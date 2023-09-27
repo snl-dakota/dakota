@@ -252,7 +252,7 @@ sub compare_output {
     my $conf_int_re = '^Confidence Intervals';
     my $surr_re = '^Surrogate quality metrics';
     my $pce_re = 'of Polynomial Chaos Expansion for';
-    my $uq_re = '^(\s+(Response Level|Resp Level Set)\s+Probability Level(\s+Reliability Index\s+General Rel Index)?|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|\s+Bin Lower\s+Bin Upper\s+Density Value|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:|\w+ Sobol\' indices:|(Moment statistics|Sample moment statistics|95% confidence intervals) for each (response function|posterior variable):|\s+Coverage Level\s+.+)$';
+    my $uq_re = '^(Standardized Regression Coefficients and Coefficients of Determination \(R\^2\):|\s+(Response Level|Resp Level Set)\s+Probability Level(\s+Reliability Index\s+General Rel Index)?|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|\s+Bin Lower\s+Bin Upper\s+Density Value|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:|\w+ Sobol\' indices:|(Moment statistics|Sample moment statistics|Double-sided tolerance interval equivalent normal statistics|95% confidence intervals) for each (response function|posterior variable):|\s+Coverage Level\s+.+)$';
     my $opt_des_re = '^Optimal design:$';
 
     while ( ($base =~ /${best_equals_re}/) && ($test =~ /${best_equals_re}/) ||
@@ -716,10 +716,10 @@ sub compare_output {
       }
     }
     elsif ( ( ($t_ev) = $test =~
-	      /^\s+(?:Initial|Final|Projected|Online|Equivalent)\s+(?:MC|MLMC|CVMC|MLCVMC|MFMC|ACV).*?\(.*?\):\s+($e)$/ ) &&
+	      /^\s+(?:Initial|Final|Projected|Online|Equivalent)\s+(?:MC|MLMC|MLCVMC|MFMC|ACV).*?\(.*?\):\s+($e)$/ ) &&
 	    ( ($b_ev) = $base =~
-	      /^\s+(?:Initial|Final|Projected|Online|Equivalent)\s+(?:MC|MLMC|CVMC|MLCVMC|MFMC|ACV).*?\(.*?\):\s+($e)$/ ) ) {
-      if ( diff($t_ev, $b_ev) ) {
+	      /^\s+(?:Initial|Final|Projected|Online|Equivalent)\s+(?:MC|MLMC|MLCVMC|MFMC|ACV).*?\(.*?\):\s+($e)$/ ) ) {
+      if ( diff_relative($t_ev, $b_ev) ) { # tends to be small: override to only use relative check
 	$test_diff = 1;
 	push @base_diffs, $base;
 	push @test_diffs, $test;
@@ -746,9 +746,9 @@ sub compare_output {
     #  }
     #}
     elsif ( ( ($t_tev, $t_nev, $t_dev) = $test =~
-	      /^  \w+ evaluations: (\d+) total \((\d+) new, (\d+) duplicate\)$/ )
-	    && ( ($b_tev, $b_nev, $b_dev) = $base =~
-		 /^  \w+ evaluations: (\d+) total \((\d+) new, (\d+) duplicate\)$/ ) ) {
+	      /^  \w+ evaluations: (\d+) total \((\d+) new, (\d+) duplicate\)$/ ) &&
+	    ( ($b_tev, $b_nev, $b_dev) = $base =~
+	      /^  \w+ evaluations: (\d+) total \((\d+) new, (\d+) duplicate\)$/ ) ) {
       if ( diff($t_tev, $b_tev) || diff($t_nev, $b_nev) ||
 	   diff($t_dev, $b_dev) ) {
 	$test_diff = 1;
@@ -831,6 +831,59 @@ sub ignore_small_value_single {
   return 0;
 }
 
+
+sub diff_naninf {
+  # $_[0] = test value
+  # $_[1] = baseline value
+
+  if ($_[0] =~ /$infre/ && $_[1] =~ /$infre/) { # both inf?
+    $first0 = substr($_[0],0,1); # Get 1st chars to compare sign
+    $first1 = substr($_[1],0,1);
+    return not (($first0 eq "-" && $first1 eq "-") || # true when negative
+		($first0 ne "-" && $first1 ne "-"))  # true when non-negative  
+  }
+  else {
+    return not ($_[0] =~ /$nanre/ && $_[1] =~ /$nanre/) # does not distinguish +/- nan
+  } 
+
+  return 0;
+}
+
+
+sub diff_relative {
+  # $_[0] = test value
+  # $_[1] = baseline value
+
+  if ($_[0] =~ /$naninf/ || $_[1] =~ /$naninf/) { # nan or inf
+    return diff_naninf($_[0],$_[1]);
+  }
+
+  $differ = abs($_[0]/$_[1] - 1.0); # relative difference
+  if ($differ > $REL_EPSILON) {
+    return 1;
+  }
+
+  return 0;
+}
+
+
+sub diff_absolute {
+  # $_[0] = test value
+  # $_[1] = baseline value
+
+  if ($_[0] =~ /$naninf/ || $_[1] =~ /$naninf/) { # nan or inf
+    return diff_naninf($_[0],$_[1]);
+  }
+
+  $differ = abs($_[0] - $_[1]);     # absolute difference
+  if ($differ > $ABS_EPSILON) {
+    return 1;
+  }
+
+  return 0;
+}
+
+
 # subroutine diff assesses whether two numbers differ by more than an epsilon
 # returns 1 if diff, 0 otherwise
 sub diff {
@@ -842,14 +895,7 @@ sub diff {
   # nan or inf, which is represented differently on posix and windows
   # systems
   if ($_[0] =~ /$naninf/ || $_[1] =~ /$naninf/) { # nan or inf
-    if ($_[0] =~ /$infre/ && $_[1] =~ /$infre/) { # both inf?
-      $first0 = substr($_[0],0,1); # Get 1st chars to compare sign
-      $first1 = substr($_[1],0,1);
-      return not (($first0 eq "-" && $first1 eq "-") || # true when negative
-	  ($first0 ne "-" && $first1 ne "-"))  # true when non-negative  
-    } else {
-      return not ($_[0] =~ /$nanre/ && $_[1] =~ /$nanre/) # does not distinguish +/- nan
-    } 
+    return diff_naninf($_[0],$_[1]);
   }
   # strings   
   if ( $_[0] =~ /^$s$/ || $_[1] =~ /^$s$/ ) {
@@ -861,18 +907,11 @@ sub diff {
     }
   }
 
-
   if ( (abs($_[0]) < $SMALL) || (abs($_[1]) < $SMALL) ) {
-    $differ = abs($_[0] - $_[1]);     # absolute difference
-    if ($differ > $ABS_EPSILON) {
-      return 1;
-    }
+    return diff_absolute($_[0],$_[1]);
   }
   else {
-    $differ = abs($_[0]/$_[1] - 1.0); # relative difference
-    if ($differ > $REL_EPSILON) {
-      return 1;
-    }
+    return diff_relative($_[0],$_[1]);
   }
 
   return 0;

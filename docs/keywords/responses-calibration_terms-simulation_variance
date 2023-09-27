@@ -19,7 +19,7 @@ as described above.
 *Usage Tips*
 
 Currently, this keyword is only in use as part of the algorithm implemented by
-:ref:`method-bayes_calibration-experimental_design<method-bayes_calibration-experimental_design>`. In this algorithm, two
+:dakkw:`method-bayes_calibration-experimental_design`. In this algorithm, two
 models (usually, one high-fidelity and one low-fidelity) are provided to
 Dakota, each with their own ``responses`` section of the input script, and each
 of which is allowed its own ``simulation_variance``.

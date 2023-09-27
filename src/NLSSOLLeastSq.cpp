@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -150,7 +150,7 @@ void NLSSOLLeastSq::check_sub_iterator_conflict()
 {
   // Run-time check (NestedModel::subIterator is constructed in init_comms())
   //if (setUpType == "model")
-  SOLBase::check_sub_iterator_conflict(iteratedModel);
+  SOLBase::check_sub_iterator_conflict(iteratedModel, methodName);
 }
 
 
@@ -205,9 +205,15 @@ void NLSSOLLeastSq::core_run()
   // these bounds must be updated from model bounds each time an iterator is
   // run within the B&B minimizer.
   RealVector augmented_l_bnds, augmented_u_bnds;
-  copy_data(iteratedModel.continuous_lower_bounds(), augmented_l_bnds);
-  copy_data(iteratedModel.continuous_upper_bounds(), augmented_u_bnds);
-  augment_bounds(augmented_l_bnds, augmented_u_bnds, iteratedModel);
+  aggregate_bounds(iteratedModel.continuous_lower_bounds(),
+		   iteratedModel.continuous_upper_bounds(),
+		   iteratedModel.linear_ineq_constraint_lower_bounds(),
+		   iteratedModel.linear_ineq_constraint_upper_bounds(),
+		   iteratedModel.linear_eq_constraint_targets(),
+		   iteratedModel.nonlinear_ineq_constraint_lower_bounds(),
+		   iteratedModel.nonlinear_ineq_constraint_upper_bounds(),
+		   iteratedModel.nonlinear_eq_constraint_targets(),
+		   augmented_l_bnds, augmented_u_bnds);
 
   NLSSOL_F77( num_least_sq_terms, num_cv, num_linear_constraints,
 	      num_nonlinear_constraints, linConstraintArraySize,

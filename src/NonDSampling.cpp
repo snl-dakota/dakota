@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -24,6 +24,7 @@
 #include "dakota_stat_util.hpp"
 #include "pecos_data_types.hpp"
 #include "NormalRandomVariable.hpp"
+#include "tolerance_intervals.hpp"
 #include <algorithm>
 
 #include <boost/math/special_functions/beta.hpp>
@@ -44,6 +45,7 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
   rngName(probDescDB.get_string("method.random_number_generator")),
   sampleType(probDescDB.get_ushort("method.sample_type")), samplesIncrement(0),
   stdRegressionCoeffs(probDescDB.get_bool("method.std_regression_coeffs")),
+  toleranceIntervalsFlag(probDescDB.get_bool("method.tolerance_intervals")),
   statsFlag(true), allDataFlag(false), samplingVarsMode(ACTIVE),
   sampleRanksMode(IGNORE_RANKS),
   varyPattern(!probDescDB.get_bool("method.fixed_seed")), 
@@ -59,6 +61,14 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
 	 << "analyses containing epistemic uncertainties." << std::endl;
     abort_handler(METHOD_ERROR);
   }
+
+#ifndef HAVE_DAKOTA_SURROGATES
+  if ( stdRegressionCoeffs ) {
+    Cerr << "Warning: Standardized Regression Coefficients are not available"
+         << " for Dakota builds without the surrogates module enabled."
+         << " Disabling requested output.\n";
+  }
+#endif
 
   if ( wilksFlag ) {
     // Only works with sample_type of random
@@ -104,6 +114,13 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
     samplesRef = numSamples;
   }
 
+  if (toleranceIntervalsFlag) {
+    tiCoverage = probDescDB.get_real("method.ti_coverage");
+    tiConfidenceLevel = probDescDB.get_real("method.ti_confidence_level");
+
+    tiNumValidSamples = 0;
+  }
+
   // update concurrency
   if (numSamples) // samples is optional (default = 0)
     maxEvalConcurrency *= numSamples;
@@ -119,6 +136,7 @@ NonDSampling(unsigned short method_name, Model& model,
   NonD(method_name, model), seedSpec(seed), randomSeed(seed),
   samplesSpec(samples), samplesRef(samples), numSamples(samples), rngName(rng),
   sampleType(sample_type), wilksFlag(false), samplesIncrement(0), stdRegressionCoeffs(false),
+  toleranceIntervalsFlag(false),
   statsFlag(false), allDataFlag(true), samplingVarsMode(sampling_vars_mode),
   sampleRanksMode(IGNORE_RANKS), varyPattern(vary_pattern),
   backfillDuplicates(false), numLHSRuns(0)
@@ -153,7 +171,9 @@ NonDSampling(unsigned short sample_type, size_t samples, int seed,
   NonD(RANDOM_SAMPLING, lower_bnds, upper_bnds), seedSpec(seed),
   randomSeed(seed), samplesSpec(samples), samplesRef(samples),
   numSamples(samples), rngName(rng), sampleType(sample_type), wilksFlag(false),
-  samplesIncrement(0), stdRegressionCoeffs(false), statsFlag(false), allDataFlag(true),
+  samplesIncrement(0), stdRegressionCoeffs(false),
+  toleranceIntervalsFlag(false),
+  statsFlag(false), allDataFlag(true),
   samplingVarsMode(ACTIVE_UNIFORM), sampleRanksMode(IGNORE_RANKS),
   varyPattern(true), backfillDuplicates(false), numLHSRuns(0)
 {
@@ -179,7 +199,9 @@ NonDSampling(unsigned short sample_type, size_t samples, int seed,
   NonD(RANDOM_SAMPLING, lower_bnds, upper_bnds), seedSpec(seed),
   randomSeed(seed), samplesSpec(samples), samplesRef(samples),
   numSamples(samples), rngName(rng), sampleType(sample_type), wilksFlag(false),
-  samplesIncrement(0), stdRegressionCoeffs(false), statsFlag(false), allDataFlag(true),
+  samplesIncrement(0), stdRegressionCoeffs(false),
+  toleranceIntervalsFlag(false),
+  statsFlag(false), allDataFlag(true),
   samplingVarsMode(ACTIVE), sampleRanksMode(IGNORE_RANKS), varyPattern(true),
   backfillDuplicates(false), numLHSRuns(0)
 {
@@ -201,7 +223,9 @@ NonDSampling::
 NonDSampling(Model& model, const RealMatrix& sample_matrix):
   NonD(LIST_SAMPLING, model), seedSpec(0), randomSeed(0),
   samplesSpec(sample_matrix.numCols()), sampleType(SUBMETHOD_DEFAULT),
-  wilksFlag(false), samplesIncrement(0), stdRegressionCoeffs(false), statsFlag(true), allDataFlag(true),
+  wilksFlag(false), samplesIncrement(0), stdRegressionCoeffs(false),
+  toleranceIntervalsFlag(false),
+  statsFlag(true), allDataFlag(true),
   samplingVarsMode(ACTIVE), sampleRanksMode(IGNORE_RANKS),
   varyPattern(false), backfillDuplicates(false), numLHSRuns(0)
 {
@@ -222,24 +246,28 @@ NonDSampling::~NonDSampling()
 
 void NonDSampling::
 transform_samples(Pecos::ProbabilityTransformation& nataf,
-		  RealMatrix& sample_matrix, size_t num_samples, bool x_to_u)
+		  RealMatrix& sample_matrix, //size_t num_samples,
+		  SizetMultiArrayConstView src_cv_ids,
+		  SizetMultiArrayConstView tgt_cv_ids, bool x_to_u)
 {
-  if (num_samples == 0)
-    num_samples = sample_matrix.numCols();
-  else if (sample_matrix.numCols() != num_samples)
-    sample_matrix.shapeUninitialized(numContinuousVars, num_samples);
+  // Since transform updates in place, we must not alter sample_matrix
+  //if (num_samples == 0)
+  //  num_samples = sample_matrix.numCols();
+  //else if (sample_matrix.numCols() != num_samples)
+  //  sample_matrix.shapeUninitialized(numContinuousVars, num_samples);
 
+  size_t num_samples = sample_matrix.numCols();
   if (x_to_u)
     for (size_t i=0; i<num_samples; ++i) {
       RealVector x_samp(Teuchos::Copy, sample_matrix[i], numContinuousVars);
       RealVector u_samp(Teuchos::View, sample_matrix[i], numContinuousVars);
-      nataf.trans_X_to_U(x_samp, u_samp);
+      nataf.trans_X_to_U(x_samp, src_cv_ids, u_samp, tgt_cv_ids);
     }
   else
     for (size_t i=0; i<num_samples; ++i) {
       RealVector u_samp(Teuchos::Copy, sample_matrix[i], numContinuousVars);
       RealVector x_samp(Teuchos::View, sample_matrix[i], numContinuousVars);
-      nataf.trans_U_to_X(u_samp, x_samp);
+      nataf.trans_U_to_X(u_samp, src_cv_ids, x_samp, tgt_cv_ids);
     }
 }
 
@@ -982,8 +1010,9 @@ compute_statistics(const RealMatrix&     vars_samples,
 		     iteratedModel.response_labels());
   }
 
-  if (epistemicStats) // Epistemic/mixed
+  if (epistemicStats) { // Epistemic/mixed
     compute_intervals(resp_samples); // compute min/max response intervals
+  }
   else { // Aleatory
     // compute means and std deviations with confidence intervals
     compute_moments(resp_samples);
@@ -994,12 +1023,22 @@ compute_statistics(const RealMatrix&     vars_samples,
 
   if (!subIteratorFlag) {
     nonDSampCorr.compute_correlations(vars_samples, resp_samples);
-    // archive the correlations to the results DB
-//    nonDSampCorr.archive_correlations(run_identifier(), resultsDB, cv_labels,
-//				      div_labels, dsv_labels, drv_labels,
-//				      iteratedModel.response_labels());
-    if (stdRegressionCoeffs)
-      nonDSampCorr.compute_std_regress_coeffs(vars_samples, resp_samples);
+  }
+
+  if (stdRegressionCoeffs) {
+    nonDSampCorr.compute_std_regress_coeffs(vars_samples, resp_samples);
+  }
+
+  if (toleranceIntervalsFlag) {
+    computeDSTIEN( resp_samples
+                 , tiCoverage
+                 , 1. - tiConfidenceLevel
+                 , tiNumValidSamples           // Output
+                 , tiDstienMus                 // Output
+                 , tiDeltaMultiplicativeFactor // Output
+                 , tiSampleSigmas              // Output
+                 , tiDstienSigmas              // Output
+                 );
   }
 
   // push results into finalStatistics
@@ -1786,40 +1825,43 @@ void NonDSampling::update_final_statistics()
 
 void NonDSampling::print_statistics(std::ostream& s) const
 {
-  if (epistemicStats) // output only min & max values in the epistemic case
+  if (epistemicStats) { // output only min & max values in the epistemic case
     print_intervals(s);
+  }
   else {
     print_moments(s);
     if (totalLevelRequests) {
       print_level_mappings(s);
       print_system_mappings(s);
     }
-    if( wilksFlag )
-      print_wilks_stastics(s); //, "response function", iteratedModel.response_labels());
   }
+
   if (!subIteratorFlag) {
-    StringMultiArrayConstView
-      acv_labels  = iteratedModel.all_continuous_variable_labels(),
-      adiv_labels = iteratedModel.all_discrete_int_variable_labels(),
-      adsv_labels = iteratedModel.all_discrete_string_variable_labels(),
-      adrv_labels = iteratedModel.all_discrete_real_variable_labels();
-    size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
-      drv_start, num_drv;
-    mode_counts(iteratedModel.current_variables(), cv_start, num_cv,
-		div_start, num_div, dsv_start, num_dsv, drv_start, num_drv);
-    StringMultiArrayConstView
-      cv_labels  =
-        acv_labels[boost::indices[idx_range(cv_start, cv_start+num_cv)]],
-      div_labels =
-        adiv_labels[boost::indices[idx_range(div_start, div_start+num_div)]],
-      dsv_labels =
-        adsv_labels[boost::indices[idx_range(dsv_start, dsv_start+num_dsv)]],
-      drv_labels =
-        adrv_labels[boost::indices[idx_range(drv_start, drv_start+num_drv)]];
-    nonDSampCorr.print_correlations(s, cv_labels, div_labels, dsv_labels,
-				    drv_labels,iteratedModel.response_labels());
-    if (stdRegressionCoeffs)
-      nonDSampCorr.print_std_regress_coeffs(s, cv_labels, iteratedModel.response_labels());
+    nonDSampCorr.print_correlations(s, iteratedModel.ordered_labels(), iteratedModel.response_labels());
+  }
+
+  if (wilksFlag) {
+    if (epistemicStats) {
+      Cerr << "Warning: Wilks printing requested in conjunction with epstemic variables" << std::endl;
+    }
+
+    print_wilks_stastics(s);
+  }
+
+  if (stdRegressionCoeffs) {
+    if (epistemicStats) {
+      Cerr << "Warning: std regression coefficients printing requested in conjunction with epstemic variables" << std::endl;
+    }
+
+    nonDSampCorr.print_std_regress_coeffs(s, iteratedModel.ordered_labels(), iteratedModel.response_labels());
+  }
+
+  if (toleranceIntervalsFlag) {
+    if (epistemicStats) {
+      Cerr << "Warning: tolerance intervals printing requested in conjunction with epstemic variables" << std::endl;
+    }
+
+    print_tolerance_intervals_statistics(s);
   }
 }
 
@@ -1962,6 +2004,92 @@ print_wilks_stastics(std::ostream& s) const
         << "        " << num_samples
         << '\n';
     }
+  }
+}
+
+void NonDSampling::
+print_tolerance_intervals_statistics(std::ostream& s) const
+{
+  const size_t width = write_precision+7;
+  const size_t response_label_width = 14;
+  s << "-----------------------------------------------------------------------------"
+    << std::endl
+    << "Double-sided tolerance interval equivalent normal results"
+    << " with coverage = "     << std::fixed << std::setprecision(2) << 100.0*tiCoverage        << "%"
+    << ", confidence level = " << std::fixed << std::setprecision(2) << 100.0*tiConfidenceLevel << "%"
+    << ", and "                << tiNumValidSamples << " valid samples"
+    << std::endl
+    << "Double-sided tolerance interval equivalent normal statistics for each response function:"
+    << std::endl
+    << std::setw(response_label_width + width + 1) << "Sample Mean mu"
+    << std::setw(width+1)  << "Sample Stdev s"
+    << std::setw(width+1)  << "Stdev Mult. f"
+    << std::setw(width+1)  << "LowerEnd=mu-f*s"
+    << std::setw(width+1)  << "UpperEnd=mu+f*s"
+    << std::setw(width+1)  << "Eq. Norm. Stdev"
+    << std::endl
+    << std::scientific << std::setprecision(write_precision);
+  for (size_t i = 0; i < numFunctions; ++i) {
+    s << std::setw(response_label_width)
+      << iteratedModel.response_labels()[i]
+      << ' ' << std::setw(width) << tiDstienMus[i]
+      << ' ' << std::setw(width) << tiSampleSigmas[i]
+      << ' ' << std::setw(width) << tiDeltaMultiplicativeFactor
+      << ' ' << std::setw(width) << tiDstienMus[i] - tiDeltaMultiplicativeFactor * tiSampleSigmas[i]
+      << ' ' << std::setw(width) << tiDstienMus[i] + tiDeltaMultiplicativeFactor * tiSampleSigmas[i]
+      << ' ' << std::setw(width) << tiDstienSigmas[i]
+      << std::endl;
+  }
+}
+
+void NonDSampling::
+archive_tolerance_intervals(size_t inc_id)
+{
+  StringArray location;
+  if (inc_id != 0) {
+    location.push_back(String("increment:") + std::to_string(inc_id));
+  }
+  location.push_back("tolerance_intervals");
+  location.push_back("");
+
+  Teuchos::SerialDenseVector<int,double> tmpValues(6);
+  for(size_t i = 0; i < numFunctions; ++i) {
+    location.back() = iteratedModel.response_labels()[i];
+    DimScaleMap scales;
+    scales.emplace( 0
+                  , StringScale( "tolerance_intervals"
+                               , { "sample_mean"
+                                 , "sample_stdev"
+                                 , "multiplicative_factor_f"
+                                 , "TI_lower_end"
+                                 , "TI_upper_end"
+                                 , "TI_equiv_normal_stdev"
+                                 }
+                               , ScaleScope::SHARED
+                               )
+                  );
+    tmpValues[0] = tiDstienMus[i];
+    tmpValues[1] = tiSampleSigmas[i];
+    tmpValues[2] = tiDeltaMultiplicativeFactor;
+    tmpValues[3] = tiDstienMus[i] - tiDeltaMultiplicativeFactor * tiSampleSigmas[i];
+    tmpValues[4] = tiDstienMus[i] + tiDeltaMultiplicativeFactor * tiSampleSigmas[i];
+    tmpValues[5] = tiDstienSigmas[i];
+
+    resultsDB.insert( run_identifier()
+                    , location
+                    , tmpValues
+                    , scales
+                    );
+  }
+
+  AttributeArray ns_attr({ResultAttribute<int>("valid_samples", tiNumValidSamples)});
+  if (inc_id == 0) {
+    StringArray location({String("tolerance_intervals")});
+    resultsDB.add_metadata_to_object(run_identifier(), location, ns_attr);
+  }
+  else {
+    StringArray location({String("increment:") + std::to_string(inc_id), String("tolerance_intervals")});
+    resultsDB.add_metadata_to_object(run_identifier(), location, ns_attr);
   }
 }
 

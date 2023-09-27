@@ -29,8 +29,8 @@ input for enabling specification of multiple grid resolutions used by
 certain advanced solution methodologies.
 
 A corresponding sequence specification is documented at, e.g.,
-:ref:`method-multifidelity_polynomial_chaos-sparse_grid_level_sequence<method-multifidelity_polynomial_chaos-sparse_grid_level_sequence>` and
-:ref:`method-multifidelity_stoch_collocation-sparse_grid_level_sequence<method-multifidelity_stoch_collocation-sparse_grid_level_sequence>`
+:dakkw:`method-multifidelity_polynomial_chaos-sparse_grid_level_sequence` and
+:dakkw:`method-multifidelity_stoch_collocation-sparse_grid_level_sequence`
 Topics::
 
 Examples::

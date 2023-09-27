@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -161,7 +161,7 @@ protected:
   /// return name of active optimizer method
   unsigned short uses_method() const;
   /// perform a numerical solver method switch due to a detected conflict
-  void method_recourse();
+  void method_recourse(unsigned short method_name);
 
   //
   //- Heading: New virtual functions
@@ -174,15 +174,57 @@ protected:
   virtual void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 					       RealVector& lin_ineq_lb,
 					       RealVector& lin_ineq_ub) = 0;
+  /// return quadratic constraint violation for augment linear
+  /// inequality constraints
+  virtual Real augmented_linear_ineq_violations(const RealVector& cd_vars,
+    const RealMatrix& lin_ineq_coeffs, const RealVector& lin_ineq_lb,
+    const RealVector& lin_ineq_ub) = 0;
+
+  virtual void numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
+					 size_t& num_nln_con);
+  virtual void numerical_solution_bounds_constraints(
+    const DAGSolutionData& soln, const RealVector& cost, Real avg_N_H,
+    RealVector& x0, RealVector& x_lb, RealVector& x_ub,
+    RealVector& lin_ineq_lb, RealVector& lin_ineq_ub, RealVector& lin_eq_tgt,
+    RealVector& nln_ineq_lb, RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
+    RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs);
+  /// When looping through a minimizer sequence/competition, this
+  /// function enables per-minimizer updates to the parameter bounds,
+  /// e.g. for providing a bounded domain for methods that require it,
+  /// while removing it for those that don't
+  virtual void finite_solution_bounds(const RealVector& cost, Real avg_N_H,
+				      RealVector& x_lb, RealVector& x_ub);
+
+  /// post-process optimization final results to recover solution data
+  virtual void recover_results(const RealVector& cv_star,
+			       const RealVector& fn_star, Real& avg_estvar,
+			       RealVector& avg_eval_ratios,
+			       Real& avg_hf_target, Real& equiv_hf_cost);
+
+  /// constraint helper function shared by NPSOL/OPT++ static evaluators
+  virtual Real linear_cost(const RealVector& N_vec);
+  /// constraint helper function shared by NPSOL/OPT++ static evaluators
+  virtual Real nonlinear_cost(const RealVector& r_and_N);
+  /// constraint gradient helper fn shared by NPSOL/OPT++ static evaluators
+  virtual void linear_cost_gradient(const RealVector& N_vec,RealVector& grad_c);
+  /// constraint gradient helper fn shared by NPSOL/OPT++ static evaluators
+  virtual void nonlinear_cost_gradient(const RealVector& r_and_N,
+				       RealVector& grad_c);
+
+  virtual size_t num_approximations() const;
 
   //
   //- Heading: member functions
   //
 
   void shared_increment(size_t iter);
+  void shared_increment(size_t iter, const UShortArray& approx_set);
   void shared_approx_increment(size_t iter);
   bool approx_increment(size_t iter, const SizetArray& approx_sequence,
 			size_t start, size_t end);
+  bool approx_increment(size_t iter, const SizetArray& approx_sequence,
+			size_t start, size_t end,
+			const UShortArray& approx_set);
   bool approx_increment(size_t iter, unsigned short root,
 			const UShortSet& reverse_dag);
   void ensemble_sample_increment(size_t iter, size_t step);
@@ -206,6 +248,11 @@ protected:
   Real compute_equivalent_cost(Real avg_hf_target,
 			       const RealVector& avg_eval_ratios,
 			       const RealVector& cost);
+  Real compute_equivalent_cost(Real avg_hf_target,
+			       const RealVector& avg_eval_ratios,
+			       const RealVector& cost,
+			       const UShortArray& approx_set);
+
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 				 size_t index, Real& equiv_hf_evals);
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
@@ -214,8 +261,17 @@ protected:
 				 const SizetArray& approx_sequence,
 				 size_t start, size_t end,Real& equiv_hf_evals);
   void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
+				 const SizetArray& approx_sequence,
+				 size_t start, size_t end,
+				 const UShortArray& approx_set,
+				 Real& equiv_hf_evals);
+  void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 				 unsigned short root,
 				 const UShortSet& reverse_dag,
+				 Real& equiv_hf_evals);
+  void increment_equivalent_cost(size_t new_samp, const RealVector& cost,
+				 unsigned short root,
+				 const UShortArray& approx_set,
 				 Real& equiv_hf_evals);
 
   void increment_sample_range(SizetArray& N_L, size_t incr,
@@ -223,6 +279,10 @@ protected:
 			      size_t start, size_t end);
   void increment_sample_range(SizetArray& N_L, size_t incr, unsigned short root,
 			      const UShortSet& reverse_dag);
+  void increment_sample_range(SizetArray& N_L, size_t incr,
+			      const SizetArray& approx_sequence,
+			      size_t start, size_t end,
+			      const UShortArray& approx_set);
 
   /// define model form and resolution level indices
   void hf_indices(size_t& hf_form_index, size_t& hf_lev_index);
@@ -237,30 +297,33 @@ protected:
   void compute_covariance(Real sum_Q1, Real sum_Q2, Real sum_Q1Q2,
 			  size_t N_shared, Real& cov_Q1Q2);
   
-  void mfmc_analytic_solution(const RealMatrix& rho2_LH, const RealVector& cost,
-			      RealMatrix& eval_ratios,
-			      bool monotonic_r = false);
-  void mfmc_reordered_analytic_solution(const RealMatrix& rho2_LH,
+  void mfmc_analytic_solution(const UShortArray& approx_set,
+			      const RealMatrix& rho2_LH, const RealVector& cost,
+			      DAGSolutionData& soln, bool monotonic_r = false);
+  void mfmc_reordered_analytic_solution(const UShortArray& approx_set,
+					const RealMatrix& rho2_LH,
 					const RealVector& cost,
 					SizetArray& approx_sequence,
-					RealMatrix& eval_ratios,
-					bool monotonic_r);
+					DAGSolutionData& soln,
+					bool monotonic_r = false);
 
-  void cvmc_ensemble_solutions(const RealMatrix& rho2_LH,
-			       const RealVector& cost, RealMatrix& eval_ratios);
-  void cvmc_ensemble_solutions(const RealSymMatrixArray& cov_LL,
-			       const RealMatrix& cov_LH,
-			       const RealVector& var_H, const RealVector& cost,
-			       const UShortArray& dag,
-			       RealMatrix& eval_ratios);
-
-  void nonhierarch_numerical_solution(const RealVector& cost,
-				      const SizetArray& approx_sequence,
-				      DAGSolutionData& soln,
-				      size_t& num_samples);
+  void ensemble_numerical_solution(const RealVector& cost,
+				   DAGSolutionData& soln, size_t& num_samples);
+  void configure_minimizers(const RealVector& cost, Real avg_N_H,
+			    RealVector& x0, RealVector& x_lb, RealVector& x_ub,
+			    RealVector& lin_ineq_lb, RealVector& lin_ineq_ub,
+			    RealVector& lin_eq_tgt,  RealVector& nln_ineq_lb,
+			    RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
+			    RealMatrix& lin_ineq_coeffs,
+			    RealMatrix& lin_eq_coeffs);
+  void run_minimizers(DAGSolutionData& soln);
 
   Real allocate_budget(const RealVector& avg_eval_ratios,
 		       const RealVector& cost);
+  Real allocate_budget(const UShortArray& approx_set,
+		       const RealVector& avg_eval_ratios,
+		       const RealVector& cost);
+
   void scale_to_budget_with_pilot(RealVector& avg_eval_ratios,
 				  const RealVector& cost, Real avg_N_H);
 
@@ -279,28 +342,47 @@ protected:
   bool ordered_approx_sequence(const RealVector& metric,
 			       SizetArray& approx_sequence,
 			       bool descending_keys = false);
-  /// determine whether metric is in increasing order for all columns
+  /// determine whether metric is in increasing order by columns for all rows
   bool ordered_approx_sequence(const RealMatrix& metric);
+  /// determine whether metric is in increasing order by active columns for
+  /// all rows
+  bool ordered_approx_sequence(const RealMatrix& metric,
+			       const UShortArray& approx_set);
 
   void apply_control(Real sum_L_shared, size_t num_shared, Real sum_L_refined,
 		     size_t num_refined, Real beta, Real& H_raw_mom);
 
   /// promote scalar to 1D array
   void inflate(size_t N_0D, SizetArray& N_1D);
+  /// promote scalar to portion of 1D array
+  void inflate(size_t N_0D, SizetArray& N_1D, const UShortArray& approx_set);
   /// promote 1D array to 2D array
   void inflate(const SizetArray& N_1D, Sizet2DArray& N_2D);
+  /// promote 1D array to active portion of 2D array
+  void inflate(const SizetArray& N_1D, Sizet2DArray& N_2D,
+	       const UShortArray& approx_set);
   /// promote vector of averaged values to full matrix
   void inflate(const RealVector& avg_eval_ratios, RealMatrix& eval_ratios);
   /// promote scalar to column vector
   void inflate(Real r_i, size_t num_rows, Real* eval_ratios_col);
 
+  /// compute a penalty merit function after an optimization solve
+  Real nh_penalty_merit(const RealVector& c_vars, const RealVector& fn_vals);
+  /// compute a penalty merit function after a DAGSolutionData instance
+  Real nh_penalty_merit(const DAGSolutionData& soln);
+
   //
   //- Heading: Data
   //
 
-  /// the minimizer used to minimize the estimator variance over parameters
-  /// of number of truth model samples and approximation eval_ratios
-  Iterator varianceMinimizer;
+  /// the minimizer(s) used to optimize the estimator variance over the number
+  /// of truth model samples and approximation eval_ratios.  Minimizers are
+  /// arranged in a sequence (first dimension) where each step in the sequence
+  /// may have multiple competitors (second dimension)
+  Iterator2DArray varianceMinimizers;
+  /// active indices for numerical solutions: varianceMinimizers[first][second]
+  SizetSizetPair varMinIndices;
+
   /// variance minimization algorithm selection: SUBMETHOD_MFMC or
   /// SUBMETHOD_ACV_{IS,MF,KL}
   unsigned short mlmfSubMethod;
@@ -316,10 +398,6 @@ protected:
   /// user specification to suppress any increments in the number of HF
   /// evaluations (e.g., because too expensive and no more can be performed)
   bool truthFixedByPilot;
-
-  /// tracks ordering of a metric (correlations, eval ratios) across set of
-  /// approximations
-  SizetArray approxSequence;
 
   /// covariances between each LF approximation and HF truth (the c
   /// vector in ACV); organized numFunctions x numApprox
@@ -351,14 +429,9 @@ private:
   /// flattens contours of average_estimator_variance() using std::log
   Real log_average_estvar(const RealVector& cd_vars);
 
-  /// constraint helper function shared by NPSOL/OPT++ static evaluators
-  Real linear_cost(const RealVector& N_vec);
-  /// constraint helper function shared by NPSOL/OPT++ static evaluators
-  Real nonlinear_cost(const RealVector& r_and_N);
-  /// constraint gradient helper fn shared by NPSOL/OPT++ static evaluators
-  void linear_cost_gradient(const RealVector& N_vec, RealVector& grad_c);
-  /// constraint gradient helper fn shared by NPSOL/OPT++ static evaluators
-  void nonlinear_cost_gradient(const RealVector& r_and_N, RealVector& grad_c);
+  /// compute a penalty merit function from objective, constraint, and
+  /// constaint bound
+  Real nh_penalty_merit(Real obj, Real nln_con, Real nln_u_bnd);
 
   /// static function used by NPSOL for the objective function
   static void npsol_objective(int& mode, int& n, double* x, double& f,
@@ -383,6 +456,9 @@ private:
   static void optpp_fdnlf1_constraint(int n, const RealVector& x,
 				      RealVector& c, int& result_mode);
 
+  /// static function used by DIRECT for its objective
+  static Real direct_penalty_merit(const RealVector& cd_vars);
+
   /// static function used by MinimizerAdapterModel for response data
   /// (objective and nonlinear constraint, if present)
   static void response_evaluator(const Variables& vars, const ActiveSet& set,
@@ -397,45 +473,12 @@ private:
 };
 
 
+inline size_t NonDNonHierarchSampling::num_approximations() const
+{ return numApprox; }
+
+
 inline unsigned short NonDNonHierarchSampling::uses_method() const
 { return optSubProblemSolver; }
-
-
-inline void NonDNonHierarchSampling::method_recourse()
-{
-  // NonDNonHierarchSampling numerical solves must protect use of Fortran
-  // solvers at this level from conflicting with use at a higher level.
-  // However, it is not necessary to check the other direction by defining
-  // check_sub_iterator_conflict(), since solver execution does not span
-  // any Model evaluations.
-
-  bool err_flag = false;
-  switch (optSubProblemSolver) {
-  case SUBMETHOD_NPSOL:
-#ifdef HAVE_OPTPP
-    optSubProblemSolver = SUBMETHOD_OPTPP;
-#else
-    err_flag = true;
-#endif
-    break;
-  case SUBMETHOD_OPTPP:
-#ifdef HAVE_NPSOL
-    optSubProblemSolver = SUBMETHOD_NPSOL;
-#else
-    err_flag = true;
-#endif
-    break;
-  }
-
-  if (err_flag) {
-    Cerr << "\nError: method conflict detected in NonDNonHierarchSampling but "
-	 << "no alternate solver available." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-  else
-    Cerr << "\nWarning: method recourse invoked in NonDNonHierarchSampling due "
-	 << "to detected method conflict.\n\n";
-}
 
 
 inline void NonDNonHierarchSampling::
@@ -490,12 +533,23 @@ inline Real NonDNonHierarchSampling::
 compute_equivalent_cost(Real avg_hf_target, const RealVector& avg_eval_ratios,
 			const RealVector& cost)
 {
-  size_t approx, len = cost.length(), hf_index = len-1;
-  Real cost_ref = cost[hf_index];
-  Real equiv_hf_ratio = 1.; // apply avg_hf_target at end
-  for (approx=0; approx<hf_index; ++approx)
-    equiv_hf_ratio += avg_eval_ratios[approx] * cost[approx] / cost_ref;
-  return equiv_hf_ratio * avg_hf_target;
+  size_t a, hf_index = cost.length() - 1;
+  Real cost_ref = cost[hf_index], rc_sum = 0.;
+  for (a=0; a<numApprox; ++a)
+    rc_sum += avg_eval_ratios[a] * cost[a];
+  return avg_hf_target * (rc_sum / cost_ref + 1.);
+}
+
+
+inline Real NonDNonHierarchSampling::
+compute_equivalent_cost(Real avg_hf_target, const RealVector& avg_eval_ratios,
+			const RealVector& cost, const UShortArray& approx_set)
+{
+  size_t a, num_approx = approx_set.size(), hf_index = cost.length() - 1;
+  Real cost_ref = cost[hf_index], rc_sum = 0.;
+  for (a=0; a<num_approx; ++a)
+    rc_sum += avg_eval_ratios[a] * cost[approx_set[a]];
+  return avg_hf_target * (rc_sum / cost_ref + 1.);
 }
 
 
@@ -532,13 +586,37 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
     increment_equivalent_cost(new_samp, cost, start, end, equiv_hf_evals);
   else {
     size_t i, len = cost.length(), hf_index = len-1, approx;
-    if (end == len) // truth is always last
-      { equiv_hf_evals += new_samp; --end; }
+    bool ordered = approx_sequence.empty();
+    // This fn is only used for LF sample increments:
+    //if (end == len) // truth is always last
+    //  { equiv_hf_evals += new_samp;  if (end) --end; }
     Real sum_cost = 0.;
-    for (i=start; i<end; ++i)
-      { approx = approx_sequence[i]; sum_cost += cost[approx]; }
+    for (i=start; i<end; ++i) {
+      approx = (ordered) ? i : approx_sequence[i];
+      sum_cost += cost[approx];
+    }
     equiv_hf_evals += (Real)new_samp * sum_cost / cost[hf_index];
   }
+}
+
+
+inline void NonDNonHierarchSampling::
+increment_equivalent_cost(size_t new_samp, const RealVector& cost,
+			  const SizetArray& approx_sequence,
+			  size_t start, size_t end,
+			  const UShortArray& approx_set, Real& equiv_hf_evals)
+{
+  size_t i, approx, num_approx = approx_set.size(), hf_index = cost.length()-1;
+  bool ordered = approx_sequence.empty();
+  // This fn is only used for LF sample increments:
+  //if (end == num_approx+1) // truth is always last
+  //  { equiv_hf_evals += new_samp;  if (end) --end; }
+  Real sum_cost = 0.;
+  for (i=start; i<end; ++i) {
+    approx = (ordered) ? i : approx_sequence[i]; // compact indexing
+    sum_cost += cost[approx_set[approx]];       // inflated indexing
+  }
+  equiv_hf_evals += (Real)new_samp * sum_cost / cost[hf_index];
 }
 
 
@@ -547,10 +625,26 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 			  unsigned short root, const UShortSet& reverse_dag,
 			  Real& equiv_hf_evals)
 {
-  Real sum_cost = cost[root];
+  Real sum_cost = 0;
+  if (root != USHRT_MAX) sum_cost += cost[root];
   UShortSet::const_iterator cit;
   for (cit=reverse_dag.begin(); cit!=reverse_dag.end(); ++cit)
     sum_cost += cost[*cit];
+  size_t hf_index = cost.length() - 1;
+  equiv_hf_evals += (Real)new_samp * sum_cost / cost[hf_index];
+}
+
+
+inline void NonDNonHierarchSampling::
+increment_equivalent_cost(size_t new_samp, const RealVector& cost,
+			  unsigned short root, const UShortArray& approx_set,
+			  Real& equiv_hf_evals)
+{
+  Real sum_cost = 0;
+  if (root != USHRT_MAX) sum_cost += cost[root];
+  size_t i, num_approx = approx_set.size();
+  for (i=0; i<num_approx; ++i)
+    sum_cost += cost[approx_set[i]];
   size_t hf_index = cost.length() - 1;
   equiv_hf_evals += (Real)new_samp * sum_cost / cost[hf_index];
 }
@@ -566,6 +660,20 @@ increment_sample_range(SizetArray& N_L, size_t incr,
   for (i=start; i<end; ++i) {
     approx = (ordered) ? i : approx_sequence[i];
     N_L[approx] += incr;
+  }
+}
+
+
+inline void NonDNonHierarchSampling::
+increment_sample_range(SizetArray& N_L, size_t incr,
+		       const SizetArray& approx_sequence,
+		       size_t start, size_t end, const UShortArray& approx_set)
+{
+  if (!incr) return;
+  bool ordered = approx_sequence.empty();  size_t i, approx;
+  for (i=start; i<end; ++i) {
+    approx = (ordered) ? i : approx_sequence[i]; // compact indexing
+    N_L[approx_set[approx]] += incr;            // inflated indexing
   }
 }
 
@@ -599,13 +707,31 @@ allocate_budget(const RealVector& avg_eval_ratios, const RealVector& cost)
 }
 
 
+inline Real NonDNonHierarchSampling::
+allocate_budget(const UShortArray& approx_set,
+		const RealVector& avg_eval_ratios, const RealVector& cost)
+{
+  // version with scalar HF target (eval_ratios already averaged over QoI
+  // due to formulation of optimization sub-problem)
+
+  Real cost_H = cost[numApprox], inner_prod, budget = (Real)maxFunctionEvals;
+  inner_prod = cost_H; // raw cost (un-normalized)
+  size_t a, num_approx = approx_set.size();
+  for (a=0; a<num_approx; ++a)
+    inner_prod += cost[approx_set[a]] * avg_eval_ratios[a];
+  Real avg_hf_target = budget / inner_prod * cost_H; // normalized to equivHF
+  return avg_hf_target;
+}
+
+
 inline void NonDNonHierarchSampling::
 r_and_N_to_N_vec(const RealVector& avg_eval_ratios, Real N_H, RealVector& N_vec)
 {
-  N_vec.sizeUninitialized(numApprox+1);
-  for (size_t i=0; i<numApprox; ++i)
+  size_t num_approx = avg_eval_ratios.length(), vec_len = num_approx+1;
+  if (N_vec.length() != vec_len) N_vec.sizeUninitialized(vec_len);
+  for (size_t i=0; i<num_approx; ++i)
     N_vec[i] = avg_eval_ratios[i] * N_H;
-  N_vec[numApprox] = N_H;
+  N_vec[num_approx] = N_H;
 }
 
 
@@ -615,11 +741,13 @@ r_and_N_to_design_vars(const RealVector& avg_eval_ratios, Real N_H,
 {
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT: // embed N at end of cd_vars for GenACV usage
-  case R_AND_N_NONLINEAR_CONSTRAINT:
-    cd_vars.sizeUninitialized(numApprox+1);
+  case R_AND_N_NONLINEAR_CONSTRAINT: {
+    size_t num_approx = avg_eval_ratios.length();
+    cd_vars.sizeUninitialized(num_approx+1);
     copy_data_partial(avg_eval_ratios, cd_vars, 0);
-    cd_vars[numApprox] = N_H;
+    cd_vars[num_approx] = N_H;
     break;
+  }
   case N_VECTOR_LINEAR_OBJECTIVE:  case N_VECTOR_LINEAR_CONSTRAINT:
     r_and_N_to_N_vec(avg_eval_ratios, N_H, cd_vars);  break;
   }
@@ -659,7 +787,7 @@ update_hf_target(Real avg_estvar, const SizetArray& N_H,
 
 inline bool NonDNonHierarchSampling::
 ordered_approx_sequence(const RealVector& metric, SizetArray& approx_sequence,
-		       bool descending_keys)
+			bool descending_keys)
 {
   size_t i, len = metric.length(), metric_order;  bool ordered = true;
   std::multimap<Real, size_t>::iterator it;
@@ -688,16 +816,37 @@ ordered_approx_sequence(const RealVector& metric, SizetArray& approx_sequence,
 
 
 inline bool NonDNonHierarchSampling::
-ordered_approx_sequence(const RealMatrix& metric)//, bool descending_keys)
+ordered_approx_sequence(const RealMatrix& metric)
 {
+  // this checks for metric ordering for each QoI (not averaged QoI)
   size_t r, c, nr = metric.numRows(), nc = metric.numCols(), metric_order;
   std::multimap<Real, size_t> metric_map;
   std::multimap<Real, size_t>::iterator it;
   bool ordered = true;
-  for (r=0; r<nr; ++r) {  // numFunctions
+  for (r=0; r<nr; ++r) { // numFunctions
     metric_map.clear();
     for (c=0; c<nc; ++c) // numApprox
       metric_map.insert(std::pair<Real, size_t>(metric(r,c), c));
+    for (c=0, it=metric_map.begin(); it!=metric_map.end(); ++it, ++c)
+      if (c != it->second) { ordered = false; break; }
+    if (!ordered) break;
+  }
+  return ordered;
+}
+
+
+inline bool NonDNonHierarchSampling::
+ordered_approx_sequence(const RealMatrix& metric, const UShortArray& approx_set)
+{
+  // this checks for metric ordering for each QoI (not averaged QoI)
+  size_t r, c, nr = metric.numRows(), nc = approx_set.size(), metric_order;
+  std::multimap<Real, size_t> metric_map;
+  std::multimap<Real, size_t>::iterator it;
+  bool ordered = true;
+  for (r=0; r<nr; ++r) { // numFunctions
+    metric_map.clear();
+    for (c=0; c<nc; ++c) // num_approx
+      metric_map.insert(std::pair<Real, size_t>(metric(r,approx_set[c]), c));
     for (c=0, it=metric_map.begin(); it!=metric_map.end(); ++it, ++c)
       if (c != it->second) { ordered = false; break; }
     if (!ordered) break;
@@ -855,10 +1004,10 @@ apply_control(Real sum_L_shared, size_t num_L_shared, Real sum_L_refined,
   H_raw_mom -= beta * (sum_L_shared  / num_L_shared - // mu from shared samples
 		       sum_L_refined / num_L_refined);// refined mu w/ increment
 
-  //Cout <<  "sum_L_shared = "  << sum_L_shared
+  //Cout <<  "apply_control: sum_L_shared = "  << sum_L_shared
   //     << " sum_L_refined = " << sum_L_refined
   //     << " num_L_shared = "  << num_L_shared
-  //     << " num_L_refined = " << num_L_refined << std::endl; 
+  //     << " num_L_refined = " << num_L_refined << std::endl;
 }
 
 
@@ -867,11 +1016,37 @@ inline void NonDNonHierarchSampling::inflate(size_t N_0D, SizetArray& N_1D)
 
 
 inline void NonDNonHierarchSampling::
+inflate(size_t N_0D, SizetArray& N_1D, const UShortArray& approx_set)
+{
+  N_1D.assign(numApprox, 0);
+  size_t i, num_approx = approx_set.size();
+  for (i=0; i<num_approx; ++i)
+    N_1D[approx_set[i]] = N_0D;
+}
+
+
+inline void NonDNonHierarchSampling::
 inflate(const SizetArray& N_1D, Sizet2DArray& N_2D)
 {
   N_2D.resize(numApprox);
   for (size_t approx=0; approx<numApprox; ++approx)
     N_2D[approx] = N_1D;
+}
+
+
+inline void NonDNonHierarchSampling::
+inflate(const SizetArray& N_1D, Sizet2DArray& N_2D,
+	const UShortArray& approx_set)
+{
+  N_2D.clear();
+  N_2D.resize(numApprox);
+  size_t i, num_approx = approx_set.size();
+  for (i=0; i<num_approx; ++i)
+    N_2D[approx_set[i]] = N_1D;
+  // Not needed so long as empty 1D arrays are allowed:
+  //for (i=0; i<numApprox; ++i)
+  //  if (N_2D[i].empty())
+  //    N_2D[i].assign(numFunctions, 0);
 }
 
 

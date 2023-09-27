@@ -3,7 +3,7 @@ Approximate control variate (ACV) sampling methods for UQ
 Description::
 An adaptive sampling method that utilizes multifidelity
 relationships in order to improve efficiency through variance reduction.
-It employs a non-hierarchical model to manage an unordered set of
+It employs an ensemble model to manage an unordered set of
 lower-fidelity approximations to a single truth model.
 
 Compared to multifidelity Monte Carlo (MFMC), ACV relaxes the nested
@@ -35,7 +35,7 @@ reliability) at this time.
 *Expected HDF5 Output*
 
 If Dakota was built with HDF5 support and run with the
-:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+:dakkw:`environment-results_output-hdf5` keyword, this method
 writes the following results to HDF5:
 
 
@@ -48,7 +48,7 @@ records the equivalent number of high-fidelity evaluations.
 *Usage Tips*
 
 The ``approximate_control_variate`` method must be used in combination
-with a non-hierarchical model specification that defines either a
+with an ensemble model specification that defines either a
 model form sequence or a discretization level sequence.  For a model
 form sequence, each model must provide a scalar
 ``solution_level_cost``.  For a discretization level sequence,
@@ -81,7 +81,7 @@ models, each with a single (or default) discretization level:
 
     model,
      id_model = 'NONHIER'
-     surrogate non_hierarchical
+     surrogate ensemble
        truth_model = 'HF'
        unordered_model_fidelities = 'LF1' 'LF2'
     

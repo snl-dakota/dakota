@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Copyright 2014-2023 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
@@ -51,19 +51,29 @@ EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db):
 
   problem_db.set_db_model_nodes(model_index); // restore
 
-  assign_default_keys();
+  // Default keys are overridden once Iterator sets surrogate_response_mode()
+  // and calls active_model_key():
+  // > Call below could be deferred, relying on Iterator ctor initialization,
+  //   except for parallel executions that only instantiate the Model.  For
+  //   this reason, go ahead and default initialize.
+  // > This suppresses the default key assignment at the bottom of
+  //   surrogate_response_mode(), such that active_model_key() must follow.
+  // > Currently, evaluate() is disallowed with DEFAULT_SURROGATE_RESP_MODE,
+  //   so a responseMode update is enforced.
+  responseMode = AGGREGATED_MODELS;  // was previously same default as DFSModel
+  assign_default_keys(responseMode); // default keys for default mode
+  if (parallelLib.mpirun_flag()) // conservative size (aggregated) for now
+    modeKeyBufferSize = server_buffer_size(responseMode, activeKey);
 
-  // Correction is required for some responseModes.  Enforcement of a
-  // correction type for these modes occurs in surrogate_response_mode().
-  switch (responseMode) {
-  case MODEL_DISCREPANCY: case AUTO_CORRECTED_SURROGATE:
-    if (corrType) // initialize DiscrepancyCorrection using initial keys
-      deltaCorr[activeKey].initialize(active_surrogate_model(0),
-				      surrogateFnIndices, corrType, corrOrder);
-    break;
-  }
-  //truthResponseRef[truthModelKey] = currentResponse.copy();
-  
+  // deltaCorr is re-initialized within active_model_key(), but here we define
+  // a default correction instance for use by methods that don't update active
+  // keys (e.g., NonDBayesCalibration).  Since AGGREGATED_MODELS is set above
+  // as a conservative choice, we suppress the mode switch:
+  //switch (mode) {
+  //case MODEL_DISCREPANCY: case AUTO_CORRECTED_SURROGATE:
+  initialize_correction(); //break;
+  //}
+
   // Ensemble surrogate models pass through numerical derivatives
   supportsEstimDerivs = false;
   // initialize ignoreBounds even though it's irrelevant for pass through
@@ -73,75 +83,92 @@ EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db):
 }
 
 
-void EnsembleSurrModel::assign_default_keys()
+void EnsembleSurrModel::assign_default_keys(short mode)
 {
   // default key data values, to be overridden at run time
 
   // For now, use design of all models are active and specific fn sets are
   // requested via ASV.
   unsigned short id = 0, num_approx = approxModels.size();
-  if (multifidelity()) { // first and last model form (no soln levels)
-    truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx,
-				     truthModel.solution_level_cost_index());
-    //if (responseMode == AGGREGATED_MODELS) {
+  size_t truth_soln_lev = truthModel.solution_levels();
+  short reduction = Pecos::RAW_DATA; // most modes are raw data w/ no reduction
+  switch (mode) {
+  case AGGREGATED_MODELS: //case DEFAULT_SURROGATE_RESP_MODE:
+    //if (multilevel_multifidelity()) {
+      // enumerate all combinations? (else resolutions not present in keys)
+    //} else
+    if (multifidelity()) { // first and last model form (no soln levels)
+      truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx,
+				       truthModel.solution_level_cost_index());
       surrModelKeys.resize(num_approx);
       for (unsigned short i=0; i<num_approx; ++i)
 	surrModelKeys[i] = Pecos::ActiveKey(id, Pecos::RAW_DATA, i,
 	  approxModels[i].solution_level_cost_index());
-    //}
-  }
-  else if (multilevel()) { // first and last solution level (last model)
-    size_t truth_soln_lev = truthModel.solution_levels(),
-      truth_index = truth_soln_lev - 1;
-    truthModelKey
-      = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx, truth_index);
-    //if (responseMode == AGGREGATED_MODELS) {
+    }
+    else if (multilevel()) {
+      size_t truth_index = truth_soln_lev - 1;
+      truthModelKey
+	= Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx, truth_index);
       surrModelKeys.resize(truth_index);
       for (size_t i=0; i<truth_index; ++i)
 	surrModelKeys[i] = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx, i);
-    //}
-  }
-  // raw data only (no data reduction)
-  activeKey.aggregate_keys(surrModelKeys, truthModelKey, Pecos::RAW_DATA);
+    }
+    break;
 
-  /* Old approach for paired models:
-  unsigned short id = 0, last_m = approxModels.size();
-  short r_type = Pecos::RAW_DATA;
-  if (multilevel_multifidelity()) { // first and last model form / soln levels
-    //size_t last_soln_lev = std::min(truthModel.solution_levels(),
-    // 				      approxModels[0].solution_levels());
-    //truthModelKey = Pecos::ActiveKey(id, r_type, last_m, last_soln_lev);
-    //surrModelKey  = Pecos::ActiveKey(id, r_type,      0, last_soln_lev);
+  case AGGREGATED_MODEL_PAIR: // first and last model form (no soln levels)
+    if (multilevel_multifidelity()) { // first and last model form / soln levels
+      // span both hierarchical dimensions by default
+      truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA,
+				       num_approx, truth_soln_lev - 1);
+      surrModelKeys.resize(1);
+      surrModelKeys[0] = Pecos::ActiveKey(id, Pecos::RAW_DATA, 0, 0);
+    }
+    else if (multifidelity()) { // first and last model form (no soln levels)
+      truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx,
+				       truthModel.solution_level_cost_index());
+      surrModelKeys.resize(1);
+      // Note: for modeKeyBufferSize estimation, must maintain consistency with
+      // NonDExpansion::configure_{sequence,indices}() and key definition for
+      // NonDMultilevelSampling::control_variate_mc() in terms of SZ_MAX usage,
+      // since this suppresses allocation of a solution level array.
+      surrModelKeys[0]  = Pecos::ActiveKey(id, Pecos::RAW_DATA, 0,
+        approxModels[0].solution_level_cost_index());
+    }
+    else if (multilevel()) {
+      truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA,
+				       num_approx, truth_soln_lev - 1);
+      surrModelKeys.resize(1);
+      surrModelKeys[0] = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx, 0);
+    }
+    break;
 
-    // span both hierarchical dimensions by default
-    size_t truth_soln_lev = truthModel.solution_levels();
-    truthModelKey = Pecos::ActiveKey(id, r_type, last_m, truth_soln_lev - 1);
-    surrModelKey  = Pecos::ActiveKey(id, r_type,      0, 0);
-  }
-  else if (multifidelity()) { // first and last model form (no soln levels)
-    // Note: for proper modeKeyBufferSize estimation, must maintain consistency
-    // with NonDExpansion::configure_{sequence,indices}() and key definition
-    // for NonDMultilevelSampling::control_variate_mc() in terms of SZ_MAX
-    // usage, since this suppresses allocation of a solution level array.
-    truthModelKey = Pecos::ActiveKey(id, r_type, last_m,
-      truthModel.solution_level_cost_index());
-    surrModelKey  = Pecos::ActiveKey(id, r_type,      0,
-      approxModels[0].solution_level_cost_index());
-  }
-  else if (multilevel()) { // first and last solution level (last model)
-    size_t truth_soln_lev = truthModel.solution_levels();
-    truthModelKey = Pecos::ActiveKey(id, r_type, last_m, truth_soln_lev - 1);
-    surrModelKey  = Pecos::ActiveKey(id, r_type, last_m, 0);
-  }
-  activeKey.aggregate_keys(surrModelKey, truthModelKey,
-			   Pecos::SINGLE_REDUCTION); // default: reduction only
-  */
+  case NO_SURROGATE: case BYPASS_SURROGATE:
+    truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA,
+				     num_approx, truth_soln_lev - 1);
+    surrModelKeys.clear();
+    break;
 
-  if (parallelLib.mpirun_flag()) {
-    MPIPackBuffer send_buff;  short mode(0);
-    send_buff << mode << activeKey; // serve_run() recvs single | aggregate key
-    modeKeyBufferSize = send_buff.size();
+  case UNCORRECTED_SURROGATE:
+    truthModelKey.clear();
+    surrModelKeys.resize(1);
+    surrModelKeys[0] = Pecos::ActiveKey(id, Pecos::RAW_DATA, 0, 0);
+    break;
+
+  case AUTO_CORRECTED_SURROGATE: case MODEL_DISCREPANCY:
+    truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA,
+				     num_approx, truth_soln_lev - 1);
+    surrModelKeys.resize(1);
+    surrModelKeys[0] = Pecos::ActiveKey(id, Pecos::RAW_DATA, 0, 0);
+    // these modes use a reduction
+    reduction = (mode == AUTO_CORRECTED_SURROGATE) ?
+      Pecos::SINGLE_REDUCTION : Pecos::RAW_WITH_REDUCTION;
+    break;
   }
+  activeKey.aggregate_keys(surrModelKeys, truthModelKey, reduction);
+
+  // would prefer to synchronize for initialization, but defer since iterator
+  // server processors do not yet have access to the responseMode:
+  //resize_response();  resize_maps();
 
   check_model_interface_instance();
 }
@@ -489,6 +516,12 @@ void EnsembleSurrModel::derived_evaluate(const ActiveSet& set)
   unsigned short m_index;
   switch (responseMode) {
 
+  case DEFAULT_SURROGATE_RESP_MODE:
+    Cerr << "Error: responseMode remains at default setting in "
+	 << "EnsembleSurrModel::derived_evaluate()" << std::endl;
+    abort_handler(MODEL_ERROR);
+    break;
+
   case AGGREGATED_MODELS: {
     // extract eval requirements from composite ASV
     Short2DArray indiv_asv;  asv_split(set.request_vector(), indiv_asv);
@@ -689,6 +722,13 @@ void EnsembleSurrModel::derived_evaluate_nowait(const ActiveSet& set)
 
   unsigned short m_index;
   switch (responseMode) {
+
+  case DEFAULT_SURROGATE_RESP_MODE:
+    Cerr << "Error: responseMode remains at default setting in "
+	 << "EnsembleSurrModel::derived_evaluate_nowait()" << std::endl;
+    abort_handler(MODEL_ERROR);
+    break;
+
   case AGGREGATED_MODELS: {
     // extract eval requirements from composite ASV
     Short2DArray indiv_asv;  asv_split(set.request_vector(), indiv_asv);
@@ -730,7 +770,7 @@ void EnsembleSurrModel::derived_evaluate_nowait(const ActiveSet& set)
   case BYPASS_SURROGATE: {
     if (set.request_vector().size() != qoi()) {
       Cerr << "Error: wrong ASV size for BYPASS_SURROGATE mode in "
-	   << "EnsembleSurrModel::derived_evaluate()" << std::endl;
+	   << "EnsembleSurrModel::derived_evaluate_nowait()" << std::endl;
       abort_handler(MODEL_ERROR);
     }
     assign_truth_key();
@@ -1044,7 +1084,7 @@ derived_synchronize_combine(IntResponseMapArray& model_resp_maps,
       while (hf_cit != hf_resp_map.end() || lf_it != lf_resp_map.end()) {
 	// these have been rekeyed already to top-level surrModelEvalCntr:
 	int hf_eval_id = (hf_cit == hf_resp_map.end()) ? INT_MAX: hf_cit->first;
-	int lf_eval_id = (lf_it == lf_resp_map.end())  ? INT_MAX : lf_it->first;
+	int lf_eval_id = (lf_it  == lf_resp_map.end()) ? INT_MAX : lf_it->first;
 
 	if (hf_eval_id < lf_eval_id) { // only HF available
 	  response_combine(hf_cit->second, empty_resp,
@@ -1383,12 +1423,8 @@ void EnsembleSurrModel::active_model_key(const Pecos::ActiveKey& key)
   switch (responseMode) {
   case MODEL_DISCREPANCY: case AUTO_CORRECTED_SURROGATE: {
     unsigned short lf_form = surrModelKeys[0].retrieve_model_form();
-    if (lf_form != USHRT_MAX) {// LF form def'd
-      DiscrepancyCorrection& delta_corr = deltaCorr[key]; // per data group
-      if (!delta_corr.initialized())
-	delta_corr.initialize(active_surrogate_model(0), surrogateFnIndices,
-			      corrType, corrOrder);
-    }
+    if (lf_form != USHRT_MAX) // LF form def'd
+      initialize_correction();
     break;
   }
   }
@@ -1504,9 +1540,14 @@ void EnsembleSurrModel::create_tabular_datastream()
     // Response
     // --------
     //mgr.append_tabular_header(currentResponse);
-    // Add HF/LF/Del prepends
-    StringArray labels = currentResponse.function_labels(); // copy
-    size_t q, num_qoi = qoi(), num_labels = labels.size(), cntr;
+    // Append model form / resolution level tags
+    // > Due to initialization ordering (which must satisfy requirements for
+    //   consistent parallel initialization), labels may not be aggregated yet.
+    const StringArray& curr_labels = currentResponse.function_labels();
+    size_t q, num_qoi = qoi(), num_curr_labels = curr_labels.size(), cntr;
+    StringArray labels;
+    if (num_curr_labels == num_m * num_qoi) labels = curr_labels; // copy
+    else                                    inflate(curr_labels, num_m, labels);
     if (solnCntlAVIndex == _NPOS)
       for (m=1, cntr=0; m<=num_m; ++m) {
 	String postpend = "_M" + std::to_string(m);
@@ -1578,9 +1619,21 @@ void EnsembleSurrModel::create_tabular_datastream()
     // Response
     // --------
     //mgr.append_tabular_header(currentResponse);
-    // Add Del_ pre-pend or model/resolution post-pends
-    StringArray labels = currentResponse.function_labels(); // copy
-    size_t q, num_qoi = qoi(), num_labels = labels.size();
+    // Add Del_ pre-pend or model form/resolution level post-pends
+    // > Mirror the label resizing for AGGREGATED_MODELS, though the case of
+    //   oversized (aggregated) response labels should not occur
+    const StringArray& curr_labels = currentResponse.function_labels();
+    size_t q, num_qoi = qoi(), num_curr_labels = curr_labels.size();
+    StringArray labels;
+    if (responseMode == AGGREGATED_MODEL_PAIR) {
+      if (num_curr_labels == 2 * num_qoi) labels = curr_labels;
+      else                                inflate(curr_labels, 2, labels);
+    }
+    else { // MODEL_DISCREPANCY, BYPASS_SURROGATE
+      labels = curr_labels;
+      if (labels.size() != num_qoi) labels.resize(num_qoi); // deflate
+    }
+    size_t num_labels = labels.size();
     if (responseMode == MODEL_DISCREPANCY)
       for (q=0; q<num_qoi; ++q)
 	labels[q].insert(0, "Del_");
@@ -1954,9 +2007,11 @@ void EnsembleSurrModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
       // recv model state from EnsembleSurrModel::component_parallel_mode()
       MPIUnpackBuffer recv_buffer(modeKeyBufferSize);
       parallelLib.bcast(recv_buffer, *pl_iter);
-      recv_buffer >> responseMode >> activeKey; // replace previous/initial key
       // extract {truth,surr}ModelKeys, assign same{Model,Interface}Instance:
-      active_model_key(activeKey);
+      short mode; Pecos::ActiveKey key;
+      recv_buffer >> mode >> key;
+      surrogate_response_mode(mode);
+      active_model_key(key); // replace previous/initial key
 
       unsigned short m_index = componentParallelMode - 1; // id to index
       // propagate resolution level to server (redundant since send_evaluation()

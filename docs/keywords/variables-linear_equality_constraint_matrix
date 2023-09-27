@@ -40,7 +40,7 @@ The pair of constraints can be written in matrix form as:
 
 
 The coefficient matrix and right hand side are expressed to Dakota in the
-:ref:`variables<variables>` section of the input file:
+:dakkw:`variables` section of the input file:
 
 .. code-block::
     
@@ -56,7 +56,7 @@ The coefficient matrix and right hand side are expressed to Dakota in the
     
 
 
-For related examples, see the :ref:`variables-linear_inequality_constraint_matrix<variables-linear_inequality_constraint_matrix>`
+For related examples, see the :dakkw:`variables-linear_inequality_constraint_matrix`
 keyword page.
 
 Theory::

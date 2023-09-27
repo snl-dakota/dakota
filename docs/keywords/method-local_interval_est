@@ -12,7 +12,7 @@ methods to calculate these bounds.
 
 *Additional Resources*
 
-Refer to :ref:`topic-variable_support<topic-variable_support>` for information on supported
+Refer to :ref:`topic-variable_support` for information on supported
 variable types.
 Topics::
 uncertainty_quantification, epistemic_uncertainty_quantification_methods, interval_estimation

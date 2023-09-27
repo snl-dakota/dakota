@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -387,8 +387,13 @@ void GaussProcApproximation::optimize_theta_global()
   // NCSU DIRECT optimize of Negative Log Likelihood
   // Uses default convergence tolerance settings in NCSUOptimizer wrapper!
   size_t max_iter = 1000, max_eval = 10000;
+  RealVector lin_ineq_lb, lin_ineq_ub, lin_eq_tgt,
+             nln_ineq_lb, nln_ineq_ub, nln_eq_tgt;
+  RealMatrix lin_ineq_coeffs, lin_eq_coeffs;
   nll_optimizer.assign_rep(std::make_shared<NCSUOptimizer>
-    (theta_lbnds, theta_ubnds, max_iter, max_eval, negloglikNCSU));
+    (theta_lbnds, theta_ubnds, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub,
+     lin_eq_coeffs, lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
+     max_iter, max_eval, negloglikNCSU));
   nll_optimizer.run(); // no pl_iter needed for this optimization
   const Variables& vars_star = nll_optimizer.variables_results();
   const Response&  resp_star = nll_optimizer.response_results();

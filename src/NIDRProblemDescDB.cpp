@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -49,7 +49,7 @@
 
 #ifdef DAKOTA_DL_SOLVER
 #ifdef _WIN32
-#include "dakota_windows.h"
+#include "util_windows.hpp"
 #define dlopen(x,y) LoadLibrary(x)
 #else
 #include <dlfcn.h>
@@ -6786,6 +6786,8 @@ static Real
 	MP_(volBoxSize),
 	MP_(vns),
 	MP_(wilksConfidenceLevel),
+	MP_(tiCoverage),
+	MP_(tiConfidenceLevel),
 	MP_(xConvTol);
 
 static RealVector
@@ -6824,7 +6826,8 @@ static unsigned short
 	MP_(sparseGridLevel),
         MP_(startOrder),
 	MP_(vbdOrder),
-	MP_(wilksOrder);
+	MP_(wilksOrder),
+        MP_(vbdViaSamplingMethod);
 
 static SizetArray
 	MP_(collocationPointsSeq),
@@ -6932,7 +6935,8 @@ static bool
 	MP_(showMiscOptions),
 	MP_(speculativeFlag),
 	MP_(standardizedSpace),
-	MP_(stdRegressionCoeffs),
+        MP_(stdRegressionCoeffs),
+        MP_(toleranceIntervalsFlag),
 	MP_(surrBasedGlobalReplacePts),
 	MP_(surrBasedLocalLayerBypass),
 	MP_(tensorGridFlag),
@@ -6988,7 +6992,8 @@ static int
 	MP_(searchSchemeSize),
 	MP_(subSamplingPeriod),
 	MP_(totalPatternSize),
-	MP_(verifyLevel);
+	MP_(verifyLevel),
+	MP_(vbdViaSamplingNumBins);
 
 static size_t
 	MP_(collocationPoints),
@@ -7029,6 +7034,7 @@ static Method_mp_type
 	MP2s(covarianceControl,FULL_COVARIANCE),
         MP2s(dagRecursionType,FULL_GRAPH_RECURSION),
         MP2s(dagRecursionType,KL_GRAPH_RECURSION),
+        MP2s(dagRecursionType,NO_GRAPH_RECURSION),
         MP2s(dagRecursionType,PARTIAL_GRAPH_RECURSION),
 	MP2s(distributionType,COMPLEMENTARY),
 	MP2s(distributionType,CUMULATIVE),
@@ -7076,6 +7082,7 @@ static Method_mp_type
 	MP2s(methodOutput,QUIET_OUTPUT),
 	MP2s(methodOutput,SILENT_OUTPUT),
 	MP2s(methodOutput,VERBOSE_OUTPUT),
+        MP2s(modelSelectType,ALL_MODEL_COMBINATIONS),
 	MP2s(multilevAllocControl,ESTIMATOR_VARIANCE),
 	MP2s(multilevAllocControl,GREEDY_REFINEMENT),
 	MP2s(multilevAllocControl,RANK_SAMPLING),
@@ -7268,10 +7275,12 @@ static Method_mp_utype
 	MP2s(optSubProbSolver,SUBMETHOD_NONE),
 	MP2s(optSubProbSolver,SUBMETHOD_OPTPP),
 	MP2s(optSubProbSolver,SUBMETHOD_NPSOL),
+	MP2s(optSubProbSolver,SUBMETHOD_NPSOL_OPTPP),
 	MP2s(optSubProbSolver,SUBMETHOD_SBLO),
 	MP2s(optSubProbSolver,SUBMETHOD_EA),
 	MP2s(optSubProbSolver,SUBMETHOD_EGO),
 	MP2s(optSubProbSolver,SUBMETHOD_SBGO),
+	MP2s(optSubProbSolver,SUBMETHOD_DIRECT_NPSOL_OPTPP),
 	MP2s(optSubProbSolver,SUBMETHOD_LHS),
 	MP2s(pstudyFileFormat,TABULAR_NONE),
         MP2s(pstudyFileFormat,TABULAR_HEADER),
@@ -7280,6 +7289,8 @@ static Method_mp_utype
         MP2s(pstudyFileFormat,TABULAR_ANNOTATED),
 	MP2s(sampleType,SUBMETHOD_LHS),
 	MP2s(sampleType,SUBMETHOD_RANDOM),
+	MP2s(vbdViaSamplingMethod,VBD_MAHADEVAN),
+	MP2s(vbdViaSamplingMethod,VBD_SALTELLI),
 	MP2s(subMethod,SUBMETHOD_AMV_PLUS_U),
 	MP2s(subMethod,SUBMETHOD_AMV_PLUS_X),
 	MP2s(subMethod,SUBMETHOD_AMV_U),

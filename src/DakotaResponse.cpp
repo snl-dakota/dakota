@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -57,16 +57,13 @@ Response(BaseConstructor, const Variables& vars,
   short asv_value = 1;
   if (grad_flag) {
     asv_value |= 2;
-    functionGradients.reshape(num_params, num_fns);
-    functionGradients = 0.;
+    functionGradients.shape(num_params, num_fns); // init to 0
   }
   if (hess_flag) {
     asv_value |= 4;
     functionHessians.resize(num_fns);
-    for (size_t i=0; i<num_fns; i++) {
-      functionHessians[i].reshape(num_params);
-      functionHessians[i] = 0.;
-    }
+    for (size_t i=0; i<num_fns; i++)
+      functionHessians[i].shape(num_params); // init to 0
   }
 
   // set up the response ActiveSet.  This object is copied by Iterator for its
@@ -1683,34 +1680,197 @@ void Response::active_set_derivative_vector(const SizetArray& asdv)
   if (responseRep)
     responseRep->active_set_derivative_vector(asdv);
   else {
-    // resize functionGradients/functionHessians if needed to accomodate
-    // a change in DVV size
-    size_t new_deriv_vars = asdv.size();
-    if (responseActiveSet.derivative_vector().size() != new_deriv_vars) {
-      size_t num_fns = responseActiveSet.request_vector().size();
-      //reshape(num_fns, new_deriv_vars, !functionGradients.empty(),
-      //	!functionHessians.empty());
-      if (!functionGradients.empty())
-	functionGradients.reshape(new_deriv_vars, num_fns);
-      if (!functionHessians.empty())
-	for (size_t i=0; i<num_fns; i++)
-	  functionHessians[i].reshape(new_deriv_vars);
-    }
+    // resize function{Gradients,Hessians} if needed to sync with new DVV
+    size_t num_deriv_vars = asdv.size();
+    if (responseActiveSet.derivative_vector().size() != num_deriv_vars)
+      reshape_active_derivs(num_deriv_vars);
     // assign the new derivative vector
     responseActiveSet.derivative_vector(asdv);
   }
 }
+
+
+void Response::active_set_derivative_vector(SizetMultiArrayConstView asdv)
+{
+  if (responseRep)
+    responseRep->active_set_derivative_vector(asdv);
+  else {
+    // resize function{Gradients,Hessians} if needed to sync with new DVV
+    size_t num_deriv_vars = asdv.size();
+    if (responseActiveSet.derivative_vector().size() != num_deriv_vars)
+      reshape_active_derivs(num_deriv_vars);
+    // assign the new derivative vector
+    responseActiveSet.derivative_vector(asdv);
+  }
+}
+
+
+void Response::reshape_active_derivs(size_t num_deriv_vars)
+{
+  if (responseRep)
+    responseRep->reshape_active_derivs(num_deriv_vars);
+  else {
+    // This differs from reshape_rep in that DVV can change more frequently;
+    // therefore, we are less aggressive about clearing arrays
+    size_t num_fns = responseActiveSet.request_vector().size();
+    if (!functionGradients.empty()) // gradients are active
+      functionGradients.reshape(num_deriv_vars, num_fns);
+    if (!functionHessians.empty())   // Hessians are active
+      for (size_t i=0; i<num_fns; i++)
+	functionHessians[i].reshape(num_deriv_vars);
+  }
+}
+
+
+void Response::
+map_dvv_indices(const SizetArray& assign_dvv, SizetArray& assign_indices,
+		SizetArray& curr_indices)
+{
+  if (responseRep)
+    responseRep->map_dvv_indices(assign_dvv, assign_indices, curr_indices);
+  else {
+    // For assigning derivatives using the incoming DVV ids, define the
+    // source and target indices by matching with the current DVV
+    const SizetArray& curr_dvv = responseActiveSet.derivative_vector();
+    size_t assign_index = 0, curr_index = 0,
+      num_assign_dvv = assign_dvv.size(), num_curr_dvv = curr_dvv.size(),
+      assign_dvv_val = (num_assign_dvv) ? assign_dvv[assign_index] : SZ_MAX,
+      curr_dvv_val   = (num_curr_dvv)   ?   curr_dvv[curr_index]   : SZ_MAX;
+    assign_indices.reserve(num_curr_dvv);  curr_indices.reserve(num_curr_dvv);
+    while (assign_index < num_assign_dvv || curr_index < num_curr_dvv) {
+      if (assign_dvv_val < curr_dvv_val) // skip: available component not needed
+	assign_dvv_val = (++assign_index < num_assign_dvv) ?
+	  assign_dvv[assign_index] : SZ_MAX;
+      else if (curr_dvv_val < assign_dvv_val) {  // error: need unavailable comp
+	Cerr << "Error: required derivative component (" << curr_dvv_val
+	     << ") not present in Response::map_dvv_indices()." << std::endl;
+	abort_handler(RESP_ERROR);
+      }
+      else {                                  // match: need available component
+	assign_indices.push_back(assign_index);
+	curr_indices.push_back(curr_index);
+	assign_dvv_val = (++assign_index < num_assign_dvv) ?
+	  assign_dvv[assign_index] : SZ_MAX;
+	curr_dvv_val   = (++curr_index   < num_curr_dvv)   ?
+	  curr_dvv[curr_index]     : SZ_MAX;
+      }
+    }
+    // Note: curr_indices should always be {0,...,num_curr_dvv-1}
+    if (curr_indices.size() != num_curr_dvv) {
+      Cerr << "Error: size mismatch following DVV index mapping in Response::"
+	   << "map_dvv_indices() indices." << std::endl;
+      abort_handler(RESP_ERROR);
+    }
+  }
+}
+
+
+void Response::
+function_gradient(const RealVector& assign_grad, int fn_index,
+		  const SizetArray& assign_indices,
+		  const SizetArray&   curr_indices)
+{
+  if (responseRep)
+    responseRep->function_gradient(assign_grad, fn_index, assign_indices,
+				   curr_indices);
+  else {
+    Real* curr_grad = functionGradients[fn_index];
+    size_t i, num_curr_ind = curr_indices.size();
+    for (i=0; i<num_curr_ind; ++i)
+      curr_grad[curr_indices[i]] = assign_grad[assign_indices[i]];
+  }
+}
+
+
+void Response::
+function_gradient(const RealVector& assign_grad, int fn_index,
+		  const SizetArray& assign_dvv)
+{
+  if (responseRep)
+    responseRep->function_gradient(assign_grad, fn_index, assign_dvv);
+  else {
+    const SizetArray& curr_dvv = responseActiveSet.derivative_vector();
+    if (assign_dvv == curr_dvv)
+      Teuchos::setCol(assign_grad, fn_index, functionGradients);
+    else {
+      size_t num_assign_dvv = assign_dvv.size(), num_curr_dvv = curr_dvv.size(),
+	assign_index = 0, curr_index = 0,
+	assign_dvv_val = (num_assign_dvv) ? assign_dvv[assign_index] : SZ_MAX,
+	curr_dvv_val   = (num_curr_dvv)   ? curr_dvv[curr_index]     : SZ_MAX;
+      Real* curr_grad = functionGradients[fn_index];
+      while (assign_index < num_assign_dvv || curr_index < num_curr_dvv) {
+	if (assign_dvv_val < curr_dvv_val)    // skip: available comp not needed
+	  assign_dvv_val = (++assign_index < num_assign_dvv) ?
+	    assign_dvv[assign_index] : SZ_MAX;
+	else if (curr_dvv_val < assign_dvv_val) {// error: need unavailable comp
+	  Cerr << "Error: required derivative component (" << curr_dvv_val
+	       << ") not present in assigned gradient vector." << std::endl;
+	  abort_handler(RESP_ERROR);
+	}
+	else {                                // match: need available component
+	  curr_grad[curr_index] = assign_grad[assign_index];
+	  assign_dvv_val = (++assign_index < num_assign_dvv) ?
+	    assign_dvv[assign_index] : SZ_MAX;
+	  curr_dvv_val   = (++curr_index   < num_curr_dvv)   ?
+	    curr_dvv[curr_index]     : SZ_MAX;
+	}
+      }
+    }
+  }
+}
+
+
+void Response::
+function_hessian(const RealSymMatrix& assign_hessian, size_t fn_index,
+		 const SizetArray&    assign_indices,
+		 const SizetArray&      curr_indices)
+{
+  if (responseRep)
+    responseRep->function_hessian(assign_hessian, fn_index,
+				  assign_indices, curr_indices);
+  else {
+    RealSymMatrix& curr_hessian = functionHessians[fn_index];
+    size_t r, c, curr_index_r, assign_index_r, num_v = curr_indices.size();
+    for (r=0; r<num_v; ++r) {
+      curr_index_r = curr_indices[r];  assign_index_r = assign_indices[r];
+      for (c=0; c<=r; ++c)
+	curr_hessian(curr_index_r, curr_indices[c])
+	  = assign_hessian(assign_index_r, assign_indices[c]);
+    }
+  }
+}
+
+
+void Response::
+function_hessian(const RealSymMatrix& assign_hessian, size_t fn_index,
+		 const SizetArray&    assign_dvv)
+{
+  if (responseRep)
+    responseRep->function_hessian(assign_hessian, fn_index, assign_dvv);
+  else {
+    if (assign_dvv == responseActiveSet.derivative_vector())
+      copy_data(assign_hessian, functionHessians[fn_index]); // override view
+    else {
+      SizetArray assign_indices, curr_indices;
+      map_dvv_indices(assign_dvv, assign_indices, curr_indices);
+      function_hessian(assign_hessian, fn_index,
+		       assign_indices, curr_indices);
+    }
+  }
+}
+
 
 void Response::set_scalar_covariance(RealVector& scalars)
 {
   if (responseRep)
     responseRep->set_scalar_covariance(scalars);
   else {
-    Cerr << "\nError: set_scalar_covaraince() not defined for this response "
+    Cerr << "\nError: set_scalar_covariance() not defined for this response "
          << std::endl;
     abort_handler(-1);
   }
 }
+
 
 void Response::set_full_covariance(std::vector<RealMatrix> &matrices,
                                    std::vector<RealVector> &diagonals,
@@ -1720,7 +1880,9 @@ void Response::set_full_covariance(std::vector<RealMatrix> &matrices,
                                    IntVector scalar_map_indices )
 {
   if (responseRep)
-    responseRep->set_full_covariance(matrices, diagonals, scalars, matrix_map_indices, diagonal_map_indices, scalar_map_indices);
+    responseRep->
+      set_full_covariance(matrices, diagonals, scalars, matrix_map_indices,
+			  diagonal_map_indices, scalar_map_indices);
   else {
     Cerr << "\nError: set_full_covariance() not defined for this response "
          << std::endl;

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -2171,6 +2171,8 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
       {"coliny.max_boxsize_limit", P_MET maxBoxSize},
       {"coliny.variable_tolerance", P_MET threshDelta},
       {"confidence_level", P_MET wilksConfidenceLevel},
+      {"ti_coverage", P_MET tiCoverage},
+      {"ti_confidence_level", P_MET tiConfidenceLevel},
       {"constraint_penalty", P_MET constraintPenalty},
       {"constraint_tolerance", P_MET constraintTolerance},
       {"convergence_tolerance", P_MET convergenceTolerance},
@@ -2291,7 +2293,8 @@ int ProblemDescDB::get_int(const String& entry_name) const
       {"random_seed", P_MET randomSeed},
       {"samples", P_MET numSamples},
       {"sub_sampling_period", P_MET subSamplingPeriod},
-      {"symbols", P_MET numSymbols}
+      {"symbols", P_MET numSymbols},
+      {"vbd_via_sampling_num_bins", P_MET vbdViaSamplingNumBins}
     },
     { /* model */
       {"active_subspace.bootstrap_samples", P_MOD numReplicates},
@@ -2356,7 +2359,8 @@ short ProblemDescDB::get_short(const String& entry_name) const
       {"nond.regression_type", P_MET regressionType},
       {"nond.response_level_target", P_MET responseLevelTarget},
       {"nond.response_level_target_reduce", P_MET responseLevelTargetReduce},
-      {"nond.search_model_graphs", P_MET dagRecursionType},
+      {"nond.search_model_graphs.recursion", P_MET dagRecursionType},
+      {"nond.search_model_graphs.selection", P_MET modelSelectType},
       {"optpp.merit_function", P_MET meritFn},
       {"output", P_MET methodOutput},
       {"sbl.acceptance_logic", P_MET surrBasedLocalAcceptLogic},
@@ -2449,7 +2453,8 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
       {"pstudy.import_format", P_MET pstudyFileFormat},
       {"sample_type", P_MET sampleType},
       {"soft_convergence_limit", P_MET softConvLimit},
-      {"sub_method", P_MET subMethod}
+      {"sub_method", P_MET subMethod},
+      {"vbd_via_sampling_method", P_MET vbdViaSamplingMethod}
     },
     { /* model */
       {"active_subspace.cv.id_method", P_MOD subspaceIdCVMethod},
@@ -2687,6 +2692,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
       {"scaling", P_MET methodScaling},
       {"speculative", P_MET speculativeFlag},
       {"std_regression_coeffs", P_MET stdRegressionCoeffs},
+      {"tolerance_intervals", P_MET toleranceIntervalsFlag},
       {"variance_based_decomp", P_MET vbdFlag},
       {"wilks", P_MET wilksFlag}
     },

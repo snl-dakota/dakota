@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -186,6 +186,8 @@ inline void ActiveSet::reshape(size_t num_fns, size_t num_deriv_v)
   reshape(num_fns);
   if (derivVarsVector.size() != num_deriv_v) {
     derivVarsVector.resize(num_deriv_v);
+    // DVV value management has not been necessary since Iterator sets
+    // ActiveSet which propagates through Model to Response
     //if (curr_deriv_v && num_deriv_v > curr_deriv_v) // inflate
     //  continue sequence?
   }

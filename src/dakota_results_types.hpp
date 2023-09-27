@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -395,6 +395,23 @@ struct StringScale {
     isMatrix = false;
   }
 
+  /// Constructor that takes and initializer list of strings
+  StringScale(const std::string & in_label, 
+        std::initializer_list<String> in_items,
+        ScaleScope in_scope = ScaleScope::UNSHARED) {
+    label = in_label;
+    // cache these because the initializer_list seems to make copies 
+    // that get destroyed when this constructor exits, which invalidates
+    // the pointers in items
+    cache = in_items;
+    items.resize(cache.size());
+    std::transform(cache.begin(), cache.end(), items.begin(), 
+      [](const String &s) { return s.c_str();});
+    scope = in_scope;
+    numCols = items.size();
+    isMatrix = false;
+  }
+
   /// Constructor that takes a vector of strings
   StringScale(const std::string& in_label, const std::vector<String> &in_items, 
           ScaleScope in_scope = ScaleScope::UNSHARED) {
@@ -470,6 +487,9 @@ struct StringScale {
   ScaleScope scope;
   /// Pointers to the strings that make up the scale
   std::vector<const char *> items;
+  /// Cache of strings that back the pointers; used only to improve the
+  /// safety of initializer_list<String> constructor.
+  std::vector<String> cache;
   /// Number of columns; equals length of scale when 1D
   int numCols;
   /// 2d or 1d?

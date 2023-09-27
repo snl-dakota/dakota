@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -40,7 +40,6 @@ Real std_normal_coverage_inverse( const Real coverage )
 }
 
 Real computeDSTIEN_conversion_factor( const size_t number_of_samples
-                                    , const Real   coverage
                                     , const Real   alpha
                                     )
 {
@@ -48,17 +47,6 @@ Real computeDSTIEN_conversion_factor( const size_t number_of_samples
     Cerr << "Error in computeDSTIEN_conversion_factor()"
          << ": the number of response samples (" << number_of_samples
          << ") must be at least 2"
-         << std::endl;
-    abort_handler(-1);
-  }
-
-  if ((0. <= coverage) && (coverage <= 1.)) {
-    // Ok
-  }
-  else {
-    Cerr << "Error in computeDSTIEN_conversion_factor()"
-         << ": coverage (" << coverage
-         << ") must belong to the closed interval [0,1]"
          << std::endl;
     abort_handler(-1);
   }
@@ -84,7 +72,7 @@ Real computeDSTIEN_conversion_factor( const size_t number_of_samples
     boost::math::chi_squared chisq(m - 1.);
     Real quant = boost::math::quantile(chisq, alpha);
     Real tmpRatio = (m - 3. - quant) / (2. * (m + 1.) * (m + 1.));
-    conversionFactor = std_normal_coverage_inverse(coverage) * std::sqrt(1. + 1./m) * std::sqrt( (m - 1.)/quant ) * std::sqrt( 1. + tmpRatio );
+    conversionFactor = std::sqrt(1. + 1./m) * std::sqrt( (m - 1.)/quant ) * std::sqrt( 1. + tmpRatio );
   }
 
   return conversionFactor;
@@ -95,6 +83,8 @@ void computeDSTIEN( const IntResponseMap & resp_samples
                   , const Real             alpha
                   , size_t               & num_valid_samples
                   , RealVector           & dstien_mus
+                  , Real                 & delta_mf
+                  , RealVector           & sample_sigmas
                   , RealVector           & dstien_sigmas
                   )
 {
@@ -117,16 +107,13 @@ void computeDSTIEN( const IntResponseMap & resp_samples
     abort_handler(-1);
   }
 
-  {
-    ;
-    for (IntRespMCIter it = resp_samples.begin(); it != resp_samples.end(); ++it) {
-      if (it->second.num_functions() != num_responses) {
-        Cerr << "Error in computeDSTIEN()"
-             << ": all response samples must have the same size (" << num_responses
-             << ") as the first sample"
-             << std::endl;
-        abort_handler(-1);
-      }
+  for (IntRespMCIter it = resp_samples.begin(); it != resp_samples.end(); ++it) {
+    if (it->second.num_functions() != num_responses) {
+      Cerr << "Error in computeDSTIEN()"
+           << ": all response samples must have the same size (" << num_responses
+           << ") as the first sample"
+           << std::endl;
+      abort_handler(-1);
     }
   }
 
@@ -156,6 +143,10 @@ void computeDSTIEN( const IntResponseMap & resp_samples
     dstien_mus.resize(num_responses);
   }
 
+  if (sample_sigmas.length() != num_responses) {
+    sample_sigmas.resize(num_responses);
+  }
+
   if (dstien_sigmas.length() != num_responses) {
     dstien_sigmas.resize(num_responses);
   }
@@ -163,6 +154,8 @@ void computeDSTIEN( const IntResponseMap & resp_samples
   // Initialize the output variables
   num_valid_samples = 0;
   dstien_mus        = 0.;
+  delta_mf          = 0.;
+  sample_sigmas     = 0.;
   dstien_sigmas     = 0.;
 
   // Determine the amount of valid samples
@@ -183,6 +176,8 @@ void computeDSTIEN( const IntResponseMap & resp_samples
 
   if (num_valid_samples == 0) {
     dstien_mus    = std::numeric_limits<Real>::quiet_NaN();
+    delta_mf      = std::numeric_limits<Real>::quiet_NaN();
+    sample_sigmas = std::numeric_limits<Real>::quiet_NaN();
     dstien_sigmas = std::numeric_limits<Real>::quiet_NaN();
   }
   else {
@@ -204,6 +199,8 @@ void computeDSTIEN( const IntResponseMap & resp_samples
 
     // Compute DSTIEN sigmas
     if (num_valid_samples == 1) {
+      delta_mf      = std::numeric_limits<Real>::quiet_NaN();
+      sample_sigmas = std::numeric_limits<Real>::quiet_NaN();
       dstien_sigmas = std::numeric_limits<Real>::quiet_NaN();
     }
     else {
@@ -213,23 +210,25 @@ void computeDSTIEN( const IntResponseMap & resp_samples
           if (sample_valid_status[j]) {
             for (size_t k = 0; k < num_responses; ++k) {
               Real diff = it->second.function_value(k) - dstien_mus[k];
-              dstien_sigmas[k] += diff * diff;
+              sample_sigmas[k] += diff * diff;
             } // for k
           }
         } // for j
       }
 
       Real conversionFactor = computeDSTIEN_conversion_factor( num_valid_samples
-                                                             , coverage
                                                              , alpha
                                                              );
 
-      dstien_sigmas *= 1./(m - 1.);
-      for (size_t k = 0; k < num_responses; ++k) {
-        dstien_sigmas[k] = std::sqrt( dstien_sigmas[k] );
-      } // for k
-      dstien_sigmas *= conversionFactor;
+      delta_mf = std_normal_coverage_inverse(coverage) * conversionFactor;
 
+      sample_sigmas *= 1./(m - 1.);
+      for (size_t k = 0; k < num_responses; ++k) {
+        sample_sigmas[k] = std::sqrt( sample_sigmas[k] );
+      } // for k
+
+      dstien_sigmas =  sample_sigmas;
+      dstien_sigmas *= conversionFactor;
     } // if (num_valid_samples == 1) else
   } // if (num_valid_samples == 0) else
 } // void computeDSTIEN()

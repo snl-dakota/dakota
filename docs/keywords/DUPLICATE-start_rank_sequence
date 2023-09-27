@@ -11,7 +11,7 @@ starting point for each level within either an individual or
 integrated refinement approach.
 
 A corresponding scalar specification is documented at, e.g.,
-:ref:`method-function_train-start_rank<method-function_train-start_rank>`
+:dakkw:`method-function_train-start_rank`
 Topics::
 
 Examples::

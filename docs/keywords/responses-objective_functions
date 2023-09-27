@@ -18,16 +18,16 @@ formulation:
    & & \mathbf{x}_{L} \leq \mathbf{x} \leq \mathbf{x}_U
    \end{eqnarray*}
 
-Unless :ref:`responses-objective_functions-sense<responses-objective_functions-sense>` is specified, Dakota
+Unless :dakkw:`responses-objective_functions-sense` is specified, Dakota
 will minimize the objective functions.
 
 The keywords
-:ref:`responses-objective_functions-nonlinear_inequality_constraints<responses-objective_functions-nonlinear_inequality_constraints>` and
-:ref:`responses-objective_functions-nonlinear_equality_constraints<responses-objective_functions-nonlinear_equality_constraints>`
+:dakkw:`responses-objective_functions-nonlinear_inequality_constraints` and
+:dakkw:`responses-objective_functions-nonlinear_equality_constraints`
 specify the number of nonlinear inequality constraints *g*, and nonlinear
 equality constraints *h*, respectively.  When interfacing to external
 applications, the responses must be returned to Dakota in this order
-in the :ref:`interface-analysis_drivers-fork-results_file<interface-analysis_drivers-fork-results_file>` :
+in the :dakkw:`interface-analysis_drivers-fork-results_file` :
 
 
 1. objective functions
@@ -38,17 +38,17 @@ in the :ref:`interface-analysis_drivers-fork-results_file<interface-analysis_dri
 An optimization problem's linear constraints are provided to the
 solver at startup only and do not need to be included in the data
 returned on every function evaluation. Linear constraints are
-therefore specified in the :ref:`variables<variables>` block through the
-:ref:`variables-linear_inequality_constraint_matrix<variables-linear_inequality_constraint_matrix>` :math:`A_i`  and
-:ref:`variables-linear_equality_constraint_matrix<variables-linear_equality_constraint_matrix>` :math:`A_e` .
+therefore specified in the :dakkw:`variables` block through the
+:dakkw:`variables-linear_inequality_constraint_matrix` :math:`A_i`  and
+:dakkw:`variables-linear_equality_constraint_matrix` :math:`A_e` .
 
 Lower and upper bounds on the design variables *x* are also
-specified in the :ref:`variables<variables>` block.
+specified in the :dakkw:`variables` block.
 
 The optional keywords relate to scaling the objective functions (for
 better numerical results), formulating the problem as minimization or
 maximization, and dealing with multiple objective functions through
-:ref:`responses-objective_functions-weights<responses-objective_functions-weights>` *w*. If scaling is used,
+:dakkw:`responses-objective_functions-weights` *w*. If scaling is used,
 it is applied before multi-objective weighted sums are formed, so,
 e.g, when both weighting and characteristic value scaling are present
 the ultimate objective function would be:

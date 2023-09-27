@@ -14,7 +14,7 @@ Topics::
 linear_constraints
 
 Examples::
-Examples of specifying linear equality constraints to Dakota are provided on the :ref:`variables-linear_equality_constraint_matrix<variables-linear_equality_constraint_matrix>` page.
+Examples of specifying linear equality constraints to Dakota are provided on the :dakkw:`variables-linear_equality_constraint_matrix` page.
 
 Theory::
 

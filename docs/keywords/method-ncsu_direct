@@ -19,11 +19,11 @@ parameters, so the keywords sometimes have slightly different meaning.
 The algorithm stops based on:
 
 
-- :ref:`method-ncsu_direct-max_iterations<method-ncsu_direct-max_iterations>` - number of iterations
-- :ref:`method-ncsu_direct-max_function_evaluations<method-ncsu_direct-max_function_evaluations>` - number of function evaluations
-- :ref:`method-ncsu_direct-solution_target<method-ncsu_direct-solution_target>` and :ref:`method-ncsu_direct-convergence_tolerance<method-ncsu_direct-convergence_tolerance>`
-- :ref:`method-ncsu_direct-min_boxsize_limit<method-ncsu_direct-min_boxsize_limit>`
-- :ref:`method-ncsu_direct-volume_boxsize_limit<method-ncsu_direct-volume_boxsize_limit>`
+- :dakkw:`method-ncsu_direct-max_iterations` - number of iterations
+- :dakkw:`method-ncsu_direct-max_function_evaluations` - number of function evaluations
+- :dakkw:`method-ncsu_direct-solution_target` and :dakkw:`method-ncsu_direct-convergence_tolerance`
+- :dakkw:`method-ncsu_direct-min_boxsize_limit`
+- :dakkw:`method-ncsu_direct-volume_boxsize_limit`
 
 This method will always strictly respect the number of iterations, but
 may slightly exceed the number of function evaluations, as it will
@@ -33,14 +33,14 @@ always explore all sub-rectangles at the current level.
 *Expected HDF5 Output*
 
 If Dakota was built with HDF5 support and run with the
-:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+:dakkw:`environment-results_output-hdf5` keyword, this method
 writes the following results to HDF5:
 
 
 - :ref:`hdf5_results-best_params`
-- :ref:`hdf5_results-best_obj_fncs` (when :ref:`responses-objective_functions<responses-objective_functions>`) are specified)
+- :ref:`hdf5_results-best_obj_fncs` (when :dakkw:`responses-objective_functions`) are specified)
 - :ref:`hdf5_results-best_constraints`
-- :ref:`hdf5_results-calibration` (when :ref:`responses-calibration_terms<responses-calibration_terms>` are specified)
+- :ref:`hdf5_results-calibration` (when :dakkw:`responses-calibration_terms` are specified)
 Topics::
 global_optimization_methods
 Examples::

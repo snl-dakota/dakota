@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -12,7 +12,9 @@
 #include <chrono>
 
 #include "dakota_stat_util.hpp"
+#ifdef HAVE_DAKOTA_SURROGATES
 #include "SurrogatesPolynomialRegression.hpp"
+#endif
 #include "util_metrics.hpp"
 
 using MatrixMap = Eigen::Map<Eigen::MatrixXd>;
@@ -35,6 +37,7 @@ int generate_system_seed()
   return seed;
 }
 
+#ifdef HAVE_DAKOTA_SURROGATES
 //----------------------------------------------------------------
 
 void compute_regression_coeffs( const RealMatrix & samples, const RealMatrix & resps,
@@ -144,5 +147,6 @@ void compute_std_regression_coeffs( const RealMatrix & samples, const RealMatrix
 
   return;
 }
+#endif
 
 } // namespace Dakota

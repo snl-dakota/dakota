@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -105,8 +105,10 @@ enum { SUBMETHOD_DEFAULT=0, // no specification
        SUBMETHOD_WASABI,
        // optimization sub-method selections (in addition to SUBMETHOD_LHS):
        SUBMETHOD_CONMIN, SUBMETHOD_DOT, SUBMETHOD_NLPQL, SUBMETHOD_NPSOL,
-       SUBMETHOD_OPTPP, SUBMETHOD_EA, SUBMETHOD_DIRECT, SUBMETHOD_EGO,
-       SUBMETHOD_SBLO, SUBMETHOD_SBGO,
+       SUBMETHOD_OPTPP, SUBMETHOD_NPSOL_OPTPP,
+       SUBMETHOD_DIRECT, SUBMETHOD_DIRECT_NPSOL_OPTPP,
+       SUBMETHOD_DIRECT_NPSOL, SUBMETHOD_DIRECT_OPTPP, 
+       SUBMETHOD_EA, SUBMETHOD_EGO, SUBMETHOD_SBLO, SUBMETHOD_SBGO,
        // Local reliability sub-method selections: (MV is 0)
        SUBMETHOD_AMV_X,       SUBMETHOD_AMV_U,
        SUBMETHOD_AMV_PLUS_X,  SUBMETHOD_AMV_PLUS_U,
@@ -119,9 +121,14 @@ enum { SUBMETHOD_DEFAULT=0, // no specification
        SUBMETHOD_CONVERGE_ORDER,  SUBMETHOD_CONVERGE_QOI,
        SUBMETHOD_ESTIMATE_ORDER };
 
-/// Graph recursion options for ACV
+/// Sampling method for variance based decomposition (VBD)
+enum { VBD_MAHADEVAN=0, VBD_SALTELLI };
+
+/// Graph recursion options for generalized ACV
 enum { NO_GRAPH_RECURSION=0, KL_GRAPH_RECURSION, PARTIAL_GRAPH_RECURSION,
        FULL_GRAPH_RECURSION };
+/// Model selection options for generalized ACV
+enum { NO_MODEL_SELECTION=0, ALL_MODEL_COMBINATIONS };
 
 // define special values for outputLevel within
 // Iterator/Model/Interface/Approximation
@@ -856,10 +863,16 @@ public:
   /// sample sets.  This results in the use of the same sampling
   /// stencil/pattern throughout an execution with repeated sampling.
   bool fixedSequenceFlag;
-  /// the \c var_based_decomp specification for a variety of sampling methods
+  /// the \c var_based_decomp specification for computing Sobol' indices
+  /// via either PCE or sampling
   bool vbdFlag;
-  /// the \c var_based_decomp tolerance for omitting index output
+  /// the \c var_based_decomp tolerance for omitting Sobol' indices computed
+  /// via either PCE or sampling
   Real vbdDropTolerance;
+  /// Sampling method for computing Sobol indices: Mahadevan (default) or Saltelli
+  unsigned short vbdViaSamplingMethod;
+  /// Number of bins to use in case the Mahadevan method is selected (default is the square root of the number of samples)
+  int vbdViaSamplingNumBins;
   /// the \c backfill option allows one to augment in LHS sample
   /// by enforcing the addition of unique discrete variables to the sample
   bool backfillFlag;
@@ -878,9 +891,16 @@ public:
   /// Wilks sided interval type
   short wilksSidedInterval;
 
-  /// flag indicating the calculation/output of stadnardized regression coefficients
+  /// flag indicating the calculation/output of standardized regression coefficients
   bool stdRegressionCoeffs;
   
+  /// Flag to specify use of double sided tolerance interval equivalent normal
+  bool toleranceIntervalsFlag;
+  /// Coverage parameter for the calculation of double sided tolerance interval equivalent normal
+  Real tiCoverage;
+  /// Confidence level parameter for the calculation of double sided tolerance interval equivalent normal
+  Real tiConfidenceLevel;
+
   /// flag to indicate bounds-based scaling of current response data set
   /// prior to build in surrogate-based methods; important for ML/MF data fits
   /// of decaying discrepancy data using regression with absolute tolerances
@@ -1036,11 +1056,15 @@ public:
   short ensembleSampSolnMode;
   /// the \c truth_fixed_by_pilot flag for ACV methods
   bool truthPilotConstraint;
-  /// option specified for \c search_model_graphs in generalized ACV methods
+  /// option specified for extent of DAG enumeration within
+  /// \c search_model_graphs for generalized ACV methods
   short dagRecursionType;
   /// option specified for \c depth_limit in generalized ACV methods with
   /// partial graph recursion
   unsigned short dagDepthLimit;
+  /// option specified for \c model_selection within \c search_model_graphs
+  /// for generalized ACV methods
+  short modelSelectType;
   /// the \c allocationTarget selection in \ref MethodMultilevelMC
   short allocationTarget;
   /// the \c allocation_target selection in \ref MethodMultilevelMC

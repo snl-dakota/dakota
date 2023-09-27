@@ -837,6 +837,25 @@ statistics, eg a statement applied to the N largest outputs
 (``two_sided``), can be specified using the ``order`` option along with
 value N.
 
+.. _`uq:tolerance_intervals`:
+
+Double Sided Tolerance Interval Equivalent Normal Distribution
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Tolerance Intervals (TIs) are a simple way to approximately account for
+the epistemic sampling uncertainty introduced from finite samples of a
+random variable. TIs are parameterized by two user-prescribed levels:
+one for the desired "coverage" proportion of a distribution and one for
+the desired degree of statistical "confidence" in covering or bounding
+at least that proportion.
+For instance, a :math:`95\%` coverage / :math:`90\%` confidence TI
+(:math:`95\%`/:math:`90\%` TI, :math:`95`/:math:`90` TI,
+or :math:`0.95`/:math:`0.90` TI)
+prescribes lower and upper values of a range said to have at least
+:math:`90\%` odds that it covers or spans :math:`95\%` of the "true"
+probability distribution from which the random samples were drawn,
+if they were drawn from a Normal distribution  :cite:p:`Jekel20`.
+
 .. _`uq:reliability`:
 
 Reliability Methods

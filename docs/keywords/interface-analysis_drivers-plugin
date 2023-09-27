@@ -4,7 +4,7 @@ Description::
 Dakota 6.16 allows for run-time loading of a C++ or Python plugin
 analysis driver as a shared object file.
 
-Python plugins support batch evaluations ( :ref:`interface-batch<interface-batch>`)
+Python plugins support batch evaluations ( :dakkw:`interface-batch`)
 through a list of dictionaries.
 Topics::
 

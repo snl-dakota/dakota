@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -126,11 +126,14 @@ DataMethodRep::DataMethodRep():
   // NonD & DACE
   numSamples(0), fixedSeedFlag(false),
   fixedSequenceFlag(false), //default is variable sampling patterns
-  vbdFlag(false),
-  vbdDropTolerance(-1.),backfillFlag(false), pcaFlag(false),
+  vbdFlag(false),vbdDropTolerance(-1.),
+  vbdViaSamplingMethod(VBD_SALTELLI),vbdViaSamplingNumBins(-1), // TODO for Teresa: should be "VBD_MAHADEVAN" instead of "VBD_SALTELLI"
+  backfillFlag(false), pcaFlag(false),
   percentVarianceExplained(0.95), wilksFlag(false), wilksOrder(1),
   wilksConfidenceLevel(0.95), wilksSidedInterval(ONE_SIDED_UPPER),
   // NonD
+  toleranceIntervalsFlag(false), tiCoverage(0.95), tiConfidenceLevel(0.90),
+  stdRegressionCoeffs(false),
   respScalingFlag(false), vbdOrder(0), covarianceControl(DEFAULT_COVARIANCE),
   rngName("mt19937"), refinementType(Pecos::NO_REFINEMENT),
   refinementControl(Pecos::NO_CONTROL),
@@ -140,9 +143,10 @@ DataMethodRep::DataMethodRep():
   quadratureOrder(USHRT_MAX), sparseGridLevel(USHRT_MAX),
   expansionOrder(USHRT_MAX), collocationPoints(SZ_MAX),
   expansionSamples(SZ_MAX), truthPilotConstraint(false),
-  dagRecursionType(NO_GRAPH_RECURSION), dagDepthLimit(2),
-  ensembleSampSolnMode(ONLINE_PILOT), allocationTarget(TARGET_MEAN),
-  useTargetVarianceOptimizationFlag(false), qoiAggregation(QOI_AGGREGATION_SUM),
+  dagRecursionType(NO_GRAPH_RECURSION), dagDepthLimit(1),
+  modelSelectType(NO_MODEL_SELECTION), ensembleSampSolnMode(ONLINE_PILOT),
+  allocationTarget(TARGET_MEAN), useTargetVarianceOptimizationFlag(false),
+  qoiAggregation(QOI_AGGREGATION_SUM),
   convergenceToleranceType(CONVERGENCE_TOLERANCE_TYPE_RELATIVE),
   convergenceToleranceTarget(CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT),
   //expansionSampleType("lhs"),
@@ -294,12 +298,15 @@ void DataMethodRep::write(MPIPackBuffer& s) const
 
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag
-    << vbdFlag << vbdDropTolerance << backfillFlag << pcaFlag
+    << vbdFlag << vbdDropTolerance
+    << vbdViaSamplingMethod << vbdViaSamplingNumBins
+    << backfillFlag << pcaFlag
     << percentVarianceExplained << wilksFlag << wilksOrder
     << wilksConfidenceLevel << wilksSidedInterval;
 
   // NonD
-  s << respScalingFlag << vbdOrder << covarianceControl << rngName
+  s << toleranceIntervalsFlag << tiCoverage << tiConfidenceLevel
+    << stdRegressionCoeffs << respScalingFlag << vbdOrder << covarianceControl << rngName
     << refinementType << refinementControl << nestingOverride << growthOverride
     << expansionType << piecewiseBasis << expansionBasisType
     << quadratureOrderSeq << sparseGridLevelSeq << expansionOrderSeq
@@ -317,11 +324,12 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << reliabilityIntegration << integrationRefine << refineSamples
     << optSubProbSolver << numericalSolveMode
     << pilotSamples << ensembleSampSolnMode << truthPilotConstraint
-    << dagRecursionType << dagDepthLimit << multilevAllocControl
-    << multilevEstimatorRate << multilevDiscrepEmulation << finalStatsType
-    << finalMomentsType << distributionType << responseLevelTarget
-    << responseLevelTargetReduce << responseLevels << probabilityLevels
-    << reliabilityLevels << genReliabilityLevels << chainSamples << buildSamples
+    << dagRecursionType << dagDepthLimit << modelSelectType
+    << multilevAllocControl << multilevEstimatorRate
+    << multilevDiscrepEmulation << finalStatsType << finalMomentsType
+    << distributionType << responseLevelTarget << responseLevelTargetReduce
+    << responseLevels << probabilityLevels << reliabilityLevels
+    << genReliabilityLevels << chainSamples << buildSamples
     << samplesOnEmulator << emulatorOrder << emulatorType << mcmcType
     << standardizedSpace << adaptPosteriorRefine << logitTransform
     << gpmsaNormalize << posteriorStatsKL << posteriorStatsMutual
@@ -462,12 +470,15 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
 
   // NonD & DACE
   s >> numSamples >> fixedSeedFlag >> fixedSequenceFlag
-    >> vbdFlag >> vbdDropTolerance >> backfillFlag >> pcaFlag
+    >> vbdFlag >> vbdDropTolerance
+    >> vbdViaSamplingMethod >> vbdViaSamplingNumBins
+    >> backfillFlag >> pcaFlag
     >> percentVarianceExplained >> wilksFlag >> wilksOrder
     >> wilksConfidenceLevel >> wilksSidedInterval;
 
   // NonD
-  s >> respScalingFlag >> vbdOrder >> covarianceControl >> rngName
+  s >> toleranceIntervalsFlag >> tiCoverage >> tiConfidenceLevel
+    >> stdRegressionCoeffs >> respScalingFlag >> vbdOrder >> covarianceControl >> rngName
     >> refinementType >> refinementControl >> nestingOverride >> growthOverride
     >> expansionType >> piecewiseBasis >> expansionBasisType
     >> quadratureOrderSeq >> sparseGridLevelSeq >> expansionOrderSeq
@@ -485,11 +496,12 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> reliabilityIntegration >> integrationRefine >> refineSamples
     >> optSubProbSolver >> numericalSolveMode
     >> pilotSamples >> ensembleSampSolnMode >> truthPilotConstraint
-    >> dagRecursionType >> dagDepthLimit >> multilevAllocControl
-    >> multilevEstimatorRate >> multilevDiscrepEmulation >> finalStatsType
-    >> finalMomentsType >> distributionType >> responseLevelTarget
-    >> responseLevelTargetReduce >> responseLevels >> probabilityLevels
-    >> reliabilityLevels >> genReliabilityLevels >> chainSamples >> buildSamples
+    >> dagRecursionType >> dagDepthLimit >> modelSelectType
+    >> multilevAllocControl >> multilevEstimatorRate
+    >> multilevDiscrepEmulation >> finalStatsType >> finalMomentsType
+    >> distributionType >> responseLevelTarget >> responseLevelTargetReduce
+    >> responseLevels >> probabilityLevels >> reliabilityLevels
+    >> genReliabilityLevels >> chainSamples >> buildSamples
     >> samplesOnEmulator >> emulatorOrder >> emulatorType >> mcmcType
     >> standardizedSpace >> adaptPosteriorRefine >> logitTransform
     >> gpmsaNormalize >> posteriorStatsKL >> posteriorStatsMutual
@@ -630,12 +642,15 @@ void DataMethodRep::write(std::ostream& s) const
 
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag
-    << vbdFlag << vbdDropTolerance << backfillFlag << pcaFlag
+    << vbdFlag << vbdDropTolerance
+    << vbdViaSamplingMethod << vbdViaSamplingNumBins
+    << backfillFlag << pcaFlag
     << percentVarianceExplained << wilksFlag << wilksOrder
     << wilksConfidenceLevel << wilksSidedInterval;
 
   // NonD
-  s << respScalingFlag << vbdOrder << covarianceControl << rngName
+  s << toleranceIntervalsFlag << tiCoverage << tiConfidenceLevel
+    << stdRegressionCoeffs << respScalingFlag << vbdOrder << covarianceControl << rngName
     << refinementType << refinementControl << nestingOverride << growthOverride
     << expansionType << piecewiseBasis << expansionBasisType
     << quadratureOrderSeq << sparseGridLevelSeq << expansionOrderSeq
@@ -653,11 +668,12 @@ void DataMethodRep::write(std::ostream& s) const
     << reliabilityIntegration << integrationRefine << refineSamples
     << optSubProbSolver << numericalSolveMode
     << pilotSamples << ensembleSampSolnMode << truthPilotConstraint
-    << dagRecursionType << dagDepthLimit << multilevAllocControl
-    << multilevEstimatorRate << multilevDiscrepEmulation << finalStatsType
-    << finalMomentsType << distributionType << responseLevelTarget
-    << responseLevelTargetReduce << responseLevels << probabilityLevels
-    << reliabilityLevels << genReliabilityLevels << chainSamples << buildSamples
+    << dagRecursionType << dagDepthLimit << modelSelectType
+    << multilevAllocControl << multilevEstimatorRate
+    << multilevDiscrepEmulation << finalStatsType << finalMomentsType
+    << distributionType << responseLevelTarget << responseLevelTargetReduce
+    << responseLevels << probabilityLevels << reliabilityLevels
+    << genReliabilityLevels << chainSamples << buildSamples
     << samplesOnEmulator << emulatorOrder << emulatorType << mcmcType
     << standardizedSpace << adaptPosteriorRefine << logitTransform
     << gpmsaNormalize << posteriorStatsKL << posteriorStatsMutual

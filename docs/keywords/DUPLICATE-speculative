@@ -28,7 +28,7 @@ already performed in parallel during the line search phase). Refer to
 speculative specification is implemented for the gradient-based
 optimizers in the DOT, CONMIN, and OPT++ libraries, and it can be used
 with dakota numerical or analytic gradient selections in the responses
-specification (refer to :ref:`responses<responses>` gradient section for information on these
+specification (refer to :dakkw:`responses` gradient section for information on these
 specifications). It should not be selected with vendor numerical
 gradients since vendor internal finite difference algorithms have not
 been modified for this purpose. In full-Newton approaches, the Hessian

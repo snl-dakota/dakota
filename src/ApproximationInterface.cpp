@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -220,7 +220,9 @@ map(const Variables& vars, const ActiveSet& set, Response& response,
 
     // Evaluate functionSurfaces at vars and populate core_response.
     const ShortArray& core_asv = core_set.request_vector();
-    size_t i, num_core_fns = core_asv.size();
+    const SizetArray& core_dvv = core_set.derivative_vector();
+    size_t   num_core_fns = core_asv.size(), fn_index,
+      num_core_deriv_vars = core_dvv.size();
     if ( num_core_fns != functionSurfaces.size() ) {
       Cerr << "Error: mismatch in number of functions in ApproximationInterface"
 	   << "::map()" << std::endl;
@@ -232,79 +234,54 @@ map(const Variables& vars, const ActiveSet& set, Response& response,
     // views are compatible and force_rebuild() is responsible for verifying
     // that no unapproximated variables have changed (which would invalidate
     // the approximation).
-    short approx_active_view = vars.view().first,
-          actual_active_view = actualModelVars.view().first;
-    bool am_vars = true;
-    if (approx_active_view == actual_active_view)
-      am_vars = false;
-    else if ( ( actual_active_view == RELAXED_ALL ||
-		actual_active_view == MIXED_ALL ) &&
-	      approx_active_view >= RELAXED_DESIGN ) { // Distinct to All
-      if (vars.acv())
-	actualModelVars.continuous_variables(vars.all_continuous_variables());
-      if (vars.adiv())
-	actualModelVars.discrete_int_variables(
-	  vars.all_discrete_int_variables());
-      if (vars.adsv())
-	actualModelVars.discrete_string_variables(
-	  vars.all_discrete_string_variables());
-      if (vars.adrv())
-	actualModelVars.discrete_real_variables(
-	  vars.all_discrete_real_variables());
+    bool same_view = (vars.view().first == actualModelVars.view().first);
+    if (!same_view) actualModelVars.map_variables_by_view(vars);
+    const Variables& surf_vars = (same_view) ? vars : actualModelVars;
+    // precompute DVV mappings once for all grads/hessians
+    bool deriv_flag = false;  StSIter it;
+    for (it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
+      if (core_asv[*it] & 6)
+	{ deriv_flag = true; break; }
+    SizetArray assign_indices, curr_indices;
+    if (deriv_flag) {
+      SizetArray assign_dvv;
+      copy_data(actualModelVars.continuous_variable_ids(), assign_dvv);
+      core_response.map_dvv_indices(assign_dvv, assign_indices, curr_indices);
     }
-    else if ( ( approx_active_view == RELAXED_ALL ||
-		approx_active_view == MIXED_ALL ) &&
-	      actual_active_view >= RELAXED_DESIGN) { // All to Distinct
-      if (vars.cv())
-	actualModelVars.all_continuous_variables(vars.continuous_variables());
-      if (vars.div())
-	actualModelVars.all_discrete_int_variables(
-	  vars.discrete_int_variables());
-      if (vars.dsv())
-	actualModelVars.all_discrete_string_variables(
-	  vars.discrete_string_variables());
-      if (vars.drv())
-	actualModelVars.all_discrete_real_variables(
-	  vars.discrete_real_variables());
-    }
-    // TO DO: extend for aleatory/epistemic uncertain views
-    else {
-      Cerr << "Error: unsupported variable view differences in "
-	   << "ApproximationInterface::map()" << std::endl;
-      abort_handler(-1);
-    }
-    // active subsets of actualModelVars are used in surrogate construction
-    // and evaluation
-    const Variables& surf_vars = (am_vars) ? actualModelVars : vars;
 
     //size_t num_core_vars = x.length(), 
     //bool approx_scale_len  = (approxScale.length())  ? true : false;
     //bool approx_offset_len = (approxOffset.length()) ? true : false;
-    for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
-      size_t index = *it;
-      if (core_asv[index] & 1) {
-	Real fn_val = functionSurfaces[index].value(surf_vars);
-	//if (approx_scale_len)
-	//  fn_val *= approxScale[index];
-	//if (approx_offset_len)
-	//  fn_val += approxOffset[index];
-	core_response.function_value(fn_val, index);
+    for (it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
+      fn_index = *it;
+      if (core_asv[fn_index] & 1) {
+	Real approx_fn = functionSurfaces[fn_index].value(surf_vars);
+	//if (approx_scale_len)  fn_val *= approxScale[fn_index];
+	//if (approx_offset_len) fn_val += approxOffset[fn_index];
+	core_response.function_value(approx_fn, fn_index);
       }
-      if (core_asv[index] & 2) { // TO DO: ACV->DVV
-	const RealVector& fn_grad = functionSurfaces[index].gradient(surf_vars);
+      if (core_asv[fn_index] & 2) {
+	const RealVector& approx_grad
+	  = functionSurfaces[fn_index].gradient(surf_vars);
 	//if (approx_scale_len)
 	//  for (size_t j=0; j<num_core_vars; j++)
-	//    fn_grad[j] *= approxScale[index];
-	core_response.function_gradient(fn_grad, index);
+	//    approx_grad[j] *= approxScale[fn_index];
+
+	// Manage potential DVV mismatch (all vs. active)
+	core_response.function_gradient(approx_grad, fn_index,
+					assign_indices, curr_indices);
       }
-      if (core_asv[index] & 4) { // TO DO: ACV->DVV
-	const RealSymMatrix& fn_hess
-	  = functionSurfaces[index].hessian(surf_vars);
+      if (core_asv[fn_index] & 4) {
+	const RealSymMatrix& approx_hess
+	  = functionSurfaces[fn_index].hessian(surf_vars);
 	//if (approx_scale_len)
 	//  for (size_t j=0; j<num_core_vars; j++)
-	//    for (size_t k=0; k<num_core_vars; k++)
-	//      fn_hess[j][k] *= approxScale[index];
-	core_response.function_hessian(fn_hess, index);
+	//    for (size_t k=0; k<=j; k++)
+	//      approx_hess[j][k] *= approxScale[fn_index];
+
+	// Manage potential DVV mismatch (all vs. active)
+	core_response.function_hessian(approx_hess, fn_index,
+				       assign_indices, curr_indices);
       }
     }
   }

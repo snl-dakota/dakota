@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -30,8 +30,7 @@ namespace Dakota {
     and merge continuous and discrete domains to create aggregate
     arrays and views.  */
 RelaxedVariables::
-RelaxedVariables(const ProblemDescDB& problem_db,
-		const std::pair<short,short>& view):
+RelaxedVariables(const ProblemDescDB& problem_db, const ShortShortPair& view):
   Variables(BaseConstructor(), problem_db, view)
 {
   const RealVector& cdv  = problem_db.get_rv(

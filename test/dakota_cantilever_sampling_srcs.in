@@ -1,0 +1,38 @@
+#@ s*: Label=FastTest
+# Dakota Input File: cantliever_sampling_srcs.in
+
+environment
+   results_output                                              
+      hdf5                                                     
+        results_output_file = 'cantilever_sampling_srcs_s0'        #s0
+#       results_output_file = 'cantilever_sampling_srcs_s1'        #s1
+
+method
+  sampling
+   samples 50
+#  refinement_samples 50 100 200                                  #s1
+   seed = 31415
+   std_regression_coeffs
+
+model
+  single
+
+variables
+  continuous_design = 2
+    initial_point    2.5    2.5
+    upper_bounds    10.0   10.0
+    lower_bounds     1.0    1.0
+    descriptors 'w' 't'
+  normal_uncertain = 4
+    means             =  40000. 29.E+6 500. 1000.
+    std_deviations    =  2000. 1.45E+6 100. 100.
+    descriptors       =  'R' 'E' 'X' 'Y'
+
+interface
+    direct
+      analysis_driver = 'cantilever'
+
+responses
+  response_functions = 3
+  no_gradients
+  no_hessians

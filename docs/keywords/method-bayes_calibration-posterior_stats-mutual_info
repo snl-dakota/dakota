@@ -35,7 +35,7 @@ Due to the necessary approximation of the multidimensional integral above, a
 negative mutual information may be reported for applications whose true value
 is close to or equal to zero.
 As of Dakota 6.6, mutual information calculations are primarily used in the
-implementation of the :ref:`method-bayes_calibration-experimental_design<method-bayes_calibration-experimental_design>`
+implementation of the :dakkw:`method-bayes_calibration-experimental_design`
 algorithm.
 Topics::
 Examples::

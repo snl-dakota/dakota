@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -172,7 +172,7 @@ synchronous_local_analysis(int analysis_id)
 
 /** No derived interface plug-ins, so perform construct-time checks.
     However, process init issues as warnings since some contexts (e.g.,
-    HierarchSurrModel) initialize more configurations than will be used. */
+    EnsembleSurrModel) initialize more configurations than will be used. */
 inline void ProcessHandleApplicInterface::
 init_communicators_checks(int max_eval_concurrency)
 {

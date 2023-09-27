@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -63,22 +63,23 @@ public:
   /// save correlations to database
   void archive_correlations(const StrStrSizet& run_identifier,  
                             ResultsManager& iterator_results,
-                            StringMultiArrayConstView cv_labels,
-                            StringMultiArrayConstView div_labels,
-                            StringMultiArrayConstView dsv_labels,
-                            StringMultiArrayConstView drv_labels,
+                            const StringArray& var_labels,
                             const StringArray& resp_labels, 
                             const size_t &inc_id = 0) const;
+
+  /// save standardized regression coefficients to database
+  void archive_std_regress_coeffs(const StrStrSizet& run_identifier,  
+                                  ResultsManager& iterator_results,
+                                  const StringArray& var_labels,
+                                  const StringArray & resp_labels,
+                                  const size_t &inc_id = 0) const;
 
   /// returns corrComputed to indicate whether compute_correlations()
   /// has been invoked
   bool correlations_computed() const;
 
   /// prints the correlations computed in compute_correlations()
-  void print_correlations(std::ostream& s, StringMultiArrayConstView cv_labels,
-			  StringMultiArrayConstView div_labels,
-			  StringMultiArrayConstView dsv_labels,
-			  StringMultiArrayConstView drv_labels,
+  void print_correlations(std::ostream& s, const StringArray& var_labels,
 			  const StringArray& resp_labels) const;
 
   /// computes standardized regression coefficients and corresponding
@@ -88,8 +89,32 @@ public:
 
   /// prints the SRCs and R^2 values computed in compute_correlations()
   void print_std_regress_coeffs(std::ostream& s,
-                          StringMultiArrayConstView cv_labels,
-			  const StringArray& resp_labels) const;
+                                StringArray var_labels,
+			        const StringArray& resp_labels) const;
+
+  /// compute VBD-based Sobol indices
+  void compute_vbd_stats_via_sampling( const unsigned short   method
+                                     , const int              numBins
+                                     , const size_t           numFunctions
+                                     , const size_t           num_vars
+                                     , const size_t           num_samples
+                                     , const IntResponseMap & resp_samples
+                                     );
+
+  /// Printing of VBD results
+  void print_sobol_indices( std::ostream      & s
+                          , const StringArray & var_labels
+                          , const StringArray & resp_labels
+                          , const Real          dropTol
+                          ) const;
+
+  /// archive VBD-based Sobol indices
+  void archive_sobol_indices( const StrStrSizet & run_identifier
+                            , ResultsManager    & resultsDB
+                            , const StringArray & var_labels
+                            , const StringArray & resp_labels
+                            , const Real          dropTol
+                            ) const;
 
 private:
 
@@ -135,6 +160,44 @@ private:
   /// Return true if there are any NaN or Inf entries in the matrix
   bool has_nan_or_inf(const RealMatrix &corr) const;
 
+  /// Check correlation matrices for nans or infs and print warning message
+  void check_correlations_for_nan_or_inf(std::ostream& s) const;
+
+  /// print simple (rank = false) or simple rank (rank = true) correlations
+  void print_simple_correlations(std::ostream& s, const StringArray& var_labels, const StringArray& resp_labels, bool rank) const;
+
+  /// print partial (rank = false) or partial rank (rank = true) correlations
+  void print_partial_correlations(std::ostream& s, const StringArray& var_labels, const StringArray& resp_labels, bool rank) const;
+
+  /// archive simple (rank = false) or simple rank (rank = true) correlations
+  void archive_simple_correlations(const StrStrSizet& run_identifier,  
+		     ResultsManager& iterator_results,
+		     const StringArray& var_labels,
+		     const StringArray& resp_labels,
+         const std::vector<const char *>& combined_desc,
+         const size_t &inc_id,
+         bool rank) const;
+
+  /// archive partial (rank = false) or partial rank (rank = true) correlations
+  void archive_partial_correlations(const StrStrSizet& run_identifier,  
+		     ResultsManager& iterator_results,
+		     const StringArray& var_labels,
+		     const StringArray& resp_labels,
+         const size_t &inc_id,
+         bool rank) const;
+
+  void compute_vbd_stats_with_Saltelli( const size_t           numFunctions
+                                      , const size_t           num_vars
+                                      , const size_t           num_samples
+                                      , const IntResponseMap & resp_samples
+                                      );
+
+  void compute_vbd_stats_with_Mahadevan( const int              numBins
+                                       , const size_t           numFunctions
+                                       , const size_t           num_vars
+                                       , const size_t           num_samples
+                                       , const IntResponseMap & resp_samples
+                                       );
   //- Heading: Data
   //
 
@@ -167,6 +230,12 @@ private:
 
   /// flag indictaing whether correlations have been computed
   bool corrComputed;
+
+  /// VBD main effect indices
+  RealVectorArray indexSi;
+
+  /// VBD total effect indices
+  RealVectorArray indexTi;
 };
 
 

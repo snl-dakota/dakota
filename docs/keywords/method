@@ -119,10 +119,10 @@ The next example shows a specification for a least squares method.
 Some of the same method independent controls are present along with
 several method dependent controls ( ``search_method`` and
 ``gradient_tolerance``) which are only meaningful for OPT++ methods (see
-:ref:`topic-package_optpp<topic-package_optpp>`).
+:ref:`topic-package_optpp`).
 
 The next example shows a specification for a nondeterministic method
-with several method dependent controls (refer to :ref:`method-sampling<method-sampling>`).
+with several method dependent controls (refer to :dakkw:`method-sampling`).
 
 .. code-block::
 
@@ -136,7 +136,7 @@ with several method dependent controls (refer to :ref:`method-sampling<method-sa
 
 The last example shows a specification for a parameter study method
 where, again, each of the controls are method dependent (refer to
-:ref:`method-vector_parameter_study<method-vector_parameter_study>`).
+:dakkw:`method-vector_parameter_study`).
 
 .. code-block::
 

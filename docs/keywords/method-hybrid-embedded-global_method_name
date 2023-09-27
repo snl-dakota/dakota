@@ -2,7 +2,7 @@ Blurb::
 Specify the global method by Dakota name
 Description::
 ``global_method_name`` is used to specify the global method in a ``hybrid``
-``embedded`` optimization by Dakota name (e.g. ' :ref:`method-soga<method-soga>`'). The name of
+``embedded`` optimization by Dakota name (e.g. ' :dakkw:`method-soga`'). The name of
 the method is provided as a string. The method is executed with default options.
 Topics::
 

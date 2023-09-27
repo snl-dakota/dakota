@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -55,10 +55,10 @@ public:
   DataFitSurrModel(ProblemDescDB& problem_db);
   /// alternate constructor for instantiations on the fly
   DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
-		   const ActiveSet& set, const String& approx_type,
-		   const UShortArray& approx_order, short corr_type,
-		   short corr_order, short data_order, short output_level,
-		   const String& point_reuse,
+		   const ActiveSet& dfs_set, const ShortShortPair& dfs_view,
+		   const String& approx_type, const UShortArray& approx_order,
+		   short corr_type, short corr_order, short data_order,
+		   short output_level, const String& point_reuse,
 		   const String& import_build_points_file = String(),
 		   unsigned short import_build_format = TABULAR_ANNOTATED,
 		   bool import_build_active_only = false,
@@ -304,8 +304,11 @@ protected:
   /// when DataFitSurrModel iteration is complete.
   void stop_servers();
 
-  /// update the Model's inactive view based on higher level (nested)
-  /// context and optionally recurse into actualModel
+  /// update the Model's active view based on higher level context
+  /// and optionally recurse into actualModel
+  void active_view(short view, bool recurse_flag = true);
+  /// update the Model's inactive view based on higher level context
+  /// and optionally recurse into actualModel
   void inactive_view(short view, bool recurse_flag = true);
 
   /// return the approxInterface identifier
@@ -426,7 +429,7 @@ private:
   Iterator daceIterator;
 
   /// manages construction and application of correction functions that
-  /// are applied to a surrogate model (DataFitSurr or HierarchSurr) in
+  /// are applied to a surrogate model (DataFitSurr or EnsembleSurr) in
   /// order to reproduce high fidelity data.
   DiscrepancyCorrection deltaCorr;
 
@@ -435,10 +438,10 @@ private:
   // add overhead for DFSModel).
 
   /// map from actualModel/highFidelityModel evaluation ids to
-  /// DataFitSurrModel/HierarchSurrModel ids
+  /// DataFitSurrModel/EnsembleSurrModel ids
   IntIntMap truthIdMap;
   /// map from approxInterface/lowFidelityModel evaluation ids to
-  /// DataFitSurrModel/HierarchSurrModel ids
+  /// DataFitSurrModel/EnsembleSurrModel ids
   IntIntMap surrIdMap;
   /// map of approximate responses retrieved in derived_synchronize_nowait()
   /// that could not be returned since corresponding truth model response
@@ -752,7 +755,7 @@ inline void DataFitSurrModel::surrogate_response_mode(short mode)
   responseMode = mode;
 
   // Mode-specific logic:
-  // > Compared to HierarchSurrModel, don't need to be as strict in validating
+  // > Compared to EnsembleSurrModel, don't need to be as strict in validating
   //   AUTO_CORRECTED_SURROGATE mode against corrType, since NO_CORRECTION is
   //   an admissible option in the case of global data fits.  However,
   //   MODEL_DISCREPANCY still needs a discrepancy formulation (additive, etc.).
@@ -761,6 +764,8 @@ inline void DataFitSurrModel::surrogate_response_mode(short mode)
   //   1-L use two instances.  In the future, could manage activation explicitly
   //   using functions shown below.  For now, SurrogateData::{push,pop}() are
   //   hardened for inactive instances.
+  // > As noted in resize_from_subordinate_model(), aggregated data sets are
+  //   consumed by DFSModel so we do not resize the response at this level.
   switch (mode) {
   case MODEL_DISCREPANCY:
     if (!corrType) {
@@ -924,7 +929,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   //parallelLib.parallel_configuration_iterator(modelPCIter);
   //approxInterface.set_communicators(messageLengths);
   // asynchEvalFlag and evaluationCapacity updates not required for DFS
-  // (refer to {Recast,HierarchSurr}Model::derived_set_communicators())
+  // (refer to {Recast,EnsembleSurr}Model::derived_set_communicators())
   //set_ie_asynchronous_mode(max_eval_concurrency);
 
   miPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);// run time setting
@@ -976,10 +981,17 @@ inline void DataFitSurrModel::stop_servers()
 }
 
 
+inline void DataFitSurrModel::active_view(short view, bool recurse_flag)
+{
+  Model::active_view(view);
+  if (recurse_flag && !actualModel.is_null())
+    actualModel.active_view(view, recurse_flag);
+}
+
+
 inline void DataFitSurrModel::inactive_view(short view, bool recurse_flag)
 {
-  currentVariables.inactive_view(view);
-  userDefinedConstraints.inactive_view(view);
+  Model::inactive_view(view);
   if (recurse_flag && !actualModel.is_null())
     actualModel.inactive_view(view, recurse_flag);
 }

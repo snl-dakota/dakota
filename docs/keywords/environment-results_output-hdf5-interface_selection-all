@@ -18,7 +18,7 @@ written:
 - ``/interfaces/truth/truth_m/``
 - ``/interfaces/APPROX_INTERFACE_1/surr/``
 
-Depending on the :ref:`environment-results_output-hdf5-model_selection<environment-results_output-hdf5-model_selection>`, the following links
+Depending on the :dakkw:`environment-results_output-hdf5-model_selection`, the following links
 may be added to model ``sources`` groups.
 
 

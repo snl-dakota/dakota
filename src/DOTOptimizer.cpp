@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -273,7 +273,7 @@ void DOTOptimizer::check_sub_iterator_conflict()
       ( ( sub_iterator.method_name() >= DOT_BFGS &&
 	  sub_iterator.method_name() <= DOT_SQP ) ||
 	sub_iterator.uses_method() == SUBMETHOD_DOT ) ) //_BFGS,_SQP, ...
-    sub_iterator.method_recourse();
+    sub_iterator.method_recourse(methodName);
   ModelList& sub_models = iteratedModel.subordinate_models();
   for (ModelLIter ml_iter = sub_models.begin();
        ml_iter != sub_models.end(); ml_iter++) {
@@ -282,7 +282,7 @@ void DOTOptimizer::check_sub_iterator_conflict()
 	( ( sub_iterator.method_name() >= DOT_BFGS &&
 	    sub_iterator.method_name() <= DOT_SQP ) ||
 	  sub_iterator.uses_method() == SUBMETHOD_DOT ) ) //_BFGS,_SQP, ...
-      sub_iterator.method_recourse();
+      sub_iterator.method_recourse(methodName);
   }
 }
 

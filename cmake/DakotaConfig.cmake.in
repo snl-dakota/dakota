@@ -63,4 +63,7 @@ set(Dakota_TPL_INCLUDE_DIRS "@EXT_TPL_INCDIRS@")
 
 set(Dakota_TPL_LIBRARY_DIRS "@EXT_TPL_LIBDIRS@")
 
+include(CMakeFindDependencyMacro)
+find_dependency(Boost @dakota_boost_version@ REQUIRED COMPONENTS @dakota_boost_libs@)
+
 set(Dakota_TPL_LIBRARIES "@EXT_TPL_LIBS@")

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -2216,7 +2216,7 @@ int TestDriverInterface::tunable_model()
       Real active_delta, w_lo = .001, w_hi = 1.; // initial definition for MF
       Real th_lb = PI / 6., th_ub = PI / 2., th_range = th_ub - th_lb;
       if (mform == "LF1" || mform == "Coarse_HF") {
-	A = std::sqrt(7.);  xy_pow = 3;  active_delta = 1.;
+	A = std::sqrt(7.);  xy_pow = 3;  active_delta = 1.;  //gamma1 = 1.;
 	xc_iter = xCM.find(VAR_theta1);
 #ifdef DEBUG
 	if (xc_iter == xCM.end()) {
@@ -2224,7 +2224,7 @@ int TestDriverInterface::tunable_model()
 	  abort_handler(-1);
 	}
 #endif
-	active_th  = (xc_iter == xCM.end()) ? PI / 3. : xc_iter->second;
+	active_th = (xc_iter == xCM.end()) ? PI / 3. : xc_iter->second;
       }
       else if (mform == "LF2") {
 	A = std::sqrt(3.);  xy_pow = 1;
@@ -2235,7 +2235,7 @@ int TestDriverInterface::tunable_model()
 	  abort_handler(-1);
 	}
 #endif
-	active_th  = (xc_iter == xCM.end())   ? PI / 6. : xc_iter->second;
+	active_th = (xc_iter == xCM.end()) ? PI / 6. : xc_iter->second;
 	xc_iter = xCM.find(VAR_delta);
 #ifdef DEBUG
 	if (xc_iter == xCM.end()) {
@@ -2243,7 +2243,7 @@ int TestDriverInterface::tunable_model()
 	  abort_handler(-1);
 	}
 #endif
-	active_delta = (xc_iter == xCM.end()) ? 2.5     : xc_iter->second;
+	active_delta = (xc_iter == xCM.end()) ? 2.5 : xc_iter->second;
 	xc_iter = xCM.find(VAR_gamma);
 #ifdef DEBUG
 	if (xc_iter == xCM.end()) {
@@ -2251,7 +2251,7 @@ int TestDriverInterface::tunable_model()
 	  abort_handler(-1);
 	}
 #endif
-	Real gamma2  = (xc_iter == xCM.end()) ? 0.55    : xc_iter->second;
+	Real gamma2 = (xc_iter == xCM.end()) ? 0.55 : xc_iter->second;
 	w_lo *= gamma2;  w_hi *= gamma2; // new for LF: reduce MF cost by gamma
       }
       // cost metadata for tunable problem (extended cost model)

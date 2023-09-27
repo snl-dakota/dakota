@@ -1341,7 +1341,7 @@ sub parse_test_output {
     #  print TEST_OUT;
     #}
     
-    if (/(Moment|Sample moment) statistics for each (response function|posterior variable):/) {
+    if (/(Moment|Sample moment|Double-sided tolerance interval equivalent normal) statistics for each (response function|posterior variable):/) {
       print;
       print TEST_OUT;
       $_ = <OUTPUT>; # grab next line (Mean/StdDev/Skew/Kurt header)
@@ -1420,7 +1420,7 @@ sub parse_test_output {
 
     # BMA: Bayesian methods might have just "Response Level  Probability Level", 
     # so Reliability Index  General Rel Index is optional
-    while (/^(\s+(Response Level|Resp Level Set)\s+Probability Level(\s+Reliability Index\s+General Rel Index)?|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|\s+Bin Lower\s+Bin Upper\s+Density Value|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:)$/) {
+    while (/^(Standardized Regression Coefficients and Coefficients of Determination \(R\^2\):|\s+(Response Level|Resp Level Set)\s+Probability Level(\s+Reliability Index\s+General Rel Index)?|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|\s+Bin Lower\s+Bin Upper\s+Density Value|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:)$/) {
       print;
       print TEST_OUT;
       $_ = <OUTPUT>; # grab next line
@@ -1433,6 +1433,21 @@ sub parse_test_output {
         $_ = <OUTPUT>; # grab next line
       }
     }
+
+#    while (/^Standardized Regression Coefficients and Coefficients of Determination \(R\^2\):$/) {
+#      print;
+#      print TEST_OUT;
+#      $_ = <OUTPUT>; # grab next line
+#      print;
+#      print TEST_OUT;
+#      $_ = <OUTPUT>; # grab next line
+#      while (/\s+($e|$naninf)/) {  # correlations may contain nan/inf
+#        print;
+#        print TEST_OUT;
+#        $_ = <OUTPUT>; # grab next line
+#      }
+#    }
+
 
     while (/^Surrogate quality metrics/) {
       print;

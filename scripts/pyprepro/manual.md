@@ -14,7 +14,7 @@ Expressions can be of three different forms (with defaults)
 
 * Inline single-line expressions (rendered) [ `{expression}` ]
 * Python code single-line  (silent) [ `% expression` ]
-* Python code multi-line blocks (silent) [ `{% expression (that can be over many line) %}` ]
+* Python code multi-line blocks (silent) [ `{% expression (that can be over many lines) %}` ]
 
 The delineation of these expressions are user settable
 
@@ -86,6 +86,23 @@ returns:
 As noted in the `--help` for pyprepro, the actual delimiters can be changed. This is useful when the defaults would require extensive escaping. 
 
 For code blocks (default `{% %}`), the innermost characters cannot be any of "`{}[]()`".
+
+Furthermore every template can individually reset the command delimiter by specifying them at the top of the file. From the help:
+
+    Specify delineators as the the first non-whitespace line. Start with a
+    comment '//', '#','%', '$' or '' (nothing), then a command, then '=' or
+    space, followed by the new setting. See examples.
+
+    [D/PY]PREPRO_CODE specifies --code
+    [D/PY]PREPRO_CODE_BLOCK specifies --code-block
+    [D/PY]PREPRO_INLINE specified --inline
+                    
+
+Where, for example `D/PY]PREPRO_CODE` can be:
+
+- `DPREPRO_CODE`
+- `PYPREPRO_CODE`
+- `PREPRO_CODE`
 
 ## Escaping delimiters
 

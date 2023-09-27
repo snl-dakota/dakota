@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -16,7 +16,7 @@
 #include "dakota_system_defs.hpp"
 #include "dakota_data_io.hpp"
 #include "dakota_tabular_io.hpp"
-#include "DakotaModel.hpp"
+#include "RecastModel.hpp"
 #include "DakotaAnalyzer.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
@@ -32,9 +32,11 @@ namespace Dakota {
 extern PRPCache data_pairs;
 
 
-Analyzer::Analyzer(ProblemDescDB& problem_db, Model& model):
+Analyzer::
+Analyzer(ProblemDescDB& problem_db, Model& model):
   Iterator(BaseConstructor(), problem_db), compactMode(true),
   numObjFns(0), numLSqTerms(0), // default: no best data tracking
+  vbdFlag(problem_db.get_bool("method.variance_based_decomp")),
   writePrecision(problem_db.get_int("environment.output_precision"))
 {
   // set_db_list_nodes() is set by a higher context
@@ -42,7 +44,7 @@ Analyzer::Analyzer(ProblemDescDB& problem_db, Model& model):
   update_from_model(iteratedModel); // variable/response counts & checks
 
   // assign context-specific defaults
-  if (convergenceTol   < 0.) convergenceTol = 1.e-4; // historical default
+  if (convergenceTol < 0.) convergenceTol = 1.e-4; // historical default
   //if (maxIterations    == SZ_MAX) maxIterations    = 100;
   //if (maxFunctionEvals == SZ_MAX) maxFunctionEvals = 1000;
 
@@ -55,7 +57,7 @@ Analyzer::Analyzer(ProblemDescDB& problem_db, Model& model):
     abort_handler(METHOD_ERROR);
   }
   
-  if (probDescDB.get_bool("method.variance_based_decomp")) 
+  if (vbdFlag) 
     vbdDropTol = probDescDB.get_real("method.vbd_drop_tolerance");
 
   if (!numFinalSolutions)  // default is zero
@@ -63,11 +65,26 @@ Analyzer::Analyzer(ProblemDescDB& problem_db, Model& model):
 }
 
 
-Analyzer::Analyzer(unsigned short method_name, Model& model):
+Analyzer::
+Analyzer(unsigned short method_name, Model& model):
+  Iterator(NoDBBaseConstructor(), method_name, model), compactMode(true),
+  numObjFns(0), numLSqTerms(0), // default: no best data tracking
+  vbdFlag(false), vbdDropTol(-1.),
+  writePrecision(0)
+{
+  update_from_model(iteratedModel); // variable/response counts & checks
+}
+
+
+Analyzer::
+Analyzer(unsigned short method_name, Model& model,
+	 const ShortShortPair& view_override):
   Iterator(NoDBBaseConstructor(), method_name, model), compactMode(true),
   numObjFns(0), numLSqTerms(0), // default: no best data tracking
   writePrecision(0)
 {
+  if (view_override != iteratedModel.current_variables().view())
+    recast_model_view(view_override);
   update_from_model(iteratedModel); // variable/response counts & checks
 }
 
@@ -91,6 +108,14 @@ bool Analyzer::resize()
 
   return parent_reinit_comms;
 }
+
+
+void Analyzer::recast_model_view(const ShortShortPair& view_override)
+{
+  iteratedModel.assign_rep(
+    std::make_shared<RecastModel>(iteratedModel, view_override));
+}
+
 
 void Analyzer::update_from_model(const Model& model)
 {
@@ -412,180 +437,6 @@ void Analyzer::get_vbd_parameter_sets(Model& model, size_t num_samples)
   }
 }
 
-
-/** Calculation of sensitivity indices obtained by variance based
-    decomposition.  These indices are obtained by the Saltelli version
-    of the Sobol VBD which uses (K+2)*N function evaluations, where K
-    is the number of dimensions (uncertain vars) and N is the number
-    of samples.  */
-void Analyzer::compute_vbd_stats(const size_t num_samples, 
-				 const IntResponseMap& resp_samples)
-{
-  using boost::multi_array;
-  using boost::extents;
-
-  // BMA TODO: This may not be right for all LHS active/inactive
-  // sampling modes, but is equivalent to previous code.
-  size_t i, j, k, num_vars = numContinuousVars + numDiscreteIntVars + 
-    numDiscreteStringVars + numDiscreteRealVars;
-
-  if (resp_samples.size() != num_samples*(num_vars+2)) {
-    Cerr << "\nError in Analyzer::compute_vbd_stats: expected "
-	 << num_samples << " responses; received " << resp_samples.size()
-	 << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-  
-  // BMA: for now copy the data to previous data structure 
-  //      total_fn_vals[respFn][replicate][sample]
-  // This is making the assumption that the responses are ordered as allSamples
-  // BMA TODO: compute statistics on finite samples only
-  multi_array<Real,3>
-    total_fn_vals(extents[numFunctions][num_vars+2][num_samples]);
-  IntRespMCIter r_it = resp_samples.begin();
-  for (i=0; i<(num_vars+2); ++i)
-    for (j=0; j<num_samples; ++r_it, ++j)
-      for (k=0; k<numFunctions; ++k)
-	total_fn_vals[k][i][j] = r_it->second.function_value(k);
-
-#ifdef DEBUG
-    Cout << "allSamples:\n" << allSamples << '\n';
-    for (k=0; k<numFunctions; ++k)
-      for (i=0; i<num_vars+2; ++i)
-	for (j=0; j<num_samples; ++j)
-	  Cout << "Response " << k << " for replicate " << i << ", sample " << j
-	       << ": " << total_fn_vals[k][i][j] << '\n';
-#endif
-
-  // There are four versions of the indices being calculated. 
-  // S1 is a corrected version from Saltelli's 2004 "Sensitivity 
-  // Analysis in Practice" book.  S1 does not have scaled output Y, 
-  // but S2 and S3 do (where scaled refers to subtracting the overall mean 
-  // from all of the output samples).  S2 and S3 have different ways of 
-  // calculating the overal variance.  S4 uses the scaled Saltelli 
-  // formulas from the following paper:  Saltelli, A., Annoni, P., Azzini, I.,
-  // Campolongo, F., Ratto, M., Tarantola, S.. Variance based sensitivity 
-  // analysis of model output.  Design and estimator for the total sensitivity
-  // index. Comp Physics Comm 2010;181:259--270.  We decided to use formulas S4
-  // and T4 based on testing with a shock physics problem that had significant 
-  // nonlinearities, interactions, and several response functions. 
-  // The results are documented in a paper by Weirs et al. that will 
-  // be forthcoming in RESS in 2011. For now we are leaving the different 
-  // implementations in if further testing is needed. 
-
-  //RealVectorArray S1(numFunctions), T1(numFunctions);
-  //RealVectorArray S2(numFunctions), T2(numFunctions);
-  //RealVectorArray S3(numFunctions), T3(numFunctions);
-  S4.resize(numFunctions, RealVector(num_vars)); 
-  T4.resize(numFunctions, RealVector(num_vars));
-
-  multi_array<Real,3>
-    total_norm_vals(extents[numFunctions][num_vars+2][num_samples]);
-
-  // Loop over number of responses to obtain sensitivity indices for each
-  for (k=0; k<numFunctions; ++k) {
- 
-    // calculate expected value of Y
-    Real mean_hatY = 0., var_hatYS = 0., var_hatYT = 0.,
-      mean_sq1=0., mean_sq2 = 0., var_hatYnom = 0., 
-      overall_mean = 0., mean_hatB=0., var_hatYC= 0., mean_C=0., 
-      mean_A_norm = 0., mean_B_norm = 0., var_A_norm = 0., var_B_norm=0., 
-      var_AB_norm = 0.;
-    // mean estimate of Y (possibly average over matrices later)
-    for (j=0; j<num_samples; j++)
-      mean_hatY += total_fn_vals[k][0][j];
-    mean_hatY /= (Real)num_samples;
-    mean_sq1 = mean_hatY*mean_hatY;
-    for (j=0; j<num_samples; j++)
-      mean_hatB += total_fn_vals[k][1][j];
-    mean_hatB /= (Real)(num_samples);
-    mean_sq2 = mean_hatY*mean_hatB;
-    //mean_sq2 += total_fn_vals[k][0][j]*total_fn_vals[k][1][j];
-    //mean_sq2 /= (Real)(num_samples);
-    // variance estimate of Y for S indices
-    for (j=0; j<num_samples; j++)
-      var_hatYS += std::pow(total_fn_vals[k][0][j], 2.);
-    var_hatYnom = var_hatYS/(Real)(num_samples) - mean_sq1;
-    var_hatYS = var_hatYS/(Real)(num_samples) - mean_sq2;
-    // variance estimate of Y for T indices
-    for (j=0; j<num_samples; j++)
-      var_hatYT += std::pow(total_fn_vals[k][1][j], 2.);
-    var_hatYT = var_hatYT/(Real)(num_samples) - (mean_hatB*mean_hatB);
-    for (j=0; j<num_samples; j++){
-      for(i=0; i<(num_vars+2); i++){ 
-        total_norm_vals[k][i][j]=total_fn_vals[k][i][j];
-        overall_mean += total_norm_vals[k][i][j];
-      } 
-    }
-   
-    overall_mean /= Real((num_samples)* (num_vars+2));
-    for (j=0; j<num_samples; j++)
-      for(i=0; i<(num_vars+2); i++)
-        total_norm_vals[k][i][j]-=overall_mean;
-    mean_C=mean_hatB*(Real)(num_samples)+mean_hatY*(Real)(num_samples);
-    mean_C=mean_C/(2*(Real)(num_samples));
-    for (j=0; j<num_samples; j++)
-      var_hatYC += std::pow(total_fn_vals[k][0][j],2);
-    for (j=0; j<num_samples; j++)
-      var_hatYC += std::pow(total_fn_vals[k][1][j],2);
-    var_hatYC = var_hatYC/((Real)(num_samples)*2)-mean_C*mean_C;
-
-  //  for (j=0; j<num_samples; j++)
-  //    mean_A_norm += total_norm_vals[k][0][j];
-  //  mean_A_norm /= (Real)num_samples;
-  //  for (j=0; j<num_samples; j++)
-  //    mean_B_norm += total_norm_vals[k][1][j];
-  //  mean_B_norm /= (Real)(num_samples);
-  //  for (j=0; j<num_samples; j++)
-  //    var_A_norm += std::pow(total_norm_vals[k][0][j], 2.);
-  //  var_AB_norm = var_A_norm/(Real)(num_samples) - (mean_A_norm*mean_B_norm);
-  //  var_A_norm = var_A_norm/(Real)(num_samples) - (mean_A_norm*mean_A_norm);
-  // variance estimate of Y for T indices
-  //  for (j=0; j<num_samples; j++)
-  //    var_B_norm += std::pow(total_norm_vals[k][1][j], 2.);
-  //  var_B_norm = var_B_norm/(Real)(num_samples) - (mean_B_norm*mean_B_norm);
-
-
-#ifdef DEBUG
-    Cout << "\nVariance of Yhat for S " << var_hatYS 
-	 << "\nVariance of Yhat for T " << var_hatYT
-	 << "\nMeanSq1 " << mean_sq1 << "\nMeanSq2 " << mean_sq2 << '\n';
-#endif
-
-    // calculate first order sensitivity indices and first order total indices
-    for (i=0; i<num_vars; i++) {
-      Real sum_S = 0., sum_T = 0., sum_J = 0., sum_J2 = 0., sum_3 = 0., sum_32=0.,sum_5=0, sum_6=0;
-      for (j=0; j<num_samples; j++) {
-	//sum_S += total_fn_vals[k][0][j]*total_fn_vals[k][i+2][j];
-	//sum_T += total_fn_vals[k][1][j]*total_fn_vals[k][i+2][j];
-        //sum_5 += total_norm_vals[k][0][j]*total_norm_vals[k][i+2][j];
-	//sum_6 += total_norm_vals[k][1][j]*total_norm_vals[k][i+2][j];
-	//sum_J += std::pow((total_fn_vals[k][0][j]-total_fn_vals[k][i+2][j]),2.);
-	sum_J2 += std::pow((total_norm_vals[k][1][j]-total_norm_vals[k][i+2][j]),2.);
-	sum_3 += total_norm_vals[k][0][j]*(total_norm_vals[k][i+2][j]-total_norm_vals[k][1][j]);
-	//sum_32 += total_fn_vals[k][1][j]*(total_fn_vals[k][1][j]-total_fn_vals[k][i+2][j]);
-      }
-
-      //S1[k][i] = (sum_S/(Real)(num_samples-1) - mean_sq2)/var_hatYS;  
-      //S1[k][i] = (sum_S/(Real)(num_samples) - mean_sq2)/var_hatYS;  
-      //T1[k][i] = 1. - (sum_T/(Real)(num_samples-1) - mean_sq2)/var_hatYS;
-      //T1[k][i] = 1. - (sum_T/(Real)(num_samples) - (mean_hatB*mean_hatB))/var_hatYT;
-      //S2[k][i] = (sum_S/(Real)(num_samples) - mean_sq1)/var_hatYnom;     
-      //T2[k][i] = 1. - (sum_T/(Real)(num_samples) - mean_sq1)/var_hatYnom;
-      //S2[k][i] = (sum_5/(Real)(num_samples) - (mean_A_norm*mean_B_norm))/var_AB_norm;  
-      //T2[k][i] = 1. - (sum_6/(Real)(num_samples) - (mean_B_norm*mean_B_norm))/var_B_norm;
-      //S3[k][i] = ((sum_5/(Real)(num_samples)) - (mean_A_norm*mean_A_norm))/var_A_norm;  
-      //T3[k][i] = 1. - (sum_6/(Real)(num_samples) - (mean_A_norm*mean_B_norm))/var_AB_norm;
-      //S3[k][i] = (sum_3/(Real)(num_samples))/var_hatYC;    
-      //T3[k][i] = (sum_32/(Real)(num_samples))/var_hatYnom;
-      //S4[k][i] = (var_hatYnom - (sum_J/(Real)(2*num_samples)))/var_hatYnom;
-      S4[k][i] = (sum_3/(Real)(num_samples))/var_hatYC;    
-      T4[k][i] = (sum_J2/(Real)(2*num_samples))/var_hatYC;
-    }
-  }
-}
-
-
 /** Generate tabular output with active variables (compactMode) or all
     variables with their labels and response labels, with no data.
     Variables are sequenced {cv, div, drv} */
@@ -764,116 +615,6 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
 	 << "tabular\nfile " << filename << ".\n" << std::endl;
 }
 
-
-/** printing of variance based decomposition indices. */
-void Analyzer::print_sobol_indices(std::ostream& s) const
-{
-  StringMultiArrayConstView cv_labels
-    = iteratedModel.continuous_variable_labels();
-  StringMultiArrayConstView div_labels
-    = iteratedModel.discrete_int_variable_labels();
-  StringMultiArrayConstView drv_labels
-    = iteratedModel.discrete_real_variable_labels();
-  const StringArray& resp_labels = iteratedModel.response_labels();
-  // output explanatory info
-  //s << "Variance Based Decomposition Sensitivity Indices\n"
-  //  << "These Sobol' indices measure the importance of the uncertain input\n"
-  //  << "variables in determining the uncertainty (variance) of the output.\n"
-  //  << "Si measures the main effect for variable i itself, while Ti\n"
-  //  << "measures the total effect (including the interaction effects\n" 
-  //  << "of variable i with other uncertain variables.)\n";
-  s << std::scientific 
-    << "\nGlobal sensitivity indices for each response function:\n";
-
-  size_t i, k, offset;
-  for (k=0; k<numFunctions; ++k) {
-    s << resp_labels[k] << " Sobol' indices:\n"; 
-    s << std::setw(38) << "Main" << std::setw(19) << "Total\n";
-    Real main, total; 
-    for (i=0; i<numContinuousVars; ++i) {
-      main = S4[k][i]; total = T4[k][i];
-      if (std::abs(main) > vbdDropTol || std::abs(total) > vbdDropTol)
-        s << "                     " << std::setw(write_precision+7) << main
-	  << ' ' << std::setw(write_precision+7) << total << ' '
-	  << cv_labels[i] << '\n';
-    }
-    offset = numContinuousVars;
-    for (i=0; i<numDiscreteIntVars; ++i) {
-      main = S4[k][i+offset]; total = T4[k][i+offset];
-      if (std::abs(main) > vbdDropTol || std::abs(total) > vbdDropTol)
-	s << "                     " << std::setw(write_precision+7) 
-	  << main << ' ' << std::setw(write_precision+7)
-	  << total << ' ' << div_labels[i] << '\n';
-    }
-    offset += numDiscreteIntVars;
-    //for (i=0; i<numDiscreteStringVars; ++i) // LPS TO DO
-    //offset += numDiscreteStringVars;
-    for (i=0; i<numDiscreteRealVars; ++i) {
-      main = S4[k][i+offset]; total = T4[k][i+offset];
-      if (std::abs(main) > vbdDropTol || std::abs(total) > vbdDropTol)
-	s << "                     " << std::setw(write_precision+7) 
-	  << main << ' ' << std::setw(write_precision+7)
-          << total << ' ' << drv_labels[i] << '\n';
-    }
-  }
-}
-
-/** printing of variance based decomposition indices. */
-void Analyzer::archive_sobol_indices() const
-{
-  if(!resultsDB.active())
-    return;
-
-  StringMultiArrayConstView cv_labels
-    = iteratedModel.continuous_variable_labels();
-  StringMultiArrayConstView div_labels
-    = iteratedModel.discrete_int_variable_labels();
-  StringMultiArrayConstView drv_labels
-    = iteratedModel.discrete_real_variable_labels();
-  const StringArray& resp_labels = iteratedModel.response_labels();
-
-
-  size_t i, k, offset;
-  for (k=0; k<numFunctions; ++k) {
-    RealArray main_effects, total_effects;
-    StringArray scale_labels;
-    for (i=0; i<numContinuousVars; ++i) {
-      Real main = S4[k][i], total = T4[k][i];
-      if (std::abs(main) > vbdDropTol || std::abs(total) > vbdDropTol) {
-        main_effects.push_back(main);
-        total_effects.push_back(total);
-        scale_labels.push_back(cv_labels[i]);
-      }
-    }
-    offset = numContinuousVars;
-    for (i=0; i<numDiscreteIntVars; ++i) {
-      Real main = S4[k][i+offset], total = T4[k][i+offset];
-      if (std::abs(main) > vbdDropTol || std::abs(total) > vbdDropTol) {
-        main_effects.push_back(main);
-        total_effects.push_back(total);
-        scale_labels.push_back(div_labels[i]);
-      }
-    }
-    offset += numDiscreteIntVars;
-    //for (i=0; i<numDiscreteStringVars; ++i) // LPS TO DO
-    //offset += numDiscreteStringVars;
-    for (i=0; i<numDiscreteRealVars; ++i) {
-      Real main = S4[k][i+offset], total = T4[k][i+offset];
-      if (std::abs(main) > vbdDropTol || std::abs(total) > vbdDropTol) {
-        main_effects.push_back(main);
-        total_effects.push_back(total);
-        scale_labels.push_back(drv_labels[i]);
-      }
-    }
-    DimScaleMap scales;
-    scales.emplace(0, StringScale("variables", scale_labels, ScaleScope::UNSHARED));
-    resultsDB.insert(run_identifier(), {String("main_effects"), resp_labels[k]}, 
-                     main_effects, scales);
-    resultsDB.insert(run_identifier(), {String("total_effects"), resp_labels[k]}, 
-                     total_effects, scales);
-  }
-}
-
 void Analyzer::compute_best_metrics(const Response& response,
 				    std::pair<Real,Real>& metrics)
 {
@@ -905,7 +646,7 @@ void Analyzer::compute_best_metrics(const Response& response,
   }
   else // no "best" metric currently defined for generic response fns
     return;
-  Real& constr_viol   = metrics.first; constr_viol= 0.0;
+  Real& constr_viol   = metrics.first; constr_viol = 0.0;
   size_t num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints(),
          num_nln_eq   = iteratedModel.num_nonlinear_eq_constraints();
   const RealVector& nln_ineq_lwr_bnds
@@ -914,7 +655,7 @@ void Analyzer::compute_best_metrics(const Response& response,
     = iteratedModel.nonlinear_ineq_constraint_upper_bounds();
   const RealVector& nln_eq_targets
     = iteratedModel.nonlinear_eq_constraint_targets();
-  for (i=0; i<num_nln_ineq; i++) { // ineq constraint violation
+  for (i=0; i<num_nln_ineq; i++) { // ineq constraint violation (default tol=0)
     size_t index = i + constr_offset;
     Real ineq_con = fn_vals[index];
     if (ineq_con > nln_ineq_upr_bnds[i])
@@ -922,7 +663,7 @@ void Analyzer::compute_best_metrics(const Response& response,
     else if (ineq_con < nln_ineq_lwr_bnds[i])
       constr_viol += std::pow(nln_ineq_lwr_bnds[i] - ineq_con,2);
   }
-  for (i=0; i<num_nln_eq; i++) { // eq constraint violation
+  for (i=0; i<num_nln_eq; i++) { // eq constraint violation (default tol=0)
     size_t index = i + constr_offset + num_nln_ineq;
     Real eq_con = fn_vals[index];
     if (std::fabs(eq_con - nln_eq_targets[i]) > 0.)

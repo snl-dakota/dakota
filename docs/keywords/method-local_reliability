@@ -37,7 +37,7 @@ optimization to compute a most probable point (MPP) of failure. A
 sign convention and the distance of the MPP from the origin in the
 transformed standard normal space ("u-space") define the reliability
 index, as explained in the :ref:`section on Reliability Methods on the Uncertainty Quantification page <uq:reliability>`.
-Also refer to :ref:`topic-variable_support<topic-variable_support>` for
+Also refer to :ref:`topic-variable_support` for
 additional information on supported variable types for transformations
 to standard normal space.  The reliability can
 then be converted to a probability using either first- or second-order

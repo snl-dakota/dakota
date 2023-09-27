@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -90,6 +90,9 @@ protected:
   NonD(ProblemDescDB& problem_db, Model& model);
   /// alternate constructor for sample generation and evaluation "on the fly"
   NonD(unsigned short method_name, Model& model);
+  /// alternate constructor for sample generation and evaluation "on the fly"
+  NonD(unsigned short method_name, Model& model,
+       const ShortShortPair& approx_view);
   /// alternate constructor for sample generation "on the fly"
   NonD(unsigned short method_name, const RealVector& lower_bnds,
        const RealVector& upper_bnds);

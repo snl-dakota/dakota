@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -139,9 +139,10 @@ namespace Dakota
                 approx_type = "global_kriging";
 		ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
 		gp_set.request_values(1); // no surr deriv evals, but GP may be grad-enhanced
+		const ShortShortPair& gp_view = iteratedModel.current_variables().view();
 		gpModel.assign_rep(std::make_shared<DataFitSurrModel>
 				   (gpBuild, iteratedModel,
-				    gp_set, approx_type, approx_order, corr_type, corr_order, data_order,
+				    gp_set, gp_view, approx_type, approx_order, corr_type, corr_order, data_order,
 				    outputLevel, sample_reuse, import_pts_file,
 				    probDescDB.get_ushort("method.import_build_format"),
 				    probDescDB.get_bool("method.import_build_active_only"),

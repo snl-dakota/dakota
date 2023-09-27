@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -127,7 +127,7 @@ inline MinimizerAdapterModel::~MinimizerAdapterModel()
 inline void MinimizerAdapterModel::
 initialize_variables(size_t num_cdv)//, num_div, num_drv, ...
 {
-  std::pair<short,short> view(MIXED_DESIGN, EMPTY_VIEW);
+  ShortShortPair view(MIXED_DESIGN, EMPTY_VIEW);
   SizetArray vc_totals;  vc_totals.assign(NUM_VC_TOTALS, 0);
   vc_totals[TOTAL_CDV] = num_cdv;
   //vc_totals[TOTAL_*DV] = num_*dv;

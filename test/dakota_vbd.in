@@ -2,7 +2,10 @@
 # DAKOTA INPUT FILE : dakota_vbd.in
 
 environment,
-	  tabular_data
+        tabular_data
+        results_output
+          hdf5
+            results_output_file = 'dakota_vbd_output'
 
 method,
 	fsu_quasi_mc halton			#s0
@@ -11,6 +14,8 @@ method,
 #	sampling				#s3,#s4
 	  variance_based_decomp
 	  samples = 100
+#	  sampling_method = mahadevan
+#	  num_bins = 11
 #         sample_type lhs			#s3,#s4
 #         seed = 44691				#s1,#s2,#s3,#s4
 #	  num_trials = 1000			#s2

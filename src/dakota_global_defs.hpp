@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -55,7 +55,8 @@ extern double HALF_LOG_2PI;
 /// These need to be in range [-63, -1], so exit code (256+enum) is in
 /// [193, 255].  See RATIONALE in dakota_global_defs.cpp.
 enum {
-  VARS_ERROR      = -10, // error with Variables
+  VARS_ERROR      = -11, // error with Variables
+  CONS_ERROR      = -10, // error with Constraints
   RESP_ERROR      = -9,  // error with Response
   APPROX_ERROR    = -8,  // error with Approximation
   METHOD_ERROR    = -7,  // error with Iterator/MetaIterator

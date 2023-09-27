@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -74,8 +74,8 @@ NonD::NonD(ProblemDescDB& problem_db, Model& model):
 
 
 NonD::NonD(unsigned short method_name, Model& model):
-  Analyzer(method_name, model), totalLevelRequests(0), cdfFlag(true),
-  pdfOutput(false), finalMomentsType(Pecos::STANDARD_MOMENTS)
+  Analyzer(method_name, model), totalLevelRequests(0),
+  cdfFlag(true), pdfOutput(false), finalMomentsType(Pecos::STANDARD_MOMENTS)
 {
   // NonDEvidence and NonDAdaptImpSampling use this ctor
 
@@ -85,6 +85,15 @@ NonD::NonD(unsigned short method_name, Model& model):
   // probability of failure for each response function 
   //ShortArray asv(3*numFunctions, 1); 
   //finalStatistics = Response(numUncertainVars, asv);
+}
+
+
+NonD::NonD(unsigned short method_name, Model& model,
+	   const ShortShortPair& approx_view):
+  Analyzer(method_name, model, approx_view), totalLevelRequests(0),
+  cdfFlag(true), pdfOutput(false), finalMomentsType(Pecos::STANDARD_MOMENTS)
+{
+  initialize_counts();
 }
 
 
@@ -109,7 +118,8 @@ void NonD::initialize_counts()
   //short active_view = vars.view().first;
   const SizetArray& ac_totals = vars.shared_data().active_components_totals();
   // convenience looping bounds
-  startCAUV = ac_totals[TOTAL_CDV];  numCAUV = ac_totals[TOTAL_CAUV];
+  startCAUV = ac_totals[TOTAL_CDV];
+  numCAUV   = ac_totals[TOTAL_CAUV];
   // stats type
   epistemicStats = (ac_totals[TOTAL_CEUV]  || ac_totals[TOTAL_DEUIV] ||
 		    ac_totals[TOTAL_DEUSV] || ac_totals[TOTAL_DEURV]);
@@ -1226,55 +1236,133 @@ unsigned short NonD::
 sub_optimizer_select(unsigned short requested_sub_method,
 		     unsigned short   default_sub_method)
 {
+  bool have_npsol = false, have_optpp = false, have_ncsu = false;
+#ifdef HAVE_NPSOL
+  have_npsol = true;
+#endif
+#ifdef HAVE_OPTPP
+  have_optpp = true;
+#endif
+#ifdef HAVE_NCSU
+  have_ncsu = true;
+#endif
+
   unsigned short assigned_sub_method = SUBMETHOD_NONE;
   switch (requested_sub_method) {
   case SUBMETHOD_NPSOL:
-#ifdef HAVE_NPSOL
-    assigned_sub_method = requested_sub_method;
-#else
-    Cerr << "\nError: this executable not configured with NPSOL SQP."
-	 << "\n       Please select alternate sub-method solver." << std::endl;
-#endif
+    if (have_npsol) assigned_sub_method = requested_sub_method;
+    else
+      Cerr << "\nError: this executable not configured with NPSOL SQP.\n       "
+	   << "Please select alternate sub-method solver." << std::endl;
     break;
+
   case SUBMETHOD_OPTPP:
-#ifdef HAVE_OPTPP
-    assigned_sub_method = requested_sub_method;
-#else
-    Cerr << "\nError: this executable not configured with OPT++ NIP."
-	 << "\n       Please select alternate sub-method solver." << std::endl;
-#endif
+    if (have_optpp) assigned_sub_method = requested_sub_method;
+    else
+      Cerr << "\nError: this executable not configured with OPT++ NIP.\n       "
+	   << "Please select alternate sub-method solver." << std::endl;
     break;
+
+  case SUBMETHOD_NPSOL_OPTPP: // not currently a spec option
+    if (have_npsol && have_optpp) assigned_sub_method = requested_sub_method;
+    else
+      Cerr << "\nError: this executable not configured with both OPT++ and "
+	   << "NPSOL.\n       Please select alternate sub-method solver."
+	   << std::endl;
+    break;
+
+  case SUBMETHOD_DIRECT:
+    if (have_ncsu) assigned_sub_method = requested_sub_method;
+    else
+      Cerr << "\nError: this executable not configured with NCSU DIRECT.\n"
+	   << "Please select alternate sub-method solver." << std::endl;
+    break;
+
+  case SUBMETHOD_DIRECT_NPSOL:
+    if (have_ncsu && have_npsol) assigned_sub_method = requested_sub_method;
+    else
+      Cerr << "\nError: this executable not configured with both NCSU DIRECT "
+	   << "and NPSOL.\n       Please select alternate sub-method solver."
+	   << std::endl;
+    break;
+
+  case SUBMETHOD_DIRECT_OPTPP:
+    if (have_ncsu && have_optpp) assigned_sub_method = requested_sub_method;
+    else
+      Cerr << "\nError: this executable not configured with both NCSU DIRECT "
+	   << "and OPT++.\n       Please select alternate sub-method solver."
+	   << std::endl;
+    break;
+
+  case SUBMETHOD_DIRECT_NPSOL_OPTPP:
+    if (have_ncsu && have_npsol && have_optpp)
+      assigned_sub_method = requested_sub_method;
+    else
+      Cerr << "\nError: this executable not configured with NCSU DIRECT, NPSOL"
+	   << ", and OPT++.\n       Please select alternate sub-method solver."
+	   << std::endl;
+    break;
+
   case SUBMETHOD_DEFAULT:
     switch (default_sub_method) {
     case SUBMETHOD_NPSOL: // use SUBMETHOD_NPSOL if available
-#ifdef HAVE_NPSOL
-      assigned_sub_method = SUBMETHOD_NPSOL;
-#elif HAVE_OPTPP
-      assigned_sub_method = SUBMETHOD_OPTPP;
-#endif
+      if      (have_npsol) assigned_sub_method = default_sub_method;
+      else if (have_optpp) assigned_sub_method = SUBMETHOD_OPTPP;
       break;
     case SUBMETHOD_OPTPP: // use SUBMETHOD_OPTPP if available
-#ifdef HAVE_OPTPP
-      assigned_sub_method = SUBMETHOD_OPTPP;
-#elif HAVE_NPSOL
-      assigned_sub_method = SUBMETHOD_NPSOL;
-#endif
+      if      (have_optpp) assigned_sub_method = default_sub_method;
+      else if (have_npsol) assigned_sub_method = SUBMETHOD_NPSOL;
+      break;
+    case SUBMETHOD_NPSOL_OPTPP: // use both OPTPP and NPSOL if available
+      if (have_npsol && have_optpp) assigned_sub_method = default_sub_method;
+      else if (have_npsol) assigned_sub_method = SUBMETHOD_NPSOL;
+      else if (have_optpp) assigned_sub_method = SUBMETHOD_OPTPP;
+      break;
+    case SUBMETHOD_DIRECT:
+      if (have_ncsu) assigned_sub_method = default_sub_method;
+      break;
+    case SUBMETHOD_DIRECT_NPSOL:
+      if (have_ncsu && have_npsol) assigned_sub_method = default_sub_method;
+      else if (have_ncsu)  assigned_sub_method = SUBMETHOD_DIRECT;
+      else if (have_npsol) assigned_sub_method = SUBMETHOD_NPSOL;
+      break;
+    case SUBMETHOD_DIRECT_OPTPP:
+      if (have_ncsu && have_optpp) assigned_sub_method = default_sub_method;
+      else if (have_ncsu)  assigned_sub_method = SUBMETHOD_DIRECT;
+      else if (have_optpp) assigned_sub_method = SUBMETHOD_OPTPP;
+      break;
+    case SUBMETHOD_DIRECT_NPSOL_OPTPP:
+      if (have_ncsu) {
+	if (have_npsol && have_optpp) assigned_sub_method = default_sub_method;
+	else if (have_npsol) assigned_sub_method = SUBMETHOD_DIRECT_NPSOL;
+	else if (have_optpp) assigned_sub_method = SUBMETHOD_DIRECT_OPTPP;
+      }
+      else if (have_npsol && have_optpp)
+	assigned_sub_method = SUBMETHOD_NPSOL_OPTPP;
+      else if (have_npsol) assigned_sub_method = SUBMETHOD_NPSOL;
+      else if (have_optpp) assigned_sub_method = SUBMETHOD_OPTPP;
       break;
     }
     if (assigned_sub_method == SUBMETHOD_NONE)
       Cerr << "\nError: this executable not configured with an available "
 	   << "sub-method solver." << std::endl;
     break;
+
   case SUBMETHOD_NONE:
     // assigned = requested = SUBMETHOD_NONE is valid for the case where a
     // sub-method solve is to be suppressed; clients are free to treat this
     // return value as an error
     break;
+
   default:
-    Cerr << "\nError: sub-method not recognized in NonD::"
-	 << "sub_optimizer_select()." << std::endl;
+    Cerr << "\nError: sub-method " << requested_sub_method
+	 << " not recognized in NonD::sub_optimizer_select()." << std::endl;
     break;
   }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "\nSub-method " << assigned_sub_method
+	 << " assigned in NonD::sub_optimizer_select()." << std::endl;
+
   return assigned_sub_method;
 }
 

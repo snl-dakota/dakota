@@ -239,6 +239,33 @@ reserved characters in the output format.
 For code blocks (default ``{% %}``), the innermost characters cannot be
 any of “``{}[]()``”.
 
+Furthermore every template can individually reset the command delimiter by
+specifying them at the top of the file. From the help:
+
+::
+
+    Specify delineators as the the first non-whitespace line. Start with a
+    comment '//', '#','%', '$' or '' (nothing), then a command, then '=' or
+    space, followed by the new setting. See examples.
+
+    Commands are:
+
+          Commands                Flags
+      ---------------------------------------
+      | PYPREPRO_CODE        |              |
+      | DPREPRO_CODE         |  --code      |
+      | PREPRO_CODE          |              |
+      | ---------------------|--------------|
+      | PYPREPRO_CODE_BLOCK  |              |
+      | DPREPRO_CODE_BLOCK   | --code-block |
+      | PREPRO_CODE_BLOCK    |              |
+      | ---------------------|--------------|
+      | PYPREPRO_INLINE      |              |
+      | DPREPRO_INLINE       | --inline     |
+      | PREPRO_INLINE        |              |
+      ---------------------------------------
+
+
 .. _`interfaces:escaping-delimiters`:
 
 Escaping Delimiters

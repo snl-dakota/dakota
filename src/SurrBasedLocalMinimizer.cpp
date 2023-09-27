@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -212,9 +212,9 @@ void SurrBasedLocalMinimizer::initialize_sub_model()
 
     approxSubProbModel.assign_rep(std::make_shared<RecastModel>(iteratedModel,
       recast_vars_map, recast_vars_comps_total, all_relax_di, all_relax_dr,
-      false, nullptr, set_recast, recast_primary_resp_map,
-      recast_secondary_resp_map, recast_offset, recast_resp_order,
-      nonlinear_resp_map, approx_subprob_objective_eval,
+      false, iteratedModel.current_variables().view(), nullptr, set_recast,
+      recast_primary_resp_map, recast_secondary_resp_map, recast_offset,
+      recast_resp_order, nonlinear_resp_map, approx_subprob_objective_eval,
       approx_subprob_constraint_eval));
 
     // these formulations have converted multiple objectives or
@@ -516,6 +516,16 @@ update_approx_sub_problem(SurrBasedLevelData& tr_data)
 
   if ( trConstraintRelax > NO_RELAX ) // relax constraints if requested
     relax_constraints(tr_data);
+  else if (approxSubProbCon != NO_CONSTRAINTS) {
+    // Approx subproblems with recast constraints (from secondaryRespMapping
+    // function in RecastModel) won't auto-propagate nonlinear constraint
+    // bounds for a general mapping --> recast client must propagate based
+    // on the specific nature of the mapping
+    approxSubProbModel.nonlinear_ineq_constraint_lower_bounds(
+      origNonlinIneqLowerBnds);
+    approxSubProbModel.nonlinear_ineq_constraint_upper_bounds(
+      origNonlinIneqUpperBnds);
+  }
 }
 
 

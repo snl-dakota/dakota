@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -20,6 +20,7 @@
 #include "dakota_stat_util.hpp"
 #include <algorithm>
 #include <boost/iterator/counting_iterator.hpp>
+#include "DataMethod.hpp"
 
 static const char rcsId[]="@(#) $Id: SensAnalysisGlobal.cpp 6170 2009-10-06 22:42:15Z lpswile $";
 
@@ -482,169 +483,124 @@ bool SensAnalysisGlobal::has_nan_or_inf(const RealMatrix &corr) const {
 void SensAnalysisGlobal::
 archive_correlations(const StrStrSizet& run_identifier,  
 		     ResultsManager& iterator_results,
-		     StringMultiArrayConstView cv_labels,
-		     StringMultiArrayConstView div_labels,
-		     StringMultiArrayConstView dsv_labels,
-		     StringMultiArrayConstView drv_labels,
+		     const StringArray& var_labels,
 		     const StringArray& resp_labels,
          const size_t &inc_id) const
 {
   if (!iterator_results.active())  return;
 
-  int num_in_out = numVars + numFns;
-
   // Get pointers to the variables and response names to create scales
   std::vector<const char *> combined_desc;
-  for (size_t i=0; i<cv_labels.size(); ++i)
-    combined_desc.push_back(cv_labels[i].c_str());
-  for (size_t i=0; i<div_labels.size(); ++i)
-    combined_desc.push_back(div_labels[i].c_str());
-  for (size_t i=0; i<dsv_labels.size(); ++i)
-    combined_desc.push_back(dsv_labels[i].c_str());
-  for (size_t i=0; i<drv_labels.size(); ++i)
-    combined_desc.push_back(drv_labels[i].c_str());
-  for (size_t i=0; i<resp_labels.size(); ++i)
-    combined_desc.push_back(resp_labels[i].c_str());
-  // Copy the variable and function labels
-  std::vector<const char *> variables_desc(combined_desc.begin(), 
-      combined_desc.begin() + numVars);
-  std::vector<const char *> functions_desc(combined_desc.begin() + numVars, 
-      combined_desc.end());
+  combined_desc.reserve(var_labels.size() + resp_labels.size());
+  for(const String& label : var_labels)
+    combined_desc.push_back(label.c_str());
+  for(const String& label : resp_labels)
+    combined_desc.push_back(label.c_str());
 
+  archive_simple_correlations(run_identifier, iterator_results, var_labels, resp_labels, combined_desc, inc_id, false);
+  archive_simple_correlations(run_identifier, iterator_results, var_labels, resp_labels, combined_desc, inc_id, true);
+  archive_partial_correlations(run_identifier, iterator_results, var_labels, resp_labels, inc_id, false);
+  archive_partial_correlations(run_identifier, iterator_results, var_labels, resp_labels, inc_id, true);
+}
+
+void SensAnalysisGlobal::
+archive_simple_correlations(const StrStrSizet& run_identifier,  
+		     ResultsManager& iterator_results,
+		     const StringArray& var_labels,
+		     const StringArray& resp_labels,
+         const std::vector<const char *>& combined_desc,
+         const size_t &inc_id,
+         bool rank) const {
+  
+  int num_in_out = numVars + numFns;
   StringArray location;
-  size_t r_index = 0; 
-  if(inc_id) {
+  if(inc_id)
     location.push_back(String("increment:") + std::to_string(inc_id));
-    r_index = 1;
-  } 
-  location.push_back("");
-  location[r_index] = "simple_correlations";
-  if (simpleCorr.numRows() == num_in_out &&
-      simpleCorr.numCols() == num_in_out) {
-    // CoreDB
-    MetaDataType md;
-    md["Row labels"] = 
-      make_metadatavalue(cv_labels, div_labels, dsv_labels, drv_labels, resp_labels);
-    md["Column labels"] = 
-      make_metadatavalue(cv_labels, div_labels, dsv_labels, drv_labels, resp_labels);
-    iterator_results.insert(run_identifier, 
-			    iterator_results.results_names.correl_simple_all,
-			    simpleCorr, md);
-    // HDF5
+  if(rank) 
+    location.push_back("simple_rank_correlations");
+  else 
+    location.push_back("simple_correlations");
+  auto& corr_matrix = (rank) ? simpleRankCorr : simpleCorr;
+  if (corr_matrix.numRows() == num_in_out &&
+      corr_matrix.numCols() == num_in_out) {
     DimScaleMap scales;
     scales.emplace(0, StringScale("factors", combined_desc));
     scales.emplace(1, StringScale("factors", combined_desc));
     iterator_results.insert(run_identifier,location, 
-        simpleCorr, scales);
-
+        corr_matrix, scales);
   }
-  else if (simpleCorr.numRows() == numVars &&
-	   simpleCorr.numCols() == numFns) {
-    // CoreDB
-    MetaDataType md;
-    md["Row labels"] = 
-      make_metadatavalue(cv_labels, div_labels, dsv_labels, drv_labels, StringArray());
-    md["Column labels"] = make_metadatavalue(resp_labels);
-    iterator_results.insert(run_identifier, 
-			    iterator_results.results_names.correl_simple_io,
-			    simpleCorr, md);
-    // HDF5
+  else if (corr_matrix.numRows() == numVars &&
+	         corr_matrix.numCols() == numFns) {
     DimScaleMap scales;
-    scales.emplace(0, StringScale("variables", variables_desc));
-    scales.emplace(1, StringScale("responses", functions_desc));
+    scales.emplace(0, StringScale("variables", var_labels));
+    scales.emplace(1, StringScale("responses", resp_labels));
     iterator_results.insert(run_identifier,location, 
-        simpleCorr, scales);
+        corr_matrix, scales);
   }
+}
 
-  // TODO: metadata
-  //  if (numericalIssuesRaw)
-  location[r_index] = "simple_rank_correlations";
-  if (simpleRankCorr.numRows() == num_in_out &&
-      simpleRankCorr.numCols() == num_in_out) {
-    // CoreDB
-    MetaDataType md;
-    md["Row labels"] = 
-      make_metadatavalue(cv_labels, div_labels, dsv_labels, drv_labels, resp_labels);
-    md["Column labels"] = 
-      make_metadatavalue(cv_labels, div_labels, dsv_labels, drv_labels, resp_labels);
-    iterator_results.insert(run_identifier, 
-			    iterator_results.results_names.correl_simple_rank_all,
-			    simpleRankCorr, md);
-    // HDF5
-    DimScaleMap scales;
-    scales.emplace(0, StringScale("factors", combined_desc));
-    scales.emplace(1, StringScale("factors", combined_desc));
-    iterator_results.insert(run_identifier,location, 
-        simpleRankCorr, scales);
- 
-  }
-  else if (simpleRankCorr.numRows() == numVars &&
-	   simpleRankCorr.numCols() == numFns) {
-    // CoreDB
-    MetaDataType md;
-    md["Row labels"] = 
-      make_metadatavalue(cv_labels, div_labels, dsv_labels, drv_labels, StringArray());
-    md["Column labels"] = make_metadatavalue(resp_labels);
-    iterator_results.insert(run_identifier, 
-			    iterator_results.results_names.correl_simple_rank_io,
-			    simpleRankCorr, md);
-    // HDF5
-    DimScaleMap scales;
-    scales.emplace(0, StringScale("variables", variables_desc));
-    scales.emplace(1, StringScale("responses", functions_desc));
-    iterator_results.insert(run_identifier,location, 
-        simpleRankCorr, scales);
-  }
-
+void SensAnalysisGlobal::
+archive_partial_correlations(const StrStrSizet& run_identifier,  
+		     ResultsManager& iterator_results,
+		     const StringArray& var_labels,
+		     const StringArray& resp_labels,
+         const size_t &inc_id,
+         bool rank) const {
+  
+  StringArray location;
+  if(inc_id)
+    location.push_back(String("increment:") + std::to_string(inc_id));
+  if(rank) 
+    location.push_back("partial_rank_correlations");
+  else 
+    location.push_back("partial_correlations");
+  auto & corr_matrix = (rank) ? partialRankCorr : partialCorr;
+  
   location.push_back("");
-  location[r_index] = "partial_correlations";
-  if (partialCorr.numRows() == numVars &&
-      partialCorr.numCols() == numFns) {
-    // CoreDB
-    MetaDataType md;
-    md["Row labels"] = 
-      make_metadatavalue(cv_labels, div_labels, dsv_labels, drv_labels, StringArray());
-    md["Column labels"] = make_metadatavalue(resp_labels);
-    iterator_results.insert(run_identifier, 
-			    iterator_results.results_names.correl_partial_io,
-			    partialCorr, md);
-    // HDF5
+  if (corr_matrix.numRows() == numVars &&
+      corr_matrix.numCols() == numFns) {
     DimScaleMap scales;
-    scales.emplace(0, StringScale("variables", variables_desc));
+    scales.emplace(0, StringScale("variables", var_labels));
     for (size_t i=0; i<resp_labels.size(); ++i) {
       location.back() = resp_labels[i];
       iterator_results.insert(run_identifier,location,
-          Teuchos::getCol<int,Real>(Teuchos::View, *const_cast<RealMatrix*>(&partialCorr), i), scales);
-    }
-  }
-  location[r_index] = "partial_rank_correlations";
-  if (partialRankCorr.numRows() == numVars &&
-      partialRankCorr.numCols() == numFns) {
-    // CoreDB
-    MetaDataType md;
-    md["Row labels"] = 
-      make_metadatavalue(cv_labels, div_labels, dsv_labels, drv_labels, StringArray());
-    md["Column labels"] = make_metadatavalue(resp_labels);
-    iterator_results.insert(run_identifier, 
-			    iterator_results.results_names.correl_partial_rank_io,
-			    partialRankCorr, md);
-    // HDF5
-    DimScaleMap scales;
-    scales.emplace(0, StringScale("variables", variables_desc));
-    for (size_t i=0; i<resp_labels.size(); ++i) {
-      location.back() = resp_labels[i];
-      iterator_results.insert(run_identifier, location,
-          Teuchos::getCol<int,Real>(Teuchos::View, *const_cast<RealMatrix*>(&partialRankCorr), i), scales);
+          Teuchos::getCol<int,Real>(Teuchos::View, *const_cast<RealMatrix*>(&corr_matrix), i), scales);
     }
   }
 }
 
+void SensAnalysisGlobal::
+archive_std_regress_coeffs(const StrStrSizet& run_identifier,  
+                           ResultsManager& iterator_results,
+                           const StringArray& var_labels,
+                           const StringArray & resp_labels,
+                           const size_t &inc_id) const
+{
+  if(!iterator_results.active())
+    return;
+
+  DimScaleMap scales;
+  scales.emplace(0, StringScale("variables", var_labels));
+
+  StringArray location;
+  if(inc_id) location.push_back(String("increment:") + std::to_string(inc_id));
+  location.push_back("std_regression_coeffs");
+
+  location.push_back("");
+  for (size_t i=0; i<resp_labels.size(); ++i) {
+    location.back() = resp_labels[i];
+    iterator_results.insert(run_identifier, location,
+        Teuchos::getCol<int,Real>(Teuchos::View, *const_cast<RealMatrix*>(&stdRegressCoeffs), i), scales);
+    // Archive Coeff of Determination (R^2) as an attribute
+    AttributeArray ns_attr({ResultAttribute<Real>("coefficient_of_determination", stdRegressCODs[i])}); 
+    iterator_results.add_metadata_to_object(run_identifier, location, ns_attr);
+  }
+
+}
+
 
 void SensAnalysisGlobal::
-print_correlations(std::ostream& s, StringMultiArrayConstView cv_labels,
-		   StringMultiArrayConstView div_labels,
-		   StringMultiArrayConstView dsv_labels,
-		   StringMultiArrayConstView drv_labels,
+print_correlations(std::ostream& s, const StringArray& var_labels,
 		   const StringArray& resp_labels) const
 {
   // output correlation matrices
@@ -653,18 +609,8 @@ print_correlations(std::ostream& s, StringMultiArrayConstView cv_labels,
     Cout << "Correlation matrices not computed." << std::endl;
     return;
   }
+  check_correlations_for_nan_or_inf(s);
 
-  if( has_nan_or_inf(simpleCorr) ||
-      has_nan_or_inf(partialCorr) ||
-      has_nan_or_inf(simpleRankCorr) ||
-      has_nan_or_inf(partialRankCorr) )
-    s << "\n\nAt least one correlation coefficient is nan or inf. This " <<
-      "commonly occurs when\ndiscrete variables (including histogram " <<
-      "variables) are present, a response is\ncompletely insensitive to " <<
-      "variables (response variance equal to 0), there are\nfewer samples " <<
-      "than variables, or some samples are approximately collinear." << 
-      std::endl;
-  
   s << std::scientific << std::setprecision(5);
 
   if (resp_labels.size() != numFns) { 
@@ -675,185 +621,107 @@ print_correlations(std::ostream& s, StringMultiArrayConstView cv_labels,
     abort_handler(-1);
   }
 
-  size_t i, j, num_cv = cv_labels.size(), num_div = div_labels.size(),
-    num_dsv = dsv_labels.size(), num_drv = drv_labels.size();
-  if (num_cv+num_div+num_dsv+num_drv != numVars) {
-    Cerr << "Error: Number of variable labels (" << num_cv+num_div+num_drv
+  if (var_labels.size() != numVars) {
+    Cerr << "Error: Number of variable labels (" << var_labels.size()
 	 << ") passed to print_correlations not equal to number of input "
 	 << "variables (" << numVars << ") in compute_correlations()." << std::endl;
     abort_handler(-1);
   }
 
-  int num_in_out = numVars + numFns;
-  if (simpleCorr.numRows() == num_in_out &&
-      simpleCorr.numCols() == num_in_out) {
-    s << "\nSimple Correlation Matrix among all inputs and outputs:\n"
-      << "             ";
-    for (i=0; i<num_cv; ++i)
-      s << std::setw(12) << cv_labels[i] << ' ';
-    for (i=0; i<num_div; ++i)
-      s << std::setw(12) << div_labels[i] << ' ';
-    for (i=0; i<num_dsv; ++i)
-      s << std::setw(12) << dsv_labels[i] << ' ';
-    for (i=0; i<num_drv; ++i)
-      s << std::setw(12) << drv_labels[i] << ' ';
-    for (i=0; i<numFns; ++i)
-      s << std::setw(12) << resp_labels[i] << ' ';
-    s << '\n';
-    for (i=0; i<num_in_out; ++i) {
-      if (i<num_cv)
-	s << std::setw(12) << cv_labels[i] << ' ';
-      else if (i<num_cv+num_div)
-	s << std::setw(12) << div_labels[i-num_cv] << ' ';
-      else if (i<num_cv+num_div+num_dsv)
-	s << std::setw(12) << dsv_labels[i-num_cv-num_div] << ' ';
-      else if (i<numVars)
-	s << std::setw(12) << drv_labels[i-num_cv-num_div-num_dsv] << ' ';
-      else
-	s << std::setw(12) << resp_labels[i-numVars] << ' ';
-      for (j=0; j<=i; ++j)
-	s << std::setw(12) << simpleCorr(i,j) << ' ';
-      s << '\n';
-    }
-  }
-  else if (simpleCorr.numRows() == numVars &&
-	   simpleCorr.numCols() == numFns) {
-    s << "\nSimple Correlation Matrix between input and output:\n"
-      << "             ";
-    for (j=0; j<numFns; ++j)
-      s << std::setw(12) << resp_labels[j] << ' ';
-    s << '\n';
-    for (i=0; i<numVars; ++i) {
-      if (i<num_cv)
-	s << std::setw(12) << cv_labels[i] << ' ';
-      else if (i<num_cv+num_div)
-	s << std::setw(12) << div_labels[i-num_cv] << ' ';
-      else if (i<num_cv+num_div+num_dsv)
-	s << std::setw(12) << dsv_labels[i-num_cv-num_div] << ' ';
-      else
-	s << std::setw(12) << drv_labels[i-num_cv-num_div-num_dsv] << ' ';
-      for (j=0; j<numFns; ++j)
-	s << std::setw(12) << simpleCorr(i,j) << ' ';
-      s << '\n';
-    }
-  }
-
-  if (partialCorr.numRows() == numVars &&
-      partialCorr.numCols() == numFns) {
-    s << "\nPartial Correlation Matrix between input and output:\n"
-      << "             ";
-    for (j=0; j<numFns; ++j)
-      s << std::setw(12) << resp_labels[j]<<' ';
-    s << '\n';
-    for (i=0; i<numVars; ++i) {
-      if (i<num_cv)
-	s << std::setw(12) << cv_labels[i] << ' ';
-      else if (i<num_cv+num_div)
-	s << std::setw(12) << div_labels[i-num_cv] << ' ';
-      else if (i<num_cv+num_div+num_dsv)
-	s << std::setw(12) << dsv_labels[i-num_cv-num_div] << ' ';
-      else
-	s << std::setw(12) << drv_labels[i-num_cv-num_div-num_dsv] << ' ';
-      for (j=0; j<numFns; ++j)
-	s << std::setw(12) << partialCorr(i,j) << ' ';
-      s << '\n';
-    }
-  }
-  //  This warning message has been supplanted by more generic tests for NaNs and
-  //  Infs
-  //if (numericalIssuesRaw)
-  //  s << "\nThere may be some numerical issues associated with the calculation "
-  //    << "of the \npartial correlation coefficients above.  This can be due to "
-  //    << "very small \nnumbers of input samples, or to ill-conditioned matrices"
-  //    << ", \nin situations where the partials are very close to zero, -1, or "
-  //    << "+1.\n";
-
-  if (simpleRankCorr.numRows() == num_in_out &&
-      simpleRankCorr.numCols() == num_in_out) {
-    s << "\nSimple Rank Correlation Matrix among all inputs and outputs:\n"
-      << "             ";
-    for (i=0; i<num_cv; ++i)
-      s << std::setw(12) << cv_labels[i] << ' ';
-    for (i=0; i<num_div; ++i)
-      s << std::setw(12) << div_labels[i] << ' ';
-    for (i=0; i<num_dsv; ++i)
-      s << std::setw(12) << dsv_labels[i] << ' ';
-    for (i=0; i<num_drv; ++i)
-      s << std::setw(12) << drv_labels[i] << ' ';
-    for (i=0; i<numFns; ++i)
-      s << std::setw(12) << resp_labels[i] << ' ';
-    s << '\n';
-    for (i=0; i<num_in_out; ++i) {
-      if (i<num_cv)
-	s << std::setw(12) << cv_labels[i] << ' ';
-      else if (i<num_cv+num_div)
-	s << std::setw(12) << div_labels[i-num_cv] << ' ';
-      else if (i<num_cv+num_div+num_dsv)
-	s << std::setw(12) << dsv_labels[i-num_cv-num_div] << ' ';
-      else if (i<numVars)
-	s << std::setw(12) << drv_labels[i-num_cv-num_div-num_dsv] << ' ';
-      else
-	s << std::setw(12) << resp_labels[i-numVars] << ' ';
-      for (j=0; j<=i; ++j)
-	s << std::setw(12) << simpleRankCorr(i,j) << ' ';
-      s << '\n';
-    }
-  }
-  else if (simpleRankCorr.numRows() == numVars &&
-	   simpleRankCorr.numCols() == numFns) {
-    s << "\nSimple Rank Correlation Matrix between input and output:\n"
-      << "             ";
-    for (j=0; j<numFns; ++j)
-      s << std::setw(12) << resp_labels[j] << ' ';
-    s << '\n';
-    for (i=0; i<numVars; ++i) {
-      if (i<num_cv)
-	s << std::setw(12) << cv_labels[i] << ' ';
-      else if (i<num_cv+num_div)
-	s << std::setw(12) << div_labels[i-num_cv] << ' ';
-      else if (i<num_cv+num_div+num_dsv)
-	s << std::setw(12) << dsv_labels[i-num_cv-num_div] << ' ';
-      else
-	s << std::setw(12) << drv_labels[i-num_cv-num_div-num_dsv] << ' ';
-      for (j=0; j<numFns; ++j)
-	s << std::setw(12) << simpleRankCorr(i,j) << ' ';
-      s << '\n';
-    }
-  }
-
-  if (partialRankCorr.numRows() == numVars &&
-      partialRankCorr.numCols() == numFns) {
-    s << "\nPartial Rank Correlation Matrix between input and output:\n"
-      << "             ";
-    for (j=0; j<numFns; ++j)
-      s << std::setw(12) << resp_labels[j] << ' ';
-    s << '\n';
-    for (i=0; i<numVars; ++i) {
-      if (i<num_cv)
-	s << std::setw(12) << cv_labels[i] << ' ';
-      else if (i<num_cv+num_div)
-	s << std::setw(12) << div_labels[i-num_cv] << ' ';
-      else if (i<num_cv+num_div+num_dsv)
-	s << std::setw(12) << dsv_labels[i-num_cv-num_div] << ' ';
-      else
-	s << std::setw(12) << drv_labels[i-num_cv-num_div-num_dsv] << ' ';
-      for (j=0; j<numFns; ++j)
-	s << std::setw(12) << partialRankCorr(i,j) << ' ';
-      s << '\n';
-    }
-  }
-
-  //  This warning message has been supplanted by more generic tests for NaNs and
-  //  Infs
-  //if (numericalIssuesRank)
-  //  s << "\nThere may be some numerical issues associated with the calculation "
-  //    << "of the \npartial rank correlation coefficients above.  This can be "
-  //    << "due to very small \nnumbers of input samples, or to ill-conditioned "
-  //    << "matrices, \nin situations where the partials are very close to zero, "
-  //    << "-1, or +1.\n";
-   
+  print_simple_correlations(s, var_labels, resp_labels, false);
+  print_partial_correlations(s, var_labels, resp_labels, false);
+  print_simple_correlations(s, var_labels, resp_labels, true);
+  print_partial_correlations(s, var_labels, resp_labels, true);
+    
   s << std::setprecision(write_precision)  // return to previous precision
     << std::endl;
+}
+
+
+void SensAnalysisGlobal::
+check_correlations_for_nan_or_inf(std::ostream& s) const {
+  if( has_nan_or_inf(simpleCorr) ||
+      has_nan_or_inf(partialCorr) ||
+      has_nan_or_inf(simpleRankCorr) ||
+      has_nan_or_inf(partialRankCorr) )
+    s << "\n\nAt least one correlation coefficient is nan or inf. This " <<
+      "commonly occurs when\ndiscrete variables (including histogram " <<
+      "variables) are present, a response is\ncompletely insensitive to " <<
+      "variables (response variance equal to 0), there are\nfewer samples " <<
+      "than variables, or some samples are approximately collinear." << 
+      std::endl;
+}
+
+void SensAnalysisGlobal::
+print_simple_correlations(std::ostream& s, const StringArray& var_labels, const StringArray& resp_labels, bool rank) const {
+  int num_in_out = numVars + numFns;
+  auto& corr_matrix = (rank) ? simpleRankCorr : simpleCorr;
+
+  if (corr_matrix.numRows() == num_in_out &&
+      corr_matrix.numCols() == num_in_out) {
+    if (rank)
+      s << "\nSimple Rank Correlation Matrix among all inputs and outputs:\n"
+        << "             ";
+    else
+      s << "\nSimple Correlation Matrix among all inputs and outputs:\n"
+        << "             ";
+    for(const String &label : var_labels)
+      s << std::setw(12) << label << ' ';
+    for(const String &label : resp_labels)
+      s << std::setw(12) << label << ' ';
+    s << '\n';
+    for (size_t i=0; i<num_in_out; ++i) {
+      if (i<numVars)
+	      s << std::setw(12) << var_labels[i] << ' ';
+      else
+	      s << std::setw(12) << resp_labels[i-numVars] << ' ';
+      for (size_t j=0; j<=i; ++j)
+	      s << std::setw(12) << corr_matrix(i,j) << ' ';
+      s << '\n';
+    }
+  } else if (corr_matrix.numRows() == numVars &&
+	   corr_matrix.numCols() == numFns) {
+    if(rank)
+      s << "\nSimple Rank Correlation Matrix between input and output:\n"
+        << "             ";
+    else
+      s << "\nSimple Correlation Matrix between input and output:\n"
+        << "             ";
+    for (const String & label : resp_labels)
+      s << std::setw(12) << label << ' ';
+    s << '\n';
+    for (size_t i=0; i<numVars; ++i) {
+      s << std::setw(12) << var_labels[i] << ' ';
+      for (size_t j=0; j<numFns; ++j)
+	      s << std::setw(12) << corr_matrix(i,j) << ' ';
+      s << '\n';
+    }
+  }
+}
+
+void SensAnalysisGlobal::
+print_partial_correlations(std::ostream& s, const StringArray& var_labels, const StringArray& resp_labels, bool rank) const {
+  int num_in_out = numVars + numFns;
+  auto& corr_matrix = (rank) ? partialRankCorr : partialCorr;
+
+  if (corr_matrix.numRows() == numVars &&
+      corr_matrix.numCols() == numFns) {
+    if(rank)
+      s << "\nPartial Rank Correlation Matrix between input and output:\n"
+        << "             ";
+    else
+      s << "\nPartial Correlation Matrix between input and output:\n"
+        << "             ";
+    for (const String& label : resp_labels)
+      s << std::setw(12) << label << ' ';
+    s << '\n';
+    for (size_t i=0; i<numVars; ++i) {
+    	s << std::setw(12) << var_labels[i] << ' ';
+      for (size_t j=0; j<numFns; ++j)
+	      s << std::setw(12) << corr_matrix(i,j) << ' ';
+      s << '\n';
+    }
+  }
 }
 
 
@@ -861,6 +729,7 @@ void SensAnalysisGlobal::
 compute_std_regress_coeffs(const RealMatrix&     vars_samples,
                            const IntResponseMap& resp_samples)
 {
+#ifdef HAVE_DAKOTA_SURROGATES
   int num_obs = vars_samples.numCols();
   if (!num_obs) {
     Cerr << "Error: Number of samples must be nonzero in SensAnalysisGlobal::"
@@ -892,16 +761,16 @@ compute_std_regress_coeffs(const RealMatrix&     vars_samples,
   RealMatrix resp_copy_trans(resp_view, Teuchos::TRANS);
 
   compute_std_regression_coeffs(vars_copy_trans, resp_copy_trans, stdRegressCoeffs, stdRegressCODs);
+#endif
 }
 
 
 void SensAnalysisGlobal::
-print_std_regress_coeffs(std::ostream& s, StringMultiArrayConstView cv_labels,
+print_std_regress_coeffs(std::ostream& s, StringArray var_labels,
 		   const StringArray& resp_labels) const
 {
+#ifdef HAVE_DAKOTA_SURROGATES
   // output standardized regression coefficients and coefficients of determination (R^2)
-
-  s << "\nStandardized Regression Coefficients and Coefficients of Determination (R^2):\n";
 
   if( has_nan_or_inf(stdRegressCoeffs) )
     s << "\nAt least one standardized regression coefficient is nan or inf. This " <<
@@ -920,14 +789,14 @@ print_std_regress_coeffs(std::ostream& s, StringMultiArrayConstView cv_labels,
     abort_handler(-1);
   }
 
-  size_t i, j, num_cv = cv_labels.size();
-  s << "\nSRCs :\n"
+  size_t i, j;
+  s << "\nStandardized Regression Coefficients and Coefficients of Determination (R^2):\n"
     << "             ";
   for (j=0; j<numFns; ++j)
     s << std::setw(12) << resp_labels[j] << ' ';
   s << '\n';
   for (i=0; i<numVars; ++i) {
-    s << std::setw(12) << cv_labels[i] << ' ';
+    s << std::setw(12) << var_labels[i] << ' ';
     for (j=0; j<numFns; ++j)
       s << std::setw(12) << stdRegressCoeffs(i,j) << ' ';
     s << '\n';
@@ -939,8 +808,238 @@ print_std_regress_coeffs(std::ostream& s, StringMultiArrayConstView cv_labels,
 
   s << std::setprecision(write_precision)  // return to previous precision
     << std::endl;
+#endif
 }
 
+void SensAnalysisGlobal::compute_vbd_stats_via_sampling( const unsigned short   method
+                                                       , const int              numBins
+                                                       , const size_t           numFunctions
+                                                       , const size_t           num_vars
+                                                       , const size_t           num_samples
+                                                       , const IntResponseMap & resp_samples
+                                                       )
+{
+  //Cout << "Entering SensAnalysisGlobal::compute_vbd_stats_via_sampling()"
+  //     << ": method = " << method
+  //     << ", numBins = " << numBins
+  //     << std::endl;
+  //sleep(10);
+
+  // TODO for Teresa: it shall be 'if ("Saltelli") {...} else {...}',
+  // since the new method "Mahadevan" shall be the default one.
+  if (method == VBD_MAHADEVAN) {
+    this->compute_vbd_stats_with_Mahadevan( numBins
+                                          , numFunctions
+                                          , num_vars
+                                          , num_samples
+                                          , resp_samples
+                                          );
+  }
+  else {
+    this->compute_vbd_stats_with_Saltelli( numFunctions
+                                         , num_vars
+                                         , num_samples
+                                         , resp_samples
+                                         );
+  }
+}
+
+void SensAnalysisGlobal::compute_vbd_stats_with_Saltelli( const size_t           numFunctions
+                                                        , const size_t           num_vars
+                                                        , const size_t           num_samples
+                                                        , const IntResponseMap & resp_samples
+                                                        )
+{
+  if (resp_samples.size() != num_samples * (num_vars+2)) {
+    Cerr << "\nError in Analyzer::compute_vbd_stats_with_Saltelli()"
+         << ": expected " << num_samples * (num_vars+2) << " responses"
+         << "; received " << resp_samples.size()
+         << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  
+  // BMA: for now copy the data to previous data structure 
+  //      total_fn_vals[respFn][replicate][sample]
+  // This is making the assumption that the responses are ordered as allSamples
+  // BMA TODO: compute statistics on finite samples only
+  boost::multi_array<Real,3> total_fn_vals(boost::extents[numFunctions][num_vars+2][num_samples]); // [k][i][j]
+  IntRespMCIter r_it = resp_samples.begin();
+  for (size_t i(0); i < (num_vars+2); ++i) {
+    for (size_t j(0); j < num_samples; ++r_it, ++j) {
+      for (size_t k(0); k < numFunctions; ++k) {
+        total_fn_vals[k][i][j] = r_it->second.function_value(k);
+      }
+    }
+  }
+
+#ifdef DEBUG
+  //Cout << "allSamples:\n" << allSamples << '\n';
+  for (size_t k(0); k < numFunctions; ++k) {
+    for (size_t i(0); i < num_vars+2; ++i) {
+      for (size_t j(0); j < num_samples; ++j) {
+        Cout << "Response " << k << " for replicate " << i << ", sample " << j
+             << ": " << total_fn_vals[k][i][j] << '\n';
+      }
+    }
+  }
+#endif
+
+  // We compute variables indexSi and indexTi according to the following paper:
+  // - A. Saltelli, P. Annoni, I. Azzini, F. Campolongo, M. Ratto, S. Tarantola,
+  //   "Variance based sensitivity analysis of model output. Design and estimator
+  //   for the total sensitivity index.", Comp Physics Comm, 181 (2), pp. 259--270,
+  //   Feb. 2010.
+  //
+  // We decided to use formulas indexSi and indexTi based on testing with a shock
+  // physics problem that had significant nonlinearities, interactions, and several
+  // response functions. The results are documented in the paper:
+  // - V. Weirs, J. Kamm, L. Swiler, S. Tarantola, M. Ratto, B. Adams, W. Rider,
+  //   M. Eldred, "Sensitivity analysis techniques applied to a system of
+  //   hyperbolic conservation laws", RESS, 107, pp. 157--170, Nov. 2012.
+
+  indexSi.resize(numFunctions, RealVector(num_vars));
+  indexTi.resize(numFunctions, RealVector(num_vars));
+
+  boost::multi_array<Real,3> total_norm_vals(boost::extents[numFunctions][num_vars+2][num_samples]); // [k][i][j]
+
+  Real dNumSamples( static_cast<Real>(num_samples) );
+
+  // Obtain sensitivity indices for each function
+  for (size_t k(0); k < numFunctions; ++k) {
+    Real mean_C(0.);
+    {
+      Real mean_hatY(0.);
+      for (size_t j(0); j < num_samples; ++j) {
+        mean_hatY += total_fn_vals[k][0][j];
+      }
+      mean_hatY /= dNumSamples;
+
+      Real mean_hatB(0.); 
+      for (size_t j(0); j < num_samples; ++j) {
+        mean_hatB += total_fn_vals[k][1][j];
+      }
+      mean_hatB /= dNumSamples;
+
+      Real overall_mean(0.);
+      for (size_t j(0); j < num_samples; ++j) {
+        for(size_t i(0); i < (num_vars+2); ++i) { 
+          total_norm_vals[k][i][j]  = total_fn_vals[k][i][j];
+          overall_mean             += total_norm_vals[k][i][j];
+        } 
+      }
+      overall_mean /= static_cast<Real>( num_samples * (num_vars+2) );
+      for (size_t j(0); j < num_samples; ++j) {
+        for(size_t i(0); i < (num_vars+2); ++i) {
+          total_norm_vals[k][i][j] -= overall_mean;
+        }
+      }
+
+      mean_C = (mean_hatB + mean_hatY) / 2.;
+    }
+
+    Real var_hatYC(0.);
+    for (size_t j(0); j < num_samples; ++j) {
+      var_hatYC += std::pow(total_fn_vals[k][0][j],2);
+    }
+    for (size_t j(0); j < num_samples; ++j) {
+      var_hatYC += std::pow(total_fn_vals[k][1][j],2);
+    }
+    var_hatYC = var_hatYC / (2. * dNumSamples)
+              - mean_C * mean_C;
+
+    // calculate first order sensitivity indices and first order total indices
+    for (size_t i(0); i < num_vars; ++i) {
+      Real sum_S(0.);
+      Real sum_T(0.);
+      for (size_t j(0); j < num_samples; ++j) {
+        Real diff(total_norm_vals[k][i+2][j] - total_norm_vals[k][1][j]);
+        sum_S += total_norm_vals[k][0][j] * diff;
+        sum_T += std::pow(diff, 2);
+      }
+
+      indexSi[k][i] = (sum_S /       dNumSamples ) / var_hatYC;
+      indexTi[k][i] = (sum_T / (2. * dNumSamples)) / var_hatYC;
+    }
+  } // for k
+}
+
+void SensAnalysisGlobal::compute_vbd_stats_with_Mahadevan( const int              numBins
+                                                         , const size_t           numFunctions
+                                                         , const size_t           num_vars
+                                                         , const size_t           num_samples
+                                                         , const IntResponseMap & resp_samples
+                                                         )
+{
+    Cerr << "\nError in Analyzer::compute_vbd_stats_with_Mahadevan()"
+         << ": not implemented yet"
+         << std::endl;
+    abort_handler(METHOD_ERROR);
+}
+
+// Printing of variance based decomposition indices.
+void SensAnalysisGlobal::print_sobol_indices( std::ostream      & s
+                                            , const StringArray & var_labels
+                                            , const StringArray & resp_labels
+                                            , const Real          dropTol
+                                            ) const
+{
+  // output explanatory info
+  //s << "Variance Based Decomposition Sensitivity Indices\n"
+  //  << "These Sobol' indices measure the importance of the uncertain input\n"
+  //  << "variables in determining the uncertainty (variance) of the output.\n"
+  //  << "Si measures the main effect for variable i itself, while Ti\n"
+  //  << "measures the total effect (including the interaction effects\n" 
+  //  << "of variable i with other uncertain variables.)\n";
+  s << std::scientific 
+    << "\nGlobal sensitivity indices for each response function:\n";
+
+  for (size_t k(0); k < resp_labels.size(); ++k) {
+    s << resp_labels[k] << " Sobol' indices:\n"; 
+    s << std::setw(38) << "Main" << std::setw(19) << "Total\n";
+    for (size_t i(0); i < var_labels.size(); ++i) {
+      Real main  = indexSi[k][i];
+      Real total = indexTi[k][i];
+      if (std::abs(main) > dropTol || std::abs(total) > dropTol) {
+        s << "                     " << std::setw(write_precision+7) << main
+          << ' ' << std::setw(write_precision+7) << total << ' '
+          << var_labels[i] << '\n';
+      }
+    }
+  }
+}
+
+// Archiving of variance based decomposition indices.
+void SensAnalysisGlobal::archive_sobol_indices( const StrStrSizet & run_identifier
+                                              , ResultsManager    & resultsDB
+                                              , const StringArray & var_labels
+                                              , const StringArray & resp_labels
+                                              , const Real          dropTol
+                                              ) const
+{
+  if(!resultsDB.active())
+    return;
+
+  for (size_t k(0); k < resp_labels.size(); ++k) {
+    RealArray   main_effects;
+    RealArray   total_effects;
+    StringArray scale_labels;
+    for (size_t i(0); i < var_labels.size(); ++i) {
+      Real main  = indexSi[k][i];
+      Real total = indexTi[k][i];
+      if (std::abs(main) > dropTol || std::abs(total) > dropTol) {
+        main_effects.push_back(main);
+        total_effects.push_back(total);
+        scale_labels.push_back(var_labels[i]);
+      }
+    }
+    DimScaleMap scales;
+    scales.emplace(0, StringScale("variables", scale_labels, ScaleScope::UNSHARED));
+    resultsDB.insert(run_identifier, {String("main_effects"), resp_labels[k]}, 
+                     main_effects, scales);
+    resultsDB.insert(run_identifier, {String("total_effects"), resp_labels[k]}, 
+                     total_effects, scales);
+  }
+}
 
 } // namespace Dakota
 

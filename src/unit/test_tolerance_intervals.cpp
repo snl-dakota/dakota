@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -63,16 +63,14 @@ void test_DSTIEN_mcf_valid_input_01_benchmark()
 {
   {
     Real m = 5;
-    Real coverage = 0.85;
     Real alpha = 0.05;
     Real mcf = computeDSTIEN_conversion_factor( m
-                                              , coverage
                                               , alpha
                                               );
 
     boost::math::chi_squared chisq(m - 1.);
     Real quant = boost::math::quantile(chisq, alpha);
-    Real referenceMCF = std_normal_coverage_inverse(coverage) * sqrt(1. + 1./m) * sqrt( (m - 1.) / quant ) * sqrt( 1. + (m - 3. - quant) / (2.*(m+1.)*(m+1.)) );
+    Real referenceMCF = sqrt(1. + 1./m) * sqrt( (m - 1.) / quant ) * sqrt( 1. + (m - 3. - quant) / (2.*(m+1.)*(m+1.)) );
 
     //std::cout << "In test_DSTIEN_mcf_valid_input_01_benchmark()"
     //          << ": mcf = "          << mcf
@@ -85,16 +83,14 @@ void test_DSTIEN_mcf_valid_input_01_benchmark()
 
   {
     Real m = 17;
-    Real coverage = 0.85;
     Real alpha = 0.09;
     Real mcf = computeDSTIEN_conversion_factor( m
-                                              , coverage
                                               , alpha
                                               );
 
     boost::math::chi_squared chisq(m - 1.);
     Real quant = boost::math::quantile(chisq, alpha);
-    Real referenceMCF = std_normal_coverage_inverse(coverage) * sqrt(1. + 1./m) * sqrt( (m - 1.) / quant ) * sqrt( 1. + (m - 3. - quant) / (2.*(m+1.)*(m+1.)) );
+    Real referenceMCF = sqrt(1. + 1./m) * sqrt( (m - 1.) / quant ) * sqrt( 1. + (m - 3. - quant) / (2.*(m+1.)*(m+1.)) );
 
     //std::cout << "In test_DSTIEN_mcf_valid_input_01_benchmark()"
     //          << ": mcf = "          << mcf
@@ -106,14 +102,14 @@ void test_DSTIEN_mcf_valid_input_01_benchmark()
   }
 
   {
-    Real mcf = computeDSTIEN_conversion_factor( 5, 0.95, 0.1 );
-    Real referenceMCF = 4.190642854565078; // Value computed by python routine
+    Real mcf = computeDSTIEN_conversion_factor( 5, 0.1 );
+    Real referenceMCF = 2.138122377564248; // Value computed by python routine
 
-    //std::cout << "In test_DSTIEN_mcf_valid_input_01_benchmark()"
-    //          << ": mcf = "          << mcf
-    //          << ", referenceMCF = " << referenceMCF
-    //          << ", std::numeric_limits<Real>::epsilon() = " << std::numeric_limits<Real>::epsilon()
-    //          << std::endl;
+    std::cout << "In test_DSTIEN_mcf_valid_input_01_benchmark()"
+              << ": mcf = "          << std::setprecision(16) << mcf
+              << ", referenceMCF = " << std::setprecision(16) << referenceMCF
+              << ", std::numeric_limits<Real>::epsilon() = " << std::numeric_limits<Real>::epsilon()
+              << std::endl;
 
     BOOST_CHECK( std::abs(mcf - referenceMCF) < 10.*std::numeric_limits<Real>::epsilon() );
   }
@@ -122,28 +118,25 @@ void test_DSTIEN_mcf_valid_input_01_benchmark()
 void test_DSTIEN_mcf_valid_input_02_regression()
 {
   Real m = 17;
-  Real coverage = 0.85;
   Real alpha = 0.06;
   Real mcf = computeDSTIEN_conversion_factor( m
-                                            , coverage
                                             , alpha
                                             );
 
-  Real referenceMCF = 2.0678241;
+  Real referenceMCF = 1.436456320254741;
 
-  //std::cout << "In test_DSTIEN_mcf_valid_input_01_regression()"
-  //          << ": mcf = "          << std::setprecision(8) << mcf
-  //          << ", referenceMCF = " << std::setprecision(8) << referenceMCF
-  //          << ", std::numeric_limits<float>::epsilon() = " << std::numeric_limits<float>::epsilon()
-  //          << std::endl;
+  std::cout << "In test_DSTIEN_mcf_valid_input_01_regression()"
+            << ": mcf = "          << std::setprecision(16) << mcf
+            << ", referenceMCF = " << std::setprecision(16) << referenceMCF
+            << ", std::numeric_limits<Real>::epsilon() = " << std::numeric_limits<Real>::epsilon()
+            << std::endl;
 
-  BOOST_CHECK( std::abs(mcf - referenceMCF ) < 10.*std::numeric_limits<float>::epsilon() );
+  BOOST_CHECK( std::abs(mcf - referenceMCF ) < 10.*std::numeric_limits<Real>::epsilon() );
 }
 
 void test_DSTIEN_mcf_invalid_input_01_noSamples()
 {
   BOOST_CHECK_THROW( computeDSTIEN_conversion_factor( 0
-                                                    , 0.85 // coverage
                                                     , 0.05 // alpha
                                                     )
                    , std::system_error
@@ -153,39 +146,20 @@ void test_DSTIEN_mcf_invalid_input_01_noSamples()
 void test_DSTIEN_mcf_invalid_input_02_justOneSample()
 {
   BOOST_CHECK_THROW( computeDSTIEN_conversion_factor( 1
-                                                    , 0.85 // coverage
                                                     , 0.05 // alpha
                                                     )
                    , std::system_error
                    );
 }
 
-void test_DSTIEN_mcf_invalid_input_03_coverageOutOfRange()
+void test_DSTIEN_mcf_invalid_input_03_alphaOutOfRange()
 {
   BOOST_CHECK_THROW( computeDSTIEN_conversion_factor( 2
-                                                    , -0.05 // coverage
-                                                    , 0.85 // alpha
-                                                    )
-                   , std::system_error
-                   );
-  BOOST_CHECK_THROW( computeDSTIEN_conversion_factor( 2
-                                                    , 1.05 // coverage
-                                                    , 0.85 // alpha
-                                                    )
-                   , std::system_error
-                   );
-}
-
-void test_DSTIEN_mcf_invalid_input_04_alphaOutOfRange()
-{
-  BOOST_CHECK_THROW( computeDSTIEN_conversion_factor( 2
-                                                    , 0.85 // coverage
                                                     , -0.05 // alpha
                                                     )
                    , std::system_error
                    );
   BOOST_CHECK_THROW( computeDSTIEN_conversion_factor( 2
-                                                    , 0.85 // coverage
                                                     , 1.05 // alpha
                                                     )
                    , std::system_error
@@ -244,6 +218,10 @@ void test_DSTIEN_valid_input_01_benchmark()
   computed_dstien_mus[1] = 777.3;
   computed_dstien_mus[2] = 999.2;
 
+  Real computed_multiplicative_factor(0.);       
+  RealVector computed_sample_sigmas(num_fns);
+  computed_sample_sigmas = 0.;
+
   RealVector computed_dstien_sigmas(num_fns);
   computed_dstien_sigmas[0] = -3888.1;
   computed_dstien_sigmas[1] = -1777.3;
@@ -256,13 +234,15 @@ void test_DSTIEN_valid_input_01_benchmark()
                , alpha
                , num_valid_samples
                , computed_dstien_mus
+               , computed_multiplicative_factor
+               , computed_sample_sigmas
                , computed_dstien_sigmas
                );
 
   //std::cout << "In test_DSTIEN_valid_input_01_benchmark()"
   //          << ": computed_dstien_mus = "    << computed_dstien_mus
   //          << ", computed_dstien_sigmas = " << computed_dstien_sigmas
-  //          << ", std::numeric_limits<float>::epsilon() = " << std::numeric_limits<float>::epsilon()
+  //          << ", std::numeric_limits<Real>::epsilon() = " << std::numeric_limits<Real>::epsilon()
   //          << std::endl;
 
   // ************************************************************************
@@ -275,7 +255,6 @@ void test_DSTIEN_valid_input_01_benchmark()
 
   Real m = 4;
   Real mcf = computeDSTIEN_conversion_factor( m
-                                            , coverage
                                             , alpha
                                             );
 
@@ -286,8 +265,8 @@ void test_DSTIEN_valid_input_01_benchmark()
 
   BOOST_CHECK( num_valid_samples == 4 );
   for (size_t k = 0; k < num_fns; ++k) {
-    BOOST_CHECK( std::abs(computed_dstien_mus[k]    - reference_dstien_mus[k]   ) < 10.*std::numeric_limits<float>::epsilon() );
-    BOOST_CHECK( std::abs(computed_dstien_sigmas[k] - reference_dstien_sigmas[k]) < 10.*std::numeric_limits<float>::epsilon() );
+    BOOST_CHECK( std::abs(computed_dstien_mus[k]    - reference_dstien_mus[k]   ) < 10.*std::numeric_limits<Real>::epsilon() );
+    BOOST_CHECK( std::abs(computed_dstien_sigmas[k] - reference_dstien_sigmas[k]) < 10.*std::numeric_limits<Real>::epsilon() );
   }
 }
 
@@ -340,6 +319,10 @@ void test_DSTIEN_valid_input_02_regression()
   computed_dstien_mus[1] = 777.3;
   computed_dstien_mus[2] = 999.2;
 
+  Real computed_multiplicative_factor(0.);       
+  RealVector computed_sample_sigmas(num_fns);
+  computed_sample_sigmas = 0.;
+
   RealVector computed_dstien_sigmas(num_fns);
   computed_dstien_sigmas[0] = -3888.1;
   computed_dstien_sigmas[1] = -1777.3;
@@ -350,13 +333,15 @@ void test_DSTIEN_valid_input_02_regression()
                , 0.05 // alpha
                , num_valid_samples
                , computed_dstien_mus
+               , computed_multiplicative_factor
+               , computed_sample_sigmas
                , computed_dstien_sigmas
                );
 
   //std::cout << "In test_DSTIEN_valid_input_02_regression()"
-  //          << ": computed_dstien_mus = "    << computed_dstien_mus
-  //          << ", computed_dstien_sigmas = " << computed_dstien_sigmas
-  //          << ", std::numeric_limits<float>::epsilon() = " << std::numeric_limits<float>::epsilon()
+  //          << ": computed_dstien_mus = "    << std::setprecision(16) << computed_dstien_mus
+  //          << ", computed_dstien_sigmas = " << std::setprecision(16) << computed_dstien_sigmas
+  //          << ", std::numeric_limits<Real>::epsilon() = " << std::numeric_limits<Real>::epsilon()
   //          << std::endl;
 
   // ************************************************************************
@@ -368,14 +353,14 @@ void test_DSTIEN_valid_input_02_regression()
   reference_dstien_mus[2] =   2.1600000000e-01;
 
   std::vector<Real> reference_dstien_sigmas(num_fns);
-  reference_dstien_sigmas[0] = 8.0025767354e+00;
-  reference_dstien_sigmas[1] = 8.2413064237e+00;
-  reference_dstien_sigmas[2] = 8.6684320980e-01;
+  reference_dstien_sigmas[0] = 5.5591537226e+00;
+  reference_dstien_sigmas[1] = 5.7249921868e+00;
+  reference_dstien_sigmas[2] = 6.0217037786e-01;
 
   BOOST_CHECK( num_valid_samples == 4 );
   for (size_t k = 0; k < num_fns; ++k) {
-    BOOST_CHECK( std::abs(computed_dstien_mus[k]    - reference_dstien_mus[k]   ) < 10.*std::numeric_limits<float>::epsilon() );
-    BOOST_CHECK( std::abs(computed_dstien_sigmas[k] - reference_dstien_sigmas[k]) < 10.*std::numeric_limits<float>::epsilon() );
+    BOOST_CHECK( std::abs(computed_dstien_mus[k]    - reference_dstien_mus[k]   ) <      10.*std::numeric_limits<Real>::epsilon() );
+    BOOST_CHECK( std::abs(computed_dstien_sigmas[k] - reference_dstien_sigmas[k]) < 1000000.*std::numeric_limits<Real>::epsilon() );
   }
 }
 
@@ -428,6 +413,10 @@ void test_DSTIEN_valid_input_03_allResponsesEqual()
   computed_dstien_mus[1] = 777.3;
   computed_dstien_mus[2] = 999.2;
 
+  Real computed_multiplicative_factor(0.);       
+  RealVector computed_sample_sigmas(num_fns);
+  computed_sample_sigmas = 0.;
+
   RealVector computed_dstien_sigmas(num_fns);
   computed_dstien_sigmas[0] = -3888.1;
   computed_dstien_sigmas[1] = -1777.3;
@@ -438,13 +427,15 @@ void test_DSTIEN_valid_input_03_allResponsesEqual()
                , 0.05 // alpha
                , num_valid_samples
                , computed_dstien_mus
+               , computed_multiplicative_factor
+               , computed_sample_sigmas
                , computed_dstien_sigmas
                );
 
   //std::cout << "In test_DSTIEN_valid_input_03_allResponsesEqual()"
   //          << ": computed_dstien_mus = "    << computed_dstien_mus
   //          << ", computed_dstien_sigmas = " << computed_dstien_sigmas
-  //          << ", std::numeric_limits<float>::epsilon() = " << std::numeric_limits<float>::epsilon()
+  //          << ", std::numeric_limits<Real>::epsilon() = " << std::numeric_limits<Real>::epsilon()
   //          << std::endl;
 
   // ************************************************************************
@@ -502,6 +493,10 @@ void test_DSTIEN_valid_input_04_noValidResponseSamples()
   computed_dstien_mus[1] = 777.3;
   computed_dstien_mus[2] = 999.2;
 
+  Real computed_multiplicative_factor(0.);       
+  RealVector computed_sample_sigmas(num_fns);
+  computed_sample_sigmas = 0.;
+
   RealVector computed_dstien_sigmas(num_fns);
   computed_dstien_sigmas[0] = -3888.1;
   computed_dstien_sigmas[1] = -1777.3;
@@ -512,6 +507,8 @@ void test_DSTIEN_valid_input_04_noValidResponseSamples()
                , 0.05 // alpha
                , num_valid_samples
                , computed_dstien_mus
+               , computed_multiplicative_factor
+               , computed_sample_sigmas
                , computed_dstien_sigmas
                );
 
@@ -560,6 +557,10 @@ void test_DSTIEN_valid_input_05_justOneValidResponseSample()
   computed_dstien_mus[1] = 777.3;
   computed_dstien_mus[2] = 999.2;
 
+  Real computed_multiplicative_factor(0.);       
+  RealVector computed_sample_sigmas(num_fns);
+  computed_sample_sigmas = 0.;
+
   RealVector computed_dstien_sigmas(num_fns);
   computed_dstien_sigmas[0] = -3888.1;
   computed_dstien_sigmas[1] = -1777.3;
@@ -570,6 +571,8 @@ void test_DSTIEN_valid_input_05_justOneValidResponseSample()
                , 0.05 // alpha
                , num_valid_samples
                , computed_dstien_mus
+               , computed_multiplicative_factor
+               , computed_sample_sigmas
                , computed_dstien_sigmas
                );
 
@@ -618,6 +621,10 @@ void test_DSTIEN_valid_input_06_differentMuSize()
 
   RealVector computed_dstien_mus(1);
 
+  Real computed_multiplicative_factor(0.);       
+  RealVector computed_sample_sigmas(1);
+  computed_sample_sigmas = 0.;
+
   RealVector computed_dstien_sigmas(num_fns);
 
   Real coverage = 0.85;
@@ -627,6 +634,8 @@ void test_DSTIEN_valid_input_06_differentMuSize()
                , alpha
                , num_valid_samples
                , computed_dstien_mus
+               , computed_multiplicative_factor
+               , computed_sample_sigmas
                , computed_dstien_sigmas
                );
 
@@ -639,7 +648,6 @@ void test_DSTIEN_valid_input_06_differentMuSize()
 
   Real m = 2;
   Real mcf = computeDSTIEN_conversion_factor( m
-                                            , coverage
                                             , alpha
                                             );
 
@@ -685,6 +693,10 @@ void test_DSTIEN_valid_input_07_differentSigmaSize()
 
   RealVector computed_dstien_mus(num_fns);
 
+  Real computed_multiplicative_factor(0.);       
+  RealVector computed_sample_sigmas(1);
+  computed_sample_sigmas = 0.;
+
   RealVector computed_dstien_sigmas(3);
 
   Real coverage = 0.85;
@@ -694,6 +706,8 @@ void test_DSTIEN_valid_input_07_differentSigmaSize()
                , alpha
                , num_valid_samples
                , computed_dstien_mus
+               , computed_multiplicative_factor
+               , computed_sample_sigmas
                , computed_dstien_sigmas
                );
 
@@ -706,7 +720,6 @@ void test_DSTIEN_valid_input_07_differentSigmaSize()
 
   Real m = 2;
   Real mcf = computeDSTIEN_conversion_factor( m
-                                            , coverage
                                             , alpha
                                             );
 
@@ -740,6 +753,10 @@ void test_DSTIEN_invalid_input_01_noResponseSamples()
 
   RealVector computed_dstien_mus(num_fns);
 
+  Real computed_multiplicative_factor(0.);       
+  RealVector computed_sample_sigmas(num_fns);
+  computed_sample_sigmas = 0.;
+
   RealVector computed_dstien_sigmas(num_fns);
 
   BOOST_CHECK_THROW( computeDSTIEN( resp_samples
@@ -747,6 +764,8 @@ void test_DSTIEN_invalid_input_01_noResponseSamples()
                                   , 0.05 // alpha
                                   , num_valid_samples
                                   , computed_dstien_mus
+                                  , computed_multiplicative_factor
+                                  , computed_sample_sigmas
                                   , computed_dstien_sigmas
                                   )
                    , std::system_error
@@ -778,6 +797,10 @@ void test_DSTIEN_invalid_input_02_justOneResponseSample()
 
   RealVector computed_dstien_mus(num_fns);
 
+  Real computed_multiplicative_factor(0.);       
+  RealVector computed_sample_sigmas(num_fns);
+  computed_sample_sigmas = 0.;
+
   RealVector computed_dstien_sigmas(num_fns);
 
   BOOST_CHECK_THROW( computeDSTIEN( resp_samples
@@ -785,6 +808,8 @@ void test_DSTIEN_invalid_input_02_justOneResponseSample()
                                   , 0.05 // alpha
                                   , num_valid_samples
                                   , computed_dstien_mus
+                                  , computed_multiplicative_factor
+                                  , computed_sample_sigmas
                                   , computed_dstien_sigmas
                                   )
                    , std::system_error
@@ -817,6 +842,10 @@ void test_DSTIEN_invalid_input_03_noResponses()
 
   RealVector computed_dstien_mus(num_fns);
 
+  Real computed_multiplicative_factor(0.);       
+  RealVector computed_sample_sigmas(num_fns);
+  computed_sample_sigmas = 0.;
+
   RealVector computed_dstien_sigmas(num_fns);
 
   BOOST_CHECK_THROW( computeDSTIEN( resp_samples
@@ -824,6 +853,8 @@ void test_DSTIEN_invalid_input_03_noResponses()
                                   , 0.05 // alpha
                                   , num_valid_samples
                                   , computed_dstien_mus
+                                  , computed_multiplicative_factor
+                                  , computed_sample_sigmas
                                   , computed_dstien_sigmas
                                   )
                    , std::system_error
@@ -857,6 +888,10 @@ void test_DSTIEN_invalid_input_04_differentResponseSizes()
 
   RealVector computed_dstien_mus(num_fns);
 
+  Real computed_multiplicative_factor(0.);       
+  RealVector computed_sample_sigmas(num_fns);
+  computed_sample_sigmas = 0.;
+
   RealVector computed_dstien_sigmas(num_fns);
 
   BOOST_CHECK_THROW( computeDSTIEN( resp_samples
@@ -864,6 +899,8 @@ void test_DSTIEN_invalid_input_04_differentResponseSizes()
                                   , 0.05 // alpha
                                   , num_valid_samples
                                   , computed_dstien_mus
+                                  , computed_multiplicative_factor
+                                  , computed_sample_sigmas
                                   , computed_dstien_sigmas
                                   )
                    , std::system_error
@@ -902,6 +939,10 @@ void test_DSTIEN_invalid_input_05_coverageOutOfRange()
 
   RealVector computed_dstien_mus(num_fns);
 
+  Real computed_multiplicative_factor(0.);       
+  RealVector computed_sample_sigmas(num_fns);
+  computed_sample_sigmas = 0.;
+
   RealVector computed_dstien_sigmas(num_fns);
 
   BOOST_CHECK_THROW( computeDSTIEN( resp_samples
@@ -909,6 +950,8 @@ void test_DSTIEN_invalid_input_05_coverageOutOfRange()
                                   , 0.85 // alpha
                                   , num_valid_samples
                                   , computed_dstien_mus
+                                  , computed_multiplicative_factor
+                                  , computed_sample_sigmas
                                   , computed_dstien_sigmas
                                   )
                    , std::system_error
@@ -919,6 +962,8 @@ void test_DSTIEN_invalid_input_05_coverageOutOfRange()
                                   , 0.85 // alpha
                                   , num_valid_samples
                                   , computed_dstien_mus
+                                  , computed_multiplicative_factor
+                                  , computed_sample_sigmas
                                   , computed_dstien_sigmas
                                   )
                    , std::system_error
@@ -957,6 +1002,10 @@ void test_DSTIEN_invalid_input_06_alphaOutOfRange()
 
   RealVector computed_dstien_mus(num_fns);
 
+  Real computed_multiplicative_factor(0.);       
+  RealVector computed_sample_sigmas(num_fns);
+  computed_sample_sigmas = 0.;
+
   RealVector computed_dstien_sigmas(num_fns);
 
   BOOST_CHECK_THROW( computeDSTIEN( resp_samples
@@ -964,6 +1013,8 @@ void test_DSTIEN_invalid_input_06_alphaOutOfRange()
                                   , -0.01 // alpha
                                   , num_valid_samples
                                   , computed_dstien_mus
+                                  , computed_multiplicative_factor
+                                  , computed_sample_sigmas
                                   , computed_dstien_sigmas
                                   )
                    , std::system_error
@@ -974,6 +1025,8 @@ void test_DSTIEN_invalid_input_06_alphaOutOfRange()
                                   , 1.01 // alpha
                                   , num_valid_samples
                                   , computed_dstien_mus
+                                  , computed_multiplicative_factor
+                                  , computed_sample_sigmas
                                   , computed_dstien_sigmas
                                   )
                    , std::system_error
@@ -1016,11 +1069,8 @@ BOOST_AUTO_TEST_CASE( test_main )
   Dakota::TestToleranceIntervals::test_DSTIEN_mcf_invalid_input_02_justOneSample();
   std::cout << "test_DSTIEN_mcf_invalid_input_02_justOneSample() passed" << std::endl;
 
-  Dakota::TestToleranceIntervals::test_DSTIEN_mcf_invalid_input_03_coverageOutOfRange();
-  std::cout << "test_DSTIEN_mcf_invalid_input_03_coverageOutOfRange() passed" << std::endl;
-
-  Dakota::TestToleranceIntervals::test_DSTIEN_mcf_invalid_input_04_alphaOutOfRange();
-  std::cout << "test_DSTIEN_mcf_invalid_input_04_alphaOutOfRange() passed" << std::endl;
+  Dakota::TestToleranceIntervals::test_DSTIEN_mcf_invalid_input_03_alphaOutOfRange();
+  std::cout << "test_DSTIEN_mcf_invalid_input_03_alphaOutOfRange() passed" << std::endl;
 
   // *************************************************************************
   // Tests for the computeDSTIEN() routine

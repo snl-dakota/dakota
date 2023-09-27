@@ -94,28 +94,56 @@ since the file must be moved from the local machine to the remote machine.
 Usage Notes - Receiving Files
 -----------------------------
 
-To send remote files back to the local machine after the remoteNestedWorkflow has completed execuion, you will need to create output ports for each file or folder you want to bring back.
+To send remote files back to your local machine after the entire workflow has completed execution, you will need to create output ports and response nodes for each file or
+folder you want to bring back. Additionally, you will need to do this at every "level" of the workflow, starting from the point at which the files originate.
+Finally, you will need to set all this up *before* you run the workflow, not afterwards.
 
-Right-click the remoteNestedWorkflow node and choose "Grab Output File" from the context menu. You will be presented with the following dialog:
+Let's assume we want to retrieve a Dakota tabular data file from a remote machine. Let's further assume that Dakota ran on the remote machine via Next-Gen Workflow, like so:
+
+.. figure:: img/JobSubmission_NGW_Example1_2.png
+   :name: jobsubnodes:figure04
+   :alt: Example remote workflow
+   :align: center
+
+   Example remote workflow
+
+In our example, because Dakota ran on the remote machine, we will need to retrieve the tabular data file from the remote machine. But how do we do that?
+Well, because it is the Dakota process that generates this output file, we can use the "Grab Output File" option on the "dakota" node shown in :numref:`jobsubnodes:figure04`.
+
+Right-click the "dakota" node and choose "Grab Output File" from the context menu. You will be presented with the following dialog:
 
 .. figure:: img/JobSubmission_NGW_3.png
-   :name: jobsubnodes:figure04
+   :name: jobsubnodes:figure05
    :alt: "Grab Output File" dialog
    :align: center
 
    "Grab Output File" dialog
-	 
-This dialog will allow you to specify the name of the file as well as the name of the remote file (relative to the working directory of remoteNestedWorkflow).
 
-After setting output ports on your remoteNestedWorkflow node, you can do whatever you wish with the returned files.
+Enter "tabular_data_file" (or something similar) in the "Port name" field, and enter the name of the tabular data file in the "File name" field. In our example,
+"tabular.data" is the name that Dakota uses for its tabular data output in this example.
 
-.. figure:: img/JobSubmission_NGW_2.png
-   :name: jobsubnodes:figure05
-   :alt: An example of returning files to your local machine
+Click OK on this dialog, which will result in a new output port, "tabular_data_file," being added to your "dakota" node. Now, pass the data from this output port to a response node, like so:
+
+.. figure:: img/JobSubmission_NGW_Example1_4.png
+   :name: jobsubnodes:figure06
+   :alt: Attaching nodes to output ports
    :align: center
 
-   An example of returning files to your local machine
-	 
-.. note::
+   Attaching nodes to output ports
 
-   For file-grabbing behavior, you can specify a wildcard pattern for the file/folder to be grabbed. This will cause NGW to grab every file/folder on the remote machine that matches the wildcard pattern.
+Doing all this will result in the *path to the tabular data file* being provided as an output response of our remote workflow.
+
+This is all well and good, but we still need to send the file back to our local machine.
+
+Back on our local machine, manually add an output port to the "remoteNestedWorkflow" node that was used to launch the remote workflow, using the Output Ports tab in the Settings editor
+(there is no need to use the "Grab Output File" shortcut dialog here). This new output port should be called "tabular_data_file" (it should mirror
+the response node we set up in the other workflow). As before, pass the data from this output port to a response node:
+
+.. figure:: img/JobSubmission_NGW_Example1_5.png
+   :name: jobsubnodes:figure07
+   :alt: Attaching nodes to output ports part 2
+   :align: center
+
+   Attaching nodes to output ports part 2
+
+Now, when you run this workflow to completion, Dakota's tabular data file will be returned to your local machine. You can follow this same process for any remote output file.

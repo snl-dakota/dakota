@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -856,6 +856,15 @@ void copy_data(const Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& sdv,
   }
   for (OrdinalType2 i=0; i<ptr_len; ++i)
     ptr[i] = sdv[i];
+}
+
+/// copy ScalarType* to ScalarType*
+template <typename OrdinalType, typename ScalarType> 
+void copy_data(const ScalarType* ptr1, ScalarType* ptr2,
+	       const OrdinalType ptr_len)
+{
+  for (OrdinalType i=0; i<ptr_len; ++i)
+    ptr2[i] = ptr1[i];
 }
 
 

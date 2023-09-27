@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -246,8 +246,8 @@ protected:
 
   /// calculate log-likelihood from the passed residuals (assuming
   /// they are already sized and scaled by covariance / hyperparams...
-  Real
-  log_likelihood(const RealVector& residuals, const RealVector& hyper_params);
+  Real log_likelihood(const RealVector& residuals,
+		      const RealVector& hyper_params);
 
   /// compute priorCovCholFactor based on prior distributions for random
   /// variables and any hyperparameters
@@ -567,7 +567,7 @@ private:
 
 
 inline const Model& NonDBayesCalibration::algorithm_space_model() const
-{ return mcmcModel; }
+{ return residualModel; }
 
 
 template <typename VectorType> 
@@ -579,7 +579,7 @@ Real NonDBayesCalibration::prior_density(const VectorType& vec)
   // which may in turn call back to our GenericVectorRV prior plug-in
 
   const Pecos::MultivariateDistribution& mv_dist
-    = (standardizedSpace) ? mcmcModel.multivariate_distribution()
+    = (standardizedSpace) ? residualModel.multivariate_distribution()
     : iteratedModel.multivariate_distribution();
   if (mv_dist.correlation()) {
     Cerr << "Error: prior_density() uses a product of marginal densities\n"
@@ -637,8 +637,8 @@ inline Real NonDBayesCalibration::prior_density(const RealVector& vec)
   // template specialization supports RealVector (e.g., for MAP pre-solve)
 
   const Pecos::MultivariateDistribution& mv_dist
-    = (standardizedSpace) ? mcmcModel.multivariate_distribution() // u_dist
-    : iteratedModel.multivariate_distribution();                  // x_dist
+    = (standardizedSpace) ? residualModel.multivariate_distribution() // u_dist
+    : iteratedModel.multivariate_distribution();                      // x_dist
 
   Real pdf;
   if (numHyperparams) {
@@ -660,7 +660,7 @@ template <typename VectorType>
 Real NonDBayesCalibration::log_prior_density(const VectorType& vec)
 {
   const Pecos::MultivariateDistribution& mv_dist
-    = (standardizedSpace) ? mcmcModel.multivariate_distribution()
+    = (standardizedSpace) ? residualModel.multivariate_distribution()
     : iteratedModel.multivariate_distribution();
   if (mv_dist.correlation()) {
     Cerr << "Error: log_prior_density() uses a sum of log marginal densities\n"
@@ -719,8 +719,8 @@ template <>
 inline Real NonDBayesCalibration::log_prior_density(const RealVector& vec)
 {
   const Pecos::MultivariateDistribution& mv_dist
-    = (standardizedSpace) ? mcmcModel.multivariate_distribution() // u_dist
-    : iteratedModel.multivariate_distribution();                  // x_dist
+    = (standardizedSpace) ? residualModel.multivariate_distribution() // u_dist
+    : iteratedModel.multivariate_distribution();                      // x_dist
 
   Real log_pdf;
   if (numHyperparams) {
@@ -745,7 +745,7 @@ void NonDBayesCalibration::prior_sample(Engine& rng, RealVector& prior_samples)
     prior_samples.sizeUninitialized(numContinuousVars + numHyperparams);
 
   const Pecos::MultivariateDistribution& mv_dist
-    = (standardizedSpace) ? mcmcModel.multivariate_distribution()
+    = (standardizedSpace) ? residualModel.multivariate_distribution()
     : iteratedModel.multivariate_distribution();
   const std::shared_ptr<Pecos::MarginalsCorrDistribution> mv_dist_rep =
     std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
@@ -777,7 +777,7 @@ void NonDBayesCalibration::prior_mean(VectorType& mean_vec) const
 
   // returns set of means that correspond to activeVars
   RealVector mvd_means
-    = (standardizedSpace) ? mcmcModel.multivariate_distribution().means()
+    = (standardizedSpace) ? residualModel.multivariate_distribution().means()
     : iteratedModel.multivariate_distribution().means();
 
   for (size_t i=0; i<numContinuousVars; ++i)
@@ -798,7 +798,7 @@ void NonDBayesCalibration::prior_variance(MatrixType& var_mat) const
 
   if (standardizedSpace) {
     // returns set of RV variances that correspond to activeVars
-    RealVector u_var = mcmcModel.multivariate_distribution().variances();
+    RealVector u_var = residualModel.multivariate_distribution().variances();
     for (size_t i=0; i<numContinuousVars; ++i)
       var_mat(i,i) = u_var[i];//[svd.cv_index_to_active_index(i)];
   }
@@ -842,7 +842,7 @@ augment_gradient_with_log_prior(VectorType1& log_grad, const VectorType2& vec)
   // neg log posterior = neg log likelihood + neg log prior = misfit - log prior
   // --> gradient of neg log posterior = misfit gradient - log prior gradient
   const Pecos::MultivariateDistribution& mv_dist
-    = (standardizedSpace) ? mcmcModel.multivariate_distribution()
+    = (standardizedSpace) ? residualModel.multivariate_distribution()
     : iteratedModel.multivariate_distribution();
   const SharedVariablesData& svd
     = iteratedModel.current_variables().shared_data();
@@ -860,7 +860,7 @@ augment_hessian_with_log_prior(MatrixType& log_hess, const VectorType& vec)
   // neg log posterior = neg log likelihood + neg log prior = misfit - log prior
   // --> Hessian of neg log posterior = misfit Hessian - log prior Hessian
   const Pecos::MultivariateDistribution& mv_dist
-    = (standardizedSpace) ? mcmcModel.multivariate_distribution()
+    = (standardizedSpace) ? residualModel.multivariate_distribution()
     : iteratedModel.multivariate_distribution();
   const SharedVariablesData& svd
     = iteratedModel.current_variables().shared_data();
@@ -879,7 +879,7 @@ augment_gradient_with_log_prior(RealVector& log_grad, const RealVector& vec)
   // neg log posterior = neg log likelihood + neg log prior = misfit - log prior
   // --> Hessian of neg log posterior = misfit Hessian - log prior Hessian
   const Pecos::MultivariateDistribution& mv_dist
-    = (standardizedSpace) ? mcmcModel.multivariate_distribution()
+    = (standardizedSpace) ? residualModel.multivariate_distribution()
     : iteratedModel.multivariate_distribution();
 
   log_grad -= mv_dist.log_pdf_gradient(vec);
@@ -893,7 +893,7 @@ augment_hessian_with_log_prior(RealSymMatrix& log_hess, const RealVector& vec)
   // neg log posterior = neg log likelihood + neg log prior = misfit - log prior
   // --> Hessian of neg log posterior = misfit Hessian - log prior Hessian
   const Pecos::MultivariateDistribution& mv_dist
-    = (standardizedSpace) ? mcmcModel.multivariate_distribution()
+    = (standardizedSpace) ? residualModel.multivariate_distribution()
     : iteratedModel.multivariate_distribution();
 
   log_hess -= mv_dist.log_pdf_hessian(vec); // only need diagonal correction...

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -39,8 +39,7 @@ public:
   //
 
   /// standard constructor
-  MixedVariables(const ProblemDescDB& problem_db,
-		 const std::pair<short,short>& view);
+  MixedVariables(const ProblemDescDB& problem_db, const ShortShortPair& view);
   /// lightweight constructor
   MixedVariables(const SharedVariablesData& svd);
   /// destructor

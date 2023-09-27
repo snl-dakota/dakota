@@ -5,8 +5,8 @@ A list of integer abscissa ("x" coordinate) values characterizing the
 probability density function for each of the integer
 ``histogram_point_uncertain`` variables.  These must be listed in
 increasing order for each variable, and are paired with
-:ref:`variables-histogram_point_uncertain-integer-counts<variables-histogram_point_uncertain-integer-counts>`.  See
-:ref:`variables-histogram_point_uncertain<variables-histogram_point_uncertain>` for details and examples.
+:dakkw:`variables-histogram_point_uncertain-integer-counts`.  See
+:dakkw:`variables-histogram_point_uncertain` for details and examples.
 Topics::
 
 Examples::

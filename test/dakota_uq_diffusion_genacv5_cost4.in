@@ -7,8 +7,8 @@ environment
 method,
 	model_pointer = 'HIERARCH'
 	approximate_control_variate
-	  acv_mf nip		#s0,#s1,#s2,#s6,#s7,#s10,#s11
-#	  acv_is nip		#s3,#s4,#s5,#s8,#s9,#s12,#s13
+	  acv_mf				#s0,#s1,#s2,#s6,#s7,#s10,#s11
+#	  acv_is				#s3,#s4,#s5,#s8,#s9,#s12,#s13
 	  solution_mode pilot_projection	#s0,#s3,#s6,#s8
 	  pilot_samples = 25	#s0,#s1,#s3,#s4,#s6,#s7,#s8,#s9,#s10,#s12
 #	  solution_mode offline_pilot		#s2,#s5,#s11,#s13
@@ -22,9 +22,6 @@ method,
 	  max_function_evaluations = 500	#s0,#s1,#s2,#s3,#s4,#s5,#s10,#s11,#s12,#s13
 #	  convergence_tolerance   = .001	#s6,#s7,#s8,#s9
 #	output silent
-
-
-
 
 model,
 	id_model = 'HIERARCH'

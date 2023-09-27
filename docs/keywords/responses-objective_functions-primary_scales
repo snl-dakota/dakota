@@ -6,7 +6,7 @@ to be used in scaling each objective function. They only have effect
 when the associated method specifies ``scaling``.
 
 This keyword is required for
-:ref:`responses-objective_functions-primary_scale_types<responses-objective_functions-primary_scale_types>` of <tt>'value'</tt> and
+:dakkw:`responses-objective_functions-primary_scale_types` of <tt>'value'</tt> and
 optional for <tt>'log'</tt>. When specified in conjunction with log,
 scale values are applied prior to the logarithm, to permit log scaling
 of strictly negative response functions.
@@ -15,21 +15,21 @@ Length: When specified, ``primary_scales`` must have length one of:
 
 
 - One (the single value will be applied to each objective function); or
-- Number of response groups ( :ref:`responses-objective_functions<responses-objective_functions>`), so the number of scalars plus the number of fields when fields are present; or
+- Number of response groups ( :dakkw:`responses-objective_functions`), so the number of scalars plus the number of fields when fields are present; or
 - Total number of response elements, so the number of scalar responses plus the sum of the lengths of the fields.
 
 *Usage Tips:*
 
 When ``primary_scales`` are specified, but not
-:ref:`responses-objective_functions-primary_scale_types<responses-objective_functions-primary_scale_types>`, the scaling type is assumed
+:dakkw:`responses-objective_functions-primary_scale_types`, the scaling type is assumed
 to be 'value' for all primary response functions.
 
 Use scale values of 1.0 to selectively avoid scaling a subset of
 response functions.
 
 When scaling is active, it is applied to objective functions prior to
-any :ref:`responses-objective_functions-weights<responses-objective_functions-weights>` and multi-objective sum
-formation. See the equations in :ref:`responses-objective_functions<responses-objective_functions>`.
+any :dakkw:`responses-objective_functions-weights` and multi-objective sum
+formation. See the equations in :dakkw:`responses-objective_functions`.
 
 See the scaling information under specific methods, e.g.,
 ``method-*-scaling`` for details on how to use this keyword.

@@ -2,7 +2,7 @@ Blurb::
 Pointer to interface that provides non-nested responses
 Description::
 ``optional_interface_pointer`` is used to specify an optional inferface (using
-that interface block's :ref:`interface-id_interface<interface-id_interface>` label) to provide non-nested
+that interface block's :dakkw:`interface-id_interface` label) to provide non-nested
 responses to the nested model.
 
 To generate the complete set of primary responses (response functions,

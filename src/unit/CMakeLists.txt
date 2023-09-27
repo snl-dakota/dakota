@@ -1,7 +1,7 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2022
+#  Copyright 2014-2023
 #  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
@@ -156,10 +156,12 @@ dakota_add_unit_test(NAME dakota_restart
   LINK_DAKOTA_LIBS
   LINK_LIBS Boost::boost)
 
-dakota_add_unit_test(NAME dakota_global_sa_metrics
-  SOURCES global_sa_metrics.cpp
-  LINK_DAKOTA_LIBS
-  LINK_LIBS Boost::boost)
+if (DAKOTA_MODULE_SURROGATES)
+  dakota_add_unit_test(NAME dakota_global_sa_metrics
+    SOURCES global_sa_metrics.cpp
+    LINK_DAKOTA_LIBS
+    LINK_LIBS Boost::boost)
+endif (DAKOTA_MODULE_SURROGATES)
 
 # Copy needed unit test auxiliary data files
 dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/expt_data_test_files"
@@ -202,6 +204,8 @@ if(DAKOTA_H5PY_FOUND)
   dakota_add_h5py_test(dist_params)
   dakota_add_h5py_test(mlmc)
   dakota_add_h5py_test(sampling_metadata)
+  dakota_add_h5py_test(variable_categories_sampling)
+  dakota_add_h5py_test(pce)
   #dakota_add_h5py_test(calibration_with_data)
   #dakota_add_h5py_test(mutlisolution_opt)
 endif()

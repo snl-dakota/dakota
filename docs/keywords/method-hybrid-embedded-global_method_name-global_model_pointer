@@ -3,7 +3,7 @@ Pointer to model used by global method
 Description::
 ``global_model_pointer`` can be used to specify a model for use with the Dakota
 method named by the ``global_method_name`` specification. The argument is a
-string that refers to the :ref:`model-id_model<model-id_model>` label of the desired model.
+string that refers to the :dakkw:`model-id_model` label of the desired model.
 Topics::
 block_pointer
 Examples::

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -139,8 +139,9 @@ private:
   /// compute Euclidean distance between points a and b
   Real distance(const RealVector& a, const RealVector& b);
   /// compute density between a representative point 
-  /// and a sample point, assuming standard normal
-  Real recentered_density(const RealVector& sample_point);
+  /// and a sample point, assuming (bounded) standard normal
+  Real recentered_density(const RealVector& sample_point,
+			  const RealRealPairArray& cauv_u_bnds);
 
   //
   //- Heading: Data members

@@ -3,7 +3,7 @@ Gaussian Process surrogate model
 Description::
 Use the Gaussian process (GP) surrogate from Surfpack, which is
 specified using the
-:ref:`model-surrogate-global-gaussian_process-surfpack<model-surrogate-global-gaussian_process-surfpack>` keyword.
+:dakkw:`model-surrogate-global-gaussian_process-surfpack` keyword.
 
 An alternate version of GP surrogates was available in prior versions of
 Dakota. *For now, both versions are supported but the ``dakota`` version is

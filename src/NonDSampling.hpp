@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -106,6 +106,8 @@ public:
   void archive_moments(size_t inc_id = 0);
   /// archive moment confidence intervals in results DB
   void archive_moment_confidence_intervals(size_t inc_id = 0);
+  /// archive standardized regression coefficients in results DB
+  void archive_std_regress_coeffs();
 
   /// archive extreme values (epistemic result) in results DB
   void archive_extreme_responses(size_t inc_id = 0);
@@ -139,6 +141,12 @@ public:
   /// prints the Wilks stastics
   void print_wilks_stastics(std::ostream& s) const;
 
+  /// prints the tolerance intervals stastics
+  void print_tolerance_intervals_statistics(std::ostream& s) const;
+
+  /// archive the tolerance intervals statistics in results DB
+  void archive_tolerance_intervals(size_t inc_id = 0);
+
   /// update finalStatistics from minValues/maxValues, momentStats,
   /// and computedProbLevels/computedRelLevels/computedRespLevels
   void update_final_statistics();
@@ -154,7 +162,7 @@ public:
   /// Static so I can test without instantiating a NonDSampling object - RWH
   static Real compute_wilks_alpha(unsigned short order, int nsamples, Real beta, bool twosided = false);
 
-  /// calculates the beta paramter given number of samples using the Wilks formula
+  /// calculates the beta parameter given number of samples using the Wilks formula
   /// Static so I can test without instantiating a NonDSampling object - RWH
   static Real compute_wilks_beta(unsigned short order, int nsamples, Real alpha, bool twosided = false);
 
@@ -164,15 +172,24 @@ public:
   static Real get_wilks_beta_min() { return 1.e-6; }
   static Real get_wilks_beta_max() { return 0.999999; }
 
-  /// transform allSamples imported by alternate constructor.  This is needed
-  /// since random variable distribution parameters are not updated until
-  /// run time and an imported sample_matrix is typically in x-space.
+  /// transform allSamples using configuration data from the source
+  /// and target models
+  void transform_samples(Model& src_model, Model& tgt_model,
+			 bool x_to_u = true);
+  /// alternate version to transform allSamples.  This is needed since
+  /// random variable distribution parameters are not updated until run
+  /// time and an imported sample_matrix is typically in x-space.
   void transform_samples(Pecos::ProbabilityTransformation& nataf,
   			 bool x_to_u = true);
-
+  /// transform the specified samples matrix from x to u or u to x,
+  /// assuming identical view and ids
+  void transform_samples(Pecos::ProbabilityTransformation& nataf,
+			 RealMatrix& sample_matrix, bool x_to_u = true);
   /// transform the specified samples matrix from x to u or u to x
   void transform_samples(Pecos::ProbabilityTransformation& nataf,
-			 RealMatrix& sample_matrix, size_t num_samples = 0,
+			 RealMatrix& sample_matrix,
+			 SizetMultiArrayConstView src_cv_ids,
+			 SizetMultiArrayConstView tgt_cv_ids,
 			 bool x_to_u = true);
 
   /// return sampleType
@@ -318,6 +335,19 @@ protected:
 
   bool stdRegressionCoeffs; ///< flags computation/output of standardized
                             ///< regression coefficients
+
+  bool toleranceIntervalsFlag; ///< flags of double sided tolerance interval
+                               ///<  equivalent normal
+  Real tiCoverage; ///< coverage to be used in the calculation of the double
+                   ///< sided tolerance interval equivaluent normal
+  Real tiConfidenceLevel; ///< confidence interval to be used in the
+                          ///< calculation of the double sided tolerance
+                          ///< interval equivalent normal
+  size_t     tiNumValidSamples;
+  RealVector tiDstienMus;
+  Real       tiDeltaMultiplicativeFactor;
+  RealVector tiSampleSigmas;
+  RealVector tiDstienSigmas;
 
   bool statsFlag;   ///< flags computation/output of statistics
   bool allDataFlag; ///< flags update of allResponses
@@ -513,10 +543,36 @@ inline void NonDSampling::vary_pattern(bool pattern_flag)
 { varyPattern = pattern_flag; }
 
 
+inline void NonDSampling::
+transform_samples(Model& src_model, Model& tgt_model, bool x_to_u)
+{
+  Pecos::ProbabilityTransformation& nataf = (x_to_u) ?
+    tgt_model.probability_transformation() :
+    src_model.probability_transformation();
+
+  transform_samples(nataf, allSamples, src_model.continuous_variable_ids(),
+		    tgt_model.continuous_variable_ids(), x_to_u);
+}
+
+
 /** transform x_samples to u_samples for use by expansionSampler */
 inline void NonDSampling::
 transform_samples(Pecos::ProbabilityTransformation& nataf, bool x_to_u)
-{ transform_samples(nataf, allSamples, numSamples, x_to_u); }
+{
+  // No model recursion available, assume same x/u ids for mapping:
+  SizetMultiArrayConstView cv_ids = iteratedModel.continuous_variable_ids();
+  transform_samples(nataf, allSamples, cv_ids, cv_ids, x_to_u);
+}
+
+
+inline void NonDSampling::
+transform_samples(Pecos::ProbabilityTransformation& nataf,
+		  RealMatrix& sample_matrix, bool x_to_u)
+{
+  // No model recursion available, assume same x/u ids for mapping:
+  SizetMultiArrayConstView cv_ids = iteratedModel.continuous_variable_ids();
+  transform_samples(nataf, sample_matrix, cv_ids, cv_ids, x_to_u);
+}
 
 
 /** This version of get_parameter_sets() extracts data from the

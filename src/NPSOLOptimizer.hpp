@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -105,9 +105,9 @@ public:
   NPSOLOptimizer(Model& model, int derivative_level, Real conv_tol);
 
   /// alternate constructor for instantiations "on the fly"
-  NPSOLOptimizer(const RealVector& initial_point,
-		 const RealVector& var_lower_bnds,
-		 const RealVector& var_upper_bnds,
+  NPSOLOptimizer(const RealVector& cv_initial,
+		 const RealVector& cv_lower_bnds,
+		 const RealVector& cv_upper_bnds,
 		 const RealMatrix& lin_ineq_coeffs,
 		 const RealVector& lin_ineq_lower_bnds,
 		 const RealVector& lin_ineq_upper_bnds,
@@ -140,16 +140,20 @@ public:
   // updaters for user-functions mode:
 
   void initial_point(const RealVector& pt);
-  void variable_bounds(const RealVector& cv_lower_bnds,
-		       const RealVector& cv_upper_bnds);
-  void linear_constraints(const RealMatrix& lin_ineq_coeffs,
-			  const RealVector& lin_ineq_lb,
-			  const RealVector& lin_ineq_ub,
-			  const RealMatrix& lin_eq_coeffs,
-			  const RealVector& lin_eq_tgt);
-  void nonlinear_constraints(const RealVector& nln_ineq_lb,
-			     const RealVector& nln_ineq_ub,
-			     const RealVector& nln_eq_tgt);
+  void update_callback_data(const RealVector& cv_initial,
+			    const RealVector& cv_lower_bnds,
+			    const RealVector& cv_upper_bnds,
+			    const RealMatrix& lin_ineq_coeffs,
+			    const RealVector& lin_ineq_l_bnds,
+			    const RealVector& lin_ineq_u_bnds,
+			    const RealMatrix& lin_eq_coeffs,
+			    const RealVector& lin_eq_targets,
+			    const RealVector& nln_ineq_l_bnds,
+			    const RealVector& nln_ineq_u_bnds,
+			    const RealVector& nln_eq_targets);
+  const RealMatrix& callback_linear_ineq_coefficients() const;
+  //const RealVector& callback_linear_ineq_lower_bounds() const;
+  //const RealVector& callback_linear_ineq_upper_bounds() const;
 
 protected:
 
@@ -197,6 +201,12 @@ private:
   RealVector lowerBounds;
   /// holds variable upper bounds passed in for "user_functions" mode.
   RealVector upperBounds;
+  /// cache the linear inequality constraint coefficients in
+  /// update_callback_data() for use in find_optimum_on_user_functions()
+  RealMatrix linIneqCoeffs;
+  /// cache the linear equality constraint coefficients in
+  /// update_callback_data() for use in find_optimum_on_user_functions()
+  RealMatrix linEqCoeffs;
   /// holds function pointer for objective function evaluator passed in for
   /// "user_functions" mode.
   void (*userObjectiveEval)  (int&, int&, double*, double&, double*, int&);
@@ -211,39 +221,27 @@ inline void NPSOLOptimizer::initial_point(const RealVector& pt)
 { copy_data(pt, initialPoint); } // protect from incoming view
 
 
-inline void NPSOLOptimizer::
-variable_bounds(const RealVector& cv_lower_bnds,
-		const RealVector& cv_upper_bnds)
+inline const RealMatrix& NPSOLOptimizer::
+callback_linear_ineq_coefficients() const
+{ return linIneqCoeffs; }
+
+
+/*
+inline const RealVector& NPSOLOptimizer::
+callback_linear_ineq_lower_bounds() const
 {
-  replace_variable_bounds(numLinearConstraints, numNonlinearConstraints,
-			  lowerBounds, upperBounds, cv_lower_bnds,
-			  cv_upper_bnds);
+  return RealVector(Teuchos::View, &lowerBounds[numContinuousVars],
+		    numLinearIneqConstraints);
 }
 
 
-inline void NPSOLOptimizer::
-linear_constraints(const RealMatrix& lin_ineq_coeffs,
-		   const RealVector& lin_ineq_lb, const RealVector& lin_ineq_ub,
-		   const RealMatrix& lin_eq_coeffs,
-		   const RealVector& lin_eq_tgt)
+inline const RealVector& NPSOLOptimizer::
+callback_linear_ineq_upper_bounds() const
 {
-  replace_linear_arrays(numContinuousVars, numNonlinearConstraints,
-			lin_ineq_coeffs, lin_eq_coeffs);
-  replace_linear_bounds(numContinuousVars, numNonlinearConstraints, lowerBounds,
-			upperBounds, lin_ineq_lb, lin_ineq_ub, lin_eq_tgt);
+  return RealVector(Teuchos::View, &upperBounds[numContinuousVars],
+		    numLinearIneqConstraints);
 }
-
-
-inline void NPSOLOptimizer::
-nonlinear_constraints(const RealVector& nln_ineq_lb,
-		      const RealVector& nln_ineq_ub,
-		      const RealVector& nln_eq_tgt)
-{
-  replace_nonlinear_arrays(numContinuousVars, numLinearConstraints,
-			   nln_ineq_lb.length() + nln_eq_tgt.length());
-  replace_nonlinear_bounds(numContinuousVars, numLinearConstraints, lowerBounds,
-			   upperBounds, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt);
-}
+*/
 
 
 #ifdef HAVE_DYNLIB_FACTORIES
@@ -254,9 +252,9 @@ nonlinear_constraints(const RealVector& nln_ineq_lb,
 NPSOLOptimizer* new_NPSOLOptimizer(ProblemDescDB& problem_db, Model& model);
 NPSOLOptimizer* new_NPSOLOptimizer(Model& model);
 NPSOLOptimizer* new_NPSOLOptimizer(Model& model, int, Real);
-NPSOLOptimizer* new_NPSOLOptimizer(const RealVector& initial_point,
-    const RealVector& var_lower_bnds,
-    const RealVector& var_upper_bnds,
+NPSOLOptimizer* new_NPSOLOptimizer(const RealVector& cv_initial,
+    const RealVector& cv_lower_bnds,
+    const RealVector& cv_upper_bnds,
     const RealMatrix& lin_ineq_coeffs,
     const RealVector& lin_ineq_lower_bnds,
     const RealVector& lin_ineq_upper_bnds,

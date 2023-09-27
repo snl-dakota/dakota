@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -17,6 +17,7 @@
 #include "DakotaPStudyDACE.hpp"
 #include "ProblemDescDB.hpp"
 #include "dakota_data_io.hpp"
+#include "dakota_data_util.hpp"
 #ifdef HAVE_FSUDACE
 #include "fsu.H"
 #endif
@@ -29,7 +30,8 @@ namespace Dakota {
 PStudyDACE::PStudyDACE(ProblemDescDB& problem_db, Model& model):
   Analyzer(problem_db, model),
   volQualityFlag(probDescDB.get_bool("method.quality_metrics")),
-  varBasedDecompFlag(probDescDB.get_bool("method.variance_based_decomp"))
+  vbdViaSamplingMethod(probDescDB.get_ushort("method.vbd_via_sampling_method")),
+  vbdViaSamplingNumBins(probDescDB.get_int("method.vbd_via_sampling_num_bins"))
 {
   // Check for discrete variable types
   if ( (numDiscreteIntVars || numDiscreteRealVars) &&
@@ -49,7 +51,9 @@ PStudyDACE::PStudyDACE(ProblemDescDB& problem_db, Model& model):
 
 
 PStudyDACE::PStudyDACE(unsigned short method_name, Model& model):
-  Analyzer(method_name, model), volQualityFlag(false), varBasedDecompFlag(false)
+  Analyzer(method_name, model), volQualityFlag(false),
+  vbdViaSamplingMethod(VBD_MAHADEVAN),
+  vbdViaSamplingNumBins(-1)
 {
   // Check for vendor numerical gradients (manage_asv will not work properly)
   if (iteratedModel.gradient_type() == "numerical" &&
@@ -107,24 +111,21 @@ void PStudyDACE::print_results(std::ostream& s, short results_state)
   if (numObjFns || numLSqTerms) // DACE usage
     Analyzer::print_results(s, results_state);
 
-  if (varBasedDecompFlag)
-    print_sobol_indices(s);
+  if (vbdFlag)
+    pStudyDACESensGlobal.print_sobol_indices(s,
+                                             iteratedModel.ordered_labels(),
+                                             iteratedModel.response_labels(),
+                                             vbdDropTol); // set in DakotaAnalyzer constructor
 
   if (pStudyDACESensGlobal.correlations_computed()) {
     if (compactMode) { // FSU, DDACE, PSUADE ignore active discrete vars
-      StringMultiArray empty;
-      StringMultiArrayConstView empty_view
-	= empty[boost::indices[idx_range(0, 0)]];
-      pStudyDACESensGlobal.print_correlations(s,
-	iteratedModel.continuous_variable_labels(), empty_view, empty_view,
-        empty_view, iteratedModel.response_labels());
+      StringArray cv_labels;
+      copy_data(iteratedModel.continuous_variable_labels(), cv_labels);
+      pStudyDACESensGlobal.print_correlations(s, cv_labels, iteratedModel.response_labels());
     }
     else // ParamStudy includes active discrete vars
       pStudyDACESensGlobal.print_correlations(s,
-        iteratedModel.continuous_variable_labels(),
-        iteratedModel.discrete_int_variable_labels(),
-        iteratedModel.discrete_string_variable_labels(),
-        iteratedModel.discrete_real_variable_labels(),
+        iteratedModel.ordered_labels(),
         iteratedModel.response_labels());
   }
 }

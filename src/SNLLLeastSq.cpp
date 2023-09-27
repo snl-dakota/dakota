@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -121,11 +121,10 @@ SNLLLeastSq::SNLLLeastSq(ProblemDescDB& problem_db, Model& model):
   // convenience function from SNLLBase
   snll_post_instantiate(numContinuousVars, vendorNumericalGradFlag,
 			iteratedModel.interval_type(),
-			iteratedModel.fd_gradient_step_size(),
-			maxIterations, maxFunctionEvals, convergenceTol,
-			probDescDB.get_real("method.gradient_tolerance"),
-			maxStep, boundConstraintFlag, numConstraints,
-			outputLevel, theOptimizer, nlfObjective, NULL, NULL);
+			iteratedModel.fd_gradient_step_size(), maxIterations,
+			maxFunctionEvals, convergenceTol, gradientTol, maxStep,
+			boundConstraintFlag, numConstraints, outputLevel,
+			theOptimizer, nlfObjective, NULL, NULL);
 }
 
 

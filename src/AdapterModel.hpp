@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -151,7 +151,8 @@ protected:
 
   /// initialize currentVariables and related info from the passed
   /// size/type info
-  bool init_variables(const SizetArray& vars_comps_totals,
+  bool init_variables(const ShortShortPair& recast_vars_view,
+		      const SizetArray& vars_comps_totals,
 		      const BitArray& all_relax_di, 
 		      const BitArray& all_relax_dr);
   /// initialize currentResponse from the passed size info
@@ -161,29 +162,6 @@ protected:
   /// initialize userDefinedConstraints from the passed size info
   void init_constraints(size_t num_recast_secondary_fns,
 			size_t recast_secondary_offset, bool reshape_vars);
-
-  /// update active variables/bounds/labels from subModel
-  virtual bool update_variables_from_model(Model& model);
-  /// update all variable values from passed sub-model
-  void update_variable_values(const Model& model);
-  /// update discrete variable values from passed sub-model
-  void update_discrete_variable_values(const Model& model);
-  /// update all variable bounds from passed sub-model
-  void update_variable_bounds(const Model& model);
-  /// update discrete variable bounds from passed sub-model
-  void update_discrete_variable_bounds(const Model& model);
-  /// update all variable labels from passed sub-model
-  void update_variable_labels(const Model& model);
-  /// update discrete variable labels from passed sub-model
-  void update_discrete_variable_labels(const Model& model);
-  /// update linear constraints from passed sub-model
-  void update_linear_constraints(const Model& model);
-  /// update complement of active variables/bounds/labels from subModel
-  void update_variables_active_complement_from_model(Model& model);
-  /// update labels and nonlinear constraint bounds/targets from subModel
-  void update_response_from_model(Model& model);
-  /// update just secondary response from subModel
-  void update_secondary_response(const Model& model);
   */
 
   //

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -68,8 +68,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   mapOptAlgOverride(probDescDB.get_ushort("method.nond.opt_subproblem_solver")),
   chainSamples(probDescDB.get_int("method.nond.chain_samples")),
   randomSeed(probDescDB.get_int("method.random_seed")),
-  mcmcDerivOrder(1),
-  batchSize(1), 
+  mcmcDerivOrder(1), batchSize(1), 
   adaptExpDesign(probDescDB.get_bool("method.nond.adapt_exp_design")),
   initHifiSamples (probDescDB.get_int("method.samples")),
   scalarDataFilename(probDescDB.get_string("responses.scalar_data_filename")),
@@ -139,11 +138,11 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   scaleFlag(probDescDB.get_bool("method.scaling")),
   weightFlag(!iteratedModel.primary_response_fn_weights().empty())
 {
-  if (randomSeed != 0)
-    Cout << " NonDBayes Seed (user-specified) = " << randomSeed << std::endl;
+  if (randomSeed)
+    Cout << "NonDBayes Seed (user-specified) = "   << randomSeed << std::endl;
   else {
     randomSeed = generate_system_seed();
-    Cout << " NonDBayes Seed (system-generated) = " << randomSeed << std::endl;
+    Cout << "NonDBayes Seed (system-generated) = " << randomSeed << std::endl;
   }
 
   // NOTE: Burn-in defaults to 0 and sub-sampling to 1. We want to
@@ -159,15 +158,51 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
        << subSamplingPeriod << "-th sample will be kept in the final chain. "
        << "The \nfinal chain will have length " << num_filtered << ".\n";
 
+  bool ensemble_model = (iteratedModel.model_type()     == "surrogate" &&
+			 iteratedModel.surrogate_type() == "ensemble");
+  short corr_type = iteratedModel.correction_type(),
+    mode = (corr_type) ? AUTO_CORRECTED_SURROGATE : UNCORRECTED_SURROGATE;
+  switch (emulatorType) {
+  case PCE_EMULATOR: case  SC_EMULATOR:
+    standardizedSpace = true; // nataf defined w/i ProbTransformModel
+    break;
+  case MF_PCE_EMULATOR:  case ML_PCE_EMULATOR:  case  MF_SC_EMULATOR:
+    standardizedSpace = true; // nataf defined w/i ProbTransformModel
+    mode = AGGREGATED_MODEL_PAIR;
+    break;
+  default:
+    standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
+    // This choice caches RAW_WITH_REDUCTION (overkill for now)
+    //mode = MODEL_DISCREPANCY;
+    //if (!corr_type) iteratedModel.correction_type(ADDITIVE_CORRECTION);
+    break;
+  }
+
+  // Errors if there are correlations and the user hasn't specified
+  // standardized_space, since this is currently unsupported.  Note that gamma
+  // distribution should be supported but currently results in a seg fault.
+  if ( !standardizedSpace &&
+       iteratedModel.multivariate_distribution().correlation() ){
+    Cerr << "Error: correlation is only supported if user specifies "
+	 << "standardized_space.\n    Only the following types of correlated "
+	 << "random variables are supported:\n    unbounded normal, "
+	 << "untruncated lognormal, uniform, exponential, gumbel, \n    "
+	 << "frechet, and weibull." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  // update from the default responseMode:
+  if (ensemble_model)
+    iteratedModel.surrogate_response_mode(mode);
+
   if (adaptExpDesign) {
-    // TODO: instead of pulling these models out, change modes on the
-    // iteratedModel
-    if (iteratedModel.model_type() != "surrogate") {
-      Cerr << "\nError: Adaptive Bayesian experiment design requires " 
-	   << "hierarchical surrogate\n       model.\n";
+    if (!ensemble_model) {
+      Cerr << "\nError: Adaptive Bayesian experiment design requires an " 
+	   << "ensemble surrogate model.\n";
       abort_handler(PARSE_ERROR);
     }
-    hifiModel = iteratedModel.truth_model();
+    // TODO: instead of pulling these models out, change modes on iteratedModel
+    hifiModel = iteratedModel.truth_model(); // not dependent on active key
 
     int num_exp = expData.num_experiments();
     int num_lhs_samples = std::max(initHifiSamples - num_exp, 0);
@@ -191,45 +226,28 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
       maxIterations = 25;
   }
 
-  switch (emulatorType) {
-  case PCE_EMULATOR:  case MF_PCE_EMULATOR:  case ML_PCE_EMULATOR:
-  case  SC_EMULATOR:  case  MF_SC_EMULATOR:
-    standardizedSpace = true; break; // nataf defined w/i ProbTransformModel
-  default:
-    standardizedSpace = probDescDB.get_bool("method.nond.standardized_space");
-    break;
-  }
-
-  // Errors if there are correlations and the user hasn't specified standardized_space,
-  // since this is currently unsupported.
-  // Note that gamma distribution should be supported but currently results in a seg fault.
-  if ( !standardizedSpace && iteratedModel.multivariate_distribution().correlation() ){
-    Cerr << "Error: correlation is only supported if user specifies standardized_space.\n"
-      << "    Only the following types of correlated random variables are supported:\n"
-      << "    unbounded normal, untruncated lognormal, uniform, exponential, gumbel, \n" 
-      << "    frechet, and weibull."
-	    << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
   // Construct emulator objects for raw QoI, prior to data residual recast
   construct_mcmc_model();
   // define variable augmentation within residualModel
   init_hyper_parameters();
 
   // expand initial point by numHyperparams for use in negLogPostModel
-  size_t i, num_orig_cv = iteratedModel.cv(),
+  const Variables& orig_vars = iteratedModel.current_variables();
+  size_t i, orig_cv_start = orig_vars.cv_start(), num_orig_cv = orig_vars.cv(),
     num_augment_cv = num_orig_cv + numHyperparams;
   mapSoln.sizeUninitialized(num_augment_cv);
-  copy_data_partial(mcmcModel.continuous_variables(), mapSoln, 0);
+  // allow mcmcModel to be in either distinct or all view
+  copy_data_partial(mcmcModel.all_continuous_variables(), (int)orig_cv_start,
+		    (int)num_orig_cv, mapSoln, 0);
   for (i=0; i<numHyperparams; ++i)
     mapSoln[num_orig_cv + i] = invGammaDists[i].mode();
 
   // Now the underlying simulation model mcmcModel is setup; wrap it
   // in a data transformation, making sure to allocate gradient/Hessian space
+  const ShortShortPair& orig_view = orig_vars.view();
   if (calibrationData) {
     residualModel.assign_rep(std::make_shared<DataTransformModel>
-			     (mcmcModel, expData, numHyperparams,
+			     (mcmcModel, expData, orig_view, numHyperparams,
 			      obsErrorMultiplierMode, mcmcDerivOrder));
     // update bounds for hyper-parameters
     Real dbl_inf = std::numeric_limits<Real>::infinity();
@@ -238,8 +256,11 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
       residualModel.continuous_upper_bound(dbl_inf, numContinuousVars + i);
     }
   }
-  else
+  else if (orig_view == mcmcModel.current_variables().view())
     residualModel = mcmcModel;  // shallow copy
+  else // convert back from surrogate view to iteratedModel view for use in MCMC
+    residualModel.assign_rep(
+      std::make_shared<RecastModel>(mcmcModel, orig_view));
 
   // Order is important: data transform, then scale, then weights
   if (scaleFlag)   scale_model();
@@ -247,6 +268,12 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 
   init_map_optimizer();
   construct_map_model();
+
+  //Cout << "\n  iteratedModel num cv = " << iteratedModel.cv() << " mvd active = " << iteratedModel.multivariate_distribution().active_variables().count()
+  //     << "\n  mcmcModel     num cv = " << mcmcModel.cv() << " mvd active = " << mcmcModel.multivariate_distribution().active_variables().count()
+  //     << "\n  residualModel num cv = " << residualModel.cv() << " mvd active = " << residualModel.multivariate_distribution().active_variables().count() << std::endl;
+  //if (mapOptAlgOverride != SUBMETHOD_NONE)
+  //  Cout << "\n  negLogPostModel num cv = "<< negLogPostModel.cv()<<std::endl;
 
   int mcmc_concurrency = 1; // prior to concurrent chains
   maxEvalConcurrency *= mcmc_concurrency;
@@ -263,8 +290,8 @@ void NonDBayesCalibration::construct_mcmc_model()
 
   switch (emulatorType) {
 
-  case PCE_EMULATOR: case SC_EMULATOR:
-  case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR: {
+  case PCE_EMULATOR: case ML_PCE_EMULATOR: case MF_PCE_EMULATOR:
+  case  SC_EMULATOR: case  MF_SC_EMULATOR: {
     mcmcModelHasSurrogate = true;
     short u_space_type = probDescDB.get_short("method.nond.expansion_type");
     const RealVector& dim_pref
@@ -307,7 +334,7 @@ void NonDBayesCalibration::construct_mcmc_model()
     else if (emulatorType == PCE_EMULATOR) {
       const String& exp_import_file
 	= probDescDB.get_string("method.nond.import_expansion_file");
-      const String & exp_export_file
+      const String& exp_export_file
         = probDescDB.get_string("method.nond.export_expansion_file");
       unsigned short ssg_level
 	= probDescDB.get_ushort("method.nond.sparse_grid_level");
@@ -315,9 +342,20 @@ void NonDBayesCalibration::construct_mcmc_model()
 	= probDescDB.get_ushort("method.nond.quadrature_order");
       unsigned short cub_int
 	= probDescDB.get_ushort("method.nond.cubature_integrand");
-      if (!exp_import_file.empty())
+      if (!exp_import_file.empty()) {
+	// While upstream update allows NonD ctor chain to use updated number
+	// of active CV, we should avoid modifying the original calibration
+	// configuration provided by the incoming iteratedModel.  Rather, we
+	// must adjust downstream within the PCE ctor.
+	//if (expData.num_config_vars())
+	//  inbound_model.active_view(MIXED_ALL); // allow recursion
+
+	// Imported surrogate will include state config vars for now.
+	// TO DO: expand this override to non-imported cases.
+	ShortShortPair approx_view(MIXED_ALL, EMPTY_VIEW);
 	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model,
-	  exp_import_file, u_space_type);
+	  exp_import_file, u_space_type, approx_view);//no export since imported
+      }
       else if (ssg_level != USHRT_MAX) { // PCE sparse grid
 	short exp_coeff_approach = (refine_cntl) ?
 	  Pecos::INCREMENTAL_SPARSE_GRID : Pecos::COMBINED_SPARSE_GRID;
@@ -335,7 +373,7 @@ void NonDBayesCalibration::construct_mcmc_model()
 	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model,
 	  Pecos::CUBATURE, cub_int, dim_pref, u_space_type, refine_type,
 	  refine_cntl, cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs,
-          exp_export_file);
+	  exp_export_file);
       else { // regression PCE: LeastSq/CS, OLI
 	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model,
 	  probDescDB.get_short("method.nond.regression_type"), 
@@ -478,7 +516,7 @@ void NonDBayesCalibration::construct_mcmc_model()
       = probDescDB.get_string("method.import_build_points_file");
     if (!import_pts_file.empty())
       { samples = 0; sample_reuse = "all"; }
-     
+
     // Consider elevating lhsSampler from NonDGPMSABayesCalibration:
     Iterator lhs_iterator; Model lhs_model;
     // NKM requires finite bounds for scaling and init of correlation lengths.
@@ -486,25 +524,25 @@ void NonDBayesCalibration::construct_mcmc_model()
     // these purposes, but +/-3 sigma has little to no effect in current tests.
     bool truncate_bnds = (emulatorType == KRIGING_EMULATOR);
     if (standardizedSpace)
-      lhs_model.assign_rep(std::make_shared<ProbabilityTransformModel>
-			   (inbound_model, ASKEY_U, truncate_bnds)); //, 3.)
+      lhs_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
+	inbound_model, ASKEY_U, truncate_bnds)); //, 3.)
     else
       lhs_model = inbound_model; // shared rep
     // Unlike EGO-based approaches, use ACTIVE sampling mode to concentrate
     // samples in regions of higher prior density
-    auto lhs_rep = std::make_shared<NonDLHSSampling>
-      (lhs_model, sample_type, samples, randomSeed,
-       probDescDB.get_string("method.random_number_generator"));
+    auto lhs_rep = std::make_shared<NonDLHSSampling>(lhs_model, sample_type,
+      samples, randomSeed,
+      probDescDB.get_string("method.random_number_generator"));
     lhs_iterator.assign_rep(lhs_rep);
 
     ActiveSet gp_set = lhs_model.current_response().active_set(); // copy
     gp_set.request_values(mcmcDerivOrder); // for misfit Hessian
-    mcmcModel.assign_rep(std::make_shared<DataFitSurrModel>
-      (lhs_iterator, lhs_model,
-       gp_set, approx_type, approx_order, corr_type, corr_order, data_order,
-       outputLevel, sample_reuse, import_pts_file,
-       probDescDB.get_ushort("method.import_build_format"),
-       probDescDB.get_bool("method.import_build_active_only")));
+    const ShortShortPair& gp_view = lhs_model.current_variables().view();
+    mcmcModel.assign_rep(std::make_shared<DataFitSurrModel>(lhs_iterator,
+      lhs_model, gp_set, gp_view, approx_type, approx_order, corr_type,
+      corr_order, data_order, outputLevel, sample_reuse, import_pts_file,
+      probDescDB.get_ushort("method.import_build_format"),
+      probDescDB.get_bool("method.import_build_active_only")));
     break;
   }
 
@@ -516,8 +554,8 @@ void NonDBayesCalibration::construct_mcmc_model()
     // STD_NORMAL space, this is managed by ProbabilityTransformModel::
     // verify_correlation_support() on a variable-by-variable basis.
     if (standardizedSpace)
-      mcmcModel.assign_rep(std::make_shared<ProbabilityTransformModel>
-			   (inbound_model, ASKEY_U));
+      mcmcModel.assign_rep(std::make_shared<ProbabilityTransformModel>(
+	inbound_model, ASKEY_U));
     else
       mcmcModel = inbound_model; // shared rep
 
@@ -653,12 +691,11 @@ void NonDBayesCalibration::construct_map_model()
   }
 
   // RecastModel for bound-constrained argmin(misfit - log prior)
-  negLogPostModel.assign_rep(std::make_shared<RecastModel>
-    (residualModel, vars_map_indices, recast_vc_totals,
-     all_relax_di, all_relax_dr, nonlinear_vars_map, nullptr,
-     set_recast, primary_resp_map_indices,
-     secondary_resp_map_indices, 0, nlp_resp_order,
-     nonlinear_resp_map, neg_log_post_resp_mapping, nullptr));
+  negLogPostModel.assign_rep(std::make_shared<RecastModel>(residualModel,
+    vars_map_indices, recast_vc_totals, all_relax_di, all_relax_dr,
+    nonlinear_vars_map, iteratedModel.current_variables().view(), nullptr,
+    set_recast, primary_resp_map_indices, secondary_resp_map_indices, 0,
+    nlp_resp_order, nonlinear_resp_map, neg_log_post_resp_mapping, nullptr));
 }
 
 void NonDBayesCalibration::construct_map_optimizer() 
@@ -811,11 +848,13 @@ void NonDBayesCalibration::initialize_model()
       mcmcModel.build_approximation();
     break;
   }
-  if(posteriorStatsMutual)
+  if (posteriorStatsMutual)
     Cout << "Mutual Information estimation not yet implemented\n";
 }
 
-void NonDBayesCalibration::map_pre_solve(){
+
+void NonDBayesCalibration::map_pre_solve()
+{
   /// Runs a pre-solve for the MAP point. If running calibrate_to_hifi()
   /// or calibrate_with_adaptive_emulator(), propagates the solution to
   /// the mapSoln variable. Returns the optimal solution as a vector.
@@ -1058,18 +1097,19 @@ Real NonDBayesCalibration::assess_emulator_convergence()
     return std::sqrt(l2_norm_delta_coeffs);
 } // assess_emulator_convergence
 
+
 void NonDBayesCalibration::calibrate_to_hifi()
 {
   /* TODO:
      - Handling of hyperparameters
      - More efficient resizing/reconstruction
-     - Use hierarchical surrogate eval modes
+     - Use EnsembleSurrModel eval modes
   */
 
   // TODO? Make a struct?
-  const RealVector initial_point(Teuchos::Copy, 
-      				 mcmcModel.continuous_variables().values(), 
-				 mcmcModel.continuous_variables().length());
+  const RealVector initial_pt(Teuchos::Copy, 
+			      mcmcModel.continuous_variables().values(), 
+			      mcmcModel.continuous_variables().length());
   int random_seed = randomSeed;  // locally incremented
   int num_exp;
   int max_hifi = (maxHifiEvals >= 0) ? maxHifiEvals : numCandidates;
@@ -1108,6 +1148,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
     Cout << "Max high-fidelity model runs = " << max_hifi << "\n\n";
   }
 
+  const ShortShortPair& orig_view = iteratedModel.current_variables().view();
   while (!stop_metric) {
     
     eval_hi2lo_stop(stop_metric, prev_MI, MI_vec, 
@@ -1115,13 +1156,13 @@ void NonDBayesCalibration::calibrate_to_hifi()
     
     // TODO: Make function update_calibration_data() or something
     residualModel.assign_rep(std::make_shared<DataTransformModel>
-			     (mcmcModel, expData, numHyperparams,
+			     (mcmcModel, expData, orig_view, numHyperparams,
 			      obsErrorMultiplierMode, mcmcDerivOrder));
     construct_map_model();
     construct_map_optimizer(); 
 
     // BMA TODO: this doesn't permit use of hyperparameters (see main ctor)
-    mcmcModel.continuous_variables(initial_point);
+    mcmcModel.continuous_variables(initial_pt);
     // TNP TODO: expose opt_for_map() and run_chain() 
     calibrate();
 
@@ -1351,7 +1392,7 @@ void NonDBayesCalibration::choose_batch_from_mutual_info( int random_seed,
 
     for (size_t i=0; i < design_matrix.size(); i++) {
       const Variables& xi_i = design_matrix[i]; // active are config vars
-      mcmcModel.current_variables().inactive_from_active(xi_i);
+      mcmcModel.current_variables().active_to_inactive_variables(xi_i);
 
       build_hi2lo_xmatrix(Xmatrix, batch_n, mi_chain, sim_error_matrix);
 
@@ -1383,7 +1424,7 @@ void NonDBayesCalibration::choose_batch_from_mutual_info( int random_seed,
     if (batchEvals > 1) {
     // Evaluate lofi model at optimal design, update Xmatrix
       RealMatrix lofi_resp_matrix;
-      mcmcModel.current_variables().inactive_from_active(optimal_config);
+      mcmcModel.current_variables().active_to_inactive_variables(optimal_config);
       Model::evaluate(mi_chain, mcmcModel, lofi_resp_matrix);
       if (sim_error_matrix.numRows() > 0)
         lofi_resp_matrix += sim_error_matrix;
@@ -1669,7 +1710,7 @@ void NonDBayesCalibration::build_scalar_discrepancy()
 
   // Construct config var information
   Variables vars_copy = mcmcModel.current_variables().copy();
-  std::pair<short, short> view(MIXED_STATE, EMPTY_VIEW);
+  ShortShortPair view(MIXED_STATE, EMPTY_VIEW);
   SizetArray vars_comps_totals(NUM_VC_TOTALS, 0);
   vars_comps_totals = mcmcModel.current_variables().shared_data().
     		      inactive_components_totals();
@@ -1813,7 +1854,7 @@ void NonDBayesCalibration::build_field_discrepancy()
   compute_col_means(acc_chain_transpose, ave_params); 
   mcmcModel.continuous_variables(ave_params);
   //mcmcModel.evaluate();
- 
+
   int num_exp = expData.num_experiments();
   size_t num_configvars = expData.num_config_vars();
   std::vector<RealVector> config_vars = expData.config_vars_as_real();
@@ -2356,7 +2397,7 @@ void NonDBayesCalibration::prior_cholesky_factorization()
 
     Cerr << "prior_cholesky_factorization() not yet implemented for this case."
 	 << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
 
     corr_solver.setMatrix( Teuchos::rcp(&prior_cov_matrix, false) );
     corr_solver.factor(); // Cholesky factorization (LL^T) in place
@@ -2512,16 +2553,14 @@ get_positive_definite_covariance_from_hessian(const RealSymMatrix &hessian,
 }
 
 
-/** Response mapping callback used within RecastModel for MAP
-    pre-solve. Computes 
+/** Response mapping callback used by RecastModel for MAP pre-solve. Computes 
 
       -log(post) = -log(like) - log(prior); where
       -log(like) = 1/2*Nr*log(2*pi) + 1/2*log(det(Cov)) + 1/2*r'(Cov^{-1})*r
                  = 1/2*Nr*log(2*pi) + 1/2*log(det(Cov)) + misfit
 
     (misfit defined as 1/2 r^T (mult^2*Gamma_d)^{-1} r) The passed
-    residual_resp has been differenced, interpolated, and
-    covariance-scaled */
+    residual_resp has been differenced, interpolated, and covariance-scaled */
 void NonDBayesCalibration::
 neg_log_post_resp_mapping(const Variables& residual_vars,
                           const Variables& nlpost_vars,
@@ -2878,7 +2917,7 @@ calculate_kde()
   std::ofstream export_kde;
   size_t wpp4 = write_precision+4;
   StringArray var_labels;
-        copy_data(residualModel.continuous_variable_labels(),var_labels);
+  copy_data(residualModel.continuous_variable_labels(),var_labels);
   const StringArray& resp_labels = 
     		     mcmcModel.current_response().function_labels();
   TabularIO::open_file(export_kde, "kde_posterior.dat",
@@ -3210,7 +3249,7 @@ print_variables(std::ostream& s, const RealVector& c_vars)
   if (standardizedSpace) {
     RealVector u_rv(Teuchos::View, c_vars.values(), numContinuousVars);
     RealVector x_rv;
-    mcmcModel.probability_transformation().trans_U_to_X(u_rv, x_rv);
+    mcmcModel.trans_U_to_X(u_rv, x_rv);
     write_data(Cout, x_rv, cv_labels);
   }
   else
@@ -3780,7 +3819,7 @@ void NonDBayesCalibration::weight_model()
     if (lsq_weights[i] < 0) {
       Cerr << "\nError: Calibration term weights must be nonnegative. "
 	   << "Specified weights are:\n" << lsq_weights << '\n';
-      abort_handler(-1);
+      abort_handler(METHOD_ERROR);
     }
 
   // TODO: pass sqrt to WeightingModel

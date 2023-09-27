@@ -2,7 +2,7 @@ Blurb::
 Pointer to global method
 Description::
 The ``global_method_pointer`` identifies the method block to use as the global
-method in a ``hybrid`` ``embedded`` optimization using its :ref:`method-id_method<method-id_method>`
+method in a ``hybrid`` ``embedded`` optimization using its :dakkw:`method-id_method`
 label.
 Topics::
 block_pointer

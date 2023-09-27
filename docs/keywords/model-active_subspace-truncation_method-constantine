@@ -10,7 +10,7 @@ size.
 *Usage Tips*
 
 If this automated diagnostic does not yield desirable results, consider
-using the explicit :ref:`model-active_subspace-dimension<model-active_subspace-dimension>` truncation option or one of the other
+using the explicit :dakkw:`model-active_subspace-dimension` truncation option or one of the other
 truncation methods.
 Topics::
 

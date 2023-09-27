@@ -8,7 +8,7 @@ multiple objectives into a single objective:
 .. math:: f = \sum_{i=1}^{n}
 w_{i}f_{i}
 Length: The ``weights`` must have length equal to
-:ref:`responses-objective_functions<responses-objective_functions>`. Thus, when scalar and/or field
+:dakkw:`responses-objective_functions`. Thus, when scalar and/or field
 responses are specified, the number of ``weights`` must equal the
 number of scalars plus the number of fields, *not* the total elements
 in the fields.
@@ -18,7 +18,7 @@ response is given equal weighting:
 .. math:: f = \sum_{i=1}^{n}
 \frac{f_i}{n}
 where, in both of these cases, a "minimization"
-:ref:`responses-objective_functions-sense<responses-objective_functions-sense>` will retain a positive weighting
+:dakkw:`responses-objective_functions-sense` will retain a positive weighting
 for a minimizer and a "maximization" sense will apply a negative
 weighting.
 
@@ -29,7 +29,7 @@ divisors.
 
 When scaling is active, it is applied to objective functions prior to
 any ``weights`` and multi-objective sum formation. See the equations in
-:ref:`responses-objective_functions<responses-objective_functions>`.
+:dakkw:`responses-objective_functions`.
 Topics::
 
 Examples::

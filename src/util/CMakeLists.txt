@@ -1,7 +1,7 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2022
+#  Copyright 2014-2023
 #  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
@@ -27,6 +27,7 @@ set(util_headers
   util_data_types.hpp
   util_eigen_plugins.hpp
   util_math_tools.hpp
+  util_windows.hpp
   )
 
 add_library(dakota_util ${util_sources} ${util_headers})

@@ -2,10 +2,10 @@ Blurb::
 Specify which variables block will be included with this model block
 Description::
 The ``variables_pointer`` is used to specify which variables block will be used
-by the model, by cross-referencing with :ref:`variables-id_variables<variables-id_variables>` keyword in
-the :ref:`variables<variables>` block.
+by the model, by cross-referencing with :dakkw:`variables-id_variables` keyword in
+the :dakkw:`variables` block.
 
-See :ref:`topic-block_pointer<topic-block_pointer>` for details about pointers.
+See :ref:`topic-block_pointer` for details about pointers.
 
 *Default Behavior*
 

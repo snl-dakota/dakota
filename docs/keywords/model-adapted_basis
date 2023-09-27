@@ -2,7 +2,7 @@ Blurb::
 Basis adaptation model
 Description::
 A model that transforms the original model (given by
-:ref:`model-adapted_basis-truth_model_pointer<model-adapted_basis-truth_model_pointer>`) to one with a rotated set of variables.
+:dakkw:`model-adapted_basis-truth_model_pointer`) to one with a rotated set of variables.
 The current implementation does not support the reduction of the dimension for the new model and only transform
 the variable set in a rotated one in which the variables are arranged in a decreasing importance order.
 

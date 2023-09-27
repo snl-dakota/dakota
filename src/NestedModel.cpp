@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -1508,7 +1508,7 @@ const IntResponseMap& NestedModel::derived_synchronize()
   nestedResponseMap.clear();
 
   // TO DO: optInt/subIter scheduling is currently sequential, but could be
-  // overlapped as in HierarchSurrModel, given IteratorScheduler nowait support
+  // overlapped as in EnsembleSurrModel, given IteratorScheduler nowait support
 
   IntIntMIter id_it; IntRespMCIter r_cit;
   if (!optInterfacePointer.empty()) {

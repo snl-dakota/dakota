@@ -56,9 +56,9 @@ The user can also specify the following to affect the merit functions:
 The only method independent controls that are currently mapped to APPS
 are:
 
-- :ref:`method-asynch_pattern_search-max_function_evaluations<method-asynch_pattern_search-max_function_evaluations>`
-- :ref:`method-asynch_pattern_search-constraint_tolerance<method-asynch_pattern_search-constraint_tolerance>`
-- :ref:`method-output<method-output>`
+- :dakkw:`method-asynch_pattern_search-max_function_evaluations`
+- :dakkw:`method-asynch_pattern_search-constraint_tolerance`
+- :dakkw:`method-output`
 
 Note that while APPS treats the constraint tolerance separately for
 linear and nonlinear constraints, we apply the same value to both if
@@ -78,14 +78,14 @@ the Dakota ``output`` settings as follows:
 *Expected HDF5 Output*
 
 If Dakota was built with HDF5 support and run with the
-:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+:dakkw:`environment-results_output-hdf5` keyword, this method
 writes the following results to HDF5:
 
 
 - :ref:`hdf5_results-best_params`
-- :ref:`hdf5_results-best_obj_fncs` (when :ref:`responses-objective_functions<responses-objective_functions>`) are specified)
+- :ref:`hdf5_results-best_obj_fncs` (when :dakkw:`responses-objective_functions`) are specified)
 - :ref:`hdf5_results-best_constraints`
-- :ref:`hdf5_results-calibration` (when :ref:`responses-calibration_terms<responses-calibration_terms>` are specified)
+- :ref:`hdf5_results-calibration` (when :dakkw:`responses-calibration_terms` are specified)
 Topics::
 package_hopspack, global_optimization_methods
 Examples::

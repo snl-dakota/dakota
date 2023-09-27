@@ -23,9 +23,9 @@ Other options are available for advanced users, and are not as well documented, 
 
 The internally coupled codes have few options because many of the
 details are already handled with the coupling.  Their behavior is
-described in the :ref:`interface-analysis_drivers-direct<interface-analysis_drivers-direct>` keyword.
+described in the :dakkw:`interface-analysis_drivers-direct` keyword.
 
-For external processes using the :ref:`interface-analysis_drivers-fork<interface-analysis_drivers-fork>` keyword,
+For external processes using the :dakkw:`interface-analysis_drivers-fork` keyword,
 
 A function evaluation may comprise:
 
@@ -51,7 +51,7 @@ support:
  - Dakota will replace the tokens `{PARAMETERS}` and `{RESULTS}` in an
    anslysis driver string with the names of the parameters and results
    files for that analysis/evaluation. Along with the
-   :ref:`interface-analysis_drivers-fork-verbatim<interface-analysis_drivers-fork-verbatim>` keyword, which prevents
+   :dakkw:`interface-analysis_drivers-fork-verbatim` keyword, which prevents
    Dakota from appending the names of the parameters and reslts files
    as command line arguments, this feature provides users with greater
    control over how their analysis drivers are invoked by Dakota.
@@ -91,7 +91,7 @@ Dakota is started, then using the system $PATH environment variable
 *Where should the driver be located?* When the driver is a script
 it is most commonly placed in the same directory as the Dakota input
 file.  When using a
-:ref:`interface-analysis_drivers-fork-work_directory<interface-analysis_drivers-fork-work_directory>`, Dakota will also look
+:dakkw:`interface-analysis_drivers-fork-work_directory`, Dakota will also look
 for drivers in the specified working directory, so link_files or
 copy_files may specify the driver to get copied or linked into the
 work directory.  When executable programs are used as drivers, they

@@ -11,6 +11,8 @@ There are generally two types of remote machines that you can submit Dakota jobs
    In Dakota GUI, the primary means of submitting jobs to remote machines is :ref:`through Next-Gen Workflow <gui-job-submission-workflow>`. As such, the following illustrations
    refer to specific steps you would take in a Next-Gen Workflow job submission approach. :ref:`Click here for information on the legacy Job Submission run configuration dialog. <gui-job-submission-classic>`
 
+.. _gui-job-submission-overview-definition-nonqueued:
+
 -------------------
 Non-queued machines
 -------------------
@@ -45,6 +47,8 @@ For a non-queued remote machine, the basic approach is as follows:
 For data collection, you should augment the second workflow to send data back to the first. Refer to the
 main :ref:`remoteNestedWorkflow <gui-job-submission-workflow-remoteNestedWorkflow-receivefiles>` section below for more
 details on how to do this.
+
+.. _gui-job-submission-overview-definition-queued:
 
 ---------------
 Queued machines

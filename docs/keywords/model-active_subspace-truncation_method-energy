@@ -7,7 +7,7 @@ Uses a criterion based on the derivative matrix eigenvalue energy.
 
 This subspace truncation method may work best when working with non-normally
 distributed uncertain variables. If this automated diagnostic does not yield
-desirable results, consider using the explicit :ref:`model-active_subspace-dimension<model-active_subspace-dimension>` truncation option or
+desirable results, consider using the explicit :dakkw:`model-active_subspace-dimension` truncation option or
 one of the other truncation methods.
 Topics::
 
@@ -18,7 +18,7 @@ Using the eigenvalue energy truncation metric, the subspace size is determined u
 
 .. math:: n = \inf \left\lbrace d \in \mathbf{Z} \quad\middle|\quad 1 \le d \le N \quad \wedge\quad 1 - \frac{\sum_{i = 1}^{d} \lambda_i}{\sum_{i = 1}^{N} \lambda_i} \,<\, \epsilon \right\rbrace 
 
-where :math:`\epsilon`  is the :ref:`model-active_subspace-truncation_method-energy-truncation_tolerance<model-active_subspace-truncation_method-energy-truncation_tolerance>`, :math:`n`  is the estimated subspace size, :math:`N`  is the size of the full space, and :math:`\lambda_i`  are the eigenvalues of the derivative matrix.
+where :math:`\epsilon`  is the :dakkw:`model-active_subspace-truncation_method-energy-truncation_tolerance`, :math:`n`  is the estimated subspace size, :math:`N`  is the size of the full space, and :math:`\lambda_i`  are the eigenvalues of the derivative matrix.
 Faq::
 
 See_Also::

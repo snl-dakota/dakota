@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -118,6 +118,9 @@ public:
   /// set the active set derivative vector and reshape
   /// functionGradients/functionHessians if needed
   void active_set_derivative_vector(const SizetArray& asdv);
+  /// set the active set derivative vector and reshape
+  /// functionGradients/functionHessians if needed
+  void active_set_derivative_vector(SizetMultiArrayConstView asdv);
 
   // NOTE: Responses are stored:
   // [primary_scalar, primary_field, nonlinear_inequality, nonlinear_equality]
@@ -156,7 +159,14 @@ public:
   /// return all function gradients as a view for updating in place
   RealMatrix function_gradients_view() const;
   /// set a function gradient
-  void function_gradient(const RealVector& fn_grad, int i);
+  void function_gradient(const RealVector& assign_grad, int fn_index);
+  /// set a function gradient, managing dissimilar DVV
+  void function_gradient(const RealVector& assign_grad, int fn_index,
+			 const SizetArray& assign_indices,
+			 const SizetArray&   curr_indices);
+  /// set a function gradient, managing dissimilar DVV
+  void function_gradient(const RealVector& assign_grad, int fn_index,
+			 const SizetArray& assign_dvv);
   /// set all function gradients
   void function_gradients(const RealMatrix& fn_grads);
 
@@ -177,9 +187,21 @@ public:
   /// for updating in place
   RealSymMatrixArray function_hessians_view() const;
   /// set a function Hessian
-  void function_hessian(const RealSymMatrix& fn_hessian, size_t i);
+  void function_hessian(const RealSymMatrix& assign_hessian, size_t fn_index);
+  /// set a function Hessian, using DVV index mappings
+  void function_hessian(const RealSymMatrix& assign_hessian, size_t fn_index,
+			const SizetArray&    assign_indices,
+			const SizetArray&      curr_indices);
+  /// set a function Hessian, managing dissimilar DVV
+  void function_hessian(const RealSymMatrix& assign_hessian,
+			size_t fn_index, const SizetArray& assign_dvv);
   /// set all function Hessians
   void function_hessians(const RealSymMatrixArray& fn_hessians);
+
+  /// define source and target indices for updating derivatives by matching
+  /// assign_dvv against the current DVV
+  void map_dvv_indices(const SizetArray& assign_dvv, SizetArray& assign_indices,
+		       SizetArray& curr_indices);
 
   // NOTE: Responses are stored:
   // [primary_scalar, primary_field, nonlinear_inequality, nonlinear_equality]
@@ -458,6 +480,9 @@ private:
   /// resizes the representation's containers
   void reshape_rep(size_t num_fns, size_t num_params, bool grad_flag,
 		   bool hess_flag);
+
+  /// reshape function{Gradients,Hessians} if needed to sync with DVV
+  void reshape_active_derivs(size_t num_deriv_vars);
 
   void read_core(std::istream& s, const unsigned short formats,
 		 std::ostringstream& errors);

@@ -10,21 +10,6 @@ Sample moment statistics for each response function:
  response_fn_1  6.2500000000e+00  6.2500000000e+00  0.0000000000e+00  0.0000000000e+00
  response_fn_2  4.3070554513e-01  5.1306923501e-01  1.3377447200e-01  1.9310067150e-01
  response_fn_3  7.6992711035e-01  8.5972643468e-01  1.4585137233e-01  2.1053342626e-01
-Wilks Statistics for One-Sided 9.5000000000e+01% Confidence Level, Order = 1 for response_fn_1:
-    Coverage Level       Upper Bound     Number of Samples
-    --------------   -----------------  -----------------
-   9.5000000000e-01   6.2500000000e+00        59
-   9.5000000000e-01   6.2500000000e+00        59
-Wilks Statistics for One-Sided 9.5000000000e+01% Confidence Level, Order = 1 for response_fn_2:
-    Coverage Level       Upper Bound     Number of Samples
-    --------------   -----------------  -----------------
-   9.5000000000e-01   7.8033288513e-01        59
-   9.5000000000e-01   7.8033288513e-01        59
-Wilks Statistics for One-Sided 9.5000000000e+01% Confidence Level, Order = 1 for response_fn_3:
-    Coverage Level       Upper Bound     Number of Samples
-    --------------   -----------------  -----------------
-   9.5000000000e-01   1.1954396016e+00        59
-   9.5000000000e-01   1.1954396016e+00        59
 Simple Correlation Matrix among all inputs and outputs:
                         R            E            X            Y response_fn_1 response_fn_2 response_fn_3 
            R  1.00000e+00 
@@ -55,6 +40,21 @@ Partial Rank Correlation Matrix between input and output:
            E         -nan -1.05948e-02 -9.09054e-01 
            X         -nan  8.71206e-01  8.31657e-01 
            Y         -nan  8.54452e-01  9.36773e-01 
+Wilks Statistics for One-Sided 9.5000000000e+01% Confidence Level, Order = 1 for response_fn_1:
+    Coverage Level       Upper Bound     Number of Samples
+    --------------   -----------------  -----------------
+   9.5000000000e-01   6.2500000000e+00        59
+   9.5000000000e-01   6.2500000000e+00        59
+Wilks Statistics for One-Sided 9.5000000000e+01% Confidence Level, Order = 1 for response_fn_2:
+    Coverage Level       Upper Bound     Number of Samples
+    --------------   -----------------  -----------------
+   9.5000000000e-01   7.8033288513e-01        59
+   9.5000000000e-01   7.8033288513e-01        59
+Wilks Statistics for One-Sided 9.5000000000e+01% Confidence Level, Order = 1 for response_fn_3:
+    Coverage Level       Upper Bound     Number of Samples
+    --------------   -----------------  -----------------
+   9.5000000000e-01   1.1954396016e+00        59
+   9.5000000000e-01   1.1954396016e+00        59
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 124 total (124 new, 0 duplicate)
 Sample moment statistics for each response function:
@@ -67,21 +67,6 @@ Sample moment statistics for each response function:
  response_fn_1  6.2500000000e+00  6.2500000000e+00  0.0000000000e+00  0.0000000000e+00
  response_fn_2  4.1554414082e-01  4.7405173534e-01  1.4632342807e-01  1.8805711436e-01
  response_fn_3  7.0842697783e-01  7.7281983870e-01  1.6104207026e-01  2.0697373908e-01
-Wilks Statistics for One-Sided 9.5000000000e+01% Confidence Level, Order = 3 for response_fn_1:
-    Coverage Level       Upper Bound     Number of Samples
-    --------------   -----------------  -----------------
-   9.5000000000e-01   6.2500000000e+00        124
-   9.5000000000e-01   6.2500000000e+00        124
-Wilks Statistics for One-Sided 9.5000000000e+01% Confidence Level, Order = 3 for response_fn_2:
-    Coverage Level       Upper Bound     Number of Samples
-    --------------   -----------------  -----------------
-   9.5000000000e-01   7.7148480377e-01        124
-   9.5000000000e-01   7.7148480377e-01        124
-Wilks Statistics for One-Sided 9.5000000000e+01% Confidence Level, Order = 3 for response_fn_3:
-    Coverage Level       Upper Bound     Number of Samples
-    --------------   -----------------  -----------------
-   9.5000000000e-01   1.1352802811e+00        124
-   9.5000000000e-01   1.1352802811e+00        124
 Simple Correlation Matrix among all inputs and outputs:
                         R            E            X            Y response_fn_1 response_fn_2 response_fn_3 
            R  1.00000e+00 
@@ -112,6 +97,21 @@ Partial Rank Correlation Matrix between input and output:
            E         -nan  5.92732e-02 -9.08025e-01 
            X         -nan  9.21451e-01  8.88664e-01 
            Y         -nan  9.27030e-01  9.70110e-01 
+Wilks Statistics for One-Sided 9.5000000000e+01% Confidence Level, Order = 3 for response_fn_1:
+    Coverage Level       Upper Bound     Number of Samples
+    --------------   -----------------  -----------------
+   9.5000000000e-01   6.2500000000e+00        124
+   9.5000000000e-01   6.2500000000e+00        124
+Wilks Statistics for One-Sided 9.5000000000e+01% Confidence Level, Order = 3 for response_fn_2:
+    Coverage Level       Upper Bound     Number of Samples
+    --------------   -----------------  -----------------
+   9.5000000000e-01   7.7148480377e-01        124
+   9.5000000000e-01   7.7148480377e-01        124
+Wilks Statistics for One-Sided 9.5000000000e+01% Confidence Level, Order = 3 for response_fn_3:
+    Coverage Level       Upper Bound     Number of Samples
+    --------------   -----------------  -----------------
+   9.5000000000e-01   1.1352802811e+00        124
+   9.5000000000e-01   1.1352802811e+00        124
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 208 total (208 new, 0 duplicate)
 Sample moment statistics for each response function:
@@ -124,21 +124,6 @@ Sample moment statistics for each response function:
  response_fn_1  6.2500000000e+00  6.2500000000e+00  0.0000000000e+00  0.0000000000e+00
  response_fn_2  4.1859654804e-01  4.6054548656e-01  1.3997212364e-01  1.6978876982e-01
  response_fn_3  7.3626872395e-01  7.8514458233e-01  1.6308535880e-01  1.9782555074e-01
-Wilks Statistics for Two-Sided 9.5000000000e+01% Confidence Level, Order = 3 for response_fn_1:
-    Coverage Level     Lower Bound        Upper Bound     Number of Samples
-    --------------  -----------------  -----------------  -----------------
-   9.5000000000e-01  6.2500000000e+00   6.2500000000e+00        208
-   9.5000000000e-01  6.2500000000e+00   6.2500000000e+00        208
-Wilks Statistics for Two-Sided 9.5000000000e+01% Confidence Level, Order = 3 for response_fn_2:
-    Coverage Level     Lower Bound        Upper Bound     Number of Samples
-    --------------  -----------------  -----------------  -----------------
-   9.5000000000e-01  1.0838723590e-01   7.4725145294e-01        208
-   9.5000000000e-01  1.0838723590e-01   7.4725145294e-01        208
-Wilks Statistics for Two-Sided 9.5000000000e+01% Confidence Level, Order = 3 for response_fn_3:
-    Coverage Level     Lower Bound        Upper Bound     Number of Samples
-    --------------  -----------------  -----------------  -----------------
-   9.5000000000e-01  4.2524321768e-01   1.2847319917e+00        208
-   9.5000000000e-01  4.2524321768e-01   1.2847319917e+00        208
 Simple Correlation Matrix among all inputs and outputs:
                         R            E            X            Y response_fn_1 response_fn_2 response_fn_3 
            R  1.00000e+00 
@@ -169,6 +154,21 @@ Partial Rank Correlation Matrix between input and output:
            E         -nan -4.61929e-02 -8.75021e-01 
            X         -nan  9.30980e-01  8.29841e-01 
            Y         -nan  9.24488e-01  9.49306e-01 
+Wilks Statistics for Two-Sided 9.5000000000e+01% Confidence Level, Order = 3 for response_fn_1:
+    Coverage Level     Lower Bound        Upper Bound     Number of Samples
+    --------------  -----------------  -----------------  -----------------
+   9.5000000000e-01  6.2500000000e+00   6.2500000000e+00        208
+   9.5000000000e-01  6.2500000000e+00   6.2500000000e+00        208
+Wilks Statistics for Two-Sided 9.5000000000e+01% Confidence Level, Order = 3 for response_fn_2:
+    Coverage Level     Lower Bound        Upper Bound     Number of Samples
+    --------------  -----------------  -----------------  -----------------
+   9.5000000000e-01  1.0838723590e-01   7.4725145294e-01        208
+   9.5000000000e-01  1.0838723590e-01   7.4725145294e-01        208
+Wilks Statistics for Two-Sided 9.5000000000e+01% Confidence Level, Order = 3 for response_fn_3:
+    Coverage Level     Lower Bound        Upper Bound     Number of Samples
+    --------------  -----------------  -----------------  -----------------
+   9.5000000000e-01  4.2524321768e-01   1.2847319917e+00        208
+   9.5000000000e-01  4.2524321768e-01   1.2847319917e+00        208
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 473 total (473 new, 0 duplicate)
 Sample moment statistics for each response function:
@@ -220,33 +220,6 @@ Sample moment statistics for each response function:
    1.0040064008e+00   9.0000000000e-01
    1.0735085782e+00   9.5000000000e-01
    1.1992375037e+00   9.9000000000e-01
-Wilks Statistics for Two-Sided 9.5000000000e+01% Confidence Level, Order = 1 for response_fn_1:
-    Coverage Level     Lower Bound        Upper Bound     Number of Samples
-    --------------  -----------------  -----------------  -----------------
-   8.0000000000e-01  6.2500000000e+00   6.2500000000e+00        22
-   8.0000000000e-01  6.2500000000e+00   6.2500000000e+00        22
-   9.0000000000e-01  6.2500000000e+00   6.2500000000e+00        46
-   9.9000000000e-01  6.2500000000e+00   6.2500000000e+00        473
-Wilks Statistics for Two-Sided 9.5000000000e+01% Confidence Level, Order = 1 for response_fn_2:
-    Coverage Level     Lower Bound        Upper Bound     Number of Samples
-    --------------  -----------------  -----------------  -----------------
-   7.5000000000e-01  2.7251870739e-01   7.4256237312e-01        18
-   7.5000000000e-01  2.7251870739e-01   7.4256237312e-01        18
-   8.0000000000e-01  2.7251870739e-01   7.4256237312e-01        22
-   8.5000000000e-01  2.4814302167e-01   7.4256237312e-01        30
-   9.0000000000e-01  1.2184335511e-01   9.7524537428e-01        46
-   9.5000000000e-01  8.3745753904e-02   9.7524537428e-01        93
-Wilks Statistics for Two-Sided 9.5000000000e+01% Confidence Level, Order = 1 for response_fn_3:
-    Coverage Level     Lower Bound        Upper Bound     Number of Samples
-    --------------  -----------------  -----------------  -----------------
-   7.0000000000e-01  5.1537944917e-01   1.1364283319e+00        14
-   7.0000000000e-01  5.1537944917e-01   1.1364283319e+00        14
-   7.5000000000e-01  5.1357842320e-01   1.1364283319e+00        18
-   8.0000000000e-01  5.1357842320e-01   1.2704501987e+00        22
-   8.5000000000e-01  5.1357842320e-01   1.2704501987e+00        30
-   9.0000000000e-01  4.5272986934e-01   1.2704501987e+00        46
-   9.5000000000e-01  2.9269805986e-01   1.2704501987e+00        93
-   9.9000000000e-01  2.5516513928e-01   1.2704501987e+00        473
 Simple Correlation Matrix among all inputs and outputs:
                         R            E            X            Y response_fn_1 response_fn_2 response_fn_3 
            R  1.00000e+00 
@@ -277,6 +250,33 @@ Partial Rank Correlation Matrix between input and output:
            E         -nan  9.85551e-02 -8.89982e-01 
            X         -nan  9.25853e-01  8.51016e-01 
            Y         -nan  9.26246e-01  9.58578e-01 
+Wilks Statistics for Two-Sided 9.5000000000e+01% Confidence Level, Order = 1 for response_fn_1:
+    Coverage Level     Lower Bound        Upper Bound     Number of Samples
+    --------------  -----------------  -----------------  -----------------
+   8.0000000000e-01  6.2500000000e+00   6.2500000000e+00        22
+   8.0000000000e-01  6.2500000000e+00   6.2500000000e+00        22
+   9.0000000000e-01  6.2500000000e+00   6.2500000000e+00        46
+   9.9000000000e-01  6.2500000000e+00   6.2500000000e+00        473
+Wilks Statistics for Two-Sided 9.5000000000e+01% Confidence Level, Order = 1 for response_fn_2:
+    Coverage Level     Lower Bound        Upper Bound     Number of Samples
+    --------------  -----------------  -----------------  -----------------
+   7.5000000000e-01  2.7251870739e-01   7.4256237312e-01        18
+   7.5000000000e-01  2.7251870739e-01   7.4256237312e-01        18
+   8.0000000000e-01  2.7251870739e-01   7.4256237312e-01        22
+   8.5000000000e-01  2.4814302167e-01   7.4256237312e-01        30
+   9.0000000000e-01  1.2184335511e-01   9.7524537428e-01        46
+   9.5000000000e-01  8.3745753904e-02   9.7524537428e-01        93
+Wilks Statistics for Two-Sided 9.5000000000e+01% Confidence Level, Order = 1 for response_fn_3:
+    Coverage Level     Lower Bound        Upper Bound     Number of Samples
+    --------------  -----------------  -----------------  -----------------
+   7.0000000000e-01  5.1537944917e-01   1.1364283319e+00        14
+   7.0000000000e-01  5.1537944917e-01   1.1364283319e+00        14
+   7.5000000000e-01  5.1357842320e-01   1.1364283319e+00        18
+   8.0000000000e-01  5.1357842320e-01   1.2704501987e+00        22
+   8.5000000000e-01  5.1357842320e-01   1.2704501987e+00        30
+   9.0000000000e-01  4.5272986934e-01   1.2704501987e+00        46
+   9.5000000000e-01  2.9269805986e-01   1.2704501987e+00        93
+   9.9000000000e-01  2.5516513928e-01   1.2704501987e+00        473
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 59 total (59 new, 0 duplicate)
 Sample moment statistics for each response function:
@@ -306,21 +306,6 @@ Sample moment statistics for each response function:
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.1004050436e+00   9.5000000000e-01
-Wilks Statistics for One-Sided 9.5000000000e+01% Confidence Level, Order = 1 for response_fn_1:
-    Coverage Level       Lower Bound     Number of Samples
-    --------------   -----------------  -----------------
-   9.5000000000e-01   6.2500000000e+00        59
-   9.5000000000e-01   6.2500000000e+00        59
-Wilks Statistics for One-Sided 9.5000000000e+01% Confidence Level, Order = 1 for response_fn_2:
-    Coverage Level       Lower Bound     Number of Samples
-    --------------   -----------------  -----------------
-   9.5000000000e-01   -3.8857106870e-02        59
-   9.5000000000e-01   -3.8857106870e-02        59
-Wilks Statistics for One-Sided 9.5000000000e+01% Confidence Level, Order = 1 for response_fn_3:
-    Coverage Level       Lower Bound     Number of Samples
-    --------------   -----------------  -----------------
-   9.5000000000e-01   3.8169879691e-01        59
-   9.5000000000e-01   3.8169879691e-01        59
 Simple Correlation Matrix among all inputs and outputs:
                         R            E            X            Y response_fn_1 response_fn_2 response_fn_3 
            R  1.00000e+00 
@@ -351,3 +336,18 @@ Partial Rank Correlation Matrix between input and output:
            E         -nan -1.05948e-02 -9.09054e-01 
            X         -nan  8.71206e-01  8.31657e-01 
            Y         -nan  8.54452e-01  9.36773e-01 
+Wilks Statistics for One-Sided 9.5000000000e+01% Confidence Level, Order = 1 for response_fn_1:
+    Coverage Level       Lower Bound     Number of Samples
+    --------------   -----------------  -----------------
+   9.5000000000e-01   6.2500000000e+00        59
+   9.5000000000e-01   6.2500000000e+00        59
+Wilks Statistics for One-Sided 9.5000000000e+01% Confidence Level, Order = 1 for response_fn_2:
+    Coverage Level       Lower Bound     Number of Samples
+    --------------   -----------------  -----------------
+   9.5000000000e-01   -3.8857106870e-02        59
+   9.5000000000e-01   -3.8857106870e-02        59
+Wilks Statistics for One-Sided 9.5000000000e+01% Confidence Level, Order = 1 for response_fn_3:
+    Coverage Level       Lower Bound     Number of Samples
+    --------------   -----------------  -----------------
+   9.5000000000e-01   3.8169879691e-01        59
+   9.5000000000e-01   3.8169879691e-01        59

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -34,23 +34,24 @@ DataTransformModel* DataTransformModel::dtModelInstance(NULL);
 //   response mapping suffice Need test with data and constraints
 //  * Don't want to output message during recast retrieve... (or do we?)
 
-/** This constructor computes various indices and mappings, then
-    updates the properties of the RecastModel.  Hyper-parameters are
-    assumed to trail the active continuous variables when presented to
-    this RecastModel */
+/** This constructor computes various indices and mappings, then updates the
+    properties of the RecastModel.  Hyper-parameters are assumed to trail the
+    active continuous variables when presented to this RecastModel. */
 DataTransformModel::
-DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
+DataTransformModel(const Model& sub_model, ExperimentData& exp_data,
+		   const ShortShortPair& recast_vars_view,
                    size_t num_hyper, unsigned short mult_mode, 
                    short recast_resp_deriv_order):
   // BMA TODO: should the BitArrays be empty or same as submodel?
   // recast_secondary_offset is the index to the equality constraints within 
   // the secondary responses
   RecastModel(sub_model, variables_expand(sub_model, num_hyper),
-	      BitArray(), BitArray(), exp_data.num_total_exppoints(), 
-	      sub_model.num_secondary_fns(),
+	      BitArray(), BitArray(), recast_vars_view,
+	      exp_data.num_total_exppoints(), sub_model.num_secondary_fns(),
 	      sub_model.num_nonlinear_ineq_constraints(),
               response_order(sub_model, recast_resp_deriv_order)), 
-  expData(exp_data), numHyperparams(num_hyper), obsErrorMultiplierMode(mult_mode)
+  expData(exp_data), numHyperparams(num_hyper),
+  obsErrorMultiplierMode(mult_mode)
 {
   modelId = RecastModel::recast_model_id(root_model_id(), "DATA_TRANSFORM");
   // register state variables as inactive vars if config vars are present
@@ -59,7 +60,9 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
   // BMA NOTE: This will change the inactive view of any Variables object
   // sharing the same SharedVariables data as the subModel's Variables
   size_t num_config_vars = expData.num_config_vars();
-  if (num_config_vars > 0) {
+  short  active_sm_view  = subModel.current_variables().view().first;
+  if ( num_config_vars &&
+       ( active_sm_view != RELAXED_ALL && active_sm_view != MIXED_ALL ) ) {
     subModel.inactive_view(MIXED_STATE);
     int num_state_vars =
       subModel.icv() + subModel.idiv() + subModel.idsv() + subModel.idrv();
@@ -67,7 +70,7 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
       Cerr << "\nError: (DataTransformModel) Number of state "
 	   << "variables = " << num_state_vars << " must match\n       number "
 	   << "of configuration variables = " << num_config_vars << "\n";
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
     }
   }
 
@@ -132,7 +135,7 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
     (numHyperparams > 0) ? vars_mapping : NULL;
   void (*set_map)  (const Variables&, const ActiveSet&, ActiveSet&) = 
     (numHyperparams > 0) ? set_mapping : NULL;
-  void (*primary_resp_map) (const Variables&, const Variables&, const Response&, 
+  void (*primary_resp_map) (const Variables&, const Variables&, const Response&,
 			    Response&) = primary_resp_differencer;
   void (*secondary_resp_map) (const Variables&, const Variables&,
 			      const Response&, Response&) = NULL;
@@ -141,6 +144,19 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
 	      primary_resp_map_indices, secondary_resp_map_indices, 
 	      nonlinear_resp_mapping, primary_resp_map, secondary_resp_map);
 
+  // transform configuration variables in expData from the original
+  // "user space" to the space used by this Model
+  if (manage_data_recastings()) {
+    VariablesArray& exp_vars_array = expData.configuration_variables();
+    size_t i, num_exp_vars = exp_vars_array.size();
+    for (i=0; i<num_exp_vars; ++i) {
+      if (outputLevel >= DEBUG_OUTPUT)
+	Cout << "User-space configuration vars:\n" << exp_vars_array[i];
+      user_space_to_iterator_space(exp_vars_array[i]);
+      if (outputLevel >= DEBUG_OUTPUT)
+	Cout << "Iterator-space configuration vars:\n" << exp_vars_array[i];
+    }
+  }
 
   // ---
   // Expand currentVariables values/labels to account for hyper-parameters
@@ -151,8 +167,11 @@ DataTransformModel(const Model& sub_model, const ExperimentData& exp_data,
   // bounds need updating too; above variable updates bypass mvDist
   // as sets on constraints object only instead of Model's
   // setters...
-  mvDist = subModel.multivariate_distribution(); // shared rep
-
+  //mvDist = subModel.multivariate_distribution(); // shared rep
+  init_distribution(true);
+  // copy_values is false in RecastModel::init_sizes(), which is correct in
+  // general since the variables config changes.  In the derived class, we can
+  // revisit this with special knowledge that subModel mvDist can be adapted.
 
   // ---
   // Expand any submodel Response data to the expanded residual size
@@ -202,7 +221,7 @@ void DataTransformModel::data_resize()
     // allow updates including the whole parameter domain change.
     Cerr << "\nError (DataTransformModel): data updates not supported when "
 	 << "calibrating\nhyper-parameters.";
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
 
   // there is no change in variables or derivatives for now
@@ -234,9 +253,10 @@ void DataTransformModel::update_from_subordinate_model(size_t depth)
     update_cv_skip_hyperparams(subModel);
 
     // for discrete, update all
-    update_discrete_variable_values(subModel);
-    update_discrete_variable_bounds(subModel);
-    update_discrete_variable_labels(subModel);
+    update_all_discrete_variables(subModel);
+    //update_discrete_variable_values(subModel);
+    //update_discrete_variable_bounds(subModel);
+    //update_discrete_variable_labels(subModel);
 
     // TODO: mvDist likely needs size change for hyper-parameters. Its
     // bounds need updating too; above variable updates bypass mvDist
@@ -248,8 +268,7 @@ void DataTransformModel::update_from_subordinate_model(size_t depth)
     expand_linear_constraints(subModel);
 
   }
-  else {
-    // base class implementation should suffice for variables
+  else { // base class implementation should suffice for variables
     bool update_active_complement = update_variables_from_model(subModel);
     if (update_active_complement)
       update_variables_active_complement_from_model(subModel);
@@ -434,7 +453,7 @@ int DataTransformModel::get_hyperparam_vc_index(const Model& sub_model)
   default:
     Cerr << "\nError: invalid active variables view " << active_view 
 	 << " in DataTransformModel.\n";
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
     break;
 
   }
@@ -500,6 +519,24 @@ gen_primary_resp_map(const SharedResponseData& srd,
 }
 
 
+void DataTransformModel::
+transform_inactive_variables(const Variables& exp_config_vars,
+			     Variables& sub_model_vars)
+{
+  // Note: experiment configuration vars are imported in "user space" (i.e.,
+  // the original vars spec) and are transformed to this model's "iterator
+  // space" in the constructor by user_space_to_iterator_space().
+
+  // experimental configurations are always stored as inactive vars (refer
+  // to ExperimentData ctor).  Thus we alternate only on the subModel view.
+  short sm_active_view = sub_model_vars.view().first; 
+  if (sm_active_view == RELAXED_ALL || sm_active_view == MIXED_ALL)
+    sub_model_vars.inactive_into_all_variables(exp_config_vars);
+  else //if (sm_active_view >= RELAXED_DESIGN)
+    sub_model_vars.inactive_variables(exp_config_vars);
+}
+
+
 /** Blocking evaluation over all experiment configurations to compute
     a single set of expanded residuals.  If the subModel supports
     asynchronous evaluate_nowait(), do the configuration evals
@@ -530,9 +567,11 @@ void DataTransformModel::derived_evaluate(const ActiveSet& set)
     }
 
     size_t num_exp = expData.num_experiments();
+    const VariablesArray& config_vars = expData.configuration_variables();
+    Variables& sm_vars = subModel.current_variables();
     for (size_t i=0; i<num_exp; ++i) {
-      // augment the active variables with the configuration variables
-      subModel.inactive_variables(expData.configuration_variables()[i]);
+      // update the subModel variables with the experiment configuration vars
+      transform_inactive_variables(config_vars[i], sm_vars);
 
       if (subModel.asynch_flag()) {
         subModel.evaluate_nowait(sub_model_set);
@@ -608,9 +647,11 @@ void DataTransformModel::derived_evaluate_nowait(const ActiveSet& set)
     }
 
     size_t num_exp = expData.num_experiments();
+    const VariablesArray& config_vars = expData.configuration_variables();
+    Variables& sm_vars = subModel.current_variables();
     for (size_t i=0; i<num_exp; ++i) {
-      // augment the active variables with the configuration variables
-      subModel.inactive_variables(expData.configuration_variables()[i]);
+      // update the subModel variables with the experiment configuration vars
+      transform_inactive_variables(config_vars[i], sm_vars);
 
       subModel.evaluate_nowait(sub_model_set);
 
@@ -689,7 +730,8 @@ void DataTransformModel::vars_mapping(const Variables& recast_vars,
 
   // this map only supports continuous variables, but rest need to come along
   submodel_vars.discrete_int_variables(recast_vars.discrete_int_variables());
-  submodel_vars.discrete_string_variables(recast_vars.discrete_string_variables());
+  submodel_vars.discrete_string_variables(
+    recast_vars.discrete_string_variables());
   submodel_vars.discrete_real_variables(recast_vars.discrete_real_variables());
 }
 
@@ -849,7 +891,7 @@ void DataTransformModel::collect_residuals(bool collect_all)
       Cerr << "\nError (DataTransformModel): Sub-model returned " 
            << cr_pair->second.size() << "evaluations,\n  but have " << num_exp 
            << " experiment configurations.\n";
-      abort_handler(-1);
+      abort_handler(MODEL_ERROR);
     }
 
     // populate recastResponseMap with any recast evals that have all
@@ -893,7 +935,7 @@ transform_response_map(const IntResponseMap& submodel_resp,
   if (submodel_resp.size() != num_exp) {
     // unsupported case: could (shouldn't) happen in complex MF workflows
     Cerr << "\nError (DataTransformModel): sub model evals wrong size.\n";
-    abort_handler(-1);
+    abort_handler(MODEL_ERROR);
   }
   IntRespMCIter sm_eval_it = submodel_resp.begin();
   for (size_t i=0; i<num_exp; ++i, ++sm_eval_it)

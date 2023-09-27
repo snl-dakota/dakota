@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -37,7 +37,7 @@ public:
   //
   //- Heading: Constructors and destructor
   //
- 
+
   /// standard constructor
   NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model);
   /// alternate constructor for numerical integration (tensor, sparse, cubature)
@@ -62,7 +62,7 @@ public:
                       String exp_expansion_file = "");
   /// alternate constructor for coefficient import
   NonDPolynomialChaos(Model& model, const String& exp_import_file,
-		      short u_space_type);
+		      short u_space_type, const ShortShortPair& approx_view);
 
   /// destructor
   ~NonDPolynomialChaos();

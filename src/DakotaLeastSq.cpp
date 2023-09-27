@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -39,7 +39,9 @@ LeastSq* LeastSq::leastSqInstance(NULL);
 /** This constructor extracts the inherited data for the least squares
     branch and performs sanity checking on gradient and constraint
     settings. */
-LeastSq::LeastSq(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits):
+LeastSq::
+LeastSq(ProblemDescDB& problem_db, Model& model,
+	std::shared_ptr<TraitsBase> traits):
   Minimizer(problem_db, model, traits),
   // initial value from Minimizer as accounts for fields and transformations
   numLeastSqTerms(numUserPrimaryFns),
@@ -84,7 +86,9 @@ LeastSq::LeastSq(ProblemDescDB& problem_db, Model& model, std::shared_ptr<Traits
 }
 
 
-LeastSq::LeastSq(unsigned short method_name, Model& model, std::shared_ptr<TraitsBase> traits):
+LeastSq::
+LeastSq(unsigned short method_name, Model& model,
+	std::shared_ptr<TraitsBase> traits):
   Minimizer(method_name, model, traits),
   numLeastSqTerms(numFunctions - numNonlinearConstraints),
   weightFlag(false) //(!model.primary_response_fn_weights().empty()), // TO DO
@@ -189,8 +193,8 @@ void LeastSq::print_results(std::ostream& s, short results_state)
     std::shared_ptr<DataTransformModel> dt_model_rep =
       std::static_pointer_cast<DataTransformModel>
       (dataTransformModel.model_rep());
-    dt_model_rep->print_best_responses(s, best_vars, 
-                                       bestResponseArray.front(), num_best, best_ind);
+    dt_model_rep->print_best_responses(s, best_vars, bestResponseArray.front(),
+				       num_best, best_ind);
   }
   else {
     // otherwise the residuals worked on are same size/type as the

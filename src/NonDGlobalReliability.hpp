@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -167,7 +167,12 @@ inline void NonDGlobalReliability::
 x_truth_evaluation(const RealVector& c_vars_u, short mode)
 {
   RealVector c_vars_x;
-  uSpaceModel.probability_transformation().trans_U_to_X(c_vars_u, c_vars_x);
+  SizetMultiArrayConstView x_cv_ids = iteratedModel.continuous_variable_ids(),
+    u_cv_ids = (mppSearchType == SUBMETHOD_EGRA_X) ?
+    uSpaceModel.continuous_variable_ids() :
+    uSpaceModel.subordinate_model().continuous_variable_ids();
+  uSpaceModel.probability_transformation().trans_U_to_X(c_vars_u, u_cv_ids,
+							c_vars_x, x_cv_ids);
   iteratedModel.continuous_variables(c_vars_x);
 
   x_truth_evaluation(mode);

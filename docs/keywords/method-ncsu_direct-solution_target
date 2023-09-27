@@ -9,7 +9,7 @@ This is used for test problems, when the true global minimum is known
 terminates when 100(f_min-fglobal)/max(1,abs(fglobal) <
 convergence_tolerance. The default for fglobal is -1.0e100 and the
 default for convergence tolerance is described at
-:ref:`method-ncsu_direct-convergence_tolerance<method-ncsu_direct-convergence_tolerance>`.
+:dakkw:`method-ncsu_direct-convergence_tolerance`.
 Topics::
 
 Examples::

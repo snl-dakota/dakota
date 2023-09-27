@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -42,8 +42,8 @@ enum { SETUP_MODEL, SETUP_USERFUNC };
 // define array limits hard-wired in DIRECT
 // maxdim (same as maxor)
 #define NCSU_DIRECT_MAXDIM 64
-// maxfunc = 90000-20
-#define NCSU_DIRECT_MAXFUNC 89980
+// BMA: maxfunc = 90000-20; MSE: increased for use with cheap evals by GenACV
+#define NCSU_DIRECT_MAXFUNC 255000
 
 NCSUOptimizer* NCSUOptimizer::ncsudirectInstance(NULL);
 
@@ -56,7 +56,7 @@ NCSUOptimizer::NCSUOptimizer(ProblemDescDB& problem_db, Model& model):
   volBoxSize(probDescDB.get_real("method.volume_boxsize_limit")),
   solutionTarget(probDescDB.get_real("method.solution_target")),
   userObjectiveEval(NULL)
-{ 
+{
   check_inputs();
 }
 
@@ -70,7 +70,7 @@ NCSUOptimizer(Model& model, size_t max_iter, size_t max_eval,
   setUpType(SETUP_MODEL),
   minBoxSize(min_box_size), volBoxSize(vol_box_size),
   solutionTarget(solution_target), userObjectiveEval(NULL)
-{ 
+{
   maxIterations = max_iter; maxFunctionEvals = max_eval;
   check_inputs();
 }
@@ -82,7 +82,7 @@ NCSUOptimizer::NCSUOptimizer(Model& model):
   Optimizer(NCSU_DIRECT, model, std::shared_ptr<TraitsBase>(new NCSUTraits())),
   setUpType(SETUP_MODEL), minBoxSize(-1.),
   volBoxSize(-1.), solutionTarget(-DBL_MAX), userObjectiveEval(NULL)
-{ 
+{
   check_inputs();
 }
 
@@ -90,16 +90,31 @@ NCSUOptimizer::NCSUOptimizer(Model& model):
 /** This is an alternate constructor for performing an optimization using
     the passed in objective function pointer. */
 NCSUOptimizer::
-NCSUOptimizer(const RealVector& var_l_bnds, const RealVector& var_u_bnds,
+NCSUOptimizer(//const RealVector& initial_pt,
+	      const RealVector& var_l_bnds, const RealVector& var_u_bnds,
+	      const RealMatrix& lin_ineq_coeffs,
+	      const RealVector& lin_ineq_l_bnds,
+	      const RealVector& lin_ineq_u_bnds,
+	      const RealMatrix& lin_eq_coeffs, const RealVector& lin_eq_tgts,
+	      const RealVector& nln_ineq_l_bnds,
+	      const RealVector& nln_ineq_u_bnds, const RealVector& nln_eq_tgts,
 	      size_t max_iter, size_t max_eval,
 	      double (*user_obj_eval) (const RealVector &x),
 	      double min_box_size, double vol_box_size, double solution_target):
-  Optimizer(NCSU_DIRECT, var_l_bnds.length(), 0, 0, 0, 0, 0, 0, 0, std::shared_ptr<TraitsBase>(new NCSUTraits())),
+  Optimizer(NCSU_DIRECT, var_l_bnds.length(), 0, 0, 0,
+	    lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
+	    nln_ineq_l_bnds.length(),  nln_eq_tgts.length(),
+	    std::shared_ptr<TraitsBase>(new NCSUTraits())),
   setUpType(SETUP_USERFUNC), minBoxSize(min_box_size), volBoxSize(vol_box_size),
   solutionTarget(solution_target), lowerBounds(var_l_bnds), 
-  upperBounds(var_u_bnds), userObjectiveEval(user_obj_eval)
-{ 
-  maxIterations = max_iter; maxFunctionEvals = max_eval; 
+  upperBounds(var_u_bnds), linIneqCoeffs(lin_ineq_coeffs),
+  // linear and nonlinear constraints are cached even though not directly used
+  linIneqLowerBnds(lin_ineq_l_bnds), linIneqUpperBnds(lin_ineq_u_bnds),
+  linEqCoeffs(lin_eq_coeffs), linEqTargets(lin_eq_tgts),
+  nlnIneqLowerBnds(nln_ineq_l_bnds), nlnIneqUpperBnds(nln_ineq_u_bnds),
+  nlnEqTargets(nln_eq_tgts), userObjectiveEval(user_obj_eval)
+{
+  maxIterations = max_iter; maxFunctionEvals = max_eval;
   check_inputs();
 }
 
@@ -113,16 +128,22 @@ void NCSUOptimizer::check_sub_iterator_conflict()
   Iterator sub_iterator = iteratedModel.subordinate_iterator();
   if (!sub_iterator.is_null() && 
        ( sub_iterator.method_name() == NCSU_DIRECT ||
-	 sub_iterator.uses_method() == SUBMETHOD_DIRECT ) )
-    sub_iterator.method_recourse();
+	 sub_iterator.uses_method() == SUBMETHOD_DIRECT ||
+	 sub_iterator.uses_method() == SUBMETHOD_DIRECT_NPSOL ||
+	 sub_iterator.uses_method() == SUBMETHOD_DIRECT_OPTPP ||
+	 sub_iterator.uses_method() == SUBMETHOD_DIRECT_NPSOL_OPTPP ) )
+    sub_iterator.method_recourse(methodName);
   ModelList& sub_models = iteratedModel.subordinate_models();
   for (ModelLIter ml_iter = sub_models.begin();
        ml_iter != sub_models.end(); ml_iter++) {
     sub_iterator = ml_iter->subordinate_iterator();
     if (!sub_iterator.is_null() && 
 	 ( sub_iterator.method_name() == NCSU_DIRECT ||
-	   sub_iterator.uses_method() == SUBMETHOD_DIRECT ) )
-      sub_iterator.method_recourse();
+	   sub_iterator.uses_method() == SUBMETHOD_DIRECT ||
+	   sub_iterator.uses_method() == SUBMETHOD_DIRECT_NPSOL ||
+	   sub_iterator.uses_method() == SUBMETHOD_DIRECT_OPTPP ||
+	   sub_iterator.uses_method() == SUBMETHOD_DIRECT_NPSOL_OPTPP ) )
+      sub_iterator.method_recourse(methodName);
   }
 }
 
@@ -132,24 +153,81 @@ void NCSUOptimizer::check_inputs()
   // Check limits against DIRECT hard-wired parameters. Note that
   // maxIterations could be a problem with constants maxdeep and
   // maxdiv, but there's no way to know a priori.
-  if (numContinuousVars > NCSU_DIRECT_MAXDIM || 
-      maxFunctionEvals > NCSU_DIRECT_MAXFUNC) {
-    if (numContinuousVars > NCSU_DIRECT_MAXDIM) 
-      Cerr << "Error (NCSUOptimizer): " << numContinuousVars << " variables "
-	   << "specified exceeds NCSU DIRECT limit\n                       of "
-	   << NCSU_DIRECT_MAXDIM << " variables.\n";
-    if (maxFunctionEvals > NCSU_DIRECT_MAXFUNC)
-      Cerr << "Error (NCSUOptimizer): max function evaluations " 
-	   << maxFunctionEvals << " specified exceeds\n                       "
-	   << "NCSU DIRECT limit of " << NCSU_DIRECT_MAXFUNC << ".\n";
+  bool err_flag = false;
+  if (numContinuousVars > NCSU_DIRECT_MAXDIM) {
+    Cerr << "Error (NCSUOptimizer): " << numContinuousVars << " variables "
+	 << "specified exceeds NCSU DIRECT limit\n                       of "
+	 << NCSU_DIRECT_MAXDIM << " variables.\n";
+    err_flag = true;
+  }
+  if (maxFunctionEvals > NCSU_DIRECT_MAXFUNC) {
+    Cerr << "Error (NCSUOptimizer): max function evaluations " 
+	 << maxFunctionEvals << " specified exceeds\n                       "
+	 << "NCSU DIRECT limit of " << NCSU_DIRECT_MAXFUNC << ".\n";
+    err_flag = true;
+  }
+
+  if (err_flag) {
     Cerr << std::endl;
-    abort_handler(-1);
+    abort_handler(METHOD_ERROR);
   }
 }
 
 
 NCSUOptimizer::~NCSUOptimizer() 
 { }
+
+
+void NCSUOptimizer::
+update_callback_data(const RealVector& cv_initial,
+		     const RealVector& cv_lower_bnds,
+		     const RealVector& cv_upper_bnds,
+		     const RealMatrix& lin_ineq_coeffs,
+		     const RealVector& lin_ineq_l_bnds,
+		     const RealVector& lin_ineq_u_bnds,
+		     const RealMatrix& lin_eq_coeffs,
+		     const RealVector& lin_eq_targets,
+		     const RealVector& nln_ineq_l_bnds,
+		     const RealVector& nln_ineq_u_bnds,
+		     const RealVector& nln_eq_targets)
+{
+  enforce_null_model();
+
+  bool reshape = false;
+  size_t num_cv  = cv_initial.length(),
+    num_lin_ineq = lin_ineq_coeffs.numRows(),
+    num_lin_eq   = lin_eq_coeffs.numRows(),
+    num_nln_ineq = nln_ineq_l_bnds.length(),
+    num_nln_eq   = nln_eq_targets.length();
+  if (numContinuousVars != num_cv)
+    { numContinuousVars  = num_cv; reshape = true; }
+  if (numLinearIneqConstraints != num_lin_ineq ||
+      numLinearEqConstraints   != num_lin_eq)
+    { numLinearIneqConstraints  = num_lin_ineq;
+      numLinearEqConstraints    = num_lin_eq; reshape = true; }
+  if (numNonlinearIneqConstraints != num_nln_ineq ||
+      numNonlinearEqConstraints   != num_nln_eq)
+    { numNonlinearIneqConstraints  = num_nln_ineq;
+      numNonlinearEqConstraints    = num_nln_eq; reshape = true; }
+  numLinearConstraints = numLinearIneqConstraints + numLinearEqConstraints;
+  numNonlinearConstraints
+    = numNonlinearIneqConstraints + numNonlinearEqConstraints;
+  numConstraints = numNonlinearConstraints + numLinearConstraints;
+  numFunctions = numObjectiveFns + numNonlinearConstraints;
+
+  //initial_point(cv_initial);           // protect from incoming view
+  copy_data(cv_lower_bnds, lowerBounds); // protect from incoming view
+  copy_data(cv_upper_bnds, upperBounds); // protect from incoming view
+
+  linIneqCoeffs    = lin_ineq_coeffs;  linEqCoeffs      = lin_eq_coeffs;
+  linIneqLowerBnds = lin_ineq_l_bnds;  linIneqUpperBnds = lin_ineq_u_bnds;
+  linEqTargets     = lin_eq_targets;
+
+  nlnIneqLowerBnds = nln_ineq_l_bnds;  nlnIneqUpperBnds = nln_ineq_u_bnds;
+  nlnEqTargets     = nln_eq_targets;
+
+  if (reshape) reshape_best(numContinuousVars, numFunctions);
+}
 
 
 /// Modified batch evaluator that accepts multiple points and returns
@@ -166,7 +244,7 @@ objective_eval(int *n, double c[], double l[], double u[], int point[],
 
   int cnt = *start-1; // starting index into fvec
   int nx  = *n;       // dimension of design vector x.
-  
+
   // number of trial points to evaluate
   // if initial point, we have a single point to evaluate
   int np = (*start == 1) ? 1 : *maxI*2;
@@ -339,23 +417,23 @@ void NCSUOptimizer::core_run()
     switch (ierror) {
     case 1:
       Cout << "(maximum function evaluations exceeded)";
-      break;;
+      break;
     case 2:
       Cout << "(maximum iterations reached)";
-      break;;
+      break;
     case 3:
       Cout << "(prescribed global minimum reached within tolerance)";
-      break;;
+      break;
     case 4:
       Cout << "(volume of best hyperrectangle is less than the "
         << "prescribed percentage of the original)"; 
-      break;;
+      break;
     case 5:
       Cout << "(best rectangle measure is less than prescribed min box size)";
-      break;;
+      break;
     default:
       Cout << "(unknown code)";
-      break;;
+      break;
     }
     Cout << std::endl;
   }

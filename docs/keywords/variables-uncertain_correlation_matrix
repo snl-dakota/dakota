@@ -28,7 +28,7 @@ table in :dakkw:`variables` for ``normal``, ``lognormal``, ...,
 
 When additional variable types are activated, they assume uniform
 distributions, and the ordering is as listed on
-:ref:`variables<variables>`.
+:dakkw:`variables`.
 
 Topics::
 

@@ -4,6 +4,9 @@
 environment
   tabular_data
     tabular_data_file = 'cantilever_sampling_wilks.dat'
+#   results_output                                              #s1
+#      hdf5                                                     #s1
+#        results_output_file = 'wilks'                          #s1
 
 method
   sampling
@@ -18,8 +21,7 @@ method
 #      two_sided                                                #s2,#s3
 #      one_sided_lower                                          #s4
 #      order 3                                                  #s1,#s2
-#      std_regression_coeffs                                    #s1
-    seed = 31415
+   seed = 31415
 
 model
   single

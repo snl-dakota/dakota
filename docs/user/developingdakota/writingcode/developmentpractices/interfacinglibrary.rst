@@ -364,7 +364,7 @@ A second option is to check which libraries appear in CMAKE_INSTALL_PREFIX/bin/ 
    
       -lXpm -lXm -lXt -lXmu -lXp -lXext -lX11 -lSM -lICE
 
- - When configuring with AMPL (HAVE_AMPL:BOOL=ON), the AMPL solver library may require dl, funcadd0.o and fl libraries. We have experienced problems with the creation of libamplsolver.a on some platforms; use the dakota-users mailing list to get help with any problems related to this.
+ - When configuring with AMPL (HAVE_AMPL:BOOL=ON), the AMPL solver library may require dl, funcadd0.o and fl libraries. We have experienced problems with the creation of libamplsolver.a on some platforms; inquire on Dakota's :ref:`dicussions forum<help-discussions>` to get help with any problems related to this.
  - Optional library GSL (discouraged due to GPL license) and if linking with system-provided GSL, gslcblas may be needed if Dakota was configured with them.
  - Newmat: as of Dakota 5.2, -lnewmat is no longer required
 

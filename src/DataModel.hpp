@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -27,9 +27,9 @@ namespace Dakota {
 enum { DEFAULT_POINTS, MINIMUM_POINTS, RECOMMENDED_POINTS, TOTAL_POINTS };
 
 /// define special values for SurrogateModel::responseMode
-enum { NO_SURROGATE=0,  UNCORRECTED_SURROGATE, AUTO_CORRECTED_SURROGATE,
-       BYPASS_SURROGATE, MODEL_DISCREPANCY, AGGREGATED_MODEL_PAIR,
-       AGGREGATED_MODELS };
+enum { DEFAULT_SURROGATE_RESP_MODE=0, NO_SURROGATE, UNCORRECTED_SURROGATE,
+       AUTO_CORRECTED_SURROGATE, BYPASS_SURROGATE, MODEL_DISCREPANCY,
+       AGGREGATED_MODEL_PAIR, AGGREGATED_MODELS };
 
 /// define special values for approxCorrectionType
 enum { NO_CORRECTION=0,  ADDITIVE_CORRECTION, MULTIPLICATIVE_CORRECTION,

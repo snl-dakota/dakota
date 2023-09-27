@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -38,10 +38,11 @@ public:
   NonDExpansion(ProblemDescDB& problem_db, Model& model);
   /// alternate constructor
   NonDExpansion(unsigned short method_name, Model& model,
-		short exp_coeffs_approach, const RealVector& dim_pref, int seed,
-		short refine_type, short refine_control, short covar_control,
-		Real colloc_ratio, short rule_nest, short rule_growth,
-		bool piecewise_basis, bool use_derivs);
+		const ShortShortPair& approx_view, short exp_coeffs_approach,
+		const RealVector& dim_pref, int seed, short refine_type,
+		short refine_control, short covar_control, Real colloc_ratio,
+		short rule_nest, short rule_growth, bool piecewise_basis,
+		bool use_derivs);
   /// destructor
   ~NonDExpansion();
 
@@ -617,13 +618,8 @@ private:
   /// of maxIterations)
   size_t maxSolverIterations;
   
-  /// flag indicating the activation of variance-bsaed decomposition
-  /// for computing Sobol' indices
-  bool vbdFlag;
   /// limits the order of interactions within the component Sobol' indices
   unsigned short vbdOrderLimit;
-  /// tolerance for omitting output of small VBD indices
-  Real vbdDropTol;
 
   // sample type for \c expansion_samples approach to estimating PCE
   // coefficients (supports construct_incremental_lhs())

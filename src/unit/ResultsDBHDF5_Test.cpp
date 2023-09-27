@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -10,7 +10,7 @@
 // #if 0 // comment to make this file active
 #ifdef DAKOTA_HAVE_HDF5
 
-#include "dakota_windows.h"
+#include "util_windows.hpp"
 
 #define BOOST_TEST_MODULE dakota_ResultsDBHDF5_Test
 #include <boost/test/included/unit_test.hpp>

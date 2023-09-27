@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -173,8 +173,11 @@ private:
   /// static data used by static rank_sort() fn
   static RealArray rawData;
 
-  /// flags computation of variance-based decomposition indices
-  bool varBasedDecompFlag;
+  /// sampling method for computing variance-based decomposition indices
+  unsigned short vbdViaSamplingMethod;
+
+  /// number of bins for using with the Mahadevan sampling method for computing variance-based decomposition indices
+  int vbdViaSamplingNumBins;
 
   /// flag to specify the calculation of principal components
   bool pcaFlag;

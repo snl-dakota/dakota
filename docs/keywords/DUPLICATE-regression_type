@@ -2,7 +2,7 @@ Blurb::
 Type of solver for forming function train approximations by regression
 Description::
 Function train approximations are formed based on regression for the set of
-coefficients described at :ref:`model-surrogate-global-function_train<model-surrogate-global-function_train>`.  Solver
+coefficients described at :dakkw:`model-surrogate-global-function_train`.  Solver
 options include least squares and regularized regression, where the latter
 penalizes high-order terms to mitigate overfitting.
 

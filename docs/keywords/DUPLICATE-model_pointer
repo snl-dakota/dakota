@@ -1,13 +1,13 @@
 Blurb::
 Identifier for model block to be used by a method
 Description::
-The ``model_pointer`` is used to specify which :ref:`model<model>` block will be
+The ``model_pointer`` is used to specify which :dakkw:`model` block will be
 used to perform the function evaluations needed by the Dakota method.
 
 *Default Behavior*
 
 If not specified, a Dakota method will use the last model block
-parsed.  If specified, there must be a :ref:`model<model>` block in the Dakota
+parsed.  If specified, there must be a :dakkw:`model` block in the Dakota
 input file that has a corresponding ``id_model`` with the same name.
 
 *Usage Tips*
@@ -16,7 +16,7 @@ When doing advanced analyses that involve using multiple methods and
 multiple models, defining a ``model_pointer`` for each method is
 imperative.
 
-See :ref:`topic-block_pointer<topic-block_pointer>` for details about pointers.
+See :ref:`topic-block_pointer` for details about pointers.
 Topics::
 block_pointer
 Examples::

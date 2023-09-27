@@ -1,0 +1,41 @@
+#@ s*: Label=FastTest
+# Dakota Input File: cantliever_sampling_tolerance_intervals.in
+
+environment
+  results_output
+    hdf5
+        results_output_file = 'cantilever_sampling_tolerance_intervals_s0'        #s0
+#       results_output_file = 'cantilever_sampling_tolerance_intervals_s1'        #s1
+
+method
+  sampling
+    samples 5
+#    refinement_samples 4 3 3 #s1
+    sample_type random
+    tolerance_intervals
+#      coverage 0.96          #s1
+#      confidence_level 0.92  #s1
+    seed = 31415
+
+model
+  single
+
+variables
+  continuous_design = 2
+    initial_point    2.5    2.5
+    upper_bounds    10.0   10.0
+    lower_bounds     1.0    1.0
+    descriptors 'w' 't'
+  normal_uncertain = 4
+    means             =  40000. 29.E+6 500. 1000.
+    std_deviations    =  2000. 1.45E+6 100. 100.
+    descriptors       =  'R' 'E' 'X' 'Y'
+
+interface
+    direct
+      analysis_driver = 'cantilever'
+
+responses
+  response_functions = 3
+  no_gradients
+  no_hessians

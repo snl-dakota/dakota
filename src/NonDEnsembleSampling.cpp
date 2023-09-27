@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -269,9 +269,9 @@ void NonDEnsembleSampling::active_set_mapping()
 {
   switch (finalStatsType) {
   case ESTIMATOR_PERFORMANCE:
-    // transfer ASV requests from finalStatistics to activeSet; we won't
-    // support derivatives of estimator performance metrics (see also
-    // initialize_final_statistics() above)
+    // transfer ASV requests from finalStatistics to activeSet
+    // (we won't support derivatives of estimator performance metrics,
+    // see also initialize_final_statistics() above)
     activeSet.request_values(1);        break;
   case QOI_STATISTICS: // final stats: moments + level mappings
     NonDSampling::active_set_mapping(); break;
