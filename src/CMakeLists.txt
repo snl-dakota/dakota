@@ -765,7 +765,6 @@ if(HAVE_MUQ)
   add_definitions("-DHAVE_MUQ")
   set(iterator_src ${iterator_src} NonDMUQBayesCalibration.cpp)
   list(APPEND DAKOTA_INCDIRS ${Dakota_SOURCE_DIR}/packages/external/muq2)
-  list(APPEND DAKOTA_LIBDIRS ${Dakota_BINARY_DIR}/packages/external/muq2)
   list(APPEND DAKOTA_PKG_LIBS muqUtilities muqModeling muqSamplingAlgorithms)
 endif()
 
