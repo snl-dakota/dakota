@@ -211,8 +211,14 @@ if(HAVE_MUQ)
   # Might need to "muck" with this to avoid MUQ attempting writes to /usr/local
   #message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
   #set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/external/muq2)
-  set(MUQ_EIGEN3_DIR ${DAKOTA_EIGEN3_INCLUDE_DIR})
-  set(MUQ_HDF5_DIR ${HDF5_INCLUDE_DIRS}/..)
+  if(NOT MUQ_EIGEN3_DIR)
+    set(MUQ_EIGEN3_DIR ${DAKOTA_EIGEN3_INCLUDE_DIR})
+  endif()
+
+  if(NOT MUQ_HDF5_DIR)
+    set(MUQ_HDF5_DIR ${HDF5_INCLUDE_DIRS}/..)
+  endif()
+
   set(MUQ_ENABLEGROUP_DEFAULT OFF CACHE BOOL "Disable MUQ default packages" FORCE)
   set(MUQ_ENABLEGROUP_SAMPLING_ALGORITHM ON CACHE BOOL "Enable MUQ sampling package" FORCE)
   add_subdirectory(external/muq2)
