@@ -99,22 +99,88 @@ starting point:
 Regression Tests
 ================
 
-These tests involve complete Dakota studies albeit typically small,
-fast and using models that represent known behavior such as polynomials
-or other canonical problems.  In brief, these tests:
+Regression tests compare the output of complete Dakota studies against
+baseline behavior to ensure that changes to the code do not cause unexpected
+changes to output. Ideally they are fast running and use models 
+with known behavior such as polynomials or other canonical problems.
 
-- Are primarily located in source/test/dakota_*.in with gold standards
-  in dakota_*.base
-- Are categorized using CTest labels, e.g. use ``ctest --print-labels``
-  to view them
-- Are usually wrappers to the native Dakota ``test/dakota_test.perl``
-  utility, e.g. use the option ``--man`` for supported options
+The following are a few key concepts in Dakota's regression test system:
 
-Regression tests run the cases specified in the source/test/dakota_*.in
-files. The outputs for each of the cases are compared to the outputs 
-extracted in the associated dakota_*.base gold standard. Any differences
-from the dakota_*.base file will be detected and the test will fail with
-a diff. If the Dakota execution fails for a case, it will fail outright.
+- In the source tree, most important test-related content is located
+  in the test/ directory. Test files are named dakota_*.in. Each test file
+  has a baseline file named dakota_*.base. Some tests have other
+  associated data files and drivers.
+- Configuring Dakota causes test files and associated content to be copied
+  to subfolders within the test/ folder of the build tree. This is where
+  they will be run.
+- A single test file can contain multiple numbered serial and parallel subtests. Each
+  subtest, after extraction from the test file, is a valid Dakota input file.
+- Tests usually should be run using the ``ctest`` commmand. CTest uses the
+  script dakota_test.perl, which is located in the test directory, to do most
+  of the heavy lifting. This script can be run from the command line, as well.
+  Run it with the argument ``--man`` for documentation of its options.
+- Subtests can be categorized and described using CTest labels. (use 
+  ``ctest --print-labels`` in a build tree to view labels of existing tests).
+  One purpose of labels is to state whether an optional component of Dakota
+  is needed to run the test.
+
+Running Regression Tests
+------------------------
+
+Dakota's full regression test suite contains approxiately 300 test files
+and more than a thousand subtests. It typically takes between several tens of
+minutes to a few hours to complete, depending on available computing resouces.
+The test system executes Dakota for each subtest, collects the output, and
+compares it to a baseline. There are three possible results for a subtest:
+
+- **PASS**: Dakota output matched the baseline to within a numerical tolerance
+- **DIFF**: Dakota ran to completion, but its output did not match the baseline
+- **FAIL**: Dakota did not run to completion (it failed to run altogether or returned nonzero)
+
+In a Dakota build tree, the ``ctest`` command is the best way to run Dakota
+tests, including regression tests. Running the command with no options runs all the tests
+sequentially. A few helpful options:
+
+- ``-j N``: Run N tests concurrently. Be aware that some of Dakota's
+  regression tests may make use of local or MPI parallelism and may
+  use multiple cores.
+- ``-L <label>``: Run only those tests whose label matches the regex <label>.
+  To run only regression tests (and not, e.g. unit tests), use the label ``Regression``.
+- ``-R <name>``: Run only those tests whose name matches the regrex <name>. The
+
+It currently is not possible to run specific subtests; all subtests of a test
+selected by label or name will be run.
+
+During configuration, test files, baselines, and auxilliary content is copied
+from the source tree to the build tree, where tests will be run. For each test
+file, a subdirectory is created in the test/ directory. The subdirectories have the
+names of their test files, minus the ``.in`` extension. If Dakota was built with parallel
+support, an additional subfolder is created for any parallel subtests in a test file.
+Its name is the test name with the letter ``p`` prepended.
+
+The results of each test are located in their subfolders. For serial subtests, the results
+are in the file ``dakota_diffs.out``. For parallel subtests, the results file is ``dakota_pdiffs.out``.
+These files state whether each subtest PASSed, DIFFed, or FAILed. If the test DIFFed, a diff
+of the Dakota console output and baseline is listed.
+
+The make target ``dakota-diffs`` causes all the ``dakota_diffs.out`` files from individual tests
+to be concatenated into a one ``dakota_diffs.out`` in the test/ directory, and similarly for the
+``dakota_pdiffs.out`` files.
+
+Subsequent runs of ``ctest`` will cause test results to be appended to existing ``dakota_diffs.out``
+files. The make target ``dakota-diffs-clean`` freshens the test/ folder.
+
+.. note::
+	While Dakota's test system has three possible test results (PASS, DIFF, FAIL), CTest has only
+	two (PASS or FAIL) and reports Dakota DIFFs as failures. Quite often tests that CTest reports
+	as failing are exhibiting only minor numerical differences from baseline and are no cause for
+	concern. Check dakota_diffs.out/dakota_pdiffs.out for "failing" tests before concluding that there's
+	a problem with your Dakota build.
+
+The ``ctest`` command uses the script ``dakota_test.perl`` and its helper ``dakota_diff.perl``
+to extract subtests, run Dakota to produce test output, and diff the results against
+the baseline. It is possible to run ``dakota_test.perl`` from the command line. Use the argument
+``--man`` to see its options. (The ``-e`` option to extract a subtest is particularly useful.)
 
 If a regression test fails, steps to diagnose the failure include the
 following which are performed in the Dakota build directory:
@@ -122,7 +188,11 @@ following which are performed in the Dakota build directory:
 #. Remove previous test artifacts related to detailed differences and
    failures via ``make dakota-diffs-clean``.
 
-#. Rerun the failing CTest: ``ctest -R test_name``
+# By default, ``dakota_test.perl`` overwrites Dakota output after each subtest. Set the
+  ``DAKOTA_TEST_SAVE_OUTPUT`` environment variable to 1 to save it.
+
+#. Rerun the failing CTest: ``ctest -R test_name``. (This regex will catch both the serial and parallel
+   subtests. Add a carat (``^``) at the beginning of the pattern to exclude the parallel subtests.)
 
 #. Generate details for how the test differs from the corresponding
    baseline: ``make dakota-diffs``.
@@ -136,39 +206,85 @@ following which are performed in the Dakota build directory:
 
 Creating a New Regression Test
 ------------------------------
-Different cases are specified in the source/test/dakota_*.in input file.  
-Lines required for all test cases should be left uncommented. Lines 
-that should only be activated for specific test cases should be commented
-out, with tags in the following format at the end of the lines: ``#sN`` or 
-``#pN`` for serial and parallel tests, respectively, where N is the integer 
-associated with a test case. The test utility will uncomment the lines 
-associated with each test case to run the tests. 
 
-Test cases start from index 0. Test Case 0 will run all uncommented lines 
-in the input file. If there are lines in Test Case 0 that should not be 
-included in other test cases, the line should be ended with ``#s0``.
+A complete regression test includes a test file, which can contain multiple
+subtests, a baseline, and any auxilliary files (such as data files or
+drivers) needed by the subtests.
 
-If a line in the input file applies to multiple test cases (but not all),
-all relevant test case tags should be appended to the end of the line. 
-For example, if a line in the input file is relevant for serial test cases 
-1 and 2, the line should be ended with ``#s1,#s2``. 
+Writing Subtests
+^^^^^^^^^^^^^^^^^^^
 
-You can label tests so that they are categorized into different groups 
-of tests (e.g., FastTest, AcceptanceTest). This is done by adding a 
-comment to the top of the input file of the form ``#@ sN: Label=FastTest``, 
-where N is the integer associated with the test case. Individual test 
-cases can be labeled, or the same label can be applied to all cases 
-using the * regular expression: ``#@ s*: Label=FastTest``. 
+Including multiple subtests within a single test file reduces maintenance
+burden by allowing related test cases to share Dakota specifications that
+they have in common.
 
-If certain test cases should only be run for specific Dakota 
-configurations, e.g., if Dakota is built with external library QUESO,
-this can be specified by adding a comment at the top of the input file 
-of the form ``#@ sN: DakotaConfig=HAVE_QUESO`` (these config flags should 
-coincide with those from CMake configuration). As with the label, the 
-config information can be applied to all text cases using the * regex:
-``#@ s*: DakotaConfig=HAVE_QUESO``.
+A test file is just a Dakota input file that has been annotated to indicate
+the lines that belong to each subtest. Subtests are numbered, beginning with 0,
+and serial and parallel subtests have independent numbering. The rules for
+annotating the lines of a test file are:
 
-An example input test file demonstrating these differences is shown here.
+- Lines required for all test cases should be left uncommented.
+- A line that should only be activated for specific subtests should be commented
+  out, and the label ``#sN`` or ``#pN`` for serial and parallel tests, respectively,
+  should be added to the end. ``N`` is the integer associated with a subtest.
+  When ``dakota_test.perl`` extracts a subtest from the test file, it will keep all
+  uncommented lines and also lines that end with a the corresponding subtest tag.
+- The tag ``#s0`` has a special meaning. Serial subtest 0 is considered to include
+  all uncommented lines in the original test input file. Lines with the ``#s0`` tag should
+  not be commented out. They will not be extracted for other subtests. This convention allows
+  the 0th serial subtest to be runnable without extraction.
+- If a line in the input file is used in multiple subtests (but not all), the tags should
+  appear in a comma-separated list. For example, if a line in the input file belongs to
+  serial subtests 1 and 2, the line should end in ``#s1,#s2``.
+
+Test Directives
+^^^^^^^^^^^^^^^
+
+The test creator can (and in some cases must) provide additional
+information to Dakota's test system through the use of directives.
+Directives must appear at the top of the file, but can be in any
+order. They have the format:
+
+``#@ <subtest specifier> = <directive>``
+
+The subtest specifier indicates which of the subtests the directive applies to.
+Its format is similar to the subtest tag:
+- ``sN`` or ``pN``, without a pound sign.
+- ``N`` can be a subtest number or, if the directive applies to all serial or parallel
+  subtests in teh file, ``*``.
+
+.. table:: Regression Test Directives
+   :widths: auto
+   ======================== ================================================================================= 
+   Directive                Meaning
+   ======================== ================================================================================= 
+   Label=FastTest           A quick-running test.                                                            
+   Label=Experimental       Experimental capability. For information only.                                   
+   Label=AcceptanceTest     Acceptance tests rarely diff on any platform                                     
+   DakotaConfig=FLAG        Only run this test if the CMake variable FLAG is true.                           
+   MPIProcs=N               Execute Dakota in parallel with N MPI tasks                                      
+   TimeoutDelay=N           Terminate Dakota if console output is unchanged for N seconds (default is 60s)   
+   TimeoutAbsolute=N        Terminate Dakota if the subtest takes longer than N seconds (default is 1200 s)  
+   CheckOutput='FILENAME'   Dakota output for the test will appear in FILENAME instead of the default        
+   Restart=read             Read the restart file written by the last subtest. Implies Restart=write.        
+   Restart=write            Write a restart file (usually to be used by a future subtest)
+   Restart=none             No restart option                 
+   DependsOn=N              This subtest depends on another. Currently for information only.                 
+   ExecCmd='CMD'            Instead of 'dakota', run this command.                                           
+   ExecArgs='ARGS'          Arguments passed to command                                                      
+   InputFile='INPUT'        Specify an input file instead of the extracted one.                                                                
+   UserMan='FILENAME'       Extract subtest to FILENAME for use in the User's Manual
+   ======================== ================================================================================= 
+
+A few notes on directives:
+- Labels can be used to filter tests using the ``-L`` option to ``ctest`` or the ``--label-regex`` option
+  to ``dakota_test.perl``.
+- ``MPIProcs`` is required for parallel tests.
+
+Example Test file
+^^^^^^^^^^^^^^^^^
+
+An example input test file demonstrating a few of these features is below.
 
 .. code-block::
 
@@ -198,15 +314,18 @@ An example input test file demonstrating these differences is shown here.
     no_gradients
     no_hessians
 
-This input file has three test cases: the first is Bayesian 
-calibration using QUESO, the second is LHS sampling, and the 
-third is random sampling. All the input file lines that are 
+This input file has three test cases: the first (s0) is Bayesian 
+calibration using QUESO, the second (s1) is LHS sampling, and the 
+third (s2) is random sampling. All the input file lines that are 
 shared between the test cases are uncommented. Note that the
-lines specific to Test Case 0 that should not appear in the 
+lines specific to Subtest s0 that should not appear in the 
 input files for Test Cases 1 and 2 have ``#s0`` appended to
-them. 
+them.
 
-To create a new gold standard dakota_*.base file for serial
+The test has the label ``FastTest`` and will only be run when
+Dakota is built with the optional QUESO component.
+
+To create a new baseline dakota_*.base file for serial
 regression tests, call 
 
 .. code-block::
@@ -217,7 +336,7 @@ This will create a file with extension .base.new with the same
 basename as the input file. Check the results, then change 
 the extension to .base to incorporate it into the test suite.
 
-More advanced options for generating gold standard (baseline)
+More advanced options for generating baseline
 files (e.g., for parallel tests) and more details about creating 
 baselines are available in ``dakota_test.perl --man``. 
 
