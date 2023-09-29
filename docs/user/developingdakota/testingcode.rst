@@ -188,8 +188,8 @@ following which are performed in the Dakota build directory:
 #. Remove previous test artifacts related to detailed differences and
    failures via ``make dakota-diffs-clean``.
 
-# By default, ``dakota_test.perl`` overwrites Dakota output after each subtest. Set the
-  ``DAKOTA_TEST_SAVE_OUTPUT`` environment variable to 1 to save it.
+#. By default, ``dakota_test.perl`` overwrites Dakota output after each subtest. Set the
+   ``DAKOTA_TEST_SAVE_OUTPUT`` environment variable to 1 to save it.
 
 #. Rerun the failing CTest: ``ctest -R test_name``. (This regex will catch both the serial and parallel
    subtests. Add a carat (``^``) at the beginning of the pattern to exclude the parallel subtests.)
