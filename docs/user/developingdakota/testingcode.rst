@@ -249,12 +249,14 @@ order. They have the format:
 
 The subtest specifier indicates which of the subtests the directive applies to.
 Its format is similar to the subtest tag:
+
 - ``sN`` or ``pN``, without a pound sign.
 - ``N`` can be a subtest number or, if the directive applies to all serial or parallel
   subtests in teh file, ``*``.
 
 .. table:: Regression Test Directives
    :widths: auto
+
    ======================== ================================================================================= 
    Directive                Meaning
    ======================== ================================================================================= 
@@ -277,6 +279,7 @@ Its format is similar to the subtest tag:
    ======================== ================================================================================= 
 
 A few notes on directives:
+
 - Labels can be used to filter tests using the ``-L`` option to ``ctest`` or the ``--label-regex`` option
   to ``dakota_test.perl``.
 - ``MPIProcs`` is required for parallel tests.
