@@ -4,7 +4,7 @@
 Contributors
 """"""""""""
 
-Potential contributors to Dakota should review the information on Feature Additions regarding means and terms of contribution.
+Potential contributors to Dakota should review the :ref:`contributing` page. 
 
 Historical Dakota Authors
 =========================

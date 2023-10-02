@@ -6,6 +6,7 @@ Miscellaneous
    
    help
    aboutteam
+   contributing
    contributors
    license
    citing
