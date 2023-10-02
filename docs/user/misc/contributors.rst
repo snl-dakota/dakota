@@ -9,7 +9,10 @@ Potential contributors to Dakota should review the information on Feature Additi
 Historical Dakota Authors
 =========================
 
-Individuals who have contributed directly to Dakota's core since its inception in 1993, including source, examples, and infrastructure. Other current developers are listed at About - Team. Format: author (organization when contributing, current affiliation): specific contribution.
+Individuals who have contributed directly to Dakota's core since its inception in 1993, including source, examples, and infrastructure.
+Other current developers are listed on the :ref:`<aboutteam-main>` page.
+
+Format: author (organization when contributing, current affiliation): specific contribution.
 
 Core and Algorithms
 -------------------
