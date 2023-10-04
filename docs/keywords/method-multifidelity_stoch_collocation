@@ -73,9 +73,9 @@ statistics are generated.
 *Additional Resources*
 
 Dakota provides access to multifidelity SC methods through the
-NonDMultilevelStochCollocation class. Refer to the Stochastic Expansion
-Methods chapter of the Theory Manual :cite:p:`TheoMan` for additional
-information on the Multifidelity SC algorithm.
+NonDMultilevelStochCollocation class. Refer to the 
+:ref:`theory:uq:expansion` section within the theory portion of the Users Guide
+for additional information on the Multifidelity SC algorithm.
 
 *Expected HDF5 Output*
 
