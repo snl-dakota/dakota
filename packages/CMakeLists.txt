@@ -216,8 +216,15 @@ if(HAVE_MUQ)
   endif()
 
   if(NOT MUQ_HDF5_DIR)
-    set(MUQ_HDF5_DIR ${HDF5_INCLUDE_DIRS}/..)
+    if(HDF5_ROOT)
+      set(MUQ_HDF5_DIR ${HDF5_ROOT})
+    else()
+      set(MUQ_HDF5_DIR ${HDF5_INCLUDE_DIRS}/..)
+    endif()
   endif()
+
+  # This also disables MUQ's attempts to acquire TPLs externally
+  set(SKIP_MUQ_TPL_CHECKS ON CACHE BOOL "Disable MUQ TPL compile/link checks" FORCE)
 
   set(MUQ_ENABLEGROUP_DEFAULT OFF CACHE BOOL "Disable MUQ default packages" FORCE)
   set(MUQ_ENABLEGROUP_SAMPLING_ALGORITHM ON CACHE BOOL "Enable MUQ sampling package" FORCE)
