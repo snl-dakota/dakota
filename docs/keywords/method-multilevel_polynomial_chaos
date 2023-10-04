@@ -40,9 +40,10 @@ future releases.
 *Additional Resources*
 
 Dakota provides access to multilevel PCE methods through the
-NonDMultilevelPolynomialChaos class. Refer to the Stochastic Expansion
-Methods chapter of the Theory Manual :cite:p:`TheoMan` for additional
-information on the Multilevel PCE algorithm.
+NonDMultilevelPolynomialChaos class. Refer to the 
+:ref:`theory:uq:expansion` section within the theory portion of the Users Guide
+for additional information on the Multilevel PCE algorithm.
+
 
 *Expected HDF5 Output*
 
