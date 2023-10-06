@@ -6611,7 +6611,9 @@ static IntVector
 	MP_(refineSamples),
 	MP_(sequenceLeap),
 	MP_(sequenceStart),
-	MP_(stepsPerVariable);
+	MP_(stepsPerVariable),
+  MP_(generatingVector),
+  MP_(generatingMatrices);
 
 static Method_mp_ilit2
 	MP3(replacementType,numberRetained,chc),
@@ -6879,7 +6881,9 @@ static String
 	MP_(pstudyFilename),
 	MP_(subMethodName),
         MP_(subMethodPointer),
-        MP_(subModelPointer);
+        MP_(subModelPointer),
+  MP_(generatingVectorFileName),
+  MP_(generatingMatricesFileName);
 
 static StringArray
 	MP_(hybridMethodNames),
@@ -6944,7 +6948,21 @@ static bool
 	MP_(useTargetVarianceOptimizationFlag),
 	MP_(vbdFlag),
 	MP_(volQualityFlag),
-	MP_(wilksFlag);
+	MP_(wilksFlag),
+  MP_(rank1LatticeFlag),
+  MP_(noRandomShiftFlag),
+  MP_(kuo),
+  MP_(cools_kuo_nuyens),
+  MP_(naturalOrdering),
+  MP_(radicalInverseOrdering),
+  MP_(digitalNetFlag),
+  MP_(noDigitalShiftFlag),
+  MP_(noScramblingFlag),
+  MP_(mostSignificantBitFirst),
+  MP_(leastSignificantBitFirst),
+  MP_(joe_kuo),
+  MP_(sobol_order_2),
+  MP_(grayCodeOrdering);
 
 static short
 	MP_(polynomialOrder);
@@ -6993,7 +7011,10 @@ static int
 	MP_(subSamplingPeriod),
 	MP_(totalPatternSize),
 	MP_(verifyLevel),
-	MP_(vbdViaSamplingNumBins);
+	MP_(vbdViaSamplingNumBins),
+  MP_(log2MaxPoints),
+  MP_(numberOfBits),
+  MP_(scrambleSize);
 
 static size_t
 	MP_(collocationPoints),
@@ -7282,6 +7303,7 @@ static Method_mp_utype
 	MP2s(optSubProbSolver,SUBMETHOD_SBGO),
 	MP2s(optSubProbSolver,SUBMETHOD_DIRECT_NPSOL_OPTPP),
 	MP2s(optSubProbSolver,SUBMETHOD_LHS),
+  MP2s(sampleType,SUBMETHOD_LOW_DISCREPANCY_SAMPLING),
 	MP2s(pstudyFileFormat,TABULAR_NONE),
         MP2s(pstudyFileFormat,TABULAR_HEADER),
         MP2s(pstudyFileFormat,TABULAR_EVAL_ID),
