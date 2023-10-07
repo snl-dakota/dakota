@@ -1,0 +1,25 @@
+Blurb::
+Ordering of the points of this digital net
+
+Description::
+Specify the order in which the points of this digital net should be returned. 
+Currently, Dakota supports :dakkw:`natural` and :dakkw:`gray_code` ordering. 
+The default behavior is to return points using Gray code ordering.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method
+      sampling
+        sample_type low_discrepancy
+          digital_net
+            ordering gray_code
+
+Theory::
+
+Faq::
+
+See_Also::

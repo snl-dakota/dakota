@@ -4,7 +4,9 @@ Uses rank-1 lattice points to sample variables
 Description::
 The ``rank_1_lattice`` keyword invokes rank-1 lattice sampling as the means of 
 drawing samples of uncertain variables according to their probability
-distributions :cite:p:`Nuyens06`. An :math:`N`-point rank-1 lattice rule in 
+distributions :cite:p:`Nuyens06`. Rank-1 lattices were introduced by
+Korobov :cite:p:`Korobov59` and Hlawka :cite:p:`Hlawka62` as the *method of good lattice points*. 
+An :math:`N`-point rank-1 lattice rule in 
 :math:`s` dimensions generates points according to
 
 

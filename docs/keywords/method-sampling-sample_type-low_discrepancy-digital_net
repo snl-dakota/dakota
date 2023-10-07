@@ -1,37 +1,68 @@
 Blurb::
-Uses low-discrepancy points to sample variables
+Uses digital net points to sample variables
+
 Description::
-The ``low_discrepancy`` keyword invokes low-discrepancy sampling as the means of
+The ``digital_net`` keyword invokes digital net sampling as the means of 
 drawing samples of uncertain variables according to their probability
-distributions. Low-discrepancy points have the desired property that they are 
-more evenly distributed compared to random samples. We implement two flavors 
-of low-discrepancy points: ``rank_1_lattice`` points :cite:p:`Nuyens06` and 
-``digital_net``s :cite:p:`Joe08` (default). The Sobol sequence is a particular 
-example of a digital net.
+distributions :cite:p:`dick10`. The Sobol sequence is a particularly 
+famous example of a digital net :cite:p:`sobol67`. A computer implementation 
+of a Sobol sequence generator in Fortran 77 was given by Bratley and Fox 
+:cite:p:`Bratley98`` as Algorithm 659. This implementation allowed points of up to 
+40 dimensions. It was extended by Joe and Kuo to allow up to 1111 dimensions in :cite:p:`Joe03`
+and up to 21201 dimensions in :cite:p:`Joe08`.
 
-*Usage Tips*
+Digital :math:`(t, m, s)`-nets and :math:`(t, s)`-sequences were introduced by Niederreiter, 
+building upon earlier work by Sobol and Faure :cite:p`Niederreiter87`. In the digital 
+construction scheme, a :math:`(t, s)`-sequence in :math:`s` dimensions with *quality parameter* :math:`t` 
+generates points :math:`\boldsymbol{x}_i = (x_{i, 0}, x_{i, 1}, \ldots, x_{i, s})`, where the 
+:math:`j`th component :math:`x_{i, j}` is constructed as follows:
+1. Write :math:`i` in its base-:math:`b` representation, i.e., 
 
-Low-discrepancy points easily scale up to hundreds or thousands of dimensions. 
-They are generally more efficient than random samples (and sometimes more 
-efficient than Latin Hypercube samples) for estimating the mean of a model 
-response. Digital net sequences (such as the Sobol sequence) can even achieve 
-higher-order convergence :cite:p`Dick10`.
+.. math:: i = (\hdots i_3 i_2 i_1)_b = i_1 + i_2 b + i_3 b^2 + \hdots
 
-# Owen98 Owen20 Bratley98 QMCPy 
+2. Compute the matrix-vector product
 
-They work best if the random variables in the model are ordered according to 
-their relative importance, i.e., the first variable in the model is the most 
-important, the second one is less important, and so on, and if the importance 
-of the random variables decays relatively rapidly.
+.. math:: \begin{pmatrix} y_1 \\ y_2 \\ y_3 \\ \vdots \end{pmatrix} C_j \begin{pmatrix} i_1 \\ i_2 \\ i_3 \\ \vdots \end{pmatrix}
 
-Just as Latin Hypercube samples, the low-discrepancy points are generated 
-uniformly in the unit (hyper)cube and care must be taken when the points are 
-transformed to other distributions. For example, when generating standard 
-normally distributed samples, the points are mapped from the unit cube to 
-an infinite domain using the inverse cumulative distribution function. This 
-function becomes unbounded near the boundary, which makes it hard to 
-integrate, and one may lose the high-order convergence observed when 
-integrating in the (hyper)cube :cite:p:`Dick13`.
+where all additions and multiplications are performed in base :math:`b`.
+
+3. Set the :math:`j`th component of the :math:`i`th points to
+
+.. math:: x_{i, j} = \frac{y_1}{b} + \frac{y_2}{b^2} + \frac{y_3}{b^3} + \hdots = (0.y_1y_2y_3\hdots)_b
+
+The matrices :math:`C_j`, :math:`j=1, 2, \ldots, s` are known as *generated matrices*.
+
+In the actual implementation of the algorithm outlined above, we use the iterative construction from Antonov and Saleev :cite:p:`Antonov79`.
+
+The performance of the digital net points depends on the choice of the 
+generating matrices. Dakota provides two predefined sets of generating matrices:
+- :dakkw:`joe_kuo` (default): generates up to ``2^32`` points in up to ``250`` dimensions :cite:p:`Joe08`
+- :dakkw:`sobol_order_2`: generates up to ``2^32`` points in up to ``1024`` dimensions :cite:p:`QMCPy`
+
+If this is not sufficient, you can provide a custom set of generating matrices 
+either as an :dakkw:`inline` argument, or using an external :dakkw:`file`.
+Custom generating matrices can be found online at :cite:p:`Kuo08`, :cite:p:`Nuyens`.
+In this case, the user must specify the ``log2`` of the maximum number of points in the 
+sequence using the keyword :dakkw:`m_max`.
+
+By default, the digital points will be shifted using a digital shift vector. If :math:`\Delta` is a 
+vector of standard uniform random numbers, then we compute :math:`\boldsymbol{x}_i \otimes \Delta`, where
+:math:`\otimes` is the element-wise :math:`b`-ary addition operator, see :cite:p:`dick10`.
+If this is not the desired behavior, specify the keyword :dakkw:`no_digital_shift`
+(**warning**: this means that the first, untransformed, point in the sequence will be 
+:math:`\boldsymbol{t}_0 = (0, 0, \ldots, 0)` -- this may or may not be the desired behavior :cite:p:`Owen20`.)
+
+Ideally, the digital net should preserve the structure of the points after randomization. 
+This can be achieved by *scrambling* the digital net. Scrambling can also improve the rate of convergence 
+of a method that uses these scrambled points to compute the mean of the model response. 
+Owen's scrambling :cite:p:`Owen98` is the most well-known scrambling technique. A particular variant 
+is linear matrix scrambling, which is implemented in Dakota :cite:p`Matouvsek98`. To disable scrambling of the points, use the keyword :dakkw:`no_scrambling`.
+
+The default behavior is to return points using Gray code ordering such that the digital net 
+becomes a *digital sequence* with good performance for an arbitrary number of points :math:`N`. 
+The Gray code ordering has an additional advantage in that there exists an iterative procedure 
+to generate the successive points of the sequence, see :dakkw:`gray_code`.
+Use the keyword :dakkw:`ordering` to choose the ordering of the point set.
 
 Topics::
 
@@ -42,8 +73,7 @@ Examples::
     method
       sampling
         sample_type low_discrepancy
-        samples = 20
-
+          digital_net
 
 Theory::
 

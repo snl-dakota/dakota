@@ -1,0 +1,33 @@
+Blurb::
+Do not scramble this digital net
+
+Description::
+The digital net should preserve the structure of the points after randomization. 
+This can be achieved by *scrambling* the digital net. Scrambling can also improve the rate of convergence 
+of a method that uses these scrambled points to compute the mean of the model response. 
+Owen's scrambling :cite:p:`Owen98` is the most well-known scrambling technique. A particular variant 
+is linear matrix scrambling, which is implemented in Dakota :cite:p`Matouvsek98`.
+In linear matrix scrambling, we left-multiply each generating matrix with a lower-triangular random scramble matrix. 
+The number of rows in the scramble matrix can be set with the keyword :dakkw:`t_scramble`.
+
+When this keyword is provided, the digital net points will not be scrambled. 
+Unscrambled digital net points have generally less performance compared to their scrambled counterparts, so it is highly recommended to 
+not use this keyword, unless you're absolutely sure you know what you're doing.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method
+      sampling
+        sample_type low_discrepancy
+          digital_net
+          no_scrambling
+
+Theory::
+
+Faq::
+
+See_Also::

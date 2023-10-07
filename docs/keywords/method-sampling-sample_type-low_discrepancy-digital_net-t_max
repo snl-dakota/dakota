@@ -1,0 +1,27 @@
+Blurb::
+Bit depth of the generating matrices
+
+Description::
+Use this option to set the number of rows in the generating matrices, or, equivalently, the number of bits of the integers that encode the generating matrices.
+This keyword must be specified when using the :dakkw:`inline` or :dakkw:`file` options to specify generating matrices, 
+and it should not be specified when :dakkw:`predefined` generating matrices are chosen.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method
+      sampling
+        sample_type low_discrepancy
+          digital_net
+            generating_matrices file 'generating_matrices.txt'
+            m_max 5
+            t_max 5
+
+Theory::
+
+Faq::
+
+See_Also::

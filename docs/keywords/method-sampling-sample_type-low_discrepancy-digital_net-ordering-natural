@@ -1,5 +1,5 @@
 Blurb::
-Natural ordering of the points of this rank-1 lattice
+Natural ordering of the points of this digital net
 
 Description::
 Returns the points in natural order.
@@ -19,7 +19,8 @@ Examples::
       sampling
         samples 16
         sample_type low_discrepancy
-          rank_1_lattice ordering natural
+          digital_net
+            ordering natural
 
 Theory::
 
