@@ -1,0 +1,38 @@
+Blurb::
+Specify a generating vector read from file
+
+Description::
+The generating vector will be read from an external file. 
+The file format is
+
+.. code-block::
+1
+12543
+9523
+15043
+2937
+5231
+...
+
+The number of entries determines the maximum dimension of the lattice rule. 
+When this keyword is specified, the user must also specify the ``log2`` of the maximum number 
+of points in the lattice using the keyword :dakkw:`m_max`.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method
+      sampling
+        sample_type low_discrepancy
+          rank_1_lattice
+            generating_vector file generating_vector.txt
+            m_max 20
+
+Theory::
+
+Faq::
+
+See_Also::

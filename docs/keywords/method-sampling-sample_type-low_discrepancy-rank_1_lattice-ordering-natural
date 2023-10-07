@@ -1,0 +1,23 @@
+Blurb::
+Natural ordering of the points of this rank-1 lattice
+
+Description::
+Returns the points in natural order.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method
+      sampling
+        sample_type low_discrepancy
+          rank_1_lattice ordering natural
+        samples 16
+
+Theory::
+
+Faq::
+
+See_Also::

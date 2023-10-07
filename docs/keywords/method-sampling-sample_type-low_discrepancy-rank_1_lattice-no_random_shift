@@ -1,0 +1,33 @@
+Blurb::
+Do not shift this rank-1 lattice
+
+Description::
+By default, the lattice points will be shifted using a random shift vector.
+This means that the points will be generated according to
+
+
+.. math:: \boldsymbol{t}_n = \left\{ \frac{n \boldsymbol{z}}{N} + \Delta \right}
+
+where :math:`\Delta` is a vector with standard uniform random points. 
+When this keyword is specified, the lattice points will **not** be shifted. 
+This means that the same set of lattice points will be generated, irrespective 
+of the value of the random seed. The first, untransformed, point in the sequence will always be 
+:math:`\boldsymbol{t}_0 = (0, 0, \ldots, 0)`.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method
+      sampling
+        sample_type low_discrepancy
+          rank_1_lattice
+          no_random_shift
+
+Theory::
+
+Faq::
+
+See_Also::

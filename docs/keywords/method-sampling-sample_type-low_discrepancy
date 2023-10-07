@@ -1,0 +1,54 @@
+Blurb::
+Uses low-discrepancy points to sample variables
+
+Description::
+The ``low_discrepancy`` keyword invokes low-discrepancy sampling as the means of
+drawing samples of uncertain variables according to their probability
+distributions. Low-discrepancy points have the desired property that they are 
+more evenly distributed compared to random samples. We implement two flavors 
+of low-discrepancy points: :dakkw:`rank_1_lattice` points :cite:p:`Nuyens06` and 
+:dakkw:`digital_net`s :cite:p:`Joe08` (default). The Sobol sequence is a particular 
+example of a digital net.
+
+When low-discrepancy points are used for integration, the method is called the 
+quasi-Monte Carlo method.
+
+*Usage Tips*
+
+Low-discrepancy points easily scale up to hundreds or thousands of dimensions. 
+They are generally more efficient than random samples (and sometimes more 
+efficient than Latin Hypercube samples) for estimating the mean of a model 
+response. Digital net sequences (such as the Sobol sequence) can even achieve 
+higher-order convergence :cite:p`Dick10`.
+
+They work best if the random variables in the model are ordered according to 
+their relative importance, i.e., the first variable in the model is the most 
+important, the second one is less important, and so on, and if the importance 
+of the random variables decays relatively rapidly.
+
+Just as Latin Hypercube samples, the low-discrepancy points are generated 
+uniformly in the unit (hyper)cube and care must be taken when the points are 
+transformed to other distributions. For example, when generating standard 
+normally distributed samples, the points are mapped from the unit cube to 
+an infinite domain using the inverse cumulative distribution function. This 
+function becomes unbounded near the boundary, which makes it hard to 
+integrate, and one may lose the high-order convergence observed when 
+integrating in the (hyper)cube :cite:p:`Dick13`.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method
+      sampling
+        sample_type low_discrepancy
+        samples = 20
+
+
+Theory::
+
+Faq::
+
+See_Also::

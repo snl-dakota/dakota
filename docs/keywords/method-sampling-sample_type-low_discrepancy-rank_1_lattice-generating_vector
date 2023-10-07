@@ -1,0 +1,17 @@
+Blurb::
+Specify the generating vector of this rank-1 lattice rule
+
+Description::
+There are three ways in which a user can specify a generating vector:
+- an inline generating vector (with the keyword :dakkw:`inline`)
+- a generating vector read from an external file (with the keyword :dakkw:`file`:)
+- a predefined generating vector (with the keyword :dakkw:`predefined`:)
+One of these options must be specified if the ``generating_vector`` keyword is provided.
+
+Topics::
+
+Theory::
+
+Faq::
+
+See_Also::
