@@ -8,6 +8,7 @@
     _______________________________________________________________________ */
 
 #include <exception>
+#include <vector>
 
 #include "Rank1Lattice.hpp"
 #include "low_discrepancy_data.hpp"
@@ -45,7 +46,7 @@ BOOST_AUTO_TEST_CASE(lattice_check_points)
   lattice.get_points(points);
 
   // Exact lattice points
-  double exact[numPoints][2] = {
+  std::vector<std::vector<double> > exact = {
     {0, 0},
     {0.5, 0.5},
     {0.25, 0.75},
@@ -518,7 +519,7 @@ BOOST_AUTO_TEST_CASE(lattice_check_disabled_randomization)
   lattice.get_points(points);
 
   // Exact lattice points
-  double exact[numPoints][2] = {
+  std::vector<std::vector<double> > exact = {
     {0, 0},
     {0.5, 0.5},
     {0.25, 0.75}
