@@ -251,12 +251,10 @@ void NonDLowDiscrepancySampling::transform(
 {
   /// Transform the samples to [-1, 1]
   auto numParams = sample_matrix.numRows();
-  Real minus_one[numParams] = { }; // will hold [-1, -1, ..., -1]
-  Real plus_one[numParams] = { }; // will hold [1, 1, ..., 1]
-  std::fill(minus_one, minus_one + numParams, -1);
-  std::fill(plus_one, plus_one + numParams, 1);
-  const RealVector lower(Teuchos::View, minus_one, numParams);
-  const RealVector upper(Teuchos::View, plus_one, numParams);
+  RealVector lower(numParams);
+  RealVector upper(numParams);
+  lower = -1.0;
+  upper = 1.0;
   scale(lower, upper, sample_matrix); // transform from [0, 1) to [-1, 1)
 
   /// If correlated, tranform samples to standard normal first
