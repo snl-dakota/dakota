@@ -1,0 +1,73 @@
+Blurb::
+Specify inline generating matrices
+
+Description::
+The generating matrices will be read from the Dakota input file.
+Generating matrices should be provided as a matrix of integers. 
+
+The number of rows in the matrix determines the maximum dimension of the lattice rule.
+The number of columns in the matrix determines the ``log2`` of the maximum number of points.
+An integer on the :math:`j`\ th row and :math:`m`\ th column encodes the :math:`m`\ th column of the :math:`j`\ th generating matrix :math:`C_j`. 
+Since the :math:`m`\ th column of :math:`C_j` is a collection of 0's and 1's, it can be represented as an integer with :math:`t` bits, where 
+:math:`t` is the number of rows in the :math:`j`\ th generating matrix :math:`C_j`. 
+By default, the encoding assumes the integers are stored with *least significant bit first* (see :dakkw:`method-sampling-digital_net-integer_format`), so that the first integer on the :math:`j`\ th row is 1.
+
+When this keyword is specified, the user must also specify the ``log2`` of the maximum number of points in the lattice using the keyword :dakkw:`method-sampling-digital_net-m_max`, 
+and the bit depth (the number of bits in the integers that encode a column of the generating matrix, or the number of rows in the generating matrices) using the keyword :dakkw:`method-sampling-digital_net-t_max`.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    environment
+      tabular_data
+        tabular_data_file = 'samples.dat'
+        freeform
+
+    method
+      sampling
+        samples 32
+        sample_type low_discrepancy
+          digital_net
+            generating_matrices inline 
+              1 2 4 8 16
+              # this encodes the generating matrix
+              # 1 0 0 0 0
+              # 0 1 0 0 0
+              # 0 0 1 0 0 
+              # 0 0 0 1 0
+              # 0 0 0 0 1
+              1 3 5 15 17
+              # this encodes the generating matrix
+              # 1 1 1 1 1
+              # 0 1 0 1 0
+              # 0 0 1 1 0
+              # 0 0 0 1 0
+              # 0 0 0 0 1
+            m_max 5
+            t_max 5
+            no_scrambling
+            no_digital_shift
+
+    variables
+      uniform_uncertain = 2
+        lower_bounds 0.0 0.0
+        upper_bounds 1.0 1.0
+
+    interface
+      analysis_drivers = 'genz'
+      analysis_components = 'cp1'
+      direct
+
+    responses
+      response_functions = 1
+      no_gradients
+      no_hessians
+
+Theory::
+
+Faq::
+
+See_Also::

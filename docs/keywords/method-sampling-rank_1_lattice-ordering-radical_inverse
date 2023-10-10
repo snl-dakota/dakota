@@ -1,0 +1,52 @@
+Blurb::
+Radical inverse ordering of the points of this rank-1 lattice
+
+Description::
+Returns the points in radical inverse order. This is the default setting.
+
+*Usage tips*
+
+The advantage of the radical inverse ordering is that one can 
+generate a good point set with an arbitrary number of points :math:`N`.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    environment
+      tabular_data
+        tabular_data_file = 'samples.dat'
+        freeform
+
+    method
+      sampling
+        samples 8
+        sample_type low_discrepancy
+          rank_1_lattice
+            generating_vector inline 1 5 # this is a Fibonacci lattice
+            m_max 3 # 8 points in total
+            no_random_shift
+            ordering radical_inverse
+
+    variables
+      uniform_uncertain = 2
+        lower_bounds 0.0 0.0
+        upper_bounds 1.0 1.0
+
+    interface
+      analysis_drivers = 'genz'
+      analysis_components = 'cp1'
+      direct
+
+    responses
+      response_functions = 1
+      no_gradients
+      no_hessians
+
+Theory::
+
+Faq::
+
+See_Also::

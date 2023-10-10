@@ -1,0 +1,44 @@
+Blurb::
+Generating matrices that provide up to 2^32 points in up to 250 dimensions
+
+Description::
+See :cite:p:`Joe08`. These are the default generating matrices.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    environment
+      tabular_data
+        tabular_data_file = 'samples.dat'
+        freeform
+
+    method
+      sampling
+        samples 1024
+        sample_type low_discrepancy
+          digital_net
+            generating_matrices predefined joe_kuo # this is the default option
+
+    variables
+      uniform_uncertain = 2
+        lower_bounds 0.0 0.0
+        upper_bounds 1.0 1.0
+
+    interface
+      analysis_drivers = 'genz'
+      analysis_components = 'cp1'
+      direct
+
+    responses
+      response_functions = 1
+      no_gradients
+      no_hessians
+
+Theory::
+
+Faq::
+
+See_Also::

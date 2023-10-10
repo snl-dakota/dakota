@@ -1,0 +1,19 @@
+Blurb::
+Specify the generating matrices of this digital net
+
+Description::
+There are three ways in which a user can specify generating matrices:
+
+- inline generating matrices (with the keyword :dakkw:`method-sampling-digital_net-generating_matrices-inline`)
+- generating matrices read from an external file (with the keyword :dakkw:`method-sampling-digital_net-generating_matrices-file`)
+- predefined generating matrices (with the keyword :dakkw:`method-sampling-digital_net-generating_matrices-predefined`)
+
+One of these options must be specified if the ``generating_matrices`` keyword is provided.
+
+Topics::
+
+Theory::
+
+Faq::
+
+See_Also::

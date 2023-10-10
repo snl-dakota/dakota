@@ -6,12 +6,13 @@ The ``low_discrepancy`` keyword invokes low-discrepancy sampling as the means of
 drawing samples of uncertain variables according to their probability
 distributions. Low-discrepancy points have the desired property that they are 
 more evenly distributed compared to random samples. We implement two flavors 
-of low-discrepancy points: :dakkw:`rank_1_lattice` points :cite:p:`Nuyens06` and 
-:dakkw:`digital_net`s :cite:p:`Joe08` (default). The Sobol sequence is a particular 
-example of a digital net.
+of low-discrepancy points: :dakkw:`method-sampling-rank_1_lattice` points :cite:p:`Nuyens06` and 
+:dakkw:`method-sampling-digital_net`\ s :cite:p:`Joe08`. Digital net points are the 
+default choice. The well-known Sobol sequence is a particular example of a digital net :cite:p:`sobol67`.
 
 When low-discrepancy points are used for integration, the method is called the 
-quasi-Monte Carlo method.
+quasi-Monte Carlo method. Low-discrepancy points are also referred to as 
+quasi-Monte Carlo points.
 
 *Usage Tips*
 
@@ -19,12 +20,14 @@ Low-discrepancy points easily scale up to hundreds or thousands of dimensions.
 They are generally more efficient than random samples (and sometimes more 
 efficient than Latin Hypercube samples) for estimating the mean of a model 
 response. Digital net sequences (such as the Sobol sequence) can even achieve 
-higher-order convergence :cite:p`Dick10`.
+higher-order convergence :cite:p:`Dick10`.
 
 They work best if the random variables in the model are ordered according to 
 their relative importance, i.e., the first variable in the model is the most 
 important, the second one is less important, and so on, and if the importance 
-of the random variables decays relatively rapidly.
+of the random variables decays relatively rapidly. In modern quasi-Monte Carlo 
+literature, this is understood as if the function belongs to a function class 
+with a certain *smoothness* :cite:p:`Joe08`.
 
 Just as Latin Hypercube samples, the low-discrepancy points are generated 
 uniformly in the unit (hyper)cube and care must be taken when the points are 
@@ -41,11 +44,30 @@ Examples::
 
 .. code-block::
 
+    environment
+      tabular_data
+        tabular_data_file = 'samples.dat'
+        freeform
+
     method
       sampling
+        samples 32
         sample_type low_discrepancy
-        samples = 20
 
+    variables
+      uniform_uncertain = 2
+        lower_bounds 0.0 0.0
+        upper_bounds 1.0 1.0
+
+    interface
+      analysis_drivers = 'genz'
+      analysis_components = 'cp1'
+      direct
+
+    responses
+      response_functions = 1
+      no_gradients
+      no_hessians
 
 Theory::
 

@@ -3,7 +3,7 @@ Selection of sampling strategy
 Description::
 The ``sample_type`` keyword allows the user to select between three types
 of sampling: Monte Carlo (pure random), Latin hypercube
-(stratified), and low-discrepancy sampling.
+(stratified), and low-discrepancy (quasi-Monte Carlo) sampling.
 
 The incremental keywords are deprecated; instead use ``samples``
 together with ``refinement_samples``.
