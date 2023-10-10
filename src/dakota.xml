@@ -892,7 +892,9 @@
 	         <keyword  id="random" name="random" code="{N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}" label="random"   />
 	         <keyword  id="incremental_lhs" name="incremental_lhs" code="{N_mdm(utype,sampleType_SUBMETHOD_LHS)}" label="incremental_lhs"   default="no sample reuse in coefficient estimation" />
 	         <keyword  id="incremental_random" name="incremental_random" code="{N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}" label="incremental_random"   />
-           <keyword  id="low_discrepancy" name="low_discrepancy" code="{N_mdm(utype,sampleType_SUBMETHOD_LOW_DISCREPANCY_SAMPLING)}" label="low_discrepancy"   />
+           <keyword  id="low_discrepancy" name="low_discrepancy" code="{N_mdm(utype,sampleType_SUBMETHOD_LOW_DISCREPANCY_SAMPLING)}" label="low_discrepancy">
+             <alias name="qmc" />
+           </keyword>
 	       </oneOf>
 	     </keyword>
 	     ' >
@@ -3080,7 +3082,7 @@
           </oneOf>
         </keyword>
       </keyword>
-    </optional>
+    </optional>  
 	  <keyword  id="variance_based_decomp2" name="variance_based_decomp" code="{N_mdm(true,vbdFlag)}" label="variance_based_decomp"  minOccurs="0" default="no variance-based decomposition" >
 	    <keyword  id="drop_tolerance2" name="drop_tolerance" code="{N_mdm(Real,vbdDropTolerance)}" label="drop_tolerance"  minOccurs="0" default="All VBD indices displayed" >
 	      <param type="REAL" />

@@ -2693,7 +2693,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       incremental_random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
       |
-      low_discrepancy {N_mdm(utype,sampleType_SUBMETHOD_LOW_DISCREPANCY_SAMPLING)}
+      low_discrepancy ALIAS qmc {N_mdm(utype,sampleType_SUBMETHOD_LOW_DISCREPANCY_SAMPLING)}
      ]
     [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
     [ d_optimal {N_mdm(true,dOptimal)}
