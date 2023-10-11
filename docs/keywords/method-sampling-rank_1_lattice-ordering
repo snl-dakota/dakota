@@ -7,11 +7,11 @@ Currently, Dakota supports :dakkw:`method-sampling-rank_1_lattice-ordering-natur
 The default behavior is to return points using radical inverse ordering, i.e., 
 the points will be generated according to
 
-.. math:: \boldsymbol{t}_n = \left\{ \phi_b(n) \boldsymbol{z} \right\}
+.. math:: \boldsymbol{t}^{(i)} = \left\{ \phi_b(i) \boldsymbol{z} \right\}
 
-where :math:`\phi_b(n)` denotes the so-called *radical inverse* function in base :math:`b` (usually, and also in Dakota, :math:`b = 2`). 
-This function transforms a number :math:`x = (\ldots x_2x_1)_b` in its base-:math:`b` representation 
-to :math:`\phi_b(x) = (0.x_1x_2\ldots)_b`. Note that the radical inverse function agrees with the original 
+where :math:`\phi_b(i)` denotes the so-called *radical inverse* function in base :math:`b` (usually, and also in Dakota, :math:`b = 2`). 
+This function transforms a number :math:`i = (\ldots i_2i_1)_b` in its base-:math:`b` representation 
+to :math:`\phi_b(i) = (0.i_1i_2\ldots)_b`. Note that the radical inverse function agrees with the original 
 formulation when :math:`N = b^m` for any :math:`m \geq 0`. The advantage of the radical inverse ordering is that one can 
 generate a good point set with an arbitrary number of points :math:`N`. Using the *natural* order, a good point set requires a number of points that is a power of 2. Semantically, the radical inverse ordering turns the lattice *rule* into a lattice *sequence*.
 

@@ -1,9 +1,9 @@
 Blurb::
 Selection of sampling strategy
 Description::
-The ``sample_type`` keyword allows the user to select between three types
-of sampling: Monte Carlo (pure random), Latin hypercube
-(stratified), and low-discrepancy (quasi-Monte Carlo) sampling.
+The ``sample_type`` keyword allows the user to select between two types
+of sampling: Monte Carlo (pure random) and Latin hypercube
+(stratified) sampling.
 
 The incremental keywords are deprecated; instead use ``samples``
 together with ``refinement_samples``.
@@ -11,7 +11,7 @@ together with ``refinement_samples``.
 *Default Behavior*
 
 If the ``sample_type`` keyword is present, it must be accompanied by
-``lhs``, ``random`` or ``low_discrepancy``.  In most contexts, ``lhs`` is the 
+``lhs`` or ``random``.  In most contexts, ``lhs`` is the 
 default (exception: multilevel_sampling uses Monte Carlo by default).
 Topics::
 

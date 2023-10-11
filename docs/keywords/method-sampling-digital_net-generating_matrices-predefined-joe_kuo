@@ -1,5 +1,5 @@
 Blurb::
-Generating matrices that provide up to 2^32 points in up to 250 dimensions
+Generating matrices that provide up to 2\ :sup:`32` points in up to 250 dimensions
 
 Description::
 See :cite:p:`Joe08`. These are the default generating matrices.

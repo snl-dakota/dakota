@@ -3,12 +3,12 @@ Do not shift this digital net
 
 Description::
 By default, the digital points will be shifted using a digital shift vector. If :math:`\Delta` is a 
-vector of standard uniform random numbers, then we compute :math:`\boldsymbol{x}_i \otimes \Delta`, where
-:math:`\otimes` is the element-wise :math:`b`-ary addition operator, see :cite:p:`Dick10`.
+vector of standard uniform random numbers, then we compute :math:`\boldsymbol{t}^{(i)} \otimes \Delta`, where
+:math:`\otimes` is the element-wise :math:`b`-ary addition (or ``XOR``) operator, see :cite:p:`Dick10`.
 When this keyword is specified, the digital net points will **not** be shifted. 
 This means that the same set of digital net points will be generated, irrespective 
-of the value of the random seed. The first, untransformed, point in the sequence will always be 
-:math:`\boldsymbol{x}_0 = (0, 0, \ldots, 0)`.
+of the value of the random seed. The first untransformed point in the sequence will always be 
+:math:`\boldsymbol{t}^{(0)} = (0, 0, \ldots, 0)`.
 
 Topics::
 

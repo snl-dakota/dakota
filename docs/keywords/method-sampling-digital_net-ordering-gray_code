@@ -10,12 +10,12 @@ The advantage of the Gray code ordering is that one can
 generate a good point set with an arbitrary number of points :math:`N`.
 
 Gray code ordering has an additional advantage in that there exists an iterative procedure by Antonov and Saleev :cite:p:`Antonov79` to generate the points of the sequence. 
-Knowing the current point with index :math:`n`, the next point with index :math:`n + 1` is obtained by XOR'ing the current point with the :math:`j`\ th column of the 
-:math:`i`\ th generating matrix, i.e.,
+Knowing the current point with index :math:`n`, the next point with index :math:`n + 1` is obtained by XOR'ing the current point with the :math:`k`\ th column of the 
+:math:`j`\ th generating matrix, i.e.,
 
-.. math:: x_{n+1, i} = x_{n, i} \oplus C_{i, j}
+.. math:: t^{(n+1)}_j = t^{(n)}_j \oplus C_{j, k}
 
-where :math:`j` is the rightmost zero-bit of :math:`n` (the position of the bit that 
+where :math:`k` is the rightmost zero-bit of :math:`n` (the position of the bit that 
 will change from :math:`n` to :math:`n+1` in Gray code).
 
 Topics::

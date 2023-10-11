@@ -5,7 +5,7 @@ Description::
 The generating matrices will be read from the Dakota input file.
 Generating matrices should be provided as a matrix of integers. 
 
-The number of rows in the matrix determines the maximum dimension of the lattice rule.
+The number of rows in the matrix determines the maximum dimension of the digital net.
 The number of columns in the matrix determines the ``log2`` of the maximum number of points.
 An integer on the :math:`j`\ th row and :math:`m`\ th column encodes the :math:`m`\ th column of the :math:`j`\ th generating matrix :math:`C_j`. 
 Since the :math:`m`\ th column of :math:`C_j` is a collection of 0's and 1's, it can be represented as an integer with :math:`t` bits, where 

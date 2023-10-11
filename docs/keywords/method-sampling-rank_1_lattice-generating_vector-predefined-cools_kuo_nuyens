@@ -1,5 +1,5 @@
 Blurb::
-A generating vector that provides up to 2^20 points in up to 250 dimensions
+A generating vector that provides up to 2\ :sup:`20` points in up to 250 dimensions
 
 Description::
 See :cite:p:`Cools06`. This is the default generating vector.

@@ -22,7 +22,7 @@ efficient than Latin Hypercube samples) for estimating the mean of a model
 response. Digital net sequences (such as the Sobol sequence) can even achieve 
 higher-order convergence :cite:p:`Dick10`.
 
-They work best if the random variables in the model are ordered according to 
+Quasi-Monte Carlo points work best if the random variables in the model are ordered according to 
 their relative importance, i.e., the first variable in the model is the most 
 important, the second one is less important, and so on, and if the importance 
 of the random variables decays relatively rapidly. In modern quasi-Monte Carlo 

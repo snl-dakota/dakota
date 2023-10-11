@@ -26,7 +26,7 @@ and the sequence ``1 3 7 15`` represents the ``4 x 4`` generating matrix
 
 This representation has two advantages.
 
-- The integers can be reused if the maximum number of bits in the representation :dakkw:`t_max` changes.
+- The integers can be reused if the maximum number of bits in the representation :dakkw:`method-sampling-digital_net-t_max` changes.
 - It generally leads to smaller, human-readable numbers in the first few entries.
 
 Obviously, generating matrices stored with ``least significant bit_first`` still need to be bit-reversed before they can be used, 

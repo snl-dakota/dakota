@@ -1,5 +1,5 @@
 Blurb::
-A generating vector that provides up to 2^20 points in up to 3600 dimensions
+A generating vector that provides up to 2\ :sup:`20` points in up to 3600 dimensions
 
 Description::
 See :cite:p:`Kuo06`.

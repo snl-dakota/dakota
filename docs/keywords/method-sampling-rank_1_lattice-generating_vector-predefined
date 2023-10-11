@@ -4,8 +4,8 @@ Specify a predefined generating vector
 Description::
 Dakota provides two predefined generating vectors:
 
-- :dakkw:`cools_kuo_nuyens` (default): generates up to ``2^20`` points in up to ``250`` dimensions :cite:p:`Cools06`.
-- :dakkw:`kuo`: generates up to ``2^20`` points in up to ``3600`` dimensions :cite:p:`Kuo06`.
+- :dakkw:`method-sampling-rank_1_lattice-generating_vector-predefined-cools_kuo_nuyens` (default): generates up to 2\ :sup:`20` points in up to 250 dimensions :cite:p:`Cools06`.
+- :dakkw:`method-sampling-rank_1_lattice-generating_vector-predefined-kuo`: generates up to 2\ :sup:`20` points in up to 3600 dimensions :cite:p:`Kuo06`.
 
 Topics::
 

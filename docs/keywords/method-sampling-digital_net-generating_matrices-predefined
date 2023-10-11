@@ -4,8 +4,8 @@ Specify predefined generating matrices
 Description::
 Dakota provides two predefined generating vectors:
 
-- :dakkw:`method-sampling-digital_net-generating_matrices-predefined-joe_kuo` (default): generates up to :math:`2^{32}` points in up to :math:`250` dimensions :cite:p:`Joe08`
-- :dakkw:`method-sampling-digital_net-generating_matrices-predefined-sobol_order_2`: generates up to :math:`2^{32}` points in up to :math:`1024` dimensions :cite:p:`QMCPy`
+- :dakkw:`method-sampling-digital_net-generating_matrices-predefined-joe_kuo` (default): generates up to 2\ :sup:`32` points in up to 250 dimensions :cite:p:`Joe08`
+- :dakkw:`method-sampling-digital_net-generating_matrices-predefined-sobol_order_2`: generates up to 2\ :sup:`32` points in up to 1024 dimensions :cite:p:`QMCPy`
 
 Topics::
 

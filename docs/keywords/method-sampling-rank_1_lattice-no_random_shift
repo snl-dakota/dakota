@@ -6,13 +6,13 @@ By default, the lattice points will be shifted using a random shift vector.
 This means that the points will be generated according to
 
 
-.. math:: \boldsymbol{t}_n = \left\{ \frac{n \boldsymbol{z}}{N} + \Delta \right\}
+.. math:: \boldsymbol{t}^{(i)} = \left\{ \frac{i \boldsymbol{z}}{N} + \Delta \right\}
 
-where :math:`\Delta` is a vector with standard uniform random points. 
+where :math:`\Delta` is a :math:`d`\ -dimensional vector with standard uniform random points. 
 When this keyword is specified, the lattice points will **not** be shifted. 
 This means that the same set of lattice points will be generated, irrespective 
 of the value of the random seed. In that case, the first untransformed point in the sequence will always be 
-:math:`\boldsymbol{t}_0 = (0, 0, \ldots, 0)`.
+:math:`\boldsymbol{t}^{(0)} = (0, 0, \ldots, 0)`.
 
 Topics::
 
