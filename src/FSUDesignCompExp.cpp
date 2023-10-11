@@ -197,7 +197,7 @@ void FSUDesignCompExp::pre_run()
 
   // If VBD has been selected, generate a series of replicate parameter sets
   // (each of the size specified by the user) in order to compute VBD metrics.
-  if (vbdFlag)
+  if (vbdFlag && vbdViaSamplingMethod==VBD_PICK_AND_FREEZE)
     get_vbd_parameter_sets(iteratedModel, numSamples);
   else
     get_parameter_sets(iteratedModel);
@@ -236,6 +236,7 @@ void FSUDesignCompExp::post_run(std::ostream& s)
                                                         numFunctions,
                                                         numContinuousVars + numDiscreteIntVars + numDiscreteRealVars,
                                                         numSamples,
+                                                        allSamples,
                                                         allResponses);
   else {
     // compute correlation statistics if (compute_corr_flag)
