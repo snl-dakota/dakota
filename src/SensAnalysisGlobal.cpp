@@ -190,7 +190,7 @@ compute_correlations(const VariablesArray& vars_samples,
   corrComputed = true;
 }
 
-size_t SensAnalysisGlobal::check_num_samples( const size_t n_var_samples,
+void SensAnalysisGlobal::check_num_samples( const size_t n_var_samples,
                                               const size_t n_response_samples,
                                               const char* method_name ){
  if ( n_var_samples == 0 ) {
@@ -818,11 +818,6 @@ void SensAnalysisGlobal::compute_vbd_stats_via_sampling( const unsigned short   
                                                        , const IntResponseMap & resp_samples
                                                        )
 {
-  //Cout << "Entering SensAnalysisGlobal::compute_vbd_stats_via_sampling()"
-  //     << ": method = " << method
-  //     << ", numBins = " << numBins
-  //     << std::endl;
-  //sleep(10);
 
   if (method == VBD_BINNED) {
     this->compute_binned_vbd_stats( numBins
@@ -1008,7 +1003,7 @@ void SensAnalysisGlobal::print_sobol_indices( std::ostream      & s
                                             ) const
 {
   // output explanatory info
-  //s << "Variance Based Decomposition Sensitivity Indices\n"
+  //  << "Variance Based Decomposition Sensitivity Indices\n"
   //  << "These Sobol' indices measure the importance of the uncertain input\n"
   //  << "variables in determining the uncertainty (variance) of the output.\n"
   //  << "Si measures the main effect for variable i itself, while Ti\n"
@@ -1187,11 +1182,8 @@ compute_binned_sobol_indices_from_valid_samples( RealMatrix valid_data, size_t n
     compute_col_means( binned_variance_samples_T, partial_variances );
     for ( int k=0; k<numFns; ++k ){
       indexSi[k][i] = 1 - partial_variances[k] / total_variances[k]; 
-      //mainEffects(i,k) = 1 - partial_variances[k] / total_variances[k];
     }
   }
-  
 }
-
 
 } // namespace Dakota

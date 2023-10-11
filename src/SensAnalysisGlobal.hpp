@@ -128,7 +128,7 @@ private:
 
   /// Checks there are a nonzero number of samples and that the number of samples agree
   /// between variables and responses. Method name passed for error handling.
-  size_t check_num_samples( const size_t num_var_samples, 
+  void check_num_samples( const size_t num_var_samples, 
                             const size_t num_response_samples, 
                             const char* method_name );
 
