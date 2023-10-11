@@ -17,13 +17,13 @@
 #include "SensAnalysisGlobal.hpp"
 #include "ResultsManager.hpp"
 #include "dakota_linear_algebra.hpp"
+#include "dakota_data_util.hpp"
 #include "dakota_stat_util.hpp"
 #include <algorithm>
 #include <boost/iterator/counting_iterator.hpp>
-#include "DataMethod.hpp"
+#include "DataMethod.hpp" 
 
 static const char rcsId[]="@(#) $Id: SensAnalysisGlobal.cpp 6170 2009-10-06 22:42:15Z lpswile $";
-
 
 namespace Dakota {
 
@@ -56,7 +56,6 @@ find_valid_samples(const IntResponseMap& resp_samples, BoolDeque& valid_sample)
 
   return num_valid_samples;
 }
-
 
 void SensAnalysisGlobal::
 valid_sample_matrix(const VariablesArray& vars_samples,
@@ -100,7 +99,6 @@ valid_sample_matrix(const RealMatrix&     vars_samples,
     }
 }
 
-
 /** When converting values to ranks, uses the average ranks of any tied values */
 void SensAnalysisGlobal::values_to_ranks(RealMatrix& valid_data)
 {
@@ -134,13 +132,11 @@ void SensAnalysisGlobal::values_to_ranks(RealMatrix& valid_data)
   }
 }
 
-
 void SensAnalysisGlobal::correl_adjust(Real& corr_value)
 {
   if (std::isfinite(corr_value) && std::abs(corr_value) > 1.0)
     corr_value = corr_value / std::abs(corr_value);
 }
-
 
 /** This version is used when full variables objects are being
     processed. Calculates simple correlation, partial correlation,
@@ -152,19 +148,9 @@ compute_correlations(const VariablesArray& vars_samples,
                      const StringSetArray& dss_vals)
 {
   size_t num_obs = vars_samples.size();
-  if (num_obs == 0) {
-    Cerr << "Error: Number of samples must be nonzero in SensAnalysisGlobal::"
-         << "compute_correlations()." << std::endl;
-    abort_handler(-1);
-  }
-  if (resp_samples.size() != num_obs) {
-    Cerr << "Error: Mismatch in array lengths in SensAnalysisGlobal::"
-         << "compute_correlations()." << std::endl;
-    abort_handler(-1);
-  }
+  check_num_samples( num_obs, resp_samples.size(), "compute_correlations" );
 
-  numVars = vars_samples[0].cv() + vars_samples[0].div() + 
-    vars_samples[0].dsv() + vars_samples[0].drv();
+  numVars = get_n_vars( vars_samples ); 
   numFns  = resp_samples.begin()->second.num_functions();
   int num_corr = numVars + numFns;
 
@@ -204,6 +190,30 @@ compute_correlations(const VariablesArray& vars_samples,
   corrComputed = true;
 }
 
+size_t SensAnalysisGlobal::check_num_samples( const size_t n_var_samples,
+                                              const size_t n_response_samples,
+                                              const char* method_name ){
+ if ( n_var_samples == 0 ) {
+    Cerr << "Error: Number of samples must be nonzero in SensAnalysisGlobal::"
+         << method_name << "()." << std::endl;
+    abort_handler(-1);
+  }
+  if ( n_response_samples != n_var_samples ) {
+    Cerr << "Error: Mismatch in array lengths in SensAnalysisGlobal::"
+         << method_name << "()." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+size_t SensAnalysisGlobal::get_n_vars(const VariablesArray& vars_samples ){
+  // TNP NOTE: There is some question whether this accounts for cases with 
+  // design variables, or the special sampling case of all uniform. Need to
+  // discuss further with BMA. 
+  size_t n_vars = vars_samples[0].cv() + vars_samples[0].div() + 
+                    vars_samples[0].dsv() + vars_samples[0].drv();
+  return n_vars;
+}
+
 /** This version is used when compact samples matrix is being
     processed.  Calculates simple correlation, partial correlation,
     simple rank correlation, and partial rank correlation
@@ -212,17 +222,8 @@ void SensAnalysisGlobal::
 compute_correlations(const RealMatrix&     vars_samples,
                      const IntResponseMap& resp_samples)
 {
-  int num_obs = vars_samples.numCols();
-  if (!num_obs) {
-    Cerr << "Error: Number of samples must be nonzero in SensAnalysisGlobal::"
-         << "compute_correlations()." << std::endl;
-    abort_handler(-1);
-  }
-  if (resp_samples.size() != num_obs) {
-    Cerr << "Error: Mismatch in array lengths in SensAnalysisGlobal::"
-         << "compute_correlations()." << std::endl;
-    abort_handler(-1);
-  }
+  size_t num_obs = vars_samples.numCols();
+  check_num_samples( num_obs, resp_samples.size(), "compute_correlations");
 
   numVars = vars_samples.numRows();
   numFns  = resp_samples.begin()->second.num_functions();
@@ -259,7 +260,6 @@ compute_correlations(const RealMatrix&     vars_samples,
 
   corrComputed = true;
 }
-
 
 /** Calculates simple correlation coefficients from a matrix of data
     (oriented factors x observations):
@@ -326,7 +326,6 @@ simple_corr(RealMatrix& total_data, const int& num_in, RealMatrix& corr_matrix)
     }
   } 
 }
-
 
 /** Calculates partial correlation coefficients between num_in inputs
     and numRows() - num_in outputs. */
@@ -598,7 +597,6 @@ archive_std_regress_coeffs(const StrStrSizet& run_identifier,
 
 }
 
-
 void SensAnalysisGlobal::
 print_correlations(std::ostream& s, const StringArray& var_labels,
 		   const StringArray& resp_labels) const
@@ -816,6 +814,7 @@ void SensAnalysisGlobal::compute_vbd_stats_via_sampling( const unsigned short   
                                                        , const size_t           numFunctions
                                                        , const size_t           num_vars
                                                        , const size_t           num_samples
+                                                       , const RealMatrix &     vars_samples
                                                        , const IntResponseMap & resp_samples
                                                        )
 {
@@ -825,30 +824,29 @@ void SensAnalysisGlobal::compute_vbd_stats_via_sampling( const unsigned short   
   //     << std::endl;
   //sleep(10);
 
-  // TODO for Teresa: it shall be 'if ("Saltelli") {...} else {...}',
-  // since the new method "Mahadevan" shall be the default one.
-  if (method == VBD_MAHADEVAN) {
-    this->compute_vbd_stats_with_Mahadevan( numBins
-                                          , numFunctions
-                                          , num_vars
-                                          , num_samples
-                                          , resp_samples
-                                          );
+  if (method == VBD_BINNED) {
+    this->compute_binned_vbd_stats( numBins
+                                  , numFunctions
+                                  , num_vars
+                                  , num_samples
+                                  , vars_samples
+                                  , resp_samples
+                                  );
   }
   else {
-    this->compute_vbd_stats_with_Saltelli( numFunctions
-                                         , num_vars
-                                         , num_samples
-                                         , resp_samples
-                                         );
+    this->compute_pick_and_freeze_vbd_stats( numFunctions
+                                           , num_vars
+                                           , num_samples
+                                           , resp_samples
+                                           );
   }
 }
 
-void SensAnalysisGlobal::compute_vbd_stats_with_Saltelli( const size_t           numFunctions
-                                                        , const size_t           num_vars
-                                                        , const size_t           num_samples
-                                                        , const IntResponseMap & resp_samples
-                                                        )
+void SensAnalysisGlobal::compute_pick_and_freeze_vbd_stats( const size_t           numFunctions
+                                                          , const size_t           num_vars
+                                                          , const size_t           num_samples
+                                                          , const IntResponseMap & resp_samples
+                                                          )
 {
   if (resp_samples.size() != num_samples * (num_vars+2)) {
     Cerr << "\nError in Analyzer::compute_vbd_stats_with_Saltelli()"
@@ -963,17 +961,43 @@ void SensAnalysisGlobal::compute_vbd_stats_with_Saltelli( const size_t          
   } // for k
 }
 
-void SensAnalysisGlobal::compute_vbd_stats_with_Mahadevan( const int              numBins
-                                                         , const size_t           numFunctions
-                                                         , const size_t           num_vars
-                                                         , const size_t           num_samples
-                                                         , const IntResponseMap & resp_samples
-                                                         )
+void SensAnalysisGlobal::compute_binned_vbd_stats( const int              numBins
+                                                 , const size_t           numFunctions
+                                                 , const size_t           num_vars
+                                                 , const size_t           num_samples
+                                                 , const RealMatrix &     vars_samples
+                                                 , const IntResponseMap & resp_samples
+                                                 )
 {
-    Cerr << "\nError in Analyzer::compute_vbd_stats_with_Mahadevan()"
-         << ": not implemented yet"
-         << std::endl;
-    abort_handler(METHOD_ERROR);
+  // TNP NOTE: the algorithm would need to be modified to support discrete random variables.
+  // Currently there is a check before calling compute_vbs_stats_via_sampling that errors
+  // out if there are discrete random variables.
+
+  check_num_samples( num_samples, resp_samples.size(), "compute_binned_vbd_stats");
+
+  numVars = num_vars;
+  numFns  = numFunctions;
+
+  // Determine which samples have valid responses (are).
+  BoolDeque is_valid_sample(num_samples);
+  int num_valid_samples = find_valid_samples(resp_samples, is_valid_sample);
+
+  // Create a matrix containing only the valid sample data.
+  // TNP NOTE: This is filtering out samples if any response is non-numeric. 
+  // However, since the binned Sobol' indices are computed per response, we could
+  // technically do this filtering per response. For now doing it all at once.
+  RealMatrix valid_data( numVars+numFns, num_valid_samples);
+  valid_sample_matrix(vars_samples, resp_samples, is_valid_sample, valid_data); 
+
+  size_t n_bins;
+  if ( numBins <= 0 ){
+    n_bins = std::trunc(std::sqrt(num_valid_samples));
+  }
+  else{
+    n_bins = numBins;
+  }
+
+  compute_binned_sobol_indices_from_valid_samples( valid_data, n_bins );
 }
 
 // Printing of variance based decomposition indices.
@@ -990,9 +1014,24 @@ void SensAnalysisGlobal::print_sobol_indices( std::ostream      & s
   //  << "Si measures the main effect for variable i itself, while Ti\n"
   //  << "measures the total effect (including the interaction effects\n" 
   //  << "of variable i with other uncertain variables.)\n";
+
   s << std::scientific 
     << "\nGlobal sensitivity indices for each response function:\n";
 
+  if (indexTi.size()>0){
+    print_main_and_total_effects_indices(s,var_labels,resp_labels,dropTol);
+  }
+  else{
+    print_main_effects_indices(s,var_labels,resp_labels,dropTol);
+  }
+}
+
+void SensAnalysisGlobal::print_main_and_total_effects_indices( std::ostream      & s
+                                                             , const StringArray & var_labels
+                                                             , const StringArray & resp_labels
+                                                             , const Real          dropTol
+                                                             ) const
+{
   for (size_t k(0); k < resp_labels.size(); ++k) {
     s << resp_labels[k] << " Sobol' indices:\n"; 
     s << std::setw(38) << "Main" << std::setw(19) << "Total\n";
@@ -1008,6 +1047,25 @@ void SensAnalysisGlobal::print_sobol_indices( std::ostream      & s
   }
 }
 
+void SensAnalysisGlobal::print_main_effects_indices( std::ostream      & s
+                                                   , const StringArray & var_labels
+                                                   , const StringArray & resp_labels
+                                                   , const Real          dropTol
+                                                   ) const
+{
+  for (size_t k(0); k < resp_labels.size(); ++k) {
+    s << resp_labels[k] << " Sobol' indices:\n"; 
+    s << std::setw(38) << "Main\n";
+    for (size_t i(0); i < var_labels.size(); ++i) {
+      Real main  = indexSi[k][i];
+      if (std::abs(main) > dropTol ) {
+        s << "                     " << std::setw(write_precision+7) << main
+          <<  ' ' << var_labels[i] << '\n';
+      }
+    }
+  }
+}
+
 // Archiving of variance based decomposition indices.
 void SensAnalysisGlobal::archive_sobol_indices( const StrStrSizet & run_identifier
                                               , ResultsManager    & resultsDB
@@ -1016,19 +1074,30 @@ void SensAnalysisGlobal::archive_sobol_indices( const StrStrSizet & run_identifi
                                               , const Real          dropTol
                                               ) const
 {
+
   if(!resultsDB.active())
     return;
 
+  archive_main_effects_indices(run_identifier, resultsDB, var_labels, resp_labels, dropTol);
+  if ( indexTi.size() > 0 ){
+    archive_total_effects_indices(run_identifier, resultsDB, var_labels, resp_labels, dropTol);
+  }
+}
+
+void SensAnalysisGlobal::archive_main_effects_indices(const StrStrSizet & run_identifier
+                                              , ResultsManager    & resultsDB
+                                              , const StringArray & var_labels
+                                              , const StringArray & resp_labels
+                                              , const Real          dropTol
+                                              ) const
+{
   for (size_t k(0); k < resp_labels.size(); ++k) {
     RealArray   main_effects;
-    RealArray   total_effects;
     StringArray scale_labels;
     for (size_t i(0); i < var_labels.size(); ++i) {
       Real main  = indexSi[k][i];
-      Real total = indexTi[k][i];
-      if (std::abs(main) > dropTol || std::abs(total) > dropTol) {
+      if (std::abs(main) > dropTol)  {
         main_effects.push_back(main);
-        total_effects.push_back(total);
         scale_labels.push_back(var_labels[i]);
       }
     }
@@ -1036,10 +1105,93 @@ void SensAnalysisGlobal::archive_sobol_indices( const StrStrSizet & run_identifi
     scales.emplace(0, StringScale("variables", scale_labels, ScaleScope::UNSHARED));
     resultsDB.insert(run_identifier, {String("main_effects"), resp_labels[k]}, 
                      main_effects, scales);
+  }
+}
+
+void SensAnalysisGlobal::archive_total_effects_indices(const StrStrSizet & run_identifier
+                                              , ResultsManager    & resultsDB
+                                              , const StringArray & var_labels
+                                              , const StringArray & resp_labels
+                                              , const Real          dropTol
+                                              ) const
+{
+  for (size_t k(0); k < resp_labels.size(); ++k) {
+    RealArray   total_effects;
+    StringArray scale_labels;
+    for (size_t i(0); i < var_labels.size(); ++i) {
+      Real total = indexTi[k][i];
+      if (std::abs(total) > dropTol) {
+        total_effects.push_back(total);
+        scale_labels.push_back(var_labels[i]);
+      }
+    }
+    DimScaleMap scales;
+    scales.emplace(0, StringScale("variables", scale_labels, ScaleScope::UNSHARED));
     resultsDB.insert(run_identifier, {String("total_effects"), resp_labels[k]}, 
                      total_effects, scales);
   }
 }
 
-} // namespace Dakota
+void SensAnalysisGlobal::
+compute_binned_sobol_indices_from_valid_samples( RealMatrix valid_data, size_t num_bins ){
 
+  //mainEffects.shape( numVars, numFns ); 
+  indexSi.resize(numFns, numVars); 
+
+  // Making a view of only the variable samples so only those are converted to their
+  // rank values.
+  size_t num_samples = valid_data.numCols();
+  size_t num_samples_per_bin = num_samples / num_bins;
+  RealMatrix valid_samples_T( valid_data, Teuchos::TRANS );
+  RealMatrix var_samples_T( Teuchos::View, valid_samples_T, num_samples, numVars );
+  RealMatrix response_samples( Teuchos::View, valid_data, numFns, num_samples, numVars );
+  RealMatrix response_samples_T( response_samples, Teuchos::TRANS);
+
+  RealMatrix sorted_var_samples_T;
+  IntMatrix sorted_var_indices_T;
+  sort_matrix_columns(var_samples_T, sorted_var_samples_T, sorted_var_indices_T );
+
+  RealVector total_means, total_variances;
+  compute_col_means( response_samples_T, total_means );
+  compute_col_variances(response_samples_T, total_means, total_variances);
+
+  RealVector binned_means, binned_variances, partial_variances;
+  RealMatrix sorted_response_samples( numFns, num_samples );
+  RealMatrix binned_variance_samples( numFns, num_bins );
+  for (int i=0; i<numVars; ++i ){ 
+
+    // TODO: starting with implementing the algorithm that computes V - the expectation 
+    // over binned variances. will implement the other option after that.
+
+    // TODO: starting with heuristic bin size of sqrt(N samples). Need to 
+    // add as user option later.
+
+    // Steps:
+    // sort the responses according to that reordering
+    // bin response samples, compute sample variance
+    // compute sample mean over binned variances
+    IntVector sort_inds = Teuchos::getCol(Teuchos::View, sorted_var_indices_T, i);
+
+    reorder_matrix_columns_from_index_vector(response_samples, sorted_response_samples, sort_inds );
+
+    for ( int j=0; j<num_bins; ++j ){ 
+
+      RealMatrix binned_response_samples( Teuchos::View, sorted_response_samples, numFns, num_samples_per_bin, 0, num_samples_per_bin*j );
+      RealMatrix binned_response_samples_T( binned_response_samples, Teuchos::TRANS );
+      compute_col_means( binned_response_samples_T, binned_means );
+      compute_col_variances( binned_response_samples_T, binned_means, binned_variances );
+      Teuchos::setCol( binned_variances, j, binned_variance_samples );
+    }
+
+    RealMatrix binned_variance_samples_T( binned_variance_samples, Teuchos::TRANS );
+    compute_col_means( binned_variance_samples_T, partial_variances );
+    for ( int k=0; k<numFns; ++k ){
+      indexSi[k][i] = 1 - partial_variances[k] / total_variances[k]; 
+      //mainEffects(i,k) = 1 - partial_variances[k] / total_variances[k];
+    }
+  }
+  
+}
+
+
+} // namespace Dakota
