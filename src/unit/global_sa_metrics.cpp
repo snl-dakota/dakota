@@ -215,7 +215,7 @@ BOOST_AUTO_TEST_CASE(test_standard_reg_coeffs_multi_resp)
 class SensAnalysisGlobalTest : public SensAnalysisGlobal {
 
   public:
-    void compute_binned_sobol_indices_from_valid_samples( RealMatrix valid_samples, size_t n_bins ){ 
+    void compute_binned_sobol_indices_from_valid_samples( const RealMatrix& valid_samples, size_t n_bins ){ 
       return SensAnalysisGlobal::compute_binned_sobol_indices_from_valid_samples(valid_samples, n_bins);
       }
     void set_num_vars( size_t num_vars ){ numVars = num_vars; }

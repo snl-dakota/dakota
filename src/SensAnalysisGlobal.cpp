@@ -1128,47 +1128,37 @@ void SensAnalysisGlobal::archive_total_effects_indices(const StrStrSizet & run_i
 }
 
 void SensAnalysisGlobal::
-compute_binned_sobol_indices_from_valid_samples( RealMatrix valid_data, size_t num_bins ){
+compute_binned_sobol_indices_from_valid_samples( const RealMatrix& valid_data, size_t num_bins ){
+    
+  // Algorithm steps, per variable:
+  // Reorder variable samples smallest to largest
+  // Sort the responses according to that reordering
+  // Bin response samples, compute sample variance in each bin
+  // Compute sample mean over binned variances
+    
+  // TODO: only implemented "option 2" algorithm from the paper; could add "option 1" if there is demand.
 
-  //mainEffects.shape( numVars, numFns ); 
   indexSi.resize(numFns, numVars); 
 
-  // Making a view of only the variable samples so only those are converted to their
-  // rank values.
   size_t num_samples = valid_data.numCols();
   size_t num_samples_per_bin = num_samples / num_bins;
-  RealMatrix valid_samples_T( valid_data, Teuchos::TRANS );
-  RealMatrix var_samples_T( Teuchos::View, valid_samples_T, num_samples, numVars );
+  
+  IntMatrix sorted_var_indices = get_var_samples_argsort(valid_data);
+
   RealMatrix response_samples( Teuchos::View, valid_data, numFns, num_samples, numVars );
-  RealMatrix response_samples_T( response_samples, Teuchos::TRANS);
-
-  RealMatrix sorted_var_samples_T;
-  IntMatrix sorted_var_indices_T;
-  sort_matrix_columns(var_samples_T, sorted_var_samples_T, sorted_var_indices_T );
-
   RealVector total_means, total_variances;
-  compute_col_means( response_samples_T, total_means );
-  compute_col_variances(response_samples_T, total_means, total_variances);
-
+  compute_response_means_and_variances( response_samples, total_means, total_variances );
+  
   RealVector binned_means, binned_variances, partial_variances;
   RealMatrix sorted_response_samples( numFns, num_samples );
   RealMatrix binned_variance_samples( numFns, num_bins );
   for (int i=0; i<numVars; ++i ){ 
 
-    // TODO: starting with implementing the algorithm that computes V - the expectation 
-    // over binned variances. will implement the other option after that.
-
-    // TODO: starting with heuristic bin size of sqrt(N samples). Need to 
-    // add as user option later.
-
-    // Steps:
-    // sort the responses according to that reordering
-    // bin response samples, compute sample variance
-    // compute sample mean over binned variances
-    IntVector sort_inds = Teuchos::getCol(Teuchos::View, sorted_var_indices_T, i);
+    IntVector sort_inds = Teuchos::getCol(Teuchos::View, sorted_var_indices, i);
 
     reorder_matrix_columns_from_index_vector(response_samples, sorted_response_samples, sort_inds );
 
+    // Compute response variances in each bin
     for ( int j=0; j<num_bins; ++j ){ 
 
       RealMatrix binned_response_samples( Teuchos::View, sorted_response_samples, numFns, num_samples_per_bin, 0, num_samples_per_bin*j );
@@ -1178,12 +1168,36 @@ compute_binned_sobol_indices_from_valid_samples( RealMatrix valid_data, size_t n
       Teuchos::setCol( binned_variances, j, binned_variance_samples );
     }
 
+    // Compute expectation of binned variances over bins
     RealMatrix binned_variance_samples_T( binned_variance_samples, Teuchos::TRANS );
     compute_col_means( binned_variance_samples_T, partial_variances );
     for ( int k=0; k<numFns; ++k ){
       indexSi[k][i] = 1 - partial_variances[k] / total_variances[k]; 
     }
   }
+}
+
+IntMatrix SensAnalysisGlobal::
+get_var_samples_argsort( const RealMatrix& valid_data){
+  
+  // Making a view of only the variable samples so only those are 
+  // converted to their rank values.
+  RealMatrix valid_samples_T( valid_data, Teuchos::TRANS );
+  RealMatrix var_samples_T( Teuchos::View, valid_samples_T, valid_data.numCols(), numVars );
+
+  RealMatrix sorted_var_samples_T;
+  IntMatrix sorted_var_indices_T;
+  sort_matrix_columns(var_samples_T, sorted_var_samples_T, sorted_var_indices_T );
+  return sorted_var_indices_T;
+}
+
+void SensAnalysisGlobal::
+compute_response_means_and_variances( const RealMatrix& response_samples, 
+                                           RealVector& total_means,
+                                           RealVector& total_variances ){
+  RealMatrix response_samples_T( response_samples, Teuchos::TRANS);
+  compute_col_means( response_samples_T, total_means );
+  compute_col_variances(response_samples_T, total_means, total_variances);
 }
 
 } // namespace Dakota

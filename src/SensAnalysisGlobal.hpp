@@ -213,6 +213,14 @@ private:
                                        , const IntResponseMap & resp_samples
                                        );
 
+  /// Returns a matrix where columns are the indices that would sort
+  /// each variable's samples smallest to largest. 
+  IntMatrix get_var_samples_argsort( const RealMatrix& valid_data );
+
+  void compute_response_means_and_variances( const RealMatrix& response_samples, 
+                                           RealVector& total_means,
+                                           RealVector& total_variances );
+
   void print_main_and_total_effects_indices( std::ostream      & s
                                            , const StringArray & var_labels
                                            , const StringArray & resp_labels
@@ -274,7 +282,7 @@ private:
 protected:
 
   /// compute binned sobol indices from valid samples (having screened out samples with non-numeric response)
-  void compute_binned_sobol_indices_from_valid_samples( RealMatrix valid_samples,
+  void compute_binned_sobol_indices_from_valid_samples( const RealMatrix& valid_samples,
                                                       size_t num_bins );
 
   /// Reorder 
