@@ -18,9 +18,10 @@ Examples::
     method
       sampling
         samples 1024
-        sample_type low_discrepancy
-          rank_1_lattice
-            generating_vector predefined kuo
+        sample_type
+          low_discrepancy
+            rank_1_lattice
+              generating_vector predefined kuo
 
     variables
       uniform_uncertain = 3

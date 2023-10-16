@@ -18,10 +18,10 @@ The number of columns in the matrix determines the ``log2`` of the maximum numbe
 An integer on the :math:`j`\ th row and :math:`m`\ th column encodes the :math:`m`\ th column of the :math:`j`\ th generating matrix :math:`C_j`. 
 Since the :math:`m`\ th column of :math:`C_j` is a collection of 0's and 1's, it can be represented as an integer with :math:`t` bits, where 
 :math:`t` is the number of rows in the :math:`j`\ th generating matrix :math:`C_j`. 
-By default, the encoding assumes the integers are stored with *least significant bit first* (see :dakkw:`method-sampling-digital_net-integer_format`), so that the first integer on the :math:`j`\ th row is 1.
+By default, the encoding assumes the integers are stored with *least significant bit first* (see :dakkw:`method-sampling-sample_type-low_discrepancy-digital_net-integer_format`), so that the first integer on the :math:`j`\ th row is 1.
 
-When this keyword is specified, the user must also specify the ``log2`` of the maximum number of points in the lattice using the keyword :dakkw:`method-sampling-digital_net-m_max`, 
-and the bit depth (the number of bits in the integers that encode a column of the generating matrix, or the number of rows in the generating matrices) using the keyword :dakkw:`method-sampling-digital_net-t_max`.
+When this keyword is specified, the user must also specify the ``log2`` of the maximum number of points in the lattice using the keyword :dakkw:`method-sampling-sample_type-low_discrepancy-digital_net-m_max`, 
+and the bit depth (the number of bits in the integers that encode a column of the generating matrix, or the number of rows in the generating matrices) using the keyword :dakkw:`method-sampling-sample_type-low_discrepancy-digital_net-t_max`.
 
 Topics::
 
@@ -37,16 +37,17 @@ Examples::
     method
       sampling
         samples 32
-        sample_type low_discrepancy
-          digital_net
-            # assume C.txt contains 
-            # 1 2 4 8 16
-            # 1 3 5 15 17
-            generating_matrices file 'C.txt'
-            m_max 5
-            t_max 5
-            no_scrambling
-            no_digital_shift
+        sample_type
+          low_discrepancy
+            digital_net
+              # assume C.txt contains 
+              # 1 2 4 8 16
+              # 1 3 5 15 17
+              generating_matrices file 'C.txt'
+              m_max 5
+              t_max 5
+              no_scrambling
+              no_digital_shift
 
     variables
       uniform_uncertain = 2

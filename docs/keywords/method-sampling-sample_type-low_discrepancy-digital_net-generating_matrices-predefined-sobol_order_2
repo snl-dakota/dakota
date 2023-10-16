@@ -18,9 +18,10 @@ Examples::
     method
       sampling
         samples 1024
-        sample_type low_discrepancy
-          digital_net
-            generating_matrices predefined sobol_order_2
+        sample_type
+          low_discrepancy
+            digital_net
+              generating_matrices predefined sobol_order_2
 
     variables
       uniform_uncertain = 2

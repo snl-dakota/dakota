@@ -8,7 +8,7 @@ of a method that uses these scrambled points to compute the mean of the model re
 Owen's scrambling :cite:p:`Owen98` is the most well-known scrambling technique. A particular variant 
 is linear matrix scrambling, which is implemented in Dakota :cite:p:`Matouvsek98`.
 In linear matrix scrambling, we left-multiply each generating matrix with a lower-triangular random scramble matrix. 
-The number of rows in the scramble matrix can be set with the keyword :dakkw:`method-sampling-digital_net-t_scramble`.
+The number of rows in the scramble matrix can be set with the keyword :dakkw:`method-sampling-sample_type-low_discrepancy-digital_net-t_scramble`.
 
 *Usage tips*
 
@@ -30,27 +30,28 @@ Examples::
     method
       sampling
         samples 32
-        sample_type low_discrepancy
-          digital_net
-            generating_matrices inline 
-              1 2 4 8 16
-              # this encodes the generating matrix
-              # 1 0 0 0 0
-              # 0 1 0 0 0
-              # 0 0 1 0 0 
-              # 0 0 0 1 0
-              # 0 0 0 0 1
-              1 3 5 15 17
-              # this encodes the generating matrix
-              # 1 1 1 1 1
-              # 0 1 0 1 0
-              # 0 0 1 1 0
-              # 0 0 0 1 0
-              # 0 0 0 0 1
-            m_max 5
-            t_max 5
-            no_scrambling
-            no_digital_shift
+        sample_type
+          low_discrepancy
+            digital_net
+              generating_matrices inline 
+                1 2 4 8 16
+                # this encodes the generating matrix
+                # 1 0 0 0 0
+                # 0 1 0 0 0
+                # 0 0 1 0 0 
+                # 0 0 0 1 0
+                # 0 0 0 0 1
+                1 3 5 15 17
+                # this encodes the generating matrix
+                # 1 1 1 1 1
+                # 0 1 0 1 0
+                # 0 0 1 1 0
+                # 0 0 0 1 0
+                # 0 0 0 0 1
+              m_max 5
+              t_max 5
+              no_scrambling
+              no_digital_shift
 
     variables
       uniform_uncertain = 2

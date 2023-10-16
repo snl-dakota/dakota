@@ -16,8 +16,8 @@ A linear scrambling matrix is a lower-tridiagonal matrix with shape
 
 which is encoded as a vector of length ``t_max``, with integer entries 
 of ``t_scramble`` bits each, encoding the columns of the scramble matrix (analogous to the way generating matrices are stored).
-The value of ``t_scramble`` must be greater than or equal to :dakkw:`method-sampling-digital_net-t_max`.
-Note that this option has no effect if the keyword :dakkw:`method-sampling-digital_net-no_scrambling` is specified. By default, Dakota uses ``t_scramble = t_max``.
+The value of ``t_scramble`` must be greater than or equal to :dakkw:`method-sampling-sample_type-low_discrepancy-digital_net-t_max`.
+Note that this option has no effect if the keyword :dakkw:`method-sampling-sample_type-low_discrepancy-digital_net-no_scrambling` is specified. By default, Dakota uses ``t_scramble = t_max``.
 
 Topics::
 
@@ -33,27 +33,28 @@ Examples::
     method
       sampling
         samples 32
-        sample_type low_discrepancy
-          digital_net
-            generating_matrices inline 
-              1 2 4 8 16
-              # this encodes the generating matrix
-              # 1 0 0 0 0
-              # 0 1 0 0 0
-              # 0 0 1 0 0 
-              # 0 0 0 1 0
-              # 0 0 0 0 1
-              1 3 5 15 17
-              # this encodes the generating matrix
-              # 1 1 1 1 1
-              # 0 1 0 1 0
-              # 0 0 1 1 0
-              # 0 0 0 1 0
-              # 0 0 0 0 1
-            m_max 5
-            t_max 5
-            t_scramble 5
-            no_digital_shift
+        sample_type
+          low_discrepancy
+            digital_net
+              generating_matrices inline 
+                1 2 4 8 16
+                # this encodes the generating matrix
+                # 1 0 0 0 0
+                # 0 1 0 0 0
+                # 0 0 1 0 0 
+                # 0 0 0 1 0
+                # 0 0 0 0 1
+                1 3 5 15 17
+                # this encodes the generating matrix
+                # 1 1 1 1 1
+                # 0 1 0 1 0
+                # 0 0 1 1 0
+                # 0 0 0 1 0
+                # 0 0 0 0 1
+              m_max 5
+              t_max 5
+              t_scramble 5
+              no_digital_shift
 
     variables
       uniform_uncertain = 2

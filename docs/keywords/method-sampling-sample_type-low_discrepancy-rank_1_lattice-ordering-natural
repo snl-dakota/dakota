@@ -25,12 +25,13 @@ Examples::
     method
       sampling
         samples 8
-        sample_type low_discrepancy
-          rank_1_lattice
-            generating_vector inline 1 5 # this is a Fibonacci lattice
-            m_max 3 # 8 points in total
-            no_random_shift
-            ordering natural # this is fine since we generate 2^3 = 8 samples
+        sample_type
+          low_discrepancy
+            rank_1_lattice
+              generating_vector inline 1 5 # this is a Fibonacci lattice
+              m_max 3 # 8 points in total
+              no_random_shift
+              ordering natural # this is fine since we generate 2^3 = 8 samples
 
     variables
       uniform_uncertain = 2

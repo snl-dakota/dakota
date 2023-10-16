@@ -4,9 +4,9 @@ Specify the generating vector of this rank-1 lattice rule
 Description::
 There are three ways in which a user can specify a generating vector:
 
-- an inline generating vector (with the keyword :dakkw:`method-sampling-rank_1_lattice-generating_vector-inline`)
-- a generating vector read from an external file (with the keyword :dakkw:`method-sampling-rank_1_lattice-generating_vector-file`)
-- a predefined generating vector (with the keyword :dakkw:`method-sampling-rank_1_lattice-generating_vector-predefined`)
+- an inline generating vector (with the keyword :dakkw:`method-sampling-sample_type-low_discrepancy-rank_1_lattice-generating_vector-inline`)
+- a generating vector read from an external file (with the keyword :dakkw:`method-sampling-sample_type-low_discrepancy-rank_1_lattice-generating_vector-file`)
+- a predefined generating vector (with the keyword :dakkw:`method-sampling-sample_type-low_discrepancy-rank_1_lattice-generating_vector-predefined`)
 
 One of these options must be specified if the ``generating_vector`` keyword is provided.
 

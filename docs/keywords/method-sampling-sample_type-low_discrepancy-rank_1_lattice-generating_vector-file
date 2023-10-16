@@ -17,7 +17,7 @@ The file format is
 
 The number of entries determines the maximum dimension of the lattice rule. 
 When this keyword is specified, the user must also specify the ``log2`` of the maximum number 
-of points in the lattice using the keyword :dakkw:`method-sampling-rank_1_lattice-m_max`.
+of points in the lattice using the keyword :dakkw:`method-sampling-sample_type-low_discrepancy-rank_1_lattice-m_max`.
 
 Topics::
 
@@ -33,9 +33,10 @@ Examples::
     method
       sampling
         samples 16
-        sample_type low_discrepancy
-          rank_1_lattice
-            generating_vector file 'z.txt'
+        sample_type
+          low_discrepancy
+            rank_1_lattice
+              generating_vector file 'z.txt'
 
     variables
       uniform_uncertain = 2

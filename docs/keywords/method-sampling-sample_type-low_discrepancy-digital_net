@@ -32,19 +32,19 @@ The matrices :math:`C_j`, :math:`j=1, 2, \ldots, d` are known as *generating mat
 The performance of the digital net points depends on the choice of the 
 generating matrices. Dakota provides two predefined sets of generating matrices:
 
-- :dakkw:`method-sampling-digital_net-generating_matrices-predefined-joe_kuo` (default): generates up to 2\ :sup:`32` points in up to 250 dimensions :cite:p:`Joe08`
-- :dakkw:`method-sampling-digital_net-generating_matrices-predefined-sobol_order_2`: generates up to 2\ :sup:`32` points in up to 1024 dimensions :cite:p:`QMCPy`
+- :dakkw:`method-sampling-sample_type-low_discrepancy-digital_net-generating_matrices-predefined-joe_kuo` (default): generates up to 2\ :sup:`32` points in up to 250 dimensions :cite:p:`Joe08`
+- :dakkw:`method-sampling-sample_type-low_discrepancy-digital_net-generating_matrices-predefined-sobol_order_2`: generates up to 2\ :sup:`32` points in up to 1024 dimensions :cite:p:`QMCPy`
 
 If this is not sufficient, you can provide a custom set of generating matrices 
-either as an :dakkw:`method-sampling-digital_net-generating_matrices-inline` argument, or using an external :dakkw:`method-sampling-digital_net-generating_matrices-file`.
+either as an :dakkw:`method-sampling-sample_type-low_discrepancy-digital_net-generating_matrices-inline` argument, or using an external :dakkw:`method-sampling-sample_type-low_discrepancy-digital_net-generating_matrices-file`.
 Custom generating matrices can be found online at :cite:p:`Kuo08`, :cite:p:`Nuyens17`.
 In this case, the user must specify the ``log2`` of the maximum number of points in the 
-sequence using the keyword :dakkw:`method-sampling-digital_net-m_max`, as well as the bit depth of the generating matrices :dakkw:`method-sampling-digital_net-t_max`.
+sequence using the keyword :dakkw:`method-sampling-sample_type-low_discrepancy-digital_net-m_max`, as well as the bit depth of the generating matrices :dakkw:`method-sampling-sample_type-low_discrepancy-digital_net-t_max`.
 
 By default, the digital points will be shifted using a digital shift vector. If :math:`\Delta` is a 
 vector of standard uniform random numbers, then we compute :math:`\boldsymbol{t}^{(i)} \otimes \Delta`, where
 :math:`\otimes` is the element-wise :math:`b`-ary addition operator, see :cite:p:`Dick10`.
-If this is not the desired behavior, specify the keyword :dakkw:`method-sampling-digital_net-no_digital_shift`
+If this is not the desired behavior, specify the keyword :dakkw:`method-sampling-sample_type-low_discrepancy-digital_net-no_digital_shift`
 (**warning**: this means that the first, untransformed, point in the sequence will be 
 :math:`\boldsymbol{t}^{(0)} = (0, 0, \ldots, 0)` -- this may or may not be the desired behavior :cite:p:`Owen20`.)
 
@@ -52,13 +52,13 @@ Ideally, the digital net should preserve the structure of the points after rando
 This can be achieved by *scrambling* the digital net. Scrambling can also improve the rate of convergence 
 of a method that uses these scrambled points to compute the mean of the model response. 
 Owen's scrambling :cite:p:`Owen98` is the most well-known scrambling technique. A particular variant 
-is linear matrix scrambling, which is implemented in Dakota :cite:p:`Matouvsek98`. To disable scrambling of the points, use the keyword :dakkw:`method-sampling-digital_net-no_scrambling`.
+is linear matrix scrambling, which is implemented in Dakota :cite:p:`Matouvsek98`. To disable scrambling of the points, use the keyword :dakkw:`method-sampling-sample_type-low_discrepancy-digital_net-no_scrambling`.
 
 The default behavior is to return points using *Gray code ordering* such that the digital net 
 becomes a *digital sequence* with good performance for an arbitrary number of points :math:`N`. 
 The Gray code ordering has an additional advantage in that there exists an iterative procedure 
-to generate the successive points of the sequence, see :dakkw:`method-sampling-digital_net-ordering-gray_code`.
-Use the keyword :dakkw:`method-sampling-digital_net-ordering` to choose the ordering of the point set.
+to generate the successive points of the sequence, see :dakkw:`method-sampling-sample_type-low_discrepancy-digital_net-ordering-gray_code`.
+Use the keyword :dakkw:`method-sampling-sample_type-low_discrepancy-digital_net-ordering` to choose the ordering of the point set.
 
 *Notes*
 
@@ -82,8 +82,9 @@ Examples::
     method
       sampling
         samples 128
-        sample_type low_discrepancy
-          digital_net # this is the default option
+        sample_type
+          low_discrepancy
+            digital_net # this is the default option
 
     variables
       uniform_uncertain = 2
