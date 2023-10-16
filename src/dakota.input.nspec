@@ -2693,7 +2693,60 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       incremental_random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
       |
-      low_discrepancy ALIAS qmc {N_mdm(utype,sampleType_SUBMETHOD_LOW_DISCREPANCY_SAMPLING)}
+      ( low_discrepancy ALIAS qmc {N_mdm(utype,sampleType_SUBMETHOD_LOW_DISCREPANCY_SAMPLING)}
+        [ 
+          ( rank_1_lattice {N_mdm(true,rank1LatticeFlag)}
+            [ no_random_shift {N_mdm(true,noRandomShiftFlag)} ]
+            [ m_max INTEGER >= 0 {N_mdm(int,log2MaxPoints)} ]
+            [ generating_vector {0}
+              inline INTEGERLIST {N_mdm(ivec,generatingVector)}
+              |
+              file STRING {N_mdm(str,generatingVectorFileName)}
+              |
+              ( predefined {0}
+                kuo {N_mdm(true,kuo)}
+                |
+                cools_kuo_nuyens {N_mdm(true,cools_kuo_nuyens)}
+               )
+             ]
+            [ ordering {0}
+              natural {N_mdm(true,naturalOrdering)}
+              |
+              radical_inverse {N_mdm(true,radicalInverseOrdering)}
+             ]
+           )
+         ]
+        [ 
+          ( digital_net ALIAS sobol_sequence {N_mdm(true,digitalNetFlag)}
+            [ no_digital_shift {N_mdm(true,noDigitalShiftFlag)} ]
+            [ no_scrambling {N_mdm(true,noScramblingFlag)} ]
+            [ integer_format {0}
+              most_significant_bit_first {N_mdm(true,mostSignificantBitFirst)}
+              |
+              least_significant_bit_first {N_mdm(true,leastSignificantBitFirst)}
+             ]
+            [ m_max INTEGER >= 0 {N_mdm(int,log2MaxPoints)} ]
+            [ t_max INTEGER >= 0 {N_mdm(int,numberOfBits)} ]
+            [ t_scramble INTEGER >= 0 {N_mdm(int,scrambleSize)} ]
+            [ generating_matrices {0}
+              inline INTEGERLIST {N_mdm(ivec,generatingMatrices)}
+              |
+              file STRING {N_mdm(str,generatingMatricesFileName)}
+              |
+              ( predefined {0}
+                joe_kuo {N_mdm(true,joe_kuo)}
+                |
+                sobol_order_2 {N_mdm(true,sobol_order_2)}
+               )
+             ]
+            [ ordering {0}
+              natural {N_mdm(true,naturalOrdering)}
+              |
+              gray_code {N_mdm(true,grayCodeOrdering)}
+             ]
+           )
+         ]
+       )
      ]
     [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
     [ d_optimal {N_mdm(true,dOptimal)}
@@ -2702,58 +2755,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
         |
         leja_oversample_ratio REAL {N_mdm(Real,collocationRatio)}
        ]
-     ]
-    [ 
-      ( rank_1_lattice {N_mdm(true,rank1LatticeFlag)}
-        [ no_random_shift {N_mdm(true,noRandomShiftFlag)} ]
-        [ m_max INTEGER >= 0 {N_mdm(int,log2MaxPoints)} ]
-        [ generating_vector {0}
-          inline INTEGERLIST {N_mdm(ivec,generatingVector)}
-          |
-          file STRING {N_mdm(str,generatingVectorFileName)}
-          |
-          ( predefined {0}
-            kuo {N_mdm(true,kuo)}
-            |
-            cools_kuo_nuyens {N_mdm(true,cools_kuo_nuyens)}
-           )
-         ]
-        [ ordering {0}
-          natural {N_mdm(true,naturalOrdering)}
-          |
-          radical_inverse {N_mdm(true,radicalInverseOrdering)}
-         ]
-       )
-     ]
-    [ 
-      ( digital_net ALIAS sobol_sequence {N_mdm(true,digitalNetFlag)}
-        [ no_digital_shift {N_mdm(true,noDigitalShiftFlag)} ]
-        [ no_scrambling {N_mdm(true,noScramblingFlag)} ]
-        [ integer_format {0}
-          most_significant_bit_first {N_mdm(true,mostSignificantBitFirst)}
-          |
-          least_significant_bit_first {N_mdm(true,leastSignificantBitFirst)}
-         ]
-        [ m_max INTEGER >= 0 {N_mdm(int,log2MaxPoints)} ]
-        [ t_max INTEGER >= 0 {N_mdm(int,numberOfBits)} ]
-        [ t_scramble INTEGER >= 0 {N_mdm(int,scrambleSize)} ]
-        [ generating_matrices {0}
-          inline INTEGERLIST {N_mdm(ivec,generatingMatrices)}
-          |
-          file STRING {N_mdm(str,generatingMatricesFileName)}
-          |
-          ( predefined {0}
-            joe_kuo {N_mdm(true,joe_kuo)}
-            |
-            sobol_order_2 {N_mdm(true,sobol_order_2)}
-           )
-         ]
-        [ ordering {0}
-          natural {N_mdm(true,naturalOrdering)}
-          |
-          gray_code {N_mdm(true,grayCodeOrdering)}
-         ]
-       )
      ]
     [ variance_based_decomp {N_mdm(true,vbdFlag)}
       [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
