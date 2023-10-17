@@ -201,13 +201,17 @@ if(HAVE_X_GRAPHICS)
   add_subdirectory(external/sciplot)
 endif(HAVE_X_GRAPHICS)
 
-# BMA TODO: Merge option to top-level once cmake_transparency branch merged
-option(HAVE_MUQ "Enable MIT MUQ library for Bayesian calibration" OFF)
+
 if(HAVE_MUQ)
+  if(WIN32)
+    message(FATAL_ERROR "MUQ does not currently support Windows.")
+  endif()
+
   if(NOT DAKOTA_HAVE_HDF5)
     message(FATAL_ERROR
             "HAVE_MUQ requires enabling HDF5 package DAKOTA_HAVE_HDF5.")
   endif()
+
   # Might need to "muck" with this to avoid MUQ attempting writes to /usr/local
   #message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
   #set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/external/muq2)
