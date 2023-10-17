@@ -2758,12 +2758,13 @@ KEYWORD method {N_mdm3(start,0,stop)}
      ]
     [ variance_based_decomp {N_mdm(true,vbdFlag)}
       [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
-      [ sampling_method {N_mdm(utype,vbdViaSamplingMethod)}
-        mahadevan {N_mdm(utype,vbdViaSamplingMethod_VBD_MAHADEVAN)}
+      [ vbd_sampling_method {N_mdm(utype,vbdViaSamplingMethod)}
+        ( binned {N_mdm(utype,vbdViaSamplingMethod_VBD_BINNED)}
+          [ num_bins INTEGER {N_mdm(int,vbdViaSamplingNumBins)} ]
+         )
         |
-        saltelli {N_mdm(utype,vbdViaSamplingMethod_VBD_SALTELLI)}
+        pick_and_freeze {N_mdm(utype,vbdViaSamplingMethod_VBD_PICK_AND_FREEZE)}
        ]
-      [ num_bins INTEGER {N_mdm(int,vbdViaSamplingNumBins)} ]
      ]
     [ backfill {N_mdm(true,backfillFlag)} ]
     [ principal_components {N_mdm(true,pcaFlag)}
@@ -5890,12 +5891,13 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ quality_metrics {N_mdm(true,volQualityFlag)} ]
     [ variance_based_decomp {N_mdm(true,vbdFlag)}
       [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
-      [ sampling_method {N_mdm(utype,vbdViaSamplingMethod)}
-        mahadevan {N_mdm(utype,vbdViaSamplingMethod_VBD_MAHADEVAN)}
+      [ vbd_sampling_method {N_mdm(utype,vbdViaSamplingMethod)}
+        ( binned {N_mdm(utype,vbdViaSamplingMethod_VBD_BINNED)}
+          [ num_bins INTEGER {N_mdm(int,vbdViaSamplingNumBins)} ]
+         )
         |
-        saltelli {N_mdm(utype,vbdViaSamplingMethod_VBD_SALTELLI)}
+        pick_and_freeze {N_mdm(utype,vbdViaSamplingMethod_VBD_PICK_AND_FREEZE)}
        ]
-      [ num_bins INTEGER {N_mdm(int,vbdViaSamplingNumBins)} ]
      ]
     [ symbols INTEGER {N_mdm(int,numSymbols)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
@@ -5909,12 +5911,13 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ quality_metrics {N_mdm(true,volQualityFlag)} ]
     [ variance_based_decomp {N_mdm(true,vbdFlag)}
       [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
-      [ sampling_method {N_mdm(utype,vbdViaSamplingMethod)}
-        mahadevan {N_mdm(utype,vbdViaSamplingMethod_VBD_MAHADEVAN)}
+      [ vbd_sampling_method {N_mdm(utype,vbdViaSamplingMethod)}
+        ( binned {N_mdm(utype,vbdViaSamplingMethod_VBD_BINNED)}
+          [ num_bins INTEGER {N_mdm(int,vbdViaSamplingNumBins)} ]
+         )
         |
-        saltelli {N_mdm(utype,vbdViaSamplingMethod_VBD_SALTELLI)}
+        pick_and_freeze {N_mdm(utype,vbdViaSamplingMethod_VBD_PICK_AND_FREEZE)}
        ]
-      [ num_bins INTEGER {N_mdm(int,vbdViaSamplingNumBins)} ]
      ]
     [ trial_type {0}
       grid {N_mdm(lit,trialType_grid)}
@@ -6158,12 +6161,13 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ quality_metrics {N_mdm(true,volQualityFlag)} ]
     [ variance_based_decomp {N_mdm(true,vbdFlag)}
       [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
-      [ sampling_method {N_mdm(utype,vbdViaSamplingMethod)}
-        mahadevan {N_mdm(utype,vbdViaSamplingMethod_VBD_MAHADEVAN)}
+      [ vbd_sampling_method {N_mdm(utype,vbdViaSamplingMethod)}
+        ( binned {N_mdm(utype,vbdViaSamplingMethod_VBD_BINNED)}
+          [ num_bins INTEGER {N_mdm(int,vbdViaSamplingNumBins)} ]
+         )
         |
-        saltelli {N_mdm(utype,vbdViaSamplingMethod_VBD_SALTELLI)}
+        pick_and_freeze {N_mdm(utype,vbdViaSamplingMethod_VBD_PICK_AND_FREEZE)}
        ]
-      [ num_bins INTEGER {N_mdm(int,vbdViaSamplingNumBins)} ]
      ]
     [ samples INTEGER {N_mdm(int,numSamples)} ]
     [ fixed_sequence {N_mdm(true,fixedSequenceFlag)} ]

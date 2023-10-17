@@ -123,7 +123,7 @@ enum { SUBMETHOD_DEFAULT=0, // no specification
        SUBMETHOD_ESTIMATE_ORDER };
 
 /// Sampling method for variance based decomposition (VBD)
-enum { VBD_MAHADEVAN=0, VBD_SALTELLI };
+enum { VBD_BINNED=0, VBD_PICK_AND_FREEZE };
 
 /// Graph recursion options for generalized ACV
 enum { NO_GRAPH_RECURSION=0, KL_GRAPH_RECURSION, PARTIAL_GRAPH_RECURSION,
