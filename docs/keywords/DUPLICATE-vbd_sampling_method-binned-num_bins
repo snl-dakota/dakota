@@ -1,0 +1,49 @@
+Blurb::
+The number of bins to used to compute the variance-based 
+decomposition
+Description::
+Allows the user to specify the number of bins to be used
+in the variance-based decomposition.
+
+**Default Behavior**
+Default number of bins is the square root of the number
+of samples rounded down to the nearest integer.
+
+**Expected Output**
+
+**Usage Tips**
+
+**Additional Discussion**
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method,
+      sampling
+        sample_type lhs
+        samples = 100
+        variance_based_decomp
+          vbd_method binned
+            num_bins = 10
+
+Theory::
+The binned approach to computing Sobol' main effect indices is 
+introduced in :cite:p:`Li16`. As opposed to pick-and-freeze 
+approaches like :cite:p:`Sal04`, it does not require a specific
+sampling structure. Given a set of randomly-generated input-output 
+samples, it computes the main effect index by binning samples, 
+computing a sample statistic for each bin, then computing another
+sample statistic over the bins. 
+
+The number of bins recommended in :cite:p:`Li16` is the square 
+root of the number of input-output samples. This is the default
+number of bins used for the method in Dakota. However, if the
+user wishes to specify a different number of bins, they can do 
+so using ``num_bins``.
+
+Faq::
+
+See_Also::

@@ -171,6 +171,7 @@ set(dakota_test_executables
   cyl_head
   expdesign_high
   expdesign_low
+  gerstner_int
   gerstner_string
   herbie
   illumination

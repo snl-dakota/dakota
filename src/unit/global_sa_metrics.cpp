@@ -9,10 +9,13 @@
 
 
 #include "dakota_stat_util.hpp"
+#include "dakota_data_types.hpp"
 #include "SurrogatesPolynomialRegression.hpp"
+#include "SensAnalysisGlobal.hpp"
 #include "util_common.hpp"
 #include "util_metrics.hpp"
 #include <string>
+#include "Eigen/Dense"
 
 #define BOOST_TEST_MODULE dakota_global_sa_metrics
 #include <boost/test/included/unit_test.hpp>
@@ -56,6 +59,7 @@ namespace {
 }
 
 //----------------------------------------------------------------
+#ifdef HAVE_DAKOTA_SURROGATES
 
 BOOST_AUTO_TEST_CASE(test_standard_reg_coeffs)
 {
@@ -204,4 +208,133 @@ BOOST_AUTO_TEST_CASE(test_standard_reg_coeffs_multi_resp)
   ///////////////////////////  What we want to test ///////////////////////////
 }
 
+#endif 
+
 //----------------------------------------------------------------
+
+class SensAnalysisGlobalTest : public SensAnalysisGlobal {
+
+  public:
+    void compute_binned_sobol_indices_from_valid_samples( const RealMatrix& valid_samples, size_t n_bins ){ 
+      return SensAnalysisGlobal::compute_binned_sobol_indices_from_valid_samples(valid_samples, n_bins);
+      }
+    void set_num_vars( size_t num_vars ){ numVars = num_vars; }
+    void set_num_fns( size_t num_fns ){ numFns = num_fns; }
+    RealVectorArray get_indexSi( ){return indexSi; }
+};
+
+class SobolG{
+  /*
+  Implements the Sobol G function, defined and discussed in detail in [1].
+
+  [1] Saltelli, Andrea, Paola Annoni, Ivano Azzini, Francesca Campolongo, 
+  Marco Ratto, and Stefano Tarantola. “Variance Based Sensitivity Analysis 
+  of Model Output. Design and Estimator for the Total Sensitivity Index.” 
+  Computer Physics Communications 181, no. 2 (February 1, 2010): 259–70. 
+  https://doi.org/10.1016/j.cpc.2009.09.018.
+
+  This class implements evaluation of the function, as well as computation of 
+  its analytical main effects indices.
+  */
+  public: 
+    SobolG():
+    a(10)
+    {
+      a << 0,0.1,0.2,0.3,0.4,0.8,1,2,3,4;
+      compute_analytical_main_effects();
+    }
+
+    SobolG( const Eigen::ArrayXd & a_in ):
+    a(a_in.size()){
+      a = a_in;
+      compute_analytical_main_effects();
+    }
+
+    Eigen::ArrayXd get_analytical_main_effects(){ return analyticalMainEffects; }
+
+    Eigen::ArrayXXd generate_input_samples( int n_samples ){
+      // Eigen's Random method generates samples from U[-1,1], so we add 1 and scale by 0.5
+      // to generate samples from U[0,1].
+      return 0.5 * ( Eigen::ArrayXXd::Random( a.size(), n_samples ) + 1 );
+    }
+
+    Eigen::ArrayXd evaluate( const Eigen::ArrayXXd& input_samples ){
+      /*
+      Input: [N_inputs x N_samples ] input_samples 
+      Implements the Sobol' G function, defined as 
+        prod_i=1^k g_i,   g_i = (|4X_i - 2| + a_i ) / ( 1 + a_i )
+      */
+
+      // colwise() means the following operation is performed over a column; 
+      // that means we'll be taking the product over the elements of each column.
+      Eigen::ArrayXXd gi{ (4*input_samples-2).abs() };
+
+      gi.colwise() += a;
+      gi.colwise() /= 1+a;
+
+      return gi.colwise().prod();      
+    } 
+
+  private:
+    void compute_analytical_main_effects(){
+      /*
+      The partial variance is computed as 
+      V_i = 1/3 / (1+a_i)^2
+      */
+
+      // Computing and storing partial variances in the main effects
+      // array for now; these aren't normalized yet.
+      analyticalMainEffects = 1/(1+a).pow(2.0)/3;
+
+      float total_variance = (1+analyticalMainEffects).prod()-1;
+
+      analyticalMainEffects /= total_variance;
+    }
+    Eigen::ArrayXd a;
+    Eigen::ArrayXd analyticalMainEffects;
+};
+
+BOOST_AUTO_TEST_CASE(test_binned_sobol_computation)
+{
+
+
+  // Generating input and output samples from our test function.
+  Eigen::ArrayXd a(Eigen::ArrayXd::Zero(2));
+  SobolG gfunc(a);
+
+  // Setting the seed so we get same samples every time
+  std::srand((unsigned int) 20230530); 
+  size_t num_samples = 1000000;
+  size_t num_bins = std::sqrt(num_samples);
+  Eigen::ArrayXXd x = gfunc.generate_input_samples(num_samples);
+  Eigen::ArrayXd g = gfunc.evaluate(x);
+
+  SensAnalysisGlobalTest gsa;
+  size_t num_vars = x.rows(), num_fns = 1;
+  gsa.set_num_vars( num_vars );
+  gsa.set_num_fns( num_fns );
+
+  // Converting to a format Dakota can ingest
+  MatrixXd samplesXd{ MatrixXd::Zero( num_vars + num_fns, num_samples )};  
+  samplesXd.topRows(num_vars) = x;
+  samplesXd.row(num_vars) = g;
+  RealMatrix samples;
+  copy_data(samplesXd, samples);
+
+  gsa.compute_binned_sobol_indices_from_valid_samples( samples, num_bins );  
+  RealVectorArray test_sobols_va = gsa.get_indexSi();
+
+  RealMatrix test_sobols{int(num_vars), int(num_fns)};
+  for (int i=0; i < num_fns; i++){
+    Teuchos::setCol( test_sobols_va[i], i, test_sobols );
+  }
+
+  RealMatrix true_sobols;
+  copy_data(gfunc.get_analytical_main_effects(), true_sobols);
+
+  // Compute the L2 error between the test and analytical Sobol' indices.
+  true_sobols -= test_sobols;
+  auto frob_err = true_sobols.normFrobenius();
+
+  BOOST_CHECK(frob_err < 1e-3);
+}

@@ -235,6 +235,26 @@ void compute_col_stdevs(RealMatrix& matrix, RealVector& avg_vals,
 
 //----------------------------------------------------------------
 
+void compute_col_variances(RealMatrix& matrix, RealVector& avg_vals, 
+                        RealVector& variances)
+{
+  int num_cols = matrix.numCols();
+  int num_rows = matrix.numRows();
+
+  variances.resize(num_cols);
+  RealVector res_vec(num_rows);
+
+  for(int i=0; i<num_cols; ++i){
+    const RealVector& col_vec = Teuchos::getCol(Teuchos::View, matrix, i);
+    for(int j = 0; j<num_rows; ++j){
+      res_vec(j) = col_vec(j) - avg_vals(i);
+    }
+    variances(i) = res_vec.dot(res_vec)/((Real) num_rows-1);
+  }
+}
+
+//----------------------------------------------------------------
+
 void sort_vector( const RealVector & vec, RealVector & sort_vec, IntVector & indices )
 {
   if( indices.length() != vec.length() )
@@ -273,6 +293,25 @@ void sort_matrix_columns( const RealMatrix & mat, RealMatrix & sort_mat, IntMatr
     RealVector sorted_vec   = Teuchos::getCol(Teuchos::View, sort_mat, i);
     IntVector  sort_indices = Teuchos::getCol(Teuchos::View, indices, i);
     sort_vector( unsrt_vec, sorted_vec, sort_indices);
+  }
+}
+
+//----------------------------------------------------------------
+
+void reorder_matrix_columns_from_index_vector( const RealMatrix& mat, 
+                                               RealMatrix& reordered_mat, 
+                                               const IntVector& indices ){
+  size_t num_inds = indices.length();
+  RealMatrix & nonconst_mat = const_cast<RealMatrix&>(mat);
+
+  if( (mat.numRows() != reordered_mat.numRows()) ||
+      (mat.numCols() != reordered_mat.numCols()) )
+    reordered_mat.shapeUninitialized(mat.numRows(), mat.numCols()); 
+
+  for ( int i=0; i<num_inds; ++i ){
+    Teuchos::setCol( Teuchos::getCol( Teuchos::View, nonconst_mat, indices[i] ),
+                     i, 
+                     reordered_mat );
   }
 }
 
