@@ -11,13 +11,13 @@ method,
 	fsu_quasi_mc halton			#s0
 #       dace lhs				#s1
 #	fsu_cvt					#s2
-#	sampling				#s3,#s4,#s5,#s6,#s7,#s8
+#	sampling				#s3,#s4,#s5,#s6
 	  variance_based_decomp
 	  samples = 100
-#	  vbd_sampling_method = binned #s5,#s6,#s7,#s8
-#	  num_bins = 5 #s7,#s8
-#         sample_type lhs			#s3,#s4,#s5,#s6,#s7,#s8
-#         seed = 44691				#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8
+#	  vbd_sampling_method = binned #s5,#s6
+#	  num_bins = 5 #s6
+#         sample_type lhs			#s3,#s4,#s5,#s6
+#         seed = 44691				#s1,#s2,#s3,#s4,#s5,#s6
 #	  num_trials = 1000			#s2
 #	  max_iterations = 100			#s2
 
@@ -25,12 +25,12 @@ variables,
 	uniform_uncertain = 2
 	  lower_bounds = 0 0
 	  upper_bounds =  1 1
-#       histogram_point_uncertain real = 2	#s4,#s6,#s8      
-#	  num_pairs = 2 3 			#s4,#s6,#s8
-#	  abscissas = 1.2 1.4 0 1 2		#s4,#s6,#s8
-#	  counts = 1 1 1 1 1  	  		#s4,#s6,#s8
-#	geometric_uncertain = 1			#s4,#s6,#s8
-#	  prob_per_trial = 0.95			#s4,#s6,#s8
+#       histogram_point_uncertain real = 2	#s4      
+#	  num_pairs = 2 3 			#s4
+#	  abscissas = 1.2 1.4 0 1 2		#s4
+#	  counts = 1 1 1 1 1  	  		#s4
+#	geometric_uncertain = 1			#s4
+#	  prob_per_trial = 0.95			#s4
 
 interface,
 	direct
