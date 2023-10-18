@@ -9,25 +9,19 @@ contributing to the output variance.
 
 *Default Behavior*
 
-Because of the computational cost, ``variance_based_decomp`` is turned
-off as a default.
+Variance based decomposition is turned off as a default.
 
-If the user specified a number of samples, N, and a number of
-nondeterministic variables, M, variance-based decomposition requires
-the evaluation of N*(M+2) samples. *Note that specifying this
-keyword will increase the number of function evaluations above the
-number requested with the ``samples`` keyword since replicated sets of
-sample values are evaluated.*
+*Note that specifying this keyword with the default* ``vbd_sampling_method``
+*of* ``pick_and_freeze`` *selected will increase the number of function 
+evaluations above the number requested with the* ``samples`` *keyword 
+since replicated sets of sample values are evaluated.* See documentation
+for ``pick_and_freeze`` on the increased sample size.
 
-*Expected Outputs*
+*Expected Output*
 
-When ``variance_based_decomp`` is specified, sensitivity indices for
-main effects and total effects will be reported.  Main effects
-(roughly) represent the percent contribution of each individual
-variable to the variance in the model response.  Total effects
-represent the percent contribution of each individual variable in
-combination with all other variables to the variance in the model
-response
+When ``variance_based_decomp`` is specified, Sobol' sensitivity indices 
+will be reported. Sobol' indices represent the percent of the variance in 
+the model response that can be attributed to each individual variable. 
 
 *Usage Tips*
 
@@ -46,21 +40,62 @@ Examples::
         samples = 100
         variance_based_decomp
 
-
 Theory::
+
 In this context, we take sensitivity analysis to be global, not local
 as when calculating derivatives of output variables with respect to
-input variables. Our definition is similar to that of :cite:p:`Sal04` :
+input variables. Our definition is similar to that of :cite:p:`Sal04`:
 "The study of how uncertainty in the output of a model can be
 apportioned to different sources of uncertainty in the model input."
 
 Variance based decomposition is a way of using sets of samples to
 understand how the variance of the output behaves, with respect to
-each input variable. A larger value of the sensitivity index,
-:math:`S_i` , means that the uncertainty in the input variable i has a
-larger effect on the variance of the output. More details on the
-calculations and interpretation of the sensitivity indices can be
-found in :cite:p:`Sal04` and :cite:p:`Weirs10`.
+each input variable. 
+
+Two types of variance-based sensitivity indices are commonly 
+computed: main effects and total effects indices. Main effects (roughly) 
+represent the percent contribution of each individual
+variable to the variance in the model response. Total effects
+represent the percent contribution of each individual variable in
+combination with all other variables to the variance in the model
+response. For the variable :math:`X_i`, the main and total effect
+indices are denoted here :math:`S_i` and :math:`T_i`, respectively,
+and their formulas are
+
+.. math::
+   S_i = \frac{V(E_{\mathbf{X}_{\sim i}}(f(\mathbf{X})|X_i))}{V(f)} \\
+   T_i = \frac{E(V_{X_{i}}(f(\mathbf{X})|\mathbf{X}_{\sim i}))}{V(f)},
+
+where :math:`\mathbf{X}_{\sim i}` denotes all variables except 
+:math:`X_i`.
+
+A larger sensitivity index means that the uncertainty in the input
+variable :math:`X_i`` has a larger effect on the variance of the 
+output. More details on the calculations and interpretation of the 
+sensitivity indices can be found in :cite:p:`Sal04` and :cite:p:`Weirs10`.
+
+Two methods to compute variance-based sensitivity indices are 
+implemented in Dakota. The default "pick-and-freeze" method is based on
+the algorithm discussed in :cite:p:`Weirs10`. Pick-and-freeze methods
+are currently the most popular approach for varianced-based sensitivity
+index computation, but they incur significant computational cost. These
+approaches rely on structured sampling wherein two independent random
+sample sets of the input variables are generated, then the random samples
+of the variable whose sensitivity index is being computed are substituted
+from one sample set into the other. Specifically, if the user specified a 
+number of samples, N, and a number of nondeterministic variables, M, 
+pick-and-freeze variance-based decomposition requires the evaluation of 
+N*(M+2) samples.
+
+The "binned" method uses the N samples generated during the sampling study
+directly to computed variance-based sensitivity indices, but it can only
+compute main effect indices, so the user will not be provided with 
+information from the total effect indices about the percent variance of 
+the model response arising from interactions between each variable and 
+all other variables. However, the main effect indices can be computed with 
+no further model evaluations beyond the N samples already specified for the
+sampling study. The binned approach is detailed in :cite:p:`Li16`.
+
 Faq::
 
 See_Also::

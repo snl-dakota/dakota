@@ -55,9 +55,9 @@ computational models on high performance computers.
 
 The Developers Manual focuses on documentation of %Dakota design
 principles and class structures; it derives principally from annotated
-source code.  For information on input command syntax, refer to the
-Reference Manual \cite RefMan, and for more details on %Dakota
-features and capabilities, refer to the Users Manual.
+source code.  For information on %Dakota input command syntax or 
+features and capabilities, refer to the Users Manual at
+https://snl-github.io.
 
 \section DevOverview Overview of Dakota
 

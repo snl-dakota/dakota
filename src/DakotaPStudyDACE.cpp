@@ -51,9 +51,7 @@ PStudyDACE::PStudyDACE(ProblemDescDB& problem_db, Model& model):
 
 
 PStudyDACE::PStudyDACE(unsigned short method_name, Model& model):
-  Analyzer(method_name, model), volQualityFlag(false),
-  vbdViaSamplingMethod(VBD_MAHADEVAN),
-  vbdViaSamplingNumBins(-1)
+  Analyzer(method_name, model), volQualityFlag(false)
 {
   // Check for vendor numerical gradients (manage_asv will not work properly)
   if (iteratedModel.gradient_type() == "numerical" &&

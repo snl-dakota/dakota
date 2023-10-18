@@ -76,7 +76,9 @@ def pyprepro(tpl,
              env=None,immutable_env=None,
              fmt='%0.10g',
              code='%',code_block='{% %}',inline='{ }',
-             warn=True,output=None):
+             warn=True,output=None,
+             **kwargs
+             ):
     """
     Main pyprepro function.
     
@@ -152,6 +154,14 @@ def pyprepro(tpl,
     invocation.
     
     """
+    return_env = kwargs.pop('_return_env',False)
+    if kwargs:
+        raise TypeError("Unexpected keywords {}".format(set(kwargs)))
+        
+#     return_env [False]
+#         If True, will *also* return the environment dict. Note that it will be an
+#         ImmutableValDict but can be convered to a regular dict as:
+#             env = dict(**env)
     # (re)set some globals from this function call.
     global DEFAULT_FMT,DEFAULT_FMT0
     DEFAULT_FMT = DEFAULT_FMT0 = fmt
@@ -237,8 +247,6 @@ def pyprepro(tpl,
             exec_(F.read(),subenv)
         for key,val in subenv.items():
             env[key] = Immutable(val)
-    
-
             
     # perform the final evaluation. Note that we do *NOT* pass `**env` since that
     # would create a copy.
@@ -249,9 +257,39 @@ def pyprepro(tpl,
     if output:
         with open(output,'wt') as out:
             out.write(txtout)
-
+    
+    # This is private. Should only be called from render()
+    if return_env:
+        # clean it up
+        for key in INIT_VARS:
+            env.pop(key,None)
+        return env
+        
     return txtout
 
+def render(*args,**kwargs):
+    """
+    Passes all arguments and keyword arguments except those noted below to the 
+    pryprepro function but returns a dictionary of the environment instead of
+    the completed template. See help(pyprepro) or the pyprepro function
+    signature for details
+
+    Additional Keyword Arguments:
+    -----------------------------
+    keep_immutable [False]
+        Default False. If True, returns an ImmutableValDict instead of a regular dict
+    
+    """
+    kwargs['_return_env'] = True
+    keep_immutable = kwargs.pop('keep_immutable',False)
+    
+    res = pyprepro(*args,**kwargs)
+    if keep_immutable:
+        return res
+        
+    return dict(res)
+        
+    
 def _parse_cli(argv,dprepro=False):
     """
     Handle command line input.
@@ -931,6 +969,15 @@ def _vartxt(env,return_values=True,comment=None):
     
     return '\n'.join(comment + t for t in txt.split('\n'))
 
+def _json_dumps(env,**k):
+    d = dict((k,v) for k,v in env.items() if k not in INIT_VARS)
+    
+    def _default(obj):
+        return "**Object of type %s is not JSON serializable**" % obj.__class__.__name__
+    return json.dumps(d,default=_default,**k)
+    
+    
+
 def _setfmt(fmt=None):
     """
     (re)set the global formatting. If passed None, will reset to initial
@@ -1579,6 +1626,8 @@ class _SimpleTemplate(_BaseTemplate):
             'setfmt':_setfmt,
             'all_vars':lambda **k: _vartxt(env,return_values=True,**k),
             'all_var_names':lambda **k: _vartxt(env,return_values=False,**k),
+            'env':env,
+            'json_dumps':lambda **k: _json_dumps(env,**k),
         })
         
         # String literals of escape characters
@@ -1914,7 +1963,7 @@ _syntax = {
     'code'  : DEFAUL_LINE_START  ,
     'inline': '{0} {1}'.format(DEFAUL_INLINE_START,DEFAUL_INLINE_END),
 }
-INIT_VARS = set(_template('BLA',return_env=True,syntax=_syntax)[-1].keys())
+INIT_VARS = set(_template('BLA',return_env=True,syntax=_syntax)[1].keys())
 
 def main():
     global CLI_MODE

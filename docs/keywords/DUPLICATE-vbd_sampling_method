@@ -1,0 +1,34 @@
+Blurb::
+The method to use for variance-based decomposition
+Description::
+Allows the user to select between ``pick_and_freeze``
+and ``binned`` for variance-based decomposition.
+
+**Default Behavior**
+
+Default method is ``pick_and_freeze``.
+
+**Expected Output**
+
+**Usage Tips**
+
+**Additional Discussion**
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method,
+      sampling
+        sample_type lhs
+        samples = 100
+        variance_based_decomp
+          vbd_sampling_method pick_and_freeze
+
+Theory::
+
+Faq::
+
+See_Also::

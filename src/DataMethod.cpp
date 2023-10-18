@@ -127,7 +127,7 @@ DataMethodRep::DataMethodRep():
   numSamples(0), fixedSeedFlag(false),
   fixedSequenceFlag(false), //default is variable sampling patterns
   vbdFlag(false),vbdDropTolerance(-1.),
-  vbdViaSamplingMethod(VBD_SALTELLI),vbdViaSamplingNumBins(-1), // TODO for Teresa: should be "VBD_MAHADEVAN" instead of "VBD_SALTELLI"
+  vbdViaSamplingMethod(VBD_PICK_AND_FREEZE),vbdViaSamplingNumBins(-1),
   backfillFlag(false), pcaFlag(false),
   percentVarianceExplained(0.95), wilksFlag(false), wilksOrder(1),
   wilksConfidenceLevel(0.95), wilksSidedInterval(ONE_SIDED_UPPER),
