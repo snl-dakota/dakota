@@ -9,6 +9,7 @@
 
 #include <exception>
 #include <vector>
+#include <ciso646>
 
 #include "Rank1Lattice.hpp"
 #include "low_discrepancy_data.hpp"

@@ -13,7 +13,7 @@
 
 #include <fstream>
 #include <cmath>
-
+#include <ciso646>
 #include "opt_tpl_test.hpp"
 
 #define BOOST_TEST_MODULE dakota_digital_net_test
