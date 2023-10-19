@@ -21,6 +21,9 @@
 
 #include <boost/math/special_functions/erf.hpp>
 
+#include <ciso646> // macros for logical operators (e.g. not for !)
+                   // Needed by MSVS.
+
 namespace Dakota {
 
 /// Default constructor
