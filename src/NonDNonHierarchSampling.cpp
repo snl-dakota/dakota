@@ -52,7 +52,7 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
   NonDEnsembleSampling(problem_db, model), optSubProblemForm(0),
   truthFixedByPilot(problem_db.get_bool("method.nond.truth_fixed_by_pilot"))
 {
-  // default solver to OPT++ NIP based on numerical experience
+  // solver(s) that perform the numerical solution for resource allocations
   optSubProblemSolver = sub_optimizer_select(
     probDescDB.get_ushort("method.nond.opt_subproblem_solver"),
     SUBMETHOD_DIRECT_NPSOL_OPTPP); // default is global + competed local
@@ -190,6 +190,61 @@ hf_indices(size_t& hf_form_index, size_t& hf_lev_index)
     else
       hf_lev_index = secondaryIndex;
   }
+}
+
+
+void NonDNonHierarchSampling::
+evaluate_pilot(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
+	       RealSymMatrixArray& sum_LL_pilot, RealMatrix& sum_LH_pilot,
+	       RealVector& sum_HH_pilot, SizetArray& N_shared_pilot,
+	       bool incr_cost)
+{
+  initialize_acv_sums(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
+		      sum_HH_pilot);
+  N_shared_pilot.assign(numFunctions, 0);
+  //initialize_acv_counts(N_shared_pilot, N_LL_pilot);
+
+  // ----------------------------------------
+  // Compute var L,H & covar LL,LH from pilot
+  // ----------------------------------------
+  // Initialize for pilot sample
+  shared_increment(mlmfIter); // spans ALL models, blocking
+  accumulate_acv_sums(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
+		      sum_HH_pilot, N_shared_pilot);//, N_LL_pilot);
+  if (mlmfIter == 0) {
+    // TO DO: allow pilot to vary for C vs c.  numSamples logic after pilot
+    // (mlmfIter >= 1) will require _baseline{L,H}
+    //if (lf_shared_pilot > hf_shared_pilot) {
+    //  numSamples = lf_shared_pilot - hf_shared_pilot;
+    //  shared_approx_increment(mlmfIter); // spans all approx models
+    //  accumulate_acv_sums(sum_L_baselineL, sum_LL,//_baselineL,
+    //                      N_L_baselineL);
+    //  if (incr_cost)
+    //    increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox,
+    //			            equivHFEvals);
+    //}
+    if (onlineCost) recover_online_cost(sequenceCost);
+  }
+  if (incr_cost)
+    increment_equivalent_cost(numSamples,sequenceCost,0,numSteps,equivHFEvals);
+}
+
+
+void NonDNonHierarchSampling::
+compute_LH_statistics(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
+		      RealSymMatrixArray& sum_LL_pilot,
+		      RealMatrix& sum_LH_pilot, RealVector& sum_HH_pilot,
+		      SizetArray& N_shared_pilot, RealMatrix& var_L,
+		      RealVector& var_H, RealSymMatrixArray& cov_LL,
+		      RealMatrix& cov_LH)
+{
+  if (mlmfIter == 0) // see var_L usage in compute_ratios()
+    compute_L_variance(sum_L_pilot, sum_LL_pilot, N_shared_pilot, var_L);
+  compute_variance(sum_H_pilot, sum_HH_pilot, N_shared_pilot, var_H);
+  compute_LL_covariance(sum_L_pilot, sum_LL_pilot, N_shared_pilot, cov_LL);
+  compute_LH_covariance(sum_L_pilot, sum_H_pilot, sum_LH_pilot,
+			N_shared_pilot, cov_LH);
+  //Cout << "var_H:\n"<< var_H << "cov_LL:\n"<< cov_LL << "cov_LH:\n"<< cov_LH;
 }
 
 
@@ -404,11 +459,10 @@ void NonDNonHierarchSampling::recover_online_cost(RealVector& seq_cost)
 
 void NonDNonHierarchSampling::
 mfmc_analytic_solution(const UShortArray& approx_set, const RealMatrix& rho2_LH,
-		       const RealVector& cost, DAGSolutionData& soln,
+		       const RealVector& cost, RealVector& avg_eval_ratios,
 		       bool monotonic_r)
 {
   size_t qoi, a, num_approx = approx_set.size(), num_am1 = num_approx - 1;
-  RealVector& avg_eval_ratios = soln.avgEvalRatios;
   if (avg_eval_ratios.length() != num_approx) avg_eval_ratios.size(num_approx);
   else                                        avg_eval_ratios = 0.;
 
@@ -454,10 +508,9 @@ mfmc_reordered_analytic_solution(const UShortArray& approx_set,
 				 const RealMatrix& rho2_LH,
 				 const RealVector& cost,
 				 SizetArray& approx_sequence,
-				 DAGSolutionData& soln, bool monotonic_r)
+				 RealVector& avg_eval_ratios, bool monotonic_r)
 {
   size_t qoi, a, num_approx = approx_set.size(), num_am1 = num_approx-1;
-  RealVector& avg_eval_ratios = soln.avgEvalRatios;
   if (avg_eval_ratios.length() != num_approx)
     avg_eval_ratios.sizeUninitialized(num_approx);
 
@@ -551,7 +604,7 @@ scale_to_budget_with_pilot(RealVector& avg_eval_ratios, const RealVector& cost,
 
 
 void NonDNonHierarchSampling::
-ensemble_numerical_solution(const RealVector& cost, DAGSolutionData& soln,
+ensemble_numerical_solution(const RealVector& cost, MFSolutionData& soln,
 			    size_t& num_samples)
 {
   size_t i, num_cdv, num_lin_con, num_nln_con, approx, approx_im1, approx_ip1,
@@ -580,7 +633,7 @@ ensemble_numerical_solution(const RealVector& cost, DAGSolutionData& soln,
   run_minimizers(soln);
   // compute sample increment for HF from current to target:
   num_samples = (truthFixedByPilot) ? 0 :
-    one_sided_delta(avg_N_H, soln.avgHFTarget);
+    one_sided_delta(avg_N_H, soln.solution_reference());
 
   //if (!num_samples) { // metrics not needed unless print_variance_reduction()
 
@@ -591,7 +644,8 @@ ensemble_numerical_solution(const RealVector& cost, DAGSolutionData& soln,
 
   // Report ratio of averages rather that average of ratios (see notes in
   // print_variance_reduction())
-  soln.avgEstVarRatio = soln.avgEstVar / average(mc_estvar); // (1 - R^2)
+  soln.average_estimator_variance_ratio(soln.average_estimator_variance() /
+					average(mc_estvar)); // (1 - R^2)
   //RealVector estvar_ratio(numFunctions, false);
   //for (size_t qoi=0; qoi<numFunctions; ++qoi)
   //  estvar_ratio[qoi] = 1. - R_sq[qoi];// compute from CF_inv,A->compute_Rsq()
@@ -626,7 +680,7 @@ numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
 
 
 void NonDNonHierarchSampling::
-numerical_solution_bounds_constraints(const DAGSolutionData& soln,
+numerical_solution_bounds_constraints(const MFSolutionData& soln,
 				      const RealVector& cost, Real avg_N_H,
 				      RealVector& x0, RealVector& x_lb,
 				      RealVector& x_ub, RealVector& lin_ineq_lb,
@@ -638,12 +692,6 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
 				      RealMatrix& lin_ineq_coeffs,
 				      RealMatrix& lin_eq_coeffs)
 {
-  const RealVector& avg_eval_ratios = soln.avgEvalRatios;
-  Real              avg_hf_target   = soln.avgHFTarget;
-  //Real                 avg_estvar = soln.avgEstVar;
-  //Real           avg_estvar_ratio = soln.avgEstVarRatio;
-  //Real              equiv_hf_cost = soln.equivHFAlloc;
-
   // For offline mode, online allocations must be lower bounded for numerics:
   // > for QOI_STATISTICS, unbiased moments / CV beta require min of 2 samples
   // > for ESTIMATOR_PERF, a lower bnd of 1 sample is allowable (MC reference)
@@ -681,8 +729,9 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
 
   // Note: ACV paper suggests additional linear constraints for r_i ordering
   switch (optSubProblemForm) {
-  case R_ONLY_LINEAR_CONSTRAINT:
+  case R_ONLY_LINEAR_CONSTRAINT: {
     x_lb = 1.; // r_i
+    RealVector avg_eval_ratios = soln.solution_ratios();
     if (avg_eval_ratios.empty()) x0 = 1.;
     else                         x0 = avg_eval_ratios;
     // set linear inequality constraint for fixed N:
@@ -695,7 +744,8 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
     for (approx=0; approx<numApprox; ++approx)
       lin_ineq_coeffs(0,approx) = cost[approx] / cost_H;
     break;
-  case R_AND_N_NONLINEAR_CONSTRAINT:
+  }
+  case R_AND_N_NONLINEAR_CONSTRAINT: {
     // Could allow optimal profile to emerge from pilot by allowing N* less than
     // the incurred cost (e.g., setting N_lb to 1), but instead we bound with
     // the incurred cost by setting x_lb = latest N_H and retaining r_lb = 1.
@@ -703,50 +753,41 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
     x_lb[numApprox] = (pilotMgmtMode == OFFLINE_PILOT) ?
       offline_N_lwr : avg_N_H; //std::floor(avg_N_H + .5); // pilot <= N*
 
+    RealVector avg_eval_ratios = soln.solution_ratios();
     if (avg_eval_ratios.empty()) x0 = 1.;
-    else copy_data_partial(avg_eval_ratios, x0, 0);     // r_i
-    x0[numApprox] = (mlmfIter) ? avg_N_H : avg_hf_target; // N
+    else copy_data_partial(avg_eval_ratios, x0, 0);                   // r_i
+    x0[numApprox] = (mlmfIter) ? avg_N_H : soln.solution_reference(); // N
 
     nln_ineq_lb[0] = -DBL_MAX; // no low bnd
     nln_ineq_ub[0] = budget;
     break;
-  case N_VECTOR_LINEAR_CONSTRAINT: {
+  }
+  case N_VECTOR_LINEAR_CONSTRAINT:  case N_VECTOR_LINEAR_OBJECTIVE: {
     x_lb = (pilotMgmtMode == OFFLINE_PILOT) ? offline_N_lwr : avg_N_H;
-    if (avg_eval_ratios.empty()) x0 = x_lb;
+    const RealVector& soln_vars = soln.solution_variables();
+    if (soln_vars.empty()) x0 = x_lb;
     else {
-      Real N_mult = (mlmfIter) ? avg_N_H : avg_hf_target;
-      r_and_N_to_N_vec(avg_eval_ratios, N_mult, x0); // N_i = [ {r_i}, 1 ] * N
+      x0 = soln_vars;
       if (pilotMgmtMode == OFFLINE_PILOT) // x0 could undershoot offline_N_lwr
 	for (i=0; i<num_cdv; ++i) // bump x0 to satisfy x_lb if needed
 	  if (x0[i] < offline_N_lwr)
 	    x0[i]   = offline_N_lwr;
     }
-    
-    // linear inequality constraint on budget:
-    //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
-    //   N w + \Sum_i w_i N_i <= equivHF * w
-    //   N + \Sum_i w_i/w N_i <= equivHF
-    lin_ineq_ub[0] = budget; // remaining ub initialized to 0
-    for (approx=0; approx<numApprox; ++approx)
-      lin_ineq_coeffs(0, approx) = cost[approx] / cost_H;
-    lin_ineq_coeffs(0, numApprox) = 1.;
-    break;
-  }
-  case N_VECTOR_LINEAR_OBJECTIVE: {
-    x_lb = (pilotMgmtMode == OFFLINE_PILOT) ? offline_N_lwr : avg_N_H;
-    if (avg_eval_ratios.empty()) x0 = x_lb;
-    else {
-      Real N_mult = (mlmfIter) ? avg_N_H : avg_hf_target;
-      r_and_N_to_N_vec(avg_eval_ratios, N_mult, x0); // N_i = [ {r_i}, 1 ] * N
-      if (pilotMgmtMode == OFFLINE_PILOT)
-	for (i=0; i<num_cdv; ++i) // bump x0 to satisfy x_lb if needed
-	  if (x0[i] < offline_N_lwr)
-	    x0[i]   = offline_N_lwr;
+    if (optSubProblemForm == N_VECTOR_LINEAR_CONSTRAINT) {
+      // linear inequality constraint on budget:
+      //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
+      //   N w + \Sum_i w_i N_i <= equivHF * w
+      //   N + \Sum_i w_i/w N_i <= equivHF
+      lin_ineq_ub[0] = budget; // remaining ub initialized to 0
+      for (approx=0; approx<numApprox; ++approx)
+	lin_ineq_coeffs(0, approx) = cost[approx] / cost_H;
+      lin_ineq_coeffs(0, numApprox) = 1.;
     }
-
-    // nonlinear constraint on estvar
-    nln_ineq_lb = -DBL_MAX;  // no lower bnd
-    nln_ineq_ub = std::log(convergenceTol * average(estVarIter0));
+    else if (optSubProblemForm == N_VECTOR_LINEAR_OBJECTIVE) {
+      // nonlinear inequality constraint on estvar
+      nln_ineq_lb = -DBL_MAX;  // no lower bnd
+      nln_ineq_ub = std::log(convergenceTol * average(estVarIter0));
+    }
     break;
   }
   }
@@ -758,6 +799,26 @@ numerical_solution_bounds_constraints(const DAGSolutionData& soln,
 	 << "Numerical solve (nln ineq lb, ub):\n" << nln_ineq_lb << nln_ineq_ub
        //<< nln_eq_tgt << lin_ineq_coeffs << lin_eq_coeffs
 	 << std::endl;
+}
+
+
+void NonDNonHierarchSampling::
+augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
+				RealVector& lin_ineq_lb,
+				RealVector& lin_ineq_ub)
+{
+  // Base definition: no augmentation
+}
+
+
+Real NonDNonHierarchSampling::
+augmented_linear_ineq_violations(const RealVector& cd_vars,
+				 const RealMatrix& lin_ineq_coeffs,
+				 const RealVector& lin_ineq_lb,
+				 const RealVector& lin_ineq_ub)
+{
+  // Base definition: no augmentation so no augmented violation
+  return 0.;
 }
 
 
@@ -1141,7 +1202,7 @@ configure_minimizers(const RealVector& cost, Real avg_N_H,
 }
 
 
-void NonDNonHierarchSampling::run_minimizers(DAGSolutionData& soln)
+void NonDNonHierarchSampling::run_minimizers(MFSolutionData& soln)
 {
   // ----------------------------------
   // Solve the optimization sub-problem: compute optimal r*,N*
@@ -1195,29 +1256,28 @@ void NonDNonHierarchSampling::run_minimizers(DAGSolutionData& soln)
   // ending with capable (local gradient-based) minimizers at sequence end.
   Iterator& min_last_best = varianceMinimizers[last_seq_index][best_min];
   recover_results(min_last_best.variables_results().continuous_variables(),
-		  min_last_best.response_results().function_values(),
-		  soln.avgEstVar, soln.avgEvalRatios, soln.avgHFTarget,
-		  soln.equivHFAlloc);
+		  min_last_best.response_results().function_values(), soln);
 }
 
 
 void NonDNonHierarchSampling::
 recover_results(const RealVector& cv_star, const RealVector& fn_star,
-		Real& avg_estvar, RealVector& avg_eval_ratios,
-		Real& avg_hf_target, Real& equiv_hf_cost)
+		MFSolutionData& soln)
 {
   // Estvar recovery from optimizer provides std::log(average(nh_estvar)) =
   // var_H / N_H (1 - R^2).  Notes:
   // > a QoI-vector prior to averaging would require recomputation from r*,N*)
   // > this value corresponds to N* (_after_ num_samples applied)
-  avg_estvar = (optSubProblemForm == N_VECTOR_LINEAR_OBJECTIVE) ?
+  Real avg_estvar = (optSubProblemForm == N_VECTOR_LINEAR_OBJECTIVE) ?
     std::exp(fn_star[1]) : std::exp(fn_star(0));
+  soln.average_estimator_variance(avg_estvar);
 
   // Recover optimizer results for average {eval_ratios,estvar}.  Also compute
   // shared increment from N* or from targeting specified budget || accuracy.
   switch (optSubProblemForm) {
-  case R_ONLY_LINEAR_CONSTRAINT:
-    copy_data(cv_star, avg_eval_ratios); // r*
+  case R_ONLY_LINEAR_CONSTRAINT: {
+    const RealVector& avg_eval_ratios = cv_star; // r*
+    Real              avg_hf_target;             // N*
     // N* was not part of the optimization (solver computes r* for fixed N)
     // and has not been updated by the optimizer.  We update it here:
 
@@ -1245,30 +1305,29 @@ recover_results(const RealVector& cv_star, const RealVector& fn_star,
 	   << ": average HF target = " << avg_hf_target << std::endl;
     }
     //avg_hf_target = std::min(budget_target, ctol_target); // enforce both
-    break;
-  case R_AND_N_NONLINEAR_CONSTRAINT:
-    // R_AND_N:  r*   is leading part of cv_star and N* is trailing entry
-    copy_data_partial(cv_star, 0, (int)numApprox, avg_eval_ratios); // r*
-    avg_hf_target = cv_star[numApprox];                             // N*
-    break;
-  case N_VECTOR_LINEAR_OBJECTIVE: case N_VECTOR_LINEAR_CONSTRAINT:
-    // N_VECTOR: N*_i is leading part of cv_star and N* is trailing entry.
-    // Note that r_i is always relative to HF N, not its DAG pairing.
-    copy_data_partial(cv_star, 0, (int)numApprox, avg_eval_ratios); // N*_i
-    avg_hf_target = cv_star[numApprox];                             // N*
-    avg_eval_ratios.scale(1. / avg_hf_target);        // r*_i = N*_i / N*
+    soln.anchored_solution_ratios(avg_eval_ratios, avg_hf_target);
+    soln.equivalent_hf_allocation(
+      compute_equivalent_cost(avg_hf_target, avg_eval_ratios, sequenceCost));
     break;
   }
-
-  // Cost recovery:
-  switch (optSubProblemForm) {
+  case R_AND_N_NONLINEAR_CONSTRAINT: {
+    // R_AND_N:  r*   is leading part of cv_star and N* is trailing entry
+    RealVector avg_eval_ratios(Teuchos::View, cv_star.values(), numApprox);
+    soln.anchored_solution_ratios(avg_eval_ratios, cv_star[numApprox]);
+    soln.equivalent_hf_allocation(fn_star[1]);
+    break;
+  }
+  case N_VECTOR_LINEAR_CONSTRAINT:
+    // N_VECTOR: N*_i is leading part of cv_star and N* is trailing entry.
+    // Note that r_i is always relative to HF N, not its DAG pairing.
+    soln.solution_variables(cv_star);
+    soln.equivalent_hf_allocation(linear_cost(cv_star));
+    break;
   case N_VECTOR_LINEAR_OBJECTIVE:
-    equiv_hf_cost = fn_star[0];  break;
-  case R_AND_N_NONLINEAR_CONSTRAINT:
-    equiv_hf_cost = fn_star[1];  break;
-  default:
-    equiv_hf_cost
-      = compute_equivalent_cost(avg_hf_target, avg_eval_ratios, sequenceCost);
+    // N_VECTOR: N*_i is leading part of cv_star and N* is trailing entry.
+    // Note that r_i is always relative to HF N, not its DAG pairing.
+    soln.solution_variables(cv_star);
+    soln.equivalent_hf_allocation(fn_star[0]);
     break;
   }
 }
@@ -1372,19 +1431,14 @@ nh_penalty_merit(const RealVector& cd_vars, const RealVector& fn_vals)
     return nh_penalty_merit(fn_vals[0], fn_vals[1],
 			    std::log(convergenceTol*average(estVarIter0)));
     break;
-
   case N_VECTOR_LINEAR_CONSTRAINT:
     return nh_penalty_merit(fn_vals[0], linear_cost(cd_vars), budget);  break;
-
   case R_AND_N_NONLINEAR_CONSTRAINT:
     return nh_penalty_merit(fn_vals[0], fn_vals[1], budget);            break;
-
-  //default: return fn_vals[0]; break; // no nln con, assume linear are enforced
-  default:  { // more involved recovery of equiv cost from cv_star
-    Real avg_estvar, avg_hf_target, equiv_hf_cost;  RealVector avg_eval_ratios;
-    recover_results(cd_vars, fn_vals, avg_estvar, avg_eval_ratios,
-		    avg_hf_target, equiv_hf_cost);
-    return nh_penalty_merit(std::log(avg_estvar), equiv_hf_cost, budget);
+  default: {
+    // Note: all cases could use this except for additional exp/log overhead
+    MFSolutionData soln;  recover_results(cd_vars, fn_vals, soln);
+    return nh_penalty_merit(soln);
     break;
   }
   }
@@ -1393,22 +1447,22 @@ nh_penalty_merit(const RealVector& cd_vars, const RealVector& fn_vals)
 
 // Minimizer::penalty_merit() uses too many Minimizer attributes, so we
 // use local definitions here
-Real NonDNonHierarchSampling::nh_penalty_merit(const DAGSolutionData& soln)
+Real NonDNonHierarchSampling::nh_penalty_merit(const MFSolutionData& soln)
 {
   // Assume linear constraints are satisfied (for now)
   // Keep accuracy in log space and normalize both cost and log-accuracy
 
+  Real  avg_estvar = soln.average_estimator_variance(),
+    equiv_hf_alloc = soln.equivalent_hf_allocation();
   switch (optSubProblemForm) {
   case N_VECTOR_LINEAR_OBJECTIVE:
-    return nh_penalty_merit(soln.equivHFAlloc, std::log(soln.avgEstVar),
+    return nh_penalty_merit(equiv_hf_alloc, std::log(avg_estvar),
 			    std::log(convergenceTol*average(estVarIter0)));
     break;
-  default: //case R_AND_N_NONLINEAR_CONSTRAINT:
-    return nh_penalty_merit(std::log(soln.avgEstVar), soln.equivHFAlloc,
+  default:
+    return nh_penalty_merit(std::log(avg_estvar), equiv_hf_alloc,
 			    (Real)maxFunctionEvals);
     break;
-  //default: // no nonlinear constraint, log scaling not necessary for estvar
-  //  return soln.avgEstVar;  break;
   }
 }
 
@@ -1828,7 +1882,7 @@ response_evaluator(const Variables& vars, const ActiveSet& set,
 
 
 void NonDNonHierarchSampling::
-print_estimator_performance(std::ostream& s, const DAGSolutionData& soln)
+print_estimator_performance(std::ostream& s, const MFSolutionData& soln)
 {
   size_t wpp7 = write_precision + 7;
   s << "<<<<< Variance for mean estimator:\n";
@@ -1860,19 +1914,20 @@ print_estimator_performance(std::ostream& s, const DAGSolutionData& soln)
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     final_mc_estvar[qoi] = varH[qoi] / (N_H_actual[qoi] + deltaNActualHF);
   Real proj_equiv_hf = equivHFEvals + deltaEquivHF,
-    avg_budget_mc_estvar = average(varH) / proj_equiv_hf;
+    avg_budget_mc_estvar = average(varH) / proj_equiv_hf,
+    avg_estvar = soln.average_estimator_variance();
   s << "  " << type << "   MC (" << std::setw(5)
     << (size_t)std::floor(average(N_H_actual) + deltaNActualHF + .5)
     << " HF samples): " << std::setw(wpp7) << average(final_mc_estvar)
     << "\n  " << type << method << " (sample profile):   "
-    << std::setw(wpp7) << soln.avgEstVar
+    << std::setw(wpp7) << avg_estvar
     << "\n  " << type << method << " ratio (1 - R^2):    "
-    << std::setw(wpp7) << soln.avgEstVarRatio
+    << std::setw(wpp7) << soln.average_estimator_variance_ratio()
     << "\n Equivalent   MC (" << std::setw(5)
     << (size_t)std::floor(proj_equiv_hf + .5) << " HF samples): "
     << std::setw(wpp7) << avg_budget_mc_estvar
     << "\n Equivalent" << method << " ratio:              "
-    << std::setw(wpp7) << soln.avgEstVar / avg_budget_mc_estvar << '\n';
+    << std::setw(wpp7) << avg_estvar / avg_budget_mc_estvar << '\n';
 }
 
 } // namespace Dakota

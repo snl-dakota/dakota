@@ -103,9 +103,9 @@ protected:
 				     RealVector& mc_est_var);
 
   /// convert estimator variance ratios to average estimator variance
-  void estvar_ratios_to_avg_estvar(const RealVector& estvar_ratios,
+  Real estvar_ratios_to_avg_estvar(const RealVector& estvar_ratios,
 				   const RealVector& var_H,
-				   const SizetArray& N_H, Real& avg_est_var);
+				   const SizetArray& N_H);
 
   /// compute scalar control variate parameters
   void compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
@@ -313,15 +313,14 @@ compute_mc_estimator_variance(const RealVector& var_l, const SizetArray& N_l,
 }
 
 
-inline void NonDEnsembleSampling::
+inline Real NonDEnsembleSampling::
 estvar_ratios_to_avg_estvar(const RealVector& estvar_ratios,
-			    const RealVector& var_H, const SizetArray& N_H,
-			    Real& avg_est_var)
+			    const RealVector& var_H, const SizetArray& N_H)
 {
   RealVector est_var(numFunctions, false);
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     est_var[qoi] = estvar_ratios[qoi] * var_H[qoi] / N_H[qoi];
-  avg_est_var = average(est_var);
+  return average(est_var);
 }
 
 

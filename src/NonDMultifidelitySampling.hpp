@@ -83,36 +83,38 @@ protected:
 
   void mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
 			const RealVector& cost,  SizetArray& approx_sequence,
-			DAGSolutionData& soln);
+			MFSolutionData& soln);
                       //bool for_warm_start = false);
   void mfmc_numerical_solution(const RealMatrix& var_L,
 			       const RealMatrix& rho2_LH,
 			       const RealVector& cost,
 			       SizetArray& approx_sequence,
-			       DAGSolutionData& soln);
+			       MFSolutionData& soln);
 
   void approx_increments(IntRealMatrixMap& sum_L_baseline,
 			 IntRealVectorMap& sum_H,  IntRealMatrixMap& sum_LL,
 			 IntRealMatrixMap& sum_LH, const SizetArray& N_H_actual,
 			 size_t N_H_alloc, const SizetArray& approx_sequence,
-			 const DAGSolutionData& soln);
-  bool mfmc_approx_increment(const DAGSolutionData& soln,
+			 const MFSolutionData& soln);
+  bool mfmc_approx_increment(const MFSolutionData& soln,
 			     const Sizet2DArray& N_L_actual_refined,
 			     SizetArray& N_L_alloc_refined, size_t iter,
 			     const SizetArray& approx_sequence,
 			     size_t start, size_t end);
 
-  void update_hf_target(const RealVector& cost, DAGSolutionData& soln);
-  void update_hf_target(const RealMatrix& rho2_LH,
+  Real update_hf_target(const RealVector& cost,
+			const RealVector& avg_eval_ratios);
+  Real update_hf_target(const RealMatrix& rho2_LH,
 			const SizetArray& approx_sequence,
+			const RealVector& avg_eval_ratios,
 			const RealVector& var_H, const RealVector& estvar_iter0,
-			RealVector& estvar_ratios, DAGSolutionData& soln);
+			RealVector& estvar_ratios);
 
   void mfmc_estimator_variance(const RealMatrix& rho2_LH,
 			       const RealVector& var_H, const SizetArray& N_H,
 			       const SizetArray& approx_sequence,
 			       RealVector& estvar_ratios,
-			       DAGSolutionData& soln);
+			       MFSolutionData& soln);
   //void mfmc_estvar_ratios(const RealMatrix& rho2_LH,
   // 			  const SizetArray& approx_sequence,
   // 			  const RealMatrix& eval_ratios,
@@ -184,12 +186,12 @@ private:
   //void compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
   //			  size_t num_L, size_t num_H, size_t num_LH,Real& beta);
 
-  void update_projected_lf_samples(const DAGSolutionData& soln,
+  void update_projected_lf_samples(const MFSolutionData& soln,
 				   const SizetArray& N_H_actual,
 				   size_t& N_H_alloc,
 				   //SizetArray& delta_N_L_actual,
 				   Real& delta_equiv_hf);
-  void update_projected_samples(const DAGSolutionData& soln,
+  void update_projected_samples(const MFSolutionData& soln,
 				const SizetArray& N_H_actual,
 				size_t& N_H_alloc, size_t& delta_N_H_actual,
 				//SizetArray& delta_N_L_actual,
@@ -212,16 +214,16 @@ private:
   unsigned short numericalSolveMode;
 
   /// final solution data for MFMC (default DAG = 1,2,...,numApprox)
-  DAGSolutionData mfmcSolnData;
+  MFSolutionData mfmcSolnData;
 };
 
 
 inline Real NonDMultifidelitySampling::estimator_accuracy_metric()
-{ return mfmcSolnData.avgEstVar; }
+{ return mfmcSolnData.average_estimator_variance(); }
 
 
 //inline Real NonDMultifidelitySampling::estimator_cost_metric()
-//{ return mfmcSolnData.equivHFAlloc; }
+//{ return mfmcSolnData.equivalent_hf_allocation(); }
 
 
 inline void NonDMultifidelitySampling::

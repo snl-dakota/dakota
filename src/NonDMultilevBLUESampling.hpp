@@ -7,14 +7,14 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:	 NonDACVSampling
+//- Class:	 NonDMultilevBLUESampling
 //- Description: Class for approximate control variate sampling
 //- Owner:       Mike Eldred
 //- Checked by:
 //- Version:
 
-#ifndef NOND_ACV_SAMPLING_H
-#define NOND_ACV_SAMPLING_H
+#ifndef NOND_ML_BLUE_SAMPLING_H
+#define NOND_ML_BLUE_SAMPLING_H
 
 #include "NonDNonHierarchSampling.hpp"
 //#include "DataMethod.hpp"
@@ -29,7 +29,7 @@ namespace Dakota {
     that utilitizes lower fidelity simulations that have response QoI
     that are correlated with the high-fidelity response QoI. */
 
-class NonDACVSampling: public NonDNonHierarchSampling
+class NonDMultilevBLUESampling: public NonDNonHierarchSampling
 {
 public:
 
@@ -38,9 +38,9 @@ public:
   //
 
   /// standard constructor
-  NonDACVSampling(ProblemDescDB& problem_db, Model& model);
+  NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model);
   /// destructor
-  ~NonDACVSampling();
+  ~NonDMultilevBLUESampling();
 
 protected:
 
@@ -59,14 +59,6 @@ protected:
   void estimator_variance_ratios(const RealVector& r_and_N,
 				 RealVector& estvar_ratios);
 
-  void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
-				       RealVector& lin_ineq_lb,
-				       RealVector& lin_ineq_ub);
-  Real augmented_linear_ineq_violations(const RealVector& cd_vars,
-					const RealMatrix& lin_ineq_coeffs,
-					const RealVector& lin_ineq_lb,
-					const RealVector& lin_ineq_ub);
-
   //
   //- Heading: member functions
   //
@@ -78,19 +70,6 @@ protected:
 			   IntRealVectorMap& sum_H,
 			   IntRealSymMatrixArrayMap& sum_LL,
 			   IntRealMatrixMap& sum_LH, RealVector& sum_HH);
-
-  /*
-  void evaluate_pilot(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
-		      RealSymMatrixArray& sum_LL_pilot,
-		      RealMatrix& sum_LH_pilot, RealVector& sum_HH_pilot,
-		      SizetArray& N_shared_pilot, bool incr_cost);
-  void compute_LH_statistics(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
-			     RealSymMatrixArray& sum_LL_pilot,
-			     RealMatrix& sum_LH_pilot, RealVector& sum_HH_pilot,
-			     SizetArray& N_shared_pilot, RealMatrix& var_L,
-			     RealVector& var_H, RealSymMatrixArray& cov_LL,
-			     RealMatrix& cov_LH);
-  */
 
   // shared_increment() cases:
   void accumulate_acv_sums(IntRealMatrixMap& sum_L_baseline,
@@ -130,13 +109,11 @@ protected:
 				       RealMatrix& cov_LH);
 
   void update_projected_lf_samples(const MFSolutionData& soln,
-				   const UShortArray& approx_set,
 				   const SizetArray& N_H_actual,
 				   size_t& N_H_alloc,
 				   //SizetArray& delta_N_L_actual,
 				   Real& delta_equiv_hf);
   void update_projected_samples(const MFSolutionData& soln,
-				const UShortArray& approx_set,
 				const SizetArray& N_H_actual, size_t& N_H_alloc,
 				size_t& delta_N_H_actual,
 				//SizetArray& delta_N_L_actual,
@@ -150,12 +127,7 @@ protected:
 				    const RealVector& var_H,
 				    RealMatrix& rho2_LH);
 
-  void pick_mfmc_cvmc_solution(const MFSolutionData& mf_soln, size_t mf_samp,
-			       const MFSolutionData& cv_soln, size_t cv_samp,
-			       MFSolutionData& soln, size_t& num_samp);
-
-  void print_computed_solution(std::ostream& s, const MFSolutionData& soln,
-			       const UShortArray& approx_set);
+  void print_computed_solution(std::ostream& s, const MFSolutionData& soln);
 
 private:
 
@@ -163,9 +135,9 @@ private:
   //- Heading: Helper functions
   //
 
-  void approximate_control_variate_online_pilot();
-  void approximate_control_variate_offline_pilot();
-  void approximate_control_variate_pilot_projection();
+  void ml_blue_online_pilot();
+  void ml_blue_offline_pilot();
+  void ml_blue_pilot_projection();
 
   void approx_increments(IntRealMatrixMap& sum_L_baselineH,
 			 IntRealVectorMap& sum_H,
@@ -180,13 +152,6 @@ private:
 			   RealSymMatrix& sum_LL_mq, RealMatrix& sum_LH_m,
 			   size_t N_shared_q, size_t mom, size_t qoi,
 			   RealVector& beta);
-
-  void analytic_initialization_from_mfmc(Real avg_N_H, MFSolutionData& soln);
-  void analytic_initialization_from_ensemble_cvmc(Real avg_N_H,
-						  MFSolutionData& soln);
-  void cvmc_ensemble_solutions(const RealMatrix& rho2_LH,
-			       const RealVector& cost,
-			       RealVector& avg_eval_ratios);
 
   void initialize_acv_counts(SizetArray& num_H, SizetSymMatrixArray& num_LL);
 
@@ -255,30 +220,26 @@ private:
   //- Heading: Data
   //
 
-  // option for performing multiple ACV optimizations and taking the best
-  //bool multiStartACV;
+  /// BLUE optimizes over a set of model groupings
+  UShort2DArray modelGroups;
+  /// aggregate cost of a sample for each of the model groupings
+  RealVector modelGroupCost;
 
-  /// ACV uses all approximations with in numApprox; this array supports this
-  /// case for functions that are generalized to support approx subsets
-  UShortArray approxSet;
-
-  /// the "F" matrix from Gorodetsky JCP paper
-  RealSymMatrix FMat;
-
-  /// final solution data for ACV (default DAG = {numApprox,...,numApprox})
-  MFSolutionData acvSolnData;
+  /// final solution data for BLUE
+  /// *** TO DO: generalize beyond DAGs?
+  MFSolutionData blueSolnData;
 };
 
 
-inline Real NonDACVSampling::estimator_accuracy_metric()
-{ return acvSolnData.average_estimator_variance(); }
+inline Real NonDMultilevBLUESampling::estimator_accuracy_metric()
+{ return blueSolnData.average_estimator_variance(); }
 
 
-//inline Real NonDACVSampling::estimator_cost_metric()
-//{ return mfmcSolnData.equivalent_hf_allocation(); }
+//inline Real NonDMultilevBLUESampling::estimator_cost_metric()
+//{ return blueSolnData.equivalent_hf_allocation(); }
 
 
-inline void NonDACVSampling::
+inline void NonDMultilevBLUESampling::
 initialize_acv_sums(RealMatrix& sum_L, RealVector& sum_H,
 		    RealSymMatrixArray& sum_LL, RealMatrix& sum_LH,
 		    RealVector& sum_HH)
@@ -293,7 +254,7 @@ initialize_acv_sums(RealMatrix& sum_L, RealVector& sum_H,
 }
 
 
-inline void NonDACVSampling::
+inline void NonDMultilevBLUESampling::
 initialize_acv_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 		    IntRealSymMatrixArrayMap& sum_LL, IntRealMatrixMap& sum_LH,
 		    RealVector& sum_HH)
@@ -310,7 +271,7 @@ initialize_acv_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 }
 
 
-inline void NonDACVSampling::
+inline void NonDMultilevBLUESampling::
 initialize_acv_counts(SizetArray& num_H, SizetSymMatrixArray& num_LL)
 {
   num_H.assign(numFunctions, 0);
@@ -320,38 +281,7 @@ initialize_acv_counts(SizetArray& num_H, SizetSymMatrixArray& num_LL)
 }
 
 
-/*
-inline void NonDACVSampling::
-initialize_acv_counts(Sizet2DArray& num_L_baseline,  SizetArray& num_H,
-		      SizetSymMatrixArray& num_LL, Sizet2DArray& num_LH)
-{
-  initialize_counts(num_L_baseline, num_H, num_LH);
-  num_LL.resize(numFunctions);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    num_LL[qoi].shape(numApprox);
-}
-
-
-inline void NonDACVSampling::
-initialize_acv_covariances(IntRealSymMatrixArrayMap covLL,
-			   IntRealMatrixMap& cov_LH, IntRealVectorMap& var_H)
-{
-  std::pair<int, RealVector> vec_pr;  std::pair<int, RealMatrix> mat_pr;
-  std::pair<int, RealSymMatrixArray> mat_array_pr;
-  for (int i=1; i<=4; ++i) {
-    vec_pr.first = mat_pr.first = mat_array_pr.first = i; // moment number
-    var_H.insert(vec_pr).first->second.size(numFunctions);
-    cov_LH.insert(mat_pr).first->second.shape(numFunctions, numApprox);
-    RealSymMatrixArray& mat_array = covLL.insert(mat_array_pr).first->second;
-    mat_array.resize(numFunctions);
-    for (size_t j=0; j<numFunctions; ++j)
-      mat_array[i].shape(numApprox);
-  }
-}
-*/
-
-
-inline void NonDACVSampling::
+inline void NonDMultilevBLUESampling::
 compute_L_variance(const RealMatrix& sum_L, const RealSymMatrixArray& sum_LL,
 		   const SizetArray& num_L, RealMatrix& var_L)
 {
@@ -367,7 +297,7 @@ compute_L_variance(const RealMatrix& sum_L, const RealSymMatrixArray& sum_LL,
 }
 
 
-inline void NonDACVSampling::
+inline void NonDMultilevBLUESampling::
 covariance_to_correlation_sq(const RealMatrix& cov_LH, const RealMatrix& var_L,
 			     const RealVector& var_H, RealMatrix& rho2_LH)
 {
@@ -384,7 +314,7 @@ covariance_to_correlation_sq(const RealMatrix& cov_LH, const RealMatrix& var_L,
 }
 
 
-inline void NonDACVSampling::
+inline void NonDMultilevBLUESampling::
 scale_to_target(Real avg_N_H, const RealVector& cost,
 		RealVector& avg_eval_ratios, Real& avg_hf_target)
 {
@@ -404,7 +334,7 @@ scale_to_target(Real avg_N_H, const RealVector& cost,
 }
 
 
-inline void NonDACVSampling::
+inline void NonDMultilevBLUESampling::
 compute_F_matrix(const RealVector& r_and_N, RealSymMatrix& F)
 {
   size_t i, j;
@@ -444,7 +374,7 @@ compute_F_matrix(const RealVector& r_and_N, RealSymMatrix& F)
   //case SUBMETHOD_ACV_RD: // TO DO
   default:
     Cerr << "Error: bad sub-method name (" << mlmfSubMethod
-	 << ") in NonDACVSampling::compute_F_matrix()" << std::endl;
+	 << ") in NonDMultilevBLUESampling::compute_F_matrix()" << std::endl;
     abort_handler(METHOD_ERROR); break;
   }
 
@@ -454,142 +384,7 @@ compute_F_matrix(const RealVector& r_and_N, RealSymMatrix& F)
 }
 
 
-/*
-inline void NonDACVSampling::
-invert_CF(const RealSymMatrix& C, const RealSymMatrix& F, RealSymMatrix& CF_inv)
-{
-  size_t i, j, n = C.numRows();
-  if (CF_inv.empty()) CF_inv.shapeUninitialized(n);
-
-  for (i=0; i<n; ++i)
-    for (j=0; j<=i; ++j) {
-      CF_inv(i,j) = C(i,j) * F(i,j);
-      //Cout << "invert_CF: C(" << i << ',' << j << ") = " << C(i,j)
-      //     << " F("  << i << ',' << j << ") = " << F(i,j)
-      //     << " CF(" << i << ',' << j << ") = " << CF_inv(i,j) << '\n';
-    }
-
-  RealSpdSolver spd_solver;
-  spd_solver.setMatrix(Teuchos::rcp(&CF_inv, false));
-  if (spd_solver.shouldEquilibrate()) {
-    spd_solver.factorWithEquilibration(true);
-    //if (outputLevel >= DEBUG_OUTPUT) {
-    //  Real rcond;  spd_solver.reciprocalConditionEstimate(rcond);
-    //  Cout << "Equilibrating in NonDACVSampling::invert_C_F(): reciprocal "
-    //	     << "condition number = " << rcond << std::endl;
-    //}
-  }
-  spd_solver.invert(); // in place
-}
-
-
-inline void NonDACVSampling::
-compute_A_vector(const RealSymMatrix& F, const RealMatrix& c,
-		 size_t qoi, RealVector& A)
-{
-  size_t i, num_approx = F.numRows();
-  if (A.length() != num_approx) A.sizeUninitialized(num_approx);
-
-  for (i=0; i<num_approx; ++i) // diag(F) o c-bar
-    A[i] = F(i,i) * c(qoi, i); // this version defers c-bar scaling
-}
-
-
-inline void NonDACVSampling::
-compute_A_vector(const RealSymMatrix& F, const RealMatrix& c,
-		 size_t qoi, Real var_H_q, RealVector& A)
-{
-  compute_A_vector(F, c, qoi, A); // first use unscaled overload
-  A.scale(1./std::sqrt(var_H_q)); // scale from c to c-bar
-}
-
-
-inline Real NonDACVSampling::
-compute_R_sq(const RealSymMatrix& CF_inv, const RealVector& A, Real var_H_q)
-{
-  RealSymMatrix trip(1, false);
-  Teuchos::symMatTripleProduct(Teuchos::TRANS, 1./var_H_q, CF_inv, A, trip);
-  return trip(0,0);
-
-  //size_t i, j, num_approx = CF_inv.numRows();
-  //Real sum, approx_inner_prod = 0.;
-  //for (i=0; i<num_approx; ++i) {
-  //  sum = 0.;
-  //  for (j=0; j<num_approx; ++j)
-  //    sum += CF_inv(i,j) * A[j];
-  //  approx_inner_prod += A[i] * sum;
-  //}
-  //return approx_inner_prod / varH[qoi]; // c-bar normalization
-}
-
-
-inline void NonDACVSampling::
-acv_estvar_ratios(const RealSymMatrix& F, RealVector& estvar_ratios)
-{
-  if (estvar_ratios.empty()) estvar_ratios.sizeUninitialized(numFunctions);
-
-  RealSymMatrix CF_inv;  RealVector A;  Real R_sq;
-  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    invert_CF(covLL[qoi], F, CF_inv);
-    //Cout << "Objective eval: CF inverse =\n" << CF_inv << std::endl;
-    compute_A_vector(F, covLH, qoi, A);    // defer c-bar scaling
-    //Cout << "Objective eval: A =\n" << A << std::endl;
-    R_sq = compute_R_sq(CF_inv, A, varH[qoi]); // apply scaling^2
-    //Cout << "Objective eval: varH[" << qoi << "] = " << varH[qoi]
-    //     << " Rsq[" << qoi << "] =\n" << R_sq << std::endl;
-    estvar_ratios[qoi] = (1. - R_sq);
-  }
-}
-
-
-inline void NonDACVSampling::
-compute_acv_control(const RealSymMatrix& cov_LL, const RealSymMatrix& F,
-		    const RealMatrix& cov_LH, size_t qoi, RealVector& beta)
-{
-  RealSymMatrix CF_inv;  RealVector A;
-  invert_CF(cov_LL, F, CF_inv);
-  //Cout << "compute_acv_control qoi " << qoi+1 << ": CF_inv\n" << CF_inv;
-  compute_A_vector(F, cov_LH, qoi, A); // no scaling (uses c, not c-bar)
-  //Cout << "compute_acv_control qoi " << qoi+1 << ": A\n" << A;
-
-  size_t n = F.numRows();
-  if (beta.length() != n) beta.size(n);
-  beta.multiply(Teuchos::LEFT_SIDE, 1., CF_inv, A, 0.); // for SymMatrix mult
-  //Cout << "compute_acv_control qoi " << qoi+1 << ": beta\n" << beta;
-}
-
-
-inline void NonDACVSampling::
-compute_acv_control(RealMatrix& sum_L, Real sum_H_q, RealSymMatrix& sum_LL_q,
-		    RealMatrix& sum_LH, const Sizet2DArray& num_L,
-		    size_t num_H_q, const SizetSymMatrix& num_LL_q,
-		    const Sizet2DArray& num_LH, const RealSymMatrix& F,
-		    size_t qoi, RealVector& beta)
-{
-  // compute cov_LL, cov_LH, var_H across numApprox for a particular QoI
-  // > cov_LH is sized for all qoi but only 1 row is used
-  size_t approx, approx2, num_L_aq;  Real sum_L_aq;
-  RealSymMatrix cov_LL(numApprox); RealMatrix cov_LH(numFunctions, numApprox);
-
-  for (approx=0; approx<numApprox; ++approx) {
-    num_L_aq = num_L[approx][qoi];  sum_L_aq = sum_L(qoi,approx);
-    compute_covariance(sum_L_aq, sum_H_q, sum_LH(qoi,approx), num_L_aq,
-		       num_H_q, num_LH[approx][qoi], cov_LH(qoi,approx));
-    compute_variance(sum_L_aq, sum_LL_q(approx,approx), num_L_aq,
-		     cov_LL(approx,approx));
-    for (approx2=0; approx2<approx; ++approx2)
-      compute_covariance(sum_L_aq, sum_L(qoi,approx2), sum_LL_q(approx,approx2),
-			 num_L_aq, num_L[approx2][qoi],num_LL_q(approx,approx2),
-			 cov_LL(approx,approx2));
-  }
-
-  // forward to overload:
-  compute_acv_control(cov_LL, F, cov_LH, qoi, beta);
-}
-*/
-
-
-inline void NonDACVSampling::
+inline void NonDMultilevBLUESampling::
 compute_C_F_c_f(const RealSymMatrix& C, const RealSymMatrix& F,
 		const RealMatrix& c, size_t qoi,
 		RealSymMatrix& C_F, RealVector& c_f)
@@ -604,7 +399,7 @@ compute_C_F_c_f(const RealSymMatrix& C, const RealSymMatrix& F,
 }
 
 
-inline void NonDACVSampling::
+inline void NonDMultilevBLUESampling::
 solve_for_C_F_c_f(RealSymMatrix& C_F, RealVector& c_f, RealVector& lhs,
 		  bool copy_C_F, bool copy_c_f)
 {
@@ -639,13 +434,13 @@ solve_for_C_F_c_f(RealSymMatrix& C_F, RealVector& c_f, RealVector& lhs,
   //Cout << "C_F after:\n" << C_F << "c_f after:\n" << c_f;
   if (code) {
     Cerr << "Error: serial dense solver failure (LAPACK error code " << code
-	 << ") in NonDACV::solve_for_C_F_c_f()." << std::endl;
+	 << ") in NonDMultilevBLUE::solve_for_C_F_c_f()." << std::endl;
     abort_handler(METHOD_ERROR);
   }
 }
 
 
-inline Real NonDACVSampling::
+inline Real NonDMultilevBLUESampling::
 solve_for_triple_product(const RealSymMatrix& C, const RealSymMatrix& F,
 			 const RealMatrix&    c, size_t qoi)
 {
@@ -665,13 +460,13 @@ solve_for_triple_product(const RealSymMatrix& C, const RealSymMatrix& F,
 }
 
 
-inline Real NonDACVSampling::
+inline Real NonDMultilevBLUESampling::
 compute_R_sq(const RealSymMatrix& C, const RealSymMatrix& F,
 	     const RealMatrix& c, size_t qoi, Real var_H_q)
 { return solve_for_triple_product(C, F, c, qoi) / var_H_q; }
 
 
-inline void NonDACVSampling::
+inline void NonDMultilevBLUESampling::
 acv_estvar_ratios(const RealSymMatrix& F, RealVector& estvar_ratios)
 {
   if (estvar_ratios.empty()) estvar_ratios.sizeUninitialized(numFunctions);
@@ -682,7 +477,7 @@ acv_estvar_ratios(const RealSymMatrix& F, RealVector& estvar_ratios)
 }
 
 
-inline void NonDACVSampling::
+inline void NonDMultilevBLUESampling::
 estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
 {
   // map incoming continuous design vars into r_i factors and compute F
@@ -704,7 +499,7 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
 }
 
 
-inline void NonDACVSampling::
+inline void NonDMultilevBLUESampling::
 compute_acv_control_covariances(RealMatrix& sum_L, Real sum_H_q,
 				RealSymMatrix& sum_LL_q, RealMatrix& sum_LH,
 				size_t N_shared_q, size_t qoi,
@@ -727,7 +522,7 @@ compute_acv_control_covariances(RealMatrix& sum_L, Real sum_H_q,
 }
 
 
-inline void NonDACVSampling::
+inline void NonDMultilevBLUESampling::
 solve_for_acv_control(const RealSymMatrix& cov_LL, const RealSymMatrix& F,
 		      const RealMatrix& cov_LH, size_t qoi, RealVector& beta)
 {
@@ -740,7 +535,7 @@ solve_for_acv_control(const RealSymMatrix& cov_LL, const RealSymMatrix& F,
 }
 
 
-inline void NonDACVSampling::
+inline void NonDMultilevBLUESampling::
 precompute_acv_control(const RealVector& avg_eval_ratios,
 		       const SizetArray& N_shared)
 {
@@ -749,7 +544,7 @@ precompute_acv_control(const RealVector& avg_eval_ratios,
 }
 
 
-inline void NonDACVSampling::
+inline void NonDMultilevBLUESampling::
 compute_acv_control(RealMatrix& sum_L_base_m, Real sum_H_mq,
 		    RealSymMatrix& sum_LL_mq, RealMatrix& sum_LH_m,
 		    size_t N_shared_q, size_t mom, size_t qoi, RealVector& beta)
@@ -768,7 +563,7 @@ compute_acv_control(RealMatrix& sum_L_base_m, Real sum_H_mq,
 }
 
 
-inline void NonDACVSampling::print_variance_reduction(std::ostream& s)
+inline void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s)
 { print_estimator_performance(s, acvSolnData); }
 
 } // namespace Dakota

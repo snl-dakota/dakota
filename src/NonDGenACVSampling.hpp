@@ -55,7 +55,7 @@ protected:
 
   void numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
 				 size_t& num_nln_con);
-  void numerical_solution_bounds_constraints(const DAGSolutionData& soln,
+  void numerical_solution_bounds_constraints(const MFSolutionData& soln,
     const RealVector& cost, Real avg_N_H, RealVector& x0, RealVector& x_lb,
     RealVector& x_ub, RealVector& lin_ineq_lb, RealVector& lin_ineq_ub,
     RealVector& lin_eq_tgt, RealVector& nln_ineq_lb, RealVector& nln_ineq_ub,
@@ -65,8 +65,7 @@ protected:
 			      RealVector& x_lb, RealVector& x_ub);
 
   void recover_results(const RealVector& cv_star, const RealVector& fn_star,
-		       Real& avg_estvar, RealVector& avg_eval_ratios,
-		       Real& avg_hf_target, Real& equiv_hf_cost);
+		       MFSolutionData& soln);
 
   Real linear_cost(const RealVector& N_vec);
   Real nonlinear_cost(const RealVector& r_and_N);
@@ -135,10 +134,10 @@ private:
 			 IntRealVectorMap& sum_H,
 			 IntRealSymMatrixArrayMap& sum_LL,
 			 IntRealMatrixMap& sum_LH, const SizetArray& N_H_actual,
-			 size_t N_H_alloc, const DAGSolutionData& soln);
+			 size_t N_H_alloc, const MFSolutionData& soln);
 
   void precompute_ratios();
-  void compute_ratios(const RealMatrix& var_L, DAGSolutionData& solution);
+  void compute_ratios(const RealMatrix& var_L, MFSolutionData& solution);
 
   void genacv_raw_moments(IntRealMatrixMap& sum_L_baseline,
 			  IntRealMatrixMap& sum_L_shared,
@@ -159,19 +158,19 @@ private:
 			      const UShortArray& approx_set, RealVector& beta);
 
   void analytic_initialization_from_mfmc(const UShortArray& approx_set,
-					 Real avg_N_H, DAGSolutionData& soln);
+					 Real avg_N_H, MFSolutionData& soln);
   void analytic_initialization_from_ensemble_cvmc(const UShortArray& approx_set,
 						  const UShortArray& dag,
 						  const UShortList& root_list,
 						  Real avg_N_H,
-						  DAGSolutionData& soln);
+						  MFSolutionData& soln);
   void cvmc_ensemble_solutions(const RealSymMatrixArray& cov_LL,
 			       const RealMatrix& cov_LH,
 			       const RealVector& var_H, const RealVector& cost,
 			       const UShortArray& approx_set,
 			       const UShortArray& dag,
 			       const UShortList& root_list,
-			       DAGSolutionData& soln);
+			       RealVector& avg_eval_ratios);
 
   void compute_parameterized_G_g(const RealVector& N_vec);
   void unroll_z1_z2(const RealVector& N_vec, RealVector& z1, RealVector& z2);
@@ -209,12 +208,12 @@ private:
 			      const SizetArray& approx_sequence,
 			      size_t sequence_start, size_t sequence_end);
 
-  bool genacv_approx_increment(const DAGSolutionData& soln,
+  bool genacv_approx_increment(const MFSolutionData& soln,
 			       const Sizet2DArray& N_L_actual_refined,
 			       SizetArray& N_L_alloc_refined,
 			       size_t iter, const SizetArray& approx_sequence,
 			       size_t start, size_t end);
-  bool genacv_approx_increment(const DAGSolutionData& soln,
+  bool genacv_approx_increment(const MFSolutionData& soln,
 			       const Sizet2DArray& N_L_actual_refined,
 			       SizetArray& N_L_alloc_refined,
 			       size_t iter, unsigned short root,
@@ -234,7 +233,7 @@ private:
 				       const UShortArray& approx_set,
 				       const UShortList& root_list);
 
-  void update_best(DAGSolutionData& solution);
+  void update_best(MFSolutionData& solution);
   void restore_best();
   //void reset_acv();
 
@@ -288,7 +287,7 @@ private:
 
   /// book-keeping of previous numerical optimization solutions for each DAG;
   /// used for warm starting
-  std::map<std::pair<UShortArray, UShortArray>, DAGSolutionData> dagSolns;
+  std::map<std::pair<UShortArray, UShortArray>, MFSolutionData> dagSolns;
 };
 
 
@@ -300,7 +299,7 @@ inline Real NonDGenACVSampling::estimator_accuracy_metric()
 {
   std::pair<UShortArray, UShortArray>
     key(activeModelSetIter->first, *activeDAGIter);
-  return dagSolns[key].avgEstVar;
+  return dagSolns[key].average_estimator_variance();
 }
 
 
@@ -308,7 +307,7 @@ inline Real NonDGenACVSampling::estimator_accuracy_metric()
 //{
 //  std::pair<UShortArray, UShortArray>
 //    key(activeModelSetIter->first, *activeDAGIter);
-//  return dagSolns[key].equivHFAlloc;
+//  return dagSolns[key].equivalent_hf_allocation();
 //}
 
 
