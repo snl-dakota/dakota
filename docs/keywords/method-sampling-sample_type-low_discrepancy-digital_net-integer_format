@@ -1,0 +1,136 @@
+Blurb::
+Specify format of integers in the generating matrices
+
+Description::
+Use this keyword to specify the format used to store the integers in the generating matrices. 
+Generating matrices provided with the :dakkw:`method-sampling-sample_type-low_discrepancy-digital_net-generating_matrices-inline` or :dakkw:`method-sampling-sample_type-low_discrepancy-digital_net-generating_matrices-file` options are encoded as matrices of integers.
+Each line in the matrix (i.e., each generating matrix) is represented by :dakkw:`method-sampling-sample_type-low_discrepancy-digital_net-m_max` integers, which represent the bits 
+of the columns in the generating matrix, with the *least significant bit* (LSB) of the integer representing the top row of the generating matrix. 
+For example, the sequence ``1 2 4 8`` represents the ``4 x 4`` generating matrix
+
+.. code-block::
+
+    1 0 0 0
+    0 1 0 0
+    0 0 1 0
+    0 0 0 1
+
+and the sequence ``1 3 7 15`` represents the ``4 x 4`` generating matrix
+
+.. code-block::
+
+    1 1 1 1
+    0 1 1 1
+    0 0 1 1
+    0 0 0 1
+
+This representation has two advantages.
+
+- The integers can be reused if the maximum number of bits in the representation :dakkw:`method-sampling-sample_type-low_discrepancy-digital_net-t_max` changes.
+- It generally leads to smaller, human-readable numbers in the first few entries.
+
+Obviously, generating matrices stored with ``least significant bit_first`` still need to be bit-reversed before they can be used, 
+but this can easily be accomplished using some bit magic. 
+
+The ``integer_format`` allows the user to choose the representation of the integers in the generating matrices. 
+As an example, the following two code snippets will generate identical points:
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    environment
+      tabular_data
+        tabular_data_file = 'samples.dat'
+        freeform
+
+    method
+      sampling
+        samples 32
+        sample_type
+          low_discrepancy
+            digital_net
+              generating_matrices inline 
+                1 2 4 8 16
+                # this encodes the generating matrix
+                # 1 0 0 0 0
+                # 0 1 0 0 0
+                # 0 0 1 0 0 
+                # 0 0 0 1 0
+                # 0 0 0 0 1
+                1 3 5 15 17
+                # this encodes the generating matrix
+                # 1 1 1 1 1
+                # 0 1 0 1 0
+                # 0 0 1 1 0
+                # 0 0 0 1 0
+                # 0 0 0 0 1
+              m_max 5
+              t_max 5
+              integer_format least_significant_bit_first
+
+    variables
+      uniform_uncertain = 2
+        lower_bounds 0.0 0.0
+        upper_bounds 1.0 1.0
+
+    interface
+      analysis_drivers = 'genz'
+      analysis_components = 'cp1'
+      direct
+
+    responses
+      response_functions = 1
+      no_gradients
+      no_hessians
+
+.. code-block::
+
+    environment
+      tabular_data
+        tabular_data_file = 'samples.dat'
+        freeform
+
+    method
+      sampling
+        samples 32
+        sample_type
+          low_discrepancy
+            digital_net
+              generating_matrices inline 
+                16 8 4 2 1
+                # this encodes the generating matrix
+                # 1 0 0 0 0
+                # 0 1 0 0 0
+                # 0 0 1 0 0 
+                # 0 0 0 1 0
+                # 0 0 0 0 1
+                16 24 20 30 17
+                # this encodes the generating matrix
+                # 1 1 1 1 1
+                # 0 1 0 1 0
+                # 0 0 1 1 0
+                # 0 0 0 1 0
+                # 0 0 0 0 1
+              m_max 5
+              t_max 5
+              no_scrambling
+              no_digital_shift
+              integer_format most_significant_bit_first
+
+    variables
+      uniform_uncertain = 2
+        lower_bounds 0.0 0.0
+        upper_bounds 1.0 1.0
+
+    interface
+      analysis_drivers = 'genz'
+      analysis_components = 'cp1'
+      direct
+
+    responses
+      response_functions = 1
+      no_gradients
+      no_hessians

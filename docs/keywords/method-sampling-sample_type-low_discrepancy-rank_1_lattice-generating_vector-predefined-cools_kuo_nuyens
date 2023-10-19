@@ -1,0 +1,45 @@
+Blurb::
+A generating vector that provides up to 2\ :sup:`20` points in up to 250 dimensions
+
+Description::
+See :cite:p:`Cools06`. This is the default generating vector.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    environment
+      tabular_data
+        tabular_data_file = 'samples.dat'
+        freeform
+
+    method
+      sampling
+        samples 1024
+        sample_type
+          low_discrepancy
+            rank_1_lattice
+              generating_vector predefined kuo
+
+    variables
+      uniform_uncertain = 3
+        lower_bounds 0.0 0.0 0.0
+        upper_bounds 1.0 1.0 1.0
+
+    interface
+      analysis_drivers = 'genz'
+      analysis_components = 'cp1'
+      direct
+
+    responses
+      response_functions = 1
+      no_gradients
+      no_hessians
+
+Theory::
+
+Faq::
+
+See_Also::

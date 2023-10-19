@@ -161,6 +161,21 @@ dakota_add_unit_test(NAME dakota_global_sa_metrics
   LINK_DAKOTA_LIBS
   LINK_LIBS Boost::boost)
 
+dakota_add_unit_test(NAME dakota_nond_low_discrepancy_sampling_test
+  SOURCES nond_low_discrepancy_sampling.cpp
+  LINK_DAKOTA_LIBS
+  LINK_LIBS Boost::boost)
+
+dakota_add_unit_test(NAME dakota_rank_1_lattice_test
+  SOURCES rank_1_lattice.cpp
+  LINK_DAKOTA_LIBS
+  LINK_LIBS Boost::boost)
+
+dakota_add_unit_test(NAME dakota_digital_net_test
+    SOURCES digital_net.cpp
+    LINK_DAKOTA_LIBS
+    LINK_LIBS Boost::boost)
+
 # Copy needed unit test auxiliary data files
 dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/expt_data_test_files"
   "${CMAKE_CURRENT_BINARY_DIR}/expt_data_test_files"

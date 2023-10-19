@@ -263,6 +263,11 @@ void read_covariance(const std::string& basename,
                      int num_vals,
                      RealMatrix& cov_vals);
 
+/// Count number of rows in given file (for LowDiscrepancySequence)
+int count_rows(String file_name);
+
+/// Count number of columns in given file (for LowDiscrepancySequence)
+int count_columns(String file_name);
 
 // --------------------------------
 // templated istream read functions (some called from operator>>)

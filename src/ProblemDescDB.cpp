@@ -1561,7 +1561,9 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
       {"fsu_quasi_mc.sequenceLeap", P_MET sequenceLeap},
       {"fsu_quasi_mc.sequenceStart", P_MET sequenceStart},
       {"nond.refinement_samples", P_MET refineSamples},
-      {"parameter_study.steps_per_variable", P_MET stepsPerVariable}
+      {"parameter_study.steps_per_variable", P_MET stepsPerVariable},
+      {"generating_vector.inline", P_MET generatingVector},
+      {"generating_matrices.inline", P_MET generatingMatrices}
     },
     { /* model */
       {"refinement_samples", P_MOD refineSamples}
@@ -2094,7 +2096,9 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
       {"sub_method_name", P_MET subMethodName},
       {"sub_method_pointer", P_MET subMethodPointer},
       {"sub_model_pointer", P_MET subModelPointer},
-      {"trial_type", P_MET trialType}
+      {"trial_type", P_MET trialType},
+      {"generating_vector.file", P_MET generatingVectorFileName},
+      {"generating_matrices.file", P_MET generatingMatricesFileName}
     },
     { /* model */
       {"advanced_options_file", P_MOD advancedOptionsFilename},
@@ -2294,7 +2298,10 @@ int ProblemDescDB::get_int(const String& entry_name) const
       {"samples", P_MET numSamples},
       {"sub_sampling_period", P_MET subSamplingPeriod},
       {"symbols", P_MET numSymbols},
-      {"vbd_via_sampling_num_bins", P_MET vbdViaSamplingNumBins}
+      {"vbd_via_sampling_num_bins", P_MET vbdViaSamplingNumBins},
+      {"m_max", P_MET log2MaxPoints},
+      {"t_max", P_MET numberOfBits},
+      {"t_scramble", P_MET scrambleSize}
     },
     { /* model */
       {"active_subspace.bootstrap_samples", P_MOD numReplicates},
@@ -2694,7 +2701,21 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
       {"std_regression_coeffs", P_MET stdRegressionCoeffs},
       {"tolerance_intervals", P_MET toleranceIntervalsFlag},
       {"variance_based_decomp", P_MET vbdFlag},
-      {"wilks", P_MET wilksFlag}
+      {"wilks", P_MET wilksFlag},
+      {"rank_1_lattice", P_MET rank1LatticeFlag},
+      {"no_random_shift", P_MET noRandomShiftFlag},
+      {"kuo", P_MET kuo},
+      {"cools_kuo_nuyens", P_MET cools_kuo_nuyens},
+      {"ordering.natural", P_MET naturalOrdering},
+      {"ordering.radical_inverse", P_MET radicalInverseOrdering},
+      {"digital_net", P_MET digitalNetFlag},
+      {"no_digital_shift", P_MET noDigitalShiftFlag},
+      {"no_scrambling", P_MET noScramblingFlag},
+      {"most_significant_bit_first", P_MET mostSignificantBitFirst},
+      {"least_significant_bit_first", P_MET leastSignificantBitFirst},
+      {"joe_kuo", P_MET joe_kuo},
+      {"sobol_order_2", P_MET sobol_order_2},
+      {"gray_code_ordering", P_MET grayCodeOrdering}
     },
     { /* model */
       {"active_subspace.build_surrogate", P_MOD subspaceBuildSurrogate},
@@ -2882,7 +2903,10 @@ void ProblemDescDB::set(const String& entry_name, const IntVector& iv)
   IntVector& rep_iv = get<IntVector>
   ( "set(IntVector&)",
     { /* environment */ },
-    { /* method */ },
+    { /* method */
+      {"generating_vector.inline", P_MET generatingVector},
+      {"generating_matrices.inline", P_MET generatingMatrices}
+    },
     { /* model */ },
     { /* variables */
       {"binomial_uncertain.num_trials", P_VAR binomialUncNumTrials},
