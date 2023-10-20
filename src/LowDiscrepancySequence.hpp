@@ -54,12 +54,6 @@ public:
     check_seedValue();
   }
 
-  /// Destructor
-  ~LowDiscrepancySequence()
-  {
-
-  }
-
   /// Get points from this low-discrepancy generator
   /// This function will store the points in-place in the matrix `points`
   /// Each column of `points` contains a `dimension`-dimensional point
