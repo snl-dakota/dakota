@@ -249,4 +249,32 @@ read_covariance(const std::string& basename, int expt_num,
   copy_data(va, cov_vals);
 }
 
+//----------------------------------------------------------------
+
+int
+count_rows(String file_name){
+
+  int nbOfLines = 0;
+  std::ifstream file(file_name);
+  String line;
+  while (std::getline(file, line))
+    ++nbOfLines;
+  return nbOfLines;
+}
+
+//----------------------------------------------------------------
+
+int
+count_columns(String file_name){
+  int nbOfColumns = 0;
+  std::ifstream file(file_name);
+  String line;
+  std::getline(file, line);
+  std::stringstream stream(line);
+  String word;
+  while ( stream >> word )
+    ++nbOfColumns;
+  return nbOfColumns;
+}
+
 } // namespace Dakota

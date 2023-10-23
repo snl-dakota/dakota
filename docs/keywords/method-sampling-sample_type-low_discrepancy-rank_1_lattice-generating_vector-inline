@@ -1,0 +1,50 @@
+Blurb::
+Specify an inline generating vector
+
+Description::
+The generating vector will be read from the Dakota input file. 
+The number of entries determines the maximum dimension of the lattice rule. 
+When this keyword is specified, the user must also specify the ``log2`` of the maximum number 
+of points in the lattice using the keyword :dakkw:`method-sampling-sample_type-low_discrepancy-rank_1_lattice-m_max`.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    environment
+      tabular_data
+        tabular_data_file = 'samples.dat'
+        freeform
+
+    method
+      sampling
+        samples 8
+        sample_type
+          low_discrepancy
+            rank_1_lattice
+              generating_vector inline 1 5 # this is a Fibonacci lattice
+              m_max 3 # 8 points in total
+              no_random_shift
+
+    variables
+      uniform_uncertain = 2
+        lower_bounds 0.0 0.0
+        upper_bounds 1.0 1.0
+
+    interface
+      analysis_drivers = 'genz'
+      analysis_components = 'cp1'
+      direct
+
+    responses
+      response_functions = 1
+      no_gradients
+      no_hessians
+
+Theory::
+
+Faq::
+
+See_Also::

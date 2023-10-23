@@ -1,0 +1,55 @@
+Blurb::
+Natural ordering of the points of this rank-1 lattice
+
+Description::
+Returns the points in natural order.
+
+*Usage Tips*
+
+When the ``natural`` ordering of the points is used, it is implicitly assumed that the user will 
+only request a number of points that is a power of 2. Failing to do so will result in a set of points 
+for which one or more dimensions are not uniformly covered, resulting in bad low-discrepancy properties, 
+and ultimately bad performance of the method that uses these points. It is recommended to not use this option unless you know what you're doing.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    environment
+      tabular_data
+        tabular_data_file = 'samples.dat'
+        freeform
+
+    method
+      sampling
+        samples 8
+        sample_type
+          low_discrepancy
+            rank_1_lattice
+              generating_vector inline 1 5 # this is a Fibonacci lattice
+              m_max 3 # 8 points in total
+              no_random_shift
+              ordering natural # this is fine since we generate 2^3 = 8 samples
+
+    variables
+      uniform_uncertain = 2
+        lower_bounds 0.0 0.0
+        upper_bounds 1.0 1.0
+
+    interface
+      analysis_drivers = 'genz'
+      analysis_components = 'cp1'
+      direct
+
+    responses
+      response_functions = 1
+      no_gradients
+      no_hessians
+
+Theory::
+
+Faq::
+
+See_Also::

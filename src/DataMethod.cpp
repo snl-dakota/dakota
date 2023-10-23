@@ -155,7 +155,12 @@ DataMethodRep::DataMethodRep():
   regressionL2Penalty(0.), crossValidation(false), crossValidNoiseOnly(false),
   //adaptedBasisInitLevel(0),
   adaptedBasisAdvancements(3), normalizedCoeffs(false), tensorGridFlag(false),
-  sampleType(SUBMETHOD_DEFAULT), dOptimal(false), numCandidateDesigns(0),
+  sampleType(SUBMETHOD_DEFAULT), rank1LatticeFlag(false), noRandomShiftFlag(false),
+  log2MaxPoints(0), kuo(false), cools_kuo_nuyens(false), naturalOrdering(false),
+  radicalInverseOrdering(false), digitalNetFlag(false), noDigitalShiftFlag(false),
+  noScramblingFlag(false), mostSignificantBitFirst(false), leastSignificantBitFirst(false),
+  numberOfBits(0), scrambleSize(64), joe_kuo(false), sobol_order_2(false), 
+  grayCodeOrdering(false), dOptimal(false), numCandidateDesigns(0),
   //reliabilitySearchType(MV),
   integrationRefine(NO_INT_REFINE), optSubProbSolver(SUBMETHOD_DEFAULT),
   numericalSolveMode(NUMERICAL_FALLBACK),
@@ -319,8 +324,13 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << crossValidNoiseOnly //<< adaptedBasisInitLevel
     << adaptedBasisAdvancements << normalizedCoeffs << pointReuse
     << tensorGridFlag << tensorGridOrder
-    << importExpansionFile << exportExpansionFile << sampleType << dOptimal
-    << numCandidateDesigns //<< reliabilitySearchType
+    << importExpansionFile << exportExpansionFile << sampleType
+    << rank1LatticeFlag <<  noRandomShiftFlag << log2MaxPoints << kuo 
+    << cools_kuo_nuyens << naturalOrdering << radicalInverseOrdering 
+    << digitalNetFlag <<  noDigitalShiftFlag <<  noScramblingFlag
+    << mostSignificantBitFirst << leastSignificantBitFirst
+    << numberOfBits << scrambleSize << joe_kuo << sobol_order_2
+    << grayCodeOrdering << dOptimal << numCandidateDesigns //<< reliabilitySearchType
     << reliabilityIntegration << integrationRefine << refineSamples
     << optSubProbSolver << numericalSolveMode
     << pilotSamples << ensembleSampSolnMode << truthPilotConstraint
@@ -491,8 +501,13 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> crossValidNoiseOnly //>> adaptedBasisInitLevel
     >> adaptedBasisAdvancements >> normalizedCoeffs >> pointReuse
     >> tensorGridFlag >> tensorGridOrder
-    >> importExpansionFile >> exportExpansionFile >> sampleType >> dOptimal
-    >> numCandidateDesigns //>> reliabilitySearchType
+    >> importExpansionFile >> exportExpansionFile >> sampleType 
+    >> rank1LatticeFlag >>  noRandomShiftFlag >> log2MaxPoints >> kuo 
+    >> cools_kuo_nuyens >> naturalOrdering >> radicalInverseOrdering 
+    >> digitalNetFlag >>  noDigitalShiftFlag >>  noScramblingFlag
+    >> mostSignificantBitFirst >> leastSignificantBitFirst
+    >> numberOfBits >> scrambleSize >> joe_kuo >> sobol_order_2
+    >> grayCodeOrdering >> dOptimal >> numCandidateDesigns //>> reliabilitySearchType
     >> reliabilityIntegration >> integrationRefine >> refineSamples
     >> optSubProbSolver >> numericalSolveMode
     >> pilotSamples >> ensembleSampSolnMode >> truthPilotConstraint

@@ -1,0 +1,78 @@
+Blurb::
+Gray code ordering of the points of this digital net
+
+Description::
+Returns the points in Gray code order.
+
+*Usage tips*
+
+The advantage of the Gray code ordering is that one can 
+generate a good point set with an arbitrary number of points :math:`N`.
+
+Gray code ordering has an additional advantage in that there exists an iterative procedure by Antonov and Saleev :cite:p:`Antonov79` to generate the points of the sequence. 
+Knowing the current point with index :math:`n`, the next point with index :math:`n + 1` is obtained by XOR'ing the current point with the :math:`k`\ th column of the 
+:math:`j`\ th generating matrix, i.e.,
+
+.. math:: t^{(n+1)}_j = t^{(n)}_j \oplus C_{j, k}
+
+where :math:`k` is the rightmost zero-bit of :math:`n` (the position of the bit that 
+will change from :math:`n` to :math:`n+1` in Gray code).
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    environment
+      tabular_data
+        tabular_data_file = 'samples.dat'
+        freeform
+
+    method
+      sampling
+        samples 32
+        sample_type
+          low_discrepancy
+            digital_net
+              generating_matrices inline 
+                1 2 4 8 16
+                # this encodes the generating matrix
+                # 1 0 0 0 0
+                # 0 1 0 0 0
+                # 0 0 1 0 0 
+                # 0 0 0 1 0
+                # 0 0 0 0 1
+                1 3 5 15 17
+                # this encodes the generating matrix
+                # 1 1 1 1 1
+                # 0 1 0 1 0
+                # 0 0 1 1 0
+                # 0 0 0 1 0
+                # 0 0 0 0 1
+              m_max 5
+              t_max 5
+              no_scrambling
+              no_digital_shift
+              ordering gray_code
+
+    variables
+      uniform_uncertain = 2
+        lower_bounds 0.0 0.0
+        upper_bounds 1.0 1.0
+
+    interface
+      analysis_drivers = 'genz'
+      analysis_components = 'cp1'
+      direct
+
+    responses
+      response_functions = 1
+      no_gradients
+      no_hessians
+
+Theory::
+
+Faq::
+
+See_Also::
