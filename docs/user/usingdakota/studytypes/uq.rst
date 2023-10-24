@@ -395,7 +395,7 @@ product or exponential function of the number of intervals for each variable,
 i.e., many classical design of experiments methods).
 
 Low-discrepancy or *quasi-Monte Carlo* sampling comes in two major flavors:
-lattice rules and digital nets. The well-known Sobl sequence :cite:p:`sobol67`
+lattice rules and digital nets. The well-known Sobol sequence :cite:p:`sobol67`
 is an example of a digital net. Just as Latin hypercube samples, the points are
 carefully chosen such that they cover the parameter space more uniformly, in the
 sense that the samples exhibit *low discrepancy*. This discrepancy is important,
