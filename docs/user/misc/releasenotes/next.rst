@@ -12,71 +12,93 @@
 Version 6.19 (2023/11/15; pre-release)
 """"""""""""""""""""""""""""""""""""""
 
-**Highlight: Feature A**
+**Highlight: New sampling-based method for main effects**
 
-*Enabling / Accessing:* Where available and how to access
+Based on the work of XXX et al., Dakota can now obtain estimates
+of first order Sobol indices (main effects) from `sampling`
+studies. Previous versions of Dakota could obtain esimates of
+main and total effects using a "pick and freeze" sampling strategy,
+which typically required a very large number of samples (hundreds or
+thousands per variable) and for those samples to be structured in a
+particular way. While the new method produces only main
+effects, the requirement on sample design has been lifted, and
+typically far fewer samples are needed for convergence.
 
-*Documentation:* Where to learn more
+*Enabling / Accessing:* 
 
-For example:
+The `variance_based_decomp` keyword now has suboptions. The
+`vbd_sampling_method pick_and_freeze` option is the default,
+and causes Dakota to use the method that has long been available
+to compute main and total effects. The `vbd_sampling_method binned`
+option causes the new method to be used.
 
-The Dakota GUI has added many significant feature improvements over
-the last year.  The Dakota GUI now allows you to seamlessly browse
-Dakota's HDF5 database output files, as well as generate sophisticated
-graphical plots from HDF5 data with just a few clicks.  HDF5 browsing
-and plot generation can also be driven within Dakota GUI by Next-Gen
-Workflow, a powerful tool that allows you to construct node-based
-workflows for complex tasks.
+*Documentation:* 
 
-*Enabling / Accessing:* Dakota GUI ships with Dakota and is available
-for Windows, Mac, and RHEL7.
+TODO: add references to new docs
 
-*Documentation:* An enhanced version of the Dakota GUI manual now ships
-with the GUI, giving you easy access to a wealth of reference material
-for using the GUI.  The 6.11 GUI manual is also available here.
+**Highlight: Low-discrepancy (quasi-Monte Carlo) sampling
 
+Two new strategies for choosing low-discrepancy points in sampling
+studies are available in this release. These include lattice rules
+and digital nets. The well-known Sobol sequence is an example of a
+digital net. Just as in Latin hypercube sampling, these strategies
+choose points that cover the parameter space more uniformly than ordinary
+Monte Carlo, leading to faster convergence of UQ results.
+
+*Enabling / Accessing:* 
+
+In a `sampling` study, choose `sample_type low_discrepancy`.
+
+*Documentation:* 
+
+TODO: Add references to new docs
 
 **Improvements by Category**
 
 *Interfaces, Input/Output*
 
+* Copying of `dakota.interfacing` objects was improved by adding `__deepcopy__` implementations
+* New examples:
+  - Demonstrating use of Dakota's direct `python` interface with a 
+    `pre-built tensorflow model <https://github.com/snl-dakota/dakota-examples/tree/master/official/drivers/Python/linked_di/tensorflow>`_.
+  - Demonstrating use of `dakota.interfacing.dprepro` in a black-box interface.
+   (For `Windows <https://github.com/snl-dakota/dakota-examples/tree/master/official/drivers/black-box_simulation_windows>`_
+   and `Linux/macOS <https://github.com/snl-dakota/dakota-examples/tree/master/official/drivers/black-box_simulation`_)
+   
 *Models*
 
 *Optimization Methods*
 
 *UQ Methods*
 
-Tolerance Intervals - Ernesto should add detail.
+* Improved support for the MIT Uncertainty Quantification Library (MUQ); although MUQ is not enabled
+  in our pre-built downloads, it is now buildable within Dakota by a wider variety of toolchains.
+* Low discrepancy sampling strategies (see highlight)
 
 *MLMF Sampling*
 
-*Sensitivity Analsys*
+*Sensitivity Analysis*
 
-Standardized Regression Coefficients - Russell should add detail.
+* Binned method for sampling-based variance-based decomposition (see highlight)
+* New examples explaining use of
+  `correlation coefficients <https://github.com/snl-dakota/dakota-examples/tree/master/official/global_sensitivity/correlations>`_
+  for global sensitivity analysis.
  
 **Miscellaneous Enhancements and Bugfixes**
 
-- Enh:
+- Enh: Documentation of Dakota's regresion test system expanded.
 
-- Bug fix: Correlation matrices now receive the correct variable labels
-  in studies that include variables from more than one category (e.g. mixture
-  of design and aleatory uncertain).
+- Bug fix: The `@python_interface` decorator in the `dakota.interfacing` module now propertly
+  interprets the dvv list provided by Dakota's direct `python` interface.
 
-- Bug fix: Standard moments are now written correctly to HDF5 for stochastic
-  expansion methods
-
-- Bug fix: No datasets are written to HDF5 for PDFs for zero-variance responses.
-  This matches the console output. Previously, empty datasets were written.
-
+- Bug fix: RPATH handling on Linux-based platforms improved.
 
 
 **Deprecated and Changed**
 
 **Compatibility**
 
-- Dakota's snapshot of Trilinos is now version 13.4.
-- Dakota now requires C++14 to build.
-- There are no further changes to TPLs or requirements for
-  this release.
+- Support for building Dakota with C++17 has been greatly expanded and is expected to work for
+  GCC, Intel, and Clang compilers. Support for Microsoft Visual Studio in progress.
 
 **Other Notes and Known Issues**
