@@ -9,7 +9,7 @@
    Remove :orphan: above if promoting this page.
 
 """"""""""""""""""""""""""""""""""""""
-Version 6.18 (2023/05/15; pre-release)
+Version 6.19 (2023/11/15; pre-release)
 """"""""""""""""""""""""""""""""""""""
 
 **Highlight: Feature A**
