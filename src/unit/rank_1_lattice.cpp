@@ -196,6 +196,7 @@ BOOST_AUTO_TEST_CASE(lattice_check_throws_mMax_in_input_file)
   // Example dakota input specification
   char dakota_input[] =
     "environment \n"
+    "  write_restart 'lattice_check_throws_mMax_in_input_file.rst' \n"
     "method \n"
     "  sampling \n"
     "    sample_type \n"
@@ -302,6 +303,7 @@ BOOST_AUTO_TEST_CASE(lattice_check_inline_generating_vector)
   // Example dakota input specification
   char dakota_input[] =
     "environment \n"
+    "  write_restart 'lattice_check_inline_generating_vector.rst' \n"
     "method \n"
     "  sampling \n"
     "    sample_type \n"
@@ -345,6 +347,7 @@ BOOST_AUTO_TEST_CASE(lattice_check_generating_vector_from_file)
   // Example dakota input specification
   char dakota_input[] =
     "environment \n"
+    "  write_restart 'lattice_check_generating_vector_from_file.rst' \n"
     "method \n"
     "  sampling \n"
     "    sample_type \n"
