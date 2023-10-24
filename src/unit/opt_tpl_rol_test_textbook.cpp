@@ -28,6 +28,8 @@ BOOST_AUTO_TEST_CASE(test_text_book_base)
 {
   /// Dakota input string:
   static const char text_book_input[] =
+    " environment "
+    "     write_restart 'test_text_book_base.rst' "
     " method,"
     "   rol"
     "     gradient_tolerance 1.0e-6"
@@ -101,6 +103,8 @@ BOOST_AUTO_TEST_CASE(test_text_book_options_file)
   /// Dakota input string:
 
   static const char text_book_input[] =
+    " environment "
+    "     write_restart 'test_text_book_options_file.rst' "
     " method,"
     "   rol"
     "     gradient_tolerance 1.0e-3"
@@ -172,6 +176,8 @@ BOOST_AUTO_TEST_CASE(test_text_book_bound_const)
 {
   /// Dakota input string:
   static const char text_book_input[] =
+    " environment "
+    "   write_restart 'test_text_book_bound_const.rst' "
     " method,"
     "   rol"
     "     gradient_tolerance 1.0e-6"
@@ -245,6 +251,8 @@ BOOST_AUTO_TEST_CASE(test_text_book_bound_const_hessian)
 {
   /// Dakota input string:
   static const char text_book_input[] =
+    " environment "
+    "   write_restart 'test_text_book_bound_const_hessian.rst' "
     " method,"
     "   rol"
     "     gradient_tolerance 1.0e-6"
@@ -318,6 +326,8 @@ BOOST_AUTO_TEST_CASE(test_text_book_bound_const_reset)
 {
   /// Dakota input string:
   static const char text_book_input[] =
+    " environment "
+    "   write_restart 'test_text_book_bound_const_reset.rst' "
     " method,"
     "   rol"
     "     gradient_tolerance 1.0e-6"
@@ -436,6 +446,8 @@ BOOST_AUTO_TEST_CASE(test_text_book_lin_eq_const)
 {
   /// Dakota input string:
   static const char text_book_input[] =
+    " environment "
+    "   write_restart 'test_text_book_lin_eq_const.rst' "
     " method,"
     "   rol"
     "     gradient_tolerance 1.0e-1"
@@ -517,6 +529,8 @@ BOOST_AUTO_TEST_CASE(test_text_book_nln_eq_const)
 {
   /// Dakota input string:
   static const char text_book_input[] =
+    " environment "
+    "   write_restart 'test_text_book_nln_eq_const.rst' "
     " method,"
     "   rol"
     "     gradient_tolerance 1.0e-6"
@@ -594,6 +608,8 @@ BOOST_AUTO_TEST_CASE(test_text_book_nln_lin_eq_const)
 {
   /// Dakota input string:
   static const char text_book_input[] =
+    " environment "
+    "   write_restart 'test_text_book_nln_lin_eq_const.rst' "
     " method,"
     "   rol"
     "     gradient_tolerance 1.0e-6"
@@ -672,6 +688,8 @@ BOOST_AUTO_TEST_CASE(test_text_book_1_lin_ineq_const)
 {
   /// Dakota input string:
   static const char text_book_input[] =
+    " environment "
+    "   write_restart 'test_text_book_1_lin_ineq_const.rst' "
     " method,"
     "   rol"
     "     gradient_tolerance 1.0e-2"
@@ -750,6 +768,8 @@ BOOST_AUTO_TEST_CASE(test_text_book_2_lin_ineq_const)
 {
   /// Dakota input string:
   static const char text_book_input[] =
+    " environment "
+    "   write_restart 'test_text_book_2_lin_ineq_const.rst' "
     " method,"
     "   rol"
     "     gradient_tolerance 1.0e-2"
@@ -835,6 +855,8 @@ BOOST_AUTO_TEST_CASE(test_text_book_nln_ineq_const)
 {
   /// Dakota input string:
   static const char text_book_input[] =
+    " environment "
+    "   write_restart 'test_text_book_nln_ineq_const.rst' "
     " method,"
     "   rol"
     "     gradient_tolerance 1.0e-4"
@@ -920,6 +942,8 @@ BOOST_AUTO_TEST_CASE(test_text_book_nln_lin_ineq_const)
 {
   /// Dakota input string:
   static const char text_book_input[] =
+    " environment "
+    "   write_restart 'test_text_book_nln_lin_ineq_const.rst' "
     " method,"
     "   rol"
     "     gradient_tolerance 1.0e-2"
@@ -1019,6 +1043,8 @@ BOOST_AUTO_TEST_CASE(test_text_book_nln_lin_eq_ineq_const)
 {
   /// Dakota input string:
   static const char text_book_input[] =
+    " environment "
+    "   write_restart 'test_text_book_nln_lin_eq_ineq_const.rst' "
     " method,"
     "   rol"
     "     gradient_tolerance 1.0e-3"
@@ -1097,6 +1123,8 @@ BOOST_AUTO_TEST_CASE(test_text_book_base_hessian)
 {
   /// Dakota input string:
   static const char text_book_input[] =
+    " environment "
+    "   write_restart 'test_text_book_base_hessian.rst' "
     " method,"
     "   rol"
     "     gradient_tolerance 1.0e-6"

@@ -18,6 +18,8 @@ BOOST_AUTO_TEST_CASE(test_simple_eq_cons)
 {
   /// Dakota input string:
   static const char text_book_input[] =
+    "environment                          "
+    "    write_restart 'test_simple_eq_cons.rst' "
     " method,"
     "   rol"
     "     gradient_tolerance 1.0e-5"
@@ -82,6 +84,8 @@ BOOST_AUTO_TEST_CASE(test_paraboloid_circle)
 {
   /// Dakota input string:
   static const char text_book_input[] =
+    " environment"
+    "   write_restart 'test_paraboloid_circle.rst' "
     " method,"
     "   rol"
     "     gradient_tolerance 1.0e-5"

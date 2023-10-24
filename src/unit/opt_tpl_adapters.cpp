@@ -25,6 +25,8 @@ using namespace Dakota;
 namespace {
   /// Dakota input string:
   string baseline_text_book_input =
+   "environment                          "
+   "    write_restart 'opt_tpl_adapters.rst' "
    "method,                              "
    "    demo_tpl                         "
    "    output silent                    "

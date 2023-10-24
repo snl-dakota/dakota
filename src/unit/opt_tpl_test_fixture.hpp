@@ -203,6 +203,7 @@ Dakota::LibraryEnvironment * Dakota::Opt_TPL_Test_Fixture::create_default_env(un
   // options such as restart in opts:
   Dakota::ProgramOptions opts;
   opts.echo_input(false);
+  opts.write_restart_file("");
 
   // delay validation/sync of the Dakota database and iterator
   // construction to allow update after all data is populated
