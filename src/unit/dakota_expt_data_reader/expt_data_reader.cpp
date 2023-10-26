@@ -42,7 +42,7 @@ namespace {
 
 BOOST_AUTO_TEST_CASE(test_expt_data_reader_read_config_vars)
 {
-  const std::string base_name = "expt_data_test_files/voltage";
+  const std::string base_name = "../expt_data_test_files/voltage";
 
   std::vector<Variables> config_data1(NUM_EXPTS, gen_mock_vars(NCV));
   read_config_vars_multifile(base_name, NUM_EXPTS, NCV, config_data1);
@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE(test_expt_data_reader_read_config_vars)
 
 BOOST_AUTO_TEST_CASE(test_expt_data_reader_read_bad_config_vars_size)
 {
-  const std::string base_name = "expt_data_test_files/voltage";
+  const std::string base_name = "../expt_data_test_files/voltage";
 
   std::vector<Variables> config_data(NUM_EXPTS, gen_mock_vars(NCV+1));
   Dakota::abort_mode = ABORT_THROWS;
@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(test_expt_data_reader_read_bad_config_vars_size)
 
 BOOST_AUTO_TEST_CASE(test_expt_data_reader_read_field_values_scalar)
 {
-  const std::string base_name = "expt_data_test_files/voltage";
+  const std::string base_name = "../expt_data_test_files/voltage";
 
   // This reads directly into a RealVector
   RealVector field_vals;
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE(test_expt_data_reader_read_field_values_scalar)
 
 BOOST_AUTO_TEST_CASE(test_expt_data_reader_read_field_values_vector)
 {
-  const std::string base_name = "expt_data_test_files/electric_field";
+  const std::string base_name = "../expt_data_test_files/electric_field";
 
   RealVectorArray field_vals;
   read_field_values(base_name, 2 /* expt number */, field_vals);
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE(test_expt_data_reader_read_field_values_vector)
 
 BOOST_AUTO_TEST_CASE(test_expt_data_reader_read_coord_values)
 {
-  const std::string base_name = "expt_data_test_files/voltage";
+  const std::string base_name = "../expt_data_test_files/voltage";
 
   RealMatrix coords;
   read_coord_values(base_name, 2 /* expt number */, coords);

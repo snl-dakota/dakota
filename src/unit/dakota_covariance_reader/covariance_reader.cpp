@@ -22,7 +22,7 @@ using namespace Dakota;
 
 BOOST_AUTO_TEST_CASE(test_covariance_reader_read_constant_covariance)
 {
-  const std::string base_name = "expt_data_test_files/voltage";
+  const std::string base_name = "../expt_data_test_files/voltage";
 
   RealMatrix cov_values;
   read_covariance(base_name, 1 /* expt number */, cov_values); // implies CONSTANT
@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(test_covariance_reader_read_constant_covariance)
 
 BOOST_AUTO_TEST_CASE(test_covariance_reader_read_vector_covariance)
 {
-  const std::string base_name = "expt_data_test_files/voltage";
+  const std::string base_name = "../expt_data_test_files/voltage";
 
   RealMatrix cov_values;
   read_covariance(base_name, 2, // expt number
@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(test_covariance_reader_read_vector_covariance)
 
 BOOST_AUTO_TEST_CASE(test_covariance_reader_read_matrix_covariance)
 {
-  const std::string base_name = "expt_data_test_files/voltage";
+  const std::string base_name = "../expt_data_test_files/voltage";
 
   RealMatrix cov_values;
   read_covariance(base_name, 3, // expt number
