@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(test_expt_data_basic)
 
   // convention appears to be field label is filename ?
   const std::string base_name = "new_voltage";
-  const std::string working_dir = "expt_data_test_files";
+  const std::string working_dir = "../expt_data_test_files";
   StringArray field_labels(NUM_FIELDS); 
   field_labels[0] = base_name;
   mock_srd.field_group_labels(field_labels);
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE(test_expt_data_twofield)
   // convention appears to be field label is filename ?
   const std::string first_base_name = "new_voltage";
   const std::string second_base_name = "pressure";
-  const std::string working_dir = "expt_data_test_files";
+  const std::string working_dir = "../expt_data_test_files";
   StringArray field_labels(NUM_FIELDS+1);
   field_labels[0] = first_base_name;
   field_labels[1] = second_base_name;

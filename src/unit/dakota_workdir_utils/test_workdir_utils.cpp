@@ -336,6 +336,8 @@ int test_main( int argc, char* argv[] )      // note the name!
 #endif
   std::string relative_driver_path("..");
   relative_driver_path += PATH_SEP_SLASH;
+  relative_driver_path += ("..");
+  relative_driver_path += PATH_SEP_SLASH;
   relative_driver_path += "uthelper";
   test_driver_relative_path(relative_driver_path);
 
