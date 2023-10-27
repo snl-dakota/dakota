@@ -168,31 +168,32 @@ Updated (2016) materials and presentations can be downloaded `here <https://dako
 |                                           |   approach                             |                        |                         |
 +-------------------------------------------+----------------------------------------+------------------------+-------------------------+
 
-.. __: https://dakota.sandia.gov/sites/default/files/training/DakotaTraining_Overview.pdf
+.. __: https://www.sandia.gov/app/uploads/sites/241/2023/04/DakotaTraining_Overview.pdf 
 __ http://digitalops.sandia.gov/Mediasite/Play/536240e97b444ee19a24d55c72fd52941d
-__ https://dakota.sandia.gov/sites/default/files/training/DakotaTraining_ModelCharacterization.pdf
-__ https://dakota.sandia.gov/sites/default/files/training/characterization-151215.zip
+__ https://www.sandia.gov/app/uploads/sites/241/2023/04/DakotaTraining_ModelCharacterization.pdf 
+__ https://www.sandia.gov/app/uploads/sites/241/2023/04/characterization-151215.zip 
 __ http://digitalops.sandia.gov/Mediasite/Play/16134f3f4b6842d2b145a9600cbbcbbd1d
-__ https://dakota.sandia.gov/sites/default/files/training/DakotaTraining_InputComponents.pdf
-__ https://dakota.sandia.gov/sites/default/files/training/input-151215.zip
+__ https://www.sandia.gov/app/uploads/sites/241/2023/04/DakotaTraining_InputComponents.pdf 
+__ https://www.sandia.gov/app/uploads/sites/241/2023/04/input-151215.zip 
 __ http://digitalops.sandia.gov/Mediasite/Play/82fa69553ac64d9b997a59316100d23a1d
 __ http://digitalops.sandia.gov/Mediasite/Play/5c5f47304b934159a40347f3ba74ad851d
-__ https://dakota.sandia.gov/sites/default/files/training/DakotaTraining_Interfacing.pdf
-__ https://dakota.sandia.gov/sites/default/files/training/interfacing-151215.zip
+__ https://www.sandia.gov/app/uploads/sites/241/2023/04/DakotaTraining_Interfacing.pdf 
+__ https://www.sandia.gov/app/uploads/sites/241/2023/04/interfacing-151215.zip 
 __ http://digitalops.sandia.gov/Mediasite/Play/e273e948e94a4f4a9fbdd385c1ef4c8a1d
-__ https://dakota.sandia.gov/sites/default/files/training/DakotaTraining_SensitivityAnalysis.pdf
-__ https://dakota.sandia.gov/sites/default/files/training/sens_analysis-220216.zip
+__ https://www.sandia.gov/app/uploads/sites/241/2023/04/DakotaTraining_SensitivityAnalysis.pdf 
+__ https://www.sandia.gov/app/uploads/sites/241/2023/04/sens_analysis-220216.zip 
 __ http://digitalops.sandia.gov/Mediasite/Play/b249f5f9347d4d9580be23dca66d9c1d1d
-__ https://dakota.sandia.gov/sites/default/files/training/DakotaTraining_SurrogateModels.pdf
-__ https://dakota.sandia.gov/sites/default/files/training/surrogate-220216.zip
+__ https://www.sandia.gov/app/uploads/sites/241/2023/04/DakotaTraining_SurrogateModels.pdf 
+__ https://www.sandia.gov/app/uploads/sites/241/2023/04/surrogate-220216.zip 
 __ http://digitalops.sandia.gov/Mediasite/Play/a13c912f3e994c4ea010aacd903b12111d
-__ https://dakota.sandia.gov/sites/default/files/training/DakotaTraining_Optimization.pdf
-__ https://dakota.sandia.gov/sites/default/files/training/optimization-220216.zip
+__ https://www.sandia.gov/app/uploads/sites/241/2023/04/DakotaTraining_Optimization.pdf 
+__ https://www.sandia.gov/app/uploads/sites/241/2023/04/optimization-220216.zip 
 __ http://digitalops.sandia.gov/Mediasite/Play/d265c6a47b1a4fe6a2f4052f97325af91d
-__ https://dakota.sandia.gov/sites/default/files/training/DakotaTraining_Calibration.pdf
-__ https://dakota.sandia.gov/sites/default/files/training/calibration-220216.zip
+__ https://www.sandia.gov/app/uploads/sites/241/2023/04/DakotaTraining_Calibration.pdf 
+__ https://www.sandia.gov/app/uploads/sites/241/2023/04/calibration-220216.zip 
 __ http://digitalops.sandia.gov/Mediasite/Play/8105e6e9c2cb45089cf24cd4585fc8cb1d
-__ https://dakota.sandia.gov/sites/default/files/training/DakotaTraining_UncertaintyQuantification.pdf
-__ https://dakota.sandia.gov/sites/default/files/training/uncertainty_analysis-220216.zip
+__ https://www.sandia.gov/app/uploads/sites/241/2023/04/DakotaTraining_UncertaintyQuantification.pdf 
+__ https://www.sandia.gov/app/uploads/sites/241/2023/04/uncertainty_analysis-220216.zip 
 __ http://digitalops.sandia.gov/Mediasite/Play/48810b3090ec4b58becd000ffa6e71741d
-__ https://dakota.sandia.gov/sites/default/files/training/DakotaTraining_Parallelism.pdf
+__ https://www.sandia.gov/app/uploads/sites/241/2023/04/DakotaTraining_Parallelism.pdf
+ 
