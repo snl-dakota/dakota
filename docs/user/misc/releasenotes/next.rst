@@ -36,7 +36,7 @@ option causes the new method to be used.
 
 TODO: add references to new docs
 
-**Highlight: Low-discrepancy (quasi-Monte Carlo) sampling
+**Highlight: Low-discrepancy (quasi-Monte Carlo) sampling**
 
 Two new strategies for choosing low-discrepancy points in sampling
 studies are available in this release. These include lattice rules
@@ -59,11 +59,12 @@ TODO: Add references to new docs
 
 * Copying of `dakota.interfacing` objects was improved by adding `__deepcopy__` implementations
 * New examples:
-  - Demonstrating use of Dakota's direct `python` interface with a 
+
+  * Demonstrating use of Dakota's direct `python` interface with a 
     `pre-built tensorflow model <https://github.com/snl-dakota/dakota-examples/tree/master/official/drivers/Python/linked_di/tensorflow>`_.
-  - Demonstrating use of `dakota.interfacing.dprepro` in a black-box interface.
-   (For `Windows <https://github.com/snl-dakota/dakota-examples/tree/master/official/drivers/black-box_simulation_windows>`_
-   and `Linux/macOS <https://github.com/snl-dakota/dakota-examples/tree/master/official/drivers/black-box_simulation`_)
+  * Demonstrating use of `dakota.interfacing.dprepro` in a black-box interface.
+    (For `Windows <https://github.com/snl-dakota/dakota-examples/tree/master/official/drivers/black-box_simulation_windows>`_
+    and `Linux/macOS <https://github.com/snl-dakota/dakota-examples/tree/master/official/drivers/black-box_simulation>`_)
    
 *Models*
 
