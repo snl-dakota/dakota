@@ -95,7 +95,7 @@ void NonDMultifidelitySampling::multifidelity_mc()
     // to the pilot and do not not update after iter 0.  We could potentially
     // update cost for shared samples, mirroring the correlation updates.
     if (onlineCost && mlmfIter == 0) recover_online_cost(sequenceCost);
-    increment_equivalent_cost(numSamples, sequenceCost, 0, numSteps,
+    increment_equivalent_cost(numSamples, sequenceCost, 0, numGroups,
 			      equivHFEvals);
 
     // -------------------------------------------
@@ -195,7 +195,7 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
     accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH,
 		       N_H_actual);
     N_H_alloc += numSamples;
-    increment_equivalent_cost(numSamples,sequenceCost,0,numSteps,equivHFEvals);
+    increment_equivalent_cost(numSamples,sequenceCost,0,numGroups,equivHFEvals);
     // compute the estimator performance metrics
     mfmc_estimator_variance(rho2LH, varH, N_H_actual, approxSequence,
 			    estVarRatios, mfmcSolnData);
@@ -235,7 +235,7 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
   accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual);
   N_H_alloc += numSamples;
   if (onlineCost) recover_online_cost(sequenceCost);
-  increment_equivalent_cost(numSamples, sequenceCost, 0, numSteps,equivHFEvals);
+  increment_equivalent_cost(numSamples, sequenceCost, 0,numGroups,equivHFEvals);
 
   // -------------------------------------------
   // Compute correlations and evaluation ratios:
@@ -281,7 +281,7 @@ augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
   bool ordered = approxSequence.empty();
   size_t i, num_am1 = numApprox - 1, approx_ip1,
     approx = (ordered) ? 0 : approxSequence[0],
-    lin_ineq_offset = ( optSubProblemForm == N_VECTOR_LINEAR_CONSTRAINT  ||
+    lin_ineq_offset = ( optSubProblemForm == N_MODEL_LINEAR_CONSTRAINT  ||
 			optSubProblemForm == R_ONLY_LINEAR_CONSTRAINT ) ? 1 : 0;
   for (i=0; i<num_am1; ++i) { // N_im1 >= N_i
     approx_ip1 = (ordered) ? i+1 : approxSequence[i+1];
@@ -307,7 +307,7 @@ augmented_linear_ineq_violations(const RealVector& cd_vars,
   bool ordered = approxSequence.empty();
   size_t i, num_am1 = numApprox - 1, approx_ip1,
     approx = (ordered) ? 0 : approxSequence[0],
-    lin_ineq_offset = ( optSubProblemForm == N_VECTOR_LINEAR_CONSTRAINT  ||
+    lin_ineq_offset = ( optSubProblemForm == N_MODEL_LINEAR_CONSTRAINT  ||
 			optSubProblemForm == R_ONLY_LINEAR_CONSTRAINT ) ? 1 : 0;
   Real inner_prod, l_bnd, u_bnd, viol, quad_viol = 0.;
   for (i=0; i<numApprox; ++i) { // N_im1 >= N_i
@@ -593,7 +593,7 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
   //          = F_ii CovLH_i^2 / (VarH_i VarL_i) = F_ii rho2LH_i where
   //   F_ii   = (r_i - r_{i+1}) / (r_i r_{i+1}).
   switch (optSubProblemForm) {
-  case N_VECTOR_LINEAR_OBJECTIVE:  case N_VECTOR_LINEAR_CONSTRAINT: {
+  case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT: {
     RealVector r;  copy_data_partial(cd_vars, 0, (int)numApprox, r); // N_i
     r.scale(1./cd_vars[numApprox]); // r_i = N_i / N
     // Compiler can resolve overload with (inherited) vector type:
@@ -1276,16 +1276,16 @@ mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
   bool ordered_rho = true, budget_constr = (maxFunctionEvals != SZ_MAX);
   switch (numericalSolveMode) {
   case NUMERICAL_OVERRIDE: // specification option
-    optSubProblemForm = (budget_constr) ? N_VECTOR_LINEAR_CONSTRAINT :
-      N_VECTOR_LINEAR_OBJECTIVE;
+    optSubProblemForm = (budget_constr) ? N_MODEL_LINEAR_CONSTRAINT :
+      N_MODEL_LINEAR_OBJECTIVE;
     break;
   case NUMERICAL_FALLBACK: // default
     ordered_rho = ordered_approx_sequence(rho2_LH); // all QoI for all Approx
     if (ordered_rho)
       optSubProblemForm = ANALYTIC_SOLUTION;
     else {
-      optSubProblemForm = (budget_constr) ? N_VECTOR_LINEAR_CONSTRAINT :
-	N_VECTOR_LINEAR_OBJECTIVE;
+      optSubProblemForm = (budget_constr) ? N_MODEL_LINEAR_CONSTRAINT :
+	N_MODEL_LINEAR_OBJECTIVE;
       Cout << "MFMC: model sequence provided is out of order with respect to "
 	   << "Low-High\n      correlation for at least one QoI.  Switching "
 	   << "to numerical solution.\n";
@@ -1405,8 +1405,8 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
   }
 
   // define covLH and covLL from rho2LH, var_L, varH
-  correlation_sq_to_covariance(rho2_LH, var_L, varH, covLH);
-  matrix_to_diagonal_array(var_L, covLL);
+  //correlation_sq_to_covariance(rho2_LH, var_L, varH, covLH);
+  //matrix_to_diagonal_array(var_L, covLL);
 
   // Base class implementation of numerical solve (shared with ACV,GenACV):
   ensemble_numerical_solution(cost, soln, numSamples);

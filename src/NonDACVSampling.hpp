@@ -79,7 +79,6 @@ protected:
 			   IntRealSymMatrixArrayMap& sum_LL,
 			   IntRealMatrixMap& sum_LH, RealVector& sum_HH);
 
-  /*
   void evaluate_pilot(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
 		      RealSymMatrixArray& sum_LL_pilot,
 		      RealMatrix& sum_LH_pilot, RealVector& sum_HH_pilot,
@@ -90,7 +89,6 @@ protected:
 			     SizetArray& N_shared_pilot, RealMatrix& var_L,
 			     RealVector& var_H, RealSymMatrixArray& cov_LL,
 			     RealMatrix& cov_LH);
-  */
 
   // shared_increment() cases:
   void accumulate_acv_sums(IntRealMatrixMap& sum_L_baseline,
@@ -145,17 +143,23 @@ protected:
   Real update_hf_target(const RealVector& avg_eval_ratios,
 			const RealVector& var_H, const RealVector& estvar0);
 
-  void covariance_to_correlation_sq(const RealMatrix& cov_LH,
-				    const RealMatrix& var_L,
-				    const RealVector& var_H,
-				    RealMatrix& rho2_LH);
-
   void pick_mfmc_cvmc_solution(const MFSolutionData& mf_soln, size_t mf_samp,
 			       const MFSolutionData& cv_soln, size_t cv_samp,
 			       MFSolutionData& soln, size_t& num_samp);
 
   void print_computed_solution(std::ostream& s, const MFSolutionData& soln,
 			       const UShortArray& approx_set);
+
+  //
+  //- Heading: Data
+  //
+
+  /// covariances between each LF approximation and HF truth (the c
+  /// vector in ACV); organized numFunctions x numApprox
+  RealMatrix covLH;
+  /// covariances among all LF approximations (the C matrix in ACV); organized
+  /// as a numFunctions array of symmetic numApprox x numApprox matrices
+  RealSymMatrixArray covLL;
 
 private:
 
@@ -181,8 +185,10 @@ private:
 			   size_t N_shared_q, size_t mom, size_t qoi,
 			   RealVector& beta);
 
-  void analytic_initialization_from_mfmc(Real avg_N_H, MFSolutionData& soln);
-  void analytic_initialization_from_ensemble_cvmc(Real avg_N_H,
+  void analytic_initialization_from_mfmc(const RealMatrix& rho2_LH,
+					 Real avg_N_H, MFSolutionData& soln);
+  void analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
+						  Real avg_N_H,
 						  MFSolutionData& soln);
   void cvmc_ensemble_solutions(const RealMatrix& rho2_LH,
 			       const RealVector& cost,
@@ -363,23 +369,6 @@ compute_L_variance(const RealMatrix& sum_L, const RealSymMatrixArray& sum_LL,
     for (approx=0; approx<numApprox; ++approx)
       compute_variance(sum_L(qoi,approx), sum_LL[qoi](approx,approx),
 		       num_L_q, var_L(qoi,approx));
-  }
-}
-
-
-inline void NonDACVSampling::
-covariance_to_correlation_sq(const RealMatrix& cov_LH, const RealMatrix& var_L,
-			     const RealVector& var_H, RealMatrix& rho2_LH)
-{
-  if (rho2_LH.empty()) rho2_LH.shapeUninitialized(numFunctions, numApprox);
-
-  size_t qoi, approx;  Real var_H_q, cov_LH_aq;
-  for (qoi=0; qoi<numFunctions; ++qoi) {
-    var_H_q = var_H[qoi];
-    for (approx=0; approx<numApprox; ++approx) {
-      cov_LH_aq = cov_LH(qoi,approx);
-      rho2_LH(qoi,approx) = cov_LH_aq / var_L(qoi,approx) * cov_LH_aq / var_H_q;
-    }
   }
 }
 
@@ -688,7 +677,7 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
   // map incoming continuous design vars into r_i factors and compute F
   RealSymMatrix F;
   switch (optSubProblemForm) {
-  case N_VECTOR_LINEAR_OBJECTIVE:  case N_VECTOR_LINEAR_CONSTRAINT: {
+  case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT: {
     RealVector r;  copy_data_partial(cd_vars, 0, (int)numApprox, r); // N_i
     r.scale(1./cd_vars[numApprox]); // r_i = N_i / N
     compute_F_matrix(r, F);

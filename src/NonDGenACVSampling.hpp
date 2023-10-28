@@ -158,10 +158,12 @@ private:
 			      const UShortArray& approx_set, RealVector& beta);
 
   void analytic_initialization_from_mfmc(const UShortArray& approx_set,
+					 const RealMatrix& rho2_LH,
 					 Real avg_N_H, MFSolutionData& soln);
   void analytic_initialization_from_ensemble_cvmc(const UShortArray& approx_set,
 						  const UShortArray& dag,
 						  const UShortList& root_list,
+						  const RealMatrix& rho2_LH,
 						  Real avg_N_H,
 						  MFSolutionData& soln);
   void cvmc_ensemble_solutions(const RealSymMatrixArray& cov_LL,
@@ -437,8 +439,8 @@ inflate_variables(const RealVector& cd_vars, RealVector& N_vec,
 		  const UShortArray& approx_set)
 {
   size_t i, num_approx = approx_set.size(), num_cdv = cd_vars.length();
-  if  (N_vec.length() == numSteps) N_vec = 0.;
-  else N_vec.size(numSteps);
+  if  (N_vec.length() == numGroups) N_vec = 0.;
+  else N_vec.size(numGroups);
   for (i=0; i<num_approx; ++i)
     N_vec[approx_set[i]] = cd_vars[i];
   if (num_cdv == num_approx + 1)

@@ -79,6 +79,9 @@ protected:
   //- Heading: Data
   //
 
+  /// number of model forms/resolution in the (outer) sequence
+  size_t numSteps;
+
   /// final estimator variance for targeted moment (usually mean), averaged
   /// across QoI
   Real avgEstVar;

@@ -38,13 +38,13 @@ NonDACVSampling(ProblemDescDB& problem_db, Model& model):
   mlmfSubMethod = problem_db.get_ushort("method.sub_method");
 
   if (maxFunctionEvals == SZ_MAX) // accuracy constraint (convTol)
-    optSubProblemForm = N_VECTOR_LINEAR_OBJECTIVE;
+    optSubProblemForm = N_MODEL_LINEAR_OBJECTIVE;
   else                     // budget constraint (maxFunctionEvals)
     // truthFixedByPilot is a user-specified option for fixing the number of
     // HF samples (to those in the pilot).  In this case, equivHF budget is
     // allocated by optimizing r* for fixed N.
     optSubProblemForm = (truthFixedByPilot && pilotMgmtMode != OFFLINE_PILOT) ?
-      R_ONLY_LINEAR_CONSTRAINT : N_VECTOR_LINEAR_CONSTRAINT;
+      R_ONLY_LINEAR_CONSTRAINT : N_MODEL_LINEAR_CONSTRAINT;
 
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "ACV sub-method selection = " << mlmfSubMethod
@@ -119,7 +119,7 @@ void NonDACVSampling::approximate_control_variate_online_pilot()
     // to the pilot and do not not update after iter 0.  We could potentially
     // update cost for shared samples, mirroring the covariance updates.
     if (onlineCost && mlmfIter == 0) recover_online_cost(sequenceCost);
-    increment_equivalent_cost(numSamples, sequenceCost, 0, numSteps,
+    increment_equivalent_cost(numSamples, sequenceCost, 0, numGroups,
 			      equivHFEvals);
     compute_LH_statistics(sum_L_baselineH[1], sum_H[1], sum_LL[1], sum_LH[1],
 			  sum_HH, N_H_actual, var_L, varH, covLL, covLH);
@@ -189,7 +189,7 @@ void NonDACVSampling::approximate_control_variate_offline_pilot()
     accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
 			sum_LH, sum_HH, N_H_actual);//, N_LL);
     N_H_alloc += numSamples;
-    increment_equivalent_cost(numSamples, sequenceCost, 0, numSteps,
+    increment_equivalent_cost(numSamples, sequenceCost, 0, numGroups,
 			      equivHFEvals);
     // perform LF increments for the online sample profile
     approx_increments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
@@ -238,7 +238,6 @@ void NonDACVSampling::approximate_control_variate_pilot_projection()
 }
 
 
-/*
 void NonDACVSampling::
 evaluate_pilot(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
 	       RealSymMatrixArray& sum_LL_pilot, RealMatrix& sum_LH_pilot,
@@ -258,22 +257,22 @@ evaluate_pilot(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
   accumulate_acv_sums(sum_L_pilot,//_baselineH, sum_L_baselineL,
 		      sum_H_pilot, sum_LL_pilot, sum_LH_pilot, sum_HH_pilot,
 		      N_shared_pilot);//, N_LL_pilot);
-  if (mlmfIter == 0) {
-    // TO DO: allow pilot to vary for C vs c.  numSamples logic after pilot
-    // (mlmfIter >= 1) will require _baseline{L,H}
-    //if (lf_shared_pilot > hf_shared_pilot) {
-    //  numSamples = lf_shared_pilot - hf_shared_pilot;
-    //  shared_approx_increment(mlmfIter); // spans all approx models
-    //  accumulate_acv_sums(sum_L_baselineL, sum_LL,//_baselineL,
-    //                      N_L_baselineL);
-    //  if (incr_cost)
-    //    increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox,
-    //			            equivHFEvals);
-    //}
-    if (onlineCost) recover_online_cost(sequenceCost);
-  }
+
+  // TO DO: allow pilot to vary for C vs c.  numSamples logic after pilot
+  // (mlmfIter >= 1) will require _baseline{L,H}
+  //if (lf_shared_pilot > hf_shared_pilot) {
+  //  numSamples = lf_shared_pilot - hf_shared_pilot;
+  //  shared_approx_increment(mlmfIter); // spans all approx models
+  //  accumulate_acv_sums(sum_L_baselineL, sum_LL,//_baselineL,
+  //                      N_L_baselineL);
+  //  if (incr_cost)
+  //    increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox,
+  //			            equivHFEvals);
+  //}
+
+  if (onlineCost) recover_online_cost(sequenceCost);
   if (incr_cost)
-    increment_equivalent_cost(numSamples,sequenceCost,0,numSteps,equivHFEvals);
+    increment_equivalent_cost(numSamples,sequenceCost,0,numGroups,equivHFEvals);
 }
 
 
@@ -295,7 +294,6 @@ compute_LH_statistics(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
 			sum_H_pilot, sum_LH_pilot, N_shared_pilot, cov_LH);
   //Cout << "var_H:\n"<< var_H << "cov_LL:\n"<< cov_LL << "cov_LH:\n"<< cov_LH;
 }
-*/
 
 
 void NonDACVSampling::
@@ -440,10 +438,11 @@ compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
       ensemble_numerical_solution(sequenceCost, soln, numSamples);
       break;
     default: { // competed initial guesses with (competed) local methods
-      covariance_to_correlation_sq(covLH, var_L, varH, rho2LH);
+      RealMatrix rho2_LH;
+      covariance_to_correlation_sq(covLH, var_L, varH, rho2_LH);
       MFSolutionData mf_soln, cv_soln;
-      analytic_initialization_from_mfmc(avg_N_H, mf_soln);
-      analytic_initialization_from_ensemble_cvmc(avg_N_H, cv_soln);
+      analytic_initialization_from_mfmc(rho2_LH, avg_N_H, mf_soln);
+      analytic_initialization_from_ensemble_cvmc(rho2_LH, avg_N_H, cv_soln);
 
       //if (multiStartACV) { // Run numerical solns from both starting points
       size_t mf_samp, cv_samp;
@@ -493,18 +492,19 @@ compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
 
 
 void NonDACVSampling::
-analytic_initialization_from_mfmc(Real avg_N_H, MFSolutionData& soln)
+analytic_initialization_from_mfmc(const RealMatrix& rho2_LH, Real avg_N_H,
+				  MFSolutionData& soln)
 {
   // > Option 1 is analytic MFMC: differs from ACV due to recursive pairing
   RealVector avg_eval_ratios;
-  if (ordered_approx_sequence(rho2LH)) // for all QoI across all Approx
-    mfmc_analytic_solution(approxSet, rho2LH, sequenceCost, avg_eval_ratios);
+  if (ordered_approx_sequence(rho2_LH)) // for all QoI across all Approx
+    mfmc_analytic_solution(approxSet, rho2_LH, sequenceCost, avg_eval_ratios);
   else {
     // compute reordered MFMC for averaged rho; monotonic r not required
     // > any rho2_LH re-ordering from MFMC initial guess can be ignored (later
     //   gets replaced with r_i ordering for approx_increments() sampling)
     SizetArray approx_sequence;
-    mfmc_reordered_analytic_solution(approxSet, rho2LH, sequenceCost,
+    mfmc_reordered_analytic_solution(approxSet, rho2_LH, sequenceCost,
 				     approx_sequence, avg_eval_ratios);
   }
   if (outputLevel >= DEBUG_OUTPUT)
@@ -521,14 +521,15 @@ analytic_initialization_from_mfmc(Real avg_N_H, MFSolutionData& soln)
 
 
 void NonDACVSampling::
-analytic_initialization_from_ensemble_cvmc(Real avg_N_H, MFSolutionData& soln)
+analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
+					   Real avg_N_H, MFSolutionData& soln)
 {
   // > Option 2 is ensemble of independent pairwise CVMCs, rescaled to an
   //   aggregate budget.  This is more ACV-like in the sense that it is not
   //   recursive, but it neglects the covariance C among approximations.
   //   It is also insensitive to model sequencing.
   RealVector avg_eval_ratios;
-  cvmc_ensemble_solutions(rho2LH, sequenceCost, avg_eval_ratios);
+  cvmc_ensemble_solutions(rho2_LH, sequenceCost, avg_eval_ratios);
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Initial guess from ensemble CVMC (unscaled eval ratios):\n"
 	 << avg_eval_ratios << std::endl;
@@ -616,13 +617,13 @@ augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT: case R_AND_N_NONLINEAR_CONSTRAINT:
     break; // none to add (r lower bounds = 1)
-  case N_VECTOR_LINEAR_CONSTRAINT: // lin_ineq #0 is augmented
+  case N_MODEL_LINEAR_CONSTRAINT: // lin_ineq #0 is augmented
     for (size_t approx=1; approx<=numApprox; ++approx) {
       lin_ineq_coeffs(approx,  approx-1) = -1.;
       lin_ineq_coeffs(approx, numApprox) =  1. + RATIO_NUDGE; // N_i > N
     }
     break;
-  case N_VECTOR_LINEAR_OBJECTIVE: // no other lin ineq
+  case N_MODEL_LINEAR_OBJECTIVE: // no other lin ineq
     for (size_t approx=0; approx<numApprox; ++approx) {
       lin_ineq_coeffs(approx,    approx) = -1.;
       lin_ineq_coeffs(approx, numApprox) =  1. + RATIO_NUDGE; // N_i > N
@@ -640,10 +641,10 @@ augmented_linear_ineq_violations(const RealVector& cd_vars,
 {
   Real quad_viol = 0.;
   switch (optSubProblemForm) {
-  case N_VECTOR_LINEAR_CONSTRAINT:  // lin_ineq #0 is augmented
-  case N_VECTOR_LINEAR_OBJECTIVE: { // no other lin ineq
+  case N_MODEL_LINEAR_CONSTRAINT:  // lin_ineq #0 is augmented
+  case N_MODEL_LINEAR_OBJECTIVE: { // no other lin ineq
     size_t lin_ineq_offset
-      = (optSubProblemForm == N_VECTOR_LINEAR_CONSTRAINT) ? 1 : 0;
+      = (optSubProblemForm == N_MODEL_LINEAR_CONSTRAINT) ? 1 : 0;
     Real viol, inner_prod, l_bnd, u_bnd, N_H = cd_vars[numApprox];
     for (size_t approx=0; approx<numApprox; ++approx) {
       inner_prod

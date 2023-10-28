@@ -257,7 +257,6 @@ void ParamStudy::pre_run()
 
 void ParamStudy::core_run()
 {
-
   archive_allocate_sets();
   // perform the evaluations; multidim exception
   bool log_resp_flag = (methodName == MULTIDIM_PARAMETER_STUDY)
@@ -265,6 +264,7 @@ void ParamStudy::core_run()
   bool log_best_flag = (numObjFns || numLSqTerms); // opt or NLS data set
   evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
 }
+
 
 void ParamStudy::archive_model_variables(const Model& model, size_t idx) const
 {

@@ -204,6 +204,9 @@ private:
   /// approximations
   SizetArray approxSequence;
 
+  /// squared Pearson correlations among approximations and truth
+  RealMatrix rho2LH;
+
   /// ratio of MFMC to MC estimator variance for the same HF samples,
   /// also known as (1 - R^2)
   RealVector estVarRatios;

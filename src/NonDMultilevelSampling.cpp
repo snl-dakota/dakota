@@ -124,8 +124,7 @@ void NonDMultilevelSampling::core_run()
   }
 
   configure_sequence(numSteps, secondaryIndex, sequenceType);
-  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
-  onlineCost = !query_cost(numSteps, multilev, sequenceCost);
+  onlineCost = !query_cost(numSteps, sequenceType, sequenceCost);
 
   // Useful for future extensions when convergence tolerance can be a vector
   convergenceTolVec.sizeUninitialized(numFunctions);
@@ -639,7 +638,7 @@ evaluate_ml_sample_increment(String prepend, unsigned short step)
 		       mlmfIter, step);
 
   // compute allResponses from allVariables using hierarchical model
-  evaluate_parameter_sets(iteratedModel, true, false);
+  evaluate_parameter_sets(iteratedModel);
 }
 
 

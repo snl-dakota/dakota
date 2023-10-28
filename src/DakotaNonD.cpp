@@ -461,7 +461,7 @@ configure_sequence(//unsigned short hierarch_dim,
     break;
   case 2:
     if (iteratedModel.multilevel_multifidelity()) {
-      seq_type  = Pecos::MODEL_FORM_RESOLUTION_LEVEL_SEQUENCE;
+      seq_type  = Pecos::FORM_RESOLUTION_ENUMERATION;
       num_steps = num_mf;
       secondary_index = num_hf_lev; // use this field as secondary step count?
     }
@@ -476,30 +476,59 @@ configure_sequence(//unsigned short hierarch_dim,
 }
 
 
+/** A one-dimensional sequence is assumed in this case. */
+void NonD::
+configure_enumeration(size_t& num_combinations)//, short& seq_type)
+{
+  // Enumerate both model forms and discretization levels
+  num_combinations = 0;
+  ModelList& sub_models = iteratedModel.subordinate_models(false);// includes HF
+  for (ModelLIter m_iter=sub_models.begin(); m_iter!=sub_models.end(); ++m_iter)
+    num_combinations += m_iter->solution_levels();
+}
+
+
 bool NonD::
-query_cost(unsigned short num_steps, bool multilevel, RealVector& cost)
+query_cost(unsigned short num_costs, short seq_type, RealVector& cost)
 {
   ModelList& sub_models = iteratedModel.subordinate_models(false);
   bool cost_defined;
-  if (multilevel) // 1D resolution hierarchy for HF model
-    cost_defined = query_cost(num_steps, sub_models.back(), cost);
-  else  {
-    cost.sizeUninitialized(num_steps);
+  switch (seq_type) {
+  case Pecos::RESOLUTION_LEVEL_SEQUENCE: // 1D resolution hierarchy for HF model
+    cost_defined = query_cost(num_costs, sub_models.back(), cost);
+  case Pecos::MODEL_FORM_SEQUENCE: {
+    cost.sizeUninitialized(num_costs);
     ModelLIter m_iter = sub_models.begin();  cost_defined = true;
-    for (unsigned short i=0; i<num_steps; ++i, ++m_iter) {
+    for (unsigned short i=0; i<num_costs; ++i, ++m_iter) {
       cost[i] = m_iter->solution_level_cost();// active soln index; 0 if unfound
       if (cost[i] <= 0.) cost_defined = false;
     }
     if (!cost_defined) cost.sizeUninitialized(0);//for compute_equivalent_cost()
+    break;
+  }
+  case Pecos::FORM_RESOLUTION_ENUMERATION: {
+    cost.sizeUninitialized(num_costs);
+    ModelLIter m_iter;  cost_defined = true;  size_t cntr = 0;
+    // assemble resolution level costs head to tail across models
+    // (model costs are presumed to be more separated than resolution costs)
+    for (m_iter=sub_models.begin(); m_iter!=sub_models.end(); ++m_iter) {
+      RealVector m_costs = m_iter->solution_level_costs();
+      copy_data_partial(m_costs, cost, cntr);
+      cntr += m_costs.length();
+      //if (cost[i] <= 0.) cost_defined = false; // *** TO DO: boolean recovery success
+    }
+    if (!cost_defined) cost.sizeUninitialized(0);//for compute_equivalent_cost()
+    break;
+  }
   }
   return cost_defined;
 }
 
 
-bool NonD::query_cost(unsigned short num_steps, Model& model, RealVector& cost)
+bool NonD::query_cost(unsigned short num_costs, Model& model, RealVector& cost)
 {
   cost = model.solution_level_costs(); // can be empty
-  if (cost.length() != num_steps || !valid_cost_values(cost))
+  if (cost.length() != num_costs || !valid_cost_values(cost))
     { cost.sizeUninitialized(0); return false; }
   return true;
 }
@@ -516,19 +545,19 @@ bool NonD::valid_cost_values(const RealVector& cost)
 
 
 void NonD::
-load_pilot_sample(const SizetArray& pilot_spec, size_t num_steps,
+load_pilot_sample(const SizetArray& pilot_spec, size_t num_groups,
 		  SizetArray& delta_N_l)
 {
   size_t pilot_size = pilot_spec.size();
-  if (num_steps == pilot_size)
+  if (num_groups == pilot_size)
     delta_N_l = pilot_spec;
   else if (pilot_size <= 1) {
     size_t num_samp = (pilot_size) ? pilot_spec[0] : 100;
-    delta_N_l.assign(num_steps, num_samp);
+    delta_N_l.assign(num_groups, num_samp);
   }
   else {
     Cerr << "Error: inconsistent pilot sample size (" << pilot_size
-	 << ") in NonD::load_pilot_sample(SizetArray).  " << num_steps
+	 << ") in NonD::load_pilot_sample(SizetArray).  " << num_groups
 	 << " expected." << std::endl;
     abort_handler(METHOD_ERROR);
   }

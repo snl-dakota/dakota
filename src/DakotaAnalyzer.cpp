@@ -236,14 +236,13 @@ void Analyzer::finalize_run()
 void Analyzer::
 evaluate_parameter_sets(Model& model, bool log_resp_flag, bool log_best_flag)
 {
-  // This function does not need an iteratorRep fwd because it is a
-  // protected fn only called by letter classes.
+  // This protected fn is only called by derived classes / letter instances
 
   // allVariables or allSamples defines the set of fn evals to be performed
   size_t i, num_evals
     = (compactMode) ? allSamples.numCols() : allVariables.size();
-  bool header_flag = (allHeaders.size() == num_evals);
-  bool asynch_flag = model.asynch_flag();
+  bool header_flag = (allHeaders.size() == num_evals),
+       asynch_flag = model.asynch_flag();
 
   if (!asynch_flag && log_resp_flag) allResponses.clear();
 
@@ -251,51 +250,141 @@ evaluate_parameter_sets(Model& model, bool log_resp_flag, bool log_best_flag)
   // and track best evaluations based on flags.
   for (i=0; i<num_evals; i++) {
     // output the evaluation header (if present)
-    if (header_flag)
-      Cout << allHeaders[i];
+    if (header_flag) Cout << allHeaders[i];
 
-    if (compactMode)
-      update_model_from_sample(model, allSamples[i]);
-    else
-      update_model_from_variables(model, allVariables[i]);
+    if (compactMode) update_model_from_sample(model,    allSamples[i]);
+    else             update_model_from_variables(model, allVariables[i]);
 
     // compute the response
     if (asynch_flag)
       model.evaluate_nowait(activeSet);
     else {
       model.evaluate(activeSet);
-      const Response& resp = model.current_response();
-      int eval_id = model.evaluation_id();
-      if (log_best_flag) // update best variables/response
-        update_best(model.current_variables(), eval_id, resp);
-      if (log_resp_flag) // log response data
-        allResponses[eval_id] = resp.copy();
-      archive_model_response(resp, i);
+      log_response(model, allResponses, i, log_resp_flag, log_best_flag);
     }
-
     archive_model_variables(model, i);
   }
-  // synchronize asynchronous evaluations
+
+  // synchronize a non-blocking evaluation of all{Samples,Variables}
+  // Note: multiple batches can be synchronized using evaluate_batch()
+  // and synchronize_batches()
   if (asynch_flag) {
     const IntResponseMap& resp_map = model.synchronize();
     if (log_resp_flag) // log response data
       allResponses = resp_map;
-    if (log_best_flag) { // update best variables/response
-      IntRespMCIter r_cit;
-      if (compactMode)
-        for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
-          update_best(allSamples[i], r_cit->first, r_cit->second);
-      else
-        for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
-          update_best(allVariables[i], r_cit->first, r_cit->second);
+    if (compactMode) log_response_map(allSamples,   resp_map, log_best_flag);
+    else             log_response_map(allVariables, resp_map, log_best_flag);
+  }
+}
+
+
+void Analyzer::evaluate_batch(Model& model, int batch_id, bool log_best_flag)
+{
+  // This function does not need an iteratorRep fwd because it is a
+  // protected fn only called by letter classes.
+
+  // allVariables or allSamples defines the set of fn evals to be performed
+  size_t i, num_cv, batch_size;
+  bool asynch_flag = model.asynch_flag();
+  IntResponse2DMap::iterator r2_it;
+  IntVariables2DMap::iterator v2_it;  IntRealVector2DMap::iterator rv2_it;
+  if (!asynch_flag) {
+    std::pair<int, IntResponseMap> resp_map_pr(batch_id, IntResponseMap());
+    std::pair<IntResponse2DMap::iterator, bool> rtn_pr
+      = batchResponsesMap.insert(resp_map_pr);
+    r2_it = rtn_pr.first;
+    if (!rtn_pr.second) // not inserted since batch_id already present
+      r2_it->second.clear();
+  }
+  if (compactMode) {
+    std::pair<int, IntRealVectorMap> map_pr(batch_id, IntRealVectorMap());
+    std::pair<IntRealVector2DMap::iterator, bool> rtn_pr
+      = batchSamplesMap.insert(map_pr);
+    rv2_it = rtn_pr.first;
+    if (!rtn_pr.second) // not inserted since batch_id already present
+      rv2_it->second.clear();
+    num_cv = allSamples.numRows();  batch_size = allSamples.numCols();
+  }
+  else {
+    std::pair<int,  IntVariablesMap> map_pr(batch_id,  IntVariablesMap());
+    std::pair<IntVariables2DMap::iterator, bool> rtn_pr
+      = batchVariablesMap.insert(map_pr);
+    v2_it = rtn_pr.first;
+    if (!rtn_pr.second) // not inserted since batch_id already present
+      v2_it->second.clear();
+    batch_size = allVariables.size();
+  }
+  bool header_flag = (allHeaders.size() == batch_size);
+
+  // Loop over parameter sets and compute responses.  Collect data
+  // and track best evaluations based on flags.
+  for (i=0; i<batch_size; i++) {
+    // output the evaluation header (if present)
+    if (header_flag) Cout << allHeaders[i];
+
+    if (compactMode) update_model_from_sample(model,    allSamples[i]);
+    else             update_model_from_variables(model, allVariables[i]);
+    archive_model_variables(model, i);
+
+    if (asynch_flag)
+      model.evaluate_nowait(activeSet);
+    else {
+      model.evaluate(activeSet);
+      log_response(model, r2_it->second, i, true, log_best_flag);
     }
-    if (resultsDB.active()) {
-      IntRespMCIter r_cit;
-      for(r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit)
-        archive_model_response(r_cit->second,
-			       std::distance(resp_map.begin(), r_cit));
+
+    // transfer all{Samples,Variables} into keyed batch{Samples,Responses}Map
+    int eval_id = model.evaluation_id();
+    if (compactMode)
+      copy_data(allSamples[i], num_cv, rv2_it->second[eval_id]);
+    else
+      v2_it->second[eval_id] = allVariables[i]; // *** shallow copy is safe unless allVariables gets updated in place
+  }
+}
+
+
+const IntResponse2DMap& Analyzer::
+synchronize_batches(Model& model, bool log_best_flag)
+{
+  // synchronize all batches at once
+
+  const IntResponseMap& full_resp_map = model.synchronize();
+  batchResponsesMap.clear();
+  //size_t i, num_batches = (compactMode) ?
+  //  batchSamplesMap.size() : batchVariablesMap.size();
+  int batch_id, first_id, last_id;
+
+  // for each batch id, extract eval_ids from full response map
+  if (compactMode)
+    for (IntRealVector2DMap::iterator s_it=batchSamplesMap.begin();
+	 s_it!=batchSamplesMap.end(); ++s_it) {
+      batch_id = s_it->first;
+      IntRealVectorMap&       rv_map = s_it->second;
+      IntResponseMap& batch_resp_map = batchResponsesMap[batch_id];
+      // Copy one by one:
+      //for (rv_it=rv_map.begin(); rv_it!=rv_map.end(); ++rv_it) {
+      //  eval_id = rv_it->first;
+      //  batch_resp_map[eval_id] = full_resp_map[eval_id];
+      //}
+      // Range copy: batches are well ordered in eval_id's
+      first_id = rv_map.begin()->first; last_id = (--rv_map.end())->first;
+      batch_resp_map.insert(full_resp_map.find(first_id),
+			    full_resp_map.find(last_id));
+      log_response_map(rv_map, batch_resp_map, log_best_flag);      
+    }
+  else {
+    for (IntVariables2DMap::iterator v_it=batchVariablesMap.begin();
+	 v_it!=batchVariablesMap.end(); ++v_it){
+      batch_id = v_it->first;
+      IntVariablesMap&      vars_map = v_it->second;
+      IntResponseMap& batch_resp_map = batchResponsesMap[batch_id];
+      first_id = vars_map.begin()->first; last_id = (--vars_map.end())->first;
+      batch_resp_map.insert(full_resp_map.find(first_id),
+			    full_resp_map.find(last_id));
+      log_response_map(vars_map, batch_resp_map, log_best_flag);      
     }
   }
+  return batchResponsesMap;
 }
 
 

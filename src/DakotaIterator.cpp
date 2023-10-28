@@ -32,10 +32,10 @@
 #include "NonDLHSSampling.hpp"
 #include "NonDAdaptImpSampling.hpp"
 #include "NonDGPImpSampling.hpp"
-#include "NonDMultilevelSampling.hpp"
 #include "NonDMultilevControlVarSampling.hpp"
-#include "NonDGenACVSampling.hpp"
 #include "NonDMultifidelitySampling.hpp"
+#include "NonDGenACVSampling.hpp"
+#include "NonDMultilevBLUESampling.hpp"
 #include "NonDGlobalEvidence.hpp"
 #include "NonDLocalEvidence.hpp"
 #include "NonDLHSEvidence.hpp"
@@ -535,6 +535,9 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     else
       return std::make_shared<NonDACVSampling>(problem_db, model);
     break;
+  case MULTILEVEL_BLUE:
+    return std::make_shared<NonDMultilevBLUESampling>(problem_db, model);
+    break;
   case DATA_FIT_SURROGATE_BASED_LOCAL:
     return std::make_shared<DataFitSurrBasedLocalMinimizer>(problem_db, model);
     break;
@@ -874,6 +877,7 @@ static UShortStrBimap method_map =
   (MULTIFIDELITY_SAMPLING,          "multifidelity_sampling")
   (MULTILEVEL_MULTIFIDELITY_SAMPLING, "multilevel_multifidelity_sampling")
   (APPROXIMATE_CONTROL_VARIATE,     "approximate_control_variate")
+  (MULTILEVEL_BLUE,                 "multilevel_blue")
   (LIST_SAMPLING,                   "list_sampling")
   (SURROGATE_BASED_LOCAL,           "surrogate_based_local")
   (DATA_FIT_SURROGATE_BASED_LOCAL,  "data_fit_surrogate_based_local")

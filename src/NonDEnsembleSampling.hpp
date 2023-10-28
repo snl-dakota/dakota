@@ -157,8 +157,6 @@ protected:
   //- Heading: Data
   //
 
-  /// number of model forms/resolution in the (outer) sequence
-  size_t numSteps;
   /// type of model sequence enumerated with primary MF/ACV loop over steps
   short sequenceType;
   /// setting for the inactive model dimension not traversed by primary MF/ACV

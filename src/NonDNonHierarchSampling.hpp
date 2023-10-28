@@ -29,8 +29,9 @@ namespace Dakota {
 
 // special values for optSubProblemForm
 enum { ANALYTIC_SOLUTION = 1, REORDERED_ANALYTIC_SOLUTION,
-       R_ONLY_LINEAR_CONSTRAINT, N_VECTOR_LINEAR_CONSTRAINT,
-       R_AND_N_NONLINEAR_CONSTRAINT, N_VECTOR_LINEAR_OBJECTIVE };
+       R_ONLY_LINEAR_CONSTRAINT, R_AND_N_NONLINEAR_CONSTRAINT,
+       N_MODEL_LINEAR_CONSTRAINT, N_MODEL_LINEAR_OBJECTIVE,
+       N_GROUP_LINEAR_CONSTRAINT, N_GROUP_LINEAR_OBJECTIVE };
 
 
 /// Container class for the numerical solution for a given configuration
@@ -326,21 +327,10 @@ protected:
   //- Heading: member functions
   //
 
-  void evaluate_pilot(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
-		      RealSymMatrixArray& sum_LL_pilot,
-		      RealMatrix& sum_LH_pilot, RealVector& sum_HH_pilot,
-		      SizetArray& N_shared_pilot, bool incr_cost);
-
-  void compute_LH_statistics(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
-			     RealSymMatrixArray& sum_LL_pilot,
-			     RealMatrix& sum_LH_pilot, RealVector& sum_HH_pilot,
-			     SizetArray& N_shared_pilot, RealMatrix& var_L,
-			     RealVector& var_H, RealSymMatrixArray& cov_LL,
-			     RealMatrix& cov_LH);
-
   void shared_increment(size_t iter);
   void shared_increment(size_t iter, const UShortArray& approx_set);
   void shared_approx_increment(size_t iter);
+
   bool approx_increment(size_t iter, const SizetArray& approx_sequence,
 			size_t start, size_t end);
   bool approx_increment(size_t iter, const SizetArray& approx_sequence,
@@ -348,7 +338,10 @@ protected:
 			const UShortArray& approx_set);
   bool approx_increment(size_t iter, unsigned short root,
 			const UShortSet& reverse_dag);
+
   void ensemble_sample_increment(size_t iter, size_t step);
+  void ensemble_sample_batch(size_t iter, int batch_id);
+  const IntResponse2DMap& ensemble_sample_synchronize();
 
   // manage response mode and active model key from {group,form,lev} triplet.
   // seq_type defines the active dimension for a model sequence.
@@ -410,6 +403,8 @@ protected:
 			      size_t start, size_t end,
 			      const UShortArray& approx_set);
 
+  void ensemble_active_set(const UShortArray& model_set);
+
   /// define model form and resolution level indices
   void hf_indices(size_t& hf_form_index, size_t& hf_lev_index);
 
@@ -422,7 +417,12 @@ protected:
 			   Real& var_Q1,  Real& var_Q2,  Real& rho2_Q1Q2);
   void compute_covariance(Real sum_Q1, Real sum_Q2, Real sum_Q1Q2,
 			  size_t N_shared, Real& cov_Q1Q2);
-  
+
+  void covariance_to_correlation_sq(const RealMatrix& cov_LH,
+				    const RealMatrix& var_L,
+				    const RealVector& var_H,
+				    RealMatrix& rho2_LH);
+
   void mfmc_analytic_solution(const UShortArray& approx_set,
 			      const RealMatrix& rho2_LH, const RealVector& cost,
 			      RealVector& avg_eval_ratios,
@@ -516,6 +516,9 @@ protected:
   /// SUBMETHOD_ACV_{IS,MF,KL}
   unsigned short mlmfSubMethod;
 
+  /// number of model groupings (pairings, pyramid levels,
+  /// tensor-product enumerations) used for sample allocations
+  size_t numGroups;
   /// number of approximation models managed by non-hierarchical iteratedModel
   size_t numApprox;
 
@@ -527,15 +530,6 @@ protected:
   /// user specification to suppress any increments in the number of HF
   /// evaluations (e.g., because too expensive and no more can be performed)
   bool truthFixedByPilot;
-
-  /// covariances between each LF approximation and HF truth (the c
-  /// vector in ACV); organized numFunctions x numApprox
-  RealMatrix covLH;
-  /// covariances among all LF approximations (the C matrix in ACV); organized
-  /// as a numFunctions array of symmetic numApprox x numApprox matrices
-  RealSymMatrixArray covLL;
-  /// squared Pearson correlations among approximations and truth
-  RealMatrix rho2LH;
 
   /// for sample projections, the calculated increment in HF samples that
   /// would be evaluated if full iteration/statistics were pursued
@@ -845,6 +839,18 @@ increment_sample_range(SizetArray& N_L, size_t incr, unsigned short root,
 }
 
 
+inline void NonDNonHierarchSampling::
+ensemble_active_set(const UShortArray& model_set)
+{
+  activeSet.request_values(0);
+  size_t m, num_models = model_set.size(), start;
+  for (m=0; m<num_models; ++m) {
+    start = model_set[m] * numFunctions;
+    activeSet.request_values(1, start, start+numFunctions);
+  }
+}
+
+
 inline Real NonDNonHierarchSampling::
 allocate_budget(const RealVector& avg_eval_ratios, const RealVector& cost)
 {
@@ -915,7 +921,7 @@ r_and_N_to_design_vars(const RealVector& avg_eval_ratios, Real N_H,
     cd_vars[num_approx] = N_H;
     break;
   }
-  case N_VECTOR_LINEAR_OBJECTIVE:  case N_VECTOR_LINEAR_CONSTRAINT:
+  case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT:
     r_and_N_to_N_vec(avg_eval_ratios, N_H, cd_vars);  break;
   }
 }
@@ -1083,6 +1089,23 @@ compute_covariance(Real sum_Q1, Real sum_Q2, Real sum_Q1Q2, size_t N_shared,
   //Cout << "compute_covariance: sum_Q1 = " << sum_Q1 << " sum_Q2 = " << sum_Q2
   //     << " sum_Q1Q2 = " << sum_Q1Q2 << " num_shared = " << num_shared
   //     << " cov_Q1Q2 = " << cov_Q1Q2 << std::endl;
+}
+
+
+inline void NonDNonHierarchSampling::
+covariance_to_correlation_sq(const RealMatrix& cov_LH, const RealMatrix& var_L,
+			     const RealVector& var_H, RealMatrix& rho2_LH)
+{
+  if (rho2_LH.empty()) rho2_LH.shapeUninitialized(numFunctions, numApprox);
+
+  size_t qoi, approx;  Real var_H_q, cov_LH_aq;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    var_H_q = var_H[qoi];
+    for (approx=0; approx<numApprox; ++approx) {
+      cov_LH_aq = cov_LH(qoi,approx);
+      rho2_LH(qoi,approx) = cov_LH_aq / var_L(qoi,approx) * cov_LH_aq / var_H_q;
+    }
+  }
 }
 
 

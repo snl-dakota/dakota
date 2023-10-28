@@ -200,7 +200,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
 	  lf_lev_cost = level_cost(lf_cost, lev);
 	  // compute allResp w/ LF model form reusing allVars from MLMC step
 	  // > Note: this CV sample set is not separately exported (see below).
-	  evaluate_parameter_sets(iteratedModel, true, false);
+	  evaluate_parameter_sets(iteratedModel);
 	  // process previous and new set of allResponses for CV sums
 	  accumulate_mlmf_Ysums(allResponses, hf_resp, sum_L_shared,
 				sum_L_refined, sum_H, sum_LL, sum_LH,
@@ -429,7 +429,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
 	  //   export_all_samples() since it is the same as the ML set.
 	  // > This is why the preceding set is marked as "mlcv_", indicating
 	  //   that the parameter sets should be applied to both ML and CV.
-	  evaluate_parameter_sets(iteratedModel, true, false);
+	  evaluate_parameter_sets(iteratedModel);
 	  // process previous and new set of allResponses for MLMF sums;
 	  accumulate_mlmf_Qsums(allResponses, hf_resp, sum_Ll, sum_Llm1,
 				sum_Ll_refined, sum_Llm1_refined, sum_Hl,
@@ -684,7 +684,7 @@ multilevel_control_variate_mc_offline_pilot()
 	configure_indices(group, lf_form, lev, sequenceType);
 	lf_lev_cost = level_cost(lf_cost, lev);
 	// eval allResp w/ LF model reusing allVars from ML step above
-	evaluate_parameter_sets(iteratedModel, true, false);
+	evaluate_parameter_sets(iteratedModel);
 	// process previous and new set of allResponses for MLMF sums;
 	accumulate_mlmf_Qsums(allResponses, hf_resp, sum_Ll, sum_Llm1,
 			      sum_Ll_refined, sum_Llm1_refined, sum_Hl,
@@ -888,7 +888,7 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
       configure_indices(group, lf_form, lev, sequenceType);
       // eval allResp w/ LF model reusing allVars from ML step above
       // > Note: this CV sample set is not separately exported (see above).
-      evaluate_parameter_sets(iteratedModel, true, false);
+      evaluate_parameter_sets(iteratedModel);
       // process previous and new set of allResponses for MLMF sums;
       accumulate_mlmf_Qsums(allResponses, hf_resp, sum_Ll, sum_Llm1,
 			    sum_Ll_refined, sum_Llm1_refined, sum_Hl, sum_Hlm1,
@@ -1144,7 +1144,7 @@ bool NonDMultilevControlVarSampling::lf_perform_samples(size_t iter, size_t lev)
   //       of zero, which is consistent with finalCVRefinement=true.
   //if (iter < maxIterations || finalCVRefinement) {
     // compute allResponses from allVariables using hierarchical model
-    evaluate_parameter_sets(iteratedModel, true, false);
+    evaluate_parameter_sets(iteratedModel);
     return true;
   //}
   //else return false;
