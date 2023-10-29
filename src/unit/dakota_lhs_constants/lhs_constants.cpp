@@ -37,6 +37,7 @@ method
     samples  60
     seed  1
     sample_type  lhs
+  output silent
 
 variables
   active  all

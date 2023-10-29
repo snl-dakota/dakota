@@ -196,6 +196,7 @@ BOOST_AUTO_TEST_CASE(test_rol_text_book_nln_ineq_const)
     "     constraint_tolerance 1.0e-4"
     "     variable_tolerance 1.0e-4"
     "     max_iterations 0"
+    "   output verbose"
     " variables,"
     "   continuous_design = 3"
     "     initial_point  0.3    0.6   0.5"
