@@ -1,12 +1,4 @@
-:orphan:
-
-.. _releasenotes-template:
-
-.. note::
-
-   This unlinked page is a template with prompts to consider when
-   authoring release notes before promoting to a versioned page.
-   Remove :orphan: above if promoting this page.
+.. _releasenotes-next:
 
 """"""""""""""""""""""""""""""""""""""
 Version 6.19 (2023/11/15; pre-release)
@@ -14,7 +6,7 @@ Version 6.19 (2023/11/15; pre-release)
 
 **Highlight: New sampling-based method for main effects**
 
-Based on the work of XXX et al., Dakota can now obtain estimates
+Based on :cite:p:`Li16`, Dakota can now obtain estimates
 of first order Sobol indices (main effects) from `sampling`
 studies. Previous versions of Dakota could obtain esimates of
 main and total effects using a "pick and freeze" sampling strategy,
@@ -26,15 +18,18 @@ typically far fewer samples are needed for convergence.
 
 *Enabling / Accessing:* 
 
-The `variance_based_decomp` keyword now has suboptions. The
-`vbd_sampling_method pick_and_freeze` option is the default,
-and causes Dakota to use the method that has long been available
-to compute main and total effects. The `vbd_sampling_method binned`
+The :dakkw:`method-sampling-variance_based_decomp` keyword now has 
+suboptions. The :dakkw:`vbd_sampling_method pick_and_freeze <method-sampling-variance_based_decomp-vbd_sampling_method-pick_and_freeze>`
+option is the default, and causes Dakota to use the method that has long been available
+to compute main and total effects. The 
+:dakkw:`vbd_sampling_method binned <method-sampling-variance_based_decomp-vbd_sampling_method-binned>`
 option causes the new method to be used.
 
 *Documentation:* 
 
-TODO: add references to new docs
+Keyword reference for the :dakkw:`method-sampling-variance_based_decomp-vbd_sampling_method-binned`
+VBD method.
+
 
 **Highlight: Low-discrepancy (quasi-Monte Carlo) sampling**
 
@@ -47,22 +42,24 @@ Monte Carlo, leading to faster convergence of UQ results.
 
 *Enabling / Accessing:* 
 
-In a `sampling` study, choose `sample_type low_discrepancy`.
+In a ``sampling`` study, choose 
+:dakkw:`sample_type low_discrepancy <method-sampling-sample_type-low_discrepancy>`.
 
 *Documentation:* 
 
-TODO: Add references to new docs
+* :dakkw:`method-sampling-sample_type-low_discrepancy` keyword.
+* Discussion of :ref:`low-disrepancy methods <uq:sampling>`.
 
 **Improvements by Category**
 
 *Interfaces, Input/Output*
 
-* Copying of `dakota.interfacing` objects was improved by adding `__deepcopy__` implementations
+* Copying of ``dakota.interfacing`` objects was improved by adding ``__deepcopy__`` implementations
 * New examples:
 
-  * Demonstrating use of Dakota's direct `python` interface with a 
+  * Demonstrating use of Dakota's direct :dakkw:`interface-analysis_drivers-python` interface with a 
     `pre-built tensorflow model <https://github.com/snl-dakota/dakota-examples/tree/master/official/drivers/Python/linked_di/tensorflow>`_.
-  * Demonstrating use of `dakota.interfacing.dprepro` in a black-box interface.
+  * Demonstrating use of ``dakota.interfacing.dprepro`` in a black-box interface.
     (For `Windows <https://github.com/snl-dakota/dakota-examples/tree/master/official/drivers/black-box_simulation_windows>`_
     and `Linux/macOS <https://github.com/snl-dakota/dakota-examples/tree/master/official/drivers/black-box_simulation>`_)
    
@@ -89,8 +86,8 @@ TODO: Add references to new docs
 
 - Enh: Documentation of Dakota's regresion test system expanded.
 
-- Bug fix: The `@python_interface` decorator in the `dakota.interfacing` module now propertly
-  interprets the dvv list provided by Dakota's direct `python` interface.
+- Bug fix: The ``@python_interface`` decorator in the ``dakota.interfacing`` module now propertly
+  interprets the dvv list provided by Dakota's direct :dakkw:`interface-analysis_drivers-python` interface.
 
 - Bug fix: RPATH handling on Linux-based platforms improved.
 
