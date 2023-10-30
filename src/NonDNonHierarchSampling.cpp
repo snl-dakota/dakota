@@ -403,12 +403,11 @@ ensemble_sample_batch(size_t iter, int batch_id)
 }
 
 
-const IntResponse2DMap& NonDNonHierarchSampling::
-ensemble_sample_synchronize()
+void NonDNonHierarchSampling::ensemble_sample_synchronize()
 {
   // synchronize multiple evaluation batches on the ensemble model and
   // bookkeep by batch id within batchResponsesMap
-  return synchronize_batches(iteratedModel);
+  synchronize_batches(iteratedModel); // ignore return reference
 }
 
 

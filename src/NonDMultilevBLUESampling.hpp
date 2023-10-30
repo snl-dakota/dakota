@@ -59,6 +59,17 @@ protected:
   void estimator_variance_ratios(const RealVector& r_and_N,
 				 RealVector& estvar_ratios);
 
+  void numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
+				 size_t& num_nln_con);
+  void numerical_solution_bounds_constraints(const MFSolutionData& soln,
+    const RealVector& cost, Real avg_N_H, RealVector& x0, RealVector& x_lb,
+    RealVector& x_ub, RealVector& lin_ineq_lb, RealVector& lin_ineq_ub,
+    RealVector& lin_eq_tgt, RealVector& nln_ineq_lb, RealVector& nln_ineq_ub,
+    RealVector& nln_eq_tgt, RealMatrix& lin_ineq_coeffs,
+    RealMatrix& lin_eq_coeffs);
+  //void finite_solution_bounds(const RealVector& cost, Real avg_N_H,
+  //			      RealVector& x_lb, RealVector& x_ub);
+
   //
   //- Heading: member functions
   //
@@ -71,15 +82,18 @@ protected:
   void initialize_blue_counts(SizetMatrixArray& num_G);
                             //, SizetSymMatrix2DArray& num_GG);
 
+  /*
   void blue_raw_moments(IntRealMatrixMap& sum_L_shared,
 		       IntRealMatrixMap& sum_L_refined,
-		       IntRealVectorMap& sum_H,
 		       IntRealSymMatrixArrayMap& sum_LL,
-		       IntRealMatrixMap& sum_LH,
 		       const RealVector& avg_eval_ratios,
 		       const SizetArray& N_shared,
 		       const Sizet2DArray& N_L_refined,
 		       RealMatrix& H_raw_mom);
+
+  Real update_hf_target(const RealVector& avg_eval_ratios,
+			const RealVector& var_H, const RealVector& estvar0);
+  */
 
   void compute_blue_control_covariances(RealMatrix& sum_L, Real sum_H_q,
 				       RealSymMatrix& sum_LL_q,
@@ -93,9 +107,6 @@ protected:
 				      //SizetArray& delta_N_L_actual,
 				      Real& delta_equiv_hf);
 
-  Real update_hf_target(const RealVector& avg_eval_ratios,
-			const RealVector& var_H, const RealVector& estvar0);
-
   void print_computed_solution(std::ostream& s, const MFSolutionData& soln);
 
 private:
@@ -108,13 +119,19 @@ private:
   void ml_blue_offline_pilot();
   void ml_blue_pilot_projection();
 
+  void group_increment(SizetArray& delta_N_G, size_t iter);
+  void evaluate_pilot(RealMatrixArray& sum_G_pilot,
+		      RealSymMatrix2DArray& sum_GG_pilot,
+		      SizetMatrixArray& N_shared_pilot, bool incr_cost);
+
+  /*
   void precompute_blue_control(const RealVector& avg_eval_ratios,
 			      const SizetArray& N_shared);
-
   void compute_blue_control(RealMatrix& sum_L_base_m, Real sum_H_mq,
 			   RealSymMatrix& sum_LL_mq, RealMatrix& sum_LH_m,
 			   size_t N_shared_q, size_t mom, size_t qoi,
 			   RealVector& beta);
+  */
 
   //void initialize_blue_covariances(IntRealSymMatrixArrayMap covLL,
   //				  IntRealMatrixMap& cov_LH,
@@ -129,18 +146,23 @@ private:
 			    SizetMatrixArray& num_G);
                           //, SizetSymMatrix2DArray& num_GG);
 
-  void compute_LH_covariance(const RealMatrix& sum_L_shared,
-			     const RealVector& sum_H, const RealMatrix& sum_LH,
-			     const SizetArray& N_shared, RealMatrix& cov_LH);
-  void compute_LL_covariance(const RealMatrix& sum_L_shared,
-			     const RealSymMatrixArray& sum_LL,
-			     const SizetArray& N_shared,
-			     RealSymMatrixArray& cov_LL);
+  void compute_GG_statistics(RealMatrixArray& sum_G_pilot,
+			     RealSymMatrix2DArray& sum_GG_pilot,
+			     SizetMatrixArray& N_shared_pilot,
+			     RealMatrixArray& var_G,
+			     RealSymMatrix2DArray& cov_GG);
+  void compute_GG_covariance(const RealMatrixArray& sum_G,
+			     const RealSymMatrix2DArray& sum_GG,
+			     const SizetMatrixArray& N_G,
+			     RealSymMatrix2DArray& cov_GG);
+  void compute_G_variance(const RealMatrixArray& sum_G,
+			  const RealSymMatrix2DArray& sum_GG,
+			  const SizetMatrixArray& num_G,
+			  RealMatrixArray& var_G);
 
-  void compute_L_variance(const RealMatrix& sum_L,
-			  const RealSymMatrixArray& sum_LL,
-			  const SizetArray& num_L, RealMatrix& var_L);
+  void compute_allocations(const RealMatrixArray& var_G, MFSolutionData& soln);
 
+  /*
   void compute_F_matrix(const RealVector& avg_eval_ratios, RealSymMatrix& F);
   void compute_C_F_c_f(const RealSymMatrix& C, const RealSymMatrix& F,
 		       const RealMatrix& c, size_t qoi,
@@ -162,6 +184,7 @@ private:
   void solve_for_blue_control(const RealSymMatrix& cov_LL,
 			     const RealSymMatrix& F, const RealMatrix& cov_LH,
 			     size_t qoi, RealVector& beta);
+  */
 
   void scale_to_target(Real avg_N_H, const RealVector& cost,
 		       RealVector& avg_eval_ratios, Real& avg_hf_target);
@@ -178,7 +201,7 @@ private:
   /// covariance matrices for each model QoI and each model grouping (the C_k
   /// matrix in ML BLUE), organized as a numGroups x numFunctions array of
   /// symmetic numModels_k x numModels_k covariance matrices
-  RealSymMatrix2DArray covG;
+  RealSymMatrix2DArray covGG;
 
   /// final solution data for BLUE
   /// *** TO DO: generalize beyond DAGs?
@@ -240,22 +263,6 @@ initialize_blue_counts(SizetMatrixArray& num_G)//,SizetSymMatrix2DArray& num_GG)
 
 
 inline void NonDMultilevBLUESampling::
-compute_L_variance(const RealMatrix& sum_L, const RealSymMatrixArray& sum_LL,
-		   const SizetArray& num_L, RealMatrix& var_L)
-{
-  if (var_L.empty()) var_L.shapeUninitialized(numFunctions, numApprox);
-
-  size_t qoi, approx, num_L_q;
-  for (qoi=0; qoi<numFunctions; ++qoi) {
-    num_L_q = num_L[qoi];
-    for (approx=0; approx<numApprox; ++approx)
-      compute_variance(sum_L(qoi,approx), sum_LL[qoi](approx,approx),
-		       num_L_q, var_L(qoi,approx));
-  }
-}
-
-
-inline void NonDMultilevBLUESampling::
 scale_to_target(Real avg_N_H, const RealVector& cost,
 		RealVector& avg_eval_ratios, Real& avg_hf_target)
 {
@@ -275,6 +282,7 @@ scale_to_target(Real avg_N_H, const RealVector& cost,
 }
 
 
+/*
 inline void NonDMultilevBLUESampling::
 compute_F_matrix(const RealVector& r_and_N, RealSymMatrix& F)
 {
@@ -472,7 +480,7 @@ inline void NonDMultilevBLUESampling::
 precompute_blue_control(const RealVector& avg_eval_ratios,
 		       const SizetArray& N_shared)
 {
-  //compute_F_matrix(avg_eval_ratios, FMat);
+  compute_F_matrix(avg_eval_ratios, FMat);
 }
 
 
@@ -481,7 +489,6 @@ compute_blue_control(RealMatrix& sum_L_base_m, Real sum_H_mq,
 		    RealSymMatrix& sum_LL_mq, RealMatrix& sum_LH_m,
 		    size_t N_shared_q, size_t mom, size_t qoi, RealVector& beta)
 {
-  /*
   if (mom == 1) // variances/covariances already computed for mean estimator
     solve_for_blue_control(covLL[qoi], FMat, covLH, qoi, beta);
   else { // compute variances/covariances for higher-order moment estimators
@@ -493,8 +500,8 @@ compute_blue_control(RealMatrix& sum_L_base_m, Real sum_H_mq,
     // forward to overload:
     solve_for_blue_control(cov_LL, FMat, cov_LH, qoi, beta);
   }
-  */
 }
+*/
 
 
 inline void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s)

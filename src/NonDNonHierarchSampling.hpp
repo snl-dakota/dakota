@@ -341,7 +341,7 @@ protected:
 
   void ensemble_sample_increment(size_t iter, size_t step);
   void ensemble_sample_batch(size_t iter, int batch_id);
-  const IntResponse2DMap& ensemble_sample_synchronize();
+  void ensemble_sample_synchronize();
 
   // manage response mode and active model key from {group,form,lev} triplet.
   // seq_type defines the active dimension for a model sequence.

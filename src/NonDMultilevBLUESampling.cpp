@@ -102,44 +102,36 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
 {
   // retrieve cost estimates across soln levels for a particular model form
   IntRealMatrixArrayMap sum_G;  IntRealSymMatrix2DArrayMap sum_GG;
-  SizetMatrixArray      num_G;  //SizetSymMatrix2DArray      num_GG;
-  initialize_blue_sums(sum_G, sum_GG); initialize_blue_counts(num_G, num_GG);
-  //size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
-  //SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
-  //size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
-  //N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
-  //initialize_blue_counts(N_H_actual, N_LL);
-  //initialize_blue_covariances(covLL, covLH, varH);
-  SizetArray group_samples;  group_samples.assign(numGroups, 0);
+  SizetMatrixArray N_G_actual;  //SizetSymMatrix2DArray N_GG;
+  initialize_blue_sums(sum_G, sum_GG); initialize_blue_counts(N_G_actual);
+  SizetArray N_G_alloc;  N_G_alloc.assign(numGroups, 0);
+  RealMatrixArray var_G;
+  //initialize_blue_counts(N_G_actual, N_GG);
+  //initialize_blue_covariances(covGG, var_G);
   SizetArray delta_N_G = pilotSamples; // sized by load_pilot_samples()
 
-  // ***************************************************************************
-  // *** TO DO: do we stick with shared_increment based on the complete group?
-  //     (I think yes.) --> review initial covariance set...
-  // *** Another option is to retire online iteration, but avoid if possible.
-  // ***************************************************************************
   while (Pecos::l1_norm(delta_N_G) && mlmfIter <= maxIterations) {
 
     // --------------------------------------------------------------------
     // Evaluate shared increment and update correlations, {eval,EstVar}_ratios
     // --------------------------------------------------------------------
     group_increment(delta_N_G, mlmfIter); // spans ALL model groups, blocking
-    accumulate_blue_sums(sum_G, sum_GG, num_G);//, num_GG);
-    N_H_alloc += (backfillFailures && mlmfIter) ? one_sided_delta(N_H_alloc,
-      blueSolnData.solution_reference()) : numSamples;
+    accumulate_blue_sums(sum_G, sum_GG, N_G_actual);//, num_GG);
+    //N_G_alloc += (backfillFailures && mlmfIter) ? one_sided_delta(N_G_alloc,
+    //  blueSolnData.solution_reference()) : numSamples; // *** TO DO
+
     // While online cost recovery could be continuously updated, we restrict
     // to the pilot and do not not update after iter 0.  We could potentially
     // update cost for shared samples, mirroring the covariance updates.
     if (onlineCost && mlmfIter == 0) recover_online_cost(sequenceCost);
     increment_equivalent_cost(numSamples, sequenceCost, 0, numGroups,
 			      equivHFEvals);
-    compute_LH_statistics(sum_L_baselineH[1], sum_LL[1], N_H_actual, var_L,
-			  varH, covLL, covLH);
+    compute_GG_statistics(sum_G[1], sum_GG[1], N_G_actual, var_G, covGG);
 
     // compute the LF/HF evaluation ratios from shared samples and compute
     // ratio of MC and BLUE mean sq errors (which incorporates anticipated
     // variance reduction from application of avg_eval_ratios).
-    compute_ratios(var_L, blueSolnData); // ***
+    compute_allocations(var_G, blueSolnData); // *** TO DO: update delta_N_G
     ++mlmfIter;
   }
 
@@ -147,10 +139,10 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
   if (finalStatsType == QOI_STATISTICS) {
     RealMatrix H_raw_mom(numFunctions, 4);
-    blue_raw_moments(sum_L, sum_LL, H_raw_mom);
+    //blue_raw_moments(sum_G, sum_GG, H_raw_mom); // *** TO DO ***
     convert_moments(H_raw_mom, momentStats);
   }
-  finalize_counts(N_L_actual, N_L_alloc);
+  //finalize_counts(N_G_actual, N_G_alloc); // *** TO DO ***
 }
 
 
@@ -159,33 +151,28 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
 void NonDMultilevBLUESampling::ml_blue_offline_pilot()
 {
   // ------------------------------------------------------------
-  // Compute var L,H & covar LL,LH from (oracle) pilot treated as "offline" cost
+  // Compute var G & covar GG from (oracle) pilot treated as "offline" cost
   // ------------------------------------------------------------
-  RealVector sum_H_pilot, sum_HH_pilot;
-  RealMatrix sum_L_pilot, sum_LH_pilot, var_L;
-  RealSymMatrixArray sum_LL_pilot;  SizetArray N_shared_pilot;
-  evaluate_pilot(sum_L_pilot, sum_LL_pilot, N_shared_pilot, false);
-  compute_LH_statistics(sum_L_pilot, sum_LL_pilot, N_shared_pilot,
-			var_L, varH, covLL, covLH);
+  RealMatrixArray sum_G_pilot, var_G; RealSymMatrix2DArray sum_GG_pilot;
+  SizetMatrixArray N_shared_pilot;
+  evaluate_pilot(sum_G_pilot, sum_GG_pilot, N_shared_pilot, false);
+  compute_GG_statistics(sum_G_pilot, sum_GG_pilot, N_shared_pilot,
+			var_G, covGG);
 
   // -----------------------------------
   // Compute "online" sample increments:
   // -----------------------------------
-  IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baselineH, sum_LH;
-  IntRealSymMatrixArrayMap sum_LL;  RealVector sum_HH;
-  //SizetSymMatrixArray N_LL;
-  initialize_blue_sums(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH);
-  size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
-  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
-  size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
-  N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
-  //initialize_blue_counts(N_H_actual, N_LL);
-  //initialize_blue_covariances(covLL, covLH, varH);
+  IntRealMatrixArrayMap sum_G; IntRealSymMatrix2DArrayMap sum_GG;
+  SizetMatrixArray N_G_actual;  //SizetSymMatrix2DArray N_GG;
+  initialize_blue_sums(sum_G, sum_GG); initialize_blue_counts(N_G_actual);
+  SizetArray N_G_alloc;  N_G_alloc.assign(numGroups, 0);
+  //initialize_blue_counts(N_G_actual, N_GG);
+  //initialize_blue_covariances(covGG, covLH, varG);
 
   // compute the LF/HF evaluation ratios from shared samples and compute
   // ratio of MC and ACV mean sq errors (which incorporates anticipated
   // variance reduction from application of avg_eval_ratios).
-  compute_ratios(var_L, blueSolnData); // ***
+  compute_allocations(var_G, blueSolnData); // *** TO DO: update N_G_alloc
   ++mlmfIter;
 
   // -----------------------------------
@@ -195,17 +182,17 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
   if (finalStatsType == QOI_STATISTICS) {
     // perform the shared increment for the online sample profile
-    group_increment(delta_N_G, mlmfIter); // spans ALL models, blocking
-    accumulate_blue_sums(sum_L, sum_LL, N_H_actual);
-    N_H_alloc += numSamples;
+    group_increment(N_G_alloc, mlmfIter); // spans ALL models, blocking
+    accumulate_blue_sums(sum_G, sum_GG, N_G_actual);
+    //N_G_alloc += numSamples; // *** TO DO ***
     increment_equivalent_cost(numSamples, sequenceCost, 0, numGroups,
 			      equivHFEvals);
     // extract moments
     RealMatrix H_raw_mom(numFunctions, 4);
-    blue_raw_moments(sum_L, sum_LL, H_raw_mom);
+    //blue_raw_moments(sum_G, sum_GG, H_raw_mom); // *** TO DO ***
     convert_moments(H_raw_mom, momentStats);
   }
-  finalize_counts(N_L_actual, N_L_alloc);
+  //finalize_counts(N_G_actual, N_G_alloc); // *** TO DO ***
 }
 
 
@@ -213,18 +200,14 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
     model form and discretization level. */
 void NonDMultilevBLUESampling::ml_blue_pilot_projection()
 {
-  size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
-  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
-  size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
-
   // --------------------------------------------------------------------
   // Evaluate shared increment and update correlations, {eval,EstVar}_ratios
   // --------------------------------------------------------------------
-  RealVector sum_H, sum_HH;  RealMatrix sum_L_baselineH, sum_LH, var_L;
-  RealSymMatrixArray sum_LL;
-  evaluate_pilot(sum_L, sum_LL, N_H_actual, true);
-  compute_LH_statistics(sum_L, sum_LL, N_H_actual, var_L, varH, covLL, covLH);
-  N_H_alloc = numSamples;
+  RealMatrixArray sum_G, var_G; RealSymMatrix2DArray sum_GG;
+  SizetMatrixArray N_G_actual;  //SizetSymMatrix2DArray N_GG;
+  evaluate_pilot(sum_G, sum_GG, N_G_actual, true);
+  compute_GG_statistics(sum_G, sum_GG, N_G_actual, var_G, covGG);
+  SizetArray N_G_alloc = pilotSamples;
 
   // -----------------------------------
   // Compute "online" sample increments:
@@ -232,11 +215,11 @@ void NonDMultilevBLUESampling::ml_blue_pilot_projection()
   // compute the LF/HF evaluation ratios from shared samples and compute
   // ratio of MC and ACV mean sq errors (which incorporates anticipated
   // variance reduction from application of avg_eval_ratios).
-  compute_ratios(var_L, blueSolnData); // ***
+  compute_allocations(var_G, blueSolnData); // *** TO DO: update N_G_alloc
   ++mlmfIter;
 
   // No LF increments or final moments for pilot projection
-  finalize_counts(N_L_actual, N_L_alloc);
+  //finalize_counts(N_G_actual, N_G_alloc); // *** TO DO ***
   // No need for updating estimator variance given deltaNActualHF since
   // NonDNonHierarchSampling::ensemble_numerical_solution() recovers N*
   // from the numerical solve and computes projected avgEstVar{,Ratio}
@@ -256,29 +239,27 @@ group_increment(SizetArray& delta_N_G, size_t iter)
     numSamples = delta_N_G[g];
     if (numSamples) {
       ensemble_active_set(modelGroups[g]);
-      ensemble_sample_batch(iter, g); // don't block between groups
+      ensemble_sample_batch(iter, g); // index is group_id; non-blocking
     }
   }
 
-  ensemble_sample_synchronize(); // neglects return...
+  ensemble_sample_synchronize(); // schedule all groups (return ignored)
 }
 
 
 void NonDMultilevBLUESampling::
-evaluate_pilot(RealMatrix& sum_L_pilot, RealSymMatrixArray& sum_LL_pilot,
-	       SizetArray& N_shared_pilot, bool incr_cost)
+evaluate_pilot(RealMatrixArray& sum_G_pilot, RealSymMatrix2DArray& sum_GG_pilot,
+	       SizetMatrixArray& N_shared_pilot, bool incr_cost)
 {
-  initialize_acv_sums(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
-		      sum_HH_pilot);
-  N_shared_pilot.assign(numFunctions, 0);
-  //initialize_acv_counts(N_shared_pilot, N_LL_pilot);
+  initialize_blue_sums(sum_G_pilot, sum_GG_pilot);
+  initialize_blue_counts(N_shared_pilot);//, N_GG_pilot);
 
   // ----------------------------------------
   // Compute var L,H & covar LL,LH from pilot
   // ----------------------------------------
   // Initialize for pilot sample
   group_increment(pilotSamples, mlmfIter); // spans ALL models, blocking
-  accumulate_blue_sums(sum_G, sum_GG, num_G);//, num_GG);
+  accumulate_blue_sums(sum_G_pilot, sum_GG_pilot, N_shared_pilot);//, N_GG);
 
   if (onlineCost) recover_online_cost(sequenceCost);
   if (incr_cost)
@@ -358,9 +339,9 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   else {
     x0 = soln_vars;
     if (pilotMgmtMode == OFFLINE_PILOT) // x0 could undershoot x_lb
-      for (i=0; i<numGroups; ++i) // bump x0 to satisfy x_lb if needed
-	if (x0[i] < x_lb[i])
-	  x0[i] = x_lb[i];
+      for (group=0; group<numGroups; ++group) // bump x0 to satisfy x_lb if nec
+	if (x0[group] < x_lb[group])
+	  x0[group] = x_lb[group];
   }
 
   switch (optSubProblemForm) {
@@ -391,7 +372,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
 
 
 void NonDMultilevBLUESampling::
-compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
+compute_allocations(const RealMatrixArray& var_L, MFSolutionData& soln)
 {
   // Solve the optimization sub-problem using an initial guess from either
   // related analytic solutions (iter == 0) or warm started from the previous
@@ -434,10 +415,10 @@ compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
       ensemble_numerical_solution(sequenceCost, soln, numSamples);
       break;
     default: { // competed initial guesses with (competed) local methods
-      covariance_to_correlation_sq(covLH, var_L, varH, rho2LH);
       // use pyramid sample definitions for hierarchical groups as init guess,
       // even though they are not independent sample sets in MFMC
-      analytic_initialization_from_mfmc(avg_N_H, soln);
+      //covariance_to_correlation_sq(covLH, var_L, varH, rho2LH);
+      //analytic_initialization_from_mfmc(avg_N_H, soln);
       ensemble_numerical_solution(sequenceCost, soln, numSamples);
       break;
     }
@@ -461,7 +442,7 @@ void NonDMultilevBLUESampling::
 print_computed_solution(std::ostream& s, const MFSolutionData& soln)
 {
   const RealVector& soln_vars = soln.solution_variables();
-  size_t i, num_v = soln_vars.size();
+  size_t i, num_v = soln_vars.length();
   for (i=0; i<num_v; ++i)
     Cout << "Group " << i+1 << " samples = " << soln_vars[i] << '\n';
   if (maxFunctionEvals == SZ_MAX)
@@ -473,7 +454,7 @@ print_computed_solution(std::ostream& s, const MFSolutionData& soln)
 	 << soln.average_estimator_variance_ratio() << std::endl;
 }
 
-// *** TO HERE ***
+/*
 // > Need to proliferate MFSolutionData update
 // > Need to start defining optimizer callbacks for est_var and linear_cost
 
@@ -501,6 +482,7 @@ update_hf_target(const RealVector& avg_eval_ratios, const RealVector& var_H,
   Real avg_hf_target = average(hf_targets);
   return avg_hf_target;
 }
+*/
 
 
 /** Multi-moment map-based version used by online pilot */
@@ -511,14 +493,17 @@ accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
 {
   using std::isfinite;  bool all_finite;
   Real g1_fn, g2_fn, g1_prod, g2_prod;
-  IntRespMCIter r_it;  IntRMMIter g_it;  IntRSMAMIter gg_it;
-  int g_ord, gg_ord, active_ord;  size_t qoi, m, m2, g1_index, g2_index;
+  IntRespMCIter r_it;  IntRMAMIter g_it;  IntRSM2AMIter gg_it;
+  int g_ord, gg_ord, active_ord;
+  size_t g, num_groups = modelGroups.size(), qoi, m, m2, num_models,
+    g1_index, g2_index;
 
-  for (g=0; g<num_groups; ++g) { // *** iterate over map of modelGroups?  Might prove useful to have a running batch id rather than a group index...  A middle ground might use a more general structure and still key with 0:numGroups.
-    num_models                       = modelGroups[g].size(); // ***
-    const IntResponseMap& resp_map_g = batchResponsesMap[group_id];
-    // If we start pruning group sets, we may need the generality of an active subset of modelGroups
-    // *** Need to finalize whether we want a Map of higher-D arrays (here) or a 2DMap of lower-D arrays (Analyzer)
+  for (g=0; g<num_groups; ++g) {
+    num_models                       = modelGroups[g].size();
+    SizetMatrix&             num_G_g =  num_G[g]; // index is group_id
+    //SizetSymMatrixArray&  num_GG_g = num_GG[g];
+    num_models                       = modelGroups[g].size();
+    const IntResponseMap& resp_map_g = batchResponsesMap[g];// index is group_id
 
     for (r_it=resp_map_g.begin(); r_it!=resp_map_g.end(); ++r_it) {
       const Response&   resp    = r_it->second;
@@ -544,15 +529,15 @@ accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
 	    ++num_G_g(qoi,m); // shared due to fault tol logic
 	    g1_fn = fn_vals[g1_index];
 
-	    g_it  = sum_G.begin();  gg_it = sum_GG.begin();
-	    g_ord  = (g_it  ==  sum_G.end()) ? 0 :  g_it->first;
-	    gg_ord = (gg_it == sum_GG.end()) ? 0 : gg_it->first;
+	    g_it    = sum_G.begin();  gg_it = sum_GG.begin();
+	    g_ord   = (g_it  ==  sum_G.end()) ? 0 :  g_it->first;
+	    gg_ord  = (gg_it == sum_GG.end()) ? 0 : gg_it->first;
 	    g1_prod = g1_fn;  active_ord = 1;
 	    while (g_ord || gg_ord) {
     
 	      if (g_ord == active_ord) { // support general key sequence
-		g_it->second[g](qoi,m) += g1_prod;  ++g_it;
-		g_ord = (g_it == sum_G.end()) ? 0 : g_it->first;
+		g_it->second[g](qoi,m) += g1_prod;
+		++g_it;  g_ord = (g_it == sum_G.end()) ? 0 : g_it->first;
 	      }
 	      if (gg_ord == active_ord) { // support general key sequence
 		RealSymMatrix& sum_GG_gq = gg_it->second[g][qoi];
@@ -561,6 +546,7 @@ accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
 		for (m2=0; m2<m; ++m2) {
 		  g2_index = m2 * numFunctions + qoi;
 		  if (asv[g2_index] & 1) {
+		    // regenerate g2_prod i/o storing off-diagonal combinations
 		    g2_prod = g2_fn = fn_vals[g2_index];
 		    for (m=1; m<active_ord; ++m)
 		      g2_prod *= g2_fn;
@@ -582,22 +568,21 @@ accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
 
 /** Single moment version used by offline-pilot and pilot-projection */
 void NonDMultilevBLUESampling::
-accumulate_blue_sums(RealMatrixArray&  sum_G, RealSymMatrix2DArray&  sum_GG,
+accumulate_blue_sums(RealMatrixArray&  sum_G, RealSymMatrix2DArray& sum_GG,
 		     SizetMatrixArray& num_G)//, SizetSymMatrix2DArray& num_GG)
 {
   using std::isfinite;  bool all_finite;
-  Real g1_fn, g2_fn;
-  IntRespMCIter r_it;
-  size_t g, num_groups = modelGroups.size(), m, num_models, qoi,
+  Real g1_fn;  IntRespMCIter r_it;
+  size_t g, num_groups = modelGroups.size(), m, m2, num_models, qoi,
     g1_index, g2_index;
 
   for (g=0; g<num_groups; ++g) {
-    RealMatrix&              sum_G_g =  sum_G[g];
-    RealSymMatrixArray&     sum_GG_g = sum_GG[g];
-    SizetMatrix&             num_G_g =  num_G[g];
+    RealMatrix&              sum_G_g =  sum_G[g]; // index is group_id
+    RealSymMatrixArray&     sum_GG_g = sum_GG[g]; // index is group_id
+    SizetMatrix&             num_G_g =  num_G[g]; // index is group_id
     //SizetSymMatrixArray&  num_GG_g = num_GG[g];
-    num_models                       = modelGroups[g].size(); // promote to map?
-    const IntResponseMap& resp_map_g = batchResponsesMap[group_id]; // ***
+    num_models                       = modelGroups[g].size();
+    const IntResponseMap& resp_map_g = batchResponsesMap[g];// index is group_id
 
     for (r_it=resp_map_g.begin(); r_it!=resp_map_g.end(); ++r_it) {
       const Response&   resp    = r_it->second;
@@ -645,103 +630,73 @@ accumulate_blue_sums(RealMatrixArray&  sum_G, RealSymMatrix2DArray&  sum_GG,
 }
 
 
-/* *** TO DO: ELEVATE SHARED CODE OR INHERIT FROM ACV SIMILAR TO GenACV
 void NonDMultilevBLUESampling::
-compute_LH_covariance(const RealMatrix& sum_L_shared, const RealVector& sum_H,
-		      const RealMatrix& sum_LH, const SizetArray& N_shared,
-		      RealMatrix& cov_LH)
+compute_GG_statistics(RealMatrixArray& sum_G_pilot,
+		      RealSymMatrix2DArray& sum_GG_pilot,
+		      SizetMatrixArray& N_shared_pilot, RealMatrixArray& var_G,
+		      RealSymMatrix2DArray& cov_GG)
 {
-  if (cov_LH.empty()) cov_LH.shapeUninitialized(numFunctions, numApprox);
-
-  size_t approx, qoi;
-  for (approx=0; approx<numApprox; ++approx) {
-    const Real* sum_L_shared_a = sum_L_shared[approx];
-    const Real*       sum_LH_a =       sum_LH[approx];
-    Real*             cov_LH_a =       cov_LH[approx];
-    for (qoi=0; qoi<numFunctions; ++qoi)
-      compute_covariance(sum_L_shared_a[qoi], sum_H[qoi], sum_LH_a[qoi],
-			 N_shared[qoi], cov_LH_a[qoi]);
-  }
-
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "cov_LH in compute_LH_covariance():\n" << cov_LH << std::endl;
+  if (mlmfIter == 0) // see var_G usage in compute_allocations()
+    compute_G_variance(sum_G_pilot, sum_GG_pilot, N_shared_pilot, var_G);
+  compute_GG_covariance(sum_G_pilot,//_baselineG,
+                        sum_GG_pilot,//N_GG_pilot,
+			N_shared_pilot, cov_GG);
+  //Cout << "var_G:\n" << var_G << "cov_GG:\n" << cov_GG;
 }
 
 
 void NonDMultilevBLUESampling::
-compute_LL_covariance(const RealMatrix& sum_L_shared,
-		      const RealSymMatrixArray& sum_LL,
-		      const SizetArray& N_shared,//SizetSymMatrixArray& N_LL,
-		      RealSymMatrixArray& cov_LL)
+compute_GG_covariance(const RealMatrixArray& sum_G,
+		      const RealSymMatrix2DArray& sum_GG,
+		      const SizetMatrixArray& N_G, RealSymMatrix2DArray& cov_GG)
 {
+  // *** TO DO ***
+  /*
   size_t qoi, approx, approx2;
-  if (cov_LL.empty()) {
-    cov_LL.resize(numFunctions);
+  if (cov_GG.empty()) {
+    cov_GG.resize(numFunctions);
     for (qoi=0; qoi<numFunctions; ++qoi)
-      cov_LL[qoi].shapeUninitialized(numApprox);
+      cov_GG[qoi].shapeUninitialized(numApprox);
   }
 
-  Real sum_L_aq;  size_t N_sh_q;
+  Real sum_G_aq;  size_t N_G_q;
   for (qoi=0; qoi<numFunctions; ++qoi) {
-    const RealSymMatrix& sum_LL_q = sum_LL[qoi];
-    RealSymMatrix&       cov_LL_q = cov_LL[qoi];
-    N_sh_q = N_shared[qoi]; //const SizetSymMatrix&  N_LL_q = N_LL[qoi];
+    const RealSymMatrix& sum_GG_q = sum_GG[qoi];
+    RealSymMatrix&       cov_GG_q = cov_GG[qoi];
+    N_G_q = N_G[qoi]; //const SizetSymMatrix&  N_GG_q = N_GG[qoi];
     for (approx=0; approx<numApprox; ++approx) {
-      sum_L_aq = sum_L_shared(qoi,approx);
+      sum_G_aq = sum_G(qoi,approx);
       for (approx2=0; approx2<=approx; ++approx2)
-	compute_covariance(sum_L_aq, sum_L_shared(qoi,approx2),
-			   sum_LL_q(approx,approx2), N_sh_q,
-			   cov_LL_q(approx,approx2));
+	compute_covariance(sum_G_aq, sum_G(qoi,approx2),
+			   sum_GG_q(approx,approx2), N_G_q,
+			   cov_GG_q(approx,approx2));
     }
   }
+  */
 
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "cov_LL in compute_LL_covariance():\n" << cov_LL << std::endl;
+    Cout << "cov_GG in compute_GG_covariance():\n" << cov_GG << std::endl;
 }
-*/
 
 
 void NonDMultilevBLUESampling::
-blue_raw_moments(IntRealMatrixMap& sum_L_baseline,
-		 IntRealMatrixMap& sum_L_refined,   IntRealVectorMap& sum_H,
-		 IntRealSymMatrixArrayMap& sum_LL,  IntRealMatrixMap& sum_LH,
-		 const RealVector& avg_eval_ratios, const SizetArray& N_shared,
-		 const Sizet2DArray& N_L_refined,   RealMatrix& H_raw_mom)
+compute_G_variance(const RealMatrixArray& sum_G,
+		   const RealSymMatrix2DArray& sum_GG,
+		   const SizetMatrixArray& num_G, RealMatrixArray& var_G)
 {
-  if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(numFunctions, 4);
+  // *** TO DO ***
 
-  precompute_blue_control(avg_eval_ratios, N_shared);
+  /*
+  if (var_G.empty()) var_G.shapeUninitialized(numFunctions, numApprox);
 
-  size_t approx, qoi, N_shared_q;  Real sum_H_mq;
-  RealVector beta(numApprox);
-  for (int mom=1; mom<=4; ++mom) {
-    RealMatrix&     sum_L_base_m = sum_L_baseline[mom];
-    RealMatrix&      sum_L_ref_m = sum_L_refined[mom];
-    RealVector&          sum_H_m =         sum_H[mom];
-    RealSymMatrixArray& sum_LL_m =        sum_LL[mom];
-    RealMatrix&         sum_LH_m =        sum_LH[mom];
-    if (outputLevel >= NORMAL_OUTPUT)
-      Cout << "Moment " << mom << " estimator:\n";
-    for (qoi=0; qoi<numFunctions; ++qoi) {
-      sum_H_mq = sum_H_m[qoi];  N_shared_q = N_shared[qoi];
-      compute_blue_control(sum_L_base_m, sum_H_mq, sum_LL_m[qoi], sum_LH_m,
-			   N_shared_q, mom, qoi, beta);
-      // *** TO DO: support shared_approx_increment() --> baselineL
-
-      Real& H_raw_mq = H_raw_mom(qoi, mom-1);
-      H_raw_mq = sum_H_mq / N_shared_q; // first term to be augmented
-      for (approx=0; approx<numApprox; ++approx) {
-	if (outputLevel >= NORMAL_OUTPUT)
-	  Cout << "   QoI " << qoi+1 << " Approx " << approx+1 << ": control "
-	       << "variate beta = " << std::setw(9) << beta[approx] << '\n';
-	// For ACV, shared counts are fixed at N_H for all approx
-	apply_control(sum_L_base_m(qoi,approx), N_shared_q,
-		      sum_L_ref_m(qoi,approx),  N_L_refined[approx][qoi],
-		      beta[approx], H_raw_mq);
-      }
-    }
+  size_t qoi, approx, num_G_q;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    num_G_q = num_G[qoi];
+    for (approx=0; approx<numApprox; ++approx)
+      compute_variance(sum_G(qoi,approx), sum_GG[qoi](approx,approx),
+		       num_G_q, var_G(qoi,approx));
   }
-  if (outputLevel >= NORMAL_OUTPUT) Cout << std::endl;
+  */
 }
 
 
@@ -795,6 +750,50 @@ update_projected_samples(const MFSolutionData& soln,
   delta_N_H_actual += actual_incr;  N_H_alloc += alloc_incr;
   increment_equivalent_cost(actual_incr, sequenceCost, numApprox,
 			    delta_equiv_hf);
+}
+
+
+void NonDMultilevBLUESampling::
+blue_raw_moments(IntRealMatrixMap& sum_L_baseline,
+		 IntRealMatrixMap& sum_L_refined,
+		 IntRealSymMatrixArrayMap& sum_LL,
+		 const RealVector& avg_eval_ratios, const SizetArray& N_shared,
+		 const Sizet2DArray& N_L_refined,   RealMatrix& H_raw_mom)
+{
+  if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(numFunctions, 4);
+
+  precompute_blue_control(avg_eval_ratios, N_shared);
+
+  size_t approx, qoi, N_shared_q;  Real sum_H_mq;
+  RealVector beta(numApprox);
+  for (int mom=1; mom<=4; ++mom) {
+    RealMatrix&     sum_L_base_m = sum_L_baseline[mom];
+    RealMatrix&      sum_L_ref_m = sum_L_refined[mom];
+    RealVector&          sum_H_m =         sum_H[mom];
+    RealSymMatrixArray& sum_LL_m =        sum_LL[mom];
+    RealMatrix&         sum_LH_m =        sum_LH[mom];
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "Moment " << mom << " estimator:\n";
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+      sum_H_mq = sum_H_m[qoi];  N_shared_q = N_shared[qoi];
+      compute_blue_control(sum_L_base_m, sum_H_mq, sum_LL_m[qoi], sum_LH_m,
+			   N_shared_q, mom, qoi, beta);
+      // *** TO DO: support shared_approx_increment() --> baselineL
+
+      Real& H_raw_mq = H_raw_mom(qoi, mom-1);
+      H_raw_mq = sum_H_mq / N_shared_q; // first term to be augmented
+      for (approx=0; approx<numApprox; ++approx) {
+	if (outputLevel >= NORMAL_OUTPUT)
+	  Cout << "   QoI " << qoi+1 << " Approx " << approx+1 << ": control "
+	       << "variate beta = " << std::setw(9) << beta[approx] << '\n';
+	// For ACV, shared counts are fixed at N_H for all approx
+	apply_control(sum_L_base_m(qoi,approx), N_shared_q,
+		      sum_L_ref_m(qoi,approx),  N_L_refined[approx][qoi],
+		      beta[approx], H_raw_mq);
+      }
+    }
+  }
+  if (outputLevel >= NORMAL_OUTPUT) Cout << std::endl;
 }
 */
 
