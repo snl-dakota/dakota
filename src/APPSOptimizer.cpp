@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       HOPSOptimizer
-//- Description: Wrapper class for HOPSPACK
-//- Owner:       Patty Hough
-//- Checked by:
-//- Version: $Id
 
 #include "ProblemDescDB.hpp"
 #include "APPSOptimizer.hpp"

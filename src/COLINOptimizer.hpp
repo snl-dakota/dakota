@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       COLINOptimizer
-//- Description: Declaration of wrapper class for COLIN solvers
-//- Owner:       Patty Hough/John Siirola/Brian Adams
-//- Checked by:
-//- Version: $Id: COLINOptimizer.hpp 6838 2010-06-24 18:52:06Z jdsiiro $
 
 #ifndef COLIN_OPTIMIZER_H
 #define COLIN_OPTIMIZER_H

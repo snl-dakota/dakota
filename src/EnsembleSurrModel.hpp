@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2023 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2023
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       EnsembleSurrModel
-//- Description: A model which manages a surrogate relationship between a low
-//-              fidelity approximate model and a high fidelity truth model.
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version: $Id: EnsembleSurrModel.hpp 7024 2010-10-16 01:24:42Z mseldre $
 
 #ifndef ENSEMBLE_SURR_MODEL_H
 #define ENSEMBLE_SURR_MODEL_H

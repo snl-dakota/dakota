@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDReliability
-//- Description: Base class for reliability methods within DAKOTA/UQ
-//- Owner:	 Mike Eldred
-//- Checked by:
-//- Version:
 
 #ifndef NOND_RELIABILITY_H
 #define NOND_RELIABILITY_H

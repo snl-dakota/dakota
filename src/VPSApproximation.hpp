@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 VPSApproximation
-//- Description: Class implementation of Voronoi Piecewise Surrogate Approximation
-//- Owner:       Mohamed Ebeida and Ahmad Rushdi
-//- Checked by:
-//- Version:
 
 #ifndef VPS_APPROXIMATION_H
 #define VPS_APPROXIMATION_H

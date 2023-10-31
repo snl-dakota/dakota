@@ -1,19 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       COLINApplication
-//- Description: Specialized application class derived from COLIN's 
-//-              application class which redefines virtual evaluation functions
-//-              with DAKOTA's response computation procedures
-//- Owner:       Patty Hough/John Siirola/Brian Adams
-//- Checked by:
-//- Version: $Id: COLINApplication.hpp 6829 2010-06-18 23:10:23Z pdhough $
 
 #include "DakotaModel.hpp"
 

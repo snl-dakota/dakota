@@ -1,18 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Description: A mock simulator main for testing Dakota in library mode.
-//-              Uses alternative instantiation syntax as described in the
-//-              library mode docs within the Developers Manual.
-//- Owner:       Mike Eldred
-//- Checked by:  Brian Adams
-//- Version: $Id: library_mode.cpp 5063 2008-06-05 02:08:06Z mseldre $
 
 /** \file library_mode.cpp
     \brief file containing a mock simulator main for testing Dakota in

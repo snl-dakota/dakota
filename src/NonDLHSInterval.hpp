@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDLHSInterval
-//- Description: Class for the Interval theory methods within DAKOTA/UQ
-//- Owner:	 Laura Swiler
-//- Checked by:
-//- Version:
 
 #ifndef NOND_LHS_INTERVAL_H
 #define NOND_LHS_INTERVAL_H

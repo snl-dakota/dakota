@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDGPImpSampling
-//- Description: Wrapper class for Gaussian Process Importance Sampling
-//- Owner:       Laura Swiler and Keith Dalbey
-//- Checked by:
-//- Version:
 
 #ifndef NOND_GP_IMP_SAMPLING_H
 #define NOND_GP_IMP_SAMPLING_H

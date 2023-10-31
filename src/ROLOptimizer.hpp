@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       ROLOptimizer
-//- Description: Wrapper class for ROL
-//- Owner:       Moe Khalil
-//- Checked by:  Patty Hough, Russell Hooper, Brian Adams
-//- Version: $Id$
 
 /** The ROLOptimizer class provides a wrapper for the Rapid
     Optimization Library (ROL), a Sandia-developed C++ library for

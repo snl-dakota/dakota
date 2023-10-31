@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        ApproximationInterface
-//- Description:  derived Interface class that manages approximate function
-//-               evaluations
-//- Owner:        Mike Eldred
-//- Version: $Id: ApproximationInterface.hpp 7034 2010-10-22 20:16:32Z mseldre $
 
 #ifndef APPROXIMATION_INTERFACE_H
 #define APPROXIMATION_INTERFACE_H

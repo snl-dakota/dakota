@@ -1,18 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Description: Monostate storage class for repository revision,
-//-              build time and date.
-//- 
-//- Owner:       Bill Bohnhoff
-//- Checked by:
-//- Version: $Id$
 
 #ifndef DAKOTA_BUILD_INFO_H
 #define DAKOTA_BUILD_INFO_H

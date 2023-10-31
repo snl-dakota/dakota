@@ -1,18 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       SeqHybridMetaIterator
-//- Description: A hybrid meta-iterator that sequentially invokes several
-//-              methods, initializing subsequent iterators with prior results
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version: $Id: SeqHybridMetaIterator.hpp 7029 2010-10-22 00:17:02Z mseldre $
 
 #ifndef SEQ_HYBRID_META_ITERATOR_H
 #define SEQ_HYBRID_META_ITERATOR_H

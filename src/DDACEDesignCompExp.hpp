@@ -1,18 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       DDACEDesignCompExp
-//- Description: This class uses Design and Analysis of Computer Experiments
-//-              (DACE) methods to sample the design space spanned by the
-//-              Model.  It returns all generated samples and their
-//-              corresponding responses as well as the best sample found.
-//- Owner:       Tony Giunta, Sandia National Laboratories
 
 
 #ifndef DDACE_DESIGN_COMP_EXP_H

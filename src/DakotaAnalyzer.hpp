@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        Analyzer
-//- Description:  Base class for NonD, DACE, and ParamStudy branches of the
-//-               iterator hierarchy.
-//- Owner:        Mike Eldred
-//- Version: $Id: DakotaAnalyzer.hpp 7035 2010-10-22 21:45:39Z mseldre $
 
 #ifndef DAKOTA_ANALYZER_H
 #define DAKOTA_ANALYZER_H

@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        DataMethod
-//- Description:
-//-
-//- Owner:        Mike Eldred
-//- Version: $Id: DataMethod.hpp 6984 2010-09-27 02:11:09Z lpswile $
 
 #ifndef DATA_METHOD_H
 #define DATA_METHOD_H

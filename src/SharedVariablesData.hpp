@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       SharedVariablesData
-//- Description: Encapsulation of data that can be shared among Variables
-//-              instances.
-//- Owner:       Mike Eldred
-//- Version: $Id: SharedVariablesData.hpp 6784 2010-05-18 21:10:35Z mseldre $
 
 #ifndef SHARED_VARIABLES_DATA_H
 #define SHARED_VARIABLES_DATA_H

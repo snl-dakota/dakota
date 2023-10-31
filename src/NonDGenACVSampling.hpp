@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDGenACVSampling
-//- Description: Class for generalized approximate control variate sampling
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version:
 
 #ifndef NOND_GEN_ACV_SAMPLING_H
 #define NOND_GEN_ACV_SAMPLING_H

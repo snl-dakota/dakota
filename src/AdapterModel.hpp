@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       AdapterModel
-//- Description: A model mapping variables into responses using call-backs.
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version: $Id: AdapterModel.hpp 7024 2010-10-16 01:24:42Z mseldre $
 
 #ifndef ADAPTER_MODEL_H
 #define ADAPTER_MODEL_H

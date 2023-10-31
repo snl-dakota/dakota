@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	     DigitalNet
-//- Description: Represents a digital net in base 2
-//- Owner:       Pieterjan Robbe
-//- Checked by:
-//- Version:
 
 #ifndef DIGITAL_NET_H
 #define DIGITAL_NET_H

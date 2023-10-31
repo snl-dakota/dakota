@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Description:  This file contains code related to data utilities that should
-//-               be compiled, rather than inlined in data_util.hpp.
-//-
-//- Owner:        Mike Eldred
-//- Version: $Id: dakota_data_util.cpp 7024 2010-10-16 01:24:42Z mseldre $
 
 #include "dakota_data_util.hpp"
 #include <boost/math/special_functions/round.hpp>

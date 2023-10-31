@@ -1,15 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       PSUADEDesignCompExp
-//- Description: This class wraps the PSUADE DACE library.
-//- Owner:       Brian M. Adams, Sandia National Laboratories
 
 
 #ifndef PSUADE_DESIGN_COMP_EXP_H

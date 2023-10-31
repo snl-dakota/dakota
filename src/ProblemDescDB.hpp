@@ -1,16 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        ProblemDescDB
-//- Description:  Base class for Dakota problem description database
-//- Owner:        Mike Eldred
-//- Version: $Id: ProblemDescDB.hpp 6798 2010-05-24 20:29:12Z wjbohnh $
 
 #ifndef PROBLEM_DESC_DB_H
 #define PROBLEM_DESC_DB_H

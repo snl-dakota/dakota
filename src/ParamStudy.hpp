@@ -1,18 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       ParamStudy
-//- Description: Parameter study driver program.  This class iterates a
-//-              Model object using simple rules, i.e. evaluating
-//-              a variety of specified points in the design space.   
-//- Owner:       Mike Eldred
-//- Version: $Id: ParamStudy.hpp 7024 2010-10-16 01:24:42Z mseldre $
 
 #ifndef PARAM_STUDY_H
 #define PARAM_STUDY_H

@@ -1,18 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       SurrBasedLocalMinimizer
-//- Description: A local surrogate-based algorithm which successively invokes
-//-              a minimizer on an approximate model within a trust region.
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version: $Id: SurrBasedLocalMinimizer.hpp 6879 2010-07-30 01:05:11Z mseldre $
 
 #ifndef SURR_BASED_LOCAL_MINIMIZER_H
 #define SURR_BASED_LOCAL_MINIMIZER_H

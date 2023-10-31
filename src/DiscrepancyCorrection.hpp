@@ -1,18 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       DiscrepancyCorrection
-//- Description: Utility for computing and applying corrections between
-//-              a truth model and an approximation.
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version: $Id: DiscrepancyCorrection.hpp 7024 2010-10-16 01:24:42Z mseldre $
 
 #ifndef DISCREPANCY_CORRECTION_H
 #define DISCREPANCY_CORRECTION_H

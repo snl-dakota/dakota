@@ -1,15 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       Graphics
-//- Description: This class encapsulates 2D (motif) and 3D (PLPLOT) graphics.
-//- Owner:       Brian Dennis, Sandia National Laboratories
 
 #ifndef DAKOTA_GRAPHICS_H
 #define DAKOTA_GRAPHICS_H

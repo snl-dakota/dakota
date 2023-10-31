@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        LeastSq
-//- Description:  Abstract base class to logically represent a variety
-//-               of DAKOTA least squares objects in a generic fashion.
-//- Owner:        Mike Eldred
-//- Version: $Id: DakotaLeastSq.hpp 6972 2010-09-17 22:18:50Z briadam $
 
 #ifndef DAKOTA_LEAST_SQ_H
 #define DAKOTA_LEAST_SQ_H
