@@ -126,12 +126,12 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
     if (onlineCost && mlmfIter == 0) recover_online_cost(sequenceCost);
     increment_equivalent_cost(delta_N_G, modelGroupCost,
 			      sequenceCost[numApprox], equivHFEvals);
-    compute_GG_statistics(sum_G[1], sum_GG[1], N_G_actual, var_G, covGG); // *** TO HERE ***
+    compute_GG_statistics(sum_G[1], sum_GG[1], N_G_actual, var_G, covGG);
 
     // compute the LF/HF evaluation ratios from shared samples and compute
     // ratio of MC and BLUE mean sq errors (which incorporates anticipated
     // variance reduction from application of avg_eval_ratios).
-    compute_allocations(var_G, blueSolnData); // *** TO DO: update delta_N_G
+    compute_allocations(var_G, blueSolnData); // *** TO HERE // *** TO DO: update delta_N_G
     ++mlmfIter;
   }
 
@@ -154,10 +154,9 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
   // Compute var G & covar GG from (oracle) pilot treated as "offline" cost
   // ------------------------------------------------------------
   RealMatrixArray sum_G_pilot, var_G; RealSymMatrix2DArray sum_GG_pilot;
-  SizetMatrixArray N_shared_pilot;
-  evaluate_pilot(sum_G_pilot, sum_GG_pilot, N_shared_pilot, false);
-  compute_GG_statistics(sum_G_pilot, sum_GG_pilot, N_shared_pilot,
-			var_G, covGG);
+  SizetMatrixArray N_pilot;
+  evaluate_pilot(sum_G_pilot, sum_GG_pilot, N_pilot, false);
+  compute_GG_statistics(sum_G_pilot, sum_GG_pilot, N_pilot, var_G, covGG);
 
   // -----------------------------------
   // Compute "online" sample increments:
@@ -640,6 +639,7 @@ compute_GG_statistics(RealMatrixArray& sum_G,
   if (mlmfIter == 0) // see var_G usage in compute_allocations()
     compute_G_variance(sum_G,  sum_GG, N_shared, var_G); // *** Review uses; just extract once from cov_GG ?
   compute_GG_covariance(sum_G, sum_GG, N_shared, cov_GG);
+
   //Cout << "var_G:\n" << var_G << "cov_GG:\n" << cov_GG;
 }
 
