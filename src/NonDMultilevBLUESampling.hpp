@@ -104,7 +104,7 @@ protected:
   void update_projected_group_samples(const MFSolutionData& soln,
 				      //const SizetArray& N_H_actual,
 				      //size_t& N_H_alloc,
-				      //SizetArray& delta_N_L_actual,
+				      SizetArray& delta_N_L_actual,
 				      Real& delta_equiv_hf);
 
   void print_computed_solution(std::ostream& s, const MFSolutionData& soln);

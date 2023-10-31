@@ -392,6 +392,9 @@ protected:
 				 unsigned short root,
 				 const UShortArray& approx_set,
 				 Real& equiv_hf_evals);
+  void increment_equivalent_cost(const SizetArray& delta_N_g,
+				 const RealVector& group_cost, Real hf_cost,
+				 Real& equiv_hf_evals);
 
   void increment_sample_range(SizetArray& N_L, size_t incr,
 			      const SizetArray& approx_sequence,
@@ -794,6 +797,21 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
     sum_cost += cost[approx_set[i]];
   size_t hf_index = cost.length() - 1;
   equiv_hf_evals += (Real)new_samp * sum_cost / cost[hf_index];
+}
+
+
+inline void NonDNonHierarchSampling::
+increment_equivalent_cost(const SizetArray& delta_N_g,
+			  const RealVector& group_cost, Real hf_cost,
+			  Real& equiv_hf_evals)
+{
+  // for group sampling, e.g. NonDMultilevBLUESampling::group_increment()
+
+  size_t g, group_len = group_cost.length();
+  Real sum = 0.;
+  for (g=0; g<group_len; ++g)
+    sum += (Real)delta_N_g[g] * group_cost[g];
+  equiv_hf_evals += sum / hf_cost;
 }
 
 

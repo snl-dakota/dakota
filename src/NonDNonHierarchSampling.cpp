@@ -70,7 +70,7 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
   size_t num_forms_resolutions;
   switch (methodName) {
   case MULTILEVEL_BLUE:
-  case APPROXIMATE_CONTROL_VARIATE:// *** TO DO: simplify heat_eq_genacv8 --> need to harden NLev slices et al.
+  //case APPROXIMATE_CONTROL_VARIATE:// *** TO DO: simplify heat_eq_genacv8 --> need to harden NLev slices et al.
     sequenceType = Pecos::FORM_RESOLUTION_ENUMERATION;
     secondaryIndex = SZ_MAX;
     configure_enumeration(num_forms_resolutions);
@@ -420,8 +420,8 @@ void NonDNonHierarchSampling::recover_online_cost(RealVector& seq_cost)
   Real cost, accum;  bool ml = (costMetadataIndices.size() == 1);
   using std::isfinite;
 
-  seq_cost.size(numGroups); // init to 0
-  for (step=0, cntr=0; step<numGroups; ++step) {
+  seq_cost.size(numApprox+1); // init to 0
+  for (step=0, cntr=0; step<=numApprox; ++step) {
     const SizetSizetPair& cost_mdi = (ml) ? costMetadataIndices[0] :
       costMetadataIndices[step];
     md_index = cntr + cost_mdi.first; // index into aggregated metadata
