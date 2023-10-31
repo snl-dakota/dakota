@@ -144,8 +144,8 @@ MPI:
 
 HDF5:
 
-- If compiling HDF5 from source, C++ support must be enabled
-  (``--enable-cxx`` option to configure), which is not the default when
+- If compiling HDF5 from source, C++ and HL support must be enabled
+  (``--enable-cxx`` and ``--enable-hl`` options to configure), which are not the defaults when
   building it from source.
 
 Trilinos:
