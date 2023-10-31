@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Description: The main DAKOTA program.
-//-              An ExecutableEnvironment is instantiated and executed.
-//- Owner:       Mike Eldred
-//- Checked by:  Brian Adams
-//- Version: $Id: main.cpp 6882 2010-07-30 20:56:49Z wjbohnh $
 
 /** \file main.cpp
     \brief file containing the main program for DAKOTA */

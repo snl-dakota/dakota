@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       NPSOLOptimizer
-//- Description: Wrapper class for NPSOL
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version: $Id: NPSOLOptimizer.hpp 6786 2010-05-19 21:39:57Z dmgay $
 
 #ifndef NPSOL_OPTIMIZER_H
 #define NPSOL_OPTIMIZER_H

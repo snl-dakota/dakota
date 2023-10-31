@@ -1,6 +1,6 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
@@ -246,6 +246,10 @@ void compute_col_means(RealMatrix& matrix, RealVector& avg_vals);
 void compute_col_stdevs(RealMatrix& matrix, RealVector& avg_vals, 
                         RealVector& std_devs);
 
+/// Computes variances of columns of matrix
+void compute_col_variances(RealMatrix& matrix, RealVector& avg_vals, 
+                        RealVector& variances);
+
 /// Removes column from matrix
 void remove_column(RealMatrix& matrix, int index);
 
@@ -256,6 +260,11 @@ void sort_vector( const RealVector & vec, RealVector & sort_vec,
 /// Sort incoming matrix columns with result and corresponding indices returned in passed arguments
 void sort_matrix_columns( const RealMatrix & mat, RealMatrix & sort_mat,
                           IntMatrix & indices );
+
+/// Reorders matrix columns according to the passed index vector. 
+void reorder_matrix_columns_from_index_vector( const RealMatrix& mat, 
+                                               RealMatrix& reordered_mat, 
+                                               const IntVector& indices );
 
 /// center the incoming matrix rows by their means, in-place
 void center_matrix_rows( RealMatrix & mat );

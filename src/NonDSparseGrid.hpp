@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDSparseGrid
-//- Description: Wrapper class for C++ code from Pecos/packages/VPISparseGrid
-//- Owner:       Mike Eldred
-//- Revised by:  
-//- Version:
 
 #ifndef NOND_SPARSE_GRID_H
 #define NOND_SPARSE_GRID_H

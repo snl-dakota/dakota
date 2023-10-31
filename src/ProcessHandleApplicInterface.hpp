@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        ProcessHandleApplicInterface
-//- Description:  Derived class for the case when analysis code simulators use
-//-               fork\exec\wait to provide the function evaluations
-//- Owner:        Mike Eldred
-//- Version: $Id: ProcessHandleApplicInterface.hpp 6492 2009-12-19 00:04:28Z briadam $
 
 #ifndef PROCESS_HANDLE_APPLIC_INTERFACE_H
 #define PROCESS_HANDLE_APPLIC_INTERFACE_H

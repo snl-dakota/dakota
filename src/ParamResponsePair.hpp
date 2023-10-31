@@ -1,18 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        ParamResponsePair
-//- Description:  A container for a variables object, a response object,
-//-               and interface and evaluation ids.
-//-
-//- Owner:        Mike Eldred
-//- Version: $Id
 
 #ifndef PARAM_RESPONSE_PAIR_H
 #define PARAM_RESPONSE_PAIR_H

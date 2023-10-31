@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDAdaptiveSampling
-//- Description: Implementation code for NonDAdaptiveSampling class
-//- Owner:       Dan Maljovec
-//- Checked by:  Brian Adams
-//- Version:
 
 //- Edited by: Mohamed S. Ebeida on 11/26/2012
 

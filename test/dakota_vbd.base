@@ -31,3 +31,15 @@ response_fn_1 Sobol' indices:
                       1.5092623811e-01  9.4977768750e-02 geuv_1
                       2.4415939924e-04  3.5559676620e-04 hpruv_1
                       5.3336880194e-01  5.8173883360e-01 hpruv_2
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
+response_fn_1 Sobol' indices:
+                                 Main
+                      4.6003274943e-01 uuv_1
+                      4.7403704956e-01 uuv_2
+Test Number 6 succeeded
+<<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
+response_fn_1 Sobol' indices:
+                                 Main
+                      4.6579220420e-01 uuv_1
+                      4.0590597112e-01 uuv_2

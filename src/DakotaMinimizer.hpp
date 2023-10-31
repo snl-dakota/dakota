@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        Minimizer
-//- Description:  Base class for the optimizer and least squares branches
-//-               of the iterator hierarchy.
-//- Owner:        Mike Eldred
-//- Version: $Id: DakotaMinimizer.hpp 7018 2010-10-12 02:25:22Z mseldre $
 
 #ifndef DAKOTA_MINIMIZER_H
 #define DAKOTA_MINIMIZER_H

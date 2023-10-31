@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        DataMethod
-//- Description:
-//-
-//- Owner:        Mike Eldred
-//- Version: $Id: DataMethod.hpp 6984 2010-09-27 02:11:09Z lpswile $
 
 #ifndef DATA_METHOD_H
 #define DATA_METHOD_H
@@ -97,9 +91,10 @@ enum { SUBMETHOD_DEFAULT=0, // no specification
        /// Type of hybrid meta-iterator:
        SUBMETHOD_COLLABORATIVE,   SUBMETHOD_EMBEDDED,   SUBMETHOD_SEQUENTIAL,
        // Sampling and DOE types:
-       SUBMETHOD_LHS,             SUBMETHOD_RANDOM,
-       SUBMETHOD_BOX_BEHNKEN,     SUBMETHOD_CENTRAL_COMPOSITE,
-       SUBMETHOD_GRID,            SUBMETHOD_OA_LHS,     SUBMETHOD_OAS,
+       SUBMETHOD_LHS,                      SUBMETHOD_RANDOM,
+       SUBMETHOD_LOW_DISCREPANCY_SAMPLING, SUBMETHOD_BOX_BEHNKEN,
+       SUBMETHOD_CENTRAL_COMPOSITE,        SUBMETHOD_GRID,
+       SUBMETHOD_OA_LHS,                   SUBMETHOD_OAS,
        // MFMC and ACV numerical solutions:
        SUBMETHOD_MFMC, SUBMETHOD_ACV_IS, SUBMETHOD_ACV_MF, SUBMETHOD_ACV_RD,
        // Bayesian inference algorithms:
@@ -124,7 +119,7 @@ enum { SUBMETHOD_DEFAULT=0, // no specification
        SUBMETHOD_ESTIMATE_ORDER };
 
 /// Sampling method for variance based decomposition (VBD)
-enum { VBD_MAHADEVAN=0, VBD_SALTELLI };
+enum { VBD_BINNED=0, VBD_PICK_AND_FREEZE };
 
 /// Graph recursion options for generalized ACV
 enum { NO_GRAPH_RECURSION=0, KL_GRAPH_RECURSION, PARTIAL_GRAPH_RECURSION,
@@ -892,6 +887,47 @@ public:
   Real wilksConfidenceLevel;
   /// Wilks sided interval type
   short wilksSidedInterval;
+
+  /// Flag to indicate rank-1 lattice sampling
+  bool rank1LatticeFlag;
+  /// Flag to indicate randomization of rank-1 lattice rule
+  bool noRandomShiftFlag;
+  /// (log2 of) maximum number of points of low-discrepancy generator
+  int log2MaxPoints;
+  /// Inline generating vector of the rank-1 lattice rule
+  IntVector generatingVector;
+  /// Name of file with generating vector
+  String generatingVectorFileName;
+  /// Predefined generating vectors
+  bool kuo;
+  bool cools_kuo_nuyens;
+  /// Ordering of the lattice points
+  bool naturalOrdering;
+  bool radicalInverseOrdering;
+
+  /// Flag to indicate digital net sampling
+  bool digitalNetFlag;
+  /// Flag to indicate randomization of digital net
+  bool noDigitalShiftFlag;
+  /// Flag to indicate scrambling of the digital net
+  bool noScramblingFlag;
+  /// Flag to indicate integers in generating matrices are stored with most significant bit first
+  bool mostSignificantBitFirst;
+  /// Flag to indicate integers in generating matrices are stored with least significant bit first
+  bool leastSignificantBitFirst;
+  /// Number of bits in each integer in the generating matrices
+  int numberOfBits;
+  /// Number of rows in the linear scramble matrix
+  int scrambleSize;
+  /// Inline generating matrices of the digital net
+  IntVector generatingMatrices;
+  /// Name of file with generating matrices
+  String generatingMatricesFileName;
+  /// Predefined generating matrices
+  bool joe_kuo;
+  bool sobol_order_2;
+  /// Ordering of the digital net points
+  bool grayCodeOrdering;
 
   /// flag indicating the calculation/output of standardized regression coefficients
   bool stdRegressionCoeffs;

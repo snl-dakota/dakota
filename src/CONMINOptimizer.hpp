@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       CONMINOptimizer
-//- Description: Wrapper class for CONMIN
-//- Owner:       Tony Giunta
-//- Checked by:
-//- Version: $Id: CONMINOptimizer.hpp 6972 2010-09-17 22:18:50Z briadam $
 
 #ifndef CONMIN_OPTIMIZER_H
 #define CONMIN_OPTIMIZER_H

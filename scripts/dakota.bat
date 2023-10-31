@@ -3,7 +3,7 @@ setlocal enabledelayedexpansion
  
 rem  _______________________________________________________________________
 rem
-rem  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+rem  Dakota: Explore and predict with confidence.
 rem  Copyright 2014-2023
 rem  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 rem  This software is distributed under the GNU Lesser General Public License.

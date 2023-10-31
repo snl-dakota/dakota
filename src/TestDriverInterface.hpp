@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        TestDriverInterface
-//- Description:  Direct interfaces to test drivers and "simple" linked
-//-               applications that don't require separate setup and tear-down
-//- Owner:        Mike Eldred, Brian Adams
-//- Version: $Id$
 
 #ifndef TEST_DRIVER_INTERFACE_H
 #define TEST_DRIVER_INTERFACE_H

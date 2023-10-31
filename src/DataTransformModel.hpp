@@ -1,18 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       DataTransformModel
-//- Description: Specialization of a RecastModel that manages the mapping from
-//-              a simulation model to residuals based on data differencing.
-//- Owner:       Brian Adams
-//- Checked by:
-//- Version: $Id$
 
 #ifndef DATA_TRANSFORM_MODEL_H
 #define DATA_TRANSFORM_MODEL_H

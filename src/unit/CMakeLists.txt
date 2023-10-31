@@ -1,6 +1,6 @@
 #  _______________________________________________________________________
 #
-#  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+#  Dakota: Explore and predict with confidence.
 #  Copyright 2014-2023
 #  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
@@ -18,6 +18,7 @@ set(dakota_unit_test_copied_files)
 # link with the whole dakota library (for now)
 #include_directories(${Dakota_SOURCE_DIR}/src)
 include_directories(${Dakota_INCLUDE_DIRS}/src) # include tpl directories 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 # TODO: make sure preprocessor defines agree with src/ and test/
 # (manage via variable at top-level)
 
@@ -29,10 +30,7 @@ link_directories(${Dakota_LIBRARY_DIRS})
 # ---
 
 # Demo: minimal Dakota unit test example using header-only Boost.Test
-dakota_add_unit_test(NAME dakota_min_unit
-  SOURCES min_unit_test.cpp
-  LINK_DAKOTA_LIBS
-  LINK_LIBS Boost::boost)
+add_subdirectory(dakota_min_unit)
 
 # Unit test: work directory utilities
 # Copy workdir unit_test helper script into the build tree at build time
@@ -49,144 +47,80 @@ dakota_copy_test_file(${CMAKE_CURRENT_SOURCE_DIR}/${ut_helper_script}
   ${script_dest_path}/${ut_helper_script} dakota_unit_test_copied_files)
 
 # Demo: BOOST_AUTO_TEST_CASE
-dakota_add_unit_test(NAME dakota_auto_unit
-  SOURCES auto_unit_test.cpp
-  LINK_DAKOTA_LIBS
-  # need team buy-in for Boost.Test library deps
-  #LINK_LIBS boost_unit_test_framework
-  LINK_LIBS Boost::boost)
+add_subdirectory(dakota_auto_unit)
 
 remove_definitions("-DHAVE_CONFIG_H")
 include_directories(${Teuchos_INCLUDE_DIRS})
 
-dakota_add_unit_test(NAME dakota_workdir_utils
-  SOURCES test_workdir_utils.cpp
-  LINK_DAKOTA_LIBS
-  LINK_LIBS Boost::boost)
+add_subdirectory(dakota_workdir_utils)
 
-dakota_add_unit_test(NAME dakota_bootstrap_util
-  SOURCES bootstrap_util_test.cpp
-  LINK_DAKOTA_LIBS
-  LINK_LIBS Boost::boost)
+add_subdirectory(dakota_bootstrap_util)
 
-dakota_add_unit_test(NAME dakota_field_covariance_utils
-  SOURCES test_field_covariance_utils.cpp
-  LINK_DAKOTA_LIBS
-  LINK_LIBS Boost::boost)
+add_subdirectory(dakota_field_covariance_utils)
 
-dakota_add_unit_test(NAME dakota_tolerance_intervals
-  SOURCES test_tolerance_intervals.cpp
-  LINK_DAKOTA_LIBS
-  LINK_LIBS Boost::boost)
+add_subdirectory(dakota_tolerance_intervals)
 
-dakota_add_unit_test(NAME dakota_leja_sampling
-  SOURCES leja_sampling.cpp
-  LINK_DAKOTA_LIBS
-  LINK_LIBS Boost::boost)
+add_subdirectory(dakota_leja_sampling)
 
-dakota_add_unit_test(NAME dakota_lhs_constants
-  SOURCES lhs_constants.cpp
-  LINK_DAKOTA_LIBS
-  LINK_LIBS Boost::boost)
+add_subdirectory(dakota_lhs_constants)
 
-dakota_add_unit_test(NAME dakota_redirect_regexs
-  SOURCES redirect_regexs.cpp
-  LINK_DAKOTA_LIBS
-  LINK_LIBS Boost::boost)
+add_subdirectory(dakota_redirect_regexs)
 
-dakota_add_unit_test(NAME dakota_response_io
-  SOURCES response_io.cpp
-  LINK_DAKOTA_LIBS
-  LINK_LIBS Boost::boost)
+add_subdirectory(dakota_response_io)
 
-dakota_add_unit_test(NAME dakota_file_reader
-  SOURCES file_reader.cpp
-  LINK_DAKOTA_LIBS
-  LINK_LIBS Boost::boost)
+add_subdirectory(dakota_file_reader)
 
 if (HAVE_DEMO_TPL)
-  dakota_add_unit_test(NAME dakota_opt_tpl_adapters
-    SOURCES opt_tpl_adapters.cpp
-    LINK_DAKOTA_LIBS
-    LINK_LIBS Boost::boost)
+  add_subdirectory(dakota_opt_tpl_adapters)
 endif()
 
-dakota_add_unit_test(NAME dakota_opt_api_core_data_xfers
-  SOURCES opt_api_core_data_xfers.cpp
-  LINK_DAKOTA_LIBS
-  LINK_LIBS Boost::boost)
+add_subdirectory(dakota_opt_api_core_data_xfers)
 
-dakota_add_unit_test(NAME dakota_opt_api_traits
-  SOURCES opt_api_traits.cpp
-  LINK_DAKOTA_LIBS
-  LINK_LIBS Boost::boost)
+add_subdirectory(dakota_opt_api_traits)
 
-dakota_add_unit_test(NAME dakota_wilks_sampling
-  SOURCES wilks_sampling.cpp
-  LINK_DAKOTA_LIBS
-  LINK_LIBS Boost::boost)
+add_subdirectory(dakota_wilks_sampling)
 
-dakota_add_unit_test(NAME dakota_covariance_reader
-  SOURCES covariance_reader.cpp
-  LINK_DAKOTA_LIBS
-  LINK_LIBS Boost::boost)
+add_subdirectory(dakota_covariance_reader)
 
-dakota_add_unit_test(NAME dakota_expt_data
-  SOURCES expt_data.cpp
-  LINK_DAKOTA_LIBS
-  LINK_LIBS Boost::boost)
+add_subdirectory(dakota_expt_data)
 
-dakota_add_unit_test(NAME dakota_expt_data_reader
-  SOURCES expt_data_reader.cpp
-  LINK_DAKOTA_LIBS
-  LINK_LIBS Boost::boost)
+add_subdirectory(dakota_expt_data_reader)
 
-dakota_add_unit_test(NAME dakota_data_conversions
-  SOURCES data_conversions.cpp
-  LINK_DAKOTA_LIBS
-  LINK_LIBS Boost::boost)
+add_subdirectory(dakota_data_conversions)
 
-dakota_add_unit_test(NAME dakota_stat_utils
-  SOURCES stat_utils.cpp
-  LINK_DAKOTA_LIBS
-  LINK_LIBS Boost::boost)
+add_subdirectory(dakota_stat_utils)
 
-dakota_add_unit_test(NAME dakota_restart
-  SOURCES restart_test.cpp
-  LINK_DAKOTA_LIBS
-  LINK_LIBS Boost::boost)
+add_subdirectory(dakota_restart)
 
-if (DAKOTA_MODULE_SURROGATES)
-  dakota_add_unit_test(NAME dakota_global_sa_metrics
-    SOURCES global_sa_metrics.cpp
-    LINK_DAKOTA_LIBS
-    LINK_LIBS Boost::boost)
-endif (DAKOTA_MODULE_SURROGATES)
+add_subdirectory(dakota_global_sa_metrics)
+
+add_subdirectory(dakota_nond_low_discrepancy_sampling_test)
+
+add_subdirectory(dakota_rank_1_lattice_test)
+
+add_subdirectory(dakota_digital_net_test)
 
 # Copy needed unit test auxiliary data files
 dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/expt_data_test_files"
   "${CMAKE_CURRENT_BINARY_DIR}/expt_data_test_files"
   dakota_unit_test_copied_files
   )
-dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/opt_tpl_test_files"
-  "${CMAKE_CURRENT_BINARY_DIR}/opt_tpl_test_files"
+dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/dakota_opt_tpl_rol_textbook/opt_tpl_test_files"
+  "${CMAKE_CURRENT_BINARY_DIR}/dakota_opt_tpl_rol_textbook/opt_tpl_test_files"
   dakota_unit_test_copied_files
   )
-dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/stat_util_test_files"
-  "${CMAKE_CURRENT_BINARY_DIR}/stat_util_test_files"
+dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/dakota_stat_utils/stat_util_test_files"
+  "${CMAKE_CURRENT_BINARY_DIR}/dakota_stat_utils/stat_util_test_files"
   dakota_unit_test_copied_files
   )
 FILE( COPY
-  "${CMAKE_CURRENT_SOURCE_DIR}/dakota_tabular_svd.dat"
-  DESTINATION "${CMAKE_CURRENT_BINARY_DIR}"
+  "${CMAKE_CURRENT_SOURCE_DIR}/dakota_surr_reduced_basis/dakota_tabular_svd.dat"
+  DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/dakota_surr_reduced_basis"
   )
 
 
 if (NOT DAKOTA_HAVE_MPI)
-  dakota_add_unit_test(NAME dakota_opt_tpl_api
-    SOURCES opt_tpl_api.cpp
-    LINK_DAKOTA_LIBS
-    LINK_LIBS Boost::boost)
+  add_subdirectory(dakota_opt_tpl_api)
 endif (NOT DAKOTA_HAVE_MPI)
 
 
@@ -212,41 +146,23 @@ endif()
 
 
 if (HAVE_ROL)
-  dakota_add_unit_test(NAME dakota_opt_tpl_rol_textbook
-    SOURCES opt_tpl_rol_test_textbook.cpp
-    LINK_DAKOTA_LIBS
-    LINK_LIBS Boost::boost)
+  add_subdirectory(dakota_opt_tpl_rol_textbook)
 
-  dakota_add_unit_test(NAME dakota_opt_tpl_rol_pbs
-    SOURCES opt_tpl_rol_test_rol_pbs.cpp
-    LINK_DAKOTA_LIBS
-    LINK_LIBS Boost::boost)
+  add_subdirectory(dakota_opt_tpl_rol_pbs)
 
-  dakota_add_unit_test(NAME dakota_rol_adapters
-    SOURCES rol_adapters.cpp
-    LINK_DAKOTA_LIBS
-    LINK_LIBS Boost::boost)
+  add_subdirectory(dakota_rol_adapters)
 
-  dakota_add_unit_test(NAME dakota_rol_integration
-    SOURCES rol_integration.cpp
-    LINK_DAKOTA_LIBS
-    LINK_LIBS Boost::boost)
+  add_subdirectory(dakota_rol_integration)
 endif (HAVE_ROL)
 
 
 if (DAKOTA_MODULE_SURROGATES)
-  dakota_add_unit_test(NAME dakota_surr_reduced_basis
-    SOURCES reduced_basis.cpp
-    LINK_DAKOTA_LIBS
-    LINK_LIBS dakota_surrogates Boost::boost)
+  add_subdirectory(dakota_surr_reduced_basis)
 
-  dakota_add_unit_test(NAME dakota_surr_gauss_proc
-    SOURCES gauss_proc_test.cpp
-    LINK_DAKOTA_LIBS
-    LINK_LIBS dakota_surrogates Boost::boost)
+  add_subdirectory(dakota_surr_gauss_proc)
 
-  dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/gauss_proc_test_files"
-    "${CMAKE_CURRENT_BINARY_DIR}/gauss_proc_test_files"
+  dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/dakota_surr_gauss_proc/gauss_proc_test_files"
+    "${CMAKE_CURRENT_BINARY_DIR}/dakota_surr_gauss_proc/gauss_proc_test_files"
     dakota_unit_test_copied_files)
 endif()
 
@@ -255,42 +171,27 @@ if(DAKOTA_HAVE_HDF5)
   include_directories(${HDF5_INCLUDE_DIRS})
   link_directories(${HDF5_LIBRARY_DIRS})
 
-  dakota_add_unit_test(NAME dakota_hdf5_serial
-    SOURCES hdf5_test_serial.cpp
-    LINK_DAKOTA_LIBS
-    LINK_LIBS Boost::boost)
+  add_subdirectory(dakota_hdf5_serial)
 
-  dakota_add_unit_test(NAME dakota_hdf5_utils
-    SOURCES hdf5_utils.cpp
-    LINK_DAKOTA_LIBS
-    LINK_LIBS Boost::boost)
+  add_subdirectory(dakota_hdf5_utils)
 
-  dakota_add_unit_test(NAME dakota_hdf5_resultsDB
-    SOURCES ResultsDBHDF5_Test.cpp
-    LINK_DAKOTA_LIBS
-    LINK_LIBS Boost::boost)
+  add_subdirectory(dakota_hdf5_resultsDB)
 endif()
 
 
 if (HAVE_MUQ)
-  dakota_add_unit_test(NAME dakota_muq_mcmc
-    SOURCES muq_mcmc.cpp
-    LINK_DAKOTA_LIBS
-    LINK_LIBS Boost::boost)
+  add_subdirectory(dakota_muq_mcmc)
 endif()
 
 
 if(DAKOTA_TEST_PREPROC)
-  dakota_add_unit_test(NAME dakota_preproc_tests
-    SOURCES test_preproc.cpp
-    LINK_DAKOTA_LIBS
-    LINK_LIBS Boost::filesystem Boost::boost)
-  dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/preproc_dakota.tmpl"
-    "${CMAKE_CURRENT_BINARY_DIR}/preproc_dakota.tmpl"
+  add_subdirectory(dakota_preproc_tests)
+  dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/dakota_preproc_tests/preproc_dakota.tmpl"
+    "${CMAKE_CURRENT_BINARY_DIR}/dakota_preproc_tests/preproc_dakota.tmpl"
     dakota_unit_test_copied_files
     )
   dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/preproc_dakota.base"
-    "${CMAKE_CURRENT_BINARY_DIR}/preproc_dakota.base"
+    "${CMAKE_CURRENT_BINARY_DIR}/dakota_preproc_tests/preproc_dakota.base"
     dakota_unit_test_copied_files
     )
 endif()

@@ -1,6 +1,6 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
@@ -45,6 +45,8 @@ class DiscrepancyCorrection;
 // -----------------------------------
 typedef double Real;
 typedef std::string String;
+typedef std::uint32_t UInt32;
+typedef std::uint64_t UInt64;
 
 // -----------------------------------
 // Numerical arrays (serial/parallel):
@@ -57,7 +59,10 @@ typedef Teuchos::SerialDenseVector<int, int>       IntVector;
 typedef Teuchos::SerialDenseMatrix<int, int>       IntMatrix;
 typedef Teuchos::SerialDenseVector<int, size_t>    SizetVector;
 typedef Teuchos::SerialDenseMatrix<int, size_t>    SizetMatrix;
+typedef Teuchos::SerialDenseVector<int, UInt32>    UInt32Vector;
+typedef Teuchos::SerialDenseVector<int, UInt64>    UInt64Vector;
 typedef Teuchos::SerialSymDenseMatrix<int, size_t> SizetSymMatrix;
+typedef Teuchos::SerialDenseMatrix<int, UInt64>    UInt64Matrix;
 
 //typedef Tpetra::CrsMatrix<int, Real>             RealSparseMatrix
 //typedef Tpetra::Vector<int, Real>                RealParallelVector

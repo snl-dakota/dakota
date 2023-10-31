@@ -1,15 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       DDACEDesignCompExp
-//- Description: Implementation code for the DDACEDesignCompExp class
-//- Owner:       Tony Giunta, Sandia National Laboratories
 
 #include "DDACEDesignCompExp.hpp"
 #include "dakota_system_defs.hpp"
@@ -118,7 +114,7 @@ void DDACEDesignCompExp::pre_run()
 
   // If VBD has been selected, generate a series of replicate parameter sets
   // (each of the size specified by the user) in order to compute VBD metrics.
-  if (vbdFlag)
+  if (vbdFlag && vbdViaSamplingMethod==VBD_PICK_AND_FREEZE)
     get_vbd_parameter_sets(iteratedModel, numSamples);
   else
     get_parameter_sets(iteratedModel);
@@ -170,6 +166,7 @@ void DDACEDesignCompExp::post_run(std::ostream& s)
                                                         numFunctions,
                                                         numContinuousVars + numDiscreteIntVars + numDiscreteRealVars,
                                                         numSamples,
+                                                        allSamples,
                                                         allResponses);
   }
   else {

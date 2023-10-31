@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       SNLLBase
-//- Description: Wrapper class for opt++
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version: $Id: SNLLBase.hpp 6720 2010-04-06 05:08:17Z wjbohnh $
 
 #ifndef SNLL_BASE_H
 #define SNLL_BASE_H

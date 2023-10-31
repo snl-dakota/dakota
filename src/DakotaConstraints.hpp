@@ -1,18 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       Dakota::Constraints
-//- Description: Container class of variables and bounds, each with fundamental
-//-              arrays (from specification) and derived arrays (for special 
-//-              cases).
-//- Owner:       Mike Eldred
-//- Version: $Id: DakotaConstraints.hpp 7024 2010-10-16 01:24:42Z mseldre $
 
 #ifndef DAKOTA_CONSTRAINTS_H
 #define DAKOTA_CONSTRAINTS_H

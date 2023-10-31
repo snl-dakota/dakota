@@ -11,6 +11,7 @@ import sys
 import shlex
 import shutil
 import random
+import json
 from textwrap import dedent
 from itertools import product
 
@@ -1107,6 +1108,53 @@ class misc(unittest.TestCase):
         """
     
         self.assertTrue(pyprepro.pyprepro('test nothing').strip() == 'test nothing')
+    
+    def test_data_exfiltration(self):
+    
+        tpl = dedent("""\
+            param1 = {param1}
+            param2 = {param2 = 20}
+            param3 = {param3 = 30}
+            
+            % with open('test_output/exfilt.json','wt') as fp:
+            %   fp.write(json_dumps(indent=1))
+            % end
+            """
+            )
+        with open('test_output/exfilt.inp','wt') as fp:
+            fp.write(tpl)
+        
+        # Test on the CLI
+        cmd = 'test_output/exfilt.inp test_output/exfilt.out --var "param1 = 1" --var "param2 = 2"'
+        pyprepro._pyprepro_cli(shsplit(cmd))
+        
+        self.assertTrue(read('test_output/exfilt.out').strip() == \
+                        'param1 = 1\nparam2 = 2\nparam3 = 30')
+        
+        with open('test_output/exfilt.json') as fp:
+            exfilt = json.load(fp)            
+        
+        # These should be there but we don't care about the value
+        self.assertTrue(exfilt.pop('fp',None))
+        
+        # Make sure it got written
+        self.assertTrue(exfilt == {'param1': 1, 'param2': 2, 'param3': 30})
+        
+        ## Test the module
+        exfilt2 = pyprepro.render(
+            tpl,
+            immutable_env=dict(param1=1,param2=2),
+        )
+        self.assertTrue(exfilt2.pop('fp',None))
+        self.assertTrue(exfilt2 == {'param1': 1, 'param2': 2, 'param3': 30})
+        assert not isinstance(exfilt2,ImmutableValDict)
+        
+        exfilt3 = pyprepro.render(
+            tpl,
+            immutable_env=dict(param1=1,param2=2),
+            keep_immutable=True,
+        )
+        assert isinstance(exfilt3,ImmutableValDict)
     
 class error_capture(unittest.TestCase):
     def test_name(self):

@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDLHSSampling
-//- Description: Implementation code for NonDLHSSampling class
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version:
 
 #include "NonDLHSSampling.hpp"
 #include "DakotaResponse.hpp"
@@ -68,11 +62,12 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, Model& model):
   if (model.primary_fn_type() == GENERIC_FNS)
     numResponseFunctions = model.num_primary_fns();
 
-  if ((vbdFlag               == true) &&
-      (numDiscreteStringVars >  0   )) {
-    Cerr << "\nError: discrete string variables are not supported for "
-         << "variance based decomposition.\n";
-    abort_handler(METHOD_ERROR);
+  if ((vbdFlag == true) && 
+      (vbdViaSamplingMethod==VBD_BINNED ) &&
+      (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars)){
+        Cerr << "\nError: discrete variables are not supported for "
+        << "binned variance based decomposition.\n";
+        abort_handler(METHOD_ERROR); 
   }
 
   if (dOptimal) {
@@ -135,9 +130,7 @@ NonDLHSSampling(Model& model, unsigned short sample_type, int samples,
   NonDSampling(RANDOM_SAMPLING, model, sample_type, samples, seed, rng,
 	       vary_pattern, sampling_vars_mode),
   numResponseFunctions(numFunctions), dOptimal(false), oversampleRatio(0.0),
-  pcaFlag(false),
-  vbdViaSamplingMethod(VBD_MAHADEVAN),
-  vbdViaSamplingNumBins(-1)
+  pcaFlag(false)
 { }
 
 
@@ -156,9 +149,7 @@ NonDLHSSampling(unsigned short sample_type, int samples, int seed,
 		const RealVector& upper_bnds): 
   NonDSampling(sample_type, samples, seed, rng, lower_bnds, upper_bnds),
   numResponseFunctions(0), dOptimal(false), oversampleRatio(0.0), 
-  pcaFlag(false),
-  vbdViaSamplingMethod(VBD_MAHADEVAN),
-  vbdViaSamplingNumBins(-1)
+  pcaFlag(false)
 {
   // since there will be no late data updates to capture in this case
   // (no sampling_reset()), go ahead and get the parameter sets.
@@ -180,9 +171,7 @@ NonDLHSSampling(unsigned short sample_type, int samples, int seed,
   NonDSampling(sample_type, samples, seed, rng, means, std_devs,
 	       lower_bnds, upper_bnds, correl),
   numResponseFunctions(0), dOptimal(false), oversampleRatio(0.0),
-  pcaFlag(false),
-  vbdViaSamplingMethod(VBD_MAHADEVAN),
-  vbdViaSamplingNumBins(-1)
+  pcaFlag(false)
 {
   // since there will be no late data updates to capture in this case
   // (no sampling_reset()), go ahead and get the parameter sets.
@@ -223,7 +212,9 @@ void NonDLHSSampling::pre_run()
   // detect duplicates); probably this means this pre_run code
   // migrates to another get_parameter_sets variant that VBD can call
 
-  if (vbdFlag) {
+  // Only need to create the pick-freeze samples for the 
+  // Saltelli method.
+  if (vbdFlag && vbdViaSamplingMethod==VBD_PICK_AND_FREEZE ) {
     get_vbd_parameter_sets(iteratedModel, numSamples);
     return;
   }
@@ -743,8 +734,9 @@ void NonDLHSSampling::post_run(std::ostream& s)
       nonDSampCorr.compute_vbd_stats_via_sampling(vbdViaSamplingMethod,
                                                   vbdViaSamplingNumBins,
                                                   numFunctions,
-                                                  numContinuousVars + numDiscreteIntVars + numDiscreteRealVars,
+                                                  numContinuousVars + numDiscreteIntVars + numDiscreteRealVars + numDiscreteStringVars,
                                                   numSamples,
+                                                  allSamples,
                                                   allResponses);
       nonDSampCorr.archive_sobol_indices(run_identifier(),
                                          resultsDB,

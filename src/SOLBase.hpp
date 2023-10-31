@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       SOLBase
-//- Description: Wrapper class for NPSOL
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version: $Id: SOLBase.hpp 7004 2010-10-04 17:55:00Z wjbohnh $
 
 #ifndef SOL_BASE_H
 #define SOL_BASE_H

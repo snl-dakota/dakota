@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       RichExtrapVerification
-//- Description: Class for Richardson extrapolation for code and solution
-//-              verification.   
-//- Owner:       Mike Eldred/Ben Pax
-//- Version: $Id: RichExtrapVerification.hpp 6972 2010-09-17 22:18:50Z briadam $
 
 #ifndef RICH_EXTRAP_VERIFICATION_H
 #define RICH_EXTRAP_VERIFICATION_H

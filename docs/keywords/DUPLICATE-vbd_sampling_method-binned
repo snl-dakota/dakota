@@ -1,0 +1,48 @@
+Blurb::
+Use the binned Sobol' main effect index computation
+Description::
+Uses unstructured input-output samples to estimate
+main effect indices. It cannot compute total indices.
+
+**Default Behavior**
+
+**Expected Output**
+Sensitivity indices for main effects *only* will be reported.  
+Main effects (roughly) represent the percent contribution of 
+each individual variable to the variance in the model response. 
+
+**Usage Tips**
+
+
+**Additional Discussion**
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method,
+      sampling
+        sample_type lhs
+        samples = 100
+        variance_based_decomp
+          vbd_sampling_method binned
+
+Theory::
+The binned approach to computing Sobol' main effect indices is 
+introduced in :cite:p:`Li16`. As opposed to pick-and-freeze 
+approaches like :cite:p:`Sal04`, it does not require a specific
+sampling structure. Given a set of randomly-generated input-output 
+samples, it computes the main effect index by binning samples, 
+computing a sample statistic for each bin, then computing another
+sample statistic over the bins. 
+
+Two algorithms are detailed in :cite:p:`Li16`: computing a 
+sample expectation for each bin, then a sample variance, or 
+computing a sample variance for each bin, then an expectation.
+The second algorithm is implemented in Dakota.
+
+Faq::
+
+See_Also::

@@ -1,0 +1,69 @@
+Blurb::
+Natural ordering of the points of this digital net
+
+Description::
+Returns the points in natural order.
+
+When the :dakkw:`natural` ordering of the points is used, it is implicitly assumed that the user will 
+only request a number of points that is a power of 2. Failing to do so will result in a set of points 
+for which one or more dimensions are not uniformly covered, resulting in bad low-discrepancy properties, 
+and ultimately bad performance of the method that uses these points. It is recommended to not use this option unless you know what you're doing.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    environment
+      tabular_data
+        tabular_data_file = 'samples.dat'
+        freeform
+
+    method
+      sampling
+        samples 32
+        sample_type
+          low_discrepancy
+            digital_net
+              generating_matrices inline 
+                1 2 4 8 16
+                # this encodes the generating matrix
+                # 1 0 0 0 0
+                # 0 1 0 0 0
+                # 0 0 1 0 0 
+                # 0 0 0 1 0
+                # 0 0 0 0 1
+                1 3 5 15 17
+                # this encodes the generating matrix
+                # 1 1 1 1 1
+                # 0 1 0 1 0
+                # 0 0 1 1 0
+                # 0 0 0 1 0
+                # 0 0 0 0 1
+              m_max 5
+              t_max 5
+              no_scrambling
+              no_digital_shift
+              ordering natural # this is fine since we generate 2^5 = 32 samples
+
+    variables
+      uniform_uncertain = 2
+        lower_bounds 0.0 0.0
+        upper_bounds 1.0 1.0
+
+    interface
+      analysis_drivers = 'genz'
+      analysis_components = 'cp1'
+      direct
+
+    responses
+      response_functions = 1
+      no_gradients
+      no_hessians
+
+Theory::
+
+Faq::
+
+See_Also::

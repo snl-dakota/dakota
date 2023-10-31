@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Utility:      Dakota Windows headers
-//- Description:  Include file to compartmentalize Windows includes and
-//-               definitions for consistency across build
-//- Owner:        Brian Adams
-//- Version: $Id$
 
 #ifndef DAKOTA_UTIL_WINDOWS_HPP
 #define DAKOTA_UTIL_WINDOWS_HPP

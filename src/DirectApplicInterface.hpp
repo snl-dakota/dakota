@@ -1,18 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        DirectApplicInterface
-//- Description:  Derived interface class managing cases where analysis code
-//-               simulators are linked into the code and may be invoked
-//-               directly. This manages parts common to all direct simulators.
-//- Owner:        Mike Eldred, Brian Adams
-//- Version: $Id: DirectApplicInterface.hpp 7024 2010-10-16 01:24:42Z mseldre $
 
 #ifndef DIRECT_APPLIC_INTERFACE_H
 #define DIRECT_APPLIC_INTERFACE_H

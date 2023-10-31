@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       NonlinearCGOptimizer
-//- Description: Simple nonlinear conjugate gradient solver w/ line search
-//- Owner:       Brian Adams
-//- Checked by:  
-//- Version: $Id$
 
 #ifndef NONLINEARCGOPTIMIZER_H
 #define NONLINEARCGOPTIMIZER_H

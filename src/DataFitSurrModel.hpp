@@ -1,19 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       DataFitSurrModel
-//- Description: A model which manages a surrogate relationship between a
-//-              data fit approximation (local, multipoint, or global) and
-//-              a truth model.
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version: $Id: DataFitSurrModel.hpp 7029 2010-10-22 00:17:02Z mseldre $
 
 #ifndef DATA_FIT_SURR_MODEL_H
 #define DATA_FIT_SURR_MODEL_H

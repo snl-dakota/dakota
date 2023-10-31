@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       EmbedHybridMetaIterator
-//- Description: A meta-iterator for tightly-coupled global-local hybrids
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version: $Id: EmbedHybridMetaIterator.hpp 6492 2009-12-19 00:04:28Z briadam $
 
 #ifndef EMBED_HYBRID_META_ITERATOR_H
 #define EMBED_HYBRID_META_ITERATOR_H

@@ -1,16 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        UsageTracker
-//- Description:  Class declaration for usage tracker wrapper class
-//-               
-//- Owner:        Brian Adams, Sandia National Laboratories
 
 #ifndef USAGE_TRACKER_H
 #define USAGE_TRACKER_H

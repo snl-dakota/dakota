@@ -1,30 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class: GetLongOpt
-//- Description: GetLongOpt manages the definition and parsing of 
-//- long options. Command line options can be abbreviated as long as there 
-//- is no ambiguity. If an option requires a value, the value should
-//- be separated from the option either by whitespace or an "=".
-//- 
-//- Other features: $
-//- o	GetLongOpt can be used to parse options given through environments.$
-//- o	GetLongOpt provides a usage function to print usage.$
-//- o	Flags & options with optional or mandatory values are supported.$
-//- o	The option marker ('-' in Unix) can be customized.$
-//- o	Parsing of command line returns optind (see getopt(3)).$
-//- o	Descriptive error messages.$
-//-
-//- Author: S Manoharan. Advanced Computer Research Institute. Lyon. France
-//- Owner: Bill Bohnhoff
-//- Checked By:
-//- Version $Id: CommandLineHandler.hpp 6710 2010-04-01 22:20:54Z briadam $
 
 #ifndef GETLONGOPT_H
 #define GETLONGOPT_H

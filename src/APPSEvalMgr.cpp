@@ -1,20 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       APPSEvalMgr
-//- Description: Specialized evaluation manager class derived from
-//-              APPSPACK's Executor class which redefines virtual
-//-              evaluation functions with DAKOTA's response
-//-              computation procedures
-//- Owner:       Patty Hough
-//- Checked by:
-//- Version: $Id$
 
 #include "APPSEvalMgr.hpp"
 #include "DakotaOptimizer.hpp"

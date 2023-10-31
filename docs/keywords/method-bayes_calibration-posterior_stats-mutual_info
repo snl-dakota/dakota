@@ -21,8 +21,8 @@ The mutual information is calculated using a :math:`k` -nearest neighbor
 approximation algorithm. As of Dakota 6.6, there are two such algorithms
 available, both of which are derived in :cite:p:`Kra04` . By default, Dakota uses
 the first such algorithm; the second may be selected by specifying the keyword
-``ksg2``. Further details can be found in the Dakota Theory Manual
-:cite:p:`TheoMan` .
+``ksg2``. Further details can be found in the :ref:`theory section <uq:bayes_experimental_design>`
+section of the User's Guide.
 
 *Expected Output*
 

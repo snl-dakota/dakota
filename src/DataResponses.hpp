@@ -1,18 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        DataResponses
-//- Description:
-//-
-//-
-//- Owner:        Mike Eldred
-//- Version: $Id: DataResponses.hpp 6731 2010-04-16 03:42:16Z wjbohnh $
 
 #ifndef DATA_RESPONSES_H 
 #define DATA_RESPONSES_H 

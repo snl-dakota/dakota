@@ -6,12 +6,6 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:       EffGlobalMinimizer
-//- Description: Implementation code for the EffGlobalMinimizer class
-//- Owner:       Barron J Bichon, Vanderbilt University
-//- Checked by:
-//- Version:
-
 //- Edited by:   Anh Tran in 2020 for parallelization
 
 #include "EffGlobalMinimizer.hpp"

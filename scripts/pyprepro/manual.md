@@ -603,6 +603,31 @@ returns:
     45
     45
 
+## JSON Dumps
+
+There is the function `json_dumps()` which will return a JSON string of all variables. Note that this does include modules and function but they will have a string result like `**Object of type module is not JSON serializable**` or `**Object of type function is not JSON serializable**` and can be ignored. It can also take most `json.dumps` keyword arguments except 'default'
+
+Example:
+
+```
+param1 = {param1 = 10}
+
+% with open('myparams.json','wt') as fp:
+%   fp.write(json_dumps(indent=1))
+% end
+```
+
+will output
+
+`myparams.json`:
+
+    {
+     "param1": 10,
+     "fp": "**Object of type TextIOWrapper is not JSON serializable**"
+    }
+    
+Note that you can also get a dictionary of all paramater when using the Python function by setting `return_env=True`
+
 ## Other Functions
 
 Other functions can be imported. All of Python is available. For example, to get a random number, you can do:

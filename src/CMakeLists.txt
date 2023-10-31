@@ -1,6 +1,6 @@
 #  _______________________________________________________________________
 #
-#  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+#  Dakota: Explore and predict with confidence.
 #  Copyright 2014-2023
 #  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
@@ -506,10 +506,11 @@ set(iterator_src DakotaIterator.cpp DakotaAnalyzer.cpp DakotaPStudyDACE.cpp
     NonDMultilevelPolynomialChaos.cpp NonDMultilevelStochCollocation.cpp
     NonDSurrogateExpansion.cpp NonDCalibration.cpp NonDBayesCalibration.cpp
     NonDWASABIBayesCalibration.cpp NonDSampling.cpp NonDLHSSampling.cpp
-    NonDEnsembleSampling.cpp NonDHierarchSampling.cpp
-    NonDMultilevelSampling.cpp NonDMultilevControlVarSampling.cpp
-    NonDNonHierarchSampling.cpp NonDMultifidelitySampling.cpp
-    NonDACVSampling.cpp NonDGenACVSampling.cpp NonDMultilevBLUESampling.cpp
+    NonDLowDiscrepancySampling.cpp NonDEnsembleSampling.cpp
+    NonDHierarchSampling.cpp NonDMultilevelSampling.cpp
+    NonDMultilevControlVarSampling.cpp NonDNonHierarchSampling.cpp
+    NonDMultifidelitySampling.cpp NonDACVSampling.cpp
+    NonDGenACVSampling.cpp NonDMultilevBLUESampling.cpp
     NonDAdaptImpSampling.cpp NonDGPImpSampling.cpp
     NonDPOFDarts.cpp NonDRKDDarts.cpp
     DakotaMinimizer.cpp DakotaOptimizer.cpp
@@ -518,7 +519,8 @@ set(iterator_src DakotaIterator.cpp DakotaAnalyzer.cpp DakotaPStudyDACE.cpp
     HierarchSurrBasedLocalMinimizer.cpp DataFitSurrBasedLocalMinimizer.cpp
     SurrBasedGlobalMinimizer.cpp EffGlobalMinimizer.cpp OptDartsOptimizer.cpp
     MetaIterator.cpp ConcurrentMetaIterator.cpp SeqHybridMetaIterator.cpp
-    EmbedHybridMetaIterator.cpp CollabHybridMetaIterator.cpp
+    EmbedHybridMetaIterator.cpp CollabHybridMetaIterator.cpp Rank1Lattice.cpp
+    DigitalNet.cpp low_discrepancy_data.cpp
 )
 set(Dakota_src_fortran lawson_hanson1.f)
 if(DAKOTA_F90)
@@ -766,8 +768,7 @@ if(HAVE_MUQ)
   # BMA TODO: Make sure the exports and install rules work properly
   add_definitions("-DHAVE_MUQ")
   set(iterator_src ${iterator_src} NonDMUQBayesCalibration.cpp)
-  list(APPEND DAKOTA_INCDIRS ${Dakota_BINARY_DIR}/packages/external/muq2/include)
-  list(APPEND DAKOTA_LIBDIRS ${Dakota_BINARY_DIR}/packages/external/muq2/lib)
+  list(APPEND DAKOTA_INCDIRS ${Dakota_SOURCE_DIR}/packages/external/muq2)
   list(APPEND DAKOTA_PKG_LIBS muqUtilities muqModeling muqSamplingAlgorithms)
 endif()
 
@@ -932,7 +933,7 @@ endif()
 
 # Force MUQ to build before Dakota source needing it:
 if(HAVE_MUQ)
-  add_dependencies(dakota_src MUQ)
+  add_dependencies(dakota_src muqModeling)
 endif()
 
 #--- Add Dakota executables, with custom commands and properties

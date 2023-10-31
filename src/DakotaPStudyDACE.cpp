@@ -1,15 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       PStudyDACE
-//- Description: Implementation code for the PStudyDACE class
-//- Owner:       Mike Eldred
 
 #include <random>
 
@@ -51,9 +47,7 @@ PStudyDACE::PStudyDACE(ProblemDescDB& problem_db, Model& model):
 
 
 PStudyDACE::PStudyDACE(unsigned short method_name, Model& model):
-  Analyzer(method_name, model), volQualityFlag(false),
-  vbdViaSamplingMethod(VBD_MAHADEVAN),
-  vbdViaSamplingNumBins(-1)
+  Analyzer(method_name, model), volQualityFlag(false)
 {
   // Check for vendor numerical gradients (manage_asv will not work properly)
   if (iteratedModel.gradient_type() == "numerical" &&

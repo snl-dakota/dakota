@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Dakota: Explore and predict with confidence.
     Copyright 2014-2023
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDDREAMBayesCalibration
-//- Description: Derived class for DREAM-based Bayesian inference
-//- Owner:       Brian Adams
-//- Checked by:
-//- Version:
 
 #ifndef NOND_DREAM_BAYES_CALIBRATION_H
 #define NOND_DREAM_BAYES_CALIBRATION_H
