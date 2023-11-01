@@ -1,0 +1,58 @@
+.. _releasenotes-gui-618:
+
+"""""""""""""""""""""""""""""""""""""""""""
+Version 6.19 - Poisonous Pipeline (2023/11)
+"""""""""""""""""""""""""""""""""""""""""""
+
+.. image:: img/DakotaGui_PoisonousPipeline.png
+   :alt: Dakota GUI 6.19 splash screen
+
+Version 6.19 of the Dakota GUI contains several exciting new features, including the ability to selectively restart individual Dakota evaluations.
+
+**Restart Capabilities**
+
+- The Dakota GUI now features a new wizard called the "New Lazy Driver Wizard." The concept behind a lazy driver is to allow Dakota to "set and forget"
+  its individual evaluations. A lazy driver performs no calculations of its own, but simply wraps itself around the actual analysis driver which performs
+  all the work. With a lazy driver, once Dakota has spun up separate analysis driver processes for each evaluation, Dakota will exit early,
+  returning NaN values in place of the final evaluations. At a later stage, the user is able to re-run Dakota, and, thanks to the logic built in to the
+  lazy analysis driver, each previously calculated evaluation will be picked up without re-running the analysis driver calculations required to arrive
+  at that value. The most beneficial use case for lazy analysis drivers is for evaluations that take an exceedingly long time to run. Lazy analysis drivers
+  can also be used in conjunction with remote job submission, if remote high-performance computers must be used to complete the calculations. The Dakota GUI
+  supports lazy analysis drivers written in Python, Bash, or IWF (Next-Gen Workflow) format.
+- In addition to the New Lazy Driver Wizard, the Dakota GUI is now equipped with a context menu that allows the user to re-run individual evaluations (but
+  only for studies that use lazy drivers). Imagine a study during which 49 out of 50 evaluations returned successfuly, but 1 evaluation mysteriously failed.
+  With the new "Re-Run" context menu option, the user can opt to individually re-run that single evaluation without disrupting the other previously calculated
+  evaluation results.
+
+**Enhancements to the Dakota Visual Editor**
+
+- The Dakota Visual Editor is now equipped with a context menu for adding, deleting, and re-organizing top-level blocks in a Dakota study. This was a key
+  feature that was previously missing from the Visual Editor, and its absence would have prevented a Dakota user from remaining in the Visual Editor to perform all of their 
+  edits. Now, top-level blocks can be managed without switching contexts to either the classic text editor or the expandable tree in the Project Navigator.
+- All of the remaining methods have been added to the Dakota Visual Editor. We have performed extensive testing on each method editor, but please contact the Dakota
+  development team if you observe any problematic behavior with any of the new method editors.
+- To support the breadth of Dakota methods now available in the Visual Editor, the method selection dropdown has been replaced with a Google-esque search bar that
+  allows the user to partially type in the method name and get matching search results.
+
+**Enhancements to New Dakota Study Wizard**
+
+- The final page of the New Dakota Study wizard (which allows for interface block configuration) has been significantly refactored. Most importantly, failure capture
+  options are now configurable on this page of the wizard.
+- The New Dakota Study wizard now accepts the possibility of 0 responses as a valid finishing condition for the wizard.
+- The New Dakota Study wizard now opens the newly-created input file as soon as the wizard is closed.
+	
+**New Next-Gen Workflow Nodes**
+
+- New displayPlot node: This node will automatically open a stream of Chartreuse-generated plot data for display in the main editor area of the GUI. This node circumvents
+  the need to use a "file" node to save the plot data and then an "openFile" node to open the saved plot.
+- New PlotInputGather node: This node allows you to iterate over a folder of completed evaluation results and gather the data for plotting. This node circumvents the need
+  to use a Dakota-generated tabular data file and/or Dakota-generated HDF5 file. Note that this node presumes the evaluation data was generated using Next-Gen Workflow.
+- New LocalDispatchAndCollect node: This node works exactly like the DispatchAndCollect node, except that it is equipped to do "set-and-forget" analysis driver
+  data collection without sending the data to a remote high-performance computer. This node is used in conjunction with the New Lazy Driver wizard if you opt to generated
+  an NGW-based lazy driver.
+	
+**Misc.**
+
+- Additional miscellaneous enhancements have now been made to the DispatchAndCollect node in Next-Gen Workflow.
+- Bugfix: An open HDF5 file is now automatically closed when the tree view is collapsed in the Project Navigator. Previously, dangling "open" files were causing problems
+  if the Dakota GUI user wished to later delete the HDF5 file.

@@ -40,6 +40,7 @@ Wizards
    wizards/NewWorkflowDriver
    wizards/NewDakotaStudy  
    wizards/NewDakotaWrapperWorkflow
+   wizards/NewLazyDriver
 
 ==========================
 Editing Dakota Input Files
