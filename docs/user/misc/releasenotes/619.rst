@@ -4,17 +4,17 @@
 Version 6.19 (2023/11/15)
 """"""""""""""""""""""""""""""""""""""
 
-**Highlight: New sampling-based method for main effects**
+**Highlight: New sampling-based method for Sobol' main effects**
 
 Based on :cite:p:`Li16`, Dakota can now obtain estimates
-of first order Sobol indices (main effects) from `sampling`
-studies. Previous versions of Dakota could obtain esimates of
-main and total effects using a "pick and freeze" sampling strategy,
-which typically required a very large number of samples (hundreds or
-thousands per variable) and for those samples to be structured in a
-particular way. While the new method produces only main
-effects, the requirement on sample design has been lifted, and
-typically far fewer samples are needed for convergence.
+of first order Sobol’ indices (main effects) from `sampling`
+studies. Previous versions of Dakota could estimate
+main and total effects using a "pick and freeze" sampling strategy 
+:cite:p:` Sal04`, which typically required a very large number of samples 
+(hundreds or thousands per variable) that had to be carefully structured. While
+the new method produces only main effects, the requirement on
+sample design has been lifted, and typically far fewer samples are
+needed for convergence.
 
 *Enabling / Accessing:* 
 
@@ -69,8 +69,8 @@ In a ``sampling`` study, choose
 
 *UQ Methods*
 
-* Improved support for the MIT Uncertainty Quantification Library (MUQ); although MUQ is not enabled
-  in our pre-built downloads, it is now buildable within Dakota by a wider variety of toolchains.
+* Improved support for Bayesian calibration methods provided by the MIT Uncertainty Quantification Library (MUQ);
+  although MUQ is not enabled in our pre-built downloads, it is now buildable within Dakota by a wider variety of toolchains.
 * Low discrepancy sampling strategies (see highlight)
 
 *MLMF Sampling*
