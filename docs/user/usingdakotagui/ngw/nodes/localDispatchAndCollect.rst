@@ -20,16 +20,21 @@ TODO
 Properties
 ----------
 
-TODO
+- **driver:**
+- **responseFileName:**
+- **failValue:**
+- **expectedEvals:**
+- **rerunFailedEvaluations:**
 
 -----------
 Input Ports
 -----------
 
-TODO
+- **paramsFile:**
+- **driver:**
 
 ------------
 Output Ports
 ------------
 
-TODO
+- **responsesMap:**
