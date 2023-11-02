@@ -66,6 +66,7 @@ Running Dakota
    running/DakotaRunConfiguration
    running/DakotaRunWorkflow
    running/DakotaConsole
+   running/ReRunEvaluations
    
 =======================
 Running Dakota Remotely

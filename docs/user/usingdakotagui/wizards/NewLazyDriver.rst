@@ -103,5 +103,5 @@ Use a run configuration to test out your lazy driver
 
 Lazy drivers can be run through the :ref:`standard Dakota run configurations <gui-run-configurations-eclipse-run-configs>`, without any further modification.
 
-Once your lazy driver has completed its first successful run, there are several helpful context menu options you might want to take advantage of to inspect the output of each evaluation directory,
-so that you can decide when it's time to run the lazy driver a second time and collect output results back to Dakota.
+Once your lazy driver has completed its first successful run, there are :ref:`several helpful context menu options <gui-rerun-evals>` you might want to take advantage of to inspect
+the output of each evaluation directory, so that you can decide when it's time to run the lazy driver a second time and collect output results back to Dakota.
