@@ -1649,7 +1649,7 @@ void NonDExpansion::multilevel_regression()
 
   // now converge on sample counts per level (NLev)
   while ( mlmfIter <= maxIterations &&
-	  ( Pecos::l1_norm(delta_N_l) || (mlmfIter == 0 && import_pilot) ) ) {
+	  ( !zeros(delta_N_l) || (mlmfIter == 0 && import_pilot) ) ) {
 
     sum_root_var_cost = 0.;
     for (step=0; step<num_steps; ++step) {

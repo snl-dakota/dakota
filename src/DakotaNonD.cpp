@@ -470,15 +470,21 @@ configure_sequence(//unsigned short hierarch_dim,
 }
 
 
-/** A one-dimensional sequence is assumed in this case. */
+/** Both model forms and resolutions are enumerated, from head to tail with
+    resolutions as inner loop. */
 void NonD::
 configure_enumeration(size_t& num_combinations)//, short& seq_type)
 {
   // Enumerate both model forms and discretization levels
   num_combinations = 0;
   ModelList& sub_models = iteratedModel.subordinate_models(false);// includes HF
-  for (ModelLIter m_iter=sub_models.begin(); m_iter!=sub_models.end(); ++m_iter)
-    num_combinations += m_iter->solution_levels();
+  ModelLIter m_iter;  size_t m, l, num_lev;
+  for (m=0, m_iter=sub_models.begin(); m_iter!=sub_models.end(); ++m_iter, ++m){
+    num_lev = m_iter->solution_levels();
+    num_combinations += num_lev;
+    for (l=0; l<num_lev; ++l)
+      ensembleIndices.push_back(UShortUShortPair(m,l));
+  }
 }
 
 

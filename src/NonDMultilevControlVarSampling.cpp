@@ -157,7 +157,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
   SizetArray&   delta_N_hf = delta_N_l[hf_form]; 
 
   // now converge on sample counts per level (N_hf)
-  while (Pecos::l1_norm(delta_N_hf) && mlmfIter <= maxIterations) {
+  while (!zeros(delta_N_hf) && mlmfIter <= maxIterations) {
 
     sum_sqrt_var_cost = 0.;
     for (lev=0, group=0; lev<num_hf_lev; ++lev, ++group) {
@@ -391,7 +391,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
   SizetArray&   delta_N_hf = delta_N_l[hf_form];
 
   // now converge on sample counts per level (N_hf)
-  while (Pecos::l1_norm(delta_N_hf) && mlmfIter <= maxIterations) {
+  while (!zeros(delta_N_hf) && mlmfIter <= maxIterations) {
 
     // FIRST PASS: evaluations, accumulations, cost estimates
     // NOTE: this will also simplify removing non-essential synchronizations

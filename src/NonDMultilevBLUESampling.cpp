@@ -39,9 +39,7 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model):
   if (maxFunctionEvals == SZ_MAX) // accuracy constraint (convTol)
     optSubProblemForm = N_GROUP_LINEAR_OBJECTIVE;
   else                     // budget constraint (maxFunctionEvals)
-    optSubProblemForm =//(truthFixedByPilot && pilotMgmtMode != OFFLINE_PILOT) ?
-      //N_GROUP_R_ONLY_LINEAR_CONSTRAINT :
-      N_GROUP_LINEAR_CONSTRAINT;
+    optSubProblemForm = N_GROUP_LINEAR_CONSTRAINT;
 
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "ML BLUE sub-method selection = " << mlmfSubMethod
@@ -98,21 +96,16 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
   IntRealMatrixArrayMap sum_G;  IntRealSymMatrix2DArrayMap sum_GG;
   SizetMatrixArray N_G_actual;  //SizetSymMatrix2DArray N_GG;
   initialize_blue_sums(sum_G, sum_GG); initialize_blue_counts(N_G_actual);
-  SizetArray N_G_alloc;  N_G_alloc.assign(numGroups, 0);
-  RealMatrixArray var_G;
-  //initialize_blue_counts(N_G_actual, N_GG);
-  //initialize_blue_covariances(covGG, var_G);
-  SizetArray delta_N_G = pilotSamples; // sized by load_pilot_samples()
+  SizetArray delta_N_G = pilotSamples, // sized by load_pilot_samples()
+             N_G_alloc = delta_N_G;
 
-  while (Pecos::l1_norm(delta_N_G) && mlmfIter <= maxIterations) {
+  while (!zeros(delta_N_G) && mlmfIter <= maxIterations) {
 
     // --------------------------------------------------------------------
     // Evaluate shared increment and update correlations, {eval,EstVar}_ratios
     // --------------------------------------------------------------------
     group_increment(delta_N_G, mlmfIter); // spans ALL model groups, blocking
     accumulate_blue_sums(sum_G, sum_GG, N_G_actual);//, num_GG);
-    //N_G_alloc += (backfillFailures && mlmfIter) ? one_sided_delta(N_G_alloc,
-    //  blueSolnData.solution_reference()) : numSamples; // *** TO DO
 
     // While online cost recovery could be continuously updated, we restrict
     // to the pilot and do not not update after iter 0.  We could potentially
@@ -120,12 +113,12 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
     if (onlineCost && mlmfIter == 0) recover_online_cost(sequenceCost);
     increment_equivalent_cost(delta_N_G, modelGroupCost,
 			      sequenceCost[numApprox], equivHFEvals);
-    compute_GG_statistics(sum_G[1], sum_GG[1], N_G_actual, var_G, covGG);
+    compute_GG_covariance(sum_G[1], sum_GG[1], N_G_actual, covGG);
 
     // compute the LF/HF evaluation ratios from shared samples and compute
     // ratio of MC and BLUE mean sq errors (which incorporates anticipated
     // variance reduction from application of avg_eval_ratios).
-    compute_allocations(var_G, blueSolnData); // *** TO HERE // *** TO DO: update delta_N_G
+    compute_allocations(blueSolnData, N_G_actual, N_G_alloc, delta_N_G);
     ++mlmfIter;
   }
 
@@ -133,10 +126,14 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
   if (finalStatsType == QOI_STATISTICS) {
     RealMatrix H_raw_mom(numFunctions, 4);
-    //blue_raw_moments(sum_G, sum_GG, H_raw_mom); // *** TO DO ***
+    blue_raw_moments(sum_G, sum_GG, N_G_actual, H_raw_mom);
     convert_moments(H_raw_mom, momentStats);
   }
-  //finalize_counts(N_G_actual, N_G_alloc); // *** TO DO ***
+
+  if (!zeros(delta_N_G)) // exceeded maxIterations
+    increment_equivalent_cost(delta_N_G, modelGroupCost,
+			      sequenceCost[numApprox], deltaEquivHF);
+  finalize_counts(N_G_actual, N_G_alloc);
 }
 
 
@@ -147,10 +144,10 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
   // ------------------------------------------------------------
   // Compute var G & covar GG from (oracle) pilot treated as "offline" cost
   // ------------------------------------------------------------
-  RealMatrixArray sum_G_pilot, var_G; RealSymMatrix2DArray sum_GG_pilot;
+  RealMatrixArray sum_G_pilot; RealSymMatrix2DArray sum_GG_pilot;
   SizetMatrixArray N_pilot;
   evaluate_pilot(sum_G_pilot, sum_GG_pilot, N_pilot, false);
-  compute_GG_statistics(sum_G_pilot, sum_GG_pilot, N_pilot, var_G, covGG);
+  compute_GG_covariance(sum_G_pilot, sum_GG_pilot, N_pilot, covGG);
 
   // -----------------------------------
   // Compute "online" sample increments:
@@ -158,14 +155,12 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
   IntRealMatrixArrayMap sum_G; IntRealSymMatrix2DArrayMap sum_GG;
   SizetMatrixArray N_G_actual;  //SizetSymMatrix2DArray N_GG;
   initialize_blue_sums(sum_G, sum_GG); initialize_blue_counts(N_G_actual);
-  SizetArray N_G_alloc;  N_G_alloc.assign(numGroups, 0);
-  //initialize_blue_counts(N_G_actual, N_GG);
-  //initialize_blue_covariances(covGG, covLH, varG);
+  SizetArray N_G_alloc, delta_N_G;  N_G_alloc.assign(numGroups, 0);
 
   // compute the LF/HF evaluation ratios from shared samples and compute
   // ratio of MC and ACV mean sq errors (which incorporates anticipated
   // variance reduction from application of avg_eval_ratios).
-  compute_allocations(var_G, blueSolnData); // *** TO DO: update N_G_alloc
+  compute_allocations(blueSolnData, N_G_actual, N_G_alloc, delta_N_G);
   ++mlmfIter;
 
   // -----------------------------------
@@ -175,17 +170,20 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
   if (finalStatsType == QOI_STATISTICS) {
     // perform the shared increment for the online sample profile
-    group_increment(N_G_alloc, mlmfIter); // spans ALL models, blocking
+    group_increment(delta_N_G, mlmfIter); // spans ALL models, blocking
     accumulate_blue_sums(sum_G, sum_GG, N_G_actual);
-    //N_G_alloc += numSamples; // *** TO DO ***
-    increment_equivalent_cost(N_G_alloc, modelGroupCost,
+    increment_equivalent_cost(delta_N_G, modelGroupCost,
 			      sequenceCost[numApprox], equivHFEvals);
     // extract moments
     RealMatrix H_raw_mom(numFunctions, 4);
-    //blue_raw_moments(sum_G, sum_GG, H_raw_mom); // *** TO DO ***
+    blue_raw_moments(sum_G, sum_GG, N_G_actual, H_raw_mom);
     convert_moments(H_raw_mom, momentStats);
   }
-  //finalize_counts(N_G_actual, N_G_alloc); // *** TO DO ***
+  else
+    increment_equivalent_cost(delta_N_G, modelGroupCost,
+			      sequenceCost[numApprox], deltaEquivHF);
+
+  finalize_counts(N_G_actual, N_G_alloc);
 }
 
 
@@ -196,11 +194,11 @@ void NonDMultilevBLUESampling::ml_blue_pilot_projection()
   // --------------------------------------------------------------------
   // Evaluate shared increment and update correlations, {eval,EstVar}_ratios
   // --------------------------------------------------------------------
-  RealMatrixArray sum_G, var_G; RealSymMatrix2DArray sum_GG;
+  RealMatrixArray sum_G; RealSymMatrix2DArray sum_GG;
   SizetMatrixArray N_G_actual;  //SizetSymMatrix2DArray N_GG;
   evaluate_pilot(sum_G, sum_GG, N_G_actual, true);
-  compute_GG_statistics(sum_G, sum_GG, N_G_actual, var_G, covGG);
-  SizetArray N_G_alloc = pilotSamples;
+  compute_GG_covariance(sum_G, sum_GG, N_G_actual, covGG);
+  SizetArray delta_N_G, N_G_alloc = pilotSamples;
 
   // -----------------------------------
   // Compute "online" sample increments:
@@ -208,11 +206,13 @@ void NonDMultilevBLUESampling::ml_blue_pilot_projection()
   // compute the LF/HF evaluation ratios from shared samples and compute
   // ratio of MC and ACV mean sq errors (which incorporates anticipated
   // variance reduction from application of avg_eval_ratios).
-  compute_allocations(var_G, blueSolnData); // *** TO DO: update N_G_alloc
+  compute_allocations(blueSolnData, N_G_actual, N_G_alloc, delta_N_G);
   ++mlmfIter;
 
-  // No LF increments or final moments for pilot projection
-  //finalize_counts(N_G_actual, N_G_alloc); // *** TO DO ***
+  // No final moments for pilot projection
+  increment_equivalent_cost(delta_N_G, modelGroupCost,
+			    sequenceCost[numApprox], deltaEquivHF);
+  finalize_counts(N_G_actual, N_G_alloc);
   // No need for updating estimator variance given deltaNActualHF since
   // NonDNonHierarchSampling::ensemble_numerical_solution() recovers N*
   // from the numerical solve and computes projected avgEstVar{,Ratio}
@@ -271,10 +271,10 @@ numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
   //case SUBMETHOD_SDP:
     switch (optSubProblemForm) {
     case N_GROUP_LINEAR_CONSTRAINT:
-      num_lin_con = (pilotMgmtMode == OFFLINE_PILOT) ? 2 : 1;
+      num_lin_con = 1;//(pilotMgmtMode == OFFLINE_PILOT) ? 2 : 1;
       num_nln_con = 0;   break;
     case N_GROUP_LINEAR_OBJECTIVE:
-      num_lin_con = (pilotMgmtMode == OFFLINE_PILOT) ? 1 : 0;
+      num_lin_con = 0;//(pilotMgmtMode == OFFLINE_PILOT) ? 1 : 0;
       num_nln_con = 1;  break;
     }
   /*
@@ -294,7 +294,6 @@ numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
 
 void NonDMultilevBLUESampling::
 numerical_solution_bounds_constraints(const MFSolutionData& soln,
-				      const RealVector& cost, Real avg_N_H,
 				      RealVector& x0, RealVector& x_lb,
 				      RealVector& x_ub, RealVector& lin_ineq_lb,
 				      RealVector& lin_ineq_ub,
@@ -309,40 +308,41 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   // Formulate the optimization sub-problem: initial pt, bnds, constraints
   // --------------------------------------
 
-  size_t group, last_index = numGroups-1, lin_offset;
+  size_t group, last_index = numGroups-1, lin_offset = 0;
   const RealVector& soln_vars = soln.solution_variables();
   //Real offline_N_lwr = 2.; //(finalStatsType == QOI_STATISTICS) ? 2. : 1.;
 
   // minimizer-specific updates (x bounds) performed in finite_solution_bounds()
-  x_lb = 0.; // no lower bound for most groups (*** TO DO: NUDGE if not SDP?)
   x_ub = DBL_MAX; // no upper bounds for groups
   if (pilotMgmtMode == OFFLINE_PILOT) {
-    lin_ineq_lb[0] = 1.; // at least 1 sample for any group
-    lin_ineq_ub[0] = DBL_MAX;
+    x_lb = 0.; // no lower bound for most groups (*** TO DO: NUDGE if not SDP?)
+    //lin_ineq_lb[0] = 1.; // at least 1 sample for any group
+    //lin_ineq_ub[0] = DBL_MAX;
+    //for (group=0; group<numGroups; ++group)
+    //  lin_ineq_coeffs(0, group) = 1.;
+    //lin_offset = 1;
+  }
+  // assign sunk cost to full group and optimize w/ this as a constraint
+  else if (mlmfIter)
+    x_lb = soln_vars;
+  else
     for (group=0; group<numGroups; ++group)
-      lin_ineq_coeffs(0, group) = 1.;
-    lin_offset = 1;
-  }
-  // assign sunk pilot cost to full group and optimize w/ this as a constraint
-  else {
-    x_lb[last_index] = avg_N_H;
-    lin_offset = 0;
-  }
+      x_lb[group] = (Real)pilotSamples[group];
 
   if (soln_vars.empty()) x0 = x_lb;
   else {
     x0 = soln_vars;
-    if (pilotMgmtMode == OFFLINE_PILOT) // x0 could undershoot x_lb
-      for (group=0; group<numGroups; ++group) // bump x0 to satisfy x_lb if nec
-	if (x0[group] < x_lb[group])
-	  x0[group] = x_lb[group];
+    //if (pilotMgmtMode == OFFLINE_PILOT) // x0 could undershoot x_lb
+    //  for (group=0; group<numGroups; ++group)// bump x0 to satisfy x_lb if nec
+    //	  if (x0[group] < x_lb[group])
+    //	    x0[group] = x_lb[group];
   }
 
   switch (optSubProblemForm) {
   case N_GROUP_LINEAR_CONSTRAINT: { // linear inequality constraint on budget:
     // \Sum_grp_i w_grp_i        N_grp_i <= equiv_HF * w_HF
     // \Sum_grp_i w_grp_i / w_HF N_grp_i <= equivHF
-    Real cost_H = cost[numApprox];
+    Real cost_H = sequenceCost[numApprox];
     lin_ineq_lb[lin_offset] = -DBL_MAX; // no lb
     lin_ineq_ub[lin_offset] = (Real)maxFunctionEvals;//budget;
     for (group=0; group<numGroups; ++group)
@@ -366,7 +366,33 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
 
 
 void NonDMultilevBLUESampling::
-compute_allocations(const RealMatrixArray& var_L, MFSolutionData& soln)
+finite_solution_upper_bounds(Real remaining, RealVector& x_ub)
+{
+  /* *** TO DO: rational upper bound for group allocations ***
+
+  if (remaining > 0.) {
+    // Set delta x_ub based on exhausting the remaining budget using only
+    // approx i.  Then x_ub = avg_N_H + delta x_ub
+    size_t i;
+    Real cost_H = sequenceCost[numApprox], factor = remaining * cost_H;
+    for (i=0; i<numApprox; ++i) // remaining = N_i * cost[i] / cost_H
+      x_ub[i] = avg_N_H + factor / sequenceCost[i];
+    if (optSubProblemForm != R_ONLY_LINEAR_CONSTRAINT) {
+      // increments in N_H are shared with cost = \Sum costs
+      Real sum_cost = cost_H;
+      for (i=0; i<numApprox; ++i) sum_cost += sequenceCost[i];
+      x_ub[numApprox] = avg_N_H + factor / sum_cost;
+    }
+  }
+  else // can happen for accuracy-constrained using mc_targets estimation
+    x_ub = avg_N_H; // same as x_lb
+  */
+}
+
+
+void NonDMultilevBLUESampling::
+compute_allocations(MFSolutionData& soln, const SizetMatrixArray& N_G_actual,
+		    SizetArray& N_G_alloc, SizetArray& delta_N_G)
 {
   // Solve the optimization sub-problem using an initial guess from either
   // related analytic solutions (iter == 0) or warm started from the previous
@@ -375,27 +401,24 @@ compute_allocations(const RealMatrixArray& var_L, MFSolutionData& soln)
   if (mlmfIter == 0) {
     if (pilotMgmtMode != OFFLINE_PILOT) cache_mc_reference();
 
-    size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
-    SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
-    size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
-    Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
     bool budget_constrained = (maxFunctionEvals != SZ_MAX);
     bool budget_exhausted
       = (budget_constrained && equivHFEvals >= (Real)maxFunctionEvals);
 
     if (budget_exhausted || convergenceTol >= 1.) { // no need for solve
       // For r_i = 1, C_F,c_f = 0 --> NUDGE for downstream CV numerics
-      RealVector soln_vars(numApprox+1); // init to 0
-      soln_vars[numApprox] = avg_N_H; // last group = all models
+      RealVector soln_vars(numGroups); // init to 0
+      for (size_t group=0; group<numGroups; ++group)
+	soln_vars[group] = (Real)pilotSamples[group];
       soln.solution_variables(soln_vars);
       // For offline pilot, the online EstVar is undefined prior to any online
       // samples, but should not happen (no budget used) unless bad convTol spec
       if (pilotMgmtMode == OFFLINE_PILOT)
 	soln.average_estimator_variance(std::numeric_limits<Real>::infinity());
       else
-	soln.average_estimator_variance(average(estVarIter0));
+	soln.average_estimator_variance(average(estVarIter0)); // *** TO DO: no CV cancel in this case
       soln.average_estimator_variance_ratio(1.);
-      numSamples = 0;  return;
+      delta_N_G.assign(numGroups, 0);  return;
     }
 
     // Run a competition among related analytic approaches (MFMC or pairwise
@@ -406,14 +429,14 @@ compute_allocations(const RealMatrixArray& var_L, MFSolutionData& soln)
     case SUBMETHOD_DIRECT_NPSOL_OPTPP:  case SUBMETHOD_DIRECT_NPSOL:
     case SUBMETHOD_DIRECT_OPTPP:        case SUBMETHOD_DIRECT:
     case SUBMETHOD_EGO:  case SUBMETHOD_SBGO:  case SUBMETHOD_EA:
-      ensemble_numerical_solution(sequenceCost, soln, numSamples);
+      ensemble_numerical_solution(soln);
       break;
     default: { // competed initial guesses with (competed) local methods
       // use pyramid sample definitions for hierarchical groups as init guess,
       // even though they are not independent sample sets in MFMC
-      //covariance_to_correlation_sq(covLH, var_L, varH, rho2LH);
-      //analytic_initialization_from_mfmc(avg_N_H, soln);
-      ensemble_numerical_solution(sequenceCost, soln, numSamples);
+      //covariance_to_correlation_sq(covGG, /*var_G,*/ rho2GG); // ***
+      //analytic_initialization_from_mfmc(avg_N_H, soln);       // ***
+      ensemble_numerical_solution(soln);
       break;
     }
     }
@@ -424,11 +447,74 @@ compute_allocations(const RealMatrixArray& var_L, MFSolutionData& soln)
     // updated avg_N_H now includes allocation from previous solution and
     // should be active on constraint bound (excepting sample count rounding)
 
-    ensemble_numerical_solution(sequenceCost, soln, numSamples);
+    ensemble_numerical_solution(soln);
   }
 
+  process_group_solution(soln, N_G_actual, N_G_alloc, delta_N_G);
   if (outputLevel >= NORMAL_OUTPUT)
     print_computed_solution(Cout, soln); // ***
+
+  if (backfillFailures) // delta_N_G may include backfill
+    one_sided_update(N_G_alloc, soln.solution_variables());
+  else // delta_N_G is the allocation increment
+    increment_samples(N_G_alloc, delta_N_G);
+}
+
+
+void NonDMultilevBLUESampling::
+process_group_solution(MFSolutionData& soln, const SizetMatrixArray& N_G_actual,
+		       const SizetArray& N_G_alloc, SizetArray& delta_N_G)
+{
+  //Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
+  //num_samples = (truthFixedByPilot) ? 0 :
+  //  one_sided_delta(avg_N_H, soln.solution_reference());
+
+  // compute sample increment for HF from current to target:
+  if (backfillFailures)
+    one_sided_delta(N_G_actual, soln.solution_variables(), delta_N_G);
+  else
+    one_sided_delta(N_G_alloc,  soln.solution_variables(), delta_N_G);
+
+  // All cases employ projected MC estvar to match the projected nonhier estvar
+  // from N* (where N* may include a num_samples increment not yet performed)
+  RealVector mc_estvar;
+  //project_mc_estimator_variance(varH, N_H_actual, num_samples, mc_estvar);
+  // *** TO DO: couple of options here; cleanest may be N_G[HF-only group]
+
+  // Report ratio of averages rather that average of ratios (see notes in
+  // print_variance_reduction())
+  soln.average_estimator_variance_ratio(soln.average_estimator_variance() /
+					average(mc_estvar)); // (1 - R^2)
+}
+
+
+inline void NonDMultilevBLUESampling::
+finalize_counts(const SizetMatrixArray& N_G_actual, const SizetArray& N_G_alloc)
+{
+  // post final sample counts back to NLev{Actual,Alloc} (for final summaries)
+
+  //bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
+  //inflate_approx_samples(N_G_actual, multilev, secondaryIndex, NLevActual);
+  //inflate_approx_samples(N_G_alloc,  multilev, secondaryIndex, NLevAlloc);
+
+  // For now, overlay group samples into model-resolution instance samples
+  size_t g, m, num_models, q, mf, rl;
+  for (g=0; g<numGroups; ++g) {
+    const UShortArray& group_g = modelGroups[g];
+    num_models = group_g.size();
+
+    const SizetMatrix& N_G_actual_g = N_G_actual[g];
+    size_t              N_G_alloc_g =  N_G_alloc[g];
+    for (m=0; m<num_models; ++m) {
+      const UShortUShortPair& indices = ensembleIndices[group_g[m]];
+      
+      mf = indices.first;  rl = indices.second;
+      NLevAlloc[mf][rl] += N_G_alloc_g;
+      SizetArray& N_l_actual_fl = NLevActual[mf][rl];
+      for (q=0; q<numFunctions; ++q)
+	N_l_actual_fl[q] += N_G_actual_g(q,m);
+    }
+  }
 }
 
 
@@ -448,10 +534,9 @@ print_computed_solution(std::ostream& s, const MFSolutionData& soln)
 	 << soln.average_estimator_variance_ratio() << std::endl;
 }
 
-/*
-// > Need to proliferate MFSolutionData update
-// > Need to start defining optimizer callbacks for est_var and linear_cost
 
+/*
+// > Need to define optimizer callbacks for est_var and linear_cost
 
 Real NonDMultilevBLUESampling::
 update_hf_target(const RealVector& avg_eval_ratios, const RealVector& var_H,
@@ -625,20 +710,6 @@ accumulate_blue_sums(RealMatrixArray&  sum_G, RealSymMatrix2DArray& sum_GG,
 
 
 void NonDMultilevBLUESampling::
-compute_GG_statistics(RealMatrixArray& sum_G,
-		      RealSymMatrix2DArray& sum_GG,
-		      SizetMatrixArray& N_shared, RealMatrixArray& var_G,
-		      RealSymMatrix2DArray& cov_GG)
-{
-  if (mlmfIter == 0) // see var_G usage in compute_allocations()
-    compute_G_variance(sum_G,  sum_GG, N_shared, var_G); // *** Review uses; just extract once from cov_GG ?
-  compute_GG_covariance(sum_G, sum_GG, N_shared, cov_GG);
-
-  //Cout << "var_G:\n" << var_G << "cov_GG:\n" << cov_GG;
-}
-
-
-void NonDMultilevBLUESampling::
 compute_GG_covariance(const RealMatrixArray& sum_G,
 		      const RealSymMatrix2DArray& sum_GG,
 		      const SizetMatrixArray& num_G,
@@ -680,6 +751,21 @@ compute_GG_covariance(const RealMatrixArray& sum_G,
 }
 
 
+/*
+void NonDMultilevBLUESampling::
+compute_GG_statistics(RealMatrixArray& sum_G,
+		      RealSymMatrix2DArray& sum_GG,
+		      SizetMatrixArray& N_shared, //RealMatrixArray& var_G,
+		      RealSymMatrix2DArray& cov_GG)
+{
+  if (mlmfIter == 0) // see var_G usage in compute_allocations()
+    compute_G_variance(sum_G,  sum_GG, N_shared, var_G); // just extract from cov_GG ?
+  compute_GG_covariance(sum_G, sum_GG, N_shared, cov_GG);
+
+  //Cout << "var_G:\n" << var_G << "cov_GG:\n" << cov_GG;
+}
+
+
 void NonDMultilevBLUESampling::
 compute_G_variance(const RealMatrixArray& sum_G,
 		   const RealSymMatrix2DArray& sum_GG,
@@ -710,9 +796,8 @@ compute_G_variance(const RealMatrixArray& sum_G,
 
 void NonDMultilevBLUESampling::
 update_projected_group_samples(const MFSolutionData& soln,
-			       //const SizetArray& N_H_actual,size_t& N_H_alloc,
-			       SizetArray& delta_N_L_actual,
-			       Real& delta_equiv_hf)
+			       const SizetArray& N_G_actual, size_t& N_G_alloc,
+			       SizetArray& delta_N_G, Real& delta_equiv_hf)
 {
   Sizet2DArray N_L_actual; //inflate(N_H_actual, N_L_actual);
   SizetArray   N_L_alloc;  //inflate(N_H_alloc,  N_L_alloc);
@@ -722,86 +807,19 @@ update_projected_group_samples(const MFSolutionData& soln,
   const RealVector& soln_vars = soln.solution_variables();
   for (group=0; group<numGroups; ++group) {
     group_tgt = soln_vars[group];
-    /*
-    const SizetArray& N_L_actual_g = N_L_actual[group];
-    size_t&           N_L_alloc_g  =  N_L_alloc[group];
+
+    const SizetArray& N_G_actual_g = N_G_actual[group];
+    size_t&           N_G_alloc_g  =  N_G_alloc[group];
     alloc_incr  = one_sided_delta(N_L_alloc_g, group_tgt);
     actual_incr = (backfillFailures) ?
       one_sided_delta(average(N_L_actual_g), group_tgt) : alloc_incr;
     //delta_N_L_actual[approx] += actual_incr;
     N_L_alloc_g += alloc_incr;
-    */
   }
 
   increment_equivalent_cost(delta_N_L_actual, modelGroupCost,
 			    sequenceCost[numApprox], delta_equiv_hf);
   finalize_counts(N_L_actual, N_L_alloc);
-}
-
-
-/**
-void NonDMultilevBLUESampling::
-update_projected_samples(const MFSolutionData& soln,
-			 const SizetArray& N_H_actual, size_t& N_H_alloc,
-			 size_t& delta_N_H_actual,
-			 //SizetArray& delta_N_L_actual,
-			 Real& delta_equiv_hf)
-{
-  // The N_L baseline is the shared set PRIOR to delta_N_H --> important for
-  // cost incr even if lf_targets is defined robustly (hf_targets * eval_ratios)
-  update_projected_lf_samples(soln, N_H_actual, N_H_alloc, //delta_N_L_actual,
-			      delta_equiv_hf);
-
-  size_t alloc_incr = one_sided_delta(N_H_alloc, avg_hf_target),
-    actual_incr = (backfillFailures) ?
-      one_sided_delta(average(N_H_actual), avg_hf_target) : alloc_incr;
-  delta_N_H_actual += actual_incr;  N_H_alloc += alloc_incr;
-  increment_equivalent_cost(actual_incr, sequenceCost, numApprox,
-			    delta_equiv_hf);
-}
-
-
-void NonDMultilevBLUESampling::
-blue_raw_moments(IntRealMatrixMap& sum_L_baseline,
-		 IntRealMatrixMap& sum_L_refined,
-		 IntRealSymMatrixArrayMap& sum_LL,
-		 const RealVector& avg_eval_ratios, const SizetArray& N_shared,
-		 const Sizet2DArray& N_L_refined,   RealMatrix& H_raw_mom)
-{
-  if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(numFunctions, 4);
-
-  precompute_blue_control(avg_eval_ratios, N_shared);
-
-  size_t approx, qoi, N_shared_q;  Real sum_H_mq;
-  RealVector beta(numApprox);
-  for (int mom=1; mom<=4; ++mom) {
-    RealMatrix&     sum_L_base_m = sum_L_baseline[mom];
-    RealMatrix&      sum_L_ref_m = sum_L_refined[mom];
-    RealVector&          sum_H_m =         sum_H[mom];
-    RealSymMatrixArray& sum_LL_m =        sum_LL[mom];
-    RealMatrix&         sum_LH_m =        sum_LH[mom];
-    if (outputLevel >= NORMAL_OUTPUT)
-      Cout << "Moment " << mom << " estimator:\n";
-    for (qoi=0; qoi<numFunctions; ++qoi) {
-      sum_H_mq = sum_H_m[qoi];  N_shared_q = N_shared[qoi];
-      compute_blue_control(sum_L_base_m, sum_H_mq, sum_LL_m[qoi], sum_LH_m,
-			   N_shared_q, mom, qoi, beta);
-      // *** TO DO: support shared_approx_increment() --> baselineL
-
-      Real& H_raw_mq = H_raw_mom(qoi, mom-1);
-      H_raw_mq = sum_H_mq / N_shared_q; // first term to be augmented
-      for (approx=0; approx<numApprox; ++approx) {
-	if (outputLevel >= NORMAL_OUTPUT)
-	  Cout << "   QoI " << qoi+1 << " Approx " << approx+1 << ": control "
-	       << "variate beta = " << std::setw(9) << beta[approx] << '\n';
-	// For ACV, shared counts are fixed at N_H for all approx
-	apply_control(sum_L_base_m(qoi,approx), N_shared_q,
-		      sum_L_ref_m(qoi,approx),  N_L_refined[approx][qoi],
-		      beta[approx], H_raw_mq);
-      }
-    }
-  }
-  if (outputLevel >= NORMAL_OUTPUT) Cout << std::endl;
 }
 */
 

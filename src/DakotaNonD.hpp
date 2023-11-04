@@ -11,6 +11,7 @@
 #define DAKOTA_NOND_H
 
 #include "DakotaAnalyzer.hpp"
+#include "dakota_stat_util.hpp"
 
 //#define DERIV_DEBUG
 
@@ -251,6 +252,19 @@ protected:
   size_t one_sided_delta(const SizetArray& current, Real target, size_t power);
   //size_t one_sided_delta(const Sizet2DArray& current,
   //			   const RealMatrix& targets, size_t power);
+  /// compute a one-sided sample increment vector to move current sampling
+  /// levels to new targets
+  void one_sided_delta(const SizetArray& current, const RealVector& targets,
+		       SizetArray& delta_N);
+  /// compute a one-sided sample increment vector to move current sampling
+  /// levels to new targets
+  void one_sided_delta(const SizetMatrixArray& current,
+		       const RealVector& targets, SizetArray& delta_N);
+
+  /// one-sided increase of current to match targets
+  void one_sided_update(SizetArray& current, const SizetArray& targets);
+  /// one-sided increase of current to match rounded targets
+  void one_sided_update(SizetArray& current, const RealVector& targets);
 
   /// return true if fine-grained reporting differs from coarse-grained
   bool differ(size_t N_alloc_ij, const SizetArray& N_actual_ij) const;
@@ -274,6 +288,11 @@ protected:
   /// archive the equivalent number of HF evals (used by ML/MF methods)
   void archive_equiv_hf_evals(const Real equiv_hf_evals);
 
+  /// return true if N_m is empty or only populated with zeros
+  bool zeros(const SizetArray& N_m) const;
+  /// return true if N_m is empty or only populated with zeros
+  bool zeros(const Sizet2DArray& N_m) const;
+
   //
   //- Heading: Data members
   //
@@ -283,6 +302,9 @@ protected:
   static NonD* nondInstance;
   /// pointer containing previous value of nondInstance
   NonD* prevNondInstance;
+
+  /// mapping from flat list of model forms/resolutions into indices
+  UShortUShortPairArray ensembleIndices;
 
   /// starting index of continuous aleatory uncertain variables within
   /// active continuous variables (convenience for managing offsets)
@@ -385,11 +407,6 @@ private:
 
   /// return true if N_l has consistent values
   bool homogeneous(const SizetArray& N_l) const;
-
-  /// return true if N_m is empty or only populated with zeros
-  bool zeros(const SizetArray& N_m) const;
-  /// return true if N_m is empty or only populated with zeros
-  bool zeros(const Sizet2DArray& N_m) const;
 
   //
   //- Heading: Data members
@@ -630,6 +647,74 @@ one_sided_delta(const Sizet2DArray& current, const RealMatrix& targets,
   return (pow_mean > 0.) ? (size_t)std::floor(pow_mean + .5) : 0; // round
 }
 */
+
+
+inline void NonD::
+one_sided_delta(const SizetArray& current, const RealVector& targets,
+		SizetArray& delta_N)
+{
+  size_t i, c_len = current.size(), t_len = targets.length(), tgt_i;
+  if (c_len != t_len) {
+    Cerr << "Error: inconsistent array sizes in NonD::one_sided_update()."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  if (delta_N.size() != c_len) delta_N.resize(c_len);
+  for (i=0; i<c_len; ++i) {
+    tgt_i      = (size_t)std::floor(targets[i] + .5);
+    delta_N[i] = (tgt_i > current[i]) ? tgt_i - current[i] : 0;
+  }
+}
+
+
+inline void NonD::
+one_sided_delta(const SizetMatrixArray& current, const RealVector& targets,
+		SizetArray& delta_N)
+{
+  size_t i, c_len = current.size(), t_len = targets.length();  Real diff_i;
+  if (c_len != t_len) {
+    Cerr << "Error: inconsistent array sizes in NonD::one_sided_update()."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  if (delta_N.size() != c_len) delta_N.resize(c_len);
+  for (i=0; i<c_len; ++i) {
+    diff_i     = targets[i] - average(current[i]); // avg over all models,qoi
+    delta_N[i] = (diff_i > 0) ? (size_t)std::floor(diff_i + .5) : 0;
+  }
+}
+
+
+inline void NonD::
+one_sided_update(SizetArray& current, const SizetArray& targets)
+{
+  size_t i, c_len = current.size(), t_len = targets.size();
+  if (c_len != t_len) {
+    Cerr << "Error: inconsistent array sizes in NonD::one_sided_update()."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  for (i=0; i<c_len; ++i)
+    if (targets[i] > current[i])
+      current[i] = targets[i];
+}
+
+
+inline void NonD::
+one_sided_update(SizetArray& current, const RealVector& targets)
+{
+  size_t i, c_len = current.size(), t_len = targets.length(), rounded;
+  if (c_len != t_len) {
+    Cerr << "Error: inconsistent array sizes in NonD::one_sided_update()."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  for (i=0; i<c_len; ++i) {
+    rounded = (size_t)std::floor(targets[i] + .5);
+    if (rounded > current[i])
+      current[i] = rounded;
+  }
+}
 
 
 inline bool NonD::zeros(const SizetArray& N_m) const

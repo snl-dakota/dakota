@@ -857,18 +857,17 @@ compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
     case SUBMETHOD_DIRECT_NPSOL_OPTPP:  case SUBMETHOD_DIRECT_NPSOL:
     case SUBMETHOD_DIRECT_OPTPP:        case SUBMETHOD_DIRECT:
     case SUBMETHOD_EGO:  case SUBMETHOD_SBGO:  case SUBMETHOD_EA:
-      ensemble_numerical_solution(sequenceCost, soln, numSamples);
-      break;
+      ensemble_numerical_solution(soln);  break;
     default: { // competed initial guesses with (competed) local methods
       RealMatrix rho2_LH;
       covariance_to_correlation_sq(covLH, var_L, varH, rho2_LH);
-      MFSolutionData mf_soln, cv_soln;  size_t mf_samp, cv_samp;
+      MFSolutionData mf_soln, cv_soln;
       analytic_initialization_from_mfmc(approx_set, rho2_LH, avg_N_H, mf_soln);
       analytic_initialization_from_ensemble_cvmc(approx_set, *activeDAGIter,
 	orderedRootList, rho2_LH, avg_N_H, cv_soln);
-      ensemble_numerical_solution(sequenceCost, mf_soln, mf_samp);
-      ensemble_numerical_solution(sequenceCost, cv_soln, cv_samp);
-      pick_mfmc_cvmc_solution(mf_soln,mf_samp,cv_soln,cv_samp,soln,numSamples);
+      ensemble_numerical_solution(mf_soln);
+      ensemble_numerical_solution(cv_soln);
+      pick_mfmc_cvmc_solution(mf_soln, cv_soln, soln);
       break;
     }
     }
@@ -881,9 +880,10 @@ compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
 
     // warm start from previous soln for corresponding {approx_set,active_dag}
     // Note: for sequenced minimizers, only the last is used for refinement
-    ensemble_numerical_solution(sequenceCost, soln, numSamples);
+    ensemble_numerical_solution(soln);
   }
 
+  process_model_solution(soln, numSamples);
   if (outputLevel >= NORMAL_OUTPUT)
     print_computed_solution(Cout, soln, approx_set);
 }
@@ -1044,7 +1044,6 @@ numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
 
 void NonDGenACVSampling::
 numerical_solution_bounds_constraints(const MFSolutionData& soln,
-				      const RealVector& cost, Real avg_N_H,
 				      RealVector& x0, RealVector& x_lb,
 				      RealVector& x_ub, RealVector& lin_ineq_lb,
 				      RealVector& lin_ineq_ub,
@@ -1057,6 +1056,11 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
 {
   // Refer to NonDNonHierarchSampling base implementation for additional notes
 
+  size_t hf_form_index, hf_lev_index;
+  hf_indices(hf_form_index, hf_lev_index);
+  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
+  size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
+  Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
   // For offline mode, online allocations must be lower bounded for numerics:
   Real offline_N_lwr = 2.; //(finalStatsType == QOI_STATISTICS) ? 2. : 1.;
 
@@ -1065,7 +1069,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   // --------------------------------------
   const UShortArray& approx_set = activeModelSetIter->first;
   size_t i, num_cdv = x0.length(), approx, num_approx = approx_set.size();
-  Real cost_H = cost[numApprox], budget = (Real)maxFunctionEvals;
+  Real cost_H = sequenceCost[numApprox], budget = (Real)maxFunctionEvals;
 
   // minimizer-specific updates (x bounds) performed in finite_solution_bounds()
   x_ub = DBL_MAX; // no upper bounds needed for x
@@ -1086,7 +1090,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
       budget / avg_N_H - 1. : // normal case
       budget - 1.;            // bound N_H at 1 (TO DO: need to perform sample)
     for (approx=0; approx<num_approx; ++approx)
-      lin_ineq_coeffs(0,approx) = cost[approx_set[approx]] / cost_H;
+      lin_ineq_coeffs(0,approx) = sequenceCost[approx_set[approx]] / cost_H;
     break;
   }
   case R_AND_N_NONLINEAR_CONSTRAINT: {
@@ -1124,7 +1128,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
       //   N + \Sum_i w_i/w N_i <= equivHF
       lin_ineq_ub[0] = budget; // remaining ub initialized to 0
       for (approx=0; approx<num_approx; ++approx)
-	lin_ineq_coeffs(0, approx) = cost[approx_set[approx]] / cost_H;
+	lin_ineq_coeffs(0, approx) = sequenceCost[approx_set[approx]] / cost_H;
       lin_ineq_coeffs(0, num_approx) = 1.;
     }
     else if (optSubProblemForm == N_MODEL_LINEAR_OBJECTIVE) {
@@ -1147,59 +1151,31 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
 
 
 void NonDGenACVSampling::
-finite_solution_bounds(const RealVector& cost, Real avg_N_H,
-		       RealVector& x_lb, RealVector& x_ub)
+finite_solution_upper_bounds(Real remaining, RealVector& x_ub)
 {
-  // Some optimizers (DIRECT, SBLO, EGO) require finite bounds
-  if ( varMinIndices.first == 0 &&
-       ( optSubProblemSolver == SUBMETHOD_DIRECT ||
-	 optSubProblemSolver == SUBMETHOD_DIRECT_NPSOL ||
-	 optSubProblemSolver == SUBMETHOD_DIRECT_OPTPP ||
-	 optSubProblemSolver == SUBMETHOD_DIRECT_NPSOL_OPTPP ||
-	 optSubProblemSolver == SUBMETHOD_SBGO ||
-	 optSubProblemSolver == SUBMETHOD_SBLO ||
-	 optSubProblemSolver == SUBMETHOD_EGO ) ) {
-    // Prior to approx increments (when numerical solns are performed),
-    // equivHFEvals represents the total incurred cost in shared sample sets.
-    Real remaining;
-    switch (optSubProblemForm) {
-    case N_MODEL_LINEAR_OBJECTIVE: { // accuracy constrained
-      // infer upper bounds from budget reqd to obtain target accuracy via MC:
-      // varH / N = tol * avg_estvar0; for minimizer sequencing, a downstream
-      // refinement can omit this approximated bound.
-      RealVector mc_targets(numFunctions, false);
-      for (size_t qoi=0; qoi<numFunctions; ++qoi)
-	mc_targets[qoi] = varH[qoi] / (convergenceTol * estVarIter0[qoi]);
-      remaining = average(mc_targets)    - equivHFEvals;  break;
-    }
-    default:
-      remaining = (Real)maxFunctionEvals - equivHFEvals;  break;
-    }
+  size_t hf_form_index, hf_lev_index;
+  hf_indices(hf_form_index, hf_lev_index);
+  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
+  size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
+  Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
 
-    //Cout << "Remaining budget = " << remaining << std::endl;
-    if (remaining > 0.) {
-      // Set delta x_ub based on exhausting the remaining budget using only
-      // approx i.  Then x_ub = avg_N_H + delta x_ub
-      const UShortArray& approx_set = activeModelSetIter->first;
-      size_t i, num_approx = approx_set.size();
-      Real cost_H = cost[numApprox], factor = remaining * cost_H;
-      for (i=0; i<num_approx; ++i) // remaining = N_i * cost[i] / cost_H
-	x_ub[i] = avg_N_H + factor / cost[approx_set[i]];
-      if (optSubProblemForm != R_ONLY_LINEAR_CONSTRAINT) {
-	// increments in N_H are shared with cost = \Sum costs
-	Real sum_cost = cost_H;
-	for (i=0; i<num_approx; ++i) sum_cost += cost[approx_set[i]];
-	x_ub[num_approx] = avg_N_H + factor / sum_cost;
-      }
+  if (remaining > 0.) {
+    // Set delta x_ub based on exhausting the remaining budget using only
+    // approx i.  Then x_ub = avg_N_H + delta x_ub
+    const UShortArray& approx_set = activeModelSetIter->first;
+    size_t i, num_approx = approx_set.size();
+    Real cost_H = sequenceCost[numApprox], factor = remaining * cost_H;
+    for (i=0; i<num_approx; ++i) // remaining = N_i * cost[i] / cost_H
+      x_ub[i] = avg_N_H + factor / sequenceCost[approx_set[i]];
+    if (optSubProblemForm != R_ONLY_LINEAR_CONSTRAINT) {
+      // increments in N_H are shared with cost = \Sum costs
+      Real sum_cost = cost_H;
+      for (i=0; i<num_approx; ++i) sum_cost += sequenceCost[approx_set[i]];
+      x_ub[num_approx] = avg_N_H + factor / sum_cost;
     }
-    else // can happen for accuracy-constrained using mc_targets estimation
-      x_ub = avg_N_H; // same as x_lb
   }
-  else
-    x_ub = DBL_MAX; // no upper bounds needed for x
-
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "Finite bounds (lb, ub):\n" << x_lb << x_ub << std::endl;
+  else // can happen for accuracy-constrained using mc_targets estimation
+    x_ub = avg_N_H; // same as x_lb
 }
 
 
@@ -1533,7 +1509,7 @@ recover_results(const RealVector& cv_star, const RealVector& fn_star,
     // N_VECTOR: N*_i is leading part of cv_star and N* is trailing entry.
     // Note that r_i is always relative to HF N, not its DAG pairing.
     soln.solution_variables(cv_star);
-    soln.equivalent_hf_allocation(linear_cost(cv_star));
+    soln.equivalent_hf_allocation(linear_model_cost(cv_star));
     break;
   case N_MODEL_LINEAR_OBJECTIVE:
     // N_VECTOR: N*_i is leading part of cv_star and N* is trailing entry.
@@ -1545,7 +1521,7 @@ recover_results(const RealVector& cv_star, const RealVector& fn_star,
 }
 
 
-Real NonDGenACVSampling::linear_cost(const RealVector& N_vec)
+Real NonDGenACVSampling::linear_model_cost(const RealVector& N_vec)
 {
   const UShortArray& approx_set = activeModelSetIter->first;
   size_t i, num_approx = approx_set.size();
@@ -1564,7 +1540,7 @@ Real NonDGenACVSampling::linear_cost(const RealVector& N_vec)
 }
 
 
-Real NonDGenACVSampling::nonlinear_cost(const RealVector& r_and_N)
+Real NonDGenACVSampling::nonlinear_model_cost(const RealVector& r_and_N)
 {
   const UShortArray& approx_set = activeModelSetIter->first;
   size_t i, num_approx = approx_set.size();
@@ -1588,7 +1564,7 @@ Real NonDGenACVSampling::nonlinear_cost(const RealVector& r_and_N)
 
 
 void NonDGenACVSampling::
-linear_cost_gradient(const RealVector& N_vec, RealVector& grad_c)
+linear_model_cost_gradient(const RealVector& N_vec, RealVector& grad_c)
 {
   const UShortArray& approx_set = activeModelSetIter->first;
   size_t i, num_approx = approx_set.size();  unsigned short inflate_i;
@@ -1609,7 +1585,7 @@ linear_cost_gradient(const RealVector& N_vec, RealVector& grad_c)
 
 
 void NonDGenACVSampling::
-nonlinear_cost_gradient(const RealVector& r_and_N, RealVector& grad_c)
+nonlinear_model_cost_gradient(const RealVector& r_and_N, RealVector& grad_c)
 {
   const UShortArray& approx_set = activeModelSetIter->first;
   size_t i, num_approx = approx_set.size();

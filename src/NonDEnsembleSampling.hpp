@@ -83,6 +83,8 @@ protected:
 
   /// increment samples array with a shared scalar
   void increment_samples(SizetArray& N_l, size_t incr);
+  /// increment samples array with a shared scalar
+  void increment_samples(SizetArray& N_l, const SizetArray& incr);
   /// increment 2D samples array with a shared 1D array (additional dim is QoI)
   void increment_samples(Sizet2DArray& N_l, const SizetArray& incr);
 
@@ -134,18 +136,6 @@ protected:
 			    Real& sm1, Real& sm2, Real& sm3, Real& sm4);
   /// detect, warn, and repair a negative central moment (for even orders)
   static void check_negative(Real& cm);
-
-  /// compute sum of a set of observations
-  static Real sum(const Real* vec, size_t vec_len);
-  /// compute average of a set of observations
-  static Real average(const Real* vec, size_t vec_len);
-  /// compute average of a set of observations
-  static Real average(const RealVector& vec);
-  /// compute average of a set of observations
-  static Real average(const SizetArray& sa);
-  /// compute row-averages for each column or column-averages for each row
-  static void average(const RealMatrix& mat, size_t avg_index,
-		      RealVector& avg_vec);
 
   //
   //- Heading: Data
@@ -327,6 +317,20 @@ increment_samples(SizetArray& N_samp, size_t incr)
 
 
 inline void NonDEnsembleSampling::
+increment_samples(SizetArray& N_samp, const SizetArray& incr)
+{
+  size_t q, nq = N_samp.size();
+  if (incr.size() != nq) {
+    Cerr << "Error: inconsistent array sizes in NonDEnsembleSampling::"
+	 << "increment_samples()." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  for (q=0; q<nq; ++q)
+    N_samp[q] += incr[q];
+}
+
+
+inline void NonDEnsembleSampling::
 increment_samples(Sizet2DArray& N_samp, const SizetArray& incr)
 {
   size_t l, nl = N_samp.size();
@@ -483,69 +487,6 @@ inline void NonDEnsembleSampling::check_negative(Real& cm)
 	 << "Repairing to zero.\n";
     cm = 0.;
     // TO DO:  consider hard error if COV < -tol (pass in mean and cm order)
-  }
-}
-
-
-inline Real NonDEnsembleSampling::sum(const Real* vec, size_t vec_len)
-{
-  Real sum = 0.;
-  for (size_t i=0; i<vec_len; ++i)
-    sum += vec[i];
-  return sum;
-}
-
-
-inline Real NonDEnsembleSampling::
-average(const Real* vec, size_t vec_len)
-{ return (vec_len == 1) ? vec[0] : sum(vec, vec_len) / (Real)vec_len; }
-
-
-inline Real NonDEnsembleSampling::average(const RealVector& vec)
-{ return average(vec.values(), vec.length()); }
-
-
-inline void NonDEnsembleSampling::
-average(const RealMatrix& mat, size_t avg_index, RealVector& avg_vec)
-{
-  size_t i, j, nr = mat.numRows(), nc = mat.numCols();
-  switch (avg_index) {
-  case 0: // average over index 0, retaining index 1
-    avg_vec.sizeUninitialized(nc);
-    for (i=0; i<nc; ++i)
-      avg_vec[i] = average(mat[i], nr); // average over rows for each col vec
-    break;
-  case 1:
-    avg_vec.size(nr); // init to 0
-    for (i=0; i<nr; ++i) {
-      Real& avg_i = avg_vec[i];         // average over cols for each row vec
-      if (nc == 1)
-	avg_i = mat(i,0);
-      else {
-	for (j=0; j<nc; ++j)
-	  avg_i += mat(i,j);
-	avg_i /= nc;
-      }
-    }
-    break;
-  default:
-    Cerr << "Error: bad averaging index (" << avg_index
-	 << ") in NonDEnsembleSampling::average(RealMatrix)." << std::endl;
-    abort_handler(-1); break;
-  }
-}
-
-
-inline Real NonDEnsembleSampling::average(const SizetArray& sa)
-{
-  size_t len = sa.size();
-  if (len == 1)
-    return (Real)sa[0];
-  else {
-    size_t sum = 0;
-    for (size_t i=0; i<len; ++i)
-      sum += sa[i];
-    return (Real)sum / (Real)len;
   }
 }
 

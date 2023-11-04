@@ -137,9 +137,9 @@ protected:
   Real update_hf_target(const RealVector& avg_eval_ratios,
 			const RealVector& var_H, const RealVector& estvar0);
 
-  void pick_mfmc_cvmc_solution(const MFSolutionData& mf_soln, size_t mf_samp,
-			       const MFSolutionData& cv_soln, size_t cv_samp,
-			       MFSolutionData& soln, size_t& num_samp);
+  void pick_mfmc_cvmc_solution(const MFSolutionData& mf_soln, //size_t mf_samp,
+			       const MFSolutionData& cv_soln, //size_t cv_samp,
+			       MFSolutionData& soln);//, size_t& num_samp);
 
   void print_computed_solution(std::ostream& s, const MFSolutionData& soln,
 			       const UShortArray& approx_set);

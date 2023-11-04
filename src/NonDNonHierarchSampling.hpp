@@ -273,9 +273,12 @@ protected:
   //- Heading: New virtual functions
   //
 
+  /// helper function that supports optimization APIs passing design variables
+  virtual Real average_estimator_variance(const RealVector& cd_vars);
   /// compute estimator variance ratios from HF samples and oversample ratios
   virtual void estimator_variance_ratios(const RealVector& r_and_N,
-					 RealVector& estvar_ratios) = 0;
+					 RealVector& estvar_ratios);
+
   /// augment linear inequality constraints as required by derived algorithm
   virtual void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 					       RealVector& lin_ineq_lb,
@@ -288,32 +291,33 @@ protected:
 
   virtual void numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
 					 size_t& num_nln_con);
-  virtual void numerical_solution_bounds_constraints(
-    const MFSolutionData& soln, const RealVector& cost, Real avg_N_H,
+  virtual void numerical_solution_bounds_constraints(const MFSolutionData& soln,
     RealVector& x0, RealVector& x_lb, RealVector& x_ub,
     RealVector& lin_ineq_lb, RealVector& lin_ineq_ub, RealVector& lin_eq_tgt,
     RealVector& nln_ineq_lb, RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
     RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs);
-  /// When looping through a minimizer sequence/competition, this
-  /// function enables per-minimizer updates to the parameter bounds,
-  /// e.g. for providing a bounded domain for methods that require it,
-  /// while removing it for those that don't
-  virtual void finite_solution_bounds(const RealVector& cost, Real avg_N_H,
-				      RealVector& x_lb, RealVector& x_ub);
+  /// Virtual portion of finite_solution_bounds()
+  virtual void finite_solution_upper_bounds(Real remaining, RealVector& x_ub);
 
   /// post-process optimization final results to recover solution data
   virtual void recover_results(const RealVector& cv_star,
 			       const RealVector& fn_star, MFSolutionData& soln);
 
   /// constraint helper function shared by NPSOL/OPT++ static evaluators
-  virtual Real linear_cost(const RealVector& N_vec);
+  virtual Real linear_model_cost(const RealVector& N_vec);
+  /// constraint gradient helper fn shared by NPSOL/OPT++ static evaluators
+  virtual void linear_model_cost_gradient(const RealVector& N_vec,
+					  RealVector& grad_c);
   /// constraint helper function shared by NPSOL/OPT++ static evaluators
-  virtual Real nonlinear_cost(const RealVector& r_and_N);
+  virtual Real linear_group_cost(const RealVector& N_vec);
   /// constraint gradient helper fn shared by NPSOL/OPT++ static evaluators
-  virtual void linear_cost_gradient(const RealVector& N_vec,RealVector& grad_c);
+  virtual void linear_group_cost_gradient(const RealVector& N_vec,
+					  RealVector& grad_c);
+  /// constraint helper function shared by NPSOL/OPT++ static evaluators
+  virtual Real nonlinear_model_cost(const RealVector& r_and_N);
   /// constraint gradient helper fn shared by NPSOL/OPT++ static evaluators
-  virtual void nonlinear_cost_gradient(const RealVector& r_and_N,
-				       RealVector& grad_c);
+  virtual void nonlinear_model_cost_gradient(const RealVector& r_and_N,
+					     RealVector& grad_c);
 
   virtual size_t num_approximations() const;
 
@@ -337,6 +341,12 @@ protected:
   void ensemble_sample_batch(size_t iter, int batch_id);
   void ensemble_sample_synchronize();
 
+  /// When looping through a minimizer sequence/competition, this
+  /// function enables per-minimizer updates to the parameter bounds,
+  /// e.g. for providing a bounded domain for methods that require it,
+  /// while removing it for those that don't
+  void finite_solution_bounds(RealVector& x_lb, RealVector& x_ub);
+
   // manage response mode and active model key from {group,form,lev} triplet.
   // seq_type defines the active dimension for a model sequence.
   //void configure_indices(size_t group,size_t form,size_t lev,short seq_type);
@@ -351,7 +361,8 @@ protected:
 		       RealVector& sum_HH);
   void initialize_counts(Sizet2DArray& num_L_baseline, SizetArray& num_H,
 			 Sizet2DArray& num_LH);
-  void finalize_counts(Sizet2DArray& N_L_actual, SizetArray& N_L_alloc);
+  void finalize_counts(const Sizet2DArray& N_L_actual,
+		       const SizetArray& N_L_alloc);
 
   Real compute_equivalent_cost(Real avg_hf_target,
 			       const RealVector& avg_eval_ratios,
@@ -431,10 +442,11 @@ protected:
 					RealVector& avg_eval_ratios,
 					bool monotonic_r = false);
 
-  void ensemble_numerical_solution(const RealVector& cost,
-				   MFSolutionData& soln, size_t& num_samples);
-  void configure_minimizers(const RealVector& cost, Real avg_N_H,
-			    RealVector& x0, RealVector& x_lb, RealVector& x_ub,
+  void ensemble_numerical_solution(MFSolutionData& soln);
+  void process_model_solution(MFSolutionData& soln, size_t& num_samples);
+  //void process_group_solution(MFSolutionData& soln, SizetArray& delta_N);
+
+  void configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 			    RealVector& lin_ineq_lb, RealVector& lin_ineq_ub,
 			    RealVector& lin_eq_tgt,  RealVector& nln_ineq_lb,
 			    RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
@@ -453,8 +465,6 @@ protected:
 
   void cache_mc_reference();
 
-  /// helper function that supports optimization APIs passing design variables
-  Real average_estimator_variance(const RealVector& cd_vars);
   /// helper function that supports virtual print_variance_reduction(s)
   void print_estimator_performance(std::ostream& s,
 				   const MFSolutionData& soln);
@@ -518,6 +528,10 @@ protected:
   size_t numGroups;
   /// number of approximation models managed by non-hierarchical iteratedModel
   size_t numApprox;
+
+  /// aggregate cost of a sample for each of a set of model groupings
+  /// (e.g. NonDMultilevBLUESampling::modelGroups)
+  RealVector modelGroupCost;
 
   /// formulation for optimization sub-problem that minimizes R^2 subject
   /// to different variable sets and different linear/nonlinear constraints
@@ -633,7 +647,7 @@ initialize_counts(Sizet2DArray& num_L_baseline, SizetArray& num_H,
 
 
 inline void NonDNonHierarchSampling::
-finalize_counts(Sizet2DArray& N_L_actual, SizetArray& N_L_alloc)
+finalize_counts(const Sizet2DArray& N_L_actual, const SizetArray& N_L_alloc)
 {
   // post final sample counts back to NLev{Actual,Alloc} (for final summaries)
 
@@ -673,7 +687,7 @@ compute_equivalent_cost(Real avg_hf_target, const RealVector& avg_eval_ratios,
 }
 
 
-/* redundant with linear_cost():
+/* redundant with linear_model_cost():
 inline Real NonDNonHierarchSampling::
 compute_equivalent_cost(const RealVector& sample_counts, const RealVector& cost)
 {
@@ -1118,6 +1132,16 @@ covariance_to_correlation_sq(const RealMatrix& cov_LH, const RealMatrix& var_L,
       rho2_LH(qoi,approx) = cov_LH_aq / var_L(qoi,approx) * cov_LH_aq / var_H_q;
     }
   }
+}
+
+
+inline Real NonDNonHierarchSampling::
+log_average_estvar(const RealVector& cd_vars)
+{
+  Real avg_est_var = average_estimator_variance(cd_vars);
+  return (avg_est_var > 0.) ?
+    std::log(avg_est_var) : // use log to flatten contours
+    std::numeric_limits<Real>::quiet_NaN();//Pecos::LARGE_NUMBER;
 }
 
 

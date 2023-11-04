@@ -429,7 +429,7 @@ compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
     case SUBMETHOD_DIRECT_NPSOL_OPTPP:  case SUBMETHOD_DIRECT_NPSOL:
     case SUBMETHOD_DIRECT_OPTPP:        case SUBMETHOD_DIRECT:
     case SUBMETHOD_EGO:  case SUBMETHOD_SBGO:  case SUBMETHOD_EA:
-      ensemble_numerical_solution(sequenceCost, soln, numSamples);
+      ensemble_numerical_solution(soln);
       break;
     default: { // competed initial guesses with (competed) local methods
       RealMatrix rho2_LH;
@@ -439,10 +439,9 @@ compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
       analytic_initialization_from_ensemble_cvmc(rho2_LH, avg_N_H, cv_soln);
 
       //if (multiStartACV) { // Run numerical solns from both starting points
-      size_t mf_samp, cv_samp;
-      ensemble_numerical_solution(sequenceCost, mf_soln, mf_samp);
-      ensemble_numerical_solution(sequenceCost, cv_soln, cv_samp);
-      pick_mfmc_cvmc_solution(mf_soln,mf_samp,cv_soln,cv_samp,soln,numSamples);
+      ensemble_numerical_solution(mf_soln);
+      ensemble_numerical_solution(cv_soln);
+      pick_mfmc_cvmc_solution(mf_soln, cv_soln, soln);
       //}
       /*
       else { // Run one numerical soln from best of two starting points
@@ -464,7 +463,7 @@ compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
         }
         soln = (mfmc_init) ? mf_soln : cv_soln;
         // Single solve initiated from lowest estvar
-        ensemble_numerical_solution(sequenceCost, soln, numSamples);
+        ensemble_numerical_solution(soln);
       }
       */
       break;
@@ -477,9 +476,10 @@ compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
     // updated avg_N_H now includes allocation from previous solution and
     // should be active on constraint bound (excepting sample count rounding)
 
-    ensemble_numerical_solution(sequenceCost, soln, numSamples);
+    ensemble_numerical_solution(soln);
   }
 
+  process_model_solution(soln, numSamples);
   if (outputLevel >= NORMAL_OUTPUT)
     print_computed_solution(Cout, soln, approxSet);
 }
@@ -563,18 +563,18 @@ cvmc_ensemble_solutions(const RealMatrix& rho2_LH, const RealVector& cost,
 
 
 void NonDACVSampling::
-pick_mfmc_cvmc_solution(const MFSolutionData& mf_soln, size_t  mf_samp,
-			const MFSolutionData& cv_soln, size_t  cv_samp,
-			MFSolutionData& soln,          size_t& num_samp)
+pick_mfmc_cvmc_solution(const MFSolutionData& mf_soln, //size_t mf_samp,
+			const MFSolutionData& cv_soln, //size_t cv_samp,
+			MFSolutionData& soln) //, size_t& num_samp)
 {
   Cout << "ACV best solution initiated from ";
   if (nh_penalty_merit(mf_soln) < nh_penalty_merit(cv_soln)) {
     Cout << "analytic MFMC.\n" << std::endl;
-    soln = mf_soln;  num_samp = mf_samp;
+    soln = mf_soln;  //num_samp = mf_samp;
   }
   else {
     Cout << "ensemble of pairwise CVMC.\n" << std::endl;
-    soln = cv_soln;  num_samp = cv_samp;
+    soln = cv_soln;  //num_samp = cv_samp;
   }
 }
 
