@@ -4,19 +4,10 @@ Description::
 Uses unstructured input-output samples to estimate
 main effect indices. It cannot compute total indices.
 
-**Default Behavior**
-
 **Expected Output**
 Sensitivity indices for main effects *only* will be reported.  
 Main effects (roughly) represent the percent contribution of 
 each individual variable to the variance in the model response. 
-
-**Usage Tips**
-
-
-**Additional Discussion**
-
-Topics::
 
 Examples::
 

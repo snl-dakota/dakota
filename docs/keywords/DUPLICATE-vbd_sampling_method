@@ -8,14 +8,6 @@ and ``binned`` for variance-based decomposition.
 
 Default method is ``pick_and_freeze``.
 
-**Expected Output**
-
-**Usage Tips**
-
-**Additional Discussion**
-
-Topics::
-
 Examples::
 
 .. code-block::

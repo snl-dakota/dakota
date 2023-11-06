@@ -1,6 +1,7 @@
 Blurb::
-The number of bins to used to compute the variance-based 
+Number of bins used to compute the variance-based 
 decomposition
+
 Description::
 Allows the user to specify the number of bins to be used
 in the variance-based decomposition.
@@ -8,14 +9,6 @@ in the variance-based decomposition.
 **Default Behavior**
 Default number of bins is the square root of the number
 of samples rounded down to the nearest integer.
-
-**Expected Output**
-
-**Usage Tips**
-
-**Additional Discussion**
-
-Topics::
 
 Examples::
 
