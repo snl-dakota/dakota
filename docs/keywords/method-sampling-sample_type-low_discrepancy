@@ -14,6 +14,10 @@ When low-discrepancy points are used for integration, the method is called the
 quasi-Monte Carlo method. Low-discrepancy points are also referred to as 
 quasi-Monte Carlo points.
 
+.. note::
+   Currently, only continuous variables are suppored for low discrepancy
+   sampling.
+
 *Usage Tips*
 
 Low-discrepancy points easily scale up to hundreds or thousands of dimensions. 
