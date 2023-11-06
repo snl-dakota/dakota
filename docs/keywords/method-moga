@@ -10,30 +10,30 @@ discrete variables.
 
 ``moga`` can utilize linear constraints using the keywords:
 
--* linear_inequality_constraint_matrix
--* linear_inequality_lower_bounds
--* linear_inequality_upper_bounds
--* linear_inequality_scale_types
--* linear_inequality_scales
--* linear_equality_constraint_matrix
--* linear_equality_targets
--* linear_equality_scale_types
--* linear_equality_scales
+* :dakkw:`variables-linear_inequality_constraint_matrix`
+* :dakkw:`variables-linear_inequality_lower_bounds`
+* :dakkw:`variables-linear_inequality_upper_bounds`
+* :dakkw:`variables-linear_inequality_scale_types`
+* :dakkw:`variables-linear_inequality_scales`
+* :dakkw:`variables-linear_equality_constraint_matrix`
+* :dakkw:`variables-linear_equality_targets`
+* :dakkw:`variables-linear_equality_scale_types`
+* :dakkw:`variables-linear_equality_scales`
 
 *Configuration*
 
 The genetic algorithm configurations are:
 
 
--fitness
--replacement
--niching
--convergence
--postprocessor
--initialization
--crossover
--mutation
--population size
+- fitness
+- replacement
+- niching
+- convergence
+- postprocessor
+- initialization
+- crossover
+- mutation
+- population size
 
 The steps followed by the algorithm are listed below. The
 configurations will effect how the algorithm completes each step.
@@ -57,7 +57,7 @@ stopping criteria only.
 
 *Expected Outputs*
 
-The ``moga`` method respects the ``output`` method independent control
+The ``moga`` method respects the :dakkw:`method-output` method independent control
 to vary the amount of information presented to the user during
 execution.
 
