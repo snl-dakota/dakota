@@ -416,7 +416,7 @@ compute_allocations(MFSolutionData& soln, const SizetMatrixArray& N_G_actual,
       if (pilotMgmtMode == OFFLINE_PILOT)
 	soln.average_estimator_variance(std::numeric_limits<Real>::infinity());
       else
-	soln.average_estimator_variance(average(estVarIter0)); // *** TO DO: no CV cancel in this case
+	soln.average_estimator_variance(average(estVarIter0)); // *** TO DO: no CV cancel in this case --> need a pilot-only solve
       soln.average_estimator_variance_ratio(1.);
       delta_N_G.assign(numGroups, 0);  return;
     }
@@ -434,9 +434,17 @@ compute_allocations(MFSolutionData& soln, const SizetMatrixArray& N_G_actual,
     default: { // competed initial guesses with (competed) local methods
       // use pyramid sample definitions for hierarchical groups as init guess,
       // even though they are not independent sample sets in MFMC
-      //covariance_to_correlation_sq(covGG, /*var_G,*/ rho2GG); // ***
-      //analytic_initialization_from_mfmc(avg_N_H, soln);       // ***
-      ensemble_numerical_solution(soln);
+      size_t g = numGroups - 1;// don't mix sample sets: use group w/ all models
+      RealMatrix rho2_LH;  covariance_to_correlation_sq(covGG[g], rho2_LH);
+      Real avg_N_H = (backfillFailures) ? average(N_G_actual[g]) : N_G_alloc[g];
+      MFSolutionData mf_soln, cv_soln;
+      analytic_initialization_from_mfmc(rho2_LH, avg_N_H, mf_soln);
+      analytic_initialization_from_ensemble_cvmc(rho2_LH, avg_N_H, cv_soln);
+
+      //if (multiStartACV) { // Run numerical solns from both starting points
+      ensemble_numerical_solution(mf_soln);
+      ensemble_numerical_solution(cv_soln);
+      pick_mfmc_cvmc_solution(mf_soln, cv_soln, soln);
       break;
     }
     }
@@ -452,12 +460,101 @@ compute_allocations(MFSolutionData& soln, const SizetMatrixArray& N_G_actual,
 
   process_group_solution(soln, N_G_actual, N_G_alloc, delta_N_G);
   if (outputLevel >= NORMAL_OUTPUT)
-    print_computed_solution(Cout, soln); // ***
+    print_computed_solution(Cout, soln);
 
   if (backfillFailures) // delta_N_G may include backfill
     one_sided_update(N_G_alloc, soln.solution_variables());
   else // delta_N_G is the allocation increment
     increment_samples(N_G_alloc, delta_N_G);
+}
+
+
+void NonDMultilevBLUESampling::
+analytic_initialization_from_mfmc(const RealMatrix& rho2_LH, Real avg_N_H,
+				  MFSolutionData& soln)
+{
+  RealVector avg_eval_ratios; // defined over numApprox, not numGroups
+  UShortArray approx_set(numApprox);
+  for (size_t i=0; i<numApprox; ++i) approx_set[i] = i;
+  if (ordered_approx_sequence(rho2_LH)) // for all QoI across all Approx
+    mfmc_analytic_solution(approx_set, rho2_LH, sequenceCost, avg_eval_ratios);
+  else {
+    // compute reordered MFMC for averaged rho; monotonic r not required
+    // > any rho2_LH re-ordering from MFMC initial guess can be ignored (later
+    //   gets replaced with r_i ordering for approx_increments() sampling)
+    SizetArray approx_sequence;
+    mfmc_reordered_analytic_solution(approx_set, rho2_LH, sequenceCost,
+				     approx_sequence, avg_eval_ratios);
+  }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Initial guess from analytic MFMC (unscaled eval ratios):\n"
+	 << avg_eval_ratios << std::endl;
+
+  Real avg_hf_target;  RealVector soln_vars(numGroups, false);
+  if (maxFunctionEvals == SZ_MAX) {
+    //avg_hf_target = update_hf_target(avg_eval_ratios, varH, estVarIter0); // *** TO DO: estVarIter0
+    //soln.anchored_solution_ratios(avg_eval_ratios, avg_hf_target);
+  }
+  else {
+    //scale_to_target(pilotSamples/*avg_N_H*/, modelGroupCost, avg_eval_ratios, sequenceCost, avg_hf_target); // redo for group-based pilot sample
+
+    // let profile emerge from pilot on MFMC groups, but deduct pilot cost
+    // for non-MFMC groups
+    BitArray active_groups(numGroups); // init to off
+    Real remaining = (Real)maxFunctionEvals;  size_t g, cntr = 0;
+    for (g=0; g<numGroups; ++g) {
+      if (mfmc_model_grouping(modelGroups[g]))  active_groups.set(g);
+      else          remaining -= pilotSamples[g] * modelGroupCost[g];
+    }
+    // allocate remaining budget among MFMC groups
+    avg_hf_target = allocate_budget(avg_eval_ratios, sequenceCost, remaining);
+    // Convert to BLUE solution using MFMC "groups":
+    for (g=0; g<numGroups; ++g)
+      soln_vars[g] = (active_groups[g]) ?
+	avg_eval_ratios[cntr++] * avg_hf_target : pilotSamples[g]; // *** verify cntr ordering
+  }
+  soln.solution_variables(soln_vars);
+}
+
+
+void NonDMultilevBLUESampling::
+analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
+					   Real avg_N_H, MFSolutionData& soln)
+{
+  // > Option 2 is ensemble of independent pairwise CVMCs, rescaled to an
+  //   aggregate budget.  This is more ACV-like in the sense that it is not
+  //   recursive, but it neglects the covariance C among approximations.
+  //   It is also insensitive to model sequencing.
+  RealVector avg_eval_ratios;
+  cvmc_ensemble_solutions(rho2_LH, sequenceCost, avg_eval_ratios);
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Initial guess from ensemble CVMC (unscaled eval ratios):\n"
+	 << avg_eval_ratios << std::endl;
+
+  Real avg_hf_target;  RealVector soln_vars(numGroups, false);
+  if (maxFunctionEvals == SZ_MAX) {
+    //avg_hf_target = update_hf_target(avg_eval_ratios, varH, estVarIter0); // *** TO DO: estVarIter0
+    //soln.anchored_solution_ratios(avg_eval_ratios, avg_hf_target);
+  }
+  else {
+    //scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, avg_hf_target);
+
+    // let profile emerge from pilot on CVMC groups, but deduct pilot cost
+    // for non-CVMC groups
+    BitArray active_groups(numGroups); // init to off
+    Real remaining = (Real)maxFunctionEvals;  size_t g, cntr = 0;
+    for (g=0; g<numGroups; ++g) {
+      if (cvmc_model_grouping(modelGroups[g]))  active_groups.set(g);
+      else          remaining -= pilotSamples[g] * modelGroupCost[g];
+    }
+    // allocate remaining budget among MFMC groups
+    avg_hf_target = allocate_budget(avg_eval_ratios, sequenceCost, remaining);
+    // Convert to BLUE solution using MFMC "groups":
+    for (g=0; g<numGroups; ++g)
+      soln_vars[g] = (active_groups[g]) ?
+	avg_eval_ratios[cntr++] * avg_hf_target : pilotSamples[g]; // *** verify cntr ordering
+  }
+  soln.solution_variables(soln_vars);
 }
 
 

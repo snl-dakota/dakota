@@ -538,6 +538,51 @@ mfmc_reordered_analytic_solution(const UShortArray& approx_set,
 
 
 void NonDNonHierarchSampling::
+cvmc_ensemble_solutions(const RealMatrix& rho2_LH, const RealVector& cost,
+			RealVector& avg_eval_ratios)
+{
+  if (avg_eval_ratios.empty()) avg_eval_ratios.size(numApprox);
+  else                         avg_eval_ratios = 0.;
+
+  // Compute an ensemble of pairwise CVMC solutions, all relative to HF:
+  size_t qoi, approx;  Real cost_ratio, rho_sq, cost_H = cost[numApprox];
+  for (approx=0; approx<numApprox; ++approx) {
+    cost_ratio = cost_H / cost[approx];
+    const Real* rho2_LH_a = rho2_LH[approx];
+    Real&  avg_eval_ratio = avg_eval_ratios[approx];
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+      rho_sq = rho2_LH_a[qoi];
+      if (rho_sq < 1.) // prevent div by 0, sqrt(negative)
+	avg_eval_ratio += std::sqrt(cost_ratio * rho_sq / (1. - rho_sq));
+      else // should not happen
+	avg_eval_ratio += std::sqrt(cost_ratio / Pecos::SMALL_NUMBER);
+    }
+    avg_eval_ratio /= numFunctions;
+  }
+}
+
+
+void NonDNonHierarchSampling::
+scale_to_target(Real avg_N_H, const RealVector& cost,
+		RealVector& avg_eval_ratios, Real& avg_hf_target)
+{
+  // scale to enforce budget constraint.  Since the profile does not emerge
+  // from pilot in ACV, don't select an infeasible initial guess:
+  // > if N* < N_pilot, scale back r* --> initial = scaled_r*,N_pilot
+  // > if N* > N_pilot, use initial = r*,N*
+  avg_hf_target = allocate_budget(avg_eval_ratios, cost); // r* --> N*
+  if (pilotMgmtMode == OFFLINE_PILOT) {
+    Real offline_N_lwr = 2.;
+    if (avg_N_H < offline_N_lwr) avg_N_H = offline_N_lwr;
+  }
+  if (avg_N_H > avg_hf_target) {// replace N* with N_pilot, rescale r* to budget
+    avg_hf_target = avg_N_H;
+    scale_to_budget_with_pilot(avg_eval_ratios, cost, avg_hf_target);
+  }
+}
+
+
+void NonDNonHierarchSampling::
 scale_to_budget_with_pilot(RealVector& avg_eval_ratios, const RealVector& cost,
 			   Real avg_N_H)
 {

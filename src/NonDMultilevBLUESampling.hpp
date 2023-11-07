@@ -155,6 +155,17 @@ private:
 			     const RealSymMatrix2DArray& sum_GG,
 			     const SizetMatrixArray& N_G,
 			     RealSymMatrix2DArray& cov_GG);
+  void covariance_to_correlation_sq(const RealSymMatrixArray& cov_GG_g,
+				    RealMatrix& rho2_LH);
+
+  void analytic_initialization_from_mfmc(const RealMatrix& rho2_LH,
+					 Real avg_N_H, MFSolutionData& soln);
+  void analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
+						  Real avg_N_H,
+						  MFSolutionData& soln);
+
+  bool mfmc_model_grouping(const UShortArray& model_group) const;
+  bool cvmc_model_grouping(const UShortArray& model_group) const;
 
   /*
   void compute_GG_statistics(RealMatrixArray& sum_G_pilot,
@@ -260,6 +271,25 @@ initialize_blue_counts(SizetMatrixArray& num_G)//,SizetSymMatrix2DArray& num_GG)
     //num_GG_g.resize(numFunctions);
     //for (size_t qoi=0; qoi<numFunctions; ++qoi)
     //  num_GG_g[qoi].shape(num_models);
+  }
+}
+
+
+inline void NonDMultilevBLUESampling::
+covariance_to_correlation_sq(const RealSymMatrixArray& cov_GG_g,
+			     RealMatrix& rho2_LH)
+{
+  if (rho2_LH.empty()) rho2_LH.shapeUninitialized(numFunctions, numApprox);
+
+  size_t qoi, approx;  Real var_H_q, var_L_q, cov_LH_q;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    const RealSymMatrix& cov_GG_gq = cov_GG_g[qoi];
+    var_H_q = cov_GG_gq(numApprox, numApprox);
+    for (approx=0; approx<numApprox; ++approx) {
+      var_L_q  = cov_GG_gq(approx,    approx);
+      cov_LH_q = cov_GG_gq(numApprox, approx);
+      rho2_LH(qoi, approx) = cov_LH_q / var_L_q * cov_LH_q / var_H_q;
+    }
   }
 }
 
@@ -498,6 +528,23 @@ blue_raw_moments(IntRealMatrixArrayMap& sum_G,
     }
   }
 }
+
+
+inline bool NonDMultilevBLUESampling::
+mfmc_model_grouping(const UShortArray& model_group) const
+{
+  // For case where all models are active in MFMC (no model selection a priori)
+  size_t i, num_models = model_group.size();
+  for (i=0; i<num_models; ++i)
+    if (model_group[i] != i) // "pyramid" sequence from 0 to last in set
+      return false;
+  return true;
+}
+
+
+inline bool NonDMultilevBLUESampling::
+cvmc_model_grouping(const UShortArray& model_group) const
+{ return (model_group.size() == 2 && model_group[1] == numApprox); }
 
 
 inline void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s)

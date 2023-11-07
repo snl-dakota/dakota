@@ -3278,6 +3278,23 @@
 	  &method_optional_model_pointer;
 	</keyword>
 
+	<keyword  id="multilevel_blue" name="multilevel_blue" code="{N_mdm(utype,methodName_MULTILEVEL_BLUE)}" label="multilevel_blue"  group="Uncertainty Quantification" >
+	  &mc_pilot_samples;
+	  &mc_solution_mode;
+	  &method_mlmf_sub_problem_solver;
+	  &method_seed_sequence;
+	  &method_sample_type_lhs_mc;
+	  <keyword  id="export_sample_sequence" name="export_sample_sequence" code="{N_mdm(true,exportSampleSeqFlag)}" label="export_sample_sequence"  minOccurs="0" >
+	    &method_export_samples_format;
+	  </keyword>
+	  &method_convergence_tolerance;
+	  &method_max_iterations;
+          &method_max_function_evaluations;
+	  &final_stats_perf_res;
+	  &rng_options;
+	  &method_optional_model_pointer;
+	</keyword>
+
 	<keyword  id="importance_sampling" name="importance_sampling" code="{N_mdm(utype,methodName_IMPORTANCE_SAMPLING)}" label="importance_sampling"  group="Uncertainty Quantification" >
 	  <alias name="nond_importance_sampling"/>
 	  <keyword  id="samples" name="samples" code="{N_mdm(int,numSamples)}" label="(initial) samples"  minOccurs="0" default="0">

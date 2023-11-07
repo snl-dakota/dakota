@@ -442,6 +442,14 @@ protected:
 					RealVector& avg_eval_ratios,
 					bool monotonic_r = false);
 
+  void cvmc_ensemble_solutions(const RealMatrix& rho2_LH,
+			       const RealVector& cost,
+			       RealVector& avg_eval_ratios);
+
+  void pick_mfmc_cvmc_solution(const MFSolutionData& mf_soln, //size_t mf_samp,
+			       const MFSolutionData& cv_soln, //size_t cv_samp,
+			       MFSolutionData& soln);//, size_t& num_samp);
+
   void ensemble_numerical_solution(MFSolutionData& soln);
   void process_model_solution(MFSolutionData& soln, size_t& num_samples);
   //void process_group_solution(MFSolutionData& soln, SizetArray& delta_N);
@@ -455,11 +463,15 @@ protected:
   void run_minimizers(MFSolutionData& soln);
 
   Real allocate_budget(const RealVector& avg_eval_ratios,
+		       const RealVector& cost, Real budget);
+  Real allocate_budget(const RealVector& avg_eval_ratios,
 		       const RealVector& cost);
   Real allocate_budget(const UShortArray& approx_set,
 		       const RealVector& avg_eval_ratios,
 		       const RealVector& cost);
 
+  void scale_to_target(Real avg_N_H, const RealVector& cost,
+		       RealVector& avg_eval_ratios, Real& avg_hf_target);
   void scale_to_budget_with_pilot(RealVector& avg_eval_ratios,
 				  const RealVector& cost, Real avg_N_H);
 
@@ -878,18 +890,24 @@ ensemble_active_set(const UShortArray& model_set)
 
 
 inline Real NonDNonHierarchSampling::
-allocate_budget(const RealVector& avg_eval_ratios, const RealVector& cost)
+allocate_budget(const RealVector& avg_eval_ratios, const RealVector& cost,
+		Real budget)
 {
   // version with scalar HF target (eval_ratios already averaged over QoI
   // due to formulation of optimization sub-problem)
 
-  Real cost_H = cost[numApprox], inner_prod, budget = (Real)maxFunctionEvals;
+  Real cost_H = cost[numApprox], inner_prod;
   inner_prod = cost_H; // raw cost (un-normalized)
   for (size_t approx=0; approx<numApprox; ++approx)
     inner_prod += cost[approx] * avg_eval_ratios[approx];
   Real avg_hf_target = budget / inner_prod * cost_H; // normalized to equivHF
   return avg_hf_target;
 }
+
+
+inline Real NonDNonHierarchSampling::
+allocate_budget(const RealVector& avg_eval_ratios, const RealVector& cost)
+{ return allocate_budget(avg_eval_ratios, cost, (Real)maxFunctionEvals); }
 
 
 inline Real NonDNonHierarchSampling::
@@ -906,6 +924,23 @@ allocate_budget(const UShortArray& approx_set,
     inner_prod += cost[approx_set[a]] * avg_eval_ratios[a];
   Real avg_hf_target = budget / inner_prod * cost_H; // normalized to equivHF
   return avg_hf_target;
+}
+
+
+inline void NonDNonHierarchSampling::
+pick_mfmc_cvmc_solution(const MFSolutionData& mf_soln, //size_t mf_samp,
+			const MFSolutionData& cv_soln, //size_t cv_samp,
+			MFSolutionData& soln) //, size_t& num_samp)
+{
+  Cout << "Best numerical solution initiated from ";
+  if (nh_penalty_merit(mf_soln) < nh_penalty_merit(cv_soln)) {
+    Cout << "analytic MFMC.\n" << std::endl;
+    soln = mf_soln;  //num_samp = mf_samp;
+  }
+  else {
+    Cout << "ensemble of pairwise CVMC.\n" << std::endl;
+    soln = cv_soln;  //num_samp = cv_samp;
+  }
 }
 
 

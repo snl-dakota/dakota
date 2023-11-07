@@ -137,10 +137,6 @@ protected:
   Real update_hf_target(const RealVector& avg_eval_ratios,
 			const RealVector& var_H, const RealVector& estvar0);
 
-  void pick_mfmc_cvmc_solution(const MFSolutionData& mf_soln, //size_t mf_samp,
-			       const MFSolutionData& cv_soln, //size_t cv_samp,
-			       MFSolutionData& soln);//, size_t& num_samp);
-
   void print_computed_solution(std::ostream& s, const MFSolutionData& soln,
 			       const UShortArray& approx_set);
 
@@ -184,10 +180,6 @@ private:
   void analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
 						  Real avg_N_H,
 						  MFSolutionData& soln);
-  void cvmc_ensemble_solutions(const RealMatrix& rho2_LH,
-			       const RealVector& cost,
-			       RealVector& avg_eval_ratios);
-
   void initialize_acv_counts(SizetArray& num_H, SizetSymMatrixArray& num_LL);
 
   //void initialize_acv_covariances(IntRealSymMatrixArrayMap covLL,
@@ -247,9 +239,6 @@ private:
   void solve_for_acv_control(const RealSymMatrix& cov_LL,
 			     const RealSymMatrix& F, const RealMatrix& cov_LH,
 			     size_t qoi, RealVector& beta);
-
-  void scale_to_target(Real avg_N_H, const RealVector& cost,
-		       RealVector& avg_eval_ratios, Real& avg_hf_target);
 
   //
   //- Heading: Data
@@ -363,26 +352,6 @@ compute_L_variance(const RealMatrix& sum_L, const RealSymMatrixArray& sum_LL,
     for (approx=0; approx<numApprox; ++approx)
       compute_variance(sum_L(qoi,approx), sum_LL[qoi](approx,approx),
 		       num_L_q, var_L(qoi,approx));
-  }
-}
-
-
-inline void NonDACVSampling::
-scale_to_target(Real avg_N_H, const RealVector& cost,
-		RealVector& avg_eval_ratios, Real& avg_hf_target)
-{
-  // scale to enforce budget constraint.  Since the profile does not emerge
-  // from pilot in ACV, don't select an infeasible initial guess:
-  // > if N* < N_pilot, scale back r* --> initial = scaled_r*,N_pilot
-  // > if N* > N_pilot, use initial = r*,N*
-  avg_hf_target = allocate_budget(avg_eval_ratios, cost); // r* --> N*
-  if (pilotMgmtMode == OFFLINE_PILOT) {
-    Real offline_N_lwr = 2.;
-    if (avg_N_H < offline_N_lwr) avg_N_H = offline_N_lwr;
-  }
-  if (avg_N_H > avg_hf_target) {// replace N* with N_pilot, rescale r* to budget
-    avg_hf_target = avg_N_H;
-    scale_to_budget_with_pilot(avg_eval_ratios, cost, avg_hf_target);
   }
 }
 
