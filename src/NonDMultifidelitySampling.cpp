@@ -38,6 +38,12 @@ NonDMultifidelitySampling(ProblemDescDB& problem_db, Model& model):
   numericalSolveMode(problem_db.get_ushort("method.nond.numerical_solve_mode"))
 {
   mlmfSubMethod = SUBMETHOD_MFMC; // if needed for numerical solves
+
+  load_pilot_sample(problem_db.get_sza("method.nond.pilot_samples"),
+		    numGroups, pilotSamples);
+
+  size_t max_ps = find_max(pilotSamples);
+  if (max_ps) maxEvalConcurrency *= max_ps;
 }
 
 

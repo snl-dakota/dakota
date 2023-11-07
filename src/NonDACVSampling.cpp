@@ -50,6 +50,12 @@ NonDACVSampling(ProblemDescDB& problem_db, Model& model):
   approxSet.resize(numApprox);
   for (size_t i=0; i<numApprox; ++i)
     approxSet[i] = i;
+
+  load_pilot_sample(problem_db.get_sza("method.nond.pilot_samples"),
+		    numGroups, pilotSamples);
+
+  size_t max_ps = find_max(pilotSamples);
+  if (max_ps) maxEvalConcurrency *= max_ps;
 }
 
 

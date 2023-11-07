@@ -68,6 +68,12 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model):
     for (m=0; m<num_models; ++m)
       group_cost += sequenceCost[models[m]];
   }
+
+  load_pilot_sample(problem_db.get_sza("method.nond.pilot_samples"),
+		    numGroups, pilotSamples);
+
+  size_t max_ps = find_max(pilotSamples);
+  if (max_ps) maxEvalConcurrency *= max_ps;
 }
 
 

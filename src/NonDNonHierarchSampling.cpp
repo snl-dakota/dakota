@@ -82,12 +82,6 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
   // Precedence: if solution costs provided, then we use them; else we rely
   /// on online cost recovery through response metadata
   onlineCost = !query_cost(num_forms_resolutions, sequenceType, sequenceCost);
-
-  load_pilot_sample(problem_db.get_sza("method.nond.pilot_samples"),
-		    numGroups, pilotSamples); // *** TO DO: PUSH DOWN DUE TO DEFERRED numGroups
-
-  size_t max_ps = find_max(pilotSamples);
-  if (max_ps) maxEvalConcurrency *= max_ps;
 }
 
 
