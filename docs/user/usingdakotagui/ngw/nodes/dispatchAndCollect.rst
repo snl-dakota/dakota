@@ -109,8 +109,8 @@ Usage Notes - Editing Control Scripts
 
 Refer to the main documentation for each control script to learn more about its function and what to consider editing:
 
-- :ref:`submit-dispatch.sh <gui-job-submission-workflow-dakotaQueueSubmit-scripts-submit>`
+- :ref:`submit-dispatch.sh <gui-job-submission-workflow-dispatchAndCollect-scripts-submitDispatch>`
 - :ref:`status.sh <gui-job-submission-workflow-common-scripts-status>`
 - :ref:`checkjob.sh <gui-job-submission-workflow-common-scripts-checkjob>`
 - :ref:`cancel.sh <gui-job-submission-workflow-dakotaQueueSubmit-scripts-cancel>`
-- :ref:`runDakotaRemote.sh <gui-job-submission-workflow-dispatchAndCollect-scripts-dispatchWorkflowRemote>`
+- :ref:`dispatchWorkflowRemote.sh <gui-job-submission-workflow-dispatchAndCollect-scripts-dispatchWorkflowRemote>`
