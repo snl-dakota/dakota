@@ -4,7 +4,7 @@ Variable Support
 ================
 
 Different nondeterministic methods have differing support for
-uncertain variable distributions. Tables :numref:`table:variable_support_part_1`,
+uncertain variable distributions. :numref:`table:variable_support_part_1`,
 :numref:`table:variable_support_part_2`, and :numref:`table:variable_support_part_3`
 summarize the uncertain variables that are available for use by the different methods, where a "-"
 indicates that the distribution is not supported by the method, a "U"
