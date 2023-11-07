@@ -4,10 +4,10 @@ Description::
 The adaptive algorithm proceeds as follows:
 
 
--Start from rank ``start_rank`` and form an approximation
--Adapt the current approximation by searching for a solution with lower rank that achieves L2 accuracy within epsilon tolerance of the reference.
--If a lower rank solution is found with comparable accuracy, then stop.  If not, increase the rank by an amount specified by ``kick_rank``.
--Return to step 2 and continue until either ``max_rank`` is reached or a converged rank (rank less than current reference with comparable accuracy) is found.
+1. Start from rank ``start_rank`` and form an approximation
+2. Adapt the current approximation by searching for a solution with lower rank that achieves L2 accuracy within epsilon tolerance of the reference.
+3. If a lower rank solution is found with comparable accuracy, then stop.  If not, increase the rank by an amount specified by ``kick_rank``.
+4. Return to step 2 and continue until either ``max_rank`` is reached or a converged rank (rank less than current reference with comparable accuracy) is found.
 
 *Default Behavior*
 

@@ -18,10 +18,12 @@ Other epistemic types include:
 - :dakkw:`variables-discrete_interval_uncertain`
 - discrete_uncertain_set :dakkw:`variables-discrete_uncertain_set-integer`
 - discrete_uncertain_set :dakkw:`variables-discrete_uncertain_set-string`
+
 Topics::
 discrete_variables, epistemic_uncertain_variables
 Examples::
-Let d1 be 2.1 or 1.3 and d2 be 0.4, 5 or 2.6.
+
+Let `dr1` be 2.1 or 1.3 and `dr2` be 0.4, 5 or 2.6.
 The following specification is for an interval analysis:
 
 .. code-block::
@@ -45,19 +47,20 @@ The discrete uncertain set integer variable is used in both interval analysis
 and in Dempster-Shafer theory of evidence.
 
 
-- interval analysis
+*interval analysis*
 
--the values are integers, equally weighted
--the true value of the random variable is one of the integers in this set
--output is the minimum and maximum function value conditionalon the specified inputs
+- the values are integers, equally weighted
+- the true value of the random variable is one of the integers in this set
+- output is the minimum and maximum function value conditionalon the specified inputs
 
 
-- Dempster-Shafer theory of evidence
+*Dempster-Shafer theory of evidence*
 
--the values are integers, but they can be assigned different weights
--outputs are called "belief" and "plausibility."Belief represents the smallest possible probability that is consistent with the evidence,
-while plausibility represents the largest possible probability that is consistent with the evidence.
-Evidence is the values together with their weights.
+- the values are integers, but they can be assigned different weights
+- outputs are called "belief" and "plausibility."Belief represents the smallest possible probability that is consistent with the evidence,
+  while plausibility represents the largest possible probability that is consistent with the evidence.
+  Evidence is the values together with their weights.
+
 Faq::
 
 See_Also::
