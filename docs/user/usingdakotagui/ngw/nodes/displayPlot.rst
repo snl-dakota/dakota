@@ -33,4 +33,4 @@ Output Ports
 ------------
 
 - **plotFileOut:** A file path to the generated plot file. Note that this output port is NOT "plotFileDataOut," meaning that its
-data is a path to an already-serialized plot file, not a data stream containing the plot information.
+  data is a path to an already-serialized plot file, not a data stream containing the plot information.

@@ -31,7 +31,7 @@ Notes
 - To see the dispatchAndCollect node in action, take a look at :ref:`the official NGW job submision examples <gui-job-submission-workflow>`.
 - There is a variaton of the dispatchAndCollect node that is intended to enable asynchronous, "offline mode"
   runs of Dakota on your local machine, relying on local process management instead of remote job submission.
-  See :ref:`localDispatchAndCollect <ngw-node-localDispatchAndCollect>.`
+  See :ref:`localDispatchAndCollect <ngw-node-localDispatchAndCollect>`.
 
 ----------
 Properties
