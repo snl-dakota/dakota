@@ -84,13 +84,17 @@ In a ``sampling`` study, choose
  
 **Miscellaneous Enhancements and Bugfixes**
 
-- Enh: Documentation of Dakota's regresion test system expanded.
+- Enh: Documentation of Dakota's regression test system expanded.
 
 - Bug fix: The ``@python_interface`` decorator in the ``dakota.interfacing`` module now propertly
   interprets the dvv list provided by Dakota's direct :dakkw:`interface-analysis_drivers-python` interface.
 
 - Bug fix: RPATH handling on Linux-based platforms improved.
 
+- Enh: :ref:`pyprepro <interfaces:dprepro-and-pyprepro>` gained a new function, ``json_dumps()``, which
+  returns all variables (and their values) formatted as a JSON string. See the
+  `pyprepro manual <https://github.com/snl-dakota/dakota/blob/devel/scripts/pyprepro/manual.md#json-dumps>`_
+  for more information.
 
 **Deprecated and Changed**
 
