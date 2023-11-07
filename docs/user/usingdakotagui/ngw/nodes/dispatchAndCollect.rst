@@ -11,8 +11,8 @@ Description
 The dispatchAndCollect node is used to submit a workflow to a remote machine. It is designed to ingest a Dakota
 parameter file and produce results that will be written to a Dakota results file. Because it takes a single
 set of Dakota parameters and produces a single set of Dakota results, this node is
-**intended to be run as part of a Dakota analysis driver.** That is, the node itself is not designed to iterate
-over a parameter space, but is driven by Dakota.
+**intended to be run as part of a Dakota analysis driver.** That is, a dispatchAndCollect node is not designed to iterate
+over a parameter space, but is itself driven by Dakota.
 
 The dispatchAndCollect node's name comes from its two-step strategy. It is intended to be run asynchronously
 with Dakota (in what is sometimes called "offline mode"). After this node submits a workflow to a remote machine (i.e. the dispatch step),
@@ -47,7 +47,7 @@ Properties
 - **dispatcherInExpertMode:** Use this if you want the dispatched workflow to run in :ref:`expert mode.<ngw-expertmode>`
   For most simple examples, this can be set to false.
 - **rerunFailedEvaluations:** Set this to true to force the evaluation to re-run - even if data already exists in the
-  evaluation directory - bit only if the previous evaluation failed.
+  evaluation directory - but only if the previous evaluation failed.
 
 **Remote Submission**
 
@@ -109,7 +109,7 @@ Usage Notes - Editing Control Scripts
 
 Refer to the main documentation for each control script to learn more about its function and what to consider editing:
 
-- :ref:`submit-dakota.sh <gui-job-submission-workflow-dakotaQueueSubmit-scripts-submit>`
+- :ref:`submit-dispatch.sh <gui-job-submission-workflow-dakotaQueueSubmit-scripts-submit>`
 - :ref:`status.sh <gui-job-submission-workflow-common-scripts-status>`
 - :ref:`checkjob.sh <gui-job-submission-workflow-common-scripts-checkjob>`
 - :ref:`cancel.sh <gui-job-submission-workflow-dakotaQueueSubmit-scripts-cancel>`
