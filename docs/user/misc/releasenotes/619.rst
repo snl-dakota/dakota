@@ -7,10 +7,10 @@ Version 6.19 (2023/11/15)
 **Highlight: New sampling-based method for Sobol' main effects**
 
 Based on :cite:p:`Li16`, Dakota can now obtain estimates
-of first order Sobol’ indices (main effects) from `sampling`
+of first order Sobol’ indices (main effects) from ``sampling``
 studies. Previous versions of Dakota could estimate
 main and total effects using a "pick and freeze" sampling strategy 
-:cite:p:` Sal04`, which typically required a very large number of samples 
+:cite:p:`Sal04`, which typically required a very large number of samples 
 (hundreds or thousands per variable) that had to be carefully structured. While
 the new method produces only main effects, the requirement on
 sample design has been lifted, and typically far fewer samples are
@@ -54,7 +54,7 @@ In a ``sampling`` study, choose
 
 *Interfaces, Input/Output*
 
-* Copying of ``dakota.interfacing`` objects was improved by adding ``__deepcopy__`` implementations
+* Copying of :ref:`dakota.interfacing <interfaces:dakota.interfacing>` objects was improved by adding ``__deepcopy__`` implementations
 * New examples:
 
   * Demonstrating use of Dakota's direct :dakkw:`interface-analysis_drivers-python` interface with a 
