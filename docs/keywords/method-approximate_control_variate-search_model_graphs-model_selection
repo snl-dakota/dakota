@@ -20,18 +20,18 @@ Topics::
 Examples::
 
 .. code-block::
-
-method,
-	model_pointer = 'ENSEMBLE'
-        approximate_control_variate acv_mf
-	  pilot_samples = 50 seed = 8674132
-	  search_model_graphs
-	    no_recursion		      # ACV case
-#	    kl_recursion  		      # GenACV case 1 of 3
-#	    partial_recursion depth_limit = 2 # GenACV case 2 of 3
-#	    full_recursion    		      # GenACV case 3 of 3
-	    model_selection		      # this option
-	  max_function_evaluations = 500
+    
+    method,
+    	model_pointer = 'ENSEMBLE'
+            approximate_control_variate acv_mf
+    	  pilot_samples = 50 seed = 8674132
+    	  search_model_graphs
+    	    no_recursion		      # ACV case
+    #	    kl_recursion  		      # GenACV case 1 of 3
+    #	    partial_recursion depth_limit = 2 # GenACV case 2 of 3
+    #	    full_recursion    		      # GenACV case 3 of 3
+    	    model_selection		      # this option
+    	  max_function_evaluations = 500
 
 Theory::
 

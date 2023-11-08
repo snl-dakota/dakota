@@ -15,15 +15,15 @@ Examples::
 
 .. code-block::
 
-method,
-    	model_pointer = 'ENSEMBLE'
-	multifidelity_sampling
-	  search_model_graphs
-	    model_selection
-	  max_function_evaluations = 250
-	  pilot_samples =  25
-	  seed = 1237
-
+    method,
+      model_pointer = 'ENSEMBLE'
+      multifidelity_sampling
+        search_model_graphs
+          model_selection
+      max_function_evaluations = 250
+      pilot_samples =  25
+      seed = 1237
+    
 Theory::
 
 Faq::
