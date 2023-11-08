@@ -50,6 +50,23 @@ In a ``sampling`` study, choose
 * :dakkw:`method-sampling-sample_type-low_discrepancy` keyword.
 * Discussion of :ref:`low-disrepancy methods <uq:sampling>`.
 
+
+**Highlight: Model selection in multifidelity sampling methods**
+
+MFMC, ACV, and generalized ACV now support selection of the most
+performant subset of model approximations, as determined through
+enumeration by the estimator accuracy versus equivalent cost trade-off.
+
+*Enabling / Accessing:* 
+
+In a ``multifidelity_sampling`` or ``approximate_control_variate`` study,
+choose :dakkw:`search_model_graphs model_selection <method-approximate_control_variate-search_model_graphs-model_selection>`.
+
+*Documentation:* 
+
+* :dakkw:`method-approximate_control_variate-search_model_graphs-model_selection` keyword.
+
+
 **Improvements by Category**
 
 *Interfaces, Input/Output*
@@ -74,6 +91,10 @@ In a ``sampling`` study, choose
 * Low discrepancy sampling strategies (see highlight)
 
 *MLMF Sampling*
+
+* Support for selection of the most performant approximation subset, as highlighted above.
+* New options for more robust numerical solution of optimal sample allocations, including ``global_local`` and ``competed_local`` solution strategies.  The former is now the default for numerical solutions in MFMC, ACV, and generalized ACV.
+
 
 *Sensitivity Analysis*
 
