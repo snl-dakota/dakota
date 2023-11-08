@@ -1,0 +1,17 @@
+Blurb::
+Perform a search over admissible model relationships for a given model ensemble
+
+Description::
+Relative to generalized ACV (:cite:p:`Bomarito2022`), MFMC is restricted
+to a single DAG definition per model subset.  Thus, this keyword is only
+used to search over possible model subsets (refer to \c model_selection).
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::
