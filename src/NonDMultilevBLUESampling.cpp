@@ -608,7 +608,7 @@ finalize_counts(const SizetMatrixArray& N_G_actual, const SizetArray& N_G_alloc)
     num_models = group_g.size();
 
     const SizetMatrix& N_G_actual_g = N_G_actual[g];
-    size_t N_G_alloc_g =  N_G_alloc[g], model_index;
+    size_t             N_G_alloc_g =  N_G_alloc[g];
     for (m=0; m<num_models; ++m) {
       m_index = group_g[m];
       mf = active_key.retrieve_model_form(m_index);
