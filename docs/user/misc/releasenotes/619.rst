@@ -80,10 +80,6 @@ choose :dakkw:`search_model_graphs model_selection <method-approximate_control_v
     (For `Windows <https://github.com/snl-dakota/dakota-examples/tree/master/official/drivers/black-box_simulation_windows>`_
     and `Linux/macOS <https://github.com/snl-dakota/dakota-examples/tree/master/official/drivers/black-box_simulation>`_)
    
-*Models*
-
-*Optimization Methods*
-
 *UQ Methods*
 
 * Improved support for Bayesian calibration methods provided by the MIT Uncertainty Quantification Library (MUQ);
@@ -117,11 +113,8 @@ choose :dakkw:`search_model_graphs model_selection <method-approximate_control_v
   `pyprepro manual <https://github.com/snl-dakota/dakota/blob/devel/scripts/pyprepro/manual.md#json-dumps>`_
   for more information.
 
-**Deprecated and Changed**
-
 **Compatibility**
 
 - Support for building Dakota with C++17 has been greatly expanded and is expected to work for
   GCC, Intel, and Clang compilers. Support for Microsoft Visual Studio in progress.
 
-**Other Notes and Known Issues**
