@@ -134,40 +134,45 @@ void NonDNonHierarchSampling::pre_run()
   */
 
   // assign an aggregate model key that persists for core_run()
-  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
-  assign_active_key(multilev);
+  assign_active_key();
 }
 
 
-void NonDNonHierarchSampling::assign_active_key(bool multilev)
+void NonDNonHierarchSampling::assign_active_key()
 {
-  // For M-model control variate, select fidelities/resolutions
-  Pecos::ActiveKey active_key, truth_key;
-  std::vector<Pecos::ActiveKey> approx_keys(numApprox);
-  //unsigned short truth_form;  size_t truth_lev;
-  if (multilev) {
-    unsigned short fixed_form = (secondaryIndex == SZ_MAX) ?
-      USHRT_MAX : secondaryIndex;
-    truth_key.form_key(0, fixed_form, numApprox);
-    for (size_t approx=0; approx<numApprox; ++approx)
-      approx_keys[approx].form_key(0, fixed_form, approx);
-    //truth_form = fixed_form;  truth_lev = numApprox;
+  Pecos::ActiveKey active_key;
+  std::vector<Pecos::ActiveKey> form_res_keys(numApprox+1);
+  bool sec_index_def = (secondaryIndex != SZ_MAX);
+  switch (sequenceType) {
+  case Pecos::RESOLUTION_LEVEL_SEQUENCE: {
+    unsigned short form = (sec_index_def) ? secondaryIndex : USHRT_MAX;
+    for (size_t approx=0; approx<=numApprox; ++approx)
+      form_res_keys[approx].form_key(0, form, approx);
+    break;
   }
-  else if (secondaryIndex == SZ_MAX) { // MF with default resolution level(s)
-    truth_key.form_key(0, numApprox,
-      iteratedModel.truth_model().solution_level_cost_index());
-    for (unsigned short approx=0; approx<numApprox; ++approx)
-      approx_keys[approx].form_key(0, approx,
-	iteratedModel.surrogate_model(approx).solution_level_cost_index());
-    //truth_form = numApprox;  truth_lev = secondaryIndex;
+  case Pecos::MODEL_FORM_SEQUENCE: {
+    size_t lev = (sec_index_def) ? secondaryIndex :
+      iteratedModel.truth_model().solution_level_cost_index();
+    form_res_keys[numApprox].form_key(0, numApprox, lev);
+    for (unsigned short approx=0; approx<numApprox; ++approx) {
+      lev = (sec_index_def) ? secondaryIndex :
+	iteratedModel.surrogate_model(approx).solution_level_cost_index();
+      form_res_keys[approx].form_key(0, approx, lev);
+    }
+    break;
   }
-  else { // MF with assigned resolution level
-    truth_key.form_key(0, numApprox, secondaryIndex);
-    for (unsigned short approx=0; approx<numApprox; ++approx)
-      approx_keys[approx].form_key(0, approx, secondaryIndex);
-    //truth_form = numApprox;  truth_lev = secondaryIndex;
+  case Pecos::FORM_RESOLUTION_ENUMERATION: {
+    ModelList& sub_models = iteratedModel.subordinate_models(false);// incl HF
+    size_t m, l, num_lev, cntr = 0;  ModelLIter m_iter;
+    for (m=0,m_iter=sub_models.begin(); m_iter!=sub_models.end(); ++m_iter,++m){
+      num_lev = m_iter->solution_levels(); // lower bound of 1
+      for (l=0; l<num_lev; ++l, ++cntr)
+        form_res_keys[cntr].form_key(0, m, l);
+    }
+    break;
   }
-  active_key.aggregate_keys(approx_keys, truth_key, Pecos::RAW_DATA);
+  }
+  active_key.aggregate_keys(form_res_keys, Pecos::RAW_DATA);
   iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
   iteratedModel.active_model_key(active_key); // data group 0
   resize_active_set();

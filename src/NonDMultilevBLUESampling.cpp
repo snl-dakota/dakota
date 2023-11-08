@@ -601,17 +601,19 @@ finalize_counts(const SizetMatrixArray& N_G_actual, const SizetArray& N_G_alloc)
   //inflate_approx_samples(N_G_alloc,  multilev, secondaryIndex, NLevAlloc);
 
   // For now, overlay group samples into model-resolution instance samples
-  size_t g, m, num_models, q, mf, rl;
+  size_t g, m, num_models, q, mf, rl, m_index;
+  const Pecos::ActiveKey& active_key = iteratedModel.active_model_key();
   for (g=0; g<numGroups; ++g) {
     const UShortArray& group_g = modelGroups[g];
     num_models = group_g.size();
 
     const SizetMatrix& N_G_actual_g = N_G_actual[g];
-    size_t              N_G_alloc_g =  N_G_alloc[g];
+    size_t N_G_alloc_g =  N_G_alloc[g], model_index;
     for (m=0; m<num_models; ++m) {
-      const UShortUShortPair& indices = ensembleIndices[group_g[m]];
-      
-      mf = indices.first;  rl = indices.second;
+      m_index = group_g[m];
+      mf = active_key.retrieve_model_form(m_index);
+      rl = active_key.retrieve_resolution_level(m_index);
+
       NLevAlloc[mf][rl] += N_G_alloc_g;
       SizetArray& N_l_actual_fl = NLevActual[mf][rl];
       for (q=0; q<numFunctions; ++q)

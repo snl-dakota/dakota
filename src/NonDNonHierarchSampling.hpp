@@ -351,7 +351,7 @@ protected:
   // seq_type defines the active dimension for a model sequence.
   //void configure_indices(size_t group,size_t form,size_t lev,short seq_type);
 
-  void assign_active_key(bool multilev);
+  void assign_active_key();
 
   /// recover estimates of simulation cost using aggregated response metadata
   void recover_online_cost(RealVector& seq_cost);

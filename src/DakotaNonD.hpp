@@ -303,9 +303,6 @@ protected:
   /// pointer containing previous value of nondInstance
   NonD* prevNondInstance;
 
-  /// mapping from flat list of model forms/resolutions into indices
-  UShortUShortPairArray ensembleIndices;
-
   /// starting index of continuous aleatory uncertain variables within
   /// active continuous variables (convenience for managing offsets)
   size_t startCAUV;
