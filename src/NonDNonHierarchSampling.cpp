@@ -889,20 +889,32 @@ finite_solution_bounds(const RealVector& x0, RealVector& x_lb, RealVector& x_ub)
     //   N_i = remaining * cost_H / modelGroupCost[i]
     if (remaining > 0.) {
       Real cost_H = sequenceCost[numApprox], factor = remaining * cost_H;
-      size_t i, len = x0.length();
+      size_t i, x_len = x0.length();
       // model groups now defined for MFMC,ACV,GenACV, in addition to ML BLUE
-      for (i=0; i<len; ++i)
-	x_ub[i] = x0[i] + factor / modelGroupCost[i];
-
-      /* *** TO DO (for completeness? DIRECT only used for N_MODEL,GROUP?)
-      if (optSubProblemForm == R_ONLY_LINEAR_CONSTRAINT)
-	x_ub.scale(1./N_H);
-      else if (optSubProblemForm == R_AND_N_NONLINEAR_CONSTRAINT) {
-        Real N_H = x0[len-1];
-	for (i=0; i<approx_len; ++i)
-	  x_ub[i] /= N_H;
+      switch (optSubProblemForm) {
+      case R_ONLY_LINEAR_CONSTRAINT: {
+	// not valid for group-based allocations (R_ONLY not used in ML BLUE).
+	// for purposes of remaining budget, use incurred cost (NLevAlloc).
+	size_t hf_form_index, hf_lev_index;
+	hf_indices(hf_form_index, hf_lev_index);
+	factor /= (Real)NLevAlloc[hf_form_index][hf_lev_index];
+	for (i=0; i<x_len; ++i)
+	  x_ub[i] = x0[i] + factor / modelGroupCost[i];
+	break;
       }
-      */
+      case R_AND_N_NONLINEAR_CONSTRAINT: {
+	size_t hf_index = x_len - 1;  Real N_H = x0[hf_index];
+	x_ub[hf_index] = N_H + factor / modelGroupCost[hf_index];
+	factor /= N_H;
+	for (i=0; i<hf_index; ++i)
+	  x_ub[i] = x0[i] + factor / modelGroupCost[i];
+	break;
+      }
+      default:
+	for (i=0; i<x_len; ++i)
+	  x_ub[i] = x0[i] + factor / modelGroupCost[i];
+	break;
+      }
     }
     else // can happen for accuracy-constrained using mc_targets estimation
       x_ub = x0;

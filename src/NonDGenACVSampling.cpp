@@ -308,13 +308,12 @@ void NonDGenACVSampling::
 unroll_reverse_dag_from_root(unsigned short root, UShortList& root_list)
 {
   // create an ordered list of roots that enable ordered sample increments by
-  // ensuring that root sample levels are first defined for all dependent nodes
+  // ensuring that root sample levels are defined before their dependent nodes
   root_list.clear();  root_list.push_back(root);
   UShortList::iterator it = root_list.begin();
   while (it != root_list.end()) {
     const UShortSet& reverse_dag = reverseActiveDAG[*it];
-    // append all dependent nodes (by default, order from lowest model index
-    // = lowest fidelity)
+    // append all dependent nodes (reverse iterator: order from high to low)
     root_list.insert(root_list.end(), reverse_dag.rbegin(), reverse_dag.rend());
     ++it;
   }
@@ -918,7 +917,7 @@ void NonDGenACVSampling::update_model_group_costs()
   unsigned short source;
   for (i=0; i<num_approx; ++i) {
     unroll_reverse_dag_from_root(approx_set[i], root_and_dependent);
-    Real& group_cost_i = modelGroupCost[i]; group_cost_i = 0.;
+    Real& group_cost_i = modelGroupCost[i];  group_cost_i = 0.;
     for (it=root_and_dependent.begin(); it!=root_and_dependent.end(); ++it)
       group_cost_i += sequenceCost[*it];
   }

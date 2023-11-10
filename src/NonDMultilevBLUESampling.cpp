@@ -240,8 +240,7 @@ group_increment(SizetArray& delta_N_G, size_t iter)
 {
   if (iter == 0) Cout << "\nML BLUE pilot sample:\n";
   else Cout << "\nML BLUE sampling iteration " << iter
-	    << ": group sample increment =\n";
-  Cout << delta_N_G << '\n';
+	    << ": group sample increment =\n" << delta_N_G << '\n';
 
   size_t g, m, num_models, start;
   for (size_t g=0; g<numGroups; ++g) {
@@ -627,35 +626,6 @@ print_computed_solution(std::ostream& s, const MFSolutionData& soln)
 	 << "\nAverage ACV variance / average MC variance = "
 	 << soln.average_estimator_variance_ratio() << std::endl;
 }
-
-
-/*
-// > Need to define optimizer callbacks for est_var and linear_cost
-
-Real NonDMultilevBLUESampling::
-update_hf_target(const RealVector& avg_eval_ratios, const RealVector& var_H,
-		 const RealVector& estvar0)
-{
-  // Note: there is a circular dependency between estvar_ratios and hf_targets
-
-  // estimator variance uses actual (not alloc) so use same for defining G,g
-  // *** TO DO: but avg_hf_target defines delta relative to actual||alloc ***
-  size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
-  Real N_H = //(backfillFailures) ?
-    average(NLevActual[hf_form_index][hf_lev_index]);// :
-    //NLevAlloc[hf_form_index][hf_lev_index];
-  RealVector cd_vars, estvar_ratios;
-  r_and_N_to_design_vars(avg_eval_ratios, N_H, cd_vars);
-  estimator_variance_ratios(cd_vars, estvar_ratios); // virtual for ACV,GenACV
-
-  RealVector hf_targets(numFunctions, false);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    hf_targets[qoi] = var_H[qoi] * estvar_ratios[qoi]
-                    / (convergenceTol * estvar0[qoi]);
-  Real avg_hf_target = average(hf_targets);
-  return avg_hf_target;
-}
-*/
 
 
 /** Multi-moment map-based version used by online pilot */
