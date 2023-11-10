@@ -54,7 +54,6 @@ protected:
     RealVector& lin_ineq_lb, RealVector& lin_ineq_ub, RealVector& lin_eq_tgt,
     RealVector& nln_ineq_lb, RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
     RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs);
-  void finite_solution_upper_bounds(Real remaining, RealVector& x_ub);
 
   void recover_results(const RealVector& cv_star, const RealVector& fn_star,
 		       MFSolutionData& soln);
@@ -127,6 +126,8 @@ private:
 			 IntRealSymMatrixArrayMap& sum_LL,
 			 IntRealMatrixMap& sum_LH, const SizetArray& N_H_actual,
 			 size_t N_H_alloc, const MFSolutionData& soln);
+
+  void update_model_group_costs();
 
   void precompute_ratios();
   void compute_ratios(const RealMatrix& var_L, MFSolutionData& solution);

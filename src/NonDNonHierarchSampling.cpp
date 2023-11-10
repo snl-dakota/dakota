@@ -855,7 +855,7 @@ augmented_linear_ineq_violations(const RealVector& cd_vars,
 
 
 void NonDNonHierarchSampling::
-finite_solution_bounds(RealVector& x_lb, RealVector& x_ub)
+finite_solution_bounds(const RealVector& x0, RealVector& x_lb, RealVector& x_ub)
 {
   // Some optimizers (DIRECT, SBLO, EGO) require finite bounds
   if ( varMinIndices.first == 0 &&
@@ -884,41 +884,34 @@ finite_solution_bounds(RealVector& x_lb, RealVector& x_ub)
     }
     //Cout << "Remaining budget = " << remaining << std::endl;
 
-    finite_solution_upper_bounds(remaining, x_ub);
+    // Set x_ub based on exhausting the remaining budget using only group i.
+    //   remaining = N_i * modelGroupCost[i] / cost_H
+    //   N_i = remaining * cost_H / modelGroupCost[i]
+    if (remaining > 0.) {
+      Real cost_H = sequenceCost[numApprox], factor = remaining * cost_H;
+      size_t i, len = x0.length();
+      // model groups now defined for MFMC,ACV,GenACV, in addition to ML BLUE
+      for (i=0; i<len; ++i)
+	x_ub[i] = x0[i] + factor / modelGroupCost[i];
+
+      /* *** TO DO (for completeness? DIRECT only used for N_MODEL,GROUP?)
+      if (optSubProblemForm == R_ONLY_LINEAR_CONSTRAINT)
+	x_ub.scale(1./N_H);
+      else if (optSubProblemForm == R_AND_N_NONLINEAR_CONSTRAINT) {
+        Real N_H = x0[len-1];
+	for (i=0; i<approx_len; ++i)
+	  x_ub[i] /= N_H;
+      }
+      */
+    }
+    else // can happen for accuracy-constrained using mc_targets estimation
+      x_ub = x0;
   }
   else
     x_ub = DBL_MAX; // no upper bounds needed for x
 
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Finite bounds (lb, ub):\n" << x_lb << x_ub << std::endl;
-}
-
-
-void NonDNonHierarchSampling::
-finite_solution_upper_bounds(Real remaining, RealVector& x_ub)
-{
-  size_t hf_form_index, hf_lev_index;
-  hf_indices(hf_form_index, hf_lev_index);
-  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
-  size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
-  Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
-
-  if (remaining > 0.) {
-    // Set delta x_ub based on exhausting the remaining budget using only
-    // approx i.  Then x_ub = avg_N_H + delta x_ub
-    size_t i;
-    Real cost_H = sequenceCost[numApprox], factor = remaining * cost_H;
-    for (i=0; i<numApprox; ++i) // remaining = N_i * cost[i] / cost_H
-      x_ub[i] = avg_N_H + factor / sequenceCost[i];
-    if (optSubProblemForm != R_ONLY_LINEAR_CONSTRAINT) {
-      // increments in N_H are shared with cost = \Sum costs
-      Real sum_cost = cost_H;
-      for (i=0; i<numApprox; ++i) sum_cost += sequenceCost[i];
-      x_ub[numApprox] = avg_N_H + factor / sum_cost;
-    }
-  }
-  else // can happen for accuracy-constrained using mc_targets estimation
-    x_ub = avg_N_H; // same as x_lb
 }
 
 
@@ -1080,7 +1073,7 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
       for (j=0; j<num_solvers; ++j) {
 	varMinIndices.second = j;
 	// *** TO DO: per-minimizer x_lb,x_ub updates for use_adapter case
-	finite_solution_bounds(x_lb, x_ub);
+	finite_solution_bounds(x0, x_lb, x_ub);
 	switch (solvers_i[j]) {
 	case SUBMETHOD_NPSOL: {
 	  // Keep FDSS smaller than RATIO_NUDGE to avoid FPE
@@ -1218,7 +1211,7 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 	for (j=0; j<num_solvers; ++j) {
 	  Iterator& min_ij = min_i[j];
 	  //if (!min_ij.is_null()) {
-	  //  finite_solution_bounds(x_lb, x_ub);
+	  //  finite_solution_bounds(x0, x_lb, x_ub);
 	  //  adapt_model.update_active_variables(x0, x_lb, x_ub);
 	  //  if (use_dfs) subProbModel.update_from_subordinate_model();
 	  //  varMinIndices.second = j;
@@ -1236,7 +1229,7 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 	  Iterator& min_ij = min_i[j];
 	  if (!min_ij.is_null()) {
 	    varMinIndices.second = j;
-	    finite_solution_bounds(x_lb, x_ub);
+	    finite_solution_bounds(x0, x_lb, x_ub);
 	    min_ij.update_callback_data(x0, x_lb, x_ub, lin_ineq_coeffs,
 	      lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs, lin_eq_tgt, nln_ineq_lb,
 	      nln_ineq_ub, nln_eq_tgt);

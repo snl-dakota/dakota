@@ -281,7 +281,7 @@ augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
   bool ordered = approxSequence.empty();
   size_t i, num_am1 = numApprox - 1, approx_ip1,
     approx = (ordered) ? 0 : approxSequence[0],
-    lin_ineq_offset = ( optSubProblemForm == N_MODEL_LINEAR_CONSTRAINT  ||
+    lin_ineq_offset = ( optSubProblemForm == N_MODEL_LINEAR_CONSTRAINT ||
 			optSubProblemForm == R_ONLY_LINEAR_CONSTRAINT ) ? 1 : 0;
   for (i=0; i<num_am1; ++i) { // N_im1 >= N_i
     approx_ip1 = (ordered) ? i+1 : approxSequence[i+1];
@@ -307,7 +307,7 @@ augmented_linear_ineq_violations(const RealVector& cd_vars,
   bool ordered = approxSequence.empty();
   size_t i, num_am1 = numApprox - 1, approx_ip1,
     approx = (ordered) ? 0 : approxSequence[0],
-    lin_ineq_offset = ( optSubProblemForm == N_MODEL_LINEAR_CONSTRAINT  ||
+    lin_ineq_offset = ( optSubProblemForm == N_MODEL_LINEAR_CONSTRAINT ||
 			optSubProblemForm == R_ONLY_LINEAR_CONSTRAINT ) ? 1 : 0;
   Real inner_prod, l_bnd, u_bnd, viol, quad_viol = 0.;
   for (i=0; i<numApprox; ++i) { // N_im1 >= N_i
@@ -1408,9 +1408,48 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
   //correlation_sq_to_covariance(rho2_LH, var_L, varH, covLH);
   //matrix_to_diagonal_array(var_L, covLL);
 
+  // modelGroupCost used for unified treatment in finite_solution_bounds()
+  update_model_group_costs();
+
   // Base class implementation of numerical solve (shared with ACV,GenACV):
   ensemble_numerical_solution(soln);
   process_model_solution(soln, numSamples);
+}
+
+
+void NonDMultifidelitySampling::update_model_group_costs()
+{
+  // modelGroupCost used in finite_solution_bounds() for
+  // mfmc_numerical_solution().  MFMC numerical preserves approxSequence
+  // in augment_linear_ineq_constraints(), so we use it here as well.
+
+  size_t num_groups = numApprox+1;
+  if (modelGroupCost.length() != num_groups)
+    modelGroupCost.sizeUninitialized(num_groups);
+
+  // shared samples
+  modelGroupCost[numApprox] = sum(sequenceCost); // irrespective of ordering
+
+  // approx samples:  Notes:
+  // > Unlike ACV (refer to NonDACVSampling::update_model_group_costs()), MFMC
+  //   numerical enforces approx sequence in augment_linear_ineq_constraints().
+  //   Therefore, an increment for N_i *does* require corresponding increments
+  //   for the more-correlated/higher-fidelity models in the approx sequence,
+  //   Similar to the HF group of shared samples, we define these groupings for
+  //   all design variables, which can reduce the search domain upper bounds.
+  // > Extreme x_ub is N_shared plus one model at r_i = max within budget,
+  //   with all sequence-dependent models at same value.
+  // > Indexing is aligned with design vars: low to high with no reordering.
+  size_t i, j, approx_i, approx_j;
+  bool ordered = approxSequence.empty();
+  for (i=0; i<numApprox; ++i) {
+    approx_i = (ordered) ? i : approxSequence[i];
+    Real& group_cost_i = modelGroupCost[approx_i];  group_cost_i = 0.;
+    for (j=0; j<=i; ++j) {
+      approx_j = (ordered) ? j : approxSequence[j];
+      group_cost_i += sequenceCost[approx_j];
+    }
+  }
 }
 
 

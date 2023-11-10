@@ -96,6 +96,8 @@ protected:
 			     const SizetArray& approx_sequence,
 			     size_t start, size_t end);
 
+  void update_model_group_costs();
+
   Real update_hf_target(const RealVector& cost,
 			const RealVector& avg_eval_ratios);
   Real update_hf_target(const RealMatrix& rho2_LH,

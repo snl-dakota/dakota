@@ -307,14 +307,14 @@ generate_reverse_dag(const UShortArray& approx_set, const UShortArray& dag)
 void NonDGenACVSampling::
 unroll_reverse_dag_from_root(unsigned short root, UShortList& root_list)
 {
-  // create an ordered list of roots that enable ordered sample increments
-  // by ensuring that root sample levels are defined
+  // create an ordered list of roots that enable ordered sample increments by
+  // ensuring that root sample levels are first defined for all dependent nodes
   root_list.clear();  root_list.push_back(root);
   UShortList::iterator it = root_list.begin();
   while (it != root_list.end()) {
     const UShortSet& reverse_dag = reverseActiveDAG[*it];
-    // append all dependent nodes (by default, use order of decreasing model
-    // index = decreasing fidelity)
+    // append all dependent nodes (by default, order from lowest model index
+    // = lowest fidelity)
     root_list.insert(root_list.end(), reverse_dag.rbegin(), reverse_dag.rend());
     ++it;
   }
@@ -818,6 +818,9 @@ compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
   // Set initial guess based either on related analytic solutions (iter == 0)
   // or warm started from previous solution (iter >= 1)
 
+  // modelGroupCost used for unified treatment in finite_solution_bounds()
+  update_model_group_costs();
+
   const UShortArray& approx_set = activeModelSetIter->first;
   if (mlmfIter == 0) {
     size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
@@ -886,6 +889,39 @@ compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
   process_model_solution(soln, numSamples);
   if (outputLevel >= NORMAL_OUTPUT)
     print_computed_solution(Cout, soln, approx_set);
+}
+
+
+void NonDGenACVSampling::update_model_group_costs()
+{
+  // modelGroupCost used in finite_solution_bounds() for
+  // mfmc_numerical_solution().  MFMC numerical preserves approxSequence
+  // in augment_linear_ineq_constraints(), so we use it here as well.
+
+  const UShortArray& approx_set = activeModelSetIter->first;
+  size_t num_approx = approx_set.size(), i, num_groups = num_approx+1;
+  if (modelGroupCost.length() != num_groups)
+    modelGroupCost.sizeUninitialized(num_groups);
+
+  // shared samples
+  modelGroupCost[num_approx] = 0.;
+  for (i=0; i<num_approx; ++i)
+    modelGroupCost[num_approx] += sequenceCost[approx_set[i]];
+
+  // approx samples:  Notes:
+  // > GenACV has sample dependencies codified in the active DAG: an increment
+  //   for N_i implies corresponding increments for dependent leaf nodes in the
+  //   DAG.  For estimating sample upper bounds from modelGroupCost, we
+  //   accumulate these node + dependency costs.
+  // > Indexing is aligned with design vars: low to high with no reordering.
+  UShortList root_and_dependent;  UShortList::iterator it;
+  unsigned short source;
+  for (i=0; i<num_approx; ++i) {
+    unroll_reverse_dag_from_root(approx_set[i], root_and_dependent);
+    Real& group_cost_i = modelGroupCost[i]; group_cost_i = 0.;
+    for (it=root_and_dependent.begin(); it!=root_and_dependent.end(); ++it)
+      group_cost_i += sequenceCost[*it];
+  }
 }
 
 
@@ -1071,7 +1107,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   size_t i, num_cdv = x0.length(), approx, num_approx = approx_set.size();
   Real cost_H = sequenceCost[numApprox], budget = (Real)maxFunctionEvals;
 
-  // minimizer-specific updates (x bounds) performed in finite_solution_bounds()
+  // minimizer-specific updates performed in finite_solution_bounds()
   x_ub = DBL_MAX; // no upper bounds needed for x
   lin_ineq_lb = -DBL_MAX; // no lower bounds on lin ineq
 
@@ -1147,35 +1183,6 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
 	 << "Numerical solve (nln ineq lb, ub):\n" << nln_ineq_lb << nln_ineq_ub
        //<< nln_eq_tgt << lin_ineq_coeffs << lin_eq_coeffs
 	 << std::endl;
-}
-
-
-void NonDGenACVSampling::
-finite_solution_upper_bounds(Real remaining, RealVector& x_ub)
-{
-  size_t hf_form_index, hf_lev_index;
-  hf_indices(hf_form_index, hf_lev_index);
-  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
-  size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
-  Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
-
-  if (remaining > 0.) {
-    // Set delta x_ub based on exhausting the remaining budget using only
-    // approx i.  Then x_ub = avg_N_H + delta x_ub
-    const UShortArray& approx_set = activeModelSetIter->first;
-    size_t i, num_approx = approx_set.size();
-    Real cost_H = sequenceCost[numApprox], factor = remaining * cost_H;
-    for (i=0; i<num_approx; ++i) // remaining = N_i * cost[i] / cost_H
-      x_ub[i] = avg_N_H + factor / sequenceCost[approx_set[i]];
-    if (optSubProblemForm != R_ONLY_LINEAR_CONSTRAINT) {
-      // increments in N_H are shared with cost = \Sum costs
-      Real sum_cost = cost_H;
-      for (i=0; i<num_approx; ++i) sum_cost += sequenceCost[approx_set[i]];
-      x_ub[num_approx] = avg_N_H + factor / sum_cost;
-    }
-  }
-  else // can happen for accuracy-constrained using mc_targets estimation
-    x_ub = avg_N_H; // same as x_lb
 }
 
 

@@ -394,6 +394,55 @@ acv_approx_increment(const MFSolutionData& soln,
 }
 
 
+void NonDACVSampling::update_model_group_costs()
+{
+  size_t i, end, num_groups = numApprox+1;
+  if (modelGroupCost.length() != num_groups)
+    modelGroupCost.sizeUninitialized(num_groups);
+
+  // shared samples.
+  modelGroupCost[numApprox] = sum(sequenceCost); // irrespective of ordering
+
+  // approx samples.  Notes:
+  // > unlike MFMC numerical, ACV does not preserve an approx sequence in
+  //   augment_linear_ineq_constraints().  A sequence is only used downstream
+  //   in NonDACVSampling::approx_increments() to enable pyramid sample reuse.
+  // > pyramid sampling in MFMC and ACV-MF can be interpreted as ML BLUE-style
+  //   groups which share samples (horizontal view within ACV sample set plots)
+  //   or individual model sampling with sample reuse (vertical slices across
+  //   pyramid layers).  For consistency with the r_i,N_i design var definition,
+  //   employ the latter view here.
+  //   >> inducing an increment for N_i does not directly induce increments in
+  //      more-correlated/higher-fidelity models (although it can affect the
+  //      pyramid ordering).  However, given the constraint of r_i>1, N_i>N, we
+  //      can treat shared samples as a cost group, as done with the shared
+  //      sample iteration.  This reduces that upper bnd for the global search.
+  //   >> Extreme x_ub is N_shared plus one model at r_i = max within budget,
+  //      with all other models at lower bound r_i = 1.
+  for (i=0; i<numApprox; ++i)
+    modelGroupCost[i] = sequenceCost[i];
+
+  /* this aggregates pyramid groups as in ML BLUE - see notes above:
+  switch (mlmfSubMethod) {
+  case SUBMETHOD_ACV_MF:
+    for (i=1, end=numApprox; i<num_groups; ++i, --end) {
+      Real& group_cost_i = modelGroupCost[i];  group_cost_i = 0.;
+      for (j=0; j<end; ++j)
+    	  group_cost_i += sequenceCost[j];//[approx];
+    }
+    break;
+  case SUBMETHOD_ACV_IS:
+    for (i=1, end=numApprox; i<num_groups; ++i, --end) {
+      Real& group_cost_i = modelGroupCost[i];  group_cost_i = 0.;
+      for (j=end-1; j<end; ++j)
+	group_cost_i += sequenceCost[j];//[approx];
+    }
+    break;
+  }
+  */
+}
+
+
 void NonDACVSampling::
 compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
 {

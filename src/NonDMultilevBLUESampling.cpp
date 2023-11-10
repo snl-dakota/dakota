@@ -105,6 +105,16 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
   SizetArray delta_N_G = pilotSamples, // sized by load_pilot_samples()
              N_G_alloc = delta_N_G;
 
+  // **********
+  // Different online pilot strategies:
+  // 1. Independent pilot samples for each group = expensive initialization;
+  //    straightforward to augment all groups with increments, but it is likely
+  //    that not all groups will get allocated with N_g > N_pilot.
+  // 2. Shared pilot sample (not independent) --> (much) less expensive
+  //    initialization for initial estimates of covGG; subsequent allocations
+  //    are independent, but shared pilot only reused once (all-model group).
+  //    Saves cost for groups that are not selected for investment.
+  // **********
   while (!zeros(delta_N_G) && mlmfIter <= maxIterations) {
 
     // --------------------------------------------------------------------
@@ -318,7 +328,9 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   const RealVector& soln_vars = soln.solution_variables();
   //Real offline_N_lwr = 2.; //(finalStatsType == QOI_STATISTICS) ? 2. : 1.;
 
-  // minimizer-specific updates (x bounds) performed in finite_solution_bounds()
+  // Initial point and parameter bounds.  Note: some minimizers require finite
+  // bounds --> these updates are performed in finite_solution_bounds()
+
   x_ub = DBL_MAX; // no upper bounds for groups
   if (pilotMgmtMode == OFFLINE_PILOT) {
     x_lb = 0.; // no lower bound for most groups (*** TO DO: NUDGE if not SDP?)
@@ -344,6 +356,8 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     //	    x0[group] = x_lb[group];
   }
 
+  // Linear and nonlinear constraints:
+
   switch (optSubProblemForm) {
   case N_GROUP_LINEAR_CONSTRAINT: { // linear inequality constraint on budget:
     // \Sum_grp_i w_grp_i        N_grp_i <= equiv_HF * w_HF
@@ -368,31 +382,6 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
 	 << "Numerical solve (nln ineq lb, ub):\n" << nln_ineq_lb << nln_ineq_ub
        //<< nln_eq_tgt << lin_ineq_coeffs << lin_eq_coeffs
 	 << std::endl;
-}
-
-
-void NonDMultilevBLUESampling::
-finite_solution_upper_bounds(Real remaining, RealVector& x_ub)
-{
-  /* *** TO DO: rational upper bound for group allocations ***
-
-  if (remaining > 0.) {
-    // Set delta x_ub based on exhausting the remaining budget using only
-    // approx i.  Then x_ub = avg_N_H + delta x_ub
-    size_t i;
-    Real cost_H = sequenceCost[numApprox], factor = remaining * cost_H;
-    for (i=0; i<numApprox; ++i) // remaining = N_i * cost[i] / cost_H
-      x_ub[i] = avg_N_H + factor / sequenceCost[i];
-    if (optSubProblemForm != R_ONLY_LINEAR_CONSTRAINT) {
-      // increments in N_H are shared with cost = \Sum costs
-      Real sum_cost = cost_H;
-      for (i=0; i<numApprox; ++i) sum_cost += sequenceCost[i];
-      x_ub[numApprox] = avg_N_H + factor / sum_cost;
-    }
-  }
-  else // can happen for accuracy-constrained using mc_targets estimation
-    x_ub = avg_N_H; // same as x_lb
-  */
 }
 
 

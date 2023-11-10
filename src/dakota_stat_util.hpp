@@ -46,6 +46,23 @@ ScalarType sum(const ScalarType* ptr, OrdinalType ptr_len)
 }
 
 
+/// compute sum of a set of observations
+template <typename OrdinalType, typename ScalarType> 
+ScalarType sum(const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& vec)
+{ return sum(vec.values(), vec.length()); }
+
+
+/// compute sum of a set of observations
+template <typename ScalarType> 
+ScalarType sum(const std::vector<ScalarType>& vec)
+{
+  ScalarType sum = 0.;  size_t i, len = vec.size();
+  for (i=0; i<len; ++i)
+    sum += vec[i];
+  return sum;
+}
+
+
 /// compute average of a set of observations
 template <typename OrdinalType, typename ScalarType> 
 Real average(const ScalarType* ptr, OrdinalType ptr_len)
@@ -108,16 +125,6 @@ inline void average(const RealMatrix& mat, size_t avg_index,
 	 << ") in NonDEnsembleSampling::average(RealMatrix)." << std::endl;
     abort_handler(-1); break;
   }
-}
-
-
-/// compute sum of a set of observations
-inline Real sum(const SizetArray& sa)
-{
-  Real sum = 0.;  size_t i, len = sa.size();
-  for (i=0; i<len; ++i)
-    sum += sa[i];
-  return sum;
 }
 
 

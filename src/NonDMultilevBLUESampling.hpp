@@ -61,7 +61,6 @@ protected:
     RealVector& lin_ineq_lb, RealVector& lin_ineq_ub, RealVector& lin_eq_tgt,
     RealVector& nln_ineq_lb, RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
     RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs);
-  void finite_solution_upper_bounds(Real remaining, RealVector& x_ub);
 
   //
   //- Heading: member functions
@@ -399,7 +398,7 @@ compute_Psi_inverse(const RealSymMatrix2DArray& cov_GG_inv,
     const UShortArray&            models_g = modelGroups[g];
     const RealSymMatrixArray& cov_GG_inv_g =  cov_GG_inv[g];
     for (qoi=0; qoi<numFunctions; ++qoi)
-      add_sub_matrix(n_g, cov_GG_inv_g[qoi], models_g, Psi_inv[qoi]);
+      add_sub_matrix(n_g, cov_GG_inv_g[qoi], models_g, Psi_inv[qoi]); // *** can become indefinite here when n_g --> 0, which depends on online/offline pilot integration strategy
   }
 
   // Psi-inverse is used for computing both estimator variance (during numerical

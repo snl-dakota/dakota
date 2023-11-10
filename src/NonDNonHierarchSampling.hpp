@@ -296,8 +296,6 @@ protected:
     RealVector& lin_ineq_lb, RealVector& lin_ineq_ub, RealVector& lin_eq_tgt,
     RealVector& nln_ineq_lb, RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
     RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs);
-  /// Virtual portion of finite_solution_bounds()
-  virtual void finite_solution_upper_bounds(Real remaining, RealVector& x_ub);
 
   /// post-process optimization final results to recover solution data
   virtual void recover_results(const RealVector& cv_star,
@@ -345,7 +343,8 @@ protected:
   /// function enables per-minimizer updates to the parameter bounds,
   /// e.g. for providing a bounded domain for methods that require it,
   /// while removing it for those that don't
-  void finite_solution_bounds(RealVector& x_lb, RealVector& x_ub);
+  void finite_solution_bounds(const RealVector& x0, RealVector& x_lb,
+			      RealVector& x_ub);
 
   // manage response mode and active model key from {group,form,lev} triplet.
   // seq_type defines the active dimension for a model sequence.
