@@ -405,7 +405,7 @@ compute_allocations(MFSolutionData& soln, const SizetMatrixArray& N_G_actual,
   // solutions (iter >= 1)
 
   if (mlmfIter == 0) {
-    if (pilotMgmtMode != OFFLINE_PILOT) cache_mc_reference();
+    //if (pilotMgmtMode != OFFLINE_PILOT) cache_mc_reference(); // *** TO DO
 
     bool budget_constrained = (maxFunctionEvals != SZ_MAX);
     bool budget_exhausted
@@ -804,6 +804,7 @@ compute_GG_covariance(const RealMatrixArray& sum_G,
     for (g=0; g<numGroups; ++g) {
       num_models = modelGroups[g].size();
       RealSymMatrixArray& cov_GG_g = cov_GG[g];
+      cov_GG_g.resize(numFunctions);
       for (qoi=0; qoi<numFunctions; ++qoi)
 	cov_GG_g[qoi].shapeUninitialized(num_models);
     }
