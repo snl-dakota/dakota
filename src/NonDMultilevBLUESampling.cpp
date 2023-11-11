@@ -654,12 +654,12 @@ accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
     g1_index, g2_index;
 
   for (g=0; g<num_groups; ++g) {
-    num_models                       = modelGroups[g].size();
     SizetMatrix&             num_G_g =  num_G[g]; // index is group_id
     //SizetSymMatrixArray&  num_GG_g = num_GG[g];
-    num_models                       = modelGroups[g].size();
-    const IntResponseMap& resp_map_g = batchResponsesMap[g];// index is group_id
+    const UShortArray&       group_g = modelGroups[g];
+    num_models                       = group_g.size();
 
+    const IntResponseMap& resp_map_g = batchResponsesMap[g];// index is group_id
     for (r_it=resp_map_g.begin(); r_it!=resp_map_g.end(); ++r_it) {
       const Response&   resp    = r_it->second;
       const RealVector& fn_vals = resp.function_values();
@@ -672,14 +672,14 @@ accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
 	// computed from the same sample set
 	all_finite = true;
 	for (m=0; m<num_models; ++m) {
-	  g1_index = m * numFunctions + qoi;
-	  if ((asv[g1_index] & 1) && !isfinite(fn_vals[g1_index]))
+	  g1_index = group_g[m] * numFunctions + qoi;
+	  if ( (asv[g1_index] & 1) && !isfinite(fn_vals[g1_index]) )
 	    { all_finite = false; break; }
 	}
 	if (!all_finite) continue;
 
 	for (m=0; m<num_models; ++m) {
-	  g1_index = m * numFunctions + qoi;
+	  g1_index = group_g[m] * numFunctions + qoi;
 	  if (asv[g1_index] & 1) {
 	    ++num_G_g(qoi,m); // shared due to fault tol logic
 	    g1_fn = fn_vals[g1_index];
@@ -699,7 +699,7 @@ accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
 		sum_GG_gq(m,m) += g1_prod * g1_prod;
 		// Off-diagonal of C matrix:
 		for (m2=0; m2<m; ++m2) {
-		  g2_index = m2 * numFunctions + qoi;
+		  g2_index = group_g[m2] * numFunctions + qoi;
 		  if (asv[g2_index] & 1) {
 		    // regenerate g2_prod i/o storing off-diagonal combinations
 		    g2_prod = g2_fn = fn_vals[g2_index];
@@ -736,9 +736,10 @@ accumulate_blue_sums(RealMatrixArray&  sum_G, RealSymMatrix2DArray& sum_GG,
     RealSymMatrixArray&     sum_GG_g = sum_GG[g]; // index is group_id
     SizetMatrix&             num_G_g =  num_G[g]; // index is group_id
     //SizetSymMatrixArray&  num_GG_g = num_GG[g];
-    num_models                       = modelGroups[g].size();
-    const IntResponseMap& resp_map_g = batchResponsesMap[g];// index is group_id
+    const UShortArray&       group_g = modelGroups[g];
+    num_models                       = group_g.size();
 
+    const IntResponseMap& resp_map_g = batchResponsesMap[g];//index g = group_id
     for (r_it=resp_map_g.begin(); r_it!=resp_map_g.end(); ++r_it) {
       const Response&   resp    = r_it->second;
       const RealVector& fn_vals = resp.function_values();
@@ -751,8 +752,8 @@ accumulate_blue_sums(RealMatrixArray&  sum_G, RealSymMatrix2DArray& sum_GG,
 	// computed from the same sample set
 	all_finite = true;
 	for (m=0; m<num_models; ++m) {
-	  g1_index = m * numFunctions + qoi;
-	  if ((asv[g1_index] & 1) && !isfinite(fn_vals[g1_index]))
+	  g1_index = group_g[m] * numFunctions + qoi;
+	  if ( (asv[g1_index] & 1) && !isfinite(fn_vals[g1_index]) )
 	    { all_finite = false; break; }
 	}
 	if (!all_finite) continue;
@@ -760,7 +761,7 @@ accumulate_blue_sums(RealMatrixArray&  sum_G, RealSymMatrix2DArray& sum_GG,
 	RealSymMatrix& sum_GG_gq = sum_GG_g[qoi];
 	//SizetSymMatrix& num_GG_gq = num_GG_g[qoi];
 	for (m=0; m<num_models; ++m) {
-	  g1_index = m * numFunctions + qoi;
+	  g1_index = group_g[m] * numFunctions + qoi;
 	  if (asv[g1_index] & 1) {
 	    ++num_G_g(qoi,m); // shared due to fault tol logic
 
@@ -771,7 +772,7 @@ accumulate_blue_sums(RealMatrixArray&  sum_G, RealSymMatrix2DArray& sum_GG,
 	    // Off-diagonal of covariance matrix:
 	    // look back (only) for single capture of each combination
 	    for (m2=0; m2<m; ++m2) {
-	      g2_index = m2 * numFunctions + qoi;
+	      g2_index = group_g[m2] * numFunctions + qoi;
 	      if (asv[g2_index] & 1) {
 		//++num_GG_gq(m,m2);
 		sum_GG_gq(m,m2) += g1_fn * fn_vals[g2_index];
@@ -781,6 +782,11 @@ accumulate_blue_sums(RealMatrixArray&  sum_G, RealSymMatrix2DArray& sum_GG,
 	}
       }
     }
+
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "In accumulate_blue_sums(), sum_G[" << g << "]:\n" << sum_G_g
+	   << "sum_GG[" << g << "]:\n" << sum_GG_g
+	   << "num_G["  << g << "]:\n" << num_G_g << std::endl;
   }
 }
 
@@ -815,7 +821,7 @@ compute_GG_covariance(const RealMatrixArray& sum_G,
       RealSymMatrix&       cov_GG_gq = cov_GG_g[qoi];
       for (m=0; m<num_models; ++m) {
 	sum_G_gqm = sum_G_g(qoi,m);  N_sh_gqm = num_G_g(qoi,m);
-	for (m2=0; m2<=num_models; ++m2)
+	for (m2=0; m2<=m; ++m2)
 	  compute_covariance(sum_G_gqm, sum_G_g(qoi,m2), sum_GG_gq(m,m2),
 			     N_sh_gqm, cov_GG_gq(m,m2));
       }
