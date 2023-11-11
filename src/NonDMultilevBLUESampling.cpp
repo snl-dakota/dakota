@@ -56,10 +56,18 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model):
   // *** TO DO: need a throttle specification
   UShort2DArray tp;  UShortArray tp_orders(numApprox+1, 1);
   Pecos::SharedPolyApproxData::
-    tensor_product_multi_index(tp_orders, modelGroups, true);
-  modelGroups.erase(modelGroups.begin()); // discard empty group (all 0's)
+    tensor_product_multi_index(tp_orders, tp, true);
+  tp.erase(tp.begin()); // discard empty group (all 0's)
 
-  numGroups = modelGroups.size();  size_t g, m, num_models;
+  size_t g, m, num_models;
+  numGroups = tp.size();  modelGroups.resize(numGroups);
+  for (g=0; g<numGroups; ++g) {
+    const UShortArray& tp_g = tp[g];
+    UShortArray&    group_g = modelGroups[g];
+    for (m=0; m<=numApprox; ++m)
+      if (tp_g[m]) group_g.push_back(m);
+  }
+
   modelGroupCost.sizeUninitialized(numGroups);
   for (g=0; g<numGroups; ++g) {
     const UShortArray& models = modelGroups[g];
@@ -68,6 +76,9 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model):
     for (m=0; m<num_models; ++m)
       group_cost += sequenceCost[models[m]];
   }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "modelGroups:\n" << modelGroups
+	 << "modelGroupCost:\n" << modelGroupCost;
 
   load_pilot_sample(problem_db.get_sza("method.nond.pilot_samples"),
 		    numGroups, pilotSamples);
@@ -238,7 +249,7 @@ void NonDMultilevBLUESampling::ml_blue_pilot_projection()
 void NonDMultilevBLUESampling::
 group_increment(SizetArray& delta_N_G, size_t iter)
 {
-  if (iter == 0) Cout << "\nML BLUE pilot sample:\n";
+  if (iter == 0) Cout << "\nPerforming pilot sample for ML BLUE.\n";
   else Cout << "\nML BLUE sampling iteration " << iter
 	    << ": group sample increment =\n" << delta_N_G << '\n';
 
@@ -251,7 +262,8 @@ group_increment(SizetArray& delta_N_G, size_t iter)
     }
   }
 
-  ensemble_sample_synchronize(); // schedule all groups (return ignored)
+  if (iteratedModel.asynch_flag())
+    ensemble_sample_synchronize(); // schedule all groups (return ignored)
 }
 
 
