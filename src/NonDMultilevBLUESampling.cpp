@@ -651,7 +651,7 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s)
 
   if (pilotMgmtMode != OFFLINE_PILOT)
     s << "    Initial pilot (" << std::setw(5)
-      << (size_t)std::floor(average(pilotSamples) + .5) << " avg samples): "
+      << (size_t)std::floor(average(pilotSamples) + .5) << " ML samples):  "
       << std::setw(wpp7) << average(estVarIter0) << '\n';
 
   String method = " ML BLUE",
@@ -670,17 +670,17 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s)
     avg_proj_equiv_estvar = average(proj_equiv_estvar);
   // As described in process_group_solution(), we have two MC references:
   // projected HF-only samples and projected equivalent HF samples.
-  s << "  " << type << "   MC (" << std::setw(5)
-    << (size_t)std::floor(average(projNActualHF) + .5) << " HF samples): "
+  s << "  " << type << " MC    (" << std::setw(5)
+    << (size_t)std::floor(average(projNActualHF) + .5) << " HF samples):  "
     << std::setw(wpp7) << average(projEstVarHF)
-    << "\n  " << type << method << " (sample profile):   "
+    << "\n  " << type << method << " (sample profile):  "
     << std::setw(wpp7) << avg_estvar
-    << "\n  " << type << method << " ratio (1 - R^2):    "
+    << "\n  " << type << method << " ratio  (1 - R^2):  "
     << std::setw(wpp7) << blueSolnData.average_estimator_variance_ratio()
-    << "\n Equivalent   MC (" << std::setw(5)
-    << (size_t)std::floor(equivHFEvals + deltaEquivHF + .5) << " HF samples): "
+    << "\n Equivalent MC    (" << std::setw(5)
+    << (size_t)std::floor(equivHFEvals + deltaEquivHF + .5) << " HF samples):  "
     << std::setw(wpp7) << avg_proj_equiv_estvar
-    << "\n Equivalent" << method << " ratio:              "
+    << "\n Equivalent" << method << " ratio:             "
     << std::setw(wpp7) << avg_estvar / avg_proj_equiv_estvar << '\n';
 }
 
