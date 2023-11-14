@@ -118,3 +118,8 @@ choose :dakkw:`search_model_graphs model_selection <method-approximate_control_v
 - Support for building Dakota with C++17 has been greatly expanded and is expected to work for
   GCC, Intel, and Clang compilers. Support for Microsoft Visual Studio in progress.
 
+**Known Issues**
+
+- Plotting in the Dakota GUI on RHEL8 may fail with the error "Unhandled even loop exception. No more handles
+  because there is no underlying browser available." There currently is no known workaround or resolution.
+
