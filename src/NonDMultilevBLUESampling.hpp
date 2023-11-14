@@ -124,6 +124,14 @@ private:
 			   const SizetMatrixArray& N_G_actual,
 			   SizetArray& N_G_alloc, SizetArray& delta_N_G);
 
+  void project_mc_estimator_variance(const RealSymMatrixArray& var_H,
+				     const SizetMatrix& N_H_actual,
+				     size_t delta_N_H, RealVector& proj_est_var,
+				     SizetVector& proj_N_H);
+  void project_mc_estimator_variance(const RealSymMatrixArray& var_H,
+				     Real N_H_actual, Real delta_N_H,
+				     RealVector& proj_est_var);
+
   /*
   void compute_blue_control_covariances(RealMatrix& sum_L, Real sum_H_q,
 				       RealSymMatrix& sum_LL_q,
@@ -218,6 +226,12 @@ private:
   /// final solution data for BLUE
   /// *** TO DO: generalize beyond DAGs?
   MFSolutionData blueSolnData;
+
+  /// reference value for estimator variance: final HF variance over
+  /// projected HF samples
+  RealVector  projEstVarHF;
+  /// reference value: projected HF samples
+  SizetVector projNActualHF;
 };
 
 
@@ -544,10 +558,6 @@ mfmc_model_grouping(const UShortArray& model_group) const
 inline bool NonDMultilevBLUESampling::
 cvmc_model_grouping(const UShortArray& model_group) const
 { return (model_group.size() == 2 && model_group[1] == numApprox); }
-
-
-inline void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s)
-{ print_estimator_performance(s, blueSolnData); }
 
 } // namespace Dakota
 
