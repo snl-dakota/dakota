@@ -887,7 +887,7 @@ compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
 
   process_model_solution(soln, numSamples);
   if (outputLevel >= NORMAL_OUTPUT)
-    print_computed_solution(Cout, soln, approx_set);
+    print_model_solution(Cout, soln, approx_set);
 }
 
 

@@ -103,7 +103,7 @@ protected:
   void finalize_counts(const SizetMatrixArray& N_G_actual,
 		       const SizetArray& N_G_alloc);
 
-  void print_computed_solution(std::ostream& s, const MFSolutionData& soln);
+  void print_group_solution(std::ostream& s, const MFSolutionData& soln);
 
 private:
 
@@ -161,7 +161,8 @@ private:
   void compute_GG_covariance(const RealMatrixArray& sum_G,
 			     const RealSymMatrix2DArray& sum_GG,
 			     const SizetMatrixArray& N_G,
-			     RealSymMatrix2DArray& cov_GG);
+			     RealSymMatrix2DArray& cov_GG,
+			     RealSymMatrix2DArray& cov_GG_inv);
   void covariance_to_correlation_sq(const RealSymMatrixArray& cov_GG_g,
 				    RealMatrix& rho2_LH);
 
@@ -336,8 +337,8 @@ add_sub_matrix(Real coeff, const RealSymMatrix& sub_mat,
     for (c=0; c<=r; ++c)
       mat(subset[r], subset[c]) += coeff * sub_mat(r,c);
 
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "add_sub_matrix() aggregate =\n" << mat << std::endl;
+  //if (outputLevel >= DEBUG_OUTPUT)
+  //  Cout << "add_sub_matrix() aggregate =\n" << mat << std::endl;
 }
 
 
@@ -353,8 +354,8 @@ add_sub_matvec(const RealSymMatrix& sub_mat, const RealMatrix& sub_mat2,
     vec[subset[r]] += sub_matvec;
   }
 
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "add_sub_matvec() aggregate =\n" << vec << std::endl;
+  //if (outputLevel >= DEBUG_OUTPUT)
+  //  Cout << "add_sub_matvec() aggregate =\n" << vec << std::endl;
 }
 
 
@@ -372,7 +373,7 @@ compute_C_inverse(const RealSymMatrix2DArray& cov_GG,
     // Note: cov_GG_inv_gq gets copied below
   }
 
-  RealSpdSolver spd_solver; // can this be reused?
+  RealSpdSolver spd_solver; // can be reused
   for (g=0; g<num_groups; ++g) {
     const RealSymMatrixArray& cov_GG_g =     cov_GG[g];
     RealSymMatrixArray&   cov_GG_inv_g = cov_GG_inv[g];
@@ -430,6 +431,9 @@ compute_Psi_inverse(const RealSymMatrix2DArray& cov_GG_inv,
       abort_handler(METHOD_ERROR);
     }
   }
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "In compute_Psi_inverse(), Psi_inv:\n" << Psi_inv << std::endl;
 }
 
 
@@ -470,7 +474,7 @@ compute_mu_hat(const RealSymMatrix2DArray& cov_GG_inv,
     const RealSymMatrix& Psi_inv_q = Psi_inv[qoi];
     RealVector&  y_hat_q =  y_hat[qoi];
     RealVector& mu_hat_q = mu_hat[qoi];
-    for (r=0; r<all_models; ++r) { //r=0; // Only using 1st row...
+    for (r=0; r<all_models; ++r) { //r=all_models-1; // Only using last row...
       Real& mu_hat_qr = mu_hat_q[r];  mu_hat_qr = 0.;
       for (c=0; c<all_models; ++c)
 	mu_hat_qr += Psi_inv_q(r, c) * y_hat_q[c];// inactive Upper is protected
@@ -493,14 +497,12 @@ compute_mu_hat(const RealSymMatrix2DArray& cov_GG_inv,
 inline void NonDMultilevBLUESampling::
 estimator_variance(const RealVector& cd_vars, RealVector& estvar)
 {
-  //RealSymMatrix2DArray cov_GG_inv;
-  compute_C_inverse(covGG, covGGinv);// *** TO DO: precompute on each iteration
   RealSymMatrixArray Psi_inv;
   compute_Psi_inverse(covGGinv, cd_vars, Psi_inv);
 
   if (estvar.empty()) estvar.sizeUninitialized(numFunctions);
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    estvar[qoi] = Psi_inv[qoi](0,0); // e1^T Psi-inverse e1
+    estvar[qoi] = Psi_inv[qoi](numApprox,numApprox); // e_l^T Psi-inverse e_l
 }
 
 
@@ -519,21 +521,18 @@ average_estimator_variance(const RealVector& cd_vars)
 inline void NonDMultilevBLUESampling::
 blue_raw_moments(IntRealMatrixArrayMap& sum_G,
 		 IntRealSymMatrix2DArrayMap& sum_GG,
-		 const SizetMatrixArray& N_G_actual, // *** TO DO
-		 RealMatrix& H_raw_mom)
+		 const SizetMatrixArray& N_G_actual, RealMatrix& H_raw_mom)
 {
-  //RealSymMatrix2DArray cov_GG_inv;  // Reuse for moment 1
-  //compute_C_inverse(covGG, covGGinv);// TO DO: precompute for each sample loop
   RealSymMatrixArray Psi_inv;  RealVectorArray mu_hat;
   for (int mom=1; mom<=4; ++mom) {
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Moment " << mom << " estimator:\n";
     RealMatrixArray& sum_G_m = sum_G[mom];
     if (mom == 1) { // reuse covariance data
-      //compute_Psi_inverse(covGGinv, N_G_actual, Psi_inv); *** uses RV (cdv)
+      //compute_Psi_inverse(covGGinv, N_G_actual, Psi_inv); // *** TO DO
       compute_mu_hat(covGGinv, Psi_inv, sum_G_m, mu_hat);
       for (size_t qoi=0; qoi<numFunctions; ++qoi)
-	H_raw_mom(qoi, mom-1) = mu_hat[qoi][0]; // *** TO DO: check model ordering --> differs from ML BLUE refs --> probably last entry i/o first
+	H_raw_mom(qoi, mom-1) = mu_hat[qoi][numApprox]; // last model
     }
     else { // generate new covariance data
       RealSymMatrix2DArray& sum_GG_m = sum_GG[mom];

@@ -1918,6 +1918,10 @@ Real NonDNonHierarchSampling::direct_penalty_merit(const RealVector& cd_vars)
     constr       = nonHierSampInstance->linear_model_cost(cd_vars);
     constr_u_bnd = budget;
     break;
+  case N_GROUP_LINEAR_CONSTRAINT:
+    constr       = nonHierSampInstance->linear_group_cost(cd_vars);
+    constr_u_bnd = budget;
+    break;
   case N_MODEL_LINEAR_OBJECTIVE:  case N_GROUP_LINEAR_OBJECTIVE:
     constr       = log_avg_estvar;
     constr_u_bnd = std::log(nonHierSampInstance->convergenceTol*

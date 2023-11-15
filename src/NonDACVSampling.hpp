@@ -137,8 +137,8 @@ protected:
   Real update_hf_target(const RealVector& avg_eval_ratios,
 			const RealVector& var_H, const RealVector& estvar0);
 
-  void print_computed_solution(std::ostream& s, const MFSolutionData& soln,
-			       const UShortArray& approx_set);
+  void print_model_solution(std::ostream& s, const MFSolutionData& soln,
+			    const UShortArray& approx_set);
 
   //
   //- Heading: Data

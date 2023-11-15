@@ -536,7 +536,7 @@ compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
 
   process_model_solution(soln, numSamples);
   if (outputLevel >= NORMAL_OUTPUT)
-    print_computed_solution(Cout, soln, approxSet);
+    print_model_solution(Cout, soln, approxSet);
 }
 
 
@@ -593,8 +593,8 @@ analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
 
 
 void NonDACVSampling::
-print_computed_solution(std::ostream& s, const MFSolutionData& soln,
-			const UShortArray& approx_set)
+print_model_solution(std::ostream& s, const MFSolutionData& soln,
+		     const UShortArray& approx_set)
 {
   const RealVector& soln_vars = soln.solution_variables();
   size_t i, num_approx = approx_set.size();

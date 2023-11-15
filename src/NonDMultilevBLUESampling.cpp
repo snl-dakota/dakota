@@ -140,7 +140,7 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
     if (onlineCost && mlmfIter == 0) recover_online_cost(sequenceCost);
     increment_equivalent_cost(delta_N_G, modelGroupCost,
 			      sequenceCost[numApprox], equivHFEvals);
-    compute_GG_covariance(sum_G[1], sum_GG[1], N_G_actual, covGG);
+    compute_GG_covariance(sum_G[1], sum_GG[1], N_G_actual, covGG, covGGinv);
 
     // compute the LF/HF evaluation ratios from shared samples and compute
     // ratio of MC and BLUE mean sq errors (which incorporates anticipated
@@ -174,7 +174,7 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
   RealMatrixArray sum_G_pilot; RealSymMatrix2DArray sum_GG_pilot;
   SizetMatrixArray N_pilot;
   evaluate_pilot(sum_G_pilot, sum_GG_pilot, N_pilot, false);
-  compute_GG_covariance(sum_G_pilot, sum_GG_pilot, N_pilot, covGG);
+  compute_GG_covariance(sum_G_pilot, sum_GG_pilot, N_pilot, covGG, covGGinv);
 
   // -----------------------------------
   // Compute "online" sample increments:
@@ -224,7 +224,7 @@ void NonDMultilevBLUESampling::ml_blue_pilot_projection()
   RealMatrixArray sum_G; RealSymMatrix2DArray sum_GG;
   SizetMatrixArray N_G_actual;  //SizetSymMatrix2DArray N_GG;
   evaluate_pilot(sum_G, sum_GG, N_G_actual, true);
-  compute_GG_covariance(sum_G, sum_GG, N_G_actual, covGG);
+  compute_GG_covariance(sum_G, sum_GG, N_G_actual, covGG, covGGinv);
   SizetArray delta_N_G, N_G_alloc = pilotSamples;
 
   // -----------------------------------
@@ -466,7 +466,7 @@ compute_allocations(MFSolutionData& soln, const SizetMatrixArray& N_G_actual,
 
   process_group_solution(soln, N_G_actual, N_G_alloc, delta_N_G);
   if (outputLevel >= NORMAL_OUTPUT)
-    print_computed_solution(Cout, soln);
+    print_group_solution(Cout, soln);
 
   if (backfillFailures) // delta_N_G may include backfill
     one_sided_update(N_G_alloc, soln.solution_variables());
@@ -592,6 +592,23 @@ process_group_solution(MFSolutionData& soln, const SizetMatrixArray& N_G_actual,
 }
 
 
+void NonDMultilevBLUESampling::
+print_group_solution(std::ostream& s, const MFSolutionData& soln)
+{
+  const RealVector& soln_vars = soln.solution_variables();
+  size_t i, num_v = soln_vars.length();
+  for (i=0; i<num_v; ++i)
+    Cout << "Group " << i+1 << " samples = " << soln_vars[i] << '\n';
+  if (maxFunctionEvals == SZ_MAX)
+    Cout << "Estimator cost allocation = " << soln.equivalent_hf_allocation()
+	 << std::endl;
+  else
+    Cout << "Average estimator variance = " << soln.average_estimator_variance()
+	 << "\nAverage ACV variance / average MC variance = "
+	 << soln.average_estimator_variance_ratio() << std::endl;
+}
+
+
 inline void NonDMultilevBLUESampling::
 finalize_counts(const SizetMatrixArray& N_G_actual, const SizetArray& N_G_alloc)
 {
@@ -622,23 +639,6 @@ finalize_counts(const SizetMatrixArray& N_G_actual, const SizetArray& N_G_alloc)
 	N_l_actual_fl[q] += N_G_actual_g(q,m);
     }
   }
-}
-
-
-void NonDMultilevBLUESampling::
-print_computed_solution(std::ostream& s, const MFSolutionData& soln)
-{
-  const RealVector& soln_vars = soln.solution_variables();
-  size_t i, num_v = soln_vars.length();
-  for (i=0; i<num_v; ++i)
-    Cout << "Group " << i+1 << " samples = " << soln_vars[i] << '\n';
-  if (maxFunctionEvals == SZ_MAX)
-    Cout << "Estimator cost allocation = " << soln.equivalent_hf_allocation()
-	 << std::endl;
-  else
-    Cout << "Average estimator variance = " << soln.average_estimator_variance()
-	 << "\nAverage ACV variance / average MC variance = "
-	 << soln.average_estimator_variance_ratio() << std::endl;
 }
 
 
@@ -722,7 +722,7 @@ accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
   using std::isfinite;  bool all_finite;
   Real g1_fn, g2_fn, g1_prod, g2_prod;
   IntRespMCIter r_it;  IntRMAMIter g_it;  IntRSM2AMIter gg_it;
-  int g_ord, gg_ord, active_ord;
+  int g_ord, gg_ord, active_ord, ord;
   size_t g, num_groups = modelGroups.size(), qoi, m, m2, num_models,
     g1_index, g2_index;
 
@@ -776,7 +776,7 @@ accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
 		  if (asv[g2_index] & 1) {
 		    // regenerate g2_prod i/o storing off-diagonal combinations
 		    g2_prod = g2_fn = fn_vals[g2_index];
-		    for (m=1; m<active_ord; ++m)
+		    for (ord=1; ord<active_ord; ++ord)
 		      g2_prod *= g2_fn;
 		    sum_GG_gq(m,m2) += g1_prod * g2_prod;
 		  }
@@ -869,7 +869,8 @@ compute_GG_covariance(const RealMatrixArray& sum_G,
 		      const RealSymMatrix2DArray& sum_GG,
 		      const SizetMatrixArray& num_G,
 		    //SizetSymMatrix2DArray& num_GG,
-		      RealSymMatrix2DArray& cov_GG)
+		      RealSymMatrix2DArray& cov_GG,
+		      RealSymMatrix2DArray& cov_GG_inv)
 {
   size_t g, m, m2, num_models, qoi;
   if (cov_GG.size() != numGroups) {
@@ -902,8 +903,13 @@ compute_GG_covariance(const RealMatrixArray& sum_G,
     }
   }
 
+  // precompute 2D array of C_k inverses for numerical solver use
+  // (Phi-inverse is dependent on N_G, but C-inverse is not)
+  compute_C_inverse(cov_GG, cov_GG_inv);
+
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "cov_GG in compute_GG_covariance():\n" << cov_GG << std::endl;
+    Cout << "In compute_GG_covariance(), cov_GG:\n" << cov_GG
+	 << "cov_GG inverse:\n" << cov_GG_inv << std::endl;
 }
 
 

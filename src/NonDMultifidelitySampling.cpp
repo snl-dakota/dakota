@@ -1414,6 +1414,8 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
   // Base class implementation of numerical solve (shared with ACV,GenACV):
   ensemble_numerical_solution(soln);
   process_model_solution(soln, numSamples);
+  //if (outputLevel >= NORMAL_OUTPUT)
+  //  print_model_solution(Cout, soln, approxSet);
 }
 
 
