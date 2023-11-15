@@ -190,7 +190,7 @@ if(DAKOTA_TEST_PREPROC)
     "${CMAKE_CURRENT_BINARY_DIR}/dakota_preproc_tests/preproc_dakota.tmpl"
     dakota_unit_test_copied_files
     )
-  dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/preproc_dakota.base"
+  dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/dakota_preproc_tests/preproc_dakota.base"
     "${CMAKE_CURRENT_BINARY_DIR}/dakota_preproc_tests/preproc_dakota.base"
     dakota_unit_test_copied_files
     )
