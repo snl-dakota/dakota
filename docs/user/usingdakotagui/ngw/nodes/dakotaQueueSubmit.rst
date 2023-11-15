@@ -38,7 +38,7 @@ Properties
 - **job.hours** - The number of hours of queue time to request.
 - **job.minutes** - The number of minutes of queue time to request.
 - **queue** - The partition (queue name) to pass to Slurm - by default, 'batch', but 'short' is an option too.
-- **submitScript** - Use this field if you would like to supply your own script responsible for submitting to the job queue, replacing the ``dakota-submit.sh``
+- **submitScript** - Use this field if you would like to supply your own script responsible for submitting to the job queue, replacing the ``submit-dakota.sh``
   provided by default.
 - **statusScript** - Use this field if you would like to supply your own script responsible for submitting to the job queue, replacing the ``status.sh``
   provided by default.
@@ -75,7 +75,7 @@ Usage Notes - Editing Control Scripts
 
 Refer to the main documentation for each control script to learn more about its function and what to consider editing:
 
-- :ref:`dakota-submit.sh <gui-job-submission-workflow-dakotaQueueSubmit-scripts-submit>`
+- :ref:`submit-dakota.sh <gui-job-submission-workflow-dakotaQueueSubmit-scripts-submit>`
 - :ref:`status.sh <gui-job-submission-workflow-common-scripts-status>`
 - :ref:`checkjob.sh <gui-job-submission-workflow-common-scripts-checkjob>`
 - :ref:`cancel.sh <gui-job-submission-workflow-dakotaQueueSubmit-scripts-cancel>`

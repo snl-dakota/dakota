@@ -33,7 +33,9 @@ Dakota
    nodes/dakotaQueueSubmit
    nodes/dakotaResultsFile
    nodes/dakotaWorkflowDriver
+   nodes/dispatchAndCollect
    nodes/dprepro
+   nodes/localDispatchAndCollect
    nodes/posPrePro
    nodes/pyprepro
    nodes/qoiExtractor
@@ -46,7 +48,9 @@ Dakota
 .. toctree::
    :maxdepth: 1
    
+   nodes/displayPlot
    nodes/plotCanvas
+   nodes/plotInputGather
    nodes/plotWindow
    nodes/screenshot
    nodes/toPlotlyJS

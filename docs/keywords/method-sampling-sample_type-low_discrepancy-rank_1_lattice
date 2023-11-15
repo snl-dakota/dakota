@@ -4,7 +4,7 @@ Uses rank-1 lattice points to sample variables
 Description::
 The ``rank_1_lattice`` keyword invokes rank-1 lattice sampling as the means of 
 drawing samples of uncertain variables according to their probability
-distributions :cite:p:`Nuyens06`. When this keyword is provided, it must be accompanied by the keyword :dakkw:`method-sampling-sample_type-low_discrepancy`.
+distributions :cite:p:`Nuyens06`.
 
 Rank-1 lattices were introduced by
 Korobov :cite:p:`Korobov59` and Hlawka :cite:p:`Hlawka62`, as the *method of good lattice points*. 

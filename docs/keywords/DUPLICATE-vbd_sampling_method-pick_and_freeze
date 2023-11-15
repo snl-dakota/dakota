@@ -6,12 +6,14 @@ effect sensitivity indices.
 
 **Default Behavior**
 
-If the user specified a number of samples, N, and a number of
-nondeterministic variables, M, pick-and-freeze variance-based 
-decomposition requires the evaluation of N*(M+2) samples. *Note 
-that specifying this keyword will increase the number of function 
-evaluations above the number requested with the ``samples`` keyword 
-since replicated sets of sample values are evaluated.*
+If the user specified a number of samples, :math:`N`, and a number of
+nondeterministic variables, :math:`M`, pick-and-freeze variance-based 
+decomposition requires the evaluation of :math:`N*(M+2)` samples.
+
+.. warning::
+    Specifying this keyword will increase the number of function 
+    evaluations above the number requested with the ``samples`` keyword 
+    since replicated sets of sample values are evaluated.
 
 **Expected Output**
 
@@ -22,13 +24,6 @@ contribution of each individual variable to the variance
 in the model response.  Total effects represent the percent 
 contribution of each individual variable in combination with 
 all other variables to the variance in the model response.
-
-**Usage Tips**
-
-
-**Additional Discussion**
-
-Topics::
 
 Examples::
 
@@ -49,9 +44,9 @@ approaches rely on structured sampling wherein two independent random
 sample sets of the input variables are generated, then the random samples
 of the variable whose sensitivity index is being computed are substituted
 from one sample set into the other. Specifically, if the user specified a 
-number of samples, N, and a number of nondeterministic variables, M, 
+number of samples, :math:`N`, and a number of nondeterministic variables, :math:`M`, 
 pick-and-freeze variance-based decomposition requires the evaluation of 
-N*(M+2) samples.
+:math:`N*(M+2)` samples.
 
 Faq::
 

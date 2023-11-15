@@ -1,0 +1,33 @@
+Blurb::
+Do not recur over admissible DAGs for a given model ensemble
+
+Description::
+This (default) option supports the ACV approach (:cite:p:`GORODETSKY2020109257`)
+in utilizing only the peer DAG (all approximation control variates
+target the same truth model).
+
+Note that the omission of the ``search_model_graphs`` block defaults to
+no searching over either DAGs or model subsets.  The ``no_recursion`` option
+exists in order to enable search over the latter while supressing search over
+the former, as shown below.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method,
+    	model_pointer = 'ENSEMBLE'
+    	approximate_control_variate acv_mf
+    	  pilot_samples = 25 seed = 8674132
+    	  search_model_graphs
+	    no_recursion
+	    model_selection
+    	  max_function_evaluations = 500
+
+Theory::
+
+Faq::
+
+See_Also::

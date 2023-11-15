@@ -48,11 +48,13 @@ set(CMAKE_MODULE_PATH
   "${Dakota_SOURCE_DIR}/cmake"
   "${Dakota_SOURCE_DIR}/cmake/semsCMake" ${CMAKE_MODULE_PATH})
 include(DakotaVersion)
+include(DakotaVersionUtils)
 include(DakotaCPack)
 include(ListFilterEmacsBackups)
 include(DakotaTestHelpers)
 include(DakotaUsersExamples)
 
+dakota_version_set_helper_vars()
 
 set(DAKOTA_JAVA_UTIL_DIR
   "${Dakota_SOURCE_DIR}/src/java_utils/src/gov/sandia/dart/dakota")

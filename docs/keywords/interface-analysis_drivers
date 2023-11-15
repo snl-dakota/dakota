@@ -30,10 +30,10 @@ For external processes using the :dakkw:`interface-analysis_drivers-fork` keywor
 A function evaluation may comprise:
 
 
--<i>A single analysis driver</i>: Function evaluation, including all pre- and   post-processing is contained entirely within a single script/executable. <br>
--<i>A single analysis driver with filters</i>: Function evaluation is   explicitly split into pre-processing (performed by the input filter),    analysis, and post-processing (by the output filter).
--<i>A single analysis driver with environment variables</i>: Function   evaluation is contained within one analysis driver, but it requires    environment variables to be set before running.
--<i>Multiple analysis drivers</i>: Drivers are run sequentially or concurrently   (See the ``asynchronous`` keyword) and can have any of the above options as    well.
+- *A single analysis driver*: Function evaluation, including all pre- and post-processing is contained entirely within a single script/executable.
+- *A single analysis driver with filters*: Function evaluation is explicitly split into pre-processing (performed by the input filter), analysis, and post-processing (by the output filter).
+- *A single analysis driver with environment variables*: Function evaluation is contained within one analysis driver, but it requires environment variables to be set before running.
+- *Multiple analysis drivers*: Drivers are run sequentially or concurrently (See the ``asynchronous`` keyword) and can have any of the above options as well.
 
 For fork and system interfaces, the analysis_driver list contains the
 names of one or more executable programs or scripts taking parameters
