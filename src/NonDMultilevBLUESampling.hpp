@@ -71,8 +71,7 @@ protected:
   void initialize_blue_sums(IntRealMatrixArrayMap& sum_G,
 			    IntRealSymMatrix2DArrayMap& sum_GG);
 
-  void initialize_blue_counts(SizetMatrixArray& num_G);
-                            //, SizetSymMatrix2DArray& num_GG);
+  void initialize_blue_counts(Sizet2DArray& num_G);
 
   void add_sub_matrix(Real coeff, const RealSymMatrix& sub_mat,
 		      const UShortArray& subset, RealSymMatrix& mat);
@@ -82,8 +81,13 @@ protected:
 
   void compute_C_inverse(const RealSymMatrix2DArray& cov_GG,
 			 RealSymMatrix2DArray& cov_GG_inv);
+
   void compute_Psi_inverse(const RealSymMatrix2DArray& cov_GG_inv,
 			   const RealVector& N_G, RealSymMatrixArray& Psi_inv);
+  void compute_Psi_inverse(const RealSymMatrix2DArray& cov_GG_inv,
+			   const Sizet2DArray& N_G,
+			   RealSymMatrixArray& Psi_inv);
+
   void compute_mu_hat(const RealSymMatrix2DArray& cov_GG_inv,
 		      const RealSymMatrixArray& Psi_inv,
 		      const RealMatrixArray& sum_G, RealVectorArray& mu_hat);
@@ -91,16 +95,15 @@ protected:
   void estimator_variance(const RealVector& cd_vars, RealVector& estvar);
 
   void process_group_solution(MFSolutionData& soln,
-			      const SizetMatrixArray& N_G_actual,
+			      const Sizet2DArray& N_G_actual,
 			      const SizetArray& N_G_alloc,
 			      SizetArray& delta_N_G);
 
   void blue_raw_moments(IntRealMatrixArrayMap& sum_G,
 			IntRealSymMatrix2DArrayMap& sum_GG,
-			const SizetMatrixArray& N_G_actual,
-			RealMatrix& H_raw_mom);
+			const Sizet2DArray& N_G_actual, RealMatrix& H_raw_mom);
 
-  void finalize_counts(const SizetMatrixArray& N_G_actual,
+  void finalize_counts(const Sizet2DArray& N_G_actual,
 		       const SizetArray& N_G_alloc);
 
   void print_group_solution(std::ostream& s, const MFSolutionData& soln);
@@ -118,49 +121,28 @@ private:
   void group_increment(SizetArray& delta_N_G, size_t iter);
   void evaluate_pilot(RealMatrixArray& sum_G_pilot,
 		      RealSymMatrix2DArray& sum_GG_pilot,
-		      SizetMatrixArray& N_shared_pilot, bool incr_cost);
+		      Sizet2DArray& N_shared_pilot, bool incr_cost);
 
-  void compute_allocations(MFSolutionData& soln,
-			   const SizetMatrixArray& N_G_actual,
+  void compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
 			   SizetArray& N_G_alloc, SizetArray& delta_N_G);
 
   void project_mc_estimator_variance(const RealSymMatrixArray& var_H,
-				     const SizetMatrix& N_H_actual,
+				     const SizetArray& N_H_actual,
 				     size_t delta_N_H, RealVector& proj_est_var,
 				     SizetVector& proj_N_H);
   void project_mc_estimator_variance(const RealSymMatrixArray& var_H,
 				     Real N_H_actual, Real delta_N_H,
 				     RealVector& proj_est_var);
 
-  /*
-  void compute_blue_control_covariances(RealMatrix& sum_L, Real sum_H_q,
-				       RealSymMatrix& sum_LL_q,
-				       RealMatrix& sum_LH, size_t N_shared_q,
-				       size_t qoi, RealSymMatrix& cov_LL,
-				       RealMatrix& cov_LH);
-  void precompute_blue_control(const RealVector& avg_eval_ratios,
-			      const SizetArray& N_shared);
-  void compute_blue_control(RealMatrix& sum_L_base_m, Real sum_H_mq,
-			   RealSymMatrix& sum_LL_mq, RealMatrix& sum_LH_m,
-			   size_t N_shared_q, size_t mom, size_t qoi,
-			   RealVector& beta);
-  void solve_for_blue_control(const RealSymMatrix& cov_LL,
-			     const RealSymMatrix& F, const RealMatrix& cov_LH,
-			     size_t qoi, RealVector& beta);
-  */
-
   void accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
 			    IntRealSymMatrix2DArrayMap& sum_GG,
-			    SizetMatrixArray& num_G);
-                          //, SizetSymMatrix2DArray& num_GG);
+			    Sizet2DArray& num_G);
   void accumulate_blue_sums(RealMatrixArray& sum_G,
-			    RealSymMatrix2DArray& sum_GG,
-			    SizetMatrixArray& num_G);
-                          //, SizetSymMatrix2DArray& num_GG);
+			    RealSymMatrix2DArray& sum_GG, Sizet2DArray& num_G);
 
   void compute_GG_covariance(const RealMatrixArray& sum_G,
 			     const RealSymMatrix2DArray& sum_GG,
-			     const SizetMatrixArray& N_G,
+			     const Sizet2DArray& N_G,
 			     RealSymMatrix2DArray& cov_GG,
 			     RealSymMatrix2DArray& cov_GG_inv);
   void covariance_to_correlation_sq(const RealSymMatrixArray& cov_GG_g,
@@ -178,12 +160,12 @@ private:
   /*
   void compute_GG_statistics(RealMatrixArray& sum_G_pilot,
 			     RealSymMatrix2DArray& sum_GG_pilot,
-			     SizetMatrixArray& N_shared_pilot,
+			     Sizet2DArray& N_shared_pilot,
 			   //RealMatrixArray& var_G,
 			     RealSymMatrix2DArray& cov_GG);
   void compute_G_variance(const RealMatrixArray& sum_G,
 			  const RealSymMatrix2DArray& sum_GG,
-			  const SizetMatrixArray& num_G,
+			  const Sizet2DArray& num_G,
 			  RealMatrixArray& var_G);
 
   void update_projected_group_samples(const MFSolutionData& soln,
@@ -191,20 +173,6 @@ private:
 				      size_t& N_G_alloc,
 				      SizetArray& delta_N_G,
 				      Real& delta_equiv_hf);
-
-  void compute_F_matrix(const RealVector& avg_eval_ratios, RealSymMatrix& F);
-  void compute_C_F_c_f(const RealSymMatrix& C, const RealSymMatrix& F,
-		       const RealMatrix& c, size_t qoi,
-		       RealSymMatrix& C_F, RealVector& c_f);
-  void solve_for_C_F_c_f(RealSymMatrix& C_F, RealVector& c_f,
-			 RealVector& lhs, bool copy_C_F = true,
-			 bool copy_c_f = true);
-  Real solve_for_triple_product(const RealSymMatrix& C, const RealSymMatrix& F,
-				const RealMatrix&    c, size_t qoi);
-  Real compute_R_sq(const RealSymMatrix& C, const RealSymMatrix& F,
-		    const RealMatrix& c, size_t qoi, Real var_H_q);
-
-  void compute_ratios(const RealMatrix& var_L, MFSolutionData& soln);
 
   void scale_to_target(Real avg_N_H, const RealVector& cost,
 		       RealVector& avg_eval_ratios, Real& avg_hf_target);
@@ -274,18 +242,12 @@ initialize_blue_sums(IntRealMatrixArrayMap& sum_G,
 
 
 inline void NonDMultilevBLUESampling::
-initialize_blue_counts(SizetMatrixArray& num_G)//,SizetSymMatrix2DArray& num_GG)
+initialize_blue_counts(Sizet2DArray& num_G)
 {
   size_t g, num_groups = modelGroups.size(), num_models;
-  num_G.resize(num_groups);  //num_GG.resize(num_groups);
-  for (g=0; g<num_groups; ++g) {
-    num_models = modelGroups[g].size();
-    num_G[g].shape(numFunctions, num_models);
-    //SizetSymMatrixArray& num_GG_g = num_GG[g];
-    //num_GG_g.resize(numFunctions);
-    //for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    //  num_GG_g[qoi].shape(num_models);
-  }
+  num_G.resize(num_groups);
+  for (g=0; g<num_groups; ++g)
+    num_G[g].assign(numFunctions, 0);
 }
 
 
@@ -393,6 +355,8 @@ compute_C_inverse(const RealSymMatrix2DArray& cov_GG,
 }
 
 
+/** This version used during numerical solution (1D vector of real
+    design variables for group samples. */
 inline void NonDMultilevBLUESampling::
 compute_Psi_inverse(const RealSymMatrix2DArray& cov_GG_inv,
 		    const RealVector& N_G, RealSymMatrixArray& Psi_inv)
@@ -400,7 +364,7 @@ compute_Psi_inverse(const RealSymMatrix2DArray& cov_GG_inv,
   // Psi matrix accumulates across groups and is sized according to
   // full model ensemble
 
-  size_t g, num_groups = modelGroups.size(), all_models = numApprox + 1, qoi;
+  size_t all_models = numApprox + 1, qoi, g, num_groups = modelGroups.size();
   if (Psi_inv.size() != numFunctions) {
     Psi_inv.resize(numFunctions);
     for (qoi=0; qoi<numFunctions; ++qoi)
@@ -408,7 +372,6 @@ compute_Psi_inverse(const RealSymMatrix2DArray& cov_GG_inv,
   }
 
   for (g=0; g<num_groups; ++g) {
-    //form_R(g, R_g); // bypass R_k^T Cinv R_k using more direct subset mgmt
     Real n_g = N_G[g];
     const UShortArray&            models_g = modelGroups[g];
     const RealSymMatrixArray& cov_GG_inv_g =  cov_GG_inv[g];
@@ -420,7 +383,7 @@ compute_Psi_inverse(const RealSymMatrix2DArray& cov_GG_inv,
   // solve) and y-hat / mu-hat (after solve), so invert now without a RHS so
   // Psi-inverse can be used in multiple places without additional tracking
   RealSpdSolver spd_solver; // can this be reused?
-  for (qoi=0; qoi<numFunctions; ++qoi) {
+  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
     spd_solver.setMatrix(Teuchos::rcp(&Psi_inv[qoi], false));
     if (spd_solver.shouldEquilibrate())
       spd_solver.factorWithEquilibration(true);
@@ -431,9 +394,19 @@ compute_Psi_inverse(const RealSymMatrix2DArray& cov_GG_inv,
       abort_handler(METHOD_ERROR);
     }
   }
-
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "In compute_Psi_inverse(), Psi_inv:\n" << Psi_inv << std::endl;
+}
+
+
+/** This version used during final results processing (2D array of
+    actual completed samples). */
+inline void NonDMultilevBLUESampling::
+compute_Psi_inverse(const RealSymMatrix2DArray& cov_GG_inv,
+		    const Sizet2DArray& N_G, RealSymMatrixArray& Psi_inv)
+{
+  RealVector avg_N_G;  average(N_G, avg_N_G);
+  compute_Psi_inverse(cov_GG_inv, avg_N_G, Psi_inv);
 }
 
 
@@ -521,7 +494,7 @@ average_estimator_variance(const RealVector& cd_vars)
 inline void NonDMultilevBLUESampling::
 blue_raw_moments(IntRealMatrixArrayMap& sum_G,
 		 IntRealSymMatrix2DArrayMap& sum_GG,
-		 const SizetMatrixArray& N_G_actual, RealMatrix& H_raw_mom)
+		 const Sizet2DArray& N_G_actual, RealMatrix& H_raw_mom)
 {
   RealSymMatrixArray Psi_inv;  RealVectorArray mu_hat;
   for (int mom=1; mom<=4; ++mom) {
@@ -529,14 +502,14 @@ blue_raw_moments(IntRealMatrixArrayMap& sum_G,
       Cout << "Moment " << mom << " estimator:\n";
     RealMatrixArray& sum_G_m = sum_G[mom];
     if (mom == 1) { // reuse covariance data
-      //compute_Psi_inverse(covGGinv, N_G_actual, Psi_inv); // *** TO DO
+      compute_Psi_inverse(covGGinv, N_G_actual, Psi_inv);
       compute_mu_hat(covGGinv, Psi_inv, sum_G_m, mu_hat);
       for (size_t qoi=0; qoi<numFunctions; ++qoi)
 	H_raw_mom(qoi, mom-1) = mu_hat[qoi][numApprox]; // last model
     }
     else { // generate new covariance data
       RealSymMatrix2DArray& sum_GG_m = sum_GG[mom];
-      
+      // *** TO DO ***
     }
   }
 }

@@ -258,7 +258,7 @@ protected:
 		       SizetArray& delta_N);
   /// compute a one-sided sample increment vector to move current sampling
   /// levels to new targets
-  void one_sided_delta(const SizetMatrixArray& current,
+  void one_sided_delta(const Sizet2DArray& current,
 		       const RealVector& targets, SizetArray& delta_N);
 
   /// one-sided increase of current to match targets
@@ -665,7 +665,7 @@ one_sided_delta(const SizetArray& current, const RealVector& targets,
 
 
 inline void NonD::
-one_sided_delta(const SizetMatrixArray& current, const RealVector& targets,
+one_sided_delta(const Sizet2DArray& current, const RealVector& targets,
 		SizetArray& delta_N)
 {
   size_t i, c_len = current.size(), t_len = targets.length();  Real diff_i;
@@ -676,7 +676,7 @@ one_sided_delta(const SizetMatrixArray& current, const RealVector& targets,
   }
   if (delta_N.size() != c_len) delta_N.resize(c_len);
   for (i=0; i<c_len; ++i) {
-    diff_i     = targets[i] - average(current[i]); // avg over all models,qoi
+    diff_i     = targets[i] - average(current[i]); // avg over all qoi
     delta_N[i] = (diff_i > 0) ? (size_t)std::floor(diff_i + .5) : 0;
   }
 }

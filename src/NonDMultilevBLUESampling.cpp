@@ -111,7 +111,7 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
 {
   // retrieve cost estimates across soln levels for a particular model form
   IntRealMatrixArrayMap sum_G;  IntRealSymMatrix2DArrayMap sum_GG;
-  SizetMatrixArray N_G_actual;  //SizetSymMatrix2DArray N_GG;
+  Sizet2DArray N_G_actual;  //SizetSymMatrix2DArray N_GG;
   initialize_blue_sums(sum_G, sum_GG); initialize_blue_counts(N_G_actual);
   SizetArray delta_N_G = pilotSamples, // sized by load_pilot_samples()
              N_G_alloc = delta_N_G;
@@ -172,7 +172,7 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
   // Compute var G & covar GG from (oracle) pilot treated as "offline" cost
   // ------------------------------------------------------------
   RealMatrixArray sum_G_pilot; RealSymMatrix2DArray sum_GG_pilot;
-  SizetMatrixArray N_pilot;
+  Sizet2DArray N_pilot;
   evaluate_pilot(sum_G_pilot, sum_GG_pilot, N_pilot, false);
   compute_GG_covariance(sum_G_pilot, sum_GG_pilot, N_pilot, covGG, covGGinv);
 
@@ -180,7 +180,7 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
   // Compute "online" sample increments:
   // -----------------------------------
   IntRealMatrixArrayMap sum_G; IntRealSymMatrix2DArrayMap sum_GG;
-  SizetMatrixArray N_G_actual;  //SizetSymMatrix2DArray N_GG;
+  Sizet2DArray N_G_actual;  //SizetSymMatrix2DArray N_GG;
   initialize_blue_sums(sum_G, sum_GG); initialize_blue_counts(N_G_actual);
   SizetArray N_G_alloc, delta_N_G;  N_G_alloc.assign(numGroups, 0);
 
@@ -222,7 +222,7 @@ void NonDMultilevBLUESampling::ml_blue_pilot_projection()
   // Evaluate shared increment and update correlations, {eval,EstVar}_ratios
   // --------------------------------------------------------------------
   RealMatrixArray sum_G; RealSymMatrix2DArray sum_GG;
-  SizetMatrixArray N_G_actual;  //SizetSymMatrix2DArray N_GG;
+  Sizet2DArray N_G_actual;  //SizetSymMatrix2DArray N_GG;
   evaluate_pilot(sum_G, sum_GG, N_G_actual, true);
   compute_GG_covariance(sum_G, sum_GG, N_G_actual, covGG, covGGinv);
   SizetArray delta_N_G, N_G_alloc = pilotSamples;
@@ -269,7 +269,7 @@ group_increment(SizetArray& delta_N_G, size_t iter)
 
 void NonDMultilevBLUESampling::
 evaluate_pilot(RealMatrixArray& sum_G_pilot, RealSymMatrix2DArray& sum_GG_pilot,
-	       SizetMatrixArray& N_shared_pilot, bool incr_cost)
+	       Sizet2DArray& N_shared_pilot, bool incr_cost)
 {
   initialize_blue_sums(sum_G_pilot, sum_GG_pilot);
   initialize_blue_counts(N_shared_pilot);//, N_GG_pilot);
@@ -397,7 +397,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
 
 
 void NonDMultilevBLUESampling::
-compute_allocations(MFSolutionData& soln, const SizetMatrixArray& N_G_actual,
+compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
 		    SizetArray& N_G_alloc, SizetArray& delta_N_G)
 {
   // Solve the optimization sub-problem using an initial guess from either
@@ -565,7 +565,7 @@ analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
 
 
 void NonDMultilevBLUESampling::
-process_group_solution(MFSolutionData& soln, const SizetMatrixArray& N_G_actual,
+process_group_solution(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
 		       const SizetArray& N_G_alloc, SizetArray& delta_N_G)
 {
   // compute sample increment for HF from current to target:
@@ -610,7 +610,7 @@ print_group_solution(std::ostream& s, const MFSolutionData& soln)
 
 
 inline void NonDMultilevBLUESampling::
-finalize_counts(const SizetMatrixArray& N_G_actual, const SizetArray& N_G_alloc)
+finalize_counts(const Sizet2DArray& N_G_actual, const SizetArray& N_G_alloc)
 {
   // post final sample counts back to NLev{Actual,Alloc} (for final summaries)
 
@@ -625,8 +625,8 @@ finalize_counts(const SizetMatrixArray& N_G_actual, const SizetArray& N_G_alloc)
     const UShortArray& group_g = modelGroups[g];
     num_models = group_g.size();
 
-    const SizetMatrix& N_G_actual_g = N_G_actual[g];
-    size_t             N_G_alloc_g =  N_G_alloc[g];
+    const SizetArray& N_G_actual_g = N_G_actual[g];
+    size_t            N_G_alloc_g  = N_G_alloc[g];
     for (m=0; m<num_models; ++m) {
       m_index = group_g[m];
       mf = active_key.retrieve_model_form(m_index);
@@ -634,9 +634,8 @@ finalize_counts(const SizetMatrixArray& N_G_actual, const SizetArray& N_G_alloc)
 
       NLevAlloc[mf][rl] += N_G_alloc_g;
       SizetArray& N_l_actual_fl = NLevActual[mf][rl];
-      if (N_l_actual_fl.empty()) N_l_actual_fl.assign(numFunctions, 0);
-      for (q=0; q<numFunctions; ++q)
-	N_l_actual_fl[q] += N_G_actual_g(q,m);
+      if (N_l_actual_fl.empty()) N_l_actual_fl = N_G_actual_g;
+      else     increment_samples(N_l_actual_fl,  N_G_actual_g);
     }
   }
 }
@@ -687,7 +686,7 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s)
 
 void NonDMultilevBLUESampling::
 project_mc_estimator_variance(const RealSymMatrixArray& var_H,
-			      const SizetMatrix& N_H_actual, size_t delta_N_H,
+			      const SizetArray& N_H_actual, size_t delta_N_H,
 			      RealVector& proj_est_var, SizetVector& proj_N_H)
 {
   // Defines projected estvar for use as a consistent reference
@@ -695,7 +694,7 @@ project_mc_estimator_variance(const RealSymMatrixArray& var_H,
   proj_N_H.sizeUninitialized(numFunctions);
   size_t qoi, N_l_q;
   for (qoi=0; qoi<numFunctions; ++qoi) {
-    N_l_q = proj_N_H[qoi] = N_H_actual(qoi,0) + delta_N_H;
+    N_l_q = proj_N_H[qoi] = N_H_actual[qoi] + delta_N_H;
     proj_est_var[qoi] = (N_l_q) ? var_H[qoi](0,0) / N_l_q : DBL_MAX;
   }
 }
@@ -716,8 +715,7 @@ project_mc_estimator_variance(const RealSymMatrixArray& var_H, Real N_H_actual,
 /** Multi-moment map-based version used by online pilot */
 void NonDMultilevBLUESampling::
 accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
-		     IntRealSymMatrix2DArrayMap& sum_GG,
-		     SizetMatrixArray& num_G)//,SizetSymMatrix2DArray& num_GG)
+		     IntRealSymMatrix2DArrayMap& sum_GG, Sizet2DArray& num_G)
 {
   using std::isfinite;  bool all_finite;
   Real g1_fn, g2_fn, g1_prod, g2_prod;
@@ -727,10 +725,9 @@ accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
     g1_index, g2_index;
 
   for (g=0; g<num_groups; ++g) {
-    SizetMatrix&             num_G_g =  num_G[g]; // index is group_id
-    //SizetSymMatrixArray&  num_GG_g = num_GG[g];
-    const UShortArray&       group_g = modelGroups[g];
-    num_models                       = group_g.size();
+    SizetArray&        num_G_g =       num_G[g]; // index is group_id
+    const UShortArray& group_g = modelGroups[g];
+    num_models                 = group_g.size();
 
     const IntResponseMap& resp_map_g = batchResponsesMap[g];// index is group_id
     for (r_it=resp_map_g.begin(); r_it!=resp_map_g.end(); ++r_it) {
@@ -746,46 +743,47 @@ accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
 	all_finite = true;
 	for (m=0; m<num_models; ++m) {
 	  g1_index = group_g[m] * numFunctions + qoi;
-	  if ( (asv[g1_index] & 1) && !isfinite(fn_vals[g1_index]) )
-	    { all_finite = false; break; }
+	  if ( (asv[g1_index] & 1) == 0 ) {
+	    Cerr << "Error: missing data for group " << g+1 << " model "
+		 << group_g[m]+1 << '.' << std::endl;
+	    abort_handler(METHOD_ERROR);
+	  }
+	  if ( !isfinite(fn_vals[g1_index]) )
+	    all_finite = false; //break;
 	}
 	if (!all_finite) continue;
 
+	++num_G_g[qoi]; // shared due to fault tol logic
 	for (m=0; m<num_models; ++m) {
 	  g1_index = group_g[m] * numFunctions + qoi;
-	  if (asv[g1_index] & 1) {
-	    ++num_G_g(qoi,m); // shared due to fault tol logic
-	    g1_fn = fn_vals[g1_index];
+	  g1_fn = fn_vals[g1_index];
 
-	    g_it    = sum_G.begin();  gg_it = sum_GG.begin();
-	    g_ord   = (g_it  ==  sum_G.end()) ? 0 :  g_it->first;
-	    gg_ord  = (gg_it == sum_GG.end()) ? 0 : gg_it->first;
-	    g1_prod = g1_fn;  active_ord = 1;
-	    while (g_ord || gg_ord) {
+	  g_it    = sum_G.begin();  gg_it = sum_GG.begin();
+	  g_ord   = (g_it  ==  sum_G.end()) ? 0 :  g_it->first;
+	  gg_ord  = (gg_it == sum_GG.end()) ? 0 : gg_it->first;
+	  g1_prod = g1_fn;  active_ord = 1;
+	  while (g_ord || gg_ord) {
     
-	      if (g_ord == active_ord) { // support general key sequence
-		g_it->second[g](qoi,m) += g1_prod;
-		++g_it;  g_ord = (g_it == sum_G.end()) ? 0 : g_it->first;
-	      }
-	      if (gg_ord == active_ord) { // support general key sequence
-		RealSymMatrix& sum_GG_gq = gg_it->second[g][qoi];
-		sum_GG_gq(m,m) += g1_prod * g1_prod;
-		// Off-diagonal of C matrix:
-		for (m2=0; m2<m; ++m2) {
-		  g2_index = group_g[m2] * numFunctions + qoi;
-		  if (asv[g2_index] & 1) {
-		    // regenerate g2_prod i/o storing off-diagonal combinations
-		    g2_prod = g2_fn = fn_vals[g2_index];
-		    for (ord=1; ord<active_ord; ++ord)
-		      g2_prod *= g2_fn;
-		    sum_GG_gq(m,m2) += g1_prod * g2_prod;
-		  }
-		}
-		++gg_it; gg_ord = (gg_it == sum_GG.end()) ? 0 : gg_it->first;
-	      }
-
-	      g1_prod *= g1_fn;  ++active_ord;
+	    if (g_ord == active_ord) { // support general key sequence
+	      g_it->second[g](qoi,m) += g1_prod;
+	      ++g_it;  g_ord = (g_it == sum_G.end()) ? 0 : g_it->first;
 	    }
+	    if (gg_ord == active_ord) { // support general key sequence
+	      RealSymMatrix& sum_GG_gq = gg_it->second[g][qoi];
+	      sum_GG_gq(m,m) += g1_prod * g1_prod;
+	      // Off-diagonal of C matrix:
+	      for (m2=0; m2<m; ++m2) {
+		g2_index = group_g[m2] * numFunctions + qoi;
+		// regenerate g2_prod i/o storing off-diagonal combinations
+		g2_prod = g2_fn = fn_vals[g2_index];
+		for (ord=1; ord<active_ord; ++ord)
+		  g2_prod *= g2_fn;
+		sum_GG_gq(m,m2) += g1_prod * g2_prod;
+	      }
+	      ++gg_it; gg_ord = (gg_it == sum_GG.end()) ? 0 : gg_it->first;
+	    }
+
+	    g1_prod *= g1_fn;  ++active_ord;
 	  }
 	}
       }
@@ -796,8 +794,8 @@ accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
 
 /** Single moment version used by offline-pilot and pilot-projection */
 void NonDMultilevBLUESampling::
-accumulate_blue_sums(RealMatrixArray&  sum_G, RealSymMatrix2DArray& sum_GG,
-		     SizetMatrixArray& num_G)//, SizetSymMatrix2DArray& num_GG)
+accumulate_blue_sums(RealMatrixArray& sum_G, RealSymMatrix2DArray& sum_GG,
+		     Sizet2DArray& num_G)
 {
   using std::isfinite;  bool all_finite;
   Real g1_fn;  IntRespMCIter r_it;
@@ -807,8 +805,7 @@ accumulate_blue_sums(RealMatrixArray&  sum_G, RealSymMatrix2DArray& sum_GG,
   for (g=0; g<num_groups; ++g) {
     RealMatrix&              sum_G_g =  sum_G[g]; // index is group_id
     RealSymMatrixArray&     sum_GG_g = sum_GG[g]; // index is group_id
-    SizetMatrix&             num_G_g =  num_G[g]; // index is group_id
-    //SizetSymMatrixArray&  num_GG_g = num_GG[g];
+    SizetArray&              num_G_g =  num_G[g]; // index is group_id
     const UShortArray&       group_g = modelGroups[g];
     num_models                       = group_g.size();
 
@@ -826,31 +823,30 @@ accumulate_blue_sums(RealMatrixArray&  sum_G, RealSymMatrix2DArray& sum_GG,
 	all_finite = true;
 	for (m=0; m<num_models; ++m) {
 	  g1_index = group_g[m] * numFunctions + qoi;
-	  if ( (asv[g1_index] & 1) && !isfinite(fn_vals[g1_index]) )
-	    { all_finite = false; break; }
+	  if ( (asv[g1_index] & 1) == 0 ) {
+	    Cerr << "Error: missing data for group " << g+1 << " model "
+		 << group_g[m]+1 << '.' << std::endl;
+	    abort_handler(METHOD_ERROR);
+	  }
+	  if ( !isfinite(fn_vals[g1_index]) )
+	    all_finite = false; //break;
 	}
 	if (!all_finite) continue;
       
+	++num_G_g[qoi]; // shared due to fault tol logic
 	RealSymMatrix& sum_GG_gq = sum_GG_g[qoi];
-	//SizetSymMatrix& num_GG_gq = num_GG_g[qoi];
 	for (m=0; m<num_models; ++m) {
 	  g1_index = group_g[m] * numFunctions + qoi;
-	  if (asv[g1_index] & 1) {
-	    ++num_G_g(qoi,m); // shared due to fault tol logic
 
-	    g1_fn = fn_vals[g1_index];
-	    sum_G_g(qoi,m) += g1_fn;
-	    sum_GG_gq(m,m) += g1_fn * g1_fn;
+	  g1_fn = fn_vals[g1_index];
+	  sum_G_g(qoi,m) += g1_fn;
+	  sum_GG_gq(m,m) += g1_fn * g1_fn;
 
-	    // Off-diagonal of covariance matrix:
-	    // look back (only) for single capture of each combination
-	    for (m2=0; m2<m; ++m2) {
-	      g2_index = group_g[m2] * numFunctions + qoi;
-	      if (asv[g2_index] & 1) {
-		//++num_GG_gq(m,m2);
-		sum_GG_gq(m,m2) += g1_fn * fn_vals[g2_index];
-	      }
-	    }
+	  // Off-diagonal of covariance matrix:
+	  // look back (only) for single capture of each combination
+	  for (m2=0; m2<m; ++m2) {
+	    g2_index = group_g[m2] * numFunctions + qoi;
+	    sum_GG_gq(m,m2) += g1_fn * fn_vals[g2_index];
 	  }
 	}
       }
@@ -867,8 +863,7 @@ accumulate_blue_sums(RealMatrixArray&  sum_G, RealSymMatrix2DArray& sum_GG,
 void NonDMultilevBLUESampling::
 compute_GG_covariance(const RealMatrixArray& sum_G,
 		      const RealSymMatrix2DArray& sum_GG,
-		      const SizetMatrixArray& num_G,
-		    //SizetSymMatrix2DArray& num_GG,
+		      const Sizet2DArray& num_G,
 		      RealSymMatrix2DArray& cov_GG,
 		      RealSymMatrix2DArray& cov_GG_inv)
 {
@@ -884,21 +879,22 @@ compute_GG_covariance(const RealMatrixArray& sum_G,
     }
   }
 
-  Real sum_G_gqm;  size_t N_sh_gqm;
+  Real sum_G_gqm;  size_t N_sh_gq;
   for (g=0; g<numGroups; ++g) {
     num_models = modelGroups[g].size();
     const RealMatrix&          sum_G_g = sum_G[g];
     const RealSymMatrixArray& sum_GG_g = sum_GG[g];
-    const SizetMatrix&         num_G_g = num_G[g];
+    const SizetArray&          num_G_g = num_G[g];
     RealSymMatrixArray&       cov_GG_g = cov_GG[g];
     for (qoi=0; qoi<numFunctions; ++qoi) {
       const RealSymMatrix& sum_GG_gq = sum_GG_g[qoi];
       RealSymMatrix&       cov_GG_gq = cov_GG_g[qoi];
+      N_sh_gq                        =  num_G_g[qoi];
       for (m=0; m<num_models; ++m) {
-	sum_G_gqm = sum_G_g(qoi,m);  N_sh_gqm = num_G_g(qoi,m);
+	sum_G_gqm = sum_G_g(qoi,m);
 	for (m2=0; m2<=m; ++m2)
 	  compute_covariance(sum_G_gqm, sum_G_g(qoi,m2), sum_GG_gq(m,m2),
-			     N_sh_gqm, cov_GG_gq(m,m2));
+			     N_sh_gq, cov_GG_gq(m,m2));
       }
     }
   }
@@ -917,7 +913,7 @@ compute_GG_covariance(const RealMatrixArray& sum_G,
 void NonDMultilevBLUESampling::
 compute_GG_statistics(RealMatrixArray& sum_G,
 		      RealSymMatrix2DArray& sum_GG,
-		      SizetMatrixArray& N_shared, //RealMatrixArray& var_G,
+		      Sizet2DArray& N_shared, //RealMatrixArray& var_G,
 		      RealSymMatrix2DArray& cov_GG)
 {
   if (mlmfIter == 0) // see var_G usage in compute_allocations()
@@ -931,7 +927,7 @@ compute_GG_statistics(RealMatrixArray& sum_G,
 void NonDMultilevBLUESampling::
 compute_G_variance(const RealMatrixArray& sum_G,
 		   const RealSymMatrix2DArray& sum_GG,
-		   const SizetMatrixArray& num_G, RealMatrixArray& var_G)
+		   const Sizet2DArray& num_G, RealMatrixArray& var_G)
 {
   size_t qoi, g, m, num_models;
   if (var_G.size() != numGroups) {
@@ -944,12 +940,12 @@ compute_G_variance(const RealMatrixArray& sum_G,
     num_models = modelGroups[g].size();
     const RealMatrix&          sum_G_g =  sum_G[g];
     const RealSymMatrixArray& sum_GG_g = sum_GG[g];
-    const SizetMatrix&         num_G_g =  num_G[g];
+    const SizetArray&          num_G_g =  num_G[g];
     RealMatrix&                var_G_g =  var_G[g];
     for (qoi=0; qoi<numFunctions; ++qoi) {
       const RealSymMatrix&   sum_GG_gq = sum_GG_g[qoi];
       for (m=0; m<num_models; ++m)
-	compute_variance(sum_G_g(qoi,m), sum_GG_gq(m,m), num_G_g(qoi,m),
+	compute_variance(sum_G_g(qoi,m), sum_GG_gq(m,m), num_G_g[qoi],
 			 var_G_g(qoi,m));
     }
   }

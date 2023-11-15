@@ -95,6 +95,18 @@ inline Real average(const SizetMatrix& mat)
 { return average(mat.values(), mat.numRows() * mat.numCols()); }
 
 
+/// compute average of a vector of counts
+inline Real average(const SizetArray& sa)
+{
+  size_t len = sa.size();
+  switch (len) {
+  case 0:  return std::numeric_limits<Real>::quiet_NaN();  break;
+  case 1:  return (Real)sa[0];         break;
+  default: return sum(sa) / (Real)len; break;
+  }
+}
+
+
 /// compute row-averages for each column or column-averages for each row
 inline void average(const RealMatrix& mat, size_t avg_index,
 		    RealVector& avg_vec)
@@ -128,15 +140,13 @@ inline void average(const RealMatrix& mat, size_t avg_index,
 }
 
 
-/// compute average of a vector of counts
-inline Real average(const SizetArray& sa)
+/// eliminate inner dimension of 2D array by averaging over each inner vector
+inline void average(const Sizet2DArray& N_2D, RealVector& N_1D)
 {
-  size_t len = sa.size();
-  switch (len) {
-  case 0:  return std::numeric_limits<Real>::quiet_NaN();  break;
-  case 1:  return (Real)sa[0];         break;
-  default: return sum(sa) / (Real)len; break;
-  }
+  size_t i, len = N_2D.size();
+  N_1D.sizeUninitialized(len);
+  for (i=0; i<len; ++i)
+    N_1D[i] = average(N_2D[i]);
 }
 
 } // namespace Dakota
