@@ -48,6 +48,8 @@ protected:
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
   Real estimator_accuracy_metric();
   //Real estimator_cost_metric();
+  void print_multigroup_summary(std::ostream& s, const String& summary_type,
+				bool projections);
   void print_variance_reduction(std::ostream& s);
 
   //void estimator_variance_ratios(const RealVector& r_and_N,
@@ -157,6 +159,8 @@ private:
   bool mfmc_model_grouping(const UShortArray& model_group) const;
   bool cvmc_model_grouping(const UShortArray& model_group) const;
 
+  void print_group(std::ostream& s, size_t g) const;
+
   /*
   void compute_GG_statistics(RealMatrixArray& sum_G_pilot,
 			     RealSymMatrix2DArray& sum_GG_pilot,
@@ -191,6 +195,11 @@ private:
   RealSymMatrix2DArray covGG;
   /// in-place matrix inverses of covGG
   RealSymMatrix2DArray covGGinv;
+
+  /// counter for successful sample accumulations, per group and per QoI
+  Sizet2DArray NGroupActual;
+  /// counter for sample allocations, per group
+  SizetArray   NGroupAlloc;
 
   /// final solution data for BLUE
   /// *** TO DO: generalize beyond DAGs?
@@ -530,6 +539,18 @@ mfmc_model_grouping(const UShortArray& model_group) const
 inline bool NonDMultilevBLUESampling::
 cvmc_model_grouping(const UShortArray& model_group) const
 { return (model_group.size() == 2 && model_group[1] == numApprox); }
+
+
+inline void NonDMultilevBLUESampling::
+print_group(std::ostream& s, size_t g) const
+{
+  const UShortArray& group_g = modelGroups[g];
+  size_t m, num_models = group_g.size();
+  s << " (models";
+  for (m=0; m<num_models; ++m)
+    s << ' ' << group_g[m];
+  s << ")\n";
+}
 
 } // namespace Dakota
 

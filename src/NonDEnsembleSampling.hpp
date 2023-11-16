@@ -49,6 +49,10 @@ protected:
   //
 
   virtual Real estimator_accuracy_metric() = 0;
+  virtual void print_multimodel_summary(std::ostream& s,
+    const String& summary_type, bool projections);
+  virtual void print_multigroup_summary(std::ostream& s,
+    const String& summary_type, bool projections);
   virtual void print_variance_reduction(std::ostream& s);
 
   //
@@ -224,6 +228,12 @@ private:
   /// cache state of seed sequence for use in seed_updated()
   size_t seedIndex;
 };
+
+
+inline void NonDEnsembleSampling::
+print_multigroup_summary(std::ostream& s, const String& summary_type,
+			 bool projections)
+{ } // default is no-op
 
 
 inline void NonDEnsembleSampling::print_variance_reduction(std::ostream& s)

@@ -396,12 +396,12 @@ ensemble_sample_batch(size_t iter, int batch_id)
 }
 
 
-void NonDNonHierarchSampling::ensemble_sample_synchronize()
-{
-  // synchronize multiple evaluation batches on the ensemble model and
-  // bookkeep by batch id within batchResponsesMap
-  synchronize_batches(iteratedModel); // ignore return reference
-}
+//void NonDNonHierarchSampling::ensemble_sample_synchronize()
+//{
+//  // synchronize multiple evaluation batches on the ensemble model and
+//  // bookkeep by batch id within batchResponsesMap
+//  synchronize_batches(iteratedModel); // ignore return reference
+//}
 
 
 void NonDNonHierarchSampling::recover_online_cost(RealVector& seq_cost)

@@ -337,7 +337,7 @@ protected:
 
   void ensemble_sample_increment(size_t iter, size_t step);
   void ensemble_sample_batch(size_t iter, int batch_id);
-  void ensemble_sample_synchronize();
+  //void ensemble_sample_synchronize();
 
   /// When looping through a minimizer sequence/competition, this
   /// function enables per-minimizer updates to the parameter bounds,

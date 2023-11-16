@@ -111,10 +111,9 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
 {
   // retrieve cost estimates across soln levels for a particular model form
   IntRealMatrixArrayMap sum_G;  IntRealSymMatrix2DArrayMap sum_GG;
-  Sizet2DArray N_G_actual;  //SizetSymMatrix2DArray N_GG;
-  initialize_blue_sums(sum_G, sum_GG); initialize_blue_counts(N_G_actual);
-  SizetArray delta_N_G = pilotSamples, // sized by load_pilot_samples()
-             N_G_alloc = delta_N_G;
+  initialize_blue_sums(sum_G, sum_GG); initialize_blue_counts(NGroupActual);
+  SizetArray delta_N_G = pilotSamples; // sized by load_pilot_samples()
+  NGroupAlloc = delta_N_G;
 
   // *** TO DO ***
   // Different online pilot strategies:
@@ -132,7 +131,7 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
     // Evaluate shared increment and update correlations, {eval,EstVar}_ratios
     // --------------------------------------------------------------------
     group_increment(delta_N_G, mlmfIter); // spans ALL model groups, blocking
-    accumulate_blue_sums(sum_G, sum_GG, N_G_actual);//, num_GG);
+    accumulate_blue_sums(sum_G, sum_GG, NGroupActual);//, num_GG);
 
     // While online cost recovery could be continuously updated, we restrict
     // to the pilot and do not not update after iter 0.  We could potentially
@@ -140,12 +139,12 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
     if (onlineCost && mlmfIter == 0) recover_online_cost(sequenceCost);
     increment_equivalent_cost(delta_N_G, modelGroupCost,
 			      sequenceCost[numApprox], equivHFEvals);
-    compute_GG_covariance(sum_G[1], sum_GG[1], N_G_actual, covGG, covGGinv);
+    compute_GG_covariance(sum_G[1], sum_GG[1], NGroupActual, covGG, covGGinv);
 
     // compute the LF/HF evaluation ratios from shared samples and compute
     // ratio of MC and BLUE mean sq errors (which incorporates anticipated
     // variance reduction from application of avg_eval_ratios).
-    compute_allocations(blueSolnData, N_G_actual, N_G_alloc, delta_N_G);
+    compute_allocations(blueSolnData, NGroupActual, NGroupAlloc, delta_N_G);
     ++mlmfIter;
   }
 
@@ -153,14 +152,14 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
   if (finalStatsType == QOI_STATISTICS) {
     RealMatrix H_raw_mom(numFunctions, 4);
-    blue_raw_moments(sum_G, sum_GG, N_G_actual, H_raw_mom);
+    blue_raw_moments(sum_G, sum_GG, NGroupActual, H_raw_mom);
     convert_moments(H_raw_mom, momentStats);
   }
 
   if (!zeros(delta_N_G)) // exceeded maxIterations
     increment_equivalent_cost(delta_N_G, modelGroupCost,
 			      sequenceCost[numApprox], deltaEquivHF);
-  finalize_counts(N_G_actual, N_G_alloc);
+  finalize_counts(NGroupActual, NGroupAlloc);
 }
 
 
@@ -180,14 +179,13 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
   // Compute "online" sample increments:
   // -----------------------------------
   IntRealMatrixArrayMap sum_G; IntRealSymMatrix2DArrayMap sum_GG;
-  Sizet2DArray N_G_actual;  //SizetSymMatrix2DArray N_GG;
-  initialize_blue_sums(sum_G, sum_GG); initialize_blue_counts(N_G_actual);
-  SizetArray N_G_alloc, delta_N_G;  N_G_alloc.assign(numGroups, 0);
+  initialize_blue_sums(sum_G, sum_GG); initialize_blue_counts(NGroupActual);
+  SizetArray delta_N_G;  NGroupAlloc.assign(numGroups, 0);
 
   // compute the LF/HF evaluation ratios from shared samples and compute
   // ratio of MC and ACV mean sq errors (which incorporates anticipated
   // variance reduction from application of avg_eval_ratios).
-  compute_allocations(blueSolnData, N_G_actual, N_G_alloc, delta_N_G);
+  compute_allocations(blueSolnData, NGroupActual, NGroupAlloc, delta_N_G);
   ++mlmfIter;
 
   // -----------------------------------
@@ -198,19 +196,19 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
   if (finalStatsType == QOI_STATISTICS) {
     // perform the shared increment for the online sample profile
     group_increment(delta_N_G, mlmfIter); // spans ALL models, blocking
-    accumulate_blue_sums(sum_G, sum_GG, N_G_actual);
+    accumulate_blue_sums(sum_G, sum_GG, NGroupActual);
     increment_equivalent_cost(delta_N_G, modelGroupCost,
 			      sequenceCost[numApprox], equivHFEvals);
     // extract moments
     RealMatrix H_raw_mom(numFunctions, 4);
-    blue_raw_moments(sum_G, sum_GG, N_G_actual, H_raw_mom);
+    blue_raw_moments(sum_G, sum_GG, NGroupActual, H_raw_mom);
     convert_moments(H_raw_mom, momentStats);
   }
   else
     increment_equivalent_cost(delta_N_G, modelGroupCost,
 			      sequenceCost[numApprox], deltaEquivHF);
 
-  finalize_counts(N_G_actual, N_G_alloc);
+  finalize_counts(NGroupActual, NGroupAlloc);
 }
 
 
@@ -221,11 +219,10 @@ void NonDMultilevBLUESampling::ml_blue_pilot_projection()
   // --------------------------------------------------------------------
   // Evaluate shared increment and update correlations, {eval,EstVar}_ratios
   // --------------------------------------------------------------------
-  RealMatrixArray sum_G; RealSymMatrix2DArray sum_GG;
-  Sizet2DArray N_G_actual;  //SizetSymMatrix2DArray N_GG;
-  evaluate_pilot(sum_G, sum_GG, N_G_actual, true);
-  compute_GG_covariance(sum_G, sum_GG, N_G_actual, covGG, covGGinv);
-  SizetArray delta_N_G, N_G_alloc = pilotSamples;
+  RealMatrixArray sum_G; RealSymMatrix2DArray sum_GG;  SizetArray delta_N_G;
+  evaluate_pilot(sum_G, sum_GG, NGroupActual, true);
+  compute_GG_covariance(sum_G, sum_GG, NGroupActual, covGG, covGGinv);
+  NGroupAlloc = pilotSamples;
 
   // -----------------------------------
   // Compute "online" sample increments:
@@ -233,13 +230,13 @@ void NonDMultilevBLUESampling::ml_blue_pilot_projection()
   // compute the LF/HF evaluation ratios from shared samples and compute
   // ratio of MC and ACV mean sq errors (which incorporates anticipated
   // variance reduction from application of avg_eval_ratios).
-  compute_allocations(blueSolnData, N_G_actual, N_G_alloc, delta_N_G);
+  compute_allocations(blueSolnData, NGroupActual, NGroupAlloc, delta_N_G);
   ++mlmfIter;
 
   // No final moments for pilot projection
   increment_equivalent_cost(delta_N_G, modelGroupCost,
 			    sequenceCost[numApprox], deltaEquivHF);
-  finalize_counts(N_G_actual, N_G_alloc);
+  finalize_counts(NGroupActual, NGroupAlloc);
   // No need for updating estimator variance given deltaNActualHF since
   // NonDNonHierarchSampling::ensemble_numerical_solution() recovers N*
   // from the numerical solve and computes projected avgEstVar{,Ratio}
@@ -263,7 +260,7 @@ group_increment(SizetArray& delta_N_G, size_t iter)
   }
 
   if (iteratedModel.asynch_flag())
-    ensemble_sample_synchronize(); // schedule all groups (return ignored)
+    synchronize_batches(iteratedModel); // schedule all groups (return ignored)
 }
 
 
@@ -597,19 +594,21 @@ print_group_solution(std::ostream& s, const MFSolutionData& soln)
 {
   const RealVector& soln_vars = soln.solution_variables();
   size_t i, num_v = soln_vars.length();
-  for (i=0; i<num_v; ++i)
-    Cout << "Group " << i+1 << " samples = " << soln_vars[i] << '\n';
+  for (i=0; i<num_v; ++i) {
+    s << "Group " << i << " samples = " << soln_vars[i];
+    print_group(s, i);
+  }
   if (maxFunctionEvals == SZ_MAX)
-    Cout << "Estimator cost allocation = " << soln.equivalent_hf_allocation()
-	 << std::endl;
+    s << "Estimator cost allocation = " << soln.equivalent_hf_allocation()
+      << std::endl;
   else
-    Cout << "Average estimator variance = " << soln.average_estimator_variance()
-	 << "\nAverage ACV variance / average MC variance = "
-	 << soln.average_estimator_variance_ratio() << std::endl;
+    s << "Average estimator variance = " << soln.average_estimator_variance()
+      << "\nAverage ACV variance / average MC variance = "
+      << soln.average_estimator_variance_ratio() << std::endl;
 }
 
 
-inline void NonDMultilevBLUESampling::
+void NonDMultilevBLUESampling::
 finalize_counts(const Sizet2DArray& N_G_actual, const SizetArray& N_G_alloc)
 {
   // post final sample counts back to NLev{Actual,Alloc} (for final summaries)
@@ -636,6 +635,44 @@ finalize_counts(const Sizet2DArray& N_G_actual, const SizetArray& N_G_alloc)
       SizetArray& N_l_actual_fl = NLevActual[mf][rl];
       if (N_l_actual_fl.empty()) N_l_actual_fl = N_G_actual_g;
       else     increment_samples(N_l_actual_fl,  N_G_actual_g);
+    }
+  }
+}
+
+
+void NonDMultilevBLUESampling::
+print_multigroup_summary(std::ostream& s, const String& summary_type,
+			 bool projections)
+{
+  // adapted from NonD::print_multilevel_evaluation_summary(Sizet2DArray&)
+  // *** TO DO:
+  // > promote num_G_{actual,alloc} to class members?
+  // > consider merging with print_group_solution()?
+
+  size_t wpp7 = write_precision + 7, g, num_groups = NGroupAlloc.size(),
+    m, num_models;
+
+  s << "<<<<< " << summary_type << "allocation of samples per model group:\n";
+  for (g=0; g<num_groups; ++g) {
+    s << "                     " << std::setw(wpp7) << NGroupAlloc[g]
+      << "  QoI_group" << g;
+    print_group(s, g);
+  }
+
+  if (projections || differ(NLevAlloc, NLevActual)) {
+    s << "<<<<< Actual accumulated samples per model group:\n";
+    for (g=0; g<num_groups; ++g) {
+      const SizetArray& N_G_g = NGroupActual[g];
+      if (!N_G_g.empty()) {
+	s << "                     " << std::setw(wpp7) << N_G_g[0];
+	if (!homogeneous(N_G_g)) { // print all counts in this 1D array
+	  size_t q, num_q = N_G_g.size();
+	  for (size_t q=1; q<num_q; ++q)
+	    s << ' ' << N_G_g[q];
+	}
+	s << "  QoI_group" << g;
+	print_group(s, g);
+      }
     }
   }
 }
@@ -789,6 +826,7 @@ accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
       }
     }
   }
+  clear_batches();
 }
 
 
@@ -857,6 +895,7 @@ accumulate_blue_sums(RealMatrixArray& sum_G, RealSymMatrix2DArray& sum_GG,
 	   << "sum_GG[" << g << "]:\n" << sum_GG_g
 	   << "num_G["  << g << "]:\n" << num_G_g << std::endl;
   }
+  clear_batches();
 }
 
 

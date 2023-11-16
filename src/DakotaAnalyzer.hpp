@@ -138,6 +138,10 @@ protected:
   /// (allResponsesMap[key])
   const IntResponse2DMap& synchronize_batches(Model& model,
 					      bool log_best_flag = false);
+  /// since synchronize returns the aggregation of all evaluated batches,
+  /// we use a separate call to indicate when processing of this data is
+  /// complete and bookkeeping can be cleared
+  void clear_batches();
 
   /// generate replicate parameter sets for use in variance-based decomposition
   void get_vbd_parameter_sets(Model& model, size_t num_samples);
@@ -291,6 +295,13 @@ inline const RealMatrix& Analyzer::all_samples()
 
 inline const IntResponseMap& Analyzer::all_responses() const
 { return allResponses; }
+
+
+inline void Analyzer::clear_batches()
+{
+  batchResponsesMap.clear(); batchSamplesMap.clear(); batchVariablesMap.clear();
+  //allResponses.clear(); allSamples.clear(); allVariables.clear();
+}
 
 
 /** default definition that gets redefined in selected derived Minimizers */

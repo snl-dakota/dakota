@@ -90,9 +90,9 @@ inline Real average(const SizetVector& vec)
 { return average(vec.values(), vec.length()); }
 
 
-/// compute sum of a matrix of observations
-inline Real average(const SizetMatrix& mat)
-{ return average(mat.values(), mat.numRows() * mat.numCols()); }
+// compute sum of a matrix of observations
+//inline Real average(const SizetMatrix& mat)
+//{ return average(mat.values(), mat.numRows() * mat.numCols()); }
 
 
 /// compute average of a vector of counts

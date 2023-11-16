@@ -292,6 +292,8 @@ protected:
   bool zeros(const SizetArray& N_m) const;
   /// return true if N_m is empty or only populated with zeros
   bool zeros(const Sizet2DArray& N_m) const;
+  /// return true if N_l has consistent values
+  bool homogeneous(const SizetArray& N_l) const;
 
   //
   //- Heading: Data members
@@ -401,9 +403,6 @@ private:
   /// print an unrolled set of aggregated QoI sample counts for a level
   void print_multilevel_row(std::ostream& s, const SizetArray& N_j,
 			    const SizetArray& N_jp1);
-
-  /// return true if N_l has consistent values
-  bool homogeneous(const SizetArray& N_l) const;
 
   //
   //- Heading: Data members
