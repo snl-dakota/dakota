@@ -124,15 +124,31 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
   //    initialization for initial estimates of covGG; subsequent allocations
   //    are independent, but shared pilot only reused once (all-model group).
   //    Saves cost for groups that are not selected for investment.
+
   // *** TO DO ***
+  // Online iteration does not work the same way since complete group increments
+  // (as opposed to only incrementing the shared sample set) will exhaust the
+  // budget on the first solve (excepting sample roundoff effects). Subsequent
+  // solves are over-constrained, becoming budget-exhausted cases.  Options:
+  // 1. under-relax sample increments (as for sample batching, shared feature
+  //    is now more strongly motivated)
+  // 2. combine with pilot sample above and only increment the shared group
+  //    until convergence (as for CV approaches) --> is there an important
+  //    interaction between dependence in group covariance samples and the
+  //    allocation solve?  If not, then converge on the allocation and *then*
+  //    evaluate independent increments for all other groups prior to roll-up
+  //    of final moments (QOI_STATISTICS mode).
+  //    --> compare rcond for shared vs. independent Psi??  Seems that
+  //    many pair-wise covariance terms will get repeated for the former, but
+  //    if Psi-inverse is essentally 
+
   while (!zeros(delta_N_G) && mlmfIter <= maxIterations) {
 
-    // --------------------------------------------------------------------
-    // Evaluate shared increment and update correlations, {eval,EstVar}_ratios
-    // --------------------------------------------------------------------
+    // -----------------------------------------------
+    // Evaluate shared increment and update covariance
+    // -----------------------------------------------
     group_increment(delta_N_G, mlmfIter); // spans ALL model groups, blocking
     accumulate_blue_sums(sum_G, sum_GG, NGroupActual);//, num_GG);
-
     // While online cost recovery could be continuously updated, we restrict
     // to the pilot and do not not update after iter 0.  We could potentially
     // update cost for shared samples, mirroring the covariance updates.
@@ -141,6 +157,9 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
 			      sequenceCost[numApprox], equivHFEvals);
     compute_GG_covariance(sum_G[1], sum_GG[1], NGroupActual, covGG, covGGinv);
 
+    // --------------------
+    // Solve for allocation
+    // --------------------
     // compute the LF/HF evaluation ratios from shared samples and compute
     // ratio of MC and BLUE mean sq errors (which incorporates anticipated
     // variance reduction from application of avg_eval_ratios).
@@ -167,9 +186,9 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
     model form and discretization level. */
 void NonDMultilevBLUESampling::ml_blue_offline_pilot()
 {
-  // ------------------------------------------------------------
-  // Compute var G & covar GG from (oracle) pilot treated as "offline" cost
-  // ------------------------------------------------------------
+  // --------------------------------------------------------------
+  // Compute covar GG from (oracle) pilot treated as "offline" cost
+  // --------------------------------------------------------------
   RealMatrixArray sum_G_pilot; RealSymMatrix2DArray sum_GG_pilot;
   Sizet2DArray N_pilot;
   evaluate_pilot(sum_G_pilot, sum_GG_pilot, N_pilot, false);
@@ -594,8 +613,9 @@ print_group_solution(std::ostream& s, const MFSolutionData& soln)
 {
   const RealVector& soln_vars = soln.solution_variables();
   size_t i, num_v = soln_vars.length();
+  s << "Numerical solution for samples per model group:\n";
   for (i=0; i<num_v; ++i) {
-    s << "Group " << i << " samples = " << soln_vars[i];
+    s << "  Group " << i << " samples = " << soln_vars[i];
     print_group(s, i);
   }
   if (maxFunctionEvals == SZ_MAX)
@@ -644,11 +664,6 @@ void NonDMultilevBLUESampling::
 print_multigroup_summary(std::ostream& s, const String& summary_type,
 			 bool projections)
 {
-  // adapted from NonD::print_multilevel_evaluation_summary(Sizet2DArray&)
-  // *** TO DO:
-  // > promote num_G_{actual,alloc} to class members?
-  // > consider merging with print_group_solution()?
-
   size_t wpp7 = write_precision + 7, g, num_groups = NGroupAlloc.size(),
     m, num_models;
 
@@ -910,9 +925,9 @@ compute_GG_covariance(const RealMatrixArray& sum_G,
   if (cov_GG.size() != numGroups) {
     cov_GG.resize(numGroups);
     for (g=0; g<numGroups; ++g) {
-      num_models = modelGroups[g].size();
       RealSymMatrixArray& cov_GG_g = cov_GG[g];
       cov_GG_g.resize(numFunctions);
+      num_models = modelGroups[g].size();
       for (qoi=0; qoi<numFunctions; ++qoi)
 	cov_GG_g[qoi].shapeUninitialized(num_models);
     }
