@@ -75,24 +75,21 @@ protected:
 
   void initialize_blue_counts(Sizet2DArray& num_G);
 
-  void add_sub_matrix(Real coeff, const RealSymMatrix& sub_mat,
-		      const UShortArray& subset, RealSymMatrix& mat);
-  void add_sub_matvec(const RealSymMatrix& sub_mat, const RealMatrix& sub_mat2,
-		      size_t sub_mat2_row, const UShortArray& subset,
-		      RealVector& vec);
-
   void compute_C_inverse(const RealSymMatrix2DArray& cov_GG,
 			 RealSymMatrix2DArray& cov_GG_inv);
   void compute_Psi(const RealSymMatrix2DArray& cov_GG_inv,
 		   const RealVector& N_G, RealSymMatrixArray& Psi);
   void compute_Psi(const RealSymMatrix2DArray& cov_GG_inv,
 		   const Sizet2DArray& N_G, RealSymMatrixArray& Psi);
+  /*
   void invert_Psi(RealSymMatrixArray& Psi);
   void compute_Psi_inverse(const RealSymMatrix2DArray& cov_GG_inv,
-			   const RealVector& N_G, RealSymMatrixArray& Psi_inv);
-  void compute_Psi_inverse(const RealSymMatrix2DArray& cov_GG_inv,
-			   const Sizet2DArray& N_G,
+			   const RealVector& N_G_1D,
 			   RealSymMatrixArray& Psi_inv);
+  void compute_Psi_inverse(const RealSymMatrix2DArray& cov_GG_inv,
+			   const Sizet2DArray& N_G_2D,
+			   RealSymMatrixArray& Psi_inv);
+  */
   void compute_y(const RealSymMatrix2DArray& cov_GG_inv,
 		 const RealMatrixArray& sum_G, RealVectorArray& y);
   void compute_mu_hat(const RealSymMatrix2DArray& cov_GG_inv,
@@ -161,6 +158,16 @@ private:
 						  Real avg_N_H,
 						  MFSolutionData& soln);
 
+  void add_sub_matrix(Real coeff, const RealSymMatrix& sub_mat,
+		      const UShortArray& subset, RealSymMatrix& mat);
+  void add_sub_matvec(const RealSymMatrix& sub_mat, const RealMatrix& sub_mat2,
+		      size_t sub_mat2_row, const UShortArray& subset,
+		      RealVector& vec);
+
+  void initialize_rsm2a(RealSymMatrix2DArray& rsm2a);
+  void initialize_rsma(RealSymMatrixArray& rsma, bool init = true);
+  void initialize_rva(RealVectorArray& rva, bool init = true);
+  
   bool mfmc_model_grouping(const UShortArray& model_group) const;
   bool cvmc_model_grouping(const UShortArray& model_group) const;
 
@@ -335,20 +342,66 @@ add_sub_matvec(const RealSymMatrix& sub_mat, const RealMatrix& sub_mat2,
 
 
 inline void NonDMultilevBLUESampling::
+initialize_rsm2a(RealSymMatrix2DArray& rsm2a)
+{
+  // size the first two dimensions, but defer RealSymMatrix::shape()
+
+  size_t num_groups = modelGroups.size();
+  if (rsm2a.size() != num_groups) {
+    rsm2a.resize(num_groups);
+    for (size_t g=0; g<num_groups; ++g)
+      rsm2a[g].resize(numFunctions);
+  }
+}
+
+
+inline void NonDMultilevBLUESampling::
+initialize_rsma(RealSymMatrixArray& rsma, bool init)
+{
+  if (rsma.size() != numFunctions) {
+    rsma.resize(numFunctions);
+    size_t qoi, all_models = numApprox + 1;
+    if (init)
+      for (qoi=0; qoi<numFunctions; ++qoi)
+	rsma[qoi].shape(all_models); // init to 0
+    else
+      for (qoi=0; qoi<numFunctions; ++qoi)
+	rsma[qoi].shapeUninitialized(all_models); // init to 0
+  }
+  else if (init)
+    for (size_t qoi=0; qoi<numFunctions; ++qoi)
+      rsma[qoi].putScalar(0.);
+}
+
+
+inline void NonDMultilevBLUESampling::
+initialize_rva(RealVectorArray& rva, bool init)
+{
+  if (rva.size() != numFunctions) {
+    rva.resize(numFunctions);
+    size_t qoi, all_models = numApprox + 1;
+    if (init)
+      for (qoi=0; qoi<numFunctions; ++qoi)
+	rva[qoi].size(all_models); // init to 0
+    else
+      for (qoi=0; qoi<numFunctions; ++qoi)
+	rva[qoi].sizeUninitialized(all_models); // init to 0
+  }
+  else if (init)
+    for (size_t qoi=0; qoi<numFunctions; ++qoi)
+      rva[qoi].putScalar(0.);
+}
+
+
+inline void NonDMultilevBLUESampling::
 compute_C_inverse(const RealSymMatrix2DArray& cov_GG,
 		  RealSymMatrix2DArray& cov_GG_inv)
 {
   // cov matrices are sized according to group member size
-
-  size_t g, num_groups = modelGroups.size(), qoi;
-  if (cov_GG_inv.size() != num_groups) {
-    cov_GG_inv.resize(num_groups);
-    for (g=0; g<num_groups; ++g)
-      cov_GG_inv[g].resize(numFunctions);
-    // Note: cov_GG_inv_gq gets copied below
-  }
+  initialize_rsm2a(cov_GG_inv);
 
   RealSpdSolver spd_solver; // reuse since setMatrix resets internal state
+  size_t qoi, g, num_groups = modelGroups.size();
   for (g=0; g<num_groups; ++g) {
     const RealSymMatrixArray& cov_GG_g =     cov_GG[g];
     RealSymMatrixArray&   cov_GG_inv_g = cov_GG_inv[g];
@@ -375,17 +428,9 @@ compute_Psi(const RealSymMatrix2DArray& cov_GG_inv, const RealVector& N_G,
 	    RealSymMatrixArray& Psi)
 {
   // Psi accumulated across groups and sized according to full model ensemble
+  initialize_rsma(Psi);
 
-  size_t all_models = numApprox + 1, qoi, g, num_groups = modelGroups.size();
-  if (Psi.size() != numFunctions) {
-    Psi.resize(numFunctions);
-    for (qoi=0; qoi<numFunctions; ++qoi)
-      Psi[qoi].shape(all_models); // init to 0
-  }
-  else
-    for (qoi=0; qoi<numFunctions; ++qoi)
-      Psi[qoi] = 0.;
-
+  size_t qoi, g, num_groups = modelGroups.size();
   for (g=0; g<num_groups; ++g) {
     Real n_g = N_G[g];
     const UShortArray&            models_g = modelGroups[g];
@@ -403,17 +448,9 @@ compute_Psi(const RealSymMatrix2DArray& cov_GG_inv, const Sizet2DArray& N_G,
 	    RealSymMatrixArray& Psi)
 {
   // Psi accumulated across groups and sized according to full model ensemble
+  initialize_rsma(Psi);
 
-  size_t all_models = numApprox + 1, qoi, g, num_groups = modelGroups.size();
-  if (Psi.size() != numFunctions) {
-    Psi.resize(numFunctions);
-    for (qoi=0; qoi<numFunctions; ++qoi)
-      Psi[qoi].shape(all_models); // init to 0
-  }
-  else
-    for (qoi=0; qoi<numFunctions; ++qoi)
-      Psi[qoi] = 0.;
-
+  size_t qoi, g, num_groups = modelGroups.size();
   for (g=0; g<num_groups; ++g) {
     const SizetArray&                N_G_g =         N_G[g];
     const UShortArray&            models_g = modelGroups[g];
@@ -425,7 +462,7 @@ compute_Psi(const RealSymMatrix2DArray& cov_GG_inv, const Sizet2DArray& N_G,
 
 
 /** This version used during numerical solution (1D vector of real
-    design variables for group samples. */
+    design variables for group samples.
 inline void NonDMultilevBLUESampling::invert_Psi(RealSymMatrixArray& Psi)
 {
   // Psi-inverse is used for computing both estimator variance (during numerical
@@ -443,31 +480,30 @@ inline void NonDMultilevBLUESampling::invert_Psi(RealSymMatrixArray& Psi)
       abort_handler(METHOD_ERROR);
     }
   }
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "In compute_Psi_inverse(), Psi_inv:\n" << Psi << std::endl;
+  //if (outputLevel >= DEBUG_OUTPUT)
+  //  Cout << "In compute_Psi_inverse(), Psi_inv:\n" << Psi << std::endl;
 }
 
 
-/** This version used during numerical solution (1D vector of real
-    design variables for group samples. */
+// This version used during numerical solution (1D vector of real design vars).
 inline void NonDMultilevBLUESampling::
 compute_Psi_inverse(const RealSymMatrix2DArray& cov_GG_inv,
-		    const RealVector& N_G, RealSymMatrixArray& Psi_inv)
+		    const RealVector& N_G_1D, RealSymMatrixArray& Psi_inv)
 {
-  compute_Psi(cov_GG_inv, N_G, Psi_inv);
+  compute_Psi(cov_GG_inv, N_G_1D, Psi_inv);
   invert_Psi(Psi_inv);
 }
 
 
-/** This version used during final results processing (2D array of
-    actual completed samples). */
+// This version used during final results (2D array of actual samples).
 inline void NonDMultilevBLUESampling::
 compute_Psi_inverse(const RealSymMatrix2DArray& cov_GG_inv,
-		    const Sizet2DArray& N_G, RealSymMatrixArray& Psi_inv)
+		    const Sizet2DArray& N_G_2D, RealSymMatrixArray& Psi_inv)
 {
-  compute_Psi(cov_GG_inv, N_G, Psi_inv);
+  compute_Psi(cov_GG_inv, N_G_2D, Psi_inv);
   invert_Psi(Psi_inv);
 }
+*/
 
 
 inline void NonDMultilevBLUESampling::
@@ -475,15 +511,9 @@ compute_y(const RealSymMatrix2DArray& cov_GG_inv, const RealMatrixArray& sum_G,
 	  RealVectorArray& y)
 {
   // y accumulated across groups and sized according to full model ensemble
+  initialize_rva(y);
 
   size_t qoi, g, num_groups = modelGroups.size();
-  if (y.size() != numFunctions) {
-    y.resize(numFunctions);
-    size_t all_models = numApprox + 1;
-    for (qoi=0; qoi<numFunctions; ++qoi)
-      y[qoi].size(all_models); // init to 0
-  }
-
   for (g=0; g<num_groups; ++g) {
     //form_R(g, R_g);
     const UShortArray&            models_g = modelGroups[g];
@@ -512,31 +542,15 @@ compute_mu_hat(const RealSymMatrix2DArray& cov_GG_inv,
   RealVectorArray y;
   compute_y(cov_GG_inv, sum_G, y);
 
+  initialize_rva(mu_hat, false);
   size_t qoi, r, c, g, num_groups = modelGroups.size();
-  if (mu_hat.size() != numFunctions) {
-    mu_hat.resize(numFunctions);
-    size_t all_models = numApprox + 1;
-    for (qoi=0; qoi<numFunctions; ++qoi)
-      mu_hat[qoi].sizeUninitialized(all_models);
-  }
-
   RealSpdSolver spd_solver;
   for (qoi=0; qoi<numFunctions; ++qoi) {
     RealVector&      y_q =      y[qoi];
     RealVector& mu_hat_q = mu_hat[qoi];
 
-    /* Direct application of Psi inverted in place
-    const RealSymMatrix& Psi_inv_q = Psi_inv[qoi];
-    for (r=0; r<all_models; ++r) { //r=all_models-1; // Only using last row...
-      Real& mu_hat_qr = mu_hat_q[r];  mu_hat_qr = 0.;
-      for (c=0; c<all_models; ++c)
-	mu_hat_qr += Psi_inv_q(r, c) * y_q[c];// inactive Upper is protected
-    }
-    */
-
-    // Try using Psi prior to inversion, leveraging both the solution refinement
-    // in solve() and equilibration during factorization (inverting Psi in place
-    // can only leverage the latter).
+    // Leverage both the soln refinement in solve() and equilibration during
+    // factorization (inverting Psi in place can only leverage the latter).
     spd_solver.setMatrix(Teuchos::rcp(&Psi[qoi],  false));// resets solver state
     spd_solver.setVectors(Teuchos::rcp(&mu_hat_q, false),
 			  Teuchos::rcp(&y_q,      false));
@@ -546,7 +560,7 @@ compute_mu_hat(const RealSymMatrix2DArray& cov_GG_inv,
     int code = spd_solver.solve();
     if (code) {
       Cerr << "Error: serial dense solver failure (LAPACK error code " << code
-	   << ") in ML BLUE::compute_mu_hat()." << std::endl;
+	   << ") in ML BLUE compute_mu_hat()." << std::endl;
       abort_handler(METHOD_ERROR);
     }
   }
@@ -556,12 +570,45 @@ compute_mu_hat(const RealSymMatrix2DArray& cov_GG_inv,
 inline void NonDMultilevBLUESampling::
 estimator_variance(const RealVector& cd_vars, RealVector& estvar)
 {
+  if (estvar.empty()) estvar.sizeUninitialized(numFunctions);
+
+  // This approach leverages both the solution refinement in solve() and
+  // equilibration during factorization (inverting Psi in place can only
+  // leverage the latter).  It seems to work much more reliably.
+  RealSymMatrixArray Psi;
+  compute_Psi(covGGinv, cd_vars, Psi);
+
+  RealSpdSolver spd_solver;
+  size_t qoi, all_models = numApprox + 1;
+  RealVector e_last(all_models, false), estvar_q(all_models, false);
+
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+
+    // e_last is equilbrated in place, so must be reset
+    e_last.putScalar(0.); e_last[numApprox] = 1.;
+
+    spd_solver.setMatrix(Teuchos::rcp(&Psi[qoi],  false));// resets solver state
+    spd_solver.setVectors(Teuchos::rcp(&estvar_q, false),
+			  Teuchos::rcp(&e_last,   false));
+    if (spd_solver.shouldEquilibrate())
+      spd_solver.factorWithEquilibration(true);
+    spd_solver.solveToRefinedSolution(true);
+    int code = spd_solver.solve();
+    if (code) {
+      Cerr << "Error: serial dense solver failure (LAPACK error code " << code
+	   << ") in ML BLUE estimator_variance()." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    estvar[qoi] = estvar_q[numApprox];
+  }
+
+  /* This approach suffers from poor performance, either from conditioning
+     issues or misunderstood Teuchos solver behavior.
   RealSymMatrixArray Psi_inv;
   compute_Psi_inverse(covGGinv, cd_vars, Psi_inv);
-
-  if (estvar.empty()) estvar.sizeUninitialized(numFunctions);
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     estvar[qoi] = Psi_inv[qoi](numApprox,numApprox); // e_l^T Psi-inverse e_l
+  */
 }
 
 
