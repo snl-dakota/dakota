@@ -314,10 +314,10 @@ numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
   //case SUBMETHOD_SDP:
     switch (optSubProblemForm) {
     case N_GROUP_LINEAR_CONSTRAINT:
-      num_lin_con = 1;//(pilotMgmtMode == OFFLINE_PILOT) ? 2 : 1;
+      num_lin_con = (pilotMgmtMode == OFFLINE_PILOT) ? 2 : 1;
       num_nln_con = 0;   break;
     case N_GROUP_LINEAR_OBJECTIVE:
-      num_lin_con = 0;//(pilotMgmtMode == OFFLINE_PILOT) ? 1 : 0;
+      num_lin_con = (pilotMgmtMode == OFFLINE_PILOT) ? 1 : 0;
       num_nln_con = 1;  break;
     }
   /*
@@ -351,7 +351,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   // Formulate the optimization sub-problem: initial pt, bnds, constraints
   // --------------------------------------
 
-  size_t group, last_index = numGroups-1, lin_offset = 0;
+  size_t g, last_index = numGroups-1, lin_offset = 0;
   const RealVector& soln_vars = soln.solution_variables();
   //Real offline_N_lwr = 2.; //(finalStatsType == QOI_STATISTICS) ? 2. : 1.;
 
@@ -360,27 +360,28 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
 
   x_ub = DBL_MAX; // no upper bounds for groups
   if (pilotMgmtMode == OFFLINE_PILOT) {
-    x_lb = 0.; // no lower bound for most groups (*** TO DO: NUDGE if not SDP?)
-    //lin_ineq_lb[0] = 1.; // at least 1 sample for any group
-    //lin_ineq_ub[0] = DBL_MAX;
-    //for (group=0; group<numGroups; ++group)
-    //  lin_ineq_coeffs(0, group) = 1.;
-    //lin_offset = 1;
+    // No group lower bounds for OFFLINE case.  Note: Using a numerical NUDGE
+    // is not essential since the group covariance contributions overlap in
+    // Psi (single group drop-outs are not fatal).  On the other hand, there
+    // doesn't seem to be much downside, so this provides a degree of hardening
+    // for extreme drop-out cases.
+    x_lb = RATIO_NUDGE;
+    lin_offset = 1; // see augment_linear_ineq_constraints() for definition
   }
   // assign sunk cost to full group and optimize w/ this as a constraint
   else if (mlmfIter)
     x_lb = soln_vars;
   else
-    for (group=0; group<numGroups; ++group)
-      x_lb[group] = (Real)pilotSamples[group];
+    for (g=0; g<numGroups; ++g)
+      x_lb[g] = (Real)pilotSamples[g];
 
   if (soln_vars.empty()) x0 = x_lb;
   else {
     x0 = soln_vars;
     //if (pilotMgmtMode == OFFLINE_PILOT) // x0 could undershoot x_lb
-    //  for (group=0; group<numGroups; ++group)// bump x0 to satisfy x_lb if nec
-    //	  if (x0[group] < x_lb[group])
-    //	    x0[group] = x_lb[group];
+    //  for (g=0; g<numGroups; ++g)// bump x0 to satisfy x_lb if nec
+    //	  if (x0[g] < x_lb[g])
+    //	    x0[g] = x_lb[g];
   }
 
   // Linear and nonlinear constraints:
@@ -392,8 +393,8 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     Real cost_H = sequenceCost[numApprox];
     lin_ineq_lb[lin_offset] = -DBL_MAX; // no lb
     lin_ineq_ub[lin_offset] = (Real)maxFunctionEvals;//budget;
-    for (group=0; group<numGroups; ++group)
-      lin_ineq_coeffs(lin_offset, group) = modelGroupCost[group] / cost_H;
+    for (g=0; g<numGroups; ++g)
+      lin_ineq_coeffs(lin_offset, g) = modelGroupCost[g] / cost_H;
     break;
   }
   case N_GROUP_LINEAR_OBJECTIVE: // nonlinear accuracy constraint: ub on estvar
@@ -413,6 +414,54 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
 
 
 void NonDMultilevBLUESampling::
+augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
+				RealVector& lin_ineq_lb,
+				RealVector& lin_ineq_ub)
+{
+  // Note: could be collapsed inside numerical_solution_bounds_constraints()
+  // above to reduce function declarations, but we stick with the convention
+  // that augment_linear_ineq_constraints() augments the core problem definition
+  // with additional sample count relationship constraints.  Instead of managing
+  // accuracy/cost metrics, these constraints ensure a well-posed solution and
+  // may need to be enforced first by methods w/o explicit constraint handling.
+
+  if (pilotMgmtMode == OFFLINE_PILOT) {
+    // Ensure that we have at least one sample for one of the groups containing
+    // the HF reference model.  This is already satisfied by pilot sampling for
+    // current group definitions used by online/projection modes.
+    lin_ineq_lb[0] = 1.;  lin_ineq_ub[0] = DBL_MAX;
+    for (size_t g=0; g<numGroups; ++g)
+      if (contains(modelGroups[g], numApprox)) // HF model is part of group
+	lin_ineq_coeffs(0, g) = 1.;
+  }
+}
+
+
+Real NonDMultilevBLUESampling::
+augmented_linear_ineq_violations(const RealVector& cd_vars,
+				 const RealMatrix& lin_ineq_coeffs,
+				 const RealVector& lin_ineq_lb,
+				 const RealVector& lin_ineq_ub)
+{
+  // These are called out separately to avoid NaNs from inadmissible points
+
+  Real quad_viol = 0.;
+  if (pilotMgmtMode == OFFLINE_PILOT) {
+    // Ensure that we have at least one sample for one of the HF groups
+    Real inner_prod = 0.;
+    for (size_t g=0; g<numGroups; ++g)
+      inner_prod += lin_ineq_coeffs(0, g) * cd_vars[g]; // avoid contains()
+    Real viol, l_bnd = lin_ineq_lb[0];//, u_bnd = lin_ineq_ub[0];
+    if (inner_prod < l_bnd)
+      { viol = (1. - inner_prod / l_bnd);  quad_viol += viol*viol; }
+    //else if (inner_prod > u_bnd)
+    //  { viol = (inner_prod / u_bnd - 1.);  quad_viol += viol*viol; }
+  }
+  return quad_viol;
+}
+
+
+void NonDMultilevBLUESampling::
 compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
 		    SizetArray& N_G_alloc, SizetArray& delta_N_G)
 {
@@ -422,8 +471,8 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
 
   if (mlmfIter == 0) {
     RealVector soln_vars(numGroups, false);
-    for (size_t group=0; group<numGroups; ++group)
-      soln_vars[group] = (Real)pilotSamples[group];
+    for (size_t g=0; g<numGroups; ++g)
+      soln_vars[g] = (Real)pilotSamples[g];
     soln.solution_variables(soln_vars);
 
     if (pilotMgmtMode != OFFLINE_PILOT) // cache reference estVarIter0

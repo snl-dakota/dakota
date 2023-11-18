@@ -279,6 +279,18 @@ protected:
   virtual void estimator_variance_ratios(const RealVector& r_and_N,
 					 RealVector& estvar_ratios);
 
+  /// within ensemble_numerical_solution(), define the number of
+  /// solution variables and constraints
+  virtual void numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
+					 size_t& num_nln_con);
+  /// within ensemble_numerical_solution(), define initial values, coefficients,
+  /// bounds, and targets for solution variables and constraints
+  virtual void numerical_solution_bounds_constraints(const MFSolutionData& soln,
+    RealVector& x0, RealVector& x_lb, RealVector& x_ub,
+    RealVector& lin_ineq_lb, RealVector& lin_ineq_ub, RealVector& lin_eq_tgt,
+    RealVector& nln_ineq_lb, RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
+    RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs);
+
   /// augment linear inequality constraints as required by derived algorithm
   virtual void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 					       RealVector& lin_ineq_lb,
@@ -288,14 +300,6 @@ protected:
   virtual Real augmented_linear_ineq_violations(const RealVector& cd_vars,
     const RealMatrix& lin_ineq_coeffs, const RealVector& lin_ineq_lb,
     const RealVector& lin_ineq_ub);
-
-  virtual void numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
-					 size_t& num_nln_con);
-  virtual void numerical_solution_bounds_constraints(const MFSolutionData& soln,
-    RealVector& x0, RealVector& x_lb, RealVector& x_ub,
-    RealVector& lin_ineq_lb, RealVector& lin_ineq_ub, RealVector& lin_eq_tgt,
-    RealVector& nln_ineq_lb, RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
-    RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs);
 
   /// post-process optimization final results to recover solution data
   virtual void recover_results(const RealVector& cv_star,

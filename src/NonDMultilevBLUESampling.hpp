@@ -64,6 +64,14 @@ protected:
     RealVector& nln_ineq_lb, RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
     RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs);
 
+  void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
+				       RealVector& lin_ineq_lb,
+				       RealVector& lin_ineq_ub);
+  Real augmented_linear_ineq_violations(const RealVector& cd_vars,
+					const RealMatrix& lin_ineq_coeffs,
+					const RealVector& lin_ineq_lb,
+					const RealVector& lin_ineq_ub);
+
   //
   //- Heading: member functions
   //

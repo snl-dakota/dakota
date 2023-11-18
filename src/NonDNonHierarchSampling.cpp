@@ -633,7 +633,7 @@ void NonDNonHierarchSampling::ensemble_numerical_solution(MFSolutionData& soln)
 
   RealVector x0(num_cdv, false), x_lb(num_cdv, false), x_ub(num_cdv, false),
     lin_ineq_lb(num_lin_con, false), lin_ineq_ub(num_lin_con), lin_eq_tgt,
-    nln_ineq_lb(num_nln_con, false), nln_ineq_ub(num_nln_con, false),nln_eq_tgt;
+    nln_ineq_lb(num_nln_con, false), nln_ineq_ub(num_nln_con,false), nln_eq_tgt;
   RealMatrix lin_ineq_coeffs(num_lin_con, num_cdv), lin_eq_coeffs;
   numerical_solution_bounds_constraints(soln, x0, x_lb, x_ub,
 					lin_ineq_lb, lin_ineq_ub, lin_eq_tgt,
