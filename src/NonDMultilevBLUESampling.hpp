@@ -642,15 +642,16 @@ blue_raw_moments(IntRealMatrixArrayMap& sum_G,
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Moment " << mom << " estimator:\n";
     RealMatrixArray& sum_G_m = sum_G[mom];
-    if (mom == 1) { // reuse covariance data
+    if (mom == 1) // reuse covariance data
       compute_mu_hat(covGGinv, sum_G_m, N_G_actual, mu_hat);
-      for (size_t qoi=0; qoi<numFunctions; ++qoi)
-	H_raw_mom(qoi, mom-1) = mu_hat[qoi][numApprox]; // last model
-    }
     else { // generate new covariance data
       RealSymMatrix2DArray& sum_GG_m = sum_GG[mom];
-      // *** TO DO ***
+      RealSymMatrix2DArray cov_GG, cov_GG_inv;
+      compute_GG_covariance(sum_G_m, sum_GG_m, N_G_actual, cov_GG, cov_GG_inv);
+      compute_mu_hat(cov_GG_inv, sum_G_m, N_G_actual, mu_hat);
     }
+    for (size_t qoi=0; qoi<numFunctions; ++qoi)
+      H_raw_mom(qoi, mom-1) = mu_hat[qoi][numApprox]; // last model
   }
 }
 

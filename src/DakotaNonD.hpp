@@ -292,6 +292,8 @@ protected:
   bool zeros(const SizetArray& N_m) const;
   /// return true if N_m is empty or only populated with zeros
   bool zeros(const Sizet2DArray& N_m) const;
+  /// return true if N_m is empty or only populated with zeros
+  bool zeros(const SizetVector& N_m) const;
   /// return true if N_l has consistent values
   bool homogeneous(const SizetArray& N_l) const;
 
@@ -728,6 +730,16 @@ inline bool NonD::zeros(const Sizet2DArray& N_m) const
   size_t j, len = N_m.size();
   for (j=0; j<len; ++j)
     if (!zeros(N_m[j]))
+      return false;
+  return true;
+}
+
+
+inline bool NonD::zeros(const SizetVector& N_m) const
+{
+  int j, len = N_m.length();
+  for (j=0; j<len; ++j)
+    if (N_m[j])
       return false;
   return true;
 }

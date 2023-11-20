@@ -418,7 +418,7 @@ augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 				RealVector& lin_ineq_lb,
 				RealVector& lin_ineq_ub)
 {
-  // Note: could be collapsed inside numerical_solution_bounds_constraints()
+  // Note: could be collapsed within numerical_solution_bounds_constraints()
   // above to reduce function declarations, but we stick with the convention
   // that augment_linear_ineq_constraints() augments the core problem definition
   // with additional sample count relationship constraints.  Instead of managing
@@ -484,11 +484,15 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
     if (budget_exhausted || convergenceTol >= 1.) { // no need for solve
       // For offline pilot, the online EstVar is undefined prior to any online
       // samples, but should not happen (no budget used) unless bad convTol spec
-      if (pilotMgmtMode == OFFLINE_PILOT)
+      if (pilotMgmtMode == OFFLINE_PILOT) {
 	soln.average_estimator_variance(std::numeric_limits<Real>::infinity());
-      else
+	soln.average_estimator_variance_ratio(
+	  std::numeric_limits<Real>::quiet_NaN());
+      }
+      else {
 	soln.average_estimator_variance(average(estVarIter0));
-      soln.average_estimator_variance_ratio(1.);
+	soln.average_estimator_variance_ratio(1.);
+      }
       delta_N_G.assign(numGroups, 0);  return;
     }
 
@@ -652,8 +656,12 @@ process_group_solution(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
 				projNActualHF);
   // Report ratio of averages rather that average of ratios (see notes in
   // print_variance_reduction())
-  soln.average_estimator_variance_ratio(soln.average_estimator_variance() /
-					average(projEstVarHF)); // (1 - R^2)
+  if (zeros(projNActualHF))
+    soln.average_estimator_variance_ratio(
+      std::numeric_limits<Real>::quiet_NaN());
+  else
+    soln.average_estimator_variance_ratio(
+      soln.average_estimator_variance() / average(projEstVarHF)); // (1 - R^2)
 }
 
 
@@ -746,14 +754,6 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s)
 {
   //print_estimator_performance(s, blueSolnData);
 
-  size_t wpp7 = write_precision + 7;
-  s << "<<<<< Variance for mean estimator:\n";
-
-  if (pilotMgmtMode != OFFLINE_PILOT)
-    s << "    Initial pilot (" << std::setw(5)
-      << (size_t)std::floor(average(pilotSamples) + .5) << " ML samples):  "
-      << std::setw(wpp7) << average(estVarIter0) << '\n';
-
   String method = " ML BLUE",
     type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected" : "   Online";
   // Ordering of averages:
@@ -766,18 +766,27 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s)
   RealVector proj_equiv_estvar;
   project_mc_estimator_variance(covGG[hf_index], equivHFEvals, deltaEquivHF,
 				proj_equiv_estvar);
-  Real avg_estvar = blueSolnData.average_estimator_variance(),
-    avg_proj_equiv_estvar = average(proj_equiv_estvar);
+  Real avg_proj_equiv_estvar = average(proj_equiv_estvar),
+       avg_estvar = blueSolnData.average_estimator_variance();
+  bool mc_only_ref = (!zeros(projNActualHF));
   // As described in process_group_solution(), we have two MC references:
   // projected HF-only samples and projected equivalent HF samples.
-  s << "  " << type << " MC    (" << std::setw(5)
-    << (size_t)std::floor(average(projNActualHF) + .5) << " HF samples):  "
-    << std::setw(wpp7) << average(projEstVarHF)
-    << "\n  " << type << method << " (sample profile):  "
-    << std::setw(wpp7) << avg_estvar
-    << "\n  " << type << method << " ratio  (1 - R^2):  "
-    << std::setw(wpp7) << blueSolnData.average_estimator_variance_ratio()
-    << "\n Equivalent MC    (" << std::setw(5)
+  size_t wpp7 = write_precision + 7;
+  s << "<<<<< Variance for mean estimator:\n";
+  if (pilotMgmtMode != OFFLINE_PILOT)
+    s << "    Initial pilot (" << std::setw(5)
+      << (size_t)std::floor(average(pilotSamples) + .5) << " ML samples):  "
+      << std::setw(wpp7) << average(estVarIter0) << '\n';
+  if (mc_only_ref)
+    s << "  " << type << " MC    (" << std::setw(5)
+      << (size_t)std::floor(average(projNActualHF) + .5) << " HF samples):  "
+      << std::setw(wpp7) << average(projEstVarHF) << '\n';
+  s << "  " << type << method << " (sample profile):  "
+    << std::setw(wpp7) << avg_estvar << '\n';
+  if (mc_only_ref)
+    s << "  " << type << method << " ratio  (1 - R^2):  " << std::setw(wpp7)
+      << blueSolnData.average_estimator_variance_ratio() << '\n';
+  s << " Equivalent MC    (" << std::setw(5)
     << (size_t)std::floor(equivHFEvals + deltaEquivHF + .5) << " HF samples):  "
     << std::setw(wpp7) << avg_proj_equiv_estvar
     << "\n Equivalent" << method << " ratio:             "
@@ -796,7 +805,8 @@ project_mc_estimator_variance(const RealSymMatrixArray& var_H,
   size_t qoi, N_l_q;
   for (qoi=0; qoi<numFunctions; ++qoi) {
     N_l_q = proj_N_H[qoi] = N_H_actual[qoi] + delta_N_H;
-    proj_est_var[qoi] = (N_l_q) ? var_H[qoi](0,0) / N_l_q : DBL_MAX;
+    proj_est_var[qoi] = (N_l_q) ? var_H[qoi](0,0) / N_l_q
+                                : std::numeric_limits<Real>::infinity();
   }
 }
 
@@ -809,7 +819,8 @@ project_mc_estimator_variance(const RealSymMatrixArray& var_H, Real N_H_actual,
   proj_est_var.sizeUninitialized(numFunctions);
   size_t qoi; Real N_l_q = N_H_actual + delta_N_H;
   for (qoi=0; qoi<numFunctions; ++qoi)
-    proj_est_var[qoi] = (N_l_q > 0.) ? var_H[qoi](0,0) / N_l_q : DBL_MAX;
+    proj_est_var[qoi] = (N_l_q > 0.) ? var_H[qoi](0,0) / N_l_q
+                                     : std::numeric_limits<Real>::infinity();
 }
 
 
