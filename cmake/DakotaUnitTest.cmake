@@ -65,5 +65,5 @@ macro(dakota_add_h5py_test TEST_NAME)
   add_test(NAME dakota_hdf5_${TEST_NAME}_test 
     COMMAND ${Python_EXECUTABLE} -B hdf5_${TEST_NAME}.py --bindir $<TARGET_FILE_DIR:dakota>
     WORKING_DIRECTORY ${test_dir})
-  set_property(TEST dakota_hdf5_${TEST_NAME}_test PROPERTY LABELS UnitTest)
+  set_property(TEST dakota_hdf5_${TEST_NAME}_test PROPERTY LABELS Unit Python)
 endmacro() 

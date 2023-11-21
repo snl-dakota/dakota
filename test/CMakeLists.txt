@@ -240,7 +240,7 @@ if(DAKOTA_PYTHON)
     ${CMAKE_CURRENT_SOURCE_DIR}/test_sys_restart_neutral.py 
     $<TARGET_FILE:dakota> $<TARGET_FILE:dakota_restart_util>
     )
-  set_tests_properties(sys_restart_neutral PROPERTIES LABELS Unit )
+  set_property(TEST sys_restart_neutral PROPERTY LABELS Unit Python)
 endif()
 
 # If needed, copy files from test/Debug or test/Release into test/.

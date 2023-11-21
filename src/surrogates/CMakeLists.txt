@@ -55,7 +55,6 @@ target_link_libraries(dakota_surrogates PUBLIC Boost::serialization)
 
 # BMA TODO: Consider using a utility to add Dakota targets and do this
 dakota_strict_warnings(dakota_surrogates)
-dakota_gcov_target(dakota_surrogates)
 
 install(FILES ${surrogates_headers} DESTINATION "include")
 # Need to make sure DLLs end up in bin and prefer lib over lib64 (for now)

@@ -59,7 +59,6 @@ target_link_libraries(dakota_util PRIVATE Boost::boost
   PUBLIC Boost::serialization)
 
 dakota_strict_warnings(dakota_util)
-dakota_gcov_target(dakota_util)
 
 install(FILES ${util_headers} DESTINATION "include")
 # Need to make sure DLLs end up in bin and prefer lib over lib64 (for now)
