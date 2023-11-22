@@ -409,20 +409,26 @@ compute_C_inverse(const RealSymMatrix2DArray& cov_GG,
   initialize_rsm2a(cov_GG_inv);
 
   RealSpdSolver spd_solver; // reuse since setMatrix resets internal state
-  size_t qoi, g, num_groups = modelGroups.size();
+  size_t q, g, num_groups = modelGroups.size();
   for (g=0; g<num_groups; ++g) {
     const RealSymMatrixArray& cov_GG_g =     cov_GG[g];
     RealSymMatrixArray&   cov_GG_inv_g = cov_GG_inv[g];
-    for (qoi=0; qoi<numFunctions; ++qoi) {
-      cov_GG_inv_g[qoi] = cov_GG_g[qoi]; // copy for inversion in place
-      spd_solver.setMatrix(Teuchos::rcp(&cov_GG_inv_g[qoi], false));
-      if (spd_solver.shouldEquilibrate())
-	spd_solver.factorWithEquilibration(true);
-      int code = spd_solver.invert(); // in place
-      if (code) {
-	Cerr << "Error: serial dense solver failure (LAPACK error code " << code
-	     << ") in NonDMultilevBLUE::compute_C_inverse()." << std::endl;
-	abort_handler(METHOD_ERROR);
+    for (q=0; q<numFunctions; ++q) {
+      const RealSymMatrix& cov_GG_gq =     cov_GG_g[q];
+      RealSymMatrix&   cov_GG_inv_gq = cov_GG_inv_g[q];
+      if (cov_GG_gq.empty()) // insufficient samples to define cov_GG
+	cov_GG_inv_gq.shape(0);
+      else {
+	cov_GG_inv_gq = cov_GG_gq; // copy for inversion in place
+	spd_solver.setMatrix(Teuchos::rcp(&cov_GG_inv_gq, false));
+	if (spd_solver.shouldEquilibrate())
+	  spd_solver.factorWithEquilibration(true);
+	int code = spd_solver.invert(); // in place
+	if (code) {
+	  Cerr << "Error: serial dense solver failure (LAPACK error code "
+	       << code << ") in ML BLUE::compute_C_inverse()." << std::endl;
+	  abort_handler(METHOD_ERROR);
+	}
       }
     }
   }
@@ -440,11 +446,15 @@ compute_Psi(const RealSymMatrix2DArray& cov_GG_inv, const RealVector& N_G,
 
   size_t qoi, g, num_groups = modelGroups.size();
   for (g=0; g<num_groups; ++g) {
-    Real n_g = N_G[g];
-    const UShortArray&            models_g = modelGroups[g];
-    const RealSymMatrixArray& cov_GG_inv_g =  cov_GG_inv[g];
-    for (qoi=0; qoi<numFunctions; ++qoi)
-      add_sub_matrix(n_g, cov_GG_inv_g[qoi], models_g, Psi[qoi]); // *** can become indefinite here when n_g --> 0, which depends on online/offline pilot integration strategy
+    // In the context of numerical optimization, we should not need to protect
+    // cov_GG_inv against n_g = 0.
+    Real N_g = N_G[g];
+    if (N_g > 0.) {
+      const UShortArray&            models_g = modelGroups[g];
+      const RealSymMatrixArray& cov_GG_inv_g =  cov_GG_inv[g];
+      for (qoi=0; qoi<numFunctions; ++qoi)
+	add_sub_matrix(N_g, cov_GG_inv_g[qoi], models_g, Psi[qoi]); // *** can become indefinite here when N_g --> 0, which depends on online/offline pilot integration strategy
+    }
   }
 }
 
@@ -460,11 +470,14 @@ compute_Psi(const RealSymMatrix2DArray& cov_GG_inv, const Sizet2DArray& N_G,
 
   size_t qoi, g, num_groups = modelGroups.size();
   for (g=0; g<num_groups; ++g) {
-    const SizetArray&                N_G_g =         N_G[g];
+    const SizetArray&                  N_g =         N_G[g];
     const UShortArray&            models_g = modelGroups[g];
     const RealSymMatrixArray& cov_GG_inv_g =  cov_GG_inv[g];
     for (qoi=0; qoi<numFunctions; ++qoi)
-      add_sub_matrix(N_G_g[qoi], cov_GG_inv_g[qoi], models_g, Psi[qoi]); // *** can become indefinite here when n_g --> 0, which depends on online/offline pilot integration strategy
+      if (N_g[qoi]) {
+	Real N_gq = N_g[qoi];
+	add_sub_matrix(N_gq, cov_GG_inv_g[qoi], models_g, Psi[qoi]); // *** can become indefinite here when n_g --> 0, which depends on online/offline pilot integration strategy
+      }
   }
 }
 
@@ -521,17 +534,19 @@ compute_y(const RealSymMatrix2DArray& cov_GG_inv, const RealMatrixArray& sum_G,
   // y accumulated across groups and sized according to full model ensemble
   initialize_rva(y);
 
-  size_t qoi, g, num_groups = modelGroups.size();
+  size_t q, g, num_groups = modelGroups.size();
   for (g=0; g<num_groups; ++g) {
     //form_R(g, R_g);
     const UShortArray&            models_g = modelGroups[g];
     const RealSymMatrixArray& cov_GG_inv_g =  cov_GG_inv[g];
     const RealMatrix&              sum_G_g =       sum_G[g];
-    for (qoi=0; qoi<numFunctions; ++qoi) {
+    for (q=0; q<numFunctions; ++q) {
       //copy_row_vector(sum_G_g, qoi, sum_G_gq);
-      //add_sub_matvec(C_gq_inv, sum_G_gq, models_g, y[qoi]);
+      //add_sub_matvec(C_gq_inv, sum_G_gq, models_g, y[q]);
       // pass row for sum_G_g to avoid copy:
-      add_sub_matvec(cov_GG_inv_g[qoi], sum_G_g, qoi, models_g, y[qoi]);
+      const RealSymMatrix& cov_GG_inv_gq = cov_GG_inv_g[q];
+      if (!cov_GG_inv_gq.empty())
+	add_sub_matvec(cov_GG_inv_gq, sum_G_g, q, models_g, y[q]);
     }
   }
 }
@@ -551,17 +566,14 @@ compute_mu_hat(const RealSymMatrix2DArray& cov_GG_inv,
   compute_y(cov_GG_inv, sum_G, y);
 
   initialize_rva(mu_hat, false);
-  size_t qoi, r, c, g, num_groups = modelGroups.size();
+  size_t q, r, c, g, num_groups = modelGroups.size();
   RealSpdSolver spd_solver;
-  for (qoi=0; qoi<numFunctions; ++qoi) {
-    RealVector&      y_q =      y[qoi];
-    RealVector& mu_hat_q = mu_hat[qoi];
-
+  for (q=0; q<numFunctions; ++q) {
     // Leverage both the soln refinement in solve() and equilibration during
     // factorization (inverting Psi in place can only leverage the latter).
-    spd_solver.setMatrix(Teuchos::rcp(&Psi[qoi],  false));// resets solver state
-    spd_solver.setVectors(Teuchos::rcp(&mu_hat_q, false),
-			  Teuchos::rcp(&y_q,      false));
+    spd_solver.setMatrix(Teuchos::rcp(&Psi[q], false)); // resets solver state
+    spd_solver.setVectors(Teuchos::rcp(&mu_hat[q], false),
+			  Teuchos::rcp(&y[q], false));
     if (spd_solver.shouldEquilibrate())
       spd_solver.factorWithEquilibration(true);
     spd_solver.solveToRefinedSolution(true);
@@ -587,15 +599,15 @@ estimator_variance(const RealVector& cd_vars, RealVector& estvar)
   compute_Psi(covGGinv, cd_vars, Psi);
 
   RealSpdSolver spd_solver;
-  size_t qoi, all_models = numApprox + 1;
+  size_t q, all_models = numApprox + 1;
   RealVector e_last(all_models, false), estvar_q(all_models, false);
 
-  for (qoi=0; qoi<numFunctions; ++qoi) {
+  for (q=0; q<numFunctions; ++q) {
 
     // e_last is equilbrated in place, so must be reset
     e_last.putScalar(0.); e_last[numApprox] = 1.;
 
-    spd_solver.setMatrix(Teuchos::rcp(&Psi[qoi],  false));// resets solver state
+    spd_solver.setMatrix( Teuchos::rcp(&Psi[q],   false));// resets solver state
     spd_solver.setVectors(Teuchos::rcp(&estvar_q, false),
 			  Teuchos::rcp(&e_last,   false));
     if (spd_solver.shouldEquilibrate())
@@ -607,7 +619,7 @@ estimator_variance(const RealVector& cd_vars, RealVector& estvar)
 	   << ") in ML BLUE estimator_variance()." << std::endl;
       abort_handler(METHOD_ERROR);
     }
-    estvar[qoi] = estvar_q[numApprox];
+    estvar[q] = estvar_q[numApprox];
   }
 
   /* This approach suffers from poor performance, either from conditioning
@@ -642,7 +654,7 @@ blue_raw_moments(IntRealMatrixArrayMap& sum_G,
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Moment " << mom << " estimator:\n";
     RealMatrixArray& sum_G_m = sum_G[mom];
-    if (mom == 1) // reuse covariance data
+    if (mom == 1 && pilotMgmtMode != OFFLINE_PILOT) // reuse online covar data
       compute_mu_hat(covGGinv, sum_G_m, N_G_actual, mu_hat);
     else { // generate new covariance data
       RealSymMatrix2DArray& sum_GG_m = sum_GG[mom];

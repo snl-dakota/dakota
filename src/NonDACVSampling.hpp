@@ -708,7 +708,7 @@ compute_acv_control(RealMatrix& sum_L_base_m, Real sum_H_mq,
 		    RealSymMatrix& sum_LL_mq, RealMatrix& sum_LH_m,
 		    size_t N_shared_q, size_t mom, size_t qoi, RealVector& beta)
 {
-  if (mom == 1) // variances/covariances already computed for mean estimator
+  if (mom == 1 && pilotMgmtMode != OFFLINE_PILOT) // online covar avail for mean
     solve_for_acv_control(covLL[qoi], FMat, covLH, qoi, beta);
   else { // compute variances/covariances for higher-order moment estimators
     // compute cov_LL, cov_LH, var_H across numApprox for a particular QoI

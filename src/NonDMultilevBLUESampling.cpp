@@ -484,15 +484,11 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
     if (budget_exhausted || convergenceTol >= 1.) { // no need for solve
       // For offline pilot, the online EstVar is undefined prior to any online
       // samples, but should not happen (no budget used) unless bad convTol spec
-      if (pilotMgmtMode == OFFLINE_PILOT) {
+      if (pilotMgmtMode == OFFLINE_PILOT)
 	soln.average_estimator_variance(std::numeric_limits<Real>::infinity());
-	soln.average_estimator_variance_ratio(
-	  std::numeric_limits<Real>::quiet_NaN());
-      }
-      else {
+      else
 	soln.average_estimator_variance(average(estVarIter0));
-	soln.average_estimator_variance_ratio(1.);
-      }
+      soln.average_estimator_variance_ratio(1.);
       delta_N_G.assign(numGroups, 0);  return;
     }
 
@@ -678,10 +674,13 @@ print_group_solution(std::ostream& s, const MFSolutionData& soln)
   if (maxFunctionEvals == SZ_MAX)
     s << "Estimator cost allocation = " << soln.equivalent_hf_allocation()
       << std::endl;
-  else
-    s << "Average estimator variance = " << soln.average_estimator_variance()
-      << "\nAverage ACV variance / average MC variance = "
-      << soln.average_estimator_variance_ratio() << std::endl;
+  else {
+    s << "Average estimator variance = " << soln.average_estimator_variance();
+    if (!zeros(projNActualHF))
+      s << "\nAverage ACV variance / average MC variance = "
+	<< soln.average_estimator_variance_ratio();
+    s << std::endl;
+  }
 }
 
 
@@ -981,19 +980,9 @@ compute_GG_covariance(const RealMatrixArray& sum_G,
 		      RealSymMatrix2DArray& cov_GG,
 		      RealSymMatrix2DArray& cov_GG_inv)
 {
-  size_t g, m, m2, num_models, qoi;
-  if (cov_GG.size() != numGroups) {
-    cov_GG.resize(numGroups);
-    for (g=0; g<numGroups; ++g) {
-      RealSymMatrixArray& cov_GG_g = cov_GG[g];
-      cov_GG_g.resize(numFunctions);
-      num_models = modelGroups[g].size();
-      for (qoi=0; qoi<numFunctions; ++qoi)
-	cov_GG_g[qoi].shapeUninitialized(num_models);
-    }
-  }
+  initialize_rsm2a(cov_GG);
 
-  Real sum_G_gqm;  size_t N_sh_gq;
+  size_t g, m, m2, num_models, qoi;  Real sum_G_gqm;  size_t N_sh_gq;
   for (g=0; g<numGroups; ++g) {
     num_models = modelGroups[g].size();
     const RealMatrix&          sum_G_g = sum_G[g];
@@ -1004,12 +993,16 @@ compute_GG_covariance(const RealMatrixArray& sum_G,
       const RealSymMatrix& sum_GG_gq = sum_GG_g[qoi];
       RealSymMatrix&       cov_GG_gq = cov_GG_g[qoi];
       N_sh_gq                        =  num_G_g[qoi];
-      for (m=0; m<num_models; ++m) {
-	sum_G_gqm = sum_G_g(qoi,m);
-	for (m2=0; m2<=m; ++m2)
-	  compute_covariance(sum_G_gqm, sum_G_g(qoi,m2), sum_GG_gq(m,m2),
-			     N_sh_gq, cov_GG_gq(m,m2));
+      if (N_sh_gq > 1) {
+	if (cov_GG_gq.empty()) cov_GG_gq.shapeUninitialized(num_models);
+	for (m=0; m<num_models; ++m) {
+	  sum_G_gqm = sum_G_g(qoi,m);
+	  for (m2=0; m2<=m; ++m2)
+	    compute_covariance(sum_G_gqm, sum_G_g(qoi,m2), sum_GG_gq(m,m2),
+			       N_sh_gq, cov_GG_gq(m,m2));
+	}
       }
+      else cov_GG_gq.shape(0);
     }
   }
 

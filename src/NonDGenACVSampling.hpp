@@ -570,7 +570,7 @@ compute_genacv_control(RealMatrix& sum_L_base_m, Real sum_H_mq,
 		       size_t N_shared_q, size_t mom, size_t qoi,
 		       const UShortArray& approx_set, RealVector& beta)
 {
-  if (mom == 1) // variances/covariances already computed for mean estimator
+  if (mom == 1 && pilotMgmtMode != OFFLINE_PILOT) // online covar avail for mean
     solve_for_genacv_control(covLL[qoi], GMat, covLH, gVec, qoi,
 			     approx_set, beta);
   else { // compute variances/covariances for higher-order moment estimators
