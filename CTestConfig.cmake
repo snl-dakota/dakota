@@ -14,3 +14,4 @@ set(CTEST_DROP_SITE "dakota-cdash.sandia.gov")
 set(CTEST_DROP_LOCATION "/submit.php?project=Dakota")
 set(CTEST_DROP_SITE_CDASH TRUE)
 
+set(CTEST_CUSTOM_COVERAGE_EXCLUDE "/packages/")
