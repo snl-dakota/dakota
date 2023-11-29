@@ -105,6 +105,8 @@ protected:
   // *********************
   // optimization results:
   // *********************
+  // Note: could/should be subclassed for analytic (vector estvar) vs.
+  //       numerical solutions (averaged estvar)
 
   /// average estimator variance for model graph
   Real avgEstVar;
@@ -444,6 +446,10 @@ protected:
 					SizetArray& approx_sequence,
 					RealVector& avg_eval_ratios,
 					bool monotonic_r = false);
+  void mfmc_estvar_ratios(const RealMatrix& rho2_LH,
+			  const SizetArray& approx_sequence,
+			  const RealVector& avg_eval_ratios,
+			  RealVector& estvar_ratios);
 
   void cvmc_ensemble_solutions(const RealMatrix& rho2_LH,
 			       const RealVector& cost,
@@ -471,12 +477,26 @@ protected:
 		       const RealVector& cost);
   Real allocate_budget(const UShortArray& approx_set,
 		       const RealVector& avg_eval_ratios,
+		       const RealVector& cost, Real budget);
+  Real allocate_budget(const UShortArray& approx_set,
+		       const RealVector& avg_eval_ratios,
 		       const RealVector& cost);
 
+  Real update_hf_target(Real avg_estvar, Real avg_N_H,
+			const RealVector& estvar_iter0);
+  Real update_hf_target(Real avg_estvar, const SizetArray& N_H,
+			const RealVector& estvar_iter0);
+  Real update_hf_target(const RealVector& estvar, const SizetArray& N_H,
+			const RealVector& estvar_iter0);
+  Real update_hf_target(const RealVector& estvar_ratios,
+			const RealVector& var_H,const RealVector& estvar_iter0);
+
   void scale_to_target(Real avg_N_H, const RealVector& cost,
-		       RealVector& avg_eval_ratios, Real& avg_hf_target);
+		       RealVector& avg_eval_ratios, Real& avg_hf_target,
+		       Real budget, Real offline_N_lwr = 2);
   void scale_to_budget_with_pilot(RealVector& avg_eval_ratios,
-				  const RealVector& cost, Real avg_N_H);
+				  const RealVector& cost, Real avg_N_H,
+				  Real budget);
 
   void cache_mc_reference();
 
@@ -569,11 +589,6 @@ private:
   //
   //- Heading: helper functions
   //
-
-  Real update_hf_target(Real avg_estvar, Real avg_N_H,
-			const RealVector& estvar0);
-  Real update_hf_target(Real avg_estvar, const SizetArray& N_H,
-			const RealVector& estvar0);
 
   /// flattens contours of average_estimator_variance() using std::log
   Real log_average_estvar(const RealVector& cd_vars);
@@ -899,8 +914,7 @@ allocate_budget(const RealVector& avg_eval_ratios, const RealVector& cost,
   // version with scalar HF target (eval_ratios already averaged over QoI
   // due to formulation of optimization sub-problem)
 
-  Real cost_H = cost[numApprox], inner_prod;
-  inner_prod = cost_H; // raw cost (un-normalized)
+  Real cost_H = cost[numApprox], inner_prod = cost_H;// raw cost (un-normalized)
   for (size_t approx=0; approx<numApprox; ++approx)
     inner_prod += cost[approx] * avg_eval_ratios[approx];
   Real avg_hf_target = budget / inner_prod * cost_H; // normalized to equivHF
@@ -914,19 +928,27 @@ allocate_budget(const RealVector& avg_eval_ratios, const RealVector& cost)
 
 
 inline Real NonDNonHierarchSampling::
-allocate_budget(const UShortArray& approx_set,
-		const RealVector& avg_eval_ratios, const RealVector& cost)
+allocate_budget(const UShortArray& approx_set,const RealVector& avg_eval_ratios,
+		const RealVector& cost,	Real budget)
 {
   // version with scalar HF target (eval_ratios already averaged over QoI
   // due to formulation of optimization sub-problem)
 
-  Real cost_H = cost[numApprox], inner_prod, budget = (Real)maxFunctionEvals;
-  inner_prod = cost_H; // raw cost (un-normalized)
+  Real cost_H = cost[numApprox], inner_prod = cost_H;// raw cost (un-normalized)
   size_t a, num_approx = approx_set.size();
   for (a=0; a<num_approx; ++a)
     inner_prod += cost[approx_set[a]] * avg_eval_ratios[a];
   Real avg_hf_target = budget / inner_prod * cost_H; // normalized to equivHF
   return avg_hf_target;
+}
+
+
+inline Real NonDNonHierarchSampling::
+allocate_budget(const UShortArray& approx_set,
+		const RealVector& avg_eval_ratios, const RealVector& cost)
+{
+  return allocate_budget(approx_set, avg_eval_ratios, cost,
+			 (Real)maxFunctionEvals);
 }
 
 
@@ -992,14 +1014,21 @@ r_and_N_to_design_vars(const RealVector& avg_eval_ratios, Real N_H,
 
 
 inline Real NonDNonHierarchSampling::
-update_hf_target(Real avg_estvar, Real avg_N_H, const RealVector& estvar0)
+update_hf_target(Real avg_estvar, Real avg_N_H, const RealVector& estvar_iter0)
 {
+  /*
   // Note: there is a circular dependency between estvar_ratios and hf_targets
   RealVector hf_targets(numFunctions, false);
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     hf_targets[qoi] = avg_estvar * avg_N_H
-                    / (convergenceTol * estvar0[qoi]);
+                    / (convergenceTol * estvar_iter0[qoi]);
   Real avg_hf_target = average(hf_targets);
+  */
+
+  Real avg_hf_target = 0.;
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    avg_hf_target += 1. / estvar_iter0[qoi];
+  avg_hf_target *= avg_estvar * avg_N_H / (convergenceTol * numFunctions);
   Cout << "Scaling profile for convergenceTol = " << convergenceTol
        << ": average HF target = " << avg_hf_target << std::endl;
   return avg_hf_target;
@@ -1008,18 +1037,85 @@ update_hf_target(Real avg_estvar, Real avg_N_H, const RealVector& estvar0)
 
 inline Real NonDNonHierarchSampling::
 update_hf_target(Real avg_estvar, const SizetArray& N_H,
-		 const RealVector& estvar0)
+		 const RealVector& estvar_iter0)
 {
+  /*
   // Note: there is a circular dependency between estvar_ratios and hf_targets
   RealVector hf_targets(numFunctions, false);
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     hf_targets[qoi] = avg_estvar * N_H[qoi]
-                    / (convergenceTol * estvar0[qoi]);
+                    / (convergenceTol * estvar_iter0[qoi]);
   Real avg_hf_target = average(hf_targets);
+  */
+
+  Real avg_hf_target = 0.;
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    avg_hf_target += N_H[qoi] / estvar_iter0[qoi];
+  avg_hf_target *= avg_estvar / (convergenceTol * numFunctions);
   Cout << "Scaling profile for convergenceTol = " << convergenceTol
        << ": average HF target = " << avg_hf_target << std::endl;
   return avg_hf_target;
 }
+
+
+inline Real NonDNonHierarchSampling::
+update_hf_target(const RealVector& estvar, const SizetArray& N_H,
+		 const RealVector& estvar_iter0)
+{
+  /*
+  // Note: there is a circular dependency between estvar_ratios and hf_targets
+  RealVector hf_targets(numFunctions, false);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    hf_targets[qoi] = estvar[qoi] * N_H[qoi]
+                    / (convergenceTol * estvar_iter0[qoi]);
+  Real avg_hf_target = average(hf_targets);
+  */
+
+  Real avg_hf_target = 0.;
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    avg_hf_target += estvar[qoi] * N_H[qoi] / estvar_iter0[qoi];
+  avg_hf_target /= convergenceTol * numFunctions;
+  Cout << "Scaling profile for convergenceTol = " << convergenceTol
+       << ": average HF target = " << avg_hf_target << std::endl;
+  return avg_hf_target;
+}
+
+
+inline Real NonDNonHierarchSampling::
+update_hf_target(const RealVector& estvar_ratios, const RealVector& var_H,
+		 const RealVector& estvar_iter0)
+{
+  /*
+  RealVector hf_targets(numFunctions, false);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    hf_targets[qoi] = var_H[qoi] * estvar_ratios[qoi]
+                    / (convergenceTol * estvar_iter0[qoi]);
+  Real avg_hf_target = average(hf_targets);
+  */
+
+  Real avg_hf_target = 0.;
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    avg_hf_target += estvar_ratios[qoi] * var_H[qoi] / estvar_iter0[qoi];
+  avg_hf_target /= convergenceTol * numFunctions;
+  Cout << "Scaling profile for convergenceTol = " << convergenceTol
+       << ": average HF target = " << avg_hf_target << std::endl;
+  return avg_hf_target;
+}
+
+
+/*
+Real NonDNonHierarchSampling::
+update_hf_target(const RealVector& estvar_ratios,
+		 const RealSymMatrixArray& cov_H,
+		 const RealVector& estvar_iter0)
+{
+  Real avg_hf_target = 0.;
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    avg_hf_target += cov_H[qoi](0,0) * estvar_ratios[qoi] / estvar_iter0[qoi];
+  avg_hf_target /= convergenceTol * numFunctions;
+  return avg_hf_target;
+}
+*/
 
 
 inline bool NonDNonHierarchSampling::

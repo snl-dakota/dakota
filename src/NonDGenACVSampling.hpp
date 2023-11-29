@@ -223,7 +223,8 @@ private:
   void scale_to_target(Real avg_N_H, const RealVector& cost,
 		       RealVector& avg_eval_ratios, Real& avg_hf_target,
 		       const UShortArray& approx_set,
-		       const UShortList&  root_list);
+		       const UShortList& root_list, Real budget,
+		       Real offline_N_lwr = 2);
   void enforce_linear_ineq_constraints(RealVector& avg_eval_ratios,
 				       const UShortArray& approx_set,
 				       const UShortList& root_list);

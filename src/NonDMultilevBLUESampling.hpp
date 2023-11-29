@@ -161,9 +161,8 @@ private:
 				    RealMatrix& rho2_LH);
 
   void analytic_initialization_from_mfmc(const RealMatrix& rho2_LH,
-					 Real avg_N_H, MFSolutionData& soln);
+					 MFSolutionData& soln);
   void analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
-						  Real avg_N_H,
 						  MFSolutionData& soln);
 
   void add_sub_matrix(Real coeff, const RealSymMatrix& sub_mat,

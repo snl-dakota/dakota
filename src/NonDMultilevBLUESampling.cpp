@@ -507,10 +507,9 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
       // even though they are not independent sample sets in MFMC
       size_t g = numGroups - 1;// don't mix sample sets: use group w/ all models
       RealMatrix rho2_LH;  covariance_to_correlation_sq(covGG[g], rho2_LH);
-      Real avg_N_H = (backfillFailures) ? average(N_G_actual[g]) : N_G_alloc[g];
       MFSolutionData mf_soln, cv_soln;
-      analytic_initialization_from_mfmc(rho2_LH, avg_N_H, mf_soln);
-      analytic_initialization_from_ensemble_cvmc(rho2_LH, avg_N_H, cv_soln);
+      analytic_initialization_from_mfmc(rho2_LH, mf_soln);
+      analytic_initialization_from_ensemble_cvmc(rho2_LH, cv_soln);
 
       //if (multiStartACV) { // Run numerical solns from both starting points
       ensemble_numerical_solution(mf_soln);
@@ -520,14 +519,8 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
     }
     }
   }
-  else { // warm start from previous solution (for active or one-and-only DAG)
-
-    // no scaling needed from prev soln (as in NonDLocalReliability) since
-    // updated avg_N_H now includes allocation from previous solution and
-    // should be active on constraint bound (excepting sample count rounding)
-
+  else // warm start from previous solution (for active or one-and-only DAG)
     ensemble_numerical_solution(soln);
-  }
 
   process_group_solution(soln, N_G_actual, N_G_alloc, delta_N_G);
   if (outputLevel >= NORMAL_OUTPUT)
@@ -541,56 +534,81 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
 
 
 void NonDMultilevBLUESampling::
-analytic_initialization_from_mfmc(const RealMatrix& rho2_LH, Real avg_N_H,
+analytic_initialization_from_mfmc(const RealMatrix& rho2_LH,
 				  MFSolutionData& soln)
 {
   RealVector avg_eval_ratios; // defined over numApprox, not numGroups
+  SizetArray approx_sequence;
   UShortArray approx_set(numApprox);
   for (size_t i=0; i<numApprox; ++i) approx_set[i] = i;
   if (ordered_approx_sequence(rho2_LH)) // for all QoI across all Approx
     mfmc_analytic_solution(approx_set, rho2_LH, sequenceCost, avg_eval_ratios);
-  else {
-    // compute reordered MFMC for averaged rho; monotonic r not required
-    // > any rho2_LH re-ordering from MFMC initial guess can be ignored (later
-    //   gets replaced with r_i ordering for approx_increments() sampling)
-    SizetArray approx_sequence;
+  else // compute reordered MFMC for averaged rho; monotonic r not required
+       // > any rho2_LH re-ordering from MFMC init guess can be ignored (later
+       //   gets replaced with r_i ordering for approx_increments() sampling)
     mfmc_reordered_analytic_solution(approx_set, rho2_LH, sequenceCost,
 				     approx_sequence, avg_eval_ratios);
-  }
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Initial guess from analytic MFMC (unscaled eval ratios):\n"
 	 << avg_eval_ratios << std::endl;
 
-  Real avg_hf_target;  RealVector soln_vars(numGroups, false);
-  if (maxFunctionEvals == SZ_MAX) { // *** TO DO
-    //avg_hf_target = update_hf_target(avg_eval_ratios, varH, estVarIter0);
-    //soln.anchored_solution_ratios(avg_eval_ratios, avg_hf_target);
+  // Convert to BLUE solution using MFMC "groups": let profile emerge from
+  // pilot on MFMC groups, but deduct pilot cost for non-MFMC groups
+  BitArray active_groups(numGroups); // init to off
+  bool budget_constrained = (maxFunctionEvals != SZ_MAX);
+  Real remaining = (budget_constrained) ? (Real)maxFunctionEvals : 0.;
+  size_t g, cntr = 0;
+  for (g=0; g<numGroups; ++g) {
+    if (mfmc_model_grouping(modelGroups[g]))  active_groups.set(g);
+    else if (budget_constrained)
+      remaining -= pilotSamples[g] * modelGroupCost[g];
   }
-  else {
-    //scale_to_target(pilotSamples/*avg_N_H*/, modelGroupCost, avg_eval_ratios, sequenceCost, avg_hf_target); // redo for group-based pilot sample
 
-    // let profile emerge from pilot on MFMC groups, but deduct pilot cost
-    // for non-MFMC groups
-    BitArray active_groups(numGroups); // init to off
-    Real remaining = (Real)maxFunctionEvals;  size_t g, cntr = 0;
-    for (g=0; g<numGroups; ++g) {
-      if (mfmc_model_grouping(modelGroups[g]))  active_groups.set(g);
-      else          remaining -= pilotSamples[g] * modelGroupCost[g];
-    }
-    // allocate remaining budget among MFMC groups
-    avg_hf_target = allocate_budget(avg_eval_ratios, sequenceCost, remaining);
-    // Convert to BLUE solution using MFMC "groups":
-    for (g=0; g<numGroups; ++g)
-      soln_vars[g] = (active_groups[g]) ?
-	avg_eval_ratios[cntr++] * avg_hf_target : pilotSamples[g]; // *** TO DO: verify cntr ordering
+  // define HF target for avg_eval_ratios according to budget or accuracy
+  Real avg_hf_target;
+  size_t group_index = numGroups - 1;// last group = all models
+  if (budget_constrained) {
+    //avg_hf_target = allocate_budget(avg_eval_ratios, sequenceCost, remaining);
+    // scale_to_target() employs allocate_budget() but rescales for lower bnds
+    Real N_shared = (Real)pilotSamples[group_index];
+    scale_to_target(N_shared, sequenceCost, avg_eval_ratios, avg_hf_target,
+		    remaining, 0.); // no lower bound for offline
   }
+  else { // accuracy-constrained
+    // Compute avg_hf_target from MFMC estvar, bypass ML BLUE estvar
+    RealVector estvar_ratios;
+    mfmc_estvar_ratios(rho2_LH, approx_sequence, avg_eval_ratios,estvar_ratios);
+    avg_hf_target = update_hf_target(estvar_ratios, NGroupActual[group_index],
+				     estVarIter0); // valid within MFMC context
+    // Best to stop here, though dissimilar to ACV,GenACV scaling
+
+    /*
+    // After computing avg_hf_target using MFMC estvar, compute ML BLUE estvar
+    // from this complete MFMC solution, then rescale (how?)
+    // > *** ACV,GenACV employ native estvar without 1st requiring avg_hf_target
+    //   from MFMC (review: because they support estvar_ratios more directly?)
+    anchored_solution_to_solution_variables(avg_eval_ratios, avg_hf_target, soln_vars);
+    RealVector estvar;
+    estimator_variance(soln_vars, estvar); // ML BLUE estar for MFMC analytic: presumably there isn't much difference (MFMC sample sets are not independent)
+    UShortArray hf_only_group(1);  hf_only_group[0] = numApprox;
+    size_t hf_index = find_index(modelGroups, hf_only_group);
+    //avg_hf_target = update_hf_target(estvar_ratios, cov_GG[hf_index], estVarIter0);
+    avg_hf_target = update_hf_target(estvar, N_G[hf_index], estVarIter0); // *** the assumed scaling with N_H is not generally valid for ML BLUE
+    */
+  }
+
+  // Convert avg_{eval_ratios,hf_target} for MFMC to soln_vars for ML BLUE
+  RealVector soln_vars(numGroups, false);
+  for (g=0; g<numGroups; ++g)
+    soln_vars[g] = (active_groups[g]) ?
+      avg_eval_ratios[cntr++] * avg_hf_target : pilotSamples[g]; // *** TO DO: verify cntr ordering
   soln.solution_variables(soln_vars);
 }
 
 
 void NonDMultilevBLUESampling::
 analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
-					   Real avg_N_H, MFSolutionData& soln)
+					   MFSolutionData& soln)
 {
   // > Option 2 is ensemble of independent pairwise CVMCs, rescaled to an
   //   aggregate budget.  This is more ACV-like in the sense that it is not
@@ -602,29 +620,28 @@ analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
     Cout << "Initial guess from ensemble CVMC (unscaled eval ratios):\n"
 	 << avg_eval_ratios << std::endl;
 
-  Real avg_hf_target;  RealVector soln_vars(numGroups, false);
-  if (maxFunctionEvals == SZ_MAX) { // *** TO DO
-    //avg_hf_target = update_hf_target(avg_eval_ratios, varH, estVarIter0);
-    //soln.anchored_solution_ratios(avg_eval_ratios, avg_hf_target);
+  // Convert to BLUE solution using MFMC "groups": let profile emerge from
+  // pilot on CVMC groups, but deduct pilot cost for non-CVMC groups
+  BitArray active_groups(numGroups); // init to off
+  Real remaining = (Real)maxFunctionEvals;  size_t g, cntr = 0;
+  for (g=0; g<numGroups; ++g) {
+    if (cvmc_model_grouping(modelGroups[g]))  active_groups.set(g);
+    else          remaining -= pilotSamples[g] * modelGroupCost[g];
   }
-  else {
-    //scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, avg_hf_target);
 
-    // let profile emerge from pilot on CVMC groups, but deduct pilot cost
-    // for non-CVMC groups
-    BitArray active_groups(numGroups); // init to off
-    Real remaining = (Real)maxFunctionEvals;  size_t g, cntr = 0;
-    for (g=0; g<numGroups; ++g) {
-      if (cvmc_model_grouping(modelGroups[g]))  active_groups.set(g);
-      else          remaining -= pilotSamples[g] * modelGroupCost[g];
-    }
-    // allocate remaining budget among MFMC groups
-    avg_hf_target = allocate_budget(avg_eval_ratios, sequenceCost, remaining);
-    // Convert to BLUE solution using MFMC "groups":
-    for (g=0; g<numGroups; ++g)
-      soln_vars[g] = (active_groups[g]) ?
-	avg_eval_ratios[cntr++] * avg_hf_target : pilotSamples[g]; // *** TO DO: verify cntr ordering
+  // define HF target for avg_eval_ratios according to budget or accuracy
+  Real avg_hf_target;
+  if (maxFunctionEvals == SZ_MAX) {
+    // same as above, once converged
   }
+  else
+    avg_hf_target = allocate_budget(avg_eval_ratios, sequenceCost, remaining);
+
+  // Convert avg_{eval_ratios,hf_target} for CVMC to soln_vars for ML BLUE
+  RealVector soln_vars(numGroups, false);
+  for (g=0; g<numGroups; ++g)
+    soln_vars[g] = (active_groups[g]) ?
+      avg_eval_ratios[cntr++] * avg_hf_target : pilotSamples[g]; // *** TO DO: verify cntr ordering
   soln.solution_variables(soln_vars);
 }
 
@@ -646,7 +663,7 @@ process_group_solution(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
   //    --> this is the closest thing to the estvar ratio (1. - R^2)
   // 2. For equivalent HF, emply var_H / (equivHFEvals + deltaEquivHF)
   UShortArray hf_only_group(1);  hf_only_group[0] = numApprox;
-  unsigned short hf_index = find_index(modelGroups, hf_only_group);
+  size_t hf_index = find_index(modelGroups, hf_only_group);
   project_mc_estimator_variance(covGG[hf_index], N_G_actual[hf_index],
 				delta_N_G[hf_index], projEstVarHF,
 				projNActualHF);
@@ -761,7 +778,7 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s)
   // > The ACV ratio then differs from final ACV / final MC (due to recovering
   //   avgEstVar from the optimizer obj fn), but difference is usually small.
   UShortArray hf_only_group(1);  hf_only_group[0] = numApprox;
-  unsigned short hf_index = find_index(modelGroups, hf_only_group);
+  size_t hf_index = find_index(modelGroups, hf_only_group);
   RealVector proj_equiv_estvar;
   project_mc_estimator_variance(covGG[hf_index], equivHFEvals, deltaEquivHF,
 				proj_equiv_estvar);

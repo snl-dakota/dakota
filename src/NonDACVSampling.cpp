@@ -561,10 +561,11 @@ analytic_initialization_from_mfmc(const RealMatrix& rho2_LH, Real avg_N_H,
 	 << avg_eval_ratios << std::endl;
 
   Real avg_hf_target;
-  if (maxFunctionEvals == SZ_MAX)
+  if (maxFunctionEvals == SZ_MAX) // HF target from ACV estvar using MFMC soln
     avg_hf_target = update_hf_target(avg_eval_ratios, varH, estVarIter0);
-  else
-    scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, avg_hf_target);
+  else // allocate_budget(), then manage lower bounds and pilot over-estimation
+    scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, avg_hf_target,
+		    (Real)maxFunctionEvals);
   soln.anchored_solution_ratios(avg_eval_ratios, avg_hf_target);
 }
 
@@ -584,10 +585,11 @@ analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
 	 << avg_eval_ratios << std::endl;
 
   Real avg_hf_target;
-  if (maxFunctionEvals == SZ_MAX)
+  if (maxFunctionEvals == SZ_MAX) // HF target from ACV estvar using CVMC solns
     avg_hf_target = update_hf_target(avg_eval_ratios, varH, estVarIter0);
-  else
-    scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, avg_hf_target);
+  else // allocate_budget(), then manage lower bounds and pilot over-estimation
+    scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, avg_hf_target,
+		    (Real)maxFunctionEvals);
   soln.anchored_solution_ratios(avg_eval_ratios, avg_hf_target);
 }
 
@@ -689,12 +691,7 @@ update_hf_target(const RealVector& avg_eval_ratios, const RealVector& var_H,
   r_and_N_to_design_vars(avg_eval_ratios, N_H, cd_vars);
   estimator_variance_ratios(cd_vars, estvar_ratios); // virtual for ACV,GenACV
 
-  RealVector hf_targets(numFunctions, false);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    hf_targets[qoi] = var_H[qoi] * estvar_ratios[qoi]
-                    / (convergenceTol * estvar0[qoi]);
-  Real avg_hf_target = average(hf_targets);
-  return avg_hf_target;
+  return update_hf_target(estvar_ratios, var_H, estvar0); // *** TO DO: can't overload because of overlapping API --> rename one ***
 }
 
 

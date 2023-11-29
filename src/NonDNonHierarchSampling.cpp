@@ -537,6 +537,78 @@ mfmc_reordered_analytic_solution(const UShortArray& approx_set,
 
 
 void NonDNonHierarchSampling::
+mfmc_estvar_ratios(const RealMatrix& rho2_LH, const SizetArray& approx_sequence,
+		   const RealVector& avg_eval_ratios, RealVector& estvar_ratios)
+{
+  if (estvar_ratios.empty()) estvar_ratios.sizeUninitialized(numFunctions);
+
+  // Appendix B of JCP paper on ACV:
+  // > R^2 = \Sum_i [ (r_i -r_{i-1})/(r_i r_{i-1}) rho2_LH_i ]
+  // > Reorder differences since eval ratios/correlations ordered from LF to HF
+  //   (opposite of JCP); after this change, reproduces Peherstorfer eq. above.
+  Real R_sq, r_i, r_ip1;  size_t qoi, approx, approx_ip1, i, ip1;
+  switch (optSubProblemForm) {
+
+  // eval_ratios per qoi,approx with no model re-sequencing
+  case ANALYTIC_SOLUTION:
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+      R_sq = 0.;  r_i = avg_eval_ratios[0];
+      for (i=0, ip1=1; ip1<numApprox; ++i, ++ip1) {
+	r_ip1 = avg_eval_ratios[ip1];
+	R_sq += (r_i - r_ip1) / (r_i * r_ip1) * rho2_LH(qoi, i);
+	r_i = r_ip1;
+      }
+      R_sq += (r_i - 1.) / r_i * rho2_LH(qoi, numApprox-1);
+      estvar_ratios[qoi] = (1. - R_sq);
+    }
+    break;
+
+  // eval_ratios & approx_sequence based on avg_rho2_LH: remain consistent here
+  case REORDERED_ANALYTIC_SOLUTION: {
+    RealVector avg_rho2_LH;  average(rho2_LH, 0, avg_rho2_LH); // avg over QoI
+    bool ordered = approx_sequence.empty();
+    approx = (ordered) ? 0 : approx_sequence[0];
+    r_i = avg_eval_ratios[approx];  R_sq = 0.;
+    for (i=0, ip1=1; ip1<numApprox; ++i, ++ip1) {
+      approx_ip1 = (ordered) ? ip1 : approx_sequence[ip1];
+      r_ip1 = avg_eval_ratios[approx_ip1];
+      // Note: monotonicity in reordered r_i is enforced in mfmc_eval_ratios()
+      // and in linear constraints for ensemble_numerical_solution()
+      R_sq += (r_i - r_ip1) / (r_i * r_ip1) * avg_rho2_LH[approx];
+      r_i = r_ip1;  approx = approx_ip1;
+    }
+    R_sq += (r_i - 1.) / r_i * avg_rho2_LH[approx];
+    estvar_ratios = (1. - R_sq); // assign scalar to vector components
+    break;
+  }
+
+  // Call stack for MFMC numerical solution:
+  // > NonDNonHierarchSampling::log_average_estvar()
+  // > NonDNonHierarchSampling::average_estimator_variance()
+  // > NonDMultifidelitySampling::estimator_variance_ratios() [virtual]
+  // > This function (vector of avg_eval_ratios from opt design variables)
+  // Note: ANALYTIC_SOLUTION above corresponds to ordered case below
+  default: {
+    bool ordered = approx_sequence.empty();
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+      approx = (ordered) ? 0 : approx_sequence[0];
+      R_sq = 0.;  r_i = avg_eval_ratios[approx];
+      for (i=0, ip1=1; ip1<numApprox; ++i, ++ip1) {
+	approx_ip1 = (ordered) ? ip1 : approx_sequence[ip1];
+	r_ip1 = avg_eval_ratios[approx_ip1];
+	R_sq += (r_i - r_ip1) / (r_i * r_ip1) * rho2_LH(qoi, approx);
+	r_i = r_ip1;  approx = approx_ip1;
+      }
+      R_sq += (r_i - 1.) / r_i * rho2_LH(qoi, approx);
+      estvar_ratios[qoi] = (1. - R_sq);
+    }
+    break;
+  }
+  }
+}
+
+
+void NonDNonHierarchSampling::
 cvmc_ensemble_solutions(const RealMatrix& rho2_LH, const RealVector& cost,
 			RealVector& avg_eval_ratios)
 {
@@ -563,27 +635,28 @@ cvmc_ensemble_solutions(const RealMatrix& rho2_LH, const RealVector& cost,
 
 void NonDNonHierarchSampling::
 scale_to_target(Real avg_N_H, const RealVector& cost,
-		RealVector& avg_eval_ratios, Real& avg_hf_target)
+		RealVector& avg_eval_ratios, Real& avg_hf_target,
+		Real budget, Real offline_N_lwr)
 {
-  // scale to enforce budget constraint.  Since the profile does not emerge
-  // from pilot in ACV, don't select an infeasible initial guess:
+  // scale to enforce budget constraint.  Since the profile does not emerge from
+  // pilot in ACV and numerical MFMC, don't select an infeasible initial guess:
   // > if N* < N_pilot, scale back r* --> initial = scaled_r*,N_pilot
   // > if N* > N_pilot, use initial = r*,N*
-  avg_hf_target = allocate_budget(avg_eval_ratios, cost); // r* --> N*
+  avg_hf_target = allocate_budget(avg_eval_ratios, cost, budget); // r* --> N*
   if (pilotMgmtMode == OFFLINE_PILOT) {
-    Real offline_N_lwr = 2.;
-    if (avg_N_H < offline_N_lwr) avg_N_H = offline_N_lwr;
+    if (avg_N_H < offline_N_lwr)
+      avg_N_H = offline_N_lwr;
   }
   if (avg_N_H > avg_hf_target) {// replace N* with N_pilot, rescale r* to budget
     avg_hf_target = avg_N_H;
-    scale_to_budget_with_pilot(avg_eval_ratios, cost, avg_hf_target);
+    scale_to_budget_with_pilot(avg_eval_ratios, cost, avg_N_H, budget);
   }
 }
 
 
 void NonDNonHierarchSampling::
 scale_to_budget_with_pilot(RealVector& avg_eval_ratios, const RealVector& cost,
-			   Real avg_N_H)
+			   Real avg_N_H, Real budget)
 {
   // retain the shape of an r* profile, but scale to budget constrained by
   // incurred pilot cost
@@ -599,8 +672,8 @@ scale_to_budget_with_pilot(RealVector& avg_eval_ratios, const RealVector& cost,
   // Apply factor: r_scaled = factor r^* which applies to LF (HF r remains 1)
   // > N_pilot (r_scaled^T w + 1) = budget, where w_i = cost_i / cost_H
   // > factor r*^T w = budget / N_pilot - 1
-  Real budget = (Real)maxFunctionEvals, cost_H = cost[numApprox],
-       factor = (budget / avg_N_H - 1.) / approx_inner_prod * cost_H;
+  Real cost_H = cost[numApprox],
+    factor = (budget / avg_N_H - 1.) / approx_inner_prod * cost_H;
   //avg_eval_ratios.scale(factor); // can result in infeasible r_i < 1
 
   for (int i=numApprox-1; i>=0; --i) { // repair r_i < 1 first if possible

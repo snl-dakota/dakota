@@ -713,6 +713,9 @@ compute_acv_control(RealMatrix& sum_L_base_m, Real sum_H_mq,
   else { // compute variances/covariances for higher-order moment estimators
     // compute cov_LL, cov_LH, var_H across numApprox for a particular QoI
     // > cov_LH is sized for all qoi but only 1 row is used
+    // > we always use the online covariances and sample accumulations for
+    //   self-consistency in data sets, even when more accurate offline
+    //   covariances may be available
     RealSymMatrix cov_LL; RealMatrix cov_LH;
     compute_acv_control_covariances(sum_L_base_m, sum_H_mq, sum_LL_mq, sum_LH_m,
 				    N_shared_q, qoi, cov_LL, cov_LH);

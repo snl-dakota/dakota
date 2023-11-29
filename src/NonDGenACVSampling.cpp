@@ -946,11 +946,11 @@ analytic_initialization_from_mfmc(const UShortArray& approx_set,
 	 << avg_eval_ratios << std::endl;
 
   Real avg_hf_target;
-  if (maxFunctionEvals == SZ_MAX)
+  if (maxFunctionEvals == SZ_MAX)// HF target from GenACV estvar using MFMC soln
     avg_hf_target = update_hf_target(avg_eval_ratios, varH, estVarIter0);
-  else
+  else // allocate_budget(), then manage lower bounds and pilot over-estimation
     scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, avg_hf_target,
-		    approx_set, orderedRootList);
+		    approx_set, orderedRootList, (Real)maxFunctionEvals);
   soln.anchored_solution_ratios(avg_eval_ratios, avg_hf_target);
 }
 
@@ -976,8 +976,9 @@ analytic_initialization_from_ensemble_cvmc(const UShortArray& approx_set,
     avg_hf_target = update_hf_target(avg_eval_ratios, varH, estVarIter0);
   }
   else { // scale according to cost
+    // incorporates lin ineq enforcement:
     scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, avg_hf_target,
-		    approx_set, root_list); // incorporates lin ineq enforcement
+		    approx_set, root_list, (Real)maxFunctionEvals);
     //RealVector cd_vars;
     //r_and_N_to_design_vars(avg_eval_ratios, avg_hf_target, cd_vars);
     //soln.average_estimator_variance(average_estimator_variance(cd_vars));
@@ -1322,17 +1323,18 @@ enforce_linear_ineq_constraints(RealVector& avg_eval_ratios,
 void NonDGenACVSampling::
 scale_to_target(Real avg_N_H, const RealVector& cost,
 		RealVector& avg_eval_ratios, Real& avg_hf_target,
-		const UShortArray& approx_set, const UShortList& root_list)
+		const UShortArray& approx_set, const UShortList& root_list,
+		Real budget, Real offline_N_lwr)
 {
   // scale to enforce budget constraint.  Since the profile does not emerge
   // from pilot in ACV, don't select an infeasible initial guess:
   // > if N* < N_pilot, scale back r* --> initial = scaled_r*,N_pilot
   // > if N* > N_pilot, use initial = r*,N*
-  avg_hf_target = allocate_budget(approx_set, avg_eval_ratios, cost);//r* --> N*
+  avg_hf_target = allocate_budget(approx_set, avg_eval_ratios, cost, budget);
 
   if (pilotMgmtMode == OFFLINE_PILOT) {
-    Real offline_N_lwr = 2.;
-    if (avg_N_H < offline_N_lwr) avg_N_H = offline_N_lwr;
+    if (avg_N_H < offline_N_lwr)
+      avg_N_H = offline_N_lwr;
   }
   if (avg_N_H > avg_hf_target) {// replace N* with N_pilot, rescale r* to budget
     avg_hf_target = avg_N_H;
@@ -1347,8 +1349,8 @@ scale_to_target(Real avg_N_H, const RealVector& cost,
     // Apply factor: r_scaled = factor r^* which applies to LF (HF r remains 1)
     // > N_pilot (r_scaled^T w + 1) = budget, where w_i = cost_i / cost_H
     // > factor r*^T w = budget / N_pilot - 1
-    Real budget = (Real)maxFunctionEvals, cost_H = cost[numApprox],
-         factor = (budget / avg_N_H - 1.) / approx_inner_prod * cost_H;
+    Real cost_H = cost[numApprox],
+      factor = (budget / avg_N_H - 1.) / approx_inner_prod * cost_H;
 
     // Enforce DAG dependencies (ACV: all point to numApprox)
     // > N for each source model > N for model it targets

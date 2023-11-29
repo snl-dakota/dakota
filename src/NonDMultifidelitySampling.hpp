@@ -98,27 +98,11 @@ protected:
 
   void update_model_group_costs();
 
-  Real update_hf_target(const RealVector& cost,
-			const RealVector& avg_eval_ratios);
-  Real update_hf_target(const RealMatrix& rho2_LH,
-			const SizetArray& approx_sequence,
-			const RealVector& avg_eval_ratios,
-			const RealVector& var_H, const RealVector& estvar_iter0,
-			RealVector& estvar_ratios);
-
   void mfmc_estimator_variance(const RealMatrix& rho2_LH,
 			       const RealVector& var_H, const SizetArray& N_H,
 			       const SizetArray& approx_sequence,
 			       RealVector& estvar_ratios,
 			       MFSolutionData& soln);
-  //void mfmc_estvar_ratios(const RealMatrix& rho2_LH,
-  // 			  const SizetArray& approx_sequence,
-  // 			  const RealMatrix& eval_ratios,
-  // 			  RealVector& estvar_ratios);
-  void mfmc_estvar_ratios(const RealMatrix& rho2_LH,
-			  const SizetArray& approx_sequence,
-			  const RealVector& avg_eval_ratios,
-			  RealVector& estvar_ratios);
 
 private:
 

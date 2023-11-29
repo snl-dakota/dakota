@@ -327,80 +327,6 @@ augmented_linear_ineq_violations(const RealVector& cd_vars,
 }
 
 
-Real NonDMultifidelitySampling::
-update_hf_target(const RealVector& cost, const RealVector& avg_eval_ratios)
-{
-  // Full budget allocation: pilot sample + addtnl N_H; then optimal N_L 
-  // > could consider under-relaxing the budget allocation to enable
-  //   additional N_H increments + associated updates to shared samples
-  //   for improving rho2LH et al.
-
-  // Scale this profile based on specified budget (maxFunctionEvals) if needed
-  // using N_H = maxFunctionEvals / cost^T eval_ratios
-  // > Pilot case iter = 0: can only scale back after shared_increment().
-  //   Optimal profile can be hidden by one_sided_delta() with pilot --> optimal
-  //   shape emerges from initialization cost as for ML cases controlled by
-  //   convTol (allow budget overshoot due to overlap of optimal with pilot,
-  //   rather than strictly allocating remaining budget)
-  Real  cost_H = cost[numApprox], budget = (Real)maxFunctionEvals,
-    inner_prod = cost_H; // raw cost (un-normalized)
-  for (size_t approx=0; approx<numApprox; ++approx)
-    inner_prod += cost[approx] * avg_eval_ratios[approx];
-  Real avg_hf_target = budget / inner_prod * cost_H; // normalized to equivHF
-  Cout << "Scaling profile for budget = " << maxFunctionEvals
-       << ": average HF target = " << avg_hf_target << std::endl;
-
-  //soln.anchored_solution_ratios(avg_eval_ratios, avg_hf_target); // defer
-  return avg_hf_target;
-
-  // For RealMatrix eval_ratios and RealVector hf_targets:
-  //for (qoi=0; qoi<numFunctions; ++qoi) {
-  //  inner_prod = cost_H; // raw cost (un-normalized)
-  //  for (approx=0; approx<numApprox; ++approx)
-  //    inner_prod += cost[approx] * eval_ratios(qoi, approx);
-  //  hf_targets[qoi] = budget / inner_prod * cost_H; // normalized to equivHF
-  //}
-
-  // For reference, compute est_var if pilot over-sample is ignored
-  //mfmc_estvar_ratios(rho2_LH, approx_sequence, eval_ratios, estVarRatios);
-  //RealVector est_var(numFunctions);
-  //Real rnd_hf_target = std::floor(average(hf_targets) + .5);
-  //for (size_t qoi=0; qoi<numFunctions; ++qoi)
-  //  est_var[qoi] = estVarRatios[qoi] * varH[qoi] / rnd_hf_target;
-  //Cout << "Avg est var neglecting pilot = " << average(est_var) << '\n';
-}
-
-
-Real NonDMultifidelitySampling::
-update_hf_target(const RealMatrix& rho2_LH, const SizetArray& approx_sequence,
-		 const RealVector& avg_eval_ratios, const RealVector& var_H,
-		 const RealVector& estvar_iter0, RealVector& estvar_ratios)
-{
-  // Note: there is a circular dependency between estvar_ratios and hf_targets
-  // > 1st compute r*,rho2 --> EstVar*, then compute EstVar*,tol --> m1* target
-  // > if pilot > m1*, then done (numSamples = 0) other than reporting _actual_
-  //   EstVar including additional pilot (actual EstVar should be < EstVar*,
-  //   although estVarRatios may be > estVarRatio* due to decrease in MC EstVar)
-  // > if m1* > pilot, then increment numSamples and continue
-  mfmc_estvar_ratios(rho2_LH, approx_sequence, avg_eval_ratios, estvar_ratios);
-  // This computes estvar_ratios* from r*,rho2.  Next, m1* from estvar_ratios*;
-  // then these estvar_ratios get replaced for actual profile
-
-  // EstVar target = convTol * estvar_iter0 = estvar_ratio * var_H / N_H
-  // --> N_H = estvar_ratio * var_H / convTol / estvar_iter0
-  // Note: don't simplify further since estvar_iter0 is fixed based on pilot
-  Real avg_hf_target = 0.;
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    avg_hf_target += estvar_ratios[qoi] * var_H[qoi] / estvar_iter0[qoi];
-  avg_hf_target /= convergenceTol * numFunctions;
-  Cout << "Scaling profile for convergenceTol = " << convergenceTol
-       << ": average HF target = " << avg_hf_target << std::endl;
-
-  //soln.anchored_solution_ratios(avg_eval_ratios, avg_hf_target); // defer
-  return avg_hf_target;
-}
-
-
 /** LF only */
 void NonDMultifidelitySampling::
 update_projected_lf_samples(const MFSolutionData& soln,
@@ -724,78 +650,6 @@ mfmc_estvar_ratios(const RealMatrix& rho2_LH, const SizetArray& approx_sequence,
   }
 }
 */
-
-
-void NonDMultifidelitySampling::
-mfmc_estvar_ratios(const RealMatrix& rho2_LH, const SizetArray& approx_sequence,
-		   const RealVector& avg_eval_ratios, RealVector& estvar_ratios)
-{
-  if (estvar_ratios.empty()) estvar_ratios.sizeUninitialized(numFunctions);
-
-  // Appendix B of JCP paper on ACV:
-  // > R^2 = \Sum_i [ (r_i -r_{i-1})/(r_i r_{i-1}) rho2_LH_i ]
-  // > Reorder differences since eval ratios/correlations ordered from LF to HF
-  //   (opposite of JCP); after this change, reproduces Peherstorfer eq. above.
-  Real R_sq, r_i, r_ip1;  size_t qoi, approx, approx_ip1, i, ip1;
-  switch (optSubProblemForm) {
-
-  // eval_ratios per qoi,approx with no model re-sequencing
-  case ANALYTIC_SOLUTION:
-    for (qoi=0; qoi<numFunctions; ++qoi) {
-      R_sq = 0.;  r_i = avg_eval_ratios[0];
-      for (i=0, ip1=1; ip1<numApprox; ++i, ++ip1) {
-	r_ip1 = avg_eval_ratios[ip1];
-	R_sq += (r_i - r_ip1) / (r_i * r_ip1) * rho2_LH(qoi, i);
-	r_i = r_ip1;
-      }
-      R_sq += (r_i - 1.) / r_i * rho2_LH(qoi, numApprox-1);
-      estvar_ratios[qoi] = (1. - R_sq);
-    }
-    break;
-
-  // eval_ratios & approx_sequence based on avg_rho2_LH: remain consistent here
-  case REORDERED_ANALYTIC_SOLUTION: {
-    RealVector avg_rho2_LH;  average(rho2_LH, 0, avg_rho2_LH); // avg over QoI
-    bool ordered = approx_sequence.empty();
-    approx = (ordered) ? 0 : approx_sequence[0];
-    r_i = avg_eval_ratios[approx];  R_sq = 0.;
-    for (i=0, ip1=1; ip1<numApprox; ++i, ++ip1) {
-      approx_ip1 = (ordered) ? ip1 : approx_sequence[ip1];
-      r_ip1 = avg_eval_ratios[approx_ip1];
-      // Note: monotonicity in reordered r_i is enforced in mfmc_eval_ratios()
-      // and in linear constraints for ensemble_numerical_solution()
-      R_sq += (r_i - r_ip1) / (r_i * r_ip1) * avg_rho2_LH[approx];
-      r_i = r_ip1;  approx = approx_ip1;
-    }
-    R_sq += (r_i - 1.) / r_i * avg_rho2_LH[approx];
-    estvar_ratios = (1. - R_sq); // assign scalar to vector components
-    break;
-  }
-
-  // Call stack for MFMC numerical solution:
-  // > NonDNonHierarchSampling::log_average_estvar()
-  // > NonDNonHierarchSampling::average_estimator_variance()
-  // > NonDMultifidelitySampling::estimator_variance_ratios() [virtual]
-  // > This function (vector of avg_eval_ratios from opt design variables)
-  // Note: ANALYTIC_SOLUTION above corresponds to ordered case below
-  default: {
-    bool ordered = approx_sequence.empty();
-    for (qoi=0; qoi<numFunctions; ++qoi) {
-      approx = (ordered) ? 0 : approx_sequence[0];
-      R_sq = 0.;  r_i = avg_eval_ratios[approx];
-      for (i=0, ip1=1; ip1<numApprox; ++i, ++ip1) {
-	approx_ip1 = (ordered) ? ip1 : approx_sequence[ip1];
-	r_ip1 = avg_eval_ratios[approx_ip1];
-	R_sq += (r_i - r_ip1) / (r_i * r_ip1) * rho2_LH(qoi, approx);
-	r_i = r_ip1;  approx = approx_ip1;
-      }
-      R_sq += (r_i - 1.) / r_i * rho2_LH(qoi, approx);
-      estvar_ratios[qoi] = (1. - R_sq);
-    }
-    break;
-  }
-  }
-}
 
 
 /** Multi-moment map-based, coarse-grained counter version used by
@@ -1328,14 +1182,19 @@ mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
     break;
   }
 
-  // Numerical solution has updated hf_target from the computed N*.
-  // Analytic solutions scale the profile to target budget || accuracy.
+  // > Numerical solution has updated hf_target from the computed N*.
+  // > Analytic solutions scale the profile to target budget || accuracy.
+  //   For analytic cases, we do not alter r* using scale_to_target(), rather
+  //   letting the analytic profile emerge from the pilot.
   switch (optSubProblemForm) {
   case ANALYTIC_SOLUTION:  case REORDERED_ANALYTIC_SOLUTION:
-    avg_hf_target = (maxFunctionEvals == SZ_MAX) ?
-      update_hf_target(rho2_LH, approx_sequence, avg_eval_ratios, varH,
-		       estVarIter0, estVarRatios) :
-      update_hf_target(sequenceCost, avg_eval_ratios);
+    if (maxFunctionEvals == SZ_MAX) {
+      mfmc_estvar_ratios(rho2_LH, approx_sequence,avg_eval_ratios,estVarRatios);
+      avg_hf_target = update_hf_target(estVarRatios, varH, estVarIter0);
+    }
+    else
+      avg_hf_target = allocate_budget(avg_eval_ratios, sequenceCost,
+				      (Real)maxFunctionEvals);
     soln.anchored_solution_ratios(avg_eval_ratios, avg_hf_target);
     break;
   }
@@ -1381,25 +1240,15 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
 	   << avg_eval_ratios << std::endl;
 
     Real avg_hf_target;
-    if (budget_constrained) { // from maxFunctionEvals
-      avg_hf_target = update_hf_target(cost, avg_eval_ratios);
-      // scale to enforce budget constraint.  Since the profile does not emerge
-      // (make numerical MFMC more resilient to pilot over-estimation like ACV),
-      // don't select an infeasible initial guess:
-      // > if N* < N_pilot, scale back r* for use initial = scaled_r*,N_pilot
-      // > if N* > N_pilot, use initial = r*,N*
-      if (pilotMgmtMode == OFFLINE_PILOT) {
-	Real offline_N_lwr = 2.;
-	if (avg_N_H < offline_N_lwr) avg_N_H = offline_N_lwr;
-      }
-      if (avg_N_H > avg_hf_target) { // rescale r* for over-estimated pilot
-	scale_to_budget_with_pilot(avg_eval_ratios, cost, avg_N_H);
-	avg_hf_target = avg_N_H;
-      }
+    if (budget_constrained) // for numerical, re-scale for over-estimated pilot
+      scale_to_target(avg_N_H, cost, avg_eval_ratios, avg_hf_target,
+		      (Real)maxFunctionEvals);
+    else { // accuracy-constrained
+      // Computes estvar_ratios* from r*,rho2.  Next, m1* from estvar_ratios*;
+      // then these estvar_ratios get replaced for actual profile
+      mfmc_estvar_ratios(rho2_LH, approx_sequence,avg_eval_ratios,estVarRatios);
+      avg_hf_target = update_hf_target(estVarRatios, varH, estVarIter0);
     }
-    else // accuracy-constrained
-      update_hf_target(rho2_LH, approx_sequence, avg_eval_ratios,
-		       varH, estVarIter0, estVarRatios);
     // push updates to MFSolutionData
     soln.anchored_solution_ratios(avg_eval_ratios, avg_hf_target);
   }
