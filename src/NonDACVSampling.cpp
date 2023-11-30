@@ -562,7 +562,7 @@ analytic_initialization_from_mfmc(const RealMatrix& rho2_LH, Real avg_N_H,
 
   Real avg_hf_target;
   if (maxFunctionEvals == SZ_MAX) // HF target from ACV estvar using MFMC soln
-    avg_hf_target = update_hf_target(avg_eval_ratios, varH, estVarIter0);
+    avg_hf_target = update_hf_target(avg_eval_ratios,avg_N_H,varH,estVarIter0);
   else // allocate_budget(), then manage lower bounds and pilot over-estimation
     scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, avg_hf_target,
 		    (Real)maxFunctionEvals);
@@ -586,7 +586,7 @@ analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
 
   Real avg_hf_target;
   if (maxFunctionEvals == SZ_MAX) // HF target from ACV estvar using CVMC solns
-    avg_hf_target = update_hf_target(avg_eval_ratios, varH, estVarIter0);
+    avg_hf_target = update_hf_target(avg_eval_ratios, avg_N_H,varH,estVarIter0);
   else // allocate_budget(), then manage lower bounds and pilot over-estimation
     scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, avg_hf_target,
 		    (Real)maxFunctionEvals);
@@ -676,22 +676,17 @@ augmented_linear_ineq_violations(const RealVector& cd_vars,
 
 
 Real NonDACVSampling::
-update_hf_target(const RealVector& avg_eval_ratios, const RealVector& var_H,
-		 const RealVector& estvar0)
+update_hf_target(const RealVector& avg_eval_ratios, Real avg_N_H,
+		 const RealVector& var_H, const RealVector& estvar0)
 {
   // Note: there is a circular dependency between estvar_ratios and hf_targets
 
-  // estimator variance uses actual (not alloc) so use same for defining G,g
-  // *** TO DO: but avg_hf_target defines delta relative to actual||alloc ***
-  size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
-  Real N_H = //(backfillFailures) ?
-    average(NLevActual[hf_form_index][hf_lev_index]);// :
-    //NLevAlloc[hf_form_index][hf_lev_index];
   RealVector cd_vars, estvar_ratios;
-  r_and_N_to_design_vars(avg_eval_ratios, N_H, cd_vars);
+  r_and_N_to_design_vars(avg_eval_ratios, avg_N_H, cd_vars);
   estimator_variance_ratios(cd_vars, estvar_ratios); // virtual for ACV,GenACV
 
-  return update_hf_target(estvar_ratios, var_H, estvar0); // *** TO DO: can't overload because of overlapping API --> rename one ***
+  return NonDNonHierarchSampling::
+    update_hf_target(estvar_ratios, var_H, estvar0);
 }
 
 

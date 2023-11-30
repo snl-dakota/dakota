@@ -119,6 +119,8 @@ protected:
 		       const SizetArray& N_G_alloc);
 
   void print_group_solution(std::ostream& s, const MFSolutionData& soln);
+  void print_group_solution_variables(std::ostream& s,
+				      const MFSolutionData& soln);
 
 private:
 
@@ -164,6 +166,14 @@ private:
 					 MFSolutionData& soln);
   void analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
 						  MFSolutionData& soln);
+
+  void analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
+					     const BitArray& active_groups,
+					     MFSolutionData& soln);
+  void analytic_ratios_to_solution_variables(const RealVector& avg_eval_ratios,
+					     Real avg_hf_target,
+					     const BitArray& active_groups,
+					     RealVector& soln_vars);
 
   void add_sub_matrix(Real coeff, const RealSymMatrix& sub_mat,
 		      const UShortArray& subset, RealSymMatrix& mat);

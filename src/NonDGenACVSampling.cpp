@@ -947,7 +947,7 @@ analytic_initialization_from_mfmc(const UShortArray& approx_set,
 
   Real avg_hf_target;
   if (maxFunctionEvals == SZ_MAX)// HF target from GenACV estvar using MFMC soln
-    avg_hf_target = update_hf_target(avg_eval_ratios, varH, estVarIter0);
+    avg_hf_target = update_hf_target(avg_eval_ratios,avg_N_H,varH,estVarIter0);
   else // allocate_budget(), then manage lower bounds and pilot over-estimation
     scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, avg_hf_target,
 		    approx_set, orderedRootList, (Real)maxFunctionEvals);
@@ -973,7 +973,7 @@ analytic_initialization_from_ensemble_cvmc(const UShortArray& approx_set,
   if (maxFunctionEvals == SZ_MAX) {
     // scale according to accuracy (convergenceTol * estVarIter0)
     enforce_linear_ineq_constraints(avg_eval_ratios, approx_set, root_list);
-    avg_hf_target = update_hf_target(avg_eval_ratios, varH, estVarIter0);
+    avg_hf_target = update_hf_target(avg_eval_ratios,avg_N_H,varH,estVarIter0);
   }
   else { // scale according to cost
     // incorporates lin ineq enforcement:
@@ -1491,11 +1491,13 @@ recover_results(const RealVector& cv_star, const RealVector& fn_star,
       // EstVar target = convTol * estvar_iter0 = estvar_ratio * varH / N_target
       //               = curr_estvar * N_curr / N_target
       //  --> N_target = curr_estvar * N_curr / (convTol * estvar_iter0)
-      avg_hf_target = update_hf_target(avg_eval_ratios, varH, estVarIter0);
-      //size_t hf_form, hf_lev;  hf_indices(hf_form, hf_lev);
-      //avg_hf_target = (backfillFailures) ?
-      //  update_hf_target(avg_estvar,NLevActual[hf_form][hf_lev],estVarIter0) :
-      //  update_hf_target(avg_estvar, NLevAlloc[hf_form][hf_lev],estVarIter0);
+      size_t hf_form_index, hf_lev_index;
+      hf_indices(hf_form_index, hf_lev_index);
+      SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
+      size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
+      Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
+      avg_hf_target
+	= update_hf_target(avg_eval_ratios, avg_N_H, varH, estVarIter0);
       Cout << "Scaling profile for convergenceTol = " << convergenceTol
 	   << ": average HF target = " << avg_hf_target << std::endl;
     }

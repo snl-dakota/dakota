@@ -521,7 +521,7 @@ mfmc_reordered_analytic_solution(const UShortArray& approx_set,
     prev_rho2 = rho2;
   }
 
-  // Reverse loop order and enforce monotonicity in reordered r_i
+  // If requested, reverse loop and enforce monotonicity in reordered r_i:
   // > max() is applied bottom-up from the base of the pyramid (samples
   //   performed bottom up, so precedence also applied in this direction),
   //   where assigning r_i = prev_ri effectively drops the CV for approx i

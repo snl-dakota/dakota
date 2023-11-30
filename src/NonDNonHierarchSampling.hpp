@@ -63,6 +63,7 @@ public:
 
   const RealVector& solution_variables() const;
   void solution_variables(const RealVector& soln_vars);
+  void solution_variables(const SizetArray& samples);
 
   std::pair<RealVector, Real> anchored_solution_ratios() const;
   void anchored_solution_ratios(const RealVector& soln_ratios, Real soln_ref);
@@ -160,6 +161,15 @@ inline const RealVector& MFSolutionData::solution_variables() const
 
 inline void MFSolutionData::solution_variables(const RealVector& soln_vars)
 { solutionVars = soln_vars; }
+
+
+inline void MFSolutionData::solution_variables(const SizetArray& samples)
+{
+  size_t i, len = samples.size();
+  if (solutionVars.length() != len) solutionVars.sizeUninitialized(len);
+  for (i=0; i<len; ++i)
+    solutionVars[i] = (Real)samples[i];
+}
 
 
 inline std::pair<RealVector, Real> MFSolutionData::

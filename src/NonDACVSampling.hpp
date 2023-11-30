@@ -134,7 +134,7 @@ protected:
 				//SizetArray& delta_N_L_actual,
 				Real& delta_equiv_hf);
 
-  Real update_hf_target(const RealVector& avg_eval_ratios,
+  Real update_hf_target(const RealVector& avg_eval_ratios, Real avg_N_H,
 			const RealVector& var_H, const RealVector& estvar0);
 
   void print_model_solution(std::ostream& s, const MFSolutionData& soln,
