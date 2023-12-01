@@ -617,13 +617,16 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
   }
   else {
     Real remaining = (Real)maxFunctionEvals, cost_H = sequenceCost[numApprox];
-    for (g=0; g<numGroups; ++g)
-      if (!active_groups[g])
-	remaining -= pilotSamples[g] * modelGroupCost[g] / cost_H;
-    //avg_hf_target = allocate_budget(avg_eval_ratios, sequenceCost, remaining);
-    // scale_to_target() employs allocate_budget() but rescales for lower bnds
-    scale_to_target(N_shared, sequenceCost, avg_eval_ratios, avg_hf_target,
-		    remaining, 0.); // no lower bound for offline
+    if (pilotMgmtMode != OFFLINE_PILOT)
+      for (g=0; g<numGroups; ++g)
+	if (!active_groups[g])
+	  remaining -= pilotSamples[g] * modelGroupCost[g] / cost_H;
+    if (remaining > 0.)
+      // scale_to_target() employs allocate_budget() and rescales for lower bnds
+      scale_to_target(N_shared, sequenceCost, avg_eval_ratios, avg_hf_target,
+		      remaining, 0.); // no lower bound for offline
+    else // budget exhausted
+      { avg_hf_target = N_shared;  avg_eval_ratios = 1.; }
   }
 
   RealVector soln_vars;
@@ -654,15 +657,14 @@ analytic_ratios_to_solution_variables(const RealVector& avg_eval_ratios,
 
   if (soln_vars.length() != numGroups) soln_vars.sizeUninitialized(numGroups);
   size_t g, cntr = 0;
-  for (g=0; g<numGroups; ++g) {
+  for (g=0; g<numGroups; ++g)
     if (active_groups[g]) {
       soln_vars[g] = avg_hf_target;
       if (cntr < numApprox)
-	soln_vars[g] *= avg_eval_ratios[cntr++];
+	soln_vars[g] *= avg_eval_ratios[cntr++];//MFMC,CVMC use same group order
     }
     else
       soln_vars[g] = pilotSamples[g];
-  }
 }
 
 
@@ -971,8 +973,8 @@ accumulate_blue_sums(RealMatrixArray& sum_G, RealSymMatrix2DArray& sum_GG,
       const Response&   resp    = r_it->second;
       const RealVector& fn_vals = resp.function_values();
       const ShortArray& asv     = resp.active_set_request_vector();
-      Cout << "Group id " << g << " eval id " << r_it->first
-	   << " response:\n" << resp << std::endl;
+      //Cout << "Group id " << g << " eval id " << r_it->first
+      //     << " response:\n" << resp << std::endl;
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
 
@@ -1011,7 +1013,7 @@ accumulate_blue_sums(RealMatrixArray& sum_G, RealSymMatrix2DArray& sum_GG,
       }
     }
 
-    //if (outputLevel >= DEBUG_OUTPUT)
+    if (outputLevel >= DEBUG_OUTPUT)
       Cout << "In accumulate_blue_sums(), sum_G[" << g << "]:\n" << sum_G_g
 	   << "sum_GG[" << g << "]:\n" << sum_GG_g
 	   << "num_G["  << g << "]:\n" << num_G_g << std::endl;
@@ -1041,7 +1043,7 @@ compute_GG_covariance(const RealMatrixArray& sum_G,
       RealSymMatrix&       cov_GG_gq = cov_GG_g[qoi];
       N_sh_gq                        =  num_G_g[qoi];
       if (N_sh_gq > 1) {
-	if (cov_GG_gq.empty()) cov_GG_gq.shapeUninitialized(num_models);
+	if (cov_GG_gq.empty()) cov_GG_gq.shape(num_models);
 	for (m=0; m<num_models; ++m) {
 	  sum_G_gqm = sum_G_g(qoi,m);
 	  for (m2=0; m2<=m; ++m2)

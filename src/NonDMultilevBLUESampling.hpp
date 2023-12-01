@@ -383,7 +383,7 @@ initialize_rsma(RealSymMatrixArray& rsma, bool init)
 	rsma[qoi].shape(all_models); // init to 0
     else
       for (qoi=0; qoi<numFunctions; ++qoi)
-	rsma[qoi].shapeUninitialized(all_models); // init to 0
+	rsma[qoi].shapeUninitialized(all_models);
   }
   else if (init)
     for (size_t qoi=0; qoi<numFunctions; ++qoi)
@@ -402,7 +402,7 @@ initialize_rva(RealVectorArray& rva, bool init)
 	rva[qoi].size(all_models); // init to 0
     else
       for (qoi=0; qoi<numFunctions; ++qoi)
-	rva[qoi].sizeUninitialized(all_models); // init to 0
+	rva[qoi].sizeUninitialized(all_models);
   }
   else if (init)
     for (size_t qoi=0; qoi<numFunctions; ++qoi)
