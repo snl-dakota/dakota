@@ -363,8 +363,8 @@ synchronize_batches(Model& model, bool log_best_flag)
       //}
       // Range copy: batches are well ordered in eval_id's
       first_id = rv_map.begin()->first; last_id = (--rv_map.end())->first;
-      batch_resp_map.insert(full_resp_map.find(first_id),
-			    full_resp_map.find(last_id));
+      batch_resp_map.insert(full_resp_map.find(first_id), // start (include)
+			  ++full_resp_map.find(last_id)); // stop  (omit)
       log_response_map(rv_map, batch_resp_map, log_best_flag);      
     }
   else {
@@ -374,8 +374,8 @@ synchronize_batches(Model& model, bool log_best_flag)
       IntVariablesMap&      vars_map = v_it->second;
       IntResponseMap& batch_resp_map = batchResponsesMap[batch_id];
       first_id = vars_map.begin()->first; last_id = (--vars_map.end())->first;
-      batch_resp_map.insert(full_resp_map.find(first_id),
-			    full_resp_map.find(last_id));
+      batch_resp_map.insert(full_resp_map.find(first_id), // start (include)
+			  ++full_resp_map.find(last_id)); // stop  (omit)
       log_response_map(vars_map, batch_resp_map, log_best_flag);      
     }
   }

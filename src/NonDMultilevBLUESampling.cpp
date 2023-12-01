@@ -616,10 +616,10 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
 				     estVarIter0);
   }
   else {
-    Real remaining = (Real)maxFunctionEvals;
+    Real remaining = (Real)maxFunctionEvals, cost_H = sequenceCost[numApprox];
     for (g=0; g<numGroups; ++g)
       if (!active_groups[g])
-	remaining -= pilotSamples[g] * modelGroupCost[g];
+	remaining -= pilotSamples[g] * modelGroupCost[g] / cost_H;
     //avg_hf_target = allocate_budget(avg_eval_ratios, sequenceCost, remaining);
     // scale_to_target() employs allocate_budget() but rescales for lower bnds
     scale_to_target(N_shared, sequenceCost, avg_eval_ratios, avg_hf_target,
@@ -631,10 +631,10 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
 					active_groups, soln_vars);
   soln.solution_variables(soln_vars);
 
-  //if (outputLevel >= DEBUG_OUTPUT) {
+  if (outputLevel >= DEBUG_OUTPUT) {
     Cout << "Analytic initialization for local solution in ML BLUE:\n";
     print_group_solution_variables(Cout, soln);
-  //}
+  }
 }
 
 
@@ -654,9 +654,15 @@ analytic_ratios_to_solution_variables(const RealVector& avg_eval_ratios,
 
   if (soln_vars.length() != numGroups) soln_vars.sizeUninitialized(numGroups);
   size_t g, cntr = 0;
-  for (g=0; g<numGroups; ++g)
-    soln_vars[g] = (active_groups[g]) ?
-      avg_eval_ratios[cntr++] * avg_hf_target : pilotSamples[g];
+  for (g=0; g<numGroups; ++g) {
+    if (active_groups[g]) {
+      soln_vars[g] = avg_hf_target;
+      if (cntr < numApprox)
+	soln_vars[g] *= avg_eval_ratios[cntr++];
+    }
+    else
+      soln_vars[g] = pilotSamples[g];
+  }
 }
 
 
@@ -965,6 +971,8 @@ accumulate_blue_sums(RealMatrixArray& sum_G, RealSymMatrix2DArray& sum_GG,
       const Response&   resp    = r_it->second;
       const RealVector& fn_vals = resp.function_values();
       const ShortArray& asv     = resp.active_set_request_vector();
+      Cout << "Group id " << g << " eval id " << r_it->first
+	   << " response:\n" << resp << std::endl;
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
 
@@ -1003,7 +1011,7 @@ accumulate_blue_sums(RealMatrixArray& sum_G, RealSymMatrix2DArray& sum_GG,
       }
     }
 
-    if (outputLevel >= DEBUG_OUTPUT)
+    //if (outputLevel >= DEBUG_OUTPUT)
       Cout << "In accumulate_blue_sums(), sum_G[" << g << "]:\n" << sum_G_g
 	   << "sum_GG[" << g << "]:\n" << sum_GG_g
 	   << "num_G["  << g << "]:\n" << num_G_g << std::endl;

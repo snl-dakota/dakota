@@ -435,7 +435,9 @@ compute_C_inverse(const RealSymMatrix2DArray& cov_GG,
 	int code = spd_solver.invert(); // in place
 	if (code) {
 	  Cerr << "Error: serial dense solver failure (LAPACK error code "
-	       << code << ") in ML BLUE::compute_C_inverse()." << std::endl;
+	       << code << ") in ML BLUE::compute_C_inverse()\n"
+	       << "       for group " << g << " QoI " << q << " with C:\n"
+	       << cov_GG_gq << std::endl;
 	  abort_handler(METHOD_ERROR);
 	}
       }
