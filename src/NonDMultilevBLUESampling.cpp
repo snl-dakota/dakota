@@ -380,10 +380,10 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   if (soln_vars.empty()) x0 = x_lb;
   else {
     x0 = soln_vars;
-    //if (pilotMgmtMode == OFFLINE_PILOT) // x0 could undershoot x_lb
-    //  for (g=0; g<numGroups; ++g)// bump x0 to satisfy x_lb if nec
-    //	  if (x0[g] < x_lb[g])
-    //	    x0[g] = x_lb[g];
+    if (pilotMgmtMode == OFFLINE_PILOT) // x0 could undershoot x_lb
+      for (g=0; g<numGroups; ++g)// bump x0 to satisfy x_lb if nec
+	if (x0[g] < x_lb[g])
+	  x0[g] = x_lb[g];
   }
 
   // Linear and nonlinear constraints:
@@ -594,7 +594,8 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
   // define HF target for avg_eval_ratios according to budget or accuracy
   Real avg_hf_target;
   size_t g, shared_index = numGroups - 1;// last group = all models
-  Real N_shared = (Real)pilotSamples[shared_index];
+  bool offline_mode = (pilotMgmtMode == OFFLINE_PILOT);
+  Real N_shared = (offline_mode) ? 0. : (Real)pilotSamples[shared_index];
   if (maxFunctionEvals == SZ_MAX) { // accuracy-constrained
     /*
     // Compute avg_hf_target only based on MFMC estvar, bypassing ML BLUE estvar
@@ -617,7 +618,7 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
   }
   else {
     Real remaining = (Real)maxFunctionEvals, cost_H = sequenceCost[numApprox];
-    if (pilotMgmtMode != OFFLINE_PILOT)
+    if (!offline_mode)
       for (g=0; g<numGroups; ++g)
 	if (!active_groups[g])
 	  remaining -= pilotSamples[g] * modelGroupCost[g] / cost_H;
@@ -656,7 +657,7 @@ analytic_ratios_to_solution_variables(const RealVector& avg_eval_ratios,
   //   MFMC/CVMC model groupings within modelGroups.
 
   if (soln_vars.length() != numGroups) soln_vars.sizeUninitialized(numGroups);
-  size_t g, cntr = 0;
+  size_t g, cntr = 0;  bool offline_mode = (pilotMgmtMode == OFFLINE_PILOT);
   for (g=0; g<numGroups; ++g)
     if (active_groups[g]) {
       soln_vars[g] = avg_hf_target;
@@ -664,7 +665,7 @@ analytic_ratios_to_solution_variables(const RealVector& avg_eval_ratios,
 	soln_vars[g] *= avg_eval_ratios[cntr++];//MFMC,CVMC use same group order
     }
     else
-      soln_vars[g] = pilotSamples[g];
+      soln_vars[g] = (offline_mode) ? 0. : pilotSamples[g];
 }
 
 
