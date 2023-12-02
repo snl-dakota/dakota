@@ -943,13 +943,12 @@ finite_solution_bounds(const RealVector& x0, RealVector& x_lb, RealVector& x_ub)
     // equivHFEvals represents the total incurred cost in shared sample sets
     Real remaining;
     switch (optSubProblemForm) {
-    case N_MODEL_LINEAR_OBJECTIVE: { // accuracy constrained
-      // infer upper bounds from budget reqd to obtain target accuracy via MC:
-      // varH / N = tol * avg_estvar0; for minimizer sequencing, a downstream
-      // refinement can omit this approximated bound
-      RealVector mc_targets(numFunctions, false);
-      for (size_t qoi=0; qoi<numFunctions; ++qoi)
-	mc_targets[qoi] = varH[qoi] / (convergenceTol * estVarIter0[qoi]);
+    case N_MODEL_LINEAR_OBJECTIVE: case N_GROUP_LINEAR_OBJECTIVE: {
+      // accuracy constrained: infer upper bounds from budget reqd to obtain
+      // target accuracy via MC: varH / N = tol * avg_estvar0; for minimizer
+      // sequencing, a downstream refinement can omit this approximated bound
+      RealVector mc_targets;
+      apply_mc_reference(mc_targets);
       remaining = average(mc_targets)    - equivHFEvals;  break;
     }
     default:
@@ -997,6 +996,17 @@ finite_solution_bounds(const RealVector& x0, RealVector& x_lb, RealVector& x_ub)
 
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Finite bounds (lb, ub):\n" << x_lb << x_ub << std::endl;
+}
+
+
+void NonDNonHierarchSampling::apply_mc_reference(RealVector& mc_targets)
+{
+  // base implementation for use when varH is available
+
+  if (mc_targets.length() != numFunctions)
+    mc_targets.sizeUninitialized(numFunctions);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    mc_targets[qoi] = varH[qoi] / (convergenceTol * estVarIter0[qoi]);
 }
 
 

@@ -64,6 +64,8 @@ protected:
     RealVector& nln_ineq_lb, RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
     RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs);
 
+  void apply_mc_reference(RealVector& mc_targets);
+
   void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 				       RealVector& lin_ineq_lb,
 				       RealVector& lin_ineq_ub);
@@ -676,6 +678,20 @@ blue_raw_moments(IntRealMatrixArrayMap& sum_G,
     for (size_t qoi=0; qoi<numFunctions; ++qoi)
       H_raw_mom(qoi, mom-1) = mu_hat[qoi][numApprox]; // last model
   }
+}
+
+
+inline void NonDMultilevBLUESampling::apply_mc_reference(RealVector& mc_targets)
+{
+  // derived implementation (varH is not used by ML BLUE)
+
+  if (mc_targets.length() != numFunctions)
+    mc_targets.sizeUninitialized(numFunctions);
+  UShortArray hf_only_group(1);  hf_only_group[0] = numApprox;
+  size_t hf_index = find_index(modelGroups, hf_only_group);
+  const RealSymMatrixArray& cov_GG_g = covGG[hf_index];
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    mc_targets[qoi] = cov_GG_g[qoi](0,0) / (convergenceTol * estVarIter0[qoi]);
 }
 
 
