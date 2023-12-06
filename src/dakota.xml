@@ -670,6 +670,14 @@
 	     </keyword>
 	     ' >
 
+    <!ENTITY mc_group_pilot_samples '
+      	     <keyword  id="pilot_samples" name="pilot_samples" code="{N_mdm(szarray,pilotSamples)}" label="Number of initial samples per model instance" minOccurs="0" >
+	       <alias name="initial_samples"/>
+	       <param type="INTEGERLIST" />
+	       <keyword id="independent" name="independent" code="{N_mdm(type,pilotGroupSampling_INDEPENDENT_PILOT)}" label="Use independent pilot samples per group" minOccurs="0" />
+	     </keyword>
+	     ' >
+
     <!ENTITY mc_solution_mode '
       	     <keyword  id="solution_mode" name="solution_mode" code="{0}" label="solution_mode" help="" minOccurs="0" default="online pilot" >
 	       <oneOf label="Ensemble Sampling Solution Mode">
@@ -3279,7 +3287,7 @@
 	</keyword>
 
 	<keyword  id="multilevel_blue" name="multilevel_blue" code="{N_mdm(utype,methodName_MULTILEVEL_BLUE)}" label="multilevel_blue"  group="Uncertainty Quantification" >
-	  &mc_pilot_samples;
+	  &mc_group_pilot_samples;
 	  &mc_solution_mode;
 	  &method_mlmf_sub_problem_solver;
 	  &method_seed_sequence;

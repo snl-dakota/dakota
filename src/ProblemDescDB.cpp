@@ -2361,6 +2361,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
       {"nond.multilevel_allocation_control", P_MET multilevAllocControl},
       {"nond.multilevel_discrepancy_emulation", P_MET multilevDiscrepEmulation},
       {"nond.nesting_override", P_MET nestingOverride},
+      {"nond.pilot_samples.mode", P_MET pilotGroupSampling},
       {"nond.qoi_aggregation", P_MET qoiAggregation},
       {"nond.refinement_statistics_mode", P_MET statsMetricMode},
       {"nond.regression_type", P_MET regressionType},

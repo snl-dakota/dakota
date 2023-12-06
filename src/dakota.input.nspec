@@ -3136,7 +3136,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
    )
   |
   ( multilevel_blue {N_mdm(utype,methodName_MULTILEVEL_BLUE)}
-    [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
+    [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)}
+      [ independent {N_mdm(type,pilotGroupSampling_INDEPENDENT_PILOT)} ]
+     ]
     [ solution_mode {0}
       online_pilot {N_mdm(type,ensembleSampSolnMode_ONLINE_PILOT)}
       |

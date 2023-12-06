@@ -139,6 +139,9 @@ private:
 		      RealSymMatrix2DArray& sum_GG_pilot,
 		      Sizet2DArray& N_shared_pilot, bool incr_cost);
 
+  void recover_online_cost(const IntResponse2DMap& batch_resp_map);
+  void update_model_group_costs();
+
   void compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
 			   SizetArray& N_G_alloc, SizetArray& delta_N_G);
 
@@ -155,12 +158,20 @@ private:
 			    Sizet2DArray& num_G);
   void accumulate_blue_sums(RealMatrixArray& sum_G,
 			    RealSymMatrix2DArray& sum_GG, Sizet2DArray& num_G);
+  void accumulate_blue_sums(RealMatrix& sum_G, RealSymMatrixArray& sum_GG,
+			    SizetArray& N_shared);
 
   void compute_GG_covariance(const RealMatrixArray& sum_G,
 			     const RealSymMatrix2DArray& sum_GG,
 			     const Sizet2DArray& N_G,
 			     RealSymMatrix2DArray& cov_GG,
 			     RealSymMatrix2DArray& cov_GG_inv);
+  void compute_GG_covariance(const RealMatrix& sum_G_g,
+			     const RealSymMatrixArray& sum_GG_g,
+			     const SizetArray& num_G_g,
+			     RealSymMatrix2DArray& cov_GG,
+			     RealSymMatrix2DArray& cov_GG_inv);
+
   void covariance_to_correlation_sq(const RealSymMatrixArray& cov_GG_g,
 				    RealMatrix& rho2_LH);
 
@@ -227,6 +238,9 @@ private:
   /// in-place matrix inverses of covGG
   RealSymMatrix2DArray covGGinv;
 
+  /// mode for pilot sampling: shared or independent
+  short pilotGroupSampling;
+
   /// counter for successful sample accumulations, per group and per QoI
   Sizet2DArray NGroupActual;
   /// counter for sample allocations, per group
@@ -249,6 +263,23 @@ inline Real NonDMultilevBLUESampling::estimator_accuracy_metric()
 
 //inline Real NonDMultilevBLUESampling::estimator_cost_metric()
 //{ return blueSolnData.equivalent_hf_allocation(); }
+
+
+inline void NonDMultilevBLUESampling::update_model_group_costs()
+{
+  modelGroupCost.sizeUninitialized(numGroups);
+
+  size_t g, m, num_models;
+  for (g=0; g<numGroups; ++g) {
+    const UShortArray& models = modelGroups[g];  num_models = models.size();
+    Real&     group_cost_g = modelGroupCost[g];  group_cost_g = 0.;
+    for (m=0; m<num_models; ++m)
+      group_cost_g += sequenceCost[models[m]];
+  }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "modelGroups:\n" << modelGroups
+	 << "modelGroupCost:\n" << modelGroupCost;
+}
 
 
 inline void NonDMultilevBLUESampling::

@@ -241,6 +241,8 @@ enum { CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT,
 
 // ML/MF sampling modes
 enum { ONLINE_PILOT, OFFLINE_PILOT, PILOT_PROJECTION };
+// ML/MF modes for group-based pilot sampling
+enum { SHARED_PILOT, INDEPENDENT_PILOT };
 // Numerical solution modes
 enum { REORDERED_FALLBACK, NUMERICAL_FALLBACK, NUMERICAL_OVERRIDE };
 
@@ -1088,8 +1090,11 @@ public:
   /// or lacking robustness, suggesting an optional override replacement
   unsigned short numericalSolveMode;
 
-  /// the \c pilot_samples selection in \ref MethodMultilevelMC
+  /// the \c pilot_samples selection in ML/MF methods
   SizetArray pilotSamples;
+  /// the group sampling approach for pilot sampling in ML BLUE:
+  /// independent or shared
+  short pilotGroupSampling;
   /// the \c solution_mode selection for ML/MF sampling methods
   short ensembleSampSolnMode;
   /// the \c truth_fixed_by_pilot flag for ACV methods

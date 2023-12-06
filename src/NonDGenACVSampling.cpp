@@ -419,7 +419,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
     // While online cost recovery could be continuously updated, we restrict
     // to the pilot and do not not update after iter 0.  We could potentially
     // update cost for shared samples, mirroring the covariance updates.
-    if (onlineCost && mlmfIter == 0) recover_online_cost(sequenceCost);
+    if (onlineCost && mlmfIter == 0) recover_online_cost(allResponses);
     increment_equivalent_cost(numSamples, sequenceCost, 0, numGroups,
 			      equivHFEvals);
     compute_LH_statistics(sum_L_baselineH[1], sum_H[1], sum_LL[1], sum_LH[1],
@@ -818,6 +818,8 @@ compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
   // or warm started from previous solution (iter >= 1)
 
   // modelGroupCost used for unified treatment in finite_solution_bounds()
+  // > for onlineCost, sequenceCost is estimated once, but modelGroupCost is
+  //   dependent on the active DAG/model subset
   update_model_group_costs();
 
   const UShortArray& approx_set = activeModelSetIter->first;

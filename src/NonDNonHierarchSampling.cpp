@@ -404,31 +404,33 @@ ensemble_sample_batch(size_t iter, int batch_id)
 //}
 
 
-void NonDNonHierarchSampling::recover_online_cost(RealVector& seq_cost)
+void NonDNonHierarchSampling::
+recover_online_cost(const IntResponseMap& all_resp)
 {
   // uses one set of allResponses with QoI aggregation across all Models,
   // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
 
   size_t cntr, step, num_finite, md_index;  IntRespMCIter r_it;
-  Real cost, accum;  bool ml = (costMetadataIndices.size() == 1);
-  using std::isfinite;
+  unsigned short mf;  Real cost, accum;  using std::isfinite;
+  sequenceCost.size(numApprox+1); // init to 0
+  const Pecos::ActiveKey& active_key = iteratedModel.active_model_key();
 
-  seq_cost.size(numApprox+1); // init to 0
   for (step=0, cntr=0; step<=numApprox; ++step) {
-    const SizetSizetPair& cost_mdi = (ml) ? costMetadataIndices[0] :
-      costMetadataIndices[step];
+    mf = active_key.retrieve_model_form(step);
+    const SizetSizetPair& cost_mdi = costMetadataIndices[mf];
     md_index = cntr + cost_mdi.first; // index into aggregated metadata
 
     accum = 0.;  num_finite = 0;
-    for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
-      cost = r_it->second.metadata()[md_index]; // offset by index
+    for (r_it=all_resp.begin(); r_it!=all_resp.end(); ++r_it) {
+      cost = r_it->second.metadata(md_index); // offset by index
       if (isfinite(cost))
 	{ accum += cost; ++num_finite; }
     }
-    seq_cost[step] = accum / num_finite;
+    sequenceCost[step] = accum / num_finite;
     if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Online cost: accum_cost = " << accum << " num_cost = "
-	   << num_finite << " seq_cost = " << seq_cost[step] << std::endl;
+      Cout << "Online cost: accum cost = " << accum
+	   << " num cost = " << num_finite
+	   << " sequence cost = " << sequenceCost[step] << std::endl;
 
     cntr += cost_mdi.second; // offset by size of metadata for step
   }

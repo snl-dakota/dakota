@@ -373,7 +373,7 @@ protected:
   void assign_active_key();
 
   /// recover estimates of simulation cost using aggregated response metadata
-  void recover_online_cost(RealVector& seq_cost);
+  void recover_online_cost(const IntResponseMap& all_resp);
 
   void initialize_sums(IntRealMatrixMap& sum_L_baseline,
 		       IntRealVectorMap& sum_H, IntRealMatrixMap& sum_LH,
@@ -771,7 +771,7 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 {
   size_t index, len = cost.length(), hf_index = len-1;
   if (end == len)
-    { equiv_hf_evals += new_samp; --end; }
+    { equiv_hf_evals += (Real)new_samp; --end; }
   Real sum_cost = 0.;
   for (index=start; index<end; ++index)
     sum_cost += cost[index];

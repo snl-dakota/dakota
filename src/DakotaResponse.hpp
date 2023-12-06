@@ -239,6 +239,8 @@ public:
   /// get the (possibly empty) response metadata;
   /// (get labels through shared_data())
   const std::vector<RespMetadataT>& metadata() const;
+  /// get a single entry from the response metadata
+  RespMetadataT metadata(size_t index) const;
   /// set the response metadata
   /// (set labels through shared_data())
   void metadata(const std::vector<RespMetadataT>& md);
@@ -880,6 +882,15 @@ inline const std::vector<RespMetadataT>& Response::metadata() const
     return responseRep->metaData;
   else
     return metaData;
+}
+
+
+inline RespMetadataT Response::metadata(size_t index) const
+{
+  if (responseRep)
+    return responseRep->metaData[index];
+  else
+    return metaData[index];
 }
 
 

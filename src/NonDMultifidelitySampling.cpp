@@ -39,6 +39,9 @@ NonDMultifidelitySampling(ProblemDescDB& problem_db, Model& model):
 {
   mlmfSubMethod = SUBMETHOD_MFMC; // if needed for numerical solves
 
+  // Run-time dependency on approxSequence
+  //if (!onlineCost) update_model_group_costs(); 
+
   load_pilot_sample(problem_db.get_sza("method.nond.pilot_samples"),
 		    numGroups, pilotSamples);
 
@@ -94,7 +97,7 @@ void NonDMultifidelitySampling::multifidelity_mc()
     // While online cost recovery could be continuously updated, we restrict
     // to the pilot and do not not update after iter 0.  We could potentially
     // update cost for shared samples, mirroring the correlation updates.
-    if (onlineCost && mlmfIter == 0) recover_online_cost(sequenceCost);
+    if (onlineCost && mlmfIter == 0) recover_online_cost(allResponses);
     increment_equivalent_cost(numSamples, sequenceCost, 0, numGroups,
 			      equivHFEvals);
 
@@ -156,7 +159,7 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   shared_increment(mlmfIter); // spans ALL models, blocking
   accumulate_mf_sums(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
 		     sum_HH_pilot, N_shared_pilot);
-  if (onlineCost) recover_online_cost(sequenceCost);
+  if (onlineCost) recover_online_cost(allResponses);
   //increment_equivalent_cost(...); // excluded
   compute_LH_correlation(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
 			 sum_HH_pilot, N_shared_pilot, var_L, varH, rho2LH);
@@ -234,7 +237,7 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
   shared_increment(mlmfIter); // spans ALL models, blocking
   accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual);
   N_H_alloc += numSamples;
-  if (onlineCost) recover_online_cost(sequenceCost);
+  if (onlineCost) recover_online_cost(allResponses);
   increment_equivalent_cost(numSamples, sequenceCost, 0,numGroups,equivHFEvals);
 
   // -------------------------------------------
