@@ -10,6 +10,7 @@ method,
 	multilevel_blue
 	  solution_mode offline_pilot		#s0,#s5
 	  pilot_samples = 100			#s0,#s5
+	    independent				#s0,#s1,#s2,#s3,#s4,#s5
 #	  solution_mode pilot_projection	#s1,#s3
 #	  pilot_samples = 25			#s1,#s2,#s3,#s4
 	  seed = 8674132

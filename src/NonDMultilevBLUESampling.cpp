@@ -29,7 +29,7 @@ namespace Dakota {
 NonDMultilevBLUESampling::
 NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model):
   NonDNonHierarchSampling(problem_db, model),
-  pilotGroupSampling(problem_db.get_short("method.pilot_samples.mode"))
+  pilotGroupSampling(problem_db.get_short("method.nond.pilot_samples.mode"))
 {
   mlmfSubMethod = problem_db.get_ushort("method.sub_method");
 
