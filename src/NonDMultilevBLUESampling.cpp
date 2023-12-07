@@ -1124,6 +1124,7 @@ accumulate_blue_sums(RealMatrix& sum_G, RealSymMatrixArray& sum_GG,
       }
       if (!all_finite) continue;
 
+      ++N_shared[qoi]; // shared due to fault tol logic
       RealSymMatrix& sum_GG_q = sum_GG[qoi];
       for (approx=0; approx<=numApprox; ++approx) {
 	g1_index = approx * numFunctions + qoi;
@@ -1139,6 +1140,10 @@ accumulate_blue_sums(RealMatrix& sum_G, RealSymMatrixArray& sum_GG,
       }
     }
   }
+
+  if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "In accumulate_blue_sums(), sum_G:\n" << sum_G
+	   << "sum_GG\n" << sum_GG << "num_G:\n" << N_shared << std::endl;
 }
 
 
@@ -1215,6 +1220,8 @@ compute_GG_covariance(const RealMatrix& sum_G_g,
 	RealSymMatrix& cov_GG_mapped = cov_GG[g][qoi];
 	const UShortArray& group_g = modelGroups[g];
 	num_mapped = group_g.size();
+	if (cov_GG_mapped.numRows() != num_mapped)
+	  cov_GG_mapped.shape(num_mapped);
 	for (m1=0; m1<num_mapped; ++m1) {
 	  g1 = group_g[m1];
 	  for (m2=0; m2<=m1; ++m2)
