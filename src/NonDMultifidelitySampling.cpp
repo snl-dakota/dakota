@@ -1318,7 +1318,7 @@ mfmc_estimator_variance(const RealMatrix& rho2_LH, const RealVector& var_H,
   // using the expression for R^2
   case ANALYTIC_SOLUTION:  case REORDERED_ANALYTIC_SOLUTION: {
 
-    size_t avg_N_H = average(N_H), avg_hf_target = soln.solution_reference();
+    Real avg_N_H = average(N_H), avg_hf_target = soln.solution_reference();
     RealVector avg_eval_ratios = soln.solution_ratios();
     if (avg_N_H > avg_hf_target) { // over-shoot of tgt from pilot|iteration
       // R^2 = \Sum_i [ (r_i -r_{i-1})/(r_i r_{i-1}) rho2_LH_i ]
