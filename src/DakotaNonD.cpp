@@ -490,7 +490,7 @@ query_cost(unsigned short num_costs, short seq_type, RealVector& cost)
   bool cost_defined;
   switch (seq_type) {
   case Pecos::RESOLUTION_LEVEL_SEQUENCE: // 1D resolution hierarchy for HF model
-    cost_defined = query_cost(num_costs, sub_models.back(), cost);
+    cost_defined = query_cost(num_costs, sub_models.back(), cost);  break;
   case Pecos::MODEL_FORM_SEQUENCE: {
     cost.sizeUninitialized(num_costs);
     ModelLIter m_iter = sub_models.begin();  cost_defined = true;
