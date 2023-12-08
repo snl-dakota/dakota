@@ -131,15 +131,15 @@ inline MFSolutionData::
 MFSolutionData(const RealVector& soln_vars, Real avg_est_var,
 	       Real avg_est_var_ratio, Real equiv_hf)
 {
-  solutionVars   = soln_vars;          avgEstVar    = avg_est_var;
+  copy_data(soln_vars, solutionVars);  avgEstVar    = avg_est_var;
   avgEstVarRatio = avg_est_var_ratio;  equivHFAlloc = equiv_hf;
 }
 
 
 inline MFSolutionData::MFSolutionData(const MFSolutionData& sd)
 {
-  solutionVars   = sd.solutionVars;    avgEstVar    = sd.avgEstVar;
-  avgEstVarRatio = sd.avgEstVarRatio;  equivHFAlloc = sd.equivHFAlloc;
+  copy_data(sd.solutionVars, solutionVars);  avgEstVar    = sd.avgEstVar;
+  avgEstVarRatio = sd.avgEstVarRatio;        equivHFAlloc = sd.equivHFAlloc;
 }
 
 
@@ -149,8 +149,8 @@ inline MFSolutionData::~MFSolutionData()
 
 inline MFSolutionData& MFSolutionData::operator=(const MFSolutionData& sd)
 {
-  solutionVars   = sd.solutionVars;    avgEstVar    = sd.avgEstVar;
-  avgEstVarRatio = sd.avgEstVarRatio;  equivHFAlloc = sd.equivHFAlloc;
+  copy_data(sd.solutionVars, solutionVars);  avgEstVar    = sd.avgEstVar;
+  avgEstVarRatio = sd.avgEstVarRatio;        equivHFAlloc = sd.equivHFAlloc;
   return *this;
 }
 
@@ -160,7 +160,7 @@ inline const RealVector& MFSolutionData::solution_variables() const
 
 
 inline void MFSolutionData::solution_variables(const RealVector& soln_vars)
-{ solutionVars = soln_vars; }
+{ copy_data(soln_vars, solutionVars); }
 
 
 inline void MFSolutionData::solution_variables(const SizetArray& samples)
