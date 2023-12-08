@@ -44,8 +44,13 @@ if(DAKOTA_PYTHON_SURROGATES)
   set_tests_properties(surrogates_python PROPERTIES LABELS Unit)
 endif()
 
+dakota_add_unit_test(NAME surrogates_python_pybind11
+  SOURCES PythonTest.cpp
+  LINK_LIBS dakota_surrogates Boost::system Boost::filesystem)
+
 # Rationale: These all include Teuchos headers and need to link to the
 # ParameterList components
+target_include_directories(surrogates_python_pybind11 PRIVATE "${Teuchos_INCLUDE_DIRS}")
 target_include_directories(surrogates_polynomial_regression PRIVATE "${Teuchos_INCLUDE_DIRS}")
 target_include_directories(surrogates_eval_metrics_cross_val PRIVATE "${Teuchos_INCLUDE_DIRS}")
 

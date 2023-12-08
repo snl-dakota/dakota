@@ -15,6 +15,7 @@ set(surrogates_sources
   SurrogatesGPKernels.cpp
   SurrogatesGPObjective.cpp
   SurrogatesPolynomialRegression.cpp
+  SurrogatesPython.cpp
   surrogates_tools.cpp
 )
 
@@ -24,6 +25,7 @@ set(surrogates_headers
   SurrogatesGPKernels.hpp
   SurrogatesGPObjective.hpp
   SurrogatesPolynomialRegression.hpp
+  SurrogatesPython.hpp
   surrogates_tools.hpp
 )
 
@@ -33,7 +35,8 @@ target_include_directories(dakota_surrogates PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
   $<INSTALL_INTERFACE:include>
 )
-target_link_libraries(dakota_surrogates PUBLIC dakota_util)
+target_link_libraries(dakota_surrogates PUBLIC dakota_util pybind11::embed)
+#target_include_directories(dakota_surrogates PUBLIC ${pybind11_INCLUDE_DIR})
 
 # Rationale: Teuchos is included in API headers, and ParameterList
 # library component is needed
