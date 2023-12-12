@@ -905,9 +905,9 @@ void NonDGenACVSampling::update_model_group_costs()
     modelGroupCost.sizeUninitialized(num_groups);
 
   // shared samples
-  modelGroupCost[num_approx] = 0.;
+  modelGroupCost[num_approx] = sequenceCost[numApprox]; // truth
   for (i=0; i<num_approx; ++i)
-    modelGroupCost[num_approx] += sequenceCost[approx_set[i]];
+    modelGroupCost[num_approx] += sequenceCost[approx_set[i]]; // active approx
 
   // approx samples:  Notes:
   // > GenACV has sample dependencies codified in the active DAG: an increment

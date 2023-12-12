@@ -997,7 +997,8 @@ finite_solution_bounds(const RealVector& x0, RealVector& x_lb, RealVector& x_ub)
     x_ub = DBL_MAX; // no upper bounds needed for x
 
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "Finite bounds (lb, ub):\n" << x_lb << x_ub << std::endl;
+    Cout << "Finite bounds (lb, ub):\n" << x_lb << x_ub
+	 << "from modelGroupCost:\n" << modelGroupCost << std::endl;
 }
 
 

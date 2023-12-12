@@ -267,12 +267,12 @@ inline Real NonDMultilevBLUESampling::estimator_accuracy_metric()
 
 inline void NonDMultilevBLUESampling::update_model_group_costs()
 {
-  modelGroupCost.sizeUninitialized(numGroups);
+  modelGroupCost.size(numGroups); // init to 0.
 
   size_t g, m, num_models;
   for (g=0; g<numGroups; ++g) {
     const UShortArray& models = modelGroups[g];  num_models = models.size();
-    Real&     group_cost_g = modelGroupCost[g];  group_cost_g = 0.;
+    Real&     group_cost_g = modelGroupCost[g];
     for (m=0; m<num_models; ++m)
       group_cost_g += sequenceCost[models[m]];
   }
