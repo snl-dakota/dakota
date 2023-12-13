@@ -16,34 +16,34 @@ Sample moment statistics for each response function:
  response_fn_2  1.2852823225626539e-01  1.3565785458704268e-02  8.0720457864885475e-01 -4.4271750649554331e-01
  response_fn_3  2.5078770519219532e-02  6.5335476656399657e-03  8.2612808730850884e-01 -1.1163584402682769e-01
 Test Number 1 succeeded
-<<<<< Function evaluation summary (LF_INT): 19254 total (19254 new, 0 duplicate)
-<<<<< Function evaluation summary (MF_INT): 6101 total (6101 new, 0 duplicate)
-<<<<< Function evaluation summary (HF_INT): 43 total (43 new, 0 duplicate)
+<<<<< Function evaluation summary (LF_INT): 19878 total (19878 new, 0 duplicate)
+<<<<< Function evaluation summary (MF_INT): 6030 total (6030 new, 0 duplicate)
+<<<<< Function evaluation summary (HF_INT): 45 total (45 new, 0 duplicate)
 <<<<< Online number of equivalent high fidelity evaluations: 4.9952343750000000e+02
 <<<<< Variance for mean estimator:
     Initial   MC (   25 HF samples):  4.1006897417589732e-06
-     Online   MC (   43 HF samples):  1.8486216594385671e-06
-     Online  ACV (sample profile):    1.0981313902522972e-08
-     Online  ACV ratio (1 - R^2):     5.9402711455074243e-03
- Equivalent   MC (  500 HF samples):  1.5913313648242660e-07
- Equivalent  ACV ratio:               6.9007085169440249e-02
+     Online   MC (   45 HF samples):  2.0189898940818683e-06
+     Online  ACV (sample profile):    1.2322839284992949e-08
+     Online  ACV ratio (1 - R^2):     6.1034675414245879e-03
+ Equivalent   MC (  500 HF samples):  1.8188244717483164e-07
+ Equivalent  ACV ratio:               6.7751668599157419e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5294594735793721e-02  6.5837294250312081e-03  7.9216051071980620e-01 -7.1143400710247828e-02
- response_fn_2  1.2928680043441082e-01  1.3678614304426793e-02  6.8108281031472684e-01 -7.0900306349863973e-01
- response_fn_3  2.5294594736099560e-02  6.5837294255536357e-03  7.9216051094168749e-01 -7.1143400161160830e-02
+ response_fn_1  2.5307276556047753e-02  6.5986467289481576e-03  7.5191800359959993e-01 -1.8406491985110840e-01
+ response_fn_2  1.2937816053585316e-01  1.3765201637361434e-02  6.9254110228204846e-01 -7.8927120873060996e-01
+ response_fn_3  2.5307276556332855e-02  6.5986467293410152e-03  7.5191800389069374e-01 -1.8406491897958066e-01
 Test Number 2 succeeded
-<<<<< Function evaluation summary (HF_INT): 25398 total (25398 new, 0 duplicate)
+<<<<< Function evaluation summary (HF_INT): 25953 total (25953 new, 0 duplicate)
 <<<<< Online number of equivalent high fidelity evaluations: 4.9952343750000000e+02
 <<<<< Variance for mean estimator:
     Initial   MC (   25 HF samples):  4.1006897417589732e-06
-     Online   MC (   43 HF samples):  1.8486216594385671e-06
-     Online  ACV (sample profile):    1.0981313902522972e-08
-     Online  ACV ratio (1 - R^2):     5.9402711455074243e-03
- Equivalent   MC (  500 HF samples):  1.5913313648242660e-07
- Equivalent  ACV ratio:               6.9007085169440249e-02
+     Online   MC (   45 HF samples):  2.0189898940818683e-06
+     Online  ACV (sample profile):    1.2322839284992949e-08
+     Online  ACV ratio (1 - R^2):     6.1034675414245879e-03
+ Equivalent   MC (  500 HF samples):  1.8188244717483164e-07
+ Equivalent  ACV ratio:               6.7751668599157419e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5294594735793721e-02  6.5837294250312081e-03  7.9216051071980620e-01 -7.1143400710247828e-02
- response_fn_2  1.2928680043441082e-01  1.3678614304426793e-02  6.8108281031472684e-01 -7.0900306349863973e-01
- response_fn_3  2.5294594736099560e-02  6.5837294255536357e-03  7.9216051094168749e-01 -7.1143400161160830e-02
+ response_fn_1  2.5307276556047753e-02  6.5986467289481576e-03  7.5191800359959993e-01 -1.8406491985110840e-01
+ response_fn_2  1.2937816053585316e-01  1.3765201637361434e-02  6.9254110228204846e-01 -7.8927120873060996e-01
+ response_fn_3  2.5307276556332855e-02  6.5986467293410152e-03  7.5191800389069374e-01 -1.8406491897958066e-01
