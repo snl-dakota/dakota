@@ -241,10 +241,10 @@ Test Number 13 succeeded
 <<<<< Variance for mean estimator:
     Initial   MC (   25 HF samples):  4.1006897417589427e-06
      Online   MC (   25 HF samples):  4.1006897417589427e-06
-     Online MFMC (sample profile):    4.1006897419791656e-09
-     Online MFMC ratio (1 - R^2):     1.0000000000537038e-03
+     Online MFMC (sample profile):    4.1006897419891885e-09
+     Online MFMC ratio (1 - R^2):     1.0000000000561480e-03
  Equivalent   MC (  333 HF samples):  3.0749527642101527e-07
- Equivalent MFMC ratio:               1.3335781250716184e-02
+ Equivalent MFMC ratio:               1.3335781250748779e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  2.5284080691115825e-02  6.5994365846254949e-03  7.7988487991388256e-01 -1.3966352048648201e-01

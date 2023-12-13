@@ -403,8 +403,8 @@ compute_F_matrix(const RealVector& r_and_N, RealSymMatrix& F)
   }
 
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "F matrix for sub-method " << mlmfSubMethod << ":\n" << F
-	 << std::endl;
+    Cout << "Given r_and_N vector:\n" << r_and_N << "F matrix for sub-method "
+	 << mlmfSubMethod << ":\n" << F << std::endl;
 }
 
 

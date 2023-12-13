@@ -16,34 +16,34 @@ Sample moment statistics for each response function:
  response_fn_2  1.2852823225626539e-01  1.3565785458704268e-02  8.0720457864885475e-01 -4.4271750649554331e-01
  response_fn_3  2.5078770519219532e-02  6.5335476656399657e-03  8.2612808730850884e-01 -1.1163584402682769e-01
 Test Number 1 succeeded
-<<<<< Function evaluation summary (LF_INT): 19878 total (19878 new, 0 duplicate)
+<<<<< Function evaluation summary (LF_INT): 19874 total (19874 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 6030 total (6030 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 45 total (45 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 4.9952343750000000e+02
+<<<<< Online number of equivalent high fidelity evaluations: 4.9950781250000000e+02
 <<<<< Variance for mean estimator:
     Initial   MC (   25 HF samples):  4.1006897417589732e-06
      Online   MC (   45 HF samples):  2.0189898940818683e-06
-     Online  ACV (sample profile):    1.2322839284992949e-08
-     Online  ACV ratio (1 - R^2):     6.1034675414245879e-03
- Equivalent   MC (  500 HF samples):  1.8188244717483164e-07
- Equivalent  ACV ratio:               6.7751668599157419e-02
+     Online  ACV (sample profile):    1.2322806381608539e-08
+     Online  ACV ratio (1 - R^2):     6.1034512444710929e-03
+ Equivalent   MC (  500 HF samples):  1.8188813660183558e-07
+ Equivalent  ACV ratio:               6.7749368440581298e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5307276556047753e-02  6.5986467289481576e-03  7.5191800359959993e-01 -1.8406491985110840e-01
- response_fn_2  1.2937816053585316e-01  1.3765201637361434e-02  6.9254110228204846e-01 -7.8927120873060996e-01
- response_fn_3  2.5307276556332855e-02  6.5986467293410152e-03  7.5191800389069374e-01 -1.8406491897958066e-01
+ response_fn_1  2.5309628874785304e-02  6.6133678464012774e-03  7.6532007241128142e-01 -1.6648710760845331e-01
+ response_fn_2  1.2937841615070950e-01  1.3765546520056923e-02  6.9181955598771794e-01 -7.8787402776646065e-01
+ response_fn_3  2.5309628875069309e-02  6.6133678467786127e-03  7.6532007265828172e-01 -1.6648710696314728e-01
 Test Number 2 succeeded
-<<<<< Function evaluation summary (HF_INT): 25953 total (25953 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 4.9952343750000000e+02
+<<<<< Function evaluation summary (HF_INT): 25949 total (25949 new, 0 duplicate)
+<<<<< Online number of equivalent high fidelity evaluations: 4.9950781250000000e+02
 <<<<< Variance for mean estimator:
     Initial   MC (   25 HF samples):  4.1006897417589732e-06
      Online   MC (   45 HF samples):  2.0189898940818683e-06
-     Online  ACV (sample profile):    1.2322839284992949e-08
-     Online  ACV ratio (1 - R^2):     6.1034675414245879e-03
- Equivalent   MC (  500 HF samples):  1.8188244717483164e-07
- Equivalent  ACV ratio:               6.7751668599157419e-02
+     Online  ACV (sample profile):    1.2322806381608539e-08
+     Online  ACV ratio (1 - R^2):     6.1034512444710929e-03
+ Equivalent   MC (  500 HF samples):  1.8188813660183558e-07
+ Equivalent  ACV ratio:               6.7749368440581298e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5307276556047753e-02  6.5986467289481576e-03  7.5191800359959993e-01 -1.8406491985110840e-01
- response_fn_2  1.2937816053585316e-01  1.3765201637361434e-02  6.9254110228204846e-01 -7.8927120873060996e-01
- response_fn_3  2.5307276556332855e-02  6.5986467293410152e-03  7.5191800389069374e-01 -1.8406491897958066e-01
+ response_fn_1  2.5309628874785304e-02  6.6133678464012774e-03  7.6532007241128142e-01 -1.6648710760845331e-01
+ response_fn_2  1.2937841615070950e-01  1.3765546520056923e-02  6.9181955598771794e-01 -7.8787402776646065e-01
+ response_fn_3  2.5309628875069309e-02  6.6133678467786127e-03  7.6532007265828172e-01 -1.6648710696314728e-01
