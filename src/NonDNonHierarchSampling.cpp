@@ -872,14 +872,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   case N_MODEL_LINEAR_CONSTRAINT:  case N_MODEL_LINEAR_OBJECTIVE: {
     x_lb = (pilotMgmtMode == OFFLINE_PILOT) ? offline_N_lwr : avg_N_H;
     const RealVector& soln_vars = soln.solution_variables();
-    if (soln_vars.empty()) x0 = x_lb;
-    else {
-      x0 = soln_vars;
-      if (pilotMgmtMode == OFFLINE_PILOT) // x0 could undershoot offline_N_lwr
-	for (i=0; i<num_cdv; ++i) // bump x0 to satisfy x_lb if needed
-	  if (x0[i] < offline_N_lwr)
-	    x0[i]   = offline_N_lwr;
-    }
+    x0 = (soln_vars.empty()) ? x_lb : soln_vars;
     if (optSubProblemForm == N_MODEL_LINEAR_CONSTRAINT) {
       // linear inequality constraint on budget:
       //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
@@ -898,6 +891,8 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     break;
   }
   }
+  // x0 can undershoot x_lb if OFFLINE_PILOT, but enforce generally
+  enforce_bounds(x0, x_lb, x_ub);
 
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Numerical solve (initial, lb, ub):\n" << x0 << x_lb << x_ub

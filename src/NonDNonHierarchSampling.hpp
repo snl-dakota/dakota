@@ -514,6 +514,9 @@ protected:
 
   void cache_mc_reference();
 
+  void enforce_bounds(RealVector& x0, const RealVector& x_lb,
+		      const RealVector& x_ub);
+
   /// helper function that supports virtual print_variance_reduction(s)
   void print_estimator_performance(std::ostream& s,
 				   const MFSolutionData& soln);
@@ -994,6 +997,28 @@ inline void NonDNonHierarchSampling::cache_mc_reference()
   // Note: could revisit this for case of lf_shared_pilot > hf_shared_pilot.
   compute_mc_estimator_variance(varH, N_H_actual, estVarIter0);
   numHIter0 = N_H_actual;
+}
+
+
+inline void NonDNonHierarchSampling::
+enforce_bounds(RealVector& x0, const RealVector& x_lb, const RealVector& x_ub)
+{
+  size_t i, len = x0.length();
+  if (x_lb.length() != len || x_ub.length() != len) {
+    Cerr << "Error: inconsistent bound sizes in enforce_bounds()." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  for (i=0; i<len; ++i) {
+    Real x_lb_i = x_lb[i], x_ub_i = x_ub[i];
+    if (x_lb_i > x_ub_i) {
+      Cerr << "Error: inconsistent bound values in enforce_bounds()."
+	   << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    Real& x0_i = x0[i];
+    if      (x0_i < x_lb_i)  x0_i = x_lb_i;
+    else if (x0_i > x_ub_i)  x0_i = x_ub_i;
+  }
 }
 
 
