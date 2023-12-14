@@ -274,7 +274,7 @@ inline void NonDMultilevBLUESampling::update_model_group_costs()
   size_t g, m, num_models;
   for (g=0; g<numGroups; ++g) {
     const UShortArray& models = modelGroups[g];  num_models = models.size();
-    Real&     group_cost_g = modelGroupCost[g];
+    Real& group_cost_g = modelGroupCost[g];
     for (m=0; m<num_models; ++m)
       group_cost_g += sequenceCost[models[m]];
   }

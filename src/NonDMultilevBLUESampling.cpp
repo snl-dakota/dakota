@@ -443,10 +443,10 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   }
   // assign sunk cost to full group and optimize w/ this as a constraint
   else if (mlmfIter)
-    x_lb = soln_vars; // continuous-valued optimizer allocation
+    x_lb = soln_vars; // continuous-valued optimizer allocation (not actual)
   else
     for (g=0; g<numGroups; ++g)
-      x_lb[g] = (Real)pilotSamples[g]; // discrete-valued pilot allocation
+      x_lb[g] = (Real)pilotSamples[g]; // discrete pilot allocation (not actual)
   x0 = (soln_vars.empty()) ? x_lb : soln_vars;
   // x0 can undershoot x_lb if OFFLINE_PILOT, but enforce generally
   enforce_bounds(x0, x_lb, x_ub);

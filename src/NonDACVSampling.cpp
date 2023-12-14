@@ -406,7 +406,7 @@ void NonDACVSampling::update_model_group_costs()
   if (modelGroupCost.length() != num_groups)
     modelGroupCost.sizeUninitialized(num_groups);
 
-  // shared samples.
+  // shared samples (no DAG search, no model selection)
   modelGroupCost[numApprox] = sum(sequenceCost); // irrespective of ordering
 
   // approx samples.  Notes:
