@@ -63,6 +63,8 @@ protected:
     RealVector& lin_ineq_lb, RealVector& lin_ineq_ub, RealVector& lin_eq_tgt,
     RealVector& nln_ineq_lb, RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
     RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs);
+  void derived_finite_solution_bounds(const RealVector& x0, RealVector& x_lb,
+				      RealVector& x_ub, Real budget);
 
   void apply_mc_reference(RealVector& mc_targets);
 

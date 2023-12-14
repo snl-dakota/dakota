@@ -938,55 +938,31 @@ finite_solution_bounds(const RealVector& x0, RealVector& x_lb, RealVector& x_ub)
 	 optSubProblemSolver == SUBMETHOD_EGO ) ) {
     // Prior to approx increments (when numerical solns are performed),
     // equivHFEvals represents the total incurred cost in shared sample sets
-    Real remaining;
+    Real budget;
     switch (optSubProblemForm) {
     case N_MODEL_LINEAR_OBJECTIVE: case N_GROUP_LINEAR_OBJECTIVE: {
       // accuracy constrained: infer upper bounds from budget reqd to obtain
       // target accuracy via MC: varH / N = tol * avg_estvar0; for minimizer
       // sequencing, a downstream refinement can omit this approximated bound
-      RealVector mc_targets;
-      apply_mc_reference(mc_targets);
-      remaining = average(mc_targets)    - equivHFEvals;  break;
+      RealVector hf_targets;  apply_mc_reference(hf_targets);
+      budget = average(hf_targets);     break;
     }
     default:
-      remaining = (Real)maxFunctionEvals - equivHFEvals;  break;
+      budget = (Real)maxFunctionEvals;  break;
     }
-    //Cout << "Remaining budget = " << remaining << std::endl;
 
-    // Set x_ub based on exhausting the remaining budget using only group i.
-    //   remaining = N_i * modelGroupCost[i] / cost_H
-    //   N_i = remaining * cost_H / modelGroupCost[i]
-    if (remaining > 0.) {
-      Real cost_H = sequenceCost[numApprox], factor = remaining * cost_H;
-      size_t i, x_len = x0.length();
-      // model groups now defined for MFMC,ACV,GenACV, in addition to ML BLUE
-      switch (optSubProblemForm) {
-      case R_ONLY_LINEAR_CONSTRAINT: {
-	// not valid for group-based allocations (R_ONLY not used in ML BLUE).
-	// for purposes of remaining budget, use incurred cost (NLevAlloc).
-	size_t hf_form_index, hf_lev_index;
-	hf_indices(hf_form_index, hf_lev_index);
-	factor /= (Real)NLevAlloc[hf_form_index][hf_lev_index];
-	for (i=0; i<x_len; ++i)
-	  x_ub[i] = x0[i] + factor / modelGroupCost[i];
-	break;
-      }
-      case R_AND_N_NONLINEAR_CONSTRAINT: {
-	size_t hf_index = x_len - 1;  Real N_H = x0[hf_index];
-	x_ub[hf_index] = N_H + factor / modelGroupCost[hf_index];
-	factor /= N_H;
-	for (i=0; i<hf_index; ++i)
-	  x_ub[i] = x0[i] + factor / modelGroupCost[i];
-	break;
-      }
-      default:
-	for (i=0; i<x_len; ++i)
-	  x_ub[i] = x0[i] + factor / modelGroupCost[i];
-	break;
-      }
-    }
-    else // can happen for accuracy-constrained using mc_targets estimation
-      x_ub = x0;
+    if (equivHFEvals < budget) // budget not exhausted
+      derived_finite_solution_bounds(x0, x_lb, x_ub, budget);
+    // "budget_exhausted" logic protects numerical solutions for budget-
+    // constrained cases in:
+    // > NonD{ACV,GenACV}Sampling::compute_ratios()
+    // > NonDMultifidelitySampling::mfmc_numerical_solution()
+    // > NonDMultilevBLUESampling::compute_allocations()
+    // but accuracy-constrained cases estimate hf_targets above, where it is
+    // possible for the pilot to overshoot this target, such that we need to
+    // protect against x_ub < x_lb.
+    else
+      x_ub = x0; // Note: x_ub = x_lb could then update x0 w/ enforce_bounds()
   }
   else
     x_ub = DBL_MAX; // no upper bounds needed for x
@@ -994,6 +970,54 @@ finite_solution_bounds(const RealVector& x0, RealVector& x_lb, RealVector& x_ub)
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Finite bounds (lb, ub):\n" << x_lb << x_ub
 	 << "from modelGroupCost:\n" << modelGroupCost << std::endl;
+}
+
+
+void NonDNonHierarchSampling::
+derived_finite_solution_bounds(const RealVector& x0, RealVector& x_lb,
+			       RealVector& x_ub, Real budget)
+{
+  size_t i, hf_index = numApprox;
+  Real cost_H  =   sequenceCost[hf_index], budget_cost = budget * cost_H,
+       cost_sh = modelGroupCost[hf_index];
+  // model groups now defined for MFMC,ACV,GenACV, in addition to ML BLUE
+  switch (optSubProblemForm) {
+  case R_ONLY_LINEAR_CONSTRAINT: { // not valid for group allocations
+    // for purposes of expended budget, use attempted samples (NLevAlloc)
+    // rather than accumulated samples (NLevActual) as fixed soln reference
+    size_t hf_form_index, hf_lev_index;
+    hf_indices(hf_form_index, hf_lev_index);
+    Real N_sh = (Real)NLevAlloc[hf_form_index][hf_lev_index],
+      factor = budget_cost / N_sh - cost_sh;
+    for (i=0; i<hf_index; ++i)
+      x_ub[i] = 1. + factor / modelGroupCost[i]; // for ub on r_i
+    break;
+  }
+  case R_AND_N_NONLINEAR_CONSTRAINT: { // not valid for group allocations
+    // Extreme N_sh is all budget allocated to shared samples:
+    x_ub[hf_index] = budget_cost / cost_sh; // ub on N_sh
+    // Extreme r_i is all refinement budget allocated to one approx:
+    //   (r_i - 1) N_sh cost_i = budget_cost - N_sh cost_sh
+    //   r_i = 1 + (budget_cost / N_sh - cost_sh) / cost_i
+    // And for variable N_sh, r_i upper bnd corresponds to N_sh lower bnd
+    Real N_sh_lb = x_lb[hf_index], factor = budget_cost / N_sh_lb - cost_sh;
+    for (i=0; i<hf_index; ++i)
+      x_ub[i] = 1. + factor / modelGroupCost[i]; // ub on r_i
+    break;
+  }
+  default: {
+    // Extreme N_sh is all budget allocated to shared samples:
+    x_ub[hf_index] = budget_cost / cost_sh; // ub on N_sh
+    // Extreme N_i is all refinement budget allocated to one approx:
+    //   delta_N_i cost_i = budget_cost - N_sh cost_sh
+    //   N_i =  (budget_cost - N_sh (cost_sh - cost_i)) / cost_i
+    // And for variable N_sh, N_i upper bnd corresponds to N_sh lower bnd
+    Real N_sh_lb = x_lb[hf_index], factor = budget_cost - N_sh_lb * cost_sh;
+    for (i=0; i<hf_index; ++i)
+      x_ub[i] = N_sh_lb + factor / modelGroupCost[i]; // ub on N_i
+    break;
+  }
+  }
 }
 
 

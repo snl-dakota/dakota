@@ -481,6 +481,26 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
 
 
 void NonDMultilevBLUESampling::
+derived_finite_solution_bounds(const RealVector& x0, RealVector& x_lb,
+			       RealVector& x_ub, Real budget)
+{
+  // Extreme N_g is all refinement budget allocated to one group:
+  //   delta_N_g cost_g = budget_cost - equivHFEvals
+  size_t g;  Real cost_H = sequenceCost[numApprox];
+  if (equivHFEvals > 0.) {
+    Real remaining_cost = (budget - equivHFEvals) * cost_H;
+    for (g=0; g<numGroups; ++g)
+      x_ub[g] = x0[g] + remaining_cost / modelGroupCost[g];
+  }
+  else { // in this case, avoid offline_N_lwr,RATIO_NUDGE within x0
+    Real budget_cost = budget * cost_H;
+    for (g=0; g<numGroups; ++g)
+      x_ub[g] = budget_cost / modelGroupCost[g];
+  }
+}
+
+
+void NonDMultilevBLUESampling::
 augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 				RealVector& lin_ineq_lb,
 				RealVector& lin_ineq_ub)

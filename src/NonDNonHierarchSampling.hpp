@@ -303,6 +303,12 @@ protected:
     RealVector& nln_ineq_lb, RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
     RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs);
 
+  /// portion of finite_solution_bounds() specific to derived class
+  /// implementations
+  virtual void derived_finite_solution_bounds(const RealVector& x0,
+					      RealVector& x_lb,
+					      RealVector& x_ub, Real budget);
+
   /// apply convergenceTol to estVarIter0 to form an estimate of required
   /// high-fidelity MC samples
   virtual void apply_mc_reference(RealVector& mc_targets);
