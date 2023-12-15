@@ -29,7 +29,6 @@ public class FeatureDelta implements Comparable<FeatureDelta> {
 	
 	public List<PluginDelta> plugins = new ArrayList<>();
 	public List<PluginDelta> childFeatures = new ArrayList<>(); // Child features are treated as plugin objects
-	public List<FragmentDelta> fragments = new ArrayList<>();
 	
 	public List<PluginDelta> recordNewPlugins = new ArrayList<>();
 	public List<PluginDelta> recordUpdatedPlugins = new ArrayList<>();
@@ -130,7 +129,7 @@ public class FeatureDelta implements Comparable<FeatureDelta> {
 					}
 					
 					if(inPluginSection) {
-						if(isFragment && originalFragment != null) fragments.add(originalFragment);
+						if(isFragment && originalFragment != null) plugins.add(originalFragment);
 						else if(originalPlugin != null) plugins.add(originalPlugin);
 					} else if(inChildFeatureSection) {
 						childFeatures.add(originalPlugin);
@@ -162,9 +161,9 @@ public class FeatureDelta implements Comparable<FeatureDelta> {
 	}
 	
 	public boolean doesHaveUpdatedFragments(Collection<PluginDelta> updatedPlugins) {
-		for(FragmentDelta fragment : fragments) {
+		for(PluginDelta plugin : plugins) {
 			for(PluginDelta updatedPlugin : updatedPlugins) {
-				if(updatedPlugin instanceof FragmentDelta && fragment.name.equals(((FragmentDelta)updatedPlugin).name)) {
+				if(updatedPlugin instanceof FragmentDelta && plugin.name.equals(((FragmentDelta)updatedPlugin).name)) {
 					return true;
 				}
 			}

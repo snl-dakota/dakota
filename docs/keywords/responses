@@ -10,9 +10,9 @@ optional keywords.
 responses expected by Dakota.  It must be one of three types:
 
 
--Optimization: objective and constraint functions
--Calibration: calibration (least squares) terms and constraint functions
--Uncertainty Quantifiation: generic response functions
+- Optimization: objective and constraint functions
+- Calibration: calibration (least squares) terms and constraint functions
+- Uncertainty Quantifiation: generic response functions
 
 The response type specified should be consistent with the iterative
 technique called for in the method specification.  Certain

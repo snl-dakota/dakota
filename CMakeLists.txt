@@ -40,6 +40,10 @@ endif()
 include(DakotaCxxOptions)
 dakota_cxx_standard()
 
+# Init code coverage if requested 
+include(DakotaGcov)
+dakota_gcov_init()
+
 # Developer convenience options first so take precedence over default options
 if(DevDebugShared OR DevDebugStatic OR DevDebug)  # DevDebug is deprecated
   include(DakotaDebug)
@@ -141,6 +145,13 @@ endif()
 enable_language(C)
 enable_language(CXX)
 enable_language(Fortran)
+
+# Ensure that GCC is being used if DAKOTA_GCOV was requested. 
+if(DAKOTA_GCOV AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+   message(FATAL_ERROR "DAKOTA_GCOV requires building with GCC")
+endif()
+
+
 if(MSVC_VERSION EQUAL 1400 OR MSVC_VERSION GREATER 1400 OR MSVC10)
   add_definitions(-D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE 
     -D_CRT_SECURE_NO_WARNINGS)
@@ -227,10 +238,6 @@ if(DAKOTA_F90)
   FortranCInterface_HEADER(dak_f90_config.h MACRO_NAMESPACE DAK_F90_)
   install(FILES ${Dakota_BINARY_DIR}/dak_f90_config.h DESTINATION include)
 endif(DAKOTA_F90)
-
-# Initialize GCov before adding targets to cover
-include(DakotaGcov)
-dakota_gcov_init()
 
 # -----
 # Configuration of Dakota components

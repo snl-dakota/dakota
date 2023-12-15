@@ -78,7 +78,11 @@ public class BatchPluginVersionUpdater {
 		"gov.sandia.apc.machines",
 		"gov.sandia.apc.terminal",
 		"gov.sandia.bb.commons.ui.saw",
+		"gov.sandia.blackbox.bmf",
 		"gov.sandia.dakota.parser.ui.saw.bridge",
+		"gov.sandia.dart.accounts.jobs",
+		"gov.sandia.dart.accounts.jobs.localstorage",
+		"gov.sandia.dart.accounts.jobs.provider",
 		"gov.sandia.dart.apache.commons",
 		"gov.sandia.dart.application",
 		"gov.sandia.dart.aprepro",
@@ -86,12 +90,20 @@ public class BatchPluginVersionUpdater {
 		"gov.sandia.dart.chart.xyplot.ui",
 		"gov.sandia.dart.common.core",
 		"gov.sandia.dart.common.preferences",
+		"gov.sandia.dart.contrib.xml",
 		"gov.sandia.dart.cubit.jni",
 		"gov.sandia.dart.cubit.jni.win64",
 		"gov.sandia.dart.dakota.tests",
 		"gov.sandia.dart.hdf.exodus.bridge",
 		"gov.sandia.dart.jna",
 		"gov.sandia.dart.launch",
+		"gov.sandia.dart.login",
+		"gov.sandia.dart.login.core",
+		"gov.sandia.dart.login.history.view",
+		"gov.sandia.dart.login.krb",
+		"gov.sandia.dart.login.krb.status",
+		"gov.sandia.dart.login.sspi",
+		"gov.sandia.dart.login.sspi.status",
 		"gov.sandia.dart.machine.definitions",
 		"gov.sandia.dart.metrics",
 		"gov.sandia.dart.packaging.jre",
@@ -99,6 +111,8 @@ public class BatchPluginVersionUpdater {
 		"gov.sandia.dart.workflow.help",
 		"gov.sandia.dart.workflow.phase3",
 		"gov.sandia.dart.workflow.phase3.embedded",
+		"gov.sandia.ecmf.workflow.runtime",
+		"gov.sandia.ecmf.workflow.ui",
 		"gov.sandia.modules",
 		"gov.sandia.modules.runtime",
 		"gov.sandia.packaging.jre",
@@ -130,8 +144,8 @@ public class BatchPluginVersionUpdater {
 	private static final boolean UPDATE_FEATURE_XML = true;
 	private static final boolean UPDATE_FEATURE_RELEASENOTES = true;
 	private static final boolean UPDATE_DAKOTAGUI_PRODUCT = true;
-	private static final String GUI_VERSION = "6.17.1";
-	private static final String BUILD_DATE = "2023/02/22";
+	private static final String GUI_VERSION = "6.19.0";
+	private static final String BUILD_DATE = "2023/11/15";
 	
 	////////////
 	// FIELDS //

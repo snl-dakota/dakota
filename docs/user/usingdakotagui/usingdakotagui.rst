@@ -40,6 +40,7 @@ Wizards
    wizards/NewWorkflowDriver
    wizards/NewDakotaStudy  
    wizards/NewDakotaWrapperWorkflow
+   wizards/NewLazyDriver
 
 ==========================
 Editing Dakota Input Files
@@ -65,6 +66,7 @@ Running Dakota
    running/DakotaRunConfiguration
    running/DakotaRunWorkflow
    running/DakotaConsole
+   running/ReRunEvaluations
    
 =======================
 Running Dakota Remotely
