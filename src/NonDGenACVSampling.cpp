@@ -379,11 +379,12 @@ void NonDGenACVSampling::core_run()
   numSamples = pilotSamples[numApprox]; // last in pilot array
 
   switch (pilotMgmtMode) {
-  case  ONLINE_PILOT: // iterated ACV (default)
+  case  ONLINE_PILOT: // iterated GenACV (default)
     generalized_acv_online_pilot();     break;
-  case OFFLINE_PILOT: // computes perf for offline pilot/Oracle correlation
+  case OFFLINE_PILOT: // computes performance for offline/Oracle correlation
     generalized_acv_offline_pilot();    break;
-  case PILOT_PROJECTION: // for algorithm assessment/selection
+  case  ONLINE_PILOT_PROJECTION:
+  case OFFLINE_PILOT_PROJECTION: // for algorithm assessment/selection
     generalized_acv_pilot_projection(); break;
   }
 }
@@ -571,13 +572,21 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
   // --------------------------------------------------------------------
   // Evaluate shared increment and update correlations, {eval,EstVar}_ratios
   // --------------------------------------------------------------------
-  RealVector sum_H, sum_HH;   RealMatrix sum_L_baselineH, sum_LH, var_L;
+  RealVector sum_H, sum_HH;   RealMatrix sum_L, sum_LH, var_L;
   RealSymMatrixArray sum_LL;
-  evaluate_pilot(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH,
-		 N_H_actual, true);
-  compute_LH_statistics(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH,
-			N_H_actual, var_L, varH, covLL, covLH);
-  N_H_alloc = numSamples;
+  if (pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
+    SizetArray N_shared_pilot;
+    evaluate_pilot(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared_pilot, false);
+    compute_LH_statistics(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared_pilot,
+			  var_L, varH, covLL, covLH);
+    N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
+  }
+  else { // ONLINE_PILOT_PROJECTION
+    evaluate_pilot(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual, true);
+    compute_LH_statistics(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual,
+			  var_L, varH, covLL, covLH);
+    N_H_alloc = numSamples;
+  } /// *** TO DO: this code block is exact same as ACV ***
   std::pair<UShortArray, UShortArray> soln_key;
 
   // -----------------------------------
@@ -2009,7 +2018,8 @@ void NonDGenACVSampling::restore_best()
       activeDAGIter      != bestDAGIter) { // best is not most recent
     activeModelSetIter = bestModelSetIter;
     activeDAGIter      = bestDAGIter;
-    if (pilotMgmtMode != PILOT_PROJECTION && finalStatsType == QOI_STATISTICS) {
+    if ( ( pilotMgmtMode == ONLINE_PILOT || pilotMgmtMode == OFFLINE_PILOT) &&
+	 finalStatsType  == QOI_STATISTICS ) {
       //&& mlmfSubMethod != SUBMETHOD_ACV_MF) // approx_increments() for IS/RD
       generate_reverse_dag(best_models, best_dag);
       // now we can re-order roots based on final eval ratios solution for

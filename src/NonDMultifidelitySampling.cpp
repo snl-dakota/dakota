@@ -64,9 +64,10 @@ void NonDMultifidelitySampling::core_run()
   switch (pilotMgmtMode) {
   case  ONLINE_PILOT: // iterated MFMC (default)
     multifidelity_mc();                  break;
-  case OFFLINE_PILOT: // computes perf for offline pilot/Oracle correlation
+  case OFFLINE_PILOT: // computes performance for offline/Oracle correlation
     multifidelity_mc_offline_pilot();    break;
-  case PILOT_PROJECTION: // for algorithm assessment/selection
+  case  ONLINE_PILOT_PROJECTION:
+  case OFFLINE_PILOT_PROJECTION: // for algorithm assessment/selection
     multifidelity_mc_pilot_projection(); break;
   }
 }
@@ -223,30 +224,39 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
     variance reduction from pilot-only sampling. */
 void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
 {
-  RealVector sum_H(numFunctions), sum_HH(numFunctions);
-  RealMatrix var_L, sum_L_baseline(numFunctions, numApprox),
-    sum_LL(numFunctions, numApprox), sum_LH(numFunctions, numApprox);
   size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
 
+  RealVector sum_H(numFunctions), sum_HH(numFunctions);
+  RealMatrix var_L, sum_L(numFunctions, numApprox),
+    sum_LL(numFunctions, numApprox), sum_LH(numFunctions, numApprox);
   // ----------------------------------------------------
   // Evaluate shared increment and increment accumulators
   // ----------------------------------------------------
   shared_increment(mlmfIter); // spans ALL models, blocking
-  accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual);
-  N_H_alloc += numSamples;
   if (onlineCost) recover_online_cost(allResponses);
-  increment_equivalent_cost(numSamples, sequenceCost, 0,numGroups,equivHFEvals);
+  if (pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
+    SizetArray N_shared_pilot;
+    accumulate_mf_sums(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared_pilot);
+    //increment_equivalent_cost(...); // excluded
+    compute_LH_correlation(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared_pilot,
+			   var_L, varH, rho2LH);
+  }
+  else { // ONLINE_PILOT_PROJECTION
+    accumulate_mf_sums(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual);
+    N_H_alloc += numSamples;
+    increment_equivalent_cost(numSamples,sequenceCost,0,numGroups,equivHFEvals);
+    // First, compute the LF/HF evaluation ratio using shared samples,
+    // averaged over QoI.  This includes updating varH and rho2LH.
+    compute_LH_correlation(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual,
+			   var_L, varH, rho2LH);
+  }
 
-  // -------------------------------------------
-  // Compute correlations and evaluation ratios:
-  // -------------------------------------------
-  // First, compute the LF/HF evaluation ratio using shared samples,
-  // averaged over QoI.  This includes updating varH and rho2LH.
-  compute_LH_correlation(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH,
-			 N_H_actual, var_L, varH, rho2LH);
+  // --------------------------
+  // Compute evaluation ratios:
+  // --------------------------
   // estVarIter0 only uses HF pilot since CV terms (sum_L_shared / N_shared
   // - sum_L_refined / N_refined) cancel out prior to sample refinement.
   // (This differs from MLMC EstVar^0 which uses pilot for all levels.)
@@ -1444,7 +1454,9 @@ void NonDMultifidelitySampling::print_variance_reduction(std::ostream& s)
     Real avg_mc_est_var        = average(mc_est_var),
          avg_budget_mc_est_var = average(varH) / proj_equiv_hf,
          avg_est_var           = mfmcSolnData.average_estimator_variance();
-    String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected":"   Online";
+    String type = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
+		   pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
+                ? "Projected":"   Online";
     s << "  " << type << "   MC (" << std::setw(5)
       << (size_t)std::floor(average(N_H_actual) + deltaNActualHF + .5)
       << " HF samples): " << std::setw(wpp7) << avg_mc_est_var << "\n  "

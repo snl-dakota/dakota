@@ -133,7 +133,8 @@ void NonDMultilevelSampling::core_run()
     break;
   case OFFLINE_PILOT:
     multilevel_mc_offline_pilot();    break;
-  case PILOT_PROJECTION:
+  case  ONLINE_PILOT_PROJECTION:
+  case OFFLINE_PILOT_PROJECTION:
     multilevel_mc_pilot_projection(); break;
   }
 }
@@ -283,7 +284,8 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
     recover_variance(momentStats, varH);
     break;
   }
-  case PILOT_PROJECTION:
+  case  ONLINE_PILOT_PROJECTION:
+  case OFFLINE_PILOT_PROJECTION:
     update_projected_samples(delta_N_l, sequenceCost, deltaEquivHF);
     break;
   }
@@ -2069,7 +2071,9 @@ compute_error_estimates(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& 
 
 void NonDMultilevelSampling::print_variance_reduction(std::ostream& s)
 {
-  String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected" : "   Online";
+  String type = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
+		 pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
+              ? "Projected" : "   Online";
   size_t wpp7 = write_precision + 7;
   s << "<<<<< Variance for mean estimator:\n";
   switch (pilotMgmtMode) {

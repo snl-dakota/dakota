@@ -118,7 +118,8 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
     sampleType = SUBMETHOD_RANDOM;
 
   switch (pilotMgmtMode) {
-  case PILOT_PROJECTION: // no iteration
+  case  ONLINE_PILOT_PROJECTION:
+  case OFFLINE_PILOT_PROJECTION: // no iteration
     maxIterations = 0; //finalCVRefinement = false;
     break;
   case OFFLINE_PILOT:
@@ -278,7 +279,8 @@ void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
   if (!statsFlag)
     return;
 
-  bool pilot_projection = (pilotMgmtMode  == PILOT_PROJECTION),
+  bool pilot_projection = (pilotMgmtMode  ==  ONLINE_PILOT_PROJECTION ||
+			   pilotMgmtMode  == OFFLINE_PILOT_PROJECTION),
        cv_projection    = (finalStatsType == ESTIMATOR_PERFORMANCE),
        projections      = (pilot_projection || cv_projection);
   String summary_type = (pilot_projection) ? "Projected " : "Online ";

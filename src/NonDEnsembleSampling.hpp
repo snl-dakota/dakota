@@ -164,7 +164,7 @@ protected:
   /// invocation of load_pilot_sample()
   SizetArray pilotSamples;
   /// enumeration for pilot management modes: ONLINE_PILOT (default),
-  /// OFFLINE_PILOT, PILOT_PROJECTION
+  /// OFFLINE_PILOT, {ONLINE,OFFLINE}_PILOT_PROJECTION
   short pilotMgmtMode;
 
   /// indicates use of online cost recovery rather than offline

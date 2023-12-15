@@ -105,7 +105,8 @@ void NonDMultilevControlVarSampling::core_run()
     break;
   case OFFLINE_PILOT:
     multilevel_control_variate_mc_offline_pilot();    break;
-  case PILOT_PROJECTION:
+  case  ONLINE_PILOT_PROJECTION:
+  case OFFLINE_PILOT_PROJECTION:
     multilevel_control_variate_mc_pilot_projection(); break;
   }
   // ML performed on HF + CV applied per level using LF if available:
@@ -2042,7 +2043,9 @@ void NonDMultilevControlVarSampling::print_variance_reduction(std::ostream& s)
   //  NonDMultifidelitySampling::print_variance_reduction(s);  break;
   default: {
     Real avg_mlmc_estvar0, avg_budget_mc_estvar;
-    String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected":"   Online";
+    String type = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
+		   pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
+                ? "Projected":"   Online";
     size_t wpp7 = write_precision + 7;
     s << "<<<<< Variance for mean estimator:\n";
     switch (pilotMgmtMode) {

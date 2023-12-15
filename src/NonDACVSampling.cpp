@@ -78,9 +78,10 @@ void NonDACVSampling::core_run()
   switch (pilotMgmtMode) {
   case  ONLINE_PILOT: // iterated ACV (default)
     approximate_control_variate_online_pilot();     break;
-  case OFFLINE_PILOT: // computes perf for offline pilot/Oracle correlation
+  case OFFLINE_PILOT: // computes perf for offline/Oracle correlation
     approximate_control_variate_offline_pilot();    break;
-  case PILOT_PROJECTION: // for algorithm assessment/selection
+  case  ONLINE_PILOT_PROJECTION:
+  case OFFLINE_PILOT_PROJECTION: // for algorithm assessment/selection
     approximate_control_variate_pilot_projection(); break;
   }
 }
@@ -216,14 +217,22 @@ void NonDACVSampling::approximate_control_variate_pilot_projection()
   // --------------------------------------------------------------------
   // Evaluate shared increment and update correlations, {eval,EstVar}_ratios
   // --------------------------------------------------------------------
-  RealVector sum_H, sum_HH;  RealMatrix sum_L_baselineH, sum_LH, var_L;
+  RealVector sum_H, sum_HH;  RealMatrix sum_L, sum_LH, var_L;
   RealSymMatrixArray sum_LL;
-  evaluate_pilot(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH,
-		 N_H_actual, true);
+  if (pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
+    SizetArray N_shared_pilot;
+    evaluate_pilot(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared_pilot, false);
+    compute_LH_statistics(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared_pilot,
+			  var_L, varH, covLL, covLH);
+    N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
+  }
+  else { // ONLINE_PILOT_PROJECTION
+    evaluate_pilot(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual, true);
+    compute_LH_statistics(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual,
+			  var_L, varH, covLL, covLH);
+    N_H_alloc = numSamples;
+  }
   if (onlineCost) update_model_group_costs();
-  compute_LH_statistics(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH,
-			N_H_actual, var_L, varH, covLL, covLH);
-  N_H_alloc = numSamples;
 
   // -----------------------------------
   // Compute "online" sample increments:

@@ -90,9 +90,10 @@ void NonDMultilevBLUESampling::core_run()
   switch (pilotMgmtMode) {
   case  ONLINE_PILOT: // iterated ML BLUE (default)
     ml_blue_online_pilot();     break;
-  case OFFLINE_PILOT: // computes perf for offline pilot/Oracle correlation
+  case OFFLINE_PILOT: // computes performance for offline/Oracle correlations
     ml_blue_offline_pilot();    break;
-  case PILOT_PROJECTION: // for algorithm assessment/selection
+  case  ONLINE_PILOT_PROJECTION:
+  case OFFLINE_PILOT_PROJECTION: // for algorithm assessment/selection
     ml_blue_pilot_projection(); break;
   }
 }
@@ -187,7 +188,6 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
   RealMatrixArray sum_G_pilot; RealSymMatrix2DArray sum_GG_pilot;
   Sizet2DArray N_pilot;
   evaluate_pilot(sum_G_pilot, sum_GG_pilot, N_pilot, false);
-  //compute_GG_covariance(sum_G_pilot, sum_GG_pilot, N_pilot, covGG, covGGinv);
 
   // -----------------------------------
   // Compute "online" sample increments:
@@ -205,7 +205,7 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
   // -----------------------------------
   // Perform "online" sample increments:
   // -----------------------------------
-  // Only QOI_STATISTICS requires application of oversample ratios and
+  // Only QOI_STATISTICS requires application of sample increments and
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
   if (finalStatsType == QOI_STATISTICS) {
     // perform the shared increment for the online sample profile
@@ -233,10 +233,16 @@ void NonDMultilevBLUESampling::ml_blue_pilot_projection()
   // --------------------------------------------------------------------
   // Evaluate shared increment and update correlations, {eval,EstVar}_ratios
   // --------------------------------------------------------------------
-  RealMatrixArray sum_G; RealSymMatrix2DArray sum_GG;  SizetArray delta_N_G;
-  evaluate_pilot(sum_G, sum_GG, NGroupActual, true);
-  //compute_GG_covariance(sum_G, sum_GG, NGroupActual, covGG, covGGinv);
-  NGroupAlloc = pilotSamples;
+  RealMatrixArray sum_G; RealSymMatrix2DArray sum_GG;
+  if (pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
+    Sizet2DArray N_pilot;
+    evaluate_pilot(sum_G, sum_GG, N_pilot, false);
+    NGroupAlloc.assign(numGroups, 0);
+  }
+  else { // ONLINE_PILOT_PROJECTION
+    evaluate_pilot(sum_G, sum_GG, NGroupActual, true);
+    NGroupAlloc = pilotSamples;
+  }
 
   // -----------------------------------
   // Compute "online" sample increments:
@@ -244,6 +250,7 @@ void NonDMultilevBLUESampling::ml_blue_pilot_projection()
   // compute the LF/HF evaluation ratios from shared samples and compute
   // ratio of MC and ACV mean sq errors (which incorporates anticipated
   // variance reduction from application of avg_eval_ratios).
+  SizetArray delta_N_G;
   compute_allocations(blueSolnData, NGroupActual, NGroupAlloc, delta_N_G);
   ++mlmfIter;
 
@@ -887,7 +894,9 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s)
   //print_estimator_performance(s, blueSolnData);
 
   String method = " ML BLUE",
-    type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected" : "   Online";
+           type = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
+		   pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
+                ? "Projected" : "   Online";
   // Ordering of averages:
   // > recomputing final MC estvar, rather than dividing the two averages, gives
   //   a result that is consistent with average(estVarIter0) when N* = pilot.
