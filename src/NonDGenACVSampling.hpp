@@ -49,24 +49,20 @@ protected:
 
   void numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
 				 size_t& num_nln_con);
-  void numerical_solution_bounds_constraints(const DAGSolutionData& soln,
-    const RealVector& cost, Real avg_N_H, RealVector& x0, RealVector& x_lb,
-    RealVector& x_ub, RealVector& lin_ineq_lb, RealVector& lin_ineq_ub,
-    RealVector& lin_eq_tgt, RealVector& nln_ineq_lb, RealVector& nln_ineq_ub,
-    RealVector& nln_eq_tgt, RealMatrix& lin_ineq_coeffs,
-    RealMatrix& lin_eq_coeffs);
-  void finite_solution_bounds(const RealVector& cost, Real avg_N_H,
-			      RealVector& x_lb, RealVector& x_ub);
+  void numerical_solution_bounds_constraints(const MFSolutionData& soln,
+    RealVector& x0, RealVector& x_lb, RealVector& x_ub,
+    RealVector& lin_ineq_lb, RealVector& lin_ineq_ub, RealVector& lin_eq_tgt,
+    RealVector& nln_ineq_lb, RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
+    RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs);
 
   void recover_results(const RealVector& cv_star, const RealVector& fn_star,
-		       Real& avg_estvar, RealVector& avg_eval_ratios,
-		       Real& avg_hf_target, Real& equiv_hf_cost);
+		       MFSolutionData& soln);
 
-  Real linear_cost(const RealVector& N_vec);
-  Real nonlinear_cost(const RealVector& r_and_N);
-  void linear_cost_gradient(const RealVector& N_vec,RealVector& grad_c);
-  void nonlinear_cost_gradient(const RealVector& r_and_N,
-				       RealVector& grad_c);
+  Real linear_model_cost(const RealVector& N_vec);
+  Real nonlinear_model_cost(const RealVector& r_and_N);
+  void linear_model_cost_gradient(const RealVector& N_vec,RealVector& grad_c);
+  void nonlinear_model_cost_gradient(const RealVector& r_and_N,
+				     RealVector& grad_c);
 
   size_t num_approximations() const;
 
@@ -129,10 +125,12 @@ private:
 			 IntRealVectorMap& sum_H,
 			 IntRealSymMatrixArrayMap& sum_LL,
 			 IntRealMatrixMap& sum_LH, const SizetArray& N_H_actual,
-			 size_t N_H_alloc, const DAGSolutionData& soln);
+			 size_t N_H_alloc, const MFSolutionData& soln);
+
+  void update_model_group_costs();
 
   void precompute_ratios();
-  void compute_ratios(const RealMatrix& var_L, DAGSolutionData& solution);
+  void compute_ratios(const RealMatrix& var_L, MFSolutionData& solution);
 
   void genacv_raw_moments(IntRealMatrixMap& sum_L_baseline,
 			  IntRealMatrixMap& sum_L_shared,
@@ -153,19 +151,21 @@ private:
 			      const UShortArray& approx_set, RealVector& beta);
 
   void analytic_initialization_from_mfmc(const UShortArray& approx_set,
-					 Real avg_N_H, DAGSolutionData& soln);
+					 const RealMatrix& rho2_LH,
+					 Real avg_N_H, MFSolutionData& soln);
   void analytic_initialization_from_ensemble_cvmc(const UShortArray& approx_set,
 						  const UShortArray& dag,
 						  const UShortList& root_list,
+						  const RealMatrix& rho2_LH,
 						  Real avg_N_H,
-						  DAGSolutionData& soln);
+						  MFSolutionData& soln);
   void cvmc_ensemble_solutions(const RealSymMatrixArray& cov_LL,
 			       const RealMatrix& cov_LH,
 			       const RealVector& var_H, const RealVector& cost,
 			       const UShortArray& approx_set,
 			       const UShortArray& dag,
 			       const UShortList& root_list,
-			       DAGSolutionData& soln);
+			       RealVector& avg_eval_ratios);
 
   void compute_parameterized_G_g(const RealVector& N_vec);
   void unroll_z1_z2(const RealVector& N_vec, RealVector& z1, RealVector& z2);
@@ -203,12 +203,12 @@ private:
 			      const SizetArray& approx_sequence,
 			      size_t sequence_start, size_t sequence_end);
 
-  bool genacv_approx_increment(const DAGSolutionData& soln,
+  bool genacv_approx_increment(const MFSolutionData& soln,
 			       const Sizet2DArray& N_L_actual_refined,
 			       SizetArray& N_L_alloc_refined,
 			       size_t iter, const SizetArray& approx_sequence,
 			       size_t start, size_t end);
-  bool genacv_approx_increment(const DAGSolutionData& soln,
+  bool genacv_approx_increment(const MFSolutionData& soln,
 			       const Sizet2DArray& N_L_actual_refined,
 			       SizetArray& N_L_alloc_refined,
 			       size_t iter, unsigned short root,
@@ -223,12 +223,13 @@ private:
   void scale_to_target(Real avg_N_H, const RealVector& cost,
 		       RealVector& avg_eval_ratios, Real& avg_hf_target,
 		       const UShortArray& approx_set,
-		       const UShortList&  root_list);
+		       const UShortList& root_list, Real budget,
+		       Real offline_N_lwr = 2);
   void enforce_linear_ineq_constraints(RealVector& avg_eval_ratios,
 				       const UShortArray& approx_set,
 				       const UShortList& root_list);
 
-  void update_best(DAGSolutionData& solution);
+  void update_best(MFSolutionData& solution);
   void restore_best();
   //void reset_acv();
 
@@ -282,7 +283,7 @@ private:
 
   /// book-keeping of previous numerical optimization solutions for each DAG;
   /// used for warm starting
-  std::map<std::pair<UShortArray, UShortArray>, DAGSolutionData> dagSolns;
+  std::map<std::pair<UShortArray, UShortArray>, MFSolutionData> dagSolns;
 };
 
 
@@ -294,7 +295,7 @@ inline Real NonDGenACVSampling::estimator_accuracy_metric()
 {
   std::pair<UShortArray, UShortArray>
     key(activeModelSetIter->first, *activeDAGIter);
-  return dagSolns[key].avgEstVar;
+  return dagSolns[key].average_estimator_variance();
 }
 
 
@@ -302,7 +303,7 @@ inline Real NonDGenACVSampling::estimator_accuracy_metric()
 //{
 //  std::pair<UShortArray, UShortArray>
 //    key(activeModelSetIter->first, *activeDAGIter);
-//  return dagSolns[key].equivHFAlloc;
+//  return dagSolns[key].equivalent_hf_allocation();
 //}
 
 
@@ -432,8 +433,8 @@ inflate_variables(const RealVector& cd_vars, RealVector& N_vec,
 		  const UShortArray& approx_set)
 {
   size_t i, num_approx = approx_set.size(), num_cdv = cd_vars.length();
-  if  (N_vec.length() == numSteps) N_vec = 0.;
-  else N_vec.size(numSteps);
+  if  (N_vec.length() == numGroups) N_vec = 0.;
+  else N_vec.size(numGroups);
   for (i=0; i<num_approx; ++i)
     N_vec[approx_set[i]] = cd_vars[i];
   if (num_cdv == num_approx + 1)
@@ -570,7 +571,7 @@ compute_genacv_control(RealMatrix& sum_L_base_m, Real sum_H_mq,
 		       size_t N_shared_q, size_t mom, size_t qoi,
 		       const UShortArray& approx_set, RealVector& beta)
 {
-  if (mom == 1) // variances/covariances already computed for mean estimator
+  if (mom == 1 && pilotMgmtMode != OFFLINE_PILOT) // online covar avail for mean
     solve_for_genacv_control(covLL[qoi], GMat, covLH, gVec, qoi,
 			     approx_set, beta);
   else { // compute variances/covariances for higher-order moment estimators

@@ -7,8 +7,6 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Edited by:   Anh Tran on 12/21/2019
-
 #ifndef EGO_MINIMIZER_H
 #define EGO_MINIMIZER_H
 

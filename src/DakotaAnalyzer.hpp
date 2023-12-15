@@ -126,8 +126,22 @@ protected:
 
   /// perform function evaluations to map parameter sets (allVariables)
   /// into response sets (allResponses)
-  void evaluate_parameter_sets(Model& model, bool log_resp_flag,
-			       bool log_best_flag);
+  void evaluate_parameter_sets(Model& model, bool log_resp_flag = true,
+			       bool log_best_flag = false);
+
+  /// perform function evaluations to map a keyed batch of parameter sets
+  /// (allVariablesMap[key]) into a corresponding batch of response sets
+  /// (allResponsesMap[key])
+  void evaluate_batch(Model& model, int batch_id, bool log_best_flag = false);
+  /// perform function evaluations to map a keyed batch of parameter sets
+  /// (allVariablesMap[key]) into a corresponding batch of response sets
+  /// (allResponsesMap[key])
+  const IntResponse2DMap& synchronize_batches(Model& model,
+					      bool log_best_flag = false);
+  /// since synchronize returns the aggregation of all evaluated batches,
+  /// we use a separate call to indicate when processing of this data is
+  /// complete and bookkeeping can be cleared
+  void clear_batches();
 
   /// generate replicate parameter sets for use in variance-based decomposition
   void get_vbd_parameter_sets(Model& model, size_t num_samples);
@@ -168,12 +182,24 @@ protected:
 
   /// switch for allSamples (compact mode) instead of allVariables (normal mode)
   bool compactMode;
+
   /// array of all variables to be evaluated in evaluate_parameter_sets()
   VariablesArray allVariables;
   /// compact alternative to allVariables
   RealMatrix allSamples;
   /// array of all responses to be computed in evaluate_parameter_sets()
   IntResponseMap allResponses;
+
+  /// alternate container for Variables samples supporting evaluate_batch() and
+  /// synchronize_batches(), a 2D map with outer batch_id and inner eval_id
+  IntVariables2DMap batchVariablesMap;
+  /// alternate container for RealVector samples supporting evaluate_batch()
+  /// and synchronize_batches(), a 2D map with outer batch_id and inner eval_id
+  IntRealVector2DMap batchSamplesMap;
+  /// alternate container for Response samples supporting evaluate_batch() and
+  /// synchronize_batches(), a 2D map with outer batch_id and inner eval_id
+  IntResponse2DMap batchResponsesMap;
+
   /// array of headers to insert into output while evaluating allVariables
   StringArray allHeaders;
 
@@ -212,6 +238,22 @@ private:
   /// compares current evaluation to best evaluation and updates best
   void update_best(const Real* sample_c_vars, int eval_id,
 		   const Response& response);
+
+  /// for current response, update best result and archive
+  void log_response(const Model& model, IntResponseMap& resp_map, size_t i,
+		    bool log_resp_flag, bool log_best_flag);
+  /// update best result and archive all results
+  void log_response_map(const RealMatrix& samples,
+			const IntResponseMap& resp_map, bool log_best_flag);
+  /// update best result and archive all results
+  void log_response_map(const VariablesArray& vars_array,
+			const IntResponseMap& resp_map, bool log_best_flag);
+  /// update best result and archive all results
+  void log_response_map(const IntRealVectorMap& rv_map,
+			const IntResponseMap& resp_map, bool log_best_flag);
+  /// update best result and archive all results
+  void log_response_map(const IntVariablesMap& vars_map,
+			const IntResponseMap& resp_map, bool log_best_flag);
 
   //
   //- Heading: Data
@@ -253,6 +295,13 @@ inline const RealMatrix& Analyzer::all_samples()
 
 inline const IntResponseMap& Analyzer::all_responses() const
 { return allResponses; }
+
+
+inline void Analyzer::clear_batches()
+{
+  batchResponsesMap.clear(); batchSamplesMap.clear(); batchVariablesMap.clear();
+  //allResponses.clear(); allSamples.clear(); allVariables.clear();
+}
 
 
 /** default definition that gets redefined in selected derived Minimizers */
@@ -299,6 +348,82 @@ inline void Analyzer::response_results_active_set(const ActiveSet& set)
 
 inline bool Analyzer::compact_mode() const
 { return compactMode; }
+
+
+inline void Analyzer::
+log_response(const Model& model, IntResponseMap& resp_map, size_t i,
+	     bool log_resp_flag, bool log_best_flag)
+{
+  const Response& resp = model.current_response();
+  int eval_id = model.evaluation_id();
+  if (log_best_flag) update_best(model.current_variables(), eval_id, resp);
+  if (log_resp_flag) resp_map[eval_id] = resp.copy();
+  archive_model_response(resp, i);
+}
+
+
+inline void Analyzer::
+log_response_map(const RealMatrix& samples, const IntResponseMap& resp_map,
+		 bool log_best_flag)
+{
+  bool db_act = resultsDB.active();
+  if (!log_best_flag && !db_act) return;
+
+  IntRespMCIter r_cit;  size_t i;
+  for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit) {
+    if (log_best_flag) update_best(samples[i], r_cit->first, r_cit->second);
+    if (db_act)        archive_model_response(r_cit->second, i);
+  }
+}
+
+
+inline void Analyzer::
+log_response_map(const VariablesArray& vars_array,
+		 const IntResponseMap& resp_map, bool log_best_flag)
+{
+  bool db_act = resultsDB.active();
+  if (!log_best_flag && !db_act) return;
+
+  IntRespMCIter r_cit;  size_t i;
+  for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit) {
+    if (log_best_flag) update_best(vars_array[i], r_cit->first, r_cit->second);
+    if (db_act)        archive_model_response(r_cit->second, i);
+  }
+}
+
+
+inline void Analyzer::
+log_response_map(const IntRealVectorMap& rv_map,
+		 const IntResponseMap& resp_map, bool log_best_flag)
+{
+  bool db_act = resultsDB.active();
+  if (!log_best_flag && !db_act) return;
+
+  IntRVMCIter v_cit;  IntRespMCIter r_cit;  size_t i;
+  for (i=0, v_cit=rv_map.begin(), r_cit=resp_map.begin();
+       v_cit!=rv_map.end() && r_cit!=resp_map.end(); ++i, ++v_cit, ++r_cit) {
+    if (log_best_flag)
+      update_best(v_cit->second.values(), r_cit->first, r_cit->second);
+    if (db_act)
+      archive_model_response(r_cit->second, i);
+  }
+}
+
+
+inline void Analyzer::
+log_response_map(const IntVariablesMap& vars_map,
+		 const IntResponseMap& resp_map, bool log_best_flag)
+{
+  bool db_act = resultsDB.active();
+  if (!log_best_flag && !db_act) return;
+
+  IntVarsMCIter v_cit;  IntRespMCIter r_cit;  size_t i;
+  for (i=0, v_cit=vars_map.begin(), r_cit=resp_map.begin();
+       v_cit!=vars_map.end() && r_cit!=resp_map.end(); ++i, ++v_cit, ++r_cit) {
+    if (log_best_flag) update_best(v_cit->second, r_cit->first, r_cit->second);
+    if (db_act)        archive_model_response(r_cit->second, i);
+  }
+}
 
 } // namespace Dakota
 

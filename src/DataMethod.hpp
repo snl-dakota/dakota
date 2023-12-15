@@ -52,9 +52,11 @@ enum { DEFAULT_METHOD=0,
        MULTILEVEL_FUNCTION_TRAIN, MULTIFIDELITY_FUNCTION_TRAIN,
        CUBATURE_INTEGRATION, SPARSE_GRID_INTEGRATION, QUADRATURE_INTEGRATION, 
        BAYES_CALIBRATION, GPAIS, POF_DARTS, RKD_DARTS,
-       IMPORTANCE_SAMPLING, ADAPTIVE_SAMPLING, MULTILEVEL_SAMPLING,
-       MULTIFIDELITY_SAMPLING, MULTILEVEL_MULTIFIDELITY_SAMPLING,
-       APPROXIMATE_CONTROL_VARIATE, LIST_SAMPLING, RANDOM_SAMPLING,
+       IMPORTANCE_SAMPLING, ADAPTIVE_SAMPLING,
+       MULTILEVEL_SAMPLING, MULTIFIDELITY_SAMPLING,
+       MULTILEVEL_MULTIFIDELITY_SAMPLING,
+       APPROXIMATE_CONTROL_VARIATE, MULTILEVEL_BLUE,
+       LIST_SAMPLING, RANDOM_SAMPLING,
        // Variables::method_view(): epistemic if method_name > RANDOM_SAMPLING
        LOCAL_INTERVAL_EST, LOCAL_EVIDENCE, GLOBAL_INTERVAL_EST, GLOBAL_EVIDENCE,
        //BAYES_CALIBRATION=(ANALYZER_BIT | NOND_BIT | PARALLEL_BIT),
@@ -239,6 +241,8 @@ enum { CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT,
 
 // ML/MF sampling modes
 enum { ONLINE_PILOT, OFFLINE_PILOT, PILOT_PROJECTION };
+// ML/MF modes for group-based pilot sampling
+enum { SHARED_PILOT, INDEPENDENT_PILOT };
 // Numerical solution modes
 enum { REORDERED_FALLBACK, NUMERICAL_FALLBACK, NUMERICAL_OVERRIDE };
 
@@ -1086,8 +1090,11 @@ public:
   /// or lacking robustness, suggesting an optional override replacement
   unsigned short numericalSolveMode;
 
-  /// the \c pilot_samples selection in \ref MethodMultilevelMC
+  /// the \c pilot_samples selection in ML/MF methods
   SizetArray pilotSamples;
+  /// the group sampling approach for pilot sampling in ML BLUE:
+  /// independent or shared
+  short pilotGroupSampling;
   /// the \c solution_mode selection for ML/MF sampling methods
   short ensembleSampSolnMode;
   /// the \c truth_fixed_by_pilot flag for ACV methods

@@ -218,7 +218,7 @@ inline void NonDSparseGrid::push_set()
 inline void NonDSparseGrid::evaluate_set()
 {
   ssgDriver->compute_trial_grid(allSamples);
-  evaluate_parameter_sets(iteratedModel, true, false);
+  evaluate_parameter_sets(iteratedModel);
   ++numIntegrations;
 }
 
@@ -239,7 +239,7 @@ finalize_sets(bool output_sets, bool converged_within_tol, bool reverted)
 inline void NonDSparseGrid::evaluate_grid_increment()
 {
   ssgDriver->compute_increment(allSamples);
-  evaluate_parameter_sets(iteratedModel, true, false);
+  evaluate_parameter_sets(iteratedModel);
   ++numIntegrations;
 }
 

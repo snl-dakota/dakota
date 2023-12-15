@@ -118,8 +118,7 @@ void NonDMultilevelSampling::core_run()
   }
 
   configure_sequence(numSteps, secondaryIndex, sequenceType);
-  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
-  onlineCost = !query_cost(numSteps, multilev, sequenceCost);
+  onlineCost = !query_cost(numSteps, sequenceType, sequenceCost);
 
   // Useful for future extensions when convergence tolerance can be a vector
   convergenceTolVec.sizeUninitialized(numFunctions);
@@ -208,7 +207,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
     N_l[step].assign(numFunctions, 0);
 
   // now converge on sample counts per level (N_l)
-  while (Pecos::l1_norm(delta_N_l) && mlmfIter <= maxIterations) {
+  while (!zeros(delta_N_l) && mlmfIter <= maxIterations) {
 
     sum_sqrt_var_cost = 0.;
     for (step=0; step<numSteps; ++step) { // step is reference to lev
@@ -312,7 +311,7 @@ void NonDMultilevelSampling::multilevel_mc_Qsum()
   Sizet2DArray N_l_actual;  SizetArray delta_N_l, N_l_alloc;
 
   load_pilot_sample(pilotSamples, numSteps, delta_N_l);
-  while (Pecos::l1_norm(delta_N_l) && mlmfIter <= maxIterations)
+  while (!zeros(delta_N_l) && mlmfIter <= maxIterations)
     // loop over levels and compute sample increments
     evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1, sequenceCost,
 		    N_l_actual, N_l_actual, N_l_alloc, N_l_alloc,// pilot=online
@@ -633,7 +632,7 @@ evaluate_ml_sample_increment(String prepend, unsigned short step)
 		       mlmfIter, step);
 
   // compute allResponses from allVariables using hierarchical model
-  evaluate_parameter_sets(iteratedModel, true, false);
+  evaluate_parameter_sets(iteratedModel);
 }
 
 

@@ -11,6 +11,7 @@
 #define DAKOTA_NOND_H
 
 #include "DakotaAnalyzer.hpp"
+#include "dakota_stat_util.hpp"
 
 //#define DERIV_DEBUG
 
@@ -135,11 +136,13 @@ protected:
   /// configure fidelity/level counts from model hierarchy
   void configure_sequence(size_t& num_steps, size_t& secondary_index,
 			  short& seq_type);
+  /// configure the total number of fidelity/level options
+  void configure_enumeration(size_t& num_combinations);//, short& seq_type);
   /// extract cost estimates from model hierarchy (forms or resolutions)
-  void configure_cost(unsigned short num_steps, bool multilevel,
+  void configure_cost(unsigned short num_steps, short seq_type,
 		      RealVector& cost);
   /// extract cost estimates from model hierarchy, if available
-  bool query_cost(unsigned short num_steps, bool multilevel, RealVector& cost);
+  bool query_cost(unsigned short num_steps, short seq_type, RealVector& cost);
   /// extract cost estimates from model hierarchy, if available
   bool query_cost(unsigned short num_steps, Model& model, RealVector& cost);
   /// test cost for valid values > 0
@@ -249,6 +252,19 @@ protected:
   size_t one_sided_delta(const SizetArray& current, Real target, size_t power);
   //size_t one_sided_delta(const Sizet2DArray& current,
   //			   const RealMatrix& targets, size_t power);
+  /// compute a one-sided sample increment vector to move current sampling
+  /// levels to new targets
+  void one_sided_delta(const SizetArray& current, const RealVector& targets,
+		       SizetArray& delta_N);
+  /// compute a one-sided sample increment vector to move current sampling
+  /// levels to new targets
+  void one_sided_delta(const Sizet2DArray& current,
+		       const RealVector& targets, SizetArray& delta_N);
+
+  /// one-sided increase of current to match targets
+  void one_sided_update(SizetArray& current, const SizetArray& targets);
+  /// one-sided increase of current to match rounded targets
+  void one_sided_update(SizetArray& current, const RealVector& targets);
 
   /// return true if fine-grained reporting differs from coarse-grained
   bool differ(size_t N_alloc_ij, const SizetArray& N_actual_ij) const;
@@ -271,6 +287,15 @@ protected:
   void archive_pdf(size_t fn_index, size_t inc_id = 0);
   /// archive the equivalent number of HF evals (used by ML/MF methods)
   void archive_equiv_hf_evals(const Real equiv_hf_evals);
+
+  /// return true if N_m is empty or only populated with zeros
+  bool zeros(const SizetArray& N_m) const;
+  /// return true if N_m is empty or only populated with zeros
+  bool zeros(const Sizet2DArray& N_m) const;
+  /// return true if N_m is empty or only populated with zeros
+  bool zeros(const SizetVector& N_m) const;
+  /// return true if N_l has consistent values
+  bool homogeneous(const SizetArray& N_l) const;
 
   //
   //- Heading: Data members
@@ -381,14 +406,6 @@ private:
   void print_multilevel_row(std::ostream& s, const SizetArray& N_j,
 			    const SizetArray& N_jp1);
 
-  /// return true if N_l has consistent values
-  bool homogeneous(const SizetArray& N_l) const;
-
-  /// return true if N_m is empty or only populated with zeros
-  bool zeros(const SizetArray& N_m) const;
-  /// return true if N_m is empty or only populated with zeros
-  bool zeros(const Sizet2DArray& N_m) const;
-
   //
   //- Heading: Data members
   //
@@ -401,9 +418,9 @@ inline NonD::~NonD()
 
 
 inline void NonD::
-configure_cost(unsigned short num_steps, bool multilevel, RealVector& cost)
+configure_cost(unsigned short num_steps, short seq_type, RealVector& cost)
 {
-  bool cost_defined = query_cost(num_steps, multilevel, cost);
+  bool cost_defined = query_cost(num_steps, seq_type, cost);
   if (!cost_defined) {
     Cerr << "Error: missing required simulation cost data in NonD::"
 	 << "configure_cost()." << std::endl;
@@ -630,6 +647,74 @@ one_sided_delta(const Sizet2DArray& current, const RealMatrix& targets,
 */
 
 
+inline void NonD::
+one_sided_delta(const SizetArray& current, const RealVector& targets,
+		SizetArray& delta_N)
+{
+  size_t i, c_len = current.size(), t_len = targets.length(), tgt_i;
+  if (c_len != t_len) {
+    Cerr << "Error: inconsistent array sizes in NonD::one_sided_update()."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  if (delta_N.size() != c_len) delta_N.resize(c_len);
+  for (i=0; i<c_len; ++i) {
+    tgt_i      = (size_t)std::floor(targets[i] + .5);
+    delta_N[i] = (tgt_i > current[i]) ? tgt_i - current[i] : 0;
+  }
+}
+
+
+inline void NonD::
+one_sided_delta(const Sizet2DArray& current, const RealVector& targets,
+		SizetArray& delta_N)
+{
+  size_t i, c_len = current.size(), t_len = targets.length();  Real diff_i;
+  if (c_len != t_len) {
+    Cerr << "Error: inconsistent array sizes in NonD::one_sided_update()."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  if (delta_N.size() != c_len) delta_N.resize(c_len);
+  for (i=0; i<c_len; ++i) {
+    diff_i     = targets[i] - average(current[i]); // avg over all qoi
+    delta_N[i] = (diff_i > 0) ? (size_t)std::floor(diff_i + .5) : 0;
+  }
+}
+
+
+inline void NonD::
+one_sided_update(SizetArray& current, const SizetArray& targets)
+{
+  size_t i, c_len = current.size(), t_len = targets.size();
+  if (c_len != t_len) {
+    Cerr << "Error: inconsistent array sizes in NonD::one_sided_update()."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  for (i=0; i<c_len; ++i)
+    if (targets[i] > current[i])
+      current[i] = targets[i];
+}
+
+
+inline void NonD::
+one_sided_update(SizetArray& current, const RealVector& targets)
+{
+  size_t i, c_len = current.size(), t_len = targets.length(), rounded;
+  if (c_len != t_len) {
+    Cerr << "Error: inconsistent array sizes in NonD::one_sided_update()."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  for (i=0; i<c_len; ++i) {
+    rounded = (size_t)std::floor(targets[i] + .5);
+    if (rounded > current[i])
+      current[i] = rounded;
+  }
+}
+
+
 inline bool NonD::zeros(const SizetArray& N_m) const
 {
   size_t j, len = N_m.size();
@@ -645,6 +730,16 @@ inline bool NonD::zeros(const Sizet2DArray& N_m) const
   size_t j, len = N_m.size();
   for (j=0; j<len; ++j)
     if (!zeros(N_m[j]))
+      return false;
+  return true;
+}
+
+
+inline bool NonD::zeros(const SizetVector& N_m) const
+{
+  int j, len = N_m.length();
+  for (j=0; j<len; ++j)
+    if (N_m[j])
       return false;
   return true;
 }

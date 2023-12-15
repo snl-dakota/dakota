@@ -7112,6 +7112,8 @@ static Method_mp_type
 	MP2s(multilevDiscrepEmulation,RECURSIVE_EMULATION),
 	MP2p(nestingOverride,NESTED),                      // Pecos enumeration
 	MP2p(nestingOverride,NON_NESTED),                  // Pecos enumeration
+	MP2s(pilotGroupSampling,SHARED_PILOT),
+	MP2s(pilotGroupSampling,INDEPENDENT_PILOT),
 	MP2s(qoiAggregation,QOI_AGGREGATION_MAX),
 	MP2s(qoiAggregation,QOI_AGGREGATION_SUM),
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_GENERALIZED),// Pecos
@@ -7260,6 +7262,7 @@ static Method_mp_utype
 	MP2s(methodName,MULTIFIDELITY_POLYNOMIAL_CHAOS),
 	MP2s(methodName,MULTIFIDELITY_SAMPLING),
 	MP2s(methodName,MULTIFIDELITY_STOCH_COLLOCATION),
+	MP2s(methodName,MULTILEVEL_BLUE),
 	MP2s(methodName,MULTILEVEL_FUNCTION_TRAIN),
 	MP2s(methodName,MULTILEVEL_MULTIFIDELITY_SAMPLING),
 	MP2s(methodName,MULTILEVEL_POLYNOMIAL_CHAOS),

@@ -77,7 +77,6 @@ protected:
 		      RealSymMatrixArray& sum_LL_pilot,
 		      RealMatrix& sum_LH_pilot, RealVector& sum_HH_pilot,
 		      SizetArray& N_shared_pilot, bool incr_cost);
-
   void compute_LH_statistics(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
 			     RealSymMatrixArray& sum_LL_pilot,
 			     RealMatrix& sum_LH_pilot, RealVector& sum_HH_pilot,
@@ -100,7 +99,7 @@ protected:
 			   const RealVector& fn_vals, const ShortArray& asv,
 			   size_t approx);
 
-  bool acv_approx_increment(const DAGSolutionData& soln,
+  bool acv_approx_increment(const MFSolutionData& soln,
 			    const Sizet2DArray& N_L_actual_refined,
 			    SizetArray& N_L_alloc_refined, size_t iter,
 			    const SizetArray& approx_sequence,
@@ -122,37 +121,35 @@ protected:
 				       size_t qoi, RealSymMatrix& cov_LL,
 				       RealMatrix& cov_LH);
 
-  void update_projected_lf_samples(Real avg_hf_targets,
-				   const RealVector& avg_eval_ratios,
+  void update_projected_lf_samples(const MFSolutionData& soln,
 				   const UShortArray& approx_set,
 				   const SizetArray& N_H_actual,
 				   size_t& N_H_alloc,
 				   //SizetArray& delta_N_L_actual,
 				   Real& delta_equiv_hf);
-  void update_projected_samples(Real avg_hf_targets,
-				const RealVector& avg_eval_ratios,
+  void update_projected_samples(const MFSolutionData& soln,
 				const UShortArray& approx_set,
 				const SizetArray& N_H_actual, size_t& N_H_alloc,
 				size_t& delta_N_H_actual,
 				//SizetArray& delta_N_L_actual,
 				Real& delta_equiv_hf);
 
-  Real update_hf_target(const RealVector& avg_eval_ratios,
+  Real update_hf_target(const RealVector& avg_eval_ratios, Real avg_N_H,
 			const RealVector& var_H, const RealVector& estvar0);
 
-  void covariance_to_correlation_sq(const RealMatrix& cov_LH,
-				    const RealMatrix& var_L,
-				    const RealVector& var_H,
-				    RealMatrix& rho2_LH);
+  void print_model_solution(std::ostream& s, const MFSolutionData& soln,
+			    const UShortArray& approx_set);
 
-  void cache_mc_reference();
+  //
+  //- Heading: Data
+  //
 
-  void pick_mfmc_cvmc_solution(const DAGSolutionData& mf_soln, size_t mf_samp,
-			       const DAGSolutionData& cv_soln, size_t cv_samp,
-			       DAGSolutionData& soln, size_t& num_samp);
-
-  void print_computed_solution(std::ostream& s, const DAGSolutionData& soln,
-			       const UShortArray& approx_set);
+  /// covariances between each LF approximation and HF truth (the c
+  /// vector in ACV); organized numFunctions x numApprox
+  RealMatrix covLH;
+  /// covariances among all LF approximations (the C matrix in ACV); organized
+  /// as a numFunctions array of symmetic numApprox x numApprox matrices
+  RealSymMatrixArray covLL;
 
 private:
 
@@ -168,7 +165,9 @@ private:
 			 IntRealVectorMap& sum_H,
 			 IntRealSymMatrixArrayMap& sum_LL,
 			 IntRealMatrixMap& sum_LH, const SizetArray& N_H_actual,
-			 size_t N_H_alloc, const DAGSolutionData& soln);
+			 size_t N_H_alloc, const MFSolutionData& soln);
+
+  void update_model_group_costs();
 
   void precompute_acv_control(const RealVector& avg_eval_ratios,
 			      const SizetArray& N_shared);
@@ -178,12 +177,11 @@ private:
 			   size_t N_shared_q, size_t mom, size_t qoi,
 			   RealVector& beta);
 
-  void analytic_initialization_from_mfmc(Real avg_N_H, DAGSolutionData& soln);
-  void analytic_initialization_from_ensemble_cvmc(Real avg_N_H,
-						  DAGSolutionData& soln);
-  void cvmc_ensemble_solutions(const RealMatrix& rho2_LH,
-			       const RealVector& cost, DAGSolutionData& soln);
-
+  void analytic_initialization_from_mfmc(const RealMatrix& rho2_LH,
+					 Real avg_N_H, MFSolutionData& soln);
+  void analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
+						  Real avg_N_H,
+						  MFSolutionData& soln);
   void initialize_acv_counts(SizetArray& num_H, SizetSymMatrixArray& num_LL);
 
   //void initialize_acv_covariances(IntRealSymMatrixArrayMap covLL,
@@ -234,7 +232,7 @@ private:
   Real compute_R_sq(const RealSymMatrix& C, const RealSymMatrix& F,
 		    const RealMatrix& c, size_t qoi, Real var_H_q);
 
-  void compute_ratios(const RealMatrix& var_L, DAGSolutionData& soln);
+  void compute_ratios(const RealMatrix& var_L, MFSolutionData& soln);
 
   void acv_estvar_ratios(const RealSymMatrix& F, RealVector& estvar_ratios);
   //Real acv_estimator_variance(const RealVector& avg_eval_ratios,
@@ -243,9 +241,6 @@ private:
   void solve_for_acv_control(const RealSymMatrix& cov_LL,
 			     const RealSymMatrix& F, const RealMatrix& cov_LH,
 			     size_t qoi, RealVector& beta);
-
-  void scale_to_target(Real avg_N_H, const RealVector& cost,
-		       RealVector& avg_eval_ratios, Real& avg_hf_target);
 
   //
   //- Heading: Data
@@ -262,16 +257,16 @@ private:
   RealSymMatrix FMat;
 
   /// final solution data for ACV (default DAG = {numApprox,...,numApprox})
-  DAGSolutionData acvSolnData;
+  MFSolutionData acvSolnData;
 };
 
 
 inline Real NonDACVSampling::estimator_accuracy_metric()
-{ return acvSolnData.avgEstVar; }
+{ return acvSolnData.average_estimator_variance(); }
 
 
 //inline Real NonDACVSampling::estimator_cost_metric()
-//{ return mfmcSolnData.equivHFAlloc; }
+//{ return mfmcSolnData.equivalent_hf_allocation(); }
 
 
 inline void NonDACVSampling::
@@ -364,43 +359,6 @@ compute_L_variance(const RealMatrix& sum_L, const RealSymMatrixArray& sum_LL,
 
 
 inline void NonDACVSampling::
-covariance_to_correlation_sq(const RealMatrix& cov_LH, const RealMatrix& var_L,
-			     const RealVector& var_H, RealMatrix& rho2_LH)
-{
-  if (rho2_LH.empty()) rho2_LH.shapeUninitialized(numFunctions, numApprox);
-
-  size_t qoi, approx;  Real var_H_q, cov_LH_aq;
-  for (qoi=0; qoi<numFunctions; ++qoi) {
-    var_H_q = var_H[qoi];
-    for (approx=0; approx<numApprox; ++approx) {
-      cov_LH_aq = cov_LH(qoi,approx);
-      rho2_LH(qoi,approx) = cov_LH_aq / var_L(qoi,approx) * cov_LH_aq / var_H_q;
-    }
-  }
-}
-
-
-inline void NonDACVSampling::
-scale_to_target(Real avg_N_H, const RealVector& cost,
-		RealVector& avg_eval_ratios, Real& avg_hf_target)
-{
-  // scale to enforce budget constraint.  Since the profile does not emerge
-  // from pilot in ACV, don't select an infeasible initial guess:
-  // > if N* < N_pilot, scale back r* --> initial = scaled_r*,N_pilot
-  // > if N* > N_pilot, use initial = r*,N*
-  avg_hf_target = allocate_budget(avg_eval_ratios, cost); // r* --> N*
-  if (pilotMgmtMode == OFFLINE_PILOT) {
-    Real offline_N_lwr = 2.;
-    if (avg_N_H < offline_N_lwr) avg_N_H = offline_N_lwr;
-  }
-  if (avg_N_H > avg_hf_target) {// replace N* with N_pilot, rescale r* to budget
-    avg_hf_target = avg_N_H;
-    scale_to_budget_with_pilot(avg_eval_ratios, cost, avg_hf_target);
-  }
-}
-
-
-inline void NonDACVSampling::
 compute_F_matrix(const RealVector& r_and_N, RealSymMatrix& F)
 {
   size_t i, j;
@@ -445,8 +403,8 @@ compute_F_matrix(const RealVector& r_and_N, RealSymMatrix& F)
   }
 
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "F matrix for sub-method " << mlmfSubMethod << ":\n" << F
-	 << std::endl;
+    Cout << "Given r_and_N vector:\n" << r_and_N << "F matrix for sub-method "
+	 << mlmfSubMethod << ":\n" << F << std::endl;
 }
 
 
@@ -684,7 +642,7 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
   // map incoming continuous design vars into r_i factors and compute F
   RealSymMatrix F;
   switch (optSubProblemForm) {
-  case N_VECTOR_LINEAR_OBJECTIVE:  case N_VECTOR_LINEAR_CONSTRAINT: {
+  case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT: {
     RealVector r;  copy_data_partial(cd_vars, 0, (int)numApprox, r); // N_i
     r.scale(1./cd_vars[numApprox]); // r_i = N_i / N
     compute_F_matrix(r, F);
@@ -750,11 +708,14 @@ compute_acv_control(RealMatrix& sum_L_base_m, Real sum_H_mq,
 		    RealSymMatrix& sum_LL_mq, RealMatrix& sum_LH_m,
 		    size_t N_shared_q, size_t mom, size_t qoi, RealVector& beta)
 {
-  if (mom == 1) // variances/covariances already computed for mean estimator
+  if (mom == 1 && pilotMgmtMode != OFFLINE_PILOT) // online covar avail for mean
     solve_for_acv_control(covLL[qoi], FMat, covLH, qoi, beta);
   else { // compute variances/covariances for higher-order moment estimators
     // compute cov_LL, cov_LH, var_H across numApprox for a particular QoI
     // > cov_LH is sized for all qoi but only 1 row is used
+    // > we always use the online covariances and sample accumulations for
+    //   self-consistency in data sets, even when more accurate offline
+    //   covariances may be available
     RealSymMatrix cov_LL; RealMatrix cov_LH;
     compute_acv_control_covariances(sum_L_base_m, sum_H_mq, sum_LL_mq, sum_LH_m,
 				    N_shared_q, qoi, cov_LL, cov_LH);

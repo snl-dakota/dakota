@@ -973,14 +973,14 @@ void NonDBayesCalibration::update_model()
   case PCE_EMULATOR: case SC_EMULATOR:
   case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
     nondInstance = (NonD*)stochExpIterator.iterator_rep().get();
-    evaluate_parameter_sets(mcmcModel, true, false); // log allResp, no best
+    evaluate_parameter_sets(mcmcModel);
     nondInstance = this; // restore
     break;
   case GP_EMULATOR: case KRIGING_EMULATOR:
     if (standardizedSpace)
       nondInstance
 	= (NonD*)mcmcModel.subordinate_iterator().iterator_rep().get();
-    evaluate_parameter_sets(mcmcModel, true, false); // log allResp, no best
+    evaluate_parameter_sets(mcmcModel);
     if (standardizedSpace)
       nondInstance = this; // restore
     break;
