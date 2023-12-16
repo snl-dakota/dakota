@@ -124,19 +124,19 @@ void NonDMultilevelSampling::core_run()
   convergenceTolVec.sizeUninitialized(numFunctions);
   convergenceTolVec = convergenceTol; // assign scalar to vector
 
-  switch (pilotMgmtMode) {
-  case ONLINE_PILOT:
-    //if (true)//(subIteratorFlag)
-    multilevel_mc_Qsum(); // w/ error est, unbiased central moments
-    //else
-    //  multilevel_mc_Ysum(); // lighter weight
-    break;
-  case OFFLINE_PILOT:
-    multilevel_mc_offline_pilot();    break;
-  case  ONLINE_PILOT_PROJECTION:
-  case OFFLINE_PILOT_PROJECTION:
-    multilevel_mc_pilot_projection(); break;
-  }
+  if (pilotProjection) // for algorithm assessment/selection
+    multilevel_mc_pilot_projection();
+  else
+    switch (pilotMgmtMode) {
+    case ONLINE_PILOT:
+      //if (true)//(subIteratorFlag)
+      multilevel_mc_Qsum(); // w/ error est, unbiased central moments
+      //else
+      //  multilevel_mc_Ysum(); // lighter weight
+      break;
+    case OFFLINE_PILOT:
+      multilevel_mc_offline_pilot();    break;
+    }
 }
 
 
@@ -272,8 +272,10 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
 	 << delta_N_l << std::endl;
   }
 
-  switch (pilotMgmtMode) {
-  case ONLINE_PILOT: case OFFLINE_PILOT: {
+  if (pilotProjection) {
+    update_projected_samples(delta_N_l, sequenceCost, deltaEquivHF);
+  }
+  else {
     // aggregate expected value of estimators for Y, Y^2, Y^3, Y^4. Final
     // expectation is sum of expectations from telescopic sum. Note: raw moments
     // have no bias correction (no additional variance from estimated center).
@@ -282,12 +284,6 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
 		   0, numSteps, Q_raw_mom);
     convert_moments(Q_raw_mom, momentStats); // raw to final (central or std)
     recover_variance(momentStats, varH);
-    break;
-  }
-  case  ONLINE_PILOT_PROJECTION:
-  case OFFLINE_PILOT_PROJECTION:
-    update_projected_samples(delta_N_l, sequenceCost, deltaEquivHF);
-    break;
   }
 
   compute_ml_estimator_variance(var_Y, N_l, estVar);
@@ -2071,9 +2067,7 @@ compute_error_estimates(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& 
 
 void NonDMultilevelSampling::print_variance_reduction(std::ostream& s)
 {
-  String type = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
-		 pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
-              ? "Projected" : "   Online";
+  String type = (pilotProjection) ? "Projected" : "   Online";
   size_t wpp7 = write_precision + 7;
   s << "<<<<< Variance for mean estimator:\n";
   switch (pilotMgmtMode) {

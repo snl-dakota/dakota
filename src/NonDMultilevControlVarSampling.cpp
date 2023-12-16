@@ -96,19 +96,19 @@ void NonDMultilevControlVarSampling::core_run()
   active_key.form_key(0, lf_form, lev, hf_form, lev, Pecos::RAW_DATA);
   iteratedModel.active_model_key(active_key);
 
-  switch (pilotMgmtMode) {
-  case ONLINE_PILOT:
-    //if (true) // reformulated approach using 1 new QoI correlation per level
-    multilevel_control_variate_mc_Qcorr();
-    //else      // original approach using 1 discrepancy correlation per level
-    //  multilevel_control_variate_mc_Ycorr();
-    break;
-  case OFFLINE_PILOT:
-    multilevel_control_variate_mc_offline_pilot();    break;
-  case  ONLINE_PILOT_PROJECTION:
-  case OFFLINE_PILOT_PROJECTION:
-    multilevel_control_variate_mc_pilot_projection(); break;
-  }
+  if (pilotProjection) // for algorithm assessment/selection
+    multilevel_control_variate_mc_pilot_projection();
+  else
+    switch (pilotMgmtMode) {
+    case ONLINE_PILOT:
+      //if (true) // reformulated approach using 1 new QoI correlation per level
+      multilevel_control_variate_mc_Qcorr();
+      //else      // original approach using 1 discrepancy correlation per level
+      //  multilevel_control_variate_mc_Ycorr();
+      break;
+    case OFFLINE_PILOT:
+      multilevel_control_variate_mc_offline_pilot();    break;
+    }
   // ML performed on HF + CV applied per level using LF if available:
   // perform MLMC on HF model and bind 1:min(num_hf,num_lf) LF control
   // variates starting at coarsest level
@@ -2043,9 +2043,7 @@ void NonDMultilevControlVarSampling::print_variance_reduction(std::ostream& s)
   //  NonDMultifidelitySampling::print_variance_reduction(s);  break;
   default: {
     Real avg_mlmc_estvar0, avg_budget_mc_estvar;
-    String type = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
-		   pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
-                ? "Projected":"   Online";
+    String type = (pilotProjection) ? "Projected":"   Online";
     size_t wpp7 = write_precision + 7;
     s << "<<<<< Variance for mean estimator:\n";
     switch (pilotMgmtMode) {

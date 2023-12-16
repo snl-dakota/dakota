@@ -2129,9 +2129,7 @@ print_estimator_performance(std::ostream& s, const MFSolutionData& soln)
     //<< std::setw(wpp7) << average(initial_mc_estvar) << '\n';
   }
 
-  String type = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
-		 pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
-              ? "Projected" : "   Online";
+  String type = (pilotProjection) ? "Projected" : "   Online";
   //String method = method_enum_to_string(methodName); // string too verbose
   String method = (methodName == MULTIFIDELITY_SAMPLING) ? " MFMC" : "  ACV";
   // Ordering of averages:

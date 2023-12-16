@@ -87,15 +87,15 @@ NonDMultilevBLUESampling::~NonDMultilevBLUESampling()
 
 void NonDMultilevBLUESampling::core_run()
 {
-  switch (pilotMgmtMode) {
-  case  ONLINE_PILOT: // iterated ML BLUE (default)
-    ml_blue_online_pilot();     break;
-  case OFFLINE_PILOT: // computes performance for offline/Oracle correlations
-    ml_blue_offline_pilot();    break;
-  case  ONLINE_PILOT_PROJECTION:
-  case OFFLINE_PILOT_PROJECTION: // for algorithm assessment/selection
-    ml_blue_pilot_projection(); break;
-  }
+  if (pilotProjection) // for algorithm assessment/selection
+    ml_blue_pilot_projection();
+  else
+    switch (pilotMgmtMode) {
+    case  ONLINE_PILOT: // iterated ML BLUE (default)
+      ml_blue_online_pilot();     break;
+    case OFFLINE_PILOT: // computes performance for offline/Oracle correlations
+      ml_blue_offline_pilot();    break;
+    }
 }
 
 
@@ -234,12 +234,12 @@ void NonDMultilevBLUESampling::ml_blue_pilot_projection()
   // Evaluate shared increment and update correlations, {eval,EstVar}_ratios
   // --------------------------------------------------------------------
   RealMatrixArray sum_G; RealSymMatrix2DArray sum_GG;
-  if (pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
+  if (pilotMgmtMode == OFFLINE_PILOT) {
     Sizet2DArray N_pilot;
     evaluate_pilot(sum_G, sum_GG, N_pilot, false);
     NGroupAlloc.assign(numGroups, 0);
   }
-  else { // ONLINE_PILOT_PROJECTION
+  else { // ONLINE_PILOT
     evaluate_pilot(sum_G, sum_GG, NGroupActual, true);
     NGroupAlloc = pilotSamples;
   }
@@ -894,9 +894,7 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s)
   //print_estimator_performance(s, blueSolnData);
 
   String method = " ML BLUE",
-           type = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
-		   pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
-                ? "Projected" : "   Online";
+           type = (pilotProjection) ? "Projected" : "   Online";
   // Ordering of averages:
   // > recomputing final MC estvar, rather than dividing the two averages, gives
   //   a result that is consistent with average(estVarIter0) when N* = pilot.

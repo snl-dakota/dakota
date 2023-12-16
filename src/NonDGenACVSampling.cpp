@@ -378,15 +378,15 @@ void NonDGenACVSampling::core_run()
   // Initialize for pilot sample
   numSamples = pilotSamples[numApprox]; // last in pilot array
 
-  switch (pilotMgmtMode) {
-  case  ONLINE_PILOT: // iterated GenACV (default)
-    generalized_acv_online_pilot();     break;
-  case OFFLINE_PILOT: // computes performance for offline/Oracle correlation
-    generalized_acv_offline_pilot();    break;
-  case  ONLINE_PILOT_PROJECTION:
-  case OFFLINE_PILOT_PROJECTION: // for algorithm assessment/selection
-    generalized_acv_pilot_projection(); break;
-  }
+  if (pilotProjection) // for algorithm assessment/selection
+    generalized_acv_pilot_projection();
+  else
+    switch (pilotMgmtMode) {
+    case  ONLINE_PILOT: // iterated GenACV (default)
+      generalized_acv_online_pilot();   break;
+    case OFFLINE_PILOT: // computes performance for offline/Oracle correlation
+      generalized_acv_offline_pilot();  break;
+    }
 }
 
 
@@ -574,14 +574,14 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
   // --------------------------------------------------------------------
   RealVector sum_H, sum_HH;   RealMatrix sum_L, sum_LH, var_L;
   RealSymMatrixArray sum_LL;
-  if (pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
+  if (pilotMgmtMode == OFFLINE_PILOT) {
     SizetArray N_shared_pilot;
     evaluate_pilot(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared_pilot, false);
     compute_LH_statistics(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared_pilot,
 			  var_L, varH, covLL, covLH);
     N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
   }
-  else { // ONLINE_PILOT_PROJECTION
+  else { // ONLINE_PILOT
     evaluate_pilot(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual, true);
     compute_LH_statistics(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual,
 			  var_L, varH, covLL, covLH);

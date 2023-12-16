@@ -30,7 +30,8 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
   NonDSampling(problem_db, model),
   //pilotSamples(problem_db.get_sza("method.nond.pilot_samples")),
   pilotMgmtMode(
-    problem_db.get_short("method.nond.ensemble_sampling_solution_mode")),
+    problem_db.get_short("method.nond.ensemble_pilot_solution_mode")),
+  pilotProjection(problem_db.get_bool("method.nond.ensemble_pilot_projection")),
   randomSeedSeqSpec(problem_db.get_sza("method.random_seed_sequence")),
   backfillFailures(false), // inactive option for now
   mlmfIter(0), equivHFEvals(0.), // also reset in pre_run()
@@ -117,27 +118,26 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
   if (!sampleType) // SUBMETHOD_DEFAULT
     sampleType = SUBMETHOD_RANDOM;
 
-  switch (pilotMgmtMode) {
-  case  ONLINE_PILOT_PROJECTION:
-  case OFFLINE_PILOT_PROJECTION: // no iteration
+  if (pilotProjection) // no iteration
     maxIterations = 0; //finalCVRefinement = false;
-    break;
-  case OFFLINE_PILOT:
-    maxIterations = 1; //finalCVRefinement = true;
-    // convergenceTol option is problematic since the reference EstVar
-    // comes from offline eval with Oracle/overkill N
-    if (maxFunctionEvals == SZ_MAX) {
-      Cerr << "Error: evaluation budget required for offline pilot mode."
-	   << std::endl;
-      abort_handler(METHOD_ERROR);
+  else
+    switch (pilotMgmtMode) {
+    case OFFLINE_PILOT:
+      maxIterations = 1; //finalCVRefinement = true;
+      // convergenceTol option is problematic since the reference EstVar
+      // comes from offline eval with Oracle/overkill N
+      if (maxFunctionEvals == SZ_MAX) {
+	Cerr << "Error: evaluation budget required for offline pilot mode."
+	     << std::endl;
+	abort_handler(METHOD_ERROR);
+      }
+      break;
+    default: // ONLINE_PILOT
+      // MLMF-specific default: don't let allocator get stuck in fine-tuning
+      if (maxIterations    == SZ_MAX) maxIterations    = 25;
+      //if (maxFunctionEvals == SZ_MAX) maxFunctionEvals = ; // allow inf budget
+      break;
     }
-    break;
-  default: // ONLINE_PILOT
-    // MLMF-specific default: don't let allocator get stuck in fine-tuning
-    if (maxIterations    == SZ_MAX) maxIterations    = 25;
-  //if (maxFunctionEvals == SZ_MAX) maxFunctionEvals = ; // allow inf budget
-    break;
-  }
 
   initialize_final_statistics();
 }
@@ -279,11 +279,9 @@ void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
   if (!statsFlag)
     return;
 
-  bool pilot_projection = (pilotMgmtMode  ==  ONLINE_PILOT_PROJECTION ||
-			   pilotMgmtMode  == OFFLINE_PILOT_PROJECTION),
-       cv_projection    = (finalStatsType == ESTIMATOR_PERFORMANCE),
-       projections      = (pilot_projection || cv_projection);
-  String summary_type = (pilot_projection) ? "Projected " : "Online ";
+  bool cv_projection  = (finalStatsType == ESTIMATOR_PERFORMANCE),
+       projections    = (pilotProjection || cv_projection);
+  String summary_type = (pilotProjection) ? "Projected " : "Online ";
 
   // model-based allocation methods, e.g. ML, MF, MLMF, ACV, GenACV
   print_multimodel_summary(s, summary_type, projections);

@@ -141,7 +141,7 @@ DataMethodRep::DataMethodRep():
   expansionSamples(SZ_MAX), truthPilotConstraint(false),
   dagRecursionType(NO_GRAPH_RECURSION), dagDepthLimit(1),
   modelSelectType(NO_MODEL_SELECTION), pilotGroupSampling(SHARED_PILOT),
-  ensembleSampSolnMode(ONLINE_PILOT),
+  ensemblePilotSolnMode(ONLINE_PILOT), ensemblePilotProjection(false),
   allocationTarget(TARGET_MEAN), useTargetVarianceOptimizationFlag(false),
   qoiAggregation(QOI_AGGREGATION_SUM),
   convergenceToleranceType(CONVERGENCE_TOLERANCE_TYPE_RELATIVE),
@@ -330,9 +330,9 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << grayCodeOrdering << dOptimal << numCandidateDesigns //<< reliabilitySearchType
     << reliabilityIntegration << integrationRefine << refineSamples
     << optSubProbSolver << numericalSolveMode << pilotSamples
-    << pilotGroupSampling << ensembleSampSolnMode << truthPilotConstraint
-    << dagRecursionType << dagDepthLimit << modelSelectType
-    << multilevAllocControl << multilevEstimatorRate
+    << pilotGroupSampling << ensemblePilotSolnMode << ensemblePilotProjection
+    << truthPilotConstraint << dagRecursionType << dagDepthLimit
+    << modelSelectType << multilevAllocControl << multilevEstimatorRate
     << multilevDiscrepEmulation << finalStatsType << finalMomentsType
     << distributionType << responseLevelTarget << responseLevelTargetReduce
     << responseLevels << probabilityLevels << reliabilityLevels
@@ -507,9 +507,9 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> grayCodeOrdering >> dOptimal >> numCandidateDesigns //>> reliabilitySearchType
     >> reliabilityIntegration >> integrationRefine >> refineSamples
     >> optSubProbSolver >> numericalSolveMode >> pilotSamples
-    >> pilotGroupSampling >> ensembleSampSolnMode >> truthPilotConstraint
-    >> dagRecursionType >> dagDepthLimit >> modelSelectType
-    >> multilevAllocControl >> multilevEstimatorRate
+    >> pilotGroupSampling >> ensemblePilotSolnMode >> ensemblePilotProjection
+    >> truthPilotConstraint >> dagRecursionType >> dagDepthLimit
+    >> modelSelectType >> multilevAllocControl >> multilevEstimatorRate
     >> multilevDiscrepEmulation >> finalStatsType >> finalMomentsType
     >> distributionType >> responseLevelTarget >> responseLevelTargetReduce
     >> responseLevels >> probabilityLevels >> reliabilityLevels
@@ -679,9 +679,9 @@ void DataMethodRep::write(std::ostream& s) const
     << numCandidateDesigns //<< reliabilitySearchType
     << reliabilityIntegration << integrationRefine << refineSamples
     << optSubProbSolver << numericalSolveMode << pilotSamples
-    << pilotGroupSampling << ensembleSampSolnMode << truthPilotConstraint
-    << dagRecursionType << dagDepthLimit << modelSelectType
-    << multilevAllocControl << multilevEstimatorRate
+    << pilotGroupSampling << ensemblePilotSolnMode << ensemblePilotProjection
+    << truthPilotConstraint << dagRecursionType << dagDepthLimit
+    << modelSelectType << multilevAllocControl << multilevEstimatorRate
     << multilevDiscrepEmulation << finalStatsType << finalMomentsType
     << distributionType << responseLevelTarget << responseLevelTargetReduce
     << responseLevels << probabilityLevels << reliabilityLevels

@@ -2831,11 +2831,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
     [ solution_mode {0}
-      online_pilot {N_mdm(type,ensembleSampSolnMode_ONLINE_PILOT)}
+      online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
       |
-      offline_pilot {N_mdm(type,ensembleSampSolnMode_OFFLINE_PILOT)}
-      |
-      pilot_projection {N_mdm(type,ensembleSampSolnMode_ONLINE_PILOT_PROJECTION)}
+      offline_pilot {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}
+      [ pilot_projection {N_mdm(true,ensemblePilotProjection)} ]
      ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
@@ -2920,11 +2919,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
     [ solution_mode {0}
-      online_pilot {N_mdm(type,ensembleSampSolnMode_ONLINE_PILOT)}
+      online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
       |
-      offline_pilot {N_mdm(type,ensembleSampSolnMode_OFFLINE_PILOT)}
-      |
-      pilot_projection {N_mdm(type,ensembleSampSolnMode_ONLINE_PILOT_PROJECTION)}
+      offline_pilot {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}
+      [ pilot_projection {N_mdm(true,ensemblePilotProjection)} ]
      ]
     [ numerical_solve {0}
       [ 
@@ -2997,11 +2995,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
     [ solution_mode {0}
-      online_pilot {N_mdm(type,ensembleSampSolnMode_ONLINE_PILOT)}
+      online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
       |
-      offline_pilot {N_mdm(type,ensembleSampSolnMode_OFFLINE_PILOT)}
-      |
-      pilot_projection {N_mdm(type,ensembleSampSolnMode_ONLINE_PILOT_PROJECTION)}
+      offline_pilot {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}
+      [ pilot_projection {N_mdm(true,ensemblePilotProjection)} ]
      ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
@@ -3070,11 +3067,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
      ]
     [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
     [ solution_mode {0}
-      online_pilot {N_mdm(type,ensembleSampSolnMode_ONLINE_PILOT)}
+      online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
       |
-      offline_pilot {N_mdm(type,ensembleSampSolnMode_OFFLINE_PILOT)}
-      |
-      pilot_projection {N_mdm(type,ensembleSampSolnMode_ONLINE_PILOT_PROJECTION)}
+      offline_pilot {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}
+      [ pilot_projection {N_mdm(true,ensemblePilotProjection)} ]
      ]
     [ truth_fixed_by_pilot {N_mdm(true,truthPilotConstraint)} ]
     [ 
@@ -3140,11 +3136,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
       [ independent {N_mdm(type,pilotGroupSampling_INDEPENDENT_PILOT)} ]
      ]
     [ solution_mode {0}
-      online_pilot {N_mdm(type,ensembleSampSolnMode_ONLINE_PILOT)}
+      online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
       |
-      offline_pilot {N_mdm(type,ensembleSampSolnMode_OFFLINE_PILOT)}
-      |
-      pilot_projection {N_mdm(type,ensembleSampSolnMode_ONLINE_PILOT_PROJECTION)}
+      offline_pilot {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}
+      [ pilot_projection {N_mdm(true,ensemblePilotProjection)} ]
      ]
     [ 
       sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}

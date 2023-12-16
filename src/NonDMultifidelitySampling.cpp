@@ -61,15 +61,15 @@ void NonDMultifidelitySampling::core_run()
   // Initialize for pilot sample
   numSamples = pilotSamples[numApprox]; // last in pilot array
 
-  switch (pilotMgmtMode) {
-  case  ONLINE_PILOT: // iterated MFMC (default)
-    multifidelity_mc();                  break;
-  case OFFLINE_PILOT: // computes performance for offline/Oracle correlation
-    multifidelity_mc_offline_pilot();    break;
-  case  ONLINE_PILOT_PROJECTION:
-  case OFFLINE_PILOT_PROJECTION: // for algorithm assessment/selection
-    multifidelity_mc_pilot_projection(); break;
-  }
+  if (pilotProjection) // for algorithm assessment/selection
+    multifidelity_mc_pilot_projection();
+  else
+    switch (pilotMgmtMode) {
+    case  ONLINE_PILOT: // iterated MFMC (default)
+      multifidelity_mc();                break;
+    case OFFLINE_PILOT: // computes performance for offline/Oracle correlation
+      multifidelity_mc_offline_pilot();  break;
+    }
 }
 
 
@@ -237,14 +237,14 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
   // ----------------------------------------------------
   shared_increment(mlmfIter); // spans ALL models, blocking
   if (onlineCost) recover_online_cost(allResponses);
-  if (pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
+  if (pilotMgmtMode == OFFLINE_PILOT) {
     SizetArray N_shared_pilot;
     accumulate_mf_sums(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared_pilot);
     //increment_equivalent_cost(...); // excluded
     compute_LH_correlation(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared_pilot,
 			   var_L, varH, rho2LH);
   }
-  else { // ONLINE_PILOT_PROJECTION
+  else { // ONLINE_PILOT
     accumulate_mf_sums(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual);
     N_H_alloc += numSamples;
     increment_equivalent_cost(numSamples,sequenceCost,0,numGroups,equivHFEvals);
@@ -1454,9 +1454,7 @@ void NonDMultifidelitySampling::print_variance_reduction(std::ostream& s)
     Real avg_mc_est_var        = average(mc_est_var),
          avg_budget_mc_est_var = average(varH) / proj_equiv_hf,
          avg_est_var           = mfmcSolnData.average_estimator_variance();
-    String type = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
-		   pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
-                ? "Projected":"   Online";
+    String type = (pilotProjection) ? "Projected":"   Online";
     s << "  " << type << "   MC (" << std::setw(5)
       << (size_t)std::floor(average(N_H_actual) + deltaNActualHF + .5)
       << " HF samples): " << std::setw(wpp7) << avg_mc_est_var << "\n  "
