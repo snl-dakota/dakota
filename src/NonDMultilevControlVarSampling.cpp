@@ -779,6 +779,7 @@ multilevel_control_variate_mc_pilot_projection()
   // retrieve cost estimates across solution levels for HF model
   RealVector hf_targets, hf_cost, lf_cost;
   RealMatrix Lambda, var_YH;  RealVectorArray eval_ratios;
+  size_t lev, num_hf_lev = iteratedModel.truth_model().solution_levels();
 
   // Initialize for pilot sample
   unsigned short lf_form = 0, hf_form = NLevActual.size() - 1; // 2 @ extremes
@@ -787,15 +788,25 @@ multilevel_control_variate_mc_pilot_projection()
   Sizet2DArray& N_actual_lf = NLevActual[lf_form];
   Sizet2DArray& N_actual_hf = NLevActual[hf_form];
 
-  evaluate_pilot(hf_cost, lf_cost, eval_ratios, Lambda, var_YH, N_alloc_hf,
-		 N_actual_hf, hf_targets, true, true);
-
+  if (pilotMgmtMode == OFFLINE_PILOT) {
+    //RealVector hf_targets_pilot;  //RealMatrix Lambda_pilot, var_YH_pilot;
+    //RealVectorArray eval_ratios_pilot;
+    SizetArray N_alloc_pilot;  Sizet2DArray N_actual_pilot(num_hf_lev);
+    N_alloc_pilot.assign(num_hf_lev, 0);
+    for (lev=0; lev<num_hf_lev; ++lev)
+      N_actual_pilot[lev].assign(numFunctions, 0);
+    evaluate_pilot(hf_cost, lf_cost, eval_ratios/*_pilot*/, Lambda/*_pilot*/,
+		   var_YH/*_pilot*/, N_alloc_pilot, N_actual_pilot,
+		   hf_targets/*_pilot*/, false, false);
+  }
+  else // ONLINE_PILOT
+    evaluate_pilot(hf_cost, lf_cost, eval_ratios, Lambda, var_YH, N_alloc_hf,
+		   N_actual_hf, hf_targets, true, true);
   // Unlike NonDMultilevelSampling::multilevel_mc_pilot_projection(), here we
   // cannot readily estimate cv_raw_moments().  Rather than reporting only the
   // ml_raw_moments() roll up, seems better to bypass variance recovery.
 
-  size_t lev, num_hf_lev = (size_t)hf_cost.length(),
-    num_cv_lev = std::min(num_hf_lev, (size_t)lf_cost.length());
+  size_t num_cv_lev = std::min(num_hf_lev, (size_t)lf_cost.length());
   for (lev=0; lev<num_cv_lev; ++lev)
     { N_actual_lf[lev] = N_actual_hf[lev]; N_alloc_lf[lev] = N_alloc_hf[lev]; }
   SizetArray delta_N_hf;  delta_N_hf.assign(num_hf_lev, 0);
