@@ -683,8 +683,9 @@
 	       <oneOf label="Ensemble Sampling Solution Mode">
 		 <keyword  id="online_pilot" name="online_pilot" code="{N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}" label="online_pilot" help="" />
 		 <keyword  id="offline_pilot" name="offline_pilot" code="{N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}" label="offline_pilot" help="" />
+		 <keyword  id="online_projection" name="online_projection" code="{N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT_PROJECTION)}" label="online_projection" help="" />
+		 <keyword  id="offline_projection" name="offline_projection" code="{N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT_PROJECTION)}" label="offline_projection" help="" />
 	       </oneOf>
-	       <keyword  id="pilot_projection" name="pilot_projection" code="{N_mdm(true,ensemblePilotProjection)}" label="pilot_projection" minOccurs="0" help="" />
 	     </keyword>
 	     ' >
 

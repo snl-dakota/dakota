@@ -645,7 +645,8 @@ scale_to_target(Real avg_N_H, const RealVector& cost,
   // > if N* < N_pilot, scale back r* --> initial = scaled_r*,N_pilot
   // > if N* > N_pilot, use initial = r*,N*
   avg_hf_target = allocate_budget(avg_eval_ratios, cost, budget); // r* --> N*
-  if (pilotMgmtMode == OFFLINE_PILOT) {
+  if (pilotMgmtMode == OFFLINE_PILOT ||
+      pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
     if (avg_N_H < offline_N_lwr)
       avg_N_H = offline_N_lwr;
   }
@@ -2129,7 +2130,9 @@ print_estimator_performance(std::ostream& s, const MFSolutionData& soln)
     //<< std::setw(wpp7) << average(initial_mc_estvar) << '\n';
   }
 
-  String type = (pilotProjection) ? "Projected" : "   Online";
+  String type = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
+		 pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
+              ? "Projected" : "   Online";
   //String method = method_enum_to_string(methodName); // string too verbose
   String method = (methodName == MULTIFIDELITY_SAMPLING) ? " MFMC" : "  ACV";
   // Ordering of averages:

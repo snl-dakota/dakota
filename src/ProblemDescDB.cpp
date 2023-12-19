@@ -2674,7 +2674,6 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
       {"nond.cross_validation", P_MET crossValidation},
       {"nond.cross_validation.noise_only", P_MET crossValidNoiseOnly},
       {"nond.d_optimal", P_MET dOptimal},
-      {"nond.ensemble_pilot_projection", P_MET ensemblePilotProjection},
       {"nond.evaluate_posterior_density", P_MET evaluatePosteriorDensity},
       {"nond.export_sample_sequence", P_MET exportSampleSeqFlag},
       {"nond.generate_posterior_samples", P_MET generatePosteriorSamples},

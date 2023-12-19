@@ -108,7 +108,7 @@ method,
 	  pilot_samples = 25	     		#s0,#s1,#s2,#s3,#s4,#s17
 #	  pilot_samples = 100			#s5,#s6,#s7,#s8,#s9,#s15,#s16,#s18,#s21,#s22,#s23,#s24
 #	  pilot_samples = 250			#s19,#s20
-#	  solution_mode pilot_projection online_pilot	#s5,#s6,#s7,#s8,#s9,#s15,#s16,#s18,#s19,#s20
+#	  solution_mode online_projection	#s5,#s6,#s7,#s8,#s9,#s15,#s16,#s18,#s19,#s20
 #	  pilot_samples = 5000			#s10,#s11,#s12,#s13,#s14
 #	  solution_mode offline_pilot		#s10,#s11,#s12,#s13,#s14
 #	  search_model_graphs full_recursion	#s23,#s24

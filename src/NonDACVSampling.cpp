@@ -33,12 +33,15 @@ NonDACVSampling(ProblemDescDB& problem_db, Model& model):
 
   if (maxFunctionEvals == SZ_MAX) // accuracy constraint (convTol)
     optSubProblemForm = N_MODEL_LINEAR_OBJECTIVE;
-  else                     // budget constraint (maxFunctionEvals)
+  else {                   // budget constraint (maxFunctionEvals)
     // truthFixedByPilot is a user-specified option for fixing the number of
     // HF samples (to those in the pilot).  In this case, equivHF budget is
     // allocated by optimizing r* for fixed N.
-    optSubProblemForm = (truthFixedByPilot && pilotMgmtMode != OFFLINE_PILOT) ?
+    bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
+		    pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
+    optSubProblemForm = (truthFixedByPilot && !offline) ?
       R_ONLY_LINEAR_CONSTRAINT : N_MODEL_LINEAR_CONSTRAINT;
+  }
 
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "ACV sub-method selection = " << mlmfSubMethod
@@ -75,15 +78,14 @@ void NonDACVSampling::core_run()
   // Initialize for pilot sample
   numSamples = pilotSamples[numApprox]; // last in pilot array
 
-  if (pilotProjection) // for algorithm assessment/selection
-    approximate_control_variate_pilot_projection();
-  else
-    switch (pilotMgmtMode) {
-    case  ONLINE_PILOT: // iterated ACV (default)
-      approximate_control_variate_online_pilot();   break;
-    case OFFLINE_PILOT: // computes perf for offline/Oracle correlation
-      approximate_control_variate_offline_pilot();  break;
-    }
+  switch (pilotMgmtMode) {
+  case  ONLINE_PILOT: // iterated ACV (default)
+    approximate_control_variate_online_pilot();     break;
+  case OFFLINE_PILOT: // computes perf for offline/Oracle correlation
+    approximate_control_variate_offline_pilot();    break;
+  case  ONLINE_PILOT_PROJECTION:  case OFFLINE_PILOT_PROJECTION:
+    approximate_control_variate_pilot_projection(); break;
+  }
 }
 
 
@@ -219,14 +221,14 @@ void NonDACVSampling::approximate_control_variate_pilot_projection()
   // --------------------------------------------------------------------
   RealVector sum_H, sum_HH;  RealMatrix sum_L, sum_LH, var_L;
   RealSymMatrixArray sum_LL;
-  if (pilotMgmtMode == OFFLINE_PILOT) {
+  if (pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
     SizetArray N_shared_pilot;
     evaluate_pilot(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared_pilot, false);
     compute_LH_statistics(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared_pilot,
 			  var_L, varH, covLL, covLH);
     N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
   }
-  else { // ONLINE_PILOT
+  else { // ONLINE_PILOT_PROJECTION
     evaluate_pilot(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual, true);
     compute_LH_statistics(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual,
 			  var_L, varH, covLL, covLH);
@@ -466,7 +468,10 @@ compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
   // solutions (iter >= 1)
 
   if (mlmfIter == 0) {
-    if (pilotMgmtMode != OFFLINE_PILOT) cache_mc_reference();
+    bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
+		    pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
+    if (!offline)
+      cache_mc_reference();
 
     size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
     SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
@@ -483,7 +488,7 @@ compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
       soln.anchored_solution_ratios(avg_eval_ratios, avg_N_H);
       // For offline pilot, the online EstVar is undefined prior to any online
       // samples, but should not happen (no budget used) unless bad convTol spec
-      if (pilotMgmtMode == OFFLINE_PILOT)
+      if (offline)
 	soln.average_estimator_variance(std::numeric_limits<Real>::infinity());
       else
 	soln.average_estimator_variance(average(estVarIter0));
@@ -1299,7 +1304,8 @@ update_projected_lf_samples(const MFSolutionData& soln,
 {
   // pilot+iterated samples shared by all approx, not just final best set
   Sizet2DArray N_L_actual;  SizetArray N_L_alloc;
-  if (pilotMgmtMode == OFFLINE_PILOT) {
+  if (pilotMgmtMode == OFFLINE_PILOT ||
+      pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
     // shared online sampling spans active model set after processing of
     // covariance data assembled offline
     inflate(N_H_actual, N_L_actual, approx_set);

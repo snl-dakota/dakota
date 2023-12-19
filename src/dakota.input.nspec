@@ -2834,7 +2834,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
       online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
       |
       offline_pilot {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}
-      [ pilot_projection {N_mdm(true,ensemblePilotProjection)} ]
+      |
+      online_projection {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT_PROJECTION)}
+      |
+      offline_projection {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT_PROJECTION)}
      ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
@@ -2922,7 +2925,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
       online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
       |
       offline_pilot {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}
-      [ pilot_projection {N_mdm(true,ensemblePilotProjection)} ]
+      |
+      online_projection {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT_PROJECTION)}
+      |
+      offline_projection {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT_PROJECTION)}
      ]
     [ numerical_solve {0}
       [ 
@@ -2998,7 +3004,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
       online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
       |
       offline_pilot {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}
-      [ pilot_projection {N_mdm(true,ensemblePilotProjection)} ]
+      |
+      online_projection {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT_PROJECTION)}
+      |
+      offline_projection {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT_PROJECTION)}
      ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
@@ -3070,7 +3079,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
       online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
       |
       offline_pilot {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}
-      [ pilot_projection {N_mdm(true,ensemblePilotProjection)} ]
+      |
+      online_projection {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT_PROJECTION)}
+      |
+      offline_projection {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT_PROJECTION)}
      ]
     [ truth_fixed_by_pilot {N_mdm(true,truthPilotConstraint)} ]
     [ 
@@ -3139,7 +3151,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
       online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
       |
       offline_pilot {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}
-      [ pilot_projection {N_mdm(true,ensemblePilotProjection)} ]
+      |
+      online_projection {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT_PROJECTION)}
+      |
+      offline_projection {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT_PROJECTION)}
      ]
     [ 
       sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}

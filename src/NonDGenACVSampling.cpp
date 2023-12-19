@@ -378,15 +378,14 @@ void NonDGenACVSampling::core_run()
   // Initialize for pilot sample
   numSamples = pilotSamples[numApprox]; // last in pilot array
 
-  if (pilotProjection) // for algorithm assessment/selection
-    generalized_acv_pilot_projection();
-  else
-    switch (pilotMgmtMode) {
-    case  ONLINE_PILOT: // iterated GenACV (default)
-      generalized_acv_online_pilot();   break;
-    case OFFLINE_PILOT: // computes performance for offline/Oracle correlation
-      generalized_acv_offline_pilot();  break;
-    }
+  switch (pilotMgmtMode) {
+  case ONLINE_PILOT: // iterated GenACV (default)
+    generalized_acv_online_pilot();   break;
+  case OFFLINE_PILOT: // computes performance for offline/Oracle correlation
+    generalized_acv_offline_pilot();  break;
+  case ONLINE_PILOT_PROJECTION:  case OFFLINE_PILOT_PROJECTION:
+    generalized_acv_pilot_projection(); break;
+  }
 }
 
 
@@ -574,14 +573,14 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
   // --------------------------------------------------------------------
   RealVector sum_H, sum_HH;   RealMatrix sum_L, sum_LH, var_L;
   RealSymMatrixArray sum_LL;
-  if (pilotMgmtMode == OFFLINE_PILOT) {
+  if (pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
     SizetArray N_shared_pilot;
     evaluate_pilot(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared_pilot, false);
     compute_LH_statistics(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared_pilot,
 			  var_L, varH, covLL, covLH);
     N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
   }
-  else { // ONLINE_PILOT
+  else { // ONLINE_PILOT_PROJECTION
     evaluate_pilot(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual, true);
     compute_LH_statistics(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual,
 			  var_L, varH, covLL, covLH);
@@ -812,7 +811,7 @@ genacv_approx_increment(const MFSolutionData& soln,
 
 void NonDGenACVSampling::precompute_ratios()
 {
-  if (pilotMgmtMode != OFFLINE_PILOT)
+  if (pilotMgmtMode == ONLINE_PILOT || pilotMgmtMode == ONLINE_PILOT_PROJECTION)
     cache_mc_reference();// {estVar,numH}Iter0
 }
 
@@ -854,7 +853,8 @@ compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
       soln.anchored_solution_ratios(avg_eval_ratios, avg_N_H);
       // For offline pilot, the online EstVar is undefined prior to any online
       // samples, but should not happen (no budget used) unless bad convTol spec
-      if (pilotMgmtMode == OFFLINE_PILOT)
+      if (pilotMgmtMode == OFFLINE_PILOT ||
+	  pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
 	soln.average_estimator_variance(std::numeric_limits<Real>::infinity());
       else
 	soln.average_estimator_variance(average(estVarIter0));
@@ -1110,6 +1110,8 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
   // For offline mode, online allocations must be lower bounded for numerics:
   Real offline_N_lwr = 2.; //(finalStatsType == QOI_STATISTICS) ? 2. : 1.;
+  bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
+		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
 
   // --------------------------------------
   // Formulate the optimization sub-problem: initial pt, bnds, constraints
@@ -1145,7 +1147,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     // the incurred cost (e.g., setting N_lb to 1), but instead we bound with
     // the incurred cost by setting x_lb = latest N_H and retaining r_lb = 1.
     x_lb = 1.; // r_i
-    x_lb[num_approx] = (pilotMgmtMode == OFFLINE_PILOT) ?
+    x_lb[num_approx] = (offline) ?
       offline_N_lwr : avg_N_H; //std::floor(avg_N_H + .5); // pilot <= N*
 
     RealVector avg_eval_ratios = soln.solution_ratios();
@@ -1158,7 +1160,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     break;
   }
   case N_MODEL_LINEAR_CONSTRAINT:  case N_MODEL_LINEAR_OBJECTIVE: {
-    x_lb = (pilotMgmtMode == OFFLINE_PILOT) ? offline_N_lwr : avg_N_H;
+    x_lb = (offline) ? offline_N_lwr : avg_N_H;
     const RealVector& soln_vars = soln.solution_variables();
     x0 = (soln_vars.empty()) ? x_lb : soln_vars;
     if (optSubProblemForm == N_MODEL_LINEAR_CONSTRAINT) {
@@ -1222,7 +1224,7 @@ augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
   }
   case R_ONLY_LINEAR_CONSTRAINT:
     // *** TO DO ***:
-    // This is active for truthFixedByPilot && pilotMgmtMode != OFFLINE_PILOT
+    // This is active for truthFixedByPilot && !offline
     // but r is not appropriate for general DAG including multiple CV targets.
     // --> either need to alter handling or suppress this option...
 
@@ -1278,7 +1280,7 @@ augmented_linear_ineq_violations(const RealVector& cd_vars,
   }
   case R_ONLY_LINEAR_CONSTRAINT:
     // *** TO DO ***:
-    // This is active for truthFixedByPilot && pilotMgmtMode != OFFLINE_PILOT
+    // This is active for truthFixedByPilot && !offline
     // but r is not appropriate for general DAG including multiple CV targets.
     // --> either need to alter handling or suppress this option...
 
@@ -1338,7 +1340,8 @@ scale_to_target(Real avg_N_H, const RealVector& cost,
   // > if N* > N_pilot, use initial = r*,N*
   avg_hf_target = allocate_budget(approx_set, avg_eval_ratios, cost, budget);
 
-  if (pilotMgmtMode == OFFLINE_PILOT) {
+  if (pilotMgmtMode == OFFLINE_PILOT ||
+      pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
     if (avg_N_H < offline_N_lwr)
       avg_N_H = offline_N_lwr;
   }

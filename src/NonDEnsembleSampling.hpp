@@ -163,11 +163,9 @@ protected:
   /// store the pilot_samples input specification, prior to run-time
   /// invocation of load_pilot_sample()
   SizetArray pilotSamples;
-  /// enumeration for pilot management modes: ONLINE_PILOT (default) or
-  /// OFFLINE_PILOT (PROJECTION modes are now managed separately via boolean)
+  /// enumeration for pilot management modes: ONLINE_PILOT (default),
+  /// OFFLINE_PILOT, ONLINE_PILOT_PROJECTION, or OFFLINE_PILOT_PROJECTION
   short pilotMgmtMode;
-  /// flag for pilot projection, whether an online or offline projection
-  bool pilotProjection;
 
   /// indicates use of online cost recovery rather than offline
   /// user-specified cost ratios

@@ -124,19 +124,18 @@ void NonDMultilevelSampling::core_run()
   convergenceTolVec.sizeUninitialized(numFunctions);
   convergenceTolVec = convergenceTol; // assign scalar to vector
 
-  if (pilotProjection) // for algorithm assessment/selection
-    multilevel_mc_pilot_projection();
-  else
-    switch (pilotMgmtMode) {
-    case ONLINE_PILOT:
-      //if (true)//(subIteratorFlag)
-      multilevel_mc_Qsum(); // w/ error est, unbiased central moments
-      //else
-      //  multilevel_mc_Ysum(); // lighter weight
-      break;
-    case OFFLINE_PILOT:
-      multilevel_mc_offline_pilot();    break;
-    }
+  switch (pilotMgmtMode) {
+  case ONLINE_PILOT:
+    //if (true)//(subIteratorFlag)
+    multilevel_mc_Qsum(); // w/ error est, unbiased central moments
+    //else
+    //  multilevel_mc_Ysum(); // lighter weight
+    break;
+  case OFFLINE_PILOT:
+    multilevel_mc_offline_pilot();    break;
+  case ONLINE_PILOT_PROJECTION:  case OFFLINE_PILOT_PROJECTION:
+    multilevel_mc_pilot_projection(); break;
+  }
 }
 
 
@@ -272,7 +271,8 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
 	 << delta_N_l << std::endl;
   }
 
-  if (pilotProjection) {
+  if (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
+      pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
     update_projected_samples(delta_N_l, sequenceCost, deltaEquivHF);
   }
   else {
@@ -429,13 +429,13 @@ void NonDMultilevelSampling::multilevel_mc_pilot_projection()
   // Initial loop for pilot
   // ----------------------
   load_pilot_sample(pilotSamples, numSteps, delta_N_l);
-  if (pilotMgmtMode == OFFLINE_PILOT) {
+  if (pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
     Sizet2DArray N_actual_pilot;  SizetArray N_alloc_pilot; // segregate
     evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1, sequenceCost, N_actual_pilot,
 		    N_actual, N_alloc_pilot, N_alloc, delta_N_l,
 		    var_Y, var_qoi, eps_sq_div_2, false, false);
   }
-  else // ONLINE_PILOT
+  else // ONLINE_PILOT_PROJECTION
     evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1, sequenceCost,
 		    N_actual, N_actual, N_alloc, N_alloc, // pilot is online
 		    delta_N_l, var_Y, var_qoi, eps_sq_div_2, true, true);
@@ -2074,11 +2074,13 @@ compute_error_estimates(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& 
 
 void NonDMultilevelSampling::print_variance_reduction(std::ostream& s)
 {
-  String type = (pilotProjection) ? "Projected" : "   Online";
+  String type = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
+		 pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
+              ? "Projected" : "   Online";
   size_t wpp7 = write_precision + 7;
   s << "<<<<< Variance for mean estimator:\n";
   switch (pilotMgmtMode) {
-  case OFFLINE_PILOT:
+  case OFFLINE_PILOT:  case OFFLINE_PILOT_PROJECTION:
     s << "  " << type << " MLMC (sample profile):   "
       << std::setw(wpp7) << avgEstVar;
     break;

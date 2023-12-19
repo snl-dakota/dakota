@@ -240,7 +240,8 @@ enum { CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT,
        CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT };
 
 // ML/MF sampling modes
-enum { ONLINE_PILOT, OFFLINE_PILOT };
+enum { ONLINE_PILOT,            OFFLINE_PILOT,
+       ONLINE_PILOT_PROJECTION, OFFLINE_PILOT_PROJECTION };
 // ML/MF modes for group-based pilot sampling
 enum { SHARED_PILOT, INDEPENDENT_PILOT };
 // Numerical solution modes
@@ -1097,8 +1098,6 @@ public:
   short pilotGroupSampling;
   /// the \c solution_mode selection for ML/MF sampling methods
   short ensemblePilotSolnMode;
-  /// the \c solution_mode selection for ML/MF sampling methods
-  bool ensemblePilotProjection;
   /// the \c truth_fixed_by_pilot flag for ACV methods
   bool truthPilotConstraint;
   /// option specified for extent of DAG enumeration within

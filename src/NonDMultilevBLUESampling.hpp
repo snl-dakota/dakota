@@ -700,8 +700,11 @@ blue_raw_moments(IntRealMatrixArrayMap& sum_G,
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Moment " << mom << " estimator:\n";
     RealMatrixArray& sum_G_m = sum_G[mom];
-    if (mom == 1 && pilotMgmtMode != OFFLINE_PILOT) // reuse online covar data
+    if (mom == 1 && ( pilotMgmtMode == ONLINE_PILOT ||
+		      pilotMgmtMode == ONLINE_PILOT_PROJECTION ) ) {
+      // online covar avail for mean
       compute_mu_hat(covGGinv, sum_G_m, N_G_actual, mu_hat);
+    }
     else { // generate new covariance data
       RealSymMatrix2DArray& sum_GG_m = sum_GG[mom];
       RealSymMatrix2DArray cov_GG, cov_GG_inv;

@@ -87,15 +87,14 @@ NonDMultilevBLUESampling::~NonDMultilevBLUESampling()
 
 void NonDMultilevBLUESampling::core_run()
 {
-  if (pilotProjection) // for algorithm assessment/selection
-    ml_blue_pilot_projection();
-  else
-    switch (pilotMgmtMode) {
-    case  ONLINE_PILOT: // iterated ML BLUE (default)
-      ml_blue_online_pilot();     break;
-    case OFFLINE_PILOT: // computes performance for offline/Oracle correlations
-      ml_blue_offline_pilot();    break;
-    }
+  switch (pilotMgmtMode) {
+  case ONLINE_PILOT: // iterated ML BLUE (default)
+    ml_blue_online_pilot();     break;
+  case OFFLINE_PILOT: // computes performance for offline/Oracle correlations
+    ml_blue_offline_pilot();    break;
+  case ONLINE_PILOT_PROJECTION:  case OFFLINE_PILOT_PROJECTION:
+    ml_blue_pilot_projection(); break;
+  }
 }
 
 
@@ -234,12 +233,12 @@ void NonDMultilevBLUESampling::ml_blue_pilot_projection()
   // Evaluate shared increment and update correlations, {eval,EstVar}_ratios
   // --------------------------------------------------------------------
   RealMatrixArray sum_G; RealSymMatrix2DArray sum_GG;
-  if (pilotMgmtMode == OFFLINE_PILOT) {
+  if (pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
     Sizet2DArray N_pilot;
     evaluate_pilot(sum_G, sum_GG, N_pilot, false);
     NGroupAlloc.assign(numGroups, 0);
   }
-  else { // ONLINE_PILOT
+  else { // ONLINE_PILOT_PROJECTION
     evaluate_pilot(sum_G, sum_GG, NGroupActual, true);
     NGroupAlloc = pilotSamples;
   }
@@ -389,15 +388,17 @@ numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
 			  size_t& num_nln_con)
 {
   num_cdv = modelGroups.size();
+  bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
+		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
 
   //switch (optSubProblemSolver) {
   //case SUBMETHOD_SDP:
     switch (optSubProblemForm) {
     case N_GROUP_LINEAR_CONSTRAINT:
-      num_lin_con = (pilotMgmtMode == OFFLINE_PILOT) ? 2 : 1;
+      num_lin_con = (offline) ? 2 : 1;
       num_nln_con = 0;   break;
     case N_GROUP_LINEAR_OBJECTIVE:
-      num_lin_con = (pilotMgmtMode == OFFLINE_PILOT) ? 1 : 0;
+      num_lin_con = (offline) ? 1 : 0;
       num_nln_con = 1;  break;
     }
   /*
@@ -439,7 +440,8 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   // bounds --> these updates are performed in finite_solution_bounds()
 
   x_ub = DBL_MAX; // no upper bounds for groups
-  if (pilotMgmtMode == OFFLINE_PILOT) {
+  if (pilotMgmtMode == OFFLINE_PILOT ||
+      pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
     // No group lower bounds for OFFLINE case.  Note: Using a numerical NUDGE
     // is not essential since the group covariance contributions overlap in
     // Psi (single group drop-outs are not fatal).  On the other hand, there
@@ -519,7 +521,8 @@ augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
   // accuracy/cost metrics, these constraints ensure a well-posed solution and
   // may need to be enforced first by methods w/o explicit constraint handling.
 
-  if (pilotMgmtMode == OFFLINE_PILOT) {
+  if (pilotMgmtMode == OFFLINE_PILOT ||
+      pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
     // Ensure that we have at least one sample for one of the groups containing
     // the HF reference model.  This is already satisfied by pilot sampling for
     // current group definitions used by online/projection modes.
@@ -540,7 +543,8 @@ augmented_linear_ineq_violations(const RealVector& cd_vars,
   // These are called out separately to avoid NaNs from inadmissible points
 
   Real quad_viol = 0.;
-  if (pilotMgmtMode == OFFLINE_PILOT) {
+  if (pilotMgmtMode == OFFLINE_PILOT ||
+      pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
     // Ensure that we have at least one sample for one of the HF groups
     Real inner_prod = 0.;
     for (size_t g=0; g<numGroups; ++g)
@@ -566,7 +570,9 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
   if (mlmfIter == 0) {
     soln.solution_variables(pilotSamples);
 
-    if (pilotMgmtMode != OFFLINE_PILOT) // cache reference estVarIter0
+    bool online = (pilotMgmtMode == ONLINE_PILOT ||
+		   pilotMgmtMode == ONLINE_PILOT_PROJECTION);
+    if (online) // cache reference estVarIter0
       estimator_variance(soln.solution_variables(), estVarIter0);
 
     bool budget_constrained = (maxFunctionEvals != SZ_MAX);
@@ -575,10 +581,10 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
     if (budget_exhausted || convergenceTol >= 1.) { // no need for solve
       // For offline pilot, the online EstVar is undefined prior to any online
       // samples, but should not happen (no budget used) unless bad convTol spec
-      if (pilotMgmtMode == OFFLINE_PILOT)
-	soln.average_estimator_variance(std::numeric_limits<Real>::infinity());
-      else
+      if (online)
 	soln.average_estimator_variance(average(estVarIter0));
+      else
+	soln.average_estimator_variance(std::numeric_limits<Real>::infinity());
       soln.average_estimator_variance_ratio(1.);
       delta_N_G.assign(numGroups, 0);  return;
     }
@@ -686,8 +692,9 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
   // define HF target for avg_eval_ratios according to budget or accuracy
   Real avg_hf_target;
   size_t g, shared_index = numGroups - 1;// last group = all models
-  bool offline_mode = (pilotMgmtMode == OFFLINE_PILOT);
-  Real N_shared = (offline_mode) ? 0. : (Real)pilotSamples[shared_index];
+  bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
+		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
+  Real N_shared = (offline) ? 0. : (Real)pilotSamples[shared_index];
   if (maxFunctionEvals == SZ_MAX) { // accuracy-constrained
     /*
     // Compute avg_hf_target only based on MFMC estvar, bypassing ML BLUE estvar
@@ -710,7 +717,7 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
   }
   else {
     Real remaining = (Real)maxFunctionEvals, cost_H = sequenceCost[numApprox];
-    if (!offline_mode)
+    if (!offline)
       for (g=0; g<numGroups; ++g)
 	if (!active_groups[g])
 	  remaining -= pilotSamples[g] * modelGroupCost[g] / cost_H;
@@ -749,7 +756,9 @@ analytic_ratios_to_solution_variables(const RealVector& avg_eval_ratios,
   //   MFMC/CVMC model groupings within modelGroups.
 
   if (soln_vars.length() != numGroups) soln_vars.sizeUninitialized(numGroups);
-  size_t g, cntr = 0;  bool offline_mode = (pilotMgmtMode == OFFLINE_PILOT);
+  size_t g, cntr = 0;
+  bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
+		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
   for (g=0; g<numGroups; ++g)
     if (active_groups[g]) {
       soln_vars[g] = avg_hf_target;
@@ -757,7 +766,7 @@ analytic_ratios_to_solution_variables(const RealVector& avg_eval_ratios,
 	soln_vars[g] *= avg_eval_ratios[cntr++];//MFMC,CVMC use same group order
     }
     else
-      soln_vars[g] = (offline_mode) ? 0. : pilotSamples[g];
+      soln_vars[g] = (offline) ? 0. : pilotSamples[g];
 }
 
 
@@ -894,7 +903,9 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s)
   //print_estimator_performance(s, blueSolnData);
 
   String method = " ML BLUE",
-           type = (pilotProjection) ? "Projected" : "   Online";
+           type = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
+		   pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
+                ? "Projected" : "   Online";
   // Ordering of averages:
   // > recomputing final MC estvar, rather than dividing the two averages, gives
   //   a result that is consistent with average(estVarIter0) when N* = pilot.
@@ -912,7 +923,7 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s)
   // projected HF-only samples and projected equivalent HF samples.
   size_t wpp7 = write_precision + 7;
   s << "<<<<< Variance for mean estimator:\n";
-  if (pilotMgmtMode != OFFLINE_PILOT)
+  if (pilotMgmtMode == ONLINE_PILOT || pilotMgmtMode == ONLINE_PILOT_PROJECTION)
     s << "    Initial pilot (" << std::setw(5)
       << (size_t)std::floor(average(pilotSamples) + .5) << " ML samples):  "
       << std::setw(wpp7) << average(estVarIter0) << '\n';
