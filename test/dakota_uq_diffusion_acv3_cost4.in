@@ -35,7 +35,7 @@ method,
 #	  acv_mf nip		#s18,#s19,#s23,#s24,#s25,#s26,#p1,#p2
 #	  acv_is nip		#s20,#s21
 #	  truth_fixed_by_pilot	#s22,#s23
-#	  solution_mode pilot_projection	#s4,#s7,#s10,#s13,#s16
+#	  solution_mode pilot_projection online_pilot	#s4,#s7,#s10,#s13,#s16
 #	  solution_mode offline_pilot		#s5,#s8,#s11,#s14,#s17
 	  max_function_evaluations = 100	#s0,#s1,#s2,#s9,#s10,#s11,#p0
 #	  max_function_evaluations = 250	#s22

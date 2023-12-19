@@ -789,15 +789,12 @@ multilevel_control_variate_mc_pilot_projection()
   Sizet2DArray& N_actual_hf = NLevActual[hf_form];
 
   if (pilotMgmtMode == OFFLINE_PILOT) {
-    //RealVector hf_targets_pilot;  //RealMatrix Lambda_pilot, var_YH_pilot;
-    //RealVectorArray eval_ratios_pilot;
     SizetArray N_alloc_pilot;  Sizet2DArray N_actual_pilot(num_hf_lev);
     N_alloc_pilot.assign(num_hf_lev, 0);
     for (lev=0; lev<num_hf_lev; ++lev)
       N_actual_pilot[lev].assign(numFunctions, 0);
-    evaluate_pilot(hf_cost, lf_cost, eval_ratios/*_pilot*/, Lambda/*_pilot*/,
-		   var_YH/*_pilot*/, N_alloc_pilot, N_actual_pilot,
-		   hf_targets/*_pilot*/, false, false);
+    evaluate_pilot(hf_cost, lf_cost, eval_ratios, Lambda, var_YH, N_alloc_pilot,
+		   N_actual_pilot, hf_targets, false, false);
   }
   else // ONLINE_PILOT
     evaluate_pilot(hf_cost, lf_cost, eval_ratios, Lambda, var_YH, N_alloc_hf,
