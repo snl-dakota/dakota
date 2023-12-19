@@ -21,14 +21,18 @@ def construct(var, resp):
     global model
     var2 = sm.add_constant(var)
     model = sm.OLS(resp, var2).fit()
-    print(model.summary())
+    #print(model.summary())
     return
 
 
 def predict(pts):
 
     global model
-    print(pts)
+    # This is a workaround for trying to add a constant to a single
+    # parameter point which ends up being a no-op
+    if pts.shape[0] == 1:
+        pad_vals = np.zeros_like(pts)
+        pts = np.append(pts, pad_vals, axis=0)
     pts2 = sm.add_constant(pts)
     return model.predict(pts2)
 

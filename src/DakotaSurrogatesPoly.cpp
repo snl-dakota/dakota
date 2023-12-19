@@ -15,6 +15,7 @@
 
 // Headers from Surrogates module
 #include "SurrogatesPolynomialRegression.hpp"
+#include "SurrogatesPython.hpp"
  
 using dakota::MatrixXd;
 
@@ -75,11 +76,11 @@ SurrogatesPolyApprox::build()
 
   // construct the surrogate
   if (!advanced_options_file.empty()) {
-    model.reset(new dakota::surrogates::PolynomialRegression
+    model.reset(new dakota::surrogates::Python
 	        (vars, resp, advanced_options_file));
   }
   else {
-    model.reset(new dakota::surrogates::PolynomialRegression
+    model.reset(new dakota::surrogates::Python
 	        (vars, resp, surrogateOpts));
   }
 }
