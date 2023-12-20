@@ -37,6 +37,14 @@ def predict(pts):
     return model.predict(pts2)
 
 
+def gradient(pts):
+
+    global model
+    # Need to check that pts are the same as were used with predict;
+    # else need to update model via predict
+    grad = model.params
+    return np.array([grad])
+
 # Simple test driver
 if __name__ == "__main__":
 

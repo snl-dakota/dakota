@@ -92,10 +92,19 @@ void Python::default_options() {
 
 MatrixXd Python::gradient(const MatrixXd& eval_points,
                                         const int qoi) {
+  /* Surrogate models don't yet support multiple responses */
   silence_unused_args(qoi);
   assert(qoi == 0);
-  throw(std::runtime_error("gradient is not currently supported."));
-  return eval_points;
+
+  const std::string dummy_spec("driver_surrogates:gradient");
+  size_t pos = dummy_spec.find(":");
+  std::string module_name = dummy_spec.substr(0,pos);
+  std::string function_name = dummy_spec.substr(pos+1);
+
+  py::object module = py::module_::import(module_name.c_str());
+  py::function callback_fn = module.attr(function_name.c_str());
+
+  return callback_fn(eval_points).cast<MatrixXd>();
 }
 
 MatrixXd Python::hessian(const MatrixXd& eval_point,
