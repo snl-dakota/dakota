@@ -280,6 +280,7 @@ inline void NonDMultilevBLUESampling::update_model_group_costs()
   }
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "modelGroups:\n" << modelGroups
+	 << "sequenceCost:\n" << sequenceCost
 	 << "modelGroupCost:\n" << modelGroupCost;
 }
 

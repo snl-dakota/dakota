@@ -809,7 +809,8 @@ print_group_solution(std::ostream& s, const MFSolutionData& soln)
 
   if (maxFunctionEvals == SZ_MAX)
     s << "Estimator cost allocation = " << soln.equivalent_hf_allocation()
-      << std::endl;
+      << "\nequivHFEvals = " << equivHFEvals
+      << " deltaEquivHF = " << deltaEquivHF << std::endl;
   else {
     s << "Average estimator variance = " << soln.average_estimator_variance();
     if (!zeros(projNActualHF))
