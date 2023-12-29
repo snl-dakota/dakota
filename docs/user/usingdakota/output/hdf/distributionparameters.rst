@@ -58,19 +58,20 @@ The uniform_uncertain dataset will contain:
   
 In these representations of the ``normal_uncertain`` and ``uniform_uncertain`` datasets, the outer square brackets ([]) enclose the dataset, and each element within the datasets are enclosed in curly braces ({}). The curly braces are meant to indicate that the elements are dictionary-like objects that support access by string field name. A bit more concretely, the following code snippet demonstrates reading the mean of the second normal variable, nuv_2.
 
-.. code-block::
+.. code-block:: python
+   :linenos:
 
-    1 import h5py 
-    2 
-    3 with h5py.File("dakota_results.h5') as h:
-    4     model = h["/models/simulation/tb_model/"]
-    5     # nu_vars is the dataset that contains distribution parameters for
-    6     # normal_uncertain variables
-    7     nu_vars = model["variable_parameters/normal_uncertain"]
-    8     nuv_2_mu = nu_vars[1]["mean"] # 1 is the 0-based index of nuv_2, and 
-    9                                   # "mean" is the name of the field where 
-   10                                   # the mean is stored; nuv_2_mu now contains
-   11                                   # 1.0.
+   import h5py 
+   
+   with h5py.File("dakota_results.h5') as h:
+       model = h["/models/simulation/tb_model/"]
+       # nu_vars is the dataset that contains distribution parameters for
+       # normal_uncertain variables
+       nu_vars = model["variable_parameters/normal_uncertain"]
+       nuv_2_mu = nu_vars[1]["mean"] # 1 is the 0-based index of nuv_2, and 
+                                     # "mean" is the name of the field where 
+                                     # the mean is stored; nuv_2_mu now contains
+                                     # 1.0.
    
 The feature in HDF5 that underlies this name-based storage of fields is compound datatypes, which are similar to C/C++ structs or Python dictionaries. Further information about how to work with compound datatypes is available in the h5py documentation.
 
@@ -139,16 +140,17 @@ h5py Examples
 
 The fields available for a variable parameters dataset can be determined in h5py by examining the datatype of the dataset.
 
-.. code-block::
+.. code-block:: python
+   :linenos:
 
-    1 import h5py
-    2 with h5py.File("dakota_results.h5") as h:
-    3     model = h["/models/simulation/NO_MODEL_ID/"]
-    4     md = model["metadata/variable_parameters"]
-    5     nu = md["normal_uncertain"]
-    6     nu_param_names = nu.dtype.names 
-    7     # nu_param_names is a tuple of strings: ('mean', 'std_deviation',
-    8     # 'lower_bound', 'upper_bound')
+    import h5py
+    with h5py.File("dakota_results.h5") as h:
+        model = h["/models/simulation/NO_MODEL_ID/"]
+        md = model["metadata/variable_parameters"]
+        nu = md["normal_uncertain"]
+        nu_param_names = nu.dtype.names 
+        # nu_param_names is a tuple of strings: ('mean', 'std_deviation',
+        # 'lower_bound', 'upper_bound')
 
 =================   
 Known Limitations
