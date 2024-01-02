@@ -237,7 +237,7 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
   shared_increment(mlmfIter); // spans ALL models, blocking
   if (onlineCost) recover_online_cost(allResponses);
   if (pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
-    SizetArray N_shared_pilot;
+    SizetArray N_shared_pilot(numFunctions, 0);
     accumulate_mf_sums(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared_pilot);
     //increment_equivalent_cost(...); // excluded
     compute_LH_correlation(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared_pilot,

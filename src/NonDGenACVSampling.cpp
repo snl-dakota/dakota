@@ -1181,7 +1181,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     break;
   }
   }
-  // x0 can undershoot x_lb if OFFLINE_PILOT, but enforce generally
+  // x0 can undershoot x_lb if an OFFLINE mode, but enforce generally
   enforce_bounds(x0, x_lb, x_ub);
 
   if (outputLevel >= DEBUG_OUTPUT)

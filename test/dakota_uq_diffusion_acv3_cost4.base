@@ -430,3 +430,15 @@ Sample moment statistics for each response function:
  response_fn_1  2.5337018264090485e-02  6.6263532746072325e-03  7.5717247128382992e-01 -1.8745543518373742e-01
  response_fn_2  1.2916284207182085e-01  1.3593988195419553e-02  7.0913709072425324e-01 -6.1179495325427569e-01
  response_fn_3  2.5337018263970786e-02  6.6263532745948458e-03  7.5717247152763534e-01 -1.8745543439095069e-01
+Test Number 27 succeeded
+<<<<< Function evaluation summary (LF_INT): 100 total (100 new, 0 duplicate)
+<<<<< Function evaluation summary (MF_INT): 100 total (100 new, 0 duplicate)
+<<<<< Function evaluation summary (HF_INT): 100 total (100 new, 0 duplicate)
+<<<<< Projected number of equivalent high fidelity evaluations: 4.9954296875000000e+02
+<<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000000000e+00
+<<<<< Variance for mean estimator:
+  Projected   MC (   11 HF samples):  9.4689240152846459e-06
+  Projected  ACV (sample profile):    1.3640480588645081e-08
+  Projected  ACV ratio (1 - R^2):     1.4405523337843612e-03
+ Equivalent   MC (  500 HF samples):  2.0850691668979900e-07
+ Equivalent  ACV ratio:               6.5419799041670973e-02

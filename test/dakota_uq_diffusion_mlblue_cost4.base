@@ -146,3 +146,19 @@ Sample moment statistics for each response function:
  response_fn_1  2.5320551756960810e-02  6.6097797414214335e-03  7.6711445254637878e-01 -1.5296307342747095e-01
  response_fn_2  1.2909497012493568e-01  1.3480937259181057e-02  7.5546565238012631e-01 -5.4182173048949345e-01
  response_fn_3  2.5320551757608674e-02  6.6097797412097443e-03  7.6711445272017487e-01 -1.5296307286199928e-01
+Test Number 12 succeeded
+<<<<< Function evaluation summary (HF_INT): 300 total (300 new, 0 duplicate)
+<<<<< Projected number of equivalent high fidelity evaluations: 5.0014453125000000e+02
+<<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000000000e+00
+<<<<< Variance for mean estimator:
+  Projected ML BLUE (sample profile):   3.7214519834282322e-09
+ Equivalent MC    (  500 HF samples):   2.0825612929888934e-07
+ Equivalent ML BLUE ratio:              1.7869591622377664e-02
+Test Number 13 succeeded
+<<<<< Function evaluation summary (HF_INT): 1200 total (1200 new, 0 duplicate)
+<<<<< Projected number of equivalent high fidelity evaluations: 4.9982421875000000e+02
+<<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000000000e+00
+<<<<< Variance for mean estimator:
+  Projected ML BLUE (sample profile):   3.0466226556906759e-09
+ Equivalent MC    (  500 HF samples):   1.8514194006290855e-07
+ Equivalent ML BLUE ratio:              1.6455605113868191e-02

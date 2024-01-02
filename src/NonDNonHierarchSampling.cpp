@@ -809,6 +809,8 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   //      switch from estimator_perf (selection) to qoi_statistics (execution);
   //      moreover, don't select an estimator based on inconsistent formulation
   // Nonzero lower bound ensures replacement of allSamples after offline pilot.
+  bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
+		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
   Real offline_N_lwr = 2.; //(finalStatsType == QOI_STATISTICS) ? 2. : 1.;
 
   // --------------------------------------
@@ -858,8 +860,8 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     // the incurred cost (e.g., setting N_lb to 1), but instead we bound with
     // the incurred cost by setting x_lb = latest N_H and retaining r_lb = 1.
     x_lb = 1.; // r_i
-    x_lb[numApprox] = (pilotMgmtMode == OFFLINE_PILOT) ?
-      offline_N_lwr : avg_N_H; //std::floor(avg_N_H + .5); // pilot <= N*
+    x_lb[numApprox] = (offline) ? offline_N_lwr :
+      avg_N_H; //std::floor(avg_N_H + .5); // pilot <= N*
 
     RealVector avg_eval_ratios = soln.solution_ratios();
     if (avg_eval_ratios.empty()) x0 = 1.;
@@ -871,7 +873,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     break;
   }
   case N_MODEL_LINEAR_CONSTRAINT:  case N_MODEL_LINEAR_OBJECTIVE: {
-    x_lb = (pilotMgmtMode == OFFLINE_PILOT) ? offline_N_lwr : avg_N_H;
+    x_lb = (offline) ? offline_N_lwr : avg_N_H;
     const RealVector& soln_vars = soln.solution_variables();
     x0 = (soln_vars.empty()) ? x_lb : soln_vars;
     if (optSubProblemForm == N_MODEL_LINEAR_CONSTRAINT) {
@@ -892,7 +894,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     break;
   }
   }
-  // x0 can undershoot x_lb if OFFLINE_PILOT, but enforce generally
+  // x0 can undershoot x_lb if an OFFLINE mode, but enforce generally
   enforce_bounds(x0, x_lb, x_ub);
 
   if (outputLevel >= DEBUG_OUTPUT)
@@ -2119,7 +2121,8 @@ print_estimator_performance(std::ostream& s, const MFSolutionData& soln)
   size_t wpp7 = write_precision + 7;
   s << "<<<<< Variance for mean estimator:\n";
 
-  if (pilotMgmtMode != OFFLINE_PILOT) {
+  if (pilotMgmtMode == ONLINE_PILOT ||
+      pilotMgmtMode == ONLINE_PILOT_PROJECTION) {
     // > reporting estVarIter0 best shows the reference for convTol
     // > recomputing with latest varH is more consistent with metrics to follow 
     //RealVector initial_mc_estvar;

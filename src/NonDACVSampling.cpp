@@ -83,7 +83,8 @@ void NonDACVSampling::core_run()
     approximate_control_variate_online_pilot();     break;
   case OFFLINE_PILOT: // computes perf for offline/Oracle correlation
     approximate_control_variate_offline_pilot();    break;
-  case  ONLINE_PILOT_PROJECTION:  case OFFLINE_PILOT_PROJECTION:
+  case  ONLINE_PILOT_PROJECTION:
+  case OFFLINE_PILOT_PROJECTION:
     approximate_control_variate_pilot_projection(); break;
   }
 }

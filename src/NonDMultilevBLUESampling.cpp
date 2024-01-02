@@ -234,12 +234,14 @@ void NonDMultilevBLUESampling::ml_blue_pilot_projection()
   // --------------------------------------------------------------------
   RealMatrixArray sum_G; RealSymMatrix2DArray sum_GG;
   if (pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
+    // accumulate offline counts
     Sizet2DArray N_pilot;
     evaluate_pilot(sum_G, sum_GG, N_pilot, false);
-    NGroupAlloc.assign(numGroups, 0);
+    // initialize online counts
+    initialize_blue_counts(NGroupActual);  NGroupAlloc.assign(numGroups, 0);
   }
   else { // ONLINE_PILOT_PROJECTION
-    evaluate_pilot(sum_G, sum_GG, NGroupActual, true);
+    evaluate_pilot(sum_G, sum_GG, NGroupActual, true); // initialize+accumulate
     NGroupAlloc = pilotSamples;
   }
 
