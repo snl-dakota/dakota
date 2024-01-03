@@ -30,18 +30,18 @@ consult :cite:p:`Aro89,Gil81,Haf92,Noc99,Van84`.
 A general optimization problem is formulated as follows:
 
 .. math::
+   :label: optimformulation
 
-  {eqnarray}{
-  \hbox{minimize:} & & f(\mathbf{x})\nonumber\\
-  & & \mathbf{x} \in \Re^{n}\nonumber\\
-  \hbox{subject to:} & &
-  \mathbf{g}_{L} \leq \mathbf{g(x)} \leq \mathbf{g}_U\nonumber\\
-  & & \mathbf{h(x)}=\mathbf{h}_{t}\label{opt:formulations:equation01}\\
-  & & \mathbf{a}_{L} \leq \mathbf{A}_i\mathbf{x} \leq
-  \mathbf{a}_U\nonumber\\
-  & & \mathbf{A}_{e}\mathbf{x}=\mathbf{a}_{t}\nonumber\\
-  & & \mathbf{x}_{L} \leq \mathbf{x} \leq \mathbf{x}_U\nonumber
-  }
+     \hbox{minimize:} & & f(\mathbf{x})\nonumber\\
+     & & \mathbf{x} \in \Re^{n}\nonumber\\
+     \hbox{subject to:} & &
+     \mathbf{g}_{L} \leq \mathbf{g(x)} \leq \mathbf{g}_U\nonumber\\
+     & & \mathbf{h(x)}=\mathbf{h}_{t}\label{opt:formulations:equation01}\\
+     & & \mathbf{a}_{L} \leq \mathbf{A}_i\mathbf{x} \leq
+     \mathbf{a}_U\nonumber\\
+     & & \mathbf{A}_{e}\mathbf{x}=\mathbf{a}_{t}\nonumber\\
+     & & \mathbf{x}_{L} \leq \mathbf{x} \leq \mathbf{x}_U\nonumber
+
 
 where vector and matrix terms are marked in bold typeface. In this
 formulation, :math:`\mathbf{x}=[x_{1},x_{2},\ldots,x_{n}]`  is an
@@ -209,7 +209,7 @@ active continuous variables, which in this case are the
 *continuous design variables*. This differs from parameter study
 methods (for which all continuous variables are active) and from
 nondeterministic analysis methods (for which the uncertain variables
-are active). Refer to Chapter 11 of the User's Manual for additional
+are active). Refer to :ref:`responses:main` for additional
 information on derivative components and active continuous variables.
 
 .. _`OptMethods`:

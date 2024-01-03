@@ -381,9 +381,10 @@ structure passed in, augmented with any required outputs.
 An example Matlab analysis driver ``rosenbrock.m`` for the Rosenbrock
 function is shown in Figure :numref:`advint:figure:matlabrosen`.
 
-.. code-block::
+.. code-block:: matlab
    :caption: Sample Matlab implementation of the Rosenbrock test function for the Dakota/Matlab interface.
    :name: advint:figure:matlabrosen
+   :linenos:
 
    function Dakota = rosenbrock(Dakota)
 
