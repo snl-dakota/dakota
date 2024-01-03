@@ -3,7 +3,7 @@
 Method-Independent Controls
 ===========================
 
-The <tt>\<method independent controls\></tt> are those controls which
+The ``method independent controls`` are those controls which
 are valid for a variety of methods. In some cases, these controls are
 abstractions which may have slightly different implementations from
 one method to the next.
