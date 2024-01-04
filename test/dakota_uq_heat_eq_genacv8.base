@@ -1,12 +1,6 @@
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
 <<<<< Online number of equivalent high fidelity evaluations: 9.9954391295e+02
 <<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000e+00
 <<<<< Variance for mean estimator:
@@ -16,12 +10,6 @@ Test Number 0 succeeded
  Equivalent   MC ( 1000 HF samples):  8.5402702076e+00
  Equivalent  ACV ratio:               6.0238443907e-04
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
 <<<<< Online number of equivalent high fidelity evaluations: 9.1357262054e+02
@@ -35,12 +23,6 @@ Test Number 1 succeeded
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
 <<<<< Online number of equivalent high fidelity evaluations: 1.0001178013e+03
 <<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000e+00
 <<<<< Variance for mean estimator:
@@ -52,12 +34,6 @@ Test Number 2 succeeded
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
 <<<<< Online number of equivalent high fidelity evaluations: 1.0003518460e+03
 <<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000e+00
 <<<<< Variance for mean estimator:
@@ -67,12 +43,6 @@ Test Number 3 succeeded
  Equivalent   MC ( 1000 HF samples):  8.5333726681e+00
  Equivalent  ACV ratio:               1.5553997787e-04
 Test Number 4 succeeded
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
 <<<<< Online number of equivalent high fidelity evaluations: 1.0000796763e+03
