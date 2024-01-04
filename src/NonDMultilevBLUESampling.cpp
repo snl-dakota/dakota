@@ -103,20 +103,10 @@ void NonDMultilevBLUESampling::core_run()
 void NonDMultilevBLUESampling::ml_blue_online_pilot()
 {
   // retrieve cost estimates across soln levels for a particular model form
-  IntRealMatrixArrayMap sum_G;  IntRealSymMatrix2DArrayMap sum_GG;
-  initialize_blue_sums(sum_G, sum_GG); initialize_blue_counts(NGroupActual);
+  IntRealMatrixArrayMap sum_G;          IntRealSymMatrix2DArrayMap sum_GG;
+  initialize_blue_sums(sum_G, sum_GG);  initialize_blue_counts(NGroupActual);
   SizetArray delta_N_G = pilotSamples; // sized by load_pilot_samples()
   NGroupAlloc = delta_N_G;
-
-  // *** TO DO ***
-  // Different online pilot strategies:
-  // 1. Independent pilot samples for each group = expensive initialization;
-  //    straightforward to augment all groups with increments, but it is likely
-  //    that not all groups will get allocated with N_g > N_pilot.
-  // 2. Shared pilot sample (not independent) --> (much) less expensive
-  //    initialization for initial estimates of covGG; subsequent allocations
-  //    are independent, but shared pilot only reused once (all-model group).
-  //    Saves cost for groups that are not selected for investment.
 
   // *** TO DO ***
   // Online iteration does not work the same way since complete group increments
@@ -138,19 +128,38 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
   while (!zeros(delta_N_G) && mlmfIter <= maxIterations) {
 
     // -----------------------------------------------
-    // Evaluate shared increment and update covariance  *** TO DO: alternate as in evaluate_pilot() ***
+    // Evaluate shared increment and update covariance
     // -----------------------------------------------
-    group_increment(delta_N_G, mlmfIter); // spans ALL model groups, blocking
-    accumulate_blue_sums(sum_G, sum_GG, NGroupActual);//, num_GG);
-    // While online cost recovery could be continuously updated, we restrict
-    // to the pilot and do not not update after iter 0.  We could potentially
-    // update cost for shared samples, mirroring the covariance updates.
-    if (onlineCost && mlmfIter == 0)
-      { recover_online_cost(batchResponsesMap); update_model_group_costs(); }
-    clear_batches();
-    increment_equivalent_cost(delta_N_G, modelGroupCost,
-			      sequenceCost[numApprox], equivHFEvals);
-    compute_GG_covariance(sum_G[1], sum_GG[1], NGroupActual, covGG, covGGinv);
+    // > Note: evaluate_pilot() does not support IntMaps
+    if (mlmfIter == 0 && pilotGroupSampling == SHARED_PILOT) {
+      size_t all_group = numGroups - 1; // last group = all models
+      numSamples = pilotSamples[all_group];
+      shared_increment(mlmfIter);
+      // accumulate for one group only and reuse for group covariances
+      accumulate_blue_sums(sum_G, sum_GG, NGroupActual, allResponses,all_group);
+      compute_GG_covariance(sum_G[1][all_group], sum_GG[1][all_group],
+			    NGroupActual[all_group], covGG, covGGinv);
+      if (onlineCost) {
+	NonDNonHierarchSampling::recover_online_cost(allResponses);
+	update_model_group_costs();
+      }
+      increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox+1,
+				equivHFEvals);
+    }
+    else {
+      group_increment(delta_N_G, mlmfIter); // spans ALL model groups, blocking
+      accumulate_blue_sums(sum_G, sum_GG, NGroupActual, batchResponsesMap);
+      compute_GG_covariance(sum_G[1], sum_GG[1], NGroupActual, covGG, covGGinv);
+      // While online cost recovery could be continuously updated, we restrict
+      // to the pilot and do not not update on subsequent iterations.  We could
+      // potentially mirror the covariance updates with cost updates, but seems
+      // likely to induce thrash when run times are not robust.
+      if (onlineCost && mlmfIter == 0)
+	{ recover_online_cost(batchResponsesMap); update_model_group_costs(); }
+      increment_equivalent_cost(delta_N_G, modelGroupCost,
+				sequenceCost[numApprox], equivHFEvals);
+      clear_batches();
+    }
 
     // --------------------
     // Solve for allocation
@@ -209,7 +218,7 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
   if (finalStatsType == QOI_STATISTICS) {
     // perform the shared increment for the online sample profile
     group_increment(delta_N_G, mlmfIter); // spans ALL models, blocking
-    accumulate_blue_sums(sum_G, sum_GG, NGroupActual);
+    accumulate_blue_sums(sum_G, sum_GG, NGroupActual, batchResponsesMap);
     increment_equivalent_cost(delta_N_G, modelGroupCost,
 			      sequenceCost[numApprox], equivHFEvals);
     // extract moments
@@ -296,10 +305,35 @@ evaluate_pilot(RealMatrixArray& sum_G_pilot, RealSymMatrix2DArray& sum_GG_pilot,
   // ----------------------------------------
   // Compute var L,H & covar LL,LH from pilot
   // ----------------------------------------
-  // Initialize for pilot sample
-  if (pilotGroupSampling == INDEPENDENT_PILOT) {
+  // INDEPENDENT_PILOT: independent pilot samples for each group = expensive
+  //   initialization; straightforward to augment all groups with increments,
+  //   but likely that not all groups will get allocated with N_g > N_pilot.
+  // SHARED_PILOT: shared pilot sample is (much) less expensive initialization
+  //   for initial estimates of covGG; subsequent allocations are independent,
+  //   but shared pilot only reused once (all-model group).  Saves cost for
+  //   groups that are not selected for investment.
+  if (pilotGroupSampling == SHARED_PILOT) {
+    size_t all_group = numGroups - 1; // last group = all models
+    numSamples = pilotSamples[all_group];
+    shared_increment(mlmfIter);
+    // accumulate for one group only and reuse for group covariances
+    RealMatrix&          sum_G_all =    sum_G_pilot[all_group];
+    RealSymMatrixArray& sum_GG_all =   sum_GG_pilot[all_group];
+    SizetArray&              N_all = N_shared_pilot[all_group];
+    accumulate_blue_sums(sum_G_all, sum_GG_all, N_all, allResponses);
+    compute_GG_covariance(sum_G_all, sum_GG_all, N_all, covGG, covGGinv);
+    if (onlineCost) {
+      NonDNonHierarchSampling::recover_online_cost(allResponses);
+      update_model_group_costs();
+    }
+    if (incr_cost)
+      increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox+1,
+				equivHFEvals);
+  }
+  else {
     group_increment(pilotSamples, mlmfIter); // all groups, independent samples
-    accumulate_blue_sums(sum_G_pilot, sum_GG_pilot, N_shared_pilot);//, N_GG);
+    accumulate_blue_sums(sum_G_pilot, sum_GG_pilot, N_shared_pilot,
+			 batchResponsesMap);
     compute_GG_covariance(sum_G_pilot, sum_GG_pilot, N_shared_pilot,
 			  covGG, covGGinv); // moved down
     if (onlineCost)
@@ -308,24 +342,6 @@ evaluate_pilot(RealMatrixArray& sum_G_pilot, RealSymMatrix2DArray& sum_GG_pilot,
       increment_equivalent_cost(pilotSamples, modelGroupCost,
 				sequenceCost[numApprox], equivHFEvals);
     clear_batches();
-  }
-  else {
-    size_t shared_index = numGroups - 1; // last group = all models
-    numSamples = pilotSamples[shared_index];
-    shared_increment(mlmfIter);
-    // accumulate for one group only and reuse for covariances
-    RealMatrix&          sum_G_sh =    sum_G_pilot[shared_index];
-    RealSymMatrixArray& sum_GG_sh =   sum_GG_pilot[shared_index];
-    SizetArray&              N_sh = N_shared_pilot[shared_index];
-    accumulate_blue_sums(sum_G_sh, sum_GG_sh, N_sh);                  //overload
-    compute_GG_covariance(sum_G_sh, sum_GG_sh, N_sh, covGG, covGGinv);//overload
-    if (onlineCost) {
-      NonDNonHierarchSampling::recover_online_cost(allResponses);
-      update_model_group_costs();
-    }
-    if (incr_cost)
-      increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox+1,
-				equivHFEvals);
   }
 }
 
@@ -976,91 +992,107 @@ project_mc_estimator_variance(const RealSymMatrixArray& var_H, Real N_H_actual,
 /** Multi-moment map-based version used by online pilot */
 void NonDMultilevBLUESampling::
 accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
-		     IntRealSymMatrix2DArrayMap& sum_GG, Sizet2DArray& num_G)
+		     IntRealSymMatrix2DArrayMap& sum_GG, Sizet2DArray& num_G,
+		     const IntResponse2DMap& batch_resp_map)
+{
+  IntResponse2DMap::const_iterator b_it;
+  size_t g, num_groups = modelGroups.size();
+  for (g=0; g<num_groups; ++g) {
+    b_it = batch_resp_map.find(g); // index g corresponds to group_id key
+    if (b_it == batch_resp_map.end()) {
+      Cerr << "Error: batch response map key " << g << " not found in "
+	   << "NonDMultilevBLUESampling::accumulate_blue_sums()" << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    accumulate_blue_sums(sum_G, sum_GG, num_G, b_it->second, g);
+  }
+}
+
+
+/** Multi-moment map-based version used by online pilot */
+void NonDMultilevBLUESampling::
+accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
+		     IntRealSymMatrix2DArrayMap& sum_GG, Sizet2DArray& num_G,
+		     const IntResponseMap& resp_map, size_t group)
 {
   using std::isfinite;  bool all_finite;
   Real g1_fn, g2_fn, g1_prod, g2_prod;
   IntRespMCIter r_cit;  IntRMAMIter g_it;  IntRSM2AMIter gg_it;
   int g_ord, gg_ord, active_ord, ord;
-  size_t g, num_groups = modelGroups.size(), qoi, m, m2, num_models,
-    g1_index, g2_index;
+  size_t qoi, m, m2, g1_index, g2_index;
 
-  for (g=0; g<num_groups; ++g) {
-    SizetArray&        num_G_g =       num_G[g]; // index is group_id
-    const UShortArray& group_g = modelGroups[g];
-    num_models                 = group_g.size();
+  SizetArray&        num_G_g =       num_G[group];
+  const UShortArray& group_g = modelGroups[group];
+  size_t          num_models = group_g.size();
 
-    const IntResponseMap& resp_map_g = batchResponsesMap[g];// index is group_id
-    for (r_cit=resp_map_g.begin(); r_cit!=resp_map_g.end(); ++r_cit) {
-      const Response&   resp    = r_cit->second;
-      const RealVector& fn_vals = resp.function_values();
-      const ShortArray& asv     = resp.active_set_request_vector();
+  for (r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit) {
+    const Response&   resp    = r_cit->second;
+    const RealVector& fn_vals = resp.function_values();
+    const ShortArray& asv     = resp.active_set_request_vector();
 
-      for (qoi=0; qoi<numFunctions; ++qoi) {
+    for (qoi=0; qoi<numFunctions; ++qoi) {
 
-	// see Bessel correction notes in NonDNonHierarchSampling::
-	// compute_correlation(): population mean and variance should be
-	// computed from the same sample set
-	all_finite = true;
-	for (m=0; m<num_models; ++m) {
-	  g1_index = group_g[m] * numFunctions + qoi;
-	  if ( (asv[g1_index] & 1) == 0 ) {
-	    Cerr << "Error: missing data for group " << g+1 << " model "
-		 << group_g[m]+1 << '.' << std::endl;
-	    abort_handler(METHOD_ERROR);
-	  }
-	  if ( !isfinite(fn_vals[g1_index]) )
-	    all_finite = false; //break;
+      // see Bessel correction notes in NonDNonHierarchSampling::
+      // compute_correlation(): population mean and variance should be
+      // computed from the same sample set
+      all_finite = true;
+      for (m=0; m<num_models; ++m) {
+	g1_index = group_g[m] * numFunctions + qoi;
+	if ( (asv[g1_index] & 1) == 0 ) {
+	  Cerr << "Error: missing data for group " << group+1 << " model "
+	       << group_g[m]+1 << '.' << std::endl;
+	  abort_handler(METHOD_ERROR);
 	}
-	if (!all_finite) continue;
+	if ( !isfinite(fn_vals[g1_index]) )
+	  all_finite = false; //break;
+      }
+      if (!all_finite) continue;
 
-	++num_G_g[qoi]; // shared due to fault tol logic
-	for (m=0; m<num_models; ++m) {
-	  g1_index = group_g[m] * numFunctions + qoi;
-	  g1_fn = fn_vals[g1_index];
+      ++num_G_g[qoi]; // shared due to fault tol logic
+      for (m=0; m<num_models; ++m) {
+	g1_index = group_g[m] * numFunctions + qoi;
+	g1_fn = fn_vals[g1_index];
 
-	  g_it    = sum_G.begin();  gg_it = sum_GG.begin();
-	  g_ord   = (g_it  ==  sum_G.end()) ? 0 :  g_it->first;
-	  gg_ord  = (gg_it == sum_GG.end()) ? 0 : gg_it->first;
-	  g1_prod = g1_fn;  active_ord = 1;
-	  while (g_ord || gg_ord) {
+	g_it    = sum_G.begin();  gg_it = sum_GG.begin();
+	g_ord   = (g_it  ==  sum_G.end()) ? 0 :  g_it->first;
+	gg_ord  = (gg_it == sum_GG.end()) ? 0 : gg_it->first;
+	g1_prod = g1_fn;  active_ord = 1;
+	while (g_ord || gg_ord) {
     
-	    if (g_ord == active_ord) { // support general key sequence
-	      g_it->second[g](qoi,m) += g1_prod;
-	      ++g_it;  g_ord = (g_it == sum_G.end()) ? 0 : g_it->first;
-	    }
-	    if (gg_ord == active_ord) { // support general key sequence
-	      RealSymMatrix& sum_GG_gq = gg_it->second[g][qoi];
-	      sum_GG_gq(m,m) += g1_prod * g1_prod;
-	      // Off-diagonal of C matrix:
-	      for (m2=0; m2<m; ++m2) {
-		g2_index = group_g[m2] * numFunctions + qoi;
-		// regenerate g2_prod i/o storing off-diagonal combinations
-		g2_prod = g2_fn = fn_vals[g2_index];
-		for (ord=1; ord<active_ord; ++ord)
-		  g2_prod *= g2_fn;
-		sum_GG_gq(m,m2) += g1_prod * g2_prod;
-	      }
-	      ++gg_it; gg_ord = (gg_it == sum_GG.end()) ? 0 : gg_it->first;
-	    }
-
-	    g1_prod *= g1_fn;  ++active_ord;
+	  if (g_ord == active_ord) { // support general key sequence
+	    g_it->second[group](qoi,m) += g1_prod;
+	    ++g_it;  g_ord = (g_it == sum_G.end()) ? 0 : g_it->first;
 	  }
+	  if (gg_ord == active_ord) { // support general key sequence
+	    RealSymMatrix& sum_GG_gq = gg_it->second[group][qoi];
+	    sum_GG_gq(m,m) += g1_prod * g1_prod;
+	    // Off-diagonal of C matrix:
+	    for (m2=0; m2<m; ++m2) {
+	      g2_index = group_g[m2] * numFunctions + qoi;
+	      // regenerate g2_prod i/o storing off-diagonal combinations
+	      g2_prod = g2_fn = fn_vals[g2_index];
+	      for (ord=1; ord<active_ord; ++ord)
+		g2_prod *= g2_fn;
+	      sum_GG_gq(m,m2) += g1_prod * g2_prod;
+	    }
+	    ++gg_it; gg_ord = (gg_it == sum_GG.end()) ? 0 : gg_it->first;
+	  }
+
+	  g1_prod *= g1_fn;  ++active_ord;
 	}
       }
     }
   }
-  //clear_batches();
 }
 
 
 /** Single moment version used by offline-pilot and pilot-projection */
 void NonDMultilevBLUESampling::
 accumulate_blue_sums(RealMatrixArray& sum_G, RealSymMatrix2DArray& sum_GG,
-		     Sizet2DArray& num_G)
+		     Sizet2DArray& num_G,const IntResponse2DMap& batch_resp_map)
 {
   using std::isfinite;  bool all_finite;
-  Real g1_fn;  IntRespMCIter r_cit;
+  Real g1_fn;  IntRespMCIter r_cit;  IntResponse2DMap::const_iterator b_it;
   size_t g, num_groups = modelGroups.size(), m, m2, num_models, qoi,
     g1_index, g2_index;
 
@@ -1071,7 +1103,13 @@ accumulate_blue_sums(RealMatrixArray& sum_G, RealSymMatrix2DArray& sum_GG,
     const UShortArray&       group_g = modelGroups[g];
     num_models                       = group_g.size();
 
-    const IntResponseMap& resp_map_g = batchResponsesMap[g];//index g = group_id
+    b_it = batch_resp_map.find(g); // index g corresponds to group_id key
+    if (b_it == batch_resp_map.end()) {
+      Cerr << "Error: batch response map key " << g << " not found in "
+	   << "NonDMultilevBLUESampling::accumulate_blue_sums()" << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    const IntResponseMap& resp_map_g = b_it->second;
     for (r_cit=resp_map_g.begin(); r_cit!=resp_map_g.end(); ++r_cit) {
       const Response&   resp    = r_cit->second;
       const RealVector& fn_vals = resp.function_values();
@@ -1128,13 +1166,13 @@ accumulate_blue_sums(RealMatrixArray& sum_G, RealSymMatrix2DArray& sum_GG,
     shared pilot sample */
 void NonDMultilevBLUESampling::
 accumulate_blue_sums(RealMatrix& sum_G, RealSymMatrixArray& sum_GG,
-		     SizetArray& N_shared)
+		     SizetArray& N_shared, const IntResponseMap& resp_map)
 {
   using std::isfinite;  bool all_finite;  IntRespMCIter r_cit;
   Real g1_fn;  size_t qoi, approx, approx2, g1_index, g2_index;
 
-  // here we process allResponses from shared_increment()
-  for (r_cit=allResponses.begin(); r_cit!=allResponses.end(); ++r_cit) {
+  // here we process resp_map from shared_increment()
+  for (r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit) {
     const Response&   resp    = r_cit->second;
     const RealVector& fn_vals = resp.function_values();
     const ShortArray& asv     = resp.active_set_request_vector();
@@ -1178,6 +1216,7 @@ accumulate_blue_sums(RealMatrix& sum_G, RealSymMatrixArray& sum_GG,
 }
 
 
+/** overload version for independent group samples */
 void NonDMultilevBLUESampling::
 compute_GG_covariance(const RealMatrixArray& sum_G,
 		      const RealSymMatrix2DArray& sum_GG,
@@ -1221,6 +1260,7 @@ compute_GG_covariance(const RealMatrixArray& sum_G,
 }
 
 
+/** overload version for shared group samples */
 void NonDMultilevBLUESampling::
 compute_GG_covariance(const RealMatrix& sum_G_g,
 		      const RealSymMatrixArray& sum_GG_g,

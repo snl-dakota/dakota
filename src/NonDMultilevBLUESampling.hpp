@@ -157,11 +157,18 @@ private:
 
   void accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
 			    IntRealSymMatrix2DArrayMap& sum_GG,
-			    Sizet2DArray& num_G);
+			    Sizet2DArray& num_G,
+			    const IntResponse2DMap& batch_resp_map);
+  void accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
+			    IntRealSymMatrix2DArrayMap& sum_GG,
+			    Sizet2DArray& num_G,
+			    const IntResponseMap& resp_map, size_t group);
   void accumulate_blue_sums(RealMatrixArray& sum_G,
-			    RealSymMatrix2DArray& sum_GG, Sizet2DArray& num_G);
+			    RealSymMatrix2DArray& sum_GG, Sizet2DArray& num_G,
+			    const IntResponse2DMap& batch_resp_map);
   void accumulate_blue_sums(RealMatrix& sum_G, RealSymMatrixArray& sum_GG,
-			    SizetArray& N_shared);
+			    SizetArray& N_shared,
+			    const IntResponseMap& resp_map);
 
   void compute_GG_covariance(const RealMatrixArray& sum_G,
 			     const RealSymMatrix2DArray& sum_GG,
