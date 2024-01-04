@@ -151,8 +151,7 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
     sum_LL_pilot(numFunctions, numApprox),
     sum_LH_pilot(numFunctions, numApprox), var_L;
   SizetArray N_shared_pilot(numFunctions, 0);
-  //Sizet2DArray N_L_pilot, N_LH_pilot;
-  //initialize_counts(N_L_pilot, N_H_pilot, N_LH_pilot);
+
   // -------------------------------------------------------------------------
   // Compute final var{L,H},rho2LH from (oracle) pilot treated as offline cost
   // -------------------------------------------------------------------------
@@ -187,8 +186,8 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   // Only QOI_STATISTICS requires application of oversample ratios and
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
   if (finalStatsType == QOI_STATISTICS) {
-    IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baseline, sum_LL, sum_LH;
-    RealVector sum_HH;     //Sizet2DArray N_L_baseline, N_LH;
+    IntRealVectorMap sum_H;  RealVector sum_HH;
+    IntRealMatrixMap sum_L_baseline, sum_LL, sum_LH;
     initialize_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH);
     // perform the shared increment for the online sample profile;
     // at least 2 samples reqd for variance (initial N_H_actual = 0)
@@ -434,7 +433,7 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
                    sum_L_refined = sum_L_baseline; // copies
   Sizet2DArray N_L_actual_shared;  inflate(N_H_actual, N_L_actual_shared);
   Sizet2DArray N_L_actual_refined = N_L_actual_shared;
-  SizetArray   N_L_alloc_refined;  inflate(N_H_alloc, N_L_alloc_refined);
+  SizetArray   N_L_alloc_refined;  inflate(N_H_alloc,  N_L_alloc_refined);
   for (size_t end=numApprox; end>0; --end) {
     // *** TO DO NON_BLOCKING: 2ND PASS ACCUMULATION AFTER 1ST PASS LAUNCH
     if (mfmc_approx_increment(soln, N_L_actual_refined, N_L_alloc_refined,

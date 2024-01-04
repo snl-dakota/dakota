@@ -337,7 +337,7 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
   IntRealMatrixMap sum_L_refined = sum_L_baselineH;//baselineL;
   Sizet2DArray N_L_actual_shared;  inflate(N_H_actual, N_L_actual_shared);
   Sizet2DArray N_L_actual_refined = N_L_actual_shared;
-  SizetArray   N_L_alloc_refined;  inflate(N_H_alloc, N_L_alloc_refined);
+  SizetArray   N_L_alloc_refined;  inflate(N_H_alloc,  N_L_alloc_refined);
   size_t start, end;
   for (end=numApprox; end>0; --end) {
     // pairwise (IS and RD) or pyramid (MF):

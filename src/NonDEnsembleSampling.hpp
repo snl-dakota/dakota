@@ -147,9 +147,6 @@ protected:
 
   /// type of model sequence enumerated with primary MF/ACV loop over steps
   short sequenceType;
-  /// setting for the inactive model dimension not traversed by primary MF/ACV
-  /// loop over steps
-  size_t secondaryIndex;
   /// relative costs of model forms/resolution levels within a 1D sequence
   RealVector sequenceCost;
 

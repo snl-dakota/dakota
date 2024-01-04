@@ -841,10 +841,6 @@ finalize_counts(const Sizet2DArray& N_G_actual, const SizetArray& N_G_alloc)
 {
   // post final sample counts back to NLev{Actual,Alloc} (for final summaries)
 
-  //bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
-  //inflate_approx_samples(N_G_actual, multilev, secondaryIndex, NLevActual);
-  //inflate_approx_samples(N_G_alloc,  multilev, secondaryIndex, NLevAlloc);
-
   // For now, overlay group samples into model-resolution instance samples
   size_t g, m, num_models, q, mf, rl, m_index;
   const Pecos::ActiveKey& active_key = iteratedModel.active_model_key();

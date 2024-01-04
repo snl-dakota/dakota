@@ -395,9 +395,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
 {
   // retrieve cost estimates across soln levels for a particular model form
   IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baselineH, sum_LH;
-  IntRealSymMatrixArrayMap sum_LL;
-  RealVector sum_HH;  RealMatrix var_L;
-  //SizetSymMatrixArray N_LL;
+  IntRealSymMatrixArrayMap sum_LL;  RealVector sum_HH;  RealMatrix var_L;
   initialize_acv_sums(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH);
   size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
@@ -413,7 +411,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
     // --------------------------------------------------------------------
     shared_increment(mlmfIter); // spans ALL models, blocking
     accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
-			sum_LH, sum_HH, N_H_actual);//, N_LL);
+			sum_LH, sum_HH, N_H_actual);
     N_H_alloc += (backfillFailures && mlmfIter) ?
       one_sided_delta(N_H_alloc, avg_hf_target) : numSamples;
     // While online cost recovery could be continuously updated, we restrict
@@ -546,7 +544,7 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
     // > utilize ASV for active approx subset
     shared_increment(mlmfIter, approx_set); // spans ACTIVE models, blocking
     accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
-			sum_LH, sum_HH, N_H_actual);//, N_LL);
+			sum_LH, sum_HH, N_H_actual);
     N_H_alloc += numSamples;
     increment_equivalent_cost(numSamples, sequenceCost, numApprox, approx_set,
 			      equivHFEvals);
@@ -645,8 +643,17 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
   IntRealMatrixMap sum_L_shared  = sum_L_baselineH,//baselineL;
                    sum_L_refined = sum_L_baselineH;//baselineL;
   Sizet2DArray N_L_actual_shared;  SizetArray N_L_alloc_refined;
-  inflate(N_H_actual, N_L_actual_shared, approx_set);
-  inflate(N_H_alloc,  N_L_alloc_refined, approx_set);
+  if (pilotMgmtMode == OFFLINE_PILOT ||
+      pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
+    // online shared_increment() only includes best model set after
+    // processing of offline covariance data
+    inflate(N_H_actual, N_L_actual_shared, approx_set);
+    inflate(N_H_alloc,  N_L_alloc_refined, approx_set);
+  }
+  else { // all models are part of online shared_increment()
+    inflate(N_H_actual, N_L_actual_shared);
+    inflate(N_H_alloc,  N_L_alloc_refined);
+  }
   Sizet2DArray N_L_actual_refined = N_L_actual_shared;
 
   switch (mlmfSubMethod) {
@@ -658,7 +665,7 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
     size_t start = 0, end, num_approx = approx_set.size();
     for (end=num_approx; end>0; --end) {
       // ACV_IS samples on [approx-1,approx) --> sum_L_refined
-      // ACV_MF samples on [0, approx)       --> sum_L_refined
+      // ACV_MF samples on [0,       approx) --> sum_L_refined
       //start = (mlmfSubMethod == SUBMETHOD_ACV_MF) ? 0 : end - 1;
       // *** TO DO NON_BLOCKING: PERFORM 2ND PASS ACCUMULATE AFTER PASS 1 LAUNCH
       if (genacv_approx_increment(soln, N_L_actual_refined, N_L_alloc_refined,
@@ -736,7 +743,7 @@ genacv_approx_increment(const MFSolutionData& soln,
   //   allowing use of one_sided_delta() with latest counts
   const UShortArray& approx_set = activeModelSetIter->first;
 
-  bool   ordered = approx_sequence.empty();
+  bool  ordered = approx_sequence.empty();
   size_t approx = (ordered) ? end-1 : approx_sequence[end-1],
     inflate_approx = approx_set[approx];
   Real lf_target = soln.solution_variables()[approx];

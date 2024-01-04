@@ -288,7 +288,6 @@ void Environment::parse(bool check_bcast_database,
   // check if true, otherwise caller assumes responsibility  
   if (check_bcast_database) 
     probDescDB.check_and_broadcast(programOptions);
-
 }
 
 

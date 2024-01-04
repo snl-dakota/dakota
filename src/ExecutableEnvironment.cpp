@@ -29,7 +29,7 @@ ExecutableEnvironment::ExecutableEnvironment(int argc, char* argv[]):
   // might get entangled with CL usage...
   if (programOptions.version())
     outputManager.output_version();
-      
+
   // After command line parsing and before input DB parsing: if just
   // getting version or help, don't instantiate anything.
   if (programOptions.proceed_to_instantiate()) {

@@ -550,9 +550,9 @@ public:
   //- Heading: Constructors, destructor, operators
   //
 
-  DataModel();                                ///< constructor
+  DataModel();                               ///< constructor
   DataModel(const DataModel&);               ///< copy constructor
-  ~DataModel();                               ///< destructor
+  ~DataModel();                              ///< destructor
 
   DataModel& operator=(const DataModel&); ///< assignment operator
 
