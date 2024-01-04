@@ -138,13 +138,13 @@ void NonDGenACVSampling::generate_ensembles_dags()
   for (d_cit=modelDAGs.begin(); d_cit!=modelDAGs.end(); ++d_cit) {
     const UShortArraySet& dag_set = d_cit->second;
     set_size = dag_set.size();  total_size += set_size;
-    Cout << "For model set:\n" << d_cit->first
+    Cout << "For approximation set:\n" << d_cit->first
 	 << "searching array of DAGs of size " << set_size;
     if (outputLevel >= DEBUG_OUTPUT) Cout << ":\n" << dag_set;//<< '\n';
     else                             Cout << ".\n";
   }
   if (modelSelectType)
-    Cout << "Total DAGs across all model sets = " << total_size << '\n';
+    Cout << "Total DAGs across all approximation sets = " << total_size << '\n';
   Cout << std::endl;
 }
 
@@ -1999,8 +1999,8 @@ void NonDGenACVSampling::update_best(MFSolutionData& soln)
     bestDAGIter      = activeDAGIter;
     meritFnStar      = merit_fn;
     if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Updating best DAG to:\n" << *bestDAGIter << " for model set:\n"
-	   << activeModelSetIter->first << std::endl;
+      Cout << "Updating best DAG to:\n" << *bestDAGIter << "for approximation "
+	   << "set:\n" << activeModelSetIter->first << std::endl;
   }
 }
 
@@ -2015,8 +2015,8 @@ void NonDGenACVSampling::restore_best()
 
   const UShortArray& best_models = bestModelSetIter->first;
   const UShortArray& best_dag    = *bestDAGIter;
-  Cout << "\nBest solution from DAG:\n" << best_dag << " for model set:\n"
-       << best_models << std::endl;
+  Cout << "\nBest solution from DAG:\n" << best_dag
+       << "for approximation set:\n" << best_models << std::endl;
   std::pair<UShortArray, UShortArray> soln_key(best_models, best_dag);
   MFSolutionData& best_soln = dagSolns[soln_key];
   if (outputLevel >= DEBUG_OUTPUT)
