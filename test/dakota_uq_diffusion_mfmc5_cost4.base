@@ -303,11 +303,11 @@ Test Number 17 succeeded
 <<<<< Function evaluation summary (LF3_INT): 100 total (100 new, 0 duplicate)
 <<<<< Function evaluation summary (LF4_INT): 100 total (100 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 100 total (100 new, 0 duplicate)
-<<<<< Projected number of equivalent high fidelity evaluations: 5.0197265625000000e+02
+<<<<< Projected number of equivalent high fidelity evaluations: 5.0198046875000000e+02
 <<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000000000e+00
 <<<<< Variance for mean estimator:
-  Projected   MC (    2 HF samples):  5.2627048608481202e-05
-  Projected MFMC (sample profile):    5.2960199749546549e-09
-  Projected MFMC ratio (1 - R^2):     1.0063304165799572e-04
- Equivalent   MC (  502 HF samples):  2.0968093760976130e-07
- Equivalent MFMC ratio:               2.5257517613790508e-02
+  Projected   MC (    2 HF samples):  5.2079082084065558e-05
+  Projected MFMC (sample profile):    5.6528521187627677e-09
+  Projected MFMC ratio (1 - R^2):     1.0854362044319421e-04
+ Equivalent   MC (  502 HF samples):  2.0749445576537905e-07
+ Equivalent MFMC ratio:               2.7243388734948356e-02
