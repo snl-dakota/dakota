@@ -1218,6 +1218,10 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
 			const RealVector& cost,  SizetArray& approx_sequence,
 			MFSolutionData& soln)
 {
+  bool budget_constrained = (maxFunctionEvals != SZ_MAX), budget_exhausted
+    = (budget_constrained && equivHFEvals >= (Real)maxFunctionEvals),
+    no_solve = (budget_exhausted || convergenceTol >= 1.); // bypass opt solve
+
   if (mlmfIter == 0) {
 
     size_t hf_form_index, hf_lev_index;
@@ -1225,15 +1229,12 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
     SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
     size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
     Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
-    bool budget_constrained = (maxFunctionEvals != SZ_MAX),
-         budget_exhausted   = (budget_constrained &&
-			       equivHFEvals >= (Real)maxFunctionEvals);
     RealVector avg_eval_ratios(numApprox, false);
 
-    if (budget_exhausted) { // only 1 feasible pt, no need for solve
+    if (no_solve) { // only 1 feasible pt, no need for solve
       avg_eval_ratios = 1.;
       soln.anchored_solution_ratios(avg_eval_ratios, avg_N_H);
-      return;
+      numSamples = 0;  return;
     }
 
     // Compute approx_sequence and r* initial guess from analytic MFMC
@@ -1264,6 +1265,8 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
     // push updates to MFSolutionData
     soln.anchored_solution_ratios(avg_eval_ratios, avg_hf_target);
   }
+  else if (no_solve) // subsequent iterations
+    { numSamples = 0;  return; } // leave soln at previous values
 
   // define covLH and covLL from rho2LH, var_L, varH
   //correlation_sq_to_covariance(rho2_LH, var_L, varH, covLH);

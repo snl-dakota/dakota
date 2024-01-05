@@ -818,7 +818,8 @@ genacv_approx_increment(const MFSolutionData& soln,
 
 void NonDGenACVSampling::precompute_ratios()
 {
-  if (pilotMgmtMode == ONLINE_PILOT || pilotMgmtMode == ONLINE_PILOT_PROJECTION)
+  if (pilotMgmtMode == ONLINE_PILOT ||
+      pilotMgmtMode == ONLINE_PILOT_PROJECTION)
     cache_mc_reference();// {estVar,numH}Iter0
 }
 
@@ -837,21 +838,23 @@ compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
   //   dependent on the active DAG/model subset
   update_model_group_costs();
 
+  bool budget_constrained = (maxFunctionEvals != SZ_MAX), budget_exhausted
+    = (budget_constrained && equivHFEvals >= (Real)maxFunctionEvals),
+    no_solve = (budget_exhausted || convergenceTol >= 1.); // bypass opt solve
   const UShortArray& approx_set = activeModelSetIter->first;
+
   if (mlmfIter == 0) {
     size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
     SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
     size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
     Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
-    bool budget_exhausted  = (maxFunctionEvals != SZ_MAX &&
-			      equivHFEvals >= (Real)maxFunctionEvals);
 
     // use default ordering for now, prior to avgEvalRatios soln
     // > sufficient for determination of best DAG, but not for pyramid sample
     //   set ordering in approx_increments()
     unroll_reverse_dag_from_root(numApprox, orderedRootList);
 
-    if (budget_exhausted || convergenceTol >= 1.) { // no need for solve
+    if (no_solve) { // no need for solve
       size_t num_approx = approx_set.size();
       RealVector avg_eval_ratios(num_approx, false);  avg_eval_ratios = 1.;
       // For r_i = 1, C_G,c_g = 0 --> enforce linear constr based on current DAG
@@ -860,11 +863,11 @@ compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
       soln.anchored_solution_ratios(avg_eval_ratios, avg_N_H);
       // For offline pilot, the online EstVar is undefined prior to any online
       // samples, but should not happen (no budget used) unless bad convTol spec
-      if (pilotMgmtMode == OFFLINE_PILOT ||
-	  pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
-	soln.average_estimator_variance(std::numeric_limits<Real>::infinity());
-      else
+      if (pilotMgmtMode == ONLINE_PILOT ||
+	  pilotMgmtMode == ONLINE_PILOT_PROJECTION)
 	soln.average_estimator_variance(average(estVarIter0));
+      else
+	soln.average_estimator_variance(std::numeric_limits<Real>::infinity());
       soln.average_estimator_variance_ratio(1.);
       numSamples = 0;  return;
     }
@@ -892,7 +895,9 @@ compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
     }
     }
   }
-  else { // warm start from previous eval_ratios solution
+  else { // subsequent iterations
+    if (no_solve) // leave soln at previous values
+      { numSamples = 0; return; }
 
     // no scaling needed from prev soln (as in NonDLocalReliability) since
     // updated avg_N_H now includes allocation from previous solution and

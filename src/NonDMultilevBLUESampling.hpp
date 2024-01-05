@@ -87,6 +87,8 @@ protected:
 
   void initialize_blue_counts(Sizet2DArray& num_G);
 
+  int  compute_C_inverse(const RealSymMatrix& cov_GG_gq,
+			 RealSymMatrix& cov_GG_inv_gq);
   void compute_C_inverse(const RealSymMatrix2DArray& cov_GG,
 			 RealSymMatrix2DArray& cov_GG_inv);
   void compute_Psi(const RealSymMatrix2DArray& cov_GG_inv,
@@ -135,6 +137,13 @@ private:
   void ml_blue_online_pilot();
   void ml_blue_offline_pilot();
   void ml_blue_pilot_projection();
+
+  void shared_covariance_iteration(IntRealMatrixArrayMap& sum_G,
+				   IntRealSymMatrix2DArrayMap& sum_GG,
+				   SizetArray& delta_N_G);
+  void independent_covariance_iteration(IntRealMatrixArrayMap& sum_G,
+					IntRealSymMatrix2DArrayMap& sum_GG,
+					SizetArray& delta_N_G);
 
   void group_increment(SizetArray& delta_N_G, size_t iter);
   void evaluate_pilot(RealMatrixArray& sum_G_pilot,
@@ -254,6 +263,10 @@ private:
   Sizet2DArray NGroupActual;
   /// counter for sample allocations, per group
   SizetArray   NGroupAlloc;
+
+  /// counter for sample accumulations when evaluating covariance
+  /// using SHARED_PILOT mode
+  SizetArray   NGroupShared;
 
   /// final solution data for BLUE
   MFSolutionData blueSolnData;
@@ -453,6 +466,22 @@ initialize_rva(RealVectorArray& rva, bool init)
 }
 
 
+inline int NonDMultilevBLUESampling::
+compute_C_inverse(const RealSymMatrix& cov_GG_gq, RealSymMatrix& cov_GG_inv_gq)
+{
+  if (cov_GG_gq.empty()) // insufficient samples to define cov_GG
+    { cov_GG_inv_gq.shape(0); return 0; }
+  else {
+    cov_GG_inv_gq = cov_GG_gq; // copy for inversion in place
+    RealSpdSolver spd_solver;
+    spd_solver.setMatrix(Teuchos::rcp(&cov_GG_inv_gq, false));
+    if (spd_solver.shouldEquilibrate())
+      spd_solver.factorWithEquilibration(true);
+    return spd_solver.invert(); // in place
+  }
+}
+
+
 inline void NonDMultilevBLUESampling::
 compute_C_inverse(const RealSymMatrix2DArray& cov_GG,
 		  RealSymMatrix2DArray& cov_GG_inv)
@@ -460,29 +489,18 @@ compute_C_inverse(const RealSymMatrix2DArray& cov_GG,
   // cov matrices are sized according to group member size
   initialize_rsm2a(cov_GG_inv);
 
-  RealSpdSolver spd_solver; // reuse since setMatrix resets internal state
   size_t q, g, num_groups = modelGroups.size();
   for (g=0; g<num_groups; ++g) {
     const RealSymMatrixArray& cov_GG_g =     cov_GG[g];
     RealSymMatrixArray&   cov_GG_inv_g = cov_GG_inv[g];
     for (q=0; q<numFunctions; ++q) {
-      const RealSymMatrix& cov_GG_gq =     cov_GG_g[q];
-      RealSymMatrix&   cov_GG_inv_gq = cov_GG_inv_g[q];
-      if (cov_GG_gq.empty()) // insufficient samples to define cov_GG
-	cov_GG_inv_gq.shape(0);
-      else {
-	cov_GG_inv_gq = cov_GG_gq; // copy for inversion in place
-	spd_solver.setMatrix(Teuchos::rcp(&cov_GG_inv_gq, false));
-	if (spd_solver.shouldEquilibrate())
-	  spd_solver.factorWithEquilibration(true);
-	int code = spd_solver.invert(); // in place
-	if (code) {
-	  Cerr << "Error: serial dense solver failure (LAPACK error code "
-	       << code << ") in ML BLUE::compute_C_inverse()\n"
-	       << "       for group " << g << " QoI " << q << " with C:\n"
-	       << cov_GG_gq << std::endl;
-	  abort_handler(METHOD_ERROR);
-	}
+      int code = compute_C_inverse(cov_GG_g[q], cov_GG_inv_g[q]);
+      if (code) {
+	Cerr << "Error: serial dense solver failure (LAPACK error code "
+	     << code << ") in ML BLUE::compute_C_inverse()\n"
+	     << "       for group " << g << " QoI " << q << " with C:\n"
+	     << cov_GG_g[q] << std::endl;
+	abort_handler(METHOD_ERROR);
       }
     }
   }
@@ -530,7 +548,7 @@ compute_Psi(const RealSymMatrix2DArray& cov_GG_inv, const Sizet2DArray& N_G,
     for (qoi=0; qoi<numFunctions; ++qoi)
       if (N_g[qoi]) {
 	Real N_gq = N_g[qoi];
-	add_sub_matrix(N_gq, cov_GG_inv_g[qoi], models_g, Psi[qoi]); // *** can become indefinite here when n_g --> 0, which depends on online/offline pilot integration strategy
+	add_sub_matrix(N_gq, cov_GG_inv_g[qoi], models_g, Psi[qoi]); // *** can become indefinite here when N_gq --> 0, which depends on online/offline pilot integration strategy
       }
   }
 }

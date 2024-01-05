@@ -468,31 +468,32 @@ compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
   // related analytic solutions (iter == 0) or warm started from the previous
   // solutions (iter >= 1)
 
+  bool budget_constrained = (maxFunctionEvals != SZ_MAX), budget_exhausted
+    = (budget_constrained && equivHFEvals >= (Real)maxFunctionEvals),
+    no_solve = (budget_exhausted || convergenceTol >= 1.); // bypass opt solve
+
   if (mlmfIter == 0) {
-    bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
-		    pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
-    if (!offline)
+    bool online = (pilotMgmtMode == ONLINE_PILOT ||
+		   pilotMgmtMode == ONLINE_PILOT_PROJECTION);
+    if (online) // cache reference estVarIter0
       cache_mc_reference();
 
     size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
     SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
     size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
     Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
-    bool budget_constrained = (maxFunctionEvals != SZ_MAX);
-    bool budget_exhausted
-      = (budget_constrained && equivHFEvals >= (Real)maxFunctionEvals);
 
-    if (budget_exhausted || convergenceTol >= 1.) { // no need for solve
+    if (no_solve) { // no need for solve
       // For r_i = 1, C_F,c_f = 0 --> NUDGE for downstream CV numerics
       RealVector avg_eval_ratios(numApprox, false);
       avg_eval_ratios = 1. + RATIO_NUDGE;
       soln.anchored_solution_ratios(avg_eval_ratios, avg_N_H);
       // For offline pilot, the online EstVar is undefined prior to any online
       // samples, but should not happen (no budget used) unless bad convTol spec
-      if (offline)
-	soln.average_estimator_variance(std::numeric_limits<Real>::infinity());
-      else
+      if (online)
 	soln.average_estimator_variance(average(estVarIter0));
+      else
+	soln.average_estimator_variance(std::numeric_limits<Real>::infinity());
       soln.average_estimator_variance_ratio(1.);
       numSamples = 0;  return;
     }
@@ -546,12 +547,15 @@ compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
     }
     }
   }
-  else { // warm start from previous solution (for active or one-and-only DAG)
+  else { // subsequent iterations
+    if (no_solve) // leave soln at previous values
+      { numSamples = 0; return; }
 
     // no scaling needed from prev soln (as in NonDLocalReliability) since
     // updated avg_N_H now includes allocation from previous solution and
     // should be active on constraint bound (excepting sample count rounding)
 
+    // warm start from previous solution (for active or one-and-only DAG)
     ensemble_numerical_solution(soln);
   }
 

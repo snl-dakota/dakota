@@ -98,79 +98,69 @@ void NonDMultilevBLUESampling::core_run()
 }
 
 
-/** This function performs control variate MC across two combinations of 
-    model form and discretization level. */
+/** This function performs ML BLUE using an iterated approach. */
 void NonDMultilevBLUESampling::ml_blue_online_pilot()
 {
+  // Online iteration does not work the same way since complete group increments
+  // (as opposed to only incrementing the shared sample set) will exhaust the
+  // budget on the first solve (excepting sample roundoff effects). Subsequent
+  // solves are over-constrained, becoming budget-exhausted cases.  Thoughts:
+  // > Good time to add support for under-relaxation of sample increments
+  //   (as for parallel batching, deploy as shared feature set)
+  // > SHARED_PILOT case needs logic to switch over from shared covariance to
+  //   independent covariance, perhaps when N_actual_g >= pilot_g rather than
+  //   mlmfIter > 0 (for which unallocated groups have no data)
+  // > For SHARED_PILOT case, can increment the shared group until convergence
+  //   (as for MFMC/ACV).  Is there an important interaction between dependence
+  //   in group covar samples and the allocation solve?
+  //   >> Compare rcond for shared vs. independent Psi??  cov_GG_inv will be Ok,
+  //      but Psi_inv may be affected by repeat of pair-wise covariance terms.
+  //   If not, first converge on the allocation and *then* evaluate independent
+  //   increments for all other groups prior to roll-up of final moments
+  //   (QOI_STATISTICS mode).
+  //   >> Strict mode: only increment if all_group is allocated --> all new
+  //      samples will get used in the final roll-up and we stay in SHARED_PILOT
+  //      mode as long as we have all_group increments to perform.  Incurred
+  //      expense still undershoots budget such that we could iterate without
+  //      under-relaxing, but we also don't want to overshoot all_group samples.
+  //   >> Loose mode: increment all_group based on some overlay of group
+  //      allocations --> complicates reuse once we shift over to independent
+  //      sample sets.  Some but not all model evals could be reused.  Avoid.
+  // > Once shifting from shared to independent estimation of covariances,
+  //   we need under-relaxation if we are to continue iteration.
+
+  // Implementation:
+  // {one-and-done, strict}        SHARED, followed by
+  // {one-and-done, under-relaxed} INDEPENDENT
+  // > strict SHARED on its own is pretty limited, but if these increments are
+  //   present, they seem useful prior to performing samples across all groups.
+  //   >> Go ahead and reuse under-relaxation spec to mitigate over-shoot.
+  //   >> Counter-argument: is it imbalanced to refine all_group to convergence
+  //      w/o refining any other groups?  Not really: all group covariances get
+  //      updated --> this is simply refinement w/i the SHARED context.
+  // > Using any and all group increments to update their corresponding group
+  //   covariances is the strongest motivation, so use under-relaxation here
+  //   to mitigate BOTH allocation overshoot and budget exhaustion.
+  // > Similar to solution_level_cost, under-relaxation could support:
+  //   >> sequence:      .5, .75, 1. for mlmfIter 1,2,3
+  //   >> scalar factor: .75 --> .75, prev + .75 remaining = .9375, .9844, ...
+  //   >> combination:   .5 .8  --> .5, .8, prev + .8 remaining = .96, .992, ...
+  //   >> Factors could also be > 1 to mitigate fine deltaN refinement near conv
+  // > under_relax_sequence = ListOfReal (includes a single fixed value)
+  //   under_relax_factor   = Real (recursive per iter on remaining-from-one)
+
   // retrieve cost estimates across soln levels for a particular model form
   IntRealMatrixArrayMap sum_G;          IntRealSymMatrix2DArrayMap sum_GG;
   initialize_blue_sums(sum_G, sum_GG);  initialize_blue_counts(NGroupActual);
   SizetArray delta_N_G = pilotSamples; // sized by load_pilot_samples()
   NGroupAlloc = delta_N_G;
 
-  // *** TO DO ***
-  // Online iteration does not work the same way since complete group increments
-  // (as opposed to only incrementing the shared sample set) will exhaust the
-  // budget on the first solve (excepting sample roundoff effects). Subsequent
-  // solves are over-constrained, becoming budget-exhausted cases.  Options:
-  // 1. under-relax sample increments (as for sample batching, shared feature
-  //    is now more strongly motivated)
-  // 2. combine with pilot sample above and only increment the shared group
-  //    until convergence (as for CV approaches) --> is there an important
-  //    interaction between dependence in group covariance samples and the
-  //    allocation solve?  If not, then converge on the allocation and *then*
-  //    evaluate independent increments for all other groups prior to roll-up
-  //    of final moments (QOI_STATISTICS mode).
-  //    --> compare rcond for shared vs. independent Psi??  Seems that
-  //    many pair-wise covariance terms will get repeated for the former, but
-  //    if Psi-inverse is essentally 
-
-  while (!zeros(delta_N_G) && mlmfIter <= maxIterations) {
-
-    // -----------------------------------------------
-    // Evaluate shared increment and update covariance
-    // -----------------------------------------------
-    // > Note: evaluate_pilot() does not support IntMaps
-    if (mlmfIter == 0 && pilotGroupSampling == SHARED_PILOT) {
-      size_t all_group = numGroups - 1; // last group = all models
-      numSamples = pilotSamples[all_group];
-      shared_increment(mlmfIter);
-      // accumulate for one group only and reuse for group covariances
-      accumulate_blue_sums(sum_G, sum_GG, NGroupActual, all_group,allResponses);
-      compute_GG_covariance(sum_G[1][all_group], sum_GG[1][all_group],
-			    NGroupActual[all_group], covGG, covGGinv);
-      if (onlineCost) {
-	NonDNonHierarchSampling::recover_online_cost(allResponses);
-	update_model_group_costs();
-      }
-      increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox+1,
-				equivHFEvals);
-    }
-    else {
-      group_increment(delta_N_G, mlmfIter); // spans ALL model groups, blocking
-      accumulate_blue_sums(sum_G, sum_GG, NGroupActual, batchResponsesMap);
-      // *** TO DO: when to replace SHARED_PILOT covariances for iter>0?
-      compute_GG_covariance(sum_G[1], sum_GG[1], NGroupActual, covGG, covGGinv);
-      // While online cost recovery could be continuously updated, we restrict
-      // to the pilot and do not not update on subsequent iterations.  We could
-      // potentially mirror the covariance updates with cost updates, but seems
-      // likely to induce thrash when run times are not robust.
-      if (onlineCost && mlmfIter == 0)
-	{ recover_online_cost(batchResponsesMap); update_model_group_costs(); }
-      increment_equivalent_cost(delta_N_G, modelGroupCost,
-				sequenceCost[numApprox], equivHFEvals);
-      clear_batches();
-    }
-
-    // --------------------
-    // Solve for allocation
-    // --------------------
-    // compute the LF/HF evaluation ratios from shared samples and compute
-    // ratio of MC and BLUE mean sq errors (which incorporates anticipated
-    // variance reduction from application of avg_eval_ratios).
-    compute_allocations(blueSolnData, NGroupActual, NGroupAlloc, delta_N_G);
-    ++mlmfIter;
+  // online iterations for shared + independent covariance estimation:
+  if (pilotGroupSampling == SHARED_PILOT) {
+    shared_covariance_iteration(sum_G, sum_GG, delta_N_G);
+    NGroupShared = NGroupActual[numGroups - 1];
   }
+  independent_covariance_iteration(sum_G, sum_GG, delta_N_G);
 
   // Only QOI_STATISTICS requires application of oversample ratios and
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
@@ -187,8 +177,7 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
 }
 
 
-/** This function performs control variate MC across two combinations of 
-    model form and discretization level. */
+/** This function performs ML BLUE using an offline pilot approach. */
 void NonDMultilevBLUESampling::ml_blue_offline_pilot()
 {
   // --------------------------------------------------------------
@@ -235,8 +224,7 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
 }
 
 
-/** This function performs control variate MC across two combinations of 
-    model form and discretization level. */
+/** This function performs ML BLUE using a pilot projection approach. */
 void NonDMultilevBLUESampling::ml_blue_pilot_projection()
 {
   // --------------------------------------------------------------------
@@ -272,6 +260,87 @@ void NonDMultilevBLUESampling::ml_blue_pilot_projection()
   // No need for updating estimator variance given deltaNActualHF since
   // NonDNonHierarchSampling::ensemble_numerical_solution() recovers N*
   // from the numerical solve and computes projected avgEstVar{,Ratio}
+}
+
+
+void NonDMultilevBLUESampling::
+shared_covariance_iteration(IntRealMatrixArrayMap& sum_G,
+			    IntRealSymMatrix2DArrayMap& sum_GG,
+			    SizetArray& delta_N_G)
+{
+  size_t all_group = numGroups - 1; // last group = all models
+  numSamples = delta_N_G[all_group];
+
+  while (numSamples && mlmfIter <= maxIterations) {
+    // -----------------------------------------------
+    // Evaluate shared increment and update covariance
+    // -----------------------------------------------
+    // > Note: evaluate_pilot() does not support IntMaps
+    shared_increment(mlmfIter);
+    // accumulate for one group only and reuse for group covariances
+    accumulate_blue_sums(sum_G, sum_GG, NGroupActual, all_group, allResponses);
+    compute_GG_covariance(sum_G[1][all_group], sum_GG[1][all_group],
+			  NGroupActual[all_group], covGG, covGGinv);
+    if (onlineCost && mlmfIter == 0) {
+      NonDNonHierarchSampling::recover_online_cost(allResponses);
+      update_model_group_costs();
+    }
+    increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox+1,
+			      equivHFEvals);
+
+    // --------------------
+    // Solve for allocation
+    // --------------------
+    // compute the LF/HF evaluation ratios from shared samples and compute
+    // ratio of MC and BLUE mean sq errors (which incorporates anticipated
+    // variance reduction from application of avg_eval_ratios).
+    compute_allocations(blueSolnData, NGroupActual, NGroupAlloc, delta_N_G);
+    numSamples = delta_N_G[all_group];
+    ++mlmfIter;
+  }
+}
+
+
+void NonDMultilevBLUESampling::
+independent_covariance_iteration(IntRealMatrixArrayMap& sum_G,
+				 IntRealSymMatrix2DArrayMap& sum_GG,
+				 SizetArray& delta_N_G)
+{
+  // resetting counter for independent iteration allows separated throttling,
+  // but also resets the numerical solve initial guess process (expensive)
+  //mlmfIter = 0;
+
+  // if SHARED_PILOT, delta_N_G[all_group] should now be zero (unless maxIter),
+  // but other groups will be nonzero prior to full convergence
+  while (!zeros(delta_N_G) && mlmfIter <= maxIterations) {
+
+    // -----------------------------------------------
+    // Evaluate shared increment and update covariance
+    // -----------------------------------------------
+    group_increment(delta_N_G, mlmfIter); // spans ALL model groups, blocking
+    accumulate_blue_sums(sum_G, sum_GG, NGroupActual, batchResponsesMap);
+
+    // *** TO DO: when to replace SHARED_PILOT covariances for mlmfIter > 0?
+    compute_GG_covariance(sum_G[1], sum_GG[1], NGroupActual, covGG, covGGinv);
+    // While online cost recovery could be continuously updated, we restrict
+    // to the pilot and do not not update on subsequent iterations.  We could
+    // potentially mirror the covariance updates with cost updates, but seems
+    // likely to induce thrash when run times are not robust.
+    if (onlineCost && mlmfIter == 0) /*&&pilotGroupSampling==INDEPENDENT_PILOT*/
+      { recover_online_cost(batchResponsesMap); update_model_group_costs(); }
+    increment_equivalent_cost(delta_N_G, modelGroupCost,
+			      sequenceCost[numApprox], equivHFEvals);
+    clear_batches();
+
+    // --------------------
+    // Solve for allocation
+    // --------------------
+    // compute the LF/HF evaluation ratios from shared samples and compute
+    // ratio of MC and BLUE mean sq errors (which incorporates anticipated
+    // variance reduction from application of avg_eval_ratios).
+    compute_allocations(blueSolnData, NGroupActual, NGroupAlloc, delta_N_G);
+    ++mlmfIter;
+  }
 }
 
 
@@ -586,18 +655,18 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
   // related analytic solutions (iter == 0) or warm started from the previous
   // solutions (iter >= 1)
 
+  bool budget_constrained = (maxFunctionEvals != SZ_MAX), budget_exhausted
+    = (budget_constrained && equivHFEvals >= (Real)maxFunctionEvals),
+    no_solve = (budget_exhausted || convergenceTol >= 1.); // bypass opt solve
+
   if (mlmfIter == 0) {
     soln.solution_variables(pilotSamples);
-
     bool online = (pilotMgmtMode == ONLINE_PILOT ||
 		   pilotMgmtMode == ONLINE_PILOT_PROJECTION);
     if (online) // cache reference estVarIter0
       estimator_variance(soln.solution_variables(), estVarIter0);
 
-    bool budget_constrained = (maxFunctionEvals != SZ_MAX);
-    bool budget_exhausted
-      = (budget_constrained && equivHFEvals >= (Real)maxFunctionEvals);
-    if (budget_exhausted || convergenceTol >= 1.) { // no need for solve
+    if (no_solve) {
       // For offline pilot, the online EstVar is undefined prior to any online
       // samples, but should not happen (no budget used) unless bad convTol spec
       if (online)
@@ -605,7 +674,8 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
       else
 	soln.average_estimator_variance(std::numeric_limits<Real>::infinity());
       soln.average_estimator_variance_ratio(1.);
-      delta_N_G.assign(numGroups, 0);  return;
+      delta_N_G.assign(numGroups, 0);
+      return;
     }
 
     // Run a competition among related analytic approaches (MFMC or pairwise
@@ -635,8 +705,13 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
     }
     }
   }
-  else // warm start from previous solution (for active or one-and-only DAG)
+  else { // subsequent iterations
+    if (no_solve) // leave soln at previous values
+      { delta_N_G.assign(numGroups, 0); return; }
+
+    // warm start from previous solution (for active or one-and-only DAG)
     ensemble_numerical_solution(soln);
+  }
 
   process_group_solution(soln, N_G_actual, N_G_alloc, delta_N_G);
   if (outputLevel >= NORMAL_OUTPUT)
@@ -1167,35 +1242,48 @@ compute_GG_covariance(const RealMatrixArray& sum_G,
 		      RealSymMatrix2DArray& cov_GG,
 		      RealSymMatrix2DArray& cov_GG_inv)
 {
-  initialize_rsm2a(cov_GG);
+  initialize_rsm2a(cov_GG);  initialize_rsm2a(cov_GG_inv); // bypass if sized
 
-  size_t g, m, m2, num_models, qoi;  Real sum_G_gqm;  size_t N_sh_gq;
+  size_t g, m, m2, num_models, qoi, all_group = numGroups - 1; // all models
+  Real sum_G_gqm;  size_t num_G_gq;  int code;
+  bool shared_pilot = (pilotGroupSampling == SHARED_PILOT);
   for (g=0; g<numGroups; ++g) {
     num_models = modelGroups[g].size();
-    const RealMatrix&          sum_G_g = sum_G[g];
-    const RealSymMatrixArray& sum_GG_g = sum_GG[g];
-    const SizetArray&          num_G_g = num_G[g];
-    RealSymMatrixArray&       cov_GG_g = cov_GG[g];
+    const SizetArray&        num_G_g =      num_G[g];
+    const RealMatrix&        sum_G_g =      sum_G[g];
+    RealSymMatrixArray&     cov_GG_g =     cov_GG[g];
+    RealSymMatrixArray& cov_GG_inv_g = cov_GG_inv[g];
     for (qoi=0; qoi<numFunctions; ++qoi) {
-      const RealSymMatrix& sum_GG_gq = sum_GG_g[qoi];
-      RealSymMatrix&       cov_GG_gq = cov_GG_g[qoi];
-      N_sh_gq                        =  num_G_g[qoi];
-      if (N_sh_gq > 1) {
+      num_G_gq = num_G_g[qoi];
+      if ( (!shared_pilot && num_G_gq >  1) ||                  // define new
+	   ( shared_pilot && num_G_gq >= NGroupShared[qoi]) ) { // replace prev
+	const RealSymMatrix& sum_GG_gq = sum_GG[g][qoi];
+	RealSymMatrix&       cov_GG_gq = cov_GG_g[qoi];
 	if (cov_GG_gq.empty()) cov_GG_gq.shape(num_models);
 	for (m=0; m<num_models; ++m) {
 	  sum_G_gqm = sum_G_g(qoi,m);
 	  for (m2=0; m2<=m; ++m2)
 	    compute_covariance(sum_G_gqm, sum_G_g(qoi,m2), sum_GG_gq(m,m2),
-			       N_sh_gq, cov_GG_gq(m,m2));
+			       num_G_gq, cov_GG_gq(m,m2));
+	}
+	code = compute_C_inverse(cov_GG_gq, cov_GG_inv_g[qoi]);
+	if (code) {
+	  Cerr << "Error: serial dense solver failure (LAPACK error code "
+	       << code << ") in ML BLUE::compute_C_inverse()\n"
+	       << "       for group " << g << " QoI " << qoi << " with C:\n"
+	       << cov_GG_gq << std::endl;
+	  abort_handler(METHOD_ERROR);
 	}
       }
-      else cov_GG_gq.shape(0);
+      else if (!shared_pilot) // inadequate samples to define covar
+	{ cov_GG_g[qoi].shape(0); cov_GG_inv_g[qoi].shape(0); }
+      //else: leave as previous shared covariance and covariance-inverse
     }
   }
 
   // precompute 2D array of C_k inverses for numerical solver use
   // (Phi-inverse is dependent on N_G, but C-inverse is not)
-  compute_C_inverse(cov_GG, cov_GG_inv);
+  //compute_C_inverse(cov_GG, cov_GG_inv);
 
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "In compute_GG_covariance(), cov_GG:\n" << cov_GG
@@ -1215,19 +1303,19 @@ compute_GG_covariance(const RealMatrix& sum_G_g,
 
   size_t qoi, m1, m2, num_models = numApprox + 1, num_mapped, g, g1,
     shared_index = numGroups - 1;
-  Real sum_G_gqm;  size_t N_sh_gq;
+  Real sum_G_gqm;  size_t num_G_gq;
   RealSymMatrixArray&     cov_GG_g = cov_GG[shared_index];//last group, all mod
   for (qoi=0; qoi<numFunctions; ++qoi) {
     const RealSymMatrix& sum_GG_gq = sum_GG_g[qoi];
     RealSymMatrix&       cov_GG_gq = cov_GG_g[qoi];
-    N_sh_gq                        =  num_G_g[qoi];
-    if (N_sh_gq > 1) {
+    num_G_gq                       =  num_G_g[qoi];
+    if (num_G_gq > 1) {
       if (cov_GG_gq.numRows() != num_models) cov_GG_gq.shape(num_models);
       for (m1=0; m1<num_models; ++m1) {
 	sum_G_gqm = sum_G_g(qoi,m1);
 	for (m2=0; m2<=m1; ++m2)
 	  compute_covariance(sum_G_gqm, sum_G_g(qoi,m2), sum_GG_gq(m1,m2),
-			     N_sh_gq, cov_GG_gq(m1,m2));
+			     num_G_gq, cov_GG_gq(m1,m2));
       }
       // map shared covariance into partial groups
       for (g=0; g<shared_index; ++g) {
