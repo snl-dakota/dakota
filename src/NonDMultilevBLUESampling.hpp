@@ -183,7 +183,8 @@ private:
 			     const RealSymMatrix2DArray& sum_GG,
 			     const Sizet2DArray& N_G,
 			     RealSymMatrix2DArray& cov_GG,
-			     RealSymMatrix2DArray& cov_GG_inv);
+			     RealSymMatrix2DArray& cov_GG_inv,
+			     bool update_prev = false);
   void compute_GG_covariance(const RealMatrix& sum_G_g,
 			     const RealSymMatrixArray& sum_GG_g,
 			     const SizetArray& num_G_g,

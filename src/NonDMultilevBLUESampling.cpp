@@ -158,7 +158,7 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
   // online iterations for shared + independent covariance estimation:
   if (pilotGroupSampling == SHARED_PILOT) {
     shared_covariance_iteration(sum_G, sum_GG, delta_N_G);
-    NGroupShared = NGroupActual[numGroups - 1];
+    NGroupShared = NGroupActual[numGroups - 1]; // for update_prev in covar est
   }
   independent_covariance_iteration(sum_G, sum_GG, delta_N_G);
 
@@ -320,8 +320,9 @@ independent_covariance_iteration(IntRealMatrixArrayMap& sum_G,
     group_increment(delta_N_G, mlmfIter); // spans ALL model groups, blocking
     accumulate_blue_sums(sum_G, sum_GG, NGroupActual, batchResponsesMap);
 
-    // *** TO DO: when to replace SHARED_PILOT covariances for mlmfIter > 0?
-    compute_GG_covariance(sum_G[1], sum_GG[1], NGroupActual, covGG, covGGinv);
+    bool update_prev = (pilotGroupSampling == SHARED_PILOT);
+    compute_GG_covariance(sum_G[1], sum_GG[1], NGroupActual, covGG, covGGinv,
+			  update_prev);
     // While online cost recovery could be continuously updated, we restrict
     // to the pilot and do not not update on subsequent iterations.  We could
     // potentially mirror the covariance updates with cost updates, but seems
@@ -392,6 +393,7 @@ evaluate_pilot(RealMatrixArray& sum_G_pilot, RealSymMatrix2DArray& sum_GG_pilot,
     SizetArray&              N_all = N_shared_pilot[all_group];
     accumulate_blue_sums(sum_G_all, sum_GG_all, N_all, all_group, allResponses);
     compute_GG_covariance(sum_G_all, sum_GG_all, N_all, covGG, covGGinv);
+    NGroupShared = N_all; // cache a copy (not currently used for offline/proj)
     if (onlineCost) {
       NonDNonHierarchSampling::recover_online_cost(allResponses);
       update_model_group_costs();
@@ -405,7 +407,7 @@ evaluate_pilot(RealMatrixArray& sum_G_pilot, RealSymMatrix2DArray& sum_GG_pilot,
     accumulate_blue_sums(sum_G_pilot, sum_GG_pilot, N_shared_pilot,
 			 batchResponsesMap);
     compute_GG_covariance(sum_G_pilot, sum_GG_pilot, N_shared_pilot,
-			  covGG, covGGinv); // moved down
+			  covGG, covGGinv);
     if (onlineCost)
       { recover_online_cost(batchResponsesMap); update_model_group_costs(); }
     if (incr_cost)
@@ -1240,13 +1242,12 @@ compute_GG_covariance(const RealMatrixArray& sum_G,
 		      const RealSymMatrix2DArray& sum_GG,
 		      const Sizet2DArray& num_G,
 		      RealSymMatrix2DArray& cov_GG,
-		      RealSymMatrix2DArray& cov_GG_inv)
+		      RealSymMatrix2DArray& cov_GG_inv, bool update_prev)
 {
   initialize_rsm2a(cov_GG);  initialize_rsm2a(cov_GG_inv); // bypass if sized
 
   size_t g, m, m2, num_models, qoi, all_group = numGroups - 1; // all models
   Real sum_G_gqm;  size_t num_G_gq;  int code;
-  bool shared_pilot = (pilotGroupSampling == SHARED_PILOT);
   for (g=0; g<numGroups; ++g) {
     num_models = modelGroups[g].size();
     const SizetArray&        num_G_g =      num_G[g];
@@ -1255,8 +1256,10 @@ compute_GG_covariance(const RealMatrixArray& sum_G,
     RealSymMatrixArray& cov_GG_inv_g = cov_GG_inv[g];
     for (qoi=0; qoi<numFunctions; ++qoi) {
       num_G_gq = num_G_g[qoi];
-      if ( (!shared_pilot && num_G_gq >  1) ||                  // define new
-	   ( shared_pilot && num_G_gq >= NGroupShared[qoi]) ) { // replace prev
+      // ONLINE_PILOT + SHARED_PILOT: only update to independent covar if equal
+      // or greater samples than shared
+      if ( ( update_prev && num_G_gq >= NGroupShared[qoi]) ||
+	   (!update_prev && num_G_gq >  1) ) { // sufficient to define new
 	const RealSymMatrix& sum_GG_gq = sum_GG[g][qoi];
 	RealSymMatrix&       cov_GG_gq = cov_GG_g[qoi];
 	if (cov_GG_gq.empty()) cov_GG_gq.shape(num_models);
@@ -1275,7 +1278,7 @@ compute_GG_covariance(const RealMatrixArray& sum_G,
 	  abort_handler(METHOD_ERROR);
 	}
       }
-      else if (!shared_pilot) // inadequate samples to define covar
+      else if (!update_prev) // inadequate samples to define covar
 	{ cov_GG_g[qoi].shape(0); cov_GG_inv_g[qoi].shape(0); }
       //else: leave as previous shared covariance and covariance-inverse
     }
