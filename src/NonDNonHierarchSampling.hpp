@@ -62,6 +62,7 @@ public:
   //
 
   const RealVector& solution_variables() const;
+  Real solution_variable(size_t i) const;
   void solution_variables(const RealVector& soln_vars);
   void solution_variables(const SizetArray& samples);
 
@@ -157,6 +158,10 @@ inline MFSolutionData& MFSolutionData::operator=(const MFSolutionData& sd)
 
 inline const RealVector& MFSolutionData::solution_variables() const
 { return solutionVars; }
+
+
+inline Real MFSolutionData::solution_variable(size_t i) const
+{ return solutionVars[i]; }
 
 
 inline void MFSolutionData::solution_variables(const RealVector& soln_vars)

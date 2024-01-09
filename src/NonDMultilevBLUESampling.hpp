@@ -155,6 +155,10 @@ private:
 
   void compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
 			   SizetArray& N_G_alloc, SizetArray& delta_N_G);
+  void increment_allocations(const MFSolutionData& soln, SizetArray& N_G_alloc,
+			     const SizetArray& delta_N_G);
+  void increment_allocations(const MFSolutionData& soln, SizetArray& N_G_alloc,
+			     const SizetArray& delta_N_G, size_t g);
 
   void project_mc_estimator_variance(const RealSymMatrixArray& var_H,
 				     const SizetArray& N_H_actual,
@@ -216,7 +220,9 @@ private:
   void initialize_rsm2a(RealSymMatrix2DArray& rsm2a);
   void initialize_rsma(RealSymMatrixArray& rsma, bool init = true);
   void initialize_rva(RealVectorArray& rva, bool init = true);
-  
+
+  void enforce_nudge(RealVector& x);
+
   bool mfmc_model_grouping(const UShortArray& model_group) const;
   bool cvmc_model_grouping(const UShortArray& model_group) const;
 
@@ -342,6 +348,48 @@ initialize_blue_counts(Sizet2DArray& num_G)
   num_G.resize(num_groups);
   for (g=0; g<num_groups; ++g)
     num_G[g].assign(numFunctions, 0);
+}
+
+
+inline void NonDMultilevBLUESampling::
+increment_allocations(const MFSolutionData& soln, SizetArray& N_G_alloc,
+		      const SizetArray& delta_N_G)
+{
+  // increments all of N_G_alloc
+
+  if (backfillFailures) // delta_N_G may include backfill
+    one_sided_update(N_G_alloc, soln.solution_variables());
+  else // delta_N_G is the allocation increment
+    increment_samples(N_G_alloc, delta_N_G);
+}
+
+
+inline void NonDMultilevBLUESampling::
+increment_allocations(const MFSolutionData& soln, SizetArray& N_G_alloc,
+		      const SizetArray& delta_N_G, size_t group)
+{
+  // only increments NGroupAlloc[all_group]
+  if (backfillFailures) { // delta_N_G may include backfill
+    size_t& curr_g = N_G_alloc[group];
+    size_t   tgt_g = (size_t)std::floor(soln.solution_variable(group) + .5);
+    if (tgt_g > curr_g) curr_g = tgt_g;
+  }
+  else // delta_N_G is the allocation increment
+    N_G_alloc[group] += delta_N_G[group];
+}
+
+
+inline void NonDMultilevBLUESampling::enforce_nudge(RealVector& x)
+{
+  // Note: Using a numerical NUDGE is not essential since the group covariance
+  // contributions overlap in Psi (single group drop-outs are not fatal).  On
+  // the other hand, there doesn't seem to be much downside, so this provides
+  // a degree of hardening for extreme drop-out cases.
+
+  size_t i, len = x.length();
+  for (i=0; i<len; ++i)
+    if (x[i] < RATIO_NUDGE)
+      x[i] = RATIO_NUDGE;
 }
 
 

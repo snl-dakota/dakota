@@ -153,13 +153,17 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
   IntRealMatrixArrayMap sum_G;          IntRealSymMatrix2DArrayMap sum_GG;
   initialize_blue_sums(sum_G, sum_GG);  initialize_blue_counts(NGroupActual);
   SizetArray delta_N_G = pilotSamples; // sized by load_pilot_samples()
-  NGroupAlloc = delta_N_G;
 
   // online iterations for shared + independent covariance estimation:
   if (pilotGroupSampling == SHARED_PILOT) {
+    NGroupAlloc.assign(numGroups, 0);
+    size_t all_group = numGroups - 1; // last group = all models
+    NGroupAlloc[all_group] = delta_N_G[all_group];
     shared_covariance_iteration(sum_G, sum_GG, delta_N_G);
-    NGroupShared = NGroupActual[numGroups - 1]; // for update_prev in covar est
+    NGroupShared = NGroupActual[all_group];// cache for update_prev in covar est
   }
+  else
+    NGroupAlloc = delta_N_G;
   independent_covariance_iteration(sum_G, sum_GG, delta_N_G);
 
   // Only QOI_STATISTICS requires application of oversample ratios and
@@ -198,6 +202,7 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
   // ratio of MC and ACV mean sq errors (which incorporates anticipated
   // variance reduction from application of avg_eval_ratios).
   compute_allocations(blueSolnData, NGroupActual, NGroupAlloc, delta_N_G);
+  increment_allocations(blueSolnData, NGroupAlloc, delta_N_G);
   ++mlmfIter;
 
   // -----------------------------------
@@ -251,6 +256,7 @@ void NonDMultilevBLUESampling::ml_blue_pilot_projection()
   // variance reduction from application of avg_eval_ratios).
   SizetArray delta_N_G;
   compute_allocations(blueSolnData, NGroupActual, NGroupAlloc, delta_N_G);
+  increment_allocations(blueSolnData, NGroupAlloc, delta_N_G);
   ++mlmfIter;
 
   // No final moments for pilot projection
@@ -295,6 +301,8 @@ shared_covariance_iteration(IntRealMatrixArrayMap& sum_G,
     // ratio of MC and BLUE mean sq errors (which incorporates anticipated
     // variance reduction from application of avg_eval_ratios).
     compute_allocations(blueSolnData, NGroupActual, NGroupAlloc, delta_N_G);
+    // only increment NGroupAlloc[all_group]
+    increment_allocations(blueSolnData, NGroupAlloc, delta_N_G, all_group);
     numSamples = delta_N_G[all_group];
     ++mlmfIter;
   }
@@ -340,6 +348,7 @@ independent_covariance_iteration(IntRealMatrixArrayMap& sum_G,
     // ratio of MC and BLUE mean sq errors (which incorporates anticipated
     // variance reduction from application of avg_eval_ratios).
     compute_allocations(blueSolnData, NGroupActual, NGroupAlloc, delta_N_G);
+    increment_allocations(blueSolnData, NGroupAlloc, delta_N_G);
     ++mlmfIter;
   }
 }
@@ -522,7 +531,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   // Formulate the optimization sub-problem: initial pt, bnds, constraints
   // --------------------------------------
 
-  size_t g, last_index = numGroups-1, lin_offset = 0;
+  size_t g, lin_offset = 0;
   const RealVector& soln_vars = soln.solution_variables();
   //Real offline_N_lwr = 2.; //(finalStatsType == QOI_STATISTICS) ? 2. : 1.;
 
@@ -532,22 +541,21 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   x_ub = DBL_MAX; // no upper bounds for groups
   if (pilotMgmtMode == OFFLINE_PILOT ||
       pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
-    // No group lower bounds for OFFLINE case.  Note: Using a numerical NUDGE
-    // is not essential since the group covariance contributions overlap in
-    // Psi (single group drop-outs are not fatal).  On the other hand, there
-    // doesn't seem to be much downside, so this provides a degree of hardening
-    // for extreme drop-out cases.
-    x_lb = RATIO_NUDGE;
+    x_lb = 0.; // no group lower bounds for OFFLINE case (NUDGE enforced below)
     lin_offset = 1; // see augment_linear_ineq_constraints() for definition
   }
-  // assign sunk cost to full group and optimize w/ this as a constraint
-  else if (mlmfIter)
-    x_lb = soln_vars; // continuous-valued optimizer allocation (not actual)
-  else
+  else {
+    // Assign sunk cost to full group and optimize w/ this as a constraint.
+    // > One could argue for only lower-bounding with actual incurred samples,
+    //   but have elected elsewhere to be consistent with backfill logic.
+    // > Note: only NGroupAlloc[all_group] is advanced in shared_covar_iter()
     for (g=0; g<numGroups; ++g)
-      x_lb[g] = (Real)pilotSamples[g]; // discrete pilot allocation (not actual)
+      x_lb[g] = (backfillFailures) ?
+	average(NGroupActual[g]) : (Real)NGroupAlloc[g];
+  }
+  enforce_nudge(x_lb); // nudge away from 0 if needed
   x0 = (soln_vars.empty()) ? x_lb : soln_vars;
-  // x0 can undershoot x_lb if OFFLINE_PILOT, but enforce generally
+  // x0 can undershoot x_lb if an OFFLINE mode, but enforce generally
   enforce_bounds(x0, x_lb, x_ub);
 
   // Linear and nonlinear constraints:
@@ -718,11 +726,6 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
   process_group_solution(soln, N_G_actual, N_G_alloc, delta_N_G);
   if (outputLevel >= NORMAL_OUTPUT)
     print_group_solution(Cout, soln);
-
-  if (backfillFailures) // delta_N_G may include backfill
-    one_sided_update(N_G_alloc, soln.solution_variables());
-  else // delta_N_G is the allocation increment
-    increment_samples(N_G_alloc, delta_N_G);
 }
 
 
