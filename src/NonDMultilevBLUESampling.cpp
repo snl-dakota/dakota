@@ -153,17 +153,16 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
   IntRealMatrixArrayMap sum_G;          IntRealSymMatrix2DArrayMap sum_GG;
   initialize_blue_sums(sum_G, sum_GG);  initialize_blue_counts(NGroupActual);
   SizetArray delta_N_G = pilotSamples; // sized by load_pilot_samples()
+  NGroupAlloc.assign(numGroups, 0);
 
-  // online iterations for shared + independent covariance estimation:
+  // online iterations for shared covariance estimation:
   if (pilotGroupSampling == SHARED_PILOT) {
-    NGroupAlloc.assign(numGroups, 0);
     size_t all_group = numGroups - 1; // last group = all models
     NGroupAlloc[all_group] = delta_N_G[all_group];
     shared_covariance_iteration(sum_G, sum_GG, delta_N_G);
     NGroupShared = NGroupActual[all_group];// cache for update_prev in covar est
   }
-  else
-    NGroupAlloc = delta_N_G;
+  // online iteration for independent covariance estimation:
   independent_covariance_iteration(sum_G, sum_GG, delta_N_G);
 
   // Only QOI_STATISTICS requires application of oversample ratios and
@@ -277,6 +276,9 @@ shared_covariance_iteration(IntRealMatrixArrayMap& sum_G,
   size_t all_group = numGroups - 1; // last group = all models
   numSamples = delta_N_G[all_group];
 
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n>>>>> multilevel_blue: online iteration for shared covariance."
+	 << std::endl;
   while (numSamples && mlmfIter <= maxIterations) {
     // -----------------------------------------------
     // Evaluate shared increment and update covariance
@@ -318,8 +320,14 @@ independent_covariance_iteration(IntRealMatrixArrayMap& sum_G,
   // but also resets the numerical solve initial guess process (expensive)
   //mlmfIter = 0;
 
+  // either leftover delta from shared_covar_iter() or initial pilot
+  increment_allocations(blueSolnData, NGroupAlloc, delta_N_G);
+
   // if SHARED_PILOT, delta_N_G[all_group] should now be zero (unless maxIter),
   // but other groups will be nonzero prior to full convergence
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "\n>>>>> multilevel_blue: online iteration for independent "
+	 << "covariance." << std::endl;
   while (!zeros(delta_N_G) && mlmfIter <= maxIterations) {
 
     // -----------------------------------------------
