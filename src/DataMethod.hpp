@@ -791,8 +791,6 @@ public:
   int randomSeed;
   /// the \c seed_sequence specification for multilevel UQ methods
   SizetArray randomSeedSeq;
-  /// the \c coefficient mapping for the scalarization term for multilevel UQ methods
-  RealVector scalarizationRespCoeffs;
 
   // MADS
   /// the \c initMeshSize choice for NOMAD in \ref MethodNOMADDC
@@ -1093,11 +1091,11 @@ public:
 
   /// the \c pilot_samples selection in ML/MF methods
   SizetArray pilotSamples;
+  /// the \c solution_mode selection for ML/MF sampling methods
+  short ensemblePilotSolnMode;
   /// the group sampling approach for pilot sampling in ML BLUE:
   /// independent or shared
   short pilotGroupSampling;
-  /// the \c solution_mode selection for ML/MF sampling methods
-  short ensemblePilotSolnMode;
   /// the \c truth_fixed_by_pilot flag for ACV methods
   bool truthPilotConstraint;
   /// option specified for extent of DAG enumeration within
@@ -1109,22 +1107,41 @@ public:
   /// option specified for \c model_selection within \c search_model_graphs
   /// for generalized ACV methods
   short modelSelectType;
+  /// sequence of (under-)relaxation factors that are applied to sample
+  /// increments computed in the latest ML/MF allocation solution:
+  ///   f_i = f_seq[i] for iter <= len, f_seq[last_i] for iter > len
+  RealVector relaxFactorSequence;
+  /// fixed (under-)relaxation factor applied to sample increments computed
+  /// in the latest ML/MF allocation solution:
+  ///   f_i = f_fixed for all iter
+  Real relaxFixedFactor;
+  /// (under-)relaxation factor that is applied to sample increments computed
+  /// in the latest ML/MF allocation solution.  The relaxation factor for
+  /// each iteration (f_i) is defined from recursive application of the user
+  /// specification (f_recur) to the remaining partition of unity:
+  ///   f_{i+1} = f_i + f_recur (1 - f_i), where f_0 = 0 gives f_1 = f_recur.
+  /// E.g., f_recur = 0.5 gives f_i = 0.5, .75, .875, .9375, ...
+  Real relaxRecursiveFactor;
   /// the \c allocationTarget selection in \ref MethodMultilevelMC
   short allocationTarget;
   /// the \c allocation_target selection in \ref MethodMultilevelMC
   bool useTargetVarianceOptimizationFlag;
-  /// the |c qoi_aggregation_norm selection in \ref MethodMultilevelMC
+  /// the \c qoi_aggregation_norm selection in \ref MethodMultilevelMC
   short qoiAggregation;
-  /// the |c convergence_tolerance_type selection in \ref MethodMultilevelMC
+  /// the \c scalarization_response_mapping for defining the statistical
+  /// goal in multilevel UQ methods
+  RealVector scalarizationRespCoeffs;
+  /// the \c convergence_tolerance_type selection in \ref MethodMultilevelMC
   short convergenceToleranceType;
-  /// the |c convergence_tolerance_type selection in \ref MethodMultilevelMC
+  /// the \c convergence_tolerance_target selection in \ref MethodMultilevelMC
   short convergenceToleranceTarget;
   /// the \c allocation_control selection in \ref MethodMultilevelPCE
   short multilevAllocControl;
   /// the \c estimator_rate selection in \ref MethodMultilevelPCE
   Real multilevEstimatorRate;
   /// type of discrepancy emulation in multilevel methods: distinct or recursive
-  short multilevDiscrepEmulation;  
+  short multilevDiscrepEmulation;
+
   /// specification of the type of final statistics in \ref MethodNonD
   short finalStatsType;
   /// the \c final_moments specification in \ref MethodNonD, subordinate to
@@ -1146,6 +1163,7 @@ public:
   RealVectorArray reliabilityLevels;
   /// the \c gen_reliability_levels specification in \ref MethodNonD
   RealVectorArray genReliabilityLevels;
+
   /// the number of MCMC chain samples
   int chainSamples;
   /// the number of samples to construct an emulator, e.g., for

@@ -143,11 +143,18 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
   //   to mitigate BOTH allocation overshoot and budget exhaustion.
   // > Similar to solution_level_cost, under-relaxation could support:
   //   >> sequence:      .5, .75, 1. for mlmfIter 1,2,3
-  //   >> scalar factor: .75 --> .75, prev + .75 remaining = .9375, .9844, ...
-  //   >> combination:   .5 .8  --> .5, .8, prev + .8 remaining = .96, .992, ...
+  //   >> scalar factor: .75 --> .75 fixed or recursive on unity partition, e.g.
+  //      .75 recursive = prev .75 + .75 * .25 remaining = .9375, .9844, ...
+  //      .5  recursive = .5, .75, .875, ...
+  //   >> combination: .5 .8 --> .5, .8, prev + .8 remaining = .96, .992, ...
   //   >> Factors could also be > 1 to mitigate fine deltaN refinement near conv
-  // > under_relax_sequence = ListOfReal (includes a single fixed value)
-  //   under_relax_factor   = Real (recursive per iter on remaining-from-one)
+  //   >> Since factor is increasing while being applied to a shrinking portion
+  //      of the allocation (delta->0), recursive compounds these two effects
+  //      and is probably more complicated than necessary, e.g. can resort to
+  //      factor = 1 (no relaxation) fairly quickly, i.e. after 1 or 2 iters.
+  // > under_relax_sequence  = ListOfReal (inclusive of a single fixed value?, don't think we want to auto-terminate with 1...)
+  //   under_relax_fixed     = Real (fixed)
+  //   under_relax_recursive = Real (recursive per iter on unity partition)
 
   // retrieve cost estimates across soln levels for a particular model form
   IntRealMatrixArrayMap sum_G;          IntRealSymMatrix2DArrayMap sum_GG;
