@@ -305,26 +305,26 @@ Test Number 25 succeeded
                       4.2351916682810122e+02
 <<<<< Best evaluation ID: 23
 Test Number 26 succeeded
-<<<<< Function evaluation summary: 74243 total (73238 new, 1005 duplicate)
-<<<<< Function evaluation summary: 74243 total (73238 new, 1005 duplicate)
-<<<<< Function evaluation summary: 74243 total (73238 new, 1005 duplicate)
+<<<<< Function evaluation summary: 964098 total (960301 new, 3797 duplicate)
+<<<<< Function evaluation summary: 964098 total (960301 new, 3797 duplicate)
+<<<<< Function evaluation summary: 964098 total (960301 new, 3797 duplicate)
 <<<<< Best parameters          =
-                      1.1500000000000001e+00 outer_theta1
+                      1.0900000000000001e+00 outer_theta1
                       5.2359877559830004e-01 outer_theta2
 <<<<< Best objective function  =
-                      4.9510010353932398e-04
+                      4.7549102324830495e-04
 <<<<< Best constraint values   =
-                      4.9992234398964126e+02
-<<<<< Best evaluation ID: 4
+                      4.9999578429345087e+02
+<<<<< Best evaluation ID: 28
 Test Number 27 succeeded
-<<<<< Function evaluation summary: 15300 total (5300 new, 10000 duplicate)
-<<<<< Function evaluation summary: 15300 total (5300 new, 10000 duplicate)
-<<<<< Function evaluation summary: 15300 total (5300 new, 10000 duplicate)
+<<<<< Function evaluation summary: 765000 total (265000 new, 500000 duplicate)
+<<<<< Function evaluation summary: 765000 total (265000 new, 500000 duplicate)
+<<<<< Function evaluation summary: 765000 total (265000 new, 500000 duplicate)
 <<<<< Best parameters          =
-                      1.0700000000000001e+00 outer_theta1
+                      1.0900000000000001e+00 outer_theta1
                       5.2359877559830004e-01 outer_theta2
 <<<<< Best objective function  =
-                      5.0785795684231904e-04
+                      4.8950661765650386e-04
 <<<<< Best constraint values   =
-                      4.9997812239723351e+02
-<<<<< Best evaluation ID: 27
+                      4.9990701657312991e+02
+<<<<< Best evaluation ID: 28
