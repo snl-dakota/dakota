@@ -107,6 +107,8 @@ protected:
 				   const RealVector& var_H,
 				   const SizetArray& N_H);
 
+  /// initialize relaxFactor prior to iteration
+  void reset_relaxation();
   /// update relaxFactor based on iteration number
   void advance_relaxation();
 
@@ -211,6 +213,8 @@ protected:
   /// mitigate over-estimation of the sample allocation based on an
   /// initial approximation to response covariance data
   Real relaxFactor;
+  /// index into relaxFactorSequence
+  size_t relaxIndex;
   /// a sequence of relaxation factors to use across ML/MF iterations
   /// (see DataMethod.hpp for usage notes)
   RealVector relaxFactorSequence;
@@ -365,14 +369,26 @@ increment_samples(Sizet2DArray& N_samp, const SizetArray& incr)
 }
 
 
+inline void NonDEnsembleSampling::reset_relaxation()
+{
+  if (relaxRecursiveFactor > 0.)
+    relaxFactor = relaxRecursiveFactor;
+  else if (!relaxFactorSequence.empty()) {
+    relaxIndex = 0;    
+    relaxFactor = relaxFactorSequence[relaxIndex];
+  }
+}
+
+
 inline void NonDEnsembleSampling::advance_relaxation()
 {
   if (relaxRecursiveFactor > 0. && relaxFactor < 1.)
     relaxFactor += relaxRecursiveFactor * (1. - relaxFactor);
-  else if (relaxFactorSequence.length() > mlmfIter)
-    relaxFactor = relaxFactorSequence[mlmfIter]; // index 0 used in ctor
-  // *** TO DO: consider relaxIter separate from mlmfIter?
-  //     (reset latter across shared/independent iterations in ML BLUE)
+  else if (!relaxFactorSequence.empty()) {
+    ++relaxIndex;
+    if (relaxIndex < relaxFactorSequence.length())
+      relaxFactor = relaxFactorSequence[relaxIndex];
+  }
 }
 
 

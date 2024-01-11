@@ -152,7 +152,7 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
   //      of the allocation (delta->0), recursive compounds these two effects
   //      and is probably more complicated than necessary, e.g. can resort to
   //      factor = 1 (no relaxation) fairly quickly, i.e. after 1 or 2 iters.
-  // > under_relax_sequence  = ListOfReal (inclusive of a single fixed value?, don't think we want to auto-terminate with 1...)
+  // > under_relax_sequence  = ListOfReal (don't auto-terminate with 1)
   //   under_relax_fixed     = Real (fixed)
   //   under_relax_recursive = Real (recursive per iter on unity partition)
 
@@ -168,6 +168,7 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
     NGroupAlloc[all_group] = delta_N_G[all_group];
     shared_covariance_iteration(sum_G, sum_GG, delta_N_G);
     NGroupShared = NGroupActual[all_group];// cache for update_prev in covar est
+    reset_relaxation(); // for initial increments for all other groups
   }
   // online iteration for independent covariance estimation:
   independent_covariance_iteration(sum_G, sum_GG, delta_N_G);
@@ -313,7 +314,7 @@ shared_covariance_iteration(IntRealMatrixArrayMap& sum_G,
     // only increment NGroupAlloc[all_group]
     increment_allocations(blueSolnData, NGroupAlloc, delta_N_G, all_group);
     numSamples = delta_N_G[all_group];
-    ++mlmfIter;
+    ++mlmfIter;  advance_relaxation();
   }
 }
 
@@ -364,7 +365,7 @@ independent_covariance_iteration(IntRealMatrixArrayMap& sum_G,
     // variance reduction from application of avg_eval_ratios).
     compute_allocations(blueSolnData, NGroupActual, NGroupAlloc, delta_N_G);
     increment_allocations(blueSolnData, NGroupAlloc, delta_N_G);
-    ++mlmfIter;
+    ++mlmfIter;  advance_relaxation();
   }
 }
 

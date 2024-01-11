@@ -40,7 +40,7 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
   exportSampleSets(problem_db.get_bool("method.nond.export_sample_sequence")),
   exportSamplesFormat(
     problem_db.get_ushort("method.nond.export_samples_format")),
-  relaxFactor(1.),
+  relaxFactor(1.), relaxIndex(0),
   relaxFactorSequence(
     problem_db.get_rv("method.nond.relaxation.factor_sequence")),
   relaxRecursiveFactor(
@@ -123,14 +123,7 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
     sampleType = SUBMETHOD_RANDOM;
 
   Real relax_fixed = problem_db.get_real("method.nond.relaxation.fixed_factor");
-  if (relax_fixed > 0.)
-    relaxFactor = relax_fixed;            // not updated
-  else if (relaxRecursiveFactor > 0.)
-    relaxFactor = relaxRecursiveFactor;   // updated in advance_relaxation()
-  else if (!relaxFactorSequence.empty())
-    relaxFactor = relaxFactorSequence[0]; // updated in advance_relaxation()
-  else
-    relaxFactor = 1.;                     // not updated
+  if (relax_fixed > 0.) relaxFactor = relax_fixed; // else initialized to 1.
 
   switch (pilotMgmtMode) {
   case ONLINE_PILOT_PROJECTION: case OFFLINE_PILOT_PROJECTION: // no iteration
@@ -201,6 +194,8 @@ void NonDEnsembleSampling::pre_run()
   mlmfIter = numLHSRuns = 0;
   equivHFEvals = deltaEquivHF = 0.;
   seedSpec = randomSeed = seed_sequence(0); // (re)set seeds to sequence
+
+  reset_relaxation();
 }
 
 
