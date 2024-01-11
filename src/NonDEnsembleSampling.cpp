@@ -40,6 +40,11 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
   exportSampleSets(problem_db.get_bool("method.nond.export_sample_sequence")),
   exportSamplesFormat(
     problem_db.get_ushort("method.nond.export_samples_format")),
+  relaxFactor(1.),
+  relaxFactorSequence(
+    problem_db.get_rv("method.nond.relaxation.factor_sequence")),
+  relaxRecursiveFactor(
+    problem_db.get_real("method.nond.relaxation.recursive_factor")),
   seedIndex(SZ_MAX)
 {
   ModelList& model_ensemble = iteratedModel.subordinate_models(false);
@@ -116,6 +121,16 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
   // (c) numerically-generated estimator variance (from, e.g., replicated LHS)
   if (!sampleType) // SUBMETHOD_DEFAULT
     sampleType = SUBMETHOD_RANDOM;
+
+  Real relax_fixed = problem_db.get_real("method.nond.relaxation.fixed_factor");
+  if (relax_fixed > 0.)
+    relaxFactor = relax_fixed;            // not updated
+  else if (relaxRecursiveFactor > 0.)
+    relaxFactor = relaxRecursiveFactor;   // updated in advance_relaxation()
+  else if (!relaxFactorSequence.empty())
+    relaxFactor = relaxFactorSequence[0]; // updated in advance_relaxation()
+  else
+    relaxFactor = 1.;                     // not updated
 
   switch (pilotMgmtMode) {
   case ONLINE_PILOT_PROJECTION: case OFFLINE_PILOT_PROJECTION: // no iteration

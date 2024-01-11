@@ -689,6 +689,22 @@
 	     </keyword>
 	     ' >
 
+    <!ENTITY mlmf_relaxation '
+      	     <keyword  id="relaxation" name="relaxation" code="{0}" label="relaxation" help="" minOccurs="0" default="no relaxation" >
+	       <oneOf label="Relaxation factor">
+		 <keyword  id="factor_sequence" name="factor_sequence" code="{N_mdm(RealDL,relaxFactorSequence)}" label="factor_sequence" help="" >
+		   <param type="REALLIST" />
+		 </keyword>
+		 <keyword  id="fixed_factor" name="fixed_factor" code="{N_mdm(Real,relaxFixedFactor)}" label="fixed_factor" help="" >
+		   <param type="REAL" />
+		 </keyword>
+		 <keyword  id="recursive_factor" name="recursive_factor" code="{N_mdm(Real,relaxRecursiveFactor)}" label="recursive_factor" help="" >
+		   <param type="REAL" />
+		 </keyword>
+	       </oneOf>
+	     </keyword>
+	     ' >
+
     <!ENTITY colloc_ratio_pts_sequence_with_pce_regress '
 	     <!-- Note: options within this entity are limited by NIDR requirements for an unambiguous anchor: cannot support ratio or pts or both, so anchoring with the more useful of the two.  With a new regression anchor, could mirror ft_method_regression_sequence and allow both to be optional. -->
 	     <keyword  id="collocation_ratio" name="collocation_ratio" code="{N_mdm(Realp,collocationRatio)}" label="Collocation point oversampling ratio to estimate coeffs" >
@@ -3290,6 +3306,7 @@
 	<keyword  id="multilevel_blue" name="multilevel_blue" code="{N_mdm(utype,methodName_MULTILEVEL_BLUE)}" label="multilevel_blue"  group="Uncertainty Quantification" >
 	  &mc_group_pilot_samples;
 	  &mc_solution_mode;
+	  &mlmf_relaxation;
 	  &method_mlmf_sub_problem_solver;
 	  &method_seed_sequence;
 	  &method_sample_type_lhs_mc;

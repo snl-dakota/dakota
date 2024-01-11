@@ -6768,6 +6768,8 @@ static Real
         MP_(priorPropCovMult),
 	MP_(refinementRate),
 	MP_(regressionL2Penalty),
+	MP_(relaxFixedFactor),
+	MP_(relaxRecursiveFactor),
 	MP_(shrinkagePercent),	// should be called shrinkageFraction
 	MP_(singConvTol),
 	MP_(singRadius),
@@ -6804,8 +6806,9 @@ static RealVector
 	MP_(predictionConfigList),
 	MP_(proposalCovData),
 	MP_(regressionNoiseTol),
-  MP_(scalarizationRespCoeffs),
-  MP_(stepVector),
+	MP_(relaxFactorSequence),
+	MP_(scalarizationRespCoeffs),
+	MP_(stepVector),
 	MP_(trustRegionInitSize);
 
 static RealVectorArray

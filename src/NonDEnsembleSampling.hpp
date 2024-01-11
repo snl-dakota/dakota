@@ -107,6 +107,9 @@ protected:
 				   const RealVector& var_H,
 				   const SizetArray& N_H);
 
+  /// update relaxFactor based on iteration number
+  void advance_relaxation();
+
   /// compute scalar control variate parameters
   void compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
 			  size_t N_shared, Real& beta);
@@ -202,6 +205,17 @@ protected:
   bool exportSampleSets;
   /// format for exporting sample increments using tagged tabular files
   unsigned short exportSamplesFormat;
+
+  /// the current relaxation factor applied to the predicted sample
+  /// increment; in typical use, this is an under-relaxation factor to
+  /// mitigate over-estimation of the sample allocation based on an
+  /// initial approximation to response covariance data
+  Real relaxFactor;
+  /// a sequence of relaxation factors to use across ML/MF iterations
+  /// (see DataMethod.hpp for usage notes)
+  RealVector relaxFactorSequence;
+  /// a recursive relaxation factor (see DataMethod.hpp for usage notes)
+  Real relaxRecursiveFactor;
 
   // store the allocation_target input specification, prior to run-time
   // Options right now:
@@ -348,6 +362,17 @@ increment_samples(Sizet2DArray& N_samp, const SizetArray& incr)
   }
   for (l=0; l<nl; ++l)
     increment_samples(N_samp[l], incr[l]);
+}
+
+
+inline void NonDEnsembleSampling::advance_relaxation()
+{
+  if (relaxRecursiveFactor > 0. && relaxFactor < 1.)
+    relaxFactor += relaxRecursiveFactor * (1. - relaxFactor);
+  else if (relaxFactorSequence.length() > mlmfIter)
+    relaxFactor = relaxFactorSequence[mlmfIter]; // index 0 used in ctor
+  // *** TO DO: consider relaxIter separate from mlmfIter?
+  //     (reset latter across shared/independent iterations in ML BLUE)
 }
 
 
