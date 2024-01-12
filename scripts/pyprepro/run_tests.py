@@ -637,7 +637,7 @@ class preparser_edge_cases(unittest.TestCase):
         Test the different escape methods
         """
     
-        input = """\
+        input = r"""\
         %inline_escape = 'Uh Oh'
         \{inline_escape\} <--- No variable definition
         \{inline_escape = 100\} <--- with variable definition (gets processed differently)
@@ -681,12 +681,12 @@ class preparser_edge_cases(unittest.TestCase):
         c( p(r'[b=2$',inline='[ $'),'2')
         c( p(r'\[b=2$',inline='[ $'),'[b=2$')
         c( p(r'\[b=2\$',inline='[ $'),'[b=2$')
-        c( p(r'\\[b=2$',inline='[ $'),'\[b=2$')
-        c( p(r'\\[b=2\$',inline='[ $'),'\[b=2$')
-        c( p(r'\\[b=2\\$',inline='[ $'),'\[b=2\$')
+        c( p(r'\\[b=2$',inline='[ $'), r'\[b=2$')
+        c( p(r'\\[b=2\$',inline='[ $'), r'\[b=2$')
+        c( p(r'\\[b=2\\$',inline='[ $'), r'\[b=2\$')
         
         # Test with nested
-        IN = """\
+        IN = r"""\
 # Several on a line, some escaped
 { alpha = 0.1 } then \{ beta = alpha \} then { beta = 2.0*alpha }
  
