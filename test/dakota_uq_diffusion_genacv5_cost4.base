@@ -198,3 +198,18 @@ Test Number 14 succeeded
   Projected  ACV ratio (1 - R^2):     4.9298687810896564e-05
  Equivalent   MC (  500 HF samples):  2.0105950858082573e-07
  Equivalent  ACV ratio:               1.2323420228228944e-02
+Test Number 15 succeeded
+<<<<< Function evaluation summary (HF_INT): 59068 total (59068 new, 0 duplicate)
+<<<<< Online number of equivalent high fidelity evaluations: 5.0003125000000000e+02
+<<<<< Variance for mean estimator:
+    Initial   MC (   25 HF samples):  4.1006897417589732e-06
+     Online   MC (   25 HF samples):  4.1006897417589732e-06
+     Online  ACV (sample profile):    3.8849149811629872e-09
+     Online  ACV ratio (1 - R^2):     9.4738086171244202e-04
+ Equivalent   MC (  500 HF samples):  2.0502167323337155e-07
+ Equivalent  ACV ratio:               1.8948801460325983e-02
+Sample moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  2.5295630128826879e-02  6.5761259170841807e-03  7.7612399561620260e-01 -1.2094806453537599e-01
+ response_fn_2  1.2913403118956884e-01  1.3425237981098331e-02  7.0741539811609444e-01 -6.2658706286506760e-01
+ response_fn_3  2.5295630128870143e-02  6.5761259172961864e-03  7.7612399596476955e-01 -1.2094806393015078e-01
