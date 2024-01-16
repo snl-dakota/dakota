@@ -63,7 +63,7 @@ void NonDMultifidelitySampling::core_run()
 
   switch (pilotMgmtMode) {
   case ONLINE_PILOT:  // iterated MFMC (default)
-    multifidelity_mc();                  break;
+    multifidelity_mc_online_pilot();     break;
   case OFFLINE_PILOT: // computes performance for offline/Oracle correlation
     multifidelity_mc_offline_pilot();    break;
   case ONLINE_PILOT_PROJECTION:  case OFFLINE_PILOT_PROJECTION:
@@ -74,7 +74,7 @@ void NonDMultifidelitySampling::core_run()
 
 /** This is the standard MFMC version that integrates the pilot alongside
     the sample adaptation and iterates to determine N_H. */
-void NonDMultifidelitySampling::multifidelity_mc()
+void NonDMultifidelitySampling::multifidelity_mc_online_pilot()
 {
   IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baseline, sum_LL, sum_LH;
   RealVector sum_HH;  RealMatrix var_L;
@@ -93,7 +93,7 @@ void NonDMultifidelitySampling::multifidelity_mc()
     accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH,
 		       N_H_actual);
     N_H_alloc += (backfillFailures && mlmfIter) ? one_sided_delta(N_H_alloc,
-      mfmcSolnData.solution_reference()) : numSamples;
+      mfmcSolnData.solution_reference(), relaxFactor) : numSamples;
     // While online cost recovery could be continuously updated, we restrict
     // to the pilot and do not not update after iter 0.  We could potentially
     // update cost for shared samples, mirroring the correlation updates.
@@ -127,7 +127,7 @@ void NonDMultifidelitySampling::multifidelity_mc()
     mfmc_estimator_variance(rho2LH, varH, N_H_actual, approxSequence,
 			    estVarRatios, mfmcSolnData);
 
-    ++mlmfIter;
+    ++mlmfIter;  advance_relaxation();
   }
 
   // Only QOI_STATISTICS requires application of oversample ratios and
@@ -192,7 +192,7 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
     // perform the shared increment for the online sample profile;
     // at least 2 samples reqd for variance (initial N_H_actual = 0)
     numSamples = std::max(one_sided_delta(N_H_actual,
-      mfmcSolnData.solution_reference(), 1), (size_t)2);
+      mfmcSolnData.solution_reference()), (size_t)2); // no relax
     shared_increment(mlmfIter); // spans ALL models, blocking
     accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH,
 		       N_H_actual);
@@ -353,9 +353,10 @@ update_projected_lf_samples(const MFSolutionData& soln,
     lf_target = soln_vars[approx];
     const SizetArray& N_L_actual_a = N_L_actual[approx];
     size_t&           N_L_alloc_a  = N_L_alloc[approx];
+    // No relaxation for projections
     alloc_incr  = one_sided_delta(N_L_alloc_a, lf_target);
     actual_incr = (backfillFailures) ?
-      one_sided_delta(N_L_actual_a, lf_target, 1) : alloc_incr;
+      one_sided_delta(N_L_actual_a, lf_target) : alloc_incr;
     /*delta_N_L_actual[approx] += actual_incr;*/  N_L_alloc_a += alloc_incr;
     increment_equivalent_cost(actual_incr, sequenceCost, approx,delta_equiv_hf);
   }
@@ -378,9 +379,10 @@ update_projected_samples(const MFSolutionData& soln,
 			      delta_equiv_hf);
 
   Real hf_target = soln.solution_reference();
+  // No relaxation for projections
   size_t alloc_incr = one_sided_delta(N_H_alloc, hf_target),
     actual_incr = (backfillFailures) ?
-      one_sided_delta(N_H_actual, hf_target, 1) : alloc_incr;
+      one_sided_delta(N_H_actual, hf_target) : alloc_incr;
   // For analytic solns, mirror the CDV lower bound for numerical solutions --
   // see rationale in NonDNonHierarchSampling::ensemble_numerical_solution()
   if ( ( pilotMgmtMode == OFFLINE_PILOT ||
@@ -494,9 +496,10 @@ mfmc_approx_increment(const MFSolutionData& soln,
   // These approaches overshoot when combined with vector update_hf_targets():
   //   lf_targets[qoi] = eval_ratios(qoi, approx) * avg_hf_target;
   //   lf_target = avg_eval_ratios[approx] * avg_hf_target;
+  // No relaxation for approx increments
   if (backfillFailures) {
     const SizetArray& lf_curr = N_L_actual_refined[approx];
-    numSamples = one_sided_delta(lf_curr, lf_target, 1); // average
+    numSamples = one_sided_delta(lf_curr, lf_target); // average
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "Approx samples (" << numSamples << ") computed from average "
 	   << "delta between target " << lf_target
@@ -1367,7 +1370,7 @@ mfmc_estimator_variance(const RealMatrix& rho2_LH, const RealVector& var_H,
     }
     // numSamples is relative to N_H, but the approx_increments() below are
     // computed relative to hf_targets (independent of sunk cost for pilot)
-    numSamples = one_sided_delta(N_H, avg_hf_target, 1);
+    numSamples = one_sided_delta(N_H, avg_hf_target, relaxFactor);
     //numSamples = std::min(num_samp_budget, num_samp_ctol); // enforce both
     break;
   }

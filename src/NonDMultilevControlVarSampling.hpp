@@ -64,7 +64,7 @@ private:
   /// Perform multilevel Monte Carlo across levels in combination with
   /// control variate Monte Carlo across model forms at each level; CV
   /// computes correlations for Q (LH correlations for QoI)
-  void multilevel_control_variate_mc_Qcorr();
+  void multilevel_control_variate_mc_online_pilot(); //_Qcorr();
   /// Qcorr approach using a pilot sample treated as separate offline cost
   void multilevel_control_variate_mc_offline_pilot();
   /// Qcorr approach projecting estimator performance from a pilot sample

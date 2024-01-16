@@ -681,7 +681,9 @@
     <!ENTITY mc_solution_mode '
       	     <keyword  id="solution_mode" name="solution_mode" code="{0}" label="solution_mode" help="" minOccurs="0" default="online pilot" >
 	       <oneOf label="Ensemble Sampling Solution Mode">
-		 <keyword  id="online_pilot" name="online_pilot" code="{N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}" label="online_pilot" help="" />
+		 <keyword  id="online_pilot" name="online_pilot" code="{N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}" label="online_pilot" help="" >
+		   &mlmf_relaxation;
+		 </keyword>
 		 <keyword  id="offline_pilot" name="offline_pilot" code="{N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}" label="offline_pilot" help="" />
 		 <keyword  id="online_projection" name="online_projection" code="{N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT_PROJECTION)}" label="online_projection" help="" />
 		 <keyword  id="offline_projection" name="offline_projection" code="{N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT_PROJECTION)}" label="offline_projection" help="" />
@@ -3306,7 +3308,6 @@
 	<keyword  id="multilevel_blue" name="multilevel_blue" code="{N_mdm(utype,methodName_MULTILEVEL_BLUE)}" label="multilevel_blue"  group="Uncertainty Quantification" >
 	  &mc_group_pilot_samples;
 	  &mc_solution_mode;
-	  &mlmf_relaxation;
 	  &method_mlmf_sub_problem_solver;
 	  &method_seed_sequence;
 	  &method_sample_type_lhs_mc;

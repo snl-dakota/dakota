@@ -99,9 +99,10 @@ void NonDMultilevControlVarSampling::core_run()
   switch (pilotMgmtMode) {
   case ONLINE_PILOT:
     //if (true) // reformulated approach using 1 new QoI correlation per level
-    multilevel_control_variate_mc_Qcorr();
+    //  multilevel_control_variate_mc_Qcorr();
     //else      // original approach using 1 discrepancy correlation per level
     //  multilevel_control_variate_mc_Ycorr();
+    multilevel_control_variate_mc_online_pilot(); //_Qcorr();
     break;
   case OFFLINE_PILOT:
     multilevel_control_variate_mc_offline_pilot();    break;
@@ -280,7 +281,8 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
       hf_targets[lev] = (lev < num_cv_lev) ? fact *
 	std::sqrt(agg_var_hf[lev] / hf_lev_cost * (1. - avg_rho2_LH[lev])) :
 	fact * std::sqrt(agg_var_hf[lev] / hf_lev_cost);
-      delta_N_hf[lev] = one_sided_delta(N_alloc_hf[lev], hf_targets[lev]);
+      delta_N_hf[lev]
+        = one_sided_delta(N_alloc_hf[lev], hf_targets[lev], relaxFactor);
     }
 
     ++mlmfIter;
@@ -333,7 +335,8 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
     across two model forms.  It generalizes the Y_l correlation case
     to separately target correlations for each QoI level embedded
     within the level discrepancies. */
-void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
+void NonDMultilevControlVarSampling::
+multilevel_control_variate_mc_online_pilot() //_Qcorr()
 {
   Model& truth_model = iteratedModel.truth_model();
   Model& surr_model  = iteratedModel.surrogate_model();
@@ -407,7 +410,8 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
 	  accumulate_paired_online_cost(hf_accum_cost, hf_num_cost, lev);
 
 	N_alloc_l = (backfillFailures && mlmfIter) ?
-	  one_sided_delta(N_alloc_hf[lev], hf_targets[lev]) : numSamples;
+	  one_sided_delta(N_alloc_hf[lev], hf_targets[lev], relaxFactor) :
+	  numSamples;
 	N_alloc_hf[lev] += N_alloc_l;
 
 	// control variate betwen LF and HF for this discretization level:
@@ -539,8 +543,8 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
 	std::sqrt(agg_var_hf[lev] / hf_lev_cost * (1. - avg_rho_dot2_LH[lev])) :
 	fact * std::sqrt(agg_var_hf[lev] / hf_lev_cost);
       delta_N_hf[lev] = (backfillFailures) ?
-	one_sided_delta(N_actual_hf[lev], hf_tgt_l, 1) :
-	one_sided_delta(N_alloc_hf[lev],  hf_tgt_l);
+	one_sided_delta(N_actual_hf[lev], hf_tgt_l, relaxFactor) :
+	one_sided_delta(N_alloc_hf[lev],  hf_tgt_l, relaxFactor);
       // Note: N_alloc_{lf,hf} accumulated upstream due to maxIterations exit
     }
 
@@ -561,7 +565,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Qcorr()
 	lf_increment(eval_ratios[lev], N_actual_lf[lev], hf_targets[lev],
 		     lf_targets, mlmfIter, lev);
 	lf_tgt_l = average(lf_targets);
-	N_alloc_lf[lev] += one_sided_delta(N_alloc_lf[lev], lf_tgt_l);
+	N_alloc_lf[lev] += one_sided_delta(N_alloc_lf[lev], lf_tgt_l);//no relax
       }
       else {                  // increment relative to allocated samples
 	lf_increment(eval_ratios[lev], N_alloc_lf[lev], hf_targets[lev],
@@ -668,9 +672,10 @@ multilevel_control_variate_mc_offline_pilot()
     for (lev=0, group=0; lev<num_hf_lev; ++lev, ++group) {
       configure_indices(group, hf_form, lev, sequenceType);
       hf_lev_cost = level_cost(hf_cost, lev);
-      // use 0 in place of delta_N_hf[lev]; min of 2 samples reqd for online var
-      numSamples
-	= std::max(one_sided_delta(0., hf_targets_pilot[lev]), (size_t)2);
+      // use 0 in place of delta_N_hf[lev]; min of 2 samp reqd for online var;
+      // no relaxation since no iteration
+      numSamples = std::max(one_sided_delta(0., hf_targets_pilot[lev]),
+			    (size_t)2);
       N_alloc_hf[lev] += numSamples;
       evaluate_ml_sample_increment("mlcv_", lev);
       if (lev < num_cv_lev) {
@@ -711,7 +716,7 @@ multilevel_control_variate_mc_offline_pilot()
 	lf_increment(eval_ratios_pilot[lev], N_actual_lf[lev],
 		     hf_targets_pilot[lev], lf_targets, mlmfIter, lev);
 	lf_tgt_l = average(lf_targets);
-	N_alloc_lf[lev] += one_sided_delta(N_alloc_lf[lev], lf_tgt_l);
+	N_alloc_lf[lev] += one_sided_delta(N_alloc_lf[lev], lf_tgt_l);//no relax
       }
       else {                  // increment relative to allocated samples
 	lf_increment(eval_ratios_pilot[lev], N_alloc_lf[lev],
@@ -987,7 +992,8 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
     hf_targets[lev] = (lev < num_cv_lev) ? fact *
       std::sqrt(agg_var_hf[lev] / hf_lev_cost * (1. - avg_rho_dot2_LH[lev])) :
       fact * std::sqrt(agg_var_hf[lev] / hf_lev_cost);
-    //delta_N_hf[lev] = one_sided_delta(N_alloc_hf[lev], hf_targets[lev]);
+    //delta_N_hf[lev]
+    //  = one_sided_delta(N_alloc_hf[lev], hf_targets[lev], relaxFactor);
   }
 
   ++mlmfIter;
@@ -1090,14 +1096,15 @@ lf_increment(const RealVector& eval_ratios, const SizetArray& N_lf,
     lf_targets[qoi] = eval_ratios[qoi] * hf_target;
   // Choose average, RMS, max of difference?
   // Trade-off: Possible overshoot vs. more iteration...
-  numSamples = one_sided_delta(N_lf, lf_targets, 1); // average
+  numSamples = one_sided_delta(N_lf, lf_targets); // averaged, no relaxation
 
   if (numSamples)
     Cout << "\nControl variate LF sample increment = " << numSamples;
   else Cout << "\nNo control variate LF sample increment";
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << " from avg LF = " << average(N_lf) << ", HF target = " << hf_target
-	 << ", avg eval_ratio = "<< average(eval_ratios);
+	 << ", relaxation = " << relaxFactor << ", avg eval_ratio = "
+	 << average(eval_ratios);
   Cout << std::endl;
 
   return (numSamples) ? lf_perform_samples(iter, lev) : false;
@@ -1112,7 +1119,7 @@ lf_increment(const RealVector& eval_ratios, size_t N_lf, Real hf_target,
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     lf_target += eval_ratios[qoi] * hf_target;
   lf_target /= numFunctions; // average
-  numSamples = one_sided_delta((Real)N_lf, lf_target);
+  numSamples = one_sided_delta((Real)N_lf, lf_target); // no relaxation
 
   if (numSamples)
     Cout << "\nControl variate LF sample increment = " << numSamples;
@@ -1309,10 +1316,10 @@ update_projected_samples(const RealVector& hf_targets,
   RealVector lf_targets(numFunctions, false);
   for (lev=0; lev<num_hf_lev; ++lev) {
     hf_target_l      = hf_targets[lev];
-    hf_alloc_incr    = one_sided_delta(N_alloc_hf[lev], hf_target_l);
+    hf_alloc_incr    = one_sided_delta(N_alloc_hf[lev], hf_target_l);// no relax
     // Note: not duplicate as evaluate_pilot() does not compute delta_N_hf
     hf_actual_incr   = (backfillFailures) ?
-      one_sided_delta(N_actual_hf[lev], hf_target_l, 1) : hf_alloc_incr;
+      one_sided_delta(N_actual_hf[lev], hf_target_l) : hf_alloc_incr;// no relax
     if (pilotMgmtMode == OFFLINE_PILOT ||
 	pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
       size_t offline_N_lwr = (finalStatsType == QOI_STATISTICS) ? 2 : 1;
@@ -1326,10 +1333,11 @@ update_projected_samples(const RealVector& hf_targets,
       const RealVector& eval_ratios_l = eval_ratios[lev];
       for (size_t qoi=0; qoi<numFunctions; ++qoi)
 	lf_targets[qoi] = eval_ratios_l[qoi] * hf_target_l;
+      // no relaxation for projections
       lf_alloc_incr    = one_sided_delta(N_alloc_lf[lev], average(lf_targets));
       N_alloc_lf[lev] += lf_alloc_incr;
       lf_actual_incr   = (backfillFailures) ?
-	one_sided_delta(N_actual_lf[lev], lf_targets, 1) : lf_alloc_incr;
+	one_sided_delta(N_actual_lf[lev], lf_targets) : lf_alloc_incr;
       //increment_samples(N_actual_lf[lev], lf_actual_incr);
       //delta_N_actual_lf[lev] += lf_actual_incr;
       increment_mlmf_equivalent_cost(hf_actual_incr, level_cost(hf_cost, lev),
@@ -1361,10 +1369,11 @@ update_projected_lf_samples(const RealVector& hf_targets,
     const RealVector& eval_ratios_l = eval_ratios[lev];
     for (size_t qoi=0; qoi<numFunctions; ++qoi)
       lf_targets[qoi] = eval_ratios_l[qoi] * hf_target_l;
+    // no relaxation for projections
     lf_alloc_incr    = one_sided_delta(N_alloc_lf[lev], average(lf_targets));
     N_alloc_lf[lev] += lf_alloc_incr;
     lf_actual_incr   = (backfillFailures) ?
-      one_sided_delta(N_actual_lf[lev], lf_targets, 1) : lf_alloc_incr;
+      one_sided_delta(N_actual_lf[lev], lf_targets) : lf_alloc_incr;
     //delta_N_actual_lf[lev] += lf_actual_incr;
     increment_ml_equivalent_cost(lf_actual_incr, level_cost(lf_cost, lev),
 				 hf_ref_cost, delta_equiv_hf);

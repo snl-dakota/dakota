@@ -890,10 +890,16 @@ process_group_solution(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
 		       const SizetArray& N_G_alloc, SizetArray& delta_N_G)
 {
   // compute sample increment for HF from current to target:
+
+  // first relax on real values and then round to delta_N_G
+  // > don't need logic for different modes: via the XML groupings,
+  //   relaxFactor will default to 1 if not ONLINE_PILOT
   if (backfillFailures)
-    one_sided_delta(N_G_actual, soln.solution_variables(), delta_N_G);
+    one_sided_delta(N_G_actual, soln.solution_variables(), delta_N_G,
+		    relaxFactor);
   else
-    one_sided_delta(N_G_alloc,  soln.solution_variables(), delta_N_G);
+    one_sided_delta(N_G_alloc,  soln.solution_variables(), delta_N_G,
+		    relaxFactor);
 
   // Employ projected MC estvar as reference to the projected ML BLUE estvar
   // from N* (where N* may include a num_samples increment not yet performed).

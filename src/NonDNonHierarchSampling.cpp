@@ -750,19 +750,19 @@ process_model_solution(MFSolutionData& soln, size_t& num_samples)
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
   num_samples = (truthFixedByPilot) ? 0 :
-    one_sided_delta(avg_N_H, soln.solution_reference());
+    one_sided_delta(avg_N_H, soln.solution_reference(), relaxFactor);
 
   //if (!num_samples) { // metrics not needed unless print_variance_reduction()
 
   // All cases employ projected MC estvar to match the projected nonhier estvar
   // from N* (where N* may include a num_samples increment not yet performed)
-  RealVector mc_estvar;
-  project_mc_estimator_variance(varH, N_H_actual, num_samples, mc_estvar);
+  RealVector proj_mc_estvar;
+  project_mc_estimator_variance(varH, N_H_actual, num_samples, proj_mc_estvar);
 
   // Report ratio of averages rather that average of ratios (see notes in
   // print_variance_reduction())
   soln.average_estimator_variance_ratio(soln.average_estimator_variance() /
-					average(mc_estvar)); // (1 - R^2)
+					average(proj_mc_estvar)); // (1 - R^2)
   //RealVector estvar_ratio(numFunctions, false);
   //for (size_t qoi=0; qoi<numFunctions; ++qoi)
   //  estvar_ratio[qoi] = 1. - R_sq[qoi];// compute from CF_inv,A->compute_Rsq()

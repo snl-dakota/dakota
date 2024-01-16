@@ -126,10 +126,9 @@ void NonDMultilevelSampling::core_run()
 
   switch (pilotMgmtMode) {
   case ONLINE_PILOT:
-    //if (true)//(subIteratorFlag)
-    multilevel_mc_Qsum(); // w/ error est, unbiased central moments
-    //else
-    //  multilevel_mc_Ysum(); // lighter weight
+    //if (subIteratorFlag) multilevel_mc_Qsum(); // error est, unbiased central
+    //else                 multilevel_mc_Ysum(); // lighter weight
+    multilevel_mc_online_pilot();     break;
     break;
   case OFFLINE_PILOT:
     multilevel_mc_offline_pilot();    break;
@@ -264,7 +263,8 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
       // "A multifidelity control variate approach for the multilevel Monte 
       // Carlo technique," Geraci, Eldred, Iaccarino, 2015.
       N_target = std::sqrt(agg_var[step]/level_cost(sequenceCost, step)) * fact;
-      delta_N_l[step] = one_sided_delta(average(N_l[step]), N_target);
+      delta_N_l[step]
+        = one_sided_delta(average(N_l[step]), N_target, relaxFactor);
     }
     ++mlmfIter;
     Cout << "\nMLMC iteration " << mlmfIter << " sample increments:\n"
@@ -296,7 +296,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
 
 /** This function performs "geometrical" MLMC on a single model form
     with multiple discretization levels. */
-void NonDMultilevelSampling::multilevel_mc_Qsum()
+void NonDMultilevelSampling::multilevel_mc_online_pilot() //_Qsum()
 {
   // For moment estimation, we accumulate telescoping sums for Q^i using
   // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
@@ -1335,10 +1335,11 @@ allocation_increment(size_t N_l_alloc, const Real* N_l_target)
 {
   switch (qoiAggregation) {
   case QOI_AGGREGATION_SUM:
-    return one_sided_delta(N_l_alloc, N_l_target[0]);
+    return one_sided_delta(N_l_alloc, N_l_target[0], relaxFactor);
     break;
   case QOI_AGGREGATION_MAX:
-    return one_sided_delta(N_l_alloc, find_max(N_l_target, numFunctions));
+    return one_sided_delta(N_l_alloc,
+			   find_max(N_l_target, numFunctions), relaxFactor);
     break;
   default:
     Cerr << "Error: QoI aggregation mode " << qoiAggregation << " not supported"
@@ -1379,8 +1380,8 @@ compute_sample_allocation_target(const RealMatrix& var_qoi,
       for (qoi=0; qoi<numFunctions; ++qoi)
 	NTargetQoI(qoi, step) = N_target;
       delta_N_l[step] = (backfillFailures) ?
-	one_sided_delta(average(N_actual[step]), N_target) :
-	one_sided_delta(N_alloc[step],           N_target);
+	one_sided_delta(average(N_actual[step]), N_target, relaxFactor) :
+	one_sided_delta(N_alloc[step],           N_target, relaxFactor);
     }
     break;
   }
@@ -1397,8 +1398,8 @@ compute_sample_allocation_target(const RealMatrix& var_qoi,
 	N_target = NTargetQoI(qoi, step)
 	  = std::sqrt(var_qoi(qoi, step) / lev_costs[step]) * factor;
 	delta_N_l_qoi[step][qoi] = (backfillFailures) ?
-	  one_sided_delta(N_actual[step][qoi], N_target) :
-	  one_sided_delta(N_alloc[step],       N_target);
+	  one_sided_delta(N_actual[step][qoi], N_target, relaxFactor) :
+	  one_sided_delta(N_alloc[step],       N_target, relaxFactor);
       }
     }
     for (step=0; step<num_steps; ++step)
@@ -1427,12 +1428,13 @@ compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql, const IntRealMa
   Real fact_qoi;
 
   size_t nb_aggregation_qois = 0;
-  Real underrelaxation_bound = 10, underrelaxation_factor
-    = static_cast<double>(max_iter) <= underrelaxation_bound ?
-      static_cast<double>(mlmfIter + 1)/static_cast<double>(max_iter) :
-      static_cast<double>(mlmfIter + 1)/underrelaxation_bound;
-  if (static_cast<double>(mlmfIter + 1) >= underrelaxation_bound) underrelaxation_factor = 1;
-  //Cout << "mlmfIter: " << mlmfIter << " ur: " << underrelaxation_factor << "\n";
+  //Real underrelaxation_bound = 10, underrelaxation_factor
+  //  = static_cast<double>(max_iter) <= underrelaxation_bound ?
+  //    static_cast<double>(mlmfIter + 1)/static_cast<double>(max_iter) :
+  //    static_cast<double>(mlmfIter + 1)/underrelaxation_bound;
+  //if (static_cast<double>(mlmfIter + 1) >= underrelaxation_bound)
+  //  underrelaxation_factor = 1;
+  //Cout << "mlmfIter: " << mlmfIter << " ur: " << underrelaxation_factor<<"\n";
 
   for (size_t step = 0; step < num_steps ; ++step) {
     level_cost_vec[step] = level_cost(cost, step);
@@ -1828,24 +1830,35 @@ compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql, const IntRealMa
   }
   for (size_t qoi = 0; qoi < nb_aggregation_qois; ++qoi) {
     for (size_t step = 0; step < num_steps; ++step) {
-      if(allocationTarget == TARGET_MEAN){
+      if (allocationTarget == TARGET_MEAN){
 	delta_N_l_qoi(qoi, step) = (backfillFailures) ?
-	  one_sided_delta(N_actual_online[step][qoi], NTargetQoI(qoi, step)) :
-	  one_sided_delta(N_alloc[step],       NTargetQoI(qoi, step));
-      }else if (allocationTarget == TARGET_VARIANCE || allocationTarget == TARGET_SIGMA || allocationTarget == TARGET_SCALARIZATION){
-	if(max_iter==1){
+	  one_sided_delta(N_actual_online[step][qoi],
+			  NTargetQoI(qoi, step), relaxFactor) :
+	  one_sided_delta(N_alloc[step], NTargetQoI(qoi, step), relaxFactor);
+      }
+      else if (allocationTarget == TARGET_VARIANCE ||
+	       allocationTarget == TARGET_SIGMA ||
+	       allocationTarget == TARGET_SCALARIZATION){
+	if (max_iter==1){
 	  delta_N_l_qoi(qoi, step) = (backfillFailures) ?
-	    one_sided_delta(N_actual_online[step][qoi], NTargetQoI(qoi, step)) :
-	    one_sided_delta(N_alloc[step],       NTargetQoI(qoi, step));
-	}else{
-	  delta_N_l_qoi(qoi, step) = (backfillFailures) ?
-	    std::min(N_actual_online[step][qoi]*3, one_sided_delta(N_actual_online[step][qoi], NTargetQoI(qoi, step))) :
-	    std::min(N_alloc[step]*3,       one_sided_delta(N_alloc[step],       NTargetQoI(qoi, step)));
-	  delta_N_l_qoi(qoi, step) = delta_N_l_qoi(qoi, step) > 1 ?  
-	    delta_N_l_qoi(qoi, step) * underrelaxation_factor > 1 ?
-	    delta_N_l_qoi(qoi, step) * underrelaxation_factor : 1 : delta_N_l_qoi(qoi, step);
+	    one_sided_delta(N_actual_online[step][qoi],
+			    NTargetQoI(qoi, step), relaxFactor) :
+	    one_sided_delta(N_alloc[step], NTargetQoI(qoi, step), relaxFactor);
 	}
-        }else{
+	else{
+	  delta_N_l_qoi(qoi, step) = (backfillFailures) ?
+	    std::min(N_actual_online[step][qoi]*3,
+		     one_sided_delta(N_actual_online[step][qoi],
+				     NTargetQoI(qoi, step), relaxFactor)) :
+	    std::min(N_alloc[step]*3,
+		     one_sided_delta(N_alloc[step],
+				     NTargetQoI(qoi, step), relaxFactor));
+	  //delta_N_l_qoi(qoi, step) = delta_N_l_qoi(qoi, step) > 1 ?  
+	  //  delta_N_l_qoi(qoi, step) * underrelaxation_factor > 1 ?
+	  //  delta_N_l_qoi(qoi, step) * underrelaxation_factor : 1 : delta_N_l_qoi(qoi, step);
+	}
+        }
+      else{
           Cout << "NonDMultilevelSampling::compute_sample_allocation_target: allocationTarget is not implemented.\n";
           abort_handler(METHOD_ERROR);
         }

@@ -119,8 +119,8 @@ void NonDACVSampling::approximate_control_variate_online_pilot()
     shared_increment(mlmfIter); // spans ALL models, blocking
     accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
 			sum_LH, sum_HH, N_H_actual);//, N_LL);
-    N_H_alloc += (backfillFailures && mlmfIter) ?
-      one_sided_delta(N_H_alloc, acvSolnData.solution_reference()) : numSamples;
+    N_H_alloc += (backfillFailures && mlmfIter) ? one_sided_delta(N_H_alloc,
+      acvSolnData.solution_reference(), relaxFactor) : numSamples;
     // While online cost recovery could be continuously updated, we restrict
     // to the pilot and do not not update after iter 0.  We could potentially
     // update cost for shared samples, mirroring the covariance updates.
@@ -135,7 +135,7 @@ void NonDACVSampling::approximate_control_variate_online_pilot()
     // ratio of MC and ACV mean sq errors (which incorporates anticipated
     // variance reduction from application of avg_eval_ratios).
     compute_ratios(var_L, acvSolnData);
-    ++mlmfIter;
+    ++mlmfIter;  advance_relaxation();
   }
 
   // Only QOI_STATISTICS requires application of oversample ratios and
@@ -385,6 +385,7 @@ acv_approx_increment(const MFSolutionData& soln,
   bool   ordered = approx_sequence.empty();
   size_t  approx = (ordered) ? end-1 : approx_sequence[end-1];
   Real lf_target = soln.solution_variables()[approx];//soln.avgEvalRatios[approx] * soln.avgHFTarget;
+  // No relaxation for approx increments
   if (backfillFailures) {
     Real lf_curr = average(N_L_actual_refined[approx]);
     numSamples = one_sided_delta(lf_curr, lf_target); // average
@@ -1326,6 +1327,7 @@ update_projected_lf_samples(const MFSolutionData& soln,
     lf_target = soln_vars[i];  inflate_i = approx_set[i];
     const SizetArray& N_L_actual_a = N_L_actual[inflate_i];
     size_t&           N_L_alloc_a  =  N_L_alloc[inflate_i];
+    // No relaxation for projections
     alloc_incr  = one_sided_delta(N_L_alloc_a, lf_target);
     actual_incr = (backfillFailures) ?
       one_sided_delta(average(N_L_actual_a), lf_target) : alloc_incr;
@@ -1352,6 +1354,7 @@ update_projected_samples(const MFSolutionData& soln,
 			      /*delta_N_L_actual,*/ delta_equiv_hf);
 
   Real hf_target = soln.solution_reference();
+  // No relaxation for projections
   size_t alloc_incr = one_sided_delta(N_H_alloc, hf_target),
     actual_incr = (backfillFailures) ?
       one_sided_delta(average(N_H_actual), hf_target) : alloc_incr;

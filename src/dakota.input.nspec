@@ -2831,7 +2831,15 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
     [ solution_mode {0}
-      online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
+      ( online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
+        [ relaxation {0}
+          factor_sequence REALLIST {N_mdm(RealDL,relaxFactorSequence)}
+          |
+          fixed_factor REAL {N_mdm(Real,relaxFixedFactor)}
+          |
+          recursive_factor REAL {N_mdm(Real,relaxRecursiveFactor)}
+         ]
+       )
       |
       offline_pilot {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}
       |
@@ -2922,7 +2930,15 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
     [ solution_mode {0}
-      online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
+      ( online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
+        [ relaxation {0}
+          factor_sequence REALLIST {N_mdm(RealDL,relaxFactorSequence)}
+          |
+          fixed_factor REAL {N_mdm(Real,relaxFixedFactor)}
+          |
+          recursive_factor REAL {N_mdm(Real,relaxRecursiveFactor)}
+         ]
+       )
       |
       offline_pilot {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}
       |
@@ -3001,7 +3017,15 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
     [ solution_mode {0}
-      online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
+      ( online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
+        [ relaxation {0}
+          factor_sequence REALLIST {N_mdm(RealDL,relaxFactorSequence)}
+          |
+          fixed_factor REAL {N_mdm(Real,relaxFixedFactor)}
+          |
+          recursive_factor REAL {N_mdm(Real,relaxRecursiveFactor)}
+         ]
+       )
       |
       offline_pilot {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}
       |
@@ -3076,7 +3100,15 @@ KEYWORD method {N_mdm3(start,0,stop)}
      ]
     [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
     [ solution_mode {0}
-      online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
+      ( online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
+        [ relaxation {0}
+          factor_sequence REALLIST {N_mdm(RealDL,relaxFactorSequence)}
+          |
+          fixed_factor REAL {N_mdm(Real,relaxFixedFactor)}
+          |
+          recursive_factor REAL {N_mdm(Real,relaxRecursiveFactor)}
+         ]
+       )
       |
       offline_pilot {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}
       |
@@ -3148,20 +3180,21 @@ KEYWORD method {N_mdm3(start,0,stop)}
       [ independent {N_mdm(type,pilotGroupSampling_INDEPENDENT_PILOT)} ]
      ]
     [ solution_mode {0}
-      online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
+      ( online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
+        [ relaxation {0}
+          factor_sequence REALLIST {N_mdm(RealDL,relaxFactorSequence)}
+          |
+          fixed_factor REAL {N_mdm(Real,relaxFixedFactor)}
+          |
+          recursive_factor REAL {N_mdm(Real,relaxRecursiveFactor)}
+         ]
+       )
       |
       offline_pilot {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}
       |
       online_projection {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT_PROJECTION)}
       |
       offline_projection {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT_PROJECTION)}
-     ]
-    [ relaxation {0}
-      factor_sequence REALLIST {N_mdm(RealDL,relaxFactorSequence)}
-      |
-      fixed_factor REAL {N_mdm(Real,relaxFixedFactor)}
-      |
-      recursive_factor REAL {N_mdm(Real,relaxRecursiveFactor)}
      ]
     [ 
       sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}

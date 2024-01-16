@@ -146,7 +146,7 @@ private:
   //void multilevel_mc_Ysum();
   /// Perform multilevel Monte Carlo across the discretization levels for a
   /// particular model form using QoI accumulators (sum_Q)
-  void multilevel_mc_Qsum();
+  void multilevel_mc_online_pilot(); //_Qsum();
   /// Qsum approach using a pilot sample treated as separate offline cost
   void multilevel_mc_offline_pilot();
   /// Qsum approach projecting estimator performance from a pilot sample

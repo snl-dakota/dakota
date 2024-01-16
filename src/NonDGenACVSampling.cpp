@@ -413,7 +413,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
     accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
 			sum_LH, sum_HH, N_H_actual);
     N_H_alloc += (backfillFailures && mlmfIter) ?
-      one_sided_delta(N_H_alloc, avg_hf_target) : numSamples;
+      one_sided_delta(N_H_alloc, avg_hf_target, relaxFactor) : numSamples;
     // While online cost recovery could be continuously updated, we restrict
     // to the pilot and do not not update after iter 0.  We could potentially
     // update cost for shared samples, mirroring the covariance updates.
@@ -454,9 +454,9 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
     else {
       avg_hf_target = dagSolns[soln_key].solution_reference();
       avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
-      numSamples = one_sided_delta(avg_N_H, avg_hf_target);
+      numSamples = one_sided_delta(avg_N_H, avg_hf_target, relaxFactor);
     }
-    ++mlmfIter;
+    ++mlmfIter;  advance_relaxation();
   }
 
   // Only QOI_STATISTICS requires application of oversample ratios and
@@ -538,6 +538,7 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
     if (truthFixedByPilot) numSamples = 0;
     else {
       Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
+      // No relaxation since final allocation
       numSamples = one_sided_delta(avg_N_H, soln.solution_reference());
     }
     // perform the shared increment for the online sample profile
@@ -741,8 +742,9 @@ genacv_approx_increment(const MFSolutionData& soln,
   //   (helpful to refer to Figure 2(b) in ACV paper, noting index differences)
   // > N_L is updated prior to each call to approx_increment (*** if BLOCKING),
   //   allowing use of one_sided_delta() with latest counts
-  const UShortArray& approx_set = activeModelSetIter->first;
+  // > No relaxation for final approx increments
 
+  const UShortArray& approx_set = activeModelSetIter->first;
   bool  ordered = approx_sequence.empty();
   size_t approx = (ordered) ? end-1 : approx_sequence[end-1],
     inflate_approx = approx_set[approx];
@@ -788,6 +790,7 @@ genacv_approx_increment(const MFSolutionData& soln,
   //   (helpful to refer to Figure 2(b) in ACV paper, noting index differences)
   // > N_L is updated prior to each call to approx_increment (*** if BLOCKING),
   //   allowing use of one_sided_delta() with latest counts
+  // > No relaxation for final approx increments
 
   Real lf_target = soln.solution_variables()[root];
   if (backfillFailures) {

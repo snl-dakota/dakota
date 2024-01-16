@@ -355,12 +355,29 @@ inline void NonDMultilevBLUESampling::
 increment_allocations(const MFSolutionData& soln, SizetArray& N_G_alloc,
 		      const SizetArray& delta_N_G)
 {
-  // increments all of N_G_alloc
+  // Alloc/Actual w.r.t. relaxation: both will track the under-relaxed target,
+  // not soln.solution_variables(), continuing to differ only in timing
+  // (allocate, then evaluate) and simulation faults
+  // > Alternative: NGroupAlloc tracks soln.solution_variables() as being
+  //   allocated by the numerical solve, whereas accumulations in NGroupActual
+  //   will undershoot allocation due to under-relaxation.  Main downside is
+  //   that the two counters diverge and can longer be interchanged.
 
+  if (backfillFailures) { // don't use delta_N_G as it may include backfill
+    SizetArray bf_delta_N_G;
+    one_sided_delta(N_G_alloc, soln.solution_variables(),
+		    bf_delta_N_G, relaxFactor); // match under-relaxation
+    increment_samples(N_G_alloc, bf_delta_N_G);
+  }
+  else // delta_N_G is the allocation increment, including any under-relaxation
+    increment_samples(N_G_alloc, delta_N_G);
+
+  /*  
   if (backfillFailures) // delta_N_G may include backfill
-    one_sided_update(N_G_alloc, soln.solution_variables());
+    one_sided_update(N_G_alloc, soln.solution_variables()); // *** TO DO: relax?
   else // delta_N_G is the allocation increment
     increment_samples(N_G_alloc, delta_N_G);
+  */
 }
 
 
@@ -368,13 +385,15 @@ inline void NonDMultilevBLUESampling::
 increment_allocations(const MFSolutionData& soln, SizetArray& N_G_alloc,
 		      const SizetArray& delta_N_G, size_t group)
 {
-  // only increments NGroupAlloc[all_group]
-  if (backfillFailures) { // delta_N_G may include backfill
+  // only increments NGroupAlloc[group]
+
+  if (backfillFailures) { // don't use delta_N_G as it may include backfill
     size_t& curr_g = N_G_alloc[group];
-    size_t   tgt_g = (size_t)std::floor(soln.solution_variable(group) + .5);
-    if (tgt_g > curr_g) curr_g = tgt_g;
+    Real diff_g = soln.solution_variable(group) - (Real)curr_g;
+    if (diff_g > 0.)
+      curr_g += (size_t)std::floor(relaxFactor * diff_g + .5);
   }
-  else // delta_N_G is the allocation increment
+  else // delta_N_G is the allocation increment, including under-relaxation
     N_G_alloc[group] += delta_N_G[group];
 }
 
