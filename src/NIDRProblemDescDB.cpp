@@ -7380,6 +7380,7 @@ static Model_mp_lit
 	MP2(surrogateType,ensemble),
 	MP2(surrogateType,global_exp_gauss_proc),
 	MP2(surrogateType,global_exp_poly),
+	MP2(surrogateType,global_exp_python),
 	MP2(surrogateType,global_function_train),
 	MP2(surrogateType,global_gaussian),
 	MP2(surrogateType,global_kriging),

@@ -134,6 +134,9 @@ get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
       return std::make_shared<SurrogatesGPApprox>
 	(problem_db, shared_data, approx_label);
     else if (approx_type == "global_exp_poly")
+      return std::make_shared<SurrogatesPolyApprox>
+	(problem_db, shared_data, approx_label);
+    else if (approx_type == "global_exp_python")
       return std::make_shared<SurrogatesPythonApprox>
 	(problem_db, shared_data, approx_label);
 #endif // HAVE_DAKOTA_SURROGATES
@@ -194,6 +197,8 @@ Approximation::get_approx(const SharedApproxData& shared_data)
   else if (approx_type == "global_exp_gauss_proc")
     return std::make_shared<SurrogatesGPApprox>(shared_data);
   else if (approx_type == "global_exp_poly")
+    return std::make_shared<SurrogatesPolyApprox>(shared_data);
+  else if (approx_type == "global_exp_python")
     return std::make_shared<SurrogatesPythonApprox>(shared_data);
 #endif // HAVE_DAKOTA_SURROGATES
   else

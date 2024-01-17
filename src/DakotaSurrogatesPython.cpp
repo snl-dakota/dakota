@@ -27,13 +27,10 @@ SurrogatesPythonApprox(const ProblemDescDB& problem_db,
 		const String& approx_label):
   SurrogatesBaseApprox(problem_db, shared_data, approx_label)
 {
-  surrogateOpts.set("max degree",
-		    static_cast<int>(problem_db.get_short("model.surrogate.polynomial_order"))
-		    );
 //  surrogateOpts.set("advanced_options_file",
 //		    problem_db.get_string("model.advanced_options_file"));
 
-  // validate supported metrics
+  // validate supported metrics - can this be ascertained from python? RWH
   std::set<std::string> allowed_metrics =
     { "sum_squared", "mean_squared", "root_mean_squared",
       "sum_abs", "mean_abs", "max_abs",
@@ -59,6 +56,7 @@ SurrogatesPythonApprox::min_coefficients() const
   // TODO (with @dtseidl): This should be based on minimum points
   // needed to build the trend, when present, or some other reasonable
   // default
+  // --- How to determine from python? RWH
   return sharedDataRep->numVars + 1;
 }
 

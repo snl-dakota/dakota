@@ -4301,6 +4301,13 @@
 		  &model_partial_surrogate_export_format;
 		  &model_surrogate_import;
 		</keyword>
+                <keyword  id="experimental_python" name="experimental_python" code="{N_mom(lit,surrogateType_global_exp_python)}" label="Experimental Python"  minOccurs="1" >
+		  <keyword  id="options_file" name="options_file" code="{N_mom(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
+		    <param type="INPUT_FILE" />
+		  </keyword>
+		  &model_partial_surrogate_export_format;
+		  &model_surrogate_import;
+		</keyword>
               </oneOf>
               <keyword  id="domain_decomposition" name="domain_decomposition" code="{N_mom(true,domainDecomp)}" label="Domain Decomposition"  minOccurs="0" complexity="1">
 		<keyword  id="cell_type" name="cell_type" code="{N_mom(str,decompCellType)}" label="Local Cell Type"  minOccurs="0">

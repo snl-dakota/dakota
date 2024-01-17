@@ -6506,6 +6506,23 @@ KEYWORD model {N_mom3(start,0,stop)}
           binary_archive {N_mom(augment_utype,modelImportFormat_BINARY_ARCHIVE)}
          ]
        )
+      |
+      ( experimental_python {N_mom(lit,surrogateType_global_exp_python)}
+        [ options_file STRING {N_mom(str,advancedOptionsFilename)} ]
+        [ export_model {N_mom(true,exportSurrogate)}
+          [ filename_prefix STRING {N_mom(str,modelExportPrefix)} ]
+          ( formats {0}
+            [ text_archive {N_mom(augment_utype,modelExportFormat_TEXT_ARCHIVE)} ]
+            [ binary_archive {N_mom(augment_utype,modelExportFormat_BINARY_ARCHIVE)} ]
+           )
+         ]
+        [ import_model {N_mom(true,importSurrogate)}
+          [ filename_prefix STRING {N_mom(str,modelImportPrefix)} ]
+          text_archive {N_mom(augment_utype,modelImportFormat_TEXT_ARCHIVE)}
+          |
+          binary_archive {N_mom(augment_utype,modelImportFormat_BINARY_ARCHIVE)}
+         ]
+       )
       [ domain_decomposition {N_mom(true,domainDecomp)}
         [ cell_type STRING {N_mom(str,decompCellType)} ]
         [ support_layers INTEGER {N_mom(int,decompSupportLayers)} ]
