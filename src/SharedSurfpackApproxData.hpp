@@ -46,6 +46,7 @@ class SharedSurfpackApproxData: public SharedApproxData
   friend class SurrogatesBaseApprox;
   friend class SurrogatesGPApprox;
   friend class SurrogatesPolyApprox;
+  friend class SurrogatesPythonApprox;
 
 public:
 

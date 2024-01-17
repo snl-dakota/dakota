@@ -55,9 +55,10 @@ class SharedApproxData
   friend class SurfpackApproximation;
 #endif // HAVE_SURFPACK
 #ifdef HAVE_DAKOTA_SURROGATES
-  friend class SurrogatesGPApprox;
+  friend class SurrogatesGPApprox; // consolidate these into the base only - RWH
   friend class SurrogatesBaseApprox;
   friend class SurrogatesPolyApprox;
+  friend class SurrogatesPythonApprox;
 #endif // HAVE_DAKOTA_SURROGATES
 
 public:

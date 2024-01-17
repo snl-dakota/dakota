@@ -7,22 +7,22 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "DakotaSurrogatesPoly.hpp"
+#include "DakotaSurrogatesPython.hpp"
 
 #include "DakotaVariables.hpp"
 #include "ProblemDescDB.hpp"
 #include "SharedSurfpackApproxData.hpp"
 
 // Headers from Surrogates module
-#include "SurrogatesPolynomialRegression.hpp"
+#include "SurrogatesPython.hpp"
  
 using dakota::MatrixXd;
 
 namespace Dakota {
 
 
-SurrogatesPolyApprox::
-SurrogatesPolyApprox(const ProblemDescDB& problem_db,
+SurrogatesPythonApprox::
+SurrogatesPythonApprox(const ProblemDescDB& problem_db,
 		const SharedApproxData& shared_data,
 		const String& approx_label):
   SurrogatesBaseApprox(problem_db, shared_data, approx_label)
@@ -46,15 +46,15 @@ SurrogatesPolyApprox(const ProblemDescDB& problem_db,
 
 
 /// On-the-fly constructor
-SurrogatesPolyApprox::
-SurrogatesPolyApprox(const SharedApproxData& shared_data):
+SurrogatesPythonApprox::
+SurrogatesPythonApprox(const SharedApproxData& shared_data):
   SurrogatesBaseApprox(shared_data)
 {
 }
 
 
 int
-SurrogatesPolyApprox::min_coefficients() const
+SurrogatesPythonApprox::min_coefficients() const
 {
   // TODO (with @dtseidl): This should be based on minimum points
   // needed to build the trend, when present, or some other reasonable
@@ -63,7 +63,7 @@ SurrogatesPolyApprox::min_coefficients() const
 }
 
 void
-SurrogatesPolyApprox::build()
+SurrogatesPythonApprox::build()
 {
   // clear any imported model mapping
   modelIsImported = false;
@@ -75,11 +75,11 @@ SurrogatesPolyApprox::build()
 
   // construct the surrogate
   if (!advanced_options_file.empty()) {
-    model.reset(new dakota::surrogates::PolynomialRegression
+    model.reset(new dakota::surrogates::Python
 	        (vars, resp, advanced_options_file));
   }
   else {
-    model.reset(new dakota::surrogates::PolynomialRegression
+    model.reset(new dakota::surrogates::Python
 	        (vars, resp, surrogateOpts));
   }
 }
