@@ -140,7 +140,8 @@ DataMethodRep::DataMethodRep():
   expansionOrder(USHRT_MAX), collocationPoints(SZ_MAX),
   expansionSamples(SZ_MAX), truthPilotConstraint(false),
   dagRecursionType(NO_GRAPH_RECURSION), dagDepthLimit(1),
-  modelSelectType(NO_MODEL_SELECTION), ensembleSampSolnMode(ONLINE_PILOT),
+  modelSelectType(NO_MODEL_SELECTION), pilotGroupSampling(SHARED_PILOT),
+  ensembleSampSolnMode(ONLINE_PILOT),
   allocationTarget(TARGET_MEAN), useTargetVarianceOptimizationFlag(false),
   qoiAggregation(QOI_AGGREGATION_SUM),
   convergenceToleranceType(CONVERGENCE_TOLERANCE_TYPE_RELATIVE),
@@ -328,8 +329,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << numberOfBits << scrambleSize << joe_kuo << sobol_order_2
     << grayCodeOrdering << dOptimal << numCandidateDesigns //<< reliabilitySearchType
     << reliabilityIntegration << integrationRefine << refineSamples
-    << optSubProbSolver << numericalSolveMode
-    << pilotSamples << ensembleSampSolnMode << truthPilotConstraint
+    << optSubProbSolver << numericalSolveMode << pilotSamples
+    << pilotGroupSampling << ensembleSampSolnMode << truthPilotConstraint
     << dagRecursionType << dagDepthLimit << modelSelectType
     << multilevAllocControl << multilevEstimatorRate
     << multilevDiscrepEmulation << finalStatsType << finalMomentsType
@@ -505,8 +506,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> numberOfBits >> scrambleSize >> joe_kuo >> sobol_order_2
     >> grayCodeOrdering >> dOptimal >> numCandidateDesigns //>> reliabilitySearchType
     >> reliabilityIntegration >> integrationRefine >> refineSamples
-    >> optSubProbSolver >> numericalSolveMode
-    >> pilotSamples >> ensembleSampSolnMode >> truthPilotConstraint
+    >> optSubProbSolver >> numericalSolveMode >> pilotSamples
+    >> pilotGroupSampling >> ensembleSampSolnMode >> truthPilotConstraint
     >> dagRecursionType >> dagDepthLimit >> modelSelectType
     >> multilevAllocControl >> multilevEstimatorRate
     >> multilevDiscrepEmulation >> finalStatsType >> finalMomentsType
@@ -677,8 +678,8 @@ void DataMethodRep::write(std::ostream& s) const
     << importExpansionFile << exportExpansionFile << sampleType << dOptimal
     << numCandidateDesigns //<< reliabilitySearchType
     << reliabilityIntegration << integrationRefine << refineSamples
-    << optSubProbSolver << numericalSolveMode
-    << pilotSamples << ensembleSampSolnMode << truthPilotConstraint
+    << optSubProbSolver << numericalSolveMode << pilotSamples
+    << pilotGroupSampling << ensembleSampSolnMode << truthPilotConstraint
     << dagRecursionType << dagDepthLimit << modelSelectType
     << multilevAllocControl << multilevEstimatorRate
     << multilevDiscrepEmulation << finalStatsType << finalMomentsType

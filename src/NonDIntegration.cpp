@@ -91,7 +91,7 @@ void NonDIntegration::core_run()
 
   // convenience function from Analyzer for evaluating parameter sets.  Data
   // flags are set to be compatible with DataFitSurrModel::build_global().
-  evaluate_parameter_sets(iteratedModel, true, false);
+  evaluate_parameter_sets(iteratedModel);
 
   // Needed for general use outside of NonDPolynomialChaos
   //if (standAloneMode)

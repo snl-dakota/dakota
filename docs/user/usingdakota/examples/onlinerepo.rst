@@ -1,12 +1,9 @@
-""""""""""""""""""""""""""
-Online Examples Repository
-""""""""""""""""""""""""""
+"""""""""""""""""""""""
+Online Examples Library
+"""""""""""""""""""""""
 
-If you are internal to Sandia, we recommend accessing the official Examples Library
-`directly on gitlab-ex <https://gitlab-ex.sandia.gov/dakota/dakota-examples>`__. Library content has
-been tailored to render correctly there, and any additions or changes we make to examples
-will be available immediately. On Gitlab, we recommend browsing the folder
-structure or using search to find what you are looking for.
+Examples of Dakota inputs, drivers, and related tools along with explanations
+are provided in our `Examples Library <https://github.com/snl-dakota/dakota-examples/>`__.
 
 ============
 Organization
@@ -29,8 +26,8 @@ Contributing Dakota Examples
 ============================
 
 If you've created an example that you feel may be of value to others, we invite you
-to submit it for inclusion in the Library. Please contact the user support mailing
-list, `dakota-users@software.sandia.gov <mnailto:dakota-users@software.sandia.gov>`__.
+to submit it for inclusion in the Library. Drop us a line on our
+`Discussions page <https://github.com/orgs/snl-dakota/discussions>`__.
 
 **See also:**
 

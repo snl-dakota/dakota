@@ -276,7 +276,7 @@ void NonDAdaptImpSampling::core_run()
     // {get,evaluate}_samples() used elsewhere, since this initial LHS
     // evaluates all response fns, not just the active resp fn being refined.
     get_parameter_sets(uSpaceModel); // generates numSamples points
-    evaluate_parameter_sets(uSpaceModel, true, false);
+    evaluate_parameter_sets(uSpaceModel);
     compute_statistics(allSamples, allResponses);
 
     init_fns.sizeUninitialized(numSamples);

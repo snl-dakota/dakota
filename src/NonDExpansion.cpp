@@ -1515,7 +1515,7 @@ void NonDExpansion::multifidelity_individual_refinement()
     NLev[step] = uSpaceModel.approximation_data(0).points(); // first QoI
   }
   // cost specification is optional for multifidelity_expansion()
-  RealVector cost;  query_cost(num_steps, multilev, cost); // if provided
+  RealVector cost;  query_cost(num_steps, seq_type, cost); // if provided
   compute_equivalent_cost(NLev, cost); // compute equivalent # of HF evals
 }
 
@@ -1534,7 +1534,7 @@ void NonDExpansion::multifidelity_integrated_refinement()
   if (multilev) form = secondary_index;
   else          lev  = secondary_index;
 
-  RealVector cost;  configure_cost(num_steps, multilev, cost);
+  RealVector cost;  configure_cost(num_steps, seq_type, cost);
 
   // Initialize all levels.  Note: configure_indices() is used for completeness
   // (uSpaceModel.active_model_key(...) is sufficient for current grid
@@ -1634,7 +1634,7 @@ void NonDExpansion::multilevel_regression()
 
   // configure metrics and cost for each step in the sequence
   RealVector cost, level_metrics(num_steps);
-  configure_cost(num_steps, multilev, cost);
+  configure_cost(num_steps, seq_type, cost);
 
   // virtual: base implementation clears keys, assigns stats type, et al.
   initialize_ml_regression(num_steps, import_pilot);
@@ -1649,7 +1649,7 @@ void NonDExpansion::multilevel_regression()
 
   // now converge on sample counts per level (NLev)
   while ( mlmfIter <= maxIterations &&
-	  ( Pecos::l1_norm(delta_N_l) || (mlmfIter == 0 && import_pilot) ) ) {
+	  ( !zeros(delta_N_l) || (mlmfIter == 0 && import_pilot) ) ) {
 
     sum_root_var_cost = 0.;
     for (step=0; step<num_steps; ++step) {

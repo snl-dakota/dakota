@@ -505,14 +505,16 @@ set(iterator_src DakotaIterator.cpp DakotaAnalyzer.cpp DakotaPStudyDACE.cpp
     NonDExpansion.cpp NonDPolynomialChaos.cpp NonDStochCollocation.cpp
     NonDMultilevelPolynomialChaos.cpp NonDMultilevelStochCollocation.cpp
     NonDSurrogateExpansion.cpp NonDCalibration.cpp NonDBayesCalibration.cpp
-    NonDWASABIBayesCalibration.cpp NonDSampling.cpp NonDLHSSampling.cpp 
+    NonDWASABIBayesCalibration.cpp NonDSampling.cpp NonDLHSSampling.cpp
     NonDLowDiscrepancySampling.cpp NonDEnsembleSampling.cpp
     NonDHierarchSampling.cpp NonDMultilevelSampling.cpp
     NonDMultilevControlVarSampling.cpp NonDNonHierarchSampling.cpp
-    NonDACVSampling.cpp NonDGenACVSampling.cpp NonDMultifidelitySampling.cpp
-    NonDAdaptImpSampling.cpp NonDGPImpSampling.cpp NonDPOFDarts.cpp
-    NonDRKDDarts.cpp DakotaMinimizer.cpp DakotaOptimizer.cpp
-    DakotaTraitsBase.cpp DakotaLeastSq.cpp NonlinearCGOptimizer.cpp
+    NonDMultifidelitySampling.cpp NonDACVSampling.cpp
+    NonDGenACVSampling.cpp NonDMultilevBLUESampling.cpp
+    NonDAdaptImpSampling.cpp NonDGPImpSampling.cpp
+    NonDPOFDarts.cpp NonDRKDDarts.cpp
+    DakotaMinimizer.cpp DakotaOptimizer.cpp
+    DakotaTraitsBase.cpp DakotaLeastSq.cpp NonlinearCGOptimizer.cpp 
     SurrBasedMinimizer.cpp SurrBasedLocalMinimizer.cpp SurrBasedLevelData.cpp
     HierarchSurrBasedLocalMinimizer.cpp DataFitSurrBasedLocalMinimizer.cpp
     SurrBasedGlobalMinimizer.cpp EffGlobalMinimizer.cpp OptDartsOptimizer.cpp

@@ -278,11 +278,33 @@ void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
   if (!statsFlag)
     return;
 
-  bool pilot_projection = (pilotMgmtMode == PILOT_PROJECTION),
-       discrep_flag     = discrepancy_sample_counts(),
+  bool pilot_projection = (pilotMgmtMode  == PILOT_PROJECTION),
        cv_projection    = (finalStatsType == ESTIMATOR_PERFORMANCE),
        projections      = (pilot_projection || cv_projection);
   String summary_type = (pilot_projection) ? "Projected " : "Online ";
+
+  // model-based allocation methods, e.g. ML, MF, MLMF, ACV, GenACV
+  print_multimodel_summary(s, summary_type, projections);
+  // group-based allocation methods, e.g. ML BLUE
+  print_multigroup_summary(s, summary_type, projections);
+  // output performance of ensemble estimator
+  print_variance_reduction(s);
+
+  if (!projections) {
+    s << "\nStatistics based on multilevel sample set:\n";
+    //print_statistics(s);
+    print_moments(s, "response function",
+		  iteratedModel.truth_model().response_labels());
+    archive_moments();
+  }
+}
+
+
+void NonDEnsembleSampling::
+print_multimodel_summary(std::ostream& s, const String& summary_type,
+			 bool projections)
+{
+  bool discrep_flag = discrepancy_sample_counts();
 
   // Always report allocated, then optionally report actual.
   // Any offline pilot samples (N_pilot in *_offline()) are excluded.
@@ -303,16 +325,6 @@ void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
       << std::scientific << std::setprecision(write_precision) << equivHFEvals
       << '\n';
     //archive_incurred_equiv_hf_evals(equivHFEvals);
-  }
-
-  print_variance_reduction(s);
-
-  if (!projections) {
-    s << "\nStatistics based on multilevel sample set:\n";
-    //print_statistics(s);
-    print_moments(s, "response function",
-		  iteratedModel.truth_model().response_labels());
-    archive_moments();
   }
 }
 

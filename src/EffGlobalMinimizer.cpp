@@ -1,12 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014 Sandia Corporation.
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2023
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Edited by:   Anh Tran in 2020 for parallelization
 
 #include "EffGlobalMinimizer.hpp"
 #include "dakota_system_defs.hpp"
