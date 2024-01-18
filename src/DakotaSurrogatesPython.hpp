@@ -45,6 +45,8 @@ protected:
   ///  Do the build
   void build() override;
 
+  /// Python module filename
+  String moduleFile;
 };
 
 } // namespace Dakota

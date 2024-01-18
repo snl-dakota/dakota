@@ -13,68 +13,31 @@
 namespace dakota {
 namespace surrogates {
 
-Python::Python(const ParameterList& param_list) {
-  default_options();
-  configOptions = param_list;
+Python::Python(const std::string& module_name) :
+  moduleFilename(module_name),
+  ownPython(false),
+  pyModuleActive(false)
+{
+  initialize_python();
 }
 
 
 Python::Python(const MatrixXd& samples,
                const MatrixXd& response,
-               const ParameterList& param_list)
+               const std::string& module_name) :
+  moduleFilename(module_name),
+  ownPython(false),
+  pyModuleActive(false)
 {
-  default_options();
-  configOptions = param_list;
+  initialize_python();
   build(samples, response);
 }
 
 
-void Python::build(const MatrixXd& samples,
-                   const MatrixXd& response)
+void Python::initialize_python()
 {
-  // Hard-coded module and method for developement purposes - RWH
-  const std::string dummy_spec("driver_surrogates:construct");
-  if( !py11Active )
-  {
-    size_t pos = dummy_spec.find(":");
-    std::string module_name = dummy_spec.substr(0,pos);
-    std::string function_name = dummy_spec.substr(pos+1);
-
-    //py::module_ module = py::module_::import(module_name.c_str());
-    py::object module = py::module_::import(module_name.c_str());
-    py::function callback_fn = module.attr(function_name.c_str());
-    py11CallBack = callback_fn;
-    py11Active = true;
-  }
-  assert( py11Active );
-  assert( Py_IsInitialized() );
-  //std::cout << "samples: " << samples << std::endl;
-  py11CallBack(samples, response);
-}
-
-
-VectorXd Python::value(const MatrixXd& eval_points,
-                       const int qoi)
-{
-  /* Surrogate models don't yet support multiple responses */
-  silence_unused_args(qoi);
-  assert(qoi == 0);
-
-  const std::string dummy_spec("driver_surrogates:predict");
-  size_t pos = dummy_spec.find(":");
-  std::string module_name = dummy_spec.substr(0,pos);
-  std::string function_name = dummy_spec.substr(pos+1);
-
-  py::object module = py::module_::import(module_name.c_str());
-  py::function callback_fn = module.attr(function_name.c_str());
-
-  return callback_fn(eval_points).cast<VectorXd>();
-}
-
-
-void Python::default_options() {
   ownPython = false;
-  py11Active = false;
+  pyModuleActive = false;
   if (!Py_IsInitialized()) {
     py::initialize_interpreter();
     ownPython = true;
@@ -88,27 +51,63 @@ void Python::default_options() {
         "Error: Could not initialize Python for surrogates use."));
     }
   }
+  if (!pyModuleActive) {
+    pyModule = py::module_::import(moduleFilename.c_str());
+    pyModuleActive = true;
+  }
 }
 
-MatrixXd Python::gradient(const MatrixXd& eval_points,
-                                        const int qoi) {
+void Python::build(const MatrixXd& samples,
+                   const MatrixXd& response)
+{
+  assert( pyModuleActive );
+  assert( Py_IsInitialized() );
+
+  // Hard-coded method for now; could expose to user - RWH
+  const std::string fn_name("construct");
+  py::function callback_fn = pyModule.attr(fn_name.c_str());
+  pyModuleActive = true;
+  callback_fn(samples, response);
+}
+
+
+VectorXd Python::value(const MatrixXd& eval_points,
+                       const int qoi) {
+  assert( pyModuleActive );
+  assert( Py_IsInitialized() );
+
   /* Surrogate models don't yet support multiple responses */
   silence_unused_args(qoi);
   assert(qoi == 0);
 
-  const std::string dummy_spec("driver_surrogates:gradient");
-  size_t pos = dummy_spec.find(":");
-  std::string module_name = dummy_spec.substr(0,pos);
-  std::string function_name = dummy_spec.substr(pos+1);
+  // Hard-coded method for now; could expose to user - RWH
+  const std::string fn_name("predict");
+  py::function callback_fn = pyModule.attr(fn_name.c_str());
+  return callback_fn(eval_points).cast<VectorXd>();
+}
 
-  py::object module = py::module_::import(module_name.c_str());
-  py::function callback_fn = module.attr(function_name.c_str());
 
+MatrixXd Python::gradient(const MatrixXd& eval_points,
+                          const int qoi) {
+  assert( pyModuleActive );
+  assert( Py_IsInitialized() );
+
+  /* Surrogate models don't yet support multiple responses */
+  silence_unused_args(qoi);
+  assert(qoi == 0);
+
+  // Hard-coded method for now; could expose to user - RWH
+  const std::string fn_name("gradient");
+  py::function callback_fn = pyModule.attr(fn_name.c_str());
   return callback_fn(eval_points).cast<MatrixXd>();
 }
 
+
 MatrixXd Python::hessian(const MatrixXd& eval_point,
-                                       const int qoi) {
+                         const int qoi) {
+  assert( pyModuleActive );
+  assert( Py_IsInitialized() );
+
   silence_unused_args(eval_point);
   silence_unused_args(qoi);
   assert(qoi == 0);

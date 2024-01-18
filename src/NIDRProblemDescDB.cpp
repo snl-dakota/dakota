@@ -7522,6 +7522,7 @@ static String
 	MP_(krigingOptMethod),
 	MP_(modelExportPrefix),
 	MP_(modelImportPrefix),
+        MP_(moduleFilename),
 	MP_(optionalInterfRespPointer),
 	MP_(propagationModelPointer),
 	MP_(refineCVMetric),

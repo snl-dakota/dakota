@@ -37,26 +37,31 @@ class Python : public Surrogate {
  public:
 
   /**
-   * \brief Constructor that sets configOptions and does not build.
+   * \brief Constructor that sets moduleFilename and does not build.
    *
-   * \param[in] options List that overrides entries in defaultConfigOptions.
+   * \param[in] module_name Name of python module file containing callback functions
    */
-  Python(const ParameterList& options);
+  Python(const std::string& mudule_name);
 
   /**
-   * \brief Constructor sets configOptions and builds the python surrogate.
+   * \brief Constructor sets moduleFilename and builds the python surrogate.
    *
    * \param[in] samples Matrix of data for surrogate construction - (num_samples
    * by num_features) \param[in] response Vector of targets for surrogate
    * construction - (num_samples by num_qoi = 1; only 1 response is supported
-   * currently). \param[in] options List that overrides entries in
-   * defaultConfigOptions
+   * currently). \param[in] module_name Name of python module file
+   * containing callback functions
    */
   Python(const MatrixXd& samples, const MatrixXd& response,
-                       const ParameterList& options);
+                       const std::string& module_name);
 
   /// Default destructor
   ~Python() { }
+
+  /// Construct and populate the defaultConfigOptions.
+  void default_options() override {
+    return initialize_python();
+  }
 
   /**
    * \brief Build the python surrogate using specified build data.
@@ -127,23 +132,30 @@ class Python : public Surrogate {
   }
 
   std::shared_ptr<Surrogate> clone() const override {
-    return std::make_shared<Python>(configOptions);
+    return std::make_shared<Python>(moduleFilename);
   }
 
  private:
 
   // --------------- Python Setup --------------------
+
+  /// Name of python callback module file
+  std::string moduleFilename;
+
   /// true if this class created the interpreter instance
   bool ownPython;
-  /// callback function for analysis driver
-  py::function py11CallBack;
 
-  bool py11Active;
+  /// true if python callback module is valid
+  bool pyModuleActive;
+
+  /// module handle for callbacks
+  py::object pyModule;
+
 
   // -------------------------------------------------
 
-  /// Construct and populate the defaultConfigOptions.
-  void default_options() override;
+  /// Initialize python interpreter and callback module
+  void initialize_python();
 
   /// Verbosity level.
   int verbosity;

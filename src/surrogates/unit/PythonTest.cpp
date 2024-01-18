@@ -25,11 +25,13 @@ void PythonRegressionSurrogate_straight_line_fit(std::string scaler_type) {
   response = (response.array() + 2.0).matrix();  // specify a y-intercept of 2.0
 
   Teuchos::ParameterList config_options("Python Test Parameters");
-  //  TODO: propagate params to python...
   config_options.set("verbose", 1);
+  //  TODO: propagate params to python...
+
   std::cout << "line_vector: " << line_vector << std::endl;
   std::cout << "response: " << response << std::endl;
-  Python pr(line_vector, response, config_options);
+  const std::string module_name = "driver_surrogates";
+  Python pr(line_vector, response, module_name);
 
   VectorXd eval_pts = VectorXd::LinSpaced(5, 0, 1);
   VectorXd expected_vals = 1.23*eval_pts;

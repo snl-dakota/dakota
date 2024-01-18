@@ -4330,6 +4330,9 @@
 		  <keyword  id="options_file" name="options_file" code="{N_mom(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
 		    <param type="INPUT_FILE" />
 		  </keyword>
+                  <keyword  id="module_file" name="module_file" code="{N_mom(str,moduleFilename)}" label="Python Module File"  minOccurs="1" >
+                    <param type="INPUT_FILE" />
+                  </keyword>
 		  &model_partial_surrogate_export_format;
 		  &model_surrogate_import;
 		</keyword>

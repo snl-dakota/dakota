@@ -308,6 +308,9 @@ public:
   /// file containing advanced surrogate option overrides
   String advancedOptionsFilename;
 
+  /// file containing python module methods used by python surrogates
+  String moduleFilename;
+
   // nested models
 
   /// string pointer to the responses specification used by the optional
