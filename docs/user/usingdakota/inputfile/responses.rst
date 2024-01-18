@@ -253,7 +253,7 @@ similarly validated by the ``labeled`` keyword when specified.
 
 The format of the numeric fields may be floating point or scientific
 notation. In the latter case, acceptable exponent characters are ``E``
-or ``e.`` A common problem when dealing with Fortran programs is that
+or ``e``. A common problem when dealing with Fortran programs is that
 a C++ read of a numeric field using ``D`` or ``d`` as the exponent
 (i.e., a double precision value from Fortran) may fail or be truncated.
 In this case, the ``D`` exponent characters must be replaced either

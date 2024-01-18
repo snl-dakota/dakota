@@ -43,15 +43,13 @@ quantification studies with only minor modification to the input file.
 In addition, the response data sets may include gradients and Hessians
 of the response functions, which will be catalogued by the parameter
 study. This allows for several different approaches to "sensitivity
-analysis": (1) the variation of function values over parameter ranges
-provides a global assessment as to the sensitivity of the functions to
-the parameters, (2) derivative information can be computed numerically,
-provided analytically by the simulator, or both (mixed gradients) in
-directly determining local sensitivity information at a point in
-parameter space, and (3) the global and local assessments can be
-combined to investigate the variation of derivative quantities through
-the parameter space by computing sensitivity information at multiple
-points.
+analysis": 
+
+1. the variation of function values over parameter ranges provides a global assessment as to the sensitivity of the functions to the parameters, 
+
+2. derivative information can be computed numerically, provided analytically by the simulator, or both (mixed gradients) in directly determining local sensitivity information at a point in parameter space, and 
+
+3. the global and local assessments can be combined to investigate the variation of derivative quantities through the parameter space by computing sensitivity information at multiple points.
 
 Parameter studies can also
 be used for investigating nonsmoothness in simulation response

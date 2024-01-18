@@ -12,34 +12,36 @@ applications. Dakota also offers more advanced algorithms, e.g., to
 manage multi-objective optimization or perform surrogate-based
 minimization.  This chapter summarizes optimization problem
 formulation, standard algorithms available in Dakota (mostly through
-included third-party libraries, see Section 6.5 of the User's Manual), some
+included third-party libraries, see :ref:`opt:libraries`), some
 advanced capabilities, and offers usage guidelines.
 
-\section OptFormulations Optimization Formulations
+.. _`OptFormulations`:
+
+Optimization Formulations
+-------------------------
 
 This section provides a basic introduction to the mathematical
 formulation of optimization, problems. The primary goal of this
 section is to introduce terms relating to these topics, and is not
 intended to be a description of theory or numerical algorithms. For
 further details,
-consult :cite:p:`Aro89` , :cite:p:`Gil81`, :cite:p:`Haf92`, :cite:p:`Noc99`, and
-:cite:p:`Van84`.
+consult :cite:p:`Aro89,Gil81,Haf92,Noc99,Van84`.
 
 A general optimization problem is formulated as follows:
 
 .. math::
+   :label: optimformulation
 
-  {eqnarray}{
-  \hbox{minimize:} & & f(\mathbf{x})\nonumber\\
-  & & \mathbf{x} \in \Re^{n}\nonumber\\
-  \hbox{subject to:} & &
-  \mathbf{g}_{L} \leq \mathbf{g(x)} \leq \mathbf{g}_U\nonumber\\
-  & & \mathbf{h(x)}=\mathbf{h}_{t}\label{opt:formulations:equation01}\\
-  & & \mathbf{a}_{L} \leq \mathbf{A}_i\mathbf{x} \leq
-  \mathbf{a}_U\nonumber\\
-  & & \mathbf{A}_{e}\mathbf{x}=\mathbf{a}_{t}\nonumber\\
-  & & \mathbf{x}_{L} \leq \mathbf{x} \leq \mathbf{x}_U\nonumber
-  }
+     \hbox{minimize:} & & f(\mathbf{x})\nonumber\\
+     & & \mathbf{x} \in \Re^{n}\nonumber\\
+     \hbox{subject to:} & &
+     \mathbf{g}_{L} \leq \mathbf{g(x)} \leq \mathbf{g}_U\nonumber\\
+     & & \mathbf{h(x)}=\mathbf{h}_{t}\label{opt:formulations:equation01}\\
+     & & \mathbf{a}_{L} \leq \mathbf{A}_i\mathbf{x} \leq
+     \mathbf{a}_U\nonumber\\
+     & & \mathbf{A}_{e}\mathbf{x}=\mathbf{a}_{t}\nonumber\\
+     & & \mathbf{x}_{L} \leq \mathbf{x} \leq \mathbf{x}_U\nonumber
+
 
 where vector and matrix terms are marked in bold typeface. In this
 formulation, :math:`\mathbf{x}=[x_{1},x_{2},\ldots,x_{n}]`  is an
@@ -73,7 +75,7 @@ constraints. Correspondingly, a design point is said to be
 *infeasible* if it violates one or more of the constraints.
 
 Many different methods exist to solve the optimization problem given
-in Section 6.1 of the User's Manual, all of which iterate on
+in :ref:`opt:formulations`, all of which iterate on
 :math:`\mathbf{x}`  in some manner. That is, an initial value for each
 parameter in :math:`\mathbf{x}`  is chosen, the *response quantities*,
 :math:`f(\mathbf{x})` , :math:`\mathbf{g(x)}` , :math:`\mathbf{h(x)}` , are computed, often
@@ -151,15 +153,18 @@ local, multipoint, global, and hierarchical surrogates for use in
 optimization. Finally, sometimes there are multiple objectives that
 one may want to optimize simultaneously instead of a single scalar
 objective.  In this case, one may employ multi-objective methods
-that are described in Section 6.3.1 of the User's Manual.
+that are described in :ref:`opt:additional:multiobjective`.
 
 This overview of optimization approaches underscores that no single
 optimization method or algorithm works best for all types of
-optimization problems. Section 6.4 of the User's Manual offers guidelines for
+optimization problems. :ref:`opt:usage` offers guidelines for
 choosing a Dakota optimization algorithm best matched to your specific
 optimization problem.
 
-\subsection OptFormulationsConstraints Constraint Considerations
+.. _`OptFormulationsConstraints`:
+
+Constraint Considerations
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Dakota's input commands permit the user to specify two-sided nonlinear
 inequality constraints of the form :math:`g_{L_{i}} \leq g_{i}(\mathbf{x})
@@ -204,29 +209,35 @@ active continuous variables, which in this case are the
 *continuous design variables*. This differs from parameter study
 methods (for which all continuous variables are active) and from
 nondeterministic analysis methods (for which the uncertain variables
-are active). Refer to Chapter 11 of the User's Manual for additional
+are active). Refer to :ref:`responses:main` for additional
 information on derivative components and active continuous variables.
 
-\section OptMethods Optimizing with Dakota: Choosing a Method
+.. _`OptMethods`:
+
+Optimizing with Dakota: Choosing a Method
+-----------------------------------------
 
 This section summarizes the optimization methods available in
 Dakota. We group them according to search method and search goal and
 establish their relevance to types of problems. For a summary of this
-discussion, see Section 6.4 of the User's Manual.
+discussion, see :ref:`opt:usage`.
 
-\subsection OptMethodsGradient Gradient-Based Local Methods
+.. _`OptMethodsGradient`:
+
+Gradient-Based Local Methods
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Gradient-based optimizers are best suited for efficient navigation to
 a local minimum in the vicinity of the initial point.  They are not
 intended to find global optima in nonconvex design spaces.  For global
-optimization methods, see Section 6.2.3 of the User's Manual.
+optimization methods, see :ref:`opt:methods:gradientfree:global`.
 Gradient-based optimization methods are highly efficient, with the
 best convergence rates of all of the local optimization methods, and
 are the methods of choice when the problem is smooth, unimodal, and
 well-behaved. However, these methods can be among the least robust
 when a problem exhibits nonsmooth, discontinuous, or multimodal
 behavior.  The derivative-free methods described
-in Section 6.2.2 of the User's Manual are more appropriate for
+in :ref:`opt:methods:gradientfree:local` are more appropriate for
 problems with these characteristics.
 
 Gradient accuracy is a critical factor for gradient-based optimizers,

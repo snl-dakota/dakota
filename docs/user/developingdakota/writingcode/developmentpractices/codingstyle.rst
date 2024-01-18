@@ -19,25 +19,25 @@ Class and variable styles
 
 Class names should be composed of two or more descriptive words, with the first character of each word capitalized, e.g.:
 
-.. code-block::
+.. code-block:: cpp
 
    class ClassName;
 
 Class member variables should be composed of two or more descriptive words, with the first character of the second and succeeding words capitalized, e.g.:
 
-.. code-block::
+.. code-block:: cpp
 
    double classMemberVariable;
 
 Temporary (i.e. local) variables are lower case, with underscores separating words in a multiple word temporary variable, e.g.:
 
-.. code-block::
+.. code-block:: cpp
 
    int temporary_variable;
 
 Constants (i.e. parameters) and enumeration values are upper case, with underscores separating words, e.g.:
 
-.. code-block::
+.. code-block:: cpp
 
    const double CONSTANT_VALUE;
 
@@ -46,13 +46,13 @@ Function styles
 
 Function names are lower case, with underscores separating words, e.g.:
 
-.. code-block::
+.. code-block:: cpp
 
    int function_name();
 
 There is no need to distinguish between member and non-member functions by style, as this distinction is usually clear by context. This style convention allows member function names which set and return the value of a similarly-named private member variable, e.g.:
 
-.. code-block::
+.. code-block:: cpp
 
     int memberVariable;
     void member_variable(int a) { // set
@@ -64,7 +64,7 @@ There is no need to distinguish between member and non-member functions by style
 
 In cases where the data to be set or returned is more than a few bytes, it is highly desirable to employ const references to avoid unnecessary copying, e.g.:
 
-.. code-block::
+.. code-block:: cpp
 
     void continuous_variables(const RealVector& c_vars) { // set
       continuousVariables = c_vars;
@@ -75,7 +75,7 @@ In cases where the data to be set or returned is more than a few bytes, it is hi
 
 Note that it is not necessary to always accept the returned data as a const reference. If it is desired to be able change this data, then accepting the result as a new variable will generate a copy, e.g.:
 
-.. code-block::
+.. code-block:: cpp
 
     // reference to continuousVariables cannot be changed
     const RealVector& c_vars = model.continuous_variables();
@@ -85,9 +85,9 @@ Note that it is not necessary to always accept the returned data as a const refe
 Miscellaneous
 -------------
 
-Appearance of typedefs to redefine or alias basic types is isolated to a few header files (data_types.h, template_defs.h), so that issues like program precision can be changed by changing a few lines of typedefs rather than many lines of code, e.g.:
+Appearance of typedefs to redefine or alias basic types is isolated to a few header files (``data_types.h``, ``template_defs.h``), so that issues like program precision can be changed by changing a few lines of typedefs rather than many lines of code, e.g.:
 
-.. code-block::
+.. code-block:: cpp
 
     typedef double Real;
 
@@ -101,7 +101,7 @@ where an external width of 81 gives 80 columns internal to the window and the de
 
 Indenting increments are 2 spaces per indent and comments are aligned with the code they describe, e.g.:
 
-.. code-block::
+.. code-block:: cpp
 
     void abort_handler(int code)
     {
@@ -122,14 +122,14 @@ Indenting increments are 2 spaces per indent and comments are aligned with the c
 
 Also, the continuation of a long command is indented 2 spaces, e.g.:
 
-.. code-block::
+.. code-block:: cpp
 
     const String& iterator_scheduling
       = problem_db.get_string("strategy.iterator_scheduling");
 
 and similar lines are aligned for readability, e.g.:
 
-.. code-block::
+.. code-block:: cpp
 
     cout << "Numerical gradients using " << finiteDiffStepSize*100. << "%"
          << finiteDiffType << " differences\nto be calculated by the "

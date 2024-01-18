@@ -406,7 +406,7 @@ description database from a Dakota input string, e.g.
 
 The input string is then used to create a Dakota environment:
 
-.. code-block::
+.. code-block:: cpp
 
 	// No input file set --> no parsing:
 	Dakota::ProgramOptions opts;
@@ -436,7 +436,7 @@ Executing the environment
 Once an environment is defined, instantiation of Dakota objects and
 population of class data is achieved by executing the study:
 
-.. code-block::
+.. code-block:: cpp
 
 	// Execute the environment
 	env.execute();
@@ -449,7 +449,7 @@ Following execution, the pertinent results are extracted and used to
 test correctness criteria. This is performed using the Boost unit test
 capabilities, e.g.
 
-.. code-block::
+.. code-block:: cpp
 
 	// retrieve the final parameter values
 	const Variables& vars = env.variables_results();
