@@ -998,7 +998,7 @@ print_multigroup_summary(std::ostream& s, const String& summary_type,
   }
 
   if (projections || differ(NLevAlloc, NLevActual)) {
-    s << "<<<<< Actual accumulated samples per model group:\n";
+    s << "<<<<< Online accumulated samples per model group:\n";
     for (g=0; g<num_groups; ++g) {
       const SizetArray& N_G_g = NGroupActual[g];
       if (!N_G_g.empty()) {

@@ -548,7 +548,7 @@ multilevel_control_variate_mc_online_pilot() //_Qcorr()
       // Note: N_alloc_{lf,hf} accumulated upstream due to maxIterations exit
     }
 
-    ++mlmfIter;
+    ++mlmfIter;  advance_relaxation();
     Cout << "\nMLMF MC iteration " << mlmfIter << " HF sample increments:\n"
 	 << delta_N_hf << std::endl;
   }

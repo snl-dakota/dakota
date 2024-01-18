@@ -7089,7 +7089,6 @@ static Method_mp_type
 	MP2p(finalMomentsType,NO_MOMENTS),                 // Pecos enumeration
 	MP2p(finalMomentsType,STANDARD_MOMENTS),           // Pecos enumeration
 	MP2s(finalStatsType,ESTIMATOR_PERFORMANCE),
-	MP2s(finalStatsType,NO_FINAL_STATS),
 	MP2s(finalStatsType,QOI_STATISTICS),
 	MP2p(growthOverride,RESTRICTED),                   // Pecos enumeration
 	MP2p(growthOverride,UNRESTRICTED),                 // Pecos enumeration

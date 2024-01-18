@@ -220,7 +220,7 @@ enum { DESIGN,            //DESIGN_UNIFORM,
 enum { ONE_SIDED_LOWER, ONE_SIDED_UPPER, TWO_SIDED };
 
 // type of final statistics for NonD sampling methods
-enum { NO_FINAL_STATS=0, QOI_STATISTICS, ESTIMATOR_PERFORMANCE };
+enum { DEFAULT_FINAL_STATS=0, QOI_STATISTICS, ESTIMATOR_PERFORMANCE };
 
 // define special values for qoi aggregation norm for sample
 // allocation over levels and QoIs

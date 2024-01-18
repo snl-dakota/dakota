@@ -502,8 +502,8 @@ mfmc_approx_increment(const MFSolutionData& soln,
     numSamples = one_sided_delta(lf_curr, lf_target); // average
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "Approx samples (" << numSamples << ") computed from average "
-	   << "delta between target " << lf_target
-	   << "and current counts:\n" << lf_curr << std::endl;
+	   << "delta between target " << lf_target << " and current counts:\n"
+	   << lf_curr << std::endl;
     size_t N_alloc = one_sided_delta(N_L_alloc_refined[approx], lf_target);
     increment_sample_range(N_L_alloc_refined, N_alloc, approx_sequence,
 			   start, end);
@@ -514,7 +514,7 @@ mfmc_approx_increment(const MFSolutionData& soln,
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "Approx samples (" << numSamples << ") computed from average "
 	   << "delta between target " << lf_target
-	   << "and current allocation = " << lf_curr << std::endl;
+	   << " and current allocation = " << lf_curr << std::endl;
     increment_sample_range(N_L_alloc_refined, numSamples, approx_sequence,
 			   start, end);
   }

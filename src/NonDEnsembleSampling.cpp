@@ -128,6 +128,11 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
   switch (pilotMgmtMode) {
   case ONLINE_PILOT_PROJECTION: case OFFLINE_PILOT_PROJECTION: // no iteration
     maxIterations = 0; //finalCVRefinement = false;
+    if (finalStatsType == QOI_STATISTICS) // currently possible in spec
+      Cerr << "Warning: final_statistics cannot be qoi_statistics in "
+	   << "projection modes.\n         Overriding to performance "
+	   << "projection." << std::endl;
+    finalStatsType = ESTIMATOR_PERFORMANCE;
     break;
   case OFFLINE_PILOT:
     maxIterations = 1; //finalCVRefinement = true;
@@ -138,11 +143,18 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
 	   << std::endl;
       abort_handler(METHOD_ERROR);
     }
+    if (!finalStatsType) finalStatsType = QOI_STATISTICS; // mode default
     break;
-  default: // ONLINE_PILOT
+  case ONLINE_PILOT:
     // MLMF-specific default: don't let allocator get stuck in fine-tuning
     if (maxIterations    == SZ_MAX) maxIterations    = 25;
     //if (maxFunctionEvals == SZ_MAX) maxFunctionEvals = ; // allow inf budget
+    if (!finalStatsType) finalStatsType = QOI_STATISTICS; // mode default
+    break;
+  default:
+    Cerr << "Error: unrecognized pilot solution mode in ensemble sampling."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
     break;
   }
 
@@ -330,7 +342,7 @@ print_multimodel_summary(std::ostream& s, const String& summary_type,
   if (projections || differ(NLevAlloc, NLevActual)) {
     // NLevActual includes successful sample accumulations used for stats
     // equivHFEvals includes incurred cost for evaluations, successful or not
-    print_multilevel_model_summary(s, NLevActual, "Actual accumulated",
+    print_multilevel_model_summary(s, NLevActual, "Online accumulated",
                                    sequenceType, discrep_flag);
     s << "<<<<< Incurred cost in equivalent high fidelity evaluations: "
       << std::scientific << std::setprecision(write_precision) << equivHFEvals

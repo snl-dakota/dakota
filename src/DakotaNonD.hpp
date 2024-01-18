@@ -242,6 +242,9 @@ protected:
 
   /// compute a one-sided sample increment for multilevel methods to
   /// move current sampling level to a new target
+  size_t one_sided_relax_round(Real diff, Real relax_factor = 1.);
+  /// compute a one-sided sample increment for multilevel methods to
+  /// move current sampling level to a new target
   size_t one_sided_delta(Real current, Real target, Real relax_factor = 1.);
   /// compute a one-sided sample increment for multilevel methods to
   /// move current sampling level to a new target
@@ -527,11 +530,24 @@ differ(const Sizet2DArray& N_alloc, const Sizet3DArray& N_actual) const
 
 
 inline size_t NonD::
-one_sided_delta(Real current, Real target, Real relax_factor)
+one_sided_relax_round(Real diff, Real relax_factor)
 {
-  Real diff = target - current;
-  return (diff > 0.) ? (size_t)std::floor(relax_factor * diff + .5) : 0;
+  if (relax_factor == 1.)
+    return (diff > 0.) ? (size_t)std::floor(diff + .5) : 0;
+  else if (diff > 0.) {
+    size_t delta = (size_t)std::floor(relax_factor * diff + .5);
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "Relaxation: diff " << diff << " relaxed with factor "
+	   << relax_factor << " and rounded to " << delta << std::endl;
+    return delta;
+  }
+  else return 0;
 }
+
+
+inline size_t NonD::
+one_sided_delta(Real current, Real target, Real relax_factor)
+{ return one_sided_relax_round(target - current, relax_factor); }
 
 
 inline size_t NonD::
@@ -578,8 +594,7 @@ one_sided_delta(const SizetArray& current, const RealVector& targets,
   }
   */
 
-  return (pow_mean > 0.) ?
-    (size_t)std::floor(relax_factor * pow_mean + .5) : 0; // round
+  return one_sided_relax_round(pow_mean, relax_factor);
 }
 
 
@@ -608,8 +623,7 @@ one_sided_delta(const SizetArray& current, Real target, Real relax_factor,
     break;
   }
 
-  return (pow_mean > 0.) ?
-    (size_t)std::floor(relax_factor * pow_mean + .5) : 0; // round
+  return one_sided_relax_round(pow_mean, relax_factor);
 }
 
 
@@ -646,8 +660,7 @@ one_sided_delta(const Sizet2DArray& current, const RealMatrix& targets,
   }
   // see notes on other finite norms above
 
-  return (pow_mean > 0.) ?
-    (size_t)std::floor(relax_factor * pow_mean + .5) : 0; // round
+  return one_sided_delta(pow_mean, relax_factor);
 }
 */
 
@@ -663,11 +676,9 @@ one_sided_delta(const SizetArray& current, const RealVector& targets,
     abort_handler(METHOD_ERROR);
   }
   if (delta_N.size() != c_len) delta_N.resize(c_len);
-  for (i=0; i<c_len; ++i) {
-    diff_i = targets[i] - (Real)current[i];
-    delta_N[i] = (diff_i > 0.) ?
-      (size_t)std::floor(relax_factor * diff_i + .5) : 0;
-  }
+  for (i=0; i<c_len; ++i)
+    delta_N[i]
+      = one_sided_relax_round(targets[i] - (Real)current[i], relax_factor);
 }
 
 
@@ -682,11 +693,9 @@ one_sided_delta(const Sizet2DArray& current, const RealVector& targets,
     abort_handler(METHOD_ERROR);
   }
   if (delta_N.size() != c_len) delta_N.resize(c_len);
-  for (i=0; i<c_len; ++i) {
-    diff_i = targets[i] - average(current[i]); // avg over all qoi
-    delta_N[i] = (diff_i > 0) ?
-      (size_t)std::floor(relax_factor * diff_i + .5) : 0;
-  }
+  for (i=0; i<c_len; ++i) // avg over all qoi
+    delta_N[i]
+      = one_sided_relax_round(targets[i] - average(current[i]), relax_factor);
 }
 
 

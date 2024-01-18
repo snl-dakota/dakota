@@ -309,11 +309,13 @@ void NonDMultilevelSampling::multilevel_mc_online_pilot() //_Qsum()
   Sizet2DArray N_l_actual;  SizetArray delta_N_l, N_l_alloc;
 
   load_pilot_sample(pilotSamples, numSteps, delta_N_l);
-  while (!zeros(delta_N_l) && mlmfIter <= maxIterations)
+  while (!zeros(delta_N_l) && mlmfIter <= maxIterations) {
     // loop over levels and compute sample increments
     evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1, sequenceCost,
 		    N_l_actual, N_l_actual, N_l_alloc, N_l_alloc,// pilot=online
 		    delta_N_l, var_Y, var_qoi, eps_sq_div_2, true, true);
+    advance_relaxation();
+  }
 
   // Only QOI_STATISTICS requires estimation of moments
   if (finalStatsType == QOI_STATISTICS) {

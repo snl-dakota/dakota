@@ -954,7 +954,8 @@ update_projected_samples(const SizetArray& delta_N_l, //Sizet2DArray& N_actual,
 {
   size_t actual_incr, alloc_incr, offline_N_lwr = 0,
     lev, num_lev = cost.length();
-  if (pilotMgmtMode == OFFLINE_PILOT)
+  if (pilotMgmtMode == OFFLINE_PILOT ||
+      pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
     offline_N_lwr = (finalStatsType == QOI_STATISTICS) ? 2 : 1;
   Real ref_cost = cost[num_lev-1];
 
