@@ -389,7 +389,68 @@ inline void NonDEnsembleSampling::advance_relaxation()
     if (relaxIndex < relaxFactorSequence.length())
       relaxFactor = relaxFactorSequence[relaxIndex];
   }
+
+  // advance factor to unity when encountering a max_iterations constraint
+  // --> optimized accuracy/cost targeted by final iteration
+  // --> avoids additional complexity in finalize_relaxation() below
+  if (mlmfIter == maxIterations && relaxFactor != 1.) {
+    Cerr << "Warning: finalizing relaxation factor due to active "
+	 << "max_iterations constraint." << std::endl;
+    relaxFactor = 1.;
+  }
 }
+
+
+/* Ensure MFSolutionData consistency: estVar and solutionVars are from final
+   numerical solve, which may be inconsistent with a relaxed sample increment.
+   Can either (a) finalize relaxFactor during advancement above or (b) update
+   both estVar and solutionVars for final sample state.  We go with (a) above
+   for now, but this function can implement (b) by:
+   > don't advance sample state to solutionVars (strictly observe user's
+     relaxation and max_iterations specifications).  Instead:
+   > reset estVar and solutionVars to the actual sample state, relaxing both
+     N_H and N_L proportionally.
+   This results in undershooting both accuracy and cost.
+inline void NonDEnsembleSampling::
+finalize_relaxation(MFSolutionData& soln)
+{
+  // if relaxation is inactive or complete, or sample increments are complete,
+  // then soln vars and estvar (from numerical solve) are already consistent
+  // with the sample increment state
+  if (relaxFactor == 1. || numSamples == 0) return;
+
+  // Else termination prior to completion of relaxation sequence --> solution
+  // from numerical solve not fully realized and soln data needs adjustment
+  // prior to final post-processing.
+
+  //Real curr_estvar = soln.average_estimator_variance(); // back out ratio?
+  const RealVector& soln_vars = soln.solution_variables();
+  RealVector delta_N(numGroups);  size_t i;
+  for (i=0; i<numGroups; ++i) {
+    curr_i = (backfillFailures) ? average(NLevActual[i]) : NLevAlloc[i];
+    tgt_i  = soln_vars[i];
+    delta_N[i] = (tgt_i > curr_i) ? tgt_i - curr_i : 0.;
+  }
+  //if (zeros(delta_N)) return;
+
+  // rather than rounded size_t from NLevActual, need either previous real-
+  // valued solver soln or previous real-valued delta_N prior to relaxation
+  //RealVector delta_N = soln_vars - prev_vars,
+  //  relaxed_vars = prev_vars + relaxFactor * delta_N;
+  RealVector relaxed_vars(numGroups, false);
+  Real multiplier = 1. - relaxFactor;
+  for (i=0; i<numGroups; ++i)
+    relaxed_vars[i] = soln_vars[i] - multiplier * delta_N[i];
+  Real relaxed_estvar = average_estimator_variance(relaxed_vars);
+
+  // override last numerical solve with final (real-valued) state
+  soln.solution_variables(relaxed_vars);
+  soln.average_estimator_variance(relaxed_estvar);
+  // ratio of averages rather that average of ratios
+  if (pilotMgmtMode == ONLINE_PILOT || pilotMgmtMode == ONLINE_PILOT_PROJECTION)
+    soln.average_estimator_variance_ratio(relaxed_estvar/average(estVarIter0));
+}
+*/
 
 
 inline void NonDEnsembleSampling::

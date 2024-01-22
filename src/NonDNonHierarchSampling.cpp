@@ -749,24 +749,49 @@ process_model_solution(MFSolutionData& soln, size_t& num_samples)
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
-  num_samples = (truthFixedByPilot) ? 0 :
-    one_sided_delta(avg_N_H, soln.solution_reference(), relaxFactor);
+  size_t soln_incr; // unrelaxed increment from numerical solution
+  if (truthFixedByPilot)
+    soln_incr = num_samples = 0;
+  else {
+    soln_incr = one_sided_delta(avg_N_H, soln.solution_reference());
+    num_samples = (relaxFactor == 1.) ? soln_incr :
+      one_sided_delta(avg_N_H, soln.solution_reference(), relaxFactor);
+  }
 
-  //if (!num_samples) { // metrics not needed unless print_variance_reduction()
+  // **************************************************************************
+  // Introduction of relaxFactor makes the optimal estVar solution inconsistent
+  // with any relaxation of the sample increment that follows
+  // > inconsistency in final reporting (if final relax factor != 1) as well as
+  //   intermediate performance metrics, e.g. estVar ratio below
+  // All NonHierarch: this fn, virtual recover_results() after numerical solve,
+  // print_variance_reduction()/print_estimator_performance(), no_solve defaults
+  // > MFMC analytic: estvar_ratios to estvar using N_H_actual{,_proj}
+  // > ACV/GenACV: print_model_solution()
+  // > ML BLUE:    {process,print}_group_solution()
+  //
+  // Approach:
+  // > Strictly interpret MFSolutionData as optimal soln, preceding any
+  //   enactment of relaxation of the optimal sample increment
+  // > For final post-processing and reporting, re-evaluate estvar/estvar_ratio
+  //   when final relaxFactor is not 1 (for whatever reason) since
+  //   soln.solution_variables() will not be consistent.
+  // **************************************************************************
+
+  //bool converged = (num_samples == 0 || mlmfIter > maxIterations ||
+  //                  pilotMgmtMode != ONLINE_PILOT);
+  //if (converged) { // metrics not needed prior to print_variance_reduction()
 
   // All cases employ projected MC estvar to match the projected nonhier estvar
-  // from N* (where N* may include a num_samples increment not yet performed)
+  // from N* (where N* includes any soln increment not yet performed)
+  // > Since soln.average_estimator_variance() precedes (and ignores subsequent)
+  //   sample increment relaxation, don't use relaxed increments here.
   RealVector proj_mc_estvar;
-  project_mc_estimator_variance(varH, N_H_actual, num_samples, proj_mc_estvar);
+  project_mc_estimator_variance(varH, N_H_actual, soln_incr, proj_mc_estvar);
 
   // Report ratio of averages rather that average of ratios (see notes in
   // print_variance_reduction())
   soln.average_estimator_variance_ratio(soln.average_estimator_variance() /
 					average(proj_mc_estvar)); // (1 - R^2)
-  //RealVector estvar_ratio(numFunctions, false);
-  //for (size_t qoi=0; qoi<numFunctions; ++qoi)
-  //  estvar_ratio[qoi] = 1. - R_sq[qoi];// compute from CF_inv,A->compute_Rsq()
-  //avg_estvar_ratio = average(estvar_ratio);
 
   //}
 }

@@ -384,7 +384,7 @@ acv_approx_increment(const MFSolutionData& soln,
 
   bool   ordered = approx_sequence.empty();
   size_t  approx = (ordered) ? end-1 : approx_sequence[end-1];
-  Real lf_target = soln.solution_variables()[approx];//soln.avgEvalRatios[approx] * soln.avgHFTarget;
+  Real lf_target = soln.solution_variables()[approx];
   // No relaxation for approx increments
   if (backfillFailures) {
     Real lf_curr = average(N_L_actual_refined[approx]);
