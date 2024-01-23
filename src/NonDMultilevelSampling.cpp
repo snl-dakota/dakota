@@ -2111,7 +2111,8 @@ void NonDMultilevelSampling::print_variance_reduction(std::ostream& s)
     break;
   }
   }
-  if (finalStatsType == QOI_STATISTICS) {
+
+  if (finalStatsType == QOI_STATISTICS) { // varH from recover_variance()
     Real     proj_equiv_hf = equivHFEvals + deltaEquivHF,
       avg_budget_mc_estvar = average(varH) / proj_equiv_hf;
     s << "\n Equivalent   MC (" << std::setw(5)

@@ -80,9 +80,19 @@ void NonDACVSampling::core_run()
 
   switch (pilotMgmtMode) {
   case  ONLINE_PILOT: // iterated ACV (default)
+    // For online, ESTIMATOR_PERFORMANCE case is still iterated for N_H, and
+    // therefore differs from ONLINE_PILOT_PROJECTION
     approximate_control_variate_online_pilot();     break;
   case OFFLINE_PILOT: // computes perf for offline/Oracle correlation
-    approximate_control_variate_offline_pilot();    break;
+    switch (finalStatsType) {
+    // since offline is not iterated, the ESTIMATOR_PERFORMANCE case is the
+    // same as OFFLINE_PILOT_PROJECTION --> bypass IntMaps, simplify code
+    case ESTIMATOR_PERFORMANCE:
+      approximate_control_variate_pilot_projection(); break;
+    default:
+      approximate_control_variate_offline_pilot();    break;
+    }
+    break;
   case  ONLINE_PILOT_PROJECTION:
   case OFFLINE_PILOT_PROJECTION:
     approximate_control_variate_pilot_projection(); break;
@@ -189,23 +199,17 @@ void NonDACVSampling::approximate_control_variate_offline_pilot()
   // -----------------------------------
   // Perform "online" sample increments:
   // -----------------------------------
-  // Only QOI_STATISTICS requires application of oversample ratios and
-  // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
-  if (finalStatsType == QOI_STATISTICS) {
-    // perform the shared increment for the online sample profile
-    shared_increment(mlmfIter); // spans ALL models, blocking
-    accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
-			sum_LH, sum_HH, N_H_actual);//, N_LL);
-    N_H_alloc += numSamples;
-    increment_equivalent_cost(numSamples, sequenceCost, 0, numGroups,
-			      equivHFEvals);
-    // perform LF increments for the online sample profile
-    approx_increments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
-		      N_H_alloc, acvSolnData);
-  }
-  else // project online profile including both shared samples and LF increment
-    update_projected_samples(acvSolnData, approxSet, N_H_actual, N_H_alloc,
-			     deltaNActualHF, deltaEquivHF);
+  // QOI_STATISTICS case; ESTIMATOR_PERFORMANCE redirects to _pilot_projection()
+
+  // perform the shared increment for the online sample profile
+  shared_increment(mlmfIter); // spans ALL models, blocking
+  accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
+		      sum_LH, sum_HH, N_H_actual);//, N_LL);
+  N_H_alloc += numSamples;
+  increment_equivalent_cost(numSamples, sequenceCost, 0,numGroups,equivHFEvals);
+  // perform LF increments for the online sample profile
+  approx_increments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
+		    N_H_alloc, acvSolnData);
 }
 
 
@@ -222,18 +226,22 @@ void NonDACVSampling::approximate_control_variate_pilot_projection()
   // --------------------------------------------------------------------
   RealVector sum_H, sum_HH;  RealMatrix sum_L, sum_LH, var_L;
   RealSymMatrixArray sum_LL;
-  if (pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
+  switch (pilotMgmtMode) {
+  case OFFLINE_PILOT: // redirected from _offline_pilot() in core_run()
+  case OFFLINE_PILOT_PROJECTION: {
     SizetArray N_shared_pilot;
     evaluate_pilot(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared_pilot, false);
     compute_LH_statistics(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared_pilot,
 			  var_L, varH, covLL, covLH);
     N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
+    break;
   }
-  else { // ONLINE_PILOT_PROJECTION
+  default: // ONLINE_PILOT_PROJECTION
     evaluate_pilot(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual, true);
     compute_LH_statistics(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual,
 			  var_L, varH, covLL, covLH);
     N_H_alloc = numSamples;
+    break;
   }
   if (onlineCost) update_model_group_costs();
 

@@ -2060,9 +2060,9 @@ void NonDMultilevControlVarSampling::print_variance_reduction(std::ostream& s)
   //  NonDMultifidelitySampling::print_variance_reduction(s);  break;
   default: {
     Real avg_mlmc_estvar0, avg_budget_mc_estvar;
-    String type = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
-		   pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
-                ? "Projected" : "   Online";
+    bool projection = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
+		       pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
+    String type = (projection) ? "Projected" : "   Online";
     size_t wpp7 = write_precision + 7;
     s << "<<<<< Variance for mean estimator:\n";
     switch (pilotMgmtMode) {
@@ -2081,19 +2081,16 @@ void NonDMultilevControlVarSampling::print_variance_reduction(std::ostream& s)
 	<< std::setw(wpp7) << avgEstVar / avg_mlmc_estvar0 << '\n';
       break;
     }
-    if (finalStatsType == QOI_STATISTICS)
-      switch (pilotMgmtMode) {
-      case ONLINE_PILOT: case OFFLINE_PILOT: {
-	Real proj_equiv_hf = equivHFEvals + deltaEquivHF;
-	avg_budget_mc_estvar = average(varH) / proj_equiv_hf;
-	s << " Equivalent     MC (" << std::setw(5)
-	  << (size_t)std::floor(proj_equiv_hf + .5) << " HF samples): "
-	  << std::setw(wpp7) << avg_budget_mc_estvar
-	  << "\n Equivalent MLCVMC / MC ratio:         " << std::setw(wpp7)
-	  << avgEstVar / avg_budget_mc_estvar << '\n';
-	break;
-      }
-      }
+    if (finalStatsType == QOI_STATISTICS // varH from recover_variance()
+	&& !projection) { // not implemented for pilot proj as in MLMC...
+      Real proj_equiv_hf = equivHFEvals + deltaEquivHF;
+      avg_budget_mc_estvar = average(varH) / proj_equiv_hf;
+      s << " Equivalent     MC (" << std::setw(5)
+	<< (size_t)std::floor(proj_equiv_hf + .5) << " HF samples): "
+	<< std::setw(wpp7) << avg_budget_mc_estvar
+	<< "\n Equivalent MLCVMC / MC ratio:         " << std::setw(wpp7)
+	<< avgEstVar / avg_budget_mc_estvar << '\n';
+    }
     break;
   }
   }
