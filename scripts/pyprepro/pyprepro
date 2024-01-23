@@ -1198,8 +1198,8 @@ def _fix_param_name(param,warn=False):
     param = _touni(param) # Ensure the string is unicode in case passed bytes
     
     param0 = param # string are immutable so it won't be affect by changes below
-    param = re.compile("\W",flags=re.UNICODE).sub('_',param) # Allow unicode on python2 (and compile first for 2.6)
-    if re.match("\d",param[0],flags=re.UNICODE):
+    param = re.compile(r"\W",flags=re.UNICODE).sub('_',param) # Allow unicode on python2 (and compile first for 2.6)
+    if re.match(r"\d",param[0],flags=re.UNICODE):
         param = 'i' + param
     while keyword.iskeyword(param):
         param += "_"
