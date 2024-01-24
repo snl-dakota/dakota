@@ -14,6 +14,7 @@ from collections import defaultdict
 import json
 import math
 import keyword
+from textwrap import dedent
 
 sys.dont_write_bytecode = True
 
@@ -24,30 +25,18 @@ if pyv >= (3,):
     xrange = range
     unicode = str
     
-__version__ = '20210218.1'
+__version__ = "20230404.0"
 
 __all__ = ['pyprepro','Immutable','Mutable','ImmutableValDict','dprepro','convert_dakota']
 
 DESCRIPTION="""\
-%(prog)s -- python-based input deck pre-processor and template engine.
+%(prog)s -- Python-based input deck pre-processor and template engine.
 
 version: __version__
 
 """.replace('__version__',__version__)
 
 EPILOG = """\
-Fallback Flags
------------------
-Will also accept `--(left/right)-delimiter` as an alias to the 
-respective parts of `--inline`. 
-
-Include Ordering
-----------------
-All include files are read and set as Immutable immediately. They are read
-in the following order: include files, json-include, python-include.
-Therefore, if a variable is, for example, set in the include file and the 
-python-include, the original value will hold.
-
 Sources:
 --------
 Built from BottlePy's SimpleTemplateEngine[1] with changes to better match
@@ -67,14 +56,13 @@ DEBUGCLI = False
 # These may be changed from within the main function. Globals
 # are *not* an ideal approach, but it makes it easier to combine
 # different Bottle code w/o turning it into its own class
-DEFAULT_FMT = '%0.10g'
-DEFAULT_FMT0 = DEFAULT_FMT # Store the original in case `setfmt` is called
+DEFAULT_FMT0 = DEFAULT_FMT = '%0.10g'
 
-BLOCK_START = '{%'
-BLOCK_CLOSE = '%}'
-LINE_START = '%' 
-INLINE_START = '{'
-INLINE_END = '}'
+DEFAUL_BLOCK_START  = '{%'
+DEFAUL_BLOCK_CLOSE  = '%}'
+DEFAUL_LINE_START   = '%' 
+DEFAUL_INLINE_START = '{'
+DEFAUL_INLINE_END   = '}'
 
 CLI_MODE = False # Reset in the if __name__ == '__main__'
 ###########################################################################
@@ -88,7 +76,9 @@ def pyprepro(tpl,
              env=None,immutable_env=None,
              fmt='%0.10g',
              code='%',code_block='{% %}',inline='{ }',
-             warn=True,output=None):
+             warn=True,output=None,
+             **kwargs
+             ):
     """
     Main pyprepro function.
     
@@ -96,13 +86,13 @@ def pyprepro(tpl,
     ----------
     tpl:
         Either a string representing the template or a filename. Will 
-        automatically read if a filename.
+        automatically read if a filename. If a file object, will read it.
     
     Options:
     --------
     include_files: (filename string or list of filenames)
         Files to be read *first* and take precendance (i.e. set as immutable). 
-        No output from these are printed! See include order below
+        No output from these are printed! See include order below.
     
     json_include: (filename string or list of filenames)
         JSON files of variables to be read that take precendance 
@@ -159,22 +149,30 @@ def pyprepro(tpl,
     Include Order:
     --------------
     All methods of including parameters set them as Immutable before
-    reading the final template file. However, they also have a specific
-    ordering aa follows: include_files, json_include,python_include
-    Therefore, if a parameter is set in the include_file and also set in a
-    json_include, the original value will hold!
+    reading the final template file. The precedence order is based on the order
+    specified in this documentation and *not* the order specified in the 
+    invocation.
     
     """
+    return_env = kwargs.pop('_return_env',False)
+    if kwargs:
+        raise TypeError("Unexpected keywords {}".format(set(kwargs)))
+        
+#     return_env [False]
+#         If True, will *also* return the environment dict. Note that it will be an
+#         ImmutableValDict but can be convered to a regular dict as:
+#             env = dict(**env)
     # (re)set some globals from this function call.
     global DEFAULT_FMT,DEFAULT_FMT0
-    global LINE_START,INLINE_START,INLINE_END,BLOCK_START,BLOCK_CLOSE
-
     DEFAULT_FMT = DEFAULT_FMT0 = fmt
-    LINE_START = code
-    INLINE_START,INLINE_END = inline.split()
-    BLOCK_START,BLOCK_CLOSE = code_block.split()
+
+#   global LINE_START,INLINE_START,INLINE_END,BLOCK_START,BLOCK_CLOSE
+#   LINE_START = code
+#   INLINE_START,INLINE_END = inline.split()
+#   BLOCK_START,BLOCK_CLOSE = code_block.split()
     
-    _check_block_syntax()
+    syntax = {'code':code,'inline':inline,'code_block':code_block}
+    syntax = _check_block_syntax(syntax)
     
     if include_files is None:
         include_files = []
@@ -214,26 +212,13 @@ def pyprepro(tpl,
     # Parse all include files. Do not send in the environment since we will
     # reserve that for later.
     for include in include_files:
-        _,subenv = _template(include,return_env=True)
+        _,subenv = _template(include,return_env=True,syntax=syntax.copy())
         
         # remove the initial variables (even though they will be the same for all
         for init_var in INIT_VARS: # init_vars is a set. May init_vars 
             del subenv[init_var]
         
         # Update the main but set as immutable
-        for key,val in subenv.items():
-            env[key] = Immutable(val)
-    
-    for json_file in json_include:
-        with open(json_file,'rb') as F:
-            subenv = json.loads(_touni(F.read()))
-        for key,val in subenv.items():
-            env[key] = Immutable(val)
-    
-    for python_file in python_include:
-        subenv = dict()
-        with open(python_file,'rb') as F:
-            exec_(F.read(),subenv)
         for key,val in subenv.items():
             env[key] = Immutable(val)
     
@@ -250,16 +235,61 @@ def pyprepro(tpl,
             env[param] = Immutable(val)
         env['DakotaParams'] = subenv
             
+    for json_file in json_include:
+        with open(json_file,'rb') as F:
+            subenv = json.loads(_touni(F.read()))
+        for key,val in subenv.items():
+            env[key] = Immutable(val)
+    
+    for python_file in python_include:
+        subenv = dict()
+        with open(python_file,'rb') as F:
+            exec_(F.read(),subenv)
+        for key,val in subenv.items():
+            env[key] = Immutable(val)
+            
     # perform the final evaluation. Note that we do *NOT* pass `**env` since that
     # would create a copy.
-    txtout = _template(tpl,env=env)     
+    if hasattr(tpl,'read'):
+        tpl = tpl.read()
+    txtout = _template(tpl,syntax=syntax.copy(),env=env)     
 
     if output:
         with open(output,'wt') as out:
             out.write(txtout)
-
+    
+    # This is private. Should only be called from render()
+    if return_env:
+        # clean it up
+        for key in INIT_VARS:
+            env.pop(key,None)
+        return env
+        
     return txtout
 
+def render(*args,**kwargs):
+    """
+    Passes all arguments and keyword arguments except those noted below to the 
+    pryprepro function but returns a dictionary of the environment instead of
+    the completed template. See help(pyprepro) or the pyprepro function
+    signature for details
+
+    Additional Keyword Arguments:
+    -----------------------------
+    keep_immutable [False]
+        Default False. If True, returns an ImmutableValDict instead of a regular dict
+    
+    """
+    kwargs['_return_env'] = True
+    keep_immutable = kwargs.pop('keep_immutable',False)
+    
+    res = pyprepro(*args,**kwargs)
+    if keep_immutable:
+        return res
+        
+    return dict(res)
+        
+    
 def _parse_cli(argv,dprepro=False):
     """
     Handle command line input.
@@ -282,51 +312,12 @@ def _parse_cli(argv,dprepro=False):
             description=DESCRIPTION,
             epilog=EPILOG,
             formatter_class=argparse.RawDescriptionHelpFormatter)
-            
-    parser.add_argument('--code',default='%',metavar='CHAR',
-        help='["%(default)s"] Specify the string to delineate a single code line')
-    parser.add_argument('--code-block',default='{% %}',metavar='"OPEN CLOSE"',
-        help=('["%(default)s"] Specify the open and close of a code block. NOTE: '
-              'the inner-most character must *not* be any of "{}[]()"')) 
-    parser.add_argument('--inline',default='{ }',metavar='"OPEN CLOSE"',
-        help=('["%(default)s"] Specify the open and close of inline '
-              'code/variables to print')) # out of order but makes more sense
-              
+    
     if dprepro:
         parser.add_argument('--simple-parser',action='store_true',
-            help='Always use the simple parser in %(prog)s rather than dakota.interfacing')
-        parser.add_argument('include', help='Include (parameter) file.')
-    else:
-        parser.add_argument('-I','--include',metavar='FILE',action='append',default=[],
-            help=('Specify a file to read before parsing input. '
-                  "Should be formatted with the same '--inline','--code', and/or '--code-block' "
-                  "as the 'infile' template. "
-                  'Note: All variables read from the --include will be take precedence '
-                  '(i.e. be immutable). You later make them mutable if necessary. '
-                  'Can specify more than one and they will be read in order. '
-                ))
-        parser.add_argument('--dakota-include',metavar='FILE',action='append',
-            help=('Specify Dakota formatted files to load variables '
-                 'directly. As with `--include`, all variables will '
-                 'be immutable and can specify this flag multiple times. '
-                 'See include ordering. ' 
-                 'All ":" in variables names are converted to "_".'))
-            
-    parser.add_argument('--json-include',metavar='FILE',action='append',
-                        help=('Specify JSON formatted files to load variables '
-                              'directly. As with `--include`, all variables will '
-                              'be immutable. Can specify multiple. '
-                              'See include ordering'))
-    parser.add_argument('--python-include',metavar='FILE',action='append',
-                        help=('Specify a python formatted file to read and use '
-                              'the resulting environment. NOTE: the file '
-                              'is read a regular python where indentation '
-                              'matters and blocks should *not* have an `end` '
-                              'statement (unlike in coode blocks). ' 
-                              'As with `--include`, all variables will '
-                              'be immutable and can specify this flag multiple times. ' 
-                              'See include ordering'))
-    
+            help='Always use the simple parser in %(prog)s rather than dakota.interfacing.')
+        parser.add_argument('include', 
+        help='Include (parameter) file. Treated as --include in precedence.')
     
     parser.add_argument('--no-warn',action='store_false',default=True,dest='warn',
         help = ('Silence warning messages.'))
@@ -334,14 +325,78 @@ def _parse_cli(argv,dprepro=False):
     parser.add_argument('--output-format',default='%0.10g',dest='fmt',
         help=("['%(default)s'] Specify the default float format. Note that this can "
               "be easily overridden inline as follows: `{'%%3.8e' %% param}`. "
-              "Specify in either %%-notation or {}.format() notation."))
-    parser.add_argument('--var',metavar='"var=value"',action='append',default=[],
-        help = ('Specify variables to predefine. They will be defined as '
-                'immutable. Use quotes to properly delineate'))
+              "Specify in either C-notation or str.format() notation."))
+    
+    delim_group = parser.add_argument_group(
+        title='Delimiter Settings',
+        description = dedent("""
+            Specify global setting for code lines, code blocks, and inline variables.
+            Can also reset on a per-file at the top of the file as follows:
+            
+                Specify delineators as the the first non-whitespace line. Start with a 
+                comment '//', '#','%', '$' or '' (nothing), then a command, then '=' or 
+                space, followed by the new setting. See examples.
+            
+                Commands are:
+                    [D/PY]PREPRO_CODE specifies --code
+                    [D/PY]PREPRO_CODE_BLOCK specifies --code-block
+                    [D/PY]PREPRO_INLINE specified --inline
+                    
+                Example: (Can intermix command types and comments)
+                
+                    # PYPREPRO_CODE >
+                    $ DPREPRO_CODE_BLOCK=[[ ]]
+                    PREPRO_INLINE = ={ }=      # specify the = so it doesn't get confused
+                
 
-    # Positional arguments. In reality, this is set this way so
-    # the help text will format correctly. We will rearrange arguments
-    # post-parsing so that all but the last two are command line.
+                    Rest of template
+            
+                Note that the command lines will be removed
+            
+            Will also accept `--(left/right)-delimiter` as an alias to the 
+            respective parts of `--inline` to maintain compatibility.
+            """))
+    delim_group.add_argument('--code',default='%',metavar='CHAR',
+        help='["%(default)s"] Specify the starting text to delineate a single code line.')
+    delim_group.add_argument('--code-block',default='{% %}',metavar='"OPEN CLOSE"',
+        help=('["%(default)s"] Specify the open and close of a code block. NOTE: '
+              'the inner-most character must *not* be any of "{}[]()".')) 
+    delim_group.add_argument('--inline',default='{ }',metavar='"OPEN CLOSE"',
+        help=('["%(default)s"] Specify the open and close of inline '
+              'code/variables to print.')) # out of order but makes more sense
+    
+    ## Includes
+    
+    include_group = parser.add_argument_group(
+        title="Include File Settings",
+        description=dedent("""
+    Specify include files. All variables from from an include will be set as 
+    Immutable (but can be made Mutable in the template). Can specify flags multiple times. 
+    Precendence follows the order of the flags *here* regardless of specified order on
+    the command line."""))
+    
+    include_group.add_argument('--var',metavar='"var=value"',action='append',default=[],
+        help = ('Specify variables to predefine. They will be defined as '
+                'immutable. Use quotes to properly delineate.'))
+
+    include_group.add_argument('-I','--include',metavar='FILE',action='append',default=[],
+        help=('Specify an include file to parse first. Just parses for variables. '
+              "Should be formatted with the same '--inline','--code', and/or '--code-block' "
+              "as the 'infile' template or with per-file specified values."
+             ))
+    include_group.add_argument('--json-include',metavar='FILE',action='append',
+        help=('Specify JSON formatted files to load variables.'))
+    include_group.add_argument('--python-include',metavar='FILE',action='append',
+        help=('Specify a Python formatted file to read and use '
+              'the resulting environment. NOTE: the file '
+              'is read a regular Python where indentation '
+              'matters and blocks should *not* have an `end` '
+              'statement (unlike in code blocks). ' 
+        ))
+    
+    include_group.add_argument('--dakota-include',metavar='FILE',action='append',
+            help=('Specify Dakota formatted files to load variables '
+                  'directly. All ":" in variables names are converted to "_".'))
     
     # include is set above based on positional_include
     parser.add_argument('infile', help='Specify the input file. Or set as `-` to read stdin')
@@ -356,22 +411,8 @@ def _parse_cli(argv,dprepro=False):
     parser.add_argument('-v', '--version', action='version', 
         version='%(prog)s-' + __version__,help="Print the version and exit")
     
-    
     # Hidden debug
     parser.add_argument('--debug',action='store_true',help=argparse.SUPPRESS)
-    
-    # This sorts the optional arguments or each parser.
-    # It is a bit of a hack. The biggest issue is that this happens on every 
-    # call but it takes about 10 microseconds
-    # Inspired by https://stackoverflow.com/a/12269358/3633154
-    for action_group in parser._action_groups:
-        # Make sure it is the **OPTIONAL** ones
-        if not all(len(action.option_strings) > 0 for action in action_group._group_actions):
-            continue
-        action_group._group_actions.sort(key=lambda action: # lower of the longest key
-                                                    sorted(action.option_strings,
-                                                           key=lambda a:-len(a))[0].lower())
-    
     
     args = parser.parse_args(argv)
 
@@ -463,13 +504,19 @@ class BlockCharacterError(Exception):
 class EmptyInlineError(ValueError):
     pass
 
-def _check_block_syntax():
+def _check_block_syntax(syntax):
     """
     Confirm that the open and closing blocks inner-most characters
     are not any of "{}[]()"
     """
-    if BLOCK_START[-1] in "{}[]()" or BLOCK_CLOSE[0] in "{}[]()":
+    syntax['LINE_START'] = syntax['code']
+    syntax['INLINE_START'],syntax['INLINE_END'] = syntax['inline'].split()
+    syntax['BLOCK_START'],syntax['BLOCK_CLOSE'] = syntax['code_block'].split()
+    
+    if syntax['BLOCK_START'][-1] in "{}[]()" or syntax['BLOCK_CLOSE'][0] in "{}[]()":
         raise BlockCharacterError('Cannot have inner-most code block be any of "{}[]()" ')
+    
+    return syntax # Not needed since we modify in place but may be useful
     
 def _mult_replace(text,*A,**replacements):
     """
@@ -505,9 +552,12 @@ def _formatter(*obj):
     # and NOT
     #   {include('file')}
     if getattr(obj,'includesentinel',False):
-        msg = ['Incorrect include syntax. Use "code-block" syntax, not "inline"']
-        msg.append("  e.g.: BLOCK_START include('include_file.inp') BLOCK_CLOSE")
-        msg = _mult_replace('\n'.join(msg),BLOCK_START=BLOCK_START,BLOCK_CLOSE=BLOCK_CLOSE)
+        # Use the currently set syntax
+        msg = dedent("""\
+            Incorrect include syntax. Use "code" syntax, not "inline".
+                    YES (code):      %(_LINE_START)s include('myinclude.inp')
+                    NO (inline):     %(_INLINE_START)sinclude('myinclude.inp')%(_INLINE_END)s 
+            """ % obj)
         raise IncludeSyntaxError(msg)
 
     if obj is None:
@@ -553,7 +603,17 @@ def _formatter(*obj):
     # give up!
     return repr(obj)
 
-def _preparser(text):
+re_spec_line = re.compile(r"""
+    ^                           # Start of line
+    (?://|\#|%|\$)?             # Comment char(s) or not
+    \ *?                        # 0 to any number of spaces
+    (?:PY|D|)PREPRO_            # DPREPRO or PYPREPRO or nothing
+    (CODE|CODE_BLOCK|INLINE)    # what is being specified.
+    (?:\ *=\ *|\ +)             # Equals (w/ or w/o spaces or just space)
+    (.*)                        # specified values
+    $                           # End of line
+    """,flags=re.VERBOSE|re.UNICODE)
+def _preparser(text,syntax):
     """
     This is a PREPARSER before sending anything to Bottle Simple Template 
     Engine.
@@ -602,8 +662,31 @@ def _preparser(text):
     """
     # Clean up
     text = _touni(text)
-    text = text.replace(u'\ufeff', '') # Remove BOM from windows
+    text = text.replace(u'\ufeff', '').replace(u'\ufffe','') # Remove BOM from windows
     text = text.replace('\r','') # Remove `^M` characters
+    
+    # Parse inline specification
+    otext = []
+    text = iter(text.split('\n'))
+    for line in text:
+        m = re_spec_line.match(line)
+        if not line.strip(): # leading white space
+            otext.append(line)
+        elif not m:
+            # we are done here!
+            otext.append(line)
+            otext.extend(text)
+            break # Not really needed since we exhaust the iterator
+        else:
+            key,value = m.groups()
+            syntax[key.lower()] = value                
+    text = '\n'.join(otext)
+    
+    syntax = _check_block_syntax(syntax)
+    BLOCK_START, BLOCK_CLOSE = syntax['BLOCK_START'], syntax['BLOCK_CLOSE']
+    LINE_START = syntax['LINE_START']
+    INLINE_START,INLINE_END = syntax['INLINE_START'],syntax['INLINE_END']
+    
     
     # Remove any code blocks and replace with random text
     code_rep = defaultdict(lambda:_rnd_str(20))    # will return random string but store it
@@ -655,19 +738,25 @@ def _preparser(text):
     # Apply _inline_fix to all inline assignments
     _,text = _delim_capture(text,
                             '{0} {1}'.format(INLINE_START,INLINE_END), # do not use re escaped
-                            _inline_fix)
+                            functools.partial(_inline_fix,syntax=syntax))
                 
     
     # Re-add the code blocks with an inverted dict
     return _mult_replace(text,code_rep,_invert=True)
 
-def _inline_fix(capture):
+def _inline_fix(capture,syntax=None):
     """
     Replace the matched line in a ROBUST manner to allow multiple definitions
     on each line
     """
+    if syntax is None:
+        # syntax is a kw to make partial easier
+        raise ValueError('syntax required')
     # Take EVERYTHING and then remove the outer.
 
+    INLINE_START,INLINE_END = syntax['INLINE_START'],syntax['INLINE_END']
+    BLOCK_START,BLOCK_CLOSE = syntax['BLOCK_START'],syntax['BLOCK_CLOSE']
+    
     match = capture[len(INLINE_START):-len(INLINE_END)].strip() # Remove open and close brackets
     
     if not match.strip():
@@ -789,7 +878,7 @@ def _delim_capture(txt,delim,sub=None):
     #      Also re-add the closing text since it was removed in split
     #   5. Store capture block (and sub if applicable)
     #   6. Continue until break
-    
+ 
     # Set up the regexes and the output
     OPEN,CLOSE = delim.split()
     rOPEN,rCLOSE = [re.escape(d) for d in (OPEN,CLOSE)]
@@ -819,15 +908,15 @@ def _delim_capture(txt,delim,sub=None):
         quote_rep = defaultdict(lambda:_rnd_str(20))            # will return random string but store it
         txt = reQUOTE.sub(lambda m:quote_rep[m.group(0)],txt)   # Replace quotes with random string
         
-        # Find the end
+        # Find the end but make sure to cut off the open in case it is the same as CLOSE
         try:
-            cap,txt = reCLOSE.split(txt,1)
+            cap,txt = reCLOSE.split(txt[len(OPEN) :],1)
         except ValueError: # There was no close. Restore txt and break
             outtxt.append(_mult_replace(txt,quote_rep,_invert=True))
             break
         
         # Restore both captured and txt
-        cap = _mult_replace(cap,quote_rep,_invert=True) + CLOSE
+        cap = OPEN + _mult_replace(cap,quote_rep,_invert=True) + CLOSE
         txt = _mult_replace(txt,quote_rep,_invert=True)
         
         captured.append(cap)
@@ -879,6 +968,15 @@ def _vartxt(env,return_values=True,comment=None):
         comment += ' ' # make sure ends with space
     
     return '\n'.join(comment + t for t in txt.split('\n'))
+
+def _json_dumps(env,**k):
+    d = dict((k,v) for k,v in env.items() if k not in INIT_VARS)
+    
+    def _default(obj):
+        return "**Object of type %s is not JSON serializable**" % obj.__class__.__name__
+    return json.dumps(d,default=_default,**k)
+    
+    
 
 def _setfmt(fmt=None):
     """
@@ -1034,7 +1132,7 @@ def convert_dakota(input_file):
     #     val param
     # by default or
     #     { val = param }
-    # in aprepro mode (regardless of the delinators set here)
+    # in aprepro mode (regardless of the delineators set here)
     env = {}
     ### TMP
     if isinstance(input_file,(list,tuple)):
@@ -1100,8 +1198,8 @@ def _fix_param_name(param,warn=False):
     param = _touni(param) # Ensure the string is unicode in case passed bytes
     
     param0 = param # string are immutable so it won't be affect by changes below
-    param = re.compile("\W",flags=re.UNICODE).sub('_',param) # Allow unicode on python2 (and compile first for 2.6)
-    if re.match("\d",param[0],flags=re.UNICODE):
+    param = re.compile(r"\W",flags=re.UNICODE).sub('_',param) # Allow unicode on python2 (and compile first for 2.6)
+    if re.match(r"\d",param[0],flags=re.UNICODE):
         param = 'i' + param
     while keyword.iskeyword(param):
         param += "_"
@@ -1355,6 +1453,7 @@ class _BaseTemplate(object):
     defaults = {}  #used in render()
 
     def __init__(self,
+                 syntax=None,
                  source=None,
                  name=None,
                  lookup=None,
@@ -1369,8 +1468,15 @@ class _BaseTemplate(object):
         The encoding parameter should be used to decode byte strings or files.
         The settings parameter contains a dict for engine-specific settings.
         """
+        if not syntax:
+            raise ValueError('Must specify syntax')
+            
+        self.syntax = syntax
         self.name = name
-        self.source = _preparser(source.read()) if hasattr(source, 'read') else source
+        if hasattr(source, 'read'):
+            self.source = _preparser(source.read(),self.syntax)
+        else:
+            self.source = source
         self.filename = source.filename if hasattr(source, 'filename') else None
         self.lookup = [os.path.abspath(x) for x in lookup] if lookup else []
         self.encoding = encoding
@@ -1382,7 +1488,7 @@ class _BaseTemplate(object):
                 raise TemplateError('Template %s not found.' % repr(name))
         if not self.source and not self.filename:
             raise TemplateError('No _template specified.')
-        self.prepare(**self.settings)
+        self.prepare(syntax=self.syntax,**self.settings)
 
     @classmethod
     def search(cls, name, lookup=None):
@@ -1442,7 +1548,8 @@ class _SimpleTemplate(_BaseTemplate):
         enc = self.encoding
         self._str = _formatter
         self._escape = lambda x: escape_func(_touni(x, enc))
-        self.syntax = syntax
+        self.syntax = _check_block_syntax(syntax) 
+        
         if noescape:
             self._str, self._escape = self._escape, self._str
 
@@ -1460,7 +1567,7 @@ class _SimpleTemplate(_BaseTemplate):
             source, encoding = _touni(source), 'utf8'
         except UnicodeError:
             raise depr(0, 11, 'Unsupported _template encodings.', 'Use utf-8 for _templates.')
-        source = _preparser(source)
+        source = _preparser(source,self.syntax)
         parser = _StplParser(source, encoding=encoding, syntax=self.syntax)
         code = parser.translate()
         self.encoding = parser.encoding
@@ -1519,20 +1626,21 @@ class _SimpleTemplate(_BaseTemplate):
             'setfmt':_setfmt,
             'all_vars':lambda **k: _vartxt(env,return_values=True,**k),
             'all_var_names':lambda **k: _vartxt(env,return_values=False,**k),
+            'env':env,
+            'json_dumps':lambda **k: _json_dumps(env,**k),
         })
         
         # String literals of escape characters
         env.update({
-            '_BLOCK_START':BLOCK_START,
-            '_BLOCK_CLOSE':BLOCK_CLOSE,
-            '_LINE_START':LINE_START,
-            '_INLINE_START':INLINE_START,
-            '_eINLINE_START': '\\' + INLINE_START,
-            '_INLINE_END':INLINE_END,
-            '_eINLINE_END':'\\' + INLINE_END,
+            '_BLOCK_START' : self.syntax['BLOCK_START'],
+            '_BLOCK_CLOSE' : self.syntax['BLOCK_CLOSE'],
+            '_LINE_START'  : self.syntax['LINE_START'],
+            '_INLINE_START': self.syntax['INLINE_START'],
+            '_eINLINE_START': '\\' + self.syntax['INLINE_START'],
+            '_INLINE_END'  : self.syntax['INLINE_END'],
+            '_eINLINE_END':'\\' + self.syntax['INLINE_END'],
             })
 
-        
         exec_(self.co,env)
         
         if env.get('_rebase'):
@@ -1612,34 +1720,40 @@ class _StplParser(object):
 
     def __init__(self, source, syntax=None, encoding='utf8'):
         self.source, self.encoding = _touni(source, encoding), encoding
-        self.set_syntax(' '.join( [ BLOCK_START, 
-                                    BLOCK_CLOSE, 
-                                    LINE_START, 
-                                    INLINE_START, 
-                                    INLINE_END,
-                                  ]))
+
+#         self.set_syntax(' '.join( [ BLOCK_START, 
+#                                     BLOCK_CLOSE, 
+#                                     LINE_START, 
+#                                     INLINE_START, 
+#                                     INLINE_END,
+#                                   ]))
+        if syntax is None: raise ValueError('Specify Syntax')
+        self.syntax = syntax
+        self.set_syntax()
         self.code_buffer, self.text_buffer = [], []
         self.lineno, self.offset = 1, 0
         self.indent, self.indent_mod = 0, 0
         self.paren_depth = 0
 
-    def get_syntax(self):
-        """ Tokens as a space separated string (default: {% %} % {{ }}) """
-        return self._syntax
+#     def get_syntax(self):
+#         """ Tokens as a space separated string (default: {% %} % {{ }}) """
+#         return self._syntax
 
-    def set_syntax(self, syntax):
-        self._syntax = syntax
-        self._tokens = syntax.split()
-        if syntax not in self._re_cache:
-            names = 'block_start block_close line_start inline_start inline_end'
-            etokens = map(re.escape, self._tokens)
-            pattern_vars = dict(zip(names.split(), etokens))
-            patterns = (self._re_split, self._re_tok, self._re_inl)
-            patterns = [re.compile(p % pattern_vars) for p in patterns]
-            self._re_cache[syntax] = patterns
-        self.re_split, self.re_tok, self.re_inl = self._re_cache[syntax]
+    def set_syntax(self):        
+        self._tokens = (self.syntax['BLOCK_START'],self.syntax['BLOCK_CLOSE'],
+                        self.syntax['LINE_START'],
+                        self.syntax['INLINE_START'],self.syntax['INLINE_END'])
 
-    syntax = property(get_syntax, set_syntax)
+        names = 'block_start block_close line_start inline_start inline_end'
+        etokens = map(re.escape, self._tokens)
+        pattern_vars = dict(zip(names.split(), etokens))
+        patterns = (self._re_split, self._re_tok, self._re_inl)
+        patterns = [re.compile(p % pattern_vars) for p in patterns]
+
+        self._re_cache['syntax'] = patterns
+        self.re_split, self.re_tok, self.re_inl = self._re_cache['syntax']
+
+    #syntax = property(get_syntax, set_syntax)
 
     def translate(self):
         if self.offset: raise RuntimeError('Parser is a one time instance.')
@@ -1746,13 +1860,14 @@ class _StplParser(object):
         self.code_buffer.append(code)
 
 
-def _template(tpl, env=None, return_env=False):
+def _template(tpl, syntax=None, env=None, return_env=False):
     """
     Get a rendered _template as a string iterator.
     You can use a name, a filename or a _template string as first parameter.
     Template rendering arguments can be passed as dictionaries
     or directly (as keyword arguments).
     """
+    assert syntax is not None
     try:
         if env is None:
             env = ImmutableValDict()
@@ -1773,13 +1888,13 @@ def _template(tpl, env=None, return_env=False):
     
         if not isfile:  # template string
             lookup = ['./'] # Just have the lookup be in this path
-            tpl = _preparser(tpl)
-            tpl_obj = _SimpleTemplate(source=tpl, lookup=lookup, **settings)
+            tpl = _preparser(tpl,syntax) # Modifies syntax in place
+            tpl_obj = _SimpleTemplate(source=tpl, lookup=lookup, syntax=syntax, **settings)
         else: # template file
             # set the lookup. It goes in order so first check directory
             # of the original template and then the current.
             lookup = [os.path.dirname(tpl) + '/.','./']
-            tpl_obj = _SimpleTemplate(name=tpl, lookup=lookup, **settings)
+            tpl_obj = _SimpleTemplate(name=tpl, lookup=lookup, syntax=syntax, **settings)
 
         # Added the option to return the environment, but this is really not needed
         # if env is set.
@@ -1843,7 +1958,12 @@ else:
 ##############################################################################
 
 # Global set of keys from an empty execution:
-INIT_VARS = set(_template('BLA',return_env=True)[-1].keys())
+_syntax = {
+    'code_block' : '{0} {1}'.format(DEFAUL_BLOCK_START,DEFAUL_BLOCK_CLOSE),
+    'code'  : DEFAUL_LINE_START  ,
+    'inline': '{0} {1}'.format(DEFAUL_INLINE_START,DEFAUL_INLINE_END),
+}
+INIT_VARS = set(_template('BLA',return_env=True,syntax=_syntax)[1].keys())
 
 def main():
     global CLI_MODE
