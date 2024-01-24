@@ -37,7 +37,7 @@ if mode in set(("tag","tag_save","saved_params")):
 if mode == "tag_save":
     # if the eval is 2 or greater, the previous dir should be around
     if mytag > 1:
-        lastdir = workdir_basename + ".%d" % (mytag - 1,)
+        lastdir = os.path.join("..", workdir_basename + ".%d" % (mytag - 1,))
         if not os.path.isdir(lastdir):
             print("Error: Failed to find saved directory",lastdir)
             sys.exit(1)
@@ -56,7 +56,7 @@ elif mode == "templatefiles_copy":
     if os.path.islink("dakota_workdir.root.dat"):
         print("Error: dakota_workdir.root.dat is symlink; should be regular file")
         sys.exit(1)
-    if not os.isfile("dakota_workdir.root.dat"):
+    if not os.path.isfile("dakota_workdir.root.dat"):
         print("Error: Failed to find template file dakota_workdir.root.dat")
         sys.exit(1)
 elif mode == "templatedir":
@@ -74,7 +74,7 @@ elif mode == "templatedir_copy":
     if os.path.islink("dakota_workdir.templatedir.dat"):
         print("Error: dakota_workdir.templatedir.dat is symlink; should be regular file")
         sys.exit(1)
-    if not os.isfile("dakota_workdir.templatedir.dat"):
+    if not os.path.isfile("dakota_workdir.templatedir.dat"):
         print("Error: Failed to find template file dakota_workdir.templatedir.dat")
         sys.exit(1)
 elif mode == "named_params":
@@ -85,7 +85,7 @@ elif mode == "saved_params":
     # if the eval is 2 or greater, the previous dir should be around
     # with a saved params file
     if mytag > 1:
-        lastdir = wordir_basename+".%s" % (mytag-1,)
+        lastdir = workdir_basename+".%s" % (mytag-1,)
         if not os.path.isdir(".." + os.sep + lastdir):
             print("Error: Failed to find saved directory",lastdir)
             sys.exit(1)
