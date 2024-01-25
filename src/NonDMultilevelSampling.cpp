@@ -131,7 +131,13 @@ void NonDMultilevelSampling::core_run()
     multilevel_mc_online_pilot();     break;
     break;
   case OFFLINE_PILOT:
-    multilevel_mc_offline_pilot();    break;
+    switch (finalStatsType) {
+    // since offline is not iterated, the ESTIMATOR_PERFORMANCE case is the
+    // same as OFFLINE_PILOT_PROJECTION --> bypass IntMaps, simplify code
+    case ESTIMATOR_PERFORMANCE:  multilevel_mc_pilot_projection();  break;
+    default:                     multilevel_mc_offline_pilot();     break;
+    }
+    break;
   case ONLINE_PILOT_PROJECTION:  case OFFLINE_PILOT_PROJECTION:
     multilevel_mc_pilot_projection(); break;
   }

@@ -89,9 +89,16 @@ void NonDMultilevBLUESampling::core_run()
 {
   switch (pilotMgmtMode) {
   case ONLINE_PILOT: // iterated ML BLUE (default)
+    // ESTIMATOR_PERFORMANCE case differs from ONLINE_PILOT_PROJECTION
     ml_blue_online_pilot();     break;
-  case OFFLINE_PILOT: // computes performance for offline/Oracle correlations
-    ml_blue_offline_pilot();    break;
+  case OFFLINE_PILOT: // non-iterated allocation from offline/Oracle correlation
+    switch (finalStatsType) {
+    // since offline is not iterated, the ESTIMATOR_PERFORMANCE case is the
+    // same as OFFLINE_PILOT_PROJECTION --> bypass IntMaps, simplify code
+    case ESTIMATOR_PERFORMANCE:  ml_blue_pilot_projection();  break;
+    default:                     ml_blue_offline_pilot();     break;
+    }
+    break;
   case ONLINE_PILOT_PROJECTION:  case OFFLINE_PILOT_PROJECTION:
     ml_blue_pilot_projection(); break;
   }
@@ -215,23 +222,19 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
   // -----------------------------------
   // Perform "online" sample increments:
   // -----------------------------------
-  // Only QOI_STATISTICS requires application of sample increments and
-  // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
-  if (finalStatsType == QOI_STATISTICS) {
-    // perform the shared increment for the online sample profile
-    group_increment(delta_N_G, mlmfIter); // spans ALL models, blocking
-    accumulate_blue_sums(sum_G, sum_GG, NGroupActual, batchResponsesMap);
-    increment_equivalent_cost(delta_N_G, modelGroupCost,
-			      sequenceCost[numApprox], equivHFEvals);
-    // extract moments
-    RealMatrix H_raw_mom(numFunctions, 4);
-    blue_raw_moments(sum_G, sum_GG, NGroupActual, H_raw_mom);
-    convert_moments(H_raw_mom, momentStats);
-  }
-  else
-    increment_equivalent_cost(delta_N_G, modelGroupCost,
-			      sequenceCost[numApprox], deltaEquivHF);
+  // QOI_STATISTICS case; ESTIMATOR_PERFORMANCE redirects to
+  // ml_blue_pilot_projection() to also bypass IntMaps.
 
+  // perform the shared increment for the online sample profile
+  group_increment(delta_N_G, mlmfIter); // spans ALL models, blocking
+  accumulate_blue_sums(sum_G, sum_GG, NGroupActual, batchResponsesMap);
+  increment_equivalent_cost(delta_N_G, modelGroupCost,
+			    sequenceCost[numApprox], equivHFEvals);
+  // extract moments
+  RealMatrix H_raw_mom(numFunctions, 4);
+  blue_raw_moments(sum_G, sum_GG, NGroupActual, H_raw_mom);
+  convert_moments(H_raw_mom, momentStats);
+  // finalize
   finalize_counts(NGroupActual, NGroupAlloc);
 }
 
@@ -255,9 +258,9 @@ void NonDMultilevBLUESampling::ml_blue_pilot_projection()
     NGroupAlloc = pilotSamples;
   }
 
-  // -----------------------------------
-  // Compute "online" sample increments:
-  // -----------------------------------
+  // -------------------------------------
+  // Compute sample increment projections:
+  // -------------------------------------
   // compute the LF/HF evaluation ratios from shared samples and compute
   // ratio of MC and ACV mean sq errors (which incorporates anticipated
   // variance reduction from application of avg_eval_ratios).

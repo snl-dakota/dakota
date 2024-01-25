@@ -80,8 +80,8 @@ void NonDACVSampling::core_run()
 
   switch (pilotMgmtMode) {
   case  ONLINE_PILOT: // iterated ACV (default)
-    // For online, ESTIMATOR_PERFORMANCE case is still iterated for N_H, and
-    // therefore differs from ONLINE_PILOT_PROJECTION
+    // ESTIMATOR_PERFORMANCE case is still iterated for N_H, and therefore
+    // differs from ONLINE_PILOT_PROJECTION
     approximate_control_variate_online_pilot();     break;
   case OFFLINE_PILOT: // computes perf for offline/Oracle correlation
     switch (finalStatsType) {

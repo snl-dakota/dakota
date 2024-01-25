@@ -105,7 +105,15 @@ void NonDMultilevControlVarSampling::core_run()
     multilevel_control_variate_mc_online_pilot(); //_Qcorr();
     break;
   case OFFLINE_PILOT:
-    multilevel_control_variate_mc_offline_pilot();    break;
+    switch (finalStatsType) {
+    // since offline is not iterated, the ESTIMATOR_PERFORMANCE case is the
+    // same as OFFLINE_PILOT_PROJECTION --> bypass IntMaps, simplify code
+    case ESTIMATOR_PERFORMANCE:
+      multilevel_control_variate_mc_pilot_projection();  break;
+    default:
+      multilevel_control_variate_mc_offline_pilot();     break;
+    }
+    break;
   case ONLINE_PILOT_PROJECTION:  case OFFLINE_PILOT_PROJECTION:
     multilevel_control_variate_mc_pilot_projection(); break;
   }
@@ -652,127 +660,108 @@ multilevel_control_variate_mc_offline_pilot()
   evaluate_pilot(hf_cost, lf_cost, eval_ratios_pilot, Lambda_pilot,var_YH_pilot,
 		 N_alloc_pilot, N_actual_pilot, hf_targets_pilot, false, false);
 
-  // Only QOI_STATISTICS requires iteration and final estimation of moments;
-  // ESTIMATOR_PERFORMANCE can bypass this expense.
+  // ----------------------------------------------------------
+  // Evaluate online sample profile computed from offline pilot
+  // ----------------------------------------------------------
+  // QOI_STATISTICS case; ESTIMATOR_PERFORMANCE redirects to
+  // multilevel_control_variate_mc_pilot_projection() to also bypass IntMaps.
   size_t num_cv_lev = std::min(num_hf_lev, (size_t)lf_cost.length());
-  if (finalStatsType == QOI_STATISTICS) {
-
-    // ----------------------------------------------------------
-    // Evaluate online sample profile computed from offline pilot
-    // ----------------------------------------------------------
-    Real lf_lev_cost, hf_lev_cost, hf_ref_cost = hf_cost[num_hf_lev-1];
-    IntRealMatrixMap sum_Ll, sum_Llm1, sum_Ll_refined, sum_Llm1_refined, sum_Hl,
-      sum_Hlm1, sum_Ll_Ll, sum_Ll_Llm1, sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1,
-      sum_Hlm1_Ll, sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1, sum_Hlm1_Hlm1;
-    initialize_mlmf_sums(sum_Ll, sum_Llm1, sum_Ll_refined, sum_Llm1_refined,
-			 sum_Hl, sum_Hlm1, sum_Ll_Ll, sum_Ll_Llm1,
-			 sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1, sum_Hlm1_Ll,
-			 sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1, sum_Hlm1_Hlm1,
-			 num_hf_lev, num_cv_lev);
-    for (lev=0, group=0; lev<num_hf_lev; ++lev, ++group) {
-      configure_indices(group, hf_form, lev, sequenceType);
-      hf_lev_cost = level_cost(hf_cost, lev);
-      // use 0 in place of delta_N_hf[lev]; min of 2 samp reqd for online var;
-      // no relaxation since no iteration
-      numSamples = std::max(one_sided_delta(0., hf_targets_pilot[lev]),
-			    (size_t)2);
-      N_alloc_hf[lev] += numSamples;
-      evaluate_ml_sample_increment("mlcv_", lev);
-      if (lev < num_cv_lev) {
-	IntResponseMap hf_resp = allResponses; // shallow copy is sufficient
-	configure_indices(group, lf_form, lev, sequenceType);
-	lf_lev_cost = level_cost(lf_cost, lev);
-	// eval allResp w/ LF model reusing allVars from ML step above
-	evaluate_parameter_sets(iteratedModel);
-	// process previous and new set of allResponses for MLMF sums;
-	accumulate_mlmf_Qsums(allResponses, hf_resp, sum_Ll, sum_Llm1,
-			      sum_Ll_refined, sum_Llm1_refined, sum_Hl,
-			      sum_Hlm1, sum_Ll_Ll, sum_Ll_Llm1, sum_Llm1_Llm1,
-			      sum_Hl_Ll, sum_Hl_Llm1, sum_Hlm1_Ll,
-			      sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1,
-			      sum_Hlm1_Hlm1, lev, N_actual_lf[lev],
-			      N_actual_hf[lev]);
-	increment_mlmf_equivalent_cost(numSamples, hf_lev_cost, numSamples,
-				       lf_lev_cost, hf_ref_cost, equivHFEvals);
-	N_alloc_lf[lev] += numSamples;
-	// leave evaluation ratios and Lambda at values from Oracle pilot
-      }
-      else {
-	// accumulate H sums for lev = 0, Y sums for lev > 0
-	accumulate_ml_Ysums(sum_Hl, sum_Hl_Hl[1], lev, N_actual_hf[lev]);
-	increment_ml_equivalent_cost(numSamples, hf_lev_cost, hf_ref_cost,
-				     equivHFEvals);
-      }
-    }
-
-    // --------------------------------------------------------
-    // LF increments and final stats from online sample profile
-    // --------------------------------------------------------
-    Real lf_tgt_l;
-    for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) {
-      // LF increments from online sample profile
+  Real lf_lev_cost, hf_lev_cost, hf_ref_cost = hf_cost[num_hf_lev-1];
+  IntRealMatrixMap sum_Ll, sum_Llm1, sum_Ll_refined, sum_Llm1_refined, sum_Hl,
+    sum_Hlm1, sum_Ll_Ll, sum_Ll_Llm1, sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1,
+    sum_Hlm1_Ll, sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1, sum_Hlm1_Hlm1;
+  initialize_mlmf_sums(sum_Ll, sum_Llm1, sum_Ll_refined, sum_Llm1_refined,
+		       sum_Hl, sum_Hlm1, sum_Ll_Ll, sum_Ll_Llm1,
+		       sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1, sum_Hlm1_Ll,
+		       sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1, sum_Hlm1_Hlm1,
+		       num_hf_lev, num_cv_lev);
+  for (lev=0, group=0; lev<num_hf_lev; ++lev, ++group) {
+    configure_indices(group, hf_form, lev, sequenceType);
+    hf_lev_cost = level_cost(hf_cost, lev);
+    // use 0 in place of delta_N_hf[lev]; min of 2 samp reqd for online var;
+    // no relaxation since no iteration
+    numSamples = std::max(one_sided_delta(0., hf_targets_pilot[lev]),(size_t)2);
+    N_alloc_hf[lev] += numSamples;
+    evaluate_ml_sample_increment("mlcv_", lev);
+    if (lev < num_cv_lev) {
+      IntResponseMap hf_resp = allResponses; // shallow copy is sufficient
       configure_indices(group, lf_form, lev, sequenceType);
-      if (backfillFailures) { // increment relative to successful samples
-	lf_increment(eval_ratios_pilot[lev], N_actual_lf[lev],
-		     hf_targets_pilot[lev], lf_targets, mlmfIter, lev);
-	lf_tgt_l = average(lf_targets);
-	N_alloc_lf[lev] += one_sided_delta(N_alloc_lf[lev], lf_tgt_l);//no relax
-      }
-      else {                  // increment relative to allocated samples
-	lf_increment(eval_ratios_pilot[lev], N_alloc_lf[lev],
-		     hf_targets_pilot[lev], lf_tgt_l, mlmfIter, lev);
-	N_alloc_lf[lev] += numSamples;
-      }
-      if (numSamples) {
-	accumulate_mlmf_Qsums(sum_Ll_refined, sum_Llm1_refined, lev,
-			      N_actual_lf[lev]);
-	increment_ml_equivalent_cost(numSamples, level_cost(lf_cost, lev),
-				     hf_ref_cost, equivHFEvals);
-      }
+      lf_lev_cost = level_cost(lf_cost, lev);
+      // eval allResp w/ LF model reusing allVars from ML step above
+      evaluate_parameter_sets(iteratedModel);
+      // process previous and new set of allResponses for MLMF sums;
+      accumulate_mlmf_Qsums(allResponses, hf_resp, sum_Ll, sum_Llm1,
+			    sum_Ll_refined, sum_Llm1_refined, sum_Hl, sum_Hlm1,
+			    sum_Ll_Ll, sum_Ll_Llm1, sum_Llm1_Llm1, sum_Hl_Ll,
+			    sum_Hl_Llm1, sum_Hlm1_Ll, sum_Hlm1_Llm1, sum_Hl_Hl,
+			    sum_Hl_Hlm1, sum_Hlm1_Hlm1, lev, N_actual_lf[lev],
+			    N_actual_hf[lev]);
+      increment_mlmf_equivalent_cost(numSamples, hf_lev_cost, numSamples,
+				     lf_lev_cost, hf_ref_cost, equivHFEvals);
+      N_alloc_lf[lev] += numSamples;
+      // leave evaluation ratios and Lambda at values from Oracle pilot
     }
-
-    RealMatrix Y_mom(numFunctions, 4), Y_cvmc_mom(numFunctions, 4, false);
-    for (lev=0; lev<num_cv_lev; ++lev) {
-      cv_raw_moments(sum_Ll, sum_Llm1, sum_Hl, sum_Hlm1, sum_Ll_Ll, sum_Ll_Llm1,
-		     sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1, sum_Hlm1_Ll,
-		     sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1, sum_Hlm1_Hlm1,
-		     N_actual_hf[lev], sum_Ll_refined, sum_Llm1_refined,
-		     N_actual_lf[lev], /*rho_dot2_LH,*/ lev, Y_cvmc_mom);
-      Y_mom += Y_cvmc_mom;
+    else {
+      // accumulate H sums for lev = 0, Y sums for lev > 0
+      accumulate_ml_Ysums(sum_Hl, sum_Hl_Hl[1], lev, N_actual_hf[lev]);
+      increment_ml_equivalent_cost(numSamples, hf_lev_cost, hf_ref_cost,
+				   equivHFEvals);
     }
-    if (num_hf_lev > num_cv_lev)
-      ml_raw_moments(sum_Hl[1], sum_Hl[2], sum_Hl[3], sum_Hl[4], N_actual_hf,
-		     num_cv_lev, num_hf_lev, Y_mom);
-    // Convert uncentered raw moment estimates to final moments (central or std)
-    convert_moments(Y_mom, momentStats);
-
-    recover_variance(momentStats, varH);
-    // See explanation of varH recovery options above.
-    //RealMatrix Y_mlmc_mom(numFunctions, 4), mlmc_stats;
-    //ml_raw_moments(sum_Hl[1], sum_Hl[2], sum_Hl[3], sum_Hl[4], N_actual_hf,
-    // 		   0, num_hf_lev, Y_mlmc_mom);
-    //convert_moments(Y_mlmc_mom, mlmc_stats); // raw to final (central or std)
-    //recover_variance(mlmc_stats, varH);
-
-    // Retain var_YH & Lambda from "oracle" pilot for computing final estimator
-    // variances.  This results in mixing offline var_YH,Lambda with online
-    // varH,N_hf, but is consistent with offline modes for MFMC and ACV.
-    compute_mlmf_estimator_variance(var_YH_pilot, N_actual_hf, Lambda_pilot,
-				    estVar);
-  }
-  else { // estimator performance only requires offline pilot
-    for (lev=0; lev<num_cv_lev; ++lev)
-      { N_actual_lf[lev] = N_actual_hf[lev]; N_alloc_lf[lev] = N_alloc_hf[lev];}
-    SizetArray delta_N_hf;  delta_N_hf.assign(num_hf_lev, 0);
-    update_projected_samples(hf_targets_pilot, eval_ratios_pilot, N_actual_hf,
-			     N_alloc_hf, hf_cost, N_actual_lf, N_alloc_lf,
-			     lf_cost, delta_N_hf, deltaEquivHF);
-    Sizet2DArray N_proj_hf = N_actual_hf;
-    increment_samples(N_proj_hf, delta_N_hf);
-    compute_mlmf_estimator_variance(var_YH_pilot, N_proj_hf, Lambda_pilot,
-				    estVar);
   }
 
+  // --------------------------------------------------------
+  // LF increments and final stats from online sample profile
+  // --------------------------------------------------------
+  Real lf_tgt_l;
+  for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) {
+    // LF increments from online sample profile
+    configure_indices(group, lf_form, lev, sequenceType);
+    if (backfillFailures) { // increment relative to successful samples
+      lf_increment(eval_ratios_pilot[lev], N_actual_lf[lev],
+		   hf_targets_pilot[lev], lf_targets, mlmfIter, lev);
+      lf_tgt_l = average(lf_targets);
+      N_alloc_lf[lev] += one_sided_delta(N_alloc_lf[lev], lf_tgt_l);//no relax
+    }
+    else {                  // increment relative to allocated samples
+      lf_increment(eval_ratios_pilot[lev], N_alloc_lf[lev],
+		   hf_targets_pilot[lev], lf_tgt_l, mlmfIter, lev);
+      N_alloc_lf[lev] += numSamples;
+    }
+    if (numSamples) {
+      accumulate_mlmf_Qsums(sum_Ll_refined, sum_Llm1_refined, lev,
+			    N_actual_lf[lev]);
+      increment_ml_equivalent_cost(numSamples, level_cost(lf_cost, lev),
+				   hf_ref_cost, equivHFEvals);
+    }
+  }
+
+  RealMatrix Y_mom(numFunctions, 4), Y_cvmc_mom(numFunctions, 4, false);
+  for (lev=0; lev<num_cv_lev; ++lev) {
+    cv_raw_moments(sum_Ll, sum_Llm1, sum_Hl, sum_Hlm1, sum_Ll_Ll, sum_Ll_Llm1,
+		   sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1, sum_Hlm1_Ll,
+		   sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1, sum_Hlm1_Hlm1,
+		   N_actual_hf[lev], sum_Ll_refined, sum_Llm1_refined,
+		   N_actual_lf[lev], /*rho_dot2_LH,*/ lev, Y_cvmc_mom);
+    Y_mom += Y_cvmc_mom;
+  }
+  if (num_hf_lev > num_cv_lev)
+    ml_raw_moments(sum_Hl[1], sum_Hl[2], sum_Hl[3], sum_Hl[4], N_actual_hf,
+		   num_cv_lev, num_hf_lev, Y_mom);
+  // Convert uncentered raw moment estimates to final moments (central or std)
+  convert_moments(Y_mom, momentStats);
+
+  recover_variance(momentStats, varH);
+  // See explanation of varH recovery options above.
+  //RealMatrix Y_mlmc_mom(numFunctions, 4), mlmc_stats;
+  //ml_raw_moments(sum_Hl[1], sum_Hl[2], sum_Hl[3], sum_Hl[4], N_actual_hf,
+  // 		   0, num_hf_lev, Y_mlmc_mom);
+  //convert_moments(Y_mlmc_mom, mlmc_stats); // raw to final (central or std)
+  //recover_variance(mlmc_stats, varH);
+
+  // Retain var_YH & Lambda from "oracle" pilot for computing final estimator
+  // variances.  This results in mixing offline var_YH,Lambda with online
+  // varH,N_hf, but is consistent with offline modes for MFMC and ACV.
+  compute_mlmf_estimator_variance(var_YH_pilot,N_actual_hf,Lambda_pilot,estVar);
   avgEstVar = average(estVar);
 }
 

@@ -147,8 +147,7 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
     break;
   case ONLINE_PILOT:
     // MLMF-specific default: don't let allocator get stuck in fine-tuning
-    if (maxIterations    == SZ_MAX) maxIterations    = 25;
-    //if (maxFunctionEvals == SZ_MAX) maxFunctionEvals = ; // allow inf budget
+    if (maxIterations == SZ_MAX) maxIterations = 25;
     if (!finalStatsType) finalStatsType = QOI_STATISTICS; // mode default
     break;
   default:

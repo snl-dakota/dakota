@@ -380,11 +380,19 @@ void NonDGenACVSampling::core_run()
 
   switch (pilotMgmtMode) {
   case ONLINE_PILOT: // iterated GenACV (default)
-    generalized_acv_online_pilot();   break;
-  case OFFLINE_PILOT: // computes performance for offline/Oracle correlation
-    generalized_acv_offline_pilot();  break;
+    // ESTIMATOR_PERFORMANCE case is still iterated for N_H, and therefore
+    // differs from ONLINE_PILOT_PROJECTION
+    generalized_acv_online_pilot();  break;
+  case OFFLINE_PILOT: // non-iterated allocation from offline/Oracle correlation
+    switch (finalStatsType) {
+    // since offline is not iterated, the ESTIMATOR_PERFORMANCE case is the
+    // same as OFFLINE_PILOT_PROJECTION --> bypass IntMaps, simplify code
+    case ESTIMATOR_PERFORMANCE:  generalized_acv_pilot_projection();  break;
+    default:                     generalized_acv_offline_pilot();     break;
+    }
+    break;
   case ONLINE_PILOT_PROJECTION:  case OFFLINE_PILOT_PROJECTION:
-    generalized_acv_pilot_projection(); break;
+    generalized_acv_pilot_projection();  break;
   }
 }
 
@@ -519,43 +527,37 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
       //reset_acv(); // reset state for next ACV execution
     }
   }
-  Cout << "\n>>>>> Approx subset and DAG evaluation completed\n" << std::endl;
   restore_best();
   ++mlmfIter;
 
   // -----------------------------------
   // Perform "online" sample increments:
   // -----------------------------------
+  // QOI_STATISTICS case; ESTIMATOR_PERFORMANCE redirects to
+  // generalized_acv_pilot_projection() to also bypass IntMaps.
   IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baselineH, sum_LH;
   IntRealSymMatrixArrayMap sum_LL;  RealVector sum_HH;
   initialize_acv_sums(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH);
   const UShortArray& approx_set = activeModelSetIter->first;
   soln_key.first = approx_set;  soln_key.second = *activeDAGIter;
   MFSolutionData& soln = dagSolns[soln_key];
-  // Only QOI_STATISTICS requires online shared/approx profile evaluation for
-  // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
-  if (finalStatsType == QOI_STATISTICS) {
-    if (truthFixedByPilot) numSamples = 0;
-    else {
-      Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
-      // No relaxation since final allocation
-      numSamples = one_sided_delta(avg_N_H, soln.solution_reference());
-    }
-    // perform the shared increment for the online sample profile
-    // > utilize ASV for active approx subset
-    shared_increment(mlmfIter, approx_set); // spans ACTIVE models, blocking
-    accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
-			sum_LH, sum_HH, N_H_actual);
-    N_H_alloc += numSamples;
-    increment_equivalent_cost(numSamples, sequenceCost, numApprox, approx_set,
-			      equivHFEvals);
-    // perform LF increments for the online sample profile
-    approx_increments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
-		      N_H_alloc, soln);
+  if (truthFixedByPilot) numSamples = 0;
+  else {
+    Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
+    // No relaxation since final allocation
+    numSamples = one_sided_delta(avg_N_H, soln.solution_reference());
   }
-  else // project online profile including both shared samples and LF increment
-    update_projected_samples(soln, approx_set, N_H_actual, N_H_alloc,
-			     deltaNActualHF,deltaEquivHF);
+  // perform the shared increment for the online sample profile
+  // > utilize ASV for active approx subset
+  shared_increment(mlmfIter, approx_set); // spans ACTIVE models, blocking
+  accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
+		      sum_LH, sum_HH, N_H_actual);
+  N_H_alloc += numSamples;
+  increment_equivalent_cost(numSamples, sequenceCost, numApprox, approx_set,
+			    equivHFEvals);
+  // perform LF increments for the online sample profile
+  approx_increments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
+		    N_H_alloc, soln);
 }
 
 
@@ -584,7 +586,7 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
     compute_LH_statistics(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual,
 			  var_L, varH, covLL, covLH);
     N_H_alloc = numSamples;
-  } /// *** TO DO: this code block is exact same as ACV ***
+  } /// *** TO DO: this code block is exact same as ACV
   std::pair<UShortArray, UShortArray> soln_key;
 
   // -----------------------------------
@@ -2015,6 +2017,8 @@ void NonDGenACVSampling::update_best(MFSolutionData& soln)
 
 void NonDGenACVSampling::restore_best()
 {
+  //Cout << "\n>>>>> Approx subset and DAG evaluation completed\n" << std::endl;
+
   if (bestModelSetIter == modelDAGs.end()) {
     Cout << "Warning: best DAG has not been updated in restore_best().\n"
 	 << "         Last active DAG will be used." << std::endl;
