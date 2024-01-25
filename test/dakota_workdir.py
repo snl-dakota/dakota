@@ -4,7 +4,6 @@ import sys
 import os
 import subprocess
 
-
 # Test work_directory named trydir
 workdir_basename="trydir"
 
@@ -24,6 +23,17 @@ else:
     resultsfile = sys.argv[2]
 
 
+# When this driver exits without running rosenbrock
+# due to an error, no results file is generated. If
+# Dakota ran it using the system interface, it hangs
+# forever. This function creates an empty results file
+# to cause Dakota to abort so the test suite can continue
+# running.
+def abort():
+    open(resultsfile, "w").close()
+    sys.exit(1)
+
+
 if mode in set(("tag","tag_save","saved_params")):
     # we should find ourselves in a directory tagged with an integer
     pwd = os.getcwd()
@@ -32,7 +42,7 @@ if mode in set(("tag","tag_save","saved_params")):
         mytag = int(mytag)
     except ValueError:
         print("Error: Unexpected directory tag!")
-        sys.exit(1)
+        abort()
 
 if mode == "tag_save":
     # if the eval is 2 or greater, the previous dir should be around
@@ -40,7 +50,7 @@ if mode == "tag_save":
         lastdir = os.path.join("..", workdir_basename + ".%d" % (mytag - 1,))
         if not os.path.isdir(lastdir):
             print("Error: Failed to find saved directory",lastdir)
-            sys.exit(1)
+            abort()
 elif mode == "templatefiles":
     # template files will include dakota_workdir.root.dat
     # and they will be symlinked by default
@@ -49,16 +59,16 @@ elif mode == "templatefiles":
             print("Error: dakota_workdir.root.dat is regular file; should be symlink")
         else:
             print("Error: Failed to find template file dakota_workdir.root.dat")
-        sys.exit(1)
+        abort()
 elif mode == "templatefiles_copy":
     # template files will include dakota_workdir.root.dat
     # and they will be copied to pwd
     if os.path.islink("dakota_workdir.root.dat"):
         print("Error: dakota_workdir.root.dat is symlink; should be regular file")
-        sys.exit(1)
+        abort()
     if not os.path.isfile("dakota_workdir.root.dat"):
         print("Error: Failed to find template file dakota_workdir.root.dat")
-        sys.exit(1)
+        abort()
 elif mode == "templatedir":
     # template files will include dakota_workdir.templatedir.dat
     # and they will be symlinked by default
@@ -67,20 +77,20 @@ elif mode == "templatedir":
             print("Error:dakota_workdir.templatedir.dat is regular file; should be symlink")
         else:
             print("Error: Failed to find template file dakota_workdir.templatedir.dat")
-        sys.exit(1)
+        abort()
 elif mode == "templatedir_copy":
     # template files will include dakota_workdir.templatedir.dat
     # and they will be copied to pwd
     if os.path.islink("dakota_workdir.templatedir.dat"):
         print("Error: dakota_workdir.templatedir.dat is symlink; should be regular file")
-        sys.exit(1)
+        abort()
     if not os.path.isfile("dakota_workdir.templatedir.dat"):
         print("Error: Failed to find template file dakota_workdir.templatedir.dat")
-        sys.exit(1)
+        abort()
 elif mode == "named_params":
     if not os.path.isfile("params.in"):
         print("Error: named parameters file params.in does not exist in trydir")
-        sys.exit(1)
+        abort()
 elif mode == "saved_params":
     # if the eval is 2 or greater, the previous dir should be around
     # with a saved params file
@@ -88,10 +98,10 @@ elif mode == "saved_params":
         lastdir = workdir_basename+".%s" % (mytag-1,)
         if not os.path.isdir(".." + os.sep + lastdir):
             print("Error: Failed to find saved directory",lastdir)
-            sys.exit(1)
+            abort()
         if not os.path.isfile(".." + os.sep + lastdir + os.sep + "params.in"):
             print("Error: named parameters file params.in does not exist in last tagged trydir")
-            sys.exit(1)
+            abort()
 
 print("Running rosenbrock...")
 
