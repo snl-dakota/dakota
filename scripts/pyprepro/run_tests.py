@@ -637,7 +637,7 @@ class preparser_edge_cases(unittest.TestCase):
         Test the different escape methods
         """
     
-        input = r"""\
+        input = r"""
         %inline_escape = 'Uh Oh'
         \{inline_escape\} <--- No variable definition
         \{inline_escape = 100\} <--- with variable definition (gets processed differently)
@@ -649,7 +649,7 @@ class preparser_edge_cases(unittest.TestCase):
         {inline_escape} # should read 'Uh Oh'
         """
     
-        gold = """\
+        gold = """
         {inline_escape} <--- No variable definition
         {inline_escape = 100} <--- with variable definition (gets processed differently)
 
@@ -686,14 +686,14 @@ class preparser_edge_cases(unittest.TestCase):
         c( p(r'\\[b=2\\$',inline='[ $'), r'\[b=2\$')
         
         # Test with nested
-        IN = r"""\
+        IN = r"""
 # Several on a line, some escaped
 { alpha = 0.1 } then \{ beta = alpha \} then { beta = 2.0*alpha }
  
 # Nested with escapes
 { alpha = 0.1 } then \{ beta = alpha \} then \{ { beta = 2.0*alpha } \} {beta}"""
         
-        GOLD = """\
+        GOLD = """
 # Several on a line, some escaped
 0.1 then { beta = alpha } then 0.2
 
@@ -1280,14 +1280,14 @@ class inline_spec(unittest.TestCase):
             
             input = input0.replace('HEADER',HEADER)
             # Nothing specified
-            self.assert_(compare_lines(pyprepro.pyprepro(input),gold))
+            self.assertTrue(compare_lines(pyprepro.pyprepro(input),gold))
             
             # Commands specified
-            self.assert_(compare_lines(pyprepro.pyprepro(input, # Doesn't matter the settings
+            self.assertTrue(compare_lines(pyprepro.pyprepro(input, # Doesn't matter the settings
                                        inline='hasfd asfd',code='ran dom',code_block='bl ock'),gold))
             
             # Same thing set    
-            self.assert_(compare_lines(pyprepro.pyprepro(input, # Doesn't matter the settings
+            self.assertTrue(compare_lines(pyprepro.pyprepro(input, # Doesn't matter the settings
                                        inline='< >',code='*',code_block='<T T>'),gold))
         
         # Test from a test file
@@ -1297,10 +1297,10 @@ class inline_spec(unittest.TestCase):
         New Val 9 # 9""")
 
         pyprepro._pyprepro_cli(shsplit('test_files/spec_regular.inp test_output/spec_reg.inp'))
-        self.assert_(compare_lines(gold2,read('test_output/spec_reg.inp')))
+        self.assertTrue(compare_lines(gold2,read('test_output/spec_reg.inp')))
 
         pyprepro._pyprepro_cli(shsplit('test_files/spec_regular.inp test_output/spec_reg.inp --code "!" --inline "<< >>" --code-block "{{% %}}"'))
-        self.assert_(compare_lines(gold2,read('test_output/spec_reg.inp')))      
+        self.assertTrue(compare_lines(gold2,read('test_output/spec_reg.inp')))      
     
     def test_inline_spec_nestedinclude(self):
         """
@@ -1323,7 +1323,7 @@ class inline_spec(unittest.TestCase):
             @0 {0: 100, 1: 101, 2: 102}""")
         
         pyprepro._pyprepro_cli(shsplit('test_files/spec_include0.inp test_output/spec_include.inp'))
-        self.assert_(compare_lines(gold,read('test_output/spec_include.inp')))    
+        self.assertTrue(compare_lines(gold,read('test_output/spec_include.inp')))    
 
         # With a specified one. Make sure the syntax is changed
         gold2 = dedent("""\
@@ -1341,7 +1341,7 @@ class inline_spec(unittest.TestCase):
             +++
             @0 {0: 100, 1: 101, 2: 102}""")
         pyprepro._pyprepro_cli(shsplit('--include test_files/spec_includeII.inp test_files/spec_include0.inp test_output/spec_include2.inp'))
-        self.assert_(compare_lines(gold2,read('test_output/spec_include2.inp')))
+        self.assertTrue(compare_lines(gold2,read('test_output/spec_include2.inp')))
 
 class Regressions(unittest.TestCase):
     def test_same_inline_open_close(self):
