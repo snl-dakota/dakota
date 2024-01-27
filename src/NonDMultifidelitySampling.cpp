@@ -447,7 +447,7 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
   }
 
   // Compute/apply control variate parameter to estimate uncentered raw moments
-  RealMatrix H_raw_mom(numFunctions, 4);
+  RealMatrix H_raw_mom(4, numFunctions);
   mf_raw_moments(sum_L_baseline, sum_L_shared, sum_L_refined, sum_H, sum_LL,
 		 sum_LH, N_L_actual_shared, N_L_actual_refined, N_H_actual,
 		 H_raw_mom);
@@ -1397,7 +1397,7 @@ mf_raw_moments(IntRealMatrixMap& sum_L_baseline, IntRealMatrixMap& sum_L_shared,
   // --> no need to incur matrix inversion overhead for MFMC; stick with same
   //     scalar approach used for analytic solutions.
 
-  if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(numFunctions, 4);
+  if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(4, numFunctions);
 
   Real beta, sum_H_mq;
   size_t approx, qoi, N_H_q;//, N_shared;
@@ -1413,7 +1413,7 @@ mf_raw_moments(IntRealMatrixMap& sum_L_baseline, IntRealMatrixMap& sum_L_shared,
       Cout << "Moment " << mom << " estimator:\n";
     for (qoi=0; qoi<numFunctions; ++qoi) {
       sum_H_mq = sum_H_m[qoi];  N_H_q = N_H[qoi];
-      Real& H_raw_mq = H_raw_mom(qoi, mom-1);
+      Real& H_raw_mq = H_raw_mom(mom-1, qoi);
       H_raw_mq = sum_H_mq / N_H_q; // first term to be augmented
       for (approx=0; approx<numApprox; ++approx) {
 	// Uses a baseline {sum,N}_L consistent with H,LL,LH accumulators:

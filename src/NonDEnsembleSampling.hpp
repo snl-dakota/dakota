@@ -133,16 +133,26 @@ protected:
   /// standardized moments
   void convert_moments(const RealMatrix& raw_mom, RealMatrix& final_mom);
 
+  /// convert uncentered (raw) moments to centered moments; unbiased estimators
+  static void uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3,Real  rm4,
+				     Real& cm1, Real& cm2, Real& cm3,Real& cm4);
   /// convert uncentered (raw) moments to centered moments; biased estimators
   static void uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
-			      Real& cm1, Real& cm2, Real& cm3, Real& cm4,
-			      size_t Nlq);
-  /// convert uncentered (raw) moments to centered moments; unbiased estimators
-  static void uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
-			      Real& cm1, Real& cm2, Real& cm3, Real& cm4);
+				     Real& cm1, Real& cm2, Real& cm3, Real& cm4,
+				     size_t Nlq);
+  /// convert uncentered (raw) moments to centered moments; biased estimators
+  static void uncentered_to_centered(const Real* rm, Real* cm, size_t num_mom);
+  /// convert uncentered (raw) moments to centered moments; biased estimators
+  void uncentered_to_centered(const RealMatrix& raw_mom, RealMatrix& cent_mom);
+
   /// convert centered moments to standardized moments
   static void centered_to_standard(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
 			    Real& sm1, Real& sm2, Real& sm3, Real& sm4);
+  /// convert centered moments to standardized moments
+  static void centered_to_standard(const Real* cm, Real* sm, size_t num_mom);
+  /// convert centered moments to standardized moments
+  void centered_to_standard(const RealMatrix& cent_mom, RealMatrix& std_mom);
+
   /// detect, warn, and repair a negative central moment (for even orders)
   static void check_negative(Real& cm);
 
@@ -523,7 +533,7 @@ uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
   //   implemented in the function following this one.
 
   cm1 = rm1;             // mean
-  cm2 = rm2 - cm1 * cm1; // variance 
+  cm2 = rm2 - cm1 * cm1; // variance
 
   cm3 = rm3 - cm1 * (3. * cm2 + cm1 * cm1);                         // using cm
   //  = rm3 - cm1 * (3. * rm2 - 2. * cm1 * cm1);                    // using rm
@@ -570,6 +580,41 @@ uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4, Real& cm1,
 }
 
 
+/** For single-level moment calculations without a sample count. */
+inline void NonDEnsembleSampling::
+uncentered_to_centered(const Real* rm, Real* cm, size_t num_mom)
+{
+  if (num_mom >= 1) {
+    Real& cm1 = cm[0];
+    cm1 = rm[0]; // mean
+    if (num_mom >= 2) {
+      Real& cm2 = cm[1];
+      cm2 = rm[1] - cm1 * cm1; // variance
+      if (num_mom >= 3) {
+	Real& cm3 = cm[2];
+	cm3 = rm[2] - cm1 * (3. * cm2 + cm1 * cm1);
+	if (num_mom >= 4)
+	  cm[3] = rm[3] - cm1 * (4. * cm3 + cm1 * (6. * cm2 + cm1 * cm1));
+      }
+    }
+  }
+}
+
+
+/** Convert full matrix of moments. */
+inline void NonDEnsembleSampling::
+uncentered_to_centered(const RealMatrix& raw_mom, RealMatrix& cent_mom)
+{
+  // Note: raw_mom and cent_mom must be num_moments x numFunctions
+  size_t qoi, num_mom = raw_mom.numRows();
+  if (cent_mom.numRows() != num_mom)
+    cent_mom.shapeUninitialized(num_mom, numFunctions);
+
+  for (qoi=0; qoi<numFunctions; ++qoi)
+    uncentered_to_centered(raw_mom[qoi], cent_mom[qoi], num_mom);
+}
+
+
 inline void NonDEnsembleSampling::
 centered_to_standard(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
 		     Real& sm1, Real& sm2, Real& sm3, Real& sm4)
@@ -582,10 +627,49 @@ centered_to_standard(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
     sm4 = cm4 / (cm2 * cm2) - 3.; // excess kurtosis
   }
   else {
-    Cerr << "\nWarning: central to standard conversion failed due to "
-	 << "non-positive\n         variance.  Retaining central moments.\n";
+    Cerr << "\nWarning: central to standard conversion failed due to non-"
+	 << "positive\n         variance.  Retaining central moments.\n";
     sm2 = 0.; sm3 = cm3; sm4 = cm4; // or assign NaN to sm{3,4}
   }
+}
+
+
+inline void NonDEnsembleSampling::
+centered_to_standard(const Real* cm, Real* sm, size_t num_mom)
+{
+  if (num_mom >= 1) {
+    sm[0] = cm[0]; // mean
+    if (num_mom >= 2) {
+      Real& sm2 = sm[1];  const Real& cm2 = cm[1];
+      if (cm2 > 0.) {
+	sm2 = std::sqrt(cm2); // std deviation
+	if (num_mom >= 3) {
+	  sm[2] = cm[2] / (cm2 * sm2); // skewness
+	  if (num_mom >= 4)
+	    sm[3] = cm[3] / (cm2 * cm2) - 3.; // excess kurtosis
+	}
+      }
+      else {
+	Cerr << "\nWarning: central to standard conversion failed due to non-"
+	     << "positive\n         variance.  Retaining central moments.\n";
+	sm2 = 0.; sm[2] = cm[2]; sm[3] = cm[3]; // or assign NaN to sm{3,4}
+      }
+    }
+  }
+}
+
+
+/** Convert full matrix of moments. */
+inline void NonDEnsembleSampling::
+centered_to_standard(const RealMatrix& cent_mom, RealMatrix& std_mom)
+{
+  // Note: cent_mom and std_mom must be num_moments x numFunctions
+  size_t qoi, num_mom = cent_mom.numRows();
+  if (std_mom.numRows() != num_mom)
+    std_mom.shapeUninitialized(num_mom, numFunctions);
+
+  for (qoi=0; qoi<numFunctions; ++qoi)
+    centered_to_standard(cent_mom[qoi], std_mom[qoi], num_mom);
 }
 
 

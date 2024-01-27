@@ -365,7 +365,7 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
   // -----------------------------------------------------------
   // Compute/apply control variate parameter to estimate moments
   // -----------------------------------------------------------
-  RealMatrix H_raw_mom(numFunctions, 4);
+  RealMatrix H_raw_mom(4, numFunctions);
   acv_raw_moments(sum_L_baselineH, sum_L_refined, sum_H, sum_LL, sum_LH,
 		  avg_eval_ratios, N_H_actual, N_L_actual_refined, H_raw_mom);
   // Convert uncentered raw moment estimates to final moments (central or std)
@@ -1271,7 +1271,7 @@ acv_raw_moments(IntRealMatrixMap& sum_L_baseline,
 		const RealVector& avg_eval_ratios, const SizetArray& N_shared,
 		const Sizet2DArray& N_L_refined,   RealMatrix& H_raw_mom)
 {
-  if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(numFunctions, 4);
+  if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(4, numFunctions);
 
   precompute_acv_control(avg_eval_ratios, N_shared);
 
@@ -1291,7 +1291,7 @@ acv_raw_moments(IntRealMatrixMap& sum_L_baseline,
 			  N_shared_q, mom, qoi, beta);
       // *** TO DO: support shared_approx_increment() --> baselineL
 
-      Real& H_raw_mq = H_raw_mom(qoi, mom-1);
+      Real& H_raw_mq = H_raw_mom(mom-1, qoi);
       H_raw_mq = sum_H_mq / N_shared_q; // first term to be augmented
       for (approx=0; approx<numApprox; ++approx) {
 	if (outputLevel >= NORMAL_OUTPUT)

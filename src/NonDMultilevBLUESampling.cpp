@@ -183,7 +183,7 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
   // Only QOI_STATISTICS requires application of oversample ratios and
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
   if (finalStatsType == QOI_STATISTICS) {
-    RealMatrix H_raw_mom(numFunctions, 4);
+    RealMatrix H_raw_mom(4, numFunctions);
     blue_raw_moments(sum_G, sum_GG, NGroupActual, H_raw_mom);
     convert_moments(H_raw_mom, momentStats);
   }
@@ -231,7 +231,7 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
   increment_equivalent_cost(delta_N_G, modelGroupCost,
 			    sequenceCost[numApprox], equivHFEvals);
   // extract moments
-  RealMatrix H_raw_mom(numFunctions, 4);
+  RealMatrix H_raw_mom(4, numFunctions);
   blue_raw_moments(sum_G, sum_GG, NGroupActual, H_raw_mom);
   convert_moments(H_raw_mom, momentStats);
   // finalize

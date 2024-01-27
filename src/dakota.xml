@@ -683,9 +683,11 @@
 	       <oneOf label="Ensemble Sampling Solution Mode">
 		 <keyword  id="online_pilot" name="online_pilot" code="{N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}" label="online_pilot" help="" >
 		   &mlmf_relaxation;
-		   <!-- &mlmf_final_stats; -->
+		   &mlmf_final_stats;
 		 </keyword>
-		 <keyword  id="offline_pilot" name="offline_pilot" code="{N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}" label="offline_pilot" help="" />
+		 <keyword  id="offline_pilot" name="offline_pilot" code="{N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}" label="offline_pilot" help="" >
+		   &mlmf_final_stats;
+		 </keyword>
 		 <keyword  id="online_projection" name="online_projection" code="{N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT_PROJECTION)}" label="online_projection" help="" />
 		 <keyword  id="offline_projection" name="offline_projection" code="{N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT_PROJECTION)}" label="offline_projection" help="" />
 	       </oneOf>
@@ -3208,7 +3210,6 @@
 	  </keyword>
 	  &method_max_iterations;
           &method_max_function_evaluations;
-	  &mlmf_final_stats;
 	  &rng_options;
 	  &method_optional_model_pointer;
 	</keyword>
@@ -3230,7 +3231,6 @@
 	  &method_convergence_tolerance;
 	  &method_max_iterations;
           &method_max_function_evaluations;
-	  &mlmf_final_stats;
 	  &rng_options;
 	  &method_optional_model_pointer;
 	</keyword>
@@ -3248,7 +3248,6 @@
 	  &method_convergence_tolerance;
 	  &method_max_iterations;
           &method_max_function_evaluations;
-	  &mlmf_final_stats;
 	  &rng_options;
 	  &method_optional_model_pointer;
 	</keyword>
@@ -3301,7 +3300,6 @@
 	  &method_convergence_tolerance;
 	  &method_max_iterations;
           &method_max_function_evaluations;
-	  &mlmf_final_stats;
 	  &rng_options;
 	  &method_optional_model_pointer;
 	</keyword>
@@ -3318,7 +3316,6 @@
 	  &method_convergence_tolerance;
 	  &method_max_iterations;
           &method_max_function_evaluations;
-	  &mlmf_final_stats;
 	  &rng_options;
 	  &method_optional_model_pointer;
 	</keyword>

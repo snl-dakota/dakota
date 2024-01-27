@@ -390,39 +390,19 @@ export_all_samples(String root_prepend, const Model& model, size_t iter,
 void NonDEnsembleSampling::
 convert_moments(const RealMatrix& raw_mom, RealMatrix& final_mom)
 {
-  // Note: raw_mom is numFunctions x 4 and final_mom is the transpose
-  if (final_mom.empty())
-    final_mom.shapeUninitialized(4, numFunctions);
-
   // Convert uncentered raw moment estimates to central moments
-  if (finalMomentsType == Pecos::CENTRAL_MOMENTS) {
-    for (size_t qoi=0; qoi<numFunctions; ++qoi)
-      uncentered_to_centered(raw_mom(qoi,0), raw_mom(qoi,1), raw_mom(qoi,2),
-			     raw_mom(qoi,3), final_mom(0,qoi), final_mom(1,qoi),
-			     final_mom(2,qoi), final_mom(3,qoi));
-  }
+  if (finalMomentsType == Pecos::CENTRAL_MOMENTS)
+    uncentered_to_centered(raw_mom, final_mom);
   // Convert uncentered raw moment estimates to standardized moments
   else { //if (finalMomentsType == Pecos::STANDARD_MOMENTS) {
-    Real cm1, cm2, cm3, cm4;
-    for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-      uncentered_to_centered(raw_mom(qoi,0), raw_mom(qoi,1), raw_mom(qoi,2),
-			     raw_mom(qoi,3), cm1, cm2, cm3, cm4);
-      centered_to_standard(cm1, cm2, cm3, cm4, final_mom(0,qoi),
-			   final_mom(1,qoi), final_mom(2,qoi),
-			   final_mom(3,qoi));
-    }
+    RealMatrix cent_mom;
+    uncentered_to_centered(raw_mom, cent_mom);
+    centered_to_standard(cent_mom, final_mom);
   }
 
   if (outputLevel >= DEBUG_OUTPUT)
-    for (size_t qoi=0; qoi<numFunctions; ++qoi)
-      Cout <<  "raw mom 1 = "   << raw_mom(qoi,0)
-	   << " final mom 1 = " << final_mom(0,qoi) << '\n'
-	   <<  "raw mom 2 = "   << raw_mom(qoi,1)
-	   << " final mom 2 = " << final_mom(1,qoi) << '\n'
-	   <<  "raw mom 3 = "   << raw_mom(qoi,2)
-	   << " final mom 3 = " << final_mom(2,qoi) << '\n'
-	   <<  "raw mom 4 = "   << raw_mom(qoi,3)
-	   << " final mom 4 = " << final_mom(3,qoi) << "\n\n";
+    Cout << "raw moments   =\n" << raw_mom
+	 << "final moments =\n" << final_mom << "\n\n";
 }
 
 } // namespace Dakota

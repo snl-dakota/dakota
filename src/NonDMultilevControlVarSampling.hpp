@@ -75,7 +75,8 @@ private:
 		      RealVectorArray& eval_ratios, RealMatrix& Lambda,
 		      RealMatrix& var_YH, SizetArray& N_alloc,
 		      Sizet2DArray& N_actual, RealVector& hf_targets,
-		      bool accumulate_cost, bool pilot_estvar);
+		      RealMatrix& pilot_mom, bool accumulate_cost,
+		      bool pilot_estvar);
 
   /// perform LF sample increment as indicated by evaluation ratios
   bool lf_increment(const RealVector& eval_ratios, const SizetArray& N_lf,
@@ -191,7 +192,7 @@ private:
 			const SizetArray& N_shared,
 			const RealMatrix& sum_L_refined,
 			const SizetArray& N_refined, size_t lev,
-			const RealVector& beta, RealVector& H_raw_mom);
+			const RealVector& beta, RealMatrix& H_raw_mom, int m);
 
   /// apply scalar control variate parameter (beta) to approximate HF moment
   void apply_mlmf_control(Real sum_Hl, Real sum_Hlm1, Real sum_Ll,
@@ -206,7 +207,7 @@ private:
 			  const RealMatrix& sum_Llm1_refined,
 			  const SizetArray& N_refined, size_t lev,
 			  const RealVector& beta_dot, const RealVector& gamma,
-			  RealVector& H_raw_mom);
+			  RealMatrix& H_raw_mom, int m);
 
   /// for pilot projection mode, advance sample counts and accumulated cost
   void update_projected_samples(const RealVector& hf_targets,
@@ -237,7 +238,7 @@ private:
 			    IntRealMatrixMap& sum_H,
 			    IntRealMatrixMap& sum_LL, IntRealMatrixMap& sum_LH,
 			    IntRealMatrixMap& sum_HH, size_t num_ml_lev,
-			    size_t num_cv_lev);
+			    size_t num_cv_lev, size_t num_mom = 4);
   /// initialize the MLMF accumulators for computing means, variances, and
   /// covariances across fidelity levels
   void initialize_mlmf_sums(IntRealMatrixMap& sum_Ll,
@@ -256,7 +257,8 @@ private:
 			    IntRealMatrixMap& sum_Hl_Hl,
 			    IntRealMatrixMap& sum_Hl_Hlm1,
 			    IntRealMatrixMap& sum_Hlm1_Hlm1,
-			    size_t num_ml_lev, size_t num_cv_lev);
+			    size_t num_ml_lev, size_t num_cv_lev,
+			    size_t num_mom = 4);
 
   /// update running QoI sums for one model at two levels (sum_Ql, sum_Qlm1)
   /// using set of model evaluations within allResponses
@@ -283,7 +285,7 @@ private:
   void accumulate_mlmf_Qsums(const IntResponseMap& lf_resp_map,
 			     const IntResponseMap& hf_resp_map,
 			     RealMatrix& sum_L_shared,RealMatrix& sum_L_refined,
-			     RealMatrix& sum_H,  RealMatrix& sum_LL,
+			     IntRealMatrixMap& sum_H,  RealMatrix& sum_LL,
 			     RealMatrix& sum_LH, RealMatrix& sum_HH,
 			     size_t lev, SizetArray& N_shared);
   /// update running two-level discrepancy sums for two models (sum_L,
@@ -325,8 +327,8 @@ private:
 			     RealMatrix& sum_Llm1,
 			     RealMatrix& sum_Ll_refined,
 			     RealMatrix& sum_Llm1_refined,
-			     RealMatrix& sum_Hl,
-			     RealMatrix& sum_Hlm1,
+			     IntRealMatrixMap& sum_Hl,
+			     IntRealMatrixMap& sum_Hlm1,
 			     RealMatrix& sum_Ll_Ll,
 			     RealMatrix& sum_Ll_Llm1,
 			     RealMatrix& sum_Llm1_Llm1,
@@ -481,14 +483,14 @@ inline void NonDMultilevControlVarSampling::
 apply_mf_control(const RealMatrix& sum_H,    const RealMatrix& sum_L_shared,
 		 const SizetArray& N_shared, const RealMatrix& sum_L_refined,
 		 const SizetArray& N_refined, size_t lev,
-		 const RealVector& beta, RealVector& H_raw_mom)
+		 const RealVector& beta, RealMatrix& H_raw_mom, int m)
 {
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
     Cout << "   QoI " << qoi+1 << ": control variate beta = "
 	 << std::setw(9) << beta[qoi] << '\n';
     apply_mf_control(sum_H(qoi,lev), sum_L_shared(qoi,lev), N_shared[qoi],
 		     sum_L_refined(qoi,lev), N_refined[qoi], beta[qoi],
-		     H_raw_mom[qoi]);
+		     H_raw_mom(m, qoi));
   }
   if (numFunctions > 1) Cout << '\n';
 }
@@ -521,7 +523,7 @@ apply_mlmf_control(const RealMatrix& sum_Hl, const RealMatrix& sum_Hlm1,
 		   const RealMatrix& sum_Llm1_refined,
 		   const SizetArray& N_refined, size_t lev,
 		   const RealVector& beta_dot, const RealVector& gamma,
-		   RealVector& H_raw_mom)
+		   RealMatrix& H_raw_mom, int m)
 {
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
     Cout << "   QoI " << qoi+1 << ": control variate beta_dot = "
@@ -530,7 +532,7 @@ apply_mlmf_control(const RealMatrix& sum_Hl, const RealMatrix& sum_Hlm1,
 		       sum_Llm1(qoi,lev), N_shared[qoi],
 		       sum_Ll_refined(qoi,lev), sum_Llm1_refined(qoi,lev),
 		       N_refined[qoi], beta_dot[qoi], gamma[qoi],
-		       H_raw_mom[qoi]);
+		       H_raw_mom(m, qoi));
   }
   if (numFunctions > 1) Cout << '\n';
 }

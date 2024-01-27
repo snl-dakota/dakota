@@ -806,7 +806,7 @@ blue_raw_moments(IntRealMatrixArrayMap& sum_G,
       compute_mu_hat(cov_GG_inv, sum_G_m, N_G_actual, mu_hat);
     }
     for (size_t qoi=0; qoi<numFunctions; ++qoi)
-      H_raw_mom(qoi, mom-1) = mu_hat[qoi][numApprox]; // last model
+      H_raw_mom(mom-1, qoi) = mu_hat[qoi][numApprox]; // last model
   }
 }
 

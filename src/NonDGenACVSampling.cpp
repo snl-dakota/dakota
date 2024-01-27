@@ -719,7 +719,7 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
   // -----------------------------------------------------------
   // Compute/apply control variate parameter to estimate moments
   // -----------------------------------------------------------
-  RealMatrix H_raw_mom(numFunctions, 4);
+  RealMatrix H_raw_mom(4, numFunctions);
   genacv_raw_moments(sum_L_baselineH, sum_L_shared, sum_L_refined, sum_H,
 		     sum_LL, sum_LH, soln.solution_ratios(), N_L_actual_shared,
 		     N_L_actual_refined, N_H_actual, H_raw_mom);
@@ -1751,7 +1751,7 @@ genacv_raw_moments(IntRealMatrixMap& sum_L_baseline,
 		   const Sizet2DArray& N_L_refined,  const SizetArray& N_H,
 		   RealMatrix& H_raw_mom)
 {
-  if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(numFunctions, 4);
+  if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(4, numFunctions);
 
   precompute_genacv_control(avg_eval_ratios, N_H);
 
@@ -1773,7 +1773,7 @@ genacv_raw_moments(IntRealMatrixMap& sum_L_baseline,
 			     N_H_q, mom, qoi, approx_set, beta);
       // *** TO DO: support shared_approx_increment() --> baselineL
 
-      Real& H_raw_mq = H_raw_mom(qoi, mom-1);
+      Real& H_raw_mq = H_raw_mom(mom-1, qoi);
       H_raw_mq = sum_H_mq / N_H_q; // first term to be augmented
       for (approx=0; approx<num_approx; ++approx) {
 	inflate_approx = approx_set[approx];
