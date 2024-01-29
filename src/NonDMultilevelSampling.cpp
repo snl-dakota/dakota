@@ -2103,7 +2103,7 @@ void NonDMultilevelSampling::print_variance_reduction(std::ostream& s)
   }
   }
 
-  // MC estvar use varH from recover_variance()
+  // MC estvar uses varH from recover_variance()
   Real     proj_equiv_hf = equivHFEvals + deltaEquivHF,
     avg_budget_mc_estvar = average(varH) / proj_equiv_hf;
   s << "\n Equivalent   MC (" << std::setw(5)

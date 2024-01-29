@@ -109,17 +109,18 @@ method,
 	  pilot_samples = 25	     		#s0,#s1,#s2,#s3,#s4,#s17,#s25,#s26
 #	  pilot_samples = 100			#s5,#s6,#s7,#s8,#s9,#s15,#s16,#s18,#s21,#s22,#s23,#s24
 #	  pilot_samples = 250			#s19,#s20
-#	  solution_mode online_projection	#s5,#s6,#s7,#s8,#s9,#s15,#s16,#s18,#s19,#s20,#s25
 #	  pilot_samples = 5000			#s10,#s11,#s12,#s13,#s14,#s27
+	  solution_mode online_pilot			#s0,#s1,#s2,#s3,#s4,#s17,#s21,#s22,#s23,#s24,#s26
+	    final_statistics estimator_performance	#s0,#s1,#s2,#s3,#s4,#s17,#s21,#s22,#s23,#s24,#s26
+#	  solution_mode online_projection	#s5,#s6,#s7,#s8,#s9,#s15,#s16,#s18,#s19,#s20,#s25
 #	  solution_mode offline_pilot		#s10,#s11,#s12,#s13,#s14,#s27
 #	  search_model_graphs full_recursion	#s23,#s24
-#	  model_selection     			#s24
+#	    model_selection    			#s24
 	  max_function_evaluations = 500  	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s23,#s24,#s25,#s26,#s27
 #	  max_function_evaluations = 1000  	#s19,#s20
 #	  convergence_tolerance = .01		#s21,#s22
 #	  numerical_solve override		#s21
 	  seed = 8674132
-	  final_statistics estimator_performance
 	output silent
 
 model,

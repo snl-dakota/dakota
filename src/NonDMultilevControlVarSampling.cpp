@@ -635,10 +635,11 @@ multilevel_control_variate_mc_online_pilot() //_Qcorr()
     // variance reduction metrics (momentStats not reported for projections)
     RealMatrix Y_mom(2, numFunctions);
     RealMatrix& sum_Hl_1 = sum_Hl[1];  RealMatrix& sum_Hl_2 = sum_Hl[2];
-    // sum_H is Q^p for 0:num_cv_lev and Y^p for num_cv_lev:num_hf_lev
+    // For levels 0:num_cv_lev, sum_Hl[p] is Ql^p
     ml_Q_raw_moments(sum_Hl_1, sum_Hlm1[1], sum_Hl_2, sum_Hlm1[2], N_actual_hf,
 		     0, num_cv_lev, Y_mom);
-    // sum_H is Y^p for num_cv_lev:num_hf_lev
+    // For levels num_cv_lev:num_hf_lev, sum_Hl[p] is level discrepancy in Q^p,
+    // i.e. Ql^p - Qlm1^p, and can be summed directly into raw moments:
     ml_Y_raw_moments(sum_Hl_1, sum_Hl_2, N_actual_hf, num_cv_lev, num_hf_lev,
 		     Y_mom);
     convert_moments(Y_mom, momentStats); // raw to final (central or std)
