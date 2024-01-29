@@ -119,7 +119,7 @@ Any integer, real, or string data associated with a keyword are provided to the 
 
 you would provide a function
 
-.. code-block::
+.. code-block:: cpp
 
     void NIDRProblemDescDB::
     method_setting_start(const char *keyname, Values *val, void **g, void *v)
@@ -129,7 +129,7 @@ in NIDRProblemDescDB.cpp. In this example, argument &method_setting_details woul
 
 For some top-level keywords, g (the third argument to the startfcn and stopfcn) provides access to a relevant context. For example, method_start (the startfcn for the top-level method keyword) executes
 
-.. code-block::
+.. code-block:: cpp
 
    DataMethod *dm = new DataMethod;
     g = (void*)dm;
@@ -137,7 +137,7 @@ For some top-level keywords, g (the third argument to the startfcn and stopfcn) 
 (and supplies a couple of default values to dm). The start functions for lower-level keywords within the method keyword get access to dm through their g arguments. Here is an example:
 
 
-.. code-block::
+.. code-block:: cpp
 
    void NIDRProblemDescDB::
     method_str(const char *keyname, Values *val, void **g, void *v)
@@ -147,7 +147,7 @@ For some top-level keywords, g (the third argument to the startfcn and stopfcn) 
 
 In this example, v points to a pointer-to-member, and an assignment is made to one of the components of the DataMethod object pointed to by \*g. The corresponding stopfcn for the top-level method keyword is
  
-.. code-block::
+.. code-block:: cpp
 
      void NIDRProblemDescDB::
     method_stop(const char *keyname, Values *val, void **g, void *v)
@@ -192,13 +192,13 @@ Augment/update get_<data_type>() Functions
 
 The next update step involves extending the database retrieval functions in dakota.source/src/ProblemDescDB.cpp. These retrieval functions accept an identifier string and return a database attribute of a particular type, e.g., a RealVector:
 
-.. code-block::
+.. code-block:: cpp
 
    const RealVector& get_rv(const String& entry_name);
 
 The implementation of each of these functions contains tables of possible entry_name values and associated pointer-to-member values. There is one table for each relevant top-level keyword, with the top-level keyword omitted from the names in the table. Since binary search is used to look for names in these tables, each table must be kept in alphabetical order of its entry names. For example,
 
-.. code-block::
+.. code-block:: cpp
 
     ...
     else if ((L = Begins(entry_name, "model."))) {
@@ -236,7 +236,7 @@ Use get_<data_type>() Functions
 
 At this point, the new specifications have been mapped through all of the database classes. The only remaining step is to retrieve the new data within the constructors of the classes that need it. This is done by invoking the get_<data_type>() function on the ProblemDescDB object using the identifier string you selected in Augment/update get_<data_type>() Functions. For example:
 
-.. code-block::
+.. code-block:: cpp
 
     const String& interface_type = problem_db.get_string("interface.type");
 

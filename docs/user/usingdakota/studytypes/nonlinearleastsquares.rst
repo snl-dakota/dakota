@@ -305,8 +305,7 @@ Examples
 --------
 
 Both the Rosenbrock and textbook example problems can be formulated as
-nonlinear least-squares problems. Refer to
-Chapter 20 in the Dakota User's Manual, or :ref:`Additional Examples <additional>` for more information on these
+nonlinear least-squares problems. Refer to :ref:`Additional Examples <additional>` for more information on these
 formulations.
 
 ..

@@ -193,7 +193,7 @@ probabilities using multimodal adaptive importance sampling.
 **Stochastic Expansion Methods**: Theoretical development of these
 techniques mirrors that of deterministic finite element analysis
 utilizing the notions of projection, orthogonality, and weak
-convergence :cite:p:`Gha99`, :cite:p:`Gha91`.
+convergence :cite:p:`Gha99,Gha91`.
 
 ..
    TODO:
@@ -835,7 +835,7 @@ Wilks-based Sample Sizes
 
 Most of the sampling methods require the user to specify the number of
 samples in advance. However, if one specifies ``random`` sampling, one
-can use an approach developed by Wilks:cite:p:`Wilks` to
+can use an approach developed by Wilks :cite:p:`Wilks` to
 determine the number of samples that ensures a particular confidence
 level in a percentile of interest. The Wilks method of computing the
 number of samples to execute for a random sampling study is based on

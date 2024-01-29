@@ -1328,7 +1328,8 @@ disk for later use. The ``print_options`` method writes the surrogate’s
 current configuration options to the console, which can useful for
 determining default settings.
 
-:: code-block:: python
+.. code-block:: python
+   :linenos:
 
    import dakota.surrogates as daksurr
 

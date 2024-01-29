@@ -290,7 +290,7 @@ Variables/responses import to post-run
 
 The post-run mode (supported only for sampling, parameter study, and
 DACE methods) requires specification of a file containing parameter and
-response data. Annotated is the default format (see :ref:input:tabularformat`), where leading columns for evaluation
+response data. Annotated is the default format (see :ref:`input:tabularformat`), where leading columns for evaluation
 and interface IDs are followed by columns for variables (active and
 inactive by default), then those for responses, with an ignored header
 row of labels and then one row per evaluation. Typically this file would
