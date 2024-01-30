@@ -246,7 +246,8 @@ void NonDMultilevBLUESampling::ml_blue_pilot_projection()
   // Evaluate shared increment and update correlations, {eval,EstVar}_ratios
   // --------------------------------------------------------------------
   RealMatrixArray sum_G; RealSymMatrix2DArray sum_GG;
-  if (pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
+  if (pilotMgmtMode == OFFLINE_PILOT || // redirected here for ESTIMATOR_PERF
+      pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
     // accumulate offline counts
     Sizet2DArray N_pilot;
     evaluate_pilot(sum_G, sum_GG, N_pilot, false);

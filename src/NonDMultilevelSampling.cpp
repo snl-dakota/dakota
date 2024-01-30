@@ -420,7 +420,8 @@ void NonDMultilevelSampling::multilevel_mc_pilot_projection()
   // Initial loop for pilot
   // ----------------------
   load_pilot_sample(pilotSamples, numSteps, delta_N_l);
-  if (pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
+  if (pilotMgmtMode == OFFLINE_PILOT || // redirected here for ESTIMATOR_PERF
+      pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
     Sizet2DArray N_actual_pilot;  SizetArray N_alloc_pilot; // segregate
     evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1, sequenceCost, N_actual_pilot,
 		    N_actual, N_alloc_pilot, N_alloc, delta_N_l,

@@ -799,8 +799,9 @@ multilevel_control_variate_mc_pilot_projection()
   Sizet2DArray& N_actual_lf = NLevActual[lf_form];
   Sizet2DArray& N_actual_hf = NLevActual[hf_form];
 
-  RealMatrix pilot_mom(2, numFunctions);
-  if (pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
+  RealMatrix pilot_mom(2, numFunctions); // for recovery of varH
+  if (pilotMgmtMode == OFFLINE_PILOT || // redirected here for ESTIMATOR_PERF
+      pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
     SizetArray N_alloc_pilot;  Sizet2DArray N_actual_pilot(num_hf_lev);
     N_alloc_pilot.assign(num_hf_lev, 0);
     for (lev=0; lev<num_hf_lev; ++lev)

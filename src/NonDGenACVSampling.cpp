@@ -574,7 +574,8 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
   // --------------------------------------------------------------------
   RealVector sum_H, sum_HH;   RealMatrix sum_L, sum_LH, var_L;
   RealSymMatrixArray sum_LL;
-  if (pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
+  if (pilotMgmtMode == OFFLINE_PILOT || // redirected here for ESTIMATOR_PERF
+      pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
     SizetArray N_shared_pilot;
     evaluate_pilot(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared_pilot, false);
     compute_LH_statistics(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared_pilot,

@@ -72,6 +72,8 @@ Test Number 5 succeeded
       Initial MLMC (pilot samples):     4.5412772423e+02
   Projected MLCVMC (sample profile):    4.2022875299e-02
   Projected MLCVMC / pilot ratio:       9.2535366279e-05
+ Equivalent     MC (   72 HF samples):  1.1973542164e+02
+ Equivalent MLCVMC / MC ratio:          3.5096444079e-04
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 2615988 total (2615988 new, 0 duplicate)
 <<<<< Function evaluation summary: 2615988 total (2615988 new, 0 duplicate)
@@ -103,16 +105,18 @@ Test Number 8 succeeded
 <<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000e+00
 <<<<< Variance for mean estimator:
   Projected MLCVMC (sample profile):    2.1177448184e-02
+ Equivalent     MC (   81 HF samples):  1.3112040498e+02
+ Equivalent MLCVMC / MC ratio:          1.6151146107e-04
 Test Number 9 succeeded
-<<<<< Function evaluation summary: 181946 total (181946 new, 0 duplicate)
-<<<<< Function evaluation summary: 181946 total (181946 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 2.9329955357e+01
+<<<<< Function evaluation summary: 171958 total (171958 new, 0 duplicate)
+<<<<< Function evaluation summary: 171958 total (171958 new, 0 duplicate)
+<<<<< Online number of equivalent high fidelity evaluations: 2.9216595982e+01
 <<<<< Variance for mean estimator:
       Initial MLMC (pilot samples):     4.5412772423e+02
-     Online MLCVMC (sample profile):    4.0090569255e-01
-     Online MLCVMC / pilot ratio:       8.8280382622e-04
- Equivalent     MC (   29 HF samples):  3.9566039380e+02
- Equivalent MLCVMC / MC ratio:          1.0132570731e-03
+     Online MLCVMC (sample profile):    3.9212171885e-01
+     Online MLCVMC / pilot ratio:       8.6346130818e-04
+ Equivalent     MC (   29 HF samples):  3.8862046987e+02
+ Equivalent MLCVMC / MC ratio:          1.0090094301e-03
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  4.2231691627e+01  1.0772512096e+02  2.1302365661e+00  6.6400934038e+00
+ response_fn_1  4.1967848451e+01  1.0655593488e+02  2.1842290145e+00  6.9716206211e+00
