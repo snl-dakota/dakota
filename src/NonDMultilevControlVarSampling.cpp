@@ -1700,14 +1700,14 @@ accumulate_mlmf_Qsums(const IntResponseMap& lf_resp_map,
 	sum_LH(qoi,lev)        += lf_l * hf_l; // Low-High
 	sum_HH(qoi,lev)        += hf_l * hf_l; // High-High
 
-	h_it = sum_H.begin(); h_ord = h_it->first;
-	active_ord = 1;
+	h_it = sum_H.begin();  h_ord = h_it->first;
+	active_ord = 1;        hf_prod = hf_l;
 	while (h_it!=sum_H.end() || active_ord <= 1) {
 	  if (h_ord == active_ord) {
-	    h_it->second(qoi,lev) += hf_prod; ++h_it; // High
+	    h_it->second(qoi,lev) += hf_prod;  ++h_it; // High
 	    h_ord = (h_it == sum_H.end()) ? 0 : h_it->first;
 	  }
-	  hf_prod *= hf_l; ++active_ord;
+	  hf_prod *= hf_l;  ++active_ord;
 	}
       }
     }
@@ -2076,17 +2076,17 @@ accumulate_mlmf_Qsums(const IntResponseMap& lf_resp_map,
 	  h2_it  = sum_Hlm1.begin();
 	  h1_ord = (h1_it == sum_Hl.end())   ? 0 : h1_it->first;
 	  h2_ord = (h2_it == sum_Hlm1.end()) ? 0 : h2_it->first;
-	  active_ord = 1;
+	  active_ord = 1;  hf_l_prod = hf_l;  hf_lm1_prod = hf_lm1;
 	  while (h1_it != sum_Hl.end() || h2_it != sum_Hlm1.end()) {
 	    if (h1_ord == active_ord) {
-	      h1_it->second(qoi,lev) += hf_l_prod; ++h1_it;
+	      h1_it->second(qoi,lev) += hf_l_prod;  ++h1_it;
 	      h1_ord = (h1_it == sum_Hl.end()) ? 0 : h1_it->first;
 	    }
 	    if (h2_ord == active_ord) {
-	      h2_it->second(qoi,lev) += hf_lm1_prod; ++h2_it;
+	      h2_it->second(qoi,lev) += hf_lm1_prod;  ++h2_it;
 	      h2_ord = (h2_it == sum_Hlm1.end()) ? 0 : h2_it->first;
 	    }
-	    hf_l_prod *= hf_l; hf_lm1_prod *= hf_lm1; ++active_ord;
+	    hf_l_prod *= hf_l;  hf_lm1_prod *= hf_lm1;  ++active_ord;
 	  }
 	}
       }
