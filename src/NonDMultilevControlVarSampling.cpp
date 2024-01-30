@@ -1210,7 +1210,7 @@ cv_raw_moments(IntRealMatrixMap& sum_L_shared, IntRealMatrixMap& sum_H,
 		       N_shared, lev, beta);
     Cout << "Moment " << m << ":\n";
     apply_mf_control(sum_H[m], sum_L_shared[m], N_shared, sum_L_refined[m],
-		     N_refined, lev, beta, H_raw_mom, m);
+		     N_refined, lev, beta, H_raw_mom, m-1);
   }
   Cout << '\n'; // for loop over levels
 }
@@ -1254,7 +1254,7 @@ cv_raw_moments(IntRealMatrixMap& sum_Ll,        IntRealMatrixMap& sum_Llm1,
       Cout << "Moment " << m << ":\n";
       apply_mlmf_control(sum_Hl[m], sum_Hlm1[m], sum_Ll[m], sum_Llm1[m],
 			 N_shared, sum_Ll_refined[m], sum_Llm1_refined[m],
-			 N_refined, lev, beta_dot, gamma, H_raw_mom, m);
+			 N_refined, lev, beta_dot, gamma, H_raw_mom, m-1);
     }
     Cout << '\n'; // for loop over levels
   }

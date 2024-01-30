@@ -192,7 +192,8 @@ private:
 			const SizetArray& N_shared,
 			const RealMatrix& sum_L_refined,
 			const SizetArray& N_refined, size_t lev,
-			const RealVector& beta, RealMatrix& H_raw_mom, int m);
+			const RealVector& beta, RealMatrix& H_raw_mom,
+			int mom_index);
 
   /// apply scalar control variate parameter (beta) to approximate HF moment
   void apply_mlmf_control(Real sum_Hl, Real sum_Hlm1, Real sum_Ll,
@@ -207,7 +208,7 @@ private:
 			  const RealMatrix& sum_Llm1_refined,
 			  const SizetArray& N_refined, size_t lev,
 			  const RealVector& beta_dot, const RealVector& gamma,
-			  RealMatrix& H_raw_mom, int m);
+			  RealMatrix& H_raw_mom, int mom_index);
 
   /// for pilot projection mode, advance sample counts and accumulated cost
   void update_projected_samples(const RealVector& hf_targets,
@@ -483,14 +484,14 @@ inline void NonDMultilevControlVarSampling::
 apply_mf_control(const RealMatrix& sum_H,    const RealMatrix& sum_L_shared,
 		 const SizetArray& N_shared, const RealMatrix& sum_L_refined,
 		 const SizetArray& N_refined, size_t lev,
-		 const RealVector& beta, RealMatrix& H_raw_mom, int m)
+		 const RealVector& beta, RealMatrix& H_raw_mom, int mom_index)
 {
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
     Cout << "   QoI " << qoi+1 << ": control variate beta = "
 	 << std::setw(9) << beta[qoi] << '\n';
     apply_mf_control(sum_H(qoi,lev), sum_L_shared(qoi,lev), N_shared[qoi],
 		     sum_L_refined(qoi,lev), N_refined[qoi], beta[qoi],
-		     H_raw_mom(m, qoi));
+		     H_raw_mom(mom_index, qoi));
   }
   if (numFunctions > 1) Cout << '\n';
 }
@@ -523,7 +524,7 @@ apply_mlmf_control(const RealMatrix& sum_Hl, const RealMatrix& sum_Hlm1,
 		   const RealMatrix& sum_Llm1_refined,
 		   const SizetArray& N_refined, size_t lev,
 		   const RealVector& beta_dot, const RealVector& gamma,
-		   RealMatrix& H_raw_mom, int m)
+		   RealMatrix& H_raw_mom, int mom_index)
 {
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
     Cout << "   QoI " << qoi+1 << ": control variate beta_dot = "
@@ -532,7 +533,7 @@ apply_mlmf_control(const RealMatrix& sum_Hl, const RealMatrix& sum_Hlm1,
 		       sum_Llm1(qoi,lev), N_shared[qoi],
 		       sum_Ll_refined(qoi,lev), sum_Llm1_refined(qoi,lev),
 		       N_refined[qoi], beta_dot[qoi], gamma[qoi],
-		       H_raw_mom(m, qoi));
+		       H_raw_mom(mom_index, qoi));
   }
   if (numFunctions > 1) Cout << '\n';
 }
