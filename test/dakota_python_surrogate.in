@@ -1,0 +1,55 @@
+#@ s*: Label=FastTest
+#@ s1: ReqFiles=surrogate_polynomial.py
+
+environment
+        tabular_data
+          tabular_data_file = "linear_surr_tabular.dat"        #s0
+          #tabular_data_file = "exp_surr_py_tabular.dat"       #s1
+        method_pointer = 'UQ'
+
+method,
+        id_method = 'UQ'
+        model_pointer = 'SURR'
+        sampling,
+        sample_type lhs
+          samples = 10000
+          seed = 98765
+        response_levels = 0.1 1.0 10.0 100.0
+        distribution cumulative
+
+model,
+        id_model = 'SURR'
+        surrogate global,
+          dace_method_pointer = 'DACE'
+          reuse_samples all
+          polynomial linear                                      #s0
+          #experimental_python                                   #s1
+          #  module_file = "surrogate_polynomial"                #s1
+method,
+        id_method = 'DACE'
+        model_pointer = 'DACE_M'
+        sampling
+          sample_type lhs
+          samples = 100
+          seed = 5034
+model,
+        id_model = 'DACE_M'
+        single
+          interface_pointer = 'I1'
+
+variables,
+        uniform_uncertain = 2
+          lower_bounds = -2.0   -2.0
+          upper_bounds =  2.0    2.0
+          descriptors  = 'x1' 'x2'
+
+interface,
+        direct
+        id_interface = 'I1'
+          analysis_driver = 'rosenbrock'
+
+responses,
+        response_functions = 1
+        no_gradients
+        no_hessians
+
