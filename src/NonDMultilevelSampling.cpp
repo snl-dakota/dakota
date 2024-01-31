@@ -845,7 +845,7 @@ accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY, size_t lev,
 	  // add to sum_Y: running sums across all sample increments
 	  y_it = sum_Y.begin(); y_ord = y_it->first;
 	  active_ord = 1;
-	  while (y_it!=sum_Y.end() || active_ord <= 1) {
+	  while (y_it!=sum_Y.end()) {
 	    if (y_ord == active_ord) {
 	      y_it->second(qoi,lev) += lf_prod; ++y_it;
 	      y_ord = (y_it == sum_Y.end()) ? 0 : y_it->first;
@@ -875,7 +875,7 @@ accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY, size_t lev,
 	  // add to sum_Y: running sums across all sample increments
 	  y_it = sum_Y.begin();  y_ord = y_it->first;
 	  active_ord = 1;
-	  while (y_it!=sum_Y.end() || active_ord <= 1) {
+	  while (y_it!=sum_Y.end()) {
 	    if (y_ord == active_ord) {
 	      y_it->second(qoi,lev) += hf_prod - lf_prod; // HF^p-LF^p
 	      ++y_it; y_ord = (y_it == sum_Y.end()) ? 0 : y_it->first;
