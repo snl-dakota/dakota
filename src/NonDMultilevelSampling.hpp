@@ -78,6 +78,15 @@ protected:
   /// recover variance from raw moments
   void recover_variance(const RealMatrix& moment_stats, RealVector& var_H);
 
+  /// initialize the ML accumulators for computing means, variances, and
+  /// covariances across resolution levels
+  void initialize_ml_Ysums(IntRealMatrixMap& sum_Y, size_t num_lev,
+			   size_t num_mom = 4);
+  /// initialize the ML accumulators for computing means, variances, and
+  /// covariances across resolution levels
+  void initialize_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
+			   IntIntPairRealMatrixMap& sum_QlQlm1, size_t num_lev);
+
   /// update accumulators for multilevel telescoping running sums
   /// using set of model evaluations within allResponses
   void accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY,
@@ -112,11 +121,20 @@ protected:
   Real aggregate_mse_Ysum(const Real* sum_Y, const Real* sum_YY,
 			  const SizetArray& N_l);
 
-  /// accumulate ML-only contributions (levels with no CV) to raw moments
-  void ml_raw_moments(const RealMatrix& sum_H1, const RealMatrix& sum_H2,
-		      const RealMatrix& sum_H3, const RealMatrix& sum_H4,
-		      const Sizet2DArray& N_hf, size_t start, size_t end,
-		      RealMatrix& ml_raw_mom);
+  /// accumulate ML-only contributions (levels with no CV) to 2 raw moments
+  void ml_Q_raw_moments(const RealMatrix& sum_Hl_1,const RealMatrix& sum_Hlm1_1,
+			const RealMatrix& sum_Hl_2,const RealMatrix& sum_Hlm1_2,
+			const Sizet2DArray& N_actual, size_t start, size_t end,
+			RealMatrix& ml_raw_mom);
+  /// accumulate ML-only contributions (levels with no CV) to 2 raw moments
+  void ml_Y_raw_moments(const RealMatrix& sum_H1, const RealMatrix& sum_H2,
+			const Sizet2DArray& N_l, size_t start, size_t end,
+			RealMatrix& ml_raw_mom);
+  /// accumulate ML-only contributions (levels with no CV) to 4 raw moments
+  void ml_Y_raw_moments(const RealMatrix& sum_H1, const RealMatrix& sum_H2,
+			const RealMatrix& sum_H3, const RealMatrix& sum_H4,
+			const Sizet2DArray& N_l, size_t start, size_t end,
+			RealMatrix& ml_raw_mom);
 
   /// manage response mode and active model key from {group,form,lev} triplet.
   /// seq_type defines the active dimension for a 1D model sequence.
@@ -146,7 +164,7 @@ private:
   //void multilevel_mc_Ysum();
   /// Perform multilevel Monte Carlo across the discretization levels for a
   /// particular model form using QoI accumulators (sum_Q)
-  void multilevel_mc_Qsum();
+  void multilevel_mc_online_pilot(); //_Qsum();
   /// Qsum approach using a pilot sample treated as separate offline cost
   void multilevel_mc_offline_pilot();
   /// Qsum approach projecting estimator performance from a pilot sample
@@ -162,13 +180,6 @@ private:
 		       RealVector& eps_sq_div_2, bool increment_cost,
 		       bool pilot_estvar);
 
-  // initialize the ML accumulators for computing means, variances, and
-  // covariances across fidelity levels
-  //void initialize_ml_Ysums(IntRealMatrixMap& sum_Y, size_t num_lev);
-  /// initialize the ML accumulators for computing means, variances, and
-  /// covariances across fidelity levels
-  void initialize_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
-			   IntIntPairRealMatrixMap& sum_QlQlm1, size_t num_lev);
   /// reset existing ML accumulators to zero for all keys
   void reset_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 		      IntIntPairRealMatrixMap& sum_QlQlm1);
@@ -893,40 +904,70 @@ set_convergence_tol(const RealVector& estimator_var0_qoi, const RealVector& cost
 }
 
 
-/*
 inline void NonDMultilevelSampling::
-ml_raw_moments(const RealMatrix& sum_H1, const RealMatrix& sum_H2,
+ml_Q_raw_moments(const RealMatrix& sum_Hl_1, const RealMatrix& sum_Hlm1_1,
+		 const RealMatrix& sum_Hl_2, const RealMatrix& sum_Hlm1_2,
+		 const Sizet2DArray& N_actual, size_t start, size_t end,
+		 RealMatrix& ml_raw_mom)
+{
+  // MLMC without CV: sum_H = HF Q sums for levels l and l - 1
+
+  size_t qoi, lev;
+  for (lev=start; lev<end; ++lev) {
+    const SizetArray& N_l = N_actual[lev];
+    const Real *sum_Hl_1l = sum_Hl_1[lev], *sum_Hl_2l = sum_Hl_2[lev];
+    if (lev) {
+      const Real *sum_Hlm1_1l = sum_Hlm1_1[lev], *sum_Hlm1_2l = sum_Hlm1_2[lev];
+      for (qoi=0; qoi<numFunctions; ++qoi) {
+	size_t N_lq = N_l[qoi];
+	ml_raw_mom(0, qoi) += ( sum_Hl_1l[qoi] - sum_Hlm1_1l[qoi] ) / N_lq;
+	ml_raw_mom(1, qoi) += ( sum_Hl_2l[qoi] - sum_Hlm1_2l[qoi] ) / N_lq;
+      }
+    }
+    else
+      for (qoi=0; qoi<numFunctions; ++qoi) {
+	size_t N_lq = N_l[qoi];
+	ml_raw_mom(0, qoi) += sum_Hl_1l[qoi] / N_lq;
+	ml_raw_mom(1, qoi) += sum_Hl_2l[qoi] / N_lq;
+      }
+  }
+}
+
+
+inline void NonDMultilevelSampling::
+ml_Y_raw_moments(const RealMatrix& sum_H1, const RealMatrix& sum_H2,
 	       const Sizet2DArray& N_l, size_t start, size_t end,
 	       RealMatrix& ml_raw_mom)
 {
   // MLMC without CV: sum_H = HF Q sums for lev 0 and HF Y sums for lev > 0
+
   size_t qoi, lev;
   for (qoi=0; qoi<numFunctions; ++qoi) {
     for (lev=start; lev<end; ++lev) {
       size_t Nlq = N_l[lev][qoi];
-      ml_raw_mom(qoi,0) += sum_H1(qoi,lev) / Nlq;
-      ml_raw_mom(qoi,1) += sum_H2(qoi,lev) / Nlq;
+      ml_raw_mom(0, qoi) += sum_H1(qoi,lev) / Nlq;
+      ml_raw_mom(1, qoi) += sum_H2(qoi,lev) / Nlq;
     }
   }
 }
-*/
 
 
 inline void NonDMultilevelSampling::
-ml_raw_moments(const RealMatrix& sum_H1, const RealMatrix& sum_H2,
+ml_Y_raw_moments(const RealMatrix& sum_H1, const RealMatrix& sum_H2,
 	       const RealMatrix& sum_H3, const RealMatrix& sum_H4,
 	       const Sizet2DArray& N_l, size_t start, size_t end,
 	       RealMatrix& ml_raw_mom)
 {
   // MLMC without CV: sum_H = HF Q sums for lev 0 and HF Y sums for lev > 0
+
   size_t qoi, lev;
   for (qoi=0; qoi<numFunctions; ++qoi) {
     for (lev=start; lev<end; ++lev) {
       size_t Nlq = N_l[lev][qoi];
-      ml_raw_mom(qoi,0) += sum_H1(qoi,lev) / Nlq;
-      ml_raw_mom(qoi,1) += sum_H2(qoi,lev) / Nlq;
-      ml_raw_mom(qoi,2) += sum_H3(qoi,lev) / Nlq;
-      ml_raw_mom(qoi,3) += sum_H4(qoi,lev) / Nlq;
+      ml_raw_mom(0, qoi) += sum_H1(qoi,lev) / Nlq;
+      ml_raw_mom(1, qoi) += sum_H2(qoi,lev) / Nlq;
+      ml_raw_mom(2, qoi) += sum_H3(qoi,lev) / Nlq;
+      ml_raw_mom(3, qoi) += sum_H4(qoi,lev) / Nlq;
     }
   }
 }
@@ -954,7 +995,8 @@ update_projected_samples(const SizetArray& delta_N_l, //Sizet2DArray& N_actual,
 {
   size_t actual_incr, alloc_incr, offline_N_lwr = 0,
     lev, num_lev = cost.length();
-  if (pilotMgmtMode == OFFLINE_PILOT)
+  if (pilotMgmtMode == OFFLINE_PILOT ||
+      pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
     offline_N_lwr = (finalStatsType == QOI_STATISTICS) ? 2 : 1;
   Real ref_cost = cost[num_lev-1];
 

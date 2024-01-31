@@ -138,13 +138,13 @@ void NonDGenACVSampling::generate_ensembles_dags()
   for (d_cit=modelDAGs.begin(); d_cit!=modelDAGs.end(); ++d_cit) {
     const UShortArraySet& dag_set = d_cit->second;
     set_size = dag_set.size();  total_size += set_size;
-    Cout << "For model set:\n" << d_cit->first
+    Cout << "For approximation set:\n" << d_cit->first
 	 << "searching array of DAGs of size " << set_size;
     if (outputLevel >= DEBUG_OUTPUT) Cout << ":\n" << dag_set;//<< '\n';
     else                             Cout << ".\n";
   }
   if (modelSelectType)
-    Cout << "Total DAGs across all model sets = " << total_size << '\n';
+    Cout << "Total DAGs across all approximation sets = " << total_size << '\n';
   Cout << std::endl;
 }
 
@@ -379,12 +379,20 @@ void NonDGenACVSampling::core_run()
   numSamples = pilotSamples[numApprox]; // last in pilot array
 
   switch (pilotMgmtMode) {
-  case  ONLINE_PILOT: // iterated ACV (default)
-    generalized_acv_online_pilot();     break;
-  case OFFLINE_PILOT: // computes perf for offline pilot/Oracle correlation
-    generalized_acv_offline_pilot();    break;
-  case PILOT_PROJECTION: // for algorithm assessment/selection
-    generalized_acv_pilot_projection(); break;
+  case ONLINE_PILOT: // iterated GenACV (default)
+    // ESTIMATOR_PERFORMANCE case is still iterated for N_H, and therefore
+    // differs from ONLINE_PILOT_PROJECTION
+    generalized_acv_online_pilot();  break;
+  case OFFLINE_PILOT: // non-iterated allocation from offline/Oracle correlation
+    switch (finalStatsType) {
+    // since offline is not iterated, the ESTIMATOR_PERFORMANCE case is the
+    // same as OFFLINE_PILOT_PROJECTION --> bypass IntMaps, simplify code
+    case ESTIMATOR_PERFORMANCE:  generalized_acv_pilot_projection();  break;
+    default:                     generalized_acv_offline_pilot();     break;
+    }
+    break;
+  case ONLINE_PILOT_PROJECTION:  case OFFLINE_PILOT_PROJECTION:
+    generalized_acv_pilot_projection();  break;
   }
 }
 
@@ -395,9 +403,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
 {
   // retrieve cost estimates across soln levels for a particular model form
   IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baselineH, sum_LH;
-  IntRealSymMatrixArrayMap sum_LL;
-  RealVector sum_HH;  RealMatrix var_L;
-  //SizetSymMatrixArray N_LL;
+  IntRealSymMatrixArrayMap sum_LL;  RealVector sum_HH;  RealMatrix var_L;
   initialize_acv_sums(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH);
   size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
@@ -413,9 +419,9 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
     // --------------------------------------------------------------------
     shared_increment(mlmfIter); // spans ALL models, blocking
     accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
-			sum_LH, sum_HH, N_H_actual);//, N_LL);
+			sum_LH, sum_HH, N_H_actual);
     N_H_alloc += (backfillFailures && mlmfIter) ?
-      one_sided_delta(N_H_alloc, avg_hf_target) : numSamples;
+      one_sided_delta(N_H_alloc, avg_hf_target, relaxFactor) : numSamples;
     // While online cost recovery could be continuously updated, we restrict
     // to the pilot and do not not update after iter 0.  We could potentially
     // update cost for shared samples, mirroring the covariance updates.
@@ -456,9 +462,9 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
     else {
       avg_hf_target = dagSolns[soln_key].solution_reference();
       avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
-      numSamples = one_sided_delta(avg_N_H, avg_hf_target);
+      numSamples = one_sided_delta(avg_N_H, avg_hf_target, relaxFactor);
     }
-    ++mlmfIter;
+    ++mlmfIter;  advance_relaxation();
   }
 
   // Only QOI_STATISTICS requires application of oversample ratios and
@@ -521,42 +527,37 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
       //reset_acv(); // reset state for next ACV execution
     }
   }
-  Cout << "\n>>>>> Approx subset and DAG evaluation completed\n" << std::endl;
   restore_best();
   ++mlmfIter;
 
   // -----------------------------------
   // Perform "online" sample increments:
   // -----------------------------------
+  // QOI_STATISTICS case; ESTIMATOR_PERFORMANCE redirects to
+  // generalized_acv_pilot_projection() to also bypass IntMaps.
   IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baselineH, sum_LH;
   IntRealSymMatrixArrayMap sum_LL;  RealVector sum_HH;
   initialize_acv_sums(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH);
   const UShortArray& approx_set = activeModelSetIter->first;
   soln_key.first = approx_set;  soln_key.second = *activeDAGIter;
   MFSolutionData& soln = dagSolns[soln_key];
-  // Only QOI_STATISTICS requires online shared/approx profile evaluation for
-  // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
-  if (finalStatsType == QOI_STATISTICS) {
-    if (truthFixedByPilot) numSamples = 0;
-    else {
-      Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
-      numSamples = one_sided_delta(avg_N_H, soln.solution_reference());
-    }
-    // perform the shared increment for the online sample profile
-    // > utilize ASV for active approx subset
-    shared_increment(mlmfIter, approx_set); // spans ACTIVE models, blocking
-    accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
-			sum_LH, sum_HH, N_H_actual);//, N_LL);
-    N_H_alloc += numSamples;
-    increment_equivalent_cost(numSamples, sequenceCost, numApprox, approx_set,
-			      equivHFEvals);
-    // perform LF increments for the online sample profile
-    approx_increments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
-		      N_H_alloc, soln);
+  if (truthFixedByPilot) numSamples = 0;
+  else {
+    Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
+    // No relaxation since final allocation
+    numSamples = one_sided_delta(avg_N_H, soln.solution_reference());
   }
-  else // project online profile including both shared samples and LF increment
-    update_projected_samples(soln, approx_set, N_H_actual, N_H_alloc,
-			     deltaNActualHF,deltaEquivHF);
+  // perform the shared increment for the online sample profile
+  // > utilize ASV for active approx subset
+  shared_increment(mlmfIter, approx_set); // spans ACTIVE models, blocking
+  accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
+		      sum_LH, sum_HH, N_H_actual);
+  N_H_alloc += numSamples;
+  increment_equivalent_cost(numSamples, sequenceCost, numApprox, approx_set,
+			    equivHFEvals);
+  // perform LF increments for the online sample profile
+  approx_increments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
+		    N_H_alloc, soln);
 }
 
 
@@ -571,13 +572,22 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
   // --------------------------------------------------------------------
   // Evaluate shared increment and update correlations, {eval,EstVar}_ratios
   // --------------------------------------------------------------------
-  RealVector sum_H, sum_HH;   RealMatrix sum_L_baselineH, sum_LH, var_L;
+  RealVector sum_H, sum_HH;   RealMatrix sum_L, sum_LH, var_L;
   RealSymMatrixArray sum_LL;
-  evaluate_pilot(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH,
-		 N_H_actual, true);
-  compute_LH_statistics(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH,
-			N_H_actual, var_L, varH, covLL, covLH);
-  N_H_alloc = numSamples;
+  if (pilotMgmtMode == OFFLINE_PILOT || // redirected here for ESTIMATOR_PERF
+      pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
+    SizetArray N_shared_pilot;
+    evaluate_pilot(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared_pilot, false);
+    compute_LH_statistics(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared_pilot,
+			  var_L, varH, covLL, covLH);
+    N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
+  }
+  else { // ONLINE_PILOT_PROJECTION
+    evaluate_pilot(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual, true);
+    compute_LH_statistics(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual,
+			  var_L, varH, covLL, covLH);
+    N_H_alloc = numSamples;
+  } /// *** TO DO: this code block is exact same as ACV
   std::pair<UShortArray, UShortArray> soln_key;
 
   // -----------------------------------
@@ -637,8 +647,17 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
   IntRealMatrixMap sum_L_shared  = sum_L_baselineH,//baselineL;
                    sum_L_refined = sum_L_baselineH;//baselineL;
   Sizet2DArray N_L_actual_shared;  SizetArray N_L_alloc_refined;
-  inflate(N_H_actual, N_L_actual_shared, approx_set);
-  inflate(N_H_alloc,  N_L_alloc_refined, approx_set);
+  if (pilotMgmtMode == OFFLINE_PILOT ||
+      pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
+    // online shared_increment() only includes best model set after
+    // processing of offline covariance data
+    inflate(N_H_actual, N_L_actual_shared, approx_set);
+    inflate(N_H_alloc,  N_L_alloc_refined, approx_set);
+  }
+  else { // all models are part of online shared_increment()
+    inflate(N_H_actual, N_L_actual_shared);
+    inflate(N_H_alloc,  N_L_alloc_refined);
+  }
   Sizet2DArray N_L_actual_refined = N_L_actual_shared;
 
   switch (mlmfSubMethod) {
@@ -650,7 +669,7 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
     size_t start = 0, end, num_approx = approx_set.size();
     for (end=num_approx; end>0; --end) {
       // ACV_IS samples on [approx-1,approx) --> sum_L_refined
-      // ACV_MF samples on [0, approx)       --> sum_L_refined
+      // ACV_MF samples on [0,       approx) --> sum_L_refined
       //start = (mlmfSubMethod == SUBMETHOD_ACV_MF) ? 0 : end - 1;
       // *** TO DO NON_BLOCKING: PERFORM 2ND PASS ACCUMULATE AFTER PASS 1 LAUNCH
       if (genacv_approx_increment(soln, N_L_actual_refined, N_L_alloc_refined,
@@ -701,7 +720,7 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
   // -----------------------------------------------------------
   // Compute/apply control variate parameter to estimate moments
   // -----------------------------------------------------------
-  RealMatrix H_raw_mom(numFunctions, 4);
+  RealMatrix H_raw_mom(4, numFunctions);
   genacv_raw_moments(sum_L_baselineH, sum_L_shared, sum_L_refined, sum_H,
 		     sum_LL, sum_LH, soln.solution_ratios(), N_L_actual_shared,
 		     N_L_actual_refined, N_H_actual, H_raw_mom);
@@ -726,9 +745,10 @@ genacv_approx_increment(const MFSolutionData& soln,
   //   (helpful to refer to Figure 2(b) in ACV paper, noting index differences)
   // > N_L is updated prior to each call to approx_increment (*** if BLOCKING),
   //   allowing use of one_sided_delta() with latest counts
-  const UShortArray& approx_set = activeModelSetIter->first;
+  // > No relaxation for final approx increments
 
-  bool   ordered = approx_sequence.empty();
+  const UShortArray& approx_set = activeModelSetIter->first;
+  bool  ordered = approx_sequence.empty();
   size_t approx = (ordered) ? end-1 : approx_sequence[end-1],
     inflate_approx = approx_set[approx];
   Real lf_target = soln.solution_variables()[approx];
@@ -773,6 +793,7 @@ genacv_approx_increment(const MFSolutionData& soln,
   //   (helpful to refer to Figure 2(b) in ACV paper, noting index differences)
   // > N_L is updated prior to each call to approx_increment (*** if BLOCKING),
   //   allowing use of one_sided_delta() with latest counts
+  // > No relaxation for final approx increments
 
   Real lf_target = soln.solution_variables()[root];
   if (backfillFailures) {
@@ -803,7 +824,8 @@ genacv_approx_increment(const MFSolutionData& soln,
 
 void NonDGenACVSampling::precompute_ratios()
 {
-  if (pilotMgmtMode != OFFLINE_PILOT)
+  if (pilotMgmtMode == ONLINE_PILOT ||
+      pilotMgmtMode == ONLINE_PILOT_PROJECTION)
     cache_mc_reference();// {estVar,numH}Iter0
 }
 
@@ -822,21 +844,23 @@ compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
   //   dependent on the active DAG/model subset
   update_model_group_costs();
 
+  bool budget_constrained = (maxFunctionEvals != SZ_MAX), budget_exhausted
+    = (budget_constrained && equivHFEvals >= (Real)maxFunctionEvals),
+    no_solve = (budget_exhausted || convergenceTol >= 1.); // bypass opt solve
   const UShortArray& approx_set = activeModelSetIter->first;
+
   if (mlmfIter == 0) {
     size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
     SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
     size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
     Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
-    bool budget_exhausted  = (maxFunctionEvals != SZ_MAX &&
-			      equivHFEvals >= (Real)maxFunctionEvals);
 
     // use default ordering for now, prior to avgEvalRatios soln
     // > sufficient for determination of best DAG, but not for pyramid sample
     //   set ordering in approx_increments()
     unroll_reverse_dag_from_root(numApprox, orderedRootList);
 
-    if (budget_exhausted || convergenceTol >= 1.) { // no need for solve
+    if (no_solve) { // no need for solve
       size_t num_approx = approx_set.size();
       RealVector avg_eval_ratios(num_approx, false);  avg_eval_ratios = 1.;
       // For r_i = 1, C_G,c_g = 0 --> enforce linear constr based on current DAG
@@ -845,10 +869,11 @@ compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
       soln.anchored_solution_ratios(avg_eval_ratios, avg_N_H);
       // For offline pilot, the online EstVar is undefined prior to any online
       // samples, but should not happen (no budget used) unless bad convTol spec
-      if (pilotMgmtMode == OFFLINE_PILOT)
-	soln.average_estimator_variance(std::numeric_limits<Real>::infinity());
-      else
+      if (pilotMgmtMode == ONLINE_PILOT ||
+	  pilotMgmtMode == ONLINE_PILOT_PROJECTION)
 	soln.average_estimator_variance(average(estVarIter0));
+      else
+	soln.average_estimator_variance(std::numeric_limits<Real>::infinity());
       soln.average_estimator_variance_ratio(1.);
       numSamples = 0;  return;
     }
@@ -876,7 +901,9 @@ compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
     }
     }
   }
-  else { // warm start from previous eval_ratios solution
+  else { // subsequent iterations
+    if (no_solve) // leave soln at previous values
+      { numSamples = 0; return; }
 
     // no scaling needed from prev soln (as in NonDLocalReliability) since
     // updated avg_N_H now includes allocation from previous solution and
@@ -1101,6 +1128,8 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
   // For offline mode, online allocations must be lower bounded for numerics:
   Real offline_N_lwr = 2.; //(finalStatsType == QOI_STATISTICS) ? 2. : 1.;
+  bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
+		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
 
   // --------------------------------------
   // Formulate the optimization sub-problem: initial pt, bnds, constraints
@@ -1136,7 +1165,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     // the incurred cost (e.g., setting N_lb to 1), but instead we bound with
     // the incurred cost by setting x_lb = latest N_H and retaining r_lb = 1.
     x_lb = 1.; // r_i
-    x_lb[num_approx] = (pilotMgmtMode == OFFLINE_PILOT) ?
+    x_lb[num_approx] = (offline) ?
       offline_N_lwr : avg_N_H; //std::floor(avg_N_H + .5); // pilot <= N*
 
     RealVector avg_eval_ratios = soln.solution_ratios();
@@ -1149,7 +1178,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     break;
   }
   case N_MODEL_LINEAR_CONSTRAINT:  case N_MODEL_LINEAR_OBJECTIVE: {
-    x_lb = (pilotMgmtMode == OFFLINE_PILOT) ? offline_N_lwr : avg_N_H;
+    x_lb = (offline) ? offline_N_lwr : avg_N_H;
     const RealVector& soln_vars = soln.solution_variables();
     x0 = (soln_vars.empty()) ? x_lb : soln_vars;
     if (optSubProblemForm == N_MODEL_LINEAR_CONSTRAINT) {
@@ -1170,7 +1199,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     break;
   }
   }
-  // x0 can undershoot x_lb if OFFLINE_PILOT, but enforce generally
+  // x0 can undershoot x_lb if an OFFLINE mode, but enforce generally
   enforce_bounds(x0, x_lb, x_ub);
 
   if (outputLevel >= DEBUG_OUTPUT)
@@ -1213,7 +1242,7 @@ augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
   }
   case R_ONLY_LINEAR_CONSTRAINT:
     // *** TO DO ***:
-    // This is active for truthFixedByPilot && pilotMgmtMode != OFFLINE_PILOT
+    // This is active for truthFixedByPilot && !offline
     // but r is not appropriate for general DAG including multiple CV targets.
     // --> either need to alter handling or suppress this option...
 
@@ -1269,7 +1298,7 @@ augmented_linear_ineq_violations(const RealVector& cd_vars,
   }
   case R_ONLY_LINEAR_CONSTRAINT:
     // *** TO DO ***:
-    // This is active for truthFixedByPilot && pilotMgmtMode != OFFLINE_PILOT
+    // This is active for truthFixedByPilot && !offline
     // but r is not appropriate for general DAG including multiple CV targets.
     // --> either need to alter handling or suppress this option...
 
@@ -1329,7 +1358,8 @@ scale_to_target(Real avg_N_H, const RealVector& cost,
   // > if N* > N_pilot, use initial = r*,N*
   avg_hf_target = allocate_budget(approx_set, avg_eval_ratios, cost, budget);
 
-  if (pilotMgmtMode == OFFLINE_PILOT) {
+  if (pilotMgmtMode == OFFLINE_PILOT ||
+      pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
     if (avg_N_H < offline_N_lwr)
       avg_N_H = offline_N_lwr;
   }
@@ -1722,7 +1752,7 @@ genacv_raw_moments(IntRealMatrixMap& sum_L_baseline,
 		   const Sizet2DArray& N_L_refined,  const SizetArray& N_H,
 		   RealMatrix& H_raw_mom)
 {
-  if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(numFunctions, 4);
+  if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(4, numFunctions);
 
   precompute_genacv_control(avg_eval_ratios, N_H);
 
@@ -1744,7 +1774,7 @@ genacv_raw_moments(IntRealMatrixMap& sum_L_baseline,
 			     N_H_q, mom, qoi, approx_set, beta);
       // *** TO DO: support shared_approx_increment() --> baselineL
 
-      Real& H_raw_mq = H_raw_mom(qoi, mom-1);
+      Real& H_raw_mq = H_raw_mom(mom-1, qoi);
       H_raw_mq = sum_H_mq / N_H_q; // first term to be augmented
       for (approx=0; approx<num_approx; ++approx) {
 	inflate_approx = approx_set[approx];
@@ -1980,14 +2010,16 @@ void NonDGenACVSampling::update_best(MFSolutionData& soln)
     bestDAGIter      = activeDAGIter;
     meritFnStar      = merit_fn;
     if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Updating best DAG to:\n" << *bestDAGIter << " for model set:\n"
-	   << activeModelSetIter->first << std::endl;
+      Cout << "Updating best DAG to:\n" << *bestDAGIter << "for approximation "
+	   << "set:\n" << activeModelSetIter->first << std::endl;
   }
 }
 
 
 void NonDGenACVSampling::restore_best()
 {
+  //Cout << "\n>>>>> Approx subset and DAG evaluation completed\n" << std::endl;
+
   if (bestModelSetIter == modelDAGs.end()) {
     Cout << "Warning: best DAG has not been updated in restore_best().\n"
 	 << "         Last active DAG will be used." << std::endl;
@@ -1996,8 +2028,8 @@ void NonDGenACVSampling::restore_best()
 
   const UShortArray& best_models = bestModelSetIter->first;
   const UShortArray& best_dag    = *bestDAGIter;
-  Cout << "\nBest solution from DAG:\n" << best_dag << " for model set:\n"
-       << best_models << std::endl;
+  Cout << "\nBest solution from DAG:\n" << best_dag
+       << "for approximation set:\n" << best_models << std::endl;
   std::pair<UShortArray, UShortArray> soln_key(best_models, best_dag);
   MFSolutionData& best_soln = dagSolns[soln_key];
   if (outputLevel >= DEBUG_OUTPUT)
@@ -2009,7 +2041,8 @@ void NonDGenACVSampling::restore_best()
       activeDAGIter      != bestDAGIter) { // best is not most recent
     activeModelSetIter = bestModelSetIter;
     activeDAGIter      = bestDAGIter;
-    if (pilotMgmtMode != PILOT_PROJECTION && finalStatsType == QOI_STATISTICS) {
+    if ( ( pilotMgmtMode == ONLINE_PILOT || pilotMgmtMode == OFFLINE_PILOT) &&
+	 finalStatsType  == QOI_STATISTICS ) {
       //&& mlmfSubMethod != SUBMETHOD_ACV_MF) // approx_increments() for IS/RD
       generate_reverse_dag(best_models, best_dag);
       // now we can re-order roots based on final eval ratios solution for

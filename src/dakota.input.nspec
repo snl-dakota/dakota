@@ -2831,11 +2831,58 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
     [ solution_mode {0}
-      online_pilot {N_mdm(type,ensembleSampSolnMode_ONLINE_PILOT)}
+      ( online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
+        [ relaxation {0}
+          factor_sequence REALLIST {N_mdm(RealDL,relaxFactorSequence)}
+          |
+          fixed_factor REAL {N_mdm(Real,relaxFixedFactor)}
+          |
+          recursive_factor REAL {N_mdm(Real,relaxRecursiveFactor)}
+         ]
+        [ final_statistics {0}
+          estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
+          |
+          ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
+            [ final_moments {0}
+              none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+              |
+              standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+              |
+              central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+             ]
+            [ distribution {0}
+              cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+              |
+              complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+             ]
+           )
+         ]
+       )
       |
-      offline_pilot {N_mdm(type,ensembleSampSolnMode_OFFLINE_PILOT)}
+      ( offline_pilot {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}
+        [ final_statistics {0}
+          estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
+          |
+          ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
+            [ final_moments {0}
+              none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+              |
+              standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+              |
+              central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+             ]
+            [ distribution {0}
+              cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+              |
+              complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+             ]
+           )
+         ]
+       )
       |
-      pilot_projection {N_mdm(type,ensembleSampSolnMode_PILOT_PROJECTION)}
+      online_projection {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT_PROJECTION)}
+      |
+      offline_projection {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT_PROJECTION)}
      ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
@@ -2889,24 +2936,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
      ]
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
-    [ final_statistics {0}
-      estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
-      |
-      ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
-        [ final_moments {0}
-          none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
-          |
-          standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
-          |
-          central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
-         ]
-        [ distribution {0}
-          cumulative {N_mdm(type,distributionType_CUMULATIVE)}
-          |
-          complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
-         ]
-       )
-     ]
     [ rng {0}
       mt19937 {N_mdm(lit,rngName_mt19937)}
       |
@@ -2920,11 +2949,58 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
     [ solution_mode {0}
-      online_pilot {N_mdm(type,ensembleSampSolnMode_ONLINE_PILOT)}
+      ( online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
+        [ relaxation {0}
+          factor_sequence REALLIST {N_mdm(RealDL,relaxFactorSequence)}
+          |
+          fixed_factor REAL {N_mdm(Real,relaxFixedFactor)}
+          |
+          recursive_factor REAL {N_mdm(Real,relaxRecursiveFactor)}
+         ]
+        [ final_statistics {0}
+          estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
+          |
+          ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
+            [ final_moments {0}
+              none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+              |
+              standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+              |
+              central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+             ]
+            [ distribution {0}
+              cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+              |
+              complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+             ]
+           )
+         ]
+       )
       |
-      offline_pilot {N_mdm(type,ensembleSampSolnMode_OFFLINE_PILOT)}
+      ( offline_pilot {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}
+        [ final_statistics {0}
+          estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
+          |
+          ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
+            [ final_moments {0}
+              none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+              |
+              standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+              |
+              central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+             ]
+            [ distribution {0}
+              cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+              |
+              complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+             ]
+           )
+         ]
+       )
       |
-      pilot_projection {N_mdm(type,ensembleSampSolnMode_PILOT_PROJECTION)}
+      online_projection {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT_PROJECTION)}
+      |
+      offline_projection {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT_PROJECTION)}
      ]
     [ numerical_solve {0}
       [ 
@@ -2966,24 +3042,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
-    [ final_statistics {0}
-      estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
-      |
-      ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
-        [ final_moments {0}
-          none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
-          |
-          standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
-          |
-          central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
-         ]
-        [ distribution {0}
-          cumulative {N_mdm(type,distributionType_CUMULATIVE)}
-          |
-          complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
-         ]
-       )
-     ]
     [ rng {0}
       mt19937 {N_mdm(lit,rngName_mt19937)}
       |
@@ -2997,11 +3055,58 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
     [ solution_mode {0}
-      online_pilot {N_mdm(type,ensembleSampSolnMode_ONLINE_PILOT)}
+      ( online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
+        [ relaxation {0}
+          factor_sequence REALLIST {N_mdm(RealDL,relaxFactorSequence)}
+          |
+          fixed_factor REAL {N_mdm(Real,relaxFixedFactor)}
+          |
+          recursive_factor REAL {N_mdm(Real,relaxRecursiveFactor)}
+         ]
+        [ final_statistics {0}
+          estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
+          |
+          ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
+            [ final_moments {0}
+              none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+              |
+              standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+              |
+              central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+             ]
+            [ distribution {0}
+              cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+              |
+              complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+             ]
+           )
+         ]
+       )
       |
-      offline_pilot {N_mdm(type,ensembleSampSolnMode_OFFLINE_PILOT)}
+      ( offline_pilot {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}
+        [ final_statistics {0}
+          estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
+          |
+          ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
+            [ final_moments {0}
+              none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+              |
+              standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+              |
+              central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+             ]
+            [ distribution {0}
+              cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+              |
+              complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+             ]
+           )
+         ]
+       )
       |
-      pilot_projection {N_mdm(type,ensembleSampSolnMode_PILOT_PROJECTION)}
+      online_projection {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT_PROJECTION)}
+      |
+      offline_projection {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT_PROJECTION)}
      ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
@@ -3024,24 +3129,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
-    [ final_statistics {0}
-      estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
-      |
-      ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
-        [ final_moments {0}
-          none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
-          |
-          standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
-          |
-          central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
-         ]
-        [ distribution {0}
-          cumulative {N_mdm(type,distributionType_CUMULATIVE)}
-          |
-          complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
-         ]
-       )
-     ]
     [ rng {0}
       mt19937 {N_mdm(lit,rngName_mt19937)}
       |
@@ -3070,11 +3157,58 @@ KEYWORD method {N_mdm3(start,0,stop)}
      ]
     [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
     [ solution_mode {0}
-      online_pilot {N_mdm(type,ensembleSampSolnMode_ONLINE_PILOT)}
+      ( online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
+        [ relaxation {0}
+          factor_sequence REALLIST {N_mdm(RealDL,relaxFactorSequence)}
+          |
+          fixed_factor REAL {N_mdm(Real,relaxFixedFactor)}
+          |
+          recursive_factor REAL {N_mdm(Real,relaxRecursiveFactor)}
+         ]
+        [ final_statistics {0}
+          estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
+          |
+          ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
+            [ final_moments {0}
+              none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+              |
+              standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+              |
+              central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+             ]
+            [ distribution {0}
+              cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+              |
+              complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+             ]
+           )
+         ]
+       )
       |
-      offline_pilot {N_mdm(type,ensembleSampSolnMode_OFFLINE_PILOT)}
+      ( offline_pilot {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}
+        [ final_statistics {0}
+          estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
+          |
+          ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
+            [ final_moments {0}
+              none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+              |
+              standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+              |
+              central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+             ]
+            [ distribution {0}
+              cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+              |
+              complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+             ]
+           )
+         ]
+       )
       |
-      pilot_projection {N_mdm(type,ensembleSampSolnMode_PILOT_PROJECTION)}
+      online_projection {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT_PROJECTION)}
+      |
+      offline_projection {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT_PROJECTION)}
      ]
     [ truth_fixed_by_pilot {N_mdm(true,truthPilotConstraint)} ]
     [ 
@@ -3109,24 +3243,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
-    [ final_statistics {0}
-      estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
-      |
-      ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
-        [ final_moments {0}
-          none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
-          |
-          standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
-          |
-          central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
-         ]
-        [ distribution {0}
-          cumulative {N_mdm(type,distributionType_CUMULATIVE)}
-          |
-          complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
-         ]
-       )
-     ]
     [ rng {0}
       mt19937 {N_mdm(lit,rngName_mt19937)}
       |
@@ -3140,11 +3256,58 @@ KEYWORD method {N_mdm3(start,0,stop)}
       [ independent {N_mdm(type,pilotGroupSampling_INDEPENDENT_PILOT)} ]
      ]
     [ solution_mode {0}
-      online_pilot {N_mdm(type,ensembleSampSolnMode_ONLINE_PILOT)}
+      ( online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
+        [ relaxation {0}
+          factor_sequence REALLIST {N_mdm(RealDL,relaxFactorSequence)}
+          |
+          fixed_factor REAL {N_mdm(Real,relaxFixedFactor)}
+          |
+          recursive_factor REAL {N_mdm(Real,relaxRecursiveFactor)}
+         ]
+        [ final_statistics {0}
+          estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
+          |
+          ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
+            [ final_moments {0}
+              none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+              |
+              standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+              |
+              central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+             ]
+            [ distribution {0}
+              cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+              |
+              complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+             ]
+           )
+         ]
+       )
       |
-      offline_pilot {N_mdm(type,ensembleSampSolnMode_OFFLINE_PILOT)}
+      ( offline_pilot {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}
+        [ final_statistics {0}
+          estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
+          |
+          ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
+            [ final_moments {0}
+              none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+              |
+              standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+              |
+              central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+             ]
+            [ distribution {0}
+              cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+              |
+              complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+             ]
+           )
+         ]
+       )
       |
-      pilot_projection {N_mdm(type,ensembleSampSolnMode_PILOT_PROJECTION)}
+      online_projection {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT_PROJECTION)}
+      |
+      offline_projection {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT_PROJECTION)}
      ]
     [ 
       sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}
@@ -3178,24 +3341,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
-    [ final_statistics {0}
-      estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
-      |
-      ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
-        [ final_moments {0}
-          none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
-          |
-          standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
-          |
-          central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
-         ]
-        [ distribution {0}
-          cumulative {N_mdm(type,distributionType_CUMULATIVE)}
-          |
-          complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
-         ]
-       )
-     ]
     [ rng {0}
       mt19937 {N_mdm(lit,rngName_mt19937)}
       |

@@ -71,7 +71,7 @@ protected:
   //- Heading: member functions
   //
 
-  void multifidelity_mc();
+  void multifidelity_mc_online_pilot();
   void multifidelity_mc_offline_pilot();
   void multifidelity_mc_pilot_projection();
 

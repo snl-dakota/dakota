@@ -62,6 +62,7 @@ public:
   //
 
   const RealVector& solution_variables() const;
+  Real solution_variable(size_t i) const;
   void solution_variables(const RealVector& soln_vars);
   void solution_variables(const SizetArray& samples);
 
@@ -157,6 +158,10 @@ inline MFSolutionData& MFSolutionData::operator=(const MFSolutionData& sd)
 
 inline const RealVector& MFSolutionData::solution_variables() const
 { return solutionVars; }
+
+
+inline Real MFSolutionData::solution_variable(size_t i) const
+{ return solutionVars[i]; }
 
 
 inline void MFSolutionData::solution_variables(const RealVector& soln_vars)
@@ -387,7 +392,7 @@ protected:
   void initialize_counts(Sizet2DArray& num_L_baseline, SizetArray& num_H,
 			 Sizet2DArray& num_LH);
   void finalize_counts(const Sizet2DArray& N_L_actual,
-		       const SizetArray& N_L_alloc);
+		       const SizetArray&   N_L_alloc);
 
   Real compute_equivalent_cost(Real avg_hf_target,
 			       const RealVector& avg_eval_ratios,
@@ -704,6 +709,25 @@ finalize_counts(const Sizet2DArray& N_L_actual, const SizetArray& N_L_alloc)
 {
   // post final sample counts back to NLev{Actual,Alloc} (for final summaries)
 
+  // Note: key data is fixed for all non-hierarchical cases
+  const Pecos::ActiveKey& active_key = iteratedModel.active_model_key();
+  if (active_key.data_size() != numApprox + 1) {
+    Cerr << "Error: inconsistent active key size in NonDNonHierarchSampling::"
+	 << "finalize_counts()." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  size_t approx, mf, rl;
+  for (approx=0; approx<numApprox; ++approx) {
+    mf = active_key.retrieve_model_form(approx);
+    rl = active_key.retrieve_resolution_level(approx);
+
+    NLevAlloc[mf][rl] += N_L_alloc[approx];
+    SizetArray& N_l_actual_fl = NLevActual[mf][rl];
+    if (N_l_actual_fl.empty()) N_l_actual_fl = N_L_actual[approx];
+    else     increment_samples(N_l_actual_fl,  N_L_actual[approx]);
+  }
+
+  /*
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
 
   // Aggregate N_H into 2D N_L array and then insert into 3D:
@@ -713,6 +737,7 @@ finalize_counts(const Sizet2DArray& N_L_actual, const SizetArray& N_L_alloc)
   // Update LF counts only as HF counts are directly updated by reference:
   inflate_approx_samples(N_L_actual, multilev, secondaryIndex, NLevActual);
   inflate_approx_samples(N_L_alloc,  multilev, secondaryIndex, NLevAlloc);
+  */
 }
 
 

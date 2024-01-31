@@ -491,26 +491,32 @@ query_cost(unsigned short num_costs, short seq_type, RealVector& cost)
   switch (seq_type) {
   case Pecos::RESOLUTION_LEVEL_SEQUENCE: // 1D resolution hierarchy for HF model
     cost_defined = query_cost(num_costs, sub_models.back(), cost);  break;
-  case Pecos::MODEL_FORM_SEQUENCE: {
-    cost.sizeUninitialized(num_costs);
-    ModelLIter m_iter = sub_models.begin();  cost_defined = true;
-    for (unsigned short i=0; i<num_costs; ++i, ++m_iter) {
-      cost[i] = m_iter->solution_level_cost();// active soln index; 0 if unfound
-      if (cost[i] <= 0.) cost_defined = false;
+  case Pecos::MODEL_FORM_SEQUENCE:
+    if (sub_models.size() == num_costs) {
+      cost.sizeUninitialized(num_costs);
+      ModelLIter m_iter = sub_models.begin();
+      for (unsigned short i=0; i<num_costs; ++i, ++m_iter)
+	cost[i] = m_iter->solution_level_cost();//active soln index; 0 if !found
+      cost_defined = valid_cost_values(cost);  // must be > 0.
     }
+    else cost_defined = false;
     if (!cost_defined) cost.sizeUninitialized(0);//for compute_equivalent_cost()
     break;
-  }
   case Pecos::FORM_RESOLUTION_ENUMERATION: {
-    cost.sizeUninitialized(num_costs);
+    cost.sizeUninitialized(num_costs); // includes lower bound of 1 per model
     ModelLIter m_iter;  cost_defined = true;  size_t cntr = 0;
     // assemble resolution level costs head to tail across models
     // (model costs are presumed to be more separated than resolution costs)
     for (m_iter=sub_models.begin(); m_iter!=sub_models.end(); ++m_iter) {
       RealVector m_costs = m_iter->solution_level_costs();
-      copy_data_partial(m_costs, cost, cntr);
-      cntr += m_costs.length();
-      //if (cost[i] <= 0.) cost_defined = false; // *** TO DO: boolean recovery success
+      size_t num_cost_m = m_costs.length(); // may be zero
+      if (num_cost_m == m_iter->solution_levels() &&
+	  valid_cost_values(m_costs)) {
+	copy_data_partial(m_costs, cost, cntr);
+	cntr += num_cost_m;
+      }
+      else
+	{ cost_defined = false;  break; }
     }
     if (!cost_defined) cost.sizeUninitialized(0);//for compute_equivalent_cost()
     break;

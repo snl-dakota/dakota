@@ -107,6 +107,11 @@ protected:
 				   const RealVector& var_H,
 				   const SizetArray& N_H);
 
+  /// initialize relaxFactor prior to iteration
+  void reset_relaxation();
+  /// update relaxFactor based on iteration number
+  void advance_relaxation();
+
   /// compute scalar control variate parameters
   void compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
 			  size_t N_shared, Real& beta);
@@ -128,16 +133,26 @@ protected:
   /// standardized moments
   void convert_moments(const RealMatrix& raw_mom, RealMatrix& final_mom);
 
+  /// convert uncentered (raw) moments to centered moments; unbiased estimators
+  static void uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3,Real  rm4,
+				     Real& cm1, Real& cm2, Real& cm3,Real& cm4);
   /// convert uncentered (raw) moments to centered moments; biased estimators
   static void uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
-			      Real& cm1, Real& cm2, Real& cm3, Real& cm4,
-			      size_t Nlq);
-  /// convert uncentered (raw) moments to centered moments; unbiased estimators
-  static void uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
-			      Real& cm1, Real& cm2, Real& cm3, Real& cm4);
+				     Real& cm1, Real& cm2, Real& cm3, Real& cm4,
+				     size_t Nlq);
+  /// convert uncentered (raw) moments to centered moments; biased estimators
+  static void uncentered_to_centered(const Real* rm, Real* cm, size_t num_mom);
+  /// convert uncentered (raw) moments to centered moments; biased estimators
+  void uncentered_to_centered(const RealMatrix& raw_mom, RealMatrix& cent_mom);
+
   /// convert centered moments to standardized moments
   static void centered_to_standard(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
 			    Real& sm1, Real& sm2, Real& sm3, Real& sm4);
+  /// convert centered moments to standardized moments
+  static void centered_to_standard(const Real* cm, Real* sm, size_t num_mom);
+  /// convert centered moments to standardized moments
+  void centered_to_standard(const RealMatrix& cent_mom, RealMatrix& std_mom);
+
   /// detect, warn, and repair a negative central moment (for even orders)
   static void check_negative(Real& cm);
 
@@ -147,9 +162,6 @@ protected:
 
   /// type of model sequence enumerated with primary MF/ACV loop over steps
   short sequenceType;
-  /// setting for the inactive model dimension not traversed by primary MF/ACV
-  /// loop over steps
-  size_t secondaryIndex;
   /// relative costs of model forms/resolution levels within a 1D sequence
   RealVector sequenceCost;
 
@@ -164,7 +176,7 @@ protected:
   /// invocation of load_pilot_sample()
   SizetArray pilotSamples;
   /// enumeration for pilot management modes: ONLINE_PILOT (default),
-  /// OFFLINE_PILOT, PILOT_PROJECTION
+  /// OFFLINE_PILOT, ONLINE_PILOT_PROJECTION, or OFFLINE_PILOT_PROJECTION
   short pilotMgmtMode;
 
   /// indicates use of online cost recovery rather than offline
@@ -205,6 +217,19 @@ protected:
   bool exportSampleSets;
   /// format for exporting sample increments using tagged tabular files
   unsigned short exportSamplesFormat;
+
+  /// the current relaxation factor applied to the predicted sample
+  /// increment; in typical use, this is an under-relaxation factor to
+  /// mitigate over-estimation of the sample allocation based on an
+  /// initial approximation to response covariance data
+  Real relaxFactor;
+  /// index into relaxFactorSequence
+  size_t relaxIndex;
+  /// a sequence of relaxation factors to use across ML/MF iterations
+  /// (see DataMethod.hpp for usage notes)
+  RealVector relaxFactorSequence;
+  /// a recursive relaxation factor (see DataMethod.hpp for usage notes)
+  Real relaxRecursiveFactor;
 
   // store the allocation_target input specification, prior to run-time
   // Options right now:
@@ -354,6 +379,90 @@ increment_samples(Sizet2DArray& N_samp, const SizetArray& incr)
 }
 
 
+inline void NonDEnsembleSampling::reset_relaxation()
+{
+  if (relaxRecursiveFactor > 0.)
+    relaxFactor = relaxRecursiveFactor;
+  else if (!relaxFactorSequence.empty()) {
+    relaxIndex = 0;    
+    relaxFactor = relaxFactorSequence[relaxIndex];
+  }
+}
+
+
+inline void NonDEnsembleSampling::advance_relaxation()
+{
+  if (relaxRecursiveFactor > 0. && relaxFactor < 1.)
+    relaxFactor += relaxRecursiveFactor * (1. - relaxFactor);
+  else if (!relaxFactorSequence.empty()) {
+    ++relaxIndex;
+    if (relaxIndex < relaxFactorSequence.length())
+      relaxFactor = relaxFactorSequence[relaxIndex];
+  }
+
+  // advance factor to unity when encountering a max_iterations constraint
+  // --> optimized accuracy/cost targeted by final iteration
+  // --> avoids additional complexity in finalize_relaxation() below
+  if (mlmfIter == maxIterations && relaxFactor != 1.) {
+    Cerr << "Warning: finalizing relaxation factor due to active "
+	 << "max_iterations constraint." << std::endl;
+    relaxFactor = 1.;
+  }
+}
+
+
+/* Ensure MFSolutionData consistency: estVar and solutionVars are from final
+   numerical solve, which may be inconsistent with a relaxed sample increment.
+   Can either (a) finalize relaxFactor during advancement above or (b) update
+   both estVar and solutionVars for final sample state.  We go with (a) above
+   for now, but this function can implement (b) by:
+   > don't advance sample state to solutionVars (strictly observe user's
+     relaxation and max_iterations specifications).  Instead:
+   > reset estVar and solutionVars to the actual sample state, relaxing both
+     N_H and N_L proportionally.
+   This results in undershooting both accuracy and cost.
+inline void NonDEnsembleSampling::
+finalize_relaxation(MFSolutionData& soln)
+{
+  // if relaxation is inactive or complete, or sample increments are complete,
+  // then soln vars and estvar (from numerical solve) are already consistent
+  // with the sample increment state
+  if (relaxFactor == 1. || numSamples == 0) return;
+
+  // Else termination prior to completion of relaxation sequence --> solution
+  // from numerical solve not fully realized and soln data needs adjustment
+  // prior to final post-processing.
+
+  //Real curr_estvar = soln.average_estimator_variance(); // back out ratio?
+  const RealVector& soln_vars = soln.solution_variables();
+  RealVector delta_N(numGroups);  size_t i;
+  for (i=0; i<numGroups; ++i) {
+    curr_i = (backfillFailures) ? average(NLevActual[i]) : NLevAlloc[i];
+    tgt_i  = soln_vars[i];
+    delta_N[i] = (tgt_i > curr_i) ? tgt_i - curr_i : 0.;
+  }
+  //if (zeros(delta_N)) return;
+
+  // rather than rounded size_t from NLevActual, need either previous real-
+  // valued solver soln or previous real-valued delta_N prior to relaxation
+  //RealVector delta_N = soln_vars - prev_vars,
+  //  relaxed_vars = prev_vars + relaxFactor * delta_N;
+  RealVector relaxed_vars(numGroups, false);
+  Real multiplier = 1. - relaxFactor;
+  for (i=0; i<numGroups; ++i)
+    relaxed_vars[i] = soln_vars[i] - multiplier * delta_N[i];
+  Real relaxed_estvar = average_estimator_variance(relaxed_vars);
+
+  // override last numerical solve with final (real-valued) state
+  soln.solution_variables(relaxed_vars);
+  soln.average_estimator_variance(relaxed_estvar);
+  // ratio of averages rather that average of ratios
+  if (pilotMgmtMode == ONLINE_PILOT || pilotMgmtMode == ONLINE_PILOT_PROJECTION)
+    soln.average_estimator_variance_ratio(relaxed_estvar/average(estVarIter0));
+}
+*/
+
+
 inline void NonDEnsembleSampling::
 compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
 		   size_t N_shared, Real& beta)
@@ -424,7 +533,7 @@ uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4,
   //   implemented in the function following this one.
 
   cm1 = rm1;             // mean
-  cm2 = rm2 - cm1 * cm1; // variance 
+  cm2 = rm2 - cm1 * cm1; // variance
 
   cm3 = rm3 - cm1 * (3. * cm2 + cm1 * cm1);                         // using cm
   //  = rm3 - cm1 * (3. * rm2 - 2. * cm1 * cm1);                    // using rm
@@ -471,6 +580,41 @@ uncentered_to_centered(Real  rm1, Real  rm2, Real  rm3, Real  rm4, Real& cm1,
 }
 
 
+/** For single-level moment calculations without a sample count. */
+inline void NonDEnsembleSampling::
+uncentered_to_centered(const Real* rm, Real* cm, size_t num_mom)
+{
+  if (num_mom >= 1) {
+    Real& cm1 = cm[0];
+    cm1 = rm[0]; // mean
+    if (num_mom >= 2) {
+      Real& cm2 = cm[1];
+      cm2 = rm[1] - cm1 * cm1; // variance
+      if (num_mom >= 3) {
+	Real& cm3 = cm[2];
+	cm3 = rm[2] - cm1 * (3. * cm2 + cm1 * cm1);
+	if (num_mom >= 4)
+	  cm[3] = rm[3] - cm1 * (4. * cm3 + cm1 * (6. * cm2 + cm1 * cm1));
+      }
+    }
+  }
+}
+
+
+/** Convert full matrix of moments. */
+inline void NonDEnsembleSampling::
+uncentered_to_centered(const RealMatrix& raw_mom, RealMatrix& cent_mom)
+{
+  // Note: raw_mom and cent_mom must be num_moments x numFunctions
+  size_t qoi, num_mom = raw_mom.numRows();
+  if (cent_mom.numRows() != num_mom)
+    cent_mom.shapeUninitialized(num_mom, numFunctions);
+
+  for (qoi=0; qoi<numFunctions; ++qoi)
+    uncentered_to_centered(raw_mom[qoi], cent_mom[qoi], num_mom);
+}
+
+
 inline void NonDEnsembleSampling::
 centered_to_standard(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
 		     Real& sm1, Real& sm2, Real& sm3, Real& sm4)
@@ -483,10 +627,49 @@ centered_to_standard(Real  cm1, Real  cm2, Real  cm3, Real  cm4,
     sm4 = cm4 / (cm2 * cm2) - 3.; // excess kurtosis
   }
   else {
-    Cerr << "\nWarning: central to standard conversion failed due to "
-	 << "non-positive\n         variance.  Retaining central moments.\n";
+    Cerr << "\nWarning: central to standard conversion failed due to non-"
+	 << "positive\n         variance.  Retaining central moments.\n";
     sm2 = 0.; sm3 = cm3; sm4 = cm4; // or assign NaN to sm{3,4}
   }
+}
+
+
+inline void NonDEnsembleSampling::
+centered_to_standard(const Real* cm, Real* sm, size_t num_mom)
+{
+  if (num_mom >= 1) {
+    sm[0] = cm[0]; // mean
+    if (num_mom >= 2) {
+      Real& sm2 = sm[1];  const Real& cm2 = cm[1];
+      if (cm2 > 0.) {
+	sm2 = std::sqrt(cm2); // std deviation
+	if (num_mom >= 3) {
+	  sm[2] = cm[2] / (cm2 * sm2); // skewness
+	  if (num_mom >= 4)
+	    sm[3] = cm[3] / (cm2 * cm2) - 3.; // excess kurtosis
+	}
+      }
+      else {
+	Cerr << "\nWarning: central to standard conversion failed due to non-"
+	     << "positive\n         variance.  Retaining central moments.\n";
+	sm2 = 0.; sm[2] = cm[2]; sm[3] = cm[3]; // or assign NaN to sm{3,4}
+      }
+    }
+  }
+}
+
+
+/** Convert full matrix of moments. */
+inline void NonDEnsembleSampling::
+centered_to_standard(const RealMatrix& cent_mom, RealMatrix& std_mom)
+{
+  // Note: cent_mom and std_mom must be num_moments x numFunctions
+  size_t qoi, num_mom = cent_mom.numRows();
+  if (std_mom.numRows() != num_mom)
+    std_mom.shapeUninitialized(num_mom, numFunctions);
+
+  for (qoi=0; qoi<numFunctions; ++qoi)
+    centered_to_standard(cent_mom[qoi], std_mom[qoi], num_mom);
 }
 
 

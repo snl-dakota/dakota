@@ -11,6 +11,29 @@ Sample moment statistics for each response function:
  response_fn_2  1.2902866585506534e-01  1.3471198725039985e-02  7.2792971373821813e-01 -4.8528329443669627e-01
  response_fn_3  2.5296322745800324e-02  6.6046916249888855e-03  7.8903758950063629e-01 -9.7606993693227118e-02
 Test Number 1 succeeded
+<<<<< Function evaluation summary (HF_INT): 64303 total (64303 new, 0 duplicate)
+<<<<< Online number of equivalent high fidelity evaluations: 5.0003125000000000e+02
+<<<<< Variance for mean estimator:
+    Initial pilot (   25 ML samples):   4.0542770961382275e-07
+     Online MC    (   25 HF samples):   3.4892801513070366e-06
+     Online ML BLUE (sample profile):   2.1633485750818184e-09
+     Online ML BLUE ratio  (1 - R^2):   6.1999853301302203e-04
+ Equivalent MC    (  500 HF samples):   1.7445310424633644e-07
+ Equivalent ML BLUE ratio:              1.2400745658426708e-02
+Sample moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  2.5312564466127885e-02  6.6034542865814963e-03  7.6145512309323071e-01 -2.2215944433860590e-01
+ response_fn_2  1.2906219512350303e-01  1.3340433245411938e-02  6.0745663646430448e-01 -6.6135686966790175e-01
+ response_fn_3  2.5312564466063236e-02  6.6034542863980172e-03  7.6145512367801671e-01 -2.2215944732710913e-01
+Test Number 2 succeeded
+<<<<< Function evaluation summary (HF_INT): 1200 total (1200 new, 0 duplicate)
+<<<<< Projected number of equivalent high fidelity evaluations: 4.9982421875000000e+02
+<<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000000000e+00
+<<<<< Variance for mean estimator:
+  Projected ML BLUE (sample profile):   3.0466226556906759e-09
+ Equivalent MC    (  500 HF samples):   1.8514194006290855e-07
+ Equivalent ML BLUE ratio:              1.6455605113868191e-02
+Test Number 3 succeeded
 <<<<< Function evaluation summary (HF_INT): 300 total (300 new, 0 duplicate)
 <<<<< Projected number of equivalent high fidelity evaluations: 5.0003125000000000e+02
 <<<<< Incurred cost in equivalent high fidelity evaluations: 1.0664062500000000e+02
@@ -21,60 +44,7 @@ Test Number 1 succeeded
   Projected ML BLUE ratio  (1 - R^2):   6.1999853301302203e-04
  Equivalent MC    (  500 HF samples):   1.7445310424633644e-07
  Equivalent ML BLUE ratio:              1.2400745658426708e-02
-Test Number 2 succeeded
-<<<<< Function evaluation summary (HF_INT): 64303 total (64303 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 5.0003125000000000e+02
-<<<<< Variance for mean estimator:
-    Initial pilot (   25 ML samples):   4.0542770961382275e-07
-     Online MC    (   25 HF samples):   3.4892801513070366e-06
-     Online ML BLUE (sample profile):   3.6078526694420599e-09
-     Online ML BLUE ratio  (1 - R^2):   1.0339819426911328e-03
- Equivalent MC    (  500 HF samples):   1.7445310424633644e-07
- Equivalent ML BLUE ratio:              2.0680931331251023e-02
-Sample moment statistics for each response function:
-                                  Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5312564466127885e-02  6.6034542865814963e-03  7.6145512309323071e-01 -2.2215944433860590e-01
- response_fn_2  1.2906219512350303e-01  1.3340433245411938e-02  6.0745663646430448e-01 -6.6135686966790175e-01
- response_fn_3  2.5312564466063236e-02  6.6034542863980172e-03  7.6145512367801671e-01 -2.2215944732710913e-01
-Test Number 3 succeeded
-<<<<< Function evaluation summary (HF_INT): 300 total (300 new, 0 duplicate)
-<<<<< Projected number of equivalent high fidelity evaluations: 3.1205078125000000e+02
-<<<<< Incurred cost in equivalent high fidelity evaluations: 1.0664062500000000e+02
-<<<<< Variance for mean estimator:
-    Initial pilot (   25 ML samples):   4.0542770961382275e-07
-  Projected MC    (   25 HF samples):   3.4892801513070366e-06
-  Projected ML BLUE (sample profile):   4.0542800085750168e-09
-  Projected ML BLUE ratio  (1 - R^2):   1.1619244751833236e-03
- Equivalent MC    (  312 HF samples):   2.7954425697396301e-07
- Equivalent ML BLUE ratio:              1.4503177609378096e-02
 Test Number 4 succeeded
-<<<<< Function evaluation summary (HF_INT): 46381 total (46381 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 4.4771875000000000e+02
-<<<<< Variance for mean estimator:
-    Initial pilot (   25 ML samples):   4.0542770961382275e-07
-     Online MC    (   25 HF samples):   3.4892801513070366e-06
-     Online ML BLUE (sample profile):   4.0477984616525606e-09
-     Online ML BLUE ratio  (1 - R^2):   1.1600669152737164e-03
- Equivalent MC    (  448 HF samples):   1.9483661066836249e-07
- Equivalent ML BLUE ratio:              2.0775348368908170e-02
-Sample moment statistics for each response function:
-                                  Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5333555638831010e-02  6.6243453772856127e-03  7.5757726947110660e-01 -2.7225006913276051e-01
- response_fn_2  1.2905401309782524e-01  1.3533572216185234e-02  6.2832862727064309e-01 -9.2258385031476342e-01
- response_fn_3  2.5333555638769059e-02  6.6243453771677868e-03  7.5757726980832718e-01 -2.7225007017385572e-01
-Test Number 5 succeeded
-<<<<< Function evaluation summary (HF_INT): 65405 total (65405 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 4.9982421875000000e+02
-<<<<< Variance for mean estimator:
-     Online ML BLUE (sample profile):   3.0466226556883378e-09
- Equivalent MC    (  500 HF samples):   1.8514194006290855e-07
- Equivalent ML BLUE ratio:              1.6455605113855562e-02
-Sample moment statistics for each response function:
-                                  Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5296322745368735e-02  6.6046916249028675e-03  7.8903758930741608e-01 -9.7606993450106483e-02
- response_fn_2  1.2902866585506534e-01  1.3471198725039985e-02  7.2792971373821813e-01 -4.8528329443669627e-01
- response_fn_3  2.5296322745800324e-02  6.6046916249888855e-03  7.8903758950063629e-01 -9.7606993693227118e-02
-Test Number 6 succeeded
 <<<<< Function evaluation summary (HF_INT): 61992 total (61992 new, 0 duplicate)
 <<<<< Online number of equivalent high fidelity evaluations: 5.0014453125000000e+02
 <<<<< Variance for mean estimator:
@@ -86,6 +56,27 @@ Sample moment statistics for each response function:
  response_fn_1  2.5320551756960810e-02  6.6097797414214335e-03  7.6711445254637878e-01 -1.5296307342747095e-01
  response_fn_2  1.2909497012493568e-01  1.3480937259181057e-02  7.5546565238012631e-01 -5.4182173048949345e-01
  response_fn_3  2.5320551757608674e-02  6.6097797412097443e-03  7.6711445272017487e-01 -1.5296307286199928e-01
+Test Number 5 succeeded
+<<<<< Function evaluation summary (HF_INT): 59855 total (59855 new, 0 duplicate)
+<<<<< Online number of equivalent high fidelity evaluations: 5.0000000000000000e+02
+<<<<< Variance for mean estimator:
+    Initial pilot (   25 ML samples):   5.9464718258428051e-07
+     Online ML BLUE (sample profile):   3.0248308103434717e-09
+ Equivalent MC    (  500 HF samples):   2.0503448708794751e-07
+ Equivalent ML BLUE ratio:              1.4752790388116515e-02
+Sample moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  2.5326813822107681e-02  6.6292722044833281e-03  7.6903576352224090e-01 -1.5741857554205696e-01
+ response_fn_2  1.2909785618505626e-01  1.3568823368342356e-02  6.9951690668337596e-01 -6.1958138075106284e-01
+ response_fn_3  2.5326813822513554e-02  6.6292722051094870e-03  7.6903576365764359e-01 -1.5741857598816056e-01
+Test Number 6 succeeded
+<<<<< Function evaluation summary (HF_INT): 300 total (300 new, 0 duplicate)
+<<<<< Projected number of equivalent high fidelity evaluations: 5.0014453125000000e+02
+<<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000000000e+00
+<<<<< Variance for mean estimator:
+  Projected ML BLUE (sample profile):   3.7214519834282322e-09
+ Equivalent MC    (  500 HF samples):   2.0825612929888934e-07
+ Equivalent ML BLUE ratio:              1.7869591622377664e-02
 Test Number 7 succeeded
 <<<<< Function evaluation summary (HF_INT): 75 total (75 new, 0 duplicate)
 <<<<< Projected number of equivalent high fidelity evaluations: 4.2005078125000000e+02
@@ -96,21 +87,45 @@ Test Number 7 succeeded
  Equivalent MC    (  420 HF samples):   2.4405916646292094e-07
  Equivalent ML BLUE ratio:              1.8282936747081091e-02
 Test Number 8 succeeded
-<<<<< Function evaluation summary (HF_INT): 64303 total (64303 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 5.0003125000000000e+02
+<<<<< Function evaluation summary (HF_INT): 46381 total (46381 new, 0 duplicate)
+<<<<< Online number of equivalent high fidelity evaluations: 4.4771875000000000e+02
 <<<<< Variance for mean estimator:
     Initial pilot (   25 ML samples):   4.0542770961382275e-07
      Online MC    (   25 HF samples):   3.4892801513070366e-06
-     Online ML BLUE (sample profile):   3.6078526694420599e-09
-     Online ML BLUE ratio  (1 - R^2):   1.0339819426911328e-03
- Equivalent MC    (  500 HF samples):   1.7445310424633644e-07
- Equivalent ML BLUE ratio:              2.0680931331251023e-02
+     Online ML BLUE (sample profile):   4.0475993255909272e-09
+     Online ML BLUE ratio  (1 - R^2):   1.1600098444588211e-03
+ Equivalent MC    (  448 HF samples):   1.9483661066836249e-07
+ Equivalent ML BLUE ratio:              2.0774326301951911e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5312564466127885e-02  6.6034542865814963e-03  7.6145512309323071e-01 -2.2215944433860590e-01
- response_fn_2  1.2906219512350303e-01  1.3340433245411938e-02  6.0745663646430448e-01 -6.6135686966790175e-01
- response_fn_3  2.5312564466063236e-02  6.6034542863980172e-03  7.6145512367801671e-01 -2.2215944732710913e-01
+ response_fn_1  2.5333555638831010e-02  6.6243453772856127e-03  7.5757726947110660e-01 -2.7225006913276051e-01
+ response_fn_2  1.2905401309782524e-01  1.3533572216185234e-02  6.2832862727064309e-01 -9.2258385031476342e-01
+ response_fn_3  2.5333555638769059e-02  6.6243453771677868e-03  7.5757726980832718e-01 -2.7225007017385572e-01
 Test Number 9 succeeded
+<<<<< Function evaluation summary (HF_INT): 300 total (300 new, 0 duplicate)
+<<<<< Projected number of equivalent high fidelity evaluations: 3.1205078125000000e+02
+<<<<< Incurred cost in equivalent high fidelity evaluations: 1.0664062500000000e+02
+<<<<< Variance for mean estimator:
+    Initial pilot (   25 ML samples):   4.0542770961382275e-07
+  Projected MC    (   25 HF samples):   3.4892801513070366e-06
+  Projected ML BLUE (sample profile):   4.0542800085750168e-09
+  Projected ML BLUE ratio  (1 - R^2):   1.1619244751833236e-03
+ Equivalent MC    (  312 HF samples):   2.7954425697396301e-07
+ Equivalent ML BLUE ratio:              1.4503177609378096e-02
+Test Number 10 succeeded
+<<<<< Function evaluation summary (HF_INT): 38043 total (38043 new, 0 duplicate)
+<<<<< Online number of equivalent high fidelity evaluations: 3.2684765625000000e+02
+<<<<< Variance for mean estimator:
+    Initial pilot (   25 ML samples):   5.9464718258428051e-07
+     Online ML BLUE (sample profile):   4.7279117401532372e-09
+ Equivalent MC    (  327 HF samples):   3.1365451635841043e-07
+ Equivalent ML BLUE ratio:              1.5073628765321815e-02
+Sample moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  2.5342566665654025e-02  6.6352756305803860e-03  7.7430057336365088e-01 -1.4346776028468833e-01
+ response_fn_2  1.2913536420637234e-01  1.3613186007389241e-02  6.6035397840508325e-01 -8.3810923326613418e-01
+ response_fn_3  2.5342566666058008e-02  6.6352756313081520e-03  7.7430057303363542e-01 -1.4346775711286863e-01
+Test Number 11 succeeded
 <<<<< Function evaluation summary (HF_INT): 75 total (75 new, 0 duplicate)
 <<<<< Projected number of equivalent high fidelity evaluations: 3.1901953125000000e+02
 <<<<< Incurred cost in equivalent high fidelity evaluations: 2.6660156250000000e+01
@@ -119,30 +134,55 @@ Test Number 9 succeeded
   Projected ML BLUE (sample profile):   5.9466836158963106e-09
  Equivalent MC    (  319 HF samples):   3.2135099422372354e-07
  Equivalent ML BLUE ratio:              1.8505259740246045e-02
-Test Number 10 succeeded
-<<<<< Function evaluation summary (HF_INT): 46381 total (46381 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 4.4771875000000000e+02
+Test Number 12 succeeded
+<<<<< Function evaluation summary (HF_INT): 59855 total (59855 new, 0 duplicate)
+<<<<< Online number of equivalent high fidelity evaluations: 5.0000000000000000e+02
 <<<<< Variance for mean estimator:
-    Initial pilot (   25 ML samples):   4.0542770961382275e-07
-     Online MC    (   25 HF samples):   3.4892801513070366e-06
-     Online ML BLUE (sample profile):   4.0477984616525606e-09
-     Online ML BLUE ratio  (1 - R^2):   1.1600669152737164e-03
- Equivalent MC    (  448 HF samples):   1.9483661066836249e-07
- Equivalent ML BLUE ratio:              2.0775348368908170e-02
+    Initial pilot (   25 ML samples):   5.9464718258428051e-07
+     Online ML BLUE (sample profile):   3.0248308102907716e-09
+ Equivalent MC    (  500 HF samples):   2.0503448708794751e-07
+ Equivalent ML BLUE ratio:              1.4752790387859484e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5333555638831010e-02  6.6243453772856127e-03  7.5757726947110660e-01 -2.7225006913276051e-01
- response_fn_2  1.2905401309782524e-01  1.3533572216185234e-02  6.2832862727064309e-01 -9.2258385031476342e-01
- response_fn_3  2.5333555638769059e-02  6.6243453771677868e-03  7.5757726980832718e-01 -2.7225007017385572e-01
-Test Number 11 succeeded
-<<<<< Function evaluation summary (HF_INT): 61992 total (61992 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 5.0014453125000000e+02
+ response_fn_1  2.5326813822107681e-02  6.6292722044833281e-03  7.6903576352224090e-01 -1.5741857554205696e-01
+ response_fn_2  1.2909785618505626e-01  1.3568823368342356e-02  6.9951690668337596e-01 -6.1958138075106284e-01
+ response_fn_3  2.5326813822513554e-02  6.6292722051094870e-03  7.6903576365764359e-01 -1.5741857598816056e-01
+Test Number 13 succeeded
+<<<<< Function evaluation summary (HF_INT): 64394 total (64394 new, 0 duplicate)
+<<<<< Online number of equivalent high fidelity evaluations: 4.9997656250000000e+02
 <<<<< Variance for mean estimator:
-     Online ML BLUE (sample profile):   3.7214519834286818e-09
- Equivalent MC    (  500 HF samples):   2.0825612929888934e-07
- Equivalent ML BLUE ratio:              1.7869591622379822e-02
+    Initial pilot (   25 ML samples):   5.9464718258428051e-07
+     Online ML BLUE (sample profile):   2.9509678379102296e-09
+ Equivalent MC    (  500 HF samples):   2.0504409853006608e-07
+ Equivalent ML BLUE ratio:              1.4391869159197102e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5320551756960810e-02  6.6097797414214335e-03  7.6711445254637878e-01 -1.5296307342747095e-01
- response_fn_2  1.2909497012493568e-01  1.3480937259181057e-02  7.5546565238012631e-01 -5.4182173048949345e-01
- response_fn_3  2.5320551757608674e-02  6.6097797412097443e-03  7.6711445272017487e-01 -1.5296307286199928e-01
+ response_fn_1  2.5272314051930377e-02  6.5922711718754377e-03  7.7170366225692388e-01 -1.3445031601390633e-01
+ response_fn_2  1.2898337645368010e-01  1.3544286518686628e-02  6.7684428160966081e-01 -6.2318947850892714e-01
+ response_fn_3  2.5272314052318012e-02  6.5922711724870856e-03  7.7170366235962728e-01 -1.3445031656958717e-01
+Test Number 14 succeeded
+<<<<< Function evaluation summary (HF_INT): 63051 total (63051 new, 0 duplicate)
+<<<<< Online number of equivalent high fidelity evaluations: 5.0000390625000000e+02
+<<<<< Variance for mean estimator:
+    Initial pilot (   25 ML samples):   5.9464718258428051e-07
+     Online ML BLUE (sample profile):   3.0646260339828994e-09
+ Equivalent MC    (  500 HF samples):   2.0503288526853130e-07
+ Equivalent ML BLUE ratio:              1.4946997550998528e-02
+Sample moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  2.5323268125501713e-02  6.6127494492051525e-03  7.8633998469958555e-01 -9.4794770856194699e-02
+ response_fn_2  1.2909716530716189e-01  1.3660028350382705e-02  6.7942648639757441e-01 -7.2546927407460382e-01
+ response_fn_3  2.5323268125886835e-02  6.6127494499101727e-03  7.8633998457015664e-01 -9.4794769323005568e-02
+Test Number 15 succeeded
+<<<<< Function evaluation summary (HF_INT): 64368 total (64368 new, 0 duplicate)
+<<<<< Online number of equivalent high fidelity evaluations: 4.9999218750000000e+02
+<<<<< Variance for mean estimator:
+    Initial pilot (   25 ML samples):   5.9464718258428051e-07
+     Online ML BLUE (sample profile):   2.9555526350125955e-09
+ Equivalent MC    (  500 HF samples):   2.0503769080186627e-07
+ Equivalent ML BLUE ratio:              1.4414679678911474e-02
+Sample moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  2.5273780381831579e-02  6.5930425810669943e-03  7.7190911209236157e-01 -1.2712201605026152e-01
+ response_fn_2  1.2897075783856848e-01  1.3537777519357887e-02  6.8353012564600113e-01 -6.2443693516288512e-01
+ response_fn_3  2.5273780382221760e-02  6.5930425816568636e-03  7.7190911221392033e-01 -1.2712201640287590e-01

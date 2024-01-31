@@ -61,10 +61,15 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
     abort_handler(METHOD_ERROR);
   }
 
+  sequenceType = Pecos::FORM_RESOLUTION_ENUMERATION;
   size_t num_forms_resolutions;
+  configure_enumeration(num_forms_resolutions);
+  numApprox = num_forms_resolutions - 1;
+  if (methodName != MULTILEVEL_BLUE) // else deferred until ML BLUE ctor
+    numGroups = num_forms_resolutions;
+  /*
   switch (methodName) {
   case MULTILEVEL_BLUE:
-  //case APPROXIMATE_CONTROL_VARIATE:// *** TO DO: simplify heat_eq_genacv8 --> need to harden NLev slices et al.
     sequenceType = Pecos::FORM_RESOLUTION_ENUMERATION;
     secondaryIndex = SZ_MAX;
     configure_enumeration(num_forms_resolutions);
@@ -77,10 +82,10 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
     numGroups = num_forms_resolutions;
     break;
   }
-  numApprox = num_forms_resolutions - 1;
+  */
 
-  // Precedence: if solution costs provided, then we use them; else we rely
-  /// on online cost recovery through response metadata
+  // Precedence: if solution costs provided, then we use them;
+  // else we rely on online cost recovery through response metadata
   onlineCost = !query_cost(num_forms_resolutions, sequenceType, sequenceCost);
 }
 
@@ -142,15 +147,16 @@ void NonDNonHierarchSampling::assign_active_key()
 {
   Pecos::ActiveKey active_key;
   std::vector<Pecos::ActiveKey> form_res_keys(numApprox+1);
-  bool sec_index_def = (secondaryIndex != SZ_MAX);
+  /*
   switch (sequenceType) {
   case Pecos::RESOLUTION_LEVEL_SEQUENCE: {
-    unsigned short form = (sec_index_def) ? secondaryIndex : USHRT_MAX;
+    unsigned short form = (secondaryIndex!=SZ_MAX) ? secondaryIndex : USHRT_MAX;
     for (size_t approx=0; approx<=numApprox; ++approx)
       form_res_keys[approx].form_key(0, form, approx);
     break;
   }
   case Pecos::MODEL_FORM_SEQUENCE: {
+    bool sec_index_def = (secondaryIndex != SZ_MAX);
     size_t lev = (sec_index_def) ? secondaryIndex :
       iteratedModel.truth_model().solution_level_cost_index();
     form_res_keys[numApprox].form_key(0, numApprox, lev);
@@ -162,6 +168,7 @@ void NonDNonHierarchSampling::assign_active_key()
     break;
   }
   case Pecos::FORM_RESOLUTION_ENUMERATION: {
+  */
     ModelList& sub_models = iteratedModel.subordinate_models(false);// incl HF
     size_t m, l, num_lev, cntr = 0;  ModelLIter m_iter;
     for (m=0,m_iter=sub_models.begin(); m_iter!=sub_models.end(); ++m_iter,++m){
@@ -169,9 +176,10 @@ void NonDNonHierarchSampling::assign_active_key()
       for (l=0; l<num_lev; ++l, ++cntr)
         form_res_keys[cntr].form_key(0, m, l);
     }
-    break;
-  }
-  }
+    //break;
+  //}
+  //}
+
   active_key.aggregate_keys(form_res_keys, Pecos::RAW_DATA);
   iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
   iteratedModel.active_model_key(active_key); // data group 0
@@ -182,6 +190,7 @@ void NonDNonHierarchSampling::assign_active_key()
 void NonDNonHierarchSampling::
 hf_indices(size_t& hf_form_index, size_t& hf_lev_index)
 {
+  /*
   if (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE) {// resolution hierarchy
     // traps for completeness (undefined model form should not occur)
     hf_form_index = (secondaryIndex == SZ_MAX) ?
@@ -189,8 +198,8 @@ hf_indices(size_t& hf_form_index, size_t& hf_lev_index)
     // extremes of range
     hf_lev_index = NLevActual[hf_form_index].size() - 1;
   }
-  else { // model form hierarchy: HF model is max of range
-    hf_form_index = NLevActual.size() - 1;
+  else if (sequenceType == Pecos::MODEL_FORM_SEQUENCE) { // model form hierarchy
+    hf_form_index = NLevActual.size() - 1; // HF model is max of range
     if (secondaryIndex == SZ_MAX) {
       size_t c_index = iteratedModel.truth_model().solution_level_cost_index();
       hf_lev_index = (c_index == SZ_MAX) ? 0 : c_index;
@@ -198,6 +207,11 @@ hf_indices(size_t& hf_form_index, size_t& hf_lev_index)
     else
       hf_lev_index = secondaryIndex;
   }
+  else { // Pecos::FORM_RESOLUTION_ENUMERATION
+  */
+    hf_form_index = NLevActual.size() - 1;
+    hf_lev_index  = NLevActual[hf_form_index].size() - 1;
+  //}
 }
 
 
@@ -645,7 +659,8 @@ scale_to_target(Real avg_N_H, const RealVector& cost,
   // > if N* < N_pilot, scale back r* --> initial = scaled_r*,N_pilot
   // > if N* > N_pilot, use initial = r*,N*
   avg_hf_target = allocate_budget(avg_eval_ratios, cost, budget); // r* --> N*
-  if (pilotMgmtMode == OFFLINE_PILOT) {
+  if (pilotMgmtMode == OFFLINE_PILOT ||
+      pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
     if (avg_N_H < offline_N_lwr)
       avg_N_H = offline_N_lwr;
   }
@@ -734,24 +749,49 @@ process_model_solution(MFSolutionData& soln, size_t& num_samples)
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
-  num_samples = (truthFixedByPilot) ? 0 :
-    one_sided_delta(avg_N_H, soln.solution_reference());
+  size_t soln_incr; // unrelaxed increment from numerical solution
+  if (truthFixedByPilot)
+    soln_incr = num_samples = 0;
+  else {
+    soln_incr = one_sided_delta(avg_N_H, soln.solution_reference());
+    num_samples = (relaxFactor == 1.) ? soln_incr :
+      one_sided_delta(avg_N_H, soln.solution_reference(), relaxFactor);
+  }
 
-  //if (!num_samples) { // metrics not needed unless print_variance_reduction()
+  // **************************************************************************
+  // Introduction of relaxFactor makes the optimal estVar solution inconsistent
+  // with any relaxation of the sample increment that follows
+  // > inconsistency in final reporting (if final relax factor != 1) as well as
+  //   intermediate performance metrics, e.g. estVar ratio below
+  // All NonHierarch: this fn, virtual recover_results() after numerical solve,
+  // print_variance_reduction()/print_estimator_performance(), no_solve defaults
+  // > MFMC analytic: estvar_ratios to estvar using N_H_actual{,_proj}
+  // > ACV/GenACV: print_model_solution()
+  // > ML BLUE:    {process,print}_group_solution()
+  //
+  // Approach:
+  // > Strictly interpret MFSolutionData as optimal soln, preceding any
+  //   enactment of relaxation of the optimal sample increment
+  // > For final post-processing and reporting, re-evaluate estvar/estvar_ratio
+  //   when final relaxFactor is not 1 (for whatever reason) since
+  //   soln.solution_variables() will not be consistent.
+  // **************************************************************************
+
+  //bool converged = (num_samples == 0 || mlmfIter > maxIterations ||
+  //                  pilotMgmtMode != ONLINE_PILOT);
+  //if (converged) { // metrics not needed prior to print_variance_reduction()
 
   // All cases employ projected MC estvar to match the projected nonhier estvar
-  // from N* (where N* may include a num_samples increment not yet performed)
-  RealVector mc_estvar;
-  project_mc_estimator_variance(varH, N_H_actual, num_samples, mc_estvar);
+  // from N* (where N* includes any soln increment not yet performed)
+  // > Since soln.average_estimator_variance() precedes (and ignores subsequent)
+  //   sample increment relaxation, don't use relaxed increments here.
+  RealVector proj_mc_estvar;
+  project_mc_estimator_variance(varH, N_H_actual, soln_incr, proj_mc_estvar);
 
   // Report ratio of averages rather that average of ratios (see notes in
   // print_variance_reduction())
   soln.average_estimator_variance_ratio(soln.average_estimator_variance() /
-					average(mc_estvar)); // (1 - R^2)
-  //RealVector estvar_ratio(numFunctions, false);
-  //for (size_t qoi=0; qoi<numFunctions; ++qoi)
-  //  estvar_ratio[qoi] = 1. - R_sq[qoi];// compute from CF_inv,A->compute_Rsq()
-  //avg_estvar_ratio = average(estvar_ratio);
+					average(proj_mc_estvar)); // (1 - R^2)
 
   //}
 }
@@ -808,6 +848,8 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   //      switch from estimator_perf (selection) to qoi_statistics (execution);
   //      moreover, don't select an estimator based on inconsistent formulation
   // Nonzero lower bound ensures replacement of allSamples after offline pilot.
+  bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
+		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
   Real offline_N_lwr = 2.; //(finalStatsType == QOI_STATISTICS) ? 2. : 1.;
 
   // --------------------------------------
@@ -857,8 +899,8 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     // the incurred cost (e.g., setting N_lb to 1), but instead we bound with
     // the incurred cost by setting x_lb = latest N_H and retaining r_lb = 1.
     x_lb = 1.; // r_i
-    x_lb[numApprox] = (pilotMgmtMode == OFFLINE_PILOT) ?
-      offline_N_lwr : avg_N_H; //std::floor(avg_N_H + .5); // pilot <= N*
+    x_lb[numApprox] = (offline) ? offline_N_lwr :
+      avg_N_H; //std::floor(avg_N_H + .5); // pilot <= N*
 
     RealVector avg_eval_ratios = soln.solution_ratios();
     if (avg_eval_ratios.empty()) x0 = 1.;
@@ -870,7 +912,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     break;
   }
   case N_MODEL_LINEAR_CONSTRAINT:  case N_MODEL_LINEAR_OBJECTIVE: {
-    x_lb = (pilotMgmtMode == OFFLINE_PILOT) ? offline_N_lwr : avg_N_H;
+    x_lb = (offline) ? offline_N_lwr : avg_N_H;
     const RealVector& soln_vars = soln.solution_variables();
     x0 = (soln_vars.empty()) ? x_lb : soln_vars;
     if (optSubProblemForm == N_MODEL_LINEAR_CONSTRAINT) {
@@ -891,7 +933,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     break;
   }
   }
-  // x0 can undershoot x_lb if OFFLINE_PILOT, but enforce generally
+  // x0 can undershoot x_lb if an OFFLINE mode, but enforce generally
   enforce_bounds(x0, x_lb, x_ub);
 
   if (outputLevel >= DEBUG_OUTPUT)
@@ -2118,7 +2160,8 @@ print_estimator_performance(std::ostream& s, const MFSolutionData& soln)
   size_t wpp7 = write_precision + 7;
   s << "<<<<< Variance for mean estimator:\n";
 
-  if (pilotMgmtMode != OFFLINE_PILOT) {
+  if (pilotMgmtMode == ONLINE_PILOT ||
+      pilotMgmtMode == ONLINE_PILOT_PROJECTION) {
     // > reporting estVarIter0 best shows the reference for convTol
     // > recomputing with latest varH is more consistent with metrics to follow 
     //RealVector initial_mc_estvar;
@@ -2129,7 +2172,9 @@ print_estimator_performance(std::ostream& s, const MFSolutionData& soln)
     //<< std::setw(wpp7) << average(initial_mc_estvar) << '\n';
   }
 
-  String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected" : "   Online";
+  String type = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
+		 pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
+              ? "Projected" : "   Online";
   //String method = method_enum_to_string(methodName); // string too verbose
   String method = (methodName == MULTIFIDELITY_SAMPLING) ? " MFMC" : "  ACV";
   // Ordering of averages:

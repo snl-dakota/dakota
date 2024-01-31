@@ -390,7 +390,7 @@
 	 DACE, sampling: minimum required
       -->
 
-    <!ENTITY final_stats_perf_res '
+    <!ENTITY mlmf_final_stats '
              <keyword  id="final_statistics" name="final_statistics" code="{0}" label="final_statistics"  minOccurs="0" default="qoi_statistics" >
                <oneOf label="Final statistics type" >
 		 <keyword  id="estimator_performance" name="estimator_performance" code="{N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}" label="Final algorithm performance" />
@@ -663,14 +663,14 @@
 	     &method_max_solver_iterations;
 	     '>
 
-    <!ENTITY mc_pilot_samples '
+    <!ENTITY mlmf_pilot_samples '
       	     <keyword  id="pilot_samples" name="pilot_samples" code="{N_mdm(szarray,pilotSamples)}" label="Number of initial samples per model instance" minOccurs="0" >
 	       <alias name="initial_samples"/> 
 	       <param type="INTEGERLIST" />
 	     </keyword>
 	     ' >
 
-    <!ENTITY mc_group_pilot_samples '
+    <!ENTITY mlmf_group_pilot_samples '
       	     <keyword  id="pilot_samples" name="pilot_samples" code="{N_mdm(szarray,pilotSamples)}" label="Number of initial samples per model instance" minOccurs="0" >
 	       <alias name="initial_samples"/>
 	       <param type="INTEGERLIST" />
@@ -678,12 +678,34 @@
 	     </keyword>
 	     ' >
 
-    <!ENTITY mc_solution_mode '
+    <!ENTITY mlmf_solution_mode '
       	     <keyword  id="solution_mode" name="solution_mode" code="{0}" label="solution_mode" help="" minOccurs="0" default="online pilot" >
 	       <oneOf label="Ensemble Sampling Solution Mode">
-		 <keyword  id="online_pilot" name="online_pilot" code="{N_mdm(type,ensembleSampSolnMode_ONLINE_PILOT)}" label="online_pilot" help="" />
-		 <keyword  id="offline_pilot" name="offline_pilot" code="{N_mdm(type,ensembleSampSolnMode_OFFLINE_PILOT)}" label="offline_pilot" help="" />
-		 <keyword  id="pilot_projection" name="pilot_projection" code="{N_mdm(type,ensembleSampSolnMode_PILOT_PROJECTION)}" label="pilot_projection" help="" />
+		 <keyword  id="online_pilot" name="online_pilot" code="{N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}" label="online_pilot" help="" >
+		   &mlmf_relaxation;
+		   &mlmf_final_stats;
+		 </keyword>
+		 <keyword  id="offline_pilot" name="offline_pilot" code="{N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}" label="offline_pilot" help="" >
+		   &mlmf_final_stats;
+		 </keyword>
+		 <keyword  id="online_projection" name="online_projection" code="{N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT_PROJECTION)}" label="online_projection" help="" />
+		 <keyword  id="offline_projection" name="offline_projection" code="{N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT_PROJECTION)}" label="offline_projection" help="" />
+	       </oneOf>
+	     </keyword>
+	     ' >
+
+    <!ENTITY mlmf_relaxation '
+      	     <keyword  id="relaxation" name="relaxation" code="{0}" label="relaxation" help="" minOccurs="0" default="no relaxation" >
+	       <oneOf label="Relaxation factor">
+		 <keyword  id="factor_sequence" name="factor_sequence" code="{N_mdm(RealDL,relaxFactorSequence)}" label="factor_sequence" help="" >
+		   <param type="REALLIST" />
+		 </keyword>
+		 <keyword  id="fixed_factor" name="fixed_factor" code="{N_mdm(Real,relaxFixedFactor)}" label="fixed_factor" help="" >
+		   <param type="REAL" />
+		 </keyword>
+		 <keyword  id="recursive_factor" name="recursive_factor" code="{N_mdm(Real,relaxRecursiveFactor)}" label="recursive_factor" help="" >
+		   <param type="REAL" />
+		 </keyword>
 	       </oneOf>
 	     </keyword>
 	     ' >
@@ -3144,8 +3166,8 @@
 	  <alias name="multilevel_mc"/>
 	  <alias name="mlmc"/>
 	  &method_seed_sequence;
-	  &mc_pilot_samples;
-	  &mc_solution_mode;
+	  &mlmf_pilot_samples;
+	  &mlmf_solution_mode;
 	  &method_sample_type_lhs_mc;
 	  <keyword  id="export_sample_sequence" name="export_sample_sequence" code="{N_mdm(true,exportSampleSeqFlag)}" label="export_sample_sequence"  minOccurs="0" >
 	    &method_export_samples_format;
@@ -3188,7 +3210,6 @@
 	  </keyword>
 	  &method_max_iterations;
           &method_max_function_evaluations;
-	  &final_stats_perf_res;
 	  &rng_options;
 	  &method_optional_model_pointer;
 	</keyword>
@@ -3197,8 +3218,8 @@
 	  <alias name="multifidelity_mc"/>
 	  <alias name="mfmc"/>
 	  &method_seed_sequence;
-	  &mc_pilot_samples;
-	  &mc_solution_mode;
+	  &mlmf_pilot_samples;
+	  &mlmf_solution_mode;
 	  &mfmc_numerical_solve;
 	  <keyword  id="search_model_graphs" name="search_model_graphs" code="{0}" label="search_model_graph" minOccurs="0" default="NO_GRAPH_RECURSION" >
 	    <keyword  id="model_selection" name="model_selection" code="{N_mdm(type,modelSelectType_ALL_MODEL_COMBINATIONS)}" label="model_selection" minOccurs="0" />
@@ -3210,7 +3231,6 @@
 	  &method_convergence_tolerance;
 	  &method_max_iterations;
           &method_max_function_evaluations;
-	  &final_stats_perf_res;
 	  &rng_options;
 	  &method_optional_model_pointer;
 	</keyword>
@@ -3219,8 +3239,8 @@
 	  <alias name="multilevel_multifidelity_mc"/>
 	  <alias name="mlmfmc"/>
 	  &method_seed_sequence;
-	  &mc_pilot_samples;
-	  &mc_solution_mode;
+	  &mlmf_pilot_samples;
+	  &mlmf_solution_mode;
 	  &method_sample_type_lhs_mc;
 	  <keyword  id="export_sample_sequence" name="export_sample_sequence" code="{N_mdm(true,exportSampleSeqFlag)}" label="export_sample_sequence"  minOccurs="0" >
 	    &method_export_samples_format;
@@ -3228,7 +3248,6 @@
 	  &method_convergence_tolerance;
 	  &method_max_iterations;
           &method_max_function_evaluations;
-	  &final_stats_perf_res;
 	  &rng_options;
 	  &method_optional_model_pointer;
 	</keyword>
@@ -3261,8 +3280,8 @@
 	      </oneOf>
 	    <!-- </optional> -->
 	  </keyword>
-	  &mc_pilot_samples;
-	  &mc_solution_mode;
+	  &mlmf_pilot_samples;
+	  &mlmf_solution_mode;
 	  <!--
 	  <keyword  id="constraints" name="constraints" code="{0}" label="constraints" >
 	    <oneOf label="Additional ACV solver constraints">
@@ -3281,14 +3300,13 @@
 	  &method_convergence_tolerance;
 	  &method_max_iterations;
           &method_max_function_evaluations;
-	  &final_stats_perf_res;
 	  &rng_options;
 	  &method_optional_model_pointer;
 	</keyword>
 
 	<keyword  id="multilevel_blue" name="multilevel_blue" code="{N_mdm(utype,methodName_MULTILEVEL_BLUE)}" label="multilevel_blue"  group="Uncertainty Quantification" >
-	  &mc_group_pilot_samples;
-	  &mc_solution_mode;
+	  &mlmf_group_pilot_samples;
+	  &mlmf_solution_mode;
 	  &method_mlmf_sub_problem_solver;
 	  &method_seed_sequence;
 	  &method_sample_type_lhs_mc;
@@ -3298,7 +3316,6 @@
 	  &method_convergence_tolerance;
 	  &method_max_iterations;
           &method_max_function_evaluations;
-	  &final_stats_perf_res;
 	  &rng_options;
 	  &method_optional_model_pointer;
 	</keyword>

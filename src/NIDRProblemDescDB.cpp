@@ -6768,6 +6768,8 @@ static Real
         MP_(priorPropCovMult),
 	MP_(refinementRate),
 	MP_(regressionL2Penalty),
+	MP_(relaxFixedFactor),
+	MP_(relaxRecursiveFactor),
 	MP_(shrinkagePercent),	// should be called shrinkageFraction
 	MP_(singConvTol),
 	MP_(singRadius),
@@ -6804,8 +6806,9 @@ static RealVector
 	MP_(predictionConfigList),
 	MP_(proposalCovData),
 	MP_(regressionNoiseTol),
-  MP_(scalarizationRespCoeffs),
-  MP_(stepVector),
+	MP_(relaxFactorSequence),
+	MP_(scalarizationRespCoeffs),
+	MP_(stepVector),
 	MP_(trustRegionInitSize);
 
 static RealVectorArray
@@ -7068,9 +7071,10 @@ static Method_mp_type
 	MP2s(emulatorType,PCE_EMULATOR),
 	MP2s(emulatorType,SC_EMULATOR),
 	MP2s(emulatorType,VPS_EMULATOR),
-	MP2s(ensembleSampSolnMode,OFFLINE_PILOT),
-	MP2s(ensembleSampSolnMode,ONLINE_PILOT),
-	MP2s(ensembleSampSolnMode,PILOT_PROJECTION),
+	MP2s(ensemblePilotSolnMode,OFFLINE_PILOT),
+	MP2s(ensemblePilotSolnMode,OFFLINE_PILOT_PROJECTION),
+	MP2s(ensemblePilotSolnMode,ONLINE_PILOT),
+	MP2s(ensemblePilotSolnMode,ONLINE_PILOT_PROJECTION),
 	MP2s(evalSynchronize,BLOCKING_SYNCHRONIZATION),
 	MP2s(evalSynchronize,NONBLOCKING_SYNCHRONIZATION),
 	MP2p(expansionBasisType,ADAPTED_BASIS_EXPANDING_FRONT),
@@ -7085,7 +7089,6 @@ static Method_mp_type
 	MP2p(finalMomentsType,NO_MOMENTS),                 // Pecos enumeration
 	MP2p(finalMomentsType,STANDARD_MOMENTS),           // Pecos enumeration
 	MP2s(finalStatsType,ESTIMATOR_PERFORMANCE),
-	MP2s(finalStatsType,NO_FINAL_STATS),
 	MP2s(finalStatsType,QOI_STATISTICS),
 	MP2p(growthOverride,RESTRICTED),                   // Pecos enumeration
 	MP2p(growthOverride,UNRESTRICTED),                 // Pecos enumeration

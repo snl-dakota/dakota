@@ -30,7 +30,7 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
   NonDSampling(problem_db, model),
   //pilotSamples(problem_db.get_sza("method.nond.pilot_samples")),
   pilotMgmtMode(
-    problem_db.get_short("method.nond.ensemble_sampling_solution_mode")),
+    problem_db.get_short("method.nond.ensemble_pilot_solution_mode")),
   randomSeedSeqSpec(problem_db.get_sza("method.random_seed_sequence")),
   backfillFailures(false), // inactive option for now
   mlmfIter(0), equivHFEvals(0.), // also reset in pre_run()
@@ -40,6 +40,11 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
   exportSampleSets(problem_db.get_bool("method.nond.export_sample_sequence")),
   exportSamplesFormat(
     problem_db.get_ushort("method.nond.export_samples_format")),
+  relaxFactor(1.), relaxIndex(0),
+  relaxFactorSequence(
+    problem_db.get_rv("method.nond.relaxation.factor_sequence")),
+  relaxRecursiveFactor(
+    problem_db.get_real("method.nond.relaxation.recursive_factor")),
   seedIndex(SZ_MAX)
 {
   ModelList& model_ensemble = iteratedModel.subordinate_models(false);
@@ -117,9 +122,17 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
   if (!sampleType) // SUBMETHOD_DEFAULT
     sampleType = SUBMETHOD_RANDOM;
 
+  Real relax_fixed = problem_db.get_real("method.nond.relaxation.fixed_factor");
+  if (relax_fixed > 0.) relaxFactor = relax_fixed; // else initialized to 1.
+
   switch (pilotMgmtMode) {
-  case PILOT_PROJECTION: // no iteration
+  case ONLINE_PILOT_PROJECTION: case OFFLINE_PILOT_PROJECTION: // no iteration
     maxIterations = 0; //finalCVRefinement = false;
+    if (finalStatsType == QOI_STATISTICS) // currently possible in spec
+      Cerr << "Warning: final_statistics cannot be qoi_statistics in "
+	   << "projection modes.\n         Overriding to performance "
+	   << "projection." << std::endl;
+    finalStatsType = ESTIMATOR_PERFORMANCE;
     break;
   case OFFLINE_PILOT:
     maxIterations = 1; //finalCVRefinement = true;
@@ -130,11 +143,17 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
 	   << std::endl;
       abort_handler(METHOD_ERROR);
     }
+    if (!finalStatsType) finalStatsType = QOI_STATISTICS; // mode default
     break;
-  default: // ONLINE_PILOT
+  case ONLINE_PILOT:
     // MLMF-specific default: don't let allocator get stuck in fine-tuning
-    if (maxIterations    == SZ_MAX) maxIterations    = 25;
-  //if (maxFunctionEvals == SZ_MAX) maxFunctionEvals = ; // allow inf budget
+    if (maxIterations == SZ_MAX) maxIterations = 25;
+    if (!finalStatsType) finalStatsType = QOI_STATISTICS; // mode default
+    break;
+  default:
+    Cerr << "Error: unrecognized pilot solution mode in ensemble sampling."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
     break;
   }
 
@@ -186,6 +205,8 @@ void NonDEnsembleSampling::pre_run()
   mlmfIter = numLHSRuns = 0;
   equivHFEvals = deltaEquivHF = 0.;
   seedSpec = randomSeed = seed_sequence(0); // (re)set seeds to sequence
+
+  reset_relaxation();
 }
 
 
@@ -278,10 +299,11 @@ void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
   if (!statsFlag)
     return;
 
-  bool pilot_projection = (pilotMgmtMode  == PILOT_PROJECTION),
+  bool pilot_projection = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
+			   pilotMgmtMode == OFFLINE_PILOT_PROJECTION),
        cv_projection    = (finalStatsType == ESTIMATOR_PERFORMANCE),
        projections      = (pilot_projection || cv_projection);
-  String summary_type = (pilot_projection) ? "Projected " : "Online ";
+  String summary_type   = (pilot_projection) ? "Projected " : "Online ";
 
   // model-based allocation methods, e.g. ML, MF, MLMF, ACV, GenACV
   print_multimodel_summary(s, summary_type, projections);
@@ -319,7 +341,7 @@ print_multimodel_summary(std::ostream& s, const String& summary_type,
   if (projections || differ(NLevAlloc, NLevActual)) {
     // NLevActual includes successful sample accumulations used for stats
     // equivHFEvals includes incurred cost for evaluations, successful or not
-    print_multilevel_model_summary(s, NLevActual, "Actual accumulated",
+    print_multilevel_model_summary(s, NLevActual, "Online accumulated",
                                    sequenceType, discrep_flag);
     s << "<<<<< Incurred cost in equivalent high fidelity evaluations: "
       << std::scientific << std::setprecision(write_precision) << equivHFEvals
@@ -368,39 +390,19 @@ export_all_samples(String root_prepend, const Model& model, size_t iter,
 void NonDEnsembleSampling::
 convert_moments(const RealMatrix& raw_mom, RealMatrix& final_mom)
 {
-  // Note: raw_mom is numFunctions x 4 and final_mom is the transpose
-  if (final_mom.empty())
-    final_mom.shapeUninitialized(4, numFunctions);
-
   // Convert uncentered raw moment estimates to central moments
-  if (finalMomentsType == Pecos::CENTRAL_MOMENTS) {
-    for (size_t qoi=0; qoi<numFunctions; ++qoi)
-      uncentered_to_centered(raw_mom(qoi,0), raw_mom(qoi,1), raw_mom(qoi,2),
-			     raw_mom(qoi,3), final_mom(0,qoi), final_mom(1,qoi),
-			     final_mom(2,qoi), final_mom(3,qoi));
-  }
+  if (finalMomentsType == Pecos::CENTRAL_MOMENTS)
+    uncentered_to_centered(raw_mom, final_mom);
   // Convert uncentered raw moment estimates to standardized moments
   else { //if (finalMomentsType == Pecos::STANDARD_MOMENTS) {
-    Real cm1, cm2, cm3, cm4;
-    for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-      uncentered_to_centered(raw_mom(qoi,0), raw_mom(qoi,1), raw_mom(qoi,2),
-			     raw_mom(qoi,3), cm1, cm2, cm3, cm4);
-      centered_to_standard(cm1, cm2, cm3, cm4, final_mom(0,qoi),
-			   final_mom(1,qoi), final_mom(2,qoi),
-			   final_mom(3,qoi));
-    }
+    RealMatrix cent_mom;
+    uncentered_to_centered(raw_mom, cent_mom);
+    centered_to_standard(cent_mom, final_mom);
   }
 
   if (outputLevel >= DEBUG_OUTPUT)
-    for (size_t qoi=0; qoi<numFunctions; ++qoi)
-      Cout <<  "raw mom 1 = "   << raw_mom(qoi,0)
-	   << " final mom 1 = " << final_mom(0,qoi) << '\n'
-	   <<  "raw mom 2 = "   << raw_mom(qoi,1)
-	   << " final mom 2 = " << final_mom(1,qoi) << '\n'
-	   <<  "raw mom 3 = "   << raw_mom(qoi,2)
-	   << " final mom 3 = " << final_mom(2,qoi) << '\n'
-	   <<  "raw mom 4 = "   << raw_mom(qoi,3)
-	   << " final mom 4 = " << final_mom(3,qoi) << "\n\n";
+    Cout << "raw moments   =\n" << raw_mom
+	 << "final moments =\n" << final_mom << "\n\n";
 }
 
 } // namespace Dakota
