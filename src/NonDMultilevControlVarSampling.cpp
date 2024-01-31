@@ -1703,7 +1703,7 @@ accumulate_mlmf_Qsums(const IntResponseMap& lf_resp_map,
 
 	h_it = sum_H.begin();  h_ord = h_it->first;
 	active_ord = 1;        hf_prod = hf_l;
-	while (h_it!=sum_H.end() || active_ord <= 1) {
+	while (h_it!=sum_H.end()) {
 	  if (h_ord == active_ord) {
 	    h_it->second(qoi,lev) += hf_prod;  ++h_it; // High
 	    h_ord = (h_it == sum_H.end()) ? 0 : h_it->first;
