@@ -242,29 +242,29 @@ protected:
 
   /// compute a one-sided sample increment for multilevel methods to
   /// move current sampling level to a new target
-  size_t one_sided_delta(Real current, Real target);
+  size_t one_sided_relax_round(Real diff, Real relax_factor = 1.);
+  /// compute a one-sided sample increment for multilevel methods to
+  /// move current sampling level to a new target
+  size_t one_sided_delta(Real current, Real target, Real relax_factor = 1.);
   /// compute a one-sided sample increment for multilevel methods to
   /// move current sampling level to a new target
   size_t one_sided_delta(const SizetArray& current, const RealVector& targets,
-			 size_t power);
+			 Real relax_factor = 1., size_t power = 1);
   /// compute a one-sided sample increment for multilevel methods to
   /// move current sampling level to a new target
-  size_t one_sided_delta(const SizetArray& current, Real target, size_t power);
+  size_t one_sided_delta(const SizetArray& current, Real target,
+			 Real relax_factor = 1., size_t power = 1);
   //size_t one_sided_delta(const Sizet2DArray& current,
-  //			   const RealMatrix& targets, size_t power);
+  //                       const RealMatrix& targets, Real relax_factor = 1.,
+  //                       size_t power = 1);
   /// compute a one-sided sample increment vector to move current sampling
   /// levels to new targets
   void one_sided_delta(const SizetArray& current, const RealVector& targets,
-		       SizetArray& delta_N);
+		       SizetArray& delta_N, Real relax_factor = 1.);
   /// compute a one-sided sample increment vector to move current sampling
   /// levels to new targets
-  void one_sided_delta(const Sizet2DArray& current,
-		       const RealVector& targets, SizetArray& delta_N);
-
-  /// one-sided increase of current to match targets
-  void one_sided_update(SizetArray& current, const SizetArray& targets);
-  /// one-sided increase of current to match rounded targets
-  void one_sided_update(SizetArray& current, const RealVector& targets);
+  void one_sided_delta(const Sizet2DArray& current, const RealVector& targets,
+		       SizetArray& delta_N, Real relax_factor = 1.);
 
   /// return true if fine-grained reporting differs from coarse-grained
   bool differ(size_t N_alloc_ij, const SizetArray& N_actual_ij) const;
@@ -529,13 +529,30 @@ differ(const Sizet2DArray& N_alloc, const Sizet3DArray& N_actual) const
 }
 
 
-inline size_t NonD::one_sided_delta(Real current, Real target)
-{ return (target > current) ? (size_t)std::floor(target - current + .5) : 0; }
+inline size_t NonD::
+one_sided_relax_round(Real diff, Real relax_factor)
+{
+  if (relax_factor == 1.)
+    return (diff > 0.) ? (size_t)std::floor(diff + .5) : 0;
+  else if (diff > 0.) {
+    size_t delta = (size_t)std::floor(relax_factor * diff + .5);
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "Relaxation: diff " << diff << " relaxed with factor "
+	   << relax_factor << " and rounded to " << delta << std::endl;
+    return delta;
+  }
+  else return 0;
+}
+
+
+inline size_t NonD::
+one_sided_delta(Real current, Real target, Real relax_factor)
+{ return one_sided_relax_round(target - current, relax_factor); }
 
 
 inline size_t NonD::
 one_sided_delta(const SizetArray& current, const RealVector& targets,
-		size_t power)
+		Real relax_factor, size_t power)
 {
   size_t i, len = current.size();
   Real diff, pow_mean = 0.;
@@ -577,12 +594,13 @@ one_sided_delta(const SizetArray& current, const RealVector& targets,
   }
   */
 
-  return (pow_mean > 0.) ? (size_t)std::floor(pow_mean + .5) : 0; // round
+  return one_sided_relax_round(pow_mean, relax_factor);
 }
 
 
 inline size_t NonD::
-one_sided_delta(const SizetArray& current, Real target,	size_t power)
+one_sided_delta(const SizetArray& current, Real target, Real relax_factor,
+		size_t power)
 {
   size_t i, len = current.size();
   Real diff, pow_mean = 0.;
@@ -605,14 +623,14 @@ one_sided_delta(const SizetArray& current, Real target,	size_t power)
     break;
   }
 
-  return (pow_mean > 0.) ? (size_t)std::floor(pow_mean + .5) : 0; // round
+  return one_sided_relax_round(pow_mean, relax_factor);
 }
 
 
 /*
 inline size_t NonD::
 one_sided_delta(const Sizet2DArray& current, const RealMatrix& targets,
-		size_t power)
+                Real relax_factor, size_t power)
 {
   size_t r, c, rows = targets.numRows(), cols = targets.numCols();
   Real diff, pow_mean = 0.;
@@ -642,76 +660,42 @@ one_sided_delta(const Sizet2DArray& current, const RealMatrix& targets,
   }
   // see notes on other finite norms above
 
-  return (pow_mean > 0.) ? (size_t)std::floor(pow_mean + .5) : 0; // round
+  return one_sided_delta(pow_mean, relax_factor);
 }
 */
 
 
 inline void NonD::
 one_sided_delta(const SizetArray& current, const RealVector& targets,
-		SizetArray& delta_N)
+		SizetArray& delta_N, Real relax_factor)
 {
-  size_t i, c_len = current.size(), t_len = targets.length(), tgt_i;
+  size_t i, c_len = current.size(), t_len = targets.length(), diff_i;
   if (c_len != t_len) {
-    Cerr << "Error: inconsistent array sizes in NonD::one_sided_update()."
+    Cerr << "Error: inconsistent array sizes in NonD::one_sided_delta()."
 	 << std::endl;
     abort_handler(METHOD_ERROR);
   }
   if (delta_N.size() != c_len) delta_N.resize(c_len);
-  for (i=0; i<c_len; ++i) {
-    tgt_i      = (size_t)std::floor(targets[i] + .5);
-    delta_N[i] = (tgt_i > current[i]) ? tgt_i - current[i] : 0;
-  }
+  for (i=0; i<c_len; ++i)
+    delta_N[i]
+      = one_sided_relax_round(targets[i] - (Real)current[i], relax_factor);
 }
 
 
 inline void NonD::
 one_sided_delta(const Sizet2DArray& current, const RealVector& targets,
-		SizetArray& delta_N)
+		SizetArray& delta_N, Real relax_factor)
 {
   size_t i, c_len = current.size(), t_len = targets.length();  Real diff_i;
   if (c_len != t_len) {
-    Cerr << "Error: inconsistent array sizes in NonD::one_sided_update()."
+    Cerr << "Error: inconsistent array sizes in NonD::one_sided_delta()."
 	 << std::endl;
     abort_handler(METHOD_ERROR);
   }
   if (delta_N.size() != c_len) delta_N.resize(c_len);
-  for (i=0; i<c_len; ++i) {
-    diff_i     = targets[i] - average(current[i]); // avg over all qoi
-    delta_N[i] = (diff_i > 0) ? (size_t)std::floor(diff_i + .5) : 0;
-  }
-}
-
-
-inline void NonD::
-one_sided_update(SizetArray& current, const SizetArray& targets)
-{
-  size_t i, c_len = current.size(), t_len = targets.size();
-  if (c_len != t_len) {
-    Cerr << "Error: inconsistent array sizes in NonD::one_sided_update()."
-	 << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-  for (i=0; i<c_len; ++i)
-    if (targets[i] > current[i])
-      current[i] = targets[i];
-}
-
-
-inline void NonD::
-one_sided_update(SizetArray& current, const RealVector& targets)
-{
-  size_t i, c_len = current.size(), t_len = targets.length(), rounded;
-  if (c_len != t_len) {
-    Cerr << "Error: inconsistent array sizes in NonD::one_sided_update()."
-	 << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-  for (i=0; i<c_len; ++i) {
-    rounded = (size_t)std::floor(targets[i] + .5);
-    if (rounded > current[i])
-      current[i] = rounded;
-  }
+  for (i=0; i<c_len; ++i) // avg over all qoi
+    delta_N[i]
+      = one_sided_relax_round(targets[i] - average(current[i]), relax_factor);
 }
 
 

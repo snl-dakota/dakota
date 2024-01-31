@@ -16,7 +16,7 @@ method,
 #	multilevel_sampling			#s5
 	  pilot_samples = 20  seed = 1237	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#p0,#p1,#p2,#p3,#p4
 #	  pilot_samples = 500 seed = 1237	#s10
-#	  solution_mode pilot_projection	#s9
+#	  solution_mode online_projection	#s9
 #	  solution_mode offline_pilot		#s10
 	  convergence_tolerance =    .1		#s0,#s2,#s4,#p0,#p1,#p2,#p3
 #	  convergence_tolerance =   .01		#s1,#s3,#s5,#s6

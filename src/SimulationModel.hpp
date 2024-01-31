@@ -29,7 +29,7 @@ namespace Dakota {
 class SimulationModel: public Model
 {
 public:
-  
+
   //
   //- Heading: Constructor and destructor
   //
@@ -39,7 +39,7 @@ public:
   
   /// Return the "default" or maximal ActiveSet for the model
   //ActiveSet default_active_set();
- 
+
 protected:
 
   //

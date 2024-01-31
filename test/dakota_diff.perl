@@ -716,9 +716,9 @@ sub compare_output {
       }
     }
     elsif ( ( ($t_ev) = $test =~
-	      /^\s+(?:Initial|Final|Projected|Online|Equivalent)\s+(?:MC|MLMC|MLCVMC|MFMC|ACV).*?\(.*?\):\s+($e)$/ ) &&
+	      /^\s+(?:Initial|Final|Projected|Online|Equivalent)\s+(?:MC|MLMC|MLCVMC|MFMC|ACV|ML BLUE).*?\(.*?\):\s+($e)$/ ) &&
 	    ( ($b_ev) = $base =~
-	      /^\s+(?:Initial|Final|Projected|Online|Equivalent)\s+(?:MC|MLMC|MLCVMC|MFMC|ACV).*?\(.*?\):\s+($e)$/ ) ) {
+	      /^\s+(?:Initial|Final|Projected|Online|Equivalent)\s+(?:MC|MLMC|MLCVMC|MFMC|ACV|ML BLUE).*?\(.*?\):\s+($e)$/ ) ) {
       if ( diff_relative($t_ev, $b_ev) ) { # tends to be small: override to only use relative check
 	$test_diff = 1;
 	push @base_diffs, $base;

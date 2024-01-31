@@ -56,8 +56,9 @@
  	  pilot_samples = 150 30
           seed = 1237
  	  sample_type random # use MC error estimates
-	  final_statistics qoi_statistics
- 	  final_moments standard
+	  solution_mode online_pilot
+	    final_statistics qoi_statistics
+	    final_moments standard
  	  max_iterations = 10
  	  convergence_tolerance 5.391910901958546e-05
  		convergence_tolerance_type absolute

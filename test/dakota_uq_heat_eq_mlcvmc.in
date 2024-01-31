@@ -8,16 +8,19 @@
 method,
 	model_pointer = 'HIERARCH'
         multilevel_multifidelity_sampling
-	  pilot_samples = 20  seed = 1237	#s0,#s1,#s2,#s3,#s5,#s7,#p0,#p1
+	  solution_mode  online_pilot		#s0,#s1,#s2,#s3,#s4,#s9
+#	    relaxation factor_sequence = .5 .75 1.	#s9
+#	  solution_mode  online_projection 	#s5
+#	  solution_mode offline_pilot		#s6
+#	  solution_mode offline_projection	#s8
+	  pilot_samples = 20  seed = 1237	#s0,#s1,#s2,#s3,#s5,#s7,#s9,#p0,#p1
 #	  pilot_samples = 100 50 40 20		#s4
 #	  seed_sequence = 1234 2345 3456 4567	#s4
-#	  pilot_samples = 500 seed = 1237	#s6
-#	  solution_mode pilot_projection 	#s5
-#	  solution_mode offline_pilot		#s6
+#	  pilot_samples = 500 seed = 1237	#s6,#s8
 #	  max_iterations = 0
 #	  convergence_tolerance = .1			
 	  convergence_tolerance = .01		#s0,#s2,#s3,#p0,#p1
-#	  convergence_tolerance = .001		#s1,#s4,#s7
+#	  convergence_tolerance = .001		#s1,#s4,#s7,#s8,#s9
 #	  convergence_tolerance = .0001
 #	  max_function_evaluations = 50		#s5,#s6
 	output silent
@@ -32,11 +35,11 @@ model,
 	id_model = 'LF'
 	variables_pointer = 'LF_VARS'
 	simulation
-	  solution_level_control = 'N_x'		 #s0,#s1,#s3,#s4,#s5,#s6,#s7,#p0,#p1
+	  solution_level_control = 'N_x'		 #s0,#s1,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#p0,#p1
 # linear in modes, linear in spatial coords:
 #	  solution_level_cost = 15. 45. 90. 180.
 # linear in modes, cubic in spatial coords:
-	  solution_level_cost = 375. 10125. 81000. 648000.   #s0,#s1,#s3,#s4,#s5,#s6,#p0,#p1
+	  solution_level_cost = 375. 10125. 81000. 648000.   #s0,#s1,#s3,#s4,#s5,#s6,#s8,#s9,#p0,#p1
 #	  solution_level_cost = 375. 	    	   	     #s2
 #	  cost_recovery_metadata = 'cost_model'		     #s7
 
@@ -44,11 +47,11 @@ model,
 	id_model = 'HF'
 	variables_pointer = 'HF_VARS'
 	simulation
-	  solution_level_control = 'N_x'		 #s0,#s1,#s2,#s4,#s5,#s6,#s7,#p0,#p1
+	  solution_level_control = 'N_x'		 #s0,#s1,#s2,#s4,#s5,#s6,#s7,#s8,#s9,#p0,#p1
 # linear in modes, linear in spatial coords:
 #	  solution_level_cost = 630. 1260. 2100. 4200.
 # linear in modes, cubic in spatial coords:
-	  solution_level_cost = 5.67e+5 4.536e+6 2.1e+7 1.68e+8	#s0,#s1,#s2,#s4,#s5,#s6,#p0,#p1
+	  solution_level_cost = 5.67e+5 4.536e+6 2.1e+7 1.68e+8	#s0,#s1,#s2,#s4,#s5,#s6,#s8,#s9,#p0,#p1
 #	  solution_level_cost = 5.67e+5			   	#s3
 #	  cost_recovery_metadata = 'cost_model'			#s7
 

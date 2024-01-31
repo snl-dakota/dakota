@@ -62,11 +62,19 @@ void NonDMultifidelitySampling::core_run()
   numSamples = pilotSamples[numApprox]; // last in pilot array
 
   switch (pilotMgmtMode) {
-  case  ONLINE_PILOT: // iterated MFMC (default)
-    multifidelity_mc();                  break;
-  case OFFLINE_PILOT: // computes perf for offline pilot/Oracle correlation
-    multifidelity_mc_offline_pilot();    break;
-  case PILOT_PROJECTION: // for algorithm assessment/selection
+  case ONLINE_PILOT:  // iterated MFMC (default)
+    // ESTIMATOR_PERFORMANCE case is still iterated for N_H, and therefore
+    // differs from ONLINE_PILOT_PROJECTION
+    multifidelity_mc_online_pilot();     break;
+  case OFFLINE_PILOT: // non-iterated allocation from offline/Oracle correlation
+    switch (finalStatsType) {
+    // since offline is not iterated, the ESTIMATOR_PERFORMANCE case is the
+    // same as OFFLINE_PILOT_PROJECTION --> bypass IntMaps, simplify code
+    case ESTIMATOR_PERFORMANCE:  multifidelity_mc_pilot_projection();  break;
+    default:                     multifidelity_mc_offline_pilot();     break;
+    }
+    break;
+  case ONLINE_PILOT_PROJECTION:  case OFFLINE_PILOT_PROJECTION:
     multifidelity_mc_pilot_projection(); break;
   }
 }
@@ -74,7 +82,7 @@ void NonDMultifidelitySampling::core_run()
 
 /** This is the standard MFMC version that integrates the pilot alongside
     the sample adaptation and iterates to determine N_H. */
-void NonDMultifidelitySampling::multifidelity_mc()
+void NonDMultifidelitySampling::multifidelity_mc_online_pilot()
 {
   IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baseline, sum_LL, sum_LH;
   RealVector sum_HH;  RealMatrix var_L;
@@ -93,7 +101,7 @@ void NonDMultifidelitySampling::multifidelity_mc()
     accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH,
 		       N_H_actual);
     N_H_alloc += (backfillFailures && mlmfIter) ? one_sided_delta(N_H_alloc,
-      mfmcSolnData.solution_reference()) : numSamples;
+      mfmcSolnData.solution_reference(), relaxFactor) : numSamples;
     // While online cost recovery could be continuously updated, we restrict
     // to the pilot and do not not update after iter 0.  We could potentially
     // update cost for shared samples, mirroring the correlation updates.
@@ -127,7 +135,7 @@ void NonDMultifidelitySampling::multifidelity_mc()
     mfmc_estimator_variance(rho2LH, varH, N_H_actual, approxSequence,
 			    estVarRatios, mfmcSolnData);
 
-    ++mlmfIter;
+    ++mlmfIter;  advance_relaxation();
   }
 
   // Only QOI_STATISTICS requires application of oversample ratios and
@@ -151,8 +159,7 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
     sum_LL_pilot(numFunctions, numApprox),
     sum_LH_pilot(numFunctions, numApprox), var_L;
   SizetArray N_shared_pilot(numFunctions, 0);
-  //Sizet2DArray N_L_pilot, N_LH_pilot;
-  //initialize_counts(N_L_pilot, N_H_pilot, N_LH_pilot);
+
   // -------------------------------------------------------------------------
   // Compute final var{L,H},rho2LH from (oracle) pilot treated as offline cost
   // -------------------------------------------------------------------------
@@ -184,38 +191,28 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   //compute_mc_estimator_variance(varH, N_H_actual, estVarIter0);
   //numHIter0 = N_H_actual;
 
-  // Only QOI_STATISTICS requires application of oversample ratios and
-  // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
-  if (finalStatsType == QOI_STATISTICS) {
-    IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baseline, sum_LL, sum_LH;
-    RealVector sum_HH;     //Sizet2DArray N_L_baseline, N_LH;
-    initialize_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH);
-    // perform the shared increment for the online sample profile;
-    // at least 2 samples reqd for variance (initial N_H_actual = 0)
-    numSamples = std::max(one_sided_delta(N_H_actual,
-      mfmcSolnData.solution_reference(), 1), (size_t)2);
-    shared_increment(mlmfIter); // spans ALL models, blocking
-    accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH,
-		       N_H_actual);
-    N_H_alloc += numSamples;
-    increment_equivalent_cost(numSamples,sequenceCost,0,numGroups,equivHFEvals);
-    // compute the estimator performance metrics
-    mfmc_estimator_variance(rho2LH, varH, N_H_actual, approxSequence,
-			    estVarRatios, mfmcSolnData);
-    // finalize with LF increments and post-processing
-    approx_increments(sum_L_baseline, sum_H, sum_LL, sum_LH, N_H_actual,
-		      N_H_alloc, approxSequence, mfmcSolnData);
-  }
-  else {
-    // project online profile including both shared samples and LF increment
-    update_projected_samples(mfmcSolnData, N_H_actual, N_H_alloc,
-			     deltaNActualHF, /*deltaNActualLF,*/ deltaEquivHF);
-    // include deltaNActualHF in estimator performance
-    SizetArray N_H_actual_proj = N_H_actual;
-    increment_samples(N_H_actual_proj, deltaNActualHF);
-    mfmc_estimator_variance(rho2LH, varH, N_H_actual_proj, approxSequence,
-			    estVarRatios, mfmcSolnData);
-  }
+  // -----------------------------------
+  // Perform "online" sample increments:
+  // -----------------------------------
+  // QOI_STATISTICS case; ESTIMATOR_PERFORMANCE redirects to
+  // multifidelity_mc_pilot_projection() to also bypass IntMaps.
+  IntRealVectorMap sum_H;  RealVector sum_HH;
+  IntRealMatrixMap sum_L_baseline, sum_LL, sum_LH;
+  initialize_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH);
+  // perform the shared increment for the online sample profile;
+  // at least 2 samples reqd for variance (initial N_H_actual = 0)
+  numSamples = std::max(one_sided_delta(N_H_actual,
+    mfmcSolnData.solution_reference()), (size_t)2); // no relax
+  shared_increment(mlmfIter); // spans ALL models, blocking
+  accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual);
+  N_H_alloc += numSamples;
+  increment_equivalent_cost(numSamples,sequenceCost,0,numGroups,equivHFEvals);
+  // compute the estimator performance metrics
+  mfmc_estimator_variance(rho2LH, varH, N_H_actual, approxSequence,
+			  estVarRatios, mfmcSolnData);
+  // finalize with LF increments and post-processing
+  approx_increments(sum_L_baseline, sum_H, sum_LL, sum_LH, N_H_actual,
+		    N_H_alloc, approxSequence, mfmcSolnData);
 }
 
 
@@ -223,30 +220,40 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
     variance reduction from pilot-only sampling. */
 void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
 {
-  RealVector sum_H(numFunctions), sum_HH(numFunctions);
-  RealMatrix var_L, sum_L_baseline(numFunctions, numApprox),
-    sum_LL(numFunctions, numApprox), sum_LH(numFunctions, numApprox);
   size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
 
+  RealVector sum_H(numFunctions), sum_HH(numFunctions);
+  RealMatrix var_L, sum_L(numFunctions, numApprox),
+    sum_LL(numFunctions, numApprox), sum_LH(numFunctions, numApprox);
   // ----------------------------------------------------
   // Evaluate shared increment and increment accumulators
   // ----------------------------------------------------
   shared_increment(mlmfIter); // spans ALL models, blocking
-  accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual);
-  N_H_alloc += numSamples;
   if (onlineCost) recover_online_cost(allResponses);
-  increment_equivalent_cost(numSamples, sequenceCost, 0,numGroups,equivHFEvals);
+  if (pilotMgmtMode == OFFLINE_PILOT || // redirected here for ESTIMATOR_PERF
+      pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
+    SizetArray N_shared_pilot(numFunctions, 0);
+    accumulate_mf_sums(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared_pilot);
+    //increment_equivalent_cost(...); // excluded
+    compute_LH_correlation(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared_pilot,
+			   var_L, varH, rho2LH);
+  }
+  else { // ONLINE_PILOT_PROJECTION
+    accumulate_mf_sums(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual);
+    N_H_alloc += numSamples;
+    increment_equivalent_cost(numSamples,sequenceCost,0,numGroups,equivHFEvals);
+    // First, compute the LF/HF evaluation ratio using shared samples,
+    // averaged over QoI.  This includes updating varH and rho2LH.
+    compute_LH_correlation(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual,
+			   var_L, varH, rho2LH);
+  }
 
-  // -------------------------------------------
-  // Compute correlations and evaluation ratios:
-  // -------------------------------------------
-  // First, compute the LF/HF evaluation ratio using shared samples,
-  // averaged over QoI.  This includes updating varH and rho2LH.
-  compute_LH_correlation(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH,
-			 N_H_actual, var_L, varH, rho2LH);
+  // --------------------------
+  // Compute evaluation ratios:
+  // --------------------------
   // estVarIter0 only uses HF pilot since CV terms (sum_L_shared / N_shared
   // - sum_L_refined / N_refined) cancel out prior to sample refinement.
   // (This differs from MLMC EstVar^0 which uses pilot for all levels.)
@@ -345,9 +352,10 @@ update_projected_lf_samples(const MFSolutionData& soln,
     lf_target = soln_vars[approx];
     const SizetArray& N_L_actual_a = N_L_actual[approx];
     size_t&           N_L_alloc_a  = N_L_alloc[approx];
+    // No relaxation for projections
     alloc_incr  = one_sided_delta(N_L_alloc_a, lf_target);
     actual_incr = (backfillFailures) ?
-      one_sided_delta(N_L_actual_a, lf_target, 1) : alloc_incr;
+      one_sided_delta(N_L_actual_a, lf_target) : alloc_incr;
     /*delta_N_L_actual[approx] += actual_incr;*/  N_L_alloc_a += alloc_incr;
     increment_equivalent_cost(actual_incr, sequenceCost, approx,delta_equiv_hf);
   }
@@ -370,12 +378,14 @@ update_projected_samples(const MFSolutionData& soln,
 			      delta_equiv_hf);
 
   Real hf_target = soln.solution_reference();
+  // No relaxation for projections
   size_t alloc_incr = one_sided_delta(N_H_alloc, hf_target),
     actual_incr = (backfillFailures) ?
-      one_sided_delta(N_H_actual, hf_target, 1) : alloc_incr;
+      one_sided_delta(N_H_actual, hf_target) : alloc_incr;
   // For analytic solns, mirror the CDV lower bound for numerical solutions --
   // see rationale in NonDNonHierarchSampling::ensemble_numerical_solution()
-  if ( pilotMgmtMode == OFFLINE_PILOT &&
+  if ( ( pilotMgmtMode == OFFLINE_PILOT ||
+	 pilotMgmtMode == OFFLINE_PILOT_PROJECTION ) &&
        ( optSubProblemForm == ANALYTIC_SOLUTION ||
 	 optSubProblemForm == REORDERED_ANALYTIC_SOLUTION ) ) {
     size_t offline_N_lwr = 2; //(finalStatsType == QOI_STATISTICS) ? 2 : 1;
@@ -424,7 +434,7 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
                    sum_L_refined = sum_L_baseline; // copies
   Sizet2DArray N_L_actual_shared;  inflate(N_H_actual, N_L_actual_shared);
   Sizet2DArray N_L_actual_refined = N_L_actual_shared;
-  SizetArray   N_L_alloc_refined;  inflate(N_H_alloc, N_L_alloc_refined);
+  SizetArray   N_L_alloc_refined;  inflate(N_H_alloc,  N_L_alloc_refined);
   for (size_t end=numApprox; end>0; --end) {
     // *** TO DO NON_BLOCKING: 2ND PASS ACCUMULATION AFTER 1ST PASS LAUNCH
     if (mfmc_approx_increment(soln, N_L_actual_refined, N_L_alloc_refined,
@@ -438,7 +448,7 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
   }
 
   // Compute/apply control variate parameter to estimate uncentered raw moments
-  RealMatrix H_raw_mom(numFunctions, 4);
+  RealMatrix H_raw_mom(4, numFunctions);
   mf_raw_moments(sum_L_baseline, sum_L_shared, sum_L_refined, sum_H, sum_LL,
 		 sum_LH, N_L_actual_shared, N_L_actual_refined, N_H_actual,
 		 H_raw_mom);
@@ -485,13 +495,14 @@ mfmc_approx_increment(const MFSolutionData& soln,
   // These approaches overshoot when combined with vector update_hf_targets():
   //   lf_targets[qoi] = eval_ratios(qoi, approx) * avg_hf_target;
   //   lf_target = avg_eval_ratios[approx] * avg_hf_target;
+  // No relaxation for approx increments
   if (backfillFailures) {
     const SizetArray& lf_curr = N_L_actual_refined[approx];
-    numSamples = one_sided_delta(lf_curr, lf_target, 1); // average
+    numSamples = one_sided_delta(lf_curr, lf_target); // average
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "Approx samples (" << numSamples << ") computed from average "
-	   << "delta between target " << lf_target
-	   << "and current counts:\n" << lf_curr << std::endl;
+	   << "delta between target " << lf_target << " and current counts:\n"
+	   << lf_curr << std::endl;
     size_t N_alloc = one_sided_delta(N_L_alloc_refined[approx], lf_target);
     increment_sample_range(N_L_alloc_refined, N_alloc, approx_sequence,
 			   start, end);
@@ -502,7 +513,7 @@ mfmc_approx_increment(const MFSolutionData& soln,
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "Approx samples (" << numSamples << ") computed from average "
 	   << "delta between target " << lf_target
-	   << "and current allocation = " << lf_curr << std::endl;
+	   << " and current allocation = " << lf_curr << std::endl;
     increment_sample_range(N_L_alloc_refined, numSamples, approx_sequence,
 			   start, end);
   }
@@ -1209,6 +1220,10 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
 			const RealVector& cost,  SizetArray& approx_sequence,
 			MFSolutionData& soln)
 {
+  bool budget_constrained = (maxFunctionEvals != SZ_MAX), budget_exhausted
+    = (budget_constrained && equivHFEvals >= (Real)maxFunctionEvals),
+    no_solve = (budget_exhausted || convergenceTol >= 1.); // bypass opt solve
+
   if (mlmfIter == 0) {
 
     size_t hf_form_index, hf_lev_index;
@@ -1216,15 +1231,12 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
     SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
     size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
     Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
-    bool budget_constrained = (maxFunctionEvals != SZ_MAX),
-         budget_exhausted   = (budget_constrained &&
-			       equivHFEvals >= (Real)maxFunctionEvals);
     RealVector avg_eval_ratios(numApprox, false);
 
-    if (budget_exhausted) { // only 1 feasible pt, no need for solve
+    if (no_solve) { // only 1 feasible pt, no need for solve
       avg_eval_ratios = 1.;
       soln.anchored_solution_ratios(avg_eval_ratios, avg_N_H);
-      return;
+      numSamples = 0;  return;
     }
 
     // Compute approx_sequence and r* initial guess from analytic MFMC
@@ -1255,6 +1267,8 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
     // push updates to MFSolutionData
     soln.anchored_solution_ratios(avg_eval_ratios, avg_hf_target);
   }
+  else if (no_solve) // subsequent iterations
+    { numSamples = 0;  return; } // leave soln at previous values
 
   // define covLH and covLL from rho2LH, var_L, varH
   //correlation_sq_to_covariance(rho2_LH, var_L, varH, covLH);
@@ -1355,7 +1369,7 @@ mfmc_estimator_variance(const RealMatrix& rho2_LH, const RealVector& var_H,
     }
     // numSamples is relative to N_H, but the approx_increments() below are
     // computed relative to hf_targets (independent of sunk cost for pilot)
-    numSamples = one_sided_delta(N_H, avg_hf_target, 1);
+    numSamples = one_sided_delta(N_H, avg_hf_target, relaxFactor);
     //numSamples = std::min(num_samp_budget, num_samp_ctol); // enforce both
     break;
   }
@@ -1384,7 +1398,7 @@ mf_raw_moments(IntRealMatrixMap& sum_L_baseline, IntRealMatrixMap& sum_L_shared,
   // --> no need to incur matrix inversion overhead for MFMC; stick with same
   //     scalar approach used for analytic solutions.
 
-  if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(numFunctions, 4);
+  if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(4, numFunctions);
 
   Real beta, sum_H_mq;
   size_t approx, qoi, N_H_q;//, N_shared;
@@ -1400,7 +1414,7 @@ mf_raw_moments(IntRealMatrixMap& sum_L_baseline, IntRealMatrixMap& sum_L_shared,
       Cout << "Moment " << mom << " estimator:\n";
     for (qoi=0; qoi<numFunctions; ++qoi) {
       sum_H_mq = sum_H_m[qoi];  N_H_q = N_H[qoi];
-      Real& H_raw_mq = H_raw_mom(qoi, mom-1);
+      Real& H_raw_mq = H_raw_mom(mom-1, qoi);
       H_raw_mq = sum_H_mq / N_H_q; // first term to be augmented
       for (approx=0; approx<numApprox; ++approx) {
 	// Uses a baseline {sum,N}_L consistent with H,LL,LH accumulators:
@@ -1429,7 +1443,8 @@ void NonDMultifidelitySampling::print_variance_reduction(std::ostream& s)
     size_t wpp7 = write_precision + 7;
     s << "<<<<< Variance for mean estimator:\n";
 
-    if (pilotMgmtMode != OFFLINE_PILOT)
+    if (pilotMgmtMode == ONLINE_PILOT ||
+	pilotMgmtMode == ONLINE_PILOT_PROJECTION)
       s << "      Initial MC (" << std::setw(5)
 	<< (size_t)std::floor(average(numHIter0) + .5) << " HF samples): "
 	<< std::setw(wpp7) << average(estVarIter0) << '\n';
@@ -1444,7 +1459,9 @@ void NonDMultifidelitySampling::print_variance_reduction(std::ostream& s)
     Real avg_mc_est_var        = average(mc_est_var),
          avg_budget_mc_est_var = average(varH) / proj_equiv_hf,
          avg_est_var           = mfmcSolnData.average_estimator_variance();
-    String type = (pilotMgmtMode == PILOT_PROJECTION) ? "Projected":"   Online";
+    String type = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
+		   pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
+                ? "Projected" : "   Online";
     s << "  " << type << "   MC (" << std::setw(5)
       << (size_t)std::floor(average(N_H_actual) + deltaNActualHF + .5)
       << " HF samples): " << std::setw(wpp7) << avg_mc_est_var << "\n  "

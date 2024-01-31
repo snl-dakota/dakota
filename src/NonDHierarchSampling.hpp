@@ -75,6 +75,8 @@ protected:
 
   /// number of model forms/resolution in the (outer) sequence
   size_t numSteps;
+  /// setting for inactive model dimension not traversed by loop over numSteps
+  size_t secondaryIndex;
 
   /// final estimator variance for targeted moment (usually mean), averaged
   /// across QoI

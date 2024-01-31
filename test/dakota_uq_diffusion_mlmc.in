@@ -8,16 +8,19 @@
 
 method,
 	model_pointer = 'HIERARCH'
-        multilevel_sampling	 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#p0,#p1
+        multilevel_sampling	 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s11,#s12,#s13,#s14,#s15,#p0,#p1
 # Ensure MFMC can also work across resolution levels:
 #	multifidelity_sampling				#s10
 #	  sample_type lhs				#s3,#s4,#s5
-	  pilot_samples = 20 seed = 1237	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s10,#s12,#p0,#p1
+	  pilot_samples = 20 seed = 1237	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s10,#s12,#s15,#p0,#p1
 #	  pilot_samples = 100 50 40 30 20		#s9,#s11
 #	  seed_sequence = 1234 2345 3456 4567 5678	#s9,#s11
-#	  pilot_samples = 500 seed = 1237		#s13
-#	  solution_mode pilot_projection		#s12
+#	  pilot_samples = 500 seed = 1237		#s13,#s14
+	  solution_mode  online_pilot			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s15
+#	    relaxation factor_sequence = .5 .75 1.	#s15
 #	  solution_mode offline_pilot			#s13
+#	  solution_mode  online_projection		#s12
+#	  solution_mode offline_projection		#s14
 	  max_iterations = 5   	    	#s0,#s1,#s2,#s3,#s4,#s5,#s9,#s10,#p0,#p1
 #	  max_iterations = 10		#s6,#s7,#s8
 	  allocation_target = mean	#s0,#s1,#s2,#s3,#s4,#s5,#s9,#p0,#p1
@@ -25,7 +28,7 @@ method,
 #	    optimization 
 	  qoi_aggregation = sum	 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#p0,#p1
 	  convergence_tolerance = .1			#s0,#s3,#s6,#p0,#p1
-#	  convergence_tolerance = .01			#s1,#s4,#s7,#s9,#s10
+#	  convergence_tolerance = .01			#s1,#s4,#s7,#s9,#s10,#s14,#s15
 #	  convergence_tolerance = .001			#s2,#s5,#s8
 #	  convergence_tolerance_type = relative		#s0,#s6,#s2,#s7
 #	  max_function_evaluations = 100		#s11,#s12
@@ -42,7 +45,7 @@ model,
 	simulation
 	  solution_level_control = 'mesh_size'
 # dense matrices --> direct solvers --> cubic growth in expense
-	  solution_level_cost = 1. 8. 64. 512. 4096. 	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#p0,#p1
+	  solution_level_cost = 1. 8. 64. 512. 4096. 	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s14,#s15,#p0,#p1
 #	  solution_level_cost = 1. 4. 16. 64. 256.	#s13
 
 variables,

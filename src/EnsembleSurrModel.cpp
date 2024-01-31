@@ -1540,10 +1540,11 @@ void EnsembleSurrModel::create_tabular_datastream()
     // > Due to initialization ordering (which must satisfy requirements for
     //   consistent parallel initialization), labels may not be aggregated yet.
     const StringArray& curr_labels = currentResponse.function_labels();
-    size_t q, num_qoi = qoi(), num_curr_labels = curr_labels.size(), cntr;
+    size_t q, num_qoi = qoi(), num_curr_labels = curr_labels.size(), cntr,
+      label_mult = (solnCntlAVIndex == _NPOS) ? num_m : num_l;
     StringArray labels;
-    if (num_curr_labels == num_m * num_qoi) labels = curr_labels; // copy
-    else                                    inflate(curr_labels, num_m, labels);
+    if (num_curr_labels == label_mult * num_qoi) labels = curr_labels; // copy
+    else inflate(curr_labels, label_mult, labels);
     if (solnCntlAVIndex == _NPOS)
       for (m=1, cntr=0; m<=num_m; ++m) {
 	String postpend = "_M" + std::to_string(m);
