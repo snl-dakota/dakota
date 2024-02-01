@@ -1498,7 +1498,10 @@ void EnsembleSurrModel::create_tabular_datastream()
     // and resolutions.
     size_t l, num_l, m, num_approx, num_m, num_m_l = 0;
     num_m = num_approx = approxModels.size();
-    if (!truthModel.is_null()) ++num_m;
+    for (m=0; m<num_approx; ++m)
+      num_m_l += approxModels[m].solution_levels();
+    if (!truthModel.is_null())
+      { ++num_m; num_m_l += truthModel.solution_levels(); }
     // -------------
     // Interface ids
     // -------------
