@@ -1493,15 +1493,18 @@ void EnsembleSurrModel::create_tabular_datastream()
   switch (responseMode) {
 
   case AGGREGATED_MODELS: {
-    // --------------------
-    // {eval,interface} ids
-    // --------------------
+    // AGGREGATED_MODELS corresponds to FORM_RESOLUTION_ENUMERATION in
+    // NonDEnsembleSampling::sequenceType, so we tabulate both model forms
+    // and resolutions.
+    size_t l, num_l, m, num_approx, num_m, num_m_l = 0;
+    num_m = num_approx = approxModels.size();
+    if (!truthModel.is_null()) ++num_m;
+    // -------------
+    // Interface ids
+    // -------------
     // To flatten into one composite tabular format, we must rely on invariant
     // quantities rather than run-time flags like same{Model,Interface}Instance
-    StringArray iface_ids;
-    bool one_iface_id = matching_all_interface_ids();
-    size_t l, num_l, m, num_m = approxModels.size();
-    if (!truthModel.is_null()) ++num_m;
+    StringArray iface_ids;  bool one_iface_id = matching_all_interface_ids();
     if (one_iface_id) // invariant (sameInterfaceInstance can vary at run time)
       iface_ids.push_back("interface");
     else
@@ -1511,52 +1514,54 @@ void EnsembleSurrModel::create_tabular_datastream()
     // ---------
     // Variables
     // ---------
-    // FUTURE: manage solution level control variables
-    // For now, enumerate model instances
-    Variables& hf_vars = truthModel.current_variables();
-    solnCntlAVIndex = (multifidelity()) ? _NPOS :
-      truthModel.solution_control_variable_index();
-    if (solnCntlAVIndex == _NPOS)
-      mgr.append_tabular_header(hf_vars);
-    else {
-      num_l = truthModel.solution_levels();
-      mgr.append_tabular_header(hf_vars, 0, solnCntlAVIndex); // leading set
-
-      // output paired solution control values
-      const String& soln_cntl_label = solution_control_label();
-      StringArray tab_labels(num_l);
-      for (l=0; l<num_l; ++l)
-	tab_labels[l] = soln_cntl_label + "_L" + std::to_string(l+1);
-      mgr.append_tabular_header(tab_labels);
-
-      size_t start = solnCntlAVIndex + 1;
-      mgr.append_tabular_header(hf_vars, start, hf_vars.tv() - start);
+    // This case is a bit awkward since we use the HF vars as the reference
+    // "shared" variable labels, minus any soln control.  Then we enumerate
+    // the soln control variable label for each model that has one.  Since
+    // solution control presence/location could vary per Model, we push this
+    // enumeration to the end after the shared variables, rather than adopting
+    // a reference state variable ordering.
+    // > Note that reading data back in from this composed tabular format is
+    //   not currently supported (refer to Variables: read_tabular()).
+    size_t     last_m    = num_m - 1;
+    Model&     ref_model = model_from_index(last_m);
+    Variables& ref_vars  = ref_model.current_variables();
+    size_t     scv_index = ref_model.solution_control_variable_index();
+    if (scv_index == _NPOS)
+      mgr.append_tabular_header(ref_vars);
+    else { // output leading and trailing vars (spec order), skip soln control
+      mgr.append_tabular_header(ref_vars, 0, scv_index);         // leading
+      size_t start = scv_index + 1, end = ref_vars.tv() - start; // skipped
+      mgr.append_tabular_header(ref_vars, start, end);           // trailing
     }
+    StringArray sc_labels;
+    for (m=0; m<num_m; ++m) {
+      Model& model_m = model_from_index(m);
+      if (model_m.solution_control_variable_index() != _NPOS)
+	sc_labels.push_back(solution_control_label(model_m) + "_SC" +
+			    std::to_string(m+1));
+    }
+    mgr.append_tabular_header(sc_labels);
     // --------
     // Response
     // --------
     //mgr.append_tabular_header(currentResponse);
-    // Append model form / resolution level tags
-    // > Due to initialization ordering (which must satisfy requirements for
-    //   consistent parallel initialization), labels may not be aggregated yet.
     const StringArray& curr_labels = currentResponse.function_labels();
-    size_t q, num_qoi = qoi(), num_curr_labels = curr_labels.size(), cntr,
-      label_mult = (solnCntlAVIndex == _NPOS) ? num_m : num_l;
-    StringArray labels;
-    if (num_curr_labels == label_mult * num_qoi) labels = curr_labels; // copy
-    else inflate(curr_labels, label_mult, labels);
-    if (solnCntlAVIndex == _NPOS)
-      for (m=1, cntr=0; m<=num_m; ++m) {
-	String postpend = "_M" + std::to_string(m);
+    size_t q, num_qoi = qoi(), num_curr_labels = curr_labels.size(), cntr = 0;
+    StringArray labels;  String m_append, m_l_append;
+    // Due to initialization ordering (which must satisfy requirements for
+    // consistent parallel initialization), labels may not be aggregated yet.
+    if (num_curr_labels == num_m_l * num_qoi) labels = curr_labels; // copy
+    else        inflate(curr_labels, num_m_l, labels);
+    // enumerate forms/resolutions and append model + level tags
+    for (m=0; m<num_m; ++m) {
+      m_l_append = m_append = (num_m > 1) ? "_M" + std::to_string(m+1) : "";
+      num_l = model_from_index(m).solution_levels();
+      for (l=0; l<num_l; ++l) {
+	if (num_l > 1) m_l_append = m_append + "_L" + std::to_string(l+1);
 	for (q=0; q<num_qoi; ++q, ++cntr)
-	  labels[cntr].append(postpend);
+	  labels[cntr].append(m_l_append);
       }
-    else
-      for (l=1, cntr=0; l<=num_l; ++l) {
-	String postpend = "_L" + std::to_string(l);
-	for (q=0; q<num_qoi; ++q, ++cntr)
-	  labels[cntr].append(postpend);
-      }
+    }
     mgr.append_tabular_header(labels, true); // with endl
     break;
   }
@@ -1603,7 +1608,7 @@ void EnsembleSurrModel::create_tabular_datastream()
       mgr.append_tabular_header(hf_vars, 0, solnCntlAVIndex); // leading set
 
       // output paired solution control values
-      const String& soln_cntl_label = solution_control_label();
+      const String& soln_cntl_label = solution_control_label(truthModel);
       StringArray tab_labels(2);
       tab_labels[0] = soln_cntl_label + "_L";  // = "HF_" + soln_cntl_label;
       tab_labels[1] = soln_cntl_label + "_Lm1";// = "LF_" + soln_cntl_label;
@@ -1677,66 +1682,54 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
   switch (responseMode) {
 
   case AGGREGATED_MODELS: { // use same #Cols since commonly alternated
-    // Output interface id(s)
-    bool one_iface_id = matching_all_interface_ids();
-    StringArray iface_ids;  size_t i, num_m = approxModels.size();
+    size_t m, num_m = approxModels.size();
     if (!truthModel.is_null()) ++num_m;
+    // -------------
+    // Interface ids
+    // -------------
+    bool one_iface_id = matching_all_interface_ids();
+    StringArray iface_ids;
     if (one_iface_id) // invariant (sameInterfaceInstance can vary at run time)
       iface_ids.push_back(truthModel.interface_id());
     else
-      for (i=0; i<num_m; ++i) {
-	if (find_model_in_keys(i))
-	  iface_ids.push_back(model_from_index(i).interface_id());
+      for (m=0; m<num_m; ++m) {
+	if (find_model_in_keys(m))
+	  iface_ids.push_back(model_from_index(m).interface_id());
 	else iface_ids.push_back("N/A");
       }
     output_mgr.add_tabular_data(iface_ids); // includes graphics cntr
-
-    // Output Variables data
+    // ---------
+    // Variables
+    // ---------
     // capture correct inactive by using lower-level variables
-    Variables& export_vars = truthModel.current_variables();
+    size_t     last_m      = num_m - 1;
+    Model&     ref_model   = model_from_index(last_m);
+    size_t     scv_index   = ref_model.solution_control_variable_index();
+    Variables& export_vars = ref_model.current_variables();
     if (asynchEvalFlag) export_vars.active_variables(vars); // reqd for parallel
-    if (solnCntlAVIndex == _NPOS)
+    if (scv_index == _NPOS)
       output_mgr.add_tabular_data(export_vars);
-    else {
-      // output leading set of variables in spec order
-      output_mgr.add_tabular_data(export_vars, 0, solnCntlAVIndex);
-
-      // output solution control values (flags are not invariant, but data
-      // count is). If sameModelInstance, desired soln cntl was overwritten
-      // by last model's value and must be temporarily restored.
-      for (i=0; i<num_m; ++i) {
-	if (find_model_in_keys(i)) {
-	  if (sameModelInstance) assign_key(i);
-	  add_tabular_solution_level_value(model_from_index(i));
+    else { // output leading and trailing vars (spec order), skip soln control
+      output_mgr.add_tabular_data(export_vars, 0, scv_index);
+      size_t start = scv_index + 1, end = export_vars.tv() - start;
+      output_mgr.add_tabular_data(export_vars, start, end);
+    }
+    for (m=0; m<num_m; ++m) {
+      Model& model_m = model_from_index(m);
+      if (model_m.solution_control_variable_index() != _NPOS) {
+	if (find_model_in_keys(m)) {
+	  // If sameModelInstance, desired soln cntl was overwritten
+	  // by last usage and must be temporarily restored
+	  if (sameModelInstance) assign_key(m);
+	  add_tabular_solution_level_value(model_m);
 	}
 	else output_mgr.add_tabular_scalar("N/A");
       }
-
-      // output trailing variables in spec order
-      size_t start = solnCntlAVIndex + 1;
-      output_mgr.add_tabular_data(export_vars, start, export_vars.tv() - start);
     }
-
-    // Output Response data
+    // --------
+    // Response: data padded with "N/A" for inactive functions
+    // --------
     output_mgr.add_tabular_data(resp);
-    /* This block no longer necessary with Response tabular change to
-       output N/A for inactive functions
-    size_t q, num_qoi = truthModel.qoi(), cntr = 0;
-    for (i=0; i<num_approx; ++i) {
-      if (surr_keys && !surrModelKeys[i].empty())
-	output_mgr.add_tabular_data(resp, cntr, num_qoi);
-      else
-	for (q=0; q<num_qoi; ++q)
-	  output_mgr.add_tabular_scalar("N/A");
-      cntr += num_qoi;
-    }
-    if (truth_key)
-      output_mgr.add_tabular_data(resp, cntr, num_qoi);
-    else
-      for (q=0; q<num_qoi; ++q)
-	output_mgr.add_tabular_scalar("N/A");
-    output_mgr.add_eol();
-    */
     break;
   }
 
@@ -2048,23 +2041,21 @@ void EnsembleSurrModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
 }
 
 
-const String& EnsembleSurrModel::solution_control_label()
+const String& EnsembleSurrModel::solution_control_label(const Model& model)
 {
-  size_t adv_index = truthModel.solution_control_discrete_variable_index();
-  switch (truthModel.solution_control_variable_type()) {
+  size_t adv_index = model.solution_control_discrete_variable_index();
+  const Variables& vars = model.current_variables();
+  switch (model.solution_control_variable_type()) {
   case DISCRETE_DESIGN_RANGE:       case DISCRETE_DESIGN_SET_INT:
   case DISCRETE_INTERVAL_UNCERTAIN: case DISCRETE_UNCERTAIN_SET_INT:
   case DISCRETE_STATE_RANGE:        case DISCRETE_STATE_SET_INT:
-    return currentVariables.all_discrete_int_variable_labels()[adv_index];
-    break;
+    return vars.all_discrete_int_variable_labels()[adv_index];    break;
   case DISCRETE_DESIGN_SET_STRING:  case DISCRETE_UNCERTAIN_SET_STRING:
   case DISCRETE_STATE_SET_STRING:
-    return currentVariables.all_discrete_string_variable_labels()[adv_index];
-    break;
+    return vars.all_discrete_string_variable_labels()[adv_index]; break;
   case DISCRETE_DESIGN_SET_REAL:  case DISCRETE_UNCERTAIN_SET_REAL:
   case DISCRETE_STATE_SET_REAL:
-    return currentVariables.all_discrete_real_variable_labels()[adv_index];
-    break;
+    return vars.all_discrete_real_variable_labels()[adv_index];   break;
   }
 }
 

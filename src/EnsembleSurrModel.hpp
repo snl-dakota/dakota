@@ -267,7 +267,7 @@ protected:
 
   /// helper to select among Variables::all_discrete_{int,string,real}_
   /// variable_labels() for exporting a solution control variable label
-  const String& solution_control_label();
+  const String& solution_control_label(const Model& model);
 
   /// helper to select among Model::solution_level_{int,string,real}_value()
   /// for exporting a scalar solution level value
@@ -860,12 +860,11 @@ inline bool EnsembleSurrModel::find_model_in_keys(unsigned short m_index)
 {
   if (!truthModelKey.empty() && truthModelKey.retrieve_model_form() == m_index)
     return true;
-  else {
-    size_t k, num_k = surrModelKeys.size();
-    for (k=0; k<num_k; ++k)
-      if (surrModelKeys[k].retrieve_model_form() == m_index)
-	return true;
-  }
+  size_t k, num_k = surrModelKeys.size();
+  for (k=0; k<num_k; ++k)
+    if (surrModelKeys[k].retrieve_model_form() == m_index)
+      return true;
+
   return false;
 }
 
