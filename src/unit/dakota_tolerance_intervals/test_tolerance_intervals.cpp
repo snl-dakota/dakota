@@ -517,8 +517,8 @@ void test_DSTIEN_valid_input_04_noValidResponseSamples()
   // ************************************************************************
   BOOST_CHECK( num_valid_samples == 0 );
   for (size_t k = 0; k < num_fns; ++k) {
-    BOOST_CHECK( isnan(computed_dstien_mus   [k]) );
-    BOOST_CHECK( isnan(computed_dstien_sigmas[k]) );
+    BOOST_CHECK( std::isnan(computed_dstien_mus   [k]) );
+    BOOST_CHECK( std::isnan(computed_dstien_sigmas[k]) );
   }
 }
 
@@ -587,7 +587,7 @@ void test_DSTIEN_valid_input_05_justOneValidResponseSample()
   BOOST_CHECK( num_valid_samples == 1 );
   for (size_t k = 0; k < num_fns; ++k) {
     BOOST_CHECK( computed_dstien_mus[k] == expected_dstien_mus[k] );
-    BOOST_CHECK( isnan(computed_dstien_sigmas[k]) );
+    BOOST_CHECK( std::isnan(computed_dstien_sigmas[k]) );
   }
 }
 
