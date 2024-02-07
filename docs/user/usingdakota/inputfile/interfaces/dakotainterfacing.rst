@@ -371,6 +371,7 @@ determine which of these to add to ``results["f"]``.
 .. code-block:: python
    :caption: Examining the active set vector
    :name: diexample:asv
+   :linenos:
 
    import dakota.interfacing as di
    import applic_module # fictitious application
@@ -394,7 +395,7 @@ determine which of these to add to ``results["f"]``.
 As of the 6.16 release, the direct Python interface can interoperate with
 ``dakota.interfacing`` using a feature of Python known as a decorator.
 Instead of receiving parameters from the Dakota parameters file and
-writing results to the results file as in Figure~\ref{diexample:asv},
+writing results to the results file as in :numref:`diexample:asv`,
 the decorated Python driver works with the Python dictionary passed from
 the direct Python interface.  An example of the decorator syntax and use
 of the ``dakota.interfacing`` :class:`Parameters` and :class:`Results`

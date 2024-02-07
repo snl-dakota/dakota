@@ -107,7 +107,7 @@ model has a sub-method, which itself likely operates on a sub-model, or
 a hierarchical approximation involves coordination of low and high
 fidelity models. Specifying ``hierarchical_tagging`` will yield function
 evaluation identifiers (“tags”) composed of the evaluation IDs of the
-models involved, e.g., outermodel.innermodel.interfaceid = 4.9.2. This
+models involved, e.g., ``outermodel.innermodel.interfaceid = 4.9.2``. This
 communicates the outer contexts to the analysis driver when performing a
 function evaluation.
 

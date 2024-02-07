@@ -48,16 +48,15 @@ local method uses gradient information in a derivative-based
 optimization approach.
 
 An example of interval estimation
-is shown in Figure
+is shown in :numref:`uq:examples:interval_out`
 
-\anchor uq:examples:interval_out
-
+.. Code block below seems to be duplicate of `uq:examples:interval_out`, consider removing it or using just a reference
 .. code-block::
 
     
-    ------------------------------------------------------------------Min and Max estimated values for each response function:
+    ------------------------------------------------------------------
+    Min and Max estimated values for each response function:
     weight:  Min = 1.0000169352e+00  Max = 9.9999491948e+01
     stress:  Min = -9.7749994284e-01  Max = 2.1499428450e+01
     displ:  Min = -9.9315672724e-01  Max = 6.7429714485e+01
-    
-    -----------------------------------------------------------------\endverbatim
+    -----------------------------------------------------------------

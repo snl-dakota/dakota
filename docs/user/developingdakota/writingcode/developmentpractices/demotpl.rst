@@ -204,7 +204,7 @@ Exchanging Parameters and Reponses
 
 Like any TPL, the Demo TPL will need to exchange parameter and obective function values with Dakota. For purposes of demonstration, an example interface between Dakota and the Demo TPL can be seen in $DAKOTA_SRC/packages/external/demo_tpl/dakota_src/DemoOptimizer.hpp (with corresponding .cpp in the same directory). Within these files is a key callback interface used by the Demo TPL to obtain objective function values for given parameter values (3 in the test above), eg:
 
-.. code-block::
+.. code-block:: cpp
 
     // File $DAKOTA_SRC/packages/external/demo_tpl/dakota_src/DemoOptimizer.cpp
     Real
@@ -227,7 +227,7 @@ In this instance, the Demo TPL uses std::vector<double> as its native parameter 
 
 For problems involving nonlinear equality and inequality constraints Dakota treats these as additional responses to the objective funtction(s). The Demo TPL supports both types for purposes of showing how these additional responses can be computed by Dakota (via interface to an underlying model) and transferred to the TPL. Similar to the call (by Demo) to compute_obj(...) are two additional methods to compute and transfer nonlinear constraint responses, eg:
 
-.. code-block::
+.. code-block:: cpp
 
     // File $DAKOTA_SRC/packages/external/demo_tpl/dakota_src/DemoOptimizer.cpp
     void
@@ -254,7 +254,7 @@ Both of these callback methods (to Dakota), compute_nln_eq(...) and compute_nln_
 
 Dakota must also provide initial parameter values to the Demo TPL and retrieve final objective function and variable values from the Demo TPL. The initial values for parameters and bound constraints can be obtained from Dakota with the get_variables<>(...) helpers. This example returns the values to a standard vector of doubles (Reals). These values can then be passed to the Demo TPL using whatever API is provided. The API for this last step varies with the particular TPL, and Demo provides a function set_problem_data in this case.
 
-.. code-block::
+.. code-block:: cpp
 
     // File $DAKOTA_SRC/packages/external/demo_tpl/dakota_src/DemoOptimizer.cpp
     void DemoTPLOptimizer::initialize_variables_and_constraints()
@@ -282,7 +282,7 @@ Dakota must also provide initial parameter values to the Demo TPL and retrieve f
 
 The TPL should be able to return an optimal objective function value and the corresponding variable (parameter) values via its API. As has been the case throughout, the data should be doubles (aliased to Real in Dakota). The following code takes the values returned by Demo via a call to get_best_f() and sets the Dakota data structures that contain final objective and variable values. It adjusts the sign of the objective based on whether minimize or maximize has been specified in the Dakota input file (minimize is the default). If the problem being optimized involves nonlinear equality and/or inequality constraints, these will also need to be obtained from the TPL and passed to Dakota as part of the array of best function values (responses).
 
-.. code-block::
+.. code-block:: cpp
 
     // File $DAKOTA_SRC/packages/external/demo_tpl/dakota_src/DemoOptimizer.cpp
     // in method void DemoTPLOptimizer::core_run()

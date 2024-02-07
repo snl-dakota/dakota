@@ -70,7 +70,7 @@ interface
 # 	link_files = 'dakota_workdir.root.dat' 			#s3
 #	link_files = 'dakota_workdir.templatedir/*'		#s4,#s7
 # The Python file must be in the workdir for the interpreter to find it...
-        copy_files = 'dakota_workdir.py'	#s0,#s1,#s2,#s3,#s4,#s7,#s8,#s8,#p0,#p1
+        copy_files = 'dakota_workdir.py'	#s0,#s1,#s2,#s3,#s4,#s7,#s8,#s9,#p0,#p1
 # 	copy_files = 'dakota_workdir.py' 'dakota_workdir.root.dat' 			#s5
 #	copy_files = 'dakota_workdir.py' 'dakota_workdir.templatedir/*'		#s6
 #	parameters_file = 'params.in'				#s8,#s9
