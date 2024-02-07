@@ -267,16 +267,6 @@ public:
 
 };
 
-/**
- * \brief Computes the eigenvalues and, optionally, eigenvectors of a
- *  real symmetric matrix A. 
- * 
- * Eigenvalues are returned in ascending order.
- */
-void symmetric_eigenvalue_decomposition( const RealSymMatrix &matrix, 
-					 RealVector &eigenvalues, 
-					 RealMatrix &eigenvectors );
-
 } // namespace dakota
 
 #endif //EXPERIMENT_DATA_UTILS

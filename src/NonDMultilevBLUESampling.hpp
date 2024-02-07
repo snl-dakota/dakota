@@ -204,11 +204,12 @@ private:
 						  MFSolutionData& soln);
 
   void analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
+					     const SizetArray& ratios_to_groups,
 					     const BitArray& active_groups,
 					     MFSolutionData& soln);
   void analytic_ratios_to_solution_variables(const RealVector& avg_eval_ratios,
 					     Real avg_hf_target,
-					     const BitArray& active_groups,
+					     const SizetArray& ratios_to_groups,
 					     RealVector& soln_vars);
 
   void add_sub_matrix(Real coeff, const RealSymMatrix& sub_mat,
@@ -223,8 +224,10 @@ private:
 
   void enforce_nudge(RealVector& x);
 
-  bool mfmc_model_grouping(const UShortArray& model_group) const;
-  bool cvmc_model_grouping(const UShortArray& model_group) const;
+  //bool mfmc_model_grouping(const UShortArray& model_group) const;
+  //bool cvmc_model_grouping(const UShortArray& model_group) const;
+  void mfmc_model_group(size_t index, UShortArray& model_group) const;
+  void cvmc_model_group(size_t index, UShortArray& model_group) const;
 
   void print_group(std::ostream& s, size_t g) const;
 
@@ -265,6 +268,10 @@ private:
 
   /// mode for pilot sampling: shared or independent
   short pilotGroupSampling;
+  /// throttle for mitigating combinatorial growth in numGroups
+  short groupThrottle;
+  /// group size threshold for groupThrottle == GROUP_SIZE_THROTTLE
+  size_t sizeThrottle;
 
   /// counter for successful sample accumulations, per group and per QoI
   Sizet2DArray NGroupActual;
@@ -371,13 +378,6 @@ increment_allocations(const MFSolutionData& soln, SizetArray& N_G_alloc,
   }
   else // delta_N_G is the allocation increment, including any under-relaxation
     increment_samples(N_G_alloc, delta_N_G);
-
-  /*  
-  if (backfillFailures) // delta_N_G may include backfill
-    one_sided_update(N_G_alloc, soln.solution_variables()); // *** TO DO: relax?
-  else // delta_N_G is the allocation increment
-    increment_samples(N_G_alloc, delta_N_G);
-  */
 }
 
 
@@ -540,12 +540,39 @@ compute_C_inverse(const RealSymMatrix& cov_GG_gq, RealSymMatrix& cov_GG_inv_gq)
   if (cov_GG_gq.empty()) // insufficient samples to define cov_GG
     { cov_GG_inv_gq.shape(0); return 0; }
   else {
+    /* This approach has not been effective for ill-conditioned cov_GG:
+    int r, nr = cov_GG_gq.numRows();
+    cov_GG_inv_gq.shape(nr);
+    RealSymMatrix A(cov_GG_gq);  RealMatrix X(nr, nr), B(nr, nr);
+    for (r=0; r<nr; ++r) B(r,r) = 1.; // identity
+    // Leverage both the soln refinement in solve() and equilibration during
+    // factorization (inverting C in place can only leverage the latter).
+    RealSpdSolver spd_solver;
+    spd_solver.setMatrix( Teuchos::rcp(&A,false));
+    spd_solver.setVectors(Teuchos::rcp(&X, false), Teuchos::rcp(&B, false));
+    if (spd_solver.shouldEquilibrate())
+      spd_solver.factorWithEquilibration(true);
+    spd_solver.solveToRefinedSolution(true);
+    int code = spd_solver.solve();
+    copy_data(X, cov_GG_inv_gq); // Dense to SymDense
+    return code;
+    */
+
     cov_GG_inv_gq = cov_GG_gq; // copy for inversion in place
     RealSpdSolver spd_solver;
     spd_solver.setMatrix(Teuchos::rcp(&cov_GG_inv_gq, false));
-    if (spd_solver.shouldEquilibrate())
-      spd_solver.factorWithEquilibration(true);
+    // Equilibration scales the system to improve solution conditioning; it
+    // involves equilibrateMatrix() and equilibrateRHS() prior to solve,
+    // followed by unequilibrateLHS() after solve.  Here, we factor/invert C
+    // without equilibration as we assemble C-inverse into Psi without any
+    // solve(); otherwise C-inverse would be the inverse of the equilibrated
+    // matrix and there is no corresponding unequilibrate to use at that point.
+    // Downstream, solves using the assembled Psi are equilibrated as needed.
     return spd_solver.invert(); // in place
+
+    // Alternatives:
+    // > Moore-Penrose pseudo-inv: SVD with truncation of small EVs --> review NonDBayesCalibration::get_positive_definite_covariance_from_hessian()
+    // > Heuristics for throttling the number of groups -- need all, HF only, pyramid sets? leading set of lower combined order?  Pilot samples > num_models in group
   }
 }
 
@@ -559,16 +586,24 @@ compute_C_inverse(const RealSymMatrix2DArray& cov_GG,
 
   size_t q, g, num_groups = modelGroups.size();
   for (g=0; g<num_groups; ++g) {
-    const RealSymMatrixArray& cov_GG_g =     cov_GG[g];
+    const RealSymMatrixArray& cov_GG_g = cov_GG[g];
     RealSymMatrixArray&   cov_GG_inv_g = cov_GG_inv[g];
     for (q=0; q<numFunctions; ++q) {
       int code = compute_C_inverse(cov_GG_g[q], cov_GG_inv_g[q]);
       if (code) {
-	Cerr << "Error: serial dense solver failure (LAPACK error code "
-	     << code << ") in ML BLUE::compute_C_inverse()\n"
-	     << "       for group " << g << " QoI " << q << " with C:\n"
-	     << cov_GG_g[q] << std::endl;
-	abort_handler(METHOD_ERROR);
+        Cerr << "Warning: serial dense solver failure (LAPACK error code "
+             << code << ") in ML BLUE::compute_C_inverse()\n         for group "
+             << g << " QoI " << q << " with C:\n" << cov_GG_g[q]
+	     << "         Omitting group from roll up." << std::endl;
+	// *** TO DO: this drops the contribution to Psi but is it also
+	// *** sufficient to omit the group from the allocation?
+	// *** (not the model, just one of the many enumerated combinations)
+	cov_GG_inv_g[q].shape(0);
+        //Cerr << "Error: serial dense solver failure (LAPACK error code "
+        //     << code << ") in ML BLUE::compute_C_inverse()\n"
+        //     << "       for group " << g << " QoI " << q << " with C:\n"
+        //     << cov_GG_g[q] << std::endl;
+        //abort_handler(METHOD_ERROR);
       }
     }
   }
@@ -592,8 +627,11 @@ compute_Psi(const RealSymMatrix2DArray& cov_GG_inv, const RealVector& N_G,
     if (N_g > 0.) {
       const UShortArray&            models_g = modelGroups[g];
       const RealSymMatrixArray& cov_GG_inv_g =  cov_GG_inv[g];
-      for (qoi=0; qoi<numFunctions; ++qoi)
-	add_sub_matrix(N_g, cov_GG_inv_g[qoi], models_g, Psi[qoi]); // *** can become indefinite here when N_g --> 0, which depends on online/offline pilot integration strategy
+      for (qoi=0; qoi<numFunctions; ++qoi) {
+	const RealSymMatrix& cov_GG_inv_gq = cov_GG_inv_g[qoi];
+	if (!cov_GG_inv_gq.empty())
+	  add_sub_matrix(N_g, cov_GG_inv_gq, models_g, Psi[qoi]); // *** can become indefinite here when N_g --> 0, which depends on online/offline pilot integration strategy
+      }
     }
   }
 }
@@ -613,11 +651,12 @@ compute_Psi(const RealSymMatrix2DArray& cov_GG_inv, const Sizet2DArray& N_G,
     const SizetArray&                  N_g =         N_G[g];
     const UShortArray&            models_g = modelGroups[g];
     const RealSymMatrixArray& cov_GG_inv_g =  cov_GG_inv[g];
-    for (qoi=0; qoi<numFunctions; ++qoi)
-      if (N_g[qoi]) {
-	Real N_gq = N_g[qoi];
-	add_sub_matrix(N_gq, cov_GG_inv_g[qoi], models_g, Psi[qoi]); // *** can become indefinite here when N_gq --> 0, which depends on online/offline pilot integration strategy
-      }
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+      const RealSymMatrix& cov_GG_inv_gq = cov_GG_inv_g[qoi];
+      size_t N_gq = N_g[qoi];
+      if (N_gq && !cov_GG_inv_gq.empty())
+	add_sub_matrix((Real)N_gq, cov_GG_inv_gq, models_g, Psi[qoi]); // *** can become indefinite here when N_gq --> 0, which depends on online/offline pilot integration strategy
+    }
   }
 }
 
@@ -632,8 +671,9 @@ inline void NonDMultilevBLUESampling::invert_Psi(RealSymMatrixArray& Psi)
   RealSpdSolver spd_solver; // reuse since setMatrix resets internal state
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
     spd_solver.setMatrix(Teuchos::rcp(&Psi[qoi], false));
-    if (spd_solver.shouldEquilibrate())
-      spd_solver.factorWithEquilibration(true);
+    // Note: equilibration should not be used outside of the solve() context,
+    // as the resulting inverse would be for the equilibrated matrix.  See
+    // discussion above in compute_C_inverse().
     int code = spd_solver.invert(); // in place
     if (code) {
       Cerr << "Error: serial dense solver failure (LAPACK error code " << code
@@ -762,6 +802,10 @@ estimator_variance(const RealVector& cd_vars, RealVector& estvar)
     estvar[q] = estvar_q[numApprox];
   }
 
+  // *** TO DO: now that we have good performance locked in, revisit this flow:
+  // should be able to equilibrate and factor each Psi once within a SpdSolver
+  // that persists, then solve to refined solution for each estvar and mu-hat.
+
   /* This approach suffers from poor performance, either from conditioning
      issues or misunderstood Teuchos solver behavior.
   RealSymMatrixArray Psi_inv;
@@ -825,6 +869,7 @@ inline void NonDMultilevBLUESampling::apply_mc_reference(RealVector& mc_targets)
 }
 
 
+/*
 inline bool NonDMultilevBLUESampling::
 mfmc_model_grouping(const UShortArray& model_group) const
 {
@@ -839,7 +884,33 @@ mfmc_model_grouping(const UShortArray& model_group) const
 
 inline bool NonDMultilevBLUESampling::
 cvmc_model_grouping(const UShortArray& model_group) const
-{ return (model_group.size() == 2 && model_group[1] == numApprox); }
+{
+  // shared sample (all models) and each approx increment (group size 1)
+  return ( ( model_group.size() == 1 && model_group[0] != numApprox ) ||
+	   ( model_group.size() == numApprox &&
+	     mfmc_model_grouping(model_group) ) ); // can be inferred from size
+}
+*/
+
+
+inline void NonDMultilevBLUESampling::
+mfmc_model_group(size_t index, UShortArray& model_group) const
+{
+  size_t m, num_models = index+1;
+  model_group.resize(num_models);
+  for (m=0; m<num_models; ++m)
+    model_group[m] = m; // "pyramid" sequence from 0 to last in set
+}
+
+
+inline void NonDMultilevBLUESampling::
+cvmc_model_group(size_t index, UShortArray& model_group) const
+{
+  if (index < numApprox)
+    { model_group.resize(1);  model_group[0] = index; }
+  else
+    mfmc_model_group(numApprox, model_group);
+}
 
 
 inline void NonDMultilevBLUESampling::

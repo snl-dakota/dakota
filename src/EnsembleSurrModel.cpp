@@ -1514,12 +1514,12 @@ void EnsembleSurrModel::create_tabular_datastream()
     // ---------
     // Variables
     // ---------
-    // This case is a bit awkward since we use the HF vars as the reference
-    // "shared" variable labels, minus any soln control.  Then we enumerate
-    // the soln control variable label for each model that has one.  Since
-    // solution control presence/location could vary per Model, we push this
-    // enumeration to the end after the shared variables, rather than adopting
-    // a reference state variable ordering.
+    // This case is a bit awkward since we use the HF variable labels as the
+    // reference "shared" set, minus any soln control.  Then we enumerate the
+    // soln control variable label for each model that has one.  Since solution
+    // control presence/location could vary per Model, we push this enumeration
+    // to the end after the shared variables, rather than adopting a reference
+    // state variable ordering.
     // > Note that reading data back in from this composed tabular format is
     //   not currently supported (refer to Variables: read_tabular()).
     size_t     last_m    = num_m - 1;
