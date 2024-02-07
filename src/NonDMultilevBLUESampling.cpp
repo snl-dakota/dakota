@@ -30,7 +30,8 @@ NonDMultilevBLUESampling::
 NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model):
   NonDNonHierarchSampling(problem_db, model),
   pilotGroupSampling(problem_db.get_short("method.nond.pilot_samples.mode")),
-  groupThrottle(NO_GROUP_THROTTLE), sizeThrottle(2) // *** TO DO: add to spec
+  groupThrottleType(problem_db.get_short("method.nond.group_throttle_type")),
+  groupSizeThrottle(problem_db.get_ushort("method.nond.group_size_throttle"))
 {
   mlmfSubMethod = problem_db.get_ushort("method.sub_method");
 
@@ -48,26 +49,23 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model):
 	 << " sub-method formulation = " << optSubProblemForm
 	 << " sub-problem solver = "     << optSubProblemSolver << std::endl;
 
-  // *** TO DO: need a throttle specification
-  // > Emulate the depth (and breadth) throttles from GenACV
-  //   >> breadth = 1 --> MFMC, depth = 1 --> ACV
-  //   >> convert "nominal" DAGs to unique groups?
   size_t g, m;
-  switch (groupThrottle) {
+  if (groupSizeThrottle != USHRT_MAX) groupThrottleType = GROUP_SIZE_THROTTLE;
+  switch (groupThrottleType) {
 
-  //case DAG_DEPTH_THROTTLE:   // Emulate ACV-IS
-  //case DAG_BREADTH_THROTTLE: // Emulate MFMC/ACV-MF
+  //case DAG_DEPTH_THROTTLE:   // Emulate ACV
+  //case DAG_BREADTH_THROTTLE: // Emulate MFMC
     // all approx --> nominal dags --> enforce constraints --> unique groups
 
-  case HIERARCH_PEER_GROUPS: {
-    // overlay hierarchical and peer groups
+  case COMMON_ESTIMATOR_GROUPS: {
+    // overlay hierarchical and peer groups (linear growth: 3numApprox-2)
     UShortArray group;  UShortArraySet unique_groups;
-    for (m=0; m<numApprox; ++m) { // peers first
-      cvmc_model_group(m, group);
+    for (m=0; m<numApprox; ++m) {
+      cvmc_model_group(m, group); // singletons: increments in pair-wise CVMC
       unique_groups.insert(group);
-    }
-    for (m=0; m<numApprox; ++m) { // pyramid groups second
-      mfmc_model_group(m, group);
+      mfmc_model_group(m, group); // pyramid groups as in MFMC/ACV-MF
+      unique_groups.insert(group);
+      mlmc_model_group(m, group); // paired  groups as in MLMC/ACV-RD
       unique_groups.insert(group);
     }
     size_t unique_len = unique_groups.size();  UShortArraySet::iterator it;
@@ -91,7 +89,7 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model):
     for (g=0; g<num_tp; ++g) {
       const UShortArray& tp_g = tp[g];
       count_m = std::count(tp_g.begin(), tp_g.end(), 1);
-      if (count_m <= sizeThrottle) {
+      if (count_m <= groupSizeThrottle) {
 	group_g.resize(count_m);
 	for (m=0, g_index=0; m<num_models; ++m)
 	  if (tp_g[m]) { group_g[g_index] = m; ++g_index; }
@@ -100,10 +98,11 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model):
     }
     // augment with all-group where needed:
     // SHARED_PILOT or local/competed_local initial guesses from MFMC/CVMC
-    // *** TO DO: since this is subtle and awkward to document, consider doing this for all cases
-    if ( sizeThrottle < num_models &&
-	 ( pilotGroupSampling == SHARED_PILOT ||
-	   varianceMinimizers.size() == 1) ) { // local w/ MFMC/CVMC pre-solve
+    // > since this is subtle / awkward to document / potentially bug-inducing
+    //   downstream, we include the all_group w/ all size throttles for now
+    if ( groupSizeThrottle < num_models ) {
+	 // && ( pilotGroupSampling == SHARED_PILOT ||
+	 // varianceMinimizers.size() == 1) ) {// local w/ MFMC/CVMC pre-solve
       group_g.resize(num_models);
       for (m=0; m<num_models; ++m)
 	group_g[m] = m;
@@ -1381,19 +1380,21 @@ compute_GG_covariance(const RealMatrixArray& sum_G,
 	}
 	code = compute_C_inverse(cov_GG_gq, cov_GG_inv_g[qoi]);
 	if (code) {
+	  /*
+	  // This drops the group contribution to Psi but probably also need
+	  // to drop the group des var from the numerical soln to prevent
+	  // unconstrained behavior there. Something to consider down the road.
 	  Cerr << "Warning: serial dense solver failure (LAPACK error code "
-	       << code << ") in ML BLUE::compute_C_inverse()\n         for "
-	       << "group " << g << " QoI " << qoi << " with C:\n" << cov_GG_gq
-	       << "         Omitting group from roll up." << std::endl;
-	  // *** TO DO: this drops the contribution to Psi but is it also
-	  // *** sufficient to omit the group from the allocation?
-	  // *** (not the model, just one of the many enumerated combinations)
-	  cov_GG_inv_g[qoi].shape(0);
-	  //Cerr << "Error: serial dense solver failure (LAPACK error code "
-	  //     << code << ") in ML BLUE::compute_C_inverse()\n"
-	  //     << "       for group " << g << " QoI " << qoi << " with C:\n"
-	  //     << cov_GG_gq << std::endl;
-	  //abort_handler(METHOD_ERROR);
+	       << code << ") in ML BLUE::compute_C_inverse()\n         "
+	       << "for group " << g << " QoI " << q << " with C:\n"<<cov_GG_g[q]
+	       <<< "         Omitting group from roll up." << std::endl;
+	  cov_GG_inv_g[q].shape(0);
+	  */
+	  Cerr << "Error: serial dense solver failure (LAPACK error code "
+	      << code << ") in ML BLUE::compute_C_inverse()\n"
+	      << "       for group " << g << " QoI " << qoi << " with C:\n"
+	      << cov_GG_gq << std::endl;
+	  abort_handler(METHOD_ERROR);
 	}
       }
       else if (!update_prev) // inadequate samples to define covar

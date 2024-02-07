@@ -228,6 +228,7 @@ private:
   //bool cvmc_model_grouping(const UShortArray& model_group) const;
   void mfmc_model_group(size_t index, UShortArray& model_group) const;
   void cvmc_model_group(size_t index, UShortArray& model_group) const;
+  void mlmc_model_group(size_t index, UShortArray& model_group) const;
 
   void print_group(std::ostream& s, size_t g) const;
 
@@ -268,10 +269,10 @@ private:
 
   /// mode for pilot sampling: shared or independent
   short pilotGroupSampling;
-  /// throttle for mitigating combinatorial growth in numGroups
-  short groupThrottle;
-  /// group size threshold for groupThrottle == GROUP_SIZE_THROTTLE
-  size_t sizeThrottle;
+  /// type of throttle for mitigating combinatorial growth in numGroups
+  short groupThrottleType;
+  /// group size threshold for groupThrottleType == GROUP_SIZE_THROTTLE
+  unsigned short groupSizeThrottle;
 
   /// counter for successful sample accumulations, per group and per QoI
   Sizet2DArray NGroupActual;
@@ -591,19 +592,21 @@ compute_C_inverse(const RealSymMatrix2DArray& cov_GG,
     for (q=0; q<numFunctions; ++q) {
       int code = compute_C_inverse(cov_GG_g[q], cov_GG_inv_g[q]);
       if (code) {
+	/*
+	// This drops the group contribution to Psi but probably also need
+	// to drop the group design var from the numerical soln to prevent
+	// unconstrained behavior there. Something to consider down the road.
         Cerr << "Warning: serial dense solver failure (LAPACK error code "
              << code << ") in ML BLUE::compute_C_inverse()\n         for group "
              << g << " QoI " << q << " with C:\n" << cov_GG_g[q]
 	     << "         Omitting group from roll up." << std::endl;
-	// *** TO DO: this drops the contribution to Psi but is it also
-	// *** sufficient to omit the group from the allocation?
-	// *** (not the model, just one of the many enumerated combinations)
 	cov_GG_inv_g[q].shape(0);
-        //Cerr << "Error: serial dense solver failure (LAPACK error code "
-        //     << code << ") in ML BLUE::compute_C_inverse()\n"
-        //     << "       for group " << g << " QoI " << q << " with C:\n"
-        //     << cov_GG_g[q] << std::endl;
-        //abort_handler(METHOD_ERROR);
+	*/
+        Cerr << "Error: serial dense solver failure (LAPACK error code "
+            << code << ") in ML BLUE::compute_C_inverse()\n"
+            << "       for group " << g << " QoI " << q << " with C:\n"
+            << cov_GG_g[q] << std::endl;
+        abort_handler(METHOD_ERROR);
       }
     }
   }
@@ -896,6 +899,7 @@ cvmc_model_grouping(const UShortArray& model_group) const
 inline void NonDMultilevBLUESampling::
 mfmc_model_group(size_t index, UShortArray& model_group) const
 {
+  // MFMC or ACV-MF
   size_t m, num_models = index+1;
   model_group.resize(num_models);
   for (m=0; m<num_models; ++m)
@@ -907,9 +911,22 @@ inline void NonDMultilevBLUESampling::
 cvmc_model_group(size_t index, UShortArray& model_group) const
 {
   if (index < numApprox)
-    { model_group.resize(1);  model_group[0] = index; }
+    { model_group.resize(1); model_group[0] = index; }
   else
     mfmc_model_group(numApprox, model_group);
+}
+
+
+inline void NonDMultilevBLUESampling::
+mlmc_model_group(size_t index, UShortArray& model_group) const
+{
+  // MLMC or ACV-RD (ACV-IS differs in shared group)
+  if (index == 0)
+    { model_group.resize(1); model_group[0] = index; }
+  else {
+    model_group.resize(2);
+    model_group[0] = index - 1; model_group[1] = index; // ordered low to high
+  }
 }
 
 

@@ -245,7 +245,7 @@ enum { ONLINE_PILOT,            OFFLINE_PILOT,
 // ML/MF modes for group-based pilot sampling
 enum { SHARED_PILOT, INDEPENDENT_PILOT };
 // Throttles for group-based pilot sampling
-enum { NO_GROUP_THROTTLE=0, HIERARCH_PEER_GROUPS, GROUP_SIZE_THROTTLE };
+enum { NO_GROUP_THROTTLE=0, COMMON_ESTIMATOR_GROUPS, GROUP_SIZE_THROTTLE };
 // Numerical solution modes
 enum { REORDERED_FALLBACK, NUMERICAL_FALLBACK, NUMERICAL_OVERRIDE };
 
@@ -1098,6 +1098,11 @@ public:
   /// the group sampling approach for pilot sampling in ML BLUE:
   /// independent or shared
   short pilotGroupSampling;
+  /// approach to restricting the total number of groups in group estimators
+  short groupThrottleType;
+  /// restricting the number of group combinations in group estimators by
+  /// enforcing a maximum size in terms of the number of models per group
+  unsigned short groupSizeThrottle;
   /// the \c truth_fixed_by_pilot flag for ACV methods
   bool truthPilotConstraint;
   /// option specified for extent of DAG enumeration within
