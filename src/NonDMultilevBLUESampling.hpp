@@ -227,6 +227,7 @@ private:
   //bool mfmc_model_grouping(const UShortArray& model_group) const;
   //bool cvmc_model_grouping(const UShortArray& model_group) const;
   void mfmc_model_group(size_t index, UShortArray& model_group) const;
+  void singleton_model_group(size_t index, UShortArray& model_group) const;
   void cvmc_model_group(size_t index, UShortArray& model_group) const;
   void mlmc_model_group(size_t index, UShortArray& model_group) const;
 
@@ -908,12 +909,15 @@ mfmc_model_group(size_t index, UShortArray& model_group) const
 
 
 inline void NonDMultilevBLUESampling::
+singleton_model_group(size_t index, UShortArray& model_group) const
+{ model_group.resize(1); model_group[0] = index; }
+
+
+inline void NonDMultilevBLUESampling::
 cvmc_model_group(size_t index, UShortArray& model_group) const
 {
-  if (index < numApprox)
-    { model_group.resize(1); model_group[0] = index; }
-  else
-    mfmc_model_group(numApprox, model_group);
+  if (index < numApprox) singleton_model_group(index, model_group);
+  else                   mfmc_model_group(numApprox,  model_group);
 }
 
 

@@ -60,19 +60,24 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model):
   case COMMON_ESTIMATOR_GROUPS: {
     // overlay hierarchical and peer groups (linear growth: 3numApprox-2)
     UShortArray group;  UShortArraySet unique_groups;
-    for (m=0; m<numApprox; ++m) {
+    for (m=0; m<numApprox; ++m) { // defer all groups to override set ordering
       cvmc_model_group(m, group); // singletons: increments in pair-wise CVMC
       unique_groups.insert(group);
       mfmc_model_group(m, group); // pyramid groups as in MFMC/ACV-MF
       unique_groups.insert(group);
+    }
+    for (m=0; m<=numApprox; ++m) {
       mlmc_model_group(m, group); // paired  groups as in MLMC/ACV-RD
       unique_groups.insert(group);
     }
+    singleton_model_group(numApprox, group); // not the last CVMC group
+    unique_groups.insert(group);    
     size_t unique_len = unique_groups.size();  UShortArraySet::iterator it;
-    modelGroups.resize(unique_len + 1);
+    numGroups = unique_len + 1;
+    modelGroups.resize(numGroups);
     for (it=unique_groups.begin(), g=0; it!=unique_groups.end(); ++it, ++g)
       modelGroups[g] = *it;
-    // last group contains all models:
+    // for consistency with other cases, make all-model case the last group
     mfmc_model_group(numApprox, modelGroups[unique_len]);
     break;
   }
