@@ -49,7 +49,7 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model):
 	 << " sub-method formulation = " << optSubProblemForm
 	 << " sub-problem solver = "     << optSubProblemSolver << std::endl;
 
-  size_t g, m;
+  // elected to flatten XML spec, so groupThrottleType is inferred
   if (groupSizeThrottle != USHRT_MAX) groupThrottleType = GROUP_SIZE_THROTTLE;
   switch (groupThrottleType) {
 
@@ -57,17 +57,24 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model):
   //case DAG_BREADTH_THROTTLE: // Emulate MFMC
     // all approx --> nominal dags --> enforce constraints --> unique groups
 
+  case MFMC_ESTIMATOR_GROUPS:
+    numGroups = numApprox + 1;
+    modelGroups.resize(numGroups);
+    for (size_t g=0; g<numGroups; ++g)
+      mfmc_model_group(g, modelGroups[g]);
+    break;
+
   case COMMON_ESTIMATOR_GROUPS: {
-    // overlay hierarchical and peer groups (linear growth: 3numApprox-2)
-    UShortArray group;  UShortArraySet unique_groups;
-    for (m=0; m<numApprox; ++m) { // defer all groups to override set ordering
-      cvmc_model_group(m, group); // singletons: increments in pair-wise CVMC
+    // overlay hierarchical and peer groups (linear growth: 3M - duplicates)
+    UShortArray group;  UShortArraySet unique_groups;  size_t g;
+    for (g=0; g<numApprox; ++g) { // defer all groups to override set ordering
+      cvmc_model_group(g, group); // singletons: increments in pair-wise CVMC
       unique_groups.insert(group);
-      mfmc_model_group(m, group); // pyramid groups as in MFMC/ACV-MF
+      mfmc_model_group(g, group); // pyramid groups as in MFMC/ACV-MF
       unique_groups.insert(group);
     }
-    for (m=0; m<=numApprox; ++m) {
-      mlmc_model_group(m, group); // paired  groups as in MLMC/ACV-RD
+    for (g=0; g<=numApprox; ++g) {
+      mlmc_model_group(g, group); // paired  groups as in MLMC/ACV-RD
       unique_groups.insert(group);
     }
     singleton_model_group(numApprox, group); // not the last CVMC group
@@ -83,19 +90,20 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model):
   }
 
   case GROUP_SIZE_THROTTLE: { // simplest throttle
+    size_t m, num_models = numApprox+1;
     // tensor product of order 1 to enumerate approximation groups
-    UShort2DArray tp;  UShortArray tp_orders(numApprox+1, 1);
+    UShort2DArray tp;  UShortArray tp_orders(num_models, 1);
     Pecos::SharedPolyApproxData::
       tensor_product_multi_index(tp_orders, tp, true);
     tp.erase(tp.begin()); // discard empty group (all 0's)
 
-    size_t num_models = numApprox+1, num_tp = tp.size(), count_m, g_index;
+    size_t num_tp = tp.size(), g, g_size, g_index;
     UShortArray group_g;
     for (g=0; g<num_tp; ++g) {
       const UShortArray& tp_g = tp[g];
-      count_m = std::count(tp_g.begin(), tp_g.end(), 1);
-      if (count_m <= groupSizeThrottle) {
-	group_g.resize(count_m);
+      g_size = std::count(tp_g.begin(), tp_g.end(), 1);
+      if (g_size <= groupSizeThrottle) {
+	group_g.resize(g_size);
 	for (m=0, g_index=0; m<num_models; ++m)
 	  if (tp_g[m]) { group_g[g_index] = m; ++g_index; }
 	modelGroups.push_back(group_g);
@@ -118,15 +126,16 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model):
   }
 
   default: { // NO_GROUP_THROTTLE
-    // Note: modelGroups are not currently ordered by numbers of models,
-    //       i.e. all 1-model cases, followed by all 2-model cases, etc.
     // tensor product of order 1 to enumerate approximation groups
+    // > modelGroups are not currently ordered by numbers of models,
+    //   i.e. all 1-model cases, followed by all 2-model cases, etc.
     UShort2DArray tp;  UShortArray tp_orders(numApprox+1, 1);
     Pecos::SharedPolyApproxData::
       tensor_product_multi_index(tp_orders, tp, true);
     tp.erase(tp.begin()); // discard empty group (all 0's)
 
     numGroups = tp.size();  modelGroups.resize(numGroups);
+    size_t g, m;
     for (g=0; g<numGroups; ++g) {
       const UShortArray& tp_g = tp[g];
       UShortArray&    group_g = modelGroups[g];

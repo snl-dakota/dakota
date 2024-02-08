@@ -7093,6 +7093,7 @@ static Method_mp_type
 	MP2s(finalStatsType,QOI_STATISTICS),
 	MP2s(groupThrottleType,COMMON_ESTIMATOR_GROUPS),
       //MP2s(groupThrottleType,GROUP_SIZE_THROTTLE),
+	MP2s(groupThrottleType,MFMC_ESTIMATOR_GROUPS),
         MP2p(growthOverride,RESTRICTED),                   // Pecos enumeration
 	MP2p(growthOverride,UNRESTRICTED),                 // Pecos enumeration
 	MP2s(iteratorScheduling,MASTER_SCHEDULING),
