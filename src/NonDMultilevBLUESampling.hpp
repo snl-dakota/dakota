@@ -160,13 +160,14 @@ private:
   void increment_allocations(const MFSolutionData& soln, SizetArray& N_G_alloc,
 			     const SizetArray& delta_N_G, size_t g);
 
-  void project_mc_estimator_variance(const RealSymMatrixArray& var_H,
+  void project_mc_estimator_variance(const RealSymMatrixArray& cov_GG_g,
+				     size_t H_index,
 				     const SizetArray& N_H_actual,
 				     size_t delta_N_H, RealVector& proj_est_var,
 				     SizetVector& proj_N_H);
-  void project_mc_estimator_variance(const RealSymMatrixArray& var_H,
-				     Real N_H_actual, Real delta_N_H,
-				     RealVector& proj_est_var);
+  void project_mc_estimator_variance(const RealSymMatrixArray& cov_GG_g,
+				     size_t H_index, Real N_H_actual,
+				     Real delta_N_H, RealVector& proj_est_var);
 
   void accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
 			    IntRealSymMatrix2DArrayMap& sum_GG,
@@ -865,11 +866,13 @@ inline void NonDMultilevBLUESampling::apply_mc_reference(RealVector& mc_targets)
 
   if (mc_targets.length() != numFunctions)
     mc_targets.sizeUninitialized(numFunctions);
-  UShortArray hf_only_group(1);  hf_only_group[0] = numApprox;
-  size_t hf_index = find_index(modelGroups, hf_only_group);
-  const RealSymMatrixArray& cov_GG_g = covGG[hf_index];
+  //UShortArray hf_only_group(1);  hf_only_group[0] = numApprox;
+  //size_t hf_index = find_index(modelGroups, hf_only_group);
+  size_t all_group = numGroups - 1;// for all throttles, last group = all models
+  const RealSymMatrixArray& cov_GG_g = covGG[all_group];//[hf_index];
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    mc_targets[qoi] = cov_GG_g[qoi](0,0) / (convergenceTol * estVarIter0[qoi]);
+    mc_targets[qoi] = cov_GG_g[qoi](numApprox,numApprox)
+                    / ( convergenceTol * estVarIter0[qoi] );
 }
 
 

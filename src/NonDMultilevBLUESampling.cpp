@@ -84,7 +84,7 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model):
     modelGroups.resize(numGroups);
     for (it=unique_groups.begin(), g=0; it!=unique_groups.end(); ++it, ++g)
       modelGroups[g] = *it;
-    // for consistency with other cases, make all-model case the last group
+    // for consistency with other cases, force all-model case to be last group
     mfmc_model_group(numApprox, modelGroups[unique_len]);
     break;
   }
@@ -849,7 +849,7 @@ analytic_initialization_from_mfmc(const RealMatrix& rho2_LH,
   for (size_t r=0; r<=numApprox; ++r) {
     mfmc_model_group(r, group); // the r-th MFMC group
     ratios_to_groups[r] = g_index = find_index(modelGroups, group);
-    active_groups.set(g_index);
+    if (g_index != _NPOS) active_groups.set(g_index);
   }
   analytic_ratios_to_solution_variables(avg_eval_ratios, ratios_to_groups,
 					active_groups, soln);
@@ -877,7 +877,7 @@ analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
   for (size_t r=0; r<=numApprox; ++r) {
     cvmc_model_group(r, group); // the r-th CVMC group
     ratios_to_groups[r] = g_index = find_index(modelGroups, group);
-    active_groups.set(g_index);
+    if (g_index != _NPOS) active_groups.set(g_index);
   }
   analytic_ratios_to_solution_variables(avg_eval_ratios, ratios_to_groups,
 					active_groups, soln);
@@ -890,31 +890,35 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
 				      const BitArray& active_groups,
 				      MFSolutionData& soln)
 {
-  // HF group needs to be present for all throttles
-  UShortArray hf_only_group(1);  hf_only_group[0] = numApprox;
-  size_t hf_index = find_index(modelGroups, hf_only_group);
+  // For analytic MFMC/CVMC initial guesses, the best ref for avg_eval_ratios
+  // is all_group, which is enforced to be present for all throttle cases.
+  //UShortArray hf_only_group; singleton_model_group(numApprox, hf_only_group);
+  //UShortArray all_group;          mfmc_model_group(numApprox,     all_group);
+  //size_t ref_index = find_index(modelGroups, all_group);//, hf_only_group);
+  size_t all_group = numGroups - 1; // for all throttles
+
   bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
 		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
-  Real avg_hf_target, N_hf = (offline) ? 0. : (Real)pilotSamples[hf_index];
+  Real avg_hf_target, offline_N_lwr = 2.,
+    N_sh = (offline) ? offline_N_lwr : (Real)pilotSamples[all_group];
   if (maxFunctionEvals == SZ_MAX) { // accuracy-constrained
     /*
     // Compute avg_hf_target only based on MFMC estvar, bypassing ML BLUE estvar
     // Note: dissimilar to ACV,GenACV logic
     RealVector estvar_ratios;
     mfmc_estvar_ratios(rho2_LH, approx_sequence, avg_eval_ratios,estvar_ratios);
-    avg_hf_target = update_hf_target(estvar_ratios, NGroupActual[hf_index],
+    avg_hf_target = update_hf_target(estvar_ratios, NGroupActual[all_group],
 				     estVarIter0); // valid within MFMC context
     */
 
     // As in ACV,GenACV, employ ML BLUE's native estvar for accuracy scaling
     RealVector soln_vars, estvar;
-    analytic_ratios_to_solution_variables(avg_eval_ratios, N_hf,
+    analytic_ratios_to_solution_variables(avg_eval_ratios, N_sh,
 					  ratios_to_groups, soln_vars);
     estimator_variance(soln_vars, estvar); // MFMC+pilot -> ML BLUE
-    // the assumed scaling with N_hf is not generally valid for ML BLUE,
+    // the assumed scaling with N_sh is not generally valid for ML BLUE,
     // but is reasonable for emulation of MFMC
-    avg_hf_target
-      = update_hf_target(estvar, NGroupActual[hf_index], estVarIter0);
+    avg_hf_target = update_hf_target(estvar, N_sh, estVarIter0);
   }
   else {
     Real remaining = (Real)maxFunctionEvals, cost_H = sequenceCost[numApprox];
@@ -924,10 +928,10 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
 	  remaining -= pilotSamples[g] * modelGroupCost[g] / cost_H;
     if (remaining > 0.)
       // scale_to_target() employs allocate_budget() and rescales for lower bnds
-      scale_to_target(N_hf, sequenceCost, avg_eval_ratios, avg_hf_target,
+      scale_to_target(N_sh, sequenceCost, avg_eval_ratios, avg_hf_target,
 		      remaining, 0.); // no lower bound for offline
     else // budget exhausted
-      { avg_hf_target = N_hf;  avg_eval_ratios = 1.; }
+      { avg_hf_target = N_sh;  avg_eval_ratios = 1.; }
   }
 
   RealVector soln_vars;
@@ -1003,14 +1007,20 @@ process_group_solution(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
   // Employ projected MC estvar as reference to the projected ML BLUE estvar
   // from N* (where N* may include a num_samples increment not yet performed).
   // Two reference points are used for ML BLUE:
-  // 1. For HF-only, employ var_H / projected-N_g for g = the HF-only group
-  //    --> this is the closest thing to the estvar ratio (1. - R^2)
+  // 1. For HF-only, employ var_H / projected-N_H --> this is the closest
+  //    thing to the estvar ratio (1. - R^2)
   // 2. For equivalent HF, emply var_H / (equivHFEvals + deltaEquivHF)
-  UShortArray hf_only_group(1);  hf_only_group[0] = numApprox;
-  size_t hf_index = find_index(modelGroups, hf_only_group);
-  project_mc_estimator_variance(covGG[hf_index], N_G_actual[hf_index],
-				delta_N_G[hf_index], projEstVarHF,
-				projNActualHF);
+  // Due to throttle defns and MFMC/CVMC initial guesses, the most consistent
+  // source for var_H[qoi] is covGG[all_group][qoi](numApprox,numApprox).
+  //UShortArray hf_only_group(1);  hf_only_group[0] = numApprox;
+  //size_t hf_index = find_index(modelGroups, hf_only_group);
+  //project_mc_estimator_variance(covGG[hf_index], 0, N_G_actual[hf_index],
+  //				  delta_N_G[hf_index], projEstVarHF,
+  //				  projNActualHF);
+  size_t all_group = numGroups - 1;// for all throttles, last group = all models
+  project_mc_estimator_variance(covGG[all_group], numApprox,
+				N_G_actual[all_group], delta_N_G[all_group],
+				projEstVarHF, projNActualHF);
   // Report ratio of averages rather that average of ratios (see notes in
   // print_variance_reduction())
   if (zeros(projNActualHF))
@@ -1128,11 +1138,14 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s)
   //   a result that is consistent with average(estVarIter0) when N* = pilot.
   // > The ACV ratio then differs from final ACV / final MC (due to recovering
   //   avgEstVar from the optimizer obj fn), but difference is usually small.
-  UShortArray hf_only_group(1);  hf_only_group[0] = numApprox;
-  size_t hf_index = find_index(modelGroups, hf_only_group);
   RealVector proj_equiv_estvar;
-  project_mc_estimator_variance(covGG[hf_index], equivHFEvals, deltaEquivHF,
-				proj_equiv_estvar);
+  size_t all_group = numGroups - 1;// for all throttles, last group = all models
+  project_mc_estimator_variance(covGG[all_group], numApprox, equivHFEvals,
+                                deltaEquivHF, proj_equiv_estvar);
+  //UShortArray hf_only_group(1);  hf_only_group[0] = numApprox;
+  //size_t hf_index = find_index(modelGroups, hf_only_group);
+  //project_mc_estimator_variance(covGG[hf_index], 0, equivHFEvals,
+  //                              deltaEquivHF, proj_equiv_estvar);
   Real avg_proj_equiv_estvar = average(proj_equiv_estvar),
        avg_estvar = blueSolnData.average_estimator_variance();
   bool mc_only_ref = (!zeros(projNActualHF));
@@ -1162,9 +1175,10 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s)
 
 
 void NonDMultilevBLUESampling::
-project_mc_estimator_variance(const RealSymMatrixArray& var_H,
-			      const SizetArray& N_H_actual, size_t delta_N_H,
-			      RealVector& proj_est_var, SizetVector& proj_N_H)
+project_mc_estimator_variance(const RealSymMatrixArray& cov_GG_g,
+			      size_t H_index, const SizetArray& N_H_actual,
+			      size_t delta_N_H, RealVector& proj_est_var,
+			      SizetVector& proj_N_H)
 {
   // Defines projected estvar for use as a consistent reference
   proj_est_var.sizeUninitialized(numFunctions);
@@ -1172,21 +1186,22 @@ project_mc_estimator_variance(const RealSymMatrixArray& var_H,
   size_t qoi, N_l_q;
   for (qoi=0; qoi<numFunctions; ++qoi) {
     N_l_q = proj_N_H[qoi] = N_H_actual[qoi] + delta_N_H;
-    proj_est_var[qoi] = (N_l_q) ? var_H[qoi](0,0) / N_l_q
+    proj_est_var[qoi] = (N_l_q) ? cov_GG_g[qoi](H_index,H_index) / N_l_q
                                 : std::numeric_limits<Real>::infinity();
   }
 }
 
 
 void NonDMultilevBLUESampling::
-project_mc_estimator_variance(const RealSymMatrixArray& var_H, Real N_H_actual,
-			      Real delta_N_H, RealVector& proj_est_var)
+project_mc_estimator_variance(const RealSymMatrixArray& cov_GG_g,
+			      size_t H_index, Real N_H_actual, Real delta_N_H,
+			      RealVector& proj_est_var)
 {
   // Defines projected estvar for use as a consistent reference
   proj_est_var.sizeUninitialized(numFunctions);
   size_t qoi; Real N_l_q = N_H_actual + delta_N_H;
   for (qoi=0; qoi<numFunctions; ++qoi)
-    proj_est_var[qoi] = (N_l_q > 0.) ? var_H[qoi](0,0) / N_l_q
+    proj_est_var[qoi] = (N_l_q > 0.) ? cov_GG_g[qoi](H_index,H_index) / N_l_q
                                      : std::numeric_limits<Real>::infinity();
 }
 
