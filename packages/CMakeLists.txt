@@ -203,9 +203,9 @@ endif(HAVE_X_GRAPHICS)
 
 
 if(HAVE_MUQ)
-  if(WIN32)
-    message(FATAL_ERROR "MUQ does not currently support Windows.")
-  endif()
+  #if(WIN32)
+  #  message(FATAL_ERROR "MUQ does not currently support Windows.")
+  #endif()
 
   if(NOT DAKOTA_HAVE_HDF5)
     message(FATAL_ERROR
