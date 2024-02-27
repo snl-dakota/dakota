@@ -1,5 +1,6 @@
 #@ s*: Label=FastTest
 #@ s1: ReqFiles=surrogate_polynomial.py
+#@ s1: DakotaConfig=DAKOTA_PYTHON_SURROGATES
 
 environment
         tabular_data

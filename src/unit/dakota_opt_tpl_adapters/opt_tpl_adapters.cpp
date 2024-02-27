@@ -33,7 +33,6 @@ namespace {
    "    max_iterations = 0               "
    "    max_function_evaluations = 0     "
    "    solution_target = 0.05           "
-   "    output silent                    "
    "                                     "
    "variables,                           "
    "    continuous_design = 2            "

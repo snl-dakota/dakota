@@ -28,9 +28,9 @@ void PythonRegressionSurrogate_straight_line_fit(std::string scaler_type) {
   config_options.set("verbose", 1);
   //  TODO: propagate params to python...
 
-  std::cout << "line_vector: " << line_vector << std::endl;
-  std::cout << "response: " << response << std::endl;
-  const std::string module_name = "driver_surrogates";
+  //std::cout << "line_vector: " << line_vector << std::endl;
+  //std::cout << "response: " << response << std::endl;
+  const std::string module_name = "polynomial_surrogate";
   Python pr(line_vector, response, module_name);
 
   VectorXd eval_pts = VectorXd::LinSpaced(5, 0, 1);
@@ -38,8 +38,8 @@ void PythonRegressionSurrogate_straight_line_fit(std::string scaler_type) {
   expected_vals = (expected_vals.array() + 2.0).matrix();
 
   VectorXd approx_values = pr.value(eval_pts);
-  std::cout << "approx_values: " << approx_values << std::endl;
-  std::cout << "expected_vals: " << expected_vals << std::endl;
+  //std::cout << "approx_values: " << approx_values << std::endl;
+  //std::cout << "expected_vals: " << expected_vals << std::endl;
 
   BOOST_CHECK(
       matrix_equals(approx_values, expected_vals, 1.0e-5));

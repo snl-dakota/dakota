@@ -466,7 +466,11 @@ endif(HAVE_SURFPACK)
 if(DAKOTA_MODULE_SURROGATES)
   add_definitions("-DHAVE_DAKOTA_SURROGATES")
   list(APPEND interface_src DakotaSurrogates.cpp DakotaSurrogatesGP.cpp
-    DakotaSurrogatesPoly.cpp DakotaSurrogatesPython.cpp) # SharedGPApproxData.cpp)
+    DakotaSurrogatesPoly.cpp) # SharedGPApproxData.cpp)
+  if(DAKOTA_PYTHON_SURROGATES)
+    add_definitions("-DHAVE_DAKOTA_PYTHON_SURROGATES")
+    list(APPEND interface_src DakotaSurrogatesPython.cpp)
+  endif()
   # TODO: Change so libraries in this dir depend on Eigen3::Eigen target
   list(APPEND DAKOTA_INCDIRS 
     ${Dakota_SOURCE_DIR}/src/util
