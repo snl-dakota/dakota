@@ -760,6 +760,59 @@ class TestDeepCopy(unittest.TestCase):
 
 # todo: test iteration, integer access
 
+class TestBatchSplitter(unittest.TestCase):
+    def setUp(self) -> None:
+        self.dakota_batch_params_file = "test_batch_splitter_dakota_batch.in"
+        with open(self.dakota_batch_params_file, "w") as f:
+            print(dakotaBatchParams, file=f)
+        
+        batch_lines = dakotaBatchParams.split('\n')
+        batch_lines = [line + "\n" for line in batch_lines]
+        self.dakota_batch_params_lines = [batch_lines[:12], batch_lines[12:]]
 
+        self.dakota_single_params_file = "test_batch_splitter_dakota_single.in"
+        with open(self.dakota_single_params_file, "w") as f:
+            print(dakotaSingleEvalBatchParams, file=f)
+        batch_lines = dakotaSingleEvalBatchParams.split('\n')
+        self.dakota_single_params_lines = [line + "\n" for line in batch_lines]
+        
+        aprepro_params = apreproParams % 1
+        self.aprepro_single_params_file = "test_batch_splitter_aprepro_single.in"
+        with open(self.aprepro_single_params_file, "w") as f:
+            print(aprepro_params, file=f)
+        batch_lines = aprepro_params.split('\n')
+        self.aprepro_single_params_lines = [line + "\n" for line in batch_lines]
+
+    def tearDown(self) -> None:
+        os.remove(self.dakota_batch_params_file)
+        os.remove(self.dakota_single_params_file)
+        os.remove(self.aprepro_single_params_file)
+
+    def test_len_dakota_batch_params(self):
+        b = di.BatchSplitter(self.dakota_batch_params_file)
+        self.assertEqual(len(b), 2)
+
+    def test_format_dakota_batch_params(self):
+        b = di.BatchSplitter(self.dakota_batch_params_file)
+        self.assertEqual(b.format, "DAKOTA")
+
+    def test_get_dakota_batch_params(self):
+        b = di.BatchSplitter(self.dakota_batch_params_file)
+        for i in range(len(b)):
+            self.assertListEqual(b[i], self.dakota_batch_params_lines[i])
+        
+    def test_iterate_dakota_batch_params(self):
+        b = di.BatchSplitter(self.dakota_batch_params_file)
+        for in_params, base_params in zip(b, self.dakota_batch_params_lines):
+            self.assertListEqual(in_params, base_params)
+
+    def test_len_dakota_single_params(self):
+        b = di.BatchSplitter(self.dakota_single_params_file)
+        self.assertEqual(len(b), 1)
+
+    def test_format_aprepro_single_params(self):
+        b = di.BatchSplitter(self.aprepro_single_params_file)
+        self.assertEqual(b.format, "APREPRO")
+        
 
 unittest.main()
