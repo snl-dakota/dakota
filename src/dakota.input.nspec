@@ -3252,6 +3252,13 @@ KEYWORD method {N_mdm3(start,0,stop)}
    )
   |
   ( multilevel_blue {N_mdm(utype,methodName_MULTILEVEL_BLUE)}
+    [ group_throttle {0}
+      mfmc_groups {N_mdm(type,groupThrottleType_MFMC_ESTIMATOR_GROUPS)}
+      |
+      common_groups {N_mdm(type,groupThrottleType_COMMON_ESTIMATOR_GROUPS)}
+      |
+      group_size INTEGER > 0 {N_mdm(ushint,groupSizeThrottle)}
+     ]
     [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)}
       [ independent {N_mdm(type,pilotGroupSampling_INDEPENDENT_PILOT)} ]
      ]

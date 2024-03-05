@@ -7,8 +7,9 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "ExperimentDataUtils.hpp"
+//#include "ExperimentDataUtils.hpp"
 #include "dakota_global_defs.hpp"
+#include "dakota_linear_algebra.hpp"
 #include "DataMethod.hpp"
 #include "DakotaResponse.hpp"
 #include "NonDBayesCalibration.hpp"

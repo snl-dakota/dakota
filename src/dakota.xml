@@ -678,6 +678,19 @@
 	     </keyword>
 	     ' >
 
+    <!ENTITY mlmf_group_throttle '
+      	     <keyword  id="group_throttle" name="group_throttle" code="{0}" label="Reduce the number of solution groups" minOccurs="0" >
+	       <oneOf label="Throttle Approach">
+		 <keyword  id="mfmc_groups" name="mfmc_groups" code="{N_mdm(type,groupThrottleType_MFMC_ESTIMATOR_GROUPS)}" label="MFMC estimator groups" />
+		 <keyword  id="common_groups" name="common_groups" code="{N_mdm(type,groupThrottleType_COMMON_ESTIMATOR_GROUPS)}" label="common estimator groups" />
+		 <!-- <keyword  id="group_size" name="group_size" code="{N_mdm(type,groupThrottleType_GROUP_SIZE_THROTTLE)}" label="group size throttle" > -->
+	         <keyword  id="group_size" name="group_size" code="{N_mdm(ushint,groupSizeThrottle)}" label="group size throttle" >
+	           <param type="INTEGER" constraint="> 0" />
+	         </keyword>
+	       </oneOf>
+	     </keyword>
+	     ' >
+
     <!ENTITY mlmf_solution_mode '
       	     <keyword  id="solution_mode" name="solution_mode" code="{0}" label="solution_mode" help="" minOccurs="0" default="online pilot" >
 	       <oneOf label="Ensemble Sampling Solution Mode">
@@ -3305,6 +3318,7 @@
 	</keyword>
 
 	<keyword  id="multilevel_blue" name="multilevel_blue" code="{N_mdm(utype,methodName_MULTILEVEL_BLUE)}" label="multilevel_blue"  group="Uncertainty Quantification" >
+	  &mlmf_group_throttle;
 	  &mlmf_group_pilot_samples;
 	  &mlmf_solution_mode;
 	  &method_mlmf_sub_problem_solver;

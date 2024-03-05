@@ -146,4 +146,54 @@ double det_AtransA(RealMatrix& A)
   return det;
 }
 
+
+void symmetric_eigenvalue_decomposition( const RealSymMatrix &matrix, 
+					 RealVector &eigenvalues, 
+					 RealMatrix &eigenvectors )
+{
+  Teuchos::LAPACK<int, Real> la;
+
+  int N( matrix.numRows() );
+  eigenvectors.shapeUninitialized( N, N );
+  //eigenvectors.assign( matrix );
+  for ( int j=0; j<N; j++)
+    for ( int i=0; i<=j; i++)
+      eigenvectors(i,j) = matrix( i,j );
+
+  char jobz = 'V'; // compute eigenvectors
+  char uplo = 'U'; // assume only upper triangular part of matrix is stored
+
+  eigenvalues.sizeUninitialized( N );
+
+  int info;        // Teuchos::LAPACK output flag
+  RealVector work; // Teuchos::LAPACK work array;
+  int lwork = -1;  // Size of Teuchos::LAPACK work array
+  
+  // Compute optimal size of work array
+  work.sizeUninitialized( 1 ); // temporary work array
+  la.SYEV( jobz, uplo, N, eigenvectors.values(), eigenvectors.stride(), 
+	   eigenvalues.values(), work.values(), lwork, &info );
+
+  lwork = (int)work[0];
+  work.sizeUninitialized( lwork );
+  
+  la.SYEV( jobz, uplo, N, eigenvectors.values(), eigenvectors.stride(), 
+	   eigenvalues.values(), work.values(), lwork, &info );
+
+  if ( info > 0 )
+    {
+      std::stringstream msg;
+      msg << "The algorithm failed to converge." << info
+	  << " off-diagonal elements of an intermediate tridiagonal "
+	  << "form did not converge to zero.";
+      throw( std::runtime_error( msg.str() ) );
+    }
+  else if ( info < 0 )
+    {
+      std::stringstream msg;
+      msg << " The " << std::abs( info ) << " argument had an illegal value.";
+      throw( std::runtime_error( msg.str() ) );
+    }
+};
+
 }  // namespace Dakota

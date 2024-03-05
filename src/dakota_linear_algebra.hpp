@@ -80,6 +80,16 @@ int qr_rsolve(const RealMatrix& q_r, bool transpose, RealMatrix& rhs);
 /// Use SVD to compute det(A'*A), destroying A with the SVD
 double det_AtransA(RealMatrix& A);
 
+/**
+ * \brief Computes the eigenvalues and, optionally, eigenvectors of a
+ *  real symmetric matrix A. 
+ * 
+ * Eigenvalues are returned in ascending order.
+ */
+void symmetric_eigenvalue_decomposition( const RealSymMatrix &matrix, 
+					 RealVector &eigenvalues, 
+					 RealMatrix &eigenvectors );
+
 }  // namespace Dakota
 
 #endif  // DAKOTA_LINEAR_ALGEBRA_H

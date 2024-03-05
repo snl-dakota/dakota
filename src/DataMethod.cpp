@@ -139,7 +139,8 @@ DataMethodRep::DataMethodRep():
   quadratureOrder(USHRT_MAX), sparseGridLevel(USHRT_MAX),
   expansionOrder(USHRT_MAX), collocationPoints(SZ_MAX),
   expansionSamples(SZ_MAX),  ensemblePilotSolnMode(ONLINE_PILOT),
-  pilotGroupSampling(SHARED_PILOT), truthPilotConstraint(false),
+  pilotGroupSampling(SHARED_PILOT), groupThrottleType(NO_GROUP_THROTTLE),
+  groupSizeThrottle(USHRT_MAX), truthPilotConstraint(false),
   dagRecursionType(NO_GRAPH_RECURSION), dagDepthLimit(1),
   modelSelectType(NO_MODEL_SELECTION), relaxFixedFactor(0.),
   relaxRecursiveFactor(0.), allocationTarget(TARGET_MEAN),
@@ -333,7 +334,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << dOptimal << numCandidateDesigns //<< reliabilitySearchType
     << reliabilityIntegration << integrationRefine << refineSamples
     << optSubProbSolver << numericalSolveMode << pilotSamples
-    << ensemblePilotSolnMode << pilotGroupSampling << truthPilotConstraint
+    << ensemblePilotSolnMode << pilotGroupSampling << groupThrottleType
+    << groupSizeThrottle << truthPilotConstraint
     << dagRecursionType << dagDepthLimit << modelSelectType
     << relaxFactorSequence << relaxFixedFactor << relaxRecursiveFactor
     << allocationTarget << useTargetVarianceOptimizationFlag
@@ -512,7 +514,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> dOptimal >> numCandidateDesigns //>> reliabilitySearchType
     >> reliabilityIntegration >> integrationRefine >> refineSamples
     >> optSubProbSolver >> numericalSolveMode >> pilotSamples
-    >> ensemblePilotSolnMode >> pilotGroupSampling >> truthPilotConstraint
+    >> ensemblePilotSolnMode >> pilotGroupSampling >> groupThrottleType
+    >> groupSizeThrottle >> truthPilotConstraint
     >> dagRecursionType >> dagDepthLimit >> modelSelectType
     >> relaxFactorSequence >> relaxFixedFactor >> relaxRecursiveFactor
     >> allocationTarget >> useTargetVarianceOptimizationFlag
@@ -691,7 +694,8 @@ void DataMethodRep::write(std::ostream& s) const
     << dOptimal << numCandidateDesigns //<< reliabilitySearchType
     << reliabilityIntegration << integrationRefine << refineSamples
     << optSubProbSolver << numericalSolveMode << pilotSamples
-    << ensemblePilotSolnMode << pilotGroupSampling << truthPilotConstraint
+    << ensemblePilotSolnMode << pilotGroupSampling << groupThrottleType
+    << groupSizeThrottle << truthPilotConstraint
     << dagRecursionType << dagDepthLimit << modelSelectType
     << relaxFactorSequence << relaxFixedFactor << relaxRecursiveFactor
     << allocationTarget << useTargetVarianceOptimizationFlag

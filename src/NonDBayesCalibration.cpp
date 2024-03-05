@@ -38,6 +38,7 @@
 //#include "ANN/ANNx.h"
 #include "dakota_data_util.hpp"
 //#include "dakota_tabular_io.hpp"
+#include "dakota_linear_algebra.hpp"
 #include "DiscrepancyCorrection.hpp"
 #include "bayes_calibration_utils.hpp"
 #include "dakota_stat_util.hpp"

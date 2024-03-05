@@ -425,14 +425,9 @@ invert_CF(const RealSymMatrix& C, const RealSymMatrix& F, RealSymMatrix& CF_inv)
 
   RealSpdSolver spd_solver;
   spd_solver.setMatrix(Teuchos::rcp(&CF_inv, false));
-  if (spd_solver.shouldEquilibrate()) {
-    spd_solver.factorWithEquilibration(true);
-    //if (outputLevel >= DEBUG_OUTPUT) {
-    //  Real rcond;  spd_solver.reciprocalConditionEstimate(rcond);
-    //  Cout << "Equilibrating in NonDACVSampling::invert_C_F(): reciprocal "
-    //	     << "condition number = " << rcond << std::endl;
-    //}
-  }
+  // Note: equilibration should not be used outside of the solve() context,
+  // as the resulting inverse would be for the equilibrated matrix.  See
+  // discussion in NonDMultilevBLUESampling::compute_C_inverse().
   spd_solver.invert(); // in place
 }
 

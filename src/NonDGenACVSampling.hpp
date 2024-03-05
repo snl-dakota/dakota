@@ -329,16 +329,9 @@ invert_C_G_matrix(const RealSymMatrix& C, const RealSymMatrix& G,
 
   RealSpdSolver spd_solver;
   spd_solver.setMatrix(Teuchos::rcp(&C_G_inv, false));
-  if (spd_solver.shouldEquilibrate()) {
-    spd_solver.factorWithEquilibration(true);
-    // if (outputLevel >= DEBUG_OUTPUT) {
-    //   Real rcond;  spd_solver.reciprocalConditionEstimate(rcond);
-    //   Cout << "Equilibrating in GenACV::invert_C_G_matrix(): reciprocal "
-    // 	   << "condition number = " << rcond << std::endl;
-    // }
-  }
-  // Only useful for solve():
-  //spd_solver.solveToRefinedSolution(true);
+  // Note: equilibration should not be used outside of the solve() context,
+  // as the resulting inverse would be for the equilibrated matrix.  See
+  // discussion in NonDMultilevBLUESampling::compute_C_inverse().
   int code = spd_solver.invert(); // inverts in place using factorization
   if (code) {
     Cerr << "Error: serial dense matrix inversion failure (LAPACK error code "
