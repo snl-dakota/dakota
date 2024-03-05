@@ -19,7 +19,7 @@ namespace {
 
 /* Unit tests */
 
-void PythonRegressionSurrogate_straight_line_fit(std::string scaler_type) {
+void PythonRegressionSurrogate_straight_line_fit() {
   VectorXd line_vector = VectorXd::LinSpaced(20, 0, 1);  // size, low, high
   VectorXd response = VectorXd::LinSpaced(20, 0, 1)*1.23;
   response = (response.array() + 2.0).matrix();  // specify a y-intercept of 2.0
@@ -51,7 +51,7 @@ void PythonRegressionSurrogate_straight_line_fit(std::string scaler_type) {
 
 int test_main(int argc, char* argv[])  // note the name!
 {
-  PythonRegressionSurrogate_straight_line_fit("none");
+  PythonRegressionSurrogate_straight_line_fit();
 
   BOOST_CHECK(boost::exit_success == 0);
 

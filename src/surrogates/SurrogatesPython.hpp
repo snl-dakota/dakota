@@ -41,7 +41,7 @@ class Python : public Surrogate {
    *
    * \param[in] module_name Name of python module file containing callback functions
    */
-  Python(const std::string& mudule_name);
+  Python(const std::string& module_name);
 
   /**
    * \brief Constructor sets moduleFilename and builds the python surrogate.
