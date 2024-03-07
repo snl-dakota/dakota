@@ -447,7 +447,7 @@ void NonDACVSampling::update_model_group_costs()
   //   >> Extreme x_ub is N_shared plus one model at r_i = max within budget,
   //      with all other models at lower bound r_i = 1.
   for (i=0; i<numApprox; ++i)
-    modelGroupCost[i] = sequenceCost[i];
+    modelGroupCost[i] = sequenceCost[i]; // *** TO DO: revisit for consistency with modelGroups
 
   /* this aggregates pyramid groups as in ML BLUE - see notes above:
   switch (mlmfSubMethod) {
@@ -455,7 +455,7 @@ void NonDACVSampling::update_model_group_costs()
     for (i=1, end=numApprox; i<num_groups; ++i, --end) {
       Real& group_cost_i = modelGroupCost[i];  group_cost_i = 0.;
       for (j=0; j<end; ++j)
-    	  group_cost_i += sequenceCost[j];//[approx];
+    	group_cost_i += sequenceCost[j];//[approx];
     }
     break;
   case SUBMETHOD_ACV_IS:
@@ -507,17 +507,17 @@ compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
       numSamples = 0;  return;
     }
 
-    // Run a competition among related analytic approaches (MFMC or pairwise
-    // CVMC) for best initial guess, where each initial gues may additionally
-    // employ multiple varianceMinimizers in ensemble_numerical_solution()
-    switch (optSubProblemSolver) { // no initial guess
-    // global and sequenced global+local methods:
+    switch (optSubProblemSolver) {
+    // global and sequenced global+local methods (no initial guess)
     case SUBMETHOD_DIRECT_NPSOL_OPTPP:  case SUBMETHOD_DIRECT_NPSOL:
     case SUBMETHOD_DIRECT_OPTPP:        case SUBMETHOD_DIRECT:
     case SUBMETHOD_EGO:  case SUBMETHOD_SBGO:  case SUBMETHOD_EA:
       ensemble_numerical_solution(soln);
       break;
-    default: { // competed initial guesses with (competed) local methods
+    default: {
+      // Run a competition among related analytic approaches (MFMC or pairwise
+      // CVMC) for best initial guess, where each initial guess may additionally
+      // employ multiple varianceMinimizers in ensemble_numerical_solution()
       RealMatrix rho2_LH;
       covariance_to_correlation_sq(covLH, var_L, varH, rho2_LH);
       MFSolutionData mf_soln, cv_soln;

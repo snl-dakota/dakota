@@ -145,7 +145,6 @@ private:
 					IntRealSymMatrix2DArrayMap& sum_GG,
 					SizetArray& delta_N_G);
 
-  void group_increment(SizetArray& delta_N_G, size_t iter);
   void evaluate_pilot(RealMatrixArray& sum_G_pilot,
 		      RealSymMatrix2DArray& sum_GG_pilot,
 		      Sizet2DArray& N_shared_pilot, bool incr_cost);
@@ -258,9 +257,6 @@ private:
   //
   //- Heading: Data
   //
-
-  /// BLUE optimizes over a set of model groupings
-  UShort2DArray modelGroups;
 
   /// covariance matrices for each model QoI and each model grouping (the C_k
   /// matrix in ML BLUE), organized as a numGroups x numFunctions array of

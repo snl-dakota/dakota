@@ -390,6 +390,27 @@ ensemble_sample_increment(size_t iter, size_t step)
 
 
 void NonDNonHierarchSampling::
+group_increment(SizetArray& delta_N_G, size_t iter)
+{
+  if (iter == 0) Cout << "\nPerforming pilot sample for ML BLUE.\n";
+  else Cout << "\nML BLUE sampling iteration " << iter
+	    << ": group sample increment =\n" << delta_N_G << '\n';
+
+  size_t g, m, num_models, start;
+  for (size_t g=0; g<numGroups; ++g) {
+    numSamples = delta_N_G[g];
+    if (numSamples) {
+      ensemble_active_set(modelGroups[g]);
+      ensemble_sample_batch(iter, g); // index is group_id; non-blocking
+    }
+  }
+
+  if (iteratedModel.asynch_flag())
+    synchronize_batches(iteratedModel); // schedule all groups (return ignored)
+}
+
+
+void NonDNonHierarchSampling::
 ensemble_sample_batch(size_t iter, int batch_id)
 {
   // generate new MC parameter sets
