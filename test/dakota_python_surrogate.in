@@ -5,7 +5,7 @@
 environment
         tabular_data
           tabular_data_file = "linear_surr_tabular.dat"        #s0
-          #tabular_data_file = "exp_surr_py_tabular.dat"       #s1
+#          tabular_data_file = "exp_surr_py_tabular.dat"       #s1
         method_pointer = 'UQ'
 
 method,
@@ -24,8 +24,8 @@ model,
           dace_method_pointer = 'DACE'
           reuse_samples all
           polynomial linear                                      #s0
-          #experimental_python                                   #s1
-          #  module_file = "surrogate_polynomial"                #s1
+#          experimental_python                                   #s1
+#            module_file = "surrogate_polynomial"                #s1
 method,
         id_method = 'DACE'
         model_pointer = 'DACE_M'
@@ -51,6 +51,6 @@ interface,
 
 responses,
         response_functions = 1
-        no_gradients
+        analytic_gradients
         no_hessians
 

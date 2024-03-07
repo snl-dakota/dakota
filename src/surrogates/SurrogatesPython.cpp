@@ -41,20 +41,43 @@ void Python::initialize_python()
   if (!Py_IsInitialized()) {
     py::initialize_interpreter();
     ownPython = true;
-    if (Py_IsInitialized()) {
-      //if (outputLevel >= NORMAL_OUTPUT)
-      //  Cout << "Python interpreter initialized for surrogates use."
-      //       << std::endl;
-    }
-    else {
+    if (!Py_IsInitialized())
       throw(std::runtime_error(
-        "Error: Could not initialize Python for surrogates use."));
-    }
+            "Error: Could not initialize Python for surrogates use."));
   }
   if (!pyModuleActive) {
-    pyModule = py::module_::import(moduleFilename.c_str());
+    try {
+      pyModule = py::module_::import(moduleFilename.c_str());
+    }
+    catch(py::error_already_set &e) {
+      if (e.matches(PyExc_ModuleNotFoundError)) {
+        std::cout << "Could not load the required module '"
+                  << moduleFilename << "'" << std::endl;
+        //throw; // Do we want to throw this again? RWH
+      }
+    }
     pyModuleActive = true;
   }
+
+  // Check that needed methods exist in the module
+  // ... We could allow the user to register these... RWH
+  std::vector<std::string> req_attrs = { "construct", "predict" };
+  bool is_module_valid = true;
+  for( auto const & req_at : req_attrs ) {
+    try {
+      py::function py_fn = pyModule.attr(req_at.c_str());
+    }
+    catch(py::error_already_set &e) {
+      if (e.matches(PyExc_AttributeError)) {
+        std::cout << "Module '" << moduleFilename << "' does not "
+          << "contain required method '" << req_at << "'"
+          << std::endl;
+      }
+      is_module_valid = false;;
+    }
+  }
+  if( !is_module_valid )
+    throw(std::runtime_error("Invalid python module for surrogates"));
 }
 
 void Python::build(const MatrixXd& samples,
@@ -65,9 +88,8 @@ void Python::build(const MatrixXd& samples,
 
   // Hard-coded method for now; could expose to user - RWH
   const std::string fn_name("construct");
-  py::function callback_fn = pyModule.attr(fn_name.c_str());
-  pyModuleActive = true;
-  callback_fn(samples, response);
+  py::function py_surr_builder = pyModule.attr(fn_name.c_str());
+  py_surr_builder(samples, response);
 }
 
 
@@ -82,8 +104,9 @@ VectorXd Python::value(const MatrixXd& eval_points,
 
   // Hard-coded method for now; could expose to user - RWH
   const std::string fn_name("predict");
-  py::function callback_fn = pyModule.attr(fn_name.c_str());
-  return callback_fn(eval_points).cast<VectorXd>();
+  py::function py_surr_eval = pyModule.attr(fn_name.c_str());
+
+  return py_surr_eval(eval_points).cast<VectorXd>();
 }
 
 
@@ -97,9 +120,23 @@ MatrixXd Python::gradient(const MatrixXd& eval_points,
   assert(qoi == 0);
 
   // Hard-coded method for now; could expose to user - RWH
+  // We could add a check for this method (attribute) above in the
+  // req_attrs if we knew it was needed at the time of our construction.
   const std::string fn_name("gradient");
-  py::function callback_fn = pyModule.attr(fn_name.c_str());
-  return callback_fn(eval_points).cast<MatrixXd>();
+  py::function py_surr_grad;
+  try {
+    py_surr_grad = pyModule.attr(fn_name.c_str());
+  }
+  catch(py::error_already_set &e) {
+    if (e.matches(PyExc_AttributeError)) {
+      std::cout << "Module '" << moduleFilename << "' does not "
+        << "contain required method '" << fn_name << "'"
+        << std::endl;
+      throw; // Do we want to throw this again? RWH
+    }
+  }
+
+  return py_surr_grad(eval_points).cast<MatrixXd>();
 }
 
 
