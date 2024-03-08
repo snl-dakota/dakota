@@ -366,6 +366,8 @@ protected:
   bool approx_increment(size_t iter, unsigned short root,
 			const UShortSet& reverse_dag);
 
+  void group_increment(SizetArray& delta_N_G, size_t iter);
+
   void ensemble_sample_increment(size_t iter, size_t step);
   void ensemble_sample_batch(size_t iter, int batch_id);
   //void ensemble_sample_synchronize();
@@ -592,8 +594,10 @@ protected:
   /// number of approximation models managed by non-hierarchical iteratedModel
   size_t numApprox;
 
+  /// the set of model groupings used by the estimator, e.g. ML BLUE
+  UShort2DArray modelGroups;
   /// aggregate cost of a sample for each of a set of model groupings
-  /// (e.g. NonDMultilevBLUESampling::modelGroups)
+  /// (i.e. modelGroups)
   RealVector modelGroupCost;
 
   /// formulation for optimization sub-problem that minimizes R^2 subject
