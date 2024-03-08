@@ -574,8 +574,11 @@ compute_C_inverse(const RealSymMatrix& cov_GG_gq, RealSymMatrix& cov_GG_inv_gq)
     return spd_solver.invert(); // in place
 
     // Alternatives:
-    // > Moore-Penrose pseudo-inv: SVD with truncation of small EVs --> review NonDBayesCalibration::get_positive_definite_covariance_from_hessian()
-    // > Heuristics for throttling the number of groups -- need all, HF only, pyramid sets? leading set of lower combined order?  Pilot samples > num_models in group
+    // > Moore-Penrose pseudo-inv: SVD with truncation of small EVs --> review use of symmetric_eigenvalue_decomposition() in NonDBayesCalibration::get_positive_definite_covariance_from_hessian() --> deploy for both C and Psi
+    // > SDP solvers (helps with Psi solve, but issues with forming Psi from C-inverse remain)
+
+    // Unsuccessful (though useful in general):
+    // > throttling the number of groups (did not remove ill-conditioning in heat_eq_mlblue8)
   }
 }
 

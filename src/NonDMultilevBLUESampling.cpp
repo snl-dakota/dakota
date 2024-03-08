@@ -58,6 +58,8 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model):
     // all approx --> nominal dags --> enforce constraints --> unique groups
 
   case MFMC_ESTIMATOR_GROUPS:
+    // Some avg_eval_ratios from an analytic pairwise CVMC initial_guess will
+    // be dropped.  MFMC is of course Ok.
     numGroups = numApprox + 1;
     modelGroups.resize(numGroups);
     for (size_t g=0; g<numGroups; ++g)
@@ -113,6 +115,10 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model):
     // SHARED_PILOT or local/competed_local initial guesses from MFMC/CVMC
     // > since this is subtle / awkward to document / potentially bug-inducing
     //   downstream, we include the all_group w/ all size throttles for now
+    // > Note 1: there is only one group with all models, so this renders
+    //   size throttle = numApprox the same as no throttle.
+    // > Note 2: size throttle < numApprox means some avg_eval_ratios from an
+    //   analytic MFMC initial_guess will be dropped.  Pairwise CVMC is Ok.
     if ( groupSizeThrottle < num_models ) {
 	 // && ( pilotGroupSampling == SHARED_PILOT ||
 	 // varianceMinimizers.size() == 1) ) {// local w/ MFMC/CVMC pre-solve
@@ -643,7 +649,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     // Assign sunk cost to full group and optimize w/ this as a constraint.
     // > One could argue for only lower-bounding with actual incurred samples,
     //   but have elected elsewhere to be consistent with backfill logic.
-    // > Note: only NGroupAlloc[all_group] is advanced in shared_covar_iter()
+    // > Note: only NGroup*[all_group] is advanced in shared_covariance_iter()
     for (g=0; g<numGroups; ++g)
       x_lb[g] = (backfillFailures) ?
 	average(NGroupActual[g]) : (Real)NGroupAlloc[g];
@@ -892,9 +898,6 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
 {
   // For analytic MFMC/CVMC initial guesses, the best ref for avg_eval_ratios
   // is all_group, which is enforced to be present for all throttle cases.
-  //UShortArray hf_only_group; singleton_model_group(numApprox, hf_only_group);
-  //UShortArray all_group;          mfmc_model_group(numApprox,     all_group);
-  //size_t ref_index = find_index(modelGroups, all_group);//, hf_only_group);
   size_t all_group = numGroups - 1; // for all throttles
 
   bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
@@ -1012,6 +1015,7 @@ process_group_solution(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
   // 2. For equivalent HF, emply var_H / (equivHFEvals + deltaEquivHF)
   // Due to throttle defns and MFMC/CVMC initial guesses, the most consistent
   // source for var_H[qoi] is covGG[all_group][qoi](numApprox,numApprox).
+  // > *** TO DO: implement a search for the most refined covGG[g][qoi](H,H)
   //UShortArray hf_only_group(1);  hf_only_group[0] = numApprox;
   //size_t hf_index = find_index(modelGroups, hf_only_group);
   //project_mc_estimator_variance(covGG[hf_index], 0, N_G_actual[hf_index],
@@ -1142,6 +1146,7 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s)
   size_t all_group = numGroups - 1;// for all throttles, last group = all models
   project_mc_estimator_variance(covGG[all_group], numApprox, equivHFEvals,
                                 deltaEquivHF, proj_equiv_estvar);
+  // *** TO DO: implement a search for the most refined covGG[g][qoi](H,H)
   //UShortArray hf_only_group(1);  hf_only_group[0] = numApprox;
   //size_t hf_index = find_index(modelGroups, hf_only_group);
   //project_mc_estimator_variance(covGG[hf_index], 0, equivHFEvals,

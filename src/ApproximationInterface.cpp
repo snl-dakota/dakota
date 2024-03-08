@@ -653,7 +653,7 @@ void ApproximationInterface::export_approximation()
   for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
     functionSurfaces[*it].export_model();
 }
-   
+
 
 /** This function updates the coefficients for each Approximation based
     on data increments provided by {update,append}_approximation(). */
