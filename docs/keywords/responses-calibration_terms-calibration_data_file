@@ -88,7 +88,9 @@ annotated format:
 For each function evaluation, Dakota will run the analysis driver,
 which must return :math:`N_{terms} = 2`  model responses. Then the
 residuals are computed as: 
+
 .. math::  R_{i} = y^{Model}_i - y^{Data}_{i}. 
+
 These residuals can be weighted using
 :dakkw:`responses-calibration_terms-weights`.
 
@@ -127,11 +129,14 @@ response:
 
 To summarize, Dakota will calculate the sum of the squared
 residuals as: 
+
 .. math:: f = \sum_{i=1}^{N_E}R_{i}^2
+
 where the residuals
 now are calculated as: 
-.. math:: R_{i} = y^{Model}_i(\theta) -
-y^{Data}_{i}. 
+
+.. math:: R_{i} = y^{Model}_i(\theta) - y^{Data}_{i}. 
+
 *With experimental variances:* If information is known about the
 measurement error and the uncertainty in the measurement, that can be
 specified by sending the measurement error variance to Dakota.  In
