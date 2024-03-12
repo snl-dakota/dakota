@@ -1,6 +1,6 @@
 #@ s*: Label=FastTest
-#@ s1: ReqFiles=surrogate_polynomial.py
-#@ s1: DakotaConfig=DAKOTA_PYTHON_SURROGATES
+#@ s*: ReqFiles=surrogate_polynomial.py,dakota_surrogate_import_rosen.ff.dat
+#@ s*: DakotaConfig=DAKOTA_PYTHON_SURROGATES
 
 environment
         tabular_data
@@ -21,11 +21,15 @@ method,
 model,
         id_model = 'SURR'
         surrogate global,
-          dace_method_pointer = 'DACE'
+          dace_method_pointer = 'DACE'                           #s0,#s1
           reuse_samples all
-          polynomial linear                                      #s0
-#          experimental_python                                   #s1
-#            module_file = "surrogate_polynomial"                #s1
+          polynomial linear                                      #s0,#s2
+#          experimental_python                                   #s1,#s3
+#            module_file = "surrogate_polynomial"                #s1,#s3
+#          import_build_points_file = 'dakota_surrogate_import_rosen.ff.dat' freeform   #s2,#s3
+#          challenge_points_file = 'dakota_surrogate_import_rosen.ff.dat' freeform      #s2,#s3
+#          metrics = "sum_squared" "root_mean_squared" "mean_abs" "max_abs" "rsquared"  #s2,#s3
+
 method,
         id_method = 'DACE'
         model_pointer = 'DACE_M'

@@ -36,6 +36,9 @@ Python::Python(const MatrixXd& samples,
 
 void Python::initialize_python()
 {
+  // Consider adding meaningful parameters... RWH
+  configOptions.set("verbosity", 1, "console output verbosity");
+
   ownPython = false;
   pyModuleActive = false;
   if (!Py_IsInitialized()) {
@@ -86,6 +89,18 @@ void Python::build(const MatrixXd& samples,
   assert( pyModuleActive );
   assert( Py_IsInitialized() );
 
+  verbosity = configOptions.get<int>("verbosity");
+
+  if (verbosity > 0) {
+    if (verbosity == 1) {
+      std::cout << "\nBuilding Python surrogate\n\n";
+    } else if (verbosity == 2) {
+      std::cout << "\nBuilding Python surrogate with module.method\n"
+                << moduleFilename << "." << "construct" << "\n";
+    } else
+      throw(
+          std::runtime_error("Invalid verbosity int for Python surrogate"));
+  }
   // Hard-coded method for now; could expose to user - RWH
   const std::string fn_name("construct");
   py::function py_surr_builder = pyModule.attr(fn_name.c_str());
