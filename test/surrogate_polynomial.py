@@ -8,40 +8,36 @@
 #  _______________________________________________________________________
 
 import numpy as np
-import statsmodels.api as sm
 
 ##########################################################.##
 #       Demo Surrogate --> Algorithmic callback             #
 #############################################################
 
-model = None
+coeffs = None
 
 def construct(var, resp):
 
     print("HERE... python surrogate construct:")
 
-    global model
-    var2 = sm.add_constant(var)
-    model = sm.OLS(resp, var2).fit()
+    global coeffs
+    var2 = np.hstack((np.ones((var.shape[0], 1)), var))
+    coeffs = np.zeros(var.shape[1])
+    z = np.linalg.inv(np.dot(var2.T, var2))
+    coeffs = np.dot(z, np.dot(var2.T, resp))
     return
 
 
 def predict(pts):
 
-    global model
-    #pts = np.transpose(pts)
-    if pts.shape[0] == 1:
-        pad_vals = np.zeros_like(pts)
-        pts = np.append(pts, pad_vals, axis=0)
-    pts2 = sm.add_constant(pts)
-    return model.predict(pts2)
+    global coeffs
+    return coeffs[0]+pts.dot(coeffs[1:])
 
 
 def gradient(pts):
 
-    global model
-    grad = model.params
-    return np.array([grad])
+    global coeffs
+    grad = coeffs[1:]
+    return grad.T
 
 
 # Simple test driver
