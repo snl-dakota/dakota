@@ -163,7 +163,18 @@ def test_lib():
     print("\n+++ Done LibEnv.\n")
 
     # Conditionally test values written to the h5 file if h5py is available
-    test_dakota_has_hdf5_and_h5py = True
+    # JAS: HDF5 doesn't play well with the environment module all the time because
+    # Dakota holds the hdf5 file open until the environment is destructed. This doesn't
+    # automatically happen, even if the environment is deleted with del because Python
+    # doesn't necessarily control the memory. This can be ascertained using Python's
+    # gc module, which provides details about garbage collection. 
+    # Some possible fixes:
+    # - modify the pybind11 code for the module so that Python receives ownership of
+    #   the memory
+    # - Expose a function in C++ that deletes the pointer
+    # - Make closing the HDF5 file the responsibility of the top-level iterator instead
+    #   relying on destruction to make it happen
+    test_dakota_has_hdf5_and_h5py = False
     try:
         import h5py
         print("Module h5py imported.\n")
