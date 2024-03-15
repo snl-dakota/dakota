@@ -1122,7 +1122,7 @@ class BatchSplitter:
     def __init__(self, parameters_file=None):
         self._parameters_file = sys.argv[1] if parameters_file is None else parameters_file
         self._format = self._detect_format()
-        self._ending_line_numbers = self._compute_ending_line_numbers()
+        self._ending_line_numbers, self._batch_id, self._eval_nums = self._parse_parameters_file()
 
     def _detect_format(self):
         """Detect format of parameters file
@@ -1141,13 +1141,14 @@ class BatchSplitter:
         else:
             raise ParamsFormatError("Unrecognized parameters file format.")
 
-    def _compute_ending_line_numbers(self) ->List[int]:
+    def _parse_parameters_file(self) ->Tuple[List[int], str, List[int]]:
         """Return a list of ending line numbers for each parameter set
         
         Line numbers begin at 1, and ending line numbers are for the first line
         after the parameter set.
         """
         line_numbers = []
+        eval_ids = []
         with open(self._parameters_file, "r") as f:
             # Advance past the first line so that the 0th batch is recorded
             # when the 1st evaluation is reached
@@ -1155,8 +1156,16 @@ class BatchSplitter:
             for i, line in enumerate(f, start=2):
                 if _pRE[self._format]["num_variables"].match(line) is not None:
                     line_numbers.append(i)
+                eval_id_m = _pRE[self._format]["eval_id"].match(line)
+                if eval_id_m is not None:
+                   eval_ids.append(eval_id_m.group("value"))
             line_numbers.append(i+1)
-        return line_numbers
+        try:
+            batch_id = eval_ids[0].split(":")[-2]
+        except IndexError:
+            raise BatchSettingError("Parameters file does not appear to be a batch file.")
+        eval_nums = [int(eval_id.split(":")[-1]) for eval_id in eval_ids]
+        return line_numbers, batch_id, eval_nums
     
     def __getitem__(self, index: int) -> List[str]:
         """Return list of lines for parameter set with index idx
@@ -1168,14 +1177,22 @@ class BatchSplitter:
         for i in range(start_line_num, self._ending_line_numbers[index]):
             lines.append(linecache.getline(self._parameters_file, i))
         return lines
+
+    @property
+    def batch_id(self):
+        return self._batch_id
+
+    @property
+    def eval_nums(self):
+        return self._eval_nums
     
     def __len__(self):
         """Return size of batch"""
         return len(self._ending_line_numbers)
     
-    def __iter__(self):
-        for p in range(len(self)):
-            yield self[p]
+    def __iter__(self) -> None:
+        for i in range(len(self)):
+            yield self[i]
 
     @property
     def parameters_file(self) -> str:
