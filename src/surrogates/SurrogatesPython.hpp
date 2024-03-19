@@ -148,8 +148,8 @@ class Python : public Surrogate {
   /// true if python callback module is valid
   bool pyModuleActive;
 
-  /// module handle for callbacks
-  py::object pyModule;
+  /// python Surrogate class
+  py::object pySurrogate;
 
 
   // -------------------------------------------------

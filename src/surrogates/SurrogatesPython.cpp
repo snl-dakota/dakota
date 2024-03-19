@@ -50,7 +50,8 @@ void Python::initialize_python()
   }
   if (!pyModuleActive) {
     try {
-      pyModule = py::module_::import(moduleFilename.c_str());
+      py::object pyModule = py::module_::import(moduleFilename.c_str());
+      pySurrogate = pyModule.attr("Surrogate")(); // hard-coded python class name
     }
     catch(py::error_already_set &e) {
       if (e.matches(PyExc_ModuleNotFoundError)) {
@@ -68,7 +69,7 @@ void Python::initialize_python()
   bool is_module_valid = true;
   for( auto const & req_at : req_attrs ) {
     try {
-      py::function py_fn = pyModule.attr(req_at.c_str());
+      py::object py_fn = pySurrogate.attr(req_at.c_str());
     }
     catch(py::error_already_set &e) {
       if (e.matches(PyExc_AttributeError)) {
@@ -103,7 +104,7 @@ void Python::build(const MatrixXd& samples,
   }
   // Hard-coded method for now; could expose to user - RWH
   const std::string fn_name("construct");
-  py::function py_surr_builder = pyModule.attr(fn_name.c_str());
+  py::object py_surr_builder = pySurrogate.attr(fn_name.c_str());
   py_surr_builder(samples, response);
 }
 
@@ -119,7 +120,7 @@ VectorXd Python::value(const MatrixXd& eval_points,
 
   // Hard-coded method for now; could expose to user - RWH
   const std::string fn_name("predict");
-  py::function py_surr_eval = pyModule.attr(fn_name.c_str());
+  py::object py_surr_eval = pySurrogate.attr(fn_name.c_str());
 
   return py_surr_eval(eval_points).cast<VectorXd>();
 }
@@ -138,9 +139,9 @@ MatrixXd Python::gradient(const MatrixXd& eval_points,
   // We could add a check for this method (attribute) above in the
   // req_attrs if we knew it was needed at the time of our construction.
   const std::string fn_name("gradient");
-  py::function py_surr_grad;
+  py::object py_surr_grad;
   try {
-    py_surr_grad = pyModule.attr(fn_name.c_str());
+    py_surr_grad = pySurrogate.attr(fn_name.c_str());
   }
   catch(py::error_already_set &e) {
     if (e.matches(PyExc_AttributeError)) {
