@@ -174,24 +174,26 @@ def test_lib():
     # - Expose a function in C++ that deletes the pointer
     # - Make closing the HDF5 file the responsibility of the top-level iterator instead
     #   relying on destruction to make it happen
-    test_dakota_has_hdf5_and_h5py = False
-    try:
-        import h5py
-        print("Module h5py imported.\n")
-    except ImportError:
-        print("Module h5py not found. Skipping check of hdf5 file values.\n")
-        test_dakota_has_hdf5_and_h5py = False
 
-    test_dakota_has_hdf5_and_h5py &= os.path.exists("test.dakota.h5")
+    # test_dakota_has_hdf5_and_h5py = True 
 
-    if test_dakota_has_hdf5_and_h5py: 
-        with h5py.File("test.dakota.h5", "r") as h:
-            hresps = h["/methods/NO_METHOD_ID/results/execution:1/best_objective_functions"]
-            hvars =  h["/methods/NO_METHOD_ID/results/execution:1/best_parameters/continuous"]
-            assert(hresps[0] < 1.e-20)
-            assert(abs((hvars[0] - target)/target) < max_tol)
-            assert(abs((hvars[1] - target)/target) < max_tol)
-            assert(abs((hvars[2] - target)/target) < max_tol)
+    # try:
+    #     import h5py
+    #     print("Module h5py imported.\n")
+    # except ImportError:
+    #     print("Module h5py not found. Skipping check of hdf5 file values.\n")
+    #     test_dakota_has_hdf5_and_h5py = False
+
+    # test_dakota_has_hdf5_and_h5py &= os.path.exists("test.dakota.h5")
+
+    # if test_dakota_has_hdf5_and_h5py: 
+    #     with h5py.File("test.dakota.h5", "r") as h:
+    #         hresps = h["/methods/NO_METHOD_ID/results/execution:1/best_objective_functions"]
+    #         hvars =  h["/methods/NO_METHOD_ID/results/execution:1/best_parameters/continuous"]
+    #         assert(hresps[0] < 1.e-20)
+    #         assert(abs((hvars[0] - target)/target) < max_tol)
+    #         assert(abs((hvars[1] - target)/target) < max_tol)
+    #         assert(abs((hvars[2] - target)/target) < max_tol)
 
 if __name__ == "__main__":
 
