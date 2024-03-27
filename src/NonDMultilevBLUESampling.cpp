@@ -246,7 +246,7 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
 
   // retrieve cost estimates across soln levels for a particular model form
   IntRealMatrixArrayMap sum_G;          IntRealSymMatrix2DArrayMap sum_GG;
-  initialize_blue_sums(sum_G, sum_GG);  initialize_blue_counts(NGroupActual);
+  initialize_group_sums(sum_G, sum_GG); initialize_group_counts(NGroupActual);
   SizetArray delta_N_G = pilotSamples; // sized by load_pilot_samples()
   NGroupAlloc.assign(numGroups, 0);
 
@@ -289,8 +289,8 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
   // -----------------------------------
   // Compute "online" sample increments:
   // -----------------------------------
-  IntRealMatrixArrayMap sum_G; IntRealSymMatrix2DArrayMap sum_GG;
-  initialize_blue_sums(sum_G, sum_GG); initialize_blue_counts(NGroupActual);
+  IntRealMatrixArrayMap sum_G;          IntRealSymMatrix2DArrayMap sum_GG;
+  initialize_group_sums(sum_G, sum_GG); initialize_group_counts(NGroupActual);
   SizetArray delta_N_G;  NGroupAlloc.assign(numGroups, 0);
 
   // compute the LF/HF evaluation ratios from shared samples and compute
@@ -333,7 +333,7 @@ void NonDMultilevBLUESampling::ml_blue_pilot_projection()
     Sizet2DArray N_pilot;
     evaluate_pilot(sum_G, sum_GG, N_pilot, false);
     // initialize online counts
-    initialize_blue_counts(NGroupActual);  NGroupAlloc.assign(numGroups, 0);
+    initialize_group_counts(NGroupActual);  NGroupAlloc.assign(numGroups, 0);
   }
   else { // ONLINE_PILOT_PROJECTION
     evaluate_pilot(sum_G, sum_GG, NGroupActual, true); // initialize+accumulate
@@ -459,8 +459,8 @@ void NonDMultilevBLUESampling::
 evaluate_pilot(RealMatrixArray& sum_G_pilot, RealSymMatrix2DArray& sum_GG_pilot,
 	       Sizet2DArray& N_shared_pilot, bool incr_cost)
 {
-  initialize_blue_sums(sum_G_pilot, sum_GG_pilot);
-  initialize_blue_counts(N_shared_pilot);//, N_GG_pilot);
+  initialize_group_sums(sum_G_pilot, sum_GG_pilot);
+  initialize_group_counts(N_shared_pilot);//, N_GG_pilot);
 
   // ----------------------------------------
   // Compute var L,H & covar LL,LH from pilot

@@ -2175,6 +2175,79 @@ response_evaluator(const Variables& vars, const ActiveSet& set,
 }
 
 
+/** Multi-moment map-based version used for approximation increments */
+void NonDNonHierarchSampling::
+accumulate_group_sums(IntRealMatrixArrayMap& sum_G, Sizet2DArray& num_G,
+		     const IntResponse2DMap& batch_resp_map)
+{
+  IntResponse2DMap::const_iterator b_it;
+  size_t g, num_groups = modelGroups.size();
+  for (g=0; g<num_groups; ++g) {
+    b_it = batch_resp_map.find(g); // index g corresponds to group_id key
+    if (b_it != batch_resp_map.end()) // else no new evals for this group
+      accumulate_group_sums(sum_G, num_G, g, b_it->second);
+  }
+}
+
+
+/** Multi-moment map-based version for approximation increments */
+void NonDNonHierarchSampling::
+accumulate_group_sums(IntRealMatrixArrayMap& sum_G, Sizet2DArray& num_G,
+		     size_t group, const IntResponseMap& resp_map)
+{
+  using std::isfinite;  bool all_finite;
+  IntRespMCIter r_cit;  IntRMAMIter g_it;
+  Real g_fn, g_prod;  int g_ord, active_ord, ord;
+
+  SizetArray&        num_G_g =       num_G[group];
+  const UShortArray& group_g = modelGroups[group];
+  size_t qoi, m, g_index, num_models = group_g.size();
+
+  for (r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit) {
+    const Response&   resp    = r_cit->second;
+    const RealVector& fn_vals = resp.function_values();
+    const ShortArray& asv     = resp.active_set_request_vector();
+
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+
+      // see fault tol notes in NonDNonHierarchSampling::compute_correlation():
+      // population mean and variance should be computed from same sample set
+      all_finite = true;
+      for (m=0; m<num_models; ++m) {
+	g_index = group_g[m] * numFunctions + qoi;
+	if ( (asv[g_index] & 1) == 0 ) {
+	  Cerr << "Error: missing data for group " << group+1 << " model "
+	       << group_g[m]+1 << '.' << std::endl;
+	  abort_handler(METHOD_ERROR);
+	}
+	if ( !isfinite(fn_vals[g_index]) )
+	  all_finite = false; //break;
+      }
+      if (!all_finite) continue;
+
+      ++num_G_g[qoi]; // shared due to fault tol logic
+      for (m=0; m<num_models; ++m) {
+	g_index = group_g[m] * numFunctions + qoi;
+	g_fn = fn_vals[g_index];
+
+	g_it   = sum_G.begin();
+	g_ord  = (g_it == sum_G.end()) ? 0 :  g_it->first;
+	g_prod = g_fn;  active_ord = 1;
+	while (g_ord) {
+
+	  if (g_ord == active_ord) { // support general key sequence
+	    g_it->second[group](qoi,m) += g_prod;
+	    ++g_it;  g_ord = (g_it == sum_G.end()) ? 0 : g_it->first;
+	  }
+
+	  g_prod *= g_fn;  ++active_ord;
+	}
+      }
+    }
+  }
+}
+
+
 void NonDNonHierarchSampling::
 print_estimator_performance(std::ostream& s, const MFSolutionData& soln)
 {

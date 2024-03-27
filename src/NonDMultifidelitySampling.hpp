@@ -88,14 +88,13 @@ protected:
   void approx_increments(IntRealMatrixMap& sum_L_baseline,
 			 IntRealVectorMap& sum_H,  IntRealMatrixMap& sum_LL,
 			 IntRealMatrixMap& sum_LH, const SizetArray& N_H_actual,
-			 size_t N_H_alloc, const SizetArray& approx_sequence,
-			 const MFSolutionData& soln);
-  bool mfmc_approx_increment(const MFSolutionData& soln,
-			     const Sizet2DArray& N_L_actual_refined,
-			     SizetArray& N_L_alloc_refined, size_t iter,
-			     const SizetArray& approx_sequence,
-			     size_t start, size_t end);
+			 size_t N_H_alloc, const MFSolutionData& soln);
+  size_t mfmc_approx_increment(const RealVector& soln_vars,
+			       const Sizet2DArray& N_L_actual_refined,
+			       SizetArray& N_L_alloc_refined,
+			       const UShortArray& model_group);
 
+  void update_model_groups();
   void update_model_group_costs();
 
   void mfmc_estimator_variance(const RealMatrix& rho2_LH,
@@ -139,6 +138,7 @@ private:
 			  IntRealMatrixMap& sum_L_refined,
 			  Sizet2DArray& num_L_shared,
 			  Sizet2DArray& num_L_refined,
+			  const IntResponseMap& resp_map,
 			  const SizetArray& approx_sequence,
 			  size_t sequence_start, size_t sequence_end);
 

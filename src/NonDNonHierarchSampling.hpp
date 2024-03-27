@@ -393,6 +393,15 @@ protected:
 		       RealVector& sum_HH);
   void initialize_counts(Sizet2DArray& num_L_baseline, SizetArray& num_H,
 			 Sizet2DArray& num_LH);
+
+  void initialize_group_sums(RealMatrixArray& sum_G,
+			     RealSymMatrix2DArray& sum_GG);
+  void initialize_group_sums(RealMatrixArray& sum_G);
+  void initialize_group_sums(IntRealMatrixArrayMap& sum_G,
+			     IntRealSymMatrix2DArrayMap& sum_GG);
+  void initialize_group_sums(IntRealMatrixArrayMap& sum_G);
+  void initialize_group_counts(Sizet2DArray& num_G);
+
   void finalize_counts(const Sizet2DArray& N_L_actual,
 		       const SizetArray&   N_L_alloc);
 
@@ -436,12 +445,19 @@ protected:
   void increment_sample_range(SizetArray& N_L, size_t incr,
 			      const SizetArray& approx_sequence,
 			      size_t start, size_t end);
-  void increment_sample_range(SizetArray& N_L, size_t incr, unsigned short root,
-			      const UShortSet& reverse_dag);
+  void increment_sample_range(SizetArray& N_L, size_t incr,
+			      const UShortArray& approx_set);
   void increment_sample_range(SizetArray& N_L, size_t incr,
 			      const SizetArray& approx_sequence,
 			      size_t start, size_t end,
 			      const UShortArray& approx_set);
+  void increment_sample_range(SizetArray& N_L, size_t incr, unsigned short root,
+			      const UShortSet& reverse_dag);
+
+  void accumulate_group_sums(IntRealMatrixArrayMap& sum_G, Sizet2DArray& num_G,
+			     const IntResponse2DMap& batch_resp_map);
+  void accumulate_group_sums(IntRealMatrixArrayMap& sum_G, Sizet2DArray& num_G,
+			     size_t group, const IntResponseMap& resp_map);
 
   void ensemble_active_set(const UShortArray& model_set);
 
@@ -498,6 +514,17 @@ protected:
 			    RealMatrix& lin_eq_coeffs);
   void run_minimizers(MFSolutionData& soln);
 
+  //bool mfmc_model_grouping(const UShortArray& model_group) const;
+  //bool cvmc_model_grouping(const UShortArray& model_group) const;
+  void mfmc_model_group(size_t last_index, UShortArray& model_group) const;
+  void mfmc_model_group(size_t last_index, const SizetArray& approx_sequence,
+			UShortArray& model_group) const;
+  void singleton_model_group(size_t index, UShortArray& model_group) const;
+  void cvmc_model_group(size_t index, UShortArray& model_group) const;
+  void mlmc_model_group(size_t index, UShortArray& model_group) const;
+
+  void print_group(std::ostream& s, size_t g) const;
+
   Real allocate_budget(const RealVector& avg_eval_ratios,
 		       const RealVector& cost, Real budget);
   Real allocate_budget(const RealVector& avg_eval_ratios,
@@ -541,6 +568,10 @@ protected:
 
   /// define approx_sequence in increasing metric order
   bool ordered_approx_sequence(const RealVector& metric,
+			       SizetArray& approx_sequence,
+			       bool descending_keys = false);
+  /// define approx_sequence in increasing metric order
+  bool ordered_approx_sequence(const RealMatrix& metric,
 			       SizetArray& approx_sequence,
 			       bool descending_keys = false);
   /// determine whether metric is in increasing order by columns for all rows
@@ -705,6 +736,67 @@ initialize_counts(Sizet2DArray& num_L_baseline, SizetArray& num_H,
     num_L_baseline[approx].assign(numFunctions,0);
     num_LH[approx].assign(numFunctions,0);
   }
+}
+
+
+inline void NonDNonHierarchSampling::
+initialize_group_sums(RealMatrixArray& sum_G, RealSymMatrix2DArray& sum_GG)
+{
+  // order indexing such that per-group structure is consistent with
+  // other estimators
+  size_t g, num_groups = modelGroups.size(), num_models;
+  sum_G.resize(num_groups);  sum_GG.resize(num_groups);
+  for (g=0; g<num_groups; ++g) {
+    num_models = modelGroups[g].size();
+    sum_G[g].shape(numFunctions, num_models);
+    RealSymMatrixArray& sum_GG_g = sum_GG[g];
+    sum_GG_g.resize(numFunctions);
+    for (size_t qoi=0; qoi<numFunctions; ++qoi)
+      sum_GG_g[qoi].shape(num_models);
+  }
+}
+
+
+inline void NonDNonHierarchSampling::
+initialize_group_sums(RealMatrixArray& sum_G)
+{
+  // order indexing such that per-group structure is consistent with
+  // other estimators
+  size_t g, num_groups = modelGroups.size();
+  sum_G.resize(num_groups);
+  for (g=0; g<num_groups; ++g)
+    sum_G[g].shape(numFunctions, modelGroups[g].size());
+}
+
+
+inline void NonDNonHierarchSampling::
+initialize_group_sums(IntRealMatrixArrayMap& sum_G,
+		     IntRealSymMatrix2DArrayMap& sum_GG)
+{
+  RealMatrixArray mat1;  RealSymMatrix2DArray mat2;
+  initialize_group_sums(mat1, mat2);
+  for (int i=1; i<=4; ++i)
+    { sum_G[i] = mat1; sum_GG[i] = mat2; } // copies
+}
+
+
+inline void NonDNonHierarchSampling::
+initialize_group_sums(IntRealMatrixArrayMap& sum_G)
+{
+  RealMatrixArray mat1;
+  initialize_group_sums(mat1);
+  for (int i=1; i<=4; ++i)
+    sum_G[i] = mat1; // copies
+}
+
+
+inline void NonDNonHierarchSampling::
+initialize_group_counts(Sizet2DArray& num_G)
+{
+  size_t g, num_groups = modelGroups.size(), num_models;
+  num_G.resize(num_groups);
+  for (g=0; g<num_groups; ++g)
+    num_G[g].assign(numFunctions, 0);
 }
 
 
@@ -900,7 +992,8 @@ increment_equivalent_cost(const SizetArray& delta_N_g,
   size_t g, group_len = group_cost.length();
   Real sum = 0.;
   for (g=0; g<group_len; ++g)
-    sum += (Real)delta_N_g[g] * group_cost[g];
+    if (delta_N_g[g])
+      sum += (Real)delta_N_g[g] * group_cost[g];
   equiv_hf_evals += sum / hf_cost;
 }
 
@@ -916,6 +1009,17 @@ increment_sample_range(SizetArray& N_L, size_t incr,
     approx = (ordered) ? i : approx_sequence[i];
     N_L[approx] += incr;
   }
+}
+
+
+inline void NonDNonHierarchSampling::
+increment_sample_range(SizetArray& N_L, size_t incr,
+		       const UShortArray& approx_set)
+{
+  if (!incr) return;
+  size_t i, num_approx = approx_set.size();
+  for (i=0; i<num_approx; ++i)
+    N_L[approx_set[i]] += incr;
 }
 
 
@@ -956,6 +1060,97 @@ ensemble_active_set(const UShortArray& model_set)
     start = model_set[m] * numFunctions;
     activeSet.request_values(1, start, start+numFunctions);
   }
+}
+
+
+/*
+inline bool NonDNonHierarchSampling::
+mfmc_model_grouping(const UShortArray& model_group) const
+{
+  // For case where all models are active in MFMC (no model selection a priori)
+  size_t i, num_models = model_group.size();
+  for (i=0; i<num_models; ++i)
+    if (model_group[i] != i) // "pyramid" sequence from 0 to last in set
+      return false;
+  return true;
+}
+
+
+inline bool NonDNonHierarchSampling::
+cvmc_model_grouping(const UShortArray& model_group) const
+{
+  // shared sample (all models) and each approx increment (group size 1)
+  return ( ( model_group.size() == 1 && model_group[0] != numApprox ) ||
+	   ( model_group.size() == numApprox &&
+	     mfmc_model_grouping(model_group) ) ); // can be inferred from size
+}
+*/
+
+
+inline void NonDNonHierarchSampling::
+mfmc_model_group(size_t last_index, UShortArray& model_group) const
+{
+  // MFMC or ACV-MF: last index is the all-models group
+  size_t m, num_models = last_index+1;
+  model_group.resize(num_models);
+  for (m=0; m<num_models; ++m)
+    model_group[m] = m; // "pyramid" sequence from 0 to last in set
+}
+
+
+inline void NonDNonHierarchSampling::
+mfmc_model_group(size_t last_index, const SizetArray& approx_sequence,
+		 UShortArray& model_group) const
+{
+  if (approx_sequence.empty())
+    { mfmc_model_group(last_index, model_group); return; }
+
+  // MFMC or ACV-MF: last index is the all-models group
+  size_t m, num_models = last_index+1;
+  model_group.resize(num_models);
+  for (m=0; m<num_models; ++m)
+    model_group[m] = approx_sequence[m]; // low to high by sequence
+  // Note: model_group is not a std::set.  In ML BLUE, the model ordering
+  // within each group is irrelevant and they are ordered by convention for
+  // group uniqueness.  Here, we allow them to be reordered by approx_sequence.
+}
+
+
+inline void NonDNonHierarchSampling::
+singleton_model_group(size_t index, UShortArray& model_group) const
+{ model_group.resize(1); model_group[0] = index; }
+
+
+inline void NonDNonHierarchSampling::
+cvmc_model_group(size_t index, UShortArray& model_group) const
+{
+  if (index < numApprox) singleton_model_group(index, model_group);
+  else                   mfmc_model_group(numApprox,  model_group);
+}
+
+
+inline void NonDNonHierarchSampling::
+mlmc_model_group(size_t index, UShortArray& model_group) const
+{
+  // MLMC or ACV-RD (ACV-IS differs in shared group)
+  if (index == 0)
+    { model_group.resize(1); model_group[0] = index; }
+  else {
+    model_group.resize(2);
+    model_group[0] = index - 1; model_group[1] = index; // ordered low to high
+  }
+}
+
+
+inline void NonDNonHierarchSampling::
+print_group(std::ostream& s, size_t g) const
+{
+  const UShortArray& group_g = modelGroups[g];
+  size_t m, num_models = group_g.size();
+  s << " (models";
+  for (m=0; m<num_models; ++m)
+    s << ' ' << group_g[m];
+  s << ")\n";
 }
 
 
@@ -1219,6 +1414,17 @@ ordered_approx_sequence(const RealVector& metric, SizetArray& approx_sequence,
   }
   if (ordered) approx_sequence.clear();
   return ordered;
+}
+
+
+inline bool NonDNonHierarchSampling::
+ordered_approx_sequence(const RealMatrix& metric, SizetArray& approx_sequence,
+			bool descending_keys)
+{
+  // metric needs to be num QoI x num metrics
+  RealVector avg_metric;
+  average(metric, 0, avg_metric); // index 0: average over rows for each col
+  return ordered_approx_sequence(avg_metric, approx_sequence, descending_keys);
 }
 
 

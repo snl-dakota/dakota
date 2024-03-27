@@ -112,13 +112,14 @@ inline void average(const RealMatrix& mat, size_t avg_index,
 		    RealVector& avg_vec)
 {
   size_t i, j, nr = mat.numRows(), nc = mat.numCols();
-  avg_vec.sizeUninitialized(nc);
   switch (avg_index) {
   case 0: // average over index 0, retaining index 1
+    avg_vec.sizeUninitialized(nc);
     for (i=0; i<nc; ++i)   // average over rows for each col vec
       avg_vec[i] = average(mat[i], nr);
     break;
   case 1:
+    avg_vec.sizeUninitialized(nr);
     for (i=0; i<nr; ++i) { // average over cols for each row vec
       Real& avg_i = avg_vec[i];
       switch (nc) {

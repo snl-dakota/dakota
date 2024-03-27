@@ -39,7 +39,7 @@ NonDMultifidelitySampling(ProblemDescDB& problem_db, Model& model):
 {
   mlmfSubMethod = SUBMETHOD_MFMC; // if needed for numerical solves
 
-  // Run-time dependency on approxSequence
+  // model{Groups,GroupCost} have run-time dependency on approxSequence
   //if (!onlineCost) update_model_group_costs(); 
 
   load_pilot_sample(problem_db.get_sza("method.nond.pilot_samples"),
@@ -143,7 +143,7 @@ void NonDMultifidelitySampling::multifidelity_mc_online_pilot()
   if (finalStatsType == QOI_STATISTICS)
     // N_H_actual is final --> finalize with LF increments + post-processing
     approx_increments(sum_L_baseline, sum_H, sum_LL, sum_LH, N_H_actual,
-		      N_H_alloc, approxSequence, mfmcSolnData);
+		      N_H_alloc, mfmcSolnData);
   else // for consistency with pilot projection
     // N_H is final --> do not compute any deltaNActualHF (from maxIter exit)
     update_projected_lf_samples(mfmcSolnData, N_H_actual, N_H_alloc,
@@ -212,7 +212,7 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
 			  estVarRatios, mfmcSolnData);
   // finalize with LF increments and post-processing
   approx_increments(sum_L_baseline, sum_H, sum_LL, sum_LH, N_H_actual,
-		    N_H_alloc, approxSequence, mfmcSolnData);
+		    N_H_alloc, mfmcSolnData);
 }
 
 
@@ -402,7 +402,6 @@ void NonDMultifidelitySampling::
 approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 		  IntRealMatrixMap& sum_LL, IntRealMatrixMap& sum_LH,
 		  const SizetArray& N_H_actual, size_t N_H_alloc,
-		  const SizetArray& approx_sequence,
 		  const MFSolutionData& soln)
 {
   // ----------------------------------------------------------------
@@ -435,17 +434,50 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
   Sizet2DArray N_L_actual_shared;  inflate(N_H_actual, N_L_actual_shared);
   Sizet2DArray N_L_actual_refined = N_L_actual_shared;
   SizetArray   N_L_alloc_refined;  inflate(N_H_alloc,  N_L_alloc_refined);
-  for (size_t end=numApprox; end>0; --end) {
-    // *** TO DO NON_BLOCKING: 2ND PASS ACCUMULATION AFTER 1ST PASS LAUNCH
-    if (mfmc_approx_increment(soln, N_L_actual_refined, N_L_alloc_refined,
-			      mlmfIter, approx_sequence, 0, end)) {
-      // MFMC samples on [0, approx) --> sum_L_{shared,refined}
-      accumulate_mf_sums(sum_L_shared, sum_L_refined, N_L_actual_shared,
-			 N_L_actual_refined, approx_sequence, 0, end);
-      increment_equivalent_cost(numSamples, sequenceCost, approx_sequence,
-				0, end, equivHFEvals);
-    }
-  }
+  //for (size_t end=numApprox; end>0; --end) {
+  //  if (mfmc_approx_increment(soln, N_L_actual_refined, N_L_alloc_refined,
+  // 			      mlmfIter, approx_sequence, 0, end)) {
+  //    // MFMC samples on [0, approx) --> sum_L_{shared,refined}
+  //    accumulate_mf_sums(sum_L_shared, sum_L_refined, N_L_actual_shared,
+  // 			 N_L_actual_refined,allResponses,approx_sequence,0,end);
+  //    increment_equivalent_cost(numSamples, sequenceCost, approx_sequence,
+  // 				0, end, equivHFEvals);
+  //  }
+  //}
+
+  // There are a couple options to rework the loop above for batch evaluation:
+  // > Minimal: rewrite accumulate_mf_sums() only to process batchResponsesMap
+  //   (Note: a general ASV-based batch accumulation is insufficient for the
+  //   MFMC shared,refined CV pairings)
+  // > Intermediate (SELECTED): rewrite accumulation code to process groups and
+  //   then overlay for CV pairs=shared,refined.  Seems preferable to ad hoc
+  //   shared,refined logic in accumulate_mf_sums() in that it explicitly maps
+  //   from ML BLUE group logic to MFMC paired logic (from "horizontal" group
+  //   allocation to "vertical" model allocation in JCP:ACV plots)
+  // > Maximal: refactor sums/counters/etc. to be group based.  Note that MFMC
+  //   is not natively group-based, but rather based on r_i oversample + reuse
+  //   --> seems overkill at this time.
+
+  // increment_sample_range() updates the count reference prior to delta_N_G,
+  // such that this in a rolling increment, ordered from base to top of pyramid
+  // --> consistent w/ group definitions where previous increments correspond
+  // to different groupings.
+  SizetArray delta_N_G(numGroups);  delta_N_G[numApprox] = 0;
+  for (int g=numApprox-1; g>=0; --g) // base to top, excluding all-model group
+    delta_N_G[g] = mfmc_approx_increment(soln.solution_variables(),
+					 N_L_actual_refined, N_L_alloc_refined,
+					 modelGroups[g]);
+  group_increment(delta_N_G, mlmfIter); // all sample batches in parallel
+  // Note: use of this fn requires modelGroupCost to be kept in sync for all
+  // cases, not just numerical solves
+  increment_equivalent_cost(delta_N_G, modelGroupCost, sequenceCost[numApprox],
+			    equivHFEvals);
+  IntRealMatrixArrayMap sum_G;  initialize_group_sums(sum_G);
+  Sizet2DArray     N_G_actual;  initialize_group_counts(N_G_actual);
+  accumulate_group_sums(sum_G, N_G_actual, batchResponsesMap);
+  // *** Overlay: from "horizontal" allocation to "vertical" in ACV plots
+  //roll_up_group_sums(sum_G, N_G_actual, sum_L_shared, sum_L_refined,
+  //		     N_L_actual_shared, N_L_actual_refined);
 
   // Compute/apply control variate parameter to estimate uncentered raw moments
   RealMatrix H_raw_mom(4, numFunctions);
@@ -459,20 +491,17 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 }
 
 
-bool NonDMultifidelitySampling::
-mfmc_approx_increment(const MFSolutionData& soln,
+size_t NonDMultifidelitySampling::
+mfmc_approx_increment(const RealVector& soln_vars,
 		      const Sizet2DArray& N_L_actual_refined,
-		      SizetArray& N_L_alloc_refined, size_t iter,
-		      const SizetArray& approx_sequence,
-		      size_t start, size_t end)
+		      SizetArray& N_L_alloc_refined,
+		      const UShortArray& model_group)
 {
-  // Update LF samples based on evaluation ratio
-  //   r = N_L/N_H -> N_L = r * N_H -> delta = N_L - N_H = (r-1) * N_H
   // Notes:
   // > the sample increment for the approx range is determined by approx[end-1]
   //   (helpful to refer to Figure 2(b) in ACV paper, noting index differences)
-  // > N_L is updated prior to each call to approx_increment (*** if BLOCKING),
-  //   allowing use of one_sided_delta() with latest counts
+  // > N_L is updated prior to each call to approx_increment allowing use of
+  //   one_sided_delta() with latest counts
 
   // When to apply averaging requires some care.  To properly enforce scalar
   // budget for vector QoI, need to either scalarize to average targets from
@@ -489,37 +518,32 @@ mfmc_approx_increment(const MFSolutionData& soln,
   //   it leaves the door open for per-QoI optimized sample profiles.
   // > Both MFMC and ACV defer rounding until the end (numSamples estimation).
 
-  bool ordered = approx_sequence.empty();
-  size_t qoi, approx = (ordered) ? end-1 : approx_sequence[end-1];
-  Real lf_target = soln.solution_variables()[approx];
+  size_t num_samp, qoi, approx = model_group.back();
+  // No relaxation for approx increments
+  Real lf_target = soln_vars[approx];
   // These approaches overshoot when combined with vector update_hf_targets():
   //   lf_targets[qoi] = eval_ratios(qoi, approx) * avg_hf_target;
   //   lf_target = avg_eval_ratios[approx] * avg_hf_target;
-  // No relaxation for approx increments
   if (backfillFailures) {
     const SizetArray& lf_curr = N_L_actual_refined[approx];
-    numSamples = one_sided_delta(lf_curr, lf_target); // average
+    num_samp = one_sided_delta(lf_curr, lf_target); // average
     if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Approx samples (" << numSamples << ") computed from average "
+      Cout << "Approx samples (" << num_samp << ") computed from average "
 	   << "delta between target " << lf_target << " and current counts:\n"
 	   << lf_curr << std::endl;
     size_t N_alloc = one_sided_delta(N_L_alloc_refined[approx], lf_target);
-    increment_sample_range(N_L_alloc_refined, N_alloc, approx_sequence,
-			   start, end);
+    increment_sample_range(N_L_alloc_refined, N_alloc, model_group);
   }
   else {
     size_t lf_curr = N_L_alloc_refined[approx];
-    numSamples = one_sided_delta(lf_curr, lf_target);
+    num_samp = one_sided_delta(lf_curr, lf_target);
     if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Approx samples (" << numSamples << ") computed from average "
+      Cout << "Approx samples (" << num_samp << ") computed from average "
 	   << "delta between target " << lf_target
 	   << " and current allocation = " << lf_curr << std::endl;
-    increment_sample_range(N_L_alloc_refined, numSamples, approx_sequence,
-			   start, end);
+    increment_sample_range(N_L_alloc_refined, num_samp, model_group);
   }
-  // the approximation sequence can be managed within one set of jobs using
-  // a composite ASV with EnsembleSurrModel
-  return approx_increment(iter, approx_sequence, start, end);
+  return num_samp;
 }
 
 
@@ -986,7 +1010,7 @@ accumulate_mf_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
 void NonDMultifidelitySampling::
 accumulate_mf_sums(IntRealMatrixMap& sum_L_shared,
 		   IntRealMatrixMap& sum_L_refined, Sizet2DArray& num_L_shared,
-		   Sizet2DArray& num_L_refined,
+		   Sizet2DArray& num_L_refined, const IntResponseMap& resp_map,
 		   const SizetArray& approx_sequence,
 		   size_t sequence_start, size_t sequence_end)
 {
@@ -1000,7 +1024,7 @@ accumulate_mf_sums(IntRealMatrixMap& sum_L_shared,
   bool ordered = approx_sequence.empty();
   IntRespMCIter r_it; IntRMMIter ls_it, lr_it;
 
-  for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+  for (r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it) {
     const Response&   resp    = r_it->second;
     const RealVector& fn_vals = resp.function_values();
     //const ShortArray& asv   = resp.active_set_request_vector();
@@ -1148,6 +1172,8 @@ mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
       N_MODEL_LINEAR_OBJECTIVE;
     break;
   case NUMERICAL_FALLBACK: // default
+    // Note: ordering in rho reqd per QoI to avoid exceptions in sqrt(rho2_diff)
+    //       ordering in avg_eval_ratios used for pyramid sampling downstream
     ordered_rho = ordered_approx_sequence(rho2_LH); // all QoI for all Approx
     if (ordered_rho)
       optSubProblemForm = ANALYTIC_SOLUTION;
@@ -1160,6 +1186,8 @@ mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
     }
     break;
   case REORDERED_FALLBACK: // not currently in XML spec, but could be added
+    // Note: ordering in rho reqd per QoI to avoid exceptions in sqrt(rho2_diff)
+    //       ordering in avg_eval_ratios used for pyramid sampling downstream
     ordered_rho = ordered_approx_sequence(rho2_LH); // all QoI for all Approx
     if (ordered_rho)
       optSubProblemForm = ANALYTIC_SOLUTION;
@@ -1182,6 +1210,7 @@ mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
     UShortArray model_set(numApprox);
     for (size_t i=0; i<numApprox; ++i) model_set[i] = i; // full set
     mfmc_analytic_solution(model_set, rho2_LH, cost, avg_eval_ratios);
+    update_model_groups();  update_model_group_costs();
     break;
   }
   case REORDERED_ANALYTIC_SOLUTION: { // inactive (see above)
@@ -1189,6 +1218,7 @@ mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
     for (size_t i=0; i<numApprox; ++i) model_set[i] = i; // full set
     mfmc_reordered_analytic_solution(model_set, rho2_LH, cost, approx_sequence,
 				     avg_eval_ratios, true); // monotonic r
+    update_model_groups();  update_model_group_costs();
     break;
   }
   default: // any of several numerical optimization formulations
@@ -1267,15 +1297,21 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
     // push updates to MFSolutionData
     soln.anchored_solution_ratios(avg_eval_ratios, avg_hf_target);
   }
-  else if (no_solve) // subsequent iterations
-    { numSamples = 0;  return; } // leave soln at previous values
+  else { // subsequent iterations
+    if (no_solve)
+      { numSamples = 0;  return; } // leave soln at previous values
+
+    // Update approx_sequence using the latest rho2_LH, mirroring the same logic
+    if  (ordered_approx_sequence(rho2_LH)) approx_sequence.clear();
+    else ordered_approx_sequence(rho2_LH,  approx_sequence);
+  }
 
   // define covLH and covLL from rho2LH, var_L, varH
   //correlation_sq_to_covariance(rho2_LH, var_L, varH, covLH);
   //matrix_to_diagonal_array(var_L, covLL);
 
   // modelGroupCost used for unified treatment in finite_solution_bounds()
-  update_model_group_costs();
+  update_model_groups();  update_model_group_costs();
 
   // Base class implementation of numerical solve (shared with ACV,GenACV):
   ensemble_numerical_solution(soln);
@@ -1285,20 +1321,31 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
 }
 
 
+void NonDMultifidelitySampling::update_model_groups()
+{
+  // Note: model selection case handled by NonDDGenACV, so here numGroups
+  // is the total number of model instances
+  if (modelGroups.size() != numGroups)
+    modelGroups.resize(numGroups);
+  for (size_t g=0; g<numGroups; ++g)
+    mfmc_model_group(g, approxSequence, modelGroups[g]);
+}
+
+
 void NonDMultifidelitySampling::update_model_group_costs()
 {
   // modelGroupCost used in finite_solution_bounds() for
   // mfmc_numerical_solution().  MFMC numerical preserves approxSequence
   // in augment_linear_ineq_constraints(), so we use it here as well.
 
-  size_t num_groups = numApprox+1;
-  if (modelGroupCost.length() != num_groups)
-    modelGroupCost.sizeUninitialized(num_groups);
+  // Note: model selection case handled by NonDDGenACV, so here numGroups
+  // is the total number of model instances
+  if (modelGroups.size() != numGroups)
+    update_model_groups();
+  if (modelGroupCost.length() != numGroups)
+    modelGroupCost.sizeUninitialized(numGroups);
 
-  // shared samples
-  modelGroupCost[numApprox] = sum(sequenceCost); // irrespective of ordering
-
-  // approx samples:  Notes:
+  // Notes:
   // > Unlike ACV (refer to NonDACVSampling::update_model_group_costs()), MFMC
   //   numerical enforces approx sequence in augment_linear_ineq_constraints().
   //   Therefore, an increment for N_i *does* require corresponding increments
@@ -1308,6 +1355,9 @@ void NonDMultifidelitySampling::update_model_group_costs()
   // > Extreme x_ub is N_shared plus one model at r_i = max within budget,
   //   with all sequence-dependent models at same value.
   // > Indexing is aligned with design vars: low to high with no reordering.
+
+  /* Without modelGroups definition:
+  // approx samples:
   size_t i, j, approx_i, approx_j;
   bool ordered = approxSequence.empty();
   for (i=0; i<numApprox; ++i) {
@@ -1317,6 +1367,19 @@ void NonDMultifidelitySampling::update_model_group_costs()
       approx_j = (ordered) ? j : approxSequence[j];
       group_cost_i += sequenceCost[approx_j];
     }
+  }
+  // shared samples
+  modelGroupCost[numApprox] = sum(sequenceCost); // irrespective of approxSeq
+  */
+
+  // With modelGroups definition:
+  size_t g, m, num_models;
+  for (g=0; g<numGroups; ++g) {
+    const UShortArray& group_g = modelGroups[g];
+    Real& group_cost = modelGroupCost[g];  group_cost = 0.;
+    num_models = group_g.size();
+    for (m=0; m<num_models; ++m)
+      group_cost += sequenceCost[group_g[m]];
   }
 }
 
