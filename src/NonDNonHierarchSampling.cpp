@@ -393,7 +393,7 @@ void NonDNonHierarchSampling::
 group_increment(SizetArray& delta_N_G, size_t iter)
 {
   if (iter == 0) Cout << "\nPerforming pilot sample for model groups.\n";
-  else Cout << "\Group sampling iteration " << iter << ": sample increment =\n"
+  else Cout << "\nGroup sampling iteration " << iter << ": sample increment =\n"
 	    << delta_N_G << '\n';
 
   size_t g, m, num_models, start;
