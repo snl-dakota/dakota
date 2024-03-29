@@ -392,9 +392,9 @@ ensemble_sample_increment(size_t iter, size_t step)
 void NonDNonHierarchSampling::
 group_increment(SizetArray& delta_N_G, size_t iter)
 {
-  if (iter == 0) Cout << "\nPerforming pilot sample for ML BLUE.\n";
-  else Cout << "\nML BLUE sampling iteration " << iter
-	    << ": group sample increment =\n" << delta_N_G << '\n';
+  if (iter == 0) Cout << "\nPerforming pilot sample for model groups.\n";
+  else Cout << "\Group sampling iteration " << iter << ": sample increment =\n"
+	    << delta_N_G << '\n';
 
   size_t g, m, num_models, start;
   for (size_t g=0; g<numGroups; ++g) {

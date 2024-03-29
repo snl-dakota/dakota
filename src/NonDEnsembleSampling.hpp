@@ -92,6 +92,9 @@ protected:
   /// increment 2D samples array with a shared 1D array (additional dim is QoI)
   void increment_samples(Sizet2DArray& N_l, const SizetArray& incr);
 
+  /// increment samples array with a shared scalar
+  void increment_sums(Real* sum_l, const Real* incr, size_t len);
+
   /// compute the variance of the mean estimator (Monte Carlo sample average)
   void compute_mc_estimator_variance(const RealVector& var_l,
 				     const SizetArray& N_l,
@@ -356,7 +359,8 @@ increment_samples(SizetArray& N_samp, const SizetArray& incr)
 {
   size_t q, nq = N_samp.size();
   if (incr.size() != nq) {
-    Cerr << "Error: inconsistent array sizes in NonDEnsembleSampling::"
+    Cerr << "Error: inconsistent array sizes (" << nq << " target, "
+	 << incr.size() << " increment) in NonDEnsembleSampling::"
 	 << "increment_samples()." << std::endl;
     abort_handler(METHOD_ERROR);
   }
@@ -370,12 +374,21 @@ increment_samples(Sizet2DArray& N_samp, const SizetArray& incr)
 {
   size_t l, nl = N_samp.size();
   if (incr.size() != nl) {
-    Cerr << "Error: inconsistent array sizes in NonDEnsembleSampling::"
+    Cerr << "Error: inconsistent array sizes (" << nl << " 2D target, "
+	 << incr.size() << " increment) in NonDEnsembleSampling::"
 	 << "increment_samples()." << std::endl;
     abort_handler(METHOD_ERROR);
   }
   for (l=0; l<nl; ++l)
     increment_samples(N_samp[l], incr[l]);
+}
+
+
+inline void NonDEnsembleSampling::
+increment_sums(Real* sum_l, const Real* incr, size_t len)
+{
+  for (size_t i=0; i<len; ++i)
+    sum_l[i] += incr[i];
 }
 
 

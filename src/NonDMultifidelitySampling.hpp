@@ -90,9 +90,16 @@ protected:
 			 IntRealMatrixMap& sum_LH, const SizetArray& N_H_actual,
 			 size_t N_H_alloc, const MFSolutionData& soln);
   size_t mfmc_approx_increment(const RealVector& soln_vars,
-			       const Sizet2DArray& N_L_actual_refined,
-			       SizetArray& N_L_alloc_refined,
+			       const Sizet2DArray& N_L_actual,
+			       SizetArray& N_L_alloc,
 			       const UShortArray& model_group);
+
+  void overlay_approx_group_sums(const IntRealMatrixArrayMap& sum_G,
+				 const Sizet2DArray& N_G_actual,
+				 IntRealMatrixMap& sum_L_shared,
+				 IntRealMatrixMap& sum_L_refined,
+				 Sizet2DArray& N_L_actual_shared,
+				 Sizet2DArray& N_L_actual_refined);
 
   void update_model_groups();
   void update_model_group_costs();

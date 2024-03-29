@@ -429,11 +429,6 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 
   // Pyramid/nested sampling: at step i, we sample approximation range
   // [0,numApprox-1-i] using the delta relative to the previous step
-  IntRealMatrixMap sum_L_shared  = sum_L_baseline,
-                   sum_L_refined = sum_L_baseline; // copies
-  Sizet2DArray N_L_actual_shared;  inflate(N_H_actual, N_L_actual_shared);
-  Sizet2DArray N_L_actual_refined = N_L_actual_shared;
-  SizetArray   N_L_alloc_refined;  inflate(N_H_alloc,  N_L_alloc_refined);
   //for (size_t end=numApprox; end>0; --end) {
   //  if (mfmc_approx_increment(soln, N_L_actual_refined, N_L_alloc_refined,
   // 			      mlmfIter, approx_sequence, 0, end)) {
@@ -461,8 +456,11 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
   // increment_sample_range() updates the count reference prior to delta_N_G,
   // such that this in a rolling increment, ordered from base to top of pyramid
   // --> consistent w/ group definitions where previous increments correspond
-  // to different groupings.
-  SizetArray delta_N_G(numGroups);  delta_N_G[numApprox] = 0;
+  //     to different groupings.
+  Sizet2DArray N_L_actual_shared, N_L_actual_refined;
+  SizetArray   N_L_alloc_refined, delta_N_G(numGroups);
+  inflate(N_H_actual, N_L_actual_shared); inflate(N_H_alloc, N_L_alloc_refined);
+  delta_N_G[numApprox] = 0;
   for (int g=numApprox-1; g>=0; --g) // base to top, excluding all-model group
     delta_N_G[g] = mfmc_approx_increment(soln.solution_variables(),
 					 N_L_actual_refined, N_L_alloc_refined,
@@ -475,9 +473,10 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
   IntRealMatrixArrayMap sum_G;  initialize_group_sums(sum_G);
   Sizet2DArray     N_G_actual;  initialize_group_counts(N_G_actual);
   accumulate_group_sums(sum_G, N_G_actual, batchResponsesMap);
-  // *** Overlay: from "horizontal" allocation to "vertical" in ACV plots
-  //roll_up_group_sums(sum_G, N_G_actual, sum_L_shared, sum_L_refined,
-  //		     N_L_actual_shared, N_L_actual_refined);
+  // Map from "horizontal" group alloc to "vertical" model alloc (see JCP ACV)
+  IntRealMatrixMap sum_L_shared = sum_L_baseline, sum_L_refined;
+  overlay_approx_group_sums(sum_G, N_G_actual, sum_L_shared, sum_L_refined,
+			    N_L_actual_shared, N_L_actual_refined);
 
   // Compute/apply control variate parameter to estimate uncentered raw moments
   RealMatrix H_raw_mom(4, numFunctions);
@@ -493,8 +492,7 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 
 size_t NonDMultifidelitySampling::
 mfmc_approx_increment(const RealVector& soln_vars,
-		      const Sizet2DArray& N_L_actual_refined,
-		      SizetArray& N_L_alloc_refined,
+		      const Sizet2DArray& N_L_actual, SizetArray& N_L_alloc,
 		      const UShortArray& model_group)
 {
   // Notes:
@@ -525,25 +523,85 @@ mfmc_approx_increment(const RealVector& soln_vars,
   //   lf_targets[qoi] = eval_ratios(qoi, approx) * avg_hf_target;
   //   lf_target = avg_eval_ratios[approx] * avg_hf_target;
   if (backfillFailures) {
-    const SizetArray& lf_curr = N_L_actual_refined[approx];
+    const SizetArray& lf_curr = N_L_actual[approx];
     num_samp = one_sided_delta(lf_curr, lf_target); // average
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "Approx samples (" << num_samp << ") computed from average "
 	   << "delta between target " << lf_target << " and current counts:\n"
 	   << lf_curr << std::endl;
-    size_t N_alloc = one_sided_delta(N_L_alloc_refined[approx], lf_target);
-    increment_sample_range(N_L_alloc_refined, N_alloc, model_group);
+    size_t N_alloc = one_sided_delta(N_L_alloc[approx], lf_target);
+    increment_sample_range(N_L_alloc, N_alloc, model_group);
   }
   else {
-    size_t lf_curr = N_L_alloc_refined[approx];
+    size_t lf_curr = N_L_alloc[approx];
     num_samp = one_sided_delta(lf_curr, lf_target);
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "Approx samples (" << num_samp << ") computed from average "
 	   << "delta between target " << lf_target
 	   << " and current allocation = " << lf_curr << std::endl;
-    increment_sample_range(N_L_alloc_refined, num_samp, model_group);
+    increment_sample_range(N_L_alloc, num_samp, model_group);
   }
   return num_samp;
+}
+
+
+void NonDMultifidelitySampling::
+overlay_approx_group_sums(const IntRealMatrixArrayMap& sum_G,
+			  const Sizet2DArray& N_G_actual,
+			  IntRealMatrixMap& sum_L_shared,
+			  IntRealMatrixMap& sum_L_refined,
+			  Sizet2DArray& N_L_actual_shared,
+			  Sizet2DArray& N_L_actual_refined)
+{
+  // omit the last group (all-models) since (a) there is no HF increment
+  // (delta_N_G[numApprox] is assigned 0 in approx_increments()) and
+  // (b) any HF refinement would be out of range for L accumulations.  
+  size_t q, m, g, num_L_groups = modelGroups.size() - 1, last_m_index;
+  unsigned short approx;
+  IntRealMatrixArrayMap::const_iterator g_cit;
+  IntRealMatrixMap::iterator s_it, r_it;
+  for (g=0; g<num_L_groups; ++g) {
+    const SizetArray& num_G_g = N_G_actual[g];
+    if (zeros(num_G_g)) continue; // all-models group has delta = 0
+
+    const UShortArray& group_g = modelGroups[g];
+    last_m_index = group_g.size() - 1;
+
+    // counters (span all moments):
+    for (m=0; m<last_m_index; ++m)
+      increment_samples(N_L_actual_shared[group_g[m]], num_G_g);
+
+    // accumulators for each moment:
+    for (s_it =sum_L_shared.begin(), g_cit =sum_G.begin();
+	 s_it!=sum_L_shared.end() && g_cit!=sum_G.end(); ++g_cit, ++s_it) {
+      const RealMatrix& sum_G_mg   = g_cit->second[g];
+      RealMatrix&       sum_L_sh_m =  s_it->second;
+      for (m=0; m<last_m_index; ++m)
+	increment_sums(sum_L_sh_m[group_g[m]], sum_G_mg[m], numFunctions);
+    }
+  }
+
+  // avoid redundant accumulations by augmenting refined starting from shared
+  N_L_actual_refined = N_L_actual_shared;
+  sum_L_refined      = sum_L_shared;
+
+  for (g=0; g<num_L_groups; ++g) {
+    const SizetArray& num_G_g = N_G_actual[g];
+    if (zeros(num_G_g)) continue; // all-models group has delta = 0
+
+    const UShortArray& group_g = modelGroups[g];
+    last_m_index = group_g.size() - 1;  approx = group_g[last_m_index];
+    // Note: HF model index is out of range for N_L --> num_G = 0 protects this
+
+    // counters (span all moments):
+    increment_samples(N_L_actual_refined[approx], num_G_g);
+
+    // accumulators for each moment:
+    for (r_it =sum_L_refined.begin(), g_cit =sum_G.begin();
+	 r_it!=sum_L_refined.end() && g_cit!=sum_G.end(); ++g_cit, ++r_it)
+      increment_sums(r_it->second[approx], g_cit->second[g][last_m_index],
+		     numFunctions);
+  }
 }
 
 
