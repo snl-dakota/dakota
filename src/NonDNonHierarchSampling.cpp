@@ -390,20 +390,30 @@ ensemble_sample_increment(size_t iter, size_t step)
 
 
 void NonDNonHierarchSampling::
-group_increment(SizetArray& delta_N_G, size_t iter)
+group_increment(SizetArray& delta_N_G, size_t iter, bool reverse_order)
 {
   if (iter == 0) Cout << "\nPerforming pilot sample for model groups.\n";
   else Cout << "\nGroup sampling iteration " << iter << ": sample increment =\n"
 	    << delta_N_G << '\n';
 
-  size_t g, m, num_models, start;
-  for (size_t g=0; g<numGroups; ++g) {
-    numSamples = delta_N_G[g];
-    if (numSamples) {
-      ensemble_active_set(modelGroups[g]);
-      ensemble_sample_batch(iter, g); // index is group_id; non-blocking
+  // Ordering does not impact evaluation management, but does impact random
+  // number sequencing across calls to get_parameter_sets()
+  if (reverse_order) // high to low ordering (e.g., bottom-up pyramid)
+    for (int g=numGroups-1; g>=0; --g) {
+      numSamples = delta_N_G[g];
+      if (numSamples) {
+	ensemble_active_set(modelGroups[g]);
+	ensemble_sample_batch(iter, g); // index is group_id; non-blocking
+      }
     }
-  }
+  else // low to high ordering (e.g. combinatorial defn of ML BLUE modelGroups)
+    for (size_t g=0; g<numGroups; ++g) {
+      numSamples = delta_N_G[g];
+      if (numSamples) {
+	ensemble_active_set(modelGroups[g]);
+	ensemble_sample_batch(iter, g); // index is group_id; non-blocking
+      }
+    }
 
   if (iteratedModel.asynch_flag())
     synchronize_batches(iteratedModel); // schedule all groups (return ignored)

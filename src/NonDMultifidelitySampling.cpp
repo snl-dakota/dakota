@@ -461,11 +461,11 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
   SizetArray   N_L_alloc_refined, delta_N_G(numGroups);
   inflate(N_H_actual, N_L_actual_shared); inflate(N_H_alloc, N_L_alloc_refined);
   delta_N_G[numApprox] = 0;
+  const RealVector& soln_vars = soln.solution_variables();
   for (int g=numApprox-1; g>=0; --g) // base to top, excluding all-model group
-    delta_N_G[g] = mfmc_approx_increment(soln.solution_variables(),
-					 N_L_actual_refined, N_L_alloc_refined,
-					 modelGroups[g]);
-  group_increment(delta_N_G, mlmfIter); // all sample batches in parallel
+    delta_N_G[g] = mfmc_approx_increment(soln_vars, N_L_actual_refined,
+					 N_L_alloc_refined, modelGroups[g]);
+  group_increment(delta_N_G, mlmfIter, true); // reverse order for RNG sequence
   // Note: use of this fn requires modelGroupCost to be kept in sync for all
   // cases, not just numerical solves
   increment_equivalent_cost(delta_N_G, modelGroupCost, sequenceCost[numApprox],
@@ -473,7 +473,7 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
   IntRealMatrixArrayMap sum_G;  initialize_group_sums(sum_G);
   Sizet2DArray     N_G_actual;  initialize_group_counts(N_G_actual);
   accumulate_group_sums(sum_G, N_G_actual, batchResponsesMap);
-  // Map from "horizontal" group alloc to "vertical" model alloc (see JCP ACV)
+  // Map from "horizontal" group incr to "vertical" model incr (see JCP ACV)
   IntRealMatrixMap sum_L_shared = sum_L_baseline, sum_L_refined;
   overlay_approx_group_sums(sum_G, N_G_actual, sum_L_shared, sum_L_refined,
 			    N_L_actual_shared, N_L_actual_refined);
@@ -553,9 +553,9 @@ overlay_approx_group_sums(const IntRealMatrixArrayMap& sum_G,
 			  Sizet2DArray& N_L_actual_shared,
 			  Sizet2DArray& N_L_actual_refined)
 {
-  // omit the last group (all-models) since (a) there is no HF increment
+  // omit the last group (all-models) since (i) there is no HF increment
   // (delta_N_G[numApprox] is assigned 0 in approx_increments()) and
-  // (b) any HF refinement would be out of range for L accumulations.  
+  // (ii) any HF refinement would be out of range for L accumulations.  
   size_t q, m, g, num_L_groups = modelGroups.size() - 1, last_m_index;
   unsigned short approx;
   IntRealMatrixArrayMap::const_iterator g_cit;
