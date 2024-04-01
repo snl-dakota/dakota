@@ -347,6 +347,7 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
   Sizet2DArray N_L_actual_refined = N_L_actual_shared;
   SizetArray   N_L_alloc_refined;  inflate(N_H_alloc,  N_L_alloc_refined);
   size_t start, end;
+  /*
   for (end=numApprox; end>0; --end) {
     // pairwise (IS and RD) or pyramid (MF):
     start = (mlmfSubMethod == SUBMETHOD_ACV_MF) ? 0 : end - 1;
@@ -361,6 +362,8 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
 				start, end, equivHFEvals);
     }
   }
+  */
+  // TO DO: new loop in process...
 
   // -----------------------------------------------------------
   // Compute/apply control variate parameter to estimate moments
