@@ -521,8 +521,23 @@ protected:
   void mfmc_model_group(size_t last_index, const SizetArray& approx_sequence,
 			UShortArray& model_group) const;
   void singleton_model_group(size_t index, UShortArray& model_group) const;
+  void singleton_model_group(size_t index, const SizetArray& approx_sequence,
+			     UShortArray& model_group) const;
   void cvmc_model_group(size_t index, UShortArray& model_group) const;
+  void cvmc_model_group(size_t index, const SizetArray& approx_sequence,
+			UShortArray& model_group) const;
   void mlmc_model_group(size_t index, UShortArray& model_group) const;
+  void mlmc_model_group(size_t index, const SizetArray& approx_sequence,
+			UShortArray& model_group) const;
+
+  void update_model_group_costs();
+
+  void overlay_approx_group_sums(const IntRealMatrixArrayMap& sum_G,
+				 const Sizet2DArray& N_G_actual,
+				 IntRealMatrixMap& sum_L_shared,
+				 IntRealMatrixMap& sum_L_refined,
+				 Sizet2DArray& N_L_actual_shared,
+				 Sizet2DArray& N_L_actual_refined);
 
   void print_group(std::ostream& s, size_t g) const;
 
@@ -1064,30 +1079,6 @@ ensemble_active_set(const UShortArray& model_set)
 }
 
 
-/*
-inline bool NonDNonHierarchSampling::
-mfmc_model_grouping(const UShortArray& model_group) const
-{
-  // For case where all models are active in MFMC (no model selection a priori)
-  size_t i, num_models = model_group.size();
-  for (i=0; i<num_models; ++i)
-    if (model_group[i] != i) // "pyramid" sequence from 0 to last in set
-      return false;
-  return true;
-}
-
-
-inline bool NonDNonHierarchSampling::
-cvmc_model_grouping(const UShortArray& model_group) const
-{
-  // shared sample (all models) and each approx increment (group size 1)
-  return ( ( model_group.size() == 1 && model_group[0] != numApprox ) ||
-	   ( model_group.size() == numApprox &&
-	     mfmc_model_grouping(model_group) ) ); // can be inferred from size
-}
-*/
-
-
 inline void NonDNonHierarchSampling::
 mfmc_model_group(size_t last_index, UShortArray& model_group) const
 {
@@ -1123,10 +1114,33 @@ singleton_model_group(size_t index, UShortArray& model_group) const
 
 
 inline void NonDNonHierarchSampling::
+singleton_model_group(size_t index, const SizetArray& approx_sequence,
+		      UShortArray& model_group) const
+{
+  if (approx_sequence.empty())
+    { singleton_model_group(last_index, model_group); return; }
+  model_group.resize(1); model_group[0] = approx_sequence[index];
+}
+
+
+inline void NonDNonHierarchSampling::
 cvmc_model_group(size_t index, UShortArray& model_group) const
 {
   if (index < numApprox) singleton_model_group(index, model_group);
   else                   mfmc_model_group(numApprox,  model_group);
+}
+
+
+inline void NonDNonHierarchSampling::
+cvmc_model_group(size_t index, const SizetArray& approx_sequence,
+		 UShortArray& model_group) const
+{
+  if (approx_sequence.empty())
+    { cvmc_model_group(last_index, model_group); return; }
+  if (index < numApprox)
+    singleton_model_group(index, approx_sequence, model_group);
+  else
+    mfmc_model_group(numApprox,  approx_sequence, model_group);
 }
 
 
@@ -1139,6 +1153,23 @@ mlmc_model_group(size_t index, UShortArray& model_group) const
   else {
     model_group.resize(2);
     model_group[0] = index - 1; model_group[1] = index; // ordered low to high
+  }
+}
+
+
+inline void NonDNonHierarchSampling::
+mlmc_model_group(size_t index, const SizetArray& approx_sequence,
+		 UShortArray& model_group) const
+{
+  if (approx_sequence.empty())
+    { mlmc_model_group(last_index, model_group); return; }
+  // MLMC or ACV-RD (ACV-IS differs in shared group)
+  if (index == 0)
+    { model_group.resize(1); model_group[0] = approx_sequence[index]; }
+  else {
+    model_group.resize(2);
+    model_group[0] = approx_sequence[index - 1];
+    model_group[1] = approx_sequence[index]; // ordered low to high
   }
 }
 

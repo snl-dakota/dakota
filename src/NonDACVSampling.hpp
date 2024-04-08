@@ -167,7 +167,8 @@ private:
 			 IntRealMatrixMap& sum_LH, const SizetArray& N_H_actual,
 			 size_t N_H_alloc, const MFSolutionData& soln);
 
-  void update_model_group_costs();
+  void update_model_groups();
+  void update_model_groups(const SizetArray& approx_sequence);
 
   void precompute_acv_control(const RealVector& avg_eval_ratios,
 			      const SizetArray& N_shared);

@@ -94,15 +94,7 @@ protected:
 			       SizetArray& N_L_alloc,
 			       const UShortArray& model_group);
 
-  void overlay_approx_group_sums(const IntRealMatrixArrayMap& sum_G,
-				 const Sizet2DArray& N_G_actual,
-				 IntRealMatrixMap& sum_L_shared,
-				 IntRealMatrixMap& sum_L_refined,
-				 Sizet2DArray& N_L_actual_shared,
-				 Sizet2DArray& N_L_actual_refined);
-
   void update_model_groups();
-  void update_model_group_costs();
 
   void mfmc_estimator_variance(const RealMatrix& rho2_LH,
 			       const RealVector& var_H, const SizetArray& N_H,

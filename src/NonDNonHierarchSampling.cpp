@@ -680,6 +680,118 @@ cvmc_ensemble_solutions(const RealMatrix& rho2_LH, const RealVector& cost,
 }
 
 
+void NonDNonHierarchSampling::update_model_group_costs()
+{
+  // modelGroupCost used in finite_solution_bounds() for
+  // mfmc_numerical_solution().  MFMC numerical preserves approxSequence
+  // in augment_linear_ineq_constraints(), so we use it here as well.
+
+  // Note: model selection case handled by NonDDGenACV, so here numGroups
+  // is the total number of model instances
+  if (modelGroups.size() != numGroups)
+    update_model_groups();
+  if (modelGroupCost.length() != numGroups)
+    modelGroupCost.sizeUninitialized(numGroups);
+
+  // Notes:
+  // > Unlike ACV (refer to NonDACVSampling::update_model_group_costs()), MFMC
+  //   numerical enforces approx sequence in augment_linear_ineq_constraints().
+  //   Therefore, an increment for N_i *does* require corresponding increments
+  //   for the more-correlated/higher-fidelity models in the approx sequence,
+  //   Similar to the HF group of shared samples, we define these groupings for
+  //   all design variables, which can reduce the search domain upper bounds.
+  // > Extreme x_ub is N_shared plus one model at r_i = max within budget,
+  //   with all sequence-dependent models at same value.
+  // > Indexing is aligned with design vars: low to high with no reordering.
+
+  /* Without modelGroups definition:
+  // approx samples:
+  size_t i, j, approx_i, approx_j;
+  bool ordered = approxSequence.empty();
+  for (i=0; i<numApprox; ++i) {
+    approx_i = (ordered) ? i : approxSequence[i];
+    Real& group_cost_i = modelGroupCost[approx_i];  group_cost_i = 0.;
+    for (j=0; j<=i; ++j) {
+      approx_j = (ordered) ? j : approxSequence[j];
+      group_cost_i += sequenceCost[approx_j];
+    }
+  }
+  // shared samples
+  modelGroupCost[numApprox] = sum(sequenceCost); // irrespective of approxSeq
+  */
+
+  // With modelGroups definition:
+  size_t g, m, num_models;
+  for (g=0; g<numGroups; ++g) {
+    const UShortArray& group_g = modelGroups[g];
+    Real& group_cost = modelGroupCost[g];  group_cost = 0.;
+    num_models = group_g.size();
+    for (m=0; m<num_models; ++m)
+      group_cost += sequenceCost[group_g[m]];
+  }
+}
+
+
+void NonDNonHierarchSampling::
+overlay_approx_group_sums(const IntRealMatrixArrayMap& sum_G,
+			  const Sizet2DArray& N_G_actual,
+			  IntRealMatrixMap& sum_L_shared,
+			  IntRealMatrixMap& sum_L_refined,
+			  Sizet2DArray& N_L_actual_shared,
+			  Sizet2DArray& N_L_actual_refined)
+{
+  // omit the last group (all-models) since (i) there is no HF increment
+  // (delta_N_G[numApprox] is assigned 0 in approx_increments()) and
+  // (ii) any HF refinement would be out of range for L accumulations.  
+  size_t q, m, g, num_L_groups = modelGroups.size() - 1, last_m_index;
+  unsigned short approx;
+  IntRealMatrixArrayMap::const_iterator g_cit;
+  IntRealMatrixMap::iterator s_it, r_it;
+  for (g=0; g<num_L_groups; ++g) {
+    const SizetArray&  num_G_g =  N_G_actual[g];
+    const UShortArray& group_g = modelGroups[g];
+    last_m_index = group_g.size() - 1;
+    // all-models group has delta = 0; singleton model groups may bypass
+    if (zeros(num_G_g) || !last_m_index) continue;
+
+    // counters (span all moments):
+    for (m=0; m<last_m_index; ++m)
+      increment_samples(N_L_actual_shared[group_g[m]], num_G_g);
+
+    // accumulators for each moment:
+    for (s_it =sum_L_shared.begin(), g_cit =sum_G.begin();
+	 s_it!=sum_L_shared.end() && g_cit!=sum_G.end(); ++g_cit, ++s_it) {
+      const RealMatrix& sum_G_mg   = g_cit->second[g];
+      RealMatrix&       sum_L_sh_m =  s_it->second;
+      for (m=0; m<last_m_index; ++m)
+	increment_sums(sum_L_sh_m[group_g[m]], sum_G_mg[m], numFunctions);
+    }
+  }
+
+  // avoid redundant accumulations by augmenting refined starting from shared
+  N_L_actual_refined = N_L_actual_shared;
+  sum_L_refined      = sum_L_shared;
+
+  for (g=0; g<num_L_groups; ++g) {
+    const SizetArray& num_G_g = N_G_actual[g];
+    if (zeros(num_G_g)) continue; // all-models group has delta = 0
+
+    const UShortArray& group_g = modelGroups[g];
+    last_m_index = group_g.size() - 1;  approx = group_g[last_m_index];
+    // Note: HF model index is out of range for N_L --> num_G = 0 protects this
+
+    // counters (span all moments):
+    increment_samples(N_L_actual_refined[approx], num_G_g);
+
+    // accumulators for each moment:
+    for (r_it =sum_L_refined.begin(), g_cit =sum_G.begin();
+	 r_it!=sum_L_refined.end() && g_cit!=sum_G.end(); ++g_cit, ++r_it)
+      increment_sums(r_it->second[approx], g_cit->second[g][last_m_index],
+		     numFunctions);
+  }
+}
+
+
 void NonDNonHierarchSampling::
 scale_to_target(Real avg_N_H, const RealVector& cost,
 		RealVector& avg_eval_ratios, Real& avg_hf_target,

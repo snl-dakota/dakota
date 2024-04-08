@@ -411,14 +411,6 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
   // performed after N_H has converged, which simplifies maxFnEvals / convTol
   // logic (no need to further interrogate these throttles below)
 
-  // maxIterations == 0 was inconsistent for targeting the pilot only case
-  // (unlike all other throttle values, it did not follow the converged HF
-  // iteration with LF increments).  Other ideas (some previously implemented):
-  // > NonDControlVarSampling::finalCVRefinement (can be hard-wired false)
-  // > maxFunctionEvals could be used as a second throttle (e.g., set equal to
-  //   pilot) with additional checks embedded below
-  // > use a special pilot-only mode (now implemented in pilotMgmtMode)
-
   // Notes on approximation sequencing for MFMC:
   // > approx must be ordered on increasing rho2_LH to enable r_i calculation
   //   (see mfmc_analytic_solution() and mfmc_reordered_analytic_solution())
@@ -426,19 +418,6 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
   //   linear constraint definitions in ensemble_numerical_solution()
   //   >> ACV can order approx sample increments based on decreasing r_i
   //      _after_ an unordered ensemble_numerical_solution()
-
-  // Pyramid/nested sampling: at step i, we sample approximation range
-  // [0,numApprox-1-i] using the delta relative to the previous step
-  //for (size_t end=numApprox; end>0; --end) {
-  //  if (mfmc_approx_increment(soln, N_L_actual_refined, N_L_alloc_refined,
-  // 			      mlmfIter, approx_sequence, 0, end)) {
-  //    // MFMC samples on [0, approx) --> sum_L_{shared,refined}
-  //    accumulate_mf_sums(sum_L_shared, sum_L_refined, N_L_actual_shared,
-  // 			 N_L_actual_refined,allResponses,approx_sequence,0,end);
-  //    increment_equivalent_cost(numSamples, sequenceCost, approx_sequence,
-  // 				0, end, equivHFEvals);
-  //  }
-  //}
 
   // There are a couple options to rework the loop above for batch evaluation:
   // > Minimal: rewrite accumulate_mf_sums() only to process batchResponsesMap
@@ -516,92 +495,28 @@ mfmc_approx_increment(const RealVector& soln_vars,
   //   it leaves the door open for per-QoI optimized sample profiles.
   // > Both MFMC and ACV defer rounding until the end (numSamples estimation).
 
-  size_t num_samp, qoi, approx = model_group.back();
-  // No relaxation for approx increments
-  Real lf_target = soln_vars[approx];
-  // These approaches overshoot when combined with vector update_hf_targets():
-  //   lf_targets[qoi] = eval_ratios(qoi, approx) * avg_hf_target;
-  //   lf_target = avg_eval_ratios[approx] * avg_hf_target;
+  size_t num_samp, approx = model_group.back();
+  Real lf_target = soln_vars[approx]; // no relaxation for approx increments
   if (backfillFailures) {
     const SizetArray& lf_curr = N_L_actual[approx];
-    num_samp = one_sided_delta(lf_curr, lf_target); // average
+    num_samp = one_sided_delta(lf_curr, lf_target); // delta of average
     if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Approx samples (" << num_samp << ") computed from average "
-	   << "delta between target " << lf_target << " and current counts:\n"
+      Cout << "Approx samples (" << num_samp << ") computed from average delta "
+	   << "between LF target " << lf_target << " and current counts:\n"
 	   << lf_curr << std::endl;
     size_t N_alloc = one_sided_delta(N_L_alloc[approx], lf_target);
     increment_sample_range(N_L_alloc, N_alloc, model_group);
   }
   else {
     size_t lf_curr = N_L_alloc[approx];
-    num_samp = one_sided_delta(lf_curr, lf_target);
+    num_samp = one_sided_delta((Real)lf_curr, lf_target);
     if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Approx samples (" << num_samp << ") computed from average "
-	   << "delta between target " << lf_target
-	   << " and current allocation = " << lf_curr << std::endl;
+      Cout << "Approx samples = " << num_samp << " computed from average delta "
+	   << "between target " << lf_target << " and current allocation = "
+	   << lf_curr << std::endl;
     increment_sample_range(N_L_alloc, num_samp, model_group);
   }
   return num_samp;
-}
-
-
-void NonDMultifidelitySampling::
-overlay_approx_group_sums(const IntRealMatrixArrayMap& sum_G,
-			  const Sizet2DArray& N_G_actual,
-			  IntRealMatrixMap& sum_L_shared,
-			  IntRealMatrixMap& sum_L_refined,
-			  Sizet2DArray& N_L_actual_shared,
-			  Sizet2DArray& N_L_actual_refined)
-{
-  // omit the last group (all-models) since (i) there is no HF increment
-  // (delta_N_G[numApprox] is assigned 0 in approx_increments()) and
-  // (ii) any HF refinement would be out of range for L accumulations.  
-  size_t q, m, g, num_L_groups = modelGroups.size() - 1, last_m_index;
-  unsigned short approx;
-  IntRealMatrixArrayMap::const_iterator g_cit;
-  IntRealMatrixMap::iterator s_it, r_it;
-  for (g=0; g<num_L_groups; ++g) {
-    const SizetArray& num_G_g = N_G_actual[g];
-    if (zeros(num_G_g)) continue; // all-models group has delta = 0
-
-    const UShortArray& group_g = modelGroups[g];
-    last_m_index = group_g.size() - 1;
-
-    // counters (span all moments):
-    for (m=0; m<last_m_index; ++m)
-      increment_samples(N_L_actual_shared[group_g[m]], num_G_g);
-
-    // accumulators for each moment:
-    for (s_it =sum_L_shared.begin(), g_cit =sum_G.begin();
-	 s_it!=sum_L_shared.end() && g_cit!=sum_G.end(); ++g_cit, ++s_it) {
-      const RealMatrix& sum_G_mg   = g_cit->second[g];
-      RealMatrix&       sum_L_sh_m =  s_it->second;
-      for (m=0; m<last_m_index; ++m)
-	increment_sums(sum_L_sh_m[group_g[m]], sum_G_mg[m], numFunctions);
-    }
-  }
-
-  // avoid redundant accumulations by augmenting refined starting from shared
-  N_L_actual_refined = N_L_actual_shared;
-  sum_L_refined      = sum_L_shared;
-
-  for (g=0; g<num_L_groups; ++g) {
-    const SizetArray& num_G_g = N_G_actual[g];
-    if (zeros(num_G_g)) continue; // all-models group has delta = 0
-
-    const UShortArray& group_g = modelGroups[g];
-    last_m_index = group_g.size() - 1;  approx = group_g[last_m_index];
-    // Note: HF model index is out of range for N_L --> num_G = 0 protects this
-
-    // counters (span all moments):
-    increment_samples(N_L_actual_refined[approx], num_G_g);
-
-    // accumulators for each moment:
-    for (r_it =sum_L_refined.begin(), g_cit =sum_G.begin();
-	 r_it!=sum_L_refined.end() && g_cit!=sum_G.end(); ++g_cit, ++r_it)
-      increment_sums(r_it->second[approx], g_cit->second[g][last_m_index],
-		     numFunctions);
-  }
 }
 
 
@@ -1387,58 +1302,6 @@ void NonDMultifidelitySampling::update_model_groups()
     modelGroups.resize(numGroups);
   for (size_t g=0; g<numGroups; ++g)
     mfmc_model_group(g, approxSequence, modelGroups[g]);
-}
-
-
-void NonDMultifidelitySampling::update_model_group_costs()
-{
-  // modelGroupCost used in finite_solution_bounds() for
-  // mfmc_numerical_solution().  MFMC numerical preserves approxSequence
-  // in augment_linear_ineq_constraints(), so we use it here as well.
-
-  // Note: model selection case handled by NonDDGenACV, so here numGroups
-  // is the total number of model instances
-  if (modelGroups.size() != numGroups)
-    update_model_groups();
-  if (modelGroupCost.length() != numGroups)
-    modelGroupCost.sizeUninitialized(numGroups);
-
-  // Notes:
-  // > Unlike ACV (refer to NonDACVSampling::update_model_group_costs()), MFMC
-  //   numerical enforces approx sequence in augment_linear_ineq_constraints().
-  //   Therefore, an increment for N_i *does* require corresponding increments
-  //   for the more-correlated/higher-fidelity models in the approx sequence,
-  //   Similar to the HF group of shared samples, we define these groupings for
-  //   all design variables, which can reduce the search domain upper bounds.
-  // > Extreme x_ub is N_shared plus one model at r_i = max within budget,
-  //   with all sequence-dependent models at same value.
-  // > Indexing is aligned with design vars: low to high with no reordering.
-
-  /* Without modelGroups definition:
-  // approx samples:
-  size_t i, j, approx_i, approx_j;
-  bool ordered = approxSequence.empty();
-  for (i=0; i<numApprox; ++i) {
-    approx_i = (ordered) ? i : approxSequence[i];
-    Real& group_cost_i = modelGroupCost[approx_i];  group_cost_i = 0.;
-    for (j=0; j<=i; ++j) {
-      approx_j = (ordered) ? j : approxSequence[j];
-      group_cost_i += sequenceCost[approx_j];
-    }
-  }
-  // shared samples
-  modelGroupCost[numApprox] = sum(sequenceCost); // irrespective of approxSeq
-  */
-
-  // With modelGroups definition:
-  size_t g, m, num_models;
-  for (g=0; g<numGroups; ++g) {
-    const UShortArray& group_g = modelGroups[g];
-    Real& group_cost = modelGroupCost[g];  group_cost = 0.;
-    num_models = group_g.size();
-    for (m=0; m<num_models; ++m)
-      group_cost += sequenceCost[group_g[m]];
-  }
 }
 
 
