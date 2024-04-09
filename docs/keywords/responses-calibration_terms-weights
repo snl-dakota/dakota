@@ -3,8 +3,9 @@ Specify weights for each objective function
 Description::
 Specifies relative emphasis through weights (multipliers) w on
 residual elements: 
-.. math::  f = \sum_{i=1}^{n} w_i R_i^2 = \sum_{i=1}^{n}
-w_i (y^{Model}_i - y^{Data}_i)^2 
+
+.. math::  f = \sum_{i=1}^{n} w_i R_i^2 = \sum_{i=1}^{n} w_i (y^{Model}_i - y^{Data}_i)^2 
+
 Length: The ``weights`` must have length equal to
 :dakkw:`responses-calibration_terms`. Thus, when scalar and/or field responses
 are specified, the number of ``weights`` must equal the number of

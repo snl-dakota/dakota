@@ -5,8 +5,9 @@ For multi-objective optimization problems (where the number of
 objective functions is greater than 1), then a ``weights``
 specification provides a simple weighted-sum approach to combining
 multiple objectives into a single objective: 
-.. math:: f = \sum_{i=1}^{n}
-w_{i}f_{i}
+
+.. math:: f = \sum_{i=1}^{n} w_{i}f_{i}
+
 Length: The ``weights`` must have length equal to
 :dakkw:`responses-objective_functions`. Thus, when scalar and/or field
 responses are specified, the number of ``weights`` must equal the
@@ -15,8 +16,9 @@ in the fields.
 
 *Default Behavior* If weights are not specified, then each
 response is given equal weighting: 
-.. math:: f = \sum_{i=1}^{n}
-\frac{f_i}{n}
+
+.. math:: f = \sum_{i=1}^{n} \frac{f_i}{n}
+
 where, in both of these cases, a "minimization"
 :dakkw:`responses-objective_functions-sense` will retain a positive weighting
 for a minimizer and a "maximization" sense will apply a negative
