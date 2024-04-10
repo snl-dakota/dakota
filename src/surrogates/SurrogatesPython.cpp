@@ -55,9 +55,13 @@ void Python::initialize_python()
     }
     catch(py::error_already_set &e) {
       if (e.matches(PyExc_ModuleNotFoundError)) {
-        std::cout << "Could not load the required module '"
+        std::cerr << "Could not load the required module '"
                   << moduleFilename << "'" << std::endl;
-        //throw; // Do we want to throw this again? RWH
+        throw;
+      }
+      else {
+        std::cerr << "Caught a python exception:\n"
+                  << e.what() << std::endl;
       }
     }
     pyModuleActive = true;
@@ -73,7 +77,7 @@ void Python::initialize_python()
     }
     catch(py::error_already_set &e) {
       if (e.matches(PyExc_AttributeError)) {
-        std::cout << "Module '" << moduleFilename << "' does not "
+        std::cerr << "Module '" << moduleFilename << "' does not "
           << "contain required method '" << req_at << "'"
           << std::endl;
       }
@@ -145,10 +149,10 @@ MatrixXd Python::gradient(const MatrixXd& eval_points,
   }
   catch(py::error_already_set &e) {
     if (e.matches(PyExc_AttributeError)) {
-      std::cout << "Module '" << moduleFilename << "' does not "
+      std::cerr << "Module '" << moduleFilename << "' does not "
         << "contain required method '" << fn_name << "'"
         << std::endl;
-      throw; // Do we want to throw this again? RWH
+      throw;
     }
   }
 
