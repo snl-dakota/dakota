@@ -140,6 +140,10 @@ elseif(UNIX)
      CACHE STRING "Set the RPATH in Dakota executables and libraries")
 endif()
 
+# Copy library installation script for Darwin so that it can be found by CPack
+if(APPLE)
+   file(COPY cmake/install_macos_libs.py DESTINATION ${CMAKE_BINARY_DIR})
+endif() 
 
 # Now check languages after compiler flags and options are set
 enable_language(C)
