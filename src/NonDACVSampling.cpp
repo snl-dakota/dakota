@@ -325,7 +325,7 @@ compute_LH_statistics(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
 
 
 void NonDACVSampling::
-approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
+approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 		  IntRealSymMatrixArrayMap& sum_LL,  IntRealMatrixMap& sum_LH,
 		  const SizetArray& N_H_actual, size_t N_H_alloc,
 		  const MFSolutionData& soln)
@@ -390,7 +390,7 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
   // Compute/apply control variate parameter to estimate moments
   // -----------------------------------------------------------
   RealMatrix H_raw_mom(4, numFunctions);
-  acv_raw_moments(sum_L_baselineH, sum_L_refined, sum_H, sum_LL, sum_LH,
+  acv_raw_moments(sum_L_baseline, sum_L_refined, sum_H, sum_LL, sum_LH,
 		  avg_eval_ratios, N_H_actual, N_L_actual_refined, H_raw_mom);
   // Convert uncentered raw moment estimates to final moments (central or std)
   convert_moments(H_raw_mom, momentStats);

@@ -378,6 +378,7 @@ protected:
 				SizetArray& N_L_alloc,
 				const UShortArray& model_group);
   size_t dag_approx_increment(const RealVector& soln_vars,
+			      const UShortArray& approx_set,
 			      const Sizet2DArray& N_L_actual,
 			      SizetArray& N_L_alloc, unsigned short root,
 			      const UShortSet& reverse_dag_set);
@@ -1152,7 +1153,7 @@ singleton_model_group(size_t index, const SizetArray& approx_sequence,
 		      UShortArray& model_group) const
 {
   if (approx_sequence.empty())
-    { singleton_model_group(last_index, model_group); return; }
+    { singleton_model_group(index, model_group); return; }
   model_group.resize(1); model_group[0] = approx_sequence[index];
 }
 
@@ -1170,7 +1171,7 @@ cvmc_model_group(size_t index, const SizetArray& approx_sequence,
 		 UShortArray& model_group) const
 {
   if (approx_sequence.empty())
-    { cvmc_model_group(last_index, model_group); return; }
+    { cvmc_model_group(index, model_group); return; }
   if (index < numApprox)
     singleton_model_group(index, approx_sequence, model_group);
   else
@@ -1196,7 +1197,7 @@ mlmc_model_group(size_t index, const SizetArray& approx_sequence,
 		 UShortArray& model_group) const
 {
   if (approx_sequence.empty())
-    { mlmc_model_group(last_index, model_group); return; }
+    { mlmc_model_group(index, model_group); return; }
   // MLMC or ACV-RD (ACV-IS differs in shared group)
   if (index == 0)
     { model_group.resize(1); model_group[0] = approx_sequence[index]; }

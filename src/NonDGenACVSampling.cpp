@@ -395,10 +395,11 @@ void NonDGenACVSampling::update_model_groups(const SizetArray& approx_sequence)
   modelGroups.resize(num_approx + 1);
   for (g=0; g<num_approx; ++g) {
     root = approx_set[approx_sequence[g]];
-    update_model_group(root, reverseActiveDAG[root], modelGroups[g]);
+    root_reverse_dag_to_group(root, reverseActiveDAG[root], modelGroups[g]);
   }
   root = numApprox;
-  update_model_group(root, reverseActiveDAG[root], modelGroups[num_approx]);
+  root_reverse_dag_to_group(root, reverseActiveDAG[root],
+			    modelGroups[num_approx]);
 
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "In update_model_groups(SizetArray&), modelGroups:\n" << modelGroups
@@ -680,7 +681,7 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
 
 
 void NonDGenACVSampling::
-approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
+approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 		  IntRealSymMatrixArrayMap& sum_LL,  IntRealMatrixMap& sum_LH,
 		  const SizetArray& N_H_actual, size_t N_H_alloc,
 		  const MFSolutionData& soln)
@@ -720,7 +721,7 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
   update_model_groups(approx_sequence);  update_model_group_costs();
 
   delta_N_G[num_approx] = 0;
-  const RealVector& soln_vars = soln.solution_variables();
+  unsigned short root;  const RealVector& soln_vars = soln.solution_variables();
   for (int g=num_approx-1; g>=0; --g) {// base to top, excluding all-model group
     root = (ordered) ? approx_set[g] : approx_set[approx_sequence[g]];
     delta_N_G[g] = dag_approx_increment(soln_vars, approx_set,
@@ -742,7 +743,7 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
   // Compute/apply control variate parameter to estimate moments
   // -----------------------------------------------------------
   RealMatrix H_raw_mom(4, numFunctions);
-  genacv_raw_moments(sum_L_baselineH, sum_L_shared, sum_L_refined, sum_H,
+  genacv_raw_moments(sum_L_baseline, sum_L_shared, sum_L_refined, sum_H,
 		     sum_LL, sum_LH, soln.solution_ratios(), N_L_actual_shared,
 		     N_L_actual_refined, N_H_actual, H_raw_mom);
   // Convert uncentered raw moment estimates to final moments (central or std)

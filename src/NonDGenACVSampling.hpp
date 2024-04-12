@@ -121,7 +121,7 @@ private:
   void generalized_acv_offline_pilot();
   void generalized_acv_pilot_projection();
 
-  void approx_increments(IntRealMatrixMap& sum_L_baselineH,
+  void approx_increments(IntRealMatrixMap& sum_L_baseline,
 			 IntRealVectorMap& sum_H,
 			 IntRealSymMatrixArrayMap& sum_LL,
 			 IntRealMatrixMap& sum_LH, const SizetArray& N_H_actual,
