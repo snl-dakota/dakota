@@ -373,6 +373,15 @@ protected:
   void ensemble_sample_batch(size_t iter, int batch_id);
   //void ensemble_sample_synchronize();
 
+  size_t group_approx_increment(const RealVector& soln_vars,
+				const Sizet2DArray& N_L_actual,
+				SizetArray& N_L_alloc,
+				const UShortArray& model_group);
+  size_t dag_approx_increment(const RealVector& soln_vars,
+			      const Sizet2DArray& N_L_actual,
+			      SizetArray& N_L_alloc, unsigned short root,
+			      const UShortSet& reverse_dag_set);
+
   /// When looping through a minimizer sequence/competition, this
   /// function enables per-minimizer updates to the parameter bounds,
   /// e.g. for providing a bounded domain for methods that require it,
@@ -529,6 +538,11 @@ protected:
   void mlmc_model_group(size_t index, UShortArray& model_group) const;
   void mlmc_model_group(size_t index, const SizetArray& approx_sequence,
 			UShortArray& model_group) const;
+
+  void root_reverse_dag_to_group(unsigned short root, const UShortSet& rev_dag,
+				 UShortArray& model_group);
+  void group_to_root_reverse_dag(const UShortArray& model_group,
+				 unsigned short& root, UShortSet& rev_dag);
 
   void update_model_group_costs();
 
@@ -722,6 +736,26 @@ inline size_t NonDNonHierarchSampling::num_approximations() const
 
 inline unsigned short NonDNonHierarchSampling::uses_method() const
 { return optSubProblemSolver; }
+
+
+inline void NonDNonHierarchSampling::
+root_reverse_dag_to_group(unsigned short root, const UShortSet& rev_dag,
+			  UShortArray& model_group)
+{
+  model_group.clear();  model_group.reserve(rev_dag.size() + 1);
+  model_group.insert(model_group.end(), rev_dag.begin(), rev_dag.end());
+  model_group.push_back(root); // by convention
+}
+
+
+inline void NonDNonHierarchSampling::
+group_to_root_reverse_dag(const UShortArray& model_group, unsigned short& root,
+			  UShortSet& rev_dag)
+{
+  root = model_group.back(); // by convention
+  rev_dag.clear();
+  rev_dag.insert(model_group.begin(), --model_group.end());
+}
 
 
 inline void NonDNonHierarchSampling::

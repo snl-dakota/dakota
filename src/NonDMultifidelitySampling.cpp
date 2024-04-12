@@ -419,6 +419,21 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
   //   >> ACV can order approx sample increments based on decreasing r_i
   //      _after_ an unordered ensemble_numerical_solution()
 
+  // When to apply averaging requires some care.  To properly enforce scalar
+  // budget for vector QoI, need to either scalarize to average targets from
+  // the beginning (scalar hf_target -> scalar lf_target as in ACV) or retain
+  // per-QoI targets until the very end (i.e., at numSamples estimation).
+  // > all HF QoI get sampled together using a scalar count (average(N*_H))
+  //   such that using N*_L(q) = r*(q) N*_H(q) seems non-optimal in isolation,
+  //   but vector estimation in update_hf_targets() (avoiding any premature
+  //   consolidation) requires vector estimation here to hit budget target.
+  //   These LF targets subsequently get averaged by one_sided_delta().
+  // > would be interesting to compare averaging from the start vs. averaging
+  //   at the very end.
+  //   Probably will be similar, in which case we will prefer the latter since
+  //   it leaves the door open for per-QoI optimized sample profiles.
+  // > Both MFMC and ACV defer rounding until the end (numSamples estimation).
+
   // There are a couple options to rework the loop above for batch evaluation:
   // > Minimal: rewrite accumulate_mf_sums() only to process batchResponsesMap
   //   (Note: a general ASV-based batch accumulation is insufficient for the
@@ -430,7 +445,21 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
   //   allocation to "vertical" model allocation in JCP:ACV plots)
   // > Maximal: refactor sums/counters/etc. to be group based.  Note that MFMC
   //   is not natively group-based, but rather based on r_i oversample + reuse
-  //   --> seems overkill at this time.
+  //   --> overkill at this time.
+
+  // Pyramid/nested sampling: at step i, we sample approximation range
+  // [0,numApprox-1-i] using the delta relative to the previous step
+  //for (size_t end=numApprox; end>0; --end) {
+  //  if (mfmc_approx_increment(soln, N_L_actual_refined, N_L_alloc_refined,
+  // 			        mlmfIter, approx_sequence, 0, end)) {
+  //    // MFMC samples on [0, approx) --> sum_L_{shared,refined}
+  //    accumulate_mf_sums(sum_L_shared, sum_L_refined, N_L_actual_shared,
+  // 			   N_L_actual_refined, allResponses, approx_sequence,
+  //                       0, end);
+  //    increment_equivalent_cost(numSamples, sequenceCost, approx_sequence,
+  // 				  0, end, equivHFEvals);
+  //  }
+  //}
 
   // increment_sample_range() updates the count reference prior to delta_N_G,
   // such that this in a rolling increment, ordered from base to top of pyramid
@@ -442,8 +471,8 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
   delta_N_G[numApprox] = 0;
   const RealVector& soln_vars = soln.solution_variables();
   for (int g=numApprox-1; g>=0; --g) // base to top, excluding all-model group
-    delta_N_G[g] = mfmc_approx_increment(soln_vars, N_L_actual_refined,
-					 N_L_alloc_refined, modelGroups[g]);
+    delta_N_G[g] = group_approx_increment(soln_vars, N_L_actual_refined,
+					  N_L_alloc_refined, modelGroups[g]);
   group_increment(delta_N_G, mlmfIter, true); // reverse order for RNG sequence
   // Note: use of this fn requires modelGroupCost to be kept in sync for all
   // cases, not just numerical solves
@@ -466,57 +495,6 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
   convert_moments(H_raw_mom, momentStats);
   // post final sample counts into format for final results reporting
   finalize_counts(N_L_actual_refined, N_L_alloc_refined);
-}
-
-
-size_t NonDMultifidelitySampling::
-mfmc_approx_increment(const RealVector& soln_vars,
-		      const Sizet2DArray& N_L_actual, SizetArray& N_L_alloc,
-		      const UShortArray& model_group)
-{
-  // Notes:
-  // > the sample increment for the approx range is determined by approx[end-1]
-  //   (helpful to refer to Figure 2(b) in ACV paper, noting index differences)
-  // > N_L is updated prior to each call to approx_increment allowing use of
-  //   one_sided_delta() with latest counts
-
-  // When to apply averaging requires some care.  To properly enforce scalar
-  // budget for vector QoI, need to either scalarize to average targets from
-  // the beginning (scalar hf_target -> scalar lf_target as in ACV) or retain
-  // per-QoI targets until the very end (i.e., at numSamples estimation).
-  // > all HF QoI get sampled together using a scalar count (average(N*_H))
-  //   such that using N*_L(q) = r*(q) N*_H(q) seems non-optimal in isolation,
-  //   but vector estimation in update_hf_targets() (avoiding any premature
-  //   consolidation) requires vector estimation here to hit budget target.
-  //   These LF targets subsequently get averaged by one_sided_delta().
-  // > would be interesting to compare averaging from the start vs. averaging
-  //   at the very end.
-  //   Probably will be similar, in which case we will prefer the latter since
-  //   it leaves the door open for per-QoI optimized sample profiles.
-  // > Both MFMC and ACV defer rounding until the end (numSamples estimation).
-
-  size_t num_samp, approx = model_group.back();
-  Real lf_target = soln_vars[approx]; // no relaxation for approx increments
-  if (backfillFailures) {
-    const SizetArray& lf_curr = N_L_actual[approx];
-    num_samp = one_sided_delta(lf_curr, lf_target); // delta of average
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Approx samples (" << num_samp << ") computed from average delta "
-	   << "between LF target " << lf_target << " and current counts:\n"
-	   << lf_curr << std::endl;
-    size_t N_alloc = one_sided_delta(N_L_alloc[approx], lf_target);
-    increment_sample_range(N_L_alloc, N_alloc, model_group);
-  }
-  else {
-    size_t lf_curr = N_L_alloc[approx];
-    num_samp = one_sided_delta((Real)lf_curr, lf_target);
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Approx samples = " << num_samp << " computed from average delta "
-	   << "between target " << lf_target << " and current allocation = "
-	   << lf_curr << std::endl;
-    increment_sample_range(N_L_alloc, num_samp, model_group);
-  }
-  return num_samp;
 }
 
 

@@ -330,11 +330,11 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
 		  const SizetArray& N_H_actual, size_t N_H_alloc,
 		  const MFSolutionData& soln)
 {
-  // ---------------------------------------------------------------
-  // Compute N_L increments based on eval ratio applied to final N_H
-  // ---------------------------------------------------------------
-  // Note: these results do not affect the iteration above and can be performed
-  // after N_H has converged
+  // ----------------------
+  // Compute N_L increments
+  // ----------------------
+  // Note: these results do not affect the iteration above and can be
+  // performed after N_H has converged
 
   // Perform a sample sequence that reuses sample increments: define
   // approx_sequence in decreasing r_i order, directionally consistent
@@ -367,11 +367,12 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
   Sizet2DArray N_L_actual_shared, N_L_actual_refined;
   SizetArray   N_L_alloc_refined, delta_N_G(numGroups);
   inflate(N_H_actual, N_L_actual_shared); inflate(N_H_alloc, N_L_alloc_refined);
-  delta_N_G[numApprox] = 0;
+  size_t last_index = numGroups - 1;
+  delta_N_G[last_index] = 0;
   const RealVector& soln_vars = soln.solution_variables();
-  for (int g=numApprox-1; g>=0; --g) // base to top, excluding all-model group
-    delta_N_G[g] = acv_approx_increment(soln_vars, N_L_actual_refined,
-					N_L_alloc_refined, modelGroups[g]);
+  for (int g=last_index-1; g>=0; --g) // base to top, excluding all-model group
+    delta_N_G[g] = group_approx_increment(soln_vars, N_L_actual_refined,
+					  N_L_alloc_refined, modelGroups[g]);
   group_increment(delta_N_G, mlmfIter, true); // reverse order for RNG sequence
   // Note: use of this fn requires modelGroupCost to be kept in sync for all
   // cases, not just numerical solves
@@ -383,7 +384,7 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
   // Map from "horizontal" group incr to "vertical" model incr (see JCP ACV)
   IntRealMatrixMap sum_L_shared = sum_L_baseline, sum_L_refined;
   overlay_approx_group_sums(sum_G, N_G_actual, sum_L_shared, sum_L_refined,
-			    N_L_actual_shared, N_L_actual_refined); // *** TO DO ***: defer and consolidate w/ DAG-based GenACV implementation
+			    N_L_actual_shared, N_L_actual_refined);
 
   // -----------------------------------------------------------
   // Compute/apply control variate parameter to estimate moments
@@ -395,42 +396,6 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
   convert_moments(H_raw_mom, momentStats);
   // post final sample counts into format for final results reporting
   finalize_counts(N_L_actual_refined, N_L_alloc_refined);
-}
-
-
-size_t NonDACVSampling::
-acv_approx_increment(const RealVector& soln_vars,
-		     const Sizet2DArray& N_L_actual, SizetArray& N_L_alloc,
-		     const UShortArray& model_group)
-{
-  // Notes:
-  // > the sample increment for the approx range is determined by approx[end-1]
-  //   (helpful to refer to Figure 2(b) in ACV paper, noting index differences)
-  // > N_L is updated prior to each call to approx_increment allowing use of
-  //   one_sided_delta() with latest counts
-
-  size_t num_samp, approx = model_group.back();
-  Real   lf_target = soln_vars[approx]; // no relaxation for approx increments
-  if (backfillFailures) {
-    const SizetArray& lf_curr = N_L_actual[approx];
-    num_samp = one_sided_delta(lf_curr, lf_target); // delta of average
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Approx samples = " << num_samp << " computed from average delta "
-	   << "between LF target = " << lf_target << " and current counts:\n"
-	   << lf_curr << std::endl;
-    size_t N_alloc = one_sided_delta(N_L_alloc[approx], lf_target);
-    increment_sample_range(N_L_alloc, N_alloc, model_group);
-  }
-  else {
-    size_t lf_curr = N_L_alloc[approx];
-    num_samp = one_sided_delta((Real)lf_curr, lf_target);
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Approx samples = " << num_samp << " computed from delta between "
-	   << "LF target = " << lf_target << " and current allocation = "
-	   << lf_curr << std::endl;
-    increment_sample_range(N_L_alloc, num_samp, model_group);
-  }
-  return num_samp;
 }
 
 

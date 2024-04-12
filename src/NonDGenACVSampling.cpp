@@ -358,6 +358,54 @@ unroll_reverse_dag_from_root(unsigned short root,
 }
 
 
+void NonDGenACVSampling::update_model_groups()
+{
+  const UShortArray& approx_set = activeModelSetIter->first;
+  //const UShortArraySet& dag_set = activeModelSetIter->second;
+  //const UShortArray& active_dag = *activeDAGIter;
+
+  // Reserve num{Approx,Groups} for total model counts and use active
+  // counts here (corresponding to active approx set and active DAG)
+  size_t g, num_approx = approx_set.size();  unsigned short root;
+  modelGroups.resize(num_approx + 1);
+  for (g=0; g<num_approx; ++g) { // active approx indexing
+    root = approx_set[g];               // active to total model indexing
+    root_reverse_dag_to_group(root, reverseActiveDAG[root], modelGroups[g]);
+  }
+  root = numApprox; // truth model in total model indexing
+  root_reverse_dag_to_group(root, reverseActiveDAG[root],
+			    modelGroups[num_approx]);
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "In update_model_groups(), modelGroups:\n" << modelGroups
+	 << std::endl;
+}
+
+
+void NonDGenACVSampling::update_model_groups(const SizetArray& approx_sequence)
+{
+  if (approx_sequence.empty())
+    update_model_groups();
+
+  // Here the ordering of groups is important to preserve incremental sample
+  // constraints (e.g. pyramid sampling in ACV-MF)
+
+  const UShortArray& approx_set = activeModelSetIter->first;
+  size_t g, num_approx = approx_set.size();  unsigned short root;
+  modelGroups.resize(num_approx + 1);
+  for (g=0; g<num_approx; ++g) {
+    root = approx_set[approx_sequence[g]];
+    update_model_group(root, reverseActiveDAG[root], modelGroups[g]);
+  }
+  root = numApprox;
+  update_model_group(root, reverseActiveDAG[root], modelGroups[num_approx]);
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "In update_model_groups(SizetArray&), modelGroups:\n" << modelGroups
+	 << std::endl;
+}
+
+
 void NonDGenACVSampling::pre_run()
 {
   NonDNonHierarchSampling::pre_run();
@@ -637,16 +685,18 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
 		  const SizetArray& N_H_actual, size_t N_H_alloc,
 		  const MFSolutionData& soln)
 {
-  // ---------------------------------------------------------------
-  // Compute N_L increments based on eval ratio applied to final N_H
-  // ---------------------------------------------------------------
-  // Note: for consistency with MFMC/ACV, r* is always defined relative to N_H,
-  // even though an oversample may target a different model based on active DAG
+  // ----------------------
+  // Compute N_L increments
+  // ----------------------
+  // Note: these results do not affect the iteration above and can be
+  // performed after N_H has converged
 
+  // The final approx set and DAG have been selected
   const UShortArray& approx_set = activeModelSetIter->first;
-  IntRealMatrixMap sum_L_shared  = sum_L_baselineH,//baselineL;
-                   sum_L_refined = sum_L_baselineH;//baselineL;
-  Sizet2DArray N_L_actual_shared;  SizetArray N_L_alloc_refined;
+  size_t num_approx = approx_set.size(), num_groups = num_approx + 1;
+
+  Sizet2DArray N_L_actual_shared, N_L_actual_refined;
+  SizetArray   N_L_alloc_refined, delta_N_G(num_groups);
   if (pilotMgmtMode == OFFLINE_PILOT ||
       pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
     // online shared_increment() only includes best model set after
@@ -658,64 +708,35 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
     inflate(N_H_actual, N_L_actual_shared);
     inflate(N_H_alloc,  N_L_alloc_refined);
   }
-  Sizet2DArray N_L_actual_refined = N_L_actual_shared;
 
-  switch (mlmfSubMethod) {
-  case SUBMETHOD_ACV_MF: { // special handling for nested pyramid sampling
-    SizetArray approx_sequence;  bool descending = true;
-    RealVector avg_eval_ratios = soln.solution_ratios();
-    ordered_approx_sequence(avg_eval_ratios, approx_sequence, descending);
+  // For pyramid sampling (ACV-MF), define a sequence that reuses sample
+  // increments: approx_sequence uses decreasing r_i order, directionally
+  // consistent with default approx indexing for well-ordered models
+  // > approx 0 is lowest fidelity --> lowest corr,cost --> highest r_i
+  // > approx_sequence corresponds to the current approx_set
+  SizetArray approx_sequence;
+  bool ordered = (mlmfSubMethod != SUBMETHOD_ACV_MF) ? false :
+    ordered_approx_sequence(soln.solution_ratios(), approx_sequence, true);
+  update_model_groups(approx_sequence);  update_model_group_costs();
 
-    size_t start = 0, end, num_approx = approx_set.size();
-    for (end=num_approx; end>0; --end) {
-      // ACV_IS samples on [approx-1,approx) --> sum_L_refined
-      // ACV_MF samples on [0,       approx) --> sum_L_refined
-      //start = (mlmfSubMethod == SUBMETHOD_ACV_MF) ? 0 : end - 1;
-      // *** TO DO NON_BLOCKING: PERFORM 2ND PASS ACCUMULATE AFTER PASS 1 LAUNCH
-      if (genacv_approx_increment(soln, N_L_actual_refined, N_L_alloc_refined,
-				  mlmfIter, approx_sequence, start, end)) {
-	accumulate_genacv_sums(sum_L_shared, sum_L_refined, N_L_actual_shared,
-			       N_L_actual_refined, approx_sequence, start, end);
-	increment_equivalent_cost(numSamples, sequenceCost, approx_sequence,
-				  start, end, approx_set, equivHFEvals);
-      }
-    }
-    break;
+  delta_N_G[num_approx] = 0;
+  const RealVector& soln_vars = soln.solution_variables();
+  for (int g=num_approx-1; g>=0; --g) {// base to top, excluding all-model group
+    root = (ordered) ? approx_set[g] : approx_set[approx_sequence[g]];
+    delta_N_G[g] = dag_approx_increment(soln_vars, approx_set,
+					N_L_actual_refined, N_L_alloc_refined,
+					root, reverseActiveDAG[root]);
   }
-  default: {
-    // Process shared sample increments based on the ordered list of roots,
-    // skipping the HF root = numApprox (this shared set already processed)
-    // > This works for GenACV-MF pyramid sampling although the samples are not
-    //   nested --> above, we instead augment the ACV-MF code for N_shared.
-    UShortList::iterator it;  unsigned short root;  UShortSet mf_reverse_dag;
-    for (it=++orderedRootList.begin(); it!=orderedRootList.end(); ++it) {
-      root = *it;
-      /*
-      // ACV-MF: need full set of subordinate notes for pyramid sampling
-      // ACV-IS: only need nodes with edges connected to root (reverse DAG)
-      if (mlmfSubMethod == SUBMETHOD_ACV_MF) {
-        UShortList partial_list;
-        unroll_reverse_dag_from_root(root, soln.solution_ratios(),
-	                             partial_list);
-        mf_reverse_dag.clear();
-        mf_reverse_dag.insert(++partial_list.begin(), partial_list.end());
-      }
-      */
-      const UShortSet& samp_reverse_dag =
-	//(mlmfSubMethod == SUBMETHOD_ACV_MF) ? mf_reverse_dag :
-	reverseActiveDAG[root];
-      // *** TO DO NON_BLOCKING: PERFORM PASS 2 ACCUMULATE AFTER PASS 1 LAUNCH
-      if (genacv_approx_increment(soln, N_L_actual_refined, N_L_alloc_refined,
-				  mlmfIter, root, samp_reverse_dag)) {
-	accumulate_genacv_sums(sum_L_shared, sum_L_refined, N_L_actual_shared,
-			       N_L_actual_refined, root, samp_reverse_dag);
-	increment_equivalent_cost(numSamples, sequenceCost, root,
-				  samp_reverse_dag, equivHFEvals);
-      }
-    }
-    break;
-  }
-  }
+  group_increment(delta_N_G, mlmfIter, true); // reverse order for RNG sequence
+  increment_equivalent_cost(delta_N_G, modelGroupCost, sequenceCost[numApprox],
+			    equivHFEvals);
+  IntRealMatrixArrayMap sum_G;  initialize_group_sums(sum_G);
+  Sizet2DArray     N_G_actual;  initialize_group_counts(N_G_actual);
+  accumulate_group_sums(sum_G, N_G_actual, batchResponsesMap);
+  // Map from "horizontal" group incr to "vertical" model incr (see JCP ACV)
+  IntRealMatrixMap sum_L_shared = sum_L_baseline, sum_L_refined;
+  overlay_approx_group_sums(sum_G, N_G_actual, sum_L_shared, sum_L_refined,
+			    N_L_actual_shared, N_L_actual_refined);
 
   // -----------------------------------------------------------
   // Compute/apply control variate parameter to estimate moments
@@ -728,97 +749,6 @@ approx_increments(IntRealMatrixMap& sum_L_baselineH, IntRealVectorMap& sum_H,
   convert_moments(H_raw_mom, momentStats);
   // post final sample counts into format for final results reporting
   finalize_counts(N_L_actual_refined, N_L_alloc_refined);
-}
-
-
-bool NonDGenACVSampling::
-genacv_approx_increment(const MFSolutionData& soln,
-			const Sizet2DArray& N_L_actual_refined,
-			SizetArray& N_L_alloc_refined,
-			size_t iter, const SizetArray& approx_sequence,
-			size_t start, size_t end)
-{
-  // Update LF samples based on evaluation ratio
-  //   r = N_L/N_H -> N_L = r * N_H -> delta = N_L - N_H = (r-1) * N_H
-  // Notes:
-  // > the sample increment for the approx range is determined by approx[end-1]
-  //   (helpful to refer to Figure 2(b) in ACV paper, noting index differences)
-  // > N_L is updated prior to each call to approx_increment (*** if BLOCKING),
-  //   allowing use of one_sided_delta() with latest counts
-  // > No relaxation for final approx increments
-
-  const UShortArray& approx_set = activeModelSetIter->first;
-  bool  ordered = approx_sequence.empty();
-  size_t approx = (ordered) ? end-1 : approx_sequence[end-1],
-    inflate_approx = approx_set[approx];
-  Real lf_target = soln.solution_variables()[approx];
-  if (backfillFailures) {
-    Real lf_curr = average(N_L_actual_refined[inflate_approx]);
-    numSamples = one_sided_delta(lf_curr, lf_target); // average
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Approx samples = " << numSamples
-	   << " computed from delta between LF target = " << lf_target
-	   << " and current average count = " << lf_curr << std::endl;
-    size_t N_alloc
-      = one_sided_delta(N_L_alloc_refined[inflate_approx], lf_target);
-    increment_sample_range(N_L_alloc_refined, N_alloc, approx_sequence,
-			   start, end, approx_set);
-  }
-  else {
-    size_t lf_curr = N_L_alloc_refined[inflate_approx];
-    numSamples = one_sided_delta((Real)lf_curr, lf_target);
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Approx samples = " << numSamples
-	   << " computed from delta between LF target = " << lf_target
-	   << " and current allocation = " << lf_curr << std::endl;
-    increment_sample_range(N_L_alloc_refined, numSamples, approx_sequence,
-			   start, end, approx_set);
-  }
-  // the approximation sequence can be managed within one set of jobs using
-  // a composite ASV with EnsembleSurrModel
-  return approx_increment(iter, approx_sequence, start, end, approx_set);
-}
-
-
-bool NonDGenACVSampling::
-genacv_approx_increment(const MFSolutionData& soln,
-			const Sizet2DArray& N_L_actual_refined,
-			SizetArray& N_L_alloc_refined, size_t iter,
-			unsigned short root, const UShortSet& reverse_dag)
-{
-  // Update LF samples based on evaluation ratio
-  //   r = N_L/N_H -> N_L = r * N_H -> delta = N_L - N_H = (r-1) * N_H
-  // Notes:
-  // > the sample increment for the approx range is determined by approx[end-1]
-  //   (helpful to refer to Figure 2(b) in ACV paper, noting index differences)
-  // > N_L is updated prior to each call to approx_increment (*** if BLOCKING),
-  //   allowing use of one_sided_delta() with latest counts
-  // > No relaxation for final approx increments
-
-  Real lf_target = soln.solution_variables()[root];
-  if (backfillFailures) {
-    Real lf_curr = average(N_L_actual_refined[root]);
-    numSamples = one_sided_delta(lf_curr, lf_target); // average
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Approx samples = " << numSamples << " for root node index "
-	   << root << " computed from delta between LF target = " << lf_target
-	   << " and current average count = " << lf_curr << std::endl;
-    size_t N_alloc = one_sided_delta(N_L_alloc_refined[root], lf_target);
-    increment_sample_range(N_L_alloc_refined, N_alloc, root, reverse_dag);
-  }
-  else {
-    size_t lf_curr = N_L_alloc_refined[root];
-    numSamples = one_sided_delta((Real)lf_curr, lf_target);
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Approx samples = " << numSamples << " for root node index "
-	   << root << " computed from delta between LF target = " << lf_target
-	   << " and current allocation = " << lf_curr << std::endl;
-    increment_sample_range(N_L_alloc_refined, numSamples, root, reverse_dag);
-  }
-
-  // the approximation sequence can be managed within one set of jobs using
-  // a composite ASV with EnsembleSurrModel
-  return approx_increment(iter, root, reverse_dag);
 }
 
 
@@ -842,6 +772,7 @@ compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
   // modelGroupCost used for unified treatment in finite_solution_bounds()
   // > for onlineCost, sequenceCost is estimated once, but modelGroupCost is
   //   dependent on the active DAG/model subset
+  update_model_groups(); // no approx sequence at this point
   update_model_group_costs();
 
   bool budget_constrained = (maxFunctionEvals != SZ_MAX), budget_exhausted
@@ -917,39 +848,6 @@ compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
   process_model_solution(soln, numSamples);
   if (outputLevel >= NORMAL_OUTPUT)
     print_model_solution(Cout, soln, approx_set);
-}
-
-
-void NonDGenACVSampling::update_model_group_costs()
-{
-  // modelGroupCost used in finite_solution_bounds() for
-  // mfmc_numerical_solution().  MFMC numerical preserves approxSequence
-  // in augment_linear_ineq_constraints(), so we use it here as well.
-
-  const UShortArray& approx_set = activeModelSetIter->first;
-  size_t num_approx = approx_set.size(), i, num_groups = num_approx+1;
-  if (modelGroupCost.length() != num_groups)
-    modelGroupCost.sizeUninitialized(num_groups);
-
-  // shared samples
-  modelGroupCost[num_approx] = sequenceCost[numApprox]; // truth
-  for (i=0; i<num_approx; ++i)
-    modelGroupCost[num_approx] += sequenceCost[approx_set[i]]; // active approx
-
-  // approx samples:  Notes:
-  // > GenACV has sample dependencies codified in the active DAG: an increment
-  //   for N_i implies corresponding increments for dependent leaf nodes in the
-  //   DAG.  For estimating sample upper bounds from modelGroupCost, we
-  //   accumulate these node + dependency costs.
-  // > Indexing is aligned with design vars: low to high with no reordering.
-  UShortList root_and_dependent;  UShortList::iterator it;
-  unsigned short source;
-  for (i=0; i<num_approx; ++i) {
-    unroll_reverse_dag_from_root(approx_set[i], root_and_dependent);
-    Real& group_cost_i = modelGroupCost[i];  group_cost_i = 0.;
-    for (it=root_and_dependent.begin(); it!=root_and_dependent.end(); ++it)
-      group_cost_i += sequenceCost[*it];
-  }
 }
 
 

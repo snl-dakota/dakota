@@ -89,10 +89,6 @@ protected:
 			 IntRealVectorMap& sum_H,  IntRealMatrixMap& sum_LL,
 			 IntRealMatrixMap& sum_LH, const SizetArray& N_H_actual,
 			 size_t N_H_alloc, const MFSolutionData& soln);
-  size_t mfmc_approx_increment(const RealVector& soln_vars,
-			       const Sizet2DArray& N_L_actual,
-			       SizetArray& N_L_alloc,
-			       const UShortArray& model_group);
 
   void update_model_groups();
 

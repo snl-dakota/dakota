@@ -99,12 +99,6 @@ protected:
 			   const RealVector& fn_vals, const ShortArray& asv,
 			   size_t approx);
 
-  bool acv_approx_increment(const MFSolutionData& soln,
-			    const Sizet2DArray& N_L_actual_refined,
-			    SizetArray& N_L_alloc_refined, size_t iter,
-			    const SizetArray& approx_sequence,
-			    size_t start, size_t end);
-
   void acv_raw_moments(IntRealMatrixMap& sum_L_shared,
 		       IntRealMatrixMap& sum_L_refined,
 		       IntRealVectorMap& sum_H,
