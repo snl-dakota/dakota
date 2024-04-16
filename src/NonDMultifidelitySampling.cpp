@@ -39,6 +39,11 @@ NonDMultifidelitySampling(ProblemDescDB& problem_db, Model& model):
 {
   mlmfSubMethod = SUBMETHOD_MFMC; // if needed for numerical solves
 
+  // defining approxSet allows reuse of fns that support model selection
+  approxSet.resize(numApprox);
+  for (size_t i=0; i<numApprox; ++i)
+    approxSet[i] = i;
+
   // model{Groups,GroupCost} have run-time dependency on approxSequence
   //if (!onlineCost) update_model_group_costs(); 
 

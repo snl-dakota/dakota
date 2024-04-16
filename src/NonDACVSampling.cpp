@@ -339,8 +339,9 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
   // > directionally consistent with default approx indexing for well-ordered
   //   models: approx 0 is lowest fidelity --> highest r_i
   SizetArray r_approx_sequence;
+  RealVector avg_eval_ratios = soln.solution_ratios();
   if (mlmfSubMethod == SUBMETHOD_ACV_MF)
-    ordered_approx_sequence(soln.solution_ratios(), r_approx_sequence, true);
+    ordered_approx_sequence(avg_eval_ratios, r_approx_sequence, true);
   update_model_groups(r_approx_sequence);  update_model_group_costs();
   // Important: unlike ML BLUE, modelGroups are only used to facilitate shared
   // sample set groupings in group_increment() and these updates to group

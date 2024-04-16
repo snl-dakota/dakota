@@ -111,6 +111,10 @@ private:
   void unroll_reverse_dag_from_root(unsigned short root,
 				    UShortList& ordered_list);
   /// create an ordered list of roots that enable ordered sample increments
+  /// by ensuring that root sample levels are defined
+  void unroll_reverse_dag_from_root(unsigned short root,
+				    UShortArray& group);
+  /// create an ordered list of roots that enable ordered sample increments
   /// by ensuring that root sample levels are defined (overloaded version
   /// factors in the over-sample ratios)
   void unroll_reverse_dag_from_root(unsigned short root,
@@ -128,7 +132,7 @@ private:
 			 size_t N_H_alloc, const MFSolutionData& soln);
 
   void update_model_groups();
-  void update_model_groups(const SizetArray& approx_sequence);
+  void update_model_groups(const UShortList& root_list);
 
   void precompute_ratios();
   void compute_ratios(const RealMatrix& var_L, MFSolutionData& solution);

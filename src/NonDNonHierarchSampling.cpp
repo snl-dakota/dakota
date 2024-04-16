@@ -800,18 +800,25 @@ overlay_approx_group_sums(const IntRealMatrixArrayMap& sum_G,
 			  Sizet2DArray& N_L_actual_shared,
 			  Sizet2DArray& N_L_actual_refined)
 {
+  // refined arrays may not be initialized, and we will leverage the shared
+  // counts below to initialize sums/counts just prior to refinement
+  // > no need to first initialize refined to the HF sums/counts (the shared
+  //   sums/counts cover this)
+  initialize_sums(sum_L_refined);
+  initialize_counts(N_L_actual_refined);
+
   // omit the last group (all-models) since (i) there is no HF increment
   // (delta_N_G[numApprox] is assigned 0 in approx_increments()) and
   // (ii) any HF refinement would be out of range for L accumulations.  
   size_t m, g, num_L_groups = modelGroups.size() - 1, last_m_index;
-  unsigned short root;
+  unsigned short model, last_model;
   IntRealMatrixArrayMap::const_iterator g_cit;
   IntRealMatrixMap::iterator s_it, r_it;
   for (g=0; g<num_L_groups; ++g) {
     const SizetArray&  num_G_g =  N_G_actual[g];
     if (zeros(num_G_g)) continue; // all-models group has delta = 0
     const UShortArray& group_g = modelGroups[g];
-    num_models = group_g.size();  last_m_index = num_models - 1;
+    last_m_index = group_g.size() - 1;
 
     for (m=0; m<last_m_index; ++m) {
       model = group_g[m];
@@ -824,18 +831,19 @@ overlay_approx_group_sums(const IntRealMatrixArrayMap& sum_G,
     }
     
     // Note: HF model index is out of range for N_L --> num_G_g=0 protects this
-    root = group_g[last_m_index];
+    last_model = group_g[last_m_index];
     // counters (span all moments):
-    SizetArray& N_L_ref = N_L_actual_refined[root];
-    N_L_ref = N_L_actual_shared[root]; // avoid redundant accumulations
+    SizetArray& N_L_ref = N_L_actual_refined[last_model];
+    N_L_ref = N_L_actual_shared[last_model]; // avoid redundant accumulations
     increment_samples(N_L_ref, num_G_g);
     // accumulators for each moment:
     for (s_it =sum_L_shared.begin(), r_it =sum_L_refined.begin(),
 	   g_cit =sum_G.begin();
 	 s_it!=sum_L_shared.end() && r_it!=sum_L_refined.end() &&
 	   g_cit!=sum_G.end(); ++s_it, ++r_it, ++g_cit) {
-      Real* sum_L_ref_r = r_it->second[root];
-      copy_data(s_it->second[root], sum_L_ref_r, numFunctions);//avoid redundant
+      Real* sum_L_ref_r = r_it->second[last_model];
+      // avoid redundant accumulations: copy shared state prior to refinement
+      copy_data(s_it->second[last_model], sum_L_ref_r, numFunctions);
       increment_sums(sum_L_ref_r, g_cit->second[g][last_m_index], numFunctions);
     }
   }

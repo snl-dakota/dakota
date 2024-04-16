@@ -404,13 +404,13 @@ void NonDGenACVSampling::update_model_groups(const UShortList& root_list)
   const UShortArray& approx_set = activeModelSetIter->first;
   size_t num_approx = approx_set.size();
   modelGroups.resize(num_approx + 1);
-  UShortList::const_iterator r_it;  int g = num_approx;
-  for (r_it =root_list.begin(), g=num_approx;
-       r_it!=root_list.end() && g >= 0; ++r_it, --g)
-    unroll_reverse_dag_from_root(*r_it, modelGroups[g]);
+  UShortList::const_iterator r_cit;  int g = num_approx;
+  for (r_cit =root_list.begin(), g=num_approx;
+       r_cit!=root_list.end() && g >= 0; ++r_cit, --g)
+    unroll_reverse_dag_from_root(*r_cit, modelGroups[g]);
 
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "In update_model_groups(SizetArray&), modelGroups:\n" << modelGroups
+    Cout << "In update_model_groups(UShortList&), modelGroups:\n" << modelGroups
 	 << std::endl;
 }
 

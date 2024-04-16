@@ -91,6 +91,7 @@ protected:
 			 size_t N_H_alloc, const MFSolutionData& soln);
 
   void update_model_groups();
+  void update_model_groups(const SizetArray& approx_sequence);
 
   void mfmc_estimator_variance(const RealMatrix& rho2_LH,
 			       const RealVector& var_H, const SizetArray& N_H,
@@ -175,6 +176,9 @@ private:
   //- Heading: Data
   //
 
+  /// MFMC uses all approximations within numApprox; this array supports this
+  /// case for functions that are generalized to support approx subsets
+  UShortArray approxSet;
   /// tracks ordering of a metric (correlations, eval ratios) across set of
   /// approximations
   SizetArray approxSequence;
