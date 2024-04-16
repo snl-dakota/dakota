@@ -357,10 +357,11 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
   Sizet2DArray N_L_actual_shared, N_L_actual_refined;
   SizetArray   N_L_alloc_refined, delta_N_G(numGroups);
   inflate(N_H_actual, N_L_actual_shared); inflate(N_H_alloc, N_L_alloc_refined);
-  size_t last_index = numGroups - 1;
-  delta_N_G[last_index] = 0;
   const RealVector& soln_vars = soln.solution_variables();
-  for (int g=last_index-1; g>=0; --g) // base to top, excluding all-model group
+  size_t last_index = numGroups - 1;  delta_N_G[last_index] = 0;
+  // Pyramid sampling with reuse: base to top, excluding all-model group.
+  // Approx sequencing is now embedded within modelGroups (see top of fn).
+  for (int g=last_index-1; g>=0; --g)
     delta_N_G[g]
       = group_approx_increment(soln_vars, approxSet, N_L_actual_refined,
 			       N_L_alloc_refined, modelGroups[g]);

@@ -501,7 +501,8 @@ dag_approx_increment(const RealVector& soln_vars, const UShortArray& approx_set,
   // > N_L is updated prior to each call to approx_increment allowing use of
   //   one_sided_delta() with latest counts
 
-  size_t num_samp, deflate_root = find_index(approx_set, root);
+  size_t num_samp, deflate_root = (approx_set.size() == numApprox) ? root :
+    find_index(approx_set, root);
   Real lf_target = soln_vars[deflate_root]; // soln_vars sized by approx_set
   if (backfillFailures) {
     const SizetArray& lf_curr = N_L_actual[root];

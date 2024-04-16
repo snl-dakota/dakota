@@ -1109,6 +1109,9 @@ mfmc_model_group(size_t last_index, const SizetArray& approx_sequence,
     { mfmc_model_group(last_index, model_group); return; }
 
   // MFMC or ACV-MF: last index is the all-models group
+  // Note: we resequence the models within fixed pyramid groups (hierarchy is
+  //   reordered prior to pyramid sampling), as opposed to reordering fixed
+  //   modelGroups for root dominance (which destroys pyramid structure)
   size_t m, num_models = last_index+1;
   model_group.resize(num_models);
   for (m=0; m<num_models; ++m)
