@@ -30,8 +30,8 @@ void PythonRegressionSurrogate_straight_line_fit() {
 
   //std::cout << "line_vector: " << line_vector << std::endl;
   //std::cout << "response: " << response << std::endl;
-  const std::string module_name = "polynomial_surrogate";
-  Python pr(line_vector, response, module_name);
+  const std::string module_and_class_name = "polynomial_surrogate.Surrogate";
+  Python pr(line_vector, response, module_and_class_name);
 
   VectorXd eval_pts = VectorXd::LinSpaced(5, 0, 1);
   VectorXd expected_vals = 1.23*eval_pts;

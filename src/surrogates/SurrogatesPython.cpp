@@ -50,8 +50,14 @@ void Python::initialize_python()
   }
   if (!pyModuleActive) {
     try {
-      py::object pyModule = py::module_::import(moduleAndClassName.c_str());
-      pySurrogate = pyModule.attr("Surrogate")(); // hard-coded python class name
+      size_t p = moduleAndClassName.find_last_of(".");
+      if( std::string::npos == p )
+        throw(std::runtime_error(
+              "Invalid surrogate python module_and_class_name.\n\tUse \"module.classname\""));
+      auto module_name = moduleAndClassName.substr(0, p);
+      auto class_name  = moduleAndClassName.substr(p+1);
+      py::object pyModule = py::module_::import(module_name.c_str());
+      pySurrogate = pyModule.attr(class_name.c_str())();
     }
     catch(py::error_already_set &e) {
       if (e.matches(PyExc_ModuleNotFoundError)) {
