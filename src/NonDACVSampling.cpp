@@ -330,40 +330,30 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 		  const SizetArray& N_H_actual, size_t N_H_alloc,
 		  const MFSolutionData& soln)
 {
-  // ----------------------
-  // Compute N_L increments
-  // ----------------------
   // Note: these results do not affect the iteration above and can be
   // performed after N_H has converged
 
-  // Perform a sample sequence that reuses sample increments: define
-  // approx_sequence in decreasing r_i order, directionally consistent
-  // with default approx indexing for well-ordered models
-  // > approx 0 is lowest fidelity --> lowest corr,cost --> highest r_i
-  SizetArray approx_sequence;  bool descending = true;
-  RealVector avg_eval_ratios = soln.solution_ratios();
-  ordered_approx_sequence(avg_eval_ratios, approx_sequence, descending);
-  if (!approx_sequence.empty())
-    { update_model_groups(approx_sequence);  update_model_group_costs(); }
+  // Perform a sample sequence that reuses sample increments: define an approx
+  // sequence in decreasing r_i order (for overlapping sample sequencing)
+  // rather than rho2_LH order (for protecting NaN from sqrt(rho2_diff))
+  // > directionally consistent with default approx indexing for well-ordered
+  //   models: approx 0 is lowest fidelity --> highest r_i
+  SizetArray r_approx_sequence;
+  if (mlmfSubMethod == SUBMETHOD_ACV_MF)
+    ordered_approx_sequence(soln.solution_ratios(), r_approx_sequence, true);
+  update_model_groups(r_approx_sequence);  update_model_group_costs();
+  // Important: unlike ML BLUE, modelGroups are only used to facilitate shared
+  // sample set groupings in group_increment() and these updates to group
+  // definitions do not imply changes to the moment roll-up or peer DAG
+  // > upstream use of modelGroupCosts in finite_solution_bounds() is complete
+  // > downstream processing is agnostic to modelGroups, consuming the overlaid
+  //   {sum,num}_L_{sh,ref}.
+  // > If modelGroups are used more broadly in the future, then nested sampling
+  //   redefinitions may need to employ group defns local to this function
 
-  /*
-  size_t start, end;
-  for (end=numApprox; end>0; --end) {
-    // pairwise (IS and RD) or pyramid (MF):
-    start = (mlmfSubMethod == SUBMETHOD_ACV_MF) ? 0 : end - 1;
-    // *** TO DO NON_BLOCKING: PERFORM 2ND PASS ACCUMULATE AFTER 1ST PASS LAUNCH
-    if (acv_approx_increment(soln, N_L_actual_refined, N_L_alloc_refined,
-			     mlmfIter, approx_sequence, start, end)) {
-      // ACV_IS samples on [approx-1,approx) --> sum_L_refined
-      // ACV_MF samples on [0, approx)       --> sum_L_refined
-      accumulate_acv_sums(sum_L_refined, N_L_actual_refined, approx_sequence,
-			  start, end);
-      increment_equivalent_cost(numSamples, sequenceCost, approx_sequence,
-				start, end, equivHFEvals);
-    }
-  }
-  */
-
+  // --------------------------------------------
+  // Perform approximation increments in parallel
+  // --------------------------------------------
   Sizet2DArray N_L_actual_shared, N_L_actual_refined;
   SizetArray   N_L_alloc_refined, delta_N_G(numGroups);
   inflate(N_H_actual, N_L_actual_shared); inflate(N_H_alloc, N_L_alloc_refined);
@@ -371,24 +361,27 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
   delta_N_G[last_index] = 0;
   const RealVector& soln_vars = soln.solution_variables();
   for (int g=last_index-1; g>=0; --g) // base to top, excluding all-model group
-    delta_N_G[g] = group_approx_increment(soln_vars, N_L_actual_refined,
-					  N_L_alloc_refined, modelGroups[g]);
+    delta_N_G[g]
+      = group_approx_increment(soln_vars, approxSet, N_L_actual_refined,
+			       N_L_alloc_refined, modelGroups[g]);
   group_increment(delta_N_G, mlmfIter, true); // reverse order for RNG sequence
-  // Note: use of this fn requires modelGroupCost to be kept in sync for all
-  // cases, not just numerical solves
+
+  // --------------------------
+  // Update sums, counts, costs
+  // --------------------------
   increment_equivalent_cost(delta_N_G, modelGroupCost, sequenceCost[numApprox],
 			    equivHFEvals);
   IntRealMatrixArrayMap sum_G;  initialize_group_sums(sum_G);
   Sizet2DArray     N_G_actual;  initialize_group_counts(N_G_actual);
   accumulate_group_sums(sum_G, N_G_actual, batchResponsesMap);
-  // Map from "horizontal" group incr to "vertical" model incr (see JCP ACV)
+  // Map from "horizontal" group incr to "vertical" model incr (see JCP: ACV)
   IntRealMatrixMap sum_L_shared = sum_L_baseline, sum_L_refined;
   overlay_approx_group_sums(sum_G, N_G_actual, sum_L_shared, sum_L_refined,
 			    N_L_actual_shared, N_L_actual_refined);
 
-  // -----------------------------------------------------------
-  // Compute/apply control variate parameter to estimate moments
-  // -----------------------------------------------------------
+  // ------------------------------------
+  // Compute/apply CV to estimate moments
+  // ------------------------------------
   RealMatrix H_raw_mom(4, numFunctions);
   acv_raw_moments(sum_L_baseline, sum_L_refined, sum_H, sum_LL, sum_LH,
 		  avg_eval_ratios, N_H_actual, N_L_actual_refined, H_raw_mom);

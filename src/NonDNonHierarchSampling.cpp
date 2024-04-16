@@ -451,6 +451,7 @@ ensemble_sample_batch(size_t iter, int batch_id)
 
 size_t NonDNonHierarchSampling::
 group_approx_increment(const RealVector& soln_vars,
+		       const UShortArray& approx_set,
 		       const Sizet2DArray& N_L_actual, SizetArray& N_L_alloc,
 		       const UShortArray& model_group)
 {
@@ -461,8 +462,10 @@ group_approx_increment(const RealVector& soln_vars,
   //   one_sided_delta() with latest counts
   // > No relaxation is used for approx increments since iteration is complete
 
-  size_t num_samp, root = model_group.back(); // root must be last model
-  Real   lf_target = soln_vars[root]; // *** TO DO ***: if we restrict this case to MFMC,ACV, then can avoid adding inflate/deflate logic
+  size_t num_samp, root = model_group.back(), // root must be last model
+    deflate_root = (approx_set.size() == numApprox) ? root :
+    find_index(approx_set, root);
+  Real lf_target = soln_vars[deflate_root];
   if (backfillFailures) {
     const SizetArray& lf_curr = N_L_actual[root];
     num_samp = one_sided_delta(lf_curr, lf_target); // delta of average
@@ -486,6 +489,7 @@ group_approx_increment(const RealVector& soln_vars,
 }
 
 
+/*
 size_t NonDNonHierarchSampling::
 dag_approx_increment(const RealVector& soln_vars, const UShortArray& approx_set,
 		     const Sizet2DArray& N_L_actual, SizetArray& N_L_alloc,
@@ -520,6 +524,7 @@ dag_approx_increment(const RealVector& soln_vars, const UShortArray& approx_set,
   }
   return num_samp;
 }
+*/
 
 
 void NonDNonHierarchSampling::
@@ -803,45 +808,35 @@ overlay_approx_group_sums(const IntRealMatrixArrayMap& sum_G,
   IntRealMatrixMap::iterator s_it, r_it;
   for (g=0; g<num_L_groups; ++g) {
     const SizetArray&  num_G_g =  N_G_actual[g];
-    const UShortArray& group_g = modelGroups[g];
-    last_m_index = group_g.size() - 1;
-    // all-models group has delta = 0; singleton model groups may bypass
-    if (last_m_index == 0 || zeros(num_G_g)) continue;
-
-    // counters (span all moments):
-    for (m=0; m<last_m_index; ++m)
-      increment_samples(N_L_actual_shared[group_g[m]], num_G_g);
-
-    // accumulators for each moment:
-    for (s_it =sum_L_shared.begin(), g_cit =sum_G.begin();
-	 s_it!=sum_L_shared.end() && g_cit!=sum_G.end(); ++g_cit, ++s_it) {
-      const RealMatrix& sum_G_mg   = g_cit->second[g];
-      RealMatrix&       sum_L_sh_m =  s_it->second;
-      for (m=0; m<last_m_index; ++m)
-	increment_sums(sum_L_sh_m[group_g[m]], sum_G_mg[m], numFunctions);
-    }
-  }
-
-  // avoid redundant accumulations by augmenting refined starting from shared
-  N_L_actual_refined = N_L_actual_shared;
-  sum_L_refined      = sum_L_shared;
-
-  for (g=0; g<num_L_groups; ++g) {
-    const SizetArray& num_G_g = N_G_actual[g];
     if (zeros(num_G_g)) continue; // all-models group has delta = 0
-
     const UShortArray& group_g = modelGroups[g];
-    last_m_index = group_g.size() - 1;  root = group_g[last_m_index];
-    // Note: HF model index is out of range for N_L --> num_G = 0 protects this
+    num_models = group_g.size();  last_m_index = num_models - 1;
 
+    for (m=0; m<last_m_index; ++m) {
+      model = group_g[m];
+      // counters (span all moments):
+      increment_samples(N_L_actual_shared[model], num_G_g);
+      // accumulators for each moment:
+      for (s_it =sum_L_shared.begin(), g_cit =sum_G.begin();
+	   s_it!=sum_L_shared.end() && g_cit!=sum_G.end(); ++g_cit, ++s_it)
+	increment_sums(s_it->second[model], g_cit->second[g][m], numFunctions);
+    }
+    
+    // Note: HF model index is out of range for N_L --> num_G_g=0 protects this
+    root = group_g[last_m_index];
     // counters (span all moments):
-    increment_samples(N_L_actual_refined[root], num_G_g);
-
+    SizetArray& N_L_ref = N_L_actual_refined[root];
+    N_L_ref = N_L_actual_shared[root]; // avoid redundant accumulations
+    increment_samples(N_L_ref, num_G_g);
     // accumulators for each moment:
-    for (r_it =sum_L_refined.begin(), g_cit =sum_G.begin();
-	 r_it!=sum_L_refined.end() && g_cit!=sum_G.end(); ++g_cit, ++r_it)
-      increment_sums(r_it->second[root], g_cit->second[g][last_m_index],
-		     numFunctions);
+    for (s_it =sum_L_shared.begin(), r_it =sum_L_refined.begin(),
+	   g_cit =sum_G.begin();
+	 s_it!=sum_L_shared.end() && r_it!=sum_L_refined.end() &&
+	   g_cit!=sum_G.end(); ++s_it, ++r_it, ++g_cit) {
+      Real* sum_L_ref_r = r_it->second[root];
+      copy_data(s_it->second[root], sum_L_ref_r, numFunctions);//avoid redundant
+      increment_sums(sum_L_ref_r, g_cit->second[g][last_m_index], numFunctions);
+    }
   }
 }
 

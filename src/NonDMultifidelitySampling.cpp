@@ -404,9 +404,6 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 		  const SizetArray& N_H_actual, size_t N_H_alloc,
 		  const MFSolutionData& soln)
 {
-  // ----------------------------------------------------------------
-  // Compute N_L increments based on eval ratio applied to final N_H
-  // ----------------------------------------------------------------
   // Note: these results do not affect the HF iteration loop and can be
   // performed after N_H has converged, which simplifies maxFnEvals / convTol
   // logic (no need to further interrogate these throttles below)
@@ -414,25 +411,25 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
   // Notes on approximation sequencing for MFMC:
   // > approx must be ordered on increasing rho2_LH to enable r_i calculation
   //   (see mfmc_analytic_solution() and mfmc_reordered_analytic_solution())
-  // > unlike ACV, we enforce that this ordering is retained within r_i through
-  //   linear constraint definitions in ensemble_numerical_solution()
+  // > unlike ACV, numerical solutions enforce that this ordering is retained
+  //   within r_i through linear constraints in ensemble_numerical_solution()
   //   >> ACV can order approx sample increments based on decreasing r_i
   //      _after_ an unordered ensemble_numerical_solution()
-
-  // When to apply averaging requires some care.  To properly enforce scalar
-  // budget for vector QoI, need to either scalarize to average targets from
-  // the beginning (scalar hf_target -> scalar lf_target as in ACV) or retain
-  // per-QoI targets until the very end (i.e., at numSamples estimation).
-  // > all HF QoI get sampled together using a scalar count (average(N*_H))
-  //   such that using N*_L(q) = r*(q) N*_H(q) seems non-optimal in isolation,
-  //   but vector estimation in update_hf_targets() (avoiding any premature
-  //   consolidation) requires vector estimation here to hit budget target.
-  //   These LF targets subsequently get averaged by one_sided_delta().
-  // > would be interesting to compare averaging from the start vs. averaging
-  //   at the very end.
-  //   Probably will be similar, in which case we will prefer the latter since
-  //   it leaves the door open for per-QoI optimized sample profiles.
-  // > Both MFMC and ACV defer rounding until the end (numSamples estimation).
+  //   >> potential difference in numerical MFMC vs GenACV for hierarchical DAG
+  //      --> consider removing this
+  // > analytic cases may be misordered in r_i, so compute a local r_i
+  //   ordering here for use incremental sample set reuse.
+  SizetArray r_approx_sequence;
+  ordered_approx_sequence(soln.solution_ratios(), r_approx_sequence, true);
+  update_model_groups(r_approx_sequence);  update_model_group_costs();
+  // Important: unlike ML BLUE, modelGroups are only used to facilitate shared
+  // sample set groupings in group_increment() and these updates to group
+  // definitions do not imply changes to the moment roll-up or peer DAG
+  // > upstream use of modelGroupCosts in finite_solution_bounds() is complete
+  // > downstream processing is agnostic to modelGroups, consuming the overlaid
+  //   {sum,num}_L_{sh,ref}.
+  // > If modelGroups are used more broadly in the future, then nested sampling
+  //   redefinitions may need to employ group defns local to this function
 
   // There are a couple options to rework the loop above for batch evaluation:
   // > Minimal: rewrite accumulate_mf_sums() only to process batchResponsesMap
@@ -447,33 +444,27 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
   //   is not natively group-based, but rather based on r_i oversample + reuse
   //   --> overkill at this time.
 
-  // Pyramid/nested sampling: at step i, we sample approximation range
-  // [0,numApprox-1-i] using the delta relative to the previous step
-  //for (size_t end=numApprox; end>0; --end) {
-  //  if (mfmc_approx_increment(soln, N_L_actual_refined, N_L_alloc_refined,
-  // 			        mlmfIter, approx_sequence, 0, end)) {
-  //    // MFMC samples on [0, approx) --> sum_L_{shared,refined}
-  //    accumulate_mf_sums(sum_L_shared, sum_L_refined, N_L_actual_shared,
-  // 			   N_L_actual_refined, allResponses, approx_sequence,
-  //                       0, end);
-  //    increment_equivalent_cost(numSamples, sequenceCost, approx_sequence,
-  // 				  0, end, equivHFEvals);
-  //  }
-  //}
-
-  // increment_sample_range() updates the count reference prior to delta_N_G,
-  // such that this in a rolling increment, ordered from base to top of pyramid
-  // --> consistent w/ group definitions where previous increments correspond
-  //     to different groupings.
+  // --------------------------------------------
+  // Perform approximation increments in parallel
+  // --------------------------------------------
   Sizet2DArray N_L_actual_shared, N_L_actual_refined;
   SizetArray   N_L_alloc_refined, delta_N_G(numGroups);
   inflate(N_H_actual, N_L_actual_shared); inflate(N_H_alloc, N_L_alloc_refined);
   delta_N_G[numApprox] = 0;
   const RealVector& soln_vars = soln.solution_variables();
+  // increment_sample_range() updates the count reference prior to computing
+  // the next delta_N_G, such that this in a rolling increment, ordered from
+  // base to top of pyramid --> consistent w/ group definitions where previous
+  // increments correspond to different groupings.
   for (int g=numApprox-1; g>=0; --g) // base to top, excluding all-model group
-    delta_N_G[g] = group_approx_increment(soln_vars, N_L_actual_refined,
-					  N_L_alloc_refined, modelGroups[g]);
+    delta_N_G[g]
+      = group_approx_increment(soln_vars, approxSet, N_L_actual_refined,
+			       N_L_alloc_refined, modelGroups[g]);
   group_increment(delta_N_G, mlmfIter, true); // reverse order for RNG sequence
+
+  // --------------------------
+  // Update sums, counts, costs
+  // --------------------------
   // Note: use of this fn requires modelGroupCost to be kept in sync for all
   // cases, not just numerical solves
   increment_equivalent_cost(delta_N_G, modelGroupCost, sequenceCost[numApprox],
@@ -481,12 +472,14 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
   IntRealMatrixArrayMap sum_G;  initialize_group_sums(sum_G);
   Sizet2DArray     N_G_actual;  initialize_group_counts(N_G_actual);
   accumulate_group_sums(sum_G, N_G_actual, batchResponsesMap);
-  // Map from "horizontal" group incr to "vertical" model incr (see JCP ACV)
+  // Map from "horizontal" group incr to "vertical" model incr (see JCP: ACV)
   IntRealMatrixMap sum_L_shared = sum_L_baseline, sum_L_refined;
   overlay_approx_group_sums(sum_G, N_G_actual, sum_L_shared, sum_L_refined,
 			    N_L_actual_shared, N_L_actual_refined);
 
-  // Compute/apply control variate parameter to estimate uncentered raw moments
+  // ------------------------------------
+  // Compute/apply CV to estimate moments
+  // ------------------------------------
   RealMatrix H_raw_mom(4, numFunctions);
   mf_raw_moments(sum_L_baseline, sum_L_shared, sum_L_refined, sum_H, sum_LL,
 		 sum_LH, N_L_actual_shared, N_L_actual_refined, N_H_actual,
@@ -1161,7 +1154,7 @@ mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
     UShortArray model_set(numApprox);
     for (size_t i=0; i<numApprox; ++i) model_set[i] = i; // full set
     mfmc_analytic_solution(model_set, rho2_LH, cost, avg_eval_ratios);
-    update_model_groups();  update_model_group_costs();
+    //update_model_groups();  update_model_group_costs();
     break;
   }
   case REORDERED_ANALYTIC_SOLUTION: { // inactive (see above)
@@ -1169,7 +1162,7 @@ mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
     for (size_t i=0; i<numApprox; ++i) model_set[i] = i; // full set
     mfmc_reordered_analytic_solution(model_set, rho2_LH, cost, approx_sequence,
 				     avg_eval_ratios, true); // monotonic r
-    update_model_groups();  update_model_group_costs();
+    //update_model_groups();  update_model_group_costs();
     break;
   }
   default: // any of several numerical optimization formulations
@@ -1261,7 +1254,11 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
   //correlation_sq_to_covariance(rho2_LH, var_L, varH, covLH);
   //matrix_to_diagonal_array(var_L, covLL);
 
-  // modelGroupCost used for unified treatment in finite_solution_bounds()
+  // This definition of modelGroupCost allows a unified treatment in
+  // NonDNonHierarchSampling::derived_finite_solution_bounds(), which aligns
+  // solution vars N[i] with modelGroupCost[i] --> use ordered groups here.
+  // > Downstream, modelGroup{s,Cost} are used for group_increment() -->
+  //   groups are redefined for an r_i ordering.
   update_model_groups();  update_model_group_costs();
 
   // Base class implementation of numerical solve (shared with ACV,GenACV):
@@ -1279,7 +1276,22 @@ void NonDMultifidelitySampling::update_model_groups()
   if (modelGroups.size() != numGroups)
     modelGroups.resize(numGroups);
   for (size_t g=0; g<numGroups; ++g)
-    mfmc_model_group(g, approxSequence, modelGroups[g]);
+    mfmc_model_group(g, modelGroups[g]);
+}
+
+
+void NonDMultifidelitySampling::
+update_model_groups(const SizetArray& approx_sequence)
+{
+  if (approx_sequence.empty())
+    update_model_groups();
+
+  // Note: model selection case handled by NonDDGenACV, so here numGroups
+  // is the total number of model instances
+  if (modelGroups.size() != numGroups)
+    modelGroups.resize(numGroups);
+  for (size_t g=0; g<numGroups; ++g)
+    mfmc_model_group(g, approx_sequence, modelGroups[g]);
 }
 
 
