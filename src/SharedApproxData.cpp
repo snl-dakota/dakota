@@ -172,7 +172,8 @@ get_shared_data(ProblemDescDB& problem_db, size_t num_vars)
 	   approx_type == "global_moving_least_squares" ||
 	   // Overloading use of SharedSurfpackApproxData for now:
 	   approx_type == "global_exp_gauss_proc" ||
-	   approx_type == "global_exp_poly")
+	   approx_type == "global_exp_poly"       ||
+	   approx_type == "global_exp_python")
     return std::make_shared<SharedSurfpackApproxData>(problem_db, num_vars);
 #endif // HAVE_SURFPACK
   else {
@@ -231,7 +232,8 @@ get_shared_data(const String& approx_type, const UShortArray& approx_order,
 	   approx_type == "global_voronoi_surrogate" ||
 	   // Overloading use of SharedSurfpackApproxData for now:
 	   approx_type == "global_exp_gauss_proc" ||
-	   approx_type == "global_exp_poly"
+	   approx_type == "global_exp_poly"       ||
+	   approx_type == "global_exp_python"
            )
     return std::make_shared<SharedSurfpackApproxData>
       (approx_type, approx_order, num_vars, data_order, output_level);

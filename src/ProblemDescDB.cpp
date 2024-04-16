@@ -2122,6 +2122,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
       {"surrogate.mars_interpolation", P_MOD marsInterpolation},
       {"surrogate.model_export_prefix", P_MOD modelExportPrefix},
       {"surrogate.model_import_prefix", P_MOD modelImportPrefix},
+      {"surrogate.class_path_and_name", P_MOD moduleAndClassName},
       {"surrogate.point_reuse", P_MOD approxPointReuse},
       {"surrogate.refine_cv_metric", P_MOD refineCVMetric},
       {"surrogate.trend_order", P_MOD trendOrder},
