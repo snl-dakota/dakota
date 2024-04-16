@@ -25,7 +25,7 @@ model,
           reuse_samples all
           polynomial linear                                      #s0,#s2
 #          experimental_python                                   #s1,#s3
-#            module_file = "surrogate_polynomial"                #s1,#s3
+#            class_path_and_name = "surrogate_polynomial"                #s1,#s3
 #          import_build_points_file = 'dakota_surrogate_import_rosen.ff.dat' freeform   #s2,#s3
 #          challenge_points_file = 'dakota_surrogate_import_rosen.ff.dat' freeform      #s2,#s3
 #          metrics = "sum_squared" "root_mean_squared" "mean_abs" "max_abs" "rsquared"  #s2,#s3

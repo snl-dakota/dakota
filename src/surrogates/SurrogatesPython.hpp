@@ -37,23 +37,23 @@ class Python : public Surrogate {
  public:
 
   /**
-   * \brief Constructor that sets moduleFilename and does not build.
+   * \brief Constructor that sets moduleAndClassName and does not build.
    *
-   * \param[in] module_name Name of python module file containing callback functions
+   * \param[in] module_and_class_name Name of python module file containing callback functions
    */
-  Python(const std::string& module_name);
+  Python(const std::string& module_and_class_name);
 
   /**
-   * \brief Constructor sets moduleFilename and builds the python surrogate.
+   * \brief Constructor sets moduleAndClassName and builds the python surrogate.
    *
    * \param[in] samples Matrix of data for surrogate construction - (num_samples
    * by num_features) \param[in] response Vector of targets for surrogate
    * construction - (num_samples by num_qoi = 1; only 1 response is supported
-   * currently). \param[in] module_name Name of python module file
+   * currently). \param[in] module_and_class_name Name of python module file
    * containing callback functions
    */
   Python(const MatrixXd& samples, const MatrixXd& response,
-                       const std::string& module_name);
+                       const std::string& module_and_class_name);
 
   /// Default destructor
   ~Python() { }
@@ -132,7 +132,7 @@ class Python : public Surrogate {
   }
 
   std::shared_ptr<Surrogate> clone() const override {
-    return std::make_shared<Python>(moduleFilename);
+    return std::make_shared<Python>(moduleAndClassName);
   }
 
  private:
@@ -140,7 +140,7 @@ class Python : public Surrogate {
   // --------------- Python Setup --------------------
 
   /// Name of python callback module file
-  std::string moduleFilename;
+  std::string moduleAndClassName;
 
   /// true if this class created the interpreter instance
   bool ownPython;

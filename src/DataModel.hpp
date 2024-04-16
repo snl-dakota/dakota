@@ -309,7 +309,7 @@ public:
   String advancedOptionsFilename;
 
   /// file containing python module methods used by python surrogates
-  String moduleFilename;
+  String moduleAndClassName;
 
   // nested models
 

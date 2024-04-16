@@ -6730,7 +6730,7 @@ KEYWORD model {N_mom3(start,0,stop)}
       |
       ( experimental_python {N_mom(lit,surrogateType_global_exp_python)}
         [ options_file STRING {N_mom(str,advancedOptionsFilename)} ]
-        module_file STRING {N_mom(str,moduleFilename)}
+        class_path_and_name STRING {N_mom(str,moduleAndClassName)}
         [ export_model {N_mom(true,exportSurrogate)}
           [ filename_prefix STRING {N_mom(str,modelExportPrefix)} ]
           ( formats {0}

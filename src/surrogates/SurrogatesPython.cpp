@@ -13,8 +13,8 @@
 namespace dakota {
 namespace surrogates {
 
-Python::Python(const std::string& module_name) :
-  moduleFilename(module_name),
+Python::Python(const std::string& module_and_class_name) :
+  moduleAndClassName(module_and_class_name),
   ownPython(false),
   pyModuleActive(false)
 {
@@ -24,8 +24,8 @@ Python::Python(const std::string& module_name) :
 
 Python::Python(const MatrixXd& samples,
                const MatrixXd& response,
-               const std::string& module_name) :
-  moduleFilename(module_name),
+               const std::string& module_and_class_name) :
+  moduleAndClassName(module_and_class_name),
   ownPython(false),
   pyModuleActive(false)
 {
@@ -50,13 +50,13 @@ void Python::initialize_python()
   }
   if (!pyModuleActive) {
     try {
-      py::object pyModule = py::module_::import(moduleFilename.c_str());
+      py::object pyModule = py::module_::import(moduleAndClassName.c_str());
       pySurrogate = pyModule.attr("Surrogate")(); // hard-coded python class name
     }
     catch(py::error_already_set &e) {
       if (e.matches(PyExc_ModuleNotFoundError)) {
         std::cerr << "Could not load the required module '"
-                  << moduleFilename << "'" << std::endl;
+                  << moduleAndClassName << "'" << std::endl;
         throw;
       }
       else {
@@ -77,7 +77,7 @@ void Python::initialize_python()
     }
     catch(py::error_already_set &e) {
       if (e.matches(PyExc_AttributeError)) {
-        std::cerr << "Module '" << moduleFilename << "' does not "
+        std::cerr << "Module '" << moduleAndClassName << "' does not "
           << "contain required method '" << req_at << "'"
           << std::endl;
       }
@@ -101,7 +101,7 @@ void Python::build(const MatrixXd& samples,
       std::cout << "\nBuilding Python surrogate\n\n";
     } else if (verbosity == 2) {
       std::cout << "\nBuilding Python surrogate with module.method\n"
-                << moduleFilename << "." << "construct" << "\n";
+                << moduleAndClassName << "." << "construct" << "\n";
     } else
       throw(
           std::runtime_error("Invalid verbosity int for Python surrogate"));
@@ -149,7 +149,7 @@ MatrixXd Python::gradient(const MatrixXd& eval_points,
   }
   catch(py::error_already_set &e) {
     if (e.matches(PyExc_AttributeError)) {
-      std::cerr << "Module '" << moduleFilename << "' does not "
+      std::cerr << "Module '" << moduleAndClassName << "' does not "
         << "contain required method '" << fn_name << "'"
         << std::endl;
       throw;

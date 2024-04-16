@@ -27,7 +27,7 @@ SurrogatesPythonApprox(const ProblemDescDB& problem_db,
 		const String& approx_label):
   SurrogatesBaseApprox(problem_db, shared_data, approx_label)
 {
-  moduleFile = problem_db.get_string("model.surrogate.module_file");
+  moduleFile = problem_db.get_string("model.surrogate.class_path_and_name");
 //  surrogateOpts.set("advanced_options_file",
 //		    problem_db.get_string("model.advanced_options_file"));
 
