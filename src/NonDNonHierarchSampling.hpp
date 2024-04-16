@@ -400,11 +400,11 @@ protected:
   /// recover estimates of simulation cost using aggregated response metadata
   void recover_online_cost(const IntResponseMap& all_resp);
 
-  void initialize_sums(IntRealMatrixMap& sum_Q);
+  //void initialize_sums(IntRealMatrixMap& sum_Q);
   void initialize_sums(IntRealMatrixMap& sum_L_baseline,
 		       IntRealVectorMap& sum_H, IntRealMatrixMap& sum_LH,
 		       RealVector& sum_HH);
-  void initialize_counts(Sizet2DArray& num_Q);
+  //void initialize_counts(Sizet2DArray& num_Q);
   void initialize_counts(Sizet2DArray& num_L_baseline, SizetArray& num_H,
 			 Sizet2DArray& num_LH);
 
@@ -737,6 +737,7 @@ inline unsigned short NonDNonHierarchSampling::uses_method() const
 { return optSubProblemSolver; }
 
 
+/*
 inline void NonDNonHierarchSampling::initialize_sums(IntRealMatrixMap& sum_Q)
 {
   // sum_* are running sums across all increments
@@ -748,6 +749,15 @@ inline void NonDNonHierarchSampling::initialize_sums(IntRealMatrixMap& sum_Q)
     sum_Q.insert(mat_pr).first->second.shape(numFunctions, numApprox);
   }
 }
+
+
+inline void NonDNonHierarchSampling::initialize_counts(Sizet2DArray& num_Q)
+{
+  num_Q.resize(numApprox);
+  for (size_t approx=0; approx<numApprox; ++approx)
+    num_Q[approx].assign(numFunctions, 0);
+}
+*/
 
 
 inline void NonDNonHierarchSampling::
@@ -765,14 +775,6 @@ initialize_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
     sum_LH.insert(mat_pr).first->second.shape(numFunctions, numApprox);
   }
   sum_HH.size(numFunctions);
-}
-
-
-inline void NonDNonHierarchSampling::initialize_counts(Sizet2DArray& num_Q)
-{
-  num_Q.resize(numApprox);
-  for (size_t approx=0; approx<numApprox; ++approx)
-    num_Q[approx].assign(numFunctions, 0);
 }
 
 
