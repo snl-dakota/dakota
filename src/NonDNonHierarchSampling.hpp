@@ -528,6 +528,11 @@ protected:
 			    RealMatrix& lin_eq_coeffs);
   void run_minimizers(MFSolutionData& soln);
 
+  void root_reverse_dag_to_group(unsigned short root, const UShortSet& rev_dag,
+				 UShortArray& model_group);
+  void group_to_root_reverse_dag(const UShortArray& model_group,
+				 unsigned short& root, UShortSet& rev_dag);
+
   //bool mfmc_model_grouping(const UShortArray& model_group) const;
   //bool cvmc_model_grouping(const UShortArray& model_group) const;
   void mfmc_model_group(size_t last_index, UShortArray& model_group) const;
@@ -1112,6 +1117,26 @@ ensemble_active_set(const UShortArray& model_set)
     start = model_set[m] * numFunctions;
     activeSet.request_values(1, start, start+numFunctions);
   }
+}
+
+
+inline void NonDNonHierarchSampling::
+root_reverse_dag_to_group(unsigned short root, const UShortSet& rev_dag,
+			  UShortArray& model_group)
+{
+  model_group.clear();  model_group.reserve(rev_dag.size() + 1);
+  model_group.insert(model_group.end(), rev_dag.begin(), rev_dag.end());
+  model_group.push_back(root); // by convention
+}
+
+
+inline void NonDNonHierarchSampling::
+group_to_root_reverse_dag(const UShortArray& model_group, unsigned short& root,
+			  UShortSet& rev_dag)
+{
+  root = model_group.back(); // by convention
+  rev_dag.clear();
+  rev_dag.insert(model_group.begin(), --model_group.end());
 }
 
 

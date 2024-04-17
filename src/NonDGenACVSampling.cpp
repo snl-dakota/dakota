@@ -380,12 +380,35 @@ void NonDGenACVSampling::update_model_groups()
   const UShortArray& approx_set = activeModelSetIter->first;
   size_t g, num_approx = approx_set.size();  unsigned short root;
   modelGroups.resize(num_approx + 1);
-  for (g=0; g<num_approx; ++g) { // active approx indexing
-    root = approx_set[g];        // active to total model indexing
-    // reverseActiveDAG is not recursive --> need a full unroll:
-    unroll_reverse_dag_from_root(root, modelGroups[g]);
+
+  switch (mlmfSubMethod) {
+  case SUBMETHOD_ACV_MF:
+    // reverseActiveDAG is not recursive --> need a full unroll
+    for (g=0; g<num_approx; ++g)
+      unroll_reverse_dag_from_root(approx_set[g], modelGroups[g]);
+    unroll_reverse_dag_from_root(numApprox, modelGroups[num_approx]);
+    break;
+  case SUBMETHOD_ACV_IS:  case SUBMETHOD_ACV_RD: {
+    // same model groupings, only differ in z2 sample set definitions
+    unsigned short root;
+    for (g=0; g<num_approx; ++g) {
+      root = approx_set[g];
+      root_reverse_dag_to_group(root, reverseActiveDAG[root], modelGroups[g]);
+    }
+    root_reverse_dag_to_group(numApprox, reverseActiveDAG[numApprox],
+			      modelGroups[num_approx]);
+    break;
   }
-  unroll_reverse_dag_from_root(numApprox, modelGroups[num_approx]);
+  }
+
+  /* This corresponds to ACV-IS (root DAG), not GenACV-IS (general DAG):
+  // singleton groups comprised of each root node
+  for (g=0; g<num_approx; ++g)
+    singleton_model_group(approx_set[g], modelGroups[g]);
+  // shared group
+  mfmc_model_group(numApprox, modelGroups[num_approx]);
+  break;
+  */
 
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "In update_model_groups(), modelGroups:\n" << modelGroups
@@ -405,9 +428,33 @@ void NonDGenACVSampling::update_model_groups(const UShortList& root_list)
   size_t num_approx = approx_set.size();
   modelGroups.resize(num_approx + 1);
   UShortList::const_iterator r_cit;  int g = num_approx;
+
+  switch (mlmfSubMethod) {
+  case SUBMETHOD_ACV_MF:
+    // reverseActiveDAG is not recursive --> need a full unroll
+    for (r_cit =root_list.begin(), g=num_approx;
+	 r_cit!=root_list.end() && g >= 0; ++r_cit, --g)
+      unroll_reverse_dag_from_root(*r_cit, modelGroups[g]);
+    break;
+  case SUBMETHOD_ACV_IS:  case SUBMETHOD_ACV_RD: {
+    // same model groupings, only differ in z2 sample set definitions
+    unsigned short root;
+    for (r_cit =root_list.begin(), g=num_approx;
+	 r_cit!=root_list.end() && g >= 0; ++r_cit, --g) {
+      root = *r_cit;
+      root_reverse_dag_to_group(root, reverseActiveDAG[root], modelGroups[g]);
+    }
+    break;
+  }
+  }
+
+  /* This corresponds to ACV-IS (root DAG), not GenACV-IS (general DAG):
+  // singleton groups comprised of each root node
   for (r_cit =root_list.begin(), g=num_approx;
        r_cit!=root_list.end() && g >= 0; ++r_cit, --g)
-    unroll_reverse_dag_from_root(*r_cit, modelGroups[g]);
+    cvmc_model_group(*r_cit, modelGroups[g]);
+  break;
+  */
 
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "In update_model_groups(UShortList&), modelGroups:\n" << modelGroups
@@ -1859,6 +1906,17 @@ unroll_z1_z2(const RealVector& N_vec, RealVector& z1, RealVector& z2)
   z1.size(numApprox);  z2.size(numGroups);  z2[numApprox] = N_vec[numApprox];
 
   switch (mlmfSubMethod) {
+  case SUBMETHOD_ACV_MF: { // not used (special unroll logic not required)
+    const UShortArray& approx_set = activeModelSetIter->first;
+    const UShortArray& active_dag = *activeDAGIter;
+    unsigned short i, source, target;  size_t dag_size = active_dag.size();
+    for (i=0; i<dag_size; ++i) {
+      source = approx_set[i];  target = active_dag[i];
+      //z1[i] = N_vec[target];  z2[i] = N_vec[source]; // COMPACTED z1,z2
+      z1[source] = N_vec[target];  z2[source] = N_vec[source]; // FULL z1,z2
+    }
+    break;
+  }
   case SUBMETHOD_ACV_IS: case SUBMETHOD_ACV_RD: {
     /* Initial approach generated from scratch:
     unsigned short dag_curr, dag_next;
@@ -1892,17 +1950,6 @@ unroll_z1_z2(const RealVector& N_vec, RealVector& z1, RealVector& z2)
 	source = *d_cit;  Real& z1s = z1[source];
 	z1s = z2t;  z2[source] = N_vec[source] - z1s; // IS/RD (not MF pyramid)
       }
-    }
-    break;
-  }
-  case SUBMETHOD_ACV_MF: { // not used (special unroll logic not required)
-    const UShortArray& approx_set = activeModelSetIter->first;
-    const UShortArray& active_dag = *activeDAGIter;
-    unsigned short i, source, target;  size_t dag_size = active_dag.size();
-    for (i=0; i<dag_size; ++i) {
-      source = approx_set[i];  target = active_dag[i];
-      //z1[i] = N_vec[target];  z2[i] = N_vec[source]; // COMPACTED z1,z2
-      z1[source] = N_vec[target];  z2[source] = N_vec[source]; // FULL z1,z2
     }
     break;
   }
