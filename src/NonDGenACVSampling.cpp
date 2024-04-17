@@ -389,7 +389,7 @@ void NonDGenACVSampling::update_model_groups()
     unroll_reverse_dag_from_root(numApprox, modelGroups[num_approx]);
     break;
   case SUBMETHOD_ACV_IS:  case SUBMETHOD_ACV_RD: {
-    // same model groupings, only differ in z2 sample set definitions
+    // same model groupings, only differ in z1/z2 sample set definitions
     unsigned short root;
     for (g=0; g<num_approx; ++g) {
       root = approx_set[g];
@@ -437,7 +437,7 @@ void NonDGenACVSampling::update_model_groups(const UShortList& root_list)
       unroll_reverse_dag_from_root(*r_cit, modelGroups[g]);
     break;
   case SUBMETHOD_ACV_IS:  case SUBMETHOD_ACV_RD: {
-    // same model groupings, only differ in z2 sample set definitions
+    // same model groupings, only differ in z1/z2 sample set definitions
     unsigned short root;
     for (r_cit =root_list.begin(), g=num_approx;
 	 r_cit!=root_list.end() && g >= 0; ++r_cit, --g) {
@@ -1787,101 +1787,71 @@ void NonDGenACVSampling::compute_parameterized_G_g(const RealVector& N_vec)
   if (GMat.numRows() != dag_size) GMat.shapeUninitialized(dag_size);
   if (gVec.length()  != dag_size) gVec.sizeUninitialized(dag_size);
 
+  //RealMatrix FGMat(dag_size, dag_size, false); // to verify matrix symmetry
+
   // define sample recursion sets backwards (from z_H down to lowest fid)
-  Real src_i, src_j, tgt_i, tgt_j, z1_i, z2_i, z1_j;
+  Real src_i, src_j, tgt_i, tgt_j, z1_i;
   switch (mlmfSubMethod) {
-  case SUBMETHOD_ACV_IS: { // Bomarito Eqs. 21-22
-    RealVector z1, z2;  unroll_z1_z2(N_vec, z1, z2);
-    Real z_i, z_j, zi_zj;
-    for (i=0; i<dag_size; ++i) {
-      src_i = approx_set[i];  tgt_i = active_dag[i];
-      z_i = N_vec[src_i];  z1_i = z1[src_i];  z2_i = z2[src_i];
-      gVec[i] = (tgt_i == numApprox) ? 1./z1_i - 1./z_i : 0.;
-      for (j=0; j<=i; ++j) {
-	src_j = approx_set[j];  tgt_j = active_dag[j]; //bj = active_dag[j];
-	z_j = N_vec[src_j];  z1_j = z1[src_j];  //z2_j = z2[src_j];
-	GMat(i,j) = 0.;  zi_zj = z_i * z_j;
-	if (tgt_i == tgt_j) GMat(i,j) += 1./z1_i - 1./z_i - 1./z_j + z1_i/zi_zj;
-	if (tgt_i == src_j) GMat(i,j) += z1_i/zi_zj - 1./z_j; // false for dag=M
-	if (src_i == tgt_j) GMat(i,j) += z1_j/zi_zj - 1./z_i; // false for dag=M
-	if (src_i == src_j) GMat(i,j) += z2_i/zi_zj;
-      }
-    }
-    //RealVector z1, z2;  unroll_z1_z2(N_vec, z1, z2);
-    //Real z_i, z_j, zi_zj, z1_j;
-    //for (i=0; i<numApprox; ++i) {
-    //  bi = active_dag[i];  z_i = N_vec[i];  z1_i = z1[i];  z2_i = z2[i];
-    //  gVec[i] = (bi == numApprox) ? 1./z1_i - 1./z_i : 0.;
-    //  for (j=0; j<=i; ++j) {
-    //    bj = active_dag[j];  z_j = N_vec[j];  z1_j = z1[j];  //z2_j = z2[j];
-    // 	  GMat(i,j) = 0.;  zi_zj = z_i * z_j;
-    // 	  if (bi == bj)  GMat(i,j) += 1./z1_i - 1./z_i - 1./z_j + z1_i/zi_zj;
-    // 	  if (bi ==  j)  GMat(i,j) += z1_i/zi_zj - 1./z_j; // false for dag = M
-    // 	  if (i  == bj)  GMat(i,j) += z1_j/zi_zj - 1./z_i; // false for dag = M
-    // 	  if (i  ==  j)  GMat(i,j) += z2_i/zi_zj;
-    //  }
-    //}
-    break;
-  }
   case SUBMETHOD_ACV_MF: { // Bomarito Eqs. 16-17
-    Real z2_j, z_H = N_vec[numApprox]; // active LF approx followed by HF
+    Real z2_i, z1_j, z2_j, z_H = N_vec[numApprox];
     for (i=0; i<dag_size; ++i) {
       src_i = approx_set[i];  tgt_i = active_dag[i];
       z1_i = /*z2_bi = z_bi =*/ N_vec[tgt_i];  z2_i = /*z_i =*/ N_vec[src_i];
       gVec[i] = (std::min(z1_i, z_H) / z1_i - std::min(z2_i, z_H) / z2_i) / z_H;
       for (j=0; j<=i; ++j) {
 	src_j = approx_set[j];  tgt_j = active_dag[j];
-	z1_j = /*z2_bj = z_bj =*/ N_vec[tgt_j];  z2_j = /*z_j =*/ N_vec[src_j];
+	z1_j  = /*z2_bj = z_bj =*/ N_vec[tgt_j];  z2_j = /*z_j =*/ N_vec[src_j];
 	GMat(i,j)
 	  = (std::min(z1_i, z1_j)/z1_j - std::min(z1_i, z2_j)/z2_j)/z1_i
 	  + (std::min(z2_i, z2_j)/z2_j - std::min(z2_i, z1_j)/z1_j)/z2_i;
       }
     }
-    /////////////////////////////////////////
-    //Real z1_j, z2_j, z_H = N_vec[numApprox];
-    //for (i=0; i<numApprox; ++i) {
-    //  bi = active_dag[i];
-    //  z1_i = /*z2_bi = z_bi =*/ N_vec[bi];  z2_i = /*z_i =*/ N_vec[i];
-    //  gVec[i] = (std::min(z1_i, z_H) / z1_i - std::min(z2_i, z_H) / z2_i)/z_H;
-    //  for (j=0; j<=i; ++j) {
-    //     bj = active_dag[j];
-    // 	   z1_j = /*z2_bj = z_bj =*/ N_vec[bj];  z2_j = /*z_j =*/ N_vec[j];
-    // 	   GMat(i,j)
-    // 	     = (std::min(z1_i, z1_j)/z1_j - std::min(z1_i, z2_j)/z2_j)/z1_i
-    // 	     + (std::min(z2_i, z2_j)/z2_j - std::min(z2_i, z1_j)/z1_j)/z2_i;
-    //  }
-    //}
     break;
   }
-  case SUBMETHOD_ACV_RD: { // Bomarito Eqs. 19-20
+  case SUBMETHOD_ACV_IS: {
+    // Bomarito Eqs. 21-22.  Notation conversion (Bomarito in quotes):
+    // > "N_{beta_i}" denotes z1_i
+    // > "N_i" denotes "zprime_i" which is NOT z2_i, but rather z2_i - z1_i
+    //   (where z2_i = N_vec[i])
+    // > z1_src is matched to "N_tgt", again "zprime_tgt" = z2_tgt - z1_tgt
     RealVector z1, z2;  unroll_z1_z2(N_vec, z1, z2);
-    for (i=0; i<numApprox; ++i) {
-      src_i = approx_set[i];  tgt_i = active_dag[i];
-      z1_i  = z1[src_i];     z2_i  = z2[src_i];
-      gVec[i] = (tgt_i == numApprox) ? 1./z1_i : 0.;
+    Real z_i, z_j, zi_zj, zprime_i;
+    for (i=0; i<dag_size; ++i) {
+      src_i = approx_set[i];   tgt_i = active_dag[i];
+      z_i   = N_vec[src_i];    z1_i  = z1[src_i];
+      zprime_i = z2[src_i] - z1_i;
+      gVec[i] = (tgt_i == numApprox) ? 1./z1_i - 1./z_i : 0.; // N_0 -> N_beta_i
       for (j=0; j<=i; ++j) {
 	src_j = approx_set[j];  tgt_j = active_dag[j];
-	z1_j = z1[src_j];      GMat(i,j) = 0.;
+	z_j   = N_vec[src_j];   zi_zj = z_i * z_j;
+	GMat(i,j) = 0.;     
+	if (tgt_i == tgt_j) GMat(i,j) += 1./z1_i - 1./z_i - 1./z_j + z1_i/zi_zj;
+	if (tgt_i == src_j) GMat(i,j) += z1_i/zi_zj - 1./z_j;
+	if (src_i == tgt_j) GMat(i,j) += zprime_i/zi_zj - 1./z_i;
+	if (src_i == src_j) GMat(i,j) += zprime_i/zi_zj;
+      }
+    }
+    break;
+  }
+  case SUBMETHOD_ACV_RD: {
+    // Bomarito Eqs. 19-20.  Notation conversion (Bomarito in quotes):
+    // > "N_{beta_i}" denotes z1_i and "N_i" denotes z2_i
+    // > z1_src is matched to "N_tgt", again z2_tgt
+    RealVector z1, z2;  unroll_z1_z2(N_vec, z1, z2);
+    Real z2_i;
+    for (i=0; i<numApprox; ++i) {
+      src_i = approx_set[i];  tgt_i = active_dag[i];
+      z1_i  = z1[src_i];      z2_i  = z2[src_i];
+      gVec[i] = (tgt_i == numApprox) ? 1./z1_i : 0.; // N_0 -> N_beta_i
+      for (j=0; j<=i; ++j) {
+	src_j = approx_set[j];  tgt_j = active_dag[j];
+	GMat(i,j) = 0.;
 	if (tgt_i == tgt_j) GMat(i,j) += 1./z1_i;
-	if (tgt_i == src_j) GMat(i,j) -= 1./z1_i; // always false for dag = M
-	if (src_i == tgt_j) GMat(i,j) -= 1./z1_j; // always false for dag = M
+	if (tgt_i == src_j) GMat(i,j) -= 1./z1_i; // always false for root dag
+	if (src_i == tgt_j) GMat(i,j) -= 1./z2_i; // always false for root dag
 	if (src_i == src_j) GMat(i,j) += 1./z2_i;
       }
     }
-
-    //RealVector z1, z2;  unroll_z1_z2(N_vec, z1, z2);
-    //for (i=0; i<numApprox; ++i) {
-    //  bi = active_dag[i];  z1_i = z1[i];  z2_i = z2[i];
-    //  gVec[i] = (bi == numApprox) ? 1./z1_i : 0.;
-    //  for (j=0; j<=i; ++j) {
-    //    bj = active_dag[j];  //z1_j = z1[j];  z2_j = z2[j];
-    //    GMat(i,j) = 0.;
-    //    if (bi == bj)  GMat(i,j) += 1./z1_i;
-    //    if (bi ==  j)  GMat(i,j) -= 1./z1_i;  // always false for dag = M
-    //    if ( i == bj)  GMat(i,j) -= 1./z1[j]; // always false for dag = M
-    //    if ( i ==  j)  GMat(i,j) += 1./z2_i;
-    //  }
-    //}
     break;
   }
   default:
@@ -1889,6 +1859,9 @@ void NonDGenACVSampling::compute_parameterized_G_g(const RealVector& N_vec)
 	 << "ACVSampling::compute_parameterized_G_g()" << std::endl;
     abort_handler(METHOD_ERROR); break;
   }
+
+  //Cout << "Full G matrix:\n" << FGMat << "g vector:\n" << gVec << std::endl;
+  //exit(0);
 
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "For dag:\n"  << active_dag  << "G matrix:\n" << GMat
@@ -1903,7 +1876,8 @@ unroll_z1_z2(const RealVector& N_vec, RealVector& z1, RealVector& z2)
   //       map indices (DAG values to sample count indices) 
 
   //Real z_H = N_vec[numApprox];
-  z1.size(numApprox);  z2.size(numGroups);  z2[numApprox] = N_vec[numApprox];
+  z1.size(numGroups);  z1[numApprox] = 0;
+  z2.size(numGroups);  z2[numApprox] = N_vec[numApprox];
 
   switch (mlmfSubMethod) {
   case SUBMETHOD_ACV_MF: { // not used (special unroll logic not required)
@@ -1917,30 +1891,23 @@ unroll_z1_z2(const RealVector& N_vec, RealVector& z1, RealVector& z2)
     }
     break;
   }
-  case SUBMETHOD_ACV_IS: case SUBMETHOD_ACV_RD: {
-    /* Initial approach generated from scratch:
-    unsigned short dag_curr, dag_next;
-    UShortList path;  UShortList::reverse_iterator rit;
-    for (i=0; i<numApprox; ++i) {
-      // walk+store path to root
-      dag_curr = i;  dag_next = dag[dag_curr];
-      path.clear();  path.push_back(dag_curr);  path.push_back(dag_next);
-      while (z2[dag_next] == 0) { // dag_next != numApprox &&
-	dag_curr = dag_next;  dag_next = dag[dag_curr];
-	path.push_back(dag_next);
-      }
-      // walk path in reverse direction to fill z1,z2
-      rit = path.rbegin();  dag_next = *rit;  ++rit;
-      for (; rit != path.rend(); ++rit) {
-	dag_curr = *rit;
-	z1[dag_curr] = z2[dag_next];
-	z2[dag_curr] = N_vec[dag_curr] - z1[dag_curr]; // IS/RD
-	dag_next = dag_curr;
+  case SUBMETHOD_ACV_IS: {
+    // leverage reverseActiveDAG and orderedRootList:
+    UShortList::const_iterator r_cit;  UShortSet::const_iterator d_cit;
+    unsigned short source, target;  Real z1t;
+    for (r_cit=orderedRootList.begin(); r_cit!=orderedRootList.end(); ++r_cit) {
+      target = *r_cit;  z1t = z1[target];
+      const UShortSet& reverse_dag = reverseActiveDAG[target];
+      for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) {
+	source = *d_cit;
+	z1[source] = N_vec[target] - z1t; // Bomarito Fig. 6
+	z2[source] = N_vec[source];       // Bomarito Fig. 6
       }
     }
-    */
-
-    // Preferred: leverage reverseActiveDAG and orderedRootList:
+    break;
+  }
+  case SUBMETHOD_ACV_RD: {
+    // leverage reverseActiveDAG and orderedRootList:
     UShortList::const_iterator r_cit;  UShortSet::const_iterator d_cit;
     unsigned short source, target;  Real z2t;
     for (r_cit=orderedRootList.begin(); r_cit!=orderedRootList.end(); ++r_cit) {
@@ -1948,7 +1915,8 @@ unroll_z1_z2(const RealVector& N_vec, RealVector& z1, RealVector& z2)
       const UShortSet& reverse_dag = reverseActiveDAG[target];
       for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) {
 	source = *d_cit;  Real& z1s = z1[source];
-	z1s = z2t;  z2[source] = N_vec[source] - z1s; // IS/RD (not MF pyramid)
+	z1s = z2t;                        // Bomarito Fig. 5
+	z2[source] = N_vec[source] - z1s; // Bomarito Fig. 5
       }
     }
     break;
