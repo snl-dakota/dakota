@@ -10,7 +10,9 @@
 
 #include "dakota_stat_util.hpp"
 #include "dakota_data_types.hpp"
+#ifdef HAVE_DAKOTA_SURROGATES
 #include "SurrogatesPolynomialRegression.hpp"
+#endif
 #include "SensAnalysisGlobal.hpp"
 #include "util_common.hpp"
 #include "util_metrics.hpp"
