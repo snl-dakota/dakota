@@ -35,19 +35,37 @@ NonDGenACVSampling(ProblemDescDB& problem_db, Model& model):
     problem_db.get_short("method.nond.search_model_graphs.selection")),
   meritFnStar(DBL_MAX)
 {
-  // assign appropriate throttle for cases other than PARTIAL_GRAPH_RECURSION
-  switch (dagRecursionType) {
-  case   NO_GRAPH_RECURSION:  dagDepthLimit = 1;          break;
-  case   KL_GRAPH_RECURSION:  dagDepthLimit = 2;          break;
-  case FULL_GRAPH_RECURSION:  dagDepthLimit = numApprox;  break;
-  }
-
-  // also support DAG for MFMC for access to model selection
+  // Support fixed DAGs (no search) for method promotions;
+  // model selection remains available
   switch (methodName) {
-  case MULTIFIDELITY_SAMPLING:
-    dagWidthLimit = 1;  mlmfSubMethod = SUBMETHOD_ACV_MF;   break;
-  default:
-    dagWidthLimit = numApprox;                              break;
+  case MULTILEVEL_SAMPLING: // MLMC promotion: enforce fixed hierarchical DAG
+    dagRecursionType = NO_GRAPH_RECURSION;
+    dagWidthLimit = 1;  dagDepthLimit = numApprox;
+    mlmfSubMethod = SUBMETHOD_ACV_RD;   break;
+  case MULTIFIDELITY_SAMPLING: // MFMC promotion: enforce fixed peer DAG
+    dagRecursionType = NO_GRAPH_RECURSION;
+    dagWidthLimit = 1;  dagDepthLimit = numApprox;
+    mlmfSubMethod = SUBMETHOD_ACV_MF;   break;
+  default: // not a promotion: ACV specification + search options
+    // assign appropriate depth/width throttles for recursion options
+    switch (dagRecursionType) {
+    case NO_GRAPH_RECURSION:
+      switch (mlmfSubMethod) {
+      case SUBMETHOD_ACV_RD: // default hierarch DAG for ACV_RD
+	dagWidthLimit = 1;  dagDepthLimit = numApprox;  break;
+      default:               // default peer DAG for ACV_MF,ACV_IS
+	dagDepthLimit = 1;  dagWidthLimit = numApprox;  break;
+      }
+      break;
+    case KL_GRAPH_RECURSION:
+      dagDepthLimit = 2;  dagWidthLimit = numApprox;  break;
+    case PARTIAL_GRAPH_RECURSION:
+      // dagDepthLimit as user specified
+      dagWidthLimit = numApprox;                      break;
+    case FULL_GRAPH_RECURSION:
+      dagDepthLimit = dagWidthLimit = numApprox;      break;
+    }
+    break;
   }
 }
 
@@ -163,14 +181,14 @@ generate_dags(unsigned short root, const UShortArray& nodes,
     w_limit = std::min(num_approx, dagWidthLimit);
   UShortArray dag;
 
-  if (d_limit <= 1) {
-    if (d_limit == 1) dag.assign(num_approx, root); // ACV
-    dag_set.insert(dag); // empty DAG (Monte Carlo) if d_limit is 0
+  if (d_limit <= 1) { // peer DAG (ACV)
+    if (d_limit == 1) dag.assign(num_approx, root);
+    dag_set.insert(dag); // empty DAG (Monte Carlo) if d_limit=0 (num_approx=0)
     return;
   }
-  else if (w_limit == 1) {
+  else if (w_limit == 1) { // hierarchical DAG (MLMC, MFMC)
     dag.resize(num_approx);
-    for (unsigned short i=0; i<num_approx; ++i) dag[i] = i+1; // MFMC
+    for (unsigned short i=0; i<num_approx; ++i) dag[i] = i+1;
     dag_set.insert(dag);
     return;
   }

@@ -650,7 +650,7 @@ protected:
   SizetSizetPair varMinIndices;
 
   /// variance minimization algorithm selection: SUBMETHOD_MFMC or
-  /// SUBMETHOD_ACV_{IS,MF,KL}
+  /// SUBMETHOD_ACV_{IS,MF,RD}
   unsigned short mlmfSubMethod;
 
   /// number of model groupings (pairings, pyramid levels,

@@ -390,7 +390,32 @@ compute_F_matrix(const RealVector& r_and_N, RealSymMatrix& F)
     }
     break;
   }
-  //case SUBMETHOD_ACV_RD: // TO DO
+  /*
+  // Weighted RD is not well-motivated as a root DAG; preferable to use ACV-IS
+  // --> map an RD user spec to GenACV and default to hierarch DAG as in MFMC
+  //     (allow DAG selection, model selection, both, neither)
+  // --> No "ACV_RD" implemented in this class for root DAG case
+  case SUBMETHOD_ACV_RD: {
+    // TO DO: convert r_and_N to N_vec
+    Real z1_i, z2_i, N_H = N_vec[numApprox];
+    for (i=0; i<numApprox; ++i) {
+      z1_i = N_H;            // z1s = z2t
+      z2_i = N_vec[i] - N_H; // z2i = N_vec[source] - z1s
+      //gVec[i] = 1./z1_i;
+      GMat(i,i) = 1./z2_i + 1./z1_i;
+      for (j=0; j<i; ++j) {
+	GMat(i,j) = 1./z1_i;
+	// From GenACV-RD:
+	//if (tgt_i == tgt_j) GMat(i,j) += 1./z1_i; // always true
+	//if (tgt_i == src_j) GMat(i,j) -= 1./z1_i; // always false for root dag
+	//if (src_i == tgt_j) GMat(i,j) -= 1./z2_i; // always false for root dag
+	//if (src_i == src_j) GMat(i,j) += 1./z2_i; // diagonal
+      }
+    }
+    // TO DO: convert GMat to F (and resolve gVec)
+    break;
+  }
+  */
   default:
     Cerr << "Error: bad sub-method name (" << mlmfSubMethod
 	 << ") in NonDACVSampling::compute_F_matrix()" << std::endl;

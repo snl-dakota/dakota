@@ -69,7 +69,9 @@ NonDACVSampling::~NonDACVSampling()
 void NonDACVSampling::core_run()
 {
   if (mlmfSubMethod == SUBMETHOD_ACV_RD) {
-    Cerr << "Error: ACV recursive difference not yet implemented." << std::endl;
+    Cerr << "Error: weighted recursive difference is not supported in ACV "
+	 << "using a peer DAG\n       (generalized ACV supports optional DAG "
+	 << "search or a default hierarchical DAG)." << std::endl;
     abort_handler(METHOD_ERROR);
   }
 

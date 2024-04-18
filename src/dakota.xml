@@ -328,7 +328,7 @@
 	     ' >
 
     <!ENTITY mfmc_numerical_solve '
-	    <keyword  id="numerical_solve" name="numerical_solve" code="{0}" label="numerical_solve" minOccurs="0" >
+	     <keyword  id="numerical_solve" name="numerical_solve" code="{0}" label="numerical_solve" minOccurs="0" >
                <optional>
 	         <oneOf label="Employ numerical solve">
                    <keyword  id="fallback" name="fallback" code="{N_mdm(utype,numericalSolveMode_NUMERICAL_FALLBACK)}" label="fallback" />
@@ -337,6 +337,12 @@
                </optional>
                &method_mlmf_sub_problem_solver;
 	     </keyword>
+	     ' >
+
+    <!ENTITY promoted_model_selection '
+	     <keyword  id="search_model_graphs" name="search_model_graphs" code="{0}" label="search_model_graph" minOccurs="0" default="NO_GRAPH_RECURSION" >
+               <keyword  id="model_selection" name="model_selection" code="{N_mdm(type,modelSelectType_ALL_MODEL_COMBINATIONS)}" label="model_selection" minOccurs="0" />
+             </keyword>
 	     ' >
 
     <!ENTITY default_trust_region '
@@ -3182,6 +3188,9 @@
 	  &mlmf_pilot_samples;
 	  &mlmf_solution_mode;
 	  &method_sample_type_lhs_mc;
+	  <keyword  id="weighted" name="weighted" code="{N_mdm(utype,subMethod_SUBMETHOD_WEIGHTED_MLMC)}" label="weighted MLMC"  minOccurs="0" >
+	    &promoted_model_selection;
+	  </keyword>
 	  <keyword  id="export_sample_sequence" name="export_sample_sequence" code="{N_mdm(true,exportSampleSeqFlag)}" label="export_sample_sequence"  minOccurs="0" >
 	    &method_export_samples_format;
 	  </keyword>
@@ -3234,9 +3243,7 @@
 	  &mlmf_pilot_samples;
 	  &mlmf_solution_mode;
 	  &mfmc_numerical_solve;
-	  <keyword  id="search_model_graphs" name="search_model_graphs" code="{0}" label="search_model_graph" minOccurs="0" default="NO_GRAPH_RECURSION" >
-	    <keyword  id="model_selection" name="model_selection" code="{N_mdm(type,modelSelectType_ALL_MODEL_COMBINATIONS)}" label="model_selection" minOccurs="0" />
-	  </keyword>
+	  &promoted_model_selection; <!-- implies numerical solve -->
 	  &method_sample_type_lhs_mc;
 	  <keyword  id="export_sample_sequence" name="export_sample_sequence" code="{N_mdm(true,exportSampleSeqFlag)}" label="export_sample_sequence"  minOccurs="0" >
 	    &method_export_samples_format;
