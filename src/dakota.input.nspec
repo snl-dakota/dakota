@@ -5944,7 +5944,16 @@ KEYWORD method {N_mdm3(start,0,stop)}
         adaptive_metropolis {N_mdm(lit,mcmcType_adaptive_metropolis)}
         |
         metropolis_hastings {N_mdm(lit,mcmcType_metropolis_hastings)}
+        |
+        mala {N_mdm(lit,mcmcType_mala)}
        ]
+      [ dr_num_stages INTEGER {N_mdm(int,drNumStages)} ]
+      [ dr_scale_type STRING {N_mdm(str,drScaleType)} ]
+      [ dr_scale REAL {N_mdm(Real,drScale)} ]
+      [ am_period_num_steps INTEGER {N_mdm(int,amPeriodNumSteps)} ]
+      [ am_starting_step INTEGER {N_mdm(int,amStartingStep)} ]
+      [ am_scale REAL {N_mdm(Real,amScale)} ]
+      [ mala_step_size REAL {N_mdm(Real,malaStepSize)} ]
       [ proposal_covariance {N_mdm(lit,proposalCovType_user)}
         ( prior {N_mdm(lit,proposalCovType_prior)}
           [ multiplier REAL > 0.0 {N_mdm(Real,priorPropCovMult)} ]

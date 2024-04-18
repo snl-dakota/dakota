@@ -27,6 +27,12 @@ method,
   seed = 34784
   chain_samples = 1000      #s0,#s1
 # chain_samples = 3000      #s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+# dr_num_stages = 3         #s9
+# dr_scale_type = 'Power'   #s9
+# dr_scale = 2.0            #s9
+# am_period_num_steps = 100 #s9
+# am_starting_step = 100    #s9
+# am_scale = 1.0            #s9
 # proposal_covariance       #s5,#s6,#s7,#s8,#s9
 #   diagonal                                                #s5,#s8,#s9
 #     values 1.0e12 1.0e-2                                  #s5,#s8,#s9

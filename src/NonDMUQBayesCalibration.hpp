@@ -98,14 +98,14 @@ protected:
 
   std::shared_ptr<muq::Modeling::WorkGraph> workGraph;
 
-  std::shared_ptr<muq::Modeling::IdentityOperator>            parameterPtr;
-  std::shared_ptr<muq::Modeling::Distribution>                distPtr;
-  std::shared_ptr<muq::Modeling::DensityProduct>              posteriorPtr;
-  std::shared_ptr<MUQLikelihood>                              MUQLikelihoodPtr;
-  std::shared_ptr<MUQPrior>    MUQPriorPtr;
+  std::shared_ptr<muq::Modeling::IdentityOperator> parameterPtr;
+  std::shared_ptr<muq::Modeling::Distribution>     distPtr;
+  std::shared_ptr<muq::Modeling::DensityProduct>   posteriorPtr;
+  std::shared_ptr<MUQLikelihood>                   MUQLikelihoodPtr;
+  std::shared_ptr<MUQPrior>                        MUQPriorPtr;
 
-  std::shared_ptr<muq::SamplingAlgorithms::SingleChainMCMC>   mcmc;
-  std::shared_ptr<muq::SamplingAlgorithms::SampleCollection>  samps;
+  std::shared_ptr<muq::SamplingAlgorithms::SingleChainMCMC>  mcmc;
+  std::shared_ptr<muq::SamplingAlgorithms::SampleCollection> samps;
 
   /// MCMC type ("dram" or "delayed_rejection" or "adaptive_metropolis" 
   /// or "metropolis_hastings" or "multilevel",  within QUESO) 
@@ -126,6 +126,27 @@ protected:
   /// initial guess (user-specified or default initial values)
   RealVector init_point;
 
+  /// DR num stages
+  int drNumStages;
+
+  /// DR scale type
+  String drScaleType;
+
+  /// DR scale
+  Real drScale;
+
+  /// AM period num steps
+  int amPeriodNumSteps;
+
+  /// AM staring step
+  int amStartingStep;
+
+  /// AM scale
+  Real amScale;
+
+  /// MALA step size (user-specified or default initial values)
+  Real malaStepSize;
+
 private:
 
   //
@@ -139,32 +160,49 @@ class MUQLikelihood : public muq::Modeling::Density {
 
 public:
 
-  inline MUQLikelihood(NonDMUQBayesCalibration* nond_muq_ptr,
-    std::shared_ptr<muq::Modeling::Distribution> distPtr) :
-    muq::Modeling::Density(distPtr), nonDMUQInstancePtr(nond_muq_ptr) {};
+  inline MUQLikelihood( NonDMUQBayesCalibration                      * nond_muq_ptr
+                      , std::shared_ptr<muq::Modeling::Distribution>   distPtr
+                      )
+    : muq::Modeling::Density(distPtr)
+    , nonDMUQInstancePtr    (nond_muq_ptr)
+  {
+    // Nothing extra to do
+  };
 
   double LogDensityImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs);
+
+  Eigen::VectorXd GradLogDensityImpl(unsigned int wrt,
+                                     muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs);
 
 protected:
 
 private:
 
-    NonDMUQBayesCalibration* nonDMUQInstancePtr;
+  NonDMUQBayesCalibration * nonDMUQInstancePtr;
 };
 
 class MUQPrior : public muq::Modeling::Density {
 public:
 
-  inline MUQPrior(NonDMUQBayesCalibration* nond_muq_ptr, std::shared_ptr<muq::Modeling::Distribution> distPtr) :
-  muq::Modeling::Density(distPtr), nonDMUQInstancePtr(nond_muq_ptr) { };
+  inline MUQPrior( NonDMUQBayesCalibration                      * nond_muq_ptr
+                 , std::shared_ptr<muq::Modeling::Distribution>   distPtr
+                 )
+    : muq::Modeling::Density(distPtr)
+    , nonDMUQInstancePtr    (nond_muq_ptr)
+  {
+    // Nothing extra to do
+  };
 
   double LogDensityImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs);
+
+  Eigen::VectorXd GradLogDensityImpl(unsigned int wrt,
+                                     muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs);
 
 protected:
 
 private:
 
-  NonDMUQBayesCalibration* nonDMUQInstancePtr;
+  NonDMUQBayesCalibration * nonDMUQInstancePtr;
 
 };
 

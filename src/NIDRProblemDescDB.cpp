@@ -6673,6 +6673,7 @@ static Method_mp_lit
 	MP2(mcmcType,dram),
 	MP2(mcmcType,metropolis_hastings),
 	MP2(mcmcType,multilevel),
+	MP2(mcmcType,mala),
 	MP2(modelDiscrepancyType,global_kriging),
 	MP2(modelDiscrepancyType,global_polynomial),
 	MP2(mutationType,bit_random),
@@ -6792,7 +6793,10 @@ static Real
 	MP_(wilksConfidenceLevel),
 	MP_(tiCoverage),
 	MP_(tiConfidenceLevel),
-	MP_(xConvTol);
+	MP_(xConvTol),
+	MP_(drScale),
+	MP_(amScale),
+	MP_(malaStepSize);
 
 static RealVector
 	MP_(anisoDimPref),
@@ -6886,8 +6890,9 @@ static String
 	MP_(subMethodName),
         MP_(subMethodPointer),
         MP_(subModelPointer),
-  MP_(generatingVectorFileName),
-  MP_(generatingMatricesFileName);
+        MP_(generatingVectorFileName),
+        MP_(generatingMatricesFileName),
+        MP_(drScaleType);
 
 static StringArray
 	MP_(hybridMethodNames),
@@ -7016,9 +7021,12 @@ static int
 	MP_(totalPatternSize),
 	MP_(verifyLevel),
 	MP_(vbdViaSamplingNumBins),
-  MP_(log2MaxPoints),
-  MP_(numberOfBits),
-  MP_(scrambleSize);
+	MP_(log2MaxPoints),
+	MP_(numberOfBits),
+	MP_(scrambleSize),
+	MP_(drNumStages),
+	MP_(amPeriodNumSteps),
+	MP_(amStartingStep);
 
 static size_t
 	MP_(collocationPoints),

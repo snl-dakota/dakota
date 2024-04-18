@@ -3658,13 +3658,35 @@
 	      &bayes_seed_rng;
 	      <optional>
 		<oneOf label="MCMC Algorithm" >
-            <keyword  id="dram" name="dram" code="{N_mdm(lit,mcmcType_dram)}" label="dram"  default="dram" />
-            <keyword  id="delayed_rejection" name="delayed_rejection" code="{N_mdm(lit,mcmcType_delayed_rejection)}" label="delayed_rejection"  default="dram" />
-            <keyword  id="adaptive_metropolis" name="adaptive_metropolis" code="{N_mdm(lit,mcmcType_adaptive_metropolis)}" label="adaptive_metropolis"  default="dram" />
-            <keyword  id="metropolis_hastings" name="metropolis_hastings" code="{N_mdm(lit,mcmcType_metropolis_hastings)}" label="metropolis_hastings"  default="dram" />
+                  <keyword  id="dram" name="dram" code="{N_mdm(lit,mcmcType_dram)}" label="dram"  default="dram" />
+                  <keyword  id="delayed_rejection" name="delayed_rejection" code="{N_mdm(lit,mcmcType_delayed_rejection)}" label="delayed_rejection"  default="dram" />
+                  <keyword  id="adaptive_metropolis" name="adaptive_metropolis" code="{N_mdm(lit,mcmcType_adaptive_metropolis)}" label="adaptive_metropolis"  default="dram" />
+                  <keyword  id="metropolis_hastings" name="metropolis_hastings" code="{N_mdm(lit,mcmcType_metropolis_hastings)}" label="metropolis_hastings"  default="dram" />
+                  <keyword  id="mala" name="mala" code="{N_mdm(lit,mcmcType_mala)}" label="mala"  default="dram" />
 		</oneOf>
 	      </optional>
-          &bayes_proposal_covariance;
+	      <keyword  id="dr_num_stages" name="dr_num_stages" code="{N_mdm(int,drNumStages)}" label="Number of stages for Delayed Rejection"  minOccurs="0" maxOccurs="1" default="3" >
+		<param type="INTEGER" />
+	      </keyword>
+	      <keyword  id="dr_scale_type" name="dr_scale_type" code="{N_mdm(str,drScaleType)}" label="Scale type for Delayed Rejection"  minOccurs="0" maxOccurs="1" default="Power" >
+		<param type="STRING" />
+	      </keyword>
+	      <keyword  id="dr_scale" name="dr_scale" code="{N_mdm(Real,drScale)}" label="Scale for Delayed Rejection"  minOccurs="0" maxOccurs="1" default="2.0" >
+		<param type="REAL" />
+	      </keyword>
+	      <keyword  id="am_period_num_steps" name="am_period_num_steps" code="{N_mdm(int,amPeriodNumSteps)}" label="Period number of steps for Adaptive Metropolis"  minOccurs="0" maxOccurs="1" default="100" >
+		<param type="INTEGER" />
+	      </keyword>
+	      <keyword  id="am_starting_step" name="am_starting_step" code="{N_mdm(int,amStartingStep)}" label="Starting step for Adaptive Metropolis"  minOccurs="0" maxOccurs="1" default="100" >
+		<param type="INTEGER" />
+	      </keyword>
+	      <keyword  id="am_scale" name="am_scale" code="{N_mdm(Real,amScale)}" label="Scale for Adaptive Metropolis"  minOccurs="0" maxOccurs="1" default="1.0" >
+		<param type="REAL" />
+	      </keyword>
+	      <keyword  id="mala_step_size" name="mala_step_size" code="{N_mdm(Real,malaStepSize)}" label="Step size for MALA"  minOccurs="0" maxOccurs="1" default="1.0" >
+		<param type="REAL" />
+	      </keyword>
+              &bayes_proposal_covariance;
 	    </keyword>
 	  </oneOf>
 	  <keyword  id="experimental_design" name="experimental_design" code="{N_mdm(true,adaptExpDesign)}" label="Bayesian Experiment Design"  minOccurs="0" >
