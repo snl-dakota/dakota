@@ -293,20 +293,27 @@ augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
   // linear inequality constraints on sample counts:
   // N_i increases w/ decreasing fidelity
 
+  size_t i, offset = ( optSubProblemForm == N_MODEL_LINEAR_CONSTRAINT ||
+		       optSubProblemForm == R_ONLY_LINEAR_CONSTRAINT ) ? 1 : 0;
+#ifdef REORDER_ON_THE_FLY
+  for (i=0; i<numApprox; ++i) { // N_i > N
+    lin_ineq_coeffs(i+offset, i)    = -1.;
+    lin_ineq_coeffs(i+offset, numApprox) =  1. + RATIO_NUDGE;
+  }
+#else
   bool ordered = approxSequence.empty();
-  size_t i, num_am1 = numApprox - 1, approx_ip1,
-    approx = (ordered) ? 0 : approxSequence[0],
-    lin_ineq_offset = ( optSubProblemForm == N_MODEL_LINEAR_CONSTRAINT ||
-			optSubProblemForm == R_ONLY_LINEAR_CONSTRAINT ) ? 1 : 0;
-  for (i=0; i<num_am1; ++i) { // N_im1 >= N_i
+  size_t num_am1 = numApprox - 1, approx_ip1,
+    approx = (ordered) ? 0 : approxSequence[0];
+  for (i=0; i<num_am1; ++i) { // N_im1 > N_i
     approx_ip1 = (ordered) ? i+1 : approxSequence[i+1];
-    lin_ineq_coeffs(i+lin_ineq_offset, approx)     = -1.;
-    lin_ineq_coeffs(i+lin_ineq_offset, approx_ip1) =  1.; // *** TO DO ***: check this --> would RATIO_NUDGE be helpful?
+    lin_ineq_coeffs(i+offset, approx)     = -1.;
+    lin_ineq_coeffs(i+offset, approx_ip1) =  1. + RATIO_NUDGE;
     approx = approx_ip1;
   }
   // N_am1 > N
-  lin_ineq_coeffs(num_am1+lin_ineq_offset,    approx) = -1.;
-  lin_ineq_coeffs(num_am1+lin_ineq_offset, numApprox) =  1. + RATIO_NUDGE;
+  lin_ineq_coeffs(num_am1+offset,    approx) = -1.;
+  lin_ineq_coeffs(num_am1+offset, numApprox) =  1. + RATIO_NUDGE;
+#endif
 }
 
 
@@ -319,25 +326,36 @@ augmented_linear_ineq_violations(const RealVector& cd_vars,
   // linear inequality constraints on sample counts:
   // N_i increases w/ decreasing fidelity
 
-  bool ordered = approxSequence.empty();
-  size_t i, num_am1 = numApprox - 1, approx_ip1,
-    approx = (ordered) ? 0 : approxSequence[0],
-    lin_ineq_offset = ( optSubProblemForm == N_MODEL_LINEAR_CONSTRAINT ||
-			optSubProblemForm == R_ONLY_LINEAR_CONSTRAINT ) ? 1 : 0;
+  size_t i, offset = ( optSubProblemForm == N_MODEL_LINEAR_CONSTRAINT ||
+		       optSubProblemForm == R_ONLY_LINEAR_CONSTRAINT ) ? 1 : 0;
   Real inner_prod, l_bnd, u_bnd, viol, quad_viol = 0.;
+#ifdef REORDER_ON_THE_FLY
+  for (i=0; i<numApprox; ++i) { // N_i > N
+    inner_prod = lin_ineq_coeffs(i+offset, i) * cd_vars[i]
+      + lin_ineq_coeffs(i+offset, numApprox) * cd_vars[numApprox];
+    l_bnd = lin_ineq_lb[i+offset];  u_bnd = lin_ineq_ub[i+offset];
+    if (inner_prod < l_bnd)
+      { viol = (1. - inner_prod / l_bnd);  quad_viol += viol*viol; }
+    else if (inner_prod > u_bnd)
+      { viol = (inner_prod / u_bnd - 1.);  quad_viol += viol*viol; }
+  }
+#else
+  bool ordered = approxSequence.empty();
+  size_t num_am1 = numApprox - 1, approx_ip1,
+    approx = (ordered) ? 0 : approxSequence[0];
   for (i=0; i<numApprox; ++i) { // N_im1 >= N_i
     if (i == num_am1) approx_ip1 = numApprox;
     else              approx_ip1 = (ordered) ? i+1 : approxSequence[i+1];
-    inner_prod = lin_ineq_coeffs(i+lin_ineq_offset, approx) * cd_vars[approx]
-      + lin_ineq_coeffs(i+lin_ineq_offset, approx_ip1) * cd_vars[approx_ip1];
-    l_bnd = lin_ineq_lb[i+lin_ineq_offset];
-    u_bnd = lin_ineq_ub[i+lin_ineq_offset];
+    inner_prod = lin_ineq_coeffs(i+offset, approx) * cd_vars[approx]
+      + lin_ineq_coeffs(i+offset, approx_ip1) * cd_vars[approx_ip1];
+    l_bnd = lin_ineq_lb[i+offset];  u_bnd = lin_ineq_ub[i+offset];
     if (inner_prod < l_bnd)
       { viol = (1. - inner_prod / l_bnd);  quad_viol += viol*viol; }
     else if (inner_prod > u_bnd)
       { viol = (inner_prod / u_bnd - 1.);  quad_viol += viol*viol; }
     approx = approx_ip1;
   }
+#endif
   return quad_viol;
 }
 
@@ -511,12 +529,12 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
     RealVector r;  copy_data_partial(cd_vars, 0, (int)numApprox, r); // N_i
     r.scale(1./cd_vars[numApprox]); // r_i = N_i / N
     // Compiler can resolve overload with (inherited) vector type:
-    mfmc_estvar_ratios(rho2LH, approxSequence, r,       estvar_ratios);
+    mfmc_estvar_ratios(rho2LH,       r, approxSequence, estvar_ratios);
     break;
   }
   default: // r_and_N provided: pass leading numApprox terms of cd_vars
     // Compiler can resolve overload with (inherited) vector type:
-    mfmc_estvar_ratios(rho2LH, approxSequence, cd_vars, estvar_ratios);
+    mfmc_estvar_ratios(rho2LH, cd_vars, approxSequence, estvar_ratios);
     break;
   }
 }
@@ -533,8 +551,8 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
 // ***************************************************************************
 
 void NonDMultifidelitySampling::
-mfmc_estvar_ratios(const RealMatrix& rho2_LH, const SizetArray& approx_sequence,
-		   const RealMatrix& eval_ratios, RealVector& estvar_ratios)
+mfmc_estvar_ratios(const RealMatrix& rho2_LH, const RealMatrix& eval_ratios,
+                   const SizetArray& approx_sequence, RealVector& estvar_ratios)
 {
   // Compute ratio of EstVar for single-fidelity MC and MFMC
   // > Estimator Var for   MC =           var_H / N_H
@@ -1122,8 +1140,10 @@ mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
       N_MODEL_LINEAR_OBJECTIVE;
     break;
   case NUMERICAL_FALLBACK: // default
-    // Note: ordering in rho reqd per QoI to avoid exceptions in sqrt(rho2_diff)
-    //       ordering in avg_eval_ratios used for pyramid sampling downstream
+    // Theory for JCP EstVar expression (Appendix B) used in minimization
+    // assumes ordered eval ratios [sqrt(rho2_diff) no longer applies to this
+    // case, no we can now focus or r_i ordering rather than rho ordering].
+    // Ordering in avg_eval_ratios is then used for pyramid sampling downstream
     ordered_rho = ordered_approx_sequence(rho2_LH); // all QoI for all Approx
     if (ordered_rho)
       optSubProblemForm = ANALYTIC_SOLUTION;
@@ -1135,7 +1155,7 @@ mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
 	   << "to numerical solution.\n";
     }
     break;
-  case REORDERED_FALLBACK: // not currently in XML spec, but could be added
+  case REORDERED_FALLBACK: // not currently in XML spec: numerical is preferred
     // Note: ordering in rho reqd per QoI to avoid exceptions in sqrt(rho2_diff)
     //       ordering in avg_eval_ratios used for pyramid sampling downstream
     ordered_rho = ordered_approx_sequence(rho2_LH); // all QoI for all Approx
@@ -1161,8 +1181,9 @@ mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
     //update_model_groups();  update_model_group_costs();
     break;
   case REORDERED_ANALYTIC_SOLUTION: // inactive (see above)
+    // enforce monotonic r for an approx_sequence defined from rho2_LH
     mfmc_reordered_analytic_solution(approxSet, rho2_LH, cost, approx_sequence,
-				     avg_eval_ratios, true); // monotonic r
+				     avg_eval_ratios, true);
     //update_model_groups();  update_model_group_costs();
     break;
   default: // any of several numerical optimization formulations
@@ -1177,7 +1198,7 @@ mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
   switch (optSubProblemForm) {
   case ANALYTIC_SOLUTION:  case REORDERED_ANALYTIC_SOLUTION:
     if (maxFunctionEvals == SZ_MAX) {
-      mfmc_estvar_ratios(rho2_LH, approx_sequence,avg_eval_ratios,estVarRatios);
+      mfmc_estvar_ratios(rho2_LH, avg_eval_ratios,approx_sequence,estVarRatios);
       avg_hf_target = update_hf_target(estVarRatios, varH, estVarIter0);
     }
     else
@@ -1218,10 +1239,16 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
       approx_sequence.clear();
       mfmc_analytic_solution(approxSet, rho2_LH, cost, avg_eval_ratios);
     }
-    else // If misordered rho, enforce that r increases monotonically across
-         // approx_sequence for consistency w/ linear constr in numerical soln
+    // If misordered rho, r will be resequenced downstream when monotonicity is
+    // needed (e.g. sample reuse in pyramid sampling); don't enforce it here
+    // ***
+    // *** TO DO: consider removing linear constraints in numerical soln
+    // > approx_sequence could be allowed to vary in mfmc_estvar_ratios(),
+    //   (replacing initial rho-sequence with an iterated r-sequence)
+    // > also consider consistency with GenACV-MF with hierarchical DAG
+    else
       mfmc_reordered_analytic_solution(approxSet, rho2_LH, cost,approx_sequence,
-				       avg_eval_ratios, true); // monotonic
+				       avg_eval_ratios);//allow nonmonotonic r_i
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Initial guess from analytic MFMC (average eval ratios):\n"
 	   << avg_eval_ratios << std::endl;
@@ -1233,7 +1260,8 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
     else { // accuracy-constrained
       // Computes estvar_ratios* from r*,rho2.  Next, m1* from estvar_ratios*;
       // then these estvar_ratios get replaced for actual profile
-      mfmc_estvar_ratios(rho2_LH, approx_sequence,avg_eval_ratios,estVarRatios);
+      mfmc_estvar_ratios(rho2_LH, avg_eval_ratios, approx_sequence,
+			 estVarRatios);
       avg_hf_target = update_hf_target(estVarRatios, varH, estVarIter0);
     }
     // push updates to MFSolutionData
@@ -1296,7 +1324,7 @@ update_model_groups(const SizetArray& approx_sequence)
 void NonDMultifidelitySampling::
 mfmc_estimator_variance(const RealMatrix& rho2_LH, const RealVector& var_H,
 			const SizetArray& N_H,
-			const SizetArray& approx_sequence,
+			SizetArray& approx_sequence,
 			RealVector& estvar_ratios, MFSolutionData& soln)
 {
   switch (optSubProblemForm) {
@@ -1313,11 +1341,11 @@ mfmc_estimator_variance(const RealMatrix& rho2_LH, const RealVector& var_H,
       //     but r_actual = N_L / N_H = r* m1* / N_H
       RealVector scaled_eval_ratios = avg_eval_ratios; // copy
       scaled_eval_ratios.scale(avg_hf_target / avg_N_H);
-      mfmc_estvar_ratios(rho2_LH, approx_sequence, scaled_eval_ratios,
+      mfmc_estvar_ratios(rho2_LH, scaled_eval_ratios, approx_sequence,
 			 estvar_ratios);
     }
     else
-      mfmc_estvar_ratios(rho2_LH, approx_sequence, avg_eval_ratios,
+      mfmc_estvar_ratios(rho2_LH,    avg_eval_ratios, approx_sequence,
 			 estvar_ratios);
 
     // update avg_est_var for final variance report and finalStats

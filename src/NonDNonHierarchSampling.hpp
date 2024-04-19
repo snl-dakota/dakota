@@ -504,8 +504,8 @@ protected:
 					RealVector& avg_eval_ratios,
 					bool monotonic_r = false);
   void mfmc_estvar_ratios(const RealMatrix& rho2_LH,
-			  const SizetArray& approx_sequence,
 			  const RealVector& avg_eval_ratios,
+			  SizetArray& approx_sequence,
 			  RealVector& estvar_ratios);
 
   void cvmc_ensemble_solutions(const RealMatrix& rho2_LH,
@@ -1748,10 +1748,11 @@ apply_control(Real sum_L_shared, size_t num_L_shared, Real sum_L_refined,
   H_raw_mom -= beta * (sum_L_shared  / num_L_shared - // mu from shared samples
 		       sum_L_refined / num_L_refined);// refined mu w/ increment
 
-  Cout <<  "apply_control: sum_L_shared = "  << sum_L_shared
-       << " sum_L_refined = " << sum_L_refined
-       << " num_L_shared = "  << num_L_shared
-       << " num_L_refined = " << num_L_refined << std::endl;
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "apply_control(): sum_L_sh = " << sum_L_shared
+	 << " sum_L_ref = " << sum_L_refined
+	 << " num_L_sh = "  << num_L_shared
+	 << " num_L_ref = " << num_L_refined << std::endl;
 }
 
 

@@ -636,12 +636,14 @@ augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT: case R_AND_N_NONLINEAR_CONSTRAINT:
     break; // none to add (r lower bounds = 1)
-  case N_MODEL_LINEAR_CONSTRAINT: // lin_ineq #0 is augmented
-    for (size_t approx=1; approx<=numApprox; ++approx) {
-      lin_ineq_coeffs(approx,  approx-1) = -1.;
-      lin_ineq_coeffs(approx, numApprox) =  1. + RATIO_NUDGE; // N_i > N
+  case N_MODEL_LINEAR_CONSTRAINT: { // lin_ineq #0 is augmented
+    size_t offset = 1;
+    for (size_t approx=0; approx<numApprox; ++approx) {
+      lin_ineq_coeffs(approx+offset,    approx) = -1.;
+      lin_ineq_coeffs(approx+offset, numApprox) =  1. + RATIO_NUDGE; // N_i > N
     }
     break;
+  }
   case N_MODEL_LINEAR_OBJECTIVE: // no other lin ineq
     for (size_t approx=0; approx<numApprox; ++approx) {
       lin_ineq_coeffs(approx,    approx) = -1.;

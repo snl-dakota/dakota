@@ -95,9 +95,8 @@ protected:
 
   void mfmc_estimator_variance(const RealMatrix& rho2_LH,
 			       const RealVector& var_H, const SizetArray& N_H,
-			       const SizetArray& approx_sequence,
-			       RealVector& estvar_ratios,
-			       MFSolutionData& soln);
+			       SizetArray& approx_sequence,
+			       RealVector& estvar_ratios, MFSolutionData& soln);
 
 private:
 

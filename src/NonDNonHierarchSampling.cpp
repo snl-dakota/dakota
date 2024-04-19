@@ -664,44 +664,46 @@ mfmc_reordered_analytic_solution(const UShortArray& approx_set,
 
 
 void NonDNonHierarchSampling::
-mfmc_estvar_ratios(const RealMatrix& rho2_LH, const SizetArray& approx_sequence,
-		   const RealVector& avg_eval_ratios, RealVector& estvar_ratios)
+mfmc_estvar_ratios(const RealMatrix& rho2_LH,
+		   const RealVector& avg_eval_ratios,
+		   SizetArray& approx_sequence, RealVector& estvar_ratios)
 {
   if (estvar_ratios.empty()) estvar_ratios.sizeUninitialized(numFunctions);
+  Real R_sq, r_i, r_ip1;  size_t qoi, approx, approx_ip1, i, ip1;
 
   // Appendix B of JCP paper on ACV:
   // > R^2 = \Sum_i [ (r_i -r_{i-1})/(r_i r_{i-1}) rho2_LH_i ]
   // > Reorder differences since eval ratios/correlations ordered from LF to HF
   //   (opposite of JCP); after this change, reproduces Peherstorfer eq. above.
-  Real R_sq, r_i, r_ip1;  size_t qoi, approx, approx_ip1, i, ip1;
-  switch (optSubProblemForm) {
 
-  // eval_ratios per qoi,approx with no model re-sequencing
-  case ANALYTIC_SOLUTION:
-    for (qoi=0; qoi<numFunctions; ++qoi) {
-      R_sq = 0.;  r_i = avg_eval_ratios[0];
-      for (i=0, ip1=1; ip1<numApprox; ++i, ++ip1) {
-	r_ip1 = avg_eval_ratios[ip1];
-	R_sq += (r_i - r_ip1) / (r_i * r_ip1) * rho2_LH(qoi, i);
-	r_i = r_ip1;
-      }
-      R_sq += (r_i - 1.) / r_i * rho2_LH(qoi, numApprox-1);
-      estvar_ratios[qoi] = (1. - R_sq);
-    }
-    break;
+  // While eval ratio misordering won't induce numerical exceptions,
+  // the derivation of the JCP ACV equation assumes ordered r_i:
+  // > either retain a fixed ordering through linear constraints, or
+  // > re-order on the fly when the optimization omits these guard rails
+
+#ifdef REORDER_ON_THE_FLY
+  // Replace sequenced lin con with root lin con -> essentially supports search
+  // over all hierarchical DAGs, similar to GenACV-MF for width limit = 1
+  bool ordered = ordered_approx_sequence(avg_eval_ratios, approx_sequence);
+#else
+  // fixed upstream, retained via linear constraints on opt solve (also
+  // encouraged via monotonicity enforcement in reordered initial guess)
+  bool ordered = approx_sequence.empty();
+#endif
+
+  switch (optSubProblemForm) {
 
   // eval_ratios & approx_sequence based on avg_rho2_LH: remain consistent here
   case REORDERED_ANALYTIC_SOLUTION: {
     RealVector avg_rho2_LH;  average(rho2_LH, 0, avg_rho2_LH); // avg over QoI
-    bool ordered = approx_sequence.empty();
     approx = (ordered) ? 0 : approx_sequence[0];
     r_i = avg_eval_ratios[approx];  R_sq = 0.;
     for (i=0, ip1=1; ip1<numApprox; ++i, ++ip1) {
       approx_ip1 = (ordered) ? ip1 : approx_sequence[ip1];
       r_ip1 = avg_eval_ratios[approx_ip1];
-      // Note: monotonicity in reordered r_i is enforced in mfmc_eval_ratios()
-      // and in linear constraints for ensemble_numerical_solution()
-      R_sq += (r_i - r_ip1) / (r_i * r_ip1) * avg_rho2_LH[approx];
+      // Note: monotonicity in r_i is enforced in mfmc_eval_ratios()
+      // for a given approx_sequence
+      R_sq += (r_i - r_ip1) / (r_i * r_ip1) * avg_rho2_LH[approx]; // *** may violate order assumption
       r_i = r_ip1;  approx = approx_ip1;
     }
     R_sq += (r_i - 1.) / r_i * avg_rho2_LH[approx];
@@ -714,16 +716,19 @@ mfmc_estvar_ratios(const RealMatrix& rho2_LH, const SizetArray& approx_sequence,
   // > NonDNonHierarchSampling::average_estimator_variance()
   // > NonDMultifidelitySampling::estimator_variance_ratios() [virtual]
   // > This function (vector of avg_eval_ratios from opt design variables)
-  // Note: ANALYTIC_SOLUTION above corresponds to ordered case below
+  // Note: ANALYTIC_SOLUTION covered by ordered case below
   default: {
-    bool ordered = approx_sequence.empty();
     for (qoi=0; qoi<numFunctions; ++qoi) {
       approx = (ordered) ? 0 : approx_sequence[0];
       R_sq = 0.;  r_i = avg_eval_ratios[approx];
       for (i=0, ip1=1; ip1<numApprox; ++i, ++ip1) {
 	approx_ip1 = (ordered) ? ip1 : approx_sequence[ip1];
 	r_ip1 = avg_eval_ratios[approx_ip1];
-	R_sq += (r_i - r_ip1) / (r_i * r_ip1) * rho2_LH(qoi, approx);
+	// While eval ratio misordering won't induce numerical exceptions,
+	// the derivation of this equation assumes ordered r_i:
+	// > either retain a fixed ordering through linear constraints, or
+	// > re-order on the fly when the optimization omits these guard rails
+	R_sq += (r_i - r_ip1) / (r_i * r_ip1) * rho2_LH(qoi, approx); // *** may violate order assumption
 	r_i = r_ip1;  approx = approx_ip1;
       }
       R_sq += (r_i - 1.) / r_i * rho2_LH(qoi, approx);

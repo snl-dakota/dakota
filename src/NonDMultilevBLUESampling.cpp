@@ -889,7 +889,7 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
     // Compute avg_hf_target only based on MFMC estvar, bypassing ML BLUE estvar
     // Note: dissimilar to ACV,GenACV logic
     RealVector estvar_ratios;
-    mfmc_estvar_ratios(rho2_LH, approx_sequence, avg_eval_ratios,estvar_ratios);
+    mfmc_estvar_ratios(rho2_LH, avg_eval_ratios, approx_sequence,estvar_ratios);
     avg_hf_target = update_hf_target(estvar_ratios, NGroupActual[all_group],
 				     estVarIter0); // valid within MFMC context
     */
