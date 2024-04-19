@@ -477,6 +477,7 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
   IntRealMatrixArrayMap sum_G;  initialize_group_sums(sum_G);
   Sizet2DArray     N_G_actual;  initialize_group_counts(N_G_actual);
   accumulate_group_sums(sum_G, N_G_actual, batchResponsesMap);
+  clear_batches();
   // Map from "horizontal" group incr to "vertical" model incr (see JCP: ACV)
   IntRealMatrixMap sum_L_shared = sum_L_baseline, sum_L_refined;
   overlay_approx_group_sums(sum_G, N_G_actual, sum_L_shared, sum_L_refined,
@@ -1151,25 +1152,19 @@ mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
 
   RealVector avg_eval_ratios;  Real avg_hf_target;
   switch (optSubProblemForm) {
-  case ANALYTIC_SOLUTION: {
+  case ANALYTIC_SOLUTION:
     Cout << "MFMC: model sequence provided is ordered in Low-High correlation "
 	 << "for all QoI.\n      Computing standard analytic solution.\n"
 	 << std::endl;
     approx_sequence.clear();
-    UShortArray model_set(numApprox);
-    for (size_t i=0; i<numApprox; ++i) model_set[i] = i; // full set
-    mfmc_analytic_solution(model_set, rho2_LH, cost, avg_eval_ratios);
+    mfmc_analytic_solution(approxSet, rho2_LH, cost, avg_eval_ratios);
     //update_model_groups();  update_model_group_costs();
     break;
-  }
-  case REORDERED_ANALYTIC_SOLUTION: { // inactive (see above)
-    UShortArray model_set(numApprox);
-    for (size_t i=0; i<numApprox; ++i) model_set[i] = i; // full set
-    mfmc_reordered_analytic_solution(model_set, rho2_LH, cost, approx_sequence,
+  case REORDERED_ANALYTIC_SOLUTION: // inactive (see above)
+    mfmc_reordered_analytic_solution(approxSet, rho2_LH, cost, approx_sequence,
 				     avg_eval_ratios, true); // monotonic r
     //update_model_groups();  update_model_group_costs();
     break;
-  }
   default: // any of several numerical optimization formulations
     mfmc_numerical_solution(var_L, rho2_LH, cost, approx_sequence, soln);
     break;
@@ -1219,15 +1214,13 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
     }
 
     // Compute approx_sequence and r* initial guess from analytic MFMC
-    UShortArray model_set(numApprox);
-    for (size_t i=0; i<numApprox; ++i) model_set[i] = i; // full set
     if (ordered_approx_sequence(rho2_LH)) {// can happen w/ NUMERICAL_OVERRIDE
       approx_sequence.clear();
-      mfmc_analytic_solution(model_set, rho2_LH, cost, avg_eval_ratios);
+      mfmc_analytic_solution(approxSet, rho2_LH, cost, avg_eval_ratios);
     }
     else // If misordered rho, enforce that r increases monotonically across
          // approx_sequence for consistency w/ linear constr in numerical soln
-      mfmc_reordered_analytic_solution(model_set, rho2_LH, cost,approx_sequence,
+      mfmc_reordered_analytic_solution(approxSet, rho2_LH, cost,approx_sequence,
 				       avg_eval_ratios, true); // monotonic
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Initial guess from analytic MFMC (average eval ratios):\n"

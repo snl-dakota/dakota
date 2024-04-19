@@ -1162,10 +1162,14 @@ mfmc_model_group(size_t last_index, const SizetArray& approx_sequence,
   // Note: we resequence the models within fixed pyramid groups (hierarchy is
   //   reordered prior to pyramid sampling), as opposed to reordering fixed
   //   modelGroups for root dominance (which destroys pyramid structure)
-  size_t m, num_models = last_index+1;
-  model_group.resize(num_models);
-  for (m=0; m<num_models; ++m)
+  size_t m, group_size = last_index+1, num_approx = approx_sequence.size(),
+    seq_mapping_len = std::min(group_size, num_approx);
+  model_group.resize(group_size);
+  for (m=0; m<seq_mapping_len; ++m)
     model_group[m] = approx_sequence[m]; // low to high by sequence
+  // truth model can be part of model group but is not part of approx sequence
+  for (m=seq_mapping_len; m<group_size; ++m)
+    model_group[m] = m;
   // Note: model_group is not a std::set.  In ML BLUE, the model ordering
   // within each group is irrelevant and they are ordered by convention for
   // group uniqueness.  Here, we allow them to be reordered by approx_sequence.
@@ -1183,7 +1187,9 @@ singleton_model_group(size_t index, const SizetArray& approx_sequence,
 {
   if (approx_sequence.empty())
     { singleton_model_group(index, model_group); return; }
-  model_group.resize(1); model_group[0] = approx_sequence[index];
+  model_group.resize(1);
+  model_group[0] = (index < approx_sequence.size()) ?
+    approx_sequence[index] : index;
 }
 
 
@@ -1229,11 +1235,13 @@ mlmc_model_group(size_t index, const SizetArray& approx_sequence,
     { mlmc_model_group(index, model_group); return; }
   // MLMC or ACV-RD (ACV-IS differs in shared group)
   if (index == 0)
-    { model_group.resize(1); model_group[0] = approx_sequence[index]; }
-  else {
+    singleton_model_group(index, approx_sequence, model_group);
+  else { // model pair ordered low to high
     model_group.resize(2);
-    model_group[0] = approx_sequence[index - 1];
-    model_group[1] = approx_sequence[index]; // ordered low to high
+    model_group[0] = (index - 1 < approx_sequence.size()) ?
+      approx_sequence[index - 1] : index - 1;
+    model_group[1] = (index < approx_sequence.size()) ?
+      approx_sequence[index]     : index;
   }
 }
 
@@ -1740,10 +1748,10 @@ apply_control(Real sum_L_shared, size_t num_L_shared, Real sum_L_refined,
   H_raw_mom -= beta * (sum_L_shared  / num_L_shared - // mu from shared samples
 		       sum_L_refined / num_L_refined);// refined mu w/ increment
 
-  //Cout <<  "apply_control: sum_L_shared = "  << sum_L_shared
-  //     << " sum_L_refined = " << sum_L_refined
-  //     << " num_L_shared = "  << num_L_shared
-  //     << " num_L_refined = " << num_L_refined << std::endl;
+  Cout <<  "apply_control: sum_L_shared = "  << sum_L_shared
+       << " sum_L_refined = " << sum_L_refined
+       << " num_L_shared = "  << num_L_shared
+       << " num_L_refined = " << num_L_refined << std::endl;
 }
 
 

@@ -2889,6 +2889,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
      ]
+    [ weighted {N_mdm(utype,subMethod_SUBMETHOD_WEIGHTED_MLMC)}
+      [ search_model_graphs {0}
+        [ model_selection {N_mdm(type,modelSelectType_ALL_MODEL_COMBINATIONS)} ]
+       ]
+     ]
     [ export_sample_sequence {N_mdm(true,exportSampleSeqFlag)}
       [ 
         ( custom_annotated {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}

@@ -311,6 +311,7 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
   accumulate_blue_sums(sum_G, sum_GG, NGroupActual, batchResponsesMap);
   increment_equivalent_cost(delta_N_G, modelGroupCost,
 			    sequenceCost[numApprox], equivHFEvals);
+  clear_batches();
   // extract moments
   RealMatrix H_raw_mom(4, numFunctions);
   blue_raw_moments(sum_G, sum_GG, NGroupActual, H_raw_mom);
@@ -1132,7 +1133,7 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s)
   //                              deltaEquivHF, proj_equiv_estvar);
   Real avg_proj_equiv_estvar = average(proj_equiv_estvar),
        avg_estvar = blueSolnData.average_estimator_variance();
-  bool mc_only_ref = (!zeros(projNActualHF));
+  bool mc_only_ref = !zeros(projNActualHF);
   // As described in process_group_solution(), we have two MC references:
   // projected HF-only samples and projected equivalent HF samples.
   size_t wpp7 = write_precision + 7;

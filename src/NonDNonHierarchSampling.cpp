@@ -465,6 +465,7 @@ group_approx_increment(const RealVector& soln_vars,
   size_t num_samp, root = model_group.back(), // root must be last model
     deflate_root = (approx_set.size() == numApprox) ? root :
     find_index(approx_set, root);
+  // soln variables sized as {approx_set,truth} with ascending model order
   Real lf_target = soln_vars[deflate_root];
   if (backfillFailures) {
     const SizetArray& lf_curr = N_L_actual[root];

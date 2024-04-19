@@ -828,6 +828,7 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
   IntRealMatrixArrayMap sum_G;  initialize_group_sums(sum_G);
   Sizet2DArray     N_G_actual;  initialize_group_counts(N_G_actual);
   accumulate_group_sums(sum_G, N_G_actual, batchResponsesMap);
+  clear_batches();
   // Map from "horizontal" group incr to "vertical" model incr (see JCP: ACV)
   IntRealMatrixMap sum_L_shared = sum_L_baseline, sum_L_refined;
   overlay_approx_group_sums(sum_G, N_G_actual, sum_L_shared, sum_L_refined,
