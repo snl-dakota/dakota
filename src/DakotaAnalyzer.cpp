@@ -342,8 +342,9 @@ const IntResponse2DMap& Analyzer::
 synchronize_batches(Model& model, bool log_best_flag)
 {
   // synchronize all batches at once
-
   const IntResponseMap& full_resp_map = model.synchronize();
+
+  // arrange full set into batch groupings
   batchResponsesMap.clear();
   //size_t i, num_batches = (compactMode) ?
   //  batchSamplesMap.size() : batchVariablesMap.size();
@@ -351,8 +352,8 @@ synchronize_batches(Model& model, bool log_best_flag)
   IntRespMCIter first_it, last_it;
 
   // for each batch id, extract eval_ids from full response map
+  //bool initial = true;
   if (compactMode) {
-    bool initial = true;
     for (IntRealVector2DMap::iterator s_it=batchSamplesMap.begin();
 	 s_it!=batchSamplesMap.end(); ++s_it) {
       batch_id = s_it->first;
@@ -364,33 +365,34 @@ synchronize_batches(Model& model, bool log_best_flag)
       //  batch_resp_map[eval_id] = full_resp_map[eval_id];
       //}
       // Range copy: batches are well ordered in eval_id's
-      if (initial) {
-	first_id = rv_map.begin()->first;
-	first_it = full_resp_map.find(first_id);
-      }
-      last_id = (--rv_map.end())->first;
-      last_it = ++full_resp_map.find(last_id);
+      // > evals within each batch are sequential, but ordering of batches may
+      //   be inverted (e.g., pyramid sampling)
+      //if (initial) {
+        first_id = rv_map.begin()->first;
+        first_it = full_resp_map.find(first_id);
+      //}
+      last_id  = (--rv_map.end())->first;
+      last_it  = ++full_resp_map.find(last_id);
       batch_resp_map.insert(first_it, last_it); // inserts [first,last)
       log_response_map(rv_map, batch_resp_map, log_best_flag);
-      first_it = last_it;  initial = false;
+      //first_it = last_it;  initial = false;
     }
   }
   else {
-    bool initial = true;
     for (IntVariables2DMap::iterator v_it=batchVariablesMap.begin();
 	 v_it!=batchVariablesMap.end(); ++v_it){
       batch_id = v_it->first;
       IntVariablesMap&      vars_map = v_it->second;
       IntResponseMap& batch_resp_map = batchResponsesMap[batch_id];
-      if (initial) {
+      //if (initial) {
 	first_id = vars_map.begin()->first;
 	first_it = full_resp_map.find(first_id);
-      }
+      //}
       last_id = (--vars_map.end())->first;
       last_it = ++full_resp_map.find(last_id);
       batch_resp_map.insert(first_it, last_it); // inserts [first,last)
       log_response_map(vars_map, batch_resp_map, log_best_flag);      
-      first_it = last_it;  initial = false;
+      //first_it = last_it;  initial = false;
     }
   }
   return batchResponsesMap;
