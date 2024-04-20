@@ -390,6 +390,37 @@ ensemble_sample_increment(size_t iter, size_t step)
 
 
 void NonDNonHierarchSampling::
+group_increment(SizetArray& delta_N_G, size_t iter, bool reverse_order)
+{
+  if (iter == 0) Cout << "\nPerforming pilot sample for model groups.\n";
+  else Cout << "\nGroup sampling iteration " << iter << ": sample increment =\n"
+	    << delta_N_G << '\n';
+
+  // Ordering does not impact evaluation management, but does impact random
+  // number sequencing across calls to get_parameter_sets()
+  if (reverse_order) // high to low ordering (e.g., bottom-up pyramid)
+    for (int g=numGroups-1; g>=0; --g) {
+      numSamples = delta_N_G[g];
+      if (numSamples) {
+	ensemble_active_set(modelGroups[g]);
+	ensemble_sample_batch(iter, g); // index is group_id; non-blocking
+      }
+    }
+  else // low to high ordering (e.g. combinatorial defn of ML BLUE modelGroups)
+    for (size_t g=0; g<numGroups; ++g) {
+      numSamples = delta_N_G[g];
+      if (numSamples) {
+	ensemble_active_set(modelGroups[g]);
+	ensemble_sample_batch(iter, g); // index is group_id; non-blocking
+      }
+    }
+
+  if (iteratedModel.asynch_flag())
+    synchronize_batches(iteratedModel); // schedule all groups (return ignored)
+}
+
+
+void NonDNonHierarchSampling::
 ensemble_sample_batch(size_t iter, int batch_id)
 {
   // generate new MC parameter sets
@@ -416,6 +447,86 @@ ensemble_sample_batch(size_t iter, int batch_id)
 //  // bookkeep by batch id within batchResponsesMap
 //  synchronize_batches(iteratedModel); // ignore return reference
 //}
+
+
+size_t NonDNonHierarchSampling::
+group_approx_increment(const RealVector& soln_vars,
+		       const UShortArray& approx_set,
+		       const Sizet2DArray& N_L_actual, SizetArray& N_L_alloc,
+		       const UShortArray& model_group)
+{
+  // Notes:
+  // > the sample increment for the approx range is determined by approx[end-1]
+  //   (helpful to refer to Figure 2(b) in ACV paper, noting index differences)
+  // > N_L is updated prior to each call to approx_increment allowing use of
+  //   one_sided_delta() with latest counts
+  // > No relaxation is used for approx increments since iteration is complete
+
+  size_t num_samp, root = model_group.back(), // root must be last model
+    deflate_root = (approx_set.size() == numApprox) ? root :
+    find_index(approx_set, root);
+  // soln variables sized as {approx_set,truth} with ascending model order
+  Real lf_target = soln_vars[deflate_root];
+  if (backfillFailures) {
+    const SizetArray& lf_curr = N_L_actual[root];
+    num_samp = one_sided_delta(lf_curr, lf_target); // delta of average
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Approx samples = " << num_samp << " computed from average delta "
+	   << "between LF target = " << lf_target << " and current counts:\n"
+	   << lf_curr << std::endl;
+    size_t N_alloc = one_sided_delta(N_L_alloc[root], lf_target);
+    increment_sample_range(N_L_alloc, N_alloc, model_group);
+  }
+  else {
+    size_t lf_curr = N_L_alloc[root];
+    num_samp = one_sided_delta((Real)lf_curr, lf_target);
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Approx samples = " << num_samp << " computed from delta between "
+	   << "LF target = " << lf_target << " and current allocation = "
+	   << lf_curr << std::endl;
+    increment_sample_range(N_L_alloc, num_samp, model_group);
+  }
+  return num_samp;
+}
+
+
+/*
+size_t NonDNonHierarchSampling::
+dag_approx_increment(const RealVector& soln_vars, const UShortArray& approx_set,
+		     const Sizet2DArray& N_L_actual, SizetArray& N_L_alloc,
+		     unsigned short root, const UShortSet& reverse_dag)
+{
+  // Notes:
+  // > the sample increment for the approx range is determined by approx[end-1]
+  //   (helpful to refer to Figure 2(b) in ACV paper, noting index differences)
+  // > N_L is updated prior to each call to approx_increment allowing use of
+  //   one_sided_delta() with latest counts
+
+  size_t num_samp, deflate_root = (approx_set.size() == numApprox) ? root :
+    find_index(approx_set, root);
+  Real lf_target = soln_vars[deflate_root]; // soln_vars sized by approx_set
+  if (backfillFailures) {
+    const SizetArray& lf_curr = N_L_actual[root];
+    num_samp = one_sided_delta(lf_curr, lf_target); // delta of average
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Approx samples = " << num_samp << " for root node index "
+	   << root << " computed from delta between LF target = " << lf_target
+	   << " and current counts:\n" << lf_curr << std::endl;
+    size_t N_alloc = one_sided_delta(N_L_alloc[root], lf_target);
+    increment_sample_range(N_L_alloc, N_alloc, root, reverse_dag);
+  }
+  else {
+    size_t lf_curr = N_L_alloc[root];
+    num_samp = one_sided_delta((Real)lf_curr, lf_target);
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Approx samples = " << num_samp << " for root node index "
+	   << root << " computed from delta between LF target = " << lf_target
+	   << " and current allocation = " << lf_curr << std::endl;
+    increment_sample_range(N_L_alloc, num_samp, root, reverse_dag);
+  }
+  return num_samp;
+}
+*/
 
 
 void NonDNonHierarchSampling::
@@ -553,44 +664,46 @@ mfmc_reordered_analytic_solution(const UShortArray& approx_set,
 
 
 void NonDNonHierarchSampling::
-mfmc_estvar_ratios(const RealMatrix& rho2_LH, const SizetArray& approx_sequence,
-		   const RealVector& avg_eval_ratios, RealVector& estvar_ratios)
+mfmc_estvar_ratios(const RealMatrix& rho2_LH,
+		   const RealVector& avg_eval_ratios,
+		   SizetArray& approx_sequence, RealVector& estvar_ratios)
 {
   if (estvar_ratios.empty()) estvar_ratios.sizeUninitialized(numFunctions);
+  Real R_sq, r_i, r_ip1;  size_t qoi, approx, approx_ip1, i, ip1;
 
   // Appendix B of JCP paper on ACV:
   // > R^2 = \Sum_i [ (r_i -r_{i-1})/(r_i r_{i-1}) rho2_LH_i ]
   // > Reorder differences since eval ratios/correlations ordered from LF to HF
   //   (opposite of JCP); after this change, reproduces Peherstorfer eq. above.
-  Real R_sq, r_i, r_ip1;  size_t qoi, approx, approx_ip1, i, ip1;
-  switch (optSubProblemForm) {
 
-  // eval_ratios per qoi,approx with no model re-sequencing
-  case ANALYTIC_SOLUTION:
-    for (qoi=0; qoi<numFunctions; ++qoi) {
-      R_sq = 0.;  r_i = avg_eval_ratios[0];
-      for (i=0, ip1=1; ip1<numApprox; ++i, ++ip1) {
-	r_ip1 = avg_eval_ratios[ip1];
-	R_sq += (r_i - r_ip1) / (r_i * r_ip1) * rho2_LH(qoi, i);
-	r_i = r_ip1;
-      }
-      R_sq += (r_i - 1.) / r_i * rho2_LH(qoi, numApprox-1);
-      estvar_ratios[qoi] = (1. - R_sq);
-    }
-    break;
+  // While eval ratio misordering won't induce numerical exceptions,
+  // the derivation of the JCP ACV equation assumes ordered r_i:
+  // > either retain a fixed ordering through linear constraints, or
+  // > re-order on the fly when the optimization omits these guard rails
+
+#ifdef REORDER_ON_THE_FLY
+  // Replace sequenced lin con with root lin con -> essentially supports search
+  // over all hierarchical DAGs, similar to GenACV-MF for width limit = 1
+  bool ordered = ordered_approx_sequence(avg_eval_ratios, approx_sequence);
+#else
+  // fixed upstream, retained via linear constraints on opt solve (also
+  // encouraged via monotonicity enforcement in reordered initial guess)
+  bool ordered = approx_sequence.empty();
+#endif
+
+  switch (optSubProblemForm) {
 
   // eval_ratios & approx_sequence based on avg_rho2_LH: remain consistent here
   case REORDERED_ANALYTIC_SOLUTION: {
     RealVector avg_rho2_LH;  average(rho2_LH, 0, avg_rho2_LH); // avg over QoI
-    bool ordered = approx_sequence.empty();
     approx = (ordered) ? 0 : approx_sequence[0];
     r_i = avg_eval_ratios[approx];  R_sq = 0.;
     for (i=0, ip1=1; ip1<numApprox; ++i, ++ip1) {
       approx_ip1 = (ordered) ? ip1 : approx_sequence[ip1];
       r_ip1 = avg_eval_ratios[approx_ip1];
-      // Note: monotonicity in reordered r_i is enforced in mfmc_eval_ratios()
-      // and in linear constraints for ensemble_numerical_solution()
-      R_sq += (r_i - r_ip1) / (r_i * r_ip1) * avg_rho2_LH[approx];
+      // Note: monotonicity in r_i is enforced in mfmc_eval_ratios()
+      // for a given approx_sequence
+      R_sq += (r_i - r_ip1) / (r_i * r_ip1) * avg_rho2_LH[approx]; // *** may violate order assumption
       r_i = r_ip1;  approx = approx_ip1;
     }
     R_sq += (r_i - 1.) / r_i * avg_rho2_LH[approx];
@@ -603,16 +716,19 @@ mfmc_estvar_ratios(const RealMatrix& rho2_LH, const SizetArray& approx_sequence,
   // > NonDNonHierarchSampling::average_estimator_variance()
   // > NonDMultifidelitySampling::estimator_variance_ratios() [virtual]
   // > This function (vector of avg_eval_ratios from opt design variables)
-  // Note: ANALYTIC_SOLUTION above corresponds to ordered case below
+  // Note: ANALYTIC_SOLUTION covered by ordered case below
   default: {
-    bool ordered = approx_sequence.empty();
     for (qoi=0; qoi<numFunctions; ++qoi) {
       approx = (ordered) ? 0 : approx_sequence[0];
       R_sq = 0.;  r_i = avg_eval_ratios[approx];
       for (i=0, ip1=1; ip1<numApprox; ++i, ++ip1) {
 	approx_ip1 = (ordered) ? ip1 : approx_sequence[ip1];
 	r_ip1 = avg_eval_ratios[approx_ip1];
-	R_sq += (r_i - r_ip1) / (r_i * r_ip1) * rho2_LH(qoi, approx);
+	// While eval ratio misordering won't induce numerical exceptions,
+	// the derivation of this equation assumes ordered r_i:
+	// > either retain a fixed ordering through linear constraints, or
+	// > re-order on the fly when the optimization omits these guard rails
+	R_sq += (r_i - r_ip1) / (r_i * r_ip1) * rho2_LH(qoi, approx); // *** may violate order assumption
 	r_i = r_ip1;  approx = approx_ip1;
       }
       R_sq += (r_i - 1.) / r_i * rho2_LH(qoi, approx);
@@ -647,6 +763,136 @@ cvmc_ensemble_solutions(const RealMatrix& rho2_LH, const RealVector& cost,
     avg_eval_ratio /= numFunctions;
   }
 }
+
+
+void NonDNonHierarchSampling::update_model_group_costs()
+{
+  // modelGroupCost used in finite_solution_bounds() for
+  // mfmc_numerical_solution().  MFMC numerical preserves approxSequence
+  // in augment_linear_ineq_constraints(), so we use it here as well.
+
+  // Note: GenACV can have active num_groups != numGroups
+  size_t num_groups = modelGroups.size(); // active groups
+  if (modelGroupCost.length() != num_groups)
+    modelGroupCost.sizeUninitialized(num_groups);
+
+  // Notes:
+  // > Unlike ACV (refer to NonDACVSampling::update_model_group_costs()), MFMC
+  //   numerical enforces approx sequence in augment_linear_ineq_constraints().
+  //   Therefore, an increment for N_i *does* require corresponding increments
+  //   for the more-correlated/higher-fidelity models in the approx sequence,
+  //   Similar to the HF group of shared samples, we define these groupings for
+  //   all design variables, which can reduce the search domain upper bounds.
+  // > Extreme x_ub is N_shared plus one model at r_i = max within budget,
+  //   with all sequence-dependent models at same value.
+  // > Indexing is aligned with design vars: low to high with no reordering.
+
+  size_t g, m, num_models;
+  for (g=0; g<num_groups; ++g) {
+    const UShortArray& group_g = modelGroups[g];
+    Real& group_cost = modelGroupCost[g];  group_cost = 0.;
+    num_models = group_g.size();
+    for (m=0; m<num_models; ++m)
+      group_cost += sequenceCost[group_g[m]];
+  }
+}
+
+
+void NonDNonHierarchSampling::
+overlay_approx_group_sums(const IntRealMatrixArrayMap& sum_G,
+			  const Sizet2DArray& N_G_actual,
+			  IntRealMatrixMap& sum_L_shared,
+			  IntRealMatrixMap& sum_L_refined,
+			  Sizet2DArray& N_L_actual_shared,
+			  Sizet2DArray& N_L_actual_refined)
+{
+  // omit the last group (all-models) since (i) there is no HF increment
+  // (delta_N_G[numApprox] is assigned 0 in approx_increments()) and
+  // (ii) any HF refinement would be out of range for L accumulations.  
+  size_t m, g, num_L_groups = modelGroups.size() - 1, last_m_index;
+  unsigned short model, last_model;
+  IntRealMatrixArrayMap::const_iterator g_cit;
+  IntRealMatrixMap::iterator s_it;
+  for (g=0; g<num_L_groups; ++g) {
+    const SizetArray&  num_G_g =  N_G_actual[g];
+    if (zeros(num_G_g)) continue; // all-models group has delta = 0
+    const UShortArray& group_g = modelGroups[g];
+    last_m_index = group_g.size() - 1;
+
+    for (m=0; m<last_m_index; ++m) {
+      model = group_g[m];
+      // counters (span all moments):
+      increment_samples(N_L_actual_shared[model], num_G_g);
+      // accumulators for each moment:
+      for (s_it =sum_L_shared.begin(), g_cit =sum_G.begin();
+	   s_it!=sum_L_shared.end() && g_cit!=sum_G.end(); ++g_cit, ++s_it)
+	increment_sums(s_it->second[model], g_cit->second[g][m], numFunctions);
+    }
+  }
+
+  // avoid redundant accumulations: copy shared state prior to refinement
+  // (includes inflations from HF to L_shared)
+  sum_L_refined      = sum_L_shared;
+  N_L_actual_refined = N_L_actual_shared;
+
+  for (g=0; g<num_L_groups; ++g) {
+    const SizetArray&  num_G_g =  N_G_actual[g];
+    if (zeros(num_G_g)) continue; // all-models group has delta = 0
+    const UShortArray& group_g = modelGroups[g];
+    // Note: HF model index is out of range for N_L --> num_G_g=0 protects this
+    last_m_index = group_g.size() - 1;  last_model = group_g[last_m_index];
+    // counters (span all moments):
+    increment_samples(N_L_actual_refined[last_model], num_G_g);
+    // accumulators for each moment:
+    for (s_it =sum_L_refined.begin(), g_cit =sum_G.begin();
+	 s_it!=sum_L_refined.end() && g_cit!=sum_G.end(); ++s_it, ++g_cit)
+      increment_sums(s_it->second[last_model], g_cit->second[g][last_m_index],
+		     numFunctions);
+  }
+}
+
+
+/* Case for ACV peer DAG (special case of more general implementation above)
+void NonDNonHierarchSampling::
+overlay_approx_group_sums(const IntRealMatrixArrayMap& sum_G,
+			  const Sizet2DArray& N_G_actual,
+			  IntRealMatrixMap& sum_L_refined,
+			  Sizet2DArray& N_L_actual_refined)
+{
+  // omit the last group (all-models) since (i) there is no HF increment
+  // (delta_N_G[numApprox] is assigned 0 in approx_increments()) and
+  // (ii) any HF refinement would be out of range for L accumulations.  
+
+  // avoid redundant accumulations by augmenting refined starting from shared
+  N_L_actual_refined = N_L_actual_shared; // not in overloads API -> do upstream
+  sum_L_refined      = sum_L_shared;      // not in overloads API -> do upstream
+
+  size_t m, g, num_L_groups = modelGroups.size() - 1, num_models;
+  unsigned short approx;
+  IntRealMatrixArrayMap::const_iterator g_cit;
+  IntRealMatrixMap::iterator s_it, r_it;
+  for (g=0; g<num_L_groups; ++g) {
+    const SizetArray&  num_G_g =  N_G_actual[g];
+    const UShortArray& group_g = modelGroups[g];
+    // all-models group has delta = 0; singleton model groups may bypass
+    if (zeros(num_G_g)) continue;
+    num_models = group_g.size();
+
+    // counters (span all moments):
+    for (m=0; m<num_models; ++m)
+      increment_samples(N_L_actual_refined[group_g[m]], num_G_g);
+
+    // accumulators for each moment:
+    for (s_it =sum_L_refined.begin(), g_cit =sum_G.begin();
+	 s_it!=sum_L_refined.end() && g_cit!=sum_G.end(); ++g_cit, ++s_it) {
+      const RealMatrix& sum_G_mg    = g_cit->second[g];
+      RealMatrix&       sum_L_ref_m =  s_it->second;
+      for (m=0; m<num_models; ++m)
+	increment_sums(sum_L_ref_m[group_g[m]], sum_G_mg[m], numFunctions);
+    }
+  }
+}
+*/
 
 
 void NonDNonHierarchSampling::
@@ -2150,6 +2396,79 @@ response_evaluator(const Variables& vars, const ActiveSet& set,
       nonHierSampInstance->nonlinear_model_cost_gradient(c_vars, grad_c);
     }
     break;
+  }
+}
+
+
+/** Multi-moment map-based version used for approximation increments */
+void NonDNonHierarchSampling::
+accumulate_group_sums(IntRealMatrixArrayMap& sum_G, Sizet2DArray& num_G,
+		     const IntResponse2DMap& batch_resp_map)
+{
+  IntResponse2DMap::const_iterator b_it;
+  size_t g, num_groups = modelGroups.size();
+  for (g=0; g<num_groups; ++g) {
+    b_it = batch_resp_map.find(g); // index g corresponds to group_id key
+    if (b_it != batch_resp_map.end()) // else no new evals for this group
+      accumulate_group_sums(sum_G, num_G, g, b_it->second);
+  }
+}
+
+
+/** Multi-moment map-based version for approximation increments */
+void NonDNonHierarchSampling::
+accumulate_group_sums(IntRealMatrixArrayMap& sum_G, Sizet2DArray& num_G,
+		     size_t group, const IntResponseMap& resp_map)
+{
+  using std::isfinite;  bool all_finite;
+  IntRespMCIter r_cit;  IntRMAMIter g_it;
+  Real g_fn, g_prod;  int g_ord, active_ord, ord;
+
+  SizetArray&        num_G_g =       num_G[group];
+  const UShortArray& group_g = modelGroups[group];
+  size_t qoi, m, g_index, num_models = group_g.size();
+
+  for (r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit) {
+    const Response&   resp    = r_cit->second;
+    const RealVector& fn_vals = resp.function_values();
+    const ShortArray& asv     = resp.active_set_request_vector();
+
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+
+      // see fault tol notes in NonDNonHierarchSampling::compute_correlation():
+      // population mean and variance should be computed from same sample set
+      all_finite = true;
+      for (m=0; m<num_models; ++m) {
+	g_index = group_g[m] * numFunctions + qoi;
+	if ( (asv[g_index] & 1) == 0 ) {
+	  Cerr << "Error: missing data for group " << group+1 << " model "
+	       << group_g[m]+1 << '.' << std::endl;
+	  abort_handler(METHOD_ERROR);
+	}
+	if ( !isfinite(fn_vals[g_index]) )
+	  all_finite = false; //break;
+      }
+      if (!all_finite) continue;
+
+      ++num_G_g[qoi]; // shared due to fault tol logic
+      for (m=0; m<num_models; ++m) {
+	g_index = group_g[m] * numFunctions + qoi;
+	g_fn = fn_vals[g_index];
+
+	g_it   = sum_G.begin();
+	g_ord  = (g_it == sum_G.end()) ? 0 :  g_it->first;
+	g_prod = g_fn;  active_ord = 1;
+	while (g_ord) {
+
+	  if (g_ord == active_ord) { // support general key sequence
+	    g_it->second[group](qoi,m) += g_prod;
+	    ++g_it;  g_ord = (g_it == sum_G.end()) ? 0 : g_it->first;
+	  }
+
+	  g_prod *= g_fn;  ++active_ord;
+	}
+      }
+    }
   }
 }
 

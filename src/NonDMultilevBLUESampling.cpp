@@ -58,6 +58,8 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model):
     // all approx --> nominal dags --> enforce constraints --> unique groups
 
   case MFMC_ESTIMATOR_GROUPS:
+    // Some avg_eval_ratios from an analytic pairwise CVMC initial_guess will
+    // be dropped.  MFMC is of course Ok.
     numGroups = numApprox + 1;
     modelGroups.resize(numGroups);
     for (size_t g=0; g<numGroups; ++g)
@@ -113,6 +115,10 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model):
     // SHARED_PILOT or local/competed_local initial guesses from MFMC/CVMC
     // > since this is subtle / awkward to document / potentially bug-inducing
     //   downstream, we include the all_group w/ all size throttles for now
+    // > Note 1: there is only one group with all models, so this renders
+    //   size throttle = numApprox the same as no throttle.
+    // > Note 2: size throttle < numApprox means some avg_eval_ratios from an
+    //   analytic MFMC initial_guess will be dropped.  Pairwise CVMC is Ok.
     if ( groupSizeThrottle < num_models ) {
 	 // && ( pilotGroupSampling == SHARED_PILOT ||
 	 // varianceMinimizers.size() == 1) ) {// local w/ MFMC/CVMC pre-solve
@@ -240,7 +246,7 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
 
   // retrieve cost estimates across soln levels for a particular model form
   IntRealMatrixArrayMap sum_G;          IntRealSymMatrix2DArrayMap sum_GG;
-  initialize_blue_sums(sum_G, sum_GG);  initialize_blue_counts(NGroupActual);
+  initialize_group_sums(sum_G, sum_GG); initialize_group_counts(NGroupActual);
   SizetArray delta_N_G = pilotSamples; // sized by load_pilot_samples()
   NGroupAlloc.assign(numGroups, 0);
 
@@ -283,8 +289,8 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
   // -----------------------------------
   // Compute "online" sample increments:
   // -----------------------------------
-  IntRealMatrixArrayMap sum_G; IntRealSymMatrix2DArrayMap sum_GG;
-  initialize_blue_sums(sum_G, sum_GG); initialize_blue_counts(NGroupActual);
+  IntRealMatrixArrayMap sum_G;          IntRealSymMatrix2DArrayMap sum_GG;
+  initialize_group_sums(sum_G, sum_GG); initialize_group_counts(NGroupActual);
   SizetArray delta_N_G;  NGroupAlloc.assign(numGroups, 0);
 
   // compute the LF/HF evaluation ratios from shared samples and compute
@@ -305,6 +311,7 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
   accumulate_blue_sums(sum_G, sum_GG, NGroupActual, batchResponsesMap);
   increment_equivalent_cost(delta_N_G, modelGroupCost,
 			    sequenceCost[numApprox], equivHFEvals);
+  clear_batches();
   // extract moments
   RealMatrix H_raw_mom(4, numFunctions);
   blue_raw_moments(sum_G, sum_GG, NGroupActual, H_raw_mom);
@@ -327,7 +334,7 @@ void NonDMultilevBLUESampling::ml_blue_pilot_projection()
     Sizet2DArray N_pilot;
     evaluate_pilot(sum_G, sum_GG, N_pilot, false);
     // initialize online counts
-    initialize_blue_counts(NGroupActual);  NGroupAlloc.assign(numGroups, 0);
+    initialize_group_counts(NGroupActual);  NGroupAlloc.assign(numGroups, 0);
   }
   else { // ONLINE_PILOT_PROJECTION
     evaluate_pilot(sum_G, sum_GG, NGroupActual, true); // initialize+accumulate
@@ -450,32 +457,11 @@ independent_covariance_iteration(IntRealMatrixArrayMap& sum_G,
 
 
 void NonDMultilevBLUESampling::
-group_increment(SizetArray& delta_N_G, size_t iter)
-{
-  if (iter == 0) Cout << "\nPerforming pilot sample for ML BLUE.\n";
-  else Cout << "\nML BLUE sampling iteration " << iter
-	    << ": group sample increment =\n" << delta_N_G << '\n';
-
-  size_t g, m, num_models, start;
-  for (size_t g=0; g<numGroups; ++g) {
-    numSamples = delta_N_G[g];
-    if (numSamples) {
-      ensemble_active_set(modelGroups[g]);
-      ensemble_sample_batch(iter, g); // index is group_id; non-blocking
-    }
-  }
-
-  if (iteratedModel.asynch_flag())
-    synchronize_batches(iteratedModel); // schedule all groups (return ignored)
-}
-
-
-void NonDMultilevBLUESampling::
 evaluate_pilot(RealMatrixArray& sum_G_pilot, RealSymMatrix2DArray& sum_GG_pilot,
 	       Sizet2DArray& N_shared_pilot, bool incr_cost)
 {
-  initialize_blue_sums(sum_G_pilot, sum_GG_pilot);
-  initialize_blue_counts(N_shared_pilot);//, N_GG_pilot);
+  initialize_group_sums(sum_G_pilot, sum_GG_pilot);
+  initialize_group_counts(N_shared_pilot);//, N_GG_pilot);
 
   // ----------------------------------------
   // Compute var L,H & covar LL,LH from pilot
@@ -643,7 +629,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     // Assign sunk cost to full group and optimize w/ this as a constraint.
     // > One could argue for only lower-bounding with actual incurred samples,
     //   but have elected elsewhere to be consistent with backfill logic.
-    // > Note: only NGroupAlloc[all_group] is advanced in shared_covar_iter()
+    // > Note: only NGroup*[all_group] is advanced in shared_covariance_iter()
     for (g=0; g<numGroups; ++g)
       x_lb[g] = (backfillFailures) ?
 	average(NGroupActual[g]) : (Real)NGroupAlloc[g];
@@ -892,9 +878,6 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
 {
   // For analytic MFMC/CVMC initial guesses, the best ref for avg_eval_ratios
   // is all_group, which is enforced to be present for all throttle cases.
-  //UShortArray hf_only_group; singleton_model_group(numApprox, hf_only_group);
-  //UShortArray all_group;          mfmc_model_group(numApprox,     all_group);
-  //size_t ref_index = find_index(modelGroups, all_group);//, hf_only_group);
   size_t all_group = numGroups - 1; // for all throttles
 
   bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
@@ -906,7 +889,7 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
     // Compute avg_hf_target only based on MFMC estvar, bypassing ML BLUE estvar
     // Note: dissimilar to ACV,GenACV logic
     RealVector estvar_ratios;
-    mfmc_estvar_ratios(rho2_LH, approx_sequence, avg_eval_ratios,estvar_ratios);
+    mfmc_estvar_ratios(rho2_LH, avg_eval_ratios, approx_sequence,estvar_ratios);
     avg_hf_target = update_hf_target(estvar_ratios, NGroupActual[all_group],
 				     estVarIter0); // valid within MFMC context
     */
@@ -1012,6 +995,7 @@ process_group_solution(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
   // 2. For equivalent HF, emply var_H / (equivHFEvals + deltaEquivHF)
   // Due to throttle defns and MFMC/CVMC initial guesses, the most consistent
   // source for var_H[qoi] is covGG[all_group][qoi](numApprox,numApprox).
+  // > *** TO DO: implement a search for the most refined covGG[g][qoi](H,H)
   //UShortArray hf_only_group(1);  hf_only_group[0] = numApprox;
   //size_t hf_index = find_index(modelGroups, hf_only_group);
   //project_mc_estimator_variance(covGG[hf_index], 0, N_G_actual[hf_index],
@@ -1142,13 +1126,14 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s)
   size_t all_group = numGroups - 1;// for all throttles, last group = all models
   project_mc_estimator_variance(covGG[all_group], numApprox, equivHFEvals,
                                 deltaEquivHF, proj_equiv_estvar);
+  // *** TO DO: implement a search for the most refined covGG[g][qoi](H,H)
   //UShortArray hf_only_group(1);  hf_only_group[0] = numApprox;
   //size_t hf_index = find_index(modelGroups, hf_only_group);
   //project_mc_estimator_variance(covGG[hf_index], 0, equivHFEvals,
   //                              deltaEquivHF, proj_equiv_estvar);
   Real avg_proj_equiv_estvar = average(proj_equiv_estvar),
        avg_estvar = blueSolnData.average_estimator_variance();
-  bool mc_only_ref = (!zeros(projNActualHF));
+  bool mc_only_ref = !zeros(projNActualHF);
   // As described in process_group_solution(), we have two MC references:
   // projected HF-only samples and projected equivalent HF samples.
   size_t wpp7 = write_precision + 7;

@@ -80,13 +80,6 @@ protected:
   //- Heading: member functions
   //
 
-  void initialize_blue_sums(RealMatrixArray& sum_G,
-			    RealSymMatrix2DArray& sum_GG);
-  void initialize_blue_sums(IntRealMatrixArrayMap& sum_G,
-			    IntRealSymMatrix2DArrayMap& sum_GG);
-
-  void initialize_blue_counts(Sizet2DArray& num_G);
-
   int  compute_C_inverse(const RealSymMatrix& cov_GG_gq,
 			 RealSymMatrix& cov_GG_inv_gq);
   void compute_C_inverse(const RealSymMatrix2DArray& cov_GG,
@@ -145,7 +138,6 @@ private:
 					IntRealSymMatrix2DArrayMap& sum_GG,
 					SizetArray& delta_N_G);
 
-  void group_increment(SizetArray& delta_N_G, size_t iter);
   void evaluate_pilot(RealMatrixArray& sum_G_pilot,
 		      RealSymMatrix2DArray& sum_GG_pilot,
 		      Sizet2DArray& N_shared_pilot, bool incr_cost);
@@ -225,15 +217,6 @@ private:
 
   void enforce_nudge(RealVector& x);
 
-  //bool mfmc_model_grouping(const UShortArray& model_group) const;
-  //bool cvmc_model_grouping(const UShortArray& model_group) const;
-  void mfmc_model_group(size_t index, UShortArray& model_group) const;
-  void singleton_model_group(size_t index, UShortArray& model_group) const;
-  void cvmc_model_group(size_t index, UShortArray& model_group) const;
-  void mlmc_model_group(size_t index, UShortArray& model_group) const;
-
-  void print_group(std::ostream& s, size_t g) const;
-
   /*
   void compute_GG_statistics(RealMatrixArray& sum_G_pilot,
 			     RealSymMatrix2DArray& sum_GG_pilot,
@@ -258,9 +241,6 @@ private:
   //
   //- Heading: Data
   //
-
-  /// BLUE optimizes over a set of model groupings
-  UShort2DArray modelGroups;
 
   /// covariance matrices for each model QoI and each model grouping (the C_k
   /// matrix in ML BLUE), organized as a numGroups x numFunctions array of
@@ -319,45 +299,6 @@ inline void NonDMultilevBLUESampling::update_model_group_costs()
     Cout << "modelGroups:\n" << modelGroups
 	 << "sequenceCost:\n" << sequenceCost
 	 << "modelGroupCost:\n" << modelGroupCost;
-}
-
-
-inline void NonDMultilevBLUESampling::
-initialize_blue_sums(RealMatrixArray& sum_G, RealSymMatrix2DArray& sum_GG)
-{
-  // order indexing such that per-group structure is consistent with
-  // other estimators
-  size_t g, num_groups = modelGroups.size(), num_models;
-  sum_G.resize(num_groups);  sum_GG.resize(num_groups);
-  for (g=0; g<num_groups; ++g) {
-    num_models = modelGroups[g].size();
-    sum_G[g].shape(numFunctions, num_models);
-    RealSymMatrixArray& sum_GG_g = sum_GG[g];
-    sum_GG_g.resize(numFunctions);
-    for (size_t qoi=0; qoi<numFunctions; ++qoi)
-      sum_GG_g[qoi].shape(num_models);
-  }
-}
-
-
-inline void NonDMultilevBLUESampling::
-initialize_blue_sums(IntRealMatrixArrayMap& sum_G,
-		     IntRealSymMatrix2DArrayMap& sum_GG)
-{
-  RealMatrixArray mat1;  RealSymMatrix2DArray mat2;
-  initialize_blue_sums(mat1, mat2);
-  for (int i=1; i<=4; ++i)
-    { sum_G[i] = mat1; sum_GG[i] = mat2; } // copies
-}
-
-
-inline void NonDMultilevBLUESampling::
-initialize_blue_counts(Sizet2DArray& num_G)
-{
-  size_t g, num_groups = modelGroups.size(), num_models;
-  num_G.resize(num_groups);
-  for (g=0; g<num_groups; ++g)
-    num_G[g].assign(numFunctions, 0);
 }
 
 
@@ -574,8 +515,11 @@ compute_C_inverse(const RealSymMatrix& cov_GG_gq, RealSymMatrix& cov_GG_inv_gq)
     return spd_solver.invert(); // in place
 
     // Alternatives:
-    // > Moore-Penrose pseudo-inv: SVD with truncation of small EVs --> review NonDBayesCalibration::get_positive_definite_covariance_from_hessian()
-    // > Heuristics for throttling the number of groups -- need all, HF only, pyramid sets? leading set of lower combined order?  Pilot samples > num_models in group
+    // > Moore-Penrose pseudo-inv: SVD with truncation of small EVs --> review use of symmetric_eigenvalue_decomposition() in NonDBayesCalibration::get_positive_definite_covariance_from_hessian() --> deploy for both C and Psi
+    // > SDP solvers (helps with Psi solve, but issues with forming Psi from C-inverse remain)
+
+    // Unsuccessful (though useful in general):
+    // > throttling the number of groups (did not remove ill-conditioning in heat_eq_mlblue8)
   }
 }
 
@@ -873,79 +817,6 @@ inline void NonDMultilevBLUESampling::apply_mc_reference(RealVector& mc_targets)
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     mc_targets[qoi] = cov_GG_g[qoi](numApprox,numApprox)
                     / ( convergenceTol * estVarIter0[qoi] );
-}
-
-
-/*
-inline bool NonDMultilevBLUESampling::
-mfmc_model_grouping(const UShortArray& model_group) const
-{
-  // For case where all models are active in MFMC (no model selection a priori)
-  size_t i, num_models = model_group.size();
-  for (i=0; i<num_models; ++i)
-    if (model_group[i] != i) // "pyramid" sequence from 0 to last in set
-      return false;
-  return true;
-}
-
-
-inline bool NonDMultilevBLUESampling::
-cvmc_model_grouping(const UShortArray& model_group) const
-{
-  // shared sample (all models) and each approx increment (group size 1)
-  return ( ( model_group.size() == 1 && model_group[0] != numApprox ) ||
-	   ( model_group.size() == numApprox &&
-	     mfmc_model_grouping(model_group) ) ); // can be inferred from size
-}
-*/
-
-
-inline void NonDMultilevBLUESampling::
-mfmc_model_group(size_t index, UShortArray& model_group) const
-{
-  // MFMC or ACV-MF
-  size_t m, num_models = index+1;
-  model_group.resize(num_models);
-  for (m=0; m<num_models; ++m)
-    model_group[m] = m; // "pyramid" sequence from 0 to last in set
-}
-
-
-inline void NonDMultilevBLUESampling::
-singleton_model_group(size_t index, UShortArray& model_group) const
-{ model_group.resize(1); model_group[0] = index; }
-
-
-inline void NonDMultilevBLUESampling::
-cvmc_model_group(size_t index, UShortArray& model_group) const
-{
-  if (index < numApprox) singleton_model_group(index, model_group);
-  else                   mfmc_model_group(numApprox,  model_group);
-}
-
-
-inline void NonDMultilevBLUESampling::
-mlmc_model_group(size_t index, UShortArray& model_group) const
-{
-  // MLMC or ACV-RD (ACV-IS differs in shared group)
-  if (index == 0)
-    { model_group.resize(1); model_group[0] = index; }
-  else {
-    model_group.resize(2);
-    model_group[0] = index - 1; model_group[1] = index; // ordered low to high
-  }
-}
-
-
-inline void NonDMultilevBLUESampling::
-print_group(std::ostream& s, size_t g) const
-{
-  const UShortArray& group_g = modelGroups[g];
-  size_t m, num_models = group_g.size();
-  s << " (models";
-  for (m=0; m<num_models; ++m)
-    s << ' ' << group_g[m];
-  s << ")\n";
 }
 
 } // namespace Dakota

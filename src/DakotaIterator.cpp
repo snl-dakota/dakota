@@ -514,12 +514,19 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
   case RANDOM_SAMPLING:
     switch (probDescDB.get_ushort("method.sample_type")) {
       case SUBMETHOD_LOW_DISCREPANCY_SAMPLING:
-        return std::make_shared<NonDLowDiscrepancySampling>(problem_db, model); break;
+        return std::make_shared<NonDLowDiscrepancySampling>(problem_db, model);
+	break;
       default:
         return std::make_shared<NonDLHSSampling>(problem_db, model); break;
       }
   case MULTILEVEL_SAMPLING:
-    return std::make_shared<NonDMultilevelSampling>(problem_db, model);   break;
+    // Similar to MFMC below, spec options could trigger promotion to GenACV
+    // (which is then restricted to default hierarch DAG for MLMC consistency)
+    if (probDescDB.get_ushort("method.sub_method") == SUBMETHOD_WEIGHTED_MLMC)
+      return std::make_shared<NonDGenACVSampling>(problem_db, model);
+    else
+      return std::make_shared<NonDMultilevelSampling>(problem_db, model);
+    break;
   case MULTIFIDELITY_SAMPLING:
     if (probDescDB.get_short("method.nond.search_model_graphs.selection"))
       return std::make_shared<NonDGenACVSampling>(problem_db, model);
@@ -531,7 +538,9 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     break;
   case APPROXIMATE_CONTROL_VARIATE:
     if (probDescDB.get_short("method.nond.search_model_graphs.recursion") ||
-	probDescDB.get_short("method.nond.search_model_graphs.selection"))
+	probDescDB.get_short("method.nond.search_model_graphs.selection") ||
+	problem_db.get_ushort("method.sub_method") == SUBMETHOD_ACV_RD)
+      // RD is promoted since we want MLMC hierarch rather than ACV peer DAG
       return std::make_shared<NonDGenACVSampling>(problem_db, model);
     else
       return std::make_shared<NonDACVSampling>(problem_db, model);

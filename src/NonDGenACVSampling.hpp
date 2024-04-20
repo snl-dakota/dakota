@@ -111,6 +111,10 @@ private:
   void unroll_reverse_dag_from_root(unsigned short root,
 				    UShortList& ordered_list);
   /// create an ordered list of roots that enable ordered sample increments
+  /// by ensuring that root sample levels are defined
+  void unroll_reverse_dag_from_root(unsigned short root,
+				    UShortArray& group);
+  /// create an ordered list of roots that enable ordered sample increments
   /// by ensuring that root sample levels are defined (overloaded version
   /// factors in the over-sample ratios)
   void unroll_reverse_dag_from_root(unsigned short root,
@@ -121,13 +125,14 @@ private:
   void generalized_acv_offline_pilot();
   void generalized_acv_pilot_projection();
 
-  void approx_increments(IntRealMatrixMap& sum_L_baselineH,
+  void approx_increments(IntRealMatrixMap& sum_L_baseline,
 			 IntRealVectorMap& sum_H,
 			 IntRealSymMatrixArrayMap& sum_LL,
 			 IntRealMatrixMap& sum_LH, const SizetArray& N_H_actual,
 			 size_t N_H_alloc, const MFSolutionData& soln);
 
-  void update_model_group_costs();
+  void update_model_groups();
+  void update_model_groups(const UShortList& root_list);
 
   void precompute_ratios();
   void compute_ratios(const RealMatrix& var_L, MFSolutionData& solution);
@@ -203,16 +208,11 @@ private:
 			      const SizetArray& approx_sequence,
 			      size_t sequence_start, size_t sequence_end);
 
-  bool genacv_approx_increment(const MFSolutionData& soln,
-			       const Sizet2DArray& N_L_actual_refined,
-			       SizetArray& N_L_alloc_refined,
-			       size_t iter, const SizetArray& approx_sequence,
-			       size_t start, size_t end);
-  bool genacv_approx_increment(const MFSolutionData& soln,
-			       const Sizet2DArray& N_L_actual_refined,
-			       SizetArray& N_L_alloc_refined,
-			       size_t iter, unsigned short root,
-			       const UShortSet& reverse_dag_set);
+  //bool genacv_approx_increment(const MFSolutionData& soln,
+  // 			         const Sizet2DArray& N_L_actual_refined,
+  // 			         SizetArray& N_L_alloc_refined,
+  // 			         size_t iter, const SizetArray& approx_sequence,
+  // 			         size_t start, size_t end);
 
   void solve_for_genacv_control(const RealSymMatrix& cov_LL,
 				const RealSymMatrix& G,

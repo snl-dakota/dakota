@@ -99,12 +99,6 @@ protected:
 			   const RealVector& fn_vals, const ShortArray& asv,
 			   size_t approx);
 
-  bool acv_approx_increment(const MFSolutionData& soln,
-			    const Sizet2DArray& N_L_actual_refined,
-			    SizetArray& N_L_alloc_refined, size_t iter,
-			    const SizetArray& approx_sequence,
-			    size_t start, size_t end);
-
   void acv_raw_moments(IntRealMatrixMap& sum_L_shared,
 		       IntRealMatrixMap& sum_L_refined,
 		       IntRealVectorMap& sum_H,
@@ -161,13 +155,14 @@ private:
   void approximate_control_variate_offline_pilot();
   void approximate_control_variate_pilot_projection();
 
-  void approx_increments(IntRealMatrixMap& sum_L_baselineH,
+  void approx_increments(IntRealMatrixMap& sum_L_baseline,
 			 IntRealVectorMap& sum_H,
 			 IntRealSymMatrixArrayMap& sum_LL,
 			 IntRealMatrixMap& sum_LH, const SizetArray& N_H_actual,
 			 size_t N_H_alloc, const MFSolutionData& soln);
 
-  void update_model_group_costs();
+  void update_model_groups();
+  void update_model_groups(const SizetArray& approx_sequence);
 
   void precompute_acv_control(const RealVector& avg_eval_ratios,
 			      const SizetArray& N_shared);
@@ -395,7 +390,32 @@ compute_F_matrix(const RealVector& r_and_N, RealSymMatrix& F)
     }
     break;
   }
-  //case SUBMETHOD_ACV_RD: // TO DO
+  /*
+  // Weighted RD is not well-motivated as a root DAG; preferable to use ACV-IS
+  // --> map an RD user spec to GenACV and default to hierarch DAG as in MFMC
+  //     (allow DAG selection, model selection, both, neither)
+  // --> No "ACV_RD" implemented in this class for root DAG case
+  case SUBMETHOD_ACV_RD: {
+    // TO DO: convert r_and_N to N_vec
+    Real z1_i, z2_i, N_H = N_vec[numApprox];
+    for (i=0; i<numApprox; ++i) {
+      z1_i = N_H;            // z1s = z2t
+      z2_i = N_vec[i] - N_H; // z2i = N_vec[source] - z1s
+      //gVec[i] = 1./z1_i;
+      GMat(i,i) = 1./z2_i + 1./z1_i;
+      for (j=0; j<i; ++j) {
+	GMat(i,j) = 1./z1_i;
+	// From GenACV-RD:
+	//if (tgt_i == tgt_j) GMat(i,j) += 1./z1_i; // always true
+	//if (tgt_i == src_j) GMat(i,j) -= 1./z1_i; // always false for root dag
+	//if (src_i == tgt_j) GMat(i,j) -= 1./z2_i; // always false for root dag
+	//if (src_i == src_j) GMat(i,j) += 1./z2_i; // diagonal
+      }
+    }
+    // TO DO: convert GMat to F (and resolve gVec)
+    break;
+  }
+  */
   default:
     Cerr << "Error: bad sub-method name (" << mlmfSubMethod
 	 << ") in NonDACVSampling::compute_F_matrix()" << std::endl;
