@@ -45,17 +45,17 @@ Test Number 3 succeeded
                       5.0017733013848499e+02
 <<<<< Best evaluation ID: 29
 Test Number 4 succeeded
-<<<<< Function evaluation summary: 46944 total (46944 new, 0 duplicate)
-<<<<< Function evaluation summary: 46944 total (46944 new, 0 duplicate)
-<<<<< Function evaluation summary: 46944 total (46944 new, 0 duplicate)
+<<<<< Function evaluation summary: 47121 total (47121 new, 0 duplicate)
+<<<<< Function evaluation summary: 47121 total (47121 new, 0 duplicate)
+<<<<< Function evaluation summary: 47121 total (47121 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.1100000000000001e+00 outer_theta1
+                      9.6999999999999997e-01 outer_theta1
                       5.2359877559830004e-01 outer_theta2
 <<<<< Best objective function  =
-                      5.2799427539443539e-04
+                      5.3515980594640456e-04
 <<<<< Best constraint values   =
-                      4.9989362568909365e+02
-<<<<< Best evaluation ID: 29
+                      5.0000667881500544e+02
+<<<<< Best evaluation ID: 22
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 25500 total (25500 new, 0 duplicate)
 <<<<< Function evaluation summary: 25500 total (25500 new, 0 duplicate)
@@ -110,9 +110,9 @@ Test Number 9 succeeded
                       1.0700000000000001e+00 outer_theta1
                       5.2359877559830004e-01 outer_theta2
 <<<<< Best objective function  =
-                      5.2866240876241221e-04
+                      5.2865978664528722e-04
 <<<<< Best constraint values   =
-                      4.9966712366039053e+02
+                      5.0015794721664861e+02
 <<<<< Best evaluation ID: 27
 Test Number 10 succeeded
 <<<<< Function evaluation summary: 1275000 total (1275000 new, 0 duplicate)
@@ -168,9 +168,9 @@ Test Number 14 succeeded
                       1.0700000000000001e+00 outer_theta1
                       5.2359877559830004e-01 outer_theta2
 <<<<< Best objective function  =
-                      5.1198007165880453e-04
+                      5.1199204441638123e-04
 <<<<< Best constraint values   =
-                      5.0013749456274576e+02
+                      4.9966502389397152e+02
 <<<<< Best evaluation ID: 27
 Test Number 15 succeeded
 <<<<< Function evaluation summary: 15300 total (10300 new, 5000 duplicate)
@@ -180,9 +180,9 @@ Test Number 15 succeeded
                       1.0700000000000001e+00 outer_theta1
                       5.2359877559830004e-01 outer_theta2
 <<<<< Best objective function  =
-                      5.2866240876241221e-04
+                      5.2865978664528722e-04
 <<<<< Best constraint values   =
-                      4.9966712366039053e+02
+                      5.0015794721664861e+02
 <<<<< Best evaluation ID: 27
 Test Number 16 succeeded
 <<<<< Function evaluation summary: 15300 total (5300 new, 10000 duplicate)
@@ -192,22 +192,22 @@ Test Number 16 succeeded
                       1.0700000000000001e+00 outer_theta1
                       5.2359877559830004e-01 outer_theta2
 <<<<< Best objective function  =
-                      5.2866240876241221e-04
+                      5.2865978664528722e-04
 <<<<< Best constraint values   =
-                      4.9966712366039053e+02
+                      5.0015794721664861e+02
 <<<<< Best evaluation ID: 27
 Test Number 17 succeeded
 <<<<< Function evaluation summary: 32460 total (32460 new, 0 duplicate)
 <<<<< Function evaluation summary: 32460 total (32460 new, 0 duplicate)
 <<<<< Function evaluation summary: 32460 total (32460 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.1771975511966000e+00 outer_theta1
-                      6.5359877559830004e-01 outer_theta2
+                      1.0671975511966001e+00 outer_theta1
+                      5.4359877559830005e-01 outer_theta2
 <<<<< Best objective function  =
-                      5.1735850554824616e-04
+                      5.2364476895521057e-04
 <<<<< Best constraint values   =
-                      4.9949609560826480e+02
-<<<<< Best evaluation ID: 14
+                      4.9985673998678772e+02
+<<<<< Best evaluation ID: 3
 Test Number 18 succeeded
 <<<<< Function evaluation summary: 6600 total (6600 new, 0 duplicate)
 <<<<< Function evaluation summary: 6600 total (6600 new, 0 duplicate)
@@ -221,53 +221,53 @@ Test Number 18 succeeded
                       4.9954850167967788e+02
 <<<<< Best evaluation ID not available
 Test Number 19 succeeded
-<<<<< Function evaluation summary: 67500 total (25750 new, 41750 duplicate)
-<<<<< Function evaluation summary: 67500 total (25750 new, 41750 duplicate)
-<<<<< Function evaluation summary: 67500 total (25750 new, 41750 duplicate)
+<<<<< Function evaluation summary: 123750 total (49750 new, 74000 duplicate)
+<<<<< Function evaluation summary: 123750 total (49750 new, 74000 duplicate)
+<<<<< Function evaluation summary: 123750 total (49750 new, 74000 duplicate)
 <<<<< Best parameters          =
-                      1.2490697388104881e+00 outer_theta1
-                      7.4740790113758693e-01 outer_theta2
+                      1.2483282955587831e+00 outer_theta1
+                      7.4776049856783899e-01 outer_theta2
 <<<<< Best objective function  =
-                      4.3874759793579107e-04
+                      4.4199932016059367e-04
 <<<<< Best constraint values   =
-                      9.9940623101032156e+02
+                      9.9952665724611757e+02
 <<<<< Best evaluation ID not available
 Test Number 20 succeeded
-<<<<< Function evaluation summary: 22500 total (9250 new, 13250 duplicate)
-<<<<< Function evaluation summary: 22500 total (9250 new, 13250 duplicate)
-<<<<< Function evaluation summary: 22500 total (9250 new, 13250 duplicate)
+<<<<< Function evaluation summary: 41250 total (16750 new, 24500 duplicate)
+<<<<< Function evaluation summary: 41250 total (16750 new, 24500 duplicate)
+<<<<< Function evaluation summary: 41250 total (16750 new, 24500 duplicate)
 <<<<< Best parameters          =
-                      1.2500000000000000e+00 outer_theta1
-                      7.5000000000000000e-01 outer_theta2
+                      1.0121569978512583e+00 outer_theta1
+                      1.0836927989981044e+00 outer_theta2
 <<<<< Best objective function  =
-                      3.1143040202639483e-04
+                      4.7796069585833508e-04
 <<<<< Best constraint values   =
-                      9.9961208546910143e+02
+                      9.9980006000974402e+02
 <<<<< Best evaluation ID not available
 Test Number 21 succeeded
-<<<<< Function evaluation summary: 590910 total (580004 new, 10906 duplicate)
-<<<<< Function evaluation summary: 590910 total (580004 new, 10906 duplicate)
-<<<<< Function evaluation summary: 590910 total (580004 new, 10906 duplicate)
+<<<<< Function evaluation summary: 589725 total (578845 new, 10880 duplicate)
+<<<<< Function evaluation summary: 589725 total (578845 new, 10880 duplicate)
+<<<<< Function evaluation summary: 589725 total (578845 new, 10880 duplicate)
 <<<<< Best parameters          =
                       1.1699999999999999e+00 outer_theta1
                       5.2359877559830004e-01 outer_theta2
 <<<<< Best objective function  =
                       3.9267802547289971e+03
 <<<<< Best constraint values   =
-                      1.1448918646314849e-04
+                      1.1448918732009449e-04
 <<<<< Best evaluation ID: 32
 Test Number 22 succeeded
-<<<<< Function evaluation summary: 394215 total (379909 new, 14306 duplicate)
-<<<<< Function evaluation summary: 394215 total (379909 new, 14306 duplicate)
-<<<<< Function evaluation summary: 394215 total (379909 new, 14306 duplicate)
+<<<<< Function evaluation summary: 392322 total (378658 new, 13664 duplicate)
+<<<<< Function evaluation summary: 392322 total (378658 new, 13664 duplicate)
+<<<<< Function evaluation summary: 392322 total (378658 new, 13664 duplicate)
 <<<<< Best parameters          =
-                      1.1499999999999999e+00 outer_theta1
+                      1.0500000000000000e+00 outer_theta1
                       5.2359877559830004e-01 outer_theta2
 <<<<< Best objective function  =
-                      2.0892165303546631e+03
+                      2.0695913825458856e+03
 <<<<< Best constraint values   =
-                      1.1448897526669522e-04
-<<<<< Best evaluation ID: 31
+                      1.1450590139058857e-04
+<<<<< Best evaluation ID: 26
 Test Number 23 succeeded
 <<<<< Function evaluation summary: 5535 total (4531 new, 1004 duplicate)
 <<<<< Function evaluation summary: 5535 total (4531 new, 1004 duplicate)
@@ -276,7 +276,7 @@ Test Number 23 succeeded
                       1.1500000000000001e+00 outer_theta1
                       5.2359877559830004e-01 outer_theta2
 <<<<< Best objective function  =
-                      5.6357202915011996e-04
+                      5.6357202941193744e-04
 <<<<< Best constraint values   =
                       4.9999443423306377e+02
 <<<<< Best evaluation ID: 4
@@ -288,7 +288,7 @@ Test Number 24 succeeded
                       1.1500000000000001e+00 outer_theta1
                       5.2359877559830004e-01 outer_theta2
 <<<<< Best objective function  =
-                      5.6357202915011996e-04
+                      5.6357202941193744e-04
 <<<<< Best constraint values   =
                       4.9999443423306377e+02
 <<<<< Best evaluation ID: 4

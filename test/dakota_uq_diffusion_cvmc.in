@@ -2,7 +2,6 @@
 #@ p1: MPIProcs=3
 #@ p2: MPIProcs=2
 #@ p3: MPIProcs=3
-#@ p4: MPIProcs=3
 #@ p4: TimeoutDelay=300
 #@ s*: TimeoutAbsolute=3600
 #@ s*: TimeoutDelay=1200
@@ -11,16 +10,16 @@
 
 method,
 	model_pointer = 'HIERARCH'
-        multifidelity_sampling			#s0,#s1,#s2,#s3,#s4,#s6,#s7,#s8,#s9,#s10,#p0,#p1,#p2,#p3,#p4
+        multifidelity_sampling			#s0,#s1,#s2,#s3,#s4,#s6,#s7,#s8,#s9,#s10,#p0,#p1,#p2,#p3
 # Ensure MLMC can also work across model forms:
 #	multilevel_sampling			#s5
-	  pilot_samples = 20  seed = 1237	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#p0,#p1,#p2,#p3,#p4
+	  pilot_samples = 20  seed = 1237	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#p0,#p1,#p2,#p3
 #	  pilot_samples = 500 seed = 1237	#s10
 #	  solution_mode online_projection	#s9
 #	  solution_mode offline_pilot		#s10
 	  convergence_tolerance =    .1		#s0,#s2,#s4,#p0,#p1,#p2,#p3
 #	  convergence_tolerance =   .01		#s1,#s3,#s5,#s6
-#	  max_function_evaluations = 250	#s7,#s8,#s9,#s10,#p4
+#	  max_function_evaluations = 250	#s7,#s8,#s9,#s10
 	  output silent
 
 model,
@@ -30,14 +29,14 @@ model,
 	  ordered_model_fidelities = 'MF' 'HF'		#s0,#s1,#p0
 #	  ordered_model_fidelities = 'LF' 'HF'		#s2,#s3,#s4,#s9,#s10,#p1,#p2,#p3
 #	  ordered_model_fidelities = 'LF' 'MF' 'HF'	#s5
-#	  truth_model = 'HF'				#s6,#s7,#s8,#p4
+#	  truth_model = 'HF'				#s6,#s7,#s8
 #	  unordered_model_fidelities = 'LF'		#s6,#s7
-#	  unordered_model_fidelities = 'LF' 'MF'	#s8,#p4
+#	  unordered_model_fidelities = 'LF' 'MF'	#s8
 
 model,
 	id_model = 'LF'
 	variables_pointer = 'LF_VARS'
-#	interface_pointer = 'LF_INT'	#s4,#s5,#s6,#s7,#s8,#s9,#s10,#p2,#p3,#p4
+#	interface_pointer = 'LF_INT'	#s4,#s5,#s6,#s7,#s8,#s9,#s10,#p2,#p3
 	simulation
 	  solution_level_control = 'mesh_size'
 # dense matrices --> direct solvers --> cubic cost growth
@@ -48,7 +47,7 @@ model,
 model,
 	id_model = 'MF'
 	variables_pointer = 'MF_VARS'
-#	interface_pointer = 'MF_INT'	#s5,#s8,#p4
+#	interface_pointer = 'MF_INT'	#s5,#s8
 	simulation
 	  solution_level_control = 'mesh_size'
 	  solution_level_cost = 64.
@@ -56,7 +55,7 @@ model,
 model,
 	id_model = 'HF'
 	variables_pointer = 'HF_VARS'
-#	interface_pointer = 'HF_INT'	#s4,#s5,#s6,#s7,#s8,#s9,#s10,#p2,#p3,#p4
+#	interface_pointer = 'HF_INT'	#s4,#s5,#s6,#s7,#s8,#s9,#s10,#p2,#p3
 	simulation
 	  solution_level_control = 'mesh_size'
 	  solution_level_cost = 4096.
@@ -108,11 +107,11 @@ variables,
                    	 0.2   # kernel length
       	    descriptors = 'field_mean' 'field_std_dev' 'kernel_order' 'kernel_length'
 	    initial_state = 0.1 0.5 1 0.2	 #s0,#s1,#p0
-#     	    initial_state = 1   4   1 0.2  	 #s5,#s8,#p4
+#     	    initial_state = 1   4   1 0.2  	 #s5,#s8
 	  string = 2  # form of kernel (refer to Yang,Lei,Baker,Lin)
       	    elements_per_variable = 2 2
 	    initial_state = 'exponential' 'on'	 #s0,#s1,#p0
-#	    initial_state = 'cosine' 'off'  	 #s5,#s8,#p4
+#	    initial_state = 'cosine' 'off'  	 #s5,#s8
       	    set_values = 'cosine' 'exponential'
                        	 'off' 'on'
       	    descriptors = 'kernel_type' 'positivity'
@@ -144,7 +143,7 @@ variables,
 
 # Enumerated interfaces improve the final evaluation summaries
 interface,
-#	id_interface = 'LF_INT'			#s4,#s5,#s6,#s7,#s8,#s9,#s10,#p2,#p3,#p4
+#	id_interface = 'LF_INT'			#s4,#s5,#s6,#s7,#s8,#s9,#s10,#p2,#p3
 	direct
 	  analysis_driver = 'steady_state_diffusion_1d'
 	  deactivate evaluation_cache restart_file
