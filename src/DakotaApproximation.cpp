@@ -26,6 +26,9 @@
 #ifdef HAVE_DAKOTA_SURROGATES
 #include "DakotaSurrogatesGP.hpp"
 #include "DakotaSurrogatesPoly.hpp"
+#ifdef HAVE_DAKOTA_PYTHON_SURROGATES
+#include "DakotaSurrogatesPython.hpp"
+#endif // HAVE_DAKOTA_PYTHON_SURROGATES
 #endif // HAVE_DAKOTA_SURROGATES
 #include "DakotaGraphics.hpp"
 
@@ -133,6 +136,11 @@ get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
     else if (approx_type == "global_exp_poly")
       return std::make_shared<SurrogatesPolyApprox>
 	(problem_db, shared_data, approx_label);
+#ifdef HAVE_DAKOTA_PYTHON_SURROGATES
+    else if (approx_type == "global_exp_python")
+      return std::make_shared<SurrogatesPythonApprox>
+	(problem_db, shared_data, approx_label);
+#endif // HAVE_DAKOTA_PYTHON_SURROGATES
 #endif // HAVE_DAKOTA_SURROGATES
     else {
       Cerr << "Error: Approximation type " << approx_type << " not available."
@@ -192,6 +200,10 @@ Approximation::get_approx(const SharedApproxData& shared_data)
     return std::make_shared<SurrogatesGPApprox>(shared_data);
   else if (approx_type == "global_exp_poly")
     return std::make_shared<SurrogatesPolyApprox>(shared_data);
+#ifdef HAVE_DAKOTA_PYTHON_SURROGATES
+  else if (approx_type == "global_exp_python")
+    return std::make_shared<SurrogatesPythonApprox>(shared_data);
+#endif // HAVE_DAKOTA_PYTHON_SURROGATES
 #endif // HAVE_DAKOTA_SURROGATES
   else
     Cerr << "Error: Approximation type " << approx_type << " not available."

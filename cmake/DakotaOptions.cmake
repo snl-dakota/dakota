@@ -111,7 +111,7 @@ if(DAKOTA_PYTHON_SURROGATES)
     message(STATUS "Disabling DAKOTA_PYTHON_SURROGATES as "
       "DAKOTA_MODULE_SURROGATES=${DAKOTA_MODULE_SURROGATES}")
     set(DAKOTA_PYTHON_SURROGATES OFF CACHE BOOL
-      "Python surrogate wrappers disabled as surrogate module is off.")
+      "Python surrogate wrappers disabled as surrogate module is off." FORCE)
   endif()
 endif()
 

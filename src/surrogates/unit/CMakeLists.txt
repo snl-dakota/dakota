@@ -42,6 +42,14 @@ if(DAKOTA_PYTHON_SURROGATES)
     $<TARGET_FILE_DIR:surrogates>
     )
   set_tests_properties(surrogates_python PROPERTIES LABELS Unit)
+
+  dakota_add_unit_test(NAME surrogates_python_pybind11
+    SOURCES PythonSurrogatesTest.cpp
+    LINK_LIBS dakota_surrogates Boost::system Boost::filesystem)
+  # Rationale: This includes Teuchos headers and needs to link to the
+  # ParameterList components
+  target_include_directories(surrogates_python_pybind11 PRIVATE "${Teuchos_INCLUDE_DIRS}")
+
 endif()
 
 # Rationale: These all include Teuchos headers and need to link to the
@@ -59,6 +67,13 @@ dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/pr_test_data"
   "${CMAKE_CURRENT_BINARY_DIR}/pr_test_data"
   surrogates_unit_test_copied_files
   )
+
+if(DAKOTA_PYTHON_SURROGATES)
+  dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/polynomial_surrogate.py"
+    "${CMAKE_CURRENT_BINARY_DIR}/polynomial_surrogate.py"
+    surrogates_unit_test_copied_files
+    )
+endif()
 
 # Add a single target for all copied files
 add_custom_target(surrogates_unit_test_files ALL

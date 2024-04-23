@@ -5,8 +5,10 @@ import io
 import collections
 import copy
 import functools
+import linecache
 import re
 import sys
+from typing import List, Tuple
 import copy
 from . import dprepro as dprepro_mod
 
@@ -1100,3 +1102,115 @@ def python_interface(fn):
         results = fn(params, results)
         return results.return_direct_results_dict()
     return wrapper
+
+
+class BatchSplitter:
+    """Split a batch parameters files into individual parameters files
+    
+    - Content of individual parameters files as list of newline terminated lines
+      can be accessed by index using [].
+    - Iterating the object yields content of individual parameter files as lists of
+      newline terminated lines.
+
+    Keyword Args:
+        parameters_file (str): Name of batch parameters file; if none, 1st command line argument is used
+
+    Attributes:
+        parameters_file: Name of parameters file
+        format: format of parameters file ("DAKOTA" or "APREPRO")
+    """
+    def __init__(self, parameters_file=None):
+        self._parameters_file = sys.argv[1] if parameters_file is None else parameters_file
+        self._format = self._detect_format()
+        self._ending_line_numbers, self._batch_id, self._eval_nums = self._parse_parameters_file()
+
+    def _detect_format(self):
+        """Detect format of parameters file
+        
+        Returns:
+            "DAKOTA" or "APREPRO"
+        """
+        with open(self._parameters_file, "r") as f:
+            line = f.readline()
+        dakota_format_match = _pRE["DAKOTA"]["num_variables"].match(line)
+        aprepro_format_match = _pRE["APREPRO"]["num_variables"].match(line)
+        if aprepro_format_match is not None:
+            return "APREPRO"
+        elif dakota_format_match is not None: 
+            return "DAKOTA"
+        else:
+            raise ParamsFormatError("Unrecognized parameters file format.")
+
+    def _parse_parameters_file(self) ->Tuple[List[int], str, List[int]]:
+        """Return a list of ending line numbers for each parameter set
+        
+        Line numbers begin at 1, and ending line numbers are for the first line
+        after the parameter set.
+        """
+        line_numbers = []
+        eval_ids = []
+        with open(self._parameters_file, "r") as f:
+            # Advance past the first line so that the 0th batch is recorded
+            # when the 1st evaluation is reached
+            f.readline() 
+            for i, line in enumerate(f, start=2):
+                if _pRE[self._format]["num_variables"].match(line) is not None:
+                    line_numbers.append(i)
+                eval_id_m = _pRE[self._format]["eval_id"].match(line)
+                if eval_id_m is not None:
+                   eval_ids.append(eval_id_m.group("value"))
+            line_numbers.append(i+1)
+        try:
+            batch_id = eval_ids[0].split(":")[-2]
+        except IndexError:
+            raise BatchSettingError("Parameters file does not appear to be a batch file.")
+        eval_nums = [int(eval_id.split(":")[-1]) for eval_id in eval_ids]
+        return line_numbers, batch_id, eval_nums
+    
+    def __getitem__(self, index: int) -> List[str]:
+        """Return list of lines for parameter set with index idx
+        
+        Lines end with newline
+        """
+        lines = []
+        start_line_num = 1 if index == 0 else self._ending_line_numbers[index-1]
+        for i in range(start_line_num, self._ending_line_numbers[index]):
+            lines.append(linecache.getline(self._parameters_file, i))
+        return lines
+
+    @property
+    def batch_id(self):
+        return self._batch_id
+
+    @property
+    def eval_nums(self):
+        return self._eval_nums
+    
+    def __len__(self):
+        """Return size of batch"""
+        return len(self._ending_line_numbers)
+    
+    def __iter__(self) -> None:
+        for i in range(len(self)):
+            yield self[i]
+
+    @property
+    def parameters_file(self) -> str:
+        return self._parameters_file
+    
+    @property
+    def format(self) -> str:
+        return self._format
+
+    def write(self, index: int, filename: str) -> None:
+        """Write parameter set with index to filename"""
+        lines = self[index]
+        with open(filename, "w") as f:
+            f.writelines(lines)
+    
+    
+    
+    
+        
+
+

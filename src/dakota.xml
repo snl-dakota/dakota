@@ -2010,7 +2010,7 @@
     </keyword>
 
     <!-- **** TOPLEVEL *** -->
-    <keyword id="method" name="method" maxOccurs="unbounded" code="{N_mdm3(start,0,stop)}" label="Method" >
+    <keyword id="method" name="method" maxOccurs="999999" code="{N_mdm3(start,0,stop)}" label="Method" >
       <keyword  id="id_method" name="id_method" code="{N_mdm(str,idMethod)}" label="Method set identifier"  minOccurs="0" default="strategy use of last method parsed" >
         <param type="STRING" taglist="method" />
       </keyword>
@@ -3665,13 +3665,35 @@
 	      &bayes_seed_rng;
 	      <optional>
 		<oneOf label="MCMC Algorithm" >
-            <keyword  id="dram" name="dram" code="{N_mdm(lit,mcmcType_dram)}" label="dram"  default="dram" />
-            <keyword  id="delayed_rejection" name="delayed_rejection" code="{N_mdm(lit,mcmcType_delayed_rejection)}" label="delayed_rejection"  default="dram" />
-            <keyword  id="adaptive_metropolis" name="adaptive_metropolis" code="{N_mdm(lit,mcmcType_adaptive_metropolis)}" label="adaptive_metropolis"  default="dram" />
-            <keyword  id="metropolis_hastings" name="metropolis_hastings" code="{N_mdm(lit,mcmcType_metropolis_hastings)}" label="metropolis_hastings"  default="dram" />
+                  <keyword  id="dram" name="dram" code="{N_mdm(lit,mcmcType_dram)}" label="dram"  default="dram" />
+                  <keyword  id="delayed_rejection" name="delayed_rejection" code="{N_mdm(lit,mcmcType_delayed_rejection)}" label="delayed_rejection"  default="dram" />
+                  <keyword  id="adaptive_metropolis" name="adaptive_metropolis" code="{N_mdm(lit,mcmcType_adaptive_metropolis)}" label="adaptive_metropolis"  default="dram" />
+                  <keyword  id="metropolis_hastings" name="metropolis_hastings" code="{N_mdm(lit,mcmcType_metropolis_hastings)}" label="metropolis_hastings"  default="dram" />
+                  <keyword  id="mala" name="mala" code="{N_mdm(lit,mcmcType_mala)}" label="mala"  default="dram" />
 		</oneOf>
 	      </optional>
-          &bayes_proposal_covariance;
+	      <keyword  id="dr_num_stages" name="dr_num_stages" code="{N_mdm(int,drNumStages)}" label="Number of stages for Delayed Rejection"  minOccurs="0" maxOccurs="1" default="3" >
+		<param type="INTEGER" />
+	      </keyword>
+	      <keyword  id="dr_scale_type" name="dr_scale_type" code="{N_mdm(str,drScaleType)}" label="Scale type for Delayed Rejection"  minOccurs="0" maxOccurs="1" default="Power" >
+		<param type="STRING" />
+	      </keyword>
+	      <keyword  id="dr_scale" name="dr_scale" code="{N_mdm(Real,drScale)}" label="Scale for Delayed Rejection"  minOccurs="0" maxOccurs="1" default="2.0" >
+		<param type="REAL" />
+	      </keyword>
+	      <keyword  id="am_period_num_steps" name="am_period_num_steps" code="{N_mdm(int,amPeriodNumSteps)}" label="Period number of steps for Adaptive Metropolis"  minOccurs="0" maxOccurs="1" default="100" >
+		<param type="INTEGER" />
+	      </keyword>
+	      <keyword  id="am_starting_step" name="am_starting_step" code="{N_mdm(int,amStartingStep)}" label="Starting step for Adaptive Metropolis"  minOccurs="0" maxOccurs="1" default="100" >
+		<param type="INTEGER" />
+	      </keyword>
+	      <keyword  id="am_scale" name="am_scale" code="{N_mdm(Real,amScale)}" label="Scale for Adaptive Metropolis"  minOccurs="0" maxOccurs="1" default="1.0" >
+		<param type="REAL" />
+	      </keyword>
+	      <keyword  id="mala_step_size" name="mala_step_size" code="{N_mdm(Real,malaStepSize)}" label="Step size for MALA"  minOccurs="0" maxOccurs="1" default="1.0" >
+		<param type="REAL" />
+	      </keyword>
+              &bayes_proposal_covariance;
 	    </keyword>
 	  </oneOf>
 	  <keyword  id="experimental_design" name="experimental_design" code="{N_mdm(true,adaptExpDesign)}" label="Bayesian Experiment Design"  minOccurs="0" >
@@ -4112,7 +4134,7 @@
     </keyword>
 
     <!-- **** TOPLEVEL *** -->
-    <keyword id="model" name="model" minOccurs="0" maxOccurs="unbounded" code="{N_mom3(start,0,stop)}" label="Model" >
+    <keyword id="model" name="model" minOccurs="0" maxOccurs="999999" code="{N_mom3(start,0,stop)}" label="Model" >
       <keyword  id="id_model" name="id_model" code="{N_mom(str,idModel)}" label="Model Identifier"  minOccurs="0" default="method use of last model parsed" complexity="0">
         <param type="STRING" taglist="model" />
       </keyword>
@@ -4361,6 +4383,16 @@
 		  <keyword  id="options_file" name="options_file" code="{N_mom(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
 		    <param type="INPUT_FILE" />
 		  </keyword>
+		  &model_partial_surrogate_export_format;
+		  &model_surrogate_import;
+		</keyword>
+                <keyword  id="experimental_python" name="experimental_python" code="{N_mom(lit,surrogateType_global_exp_python)}" label="Experimental Python"  minOccurs="1" >
+		  <keyword  id="options_file" name="options_file" code="{N_mom(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
+		    <param type="INPUT_FILE" />
+		  </keyword>
+                  <keyword  id="class_path_and_name" name="class_path_and_name" code="{N_mom(str,moduleAndClassName)}" label="Python Module File and Class Name"  minOccurs="1" >
+                    <param type="INPUT_FILE" />
+                  </keyword>
 		  &model_partial_surrogate_export_format;
 		  &model_surrogate_import;
 		</keyword>
@@ -4743,7 +4775,7 @@
     </keyword>
 
     <!-- **** TOPLEVEL *** -->
-    <keyword id="variables" name="variables" maxOccurs="unbounded" code="{N_vam3(start,0,stop)}" label="Variables" >
+    <keyword id="variables" name="variables" maxOccurs="999999" code="{N_vam3(start,0,stop)}" label="Variables" >
       <keyword  id="id_variables" name="id_variables" code="{N_vam(str,idVariables)}" label="Variables set identifier"  minOccurs="0" default="use of last variables parsed" >
         <param type="STRING" taglist="variables" />
       </keyword>
@@ -5533,7 +5565,7 @@
 
 
     <!-- **** TOPLEVEL *** -->
-    <keyword id="interface" name="interface" maxOccurs="unbounded" code="{N_ifm3(start,0,stop)}" label="Interface" >
+    <keyword id="interface" name="interface" maxOccurs="999999" code="{N_ifm3(start,0,stop)}" label="Interface" >
       <keyword  id="id_interface" name="id_interface" code="{N_ifm(str,idInterface)}" label="Interface Set Identifier"  minOccurs="0" default="use of last interface parsed" complexity="0">
         <param type="STRING" taglist="interface" />
       </keyword>
@@ -5737,7 +5769,7 @@
     </keyword>
 
     <!-- **** TOPLEVEL *** -->
-    <keyword id="responses" name="responses" maxOccurs="unbounded" code="{N_rem3(start,0,stop)}" label="Responses" >
+    <keyword id="responses" name="responses" maxOccurs="999999" code="{N_rem3(start,0,stop)}" label="Responses" >
       <keyword  id="id_responses" name="id_responses" code="{N_rem(str,idResponses)}" label="Responses set identifier"  minOccurs="0" default="use of last responses parsed" >
         <param type="STRING" taglist="responses" />
       </keyword>

@@ -25,7 +25,7 @@ if pyv >= (3,):
     xrange = range
     unicode = str
     
-__version__ = "20230404.0"
+__version__ = "20230908.0"
 
 __all__ = ['pyprepro','Immutable','Mutable','ImmutableValDict','dprepro','convert_dakota']
 
@@ -260,9 +260,6 @@ def pyprepro(tpl,
     
     # This is private. Should only be called from render()
     if return_env:
-        # clean it up
-        for key in INIT_VARS:
-            env.pop(key,None)
         return env
         
     return txtout
@@ -283,11 +280,35 @@ def render(*args,**kwargs):
     kwargs['_return_env'] = True
     keep_immutable = kwargs.pop('keep_immutable',False)
     
-    res = pyprepro(*args,**kwargs)
-    if keep_immutable:
-        return res
+    env = pyprepro(*args,**kwargs)
+    
+    # This code block is about removing items in the dictionary that come from
+    # the code itself and not the user. The problem is, we want to permit writing
+    # variables with names already defined (e.g. 'gamma'). Approach is documented
+    for key,val in INIT_VARS.items():
+        if key in env and (env[key] == val or key.startswith('_')): # Value hasn't changed
+            del env[key]
+            continue
+            
+        if key == 'nan' and math.isnan(val): # Special case for nan
+            del env[key]
+            continue
         
-    return dict(res)
+        # Callable Lambdas that change equality. Note that this will only capture
+        # if also in INIT_VARS
+        if key in _CALLABLE_INIT_LAMBDAS and callable(val):
+            del env[key]
+            continue
+        
+        # The 'env' key ends up being recursive. Test for it
+        if key == 'env' and isinstance(val,dict) and val.get('env') is val:
+            del env[key]
+            continue
+    
+    if keep_immutable:
+        return env
+        
+    return dict(env)
         
     
 def _parse_cli(argv,dprepro=False):
@@ -1963,7 +1984,21 @@ _syntax = {
     'code'  : DEFAUL_LINE_START  ,
     'inline': '{0} {1}'.format(DEFAUL_INLINE_START,DEFAUL_INLINE_END),
 }
-INIT_VARS = set(_template('BLA',return_env=True,syntax=_syntax)[1].keys())
+INIT_VARS = dict(_template('BLA',return_env=True,syntax=_syntax)[1])
+
+_CALLABLE_INIT_LAMBDAS = frozenset(
+    [
+        "_printlist",
+        "_str",
+        "all_var_names",
+        "all_vars",
+        "defined",
+        "get",
+        "include",
+        "json_dumps",
+        "vset",
+    ]
+)
 
 def main():
     global CLI_MODE

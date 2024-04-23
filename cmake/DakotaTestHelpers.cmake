@@ -310,6 +310,9 @@ function(dakota_regression_test test_name serpar_string test_props
        list(APPEND copied_files_abs "${copied_file}")
      endforeach()
 
+    set_tests_properties(${_par_mark}${test_name} PROPERTIES
+      ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH}:$ENV{PYTHONPATH}")
+
    endif()
 
    set(copied_test_files_abs ${copied_test_files_abs} ${copied_files_abs}

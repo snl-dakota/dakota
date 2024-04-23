@@ -193,6 +193,14 @@ DataMethodRep::DataMethodRep():
   generatePosteriorSamples(false), evaluatePosteriorDensity(false),
   // Wasabi
   numPushforwardSamples(10000),
+  // MUQ
+  drNumStages(3),
+  drScaleType("Power"),
+  drScale(2.0),
+  amPeriodNumSteps(100),
+  amStartingStep(100),
+  amScale(1.0),
+  malaStepSize(1.0),
   // Parameter Study
   numSteps(0), pstudyFileFormat(TABULAR_ANNOTATED), pstudyFileActive(false),
   // Verification
@@ -366,6 +374,13 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << batchSize << batchSizeExplore
     << mutualInfoKSG2 << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << numPushforwardSamples
+    << drNumStages
+    << drScaleType
+    << drScale
+    << amPeriodNumSteps
+    << amStartingStep
+    << amScale
+    << malaStepSize
     << dataDistType << dataDistCovInputType << dataDistMeans
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
@@ -546,6 +561,13 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> batchSize >> batchSizeExplore
     >> mutualInfoKSG2 >> numChains >> numCR >> crossoverChainPairs
     >> grThreshold >> jumpStep >> numPushforwardSamples
+    >> drNumStages
+    >> drScaleType
+    >> drScale
+    >> amPeriodNumSteps
+    >> amStartingStep
+    >> amScale
+    >> malaStepSize
     >> dataDistType >> dataDistCovInputType >> dataDistMeans
     >> dataDistCovariance >> dataDistFile >> posteriorDensityExportFilename
     >> posteriorSamplesExportFilename >> posteriorSamplesImportFilename
@@ -726,6 +748,13 @@ void DataMethodRep::write(std::ostream& s) const
     << batchSize << batchSizeExplore
     << mutualInfoKSG2 << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << numPushforwardSamples
+    << drNumStages
+    << drScaleType
+    << drScale
+    << amPeriodNumSteps
+    << amStartingStep
+    << amScale
+    << malaStepSize
     << dataDistType << dataDistCovInputType << dataDistMeans
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename

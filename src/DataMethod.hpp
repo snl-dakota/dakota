@@ -1348,6 +1348,29 @@ public:
   /// set of samples
   bool evaluatePosteriorDensity;
 
+  // MUQ sub-specification
+
+  /// DR num stages
+  int drNumStages;
+
+  /// DR scale type
+  String drScaleType;
+
+  /// DR scale
+  Real drScale;
+
+  /// AM period num steps
+  int amPeriodNumSteps;
+
+  /// AM staring step
+  int amStartingStep;
+
+  /// AM scale
+  Real amScale;
+
+  /// MALA step size
+  Real malaStepSize;
+
   // Parameter Study
 
   /// the \c final_point specification in \ref MethodPSVPS

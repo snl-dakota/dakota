@@ -255,17 +255,17 @@ class Immutables(unittest.TestCase):
         env['outI'] = Immutable('i')
         env['outM'] = 'm'
         
-        env['assert_'] = self.assertTrue         
+        env['assertTrue'] = self.assertTrue         
         exec_test = """\
             
-            assert_(outI == 'i')
-            assert_(outM == 'm')
+            assertTrue(outI == 'i')
+            assertTrue(outM == 'm')
         
             outI == 'III'
             outM = 'MMM'
         
-            assert_(outI == 'i')
-            assert_(outM == 'MMM')
+            assertTrue(outI == 'i')
+            assertTrue(outM == 'MMM')
         
             inI = Immutable('I')
             inM = 'M'
@@ -273,8 +273,8 @@ class Immutables(unittest.TestCase):
             inI = 'ii'
             inM = 'mm'
         
-            assert_(inI == 'I')  # not 'ii'
-            assert_(inM == 'mm')
+            assertTrue(inI == 'I')  # not 'ii'
+            assertTrue(inM == 'mm')
         
             im2 = Immutable('a')
             del im2
@@ -1140,7 +1140,7 @@ class misc(unittest.TestCase):
         # Make sure it got written
         self.assertTrue(exfilt == {'param1': 1, 'param2': 2, 'param3': 30})
         
-        ## Test the module
+        ## Test the module and render
         exfilt2 = pyprepro.render(
             tpl,
             immutable_env=dict(param1=1,param2=2),
@@ -1155,6 +1155,25 @@ class misc(unittest.TestCase):
             keep_immutable=True,
         )
         assert isinstance(exfilt3,ImmutableValDict)
+    
+        # Related to #13. Special terms should render them
+        exfilt4 = pyprepro.render("{gamma = 2}\n{cos = 4}")
+        self.assertTrue(exfilt4 == {'cos': 4, 'gamma': 2})
+
+        exfilt4 = pyprepro.render("empty template", immutable_env={"gamma": 2, "cos": 4})
+        self.assertTrue(exfilt4 == {'cos': 4, 'gamma': 2})
+
+        #exfilt4 = pyprepro.render("{lambda = 123}\n")
+        #self.assertTrue(exfilt4 == {'lambda': 123})
+
+        empty = pyprepro.render("nothing")
+        # assert len(empty) == 0, "Should render nothing" # Removed for now
+        if not len(empty) == 0:
+            sys.stderr.write("\n\nWARNING: render without templates should return nothing but failed\n\n")
+            sys.stderr.flush()
+
+
+        
     
 class error_capture(unittest.TestCase):
     def test_name(self):

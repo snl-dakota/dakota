@@ -1,0 +1,166 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 10000 total (10000 new, 0 duplicate)
+<<<<< Function evaluation summary (I1): 100 total (100 new, 0 duplicate)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.6334552651e+02  3.5896984358e+02 -1.5536883737e-03 -1.1934727461e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  4.5630899510e+02  4.7038205792e+02  3.5406317004e+02  3.6401539762e+02
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+  -1.8747657919e+02   1.0000000000e-01   6.7545746139e-04
+   1.0000000000e-01   1.0000000000e+00   6.6666666667e-04
+   1.0000000000e+00   1.0000000000e+01   7.1111111111e-04
+   1.0000000000e+01   1.0000000000e+02   8.1777777778e-04
+   1.0000000000e+02   1.1201195728e+03   7.7706576872e-04
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01   1.2670000000e-01
+   1.0000000000e+00   1.2730000000e-01
+   1.0000000000e+01   1.3370000000e-01
+   1.0000000000e+02   2.0730000000e-01
+Simple Correlation Matrix among all inputs and outputs:
+                       x1           x2 response_fn_1 
+          x1  1.00000e+00 
+          x2  3.19706e-03  1.00000e+00 
+response_fn_1 -6.60155e-02 -9.98025e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+          x1 -1.00000e+00 
+          x2 -1.00000e+00 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                       x1           x2 response_fn_1 
+          x1  1.00000e+00 
+          x2  3.19667e-03  1.00000e+00 
+response_fn_1 -6.48809e-02 -9.98066e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+          x1 -9.92497e-01 
+          x2 -9.99971e-01 
+Test Number 1 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 10000 total (10000 new, 0 duplicate)
+<<<<< Function evaluation summary (I1): 100 total (100 new, 0 duplicate)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.6334552651e+02  3.5896984358e+02 -1.5536883737e-03 -1.1934727461e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  4.5630899510e+02  4.7038205792e+02  3.5406317004e+02  3.6401539762e+02
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+  -1.8747657919e+02   1.0000000000e-01   6.7545746139e-04
+   1.0000000000e-01   1.0000000000e+00   6.6666666667e-04
+   1.0000000000e+00   1.0000000000e+01   7.1111111111e-04
+   1.0000000000e+01   1.0000000000e+02   8.1777777778e-04
+   1.0000000000e+02   1.1201195728e+03   7.7706576872e-04
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01   1.2670000000e-01
+   1.0000000000e+00   1.2730000000e-01
+   1.0000000000e+01   1.3370000000e-01
+   1.0000000000e+02   2.0730000000e-01
+Simple Correlation Matrix among all inputs and outputs:
+                       x1           x2 response_fn_1 
+          x1  1.00000e+00 
+          x2  3.19706e-03  1.00000e+00 
+response_fn_1 -6.60155e-02 -9.98025e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+          x1 -1.00000e+00 
+          x2 -1.00000e+00 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                       x1           x2 response_fn_1 
+          x1  1.00000e+00 
+          x2  3.19667e-03  1.00000e+00 
+response_fn_1 -6.48809e-02 -9.98066e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+          x1 -9.92497e-01 
+          x2 -9.99971e-01 
+Test Number 2 succeeded
+Surrogate quality metrics at build (training) points for response_fn_1:
+         sum_squared  2.94208e+07
+Surrogate quality metrics at challenge (test) points for response_fn_1:
+         sum_squared  2.94208e+07
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 10000 total (10000 new, 0 duplicate)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.6334552651e+02  3.5896984356e+02 -1.5536883750e-03 -1.1934727461e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  4.5630899510e+02  4.7038205792e+02  3.5406317003e+02  3.6401539760e+02
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+  -1.8747657920e+02   1.0000000000e-01   6.7545746138e-04
+   1.0000000000e-01   1.0000000000e+00   6.6666666667e-04
+   1.0000000000e+00   1.0000000000e+01   7.1111111111e-04
+   1.0000000000e+01   1.0000000000e+02   8.1777777778e-04
+   1.0000000000e+02   1.1201195728e+03   7.7706576871e-04
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01   1.2670000000e-01
+   1.0000000000e+00   1.2730000000e-01
+   1.0000000000e+01   1.3370000000e-01
+   1.0000000000e+02   2.0730000000e-01
+Simple Correlation Matrix among all inputs and outputs:
+                       x1           x2 response_fn_1 
+          x1  1.00000e+00 
+          x2  3.19706e-03  1.00000e+00 
+response_fn_1 -6.60155e-02 -9.98025e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+          x1 -1.00000e+00 
+          x2 -1.00000e+00 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                       x1           x2 response_fn_1 
+          x1  1.00000e+00 
+          x2  3.19667e-03  1.00000e+00 
+response_fn_1 -6.48809e-02 -9.98066e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+          x1 -9.92497e-01 
+          x2 -9.99971e-01 
+Test Number 3 succeeded
+Surrogate quality metrics at build (training) points for response_fn_1:
+         sum_squared  2.94208e+07
+Surrogate quality metrics at challenge (test) points for response_fn_1:
+         sum_squared  2.94208e+07
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 10000 total (10000 new, 0 duplicate)
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.6334552651e+02  3.5896984356e+02 -1.5536883750e-03 -1.1934727461e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  4.5630899510e+02  4.7038205792e+02  3.5406317003e+02  3.6401539760e+02
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+  -1.8747657920e+02   1.0000000000e-01   6.7545746138e-04
+   1.0000000000e-01   1.0000000000e+00   6.6666666667e-04
+   1.0000000000e+00   1.0000000000e+01   7.1111111111e-04
+   1.0000000000e+01   1.0000000000e+02   8.1777777778e-04
+   1.0000000000e+02   1.1201195728e+03   7.7706576871e-04
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01   1.2670000000e-01
+   1.0000000000e+00   1.2730000000e-01
+   1.0000000000e+01   1.3370000000e-01
+   1.0000000000e+02   2.0730000000e-01
+Simple Correlation Matrix among all inputs and outputs:
+                       x1           x2 response_fn_1 
+          x1  1.00000e+00 
+          x2  3.19706e-03  1.00000e+00 
+response_fn_1 -6.60155e-02 -9.98025e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+          x1 -1.00000e+00 
+          x2 -1.00000e+00 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                       x1           x2 response_fn_1 
+          x1  1.00000e+00 
+          x2  3.19667e-03  1.00000e+00 
+response_fn_1 -6.48809e-02 -9.98066e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+          x1 -9.92497e-01 
+          x2 -9.99971e-01 

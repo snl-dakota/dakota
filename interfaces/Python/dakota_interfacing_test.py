@@ -98,6 +98,39 @@ dakotaBatchParams = """                                          2 variables
                                     seconds MD_1
 """
 
+apreproBatchParams = """                    { DAKOTA_VARS     =                      3 }
+                    { x1              =  7.488318331306800e-01 }
+                    { x2              =  2.188638686202466e-01 }
+                    { dussv_1         =                      "foo bar" }
+                    { DAKOTA_FNS      =                      1 }
+                    { ASV_1:response_fn_1 =                  1 }
+                    { DAKOTA_DER_VARS =                      2 }
+                    { DVV_1:x1        =                      1 }
+                    { DVV_2:x2        =                      2 }
+                    { DAKOTA_AN_COMPS =                      2 }
+                    { AC_1:first.sh   =                      "a b" }
+                    { AC_2:first.sh   =                      "b" }
+                    { DAKOTA_EVAL_ID  =                    1:1 }
+                    { DAKOTA_METADATA =                      1 }
+                    { MD_1            =                      "seconds" }
+                    { DAKOTA_VARS     =                      3 }
+                    { x1              =  7.488318331306800e-01 }
+                    { x2              =  2.188638686202466e-01 }
+                    { dussv_1         =                      "foo bar" }
+                    { DAKOTA_FNS      =                      1 }
+                    { ASV_1:response_fn_1 =                  1 }
+                    { DAKOTA_DER_VARS =                      2 }
+                    { DVV_1:x1        =                      1 }
+                    { DVV_2:x2        =                      2 }
+                    { DAKOTA_AN_COMPS =                      2 }
+                    { AC_1:first.sh   =                      "a b" }
+                    { AC_2:first.sh   =                      "b" }
+                    { DAKOTA_EVAL_ID  =                    1:2 }
+                    { DAKOTA_METADATA =                      1 }
+                    { MD_1            =                      "seconds" }
+"""
+
+
 # Dictionaries for testing the direct interface
 direct_dense_params = {
     "variables": 5, 
@@ -760,6 +793,65 @@ class TestDeepCopy(unittest.TestCase):
 
 # todo: test iteration, integer access
 
+class TestBatchSplitter(unittest.TestCase):
+    def setUp(self) -> None:
+        self.dakota_batch_params_file = "test_batch_splitter_dakota_batch.in"
+        with open(self.dakota_batch_params_file, "w") as f:
+            print(dakotaBatchParams, file=f)
+        
+        batch_lines = dakotaBatchParams.split('\n')
+        batch_lines = [line + "\n" for line in batch_lines]
+        self.dakota_batch_params_lines = [batch_lines[:12], batch_lines[12:]]
 
+        self.aprepro_batch_params_file = "test_batch_splitter_aprepro_batch.in"
+        with open(self.aprepro_batch_params_file, "w") as f:
+            print(apreproBatchParams, file=f)
+        batch_lines = apreproBatchParams.split('\n')
+        batch_lines = [line + "\n" for line in batch_lines]
+        self.aprepro_batch_params_lines = [batch_lines[:15], batch_lines[15:]]
+
+    def tearDown(self) -> None:
+        os.remove(self.dakota_batch_params_file)
+        os.remove(self.aprepro_batch_params_file)
+
+    def test_len_dakota_batch_params(self):
+        b = di.BatchSplitter(self.dakota_batch_params_file)
+        self.assertEqual(len(b), 2)
+
+    def test_dakota_nums(self):
+        b = di.BatchSplitter(self.dakota_batch_params_file)
+        self.assertEqual(b.batch_id, "1")
+        self.assertListEqual(b.eval_nums,[1, 2])
+
+    def test_format_dakota_batch_params(self):
+        b = di.BatchSplitter(self.dakota_batch_params_file)
+        self.assertEqual(b.format, "DAKOTA")
+
+    def test_get_dakota_batch_params(self):
+        b = di.BatchSplitter(self.dakota_batch_params_file)
+        for i in range(len(b)):
+            self.assertListEqual(b[i], self.dakota_batch_params_lines[i])
+        
+    def test_iterate_dakota_batch_params(self):
+        b = di.BatchSplitter(self.dakota_batch_params_file)
+        for in_params, base_params in zip(b, self.dakota_batch_params_lines):
+            self.assertListEqual(in_params, base_params)
+
+    def test_format_aprepro_batch_params(self):
+        b = di.BatchSplitter(self.aprepro_batch_params_file)
+        self.assertEqual(b.format, "APREPRO")
+ 
+    def test_get_aprepro_batch_params(self):
+        b = di.BatchSplitter(self.aprepro_batch_params_file)
+        for i in range(len(b)):
+            self.assertListEqual(b[i], self.aprepro_batch_params_lines[i])
+
+    def test_aprepro_nums(self):
+        b = di.BatchSplitter(self.aprepro_batch_params_file)
+        self.assertEqual(b.batch_id, "1")
+        self.assertListEqual(b.eval_nums,[1, 2])
+
+
+    
 
 unittest.main()

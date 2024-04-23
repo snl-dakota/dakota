@@ -27,6 +27,11 @@ set(surrogates_headers
   surrogates_tools.hpp
 )
 
+if(DAKOTA_PYTHON_SURROGATES)
+  list(APPEND surrogates_sources SurrogatesPython.cpp)
+  list(APPEND surrogates_headers SurrogatesPython.hpp)
+endif()
+
 add_library(dakota_surrogates ${surrogates_sources} ${surrogates_headers})
 
 target_include_directories(dakota_surrogates PUBLIC
@@ -34,6 +39,9 @@ target_include_directories(dakota_surrogates PUBLIC
   $<INSTALL_INTERFACE:include>
 )
 target_link_libraries(dakota_surrogates PUBLIC dakota_util)
+if(DAKOTA_PYTHON_SURROGATES)
+  target_link_libraries(dakota_surrogates PUBLIC pybind11::embed)
+endif()
 
 # Rationale: Teuchos is included in API headers, and ParameterList
 # library component is needed

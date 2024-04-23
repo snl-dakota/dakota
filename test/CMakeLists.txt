@@ -34,6 +34,10 @@ remove_definitions("-DHAVE_CONFIG_H")
 # Generate regression tests for all dakota_*.in in this directory
 if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
 
+  if(NOT DAKOTA_PYTHON_PATH)
+    set(DAKOTA_PYTHON_PATH "${Dakota_SOURCE_DIR}/interfaces/Python")
+  endif()
+
   # list of all destination files copied into test/ or subdirs test/dakota_*
   # so we can have a custom target depend on them
   set(copied_test_files_abs)
@@ -158,6 +162,7 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
   # This gets built in test/ so can be packaged in binaries even when
   # not building docs
   add_subdirectory(examples-users)
+
 
 endif() # BUILD_TESTING AND DAKOTA_ENABLE_TESTS
 
