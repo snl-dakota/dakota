@@ -18,17 +18,17 @@ method,
 # Note: this option invokes numerical solve in GenACV for the MFMC DAG:
 #	  search_model_graphs model_selection	      #s14,#s15,#s16
 #	  final_statistics estimator_performance      #s15,#s18,#s19
-	  max_function_evaluations = 100	#s0,#s1,#s2,#s9,#s11,#p0,#p1,#p2
+	  max_function_evaluations = 100	#s0,#s1,#s2,#s9,#s11,#p0
 #	  max_function_evaluations = 250
-#	  max_function_evaluations = 500	#s3,#s4,#s5,#s10,#s12,#s14,#s15,#s16,#s17
+#	  max_function_evaluations = 500	#s3,#s4,#s5,#s10,#s12,#s14,#s15,#s16,#s17,#p1,#p2
 #	  max_function_evaluations = 1000
 #	  max_function_evaluations = 2500	#s6,#s7,#s8
 #	  max_function_evaluations = 250000	#s18,#s19
-	  pilot_samples =   5			#s0,#s3,#s6,#s9,#s10,#s11,#s18,#s19
+	  pilot_samples =   5			#s0,#s3,#s6,#s9,#s10,#s11,#s18,#s19,#p2
 #	  pilot_samples =  10
-#	  pilot_samples =  25			#s1,#s4,#s7,#s12,#s13,#s14,#s15,#s16,#p0,#p1,#p2
+#	  pilot_samples =  25			#s1,#s4,#s7,#s12,#s13,#s14,#s15,#s16,#p0
 #	  pilot_samples =  50
-#	  pilot_samples = 100			#s2,#s5,#s8,#s17
+#	  pilot_samples = 100			#s2,#s5,#s8,#s17,#p1
 	  seed = 8674132  			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s10,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#p0,#p1,#p2
 # LF correlations out for order for 5 samples at this seed:
 #	  seed = 1237				#s9,#s11

@@ -12,8 +12,11 @@
 #include "ParamResponsePair.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
+#include <thread>
 
 //#define DEBUG
+#define MICRO_PAUSE 25
+
 
 namespace Dakota {
 
@@ -1620,7 +1623,14 @@ void ApplicationInterface::master_dynamic_schedule_evaluations_nowait()
     if (num_running == num_jobs) Cout << '\n';
     else Cout << " and backfilling (" << num_jobs-num_running <<" remaining)\n";
   }
-  test_receives_backfill(assign_iter, false); // !peer
+  // continue to process and backfill completions as available;
+  // reduces bookkeeping overhead for fast running jobs
+  size_t num_recv = num_running;
+  while (num_recv) {
+    num_recv = test_receives_backfill(assign_iter, false); // !peer
+    if (num_recv && assign_iter != beforeSynchCorePRPQueue.end())
+      std::this_thread::sleep_for(std::chrono::microseconds(MICRO_PAUSE));
+  }
 
   if (msgPassRunningMap.empty()) {
     // deallocate MPI & buffer arrays
@@ -1803,10 +1813,18 @@ void ApplicationInterface::peer_static_schedule_evaluations_nowait()
     if (num_running == num_jobs) Cout << '\n';
     else Cout << " and backfilling (" << num_jobs-num_running <<" remaining)\n";
   }
-  if (num_remote_running)
-    test_receives_backfill(assign_iter, true); // peer
-  if (!synch_local && num_local_running)
-    test_local_backfill(beforeSynchCorePRPQueue, assign_iter);
+  // continue to process and backfill as completions are available;
+  // reduces bookkeeping overhead for fast running jobs
+  size_t num_recv = num_running;
+  while	(num_recv) {
+    num_recv = 0;
+    if (num_remote_running)
+      num_recv += test_receives_backfill(assign_iter, true); // peer
+    if (!synch_local && num_local_running)
+      num_recv += test_local_backfill(beforeSynchCorePRPQueue, assign_iter);
+    if (num_recv && assign_iter != beforeSynchCorePRPQueue.end())
+      std::this_thread::sleep_for(std::chrono::microseconds(MICRO_PAUSE));
+  }
 
   if (msgPassRunningMap.empty()) {
     // deallocate MPI & buffer arrays
@@ -1978,10 +1996,18 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations_nowait()
     if (num_running == num_jobs) Cout << '\n';
     else Cout << " and backfilling (" << num_jobs-num_running <<" remaining)\n";
   }
-  if (num_remote_running)
-    test_receives_backfill(assign_iter, true); // peer
-  if (num_local_running)
-    test_local_backfill(beforeSynchCorePRPQueue, assign_iter);
+  // continue to process and backfill as completions are available;
+  // reduces bookkeeping overhead for fast running jobs
+  size_t num_recv = num_running;
+  while (num_recv) {
+    num_recv = 0;
+    if (num_remote_running)
+      num_recv += test_receives_backfill(assign_iter, true); // peer
+    if (num_local_running)
+      num_recv += test_local_backfill(beforeSynchCorePRPQueue, assign_iter);
+    if (num_recv && assign_iter != beforeSynchCorePRPQueue.end())
+      std::this_thread::sleep_for(std::chrono::microseconds(MICRO_PAUSE));
+  }
 
   if (msgPassRunningMap.empty()) {
     // deallocate MPI & buffer arrays
@@ -2040,7 +2066,14 @@ asynchronous_local_evaluations_nowait(PRPQueue& local_prp_queue)
     if (num_active == num_jobs) Cout << '\n';
     else Cout << " and backfilling (" << num_jobs-num_active << " remaining)\n";
   }
-  test_local_backfill(local_prp_queue, local_prp_iter);
+  // continue to process and backfill completions as available;
+  // reduces bookkeeping overhead for fast running jobs
+  size_t num_recv = num_active;
+  while (num_recv) {
+    num_recv = test_local_backfill(local_prp_queue, local_prp_iter);
+    if (num_recv && local_prp_iter != local_prp_queue.end())
+      std::this_thread::sleep_for(std::chrono::microseconds(MICRO_PAUSE));
+  }
 }
 
 
