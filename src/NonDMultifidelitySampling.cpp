@@ -297,7 +297,7 @@ augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 		       optSubProblemForm == R_ONLY_LINEAR_CONSTRAINT ) ? 1 : 0;
 #ifdef REORDER_ON_THE_FLY
   for (i=0; i<numApprox; ++i) { // N_i > N
-    lin_ineq_coeffs(i+offset, i)    = -1.;
+    lin_ineq_coeffs(i+offset, i)         = -1.;
     lin_ineq_coeffs(i+offset, numApprox) =  1. + RATIO_NUDGE;
   }
 #else

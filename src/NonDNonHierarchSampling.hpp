@@ -13,6 +13,8 @@
 #include "NonDEnsembleSampling.hpp"
 //#include "DataMethod.hpp"
 
+#define REORDER_ON_THE_FLY
+
 
 namespace Dakota {
 
