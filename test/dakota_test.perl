@@ -36,6 +36,7 @@ my $test_num = undef;        # undef since can be zero
 my $test_props_dir = "";     # write test properties to this directory
 my $using_srun = 0;          # use srun to launch parallel dakota (and serial on Cray)
 my $using_aprun = 0;         # use aprun to launch both serial and parallel dakota
+my $using_jsrun = 0;         # use jsrun to launch both serial and parallel dakota
 my $on_cray = 0;             # Testing is being done on cray
 my $run_valgrind = 0;        # boolean for whether to run valgrind
 my $vg_extra_args = "";      # append args from DAKOTA_TEST_VALGRIND_EXTRA_ARGS
@@ -618,6 +619,10 @@ sub manage_parallelism {
       $using_srun = 1;
     }
   }
+  # For systems that use LLNL's jsrun launcher
+  if (exists $ENV{USE_JSRUN}) {
+    $using_jsrun = 1;
+  }
 }
 
 
@@ -1083,6 +1088,9 @@ sub form_test_command {
     } 
     elsif($using_aprun == 1) {
       $test_command = "aprun -n $num_proc $fulldakota $redir";
+    }
+    elsif($using_jsrun == 1) {
+      $test_command = "jsrun -n $num_proc $fulldakota $redir";
     }
     else
     { 
