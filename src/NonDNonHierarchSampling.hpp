@@ -13,8 +13,6 @@
 #include "NonDEnsembleSampling.hpp"
 //#include "DataMethod.hpp"
 
-#define REORDER_ON_THE_FLY
-
 
 namespace Dakota {
 
@@ -502,7 +500,7 @@ protected:
   void mfmc_reordered_analytic_solution(const UShortArray& approx_set,
 					const RealMatrix& rho2_LH,
 					const RealVector& cost,
-					SizetArray& approx_sequence,
+					SizetArray& corr_approx_sequence,
 					RealVector& avg_eval_ratios,
 					bool monotonic_r = false);
   void mfmc_estvar_ratios(const RealMatrix& rho2_LH,

@@ -594,10 +594,7 @@ mfmc_analytic_solution(const UShortArray& approx_set, const RealMatrix& rho2_LH,
     prev_approx = approx;
   }
 
-  // Note: one_sided_delta(N_H, hf_targets, 1) enforces monotonicity a bit
-  // further downstream.  It averages +/- differences so it's not one-sided
-  // per QoI --> to recover the same behavior, we must use avg_eval_ratios.
-  // For now, monotonic_r defaults false since it should be redundant.
+  // If requested (analytic stand-alone), enforce monotonicity in r_i
   if (monotonic_r) {
     Real r_i, prev_ri = 1.;
     for (int i=num_approx-1; i>=0; --i) {
@@ -612,7 +609,7 @@ void NonDNonHierarchSampling::
 mfmc_reordered_analytic_solution(const UShortArray& approx_set,
 				 const RealMatrix& rho2_LH,
 				 const RealVector& cost,
-				 SizetArray& approx_sequence,
+				 SizetArray& corr_approx_sequence,
 				 RealVector& avg_eval_ratios, bool monotonic_r)
 {
   size_t qoi, a, num_approx = approx_set.size(), num_am1 = num_approx-1;
@@ -623,23 +620,23 @@ mfmc_reordered_analytic_solution(const UShortArray& approx_set,
   RealVector avg_rho2_LH(num_approx); // init to 0.
   for (a=0; a<num_approx; ++a)
     avg_rho2_LH[a] = average(rho2_LH[approx_set[a]], numFunctions);
-  bool ordered = ordered_approx_sequence(avg_rho2_LH, approx_sequence);
+  bool ordered = ordered_approx_sequence(avg_rho2_LH, corr_approx_sequence);
   // Note: even if avg_rho2_LH is now ordered, rho2_LH is not for all QoI, so
   // stick with this alternate formulation, at least for this MFMC iteration.
   if (ordered)
     Cout << "MFMC: averaged correlations are well-ordered.\n" << std::endl;
   else
     Cout << "MFMC: reordered approximation model sequence (low to high):\n"
-	 << approx_sequence << std::endl;
+	 << corr_approx_sequence << std::endl;
 
   // precompute a factor based on most-correlated approx
   unsigned short approx, inflate_approx;
-  size_t most_corr = (ordered) ? num_am1 : approx_sequence[num_am1];
+  size_t most_corr = (ordered) ? num_am1 : corr_approx_sequence[num_am1];
   Real cost_L, cost_H = cost[numApprox], rho2, prev_rho2, rho2_diff,
     factor = cost_H / (1. - avg_rho2_LH[most_corr]);// most correlated
-  // Compute averaged eval ratios using averaged rho2 for approx_sequence
+  // Compute averaged eval ratios using averaged rho2 for corr_approx_sequence
   for (a=0; a<num_approx; ++a) {
-    approx = (ordered) ? a : approx_sequence[a];
+    approx = (ordered) ? a : corr_approx_sequence[a];
     inflate_approx = approx_set[approx];  cost_L = cost[inflate_approx];// full
     // NOTE: indexing is inverted from Peherstorfer (i+1 becomes i-1)
     rho2_diff = rho2  = avg_rho2_LH[approx]; // contracted
@@ -648,14 +645,15 @@ mfmc_reordered_analytic_solution(const UShortArray& approx_set,
     prev_rho2 = rho2;
   }
 
-  // If requested, reverse loop and enforce monotonicity in reordered r_i:
+  // If requested (analytic stand-alone), enforce monotonicity in r_i for
+  // rho ordering:
   // > max() is applied bottom-up from the base of the pyramid (samples
   //   performed bottom up, so precedence also applied in this direction),
   //   where assigning r_i = prev_ri effectively drops the CV for approx i
   if (monotonic_r) {
     Real r_i, prev_ri = 1.;
     for (int i=num_approx-1; i>=0; --i) {
-      approx = (ordered) ? i : approx_sequence[i];
+      approx = (ordered) ? i : corr_approx_sequence[i];
       r_i = std::max(avg_eval_ratios[approx], prev_ri);
       prev_ri = avg_eval_ratios[approx] = r_i;
     }
@@ -664,46 +662,35 @@ mfmc_reordered_analytic_solution(const UShortArray& approx_set,
 
 
 void NonDNonHierarchSampling::
-mfmc_estvar_ratios(const RealMatrix& rho2_LH,
-		   const RealVector& avg_eval_ratios,
+mfmc_estvar_ratios(const RealMatrix& rho2_LH, const RealVector& avg_eval_ratios,
 		   SizetArray& approx_sequence, RealVector& estvar_ratios)
 {
   if (estvar_ratios.empty()) estvar_ratios.sizeUninitialized(numFunctions);
-  Real R_sq, r_i, r_ip1;  size_t qoi, approx, approx_ip1, i, ip1;
+  Real R_sq, r_i, r_ip1;  size_t qoi, approx, approx_ip1, ip1;
+
+  // Analytic cases: sequence fixed upstream based on rho2LH; r_i monotonicity
+  //   enforced after analytic r_i computations for rho2LH sequence.
+  // Numerical cases: sequence updated in estimator_variance_ratios() for each
+  //   call (previously was enforced via linear constraints on opt solve, but
+  //   now reordered on the fly based on current optimizer design vars)
+  bool ordered = approx_sequence.empty();
 
   // Appendix B of JCP paper on ACV:
   // > R^2 = \Sum_i [ (r_i -r_{i-1})/(r_i r_{i-1}) rho2_LH_i ]
   // > Reorder differences since eval ratios/correlations ordered from LF to HF
-  //   (opposite of JCP); after this change, reproduces Peherstorfer eq. above.
-
-  // While eval ratio misordering won't induce numerical exceptions,
-  // the derivation of the JCP ACV equation assumes ordered r_i:
-  // > either retain a fixed ordering through linear constraints, or
-  // > re-order on the fly when the optimization omits these guard rails
-
-#ifdef REORDER_ON_THE_FLY
-  // Replace sequenced lin con with root lin con -> essentially supports search
-  // over all hierarchical DAGs, similar to GenACV-MF for width limit = 1
-  bool ordered = ordered_approx_sequence(avg_eval_ratios, approx_sequence);
-#else
-  // fixed upstream, retained via linear constraints on opt solve (also
-  // encouraged via monotonicity enforcement in reordered initial guess)
-  bool ordered = approx_sequence.empty();
-#endif
+  //   (opposite of JCP); after this change, reproduces Peherstorfer eq.
 
   switch (optSubProblemForm) {
 
-  // eval_ratios & approx_sequence based on avg_rho2_LH: remain consistent here
+  // eval_ratios based on avg_rho2_LH: remain consistent here
   case REORDERED_ANALYTIC_SOLUTION: {
     RealVector avg_rho2_LH;  average(rho2_LH, 0, avg_rho2_LH); // avg over QoI
     approx = (ordered) ? 0 : approx_sequence[0];
     r_i = avg_eval_ratios[approx];  R_sq = 0.;
-    for (i=0, ip1=1; ip1<numApprox; ++i, ++ip1) {
+    for (ip1=1; ip1<numApprox; ++ip1) {
       approx_ip1 = (ordered) ? ip1 : approx_sequence[ip1];
       r_ip1 = avg_eval_ratios[approx_ip1];
-      // Note: monotonicity in r_i is enforced in mfmc_eval_ratios()
-      // for a given approx_sequence
-      R_sq += (r_i - r_ip1) / (r_i * r_ip1) * avg_rho2_LH[approx]; // *** may violate order assumption
+      R_sq += (r_i - r_ip1) / (r_i * r_ip1) * avg_rho2_LH[approx]; // see below
       r_i = r_ip1;  approx = approx_ip1;
     }
     R_sq += (r_i - 1.) / r_i * avg_rho2_LH[approx];
@@ -721,14 +708,14 @@ mfmc_estvar_ratios(const RealMatrix& rho2_LH,
     for (qoi=0; qoi<numFunctions; ++qoi) {
       approx = (ordered) ? 0 : approx_sequence[0];
       R_sq = 0.;  r_i = avg_eval_ratios[approx];
-      for (i=0, ip1=1; ip1<numApprox; ++i, ++ip1) {
+      for (ip1=1; ip1<numApprox; ++ip1) {
 	approx_ip1 = (ordered) ? ip1 : approx_sequence[ip1];
 	r_ip1 = avg_eval_ratios[approx_ip1];
 	// While eval ratio misordering won't induce numerical exceptions,
 	// the derivation of this equation assumes ordered r_i:
 	// > either retain a fixed ordering through linear constraints, or
 	// > re-order on the fly when the optimization omits these guard rails
-	R_sq += (r_i - r_ip1) / (r_i * r_ip1) * rho2_LH(qoi, approx); // *** may violate order assumption
+	R_sq += (r_i - r_ip1) / (r_i * r_ip1) * rho2_LH(qoi, approx);
 	r_i = r_ip1;  approx = approx_ip1;
       }
       R_sq += (r_i - 1.) / r_i * rho2_LH(qoi, approx);
@@ -900,8 +887,9 @@ scale_to_target(Real avg_N_H, const RealVector& cost,
 		RealVector& avg_eval_ratios, Real& avg_hf_target,
 		Real budget, Real offline_N_lwr)
 {
-  // scale to enforce budget constraint.  Since the profile does not emerge from
-  // pilot in ACV and numerical MFMC, don't select an infeasible initial guess:
+  // Numerical cases: scale to enforce budget constraint.
+  // Since the profile does not emerge from pilot in ACV and numerical MFMC,
+  // don't select an infeasible initial guess:
   // > if N* < N_pilot, scale back r* --> initial = scaled_r*,N_pilot
   // > if N* > N_pilot, use initial = r*,N*
   avg_hf_target = allocate_budget(avg_eval_ratios, cost, budget); // r* --> N*
@@ -943,7 +931,7 @@ scale_to_budget_with_pilot(RealVector& avg_eval_ratios, const RealVector& cost,
     Real& r_i = avg_eval_ratios[i];
     r_i *= factor;
     if (r_i <= 1.) { // fix at 1+NUDGE --> scale remaining r_i to reduced budget
-      // > only valid for default DAG with all CV targets = truth, otherwise
+      // > only valid for peer DAG with all CV targets = truth, otherwise
       //   tramples linear ineq for other source-target pairs
       // > DAG-aware overload below preserves source-target ratio
       r_i = 1. + RATIO_NUDGE;  cost_r_i = r_i * cost[i];
@@ -1197,7 +1185,23 @@ augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 				RealVector& lin_ineq_lb,
 				RealVector& lin_ineq_ub)
 {
-  // Base definition: no augmentation
+  // linear inequality constraints on sample counts:
+  //  N_i >  N (aka r_i > 1) prevents numerical exceptions
+  // (N_i >= N becomes N_i > N based on RATIO_NUDGE)
+
+  switch (optSubProblemForm) {
+  case N_MODEL_LINEAR_CONSTRAINT:  // lin_ineq #0 is augmented
+  case N_MODEL_LINEAR_OBJECTIVE: { // no other lin ineq
+    size_t offset = (optSubProblemForm == N_MODEL_LINEAR_CONSTRAINT) ? 1 : 0;
+    for (size_t approx=0; approx<numApprox; ++approx) {
+      lin_ineq_coeffs(approx+offset,    approx) = -1.;
+      lin_ineq_coeffs(approx+offset, numApprox) =  1. + RATIO_NUDGE; // N_i > N
+    }
+    break;
+  }
+  case R_ONLY_LINEAR_CONSTRAINT: case R_AND_N_NONLINEAR_CONSTRAINT:
+    break; // none to add (r lower bounds = 1)
+  }
 }
 
 
@@ -1207,8 +1211,28 @@ augmented_linear_ineq_violations(const RealVector& cd_vars,
 				 const RealVector& lin_ineq_lb,
 				 const RealVector& lin_ineq_ub)
 {
-  // Base definition: no augmentation so no augmented violation
-  return 0.;
+  Real quad_viol = 0.;
+  switch (optSubProblemForm) {
+  case N_MODEL_LINEAR_CONSTRAINT:  // lin_ineq #0 is augmented
+  case N_MODEL_LINEAR_OBJECTIVE: { // no other lin ineq
+    size_t offset = (optSubProblemForm == N_MODEL_LINEAR_CONSTRAINT) ? 1 : 0;
+    Real viol, inner_prod, l_bnd, u_bnd, N_H = cd_vars[numApprox];
+    for (size_t approx=0; approx<numApprox; ++approx) {
+      inner_prod = lin_ineq_coeffs(approx+offset, approx)    * cd_vars[approx]
+	         + lin_ineq_coeffs(approx+offset, numApprox) * N_H;
+      l_bnd = lin_ineq_lb[approx+offset];
+      u_bnd = lin_ineq_ub[approx+offset];
+      if (inner_prod < l_bnd)
+	{ viol = (1. - inner_prod / l_bnd);  quad_viol += viol*viol; }
+      else if (inner_prod > u_bnd)
+	{ viol = (inner_prod / u_bnd - 1.);  quad_viol += viol*viol; }
+    }
+    break;
+  }
+  case R_ONLY_LINEAR_CONSTRAINT: case R_AND_N_NONLINEAR_CONSTRAINT:
+    break; // none to add (r lower bounds = 1)
+  }
+  return quad_viol;
 }
 
 
