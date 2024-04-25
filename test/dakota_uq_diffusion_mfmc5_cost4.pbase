@@ -1,9 +1,5 @@
 Test Number 0 succeeded
-<<<<< Function evaluation summary (LF1_INT): 22539 total (22539 new, 0 duplicate)
-<<<<< Function evaluation summary (LF2_INT): 554 total (554 new, 0 duplicate)
-<<<<< Function evaluation summary (LF3_INT): 47 total (47 new, 0 duplicate)
-<<<<< Function evaluation summary (LF4_INT): 25 total (25 new, 0 duplicate)
-<<<<< Function evaluation summary (HF_INT): 25 total (25 new, 0 duplicate)
+<<<<< Function evaluation summary (HF_INT): 23190 total (23190 new, 0 duplicate)
 <<<<< Online number of equivalent high fidelity evaluations: 1.3088671875000000e+02
 <<<<< Variance for mean estimator:
       Initial MC (   25 HF samples):  4.1006897417589427e-06

@@ -1,8 +1,8 @@
 #@ p0: MPIProcs=2
 #@ p1: MPIProcs=3
 #@ p2: MPIProcs=2
-#@ s*: TimeoutAbsolute=36000
-#@ s*: TimeoutDelay=36000
+#@ *: TimeoutAbsolute=36000
+#@ *: TimeoutDelay=36000
 
 environment
 	output_precision = 16
@@ -41,7 +41,7 @@ model,
 	variables_pointer = 'HF_VARS'
 	surrogate ensemble
 	  truth_model = 'HF'
-	  unordered_model_fidelities = 'LF1' 'LF2' 'LF3' 'LF4'	#s12,#p1
+#	  unordered_model_fidelities = 'LF1' 'LF2' 'LF3' 'LF4'	#s12,#p1
 #	  unordered_model_fidelities = 'LF2' 'LF1' 'LF4' 'LF3'	#s11
 
 model,
@@ -82,8 +82,8 @@ model,
 	interface_pointer = 'HF_INT'
 	simulation
 	  solution_level_control = 'mesh_size'
-	  solution_level_cost = 256.		#s11,#s12,#p1
-#	  solution_level_cost = 1 4 16 64 256.	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#p0,#p2
+#	  solution_level_cost = 256.		#s11,#s12,#p1
+	  solution_level_cost = 1 4 16 64 256.	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#p0,#p2
 
 variables,
 	id_variables = 'LF1_VARS'
@@ -193,8 +193,8 @@ variables,
 	discrete_state_set
 	  integer = 1 # even poly degree for odd mesh pts including boundary
 	    initial_state = 64
-	    set_values = 64		#s11,#s12,#p1
-#      	    set_values = 4 8 16 32 64	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#p0,#p2
+#	    set_values = 64		#s11,#s12,#p1
+      	    set_values = 4 8 16 32 64	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#p0,#p2
       	    descriptors = 'mesh_size'
     	  real = 4
       	    elements_per_variable = 2 2 1 1

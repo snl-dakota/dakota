@@ -1,8 +1,8 @@
 #@ p0: MPIProcs=2
 #@ p1: MPIProcs=3
 #@ p2: MPIProcs=2
-#@ s*: TimeoutAbsolute=36000
-#@ s*: TimeoutDelay=36000
+#@ *: TimeoutAbsolute=36000
+#@ *: TimeoutDelay=36000
 #@ p0: DakotaConfig=HAVE_NPSOL
 #@ s0: DakotaConfig=HAVE_NPSOL
 #@ s1: DakotaConfig=HAVE_NPSOL
@@ -60,7 +60,7 @@ model,
 	variables_pointer = 'HF_VARS'
 	surrogate ensemble
 	  truth_model = 'HF'
-	  unordered_model_fidelities = 'LF' 'MF'	#s24,#p1
+#	  unordered_model_fidelities = 'LF' 'MF'	#s24,#p1
 #	  unordered_model_fidelities = 'MF' 'LF'	#s25
 
 model,
@@ -88,8 +88,8 @@ model,
 	  solution_level_control = 'mesh_size'
 # factor of 4 for each of 5 resolutions
 #	  solution_level_cost = 4096. # factor of 8 for each of 5 resolutions
-	  solution_level_cost = 256.  	       #s24,#p1
-#	  solution_level_cost = 1 16 256.      #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s25,#s26,#s27,#s28,#p0,#p2
+#	  solution_level_cost = 256.  	       #s24,#s25,#p1
+	  solution_level_cost = 1 16 256.      #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s26,#s27,#s28,#p0,#p2
 
 variables,
 	id_variables = 'LF_VARS'
@@ -149,8 +149,8 @@ variables,
 	discrete_state_set
 	  integer = 1 # even poly degree for odd mesh pts including boundary
 	    initial_state = 64
-	    set_values = 64		#s24,#p1
-#	    set_values = 4 16 64	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s25,#s26,#s27,#s28,#p0,#p2
+#	    set_values = 64		#s24,#s25,#p1
+	    set_values = 4 16 64	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20,#s21,#s22,#s23,#s26,#s27,#s28,#p0,#p2
       	    descriptors = 'mesh_size'
     	  real = 4
       	    elements_per_variable = 2 2 1 1
