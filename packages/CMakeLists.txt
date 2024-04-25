@@ -232,5 +232,6 @@ if(HAVE_MUQ)
 
   set(MUQ_ENABLEGROUP_DEFAULT OFF CACHE BOOL "Disable MUQ default packages" FORCE)
   set(MUQ_ENABLEGROUP_SAMPLING_ALGORITHM ON CACHE BOOL "Enable MUQ sampling package" FORCE)
+  set(PYTHON_INSTALL_PREFIX "share/dakota/Python" CACHE PATH "Install path for MUQ python package -- otherwise defaults to share/python")
   add_subdirectory(external/muq2)
 endif()
