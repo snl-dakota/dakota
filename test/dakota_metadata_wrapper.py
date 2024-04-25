@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Wrapper around text_book that appends some metadata at end of file
 
