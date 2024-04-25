@@ -1280,7 +1280,6 @@ emerge_from_pilot(Real avg_N_H, const RealVector& cost,
   // > if r*_i N* <= N_H (shared sample), take credit for pilot
   //   --> increase N_i to N_H with     r_i N_i = (1+nudge) N_H
   // > if r*_i N* >  N_H, keep N_i with r_i N_i = (scaled r_i) N_H
-  avg_hf_target = allocate_budget(avg_eval_ratios, cost, budget); // r* --> N*
   if (pilotMgmtMode == OFFLINE_PILOT ||
       pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
     if (avg_N_H < offline_N_lwr)
