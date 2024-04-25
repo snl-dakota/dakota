@@ -59,14 +59,6 @@ protected:
   void estimator_variance_ratios(const RealVector& r_and_N,
 				 RealVector& estvar_ratios);
 
-  void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
-				       RealVector& lin_ineq_lb,
-				       RealVector& lin_ineq_ub);
-  Real augmented_linear_ineq_violations(const RealVector& cd_vars,
-					const RealMatrix& lin_ineq_coeffs,
-					const RealVector& lin_ineq_lb,
-					const RealVector& lin_ineq_ub);
-
   //
   //- Heading: member functions
   //
@@ -76,14 +68,15 @@ protected:
   void multifidelity_mc_pilot_projection();
 
   void mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
-			const RealVector& cost,  SizetArray& approx_sequence,
-			MFSolutionData& soln);
+			const RealVector& cost,  MFSolutionData& soln);
                       //bool for_warm_start = false);
   void mfmc_numerical_solution(const RealMatrix& var_L,
 			       const RealMatrix& rho2_LH,
-			       const RealVector& cost,
-			       SizetArray& approx_sequence,
-			       MFSolutionData& soln);
+			       const RealVector& cost, MFSolutionData& soln);
+
+  void emerge_from_pilot(Real avg_N_H, const RealVector& cost,
+			 RealVector& avg_eval_ratios, Real& avg_hf_target,
+			 Real budget, Real offline_N_lwr);
 
   void approx_increments(IntRealMatrixMap& sum_L_baseline,
 			 IntRealVectorMap& sum_H,  IntRealMatrixMap& sum_LL,
@@ -95,7 +88,6 @@ protected:
 
   void mfmc_estimator_variance(const RealMatrix& rho2_LH,
 			       const RealVector& var_H, const SizetArray& N_H,
-			       SizetArray& approx_sequence,
 			       RealVector& estvar_ratios, MFSolutionData& soln);
 
 private:
@@ -178,16 +170,16 @@ private:
   /// MFMC uses all approximations within numApprox; this array supports this
   /// case for functions that are generalized to support approx subsets
   UShortArray approxSet;
-  /// tracks ordering of a metric (correlations, eval ratios) across set of
-  /// approximations
-  SizetArray approxSequence;
+
+  /// tracks approximation ordering based on ascending rho2_LH;
+  /// used to determine which analytic MFMC option is used.
+  SizetArray corrApproxSequence;
+  /// tracks approximation ordering based on descending evaluation ratios,
+  /// as required for estimator variance calculations and nested sampling.
+  SizetArray ratioApproxSequence;
 
   /// squared Pearson correlations among approximations and truth
   RealMatrix rho2LH;
-
-  /// ratio of MFMC to MC estimator variance for the same HF samples,
-  /// also known as (1 - R^2)
-  RealVector estVarRatios;
 
   /// controls use of numerical solve option: either a fallback in case of
   /// model misordering (default = NUMERICAL_FALLBACK) or override for
@@ -196,6 +188,9 @@ private:
 
   /// final solution data for MFMC (default DAG = 1,2,...,numApprox)
   MFSolutionData mfmcSolnData;
+  /// ratio of MFMC to MC estimator variance for the same HF samples,
+  /// also known as (1 - R^2)
+  RealVector estVarRatios;
 };
 
 

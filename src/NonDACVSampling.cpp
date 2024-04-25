@@ -624,69 +624,6 @@ print_model_solution(std::ostream& s, const MFSolutionData& soln,
 }
 
 
-void NonDACVSampling::
-augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
-				RealVector& lin_ineq_lb,
-				RealVector& lin_ineq_ub)
-{
-  // linear inequality constraints on sample counts:
-  //  N_i >  N (aka r_i > 1) prevents numerical exceptions
-  // (N_i >= N becomes N_i > N based on RATIO_NUDGE)
-
-  switch (optSubProblemForm) {
-  case R_ONLY_LINEAR_CONSTRAINT: case R_AND_N_NONLINEAR_CONSTRAINT:
-    break; // none to add (r lower bounds = 1)
-  case N_MODEL_LINEAR_CONSTRAINT: { // lin_ineq #0 is augmented
-    size_t offset = 1;
-    for (size_t approx=0; approx<numApprox; ++approx) {
-      lin_ineq_coeffs(approx+offset,    approx) = -1.;
-      lin_ineq_coeffs(approx+offset, numApprox) =  1. + RATIO_NUDGE; // N_i > N
-    }
-    break;
-  }
-  case N_MODEL_LINEAR_OBJECTIVE: // no other lin ineq
-    for (size_t approx=0; approx<numApprox; ++approx) {
-      lin_ineq_coeffs(approx,    approx) = -1.;
-      lin_ineq_coeffs(approx, numApprox) =  1. + RATIO_NUDGE; // N_i > N
-    }
-    break;
-  }
-}
-
-
-Real NonDACVSampling::
-augmented_linear_ineq_violations(const RealVector& cd_vars,
-				 const RealMatrix& lin_ineq_coeffs,
-				 const RealVector& lin_ineq_lb,
-				 const RealVector& lin_ineq_ub)
-{
-  Real quad_viol = 0.;
-  switch (optSubProblemForm) {
-  case N_MODEL_LINEAR_CONSTRAINT:  // lin_ineq #0 is augmented
-  case N_MODEL_LINEAR_OBJECTIVE: { // no other lin ineq
-    size_t lin_ineq_offset
-      = (optSubProblemForm == N_MODEL_LINEAR_CONSTRAINT) ? 1 : 0;
-    Real viol, inner_prod, l_bnd, u_bnd, N_H = cd_vars[numApprox];
-    for (size_t approx=0; approx<numApprox; ++approx) {
-      inner_prod
-	= lin_ineq_coeffs(approx+lin_ineq_offset, approx)    * cd_vars[approx]
-	+ lin_ineq_coeffs(approx+lin_ineq_offset, numApprox) * N_H;
-      l_bnd = lin_ineq_lb[approx+lin_ineq_offset];
-      u_bnd = lin_ineq_ub[approx+lin_ineq_offset];
-      if (inner_prod < l_bnd)
-	{ viol = (1. - inner_prod / l_bnd);  quad_viol += viol*viol; }
-      else if (inner_prod > u_bnd)
-	{ viol = (inner_prod / u_bnd - 1.);  quad_viol += viol*viol; }
-    }
-    break;
-  }
-  case R_ONLY_LINEAR_CONSTRAINT: case R_AND_N_NONLINEAR_CONSTRAINT:
-    break; // none to add (r lower bounds = 1)
-  }
-  return quad_viol;
-}
-
-
 Real NonDACVSampling::
 update_hf_target(const RealVector& avg_eval_ratios, Real avg_N_H,
 		 const RealVector& var_H, const RealVector& estvar0)
