@@ -1400,13 +1400,13 @@ void EnsembleSurrModel::active_model_key(const Pecos::ActiveKey& key)
   // assign same{Model,Interface}Instance
   check_model_interface_instance();
 
-  // assign extracted keys
-  // If model forms are distinct (multifidelity case), can activate soln level
-  // indices now and will persist; else (multilevel case) soln level is managed
-  // for LF & HF contributions in derived_evaluate().
+  // Assign extracted keys for static cases.
+  // > If model forms are distinct, can activate soln level indices now and
+  //   will persist; else soln level is managed dynamically for surrogate and
+  //   truth contributions in derived_evaluate().
   // > Special case: multilevel data import in DataFitSurrModel::consistent()
   //   requires correct state prior to evaluations in order to find level data
-  if (sameModelInstance) {
+  if (sameModelInstance) { // all subordinate keys involve same model form
     switch (responseMode) {
     case BYPASS_SURROGATE:      case NO_SURROGATE:
       assign_truth_key();       break;
@@ -1415,18 +1415,22 @@ void EnsembleSurrModel::active_model_key(const Pecos::ActiveKey& key)
   //case AGGREGATED_MODELS: break; // defer setting active solution levels
     }
   }
-  else { // approximations are separate models
-    size_t i, num_approx = surrModelKeys.size();
-    for (i=0; i<num_approx; ++i)
-      assign_surrogate_key(i); // ***
-    assign_truth_key(); // ***
+  else { // active approximations involve at least one additional model form
+    assign_truth_key();
+    unsigned short form, prev_form = truthModelKey.retrieve_model_form();
+    size_t num_approx = surrModelKeys.size();
+    for (int i=num_approx-1; i>=0; --i) {
+      form = surrModelKeys[i].retrieve_model_form();
+      if (form != prev_form)
+	{ assign_surrogate_key(i); prev_form = form; }
+    }
   }
 
   // if necessary, resize the response for new responseMode (performed by a
   // separate preceding update) and new active keys (above).  Since parallel
   // job scheduling only involves only 1 model at any given time, this call
   // does not need to be matched on serve_run() procs.
-  resize_response(); // ***
+  resize_response();
   /// allocate modelIdMaps and cachedRespMaps arrays based on active keys
   resize_maps();
 

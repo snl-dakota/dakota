@@ -15,7 +15,7 @@ method,
 	  seed = 8674132
 	  search_model_graphs
 	    no_recursion				#s0,#s3,#p0
-#	    kl_recursion				#s1,#s4,#p1,#p2
+#	    kl_recursion				#s1,#s4,#p1
 #	    partial_recursion depth_limit = 2		#s2
 #	    full_recursion
 #	    model_selection				#s3,#s4,#p2
