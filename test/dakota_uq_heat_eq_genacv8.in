@@ -1,7 +1,7 @@
 #@ p0: MPIProcs=2
 #@ p1: MPIProcs=3
-#@ s*: TimeoutAbsolute=1200
-#@ s*: TimeoutDelay=1200
+#@ *: TimeoutAbsolute=1200
+#@ *: TimeoutDelay=1200
 
 #environment,
 
@@ -13,8 +13,8 @@ method,
 	  pilot_samples = 250
 	  seed = 8674132
 	  search_model_graphs
-	    no_recursion				#s0,#s3
-#	    kl_recursion				#s1,#s4
+	    no_recursion				#s0,#s3,#p0
+#	    kl_recursion				#s1,#s4,#p1
 #	    partial_recursion depth_limit = 2		#s2
 #	    full_recursion
 #	    model_selection				#s3,#s4
