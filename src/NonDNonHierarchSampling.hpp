@@ -879,18 +879,6 @@ finalize_counts(const Sizet2DArray& N_L_actual, const SizetArray& N_L_alloc)
     if (N_l_actual_fl.empty()) N_l_actual_fl = N_L_actual[approx];
     else     increment_samples(N_l_actual_fl,  N_L_actual[approx]);
   }
-
-  /*
-  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
-
-  // Aggregate N_H into 2D N_L array and then insert into 3D:
-  //N_L_actual.push_back(N_H);
-  //inflate_sequence_samples(N_L_actual, multilev, secondaryIndex, NLevActual);
-
-  // Update LF counts only as HF counts are directly updated by reference:
-  inflate_approx_samples(N_L_actual, multilev, secondaryIndex, NLevActual);
-  inflate_approx_samples(N_L_alloc,  multilev, secondaryIndex, NLevAlloc);
-  */
 }
 
 

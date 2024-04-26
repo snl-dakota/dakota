@@ -427,15 +427,17 @@ configure_sequence(//unsigned short hierarch_dim,
   ModelList& sub_models = iteratedModel.subordinate_models(false);
   ModelLIter m_iter = --sub_models.end(); // HF model
   size_t num_mf = sub_models.size(), num_hf_lev = m_iter->solution_levels();
+  bool ml = iteratedModel.multilevel();
 
   //switch (hierarch_dim) {
   //case 1:
-    if (iteratedModel.multilevel()) {
+    if (ml || iteratedModel.multilevel_multifidelity()) {
+      // only loop (1D) or outer loop (2D)
       seq_type  = Pecos::RESOLUTION_LEVEL_SEQUENCE;
       num_steps = num_hf_lev;  secondary_index = num_mf - 1;
-      if (num_mf > 1)
+      if (ml && num_mf > 1)
 	Cerr << "Warning: multiple model forms will be ignored by "
-	     << "NonD::configure_sequence().\n";
+	     << "NonD::configure_sequence() for ML precedence.\n";
     }
     else if (iteratedModel.multifidelity()) {
       seq_type  = Pecos::MODEL_FORM_SEQUENCE;
@@ -444,7 +446,7 @@ configure_sequence(//unsigned short hierarch_dim,
       secondary_index = SZ_MAX;
       if (num_hf_lev > 1)
 	Cerr << "Warning: solution control levels will be ignored by "
-	     << "NonD::configure_sequence().\n";
+	     << "NonD::configure_sequence() for MF precedence.\n";
     }
     else {
       Cerr << "Error: no model hierarchy evident in NonD::configure_sequence()."

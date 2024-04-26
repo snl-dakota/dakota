@@ -20,8 +20,8 @@ extern Model dummy_model; // defined in DakotaModel.cpp
 
 EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db):
   SurrogateModel(problem_db), sameModelInstance(false),
-  sameInterfaceInstance(false), mfPrecedence(true), modeKeyBufferSize(0),
-  correctionMode(SINGLE_CORRECTION)
+  sameInterfaceInstance(false), ensemblePrecedence(DEFAULT_PRECEDENCE),
+  modeKeyBufferSize(0), correctionMode(SINGLE_CORRECTION)
 {
   const String& truth_model_ptr
     = problem_db.get_string("model.surrogate.truth_model_pointer");
@@ -89,11 +89,12 @@ void EnsembleSurrModel::assign_default_keys(short mode)
   size_t truth_soln_lev = truthModel.solution_levels();
   short reduction = Pecos::RAW_DATA; // most modes are raw data w/ no reduction
   switch (mode) {
-  case AGGREGATED_MODELS: //case DEFAULT_SURROGATE_RESP_MODE:
-    //if (multilevel_multifidelity()) {
-      // enumerate all combinations? (else resolutions not present in keys)
-    //} else
-    if (multifidelity()) { // first and last model form (no soln levels)
+  case AGGREGATED_MODELS: { //case DEFAULT_SURROGATE_RESP_MODE:
+    // Note: hierarchical cases use BYPASS_SURROGATE or AGGREGATED_MODEL_PAIR.
+    //       Non-hierarchical cases use AGGREGATED_MODELS with a sequenceType
+    //       of FORM_RESOLUTION_ENUMERATION.
+    /*
+    if (multifidelity()) { // override: model forms only (no soln levels)
       truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx,
 				       truthModel.solution_level_cost_index());
       surrModelKeys.resize(num_approx);
@@ -101,7 +102,7 @@ void EnsembleSurrModel::assign_default_keys(short mode)
 	surrModelKeys[i] = Pecos::ActiveKey(id, Pecos::RAW_DATA, i,
 	  approxModels[i].solution_level_cost_index());
     }
-    else if (multilevel()) {
+    else if (multilevel()) { // override: soln levels only (last model form)
       size_t truth_index = truth_soln_lev - 1;
       truthModelKey
 	= Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx, truth_index);
@@ -109,7 +110,28 @@ void EnsembleSurrModel::assign_default_keys(short mode)
       for (size_t i=0; i<truth_index; ++i)
 	surrModelKeys[i] = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx, i);
     }
+    else { // enumerate all combinations of model forms and soln levels
+    */
+      size_t i, j, truth_index = truth_soln_lev - 1, num_lev, cntr = 0,
+	num_combinations = truth_soln_lev;
+      for (i=0; i<num_approx; ++i)
+	num_combinations += approxModels[i].solution_levels();
+      // arrange surrogate keys head to tail
+      surrModelKeys.resize(num_combinations-1);
+      for (i=0; i<num_approx; ++i) {
+	num_lev = approxModels[i].solution_levels();
+	for (j=0; j<num_lev; ++j, ++cntr)
+	  surrModelKeys[cntr] = Pecos::ActiveKey(id, Pecos::RAW_DATA, i, j);
+      }
+      // truth model resolutions
+      for (j=0; j<truth_index; ++j, ++cntr)
+	surrModelKeys[cntr]
+	  = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx, j);
+      truthModelKey
+	= Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx, truth_index);
+    //}
     break;
+  }
 
   case AGGREGATED_MODEL_PAIR: // first and last model form (no soln levels)
     if (multilevel_multifidelity()) { // first and last model form / soln levels
@@ -1396,15 +1418,15 @@ void EnsembleSurrModel::active_model_key(const Pecos::ActiveKey& key)
   else { // approximations are separate models
     size_t i, num_approx = surrModelKeys.size();
     for (i=0; i<num_approx; ++i)
-      assign_surrogate_key(i);
-    assign_truth_key();
+      assign_surrogate_key(i); // ***
+    assign_truth_key(); // ***
   }
 
   // if necessary, resize the response for new responseMode (performed by a
   // separate preceding update) and new active keys (above).  Since parallel
   // job scheduling only involves only 1 model at any given time, this call
   // does not need to be matched on serve_run() procs.
-  resize_response();
+  resize_response(); // ***
   /// allocate modelIdMaps and cachedRespMaps arrays based on active keys
   resize_maps();
 

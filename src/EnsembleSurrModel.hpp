@@ -85,8 +85,8 @@ protected:
   bool multilevel() const;
   bool multilevel_multifidelity() const;
 
-  bool multifidelity_precedence() const;
-  void multifidelity_precedence(bool mf_prec, bool update_default = true);
+  short ensemble_precedence() const;
+  void ensemble_precedence(short mlmf_prec, bool update_default = true);
 
   /// set responseMode and pass any bypass request on to the high
   /// fidelity model for any lower-level surrogate recursions
@@ -298,8 +298,9 @@ protected:
   bool sameInterfaceInstance;
   /// index of solution control variable within all variables
   size_t solnCntlAVIndex;
-  /// tie breaker for type of model hierarchy when forms and levels are present
-  bool mfPrecedence;
+  /// precedence tie breaker for type of 1D,2D model hierarchy when model forms
+  /// and resolution levels are present
+  short ensemblePrecedence;
 
   // store aggregate model key that is active in component_parallel_mode()
   //Pecos::ActiveKey componentParallelKey;
@@ -563,34 +564,39 @@ inline bool EnsembleSurrModel::multifidelity() const
 {
   // This function is used when we don't want to alter logic at run-time based
   // on a deactivated key (as for same{Model,Interface}Instance)
-  // > we rely on mfPrecedence passed from NonDExpansion::configure_sequence()
-  //   based on the ML/MF algorithm selection; otherwise defaults to true
+  // > we rely on ensemblePrecedence passed from NonDExpansion::
+  //   configure_sequence() based on the ML/MF algorithm selection;
+  //   otherwise defaults to true
 
   return ( approxModels.size() &&
-	   ( mfPrecedence || truthModel.solution_levels() <= 1 ) );
+	   ( ensemblePrecedence == MULTIFIDELITY_PRECEDENCE ||
+	     truthModel.solution_levels() <= 1 ) );
 }
 
 
 inline bool EnsembleSurrModel::multilevel() const
 {
   return ( truthModel.solution_levels() > 1 &&
-	   ( !mfPrecedence || approxModels.empty() ) );
+	   ( ensemblePrecedence == MULTILEVEL_PRECEDENCE ||
+	     approxModels.empty() ) );
 }
 
 
 inline bool EnsembleSurrModel::multilevel_multifidelity() const
-{ return (approxModels.size() && truthModel.solution_levels() > 1); }
+{ return ( approxModels.size() && truthModel.solution_levels() > 1 &&
+	   ( ensemblePrecedence != MULTILEVEL_PRECEDENCE &&
+	     ensemblePrecedence != MULTIFIDELITY_PRECEDENCE) ); }
 
 
-inline bool EnsembleSurrModel::multifidelity_precedence() const
-{ return mfPrecedence; }
+inline short EnsembleSurrModel::ensemble_precedence() const
+{ return ensemblePrecedence; }
 
 
 inline void EnsembleSurrModel::
-multifidelity_precedence(bool mf_prec, bool update_default)
+ensemble_precedence(short mlmf_prec, bool update_default)
 {
-  if (mfPrecedence != mf_prec) {
-    mfPrecedence = mf_prec;
+  if (ensemblePrecedence != mlmf_prec) {
+    ensemblePrecedence = mlmf_prec;
     if (update_default) assign_default_keys(responseMode);
   }
 }

@@ -67,22 +67,6 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
   numApprox = num_forms_resolutions - 1;
   if (methodName != MULTILEVEL_BLUE) // else deferred until ML BLUE ctor
     numGroups = num_forms_resolutions;
-  /*
-  switch (methodName) {
-  case MULTILEVEL_BLUE:
-    sequenceType = Pecos::FORM_RESOLUTION_ENUMERATION;
-    secondaryIndex = SZ_MAX;
-    configure_enumeration(num_forms_resolutions);
-    // numGroups deferred until ML BLUE ctor
-    // per-model sequenceCost gets mapped into per-group modelGroupCost
-    break;
-  default:
-    iteratedModel.multifidelity_precedence(true); // prefer MF, reassign keys
-    configure_sequence(num_forms_resolutions, secondaryIndex, sequenceType);
-    numGroups = num_forms_resolutions;
-    break;
-  }
-  */
 
   // Precedence: if solution costs provided, then we use them;
   // else we rely on online cost recovery through response metadata
@@ -147,38 +131,15 @@ void NonDNonHierarchSampling::assign_active_key()
 {
   Pecos::ActiveKey active_key;
   std::vector<Pecos::ActiveKey> form_res_keys(numApprox+1);
-  /*
-  switch (sequenceType) {
-  case Pecos::RESOLUTION_LEVEL_SEQUENCE: {
-    unsigned short form = (secondaryIndex!=SZ_MAX) ? secondaryIndex : USHRT_MAX;
-    for (size_t approx=0; approx<=numApprox; ++approx)
-      form_res_keys[approx].form_key(0, form, approx);
-    break;
+
+  // case Pecos::FORM_RESOLUTION_ENUMERATION
+  ModelList& sub_models = iteratedModel.subordinate_models(false);// incl HF
+  size_t m, l, num_lev, cntr = 0;  ModelLIter m_iter;
+  for (m=0,m_iter=sub_models.begin(); m_iter!=sub_models.end(); ++m_iter,++m){
+    num_lev = m_iter->solution_levels(); // lower bound of 1
+    for (l=0; l<num_lev; ++l, ++cntr)
+      form_res_keys[cntr].form_key(0, m, l);
   }
-  case Pecos::MODEL_FORM_SEQUENCE: {
-    bool sec_index_def = (secondaryIndex != SZ_MAX);
-    size_t lev = (sec_index_def) ? secondaryIndex :
-      iteratedModel.truth_model().solution_level_cost_index();
-    form_res_keys[numApprox].form_key(0, numApprox, lev);
-    for (unsigned short approx=0; approx<numApprox; ++approx) {
-      lev = (sec_index_def) ? secondaryIndex :
-	iteratedModel.surrogate_model(approx).solution_level_cost_index();
-      form_res_keys[approx].form_key(0, approx, lev);
-    }
-    break;
-  }
-  case Pecos::FORM_RESOLUTION_ENUMERATION: {
-  */
-    ModelList& sub_models = iteratedModel.subordinate_models(false);// incl HF
-    size_t m, l, num_lev, cntr = 0;  ModelLIter m_iter;
-    for (m=0,m_iter=sub_models.begin(); m_iter!=sub_models.end(); ++m_iter,++m){
-      num_lev = m_iter->solution_levels(); // lower bound of 1
-      for (l=0; l<num_lev; ++l, ++cntr)
-        form_res_keys[cntr].form_key(0, m, l);
-    }
-    //break;
-  //}
-  //}
 
   active_key.aggregate_keys(form_res_keys, Pecos::RAW_DATA);
   iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
@@ -190,28 +151,9 @@ void NonDNonHierarchSampling::assign_active_key()
 void NonDNonHierarchSampling::
 hf_indices(size_t& hf_form_index, size_t& hf_lev_index)
 {
-  /*
-  if (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE) {// resolution hierarchy
-    // traps for completeness (undefined model form should not occur)
-    hf_form_index = (secondaryIndex == SZ_MAX) ?
-      NLevActual.size() - 1 : secondaryIndex;
-    // extremes of range
-    hf_lev_index = NLevActual[hf_form_index].size() - 1;
-  }
-  else if (sequenceType == Pecos::MODEL_FORM_SEQUENCE) { // model form hierarchy
-    hf_form_index = NLevActual.size() - 1; // HF model is max of range
-    if (secondaryIndex == SZ_MAX) {
-      size_t c_index = iteratedModel.truth_model().solution_level_cost_index();
-      hf_lev_index = (c_index == SZ_MAX) ? 0 : c_index;
-    }
-    else
-      hf_lev_index = secondaryIndex;
-  }
-  else { // Pecos::FORM_RESOLUTION_ENUMERATION
-  */
-    hf_form_index = NLevActual.size() - 1;
-    hf_lev_index  = NLevActual[hf_form_index].size() - 1;
-  //}
+  // case Pecos::FORM_RESOLUTION_ENUMERATION
+  hf_form_index = NLevActual.size() - 1;
+  hf_lev_index  = NLevActual[hf_form_index].size() - 1;
 }
 
 

@@ -99,11 +99,8 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   }
 
   // Want to define this at construct time for use in EnsembleSurrModel::
-  // create_tabular_datastream().  Note that MLCV will have two overlapping
-  // assignments, one from the CV ctor (first) that is then overwritten by
-  // this ctor (second).  Alternatively we could protect this call with
-  // methodName, but the current behavior is sufficient.
-  iteratedModel.multifidelity_precedence(false); // prefer ML, reassign keys
+  // create_tabular_datastream()
+  iteratedModel.ensemble_precedence(MULTILEVEL_PRECEDENCE); // prefer ML over MF
 }
 
 

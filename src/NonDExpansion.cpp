@@ -232,15 +232,17 @@ void NonDExpansion::initialize_response_covariance()
 
 void NonDExpansion::resolve_inputs(short& u_space_type, short& data_order)
 {
-  bool err_flag = false,
-    mf = (methodName == MULTIFIDELITY_POLYNOMIAL_CHAOS  ||
-	  methodName == MULTIFIDELITY_STOCH_COLLOCATION ||
-	  methodName == MULTIFIDELITY_FUNCTION_TRAIN    ),
+  // Expansion methods are currently ML or MF, not yet both (ENUMERATION_PREC)
+  short mlmf_prec = (methodName == MULTIFIDELITY_POLYNOMIAL_CHAOS  ||
+		     methodName == MULTIFIDELITY_STOCH_COLLOCATION ||
+		     methodName == MULTIFIDELITY_FUNCTION_TRAIN    )
+    ? MULTIFIDELITY_PRECEDENCE : MULTILEVEL_PRECEDENCE;
+  bool err_flag = false, mf = (mlmf_prec == MULTIFIDELITY_PRECEDENCE),
     mf_greedy = (mf && multilevAllocControl == GREEDY_REFINEMENT);
 
   // define tie breaker for hierarchy of model forms versus resolution levels
   if (iteratedModel.surrogate_type() == "ensemble")
-    iteratedModel.multifidelity_precedence(mf);//reassign default keys if needed
+    iteratedModel.ensemble_precedence(mlmf_prec); // don't reassign default keys
 
   // Check for suitable distribution types.
   // Note: prefer warning in Analyzer (active discrete ignored), but

@@ -3612,21 +3612,21 @@ bool Model::multilevel_multifidelity() const
 }
 
 
-bool Model::multifidelity_precedence() const
+short Model::ensemble_precedence() const
 {
-  if (modelRep) return modelRep->multifidelity_precedence();
-  else          return true; // default
+  if (modelRep) return modelRep->ensemble_precedence();
+  else          return DEFAULT_PRECEDENCE;
 }
 
 
-void Model::multifidelity_precedence(bool mf_prec, bool update_default)
+void Model::ensemble_precedence(short mlmf_prec, bool update_default)
 {
   if (modelRep)
-    modelRep->multifidelity_precedence(mf_prec, update_default);
+    modelRep->ensemble_precedence(mlmf_prec, update_default);
   else {
-    Cerr << "Error: Letter lacking redefinition of virtual multifidelity_"
-	 << "precedence() function.\n       multifidelity_precedence is not "
-	 << "supported by this Model class." << std::endl;
+    Cerr << "Error: Letter lacking redefinition of virtual ensemble_precedence"
+	 << "() function.\n       ensemble precedence is not supported by this "
+	 << "Model class." << std::endl;
     abort_handler(MODEL_ERROR);
   }
 }

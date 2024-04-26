@@ -31,6 +31,9 @@ NonDMultilevControlVarSampling(ProblemDescDB& problem_db, Model& model):
   NonDHierarchSampling(problem_db, model), // top of virtual inheritance
   delegateMethod(MULTILEVEL_MULTIFIDELITY_SAMPLING)
 {
+  // override MULTILEVEL_PRECEDENCE from NonDMultilevel ctor
+  iteratedModel.ensemble_precedence(MULTILEVEL_MULTIFIDELITY_PRECEDENCE);
+
   // For now...
   // *** Note: prior to MFMC for num_mf > 2, allow limiting ragged case
   //           with num_hf_lev == 1
@@ -40,11 +43,6 @@ NonDMultilevControlVarSampling(ProblemDescDB& problem_db, Model& model):
 	 << "forms and multiple HF solution levels." << std::endl;
     //abort_handler(METHOD_ERROR);
   }
-
-  // MLCV has two overlapping precedence assignments, one from CV ctor (first)
-  // that is then overwritten by the ML ctor (second), such that we retain a
-  // ML precedence.  This precedence is not required for core_run() below.
-  //iteratedModel.multifidelity_precedence(false); // prefer ML, reassign keys
 }
 
 
