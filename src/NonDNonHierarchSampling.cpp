@@ -340,8 +340,9 @@ group_increment(SizetArray& delta_N_G, size_t iter, bool reverse_order)
 
   // Ordering does not impact evaluation management, but does impact random
   // number sequencing across calls to get_parameter_sets()
+  size_t num_groups = modelGroups.size();
   if (reverse_order) // high to low ordering (e.g., bottom-up pyramid)
-    for (int g=numGroups-1; g>=0; --g) {
+    for (int g=num_groups-1; g>=0; --g) {
       numSamples = delta_N_G[g];
       if (numSamples) {
 	ensemble_active_set(modelGroups[g]);
@@ -349,7 +350,7 @@ group_increment(SizetArray& delta_N_G, size_t iter, bool reverse_order)
       }
     }
   else // low to high ordering (e.g. combinatorial defn of ML BLUE modelGroups)
-    for (size_t g=0; g<numGroups; ++g) {
+    for (size_t g=0; g<num_groups; ++g) {
       numSamples = delta_N_G[g];
       if (numSamples) {
 	ensemble_active_set(modelGroups[g]);

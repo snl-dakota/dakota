@@ -1858,7 +1858,7 @@ void NonDGenACVSampling::compute_parameterized_G_g(const RealVector& N_vec)
     // > z1_src is matched to "N_tgt", again z2_tgt
     RealVector z1, z2;  unroll_z1_z2(N_vec, z1, z2);
     Real z2_i;
-    for (i=0; i<numApprox; ++i) {
+    for (i=0; i<dag_size; ++i) {
       src_i = approx_set[i];  tgt_i = active_dag[i];
       z1_i  = z1[src_i];      z2_i  = z2[src_i];
       gVec[i] = (tgt_i == numApprox) ? 1./z1_i : 0.; // N_0 -> N_beta_i
