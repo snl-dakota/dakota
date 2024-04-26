@@ -10,12 +10,12 @@ environment
 method,
 	model_pointer = 'HIERARCH'
 	approximate_control_variate
-	  acv_mf			#s0,#s1,#s2,#s6,#s7,#s10,#s11,#s14,#s15,#p0
-#	  acv_is			#s3,#s4,#s5,#s8,#s9,#s12,#s13,#p1
-#	  acv_rd			#s16,#p2
-	  solution_mode  online_projection	#s0,#s3,#s6,#s8
-#	  solution_mode  online_pilot		#s1,#s4,#s7,#s9,#s10,#s12,#s15,#s16,#p0,#p1,#p2
-#	    relaxation factor_sequence = .5 .75 1.	#s15,#s16,#p0,#p1,#p2
+	  acv_mf		#s0,#s1,#s2,#s6,#s7,#s10,#s11,#s14,#s15,#p0
+#	  acv_is		#s3,#s4,#s5,#s8,#s9,#s12,#s13,#p1
+#	  acv_rd		#s16,#p2
+	  solution_mode online_projection	#s0,#s3,#s6,#s8
+#	  solution_mode online_pilot		#s1,#s4,#s7,#s9,#s10,#s12,#s15,#s16,#p0,#p1,#p2
+#	    relaxation factor_sequence = .5 .75 1.	#s15,#p0,#p1,#p2
 #	  solution_mode offline_projection		#s14
 #	  solution_mode offline_pilot			#s2,#s5,#s11,#s13
 	  pilot_samples = 25		#s0,#s1,#s3,#s4,#s6,#s7,#s8,#s9,#s10,#s12,#s15,#s16,#p0,#p1,#p2
