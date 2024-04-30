@@ -8,7 +8,7 @@
 #  _______________________________________________________________________
 
 find_package(Doxygen 1.8.20 REQUIRED)
-find_package(LATEX REQUIRED)
+#find_package(LATEX REQUIRED)
 
 # create Doxygen files with substituted PATH and version information
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.cmake.in
@@ -49,21 +49,21 @@ add_custom_target(docs-dev-html
 ##add_custom_target(docs-texmf-cnf DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/texmf.cnf)
 
 # Build Developer's Manual into PDF
-add_custom_command(
-  OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/latex-dev/refman.pdf
-  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex-dev/refman.tex
+#add_custom_command(
+#  OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/latex-dev/refman.pdf
+#  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex-dev/refman.tex
 ##${CMAKE_CURRENT_BINARY_DIR}/texmf.cnf
-  COMMAND ${CMAKE_COMMAND} -E echo_append "Building Developers Manual PDF..."
+#  COMMAND ${CMAKE_COMMAND} -E echo_append "Building Developers Manual PDF..."
 ##  COMMAND ${PERL_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/latex_modify.perl
 ##   --developers
 ##  COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/latex-dev sh -c 'export TEXMFCNF=${CMAKE_CURRENT_BINARY_DIR}:$$TEXMFCNF && make'
-  COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/latex-dev sh -c 'make'
-  COMMAND ${CMAKE_COMMAND} -E echo "Done."
-  COMMENT "LaTeX: Developers to PDF"
-)
+#  COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/latex-dev sh -c 'make'
+#  COMMAND ${CMAKE_COMMAND} -E echo "Done."
+#  COMMENT "LaTeX: Developers to PDF"
+#)
 
-add_custom_target(docs-dev-pdf
-  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex-dev/refman.pdf)
+#add_custom_target(docs-dev-pdf
+#  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex-dev/refman.pdf)
 
 # Remove Doxygen-generated directories on make clean
 set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES 

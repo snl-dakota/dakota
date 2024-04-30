@@ -203,10 +203,10 @@ endif()
 
 # Generate PDF Dev
 # TODO: depend on sphinx users
-add_custom_target(docs-pdf)
-if(DAKOTA_DOCS_DEV)
-  add_dependencies(docs-pdf docs-dev-pdf)
-endif()
+#add_custom_target(docs-pdf)
+#if(DAKOTA_DOCS_DEV)
+#  add_dependencies(docs-pdf docs-dev-pdf)
+#endif()
 
 # Package docs for nightly builds (HTML and PDF for dev)
 # TODO: Rework this into custom command(s) and bind into target
@@ -221,18 +221,18 @@ add_custom_target(package_docs
   COMMAND ${CMAKE_COMMAND} -E create_symlink dev/html-dev html-dev
   COMMAND ${CMAKE_COMMAND} -E
     tar czf html-dev-${Dakota_FINAL_PACKAGE_LABEL}.tar.gz "html-dev/*"
-  COMMAND ${CMAKE_COMMAND} -E copy
-    dev/latex-dev/refman.pdf Developers-${Dakota_FINAL_PACKAGE_LABEL}.pdf
+#  COMMAND ${CMAKE_COMMAND} -E copy
+#    dev/latex-dev/refman.pdf Developers-${Dakota_FINAL_PACKAGE_LABEL}.pdf
   COMMAND ${CMAKE_COMMAND} -E
     tar czf dakota-${Dakota_FINAL_PACKAGE_LABEL}-docs.tar.gz
       user-html
       user-html-${Dakota_FINAL_PACKAGE_LABEL}.tar.gz
       "html-dev/*"
       html-dev-${Dakota_FINAL_PACKAGE_LABEL}.tar.gz
-      Developers-${Dakota_FINAL_PACKAGE_LABEL}.pdf
+#      Developers-${Dakota_FINAL_PACKAGE_LABEL}.pdf
   COMMENT "Packaging docs"
   )
-add_dependencies(package_docs docs-pdf docs)
+add_dependencies(package_docs docs ) #docs-pdf
 
 
 if(DAKOTA_DOCS_LEGACY)
@@ -240,5 +240,6 @@ if(DAKOTA_DOCS_LEGACY)
 endif()
 
 set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES 
-  "dakota-${Dakota_FINAL_PACKAGE_LABEL}-docs.tar.gz;Developers-${Dakota_VERSION_STRING}.pdf;html-dev;html-dev-${Dakota_VERSION_STRING}.tar.gz;user-html;user-html-${Dakota_VERSION_STRING}.tar.gz"
+  "dakota-${Dakota_FINAL_PACKAGE_LABEL}-docs.tar.gz;html-dev;html-dev-${Dakota_VERSION_STRING}.tar.gz;user-html;user-html-${Dakota_VERSION_STRING}.tar.gz"
+  #"dakota-${Dakota_FINAL_PACKAGE_LABEL}-docs.tar.gz;Developers-${Dakota_VERSION_STRING}.pdf;html-dev;html-dev-${Dakota_VERSION_STRING}.tar.gz;user-html;user-html-${Dakota_VERSION_STRING}.tar.gz"
   )
