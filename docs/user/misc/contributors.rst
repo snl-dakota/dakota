@@ -88,12 +88,24 @@ Contributors to third-party libraries used by Dakota who also advised on their i
 - Surfpack: Keith Dalbey (SNL), Shane Brown (SNL, now KAPL), Eric Cyr (SNL), Mike Eldred (SNL), Tony Giunta (SNL), Mark Richards (SNL, now UIUC)
 - pyprepro: Justin Winokur (SNL)
 
-Other Contributors
+Other Team Members
 ------------------
+
+Current and former Sandians who made substantial non-code contributions to Dakota include:
 
 - Lara Bauman: product manager, GUI advisor
 - Ken Hu (SNL): product manager, documentation
+- Sophia Lefantzi (SNL): Business management
+- Dan Turner (SNL): Business management
 - Jim Stewart (SNL): Business management
 - V. Greg Weirs (SNL): Application deployment and consulting
-- George Orient (SNL): product manager, GUI advisor
+- George Orient: product manager, GUI advisor
+
+External Contributors
+---------------------
+
+Dakota acknowledges the following organizations and individuals who have made substantial improvements
+to the codebase and documentation.
+
+- PeopleTec, Inc: Christopher Austin, Dr. Daniel Hyams, Bill Carter, Jacob Rice, Joshua Hendrix, Sam Songy, Arthur Ward
 
