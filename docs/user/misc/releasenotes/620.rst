@@ -1,16 +1,8 @@
-:orphan:
+.. _releasenotes-620:
 
-.. _releasenotes-template:
-
-.. note::
-
-   This unlinked page is a template with prompts to consider when
-   authoring release notes before promoting to a versioned page.
-   Remove :orphan: above if promoting this page.
-
-""""""""""""""""""""""""""""""""""""""
-Version 6.21 (2024/11/15; pre-release)
-""""""""""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""
+Version 6.20 (2024/05/15)
+"""""""""""""""""""""""""
 
 **Highlight: Feature A**
 
@@ -40,6 +32,10 @@ for using the GUI.  The 6.11 GUI manual is also available here.
 
 *Interfaces, Input/Output*
 
+- A new class, `BatchSplitter` was added to the 
+  :ref:`dakota.interfacing module <interfaces:dakota.interfacing>` to ease 
+  splitting batch parameters files into parameters files for individual evaluations.
+
 *Models*
 
 *Optimization Methods*
@@ -48,15 +44,25 @@ for using the GUI.  The 6.11 GUI manual is also available here.
 
 *MLMF Sampling*
 
+*Examples*
 
+- `Use Dakota on HPCs <https://github.com/snl-dakota/dakota-examples/tree/master/official/parallelization>`_ with 
+   `Flux <https://flux-framework.readthedocs.io/en/latest/>`_ 
  
 **Miscellaneous Enhancements and Bugfixes**
 
 - Enh:
-- Bug fix:
+- Bug fix: Numerous small security enhancements to TPLs (`PeopleTec, Inc <https://www.peopletec.com/>`_)
+- Bug fix: Numerous formatting fixes to the documentation, pyprepro, and Python testing scripts (`rzehumat <https://github.com/rzehumat>`_ )
+- Bug fix: Fix to unit test (`furstj <https://github.com/furstj>`_)
 
 **Deprecated and Changed**
+
+- Intel (x86_64) builds for macOS are no longer available, only arm64 (Apple Silicon)
+- Builds for RHEL7 are no longer available
 
 **Compatibility**
 
 **Other Notes and Known Issues**
+
+- The surrogate workflow node in the Dakota GUI is nonfunctional on macOS.
