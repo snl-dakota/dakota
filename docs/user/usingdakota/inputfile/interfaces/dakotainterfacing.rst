@@ -20,7 +20,10 @@ The following sections describe the components of
    writes them to file
 -  The :class:`BatchParameters` and :class:`BatchResults` classes. Containers for
    multiple :class:`Parameters` and :class:`Results` objects; used when
-   evaluations are performed by Dakota in :ref:`batch mode <interfaces:batch>`.
+   evaluations are performed by Dakota in :ref:`batch mode <interfaces:batch>`
+-  The :class:`BatchSplitter', for splitting batch parameters files into the text
+   for individual evaluations. Useful when converting an existing workflow that
+   expects individual parameters files to work with Dakota's batch interface.
 -  The :func:`read_parameters_file` function. Constructs :class:`Parameters`,
    :class:`Results`, :class:`BatchParameters`, and :class:`BatchResults` objects from a
    Dakota parameters file.
@@ -267,17 +270,44 @@ API
    .. attribute:: batch_id
    
       The "id" of this batch of evaluations, reported by Dakota (string)
-      
-   .. method:: write (stream=None, ignore_asv=None)
+
+   .. method:: write (stream=None, ignore_asv=None) 
    
-      Write results for all evaluations to the Dakota results file.
-      
       :param stream: If *stream* is set, it overrides the results file name
                      provided at construct time. It must be an open file-like object,
                      rather than the name of a file.
       :param ignore_asv: If *ignore_asv* is True, the file will be written even
                          if information requested via the active set vector is missing.
 
+.. class:: BatchSplitter
+
+    A :class:`BatchSplitter` object splits a batch paramters file into the text of individual parameter sets. The parameter sets are 
+    accessible as lists of newline terminated strings, in dakota or aprepro format, by 0-based index or by iterating the object. A specified
+    parameter set can also be written to file. Calling `len()` on the object returns the number of evaluations in the batch.
+
+   .. attribute:: batch_id
+   
+      The "id" of this batch of evaluations, reported by Dakota (string)
+
+   .. attribute:: eval_nums
+
+      Evaluation numbers in the batch (list of int).
+
+   .. attribute:: parameters_file
+
+      Name of the batch parameters file (string)
+
+   .. attribute:: format
+
+      Format of the file, "DAKOTA" or "APREPRO" (string)
+      
+   .. method:: write (index, filename)
+   
+      Write parameters for one evaluation to a file.
+      
+      :param index: Index of parameters set (int)
+      :param filename: Filepath (string or pathlib.Path)
+ 
 Processing Templates
 ~~~~~~~~~~~~~~~~~~~~
 
