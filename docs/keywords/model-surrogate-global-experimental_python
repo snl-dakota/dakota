@@ -1,0 +1,17 @@
+Blurb::
+Use the experimental python surrogates interface
+
+Description::
+This is an experimental capability that allows the user to expose a python-based
+surrogate to Dakota.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::
+

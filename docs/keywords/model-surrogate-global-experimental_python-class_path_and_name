@@ -1,0 +1,50 @@
+Blurb::
+Specify the module and class name of the python surrogate
+
+Description::
+Specify the module and class name of the python surrogate.
+At minimum, the class must contain the methods 'construct' and 'predict'.
+Dakota passes to the former a matrix (num samples x num variables)
+of variable values and a num samples x 1 matrix of responses to use
+to train the surrogate.  The `predict` method receives a matrix of num
+samples x num variables and expects a matrix of num samples x 1 predicted
+values to be returned.  An optional 'gradient' method is supported as
+well and returns gradients for a matrix of variables passed from Dakota.
+
+Topics::
+
+Examples::
+
+Use of python-based surrogates in Dakota is enabled via:
+
+.. code-block::
+
+  model,
+      id_model = 'SURR'
+      surrogate global,
+      dace_method_pointer = 'DACE'
+      experimental_python
+          class_path_and_name = "surrogate_polynomial.Surrogate"
+
+An corresponding python class (incomplete) would contain at minimum:
+
+.. code-block::
+
+  class Surrogate:
+
+    def construct(self, var, resp):
+        var2 = np.hstack((np.ones((var.shape[0], 1)), var))
+        self.coeffs = np.zeros(var.shape[1])
+        z = np.linalg.inv(np.dot(var2.T, var2))
+        self.coeffs = np.dot(z, np.dot(var2.T, resp))
+        return
+
+    def predict(self, pts):
+        return self.coeffs[0]+pts.dot(self.coeffs[1:])
+
+
+Theory::
+
+Faq::
+
+See_Also::
