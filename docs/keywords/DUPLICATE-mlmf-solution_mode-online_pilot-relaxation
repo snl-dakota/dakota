@@ -1,0 +1,33 @@
+Blurb::
+For an online pilot mode, apply under-relaxation to the shared sample increments
+
+Description::
+Multilevel / multifidelity sampling methods are adaptive UQ methods
+that utilize a pilot sample to estimate an initial set of correlations
+or variances, and then augment the pilot with additional sample
+increments to optimally allocate resources.  In the iterated
+``online_pilot`` solution mode, the initial pilot sample is updated with
+additional shared samples in the direction of the optimal solution to
+the resource allocation problem.  When the initial correlation /
+covariance approximations are inaccurate, this update can be overly
+aggressive, such that it becomes advisable to only accept a portion of
+this suggested increment through use of an under-relaxation factor.
+
+Three options are provided for defining a sequence of under-relaxation
+factors: ``factor_sequence``, ``fixed_factor``, and ``recursive_factor``.
+
+**Default Behavior**
+
+Relaxation is an optional specification, and no relaxation (accept the
+full magnitude of suggested sample increments) is the default.
+
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

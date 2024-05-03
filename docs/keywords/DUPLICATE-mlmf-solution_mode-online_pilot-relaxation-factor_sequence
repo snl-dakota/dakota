@@ -1,0 +1,52 @@
+Blurb::
+For under-relaxation of shared sample increments, apply a sequence of factors, one per iteration
+
+Description::
+When initial correlation / covariance approximations are inaccurate,
+iterated sample updates can be overly aggressive, such that it becomes
+advisable to only accept a portion of this suggested increment through
+use of an under-relaxation factor.
+
+In the ``factor_sequence`` option, a sequence of relaxation factors is
+specified, one for each online iteration. Once the sequence is
+exhausted, all subsequent online iterations will continue to employ
+the final sequence value.
+
+**Usage Tips**
+
+While not required or enforced, it is often a good idea to end the
+sequence with a value of 1, corresponding to retirement of the
+relaxation process.
+
+The one case where the relaxation factor is automatically advanced to
+1 is the case where a ``max_iterations`` constraint will force early
+termination of the iteration. This avoids polluting the final results
+with an anticipated variance reduction that was not fully realized due
+to increment throttling.
+
+The need for under-relaxation is usually highest on the initial
+iteration, corresponding to a smaller relaxation factor in the
+sequence (e.g., initial factor of .5 below).  This need then decays as
+the shared samples approach the optimal allocation and the covariances
+approach their final values (e.g., subsequent factors of .75 and
+1. below).
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method,
+	multilevel_blue
+	  solution_mode  online_pilot
+	    relaxation factor_sequence = .5 .75 1.
+	  pilot_samples = 25
+	  seed = 8674132
+	  max_function_evaluations = 500
+
+Theory::
+
+Faq::
+
+See_Also::

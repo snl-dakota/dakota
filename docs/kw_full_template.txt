@@ -1,5 +1,5 @@
 Blurb::
-TEMPLATE See guidelines for blub below.
+TEMPLATE See guidelines for blurb below.
 
 Description::
 

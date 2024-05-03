@@ -1,20 +1,38 @@
 Blurb::
 Specify a solution mode that includes the pilot cost within the sample allocation logic
-Description::
-Multilevel / multifidelity sampling methods are adaptive
-UQ methods that utilize a pilot sample to estimate an initial set of
-correlations or variances, and then augment the pilot with additional
-sample increments to optimally allocate resources.  In this mode, the
-cost of pilot sampling is treated as online cost and is included within
-the optimal sample allocation logic.  This mode is the default.
 
-*Additional Discussion*
+Description::
+Multilevel / multifidelity sampling methods are adaptive UQ methods
+that utilize a pilot sample to estimate an initial set of correlations
+or variances, and then augment the pilot with additional sample
+increments to optimally allocate resources.  In this mode, the cost of
+pilot sampling is treated as online cost and is included within the
+optimal sample allocation logic.  It is the only solution mode that is
+iterative, seeking to converge from the initial pilot to a shared set
+of samples that is neither over- nor under-estimated.  The former
+over-estimation, while supporting more robust estimation of
+correlations and variances (refer to the ``offline_pilot`` option if a
+reference solution is needed), is inefficient due to non-optimality of
+the aggregate sample sets, obscuring the underlying optimal profile.
+The latter under-estimation results in unnecessary inaccuracy due to
+reliance on the initial correlation / covariance approximations -- if
+shared sample increments are indicated in the subsequent allocation
+process, then these should also be used to make better estimates of
+the shared covariances (through online iteration).
+
+**Default Behavior**
+
+This iterative online mode (``online_pilot``) is the default.
+
+**Usage Tips**
+
 It is typically advantageous to start from a smaller pilot sample and
-then rely on the adaptive logic to increase the sample levels to the
-optimal level required to achieve the desired accuracy or enforce the
-prescribed budget.  Over-estimation of the pilot, while supporting more
-robust estimation of correlations and variances, can hide the optimal
-profile and result in a non-optimal allocation of resources.
+then rely on the iterative updates to increase the shared sample
+levels to match the optimal sample profile (as dictated by an accuracy
+target or prescribed budget).  Under-relaxation can also be helpful to
+avoid a shared sample update that is too aggressive based on inaccurate
+initial information.
+
 Topics::
 
 Examples::
