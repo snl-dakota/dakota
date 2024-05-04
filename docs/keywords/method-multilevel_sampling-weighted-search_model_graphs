@@ -1,0 +1,21 @@
+Blurb::
+For weighted multilevel Monte Carlo, model graph selection options become available
+
+Description::
+Referring to :dakkw:`method-approximate_control_variate-acv_recursive_diff`,
+weighted MLMC is a special case of ACV-RD, resulting in a forward to
+the generalized ACV solver for the case of a fixed hierarchical DAG.
+
+While the DAG is fixed, other search options in generalized
+ACV become available -- see
+:dakkw:`method-multilevel_sampling-weighted-search_model_graphs-model_selection`.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

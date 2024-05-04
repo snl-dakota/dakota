@@ -1,14 +1,56 @@
 Blurb::
-Weighted recursive difference option for approximate control variate sampling (ACV-RD)
+Sampling scheme within the approximate control variate (ACV) algorithm that employs weighted recursive differences (RD) across model pairings
 
 Description::
-This is a placeholder for potential future capability.
+Similar to ACV-IS, the ACV-RD variant uses independent sample set
+definitions across paired models.  The pairings depend on the
+underlying directed acyclic graph (DAG) definition of the model
+relationships, and in the case of ACV without a
+``search_model_graphs`` specification (not generalized ACV as in
+:cite:p:`Bomarito2022`), the default "peer DAG" is used for which
+all approximation nodes point to the root node and the root node
+identifies the reference "truth" model.  This means that every
+approximation participates in a sample set that is shared with the
+truth model (the root allocation), and each approximation then has
+its own separate augmentation to this shared set (each of the nodes
+connecting to the root).
+
+**Additional Discussion**
+
+In the case of a "hierarchical" DAG (not supported by standard ACV,
+but one of the cases available within generalized ACV using
+``search_model_graphs``), each approximation node points to the next
+approximation of higher fidelity, ending with the truth model at the
+root node.  For this DAG case, both ACV-IS and ACV-RD can be
+considered to be a weighted multilevel Monte Carlo (MLMC) in terms of
+structure, in that independent sample sets are defined for each level
+and span a pair of consecutive models within a sequence.  The key
+difference from traditional MLMC is the control variate weights are
+not assumed to be 1, and can better adapt to cases with non-ideal
+correlation values.  ACV-IS and ACV-RD then differ in these weight
+definitions, as derived from the differing set definitions for
+:math:`z^1` and :math:`z^2` (which are distinct sets in ACV-RD and
+overlapping sets in ACV-IS; again see :cite:p:`GORODETSKY2020109257`
+and :cite:p:`Bomarito2022`).
 
 Topics::
 
 Examples::
 
 Theory::
+
+Refer to :cite:p:`GORODETSKY2020109257` for the original ACV
+formulation, including the :math:`z^1` and :math:`z^2` semantics used
+here.  In this paper, the "W-RDiff" estimator is a special case that
+corresponds to ACV-RD with a hierarchical DAG (see also Additional
+Discussion above).  Also, ACV-IS and ACV-MF both assume peer DAGs,
+and ACV-KL is a mix of hierarchical and peer.
+
+Refer to :cite:p:`Bomarito2022` for understanding ACV generalizations
+for the different control variate pairings that are possible when
+codified into a more comprehensive set of potential DAGs.  Both papers
+provide sample set diagrams that are instructive for understanding the
+different formulations.
 
 Faq::
 

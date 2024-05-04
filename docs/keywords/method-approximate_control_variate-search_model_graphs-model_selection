@@ -2,14 +2,15 @@ Blurb::
 Perform a recursion of admissible model subsets for a given model ensemble
 
 Description::
-For the ACV (:cite:p:`GORODETSKY2020109257`) and
-generalized ACV (:cite:p:`Bomarito2022`) methods, this option specifies
-an enumerative search over all model subsets for a given model ensemble.
-In the ACV case, there is a single DAG definition per model subset;
-thus this keyword is only used to search over possible subsets given
-this fixed ACV DAG.  For generalized ACV, model selection may be
-combined with enumeration of admissible DAGs using different DAG
-recursion throttles.
+For the ACV (:cite:p:`GORODETSKY2020109257`) and generalized ACV
+(:cite:p:`Bomarito2022`) methods, this option specifies an enumerative
+search over all model subsets for a given model ensemble.  In the ACV
+case, each model subset employs a single DAG definition (a "peer" DAG
+where each active approximation node points to the root node); thus
+this keyword is only used to search over possible subsets given this
+fixed ACV DAG.  For generalized ACV, model selection may be combined
+with enumeration of admissible DAGs using different DAG recursion
+throttles.
 
 The model subset (and DAG definition) with the best performance
 (lowest estimator variance for a prescribed budget or lowest cost for

@@ -1,0 +1,29 @@
+Blurb::
+Independent pilot sampling for groups in multilevel BLUE
+
+Description::
+
+The pilot sample provides initial estimates of group covariances
+during the first iteration of the multilevel best linear unbiased
+estimator (ML BLUE) sampling approach.  
+
+ML BLUE requires independent samples per group, and this option starts
+from independent pilot samples for each of the groups in ML BLUE.
+This approach results in a more expensive initialization for the group
+covariances than the shared pilot sample approach (the default) and it
+may result in lower efficiency in the case where it invests pilot
+samples for groups that turn out to be inactive in the subsequent resource
+allocations.  Its advantage is simplicity in that group sample increments
+simply update the existing group covariances since they were constructed
+independently from the beginning.
+
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::
