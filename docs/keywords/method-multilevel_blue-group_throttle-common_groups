@@ -1,0 +1,19 @@
+Blurb::
+Throttle multilevel BLUE to only search over common groups
+
+Description::
+The number of groups in ML BLUE is reduced to include only the most
+common group definitions, as composed from ordered hierarchical group
+definitions from MFMC, peer group definitions from ACV, and ordered
+pair definitions from MLMC.  Its size grows linearly with the total
+number of models.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::
