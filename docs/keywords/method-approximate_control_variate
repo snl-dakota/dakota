@@ -1,5 +1,6 @@
 Blurb::
 Approximate control variate (ACV) sampling methods for UQ
+
 Description::
 An adaptive sampling method that utilizes multifidelity
 relationships in order to improve efficiency through variance reduction.
@@ -15,8 +16,11 @@ control variates appears identical to MFMC:
 .. math::  \hat{Q}_{HF}^{CV} = \hat{Q}_{HF}^{MC} - \sum_{i=1}^M \beta_i (\hat{Q}_{LF_i}^{MC} - \mathbb{E}[Q_{LF_i}]) 
 
 the sample patterns used for the constituent estimators differ as
-depicted in Gorodetsky et al. (2020), Figure 2.  Two ACV variants
-are currently implemented, ACV-MF and ACV-IS, with ACV-KL to follow.
+depicted in :cite:p:`GORODETSKY2020109257`, Figure 2.  Three ACV
+variants are currently implemented, ACV-MF, ACV-IS, and ACV-RD.
+Parametrically defined estimators such as ACV-KL are covered within
+the :dakkw:`method-approximate_control_variate-search_model_graphs`
+option, using the approaches described in :cite:p:`Bomarito2022`.
 
 *Default Behavior*
 
@@ -48,13 +52,15 @@ records the equivalent number of high-fidelity evaluations.
 *Usage Tips*
 
 The ``approximate_control_variate`` method must be used in combination
-with an ensemble model specification that defines either a
-model form sequence or a discretization level sequence.  For a model
-form sequence, each model must provide a scalar
-``solution_level_cost``.  For a discretization level sequence,
-``solution_level_control`` must identify the variable string descriptor
-that controls the resolution levels and the associated array of
-relative costs must be provided using ``solution_level_cost``.
+with an ensemble model specification that enumerates a truth model and
+a set of model approximations using either a model form sequence, a
+discretization level sequence, or some combination.  For each model
+form and discretization, each instance must either provide a
+``solution_level_cost`` or return metadata for estimating cost.  For a
+sequence of discretization levels, ``solution_level_control`` must
+identify the variable string descriptor that controls the resolution
+levels and the associated array of relative costs must be provided
+using ``solution_level_cost``.
 Topics::
 
 Examples::
@@ -105,13 +111,18 @@ models, each with a single (or default) discretization level:
 
 
 Refer to ``dakota/test/dakota_uq_diffusion_acv3_cost4``.in and
-``dakota/test/dakota_uq_tunable_acv``.in in the source distribution
+``dakota/test/dakota_uq_tunable_acv``.in within the source distribution
 for this case as well as additional examples.
 
-Refer to [Gorodetsky et al., JCP (408), 2020] for more
-detailed algorithm descriptions, theoretical considerations, and
-a helpful sample set diagram.
 Theory::
+
+Refer to :cite:p:`GORODETSKY2020109257` for more
+detailed algorithm descriptions, theoretical considerations, and
+helpful sample set diagrams.
+
+Refer to :cite:p:`Bomarito2022` for understanding ACV generalizations
+for the different control variate pairings that are possible when
+codified into a more comprehensive set of potential DAGs.
 
 Faq::
 
