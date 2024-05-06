@@ -21,7 +21,7 @@ The following sections describe the components of
 -  The :class:`BatchParameters` and :class:`BatchResults` classes. Containers for
    multiple :class:`Parameters` and :class:`Results` objects; used when
    evaluations are performed by Dakota in :ref:`batch mode <interfaces:batch>`
--  The :class:`BatchSplitter', for splitting batch parameters files into the text
+-  The :class:`BatchSplitter`, for splitting batch parameters files into the text
    for individual evaluations. Useful when converting an existing workflow that
    expects individual parameters files to work with Dakota's batch interface.
 -  The :func:`read_parameters_file` function. Constructs :class:`Parameters`,
@@ -284,6 +284,11 @@ API
     A :class:`BatchSplitter` object splits a batch paramters file into the text of individual parameter sets. The parameter sets are 
     accessible as lists of newline terminated strings, in dakota or aprepro format, by 0-based index or by iterating the object. A specified
     parameter set can also be written to file. Calling `len()` on the object returns the number of evaluations in the batch.
+
+   .. method:: BatchSplitter (parameters_file=None)
+
+      :param parameters_file: If None, the first command line argument is used as the name of the batch parameters file. Otherwise, the
+                              name as a string is expected.
 
    .. attribute:: batch_id
    
