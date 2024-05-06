@@ -203,7 +203,7 @@ II.  Install Windows Executable
    b. At the command prompt, type the following command, replacing %install_dir%
       with the path to your Dakota installation:
 
-      C:\Users\name> path=%path%;%install_dir%\bin;%install_dir%\share\dakota\test;%install_dir%\lib
+      C:\Users\name> set path=%path%;%install_dir%\bin;%install_dir%\share\dakota\test;%install_dir%\lib
       
       Note that the path will be set only for as long as the cmd window
       remains open. To permanently add Dakota to your path, consult the 
@@ -245,7 +245,7 @@ III. Test Binary Distribution installation.
 3. For distributions with Graphical User Interface (GUI) support, the
    GUI can be launched using the following command:
 
-       Windows Command Terminal: $INSTALL_DIR/gui/DakotaUI.exe
+       Windows Command Terminal: %install_dir%/gui/DakotaUI.exe
        Linux:                    dakota-ui.sh
        macOS:                    dakota-ui.sh
 
