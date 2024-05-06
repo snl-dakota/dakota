@@ -66,6 +66,7 @@ Dakota. For example it might contain template expressions in curly braces:
 		lower_bounds {MyLB} {MyLB} {MyLB}
 
 .. Originally labelled as 'Section 10.9', which is part about pyprepro according to https://www.sandia.gov/app/uploads/sites/241/2023/03/Users-6.16.0.pdf
+
 (See :ref:`dprepro- and pyprepro- specific instructions<interfaces:dprepro-and-pyprepro>` for more information and use cases.) To pre-process the input file, specify the -preproc flag which gen-
 erates an intermediate temporary input file for use in Dakota. If Dakota’s pyprepro.py utility is not available on the execution
 PATH and/or additional pre-processing options are needed, the tool location and syntax can be specified, for example:
