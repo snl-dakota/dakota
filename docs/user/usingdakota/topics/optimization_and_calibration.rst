@@ -30,7 +30,7 @@ consult :cite:p:`Aro89,Gil81,Haf92,Noc99,Van84`.
 A general optimization problem is formulated as follows:
 
 .. math::
-   :label: optimformulation
+   :label: topicoptimformulation
 
      \hbox{minimize:} & & f(\mathbf{x})\nonumber\\
      & & \mathbf{x} \in \Re^{n}\nonumber\\
