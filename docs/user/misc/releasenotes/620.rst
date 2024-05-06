@@ -46,14 +46,14 @@ for using the GUI.  The 6.11 GUI manual is also available here.
 
 *Examples*
 
-- `Use Dakota on HPCs <https://github.com/snl-dakota/dakota-examples/tree/master/official/parallelization>`_ with 
-   `Flux <https://flux-framework.readthedocs.io/en/latest/>`_ 
+- `Use Dakota on HPCs <https://github.com/snl-dakota/dakota-examples/tree/master/official/parallelization>`_ with the
+  resource management frameowrk `Flux <https://flux-framework.readthedocs.io/en/latest/>`_. 
  
 **Miscellaneous Enhancements and Bugfixes**
 
 - Enh:
 - Bug fix: Numerous small security enhancements to TPLs (`PeopleTec, Inc <https://www.peopletec.com/>`_)
-- Bug fix: Numerous formatting fixes to the documentation, pyprepro, and Python testing scripts (`rzehumat <https://github.com/rzehumat>`_ )
+- Bug fix: Numerous formatting fixes to the documentation, pyprepro, and Python testing scripts (`rzehumat <https://github.com/rzehumat>`_)
 - Bug fix: Fix to unit test (`furstj <https://github.com/furstj>`_)
 
 **Deprecated and Changed**
