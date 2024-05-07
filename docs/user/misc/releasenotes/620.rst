@@ -28,6 +28,24 @@ with the GUI, giving you easy access to a wealth of reference material
 for using the GUI.  The 6.11 GUI manual is also available here.
 
 
+**Highlight: Multilevel Best Linear Unbiased Estimator (ML BLUE)**
+
+ML BLUE (:cite:p`Schaden2020`) is a new multifidelity sampling-based
+approach for UQ, distinguished from other estimators through its use
+of sample allocations based on model groupings.  It has motivated a
+number of other general extensions to Dakota's MF sampling methods,
+including multi-batch concurrency and under-relaxation of predicted
+sample increments (see MLMF Sampling below), and it is full featured
+in its support for group size throttling, shared versus independent
+pilot sampling, online versus offline solution modes, and
+hyper-parameter model tuning.
+
+*Enabling / Accessing:* new method specification option for multifidelity sampling: `multilevel_blue`.
+
+*Documentation:* Refer to the reference documentation starting from :dakkw:`method-multilevel_blue` for additional information.  A number of numerical examples using standard Dakota benchmarks are available under dakota/test in the release distribution.
+
+
+
 **Improvements by Category**
 
 *Interfaces, Input/Output*
@@ -44,10 +62,20 @@ for using the GUI.  The 6.11 GUI manual is also available here.
 
 *MLMF Sampling*
 
+- Expansion in the set of solution modes for all MF sampling methods.  Projection mode now supports online (pilot is integrated) and offline (pilot is separated) options, bringing the total number of mode specifications to four: online_pilot, offline_pilot, online_projection, offline_projection.
+
+- Expansion in parallelism for multifidelity sampling by eliminating convenience synchronization points.  MFMC, ACV, generalized ACV, and ML BLUE now support concurrency across multiple batches, each containing multiple samples and each spanning multiple model instances.  Previously, only a single batch (multiple samples across multiple models) could be evaluated concurrently, in support of convenience of algorithm bookeeping.  (Note: MLMC and MLCV MC will follow shortly in stable releases, as can other batch sampling-based methods under `Analyzer`.)
+
+- Support for under-relaxation of predicted sample increments for all MF sampling methods.  Options for relaxation factors include, fixed, recursive, and sequenced.  This is especially useful for group-based allocations in ML BLUE, which would otherwise exhaust its full budget in its first online iteration.
+
+- ACV-RD sampling scheme now supported in generalized ACV (augmenting previous ACV-MF and ACV-IS).  Similar to endowing hierarchical MFMC and peer ACV-MF/ACV-IS with model selection in the last release, weighted MLMC including model selection is now supported within the `multilevel_sampling` method, via reuse of the generalized ACV solver for ACV-RD with a fixed hierarchical DAG.
+
+- Numerical MFMC has been improved through the use of dynamic reordering of models (previously static and fragile) during the solution process, ensuring the estimator variance calculations remain valid.
+
 *Examples*
 
 - `Use Dakota on HPCs <https://github.com/snl-dakota/dakota-examples/tree/master/official/parallelization>`_ with the
-  resource management frameowrk `Flux <https://flux-framework.readthedocs.io/en/latest/>`_. 
+  resource management framework `Flux <https://flux-framework.readthedocs.io/en/latest/>`_. 
  
 **Miscellaneous Enhancements and Bugfixes**
 
