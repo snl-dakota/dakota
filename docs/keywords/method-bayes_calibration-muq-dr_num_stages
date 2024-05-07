@@ -1,8 +1,8 @@
 Blurb::
-Parameter for the DR or DRAM MCMC algorithms in MUQ
+Number of stages
 
 Description::
-Number of stages to use.
+Used by both the DR and DRAM MCMC algorithms.
 
 Topics::
 bayesian_calibration

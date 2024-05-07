@@ -1,10 +1,11 @@
 Blurb::
-Parameter for the DR or DRAM MCMC algorithms in MUQ
+Scaling parameter
+
 
 Description::
-Value of parameter 'b' in equation for the scaling scalar 'a_i' in the i-th stage, i=0,1,...,N-1, where N is the number of stages (parameter dr_num_stages).
-The equation can be either a_i = b/(i+1) (in case of dr_scale_type = "Linear") or a_i = b/2^i (in case of dr_scale_type = "Power).
-Value must be positive.
+Value of parameter :math:`b` in equation for the scaling scalar :math:`a_i` in the :math:`i`-th stage, :math:`i=0,1,...,N-1`, where :math:`N` is the number of stages (parameter 
+:dakkw:`method-bayes_calibration-muq-dr_num_stages`). The equation can be either :math:`a_i = b/(i+1)` (in case of :dakkw:`method-bayes_calibration-muq-dr_scale_type` = "Linear")
+or :math:`a_i = b/2^i` (for "Power"). Value must be positive. Used by the DR and DRAM MCMC algorithms.
 
 Topics::
 bayesian_calibration

@@ -1,6 +1,6 @@
 :orphan:
 
-.. _releasenotes-template:
+.. _releasenotes-next:
 
 """"""""""""""""""""""""""""""""""""""
 Version 6.20 (2024/05/15; pre-release)

@@ -1,8 +1,8 @@
 Blurb::
-Parameter for the DR or DRAM MCMC algorithms in MUQ
+Type of scaling to use
 
 Description::
-Type of scaling function to use: either 'Linear' or 'Power'
+Set to either 'Linear' or 'Power'. Used for the DR or DRAM MCMC algorithms.
 
 Topics::
 bayesian_calibration

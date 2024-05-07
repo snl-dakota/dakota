@@ -1,8 +1,8 @@
 Blurb::
-Parameter for the AM or DRAM MCMC algorithms in MUQ
+Number of steps prior to start of proposal covariance adaptation
 
 Description::
-How many steps should be taken before beginning to adapt the proposal covariance.
+How many steps should be taken before beginning to adapt the proposal covariance. Used by the AM or DRAM MCMC algorithms.
 
 Topics::
 bayesian_calibration

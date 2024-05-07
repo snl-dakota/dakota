@@ -2,9 +2,9 @@ Blurb::
 Metropolis-adjusted Langevin algorithm
 
 Description::
-When the user selects `bayesian_calibration muq' in the Dakota input file,
-the occurrence of the `mala' keyword will cause Dakota to use the MALA
-algorithm (:cite:p`RobTwe96`) from the MUQ library.
+When the user selects 'bayesian_calibration muq' in the Dakota input file,
+the occurrence of the 'mala' keyword will cause Dakota to use the MALA
+algorithm (:cite:p:`RobTwe96`) from the MUQ library.
 
 Topics::
 bayesian_calibration
