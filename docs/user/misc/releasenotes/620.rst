@@ -32,7 +32,7 @@ hyper-parameter model tuning.
 
 *Models*
 
-*Optimization Methods*
+- Experimental support for user-provided data fit surrogate models implemented in Python. See the :dakkw:`model-surrogate-global-experimental_python` model keyword.
 
 *UQ Methods*
 
@@ -55,7 +55,6 @@ hyper-parameter model tuning.
  
 **Miscellaneous Enhancements and Bugfixes**
 
-- Enh:
 - Bug fix: Numerous small security enhancements to TPLs (`PeopleTec, Inc <https://www.peopletec.com/>`_)
 - Bug fix: Numerous formatting fixes to the documentation, pyprepro, and Python testing scripts (`rzehumat <https://github.com/rzehumat>`_)
 - Bug fix: Fix to unit test (`furstj <https://github.com/furstj>`_)
@@ -64,8 +63,6 @@ hyper-parameter model tuning.
 
 - Intel (x86_64) builds for macOS are no longer available, only arm64 (Apple Silicon)
 - Builds for RHEL7 are no longer available
-
-**Compatibility**
 
 **Other Notes and Known Issues**
 
