@@ -1,5 +1,5 @@
 Blurb::
-Sampling scheme within the approximate control variate (ACV) algorithm that employs independent samples (IS) per model
+Sampling scheme within the approximate control variate (ACV) algorithm that employs independent samples (IS) across model pairings
 
 Description::
 This ACV-IS variant uses independent sample set definitions across
@@ -10,9 +10,9 @@ ACV as in :cite:p:`Bomarito2022`), the default "peer DAG" is used for
 which all approximation nodes point to the root node and the root node
 identifies the reference "truth" model.  This means that every
 approximation participates in a sample set that is shared with the
-truth model (the root allocation), and each approximation then has its
-own separate augmentation to this shared set (each of the nodes
-connecting to the root).
+truth model (the root allocation), and then each approximation
+(each of the nodes connecting to the root) has its own independent
+augmentation to this shared set.
 
 **Additional Discussion**
 

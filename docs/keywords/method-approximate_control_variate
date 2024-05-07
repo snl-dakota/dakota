@@ -7,26 +7,62 @@ relationships in order to improve efficiency through variance reduction.
 It employs an ensemble model to manage an unordered set of
 lower-fidelity approximations to a single truth model.
 
-Compared to multifidelity Monte Carlo (MFMC), ACV relaxes the nested
-sampling of a recursive emulator, instead targeting the truth model's
-variance with each control variate pair.  While the ensemble of
-control variates appears identical to MFMC:
+Compared to multifidelity Monte Carlo (MFMC), ACV is not a recursive
+emulator based on hierarchical control variate pairings.  Rather, the
+truth model's variance is targeted using each control variate pairing.
+These pairings are codified with a directed acyclic graph (DAG), such
+that ACV defines a "peer" DAG where all approximation nodes point to the
+root node and the root node identifies the reference "truth" model.
+MFMC, on the other hand, employs a "hierarchical" DAG, where each
+approximation node points to the next approximation of higher
+fidelity, ending with the truth model at the root node.
+
+While the ensemble of control variates appears identical to MFMC:
 
 
 .. math::  \hat{Q}_{HF}^{CV} = \hat{Q}_{HF}^{MC} - \sum_{i=1}^M \beta_i (\hat{Q}_{LF_i}^{MC} - \mathbb{E}[Q_{LF_i}]) 
 
 the sample patterns used for the constituent estimators differ as
-depicted in :cite:p:`GORODETSKY2020109257`, Figure 2.  Three ACV
-variants are currently implemented, ACV-MF, ACV-IS, and ACV-RD.
-Parametrically defined estimators such as ACV-KL are covered within
+depicted in :cite:p:`GORODETSKY2020109257`, Figure 2, with the
+:math:`z^1` and :math:`z^2` definitions reflective of the control
+variate pairings.
+
+In the generalized ACV case (:cite:p:`Bomarito2022`) available from
 the :dakkw:`method-approximate_control_variate-search_model_graphs`
+specification, three different ACV sampling schemes are supported:
+ACV-MF (multifidelity), ACV-IS (independent sampling), and ACV-RD
+(recursive difference), where each scheme supports an enumerative
+search over admissible DAGs and model subset selections.  Each
+of these three schemes is also supported in non-generalized form
+for specific DAG definitions, as follows:
+
+* ACV-MF: peer DAG in :dakkw:`method-approximate_control_variate` and hierarchical DAG in :dakkw:`method-multifidelity_sampling`
+
+* ACV-IS: peer DAG in :dakkw:`method-approximate_control_variate`.
+
+* ACV-RD: hierarchical DAG in :dakkw:`method-multilevel_sampling` using the :dakkw:`weighted` option.
+
+Finally, the ACV-KL variant (:cite:p:`GORODETSKY2020109257`) is not
+another sampling scheme, but rather a parametrically defined estimator
+that enumerates a relatively small subset of admissible DAGs. It is
+available under the
+:dakkw:`method-approximate_control_variate-search_model_graphs-kl_recursion`
 option, using the approaches described in :cite:p:`Bomarito2022`.
+
 
 *Default Behavior*
 
-The ``approximate_control_variate`` method employs Monte Carlo sample
-sets by default, but this default can be overridden to use Latin
-hypercube sample sets using ``sample_type`` ``lhs``.
+The ``approximate_control_variate`` method employs a number of important
+default settings:
+
+* The DAG defining control variate pairings defaults to a "peer" DAG where all approximation nodes point to the root node and the root node identifies the reference "truth" model.  This means that every approximation participates in a sample set that is shared with the truth model (the root allocation), and each approximation (each of the nodes connecting to the root) then has its own augmentation to this shared set.  For ACV-IS and ACV-RD, these augmentations are independent.  To explore other admissible DAGs, ``search_model_graphs`` can be used.
+
+* The default solver is ``global_local``, starting with the DIRECT global solver and proceeding to available local solvers (SQP and NIP) in competition.  For larger model ensembles, a purely local approach is more scalable.
+
+* Solution mode will be ``online_pilot``, an approach which iterates toward a set of shared samples whose size is consistent with the optimal allocation.
+
+* Monte Carlo sample sets are used by default and are most consistent with the underlying theory, but this default can be overridden to use Latin hypercube sample sets using ``sample_type`` ``lhs``.  Allocations remain governed by Monte Carlo variance for all cases.
+
 
 *Expected Output*
 
@@ -49,18 +85,23 @@ writes the following results to HDF5:
 In addition, the execution group has the attribute ``equiv_hf_evals``, which
 records the equivalent number of high-fidelity evaluations.
 
+
 *Usage Tips*
 
 The ``approximate_control_variate`` method must be used in combination
 with an ensemble model specification that enumerates a truth model and
 a set of model approximations using either a model form sequence, a
-discretization level sequence, or some combination.  For each model
-form and discretization, each instance must either provide a
-``solution_level_cost`` or return metadata for estimating cost.  For a
-sequence of discretization levels, ``solution_level_control`` must
-identify the variable string descriptor that controls the resolution
-levels and the associated array of relative costs must be provided
-using ``solution_level_cost``.
+discretization level sequence, or a combination of model forms and
+discretization levels.  For each model form and discretization, each
+instance must either provide a ``solution_level_cost`` or return
+metadata for estimating cost.  For a sequence of discretization
+levels, ``solution_level_control`` must identify the variable string
+descriptor that controls the resolution levels and the associated
+array of relative costs must be provided using
+``solution_level_cost``.  An alternative to prescribing the cost
+profile is estimating it on the fly using cost metadata that is
+returned from the different simulation instances.
+
 Topics::
 
 Examples::

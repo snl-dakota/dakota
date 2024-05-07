@@ -1,5 +1,6 @@
 Blurb::
-Multilevel sampling methods for UQ
+Multilevel Monte Carlo (MLMC) sampling method for UQ
+
 Description::
 An adaptive sampling method that utilizes multilevel
 relationships within an ensemble surrogate model in order to
@@ -28,11 +29,33 @@ allocated for each level ( :math:`N_l` ) is based on a total cost minimization
 procedure that incorporates the relative cost and observed variance for each
 of the :math:`Y_\ell` .
 
+
+*Weighting and Model Selection*
+
+Similar to MFMC (see :dakkw:`method-multifidelity_sampling`), weighted
+MLMC is a special case of generalized ACV using the ACV-RD sampling
+scheme (:cite:p:`Bomarito2022`) in combination with a hierarchical DAG
+(each approximation node points to the next approximation of higher
+fidelity, ending with the truth model at the root node).  As such, the
+selection of a weighted MLMC approach is promoted to the generalized
+ACV solver in order to gain access to both weighting and optional
+model selection capabilities by activating the
+:dakkw:`method-multilevel_sampling-weighted` and
+:dakkw:`method-multilevel_sampling-weighted-search_model_graphs-model_selection`
+options, respectively.  This results in one or more numerical
+solutions for a fixed hierarchical DAG.
+
+
 *Default Behavior*
 
-The ``multilevel_sampling`` method employs Monte Carlo sample sets by
-default, but this default can be overridden to use Latin hypercube
-sample sets using ``sample_type`` ``lhs``.
+The ``multilevel_sampling`` method employs a number of important default settings:
+
+* By default, MLMC is unweighted and provides a convenient analytic solution for the optimal sample allocations.  The option of weighted MLMC is also available as a numerical solution and can be combined with model selection as described above.
+
+* Solution mode will be ``online_pilot``, an approach which iterates toward a set of shared samples whose size is consistent with the optimal allocation.
+
+* Monte Carlo sample sets are used by default and are most consistent with the underlying theory, but this default can be overridden to use Latin hypercube sample sets using ``sample_type`` ``lhs``.  Allocations remain governed by Monte Carlo variance for all cases.
+
 
 *Expected Output*
 
@@ -57,12 +80,16 @@ records the equivalent number of high-fidelity evaluations.
 *Usage Tips*
 
 The multilevel sampling method must be used in combination with an
-ordered ensemble surrogate model specification, and supports either a sequence of
-model forms or a sequence of discretization levels.  For the former,
-each model form must provide a scalar ``solution_level_cost`` and for the
-latter, it is necessary to identify the variable string descriptor that
-controls the resolution levels using ``solution_level_control`` as well
-as the associated array of relative costs using ``solution_level_cost``.
+ordered ensemble surrogate model specification, and supports either a
+sequence of model forms or a sequence of discretization levels.  For
+the former, each model form must provide a scalar
+``solution_level_cost`` and for the latter, it is necessary to
+identify the variable string descriptor that controls the resolution
+levels using ``solution_level_control`` as well as the associated
+array of relative costs using ``solution_level_cost``.  An alternative
+to prescribing the cost profile is estimating it on the fly using cost
+metadata that is returned from the different simulation instances.
+
 Topics::
 
 Examples::

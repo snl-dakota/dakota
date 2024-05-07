@@ -1,31 +1,68 @@
 Blurb::
-The multilevel best linear unbiased estimator (ML BLUE) sampling approach
+The multilevel best linear unbiased estimator (ML BLUE) sampling method for UQ
 
 Description::
-An adaptive multifidelity sampling method that improves accuracy
-and/or efficiency through variance reduction relative to
-single-fidelity Monte Carlo sampling.  It employs an ensemble model to
-manage a set of lower-fidelity approximations to a single truth model.
+
+An adaptive multifidelity sampling method that improves performance
+relative to single-fidelity Monte Carlo sampling, either of terms of
+greater accuracy (reduced variance in the estimated statistics) for
+a prescribed budget or reduced cost for specified accuracy.  It employs
+an ensemble model to manage a set of lower-fidelity approximations to
+a single truth model.
 
 Compared to other estimators (MLMC, MLCV MC, MFMC, ACV, generalized
-ACV), ML BLUE employs a group-based approach, where independent
-samples are allocated for each group and each group is composed of
-combinations of models.
+ACV), ML BLUE is distinguished in that it employs a group-based
+approach, where independent samples are allocated for each group and
+each group is composed of unordered combinations of models.  The number
+of groups grows combinatorially with the total number of models, and a
+few throttle options are provided to prevent the number of groups from
+gorwing to excess.
+
+As described in :cite:p:`Schaden2020`, the ML BLUE estimator for QoI
+expected values is
+
+.. math::  \Psi q^B = y
+
+where
+
+.. math::  \Psi = \sum_{k=1}^K m_k R_k^T C_k^{-1} R_k
+
+.. math::  y = \sum_{k=1}^K R_k^T C_k^{-1} S_k
+
+.. math::  S_k = \sum_{i=1}^{m_k} Y_k^{(i)}
+
+given group sample count :math:`m`, group restriction operator
+:math:`R_k`, group covariance estimate :math:`C_k`, and group QoI
+sum :math:`S_k` for each group :math:`k`. For a linear combination
+of the model means :math:`q_{\beta}^B = \beta^T q^B`, the variance
+of ML BLUE is :math:`\beta^T \Psi^{-1} \beta`.  The numerical solution 
+for :math:`m` minimizes this variance subject to a prescribed budget
+(or minimizes cost for specified accuracy), where the common choice
+of :math:`\beta = [1, 0, 0, \dots]^T` targets the HF mean.
+
 
 **Status**
 
-This method is under actove development.  While currently exhibiting
-good performance for a small number of models (5 or less), larger
-model ensembles result in ill-conditioning. Throttling can delay these
+This method is currently under active development.  It exhibits
+competitive performance for smaller numbers of models (roughly 5 or
+less), whereas larger model ensembles lead to ill-conditioning in the
+matrix solutions and inaccurate results. Throttling can delay these
 problems in some cases, but more advanced numerical treatments are
-needed (in progress).
+needed (work in progress).
 
 *Default Behavior*
 
-The ``multilevel_blue`` method employs Monte Carlo sample
-sets by default, but this default can be overridden to use Latin
-hypercube sample sets using ``sample_type`` ``lhs``.  Allocations
-remain governed by Monte Carlo variance for all cases.
+The ``multilevel_blue`` method employs a number of important default settings:
+
+* The pilot sampling strategy involves shared samples for initial estimation of group covariances (refer to :dakkw:`method-multilevel_blue-pilot_samples`).
+
+* The number of groups is not throttled by default (refer to :dakkw:`method-multilevel_blue-group_throttle`).
+
+* The default solver is ``global_local``, starting with the DIRECT global solver and proceeding to available local solvers (SQP and NIP) in competition.  For larger group counts, a purely local approach can be more scalable.
+
+* Solution mode will be ``online_pilot``, an approach which iterates toward a set of shared samples whose size is consistent with the optimal allocation.  Since group-based approaches will try to allocate the entire budget on the first iteration, the use of under-relaxation (see :dakkw:`method-multilevel_blue-solution_mode-online_pilot-relaxation`) can be especially beneficial.
+
+* Monte Carlo sample sets are used by default and are most consistent with the underlying theory, but this default can be overridden to use Latin hypercube sample sets using ``sample_type`` ``lhs``.  Allocations remain governed by Monte Carlo variance for all cases.
 
 *Expected Output*
 
@@ -39,14 +76,16 @@ at this time.
 
 The ``multilevel_blue`` method must be used in combination with an
 ensemble model specification that enumerates a truth model and
-approximation models using either a model form sequence, a
-discretization level sequence, or some combination.  For each model
-form and discretization, each instance must either provide a
-``solution_level_cost`` or return metadata for estimating cost.  For a
-sequence of discretization levels, ``solution_level_control`` must
-identify the variable string descriptor that controls the resolution
-levels and the associated array of relative costs must be provided
-using ``solution_level_cost``.
+approximation models using either a model form ensemble, a set of
+resolution levels, or some combination.  By default, all model forms
+and resolution levels will be enumerated within the model ensemble.
+For each model instance, cost data must by provided either using
+``solution_level_cost`` or metadata that is returned from simulations
+for estimating cost on the fly.  For a sequence of discretization
+levels, ``solution_level_control`` must identify the variable string
+descriptor that controls the resolution levels and the associated
+array of relative costs must be provided using
+``solution_level_cost``.
 
 Topics::
 
@@ -64,13 +103,13 @@ The following method block:
 	  seed = 8674132
 	  max_function_evaluations = 500
 
-specifies ML BLUE using an iterated online pilot in
-combination with the default allcoation solver (global_local),
-the default shared pilot estimation of group covariances,
-and and ensemble model identified by the HIERARCH pointer.
+specifies ML BLUE using an iterated online pilot in combination with
+the default optimization solver strategy (global_local), the default
+shared pilot estimation of group covariances, and an ensemble model
+identified by the HIERARCH pointer.
 
 This HIERARCH model specification provides a one-dimensional sequence,
-here defined by a set of discretization levels:
+here defined by a set of 3 discretization levels:
 
 .. code-block::
 

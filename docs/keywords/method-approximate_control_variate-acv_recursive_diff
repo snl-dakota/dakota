@@ -11,9 +11,9 @@ relationships, and in the case of ACV without a
 all approximation nodes point to the root node and the root node
 identifies the reference "truth" model.  This means that every
 approximation participates in a sample set that is shared with the
-truth model (the root allocation), and each approximation then has
-its own separate augmentation to this shared set (each of the nodes
-connecting to the root).
+truth model (the root allocation), and then each approximation
+(each of the nodes connecting to the root) has its own independent
+augmentation to this shared set.
 
 **Additional Discussion**
 
@@ -43,8 +43,9 @@ Refer to :cite:p:`GORODETSKY2020109257` for the original ACV
 formulation, including the :math:`z^1` and :math:`z^2` semantics used
 here.  In this paper, the "W-RDiff" estimator is a special case that
 corresponds to ACV-RD with a hierarchical DAG (see also Additional
-Discussion above).  Also, ACV-IS and ACV-MF both assume peer DAGs,
-and ACV-KL is a mix of hierarchical and peer.
+Discussion above).  Also, ACV-IS and ACV-MF both assume peer DAGs, and
+ACV-KL searches over a alightly more general set of DAGs that are a
+mix of hierarchical and peer.
 
 Refer to :cite:p:`Bomarito2022` for understanding ACV generalizations
 for the different control variate pairings that are possible when
