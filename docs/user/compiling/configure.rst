@@ -513,6 +513,7 @@ routinely tested.
    HAVE_NL2SOL,     ON,
    HAVE_NLPQL, 	    ON,  "Turns OFF if packages/NLPQL missing"
    HAVE_NOMAD, 	    ON,
+   HAVE_MUQ,        OFF,
    HAVE_NOWPAC,     OFF,
    HAVE_NPSOL, 	    ON,  "Turns OFF if packages/NPSOL missing"
    HAVE_OPTPP, 	    ON,

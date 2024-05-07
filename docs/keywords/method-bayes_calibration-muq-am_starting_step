@@ -1,0 +1,16 @@
+Blurb::
+Parameter for the AM or DRAM MCMC algorithms in MUQ
+
+Description::
+How many steps should be taken before beginning to adapt the proposal covariance.
+
+Topics::
+bayesian_calibration
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

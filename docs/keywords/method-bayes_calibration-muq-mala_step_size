@@ -1,0 +1,16 @@
+Blurb::
+Parameter for the MALA MCMC algorithm in MUQ
+
+Description::
+The step size parameter tau in the preconditioned Langevin proposal xCandidate = xCurrent + tau M \grad \ln \pi(xCurrent) + \sqrt(2 tau) M^{1/2} z,
+where M is the proposal covariance and z is a standard normal random variable.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

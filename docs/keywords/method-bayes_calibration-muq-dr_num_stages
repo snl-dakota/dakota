@@ -1,0 +1,16 @@
+Blurb::
+Parameter for the DR or DRAM MCMC algorithms in MUQ
+
+Description::
+Number of stages to use.
+
+Topics::
+bayesian_calibration
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::
