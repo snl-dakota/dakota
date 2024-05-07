@@ -1,0 +1,16 @@
+Blurb::
+Parameter for the AM or DRAM MCMC algorithms in MUQ
+
+Description::
+Number of steps between updates of the proposal covariance.
+
+Topics::
+bayesian_calibration
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

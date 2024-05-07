@@ -1,0 +1,18 @@
+Blurb::
+Parameter for the DR or DRAM MCMC algorithms in MUQ
+
+Description::
+Value of parameter 'b' in equation for the scaling scalar 'a_i' in the i-th stage, i=0,1,...,N-1, where N is the number of stages (parameter dr_num_stages).
+The equation can be either a_i = b/(i+1) (in case of dr_scale_type = "Linear") or a_i = b/2^i (in case of dr_scale_type = "Power).
+Value must be positive.
+
+Topics::
+bayesian_calibration
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

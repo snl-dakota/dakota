@@ -1,0 +1,16 @@
+Blurb::
+Parameter for the AM or DRAM MCMC algorithms in MUQ
+
+Description::
+Scaling of the sample covariance used to define the proposal covariance
+
+Topics::
+bayesian_calibration
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

@@ -1,0 +1,16 @@
+Blurb::
+Parameter for the DR or DRAM MCMC algorithms in MUQ
+
+Description::
+Type of scaling function to use: either 'Linear' or 'Power'
+
+Topics::
+bayesian_calibration
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

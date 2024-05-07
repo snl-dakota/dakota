@@ -2,39 +2,35 @@
 
 .. _releasenotes-template:
 
-.. note::
-
-   This unlinked page is a template with prompts to consider when
-   authoring release notes before promoting to a versioned page.
-   Remove :orphan: above if promoting this page.
-
 """"""""""""""""""""""""""""""""""""""
-Version 6.21 (2024/11/15; pre-release)
+Version 6.20 (2024/05/15; pre-release)
 """"""""""""""""""""""""""""""""""""""
 
-**Highlight: Feature A**
+**Highlight: New options for using MCMC algorithms from the MUQ library**
 
-*Enabling / Accessing:* Where available and how to access
+When selecting `bayes_calibration muq' under the `method' section of a Dakota input file,
+the user can now select the 'mala' MCMC algorithm (in addition to the already supported four
+algorithms). The user can now also select values for parameters in each of these algorithms.
 
-*Documentation:* Where to learn more
+*Enabling / Accessing:* 
 
-For example:
+Dakota currently interfaces with five MCMC algorithms from MUQ:
+metropolis_hastings, adaptive_metropolis, delayed_rejection, dram, and mala.
+Dakota also allows the user to select values for seven parameters related
+to these five methods (the prefix in each parameter indicates which MCMC
+algorithm the parameter relates itself to): dr_num_stages, dr_scale_type,
+dr_scale, am_period_num_steps, am_starting_step, am_scale, and mala_step_size.
 
-The Dakota GUI has added many significant feature improvements over
-the last year.  The Dakota GUI now allows you to seamlessly browse
-Dakota's HDF5 database output files, as well as generate sophisticated
-graphical plots from HDF5 data with just a few clicks.  HDF5 browsing
-and plot generation can also be driven within Dakota GUI by Next-Gen
-Workflow, a powerful tool that allows you to construct node-based
-workflows for complex tasks.
+*Documentation:* 
 
-*Enabling / Accessing:* Dakota GUI ships with Dakota and is available
-for Windows, Mac, and RHEL7.
-
-*Documentation:* An enhanced version of the Dakota GUI manual now ships
-with the GUI, giving you easy access to a wealth of reference material
-for using the GUI.  The 6.11 GUI manual is also available here.
-
+See the eight keywords :dakkw:`method-bayes_calibration-muq-mala`,
+:dakkw:`method-bayes_calibration-muq-am_period_num_steps`,
+:dakkw:`method-bayes_calibration-muq-am_scale`,
+:dakkw:`method-bayes_calibration-muq-am_starting_step`,
+:dakkw:`method-bayes_calibration-muq-dr_num_stages`,
+:dakkw:`method-bayes_calibration-muq-dr_scale`,
+:dakkw:`method-bayes_calibration-muq-dr_scale_type`, and
+:dakkw:`method-bayes_calibration-muq-mala_step_size`.
 
 **Improvements by Category**
 
