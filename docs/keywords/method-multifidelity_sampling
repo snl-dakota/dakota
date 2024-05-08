@@ -70,7 +70,7 @@ The ``multifidelity_sampling`` method employs a number of important default sett
 
 * The DAG defining control variate pairings is a "hierarchical" DAG where each approximation node points to the next approximation of higher fidelity, ending with the truth model at the root node.  For other DAG options, refer to the approximate control variate method (peer DAG by default) and it's option to ``search_model_graphs`` (enumerates all or some subset of the admissible DAGs).
 
-* If the model QoI are well-ordered, then the analytic solution from :cite:p`peherstorfer2016optimal` will be used.  If a numerical solution is instead used, whether due to an override specification or due to detection of model misordering, the numerical solver will be ``global_local`` by default, starting with the DIRECT global solver and proceeding to available local solvers (SQP and NIP) in competition.  The numerical solution reorders models on the fly in order to enforce the required ordering constraints for computing the MFMC estimator variance.
+* If the model QoI are well-ordered, then the analytic solution from :cite:p:`peherstorfer2016optimal` will be used.  If a numerical solution is instead used, whether due to an override specification or due to detection of model misordering, the numerical solver will be ``global_local`` by default, starting with the DIRECT global solver and proceeding to available local solvers (SQP and NIP) in competition.  The numerical solution reorders models on the fly in order to enforce the required ordering constraints for computing the MFMC estimator variance.
 
 * Solution mode will be ``online_pilot``, an approach which iterates toward a set of shared samples whose size is consistent with the optimal allocation
 

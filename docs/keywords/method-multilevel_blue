@@ -16,7 +16,7 @@ approach, where independent samples are allocated for each group and
 each group is composed of unordered combinations of models.  The number
 of groups grows combinatorially with the total number of models, and a
 few throttle options are provided to prevent the number of groups from
-gorwing to excess.
+growing to excess.
 
 As described in :cite:p:`Schaden2020`, the ML BLUE estimator for QoI
 expected values is
@@ -31,7 +31,7 @@ where
 
 .. math::  S_k = \sum_{i=1}^{m_k} Y_k^{(i)}
 
-given group sample count :math:`m`, group restriction operator
+given group sample count :math:`m_k`, group restriction operator
 :math:`R_k`, group covariance estimate :math:`C_k`, and group QoI
 sum :math:`S_k` for each group :math:`k`. For a linear combination
 of the model means :math:`q_{\beta}^B = \beta^T q^B`, the variance
