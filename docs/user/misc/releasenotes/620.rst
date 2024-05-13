@@ -37,6 +37,10 @@ to these five methods (the prefix in each parameter indicates which MCMC
 algorithm the parameter relates itself to): dr_num_stages, dr_scale_type,
 dr_scale, am_period_num_steps, am_starting_step, am_scale, and mala_step_size.
 
+`MUQ <https://mituq.bitbucket.io>`_ is an optional feature of Dakota and can be
+enabled when building from source by setting the ``HAVE_MUQ`` CMake variable to 
+``ON``. In release 6.20, pre-built Linux binaries include MUQ.
+
 *Documentation:* 
 
 See the eight keywords :dakkw:`method-bayes_calibration-muq-mala`,
