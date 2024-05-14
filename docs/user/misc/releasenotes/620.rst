@@ -17,7 +17,7 @@ in its support for group size throttling, shared versus independent
 pilot sampling, online versus offline solution modes, and
 hyper-parameter model tuning.
 
-*Enabling / Accessing:* new method specification option for multifidelity sampling: :dakkw:`multilevel_blue`.
+*Enabling / Accessing:* new method specification option for multifidelity sampling: :dakkw:`method-multilevel_blue`.
 
 *Documentation:* Refer to the reference documentation starting from :dakkw:`method-multilevel_blue` for additional information.  A number of numerical examples using standard Dakota benchmarks are available under dakota/test in the release distribution.
 
