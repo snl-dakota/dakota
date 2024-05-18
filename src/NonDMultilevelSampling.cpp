@@ -297,8 +297,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
 */
 
 
-/** This function performs "geometrical" MLMC on a single model form
-    with multiple discretization levels. */
+/** The online version iterates the sample allocations for all levels. */
 void NonDMultilevelSampling::multilevel_mc_online_pilot() //_Qsum()
 {
   // For moment estimation, we accumulate telescoping sums for Q^i using
@@ -341,6 +340,8 @@ void NonDMultilevelSampling::multilevel_mc_online_pilot() //_Qsum()
 }
 
 
+/** The offline version allocates once for all levels based on the
+    offline pilot results. */
 void NonDMultilevelSampling::multilevel_mc_offline_pilot()
 {
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
@@ -370,20 +371,22 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
   // Evaluate online sample profile computed from offline pilot
   // ----------------------------------------------------------
   reset_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1);
-  Real ref_cost = sequenceCost[numSteps-1];
+  Real ref_cost = sequenceCost[numSteps-1];  size_t offline_N_lwr = 2;
+  for (step=0; step<numSteps; ++step)
+    if (delta_N_l[step] < offline_N_lwr)
+      delta_N_l[step] = offline_N_lwr; // min of 2 reqd for online variance
+
+  step_increments(delta_N_l, "ml_");
 
   for (step=0; step<numSteps; ++step) {
-    configure_indices(step, form, lev, sequenceType);
-
-    // define online samples from delta_N_l; min of 2 reqd for online variance
-    numSamples = std::max(delta_N_l[step], (size_t)2);
-    evaluate_ml_sample_increment("ml_", step);
     accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step,
-			N_actual_online[step]);
+			N_actual_online[step], batchResponsesMap[step]);
+    numSamples = delta_N_l[step];
     N_alloc_online[step] += numSamples;
     increment_ml_equivalent_cost(numSamples, level_cost(sequenceCost, step),
 				 ref_cost, equivHFEvals);
   }
+  clear_batches();
 
   // ---------------------
   // Final post-processing
@@ -402,6 +405,8 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
 }
 
 
+/** The projection version predicts the estimator performance based on
+    either online or offline pilot results. */
 void NonDMultilevelSampling::multilevel_mc_pilot_projection()
 {
   // For moment estimation, we accumulate telescoping sums for Q^i using
@@ -423,7 +428,7 @@ void NonDMultilevelSampling::multilevel_mc_pilot_projection()
     evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1, sequenceCost, N_actual_pilot,
 		    N_actual, N_alloc_pilot, N_alloc, delta_N_l,
 		    var_Y, var_qoi, eps_sq_div_2, false, false);
-    compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_actual_pilot); // for varH
+    compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_actual_pilot); // only varH
   }
   else { // ONLINE_PILOT_PROJECTION
     evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1, sequenceCost,
@@ -500,16 +505,22 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
       { accumulated_cost.size(numSteps); num_cost.assign(numSteps, 0); }
   }
 
+  // Note: activeSet does not identify pairs for Analyzer::evaluate_batch(),
+  // rather EnsembleSurrModel uses special logic for response modes
+  // BYPASS_SURROGATE (1x response) and AGGREGATED_MODEL_PAIR (2x response)
+  // in downstream evaluate()
+  step_increments(delta_N_l, "ml_");
+  // Since ML groups use independent sample sets (no cross-group roll up as in
+  // MFMC, ACV-MF), the "horizontal" group to "vertical" model accumulation
+  // conversion is inefficient/overkill and should only be considered for
+  // consistency with other cases
+
   for (step=0; step<numSteps; ++step) {
 
-    configure_indices(step, form, lev, sequenceType);
     numSamples = delta_N_l[step];
     if (numSamples) {
-
-      // assign sequence, get samples, export, evaluate
-      evaluate_ml_sample_increment("ml_", step);
       accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step,
-			  N_actual_pilot[step]);
+			  N_actual_pilot[step], batchResponsesMap[step]);
       if (backfillFailures && mlmfIter)
 	N_alloc_pilot[step] +=
 	  allocation_increment(N_alloc_pilot[step], NTargetQoI[step]);
@@ -529,6 +540,8 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
       }
     }
   }
+  clear_batches();
+
   // defer cost accumulation until online cost recovery is complete
   if (onlineCost && mlmfIter == 0)
     average_online_cost(accumulated_cost, num_cost, cost);
@@ -536,7 +549,7 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
     Real ref_cost = cost[numSteps-1];
     for (step=0; step<numSteps; ++step)
       increment_ml_equivalent_cost(delta_N_l[step], level_cost(cost, step),
-				   ref_cost, equivHFEvals);
+    				   ref_cost, equivHFEvals);
   }
   // capture pilot-sample metrics:
   if (mlmfIter == 0) {
@@ -710,14 +723,15 @@ reset_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 
 
 void NonDMultilevelSampling::
-accumulate_ml_Qsums(IntRealMatrixMap& sum_Q, size_t lev, SizetArray& num_Q)
+accumulate_ml_Qsums(IntRealMatrixMap& sum_Q, size_t lev, SizetArray& num_Q,
+		    const IntResponseMap& resp_map)
 {
   using std::isfinite;
   Real q_l, q_l_prod;
   int ord, active_ord; size_t qoi;
   IntRespMCIter r_it; IntRMMIter q_it;
 
-  for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+  for (r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it) {
     const RealVector& fn_vals = r_it->second.function_values();
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
@@ -754,7 +768,7 @@ accumulate_ml_Qsums(IntRealMatrixMap& sum_Q, size_t lev, SizetArray& num_Q)
 void NonDMultilevelSampling::
 accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 		    IntIntPairRealMatrixMap& sum_QlQlm1, size_t lev,
-		    SizetArray& num_Q)
+		    SizetArray& num_Q, const IntResponseMap& resp_map)
 {
   if (lev == 0)
     accumulate_ml_Qsums(sum_Ql, lev, num_Q);
@@ -764,7 +778,7 @@ accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
     int l1_ord, l2_ord, active_ord; size_t qoi;
     IntRespMCIter r_it; IntRMMIter l1_it, l2_it; IntIntPair pr;
 
-    for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+    for (r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it) {
       const RealVector& fn_vals = r_it->second.function_values();
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
@@ -822,7 +836,7 @@ accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 
 void NonDMultilevelSampling::
 accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY, size_t lev,
-		    SizetArray& num_Y)
+		    SizetArray& num_Y, const IntResponseMap& resp_map)
 {
   using std::isfinite;
   Real lf_fn, lf_prod;
@@ -830,7 +844,7 @@ accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY, size_t lev,
   IntRespMCIter r_it; IntRMMIter y_it;
 
   if (lev == 0) {
-    for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+    for (r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it) {
       const RealVector& fn_vals = r_it->second.function_values();
       for (qoi=0; qoi<numFunctions; ++qoi) {
 
@@ -856,7 +870,7 @@ accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY, size_t lev,
   }
   else {
     Real hf_fn, hf_prod, delta_prod;
-    for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+    for (r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it) {
       const RealVector& fn_vals = r_it->second.function_values();
       for (qoi=0; qoi<numFunctions; ++qoi) {
 
@@ -897,13 +911,13 @@ accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY, size_t lev,
 
 void NonDMultilevelSampling::
 accumulate_ml_Ysums(RealMatrix& sum_Y, RealMatrix& sum_YY, size_t lev,
-		    SizetArray& num_Y)
+		    SizetArray& num_Y, const IntResponseMap& resp_map)
 {
   using std::isfinite;
   Real lf_fn;  size_t qoi;  IntRespMCIter r_it;
 
   if (lev == 0) {
-    for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+    for (r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it) {
       const RealVector& fn_vals = r_it->second.function_values();
       for (qoi=0; qoi<numFunctions; ++qoi) {
 	lf_fn = fn_vals[qoi];
@@ -917,7 +931,7 @@ accumulate_ml_Ysums(RealMatrix& sum_Y, RealMatrix& sum_YY, size_t lev,
   }
   else {
     Real hf_fn, delta_fn;
-    for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+    for (r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it) {
       const RealVector& fn_vals = r_it->second.function_values();
       for (qoi=0; qoi<numFunctions; ++qoi) {
 

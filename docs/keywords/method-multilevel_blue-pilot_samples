@@ -18,7 +18,8 @@ The benefit in the latter shared pilot approach is one can avoid
 investing any pilot samples for groups that not determined to be
 active in the resource allocation process.  Groups that are determined
 to be active, however, must start from new sets of independent
-samples, not reusing the shared samples.
+samples, not reusing the shared samples (except for the group that
+contains all models, to which the shared pilot samples are assigned).
 
 
 *Default Behavior*

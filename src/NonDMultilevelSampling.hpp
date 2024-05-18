@@ -90,15 +90,17 @@ protected:
   /// update accumulators for multilevel telescoping running sums
   /// using set of model evaluations within allResponses
   void accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY,
-			   size_t lev, SizetArray& num_Y);
+			   size_t lev, SizetArray& num_Y,
+			   const IntResponseMap& resp_map);
   /// update accumulators for multilevel telescoping running sums
   /// using set of model evaluations within allResponses
   void accumulate_ml_Ysums(RealMatrix& sum_Y, RealMatrix& sum_YY,
-			   size_t lev, SizetArray& num_Y);
+			   size_t lev, SizetArray& num_Y,
+			   const IntResponseMap& resp_map);
   /// update running QoI sums for one model (sum_Q) using set of model
   /// evaluations within allResponses; used for level 0 from other accumulators
   void accumulate_ml_Qsums(IntRealMatrixMap& sum_Q, size_t lev,
-			   SizetArray& num_Q);
+			   SizetArray& num_Q, const IntResponseMap& resp_map);
 
   /// compute variance scalar from sum accumulators
   Real variance_Ysum(Real sum_Y, Real sum_YY, size_t Nlq);
@@ -162,12 +164,12 @@ private:
   // Perform multilevel Monte Carlo across the discretization levels for a
   // particular model form using discrepancy accumulators (sum_Y)
   //void multilevel_mc_Ysum();
-  /// Perform multilevel Monte Carlo across the discretization levels for a
-  /// particular model form using QoI accumulators (sum_Q)
+
+  /// Online iteration
   void multilevel_mc_online_pilot(); //_Qsum();
-  /// Qsum approach using a pilot sample treated as separate offline cost
+  /// Online allocations for all levels based on offline pilot
   void multilevel_mc_offline_pilot();
-  /// Qsum approach projecting estimator performance from a pilot sample
+  /// Project estimator performance from an online or offline pilot sample
   void multilevel_mc_pilot_projection();
 
   /// helper for shared code among offline-pilot and pilot-projection modes
@@ -196,7 +198,7 @@ private:
   /// model evaluations within allResponses
   void accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 			   IntIntPairRealMatrixMap& sum_QlQlm1, size_t lev,
-			   SizetArray& num_Q);
+			   SizetArray& num_Q, const IntResponseMap& resp_map);
 
   /// increment the allocated samples counter
   size_t allocation_increment(size_t N_l_alloc, const Real* N_l_target);

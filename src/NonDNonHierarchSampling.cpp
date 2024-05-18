@@ -332,11 +332,11 @@ ensemble_sample_increment(size_t iter, size_t step)
 
 
 void NonDNonHierarchSampling::
-group_increment(SizetArray& delta_N_G, size_t iter, bool reverse_order)
+group_increments(SizetArray& delta_N_G, String prepend, bool reverse_order)
 {
-  if (iter == 0) Cout << "\nPerforming pilot sample for model groups.\n";
-  else Cout << "\nGroup sampling iteration " << iter << ": sample increment =\n"
-	    << delta_N_G << '\n';
+  if (mlmfIter == 0) Cout << "\nPerforming pilot sample for model groups.\n";
+  else Cout << "\nGroup sampling iteration " << mlmfIter
+	    << ": sample increment =\n" << delta_N_G << '\n';
 
   // Ordering does not impact evaluation management, but does impact random
   // number sequencing across calls to get_parameter_sets()
@@ -346,7 +346,7 @@ group_increment(SizetArray& delta_N_G, size_t iter, bool reverse_order)
       numSamples = delta_N_G[g];
       if (numSamples) {
 	ensemble_active_set(modelGroups[g]);
-	ensemble_sample_batch(iter, g); // index is group_id; non-blocking
+	ensemble_sample_batch(prepend, g); // index is group_id; non-blocking
       }
     }
   else // low to high ordering (e.g. combinatorial defn of ML BLUE modelGroups)
@@ -354,42 +354,13 @@ group_increment(SizetArray& delta_N_G, size_t iter, bool reverse_order)
       numSamples = delta_N_G[g];
       if (numSamples) {
 	ensemble_active_set(modelGroups[g]);
-	ensemble_sample_batch(iter, g); // index is group_id; non-blocking
+	ensemble_sample_batch(prepend, g); // index is group_id; non-blocking
       }
     }
 
   if (iteratedModel.asynch_flag())
     synchronize_batches(iteratedModel); // schedule all groups (return ignored)
 }
-
-
-void NonDNonHierarchSampling::
-ensemble_sample_batch(size_t iter, int batch_id)
-{
-  // generate new MC parameter sets
-  get_parameter_sets(iteratedModel);
-
-  // export separate output files for each data set:
-  if (exportSampleSets) { // for HF+LF models, use the HF tags
-    export_all_samples("cv_", iteratedModel.active_truth_model(),
-		       iter, batch_id);
-    for (size_t i=0; i<numApprox; ++i)
-      export_all_samples("cv_", iteratedModel.active_surrogate_model(i),
-			 iter, batch_id);
-  }
-
-  // evaluate all{Samples,Variables} using model ensemble and migrate
-  // all{Samples,Variables} to batch{Samples,Variables}Map
-  evaluate_batch(iteratedModel, batch_id); // excludes synchronize
-}
-
-
-//void NonDNonHierarchSampling::ensemble_sample_synchronize()
-//{
-//  // synchronize multiple evaluation batches on the ensemble model and
-//  // bookkeep by batch id within batchResponsesMap
-//  synchronize_batches(iteratedModel); // ignore return reference
-//}
 
 
 size_t NonDNonHierarchSampling::

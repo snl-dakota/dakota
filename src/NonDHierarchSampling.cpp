@@ -123,24 +123,36 @@ accumulate_paired_online_cost(RealVector& accum_cost, SizetArray& num_cost,
 }
 
 
-/*  ... Some early notes when there was one composite core_run() ...
-void NonDHierarchSampling::core_run()
+/** The version in NonDNonHierarchSampling would be sufficiently general here
+    as well, given AGGREGATED_MODELS controlled by the ASV. However, MLMC and
+    MLCV MC employ AGGREGATED_MODEL_PAIR without ASV subsetting, so we
+    specialize for that case. */
+void NonDHierarchSampling::
+step_increments(SizetArray& delta_N_l, String prepend)
 {
-  // Future: include peer alternatives (1D list --> matrix)
-  //         For MLMC, could seek adaptive selection of most correlated
-  //         alternative (or a convex combination of alternatives).
+  if (mlmfIter == 0) Cout << "\nPerforming pilot sample for model groups.\n";
+  else Cout << "\nSampling iteration " << mlmfIter << ": sample increment =\n"
+	    << delta_N_l << '\n';
 
-  // TO DO: hierarchy incl peers (not peers each optionally incl hierarchy)
-  //   num_mf     = iteratedModel.model_hierarchy_depth();
-  //   num_peer_i = iteratedModel.model_peer_breadth(i);
+  // *** TO DO: sufficient for spanning ML batches but not ML + CV ***
 
-  // TO DO: this initial logic is limiting:
-  // > allow MLMC and CVMC for either model forms or discretization levels
-  // > separate method specs that both map to NonDMultifidelitySampling ???
+  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
+  size_t num_steps = delta_N_l.size(), form, lev,
+    &step = (multilev) ? lev : form;
+  if (multilev) form = secondaryIndex;
+  else          lev  = secondaryIndex;
 
-  // TO DO: following pilot sample across levels and fidelities in mixed case,
-  // could pair models for CVMC based on estimation of rho2_LH.
+  for (step=0; step<num_steps; ++step) {
+    numSamples = delta_N_l[step];
+    if (numSamples) {
+      configure_indices(step, form, lev, sequenceType);
+      assign_specification_sequence(step);  // indexed so can skip if no batch
+      ensemble_sample_batch(prepend, step); // index is group_id; non-blocking
+    }
+  }
+
+  if (iteratedModel.asynch_flag())
+    synchronize_batches(iteratedModel); // schedule all groups (return ignored)
 }
-*/
 
 } // namespace Dakota

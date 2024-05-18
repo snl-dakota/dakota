@@ -59,6 +59,10 @@ protected:
   //- Heading: Member functions
   //
 
+  /// evaluate multiple sample batches concurrently, where each batch involves
+  /// either a single model or model pair
+  void step_increments(SizetArray& delta_N_l, String prepend);
+
   /// average costs once accumulations are complete
   void average_online_cost(const RealVector& accum_cost,
 			   const SizetArray& num_cost, RealVector& seq_cost);

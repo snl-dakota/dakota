@@ -74,6 +74,9 @@ protected:
   //- Heading: Member functions
   //
 
+  void ensemble_sample_batch(const String& prepend, int batch_id);
+  //void ensemble_sample_synchronize();
+
   /// return cost metric for entry into finalStatistics
   Real estimator_cost_metric();
 

@@ -366,12 +366,10 @@ protected:
   bool approx_increment(size_t iter, unsigned short root,
 			const UShortSet& reverse_dag);
 
-  void group_increment(SizetArray& delta_N_G, size_t iter,
-		       bool reverse_order = false);
+  void group_increments(SizetArray& delta_N_G, String prepend,
+			bool reverse_order = false);
 
   void ensemble_sample_increment(size_t iter, size_t step);
-  void ensemble_sample_batch(size_t iter, int batch_id);
-  //void ensemble_sample_synchronize();
 
   size_t group_approx_increment(const RealVector& soln_vars,
 				const UShortArray& approx_set,
@@ -1032,7 +1030,7 @@ increment_equivalent_cost(const SizetArray& delta_N_g,
 			  const RealVector& group_cost, Real hf_cost,
 			  Real& equiv_hf_evals)
 {
-  // for group sampling, e.g. NonDMultilevBLUESampling::group_increment()
+  // for group sampling, e.g. NonDMultilevBLUESampling::group_increments()
 
   size_t g, group_len = group_cost.length();
   Real sum = 0.;

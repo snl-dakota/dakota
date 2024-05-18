@@ -307,7 +307,7 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
   // ml_blue_pilot_projection() to also bypass IntMaps.
 
   // perform the shared increment for the online sample profile
-  group_increment(delta_N_G, mlmfIter); // spans ALL models, blocking
+  group_increments(delta_N_G, "blue_"); // spans ALL models, blocking
   accumulate_blue_sums(sum_G, sum_GG, NGroupActual, batchResponsesMap);
   increment_equivalent_cost(delta_N_G, modelGroupCost,
 			    sequenceCost[numApprox], equivHFEvals);
@@ -427,7 +427,7 @@ independent_covariance_iteration(IntRealMatrixArrayMap& sum_G,
     // -----------------------------------------------
     // Evaluate shared increment and update covariance
     // -----------------------------------------------
-    group_increment(delta_N_G, mlmfIter); // spans ALL model groups, blocking
+    group_increments(delta_N_G, "blue_"); // spans ALL model groups, blocking
     accumulate_blue_sums(sum_G, sum_GG, NGroupActual, batchResponsesMap);
 
     bool update_prev = (pilotGroupSampling == SHARED_PILOT);
@@ -493,7 +493,7 @@ evaluate_pilot(RealMatrixArray& sum_G_pilot, RealSymMatrix2DArray& sum_GG_pilot,
 				equivHFEvals);
   }
   else {
-    group_increment(pilotSamples, mlmfIter); // all groups, independent samples
+    group_increments(pilotSamples, "blue_"); // all groups, independent samples
     accumulate_blue_sums(sum_G_pilot, sum_GG_pilot, N_shared_pilot,
 			 batchResponsesMap);
     compute_GG_covariance(sum_G_pilot, sum_GG_pilot, N_shared_pilot,
