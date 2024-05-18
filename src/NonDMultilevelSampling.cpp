@@ -618,6 +618,40 @@ configure_indices(unsigned short group, unsigned short form, size_t lev,
 }
 
 
+/** The version in NonDNonHierarchSampling would be sufficiently general here
+    as well, given AGGREGATED_MODELS controlled by the ASV. However, MLMC and
+    MLCV MC employ AGGREGATED_MODEL_PAIR without ASV subsetting, so we
+    specialize for that case. */
+void NonDMultilevelSampling::
+step_increments(SizetArray& delta_N_l, String prepend)
+{
+  if (mlmfIter == 0) Cout << "\nPerforming pilot sample for model groups.\n";
+  else Cout << "\nSampling iteration " << mlmfIter << ": sample increment =\n"
+	    << delta_N_l << '\n';
+
+  // *** TO DO: sufficient for spanning ML batches but not ML + CV ***
+
+  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
+  size_t num_steps = delta_N_l.size(), form, lev,
+    &step = (multilev) ? lev : form;
+  if (multilev) form = secondaryIndex;
+  else          lev  = secondaryIndex;
+
+  for (step=0; step<num_steps; ++step) {
+    numSamples = delta_N_l[step];
+    if (numSamples) {
+      configure_indices(step, form, lev, sequenceType);
+      assign_specification_sequence(step);  // indexed so can skip if no batch
+      ensemble_sample_batch(prepend, step); // index is group_id; non-blocking
+    }
+  }
+
+  if (iteratedModel.asynch_flag())
+    synchronize_batches(iteratedModel); // schedule all groups (return ignored)
+}
+
+
+/*
 void NonDMultilevelSampling::
 evaluate_ml_sample_increment(String prepend, unsigned short step)
 {
@@ -639,6 +673,7 @@ evaluate_ml_sample_increment(String prepend, unsigned short step)
   // compute allResponses from allVariables using hierarchical model
   evaluate_parameter_sets(iteratedModel);
 }
+*/
 
 
 void NonDMultilevelSampling::
@@ -771,7 +806,7 @@ accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 		    SizetArray& num_Q, const IntResponseMap& resp_map)
 {
   if (lev == 0)
-    accumulate_ml_Qsums(sum_Ql, lev, num_Q);
+    accumulate_ml_Qsums(sum_Ql, lev, num_Q, resp_map);
   else {
     using std::isfinite;
     Real q_l, q_lm1, q_l_prod, q_lm1_prod, qq_prod;

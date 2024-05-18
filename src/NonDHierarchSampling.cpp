@@ -122,37 +122,4 @@ accumulate_paired_online_cost(RealVector& accum_cost, SizetArray& num_cost,
   // averaging is deferred until average_online_cost()
 }
 
-
-/** The version in NonDNonHierarchSampling would be sufficiently general here
-    as well, given AGGREGATED_MODELS controlled by the ASV. However, MLMC and
-    MLCV MC employ AGGREGATED_MODEL_PAIR without ASV subsetting, so we
-    specialize for that case. */
-void NonDHierarchSampling::
-step_increments(SizetArray& delta_N_l, String prepend)
-{
-  if (mlmfIter == 0) Cout << "\nPerforming pilot sample for model groups.\n";
-  else Cout << "\nSampling iteration " << mlmfIter << ": sample increment =\n"
-	    << delta_N_l << '\n';
-
-  // *** TO DO: sufficient for spanning ML batches but not ML + CV ***
-
-  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
-  size_t num_steps = delta_N_l.size(), form, lev,
-    &step = (multilev) ? lev : form;
-  if (multilev) form = secondaryIndex;
-  else          lev  = secondaryIndex;
-
-  for (step=0; step<num_steps; ++step) {
-    numSamples = delta_N_l[step];
-    if (numSamples) {
-      configure_indices(step, form, lev, sequenceType);
-      assign_specification_sequence(step);  // indexed so can skip if no batch
-      ensemble_sample_batch(prepend, step); // index is group_id; non-blocking
-    }
-  }
-
-  if (iteratedModel.asynch_flag())
-    synchronize_batches(iteratedModel); // schedule all groups (return ignored)
-}
-
 } // namespace Dakota
