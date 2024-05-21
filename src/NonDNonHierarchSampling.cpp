@@ -341,12 +341,14 @@ group_increments(SizetArray& delta_N_G, String prepend, bool reverse_order)
   // Ordering does not impact evaluation management, but does impact random
   // number sequencing across calls to get_parameter_sets()
   size_t num_groups = modelGroups.size();
+  UShortArray batch_key(1);
   if (reverse_order) // high to low ordering (e.g., bottom-up pyramid)
     for (int g=num_groups-1; g>=0; --g) {
       numSamples = delta_N_G[g];
       if (numSamples) {
 	ensemble_active_set(modelGroups[g]);
-	ensemble_sample_batch(prepend, g); // index is group_id; non-blocking
+	batch_key[0] = g; // index is group_id
+	ensemble_sample_batch(prepend, batch_key); // non-blocking
       }
     }
   else // low to high ordering (e.g. combinatorial defn of ML BLUE modelGroups)
@@ -354,7 +356,8 @@ group_increments(SizetArray& delta_N_G, String prepend, bool reverse_order)
       numSamples = delta_N_G[g];
       if (numSamples) {
 	ensemble_active_set(modelGroups[g]);
-	ensemble_sample_batch(prepend, g); // index is group_id; non-blocking
+	batch_key[0] = g; // index is group_id
+	ensemble_sample_batch(prepend, batch_key); // non-blocking
       }
     }
 

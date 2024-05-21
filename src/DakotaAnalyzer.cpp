@@ -353,7 +353,7 @@ synchronize_batches(Model& model, bool log_best_flag)
   batchResponsesMap.clear();
   //size_t i, num_batches = (compactMode) ?
   //  batchSamplesMap.size() : batchVariablesMap.size();
-  UShortArray   first_id, last_id;
+  int first_id, last_id;
   IntRespMCIter first_it, last_it;
 
   // for each batch id, extract eval_ids from full response map

@@ -78,6 +78,10 @@ private:
 		      RealMatrix& pilot_mom, bool accumulate_cost,
 		      bool pilot_estvar);
 
+  /// evaluate multiple sample batches concurrently, where each batch involves
+  /// either a single model or model pair
+  void mlmf_increments(SizetArray& delta_N_l, String prepend);
+
   /// perform LF sample increment as indicated by evaluation ratios
   bool lf_increment(const RealVector& eval_ratios, const SizetArray& N_lf,
 		    Real hf_target, RealVector& lf_targets,

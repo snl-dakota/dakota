@@ -581,8 +581,9 @@ multilevel_control_variate_mc_online_pilot() //_Qcorr()
 	N_alloc_lf[lev] += numSamples;
       }
       if (numSamples) {
+	lf_ml[1] = lev;
 	accumulate_mlmf_Qsums(sum_Ll_refined, sum_Llm1_refined, lev,
-			      N_actual_lf[lev]);
+			      N_actual_lf[lev], batchResponsesMap[lf_ml]);
 	increment_ml_equivalent_cost(numSamples, level_cost(lf_cost, lev),
 				     hf_ref_cost, equivHFEvals);
 	if (outputLevel == DEBUG_OUTPUT)
@@ -668,6 +669,7 @@ multilevel_control_variate_mc_offline_pilot()
   N_alloc_pilot.assign(num_hf_lev, 0);
   for (lev=0; lev<num_hf_lev; ++lev)
     N_actual_pilot[lev].assign(numFunctions, 0);
+  SizetArray delta_N_hf(num_hf_lev);
 
   // -----------------------------------------
   // Initial loop for offline (overkill) pilot
@@ -749,8 +751,9 @@ multilevel_control_variate_mc_offline_pilot()
       N_alloc_lf[lev] += numSamples;
     }
     if (numSamples) {
+      lf_ml[1] = lev;
       accumulate_mlmf_Qsums(sum_Ll_refined, sum_Llm1_refined, lev,
-			    N_actual_lf[lev]);
+			    N_actual_lf[lev], batchResponsesMap[lf_ml]);
       increment_ml_equivalent_cost(numSamples, level_cost(lf_cost, lev),
 				   hf_ref_cost, equivHFEvals);
     }
@@ -1044,7 +1047,8 @@ mlmf_increments(SizetArray& delta_N_l, String prepend)
   size_t step, num_steps = delta_N_l.size(),
     num_hf_lev = truth_model.solution_levels(),
     num_lf_lev =  surr_model.solution_levels(),
-    num_cv_lev = std::min(num_hf_lev, num_lf_lev);
+    num_cv_lev = std::min(num_hf_lev, num_lf_lev),
+    lf_form = 0, hf_form = NLevActual.size() - 1;
   UShortArray batch_key(2); // form,resolution
   for (step=0; step<num_steps; ++step) {
     numSamples = delta_N_l[step];

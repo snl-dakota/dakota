@@ -415,8 +415,8 @@ void NonDMultilevelSampling::multilevel_mc_pilot_projection()
   // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
   // For computing N_l from estimator variance, we accumulate square of Y1
   // estimator (YY[i] = (Y^i)^2 for i=1).
-  RealMatrix sum_Ql, sum_Qlm1;  IntIntPairRealMatrixMap sum_QlQlm1; // ***
-  initialize_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, numSteps); // ***
+  IntRealMatrixMap sum_Ql, sum_Qlm1;  IntIntPairRealMatrixMap sum_QlQlm1;
+  initialize_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, numSteps);
   RealMatrix var_Y, var_qoi;  RealVector eps_sq_div_2;
   Sizet2DArray N_actual;  SizetArray delta_N_l, N_alloc;
 
@@ -427,15 +427,15 @@ void NonDMultilevelSampling::multilevel_mc_pilot_projection()
   if (pilotMgmtMode == OFFLINE_PILOT || // redirected here for ESTIMATOR_PERF
       pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
     Sizet2DArray N_actual_pilot;  SizetArray N_alloc_pilot; // segregate
-    evaluate_pilot(sum_Ql, sum_Qlm1, sum_QlQlm1, sequenceCost, N_actual_pilot,
-		   N_actual, N_alloc_pilot, N_alloc, delta_N_l,
-		   var_Y, var_qoi, eps_sq_div_2, false, false);
+    evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1, sequenceCost, N_actual_pilot,
+		    N_actual, N_alloc_pilot, N_alloc, delta_N_l,
+		    var_Y, var_qoi, eps_sq_div_2, false, false);
     compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_actual_pilot); // only varH
   }
   else { // ONLINE_PILOT_PROJECTION
-    evaluate_pilot(sum_Ql, sum_Qlm1, sum_QlQlm1, sequenceCost,
-		   N_actual, N_actual, N_alloc, N_alloc, // pilot is online
-		   delta_N_l, var_Y, var_qoi, eps_sq_div_2, true, true);
+    evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1, sequenceCost,
+		    N_actual, N_actual, N_alloc, N_alloc, // pilot is online
+		    delta_N_l, var_Y, var_qoi, eps_sq_div_2, true, true);
     compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_actual); // only for varH
   }
 
@@ -523,8 +523,9 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
     numSamples = delta_N_l[step];
     if (numSamples) {
       batch_key[0] = step; // index used as group id key
+      IntResponseMap& resp_map = batchResponsesMap[batch_key];
       accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step,
-			  N_actual_pilot[step], batchResponsesMap[batch_key]);
+			  N_actual_pilot[step], resp_map);
       if (backfillFailures && mlmfIter)
 	N_alloc_pilot[step] +=
 	  allocation_increment(N_alloc_pilot[step], NTargetQoI[step]);
@@ -538,7 +539,8 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 
       if (mlmfIter == 0) {
 	if (onlineCost)
-	  accumulate_paired_online_cost(accumulated_cost, num_cost, step);
+	  accumulate_paired_online_cost(accumulated_cost, num_cost, step,
+					resp_map);
 	if (!budget_constrained) // MSE reference is MC applied to HF
 	  aggregate_mse_target_Qsum(var_qoi, N_actual_pilot, step,agg_est_var0);
       }
