@@ -509,7 +509,7 @@ evaluate_pilot(RealMatrixArray& sum_G_pilot, RealSymMatrix2DArray& sum_GG_pilot,
 
 
 void NonDMultilevBLUESampling::
-recover_online_cost(const IntResponse2DMap& batch_resp_map)
+recover_online_cost(const UShortArrayIntResponse2DMap& batch_resp_map)
 {
   // uses one set of allResponses with QoI aggregation across all Models,
   // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
@@ -517,14 +517,16 @@ recover_online_cost(const IntResponse2DMap& batch_resp_map)
   size_t g, num_groups = modelGroups.size(), m, num_models = numApprox+1,
     cntr, md_index;
   unsigned short mform;  Real cost;  using std::isfinite;
-  IntRespMCIter  r_cit;  IntResponse2DMap::const_iterator m_cit;
+  IntRespMCIter  r_cit;  UShortArrayIntResponse2DMap::const_iterator m_cit;
   IntVector num_finite(num_models);  sequenceCost.size(num_models); // init to 0
   // active key contains all ensemble members and maps to forms/resolutions,
   // which is needed since cost meta-data indexing is per model form
   const Pecos::ActiveKey& active_key = iteratedModel.active_model_key();
+  UShortArray batch_key(1);
 
   for (g=0; g<num_groups; ++g) {
-    m_cit = batch_resp_map.find(g); // index used as group id
+    batch_key[0] = g; // index g used as group id key
+    m_cit = batch_resp_map.find(batch_key);
     if (m_cit == batch_resp_map.end()) {
       Cerr << "Error: failed lookup for batch group id " << g
 	   << " in recover_online_cost()." << std::endl;
@@ -1195,12 +1197,14 @@ project_mc_estimator_variance(const RealSymMatrixArray& cov_GG_g,
 void NonDMultilevBLUESampling::
 accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
 		     IntRealSymMatrix2DArrayMap& sum_GG, Sizet2DArray& num_G,
-		     const IntResponse2DMap& batch_resp_map)
+		     const UShortArrayIntResponse2DMap& batch_resp_map)
 {
-  IntResponse2DMap::const_iterator b_it;
+  UShortArrayIntResponse2DMap::const_iterator b_it;
   size_t g, num_groups = modelGroups.size();
+  UShortArray batch_key(1);
   for (g=0; g<num_groups; ++g) {
-    b_it = batch_resp_map.find(g); // index g corresponds to group_id key
+    batch_key[0] = g; // index g corresponds to group_id key
+    b_it = batch_resp_map.find(batch_key);
     if (b_it != batch_resp_map.end()) // else no new evals for this group
       accumulate_blue_sums(sum_G, sum_GG, num_G, g, b_it->second);
   }
@@ -1288,12 +1292,14 @@ accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
 void NonDMultilevBLUESampling::
 accumulate_blue_sums(RealMatrixArray& sum_G, RealSymMatrix2DArray& sum_GG,
 		     Sizet2DArray& num_G,
-		     const IntResponse2DMap& batch_resp_map)
+		     const UShortArrayIntResponse2DMap& batch_resp_map)
 {
-  IntResponse2DMap::const_iterator b_it;
+  UShortArrayIntResponse2DMap::const_iterator b_it;
   size_t g, num_groups = modelGroups.size();
+  UShortArray batch_key(1);
   for (g=0; g<num_groups; ++g) {
-    b_it = batch_resp_map.find(g); // index g corresponds to group_id key
+    batch_key[0] = g; // index g corresponds to group_id key
+    b_it = batch_resp_map.find(batch_key);
     if (b_it != batch_resp_map.end())
       accumulate_blue_sums(sum_G[g], sum_GG[g], num_G[g], g, b_it->second);
   }

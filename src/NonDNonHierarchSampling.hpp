@@ -467,7 +467,7 @@ protected:
 			      const UShortSet& reverse_dag);
 
   void accumulate_group_sums(IntRealMatrixArrayMap& sum_G, Sizet2DArray& num_G,
-			     const IntResponse2DMap& batch_resp_map);
+			     const UShortArrayIntResponse2DMap& batch_resp_map);
   void accumulate_group_sums(IntRealMatrixArrayMap& sum_G, Sizet2DArray& num_G,
 			     size_t group, const IntResponseMap& resp_map);
 

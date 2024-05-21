@@ -265,11 +265,11 @@ private:
   /// using set of model evaluations within allResponses
   void accumulate_mlmf_Qsums(IntRealMatrixMap& sum_Ql,
 			     IntRealMatrixMap& sum_Qlm1, size_t lev,
-			     SizetArray& num_Q);
+			     SizetArray& num_Q, const IntResponseMap& resp_map);
   /// update running discrepancy sums for one model (sum_Y) using
   /// set of model evaluations within allResponses
   void accumulate_mlmf_Ysums(IntRealMatrixMap& sum_Y, size_t lev,
-			     SizetArray& num_Y);
+			     SizetArray& num_Y, const IntResponseMap& resp_map);
   /// update running QoI sums for two models (sum_L, sum_H, sum_LL, sum_LH,
   /// and sum_HH) from set of low/high fidelity model evaluations within
   /// {lf,hf}_resp_map; used for level 0 from other accumulators

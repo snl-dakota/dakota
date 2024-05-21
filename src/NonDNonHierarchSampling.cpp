@@ -2341,12 +2341,14 @@ response_evaluator(const Variables& vars, const ActiveSet& set,
 /** Multi-moment map-based version used for approximation increments */
 void NonDNonHierarchSampling::
 accumulate_group_sums(IntRealMatrixArrayMap& sum_G, Sizet2DArray& num_G,
-		     const IntResponse2DMap& batch_resp_map)
+		     const UShortArrayIntResponse2DMap& batch_resp_map)
 {
-  IntResponse2DMap::const_iterator b_it;
+  UShortArrayIntResponse2DMap::const_iterator b_it;
   size_t g, num_groups = modelGroups.size();
+  UShortArray batch_key(1);
   for (g=0; g<num_groups; ++g) {
-    b_it = batch_resp_map.find(g); // index g corresponds to group_id key
+    batch_key[0] = g; // index g corresponds to group_id key
+    b_it = batch_resp_map.find(batch_key);
     if (b_it != batch_resp_map.end()) // else no new evals for this group
       accumulate_group_sums(sum_G, num_G, g, b_it->second);
   }

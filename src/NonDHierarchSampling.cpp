@@ -70,7 +70,7 @@ NonDHierarchSampling::~NonDHierarchSampling()
 
 void NonDHierarchSampling::
 accumulate_paired_online_cost(RealVector& accum_cost, SizetArray& num_cost,
-			      size_t step)
+			      size_t step, const IntResponseMap& resp_map)
 {
   // This implementation is for singleton or paired responses, not for
   // aggregation of a full Model ensemble
@@ -91,9 +91,9 @@ accumulate_paired_online_cost(RealVector& accum_cost, SizetArray& num_cost,
   }
 
   using std::isfinite;  Real cost1, cost2;  IntRespMCIter r_cit;
-  // uses one set of allResponses with QoI aggregation across all Models,
+  // uses one response map with QoI aggregation across all Models,
   // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
-  for (r_cit=allResponses.begin(); r_cit!=allResponses.end(); ++r_cit) {
+  for (r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit) {
     const std::vector<RespMetadataT>& md = r_cit->second.metadata();//aggregated
 
     if (step) { step1 = step - 1; step2 = step; }

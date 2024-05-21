@@ -63,7 +63,7 @@ protected:
 
   /// evaluate multiple sample batches concurrently, where each batch involves
   /// either a single model or model pair
-  void step_increments(SizetArray& delta_N_l, String prepend);
+  void ml_increments(SizetArray& delta_N_l, String prepend);
 
   // helper that consolidates sequence advancement, sample generation,
   // sample export, and sample evaluation

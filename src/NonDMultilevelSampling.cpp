@@ -376,11 +376,13 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
     if (delta_N_l[step] < offline_N_lwr)
       delta_N_l[step] = offline_N_lwr; // min of 2 reqd for online variance
 
-  step_increments(delta_N_l, "ml_");
+  ml_increments(delta_N_l, "ml_");
 
+  UShortArray batch_key(1);
   for (step=0; step<numSteps; ++step) {
+    batch_key[0] = step; // index used as group id key
     accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step,
-			N_actual_online[step], batchResponsesMap[step]);
+			N_actual_online[step], batchResponsesMap[batch_key]);
     numSamples = delta_N_l[step];
     N_alloc_online[step] += numSamples;
     increment_ml_equivalent_cost(numSamples, level_cost(sequenceCost, step),
@@ -413,8 +415,8 @@ void NonDMultilevelSampling::multilevel_mc_pilot_projection()
   // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
   // For computing N_l from estimator variance, we accumulate square of Y1
   // estimator (YY[i] = (Y^i)^2 for i=1).
-  IntRealMatrixMap sum_Ql, sum_Qlm1;  IntIntPairRealMatrixMap sum_QlQlm1;
-  initialize_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, numSteps);
+  RealMatrix sum_Ql, sum_Qlm1;  IntIntPairRealMatrixMap sum_QlQlm1; // ***
+  initialize_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, numSteps); // ***
   RealMatrix var_Y, var_qoi;  RealVector eps_sq_div_2;
   Sizet2DArray N_actual;  SizetArray delta_N_l, N_alloc;
 
@@ -425,15 +427,15 @@ void NonDMultilevelSampling::multilevel_mc_pilot_projection()
   if (pilotMgmtMode == OFFLINE_PILOT || // redirected here for ESTIMATOR_PERF
       pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
     Sizet2DArray N_actual_pilot;  SizetArray N_alloc_pilot; // segregate
-    evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1, sequenceCost, N_actual_pilot,
-		    N_actual, N_alloc_pilot, N_alloc, delta_N_l,
-		    var_Y, var_qoi, eps_sq_div_2, false, false);
+    evaluate_pilot(sum_Ql, sum_Qlm1, sum_QlQlm1, sequenceCost, N_actual_pilot,
+		   N_actual, N_alloc_pilot, N_alloc, delta_N_l,
+		   var_Y, var_qoi, eps_sq_div_2, false, false);
     compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_actual_pilot); // only varH
   }
   else { // ONLINE_PILOT_PROJECTION
-    evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1, sequenceCost,
-		    N_actual, N_actual, N_alloc, N_alloc, // pilot is online
-		    delta_N_l, var_Y, var_qoi, eps_sq_div_2, true, true);
+    evaluate_pilot(sum_Ql, sum_Qlm1, sum_QlQlm1, sequenceCost,
+		   N_actual, N_actual, N_alloc, N_alloc, // pilot is online
+		   delta_N_l, var_Y, var_qoi, eps_sq_div_2, true, true);
     compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_actual); // only for varH
   }
 
@@ -509,18 +511,20 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
   // rather EnsembleSurrModel uses special logic for response modes
   // BYPASS_SURROGATE (1x response) and AGGREGATED_MODEL_PAIR (2x response)
   // in downstream evaluate()
-  step_increments(delta_N_l, "ml_");
+  ml_increments(delta_N_l, "ml_");
   // Since ML groups use independent sample sets (no cross-group roll up as in
   // MFMC, ACV-MF), the "horizontal" group to "vertical" model accumulation
   // conversion is inefficient/overkill and should only be considered for
   // consistency with other cases
 
+  UShortArray batch_key(1);
   for (step=0; step<numSteps; ++step) {
 
     numSamples = delta_N_l[step];
     if (numSamples) {
+      batch_key[0] = step; // index used as group id key
       accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step,
-			  N_actual_pilot[step], batchResponsesMap[step]);
+			  N_actual_pilot[step], batchResponsesMap[batch_key]);
       if (backfillFailures && mlmfIter)
 	N_alloc_pilot[step] +=
 	  allocation_increment(N_alloc_pilot[step], NTargetQoI[step]);
@@ -623,26 +627,26 @@ configure_indices(unsigned short group, unsigned short form, size_t lev,
     MLCV MC employ AGGREGATED_MODEL_PAIR without ASV subsetting, so we
     specialize for that case. */
 void NonDMultilevelSampling::
-step_increments(SizetArray& delta_N_l, String prepend)
+ml_increments(SizetArray& delta_N_l, String prepend)
 {
   if (mlmfIter == 0) Cout << "\nPerforming pilot sample for model groups.\n";
   else Cout << "\nSampling iteration " << mlmfIter << ": sample increment =\n"
 	    << delta_N_l << '\n';
-
-  // *** TO DO: sufficient for spanning ML batches but not ML + CV ***
 
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
   size_t num_steps = delta_N_l.size(), form, lev,
     &step = (multilev) ? lev : form;
   if (multilev) form = secondaryIndex;
   else          lev  = secondaryIndex;
+  UShortArray batch_key(1); // step (1D, no need for 2D=form,resolution)
 
   for (step=0; step<num_steps; ++step) {
     numSamples = delta_N_l[step];
     if (numSamples) {
       configure_indices(step, form, lev, sequenceType);
       assign_specification_sequence(step);  // indexed so can skip if no batch
-      ensemble_sample_batch(prepend, step); // index is group_id; non-blocking
+      batch_key[0] = step;                  // index is group_id
+      ensemble_sample_batch(prepend, batch_key); // non-blocking
     }
   }
 
