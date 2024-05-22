@@ -748,13 +748,13 @@ multilevel_control_variate_mc_offline_pilot()
   SizetArray delta_N_lf(num_cv_lev);
   for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) // no relaxation
     if (backfillFailures) { // increment relative to successful samples
-      delta_N_lf[lev] = lf_increment(eval_ratios[lev], N_actual_lf[lev],
+      delta_N_lf[lev] = lf_increment(eval_ratios_pilot[lev], N_actual_lf[lev],
 				     hf_targets_pilot[lev], lf_targets);
       N_alloc_lf[lev]
 	+= one_sided_delta(N_alloc_lf[lev], average(lf_targets));
     }
     else { // increment relative to allocated samples
-      delta_N_lf[lev] = lf_increment(eval_ratios[lev], N_alloc_lf[lev],
+      delta_N_lf[lev] = lf_increment(eval_ratios_pilot[lev], N_alloc_lf[lev],
 				     hf_targets_pilot[lev], lf_targets);
       N_alloc_lf[lev] += delta_N_lf[lev];
     }
@@ -1105,7 +1105,7 @@ lf_increments(SizetArray& delta_N_lf, String prepend)
 {
   if (mlmfIter == 0) Cout << "\nPerforming pilot sample for model groups.\n";
   else Cout << "\nSampling iteration " << mlmfIter << ": sample increment =\n"
-	    << delta_N_l << '\n';
+	    << delta_N_lf << '\n';
 
   size_t lev, num_cv_lev = delta_N_lf.size(), lf_form = 0;
   UShortArray batch_key(2);  batch_key[0] = lf_form;

@@ -122,4 +122,49 @@ accumulate_paired_online_cost(RealVector& accum_cost, SizetArray& num_cost,
   // averaging is deferred until average_online_cost()
 }
 
+
+void NonDHierarchSampling::
+ensemble_sample_batch(const String& prepend, const UShortArray& batch_key,
+		      bool new_samples)
+{
+  if (new_samples) {
+    // generate new MC parameter sets
+    get_parameter_sets(iteratedModel);
+
+    // export separate output files for each data set:
+    // for hierarchical, can rely on active truth,surr keys
+    if (exportSampleSets) {
+      if (iteratedModel.active_truth_key())
+	export_all_samples(prepend, iteratedModel.active_truth_model(),
+			   mlmfIter, batch_key);
+      size_t i, num_active_surr = iteratedModel.active_surrogate_keys();
+      for (i=0; i<num_active_surr; ++i)
+	export_all_samples(prepend, iteratedModel.active_surrogate_model(i),
+			   mlmfIter, batch_key);
+    }
+  }
+
+  // evaluate all{Samples,Variables} using model ensemble and migrate
+  // all{Samples,Variables} to batch{Samples,Variables}Map
+  evaluate_batch(iteratedModel, batch_key); // excludes synchronize
+}
+
+
+void NonDHierarchSampling::
+export_all_samples(String root_prepend, const Model& model, size_t iter,
+		   const UShortArray& batch_key)
+{
+  String tabular_filename(root_prepend);
+  const String& iface_id = model.interface_id();
+  size_t i, num_samp = allSamples.numCols(), num_key = batch_key.size();
+  if (iface_id.empty()) tabular_filename += "NO_ID_i";
+  else                  tabular_filename += iface_id + "_i";
+  tabular_filename += std::to_string(iter) +  "_k";
+  for (i=0; i<num_key; ++i)
+    tabular_filename += std::to_string(batch_key[i]);
+  tabular_filename += '_' + std::to_string(num_samp) + ".dat";
+
+  NonDEnsembleSampling::export_all_samples(model, tabular_filename);
+}
+
 } // namespace Dakota

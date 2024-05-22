@@ -369,7 +369,10 @@ protected:
   void group_increments(SizetArray& delta_N_G, String prepend,
 			bool reverse_order = false);
 
-  void ensemble_sample_increment(size_t iter, size_t step);
+  void ensemble_sample_increment(const String& prepend, size_t step,
+				 bool new_samples = true);
+  void ensemble_sample_batch(const String& prepend, size_t step,
+			     bool new_samples = true);
 
   size_t group_approx_increment(const RealVector& soln_vars,
 				const UShortArray& approx_set,
@@ -381,6 +384,12 @@ protected:
   // 			      const Sizet2DArray& N_L_actual,
   // 			      SizetArray& N_L_alloc, unsigned short root,
   // 			      const UShortSet& reverse_dag_set);
+
+  /// export allSamples for all Models included in ensemble batch evaluation
+  void export_sample_sets(const String& prepend, size_t step);
+  /// export allSamples to a tagged tabular file
+  void export_all_samples(const String& root_prepend, const Model& model,
+			  size_t iter, size_t step);
 
   /// When looping through a minimizer sequence/competition, this
   /// function enables per-minimizer updates to the parameter bounds,
@@ -615,6 +624,9 @@ protected:
 
   void apply_control(Real sum_L_shared, size_t num_shared, Real sum_L_refined,
 		     size_t num_refined, Real beta, Real& H_raw_mom);
+
+  /// identify if there are activeSet requests for model i
+  bool active_set_for_model(size_t i);
 
   /// promote scalar to 1D array
   void inflate(size_t N_0D, SizetArray& N_1D);
@@ -1739,6 +1751,17 @@ apply_control(Real sum_L_shared, size_t num_L_shared, Real sum_L_refined,
 	 << " sum_L_ref = " << sum_L_refined
 	 << " num_L_sh = "  << num_L_shared
 	 << " num_L_ref = " << num_L_refined << std::endl;
+}
+
+
+inline bool NonDNonHierarchSampling::active_set_for_model(size_t i)
+{
+  size_t i, start = numFunctions*i, end = start+numFunctions;
+  const UShortArray& asv = activeSet.request_vector();
+  for (i=start; i<end; ++i)
+    if (asv[i])
+      return true;
+  return false;
 }
 
 

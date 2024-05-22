@@ -74,11 +74,6 @@ protected:
   //- Heading: Member functions
   //
 
-  void ensemble_sample_batch(const String& prepend,
-			     const UShortArray& batch_key,
-			     bool new_samples = true);
-  //void ensemble_sample_synchronize();
-
   /// return cost metric for entry into finalStatistics
   Real estimator_cost_metric();
 
@@ -134,8 +129,7 @@ protected:
 			  const SizetArray& N_shared, RealVector& beta);
 
   /// export allSamples to tagged tabular file
-  void export_all_samples(String root_prepend, const Model& model,
-			  size_t iter, const UShortArray& batch_key);
+  void export_all_samples(const Model& model, const String& tabular_filename);
 
   /// convert uncentered raw moments (multilevel expectations) to
   /// standardized moments

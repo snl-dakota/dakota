@@ -71,6 +71,10 @@ protected:
   void recover_paired_online_cost(RealVector& seq_cost, size_t step,
 				  const IntResponseMap& resp_map);
 
+  /// export allSamples to tagged tabular file
+  void export_all_samples(String root_prepend, const Model& model,
+			  size_t iter, const UShortArray& batch_key);
+
   //
   //- Heading: Data
   //

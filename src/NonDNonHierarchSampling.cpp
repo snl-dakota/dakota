@@ -170,7 +170,7 @@ void NonDNonHierarchSampling::shared_increment(size_t iter)
     //resize_active_set();
 
     activeSet.request_values(1);
-    ensemble_sample_increment(iter, numGroups); // BLOCK if not shared_approx_increment()  *** TO DO: step value
+    ensemble_sample_increment(numGroups); // BLOCK if not shared_approx_increment()  *** TO DO: step value
   }
 }
 
@@ -194,7 +194,7 @@ shared_increment(size_t iter, const UShortArray& approx_set)
     size_t start = numApprox * numFunctions;
     activeSet.request_values(1, start, start + numFunctions);
 
-    ensemble_sample_increment(iter, numGroups); // BLOCK if not shared_approx_increment()  *** TO DO: step value
+    ensemble_sample_increment(numGroups); // BLOCK if not shared_approx_increment()  *** TO DO: step value
   }
 }
 
@@ -216,7 +216,7 @@ void NonDNonHierarchSampling::shared_approx_increment(size_t iter)
     activeSet.request_values(1, 0,   approx_qoi); // all approx QoI
     activeSet.request_values(0, approx_qoi, end); //   no truth QoI
 
-    ensemble_sample_increment(iter, numApprox); // BLOCK  *** TO DO: step value
+    ensemble_sample_increment(numApprox); // BLOCK  *** TO DO: step value
   }
 }
 
@@ -239,7 +239,7 @@ approx_increment(size_t iter, const SizetArray& approx_sequence,
       activeSet.request_values(1, start_qoi, start_qoi + numFunctions);
     }
 
-    ensemble_sample_increment(iter, start); // NON-BLOCK
+    ensemble_sample_increment(start); // NON-BLOCK
     return true;
   }
   else {
@@ -268,7 +268,7 @@ approx_increment(size_t iter, const SizetArray& approx_sequence,
       activeSet.request_values(1, start_qoi, start_qoi + numFunctions);
     }
 
-    ensemble_sample_increment(iter, start); // NON-BLOCK
+    ensemble_sample_increment(start); // NON-BLOCK
     return true;
   }
   else {
@@ -304,30 +304,11 @@ approx_increment(size_t iter, unsigned short root, const UShortSet& reverse_dag)
       activeSet.request_values(1, start_qoi, start_qoi + numFunctions);
     }
 
-    ensemble_sample_increment(iter, root); // NON-BLOCK
+    ensemble_sample_increment(root); // NON-BLOCK
     return true;
   }
   else
     return false;
-}
-
-
-void NonDNonHierarchSampling::
-ensemble_sample_increment(size_t iter, size_t step)
-{
-  // generate new MC parameter sets
-  get_parameter_sets(iteratedModel);
-
-  // export separate output files for each data set:
-  if (exportSampleSets) { // for HF+LF models, use the HF tags
-    export_all_samples("cv_", iteratedModel.active_truth_model(), iter, step);
-    for (size_t i=0; i<numApprox; ++i)
-      export_all_samples("cv_", iteratedModel.active_surrogate_model(i),
-			 iter, step);
-  }
-
-  // compute allResponses from all{Samples,Variables} using model ensemble
-  evaluate_parameter_sets(iteratedModel); // includes synchronize
 }
 
 
@@ -341,14 +322,12 @@ group_increments(SizetArray& delta_N_G, String prepend, bool reverse_order)
   // Ordering does not impact evaluation management, but does impact random
   // number sequencing across calls to get_parameter_sets()
   size_t num_groups = modelGroups.size();
-  UShortArray batch_key(1);
   if (reverse_order) // high to low ordering (e.g., bottom-up pyramid)
     for (int g=num_groups-1; g>=0; --g) {
       numSamples = delta_N_G[g];
       if (numSamples) {
 	ensemble_active_set(modelGroups[g]);
-	batch_key[0] = g; // index is group_id
-	ensemble_sample_batch(prepend, batch_key); // non-blocking
+	ensemble_sample_batch(prepend, g); // index is group_id, non-blocking
       }
     }
   else // low to high ordering (e.g. combinatorial defn of ML BLUE modelGroups)
@@ -356,8 +335,7 @@ group_increments(SizetArray& delta_N_G, String prepend, bool reverse_order)
       numSamples = delta_N_G[g];
       if (numSamples) {
 	ensemble_active_set(modelGroups[g]);
-	batch_key[0] = g; // index is group_id
-	ensemble_sample_batch(prepend, batch_key); // non-blocking
+	ensemble_sample_batch(prepend, g); // index is group_id, non-blocking
       }
     }
 
@@ -444,6 +422,73 @@ dag_approx_increment(const RealVector& soln_vars, const UShortArray& approx_set,
   return num_samp;
 }
 */
+
+
+void NonDNonHierarchSampling::
+ensemble_sample_increment(const String& prepend, size_t step, bool new_samples)
+{
+  // Single sample batch case: define and evaluate (includes synchronization)
+
+  if (new_samples) {
+    // generate new MC parameter sets
+    get_parameter_sets(iteratedModel);
+    // export separate output files for each data set
+    export_sample_sets(prepend, step);
+  }
+
+  // compute allResponses from all{Samples,Variables} using model ensemble
+  evaluate_parameter_sets(iteratedModel); // includes synchronize
+}
+
+
+void NonDNonHierarchSampling::
+ensemble_sample_batch(const String& prepend, size_t step, bool new_samples)
+{
+  // Queue one sample batch among multiple (excludes synchronization)
+
+  if (new_samples) {
+    // generate new MC parameter sets
+    get_parameter_sets(iteratedModel);
+    // export separate output files for each data set
+    export_sample_sets(prepend, step);
+  }
+
+  // evaluate all{Samples,Variables} using model ensemble and migrate
+  // all{Samples,Variables} to batch{Samples,Variables}Map
+  UShortArray batch_key(1);  batch_key[0] = step;
+  evaluate_batch(iteratedModel, batch_key); // excludes synchronize
+}
+
+
+void NonDNonHierarchSampling::
+export_sample_sets(const String& prepend, size_t step)
+{
+  if (exportSampleSets) { // for HF+LF models, use the HF tags
+    if (active_set_for_model(numApprox))
+      export_all_samples(prepend, iteratedModel.active_truth_model(),
+			 mlmfIter, step);
+    for (size_t i=0; i<numApprox; ++i)
+      if (active_set_for_model(i))
+	export_all_samples(prepend, iteratedModel.active_surrogate_model(i),
+			   mlmfIter, step);
+  }
+}
+
+
+void NonDNonHierarchSampling::
+export_all_samples(const String& root_prepend, const Model& model, size_t iter,
+		   size_t step)
+{
+  String tabular_filename(root_prepend);
+  const String& iface_id = model.interface_id();
+  size_t i, num_samp = allSamples.numCols();
+  if (iface_id.empty()) tabular_filename += "NO_ID_i";
+  else                  tabular_filename += iface_id + "_i";
+  tabular_filename += std::to_string(iter) +  "_s" + std::to_string(step)
+    + '_' + std::to_string(num_samp) + ".dat";
+
+  NonDEnsembleSampling::export_all_samples(model, tabular_filename);
+}
 
 
 void NonDNonHierarchSampling::
