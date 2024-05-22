@@ -135,7 +135,7 @@ protected:
 
   /// export allSamples to tagged tabular file
   void export_all_samples(String root_prepend, const Model& model,
-			  size_t iter, size_t step);
+			  size_t iter, const UShortArray& batch_key);
 
   /// convert uncentered raw moments (multilevel expectations) to
   /// standardized moments

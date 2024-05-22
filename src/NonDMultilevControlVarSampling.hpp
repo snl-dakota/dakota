@@ -79,18 +79,18 @@ private:
 		      bool pilot_estvar);
 
   /// evaluate multiple sample batches concurrently, where each batch involves
-  /// either a single model or model pair
+  /// either a single level or level pair for both HF and LF models
   void mlmf_increments(SizetArray& delta_N_l, String prepend);
+  /// evaluate multiple sample batches concurrently, where each batch involves
+  /// either a single level or level pair for the LF model
+  void lf_increments(SizetArray& delta_N_lf, String prepend);
 
   /// perform LF sample increment as indicated by evaluation ratios
-  bool lf_increment(const RealVector& eval_ratios, const SizetArray& N_lf,
-		    Real hf_target, RealVector& lf_targets,
-		    size_t iter, size_t lev);
+  size_t lf_increment(const RealVector& eval_ratios, const SizetArray& N_lf,
+		      Real hf_target, RealVector& lf_targets);
   /// perform LF sample increment as indicated by evaluation ratios
-  bool lf_increment(const RealVector& eval_ratios, size_t N_lf, Real hf_target,
-		    Real& lf_target, size_t iter, size_t lev);
-  /// parameter set definition and evaluation for LF sample increment
-  bool lf_perform_samples(size_t iter, size_t lev);
+  size_t lf_increment(const RealVector& eval_ratios, size_t N_lf,
+		      Real hf_target, RealVector& lf_targets);
 
   /// compute the equivalent number of HF evaluations (includes any sim faults)
   Real compute_mlmf_equivalent_cost(const SizetArray& raw_N_hf,

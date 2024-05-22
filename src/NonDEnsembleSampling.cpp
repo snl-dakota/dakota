@@ -237,11 +237,11 @@ ensemble_sample_batch(const String& prepend, const UShortArray& batch_key,
     if (exportSampleSets) { // for HF+LF models, use the HF tags
       if (iteratedModel.active_truth_key())
 	export_all_samples(prepend, iteratedModel.active_truth_model(),
-			   mlmfIter, batch_id); // ***
+			   mlmfIter, batch_key);
       size_t i, num_active_surr = iteratedModel.active_surrogate_keys();
       for (i=0; i<num_active_surr; ++i)
 	export_all_samples(prepend, iteratedModel.active_surrogate_model(i),
-			   mlmfIter, batch_id); // ***
+			   mlmfIter, batch_key);
     }
   }
 
@@ -379,16 +379,17 @@ print_multimodel_summary(std::ostream& s, const String& summary_type,
 
 void NonDEnsembleSampling::
 export_all_samples(String root_prepend, const Model& model, size_t iter,
-		   size_t step)
+		   const UShortArray& batch_key)
 {
   String tabular_filename(root_prepend);
   const String& iface_id = model.interface_id();
-  size_t i, num_samp = allSamples.numCols();
+  size_t i, num_samp = allSamples.numCols(), num_key = batch_key.size();
   if (iface_id.empty()) tabular_filename += "NO_ID_i";
   else                  tabular_filename += iface_id + "_i";
-  tabular_filename += std::to_string(iter)     +  "_l"
-                   +  std::to_string(step)     +  '_'
-                   +  std::to_string(num_samp) + ".dat";
+  tabular_filename += std::to_string(iter) +  "_k";
+  for (i=0; i<num_key; ++i)
+    tabular_filename += std::to_string(batch_key[i]);
+  tabular_filename += '_' + std::to_string(num_samp) + ".dat";
   Variables vars(model.current_variables().copy());
 
   String context_message("NonDEnsembleSampling::export_all_samples");

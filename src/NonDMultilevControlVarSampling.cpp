@@ -364,7 +364,7 @@ multilevel_control_variate_mc_online_pilot() //_Qcorr()
   if (online_lf_cost)
     { lf_accum_cost.size(num_cv_lev); lf_num_cost.assign(num_cv_lev, 0); }
   Real eps_sq_div_2, sum_sqrt_var_cost, agg_estvar_iter0 = 0., budget, r_lq,
-    lf_lev_cost, hf_lev_cost, hf_ref_cost, hf_tgt_l, lf_tgt_l;
+    lf_lev_cost, hf_lev_cost, hf_ref_cost, hf_tgt_l;
   RealVectorArray eval_ratios(num_cv_lev);
 
   // CV requires cross-level covariance combinations in Qcorr approach
@@ -465,6 +465,7 @@ multilevel_control_variate_mc_online_pilot() //_Qcorr()
       //if (online_hf_cost) truth_model.solution_level_costs(hf_cost);
       //if (online_lf_cost)  surr_model.solution_level_costs(lf_cost);
     }
+    clear_batches();
 
     // FINAL PASS: STATS
     sum_sqrt_var_cost = 0.;
@@ -564,22 +565,29 @@ multilevel_control_variate_mc_online_pilot() //_Qcorr()
   // Only QOI_STATISTICS requires application of oversample ratios and
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
   if (finalStatsType == QOI_STATISTICS) {
+
+    SizetArray delta_N_lf(num_cv_lev);
+    for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) // no relaxation
+      if (backfillFailures) { // increment relative to successful samples
+	delta_N_lf[lev] = lf_increment(eval_ratios[lev], N_actual_lf[lev],
+				       hf_targets[lev], lf_targets);
+	N_alloc_lf[lev]
+	  += one_sided_delta(N_alloc_lf[lev], average(lf_targets));
+      }
+      else { // increment relative to allocated samples
+	delta_N_lf[lev] = lf_increment(eval_ratios[lev], N_alloc_lf[lev],
+				       hf_targets[lev], lf_targets);
+	N_alloc_lf[lev] += delta_N_lf[lev];
+      }
+
+    // parallel execution for multiple sample batches across multiple models
+    lf_increments(delta_N_lf, "cv_");
+
     // All CV lf_increment() calls now follow convergence of ML iteration:
     // > Avoids early mis-estimation of LF increments
     // > Parallel scheduling benefits from one final large batch of refinements
     for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) {
-      configure_indices(group, lf_form, lev, sequenceType);
-      if (backfillFailures) { // increment relative to successful samples
-	lf_increment(eval_ratios[lev], N_actual_lf[lev], hf_targets[lev],
-		     lf_targets, mlmfIter, lev);
-	lf_tgt_l = average(lf_targets);
-	N_alloc_lf[lev] += one_sided_delta(N_alloc_lf[lev], lf_tgt_l);//no relax
-      }
-      else {                  // increment relative to allocated samples
-	lf_increment(eval_ratios[lev], N_alloc_lf[lev], hf_targets[lev],
-		     lf_tgt_l, mlmfIter, lev);
-	N_alloc_lf[lev] += numSamples;
-      }
+      numSamples = delta_N_lf[lev];
       if (numSamples) {
 	lf_ml[1] = lev;
 	accumulate_mlmf_Qsums(sum_Ll_refined, sum_Llm1_refined, lev,
@@ -591,6 +599,7 @@ multilevel_control_variate_mc_online_pilot() //_Qcorr()
 	       << sum_Ll_refined[2];
       }
     }
+    clear_batches();
 
     // Roll up raw moments from MLCVMC and MLMC levels
     RealMatrix Y_mom(4, numFunctions), Y_cvmc_mom(4, numFunctions, false);
@@ -731,34 +740,49 @@ multilevel_control_variate_mc_offline_pilot()
 				   equivHFEvals);
     }
   }
+  clear_batches();
 
-  // --------------------------------------------------------
-  // LF increments and final stats from online sample profile
-  // --------------------------------------------------------
-  Real lf_tgt_l;
-  for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) {
-    // LF increments from online sample profile
-    configure_indices(group, lf_form, lev, sequenceType);
+  // -------------
+  // LF increments
+  // -------------
+  SizetArray delta_N_lf(num_cv_lev);
+  for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) // no relaxation
     if (backfillFailures) { // increment relative to successful samples
-      lf_increment(eval_ratios_pilot[lev], N_actual_lf[lev],
-		   hf_targets_pilot[lev], lf_targets, mlmfIter, lev);
-      lf_tgt_l = average(lf_targets);
-      N_alloc_lf[lev] += one_sided_delta(N_alloc_lf[lev], lf_tgt_l);//no relax
+      delta_N_lf[lev] = lf_increment(eval_ratios[lev], N_actual_lf[lev],
+				     hf_targets_pilot[lev], lf_targets);
+      N_alloc_lf[lev]
+	+= one_sided_delta(N_alloc_lf[lev], average(lf_targets));
     }
-    else {                  // increment relative to allocated samples
-      lf_increment(eval_ratios_pilot[lev], N_alloc_lf[lev],
-		   hf_targets_pilot[lev], lf_tgt_l, mlmfIter, lev);
-      N_alloc_lf[lev] += numSamples;
+    else { // increment relative to allocated samples
+      delta_N_lf[lev] = lf_increment(eval_ratios[lev], N_alloc_lf[lev],
+				     hf_targets_pilot[lev], lf_targets);
+      N_alloc_lf[lev] += delta_N_lf[lev];
     }
+
+  // parallel execution for multiple sample batches across multiple models
+  lf_increments(delta_N_lf, "cv_");
+
+  // All CV lf_increment() calls now follow convergence of ML iteration:
+  // > Avoids early mis-estimation of LF increments
+  // > Parallel scheduling benefits from one final large batch of refinements
+  for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) {
+    numSamples = delta_N_lf[lev];
     if (numSamples) {
       lf_ml[1] = lev;
       accumulate_mlmf_Qsums(sum_Ll_refined, sum_Llm1_refined, lev,
 			    N_actual_lf[lev], batchResponsesMap[lf_ml]);
       increment_ml_equivalent_cost(numSamples, level_cost(lf_cost, lev),
 				   hf_ref_cost, equivHFEvals);
+      if (outputLevel == DEBUG_OUTPUT)
+	Cout << "Accumulated sums (L_refined[1,2]):\n" << sum_Ll_refined[1]
+	     << sum_Ll_refined[2];
     }
   }
+  clear_batches();
 
+  // --------------------------------------
+  // Final stats from online sample profile
+  // --------------------------------------
   Y_mom.shape(4, numFunctions);  RealMatrix Y_cvmc_mom(4, numFunctions, false);
   for (lev=0; lev<num_cv_lev; ++lev) {
     cv_raw_moments(sum_Ll, sum_Llm1, sum_Hl, sum_Hlm1, sum_Ll_Ll, sum_Ll_Llm1,
@@ -933,6 +957,7 @@ evaluate_pilot(RealVector& hf_cost, RealVector& lf_cost,
   // Note: could assign these back if needed elsewhere:
   //if (online_hf_cost) truth_model.solution_level_costs(hf_cost);
   //if (online_lf_cost)  surr_model.solution_level_costs(lf_cost);
+  clear_batches();
 
   // FINAL PASS: STATS
   sum_sqrt_var_cost = 0.;
@@ -1042,29 +1067,55 @@ mlmf_increments(SizetArray& delta_N_l, String prepend)
   else Cout << "\nSampling iteration " << mlmfIter << ": sample increment =\n"
 	    << delta_N_l << '\n';
 
-  Model& truth_model = iteratedModel.truth_model();
-  Model& surr_model  = iteratedModel.surrogate_model();
-  size_t step, num_steps = delta_N_l.size(),
-    num_hf_lev = truth_model.solution_levels(),
-    num_lf_lev =  surr_model.solution_levels(),
+  size_t lev, num_lev = delta_N_l.size(),
+    num_hf_lev = iteratedModel.truth_model().solution_levels(),
+    num_lf_lev = iteratedModel.surrogate_model().solution_levels(),
     num_cv_lev = std::min(num_hf_lev, num_lf_lev),
     lf_form = 0, hf_form = NLevActual.size() - 1;
   UShortArray batch_key(2); // form,resolution
-  for (step=0; step<num_steps; ++step) {
-    numSamples = delta_N_l[step];
+  for (lev=0; lev<num_lev; ++lev) {
+    numSamples = delta_N_l[lev];
     if (numSamples) {
-      assign_specification_sequence(step); // indexed so can skip if no samples
-      batch_key[1] = step;
+      assign_specification_sequence(lev); // indexed so can skip if no samples
+      batch_key[1] = lev;
 
-      configure_indices(step, hf_form, step, sequenceType);
+      configure_indices(lev, hf_form, lev, sequenceType);
       batch_key[0] = hf_form;
       ensemble_sample_batch(prepend, batch_key, true); // new samples
 
-      if (step < num_cv_lev) {
-	configure_indices(step, lf_form, step, sequenceType);
+      if (lev < num_cv_lev) {
+	configure_indices(lev, lf_form, lev, sequenceType);
 	batch_key[0] = lf_form;
 	ensemble_sample_batch(prepend, batch_key, false); // reuse prev samples
       }
+    }
+  }
+
+  if (iteratedModel.asynch_flag())
+    synchronize_batches(iteratedModel); // schedule all groups (return ignored)
+}
+
+
+/** The version in NonDNonHierarchSampling would be sufficiently general here
+    as well, given AGGREGATED_MODELS controlled by the ASV. However, MLMC and
+    MLCV MC employ AGGREGATED_MODEL_PAIR without ASV subsetting, so we
+    specialize for that case. */
+void NonDMultilevControlVarSampling::
+lf_increments(SizetArray& delta_N_lf, String prepend)
+{
+  if (mlmfIter == 0) Cout << "\nPerforming pilot sample for model groups.\n";
+  else Cout << "\nSampling iteration " << mlmfIter << ": sample increment =\n"
+	    << delta_N_l << '\n';
+
+  size_t lev, num_cv_lev = delta_N_lf.size(), lf_form = 0;
+  UShortArray batch_key(2);  batch_key[0] = lf_form;
+  for (lev=0; lev<num_cv_lev; ++lev) {
+    numSamples = delta_N_lf[lev];
+    if (numSamples) {
+      // No assign_specification_sequence() for LF increments
+      batch_key[1] = lev;
+      configure_indices(lev, lf_form, lev, sequenceType);
+      ensemble_sample_batch(prepend, batch_key, true); // new samples
     }
   }
 
@@ -1157,9 +1208,9 @@ compute_eval_ratios(RealMatrix& sum_Ll,        RealMatrix& sum_Llm1,
 }
 
 
-bool NonDMultilevControlVarSampling::
+size_t NonDMultilevControlVarSampling::
 lf_increment(const RealVector& eval_ratios, const SizetArray& N_lf,
-	     Real hf_target, RealVector& lf_targets, size_t iter, size_t lev)
+	     Real hf_target, RealVector& lf_targets)
 {
   // update LF samples based on evaluation ratio
   //   r = m/n -> m = r*n -> delta = m-n = (r-1)*n
@@ -1169,10 +1220,10 @@ lf_increment(const RealVector& eval_ratios, const SizetArray& N_lf,
     lf_targets[qoi] = eval_ratios[qoi] * hf_target;
   // Choose average, RMS, max of difference?
   // Trade-off: Possible overshoot vs. more iteration...
-  numSamples = one_sided_delta(N_lf, lf_targets); // averaged, no relaxation
+  size_t num_samp = one_sided_delta(N_lf, lf_targets);// averaged, no relaxation
 
-  if (numSamples)
-    Cout << "\nControl variate LF sample increment = " << numSamples;
+  if (num_samp)
+    Cout << "\nControl variate LF sample increment = " << num_samp;
   else Cout << "\nNo control variate LF sample increment";
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << " from avg LF = " << average(N_lf) << ", HF target = " << hf_target
@@ -1180,56 +1231,28 @@ lf_increment(const RealVector& eval_ratios, const SizetArray& N_lf,
 	 << average(eval_ratios);
   Cout << std::endl;
 
-  return (numSamples) ? lf_perform_samples(iter, lev) : false;
+  return num_samp;
 }
 
 
-bool NonDMultilevControlVarSampling::
+size_t NonDMultilevControlVarSampling::
 lf_increment(const RealVector& eval_ratios, size_t N_lf, Real hf_target,
-	     Real& lf_target, size_t iter, size_t lev)
+	     RealVector& lf_targets)
 {
-  lf_target = 0.;
+  if (lf_targets.empty()) lf_targets.sizeUninitialized(numFunctions);
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    lf_target += eval_ratios[qoi] * hf_target;
-  lf_target /= numFunctions; // average
-  numSamples = one_sided_delta((Real)N_lf, lf_target); // no relaxation
+    lf_targets[qoi] = eval_ratios[qoi] * hf_target;
+  size_t num_samp = one_sided_delta((Real)N_lf, average(lf_targets));// no relax
 
-  if (numSamples)
-    Cout << "\nControl variate LF sample increment = " << numSamples;
+  if (num_samp)
+    Cout << "\nControl variate LF sample increment = " << num_samp;
   else Cout << "\nNo control variate LF sample increment";
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << " from LF = " << N_lf << ", HF target = " << hf_target
 	 << ", avg eval_ratio = "<< average(eval_ratios);
   Cout << std::endl;
 
-  return (numSamples) ? lf_perform_samples(iter, lev) : false;
-}
-
-
-bool NonDMultilevControlVarSampling::lf_perform_samples(size_t iter, size_t lev)
-{
-  // ----------------------------------------
-  // Compute LF increment for control variate
-  // ----------------------------------------
-
-  // generate new MC parameter sets
-  get_parameter_sets(iteratedModel);// pull dist params from any model
-  // export separate output files for each data set:
-  if (exportSampleSets)
-    export_all_samples("cv_", iteratedModel.active_surrogate_model(0),iter,lev);
-
-  // Iteration 0 is defined as the pilot sample + initial CV increment, and
-  // each subsequent iter can be defined as a pair of ML + CV increments.  If
-  // it is desired to stop between the ML and CV components, finalCVRefinement
-  // can be hardwired to false (not currently part of input spec).
-  // Note: termination based on delta_N_hf=0 has final ML and CV increments
-  //       of zero, which is consistent with finalCVRefinement=true.
-  //if (iter < maxIterations || finalCVRefinement) {
-    // compute allResponses from allVariables using hierarchical model
-    evaluate_parameter_sets(iteratedModel);
-    return true;
-  //}
-  //else return false;
+  return num_samp;
 }
 
 
