@@ -285,17 +285,17 @@ Test Number 21 succeeded
                      -1.5650429086e-03
 <<<<< Best evaluation ID: 203
 Test Number 22 succeeded
-<<<<< Function evaluation summary: 214 total (214 new, 0 duplicate)
+<<<<< Function evaluation summary: 278 total (278 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.1402435303e+00 intake_dia
-                      3.2368571758e+00 flatness
+                      2.1402474046e+00 intake_dia
+                      3.2368583679e+00 flatness
 <<<<< Best objective function  =
-                     -2.2485657085e+00
+                     -2.2485672206e+00
 <<<<< Best constraint values   =
-                      1.9994505492e-01
-                     -1.1447142363e-01
-                     -2.0000000041e-01
-<<<<< Best evaluation ID: 191
+                      1.9999983887e-01
+                     -1.1447124481e-01
+                     -2.0000011757e-01
+<<<<< Best evaluation ID: 246
 Test Number 23 succeeded
 <<<<< Function evaluation summary: 187 total (187 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -309,17 +309,17 @@ Test Number 23 succeeded
                      -2.0000002384e-01
 <<<<< Best evaluation ID: 171
 Test Number 24 succeeded
-<<<<< Function evaluation summary: 243 total (243 new, 0 duplicate)
+<<<<< Function evaluation summary: 182 total (182 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.0403488163e+00 intake_dia
-                      1.7685585022e+00 flatness
+                      2.0421059030e+00 intake_dia
+                      1.7685575485e+00 flatness
 <<<<< Best objective functions =
-                     -2.4252121619e+00
-                     -3.4057525633e-01
-                     -3.3471622467e-01
+                     -2.4259791732e+00
+                     -3.3740044309e-01
+                     -3.3471636772e-01
 <<<<< Best constraint values   =
-                     -2.8050302991e-07
-<<<<< Best evaluation ID: 228
+                     -1.2023554985e-07
+<<<<< Best evaluation ID: 168
 Test Number 25 succeeded
 <<<<< Function evaluation summary: 26208 total (5282 new, 20926 duplicate)
 <<<<< Best parameters          =

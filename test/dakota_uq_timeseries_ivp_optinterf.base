@@ -3,8 +3,8 @@ Test Number 0 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 4500 total (4500 new, 0 duplicate)
       DeltaTime: 4500 val (4500 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Surrogate quality metrics at build (training) points for function 1:
-   root_mean_squared  9.2298974740e-16
-            mean_abs  7.1345707120e-16
+   root_mean_squared  8.5539986797e-16
+            mean_abs  6.8986483193e-16
             rsquared  1.0000000000e+00
 <<<<< Function evaluation summary (OPTIONAL_I): 171 total (171 new, 0 duplicate)
 <<<<< Function evaluation summary (ALEAT_I): 7695 total (7695 new, 0 duplicate)

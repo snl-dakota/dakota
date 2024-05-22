@@ -40,8 +40,8 @@ Sample moment statistics for each posterior variable:
              w  4.8340482577e+00  1.9295132109e+00  8.5003876931e-01 -8.7351136803e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-        stress -1.1268200410e+04  7.4460052064e+03  8.8502735814e-01  1.0514979065e+01
-  displacement  6.1138732834e-01  1.1693813466e+00  9.9363824323e+00  2.2802758694e+02
+            f1 -1.1268200410e+04  7.4460052064e+03  8.8502735814e-01  1.0514979065e+01
+            f2  6.1138732834e-01  1.1693813466e+00  9.9363824323e+00  2.2802758694e+02
                   Response Level    Probability Level
                   ----------------- -----------------
                  -2.1097954047e+04  5.0000000000e-02

@@ -1,30 +1,30 @@
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 45 total (38 new, 7 duplicate)
+<<<<< Function evaluation summary: 22 total (21 new, 1 duplicate)
 <<<<< Best parameters          =
-                      2.1499799601e+00 w
-                      3.7160522052e+00 t
+                      3.0169604904e+00 w
+                      4.0221595624e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
                       1.0000000000e+03 Y
 <<<<< Best objective function  =
-                      7.9894377721e+00
+                      1.2134696486e+01
 <<<<< Best constraint values   =
-                     -5.8138181038e-02
-                     -2.7513848627e-03
-<<<<< Best evaluation ID: 39
+                     -4.8780873208e-01
+                     -5.8288567272e-01
+<<<<< Best evaluation ID: 16
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 32 total (28 new, 4 duplicate)
+<<<<< Function evaluation summary: 24 total (23 new, 1 duplicate)
 <<<<< Best parameters          =
-                      2.1481509707e+00 w
-                      3.7561319130e+00 t
+                      2.6702484377e+00 w
+                      3.7275906451e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
                       1.0000000000e+03 Y
 <<<<< Best objective function  =
-                      8.0687384149e+00
+                      9.9535930965e+00
 <<<<< Best constraint values   =
-                     -7.2364933833e-02
-                     -1.7822167572e-02
-<<<<< Best evaluation ID: 25
+                     -3.1353689421e-01
+                     -3.8210047494e-01
+<<<<< Best evaluation ID: 21

@@ -11,9 +11,9 @@ Moment statistics for each response function:
  response_fn_3  1.2727805377e-04  5.5523157783e-04
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  7.9232432728e-08  3.1101547994e-06
- response_fn_2  4.5504402068e-06  8.2518722326e-05
- response_fn_3  7.9226314841e-08  3.1101554788e-06
+ response_fn_1  7.9232421376e-08  3.1101547983e-06
+ response_fn_2  4.5504402109e-06  8.2518722323e-05
+ response_fn_3  7.9226314880e-08  3.1101554787e-06
 <<<<< Function evaluation summary (LF_INT): 1718 total (1519 new, 199 duplicate)
 <<<<< Function evaluation summary (MF_INT): 218 total (199 new, 19 duplicate)
 <<<<< Function evaluation summary (HF_INT): 19 total (19 new, 0 duplicate)

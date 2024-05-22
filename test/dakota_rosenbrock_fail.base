@@ -42,11 +42,11 @@ response_fn_1 Sobol' indices:
    5.0000000000e+02   7.1500000000e-01
    1.0000000000e+03   8.5530000000e-01
 Test Number 1 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE_1): 443 total (443 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 1200 total (1200 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 442 total (442 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 1199 total (1198 new, 1 duplicate)
 <<<<< Best parameters          =
-                      1.0004590123e+00 x1
-                      1.0009202337e+00 x2
+                      1.0004464404e+00 x1
+                      1.0008950191e+00 x2
 <<<<< Best objective function  =
-                      2.1109166929e-07
-<<<<< Best evaluation ID: 1200
+                      1.9968498383e-07
+<<<<< Best evaluation ID: 1199

@@ -12,7 +12,7 @@ Test Number 0 succeeded
  Equivalent  ACV ratio:               4.8679736854253086e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  3.7378801701313448e-02  9.8689001723505732e-01 -2.2310353328054364e-01  5.0668387813560454e+00
+ response_fn_1  3.7378801701313448e-02  9.8689001723505754e-01 -2.2310353328054361e-01  5.0668387813560365e+00
 Test Number 1 succeeded
 <<<<< Function evaluation summary (LF_INT): 991 total (991 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 991 total (991 new, 0 duplicate)
@@ -27,7 +27,7 @@ Test Number 1 succeeded
  Equivalent  ACV ratio:               4.4483516402506096e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1 -8.7970814008149767e-03  9.3640019024496457e-01 -1.7070916574301173e-01  2.7639256505513066e+00
+ response_fn_1 -8.7970814008150322e-03  9.3640019024496490e-01 -1.7070916574301176e-01  2.7639256505512932e+00
 Test Number 2 succeeded
 <<<<< Function evaluation summary (LF_INT): 2182 total (2182 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 2182 total (2182 new, 0 duplicate)
@@ -42,7 +42,7 @@ Test Number 2 succeeded
  Equivalent  ACV ratio:               4.1548580125908036e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  1.5223376060403280e-02  1.0063396979092860e+00  2.7646148767078149e-01  2.0169309345654236e+00
+ response_fn_1  1.5223376060403289e-02  1.0063396979092865e+00  2.7646148767078077e-01  2.0169309345654192e+00
 Test Number 3 succeeded
 <<<<< Function evaluation summary (LF_INT): 4678 total (4678 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 4678 total (4678 new, 0 duplicate)
@@ -57,7 +57,7 @@ Test Number 3 succeeded
  Equivalent  ACV ratio:               3.9681776761865478e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1 -1.7600811536969661e-02  1.0361059429143857e+00  2.1718655396174111e-01  2.4699412512531058e+00
+ response_fn_1 -1.7600811536969661e-02  1.0361059429143873e+00  2.1718655396174025e-01  2.4699412512530605e+00
 Test Number 4 succeeded
 <<<<< Function evaluation summary (LF_INT): 11651 total (11651 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 11651 total (11651 new, 0 duplicate)
@@ -72,7 +72,7 @@ Test Number 4 succeeded
  Equivalent  ACV ratio:               4.1981121207159305e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  1.9182556334433089e-03  9.7347557834495524e-01 -1.5516239636908600e-02  2.7216059436232038e+00
+ response_fn_1  1.9182556334433193e-03  9.7347557834495901e-01 -1.5516239636908345e-02  2.7216059436231639e+00
 Test Number 5 succeeded
 <<<<< Function evaluation summary (LF_INT): 22964 total (22964 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 22964 total (22964 new, 0 duplicate)
@@ -87,7 +87,7 @@ Test Number 5 succeeded
  Equivalent  ACV ratio:               4.0170784786870700e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1 -4.2666845723906936e-04  9.9882534242397025e-01 -7.5912090308842897e-02  2.7080993419599908e+00
+ response_fn_1 -4.2666845723907023e-04  9.9882534242396370e-01 -7.5912090308844132e-02  2.7080993419601374e+00
 Test Number 6 succeeded
 <<<<< Function evaluation summary (LF_INT): 46436 total (46436 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 46436 total (46436 new, 0 duplicate)
@@ -102,7 +102,7 @@ Test Number 6 succeeded
  Equivalent  ACV ratio:               4.0066822271762470e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1 -5.9896205587387005e-03  1.0044246264356280e+00 -1.1230666470847863e-02  2.7912334623968231e+00
+ response_fn_1 -5.9896205587387317e-03  1.0044246264356269e+00 -1.1230666470847387e-02  2.7912334623968089e+00
 Test Number 7 succeeded
 <<<<< Function evaluation summary (LF_INT): 398 total (398 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 398 total (398 new, 0 duplicate)
@@ -117,37 +117,37 @@ Test Number 7 succeeded
  Equivalent  ACV ratio:               4.8571401799393898e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  3.3968992461304796e-02  1.0117603439496548e+00 -5.6561447840805690e-01  4.7297094943408737e+00
+ response_fn_1  3.3968992461304776e-02  1.0117603439496552e+00 -5.6561447840805634e-01  4.7297094943408586e+00
 Test Number 8 succeeded
 <<<<< Function evaluation summary (LF_INT): 967 total (967 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 995 total (995 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 140 total (140 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 2.4916999999999999e+02
+<<<<< Online number of equivalent high fidelity evaluations: 2.4916999999999996e+02
 <<<<< Variance for mean estimator:
     Initial   MC (   10 HF samples):  5.6033560944958559e-02
      Online   MC (  140 HF samples):  5.7716231331855928e-03
      Online  ACV (sample profile):    1.4954567278270279e-03
      Online  ACV ratio (1 - R^2):     2.5910505473381884e-01
- Equivalent   MC (  249 HF samples):  3.2428753005818642e-03
- Equivalent  ACV ratio:               4.6115147491446873e-01
+ Equivalent   MC (  249 HF samples):  3.2428753005818646e-03
+ Equivalent  ACV ratio:               4.6115147491446867e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1 -9.6155905652616780e-03  9.2757795221000328e-01 -2.4530725063274819e-01  3.5109446338252450e+00
+ response_fn_1 -9.6155905652615670e-03  9.2757795221000272e-01 -2.4530725063274933e-01  3.5109446338252663e+00
 Test Number 9 succeeded
 <<<<< Function evaluation summary (LF_INT): 2180 total (2180 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 2181 total (2181 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 260 total (260 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 4.9990000000000003e+02
+<<<<< Online number of equivalent high fidelity evaluations: 4.9989999999999998e+02
 <<<<< Variance for mean estimator:
     Initial   MC (   10 HF samples):  5.6033560944958559e-02
      Online   MC (  260 HF samples):  3.6815254306896555e-03
      Online  ACV (sample profile):    8.0909052691034288e-04
      Online  ACV ratio (1 - R^2):     2.1977045714954546e-01
- Equivalent   MC (  500 HF samples):  1.9147761791944598e-03
+ Equivalent   MC (  500 HF samples):  1.9147761791944600e-03
  Equivalent  ACV ratio:               4.2255096741945297e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  3.2948208311437049e-02  1.0117088883549723e+00  5.2574674422330249e-02  2.4591766516129718e+00
+ response_fn_1  3.2948208311436980e-02  1.0117088883549716e+00  5.2574674422330339e-02  2.4591766516129914e+00
 Test Number 10 succeeded
 <<<<< Function evaluation summary (LF_INT): 4121 total (4121 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 4118 total (4118 new, 0 duplicate)
@@ -162,7 +162,7 @@ Test Number 10 succeeded
  Equivalent  ACV ratio:               4.2591193002094219e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1 -1.4576710018291101e-02  1.0113726590922085e+00 -9.6222163121781959e-02  2.6728597604035276e+00
+ response_fn_1 -1.4576710018291087e-02  1.0113726590922092e+00 -9.6222163121781779e-02  2.6728597604035036e+00
 Test Number 11 succeeded
 <<<<< Function evaluation summary (LF_INT): 27531 total (27531 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 7296 total (7296 new, 0 duplicate)
@@ -177,7 +177,7 @@ Test Number 11 succeeded
  Equivalent  ACV ratio:               6.4931238488129128e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.1808378903830083e-03  9.9907389231529409e-01  5.5630723712642501e-02  2.5872538949926156e+00
+ response_fn_1  2.1808378903829945e-03  9.9907389231529364e-01  5.5630723712642674e-02  2.5872538949926245e+00
 Test Number 12 succeeded
 <<<<< Function evaluation summary (LF_INT): 80156 total (80156 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 19011 total (19011 new, 0 duplicate)
@@ -192,7 +192,7 @@ Test Number 12 succeeded
  Equivalent  ACV ratio:               6.1187986417873519e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1 -2.4982635758599367e-03  9.9799034557854749e-01  3.6346254606824932e-02  2.6965908278860304e+00
+ response_fn_1 -2.4982635758599540e-03  9.9799034557855748e-01  3.6346254606823933e-02  2.6965908278858155e+00
 Test Number 13 succeeded
 <<<<< Function evaluation summary (LF_INT): 150798 total (150798 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 36307 total (36307 new, 0 duplicate)
@@ -207,4 +207,4 @@ Test Number 13 succeeded
  Equivalent  ACV ratio:               6.1841724052817137e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1 -5.8282021053120744e-03  1.0011442712691572e+00 -2.4554614450463853e-02  2.7846212911620150e+00
+ response_fn_1 -5.8282021053120310e-03  1.0011442712691601e+00 -2.4554614450463579e-02  2.7846212911619501e+00

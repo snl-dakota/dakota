@@ -202,22 +202,22 @@ Test Number 15 succeeded
 <<<<< Best objective function  =
                      -3.1636810419e+01
 <<<<< Best constraint values   =
-                      3.8837485371e-01
-                     -1.8368653265e-09
+                      3.8837485369e-01
+                     -1.8368648824e-09
                       3.8005048866e-01
 <<<<< Best evaluation ID: 49
 Test Number 16 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE_1): 361 total (361 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 386 total (386 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 287 total (287 new, 0 duplicate)
 <<<<< Best parameters          =
-                      4.9549293385e+01 x1
-                      1.9642370630e+01 x2
+                      4.9550074585e+01 x1
+                      1.9642477491e+01 x2
 <<<<< Best objective function  =
-                     -3.1635818868e+01
+                     -3.1636192719e+01
 <<<<< Best constraint values   =
-                      3.9037940730e-01
-                      2.6216603339e-04
-                      3.7953567762e-01
+                      3.9040889246e-01
+                      1.5967205099e-04
+                      3.7953151998e-01
 <<<<< Best evaluation ID: 287
 Test Number 17 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 53 total (53 new, 0 duplicate)
