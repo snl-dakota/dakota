@@ -378,7 +378,7 @@ shared_covariance_iteration(IntRealMatrixArrayMap& sum_G,
     // Evaluate shared increment and update covariance
     // -----------------------------------------------
     // > Note: evaluate_pilot() does not support IntMaps
-    shared_increment(mlmfIter);
+    shared_increment("blue_");
     // accumulate for one group only and reuse for group covariances
     accumulate_blue_sums(sum_G, sum_GG, NGroupActual, all_group, allResponses);
     compute_GG_covariance(sum_G[1][all_group], sum_GG[1][all_group],
@@ -476,7 +476,7 @@ evaluate_pilot(RealMatrixArray& sum_G_pilot, RealSymMatrix2DArray& sum_GG_pilot,
   if (pilotGroupSampling == SHARED_PILOT) {
     size_t all_group = numGroups - 1; // last group = all models
     numSamples = pilotSamples[all_group];
-    shared_increment(mlmfIter);
+    shared_increment("blue_");
     // accumulate for one group only and reuse for group covariances
     RealMatrix&          sum_G_all =    sum_G_pilot[all_group];
     RealSymMatrixArray& sum_GG_all =   sum_GG_pilot[all_group];

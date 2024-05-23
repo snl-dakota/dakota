@@ -102,7 +102,7 @@ void NonDMultifidelitySampling::multifidelity_mc_online_pilot()
     // ----------------------------------------------------
     // Evaluate shared increment and increment accumulators
     // ----------------------------------------------------
-    shared_increment(mlmfIter); // spans ALL models, blocking
+    shared_increment("mf_"); // spans ALL models, blocking
     accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH,
 		       N_H_actual);
     N_H_alloc += (backfillFailures && mlmfIter) ? one_sided_delta(N_H_alloc,
@@ -168,7 +168,7 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   // -------------------------------------------------------------------------
   // Compute final var{L,H},rho2LH from (oracle) pilot treated as offline cost
   // -------------------------------------------------------------------------
-  shared_increment(mlmfIter); // spans ALL models, blocking
+  shared_increment("mf_"); // spans ALL models, blocking
   accumulate_mf_sums(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
 		     sum_HH_pilot, N_shared_pilot);
   if (onlineCost) recover_online_cost(allResponses);
@@ -208,7 +208,7 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   // at least 2 samples reqd for variance (initial N_H_actual = 0)
   numSamples = std::max(one_sided_delta(N_H_actual,
     mfmcSolnData.solution_reference()), (size_t)2); // no relax
-  shared_increment(mlmfIter); // spans ALL models, blocking
+  shared_increment("mf_"); // spans ALL models, blocking
   accumulate_mf_sums(sum_L_baseline, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual);
   N_H_alloc += numSamples;
   increment_equivalent_cost(numSamples,sequenceCost,0,numGroups,equivHFEvals);
@@ -235,7 +235,7 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
   // ----------------------------------------------------
   // Evaluate shared increment and increment accumulators
   // ----------------------------------------------------
-  shared_increment(mlmfIter); // spans ALL models, blocking
+  shared_increment("mf_"); // spans ALL models, blocking
   if (onlineCost) recover_online_cost(allResponses);
   if (pilotMgmtMode == OFFLINE_PILOT || // redirected here for ESTIMATOR_PERF
       pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
@@ -413,7 +413,7 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
     delta_N_G[g]
       = group_approx_increment(soln_vars, approxSet, N_L_actual_refined,
 			       N_L_alloc_refined, modelGroups[g]);
-  group_increments(delta_N_G, "cv_", true); // reverse order for RNG sequence
+  group_increments(delta_N_G, "mf_", true); // reverse order for RNG sequence
 
   // --------------------------
   // Update sums, counts, costs

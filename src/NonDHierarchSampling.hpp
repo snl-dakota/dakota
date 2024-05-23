@@ -59,6 +59,11 @@ protected:
   //- Heading: Member functions
   //
 
+  /// queue a batch of samples to be performed for the active model subset
+  void ensemble_sample_batch(const String& prepend,
+			     const UShortArray& batch_key,
+			     bool new_samples = true);
+
   /// average costs once accumulations are complete
   void average_online_cost(const RealVector& accum_cost,
 			   const SizetArray& num_cost, RealVector& seq_cost);

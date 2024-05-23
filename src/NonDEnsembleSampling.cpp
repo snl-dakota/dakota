@@ -367,6 +367,8 @@ export_all_samples(const Model& model, const String& tabular_filename)
   TabularIO::open_file(tabular_stream, tabular_filename, context_message);
   TabularIO::write_header_tabular(tabular_stream, vars, no_resp_labels,
 				  cntr_label, interf_label,exportSamplesFormat);
+  const String& iface_id = model.interface_id();
+  size_t i, num_samp = allSamples.numCols();
   for (i=0; i<num_samp; ++i) {
     sample_to_variables(allSamples[i], vars); // NonDSampling version
     TabularIO::write_data_tabular(tabular_stream, vars, iface_id, i+1,

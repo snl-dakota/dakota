@@ -354,16 +354,16 @@ protected:
   //- Heading: member functions
   //
 
-  void shared_increment(size_t iter);
-  void shared_increment(size_t iter, const UShortArray& approx_set);
-  void shared_approx_increment(size_t iter);
+  void shared_increment(String prepend);
+  void shared_increment(String prepend, const UShortArray& approx_set);
+  void shared_approx_increment(String prepend);
 
-  bool approx_increment(size_t iter, const SizetArray& approx_sequence,
+  bool approx_increment(String prepend, const SizetArray& approx_sequence,
 			size_t start, size_t end);
-  bool approx_increment(size_t iter, const SizetArray& approx_sequence,
+  bool approx_increment(String prepend, const SizetArray& approx_sequence,
 			size_t start, size_t end,
 			const UShortArray& approx_set);
-  bool approx_increment(size_t iter, unsigned short root,
+  bool approx_increment(String prepend, unsigned short root,
 			const UShortSet& reverse_dag);
 
   void group_increments(SizetArray& delta_N_G, String prepend,
@@ -1756,10 +1756,10 @@ apply_control(Real sum_L_shared, size_t num_L_shared, Real sum_L_refined,
 
 inline bool NonDNonHierarchSampling::active_set_for_model(size_t i)
 {
-  size_t i, start = numFunctions*i, end = start+numFunctions;
-  const UShortArray& asv = activeSet.request_vector();
-  for (i=start; i<end; ++i)
-    if (asv[i])
+  size_t qoi, start = numFunctions*i, end = start+numFunctions;
+  const ShortArray& asv = activeSet.request_vector();
+  for (qoi=start; qoi<end; ++qoi)
+    if (asv[qoi])
       return true;
   return false;
 }

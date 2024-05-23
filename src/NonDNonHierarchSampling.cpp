@@ -157,10 +157,10 @@ hf_indices(size_t& hf_form_index, size_t& hf_lev_index)
 }
 
 
-void NonDNonHierarchSampling::shared_increment(size_t iter)
+void NonDNonHierarchSampling::shared_increment(String prepend)
 {
-  if (iter == 0) Cout << "\nNon-hierarchical pilot sample: ";
-  else Cout << "\nNon-hierarchical sampling iteration " << iter
+  if (mlmfIter == 0) Cout << "\nNon-hierarchical pilot sample: ";
+  else Cout << "\nNon-hierarchical sampling iteration " << mlmfIter
 	    << ": shared sample increment = ";
   Cout << numSamples << '\n';
 
@@ -170,16 +170,16 @@ void NonDNonHierarchSampling::shared_increment(size_t iter)
     //resize_active_set();
 
     activeSet.request_values(1);
-    ensemble_sample_increment(numGroups); // BLOCK if not shared_approx_increment()  *** TO DO: step value
+    ensemble_sample_increment(prepend, numGroups); // block on single batch
   }
 }
 
 
 void NonDNonHierarchSampling::
-shared_increment(size_t iter, const UShortArray& approx_set)
+shared_increment(String prepend, const UShortArray& approx_set)
 {
-  if (iter == 0) Cout << "\nNon-hierarchical pilot sample: ";
-  else Cout << "\nNon-hierarchical sampling iteration " << iter
+  if (mlmfIter == 0) Cout << "\nNon-hierarchical pilot sample: ";
+  else Cout << "\nNon-hierarchical sampling iteration " << mlmfIter
 	    << ": shared sample increment = ";
   Cout << numSamples << '\n';
 
@@ -188,21 +188,21 @@ shared_increment(size_t iter, const UShortArray& approx_set)
     //iteratedModel.active_model_key(agg_key);
     //resize_active_set();
 
-    // active approximations
+    // active approximation subset
     ensemble_active_set(approx_set);
-    // truth
+    // truth (not included in approx_set above)
     size_t start = numApprox * numFunctions;
-    activeSet.request_values(1, start, start + numFunctions);
+    activeSet.request_values(1, start, start + numFunctions); // augment approx
 
-    ensemble_sample_increment(numGroups); // BLOCK if not shared_approx_increment()  *** TO DO: step value
+    ensemble_sample_increment(prepend, numGroups); // block on single batch
   }
 }
 
 
-void NonDNonHierarchSampling::shared_approx_increment(size_t iter)
+void NonDNonHierarchSampling::shared_approx_increment(String prepend)
 {
-  if (iter == 0) Cout << "\nNon-hierarchical approx pilot sample: ";
-  else Cout << "\nNon-hierarchical sampling iteration " << iter
+  if (mlmfIter == 0) Cout << "\nNon-hierarchical approx pilot sample: ";
+  else Cout << "\nNon-hierarchical sampling iteration " << mlmfIter
 	    << ": shared approx sample increment = ";
   Cout << numSamples << '\n';
 
@@ -216,13 +216,13 @@ void NonDNonHierarchSampling::shared_approx_increment(size_t iter)
     activeSet.request_values(1, 0,   approx_qoi); // all approx QoI
     activeSet.request_values(0, approx_qoi, end); //   no truth QoI
 
-    ensemble_sample_increment(numApprox); // BLOCK  *** TO DO: step value
+    ensemble_sample_increment(prepend, numApprox); // block on single batch
   }
 }
 
 
 bool NonDNonHierarchSampling::
-approx_increment(size_t iter, const SizetArray& approx_sequence,
+approx_increment(String prepend, const SizetArray& approx_sequence,
 		 size_t start, size_t end)
 {
   if (numSamples && start < end) {
@@ -239,7 +239,7 @@ approx_increment(size_t iter, const SizetArray& approx_sequence,
       activeSet.request_values(1, start_qoi, start_qoi + numFunctions);
     }
 
-    ensemble_sample_increment(start); // NON-BLOCK
+    ensemble_sample_increment(prepend, start); // block on single batch
     return true;
   }
   else {
@@ -251,7 +251,7 @@ approx_increment(size_t iter, const SizetArray& approx_sequence,
 
 
 bool NonDNonHierarchSampling::
-approx_increment(size_t iter, const SizetArray& approx_sequence,
+approx_increment(String prepend, const SizetArray& approx_sequence,
 		 size_t start, size_t end, const UShortArray& approx_set)
 {
   if (numSamples && start < end) {
@@ -268,7 +268,7 @@ approx_increment(size_t iter, const SizetArray& approx_sequence,
       activeSet.request_values(1, start_qoi, start_qoi + numFunctions);
     }
 
-    ensemble_sample_increment(start); // NON-BLOCK
+    ensemble_sample_increment(prepend, start); // block on single batch
     return true;
   }
   else {
@@ -280,7 +280,8 @@ approx_increment(size_t iter, const SizetArray& approx_sequence,
 
 
 bool NonDNonHierarchSampling::
-approx_increment(size_t iter, unsigned short root, const UShortSet& reverse_dag)
+approx_increment(String prepend, unsigned short root,
+		 const UShortSet& reverse_dag)
 {
   UShortSet::const_iterator cit;
   if (numSamples) Cout << "\nApprox sample increment = " << numSamples;
@@ -304,7 +305,7 @@ approx_increment(size_t iter, unsigned short root, const UShortSet& reverse_dag)
       activeSet.request_values(1, start_qoi, start_qoi + numFunctions);
     }
 
-    ensemble_sample_increment(root); // NON-BLOCK
+    ensemble_sample_increment(prepend, root); // block on single batch
     return true;
   }
   else
