@@ -151,7 +151,7 @@ protected:
   void configure_indices(size_t group, size_t form, size_t lev, short seq_type);
 
   /// return (aggregate) level cost
-  Real level_cost(const RealVector& cost, size_t step);
+  Real level_cost(const RealVector& cost, size_t step, size_t offset = 0);
 
   //
   //- Heading: Data
@@ -590,12 +590,13 @@ configure_indices(size_t group, size_t form, size_t lev, short seq_type)
 
 
 inline Real NonDMultilevelSampling::
-level_cost(const RealVector& cost, size_t step)
+level_cost(const RealVector& cost, size_t step, size_t offset)
 {
   // discrepancies incur two level costs
+  size_t offset_step = offset + step;
   return (step) ?
-    cost[step] + cost[step-1] : // aggregated {HF,LF} mode
-    cost[step];                 //     uncorrected LF mode
+    cost[offset_step] + cost[offset_step-1] : // aggregated {HF,LF} mode
+    cost[offset_step];                        //     uncorrected LF mode
 }
 
 
