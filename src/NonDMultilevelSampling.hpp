@@ -93,18 +93,19 @@ protected:
 
   /// update accumulators for multilevel telescoping running sums
   /// using set of model evaluations within allResponses
-  void accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY,
-			   size_t lev, SizetArray& num_Y,
-			   const IntResponseMap& resp_map);
+  void accumulate_ml_Ysums(const IntResponseMap& resp_map,
+			   IntRealMatrixMap& sum_Y, RealMatrix& sum_YY,
+			   size_t lev, size_t lev_offset, SizetArray& num_Y);
   /// update accumulators for multilevel telescoping running sums
   /// using set of model evaluations within allResponses
-  void accumulate_ml_Ysums(RealMatrix& sum_Y, RealMatrix& sum_YY,
-			   size_t lev, SizetArray& num_Y,
-			   const IntResponseMap& resp_map);
+  void accumulate_ml_Ysums(const IntResponseMap& resp_map, RealMatrix& sum_Y,
+			   RealMatrix& sum_YY, size_t lev, size_t lev_offset,
+			   SizetArray& num_Y);
   /// update running QoI sums for one model (sum_Q) using set of model
   /// evaluations within allResponses; used for level 0 from other accumulators
-  void accumulate_ml_Qsums(IntRealMatrixMap& sum_Q, size_t lev,
-			   SizetArray& num_Q, const IntResponseMap& resp_map);
+  void accumulate_ml_Qsums(const IntResponseMap& resp_map,
+			   IntRealMatrixMap& sum_Q, size_t lev,
+			   SizetArray& num_Q);
 
   /// compute variance scalar from sum accumulators
   Real variance_Ysum(Real sum_Y, Real sum_YY, size_t Nlq);
@@ -178,7 +179,7 @@ private:
 
   /// helper for shared code among offline-pilot and pilot-projection modes
   void evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
-		       IntIntPairRealMatrixMap& sum_QlQlm1, RealVector& cost,
+		       IntIntPairRealMatrixMap& sum_QlQlm1,
 		       Sizet2DArray& N_actual_pilot,
 		       Sizet2DArray& N_actual_online, SizetArray& N_alloc_pilot,
 		       SizetArray& N_alloc_online, SizetArray& delta_N_l,
@@ -200,9 +201,10 @@ private:
 
   /// update running QoI sums for two models (sum_Ql, sum_Qlm1) using set of
   /// model evaluations within allResponses
-  void accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
+  void accumulate_ml_Qsums(const IntResponseMap& resp_map,
+			   IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 			   IntIntPairRealMatrixMap& sum_QlQlm1, size_t lev,
-			   SizetArray& num_Q, const IntResponseMap& resp_map);
+			   SizetArray& num_Q);
 
   /// increment the allocated samples counter
   size_t allocation_increment(size_t N_l_alloc, const Real* N_l_target);

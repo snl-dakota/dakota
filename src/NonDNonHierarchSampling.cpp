@@ -51,19 +51,8 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_ushort("method.nond.opt_subproblem_solver"),
     SUBMETHOD_DIRECT_NPSOL_OPTPP); // default is global + competed local
 
-  // check iteratedModel for model form hierarchy and/or discretization levels;
-  // set initial response mode for set_communicators() (precedes core_run()).
-  if (iteratedModel.surrogate_type() == "ensemble")
-    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
-  else {
-    Cerr << "Error: sampling the full range of a model ensemble requires an "
-	 << "ensemble surrogate model specification." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  sequenceType = Pecos::FORM_RESOLUTION_ENUMERATION;
   size_t num_forms_resolutions;
-  configure_enumeration(num_forms_resolutions);
+  configure_enumeration(num_forms_resolutions, sequenceType);
   numApprox = num_forms_resolutions - 1;
   if (methodName != MULTILEVEL_BLUE) // else deferred until ML BLUE ctor
     numGroups = num_forms_resolutions;
@@ -142,7 +131,7 @@ void NonDNonHierarchSampling::assign_active_key()
   }
 
   active_key.aggregate_keys(form_res_keys, Pecos::RAW_DATA);
-  iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
+  //iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
   iteratedModel.active_model_key(active_key); // data group 0
   resize_active_set();
 }
@@ -456,8 +445,7 @@ ensemble_sample_batch(const String& prepend, size_t step, bool new_samples)
 
   // evaluate all{Samples,Variables} using model ensemble and migrate
   // all{Samples,Variables} to batch{Samples,Variables}Map
-  UShortArray batch_key(1);  batch_key[0] = step;
-  evaluate_batch(iteratedModel, batch_key); // excludes synchronize
+  evaluate_batch(iteratedModel, step); // excludes synchronize
 }
 
 
@@ -489,39 +477,6 @@ export_all_samples(const String& root_prepend, const Model& model, size_t iter,
     + '_' + std::to_string(num_samp) + ".dat";
 
   NonDEnsembleSampling::export_all_samples(model, tabular_filename);
-}
-
-
-void NonDNonHierarchSampling::
-recover_online_cost(const IntResponseMap& all_resp)
-{
-  // uses one set of allResponses with QoI aggregation across all Models,
-  // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
-
-  size_t cntr, step, num_finite, md_index;  IntRespMCIter r_it;
-  unsigned short mf;  Real cost, accum;  using std::isfinite;
-  sequenceCost.size(numApprox+1); // init to 0
-  const Pecos::ActiveKey& active_key = iteratedModel.active_model_key();
-
-  for (step=0, cntr=0; step<=numApprox; ++step) {
-    mf = active_key.retrieve_model_form(step);
-    const SizetSizetPair& cost_mdi = costMetadataIndices[mf];
-    md_index = cntr + cost_mdi.first; // index into aggregated metadata
-
-    accum = 0.;  num_finite = 0;
-    for (r_it=all_resp.begin(); r_it!=all_resp.end(); ++r_it) {
-      cost = r_it->second.metadata(md_index); // offset by index
-      if (isfinite(cost))
-	{ accum += cost; ++num_finite; }
-    }
-    sequenceCost[step] = accum / num_finite;
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Online cost: accum cost = " << accum
-	   << " num cost = " << num_finite
-	   << " sequence cost = " << sequenceCost[step] << std::endl;
-
-    cntr += cost_mdi.second; // offset by size of metadata for step
-  }
 }
 
 
@@ -2390,14 +2345,12 @@ response_evaluator(const Variables& vars, const ActiveSet& set,
 /** Multi-moment map-based version used for approximation increments */
 void NonDNonHierarchSampling::
 accumulate_group_sums(IntRealMatrixArrayMap& sum_G, Sizet2DArray& num_G,
-		     const UShortArrayIntResponse2DMap& batch_resp_map)
+		     const IntIntResponse2DMap& batch_resp_map)
 {
-  UShortArrayIntResponse2DMap::const_iterator b_it;
+  IntIntResponse2DMap::const_iterator b_it;
   size_t g, num_groups = modelGroups.size();
-  UShortArray batch_key(1);
   for (g=0; g<num_groups; ++g) {
-    batch_key[0] = g; // index g corresponds to group_id key
-    b_it = batch_resp_map.find(batch_key);
+    b_it = batch_resp_map.find(g); // index g corresponds to group_id key
     if (b_it != batch_resp_map.end()) // else no new evals for this group
       accumulate_group_sums(sum_G, num_G, g, b_it->second);
   }

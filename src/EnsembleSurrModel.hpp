@@ -588,9 +588,11 @@ inline bool EnsembleSurrModel::multilevel() const
 
 
 inline bool EnsembleSurrModel::multilevel_multifidelity() const
-{ return ( approxModels.size() && truthModel.solution_levels() > 1 &&
+{
+  return ( !approxModels.empty() && truthModel.solution_levels() > 1 &&
 	   ( ensemblePrecedence != MULTILEVEL_PRECEDENCE &&
-	     ensemblePrecedence != MULTIFIDELITY_PRECEDENCE) ); }
+	     ensemblePrecedence != MULTIFIDELITY_PRECEDENCE) );
+}
 
 
 inline short EnsembleSurrModel::ensemble_precedence() const

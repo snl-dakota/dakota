@@ -165,11 +165,30 @@ bool operator!=(typename boost::multi_array<T, 1>::template
 
 /// checks for any non-zero value in std::vector(); useful for determining
 /// whether an array of request codes (e.g., an ASV) has any actionable content
-template <typename OrdinalType>
-bool non_zero(const std::vector<OrdinalType>& vec)
+template <typename OrdinalType, typename ScalarType>
+bool non_zero(const std::vector<ScalarType>& vec)
 {
-  size_t i, len = vec.size();
+  OrdinalType i, len = vec.size();
   for (i=0; i<len; ++i)
+    if (vec[i] != 0)
+      return true;
+  return false; // includes case of empty vector (no actions)
+}
+
+/// checks for any non-zero value in range of a std::vector(); useful for
+/// determining whether an array of request codes (e.g., an ASV) has any
+/// actionable content
+template <typename OrdinalType, typename ScalarType>
+bool non_zero(const std::vector<ScalarType>& vec,
+	      OrdinalType start, OrdinalType end)
+{
+  OrdinalType i, len = vec.size();
+  if (start > end || end > len) {
+    Cerr << "Error: range out of bounds in non_zero(vec, start, end)."
+	 << std::endl;
+    abort_handler(-1);
+  }
+  for (i=start; i<end; ++i)
     if (vec[i] != 0)
       return true;
   return false; // includes case of empty vector (no actions)

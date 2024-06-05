@@ -404,9 +404,6 @@ protected:
 
   void assign_active_key();
 
-  /// recover estimates of simulation cost using aggregated response metadata
-  void recover_online_cost(const IntResponseMap& all_resp);
-
   //void initialize_sums(IntRealMatrixMap& sum_Q);
   void initialize_sums(IntRealMatrixMap& sum_L_baseline,
 		       IntRealVectorMap& sum_H, IntRealMatrixMap& sum_LH,
@@ -476,7 +473,7 @@ protected:
 			      const UShortSet& reverse_dag);
 
   void accumulate_group_sums(IntRealMatrixArrayMap& sum_G, Sizet2DArray& num_G,
-			     const UShortArrayIntResponse2DMap& batch_resp_map);
+			     const IntIntResponse2DMap& batch_resp_map);
   void accumulate_group_sums(IntRealMatrixArrayMap& sum_G, Sizet2DArray& num_G,
 			     size_t group, const IntResponseMap& resp_map);
 

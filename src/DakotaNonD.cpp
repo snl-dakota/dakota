@@ -417,10 +417,10 @@ void NonD::push_level_mappings(const RealVector& level_maps, size_t offset)
 }
 
 
-/** A one-dimensional sequence is assumed in this case. */
+/** A one-dimensional sequence is defined in this case. */
 void NonD::
-configure_sequence(//unsigned short hierarch_dim,
-		   size_t& num_steps, size_t& secondary_index, short& seq_type)
+configure_1d_sequence(size_t& num_steps, size_t& secondary_index,
+		      short& seq_type)
 {
   // Allow either model forms or discretization levels, but not both
   // (precedence determined by ML/MF calling algorithm)
@@ -429,54 +429,60 @@ configure_sequence(//unsigned short hierarch_dim,
   size_t num_mf = sub_models.size(), num_hf_lev = m_iter->solution_levels();
   bool ml = iteratedModel.multilevel();
 
-  //switch (hierarch_dim) {
-  //case 1:
-    if (ml || iteratedModel.multilevel_multifidelity()) {
-      // only loop (1D) or outer loop (2D)
-      seq_type  = Pecos::RESOLUTION_LEVEL_SEQUENCE;
-      num_steps = num_hf_lev;  secondary_index = num_mf - 1;
-      if (ml && num_mf > 1)
-	Cerr << "Warning: multiple model forms will be ignored by "
-	     << "NonD::configure_sequence() for ML precedence.\n";
-    }
-    else if (iteratedModel.multifidelity()) {
-      seq_type  = Pecos::MODEL_FORM_SEQUENCE;
-      num_steps = num_mf;
-      // retain each model's active solution control index:
-      secondary_index = SZ_MAX;
-      if (num_hf_lev > 1)
-	Cerr << "Warning: solution control levels will be ignored by "
-	     << "NonD::configure_sequence() for MF precedence.\n";
-    }
-    else {
-      Cerr << "Error: no model hierarchy evident in NonD::configure_sequence()."
-	   << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
-  /*
-    break;
-  case 2:
-    if (iteratedModel.multilevel_multifidelity()) {
-      seq_type  = Pecos::FORM_RESOLUTION_ENUMERATION;
-      num_steps = num_mf;
-      secondary_index = num_hf_lev; // use this field as secondary step count?
-    }
-    else {
-      Cerr << "Error: no compatible model hierarchy evident in NonDExpansion::"
-	   << "configure_sequence()." << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
-    break;
+  if (ml || iteratedModel.multilevel_multifidelity()) {
+    // only loop (1D) or outer loop (2D)
+    seq_type  = Pecos::RESOLUTION_LEVEL_1D_SEQUENCE;
+    num_steps = num_hf_lev;  secondary_index = num_mf - 1;
+    if (ml && num_mf > 1)
+      Cerr << "Warning: multiple model forms will be ignored by "
+	   << "NonD::configure_1d_sequence() for ML precedence.\n";
   }
-  */
+  else if (iteratedModel.multifidelity()) {
+    seq_type  = Pecos::MODEL_FORM_1D_SEQUENCE;
+    num_steps = num_mf;
+    // retain each model's active solution control index:
+    secondary_index = SZ_MAX;
+    if (num_hf_lev > 1)
+      Cerr << "Warning: solution control levels will be ignored by "
+	   << "NonD::configure_1d_sequence() for MF precedence.\n";
+  }
+  else {
+    Cerr << "Error: no model hierarchy evident in NonD::"
+	 << "configure_1d_sequence()." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+}
+
+
+/** A two-dimensional sequence is supported in this case. */
+void NonD::
+configure_2d_sequence(size_t& num_steps, size_t& secondary_index,
+		      short& seq_type)
+{
+  if (iteratedModel.multilevel_multifidelity()) {
+    seq_type  = Pecos::FORM_RESOLUTION_2D_SEQUENCE;
+
+    // For completeness (not currently used)
+    ModelList& sub_models = iteratedModel.subordinate_models(false);
+    num_steps = sub_models.back().solution_levels(); // num_hf_lev
+    secondary_index = sub_models.size() - 1;     // HF model index
+  }
+  else {
+    Cerr << "Warning: no compatible 2D model hierarchy evident in NonD::"
+	 << "configure_2d_sequence().\n         Trying 1d_sequence.\n";
+    //abort_handler(METHOD_ERROR);
+    configure_1d_sequence(num_steps, secondary_index, seq_type);
+  }
 }
 
 
 /** Both model forms and resolutions are enumerated, from head to tail with
     resolutions as inner loop. */
 void NonD::
-configure_enumeration(size_t& num_combinations)//, short& seq_type)
+configure_enumeration(size_t& num_combinations, short& seq_type)
 {
+  seq_type = Pecos::FORM_RESOLUTION_ENUMERATION;
+
   // Enumerate both model forms and discretization levels
   num_combinations = 0;
   ModelList& sub_models = iteratedModel.subordinate_models(false);// includes HF
@@ -486,26 +492,51 @@ configure_enumeration(size_t& num_combinations)//, short& seq_type)
 
 
 bool NonD::
-query_cost(unsigned short num_costs, short seq_type, RealVector& cost)
+query_cost(unsigned short num_costs, short seq_type, RealVector& seq_cost)
 {
   ModelList& sub_models = iteratedModel.subordinate_models(false);
   bool cost_defined;
   switch (seq_type) {
-  case Pecos::RESOLUTION_LEVEL_SEQUENCE: // 1D resolution hierarchy for HF model
-    cost_defined = query_cost(num_costs, sub_models.back(), cost);  break;
-  case Pecos::MODEL_FORM_SEQUENCE:
+
+  // These cases may employ model subsets due to sequence constraints
+
+  case Pecos::RESOLUTION_LEVEL_1D_SEQUENCE:  // ML
+    cost_defined = query_cost(num_costs, sub_models.back(), seq_cost);  break;
+  case Pecos::MODEL_FORM_1D_SEQUENCE:        // MF
     if (sub_models.size() == num_costs) {
-      cost.sizeUninitialized(num_costs);
+      seq_cost.sizeUninitialized(num_costs);
       ModelLIter m_iter = sub_models.begin();
       for (unsigned short i=0; i<num_costs; ++i, ++m_iter)
-	cost[i] = m_iter->solution_level_cost();//active soln index; 0 if !found
+	seq_cost[i] = m_iter->solution_level_cost();// act soln index; 0 if !fnd
       cost_defined = valid_cost_values(cost);  // must be > 0.
     }
     else cost_defined = false;
-    if (!cost_defined) cost.sizeUninitialized(0);//for compute_equivalent_cost()
+    if (!cost_defined) seq_cost.sizeUninitialized(0);// for compute_equiv_cost()
     break;
+  case Pecos::FORM_RESOLUTION_2D_SEQUENCE: { // MLMF
+    const Model &lf_model = sub_models.front(), &hf_model = sub_models.back();
+    size_t num_hf_lev    = hf_model.solution_levels(),
+           num_cv_lev    = std::min(num_hf_lev, lf_model.solution_levels()),
+           num_total_lev = num_hf_lev + num_cv_lev;
+    if (num_total_lev == num_costs) {
+      seq_cost.sizeUninitialized(num_costs);
+      RealVector lf_costs = lf_model.solution_level_costs(),
+	         hf_costs = hf_model.solution_level_costs();
+      if (lf_costs.length() >= num_cv_lev && hf_costs.length() == num_hf_lev) {
+	copy_data_partial(lf_costs, 0, num_cv_lev, seq_cost, 0);
+	copy_data_partial(hf_costs, seq_cost, num_cv_lev);
+	cost_defined = valid_cost_values(seq_cost);
+      }
+    }
+    else cost_defined = false;
+    if (!cost_defined) seq_cost.sizeUninitialized(0);// for compute_equiv_cost()
+    break;
+  }
+
+  // This case is unconstrained: all resolution levels for all model forms
+
   case Pecos::FORM_RESOLUTION_ENUMERATION: {
-    cost.sizeUninitialized(num_costs); // includes lower bound of 1 per model
+    seq_cost.sizeUninitialized(num_costs); // includes lower bnd of 1 per model
     ModelLIter m_iter;  cost_defined = true;  size_t cntr = 0;
     // assemble resolution level costs head to tail across models
     // (model costs are presumed to be more separated than resolution costs)
@@ -514,13 +545,13 @@ query_cost(unsigned short num_costs, short seq_type, RealVector& cost)
       size_t num_cost_m = m_costs.length(); // may be zero
       if (num_cost_m == m_iter->solution_levels() &&
 	  valid_cost_values(m_costs)) {
-	copy_data_partial(m_costs, cost, cntr);
+	copy_data_partial(m_costs, seq_cost, cntr);
 	cntr += num_cost_m;
       }
       else
 	{ cost_defined = false;  break; }
     }
-    if (!cost_defined) cost.sizeUninitialized(0);//for compute_equivalent_cost()
+    if (!cost_defined) seq_cost.sizeUninitialized(0);// for compute_equiv_cost()
     break;
   }
   }

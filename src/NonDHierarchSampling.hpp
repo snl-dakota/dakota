@@ -60,25 +60,14 @@ protected:
   //
 
   /// queue a batch of samples to be performed for the active model subset
-  void ensemble_sample_batch(const String& prepend,
-			     const UShortArray& batch_key,
+  void ensemble_sample_batch(const String& prepend, int batch_id,
 			     bool new_samples = true);
-
-  /// average costs once accumulations are complete
-  void average_online_cost(const RealVector& accum_cost,
-			   const SizetArray& num_cost, RealVector& seq_cost);
-  /// recover partial estimates of simulation cost using aggregated (paired)
-  /// response metadata
-  void accumulate_paired_online_cost(RealVector& accum_cost,
-				     SizetArray& num_cost, size_t step,
-				     const IntResponseMap& resp_map);
-  /// accumulate cost and counts and then perform averaging
-  void recover_paired_online_cost(RealVector& seq_cost, size_t step,
-				  const IntResponseMap& resp_map);
+  /// set request = 1 for QoI in (lev-1,lev)
+  void ml_active_set(size_t lev, size_t offset = 0, bool clear_req = true);
 
   /// export allSamples to tagged tabular file
   void export_all_samples(String root_prepend, const Model& model,
-			  size_t iter, const UShortArray& batch_key);
+			  size_t iter, int batch_id);
 
   //
   //- Heading: Data
@@ -107,29 +96,18 @@ inline Real NonDHierarchSampling::estimator_accuracy_metric()
 
 
 inline void NonDHierarchSampling::
-average_online_cost(const RealVector& accum_cost, const SizetArray& num_cost,
-		    RealVector& seq_cost)
+ml_active_set(size_t lev, size_t offset, bool clear_req)
 {
-  // Finalize the average cost for the ensemble
-  size_t step, num_steps = accum_cost.length();
-  if (seq_cost.length() != num_steps) seq_cost.sizeUninitialized(num_steps);
-  for (step=0; step<num_steps; ++step)
-    seq_cost[step] = accum_cost[step] / num_cost[step];
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "Online cost: accum_cost:\n" << accum_cost << "num_cost:\n"
-	 << num_cost << "seq_cost:\n" << seq_cost << std::endl;
-}
+  if (clear_req) activeSet.request_values(0);
 
-
-inline void NonDHierarchSampling::
-recover_paired_online_cost(RealVector& seq_cost, size_t step,
-			   const IntResponseMap& resp_map)
-{
-  int len = seq_cost.length();
-  RealVector accum_cost(len);                    // init to 0
-  SizetArray num_cost;  num_cost.assign(len, 0); // init to 0
-  accumulate_paired_online_cost(accum_cost, num_cost, step, resp_map);
-  average_online_cost(accum_cost, num_cost, seq_cost);
+  if (lev) {
+    size_t lm1 = lev - 1;
+    if (lm1) offset += lm1 * numFunctions;
+    size_t end = offset + numFunctions;
+    activeSet.request_values(1, offset, end);
+    offset = end;
+  }
+  activeSet.request_values(1, offset, offset + numFunctions);
 }
 
 } // namespace Dakota
