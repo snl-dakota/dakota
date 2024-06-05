@@ -451,7 +451,7 @@ multilevel_control_variate_mc_online_pilot() //_Qcorr()
     sum_sqrt_var_cost = 0.;
     for (lev=0, group=0; lev<num_hf_lev; ++lev, ++group) {
 
-      hf_lev_cost = level_cost(sequenceCost, num_cv_lev + lev);
+      hf_lev_cost = level_cost(sequenceCost, lev, num_cv_lev);
       numSamples = delta_N_hf[lev];
 
       // aggregate variances across QoI for estimating N_hf (justification:
@@ -527,7 +527,7 @@ multilevel_control_variate_mc_online_pilot() //_Qcorr()
       budget / sum_sqrt_var_cost :      //        budget constraint
       sum_sqrt_var_cost / eps_sq_div_2; // error balance constraint
     for (lev=0; lev<num_hf_lev; ++lev) {
-      hf_lev_cost = level_cost(sequenceCost, num_cv_lev + lev);
+      hf_lev_cost = level_cost(sequenceCost, lev, num_cv_lev);
       hf_tgt_l = hf_targets[lev] = (lev < num_cv_lev) ? fact *
 	std::sqrt(agg_var_hf[lev] / hf_lev_cost * (1. - avg_rho_dot2_LH[lev])) :
 	fact * std::sqrt(agg_var_hf[lev] / hf_lev_cost);
@@ -692,7 +692,7 @@ multilevel_control_variate_mc_offline_pilot()
   for (lev=0, group=0; lev<num_hf_lev; ++lev, ++group) {
 
     numSamples = delta_N_hf[lev];  N_alloc_hf[lev] += numSamples;
-    hf_lev_cost = level_cost(sequenceCost, num_cv_lev + lev);
+    hf_lev_cost = level_cost(sequenceCost, lev, num_cv_lev);
     IntResponseMap& mlmf_resp_map = batchResponsesMap[lev];
 
     if (lev < num_cv_lev) {
@@ -922,7 +922,7 @@ evaluate_pilot(RealVectorArray& eval_ratios, RealMatrix& Lambda,
   sum_sqrt_var_cost = 0.;
   for (lev=0, group=0; lev<num_hf_lev; ++lev, ++group) {
 
-    hf_lev_cost = level_cost(sequenceCost, num_cv_lev + lev);
+    hf_lev_cost = level_cost(sequenceCost, lev, num_cv_lev);
     Real& agg_var_hf_l = agg_var_hf[lev];//carried over from prev iter if!samp
     numSamples = delta_N_hf[lev];
 
@@ -1003,7 +1003,7 @@ evaluate_pilot(RealVectorArray& eval_ratios, RealMatrix& Lambda,
     budget / sum_sqrt_var_cost :      //        budget constraint
     sum_sqrt_var_cost / eps_sq_div_2; // error balance constraint
   for (lev=0; lev<num_hf_lev; ++lev) {
-    hf_lev_cost = level_cost(sequenceCost, num_cv_lev + lev);
+    hf_lev_cost = level_cost(sequenceCost, lev, num_cv_lev);
     hf_targets[lev] = (lev < num_cv_lev) ? fact *
       std::sqrt(agg_var_hf[lev] / hf_lev_cost * (1. - avg_rho_dot2_LH[lev])) :
       fact * std::sqrt(agg_var_hf[lev] / hf_lev_cost);
@@ -1419,12 +1419,12 @@ update_projected_samples(const RealVector& hf_targets,
       //increment_samples(N_actual_lf[lev], lf_actual_incr);
       //delta_N_actual_lf[lev] += lf_actual_incr;
       increment_mlmf_equivalent_cost(hf_actual_incr,
-	level_cost(sequenceCost, num_cv_lev+lev), lf_actual_incr,
+	level_cost(sequenceCost, lev, num_cv_lev), lf_actual_incr,
 	level_cost(sequenceCost, lev), hf_ref_cost, delta_equiv_hf);
     }
     else
       increment_ml_equivalent_cost(hf_actual_incr,
-	level_cost(sequenceCost, num_cv_lev+lev), hf_ref_cost, delta_equiv_hf);
+	level_cost(sequenceCost, lev, num_cv_lev), hf_ref_cost, delta_equiv_hf);
   }
 }
 
