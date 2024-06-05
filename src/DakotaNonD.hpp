@@ -143,12 +143,9 @@ protected:
   void configure_enumeration(size_t& num_combinations, short& seq_type);
 
   /// extract cost estimates from model hierarchy (forms or resolutions)
-  void configure_cost(unsigned short num_steps, short seq_type,
-		      RealVector& cost);
+  void configure_cost(size_t num_steps, short seq_type, RealVector& cost);
   /// extract cost estimates from model hierarchy, if available
-  bool query_cost(unsigned short num_steps, short seq_type, RealVector& cost);
-  /// extract cost estimates from model hierarchy, if available
-  bool query_cost(unsigned short num_steps, Model& model, RealVector& cost);
+  bool query_cost(size_t num_steps, short seq_type, RealVector& cost);
   /// test cost for valid values > 0
   bool valid_cost_values(const RealVector& cost);
 
@@ -422,7 +419,7 @@ inline NonD::~NonD()
 
 
 inline void NonD::
-configure_cost(unsigned short num_steps, short seq_type, RealVector& cost)
+configure_cost(size_t num_steps, short seq_type, RealVector& cost)
 {
   bool cost_defined = query_cost(num_steps, seq_type, cost);
   if (!cost_defined) {

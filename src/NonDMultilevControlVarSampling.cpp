@@ -36,6 +36,7 @@ NonDMultilevControlVarSampling(ProblemDescDB& problem_db, Model& model):
   // Note: only sequenceType is currently used by MLCV
   configure_2d_sequence(numSteps, secondaryIndex, sequenceType);
   numApprox = numSteps - 1; // numSteps is total = num_cv_lev + num_hf_lev
+  onlineCost = !query_cost(numSteps, sequenceType, sequenceCost);
 }
 
 

@@ -490,12 +490,11 @@ configure_enumeration(size_t& num_combinations, short& seq_type)
   num_combinations = 0;
   ModelList& sub_models = iteratedModel.subordinate_models(false);// includes HF
   for (ModelLIter m_iter=sub_models.begin(); m_iter!=sub_models.end(); ++m_iter)
-    num_combinations += m_iter->solution_levels();
+    num_combinations += m_iter->solution_levels(); // lower bound of 1
 }
 
 
-bool NonD::
-query_cost(unsigned short num_costs, short seq_type, RealVector& seq_cost)
+bool NonD::query_cost(size_t num_costs, short seq_type, RealVector& seq_cost)
 {
   ModelList& sub_models = iteratedModel.subordinate_models(false);
   bool cost_defined;
@@ -504,70 +503,62 @@ query_cost(unsigned short num_costs, short seq_type, RealVector& seq_cost)
   // These cases may employ model subsets due to sequence constraints
 
   case Pecos::RESOLUTION_LEVEL_1D_SEQUENCE:  // ML
-    cost_defined = query_cost(num_costs, sub_models.back(), seq_cost);  break;
+    seq_cost = sub_models.back().solution_level_costs(); // can be empty
+    cost_defined = (seq_cost.length() == num_costs &&
+		    valid_cost_values(seq_cost));
+    break;
   case Pecos::MODEL_FORM_1D_SEQUENCE:        // MF
     if (sub_models.size() == num_costs) {
       seq_cost.sizeUninitialized(num_costs);
       ModelLIter m_iter = sub_models.begin();
-      for (unsigned short i=0; i<num_costs; ++i, ++m_iter)
+      for (size_t i=0; i<num_costs; ++i, ++m_iter)
 	seq_cost[i] = m_iter->solution_level_cost();// act soln index; 0 if !fnd
       cost_defined = valid_cost_values(seq_cost);  // must be > 0.
     }
     else cost_defined = false;
-    if (!cost_defined) seq_cost.sizeUninitialized(0);// for compute_equiv_cost()
     break;
   case Pecos::FORM_RESOLUTION_2D_SEQUENCE: { // MLMF
-    const Model &lf_model = sub_models.front(), &hf_model = sub_models.back();
-    size_t num_hf_lev    = hf_model.solution_levels(),
-           num_cv_lev    = std::min(num_hf_lev, lf_model.solution_levels()),
-           num_total_lev = num_hf_lev + num_cv_lev;
-    if (num_total_lev == num_costs) {
+    RealVector lf_costs = sub_models.front().solution_level_costs(),
+	       hf_costs =  sub_models.back().solution_level_costs();
+    int num_hf_lev = hf_costs.length(),
+        num_cv_lev = std::min(num_hf_lev, lf_costs.length());
+    if (num_hf_lev + num_cv_lev == num_costs) {
       seq_cost.sizeUninitialized(num_costs);
-      RealVector lf_costs = lf_model.solution_level_costs(),
-	         hf_costs = hf_model.solution_level_costs();
-      if (lf_costs.length() >= num_cv_lev && hf_costs.length() == num_hf_lev) {
-	copy_data_partial(lf_costs, 0, (int)num_cv_lev, seq_cost, 0);//truncated
-	copy_data_partial(hf_costs, seq_cost, (int)num_cv_lev);      //all
-	cost_defined = valid_cost_values(seq_cost);
-      }
+      copy_data_partial(lf_costs, 0, num_cv_lev, seq_cost, 0);// truncated
+      copy_data_partial(hf_costs, seq_cost, num_cv_lev);      // all
+      cost_defined = valid_cost_values(seq_cost);
     }
     else cost_defined = false;
-    if (!cost_defined) seq_cost.sizeUninitialized(0);// for compute_equiv_cost()
     break;
   }
 
   // This case is unconstrained: all resolution levels for all model forms
 
   case Pecos::FORM_RESOLUTION_ENUMERATION: {
+    // roll up of forms + levels uses a lower bound of 1 cost per model, but
+    // solution_level_costs() can only provide costs from the specification.
+    // Therefore we check each model for consistency.
     seq_cost.sizeUninitialized(num_costs); // includes lower bnd of 1 per model
     ModelLIter m_iter;  cost_defined = true;  size_t cntr = 0;
     // assemble resolution level costs head to tail across models
     // (model costs are presumed to be more separated than resolution costs)
     for (m_iter=sub_models.begin(); m_iter!=sub_models.end(); ++m_iter) {
       RealVector m_costs = m_iter->solution_level_costs();
-      size_t num_cost_m = m_costs.length(); // may be zero
-      if (num_cost_m == m_iter->solution_levels() &&
+      size_t  num_cost_m = m_costs.length();      // not bounded: may be 0
+      if (num_cost_m == m_iter->solution_levels() && // lower bounded at 1
 	  valid_cost_values(m_costs)) {
 	copy_data_partial(m_costs, seq_cost, cntr);
-	cntr += num_cost_m;
+	cntr += num_cost_m; // may be zero
       }
       else
 	{ cost_defined = false;  break; }
     }
-    if (!cost_defined) seq_cost.sizeUninitialized(0);// for compute_equiv_cost()
     break;
   }
   }
+
+  if (!cost_defined) seq_cost.sizeUninitialized(0);// for compute_equiv_cost()
   return cost_defined;
-}
-
-
-bool NonD::query_cost(unsigned short num_costs, Model& model, RealVector& cost)
-{
-  cost = model.solution_level_costs(); // can be empty
-  if (cost.length() != num_costs || !valid_cost_values(cost))
-    { cost.sizeUninitialized(0); return false; }
-  return true;
 }
 
 
