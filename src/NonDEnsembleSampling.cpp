@@ -236,8 +236,8 @@ void NonDEnsembleSampling::post_run(std::ostream& s)
 
 
 void NonDEnsembleSampling::
-accumulate_online_cost(const IntResponseMap& resp_map,
-		       const RealVector& accum_cost, const SizetArray& num_cost)
+accumulate_online_cost(const IntResponseMap& resp_map, RealVector& accum_cost,
+		       SizetArray& num_cost)
 {
   // uses one set of allResponses with QoI aggregation across all Models,
   // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel

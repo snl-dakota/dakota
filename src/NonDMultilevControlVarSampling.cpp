@@ -35,6 +35,7 @@ NonDMultilevControlVarSampling(ProblemDescDB& problem_db, Model& model):
   iteratedModel.ensemble_precedence(MULTILEVEL_MULTIFIDELITY_PRECEDENCE);
   // Note: only sequenceType is currently used by MLCV
   configure_2d_sequence(numSteps, secondaryIndex, sequenceType);
+  numApprox = numSteps - 1; // numSteps is total = num_cv_lev + num_hf_lev
 }
 
 
@@ -64,7 +65,7 @@ void NonDMultilevControlVarSampling::core_run()
   switch (sequenceType) { // 1d fallbacks selected in configure_2d_sequence()
   case Pecos::RESOLUTION_LEVEL_1D_SEQUENCE:
     delegateMethod = MULTILEVEL_SAMPLING;
-    NonDMultilevelSampling::core_run();
+    NonDMultilevelSampling::core_run(); // reinvokes configure_1d_sequence()
     return;  break;
   // MFMC not inherited as CVMC was, so rely on MLCV with 2 models, num_hf_lev=1
   //case Pecos::MODEL_FORM_1D_SEQUENCE:
@@ -403,7 +404,7 @@ multilevel_control_variate_mc_online_pilot() //_Qcorr()
     if (mlmfIter == 0) {
       if (onlineCost)
 	recover_online_cost(batchResponsesMap); // define sequenceCost for LF,HF
-      hf_ref_cost = sequenceCost.back();
+      hf_ref_cost = sequenceCost[numApprox];
       if (budget_constrained) budget = (Real)maxFunctionEvals * hf_ref_cost;
       // Note: could assign these back if needed elsewhere:
       //if (online_hf_cost) truth_model.solution_level_costs(hf_cost);
@@ -641,7 +642,7 @@ void NonDMultilevControlVarSampling::
 multilevel_control_variate_mc_offline_pilot()
 {
   // retrieve cost estimates across solution levels for HF model
-  RealVector hf_targets_pilot, lf_target;
+  RealVector hf_targets_pilot, lf_targets;
   RealMatrix Lambda_pilot, var_YH_pilot, Y_mom;
   RealVectorArray eval_ratios_pilot;
 
@@ -671,7 +672,7 @@ multilevel_control_variate_mc_offline_pilot()
   // ----------------------------------------------------------
   // QOI_STATISTICS case; ESTIMATOR_PERFORMANCE redirects to
   // multilevel_control_variate_mc_pilot_projection() to also bypass IntMaps.
-  Real lf_lev_cost, hf_lev_cost, hf_ref_cost = sequenceCost.back();
+  Real lf_lev_cost, hf_lev_cost, hf_ref_cost = sequenceCost[numApprox];
   IntRealMatrixMap sum_Ll, sum_Llm1, sum_Ll_refined, sum_Llm1_refined, sum_Hl,
     sum_Hlm1, sum_Ll_Ll, sum_Ll_Llm1, sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1,
     sum_Hlm1_Ll, sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1, sum_Hlm1_Hlm1;
@@ -891,7 +892,7 @@ evaluate_pilot(RealVectorArray& eval_ratios, RealMatrix& Lambda,
   mlmf_increments(delta_N_hf, "mlcv_");
   if (onlineCost)
     recover_online_cost(batchResponsesMap); // define sequenceCost for LF,HF
-  hf_ref_cost = sequenceCost.back();
+  hf_ref_cost = sequenceCost[numApprox];
   if (budget_constrained) budget = (Real)maxFunctionEvals * hf_ref_cost;
   // Note: could assign these back if needed elsewhere:
   //if (online_hf_cost) truth_model.solution_level_costs(hf_cost);
@@ -1388,7 +1389,7 @@ update_projected_samples(const RealVector& hf_targets,
     num_hf_lev = iteratedModel.truth_model().solution_levels(),
     num_cv_lev = std::min(num_hf_lev,
 			  iteratedModel.surrogate_model().solution_levels());
-  Real hf_target_l, hf_ref_cost = sequenceCost.back();
+  Real hf_target_l, hf_ref_cost = sequenceCost[numApprox];
   RealVector lf_targets(numFunctions, false);
   for (lev=0; lev<num_hf_lev; ++lev) {
     hf_target_l      = hf_targets[lev];
@@ -1438,7 +1439,7 @@ update_projected_lf_samples(const RealVector& hf_targets,
   size_t lf_actual_incr, lf_alloc_incr, lev, num_cv_lev
     = std::min(iteratedModel.truth_model().solution_levels(),
 	       iteratedModel.surrogate_model().solution_levels());
-  Real hf_target_l, hf_ref_cost = sequenceCost.back();
+  Real hf_target_l, hf_ref_cost = sequenceCost[numApprox];
   RealVector lf_targets(numFunctions, false);
   for (lev=0; lev<num_cv_lev; ++lev) {
     hf_target_l = hf_targets[lev];
@@ -1925,7 +1926,7 @@ accumulate_mlmf_Qsums(const IntResponseMap& resp_map, RealMatrix& sum_Ll,
   else {
     using std::isfinite;
     Real lf_l, lf_lm1, hf_l, hf_lm1, hf_l_prod, hf_lm1_prod;
-    IntRespMCIter lf_r_it, hf_r_it;  IntRMMIter h1_it, h2_it;
+    IntRespMCIter r_it;  IntRMMIter h1_it, h2_it;
     int h1_ord, h2_ord, active_ord;
     size_t qoi, offset_lf_lm1 = (lev-1) * numFunctions,
       offset_lf_l   = lev * numFunctions,

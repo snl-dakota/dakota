@@ -24,7 +24,7 @@
 #endif
 
 // Toggle for MPI debug hold
-//#define MPI_DEBUG
+#define MPI_DEBUG
 
 #if defined(MPI_DEBUG) && defined(MPICH_NAME)
 #include <sys/types.h> 

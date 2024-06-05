@@ -425,8 +425,8 @@ configure_1d_sequence(size_t& num_steps, size_t& secondary_index,
   // Allow either model forms or discretization levels, but not both
   // (precedence determined by ML/MF calling algorithm)
   ModelList& sub_models = iteratedModel.subordinate_models(false);
-  ModelLIter m_iter = --sub_models.end(); // HF model
-  size_t num_mf = sub_models.size(), num_hf_lev = m_iter->solution_levels();
+  size_t num_mf = sub_models.size(),
+    num_hf_lev  = sub_models.back().solution_levels();
   bool ml = iteratedModel.multilevel();
 
   if (ml || iteratedModel.multilevel_multifidelity()) {
@@ -456,22 +456,25 @@ configure_1d_sequence(size_t& num_steps, size_t& secondary_index,
 
 /** A two-dimensional sequence is supported in this case. */
 void NonD::
-configure_2d_sequence(size_t& num_steps, size_t& secondary_index,
+configure_2d_sequence(size_t& total_steps, size_t& secondary_index,
 		      short& seq_type)
 {
   if (iteratedModel.multilevel_multifidelity()) {
     seq_type  = Pecos::FORM_RESOLUTION_2D_SEQUENCE;
 
-    // For completeness (not currently used)
     ModelList& sub_models = iteratedModel.subordinate_models(false);
-    num_steps = sub_models.back().solution_levels(); // num_hf_lev
-    secondary_index = sub_models.size() - 1;     // HF model index
+    size_t num_mf = sub_models.size(),
+      num_hf_lev  = sub_models.back().solution_levels(),
+      num_cv_lev  = (num_mf > 1) ?
+      std::min(num_hf_lev, sub_models.front().solution_levels()) : 0;
+    total_steps = num_cv_lev + num_hf_lev;
+    secondary_index = SZ_MAX; // not relevant for 2D
   }
   else {
     Cerr << "Warning: no compatible 2D model hierarchy evident in NonD::"
 	 << "configure_2d_sequence().\n         Trying 1d_sequence.\n";
     //abort_handler(METHOD_ERROR);
-    configure_1d_sequence(num_steps, secondary_index, seq_type);
+    configure_1d_sequence(total_steps, secondary_index, seq_type);
   }
 }
 
@@ -508,7 +511,7 @@ query_cost(unsigned short num_costs, short seq_type, RealVector& seq_cost)
       ModelLIter m_iter = sub_models.begin();
       for (unsigned short i=0; i<num_costs; ++i, ++m_iter)
 	seq_cost[i] = m_iter->solution_level_cost();// act soln index; 0 if !fnd
-      cost_defined = valid_cost_values(cost);  // must be > 0.
+      cost_defined = valid_cost_values(seq_cost);  // must be > 0.
     }
     else cost_defined = false;
     if (!cost_defined) seq_cost.sizeUninitialized(0);// for compute_equiv_cost()
@@ -523,8 +526,8 @@ query_cost(unsigned short num_costs, short seq_type, RealVector& seq_cost)
       RealVector lf_costs = lf_model.solution_level_costs(),
 	         hf_costs = hf_model.solution_level_costs();
       if (lf_costs.length() >= num_cv_lev && hf_costs.length() == num_hf_lev) {
-	copy_data_partial(lf_costs, 0, num_cv_lev, seq_cost, 0);
-	copy_data_partial(hf_costs, seq_cost, num_cv_lev);
+	copy_data_partial(lf_costs, 0, (int)num_cv_lev, seq_cost, 0);//truncated
+	copy_data_partial(hf_costs, seq_cost, (int)num_cv_lev);      //all
 	cost_defined = valid_cost_values(seq_cost);
       }
     }

@@ -117,6 +117,7 @@ void NonDMultilevelSampling::core_run()
   }
 
   configure_1d_sequence(numSteps, secondaryIndex, sequenceType);
+  numApprox  = numSteps - 1;
   onlineCost = !query_cost(numSteps, sequenceType, sequenceCost);
   // assign an aggregate model key that does not need to be updated
   // (activeSet identifies QoIs for the active model subset)
@@ -156,14 +157,19 @@ void NonDMultilevelSampling::assign_active_key()
     break;
   case Pecos::MODEL_FORM_1D_SEQUENCE: {
     // Note: secondaryIndex is SZ_MAX
-    size_t s, lev, num_approx = numSteps - 1;
-    for (s=0; s<num_approx; ++s) {
+    size_t s, lev;
+    for (s=0; s<numApprox; ++s) {
       lev = iteratedModel.surrogate_model(s).solution_level_cost_index();
       seq_keys[s].form_key(0, s, lev);
     }
     lev = iteratedModel.truth_model().solution_level_cost_index();
-    seq_keys[num_approx].form_key(0, num_approx, lev);
+    seq_keys[numApprox].form_key(0, numApprox, lev);
     break;
+  }
+  default:
+    Cerr << "Error: unsupported sequence type in MLMC assign_active_key()"
+	 << std::endl;
+    abort_handler(METHOD_ERROR);  break;
   }
 
   Pecos::ActiveKey active_key;

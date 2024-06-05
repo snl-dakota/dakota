@@ -1394,7 +1394,7 @@ void NonDExpansion::multifidelity_reference_expansion()
 
   // Allow either model forms or discretization levels, but not both
   size_t num_steps, form, lev, secondary_index; short seq_type;
-  configure_sequence(num_steps, secondary_index, seq_type);
+  configure_1d_sequence(num_steps, secondary_index, seq_type);
   bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_1D_SEQUENCE);
   // either lev varies and form is fixed, or vice versa:
   size_t& step = (multilev) ? lev : form;  step = 0;
@@ -1457,7 +1457,7 @@ void NonDExpansion::multifidelity_individual_refinement()
 {
   // Allow either model forms or discretization levels, but not both
   size_t num_steps, form, lev, secondary_index; short seq_type;
-  configure_sequence(num_steps, secondary_index, seq_type);
+  configure_1d_sequence(num_steps, secondary_index, seq_type);
   bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_1D_SEQUENCE);
   // either lev varies and form is fixed, or vice versa:
   size_t& step = (multilev) ? lev : form;  step = 0;
@@ -1529,7 +1529,7 @@ void NonDExpansion::multifidelity_integrated_refinement()
        << "\n-----------------------------------------------\n";
   // Initialize again (or must propagate settings from mf_expansion())
   size_t num_steps, form, lev, secondary_index; short seq_type;
-  configure_sequence(num_steps, secondary_index, seq_type);
+  configure_1d_sequence(num_steps, secondary_index, seq_type);
   bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_1D_SEQUENCE);
   // either lev varies and form is fixed, or vice versa:
   size_t& step = (multilev) ? lev : form;
@@ -1624,7 +1624,7 @@ void NonDExpansion::multilevel_regression()
 {
   // Allow either model forms or discretization levels, but not both
   size_t num_steps, form, lev, secondary_index; short seq_type;
-  configure_sequence(num_steps, secondary_index, seq_type);
+  configure_1d_sequence(num_steps, secondary_index, seq_type);
   bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_1D_SEQUENCE);
   // either lev varies and form is fixed, or vice versa:
   size_t& step = (multilev) ? lev : form;

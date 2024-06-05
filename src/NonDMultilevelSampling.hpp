@@ -177,6 +177,9 @@ private:
   /// Project estimator performance from an online or offline pilot sample
   void multilevel_mc_pilot_projection();
 
+  /// define the truth and surrogate keys
+  void assign_active_key();
+
   /// helper for shared code among offline-pilot and pilot-projection modes
   void evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 		       IntIntPairRealMatrixMap& sum_QlQlm1,

@@ -174,6 +174,9 @@ protected:
   /// relative costs of model forms/resolution levels within a 1D sequence
   RealVector sequenceCost;
 
+  /// number of approximation models managed by non-hierarchical iteratedModel
+  size_t numApprox;
+
   /// total number of successful sample evaluations (excluding faults)
   /// for each model form, discretization level, and QoI
   Sizet3DArray NLevActual;
@@ -261,8 +264,10 @@ private:
 
   /// accumulator of cost metadata per sample batch
   void accumulate_online_cost(const IntResponseMap& resp_map,
-			      const RealVector& accum_cost,
-			      const SizetArray& num_cost);
+			      RealVector& accum_cost, SizetArray& num_cost);
+  /// convert cost accumulations to averages
+  void average_online_cost(const RealVector& accum_cost,
+			   const SizetArray& num_cost, RealVector& seq_cost);
 
   /// cache state of seed sequence for use in seed_updated()
   size_t seedIndex;
@@ -332,9 +337,18 @@ recover_online_cost(const IntIntResponse2DMap& batch_resp_map)
   RealVector accum_cost(len);                    // init to 0
   SizetArray num_cost;  num_cost.assign(len, 0); // init to 0
   size_t b, num_batch = batch_resp_map.size();
+  IntIntResponse2DMap::const_iterator b_it;
 
-  for (b=0; b<num_batch; ++b)
-    accumulate_online_cost(batch_resp_map[b], accum_cost, num_cost);
+  for (b=0; b<num_batch; ++b) {
+    b_it = batch_resp_map.find(b);
+    if (b_it == batch_resp_map.end()) {
+      Cerr << "Error: batch id lookup failure in recover_online_cost()"
+	   << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    else
+      accumulate_online_cost(b_it->second, accum_cost, num_cost);
+  }
   average_online_cost(accum_cost, num_cost, sequenceCost);
 }
 

@@ -165,10 +165,10 @@ bool operator!=(typename boost::multi_array<T, 1>::template
 
 /// checks for any non-zero value in std::vector(); useful for determining
 /// whether an array of request codes (e.g., an ASV) has any actionable content
-template <typename OrdinalType, typename ScalarType>
+template <typename ScalarType>
 bool non_zero(const std::vector<ScalarType>& vec)
 {
-  OrdinalType i, len = vec.size();
+  size_t i, len = vec.size();
   for (i=0; i<len; ++i)
     if (vec[i] != 0)
       return true;

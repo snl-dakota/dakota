@@ -663,8 +663,6 @@ protected:
   /// number of model groupings (pairings, pyramid levels,
   /// tensor-product enumerations) used for sample allocations
   size_t numGroups;
-  /// number of approximation models managed by non-hierarchical iteratedModel
-  size_t numApprox;
 
   /// the set of model groupings used by the estimator, e.g. ML BLUE
   UShort2DArray modelGroups;
