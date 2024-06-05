@@ -34,6 +34,7 @@ ApproximationFieldInterface(ProblemDescDB& problem_db, const Variables& am_vars,
                                                                           << numFields << ", "
                                                                           << numScalars << std::endl;
 
+  // Reconstruction to allow field-based approximations
   functionSurfaces.clear();
   functionSurfaces.resize(num_fns);
   for (StSIter it=approximation_fn_indices().begin(); it!=approximation_fn_indices().end(); ++it)
