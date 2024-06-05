@@ -47,6 +47,16 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
     problem_db.get_real("method.nond.relaxation.recursive_factor")),
   seedIndex(SZ_MAX)
 {
+  // check iteratedModel for model form hierarchy and/or discretization levels;
+  // set initial response mode for set_communicators() (precedes core_run()).
+  if (iteratedModel.surrogate_type() == "ensemble")
+    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
+  else {
+    Cerr << "Error: ensemble sampling for multifidelity analysis requires an "
+	 << "ensemble surrogate model specification." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
   ModelList& model_ensemble = iteratedModel.subordinate_models(false);
   size_t i, num_mf = model_ensemble.size(), num_lev, prev_lev = SZ_MAX,
     md_index, num_md;
@@ -225,6 +235,40 @@ void NonDEnsembleSampling::post_run(std::ostream& s)
 }
 
 
+void NonDEnsembleSampling::
+accumulate_online_cost(const IntResponseMap& resp_map, RealVector& accum_cost,
+		       SizetArray& num_cost)
+{
+  // uses one set of allResponses with QoI aggregation across all Models,
+  // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
+
+  using std::isfinite;
+  size_t m, cntr, start, end, md_index;  unsigned short mf;  Real cost;
+  IntRespMCIter r_it;
+  const Pecos::ActiveKey& active_key = iteratedModel.active_model_key();
+
+  for (m=0, cntr=0, start=0; m<=numApprox; ++m) {
+    // Locate cost meta-data for ensemble member m through its model form 
+    mf = active_key.retrieve_model_form(m);
+    const SizetSizetPair& cost_mdi = costMetadataIndices[mf];
+    md_index = cntr + cost_mdi.first; // index into aggregated metadata
+
+    end = start + numFunctions;
+    for (r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it) {
+      const Response& resp = r_it->second;
+      if (non_zero(resp.active_set_request_vector(), start, end)) {
+	cost = resp.metadata(md_index);
+	if (isfinite(cost))
+	  { accum_cost[m] += cost; ++num_cost[m]; }
+      }
+    }
+
+    start = end;
+    cntr += cost_mdi.second; // offset by size of metadata for model
+  } 
+}
+
+
 void NonDEnsembleSampling::initialize_final_statistics()
 {
   switch (finalStatsType) {
@@ -352,17 +396,8 @@ print_multimodel_summary(std::ostream& s, const String& summary_type,
 
 
 void NonDEnsembleSampling::
-export_all_samples(String root_prepend, const Model& model, size_t iter,
-		   size_t step)
+export_all_samples(const Model& model, const String& tabular_filename)
 {
-  String tabular_filename(root_prepend);
-  const String& iface_id = model.interface_id();
-  size_t i, num_samp = allSamples.numCols();
-  if (iface_id.empty()) tabular_filename += "NO_ID_i";
-  else                  tabular_filename += iface_id + "_i";
-  tabular_filename += std::to_string(iter)     +  "_l"
-                   +  std::to_string(step)     +  '_'
-                   +  std::to_string(num_samp) + ".dat";
   Variables vars(model.current_variables().copy());
 
   String context_message("NonDEnsembleSampling::export_all_samples");
@@ -376,6 +411,8 @@ export_all_samples(String root_prepend, const Model& model, size_t iter,
   TabularIO::open_file(tabular_stream, tabular_filename, context_message);
   TabularIO::write_header_tabular(tabular_stream, vars, no_resp_labels,
 				  cntr_label, interf_label,exportSamplesFormat);
+  const String& iface_id = model.interface_id();
+  size_t i, num_samp = allSamples.numCols();
   for (i=0; i<num_samp; ++i) {
     sample_to_variables(allSamples[i], vars); // NonDSampling version
     TabularIO::write_data_tabular(tabular_stream, vars, iface_id, i+1,

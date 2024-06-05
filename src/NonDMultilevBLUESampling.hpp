@@ -142,7 +142,6 @@ private:
 		      RealSymMatrix2DArray& sum_GG_pilot,
 		      Sizet2DArray& N_shared_pilot, bool incr_cost);
 
-  void recover_online_cost(const IntResponse2DMap& batch_resp_map);
   void update_model_group_costs();
 
   void compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
@@ -164,14 +163,14 @@ private:
   void accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
 			    IntRealSymMatrix2DArrayMap& sum_GG,
 			    Sizet2DArray& num_G,
-			    const IntResponse2DMap& batch_resp_map);
+			    const IntIntResponse2DMap& batch_resp_map);
   void accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
 			    IntRealSymMatrix2DArrayMap& sum_GG,
 			    Sizet2DArray& num_G, size_t group,
 			    const IntResponseMap& resp_map);
   void accumulate_blue_sums(RealMatrixArray& sum_G,
 			    RealSymMatrix2DArray& sum_GG, Sizet2DArray& num_G,
-			    const IntResponse2DMap& batch_resp_map);
+			    const IntIntResponse2DMap& batch_resp_map);
   void accumulate_blue_sums(RealMatrix& sum_G, RealSymMatrixArray& sum_GG,
 			    SizetArray& N_shared, size_t group,
 			    const IntResponseMap& resp_map);

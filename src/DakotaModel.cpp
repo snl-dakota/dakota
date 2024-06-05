@@ -3591,6 +3591,24 @@ const Model& Model::active_truth_model() const
 }
 
 
+bool Model::active_truth_key() const
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->active_truth_key();
+  else // letter lacking redefinition of virtual fn.
+    return true; // mirror active_truth_model() default (DFSModel::actualModel)
+}
+
+
+size_t Model::active_surrogate_keys() const
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->active_surrogate_keys();
+  else // letter lacking redefinition of virtual fn.
+    return 1; // mirror active_surrogate_model() default (for DFSModel)
+}
+
+
 bool Model::multifidelity() const
 {
   if (modelRep) return modelRep->multifidelity();

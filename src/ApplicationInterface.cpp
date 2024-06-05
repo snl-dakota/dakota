@@ -723,17 +723,18 @@ const IntResponseMap& ApplicationInterface::synchronize()
 
   if (coreMappings) {
     size_t core_prp_jobs = beforeSynchCorePRPQueue.size();
-    Cout << "\nBlocking synchronize of " << core_prp_jobs << " asynchronous ";
-    if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
-    Cout << "evaluations";
-    if (cached_eval || hist_duplicates || queue_duplicates)
-      Cout << ", " << cached_eval << " cached evaluations, and "
-	   << hist_duplicates + queue_duplicates << " duplicates";
-    Cout << std::endl;
-
     // Process nonduplicate evaluations for either the message passing or local 
     // asynchronous case.
     if (core_prp_jobs) {
+      Cout << "\nBlocking synchronize of " << core_prp_jobs << " asynchronous ";
+      if (!(interfaceId.empty() || interfaceId == "NO_ID"))
+	Cout << interfaceId << ' ';
+      Cout << "evaluations";
+      if (cached_eval || hist_duplicates || queue_duplicates)
+	Cout << ", " << cached_eval << " cached evaluations, and "
+	     << hist_duplicates + queue_duplicates << " duplicates";
+      Cout << std::endl;
+
       if (ieMessagePass) { // single or multi-processor servers
 	if (ieDedMasterFlag) master_dynamic_schedule_evaluations();
 	else {
@@ -755,7 +756,8 @@ const IntResponseMap& ApplicationInterface::synchronize()
   }
   else if (!beforeSynchAlgPRPQueue.empty()) {
     Cout << "\nBlocking synchronize of " << beforeSynchAlgPRPQueue.size();
-    if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << ' ' << interfaceId;
+    if (!(interfaceId.empty() || interfaceId == "NO_ID"))
+      Cout << ' ' << interfaceId;
     Cout << " algebraic mappings" << std::endl;
   }
 
@@ -807,9 +809,9 @@ const IntResponseMap& ApplicationInterface::synchronize()
     for (IntRespMCIter rr_iter = rawResponseMap.begin();
 	 rr_iter != rawResponseMap.end(); ++rr_iter) {
       Cout << "\nActive response data for ";
-      if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
-      Cout << "evaluation " << rr_iter->first
-	   << ":\n" << rr_iter->second;
+      if (!(interfaceId.empty() || interfaceId == "NO_ID"))
+	Cout << interfaceId << ' ';
+      Cout << "evaluation " << rr_iter->first << ":\n" << rr_iter->second;
     }
 
   return rawResponseMap;
@@ -834,7 +836,8 @@ const IntResponseMap& ApplicationInterface::synchronize_nowait()
     if ( headerFlag && (core_prp_jobs || hist_duplicates) ) {
       Cout << "\nNonblocking synchronize of " << core_prp_jobs
 	   << " asynchronous ";
-      if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
+      if (!(interfaceId.empty() || interfaceId == "NO_ID"))
+	Cout << interfaceId << ' ';
       Cout << "evaluations";
       if (cached_eval || hist_duplicates || queue_duplicates)
 	Cout << ", " << cached_eval << " cached evaluations, and "
@@ -867,7 +870,8 @@ const IntResponseMap& ApplicationInterface::synchronize_nowait()
   }
   else if (!beforeSynchAlgPRPQueue.empty()) {
     Cout << "\nNonblocking synchronize of " << beforeSynchAlgPRPQueue.size();
-    if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << ' ' << interfaceId;
+    if (!(interfaceId.empty() || interfaceId == "NO_ID"))
+      Cout << ' ' << interfaceId;
     Cout << " algebraic mappings" << std::endl;
   }
 
@@ -946,7 +950,8 @@ const IntResponseMap& ApplicationInterface::synchronize_nowait()
     // output completed responses
     if (outputLevel > QUIET_OUTPUT) {
       Cout << "\nActive response data for ";
-      if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
+      if (!(interfaceId.empty() || interfaceId == "NO_ID"))
+	Cout << interfaceId << ' ';
       Cout << "evaluation " << fn_eval_id << ":\n" << rr_iter->second;
     }
     // clean up bookkeeping

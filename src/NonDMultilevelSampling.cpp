@@ -46,24 +46,24 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
   // For testing multilevel_mc_Qsum():
   //subIteratorFlag = true;
   storeEvals = false;
-  if (allocationTarget == TARGET_MEAN){
+  switch (allocationTarget) {
+  case TARGET_MEAN: {
     scalarizationCoeffs.reshape(numFunctions, 2*numFunctions);
     scalarizationCoeffs = 0;
-    size_t vec_ctr = 0;
-    for(size_t i = 0; i < numFunctions; ++i){
-        scalarizationCoeffs(i, 2*i) = 1.;
-    }
+    size_t i, vec_ctr = 0;
+    for(i = 0; i < numFunctions; ++i)
+      scalarizationCoeffs(i, 2*i) = 1.;
+    break;
   }
-  if (allocationTarget == TARGET_VARIANCE || 
-          allocationTarget == TARGET_SIGMA){
+  case TARGET_VARIANCE: case TARGET_SIGMA: {
     scalarizationCoeffs.reshape(numFunctions, 2*numFunctions);
     scalarizationCoeffs = 0;
-    size_t vec_ctr = 0;
-    for(size_t i = 0; i < numFunctions; ++i){
-        scalarizationCoeffs(i, 2*i+1) = 1.;
-    }
+    size_t i, vec_ctr = 0;
+    for(i = 0; i < numFunctions; ++i)
+      scalarizationCoeffs(i, 2*i+1) = 1.;
+    break;
   }
-  if (allocationTarget == TARGET_SCALARIZATION) {
+  case TARGET_SCALARIZATION: {
     cov_approximation_type = COV_CORRLIFT;
     bootstrapSeed = 0;
     storeEvals = true;
@@ -88,14 +88,16 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
     }
     else{
       scalarizationCoeffs.reshape(numFunctions, 2*numFunctions);
-      size_t vec_ctr = 0;
-      for(size_t i = 0; i < numFunctions; ++i){
-        for(size_t j = 0; j < numFunctions; ++j){
+      size_t i, j, vec_ctr = 0;
+      for(i = 0; i < numFunctions; ++i){
+        for(j = 0; j < numFunctions; ++j){
           scalarizationCoeffs(i, 2*j)   = scalarization_resp_vector[vec_ctr++];
           scalarizationCoeffs(i, 2*j+1) = scalarization_resp_vector[vec_ctr++];
         }
       }
     }
+    break;
+  }
   }
 
   // Want to define this at construct time for use in EnsembleSurrModel::
@@ -114,8 +116,12 @@ void NonDMultilevelSampling::core_run()
     abort_handler(METHOD_ERROR);
   }
 
-  configure_sequence(numSteps, secondaryIndex, sequenceType);
+  configure_1d_sequence(numSteps, secondaryIndex, sequenceType);
+  numApprox  = numSteps - 1;
   onlineCost = !query_cost(numSteps, sequenceType, sequenceCost);
+  // assign an aggregate model key that does not need to be updated
+  // (activeSet identifies QoIs for the active model subset)
+  assign_active_key();
 
   // Useful for future extensions when convergence tolerance can be a vector
   convergenceTolVec.sizeUninitialized(numFunctions);
@@ -138,6 +144,38 @@ void NonDMultilevelSampling::core_run()
   case ONLINE_PILOT_PROJECTION:  case OFFLINE_PILOT_PROJECTION:
     multilevel_mc_pilot_projection(); break;
   }
+}
+
+
+void NonDMultilevelSampling::assign_active_key()
+{
+  std::vector<Pecos::ActiveKey> seq_keys(numSteps);
+  switch (sequenceType) {
+  case Pecos::RESOLUTION_LEVEL_1D_SEQUENCE:
+    for (size_t s=0; s<numSteps; ++s)
+      seq_keys[s].form_key(0, secondaryIndex, s);
+    break;
+  case Pecos::MODEL_FORM_1D_SEQUENCE: {
+    // Note: secondaryIndex is SZ_MAX
+    size_t s, lev;
+    for (s=0; s<numApprox; ++s) {
+      lev = iteratedModel.surrogate_model(s).solution_level_cost_index();
+      seq_keys[s].form_key(0, s, lev);
+    }
+    lev = iteratedModel.truth_model().solution_level_cost_index();
+    seq_keys[numApprox].form_key(0, numApprox, lev);
+    break;
+  }
+  default:
+    Cerr << "Error: unsupported sequence type in MLMC assign_active_key()"
+	 << std::endl;
+    abort_handler(METHOD_ERROR);  break;
+  }
+
+  Pecos::ActiveKey active_key;
+  active_key.aggregate_keys(seq_keys, Pecos::RAW_DATA);
+  iteratedModel.active_model_key(active_key); // data group 0
+  resize_active_set();
 }
 
 
@@ -177,7 +215,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
 
   // Allow either model forms or discretization levels, but not both
   size_t form, lev;
-  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE),
+  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_1D_SEQUENCE),
     budget_constrained = (maxFunctionEvals != SZ_MAX);
   // either lev varies and form is fixed, or vice versa:
   size_t& step = (multilev) ? lev : form;
@@ -230,7 +268,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
 
 	// process allResponses: accumulate new samples for each qoi and
 	// update number of successful samples for each QoI
-	accumulate_ml_Ysums(sum_Y, sum_YY, lev, N_l[step]);
+	accumulate_ml_Ysums(sum_Y, sum_YY, lev, 0, N_l[step]);
 	increment_ml_equivalent_cost(numSamples, lev_cost, ref_cost,
 	                             equivHFEvals);
 
@@ -297,8 +335,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
 */
 
 
-/** This function performs "geometrical" MLMC on a single model form
-    with multiple discretization levels. */
+/** The online version iterates the sample allocations for all levels. */
 void NonDMultilevelSampling::multilevel_mc_online_pilot() //_Qsum()
 {
   // For moment estimation, we accumulate telescoping sums for Q^i using
@@ -313,10 +350,10 @@ void NonDMultilevelSampling::multilevel_mc_online_pilot() //_Qsum()
 
   load_pilot_sample(pilotSamples, numSteps, delta_N_l);
   while (!zeros(delta_N_l) && mlmfIter <= maxIterations) {
-    // loop over levels and compute sample increments
-    evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1, sequenceCost,
-		    N_l_actual, N_l_actual, N_l_alloc, N_l_alloc,// pilot=online
-		    delta_N_l, var_Y, var_qoi, eps_sq_div_2, true, true);
+    // loop over levels and compute sample increments; pilot=online
+    evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l_actual, N_l_actual,
+		    N_l_alloc, N_l_alloc, delta_N_l, var_Y, var_qoi,
+		    eps_sq_div_2, true, true);
     advance_relaxation();
   }
 
@@ -335,15 +372,17 @@ void NonDMultilevelSampling::multilevel_mc_online_pilot() //_Qsum()
   avgEstVar = average(estVar);
 
   // post final N_l back to NLevActual (needed for final eval summary)
-  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
+  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_1D_SEQUENCE);
   inflate_sequence_samples(N_l_actual, multilev, secondaryIndex, NLevActual);
   inflate_sequence_samples(N_l_alloc,  multilev, secondaryIndex, NLevAlloc);
 }
 
 
+/** The offline version allocates once for all levels based on the
+    offline pilot results. */
 void NonDMultilevelSampling::multilevel_mc_offline_pilot()
 {
-  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
+  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_1D_SEQUENCE);
   size_t form, lev, &step = (multilev) ? lev : form;
   if (multilev) form = secondaryIndex;
   else          lev  = secondaryIndex;
@@ -362,28 +401,30 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
   // Initial loop for offline (overkill) pilot
   // -----------------------------------------
   load_pilot_sample(pilotSamples, numSteps, delta_N_l);
-  evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1, sequenceCost, N_actual_pilot,
-		  N_actual_online, N_alloc_pilot, N_alloc_online, delta_N_l,
-		  var_Y, var_qoi, eps_sq_div_2, false, false);
+  evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1, N_actual_pilot, N_actual_online,
+		  N_alloc_pilot, N_alloc_online, delta_N_l, var_Y, var_qoi,
+		  eps_sq_div_2, false, false);
 
   // ----------------------------------------------------------
   // Evaluate online sample profile computed from offline pilot
   // ----------------------------------------------------------
   reset_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1);
-  Real ref_cost = sequenceCost[numSteps-1];
+  Real ref_cost = sequenceCost[numSteps-1];  size_t offline_N_lwr = 2;
+  for (step=0; step<numSteps; ++step)
+    if (delta_N_l[step] < offline_N_lwr)
+      delta_N_l[step] = offline_N_lwr; // min of 2 reqd for online variance
+
+  ml_increments(delta_N_l, "ml_");
 
   for (step=0; step<numSteps; ++step) {
-    configure_indices(step, form, lev, sequenceType);
-
-    // define online samples from delta_N_l; min of 2 reqd for online variance
-    numSamples = std::max(delta_N_l[step], (size_t)2);
-    evaluate_ml_sample_increment("ml_", step);
-    accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step,
-			N_actual_online[step]);
+    accumulate_ml_Qsums(batchResponsesMap[step], sum_Ql, sum_Qlm1, sum_QlQlm1,
+			step, N_actual_online[step]);
+    numSamples = delta_N_l[step];
     N_alloc_online[step] += numSamples;
     increment_ml_equivalent_cost(numSamples, level_cost(sequenceCost, step),
 				 ref_cost, equivHFEvals);
   }
+  clear_batches();
 
   // ---------------------
   // Final post-processing
@@ -402,6 +443,8 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
 }
 
 
+/** The projection version predicts the estimator performance based on
+    either online or offline pilot results. */
 void NonDMultilevelSampling::multilevel_mc_pilot_projection()
 {
   // For moment estimation, we accumulate telescoping sums for Q^i using
@@ -420,13 +463,13 @@ void NonDMultilevelSampling::multilevel_mc_pilot_projection()
   if (pilotMgmtMode == OFFLINE_PILOT || // redirected here for ESTIMATOR_PERF
       pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
     Sizet2DArray N_actual_pilot;  SizetArray N_alloc_pilot; // segregate
-    evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1, sequenceCost, N_actual_pilot,
-		    N_actual, N_alloc_pilot, N_alloc, delta_N_l,
-		    var_Y, var_qoi, eps_sq_div_2, false, false);
-    compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_actual_pilot); // for varH
+    evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1,
+		    N_actual_pilot, N_actual, N_alloc_pilot, N_alloc,
+		    delta_N_l, var_Y, var_qoi, eps_sq_div_2, false, false);
+    compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_actual_pilot); // only varH
   }
   else { // ONLINE_PILOT_PROJECTION
-    evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1, sequenceCost,
+    evaluate_levels(sum_Ql, sum_Qlm1, sum_QlQlm1,
 		    N_actual, N_actual, N_alloc, N_alloc, // pilot is online
 		    delta_N_l, var_Y, var_qoi, eps_sq_div_2, true, true);
     compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_actual); // only for varH
@@ -445,7 +488,7 @@ void NonDMultilevelSampling::multilevel_mc_pilot_projection()
   avgEstVar = average(estVar);
 
   // post final N_l back to NLevActual (needed for final eval summary)
-  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE);
+  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_1D_SEQUENCE);
   inflate_sequence_samples(N_actual, multilev, secondaryIndex, NLevActual);
   inflate_sequence_samples(N_alloc,  multilev, secondaryIndex, NLevAlloc);
 }
@@ -453,7 +496,7 @@ void NonDMultilevelSampling::multilevel_mc_pilot_projection()
 
 void NonDMultilevelSampling::
 evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
-		IntIntPairRealMatrixMap& sum_QlQlm1, RealVector& cost,
+		IntIntPairRealMatrixMap& sum_QlQlm1,
 		Sizet2DArray& N_actual_pilot, Sizet2DArray& N_actual_online,
 		SizetArray& N_alloc_pilot, SizetArray& N_alloc_online,
 		SizetArray& delta_N_l, RealMatrix& var_Y,
@@ -467,13 +510,12 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 
   // Allow either model forms or discretization levels, but not both
   // (either lev varies for fixed form or vice versa)
-  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_SEQUENCE),
+  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_1D_SEQUENCE),
     budget_constrained = (maxFunctionEvals != SZ_MAX);
   size_t form, lev, &step = (multilev) ? lev : form;
   if (multilev) form = secondaryIndex;
   else          lev  = secondaryIndex;
-  RealVector agg_est_var0, accumulated_cost;  IntIntPair pr11(1, 1);
-  SizetArray num_cost; // counts for online recovery
+  RealVector agg_est_var0;  IntIntPair pr11(1, 1);
 
   // Note: for online and projection modes, N_*_pilot and N_*_online
   //       are the same array; for offline, they are distinct.
@@ -496,19 +538,27 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
       { agg_est_var0.size(numFunctions); eps_sq_div_2.size(numFunctions); }
     var_Y.shapeUninitialized(numFunctions, numSteps);
     var_qoi.shapeUninitialized(numFunctions, numSteps);
-    if (onlineCost)
-      { accumulated_cost.size(numSteps); num_cost.assign(numSteps, 0); }
   }
+
+  // Previous use of BYPASS_SURROGATE (1x response for lev 0) and
+  // AGGREGATED_MODEL_PAIR (2x response for lev >= 1) has now been replaced
+  // with AGGREGATED_MODELS as for nonhierarchical approaches.  In this case,
+  // activeSet identifies active model or model pair within the full model set
+  // for Analyzer::evaluate_batch()
+  // > Since ML groups use independent sample sets (no cross-group roll up as
+  //   in MFMC, ACV-MF), the "horizontal" group to "vertical" model accumulation
+  //   conversion is inefficient/overkill and should only be considered for
+  //   consistency with other cases.
+  ml_increments(delta_N_l, "ml_");
+  if (onlineCost && mlmfIter == 0)
+    recover_online_cost(batchResponsesMap); // computes sequenceCost
 
   for (step=0; step<numSteps; ++step) {
 
-    configure_indices(step, form, lev, sequenceType);
     numSamples = delta_N_l[step];
     if (numSamples) {
-
-      // assign sequence, get samples, export, evaluate
-      evaluate_ml_sample_increment("ml_", step);
-      accumulate_ml_Qsums(sum_Ql, sum_Qlm1, sum_QlQlm1, step,
+      IntResponseMap& resp_map = batchResponsesMap[step];//step used as group id
+      accumulate_ml_Qsums(resp_map, sum_Ql, sum_Qlm1, sum_QlQlm1, step,
 			  N_actual_pilot[step]);
       if (backfillFailures && mlmfIter)
 	N_alloc_pilot[step] +=
@@ -521,37 +571,32 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
       aggregate_variance_target_Qsum(sum_Ql, sum_Qlm1, sum_QlQlm1,
 				     N_actual_pilot, step, var_qoi);
 
-      if (mlmfIter == 0) {
-	if (onlineCost)
-	  accumulate_paired_online_cost(accumulated_cost, num_cost, step);
-	if (!budget_constrained) // MSE reference is MC applied to HF
-	  aggregate_mse_target_Qsum(var_qoi, N_actual_pilot, step,agg_est_var0);
-      }
+      if (mlmfIter == 0 && !budget_constrained) // MSE ref is MC applied to HF
+	aggregate_mse_target_Qsum(var_qoi, N_actual_pilot, step,agg_est_var0);
     }
   }
-  // defer cost accumulation until online cost recovery is complete
-  if (onlineCost && mlmfIter == 0)
-    average_online_cost(accumulated_cost, num_cost, cost);
+  clear_batches();
+
   if (increment_cost) {
-    Real ref_cost = cost[numSteps-1];
+    Real ref_cost = sequenceCost[numSteps-1];
     for (step=0; step<numSteps; ++step)
-      increment_ml_equivalent_cost(delta_N_l[step], level_cost(cost, step),
-				   ref_cost, equivHFEvals);
+      increment_ml_equivalent_cost(delta_N_l[step],
+	level_cost(sequenceCost, step), ref_cost, equivHFEvals);
   }
   // capture pilot-sample metrics:
   if (mlmfIter == 0) {
     if (pilot_estvar) // initial est var for summary report (not aggregated)
       compute_ml_estimator_variance(var_Y, N_actual_pilot, estVarIter0);
     if (!budget_constrained) // set target eps^2 / 2 = estvar0 * rel tol
-      set_convergence_tol(agg_est_var0, cost, eps_sq_div_2);
+      set_convergence_tol(agg_est_var0, sequenceCost, eps_sq_div_2);
   }
   // update targets based on variance estimates
   if (budget_constrained)
-    compute_sample_allocation_target(var_qoi, cost, N_actual_online,
+    compute_sample_allocation_target(var_qoi, sequenceCost, N_actual_online,
 				     N_alloc_online, delta_N_l);
   else
     compute_sample_allocation_target(sum_Ql, sum_Qlm1, sum_QlQlm1, eps_sq_div_2,
-				     var_qoi, cost, N_actual_pilot,
+				     var_qoi, sequenceCost, N_actual_pilot,
 				     N_actual_online, N_alloc_online,delta_N_l);
 
   ++mlmfIter;
@@ -560,6 +605,7 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 }
 
 
+/*
 void NonDMultilevelSampling::
 configure_indices(unsigned short group, unsigned short form, size_t lev,
 		  short seq_type)
@@ -575,8 +621,8 @@ configure_indices(unsigned short group, unsigned short form, size_t lev,
     iteratedModel.truth_model().solution_level_cost_index() : lev;
   Pecos::ActiveKey hf_key;  hf_key.form_key(group, form, hf_lev);
 
-  if ( (seq_type == Pecos::MODEL_FORM_SEQUENCE       && form == 0) ||
-       (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE && lev  == 0)) {
+  if ( (seq_type == Pecos::MODEL_FORM_1D_SEQUENCE       && form == 0) ||
+       (seq_type == Pecos::RESOLUTION_LEVEL_1D_SEQUENCE && lev  == 0)) {
     // step 0 in the sequence
     iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
     iteratedModel.active_model_key(hf_key); // one active fidelity
@@ -592,7 +638,7 @@ configure_indices(unsigned short group, unsigned short form, size_t lev,
 	   << "configure_indices()." << std::endl;
       abort_handler(METHOD_ERROR);
     }
-    if (seq_type == Pecos::MODEL_FORM_SEQUENCE && lev == SZ_MAX) {
+    if (seq_type == Pecos::MODEL_FORM_1D_SEQUENCE && lev == SZ_MAX) {
       unsigned short lf_form = lf_key.retrieve_model_form();
       size_t lf_lev
 	= iteratedModel.surrogate_model(lf_form).solution_level_cost_index();
@@ -603,8 +649,43 @@ configure_indices(unsigned short group, unsigned short form, size_t lev,
     resize_active_set();
   }
 }
+*/
 
 
+/** The version in NonDNonHierarchSampling would be sufficiently general here
+    as well, given AGGREGATED_MODELS controlled by the ASV. However, MLMC and
+    MLCV MC employ AGGREGATED_MODEL_PAIR without ASV subsetting, so we
+    specialize for that case. */
+void NonDMultilevelSampling::
+ml_increments(SizetArray& delta_N_l, String prepend)
+{
+  if (mlmfIter == 0) Cout << "\nPerforming pilot sample for model groups.\n";
+  else Cout << "\nSampling iteration " << mlmfIter << ": sample increment =\n"
+	    << delta_N_l << '\n';
+
+  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_1D_SEQUENCE);
+  size_t num_steps = delta_N_l.size(), form, lev,
+    &step = (multilev) ? lev : form;
+  if (multilev) form = secondaryIndex;
+  else          lev  = secondaryIndex;
+
+  for (step=0; step<num_steps; ++step) {
+    numSamples = delta_N_l[step];
+    if (numSamples) {
+      //configure_indices(step, form, lev, sequenceType);
+      assign_specification_sequence(step);  // indexed so can skip if no batch
+      // AGGREGATED_MODELS using step, step-1)
+      ml_active_set(step);
+      ensemble_sample_batch(prepend, step); // index is group_id
+    }
+  }
+
+  if (iteratedModel.asynch_flag())
+    synchronize_batches(iteratedModel); // schedule all groups (return ignored)
+}
+
+
+/*
 void NonDMultilevelSampling::
 evaluate_ml_sample_increment(String prepend, unsigned short step)
 {
@@ -626,6 +707,7 @@ evaluate_ml_sample_increment(String prepend, unsigned short step)
   // compute allResponses from allVariables using hierarchical model
   evaluate_parameter_sets(iteratedModel);
 }
+*/
 
 
 void NonDMultilevelSampling::
@@ -667,7 +749,8 @@ initialize_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 }
 
 
-void NonDMultilevelSampling::store_evaluations(const size_t lev){
+void NonDMultilevelSampling::store_evaluations(const size_t lev)
+{
   std::map<int, RealMatrix>::iterator it = levQoisamplesmatrixMap.find(lev);
   //Set index to previous size
   int eval_index = it->second.numCols(); 
@@ -694,6 +777,7 @@ void NonDMultilevelSampling::store_evaluations(const size_t lev){
   //Cout << it->second << std::endl;
 }
 
+
 void NonDMultilevelSampling::
 reset_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 	       IntIntPairRealMatrixMap& sum_QlQlm1)
@@ -710,18 +794,19 @@ reset_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 
 
 void NonDMultilevelSampling::
-accumulate_ml_Qsums(IntRealMatrixMap& sum_Q, size_t lev, SizetArray& num_Q)
+accumulate_ml_Qsums(const IntResponseMap& resp_map, IntRealMatrixMap& sum_Q,
+		    size_t lev, SizetArray& num_Q)
 {
   using std::isfinite;
   Real q_l, q_l_prod;
-  int ord, active_ord; size_t qoi;
+  int ord, active_ord; size_t qoi, offset_l = lev * numFunctions;
   IntRespMCIter r_it; IntRMMIter q_it;
 
-  for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+  for (r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it) {
     const RealVector& fn_vals = r_it->second.function_values();
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
-      q_l_prod = q_l = fn_vals[qoi];
+      q_l_prod = q_l = fn_vals[qoi+offset_l];
 
       if (isfinite(q_l)) { // neither NaN nor +/-Inf
 	q_it = sum_Q.begin(); ord = q_it->first;
@@ -752,25 +837,27 @@ accumulate_ml_Qsums(IntRealMatrixMap& sum_Q, size_t lev, SizetArray& num_Q)
 
 
 void NonDMultilevelSampling::
-accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
-		    IntIntPairRealMatrixMap& sum_QlQlm1, size_t lev,
-		    SizetArray& num_Q)
+accumulate_ml_Qsums(const IntResponseMap& resp_map, IntRealMatrixMap& sum_Ql,
+		    IntRealMatrixMap& sum_Qlm1,
+		    IntIntPairRealMatrixMap& sum_QlQlm1,
+		    size_t lev, SizetArray& num_Q)
 {
   if (lev == 0)
-    accumulate_ml_Qsums(sum_Ql, lev, num_Q);
+    accumulate_ml_Qsums(resp_map, sum_Ql, lev, num_Q);
   else {
     using std::isfinite;
     Real q_l, q_lm1, q_l_prod, q_lm1_prod, qq_prod;
-    int l1_ord, l2_ord, active_ord; size_t qoi;
+    int l1_ord, l2_ord, active_ord;
+    size_t qoi, offset_lm1 = (lev-1)*numFunctions, offset_l = lev*numFunctions;
     IntRespMCIter r_it; IntRMMIter l1_it, l2_it; IntIntPair pr;
 
-    for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+    for (r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it) {
       const RealVector& fn_vals = r_it->second.function_values();
 
       for (qoi=0; qoi<numFunctions; ++qoi) {
 	// response mode AGGREGATED_MODEL_PAIR orders low to high fidelity
-	q_lm1_prod = q_lm1 = fn_vals[qoi];
-	q_l_prod   = q_l   = fn_vals[qoi+numFunctions];
+	q_lm1_prod = q_lm1 = fn_vals[qoi+offset_lm1];
+	q_l_prod   = q_l   = fn_vals[qoi+offset_l];
 
 	// sync sample counts for Ql and Qlm1
 	if (isfinite(q_l) && isfinite(q_lm1)) { // neither NaN nor +/-Inf
@@ -821,33 +908,35 @@ accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 
 
 void NonDMultilevelSampling::
-accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY, size_t lev,
+accumulate_ml_Ysums(const IntResponseMap& resp_map, IntRealMatrixMap& sum_Y,
+		    RealMatrix& sum_YY, size_t lev, size_t lev_offset,
 		    SizetArray& num_Y)
 {
   using std::isfinite;
-  Real lf_fn, lf_prod;
-  int y_ord, active_ord; size_t qoi;
+  Real q_l, q_l_prod;  int y_ord, active_ord;
+  size_t qoi, offset_l = (lev + lev_offset) * numFunctions;
   IntRespMCIter r_it; IntRMMIter y_it;
 
   if (lev == 0) {
-    for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+    for (r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it) {
       const RealVector& fn_vals = r_it->second.function_values();
+
       for (qoi=0; qoi<numFunctions; ++qoi) {
 
-	lf_prod = lf_fn = fn_vals[qoi];
-	if (isfinite(lf_fn)) { // neither NaN nor +/-Inf
+	q_l_prod = q_l = fn_vals[qoi+offset_l];
+	if (isfinite(q_l)) { // neither NaN nor +/-Inf
 	  // add to sum_YY: running sums across all sample increments
-	  sum_YY(qoi,lev) += lf_prod * lf_prod;
+	  sum_YY(qoi,lev) += q_l_prod * q_l_prod;
 
 	  // add to sum_Y: running sums across all sample increments
 	  y_it = sum_Y.begin(); y_ord = y_it->first;
 	  active_ord = 1;
 	  while (y_it!=sum_Y.end()) {
 	    if (y_ord == active_ord) {
-	      y_it->second(qoi,lev) += lf_prod; ++y_it;
+	      y_it->second(qoi,lev) += q_l_prod; ++y_it;
 	      y_ord = (y_it == sum_Y.end()) ? 0 : y_it->first;
 	    }
-	    lf_prod *= lf_fn; ++active_ord;
+	    q_l_prod *= q_l; ++active_ord;
 	  }
 	  ++num_Y[qoi];
 	}
@@ -855,18 +944,20 @@ accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY, size_t lev,
     }
   }
   else {
-    Real hf_fn, hf_prod, delta_prod;
-    for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+    Real q_lm1, q_lm1_prod, delta_prod;
+    size_t offset_lm1 = offset_l - numFunctions;
+    for (r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it) {
       const RealVector& fn_vals = r_it->second.function_values();
+
       for (qoi=0; qoi<numFunctions; ++qoi) {
 
 	// response mode AGGREGATED_MODEL_PAIR orders low to high fidelity
-	lf_prod = lf_fn = fn_vals[qoi];
-	hf_prod = hf_fn = fn_vals[qoi+numFunctions];
-	if (isfinite(lf_fn) && isfinite(hf_fn)) { // neither NaN nor +/-Inf
+	q_lm1_prod = q_lm1 = fn_vals[qoi+offset_lm1];
+	q_l_prod   = q_l   = fn_vals[qoi+offset_l];
+	if (isfinite(q_lm1) && isfinite(q_l)) { // neither NaN nor +/-Inf
 
 	  // add to sum_YY: running sums across all sample increments
-	  delta_prod = hf_prod - lf_prod;
+	  delta_prod = q_l_prod - q_lm1_prod;
 	  sum_YY(qoi,lev) += delta_prod * delta_prod; // (HF^p-LF^p)^2 for p=1
 
 	  // add to sum_Y: running sums across all sample increments
@@ -874,10 +965,10 @@ accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY, size_t lev,
 	  active_ord = 1;
 	  while (y_it!=sum_Y.end()) {
 	    if (y_ord == active_ord) {
-	      y_it->second(qoi,lev) += hf_prod - lf_prod; // HF^p-LF^p
+	      y_it->second(qoi,lev) += q_l_prod - q_lm1_prod; // HF^p-LF^p
 	      ++y_it; y_ord = (y_it == sum_Y.end()) ? 0 : y_it->first;
 	    }
-	    hf_prod *= hf_fn; lf_prod *= lf_fn; ++active_ord;
+	    q_l_prod *= q_l; q_lm1_prod *= q_lm1; ++active_ord;
 	  }
 	  ++num_Y[qoi];
 	}
@@ -896,38 +987,41 @@ accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY, size_t lev,
 
 
 void NonDMultilevelSampling::
-accumulate_ml_Ysums(RealMatrix& sum_Y, RealMatrix& sum_YY, size_t lev,
+accumulate_ml_Ysums(const IntResponseMap& resp_map, RealMatrix& sum_Y,
+		    RealMatrix& sum_YY, size_t lev, size_t lev_offset,
 		    SizetArray& num_Y)
 {
   using std::isfinite;
-  Real lf_fn;  size_t qoi;  IntRespMCIter r_it;
+  Real q_l;  size_t qoi, offset_l = (lev + lev_offset) * numFunctions;
+  IntRespMCIter r_it;
 
   if (lev == 0) {
-    for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+    for (r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it) {
       const RealVector& fn_vals = r_it->second.function_values();
       for (qoi=0; qoi<numFunctions; ++qoi) {
-	lf_fn = fn_vals[qoi];
-	if (isfinite(lf_fn)) { // neither NaN nor +/-Inf
+	q_l = fn_vals[qoi+offset_l];
+	if (isfinite(q_l)) { // neither NaN nor +/-Inf
 	  ++num_Y[qoi];
-	  sum_Y(qoi,lev)  += lf_fn;           // add to sum_Y
-	  sum_YY(qoi,lev) += lf_fn * lf_fn;	// add to sum_YY
+	  sum_Y(qoi,lev)  += q_l;       // add to sum_Y
+	  sum_YY(qoi,lev) += q_l * q_l;	// add to sum_YY
 	}
       }
     }
   }
   else {
-    Real hf_fn, delta_fn;
-    for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+    Real q_lm1, delta_fn;
+    size_t offset_lm1 = offset_l - numFunctions;
+    for (r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it) {
       const RealVector& fn_vals = r_it->second.function_values();
       for (qoi=0; qoi<numFunctions; ++qoi) {
 
 	// response mode AGGREGATED_MODEL_PAIR orders low to high fidelity
-	lf_fn = fn_vals[qoi];
-	hf_fn = fn_vals[qoi+numFunctions];
-	if (isfinite(lf_fn) && isfinite(hf_fn)) { // neither NaN nor +/-Inf
+	q_lm1 = fn_vals[qoi+offset_lm1];
+	q_l   = fn_vals[qoi+offset_l];
+	if (isfinite(q_lm1) && isfinite(q_l)) { // neither NaN nor +/-Inf
 	  ++num_Y[qoi];
 
-	  delta_fn = hf_fn - lf_fn;
+	  delta_fn = q_l - q_lm1;
 	  // add to sum_Y
 	  sum_Y(qoi,lev) += delta_fn; // HF^p-LF^p
 	  // add to sum_YY

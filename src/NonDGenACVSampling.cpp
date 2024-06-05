@@ -539,7 +539,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
     // --------------------------------------------------------------------
     // Evaluate shared increment and update correlations, {eval,EstVar}_ratios
     // --------------------------------------------------------------------
-    shared_increment(mlmfIter); // spans ALL models, blocking
+    shared_increment("acv_"); // spans ALL models, blocking
     accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
 			sum_LH, sum_HH, N_H_actual);
     N_H_alloc += (backfillFailures && mlmfIter) ?
@@ -677,7 +677,7 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
   }
   // perform the shared increment for the online sample profile
   // > utilize ASV for active approx subset
-  shared_increment(mlmfIter, approx_set); // spans ACTIVE models, blocking
+  shared_increment("acv_", approx_set); // spans ACTIVE models, blocking
   accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
 		      sum_LH, sum_HH, N_H_actual);
   N_H_alloc += numSamples;
@@ -801,7 +801,7 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
   update_model_groups(orderedRootList);
   update_model_group_costs();
   // Important: unlike ML BLUE, modelGroups are only used to facilitate shared
-  // sample set groupings in group_increment() and these updates to group
+  // sample set groupings in group_increments() and these updates to group
   // definitions do not imply changes to the moment roll-up or peer DAG
   // > upstream use of modelGroupCosts in finite_solution_bounds() is complete
   // > downstream processing is agnostic to modelGroups, consuming the overlaid
@@ -818,7 +818,7 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
     delta_N_G[g]
       = group_approx_increment(soln_vars, approx_set, N_L_actual_refined,
 			       N_L_alloc_refined, modelGroups[g]);
-  group_increment(delta_N_G, mlmfIter, true); // reverse order for RNG sequence
+  group_increments(delta_N_G, "acv_", true); // reverse order for RNG sequence
 
   // --------------------------
   // Update sums, counts, costs

@@ -74,6 +74,13 @@ protected:
   //- Heading: Member functions
   //
 
+  /// recover estimates of simulation cost using aggregated response
+  /// metadata spanning one batch of samples
+  void recover_online_cost(const IntResponseMap& all_resp);
+  /// recover estimates of simulation cost using aggregated response
+  /// metadata spanning multiple batches of samples
+  void recover_online_cost(const IntIntResponse2DMap& batch_resp_map);
+
   /// return cost metric for entry into finalStatistics
   Real estimator_cost_metric();
 
@@ -129,8 +136,7 @@ protected:
 			  const SizetArray& N_shared, RealVector& beta);
 
   /// export allSamples to tagged tabular file
-  void export_all_samples(String root_prepend, const Model& model,
-			  size_t iter, size_t step);
+  void export_all_samples(const Model& model, const String& tabular_filename);
 
   /// convert uncentered raw moments (multilevel expectations) to
   /// standardized moments
@@ -167,6 +173,9 @@ protected:
   short sequenceType;
   /// relative costs of model forms/resolution levels within a 1D sequence
   RealVector sequenceCost;
+
+  /// number of approximation models managed by non-hierarchical iteratedModel
+  size_t numApprox;
 
   /// total number of successful sample evaluations (excluding faults)
   /// for each model form, discretization level, and QoI
@@ -253,6 +262,13 @@ private:
   //- Heading: Helper functions
   //
 
+  /// accumulator of cost metadata per sample batch
+  void accumulate_online_cost(const IntResponseMap& resp_map,
+			      RealVector& accum_cost, SizetArray& num_cost);
+  /// convert cost accumulations to averages
+  void average_online_cost(const RealVector& accum_cost,
+			   const SizetArray& num_cost, RealVector& seq_cost);
+
   /// cache state of seed sequence for use in seed_updated()
   size_t seedIndex;
 };
@@ -280,6 +296,60 @@ inline void NonDEnsembleSampling::resize_active_set()
     activeSet.reshape(iteratedModel.response_size());
     activeSet.request_values(1);
   }
+}
+
+
+inline void NonDEnsembleSampling::
+average_online_cost(const RealVector& accum_cost, const SizetArray& num_cost,
+		    RealVector& seq_cost)
+{
+  // Finalize the average cost for the ensemble
+  size_t step, num_steps = accum_cost.length();
+  if (seq_cost.length() != num_steps) seq_cost.sizeUninitialized(num_steps);
+  for (step=0; step<num_steps; ++step)
+    seq_cost[step] = accum_cost[step] / num_cost[step];
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Online cost: accum_cost:\n" << accum_cost << "num_cost:\n"
+	 << num_cost << "seq_cost:\n" << seq_cost << std::endl;
+}
+
+
+inline void NonDEnsembleSampling::
+recover_online_cost(const IntResponseMap& resp_map)
+{
+  // uses one response map with QoI aggregation across all Models
+
+  int len = numApprox + 1;
+  RealVector accum_cost(len);                    // init to 0
+  SizetArray num_cost;  num_cost.assign(len, 0); // init to 0
+
+  accumulate_online_cost(resp_map, accum_cost, num_cost);
+  average_online_cost(accum_cost, num_cost, sequenceCost);
+}
+
+
+inline void NonDEnsembleSampling::
+recover_online_cost(const IntIntResponse2DMap& batch_resp_map)
+{
+  // uses multiple batches of resp maps with QoI aggregation across all Models
+
+  int len = numApprox + 1;
+  RealVector accum_cost(len);                    // init to 0
+  SizetArray num_cost;  num_cost.assign(len, 0); // init to 0
+  size_t b, num_batch = batch_resp_map.size();
+  IntIntResponse2DMap::const_iterator b_it;
+
+  for (b=0; b<num_batch; ++b) {
+    b_it = batch_resp_map.find(b);
+    if (b_it == batch_resp_map.end()) {
+      Cerr << "Error: batch id lookup failure in recover_online_cost()"
+	   << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    else
+      accumulate_online_cost(b_it->second, accum_cost, num_cost);
+  }
+  average_online_cost(accum_cost, num_cost, sequenceCost);
 }
 
 

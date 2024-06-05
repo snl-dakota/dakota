@@ -130,7 +130,7 @@ void NonDACVSampling::approximate_control_variate_online_pilot()
     // --------------------------------------------------------------------
     // Evaluate shared increment and update correlations, {eval,EstVar}_ratios
     // --------------------------------------------------------------------
-    shared_increment(mlmfIter); // spans ALL models, blocking
+    shared_increment("acv_"); // spans ALL models, blocking
     accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
 			sum_LH, sum_HH, N_H_actual);//, N_LL);
     N_H_alloc += (backfillFailures && mlmfIter) ? one_sided_delta(N_H_alloc,
@@ -206,7 +206,7 @@ void NonDACVSampling::approximate_control_variate_offline_pilot()
   // QOI_STATISTICS case; ESTIMATOR_PERFORMANCE redirects to _pilot_projection()
 
   // perform the shared increment for the online sample profile
-  shared_increment(mlmfIter); // spans ALL models, blocking
+  shared_increment("acv_"); // spans ALL models, blocking
   accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
 		      sum_LH, sum_HH, N_H_actual);//, N_LL);
   N_H_alloc += numSamples;
@@ -282,7 +282,7 @@ evaluate_pilot(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
   // Compute var L,H & covar LL,LH from pilot
   // ----------------------------------------
   // Initialize for pilot sample
-  shared_increment(mlmfIter); // spans ALL models, blocking
+  shared_increment("acv_"); // spans ALL models, blocking
   accumulate_acv_sums(sum_L_pilot,//_baselineH, sum_L_baselineL,
 		      sum_H_pilot, sum_LL_pilot, sum_LH_pilot, sum_HH_pilot,
 		      N_shared_pilot);//, N_LL_pilot);
@@ -291,7 +291,7 @@ evaluate_pilot(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
   // (mlmfIter >= 1) will require _baseline{L,H}
   //if (lf_shared_pilot > hf_shared_pilot) {
   //  numSamples = lf_shared_pilot - hf_shared_pilot;
-  //  shared_approx_increment(mlmfIter); // spans all approx models
+  //  shared_approx_increment("acv_"); // spans all approx models
   //  accumulate_acv_sums(sum_L_baselineL, sum_LL,//_baselineL,
   //                      N_L_baselineL);
   //  if (incr_cost)
@@ -346,7 +346,7 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
     ordered_approx_sequence(avg_eval_ratios, r_approx_sequence, true);
   update_model_groups(r_approx_sequence);  update_model_group_costs();
   // Important: unlike ML BLUE, modelGroups are only used to facilitate shared
-  // sample set groupings in group_increment() and these updates to group
+  // sample set groupings in group_increments() and these updates to group
   // definitions do not imply changes to the moment roll-up or peer DAG
   // > upstream use of modelGroupCosts in finite_solution_bounds() is complete
   // > downstream processing is agnostic to modelGroups, consuming the overlaid
@@ -368,7 +368,7 @@ approx_increments(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
     delta_N_G[g]
       = group_approx_increment(soln_vars, approxSet, N_L_actual_refined,
 			       N_L_alloc_refined, modelGroups[g]);
-  group_increment(delta_N_G, mlmfIter, true); // reverse order for RNG sequence
+  group_increments(delta_N_G, "acv_", true); // reverse order for RNG sequence
 
   // --------------------------
   // Update sums, counts, costs

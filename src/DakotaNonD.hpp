@@ -133,18 +133,19 @@ protected:
   /// update computed{Resp,Prob,Rel,GenRel}Levels from level_maps
   void push_level_mappings(const RealVector& level_maps, size_t offset);
 
-  /// configure fidelity/level counts from model hierarchy
-  void configure_sequence(size_t& num_steps, size_t& secondary_index,
-			  short& seq_type);
-  /// configure the total number of fidelity/level options
-  void configure_enumeration(size_t& num_combinations);//, short& seq_type);
+  /// configure a one-dimensional hierarchical sequence (ML or MF)
+  void configure_1d_sequence(size_t& num_steps, size_t& secondary_index,
+			     short& seq_type);
+  /// configure a two-dimensional hierarchical sequence (MLMF)
+  void configure_2d_sequence(size_t& num_steps, size_t& secondary_index,
+			     short& seq_type);
+  /// configure the total number of model form/resolution level options
+  void configure_enumeration(size_t& num_combinations, short& seq_type);
+
   /// extract cost estimates from model hierarchy (forms or resolutions)
-  void configure_cost(unsigned short num_steps, short seq_type,
-		      RealVector& cost);
+  void configure_cost(size_t num_steps, short seq_type, RealVector& cost);
   /// extract cost estimates from model hierarchy, if available
-  bool query_cost(unsigned short num_steps, short seq_type, RealVector& cost);
-  /// extract cost estimates from model hierarchy, if available
-  bool query_cost(unsigned short num_steps, Model& model, RealVector& cost);
+  bool query_cost(size_t num_steps, short seq_type, RealVector& cost);
   /// test cost for valid values > 0
   bool valid_cost_values(const RealVector& cost);
 
@@ -418,7 +419,7 @@ inline NonD::~NonD()
 
 
 inline void NonD::
-configure_cost(unsigned short num_steps, short seq_type, RealVector& cost)
+configure_cost(size_t num_steps, short seq_type, RealVector& cost)
 {
   bool cost_defined = query_cost(num_steps, seq_type, cost);
   if (!cost_defined) {
@@ -825,7 +826,7 @@ print_multilevel_model_summary(std::ostream& s,
     else              print_multilevel_evaluation_summary(s,  N_samp[0]);
   }
   else {
-    bool mf_seq = (seq_type == Pecos::MODEL_FORM_SEQUENCE);
+    bool mf_seq = (seq_type == Pecos::MODEL_FORM_1D_SEQUENCE);
     ModelList& sub_models = iteratedModel.subordinate_models(false);
     ModelLIter     m_iter = sub_models.begin();
     s << "<<<<< " << type << " samples per model form:\n";
