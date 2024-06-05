@@ -119,6 +119,7 @@ protected:
   void clear_active_data();
 
   SharedApproxData& shared_approximation();
+  const SizetSet& approximation_fn_indices() const;
   std::vector<Approximation>& approximations();
   const Pecos::SurrogateData& approximation_data(size_t fn_index);
 
@@ -145,6 +146,17 @@ protected:
   // approximateModel
   const IntResponseMap& synchronize();
   const IntResponseMap& synchronize_nowait();
+
+  //
+  //- Heading: Data
+  //
+
+  /// list of approximations, one per response function
+  /** This formulation allows the use of mixed approximations (i.e.,
+      different approximations used for different response functions),
+      although the input specification is not currently general enough
+      to support it. */
+  std::vector<Approximation> functionSurfaces;
 
 private:
 
@@ -210,12 +222,6 @@ private:
 
   /// data that is shared among all functionSurfaces
   SharedApproxData sharedData;
-  /// list of approximations, one per response function
-  /** This formulation allows the use of mixed approximations (i.e.,
-      different approximations used for different response functions),
-      although the input specification is not currently general enough
-      to support it. */
-  std::vector<Approximation> functionSurfaces;
 
   /// array of approximation coefficient vectors, one per response function
   RealVectorArray functionSurfaceCoeffs;
@@ -573,6 +579,10 @@ inline bool ApproximationInterface::advancement_available()
     return refine;
   }
 }
+
+
+inline const SizetSet& ApproximationInterface::approximation_fn_indices() const
+{ return approxFnIndices; }
 
 
 inline SharedApproxData& ApproximationInterface::shared_approximation()
