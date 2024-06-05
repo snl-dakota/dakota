@@ -1,5 +1,5 @@
 #@ s*: Label=FastTest
-#@ *: DakotaConfig=DAKOTA_PYTHON_DIRECT_INTERFACE
+#@ *: DakotaConfig=DAKOTA_PYBIND11
 #@ *: ReqFiles=driver_text_book.py
 
 method,

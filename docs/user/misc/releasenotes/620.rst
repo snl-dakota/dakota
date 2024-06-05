@@ -17,7 +17,7 @@ in its support for group size throttling, shared versus independent
 pilot sampling, online versus offline solution modes, and
 hyper-parameter model tuning.
 
-*Enabling / Accessing:* new method specification option for multifidelity sampling: :dakkw:`multilevel_blue`.
+*Enabling / Accessing:* new method specification option for multifidelity sampling: :dakkw:`method-multilevel_blue`.
 
 *Documentation:* Refer to the reference documentation starting from :dakkw:`method-multilevel_blue` for additional information.  A number of numerical examples using standard Dakota benchmarks are available under dakota/test in the release distribution.
 
@@ -36,6 +36,10 @@ Dakota also allows the user to select values for seven parameters related
 to these five methods (the prefix in each parameter indicates which MCMC
 algorithm the parameter relates itself to): dr_num_stages, dr_scale_type,
 dr_scale, am_period_num_steps, am_starting_step, am_scale, and mala_step_size.
+
+`MUQ <https://mituq.bitbucket.io>`_ is an optional feature of Dakota and can be
+enabled when building from source by setting the ``HAVE_MUQ`` CMake variable to 
+``ON``. In release 6.20, pre-built Linux binaries include MUQ.
 
 *Documentation:* 
 
