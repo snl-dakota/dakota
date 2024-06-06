@@ -361,6 +361,17 @@ protected:
   //- Heading: Member functions
   //
 
+  /// Used only by the standard envelope constructor to initialize
+  /// approxRep to the appropriate derived type.
+  std::shared_ptr<Approximation>
+  get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
+	     const String& approx_label);
+
+  /// Used only by the alternate envelope constructor to initialize
+  /// approxRep to the appropriate derived type.
+  std::shared_ptr<Approximation>
+  get_approx(const SharedApproxData& shared_data);
+
   /// create a SurrogateDataVars instance from a Real*
   Pecos::SurrogateDataVars variables_to_sdv(const Real* sample_c_vars);
   /// create a SurrogateDataVars instance by extracting data from a
@@ -409,29 +420,18 @@ protected:
   /// contains the approximation data that is shared among the response set
   std::shared_ptr<SharedApproxData> sharedDataRep;
 
+  /// pointer to the letter (initialized only for the envelope)
+  std::shared_ptr<Approximation> approxRep;
+
 private:
 
   //
   //- Heading: Member functions
   //
 
-  /// Used only by the standard envelope constructor to initialize
-  /// approxRep to the appropriate derived type.
-  std::shared_ptr<Approximation>
-  get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
-	     const String& approx_label);
-
-  /// Used only by the alternate envelope constructor to initialize
-  /// approxRep to the appropriate derived type.
-  std::shared_ptr<Approximation>
-  get_approx(const SharedApproxData& shared_data);
-
   //
   //- Heading: Data
   //
-
-  /// pointer to the letter (initialized only for the envelope)
-  std::shared_ptr<Approximation> approxRep;
 };
 
 

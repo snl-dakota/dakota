@@ -175,9 +175,6 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   }
   // size approxInterface based on currentResponse, which is constructed from
   // DB response spec, since actualModel could contain response aggregations
-  //Cout << "currentResponse.field_lengths(): " << currentResponse.field_lengths().length()
-  //                                            << currentResponse.field_lengths()
-  //                                            << std::endl;
   if( 0 == currentResponse.field_lengths().length() )
     approxInterface.assign_rep(std::make_shared<ApproximationInterface>(
       problem_db, vars, cache, am_interface_id,

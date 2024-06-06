@@ -42,8 +42,20 @@ public:
 
 protected:
 
+  /// return reference to specified approximation
+  Approximation& function_surface(size_t) override;
+  const Approximation& function_surface(size_t) const override;
+
+  size_t num_function_surfaces() const override
+  { return numSurfaces; }
+
   int numFields;
   int numScalars;
+  int numSurfaces;
+  mutable int activeSurface;
+  mutable int activeComponent;
+  std::map<int,int> fn2SurfaceIdMap;
+  std::map<int,int> fn2SurfaceComponentMap;
   std::vector<std::vector<int>> fieldFnIndices;
 };
 

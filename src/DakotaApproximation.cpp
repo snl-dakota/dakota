@@ -142,10 +142,10 @@ get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
 	(problem_db, shared_data, approx_label);
 #endif // HAVE_DAKOTA_PYTHON_SURROGATES
 #endif // HAVE_DAKOTA_SURROGATES
-    else {
-      Cerr << "Error: Approximation type " << approx_type << " not available."
-	   << std::endl;
-    }
+    //else {
+    //  Cerr << "Error: Approximation type " << approx_type << " not available."
+    //       << std::endl;
+    //}
   }
   return std::shared_ptr<Approximation>();
 }
