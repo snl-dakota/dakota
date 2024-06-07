@@ -1062,8 +1062,8 @@ derived_synchronize_combine(IntResponseMapArray& model_resp_maps,
     // {hf,lf}_resp_map may be partial sets (partial surrogateFnIndices
     // in {UN,AUTO_}CORRECTED_SURROGATE) or full sets (MODEL_DISCREPANCY,
     // AGGREGATED_MODEL_PAIR).
-    IntResponseMap&       lf_resp_map = model_resp_maps[0];
-    const IntResponseMap& hf_resp_map = model_resp_maps[1];
+    IntResponseMap&       lf_resp_map = model_resp_maps[0]; // ***
+    const IntResponseMap& hf_resp_map = model_resp_maps[1]; // ***
     IntRespMCIter hf_cit = hf_resp_map.begin();
     IntRespMIter  lf_it  = lf_resp_map.begin();
     bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
@@ -1081,7 +1081,7 @@ derived_synchronize_combine(IntResponseMapArray& model_resp_maps,
     case AGGREGATED_MODEL_PAIR:
       for (; hf_cit != hf_resp_map.end() && lf_it != lf_resp_map.end();
 	   ++hf_cit, ++lf_it) {
-	check_key(hf_cit->first, lf_it->first);
+	check_key(hf_cit->first, lf_it->first); // ***
 	aggregate_response(lf_it->second, hf_cit->second,
 			   combined_resp_map[hf_cit->first]);
       }
@@ -2027,9 +2027,9 @@ void EnsembleSurrModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
       MPIUnpackBuffer recv_buffer(modeKeyBufferSize);
       parallelLib.bcast(recv_buffer, *pl_iter);
       // extract {truth,surr}ModelKeys, assign same{Model,Interface}Instance:
-      short mode; Pecos::ActiveKey key;
-      recv_buffer >> mode >> key;
-      surrogate_response_mode(mode);
+      short resp_mode; Pecos::ActiveKey key;
+      recv_buffer >> resp_mode >> key;
+      surrogate_response_mode(resp_mode);
       active_model_key(key); // replace previous/initial key
 
       unsigned short m_index = componentParallelMode - 1; // id to index

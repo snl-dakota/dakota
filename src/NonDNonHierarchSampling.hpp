@@ -354,24 +354,25 @@ protected:
   //- Heading: member functions
   //
 
-  void shared_increment(size_t iter);
-  void shared_increment(size_t iter, const UShortArray& approx_set);
-  void shared_approx_increment(size_t iter);
+  void shared_increment(String prepend);
+  void shared_increment(String prepend, const UShortArray& approx_set);
+  void shared_approx_increment(String prepend);
 
-  bool approx_increment(size_t iter, const SizetArray& approx_sequence,
+  bool approx_increment(String prepend, const SizetArray& approx_sequence,
 			size_t start, size_t end);
-  bool approx_increment(size_t iter, const SizetArray& approx_sequence,
+  bool approx_increment(String prepend, const SizetArray& approx_sequence,
 			size_t start, size_t end,
 			const UShortArray& approx_set);
-  bool approx_increment(size_t iter, unsigned short root,
+  bool approx_increment(String prepend, unsigned short root,
 			const UShortSet& reverse_dag);
 
-  void group_increment(SizetArray& delta_N_G, size_t iter,
-		       bool reverse_order = false);
+  void group_increments(SizetArray& delta_N_G, String prepend,
+			bool reverse_order = false);
 
-  void ensemble_sample_increment(size_t iter, size_t step);
-  void ensemble_sample_batch(size_t iter, int batch_id);
-  //void ensemble_sample_synchronize();
+  void ensemble_sample_increment(const String& prepend, size_t step,
+				 bool new_samples = true);
+  void ensemble_sample_batch(const String& prepend, size_t step,
+			     bool new_samples = true);
 
   size_t group_approx_increment(const RealVector& soln_vars,
 				const UShortArray& approx_set,
@@ -383,6 +384,12 @@ protected:
   // 			      const Sizet2DArray& N_L_actual,
   // 			      SizetArray& N_L_alloc, unsigned short root,
   // 			      const UShortSet& reverse_dag_set);
+
+  /// export allSamples for all Models included in ensemble batch evaluation
+  void export_sample_sets(const String& prepend, size_t step);
+  /// export allSamples to a tagged tabular file
+  void export_all_samples(const String& root_prepend, const Model& model,
+			  size_t iter, size_t step);
 
   /// When looping through a minimizer sequence/competition, this
   /// function enables per-minimizer updates to the parameter bounds,
@@ -396,9 +403,6 @@ protected:
   //void configure_indices(size_t group,size_t form,size_t lev,short seq_type);
 
   void assign_active_key();
-
-  /// recover estimates of simulation cost using aggregated response metadata
-  void recover_online_cost(const IntResponseMap& all_resp);
 
   //void initialize_sums(IntRealMatrixMap& sum_Q);
   void initialize_sums(IntRealMatrixMap& sum_L_baseline,
@@ -469,7 +473,7 @@ protected:
 			      const UShortSet& reverse_dag);
 
   void accumulate_group_sums(IntRealMatrixArrayMap& sum_G, Sizet2DArray& num_G,
-			     const IntResponse2DMap& batch_resp_map);
+			     const IntIntResponse2DMap& batch_resp_map);
   void accumulate_group_sums(IntRealMatrixArrayMap& sum_G, Sizet2DArray& num_G,
 			     size_t group, const IntResponseMap& resp_map);
 
@@ -618,6 +622,9 @@ protected:
   void apply_control(Real sum_L_shared, size_t num_shared, Real sum_L_refined,
 		     size_t num_refined, Real beta, Real& H_raw_mom);
 
+  /// identify if there are activeSet requests for model i
+  bool active_set_for_model(size_t i);
+
   /// promote scalar to 1D array
   void inflate(size_t N_0D, SizetArray& N_1D);
   /// promote scalar to portion of 1D array
@@ -656,8 +663,6 @@ protected:
   /// number of model groupings (pairings, pyramid levels,
   /// tensor-product enumerations) used for sample allocations
   size_t numGroups;
-  /// number of approximation models managed by non-hierarchical iteratedModel
-  size_t numApprox;
 
   /// the set of model groupings used by the estimator, e.g. ML BLUE
   UShort2DArray modelGroups;
@@ -1032,7 +1037,7 @@ increment_equivalent_cost(const SizetArray& delta_N_g,
 			  const RealVector& group_cost, Real hf_cost,
 			  Real& equiv_hf_evals)
 {
-  // for group sampling, e.g. NonDMultilevBLUESampling::group_increment()
+  // for group sampling, e.g. NonDMultilevBLUESampling::group_increments()
 
   size_t g, group_len = group_cost.length();
   Real sum = 0.;
@@ -1741,6 +1746,17 @@ apply_control(Real sum_L_shared, size_t num_L_shared, Real sum_L_refined,
 	 << " sum_L_ref = " << sum_L_refined
 	 << " num_L_sh = "  << num_L_shared
 	 << " num_L_ref = " << num_L_refined << std::endl;
+}
+
+
+inline bool NonDNonHierarchSampling::active_set_for_model(size_t i)
+{
+  size_t qoi, start = numFunctions*i, end = start+numFunctions;
+  const ShortArray& asv = activeSet.request_vector();
+  for (qoi=start; qoi<end; ++qoi)
+    if (asv[qoi])
+      return true;
+  return false;
 }
 
 

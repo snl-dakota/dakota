@@ -29,12 +29,13 @@ NonDHierarchSampling::
 NonDHierarchSampling(ProblemDescDB& problem_db, Model& model):
   NonDEnsembleSampling(problem_db, model)
 {
+  bool err_flag = false;
+  /*
   // ensure iteratedModel is an ensemble surrogate model and set initial
   // response mode (for set_communicators() which precedes core_run()).
   // Note: even though hierarchical sampling might involve a single model form,
   // we require an ensemble model to manage aggregations, reductions, etc.
   // (i.e. a SimulationModel with resolution hyper-parameters is insufficient).
-  bool err_flag = false;
   if (iteratedModel.surrogate_type() == "ensemble")
     iteratedModel.surrogate_response_mode(AGGREGATED_MODEL_PAIR);
   else {
@@ -42,6 +43,7 @@ NonDHierarchSampling(ProblemDescDB& problem_db, Model& model):
 	 << "model specification." << std::endl;
     err_flag = true;
   }
+  */
 
   pilotSamples = problem_db.get_sza("method.nond.pilot_samples");
   if ( !std::all_of( std::begin(pilotSamples), std::end(pilotSamples),
@@ -69,78 +71,44 @@ NonDHierarchSampling::~NonDHierarchSampling()
 
 
 void NonDHierarchSampling::
-accumulate_paired_online_cost(RealVector& accum_cost, SizetArray& num_cost,
-			      size_t step)
+ensemble_sample_batch(const String& prepend, int batch_id, bool new_samples)
 {
-  // This implementation is for singleton or paired responses, not for
-  // aggregation of a full Model ensemble
+  if (new_samples) {
+    // generate new MC parameter sets
+    get_parameter_sets(iteratedModel);
 
-  // for ML and MLCV, accumulation can span two calls --> init outside
-
-  const Pecos::ActiveKey& key = iteratedModel.active_model_key();
-  unsigned short form1 = key.retrieve_model_form(0);
-  size_t form1_index = (form1 == USHRT_MAX) ? 0 : (size_t)form1;
-  // costMetadataIndices follows ordered models
-  const SizetSizetPair& cost1_mdi = costMetadataIndices[form1_index];
-  size_t md1_index = cost1_mdi.first, md1_len = cost1_mdi.second,
-    md2_index, step1, step2;
-  if (step) {
-    unsigned short form2 = key.retrieve_model_form(1);
-    size_t form2_index = (form2 == USHRT_MAX) ? 0 : (size_t)form2;
-    md2_index = costMetadataIndices[form2_index].first;
-  }
-
-  using std::isfinite;  Real cost1, cost2;  IntRespMCIter r_cit;
-  // uses one set of allResponses with QoI aggregation across all Models,
-  // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
-  for (r_cit=allResponses.begin(); r_cit!=allResponses.end(); ++r_cit) {
-    const std::vector<RespMetadataT>& md = r_cit->second.metadata();//aggregated
-
-    if (step) { step1 = step - 1; step2 = step; }
-    else        step1 = step;
-
-    cost1 = md[md1_index]; // offset by metadata index
-    if (isfinite(cost1)) {
-      accum_cost[step1] += cost1;
-      ++num_cost[step1];
-      if (outputLevel >= DEBUG_OUTPUT)
-	Cout << "Metadata:\n" << md << "Model key1 cost: accum_cost = "
-	     << accum_cost[step1] << " num_cost = "<<num_cost[step1]<<std::endl;
-    }
-
-    if (step) {
-      cost2 = md[md1_len + md2_index]; // offset by metadata index
-      if (isfinite(cost2)) {
-	accum_cost[step2] += cost2;
-	++num_cost[step2];
-	if (outputLevel >= DEBUG_OUTPUT)
-	  Cout << "Model key2 cost: accum_cost = " << accum_cost[step2]
-	       << " num_cost = " << num_cost[step2] << std::endl;
-      }
+    // export separate output files for each data set:
+    // for hierarchical, can rely on active truth,surr keys
+    if (exportSampleSets) {
+      if (iteratedModel.active_truth_key())
+	export_all_samples(prepend, iteratedModel.active_truth_model(),
+			   mlmfIter, batch_id);
+      size_t i, num_active_surr = iteratedModel.active_surrogate_keys();
+      for (i=0; i<num_active_surr; ++i)
+	export_all_samples(prepend, iteratedModel.active_surrogate_model(i),
+			   mlmfIter, batch_id);
     }
   }
-  // averaging is deferred until average_online_cost()
+
+  // evaluate all{Samples,Variables} using model ensemble and migrate
+  // all{Samples,Variables} to batch{Samples,Variables}Map
+  evaluate_batch(iteratedModel, batch_id); // excludes synchronize
 }
 
 
-/*  ... Some early notes when there was one composite core_run() ...
-void NonDHierarchSampling::core_run()
+void NonDHierarchSampling::
+export_all_samples(String root_prepend, const Model& model, size_t iter,
+		   int batch_id)
 {
-  // Future: include peer alternatives (1D list --> matrix)
-  //         For MLMC, could seek adaptive selection of most correlated
-  //         alternative (or a convex combination of alternatives).
+  String tabular_filename(root_prepend);
+  const String& iface_id = model.interface_id();
+  size_t i, num_samp = allSamples.numCols();
+  if (iface_id.empty()) tabular_filename += "NO_ID_i";
+  else                  tabular_filename += iface_id + "_i";
+  tabular_filename += std::to_string(iter) +  "_b" + std::to_string(batch_id)
+                   +  '_' + std::to_string(num_samp) + ".dat";
 
-  // TO DO: hierarchy incl peers (not peers each optionally incl hierarchy)
-  //   num_mf     = iteratedModel.model_hierarchy_depth();
-  //   num_peer_i = iteratedModel.model_peer_breadth(i);
-
-  // TO DO: this initial logic is limiting:
-  // > allow MLMC and CVMC for either model forms or discretization levels
-  // > separate method specs that both map to NonDMultifidelitySampling ???
-
-  // TO DO: following pilot sample across levels and fidelities in mixed case,
-  // could pair models for CVMC based on estimation of rho2_LH.
+  NonDEnsembleSampling::export_all_samples(model, tabular_filename);
 }
-*/
 
 } // namespace Dakota

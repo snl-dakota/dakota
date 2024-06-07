@@ -147,6 +147,11 @@ protected:
   /// return the model corresponding to truthModelKey
   const Model& active_truth_model() const;
 
+  /// return true if there is an active truth model indicated by truthModelKey
+  bool active_truth_key() const;
+  /// return the number of active surrogate models indicated by surrModelKeys
+  size_t active_surrogate_keys() const;
+
   /// define the active model key and extract {truth,surr}ModelKeys
   void active_model_key(const Pecos::ActiveKey& key);
   /// remove keys for any approximations underlying {truth,approx}Models
@@ -583,9 +588,11 @@ inline bool EnsembleSurrModel::multilevel() const
 
 
 inline bool EnsembleSurrModel::multilevel_multifidelity() const
-{ return ( approxModels.size() && truthModel.solution_levels() > 1 &&
+{
+  return ( !approxModels.empty() && truthModel.solution_levels() > 1 &&
 	   ( ensemblePrecedence != MULTILEVEL_PRECEDENCE &&
-	     ensemblePrecedence != MULTIFIDELITY_PRECEDENCE) ); }
+	     ensemblePrecedence != MULTIFIDELITY_PRECEDENCE) );
+}
 
 
 inline short EnsembleSurrModel::ensemble_precedence() const
@@ -935,6 +942,14 @@ inline const Model& EnsembleSurrModel::active_truth_model() const
   }
   else return model_from_index(hf_form);
 }
+
+
+inline bool EnsembleSurrModel::active_truth_key() const
+{ return !truthModelKey.empty(); }
+
+
+inline size_t EnsembleSurrModel::active_surrogate_keys() const
+{ return surrModelKeys.size(); }
 
 
 inline Model& EnsembleSurrModel::truth_model()

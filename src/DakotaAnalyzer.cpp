@@ -273,7 +273,8 @@ evaluate_parameter_sets(Model& model, bool log_resp_flag, bool log_best_flag)
 }
 
 
-void Analyzer::evaluate_batch(Model& model, int batch_id, bool log_best_flag)
+void Analyzer::
+evaluate_batch(Model& model, int batch_id, bool log_best_flag)
 {
   // This function does not need an iteratorRep fwd because it is a
   // protected fn only called by letter classes.
@@ -281,11 +282,12 @@ void Analyzer::evaluate_batch(Model& model, int batch_id, bool log_best_flag)
   // allVariables or allSamples defines the set of fn evals to be performed
   size_t i, num_cv, batch_size;
   bool asynch_flag = model.asynch_flag();
-  IntResponse2DMap::iterator r2_it;
-  IntVariables2DMap::iterator v2_it;  IntRealVector2DMap::iterator rv2_it;
+  IntIntResponse2DMap::iterator    r2_it;
+  IntIntVariables2DMap::iterator   v2_it;
+  IntIntRealVector2DMap::iterator rv2_it;
   if (!asynch_flag) {
     std::pair<int, IntResponseMap> resp_map_pr(batch_id, IntResponseMap());
-    std::pair<IntResponse2DMap::iterator, bool> rtn_pr
+    std::pair<IntIntResponse2DMap::iterator, bool> rtn_pr
       = batchResponsesMap.insert(resp_map_pr);
     r2_it = rtn_pr.first;
     if (!rtn_pr.second) // not inserted since batch_id already present
@@ -293,7 +295,7 @@ void Analyzer::evaluate_batch(Model& model, int batch_id, bool log_best_flag)
   }
   if (compactMode) {
     std::pair<int, IntRealVectorMap> map_pr(batch_id, IntRealVectorMap());
-    std::pair<IntRealVector2DMap::iterator, bool> rtn_pr
+    std::pair<IntIntRealVector2DMap::iterator, bool> rtn_pr
       = batchSamplesMap.insert(map_pr);
     rv2_it = rtn_pr.first;
     if (!rtn_pr.second) // not inserted since batch_id already present
@@ -301,8 +303,8 @@ void Analyzer::evaluate_batch(Model& model, int batch_id, bool log_best_flag)
     num_cv = allSamples.numRows();  batch_size = allSamples.numCols();
   }
   else {
-    std::pair<int,  IntVariablesMap> map_pr(batch_id,  IntVariablesMap());
-    std::pair<IntVariables2DMap::iterator, bool> rtn_pr
+    std::pair<int, IntVariablesMap> map_pr(batch_id, IntVariablesMap());
+    std::pair<IntIntVariables2DMap::iterator, bool> rtn_pr
       = batchVariablesMap.insert(map_pr);
     v2_it = rtn_pr.first;
     if (!rtn_pr.second) // not inserted since batch_id already present
@@ -338,7 +340,7 @@ void Analyzer::evaluate_batch(Model& model, int batch_id, bool log_best_flag)
 }
 
 
-const IntResponse2DMap& Analyzer::
+const IntIntResponse2DMap& Analyzer::
 synchronize_batches(Model& model, bool log_best_flag)
 {
   // synchronize all batches at once
@@ -348,15 +350,15 @@ synchronize_batches(Model& model, bool log_best_flag)
   batchResponsesMap.clear();
   //size_t i, num_batches = (compactMode) ?
   //  batchSamplesMap.size() : batchVariablesMap.size();
-  int batch_id, first_id, last_id;
+  int first_id, last_id;
   IntRespMCIter first_it, last_it;
 
   // for each batch id, extract eval_ids from full response map
   //bool initial = true;
   if (compactMode) {
-    for (IntRealVector2DMap::iterator s_it=batchSamplesMap.begin();
+    for (IntIntRealVector2DMap::iterator s_it=batchSamplesMap.begin();
 	 s_it!=batchSamplesMap.end(); ++s_it) {
-      batch_id = s_it->first;
+      int                   batch_id = s_it->first;
       IntRealVectorMap&       rv_map = s_it->second;
       IntResponseMap& batch_resp_map = batchResponsesMap[batch_id];
       // Copy one by one:
@@ -379,9 +381,9 @@ synchronize_batches(Model& model, bool log_best_flag)
     }
   }
   else {
-    for (IntVariables2DMap::iterator v_it=batchVariablesMap.begin();
+    for (IntIntVariables2DMap::iterator v_it=batchVariablesMap.begin();
 	 v_it!=batchVariablesMap.end(); ++v_it){
-      batch_id = v_it->first;
+      int                   batch_id = v_it->first;
       IntVariablesMap&      vars_map = v_it->second;
       IntResponseMap& batch_resp_map = batchResponsesMap[batch_id];
       //if (initial) {

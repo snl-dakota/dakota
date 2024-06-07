@@ -61,9 +61,13 @@ protected:
   //- Heading: Member functions
   //
 
-  /// helper that consolidates sequence advancement, sample generation,
-  /// sample export, and sample evaluation
-  void evaluate_ml_sample_increment(String prepend, unsigned short step);
+  /// evaluate multiple sample batches concurrently, where each batch involves
+  /// either a single model or model pair
+  void ml_increments(SizetArray& delta_N_l, String prepend);
+
+  // helper that consolidates sequence advancement, sample generation,
+  // sample export, and sample evaluation
+  //void evaluate_ml_sample_increment(String prepend, unsigned short step);
 
   /// increment the equivalent number of HF evaluations based on new
   /// model evaluations
@@ -89,15 +93,18 @@ protected:
 
   /// update accumulators for multilevel telescoping running sums
   /// using set of model evaluations within allResponses
-  void accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY,
-			   size_t lev, SizetArray& num_Y);
+  void accumulate_ml_Ysums(const IntResponseMap& resp_map,
+			   IntRealMatrixMap& sum_Y, RealMatrix& sum_YY,
+			   size_t lev, size_t lev_offset, SizetArray& num_Y);
   /// update accumulators for multilevel telescoping running sums
   /// using set of model evaluations within allResponses
-  void accumulate_ml_Ysums(RealMatrix& sum_Y, RealMatrix& sum_YY,
-			   size_t lev, SizetArray& num_Y);
+  void accumulate_ml_Ysums(const IntResponseMap& resp_map, RealMatrix& sum_Y,
+			   RealMatrix& sum_YY, size_t lev, size_t lev_offset,
+			   SizetArray& num_Y);
   /// update running QoI sums for one model (sum_Q) using set of model
   /// evaluations within allResponses; used for level 0 from other accumulators
-  void accumulate_ml_Qsums(IntRealMatrixMap& sum_Q, size_t lev,
+  void accumulate_ml_Qsums(const IntResponseMap& resp_map,
+			   IntRealMatrixMap& sum_Q, size_t lev,
 			   SizetArray& num_Q);
 
   /// compute variance scalar from sum accumulators
@@ -144,7 +151,7 @@ protected:
   void configure_indices(size_t group, size_t form, size_t lev, short seq_type);
 
   /// return (aggregate) level cost
-  Real level_cost(const RealVector& cost, size_t step);
+  Real level_cost(const RealVector& cost, size_t step, size_t offset = 0);
 
   //
   //- Heading: Data
@@ -162,17 +169,20 @@ private:
   // Perform multilevel Monte Carlo across the discretization levels for a
   // particular model form using discrepancy accumulators (sum_Y)
   //void multilevel_mc_Ysum();
-  /// Perform multilevel Monte Carlo across the discretization levels for a
-  /// particular model form using QoI accumulators (sum_Q)
+
+  /// Online iteration
   void multilevel_mc_online_pilot(); //_Qsum();
-  /// Qsum approach using a pilot sample treated as separate offline cost
+  /// Online allocations for all levels based on offline pilot
   void multilevel_mc_offline_pilot();
-  /// Qsum approach projecting estimator performance from a pilot sample
+  /// Project estimator performance from an online or offline pilot sample
   void multilevel_mc_pilot_projection();
+
+  /// define the truth and surrogate keys
+  void assign_active_key();
 
   /// helper for shared code among offline-pilot and pilot-projection modes
   void evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
-		       IntIntPairRealMatrixMap& sum_QlQlm1, RealVector& cost,
+		       IntIntPairRealMatrixMap& sum_QlQlm1,
 		       Sizet2DArray& N_actual_pilot,
 		       Sizet2DArray& N_actual_online, SizetArray& N_alloc_pilot,
 		       SizetArray& N_alloc_online, SizetArray& delta_N_l,
@@ -194,7 +204,8 @@ private:
 
   /// update running QoI sums for two models (sum_Ql, sum_Qlm1) using set of
   /// model evaluations within allResponses
-  void accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
+  void accumulate_ml_Qsums(const IntResponseMap& resp_map,
+			   IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 			   IntIntPairRealMatrixMap& sum_QlQlm1, size_t lev,
 			   SizetArray& num_Q);
 
@@ -579,12 +590,13 @@ configure_indices(size_t group, size_t form, size_t lev, short seq_type)
 
 
 inline Real NonDMultilevelSampling::
-level_cost(const RealVector& cost, size_t step)
+level_cost(const RealVector& cost, size_t step, size_t offset)
 {
   // discrepancies incur two level costs
+  size_t offset_step = offset + step;
   return (step) ?
-    cost[step] + cost[step-1] : // aggregated {HF,LF} mode
-    cost[step];                 //     uncorrected LF mode
+    cost[offset_step] + cost[offset_step-1] : // aggregated {HF,LF} mode
+    cost[offset_step];                        //     uncorrected LF mode
 }
 
 

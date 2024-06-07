@@ -136,8 +136,8 @@ protected:
   /// perform function evaluations to map a keyed batch of parameter sets
   /// (allVariablesMap[key]) into a corresponding batch of response sets
   /// (allResponsesMap[key])
-  const IntResponse2DMap& synchronize_batches(Model& model,
-					      bool log_best_flag = false);
+  const IntIntResponse2DMap& synchronize_batches(Model& model,
+						 bool log_best_flag = false);
   /// since synchronize returns the aggregation of all evaluated batches,
   /// we use a separate call to indicate when processing of this data is
   /// complete and bookkeeping can be cleared
@@ -192,13 +192,13 @@ protected:
 
   /// alternate container for Variables samples supporting evaluate_batch() and
   /// synchronize_batches(), a 2D map with outer batch_id and inner eval_id
-  IntVariables2DMap batchVariablesMap;
+  IntIntVariables2DMap batchVariablesMap;
   /// alternate container for RealVector samples supporting evaluate_batch()
   /// and synchronize_batches(), a 2D map with outer batch_id and inner eval_id
-  IntRealVector2DMap batchSamplesMap;
+  IntIntRealVector2DMap batchSamplesMap;
   /// alternate container for Response samples supporting evaluate_batch() and
   /// synchronize_batches(), a 2D map with outer batch_id and inner eval_id
-  IntResponse2DMap batchResponsesMap;
+  IntIntResponse2DMap batchResponsesMap;
 
   /// array of headers to insert into output while evaluating allVariables
   StringArray allHeaders;

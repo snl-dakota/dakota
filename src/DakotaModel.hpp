@@ -137,6 +137,11 @@ public:
   /// return the active truth sub-model in surrogate models
   virtual const Model& active_truth_model() const;
 
+  /// return true if there is an active truth model indicated by truthModelKey
+  virtual bool active_truth_key() const;
+  /// return the number of active surrogate models indicated by surrModelKeys
+  virtual size_t active_surrogate_keys() const;
+
   /// identify if 1D hierarchy can be defined across model forms
   virtual bool multifidelity() const;
   /// identify if 1D hierarchy can be defined across resolution levels

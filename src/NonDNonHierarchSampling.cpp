@@ -51,19 +51,8 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_ushort("method.nond.opt_subproblem_solver"),
     SUBMETHOD_DIRECT_NPSOL_OPTPP); // default is global + competed local
 
-  // check iteratedModel for model form hierarchy and/or discretization levels;
-  // set initial response mode for set_communicators() (precedes core_run()).
-  if (iteratedModel.surrogate_type() == "ensemble")
-    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
-  else {
-    Cerr << "Error: sampling the full range of a model ensemble requires an "
-	 << "ensemble surrogate model specification." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  sequenceType = Pecos::FORM_RESOLUTION_ENUMERATION;
   size_t num_forms_resolutions;
-  configure_enumeration(num_forms_resolutions);
+  configure_enumeration(num_forms_resolutions, sequenceType);
   numApprox = num_forms_resolutions - 1;
   if (methodName != MULTILEVEL_BLUE) // else deferred until ML BLUE ctor
     numGroups = num_forms_resolutions;
@@ -142,7 +131,7 @@ void NonDNonHierarchSampling::assign_active_key()
   }
 
   active_key.aggregate_keys(form_res_keys, Pecos::RAW_DATA);
-  iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
+  //iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
   iteratedModel.active_model_key(active_key); // data group 0
   resize_active_set();
 }
@@ -157,10 +146,10 @@ hf_indices(size_t& hf_form_index, size_t& hf_lev_index)
 }
 
 
-void NonDNonHierarchSampling::shared_increment(size_t iter)
+void NonDNonHierarchSampling::shared_increment(String prepend)
 {
-  if (iter == 0) Cout << "\nNon-hierarchical pilot sample: ";
-  else Cout << "\nNon-hierarchical sampling iteration " << iter
+  if (mlmfIter == 0) Cout << "\nNon-hierarchical pilot sample: ";
+  else Cout << "\nNon-hierarchical sampling iteration " << mlmfIter
 	    << ": shared sample increment = ";
   Cout << numSamples << '\n';
 
@@ -170,16 +159,16 @@ void NonDNonHierarchSampling::shared_increment(size_t iter)
     //resize_active_set();
 
     activeSet.request_values(1);
-    ensemble_sample_increment(iter, numGroups); // BLOCK if not shared_approx_increment()  *** TO DO: step value
+    ensemble_sample_increment(prepend, numGroups); // block on single batch
   }
 }
 
 
 void NonDNonHierarchSampling::
-shared_increment(size_t iter, const UShortArray& approx_set)
+shared_increment(String prepend, const UShortArray& approx_set)
 {
-  if (iter == 0) Cout << "\nNon-hierarchical pilot sample: ";
-  else Cout << "\nNon-hierarchical sampling iteration " << iter
+  if (mlmfIter == 0) Cout << "\nNon-hierarchical pilot sample: ";
+  else Cout << "\nNon-hierarchical sampling iteration " << mlmfIter
 	    << ": shared sample increment = ";
   Cout << numSamples << '\n';
 
@@ -188,21 +177,21 @@ shared_increment(size_t iter, const UShortArray& approx_set)
     //iteratedModel.active_model_key(agg_key);
     //resize_active_set();
 
-    // active approximations
+    // active approximation subset
     ensemble_active_set(approx_set);
-    // truth
+    // truth (not included in approx_set above)
     size_t start = numApprox * numFunctions;
-    activeSet.request_values(1, start, start + numFunctions);
+    activeSet.request_values(1, start, start + numFunctions); // augment approx
 
-    ensemble_sample_increment(iter, numGroups); // BLOCK if not shared_approx_increment()  *** TO DO: step value
+    ensemble_sample_increment(prepend, numGroups); // block on single batch
   }
 }
 
 
-void NonDNonHierarchSampling::shared_approx_increment(size_t iter)
+void NonDNonHierarchSampling::shared_approx_increment(String prepend)
 {
-  if (iter == 0) Cout << "\nNon-hierarchical approx pilot sample: ";
-  else Cout << "\nNon-hierarchical sampling iteration " << iter
+  if (mlmfIter == 0) Cout << "\nNon-hierarchical approx pilot sample: ";
+  else Cout << "\nNon-hierarchical sampling iteration " << mlmfIter
 	    << ": shared approx sample increment = ";
   Cout << numSamples << '\n';
 
@@ -216,13 +205,13 @@ void NonDNonHierarchSampling::shared_approx_increment(size_t iter)
     activeSet.request_values(1, 0,   approx_qoi); // all approx QoI
     activeSet.request_values(0, approx_qoi, end); //   no truth QoI
 
-    ensemble_sample_increment(iter, numApprox); // BLOCK  *** TO DO: step value
+    ensemble_sample_increment(prepend, numApprox); // block on single batch
   }
 }
 
 
 bool NonDNonHierarchSampling::
-approx_increment(size_t iter, const SizetArray& approx_sequence,
+approx_increment(String prepend, const SizetArray& approx_sequence,
 		 size_t start, size_t end)
 {
   if (numSamples && start < end) {
@@ -239,7 +228,7 @@ approx_increment(size_t iter, const SizetArray& approx_sequence,
       activeSet.request_values(1, start_qoi, start_qoi + numFunctions);
     }
 
-    ensemble_sample_increment(iter, start); // NON-BLOCK
+    ensemble_sample_increment(prepend, start); // block on single batch
     return true;
   }
   else {
@@ -251,7 +240,7 @@ approx_increment(size_t iter, const SizetArray& approx_sequence,
 
 
 bool NonDNonHierarchSampling::
-approx_increment(size_t iter, const SizetArray& approx_sequence,
+approx_increment(String prepend, const SizetArray& approx_sequence,
 		 size_t start, size_t end, const UShortArray& approx_set)
 {
   if (numSamples && start < end) {
@@ -268,7 +257,7 @@ approx_increment(size_t iter, const SizetArray& approx_sequence,
       activeSet.request_values(1, start_qoi, start_qoi + numFunctions);
     }
 
-    ensemble_sample_increment(iter, start); // NON-BLOCK
+    ensemble_sample_increment(prepend, start); // block on single batch
     return true;
   }
   else {
@@ -280,7 +269,8 @@ approx_increment(size_t iter, const SizetArray& approx_sequence,
 
 
 bool NonDNonHierarchSampling::
-approx_increment(size_t iter, unsigned short root, const UShortSet& reverse_dag)
+approx_increment(String prepend, unsigned short root,
+		 const UShortSet& reverse_dag)
 {
   UShortSet::const_iterator cit;
   if (numSamples) Cout << "\nApprox sample increment = " << numSamples;
@@ -304,7 +294,7 @@ approx_increment(size_t iter, unsigned short root, const UShortSet& reverse_dag)
       activeSet.request_values(1, start_qoi, start_qoi + numFunctions);
     }
 
-    ensemble_sample_increment(iter, root); // NON-BLOCK
+    ensemble_sample_increment(prepend, root); // block on single batch
     return true;
   }
   else
@@ -313,30 +303,11 @@ approx_increment(size_t iter, unsigned short root, const UShortSet& reverse_dag)
 
 
 void NonDNonHierarchSampling::
-ensemble_sample_increment(size_t iter, size_t step)
+group_increments(SizetArray& delta_N_G, String prepend, bool reverse_order)
 {
-  // generate new MC parameter sets
-  get_parameter_sets(iteratedModel);
-
-  // export separate output files for each data set:
-  if (exportSampleSets) { // for HF+LF models, use the HF tags
-    export_all_samples("cv_", iteratedModel.active_truth_model(), iter, step);
-    for (size_t i=0; i<numApprox; ++i)
-      export_all_samples("cv_", iteratedModel.active_surrogate_model(i),
-			 iter, step);
-  }
-
-  // compute allResponses from all{Samples,Variables} using model ensemble
-  evaluate_parameter_sets(iteratedModel); // includes synchronize
-}
-
-
-void NonDNonHierarchSampling::
-group_increment(SizetArray& delta_N_G, size_t iter, bool reverse_order)
-{
-  if (iter == 0) Cout << "\nPerforming pilot sample for model groups.\n";
-  else Cout << "\nGroup sampling iteration " << iter << ": sample increment =\n"
-	    << delta_N_G << '\n';
+  if (mlmfIter == 0) Cout << "\nPerforming pilot sample for model groups.\n";
+  else Cout << "\nGroup sampling iteration " << mlmfIter
+	    << ": sample increment =\n" << delta_N_G << '\n';
 
   // Ordering does not impact evaluation management, but does impact random
   // number sequencing across calls to get_parameter_sets()
@@ -346,7 +317,7 @@ group_increment(SizetArray& delta_N_G, size_t iter, bool reverse_order)
       numSamples = delta_N_G[g];
       if (numSamples) {
 	ensemble_active_set(modelGroups[g]);
-	ensemble_sample_batch(iter, g); // index is group_id; non-blocking
+	ensemble_sample_batch(prepend, g); // index is group_id, non-blocking
       }
     }
   else // low to high ordering (e.g. combinatorial defn of ML BLUE modelGroups)
@@ -354,42 +325,13 @@ group_increment(SizetArray& delta_N_G, size_t iter, bool reverse_order)
       numSamples = delta_N_G[g];
       if (numSamples) {
 	ensemble_active_set(modelGroups[g]);
-	ensemble_sample_batch(iter, g); // index is group_id; non-blocking
+	ensemble_sample_batch(prepend, g); // index is group_id, non-blocking
       }
     }
 
   if (iteratedModel.asynch_flag())
     synchronize_batches(iteratedModel); // schedule all groups (return ignored)
 }
-
-
-void NonDNonHierarchSampling::
-ensemble_sample_batch(size_t iter, int batch_id)
-{
-  // generate new MC parameter sets
-  get_parameter_sets(iteratedModel);
-
-  // export separate output files for each data set:
-  if (exportSampleSets) { // for HF+LF models, use the HF tags
-    export_all_samples("cv_", iteratedModel.active_truth_model(),
-		       iter, batch_id);
-    for (size_t i=0; i<numApprox; ++i)
-      export_all_samples("cv_", iteratedModel.active_surrogate_model(i),
-			 iter, batch_id);
-  }
-
-  // evaluate all{Samples,Variables} using model ensemble and migrate
-  // all{Samples,Variables} to batch{Samples,Variables}Map
-  evaluate_batch(iteratedModel, batch_id); // excludes synchronize
-}
-
-
-//void NonDNonHierarchSampling::ensemble_sample_synchronize()
-//{
-//  // synchronize multiple evaluation batches on the ensemble model and
-//  // bookkeep by batch id within batchResponsesMap
-//  synchronize_batches(iteratedModel); // ignore return reference
-//}
 
 
 size_t NonDNonHierarchSampling::
@@ -473,35 +415,68 @@ dag_approx_increment(const RealVector& soln_vars, const UShortArray& approx_set,
 
 
 void NonDNonHierarchSampling::
-recover_online_cost(const IntResponseMap& all_resp)
+ensemble_sample_increment(const String& prepend, size_t step, bool new_samples)
 {
-  // uses one set of allResponses with QoI aggregation across all Models,
-  // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
+  // Single sample batch case: define and evaluate (includes synchronization)
 
-  size_t cntr, step, num_finite, md_index;  IntRespMCIter r_it;
-  unsigned short mf;  Real cost, accum;  using std::isfinite;
-  sequenceCost.size(numApprox+1); // init to 0
-  const Pecos::ActiveKey& active_key = iteratedModel.active_model_key();
-
-  for (step=0, cntr=0; step<=numApprox; ++step) {
-    mf = active_key.retrieve_model_form(step);
-    const SizetSizetPair& cost_mdi = costMetadataIndices[mf];
-    md_index = cntr + cost_mdi.first; // index into aggregated metadata
-
-    accum = 0.;  num_finite = 0;
-    for (r_it=all_resp.begin(); r_it!=all_resp.end(); ++r_it) {
-      cost = r_it->second.metadata(md_index); // offset by index
-      if (isfinite(cost))
-	{ accum += cost; ++num_finite; }
-    }
-    sequenceCost[step] = accum / num_finite;
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Online cost: accum cost = " << accum
-	   << " num cost = " << num_finite
-	   << " sequence cost = " << sequenceCost[step] << std::endl;
-
-    cntr += cost_mdi.second; // offset by size of metadata for step
+  if (new_samples) {
+    // generate new MC parameter sets
+    get_parameter_sets(iteratedModel);
+    // export separate output files for each data set
+    export_sample_sets(prepend, step);
   }
+
+  // compute allResponses from all{Samples,Variables} using model ensemble
+  evaluate_parameter_sets(iteratedModel); // includes synchronize
+}
+
+
+void NonDNonHierarchSampling::
+ensemble_sample_batch(const String& prepend, size_t step, bool new_samples)
+{
+  // Queue one sample batch among multiple (excludes synchronization)
+
+  if (new_samples) {
+    // generate new MC parameter sets
+    get_parameter_sets(iteratedModel);
+    // export separate output files for each data set
+    export_sample_sets(prepend, step);
+  }
+
+  // evaluate all{Samples,Variables} using model ensemble and migrate
+  // all{Samples,Variables} to batch{Samples,Variables}Map
+  evaluate_batch(iteratedModel, step); // excludes synchronize
+}
+
+
+void NonDNonHierarchSampling::
+export_sample_sets(const String& prepend, size_t step)
+{
+  if (exportSampleSets) { // for HF+LF models, use the HF tags
+    if (active_set_for_model(numApprox))
+      export_all_samples(prepend, iteratedModel.active_truth_model(),
+			 mlmfIter, step);
+    for (size_t i=0; i<numApprox; ++i)
+      if (active_set_for_model(i))
+	export_all_samples(prepend, iteratedModel.active_surrogate_model(i),
+			   mlmfIter, step);
+  }
+}
+
+
+void NonDNonHierarchSampling::
+export_all_samples(const String& root_prepend, const Model& model, size_t iter,
+		   size_t step)
+{
+  String tabular_filename(root_prepend);
+  const String& iface_id = model.interface_id();
+  size_t i, num_samp = allSamples.numCols();
+  if (iface_id.empty()) tabular_filename += "NO_ID_i";
+  else                  tabular_filename += iface_id + "_i";
+  tabular_filename += std::to_string(iter) +  "_s" + std::to_string(step)
+    + '_' + std::to_string(num_samp) + ".dat";
+
+  NonDEnsembleSampling::export_all_samples(model, tabular_filename);
 }
 
 
@@ -2370,9 +2345,9 @@ response_evaluator(const Variables& vars, const ActiveSet& set,
 /** Multi-moment map-based version used for approximation increments */
 void NonDNonHierarchSampling::
 accumulate_group_sums(IntRealMatrixArrayMap& sum_G, Sizet2DArray& num_G,
-		     const IntResponse2DMap& batch_resp_map)
+		     const IntIntResponse2DMap& batch_resp_map)
 {
-  IntResponse2DMap::const_iterator b_it;
+  IntIntResponse2DMap::const_iterator b_it;
   size_t g, num_groups = modelGroups.size();
   for (g=0; g<num_groups; ++g) {
     b_it = batch_resp_map.find(g); // index g corresponds to group_id key

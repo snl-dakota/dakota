@@ -1269,8 +1269,8 @@ configure_indices(size_t group, size_t form, size_t lev, short seq_type)
                  frm = (form  == SZ_MAX) ? USHRT_MAX : (unsigned short)form;
   Pecos::ActiveKey hf_key;  hf_key.form_key(grp, frm, lev);
 
-  if ( (seq_type == Pecos::MODEL_FORM_SEQUENCE       && form == 0) ||
-       (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE && lev  == 0) ||
+  if ( (seq_type == Pecos::MODEL_FORM_1D_SEQUENCE       && form == 0) ||
+       (seq_type == Pecos::RESOLUTION_LEVEL_1D_SEQUENCE && lev  == 0) ||
        !multilevDiscrepEmulation) {
     iteratedModel.surrogate_response_mode(BYPASS_SURROGATE); // truth only
     uSpaceModel.active_model_key(hf_key); // one data set
@@ -1394,8 +1394,8 @@ void NonDExpansion::multifidelity_reference_expansion()
 
   // Allow either model forms or discretization levels, but not both
   size_t num_steps, form, lev, secondary_index; short seq_type;
-  configure_sequence(num_steps, secondary_index, seq_type);
-  bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE);
+  configure_1d_sequence(num_steps, secondary_index, seq_type);
+  bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_1D_SEQUENCE);
   // either lev varies and form is fixed, or vice versa:
   size_t& step = (multilev) ? lev : form;  step = 0;
   if (multilev) form = secondary_index;
@@ -1457,8 +1457,8 @@ void NonDExpansion::multifidelity_individual_refinement()
 {
   // Allow either model forms or discretization levels, but not both
   size_t num_steps, form, lev, secondary_index; short seq_type;
-  configure_sequence(num_steps, secondary_index, seq_type);
-  bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE);
+  configure_1d_sequence(num_steps, secondary_index, seq_type);
+  bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_1D_SEQUENCE);
   // either lev varies and form is fixed, or vice versa:
   size_t& step = (multilev) ? lev : form;  step = 0;
   if (multilev) form = secondary_index;
@@ -1529,8 +1529,8 @@ void NonDExpansion::multifidelity_integrated_refinement()
        << "\n-----------------------------------------------\n";
   // Initialize again (or must propagate settings from mf_expansion())
   size_t num_steps, form, lev, secondary_index; short seq_type;
-  configure_sequence(num_steps, secondary_index, seq_type);
-  bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE);
+  configure_1d_sequence(num_steps, secondary_index, seq_type);
+  bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_1D_SEQUENCE);
   // either lev varies and form is fixed, or vice versa:
   size_t& step = (multilev) ? lev : form;
   if (multilev) form = secondary_index;
@@ -1624,8 +1624,8 @@ void NonDExpansion::multilevel_regression()
 {
   // Allow either model forms or discretization levels, but not both
   size_t num_steps, form, lev, secondary_index; short seq_type;
-  configure_sequence(num_steps, secondary_index, seq_type);
-  bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_SEQUENCE);
+  configure_1d_sequence(num_steps, secondary_index, seq_type);
+  bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_1D_SEQUENCE);
   // either lev varies and form is fixed, or vice versa:
   size_t& step = (multilev) ? lev : form;
   if (multilev) form = secondary_index;
