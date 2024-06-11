@@ -50,56 +50,23 @@ std::shared_ptr<FieldApproximation> FieldApproximation::
 get_field_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
            const StringArray& approx_labels)
 {
-    const String& approx_type = shared_data.data_rep()->approxType;
+  const String& approx_type = shared_data.data_rep()->approxType;
 
-    Cout << "FieldApproximation::get_field_approx: creating \""
-         << approx_type << "\" for each of these responses:\n";
-    for (auto const & label : approx_labels)
-      Cout << "\t\"" << label << "\"" << std::endl;
+  Cout << "FieldApproximation::get_field_approx: creating \""
+       << approx_type << "\" for each of these responses:\n";
+  for (auto const & label : approx_labels)
+    Cout << "\t\"" << label << "\"" << std::endl;
 
-    // TODO: create a CompositeApproximation class which allows registration of
-    //       scalar Approximations which then get created and registered here.
-    //       Then start delegating or customizing API calls using ApproximationFieldInterface
-    //       and needed implementation in FieldApproximation classes.
-    //std::shared_ptr<FieldApproximation>(
-    //    new CompositeApproximation(problem_db, shared_data, approx_labels));
-    auto approx = std::make_shared<CompositeApproximation>(problem_db, shared_data, approx_labels);
+  // TODO: create a CompositeApproximation class which allows registration of
+  //       scalar Approximations which then get created and registered here.
+  //       Then start delegating or customizing API calls using ApproximationFieldInterface
+  //       and needed implementation in FieldApproximation classes.
+  auto approx = std::make_shared<CompositeApproximation>(problem_db, shared_data, approx_labels);
 
-    for (size_t i=0; i<approx_labels.size(); ++i)
-      approx->add_approximation(std::make_shared<Approximation>(problem_db, shared_data, approx_labels[i]));
+  for (size_t i=0; i<approx_labels.size(); ++i)
+    approx->add_approximation(std::make_shared<Approximation>(problem_db, shared_data, approx_labels[i]));
 
-    return approx;
-
-
-//#ifdef HAVE_SURFPACK
-//    else if (approx_type == "global_polynomial"     ||
-//	     approx_type == "global_kriging"        ||
-//	     approx_type == "global_neural_network" || // TO DO: Two ANN's ?
-//	     approx_type == "global_radial_basis"   ||
-//	     approx_type == "global_mars"           ||
-//	     approx_type == "global_moving_least_squares")
-//      return std::make_shared<SurfpackApproximation>
-//	(problem_db, shared_data, approx_label);
-//#endif // HAVE_SURFPACK
-//#ifdef HAVE_DAKOTA_SURROGATES
-//    else if (approx_type == "global_exp_gauss_proc")
-//      return std::make_shared<SurrogatesGPApprox>
-//	(problem_db, shared_data, approx_label);
-//    else if (approx_type == "global_exp_poly")
-//      return std::make_shared<SurrogatesPolyApprox>
-//	(problem_db, shared_data, approx_label);
-//#ifdef HAVE_DAKOTA_PYTHON_SURROGATES
-//    else if (approx_type == "global_exp_python")
-//      return std::make_shared<SurrogatesPythonApprox>
-//	(problem_db, shared_data, approx_label);
-//#endif // HAVE_DAKOTA_PYTHON_SURROGATES
-//#endif // HAVE_DAKOTA_SURROGATES
-//    else {
-//      Cerr << "Error: FieldApproximation type " << approx_type << " not available."
-//	   << std::endl;
-//    }
-//  }
-  return std::shared_ptr<FieldApproximation>();
+  return approx;
 }
 
 
