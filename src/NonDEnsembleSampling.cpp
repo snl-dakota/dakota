@@ -66,8 +66,14 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
   costMetadataIndices.resize(num_mf);
   for (i=num_mf-1, ml_rit=model_ensemble.rbegin();
        ml_rit!=model_ensemble.rend(); --i, ++ml_rit) { // high fid to low fid
-    // only SimulationModel supports solution_{levels,costs} and cost metadata.
-    // metadata indices only vary per response specification (model form).
+    // Only SimulationModel supports solution_{levels,costs} and cost metadata,
+    // and metadata indices only vary per response specification (model form).
+    // Note: definition of the number of solution levels only requires user
+    // specification of the solution level control string, which binds with the
+    // number of admissible values for that identified variable.  In the event
+    // that solution costs are not specified (and have to be recovered from
+    // response metadata), SimulationModel::initialize_solution_control() still
+    // sizes solnCntlCostMap such that the correct number of levels is returned.
     num_lev  = ml_rit->solution_levels(); // lower bound is 1 soln level
     md_index = ml_rit->cost_metadata_index();
     num_md   = ml_rit->current_response().metadata().size();
@@ -80,6 +86,8 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
       num_lev = prev_lev;
     }
 
+    
+    /*
     // Ensure there is consistent cost data available as SimulationModel must
     // be allowed to have empty solnCntlCostMap (when optional solution control
     // is not specified).  Passing false bypasses lower bound of 1.
@@ -93,7 +101,21 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
 	   << ml_rit->model_id() << '.' << std::endl;
       err_flag = true;
     }
-
+    */
+    // Specialize logic to sequenceType and augment w/ derived error checks
+    bool model_cost_spec = query_cost(*ml_rit, num_lev, sequenceType);
+    if (model_cost_spec) // enforce precedence: if both, spec over recovery
+      md_index = SZ_MAX; // ignore any available metadata
+    else if (md_index == SZ_MAX) {
+      // *** TO DO: log cost status per model, but do error traps as needed in specific derived classes (e.g., MLCV for first,last model)
+      Cerr << "Error: insufficient cost data provided for ensemble sampling."
+	   << "\n       Please provide offline solution_level_cost "
+	   << "estimates or activate\n       online cost recovery for model "
+	   << ml_rit->model_id() << '.' << std::endl;
+      err_flag = true;
+    }
+    // else recovery from available cost metadata for this model
+    
     //Sizet2DArray& Nl_i = NLevActual[i];
     NLevActual[i].resize(num_lev); //Nl_i.resize(num_lev);
     //for (j=0; j<num_lev; ++j)
@@ -243,23 +265,28 @@ accumulate_online_cost(const IntResponseMap& resp_map, RealVector& accum_cost,
   // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
 
   using std::isfinite;
-  size_t m, cntr, start, end, md_index;  unsigned short mf;  Real cost;
-  IntRespMCIter r_it;
+  size_t m, cntr, start, end, md_index, md_index_m;
+  unsigned short mf;  Real cost;  IntRespMCIter r_it;
   const Pecos::ActiveKey& active_key = iteratedModel.active_model_key();
 
   for (m=0, cntr=0, start=0; m<=numApprox; ++m) {
-    // Locate cost meta-data for ensemble member m through its model form 
+    end = start + numFunctions;
+
+    // Locate cost meta-data for ensemble member m through its model form
+    // > see SurrogateModel::insert_metadata(): aggregated metadata is padded
+    //   for any inactive models within the AGGREGATED_MODELS set
     mf = active_key.retrieve_model_form(m);
     const SizetSizetPair& cost_mdi = costMetadataIndices[mf];
-    md_index = cntr + cost_mdi.first; // index into aggregated metadata
-
-    end = start + numFunctions;
-    for (r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it) {
-      const Response& resp = r_it->second;
-      if (non_zero(resp.active_set_request_vector(), start, end)) {
-	cost = resp.metadata(md_index);
-	if (isfinite(cost))
-	  { accum_cost[m] += cost; ++num_cost[m]; }
+    md_index_m = cost_mdi.first;
+    if (md_index_m != SZ_MAX) { // alternatively, if (sequenceCost[m] == 0.)
+      md_index = cntr + md_index_m; // index into aggregated metadata
+      for (r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it) {
+	const Response& resp = r_it->second;
+	if (non_zero(resp.active_set_request_vector(), start, end)) {
+	  cost = resp.metadata(md_index);
+	  if (isfinite(cost))
+	    { accum_cost[m] += cost; ++num_cost[m]; }
+	}
       }
     }
 

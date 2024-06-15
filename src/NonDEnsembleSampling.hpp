@@ -305,9 +305,12 @@ average_online_cost(const RealVector& accum_cost, const SizetArray& num_cost,
 {
   // Finalize the average cost for the ensemble
   size_t step, num_steps = accum_cost.length();
+  //if (num_cost.size() != num_steps) { } // not possible in recover_online_cost
   if (seq_cost.length() != num_steps) seq_cost.sizeUninitialized(num_steps);
+
   for (step=0; step<num_steps; ++step)
-    seq_cost[step] = accum_cost[step] / num_cost[step];
+    seq_cost[step] = (num_cost[step]) ? accum_cost[step] / num_cost[step] : 0.;
+
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Online cost: accum_cost:\n" << accum_cost << "num_cost:\n"
 	 << num_cost << "seq_cost:\n" << seq_cost << std::endl;

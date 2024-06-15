@@ -146,8 +146,10 @@ protected:
   void configure_cost(size_t num_steps, short seq_type, RealVector& cost);
   /// extract cost estimates from model hierarchy, if available
   bool query_cost(size_t num_steps, short seq_type, RealVector& cost);
-  /// test cost for valid values > 0
-  bool valid_cost_values(const RealVector& cost);
+  /// test cost for value > 0
+  bool valid_cost(Real cost) const;
+  /// test costs for valid values > 0
+  bool valid_costs(const RealVector& costs) const;
 
   /// distribute pilot sample specification across model forms or levels
   void load_pilot_sample(const SizetArray& pilot_spec, size_t num_steps,
@@ -427,6 +429,20 @@ configure_cost(size_t num_steps, short seq_type, RealVector& cost)
 	 << "configure_cost()." << std::endl;
     abort_handler(METHOD_ERROR);
   }
+}
+
+
+inline bool NonD::valid_cost(Real cost) const
+{ return (cost > 0.) ? true : false; }
+
+
+inline bool NonD::valid_costs(const RealVector& cost) const
+{
+  size_t i, len = cost.length();
+  for (i=0; i<len; ++i)
+    if (cost[i] <= 0.)
+      return false;
+  return true;
 }
 
 
