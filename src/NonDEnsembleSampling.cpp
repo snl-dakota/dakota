@@ -86,22 +86,6 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
       num_lev = prev_lev;
     }
 
-    
-    /*
-    // Ensure there is consistent cost data available as SimulationModel must
-    // be allowed to have empty solnCntlCostMap (when optional solution control
-    // is not specified).  Passing false bypasses lower bound of 1.
-    // > Previous option below uses solution_levels() with and without false,
-    //   which can only differ if SimulationModel::solnCntlCostMap is empty.
-    //if (md_index == SZ_MAX && num_lev > ml_rit->solution_levels(false)) { }
-    if (md_index == SZ_MAX && ml_rit->solution_levels(false) == 0) {
-      Cerr << "Error: insufficient cost data provided for ensemble sampling."
-	   << "\n       Please provide offline solution_level_cost "
-	   << "estimates or activate\n       online cost recovery for model "
-	   << ml_rit->model_id() << '.' << std::endl;
-      err_flag = true;
-    }
-    */
     // Specialize logic to sequenceType and augment w/ derived error checks
     bool model_cost_spec = query_cost(*ml_rit, num_lev, sequenceType);
     if (model_cost_spec) // enforce precedence: if both, spec over recovery

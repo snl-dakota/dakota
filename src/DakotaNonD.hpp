@@ -145,6 +145,8 @@ protected:
   /// extract cost estimates from model hierarchy (forms or resolutions)
   void configure_cost(size_t num_steps, short seq_type, RealVector& cost);
   /// extract cost estimates from model hierarchy, if available
+  bool query_cost(Model& model, size_t num_costs, short seq_type);
+  /// extract cost estimates from model hierarchy, if available
   bool query_cost(size_t num_steps, short seq_type, RealVector& cost);
   /// test cost for value > 0
   bool valid_cost(Real cost) const;

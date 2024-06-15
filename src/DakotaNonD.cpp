@@ -555,13 +555,13 @@ bool NonD::query_cost(size_t num_costs, short seq_type, RealVector& seq_cost)
     // Therefore we check each model for consistency.
     ModelLIter m_iter;  size_t cntr;
     for (m_iter=sub_models.begin(), cntr=0; m_iter!=sub_models.end(); ++m_iter)
-      cntr += m_iter->solution_levels(false);
+      cntr += m_iter->solution_levels();
     seq_cost.sizeUninitialized(cntr);
     // assemble resolution level costs head to tail across models
     // (model costs are presumed to be more separated than resolution costs)
     for (m_iter=sub_models.begin(), cntr=0; m_iter!=sub_models.end(); ++m_iter){
       copy_data_partial(m_iter->solution_level_costs(), seq_cost, cntr);
-      cntr += m_iter->solution_levels(false);
+      cntr += m_iter->solution_levels();
     }
     break;
   }
@@ -570,11 +570,11 @@ bool NonD::query_cost(size_t num_costs, short seq_type, RealVector& seq_cost)
   // If any gaps remain, online cost recovery (via onlineCost) is active
   // > leave these remaining gaps in place to fill downstream
   // > don't resize to 0 for length mismatch: make this a hard error
-  if (cost.length() != num_costs) {
-    Cerr << "Error: length of cost roll-up (" << cost.length()
+  if (seq_cost.length() != num_costs) {
+    Cerr << "Error: length of cost roll-up (" << seq_cost.length()
 	 << ") does not match expected number of costs (" << num_costs
 	 << ")." << std::endl;
-    abort_handler(METHOD_EROR);
+    abort_handler(METHOD_ERROR);
   }
   // cost definition complete only if all entried are valid
   return valid_costs(seq_cost);
