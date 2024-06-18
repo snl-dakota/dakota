@@ -3709,10 +3709,10 @@ Interface& Model::derived_interface()
 
 
 /** return the number of levels within a solution / discretization hierarchy. */
-size_t Model::solution_levels(bool lwr_bnd) const
+size_t Model::solution_levels() const
 {
-  if (modelRep) return modelRep->solution_levels(lwr_bnd); // fwd to letter
-  else          return (lwr_bnd) ? 1 : 0; // default
+  if (modelRep) return modelRep->solution_levels(); // fwd to letter
+  else          return 0; // default
 }
 
 
