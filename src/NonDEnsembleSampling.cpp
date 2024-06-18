@@ -86,20 +86,6 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
       num_lev = prev_lev;
     }
 
-    // Specialize logic to sequenceType and augment w/ derived error checks
-    bool model_cost_spec = query_cost(*ml_rit, num_lev, sequenceType);
-    if (model_cost_spec) // enforce precedence: if both, spec over recovery
-      md_index = SZ_MAX; // ignore any available metadata
-    else if (md_index == SZ_MAX) {
-      // *** TO DO: log cost status per model, but do error traps as needed in specific derived classes (e.g., MLCV for first,last model)
-      Cerr << "Error: insufficient cost data provided for ensemble sampling."
-	   << "\n       Please provide offline solution_level_cost "
-	   << "estimates or activate\n       online cost recovery for model "
-	   << ml_rit->model_id() << '.' << std::endl;
-      err_flag = true;
-    }
-    // else recovery from available cost metadata for this model
-    
     //Sizet2DArray& Nl_i = NLevActual[i];
     NLevActual[i].resize(num_lev); //Nl_i.resize(num_lev);
     //for (j=0; j<num_lev; ++j)
@@ -120,6 +106,20 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
     //   >> Projections are allocations --> include in final NLevAlloc
     //   >> use similar approach with equivHFEvals (tracks actual) + delta
     //      (separated projection)
+
+    // Specialize logic to sequenceType and augment w/ derived error checks
+    bool model_cost_spec = query_cost(*ml_rit, num_lev, sequenceType);
+    if (model_cost_spec) // enforce precedence: if both, spec over recovery
+      md_index = SZ_MAX; // ignore any available metadata
+    else if (md_index == SZ_MAX) {
+      // *** TO DO: log cost status per model, but do error traps as needed in specific derived classes (e.g., MLCV for first,last model)
+      Cerr << "Error: insufficient cost data provided for ensemble sampling."
+	   << "\n       Please provide offline solution_level_cost "
+	   << "estimates or activate\n       online cost recovery for model "
+	   << ml_rit->model_id() << '.' << std::endl;
+      err_flag = true;
+    }
+    // else recovery from cost metadata for this model
 
     costMetadataIndices[i] = SizetSizetPair(md_index, num_md);
     prev_lev = num_lev;
@@ -262,7 +262,7 @@ accumulate_online_cost(const IntResponseMap& resp_map, RealVector& accum_cost,
     mf = active_key.retrieve_model_form(m);
     const SizetSizetPair& cost_mdi = costMetadataIndices[mf];
     md_index_m = cost_mdi.first;
-    if (md_index_m != SZ_MAX) { // alternatively, if (sequenceCost[m] == 0.)
+    if (md_index_m != SZ_MAX) { // alternatively, if solnCntlCostMap key is 0.
       md_index = cntr + md_index_m; // index into aggregated metadata
       for (r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it) {
 	const Response& resp = r_it->second;

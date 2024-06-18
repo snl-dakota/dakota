@@ -90,46 +90,21 @@ void EnsembleSurrModel::assign_default_keys(short mode)
   short reduction = Pecos::RAW_DATA; // most modes are raw data w/ no reduction
   switch (mode) {
   case AGGREGATED_MODELS: { //case DEFAULT_SURROGATE_RESP_MODE:
-    // Note: hierarchical cases use BYPASS_SURROGATE or AGGREGATED_MODEL_PAIR.
-    //       Non-hierarchical cases use AGGREGATED_MODELS with a sequenceType
-    //       of FORM_RESOLUTION_ENUMERATION.
-    /*
-    if (multifidelity()) { // override: model forms only (no soln levels)
-      truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx,
-				       truthModel.solution_level_cost_index());
-      surrModelKeys.resize(num_approx);
-      for (unsigned short i=0; i<num_approx; ++i)
-	surrModelKeys[i] = Pecos::ActiveKey(id, Pecos::RAW_DATA, i,
-	  approxModels[i].solution_level_cost_index());
+    size_t i, j, truth_index = truth_soln_lev - 1, num_lev, cntr = 0,
+      num_combinations = truth_soln_lev;
+    for (i=0; i<num_approx; ++i)
+      num_combinations += approxModels[i].solution_levels();
+    // arrange surrogate keys head to tail
+    surrModelKeys.resize(num_combinations-1);
+    for (i=0; i<num_approx; ++i) {
+      num_lev = approxModels[i].solution_levels();
+      for (j=0; j<num_lev; ++j, ++cntr)
+	surrModelKeys[cntr] = Pecos::ActiveKey(id, Pecos::RAW_DATA, i, j);
     }
-    else if (multilevel()) { // override: soln levels only (last model form)
-      size_t truth_index = truth_soln_lev - 1;
-      truthModelKey
-	= Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx, truth_index);
-      surrModelKeys.resize(truth_index);
-      for (size_t i=0; i<truth_index; ++i)
-	surrModelKeys[i] = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx, i);
-    }
-    else { // enumerate all combinations of model forms and soln levels
-    */
-      size_t i, j, truth_index = truth_soln_lev - 1, num_lev, cntr = 0,
-	num_combinations = truth_soln_lev;
-      for (i=0; i<num_approx; ++i)
-	num_combinations += approxModels[i].solution_levels();
-      // arrange surrogate keys head to tail
-      surrModelKeys.resize(num_combinations-1);
-      for (i=0; i<num_approx; ++i) {
-	num_lev = approxModels[i].solution_levels();
-	for (j=0; j<num_lev; ++j, ++cntr)
-	  surrModelKeys[cntr] = Pecos::ActiveKey(id, Pecos::RAW_DATA, i, j);
-      }
-      // truth model resolutions
-      for (j=0; j<truth_index; ++j, ++cntr)
-	surrModelKeys[cntr]
-	  = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx, j);
-      truthModelKey
-	= Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx, truth_index);
-    //}
+    // truth model resolutions
+    for (j=0; j<truth_index; ++j, ++cntr)
+      surrModelKeys[cntr] = Pecos::ActiveKey(id,Pecos::RAW_DATA,num_approx,j);
+    truthModelKey = Pecos::ActiveKey(id,Pecos::RAW_DATA,num_approx,truth_index);
     break;
   }
 

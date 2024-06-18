@@ -3712,7 +3712,8 @@ Interface& Model::derived_interface()
 size_t Model::solution_levels() const
 {
   if (modelRep) return modelRep->solution_levels(); // fwd to letter
-  else          return 0; // default
+  else          return 1; // default (see SimulationModel::
+                          // initialize_solution_control())
 }
 
 
