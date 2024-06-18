@@ -14,6 +14,13 @@
 #include "dakota_data_types.hpp"
 #include "DakotaModel.hpp"
 
+
+#define CLOSE_IO_UNITS_F77 F77_FUNC(close_io_units,CLOSE_IO_UNITS)
+
+extern "C" {
+  void CLOSE_IO_UNITS_F77();
+}
+
 namespace Dakota {
 
 class Minimizer; // fwd declarations
@@ -30,7 +37,7 @@ class Model;
 class SOLBase
 {
 public:
-  
+    
   //
   //- Heading: Constructors and destructor
   //
@@ -198,16 +205,31 @@ protected:
   /// used in constraint_eval() to bridge NLSSOLLeastSq::numLeastSqTerms
   /// and NPSOLOptimizer::numObjectiveFns
   size_t constrOffset;
+
+  // The NPSOL package does not close output files explicitly, relying on
+  // process termination to close them. This can cause problems when Dakota
+  // is used in "library mode", such as with the environment Python binding.
+  // The numInstances variable counts instances of NPSOL and NLSSOL wrappers,
+  // and a subroutine is called to close the files when it reaches 0 (see
+  // the SOLBase constructors and destructor).
+  
+  /// Track the number of instances of SOLBase and its derived classes. 
+  static size_t numInstances;
+
 };
 
 
 inline SOLBase::SOLBase():
   boundsArraySize(0), linConstraintMatrixF77(NULL),
   upperFactorHessianF77(NULL), constraintJacMatrixF77(NULL)
-{ }
+{ numInstances++;}
 
 
-inline SOLBase::~SOLBase() { }
+inline SOLBase::~SOLBase() { 
+  numInstances--;
+  if(numInstances == 0)
+    CLOSE_IO_UNITS_F77();
+}
 
 
 inline void SOLBase::size_bounds_array(size_t new_bnds_size)
