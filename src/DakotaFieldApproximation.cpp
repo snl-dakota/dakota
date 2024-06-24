@@ -40,7 +40,10 @@ FieldApproximation(ProblemDescDB& problem_db,
   FieldApproximation(BaseConstructor(), problem_db, shared_data, approx_labels)
 {
   //assert( !approxRep ); // Needs to be set by us
-  approxRep = get_field_approx(problem_db, shared_data, approx_labels);
+  if (approx_labels.size() == 1)
+    approxRep = get_approx(problem_db, shared_data, approx_labels[0]);
+  else
+    approxRep = get_field_approx(problem_db, shared_data, approx_labels);
 }
 
 
