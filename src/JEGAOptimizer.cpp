@@ -142,7 +142,7 @@ Begin Namespace
 */
 namespace Dakota {
 
-
+size_t JEGAOptimizer::numInstances = 0;
 
 
 /*
@@ -1951,6 +1951,9 @@ JEGAOptimizer::JEGAOptimizer(
 
     // We only ever need one EvaluatorCreator so we can create it now.
     this->_theEvalCreator = new EvaluatorCreator(iteratedModel);
+
+    // Increment object counter
+    this->numInstances++;
 }
 
 JEGAOptimizer::~JEGAOptimizer(
@@ -1960,6 +1963,10 @@ JEGAOptimizer::~JEGAOptimizer(
 
     delete this->_theEvalCreator;
     delete this->_theParamDB;
+    this->numInstances--;
+    if(this->numInstances == 0) // Force JEGA's global log file to close. See the comment on numInstances. 
+      JEGA::Logging::Logger::Global().Gate().get_log().get_first_log().~file_log();
+    
 }
 
 

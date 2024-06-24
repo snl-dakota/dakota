@@ -63,9 +63,13 @@ class Parameters(object):
     function ``dakota.interfacing.read_parameters_file``.
 
     Variable values can be accessed by name or by index using []. Analysis
-    components are accessible by index only using the an_comp attribute. The
-    Parameters class supports iteration, yielding the index, variable
-    descriptor, and variable value.
+    components are accessible by index only using the an_comp attribute.
+    Paramaters objects can be iterated, yielding the variable descriptors.
+    Other ways to iterate the object are the items() method, which yields
+    tuples of descriptor and variable value, and values() method, which
+    yields only the values.
+
+ and variable value.
 
     Attributes:
         an_comps: List of strings containing the analysis components.
@@ -349,8 +353,10 @@ class Results(object):
     ``dakota.interfacing.read_parameters_file``.
 
     Each response is represented by a Response object, and can be accessed
-    by name or by index using []. The Results class supports iteration, yielding
-    the index, response descriptor, and Response object.
+    by name or by index using []. Results objects support iteration, yielding
+    the response descriptors. Other iterators are provided by the items() method,
+    which yields a tuple of descriptor and Response object, and responses(),
+    which yields Response objects.
 
     Attributes:
         eval_id: Evaluation id (a string).

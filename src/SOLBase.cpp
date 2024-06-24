@@ -21,6 +21,7 @@ namespace Dakota {
 SOLBase*   SOLBase::solInstance(NULL);
 Minimizer* SOLBase::optLSqInstance(NULL);
 
+size_t SOLBase::numInstances = 0;
 
 SOLBase::SOLBase(Model& model):
   boundsArraySize(0), linConstraintMatrixF77(NULL),
@@ -32,6 +33,8 @@ SOLBase::SOLBase(Model& model):
   // it's a bit cleaner/more flexible to have them passed through member
   // function parameter lists rather than re-extracted from problem_db.
   //const ProblemDescDB& problem_db = model.problem_description_db();
+  
+  numInstances++;
 }
 
 
