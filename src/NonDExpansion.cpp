@@ -1517,8 +1517,9 @@ void NonDExpansion::multifidelity_individual_refinement()
     NLev[step] = uSpaceModel.approximation_data(0).points(); // first QoI
   }
   // cost specification is optional for multifidelity_expansion()
-  RealVector cost;  query_cost(num_steps, seq_type, cost); // if provided
-  compute_equivalent_cost(NLev, cost); // compute equivalent # of HF evals
+  RealVector cost;
+  if (query_cost(num_steps, seq_type, cost) == USER_COST_SPEC)
+    compute_equivalent_cost(NLev, cost); // compute equivalent # of HF evals
 }
 
 

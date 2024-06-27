@@ -58,14 +58,14 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
   }
 
   ModelList& model_ensemble = iteratedModel.subordinate_models(false);
-  size_t i, num_mf = model_ensemble.size(), num_lev, prev_lev = SZ_MAX,
+  size_t num_mf = model_ensemble.size(), num_lev, prev_lev = SZ_MAX,
     md_index, num_md;
-  ModelLRevIter ml_rit; // reverse iteration for prev_lev tracking
-  bool err_flag = false, mlmf = (methodName==MULTILEVEL_MULTIFIDELITY_SAMPLING);
+  int m;  ModelLRevIter ml_rit; // reverse iteration for prev_lev tracking
   NLevActual.resize(num_mf);  NLevAlloc.resize(num_mf);
   costMetadataIndices.resize(num_mf);
-  for (i=num_mf-1, ml_rit=model_ensemble.rbegin();
-       ml_rit!=model_ensemble.rend(); --i, ++ml_rit) { // high fid to low fid
+  bool mlmf = (methodName == MULTILEVEL_MULTIFIDELITY_SAMPLING);
+  for (m=num_mf-1, ml_rit=model_ensemble.rbegin();
+       ml_rit!=model_ensemble.rend(); --m, ++ml_rit) { // high fid to low fid
     // Only SimulationModel supports solution_{levels,costs} and cost metadata,
     // and metadata indices only vary per response specification (model form).
     // Note: definition of the number of solution levels only requires user
@@ -86,46 +86,27 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
       num_lev = prev_lev;
     }
 
-    //Sizet2DArray& Nl_i = NLevActual[i];
-    NLevActual[i].resize(num_lev); //Nl_i.resize(num_lev);
-    //for (j=0; j<num_lev; ++j)
-    //  Nl_i[j].resize(numFunctions); // defer to pre_run()
-    NLevAlloc[i].resize(num_lev);
     // Must manage N_actual vs. N_actual_proj in final roll ups:
-    // > "Actual" should mean succeeded --> suppress projection-based
-    //   updates to actual counters
-    // > migrate projection-based reporting to Alloc (+ other cached state as
-    //   needed), which retains strict linkage with accumulated sums/stats.
-    //   BUT, projected variance reduction calcs reuse best available varH in
+    // > "Actual" means succeeded --> no projection-based updates to actual
+    //    --> retains strict linkage with accumulated sums/stats.
+    // > Projections are allocations --> include in NLevAlloc
+    // > BUT, projected variance reduction calcs reuse best available varH in
     //   combination with projected NLevActual, so:
     //   >> Use NLevActual in multilevel_eval_summary();
     //      use NLevActual + deltaNLevActual in print_variance_reduction(),
     //      (for stats like varH, actual + proj is preferred to projected alloc)
-    //      where Proj can be lower dimensional even for backfill
-    //      (actual_incr is averaged over QoI)
-    //   >> Projections are allocations --> include in final NLevAlloc
     //   >> use similar approach with equivHFEvals (tracks actual) + delta
     //      (separated projection)
+    //Sizet2DArray& Nl_m = NLevActual[m];
+    NLevActual[m].resize(num_lev); //Nl_m.resize(num_lev);
+    //for (j=0; j<num_lev; ++j)
+    //  Nl_m[j].resize(numFunctions); // defer to pre_run()
+    NLevAlloc[m].resize(num_lev);
 
-    // Specialize logic to sequenceType and augment w/ derived error checks
-    bool model_cost_spec = query_cost(*ml_rit, num_lev, sequenceType);
-    if (model_cost_spec) // enforce precedence: if both, spec over recovery
-      md_index = SZ_MAX; // ignore any available metadata
-    else if (md_index == SZ_MAX) {
-      // *** TO DO: log cost status per model, but do error traps as needed in specific derived classes (e.g., MLCV for first,last model)
-      Cerr << "Error: insufficient cost data provided for ensemble sampling."
-	   << "\n       Please provide offline solution_level_cost "
-	   << "estimates or activate\n       online cost recovery for model "
-	   << ml_rit->model_id() << '.' << std::endl;
-      err_flag = true;
-    }
-    // else recovery from cost metadata for this model
-
-    costMetadataIndices[i] = SizetSizetPair(md_index, num_md);
+    // Note: md_index is subject to updates downstream (precedence of user spec)
+    costMetadataIndices[m] = SizetSizetPair(md_index, num_md);
     prev_lev = num_lev;
   }
-  if (err_flag)
-    abort_handler(METHOD_ERROR);
 
   // Support multilevel LHS as a specification override.  The estimator variance
   // is known/correct for MC and an assumption/approximation for LHS.  To get an

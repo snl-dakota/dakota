@@ -250,6 +250,9 @@ enum { NO_GROUP_THROTTLE=0,     MFMC_ESTIMATOR_GROUPS,
        COMMON_ESTIMATOR_GROUPS, GROUP_SIZE_THROTTLE };
 // Numerical solution modes
 enum { REORDERED_FALLBACK, NUMERICAL_FALLBACK, NUMERICAL_OVERRIDE };
+// options for obtaining cost data for model fidelities/resolutions
+enum { NO_COST_SOURCE=0, USER_COST_SPEC, ONLINE_COST_RECOVERY,
+       MIXED_COST_SPEC_RECOVERY };
 
 // ---------------
 // NonDReliability

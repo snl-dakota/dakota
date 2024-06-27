@@ -494,6 +494,7 @@ configure_enumeration(size_t& num_combinations, short& seq_type)
 }
 
 
+/*
 bool NonD::query_cost(Model& model, size_t num_costs, short seq_type)
 {
   if (seq_type == Pecos::MODEL_FORM_1D_SEQUENCE)
@@ -501,44 +502,82 @@ bool NonD::query_cost(Model& model, size_t num_costs, short seq_type)
   else { // RESOLUTION_LEVEL_1D_SEQUENCE,
          // FORM_RESOLUTION_{2D_SEQUENCE,ENUMERATION}
     const RealVector& m_costs = model.solution_level_costs(); // can be empty
-    return (m_costs.length() >= num_costs && valid_costs(m_costs));
+    int num_m_costs = m_costs.length();
+    if (num_m_costs == num_costs) return valid_costs(m_costs);
+    else if (num_m_costs > num_costs) {
+      RealVector m_costs_view(Teuchos::View, m_costs.values(), num_costs);
+      return valid_costs(m_costs_view);
+    }
+    else return false;
   }
 }
+*/
 
 
-bool NonD::query_cost(size_t num_costs, short seq_type, RealVector& seq_cost)
+short NonD::
+query_cost(size_t num_steps, short seq_type, RealVector& seq_cost,
+	   BitArray& model_cost_spec,
+	   const SizetSizetPairArray& cost_md_indices)
 {
   // returns: true if all required cost data is available from the input spec
   //          false if at least some subset of the cost data must be recovered
   //            online from response metadata
   // Notes:
   // > costMetadataIndices[mf] = (cost metadata index, num metadata) per model
-  // > costMetadataIndices[mf].first = SZ_MAX indicates unmatched metadata label
-  // > not currently sufficient to ensure adequate per-level data
+  // > costMetadataIndices[mf].first = SZ_MAX indicates either an unmatched
+  //   metadata label or precedence of a user cost specification
   // > Recovery can vary per model, but not per level (each Model employs either
   //   specified or recovered cost for all levels)
+  // > SimulationModel::initialize_solution_control() creates a solnCntlCostMap
+  //   of the correct length and pads with zeros where user spec is unavailable
+  //   >> simplifies roll-up logic below: sufficient to check for total length
+  //      and valid/non-zero entries
+  //   >> subsets of the aggregate sequence cost are defined for each model
+  //      with a user cost spec --> cost metadata recoveries are inserted
+  //      where costMetadataIndices[mform].first is valid (not SZ_MAX)
+  // > Integrated processing no longer invokes query_cost for each model,
+  //   now focusing only on the active models
 
   ModelList& sub_models = iteratedModel.subordinate_models(false);
+  size_t m, num_mf = sub_models.size();
+  bool user_spec = false, md_recover = false;
+  model_cost_spec.resize(num_mf); // Note: not all models are checked
+
   switch (seq_type) {
 
   // These cases may employ model subsets due to sequence constraints
 
-  case Pecos::RESOLUTION_LEVEL_1D_SEQUENCE:   // ML
-    seq_cost = sub_models.back().solution_level_costs();
+  case Pecos::RESOLUTION_LEVEL_1D_SEQUENCE: {  // ML
+    Model& hf_model = sub_models.back();
+    seq_cost = hf_model.solution_level_costs();
+    m = num_mf - 1;
+    model_cost_spec[m] = valid_costs(seq_cost);
+    if      (model_cost_spec[m])                 user_spec  = true;
+    else if (cost_md_indices[m].first != SZ_MAX) md_recover = true;
     break;
+  }
   case Pecos::MODEL_FORM_1D_SEQUENCE: {       // MF
-    size_t i, num_mf = sub_models.size();
     seq_cost.sizeUninitialized(num_mf);
     ModelLIter m_iter;
-    for (i=0, m_iter=sub_models.begin(); i<num_mf; ++i, ++m_iter)
-      seq_cost[i] = m_iter->solution_level_cost();// act soln index; 0 if !fnd
+    for (m=0, m_iter=sub_models.begin(); m<num_mf; ++m, ++m_iter) {
+      seq_cost[m] = m_iter->solution_level_cost();// act soln index; 0 if !fnd
+      model_cost_spec[m] = valid_cost(seq_cost[m]);
+      if      (model_cost_spec[m])                 user_spec  = true;
+      else if (cost_md_indices[m].first != SZ_MAX) md_recover = true;
+    }
     break;
   }
   case Pecos::FORM_RESOLUTION_2D_SEQUENCE: {  // MLMF
     Model &lf_model = sub_models.front(), &hf_model = sub_models.back();
-    // Cost specifications are optional; match to numebr of soln control values
-    RealVector lf_costs = lf_model.solution_level_costs(),
-	       hf_costs = hf_model.solution_level_costs();
+    // Cost specifications are optional; match to number of soln control values
+    RealVector lf_costs = sub_models.front().solution_level_costs(),
+	       hf_costs =  sub_models.back().solution_level_costs();
+    m = 0;        model_cost_spec[m] = valid_costs(lf_costs);
+    if      (model_cost_spec[m])                 user_spec  = true;
+    else if (cost_md_indices[m].first != SZ_MAX) md_recover = true;
+    m = num_mf-1; model_cost_spec[m] = valid_costs(hf_costs);
+    if      (model_cost_spec[m])                 user_spec  = true;
+    else if (cost_md_indices[m].first != SZ_MAX) md_recover = true;
     int num_hf_lev = hf_costs.length(),
         num_cv_lev = std::min(lf_costs.length(), num_hf_lev);
     seq_cost.sizeUninitialized(num_hf_lev + num_cv_lev);
@@ -550,34 +589,98 @@ bool NonD::query_cost(size_t num_costs, short seq_type, RealVector& seq_cost)
   // This case is unconstrained: all resolution levels for all model forms
 
   case Pecos::FORM_RESOLUTION_ENUMERATION: {
-    // roll up of forms + levels uses a lower bound of 1 cost per model, but
-    // solution_level_costs() can only provide costs from the specification.
-    // Therefore we check each model for consistency.
     ModelLIter m_iter;  size_t cntr;
     for (m_iter=sub_models.begin(), cntr=0; m_iter!=sub_models.end(); ++m_iter)
       cntr += m_iter->solution_levels();
     seq_cost.sizeUninitialized(cntr);
     // assemble resolution level costs head to tail across models
     // (model costs are presumed to be more separated than resolution costs)
-    for (m_iter=sub_models.begin(), cntr=0; m_iter!=sub_models.end(); ++m_iter){
-      copy_data_partial(m_iter->solution_level_costs(), seq_cost, cntr);
-      cntr += m_iter->solution_levels();
+    for (m=0, cntr=0, m_iter=sub_models.begin(); m_iter!=sub_models.end();
+	 ++m, ++m_iter) {
+      RealVector m_costs = m_iter->solution_level_costs();
+      model_cost_spec[m] = valid_costs(m_costs);
+      if      (model_cost_spec[m])                 user_spec  = true;
+      else if (cost_md_indices[m].first != SZ_MAX) md_recover = true;
+      copy_data_partial(m_costs, seq_cost, cntr);
+      cntr += m_costs.length();
     }
     break;
   }
   }
 
-  // If any gaps remain, online cost recovery (via onlineCost) is active
-  // > leave these remaining gaps in place to fill downstream
-  // > don't resize to 0 for length mismatch: make this a hard error
-  if (seq_cost.length() != num_costs) {
+  // for completeness, should not occur for current use cases
+  bool err_flag = (seq_cost.length() != num_steps);
+  if (err_flag) {
     Cerr << "Error: length of cost roll-up (" << seq_cost.length()
-	 << ") does not match expected number of costs (" << num_costs
+	 << ") does not match expected number of costs (" << num_steps
 	 << ")." << std::endl;
     abort_handler(METHOD_ERROR);
   }
-  // cost definition complete only if all entried are valid
-  return valid_costs(seq_cost);
+
+  // Note: omissions are trapped by test_cost downstream when required.
+  // Here we overlay user_spec and md_recover.
+  if (user_spec && md_recover) return MIXED_COST_SPEC_RECOVERY;
+  else if (user_spec)          return USER_COST_SPEC;
+  else if (md_recover)         return ONLINE_COST_RECOVERY;
+  else                         return NO_COST_SOURCE;
+}
+
+
+void NonD::
+test_cost(short seq_type, const BitArray& model_cost_spec,
+	  SizetSizetPairArray& cost_md_indices)
+{
+  ModelList& sub_models = iteratedModel.subordinate_models(false);
+  size_t m, num_mf = sub_models.size();  bool err_flag = false;
+
+  switch (seq_type) {
+
+  // These cases may employ model subsets due to sequence constraints
+
+  case Pecos::RESOLUTION_LEVEL_1D_SEQUENCE: {  // ML
+    Model& hf_model = sub_models.back();  m = num_mf - 1;
+    if (test_cost(model_cost_spec[m], cost_md_indices[m], hf_model.model_id()))
+      err_flag = true;
+    break;
+  }
+  case Pecos::MODEL_FORM_1D_SEQUENCE: {       // MF
+    ModelLIter m_iter;
+    for (m=0, m_iter=sub_models.begin(); m<num_mf; ++m, ++m_iter)
+      if (test_cost(model_cost_spec[m], cost_md_indices[m], m_iter->model_id()))
+	err_flag = true;
+    break;
+  }
+  case Pecos::FORM_RESOLUTION_2D_SEQUENCE: {  // MLMF
+    // Cost specifications are optional; match to number of soln control values
+    m = 0;        Model& lf_model = sub_models.front();
+    if (test_cost(model_cost_spec[m], cost_md_indices[m], lf_model.model_id()))
+      err_flag = true;
+    m = num_mf-1; Model& hf_model = sub_models.back();
+    if (test_cost(model_cost_spec[m], cost_md_indices[m], hf_model.model_id()))
+      err_flag = true;
+    break;
+  }
+
+  // This case is unconstrained: all resolution levels for all model forms
+
+  case Pecos::FORM_RESOLUTION_ENUMERATION: {
+    ModelLIter m_iter;  size_t cntr;
+    // assemble resolution level costs head to tail across models
+    // (model costs are presumed to be more separated than resolution costs)
+    for (m=0, cntr=0, m_iter=sub_models.begin(); m_iter!=sub_models.end();
+	 ++m, ++m_iter)
+      if (test_cost(model_cost_spec[m], cost_md_indices[m], m_iter->model_id()))
+	err_flag = true;
+    break;
+  }
+  }
+
+  if (err_flag) {
+    Cerr << "       Please provide offline solution_level_cost specification "
+	 << "or\n       activate online cost recovery for each active model."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
 }
 
 

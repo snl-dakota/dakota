@@ -142,12 +142,29 @@ protected:
   /// configure the total number of model form/resolution level options
   void configure_enumeration(size_t& num_combinations, short& seq_type);
 
-  /// extract cost estimates from model hierarchy (forms or resolutions)
-  void configure_cost(size_t num_steps, short seq_type, RealVector& cost);
-  /// extract cost estimates from model hierarchy, if available
-  bool query_cost(Model& model, size_t num_costs, short seq_type);
-  /// extract cost estimates from model hierarchy, if available
-  bool query_cost(size_t num_steps, short seq_type, RealVector& cost);
+  /// extract cost estimates from model ensemble, enforcing requirements
+  /// (case without metadata support)
+  short configure_cost(size_t num_steps, short seq_type, RealVector& cost);
+  /// extract cost estimates from model ensemble, enforcing requirements
+  /// (case with metadata support)
+  short configure_cost(size_t num_steps, short seq_type, RealVector& cost,
+		       SizetSizetPairArray& cost_md_indices);
+  // optionally extract cost estimates from model, if available
+  //short query_cost(Model& model, size_t num_costs, short seq_type);
+  /// optionally extract cost estimates from model ensemble, if available
+  /// (case without metadata support)
+  short query_cost(size_t num_steps, short seq_type, RealVector& cost);
+  /// optionally extract cost estimates from model ensemble, if available
+  /// (case with metadata support)
+  short query_cost(size_t num_steps, short seq_type, RealVector& cost,
+		   BitArray& model_cost_spec,
+		   const SizetSizetPairArray& cost_md_indices);
+  /// check cost specification and metadata indices for each active model
+  void test_cost(short seq_type, const BitArray& model_cost_spec,
+		 SizetSizetPairArray& cost_md_indices);
+  /// check cost specification and metadata indices for a given model
+  bool test_cost(bool cost_spec, SizetSizetPair& cost_md_indices,
+		 const String& model_id);
   /// test cost for value > 0
   bool valid_cost(Real cost) const;
   /// test costs for valid values > 0
@@ -422,15 +439,60 @@ inline NonD::~NonD()
 { }
 
 
-inline void NonD::
+inline short NonD::
 configure_cost(size_t num_steps, short seq_type, RealVector& cost)
 {
-  bool cost_defined = query_cost(num_steps, seq_type, cost);
-  if (!cost_defined) {
-    Cerr << "Error: missing required simulation cost data in NonD::"
-	 << "configure_cost()." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
+  // NonDExpansion uses this fn for enforcing cost from spec (no metadata)
+  size_t m, num_mf = iteratedModel.subordinate_models(false).size();
+  BitArray model_cost_spec;  SizetSizetPairArray cost_md_indices(num_mf);
+  for (m=0; m<num_mf; ++m)
+    cost_md_indices[m] = SizetSizetPair(SZ_MAX, 0); // no metadata for any model
+  short cost_source
+    = query_cost(num_steps, seq_type, cost, model_cost_spec, cost_md_indices);
+  test_cost(seq_type, model_cost_spec, cost_md_indices);
+  return cost_source;
+}
+
+
+inline short NonD::
+configure_cost(size_t num_steps, short seq_type, RealVector& cost,
+	       SizetSizetPairArray& cost_md_indices)
+{
+  // enforce required costs available from either spec or recovery:
+  BitArray model_cost_spec;
+  short cost_source
+    = query_cost(num_steps, seq_type, cost, model_cost_spec, cost_md_indices);
+  test_cost(seq_type, model_cost_spec, cost_md_indices);
+  return cost_source;
+}
+
+
+inline short NonD::
+query_cost(size_t num_steps, short seq_type, RealVector& cost)
+{
+  // NonDExpansion uses this function for optional cost
+  size_t m, num_mf = iteratedModel.subordinate_models(false).size();
+  BitArray model_cost_spec;  SizetSizetPairArray cost_md_indices(num_mf);
+  for (m=0; m<num_mf; ++m)
+    cost_md_indices[m] = SizetSizetPair(SZ_MAX, 0); // no metadata for any model
+  return query_cost(num_steps, seq_type, cost, model_cost_spec,cost_md_indices);
+}
+
+
+inline bool NonD::
+test_cost(bool cost_spec, SizetSizetPair& cost_md_indices,
+	  const String& model_id)
+{
+  // lower-level version for scalar inputs: return true if neither user spec
+  // nor metadata recovery are available
+  bool err = false;
+  if (cost_spec == true) // precedence: user spec, then online recovery
+    cost_md_indices.first = SZ_MAX; // deactivate cost recovery for this model
+  else if (cost_md_indices.first == SZ_MAX)
+    err = true; // neither spec nor recovery
+  if (err)
+    Cerr << "Error: insufficient cost data for model " << model_id << ".\n";
+  return err;
 }
 
 
