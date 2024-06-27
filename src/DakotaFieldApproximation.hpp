@@ -31,6 +31,11 @@ public:
                      const SharedApproxData& shared_data, 
                      const StringArray& approx_label);
 
+  /// constructor initializes the base class part of letter classes
+  /// (BaseConstructor overloading avoids infinite recursion in the
+  /// derived class constructors - Coplien, p. 139)
+  FieldApproximation(NoDBBaseConstructor, const SharedApproxData& shared_data);
+
   /// default constructor
   FieldApproximation();
   /// standard constructor for envelope

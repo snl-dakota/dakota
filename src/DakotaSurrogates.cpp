@@ -30,7 +30,7 @@ SurrogatesBaseApprox::
 SurrogatesBaseApprox(const ProblemDescDB& problem_db,
 		     const SharedApproxData& shared_data,
 		     const String& approx_label):
-  Approximation(BaseConstructor(), problem_db, shared_data, approx_label)
+  FieldApproximation(BaseConstructor(), problem_db, shared_data, StringArray{approx_label})
 {
   advanced_options_file = problem_db.get_string("model.advanced_options_file");
   set_verbosity();
@@ -39,7 +39,7 @@ SurrogatesBaseApprox(const ProblemDescDB& problem_db,
 
 SurrogatesBaseApprox::
 SurrogatesBaseApprox(const SharedApproxData& shared_data):
-  Approximation(NoDBBaseConstructor(), shared_data)
+  FieldApproximation(NoDBBaseConstructor(), shared_data)
 { set_verbosity(); }
 
 

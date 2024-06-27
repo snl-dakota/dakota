@@ -10,7 +10,7 @@
 #ifndef DAKOTA_SURROGATES_H
 #define DAKOTA_SURROGATES_H
 
-#include "DakotaApproximation.hpp"
+#include "DakotaFieldApproximation.hpp"
 #include "util_data_types.hpp"
 #include <memory>
 
@@ -27,7 +27,7 @@ namespace Dakota {
 
 /** Encapsulates common behavior for Surrogates modules, with
     specialization for specific surrogates in derived classes.  */
-class SurrogatesBaseApprox: public Approximation
+class SurrogatesBaseApprox: public FieldApproximation
 {
 public:
 
