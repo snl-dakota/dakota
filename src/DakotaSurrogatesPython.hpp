@@ -28,10 +28,14 @@ public:
 
   /// default constructor
   SurrogatesPythonApprox() { }
-  /// standard constructor: 
+  /// standard constructor for scalar surfaces: 
   SurrogatesPythonApprox(const ProblemDescDB& problem_db,
 		         const SharedApproxData& shared_data,
 		         const String& approx_label);
+  /// standard constructor for field surfaces: 
+  SurrogatesPythonApprox(const ProblemDescDB& problem_db,
+		         const SharedApproxData& shared_data,
+		         const StringArray& approx_labels);
   /// alternate constructor
   SurrogatesPythonApprox(const SharedApproxData& shared_data);
   /// destructor

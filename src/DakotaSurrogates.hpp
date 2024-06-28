@@ -37,10 +37,14 @@ public:
 
   /// default constructor
   SurrogatesBaseApprox() { }
-  /// standard constructor: 
+  /// standard constructor for scalar surfaces: 
   SurrogatesBaseApprox(const ProblemDescDB& problem_db,
 		       const SharedApproxData& shared_data,
 		       const String& approx_label);
+  /// standard constructor for field surfaces: 
+  SurrogatesBaseApprox(const ProblemDescDB& problem_db,
+		       const SharedApproxData& shared_data,
+		       const StringArray& approx_labels);
   /// alternate constructor
   SurrogatesBaseApprox(const SharedApproxData& shared_data);
   /// destructor

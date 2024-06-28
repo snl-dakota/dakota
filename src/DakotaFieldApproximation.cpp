@@ -8,6 +8,9 @@
     _______________________________________________________________________ */
 
 #include "DakotaCompositeApproximation.hpp"
+#ifdef HAVE_DAKOTA_PYTHON_SURROGATES
+#include "DakotaSurrogatesPython.hpp"
+#endif // HAVE_DAKOTA_PYTHON_SURROGATES
 
 
 namespace Dakota {
@@ -19,13 +22,15 @@ FieldApproximation::
 FieldApproximation(BaseConstructor, const ProblemDescDB& problem_db,
                    const SharedApproxData& shared_data, 
                    const StringArray& approx_labels):
-  Approximation(BaseConstructor(), problem_db, shared_data, String("field"))
+  Approximation(BaseConstructor(), problem_db, shared_data, String("field")),
+  numComponents(approx_labels.size())
 { /* empty ctor */ }
 
 
 FieldApproximation::
 FieldApproximation(NoDBBaseConstructor ndbbc, const SharedApproxData& shared_data):
-  Approximation(ndbbc, shared_data)
+  Approximation(ndbbc, shared_data),
+  numComponents(0)
 { /* empty ctor */ }
 
 
@@ -33,7 +38,8 @@ FieldApproximation(NoDBBaseConstructor ndbbc, const SharedApproxData& shared_dat
     and by the alternate envelope constructor.  approxRep is NULL in this
     case (problem_db is needed to build a meaningful Approximation object). */
 FieldApproximation::FieldApproximation():
-  Approximation()
+  Approximation(),
+  numComponents(0)
 { /* empty ctor */ }
 
 
@@ -47,7 +53,7 @@ FieldApproximation(ProblemDescDB& problem_db,
   FieldApproximation(BaseConstructor(), problem_db, shared_data, approx_labels)
 {
   //assert( !approxRep ); // Needs to be set by us
-  if (approx_labels.size() == 1)
+  if (numComponents == 1)
     approxRep = get_approx(problem_db, shared_data, approx_labels[0]);
   else
     approxRep = get_field_approx(problem_db, shared_data, approx_labels);
@@ -67,14 +73,19 @@ get_field_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
   for (auto const & label : approx_labels)
     Cout << "\t\"" << label << "\"" << std::endl;
 
-  // TODO: create a CompositeApproximation class which allows registration of
-  //       scalar Approximations which then get created and registered here.
-  //       Then start delegating or customizing API calls using ApproximationFieldInterface
-  //       and needed implementation in FieldApproximation classes.
-  auto approx = std::make_shared<CompositeApproximation>(problem_db, shared_data, approx_labels);
+  if( false )
+  {
+    // TODO: create a CompositeApproximation class which allows registration of
+    //       scalar Approximations which then get created and registered here.
+    //       Then start delegating or customizing API calls using ApproximationFieldInterface
+    //       and needed implementation in FieldApproximation classes.
+    auto approx = std::make_shared<CompositeApproximation>(problem_db, shared_data, approx_labels);
 
-  for (size_t i=0; i<approx_labels.size(); ++i)
-    approx->add_approximation(std::make_shared<Approximation>(problem_db, shared_data, approx_labels[i]));
+    for (size_t i=0; i<approx_labels.size(); ++i)
+      approx->add_approximation(get_approx(problem_db, shared_data, approx_labels[i]));
+  }
+
+    auto approx = std::make_shared<SurrogatesPythonApprox>(problem_db, shared_data, approx_labels);
 
   return approx;
 }

@@ -66,6 +66,8 @@ protected:
 
   int activeComponent;
 
+  size_t numComponents;
+
 private:
 
   //

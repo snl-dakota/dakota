@@ -43,6 +43,28 @@ SurrogatesPythonApprox(const ProblemDescDB& problem_db,
 }
 
 
+SurrogatesPythonApprox::
+SurrogatesPythonApprox(const ProblemDescDB& problem_db,
+		const SharedApproxData& shared_data,
+		const StringArray& approx_labels):
+  SurrogatesBaseApprox(problem_db, shared_data, approx_labels)
+{
+  moduleFile = problem_db.get_string("model.surrogate.class_path_and_name");
+//  surrogateOpts.set("advanced_options_file",
+//		    problem_db.get_string("model.advanced_options_file"));
+
+  // validate supported metrics - can this be ascertained from python? RWH
+  std::set<std::string> allowed_metrics =
+    { "sum_squared", "mean_squared", "root_mean_squared",
+      "sum_abs", "mean_abs", "max_abs",
+      "sum_abs_percent", "mean_abs_percent", // APE, MAPE
+      "rsquared" };
+  std::shared_ptr<SharedSurfpackApproxData> shared_surf_data_rep =
+    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
+  shared_surf_data_rep->validate_metrics(allowed_metrics);
+}
+
+
 /// On-the-fly constructor
 SurrogatesPythonApprox::
 SurrogatesPythonApprox(const SharedApproxData& shared_data):
