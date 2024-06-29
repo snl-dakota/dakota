@@ -35,8 +35,9 @@ NonDMultilevControlVarSampling(ProblemDescDB& problem_db, Model& model):
   iteratedModel.ensemble_precedence(MULTILEVEL_MULTIFIDELITY_PRECEDENCE);
   // Note: only sequenceType is currently used by MLCV
   configure_2d_sequence(numSteps, secondaryIndex, sequenceType);
-  numApprox = numSteps - 1; // numSteps is total = num_cv_lev + num_hf_lev
-  onlineCost = !query_cost(numSteps, sequenceType, sequenceCost);
+  numApprox  = numSteps - 1; // numSteps is total = num_cv_lev + num_hf_lev
+  costSource = configure_cost(numSteps, sequenceType, sequenceCost,
+			      costMetadataIndices);
 }
 
 
@@ -403,7 +404,7 @@ multilevel_control_variate_mc_online_pilot() //_Qcorr()
     // FIRST PASS: launch and synchonize sample batches
     mlmf_increments(delta_N_hf, "mlcv_");
     if (mlmfIter == 0) {
-      if (onlineCost)
+      if (costSource != USER_COST_SPEC)
 	recover_online_cost(batchResponsesMap); // define sequenceCost for LF,HF
       hf_ref_cost = sequenceCost[numApprox];
       if (budget_constrained) budget = (Real)maxFunctionEvals * hf_ref_cost;
@@ -891,7 +892,7 @@ evaluate_pilot(RealVectorArray& eval_ratios, RealMatrix& Lambda,
 
   // FIRST PASS: launch and synchonize sample batches
   mlmf_increments(delta_N_hf, "mlcv_");
-  if (onlineCost)
+  if (costSource != USER_COST_SPEC)
     recover_online_cost(batchResponsesMap); // define sequenceCost for LF,HF
   hf_ref_cost = sequenceCost[numApprox];
   if (budget_constrained) budget = (Real)maxFunctionEvals * hf_ref_cost;

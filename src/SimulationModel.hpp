@@ -51,7 +51,7 @@ protected:
 
   /// return size of solnCntlCostMap, optionally enforcing lower bound
   /// of 1 solution level
-  size_t solution_levels(bool lwr_bnd = true) const;
+  size_t solution_levels() const;
 
   /// return all cost estimates from solnCntlCostMap
   RealVector solution_level_costs() const;
@@ -223,11 +223,8 @@ inline Interface& SimulationModel::derived_interface()
 
 /* There is a default solution level (nominal settings) even if no
    solution control is provided */ 
-inline size_t SimulationModel::solution_levels(bool lwr_bnd) const
-{
-  size_t map_len = solnCntlCostMap.size(), lwr = 1;
-  return (lwr_bnd) ? std::max(lwr, map_len) : map_len;
-}
+inline size_t SimulationModel::solution_levels() const
+{ return solnCntlCostMap.size(); }
 
 
 inline short SimulationModel::solution_control_variable_type() const

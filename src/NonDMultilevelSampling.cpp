@@ -118,7 +118,9 @@ void NonDMultilevelSampling::core_run()
 
   configure_1d_sequence(numSteps, secondaryIndex, sequenceType);
   numApprox  = numSteps - 1;
-  onlineCost = !query_cost(numSteps, sequenceType, sequenceCost);
+  costSource = configure_cost(numSteps, sequenceType, sequenceCost,
+			      costMetadataIndices);
+
   // assign an aggregate model key that does not need to be updated
   // (activeSet identifies QoIs for the active model subset)
   assign_active_key();
@@ -550,7 +552,7 @@ evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
   //   conversion is inefficient/overkill and should only be considered for
   //   consistency with other cases.
   ml_increments(delta_N_l, "ml_");
-  if (onlineCost && mlmfIter == 0)
+  if (mlmfIter == 0 && costSource != USER_COST_SPEC)
     recover_online_cost(batchResponsesMap); // computes sequenceCost
 
   for (step=0; step<numSteps; ++step) {

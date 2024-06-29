@@ -77,7 +77,8 @@ void NonDACVSampling::core_run()
 
   // bypass for GenACV:
   update_model_groups();
-  if (!onlineCost) update_model_group_costs();
+  if (costSource == USER_COST_SPEC)
+    update_model_group_costs();
 
   // Initialize for pilot sample
   numSamples = pilotSamples[numApprox]; // last in pilot array
@@ -138,7 +139,7 @@ void NonDACVSampling::approximate_control_variate_online_pilot()
     // While online cost recovery could be continuously updated, we restrict
     // to the pilot and do not not update after iter 0.  We could potentially
     // update cost for shared samples, mirroring the covariance updates.
-    if (onlineCost && mlmfIter == 0)
+    if (mlmfIter == 0 && costSource != USER_COST_SPEC)
       { recover_online_cost(allResponses); update_model_group_costs(); }
     increment_equivalent_cost(numSamples, sequenceCost, 0, numGroups,
 			      equivHFEvals);
@@ -176,7 +177,7 @@ void NonDACVSampling::approximate_control_variate_offline_pilot()
   RealSymMatrixArray sum_LL_pilot;  SizetArray N_shared_pilot;
   evaluate_pilot(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
 		 sum_HH_pilot, N_shared_pilot, false);
-  if (onlineCost) update_model_group_costs();
+  if (costSource != USER_COST_SPEC) update_model_group_costs();
   compute_LH_statistics(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
 			sum_HH_pilot, N_shared_pilot, var_L, varH, covLL,covLH);
 
@@ -247,7 +248,7 @@ void NonDACVSampling::approximate_control_variate_pilot_projection()
     N_H_alloc = numSamples;
     break;
   }
-  if (onlineCost) update_model_group_costs();
+  if (costSource != USER_COST_SPEC) update_model_group_costs();
 
   // -----------------------------------
   // Compute "online" sample increments:
@@ -299,7 +300,7 @@ evaluate_pilot(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
   //			            equivHFEvals);
   //}
 
-  if (onlineCost) // don't update group costs (GenACV usage)
+  if (costSource != USER_COST_SPEC) // don't update group costs (GenACV)
     recover_online_cost(allResponses); //update_model_group_costs();
   if (incr_cost)
     increment_equivalent_cost(numSamples,sequenceCost,0,numGroups,equivHFEvals);

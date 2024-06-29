@@ -57,17 +57,20 @@ initialize_solution_control(const String& control, const RealVector& cost)
 {
   solnCntlCostMap.clear();
 
-  size_t i, cost_len = cost.length(), num_lev;
+  size_t cost_len = cost.length(), num_lev;
   if (control.empty()) {
-    // cost_len of 0: empty map for no solution control
-    // cost_len of 1: nominal cost for model w/o any soln levels
-    // cost_len  > 1: error
-    if (cost_len == 1)   // nominal cost with no solution control
-      solnCntlCostMap.insert(std::pair<Real, size_t>(cost[0], _NPOS));
-    else if (cost_len) { // more than 1 cost requires associated control
+    // no solution control/no cost spec:  set placeholder cost for model
+    // no solution control/cost_len of 1: nominal cost specified for model
+    // no solution control/cost_len  > 1: error
+    switch (cost_len) {
+    case 0: // invalid cost of 0 must be replaced by online recovery
+      solnCntlCostMap.insert(std::pair<Real, size_t>(0.,      _NPOS));  break;
+    case 1: // nominal cost specified for model (no levels)
+      solnCntlCostMap.insert(std::pair<Real, size_t>(cost[0], _NPOS));  break;
+    default: // more than 1 cost requires associated solution control
       Cerr << "Error: vector-valued solution cost requires an associated "
 	   << "solution control." << std::endl;
-      abort_handler(MODEL_ERROR);
+      abort_handler(MODEL_ERROR);                                       break;
     }
     return;
   }
@@ -183,11 +186,11 @@ initialize_solution_control(const String& control, const RealVector& cost)
   //       solution_level_cost = 10. # scalar multiplier
   // results in solnCntlCostMap = { {1., 0}, {10., 1}, {100., 2} }
   if (cost_len == num_lev)
-    for (i=0; i<num_lev; ++i)
+    for (size_t i=0; i<num_lev; ++i)
       solnCntlCostMap.insert(std::pair<Real, size_t>(cost[i], i));
   else if (cost_len == 1) {
     Real multiplier = cost[0], prod = 1.;
-    for (i=0; i<num_lev; ++i) { // assume increasing cost
+    for (size_t i=0; i<num_lev; ++i) { // assume increasing cost
       solnCntlCostMap.insert(std::pair<Real, size_t>(prod, i));
       prod *= multiplier;
     }
@@ -197,7 +200,7 @@ initialize_solution_control(const String& control, const RealVector& cost)
 	 << "         Relying on online metadata recovery where required."
 	 << std::endl;
     // populate solnCntlCostMap with the correct length but with dummy costs
-    for (i=0; i<num_lev; ++i)
+    for (size_t i=0; i<num_lev; ++i)
       solnCntlCostMap.insert(std::pair<Real, size_t>(0., i));
   }
   else {

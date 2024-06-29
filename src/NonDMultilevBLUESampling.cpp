@@ -152,7 +152,7 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model):
   }
   }
 
-  if (!onlineCost) update_model_group_costs(); 
+  if (costSource == USER_COST_SPEC) update_model_group_costs(); 
 
   load_pilot_sample(problem_db.get_sza("method.nond.pilot_samples"),
 		    numGroups, pilotSamples);
@@ -383,7 +383,7 @@ shared_covariance_iteration(IntRealMatrixArrayMap& sum_G,
     accumulate_blue_sums(sum_G, sum_GG, NGroupActual, all_group, allResponses);
     compute_GG_covariance(sum_G[1][all_group], sum_GG[1][all_group],
 			  NGroupActual[all_group], covGG, covGGinv);
-    if (onlineCost && mlmfIter == 0)
+    if (mlmfIter == 0 && costSource != USER_COST_SPEC)
       { recover_online_cost(allResponses); update_model_group_costs(); }
     increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox+1,
 			      equivHFEvals);
@@ -435,7 +435,8 @@ independent_covariance_iteration(IntRealMatrixArrayMap& sum_G,
     // to the pilot and do not not update on subsequent iterations.  We could
     // potentially mirror the covariance updates with cost updates, but seems
     // likely to induce thrash when run times are not robust.
-    if (onlineCost && mlmfIter == 0) /*&&pilotGroupSampling==INDEPENDENT_PILOT*/
+    if (mlmfIter == 0 && costSource != USER_COST_SPEC)
+        /*&&pilotGroupSampling==INDEPENDENT_PILOT*/
       { recover_online_cost(batchResponsesMap); update_model_group_costs(); }
     increment_equivalent_cost(delta_N_G, modelGroupCost,
 			      sequenceCost[numApprox], equivHFEvals);
@@ -482,7 +483,7 @@ evaluate_pilot(RealMatrixArray& sum_G_pilot, RealSymMatrix2DArray& sum_GG_pilot,
     accumulate_blue_sums(sum_G_all, sum_GG_all, N_all, all_group, allResponses);
     compute_GG_covariance(sum_G_all, sum_GG_all, N_all, covGG, covGGinv);
     NGroupShared = N_all; // cache a copy (not currently used for offline/proj)
-    if (onlineCost)
+    if (costSource != USER_COST_SPEC)
       { recover_online_cost(allResponses); update_model_group_costs(); }
     if (incr_cost)
       increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox+1,
@@ -494,7 +495,7 @@ evaluate_pilot(RealMatrixArray& sum_G_pilot, RealSymMatrix2DArray& sum_GG_pilot,
 			 batchResponsesMap);
     compute_GG_covariance(sum_G_pilot, sum_GG_pilot, N_shared_pilot,
 			  covGG, covGGinv);
-    if (onlineCost)
+    if (costSource != USER_COST_SPEC)
       { recover_online_cost(batchResponsesMap); update_model_group_costs(); }
     if (incr_cost)
       increment_equivalent_cost(pilotSamples, modelGroupCost,

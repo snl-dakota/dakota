@@ -58,16 +58,22 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
   }
 
   ModelList& model_ensemble = iteratedModel.subordinate_models(false);
-  size_t i, num_mf = model_ensemble.size(), num_lev, prev_lev = SZ_MAX,
+  size_t num_mf = model_ensemble.size(), num_lev, prev_lev = SZ_MAX,
     md_index, num_md;
-  ModelLRevIter ml_rit; // reverse iteration for prev_lev tracking
-  bool err_flag = false, mlmf = (methodName==MULTILEVEL_MULTIFIDELITY_SAMPLING);
+  int m;  ModelLRevIter ml_rit; // reverse iteration for prev_lev tracking
   NLevActual.resize(num_mf);  NLevAlloc.resize(num_mf);
   costMetadataIndices.resize(num_mf);
-  for (i=num_mf-1, ml_rit=model_ensemble.rbegin();
-       ml_rit!=model_ensemble.rend(); --i, ++ml_rit) { // high fid to low fid
-    // only SimulationModel supports solution_{levels,costs} and cost metadata.
-    // metadata indices only vary per response specification (model form).
+  bool mlmf = (methodName == MULTILEVEL_MULTIFIDELITY_SAMPLING);
+  for (m=num_mf-1, ml_rit=model_ensemble.rbegin();
+       ml_rit!=model_ensemble.rend(); --m, ++ml_rit) { // high fid to low fid
+    // Only SimulationModel supports solution_{levels,costs} and cost metadata,
+    // and metadata indices only vary per response specification (model form).
+    // Note: definition of the number of solution levels only requires user
+    // specification of the solution level control string, which binds with the
+    // number of admissible values for that identified variable.  In the event
+    // that solution costs are not specified (and have to be recovered from
+    // response metadata), SimulationModel::initialize_solution_control() still
+    // sizes solnCntlCostMap such that the correct number of levels is returned.
     num_lev  = ml_rit->solution_levels(); // lower bound is 1 soln level
     md_index = ml_rit->cost_metadata_index();
     num_md   = ml_rit->current_response().metadata().size();
@@ -80,46 +86,27 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
       num_lev = prev_lev;
     }
 
-    // Ensure there is consistent cost data available as SimulationModel must
-    // be allowed to have empty solnCntlCostMap (when optional solution control
-    // is not specified).  Passing false bypasses lower bound of 1.
-    // > Previous option below uses solution_levels() with and without false,
-    //   which can only differ if SimulationModel::solnCntlCostMap is empty.
-    //if (md_index == SZ_MAX && num_lev > ml_rit->solution_levels(false)) { }
-    if (md_index == SZ_MAX && ml_rit->solution_levels(false) == 0) {
-      Cerr << "Error: insufficient cost data provided for ensemble sampling."
-	   << "\n       Please provide offline solution_level_cost "
-	   << "estimates or activate\n       online cost recovery for model "
-	   << ml_rit->model_id() << '.' << std::endl;
-      err_flag = true;
-    }
-
-    //Sizet2DArray& Nl_i = NLevActual[i];
-    NLevActual[i].resize(num_lev); //Nl_i.resize(num_lev);
-    //for (j=0; j<num_lev; ++j)
-    //  Nl_i[j].resize(numFunctions); // defer to pre_run()
-    NLevAlloc[i].resize(num_lev);
     // Must manage N_actual vs. N_actual_proj in final roll ups:
-    // > "Actual" should mean succeeded --> suppress projection-based
-    //   updates to actual counters
-    // > migrate projection-based reporting to Alloc (+ other cached state as
-    //   needed), which retains strict linkage with accumulated sums/stats.
-    //   BUT, projected variance reduction calcs reuse best available varH in
+    // > "Actual" means succeeded --> no projection-based updates to actual
+    //    --> retains strict linkage with accumulated sums/stats.
+    // > Projections are allocations --> include in NLevAlloc
+    // > BUT, projected variance reduction calcs reuse best available varH in
     //   combination with projected NLevActual, so:
     //   >> Use NLevActual in multilevel_eval_summary();
     //      use NLevActual + deltaNLevActual in print_variance_reduction(),
     //      (for stats like varH, actual + proj is preferred to projected alloc)
-    //      where Proj can be lower dimensional even for backfill
-    //      (actual_incr is averaged over QoI)
-    //   >> Projections are allocations --> include in final NLevAlloc
     //   >> use similar approach with equivHFEvals (tracks actual) + delta
     //      (separated projection)
+    //Sizet2DArray& Nl_m = NLevActual[m];
+    NLevActual[m].resize(num_lev); //Nl_m.resize(num_lev);
+    //for (j=0; j<num_lev; ++j)
+    //  Nl_m[j].resize(numFunctions); // defer to pre_run()
+    NLevAlloc[m].resize(num_lev);
 
-    costMetadataIndices[i] = SizetSizetPair(md_index, num_md);
+    // Note: md_index is subject to updates downstream (precedence of user spec)
+    costMetadataIndices[m] = SizetSizetPair(md_index, num_md);
     prev_lev = num_lev;
   }
-  if (err_flag)
-    abort_handler(METHOD_ERROR);
 
   // Support multilevel LHS as a specification override.  The estimator variance
   // is known/correct for MC and an assumption/approximation for LHS.  To get an
@@ -243,23 +230,28 @@ accumulate_online_cost(const IntResponseMap& resp_map, RealVector& accum_cost,
   // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
 
   using std::isfinite;
-  size_t m, cntr, start, end, md_index;  unsigned short mf;  Real cost;
-  IntRespMCIter r_it;
+  size_t m, cntr, start, end, md_index, md_index_m;
+  unsigned short mf;  Real cost;  IntRespMCIter r_it;
   const Pecos::ActiveKey& active_key = iteratedModel.active_model_key();
 
   for (m=0, cntr=0, start=0; m<=numApprox; ++m) {
-    // Locate cost meta-data for ensemble member m through its model form 
+    end = start + numFunctions;
+
+    // Locate cost meta-data for ensemble member m through its model form
+    // > see SurrogateModel::insert_metadata(): aggregated metadata is padded
+    //   for any inactive models within the AGGREGATED_MODELS set
     mf = active_key.retrieve_model_form(m);
     const SizetSizetPair& cost_mdi = costMetadataIndices[mf];
-    md_index = cntr + cost_mdi.first; // index into aggregated metadata
-
-    end = start + numFunctions;
-    for (r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it) {
-      const Response& resp = r_it->second;
-      if (non_zero(resp.active_set_request_vector(), start, end)) {
-	cost = resp.metadata(md_index);
-	if (isfinite(cost))
-	  { accum_cost[m] += cost; ++num_cost[m]; }
+    md_index_m = cost_mdi.first;
+    if (md_index_m != SZ_MAX) { // alternatively, if solnCntlCostMap key is 0.
+      md_index = cntr + md_index_m; // index into aggregated metadata
+      for (r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it) {
+	const Response& resp = r_it->second;
+	if (non_zero(resp.active_set_request_vector(), start, end)) {
+	  cost = resp.metadata(md_index);
+	  if (isfinite(cost))
+	    { accum_cost[m] += cost; ++num_cost[m]; }
+	}
       }
     }
 
