@@ -170,7 +170,7 @@ public:
   virtual Interface& derived_interface();
 
   /// number of discrete levels within solution control (SimulationModel)
-  virtual size_t solution_levels(bool lwr_bnd = true) const;
+  virtual size_t solution_levels() const;
   /// activate a particular level within the solution level control
   /// (SimulationModel)
   virtual void solution_level_cost_index(size_t index);

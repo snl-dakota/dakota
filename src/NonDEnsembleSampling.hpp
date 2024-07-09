@@ -81,6 +81,12 @@ protected:
   /// metadata spanning multiple batches of samples
   void recover_online_cost(const IntIntResponse2DMap& batch_resp_map);
 
+  /// enforce either a user cost specification or online cost recovery
+  /// for each ACTIVE model within the sequence type
+  void check_cost_options(const BitArray& cost_specs,
+			  const SizetSizetPairArray& cost_md_indices,
+			  short seq_type);
+
   /// return cost metric for entry into finalStatistics
   Real estimator_cost_metric();
 
@@ -191,9 +197,9 @@ protected:
   /// OFFLINE_PILOT, ONLINE_PILOT_PROJECTION, or OFFLINE_PILOT_PROJECTION
   short pilotMgmtMode;
 
-  /// indicates use of online cost recovery rather than offline
-  /// user-specified cost ratios
-  bool onlineCost;
+  /// indicates use of user-specified cost ratios, online cost recovery,
+  /// or a combination
+  short costSource;
   /// indices of cost data within response metadata, one per model form
   SizetSizetPairArray costMetadataIndices;
 
@@ -304,10 +310,19 @@ average_online_cost(const RealVector& accum_cost, const SizetArray& num_cost,
 		    RealVector& seq_cost)
 {
   // Finalize the average cost for the ensemble
-  size_t step, num_steps = accum_cost.length();
+  size_t step, num_steps = accum_cost.length();  unsigned short mf;
+  //if (num_cost.size() != num_steps) { } // not possible in recover_online_cost
   if (seq_cost.length() != num_steps) seq_cost.sizeUninitialized(num_steps);
-  for (step=0; step<num_steps; ++step)
-    seq_cost[step] = accum_cost[step] / num_cost[step];
+  const Pecos::ActiveKey& active_key = iteratedModel.active_model_key();
+
+  for (step=0; step<num_steps; ++step) {
+    mf = active_key.retrieve_model_form(step);
+    if (costMetadataIndices[mf].first != SZ_MAX)
+      seq_cost[step] = (num_cost[step]) ?
+	accum_cost[step] / num_cost[step] : 0.;
+    // else cost to be provided from metadata
+  }
+
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Online cost: accum_cost:\n" << accum_cost << "num_cost:\n"
 	 << num_cost << "seq_cost:\n" << seq_cost << std::endl;

@@ -45,7 +45,7 @@ NonDMultifidelitySampling(ProblemDescDB& problem_db, Model& model):
     approxSet[i] = i;
 
   // model{Groups,GroupCost} have run-time dependency on approx sequence
-  //if (!onlineCost) update_model_group_costs(); 
+  //if (costSource == USER_COST_SPEC) update_model_group_costs(); 
 
   load_pilot_sample(problem_db.get_sza("method.nond.pilot_samples"),
 		    numGroups, pilotSamples);
@@ -110,7 +110,8 @@ void NonDMultifidelitySampling::multifidelity_mc_online_pilot()
     // While online cost recovery could be continuously updated, we restrict
     // to the pilot and do not not update after iter 0.  We could potentially
     // update cost for shared samples, mirroring the correlation updates.
-    if (onlineCost && mlmfIter == 0) recover_online_cost(allResponses);
+    if (mlmfIter == 0 && costSource != USER_COST_SPEC)
+      recover_online_cost(allResponses);
     increment_equivalent_cost(numSamples, sequenceCost, 0, numGroups,
 			      equivHFEvals);
 
@@ -171,7 +172,7 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   shared_increment("mf_"); // spans ALL models, blocking
   accumulate_mf_sums(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
 		     sum_HH_pilot, N_shared_pilot);
-  if (onlineCost) recover_online_cost(allResponses);
+  if (costSource != USER_COST_SPEC) recover_online_cost(allResponses);
   //increment_equivalent_cost(...); // excluded
   compute_LH_correlation(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
 			 sum_HH_pilot, N_shared_pilot, var_L, varH, rho2LH);
@@ -236,7 +237,7 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
   // Evaluate shared increment and increment accumulators
   // ----------------------------------------------------
   shared_increment("mf_"); // spans ALL models, blocking
-  if (onlineCost) recover_online_cost(allResponses);
+  if (costSource != USER_COST_SPEC) recover_online_cost(allResponses);
   if (pilotMgmtMode == OFFLINE_PILOT || // redirected here for ESTIMATOR_PERF
       pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
     SizetArray N_shared_pilot(numFunctions, 0);

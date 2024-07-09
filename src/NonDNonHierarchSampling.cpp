@@ -59,7 +59,8 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
 
   // Precedence: if solution costs provided, then we use them;
   // else we rely on online cost recovery through response metadata
-  onlineCost = !query_cost(num_forms_resolutions, sequenceType, sequenceCost);
+  costSource = configure_cost(num_forms_resolutions, sequenceType,
+			      sequenceCost, costMetadataIndices);
 }
 
 
