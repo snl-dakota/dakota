@@ -13,6 +13,7 @@
 #include "DakotaVariables.hpp"
 #include "ProblemDescDB.hpp"
 #include "dakota_data_io.hpp"
+#include "JSONResultsParser.hpp"
 #include <algorithm>
 #include <sstream>
 #include <boost/archive/binary_oarchive.hpp>
@@ -361,46 +362,21 @@ void Response::copy_rep(std::shared_ptr<Response> source_resp_rep)
 // Model::currentResponse in a restart operation would cause problems.
 
 
-/** ASCII version of read needs capabilities for capturing data omissions or
-    formatting errors (resulting from user error or asynch race condition) and
-    analysis failures (resulting from nonconvergence, instability, etc.). */
-void Response::read(std::istream& s, const unsigned short format)
-{
-  // if envelope, forward to letter
-  if (responseRep)
-    { responseRep->read(s,format); return; }
-
-  // If a failure is detected, throw an error
-  if (failure_reported(s)) 
-    throw FunctionEvalFailure(String("failure captured"));
-  
-  // Destroy old values and set to zero (so that else assignments are not needed
-  // below). The arrays have been properly sized by the Response constructor.
-  reset();
-  
-  std::ostringstream errors; // all helper funcs can append messages to errors
-
-  read_core(s, format, errors);
-
-  if(!errors.str().empty())
-    throw ResultsFileError(errors.str());
-}
 
 
-void Response::read_core(std::istream& s, const unsigned short format,
-			 std::ostringstream& errors)
+
+void Response::read_core(std::istream& s,
+                          const bool labeled,
+                          std::ostringstream& errors)
 {
   // std::function is overkill, but perhaps clearer than bind or lambda
   std::function<void(Response&, std::istream& s, const ShortArray &asv,
 		     size_t, std::ostringstream &errors)> value_reader;
-  switch(format) { // future formats go here
-    case FLEXIBLE_RESULTS:
-      value_reader = &Response::read_flexible_fn_vals;
-      break;
-    case LABELED_RESULTS:
-      value_reader = &Response::read_labeled_fn_vals;
-      break;
-  }
+  if(labeled)
+     value_reader = &Response::read_labeled_fn_vals;
+  else
+     value_reader = &Response::read_flexible_fn_vals;
+  
 
   // A segmented parser until we do an all-at-once parse of the file.
   // This implementation is fragile w.r.t. kinds of errors it can detect.
@@ -419,6 +395,36 @@ void Response::read_core(std::istream& s, const unsigned short format,
     // TODO: validate that derivatives don't errantly appear after metadata:
     read_gradients(s, asv, false, errors);
     read_hessians(s, asv, false, errors);
+  }
+}
+
+void Response::read_core(const json& j,
+                          const bool labeled,
+                          std::ostringstream& errors)
+{
+  const ShortArray& asv = active_set().request_vector();
+  const StringArray& fn_labels = function_labels();
+  const StringArray& md_labels = shared_data().metadata_labels();
+  const size_t& nf = fn_labels.size();
+  const size_t& nmd = md_labels.size();
+  try {
+    JSONResultsParser p(j);
+    // Set the functions, gradients, and hessians where requested
+    for(size_t i = 0; i < nf; ++i) {
+      if(asv[i] & 1)
+        function_value(p.function(fn_labels[i]), i);
+      if(asv[i] & 2)
+        function_gradient(p.gradient(fn_labels[i]), i);
+      if(asv[i] & 4)
+        function_hessian(p.hessian(fn_labels[i]), i);
+    }
+    // set the metadata, if requested
+    std::vector<RespMetadataT> md;
+    std::transform(md_labels.begin(), md_labels.end(), std::back_inserter(md),
+      [&p](const std::string& label){return p.metadata(label);});
+    metadata(md);
+  } catch(const JSONResultsParserError& e) {
+    errors << e.what();
   }
 }
 
@@ -790,7 +796,11 @@ bool Response::failure_reported(std::istream& s) {
   }
   return true;
 }
- 
+
+
+bool Response::failure_reported(const json& j) {
+  return JSONResultsParser(j).failed();
+}
 
 
 /** ASCII version of write. */

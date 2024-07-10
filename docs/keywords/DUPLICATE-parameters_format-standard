@@ -1,0 +1,33 @@
+Blurb::
+Use the standard format for parameters files
+
+Description::
+
+When this keyword is used, parameters files will be written in
+the default `standard` format, which is explained
+:ref:`here <variables:parameters:standard>`. A strength of the `standard`
+format is that it is relatively easy to parse using ordinary GNU
+text processing tools. It is also understood by Dakota's template
+processing tool, :ref:`dprepro <interfaces:dprepro-and-pyprepro>`
+and the :ref:`dakota.interfacing <interfaces:dakota.interfacing>`
+module.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    interface
+      fork
+      analysis_drivers 'driver.py'
+      parameters_file = "params.in"
+      results_file = "results.out"
+      parameters_format
+        standard
+
+Theory::
+
+Faq::
+
+See_Also::

@@ -1,0 +1,31 @@
+Blurb::
+Expect results files in JSON format
+
+Description::
+
+When this keyword is used, Dakota expects results files written
+by an analysis driver or output filter to be in JSON
+format, which is explained :ref:`here <responses:results:json>`.
+Some strengths of the JSON format are that it is a widely
+used format for data interchange,  and the metadata it includes reduce
+the potential for driver bugs.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    interface
+      fork
+      analysis_drivers 'driver.py'
+      parameters_file = "params.in"
+      results_file = "results.out"
+      results_format
+        json
+
+Theory::
+
+Faq::
+
+See_Also::

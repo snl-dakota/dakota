@@ -1,0 +1,34 @@
+Blurb::
+Expect results files in standard format
+
+Description::
+
+When this keyword is used, Dakota expects results files written
+by an analysis driver or output filter to be in the default `standard`
+format, which is explained :ref:`here <responses:results:standard>`.
+A strength of the `standard` format is that it is flexible and easy
+to write. Standard-format results files can be written by the 
+:ref:`dakota.interfacing <interfaces:dakota.interfacing>` Python
+module.
+
+module.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    interface
+      fork
+      analysis_drivers 'driver.py'
+      parameters_file = "params.in"
+      results_file = "results.out"
+      results_format
+        standard
+
+Theory::
+
+Faq::
+
+See_Also::
