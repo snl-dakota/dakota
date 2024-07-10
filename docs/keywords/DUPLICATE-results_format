@@ -1,0 +1,32 @@
+Blurb::
+Format of the results file
+
+Description::
+
+This keyword group is used to select from among the supported
+results file formats.
+
+*Default Behavior*
+
+By default, the `dakota` format is used.
+
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    interface
+      fork
+      analysis_drivers 'driver.py'
+      parameters_file = "params.in"
+      results_file = "results.out"
+      results_format
+        json
+    
+Theory::
+
+Faq::
+
+See_Also::

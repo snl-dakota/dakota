@@ -14,6 +14,9 @@
 #include "DakotaActiveSet.hpp"
 #include "SharedResponseData.hpp"
 #include "Teuchos_SerialDenseHelpers.hpp"
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
 
 namespace Dakota {
 
@@ -247,9 +250,14 @@ public:
   /// set a portion of the response metadata starting from given position
   void metadata(const std::vector<RespMetadataT>& md, size_t start);
 
-  /// read a response object of specified format from a std::istream 
-  void read(std::istream& s, const unsigned short format = FLEXIBLE_RESULTS);
- 
+  /** ASCII version of read needs capabilities for capturing data omissions or
+    formatting errors (resulting from user error or asynch race condition) and
+    analysis failures (resulting from nonconvergence, instability, etc.). */
+
+  /// Read results into the Response from Input s.
+  template<class Input>
+  void read(Input& s, const bool labeled = false);
+
   /// write a response object to a std::ostream
   void write(std::ostream& s) const;
 
@@ -480,8 +488,15 @@ private:
   /// reshape function{Gradients,Hessians} if needed to sync with DVV
   void reshape_active_derivs(size_t num_deriv_vars);
 
-  void read_core(std::istream& s, const unsigned short formats,
-		 std::ostringstream& errors);
+  /// Populate the Response with the contents of s
+  void read_core(std::istream& s,
+                  const bool labeled,
+                  std::ostringstream& errors);
+
+  /// Populate the Response with the contents of j
+  void read_core(const json& j,
+                  const bool labeled,
+                  std::ostringstream& errors);
 
   bool expect_derivatives(const ShortArray& asv);
 
@@ -514,6 +529,9 @@ private:
   /// Check for FAIL in stream
   bool failure_reported(std::istream &s);
 
+  /// Check for fail in JSON
+  bool failure_reported(const json &);
+
   //
   //- Heading: Private data members
   //
@@ -521,6 +539,29 @@ private:
   /// pointer to the body (handle-body idiom)
   std::shared_ptr<Response> responseRep;
 };
+
+template<class Input>
+void Response::read(Input& s, const bool labeled)
+{
+  // if envelope, forward to letter
+  if (responseRep)
+    { responseRep->read(s, labeled); return; }
+
+  // If a failure is detected, throw an error
+  if (failure_reported(s)) 
+    throw FunctionEvalFailure(String("failure captured"));
+  
+  // Destroy old values and set to zero (so that else assignments are not needed
+  // below). The arrays have been properly sized by the Response constructor.
+  reset();
+  
+  std::ostringstream errors; // all helper funcs can append messages to errors
+
+  read_core(s, labeled, errors);
+
+  if(!errors.str().empty())
+    throw ResultsFileError(errors.str());
+}
 
 
 inline const SharedResponseData& Response::shared_data() const

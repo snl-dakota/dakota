@@ -31,10 +31,11 @@ another in a 1000-sample study.
 File Formats
 ~~~~~~~~~~~~ 
 
-The combined parameters file for a batch is simply the concatenation of
-all the parameters files for the evaluations in the batch. The
-individual parameter sets may use the default Dakota format, or the user
-can select the aprepro format.
+For :ref:`standard <variables:parameters:standard>`
+and :ref:`APREPRO <variables:parameters:aprepro>`-format parameters files,
+the combined parameters file for a batch is simply the concatenation of 
+the paramters information for all the evaluations in the batch, in standard 
+or APREPRO format.
 
 The following example parameters file contains parameter sets for two
 evaluations.
@@ -62,6 +63,10 @@ Note that the ``eval_id`` contains two pieces of information separated
 by a colon. The second is the evaluation number, and the first is the
 batch number. The batch number is an incrementing integer that uniquely
 identifies the batch.
+
+A :ref:`JSON format <variables:parameters:json>` batch parameters file contains an array at the top level.
+The elements of the array are objects that contain parameters information
+for each evaluation in the batch.
 
 The combined results file format is likewise a concatenation of the
 results for all the evaluations in the batch. However, a line beginning

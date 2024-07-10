@@ -144,6 +144,12 @@ enum { RESULTS_OUTPUT_TEXT = 1, RESULTS_OUTPUT_HDF5 = 2};
 /// options for results file format
 enum {FLEXIBLE_RESULTS, LABELED_RESULTS};
 
+/// Parameters file format
+enum { PARAMETERS_FILE_STANDARD = 0, PARAMETERS_FILE_APREPRO, PARAMETERS_FILE_JSON };
+
+/// Results file format
+enum { RESULTS_FILE_STANDARD = 0, RESULTS_FILE_JSON };
+
 /// define special values for surrogateExportFormats
 enum { NO_MODEL_FORMAT=0, TEXT_ARCHIVE=1, BINARY_ARCHIVE=2, ALGEBRAIC_FILE=4,
        ALGEBRAIC_CONSOLE=8 };

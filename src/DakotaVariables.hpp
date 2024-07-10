@@ -22,6 +22,7 @@ class ProblemDescDB;
 class MPIPackBuffer;
 class MPIUnpackBuffer;
 
+
 /// Utility used in derived read_core to read in generic format
 class GeneralReader {
 public: 
@@ -65,6 +66,19 @@ public:
                                label_array);
   }
 };
+
+//TEMP EMILIANO #1
+class JSONWriter {
+public: 
+  template<typename ArrayType> 
+  void operator()(json& s, size_t start_index, size_t num_items, 
+                  const ArrayType& array_data, 
+                  StringMultiArrayConstView label_array) {
+    write_data_partial_json(s, start_index, num_items, array_data, 
+                               label_array);
+  }
+};
+
 
 /// Utility used in derived write_core to write values in tabular format
 class TabularWriter {
@@ -162,6 +176,9 @@ public:
   /// write a variables object to an std::ostream in aprepro format,
   /// e.g., a parameters file
   virtual void write_aprepro(std::ostream& s) const;
+
+  /// write a variables object to a json object
+  virtual void write_json(json& s) const;
 
   // For neutral file I/O (restart translation to/from neutral):
   /// read a variables object in annotated format from an istream
