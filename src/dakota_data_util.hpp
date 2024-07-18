@@ -807,6 +807,41 @@ void copy_data(const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& ssd
   ssdm2.assign(ssdm1);
 }
 
+
+template <typename OrdinalType, typename ScalarType> 
+void copy_data(const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& ssdm,
+	       Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm)
+{
+  OrdinalType nr = ssdm.numRows(), i, j;
+  if (sdm.numRows() != nr || sdm.numCols() != nr)
+    sdm.shapeUninitialized(nr,nr);
+  for (i=0; i<nr; ++i) {
+    sdm(i,i) = ssdm(i,i);
+    for (j=0; j<i; ++j)
+      sdm(i,j) = sdm(j,i) = ssdm(i,j);
+  }
+}
+
+
+template <typename OrdinalType, typename ScalarType> 
+void copy_data(const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm,
+	       Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& ssdm)
+{
+  OrdinalType nr = sdm.numRows(), i, j;
+  if (sdm.numCols() != nr) {
+    Cerr << "Error: cannot copy rectangular SerialDenseMatrix to "
+	 << "SerialSymDenseMatrix" << std::endl;
+    abort_handler(-1);
+  }
+  if (ssdm.numRows() != nr)
+    ssdm.shapeUninitialized(nr);
+  for (i=0; i<nr; ++i) {
+    ssdm(i,i) = sdm(i,i);
+    for (j=0; j<i; ++j)
+      ssdm(i,j) = (sdm(i,j) == sdm(j,i)) ? sdm(i,j) : (sdm(i,j) + sdm(j,i))/2.;
+  }
+}
+
 /// Taken from pecos/src/MathTools.hpp, BUT
 /// not templated because the implementation is specific to RealMatrix
 inline void copy_data( const RealMatrix &source, RealMatrix &dest, 

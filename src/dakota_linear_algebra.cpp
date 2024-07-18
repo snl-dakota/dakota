@@ -8,6 +8,7 @@
     _______________________________________________________________________ */
 
 #include "dakota_global_defs.hpp"
+//#include "dakota_data_io.hpp"
 #include "dakota_linear_algebra.hpp"
 #include "Teuchos_LAPACK.hpp"
 
@@ -22,20 +23,17 @@ void svd(RealMatrix& matrix, RealVector& singular_vals, RealMatrix& v_trans,
   // compute the SVD of the incoming matrix
   // ----
 
-  char JOBU = 'N';
+  char JOBU  = 'N';
   char JOBVT = 'N';
   if (compute_vectors) {
-    JOBU = 'O';  // overwrite A with U
+    JOBU  = 'O'; // overwrite A with U
     JOBVT = 'A'; // compute all singular vectors VT
   }
-  int M(matrix.numRows());
-  int N(matrix.numCols());
-  int LDA = matrix.stride();
-  int num_singular_values = std::min(M, N);
+  int M(matrix.numRows()), N(matrix.numCols()), LDA = matrix.stride(),
+    num_singular_values = std::min(M, N);
   singular_vals.resize(num_singular_values);
   Real* U = NULL;
-  int LDU = 1;
-  int LDVT = 1;
+  int LDU = 1, LDVT = 1;
   if (compute_vectors) {
     v_trans.reshape(N, N);
     LDVT = N;
@@ -74,6 +72,38 @@ void singular_values(RealMatrix& matrix, RealVector& singular_vals)
   // empty matrix with NULL .values()
   RealMatrix v_trans;
   svd(matrix, singular_vals, v_trans, false);
+}
+
+
+void pseudo_inverse(RealMatrix& A, RealMatrix& A_inv)
+{
+  // TO DO: accept A as const and allocate separately for U
+  // (overload svd() above)
+
+  RealVector Sigma;  RealMatrix V_T;
+  svd(A, Sigma, V_T, true); // U overwrites A
+  //Cout << "Singular values:\n" << Sigma << std::endl;
+
+  // Form inverse A^{-1} = V S^{-1} U^T or pseudo-inverse A* = V S* U^T:
+  Real s_tol = 1.e-12; // in between DBL_EPSILON, sqrt(DBL_EPSILON)
+  size_t r, c, n = Sigma.length(); // min(M, N)
+  RealMatrix Sinv_U_T(n, n); // init to 0
+  Real s_ref = Sigma[0]; // largest singular value
+  if (s_ref <= 0.) {
+    Cerr << "Error: no positive singular values in pseudo_inverse()."
+	 << std::endl;
+    abort_handler(-1);
+  }
+  for (r=0; r<n; ++r) {
+    Real s_val = Sigma[r], s_ratio = s_val / s_ref; // smallest ratio is rcond
+    Real*  A_r = A[r]; // col vector of U^T
+    if (s_ratio > s_tol) // else truncate
+      for (c=0; c<n; ++c)
+	Sinv_U_T(r,c) = A_r[c] / s_val; // A(c,r) / s_val
+  }
+  // (pseudo-)inverse = V scaled_UT
+  A_inv.shape(n,n);
+  A_inv.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1., V_T, Sinv_U_T, 0.);
 }
 
 

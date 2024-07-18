@@ -61,6 +61,9 @@ void svd(RealMatrix& matrix, RealVector& singular_vals, RealMatrix& v_trans,
 /// (A will be destroyed)
 void singular_values(RealMatrix& matrix, RealVector& singular_values);
 
+/// compute the pseudo-inverse by SVD (A is overwritten by U)
+  void pseudo_inverse(RealMatrix& A, RealMatrix& A_inv);
+
 /**
  * \brief Compute an in-place QR factorization A = QR
 

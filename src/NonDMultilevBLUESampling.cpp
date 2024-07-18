@@ -10,6 +10,7 @@
 #include "dakota_system_defs.hpp"
 #include "dakota_data_io.hpp"
 //#include "dakota_tabular_io.hpp"
+#include "dakota_linear_algebra.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "NonDMultilevBLUESampling.hpp"
@@ -700,12 +701,12 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
       estimator_variance(soln.solution_variables(), estVarIter0);
 
     if (no_solve) {
-      // For offline pilot, the online EstVar is undefined prior to any online
+      // For offline pilot, the online EstVar is undefined (0/0) prior to online
       // samples, but should not happen (no budget used) unless bad convTol spec
       if (online)
 	soln.average_estimator_variance(average(estVarIter0));
       else
-	soln.average_estimator_variance(std::numeric_limits<Real>::infinity());
+	soln.average_estimator_variance(std::numeric_limits<Real>::quiet_NaN());
       soln.average_estimator_variance_ratio(1.);
       delta_N_G.assign(numGroups, 0);
       return;
@@ -935,26 +936,31 @@ process_group_solution(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
   // 1. For HF-only, employ var_H / projected-N_H --> this is the closest
   //    thing to the estvar ratio (1. - R^2)
   // 2. For equivalent HF, emply var_H / (equivHFEvals + deltaEquivHF)
-  // Due to throttle defns and MFMC/CVMC initial guesses, the most consistent
-  // source for var_H[qoi] is covGG[all_group][qoi](numApprox,numApprox).
-  // > *** TO DO: implement a search for the most refined covGG[g][qoi](H,H)
-  //UShortArray hf_only_group(1);  hf_only_group[0] = numApprox;
-  //size_t hf_index = find_index(modelGroups, hf_only_group);
-  //project_mc_estimator_variance(covGG[hf_index], 0, N_G_actual[hf_index],
-  //				  delta_N_G[hf_index], projEstVarHF,
-  //				  projNActualHF);
-  size_t all_group = numGroups - 1;// for all throttles, last group = all models
-  project_mc_estimator_variance(covGG[all_group], numApprox,
-				N_G_actual[all_group], delta_N_G[all_group],
-				projEstVarHF, projNActualHF);
-  // Report ratio of averages rather that average of ratios (see notes in
-  // print_variance_reduction())
-  if (zeros(projNActualHF))
+  size_t ref_group, ref_model_index;
+  switch (pilotMgmtMode) {
+  case OFFLINE_PILOT:  case OFFLINE_PILOT_PROJECTION:
+    // no online samp, so use delta for max projection (covGG assumed accurate)
+    find_hf_sample_reference(delta_N_G,  ref_group, ref_model_index);  break;
+  default: // define online ref from group with max HF samples (best varH)
+    find_hf_sample_reference(N_G_actual, ref_group, ref_model_index);  break;
+  }
+
+  if (ref_group == _NPOS) { // no online HF samples
+    projEstVarHF = std::numeric_limits<Real>::quiet_NaN(); // all QoI
+    projNActualHF.size(numFunctions); // set to 0
     soln.average_estimator_variance_ratio(
       std::numeric_limits<Real>::quiet_NaN());
-  else
+  }
+  else {
+    // Note: estvar is nan for 1 HF sample since bessel corr divides by 0
+    project_mc_estimator_variance(covGG[ref_group], ref_model_index,
+				  N_G_actual[ref_group], delta_N_G[ref_group],
+				  projEstVarHF, projNActualHF);
+    // Report ratio of averages rather that average of ratios (see notes in
+    // print_variance_reduction())
     soln.average_estimator_variance_ratio(
-      soln.average_estimator_variance() / average(projEstVarHF)); // (1 - R^2)
+      soln.average_estimator_variance() / average(projEstVarHF));
+  }
 }
 
 
@@ -1065,14 +1071,16 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s)
   // > The ACV ratio then differs from final ACV / final MC (due to recovering
   //   avgEstVar from the optimizer obj fn), but difference is usually small.
   RealVector proj_equiv_estvar;
-  size_t all_group = numGroups - 1;// for all throttles, last group = all models
-  project_mc_estimator_variance(covGG[all_group], numApprox, equivHFEvals,
+  // search for the most refined covGG[g][qoi](H,H)
+  size_t ref_group, ref_model_index;
+  switch (pilotMgmtMode) {
+  case OFFLINE_PILOT:  case OFFLINE_PILOT_PROJECTION:
+    ref_group = numGroups - 1;  ref_model_index = numApprox;             break;
+  default: // define online ref from group with max HF samples (best varH)
+    find_hf_sample_reference(NGroupActual, ref_group, ref_model_index);  break;
+  }
+  project_mc_estimator_variance(covGG[ref_group], ref_model_index, equivHFEvals,
                                 deltaEquivHF, proj_equiv_estvar);
-  // *** TO DO: implement a search for the most refined covGG[g][qoi](H,H)
-  //UShortArray hf_only_group(1);  hf_only_group[0] = numApprox;
-  //size_t hf_index = find_index(modelGroups, hf_only_group);
-  //project_mc_estimator_variance(covGG[hf_index], 0, equivHFEvals,
-  //                              deltaEquivHF, proj_equiv_estvar);
   Real avg_proj_equiv_estvar = average(proj_equiv_estvar),
        avg_estvar = blueSolnData.average_estimator_variance();
   bool mc_only_ref = !zeros(projNActualHF);
@@ -1113,8 +1121,8 @@ project_mc_estimator_variance(const RealSymMatrixArray& cov_GG_g,
   size_t qoi, N_l_q;
   for (qoi=0; qoi<numFunctions; ++qoi) {
     N_l_q = proj_N_H[qoi] = N_H_actual[qoi] + delta_N_H;
-    proj_est_var[qoi] = (N_l_q) ? cov_GG_g[qoi](H_index,H_index) / N_l_q
-                                : std::numeric_limits<Real>::infinity();
+    proj_est_var[qoi] = (N_l_q) ? cov_GG_g[qoi](H_index,H_index) / N_l_q :
+      std::numeric_limits<Real>::quiet_NaN(); // 0 / 0
   }
 }
 
@@ -1128,8 +1136,8 @@ project_mc_estimator_variance(const RealSymMatrixArray& cov_GG_g,
   proj_est_var.sizeUninitialized(numFunctions);
   size_t qoi; Real N_l_q = N_H_actual + delta_N_H;
   for (qoi=0; qoi<numFunctions; ++qoi)
-    proj_est_var[qoi] = (N_l_q > 0.) ? cov_GG_g[qoi](H_index,H_index) / N_l_q
-                                     : std::numeric_limits<Real>::infinity();
+    proj_est_var[qoi] = (N_l_q > 0.) ? cov_GG_g[qoi](H_index,H_index) / N_l_q :
+      std::numeric_limits<Real>::quiet_NaN(); // 0 / 0
 }
 
 
@@ -1334,24 +1342,7 @@ compute_GG_covariance(const RealMatrixArray& sum_G,
 	    compute_covariance(sum_G_gqm, sum_G_g(qoi,m2), sum_GG_gq(m,m2),
 			       num_G_gq, cov_GG_gq(m,m2));
 	}
-	code = compute_C_inverse(cov_GG_gq, cov_GG_inv_g[qoi]);
-	if (code) {
-	  /*
-	  // This drops the group contribution to Psi but probably also need
-	  // to drop the group des var from the numerical soln to prevent
-	  // unconstrained behavior there. Something to consider down the road.
-	  Cerr << "Warning: serial dense solver failure (LAPACK error code "
-	       << code << ") in ML BLUE::compute_C_inverse()\n         "
-	       << "for group " << g << " QoI " << q << " with C:\n"<<cov_GG_g[q]
-	       <<< "         Omitting group from roll up." << std::endl;
-	  cov_GG_inv_g[q].shape(0);
-	  */
-	  Cerr << "Error: serial dense solver failure (LAPACK error code "
-	      << code << ") in ML BLUE::compute_C_inverse()\n"
-	      << "       for group " << g << " QoI " << qoi << " with C:\n"
-	      << cov_GG_gq << std::endl;
-	  abort_handler(METHOD_ERROR);
-	}
+	compute_C_inverse(cov_GG_gq, cov_GG_inv_g[qoi], g, qoi);
       }
       else if (!update_prev) // inadequate samples to define covar
 	{ cov_GG_g[qoi].shape(0); cov_GG_inv_g[qoi].shape(0); }
@@ -1454,5 +1445,244 @@ compute_G_variance(const RealMatrixArray& sum_G,
   }
 }
 */
+
+
+void NonDMultilevBLUESampling::
+compute_C_inverse(const RealSymMatrix& cov_GG_gq, RealSymMatrix& cov_GG_inv_gq,
+		  size_t group, size_t qoi)
+{
+  if (cov_GG_gq.empty()) // insufficient samples to define cov_GG
+    { cov_GG_inv_gq.shape(0); }
+  else {
+
+    /* This approach has not been effective for ill-conditioned cov_GG:
+    int r, nr = cov_GG_gq.numRows();
+    cov_GG_inv_gq.shape(nr);
+    RealSymMatrix A(cov_GG_gq);  RealMatrix X(nr, nr), B(nr, nr);
+    for (r=0; r<nr; ++r) B(r,r) = 1.; // identity
+    // Leverage both the soln refinement in solve() and equilibration during
+    // factorization (inverting C in place can only leverage the latter).
+    RealSpdSolver spd_solver;
+    spd_solver.setMatrix( Teuchos::rcp(&A,false));
+    spd_solver.setVectors(Teuchos::rcp(&X, false), Teuchos::rcp(&B, false));
+    if (spd_solver.shouldEquilibrate())
+     spd_solver.factorWithEquilibration(true);
+    spd_solver.solveToRefinedSolution(true);
+    int code = spd_solver.solve();
+    copy_data(X, cov_GG_inv_gq); // Dense to SymDense
+    */
+
+    /* Detection of ill-conditioning in Cholesky factorization has been
+       observed to be insuffienct to prevent blow-up within invert() -->
+       use SVD at all times rather than as a fallback.
+    cov_GG_inv_gq = cov_GG_gq; // copy for inversion in place
+    RealSpdSolver spd_solver;
+    spd_solver.setMatrix(Teuchos::rcp(&cov_GG_inv_gq, false));
+    // Equilibration scales the system to improve solution conditioning; it
+    // involves equilibrateMatrix() and equilibrateRHS() prior to solve,
+    // followed by unequilibrateLHS() after solve.  Here, we factor/invert C
+    // without equilibration as we assemble C-inverse into Psi without any
+    // solve(); otherwise C-inverse would be the inverse of the equilibrated
+    // matrix and there is no corresponding unequilibrate to use at that point.
+    // Downstream, solves using the assembled Psi are equilibrated as needed.
+
+    // factor() is embedded within both reciprocalConditionEstimate() and
+    // invert(), so this return code is the furthest upstream
+    int fact_code = spd_solver.factor(); // Real rcond;
+    //int rcond_code = spd_solver.reciprocalConditionEstimate(rcond);
+    //int   inv_code = spd_solver.invert(); // in place
+    if (fact_code) { // only traps extreme cases
+      Cerr << "Warning: failure in group covariance factorization in ML BLUE::"
+	   << "compute_C_inverse()\n         for group " << group << " QoI "
+	   << qoi //<< " with C:\n" << cov_GG_gq
+	   << " (LAPACK error: leading minor of order " << fact_code
+	   << " is not positive definite,\n       and the factorization could "
+	   << "not be completed).  Resorting to pseudo-inverse via SVD."
+	   << std::endl;
+
+      // This drops the group contribution to Psi but probably also need
+      // to drop the group design var from the numerical soln to prevent
+      // unconstrained behavior there.
+      cov_GG_inv_gq.shape(0);
+    }
+    else { // bad inverses can still occur
+      spd_solver.invert();
+      //if (outputLevel >= DEBUG_OUTPUT)
+        Cout << "LL^T inverse for group " << group << " QoI " << qoi << ":\n"
+	     << cov_GG_inv_gq << std::endl;
+    }
+    */
+
+    /*
+    // SYEV not consistent with Cholesky-based inverse for well conditioned
+    // Need to review Petra2014
+    RealVector eigen_vals;  RealMatrix eigen_vecs;
+    symmetric_eigenvalue_decomposition( cov_GG_gq, eigen_vals, eigen_vecs );
+    //if (outputLevel >= DEBUG_OUTPUT)
+    //  Cout << "SYEV eigenvalues for " << group << " QoI " << qoi << ":\n"
+    // 	     << eigen_vals << std::endl;
+    // Form V and D
+    Real ev_tol = std::sqrt(DBL_EPSILON); // Petra2014 suggests tol=1 in Fig 5.2
+    int n, r, num_rows = eigen_vals.length(), num_neglect = 0;
+    for (n=0; n<num_rows; ++n) // returned in increasing order
+      if ( eigen_vals[n] <= ev_tol ) ++num_neglect;
+      else                           break;
+    int num_low_rank = num_rows - num_neglect, offset_r;
+    RealSymMatrix D(num_low_rank); // init to 0;    r x r diagonal matrix
+    RealMatrix V(num_rows, num_low_rank, false); // n x r matrix for r retained
+    for (r=0; r<num_low_rank; ++r) {
+      offset_r = r + num_neglect;
+      Real lambda = eigen_vals[offset_r];
+      D(r,r) = lambda / (lambda + 1.); // Sherman-Morrison-Woodbury
+      for (n=0; n<num_rows; ++n)
+	V(n,r) = eigen_vecs(n,offset_r); // copy column
+    }
+    // Form inverse = I - V D V^T
+    // inv(hessian) of posterior = L (I - V D V^T) L^T for prior Cholesky L
+    cov_GG_inv_gq.shapeUninitialized(num_rows);
+    Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., D, V, cov_GG_inv_gq);
+    for (n=0; n<num_rows; ++n)
+      cov_GG_inv_gq(n,n) += 1.;
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Pseudo-inverse by SYEV for group " << group << " QoI " << qoi
+	   << ":\n" << cov_GG_inv_gq << std::endl;
+    */
+
+    // Rely on SVD (full or pseudo-inverse as dictated by singular vals)
+    RealMatrix A, A_inv;
+    copy_data(cov_GG_gq, A);         // RealSymMatrix to RealMatrix
+    pseudo_inverse(A, A_inv);
+    copy_data(A_inv, cov_GG_inv_gq); // RealMatrix to RealSymMatrix
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Pseudo-inverse by SVD for group " << group << " QoI " << qoi
+	   << ":\n" << cov_GG_inv_gq << "\n--------------\n" << std::endl;
+ 
+    // Alternatives:
+    // > Pseudo-inverse for covariances: is symmetric_eigenvalue_decomp()
+    //   preferred to SVD for case of symmetric matrices?
+    // > SVD for both C and Psi? or just for Psi while dropping C_k groups that
+    //   are ill-conditioned? --> factor() has inadequate detection so would
+    //   still access to eigen/singular values).
+    // > Schaden and Ullmann suggest + \delta I nugget offset, but again this
+    //   seems best combined with a detection scheme
+    // > SDP solvers (helps only with Psi solve --> issues with C-inverse must
+    //   be addressed separately)
+  }
+}
+
+
+void NonDMultilevBLUESampling::
+compute_mu_hat(const RealSymMatrix2DArray& cov_GG_inv,
+	       const RealMatrixArray& sum_G, const Sizet2DArray& N_G,
+	       RealVectorArray& mu_hat)
+{
+  // accumulate Psi but don't invert in place
+  RealSymMatrixArray Psi;
+  compute_Psi(cov_GG_inv, N_G, Psi);
+
+  // Only need to form y when solving for mu-hat:
+  RealVectorArray y;
+  compute_y(cov_GG_inv, sum_G, y);
+
+  initialize_rva(mu_hat, false);
+  size_t q, r, c, g, num_groups = modelGroups.size();
+  /*
+  RealSpdSolver spd_solver;
+  for (q=0; q<numFunctions; ++q) {
+    // Leverage both the soln refinement in solve() and equilibration during
+    // factorization (inverting Psi in place can only leverage the latter).
+    spd_solver.setMatrix(Teuchos::rcp(&Psi[q], false)); // resets solver state
+    spd_solver.setVectors(Teuchos::rcp(&mu_hat[q], false),
+			  Teuchos::rcp(&y[q], false));
+    if (spd_solver.shouldEquilibrate())
+      spd_solver.factorWithEquilibration(true);
+    spd_solver.solveToRefinedSolution(true);
+    int code = spd_solver.solve();
+    if (code) {
+      Cerr << "Error: serial dense solver failure (LAPACK error code " << code
+	   << ") in ML BLUE compute_mu_hat()." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Cholesky solve for mu_hat for QoI " << q << ":\n" << mu_hat[q]
+	   << std::endl;
+  }
+  */
+
+  RealMatrix A, A_inv;
+  for (q=0; q<numFunctions; ++q) {
+    copy_data(Psi[q], A); // RealSymMatrix to RealMatrix
+    pseudo_inverse(A, A_inv);
+    mu_hat[q].multiply(Teuchos::NO_TRANS,Teuchos::NO_TRANS,1., A_inv, y[q], 0.);
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Pseudo-inverse solve for mu_hat for QoI " << q << ":\n"
+	   << mu_hat[q] << std::endl;
+  }
+}
+
+
+void NonDMultilevBLUESampling::
+estimator_variance(const RealVector& cd_vars, RealVector& estvar)
+{
+  if (estvar.empty()) estvar.sizeUninitialized(numFunctions);
+
+  // This approach leverages both the solution refinement in solve() and
+  // equilibration during factorization (inverting Psi in place can only
+  // leverage the latter).  It seems to work much more reliably.
+  RealSymMatrixArray Psi;
+  compute_Psi(covGGinv, cd_vars, Psi);
+
+  size_t q, all_models = numApprox + 1;
+
+  /*
+  RealSpdSolver spd_solver;
+  RealVector e_last(all_models, false), estvar_q(all_models, false);
+  for (q=0; q<numFunctions; ++q) {
+    // e_last is equilbrated in place, so must be reset
+    e_last.putScalar(0.); e_last[numApprox] = 1.;
+
+    spd_solver.setMatrix( Teuchos::rcp(&Psi[q],   false));// resets solver state
+    spd_solver.setVectors(Teuchos::rcp(&estvar_q, false),
+			  Teuchos::rcp(&e_last,   false));
+    if (spd_solver.shouldEquilibrate())
+      spd_solver.factorWithEquilibration(true);
+    spd_solver.solveToRefinedSolution(true);
+    int code = spd_solver.solve();
+    if (code) {
+      Cerr << "Error: serial dense solver failure (LAPACK error code " << code
+	   << ") in ML BLUE estimator_variance()." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    estvar[q] = estvar_q[numApprox];
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Cholesky       solve for estvar for QoI " << q << " = "
+	   << estvar[q] << std::endl;
+  }
+  */
+
+  // Psi and e_last need to be reset if Cholesky also active above
+  //compute_Psi(covGGinv, cd_vars, Psi);
+  for (q=0; q<numFunctions; ++q) {
+    RealMatrix A, A_inv;
+    copy_data(Psi[q], A); // RealSymMatrix to RealMatrix
+    pseudo_inverse(A, A_inv);
+    estvar[q] = A_inv(numApprox,numApprox);
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Pseudo-inverse solve for estvar for QoI " << q << " = "
+	   << estvar[q] << std::endl;
+  }
+
+  // *** TO DO: now that we have good performance locked in, revisit this flow:
+  // should be able to equilibrate and factor each Psi once within a SpdSolver
+  // that persists, then solve to refined solution for each estvar and mu-hat.
+
+  /* This approach suffers from poor performance, either from conditioning
+     issues or misunderstood Teuchos solver behavior.
+  RealSymMatrixArray Psi_inv;
+  compute_Psi_inverse(covGGinv, cd_vars, Psi_inv);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    estvar[qoi] = Psi_inv[qoi](numApprox,numApprox); // e_l^T Psi-inverse e_l
+  */
+}
 
 } // namespace Dakota
