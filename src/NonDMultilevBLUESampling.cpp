@@ -32,7 +32,9 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model):
   NonDNonHierarchSampling(problem_db, model),
   pilotGroupSampling(problem_db.get_short("method.nond.pilot_samples.mode")),
   groupThrottleType(problem_db.get_short("method.nond.group_throttle_type")),
-  groupSizeThrottle(problem_db.get_ushort("method.nond.group_size_throttle"))
+  groupSizeThrottle(problem_db.get_ushort("method.nond.group_size_throttle")),
+  rCondBestThrottle(problem_db.get_sizet("method.nond.rcond_best_throttle")),
+  rCondTolThrottle(problem_db.get_real("method.nond.rcond_tol_throttle"))
 {
   mlmfSubMethod = problem_db.get_ushort("method.sub_method");
 
@@ -50,8 +52,16 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model):
 	 << " sub-method formulation = " << optSubProblemForm
 	 << " sub-problem solver = "     << optSubProblemSolver << std::endl;
 
-  // elected to flatten XML spec, so groupThrottleType is inferred
-  if (groupSizeThrottle != USHRT_MAX) groupThrottleType = GROUP_SIZE_THROTTLE;
+  // groupThrottleType is inferred for scalar spec so XML can be flattened
+  if (!groupThrottleType) {
+    if (groupSizeThrottle != USHRT_MAX)
+      groupThrottleType = GROUP_SIZE_THROTTLE;
+    else if (rCondBestThrottle != SZ_MAX)
+      groupThrottleType = RCOND_BEST_COUNT_THROTTLE;
+    else if (rCondTolThrottle != DBL_MAX)
+      groupThrottleType = RCOND_TOLERANCE_THROTTLE;
+  }
+
   switch (groupThrottleType) {
 
   //case DAG_DEPTH_THROTTLE:   // Emulate ACV
@@ -132,7 +142,7 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model):
     break;
   }
 
-  default: { // NO_GROUP_THROTTLE
+  default: { // NO_GROUP_THROTTLE, RCOND_*_THROTTLE
     // tensor product of order 1 to enumerate approximation groups
     // > modelGroups are not currently ordered by numbers of models,
     //   i.e. all 1-model cases, followed by all 2-model cases, etc.
@@ -1320,7 +1330,12 @@ compute_GG_covariance(const RealMatrixArray& sum_G,
 {
   initialize_rsm2a(cov_GG);  initialize_rsm2a(cov_GG_inv); // bypass if sized
 
-  size_t g, m, m2, num_models, qoi, num_G_gq;  Real sum_G_gqm;  int code;
+  size_t g, m, m2, num_models, qoi, num_G_gq;
+  Real sum_G_gqm;  int code;  RealVector rcond(numFunctions);
+  bool rcond_throttle = (groupThrottleType == RCOND_TOLERANCE_THROTTLE ||
+			 groupThrottleType == RCOND_BEST_COUNT_THROTTLE);
+  if (rcond_throttle) groupCovCondMap.clear();
+
   for (g=0; g<numGroups; ++g) {
     num_models = modelGroups[g].size();
     const SizetArray&        num_G_g =      num_G[g];
@@ -1342,21 +1357,25 @@ compute_GG_covariance(const RealMatrixArray& sum_G,
 	    compute_covariance(sum_G_gqm, sum_G_g(qoi,m2), sum_GG_gq(m,m2),
 			       num_G_gq, cov_GG_gq(m,m2));
 	}
-	compute_C_inverse(cov_GG_gq, cov_GG_inv_g[qoi], g, qoi);
+	compute_C_inverse(cov_GG_gq, cov_GG_inv_g[qoi], g, qoi, rcond[qoi]);
       }
       else if (!update_prev) // inadequate samples to define covar
 	{ cov_GG_g[qoi].shape(0); cov_GG_inv_g[qoi].shape(0); }
       //else: leave as previous shared covariance and covariance-inverse
     }
+    if (rcond_throttle)
+      groupCovCondMap.insert(std::pair<Real,size_t>(average(rcond), g));
   }
 
   // precompute 2D array of C_k inverses for numerical solver use
   // (Phi-inverse is dependent on N_G, but C-inverse is not)
   //compute_C_inverse(cov_GG, cov_GG_inv);
-
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "In compute_GG_covariance(), cov_GG:\n" << cov_GG
 	 << "cov_GG inverse:\n" << cov_GG_inv << std::endl;
+
+  if (rcond_throttle)
+    prune_model_groups();// for now one-and-done; *** TO DO: prune_model_groups(origModelGroups, modelGroups);
 }
 
 
@@ -1410,10 +1429,13 @@ compute_GG_covariance(const RealMatrix& sum_G_g,
   // precompute 2D array of C_k inverses for numerical solver use
   // (Phi-inverse is dependent on N_G, but C-inverse is not)
   compute_C_inverse(cov_GG, cov_GG_inv);
-
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "In compute_GG_covariance(), cov_GG:\n" << cov_GG
 	 << "cov_GG inverse:\n" << cov_GG_inv << std::endl;
+
+  if (groupThrottleType == RCOND_TOLERANCE_THROTTLE ||
+      groupThrottleType == RCOND_BEST_COUNT_THROTTLE)
+    prune_model_groups();// for now one-and-done; *** TO DO: prune_model_groups(origModelGroups, modelGroups);
 }
 
 
@@ -1449,7 +1471,7 @@ compute_G_variance(const RealMatrixArray& sum_G,
 
 void NonDMultilevBLUESampling::
 compute_C_inverse(const RealSymMatrix& cov_GG_gq, RealSymMatrix& cov_GG_inv_gq,
-		  size_t group, size_t qoi)
+		  size_t group, size_t qoi, Real& rcond)
 {
   if (cov_GG_gq.empty()) // insufficient samples to define cov_GG
     { cov_GG_inv_gq.shape(0); }
@@ -1549,13 +1571,14 @@ compute_C_inverse(const RealSymMatrix& cov_GG_gq, RealSymMatrix& cov_GG_inv_gq,
     */
 
     // Rely on SVD (full or pseudo-inverse as dictated by singular vals)
-    RealMatrix A, A_inv;
+    RealMatrix A, A_inv;  Real rcond;
     copy_data(cov_GG_gq, A);         // RealSymMatrix to RealMatrix
-    pseudo_inverse(A, A_inv);
+    pseudo_inverse(A, A_inv, rcond);
     copy_data(A_inv, cov_GG_inv_gq); // RealMatrix to RealSymMatrix
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "Pseudo-inverse by SVD for group " << group << " QoI " << qoi
-	   << ":\n" << cov_GG_inv_gq << "\n--------------\n" << std::endl;
+	   << ": rcond = " << rcond << " Inverse =\n" << cov_GG_inv_gq
+	   << "\n--------------\n" << std::endl;
  
     // Alternatives:
     // > Pseudo-inverse for covariances: is symmetric_eigenvalue_decomp()
@@ -1609,10 +1632,10 @@ compute_mu_hat(const RealSymMatrix2DArray& cov_GG_inv,
   }
   */
 
-  RealMatrix A, A_inv;
+  RealMatrix A, A_inv;  Real rcond;
   for (q=0; q<numFunctions; ++q) {
     copy_data(Psi[q], A); // RealSymMatrix to RealMatrix
-    pseudo_inverse(A, A_inv);
+    pseudo_inverse(A, A_inv, rcond);
     mu_hat[q].multiply(Teuchos::NO_TRANS,Teuchos::NO_TRANS,1., A_inv, y[q], 0.);
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "Pseudo-inverse solve for mu_hat for QoI " << q << ":\n"
@@ -1662,10 +1685,10 @@ estimator_variance(const RealVector& cd_vars, RealVector& estvar)
 
   // Psi and e_last need to be reset if Cholesky also active above
   //compute_Psi(covGGinv, cd_vars, Psi);
+  RealMatrix A, A_inv;  Real rcond;
   for (q=0; q<numFunctions; ++q) {
-    RealMatrix A, A_inv;
     copy_data(Psi[q], A); // RealSymMatrix to RealMatrix
-    pseudo_inverse(A, A_inv);
+    pseudo_inverse(A, A_inv, rcond);
     estvar[q] = A_inv(numApprox,numApprox);
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "Pseudo-inverse solve for estvar for QoI " << q << " = "
@@ -1683,6 +1706,37 @@ estimator_variance(const RealVector& cd_vars, RealVector& estvar)
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     estvar[qoi] = Psi_inv[qoi](numApprox,numApprox); // e_l^T Psi-inverse e_l
   */
+}
+
+
+void NonDMultilevBLUESampling::prune_model_groups()
+{
+  if (numGroups <= rCondBestThrottle) return;
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Pruning model groups from " << numGroups << " to best "
+	 << rCondBestThrottle << " based on group covariance conditioning.\n";
+  UShort2DArray pruned_model_groups(rCondBestThrottle);
+  RealSymMatrix2DArray pruned_cov_GG(rCondBestThrottle),
+                       pruned_cov_GG_inv(rCondBestThrottle);
+  size_t g, keep_g, skip_front = numGroups - rCondBestThrottle;
+  std::multimap<Real, size_t>::iterator rc_it = groupCovCondMap.begin();
+  std::advance(rc_it, skip_front);
+  for (g=0; rc_it!=groupCovCondMap.end() && g<rCondBestThrottle; ++rc_it, ++g) {
+    keep_g = rc_it->second;
+    pruned_model_groups[g] = modelGroups[keep_g];
+    pruned_cov_GG[g]       =       covGG[keep_g];
+    pruned_cov_GG_inv[g]   =    covGGinv[keep_g];
+  }
+  modelGroups = pruned_model_groups;
+  numGroups   = modelGroups.size();
+  covGG       = pruned_cov_GG;
+  covGGinv    = pruned_cov_GG_inv;
+  // TO DO: sum_G's, N_G's actual/alloc as well
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Remaining groups:\n" << modelGroups;
+  // TO DO: ensure all_group remains???    
 }
 
 } // namespace Dakota

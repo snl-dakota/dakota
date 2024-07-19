@@ -2213,6 +2213,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
       {"nond.collocation_ratio", P_MET collocationRatio},
       {"nond.collocation_ratio_terms_order", P_MET collocRatioTermsOrder},
       {"nond.multilevel_estimator_rate", P_MET multilevEstimatorRate},
+      {"nond.rcond_tol_throttle", P_MET rCondTolThrottle},
       {"nond.regression_penalty", P_MET regressionL2Penalty},
       {"nond.relaxation.fixed_factor", P_MET relaxFixedFactor},
       {"nond.relaxation.recursive_factor", P_MET relaxRecursiveFactor},
@@ -2565,6 +2566,7 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
       {"nond.expansion_samples", P_MET expansionSamples},
       {"nond.max_refinement_iterations", P_MET maxRefineIterations},
       {"nond.max_solver_iterations", P_MET maxSolverIterations},
+      {"nond.rcond_best_throttle", P_MET rCondBestThrottle},
       {"num_candidate_designs", P_MET numCandidateDesigns},
       {"num_candidates", P_MET numCandidates},
       {"num_prediction_configs", P_MET numPredConfigs}

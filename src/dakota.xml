@@ -689,9 +689,14 @@
 	       <oneOf label="Throttle Approach">
 		 <keyword  id="mfmc_groups" name="mfmc_groups" code="{N_mdm(type,groupThrottleType_MFMC_ESTIMATOR_GROUPS)}" label="MFMC estimator groups" />
 		 <keyword  id="common_groups" name="common_groups" code="{N_mdm(type,groupThrottleType_COMMON_ESTIMATOR_GROUPS)}" label="common estimator groups" />
-		 <!-- <keyword  id="group_size" name="group_size" code="{N_mdm(type,groupThrottleType_GROUP_SIZE_THROTTLE)}" label="group size throttle" > -->
 	         <keyword  id="group_size" name="group_size" code="{N_mdm(ushint,groupSizeThrottle)}" label="group size throttle" >
 	           <param type="INTEGER" constraint="> 0" />
+	         </keyword>
+	         <keyword  id="best_conditioned" name="best_conditioned" code="{N_mdm(sizet,rCondBestThrottle)}" label="best conditioned throttle" >
+	           <param type="INTEGER" constraint="> 0" />
+	         </keyword>
+	         <keyword  id="rcond_tolerance" name="rcond_tolerance" code="{N_mdm(Real,rCondTolThrottle)}" label="rcond tolerance throttle" >
+	           <param type="REAL" constraint=">= 0" />
 	         </keyword>
 	       </oneOf>
 	     </keyword>

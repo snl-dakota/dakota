@@ -14,8 +14,8 @@
 
 namespace Dakota {
 
-void svd(RealMatrix& matrix, RealVector& singular_vals, RealMatrix& v_trans,
-	 bool compute_vectors)
+void singular_value_decomp(RealMatrix& matrix, RealVector& singular_vals,
+			   RealMatrix& v_trans, bool compute_vectors)
 {
   Teuchos::LAPACK<int, Real> la;
 
@@ -55,13 +55,14 @@ void svd(RealMatrix& matrix, RealVector& singular_vals, RealMatrix& v_trans,
   delete [] work;
 
   if (info < 0) {
-    Cerr << "\nError: svd() failed. " << "The " << std::abs( info ) 
-	 << "-th argument had an illegal value.\n";
+    Cerr << "\nError: singular_value_decomp() failed. " << "The "
+	 << std::abs(info) << "-th argument had an illegal value." << std::endl;
     abort_handler(-1);
   }
   if (info > 0) {
-    Cerr << "\nError: svd() failed. " << info << "superdiagonals of an "
-	 << "intermediate bidiagonal form B did not converge to 0.\n";
+    Cerr << "\nError: singular_value_decomp() failed. " << info
+	 << " superdiagonals of an intermediate bidiagonal form B did not "
+	 << "converge to 0." << std::endl;
     abort_handler(-1);
   }
 }
@@ -71,21 +72,21 @@ void singular_values(RealMatrix& matrix, RealVector& singular_vals)
 {
   // empty matrix with NULL .values()
   RealMatrix v_trans;
-  svd(matrix, singular_vals, v_trans, false);
+  singular_value_decomp(matrix, singular_vals, v_trans, false);
 }
 
 
-void pseudo_inverse(RealMatrix& A, RealMatrix& A_inv)
+void pseudo_inverse(RealMatrix& A, RealMatrix& A_inv, Real& rcond)
 {
   // TO DO: accept A as const and allocate separately for U
-  // (overload svd() above)
+  // (overload singular_value_decomp() above)
 
   RealVector Sigma;  RealMatrix V_T;
-  svd(A, Sigma, V_T, true); // U overwrites A
+  singular_value_decomp(A, Sigma, V_T, true); // U overwrites A
   //Cout << "Singular values:\n" << Sigma << std::endl;
 
   // Form inverse A^{-1} = V S^{-1} U^T or pseudo-inverse A* = V S* U^T:
-  Real s_tol = 1.e-12; // in between DBL_EPSILON, sqrt(DBL_EPSILON)
+  Real s_tol = 1.e-12; // halfway between DBL_EPSILON, sqrt(DBL_EPSILON)
   size_t r, c, n = Sigma.length(); // min(M, N)
   RealMatrix Sinv_U_T(n, n); // init to 0
   Real s_ref = Sigma[0]; // largest singular value
@@ -94,6 +95,7 @@ void pseudo_inverse(RealMatrix& A, RealMatrix& A_inv)
 	 << std::endl;
     abort_handler(-1);
   }
+  rcond = Sigma[n-1] / s_ref; // inverse condition number < 1
   for (r=0; r<n; ++r) {
     Real s_val = Sigma[r], s_ratio = s_val / s_ref; // smallest ratio is rcond
     Real*  A_r = A[r]; // col vector of U^T

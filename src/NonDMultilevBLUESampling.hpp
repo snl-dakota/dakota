@@ -82,7 +82,7 @@ protected:
 
   void compute_C_inverse(const RealSymMatrix& cov_GG_gq,
 			 RealSymMatrix& cov_GG_inv_gq,
-			 size_t group, size_t qoi);
+			 size_t group, size_t qoi, Real& rcond);
   void compute_C_inverse(const RealSymMatrix2DArray& cov_GG,
 			 RealSymMatrix2DArray& cov_GG_inv);
   void compute_Psi(const RealSymMatrix2DArray& cov_GG_inv,
@@ -105,6 +105,9 @@ protected:
 		      RealVectorArray& mu_hat);
 
   void estimator_variance(const RealVector& cd_vars, RealVector& estvar);
+
+  /// prune modelGroups down to subset with best conditioned group covariances
+  void prune_model_groups();
 
   void process_group_solution(MFSolutionData& soln,
 			      const Sizet2DArray& N_G_actual,
@@ -259,10 +262,19 @@ private:
 
   /// mode for pilot sampling: shared or independent
   short pilotGroupSampling;
+
   /// type of throttle for mitigating combinatorial growth in numGroups
   short groupThrottleType;
   /// group size threshold for groupThrottleType == GROUP_SIZE_THROTTLE
   unsigned short groupSizeThrottle;
+  /// throttle the number of groups to this count based on ranking by
+  /// condition number in group covariance
+  size_t rCondBestThrottle;
+  /// throttle the number of groups based on this tolerance for
+  /// condition number in group covariance
+  Real rCondTolThrottle;
+  /// map from rcond to group number: pick the first rCondBestThrottle groups
+  std::multimap<Real, size_t> groupCovCondMap;
 
   /// counter for successful sample accumulations, per group and per QoI
   Sizet2DArray NGroupActual;
@@ -556,13 +568,19 @@ compute_C_inverse(const RealSymMatrix2DArray& cov_GG,
 {
   // cov matrices are sized according to group member size
   initialize_rsm2a(cov_GG_inv);
+  bool rcond_throttle = (groupThrottleType == RCOND_TOLERANCE_THROTTLE ||
+			 groupThrottleType == RCOND_BEST_COUNT_THROTTLE);
+  if (rcond_throttle) groupCovCondMap.clear();
 
   size_t q, g, num_groups = modelGroups.size();
+  RealVector rcond(numFunctions);
   for (g=0; g<num_groups; ++g) {
     const RealSymMatrixArray& cov_GG_g = cov_GG[g];
     RealSymMatrixArray&   cov_GG_inv_g = cov_GG_inv[g];
     for (q=0; q<numFunctions; ++q)
-      compute_C_inverse(cov_GG_g[q], cov_GG_inv_g[q], g, q);
+      compute_C_inverse(cov_GG_g[q], cov_GG_inv_g[q], g, q, rcond[q]);
+    if (rcond_throttle)
+      groupCovCondMap.insert(std::pair<Real,size_t>(average(rcond), g));
   }
 }
 
