@@ -63,11 +63,14 @@ take the appropriate corrective action. The form of this communication
 depends on the type of simulation interface in use.
 
 In the system call and fork simulation interfaces, a detected simulation
-failure is communicated to Dakota through the results file. Instead of
-returning the standard results file data, the string “``fail``” should
-appear at the beginning of the results file. Any data appearing after
-the fail string will be ignored. Also, Dakota’s detection of this string
-is case insensitive, so “``FAIL``”, “``Fail``”, etc., are equally valid.
+failure is communicated to Dakota through the results file. When using
+the :ref:`standard <responses:results:standard>` results file format,
+the string “``fail``” should appear at the beginning of the results file.
+Any data appearing after the fail string will be ignored. Also, Dakota’s
+detection of this string is case insensitive, so “``FAIL``”, “``Fail``”,
+etc., are equally valid. For :ref:`JSON <responses:results:json>`, failure
+is communicated to Dakota by including the name:value pair ``"fail": "true"``
+in the evaluation object. Both the name and value must be lowercase.
 
 In the direct simulation interface case, a detected simulation failure
 is communicated to Dakota through the return code provided by the user’s

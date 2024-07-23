@@ -127,7 +127,18 @@ if(NOT DAKOTA_VERSION_FOUND)
 endif()
 
 # -----------------
+# Set path for nlohmann::json header
 
+set(JSON_SINGLE_INCDIR "${PROJECT_SOURCE_DIR}/packages/external/json/single_include")
+if(EXISTS "${JSON_SINGLE_INCDIR}/nlohmann/json.hpp")
+  message( "Found JSON header file" )
+  list( APPEND EXT_TPL_INCDIRS ${JSON_SINGLE_INCDIR} )
+else()
+  message( FATAL_ERROR "JSON header file not found in ${JSON_SINGLE_INCDIR}.
+                        You may need run `git submodule update --init --recursive`" )
+endif()
+
+# -----------------
 
 # -----------------
 # Boost Adjustments
@@ -399,6 +410,9 @@ set(util_src ParallelLibrary.cpp IteratorScheduler.cpp MPIPackBuffer.cpp
     ReducedBasis.cpp spectral_diffusion.cpp nested_sampling.cpp
     predator_prey.cpp bayes_calibration_utils.cpp EvaluationStore.cpp
     DakotaTPLDataTransfer.cpp RestartVersion.cpp tolerance_intervals.cpp
+    ParametersFileWriter.cpp ApreproParametersFileWriter.cpp StandardParametersFileWriter.cpp
+    JSONParametersFileWriter.cpp ResultsFileReader.cpp StandardResultsFileReader.cpp
+    JSONResultsFileReader.cpp JSONResultsParser.cpp
     )
 
 if(DAKOTA_HAVE_HDF5)

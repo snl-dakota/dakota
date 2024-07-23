@@ -1,0 +1,30 @@
+Blurb::
+Use the JSON format for parameters files
+
+Description::
+
+When this keyword is used, parameters files will be written in JSON 
+format, which is explained :ref:`here <variables:parameters:json>`.
+JSON format files can be decoded by many programming languages,
+which may make them easier to work with than standard or APREPRO
+format parameters files.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    interface
+      fork
+      analysis_drivers 'driver.py'
+      parameters_file = "params.in"
+      results_file = "results.out"
+      parameters_format
+        json
+
+Theory::
+
+Faq::
+
+See_Also::

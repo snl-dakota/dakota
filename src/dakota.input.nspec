@@ -7304,10 +7304,22 @@ KEYWORD interface {N_ifm3(start,0,stop)}
     ( system {N_ifm(type,interfaceType_SYSTEM_INTERFACE)}
       [ parameters_file STRING {N_ifm(str,parametersFile)} ]
       [ results_file STRING {N_ifm(str,resultsFile)} ]
+      [ parameters_format {N_ifm(type,parametersFileFormat_PARAMETERS_FILE_STANDARD)}
+        standard {N_ifm(type,parametersFileFormat_PARAMETERS_FILE_STANDARD)}
+        |
+        aprepro {N_ifm(type,parametersFileFormat_PARAMETERS_FILE_APREPRO)}
+        |
+        json {N_ifm(type,parametersFileFormat_PARAMETERS_FILE_JSON)}
+       ]
+      [ results_format {N_ifm(type,resultsFileFormat_RESULTS_FILE_STANDARD)}
+        ( standard {N_ifm(type,resultsFileFormat_RESULTS_FILE_STANDARD)}
+          [ labeled {N_ifm(true,dakotaResultsFileLabeled)} ]
+         )
+        |
+        json {N_ifm(type,resultsFileFormat_RESULTS_FILE_JSON)}
+       ]
       [ file_tag {N_ifm(true,fileTagFlag)} ]
       [ file_save {N_ifm(true,fileSaveFlag)} ]
-      [ labeled {N_ifm(type,resultsFileFormat_LABELED_RESULTS)} ]
-      [ aprepro ALIAS dprepro {N_ifm(true,apreproFlag)} ]
       [ work_directory {N_ifm(true,useWorkdir)}
         [ named STRING {N_ifm(str,workDir)} ]
         [ directory_tag ALIAS dir_tag {N_ifm(true,dirTag)} ]
@@ -7323,10 +7335,22 @@ KEYWORD interface {N_ifm3(start,0,stop)}
     ( fork {N_ifm(type,interfaceType_FORK_INTERFACE)}
       [ parameters_file STRING {N_ifm(str,parametersFile)} ]
       [ results_file STRING {N_ifm(str,resultsFile)} ]
+      [ parameters_format {N_ifm(type,parametersFileFormat_PARAMETERS_FILE_STANDARD)}
+        standard {N_ifm(type,parametersFileFormat_PARAMETERS_FILE_STANDARD)}
+        |
+        aprepro {N_ifm(type,parametersFileFormat_PARAMETERS_FILE_APREPRO)}
+        |
+        json {N_ifm(type,parametersFileFormat_PARAMETERS_FILE_JSON)}
+       ]
+      [ results_format {N_ifm(type,resultsFileFormat_RESULTS_FILE_STANDARD)}
+        ( standard {N_ifm(type,resultsFileFormat_RESULTS_FILE_STANDARD)}
+          [ labeled {N_ifm(true,dakotaResultsFileLabeled)} ]
+         )
+        |
+        json {N_ifm(type,resultsFileFormat_RESULTS_FILE_JSON)}
+       ]
       [ file_tag {N_ifm(true,fileTagFlag)} ]
       [ file_save {N_ifm(true,fileSaveFlag)} ]
-      [ labeled {N_ifm(type,resultsFileFormat_LABELED_RESULTS)} ]
-      [ aprepro ALIAS dprepro {N_ifm(true,apreproFlag)} ]
       [ work_directory {N_ifm(true,useWorkdir)}
         [ named STRING {N_ifm(str,workDir)} ]
         [ directory_tag ALIAS dir_tag {N_ifm(true,dirTag)} ]

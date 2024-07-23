@@ -21,12 +21,17 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/array.hpp>
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
 
 static const char rcsId[]="@(#) $Id: DakotaVariables.cpp 7037 2010-10-23 01:18:08Z mseldre $";
 
 BOOST_CLASS_EXPORT(Dakota::Variables)
 
 namespace Dakota {
+
+
 
 
 /** This constructor is the one which must build the base class data for all
@@ -565,6 +570,16 @@ void Variables::write_aprepro(std::ostream& s) const
   }
 }
 
+void Variables::write_json(json& s) const
+{
+  if (variablesRep)
+    variablesRep->write_json(s); // envelope fwd to letter
+  else { // letter lacking redefinition of virtual fn.!
+    Cerr << "Error: Letter lacking redefinition of virtual write_json "
+	 << "function.\nNo default defined at base class." << std::endl;
+    abort_handler(-1);
+  }
+}
 
 void Variables::read_annotated(std::istream& s)
 {

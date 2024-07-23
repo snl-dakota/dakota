@@ -7,6 +7,7 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
+#include <nlohmann/json.hpp>
 #include "RelaxedVariables.hpp"
 #include "ProblemDescDB.hpp"
 #include "dakota_data_io.hpp"
@@ -14,6 +15,7 @@
 
 static const char rcsId[]="@(#) $Id";
 
+using json = nlohmann::json;
 
 namespace Dakota {
 
@@ -158,6 +160,9 @@ void RelaxedVariables::write(std::ostream& s, unsigned short vars_part) const
 void RelaxedVariables::write_aprepro(std::ostream& s) const
 { write_core(s, ApreproWriter(), ALL_VARS); }
 
+//TEMP EMILIANO
+void RelaxedVariables::write_json(json& s) const
+{ write_core(s, JSONWriter(), ALL_VARS); }
 
 void RelaxedVariables::
 write_tabular(std::ostream& s, unsigned short vars_part) const
@@ -347,8 +352,8 @@ void RelaxedVariables::read_core(std::istream& s, Reader read_handler,
       read_handler(s, adrv_offset++, len, allDiscreteRealVars, adrv_labels);
 }
 
-template<typename Writer>
-void RelaxedVariables::write_core(std::ostream& s, Writer write_handler, 
+template<typename Writer, typename Stream>
+void RelaxedVariables::write_core(Stream& s, Writer write_handler, 
                                   unsigned short vars_part) const
 {
   SizetArray vc_totals;
@@ -454,9 +459,9 @@ void RelaxedVariables::write_core(std::ostream& s, Writer write_handler,
 }
 
 
-template<typename Writer>
+template<typename Writer, typename Stream>
 bool RelaxedVariables::
-write_partial_core(std::ostream& s, Writer write_handler, size_t start_index,
+write_partial_core(Stream& s, Writer write_handler, size_t start_index,
 		   size_t end_index, size_t& acv_offset, size_t& adiv_offset,
 		   size_t& adsv_offset, size_t& adrv_offset, size_t& av_cntr,
 		   size_t num_cv, size_t num_div, size_t num_dsv,

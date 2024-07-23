@@ -127,12 +127,12 @@ public:
   /// analysis_drivers/input_filter/output_filter syntax (from the \c
   /// verbatim specification in \ref InterfApplicSC and \ref InterfApplicF)
   bool verbatimFlag;
-  /// flag for aprepro format usage in the parameters file for
-  /// system call and fork interfaces (from the \c aprepro
-  /// specification in \ref InterfApplicSC and \ref InterfApplicF)
-  bool apreproFlag;
   /// Expected format of results file
   unsigned short resultsFileFormat;
+  /// Parameters file format
+  unsigned short parametersFileFormat;
+  /// Require responses to be labeled
+  bool dakotaResultsFileLabeled;
   /// flag for file tagging of parameters and results files for
   /// system call and fork interfaces (from the \c file_tag
   /// specification in \ref InterfApplicSC and \ref InterfApplicF)

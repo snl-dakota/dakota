@@ -96,7 +96,7 @@ interface                                 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s
 #    direct				                        #s8,#s9
 #      parameters_file=        'tb.in'    #s1,#s3,#s5,#s7
 #      results_file=           'tb.out'	  #s1,#s3,#s5,#s7
-       labeled                            #s0,#s1,#s2,#s3
+       results_format standard labeled      #s0,#s1,#s2,#s3
 #      file_tag				                    #s3,#s7
 #  asynchronous			                      #s2,#s3,#s6,#s7
 

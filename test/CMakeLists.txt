@@ -22,6 +22,7 @@ set(dakota_test_configured_inputs
   dakota_batch
   dakota_workdir
   dakota_workdir_windows
+  dakota_json_io
   )
 
 include_directories(
