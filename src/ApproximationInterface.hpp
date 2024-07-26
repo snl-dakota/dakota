@@ -60,6 +60,9 @@ protected:
   virtual Approximation& function_surface(size_t);
   virtual const Approximation& function_surface(size_t) const;
 
+  /// return surface field component for response index
+  virtual int field_component(size_t fn_index) const;
+
   virtual size_t num_function_surfaces() const;
 
   /// the function evaluator: provides an approximate "mapping" from
@@ -286,6 +289,8 @@ inline Approximation& ApproximationInterface::function_surface(size_t index)
 inline const Approximation& ApproximationInterface::function_surface(size_t index) const
 { return functionSurfaces[index]; }
 
+inline int ApproximationInterface::field_component(size_t fn_index) const
+{ return 0; }
 
 inline size_t ApproximationInterface::num_function_surfaces() const
 { return functionSurfaces.size(); }

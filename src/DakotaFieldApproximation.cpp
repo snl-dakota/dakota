@@ -98,10 +98,10 @@ FieldApproximation::~FieldApproximation()
 /** This is the common base class portion of the virtual fn and is
     insufficient on its own; derived implementations should explicitly
     invoke (or reimplement) this base class contribution. */
-void FieldApproximation::build()
+void FieldApproximation::build(int num_resp)
 {
   if (approxRep)
-    approxRep->build();
+    approxRep->build(num_resp);
   else { // default is only a data check; augmented/replaced by derived class
     check_points(approxData.points());
   }

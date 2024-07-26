@@ -250,11 +250,21 @@ map(const Variables& vars, const ActiveSet& set, Response& response,
     //bool approx_offset_len = (approxOffset.length()) ? true : false;
     for (it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
       fn_index = *it;
+      Approximation & approx = function_surface(fn_index);
       if (core_asv[fn_index] & 1) {
-	Real approx_fn = function_surface(fn_index).value(surf_vars);
-	//if (approx_scale_len)  fn_val *= approxScale[fn_index];
-	//if (approx_offset_len) fn_val += approxOffset[fn_index];
-	core_response.function_value(approx_fn, fn_index);
+        if( 1 == approx.num_components() ) {
+          Real approx_fn = function_surface(fn_index).value(surf_vars);
+          //if (approx_scale_len)  fn_val *= approxScale[fn_index];
+          //if (approx_offset_len) fn_val += approxOffset[fn_index];
+          core_response.function_value(approx_fn, fn_index);
+        }
+        else {
+          RealVector approx_fns = function_surface(fn_index).values(surf_vars);
+          for (size_t c=0; c<approx.num_components(); ++c) {
+            Real approx_fn = approx_fns[c];
+            core_response.function_value(approx_fn, fn_index+c);
+          }
+        }
       }
       if (core_asv[fn_index] & 2) {
 	const RealVector& approx_grad
@@ -279,6 +289,9 @@ map(const Variables& vars, const ActiveSet& set, Response& response,
 	core_response.function_hessian(approx_hess, fn_index,
 				       assign_indices, curr_indices);
       }
+      // Handle indexing for fields
+      for (size_t c=0; c<approx.num_components()-1; ++c)
+        ++it;
     }
   }
 
@@ -616,9 +629,10 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
   for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     size_t fn_index = *it;
     // construct the approximation
-    function_surface(fn_index).build();
+    if( 0 == field_component(fn_index) )
+        function_surface(fn_index).build(num_function_surfaces());
 
-    // manage diagnostics
+    // manage diagnostics - TODO fix for fields - RWH
     if (function_surface(fn_index).diagnostics_available()) {
       // print default or user-requested metrics and cross-validation
       function_surface(fn_index).primary_diagnostics(fn_index);
@@ -829,7 +843,7 @@ shallow_add(const Variables& vars, const IntResponsePair& response_pr,
       if (asv[i]) { // vars,resp copy = shallow,shallow
 	// mapping required for advanced cases, such as recursive emulation
 	qoi_set_to_key_index(qoi_set, key_index);
-	fn_surf.add(vars, false, resp, i, false, anchor, eval_id, key_index);
+        fn_surf.add(vars, false, resp, i, false, anchor, eval_id, key_index);
       }
   }
 }

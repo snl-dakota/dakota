@@ -233,10 +233,10 @@ Approximation::~Approximation()
 /** This is the common base class portion of the virtual fn and is
     insufficient on its own; derived implementations should explicitly
     invoke (or reimplement) this base class contribution. */
-void Approximation::build()
+void Approximation::build(int num_resp)
 {
   if (approxRep)
-    approxRep->build();
+    approxRep->build(num_resp);
   else { // default is only a data check; augmented/replaced by derived class
     check_points(approxData.points());
 
@@ -416,6 +416,31 @@ Real Approximation::value(const Variables& vars)
   }
 
   return approxRep->value(vars);
+}
+
+
+
+RealVector Approximation::values(const RealVector& c_vars)
+{
+  if (!approxRep) {
+    Cerr << "Error: values() not available for this approximation type."
+	 << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->values(c_vars);
+}
+
+
+RealVector Approximation::values(const Variables& vars)
+{
+  if (!approxRep) {
+    Cerr << "Error: values() not available for this approximation type."
+	 << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->values(vars);
 }
 
 

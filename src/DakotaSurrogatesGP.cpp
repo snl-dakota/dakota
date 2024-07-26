@@ -127,7 +127,7 @@ SurrogatesGPApprox::min_coefficients() const
 
 
 void
-SurrogatesGPApprox::build()
+SurrogatesGPApprox::build(int num_resp)
 {
   // clear any imported model mapping
   modelIsImported = false;

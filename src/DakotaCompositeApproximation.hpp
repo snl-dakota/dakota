@@ -46,7 +46,7 @@ public:
     { return 0; }
 
   /// builds the approximation from scratch
-  void build() override;
+  void build(int num_resp) override;
 
 protected:
 

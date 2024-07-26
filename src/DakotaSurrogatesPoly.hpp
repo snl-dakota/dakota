@@ -43,7 +43,7 @@ protected:
   int min_coefficients() const override;
 
   ///  Do the build
-  void build() override;
+  void build(int num_resp) override;
 
 };
 

@@ -46,6 +46,10 @@ protected:
   Approximation& function_surface(size_t) override;
   const Approximation& function_surface(size_t) const override;
 
+  /// return surface field component for resppnse index
+  int field_component(size_t fn_index) const override
+  { return fn2SurfaceComponentMap.at(fn_index); }
+
   size_t num_function_surfaces() const override
   { return numSurfaces; }
 

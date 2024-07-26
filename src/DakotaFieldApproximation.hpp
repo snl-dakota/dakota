@@ -47,7 +47,11 @@ public:
   virtual ~FieldApproximation();
 
   /// builds the approximation from scratch
-  void build() override;
+  void build(int num_resp) override;
+
+  /// return the number of approximation components
+  size_t num_components() const override
+  { return numComponents; }
 
   /// set active field component
   void active_component(int comp)

@@ -68,7 +68,7 @@ public:
   virtual void clear_model_keys();
 
   /// builds the approximation from scratch
-  virtual void build();
+  virtual void build(int num_resp=1);
   /// exports the approximation; if export_format > NO_MODEL_FORMAT,
   /// uses all 3 parameters, otherwise extracts these from the
   /// Approximation's sharedDataRep to build a filename
@@ -111,6 +111,8 @@ public:
 
   /// retrieve the approximate function value for a given parameter vector
   virtual Real value(const Variables& vars);
+  /// retrieve the approximate function values for a given parameter vector
+  virtual RealVector values(const Variables& vars);
   /// retrieve the approximate function gradient for a given parameter vector
   virtual const RealVector& gradient(const Variables& vars);
   /// retrieve the approximate function Hessian for a given parameter vector
@@ -120,6 +122,8 @@ public:
     
   /// retrieve the approximate function value for a given parameter vector
   virtual Real value(const RealVector& c_vars);
+  /// retrieve the approximate function value for a given parameter vector
+  virtual RealVector values(const RealVector& c_vars);
   /// retrieve the approximate function gradient for a given parameter vector
   virtual const RealVector& gradient(const RealVector& c_vars);
   /// retrieve the approximate function Hessian for a given parameter vector
@@ -241,6 +245,9 @@ public:
 
   /// return the number of constraints to be enforced via an anchor point
   virtual int num_constraints() const;
+
+  /// return the number of approximation components (1 for scalars)
+  virtual size_t num_components() const;
 
   /* *** Additions for C3 ***
   /// clear current build data in preparation for next build
@@ -639,6 +646,13 @@ inline void Approximation::check_points(size_t num_build_pts)
 	 << num_build_pts << " samples were provided." << std::endl;
     abort_handler(APPROX_ERROR);
   }
+}
+
+
+inline size_t Approximation::num_components() const
+{ 
+  if (approxRep) return approxRep->num_components();
+  else return 1;
 }
 
 

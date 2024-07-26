@@ -84,7 +84,7 @@ SurrogatesPythonApprox::min_coefficients() const
 }
 
 void
-SurrogatesPythonApprox::build()
+SurrogatesPythonApprox::build(int num_resp)
 {
   // clear any imported model mapping
   modelIsImported = false;
@@ -92,7 +92,7 @@ SurrogatesPythonApprox::build()
     varsMapIndices.clear();
 
   MatrixXd vars, resp;
-  convert_surrogate_data(vars, resp);
+  convert_surrogate_data(vars, resp, num_resp);
 
   // construct the surrogate
   model.reset(new dakota::surrogates::Python(vars, resp, moduleFile));

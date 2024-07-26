@@ -55,7 +55,7 @@ SurrogatesBaseApprox(const SharedApproxData& shared_data):
 
 
 bool SurrogatesBaseApprox::diagnostics_available()
-{ return true; }
+{ return false; }
 
 
 Real SurrogatesBaseApprox::diagnostic(const String& metric_type)
@@ -174,7 +174,7 @@ dakota::ParameterList& SurrogatesBaseApprox::getSurrogateOpts()
 
 
 void
-SurrogatesBaseApprox::convert_surrogate_data(MatrixXd& vars, MatrixXd& resp)
+SurrogatesBaseApprox::convert_surrogate_data(MatrixXd& vars, MatrixXd& resp, int num_resp)
 {
   size_t num_v = sharedDataRep->numVars;
   int num_qoi             = 1; // only using 1 for now
@@ -183,22 +183,27 @@ SurrogatesBaseApprox::convert_surrogate_data(MatrixXd& vars, MatrixXd& resp)
   const Pecos::SDVArray& sdv_array = approx_data.variables_data();
   const Pecos::SDRArray& sdr_array = approx_data.response_data();
 
-  int num_pts = approx_data.points();
+  int num_pts = approx_data.points()/num_resp;
 
   // num_samples x num_features
   vars.resize(num_pts, num_v);
-  // num_samples x num_qoi
-  resp.resize(num_pts, num_qoi);
+  // num_samples x num_resp
+  resp.resize(num_pts, num_resp);
 
   // gymnastics since underlying merge_data_partial is strongly typed
   // and can't pass an Eigen type
   RealArray x(num_v);
+  RealArray r(num_resp);
   Eigen::Map<VectorXd> x_eig(x.data(), num_v);
+  Eigen::Map<VectorXd> r_eig(r.data(), num_resp);
   for (size_t i=0; i<num_pts; ++i) {
     std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
-      sdv_to_realarray(sdv_array[i], x);
+      sdv_to_realarray(sdv_array[i*num_resp], x);
     vars.row(i) = x_eig;
-    resp(i,0) = sdr_array[i].response_function();
+    //resp(i,0) = sdr_array[i].response_function();
+    for (int j=0; j<num_resp; ++j)
+      r_eig(j) = sdr_array[i*num_resp+j].response_function();
+    resp.row(i) = r_eig;
   }
 }
 
@@ -206,6 +211,12 @@ SurrogatesBaseApprox::convert_surrogate_data(MatrixXd& vars, MatrixXd& resp)
 Real SurrogatesBaseApprox::value(const Variables& vars)
 {
   return value(map_eval_vars(vars));
+}
+
+
+RealVector SurrogatesBaseApprox::values(const Variables& vars)
+{
+  return values(map_eval_vars(vars));
 }
 
 
@@ -241,6 +252,25 @@ SurrogatesBaseApprox::value(const RealVector& c_vars)
 
   Eigen::Map<Eigen::RowVectorXd> eval_point(c_vars.values(), c_vars.length());
   return model->value(eval_point)(0);
+}
+    
+RealVector
+SurrogatesBaseApprox::values(const RealVector& c_vars)
+{
+  if (!model) {
+    Cerr << "Error: surface is null in SurrogatesBaseApprox::values()"
+	 << std::endl;
+    abort_handler(-1);
+  }
+
+  Eigen::Map<Eigen::RowVectorXd> eval_point(c_vars.values(), c_vars.length());
+  VectorXd vals = model->value(eval_point);
+
+  RealVector ret_vals(vals.size());
+  for (size_t j = 0; j < vals.size(); j++)
+    ret_vals[j] = vals(j);
+
+  return ret_vals;
 }
     
 const RealVector& SurrogatesBaseApprox::gradient(const RealVector& c_vars)

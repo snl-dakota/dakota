@@ -132,7 +132,27 @@ VectorXd Python::value(const MatrixXd& eval_points,
   const std::string fn_name("predict");
   py::object py_surr_eval = pySurrogate.attr(fn_name.c_str());
 
-  return py_surr_eval(eval_points).cast<VectorXd>();
+  auto vals = py_surr_eval(eval_points).cast<MatrixXd>();
+  std::cout << vals << std::endl;
+
+  return vals;//.col(0);
+  //return py_surr_eval(eval_points).cast<VectorXd>();
+}
+
+
+VectorXd Python::value(const MatrixXd& eval_points) {
+  assert( pyModuleActive );
+  assert( Py_IsInitialized() );
+
+  // Hard-coded method for now; could expose to user - RWH
+  const std::string fn_name("predict");
+  py::object py_surr_eval = pySurrogate.attr(fn_name.c_str());
+
+  auto vals = py_surr_eval(eval_points).cast<MatrixXd>();
+  std::cout << vals << std::endl;
+
+  return vals.row(0);
+  //return py_surr_eval(eval_points).cast<VectorXd>();
 }
 
 

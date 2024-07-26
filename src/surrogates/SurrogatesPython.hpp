@@ -87,9 +87,7 @@ class Python : public Surrogate {
    * by num_features). \returns Values of the python surrogate at the
    * prediction points - (num_pts)
    */
-  VectorXd value(const MatrixXd& eval_points) {
-    return Surrogate::value(eval_points);
-  }
+  VectorXd value(const MatrixXd& eval_points) override;
 
   /**
    *  \brief Evaluate the gradient of the python surrogate at a set of

@@ -71,13 +71,17 @@ public:
 protected:
 
   /// convert Pecos surrogate data to reshaped Eigen vars/resp matrices
-  void convert_surrogate_data(dakota::MatrixXd& vars, dakota::MatrixXd& resp);
+  void convert_surrogate_data(dakota::MatrixXd& vars, dakota::MatrixXd& resp, int num_resp=1);
 
   Real value(const Variables& vars) override;
+
+  RealVector values(const Variables& vars) override;
 
   const RealVector& gradient(const Variables& vars) override;
 
   Real value(const RealVector& c_vars) override;
+
+  RealVector values(const RealVector& c_vars) override;
 
   const RealVector& gradient(const RealVector& c_vars) override;
 

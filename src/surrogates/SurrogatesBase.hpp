@@ -90,7 +90,7 @@ class Surrogate {
    * 0. \param[in] eval_points Vector of prediction points - (num_features).
    *  \returns Values of the Surrogate at the prediction points - (num_pts).
    */
-  VectorXd value(const MatrixXd& eval_points) { return value(eval_points, 0); }
+  virtual VectorXd value(const MatrixXd& eval_points) { return value(eval_points, 0); }
 
   /**
    *  \brief Evaluate the gradient of the Surrogate at a set of prediction

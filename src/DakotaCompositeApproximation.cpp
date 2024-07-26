@@ -32,7 +32,7 @@ CompositeApproximation::value(const Variables& vars)
 }
 
 void 
-CompositeApproximation::build()
+CompositeApproximation::build(int num_resp)
 {
   return approximations[activeComponent]->build();
 }
