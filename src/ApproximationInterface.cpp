@@ -630,7 +630,7 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
     size_t fn_index = *it;
     // construct the approximation
     if( 0 == field_component(fn_index) )
-        function_surface(fn_index).build(num_function_surfaces());
+        function_surface(fn_index).build(function_surface(fn_index).num_components());
 
     // manage diagnostics - TODO fix for fields - RWH
     if (function_surface(fn_index).diagnostics_available()) {
