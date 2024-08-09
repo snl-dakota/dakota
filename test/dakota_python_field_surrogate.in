@@ -14,7 +14,7 @@ method,
         model_pointer = 'SURR'
         sampling,
         sample_type lhs
-          samples = 5
+          samples = 100
           seed = 98765
           #response_levels = 0.1 1.0 10.0 100.0
           #distribution cumulative
@@ -34,7 +34,7 @@ method,
         model_pointer = 'DACE_M'
         sampling
           sample_type lhs
-          samples = 10
+          samples = 100
           seed = 5034
 model,
         id_model = 'DACE_M'
