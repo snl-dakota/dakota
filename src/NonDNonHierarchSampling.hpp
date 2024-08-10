@@ -638,6 +638,9 @@ protected:
   void inflate(const RealVector& avg_eval_ratios, RealMatrix& eval_ratios);
   /// promote scalar to column vector
   void inflate(Real r_i, size_t num_rows, Real* eval_ratios_col);
+  /// promote active vector subset to full vector based on mask
+  void inflate(const RealVector& vec, const BitArray& mask,
+	       RealVector& inflated_vec);
 
   /// compute a penalty merit function after an optimization solve
   Real nh_penalty_merit(const RealVector& c_vars, const RealVector& fn_vals);
@@ -1819,6 +1822,21 @@ inflate(Real r_i, size_t num_rows, Real* eval_ratios_col)
   // inflate scalar to column vector
   for (size_t row=0; row<num_rows; ++row)
     eval_ratios_col[row] = r_i;
+}
+
+
+inline void NonDNonHierarchSampling::
+inflate(const RealVector& vec, const BitArray& mask, RealVector& inflated_vec)
+{
+  if (mask.empty())
+    copy_data(vec, inflated_vec);
+  else {
+    size_t i, cntr = 0, inflated_len = mask.size();
+    inflated_vec.size(inflated_len); // init to 0
+    for (i=0; i<inflated_len; ++i)
+      if (mask[i])
+	inflated_vec[i] = vec[cntr++];
+  }
 }
 
 } // namespace Dakota

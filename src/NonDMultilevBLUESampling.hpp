@@ -106,9 +106,6 @@ protected:
 
   void estimator_variance(const RealVector& cd_vars, RealVector& estvar);
 
-  /// prune modelGroups down to subset with best conditioned group covariances
-  void prune_model_groups();
-
   void process_group_solution(MFSolutionData& soln,
 			      const Sizet2DArray& N_G_actual,
 			      const SizetArray& N_G_alloc,
@@ -215,6 +212,17 @@ private:
 					     const SizetArray& ratios_to_groups,
 					     RealVector& soln_vars);
 
+  /// return size of active subset of modelGroups defined by retainedModelGroups
+  size_t num_active_groups() const;
+  /// map group indexing from active (soln vars) to all (modelGroups),
+  /// if needed due to retainedModelGroups
+  size_t active_to_all_group(size_t active_index) const;
+  /// map group indexing from all (modelGroups) to active (soln vars),
+  /// if needed due to retainedModelGroups
+  size_t all_to_active_group(size_t all_index)    const;
+  /// prune modelGroups down to subset with best conditioned group covariances
+  void prune_model_groups();
+
   void add_sub_matrix(Real coeff, const RealSymMatrix& sub_mat,
 		      const UShortArray& subset, RealSymMatrix& mat);
   void add_sub_matvec(const RealSymMatrix& sub_mat, const RealMatrix& sub_mat2,
@@ -275,6 +283,8 @@ private:
   Real rCondTolThrottle;
   /// map from rcond to group number: pick the first rCondBestThrottle groups
   std::multimap<Real, size_t> groupCovCondMap;
+  /// runtime group throttling due to covariance conditioning
+  BitArray retainedModelGroups;
 
   /// counter for successful sample accumulations, per group and per QoI
   Sizet2DArray NGroupActual;
@@ -294,6 +304,44 @@ private:
   /// reference value: projected HF samples
   SizetVector projNActualHF;
 };
+
+
+inline size_t NonDMultilevBLUESampling::num_active_groups() const
+{
+  if (retainedModelGroups.empty()) return modelGroups.size();
+  else                             return retainedModelGroups.count();
+}
+
+
+inline size_t NonDMultilevBLUESampling::
+active_to_all_group(size_t active_index) const
+{
+  if (retainedModelGroups.empty()) return active_index;
+  else {
+    size_t cntr = 0, g, num_groups = retainedModelGroups.size();
+    for (g=0; g<num_groups; ++g)
+      if (retainedModelGroups[g]) {
+	if (cntr == active_index) return g;
+	else                      ++cntr;
+      }
+  }
+  return _NPOS;
+}
+
+
+inline size_t NonDMultilevBLUESampling::
+all_to_active_group(size_t all_index) const
+{
+  if      ( retainedModelGroups.empty()   ) return all_index;
+  else if (!retainedModelGroups[all_index]) return _NPOS;
+  else {
+    size_t g, cntr = 0;
+    for (g=0; g<all_index; ++g)
+      if (retainedModelGroups[g])
+	++cntr;
+    return cntr;
+  }
+}
 
 
 inline Real NonDMultilevBLUESampling::estimator_accuracy_metric()
