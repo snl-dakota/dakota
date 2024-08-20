@@ -39,7 +39,7 @@ dakota_add_unit_test(NAME surrogates_eval_metrics_cross_val
 if(DAKOTA_PYTHON_SURROGATES)
   add_test(NAME surrogates_python
     COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_surrogate.py
-    $<TARGET_FILE_DIR:surrogates>
+    $<TARGET_FILE_DIR:dak_surrogates>
     )
   set_tests_properties(surrogates_python PROPERTIES LABELS Unit)
 
