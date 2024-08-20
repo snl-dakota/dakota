@@ -641,6 +641,9 @@ protected:
   /// promote active vector subset to full vector based on mask
   void inflate(const RealVector& vec, const BitArray& mask,
 	       RealVector& inflated_vec);
+  /// demote full vector to active subset based on mask
+  void deflate(const RealVector& vec, const BitArray& mask,
+	       RealVector& deflated_vec);
 
   /// compute a penalty merit function after an optimization solve
   Real nh_penalty_merit(const RealVector& c_vars, const RealVector& fn_vals);
@@ -1335,14 +1338,16 @@ enforce_bounds(RealVector& x0, const RealVector& x_lb, const RealVector& x_ub)
 {
   size_t i, len = x0.length();
   if (x_lb.length() != len || x_ub.length() != len) {
-    Cerr << "Error: inconsistent bound sizes in enforce_bounds()." << std::endl;
+    Cerr << "Error: inconsistent bound sizes in enforce_bounds(): (0,l,u) = ("
+	 << len << "," << x_lb.length() << "," << x_ub.length() << ")."
+	 << std::endl;
     abort_handler(METHOD_ERROR);
   }
   for (i=0; i<len; ++i) {
     Real x_lb_i = x_lb[i], x_ub_i = x_ub[i];
     if (x_lb_i > x_ub_i) {
-      Cerr << "Error: inconsistent bound values in enforce_bounds()."
-	   << std::endl;
+      Cerr << "Error: inconsistent bound values in enforce_bounds(): (l,u) = ("
+	   << x_lb_i << "," << x_ub_i << ")." << std::endl;
       abort_handler(METHOD_ERROR);
     }
     Real& x0_i = x0[i];
@@ -1836,6 +1841,21 @@ inflate(const RealVector& vec, const BitArray& mask, RealVector& inflated_vec)
     for (i=0; i<inflated_len; ++i)
       if (mask[i])
 	inflated_vec[i] = vec[cntr++];
+  }
+}
+
+
+inline void NonDNonHierarchSampling::
+deflate(const RealVector& vec, const BitArray& mask, RealVector& deflated_vec)
+{
+  if (mask.empty())
+    copy_data(vec, deflated_vec);
+  else {
+    size_t i, cntr = 0, len = vec.length(), deflate_len = mask.count();
+    deflated_vec.sizeUninitialized(deflate_len); // init to 0
+    for (i=0; i<len; ++i)
+      if (mask[i])
+	deflated_vec[cntr++] = vec[i];
   }
 }
 

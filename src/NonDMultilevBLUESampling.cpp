@@ -590,7 +590,10 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     }
   }
   enforce_nudge(x_lb); // nudge away from 0 if needed
-  x0 = (soln_vars.empty()) ? x_lb : soln_vars;
+  if (soln_vars.empty()) x0 = x_lb;
+  else if (soln_vars.length() != num_v)
+    deflate(soln_vars, retainedModelGroups, x0);
+  else                   x0 = soln_vars;
   // x0 can undershoot x_lb if an OFFLINE mode, but enforce generally
   enforce_bounds(x0, x_lb, x_ub);
 
@@ -1605,7 +1608,7 @@ compute_C_inverse(const RealSymMatrix& cov_GG_gq, RealSymMatrix& cov_GG_inv_gq,
     */
 
     // Rely on SVD (full or pseudo-inverse as dictated by singular vals)
-    RealMatrix A, A_inv;  Real rcond;
+    RealMatrix A, A_inv;
     copy_data(cov_GG_gq, A);         // RealSymMatrix to RealMatrix
     pseudo_inverse(A, A_inv, rcond);
     copy_data(A_inv, cov_GG_inv_gq); // RealMatrix to RealSymMatrix
@@ -1757,16 +1760,25 @@ void NonDMultilevBLUESampling::prune_model_groups()
   std::multimap<Real, size_t>::iterator rc_it = groupCovCondMap.begin();
   std::advance(rc_it, skip_front);
 
+  for (std::multimap<Real, size_t>::iterator it=groupCovCondMap.begin();
+       it != rc_it; ++it)
+    Cout << "Discard: rcond = "<< it->first<< " group = "<<it->second << '\n';
+
   if (retainedModelGroups.size() != numGroups)
     retainedModelGroups.resize(numGroups);
   retainedModelGroups.reset();
-  for (; rc_it!=groupCovCondMap.end(); ++rc_it)
+  for (; rc_it!=groupCovCondMap.end(); ++rc_it) {
+    Cout << "Retain: rcond = " << rc_it->first << " group = "
+         << rc_it->second << '\n';
     retainedModelGroups.set(rc_it->second);
+  }
   // TO DO: currently allowing all_group to be pruned, which is Ok for cov_GG
-  if (outputLevel >= DEBUG_OUTPUT)
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Cout << "Retained group count = " << retainedModelGroups.count() << '\n';
     for (g=0; g<numGroups; ++g)
       if (retainedModelGroups[g])
 	Cout << "Remaining group " << g << ":\n" << modelGroups[g];
+  }
 
   // leave numGroups synchronized with modelGroups and retrieve active count
   // using num_active_groups()
