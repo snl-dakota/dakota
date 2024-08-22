@@ -796,13 +796,13 @@ analytic_initialization_from_mfmc(const RealMatrix& rho2_LH,
   // pilot on MFMC groups, but deduct pilot cost for non-MFMC groups
   SizetArray ratios_to_groups(numApprox+1);  UShortArray group;  size_t g_index;
   BitArray active_groups(numGroups); // init to off
-  bool no_covar_throttle = retainedModelGroups.empty();
+  bool no_retain_throttle = retainedModelGroups.empty();
   for (size_t r=0; r<=numApprox; ++r) {
     mfmc_model_group(r, group); // the r-th MFMC group
     ratios_to_groups[r] = g_index = find_index(modelGroups, group);
     // group is present within pre- and post-covariance throttling
     if ( g_index != _NPOS &&
-	 ( no_covar_throttle || retainedModelGroups[g_index]) )
+	 ( no_retain_throttle || retainedModelGroups[g_index]) )
       active_groups.set(g_index);
   }
   analytic_ratios_to_solution_variables(avg_eval_ratios, ratios_to_groups,
@@ -828,13 +828,13 @@ analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
   // pilot on MFMC groups, but deduct pilot cost for non-MFMC groups
   SizetArray ratios_to_groups(numApprox+1);  UShortArray group;  size_t g_index;
   BitArray active_groups(numGroups); // init to off
-  bool no_covar_throttle = retainedModelGroups.empty();
+  bool no_retain_throttle = retainedModelGroups.empty();
   for (size_t r=0; r<=numApprox; ++r) {
     cvmc_model_group(r, group); // the r-th CVMC group
     ratios_to_groups[r] = g_index = find_index(modelGroups, group);
     // group is present within constructor-based and post-covariance throttling
     if ( g_index != _NPOS &&
-	 ( no_covar_throttle || retainedModelGroups[g_index]) )
+	 ( no_retain_throttle || retainedModelGroups[g_index]) )
       active_groups.set(g_index);
   }
   analytic_ratios_to_solution_variables(avg_eval_ratios, ratios_to_groups,
@@ -1031,9 +1031,10 @@ print_group_solution_variables(std::ostream& s, const MFSolutionData& soln)
 {
   const RealVector& soln_vars = soln.solution_variables();
   size_t g, num_g = modelGroups.size(), cntr = 0;
+  bool no_retain_throttle = retainedModelGroups.empty();
   s << "Numerical solution for samples per model group:\n";
   for (g=0; g<num_g; ++g) {
-    if (retainedModelGroups.empty() || retainedModelGroups[g]) {
+    if (no_retain_throttle || retainedModelGroups[g]) {
       s << "  Group " << g << " samples = " << soln_vars[cntr++];
       print_group(s, g);
     }

@@ -643,10 +643,11 @@ compute_Psi(const RealSymMatrix2DArray& cov_GG_inv, const RealVector& cdv,
   initialize_rsma(Psi);
 
   size_t qoi, g, num_groups = modelGroups.size(), v_index = 0;
+  bool no_retain_throttle = retainedModelGroups.empty();
   for (g=0; g<num_groups; ++g) {
     // In the context of numerical optimization, we should not need to protect
     // cov_GG_inv against n_g = 0.
-    if (retainedModelGroups.empty() || retainedModelGroups[g]) {
+    if (no_retain_throttle || retainedModelGroups[g]) {
       Real v_i = cdv[v_index++];
       if (v_i > 0.) {
 	const UShortArray&            models_g = modelGroups[g];
@@ -672,8 +673,9 @@ compute_Psi(const RealSymMatrix2DArray& cov_GG_inv, const Sizet2DArray& N_G,
   initialize_rsma(Psi);
 
   size_t qoi, g, num_groups = modelGroups.size();
+  bool no_retain_throttle = retainedModelGroups.empty();
   for (g=0; g<num_groups; ++g) {
-    if (retainedModelGroups.empty() || retainedModelGroups[g]) {
+    if (no_retain_throttle || retainedModelGroups[g]) {
       const SizetArray&                  N_g =         N_G[g];
       const UShortArray&            models_g = modelGroups[g];
       const RealSymMatrixArray& cov_GG_inv_g =  cov_GG_inv[g];
