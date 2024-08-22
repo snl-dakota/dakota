@@ -1191,14 +1191,6 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   }
   // x0 can undershoot x_lb if an OFFLINE mode, but enforce generally
   enforce_bounds(x0, x_lb, x_ub);
-
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "Numerical solve (initial, lb, ub):\n" << x0 << x_lb << x_ub
-	 << "Numerical solve (lin ineq lb, ub):\n" << lin_ineq_lb << lin_ineq_ub
-       //<< lin_eq_tgt
-	 << "Numerical solve (nln ineq lb, ub):\n" << nln_ineq_lb << nln_ineq_ub
-       //<< nln_eq_tgt << lin_ineq_coeffs << lin_eq_coeffs
-	 << std::endl;
 }
 
 

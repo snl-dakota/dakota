@@ -525,11 +525,14 @@ protected:
   //void process_group_solution(MFSolutionData& soln, SizetArray& delta_N);
 
   void configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
-			    RealVector& lin_ineq_lb, RealVector& lin_ineq_ub,
-			    RealVector& lin_eq_tgt,  RealVector& nln_ineq_lb,
-			    RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
-			    RealMatrix& lin_ineq_coeffs,
-			    RealMatrix& lin_eq_coeffs);
+			    const RealVector& lin_ineq_lb,
+			    const RealVector& lin_ineq_ub,
+			    const RealVector& lin_eq_tgt,
+			    const RealVector& nln_ineq_lb,
+			    const RealVector& nln_ineq_ub,
+			    const RealVector& nln_eq_tgt,
+			    const RealMatrix& lin_ineq_coeffs,
+			    const RealMatrix& lin_eq_coeffs);
   void run_minimizers(MFSolutionData& soln);
 
   void root_reverse_dag_to_group(unsigned short root, const UShortSet& rev_dag,
@@ -643,6 +646,9 @@ protected:
 	       RealVector& inflated_vec);
   /// demote full vector to active subset based on mask
   void deflate(const RealVector& vec, const BitArray& mask,
+	       RealVector& deflated_vec);
+  /// demote full vector to active subset based on mask
+  void deflate(const SizetArray& vec, const BitArray& mask,
 	       RealVector& deflated_vec);
 
   /// compute a penalty merit function after an optimization solve
@@ -1856,6 +1862,21 @@ deflate(const RealVector& vec, const BitArray& mask, RealVector& deflated_vec)
     for (i=0; i<len; ++i)
       if (mask[i])
 	deflated_vec[cntr++] = vec[i];
+  }
+}
+
+
+inline void NonDNonHierarchSampling::
+deflate(const SizetArray& vec, const BitArray& mask, RealVector& deflated_vec)
+{
+  if (mask.empty())
+    copy_data(vec, deflated_vec);
+  else {
+    size_t i, cntr = 0, len = vec.size(), deflate_len = mask.count();
+    deflated_vec.sizeUninitialized(deflate_len); // init to 0
+    for (i=0; i<len; ++i)
+      if (mask[i])
+	deflated_vec[cntr++] = (Real)vec[i];
   }
 }
 

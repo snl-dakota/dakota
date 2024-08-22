@@ -617,14 +617,6 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     nln_ineq_ub = std::log(convergenceTol * average(estVarIter0));
     break;
   }
-
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "Numerical solve (initial, lb, ub):\n" << x0 << x_lb << x_ub
-	 << "Numerical solve (lin ineq lb, ub):\n" << lin_ineq_lb << lin_ineq_ub
-       //<< lin_eq_tgt
-	 << "Numerical solve (nln ineq lb, ub):\n" << nln_ineq_lb << nln_ineq_ub
-       //<< nln_eq_tgt << lin_ineq_coeffs << lin_eq_coeffs
-	 << std::endl;
 }
 
 
@@ -719,7 +711,11 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
     no_solve = (budget_exhausted || convergenceTol >= 1.); // bypass opt solve
 
   if (mlmfIter == 0) {
-    soln.solution_variables(pilotSamples);
+    if (retainedModelGroups.empty()) soln.solution_variables(pilotSamples);
+    else {
+      RealVector x0; deflate(pilotSamples, retainedModelGroups, x0);
+      soln.solution_variables(x0);
+    }
     bool online = (pilotMgmtMode == ONLINE_PILOT ||
 		   pilotMgmtMode == ONLINE_PILOT_PROJECTION);
     if (online) // cache reference estVarIter0
@@ -1034,11 +1030,13 @@ void NonDMultilevBLUESampling::
 print_group_solution_variables(std::ostream& s, const MFSolutionData& soln)
 {
   const RealVector& soln_vars = soln.solution_variables();
-  size_t i, num_v = soln_vars.length();
+  size_t g, num_g = modelGroups.size(), cntr = 0;
   s << "Numerical solution for samples per model group:\n";
-  for (i=0; i<num_v; ++i) {
-    s << "  Group " << i << " samples = " << soln_vars[i];
-    print_group(s, i);
+  for (g=0; g<num_g; ++g) {
+    if (retainedModelGroups.empty() || retainedModelGroups[g]) {
+      s << "  Group " << g << " samples = " << soln_vars[cntr++];
+      print_group(s, g);
+    }
   }
 }
 
@@ -1411,8 +1409,7 @@ compute_GG_covariance(const RealMatrixArray& sum_G,
     Cout << "In compute_GG_covariance(), cov_GG:\n" << cov_GG
 	 << "cov_GG inverse:\n" << cov_GG_inv << std::endl;
 
-  if (rcond_throttle)
-    prune_model_groups(); // redefined from scratch on each call
+  prune_model_groups(); // redefined from scratch on each call
 }
 
 
@@ -1470,9 +1467,7 @@ compute_GG_covariance(const RealMatrix& sum_G_g,
     Cout << "In compute_GG_covariance(), cov_GG:\n" << cov_GG
 	 << "cov_GG inverse:\n" << cov_GG_inv << std::endl;
 
-  if (groupThrottleType == RCOND_TOLERANCE_THROTTLE ||
-      groupThrottleType == RCOND_BEST_COUNT_THROTTLE)
-    prune_model_groups(); // redefined from scratch on each call
+  prune_model_groups(); // redefined from scratch on each call
 }
 
 
@@ -1748,34 +1743,63 @@ estimator_variance(const RealVector& cd_vars, RealVector& estvar)
 
 void NonDMultilevBLUESampling::prune_model_groups()
 {
-  // *** TO DO: tolerance throttle
-
-  if (numGroups <= rCondBestThrottle) return;
-
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "Pruning model groups from " << numGroups << " to best "
-	 << rCondBestThrottle << " based on group covariance conditioning.\n";
-
-  size_t g, keep_g, skip_front = numGroups - rCondBestThrottle;
-  std::multimap<Real, size_t>::iterator rc_it = groupCovCondMap.begin();
-  std::advance(rc_it, skip_front);
-
-  for (std::multimap<Real, size_t>::iterator it=groupCovCondMap.begin();
-       it != rc_it; ++it)
-    Cout << "Discard: rcond = "<< it->first<< " group = "<<it->second << '\n';
+  if (groupThrottleType != RCOND_BEST_COUNT_THROTTLE &&
+      groupThrottleType != RCOND_TOLERANCE_THROTTLE )
+    { retainedModelGroups.clear(); return; }
 
   if (retainedModelGroups.size() != numGroups)
     retainedModelGroups.resize(numGroups);
   retainedModelGroups.reset();
-  for (; rc_it!=groupCovCondMap.end(); ++rc_it) {
-    Cout << "Retain: rcond = " << rc_it->first << " group = "
-         << rc_it->second << '\n';
-    retainedModelGroups.set(rc_it->second);
+  std::multimap<Real, size_t>::iterator rc_it = groupCovCondMap.begin();
+
+  switch (groupThrottleType) {
+  case RCOND_BEST_COUNT_THROTTLE: {
+    if (numGroups <= rCondBestThrottle) return;
+    Cout << "Pruning model groups from " << numGroups << " to best "
+	 << rCondBestThrottle << " based on group covariance conditioning.\n";
+
+    size_t skip_front = numGroups - rCondBestThrottle;
+    std::advance(rc_it, skip_front);
+
+    if (outputLevel >= DEBUG_OUTPUT)
+      for (std::multimap<Real, size_t>::iterator it=groupCovCondMap.begin();
+	   it != rc_it; ++it)
+	Cout << "Discard: rcond = "<< it->first<< " group = "<<it->second<<'\n';
+
+    for (; rc_it!=groupCovCondMap.end(); ++rc_it) {
+      if (outputLevel >= DEBUG_OUTPUT)
+	Cout << "Retain: rcond = " << rc_it->first << " group = "
+	     << rc_it->second << '\n';
+      retainedModelGroups.set(rc_it->second);
+    }
+    break;
   }
+  case RCOND_TOLERANCE_THROTTLE:
+    Cout << "Pruning model groups based on rcond tolerance = "
+	 << rCondTolThrottle << " for group covariances.\n";
+
+    for (; rc_it!=groupCovCondMap.end(); ++rc_it)
+      if (rc_it->first < rCondTolThrottle) {
+	if (outputLevel >= DEBUG_OUTPUT)
+	  Cout << "Discard: rcond = " << rc_it->first << " group = "
+	       << rc_it->second << '\n';
+      }
+      else break; // out of for loop
+
+    for (; rc_it!=groupCovCondMap.end(); ++rc_it) {
+      if (outputLevel >= DEBUG_OUTPUT)
+	Cout << "Retain: rcond = " << rc_it->first << " group = "
+	     << rc_it->second << '\n';
+      retainedModelGroups.set(rc_it->second);
+    }
+    break;
+  }
+
   // TO DO: currently allowing all_group to be pruned, which is Ok for cov_GG
+  // TO DO: number of remaining groups may exceed max for global opt --> modify method as needed.
   if (outputLevel >= DEBUG_OUTPUT) {
     Cout << "Retained group count = " << retainedModelGroups.count() << '\n';
-    for (g=0; g<numGroups; ++g)
+    for (size_t g=0; g<numGroups; ++g)
       if (retainedModelGroups[g])
 	Cout << "Remaining group " << g << ":\n" << modelGroups[g];
   }

@@ -881,15 +881,15 @@ void copy_data(const Teuchos::SerialDenseVector<OrdinalType, ScalarType1>& sdv,
 
 /// copy Array<ScalarType> to
 /// Teuchos::SerialDenseVector<OrdinalType, ScalarType> - used by NOWPACOptimizer - MSE
-template <typename OrdinalType, typename ScalarType> 
-void copy_data(const std::vector<ScalarType>& da,
-	       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& sdv)
+template <typename OrdinalType, typename ScalarType1, typename ScalarType2> 
+void copy_data(const std::vector<ScalarType1>& vec,
+	       Teuchos::SerialDenseVector<OrdinalType, ScalarType2>& sdv)
 {
- size_t size_da = da.size();
- if (sdv.length() != size_da)
-   sdv.sizeUninitialized(size_da);
- for (OrdinalType i=0; i<size_da; ++i)
-   sdv[i] = da[i];
+ size_t size_vec = vec.size();
+ if (size_vec != sdv.length())
+   sdv.sizeUninitialized(size_vec);
+ for (OrdinalType i=0; i<size_vec; ++i)
+   sdv[i] = (ScalarType2)vec[i];
 }
 
 /// copy ScalarType* to Teuchos::SerialDenseVector<OrdinalType, ScalarType> - used by ScalingModel::response_modify_n2s - RWH
