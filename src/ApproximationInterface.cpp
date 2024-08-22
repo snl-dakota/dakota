@@ -629,8 +629,10 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
   for (StSIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     size_t fn_index = *it;
     // construct the approximation
-    if( 0 == field_component(fn_index) )
-        function_surface(fn_index).build(function_surface(fn_index).num_components());
+    if( function_surface(fn_index).num_components() > 1 )
+      function_surface(fn_index).build(function_surface(fn_index).num_components());
+    else
+      function_surface(fn_index).build();
 
     // manage diagnostics - TODO fix for fields - RWH
     if (function_surface(fn_index).diagnostics_available()) {

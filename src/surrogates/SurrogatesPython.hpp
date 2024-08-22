@@ -63,6 +63,9 @@ class Python : public Surrogate {
     return initialize_python();
   }
 
+  // Allow disabling for field surrogates for now - RWH
+  virtual bool diagnostics_available() override;
+
   /**
    * \brief Build the python surrogate using specified build data.
    *
@@ -148,6 +151,9 @@ class Python : public Surrogate {
 
   /// python Surrogate class
   py::object pySurrogate;
+
+  /// flag for field-based surrogates
+  bool isField;
 
 
   // -------------------------------------------------

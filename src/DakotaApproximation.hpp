@@ -68,7 +68,11 @@ public:
   virtual void clear_model_keys();
 
   /// builds the approximation from scratch
-  virtual void build(int num_resp=1);
+  virtual void build();
+
+  /// overloaded build to support field-based approximations; builds from scratch
+  virtual void build(int num_resp);
+
   /// exports the approximation; if export_format > NO_MODEL_FORMAT,
   /// uses all 3 parameters, otherwise extracts these from the
   /// Approximation's sharedDataRep to build a filename

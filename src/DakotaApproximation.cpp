@@ -233,10 +233,10 @@ Approximation::~Approximation()
 /** This is the common base class portion of the virtual fn and is
     insufficient on its own; derived implementations should explicitly
     invoke (or reimplement) this base class contribution. */
-void Approximation::build(int num_resp)
+void Approximation::build()
 {
   if (approxRep)
-    approxRep->build(num_resp);
+    approxRep->build();
   else { // default is only a data check; augmented/replaced by derived class
     check_points(approxData.points());
 
@@ -246,6 +246,18 @@ void Approximation::build(int num_resp)
     //size_t i, num_checks = embedded_keys.size();
     //for (i=0; i<num_checks; ++i)
     //  check_points(approxData.points(embedded_keys[i]));
+  }
+}
+
+/** This is the field-based common base class portion of the virtual fn and is
+    insufficient on its own; derived implementations should explicitly
+    invoke (or reimplement) this base class contribution. */
+void Approximation::build(int num_resp)
+{
+  if (approxRep)
+    approxRep->build(num_resp);
+  else { // default is only a data check; augmented/replaced by derived class
+    check_points(approxData.points());
   }
 }
 

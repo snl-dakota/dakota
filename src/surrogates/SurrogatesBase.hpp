@@ -86,8 +86,8 @@ class Surrogate {
   virtual VectorXd value(const MatrixXd& eval_points, const int qoi) = 0;
 
   /**
-   *  \brief Evaluate the Surrogate at a set of prediction points for QoI index
-   * 0. \param[in] eval_points Vector of prediction points - (num_features).
+   *  \brief Evaluate the Surrogate at a set of prediction points for all QoIs.
+   *  \param[in] eval_points Vector of prediction points - (num_features).
    *  \returns Values of the Surrogate at the prediction points - (num_pts).
    */
   virtual VectorXd value(const MatrixXd& eval_points) { return value(eval_points, 0); }
@@ -204,6 +204,11 @@ class Surrogate {
 
   // also demo load via ctor
   //  Surrogate(infile, binary)
+
+  // Allow diagnostics enable/disable
+  virtual bool diagnostics_available() {
+    return true;
+  }
 
   /// Evalute metrics at specified points (within surrogates)
   VectorXd evaluate_metrics(const StringArray& mnames, const MatrixXd& points,

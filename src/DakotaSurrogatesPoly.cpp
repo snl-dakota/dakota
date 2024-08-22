@@ -63,7 +63,7 @@ SurrogatesPolyApprox::min_coefficients() const
 }
 
 void
-SurrogatesPolyApprox::build(int num_resp)
+SurrogatesPolyApprox::build()
 {
   // clear any imported model mapping
   modelIsImported = false;

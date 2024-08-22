@@ -67,7 +67,7 @@ protected:
 
   /// SurfData object will be created from Dakota's SurrogateData,
   /// and the appropriate Surfpack build method will be invoked
-  void build(int num_resp) override;
+  void build() override;
 
 
   /// validate imported labels and initialize map if needed

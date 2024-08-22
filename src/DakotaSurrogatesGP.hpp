@@ -45,7 +45,7 @@ protected:
   int min_coefficients() const override;
 
   ///  Do the build
-  void build(int num_resp) override;
+  void build() override;
 
   Real prediction_variance(const Variables& vars) override;
 

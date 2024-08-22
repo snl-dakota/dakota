@@ -46,7 +46,10 @@ protected:
   // Minimum number of data points required to build
   int min_coefficients() const override;
 
-  ///  Do the build
+  ///  Do the build - scalar version
+  void build() override;
+
+  ///  Do the build - field version
   void build(int num_resp) override;
 
   /// Python module filename

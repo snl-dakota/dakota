@@ -55,7 +55,7 @@ SurrogatesBaseApprox(const SharedApproxData& shared_data):
 
 
 bool SurrogatesBaseApprox::diagnostics_available()
-{ return false; }
+{ return model->diagnostics_available(); }
 
 
 Real SurrogatesBaseApprox::diagnostic(const String& metric_type)
@@ -251,7 +251,7 @@ SurrogatesBaseApprox::value(const RealVector& c_vars)
   }
 
   Eigen::Map<Eigen::RowVectorXd> eval_point(c_vars.values(), c_vars.length());
-  return model->value(eval_point)(0);
+  return model->value(eval_point, 0)(0);
 }
     
 RealVector

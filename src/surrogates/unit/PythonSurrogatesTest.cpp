@@ -37,7 +37,7 @@ void PythonRegressionSurrogate_straight_line_fit() {
   VectorXd expected_vals = 1.23*eval_pts;
   expected_vals = (expected_vals.array() + 2.0).matrix();
 
-  VectorXd approx_values = pr.value(eval_pts, /* qoi */ 0);
+  VectorXd approx_values = pr.value(eval_pts, 0);
   //std::cout << "approx_values: " << approx_values << std::endl;
   //std::cout << "expected_vals: " << expected_vals << std::endl;
 

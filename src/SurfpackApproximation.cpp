@@ -365,7 +365,7 @@ int SurfpackApproximation::recommended_coefficients() const
 }
 
 
-void SurfpackApproximation::build(int num_resp)
+void SurfpackApproximation::build()
 {
   // base class implementation checks data set against min required
   Approximation::build();

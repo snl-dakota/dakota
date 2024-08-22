@@ -80,7 +80,7 @@ VectorXd Surrogate::evaluate_metrics(const StringArray& mnames,
   VectorXd metrics(num_metrics);
 
   for (int m = 0; m < num_metrics; m++) {
-    surr_values = this->value(points);
+    surr_values = this->value(points,0);
     metrics(m) =
         util::compute_metric(surr_values, ref_values.col(0), mnames[m]);
   }
