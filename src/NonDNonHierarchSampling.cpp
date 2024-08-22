@@ -1975,6 +1975,8 @@ linear_model_cost_gradient(const RealVector& N_vec, RealVector& grad_c)
 
 Real NonDNonHierarchSampling::linear_group_cost(const RealVector& N_g)
 {
+  // default version for case where retainedModelGroups is undefined
+
   // linear objective: N + Sum(w_i N_i) / w
   Real lin_obj = 0.;
   for (size_t i=0; i<numGroups; ++i)
@@ -1989,6 +1991,8 @@ Real NonDNonHierarchSampling::linear_group_cost(const RealVector& N_g)
 void NonDNonHierarchSampling::
 linear_group_cost_gradient(const RealVector& N_vec, RealVector& grad_c)
 {
+  // default version for case where retainedModelGroups is undefined
+
   Real cost_H = sequenceCost[numApprox];
   for (size_t i=0; i<numGroups; ++i)
     grad_c[i] = modelGroupCost[i] / cost_H;

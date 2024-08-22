@@ -66,6 +66,9 @@ protected:
   void derived_finite_solution_bounds(const RealVector& x0, RealVector& x_lb,
 				      RealVector& x_ub, Real budget);
 
+  Real linear_group_cost(const RealVector& cdv);
+  void linear_group_cost_gradient(const RealVector& cdv, RealVector& grad_c);
+
   void apply_mc_reference(RealVector& mc_targets);
 
   void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
@@ -607,6 +610,38 @@ initialize_rva(RealVectorArray& rva, bool init)
   else if (init)
     for (size_t qoi=0; qoi<numFunctions; ++qoi)
       rva[qoi].putScalar(0.);
+}
+
+
+inline Real NonDMultilevBLUESampling::linear_group_cost(const RealVector& cdv)
+{
+  if (retainedModelGroups.empty())
+    return NonDNonHierarchSampling::linear_group_cost(cdv);
+
+  // linear objective: N + Sum(w_i N_i) / w
+  Real lin_obj = 0.;  size_t i, cntr = 0;
+  for (i=0; i<numGroups; ++i)
+    if (retainedModelGroups[i])
+      lin_obj += modelGroupCost[i] * cdv[cntr++]; // Sum(w_i N_i)
+  lin_obj /= sequenceCost[numApprox];// N + Sum / w
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "linear group cost = " << lin_obj << std::endl;
+  return lin_obj;
+}
+
+
+inline void NonDMultilevBLUESampling::
+linear_group_cost_gradient(const RealVector& cdv, RealVector& grad_c)
+{
+  if (retainedModelGroups.empty())
+    NonDNonHierarchSampling::linear_group_cost_gradient(cdv, grad_c);
+
+  Real cost_H = sequenceCost[numApprox];  size_t i, cntr = 0;
+  for (i=0; i<numGroups; ++i)
+    if (retainedModelGroups[i])
+      grad_c[cntr++] = modelGroupCost[i] / cost_H;
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "linear group cost gradient:\n" << grad_c << std::endl;
 }
 
 
