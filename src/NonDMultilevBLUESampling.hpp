@@ -636,24 +636,26 @@ compute_C_inverse(const RealSymMatrix2DArray& cov_GG,
 /** This version used during numerical solution (1D vector of real
     design variables for group samples. */
 inline void NonDMultilevBLUESampling::
-compute_Psi(const RealSymMatrix2DArray& cov_GG_inv, const RealVector& N_G,
+compute_Psi(const RealSymMatrix2DArray& cov_GG_inv, const RealVector& cdv,
 	    RealSymMatrixArray& Psi)
 {
   // Psi accumulated across groups and sized according to full model ensemble
   initialize_rsma(Psi);
 
-  size_t qoi, g, num_groups = modelGroups.size();
+  size_t qoi, g, num_groups = modelGroups.size(), v_index = 0;
   for (g=0; g<num_groups; ++g) {
     // In the context of numerical optimization, we should not need to protect
     // cov_GG_inv against n_g = 0.
-    Real N_g = N_G[g];
-    if (N_g > 0.) {
-      const UShortArray&            models_g = modelGroups[g];
-      const RealSymMatrixArray& cov_GG_inv_g =  cov_GG_inv[g];
-      for (qoi=0; qoi<numFunctions; ++qoi) {
-	const RealSymMatrix& cov_GG_inv_gq = cov_GG_inv_g[qoi];
-	if (!cov_GG_inv_gq.empty())
-	  add_sub_matrix(N_g, cov_GG_inv_gq, models_g, Psi[qoi]); // *** can become indefinite here when N_g --> 0, which depends on online/offline pilot integration strategy
+    if (retainedModelGroups.empty() || retainedModelGroups[g]) {
+      Real v_i = cdv[v_index++];
+      if (v_i > 0.) {
+	const UShortArray&            models_g = modelGroups[g];
+	const RealSymMatrixArray& cov_GG_inv_g =  cov_GG_inv[g];
+	for (qoi=0; qoi<numFunctions; ++qoi) {
+	  const RealSymMatrix& cov_GG_inv_gq = cov_GG_inv_g[qoi];
+	  if (!cov_GG_inv_gq.empty())
+	    add_sub_matrix(v_i, cov_GG_inv_gq, models_g, Psi[qoi]); // *** can become indefinite here when N_g --> 0, which depends on online/offline pilot integration strategy
+	}
       }
     }
   }
@@ -671,14 +673,16 @@ compute_Psi(const RealSymMatrix2DArray& cov_GG_inv, const Sizet2DArray& N_G,
 
   size_t qoi, g, num_groups = modelGroups.size();
   for (g=0; g<num_groups; ++g) {
-    const SizetArray&                  N_g =         N_G[g];
-    const UShortArray&            models_g = modelGroups[g];
-    const RealSymMatrixArray& cov_GG_inv_g =  cov_GG_inv[g];
-    for (qoi=0; qoi<numFunctions; ++qoi) {
-      const RealSymMatrix& cov_GG_inv_gq = cov_GG_inv_g[qoi];
-      size_t N_gq = N_g[qoi];
-      if (N_gq && !cov_GG_inv_gq.empty())
-	add_sub_matrix((Real)N_gq, cov_GG_inv_gq, models_g, Psi[qoi]); // *** can become indefinite here when N_gq --> 0, which depends on online/offline pilot integration strategy
+    if (retainedModelGroups.empty() || retainedModelGroups[g]) {
+      const SizetArray&                  N_g =         N_G[g];
+      const UShortArray&            models_g = modelGroups[g];
+      const RealSymMatrixArray& cov_GG_inv_g =  cov_GG_inv[g];
+      for (qoi=0; qoi<numFunctions; ++qoi) {
+	const RealSymMatrix& cov_GG_inv_gq = cov_GG_inv_g[qoi];
+	size_t N_gq = N_g[qoi];
+	if (N_gq && !cov_GG_inv_gq.empty())
+	  add_sub_matrix((Real)N_gq, cov_GG_inv_gq, models_g, Psi[qoi]); // *** can become indefinite here when N_gq --> 0, which depends on online/offline pilot integration strategy
+      }
     }
   }
   // Add \delta I (Schaden & Ullmann, 2020)
