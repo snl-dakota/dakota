@@ -794,19 +794,15 @@ analytic_initialization_from_mfmc(const RealMatrix& rho2_LH,
 
   // Convert to BLUE solution using MFMC "groups": let profile emerge from
   // pilot on MFMC groups, but deduct pilot cost for non-MFMC groups
-  SizetArray ratios_to_groups(numApprox+1);  UShortArray group;  size_t g_index;
-  BitArray active_groups(numGroups); // init to off
+  SizetArray ratios_to_groups(numApprox+1); UShortArray group; size_t g_index;
   bool no_retain_throttle = retainedModelGroups.empty();
   for (size_t r=0; r<=numApprox; ++r) {
     mfmc_model_group(r, group); // the r-th MFMC group
-    ratios_to_groups[r] = g_index = find_index(modelGroups, group);
-    // group is present within pre- and post-covariance throttling
-    if ( g_index != _NPOS &&
-	 ( no_retain_throttle || retainedModelGroups[g_index]) )
-      active_groups.set(g_index);
+    g_index = find_index(modelGroups, group);
+    ratios_to_groups[r] = (no_retain_throttle || retainedModelGroups[g_index])
+                        ? g_index : _NPOS;
   }
-  analytic_ratios_to_solution_variables(avg_eval_ratios, ratios_to_groups,
-					active_groups, soln);
+  analytic_ratios_to_solution_variables(avg_eval_ratios,ratios_to_groups,soln);
 }
 
 
@@ -827,25 +823,20 @@ analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
   // Convert to BLUE solution using MFMC "groups": let profile emerge from
   // pilot on MFMC groups, but deduct pilot cost for non-MFMC groups
   SizetArray ratios_to_groups(numApprox+1);  UShortArray group;  size_t g_index;
-  BitArray active_groups(numGroups); // init to off
   bool no_retain_throttle = retainedModelGroups.empty();
   for (size_t r=0; r<=numApprox; ++r) {
     cvmc_model_group(r, group); // the r-th CVMC group
-    ratios_to_groups[r] = g_index = find_index(modelGroups, group);
-    // group is present within constructor-based and post-covariance throttling
-    if ( g_index != _NPOS &&
-	 ( no_retain_throttle || retainedModelGroups[g_index]) )
-      active_groups.set(g_index);
+    g_index = find_index(modelGroups, group);
+    ratios_to_groups[r] = (no_retain_throttle || retainedModelGroups[g_index])
+                        ? g_index : _NPOS;
   }
-  analytic_ratios_to_solution_variables(avg_eval_ratios, ratios_to_groups,
-					active_groups, soln);
+  analytic_ratios_to_solution_variables(avg_eval_ratios,ratios_to_groups,soln);
 }
 
 
 void NonDMultilevBLUESampling::
 analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
 				      const SizetArray& ratios_to_groups,
-				      const BitArray& active_groups,
 				      MFSolutionData& soln)
 {
   // For analytic MFMC/CVMC initial guesses, the best ref for avg_eval_ratios
@@ -877,10 +868,18 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
   }
   else {
     Real remaining = (Real)maxFunctionEvals, cost_H = sequenceCost[numApprox];
-    if (!offline && pilotGroupSampling != SHARED_PILOT)
-      for (size_t g=0; g<numGroups; ++g)
-	if (!active_groups[g])
+    if (!offline && pilotGroupSampling != SHARED_PILOT) {
+      BitArray inactive(numGroups);  inactive.set();
+      size_t g, r, num_r = ratios_to_groups.size(); // numApprox+1
+      for (r=0; r<num_r; ++r) {
+	g = ratios_to_groups[r];
+	if (g != _NPOS)
+	  inactive.reset(g);
+      }
+      for (g=0; g<numGroups; ++g)
+	if (inactive[g])
 	  remaining -= pilotSamples[g] * modelGroupCost[g] / cost_H;
+    }
     if (remaining > 0.)
       // scale_to_target() employs allocate_budget() and rescales for lower bnds
       scale_to_target(N_sh, sequenceCost, avg_eval_ratios, avg_hf_target,
@@ -928,31 +927,24 @@ analytic_ratios_to_solution_variables(const RealVector& avg_eval_ratios,
     // last group = all models is always present in modelGroups,
     // but may be omitted due to active group throttling
     size_t all_group = numGroups - 1;
-    v = all_to_active_group(all_group);
-    if (ratios_to_groups[all_group] != _NPOS &&// for completeness (always incl)
-	v != _NPOS)                            // not throttled due to C_k rcond
+    v = all_to_active_group(all_group); // group g -> active v
+    if (v != _NPOS)
       soln_vars[v] = (Real)pilotSamples[all_group]; // likely overwritten
   }
   else // INDEPENDENT_PILOT
     for (v=0; v<num_v; ++v) {
-      g = active_to_all_group(v);
+      g = active_to_all_group(v);       // active v -> group g
       soln_vars[v] = (g == _NPOS) ? 0. : (Real)pilotSamples[g];
     }
 
   // Define soln_vars for active groups using avg_{eval_ratios,hf_target}
-  for (r=0; r<num_r; ++r) {
-    g_index = ratios_to_groups[r];
+  for (r=0; r<=num_r; ++r) {
+    g_index = ratios_to_groups[r];      // eval ratio r -> group g
     if (g_index != _NPOS) {
-      v = all_to_active_group(g_index);
-      if (v != _NPOS)
-	soln_vars[v] = avg_eval_ratios[r] * avg_hf_target;
+      v = all_to_active_group(g_index); // group g -> active v
+      soln_vars[v] = (r < num_r) ? avg_hf_target * avg_eval_ratios[r]
+	                         : avg_hf_target;
     }
-  }
-  g_index = ratios_to_groups[num_r]; // shared sample group
-  if (g_index != _NPOS) {
-    v = all_to_active_group(g_index);
-    if (v != _NPOS)
-      soln_vars[v] = avg_hf_target;
   }
 }
 
@@ -1728,7 +1720,7 @@ estimator_variance(const RealVector& cd_vars, RealVector& estvar)
 	   << estvar[q] << std::endl;
   }
 
-  // *** TO DO: now that we have good performance locked in, revisit this flow:
+  // Revisit this flow:
   // should be able to equilibrate and factor each Psi once within a SpdSolver
   // that persists, then solve to refined solution for each estvar and mu-hat.
 

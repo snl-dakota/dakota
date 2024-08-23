@@ -208,7 +208,6 @@ private:
 
   void analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
 					     const SizetArray& ratios_to_groups,
-					     const BitArray& active_groups,
 					     MFSolutionData& soln);
   void analytic_ratios_to_solution_variables(const RealVector& avg_eval_ratios,
 					     Real avg_hf_target,
