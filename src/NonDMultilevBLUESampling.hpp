@@ -66,6 +66,9 @@ protected:
   void derived_finite_solution_bounds(const RealVector& x0, RealVector& x_lb,
 				      RealVector& x_ub, Real budget);
 
+  Real linear_group_cost(const RealVector& cdv);
+  void linear_group_cost_gradient(const RealVector& cdv, RealVector& grad_c);
+
   void apply_mc_reference(RealVector& mc_targets);
 
   void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
@@ -80,8 +83,9 @@ protected:
   //- Heading: member functions
   //
 
-  int  compute_C_inverse(const RealSymMatrix& cov_GG_gq,
-			 RealSymMatrix& cov_GG_inv_gq);
+  void compute_C_inverse(const RealSymMatrix& cov_GG_gq,
+			 RealSymMatrix& cov_GG_inv_gq,
+			 size_t group, size_t qoi, Real& rcond);
   void compute_C_inverse(const RealSymMatrix2DArray& cov_GG,
 			 RealSymMatrix2DArray& cov_GG_inv);
   void compute_Psi(const RealSymMatrix2DArray& cov_GG_inv,
@@ -151,6 +155,13 @@ private:
   void increment_allocations(const MFSolutionData& soln, SizetArray& N_G_alloc,
 			     const SizetArray& delta_N_G, size_t g);
 
+  /// find group and model indices for HF reference variance
+  void find_hf_sample_reference(const Sizet2DArray& N_G,  size_t& ref_group,
+				size_t& ref_model_index);
+  /// find group and model indices for HF reference variance
+  void find_hf_sample_reference(const SizetArray& N_G,  size_t& ref_group,
+				size_t& ref_model_index);
+
   void project_mc_estimator_variance(const RealSymMatrixArray& cov_GG_g,
 				     size_t H_index,
 				     const SizetArray& N_H_actual,
@@ -197,12 +208,22 @@ private:
 
   void analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
 					     const SizetArray& ratios_to_groups,
-					     const BitArray& active_groups,
 					     MFSolutionData& soln);
   void analytic_ratios_to_solution_variables(const RealVector& avg_eval_ratios,
 					     Real avg_hf_target,
 					     const SizetArray& ratios_to_groups,
 					     RealVector& soln_vars);
+
+  /// return size of active subset of modelGroups defined by retainedModelGroups
+  size_t num_active_groups() const;
+  /// map group indexing from active (soln vars) to all (modelGroups),
+  /// if needed due to retainedModelGroups
+  size_t active_to_all_group(size_t active_index) const;
+  /// map group indexing from all (modelGroups) to active (soln vars),
+  /// if needed due to retainedModelGroups
+  size_t all_to_active_group(size_t all_index)    const;
+  /// prune modelGroups down to subset with best conditioned group covariances
+  void prune_model_groups();
 
   void add_sub_matrix(Real coeff, const RealSymMatrix& sub_mat,
 		      const UShortArray& subset, RealSymMatrix& mat);
@@ -215,6 +236,7 @@ private:
   void initialize_rva(RealVectorArray& rva, bool init = true);
 
   void enforce_nudge(RealVector& x);
+  void enforce_diagonal_delta(RealSymMatrixArray& Psi);
 
   /*
   void compute_GG_statistics(RealMatrixArray& sum_G_pilot,
@@ -250,10 +272,21 @@ private:
 
   /// mode for pilot sampling: shared or independent
   short pilotGroupSampling;
+
   /// type of throttle for mitigating combinatorial growth in numGroups
   short groupThrottleType;
   /// group size threshold for groupThrottleType == GROUP_SIZE_THROTTLE
   unsigned short groupSizeThrottle;
+  /// throttle the number of groups to this count based on ranking by
+  /// condition number in group covariance
+  size_t rCondBestThrottle;
+  /// throttle the number of groups based on this tolerance for
+  /// condition number in group covariance
+  Real rCondTolThrottle;
+  /// map from rcond to group number: pick the first rCondBestThrottle groups
+  std::multimap<Real, size_t> groupCovCondMap;
+  /// runtime group throttling due to covariance conditioning
+  BitArray retainedModelGroups;
 
   /// counter for successful sample accumulations, per group and per QoI
   Sizet2DArray NGroupActual;
@@ -273,6 +306,44 @@ private:
   /// reference value: projected HF samples
   SizetVector projNActualHF;
 };
+
+
+inline size_t NonDMultilevBLUESampling::num_active_groups() const
+{
+  if (retainedModelGroups.empty()) return modelGroups.size();
+  else                             return retainedModelGroups.count();
+}
+
+
+inline size_t NonDMultilevBLUESampling::
+active_to_all_group(size_t active_index) const
+{
+  if (retainedModelGroups.empty()) return active_index;
+  else {
+    size_t cntr = 0, g, num_groups = retainedModelGroups.size();
+    for (g=0; g<num_groups; ++g)
+      if (retainedModelGroups[g]) {
+	if (cntr == active_index) return g;
+	else                      ++cntr;
+      }
+  }
+  return _NPOS;
+}
+
+
+inline size_t NonDMultilevBLUESampling::
+all_to_active_group(size_t all_index) const
+{
+  if      ( retainedModelGroups.empty()   ) return all_index;
+  else if (!retainedModelGroups[all_index]) return _NPOS;
+  else {
+    size_t g, cntr = 0;
+    for (g=0; g<all_index; ++g)
+      if (retainedModelGroups[g])
+	++cntr;
+    return cntr;
+  }
+}
 
 
 inline Real NonDMultilevBLUESampling::estimator_accuracy_metric()
@@ -341,6 +412,54 @@ increment_allocations(const MFSolutionData& soln, SizetArray& N_G_alloc,
 }
 
 
+inline void NonDMultilevBLUESampling::
+find_hf_sample_reference(const Sizet2DArray& N_G, size_t& ref_group,
+			 size_t& ref_model_index)
+{
+  ref_group = ref_model_index = SZ_MAX;
+  Real ref_samples = 0., group_samples;
+  size_t g, num_groups = modelGroups.size(), hf_index;
+  for (g=0; g<num_groups; ++g) {
+    hf_index = find_index(modelGroups[g], numApprox); // index of HF model
+    if (hf_index != _NPOS) { // HF model is present
+      group_samples = average(N_G[g]);
+      // Note: not protected from 1 sample -> Cov = nan from bessel corr
+      if (group_samples > ref_samples) {
+	ref_group   = g;  ref_model_index = hf_index;
+	ref_samples = group_samples;
+      }
+    }
+  }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "HF sample reference located in group " << ref_group
+	 << " at index " << ref_model_index << std::endl;
+}
+
+
+inline void NonDMultilevBLUESampling::
+find_hf_sample_reference(const SizetArray& N_G, size_t& ref_group,
+			 size_t& ref_model_index)
+{
+  ref_group = ref_model_index = SZ_MAX;
+  Real ref_samples = 0., group_samples;
+  size_t g, num_groups = modelGroups.size(), hf_index;
+  for (g=0; g<num_groups; ++g) {
+    hf_index = find_index(modelGroups[g], numApprox); // index of HF model
+    if (hf_index != _NPOS) { // HF model is present
+      group_samples = N_G[g];
+      // Note: not protected from 1 sample -> Cov = nan from bessel corr
+      if (group_samples > ref_samples) {
+	ref_group   = g;  ref_model_index = hf_index;
+	ref_samples = group_samples;
+      }
+    }
+  }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "HF sample reference located in group " << ref_group
+	 << " at index " << ref_model_index << std::endl;
+}
+
+
 inline void NonDMultilevBLUESampling::enforce_nudge(RealVector& x)
 {
   // Note: Using a numerical NUDGE is not essential since the group covariance
@@ -349,9 +468,25 @@ inline void NonDMultilevBLUESampling::enforce_nudge(RealVector& x)
   // a degree of hardening for extreme drop-out cases.
 
   size_t i, len = x.length();
+  Real lb = RATIO_NUDGE * std::sqrt(maxFunctionEvals); // hand-tuned heuristic
   for (i=0; i<len; ++i)
-    if (x[i] < RATIO_NUDGE)
-      x[i] = RATIO_NUDGE;
+    if (x[i] < lb)
+      x[i] = lb;
+}
+
+
+inline void NonDMultilevBLUESampling::
+enforce_diagonal_delta(RealSymMatrixArray& Psi)
+{
+  // This has not been as effective as enforce_nudge(), and is not as directly
+  // interpretable as lower-bounding of m_k
+
+  size_t i, j, num_rsm = Psi.size();  int n;  Real delta = RATIO_NUDGE;
+  for (i=0; i<num_rsm; ++i) {
+    RealSymMatrix& Psi_i = Psi[i];  n = Psi_i.numRows();
+    for (j=0; j<n; ++j)
+      Psi_i(n,n) += delta;
+  }
 }
 
 
@@ -477,49 +612,35 @@ initialize_rva(RealVectorArray& rva, bool init)
 }
 
 
-inline int NonDMultilevBLUESampling::
-compute_C_inverse(const RealSymMatrix& cov_GG_gq, RealSymMatrix& cov_GG_inv_gq)
+inline Real NonDMultilevBLUESampling::linear_group_cost(const RealVector& cdv)
 {
-  if (cov_GG_gq.empty()) // insufficient samples to define cov_GG
-    { cov_GG_inv_gq.shape(0); return 0; }
-  else {
-    /* This approach has not been effective for ill-conditioned cov_GG:
-    int r, nr = cov_GG_gq.numRows();
-    cov_GG_inv_gq.shape(nr);
-    RealSymMatrix A(cov_GG_gq);  RealMatrix X(nr, nr), B(nr, nr);
-    for (r=0; r<nr; ++r) B(r,r) = 1.; // identity
-    // Leverage both the soln refinement in solve() and equilibration during
-    // factorization (inverting C in place can only leverage the latter).
-    RealSpdSolver spd_solver;
-    spd_solver.setMatrix( Teuchos::rcp(&A,false));
-    spd_solver.setVectors(Teuchos::rcp(&X, false), Teuchos::rcp(&B, false));
-    if (spd_solver.shouldEquilibrate())
-      spd_solver.factorWithEquilibration(true);
-    spd_solver.solveToRefinedSolution(true);
-    int code = spd_solver.solve();
-    copy_data(X, cov_GG_inv_gq); // Dense to SymDense
-    return code;
-    */
+  if (retainedModelGroups.empty())
+    return NonDNonHierarchSampling::linear_group_cost(cdv);
 
-    cov_GG_inv_gq = cov_GG_gq; // copy for inversion in place
-    RealSpdSolver spd_solver;
-    spd_solver.setMatrix(Teuchos::rcp(&cov_GG_inv_gq, false));
-    // Equilibration scales the system to improve solution conditioning; it
-    // involves equilibrateMatrix() and equilibrateRHS() prior to solve,
-    // followed by unequilibrateLHS() after solve.  Here, we factor/invert C
-    // without equilibration as we assemble C-inverse into Psi without any
-    // solve(); otherwise C-inverse would be the inverse of the equilibrated
-    // matrix and there is no corresponding unequilibrate to use at that point.
-    // Downstream, solves using the assembled Psi are equilibrated as needed.
-    return spd_solver.invert(); // in place
+  // linear objective: N + Sum(w_i N_i) / w
+  Real lin_obj = 0.;  size_t i, cntr = 0;
+  for (i=0; i<numGroups; ++i)
+    if (retainedModelGroups[i])
+      lin_obj += modelGroupCost[i] * cdv[cntr++]; // Sum(w_i N_i)
+  lin_obj /= sequenceCost[numApprox];// N + Sum / w
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "linear group cost = " << lin_obj << std::endl;
+  return lin_obj;
+}
 
-    // Alternatives:
-    // > Moore-Penrose pseudo-inv: SVD with truncation of small EVs --> review use of symmetric_eigenvalue_decomposition() in NonDBayesCalibration::get_positive_definite_covariance_from_hessian() --> deploy for both C and Psi
-    // > SDP solvers (helps with Psi solve, but issues with forming Psi from C-inverse remain)
 
-    // Unsuccessful (though useful in general):
-    // > throttling the number of groups (did not remove ill-conditioning in heat_eq_mlblue8)
-  }
+inline void NonDMultilevBLUESampling::
+linear_group_cost_gradient(const RealVector& cdv, RealVector& grad_c)
+{
+  if (retainedModelGroups.empty())
+    NonDNonHierarchSampling::linear_group_cost_gradient(cdv, grad_c);
+
+  Real cost_H = sequenceCost[numApprox];  size_t i, cntr = 0;
+  for (i=0; i<numGroups; ++i)
+    if (retainedModelGroups[i])
+      grad_c[cntr++] = modelGroupCost[i] / cost_H;
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "linear group cost gradient:\n" << grad_c << std::endl;
 }
 
 
@@ -529,31 +650,19 @@ compute_C_inverse(const RealSymMatrix2DArray& cov_GG,
 {
   // cov matrices are sized according to group member size
   initialize_rsm2a(cov_GG_inv);
+  bool rcond_throttle = (groupThrottleType == RCOND_TOLERANCE_THROTTLE ||
+			 groupThrottleType == RCOND_BEST_COUNT_THROTTLE);
+  if (rcond_throttle) groupCovCondMap.clear();
 
   size_t q, g, num_groups = modelGroups.size();
+  RealVector rcond(numFunctions);
   for (g=0; g<num_groups; ++g) {
     const RealSymMatrixArray& cov_GG_g = cov_GG[g];
     RealSymMatrixArray&   cov_GG_inv_g = cov_GG_inv[g];
-    for (q=0; q<numFunctions; ++q) {
-      int code = compute_C_inverse(cov_GG_g[q], cov_GG_inv_g[q]);
-      if (code) {
-	/*
-	// This drops the group contribution to Psi but probably also need
-	// to drop the group design var from the numerical soln to prevent
-	// unconstrained behavior there. Something to consider down the road.
-        Cerr << "Warning: serial dense solver failure (LAPACK error code "
-             << code << ") in ML BLUE::compute_C_inverse()\n         for group "
-             << g << " QoI " << q << " with C:\n" << cov_GG_g[q]
-	     << "         Omitting group from roll up." << std::endl;
-	cov_GG_inv_g[q].shape(0);
-	*/
-        Cerr << "Error: serial dense solver failure (LAPACK error code "
-            << code << ") in ML BLUE::compute_C_inverse()\n"
-            << "       for group " << g << " QoI " << q << " with C:\n"
-            << cov_GG_g[q] << std::endl;
-        abort_handler(METHOD_ERROR);
-      }
-    }
+    for (q=0; q<numFunctions; ++q)
+      compute_C_inverse(cov_GG_g[q], cov_GG_inv_g[q], g, q, rcond[q]);
+    if (rcond_throttle)
+      groupCovCondMap.insert(std::pair<Real,size_t>(average(rcond), g));
   }
 }
 
@@ -561,32 +670,35 @@ compute_C_inverse(const RealSymMatrix2DArray& cov_GG,
 /** This version used during numerical solution (1D vector of real
     design variables for group samples. */
 inline void NonDMultilevBLUESampling::
-compute_Psi(const RealSymMatrix2DArray& cov_GG_inv, const RealVector& N_G,
+compute_Psi(const RealSymMatrix2DArray& cov_GG_inv, const RealVector& cdv,
 	    RealSymMatrixArray& Psi)
 {
   // Psi accumulated across groups and sized according to full model ensemble
   initialize_rsma(Psi);
 
-  size_t qoi, g, num_groups = modelGroups.size();
+  size_t qoi, g, num_groups = modelGroups.size(), v_index = 0;
+  bool no_retain_throttle = retainedModelGroups.empty();
   for (g=0; g<num_groups; ++g) {
     // In the context of numerical optimization, we should not need to protect
     // cov_GG_inv against n_g = 0.
-    Real N_g = N_G[g];
-    if (N_g > 0.) {
-      const UShortArray&            models_g = modelGroups[g];
-      const RealSymMatrixArray& cov_GG_inv_g =  cov_GG_inv[g];
-      for (qoi=0; qoi<numFunctions; ++qoi) {
-	const RealSymMatrix& cov_GG_inv_gq = cov_GG_inv_g[qoi];
-	if (!cov_GG_inv_gq.empty())
-	  add_sub_matrix(N_g, cov_GG_inv_gq, models_g, Psi[qoi]); // *** can become indefinite here when N_g --> 0, which depends on online/offline pilot integration strategy
+    if (no_retain_throttle || retainedModelGroups[g]) {
+      Real v_i = cdv[v_index++];
+      if (v_i > 0.) {
+	const UShortArray&            models_g = modelGroups[g];
+	const RealSymMatrixArray& cov_GG_inv_g =  cov_GG_inv[g];
+	for (qoi=0; qoi<numFunctions; ++qoi) {
+	  const RealSymMatrix& cov_GG_inv_gq = cov_GG_inv_g[qoi];
+	  if (!cov_GG_inv_gq.empty())
+	    add_sub_matrix(v_i, cov_GG_inv_gq, models_g, Psi[qoi]); // *** can become indefinite here when N_g --> 0, which depends on online/offline pilot integration strategy
+	}
       }
     }
   }
+  // Add \delta I (Schaden & Ullmann, 2020)
+  //enforce_diagonal_delta(Psi);
 }
 
 
-/** This version used during numerical solution (1D vector of real
-    design variables for group samples. */
 inline void NonDMultilevBLUESampling::
 compute_Psi(const RealSymMatrix2DArray& cov_GG_inv, const Sizet2DArray& N_G,
 	    RealSymMatrixArray& Psi)
@@ -595,17 +707,22 @@ compute_Psi(const RealSymMatrix2DArray& cov_GG_inv, const Sizet2DArray& N_G,
   initialize_rsma(Psi);
 
   size_t qoi, g, num_groups = modelGroups.size();
+  bool no_retain_throttle = retainedModelGroups.empty();
   for (g=0; g<num_groups; ++g) {
-    const SizetArray&                  N_g =         N_G[g];
-    const UShortArray&            models_g = modelGroups[g];
-    const RealSymMatrixArray& cov_GG_inv_g =  cov_GG_inv[g];
-    for (qoi=0; qoi<numFunctions; ++qoi) {
-      const RealSymMatrix& cov_GG_inv_gq = cov_GG_inv_g[qoi];
-      size_t N_gq = N_g[qoi];
-      if (N_gq && !cov_GG_inv_gq.empty())
-	add_sub_matrix((Real)N_gq, cov_GG_inv_gq, models_g, Psi[qoi]); // *** can become indefinite here when N_gq --> 0, which depends on online/offline pilot integration strategy
+    if (no_retain_throttle || retainedModelGroups[g]) {
+      const SizetArray&                  N_g =         N_G[g];
+      const UShortArray&            models_g = modelGroups[g];
+      const RealSymMatrixArray& cov_GG_inv_g =  cov_GG_inv[g];
+      for (qoi=0; qoi<numFunctions; ++qoi) {
+	const RealSymMatrix& cov_GG_inv_gq = cov_GG_inv_g[qoi];
+	size_t N_gq = N_g[qoi];
+	if (N_gq && !cov_GG_inv_gq.empty())
+	  add_sub_matrix((Real)N_gq, cov_GG_inv_gq, models_g, Psi[qoi]); // *** can become indefinite here when N_gq --> 0, which depends on online/offline pilot integration strategy
+      }
     }
   }
+  // Add \delta I (Schaden & Ullmann, 2020)
+  //enforce_diagonal_delta(Psi);
 }
 
 
@@ -637,8 +754,7 @@ inline void NonDMultilevBLUESampling::invert_Psi(RealSymMatrixArray& Psi)
 // This version used during numerical solution (1D vector of real design vars).
 inline void NonDMultilevBLUESampling::
 compute_Psi_inverse(const RealSymMatrix2DArray& cov_GG_inv,
-		    const RealVector& N_G_1D, RealSymMatrixArray& Psi_inv)
-{
+		    const RealVector& N_G_1D, RealSymMatrixArray& Psi_inv{
   compute_Psi(cov_GG_inv, N_G_1D, Psi_inv);
   invert_Psi(Psi_inv);
 }
@@ -677,90 +793,6 @@ compute_y(const RealSymMatrix2DArray& cov_GG_inv, const RealMatrixArray& sum_G,
 	add_sub_matvec(cov_GG_inv_gq, sum_G_g, q, models_g, y[q]);
     }
   }
-}
-
-
-inline void NonDMultilevBLUESampling::
-compute_mu_hat(const RealSymMatrix2DArray& cov_GG_inv,
-	       const RealMatrixArray& sum_G, const Sizet2DArray& N_G,
-	       RealVectorArray& mu_hat)
-{
-  // accumulate Psi but don't invert in place
-  RealSymMatrixArray Psi;
-  compute_Psi(cov_GG_inv, N_G, Psi);
-
-  // Only need to form y when solving for mu-hat:
-  RealVectorArray y;
-  compute_y(cov_GG_inv, sum_G, y);
-
-  initialize_rva(mu_hat, false);
-  size_t q, r, c, g, num_groups = modelGroups.size();
-  RealSpdSolver spd_solver;
-  for (q=0; q<numFunctions; ++q) {
-    // Leverage both the soln refinement in solve() and equilibration during
-    // factorization (inverting Psi in place can only leverage the latter).
-    spd_solver.setMatrix(Teuchos::rcp(&Psi[q], false)); // resets solver state
-    spd_solver.setVectors(Teuchos::rcp(&mu_hat[q], false),
-			  Teuchos::rcp(&y[q], false));
-    if (spd_solver.shouldEquilibrate())
-      spd_solver.factorWithEquilibration(true);
-    spd_solver.solveToRefinedSolution(true);
-    int code = spd_solver.solve();
-    if (code) {
-      Cerr << "Error: serial dense solver failure (LAPACK error code " << code
-	   << ") in ML BLUE compute_mu_hat()." << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
-  }
-}
-
-
-inline void NonDMultilevBLUESampling::
-estimator_variance(const RealVector& cd_vars, RealVector& estvar)
-{
-  if (estvar.empty()) estvar.sizeUninitialized(numFunctions);
-
-  // This approach leverages both the solution refinement in solve() and
-  // equilibration during factorization (inverting Psi in place can only
-  // leverage the latter).  It seems to work much more reliably.
-  RealSymMatrixArray Psi;
-  compute_Psi(covGGinv, cd_vars, Psi);
-
-  RealSpdSolver spd_solver;
-  size_t q, all_models = numApprox + 1;
-  RealVector e_last(all_models, false), estvar_q(all_models, false);
-
-  for (q=0; q<numFunctions; ++q) {
-
-    // e_last is equilbrated in place, so must be reset
-    e_last.putScalar(0.); e_last[numApprox] = 1.;
-
-    spd_solver.setMatrix( Teuchos::rcp(&Psi[q],   false));// resets solver state
-    spd_solver.setVectors(Teuchos::rcp(&estvar_q, false),
-			  Teuchos::rcp(&e_last,   false));
-    if (spd_solver.shouldEquilibrate())
-      spd_solver.factorWithEquilibration(true);
-    spd_solver.solveToRefinedSolution(true);
-    int code = spd_solver.solve();
-    if (code) {
-      Cerr << "Error: serial dense solver failure (LAPACK error code " << code
-	   << ") in ML BLUE estimator_variance()." << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
-    estvar[q] = estvar_q[numApprox];
-  }
-
-  // *** TO DO: now that we have good performance locked in, revisit this flow:
-  // should be able to equilibrate and factor each Psi once within a SpdSolver
-  // that persists, then solve to refined solution for each estvar and mu-hat.
-
-  /* This approach suffers from poor performance, either from conditioning
-     issues or misunderstood Teuchos solver behavior.
-  RealSymMatrixArray Psi_inv;
-  compute_Psi_inverse(covGGinv, cd_vars, Psi_inv);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    estvar[qoi] = Psi_inv[qoi](numApprox,numApprox); // e_l^T Psi-inverse e_l
-  */
 }
 
 

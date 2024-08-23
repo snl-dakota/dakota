@@ -140,7 +140,8 @@ DataMethodRep::DataMethodRep():
   expansionOrder(USHRT_MAX), collocationPoints(SZ_MAX),
   expansionSamples(SZ_MAX),  ensemblePilotSolnMode(ONLINE_PILOT),
   pilotGroupSampling(SHARED_PILOT), groupThrottleType(NO_GROUP_THROTTLE),
-  groupSizeThrottle(USHRT_MAX), truthPilotConstraint(false),
+  groupSizeThrottle(USHRT_MAX), rCondBestThrottle(SZ_MAX),
+  rCondTolThrottle(DBL_MAX), truthPilotConstraint(false),
   dagRecursionType(NO_GRAPH_RECURSION), dagDepthLimit(1),
   modelSelectType(NO_MODEL_SELECTION), relaxFixedFactor(0.),
   relaxRecursiveFactor(0.), allocationTarget(TARGET_MEAN),
@@ -343,10 +344,11 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << reliabilityIntegration << integrationRefine << refineSamples
     << optSubProbSolver << numericalSolveMode << pilotSamples
     << ensemblePilotSolnMode << pilotGroupSampling << groupThrottleType
-    << groupSizeThrottle << truthPilotConstraint
-    << dagRecursionType << dagDepthLimit << modelSelectType
-    << relaxFactorSequence << relaxFixedFactor << relaxRecursiveFactor
-    << allocationTarget << useTargetVarianceOptimizationFlag
+    << groupSizeThrottle << rCondBestThrottle << rCondTolThrottle
+    << truthPilotConstraint << dagRecursionType << dagDepthLimit
+    << modelSelectType << relaxFactorSequence << relaxFixedFactor
+    << relaxRecursiveFactor << allocationTarget
+    << useTargetVarianceOptimizationFlag
     << qoiAggregation << scalarizationRespCoeffs
     << convergenceToleranceType << convergenceToleranceTarget
     << multilevAllocControl << multilevEstimatorRate
@@ -530,10 +532,11 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> reliabilityIntegration >> integrationRefine >> refineSamples
     >> optSubProbSolver >> numericalSolveMode >> pilotSamples
     >> ensemblePilotSolnMode >> pilotGroupSampling >> groupThrottleType
-    >> groupSizeThrottle >> truthPilotConstraint
-    >> dagRecursionType >> dagDepthLimit >> modelSelectType
-    >> relaxFactorSequence >> relaxFixedFactor >> relaxRecursiveFactor
-    >> allocationTarget >> useTargetVarianceOptimizationFlag
+    >> groupSizeThrottle >> rCondBestThrottle >> rCondTolThrottle
+    >> truthPilotConstraint >> dagRecursionType >> dagDepthLimit
+    >> modelSelectType >> relaxFactorSequence >> relaxFixedFactor
+    >> relaxRecursiveFactor >> allocationTarget
+    >> useTargetVarianceOptimizationFlag
     >> qoiAggregation >> scalarizationRespCoeffs
     >> convergenceToleranceType >> convergenceToleranceTarget
     >> multilevAllocControl >> multilevEstimatorRate
@@ -717,10 +720,11 @@ void DataMethodRep::write(std::ostream& s) const
     << reliabilityIntegration << integrationRefine << refineSamples
     << optSubProbSolver << numericalSolveMode << pilotSamples
     << ensemblePilotSolnMode << pilotGroupSampling << groupThrottleType
-    << groupSizeThrottle << truthPilotConstraint
-    << dagRecursionType << dagDepthLimit << modelSelectType
-    << relaxFactorSequence << relaxFixedFactor << relaxRecursiveFactor
-    << allocationTarget << useTargetVarianceOptimizationFlag
+    << groupSizeThrottle << rCondBestThrottle << rCondTolThrottle
+    << truthPilotConstraint << dagRecursionType << dagDepthLimit
+    << modelSelectType << relaxFactorSequence << relaxFixedFactor
+    << relaxRecursiveFactor << allocationTarget
+    << useTargetVarianceOptimizationFlag
     << qoiAggregation << scalarizationRespCoeffs
     << convergenceToleranceType << convergenceToleranceTarget
     << multilevAllocControl << multilevEstimatorRate

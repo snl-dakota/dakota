@@ -1747,8 +1747,8 @@ const Model& Iterator::algorithm_space_model() const
 	 << "instance." << std::endl;
     abort_handler(METHOD_ERROR);
   }
-  else // envelope fwd to letter
-    return iteratorRep->algorithm_space_model();
+
+  return iteratorRep->algorithm_space_model();
 }
 
 

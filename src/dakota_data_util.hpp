@@ -807,6 +807,41 @@ void copy_data(const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& ssd
   ssdm2.assign(ssdm1);
 }
 
+
+template <typename OrdinalType, typename ScalarType> 
+void copy_data(const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& ssdm,
+	       Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm)
+{
+  OrdinalType nr = ssdm.numRows(), i, j;
+  if (sdm.numRows() != nr || sdm.numCols() != nr)
+    sdm.shapeUninitialized(nr,nr);
+  for (i=0; i<nr; ++i) {
+    sdm(i,i) = ssdm(i,i);
+    for (j=0; j<i; ++j)
+      sdm(i,j) = sdm(j,i) = ssdm(i,j);
+  }
+}
+
+
+template <typename OrdinalType, typename ScalarType> 
+void copy_data(const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm,
+	       Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& ssdm)
+{
+  OrdinalType nr = sdm.numRows(), i, j;
+  if (sdm.numCols() != nr) {
+    Cerr << "Error: cannot copy rectangular SerialDenseMatrix to "
+	 << "SerialSymDenseMatrix" << std::endl;
+    abort_handler(-1);
+  }
+  if (ssdm.numRows() != nr)
+    ssdm.shapeUninitialized(nr);
+  for (i=0; i<nr; ++i) {
+    ssdm(i,i) = sdm(i,i);
+    for (j=0; j<i; ++j)
+      ssdm(i,j) = (sdm(i,j) == sdm(j,i)) ? sdm(i,j) : (sdm(i,j) + sdm(j,i))/2.;
+  }
+}
+
 /// Taken from pecos/src/MathTools.hpp, BUT
 /// not templated because the implementation is specific to RealMatrix
 inline void copy_data( const RealMatrix &source, RealMatrix &dest, 
@@ -846,15 +881,15 @@ void copy_data(const Teuchos::SerialDenseVector<OrdinalType, ScalarType1>& sdv,
 
 /// copy Array<ScalarType> to
 /// Teuchos::SerialDenseVector<OrdinalType, ScalarType> - used by NOWPACOptimizer - MSE
-template <typename OrdinalType, typename ScalarType> 
-void copy_data(const std::vector<ScalarType>& da,
-	       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& sdv)
+template <typename OrdinalType, typename ScalarType1, typename ScalarType2> 
+void copy_data(const std::vector<ScalarType1>& vec,
+	       Teuchos::SerialDenseVector<OrdinalType, ScalarType2>& sdv)
 {
- size_t size_da = da.size();
- if (sdv.length() != size_da)
-   sdv.sizeUninitialized(size_da);
- for (OrdinalType i=0; i<size_da; ++i)
-   sdv[i] = da[i];
+ size_t size_vec = vec.size();
+ if (size_vec != sdv.length())
+   sdv.sizeUninitialized(size_vec);
+ for (OrdinalType i=0; i<size_vec; ++i)
+   sdv[i] = (ScalarType2)vec[i];
 }
 
 /// copy ScalarType* to Teuchos::SerialDenseVector<OrdinalType, ScalarType> - used by ScalingModel::response_modify_n2s - RWH

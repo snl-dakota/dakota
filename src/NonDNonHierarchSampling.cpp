@@ -885,6 +885,7 @@ void NonDNonHierarchSampling::ensemble_numerical_solution(MFSolutionData& soln)
   // virtual augmentation of linear ineq (differs among MFMC, ACV, GenACV)
   augment_linear_ineq_constraints(lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub);
 
+
   // Perform the numerical solve(s) and recover the solution:
   configure_minimizers(x0, x_lb, x_ub, lin_ineq_lb, lin_ineq_ub, lin_eq_tgt,
 		       nln_ineq_lb, nln_ineq_ub, nln_eq_tgt, lin_ineq_coeffs,
@@ -1088,14 +1089,6 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   }
   // x0 can undershoot x_lb if an OFFLINE mode, but enforce generally
   enforce_bounds(x0, x_lb, x_ub);
-
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "Numerical solve (initial, lb, ub):\n" << x0 << x_lb << x_ub
-	 << "Numerical solve (lin ineq lb, ub):\n" << lin_ineq_lb << lin_ineq_ub
-       //<< lin_eq_tgt
-	 << "Numerical solve (nln ineq lb, ub):\n" << nln_ineq_lb << nln_ineq_ub
-       //<< nln_eq_tgt << lin_ineq_coeffs << lin_eq_coeffs
-	 << std::endl;
 }
 
 
@@ -1266,10 +1259,14 @@ void NonDNonHierarchSampling::apply_mc_reference(RealVector& mc_targets)
 
 void NonDNonHierarchSampling::
 configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
-		     RealVector& lin_ineq_lb,     RealVector& lin_ineq_ub,
-		     RealVector& lin_eq_tgt,      RealVector& nln_ineq_lb,
-		     RealVector& nln_ineq_ub,     RealVector& nln_eq_tgt,
-		     RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs)
+		     const RealVector& lin_ineq_lb,
+		     const RealVector& lin_ineq_ub,
+		     const RealVector& lin_eq_tgt,
+		     const RealVector& nln_ineq_lb,
+		     const RealVector& nln_ineq_ub,
+		     const RealVector& nln_eq_tgt,
+		     const RealMatrix& lin_ineq_coeffs,
+		     const RealMatrix& lin_eq_coeffs)
 {
   // support sequenced (global-local) and competed (NPSOL_OPTPP) configurations:
   // > EGO vs. DIRECT: the former adds efficiency over the latter when the model
@@ -1585,6 +1582,17 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 	  }
 	}
       }
+  }
+
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Cout << "Numerical solve (initial, lb, ub):\n" << x0 << x_lb << x_ub;
+    if (!lin_ineq_lb.empty() || !lin_ineq_ub.empty())
+      Cout << "Numerical solve (lin ineq lb, ub):\n" << lin_ineq_lb
+	   << lin_ineq_ub;// << lin_ineq_coeffs << lin_eq_tgt << lin_eq_coeffs;
+    if (!nln_ineq_lb.empty() || !nln_ineq_ub.empty())
+      Cout << "Numerical solve (nln ineq lb, ub):\n" << nln_ineq_lb
+	   << nln_ineq_ub;// << nln_eq_tgt;
+    Cout << std::endl;
   }
 }
 
@@ -1967,6 +1975,8 @@ linear_model_cost_gradient(const RealVector& N_vec, RealVector& grad_c)
 
 Real NonDNonHierarchSampling::linear_group_cost(const RealVector& N_g)
 {
+  // default version for case where retainedModelGroups is undefined
+
   // linear objective: N + Sum(w_i N_i) / w
   Real lin_obj = 0.;
   for (size_t i=0; i<numGroups; ++i)
@@ -1981,6 +1991,8 @@ Real NonDNonHierarchSampling::linear_group_cost(const RealVector& N_g)
 void NonDNonHierarchSampling::
 linear_group_cost_gradient(const RealVector& N_vec, RealVector& grad_c)
 {
+  // default version for case where retainedModelGroups is undefined
+
   Real cost_H = sequenceCost[numApprox];
   for (size_t i=0; i<numGroups; ++i)
     grad_c[i] = modelGroupCost[i] / cost_H;

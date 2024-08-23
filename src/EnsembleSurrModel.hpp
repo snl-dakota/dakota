@@ -812,7 +812,7 @@ inline Pecos::ActiveKey& EnsembleSurrModel::key_from_index(size_t k_index)
   else { // includes _NPOS
     Cerr << "Error: key index (" << k_index << ") out of range in "
 	 << "EnsembleSurrModel::key_from_index()" << std::endl;
-    abort_handler(MODEL_ERROR);
+    abort_handler(MODEL_ERROR);  return truthModelKey;
   }
 }
 
@@ -826,6 +826,8 @@ inline Model& EnsembleSurrModel::model_from_index(unsigned short m_index)
     Cerr << "Error: model index (" << m_index << ") out of range in "
 	 << "EnsembleSurrModel::model_from_index()" << std::endl;
     abort_handler(MODEL_ERROR);
+    extern Model dummy_model; // defined in DakotaModel.cpp
+    return dummy_model;
   }
 }
 
@@ -840,6 +842,8 @@ model_from_index(unsigned short m_index) const
     Cerr << "Error: model index (" << m_index << ") out of range in "
 	 << "EnsembleSurrModel::model_from_index()" << std::endl;
     abort_handler(MODEL_ERROR);
+    extern Model dummy_model; // defined in DakotaModel.cpp
+    return dummy_model;
   }
 }
 
@@ -852,6 +856,8 @@ inline Model& EnsembleSurrModel::approx_model_from_index(unsigned short m_index)
     Cerr << "Error: model index (" << m_index << ") out of range in "
 	 << "EnsembleSurrModel::approx_model_from_index()" << std::endl;
     abort_handler(MODEL_ERROR);
+    extern Model dummy_model; // defined in DakotaModel.cpp
+    return dummy_model;
   }
 }
 
@@ -865,6 +871,8 @@ approx_model_from_index(unsigned short m_index) const
     Cerr << "Error: model index (" << m_index << ") out of range in "
 	 << "EnsembleSurrModel::approx_model_from_index()" << std::endl;
     abort_handler(MODEL_ERROR);
+    extern Model dummy_model; // defined in DakotaModel.cpp
+    return dummy_model;
   }
 }
 

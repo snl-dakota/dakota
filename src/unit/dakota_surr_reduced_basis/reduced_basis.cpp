@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(test_reduced_basis_compute_svd)
   // --------------- What we are testing
   RealVector singular_values;
   RealMatrix VTranspose;
-  svd(matrix, singular_values, VTranspose);
+  singular_value_decomp(matrix, singular_values, VTranspose);
   // --------------- What we are testing
 
   //std::cout << "\nSingular values:\n" << std::endl;

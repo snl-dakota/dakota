@@ -191,7 +191,7 @@ initialize( int order, String kernel, const RealVector &bndry_conds,
     leftSingularVectors_ = Corr;
     RealMatrix VT;
     // svd gives: Corr = leftSingularVectors_*singularValues_*VT;
-    svd(leftSingularVectors_, singularValues_, VT);
+    singular_value_decomp(leftSingularVectors_, singularValues_, VT);
   }
 }
 
