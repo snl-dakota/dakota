@@ -632,8 +632,10 @@ inline Real NonDMultilevBLUESampling::linear_group_cost(const RealVector& cdv)
 inline void NonDMultilevBLUESampling::
 linear_group_cost_gradient(const RealVector& cdv, RealVector& grad_c)
 {
-  if (retainedModelGroups.empty())
+  if (retainedModelGroups.empty()) {
     NonDNonHierarchSampling::linear_group_cost_gradient(cdv, grad_c);
+    return;
+  }
 
   Real cost_H = sequenceCost[numApprox];  size_t i, cntr = 0;
   for (i=0; i<numGroups; ++i)
