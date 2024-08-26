@@ -52,7 +52,7 @@ Minimizer(ProblemDescDB& problem_db, Model& model,
     !probDescDB.get_string("responses.scalar_data_filename").empty()),
   expData(probDescDB, model.current_response().shared_data(), outputLevel),
   numExperiments(0), numTotalCalibTerms(0),
-  scaleFlag(probDescDB.get_bool("method.scaling"))
+  scaleFlag(probDescDB.get_bool("method.scaling")), iteratedModel{Iterator::iterated_model()}
 {
   iteratedModel = model;
   update_from_model(iteratedModel); // variable,response counts & checks
@@ -76,7 +76,7 @@ Minimizer(unsigned short method_name, Model& model,
   constraintTol(0.), bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
   boundConstraintFlag(false), speculativeFlag(false), optimizationFlag(true),
   calibrationDataFlag(false), numExperiments(0), numTotalCalibTerms(0),
-  scaleFlag(false)
+  scaleFlag(false), iteratedModel{Iterator::iterated_model()}
 {
   update_from_model(iteratedModel); // variable,constraint counts & checks
 }
@@ -89,7 +89,7 @@ Minimizer(Model& model, size_t max_iter, size_t max_eval, Real conv_tol,
   constraintTol(0.), bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
   boundConstraintFlag(false), speculativeFlag(false), optimizationFlag(true),
   calibrationDataFlag(false), numExperiments(0), numTotalCalibTerms(0),
-  scaleFlag(false)
+  scaleFlag(false), iteratedModel{Iterator::iterated_model()}
 {
   update_from_model(iteratedModel); // variable,constraint counts & checks
 }
@@ -110,7 +110,7 @@ Minimizer(unsigned short method_name, size_t num_lin_ineq, size_t num_lin_eq,
   numUserPrimaryFns(1), numIterPrimaryFns(1), boundConstraintFlag(false),
   speculativeFlag(false), optimizationFlag(true), 
   calibrationDataFlag(false), numExperiments(0), numTotalCalibTerms(0),
-  scaleFlag(false)
+  scaleFlag(false), iteratedModel{Iterator::iterated_model()}
 { }
 
 

@@ -313,6 +313,8 @@ protected:
   /// Emerging helper class for handling data transfers to/from Dakota and the underlying TPL
   std::shared_ptr<TPLDataTransfer> dataTransferHandler;
 
+  Model& iteratedModel;
+
 private:
 
   //
@@ -327,7 +329,7 @@ private:
 
 
 inline Minimizer::Minimizer(std::shared_ptr<TraitsBase> traits): 
-  Iterator(traits), calibrationDataFlag(false), scaleFlag(false)
+  Iterator(traits), calibrationDataFlag(false), scaleFlag(false), iteratedModel{Iterator::iterated_model()}
 { }
 
 

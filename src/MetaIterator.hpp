@@ -96,6 +96,9 @@ protected:
   /// maximum number of concurrent sub-iterator executions
   int maxIteratorConcurrency;
 
+
+  Model& iteratedModel;
+
 private:
 
   //

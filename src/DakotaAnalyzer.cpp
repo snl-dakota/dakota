@@ -32,7 +32,8 @@ Analyzer(ProblemDescDB& problem_db, Model& model):
   Iterator(BaseConstructor(), problem_db), compactMode(true),
   numObjFns(0), numLSqTerms(0), // default: no best data tracking
   vbdFlag(problem_db.get_bool("method.variance_based_decomp")),
-  writePrecision(problem_db.get_int("environment.output_precision"))
+  writePrecision(problem_db.get_int("environment.output_precision")),
+  iteratedModel{Iterator::iterated_model()}
 {
   // set_db_list_nodes() is set by a higher context
   iteratedModel = model;
@@ -65,7 +66,7 @@ Analyzer(unsigned short method_name, Model& model):
   Iterator(NoDBBaseConstructor(), method_name, model), compactMode(true),
   numObjFns(0), numLSqTerms(0), // default: no best data tracking
   vbdFlag(false), vbdDropTol(-1.),
-  writePrecision(0)
+  writePrecision(0),iteratedModel{Iterator::iterated_model()}
 {
   update_from_model(iteratedModel); // variable/response counts & checks
 }
@@ -76,7 +77,7 @@ Analyzer(unsigned short method_name, Model& model,
 	 const ShortShortPair& view_override):
   Iterator(NoDBBaseConstructor(), method_name, model), compactMode(true),
   numObjFns(0), numLSqTerms(0), // default: no best data tracking
-  writePrecision(0)
+  writePrecision(0),iteratedModel{Iterator::iterated_model()}
 {
   if (view_override != iteratedModel.current_variables().view())
     recast_model_view(view_override);
@@ -87,7 +88,7 @@ Analyzer(unsigned short method_name, Model& model,
 Analyzer::Analyzer(unsigned short method_name):
   Iterator(NoDBBaseConstructor(), method_name), compactMode(true),
   numObjFns(0), numLSqTerms(0), // default: no best data tracking
-  writePrecision(0)
+  writePrecision(0),iteratedModel{Iterator::iterated_model()}
 { }
 
 

@@ -478,10 +478,6 @@ protected:
   // index for the active ParallelLevel within ParallelConfiguration::miPLIters
   //size_t miPLIndex;
 
-  /// the model to be iterated (for iterators and meta-iterators
-  /// employing a single model instance)
-  Model iteratedModel;
-
   /// number of Models locally (in Iterator or derived classes)
   /// wrapped around the initially passed in Model
   size_t myModelLayers;
@@ -575,6 +571,10 @@ private:
   //
   //- Heading: Data
   //
+  
+  /// the model to be iterated (for iterators and meta-iterators
+  /// employing a single model instance)
+  Model iteratedModel;
 
   /// method identifier string from the input file, or an
   /// auto-generated ID, such that each instance of an Iterator has a

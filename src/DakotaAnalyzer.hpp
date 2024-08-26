@@ -220,6 +220,9 @@ protected:
   /// either PCE or sampling
   Real vbdDropTol;
 
+  /// Reference to Iterator::iterated_model()
+  Model& iteratedModel;
+
 private:
 
   //
@@ -264,7 +267,7 @@ private:
 };
 
 
-inline Analyzer::Analyzer()
+inline Analyzer::Analyzer() : iteratedModel{Iterator::iterated_model()}
 { }
 
 

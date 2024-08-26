@@ -22,7 +22,8 @@ MetaIterator::MetaIterator(ProblemDescDB& problem_db):
 	    false, // peers can manage local jobs (initial extracted from DB)
 	    problem_db.get_int("method.iterator_servers"),
 	    problem_db.get_int("method.processors_per_iterator"),
-	    problem_db.get_short("method.iterator_scheduling"))
+	    problem_db.get_short("method.iterator_scheduling")),
+      iteratedModel{Iterator::iterated_model()}
 {
   // historical default convergence tolerance
   if (convergenceTol < 0.0) convergenceTol = 1.0e-4;
@@ -38,7 +39,8 @@ MetaIterator::MetaIterator(ProblemDescDB& problem_db, Model& model):
 	    false, // peers can manage local jobs (initial extracted from DB)
 	    problem_db.get_int("method.iterator_servers"),
 	    problem_db.get_int("method.processors_per_iterator"),
-	    problem_db.get_short("method.iterator_scheduling"))
+	    problem_db.get_short("method.iterator_scheduling")),
+      iteratedModel{Iterator::iterated_model()}
 {
   iteratedModel = model;
   //update_from_model(iteratedModel);
