@@ -468,7 +468,8 @@ inline void NonDMultilevBLUESampling::enforce_nudge(RealVector& x)
   // a degree of hardening for extreme drop-out cases.
 
   size_t i, len = x.length();
-  Real lb = RATIO_NUDGE * std::sqrt(maxFunctionEvals); // hand-tuned heuristic
+  Real lb = (maxFunctionEvals == SZ_MAX) ? RATIO_NUDGE :
+    RATIO_NUDGE * std::sqrt(maxFunctionEvals); // hand-tuned heuristic
   for (i=0; i<len; ++i)
     if (x[i] < lb)
       x[i] = lb;
