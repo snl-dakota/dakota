@@ -3,40 +3,40 @@ Test Number 0 succeeded
 <<<<< Function evaluation summary (TRUE_FN): 862 total (862 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+00 x1
-                      2.8221194721e-01 x2
-                      2.9943413089e-15 x3
-                      2.9046837716e-16 x4
-                      7.0867974690e-17 x5
-                      7.5466808840e-01 x6
+                      2.8221108447e-01 x2
+                      3.2096862554e-15 x3
+                      3.5853020309e-16 x4
+                      6.8522137864e-17 x5
+                      7.5467017697e-01 x6
                       1.0000000000e+00 x7
 <<<<< Best objective function  =
-                      1.0759894336e+00
+                      1.0759894325e+00
 <<<<< Best evaluation ID: 780
 Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 1532 total (1532 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 862 total (862 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+00 x1
-                      2.8052732645e-01 x2
-                      1.4487475573e-15 x3
-                      1.4062596242e-16 x4
-                      5.2762705331e-17 x5
-                      7.5072983474e-01 x6
+                      2.8052667322e-01 x2
+                      1.3729825687e-15 x3
+                      2.4096123499e-16 x4
+                      4.2454699395e-17 x5
+                      7.5073104605e-01 x6
                       1.0000000000e+00 x7
 <<<<< Best objective function  =
-                      1.0760048427e+00
+                      1.0760048408e+00
 <<<<< Best evaluation ID: 862
 Test Number 2 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE_1): 424 total (424 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 423 total (423 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 504 total (504 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+00 x1
-                      2.8164424146e-01 x2
-                      2.1020057957e-15 x3
-                      1.9959261030e-16 x4
-                      2.0010502170e-16 x5
-                      7.5652130537e-01 x6
+                      2.8163232215e-01 x2
+                      2.2226665375e-15 x3
+                      2.9148572459e-16 x4
+                      1.4429359383e-16 x5
+                      7.5653609660e-01 x6
                       1.0000000000e+00 x7
 <<<<< Best objective function  =
-                      1.0759888873e+00
+                      1.0759888882e+00
 <<<<< Best evaluation ID: 504

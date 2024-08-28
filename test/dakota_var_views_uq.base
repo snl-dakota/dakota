@@ -44,15 +44,15 @@ Test Number 2 succeeded
 <<<<< Function evaluation summary: 47 total (44 new, 3 duplicate)
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-   5.9800828689e+00   1.0000000000e+01   8.7668243750e-02
+   5.9800829973e+00   1.0000000000e+01   8.7668246549e-02
    1.0000000000e+01   4.0000000000e+01   1.1642329314e-02
    4.0000000000e+01   1.0000000000e+02   4.6123202283e-03
-   1.0000000000e+02   1.6724582847e+02   3.2079063449e-04
+   1.0000000000e+02   1.6724582884e+02   3.2079063288e-04
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   1.0000000000e+01   3.5241907490e-01                      3.7879762683e-01
-   4.0000000000e+01   7.0168895432e-01                     -5.2926433708e-01
-   1.0000000000e+02   9.7842816802e-01                     -2.0223165110e+00
+   1.0000000000e+01   3.5241907490e-01                      3.7879762684e-01
+   4.0000000000e+01   7.0168895431e-01                     -5.2926433706e-01
+   1.0000000000e+02   9.7842816801e-01                     -2.0223165108e+00
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
@@ -149,8 +149,8 @@ response_fn_1:  Min = 6.0000000000e+00  Max = 1.6800000000e+02
 response_fn_2:  Min = 0.0000000000e+00  Max = 0.0000000000e+00
 response_fn_3:  Min = 0.0000000000e+00  Max = 0.0000000000e+00
 Test Number 6 succeeded
-<<<<< Function evaluation summary: 63 total (61 new, 2 duplicate)
-response_fn_1:  Min = 6.0000000251e+00  Max = 1.6799918712e+02
+<<<<< Function evaluation summary: 62 total (60 new, 2 duplicate)
+response_fn_1:  Min = 6.0000004000e+00  Max = 1.6799918712e+02
 response_fn_2:  Min = 0.0000000000e+00  Max = 0.0000000000e+00
 response_fn_3:  Min = 0.0000000000e+00  Max = 0.0000000000e+00
 Test Number 7 succeeded

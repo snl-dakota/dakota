@@ -1,4 +1,16 @@
 Test Number 0 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.6451342372e+00  2.2184461087e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4157052125e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      9.8787731327e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      9.4065041683e-01
 <<<<< Function evaluation summary: 3745 total (3375 new, 370 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    3.5000000000e+00   P0   P0   P0
@@ -1737,6 +1749,24 @@ Moment statistics for each response function:
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      9.4065041683e-01
 Test Number 1 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.6451342372e+00  1.5492554675e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.0618869978e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.2390854493e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      9.7288178104e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      9.4067643720e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      9.4065041683e-01
 <<<<< Function evaluation summary: 687 total (687 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    3.5000000000e+00   P0   P0   P0
@@ -2206,6 +2236,18 @@ Moment statistics for each response function:
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      9.4065041683e-01
 Test Number 2 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.6451342372e+00  2.2184461087e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4157052125e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      8.7765847215e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      9.4064984171e-01
 <<<<< Function evaluation summary: 3745 total (3375 new, 370 duplicate)
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -2215,6 +2257,24 @@ Moment statistics for each response function:
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      9.4064984171e-01
 Test Number 3 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.6451342372e+00  1.5492554675e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.0618869978e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                     -1.6230330002e-02
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                     -6.9583700215e-02
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                     -3.5384525637e-02
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                     -3.8600254974e-05
 <<<<< Function evaluation summary: 687 total (687 new, 0 duplicate)
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -2224,6 +2284,27 @@ Moment statistics for each response function:
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      9.4064984171e-01
 Test Number 4 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.6451342372e+00  2.2184461087e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4157052125e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      5.8071309677e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      5.8058323516e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.0700102985e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.0108247439e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.0108241390e+00
 <<<<< Function evaluation summary: 2610 total (1395 new, 1215 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    3.5000000000e+00   P0   P0   P0
@@ -3103,6 +3184,21 @@ response_fn_1 Sobol' indices:
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      1.0108241390e+00
 Test Number 5 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.5000000000e+00  3.5975594036e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      9.7288178104e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      9.7277911246e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      9.4067643720e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      9.4067643720e-01
 <<<<< Function evaluation summary: 463 total (463 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    3.5000000000e+00   P0   P0   P0
@@ -3436,6 +3532,27 @@ response_fn_1 Sobol' indices:
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      9.4067643720e-01
 Test Number 6 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.6451342372e+00  2.2184461087e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4157052125e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      5.8071309677e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      5.8058323516e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      9.3374375917e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.0108240303e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.0108241390e+00
 <<<<< Function evaluation summary: 2610 total (1395 new, 1215 duplicate)
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -3450,6 +3567,21 @@ response_fn_1 Sobol' indices:
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      1.0108241390e+00
 Test Number 7 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.5000000000e+00  3.5857974928e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      9.7607296760e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      9.7594832484e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      9.4068844196e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      9.4068844196e-01
 <<<<< Function evaluation summary: 463 total (463 new, 0 duplicate)
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -3459,11 +3591,26 @@ response_fn_1 Sobol' indices:
                                   Main             Total
                       3.1393089584e-01  5.5755244123e-01 x1
                       4.4244755877e-01  4.4244755877e-01 x2
-                     -2.4380316580e-15  2.4362154539e-01 x3
+                      1.9247618353e-15  2.4362154539e-01 x3
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      9.4068844196e-01
 Test Number 8 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.6451342372e+00  2.2184461087e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4157052125e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.2705964766e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.1744361108e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      1.1744351621e+00
 <<<<< Function evaluation summary: 504 total (279 new, 225 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    3.5000000000e+00   P0   P0   P0
@@ -3690,6 +3837,21 @@ Moment statistics for each response function:
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      1.1744351621e+00
 Test Number 9 succeeded
+Moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.5000000000e+00  3.5975594036e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      9.7288178104e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      9.7277911246e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      9.4067643720e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      9.4067643720e-01
 <<<<< Function evaluation summary: 495 total (495 new, 0 duplicate)
 Coefficients of Polynomial Chaos Expansion for response_fn_1:
    3.5000000000e+00   P0   P0   P0

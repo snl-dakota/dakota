@@ -5584,18 +5584,30 @@
         </keyword>
         <oneOf label="Interface Type">
           <keyword id="system9" name="system" code="{N_ifm(type,interfaceType_SYSTEM_INTERFACE)}" label="System"  complexity="0">
-	        <keyword id="parameters_file" name="parameters_file" code="{N_ifm(str,parametersFile)}" label="Parameters File"  minOccurs="0" default="Unix temp files" complexity="0">
+            <keyword id="parameters_file" name="parameters_file" code="{N_ifm(str,parametersFile)}" label="Parameters File"  minOccurs="0" default="Unix temp files" complexity="0">
               <param type="STRING" />
             </keyword>
-	        <keyword id="results_file" name="results_file" code="{N_ifm(str,resultsFile)}" label="Results File"  minOccurs="0" default="Unix temp files" complexity="0">
+            <keyword id="results_file" name="results_file" code="{N_ifm(str,resultsFile)}" label="Results File"  minOccurs="0" default="Unix temp files" complexity="0">
               <param type="STRING" />
             </keyword>
-	        <keyword id="file_tag" name="file_tag" code="{N_ifm(true,fileTagFlag)}" label="File Tag"  minOccurs="0" default="no tagging" complexity="0"/>
-	        <keyword id="file_save" name="file_save" code="{N_ifm(true,fileSaveFlag)}" label="File Save"  minOccurs="0" default="file cleanup" complexity="0"/>
-	        <keyword id="labeled" name="labeled" code="{N_ifm(type,resultsFileFormat_LABELED_RESULTS)}" label="Labeled" minOccurs="0" default="Function value labels optional" complexity="0"/>
-	        <keyword id="aprepro" name="aprepro" code="{N_ifm(true,apreproFlag)}" label="APREPRO"  minOccurs="0" default="standard parameters file format" complexity="0">
-              <alias name="dprepro" />
-            </keyword>
+              <keyword id="parameters_format" name="parameters_format" code="{N_ifm(type,parametersFileFormat_PARAMETERS_FILE_STANDARD)}" label="Parameters file format" minOccurs="0" default="standard format">
+                <oneOf label="Parameters file format">
+                  <keyword id="standard" name="standard" code="{N_ifm(type,parametersFileFormat_PARAMETERS_FILE_STANDARD)}" label="standard format" />
+                  <keyword id="aprepro" name="aprepro" code="{N_ifm(type,parametersFileFormat_PARAMETERS_FILE_APREPRO)}" label="aprepro format" />
+                  <keyword id="json" name="json" code="{N_ifm(type,parametersFileFormat_PARAMETERS_FILE_JSON)}" label="JSON format" />
+                </oneOf>
+              </keyword>
+              <keyword id="results_format" name="results_format" code="{N_ifm(type,resultsFileFormat_RESULTS_FILE_STANDARD)}" label="Results file format" minOccurs="0" default="standard format">
+                <oneOf label="Results file format">
+                  <keyword id="standard" name="standard" code="{N_ifm(type,resultsFileFormat_RESULTS_FILE_STANDARD)}" label="standard format" >
+	            <keyword id="labeled" name="labeled" code="{N_ifm(true,dakotaResultsFileLabeled)}" label="Labeled" minOccurs="0" default="Function value labels optional" complexity="0"/>
+                  </keyword>
+                  <keyword id="json" name="json" code="{N_ifm(type,resultsFileFormat_RESULTS_FILE_JSON)}" label="JSON format" />
+                </oneOf>
+              </keyword>
+
+            <keyword id="file_tag" name="file_tag" code="{N_ifm(true,fileTagFlag)}" label="File Tag"  minOccurs="0" default="no tagging" complexity="0"/>
+            <keyword id="file_save" name="file_save" code="{N_ifm(true,fileSaveFlag)}" label="File Save"  minOccurs="0" default="file cleanup" complexity="0"/>
 	        <keyword id="work_directory" name="work_directory" code="{N_ifm(true,useWorkdir)}" label="Work Directory"  minOccurs="0" default="no work directory" complexity="0">
               <keyword id="named" name="named" code="{N_ifm(str,workDir)}" label="Named"  minOccurs="0" default="dakota_work_xxxxxxxx" complexity="0">
                 <param type="STRING" />
@@ -5616,12 +5628,6 @@
             </keyword>
 	        <keyword id="allow_existing_results" name="allow_existing_results" code="{N_ifm(true,allowExistingResultsFlag)}" label="Allow Existing Results"  minOccurs="0" default="results files removed before each evaluation" complexity="1"/>
 	        <keyword id="verbatim" name="verbatim" code="{N_ifm(true,verbatimFlag)}" label="Verbatim"  minOccurs="0" default="driver/filter invocation syntax augmented with file names" complexity="1"/>
-	        <!-- <keyword id="results_format" name="results_format" code="{0}" label="results_format" minOccurs="0" maxOccurs="1" default="Flexible format">
-		    <oneOf>
-              <keyword id="flexible" name="flexible" code="{N_ifm(type,resultsFileFormat_FLEXIBLE_RESULTS)}" label="flexible" />
-		    </oneOf>
-	        </keyword>
-	        -->
 	      </keyword>
           <keyword id="fork" name="fork" code="{N_ifm(type,interfaceType_FORK_INTERFACE)}" label="Fork Interface "  complexity="0">
             <keyword id="parameters_file" name="parameters_file" code="{N_ifm(str,parametersFile)}" label="Parameters File"  minOccurs="0" default="Unix temp files" complexity="0">
@@ -5630,12 +5636,24 @@
 	        <keyword id="results_file" name="results_file" code="{N_ifm(str,resultsFile)}" label="Results File"  minOccurs="0" default="Unix temp files" complexity="0">
               <param type="STRING" />
             </keyword>
+              <keyword id="parameters_format" name="parameters_format" code="{N_ifm(type,parametersFileFormat_PARAMETERS_FILE_STANDARD)}" label="Parameters file format" minOccurs="0" default="standard format">
+                <oneOf label="Parameters file format">
+                  <keyword id="standard" name="standard" code="{N_ifm(type,parametersFileFormat_PARAMETERS_FILE_STANDARD)}" label="standard format" />
+                  <keyword id="aprepro" name="aprepro" code="{N_ifm(type,parametersFileFormat_PARAMETERS_FILE_APREPRO)}" label="aprepro format" />
+                  <keyword id="json" name="json" code="{N_ifm(type,parametersFileFormat_PARAMETERS_FILE_JSON)}" label="JSON format" />
+                </oneOf>
+              </keyword>
+              <keyword id="results_format" name="results_format" code="{N_ifm(type,resultsFileFormat_RESULTS_FILE_STANDARD)}" label="Results file format" minOccurs="0" default="standard format">
+                <oneOf label="Results file format">
+                  <keyword id="standard" name="standard" code="{N_ifm(type,resultsFileFormat_RESULTS_FILE_STANDARD)}" label="standard format" >
+	            <keyword id="labeled" name="labeled" code="{N_ifm(true,dakotaResultsFileLabeled)}" label="Labeled" minOccurs="0" default="Function value labels optional" complexity="0"/>
+                  </keyword>
+		  <keyword id="json" name="json" code="{N_ifm(type,resultsFileFormat_RESULTS_FILE_JSON)}" label="JSON format" />
+                </oneOf>
+              </keyword>
+
 	        <keyword id="file_tag" name="file_tag" code="{N_ifm(true,fileTagFlag)}" label="File Tag"  minOccurs="0" default="no tagging" complexity="0"/>
 	        <keyword id="file_save" name="file_save" code="{N_ifm(true,fileSaveFlag)}" label="File Save"  minOccurs="0" default="file cleanup" complexity="0"/>
-	        <keyword id="labeled" name="labeled" code="{N_ifm(type,resultsFileFormat_LABELED_RESULTS)}" label="Labeled" minOccurs="0" default="Function value labels optional" complexity="0"/>
-	        <keyword id="aprepro" name="aprepro" code="{N_ifm(true,apreproFlag)}" label="APREPRO"  minOccurs="0" default="standard parameters file format" complexity="0">
-              <alias name="dprepro" />
-            </keyword>
 	        <keyword id="work_directory" name="work_directory" code="{N_ifm(true,useWorkdir)}" label="Work Directory"  minOccurs="0" default="no work directory" complexity="0">
               <keyword id="named" name="named" code="{N_ifm(str,workDir)}" label="Named"  minOccurs="0" default="dakota_work_xxxxxxxx" complexity="0">
                 <param type="STRING" />
@@ -5656,12 +5674,6 @@
             </keyword>
 	        <keyword id="allow_existing_results" name="allow_existing_results" code="{N_ifm(true,allowExistingResultsFlag)}" label="Allow Existing Results"  minOccurs="0" default="results files removed before each evaluation" complexity="1"/>
 	        <keyword id="verbatim" name="verbatim" code="{N_ifm(true,verbatimFlag)}" label="Verbatim"  minOccurs="0" default="driver/filter invocation syntax augmented with file names" complexity="1"/>
-	        <!-- <keyword id="results_format" name="results_format" code="{0}" label="results_format" minOccurs="0" maxOccurs="1" default="Flexible format">
-		      <oneOf>
-                <keyword id="flexible" name="flexible" code="{N_ifm(type,resultsFileFormat_FLEXIBLE_RESULTS)}" label="flexible" />
-		      </oneOf>
-	        </keyword>
-	        -->
           </keyword>
           <keyword id="direct" name="direct" code="{N_ifm(type,interfaceType_TEST_INTERFACE)}" label="Direct Function Interface "  complexity="0">
             <keyword id="processors_per_analysis" name="processors_per_analysis" code="{N_ifm(int,procsPerAnalysis)}" label="Number of Processors per Analysis Server"  minOccurs="0" default="automatic (see discussion)" complexity="1">

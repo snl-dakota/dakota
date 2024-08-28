@@ -416,7 +416,7 @@ State variable configuration mirrors that of :ref:`design variables
 bounds), or :dakkw:`variables-discrete_state_set` (a discrete
 integer-, string-, or real-valued set). Model parameterizations with
 strings (e.g., "mesh1.exo"), are also possible using an interface
-:dakkw:`interrface-analysis_drivers-analysis_components` specification
+:dakkw:`interface-analysis_drivers-analysis_components` specification
 (see also :ref:`variables:parameters:standard`)
 
 State variables, as with other types of variables, are viewed
@@ -603,32 +603,41 @@ variables are specified using three keywords:
 
 .. _`variables:parameters`:
 
-Dakota Parameters File Data Format
-----------------------------------
+Dakota Parameters File Data Formats
+-----------------------------------
 
-Simulation interfaces which employ system calls and forks to create
-separate simulation processes must communicate with the simulation
-code through the file system. This is accomplished through the reading
-and writing of parameters and results files. Dakota uses a particular
-format for this data input/output. Depending on the user’s interface
-specification, Dakota will write the parameters file in either
-standard or APREPRO format. The former uses a simple ``value tag``
-format, whereas latter option uses a ``{ tag = value }`` format for
-compatibility with the APREPRO utility :cite:p:`Sja92` (as well as
-DPrePro, BPREPRO, and JPrePost variants).
+Simulation interfaces employ :dakkw:`forks <interface-analysis_drivers-fork>`
+or :dakkw:`interface-analysis_drivers-system` calls to run simulation
+workflows via user-developed drivers. Dakota communicates variable or parameter
+values to the driver and receives back response values using the file system,
+through the writing of parameters files and reading of results files.
+
+Prior to invoking an analysis driver (or optional input or output filter),
+Dakota creates a parameters file that contains the current parameter
+values and a set of function requests. See the 
+:ref:`interfacing <interfaces:overview>` portion of the manual for full
+details.
+
+Dakota supports three parameters file formats: standard, APREPRO, and
+JSON. They are explained in full detail in the following sections.
+Briefly, the standard format is unique to Dakota and uses a simple
+``value tag`` syntax to communicate information about the evaluation.
+In the APREPRO format, which is intended for use with the APREPRO
+template processing utility :cite:p:`Sja92`, information is contained
+in a series of of statements of the form ``{ tag = value }``. JSON is
+JSON (JavaScript Object Notation), a common format for data interchange.
+
 
 .. _`variables:parameters:standard`:
 
 Parameters file format (standard)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Prior to invoking a simulation, Dakota creates a parameters file which
-contains the current parameter values and a set of function requests.
-The standard format for this parameters file is shown in
-:numref:`variables:std_params_format`.
+The standard parameters file format for a single evaluation is 
+shown in :numref:`variables:std_params_format`.
 
 .. code-block::
-   :caption: Parameters file data format - standard option.
+   :caption: Parameters file data format - standard option
    :name: variables:std_params_format
 
    <int>    variables
@@ -663,6 +672,11 @@ precision value, and ``<string>`` denotes a string value. Each of the
 major blocks denotes an array which begins with an array length and a
 descriptive tag. These array lengths can be useful for dynamic memory
 allocation within a simulator or filter program.
+
+When using Dakota's :dakkw:`interface-batch` interface with the standard
+format, information for multiple evaluations is written in a concatenated
+fashion to a single batch parameters file. The format for each evaluation
+is as shown in :numref:`variables:std_params_format`.
 
 The first array for variables begins with the total number of variables
 (``n``) with its identifier string ``variables``. The next ``n`` lines
@@ -784,27 +798,28 @@ require the use of includes since it processes the Dakota parameters
 file and template simulation file separately to create a simulation
 input file populated with the variables data.
 
+
 .. code-block::
-   :caption: Parameters file data format - APREPRO option.
+   :caption: Parameters file data format - APREPRO option
    :name: variables:aprepro_params_format
 
    { DAKOTA_VARS = <int> }
-   { <label_cdv_i = <double> }         (i = 1 to n_cdv)
-   { <label_ddiv_i = <int> }           (i = 1 to n_ddiv)
-   { <label_ddsv_i = <string> }        (i = 1 to n_ddsv)
-   { <label_ddrv_i = <double> }        (i = 1 to n_ddrv)
-   { <label_cauv_i = <double> }        (i = 1 to n_cauv)
-   { <label_dauiv_i = <int> }          (i = 1 to n_dauiv)
-   { <label_dausv_i = <string> }       (i = 1 to n_dausv)
-   { <label_daurv_i = <double> }       (i = 1 to n_daurv)
-   { <label_ceuv_i = <double> }        (i = 1 to n_ceuv)
-   { <label_deuiv_i = <int> }          (i = 1 to n_deuiv)
-   { <label_deusv_i = <string> }       (i = 1 to n_deusv)
-   { <label_deurv_i = <double> }       (i = 1 to n_deurv)
-   { <label_csv_i = <double> }         (i = 1 to n_csv)
-   { <label_dsiv_i = <int> }           (i = 1 to n_dsiv)
-   { <label_dssv_i = <string> }        (i = 1 to n_dssv)
-   { <label_dsrv_i = <double> }        (i = 1 to n_dsrv)
+   { <label_cdv_i> = <double> }         (i = 1 to n_cdv)
+   { <label_ddiv_i> = <int> }           (i = 1 to n_ddiv)
+   { <label_ddsv_i> = <string> }        (i = 1 to n_ddsv)
+   { <label_ddrv_i> = <double> }        (i = 1 to n_ddrv)
+   { <label_cauv_i> = <double> }        (i = 1 to n_cauv)
+   { <label_dauiv_i> = <int> }          (i = 1 to n_dauiv)
+   { <label_dausv_i> = <string> }       (i = 1 to n_dausv)
+   { <label_daurv_i> = <double> }       (i = 1 to n_daurv)
+   { <label_ceuv_i> = <double> }        (i = 1 to n_ceuv)
+   { <label_deuiv_i> = <int> }          (i = 1 to n_deuiv)
+   { <label_deusv_i> = <string> }       (i = 1 to n_deusv)
+   { <label_deurv_i> = <double> }       (i = 1 to n_deurv)
+   { <label_csv_i> = <double> }         (i = 1 to n_csv)
+   { <label_dsiv_i> = <int> }           (i = 1 to n_dsiv)
+   { <label_dssv_i> = <string> }        (i = 1 to n_dssv)
+   { <label_dsrv_i> = <double> }        (i = 1 to n_dsrv)
    { DAKOTA_FNS = <int> }
    { ASV_i:label_response_i = <int> }              (i = 1 to m)
    { DAKOTA_DER_VARS = <int> }
@@ -814,6 +829,116 @@ input file populated with the variables data.
    { DAKOTA_EVAL_ID = <string> }
    { DAKOTA_METADATA = <int> }
    { MD_i = <string> }                            (i = 1 to r)
+
+As with the standard format, :dakkw:`interface-batch` parameters files
+are simply a concatenation of the information for evaluations in the batch
+in ARREPRO format.
+
+
+.. _`variables:parameters:json`:
+
+Parameters file format (JSON)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The JSON format encodes information using two structures, `objects`
+and `arrays`. An object is a collection of name/value pairs. In many
+programming languages it may be known as a dictionary, associative array,
+map, or hash table. An array is an ordered list of values, and is commonly
+known as an array, vector, or list. Objects and arrays may contain other
+objects or arrays, or scalar values that have "primitive" types such as 
+strings, numbers, or booleans.
+
+In Dakota's JSON format, information about each evaluation is stored in a 
+top-level object. The object contains the names (also known as keys):
+
+.. code-block:: JSON
+   :caption: Top-level organization of an evaluation in JSON
+   :name: variables:json_params_format:top
+
+   {
+     "variables": [],
+     "responses": [],
+     "derivative_variables": []
+     "analysis_components": [],
+     "eval_id": "",
+     "metadata": []
+   }
+
+Unlike in the standard and APREPRO formats, the numbers of variables,
+responses, derviatve variables, etc, are not explicitly included in the JSON
+parameters file. They are unnecessary for parsing the file and are simply
+the lengths of the array in question. Another difference between the JSON
+format and the standard and APREPRO formats arises when using Dakota's
+:dakkw:`interface-batch` interface. The top-level data structure of a
+JSON format batch parameters file is an array, which contains evaluation
+objects.
+
+Variables
+^^^^^^^^^
+
+Variable labels and values are stored within objects that are elements
+of the `variables` array. Each object resembles the following, where
+the variable value is an integer, double, or string, as appropriate.
+
+
+.. code-block:: JSON
+   :caption: Array element of `variables` object
+   :name: variables:json_params_format:variables
+
+   {
+     "label": "<label_var_i>",
+     "value": <variable value>
+   }
+
+The order of the variables in the array is the same as for the 
+standard and APREPRO format files, described in the previous two
+sections.
+
+Responses
+^^^^^^^^^
+
+The `responses` name is associated with an array of objects that
+store the label and active set for each expected response.
+
+.. code-block:: JSON
+   :caption: Array element of `responses` object
+   :name: variables:json_params_format:responses
+
+   {
+     "label": "<label_response_i>",
+     "active_set": <int>
+   }
+
+
+Derivative Variables
+^^^^^^^^^^^^^^^^^^^^
+
+Gradients and Hessians, if requested, are expected to be computed
+with respect to the `derivative_variables`. The array associated
+with this key contains 1-based indices into the `variables` array.
+
+Analysis Components
+^^^^^^^^^^^^^^^^^^^
+
+The `analysis_components` name is associated with an array of
+analysis components objects of the form:
+
+.. code-block:: JSON
+   :caption: Array element of `analysis_components` object
+   :name: variables:json_params_format:an_comps
+
+   {
+     "driver": "<driver_string>",
+     "component": "<an_comp_i>"
+   }
+
+Evaluation ID and Metadata
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Finally, the evaluation ID is a string associated with the `eval_id`
+key, and the `metadata` name refers to an array of strings, a list
+of the expected metadata responses.
+   
 
 
 .. _`variables:asv`:

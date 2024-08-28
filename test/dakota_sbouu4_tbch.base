@@ -11,7 +11,7 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                      -4.9627545643e-01
                      -2.8296809719e-01
-                     -4.9496049052e-02
+                     -4.9496049050e-02
                       1.6000000000e+05
 <<<<< Best evaluation ID not available
 Test Number 1 succeeded
@@ -21,12 +21,12 @@ Test Number 1 succeeded
 <<<<< Function evaluation summary (UQ_ACTUAL): 45 total (45 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.9898091079e+00 d1
-                      2.1068974687e+00 d2
+                      2.1068974686e+00 d2
 <<<<< Best objective function  =
                      -3.3986245178e+00
 <<<<< Best constraint values   =
-                     -4.9570989667e-01
-                     -2.8396537970e-01
-                     -4.8543667163e-02
+                     -4.9570989666e-01
+                     -2.8396537972e-01
+                     -4.8543667144e-02
                       1.6000000000e+05
 <<<<< Best evaluation ID not available

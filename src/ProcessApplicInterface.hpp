@@ -11,6 +11,8 @@
 #define PROCESS_APPLIC_INTERFACE_H
 
 #include "ApplicationInterface.hpp"
+#include <memory>
+
 #ifdef _WIN32
 typedef intptr_t pid_t;
 #endif
@@ -21,6 +23,9 @@ namespace bfs = boost::filesystem;
 
 namespace Dakota {
 
+
+class ParametersFileWriter;
+class ResultsFileReader;
 
 /// Substitute parameters and results file names into driver strings
 String substitute_params_and_results(const String &driver, const String &params, const String &results);
@@ -124,8 +129,7 @@ protected:
   void define_filenames(const String& eval_id_tag);
 
   /// write the parameters data and response request data to one or
-  /// more parameters files (using one or more invocations of
-  /// write_parameters_file()) in either standard or aprepro format
+  /// more parameters files
   void write_parameters_files(const Variables& vars,     const ActiveSet& set,
 			      const Response&  response, const int id);
 
@@ -155,11 +159,10 @@ protected:
   /// flag indicating use of passing of filenames as command line arguments to
   /// the analysis drivers and input/output filters
   bool commandLineArgs;
-  /// flag indicating use of the APREPRO (the Sandia "A PRE PROcessor" utility)
-  /// format for parameter files
-  bool apreproFlag;
-  /// results file format
-  unsigned short resultsFileFormat;
+  /// parameters file writer
+  std::unique_ptr<ParametersFileWriter> paramsFileWriter;
+  /// results file reader
+  std::unique_ptr<ResultsFileReader> resultsFileReader;
   /// flag indicating the need for separate parameters files for multiple
   /// analysis drivers
   bool multipleParamsFiles;
@@ -237,18 +240,6 @@ private:
   //- Heading: Convenience functions
   //
 
-  /// write the variables, active set vector, derivative variables vector,
-  /// and analysis components to the specified parameters file in either
-  /// standard or aprepro format
-  void write_parameters_file(const Variables& vars, const ActiveSet& set,
-			     const Response& response, const std::string& prog,
-			     const std::vector<String>& an_comps,
-			     const std::string& params_fname,
-                             const bool file_mode_out = true);
-
-  /// Open and read the results file at path, properly handling errors
-  void read_results_file(Response &response, const bfs::path &path, 
-      const int id);
   //
   //- Heading: Data
   //

@@ -36,7 +36,7 @@ Sample moment statistics for each posterior variable:
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
         stress  2.6603856243e+03  8.3754799396e+01 -3.7471605301e-02 -1.2780840408e-01
-  displacement  2.9239429437e-01  1.0056554096e-02 -1.6424699849e-03 -2.6863870394e-01
+  displacement  2.9239429437e-01  1.0056554096e-02 -1.6424699851e-03 -2.6863870394e-01
 Information gained from prior to posterior = 6.4560412654e+00
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 16584 total (16584 new, 0 duplicate)
@@ -76,7 +76,7 @@ Sample moment statistics for each posterior variable:
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
         stress  2.6603856243e+03  8.3754799396e+01 -3.7471605301e-02 -1.2780840408e-01
-  displacement  2.9239429437e-01  1.0056554096e-02 -1.6424699849e-03 -2.6863870394e-01
+  displacement  2.9239429437e-01  1.0056554096e-02 -1.6424699851e-03 -2.6863870394e-01
 Information gained from prior to posterior = 6.4560412654e+00
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 18233 total (18233 new, 0 duplicate)
@@ -94,13 +94,13 @@ Test Number 4 succeeded
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
              E  2.8678669546e+07  1.3338109630e+05  5.9271123501e-02 -2.1992341198e-01
-             w  2.5002894282e+00  3.5858484104e-03 -4.7558020251e-02  3.9332938184e-04
+             w  2.5002894282e+00  3.5858484104e-03 -4.7558020251e-02  3.9332938264e-04
   CovMultResp1  9.9174244777e-01  1.8395537515e-01  8.6460939341e-01  1.5995801027e+00
   CovMultResp2  1.0362145310e+00  1.8942198660e-01  6.9795141350e-01  5.8410477363e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-        stress  2.6600292992e+03  8.4131499997e+01  5.8493352154e-02 -6.5711958837e-05
-  displacement  2.9224795761e-01  1.0128326028e-02 -5.7657198052e-02  6.9826516015e-03
+        stress  2.6600292992e+03  8.4131499997e+01  5.8493352154e-02 -6.5711958061e-05
+  displacement  2.9224795761e-01  1.0128326028e-02 -5.7657198053e-02  6.9826516018e-03
 Information gained from prior to posterior = 6.3244626630e+00
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 18394 total (18394 new, 0 duplicate)

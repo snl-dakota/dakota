@@ -39,6 +39,7 @@ void NLSSOL_F77(int& m, int& n, int& nclin, int& ncnln, int& nrowa,
 void NLOPTN2_F77( const char* option_string );
 
 }
+
 namespace Dakota {
 
 NLSSOLLeastSq* NLSSOLLeastSq::nlssolInstance(NULL);
@@ -76,7 +77,7 @@ NLSSOLLeastSq::NLSSOLLeastSq(Model& model):
 
 
 NLSSOLLeastSq::~NLSSOLLeastSq()
-{ }
+{}
 
 
 void NLSSOLLeastSq::

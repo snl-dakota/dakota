@@ -13,7 +13,6 @@
 #include "DakotaVariables.hpp"
 #include "DataVariables.hpp"
 
-
 namespace Dakota {
 
 /// Derived class within the Variables hierarchy which employs the
@@ -53,6 +52,7 @@ protected:
 
   void write(std::ostream& s, unsigned short vars_part = ALL_VARS) const;
   void write_aprepro(std::ostream& s) const;
+  void write_json(json& s) const;
   void write_tabular(std::ostream& s,
 		     unsigned short vars_part = ALL_VARS) const;
   void write_tabular_partial(std::ostream& s, size_t start_index,
@@ -70,13 +70,13 @@ protected:
 		 unsigned short vars_part);
   /// Implementation of writing various formats using the specified
   /// write handler, accounting for reordering due to relaxation
-  template<typename Writer>
-  void write_core(std::ostream& s, Writer write_handler,
+  template<typename Writer, typename Stream>
+  void write_core(Stream& s, Writer write_handler,
                   unsigned short vars_part) const;
   /// Implementation for partial writing in various formats using the
   /// specified write handler
-  template<typename Writer>
-  bool write_partial_core(std::ostream& s, Writer write_handler,
+  template<typename Writer, typename Stream>
+  bool write_partial_core(Stream& s, Writer write_handler,
 			  size_t start_index, size_t end_index,
 			  size_t& acv_offset, size_t& adiv_offset,
 			  size_t& adsv_offset, size_t& adrv_offset,

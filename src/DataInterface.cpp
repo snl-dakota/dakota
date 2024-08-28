@@ -16,8 +16,10 @@ namespace Dakota {
 
 DataInterfaceRep::DataInterfaceRep():
   interfaceType(DEFAULT_INTERFACE),
-  allowExistingResultsFlag(false), verbatimFlag(false), apreproFlag(false),
-  resultsFileFormat(FLEXIBLE_RESULTS), fileTagFlag(false), fileSaveFlag(false),
+  allowExistingResultsFlag(false), verbatimFlag(false),
+  parametersFileFormat(PARAMETERS_FILE_STANDARD), 
+  resultsFileFormat(RESULTS_FILE_STANDARD), dakotaResultsFileLabeled(false),
+  fileTagFlag(false), fileSaveFlag(false),
   batchEvalFlag(false), asynchFlag(false),
   asynchLocalEvalConcurrency(0), asynchLocalEvalScheduling(DEFAULT_SCHEDULING),
   asynchLocalAnalysisConcurrency(0), evalServers(0),
@@ -38,8 +40,9 @@ void DataInterfaceRep::write(MPIPackBuffer& s) const
 {
   s << idInterface << interfaceType << algebraicMappings << analysisDrivers
     << analysisComponents << inputFilter << outputFilter << parametersFile
-    << resultsFile << allowExistingResultsFlag  << verbatimFlag << apreproFlag 
-    << resultsFileFormat << fileTagFlag << fileSaveFlag //<< gridHostNames << gridProcsPerHost
+    << resultsFile << allowExistingResultsFlag  << verbatimFlag  
+    << parametersFileFormat << resultsFileFormat 
+    << dakotaResultsFileLabeled << fileTagFlag << fileSaveFlag //<< gridHostNames << gridProcsPerHost
     << batchEvalFlag << asynchFlag << asynchLocalEvalConcurrency
     << asynchLocalEvalScheduling << asynchLocalAnalysisConcurrency
     << evalServers << evalScheduling << procsPerEval << analysisServers
@@ -55,8 +58,9 @@ void DataInterfaceRep::read(MPIUnpackBuffer& s)
 {
   s >> idInterface >> interfaceType >> algebraicMappings >> analysisDrivers
     >> analysisComponents >> inputFilter >> outputFilter >> parametersFile
-    >> resultsFile >> allowExistingResultsFlag  >> verbatimFlag >> apreproFlag 
-    >> resultsFileFormat >> fileTagFlag >> fileSaveFlag //>> gridHostNames >> gridProcsPerHost
+    >> resultsFile >> allowExistingResultsFlag  >> verbatimFlag  
+    >> parametersFileFormat >> resultsFileFormat 
+    >> dakotaResultsFileLabeled >> fileTagFlag >> fileSaveFlag //>> gridHostNames >> gridProcsPerHost
     >> batchEvalFlag >> asynchFlag >> asynchLocalEvalConcurrency
     >> asynchLocalEvalScheduling >> asynchLocalAnalysisConcurrency
     >> evalServers >> evalScheduling >> procsPerEval >> analysisServers
@@ -72,8 +76,9 @@ void DataInterfaceRep::write(std::ostream& s) const
 {
   s << idInterface << interfaceType << algebraicMappings << analysisDrivers
     << analysisComponents << inputFilter << outputFilter << parametersFile
-    << resultsFile << allowExistingResultsFlag  << verbatimFlag << apreproFlag 
-    << resultsFileFormat << fileTagFlag << fileSaveFlag //<< gridHostNames << gridProcsPerHost
+    << resultsFile << allowExistingResultsFlag  << verbatimFlag  
+    << parametersFileFormat << resultsFileFormat 
+    << dakotaResultsFileLabeled << fileTagFlag << fileSaveFlag //<< gridHostNames << gridProcsPerHost
     << batchEvalFlag << asynchFlag << asynchLocalEvalConcurrency
     << asynchLocalEvalScheduling << asynchLocalAnalysisConcurrency
     << evalServers << evalScheduling << procsPerEval << analysisServers

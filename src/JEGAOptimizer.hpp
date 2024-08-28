@@ -222,7 +222,15 @@ class JEGAOptimizer :
     ===========================================================================
     */
     private:
+	
+        // Track the number of instances so that the destructor can be called on
+	// JEGA's global logger when it reaches 0. The logger keeps JEGAGlobal.log open
+	// until process termination, which can cause problems when Dakota is used in
+	// library mode, such as with the environment Python binding, because it outlives
+	// the environment. See the destructor.
 
+        /// Number of instances of this class
+        static size_t numInstances;
         /**
          * \brief A pointer to an EvaluatorCreator used to create the evaluator
          *        used by JEGA in Dakota (a JEGAEvaluator).

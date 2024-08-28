@@ -1,18 +1,27 @@
 Blurb::
-Write parameters files in APREPRO syntax
-Description::
-The
-format of data in the parameters files can be modified for direct
-usage with the APREPRO pre-processing tool
-:cite:p:`Sja92`
-using the ``aprepro`` specification
+Use the APREPRO format for parameters files
 
-Without this keyword, the parameters file are written in
-DPrePro format. :ref:`DPrePro <interfaces:dprepro-and-pyprepro>` is
-a utility included with Dakota.
-Topics::
-file_formats
+Description::
+
+When this keyword is used, parameters files will be written in
+`APREPRO` format, which is explained
+:ref:`here <variables:parameters:aprepro>`. APREPRO format is understood
+by the APREPRO template processing tool :cite:p:`Sja92`. It is also 
+understood by Dakota's template processing tool, 
+:ref:`dprepro <interfaces:dprepro-and-pyprepro>` and the 
+:ref:`dakota.interfacing <interfaces:dakota.interfacing>` module.
+
 Examples::
+
+.. code-block::
+
+    interface
+      fork
+      analysis_drivers 'driver.py'
+      parameters_file = "params.in"
+      results_file = "results.out"
+      parameters_format
+        aprepro
 
 Theory::
 

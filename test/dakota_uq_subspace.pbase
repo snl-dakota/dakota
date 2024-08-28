@@ -1057,7 +1057,7 @@ Test Number 14 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.8625136561615136e+02  1.1271170414271211e+02  5.4491140024454376e-01  8.6160836132232244e-02
+ response_fn_1  2.8625136561615136e+02  1.1271170414271211e+02  5.4491140024454388e-01  8.6160836132233423e-02
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev          UpperCI_StdDev
  response_fn_1  2.6388691821593511e+02  3.0861581301636761e+02  9.8961647794437042e+01  1.3093439768467687e+02

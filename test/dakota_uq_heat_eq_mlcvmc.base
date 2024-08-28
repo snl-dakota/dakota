@@ -73,7 +73,7 @@ Test Number 5 succeeded
   Projected MLCVMC (sample profile):    4.2022875299e-02
   Projected MLCVMC / pilot ratio:       9.2535366279e-05
  Equivalent     MC (   72 HF samples):  1.1973542164e+02
- Equivalent MLCVMC / MC ratio:          3.5096444079e-04
+ Equivalent MLCVMC / MC ratio:          3.5096444080e-04
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 2615988 total (2615988 new, 0 duplicate)
 <<<<< Function evaluation summary: 2615988 total (2615988 new, 0 duplicate)

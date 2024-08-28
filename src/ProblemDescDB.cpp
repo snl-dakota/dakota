@@ -2502,6 +2502,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
     },
     { /* variables */ },
     { /* interface */
+      {"application.parameters_file_format", P_INT parametersFileFormat},
       {"application.results_file_format", P_INT resultsFileFormat},
       {"type", P_INT interfaceType}
     },
@@ -2768,7 +2769,6 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
     { /* interface */
       {"active_set_vector", P_INT activeSetVectorFlag},
       {"allow_existing_results", P_INT allowExistingResultsFlag},
-      {"application.aprepro", P_INT apreproFlag},
       {"application.file_save", P_INT fileSaveFlag},
       {"application.file_tag", P_INT fileTagFlag},
       {"application.verbatim", P_INT verbatimFlag},
@@ -2777,6 +2777,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
       {"dirSave", P_INT dirSave},
       {"dirTag", P_INT dirTag},
       {"evaluation_cache", P_INT evalCacheFlag},
+      {"labeled_results", P_INT dakotaResultsFileLabeled},
       {"nearby_evaluation_cache", P_INT nearbyEvalCacheFlag},
       {"python.numpy", P_INT numpyFlag},
       {"restart_file", P_INT restartFileFlag},

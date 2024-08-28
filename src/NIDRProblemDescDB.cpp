@@ -6536,8 +6536,11 @@ static Iface_mp_utype
 	MP2s(interfaceType,PYTHON_INTERFACE),
 	MP2s(interfaceType,SCILAB_INTERFACE),
 	MP2s(interfaceType,SYSTEM_INTERFACE),
-	//MP2s(resultsFileFormat,FLEXIBLE_RESULTS), // re-enable when more formats added?
-	MP2s(resultsFileFormat,LABELED_RESULTS);
+	MP2s(parametersFileFormat,PARAMETERS_FILE_APREPRO),
+	MP2s(parametersFileFormat,PARAMETERS_FILE_STANDARD),
+	MP2s(parametersFileFormat,PARAMETERS_FILE_JSON),
+  MP2s(resultsFileFormat,RESULTS_FILE_STANDARD),
+	MP2s(resultsFileFormat,RESULTS_FILE_JSON);
 
 static String
 	MP_(algebraicMappings),
@@ -6560,9 +6563,9 @@ static StringArray
 static bool
 	MP_(activeSetVectorFlag),
 	MP_(allowExistingResultsFlag),
-	MP_(apreproFlag),
 	MP_(asynchFlag),
 	MP_(batchEvalFlag),
+        MP_(dakotaResultsFileLabeled),
 	MP_(dirSave),
 	MP_(dirTag),
 	MP_(evalCacheFlag),

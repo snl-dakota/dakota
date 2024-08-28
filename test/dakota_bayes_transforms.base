@@ -55,12 +55,12 @@ Test Number 1 succeeded
                       6.9070984121e+00
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-             E  2.9011141935e+07  1.3542817408e+05  9.5162129333e-03  2.1374103318e-01
-             w  2.4994633191e+00  6.9266030550e-03  4.7435989078e-02  1.3188480844e-01
+             E  2.9011141935e+07  1.3542817408e+05  9.5162129331e-03  2.1374103318e-01
+             w  2.4994633191e+00  6.9266030550e-03  4.7435989077e-02  1.3188480844e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
         stress  2.6798374864e+03  1.6261414930e+02 -2.4878131755e-02  1.3988695205e-01
-  displacement  2.6447857297e-01  1.5098389234e-03  7.1642358799e-02 -1.9216021896e-01
+  displacement  2.6447857297e-01  1.5098389234e-03  7.1642358800e-02 -1.9216021896e-01
                   Response Level    Probability Level
                   ----------------- -----------------
                   2.3429611792e+03  5.0000000000e-02
@@ -191,7 +191,7 @@ Sample moment statistics for each posterior variable:
              w  2.4999305000e+00  1.5882746117e-02  1.5575420911e-01 -4.4882206547e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-        stress  2.6713069671e+03  3.7235006278e+02 -1.1884695320e-01 -4.6604845215e-01
+        stress  2.6713069671e+03  3.7235006278e+02 -1.1884695320e-01 -4.6604845216e-01
   displacement  2.6312883309e-01  1.4988921734e-02 -1.4726223660e-01 -1.0890346979e-01
                   Response Level    Probability Level
                   ----------------- -----------------
@@ -217,7 +217,7 @@ Sample moment statistics for each response function:
                   2.9106923752e-01  9.5000000000e-01
                   2.3733754538e-01  1.0000000000e-01
                   2.8710260203e-01  9.0000000000e-01
-Information gained from prior to posterior = -1.4497101355e+01
+Information gained from prior to posterior = -1.4497101354e+01
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
 <<<<< Best parameters          =

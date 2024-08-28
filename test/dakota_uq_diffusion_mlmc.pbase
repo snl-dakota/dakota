@@ -1,28 +1,28 @@
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 661 total (661 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 2.5879882812e+01
+<<<<< Online number of equivalent high fidelity evaluations: 2.5879882812e+01
 <<<<< Variance for mean estimator:
     Initial MLMC (pilot samples):     1.0681995540e-05
-      Final MLMC (sample profile):    7.8989110870e-07
-      Final MLMC / pilot ratio:       7.3946024949e-02
+     Online MLMC (sample profile):    7.8989110870e-07
+     Online MLMC / pilot ratio:       7.3946024949e-02
  Equivalent   MC (   26 HF samples):  3.3384832570e-06
  Equivalent MLMC / MC ratio:          2.3660178827e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5347265313e-02  6.3949368322e-03  7.1896519209e-01 -3.4059785010e-01
+ response_fn_1  2.5347265313e-02  6.3949368322e-03  7.1896519209e-01 -3.4059785009e-01
  response_fn_2  1.2789480489e-01  1.3319468165e-02  5.5261688836e-01 -7.7015986016e-01
  response_fn_3  2.5347265314e-02  6.3949368324e-03  7.1896519207e-01 -3.4059785005e-01
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 661 total (661 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 2.5879882812e+01
+<<<<< Online number of equivalent high fidelity evaluations: 2.5879882812e+01
 <<<<< Variance for mean estimator:
     Initial MLMC (pilot samples):     1.0681995540e-05
-      Final MLMC (sample profile):    7.8989110870e-07
-      Final MLMC / pilot ratio:       7.3946024949e-02
+     Online MLMC (sample profile):    7.8989110870e-07
+     Online MLMC / pilot ratio:       7.3946024949e-02
  Equivalent   MC (   26 HF samples):  3.3384832570e-06
  Equivalent MLMC / MC ratio:          2.3660178827e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5347265313e-02  6.3949368322e-03  7.1896519209e-01 -3.4059785010e-01
+ response_fn_1  2.5347265313e-02  6.3949368322e-03  7.1896519209e-01 -3.4059785009e-01
  response_fn_2  1.2789480489e-01  1.3319468165e-02  5.5261688836e-01 -7.7015986016e-01
  response_fn_3  2.5347265314e-02  6.3949368324e-03  7.1896519207e-01 -3.4059785005e-01
