@@ -528,9 +528,11 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
       return std::make_shared<NonDMultilevelSampling>(problem_db, model);
     break;
   case MULTIFIDELITY_SAMPLING:
-    if (probDescDB.get_short("method.nond.search_model_graphs.selection"))
+    if (probDescDB.get_short("method.nond.search_model_graphs.recursion") ||
+	probDescDB.get_short("method.nond.search_model_graphs.selection"))
       return std::make_shared<NonDGenACVSampling>(problem_db, model);
-    else
+    else // Note that numerical MFMC reorders models on the fly,
+         // similar to enumeration of hierarchical DAGs
       return std::make_shared<NonDMultifidelitySampling>(problem_db,model);
     break;
   case MULTILEVEL_MULTIFIDELITY_SAMPLING:

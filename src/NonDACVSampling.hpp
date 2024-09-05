@@ -134,7 +134,7 @@ protected:
   /// vector in ACV); organized numFunctions x numApprox
   RealMatrix covLH;
   /// covariances among all LF approximations (the C matrix in ACV); organized
-  /// as a numFunctions array of symmetic numApprox x numApprox matrices
+  /// as a numFunctions array of symmetric numApprox x numApprox matrices
   RealSymMatrixArray covLL;
 
 private:

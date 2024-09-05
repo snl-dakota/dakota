@@ -102,6 +102,12 @@ private:
   void generate_sub_trees(unsigned short root, const UShortArray& nodes,
 			  unsigned short depth, UShortArray& dag,
 			  UShortArraySet& model_dags);
+  /// recursively generate sub-trees for current root and subordinate nodes,
+  /// restricted to hierarchical DAGs (width = 1)
+  void generate_hierarchical_sub_trees(unsigned short root,
+				       const UShortArray& nodes,
+				       unsigned short depth, UShortArray& dag,
+				       UShortArraySet& model_dags);
   /// for the given DAG and active approimation set, generate the sets
   /// of source nodes that point to given targets
   void generate_reverse_dag(const UShortArray& approx_set,

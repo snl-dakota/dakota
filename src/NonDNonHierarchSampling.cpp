@@ -589,9 +589,10 @@ mfmc_estvar_ratios(const RealMatrix& rho2_LH, const RealVector& avg_eval_ratios,
 
   // Analytic cases: sequence fixed upstream based on rho2LH; r_i monotonicity
   //   enforced after analytic r_i computations for rho2LH sequence.
-  // Numerical cases: sequence updated in estimator_variance_ratios() for each
-  //   call (previously was enforced via linear constraints on opt solve, but
-  //   now reordered on the fly based on current optimizer design vars)
+  // Numerical cases: update sequence on every call in NonDMultifidelitySampling
+  //   ::estimator_variance_ratios().  Previously, was defined once and retained
+  //   via linear constraints on opt solve, but is now reordered on the fly
+  //   based on current optimizer design vars to retain validity of estvar.
   bool ordered = approx_sequence.empty();
 
   // Appendix B of JCP paper on ACV:
@@ -885,7 +886,6 @@ void NonDNonHierarchSampling::ensemble_numerical_solution(MFSolutionData& soln)
   // virtual augmentation of linear ineq (differs among MFMC, ACV, GenACV)
   augment_linear_ineq_constraints(lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub);
 
-
   // Perform the numerical solve(s) and recover the solution:
   configure_minimizers(x0, x_lb, x_ub, lin_ineq_lb, lin_ineq_ub, lin_eq_tgt,
 		       nln_ineq_lb, nln_ineq_ub, nln_eq_tgt, lin_ineq_coeffs,
@@ -955,22 +955,22 @@ void NonDNonHierarchSampling::
 numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
 			  size_t& num_nln_con)
 {
+  // Notes:
+  // > numerical MFMC now uses N_i > N in base augment_linear_ineq_constraints()
+  //   (rather than linear constraints enforcing a hierarchical sequence) since
+  //   it reorders on the fly using ratioApproxSequence
+  // > R_AND_N_NONLINEAR_CONSTRAINT can likely be retired, although
+  //   R_ONLY_LINEAR_CONSTRAINT retains some value for truth_fixed_by_pilot
+
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT:
-    num_cdv = numApprox;  num_nln_con = 0;
-    num_lin_con = 1;
-    if (mlmfSubMethod == SUBMETHOD_MFMC) num_lin_con += numApprox;
-    break;
+    num_cdv = numApprox;  num_nln_con = 0;  num_lin_con = 1;          break;
   case R_AND_N_NONLINEAR_CONSTRAINT:
-    num_cdv = numGroups;  num_nln_con = 1;
-    num_lin_con = (mlmfSubMethod == SUBMETHOD_MFMC) ? numApprox : 0;
-    break;
+    num_cdv = numGroups;  num_nln_con = 1;  num_lin_con = 0;          break;
   case N_MODEL_LINEAR_CONSTRAINT:
-    num_lin_con = num_cdv = numGroups;  num_nln_con = 0;
-    break;
+    num_lin_con = num_cdv = numGroups;      num_nln_con = 0;           break;
   case N_MODEL_LINEAR_OBJECTIVE:
-    num_cdv = numGroups;  num_nln_con = 1;  num_lin_con = numApprox;
-    break;
+    num_cdv = numGroups;  num_nln_con = 1;  num_lin_con = numApprox;  break;
   }
 }
 
@@ -1100,6 +1100,8 @@ augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
   // linear inequality constraints on sample counts:
   //  N_i >  N (aka r_i > 1) prevents numerical exceptions
   // (N_i >= N becomes N_i > N based on RATIO_NUDGE)
+
+  // numerical MFMC now adopts this base implementation (see above)
 
   switch (optSubProblemForm) {
   case N_MODEL_LINEAR_CONSTRAINT:  // lin_ineq #0 is augmented

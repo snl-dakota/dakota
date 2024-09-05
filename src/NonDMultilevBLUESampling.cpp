@@ -163,7 +163,15 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model):
   }
   }
 
-  if (costSource == USER_COST_SPEC) update_model_group_costs(); 
+  if (costSource == USER_COST_SPEC) update_model_group_costs();
+
+  // if throttling is complete (not based on observed group covariances),
+  // adjust solver according to numGroups if necessary (e.g. dimension
+  // limitations for global pre-processing).  If throttling is instead
+  // dynamic, perform this update downstream in prune_model_groups().
+  if (groupThrottleType != RCOND_TOLERANCE_THROTTLE &&
+      groupThrottleType != RCOND_BEST_COUNT_THROTTLE)
+    update_search_algorithm();
 
   load_pilot_sample(problem_db.get_sza("method.nond.pilot_samples"),
 		    numGroups, pilotSamples);
@@ -179,6 +187,8 @@ NonDMultilevBLUESampling::~NonDMultilevBLUESampling()
 
 void NonDMultilevBLUESampling::core_run()
 {
+  retainedModelGroups.clear();
+
   switch (pilotMgmtMode) {
   case ONLINE_PILOT: // iterated ML BLUE (default)
     // ESTIMATOR_PERFORMANCE case differs from ONLINE_PILOT_PROJECTION
@@ -1800,6 +1810,9 @@ void NonDMultilevBLUESampling::prune_model_groups()
   // leave numGroups synchronized with modelGroups and retrieve active count
   // using num_active_groups()
   //numGroups = retainedModelGroups.count();
+
+  // this update performed in ctor for static group allocations
+  update_search_algorithm();
 }
 
 } // namespace Dakota

@@ -142,7 +142,7 @@ DataMethodRep::DataMethodRep():
   pilotGroupSampling(SHARED_PILOT), groupThrottleType(NO_GROUP_THROTTLE),
   groupSizeThrottle(USHRT_MAX), rCondBestThrottle(SZ_MAX),
   rCondTolThrottle(DBL_MAX), truthPilotConstraint(false),
-  dagRecursionType(NO_GRAPH_RECURSION), dagDepthLimit(1),
+  dagRecursionType(NO_GRAPH_RECURSION), dagDepthLimit(USHRT_MAX),
   modelSelectType(NO_MODEL_SELECTION), relaxFixedFactor(0.),
   relaxRecursiveFactor(0.), allocationTarget(TARGET_MEAN),
   useTargetVarianceOptimizationFlag(false), qoiAggregation(QOI_AGGREGATION_SUM),

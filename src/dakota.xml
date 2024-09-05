@@ -342,6 +342,10 @@
     <!ENTITY promoted_model_selection '
 	     <keyword  id="search_model_graphs" name="search_model_graphs" code="{0}" label="search_model_graph" minOccurs="0" default="NO_GRAPH_RECURSION" >
                <keyword  id="model_selection" name="model_selection" code="{N_mdm(type,modelSelectType_ALL_MODEL_COMBINATIONS)}" label="model_selection" minOccurs="0" />
+	       <oneOf label="DAG Ensemble Generation Option">
+		 <keyword  id="no_recursion" name="no_recursion" code="{N_mdm(type,dagRecursionType_NO_GRAPH_RECURSION)}" label="no_recursion" />
+		 <keyword  id="full_recursion" name="full_recursion" code="{N_mdm(type,dagRecursionType_FULL_GRAPH_RECURSION)}" label="full_recursion" />
+	       </oneOf>
              </keyword>
 	     ' >
 
