@@ -58,6 +58,10 @@ protected:
   //
 
   void calibrate();
+
+  
+  void map_pre_solve() override;
+
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   /// convenience function to print calibration parameters, e.g., for
