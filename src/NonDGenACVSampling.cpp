@@ -78,7 +78,7 @@ NonDGenACVSampling::~NonDGenACVSampling()
 
 void NonDGenACVSampling::generate_ensembles_dags()
 {
-  UShortArray nodes(numApprox), dag;  size_t i;
+  UShortArray nodes(numApprox);  size_t i;
   for (i=0; i<numApprox; ++i) nodes[i] = i;
   unsigned short root = numApprox;
 
@@ -198,10 +198,10 @@ generate_dags(unsigned short root, const UShortArray& nodes,
     // promoting "search_model_graphs full recursion" here, trading (nonsmooth
     // but efficient) integration for (smooth but expensive) enumeration.
 
+    dag.resize(num_approx);
     switch (dagRecursionType) {
     case NO_GRAPH_RECURSION:
       // Omit alternate model orderings --> one ordered hierarchical DAG
-      dag.resize(num_approx);
       for (unsigned short i=0; i<num_approx; ++i) dag[i] = i+1;
       dag_set.insert(dag);
       break;
@@ -210,8 +210,9 @@ generate_dags(unsigned short root, const UShortArray& nodes,
       // *** TO DO: verify GenACV DAG dependencies handle misordered hierarch
       // *** TO DO: can we treat the weighted MLMC case the same way?
       generate_hierarchical_sub_trees(root, nodes, d_limit, dag, dag_set);
-      return;
+      break;
     }
+    return;
   }
 
   // zero root directed acyclic graphs
