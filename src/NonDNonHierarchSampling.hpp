@@ -1664,9 +1664,10 @@ inline Real NonDNonHierarchSampling::
 log_average_estvar(const RealVector& cd_vars)
 {
   Real avg_est_var = average_estimator_variance(cd_vars);
-  return (avg_est_var > 0.) ?
-    std::log(avg_est_var) : // use log to flatten contours
-    std::numeric_limits<Real>::quiet_NaN();//Pecos::LARGE_NUMBER;
+  if (avg_est_var > 0.)
+    return std::log(avg_est_var); // use log to flatten contours
+  else
+    return std::numeric_limits<Real>::quiet_NaN();//Pecos::LARGE_NUMBER;
 }
 
 

@@ -1358,10 +1358,16 @@ augmented_linear_ineq_violations(const RealVector& cd_vars,
 	lin_ineq_coeffs(i+lin_ineq_offset, deflate_tgt)  * cd_vars[deflate_tgt];
       l_bnd = lin_ineq_lb[i+lin_ineq_offset];
       u_bnd = lin_ineq_ub[i+lin_ineq_offset];
-      if (inner_prod < l_bnd)
-	{ viol = (1. - inner_prod / l_bnd);  quad_viol += viol*viol; }
-      else if (inner_prod > u_bnd)
-	{ viol = (inner_prod / u_bnd - 1.);  quad_viol += viol*viol; }
+      if (inner_prod < l_bnd) {
+	viol = (std::abs(l_bnd) > Pecos::SMALL_NUMBER)
+	  ? (1. - inner_prod / l_bnd) : l_bnd - inner_prod;
+	quad_viol += viol*viol;
+      }
+      else if (inner_prod > u_bnd) {
+	viol = (std::abs(u_bnd) > Pecos::SMALL_NUMBER)
+	  ? (inner_prod / u_bnd - 1.) : inner_prod - u_bnd;
+	quad_viol += viol*viol;
+      }
     }
     break;
   }

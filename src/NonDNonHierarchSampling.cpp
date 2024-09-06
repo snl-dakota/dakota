@@ -968,7 +968,7 @@ numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
   case R_AND_N_NONLINEAR_CONSTRAINT:
     num_cdv = numGroups;  num_nln_con = 1;  num_lin_con = 0;          break;
   case N_MODEL_LINEAR_CONSTRAINT:
-    num_lin_con = num_cdv = numGroups;      num_nln_con = 0;           break;
+    num_lin_con = num_cdv = numGroups;      num_nln_con = 0;          break;
   case N_MODEL_LINEAR_OBJECTIVE:
     num_cdv = numGroups;  num_nln_con = 1;  num_lin_con = numApprox;  break;
   }
@@ -1136,10 +1136,16 @@ augmented_linear_ineq_violations(const RealVector& cd_vars,
 	         + lin_ineq_coeffs(approx+offset, numApprox) * N_H;
       l_bnd = lin_ineq_lb[approx+offset];
       u_bnd = lin_ineq_ub[approx+offset];
-      if (inner_prod < l_bnd)
-	{ viol = (1. - inner_prod / l_bnd);  quad_viol += viol*viol; }
-      else if (inner_prod > u_bnd)
-	{ viol = (inner_prod / u_bnd - 1.);  quad_viol += viol*viol; }
+      if (inner_prod < l_bnd) {
+	viol = (std::abs(l_bnd) > Pecos::SMALL_NUMBER)
+	  ? (1. - inner_prod / l_bnd) : l_bnd - inner_prod;
+	quad_viol += viol*viol;
+      }
+      else if (inner_prod > u_bnd) {
+	viol = (std::abs(u_bnd) > Pecos::SMALL_NUMBER)
+	  ? (inner_prod / u_bnd - 1.) : inner_prod - u_bnd;
+	quad_viol += viol*viol;
+      }
     }
     break;
   }
@@ -2234,9 +2240,17 @@ Real NonDNonHierarchSampling::direct_penalty_merit(const RealVector& cd_vars)
         direct_min.callback_linear_ineq_upper_bounds());
   bool protect_numerics = (lin_ineq_viol > 0.); // RATIO_NUDGE reflected in viol
   Real obj, constr, constr_u_bnd,
-    budget = (Real)nonHierSampInstance->maxFunctionEvals, log_avg_estvar
-    = (protect_numerics) ? std::log(average(nonHierSampInstance->estVarIter0))
-                         : nonHierSampInstance->log_average_estvar(cd_vars);
+    budget = (Real)nonHierSampInstance->maxFunctionEvals, log_avg_estvar;
+  if (protect_numerics) {
+    const RealVector& estvar0 = nonHierSampInstance->estVarIter0;
+    log_avg_estvar = (estvar0.empty()) ? // offline modes
+      std::log(Pecos::LARGE_NUMBER) : std::log(average(estvar0));
+    if (nonHierSampInstance->outputLevel >= DEBUG_OUTPUT)
+      Cout << "Protect numerics: bypass EstVar computation due to linear ineq "
+	   << "constraint violation." << std::endl;
+  }
+  else
+    log_avg_estvar = nonHierSampInstance->log_average_estvar(cd_vars);
 
   switch (nonHierSampInstance->optSubProblemForm) {
   case N_MODEL_LINEAR_OBJECTIVE:

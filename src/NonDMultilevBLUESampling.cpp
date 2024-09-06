@@ -699,10 +699,17 @@ augmented_linear_ineq_violations(const RealVector& cd_vars,
     for (v=0; v<num_v; ++v)
       inner_prod += lin_ineq_coeffs(0, v) * cd_vars[v]; // avoid contains()
     Real viol, l_bnd = lin_ineq_lb[0];//, u_bnd = lin_ineq_ub[0];
-    if (inner_prod < l_bnd)
-      { viol = (1. - inner_prod / l_bnd);  quad_viol += viol*viol; }
-    //else if (inner_prod > u_bnd)
-    //  { viol = (inner_prod / u_bnd - 1.);  quad_viol += viol*viol; }
+    if (inner_prod < l_bnd) {
+      viol =
+	//(std::abs(l_bnd) > Pecos::SMALL_NUMBER) ? (1. - inner_prod / l_bnd) :
+	l_bnd - inner_prod;
+      quad_viol += viol*viol;
+    }
+    //else if (inner_prod > u_bnd) {
+    //	viol = (std::abs(u_bnd) > Pecos::SMALL_NUMBER)
+    //	  ? (inner_prod / u_bnd - 1.) : inner_prod - u_bnd;
+    //	quad_viol += viol*viol;
+    //}
   }
   return quad_viol;
 }
