@@ -11,9 +11,13 @@
 #include "dakota_system_defs.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
+#include "DigitalNet.hpp"
+#include "LDDriverAdapter.hpp"
 #include "LHSDriverAdapter.hpp"
 #include "NonDSampling.hpp"
 #include "ProblemDescDB.hpp"
+#include "Rank1Lattice.hpp"
+#include "SamplerDriver.hpp"
 #include "SensAnalysisGlobal.hpp"
 #include "ProbabilityTransformation.hpp"
 #include "dakota_stat_util.hpp"
@@ -46,7 +50,11 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
   varyPattern(!probDescDB.get_bool("method.fixed_seed")), 
   backfillDuplicates(probDescDB.get_bool("method.backfill")),
   wilksFlag(probDescDB.get_bool("method.wilks")), numLHSRuns(0),
-  samplerDriver(std::make_unique<LHSDriverAdapter>())
+  samplerDriver(
+    ( problem_db.get_ushort("method.sample_type") == SUBMETHOD_LOW_DISCREPANCY_SAMPLING ) ?
+      std::unique_ptr<SamplerDriver>(std::make_unique<LDDriverAdapter>(problem_db)) :
+        std::unique_ptr<SamplerDriver>(std::make_unique<LHSDriverAdapter>())
+  )
 {
   // pushed down as some derived classes (MLMC) use a MC default
   //if (!sampleType)
@@ -964,6 +972,7 @@ void NonDSampling::active_set_mapping()
     or allVariables. */
 void NonDSampling::core_run()
 {
+  Cout << "Hello from NonDSampling::core_run" << std::endl;
   bool log_resp_flag = (allDataFlag || statsFlag), log_best_flag = false;
   evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
 }

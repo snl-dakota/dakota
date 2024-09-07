@@ -75,7 +75,7 @@ void LHSDriverAdapter::advance_seed_sequence() {
     lhsDriver.advance_seed_sequence();
 }
 
-int LHSDriverAdapter::seed() const {
+int LHSDriverAdapter::seed() {
     return lhsDriver.seed();
 }
 

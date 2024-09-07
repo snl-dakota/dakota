@@ -64,7 +64,7 @@ public:
 
     virtual void advance_seed_sequence() = 0;
 
-    virtual int seed() const = 0;
+    virtual int seed() = 0;
 
     virtual void initialize(
         const String& sampleType,

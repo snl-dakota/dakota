@@ -130,7 +130,6 @@
 #include "ResultsManager.hpp"
 #include "EvaluationStore.hpp"
 #include "NonDWASABIBayesCalibration.hpp"
-#include "NonDLowDiscrepancySampling.hpp"
 
 #include <boost/bimap.hpp>
 #include <boost/assign.hpp>
@@ -512,13 +511,7 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
 //    return std::make_shared<NonDMUQBayesCalibration>(problem_db, model);break;
 //#endif
   case RANDOM_SAMPLING:
-    switch (probDescDB.get_ushort("method.sample_type")) {
-      case SUBMETHOD_LOW_DISCREPANCY_SAMPLING:
-        return std::make_shared<NonDLowDiscrepancySampling>(problem_db, model);
-	break;
-      default:
-        return std::make_shared<NonDLHSSampling>(problem_db, model); break;
-      }
+    return std::make_shared<NonDLHSSampling>(problem_db, model); break;
   case MULTILEVEL_SAMPLING:
     // Similar to MFMC below, spec options could trigger promotion to GenACV
     // (which is then restricted to default hierarch DAG for MLMC consistency)

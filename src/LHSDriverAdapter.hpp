@@ -69,7 +69,7 @@ public:
 
     void advance_seed_sequence() override;
 
-    int seed() const override;
+    int seed() override;
 
     void initialize(
         const String& sampleType,
