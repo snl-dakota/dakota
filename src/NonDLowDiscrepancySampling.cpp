@@ -10,6 +10,7 @@
 #include "dakota_data_types.hpp"
 #include "NonDLowDiscrepancySampling.hpp"
 #include "ProbabilityTransformModel.hpp"
+#include "RandomVariable.hpp"
 #include "Rank1Lattice.hpp"
 #include "DigitalNet.hpp"
 

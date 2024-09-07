@@ -17,6 +17,7 @@
 #include "LowDiscrepancySequence.hpp"
 
 #include <boost/random/uniform_int.hpp>
+#include <boost/random/mersenne_twister.hpp>
 
 namespace Dakota {
 

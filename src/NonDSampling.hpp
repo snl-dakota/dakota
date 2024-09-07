@@ -12,7 +12,7 @@
 
 #include "dakota_data_types.hpp"
 #include "DakotaNonD.hpp"
-#include "LHSDriver.hpp"
+#include "SamplerDriver.hpp"
 #include "SensAnalysisGlobal.hpp"
 
 namespace Dakota {
@@ -235,10 +235,10 @@ protected:
   /// set varyPattern
   void vary_pattern(bool pattern_flag);
 
-  /// Uses lhsDriver to generate a set of samples from the
+  /// Uses samplerDriver to generate a set of samples from the
   /// distributions/bounds defined in the incoming model.
   void get_parameter_sets(Model& model);
-  /// Uses lhsDriver to generate a set of samples from the
+  /// Uses samplerDriver to generate a set of samples from the
   /// distributions/bounds defined in the incoming model and populates
   /// the specified design matrix.
   void get_parameter_sets(Model& model, const size_t num_samples, 
@@ -246,11 +246,11 @@ protected:
   /// core of get_parameter_sets that accepts message print control
   void get_parameter_sets(Model& model, const size_t num_samples,
                           RealMatrix& design_matrix, bool write_msg);
-  /// Uses lhsDriver to generate a set of uniform samples over
+  /// Uses samplerDriver to generate a set of uniform samples over
   /// lower_bnds/upper_bnds.
   void get_parameter_sets(const RealVector& lower_bnds,
                           const RealVector& upper_bnds);
-  /// Uses lhsDriver to generate a set of normal samples 
+  /// Uses samplerDriver to generate a set of normal samples 
   void get_parameter_sets(const RealVector& means,
                           const RealVector& std_devs,
                           const RealVector& lower_bnds,
@@ -283,7 +283,7 @@ protected:
   //- Heading: Convenience member functions for derived classes
   //
 
-  /// increments numLHSRuns, sets random seed, and initializes lhsDriver
+  /// increments numLHSRuns, sets random seed, and initializes samplerDriver
   void initialize_sample_driver(bool write_message, size_t num_samples);
 
   /// compute sampled subsets (all, active, uncertain) within all
@@ -324,7 +324,10 @@ protected:
   /// current increment in a sequence of samples
   int samplesIncrement;
 
-  Pecos::LHSDriver lhsDriver; ///< the C++ wrapper for the F90 LHS library
+  // Pointer to a SamplerDriver that wraps Pecos::LHSDriver to provide uniform
+  // access to generate_*_samples for other sampling methods, in particular for
+  // low-discrepancy sampling
+  std::unique_ptr<SamplerDriver> samplerDriver; 
   size_t numLHSRuns; ///< counter for number of sample set generations
 
   bool stdRegressionCoeffs; ///< flags computation/output of standardized
@@ -518,7 +521,7 @@ sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag)
 
 inline void NonDSampling::random_seed(int seed)
 { /*seedSpec = */randomSeed = seed; }
-// lhsDriver initialized in initialize_sample_driver()
+// samplerDriver initialized in initialize_sample_driver()
 
 
 inline bool NonDSampling::seed_updated()
