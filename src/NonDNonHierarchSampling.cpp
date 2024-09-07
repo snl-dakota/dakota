@@ -1945,7 +1945,7 @@ average_estimator_variance(const RealVector& cd_vars)
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "NonDNonHierarchSampling::average_estimator_variance(): "
 	 << "design vars:\n" << cd_vars << "EstVar ratios:\n" << estvar_ratios
-	 << "average((1. - Rsq) varH / N) = " << avg_estvar << '\n';
+	 << "EstVar:\n" << est_var << "average EstVar = " << avg_estvar << '\n';
   return avg_estvar;
 }
 
@@ -2242,9 +2242,9 @@ Real NonDNonHierarchSampling::direct_penalty_merit(const RealVector& cd_vars)
   Real obj, constr, constr_u_bnd,
     budget = (Real)nonHierSampInstance->maxFunctionEvals, log_avg_estvar;
   if (protect_numerics) {
-    const RealVector& estvar0 = nonHierSampInstance->estVarIter0;
-    log_avg_estvar = (estvar0.empty()) ? // offline modes
-      std::log(Pecos::LARGE_NUMBER) : std::log(average(estvar0));
+    //const RealVector& estvar0 = nonHierSampInstance->estVarIter0;
+    log_avg_estvar = //(estvar0.empty()) ? // offline modes
+      std::log(Pecos::LARGE_NUMBER);// : std::log(average(estvar0));
     if (nonHierSampInstance->outputLevel >= DEBUG_OUTPUT)
       Cout << "Protect numerics: bypass EstVar computation due to linear ineq "
 	   << "constraint violation." << std::endl;

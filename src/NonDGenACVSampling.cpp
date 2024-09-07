@@ -108,6 +108,7 @@ void NonDGenACVSampling::generate_ensembles_dags()
       nodes.resize(dag_size); // discard trailing node
       generate_dags(dag_size, nodes, nominal_dags[dag_size]);
     }
+
     // Now map each set of active model nodes through the nominal dags
     UShortArray mapped_dag;  unsigned short nom_dag_j;
     for (i=0; i<num_tp; ++i) { // include first = {0} --> retain MC case
@@ -115,6 +116,7 @@ void NonDGenACVSampling::generate_ensembles_dags()
       nodes.clear();
       for (j=0; j<numApprox; ++j)
 	if (tp_i[j]) nodes.push_back(j);
+      //Cout << "tp_i:\n" << tp_i << "nodes:\n" << nodes << std::endl;
       dag_size = nodes.size();
       mapped_dag.resize(dag_size);
       const UShortArraySet& nominal_set = nominal_dags[dag_size];
