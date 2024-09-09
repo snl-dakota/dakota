@@ -359,7 +359,7 @@ void NonDMUQBayesCalibration::specify_posterior()
 void NonDMUQBayesCalibration::calibrate()
 {
   const int N =  (chainSamples > 0) ? chainSamples : 1000;
-  size_t num_cv = numContinuousVars;
+  const size_t &num_cv = numContinuousVars;
   Eigen::VectorXd init_pt(num_cv);
   if(mapOptimizer.is_null()) {
     const RealVector& init_point = nonDMUQInstance->mcmcModel.continuous_variables();
