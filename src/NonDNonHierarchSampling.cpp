@@ -486,7 +486,7 @@ mfmc_analytic_solution(const UShortArray& approx_set, const RealMatrix& rho2_LH,
 		       const RealVector& cost, RealVector& avg_eval_ratios,
 		       bool monotonic_r)
 {
-  size_t qoi, a, num_approx = approx_set.size(), num_am1 = num_approx - 1;
+  int a;  size_t qoi, num_approx = approx_set.size(), num_am1 = num_approx - 1;
   if (avg_eval_ratios.length() != num_approx) avg_eval_ratios.size(num_approx);
   else                                        avg_eval_ratios = 0.;
 
@@ -510,10 +510,16 @@ mfmc_analytic_solution(const UShortArray& approx_set, const RealMatrix& rho2_LH,
       for (qoi=0; qoi<numFunctions; ++qoi)
 	avg_eval_ratio += std::sqrt(factor[qoi] / cost_L * rho2_LH_m[qoi]);
     avg_eval_ratio /= numFunctions;
+    prev_approx = approx;
+  }
+
+  // Reverse order for incremental lower bound enforcement
+  for (a=num_am1; a>=0; --a) {
+    // approx_set is ordered but with omissions
+    Real& avg_eval_ratio = avg_eval_ratios[approx_set[a]];
     // Enforce r_i > 1 to protect numerics in mfmc_estvar_ratios()
     if (avg_eval_ratio < nudge_p1)
       { avg_eval_ratio = nudge_p1; nudge_p1 += RATIO_NUDGE; }
-    prev_approx = approx;
   }
 
   // If requested (analytic stand-alone), enforce monotonicity in r_i
@@ -566,10 +572,16 @@ mfmc_reordered_analytic_solution(const UShortArray& approx_set,
     rho2_diff = rho2  = avg_rho2_LH[approx]; // contracted
     if (a) rho2_diff -= prev_rho2;
     avg_eval_ratio = std::sqrt(factor / cost_L * rho2_diff);
+    prev_rho2 = rho2;
+  }
+
+  // Reverse order for incremental lower bound enforcement
+  for (a=num_am1; a>=0; --a) {
+    approx = (ordered) ? a : corr_approx_sequence[a];
+    Real& avg_eval_ratio = avg_eval_ratios[approx];
     // Enforce r_i > 1 to protect numerics in mfmc_estvar_ratios()
     if (avg_eval_ratio < nudge_p1)
       { avg_eval_ratio = nudge_p1; nudge_p1 += RATIO_NUDGE; }
-    prev_rho2 = rho2;
   }
 
   // If requested (analytic stand-alone), enforce monotonicity in r_i for
