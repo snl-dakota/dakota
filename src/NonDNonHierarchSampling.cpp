@@ -491,7 +491,7 @@ mfmc_analytic_solution(const UShortArray& approx_set, const RealMatrix& rho2_LH,
   else                                        avg_eval_ratios = 0.;
 
   unsigned short approx, prev_approx, last_approx = approx_set[num_am1];
-  Real cost_L, cost_H = cost[numApprox]; // HF cost
+  Real cost_L, cost_H = cost[numApprox], nudge_p1 = RATIO_NUDGE + 1.;
   // standard approach for well-ordered approxs
   RealVector factor(numFunctions, false);
   for (qoi=0; qoi<numFunctions; ++qoi)
@@ -510,6 +510,9 @@ mfmc_analytic_solution(const UShortArray& approx_set, const RealMatrix& rho2_LH,
       for (qoi=0; qoi<numFunctions; ++qoi)
 	avg_eval_ratio += std::sqrt(factor[qoi] / cost_L * rho2_LH_m[qoi]);
     avg_eval_ratio /= numFunctions;
+    // Enforce r_i > 1 to protect numerics in mfmc_estvar_ratios()
+    if (avg_eval_ratio < nudge_p1)
+      { avg_eval_ratio = nudge_p1; nudge_p1 += RATIO_NUDGE; }
     prev_approx = approx;
   }
 
@@ -545,22 +548,27 @@ mfmc_reordered_analytic_solution(const UShortArray& approx_set,
   if (ordered)
     Cout << "MFMC: averaged correlations are well-ordered.\n" << std::endl;
   else
-    Cout << "MFMC: reordered approximation model sequence (low to high):\n"
-	 << corr_approx_sequence << std::endl;
+    Cout << "MFMC: average correlation-ordered approximation sequence "
+	 << "(low to high):\n" << corr_approx_sequence << std::endl;
 
   // precompute a factor based on most-correlated approx
   unsigned short approx, inflate_approx;
   size_t most_corr = (ordered) ? num_am1 : corr_approx_sequence[num_am1];
   Real cost_L, cost_H = cost[numApprox], rho2, prev_rho2, rho2_diff,
+    nudge_p1 = RATIO_NUDGE + 1.,
     factor = cost_H / (1. - avg_rho2_LH[most_corr]);// most correlated
   // Compute averaged eval ratios using averaged rho2 for corr_approx_sequence
   for (a=0; a<num_approx; ++a) {
     approx = (ordered) ? a : corr_approx_sequence[a];
+    Real& avg_eval_ratio = avg_eval_ratios[approx];
     inflate_approx = approx_set[approx];  cost_L = cost[inflate_approx];// full
     // NOTE: indexing is inverted from Peherstorfer (i+1 becomes i-1)
     rho2_diff = rho2  = avg_rho2_LH[approx]; // contracted
     if (a) rho2_diff -= prev_rho2;
-    avg_eval_ratios[approx] = std::sqrt(factor / cost_L * rho2_diff);
+    avg_eval_ratio = std::sqrt(factor / cost_L * rho2_diff);
+    // Enforce r_i > 1 to protect numerics in mfmc_estvar_ratios()
+    if (avg_eval_ratio < nudge_p1)
+      { avg_eval_ratio = nudge_p1; nudge_p1 += RATIO_NUDGE; }
     prev_rho2 = rho2;
   }
 
@@ -599,6 +607,10 @@ mfmc_estvar_ratios(const RealMatrix& rho2_LH, const RealVector& avg_eval_ratios,
   // > R^2 = \Sum_i [ (r_i -r_{i-1})/(r_i r_{i-1}) rho2_LH_i ]
   // > Reorder differences since eval ratios/correlations ordered from LF to HF
   //   (opposite of JCP); after this change, reproduces Peherstorfer eq.
+  // > Note that R^2 can blow up (resulting in negative estvar_ratios) when
+  //   r_i < 1 so we now prevent this in ordered/reordered analytic cases
+  //   (as for numerical cases), even though it might only be an initial
+  //   guess for something else.
 
   switch (optSubProblemForm) {
 
@@ -1053,8 +1065,9 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     // the incurred cost (e.g., setting N_lb to 1), but instead we bound with
     // the incurred cost by setting x_lb = latest N_H and retaining r_lb = 1.
     x_lb = 1.; // r_i
-    x_lb[numApprox] = (offline) ? offline_N_lwr :
-      avg_N_H; //std::floor(avg_N_H + .5); // pilot <= N*
+    x_lb[numApprox] = (offline) ? offline_N_lwr : avg_N_H;
+    // Allow numerical nudge as lower bound:
+    //x_lb[numApprox] = avg_N_H;  enforce_nudge(x_lb);
 
     RealVector avg_eval_ratios = soln.solution_ratios();
     if (avg_eval_ratios.empty()) x0 = 1.;
@@ -1067,6 +1080,9 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   }
   case N_MODEL_LINEAR_CONSTRAINT:  case N_MODEL_LINEAR_OBJECTIVE: {
     x_lb = (offline) ? offline_N_lwr : avg_N_H;
+    // Allow numerical nudge as lower bound:
+    //x_lb = avg_N_H;  enforce_nudge(x_lb);
+
     const RealVector& soln_vars = soln.solution_variables();
     x0 = (soln_vars.empty()) ? x_lb : soln_vars;
     if (optSubProblemForm == N_MODEL_LINEAR_CONSTRAINT) {

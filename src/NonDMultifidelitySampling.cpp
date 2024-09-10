@@ -455,7 +455,7 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
   // the derivation of the JCP ACV equation assumes ordered r_i:
   // > either retain a fixed ordering through linear constraints (old)
   // > re-order on the fly and omit linear constraint sequencing (new)
-  //   (essentially supports search over all hierarchical DAGs, similar to
+  //   (essentially supports search over hierarchical DAGs, similar to
   //   GenACV-MF for width limit = 1)
 
   // Note: ACV implementation based on F also works for MFMC, but since MFMC
@@ -464,21 +464,27 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
   // > R_sq_i = F_ii^2 \bar{c}_ii^2 / (F_ii C_ii) for i = approximation number
   //          = F_ii CovLH_i^2 / (VarH_i VarL_i) = F_ii rho2LH_i where
   //   F_ii   = (r_i - r_{i+1}) / (r_i r_{i+1}).
+  RealVector r;
   switch (optSubProblemForm) {
-  case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT: {
-    RealVector r;  copy_data_partial(cd_vars, 0, (int)numApprox, r); // N_i
+  case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT:
+    copy_data_partial(cd_vars, 0, (int)numApprox, r); // N_i
     r.scale(1./cd_vars[numApprox]); // r_i = N_i / N
-    ordered_approx_sequence(r, ratioApproxSequence, true); // high to low r_i
-    mfmc_estvar_ratios(rho2LH, r, ratioApproxSequence, estvar_ratios);
+    break;
+  default: // r_and_N provided: pass leading numApprox terms of cd_vars
+    r = RealVector(Teuchos::View, cd_vars.values(), numApprox);
     break;
   }
-  default: { // r_and_N provided: pass leading numApprox terms of cd_vars
-    RealVector r(Teuchos::View, cd_vars.values(), numApprox);
-    ordered_approx_sequence(r, ratioApproxSequence, true); // high to low r_i
-    mfmc_estvar_ratios(rho2LH, r, ratioApproxSequence, estvar_ratios);
-    break;
+
+  // define approx order using high to low on average evaluation ratios
+  bool ordered = ordered_approx_sequence(r, ratioApproxSequence, true);
+  if (outputLevel >= DEBUG_OUTPUT) {
+    if (ordered)
+      Cout << "MFMC: evaluation ratios are well-ordered.\n" << std::endl;
+    else
+      Cout << "MFMC: evaluation ratio-ordered approximation sequence "
+	   << "(high to low):\n" << ratioApproxSequence << std::endl;
   }
-  }
+  mfmc_estvar_ratios(rho2LH, r, ratioApproxSequence, estvar_ratios);
 }
 
 
@@ -1193,8 +1199,8 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
     }
 
     // Compute r* initial guess from analytic MFMC
-    // > leave r_i at analytic values, allowing monotonicity, unless
-    //   mfmc_estvar_ratios() is needed for accuracy constraint
+    // > leave r_i at analytic values unless mfmc_estvar_ratios() is needed for
+    //   accuracy constraint
     bool monotonic_r = (budget_constrained) ? false : true;
     if (ordered_approx_sequence(rho2_LH)) { // can happen w/ NUMERICAL_OVERRIDE
       corrApproxSequence.clear();
@@ -1287,14 +1293,14 @@ emerge_from_pilot(Real avg_N_H, const RealVector& cost,
       avg_N_H = offline_N_lwr;
   }
   if (avg_N_H > avg_hf_target) { // replace N*, rescale r*
-    Real nudged = 1. + RATIO_NUDGE, scaling = avg_hf_target / avg_N_H, N_i;
+    Real nudge = RATIO_NUDGE, scaling = avg_hf_target / avg_N_H, N_i;
     bool ordered = ratioApproxSequence.empty();  unsigned short approx;
     for (int i=numApprox-1; i>=0; --i) {
       approx = (ordered) ? i : ratioApproxSequence[i];
       Real& r_i = avg_eval_ratios[approx];  N_i = r_i * avg_hf_target;
       // use RATIO_NUDGE, noting that best for peer DAG
       if (N_i <= avg_N_H) //  new N_i = N_H (new r_i = 1)
-	{ r_i = nudged; nudged += RATIO_NUDGE; }
+	{ r_i = 1. + nudge; nudge += RATIO_NUDGE; }
       else // same N_i (new r_i for new N_H)
 	r_i *= scaling;
     }

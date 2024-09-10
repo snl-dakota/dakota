@@ -521,7 +521,8 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
       }
   case MULTILEVEL_SAMPLING:
     // Similar to MFMC below, spec options could trigger promotion to GenACV
-    // (which is then restricted to default hierarch DAG for MLMC consistency)
+    // (which is then restricted to hierarchical DAGs for MLMC consistency)
+    // Note that recursion/selection is not available w/o weighting.
     if (probDescDB.get_ushort("method.sub_method") == SUBMETHOD_WEIGHTED_MLMC)
       return std::make_shared<NonDGenACVSampling>(problem_db, model);
     else
@@ -531,8 +532,8 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     if (probDescDB.get_short("method.nond.search_model_graphs.recursion") ||
 	probDescDB.get_short("method.nond.search_model_graphs.selection"))
       return std::make_shared<NonDGenACVSampling>(problem_db, model);
-    else // Note that numerical MFMC reorders models on the fly,
-         // similar to enumeration of hierarchical DAGs
+    else // Note that numerical MFMC reorders models on the fly, similar to
+         // enumeration of hierarchical DAGs (more efficient, less smooth?)
       return std::make_shared<NonDMultifidelitySampling>(problem_db,model);
     break;
   case MULTILEVEL_MULTIFIDELITY_SAMPLING:

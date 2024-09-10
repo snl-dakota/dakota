@@ -742,6 +742,9 @@ private:
   static void response_evaluator(const Variables& vars, const ActiveSet& set,
 				 Response& response);
 
+  // bound x away from zero
+  //void enforce_nudge(RealVector& x);
+
   //
   //- Heading: Data
   //
@@ -1880,6 +1883,20 @@ deflate(const SizetArray& vec, const BitArray& mask, RealVector& deflated_vec)
 	deflated_vec[cntr++] = (Real)vec[i];
   }
 }
+
+
+/*
+inline void NonDNonHierarchSampling::enforce_nudge(RealVector& x)
+{
+  size_t i, len = x.length();
+  Real lb = //(maxFunctionEvals == SZ_MAX) ?
+    RATIO_NUDGE;
+  //RATIO_NUDGE * std::sqrt(maxFunctionEvals); // hand-tuned heuristic
+  for (i=0; i<len; ++i)
+    if (x[i] < lb)
+      x[i] = lb;
+}
+*/
 
 } // namespace Dakota
 
