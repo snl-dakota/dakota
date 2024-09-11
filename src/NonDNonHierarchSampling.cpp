@@ -524,10 +524,10 @@ mfmc_analytic_solution(const UShortArray& approx_set, const RealMatrix& rho2_LH,
 
   // If requested (analytic stand-alone), enforce monotonicity in r_i
   if (monotonic_r) {
-    Real r_i, prev_ri = 1.;
-    for (int i=num_approx-1; i>=0; --i) {
-      r_i = std::max(avg_eval_ratios[i], prev_ri);
-      prev_ri = avg_eval_ratios[i] = r_i;
+    Real r, prev_r = 1.;
+    for (a=num_am1; a>=0; --a) {
+      r = std::max(avg_eval_ratios[a], prev_r);
+      prev_r = avg_eval_ratios[a] = r;
     }
   }
 }
@@ -540,7 +540,7 @@ mfmc_reordered_analytic_solution(const UShortArray& approx_set,
 				 SizetArray& corr_approx_sequence,
 				 RealVector& avg_eval_ratios, bool monotonic_r)
 {
-  size_t qoi, a, num_approx = approx_set.size(), num_am1 = num_approx-1;
+  int a;  size_t qoi, num_approx = approx_set.size(), num_am1 = num_approx-1;
   if (avg_eval_ratios.length() != num_approx)
     avg_eval_ratios.sizeUninitialized(num_approx);
 
@@ -566,12 +566,11 @@ mfmc_reordered_analytic_solution(const UShortArray& approx_set,
   // Compute averaged eval ratios using averaged rho2 for corr_approx_sequence
   for (a=0; a<num_approx; ++a) {
     approx = (ordered) ? a : corr_approx_sequence[a];
-    Real& avg_eval_ratio = avg_eval_ratios[approx];
     inflate_approx = approx_set[approx];  cost_L = cost[inflate_approx];// full
     // NOTE: indexing is inverted from Peherstorfer (i+1 becomes i-1)
     rho2_diff = rho2  = avg_rho2_LH[approx]; // contracted
     if (a) rho2_diff -= prev_rho2;
-    avg_eval_ratio = std::sqrt(factor / cost_L * rho2_diff);
+    avg_eval_ratios[approx] = std::sqrt(factor / cost_L * rho2_diff);
     prev_rho2 = rho2;
   }
 
@@ -590,11 +589,11 @@ mfmc_reordered_analytic_solution(const UShortArray& approx_set,
   //   performed bottom up, so precedence also applied in this direction),
   //   where assigning r_i = prev_ri effectively drops the CV for approx i
   if (monotonic_r) {
-    Real r_i, prev_ri = 1.;
-    for (int i=num_approx-1; i>=0; --i) {
-      approx = (ordered) ? i : corr_approx_sequence[i];
-      r_i = std::max(avg_eval_ratios[approx], prev_ri);
-      prev_ri = avg_eval_ratios[approx] = r_i;
+    Real r, prev_r = 1.;
+    for (a=num_am1; a>=0; --a) {
+      approx = (ordered) ? a : corr_approx_sequence[a];
+      r = std::max(avg_eval_ratios[approx], prev_r);
+      prev_r = avg_eval_ratios[approx] = r;
     }
   }
 }
