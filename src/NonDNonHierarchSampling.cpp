@@ -513,11 +513,11 @@ mfmc_analytic_solution(const UShortArray& approx_set, const RealMatrix& rho2_LH,
     prev_approx = approx;
   }
 
-  // Reverse order for incremental lower bound enforcement
+  // Reverse order for incremental lower bound enforcement: enforce r_i > 1
+  // to protect numerics in mfmc_estvar_ratios()
   for (a=num_am1; a>=0; --a) {
     // approx_set is ordered but with omissions
     Real& avg_eval_ratio = avg_eval_ratios[approx_set[a]];
-    // Enforce r_i > 1 to protect numerics in mfmc_estvar_ratios()
     if (avg_eval_ratio < nudge_p1)
       { avg_eval_ratio = nudge_p1; nudge_p1 += RATIO_NUDGE; }
   }
@@ -575,11 +575,11 @@ mfmc_reordered_analytic_solution(const UShortArray& approx_set,
     prev_rho2 = rho2;
   }
 
-  // Reverse order for incremental lower bound enforcement
+  // Reverse order for incremental lower bound enforcement: enforce r_i > 1
+  // to protect numerics in mfmc_estvar_ratios()
   for (a=num_am1; a>=0; --a) {
     approx = (ordered) ? a : corr_approx_sequence[a];
     Real& avg_eval_ratio = avg_eval_ratios[approx];
-    // Enforce r_i > 1 to protect numerics in mfmc_estvar_ratios()
     if (avg_eval_ratio < nudge_p1)
       { avg_eval_ratio = nudge_p1; nudge_p1 += RATIO_NUDGE; }
   }
