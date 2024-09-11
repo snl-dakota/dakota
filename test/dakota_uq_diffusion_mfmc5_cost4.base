@@ -219,28 +219,28 @@ Test Number 14 succeeded
  Equivalent MFMC ratio:               1.2989582954921581e-02
 Test Number 15 succeeded
 <<<<< Function evaluation summary (HF_INT): 125 total (125 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 4.9996093750000000e+02
+<<<<< Online number of equivalent high fidelity evaluations: 4.9996484375000000e+02
 <<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000000000e+00
 <<<<< Variance for mean estimator:
      Online   MC (    2 HF samples):  5.1258621771986297e-05
-     Online MFMC (sample profile):    2.5406886815626357e-09
-     Online MFMC ratio (1 - R^2):     4.9566074813021310e-05
- Equivalent   MC (  500 HF samples):  2.0505050665877790e-07
- Equivalent MFMC ratio:               1.2390550615856637e-02
+     Online MFMC (sample profile):    2.5406886814607374e-09
+     Online MFMC ratio (1 - R^2):     4.9566074811033385e-05
+ Equivalent   MC (  500 HF samples):  2.0504890458904910e-07
+ Equivalent MFMC ratio:               1.2390647424099559e-02
 Test Number 16 succeeded
-<<<<< Function evaluation summary (HF_INT): 79914 total (79914 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 4.9996093750000000e+02
+<<<<< Function evaluation summary (HF_INT): 79915 total (79915 new, 0 duplicate)
+<<<<< Online number of equivalent high fidelity evaluations: 4.9996484375000000e+02
 <<<<< Variance for mean estimator:
      Online   MC (    2 HF samples):  5.1258621771986297e-05
-     Online MFMC (sample profile):    2.5406886815626357e-09
-     Online MFMC ratio (1 - R^2):     4.9566074813021310e-05
- Equivalent   MC (  500 HF samples):  2.0505050665877790e-07
- Equivalent MFMC ratio:               1.2390550615856637e-02
+     Online MFMC (sample profile):    2.5406886814607374e-09
+     Online MFMC ratio (1 - R^2):     4.9566074811033385e-05
+ Equivalent   MC (  500 HF samples):  2.0504890458904910e-07
+ Equivalent MFMC ratio:               1.2390647424099559e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5332357132806817e-02  6.6285561257139625e-03  7.7741987132473112e-01 -1.4261837104050823e-01
- response_fn_2  1.2916833732192379e-01  1.3579437355436392e-02  7.1655386086796180e-01 -5.5549146048056475e-01
- response_fn_3  2.5332357135922145e-02  6.6285561244183938e-03  7.7741987105699684e-01 -1.4261837034656155e-01
+ response_fn_1  2.5330536353918905e-02  6.6236453936205000e-03  7.7672257929306188e-01 -1.4331768325784289e-01
+ response_fn_2  1.2917079496957221e-01  1.3589393456742514e-02  7.1225448933854452e-01 -5.8577492481591165e-01
+ response_fn_3  2.5330536357034535e-02  6.6236453923255835e-03  7.7672257902332309e-01 -1.4331768255456634e-01
 Test Number 17 succeeded
 <<<<< Function evaluation summary (HF_INT): 500 total (500 new, 0 duplicate)
 <<<<< Projected number of equivalent high fidelity evaluations: 5.0198046875000000e+02
@@ -273,3 +273,25 @@ Test Number 19 succeeded
      Online MFMC ratio (1 - R^2):     5.3141584428824439e-05
  Equivalent   MC (250000 HF samples):  3.6480244402389023e-10
  Equivalent MFMC ratio:               1.2381537632503900e-02
+Test Number 20 succeeded
+<<<<< Function evaluation summary (HF_INT): 125 total (125 new, 0 duplicate)
+<<<<< Projected number of equivalent high fidelity evaluations: 5.0003906250000000e+02
+<<<<< Incurred cost in equivalent high fidelity evaluations: 3.3300781250000000e+01
+<<<<< Variance for mean estimator:
+    Initial   MC (   25 HF samples):  4.1006897417589037e-06
+  Projected   MC (   25 HF samples):  4.1006897417589037e-06
+  Projected MFMC (sample profile):    2.6631044236155670e-09
+  Projected MFMC ratio (1 - R^2):     6.4942841115145789e-04
+ Equivalent   MC (  500 HF samples):  2.0501847001997489e-07
+ Equivalent MFMC ratio:               1.2989582954921581e-02
+Test Number 21 succeeded
+<<<<< Function evaluation summary (HF_INT): 125 total (125 new, 0 duplicate)
+<<<<< Projected number of equivalent high fidelity evaluations: 5.0003906250000000e+02
+<<<<< Incurred cost in equivalent high fidelity evaluations: 3.3300781250000000e+01
+<<<<< Variance for mean estimator:
+    Initial   MC (   25 HF samples):  4.1006897417589037e-06
+  Projected   MC (   25 HF samples):  4.1006897417589037e-06
+  Projected MFMC (sample profile):    2.6631044236155670e-09
+  Projected MFMC ratio (1 - R^2):     6.4942841115145789e-04
+ Equivalent   MC (  500 HF samples):  2.0501847001997489e-07
+ Equivalent MFMC ratio:               1.2989582954921581e-02
