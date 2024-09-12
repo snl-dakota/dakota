@@ -484,14 +484,14 @@ export_all_samples(const String& root_prepend, const Model& model, size_t iter,
 void NonDNonHierarchSampling::
 mfmc_analytic_solution(const UShortArray& approx_set, const RealMatrix& rho2_LH,
 		       const RealVector& cost, RealVector& avg_eval_ratios,
-		       bool monotonic_r)
+		       bool lower_bounded_r, bool monotonic_r)
 {
-  size_t qoi, a, num_approx = approx_set.size(), num_am1 = num_approx - 1;
+  int a;  size_t qoi, num_approx = approx_set.size(), num_am1 = num_approx - 1;
   if (avg_eval_ratios.length() != num_approx) avg_eval_ratios.size(num_approx);
   else                                        avg_eval_ratios = 0.;
 
   unsigned short approx, prev_approx, last_approx = approx_set[num_am1];
-  Real cost_L, cost_H = cost[numApprox]; // HF cost
+  Real cost_L, cost_H = cost[numApprox], nudge_p1 = RATIO_NUDGE + 1.;
   // standard approach for well-ordered approxs
   RealVector factor(numFunctions, false);
   for (qoi=0; qoi<numFunctions; ++qoi)
@@ -513,12 +513,22 @@ mfmc_analytic_solution(const UShortArray& approx_set, const RealMatrix& rho2_LH,
     prev_approx = approx;
   }
 
+  // Reverse order for incremental lower bound enforcement: enforce r_i > 1
+  // to protect numerics in mfmc_estvar_ratios()
+  if (lower_bounded_r)
+    for (a=num_am1; a>=0; --a) {
+      // approx_set is ordered but with omissions
+      Real& avg_eval_ratio = avg_eval_ratios[approx_set[a]];
+      if (avg_eval_ratio < nudge_p1)
+	{ avg_eval_ratio = nudge_p1; nudge_p1 += RATIO_NUDGE; }
+    }
+
   // If requested (analytic stand-alone), enforce monotonicity in r_i
   if (monotonic_r) {
-    Real r_i, prev_ri = 1.;
-    for (int i=num_approx-1; i>=0; --i) {
-      r_i = std::max(avg_eval_ratios[i], prev_ri);
-      prev_ri = avg_eval_ratios[i] = r_i;
+    Real r, prev_r = 1.;
+    for (a=num_am1; a>=0; --a) {
+      r = std::max(avg_eval_ratios[a], prev_r);
+      prev_r = avg_eval_ratios[a] = r;
     }
   }
 }
@@ -529,9 +539,10 @@ mfmc_reordered_analytic_solution(const UShortArray& approx_set,
 				 const RealMatrix& rho2_LH,
 				 const RealVector& cost,
 				 SizetArray& corr_approx_sequence,
-				 RealVector& avg_eval_ratios, bool monotonic_r)
+				 RealVector& avg_eval_ratios,
+				 bool lower_bounded_r, bool monotonic_r)
 {
-  size_t qoi, a, num_approx = approx_set.size(), num_am1 = num_approx-1;
+  int a;  size_t qoi, num_approx = approx_set.size(), num_am1 = num_approx-1;
   if (avg_eval_ratios.length() != num_approx)
     avg_eval_ratios.sizeUninitialized(num_approx);
 
@@ -545,13 +556,14 @@ mfmc_reordered_analytic_solution(const UShortArray& approx_set,
   if (ordered)
     Cout << "MFMC: averaged correlations are well-ordered.\n" << std::endl;
   else
-    Cout << "MFMC: reordered approximation model sequence (low to high):\n"
-	 << corr_approx_sequence << std::endl;
+    Cout << "MFMC: average correlation-ordered approximation sequence "
+	 << "(low to high):\n" << corr_approx_sequence << std::endl;
 
   // precompute a factor based on most-correlated approx
   unsigned short approx, inflate_approx;
   size_t most_corr = (ordered) ? num_am1 : corr_approx_sequence[num_am1];
   Real cost_L, cost_H = cost[numApprox], rho2, prev_rho2, rho2_diff,
+    nudge_p1 = RATIO_NUDGE + 1.,
     factor = cost_H / (1. - avg_rho2_LH[most_corr]);// most correlated
   // Compute averaged eval ratios using averaged rho2 for corr_approx_sequence
   for (a=0; a<num_approx; ++a) {
@@ -564,17 +576,27 @@ mfmc_reordered_analytic_solution(const UShortArray& approx_set,
     prev_rho2 = rho2;
   }
 
+  // Reverse order for incremental lower bound enforcement: enforce r_i > 1
+  // to protect numerics in mfmc_estvar_ratios()
+  if (lower_bounded_r)
+    for (a=num_am1; a>=0; --a) {
+      approx = (ordered) ? a : corr_approx_sequence[a];
+      Real& avg_eval_ratio = avg_eval_ratios[approx];
+      if (avg_eval_ratio < nudge_p1)
+	{ avg_eval_ratio = nudge_p1; nudge_p1 += RATIO_NUDGE; }
+    }
+
   // If requested (analytic stand-alone), enforce monotonicity in r_i for
   // rho ordering:
   // > max() is applied bottom-up from the base of the pyramid (samples
   //   performed bottom up, so precedence also applied in this direction),
   //   where assigning r_i = prev_ri effectively drops the CV for approx i
   if (monotonic_r) {
-    Real r_i, prev_ri = 1.;
-    for (int i=num_approx-1; i>=0; --i) {
-      approx = (ordered) ? i : corr_approx_sequence[i];
-      r_i = std::max(avg_eval_ratios[approx], prev_ri);
-      prev_ri = avg_eval_ratios[approx] = r_i;
+    Real r, prev_r = 1.;
+    for (a=num_am1; a>=0; --a) {
+      approx = (ordered) ? a : corr_approx_sequence[a];
+      r = std::max(avg_eval_ratios[approx], prev_r);
+      prev_r = avg_eval_ratios[approx] = r;
     }
   }
 }
@@ -589,15 +611,20 @@ mfmc_estvar_ratios(const RealMatrix& rho2_LH, const RealVector& avg_eval_ratios,
 
   // Analytic cases: sequence fixed upstream based on rho2LH; r_i monotonicity
   //   enforced after analytic r_i computations for rho2LH sequence.
-  // Numerical cases: sequence updated in estimator_variance_ratios() for each
-  //   call (previously was enforced via linear constraints on opt solve, but
-  //   now reordered on the fly based on current optimizer design vars)
+  // Numerical cases: update sequence on every call in NonDMultifidelitySampling
+  //   ::estimator_variance_ratios().  Previously, was defined once and retained
+  //   via linear constraints on opt solve, but is now reordered on the fly
+  //   based on current optimizer design vars to retain validity of estvar.
   bool ordered = approx_sequence.empty();
 
   // Appendix B of JCP paper on ACV:
   // > R^2 = \Sum_i [ (r_i -r_{i-1})/(r_i r_{i-1}) rho2_LH_i ]
   // > Reorder differences since eval ratios/correlations ordered from LF to HF
   //   (opposite of JCP); after this change, reproduces Peherstorfer eq.
+  // > Note that R^2 can blow up (resulting in negative estvar_ratios) when
+  //   r_i < 1 so we now prevent this in ordered/reordered analytic cases
+  //   (as for numerical cases), even though it might only be an initial
+  //   guess for something else.
 
   switch (optSubProblemForm) {
 
@@ -648,17 +675,17 @@ mfmc_estvar_ratios(const RealMatrix& rho2_LH, const RealVector& avg_eval_ratios,
 
 void NonDNonHierarchSampling::
 cvmc_ensemble_solutions(const RealMatrix& rho2_LH, const RealVector& cost,
-			RealVector& avg_eval_ratios)
+			RealVector& avg_eval_ratios, bool lower_bounded_r)
 {
   if (avg_eval_ratios.empty()) avg_eval_ratios.size(numApprox);
   else                         avg_eval_ratios = 0.;
 
   // Compute an ensemble of pairwise CVMC solutions, all relative to HF:
-  size_t qoi, approx;  Real cost_ratio, rho_sq, cost_H = cost[numApprox];
-  for (approx=0; approx<numApprox; ++approx) {
-    cost_ratio = cost_H / cost[approx];
-    const Real* rho2_LH_a = rho2_LH[approx];
-    Real&  avg_eval_ratio = avg_eval_ratios[approx];
+  size_t qoi;  int a;  Real cost_ratio, rho_sq, cost_H = cost[numApprox];
+  for (a=0; a<numApprox; ++a) {
+    cost_ratio = cost_H / cost[a];
+    const Real* rho2_LH_a = rho2_LH[a];
+    Real&  avg_eval_ratio = avg_eval_ratios[a];
     for (qoi=0; qoi<numFunctions; ++qoi) {
       rho_sq = rho2_LH_a[qoi];
       if (rho_sq < 1.) // prevent div by 0, sqrt(negative)
@@ -667,6 +694,17 @@ cvmc_ensemble_solutions(const RealMatrix& rho2_LH, const RealVector& cost,
 	avg_eval_ratio += std::sqrt(cost_ratio / Pecos::SMALL_NUMBER);
     }
     avg_eval_ratio /= numFunctions;
+  }
+
+  // Reverse order for incremental lower bound enforcement: enforce r_i > 1
+  // to protect numerics in mfmc_estvar_ratios()
+  if (lower_bounded_r) {
+    Real nudge_p1 = 1. + RATIO_NUDGE;
+    for (int a=numApprox-1; a>=0; --a) {
+      Real& avg_eval_ratio = avg_eval_ratios[a];
+      if (avg_eval_ratio < nudge_p1)
+	{ avg_eval_ratio = nudge_p1; nudge_p1 += RATIO_NUDGE; }
+    }
   }
 }
 
@@ -885,7 +923,6 @@ void NonDNonHierarchSampling::ensemble_numerical_solution(MFSolutionData& soln)
   // virtual augmentation of linear ineq (differs among MFMC, ACV, GenACV)
   augment_linear_ineq_constraints(lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub);
 
-
   // Perform the numerical solve(s) and recover the solution:
   configure_minimizers(x0, x_lb, x_ub, lin_ineq_lb, lin_ineq_ub, lin_eq_tgt,
 		       nln_ineq_lb, nln_ineq_ub, nln_eq_tgt, lin_ineq_coeffs,
@@ -955,22 +992,22 @@ void NonDNonHierarchSampling::
 numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
 			  size_t& num_nln_con)
 {
+  // Notes:
+  // > numerical MFMC now uses N_i > N in base augment_linear_ineq_constraints()
+  //   (rather than linear constraints enforcing a hierarchical sequence) since
+  //   it reorders on the fly using ratioApproxSequence
+  // > R_AND_N_NONLINEAR_CONSTRAINT can likely be retired, although
+  //   R_ONLY_LINEAR_CONSTRAINT retains some value for truth_fixed_by_pilot
+
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT:
-    num_cdv = numApprox;  num_nln_con = 0;
-    num_lin_con = 1;
-    if (mlmfSubMethod == SUBMETHOD_MFMC) num_lin_con += numApprox;
-    break;
+    num_cdv = numApprox;  num_nln_con = 0;  num_lin_con = 1;          break;
   case R_AND_N_NONLINEAR_CONSTRAINT:
-    num_cdv = numGroups;  num_nln_con = 1;
-    num_lin_con = (mlmfSubMethod == SUBMETHOD_MFMC) ? numApprox : 0;
-    break;
+    num_cdv = numGroups;  num_nln_con = 1;  num_lin_con = 0;          break;
   case N_MODEL_LINEAR_CONSTRAINT:
-    num_lin_con = num_cdv = numGroups;  num_nln_con = 0;
-    break;
+    num_lin_con = num_cdv = numGroups;      num_nln_con = 0;          break;
   case N_MODEL_LINEAR_OBJECTIVE:
-    num_cdv = numGroups;  num_nln_con = 1;  num_lin_con = numApprox;
-    break;
+    num_cdv = numGroups;  num_nln_con = 1;  num_lin_con = numApprox;  break;
   }
 }
 
@@ -1053,8 +1090,9 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     // the incurred cost (e.g., setting N_lb to 1), but instead we bound with
     // the incurred cost by setting x_lb = latest N_H and retaining r_lb = 1.
     x_lb = 1.; // r_i
-    x_lb[numApprox] = (offline) ? offline_N_lwr :
-      avg_N_H; //std::floor(avg_N_H + .5); // pilot <= N*
+    x_lb[numApprox] = (offline) ? offline_N_lwr : avg_N_H;
+    // Allow numerical nudge as lower bound:
+    //x_lb[numApprox] = avg_N_H;  enforce_nudge(x_lb);
 
     RealVector avg_eval_ratios = soln.solution_ratios();
     if (avg_eval_ratios.empty()) x0 = 1.;
@@ -1067,6 +1105,9 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   }
   case N_MODEL_LINEAR_CONSTRAINT:  case N_MODEL_LINEAR_OBJECTIVE: {
     x_lb = (offline) ? offline_N_lwr : avg_N_H;
+    // Allow numerical nudge as lower bound:
+    //x_lb = avg_N_H;  enforce_nudge(x_lb);
+
     const RealVector& soln_vars = soln.solution_variables();
     x0 = (soln_vars.empty()) ? x_lb : soln_vars;
     if (optSubProblemForm == N_MODEL_LINEAR_CONSTRAINT) {
@@ -1101,6 +1142,8 @@ augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
   //  N_i >  N (aka r_i > 1) prevents numerical exceptions
   // (N_i >= N becomes N_i > N based on RATIO_NUDGE)
 
+  // numerical MFMC now adopts this base implementation (see above)
+
   switch (optSubProblemForm) {
   case N_MODEL_LINEAR_CONSTRAINT:  // lin_ineq #0 is augmented
   case N_MODEL_LINEAR_OBJECTIVE: { // no other lin ineq
@@ -1134,10 +1177,16 @@ augmented_linear_ineq_violations(const RealVector& cd_vars,
 	         + lin_ineq_coeffs(approx+offset, numApprox) * N_H;
       l_bnd = lin_ineq_lb[approx+offset];
       u_bnd = lin_ineq_ub[approx+offset];
-      if (inner_prod < l_bnd)
-	{ viol = (1. - inner_prod / l_bnd);  quad_viol += viol*viol; }
-      else if (inner_prod > u_bnd)
-	{ viol = (inner_prod / u_bnd - 1.);  quad_viol += viol*viol; }
+      if (inner_prod < l_bnd) {
+	viol = (std::abs(l_bnd) > Pecos::SMALL_NUMBER)
+	  ? (1. - inner_prod / l_bnd) : l_bnd - inner_prod;
+	quad_viol += viol*viol;
+      }
+      else if (inner_prod > u_bnd) {
+	viol = (std::abs(u_bnd) > Pecos::SMALL_NUMBER)
+	  ? (inner_prod / u_bnd - 1.) : inner_prod - u_bnd;
+	quad_viol += viol*viol;
+      }
     }
     break;
   }
@@ -1937,7 +1986,7 @@ average_estimator_variance(const RealVector& cd_vars)
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "NonDNonHierarchSampling::average_estimator_variance(): "
 	 << "design vars:\n" << cd_vars << "EstVar ratios:\n" << estvar_ratios
-	 << "average((1. - Rsq) varH / N) = " << avg_estvar << '\n';
+	 << "EstVar:\n" << est_var << "average EstVar = " << avg_estvar << '\n';
   return avg_estvar;
 }
 
@@ -2232,9 +2281,17 @@ Real NonDNonHierarchSampling::direct_penalty_merit(const RealVector& cd_vars)
         direct_min.callback_linear_ineq_upper_bounds());
   bool protect_numerics = (lin_ineq_viol > 0.); // RATIO_NUDGE reflected in viol
   Real obj, constr, constr_u_bnd,
-    budget = (Real)nonHierSampInstance->maxFunctionEvals, log_avg_estvar
-    = (protect_numerics) ? std::log(average(nonHierSampInstance->estVarIter0))
-                         : nonHierSampInstance->log_average_estvar(cd_vars);
+    budget = (Real)nonHierSampInstance->maxFunctionEvals, log_avg_estvar;
+  if (protect_numerics) {
+    //const RealVector& estvar0 = nonHierSampInstance->estVarIter0;
+    log_avg_estvar = //(estvar0.empty()) ? // offline modes
+      std::log(Pecos::LARGE_NUMBER);// : std::log(average(estvar0));
+    if (nonHierSampInstance->outputLevel >= DEBUG_OUTPUT)
+      Cout << "Protect numerics: bypass EstVar computation due to linear ineq "
+	   << "constraint violation." << std::endl;
+  }
+  else
+    log_avg_estvar = nonHierSampInstance->log_average_estvar(cd_vars);
 
   switch (nonHierSampInstance->optSubProblemForm) {
   case N_MODEL_LINEAR_OBJECTIVE:

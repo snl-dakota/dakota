@@ -500,13 +500,15 @@ protected:
   void mfmc_analytic_solution(const UShortArray& approx_set,
 			      const RealMatrix& rho2_LH, const RealVector& cost,
 			      RealVector& avg_eval_ratios,
-			      bool monotonic_r = false);
+			      bool lower_bounded_r = true,
+			      bool     monotonic_r = false);
   void mfmc_reordered_analytic_solution(const UShortArray& approx_set,
 					const RealMatrix& rho2_LH,
 					const RealVector& cost,
 					SizetArray& corr_approx_sequence,
 					RealVector& avg_eval_ratios,
-					bool monotonic_r = false);
+					bool lower_bounded_r = true,
+					bool     monotonic_r = false);
   void mfmc_estvar_ratios(const RealMatrix& rho2_LH,
 			  const RealVector& avg_eval_ratios,
 			  SizetArray& approx_sequence,
@@ -514,7 +516,8 @@ protected:
 
   void cvmc_ensemble_solutions(const RealMatrix& rho2_LH,
 			       const RealVector& cost,
-			       RealVector& avg_eval_ratios);
+			       RealVector& avg_eval_ratios,
+			       bool lower_bounded_r = true);
 
   void pick_mfmc_cvmc_solution(const MFSolutionData& mf_soln, //size_t mf_samp,
 			       const MFSolutionData& cv_soln, //size_t cv_samp,
@@ -741,6 +744,9 @@ private:
   /// (objective and nonlinear constraint, if present)
   static void response_evaluator(const Variables& vars, const ActiveSet& set,
 				 Response& response);
+
+  // bound x away from zero
+  //void enforce_nudge(RealVector& x);
 
   //
   //- Heading: Data
@@ -1664,9 +1670,10 @@ inline Real NonDNonHierarchSampling::
 log_average_estvar(const RealVector& cd_vars)
 {
   Real avg_est_var = average_estimator_variance(cd_vars);
-  return (avg_est_var > 0.) ?
-    std::log(avg_est_var) : // use log to flatten contours
-    std::numeric_limits<Real>::quiet_NaN();//Pecos::LARGE_NUMBER;
+  if (avg_est_var > 0.)
+    return std::log(avg_est_var); // use log to flatten contours
+  else
+    return std::numeric_limits<Real>::quiet_NaN();//Pecos::LARGE_NUMBER;
 }
 
 
@@ -1879,6 +1886,20 @@ deflate(const SizetArray& vec, const BitArray& mask, RealVector& deflated_vec)
 	deflated_vec[cntr++] = (Real)vec[i];
   }
 }
+
+
+/*
+inline void NonDNonHierarchSampling::enforce_nudge(RealVector& x)
+{
+  size_t i, len = x.length();
+  Real lb = //(maxFunctionEvals == SZ_MAX) ?
+    RATIO_NUDGE;
+  //RATIO_NUDGE * std::sqrt(maxFunctionEvals); // hand-tuned heuristic
+  for (i=0; i<len; ++i)
+    if (x[i] < lb)
+      x[i] = lb;
+}
+*/
 
 } // namespace Dakota
 

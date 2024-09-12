@@ -13,6 +13,7 @@
 #include "NonDNonHierarchSampling.hpp"
 //#include "DataMethod.hpp"
 
+#define DIRECT_DIMENSION_LIMIT 64
 
 namespace Dakota {
 
@@ -147,6 +148,7 @@ private:
 		      Sizet2DArray& N_shared_pilot, bool incr_cost);
 
   void update_model_group_costs();
+  void update_search_algorithm();
 
   void compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
 			   SizetArray& N_G_alloc, SizetArray& delta_N_G);
@@ -369,6 +371,30 @@ inline void NonDMultilevBLUESampling::update_model_group_costs()
     Cout << "modelGroups:\n" << modelGroups
 	 << "sequenceCost:\n" << sequenceCost
 	 << "modelGroupCost:\n" << modelGroupCost;
+}
+
+
+inline void NonDMultilevBLUESampling::update_search_algorithm()
+{
+  size_t num_g = num_active_groups();  bool warn = false;
+  if (num_g > DIRECT_DIMENSION_LIMIT) {
+    switch (optSubProblemSolver) {
+    case SUBMETHOD_DIRECT_NPSOL_OPTPP:
+      optSubProblemSolver = SUBMETHOD_NPSOL_OPTPP;  warn = true;  break;
+    case SUBMETHOD_DIRECT_NPSOL:
+      optSubProblemSolver = SUBMETHOD_NPSOL;        warn = true;  break;
+    case SUBMETHOD_DIRECT_OPTPP:
+      optSubProblemSolver = SUBMETHOD_OPTPP;        warn = true;  break;
+    //case SUBMETHOD_DIRECT:
+    //case SUBMETHOD_EGO:
+    //case SUBMETHOD_SBGO:
+    //case SUBMETHOD_EA:
+    }
+  }
+  if (warn)
+    Cerr << "Warning: ML BLUE solver demoted to "
+	 << submethod_enum_to_string(optSubProblemSolver)
+	 << " due to solution dimension = " << num_g << std::endl;
 }
 
 
