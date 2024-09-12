@@ -798,13 +798,17 @@ analytic_initialization_from_mfmc(const RealMatrix& rho2_LH,
   RealVector avg_eval_ratios; // defined over numApprox, not numGroups
   SizetArray approx_sequence;  UShortArray approx_set(numApprox);
   for (size_t i=0; i<numApprox; ++i) approx_set[i] = i;
+  // Allow r<1 since only an initial guess (valid MFMC estvar not needed)
+  bool lower_bounded_r = false, monotonic_r = false;
   if (ordered_approx_sequence(rho2_LH)) // for all QoI across all Approx
-    mfmc_analytic_solution(approx_set, rho2_LH, sequenceCost, avg_eval_ratios);
+    mfmc_analytic_solution(approx_set, rho2_LH, sequenceCost, avg_eval_ratios,
+			   lower_bounded_r, monotonic_r);
   else // compute reordered MFMC for averaged rho; monotonic r not required
        // > any rho2_LH re-ordering from MFMC init guess can be ignored (later
        //   gets replaced with r_i ordering for approx_increments() sampling)
     mfmc_reordered_analytic_solution(approx_set, rho2_LH, sequenceCost,
-				     approx_sequence, avg_eval_ratios);
+				     approx_sequence, avg_eval_ratios,
+				     lower_bounded_r, monotonic_r);
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Initial guess from analytic MFMC (unscaled eval ratios):\n"
 	 << avg_eval_ratios << std::endl;
@@ -831,8 +835,9 @@ analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
   // This is ACV-like in that it is not recursive, but it neglects covariance C
   // among approximations.  It is also insensitive to model sequencing.
 
-  RealVector avg_eval_ratios;
-  cvmc_ensemble_solutions(rho2_LH, sequenceCost, avg_eval_ratios);
+  RealVector avg_eval_ratios;  bool lower_bounded_r = false;
+  cvmc_ensemble_solutions(rho2_LH, sequenceCost, avg_eval_ratios,
+			  lower_bounded_r);
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Initial guess from ensemble CVMC (unscaled eval ratios):\n"
 	 << avg_eval_ratios << std::endl;

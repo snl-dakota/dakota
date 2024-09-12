@@ -1132,13 +1132,13 @@ mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
   // numerical case) would be inconsistent with the sequence used for the 
   // analytic r_i computation --> preserve rho ordering and enforce monotonic
   // r_i for downstream eval of estvar, moment roll-up, et al.
-  bool monotonic_r = true;
+  bool lower_bounded_r = true, monotonic_r = true;
   RealVector avg_eval_ratios;  Real avg_hf_target;
   switch (optSubProblemForm) {
   case ANALYTIC_SOLUTION:
     corrApproxSequence.clear();  ratioApproxSequence.clear();
     mfmc_analytic_solution(approxSet, rho2_LH, cost, avg_eval_ratios,
-			   monotonic_r);
+			   lower_bounded_r, monotonic_r);
     //update_model_groups();  update_model_group_costs();
     break;
 
@@ -1146,7 +1146,7 @@ mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
     ratioApproxSequence.clear();
     mfmc_reordered_analytic_solution(approxSet, rho2_LH, cost,
 				     corrApproxSequence, avg_eval_ratios,
-				     monotonic_r);
+				     lower_bounded_r, monotonic_r);
     //update_model_groups();  update_model_group_costs();
     break;
 
@@ -1201,16 +1201,17 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
     // Compute r* initial guess from analytic MFMC
     // > leave r_i at analytic values unless mfmc_estvar_ratios() is needed for
     //   accuracy constraint
-    bool monotonic_r = (budget_constrained) ? false : true;
+    bool lower_bounded_r = true, monotonic_r = (budget_constrained) ?
+      false : true;
     if (ordered_approx_sequence(rho2_LH)) { // can happen w/ NUMERICAL_OVERRIDE
       corrApproxSequence.clear();
       mfmc_analytic_solution(approxSet, rho2_LH, cost, avg_eval_ratios,
-			     monotonic_r);
+			     lower_bounded_r, monotonic_r);
     }
     else
       mfmc_reordered_analytic_solution(approxSet, rho2_LH, cost,
 				       corrApproxSequence, avg_eval_ratios,
-				       monotonic_r);
+				       lower_bounded_r, monotonic_r);
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Initial guess from analytic MFMC (average eval ratios):\n"
 	   << avg_eval_ratios << std::endl;

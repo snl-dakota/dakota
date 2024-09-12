@@ -484,7 +484,7 @@ export_all_samples(const String& root_prepend, const Model& model, size_t iter,
 void NonDNonHierarchSampling::
 mfmc_analytic_solution(const UShortArray& approx_set, const RealMatrix& rho2_LH,
 		       const RealVector& cost, RealVector& avg_eval_ratios,
-		       bool monotonic_r)
+		       bool lower_bounded_r, bool monotonic_r)
 {
   int a;  size_t qoi, num_approx = approx_set.size(), num_am1 = num_approx - 1;
   if (avg_eval_ratios.length() != num_approx) avg_eval_ratios.size(num_approx);
@@ -515,12 +515,13 @@ mfmc_analytic_solution(const UShortArray& approx_set, const RealMatrix& rho2_LH,
 
   // Reverse order for incremental lower bound enforcement: enforce r_i > 1
   // to protect numerics in mfmc_estvar_ratios()
-  for (a=num_am1; a>=0; --a) {
-    // approx_set is ordered but with omissions
-    Real& avg_eval_ratio = avg_eval_ratios[approx_set[a]];
-    if (avg_eval_ratio < nudge_p1)
-      { avg_eval_ratio = nudge_p1; nudge_p1 += RATIO_NUDGE; }
-  }
+  if (lower_bounded_r)
+    for (a=num_am1; a>=0; --a) {
+      // approx_set is ordered but with omissions
+      Real& avg_eval_ratio = avg_eval_ratios[approx_set[a]];
+      if (avg_eval_ratio < nudge_p1)
+	{ avg_eval_ratio = nudge_p1; nudge_p1 += RATIO_NUDGE; }
+    }
 
   // If requested (analytic stand-alone), enforce monotonicity in r_i
   if (monotonic_r) {
@@ -538,7 +539,8 @@ mfmc_reordered_analytic_solution(const UShortArray& approx_set,
 				 const RealMatrix& rho2_LH,
 				 const RealVector& cost,
 				 SizetArray& corr_approx_sequence,
-				 RealVector& avg_eval_ratios, bool monotonic_r)
+				 RealVector& avg_eval_ratios,
+				 bool lower_bounded_r, bool monotonic_r)
 {
   int a;  size_t qoi, num_approx = approx_set.size(), num_am1 = num_approx-1;
   if (avg_eval_ratios.length() != num_approx)
@@ -576,12 +578,13 @@ mfmc_reordered_analytic_solution(const UShortArray& approx_set,
 
   // Reverse order for incremental lower bound enforcement: enforce r_i > 1
   // to protect numerics in mfmc_estvar_ratios()
-  for (a=num_am1; a>=0; --a) {
-    approx = (ordered) ? a : corr_approx_sequence[a];
-    Real& avg_eval_ratio = avg_eval_ratios[approx];
-    if (avg_eval_ratio < nudge_p1)
-      { avg_eval_ratio = nudge_p1; nudge_p1 += RATIO_NUDGE; }
-  }
+  if (lower_bounded_r)
+    for (a=num_am1; a>=0; --a) {
+      approx = (ordered) ? a : corr_approx_sequence[a];
+      Real& avg_eval_ratio = avg_eval_ratios[approx];
+      if (avg_eval_ratio < nudge_p1)
+	{ avg_eval_ratio = nudge_p1; nudge_p1 += RATIO_NUDGE; }
+    }
 
   // If requested (analytic stand-alone), enforce monotonicity in r_i for
   // rho ordering:
@@ -672,17 +675,17 @@ mfmc_estvar_ratios(const RealMatrix& rho2_LH, const RealVector& avg_eval_ratios,
 
 void NonDNonHierarchSampling::
 cvmc_ensemble_solutions(const RealMatrix& rho2_LH, const RealVector& cost,
-			RealVector& avg_eval_ratios)
+			RealVector& avg_eval_ratios, bool lower_bounded_r)
 {
   if (avg_eval_ratios.empty()) avg_eval_ratios.size(numApprox);
   else                         avg_eval_ratios = 0.;
 
   // Compute an ensemble of pairwise CVMC solutions, all relative to HF:
-  size_t qoi, approx;  Real cost_ratio, rho_sq, cost_H = cost[numApprox];
-  for (approx=0; approx<numApprox; ++approx) {
-    cost_ratio = cost_H / cost[approx];
-    const Real* rho2_LH_a = rho2_LH[approx];
-    Real&  avg_eval_ratio = avg_eval_ratios[approx];
+  size_t qoi;  int a;  Real cost_ratio, rho_sq, cost_H = cost[numApprox];
+  for (a=0; a<numApprox; ++a) {
+    cost_ratio = cost_H / cost[a];
+    const Real* rho2_LH_a = rho2_LH[a];
+    Real&  avg_eval_ratio = avg_eval_ratios[a];
     for (qoi=0; qoi<numFunctions; ++qoi) {
       rho_sq = rho2_LH_a[qoi];
       if (rho_sq < 1.) // prevent div by 0, sqrt(negative)
@@ -691,6 +694,17 @@ cvmc_ensemble_solutions(const RealMatrix& rho2_LH, const RealVector& cost,
 	avg_eval_ratio += std::sqrt(cost_ratio / Pecos::SMALL_NUMBER);
     }
     avg_eval_ratio /= numFunctions;
+  }
+
+  // Reverse order for incremental lower bound enforcement: enforce r_i > 1
+  // to protect numerics in mfmc_estvar_ratios()
+  if (lower_bounded_r) {
+    Real nudge_p1 = 1. + RATIO_NUDGE;
+    for (int a=numApprox-1; a>=0; --a) {
+      Real& avg_eval_ratio = avg_eval_ratios[a];
+      if (avg_eval_ratio < nudge_p1)
+	{ avg_eval_ratio = nudge_p1; nudge_p1 += RATIO_NUDGE; }
+    }
   }
 }
 

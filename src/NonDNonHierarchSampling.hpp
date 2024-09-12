@@ -500,13 +500,15 @@ protected:
   void mfmc_analytic_solution(const UShortArray& approx_set,
 			      const RealMatrix& rho2_LH, const RealVector& cost,
 			      RealVector& avg_eval_ratios,
-			      bool monotonic_r = false);
+			      bool lower_bounded_r = true,
+			      bool     monotonic_r = false);
   void mfmc_reordered_analytic_solution(const UShortArray& approx_set,
 					const RealMatrix& rho2_LH,
 					const RealVector& cost,
 					SizetArray& corr_approx_sequence,
 					RealVector& avg_eval_ratios,
-					bool monotonic_r = false);
+					bool lower_bounded_r = true,
+					bool     monotonic_r = false);
   void mfmc_estvar_ratios(const RealMatrix& rho2_LH,
 			  const RealVector& avg_eval_ratios,
 			  SizetArray& approx_sequence,
@@ -514,7 +516,8 @@ protected:
 
   void cvmc_ensemble_solutions(const RealMatrix& rho2_LH,
 			       const RealVector& cost,
-			       RealVector& avg_eval_ratios);
+			       RealVector& avg_eval_ratios,
+			       bool lower_bounded_r = true);
 
   void pick_mfmc_cvmc_solution(const MFSolutionData& mf_soln, //size_t mf_samp,
 			       const MFSolutionData& cv_soln, //size_t cv_samp,

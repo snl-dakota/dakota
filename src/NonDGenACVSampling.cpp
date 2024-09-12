@@ -35,18 +35,18 @@ NonDGenACVSampling(ProblemDescDB& problem_db, Model& model):
     problem_db.get_short("method.nond.search_model_graphs.selection")),
   meritFnStar(DBL_MAX)
 {
-  // Support fixed DAGs (no search) for method promotions;
-  // model selection remains available
+  // Support constrained DAG ensembles for method promotions (hierarchical
+  // for MFMC/MLMC, peer for ACV); recursion + model selection are optional
   switch (methodName) {
   case MULTILEVEL_SAMPLING:    // MLMC promotion for model selection
-    // weighted MLMC = ACV-RD for fixed hierarchical DAG
-    //dagRecursionType = NO_GRAPH_RECURSION; // allow hierarchical DAG ensemble
-    dagWidthLimit = 1;  dagDepthLimit = numApprox; // fixed hierarchical DAG
+    // weighted MLMC = ACV-RD for hierarchical DAG(s)
+    //dagRecursionType = NO_GRAPH_RECURSION; // DAG recursion now optional
+    dagWidthLimit = 1;  dagDepthLimit = numApprox; // a hierarchical DAG
     mlmfSubMethod = SUBMETHOD_ACV_RD;   break;
   case MULTIFIDELITY_SAMPLING: // MFMC promotion for model selection
-    // MFMC = ACV-MF for fixed hierarchical DAG (Note: SUBMETHOD_MFMC not used)
-    //dagRecursionType = NO_GRAPH_RECURSION; // allow hierarchical DAG ensemble
-    dagWidthLimit = 1;  dagDepthLimit = numApprox; // fixed hierarchical DAG
+    // MFMC = ACV-MF for hierarchical DAG(s) (Note: SUBMETHOD_MFMC not used)
+    //dagRecursionType = NO_GRAPH_RECURSION; // DAG recursion now optional
+    dagWidthLimit = 1;  dagDepthLimit = numApprox; // a hierarchical DAG
     mlmfSubMethod = SUBMETHOD_ACV_MF;   break;
   default: // not a promotion: ACV specification + search options
     // assign appropriate depth/width throttles for recursion options
