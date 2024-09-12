@@ -21,6 +21,8 @@ method,
   am_scale = 0.1
   mala_step_size = 0.1
 # output debug
+  export_chain_points_file 'chain_samples.dat'
+# pre_solve sqp    #s1
 
 variables,
   uniform_uncertain 1
@@ -37,9 +39,6 @@ interface,
     fork
     parameters_file 'params.in'
     results_file 'results.out'
-#file_tag
-#file_save
-#asynchronous evaluation_concurrency 16
 
 responses,
   calibration_terms = 1
@@ -48,5 +47,7 @@ responses,
       num_experiments = 1
       variance_type = 'scalar'
     descriptors 'd'
-    no_gradients
+    no_gradients       #s0
+#   analytic_gradients #s1
+
     no_hessians
