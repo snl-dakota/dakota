@@ -106,10 +106,21 @@ public:
     }
   }
 
-  /// Randomize this low-discrepancy sequence
-  /// NOTE: this function is required by `NonDLowDiscrepancySampling` for
-  /// generating unique samples
-  virtual void randomize() = 0;
+  /// Returns the random seed value
+  int get_seed() {
+    return seedValue;
+  }
+
+  /// Sets the random seed value
+  void set_seed(int seed) {
+    seedValue = seed;
+    reseed();
+  }
+
+  /// Reseed this low-discrepancy sequence
+  /// NOTE: this function is required by `LDDriver` to change
+  /// the random seed
+  virtual void reseed() = 0;
 
 protected:
 

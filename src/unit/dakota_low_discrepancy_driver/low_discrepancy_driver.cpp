@@ -17,7 +17,7 @@
 
 #include "opt_tpl_test.hpp"
 
-#define BOOST_TEST_MODULE dakota_nond_low_discrepancy_sampling_test
+#define BOOST_TEST_MODULE dakota_low_discrepancy_driver
 #include <boost/test/included/unit_test.hpp>
 
 namespace DakotaUnitTest {
@@ -25,15 +25,15 @@ namespace DakotaUnitTest {
 namespace TestLowDiscrepancy {
 
 //
-//  Tests for NonDLowDiscrepancySampling
+//  Tests for LowDiscrepancyDriver (LDDRiver)
 //
-namespace TestNonDLowDiscrepancySampling {
+namespace TestLowDiscrepancyDriver {
 
 
 // +-------------------------------------------------------------------------+
 // |                         Check valid input file                          |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(NonDLowDiscrepancySampling_check_valid_input_file)
+BOOST_AUTO_TEST_CASE(LowDiscrepancyDriver_check_valid_input_file)
 {
   // Example dakota input specification
   char dakota_input[] =
@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(NonDLowDiscrepancySampling_check_valid_input_file)
     "    tabular_data \n"
     "    tabular_data_file = 'samples.dat' \n"
     "    freeform \n"
-    "    write_restart 'NonDLowDiscrepancySampling_check_valid_input_file.rst' \n"
+    "    write_restart 'LowDiscrepancyDriver_check_valid_input_file.rst' \n"
     "method \n"
     "  sampling \n"
     "    sample_type \n"
@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(NonDLowDiscrepancySampling_check_valid_input_file)
 // +-------------------------------------------------------------------------+
 // |                           Refinement samples                            |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(NonDLowDiscrepancySampling_check_refinement_samples)
+BOOST_AUTO_TEST_CASE(LowDiscrepancyDriver_check_refinement_samples)
 {
   // Example dakota input specification
   char dakota_input[] =
@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(NonDLowDiscrepancySampling_check_refinement_samples)
     "    tabular_data \n"
     "    tabular_data_file = 'samples.dat' \n"
     "    freeform \n"
-    "    write_restart 'NonDLowDiscrepancySampling_check_refinement_samples.rst' \n"
+    "    write_restart 'LowDiscrepancyDriver_check_refinement_samples.rst' \n"
     "method \n"
     "  sampling \n"
     "    sample_type \n"
@@ -171,7 +171,7 @@ BOOST_AUTO_TEST_CASE(NonDLowDiscrepancySampling_check_refinement_samples)
 // +-------------------------------------------------------------------------+
 // |                      Check normal random samples                        |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(NonDLowDiscrepancySampling_check_normal_random_samples)
+BOOST_AUTO_TEST_CASE(LowDiscrepancyDriver_check_normal_random_samples)
 {
   // Example dakota input specification
   char dakota_input[] =
@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE(NonDLowDiscrepancySampling_check_normal_random_samples)
     "    tabular_data \n"
     "    tabular_data_file = 'samples.dat' \n"
     "    freeform \n"
-    "    write_restart 'NonDLowDiscrepancySampling_check_normal_random_samples.rst' \n"
+    "    write_restart 'LowDiscrepancyDriver_check_normal_random_samples.rst' \n"
     "method \n"
     "  sampling \n"
     "    sample_type \n"
@@ -247,7 +247,7 @@ BOOST_AUTO_TEST_CASE(NonDLowDiscrepancySampling_check_normal_random_samples)
 // +-------------------------------------------------------------------------+
 // |                   Check transformed uniform samples                     |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(NonDLowDiscrepancySampling_check_transformed_uniform_samples)
+BOOST_AUTO_TEST_CASE(LowDiscrepancyDriver_check_transformed_uniform_samples)
 {
   // Example dakota input specification
   char dakota_input[] =
@@ -255,7 +255,7 @@ BOOST_AUTO_TEST_CASE(NonDLowDiscrepancySampling_check_transformed_uniform_sample
     "    tabular_data \n"
     "    tabular_data_file = 'samples.dat' \n"
     "    freeform \n"
-    "    write_restart 'NonDLowDiscrepancySampling_check_transformed_uniform_samples.rst' \n"
+    "    write_restart 'LowDiscrepancyDriver_check_transformed_uniform_samples.rst' \n"
     "method \n"
     "  sampling \n"
     "    sample_type \n"
@@ -313,7 +313,7 @@ BOOST_AUTO_TEST_CASE(NonDLowDiscrepancySampling_check_transformed_uniform_sample
 // +-------------------------------------------------------------------------+
 // |                    Check active variables sampling                      |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(NonDLowDiscrepancySampling_check_active_variables_sampling)
+BOOST_AUTO_TEST_CASE(LowDiscrepancyDriver_check_active_variables_sampling)
 {
   // Example dakota input specification
   char dakota_input[] =
@@ -321,7 +321,7 @@ BOOST_AUTO_TEST_CASE(NonDLowDiscrepancySampling_check_active_variables_sampling)
     "    tabular_data \n"
     "    tabular_data_file = 'samples.dat' \n"
     "    freeform \n"
-    "    write_restart 'NonDLowDiscrepancySampling_check_active_variables_sampling.rst' \n"
+    "    write_restart 'LowDiscrepancyDriver_check_active_variables_sampling.rst' \n"
     "method \n"
     "  sampling \n"
     "    sample_type \n"
@@ -372,7 +372,7 @@ BOOST_AUTO_TEST_CASE(NonDLowDiscrepancySampling_check_active_variables_sampling)
 // +-------------------------------------------------------------------------+
 // |                Sample from correlated random variables                  |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(NonDLowDiscrepancySampling_sample_correlated_distributions)
+BOOST_AUTO_TEST_CASE(LowDiscrepancyDriver_sample_correlated_distributions)
 {
   // Example dakota input specification
   char dakota_input[] =
@@ -380,7 +380,7 @@ BOOST_AUTO_TEST_CASE(NonDLowDiscrepancySampling_sample_correlated_distributions)
     "    tabular_data \n"
     "    tabular_data_file = 'samples.dat' \n"
     "    freeform \n"
-    "    write_restart 'NonDLowDiscrepancySampling_sample_correlated_distributions.rst' \n"
+    "    write_restart 'LowDiscrepancyDriver_sample_correlated_distributions.rst' \n"
     "method \n"
     "  sampling \n"
     "    sample_type \n"
@@ -462,7 +462,7 @@ BOOST_AUTO_TEST_CASE(NonDLowDiscrepancySampling_sample_correlated_distributions)
 // +-------------------------------------------------------------------------+
 // |                  Cannot sample discrete distributions                   |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(NonDLowDiscrepancySampling_check_discrete_distributions)
+BOOST_AUTO_TEST_CASE(LowDiscrepancyDriver_check_discrete_distributions)
 {
   // Make sure an exception is thrown instead of an exit code
   Dakota::abort_mode = Dakota::ABORT_THROWS;
@@ -473,7 +473,7 @@ BOOST_AUTO_TEST_CASE(NonDLowDiscrepancySampling_check_discrete_distributions)
     "    tabular_data \n"
     "    tabular_data_file = 'samples.dat' \n"
     "    freeform \n"
-    "    write_restart 'NonDLowDiscrepancySampling_check_discrete_distributions.rst' \n"
+    "    write_restart 'LowDiscrepancyDriver_check_discrete_distributions.rst' \n"
     "method \n"
     "  sampling \n"
     "    sample_type \n"
@@ -512,7 +512,7 @@ BOOST_AUTO_TEST_CASE(NonDLowDiscrepancySampling_check_discrete_distributions)
   );
 }
 
-} // end namespace TestNonDLowDiscrepancySampling
+} // end namespace TestLowDiscrepancyDriver
 
 } // end namespace TestLowDiscrepancy
 
