@@ -24,7 +24,8 @@ void JSONResultsFileReader::read_results_file(Response& response, const bfs::pat
     }
     json j;
     try {
-        results_file >> j;
+        // results_file >> j;
+        j = json::parse(results_file);
     } catch(const json::parse_error& e) {
         throw FileReadException("Error(s) encountered reading results file " + results_path.string() +
 			" for Evaluation " + std::to_string(id) + ":\n" + e.what());
@@ -51,7 +52,8 @@ void JSONResultsFileReader::read_results_file(PRPQueue& prp_queue, const std::st
     }
     json j;
         try {
-        results_file >> j;
+        // results_file >> j;
+        j = json::parse(results_file);
     } catch(const json::parse_error& e) {
         throw FileReadException("Error(s) encountered reading results file " + results_path +
 			" for Batch " + std::to_string(batch_id) + ":\n" + e.what());

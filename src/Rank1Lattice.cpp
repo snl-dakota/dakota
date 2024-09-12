@@ -405,7 +405,7 @@ void Rank1Lattice::random_shift(
   // lhsDriver.seed(seedValue);
   // lhsDriver.generate_uniform_samples(lower, upper, corr, 1, randomShift);
   randomShift.resize(dMax);
-  if ( seed < 0 )
+  if ( !randomShiftFlag || seed < 0 )
   {
     randomShift = 0; /// Sets all entries to 0
   }

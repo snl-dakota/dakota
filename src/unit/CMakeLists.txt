@@ -94,7 +94,7 @@ add_subdirectory(dakota_restart)
 
 add_subdirectory(dakota_global_sa_metrics)
 
-add_subdirectory(dakota_nond_low_discrepancy_sampling_test)
+add_subdirectory(dakota_low_discrepancy_driver)
 
 add_subdirectory(dakota_rank_1_lattice_test)
 
