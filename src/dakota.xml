@@ -3560,13 +3560,13 @@
 		  <keyword  id="multilevel" name="multilevel" code="{N_mdm(lit,mcmcType_multilevel)}" label="multilevel"  default="dram" />
 		</oneOf>
 	      </optional>
-	      <keyword  id="pre_solve" name="pre_solve" code="{0}" label="pre_solve"  minOccurs="0" default="nip pre-solve for emulators" >
+	  <keyword  id="pre_solve" name="pre_solve" code="{0}" label="pre_solve"  minOccurs="0" default="nip pre-solve for emulators" >
 		<oneOf label="Pre-solve Optimizer">
 		  <keyword  id="sqp1" name="sqp" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}" label="sqp"   />
 		  <keyword  id="nip" name="nip" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}" label="nip"   />
 		  <keyword  id="none" name="none" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NONE)}" label="none"   />
 		</oneOf>
-	      </keyword>
+	  </keyword>
 	      &bayes_proposal_covariance;
 	      <keyword  id="options_file" name="options_file" code="{N_mdm(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
 		<param type="INPUT_FILE" />
@@ -3681,33 +3681,44 @@
 	    </keyword>
 	    <keyword  id="muq" name="muq" code="{N_mdm(utype,subMethod_SUBMETHOD_MUQ)}" label="muq"  minOccurs="1" >
 	      <keyword  id="chain_samples" name="chain_samples" code="{N_mdm(int,chainSamples)}" label="MCMC chain samples"  default="method-dependent">
-		<alias name="samples" />
-		<param type="INTEGER" />
-	      </keyword>
+          <alias name="samples" />
+          <param type="INTEGER" />
+        </keyword>
 	      &bayes_seed_rng;
+        <keyword  id="export_chain_points_file" name="export_chain_points_file" code="{N_mdm(str,exportMCMCPtsFile)}" label="File export of MCMC acceptance chain"  minOccurs="0" default="chain export to default filename" >
+          <param type="OUTPUT_FILE" />
+          &method_export_samples_format;
+        </keyword>
 	      <optional>
-		<oneOf label="MCMC Algorithm" >
+          <oneOf label="MCMC Algorithm" >
                   <keyword  id="dram" name="dram" code="{N_mdm(lit,mcmcType_dram)}" label="dram"  default="dram" />
                   <keyword  id="delayed_rejection" name="delayed_rejection" code="{N_mdm(lit,mcmcType_delayed_rejection)}" label="delayed_rejection"  default="dram" />
                   <keyword  id="adaptive_metropolis" name="adaptive_metropolis" code="{N_mdm(lit,mcmcType_adaptive_metropolis)}" label="adaptive_metropolis"  default="dram" />
                   <keyword  id="metropolis_hastings" name="metropolis_hastings" code="{N_mdm(lit,mcmcType_metropolis_hastings)}" label="metropolis_hastings"  default="dram" />
                   <keyword  id="mala" name="mala" code="{N_mdm(lit,mcmcType_mala)}" label="mala"  default="dram" />
-		</oneOf>
+          </oneOf>
 	      </optional>
+        <keyword  id="pre_solve" name="pre_solve" code="{0}" label="pre_solve"  minOccurs="0" default="nip pre-solve for emulators" >
+          <oneOf label="Pre-solve Optimizer">
+            <keyword  id="sqp1" name="sqp" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}" label="sqp"   />
+            <keyword  id="nip" name="nip" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}" label="nip"   />
+            <keyword  id="none" name="none" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NONE)}" label="none"   />
+          </oneOf>
+        </keyword>
 	      <keyword  id="dr_num_stages" name="dr_num_stages" code="{N_mdm(int,drNumStages)}" label="Number of stages for Delayed Rejection"  minOccurs="0" maxOccurs="1" default="3" >
-		<param type="INTEGER" />
+          <param type="INTEGER" />
 	      </keyword>
 	      <keyword  id="dr_scale_type" name="dr_scale_type" code="{N_mdm(str,drScaleType)}" label="Scale type for Delayed Rejection"  minOccurs="0" maxOccurs="1" default="Power" >
-		<param type="STRING" />
+          <param type="STRING" />
 	      </keyword>
 	      <keyword  id="dr_scale" name="dr_scale" code="{N_mdm(Real,drScale)}" label="Scale for Delayed Rejection"  minOccurs="0" maxOccurs="1" default="2.0" >
-		<param type="REAL" />
+          <param type="REAL" />
 	      </keyword>
 	      <keyword  id="am_period_num_steps" name="am_period_num_steps" code="{N_mdm(int,amPeriodNumSteps)}" label="Period number of steps for Adaptive Metropolis"  minOccurs="0" maxOccurs="1" default="100" >
-		<param type="INTEGER" />
+          <param type="INTEGER" />
 	      </keyword>
 	      <keyword  id="am_starting_step" name="am_starting_step" code="{N_mdm(int,amStartingStep)}" label="Starting step for Adaptive Metropolis"  minOccurs="0" maxOccurs="1" default="100" >
-		<param type="INTEGER" />
+          <param type="INTEGER" />
 	      </keyword>
 	      <keyword  id="am_scale" name="am_scale" code="{N_mdm(Real,amScale)}" label="Scale for Adaptive Metropolis"  minOccurs="0" maxOccurs="1" default="1.0" >
 		<param type="REAL" />

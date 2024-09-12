@@ -5945,6 +5945,19 @@ KEYWORD method {N_mdm3(start,0,stop)}
         |
         rnum2 {N_mdm(lit,rngName_rnum2)}
        ]
+      [ export_chain_points_file STRING {N_mdm(str,exportMCMCPtsFile)}
+        [ 
+          ( custom_annotated {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)} ]
+           )
+          |
+          annotated {N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}
+          |
+          freeform {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+         ]
+       ]
       [ 
         dram {N_mdm(lit,mcmcType_dram)}
         |
@@ -5955,6 +5968,13 @@ KEYWORD method {N_mdm3(start,0,stop)}
         metropolis_hastings {N_mdm(lit,mcmcType_metropolis_hastings)}
         |
         mala {N_mdm(lit,mcmcType_mala)}
+       ]
+      [ pre_solve {0}
+        sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}
+        |
+        nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}
+        |
+        none {N_mdm(utype,optSubProbSolver_SUBMETHOD_NONE)}
        ]
       [ dr_num_stages INTEGER {N_mdm(int,drNumStages)} ]
       [ dr_scale_type STRING {N_mdm(str,drScaleType)} ]
