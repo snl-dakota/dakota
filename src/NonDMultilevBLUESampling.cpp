@@ -358,8 +358,14 @@ void NonDMultilevBLUESampling::ml_blue_pilot_projection()
     initialize_group_counts(NGroupActual);  NGroupAlloc.assign(numGroups, 0);
   }
   else { // ONLINE_PILOT_PROJECTION
-    evaluate_pilot(sum_G, sum_GG, NGroupActual, true); // initialize+accumulate
-    NGroupAlloc = pilotSamples;
+    if (pilotGroupSampling == SHARED_PILOT) {
+      NGroupAlloc.assign(numGroups, 0);
+      size_t all_group = numGroups - 1; // last group = all models
+      NGroupAlloc[all_group] = pilotSamples[all_group];
+    }
+    else NGroupAlloc = pilotSamples;
+    // initialize + accumulate online counts
+    evaluate_pilot(sum_G, sum_GG, NGroupActual, true);
   }
 
   // -------------------------------------
@@ -809,6 +815,19 @@ analytic_initialization_from_mfmc(const RealMatrix& rho2_LH,
     mfmc_reordered_analytic_solution(approx_set, rho2_LH, sequenceCost,
 				     approx_sequence, avg_eval_ratios,
 				     lower_bounded_r, monotonic_r);
+  /* Desirable to start from avg_hf_target for MFMC rather than N_shared
+  if (maxFunctionEvals == SZ_MAX) // accuracy-constrained
+    // Compute avg_hf_target only based on MFMC estvar, bypassing ML BLUE estvar
+    // Note: dissimilar to ACV,GenACV logic
+    RealVector estvar_ratios;
+    mfmc_estvar_ratios(rho2_LH, avg_eval_ratios, approx_sequence,estvar_ratios);
+    avg_hf_target = update_hf_target(estvar_ratios, NGroupActual[all_group],
+				     estVarIter0); // valid within MFMC context
+  }
+  else
+    avg_hf_target = allocate_budget(avg_eval_ratios, cost, budget);
+               // = scale_to_target(...);
+  */
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Initial guess from analytic MFMC (unscaled eval ratios):\n"
 	 << avg_eval_ratios << std::endl;
@@ -838,6 +857,13 @@ analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
   RealVector avg_eval_ratios;  bool lower_bounded_r = false;
   cvmc_ensemble_solutions(rho2_LH, sequenceCost, avg_eval_ratios,
 			  lower_bounded_r);
+  /*
+  if (maxFunctionEvals == SZ_MAX) // accuracy-constrained
+    avg_hf_target = update_hf_target(cvmc_estvar, N_sh, estVarIter0);
+  else
+    avg_hf_target = allocate_budget(avg_eval_ratios, cost, budget);
+               // = scale_to_target(...);
+  */
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Initial guess from ensemble CVMC (unscaled eval ratios):\n"
 	 << avg_eval_ratios << std::endl;
@@ -867,29 +893,23 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
 
   bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
 		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
-  Real avg_hf_target, offline_N_lwr = 2.,
-    N_sh = (offline) ? offline_N_lwr : (Real)pilotSamples[all_group];
-  if (maxFunctionEvals == SZ_MAX) { // accuracy-constrained
-    /*
-    // Compute avg_hf_target only based on MFMC estvar, bypassing ML BLUE estvar
-    // Note: dissimilar to ACV,GenACV logic
-    RealVector estvar_ratios;
-    mfmc_estvar_ratios(rho2_LH, avg_eval_ratios, approx_sequence,estvar_ratios);
-    avg_hf_target = update_hf_target(estvar_ratios, NGroupActual[all_group],
-				     estVarIter0); // valid within MFMC context
-    */
-
-    // As in ACV,GenACV, employ ML BLUE's native estvar for accuracy scaling
-    RealVector soln_vars, mlblue_estvar;
-    analytic_ratios_to_solution_variables(avg_eval_ratios, N_sh,
-					  ratios_to_groups, soln_vars);
+  Real avg_hf_target, N_shared;
+  if (maxFunctionEvals == SZ_MAX) { // accuracy-constrained -> online only
+    // As for {ACV,GenACV}, employ ML BLUE's native estvar for accuracy scaling
+    RealVector soln_vars, mlblue_estvar;  SizetArray N_shared;
+    size_t pilot_samp = pilotSamples[all_group];
+    ratios_target_to_solution_variables(avg_eval_ratios, (Real)pilot_samp,
+					ratios_to_groups, soln_vars);
     estimator_variance(soln_vars, mlblue_estvar); // MFMC+pilot -> ML BLUE
     // the assumed scaling with N_sh is not generally valid for ML BLUE,
     // but is reasonable for emulation of MFMC
-    avg_hf_target = update_hf_target(mlblue_estvar, N_sh, estVarIter0);
+    N_shared.assign(numFunctions, pilot_samp); // online
+    avg_hf_target = update_hf_target(mlblue_estvar, N_shared, estVarIter0);
   }
-  else {
-    Real remaining = (Real)maxFunctionEvals, cost_H = sequenceCost[numApprox];
+  else { // budget-constrained -> online or offline
+    Real remaining = (Real)maxFunctionEvals,
+      cost_H = sequenceCost[numApprox], offline_N_lwr = 2.;
+    N_shared = (offline) ? offline_N_lwr : (Real)pilotSamples[all_group];
     if (!offline && pilotGroupSampling != SHARED_PILOT) {
       BitArray inactive(numGroups);  inactive.set();
       size_t g, r, num_r = ratios_to_groups.size(); // numApprox+1
@@ -904,15 +924,15 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
     }
     if (remaining > 0.)
       // scale_to_target() employs allocate_budget() and rescales for lower bnds
-      scale_to_target(N_sh, sequenceCost, avg_eval_ratios, avg_hf_target,
-		      remaining, 0.); // no lower bound for offline
+      scale_to_target(N_shared, sequenceCost, avg_eval_ratios, avg_hf_target,
+		      remaining, offline_N_lwr);
     else // budget exhausted
-      { avg_hf_target = N_sh;  avg_eval_ratios = 1.; }
+      { avg_hf_target = N_shared; avg_eval_ratios = 1.; }
   }
 
   RealVector mlblue_vars;
-  analytic_ratios_to_solution_variables(avg_eval_ratios, avg_hf_target,
-					ratios_to_groups, mlblue_vars);
+  ratios_target_to_solution_variables(avg_eval_ratios, avg_hf_target,
+				      ratios_to_groups, mlblue_vars);
   soln.solution_variables(mlblue_vars);
 
   if (outputLevel >= DEBUG_OUTPUT) {
@@ -923,10 +943,10 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
 
 
 void NonDMultilevBLUESampling::
-analytic_ratios_to_solution_variables(const RealVector& avg_eval_ratios,
-				      Real avg_hf_target,
-				      const SizetArray& ratios_to_groups,
-				      RealVector& soln_vars)
+ratios_target_to_solution_variables(const RealVector& avg_eval_ratios,
+				    Real avg_hf_target,
+				    const SizetArray& ratios_to_groups,
+				    RealVector& soln_vars)
 {
   // Convert avg_{eval_ratios,hf_target} for MFMC/CVMC to soln_vars for ML BLUE
   // > We assume for now that the MFMC/CVMC groups for which eval ratios are
@@ -937,35 +957,36 @@ analytic_ratios_to_solution_variables(const RealVector& avg_eval_ratios,
   //   MFMC/CVMC model groupings within modelGroups.
 
   // Initialize soln_vars
-  size_t r, num_r = avg_eval_ratios.length(), v, g, g_index,
-    num_v = num_active_groups();
-  if (soln_vars.length() != num_v)
-    soln_vars.sizeUninitialized(num_v); // init to 0
-  if (pilotMgmtMode == OFFLINE_PILOT ||
-      pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
-    soln_vars = 0.;
-  else if (pilotGroupSampling == SHARED_PILOT) {
-    soln_vars = 0.;
-    // last group = all models is always present in modelGroups,
-    // but may be omitted due to active group throttling
-    size_t all_group = numGroups - 1;
-    v = all_to_active_group(all_group); // group g -> active v
-    if (v != _NPOS)
-      soln_vars[v] = (Real)pilotSamples[all_group]; // likely overwritten
-  }
-  else // INDEPENDENT_PILOT
-    for (v=0; v<num_v; ++v) {
-      g = active_to_all_group(v);       // active v -> group g
-      soln_vars[v] = (g == _NPOS) ? 0. : (Real)pilotSamples[g];
+  size_t v, num_v = num_active_groups(), g;
+  if (soln_vars.length() != num_v) soln_vars.size(num_v); // init to 0
+  else                             soln_vars = 0.;
+  if (pilotMgmtMode == ONLINE_PILOT ||
+      pilotMgmtMode == ONLINE_PILOT_PROJECTION) {
+    if (pilotGroupSampling == SHARED_PILOT) {
+      // last group = all models is always present in modelGroups,
+      // but may be omitted due to active group throttling
+      size_t all_group = numGroups - 1;
+      v = all_to_active_group(all_group); // group g -> active v
+      if (v != _NPOS)
+	soln_vars[v] = (Real)pilotSamples[all_group];
     }
+    else // INDEPENDENT_PILOT
+      for (v=0; v<num_v; ++v) {
+	g = active_to_all_group(v);       // active v -> group g
+	if (g != _NPOS)
+	  soln_vars[v] = (Real)pilotSamples[g];
+      }
+  }
 
   // Define soln_vars for active groups using avg_{eval_ratios,hf_target}
+  size_t r, num_r = avg_eval_ratios.length();  Real N_samp;
   for (r=0; r<=num_r; ++r) {
-    g_index = ratios_to_groups[r];      // eval ratio r -> group g
-    if (g_index != _NPOS) {
-      v = all_to_active_group(g_index); // group g -> active v
-      soln_vars[v] = (r < num_r) ? avg_hf_target * avg_eval_ratios[r]
-	                         : avg_hf_target;
+    g = ratios_to_groups[r];      // eval ratio r -> group g
+    if (g != _NPOS) {
+      v = all_to_active_group(g); // group g -> active v
+      N_samp = avg_hf_target;
+      if (r < num_r)             N_samp *= avg_eval_ratios[r];
+      if (N_samp > soln_vars[v]) soln_vars[v] = N_samp; // emerge from pilot
     }
   }
 }
@@ -1808,6 +1829,21 @@ void NonDMultilevBLUESampling::prune_model_groups()
       retainedModelGroups.set(rc_it->second);
     }
     break;
+  }
+
+  // Need at least 1 group that contains the HF reference model
+  // APPROACH 1: always include all_group (as with other throttles)
+  size_t all_group = numGroups - 1;
+  if (!retainedModelGroups[all_group]) {
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Augment: group = " << all_group << '\n';
+    retainedModelGroups.set(numGroups-1);
+  }
+  // APPROACH 2: iff no HF group, add the best conditioned one
+  // Note: this may have zero samples if SHARED_PILOT
+  if (false) { // Assess gap
+    // Find best from discarded
+    // Augment
   }
 
   // TO DO: currently allowing all_group to be pruned, which is Ok for cov_GG

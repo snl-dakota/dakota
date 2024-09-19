@@ -580,14 +580,11 @@ protected:
 		       const RealVector& avg_eval_ratios,
 		       const RealVector& cost);
 
-  Real update_hf_target(Real avg_estvar, Real avg_N_H,
-			const RealVector& estvar_iter0);
-  Real update_hf_target(Real avg_estvar, const SizetArray& N_H,
-			const RealVector& estvar_iter0);
   Real update_hf_target(const RealVector& estvar, const SizetArray& N_H,
 			const RealVector& estvar_iter0);
   Real update_hf_target(const RealVector& estvar_ratios,
-			const RealVector& var_H,const RealVector& estvar_iter0);
+			const RealVector& var_H,
+			const RealVector& estvar_iter0);
 
   void scale_to_target(Real avg_N_H, const RealVector& cost,
 		       RealVector& avg_eval_ratios, Real& avg_hf_target,
@@ -713,6 +710,15 @@ private:
   /// compute a penalty merit function from objective, constraint, and
   /// constaint bound
   Real nh_penalty_merit(Real obj, Real nln_con, Real nln_u_bnd);
+
+  /// local version used during numerical solves
+  /// (objective/constraint is averaged estvar)
+  Real update_hf_target(Real avg_estvar, size_t avg_N_H,
+			const RealVector& estvar_iter0);
+  /// local version used during numerical solves
+  /// (objective/constraint is averaged estvar)
+  Real update_hf_target(Real avg_estvar, const SizetArray& N_H,
+			const RealVector& estvar_iter0);
 
   /// static function used by NPSOL for the objective function
   static void npsol_objective(int& mode, int& n, double* x, double& f,
@@ -1400,7 +1406,7 @@ r_and_N_to_design_vars(const RealVector& avg_eval_ratios, Real N_H,
 
 
 inline Real NonDNonHierarchSampling::
-update_hf_target(Real avg_estvar, Real avg_N_H, const RealVector& estvar_iter0)
+update_hf_target(Real avg_estvar, size_t avg_N_H, const RealVector& estvar_iter0)
 {
   /*
   // Note: there is a circular dependency between estvar_ratios and hf_targets
@@ -1425,14 +1431,12 @@ inline Real NonDNonHierarchSampling::
 update_hf_target(Real avg_estvar, const SizetArray& N_H,
 		 const RealVector& estvar_iter0)
 {
-  /*
   // Note: there is a circular dependency between estvar_ratios and hf_targets
-  RealVector hf_targets(numFunctions, false);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    hf_targets[qoi] = avg_estvar * N_H[qoi]
-                    / (convergenceTol * estvar_iter0[qoi]);
-  Real avg_hf_target = average(hf_targets);
-  */
+  //RealVector hf_targets(numFunctions, false);
+  //for (size_t qoi=0; qoi<numFunctions; ++qoi)
+  //  hf_targets[qoi] = avg_estvar * N_H[qoi]
+  //                  / (convergenceTol * estvar_iter0[qoi]);
+  //Real avg_hf_target = average(hf_targets);
 
   Real avg_hf_target = 0.;
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
@@ -1445,21 +1449,18 @@ update_hf_target(Real avg_estvar, const SizetArray& N_H,
 
 
 inline Real NonDNonHierarchSampling::
-update_hf_target(const RealVector& estvar, const SizetArray& N_H,
+update_hf_target(const RealVector& estvar_ratios, const RealVector& var_H,
 		 const RealVector& estvar_iter0)
 {
-  /*
-  // Note: there is a circular dependency between estvar_ratios and hf_targets
-  RealVector hf_targets(numFunctions, false);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    hf_targets[qoi] = estvar[qoi] * N_H[qoi]
-                    / (convergenceTol * estvar_iter0[qoi]);
-  Real avg_hf_target = average(hf_targets);
-  */
+  //RealVector hf_targets(numFunctions, false);
+  //for (size_t qoi=0; qoi<numFunctions; ++qoi)
+  //  hf_targets[qoi] = var_H[qoi] * estvar_ratios[qoi]
+  //                  / (convergenceTol * estvar_iter0[qoi]);
+  //Real avg_hf_target = average(hf_targets);
 
   Real avg_hf_target = 0.;
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    avg_hf_target += estvar[qoi] * N_H[qoi] / estvar_iter0[qoi];
+    avg_hf_target += estvar_ratios[qoi] * var_H[qoi] / estvar_iter0[qoi];
   avg_hf_target /= convergenceTol * numFunctions;
   Cout << "Scaling profile for convergenceTol = " << convergenceTol
        << ": average HF target = " << avg_hf_target << std::endl;
@@ -1468,20 +1469,19 @@ update_hf_target(const RealVector& estvar, const SizetArray& N_H,
 
 
 inline Real NonDNonHierarchSampling::
-update_hf_target(const RealVector& estvar_ratios, const RealVector& var_H,
+update_hf_target(const RealVector& estvar, const SizetArray& N_H,
 		 const RealVector& estvar_iter0)
 {
-  /*
-  RealVector hf_targets(numFunctions, false);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    hf_targets[qoi] = var_H[qoi] * estvar_ratios[qoi]
-                    / (convergenceTol * estvar_iter0[qoi]);
-  Real avg_hf_target = average(hf_targets);
-  */
+  // Note: there is a circular dependency between estvar_ratios and hf_targets
+  //RealVector hf_targets(numFunctions, false);
+  //for (size_t qoi=0; qoi<numFunctions; ++qoi)
+  //  hf_targets[qoi] = estvar[qoi] * N_H[qoi]
+  //                  / (convergenceTol * estvar_iter0[qoi]);
+  //Real avg_hf_target = average(hf_targets);
 
   Real avg_hf_target = 0.;
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    avg_hf_target += estvar_ratios[qoi] * var_H[qoi] / estvar_iter0[qoi];
+    avg_hf_target += estvar[qoi] * N_H[qoi] / estvar_iter0[qoi];
   avg_hf_target /= convergenceTol * numFunctions;
   Cout << "Scaling profile for convergenceTol = " << convergenceTol
        << ": average HF target = " << avg_hf_target << std::endl;

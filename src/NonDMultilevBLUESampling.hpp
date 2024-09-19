@@ -211,10 +211,10 @@ private:
   void analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
 					     const SizetArray& ratios_to_groups,
 					     MFSolutionData& soln);
-  void analytic_ratios_to_solution_variables(const RealVector& avg_eval_ratios,
-					     Real avg_hf_target,
-					     const SizetArray& ratios_to_groups,
-					     RealVector& soln_vars);
+  void ratios_target_to_solution_variables(const RealVector& avg_eval_ratios,
+					   Real avg_hf_target,
+					   const SizetArray& ratios_to_groups,
+					   RealVector& soln_vars);
 
   /// return size of active subset of modelGroups defined by retainedModelGroups
   size_t num_active_groups() const;
@@ -444,14 +444,15 @@ find_hf_sample_reference(const Sizet2DArray& N_G, size_t& ref_group,
 {
   ref_group = ref_model_index = SZ_MAX;
   Real ref_samples = 0., group_samples;
-  size_t g, num_groups = modelGroups.size(), hf_index;
+  size_t g, num_groups = modelGroups.size();
   for (g=0; g<num_groups; ++g) {
-    hf_index = find_index(modelGroups[g], numApprox); // index of HF model
-    if (hf_index != _NPOS) { // HF model is present
+    UShortArray& group_g = modelGroups[g];
+    // find_index() is unnecessary assuming groups have ordered models
+    if (group_g.back() == numApprox) { // HF model is present
       group_samples = average(N_G[g]);
       // Note: not protected from 1 sample -> Cov = nan from bessel corr
       if (group_samples > ref_samples) {
-	ref_group   = g;  ref_model_index = hf_index;
+	ref_group   = g;  ref_model_index = group_g.size() - 1;
 	ref_samples = group_samples;
       }
     }
@@ -468,14 +469,15 @@ find_hf_sample_reference(const SizetArray& N_G, size_t& ref_group,
 {
   ref_group = ref_model_index = SZ_MAX;
   Real ref_samples = 0., group_samples;
-  size_t g, num_groups = modelGroups.size(), hf_index;
+  size_t g, num_groups = modelGroups.size();
   for (g=0; g<num_groups; ++g) {
-    hf_index = find_index(modelGroups[g], numApprox); // index of HF model
-    if (hf_index != _NPOS) { // HF model is present
+    UShortArray& group_g = modelGroups[g];
+    // find_index() is unnecessary assuming groups have ordered models
+    if (group_g.back() == numApprox) { // HF model is present
       group_samples = N_G[g];
       // Note: not protected from 1 sample -> Cov = nan from bessel corr
       if (group_samples > ref_samples) {
-	ref_group   = g;  ref_model_index = hf_index;
+	ref_group   = g;  ref_model_index = group_g.size() - 1;
 	ref_samples = group_samples;
       }
     }
