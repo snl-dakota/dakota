@@ -163,6 +163,8 @@ private:
   /// find group and model indices for HF reference variance
   void find_hf_sample_reference(const SizetArray& N_G,  size_t& ref_group,
 				size_t& ref_model_index);
+  /// ensure a HF group is retained after run-time throttling
+  size_t retain_hf_group();
 
   void project_mc_estimator_variance(const RealSymMatrixArray& cov_GG_g,
 				     size_t H_index,
@@ -485,6 +487,23 @@ find_hf_sample_reference(const SizetArray& N_G, size_t& ref_group,
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "HF sample reference located in group " << ref_group
 	 << " at index " << ref_model_index << std::endl;
+}
+
+
+inline size_t NonDMultilevBLUESampling::retain_hf_group()
+{
+  //size_t skip_front = numGroups - retainedModelGroups.count();
+  //std::advance(rit, skip_front);
+
+  std::multimap<Real, size_t>::reverse_iterator rit;  size_t group;
+  for (rit = groupCovCondMap.rbegin(); rit!=groupCovCondMap.rend(); ++rit) {
+    group = rit->second;
+    if (modelGroups[group].back() == numApprox)
+      return (retainedModelGroups[group]) ?
+	_NPOS : // a HF group has already been retained
+	group;  // return a discard to add (highest rcond)
+  }
+  return _NPOS; // none available to retain (should not happen)
 }
 
 

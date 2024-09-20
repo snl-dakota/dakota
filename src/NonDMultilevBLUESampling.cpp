@@ -409,7 +409,7 @@ shared_covariance_iteration(IntRealMatrixArrayMap& sum_G,
     // accumulate for one group only and reuse for group covariances
     accumulate_blue_sums(sum_G, sum_GG, NGroupActual, all_group, allResponses);
     compute_GG_covariance(sum_G[1][all_group], sum_GG[1][all_group],
-			  NGroupActual[all_group], covGG, covGGinv);
+			  NGroupActual[all_group], covGG, covGGinv); // *** PRUNE
     if (mlmfIter == 0 && costSource != USER_COST_SPEC)
       { recover_online_cost(allResponses); update_model_group_costs(); }
     increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox+1,
@@ -421,7 +421,7 @@ shared_covariance_iteration(IntRealMatrixArrayMap& sum_G,
     // compute the LF/HF evaluation ratios from shared samples and compute
     // ratio of MC and BLUE mean sq errors (which incorporates anticipated
     // variance reduction from application of avg_eval_ratios).
-    compute_allocations(blueSolnData, NGroupActual, NGroupAlloc, delta_N_G);
+    compute_allocations(blueSolnData, NGroupActual, NGroupAlloc, delta_N_G); // *** AFFECTED BY PRUNE
     // only increment NGroupAlloc[all_group]
     increment_allocations(blueSolnData, NGroupAlloc, delta_N_G, all_group);
     numSamples = delta_N_G[all_group];
@@ -893,7 +893,7 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
 
   bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
 		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
-  Real avg_hf_target, N_shared;
+  Real avg_hf_target;
   if (maxFunctionEvals == SZ_MAX) { // accuracy-constrained -> online only
     // As for {ACV,GenACV}, employ ML BLUE's native estvar for accuracy scaling
     RealVector soln_vars, mlblue_estvar;  SizetArray N_shared;
@@ -908,8 +908,8 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
   }
   else { // budget-constrained -> online or offline
     Real remaining = (Real)maxFunctionEvals,
-      cost_H = sequenceCost[numApprox], offline_N_lwr = 2.;
-    N_shared = (offline) ? offline_N_lwr : (Real)pilotSamples[all_group];
+      cost_H = sequenceCost[numApprox], offline_N_lwr = 2.,
+      N_shared = (offline) ? offline_N_lwr : (Real)pilotSamples[all_group];
     if (!offline && pilotGroupSampling != SHARED_PILOT) {
       BitArray inactive(numGroups);  inactive.set();
       size_t g, r, num_r = ratios_to_groups.size(); // numApprox+1
@@ -1833,21 +1833,25 @@ void NonDMultilevBLUESampling::prune_model_groups()
 
   // Need at least 1 group that contains the HF reference model
   // APPROACH 1: always include all_group (as with other throttles)
+  // > this group always has shared/indep pilot samples for online or
+  //   offline_N_lwr = 2 for offline, but covariance may be poorly conditioned
   size_t all_group = numGroups - 1;
   if (!retainedModelGroups[all_group]) {
     if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Augment: group = " << all_group << '\n';
-    retainedModelGroups.set(numGroups-1);
+      Cout << "Augment: add HF group = " << all_group << '\n';
+    retainedModelGroups.set(all_group);
   }
-  // APPROACH 2: iff no HF group, add the best conditioned one
-  // Note: this may have zero samples if SHARED_PILOT
-  if (false) { // Assess gap
-    // Find best from discarded
-    // Augment
+  /*
+  // APPROACH 2: iff no HF group, add the best-conditioned discard
+  // > this group may have zero samples if online SHARED_PILOT --> bad Psi
+  size_t g_index = retain_hf_group();
+  if (g_index != _NPOS) {
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Augment: add HF group = " << g_index << '\n';
+    retainedModelGroups.set(g_index); // Augment
   }
+  */
 
-  // TO DO: currently allowing all_group to be pruned, which is Ok for cov_GG
-  // TO DO: number of remaining groups may exceed max for global opt --> modify method as needed.
   if (outputLevel >= DEBUG_OUTPUT) {
     Cout << "Retained group count = " << retainedModelGroups.count() << '\n';
     for (size_t g=0; g<numGroups; ++g)
