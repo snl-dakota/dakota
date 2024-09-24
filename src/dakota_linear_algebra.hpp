@@ -54,12 +54,15 @@ namespace Dakota {
    destroying A if compute_vectors = false); optionally returns right
    singular vectors in v_trans.
  */
-void svd(RealMatrix& matrix, RealVector& singular_vals, RealMatrix& v_trans,
-	 bool compute_vectors = true);
+void singular_value_decomp(RealMatrix& matrix, RealVector& singular_vals,
+			   RealMatrix& v_trans, bool compute_vectors = true);
 
 /// compute the singular values without storing any singular vectors
 /// (A will be destroyed)
 void singular_values(RealMatrix& matrix, RealVector& singular_values);
+
+/// compute the pseudo-inverse by SVD (A is overwritten by U)
+void pseudo_inverse(RealMatrix& A, RealMatrix& A_inv, Real& rcond);
 
 /**
  * \brief Compute an in-place QR factorization A = QR

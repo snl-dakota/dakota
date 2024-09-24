@@ -17,6 +17,7 @@
 #include "LowDiscrepancySequence.hpp"
 
 #include <boost/random/uniform_int.hpp>
+#include <boost/random/mersenne_twister.hpp>
 
 namespace Dakota {
 
@@ -555,7 +556,7 @@ void DigitalNet::digital_shift(
 )
 {
   digitalShift.resize(dMax);
-  if ( seed < 0 )
+  if ( !digitalShiftFlag || seed < 0 )
   {
     digitalShift = 0; /// Sets all entries to 0
   }

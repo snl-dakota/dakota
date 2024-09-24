@@ -413,7 +413,7 @@ partial_corr(RealMatrix& total_data, const int num_in,
                                 control_factors_Z, correl_factors_X, 0.0);
       RealVector sing_vals; 
       RealMatrix v_trans;
-      svd(control_factors_Z, sing_vals, v_trans);
+      singular_value_decomp(control_factors_Z, sing_vals, v_trans);
 
       double tol = 
         std::numeric_limits<double>::epsilon() * control_factors_Z.normInf();

@@ -52,6 +52,11 @@ NonDMUQBayesCalibration(ProblemDescDB& problem_db, Model& model):
   amScale(probDescDB.get_real("method.nond.am_scale")),
   malaStepSize(probDescDB.get_real("method.nond.mala_step_size"))
 {
+  // MUQ does not yet support hyper-parameter multiplier calibration
+  if(numHyperparams != 0) {
+      Cerr << "\nError: NonDMUQBayesCalibration::constructor(): bayes_calibration muq does not support calibrate_error_multipliers!\n";
+      abort_handler(METHOD_ERROR);
+  }
   // default initial proposal covariance choice
   if (proposalCovarType.empty())
     proposalCovarType = "prior";
@@ -353,12 +358,18 @@ void NonDMUQBayesCalibration::specify_posterior()
 /** Perform the uncertainty quantification */
 void NonDMUQBayesCalibration::calibrate()
 {
-  int N =  (chainSamples > 0) ? chainSamples : 1000;
-  size_t num_cv = numContinuousVars;
-  const RealVector& init_point = nonDMUQInstance->mcmcModel.continuous_variables();
+  const int N =  (chainSamples > 0) ? chainSamples : 1000;
+  const size_t &num_cv = numContinuousVars;
   Eigen::VectorXd init_pt(num_cv);
-  for (size_t i(0); i < num_cv; ++i)
-    init_pt[i] = init_point[i];
+  if(mapOptimizer.is_null()) {
+    const RealVector& init_point = nonDMUQInstance->mcmcModel.continuous_variables();
+    for (size_t i(0); i < num_cv; ++i)
+      init_pt[i] = init_point[i];
+  } else {
+    map_pre_solve();
+    for (size_t i(0); i < num_cv; ++i)
+      init_pt[i] = mapSoln[i];
+  }
 
   Cout << "Running Bayesian Calibration with MUQ " << mcmcType << " using "
        << N << " MCMC samples." << std::endl;
@@ -379,7 +390,16 @@ void NonDMUQBayesCalibration::calibrate()
   cache_chain();
 
   // Generate useful stats from the posterior samples
-  //compute_statistics();
+  // compute_statistics();
+}
+
+
+void NonDMUQBayesCalibration::map_pre_solve()
+{
+  // doing a double check here to avoid a double copy if not optimizing 
+  // for MAP (this check happens again in base class map_pre_solve()). 
+  if (mapOptimizer.is_null()) return;
+  NonDBayesCalibration::map_pre_solve();
 }
 
 void NonDMUQBayesCalibration::log_best()

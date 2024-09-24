@@ -6770,6 +6770,7 @@ static Real
 	MP_(mutationScale),
 	MP_(percentVarianceExplained),
         MP_(priorPropCovMult),
+        MP_(rCondTolThrottle),
 	MP_(refinementRate),
 	MP_(regressionL2Penalty),
 	MP_(relaxFixedFactor),
@@ -7049,8 +7050,9 @@ static size_t
 	MP_(numOffspring),
 	MP_(numParents),
 	MP_(numPredConfigs),
-  //MP_(startOrder),
-  MP_(startRank);
+	MP_(rCondBestThrottle),
+	//MP_(startOrder),
+	MP_(startRank);
 
 static Method_mp_type
 	MP2s(allocationTarget,TARGET_MEAN),

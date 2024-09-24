@@ -300,7 +300,7 @@ void QMEApproximation::find_scaled_coefficients()
   RealVector singularValues, delta(numUsed), approx_delta(numUsed);
   RealMatrix V_transpose, D(numUsed,numUsed), D2T(numUsed,numUsed);
   G_reduced_xfm = dy;
-  svd(G_reduced_xfm, singularValues, V_transpose);
+  singular_value_decomp(G_reduced_xfm, singularValues, V_transpose);
 
 #ifdef DEBUG
   Cout << "QMEA: numUsed=" << numUsed << '\n';

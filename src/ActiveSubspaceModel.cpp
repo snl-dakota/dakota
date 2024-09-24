@@ -510,7 +510,7 @@ void ActiveSubspaceModel::compute_svd()
 
   RealMatrix V_transpose;
   leftSingularVectors = derivativeMatrix;
-  svd(leftSingularVectors, singularValues, V_transpose);
+  singular_value_decomp(leftSingularVectors, singularValues, V_transpose);
 
   // TODO: Analyze whether we need to worry about this
   if(singularValues.length() == 0) {
@@ -672,7 +672,8 @@ compute_bing_li_criterion(RealVector& singular_values)
   for (size_t i = 0; i < numReplicates; ++i) {
     bootstrap_sampler(bootstrapped_sample);
 
-    svd(bootstrapped_sample, sample_sing_vals, sample_sing_vectors);
+    singular_value_decomp(bootstrapped_sample, sample_sing_vals,
+			  sample_sing_vectors);
 
     // Overwrite bootstrap replicate with singular matrix product
     RealMatrix bootstrapped_sample_copy = bootstrapped_sample;
@@ -770,7 +771,8 @@ compute_constantine_metric(RealVector& singular_values)
   for (size_t i = 0; i < numReplicates; ++i) {
     bootstrap_sampler(bootstrapped_sample);
 
-    svd(bootstrapped_sample, sample_sing_vals, sample_sing_vectors);
+    singular_value_decomp(bootstrapped_sample, sample_sing_vals,
+			  sample_sing_vectors);
 
     for(size_t j = 0; j < constantine_metric.size(); ++j) {
       size_t num_sing_vec = j+1;
@@ -789,7 +791,7 @@ compute_constantine_metric(RealVector& singular_values)
 
       // The spectral norm is slow, let's use the Frobenius norm instead.
       // Compute the spectral norm of dist_mat (largest singular value):
-      //svd(dist_mat, dist_sing_vals, dist_sing_vectors);
+      //singular_value_decomp(dist_mat, dist_sing_vals, dist_sing_vectors);
       //constantine_metric[j] += dist_sing_vals(0) / numReplicates;
 
       constantine_metric[j] += dist_mat.normFrobenius() / numReplicates;

@@ -500,13 +500,15 @@ protected:
   void mfmc_analytic_solution(const UShortArray& approx_set,
 			      const RealMatrix& rho2_LH, const RealVector& cost,
 			      RealVector& avg_eval_ratios,
-			      bool monotonic_r = false);
+			      bool lower_bounded_r = true,
+			      bool     monotonic_r = false);
   void mfmc_reordered_analytic_solution(const UShortArray& approx_set,
 					const RealMatrix& rho2_LH,
 					const RealVector& cost,
 					SizetArray& corr_approx_sequence,
 					RealVector& avg_eval_ratios,
-					bool monotonic_r = false);
+					bool lower_bounded_r = true,
+					bool     monotonic_r = false);
   void mfmc_estvar_ratios(const RealMatrix& rho2_LH,
 			  const RealVector& avg_eval_ratios,
 			  SizetArray& approx_sequence,
@@ -514,7 +516,8 @@ protected:
 
   void cvmc_ensemble_solutions(const RealMatrix& rho2_LH,
 			       const RealVector& cost,
-			       RealVector& avg_eval_ratios);
+			       RealVector& avg_eval_ratios,
+			       bool lower_bounded_r = true);
 
   void pick_mfmc_cvmc_solution(const MFSolutionData& mf_soln, //size_t mf_samp,
 			       const MFSolutionData& cv_soln, //size_t cv_samp,
@@ -525,11 +528,14 @@ protected:
   //void process_group_solution(MFSolutionData& soln, SizetArray& delta_N);
 
   void configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
-			    RealVector& lin_ineq_lb, RealVector& lin_ineq_ub,
-			    RealVector& lin_eq_tgt,  RealVector& nln_ineq_lb,
-			    RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
-			    RealMatrix& lin_ineq_coeffs,
-			    RealMatrix& lin_eq_coeffs);
+			    const RealVector& lin_ineq_lb,
+			    const RealVector& lin_ineq_ub,
+			    const RealVector& lin_eq_tgt,
+			    const RealVector& nln_ineq_lb,
+			    const RealVector& nln_ineq_ub,
+			    const RealVector& nln_eq_tgt,
+			    const RealMatrix& lin_ineq_coeffs,
+			    const RealMatrix& lin_eq_coeffs);
   void run_minimizers(MFSolutionData& soln);
 
   void root_reverse_dag_to_group(unsigned short root, const UShortSet& rev_dag,
@@ -638,6 +644,15 @@ protected:
   void inflate(const RealVector& avg_eval_ratios, RealMatrix& eval_ratios);
   /// promote scalar to column vector
   void inflate(Real r_i, size_t num_rows, Real* eval_ratios_col);
+  /// promote active vector subset to full vector based on mask
+  void inflate(const RealVector& vec, const BitArray& mask,
+	       RealVector& inflated_vec);
+  /// demote full vector to active subset based on mask
+  void deflate(const RealVector& vec, const BitArray& mask,
+	       RealVector& deflated_vec);
+  /// demote full vector to active subset based on mask
+  void deflate(const SizetArray& vec, const BitArray& mask,
+	       RealVector& deflated_vec);
 
   /// compute a penalty merit function after an optimization solve
   Real nh_penalty_merit(const RealVector& c_vars, const RealVector& fn_vals);
@@ -729,6 +744,9 @@ private:
   /// (objective and nonlinear constraint, if present)
   static void response_evaluator(const Variables& vars, const ActiveSet& set,
 				 Response& response);
+
+  // bound x away from zero
+  //void enforce_nudge(RealVector& x);
 
   //
   //- Heading: Data
@@ -1332,14 +1350,16 @@ enforce_bounds(RealVector& x0, const RealVector& x_lb, const RealVector& x_ub)
 {
   size_t i, len = x0.length();
   if (x_lb.length() != len || x_ub.length() != len) {
-    Cerr << "Error: inconsistent bound sizes in enforce_bounds()." << std::endl;
+    Cerr << "Error: inconsistent bound sizes in enforce_bounds(): (0,l,u) = ("
+	 << len << "," << x_lb.length() << "," << x_ub.length() << ")."
+	 << std::endl;
     abort_handler(METHOD_ERROR);
   }
   for (i=0; i<len; ++i) {
     Real x_lb_i = x_lb[i], x_ub_i = x_ub[i];
     if (x_lb_i > x_ub_i) {
-      Cerr << "Error: inconsistent bound values in enforce_bounds()."
-	   << std::endl;
+      Cerr << "Error: inconsistent bound values in enforce_bounds(): (l,u) = ("
+	   << x_lb_i << "," << x_ub_i << ")." << std::endl;
       abort_handler(METHOD_ERROR);
     }
     Real& x0_i = x0[i];
@@ -1650,9 +1670,10 @@ inline Real NonDNonHierarchSampling::
 log_average_estvar(const RealVector& cd_vars)
 {
   Real avg_est_var = average_estimator_variance(cd_vars);
-  return (avg_est_var > 0.) ?
-    std::log(avg_est_var) : // use log to flatten contours
-    std::numeric_limits<Real>::quiet_NaN();//Pecos::LARGE_NUMBER;
+  if (avg_est_var > 0.)
+    return std::log(avg_est_var); // use log to flatten contours
+  else
+    return std::numeric_limits<Real>::quiet_NaN();//Pecos::LARGE_NUMBER;
 }
 
 
@@ -1820,6 +1841,65 @@ inflate(Real r_i, size_t num_rows, Real* eval_ratios_col)
   for (size_t row=0; row<num_rows; ++row)
     eval_ratios_col[row] = r_i;
 }
+
+
+inline void NonDNonHierarchSampling::
+inflate(const RealVector& vec, const BitArray& mask, RealVector& inflated_vec)
+{
+  if (mask.empty())
+    copy_data(vec, inflated_vec);
+  else {
+    size_t i, cntr = 0, inflated_len = mask.size();
+    inflated_vec.size(inflated_len); // init to 0
+    for (i=0; i<inflated_len; ++i)
+      if (mask[i])
+	inflated_vec[i] = vec[cntr++];
+  }
+}
+
+
+inline void NonDNonHierarchSampling::
+deflate(const RealVector& vec, const BitArray& mask, RealVector& deflated_vec)
+{
+  if (mask.empty())
+    copy_data(vec, deflated_vec);
+  else {
+    size_t i, cntr = 0, len = vec.length(), deflate_len = mask.count();
+    deflated_vec.sizeUninitialized(deflate_len); // init to 0
+    for (i=0; i<len; ++i)
+      if (mask[i])
+	deflated_vec[cntr++] = vec[i];
+  }
+}
+
+
+inline void NonDNonHierarchSampling::
+deflate(const SizetArray& vec, const BitArray& mask, RealVector& deflated_vec)
+{
+  if (mask.empty())
+    copy_data(vec, deflated_vec);
+  else {
+    size_t i, cntr = 0, len = vec.size(), deflate_len = mask.count();
+    deflated_vec.sizeUninitialized(deflate_len); // init to 0
+    for (i=0; i<len; ++i)
+      if (mask[i])
+	deflated_vec[cntr++] = (Real)vec[i];
+  }
+}
+
+
+/*
+inline void NonDNonHierarchSampling::enforce_nudge(RealVector& x)
+{
+  size_t i, len = x.length();
+  Real lb = //(maxFunctionEvals == SZ_MAX) ?
+    RATIO_NUDGE;
+  //RATIO_NUDGE * std::sqrt(maxFunctionEvals); // hand-tuned heuristic
+  for (i=0; i<len; ++i)
+    if (x[i] < lb)
+      x[i] = lb;
+}
+*/
 
 } // namespace Dakota
 

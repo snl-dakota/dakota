@@ -35,16 +35,18 @@ NonDGenACVSampling(ProblemDescDB& problem_db, Model& model):
     problem_db.get_short("method.nond.search_model_graphs.selection")),
   meritFnStar(DBL_MAX)
 {
-  // Support fixed DAGs (no search) for method promotions;
-  // model selection remains available
+  // Support constrained DAG ensembles for method promotions (hierarchical
+  // for MFMC/MLMC, peer for ACV); recursion + model selection are optional
   switch (methodName) {
-  case MULTILEVEL_SAMPLING: // MLMC promotion: enforce fixed hierarchical DAG
-    dagRecursionType = NO_GRAPH_RECURSION;
-    dagWidthLimit = 1;  dagDepthLimit = numApprox;
+  case MULTILEVEL_SAMPLING:    // MLMC promotion for model selection
+    // weighted MLMC = ACV-RD for hierarchical DAG(s)
+    //dagRecursionType = NO_GRAPH_RECURSION; // DAG recursion now optional
+    dagWidthLimit = 1;  dagDepthLimit = numApprox; // a hierarchical DAG
     mlmfSubMethod = SUBMETHOD_ACV_RD;   break;
-  case MULTIFIDELITY_SAMPLING: // MFMC promotion: enforce fixed peer DAG
-    dagRecursionType = NO_GRAPH_RECURSION;
-    dagWidthLimit = 1;  dagDepthLimit = numApprox;
+  case MULTIFIDELITY_SAMPLING: // MFMC promotion for model selection
+    // MFMC = ACV-MF for hierarchical DAG(s) (Note: SUBMETHOD_MFMC not used)
+    //dagRecursionType = NO_GRAPH_RECURSION; // DAG recursion now optional
+    dagWidthLimit = 1;  dagDepthLimit = numApprox; // a hierarchical DAG
     mlmfSubMethod = SUBMETHOD_ACV_MF;   break;
   default: // not a promotion: ACV specification + search options
     // assign appropriate depth/width throttles for recursion options
@@ -76,7 +78,7 @@ NonDGenACVSampling::~NonDGenACVSampling()
 
 void NonDGenACVSampling::generate_ensembles_dags()
 {
-  UShortArray nodes(numApprox), dag;  size_t i;
+  UShortArray nodes(numApprox);  size_t i;
   for (i=0; i<numApprox; ++i) nodes[i] = i;
   unsigned short root = numApprox;
 
@@ -106,6 +108,7 @@ void NonDGenACVSampling::generate_ensembles_dags()
       nodes.resize(dag_size); // discard trailing node
       generate_dags(dag_size, nodes, nominal_dags[dag_size]);
     }
+
     // Now map each set of active model nodes through the nominal dags
     UShortArray mapped_dag;  unsigned short nom_dag_j;
     for (i=0; i<num_tp; ++i) { // include first = {0} --> retain MC case
@@ -113,6 +116,7 @@ void NonDGenACVSampling::generate_ensembles_dags()
       nodes.clear();
       for (j=0; j<numApprox; ++j)
 	if (tp_i[j]) nodes.push_back(j);
+      //Cout << "tp_i:\n" << tp_i << "nodes:\n" << nodes << std::endl;
       dag_size = nodes.size();
       mapped_dag.resize(dag_size);
       const UShortArraySet& nominal_set = nominal_dags[dag_size];
@@ -187,9 +191,29 @@ generate_dags(unsigned short root, const UShortArray& nodes,
     return;
   }
   else if (w_limit == 1) { // hierarchical DAG (MLMC, MFMC)
+    // Note: numerical MFMC (promoted here for search_model_graphs options)
+    // defines ratioApproxSequence on the fly (see NonDMultifidelitySampling::
+    // estimator_variance_ratios()) to ensure estvar validity while avoiding
+    // linear constraints needed to enforce a fixed ordering. This essentially
+    // updates a hierarchical DAG on the fly, with the downside of potentially
+    // introducing discontinuities in the integrated solve --> test against
+    // promoting "search_model_graphs full recursion" here, trading (nonsmooth
+    // but efficient) integration for (smooth but expensive) enumeration.
+
     dag.resize(num_approx);
-    for (unsigned short i=0; i<num_approx; ++i) dag[i] = i+1;
-    dag_set.insert(dag);
+    switch (dagRecursionType) {
+    case NO_GRAPH_RECURSION:
+      // Omit alternate model orderings --> one ordered hierarchical DAG
+      for (unsigned short i=0; i<num_approx; ++i) dag[i] = i+1;
+      dag_set.insert(dag);
+      break;
+    case FULL_GRAPH_RECURSION:
+      // Include all hierarchical DAG orderings (depth exactly = numApprox)
+      // *** TO DO: verify GenACV DAG dependencies handle misordered hierarch
+      // *** TO DO: can we treat the weighted MLMC case the same way?
+      generate_hierarchical_sub_trees(root, nodes, d_limit, dag, dag_set);
+      break;
+    }
     return;
   }
 
@@ -237,7 +261,7 @@ generate_sub_trees(unsigned short root, const UShortArray& nodes,
   //     << " root = " << root << " nodes =\n" << nodes << std::endl;
 
   size_t i, num_nodes = nodes.size();
-  if (nodes.empty()) {
+  if (num_nodes == 0) {
     // suppress some duplicates for sub_nodes with empty sub_nodes_per_root
     //dag_set.insert(dag);
     return;
@@ -292,6 +316,69 @@ generate_sub_trees(unsigned short root, const UShortArray& nodes,
 	for (k=0; k<num_sub_roots; ++k)
 	  generate_sub_trees(sub_roots[k], sub_nodes_per_root[k], dm1, dag,
 			     dag_set);
+      }
+    }
+  }
+}
+
+
+void NonDGenACVSampling::
+generate_hierarchical_sub_trees(unsigned short root, const UShortArray& nodes,
+				unsigned short depth, UShortArray& dag,
+				UShortArraySet& dag_set)
+{
+  // Simplified version (fewer tp1 options) of recursion above
+
+  size_t i, num_nodes = nodes.size();
+  if (num_nodes == 0) {
+    // suppress some duplicates for sub_nodes with empty sub_nodes_per_root
+    //dag_set.insert(dag);
+    return;
+  }
+  else if (depth <= 1) {
+    for (i=0; i<num_nodes; ++i) dag[nodes[i]] = root;
+    //Cout << "Recursion hit bottom.  Inserting:\n" << dag;
+    dag_set.insert(dag); // insert completed DAG
+    return;
+  }
+
+  UShort2DArray tp2, sub_nodes_per_root;
+  UShortArray   tp2_orders, sub_roots, sub_nodes;
+  size_t n, j, k, num_tp2, num_sub_roots, num_sub_nodes;
+  unsigned short node_j, dm1 = depth - 1, nm1 = num_nodes - 1;
+  num_sub_roots = 1;  num_sub_nodes = num_nodes - num_sub_roots;
+  sub_roots.resize(num_sub_roots); sub_nodes.resize(num_sub_nodes);
+
+  for (i=0; i<num_nodes; ++i) {
+    // segregate "on" (1) into roots, "off" (0) into nexts
+    for (j=0, n=0; j<num_nodes; ++j) {
+      node_j = nodes[j];
+      if (j == i) { sub_roots[0] = node_j;  dag[node_j] = root; }
+      else sub_nodes[n++] = node_j;
+    }
+ 
+    if (sub_nodes.empty()) { // optimize out unnecessary recursion
+      //Cout << "Recursion out of nodes.  Inserting:\n" << dag;
+      dag_set.insert(dag); // insert completed DAG
+    }
+    else {
+      sub_nodes_per_root.resize(num_sub_roots);
+      // 2nd TP defines assignments of sub_nodes per sub_root (differs from 1st
+      // TP above as there are multiple roots available, which will be recurred)
+      tp2_orders.assign(num_sub_nodes, num_sub_roots);
+      Pecos::SharedPolyApproxData::
+	tensor_product_multi_index(tp2_orders, tp2, false);
+      num_tp2 = tp2.size();
+      for (j=0; j<num_tp2; ++j) { // 1st entry (all 0's) is valid for this TP
+	const UShortArray& tp2_j = tp2[j];
+	for (k=0; k<num_sub_roots; ++k) sub_nodes_per_root[k].clear();
+	for (k=0; k<num_sub_nodes; ++k) {
+	  unsigned short tp2_jk = tp2_j[k];
+	  sub_nodes_per_root[tp2_jk].push_back(sub_nodes[k]);
+	}
+	for (k=0; k<num_sub_roots; ++k)
+	  generate_hierarchical_sub_trees(sub_roots[k], sub_nodes_per_root[k],
+					  dm1, dag, dag_set);
       }
     }
   }
@@ -1076,16 +1163,18 @@ void NonDGenACVSampling::
 numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
 			  size_t& num_nln_con)
 {
+  // Note: SUBMETHOD_MFMC not used by GenACV
+
   size_t num_approx = activeModelSetIter->first.size();
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT:
     num_cdv = num_approx;  num_nln_con = 0;
     num_lin_con = 1;
-    if (mlmfSubMethod == SUBMETHOD_MFMC) num_lin_con += num_approx;
+    //if (mlmfSubMethod == SUBMETHOD_MFMC) num_lin_con += num_approx;
     break;
   case R_AND_N_NONLINEAR_CONSTRAINT:
     num_cdv = num_approx + 1;  num_nln_con = 1;
-    num_lin_con = (mlmfSubMethod == SUBMETHOD_MFMC) ? num_approx : 0;
+    num_lin_con = 0; //(mlmfSubMethod == SUBMETHOD_MFMC) ? num_approx : 0;
     break;
   case N_MODEL_LINEAR_CONSTRAINT:
     num_lin_con = num_cdv = num_approx + 1;  num_nln_con = 0;
@@ -1191,14 +1280,6 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   }
   // x0 can undershoot x_lb if an OFFLINE mode, but enforce generally
   enforce_bounds(x0, x_lb, x_ub);
-
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "Numerical solve (initial, lb, ub):\n" << x0 << x_lb << x_ub
-	 << "Numerical solve (lin ineq lb, ub):\n" << lin_ineq_lb << lin_ineq_ub
-       //<< lin_eq_tgt
-	 << "Numerical solve (nln ineq lb, ub):\n" << nln_ineq_lb << nln_ineq_ub
-       //<< nln_eq_tgt << lin_ineq_coeffs << lin_eq_coeffs
-	 << std::endl;
 }
 
 
@@ -1279,10 +1360,16 @@ augmented_linear_ineq_violations(const RealVector& cd_vars,
 	lin_ineq_coeffs(i+lin_ineq_offset, deflate_tgt)  * cd_vars[deflate_tgt];
       l_bnd = lin_ineq_lb[i+lin_ineq_offset];
       u_bnd = lin_ineq_ub[i+lin_ineq_offset];
-      if (inner_prod < l_bnd)
-	{ viol = (1. - inner_prod / l_bnd);  quad_viol += viol*viol; }
-      else if (inner_prod > u_bnd)
-	{ viol = (inner_prod / u_bnd - 1.);  quad_viol += viol*viol; }
+      if (inner_prod < l_bnd) {
+	viol = (std::abs(l_bnd) > Pecos::SMALL_NUMBER)
+	  ? (1. - inner_prod / l_bnd) : l_bnd - inner_prod;
+	quad_viol += viol*viol;
+      }
+      else if (inner_prod > u_bnd) {
+	viol = (std::abs(u_bnd) > Pecos::SMALL_NUMBER)
+	  ? (inner_prod / u_bnd - 1.) : inner_prod - u_bnd;
+	quad_viol += viol*viol;
+      }
     }
     break;
   }

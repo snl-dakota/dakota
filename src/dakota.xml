@@ -342,6 +342,10 @@
     <!ENTITY promoted_model_selection '
 	     <keyword  id="search_model_graphs" name="search_model_graphs" code="{0}" label="search_model_graph" minOccurs="0" default="NO_GRAPH_RECURSION" >
                <keyword  id="model_selection" name="model_selection" code="{N_mdm(type,modelSelectType_ALL_MODEL_COMBINATIONS)}" label="model_selection" minOccurs="0" />
+	       <oneOf label="DAG Ensemble Generation Option">
+		 <keyword  id="no_recursion" name="no_recursion" code="{N_mdm(type,dagRecursionType_NO_GRAPH_RECURSION)}" label="no_recursion" />
+		 <keyword  id="full_recursion" name="full_recursion" code="{N_mdm(type,dagRecursionType_FULL_GRAPH_RECURSION)}" label="full_recursion" />
+	       </oneOf>
              </keyword>
 	     ' >
 
@@ -689,9 +693,14 @@
 	       <oneOf label="Throttle Approach">
 		 <keyword  id="mfmc_groups" name="mfmc_groups" code="{N_mdm(type,groupThrottleType_MFMC_ESTIMATOR_GROUPS)}" label="MFMC estimator groups" />
 		 <keyword  id="common_groups" name="common_groups" code="{N_mdm(type,groupThrottleType_COMMON_ESTIMATOR_GROUPS)}" label="common estimator groups" />
-		 <!-- <keyword  id="group_size" name="group_size" code="{N_mdm(type,groupThrottleType_GROUP_SIZE_THROTTLE)}" label="group size throttle" > -->
 	         <keyword  id="group_size" name="group_size" code="{N_mdm(ushint,groupSizeThrottle)}" label="group size throttle" >
 	           <param type="INTEGER" constraint="> 0" />
+	         </keyword>
+	         <keyword  id="best_conditioned" name="best_conditioned" code="{N_mdm(sizet,rCondBestThrottle)}" label="best conditioned throttle" >
+	           <param type="INTEGER" constraint="> 0" />
+	         </keyword>
+	         <keyword  id="rcond_tolerance" name="rcond_tolerance" code="{N_mdm(Real,rCondTolThrottle)}" label="rcond tolerance throttle" >
+	           <param type="REAL" constraint=">= 0" />
 	         </keyword>
 	       </oneOf>
 	     </keyword>
@@ -1876,10 +1885,114 @@
 	     </oneOf>
 	     ' >
 
+    <!-- Entities below are for low discrepancy sampling -->
+
     <!-- Extracted option for natural ordering of low-discrepancy points, as it occurs in both rank-1 lattice and digital net -->
     <!ENTITY natural '
       <keyword id="natural" name="natural" code="{N_mdm(true,naturalOrdering)}" label="Natural ordering" >
       </keyword>
+    ' >
+
+    <!-- Extracted options for rank 1 lattices, as they occurs for both replicated and non-replicted low-discrepancy sampling -->
+    <!ENTITY rank_1_lattice_options '
+      <keyword id="no_random_shift" name="no_random_shift" code="{N_mdm(true,noRandomShiftFlag)}" label="no_random_shift" minOccurs="0">
+      </keyword>
+      <keyword id="m_max" name="m_max" code="{N_mdm(int,log2MaxPoints)}" label="m_max" minOccurs="0" default="0">
+        <param type="INTEGER" constraint=">= 0" />
+      </keyword>
+      <keyword id="generating_vector" name="generating_vector" code="{0}" label="Generating vector" minOccurs="0" default="No generating vector">
+        <oneOf label="Generating Vector"> 
+          <keyword id="inline" name="inline" code="{N_mdm(ivec,generatingVector)}" label="Inline generating vector" >
+            <param type="INTEGERLIST" />
+          </keyword>
+          <keyword id="file" name="file" code="{N_mdm(str,generatingVectorFileName)}" label="Generating vector file" >
+            <param type="STRING" />
+          </keyword>
+          <keyword id="predefined" name="predefined" code="{0}" label="Predefined generating vector" default="Default generating vector">
+            <oneOf label="Predefined Generating Vectors">
+              <keyword id="kuo" name="kuo" code="{N_mdm(true,kuo)}" label="Generating vector from Kuo&apos;s website">
+              </keyword>
+              <keyword id="cools_kuo_nuyens" name="cools_kuo_nuyens" code="{N_mdm(true,cools_kuo_nuyens)}" label="Generating vector from Cools, Kuo and Nuyens (2016)">
+              </keyword>
+            </oneOf>
+          </keyword>
+        </oneOf>
+      </keyword>
+      <keyword id="ordering" name="ordering" code="{0}" label="Ordering" minOccurs="0" default="Radical inverse ordering">
+        <oneOf label="Ordering">
+          &natural;
+          <keyword id="radical_inverse" name="radical_inverse" code="{N_mdm(true,radicalInverseOrdering)}" label="Radical inverse ordering" >
+          </keyword>
+        </oneOf>
+      </keyword>
+    ' >
+
+    <!-- Extracted options for digital nets, as they occurs for both replicated and non-replicted low-discrepancy sampling -->
+    <!ENTITY digital_net_options '
+      <alias name="sobol_sequence"/>
+      <keyword id="no_digital_shift" name="no_digital_shift" code="{N_mdm(true,noDigitalShiftFlag)}" label="no_digital_shift" minOccurs="0">
+      </keyword>
+      <keyword id="no_scrambling" name="no_scrambling" code="{N_mdm(true,noScramblingFlag)}" label="no_scrambling" minOccurs="0">
+      </keyword>
+      <keyword id="integer_format" name="integer_format" code="{0}" label="Integer format" minOccurs="0" default="Most significant bit first">
+        <oneOf label="Integer Format">
+          <keyword id="most_significant_bit_first" name="most_significant_bit_first" code="{N_mdm(true,mostSignificantBitFirst)}" label="most_significant_bit_first" >
+          </keyword>
+          <keyword id="least_significant_bit_first" name="least_significant_bit_first" code="{N_mdm(true,leastSignificantBitFirst)}" label="least_significant_bit_first" >
+          </keyword>
+        </oneOf>
+      </keyword>
+      <keyword id="m_max" name="m_max" code="{N_mdm(int,log2MaxPoints)}" label="m_max" minOccurs="0" default="0">
+        <param type="INTEGER" constraint=">= 0" />
+      </keyword>
+      <keyword id="t_max" name="t_max" code="{N_mdm(int,numberOfBits)}" label="t_max" minOccurs="0" default="0">
+        <param type="INTEGER" constraint=">= 0" />
+      </keyword>
+      <keyword id="t_scramble" name="t_scramble" code="{N_mdm(int,scrambleSize)}" label="t_scramble" minOccurs="0" default="64">
+        <param type="INTEGER" constraint=">= 0" />
+      </keyword>
+      <keyword id="generating_matrices" name="generating_matrices" code="{0}" label="Generating matrices" minOccurs="0" default="No generating matrices">
+        <oneOf label="Generating Matrices"> 
+          <keyword id="inline" name="inline" code="{N_mdm(ivec,generatingMatrices)}" label="Inline generating matrices" >
+            <param type="INTEGERLIST" />
+          </keyword>
+          <keyword id="file" name="file" code="{N_mdm(str,generatingMatricesFileName)}" label="Generating matrices file" >
+            <param type="STRING" />
+          </keyword>
+          <keyword id="predefined" name="predefined" code="{0}" label="Predefined generating matrices" default="Default generating matrices">
+            <oneOf label="Predefined Generating Matrices">
+              <keyword id="joe_kuo" name="joe_kuo" code="{N_mdm(true,joe_kuo)}" label="Generating matrices from Joe and Kuo (2008)">
+              </keyword>
+              <keyword id="sobol_order_2" name="sobol_order_2" code="{N_mdm(true,sobol_order_2)}" label="Generating matrices for Sobol sequence">
+              </keyword>
+            </oneOf>
+          </keyword>
+        </oneOf>
+      </keyword>
+      <keyword id="ordering" name="ordering" code="{0}" label="Ordering" minOccurs="0" default="Gray code ordering">
+        <oneOf label="Ordering">
+          &natural;
+          <keyword id="gray_code" name="gray_code" code="{N_mdm(true,grayCodeOrdering)}" label="Gray code ordering" >
+          </keyword>
+        </oneOf>
+      </keyword>
+    ' >
+
+    <!-- Extracted options for low-discrepancy sampling -->
+    <!ENTITY low_discrepancy '
+      <keyword  id="low_discrepancy" name="low_discrepancy" code="{N_mdm(utype,sampleType_SUBMETHOD_LOW_DISCREPANCY_SAMPLING)}" label="low_discrepancy">
+          <alias name="qmc" />
+          <optional>
+            <keyword id="rank_1_lattice" name="rank_1_lattice" code="{N_mdm(true,rank1LatticeFlag)}" label="Options for rank-1 lattice samples" default="No rank-1 lattice sampling">
+              &rank_1_lattice_options;
+            </keyword>
+          </optional>
+          <optional>
+            <keyword id="digital_net" name="digital_net" code="{N_mdm(true,digitalNetFlag)}" label="Options for digital net samples" default="No digital net sampling">
+              &digital_net_options;
+            </keyword>
+          </optional>
+        </keyword>
     ' >
 
     ]>
@@ -3041,94 +3154,7 @@
         <keyword  id="random" name="random" code="{N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}" label="random"   />
         <keyword  id="incremental_lhs" name="incremental_lhs" code="{N_mdm(utype,sampleType_SUBMETHOD_LHS)}" label="incremental_lhs"   default="no sample reuse in coefficient estimation" />
         <keyword  id="incremental_random" name="incremental_random" code="{N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}" label="incremental_random"   />
-        <keyword  id="low_discrepancy" name="low_discrepancy" code="{N_mdm(utype,sampleType_SUBMETHOD_LOW_DISCREPANCY_SAMPLING)}" label="low_discrepancy">
-          <alias name="qmc" />
-          <optional>
-            <keyword id="rank_1_lattice" name="rank_1_lattice" code="{N_mdm(true,rank1LatticeFlag)}" label="Options for rank-1 lattice samples" default="No rank-1 lattice sampling">
-              <keyword id="no_random_shift" name="no_random_shift" code="{N_mdm(true,noRandomShiftFlag)}" label="no_random_shift" minOccurs="0">
-              </keyword>
-              <keyword id="m_max" name="m_max" code="{N_mdm(int,log2MaxPoints)}" label="m_max" minOccurs="0" default="0">
-                <param type="INTEGER" constraint=">= 0" />
-              </keyword>
-              <keyword id="generating_vector" name="generating_vector" code="{0}" label="Generating vector" minOccurs="0" default="No generating vector">
-                <oneOf label="Generating Vector"> 
-                  <keyword id="inline" name="inline" code="{N_mdm(ivec,generatingVector)}" label="Inline generating vector" >
-                    <param type="INTEGERLIST" />
-                  </keyword>
-                  <keyword id="file" name="file" code="{N_mdm(str,generatingVectorFileName)}" label="Generating vector file" >
-                    <param type="STRING" />
-                  </keyword>
-                  <keyword id="predefined" name="predefined" code="{0}" label="Predefined generating vector" default="Default generating vector">
-                    <oneOf label="Predefined Generating Vectors">
-                      <keyword id="kuo" name="kuo" code="{N_mdm(true,kuo)}" label="Generating vector from Kuo's website">
-                      </keyword>
-                      <keyword id="cools_kuo_nuyens" name="cools_kuo_nuyens" code="{N_mdm(true,cools_kuo_nuyens)}" label="Generating vector from Cools, Kuo and Nuyens (2016)">
-                      </keyword>
-                    </oneOf>
-                  </keyword>
-                </oneOf>
-              </keyword>
-              <keyword id="ordering" name="ordering" code="{0}" label="Ordering" minOccurs="0" default="Radical inverse ordering">
-                <oneOf label="Ordering">
-                  &natural;
-                  <keyword id="radical_inverse" name="radical_inverse" code="{N_mdm(true,radicalInverseOrdering)}" label="Radical inverse ordering" >
-                  </keyword>
-                </oneOf>
-              </keyword>
-            </keyword>
-          </optional>
-          <optional>
-            <keyword id="digital_net" name="digital_net" code="{N_mdm(true,digitalNetFlag)}" label="Options for digital net samples" default="No digital net sampling">
-              <alias name="sobol_sequence"/>
-              <keyword id="no_digital_shift" name="no_digital_shift" code="{N_mdm(true,noDigitalShiftFlag)}" label="no_digital_shift" minOccurs="0">
-              </keyword>
-              <keyword id="no_scrambling" name="no_scrambling" code="{N_mdm(true,noScramblingFlag)}" label="no_scrambling" minOccurs="0">
-              </keyword>
-              <keyword id="integer_format" name="integer_format" code="{0}" label="Integer format" minOccurs="0" default="Most significant bit first">
-                <oneOf label="Integer Format">
-                  <keyword id="most_significant_bit_first" name="most_significant_bit_first" code="{N_mdm(true,mostSignificantBitFirst)}" label="most_significant_bit_first" >
-                  </keyword>
-                  <keyword id="least_significant_bit_first" name="least_significant_bit_first" code="{N_mdm(true,leastSignificantBitFirst)}" label="least_significant_bit_first" >
-                  </keyword>
-                </oneOf>
-              </keyword>
-              <keyword id="m_max" name="m_max" code="{N_mdm(int,log2MaxPoints)}" label="m_max" minOccurs="0" default="0">
-                <param type="INTEGER" constraint=">= 0" />
-              </keyword>
-              <keyword id="t_max" name="t_max" code="{N_mdm(int,numberOfBits)}" label="t_max" minOccurs="0" default="0">
-                <param type="INTEGER" constraint=">= 0" />
-              </keyword>
-              <keyword id="t_scramble" name="t_scramble" code="{N_mdm(int,scrambleSize)}" label="t_scramble" minOccurs="0" default="64">
-                <param type="INTEGER" constraint=">= 0" />
-              </keyword>
-              <keyword id="generating_matrices" name="generating_matrices" code="{0}" label="Generating matrices" minOccurs="0" default="No generating matrices">
-                <oneOf label="Generating Matrices"> 
-                  <keyword id="inline" name="inline" code="{N_mdm(ivec,generatingMatrices)}" label="Inline generating matrices" >
-                    <param type="INTEGERLIST" />
-                  </keyword>
-                  <keyword id="file" name="file" code="{N_mdm(str,generatingMatricesFileName)}" label="Generating matrices file" >
-                    <param type="STRING" />
-                  </keyword>
-                  <keyword id="predefined" name="predefined" code="{0}" label="Predefined generating matrices" default="Default generating matrices">
-                    <oneOf label="Predefined Generating Matrices">
-                      <keyword id="joe_kuo" name="joe_kuo" code="{N_mdm(true,joe_kuo)}" label="Generating matrices from Joe and Kuo (2008)">
-                      </keyword>
-                      <keyword id="sobol_order_2" name="sobol_order_2" code="{N_mdm(true,sobol_order_2)}" label="Generating matrices for Sobol sequence">
-                      </keyword>
-                    </oneOf>
-                  </keyword>
-                </oneOf>
-              </keyword>
-              <keyword id="ordering" name="ordering" code="{0}" label="Ordering" minOccurs="0" default="Gray code ordering">
-                <oneOf label="Ordering">
-                  &natural;
-                  <keyword id="gray_code" name="gray_code" code="{N_mdm(true,grayCodeOrdering)}" label="Gray code ordering" >
-                  </keyword>
-                </oneOf>
-              </keyword>
-            </keyword>
-          </optional> 
-        </keyword>
+        &low_discrepancy;
       </oneOf>
     </keyword>
 	  <keyword  id="refinement_samples" name="refinement_samples" code="{N_mdm(ivec,refineSamples)}" label="Refinement samples"  minOccurs="0" >
@@ -3538,13 +3564,13 @@
 		  <keyword  id="multilevel" name="multilevel" code="{N_mdm(lit,mcmcType_multilevel)}" label="multilevel"  default="dram" />
 		</oneOf>
 	      </optional>
-	      <keyword  id="pre_solve" name="pre_solve" code="{0}" label="pre_solve"  minOccurs="0" default="nip pre-solve for emulators" >
+	  <keyword  id="pre_solve" name="pre_solve" code="{0}" label="pre_solve"  minOccurs="0" default="nip pre-solve for emulators" >
 		<oneOf label="Pre-solve Optimizer">
 		  <keyword  id="sqp1" name="sqp" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}" label="sqp"   />
 		  <keyword  id="nip" name="nip" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}" label="nip"   />
 		  <keyword  id="none" name="none" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NONE)}" label="none"   />
 		</oneOf>
-	      </keyword>
+	  </keyword>
 	      &bayes_proposal_covariance;
 	      <keyword  id="options_file" name="options_file" code="{N_mdm(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
 		<param type="INPUT_FILE" />
@@ -3659,33 +3685,44 @@
 	    </keyword>
 	    <keyword  id="muq" name="muq" code="{N_mdm(utype,subMethod_SUBMETHOD_MUQ)}" label="muq"  minOccurs="1" >
 	      <keyword  id="chain_samples" name="chain_samples" code="{N_mdm(int,chainSamples)}" label="MCMC chain samples"  default="method-dependent">
-		<alias name="samples" />
-		<param type="INTEGER" />
-	      </keyword>
+          <alias name="samples" />
+          <param type="INTEGER" />
+        </keyword>
 	      &bayes_seed_rng;
+        <keyword  id="export_chain_points_file" name="export_chain_points_file" code="{N_mdm(str,exportMCMCPtsFile)}" label="File export of MCMC acceptance chain"  minOccurs="0" default="chain export to default filename" >
+          <param type="OUTPUT_FILE" />
+          &method_export_samples_format;
+        </keyword>
 	      <optional>
-		<oneOf label="MCMC Algorithm" >
+          <oneOf label="MCMC Algorithm" >
                   <keyword  id="dram" name="dram" code="{N_mdm(lit,mcmcType_dram)}" label="dram"  default="dram" />
                   <keyword  id="delayed_rejection" name="delayed_rejection" code="{N_mdm(lit,mcmcType_delayed_rejection)}" label="delayed_rejection"  default="dram" />
                   <keyword  id="adaptive_metropolis" name="adaptive_metropolis" code="{N_mdm(lit,mcmcType_adaptive_metropolis)}" label="adaptive_metropolis"  default="dram" />
                   <keyword  id="metropolis_hastings" name="metropolis_hastings" code="{N_mdm(lit,mcmcType_metropolis_hastings)}" label="metropolis_hastings"  default="dram" />
                   <keyword  id="mala" name="mala" code="{N_mdm(lit,mcmcType_mala)}" label="mala"  default="dram" />
-		</oneOf>
+          </oneOf>
 	      </optional>
+        <keyword  id="pre_solve" name="pre_solve" code="{0}" label="pre_solve"  minOccurs="0" default="nip pre-solve for emulators" >
+          <oneOf label="Pre-solve Optimizer">
+            <keyword  id="sqp1" name="sqp" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}" label="sqp"   />
+            <keyword  id="nip" name="nip" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}" label="nip"   />
+            <keyword  id="none" name="none" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_NONE)}" label="none"   />
+          </oneOf>
+        </keyword>
 	      <keyword  id="dr_num_stages" name="dr_num_stages" code="{N_mdm(int,drNumStages)}" label="Number of stages for Delayed Rejection"  minOccurs="0" maxOccurs="1" default="3" >
-		<param type="INTEGER" />
+          <param type="INTEGER" />
 	      </keyword>
 	      <keyword  id="dr_scale_type" name="dr_scale_type" code="{N_mdm(str,drScaleType)}" label="Scale type for Delayed Rejection"  minOccurs="0" maxOccurs="1" default="Power" >
-		<param type="STRING" />
+          <param type="STRING" />
 	      </keyword>
 	      <keyword  id="dr_scale" name="dr_scale" code="{N_mdm(Real,drScale)}" label="Scale for Delayed Rejection"  minOccurs="0" maxOccurs="1" default="2.0" >
-		<param type="REAL" />
+          <param type="REAL" />
 	      </keyword>
 	      <keyword  id="am_period_num_steps" name="am_period_num_steps" code="{N_mdm(int,amPeriodNumSteps)}" label="Period number of steps for Adaptive Metropolis"  minOccurs="0" maxOccurs="1" default="100" >
-		<param type="INTEGER" />
+          <param type="INTEGER" />
 	      </keyword>
 	      <keyword  id="am_starting_step" name="am_starting_step" code="{N_mdm(int,amStartingStep)}" label="Starting step for Adaptive Metropolis"  minOccurs="0" maxOccurs="1" default="100" >
-		<param type="INTEGER" />
+          <param type="INTEGER" />
 	      </keyword>
 	      <keyword  id="am_scale" name="am_scale" code="{N_mdm(Real,amScale)}" label="Scale for Adaptive Metropolis"  minOccurs="0" maxOccurs="1" default="1.0" >
 		<param type="REAL" />
