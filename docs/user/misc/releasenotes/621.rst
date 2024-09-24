@@ -1,0 +1,56 @@
+.. _releasenotes-621:
+
+""""""""""""""""""""""""""""""""""""""
+Version 6.21 (2024/11/15)
+""""""""""""""""""""""""""""""""""""""
+
+**Highlight: New options for using MCMC algorithms from the MUQ library**
+
+*Enabling / Accessing:* 
+
+*Documentation:* 
+
+**Highlight: JSON format parameters and results files**
+
+*Enabling / Accessing:* 
+
+*Documentation:* 
+
+**Highlight: MLMF Updates**
+
+*Enabling / Accessing:* 
+
+*Documentation:* 
+
+**Improvements by Category**
+
+*Interfaces, Input/Output*
+
+*Models*
+
+- Vector-valued Python surrogates now supported. Python surrogates now
+  can provide Hessians.
+
+*Optimization Methods*
+
+*UQ Methods*
+
+- MAP pre-solve and chain samples export enabled for muq methods
+
+*MLMF Sampling*
+
+
+ 
+**Miscellaneous Enhancements and Bugfixes**
+
+- Enh:
+- Bug fix: JEGA global log file is closed when the environment is
+  destructed.
+
+**Deprecated and Changed**
+
+**Compatibility**
+
+- Building Dakota from source now requires a C++14 compliant compiler.
+
+**Other Notes and Known Issues**
