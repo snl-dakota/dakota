@@ -166,6 +166,21 @@ private:
   /// ensure a HF group is retained after run-time throttling
   size_t retain_hf_group();
 
+  void enforce_bounds_linear_constraints(RealVector& soln_vars);
+  void specify_parameter_bounds(RealVector& x_lb, RealVector& x_ub);
+  void specify_initial_parameters(const MFSolutionData& soln, RealVector& x0,
+				  const RealVector& x_lb,
+				  const RealVector& x_ub);
+  void specify_linear_constraints(RealVector& lin_ineq_lb,
+				  RealVector& lin_ineq_ub,
+				  RealVector& lin_eq_tgt,
+				  RealMatrix& lin_ineq_coeffs,
+				  RealMatrix& lin_eq_coeffs);
+  void specify_nonlinear_constraints(RealVector& nln_ineq_lb,
+				     RealVector& nln_ineq_ub,
+				     RealVector& nln_eq_tgt);
+  void enforce_augmented_linear_ineq_constraints(RealVector& soln_vars);
+
   void project_mc_estimator_variance(const RealSymMatrixArray& cov_GG_g,
 				     size_t H_index,
 				     const SizetArray& N_H_actual,

@@ -581,58 +581,15 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   // Formulate the optimization sub-problem: initial pt, bnds, constraints
   // --------------------------------------
 
-  size_t g, v, lin_offset = 0, num_v = num_active_groups();
-  const RealVector& soln_vars = soln.solution_variables();
-  //Real offline_N_lwr = 2.; //(finalStatsType == QOI_STATISTICS) ? 2. : 1.;
-
-  // Initial point and parameter bounds.  Note: some minimizers require finite
-  // bounds --> these updates are performed in finite_solution_bounds()
-
-  x_ub = DBL_MAX; // no upper bounds for groups
-  if (pilotMgmtMode == OFFLINE_PILOT ||
-      pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
-    x_lb = 0.; // no group lower bounds for OFFLINE case (NUDGE enforced below)
-    lin_offset = 1; // see augment_linear_ineq_constraints() for definition
-  }
-  else {
-    // Assign sunk cost to full group and optimize w/ this as a constraint.
-    // > One could argue for only lower-bounding with actual incurred samples,
-    //   but have elected elsewhere to be consistent with backfill logic.
-    // > Note: only NGroup*[all_group] is advanced in shared_covariance_iter()
-    for (v=0; v<num_v; ++v) {
-      g = active_to_all_group(v);
-      x_lb[v] = (backfillFailures) ?
-	average(NGroupActual[g]) : (Real)NGroupAlloc[g];
-    }
-  }
+  specify_parameter_bounds(x_lb, x_ub);
   enforce_nudge(x_lb); // nudge away from 0 if needed
-  if (soln_vars.empty()) x0 = x_lb;
-  else if (soln_vars.length() != num_v)
-    deflate(soln_vars, retainedModelGroups, x0);
-  else                   x0 = soln_vars;
-  // x0 can undershoot x_lb if an OFFLINE mode, but enforce generally
-  enforce_bounds(x0, x_lb, x_ub);
 
-  // Linear and nonlinear constraints:
+  specify_initial_parameters(soln, x0, x_lb, x_ub);
+  enforce_bounds(x0, x_lb, x_ub);// for example, x0 can undershoot lb if OFFLINE
 
-  switch (optSubProblemForm) {
-  case N_GROUP_LINEAR_CONSTRAINT: { // linear inequality constraint on budget:
-    // \Sum_grp_i w_grp_i        N_grp_i <= equiv_HF * w_HF
-    // \Sum_grp_i w_grp_i / w_HF N_grp_i <= equivHF
-    Real cost_H = sequenceCost[numApprox];
-    lin_ineq_lb[lin_offset] = -DBL_MAX; // no lb
-    lin_ineq_ub[lin_offset] = (Real)maxFunctionEvals;//budget;
-    for (v=0; v<num_v; ++v) {
-      g = active_to_all_group(v);
-      lin_ineq_coeffs(lin_offset, v) = modelGroupCost[g] / cost_H;
-    }
-    break;
-  }
-  case N_GROUP_LINEAR_OBJECTIVE: // nonlinear accuracy constraint: ub on estvar
-    nln_ineq_lb = -DBL_MAX;   // no lower bnd
-    nln_ineq_ub = std::log(convergenceTol * average(estVarIter0));
-    break;
-  }
+  specify_linear_constraints(lin_ineq_lb, lin_ineq_ub, lin_eq_tgt,
+			     lin_ineq_coeffs, lin_eq_coeffs);
+  specify_nonlinear_constraints(nln_ineq_lb, nln_ineq_ub, nln_eq_tgt);
 }
 
 
@@ -718,6 +675,148 @@ augmented_linear_ineq_violations(const RealVector& cd_vars,
     //}
   }
   return quad_viol;
+}
+
+
+void NonDMultilevBLUESampling::
+enforce_bounds_linear_constraints(RealVector& soln_vars)
+{
+  // This function applies ML BLUE requirements to an (analytic) initial guess
+  // from another estimator (MFMC, CVMC).  These requirements are focused on
+  // having the matrix solution be well-posed, rather than enforcing constraints
+  // on accuracy or budget.
+
+  size_t num_v = num_active_groups();
+  RealVector x_lb(num_v), x_ub(num_v);
+  specify_parameter_bounds(x_lb, x_ub);
+  enforce_nudge(x_lb); // nudge away from 0 if needed
+  enforce_bounds(soln_vars, x_lb, x_ub);
+  enforce_augmented_linear_ineq_constraints(soln_vars);
+}
+
+
+void NonDMultilevBLUESampling::
+specify_parameter_bounds(RealVector& x_lb, RealVector& x_ub)
+{
+  // Solver parameter bounds.  Note: some minimizers require finite
+  // bounds --> these updates are performed in finite_solution_bounds()
+
+  x_ub = DBL_MAX; // no upper bounds for groups
+  if (pilotMgmtMode == OFFLINE_PILOT ||
+      pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
+    x_lb = 0.; // no group lower bounds for OFFLINE case (NUDGE enforced below)
+  else {
+    // Assign sunk cost to full group and optimize w/ this as a constraint.
+    // > One could argue for only lower-bounding with actual incurred samples,
+    //   but have elected elsewhere to be consistent with backfill logic.
+    // > Note: only NGroup*[all_group] is advanced in shared_covariance_iter()
+    size_t g, v, num_v = x_lb.length();
+    for (v=0; v<num_v; ++v) {
+      g = active_to_all_group(v);
+      x_lb[v] = (backfillFailures) ?
+	average(NGroupActual[g]) : (Real)NGroupAlloc[g];
+    }
+  }
+  //enforce_nudge(x_lb); // nudge away from 0 if needed
+}
+
+
+void NonDMultilevBLUESampling::
+specify_initial_parameters(const MFSolutionData& soln, RealVector& x0,
+			   const RealVector& x_lb, const RealVector& x_ub)
+{
+  const RealVector& soln_vars = soln.solution_variables();
+  if (soln_vars.empty()) x0 = x_lb;
+  else {
+    size_t num_v = num_active_groups();
+    if (soln_vars.length() != num_v)
+      deflate(soln_vars, retainedModelGroups, x0);
+    else                 x0 = soln_vars;
+  }
+}
+
+
+void NonDMultilevBLUESampling::
+specify_linear_constraints(RealVector& lin_ineq_lb, RealVector& lin_ineq_ub,
+			   RealVector& lin_eq_tgt,  RealMatrix& lin_ineq_coeffs,
+			   RealMatrix& lin_eq_coeffs)
+{
+  switch (optSubProblemForm) {
+  case N_GROUP_LINEAR_CONSTRAINT: { // linear inequality constraint on budget:
+    // \Sum_grp_i w_grp_i        N_grp_i <= equiv_HF * w_HF
+    // \Sum_grp_i w_grp_i / w_HF N_grp_i <= equivHF
+    Real cost_H = sequenceCost[numApprox];
+    size_t g, v, num_v = num_active_groups(),
+      lin_offset = (pilotMgmtMode == OFFLINE_PILOT ||
+		    pilotMgmtMode == OFFLINE_PILOT_PROJECTION) ? 1 : 0;
+    lin_ineq_lb[lin_offset] = -DBL_MAX; // no lb
+    lin_ineq_ub[lin_offset] = (Real)maxFunctionEvals;//budget;
+    for (v=0; v<num_v; ++v) {
+      g = active_to_all_group(v);
+      lin_ineq_coeffs(lin_offset, v) = modelGroupCost[g] / cost_H;
+    }
+    break;
+  }
+  }
+}
+
+
+void NonDMultilevBLUESampling::
+specify_nonlinear_constraints(RealVector& nln_ineq_lb, RealVector& nln_ineq_ub,
+			      RealVector& nln_eq_tgt)
+{
+  switch (optSubProblemForm) {
+  case N_GROUP_LINEAR_OBJECTIVE: // nonlinear accuracy constraint: ub on estvar
+    nln_ineq_lb = -DBL_MAX;   // no lower bnd
+    nln_ineq_ub = std::log(convergenceTol * average(estVarIter0));
+    break;
+  }
+}
+
+
+void NonDMultilevBLUESampling::
+enforce_augmented_linear_ineq_constraints(RealVector& soln_vars)
+{
+  if ( pilotMgmtMode == ONLINE_PILOT ||
+       pilotMgmtMode == ONLINE_PILOT_PROJECTION ) // no augmented linear ineq
+    return;
+
+  RealMatrix lin_ineq_coeffs(1, soln_vars.length());
+  RealVector lin_ineq_lb(1), lin_ineq_ub(1);
+  augment_linear_ineq_constraints(lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub);
+
+  size_t g;  int v, num_v = soln_vars.length(), last_v = num_v - 1;
+  Real lb = 1.;
+  // Assess presence of at least 1 sample in a HF group (any partial
+  // contributions are discarded in a way that linear ineq cannot support)
+  bool hf_sampled = false;
+  for (v=last_v; v>=0; --v)
+    if (lin_ineq_coeffs(0, v) == 1. && // group contains HF
+	soln_vars[v] >= lb)            // this group is sampled
+      { hf_sampled = true; break; }
+
+  // Ensure that we have at least one sample for one of the groups containing
+  // the HF reference model.  This is already satisfied by pilot sampling for
+  // current group definitions used by online/projection modes.
+  if (!hf_sampled) {
+    // Simply work backwards from last v to first (subsumes all_group cases)
+    for (v=last_v; v>=0; --v)
+      if (lin_ineq_coeffs(0, v) == 1.) // this group is sampled
+	{ soln_vars[v] += lb; break; } // preserve any previous nudge
+
+    /*
+    switch (groupThrottleType) {
+    case RCOND_TOLERANCE_THROTTLE:
+    case RCOND_BEST_COUNT_THROTTLE:
+      // could search for best HF group to augment...
+      break;
+    default: {
+      size_t all_group = numGroups - 1; // last group = all models
+      soln_vars[all_group] += 1.; // preserve any previous nudge
+      break;
+    }
+    */
+  }
 }
 
 
@@ -897,10 +996,15 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
   if (maxFunctionEvals == SZ_MAX) { // accuracy-constrained -> online only
     // As for {ACV,GenACV}, employ ML BLUE's native estvar for accuracy scaling
     RealVector soln_vars, mlblue_estvar;  SizetArray N_shared;
+    // Rather than estimating avg_hf_target for MFMC/CVMC (based on estvar and
+    // estVarIter0 from MFMC/CVMC), we instead employ pilot_samp to provide a
+    // baseline estvar for ML BLUE, and then scale toward an avg_hf_target for
+    // ML BLUE based on this estvar relative to estVarIter0.
     size_t pilot_samp = pilotSamples[all_group];
     ratios_target_to_solution_variables(avg_eval_ratios, (Real)pilot_samp,
 					ratios_to_groups, soln_vars);
-    estimator_variance(soln_vars, mlblue_estvar); // MFMC+pilot -> ML BLUE
+    enforce_bounds_linear_constraints(soln_vars); // for valid estvar
+    estimator_variance(soln_vars, mlblue_estvar); // compute ML BLUE estvar
     // the assumed scaling with N_sh is not generally valid for ML BLUE,
     // but is reasonable for emulation of MFMC
     N_shared.assign(numFunctions, pilot_samp); // online
@@ -933,6 +1037,7 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
   RealVector mlblue_vars;
   ratios_target_to_solution_variables(avg_eval_ratios, avg_hf_target,
 				      ratios_to_groups, mlblue_vars);
+  enforce_bounds_linear_constraints(mlblue_vars); // enforce again
   soln.solution_variables(mlblue_vars);
 
   if (outputLevel >= DEBUG_OUTPUT) {
@@ -1832,25 +1937,30 @@ void NonDMultilevBLUESampling::prune_model_groups()
   }
 
   // Need at least 1 group that contains the HF reference model
+  //
   // APPROACH 1: always include all_group (as with other throttles)
   // > this group always has shared/indep pilot samples for online or
   //   offline_N_lwr = 2 for offline, but covariance may be poorly conditioned
-  size_t all_group = numGroups - 1;
-  if (!retainedModelGroups[all_group]) {
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Augment: add HF group = " << all_group << '\n';
-    retainedModelGroups.set(all_group);
+  bool online = (pilotMgmtMode == ONLINE_PILOT ||
+		 pilotMgmtMode == ONLINE_PILOT_PROJECTION);
+  if (online && pilotGroupSampling == SHARED_PILOT) { // most common case
+    size_t all_group = numGroups - 1;
+    if (!retainedModelGroups[all_group]) {
+      if (outputLevel >= DEBUG_OUTPUT)
+	Cout << "Augment: add HF group = " << all_group << '\n';
+      retainedModelGroups.set(all_group);
+    }
   }
-  /*
   // APPROACH 2: iff no HF group, add the best-conditioned discard
   // > this group may have zero samples if online SHARED_PILOT --> bad Psi
-  size_t g_index = retain_hf_group();
-  if (g_index != _NPOS) {
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Augment: add HF group = " << g_index << '\n';
-    retainedModelGroups.set(g_index); // Augment
+  else {
+    size_t g_index = retain_hf_group();
+    if (g_index != _NPOS) {
+      if (outputLevel >= DEBUG_OUTPUT)
+	Cout << "Augment: add HF group = " << g_index << '\n';
+      retainedModelGroups.set(g_index); // Augment
+    }
   }
-  */
 
   if (outputLevel >= DEBUG_OUTPUT) {
     Cout << "Retained group count = " << retainedModelGroups.count() << '\n';
