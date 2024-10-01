@@ -232,7 +232,7 @@ initialize_iterator(const VariablesArray& param_sets)
   // > all of parameterSets (numIteratorJobs == 1)
   size_t num_param_sets = param_sets.size();
   if (num_param_sets == 1)
-    selectedModels[seqCount].active_variables(param_sets[0]);
+    selectedModels[seqCount].current_variables().active_variables(param_sets[0]);
   else if (selectedIterators[seqCount].accepts_multiple_points())
     selectedIterators[seqCount].initial_points(param_sets);
   else {

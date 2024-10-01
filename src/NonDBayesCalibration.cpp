@@ -232,7 +232,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     num_augment_cv = num_orig_cv + numHyperparams;
   mapSoln.sizeUninitialized(num_augment_cv);
   // allow mcmcModel to be in either distinct or all view
-  copy_data_partial(mcmcModel.all_continuous_variables(), (int)orig_cv_start,
+  copy_data_partial(mcmcModel.current_variables().all_continuous_variables(), (int)orig_cv_start,
 		    (int)num_orig_cv, mapSoln, 0);
   for (i=0; i<numHyperparams; ++i)
     mapSoln[num_orig_cv + i] = invGammaDists[i].mode();
@@ -264,11 +264,11 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   init_map_optimizer();
   construct_map_model();
 
-  //Cout << "\n  iteratedModel num cv = " << iteratedModel.cv() << " mvd active = " << iteratedModel.multivariate_distribution().active_variables().count()
-  //     << "\n  mcmcModel     num cv = " << mcmcModel.cv() << " mvd active = " << mcmcModel.multivariate_distribution().active_variables().count()
-  //     << "\n  residualModel num cv = " << residualModel.cv() << " mvd active = " << residualModel.multivariate_distribution().active_variables().count() << std::endl;
+  //Cout << "\n  iteratedModel num cv = " << iteratedModel.current_variables().cv() << " mvd active = " << iteratedModel.multivariate_distribution().active_variables().count()
+  //     << "\n  mcmcModel     num cv = " << mcmcModel.current_variables().cv() << " mvd active = " << mcmcModel.multivariate_distribution().active_variables().count()
+  //     << "\n  residualModel num cv = " << residualModel.current_variables().cv() << " mvd active = " << residualModel.multivariate_distribution().active_variables().count() << std::endl;
   //if (mapOptAlgOverride != SUBMETHOD_NONE)
-  //  Cout << "\n  negLogPostModel num cv = "<< negLogPostModel.cv()<<std::endl;
+  //  Cout << "\n  negLogPostModel num cv = "<< negLogPostModel.current_variables().cv()<<std::endl;
 
   int mcmc_concurrency = 1; // prior to concurrent chains
   maxEvalConcurrency *= mcmc_concurrency;
@@ -1103,8 +1103,8 @@ void NonDBayesCalibration::calibrate_to_hifi()
 
   // TODO? Make a struct?
   const RealVector initial_pt(Teuchos::Copy, 
-			      mcmcModel.continuous_variables().values(), 
-			      mcmcModel.continuous_variables().length());
+			      mcmcModel.current_variables().continuous_variables().values(), 
+			      mcmcModel.current_variables().continuous_variables().length());
   int random_seed = randomSeed;  // locally incremented
   int num_exp;
   int max_hifi = (maxHifiEvals >= 0) ? maxHifiEvals : numCandidates;
@@ -1115,7 +1115,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
 
   // We assume the hifiModel's active variables are the config vars
   int num_design_vars =
-    hifiModel.cv() + hifiModel.div() + hifiModel.dsv() + hifiModel.drv();
+    hifiModel.current_variables().cv() + hifiModel.current_variables().div() + hifiModel.current_variables().dsv() + hifiModel.current_variables().drv();
   VariablesArray design_matrix, optimal_config_matrix;
   size_and_fill(hifiModel.current_variables().shared_data(), numCandidates,
 		design_matrix);
@@ -1157,7 +1157,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
     construct_map_optimizer(); 
 
     // BMA TODO: this doesn't permit use of hyperparameters (see main ctor)
-    mcmcModel.continuous_variables(initial_pt);
+    mcmcModel.current_variables().continuous_variables(initial_pt);
     // TNP TODO: expose opt_for_map() and run_chain() 
     calibrate();
 
@@ -1682,7 +1682,7 @@ void NonDBayesCalibration::build_scalar_discrepancy()
   int num_cols = acc_chain_transpose.numCols();
   RealVector ave_params(num_cols);
   compute_col_means(acc_chain_transpose, ave_params); 
-  mcmcModel.continuous_variables(ave_params);
+  mcmcModel.current_variables().continuous_variables(ave_params);
   
   int num_exp = expData.num_experiments();
   size_t num_configvars = expData.num_config_vars();
@@ -1797,7 +1797,7 @@ void NonDBayesCalibration::build_scalar_discrepancy()
       zero_response.function_value(0,j);
     RealVector config_vec = Teuchos::getCol(Teuchos::View, configpred_mat, i);
     Model::inactive_variables(config_vec, mcmcModel);
-    mcmcModel.continuous_variables(ave_params); //KAM -delete later
+    mcmcModel.current_variables().continuous_variables(ave_params); //KAM -delete later
     mcmcModel.evaluate();
     Variables configpred = configpred_array[i];
     Response simresponse_pred = mcmcModel.current_response();
@@ -1847,7 +1847,7 @@ void NonDBayesCalibration::build_field_discrepancy()
   int num_cols = acc_chain_transpose.numCols();
   RealVector ave_params(num_cols);
   compute_col_means(acc_chain_transpose, ave_params); 
-  mcmcModel.continuous_variables(ave_params);
+  mcmcModel.current_variables().continuous_variables(ave_params);
   //mcmcModel.evaluate();
 
   int num_exp = expData.num_experiments();
@@ -2442,7 +2442,7 @@ get_positive_definite_covariance_from_hessian(const RealSymMatrix &hessian,
 
   // Option 1: if augmenting with Hessian of negative log prior
   //           Hess of neg log posterior = Hess of misfit - Hess of log prior
-  //const RealVector& c_vars = mcmcModel.continuous_variables();
+  //const RealVector& c_vars = mcmcModel.current_variables().continuous_variables();
   //augment_hessian_with_log_prior(log_hess, c_vars);
 
   // Option 2: if preconditioning with prior covariance using L^T H L
@@ -2978,7 +2978,7 @@ void NonDBayesCalibration::calculate_evidence()
       RealVector params = Teuchos::getCol(Teuchos::View, prior_dist_samples, i);
       RealVector cont_params = params;
       cont_params.resize(numContinuousVars);  
-      residualModel.continuous_variables(cont_params);
+      residualModel.current_variables().continuous_variables(cont_params);
       residualModel.evaluate();
       RealVector residual = residualModel.current_response().function_values();
       double log_like = log_likelihood(residual, params);
@@ -3004,7 +3004,7 @@ void NonDBayesCalibration::calculate_evidence()
     const RealVector& map_c_vars
       = mapOptimizer.variables_results().continuous_variables();
     //estimate likelihood at MAP point: 
-    residualModel.continuous_variables(map_c_vars);
+    residualModel.current_variables().continuous_variables(map_c_vars);
     ActiveSet resAS = residualModel.current_response().active_set();
     resAS.request_values(7);
     residualModel.evaluate(resAS);

@@ -100,7 +100,7 @@ void NonDInterval::initialize_final_statistics()
   // default response ASV/DVV may be overridden by NestedModel update
   // in subIterator.response_results_active_set(sub_iterator_set)
   ActiveSet stats_set(num_final_stats);
-  stats_set.derivative_vector(iteratedModel.inactive_continuous_variable_ids());
+  stats_set.derivative_vector(iteratedModel.current_variables().inactive_continuous_variable_ids());
   finalStatistics = Response(SIMULATION_RESPONSE, stats_set);
 
   // Assign meaningful fn labels to final stats (appear in NestedModel output)

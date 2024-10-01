@@ -68,11 +68,11 @@ void PebbldBranchSub::setRootComputation()
   // is code shared with the sub-problems that requires it to be here
   // for consistency, i.e., so there are not seg faults due to these
   // not existing.
-  cont_vars.resize(subModel.continuous_variables().length());
+  cont_vars.resize(subModel.current_variables().continuous_variables().length());
   lower_bounds.resize(subModel.continuous_lower_bounds().length());
   upper_bounds.resize(subModel.continuous_upper_bounds().length());
-  for (int i=0; i<subModel.continuous_variables().length(); i++)
-    cont_vars[i] = subModel.continuous_variables()[i];
+  for (int i=0; i<subModel.current_variables().continuous_variables().length(); i++)
+    cont_vars[i] = subModel.current_variables().continuous_variables()[i];
   for (int i=0; i<subModel.continuous_lower_bounds().length(); i++)
     lower_bounds[i] = subModel.continuous_lower_bounds()[i];
   for (int i=0; i<subModel.continuous_upper_bounds().length(); i++)
@@ -85,7 +85,7 @@ void PebbldBranchSub::boundComputation(double* controlParam)
   // The Discrete Domain is relaxed into a Continuous Domain.
 
   // Reset the model variable values and bounds for the sub-problem.
-  subModel.continuous_variables(cont_vars);
+  subModel.current_variables().continuous_variables(cont_vars);
   subModel.continuous_lower_bounds(lower_bounds);
   subModel.continuous_upper_bounds(upper_bounds);
 
@@ -120,7 +120,7 @@ bool PebbldBranchSub::candidateSolution()
   const SharedVariablesData& svd = subModel.current_variables().shared_data();
   const BitArray int_relaxed = svd.all_relaxed_discrete_int();
   int num_int_vars = int_relaxed.size();
-  int num_cont_vars = subModel.cv() - num_int_vars;
+  int num_cont_vars = subModel.current_variables().cv() - num_int_vars;
 
   for(int i=num_cont_vars;i<num_cont_vars+num_int_vars;i++)
   {
@@ -142,7 +142,7 @@ int PebbldBranchSub::splitComputation()
   const SharedVariablesData& svd = subModel.current_variables().shared_data();
   const BitArray int_relaxed = svd.all_relaxed_discrete_int();
   int num_int_vars = int_relaxed.size();
-  int num_cont_vars = subModel.cv() - num_int_vars;
+  int num_cont_vars = subModel.current_variables().cv() - num_int_vars;
 
   // Assuming that in the relaxed problem, the Binary/Integer
   // elements of the domain are first.
@@ -196,10 +196,10 @@ void PebbldBranchSub::pebbldSubAsChildOf(PebbldBranchSub* parent, int _splitVar,
   // The only model-related data that differs across sub-problems are
   // the initial variable values and the bounds.  This needs to be a
   // deep copy.
-  cont_vars.resize(subModel.continuous_variables().length());
+  cont_vars.resize(subModel.current_variables().continuous_variables().length());
   lower_bounds.resize(subModel.continuous_lower_bounds().length());
   upper_bounds.resize(subModel.continuous_upper_bounds().length());
-  for (int i=0; i<subModel.continuous_variables().length(); i++)
+  for (int i=0; i<subModel.current_variables().continuous_variables().length(); i++)
     cont_vars[i] = _candidate_x[i];
   for (int i=0; i<subModel.continuous_lower_bounds().length(); i++)
     lower_bounds[i] = _lower_bounds[i];

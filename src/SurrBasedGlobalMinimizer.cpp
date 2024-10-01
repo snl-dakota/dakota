@@ -179,7 +179,7 @@ void SurrBasedGlobalMinimizer::core_run()
     IntResponseMap truth_resp_results;
     for (i=0; i<num_results; i++) {
       // set the current values of the active variables in the truth model
-      truth_model.active_variables(vars_results[i]);
+      truth_model.current_variables().active_variables(vars_results[i]);
 
       // request the evaluation in synchronous or asyncronous mode.
       if (truth_asynch_flag)
@@ -250,7 +250,7 @@ void SurrBasedGlobalMinimizer::core_run()
       if (accepts_multipoint)
 	approxSubProbMinimizer.initial_points(vars_results);
       else
-	approx_model.active_variables(vars_results.front());
+	approx_model.current_variables().active_variables(vars_results.front());
     }
   }
 }

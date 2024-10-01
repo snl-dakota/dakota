@@ -120,7 +120,7 @@ void ROLOptimizer::core_run()
 
       // Evaluate model for responses at best parameters and set Dakota
       // bestResponseArray.
-      iteratedModel.continuous_variables(cont_vars);
+      iteratedModel.current_variables().continuous_variables(cont_vars);
       iteratedModel.evaluate();
       const RealVector& best_fns =
         iteratedModel.current_response().function_values();
@@ -486,9 +486,9 @@ namespace {
       prev_x = x;
 
     // Set the model variables to the current values.
-    size_t num_cv = model.cv();
+    size_t num_cv = model.current_variables().cv();
     for(size_t i=0; i<num_cv; ++i)
-      model.continuous_variable(x[i], i);
+      model.current_variables().continuous_variable(x[i], i);
 
     // Evaluate response, gradient, and Hessian, depending on 
     // what is provided by Dakota/user.

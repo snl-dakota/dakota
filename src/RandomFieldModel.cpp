@@ -167,7 +167,7 @@ void RandomFieldModel::get_field_data()
     // BMA TODO: relax assumption of allSamples / compactMode
     // Generalize to discrete vars
     if (expansionForm == RF_PCA_GP) {
-      rfBuildVars.reshape(subModel.cv(), num_samples);
+      rfBuildVars.reshape(subModel.current_variables().cv(), num_samples);
       rfBuildVars.assign(daceIterator.all_samples());
     }
     rfBuildData.reshape(num_samples, numFns);
@@ -239,7 +239,7 @@ void RandomFieldModel::identify_field_model()
     SharedApproxData sharedData;
 
     // BMA TODO: generalize to discrete vars if possible
-    sharedData = SharedApproxData(approx_type, approx_order, subModel.cv(),
+    sharedData = SharedApproxData(approx_type, approx_order, subModel.current_variables().cv(),
                                   data_order, output_level);
 
     // build one GP for each Principal Component
@@ -289,11 +289,11 @@ void RandomFieldModel::initialize_recast()
   // We assume the mapping is for all active variables, but only
   // normal uncertain get modified
   size_t submodel_vars = 
-    subModel.cv()+ subModel.div() + subModel.dsv() + subModel.drv();
+    subModel.current_variables().cv()+ subModel.current_variables().div() + subModel.current_variables().dsv() + subModel.current_variables().drv();
   size_t recast_vars = submodel_vars + actualReducedRank;
 
   // BMA TODO: This is wrong!  Assumes normal lead the cv array!
-  UShortMultiArrayConstView sm_cv_types = subModel.continuous_variable_types();
+  UShortMultiArrayConstView sm_cv_types = subModel.current_variables().continuous_variable_types();
   size_t num_sm_normal
     = std::count(sm_cv_types.begin(), sm_cv_types.end(), NORMAL_UNCERTAIN);
 
@@ -445,9 +445,9 @@ void RandomFieldModel::vars_mapping(const Variables& recast_augmented_vars,
 
     // BMA TODO: generalize this for other views; for now, assume cv()
     // starts with normal uncertain
-    size_t num_sm_cv = rfmInstance->subModel.cv();
+    size_t num_sm_cv = rfmInstance->subModel.current_variables().cv();
     UShortMultiArrayConstView sm_cv_types
-      = rfmInstance->subModel.continuous_variable_types();
+      = rfmInstance->subModel.current_variables().continuous_variable_types();
     size_t num_sm_normal
       = std::count(sm_cv_types.begin(), sm_cv_types.end(), NORMAL_UNCERTAIN);
 
@@ -518,7 +518,7 @@ void RandomFieldModel::generate_kl_realization()
   // BMA TODO: properly extract the N(0,1) vars from their place in
   // the overall vector when not in aleatory view (what's in the total
   // vector depends on the view...)
-  UShortMultiArrayConstView sm_cv_types = subModel.continuous_variable_types();
+  UShortMultiArrayConstView sm_cv_types = subModel.current_variables().continuous_variable_types();
   size_t num_sm_normal
     = std::count(sm_cv_types.begin(), sm_cv_types.end(), NORMAL_UNCERTAIN);
   const RealVector& augmented_cvars = currentVariables.continuous_variables();

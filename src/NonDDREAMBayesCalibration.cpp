@@ -190,7 +190,7 @@ void NonDDREAMBayesCalibration::calibrate()
   ////////////////////////////////////////////////////////
   int total_num_params = numContinuousVars + numHyperparams;
   
-  const RealVector& init_point = mcmcModel.continuous_variables();
+  const RealVector& init_point = mcmcModel.current_variables().continuous_variables();
   Cout << "Initial Points " << init_point << '\n';
 
   // resize, initializing to zero
@@ -300,7 +300,7 @@ double NonDDREAMBayesCalibration::sample_likelihood(int par_num, double zp[])
 
   // DREAM searches in either the original space (default for GPs and no
   // emulator) or standardized space (PCE/SC, optional for GP/no emulator).  
-  nonDDREAMInstance->residualModel.continuous_variables(all_params); 
+  nonDDREAMInstance->residualModel.current_variables().continuous_variables(all_params); 
 
   // Compute simulation response to use in likelihood 
   nonDDREAMInstance->residualModel.evaluate();
@@ -495,7 +495,7 @@ void NonDDREAMBayesCalibration::archive_acceptance_chain()
 
     // now retreive function values
     if (mcmcModelHasSurrogate) {
-      mcmcModel.active_variables(lookup_vars);
+      mcmcModel.current_variables().active_variables(lookup_vars);
       mcmcModel.evaluate(lookup_resp.active_set());
       const RealVector& fn_vals = mcmcModel.current_response().function_values();
       Teuchos::setCol(fn_vals, sample_index, acceptedFnVals);	

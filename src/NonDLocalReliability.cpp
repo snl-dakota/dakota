@@ -673,7 +673,7 @@ void NonDLocalReliability::mean_value()
 	  for (j=0; j<i; ++j, ++cntr) // collect both off diagonal terms
 	    imp_fact[cntr]
 	      = terms_i * ranVarStdDevsX[j] * x_corr_mat(i,j) * fn_grad[j];
-	  // TO DO: model.cv_index_to_corr_index() for general use cases
+	  // TO DO: model.current_variables().cv_index_to_corr_index() for general use cases
 	}
       }
       else
@@ -796,11 +796,11 @@ void NonDLocalReliability::mpp_search()
   nondLocRelInstance = this;
 
   // initialize initialPtUSpec on first reliability analysis; needs to precede
-  // iteratedModel.continuous_variables() assignment in initial_taylor_series()
+  // iteratedModel.current_variables().continuous_variables() assignment in initial_taylor_series()
   // and needs to follow nataf.transform_correlations()
   if (numRelAnalyses == 0) {
     if (initialPtUserSpec)
-      uSpaceModel.trans_X_to_U(iteratedModel.continuous_variables(),
+      uSpaceModel.trans_X_to_U(iteratedModel.current_variables().continuous_variables(),
 			       initialPtUSpec);
     else {
       // don't use the mean uncertain variable defaults from the parser
@@ -810,7 +810,7 @@ void NonDLocalReliability::mpp_search()
     }
   }
 
-  // sets iteratedModel.continuous_variables() to mean values
+  // sets iteratedModel.current_variables().continuous_variables() to mean values
   initial_taylor_series();
 
   // Initialize local arrays
@@ -980,7 +980,7 @@ void NonDLocalReliability::mpp_search()
 	      primary_resp_map, secondary_resp_map, nonlinear_resp_map,
 	      PMA_objective_eval, PMA_constraint_eval);	    
 	}
-	mppModel.continuous_variables(initialPtU);
+	mppModel.current_variables().continuous_variables(initialPtU);
 
         // Execute MPP search and retrieve u-space results
         Cout << "\n>>>>> Initiating search for most probable point (MPP)\n";
@@ -1022,7 +1022,7 @@ void NonDLocalReliability::mpp_search()
 
   // Update warm-start data
   if (warmStartFlag && subIteratorFlag) // view->copy
-    copy_data(iteratedModel.inactive_continuous_variables(), prevICVars);
+    copy_data(iteratedModel.current_variables().inactive_continuous_variables(), prevICVars);
 
   // This function manages either component or system reliability metrics
   // via post-processing of computed{Resp,Prob,Rel,GenRel}Levels
@@ -1092,7 +1092,7 @@ void NonDLocalReliability::initial_taylor_series()
     Cout << "\n>>>>> Evaluating response at mean values\n";
     if (mppSearchType && mppSearchType < SUBMETHOD_NO_APPROX)
       uSpaceModel.component_parallel_mode(TRUTH_MODEL_MODE);
-    iteratedModel.continuous_variables(ranVarMeansX);
+    iteratedModel.current_variables().continuous_variables(ranVarMeansX);
     activeSet.request_vector(asrv);
     iteratedModel.evaluate(activeSet);
     const Response& curr_resp = iteratedModel.current_response();
@@ -1142,7 +1142,7 @@ void NonDLocalReliability::initial_taylor_series()
 	    for (k=0; k<numContinuousVars; ++k) {
 	      Real cov_jk = ranVarStdDevsX[j] * ranVarStdDevsX[k] 
 		          * x_corr_mat(j,k);//covariance(j,k);
-	      // TO DO: model.cv_index_to_corr_index() for general use cases
+	      // TO DO: model.current_variables().cv_index_to_corr_index() for general use cases
 	      if (t2nq) v1 += cov_jk * fnHessiansMeanX[i](j,k);
 	      v2 += cov_jk * fn_grad_ji * fnGradsMeanX(k,i);
 	    }
@@ -1206,7 +1206,7 @@ void NonDLocalReliability::initialize_class_data()
   RealVector ep_median_u(numContinuousVars), // inits vals to 0
              ep_median_x(numContinuousVars, false);
   uSpaceModel.trans_U_to_X(ep_median_u, ep_median_x);
-  iteratedModel.continuous_variables(ep_median_x);
+  iteratedModel.current_variables().continuous_variables(ep_median_x);
   activeSet.request_values(0); // initialize
   for (size_t i=0; i<numFunctions; i++)
     if (!requestedRespLevels[i].empty() || !requestedProbLevels[i].empty() ||
@@ -1274,7 +1274,7 @@ void NonDLocalReliability::initialize_level_data()
       RealVector fn_grad_u = Teuchos::getCol(Teuchos::View, prevFnGradULev0,
                                              respFnCount);
       const RealVector& d_k_plus_1
-	= iteratedModel.inactive_continuous_variables(); // view
+	= iteratedModel.current_variables().inactive_continuous_variables(); // view
       Real grad_d_delta_d = 0., norm_grad_u_sq = 0.;
       size_t i, num_icv = d_k_plus_1.length();
       for (i=0; i<num_icv; i++)
@@ -1606,7 +1606,7 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
 	mode |= 2; // fnGradX needed to transform fnHessX to fnHessU
     }
 
-    SizetMultiArrayConstView cv_ids = iteratedModel.continuous_variable_ids();
+    SizetMultiArrayConstView cv_ids = iteratedModel.current_variables().continuous_variable_ids();
     if (mode & 6)
       uSpaceModel.trans_U_to_X(mostProbPointU, mostProbPointX);
     // retrieve previously evaluated gradient information, if possible
@@ -1788,7 +1788,7 @@ void NonDLocalReliability::update_limit_state_surrogate()
   asv[respFnCount] = (taylorOrder == 2) ? 7 : 3;
   ActiveSet set;//(numFunctions, numContinuousVars);
   set.request_vector(asv);
-  set.derivative_vector(iteratedModel.continuous_variable_ids());
+  set.derivative_vector(iteratedModel.current_variables().continuous_variable_ids());
   Response response(SIMULATION_RESPONSE, set);
   response.function_value(computedRespLevel, respFnCount);
   if (x_space) {
@@ -1861,12 +1861,12 @@ void NonDLocalReliability::truth_evaluation(short mode)
   uSpaceModel.component_parallel_mode(TRUTH_MODEL_MODE);      // Recast forwards
   uSpaceModel.surrogate_response_mode(BYPASS_SURROGATE); // Recast forwards
 
-  uSpaceModel.continuous_variables(mostProbPointU);
+  uSpaceModel.current_variables().continuous_variables(mostProbPointU);
   activeSet.request_values(0);
   activeSet.request_value(mode, respFnCount);
   uSpaceModel.evaluate(activeSet);
 
-  copy_data(iteratedModel.continuous_variables(), mostProbPointX);
+  copy_data(iteratedModel.current_variables().continuous_variables(), mostProbPointX);
   const Response& x_resp = iteratedModel.current_response();
   const Response& u_resp =   uSpaceModel.current_response();
   if (mode & 1)
@@ -2204,7 +2204,7 @@ dg_ds_eval(const RealVector& x_vars, const RealVector& fn_grad_x,
 	 << "variables\n";
     if (mppSearchType && mppSearchType < SUBMETHOD_NO_APPROX)
       uSpaceModel.component_parallel_mode(TRUTH_MODEL_MODE);
-    iteratedModel.continuous_variables(x_vars);
+    iteratedModel.current_variables().continuous_variables(x_vars);
     ActiveSet inactive_grad_set = activeSet;
     inactive_grad_set.request_values(0);
     inactive_grad_set.request_value(2, respFnCount);
@@ -2212,7 +2212,7 @@ dg_ds_eval(const RealVector& x_vars, const RealVector& fn_grad_x,
     // and includes augmented and inserted variable ids.  Since we only want the
     // augmented ids in this case, the UQ-level inactive ids are sufficient.
     SizetMultiArrayConstView icv_ids
-      = iteratedModel.inactive_continuous_variable_ids();
+      = iteratedModel.current_variables().inactive_continuous_variable_ids();
     inactive_grad_set.derivative_vector(icv_ids);
     /* More rigorous with reqd deriv vars, but equivalent in practice:
     // Filter final_dvv to contain only inactive continuous variable ids:

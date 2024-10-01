@@ -448,10 +448,10 @@ void NomadOptimizer::Evaluator::set_variables(const NOMAD::Eval_Point &x) const
   //     something like
   //     setEvalVariables(...)
 
-  int n_cont_vars = _model.cv();
-  int n_disc_int_vars = _model.div();
-  int n_disc_real_vars = _model.drv();
-  int n_disc_string_vars = _model.dsv();
+  int n_cont_vars = _model.current_variables().cv();
+  int n_disc_int_vars = _model.current_variables().div();
+  int n_disc_real_vars = _model.current_variables().drv();
+  int n_disc_string_vars = _model.current_variables().dsv();
 	  
   // Prepare Vectors for Dakota model.
   RealVector contVars(n_cont_vars);
@@ -479,7 +479,7 @@ void NomadOptimizer::Evaluator::set_variables(const NOMAD::Eval_Point &x) const
   // x.get_m() = # of BB Outputs
   for(i=0; i<n_cont_vars; i++)
   {
-    _model.continuous_variable(x[i].value(), i);
+    _model.current_variables().continuous_variable(x[i].value(), i);
   }
 
   for(i=0, dsi_cntr=0; i<n_disc_int_vars; i++)
@@ -489,23 +489,23 @@ void NomadOptimizer::Evaluator::set_variables(const NOMAD::Eval_Point &x) const
     if (int_set_bits[i]) {
       int dakota_value = set_index_to_value(x[i+n_cont_vars].value(), 
 					    set_int_vars[dsi_cntr]);
-      _model.discrete_int_variable(dakota_value, i);
+      _model.current_variables().discrete_int_variable(dakota_value, i);
       ++dsi_cntr;
     }
     // This active discrete int var is a range type
     else  {
-      _model.discrete_int_variable(x[i+n_cont_vars].value(), i);
+      _model.current_variables().discrete_int_variable(x[i+n_cont_vars].value(), i);
     }
   }
 
   // For real set and strings, map from index to value.
   for (i=0; i<n_disc_real_vars; i++) {
     Real dakota_value = set_index_to_value(x[i+n_cont_vars+n_disc_int_vars].value(), set_real_vars[i]);
-    _model.discrete_real_variable(dakota_value, i);
+    _model.current_variables().discrete_real_variable(dakota_value, i);
   }
 
   for (i=0; i<n_disc_string_vars; i++) {
-    _model.discrete_string_variable(set_index_to_value(x[i+n_cont_vars+n_disc_int_vars+n_disc_real_vars].value(), set_string_vars[i]), i);
+    _model.current_variables().discrete_string_variable(set_index_to_value(x[i+n_cont_vars+n_disc_int_vars+n_disc_real_vars].value(), set_string_vars[i]), i);
   }
 
 }
@@ -625,20 +625,20 @@ void NomadOptimizer::load_parameters(Model &model, NOMAD::Parameters &p)
   NOMAD::Point _upper_bound (numTotalVars);
   NOMAD::Point _lower_bound (numTotalVars);
      
-  const RealVector& initial_point_cont = model.continuous_variables();
+  const RealVector& initial_point_cont = model.current_variables().continuous_variables();
   const RealVector& lower_bound_cont = model.continuous_lower_bounds();
   const RealVector& upper_bound_cont = model.continuous_upper_bounds();
 
-  const IntVector& initial_point_int = model.discrete_int_variables();
+  const IntVector& initial_point_int = model.current_variables().discrete_int_variables();
   const IntVector& lower_bound_int = model.discrete_int_lower_bounds();
   const IntVector& upper_bound_int = model.discrete_int_upper_bounds();
 
-  const RealVector& initial_point_real = model.discrete_real_variables();
+  const RealVector& initial_point_real = model.current_variables().discrete_real_variables();
   const RealVector& lower_bound_real = model.discrete_real_lower_bounds();
   const RealVector& upper_bound_real = model.discrete_real_upper_bounds();
 
   const StringMultiArrayConstView initial_point_string = 
-    model.discrete_string_variables();
+    model.current_variables().discrete_string_variables();
 
   const BitArray& int_set_bits = iteratedModel.discrete_int_sets();
   const IntSetArray& initial_point_set_int = 

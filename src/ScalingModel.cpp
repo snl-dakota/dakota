@@ -87,7 +87,7 @@ ScalingModel(Model& sub_model):
 
   // We assume the mapping is for all active variables
   size_t total_active_vars = 
-    sub_model.cv() + sub_model.div() + sub_model.dsv() + sub_model.drv();
+    sub_model.current_variables().cv() + sub_model.current_variables().div() + sub_model.current_variables().dsv() + sub_model.current_variables().drv();
   Sizet2DArray vars_map_indices(total_active_vars);
   bool nonlinear_vars_mapping = false;
   for (size_t i=0; i<total_active_vars; ++i) {
@@ -288,7 +288,7 @@ void ScalingModel::initialize_scaling(Model& sub_model)
   supportsEstimDerivs = true;
   sub_model.supports_derivative_estimation(false);
 
-  size_t num_cv = cv(), num_primary = num_primary_fns(),
+  size_t num_cv = current_variables().cv(), num_primary = num_primary_fns(),
     num_nln_ineq = num_nonlinear_ineq_constraints(),
     num_nln_eq = num_nonlinear_eq_constraints(),
     num_lin_ineq = num_linear_ineq_constraints(),
@@ -327,8 +327,8 @@ void ScalingModel::initialize_scaling(Model& sub_model)
 
   continuous_lower_bounds(lbs);
   continuous_upper_bounds(ubs);
-  continuous_variables(
-                       modify_n2s(sub_model.continuous_variables(), cvScaleTypes,
+  current_variables().continuous_variables(
+                       modify_n2s(sub_model.current_variables().continuous_variables(), cvScaleTypes,
                                   cvScaleMultipliers, cvScaleOffsets) );
 
   if (outputLevel > NORMAL_OUTPUT && varsScaleFlag) {

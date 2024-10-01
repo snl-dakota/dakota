@@ -546,7 +546,7 @@ inline void ProbabilityTransformModel::
 trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
 		  const RealVector& x_vars)
 {
-  SizetMultiArrayConstView x_cv_ids = subModel.continuous_variable_ids(),
+  SizetMultiArrayConstView x_cv_ids = subModel.current_variables().continuous_variable_ids(),
     u_cv_ids = currentVariables.continuous_variable_ids();
   SizetArray x_dvv; copy_data(x_cv_ids, x_dvv);
   natafTransform.trans_grad_X_to_U(fn_grad_x, x_cv_ids, fn_grad_u, u_cv_ids,
@@ -558,7 +558,7 @@ inline void ProbabilityTransformModel::
 trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
 		  const RealVector& x_vars)
 {
-  SizetMultiArrayConstView x_cv_ids = subModel.continuous_variable_ids(),
+  SizetMultiArrayConstView x_cv_ids = subModel.current_variables().continuous_variable_ids(),
     u_cv_ids = currentVariables.continuous_variable_ids();
   SizetArray x_dvv; copy_data(x_cv_ids, x_dvv);
   natafTransform.trans_grad_U_to_X(fn_grad_u, u_cv_ids, fn_grad_x, x_cv_ids,
@@ -570,11 +570,11 @@ inline void ProbabilityTransformModel::
 trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
 		  const RealVector& x_vars)
 {
-  SizetMultiArrayConstView x_cv_ids = subModel.continuous_variable_ids();
+  SizetMultiArrayConstView x_cv_ids = subModel.current_variables().continuous_variable_ids();
   SizetArray x_dvv; copy_data(x_cv_ids, x_dvv);
   natafTransform.trans_grad_X_to_S(fn_grad_x, fn_grad_s, x_vars, x_dvv,
     x_cv_ids, currentVariables.continuous_variable_ids(), // u_cv_ids
-    subModel.all_continuous_variable_ids(),              // x_acv_ids
+    subModel.current_variables().all_continuous_variable_ids(),              // x_acv_ids
     primaryACVarMapIndices, secondaryACVarMapTargets);
 }
 
@@ -583,7 +583,7 @@ inline void ProbabilityTransformModel::
 trans_hess_X_to_U(const RealSymMatrix& fn_hess_x, RealSymMatrix& fn_hess_u,
 		  const RealVector& x_vars, const RealVector& fn_grad_x)
 {
-  SizetMultiArrayConstView x_cv_ids = subModel.continuous_variable_ids(),
+  SizetMultiArrayConstView x_cv_ids = subModel.current_variables().continuous_variable_ids(),
     u_cv_ids = currentVariables.continuous_variable_ids();
   SizetArray x_dvv; copy_data(x_cv_ids, x_dvv);
   natafTransform.trans_hess_X_to_U(fn_hess_x, x_cv_ids, fn_hess_u, u_cv_ids,

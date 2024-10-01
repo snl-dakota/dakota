@@ -68,7 +68,7 @@ void NonlinearCGOptimizer::core_run()
 
   // TODO: Once DAKOTA moves to Teuchos for its numerical data type,
   // remove the various copies below.  (Also, could use std::copy for some.)
-  copy_data(iteratedModel.continuous_variables(), designVars); // view->copy
+  copy_data(iteratedModel.current_variables().continuous_variables(), designVars); // view->copy
   searchDirection.sizeUninitialized(numContinuousVars);
 
   if (linesearchType > CG_FIXED_STEP)
@@ -143,7 +143,7 @@ void NonlinearCGOptimizer::core_run()
 		    1, designVars.values(), 1);
 
     // TODO: this is a duplicate copy in the linesearch case -- rework to avoid
-    iteratedModel.continuous_variables(designVars);
+    iteratedModel.current_variables().continuous_variables(designVars);
     
     // archive gradient and derived metric for next iteration
     functionPrev = functionCurr;
@@ -598,7 +598,7 @@ Real NonlinearCGOptimizer::linesearch_eval(const Real& trial_step,
   // evaluate function only 
   for (size_t i=0; i<numContinuousVars; i++)
     trialVars[i] = designVars[i] + trial_step * searchDirection[i];
-  iteratedModel.continuous_variables(trialVars);
+  iteratedModel.current_variables().continuous_variables(trialVars);
   activeSet.request_values(req_val);
   iteratedModel.evaluate(activeSet);
   const Response& response = iteratedModel.current_response();

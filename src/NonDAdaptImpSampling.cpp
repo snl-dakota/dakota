@@ -666,7 +666,7 @@ evaluate_samples(const RealVectorArray& var_samples_u, RealVector& fn_samples)
 
   // update designPoint once; update uncertain vars for each sample
   for (j=0; j<startCAUV; ++j)
-    uSpaceModel.continuous_variable(designPoint[j], j);
+    uSpaceModel.current_variables().continuous_variable(designPoint[j], j);
 
   // calculate the probability of failure
   ActiveSet set = uSpaceModel.current_response().active_set(); // copy
@@ -675,7 +675,7 @@ evaluate_samples(const RealVectorArray& var_samples_u, RealVector& fn_samples)
   for (i=0; i<num_samples; i++) {
     const RealVector& sample_i = var_samples_u[i];
     for (j=startCAUV, cntr=0; cntr<numCAUV; ++j, ++cntr)
-      uSpaceModel.continuous_variable(sample_i[cntr], j);
+      uSpaceModel.current_variables().continuous_variable(sample_i[cntr], j);
 
     // get response value at the sample point
     if (asynch_flag) // set from uSpaceModel for stand-alone or on-the-fly

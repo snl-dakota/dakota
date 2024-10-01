@@ -638,7 +638,7 @@ qoi_eval(size_t num_samp, const double* var_sets, double* qoi_sets, void* args)
   RealVector cv_i(num_cv, false);
   for (size_t i=0; i<num_samp; ++i) {
     copy_data(var_sets+num_cv*i, num_cv, cv_i);
-    c3Instance->iteratedModel.continuous_variables(cv_i);
+    c3Instance->iteratedModel.current_variables().continuous_variables(cv_i);
     if (asynch_flag)
       c3Instance->iteratedModel.evaluate_nowait();
     else {

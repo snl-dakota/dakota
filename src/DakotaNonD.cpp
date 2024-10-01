@@ -272,7 +272,7 @@ void NonD::initialize_response_covariance()
 void NonD::initialize_final_statistics()
 {
   size_t i, j, num_levels, cntr = 0, rl_len = 0, num_final_stats,
-    num_active_vars = iteratedModel.cv();
+    num_active_vars = iteratedModel.current_variables().cv();
   if (epistemicStats)
     num_final_stats = 2*numFunctions;
   else { // aleatory UQ
@@ -297,7 +297,7 @@ void NonD::initialize_final_statistics()
   //   subIterator construction follows in NestedModel::derived_init_comms()
   //   --> invocation of this fn from NonD ctors should have inactive view
   ActiveSet stats_set(num_final_stats);//, num_active_vars); // default RV = 1
-  stats_set.derivative_vector(iteratedModel.inactive_continuous_variable_ids());
+  stats_set.derivative_vector(iteratedModel.current_variables().inactive_continuous_variable_ids());
   finalStatistics = Response(SIMULATION_RESPONSE, stats_set);
 
   // Assign meaningful labels to finalStatistics (appear in NestedModel output)

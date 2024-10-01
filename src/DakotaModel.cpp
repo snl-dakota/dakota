@@ -1123,13 +1123,13 @@ Model::initialize_x0_bounds(const SizetArray& original_dvv,
     ( (inactive_derivs) ? inactive_continuous_upper_bounds() :
       all_continuous_upper_bounds() );
   SizetMultiArrayConstView cv_ids = (active_derivs) ?
-    continuous_variable_ids() :
-    ( (inactive_derivs) ? inactive_continuous_variable_ids() : 
-      all_continuous_variable_ids() );
+    current_variables().continuous_variable_ids() :
+    ( (inactive_derivs) ? current_variables().inactive_continuous_variable_ids() : 
+      current_variables().all_continuous_variable_ids() );
   UShortMultiArrayConstView cv_types = (active_derivs) ? 
-    continuous_variable_types() : 
-    ( (inactive_derivs) ? inactive_continuous_variable_types() : 
-      all_continuous_variable_types() );
+    current_variables().continuous_variable_types() : 
+    ( (inactive_derivs) ? current_variables().inactive_continuous_variable_types() : 
+      current_variables().all_continuous_variable_types() );
 
   // if not respecting bounds, leave at +/- infinity
   size_t num_deriv_vars = original_dvv.size();
@@ -2421,15 +2421,15 @@ synchronize_derivatives(const Variables& vars,
   if (fd_grad_flag || fd_hess_flag) {
     SizetMultiArray cv_ids;
     if (orig_dvv == currentVariables.continuous_variable_ids()) {
-      cv_ids.resize(boost::extents[cv()]);
+      cv_ids.resize(boost::extents[current_variables().cv()]);
       cv_ids = currentVariables.continuous_variable_ids();
     }
     else if (orig_dvv == currentVariables.inactive_continuous_variable_ids()) {
-      cv_ids.resize(boost::extents[icv()]);
+      cv_ids.resize(boost::extents[current_variables().icv()]);
       cv_ids = currentVariables.inactive_continuous_variable_ids();
     }
     else { // general derivatives
-      cv_ids.resize(boost::extents[acv()]);
+      cv_ids.resize(boost::extents[current_variables().acv()]);
       cv_ids = currentVariables.all_continuous_variable_ids();
     }
     const RealVector& fn_vals_x0  = initial_map_response.function_values();
@@ -6074,28 +6074,28 @@ void Model::active_variables(const RealVector& config_vars, Model& model)
 
   size_t offset = 0;  // current index into configuration variables
 
-  RealVector ccv(Teuchos::View, config_vars.values() + offset, model.cv());
-  model.continuous_variables(ccv);
-  offset += model.cv();
+  RealVector ccv(Teuchos::View, config_vars.values() + offset, model.current_variables().cv());
+  model.current_variables().continuous_variables(ccv);
+  offset += model.current_variables().cv();
 
-  RealVector dicv(Teuchos::View, config_vars.values() + offset, model.div());
-  IntVector dicv_as_int(model.div());
+  RealVector dicv(Teuchos::View, config_vars.values() + offset, model.current_variables().div());
+  IntVector dicv_as_int(model.current_variables().div());
   iround(dicv, dicv_as_int);
-  model.discrete_int_variables(dicv_as_int);
-  offset += model.div();
+  model.current_variables().discrete_int_variables(dicv_as_int);
+  offset += model.current_variables().div();
 
-  RealVector dscv(Teuchos::View, config_vars.values() + offset, model.dsv());
+  RealVector dscv(Teuchos::View, config_vars.values() + offset, model.current_variables().dsv());
   const StringSetArray& discrete_str_vals = model.discrete_set_string_values();
-  for (size_t i=0; i<model.dsv(); ++i) {
+  for (size_t i=0; i<model.current_variables().dsv(); ++i) {
     String str_value = 
       set_index_to_value(boost::math::iround(dscv[i]), discrete_str_vals[i]);
     model.current_variables().discrete_string_variable(str_value, i);
   }
-  offset += model.dsv();
+  offset += model.current_variables().dsv();
 
-  RealVector drcv(Teuchos::View, config_vars.values() + offset, model.drv());
-  model.discrete_real_variables(drcv);
-  //offset += model.drv();
+  RealVector drcv(Teuchos::View, config_vars.values() + offset, model.current_variables().drv());
+  model.current_variables().discrete_real_variables(drcv);
+  //offset += model.current_variables().drv();
 }
 
 
@@ -6117,30 +6117,30 @@ void Model::inactive_variables(const RealVector& config_vars, Model& model,
 
   size_t offset = 0;  // current index into configuration variables
 
-  RealVector ccv(Teuchos::View, config_vars.values() + offset, model.icv());
+  RealVector ccv(Teuchos::View, config_vars.values() + offset, model.current_variables().icv());
   vars.inactive_continuous_variables(ccv);
-  offset += model.icv();
+  offset += model.current_variables().icv();
 
-  RealVector dicv(Teuchos::View, config_vars.values() + offset, model.idiv());
-  IntVector dicv_as_int(model.idiv());
+  RealVector dicv(Teuchos::View, config_vars.values() + offset, model.current_variables().idiv());
+  IntVector dicv_as_int(model.current_variables().idiv());
   iround(dicv, dicv_as_int);
   vars.inactive_discrete_int_variables(dicv_as_int);
-  offset += model.idiv();
+  offset += model.current_variables().idiv();
 
-  RealVector dscv(Teuchos::View, config_vars.values() + offset, model.idsv());
+  RealVector dscv(Teuchos::View, config_vars.values() + offset, model.current_variables().idsv());
   // the admissible _inactive_ discrete string values
   const StringSetArray& discrete_str_vals =
     model.discrete_set_string_values(model.current_variables().view().second);
-  for (size_t i=0; i<model.idsv(); ++i) {
+  for (size_t i=0; i<model.current_variables().idsv(); ++i) {
     String str_value = 
       set_index_to_value(boost::math::iround(dscv[i]), discrete_str_vals[i]);
     vars.inactive_discrete_string_variable(str_value, i);
   }
-  offset += model.idsv();
+  offset += model.current_variables().idsv();
 
-  RealVector drcv(Teuchos::View, config_vars.values() + offset, model.idrv());
+  RealVector drcv(Teuchos::View, config_vars.values() + offset, model.current_variables().idrv());
   vars.inactive_discrete_real_variables(drcv);
-  //offset += model.idrv();
+  //offset += model.current_variables().idrv();
 }
 
 
@@ -6186,7 +6186,7 @@ void Model::evaluate(const VariablesArray& sample_vars,
   resp_matrix.shape(model.response_size(), num_evals);
 
   for (i=0; i<num_evals; ++i) {
-    model.active_variables(sample_vars[i]);
+    model.current_variables().active_variables(sample_vars[i]);
     if (model.asynch_flag())
       model.evaluate_nowait();
     else {

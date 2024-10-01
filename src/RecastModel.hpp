@@ -835,7 +835,7 @@ inline void RecastModel::resize_from_subordinate_model(size_t depth)
                             !currentResponse.function_hessians().empty());
   }
 
-  //size_t num_sm_acv = subModel.acv(), ...;
+  //size_t num_sm_acv = subModel.current_variables().acv(), ...;
   //if (currentVariables.acv() != num_sm_acv || ...)
   //  currentVariables.reshape(num_sm_acv,num_sm_adiv,num_sm_adsv,num_sm_adrv);
 }

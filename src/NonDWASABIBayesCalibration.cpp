@@ -410,7 +410,7 @@ compute_responses(RealMatrix & samples, RealMatrix & responses)
   for (int j=0; j<num_samples; j++) {
     RealVector sample(Teuchos::View, samples[j], numContinuousVars);
     
-    mcmcModel.continuous_variables(sample); 
+    mcmcModel.current_variables().continuous_variables(sample); 
 
     mcmcModel.evaluate();
     const Response& curr_resp = mcmcModel.current_response();

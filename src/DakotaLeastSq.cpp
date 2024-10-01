@@ -471,7 +471,7 @@ void LeastSq::post_run(std::ostream& s)
     //    eval iterated model; save iter_fns and conditionally save native_fns
     // else if (!native_fns)
     //    eval original model; save native_fns
-    iteratedModel.continuous_variables(iter_vars.continuous_variables());
+    iteratedModel.current_variables().continuous_variables(iter_vars.continuous_variables());
     activeSet.request_values(0);
     for (size_t i=0; i<numLeastSqTerms; ++i)
       activeSet.request_value(1, i);
@@ -495,7 +495,7 @@ void LeastSq::post_run(std::ostream& s)
     // For now, we populate iter_resp, then partially undo the scaling in
     // get_confidence_intervals.  Could instead get the eval from
     // original_model and transform it up.
-    iteratedModel.continuous_variables(iter_vars.continuous_variables());
+    iteratedModel.current_variables().continuous_variables(iter_vars.continuous_variables());
     activeSet.request_values(0);
     for (size_t i=0; i<numLeastSqTerms; ++i)
       activeSet.request_value(2, i);

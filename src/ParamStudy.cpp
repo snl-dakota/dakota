@@ -68,11 +68,11 @@ ParamStudy::ParamStudy(ProblemDescDB& problem_db, Model& model):
       // checks only if in check mode; else avoid additional overhead and rely
       // on run-time checks for run-time initialPoint.
       if (numSteps && parallelLib.command_line_check()) {
-	initialCVPoint  = iteratedModel.continuous_variables();      // view
-	initialDIVPoint = iteratedModel.discrete_int_variables();    // view
+	initialCVPoint  = iteratedModel.current_variables().continuous_variables();      // view
+	initialDIVPoint = iteratedModel.current_variables().discrete_int_variables();    // view
 	initialDSVPoint.resize(boost::extents[numDiscreteStringVars]);
-	initialDSVPoint = iteratedModel.discrete_string_variables(); // copy
-	initialDRVPoint = iteratedModel.discrete_real_variables();   // view
+	initialDSVPoint = iteratedModel.current_variables().discrete_string_variables(); // copy
+	initialDRVPoint = iteratedModel.current_variables().discrete_real_variables();   // view
 	final_point_to_step_vector(); // covers check_ranges_sets(numSteps)
       }
     }
@@ -85,10 +85,10 @@ ParamStudy::ParamStudy(ProblemDescDB& problem_db, Model& model):
 	  probDescDB.get_int("method.parameter_study.num_steps")))
 	err_flag = true;
       // discrete initial pts needed for check_sets(); reassigned in pre-run
-      initialDIVPoint = iteratedModel.discrete_int_variables();    // view
+      initialDIVPoint = iteratedModel.current_variables().discrete_int_variables();    // view
       initialDSVPoint.resize(boost::extents[numDiscreteStringVars]);
-      initialDSVPoint = iteratedModel.discrete_string_variables(); // copy
-      initialDRVPoint = iteratedModel.discrete_real_variables();   // view
+      initialDSVPoint = iteratedModel.current_variables().discrete_string_variables(); // copy
+      initialDRVPoint = iteratedModel.current_variables().discrete_real_variables();   // view
       if (check_ranges_sets(numSteps))
 	err_flag = true;
     }
@@ -101,10 +101,10 @@ ParamStudy::ParamStudy(ProblemDescDB& problem_db, Model& model):
     if (check_steps_per_variable(
 	probDescDB.get_iv("method.parameter_study.steps_per_variable")))
       err_flag = true;
-    initialDIVPoint = iteratedModel.discrete_int_variables();    // view
+    initialDIVPoint = iteratedModel.current_variables().discrete_int_variables();    // view
     initialDSVPoint.resize(boost::extents[numDiscreteStringVars]);
-    initialDSVPoint = iteratedModel.discrete_string_variables(); // copy
-    initialDRVPoint = iteratedModel.discrete_real_variables();   // view
+    initialDSVPoint = iteratedModel.current_variables().discrete_string_variables(); // copy
+    initialDRVPoint = iteratedModel.current_variables().discrete_real_variables();   // view
     if (check_ranges_sets(contStepsPerVariable, discIntStepsPerVariable,
 			  discStringStepsPerVariable, discRealStepsPerVariable))
       err_flag = true;
@@ -271,10 +271,10 @@ void ParamStudy::archive_model_variables(const Model& model, size_t idx) const
   // Let's try to write resultsDB stuff here - RWH
   if(resultsDB.active())
   {
-    const RealVector& c_vars  = model.continuous_variables();
-    const IntVector & di_vars = model.discrete_int_variables();
-    StringMultiArrayConstView ds_vars = model.discrete_string_variables();
-    const RealVector& dr_vars = model.discrete_real_variables();
+    const RealVector& c_vars  = model.current_variables().continuous_variables();
+    const IntVector & di_vars = model.current_variables().discrete_int_variables();
+    StringMultiArrayConstView ds_vars = model.current_variables().discrete_string_variables();
+    const RealVector& dr_vars = model.current_variables().discrete_real_variables();
 
     if( numContinuousVars )
       resultsDB.insert_into
@@ -864,10 +864,10 @@ void ParamStudy::distribute_partitions()
   initialDSVPoint.resize(boost::extents[numDiscreteStringVars]);
   initialDRVPoint.sizeUninitialized(numDiscreteRealVars);
 
-  const RealVector&          c_vars = iteratedModel.continuous_variables();
-  const IntVector&          di_vars = iteratedModel.discrete_int_variables();
-  StringMultiArrayConstView ds_vars = iteratedModel.discrete_string_variables();
-  const RealVector&         dr_vars = iteratedModel.discrete_real_variables();
+  const RealVector&          c_vars = iteratedModel.current_variables().continuous_variables();
+  const IntVector&          di_vars = iteratedModel.current_variables().discrete_int_variables();
+  StringMultiArrayConstView ds_vars = iteratedModel.current_variables().discrete_string_variables();
+  const RealVector&         dr_vars = iteratedModel.current_variables().discrete_real_variables();
 
   const RealVector&  c_l_bnds = iteratedModel.continuous_lower_bounds();
   const RealVector&  c_u_bnds = iteratedModel.continuous_upper_bounds();
@@ -1152,10 +1152,10 @@ void ParamStudy::archive_allocate_cps() const
 
 void ParamStudy::archive_cps_vars(const Model& model, size_t idx) const
 {
-  const RealVector& c_vars  = model.continuous_variables();
-  const IntVector & di_vars = model.discrete_int_variables();
-  StringMultiArrayConstView ds_vars = model.discrete_string_variables();
-  const RealVector& dr_vars = model.discrete_real_variables();
+  const RealVector& c_vars  = model.current_variables().continuous_variables();
+  const IntVector & di_vars = model.current_variables().discrete_int_variables();
+  StringMultiArrayConstView ds_vars = model.current_variables().discrete_string_variables();
+  const RealVector& dr_vars = model.current_variables().discrete_real_variables();
 
   StringMultiArrayConstView cv_labels
     = iteratedModel.continuous_variable_labels();

@@ -70,8 +70,8 @@ class DakotaModelObjective : public FactoryT::RObjT
     Real value(const typename FactoryT::VT &x, Real &tol)
     {
       Real result = 0;
-      dakModel->continuous_variable(x[0], 0);
-      dakModel->continuous_variable(x[1], 1);
+      dakModel->current_variables().continuous_variable(x[0], 0);
+      dakModel->current_variables().continuous_variable(x[1], 1);
       dakModel->evaluate();
       const Response& test_resp  = dakModel->current_response();
       result = test_resp.function_value(0);

@@ -285,7 +285,7 @@ objective_eval(int *n, double c[], double l[], double u[], int point[],
 
     if (ncsudirectInstance->setUpType == SETUP_MODEL) {
 
-      ncsudirectInstance->iteratedModel.continuous_variables(local_des_vars);
+      ncsudirectInstance->iteratedModel.current_variables().continuous_variables(local_des_vars);
 
       // request the evaluation in synchronous or asynchronous mode
       if (ncsudirectInstance->iteratedModel.asynch_flag())
@@ -366,7 +366,7 @@ void NCSUOptimizer::core_run()
   if (setUpType == SETUP_MODEL) {
     // initialize local_des_vars with DB initial point.  Variables are updated 
     // in constraint_eval/objective_eval
-    copy_data(iteratedModel.continuous_variables(), local_des_vars);
+    copy_data(iteratedModel.current_variables().continuous_variables(), local_des_vars);
     copy_data(iteratedModel.continuous_lower_bounds(), lowerBounds);
     copy_data(iteratedModel.continuous_upper_bounds(), upperBounds);
   } 

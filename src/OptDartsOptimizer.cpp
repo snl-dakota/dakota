@@ -128,15 +128,15 @@ void OptDartsOptimizer::load_parameters(Model &model)
      //NOMAD::Point _upper_bound (numTotalVars);
      //NOMAD::Point _lower_bound (numTotalVars);
      
-     const RealVector& initial_point_cont = model.continuous_variables();
+     const RealVector& initial_point_cont = model.current_variables().continuous_variables();
      const RealVector& lower_bound_cont = model.continuous_lower_bounds();
      const RealVector& upper_bound_cont = model.continuous_upper_bounds();
 
-     const IntVector& initial_point_int = model.discrete_int_variables();
+     const IntVector& initial_point_int = model.current_variables().discrete_int_variables();
      const IntVector& lower_bound_int = model.discrete_int_lower_bounds();
      const IntVector& upper_bound_int = model.discrete_int_upper_bounds();
 
-     const RealVector& initial_point_real = model.discrete_real_variables();
+     const RealVector& initial_point_real = model.current_variables().discrete_real_variables();
      const RealVector& lower_bound_real = model.discrete_real_lower_bounds();
      const RealVector& upper_bound_real = model.discrete_real_upper_bounds();
 
@@ -165,7 +165,7 @@ void OptDartsOptimizer::load_parameters(Model &model)
         RealVector newX(_num_dim);
         for (size_t idim = 0; idim < _num_dim; idim++) newX[idim] = _dart[idim];
         
-        iteratedModel.continuous_variables(newX);
+        iteratedModel.current_variables().continuous_variables(newX);
         iteratedModel.evaluate();
         
         

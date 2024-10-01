@@ -505,7 +505,7 @@ void NonDQUESOBayesCalibration::cache_chain()
     // querying a more complete eval database when available...
 
     if (mcmcModelHasSurrogate) {
-      mcmcModel.active_variables(lookup_vars);
+      mcmcModel.current_variables().active_variables(lookup_vars);
       mcmcModel.evaluate(lookup_resp.active_set());
       const RealVector& fn_vals = mcmcModel.current_response().function_values();
       Teuchos::setCol(fn_vals, i, acceptedFnVals);

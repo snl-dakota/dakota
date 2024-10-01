@@ -498,7 +498,7 @@ void NonDGlobalInterval::evaluate_response_star_truth()
 {
   //fHatModel.component_parallel_mode(TRUTH_MODEL_MODE);
   const Variables& vars_star = intervalOptimizer.variables_results();
-  iteratedModel.active_variables(vars_star);
+  iteratedModel.current_variables().active_variables(vars_star);
   ActiveSet set = iteratedModel.current_response().active_set();
   // GT: Get all responses per function evaluation
   // changing this might break some of the logic needed to determine

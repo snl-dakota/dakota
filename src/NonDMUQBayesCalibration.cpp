@@ -355,7 +355,7 @@ void NonDMUQBayesCalibration::calibrate()
 {
   int N =  (chainSamples > 0) ? chainSamples : 1000;
   size_t num_cv = numContinuousVars;
-  const RealVector& init_point = nonDMUQInstance->mcmcModel.continuous_variables();
+  const RealVector& init_point = nonDMUQInstance->mcmcModel.current_variables().continuous_variables();
   Eigen::VectorXd init_pt(num_cv);
   for (size_t i(0); i < num_cv; ++i)
     init_pt[i] = init_point[i];
@@ -556,7 +556,7 @@ void NonDMUQBayesCalibration::cache_chain()
     // now retreive function values
 
     if (mcmcModelHasSurrogate) {
-      nonDMUQInstance->mcmcModel.active_variables(lookup_vars);
+      nonDMUQInstance->mcmcModel.current_variables().active_variables(lookup_vars);
       nonDMUQInstance->mcmcModel.evaluate(lookup_resp.active_set());
       const RealVector& fn_vals = nonDMUQInstance->mcmcModel.current_response().function_values();
       Teuchos::setCol(fn_vals, i, acceptedFnVals);

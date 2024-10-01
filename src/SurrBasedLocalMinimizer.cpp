@@ -350,7 +350,7 @@ void SurrBasedLocalMinimizer::pre_run()
   // need copies of initial point and initial global bounds, since iteratedModel
   // continuous vars will be reset to the TR center and iteratedModel bounds
   // will be reset to the TR bounds
-  copy_data(iteratedModel.continuous_variables(),    initialPoint);
+  copy_data(iteratedModel.current_variables().continuous_variables(),    initialPoint);
   copy_data(iteratedModel.continuous_lower_bounds(), globalLowerBnds);
   copy_data(iteratedModel.continuous_upper_bounds(), globalUpperBnds);
 }
@@ -505,7 +505,7 @@ update_trust_region_data(SurrBasedLevelData& tr_data,
 void SurrBasedLocalMinimizer::
 update_approx_sub_problem(SurrBasedLevelData& tr_data)
 {
-  approxSubProbModel.active_variables(tr_data.vars_center());
+  approxSubProbModel.current_variables().active_variables(tr_data.vars_center());
   approxSubProbModel.continuous_lower_bounds(tr_data.tr_lower_bounds());
   approxSubProbModel.continuous_upper_bounds(tr_data.tr_upper_bounds());
 
@@ -1554,7 +1554,7 @@ hom_constraint_eval(int& mode, int& ncnln, int& n, int& nrowj, int* needc,
   //RealVector local_des_vars(n-1);
   // WJB: copy vs. view?? copy_data(&tau_and_x[1], n-1, local_des_vars);
   RealVector local_des_vars(Teuchos::View, &tau_and_x[1], n-1);
-  sblmInstance->approxSubProbModel.continuous_variables(local_des_vars);
+  sblmInstance->approxSubProbModel.current_variables().continuous_variables(local_des_vars);
 
   // compute response
   sblmInstance->approxSubProbModel.evaluate(local_set);

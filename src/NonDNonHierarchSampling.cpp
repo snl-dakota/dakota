@@ -1629,7 +1629,7 @@ void NonDNonHierarchSampling::run_minimizers(MFSolutionData& soln)
 	Iterator& min_ij = min_ip1[j];
 	Model&  model_ij = min_ij.iterated_model();
 	if (model_ij.is_null())  min_ij.initial_point(vars_star);
-	else                model_ij.active_variables(vars_star);
+	else                model_ij.current_variables().active_variables(vars_star);
       }
     }
   }

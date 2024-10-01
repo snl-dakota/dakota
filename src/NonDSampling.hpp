@@ -544,8 +544,8 @@ transform_samples(Model& src_model, Model& tgt_model, bool x_to_u)
     tgt_model.probability_transformation() :
     src_model.probability_transformation();
 
-  transform_samples(nataf, allSamples, src_model.continuous_variable_ids(),
-		    tgt_model.continuous_variable_ids(), x_to_u);
+  transform_samples(nataf, allSamples, src_model.current_variables().continuous_variable_ids(),
+		    tgt_model.current_variables().continuous_variable_ids(), x_to_u);
 }
 
 
@@ -554,7 +554,7 @@ inline void NonDSampling::
 transform_samples(Pecos::ProbabilityTransformation& nataf, bool x_to_u)
 {
   // No model recursion available, assume same x/u ids for mapping:
-  SizetMultiArrayConstView cv_ids = iteratedModel.continuous_variable_ids();
+  SizetMultiArrayConstView cv_ids = iteratedModel.current_variables().continuous_variable_ids();
   transform_samples(nataf, allSamples, cv_ids, cv_ids, x_to_u);
 }
 
@@ -564,7 +564,7 @@ transform_samples(Pecos::ProbabilityTransformation& nataf,
 		  RealMatrix& sample_matrix, bool x_to_u)
 {
   // No model recursion available, assume same x/u ids for mapping:
-  SizetMultiArrayConstView cv_ids = iteratedModel.continuous_variable_ids();
+  SizetMultiArrayConstView cv_ids = iteratedModel.current_variables().continuous_variable_ids();
   transform_samples(nataf, sample_matrix, cv_ids, cv_ids, x_to_u);
 }
 

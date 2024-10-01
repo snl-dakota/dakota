@@ -130,8 +130,8 @@ void Minimizer::update_from_model(const Model& model)
 {
   Iterator::update_from_model(model);
 
-  numContinuousVars     = model.cv();  numDiscreteIntVars  = model.div();
-  numDiscreteStringVars = model.dsv(); numDiscreteRealVars = model.drv();
+  numContinuousVars     = model.current_variables().cv();  numDiscreteIntVars  = model.current_variables().div();
+  numDiscreteStringVars = model.current_variables().dsv(); numDiscreteRealVars = model.current_variables().drv();
   numFunctions          = model.response_size();
 
   bool err_flag = false;
@@ -343,11 +343,11 @@ void Minimizer::initialize_run()
     
     // Could be lighter weight, but don't have a way to update only inactive
     bestVariablesArray.front().all_continuous_variables(
-      usermodel.all_continuous_variables());
+      usermodel.current_variables().all_continuous_variables());
     bestVariablesArray.front().all_discrete_int_variables(
-      usermodel.all_discrete_int_variables());
+      usermodel.current_variables().all_discrete_int_variables());
     bestVariablesArray.front().all_discrete_real_variables(
-      usermodel.all_discrete_real_variables());
+      usermodel.current_variables().all_discrete_real_variables());
   }
 }
 

@@ -218,7 +218,7 @@ void NLPQLPOptimizer::initialize_run()
   allocate_workspace();
   //check_sub_iterator_conflict(); // now virtual and called from Iterator
 
-  const RealVector& local_cdv = iteratedModel.continuous_variables();
+  const RealVector& local_cdv = iteratedModel.current_variables().continuous_variables();
   for (size_t i=0; i<numContinuousVars; i++)
     X[i] = local_cdv[i]; // Note: X is [NMAX,L]
 
@@ -279,7 +279,7 @@ void NLPQLPOptimizer::core_run()
     if (fn_eval_cntr > 1) {
       RealVector local_cdv(N, false);
       copy_data(X, N, local_cdv); // Note: X is [NMAX,L]
-      iteratedModel.continuous_variables(local_cdv);
+      iteratedModel.current_variables().continuous_variables(local_cdv);
     }
     iteratedModel.evaluate(activeSet);
     const Response& local_response = iteratedModel.current_response();

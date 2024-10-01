@@ -60,7 +60,7 @@ DataTransformModel(const Model& sub_model, ExperimentData& exp_data,
        ( active_sm_view != RELAXED_ALL && active_sm_view != MIXED_ALL ) ) {
     subModel.inactive_view(MIXED_STATE);
     int num_state_vars =
-      subModel.icv() + subModel.idiv() + subModel.idsv() + subModel.idrv();
+      subModel.current_variables().icv() + subModel.current_variables().idiv() + subModel.current_variables().idsv() + subModel.current_variables().idrv();
     if (num_state_vars != num_config_vars) {
       Cerr << "\nError: (DataTransformModel) Number of state "
 	   << "variables = " << num_state_vars << " must match\n       number "
@@ -86,8 +86,8 @@ DataTransformModel(const Model& sub_model, ExperimentData& exp_data,
   // For now, we assume that any hyper-parameters are appended to the
   // active continuous variables, and that active discrete int,
   // string, real follow in both the recast and sub-model
-  size_t submodel_cv = sub_model.cv();
-  size_t submodel_dv = sub_model.div() + sub_model.dsv() + sub_model.drv();
+  size_t submodel_cv = sub_model.current_variables().cv();
+  size_t submodel_dv = sub_model.current_variables().div() + sub_model.current_variables().dsv() + sub_model.current_variables().drv();
   Sizet2DArray vars_map_indices(submodel_cv + submodel_dv);
   for (size_t i=0; i<submodel_cv; ++i) {
     vars_map_indices[i].resize(1);
@@ -284,7 +284,7 @@ void DataTransformModel::update_cv_skip_hyperparams(const Model& model)
     num_cv  = sm_vars.cv(), // omits any hyper-parameters
     cv_end = cv_begin + num_cv,
     num_acv = sm_vars.acv();
-  const RealVector& acv = model.all_continuous_variables();
+  const RealVector& acv = model.current_variables().all_continuous_variables();
   const RealVector& acv_l_bnds = model.all_continuous_lower_bounds();
   const RealVector& acv_u_bnds = model.all_continuous_upper_bounds();
   StringMultiArrayConstView acv_labels
@@ -745,7 +745,7 @@ void DataTransformModel::set_mapping(const Variables& recast_vars,
   // number of active continuous variables
   SizetArray sub_model_dvv;
   const SizetArray& recast_dvv = recast_set.derivative_vector();
-  size_t max_sm_id = dtModelInstance->subordinate_model().cv();
+  size_t max_sm_id = dtModelInstance->subordinate_model().current_variables().cv();
   for (size_t i=0; i<recast_dvv.size(); ++i)
     if (1 <= recast_dvv[i] && recast_dvv[i] <= max_sm_id)
       sub_model_dvv.push_back(recast_dvv[i]);
@@ -984,7 +984,7 @@ void DataTransformModel::init_continuous_vars()
 {
   const SharedVariablesData& svd = subModel.current_variables().shared_data();
   const SizetArray& sm_vc_totals = svd.components_totals();
-  const RealVector& sm_acv = subModel.all_continuous_variables();
+  const RealVector& sm_acv = subModel.current_variables().all_continuous_variables();
   StringMultiArrayConstView sm_acvl = subModel.all_continuous_variable_labels();
   const RealVector & sm_aclb = subModel.all_continuous_lower_bounds();
   const RealVector & sm_acub = subModel.all_continuous_upper_bounds();
@@ -999,7 +999,7 @@ void DataTransformModel::init_continuous_vars()
     
     size_t num_cvars = sm_vc_totals[vci];
     for (size_t i=0; i<num_cvars; ++i) {
-      all_continuous_variable(sm_acv[sm_offset], dtm_offset);
+      current_variables().all_continuous_variable(sm_acv[sm_offset], dtm_offset);
       all_continuous_variable_label(sm_acvl[sm_offset], dtm_offset);
       all_continuous_lower_bound(sm_aclb[sm_offset], dtm_offset);
       all_continuous_upper_bound(sm_acub[sm_offset], dtm_offset);
@@ -1011,7 +1011,7 @@ void DataTransformModel::init_continuous_vars()
       const StringArray& hyper_labels = 
 	expData.hyperparam_labels(obsErrorMultiplierMode);
       for (size_t i=0; i<numHyperparams; ++i) {
-	all_continuous_variable(1.0, dtm_offset);
+	current_variables().all_continuous_variable(1.0, dtm_offset);
 	all_continuous_variable_label(hyper_labels[i], dtm_offset);
 	all_continuous_lower_bound(0.0, dtm_offset);
 	all_continuous_upper_bound(std::numeric_limits<double>::infinity(),

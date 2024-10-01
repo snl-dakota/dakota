@@ -68,7 +68,7 @@ void COLINApplication::set_problem(Model& model) {
 
   // Get the upper and lower bounds on the continuous variables.
 
-  _num_real_vars = model.cv();
+  _num_real_vars = model.current_variables().cv();
   if (num_real_vars > 0)
   {
     _real_lower_bounds = model.continuous_lower_bounds();
@@ -82,8 +82,8 @@ void COLINApplication::set_problem(Model& model) {
 
   // Get the upper and lower bounds on the discrete variables.
 
-  size_t i, j, num_div = model.div(), num_drv = model.drv(),
-    num_dsv = model.dsv(), num_dv = num_div + num_drv + num_dsv;
+  size_t i, j, num_div = model.current_variables().div(), num_drv = model.current_variables().drv(),
+    num_dsv = model.current_variables().dsv(), num_dv = num_div + num_drv + num_dsv;
   _num_int_vars = num_dv;
   if (num_dv) {
     const BitArray&       di_set_bits = model.discrete_int_sets();
@@ -352,7 +352,7 @@ colin_request_to_dakota_request(const utilib::Any &domain,
 
   RealVector cdv;
   TypeManager()->lexical_cast(miv.Real(), cdv);
-  iteratedModel.continuous_variables(cdv);
+  iteratedModel.current_variables().continuous_variables(cdv);
 
   // Cast the discrete variables from COLIN to a temporary vector.
 
@@ -372,29 +372,29 @@ colin_request_to_dakota_request(const utilib::Any &domain,
   // variables.  Get the integer values associated with each index and
   // assign them to DAKOTA integer variables.
 
-  size_t j, dsi_cntr, num_div = iteratedModel.div(),
-    num_drv = iteratedModel.drv(), num_dsv = iteratedModel.dsv();
+  size_t j, dsi_cntr, num_div = iteratedModel.current_variables().div(),
+    num_drv = iteratedModel.current_variables().drv(), num_dsv = iteratedModel.current_variables().dsv();
   for (j=0, dsi_cntr=0; j<num_div; ++j) {
     if (di_set_bits[j]) { // this active discrete int var is a set type
       int dakota_value = set_index_to_value(ddv[j], dsiv_values[dsi_cntr]);
-      iteratedModel.discrete_int_variable(dakota_value, j);
+      iteratedModel.current_variables().discrete_int_variable(dakota_value, j);
       ++dsi_cntr;
     }
     else                  // this active discrete int var is a range type
-      iteratedModel.discrete_int_variable(ddv[j], j);
+      iteratedModel.current_variables().discrete_int_variable(ddv[j], j);
   }
 
   // Likewise for the real set discrete variables.
 
   for (size_t j=0; j<num_drv; ++j) {
     Real dakota_value = set_index_to_value(ddv[j+num_div], dsrv_values[j]);
-    iteratedModel.discrete_real_variable(dakota_value, j);
+    iteratedModel.current_variables().discrete_real_variable(dakota_value, j);
   }
 
   // Likelikewise for the string set discrete variables
   for (size_t j=0; j<num_dsv; ++j) {
     String dakota_value = set_index_to_value(ddv[j+num_div+num_drv], dssv_values[j]);
-    iteratedModel.discrete_string_variable(dakota_value, j);
+    iteratedModel.current_variables().discrete_string_variable(dakota_value, j);
   }
 
   // Map COLIN info requests (pair<ResponseInfo, *>) to DAKOTA

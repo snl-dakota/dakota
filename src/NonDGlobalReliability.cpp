@@ -601,7 +601,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	const RealVector& c_vars_u = vars_star.continuous_variables();
 
 	// Get expected value at u* for output
-	uSpaceModel.continuous_variables(c_vars_u);
+	uSpaceModel.current_variables().continuous_variables(c_vars_u);
 	uSpaceModel.evaluate();
 	const RealVector& g_hat_fns
 	  = uSpaceModel.current_response().function_values();
@@ -698,7 +698,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
       samsOut << std::scientific;
       const Pecos::SurrogateData& gp_data
 	= uSpaceModel.approximation_data(respFnCount);
-      size_t num_data_pts = gp_data.size(), num_vars = uSpaceModel.cv();
+      size_t num_data_pts = gp_data.size(), num_vars = uSpaceModel.current_variables().cv();
       for (size_t i=0; i<num_data_pts; ++i) {
 	const RealVector& sams = gp_data.continuous_variables(i); // view
 	Real true_fn = gp_data.response_function(i);
@@ -1081,7 +1081,7 @@ constraint_penalty(const Real& c_viol, const RealVector& u)
       A[i] = 2.*u[i];
 
     // form -{grad_f} = m_grad_f = -grad[G_hat(u)]
-    uSpaceModel.continuous_variables(u);
+    uSpaceModel.current_variables().continuous_variables(u);
     uSpaceModel.evaluate();
     RealVector m_grad_f
       = uSpaceModel.current_response().function_gradient_copy(0);

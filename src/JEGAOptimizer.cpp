@@ -1986,8 +1986,8 @@ JEGAOptimizer::Evaluator::SeparateVariables(
 {
     EDDY_FUNC_DEBUGSCOPE
 
-    size_t num_cv  = this->_model.cv(), num_div = this->_model.div(),
-           num_drv = this->_model.drv(), num_dsv = this->_model.dsv();
+    size_t num_cv  = this->_model.current_variables().cv(), num_div = this->_model.current_variables().div(),
+           num_drv = this->_model.current_variables().drv(), num_dsv = this->_model.current_variables().dsv();
 
     // "into" containers may not yet be sized. If not, size them.  If they are,
     // don't size them b/c it will be a lot of wasted effort.
@@ -2174,12 +2174,12 @@ JEGAOptimizer::Evaluator::Evaluate(
         // send this guy out for evaluation using the _model.
 
         // first, set the current values of the variables in the model
-        this->_model.continuous_variables(contVars);
-        this->_model.discrete_int_variables(discIntVars);
-        this->_model.discrete_real_variables(discRealVars);
+        this->_model.current_variables().continuous_variables(contVars);
+        this->_model.current_variables().discrete_int_variables(discIntVars);
+        this->_model.current_variables().discrete_real_variables(discRealVars);
 	// Strings set by calling single value setter for each
 	for (size_t i=0; i<discStringVars.num_elements(); ++i)
-	  this->_model.discrete_string_variable(discStringVars[i],i);
+	  this->_model.current_variables().discrete_string_variable(discStringVars[i],i);
 	// Could use discrete_string_varables to avoid overhead of repeated 
 	// function calls, but it takes a StringMultiArrayConstView, which
 	// must be created from discStringVars. Maybe there's a simpler way,
@@ -2187,7 +2187,7 @@ JEGAOptimizer::Evaluator::Evaluate(
 	// const size_t &dsv_len = discStringVars.num_elements();
 	// StringMultiArrayConstView dsv_view = discStringVars[ 
 	//   boost::indices[idx_range(0,dsv_len)]];
-        // this->_model.discrete_string_variables(dsv_view);
+        // this->_model.current_variables().discrete_string_variables(dsv_view);
 	
         // now request the evaluation in synchronous or asyncronous mode.
         if(this->_model.asynch_flag())

@@ -96,10 +96,10 @@ bool Analyzer::resize()
 {
   bool parent_reinit_comms = Iterator::resize();
 
-  numContinuousVars     = iteratedModel.cv();
-  numDiscreteIntVars    = iteratedModel.div();
-  numDiscreteStringVars = iteratedModel.dsv();
-  numDiscreteRealVars   = iteratedModel.drv();
+  numContinuousVars     = iteratedModel.current_variables().cv();
+  numDiscreteIntVars    = iteratedModel.current_variables().div();
+  numDiscreteStringVars = iteratedModel.current_variables().dsv();
+  numDiscreteRealVars   = iteratedModel.current_variables().drv();
   numFunctions          = iteratedModel.response_size();
 
   return parent_reinit_comms;
@@ -117,8 +117,8 @@ void Analyzer::update_from_model(const Model& model)
 {
   Iterator::update_from_model(model);
 
-  numContinuousVars     = model.cv();  numDiscreteIntVars  = model.div();
-  numDiscreteStringVars = model.dsv(); numDiscreteRealVars = model.drv();
+  numContinuousVars     = model.current_variables().cv();  numDiscreteIntVars  = model.current_variables().div();
+  numDiscreteStringVars = model.current_variables().dsv(); numDiscreteRealVars = model.current_variables().drv();
   numFunctions          = model.response_size();
 
   bool err_flag = false;
@@ -407,7 +407,7 @@ void Analyzer::update_model_from_variables(Model& model, const Variables& vars)
   // default implementation is sufficient in current uses, but could
   // be overridden in future cases where a view discrepancy can exist
   // between model and vars.
-  model.active_variables(vars);
+  model.current_variables().active_variables(vars);
 }
 
 // ***************************************************
@@ -419,9 +419,9 @@ void Analyzer::update_model_from_sample(Model& model, const Real* sample_vars)
 {
   // default implementation is sufficient for FSUDesignCompExp and
   // NonD{Quadrature,SparseGrid,Cubature}, but NonDSampling overrides.
-  size_t i, num_cv = model.cv();
+  size_t i, num_cv = model.current_variables().cv();
   for (i=0; i<num_cv; ++i)
-    model.continuous_variable(sample_vars[i], i);
+    model.current_variables().continuous_variable(sample_vars[i], i);
 }
 
 

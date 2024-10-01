@@ -212,8 +212,8 @@ void DataFitSurrBasedLocalMinimizer::pre_run()
 void DataFitSurrBasedLocalMinimizer::post_run(std::ostream& s)
 {
   // restore original/global bounds
-  //approxSubProbModel.continuous_variables(initialPoint);
-  //if (recastSubProb) iteratedModel.continuous_variables(initialPoint);
+  //approxSubProbModel.current_variables().continuous_variables(initialPoint);
+  //if (recastSubProb) iteratedModel.current_variables().continuous_variables(initialPoint);
   approxSubProbModel.continuous_lower_bounds(globalLowerBnds);
   approxSubProbModel.continuous_upper_bounds(globalUpperBnds);
   if (recastSubProb) { // propagate to DFSModel
@@ -406,7 +406,7 @@ void DataFitSurrBasedLocalMinimizer::minimize()
     // search for data fits.  Therefore, reevaluate corrected approximation.
     Cout << "\n>>>>> Evaluating approximate optimum outside of subproblem "
 	 << "recasting.\n";
-    iteratedModel.active_variables(trustRegionData.vars_star());
+    iteratedModel.current_variables().active_variables(trustRegionData.vars_star());
     // leave iteratedModel in AUTO_CORRECTED_SURROGATE mode
     iteratedModel.evaluate(trustRegionData.active_set_star(APPROX_RESPONSE));
     trustRegionData.response_star(iteratedModel.current_response(),
@@ -428,7 +428,7 @@ void DataFitSurrBasedLocalMinimizer::verify()
   // must be in the correct server mode.
   iteratedModel.component_parallel_mode(TRUTH_MODEL_MODE);
   Model& truth_model = iteratedModel.truth_model();
-  truth_model.active_variables(trustRegionData.vars_star());
+  truth_model.current_variables().active_variables(trustRegionData.vars_star());
   // In all cases (including gradient mode), we only need the truth fn
   // values to validate the predicted optimum.  For gradient mode, we will
   // compute the gradients below if the predicted optimum is accepted.
@@ -450,7 +450,7 @@ void DataFitSurrBasedLocalMinimizer::verify()
   compute_trust_region_ratio(trustRegionData, globalApproxFlag);
 
   // record the iteration results, even if no change in center iterate
-  iteratedModel.active_variables(trustRegionData.vars_center());
+  iteratedModel.current_variables().active_variables(trustRegionData.vars_center());
   OutputManager& output_mgr = parallelLib.output_manager();
   output_mgr.add_tabular_data(trustRegionData.vars_center(),
     truth_model.interface_id(),
@@ -537,7 +537,7 @@ void DataFitSurrBasedLocalMinimizer::find_center_truth()
     // must be in the correct server mode.
     iteratedModel.component_parallel_mode(TRUTH_MODEL_MODE);
     Model& truth_model = iteratedModel.truth_model();
-    truth_model.active_variables(trustRegionData.vars_center());
+    truth_model.current_variables().active_variables(trustRegionData.vars_center());
     if (multiLayerBypassFlag) {
       short mode = truth_model.surrogate_response_mode();
       truth_model.surrogate_response_mode(BYPASS_SURROGATE);

@@ -1099,7 +1099,7 @@ void DataFitSurrModel::build_local_multipoint()
   // Evaluate value and derivatives using actualModel
   ActiveSet set = actualModel.current_response().active_set(); // copy
   set.request_vector(actual_asv);
-  set.derivative_vector(actualModel.continuous_variable_ids());
+  set.derivative_vector(actualModel.current_variables().continuous_variable_ids());
   actualModel.evaluate(set);
 
   // construct a new approximation using this actualModel evaluation
@@ -1148,9 +1148,9 @@ void DataFitSurrModel::build_global()
       num_dr_vars = currentVariables.drv();
     }
     else {
-      num_c_vars  = actualModel.cv();
-      num_di_vars = actualModel.div();
-      num_dr_vars = actualModel.drv();
+      num_c_vars  = actualModel.current_variables().cv();
+      num_di_vars = actualModel.current_variables().div();
+      num_dr_vars = actualModel.current_variables().drv();
     }
 
     // Process PRPCache using default iterators (index 0 = ordered_non_unique).

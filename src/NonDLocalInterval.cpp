@@ -171,7 +171,7 @@ void NonDLocalInterval::core_run()
   minMaxModel.update_from_subordinate_model(layers-1);
 
   RealVector min_initial_pt, max_initial_pt;
-  copy_data(minMaxModel.continuous_variables(), min_initial_pt); // view->copy
+  copy_data(minMaxModel.current_variables().continuous_variables(), min_initial_pt); // view->copy
   max_initial_pt = min_initial_pt; // copy->copy
 
   Sizet2DArray vars_map, primary_resp_map(1), secondary_resp_map;
@@ -203,7 +203,7 @@ void NonDLocalInterval::core_run()
       // Execute local search and retrieve results
       Cout << "\n>>>>> Initiating local minimization\n";
       truncate_to_cell_bounds(min_initial_pt);
-      minMaxModel.continuous_variables(min_initial_pt); // set starting pt
+      minMaxModel.current_variables().continuous_variables(min_initial_pt); // set starting pt
       minMaxOptimizer.run(pl_iter);
       if (numCells>1 && cellCntr<numCells-1)            // warm start next min
 	copy_data(minMaxOptimizer.variables_results().continuous_variables(),
@@ -216,7 +216,7 @@ void NonDLocalInterval::core_run()
       // Execute local search and retrieve results
       Cout << "\n>>>>> Initiating local maximization\n";
       truncate_to_cell_bounds(max_initial_pt);
-      minMaxModel.continuous_variables(max_initial_pt); // set starting point
+      minMaxModel.current_variables().continuous_variables(max_initial_pt); // set starting point
       minMaxOptimizer.run(pl_iter); 
       if (numCells>1 && cellCntr<numCells-1)            // warm start next max
 	copy_data(minMaxOptimizer.variables_results().continuous_variables(),

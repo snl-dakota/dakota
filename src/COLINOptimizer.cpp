@@ -343,11 +343,11 @@ void COLINOptimizer::core_run()
     // variables.  COLIN does not distinguish between discrete integer
     // and discrete real.
 
-    const RealVector&  cv_init = iteratedModel.continuous_variables();
-    const IntVector&  div_init = iteratedModel.discrete_int_variables();
-    const RealVector& drv_init = iteratedModel.discrete_real_variables();
+    const RealVector&  cv_init = iteratedModel.current_variables().continuous_variables();
+    const IntVector&  div_init = iteratedModel.current_variables().discrete_int_variables();
+    const RealVector& drv_init = iteratedModel.current_variables().discrete_real_variables();
     StringMultiArrayConstView dsv_init = 
-	    iteratedModel.discrete_string_variables();
+	    iteratedModel.current_variables().discrete_string_variables();
     IntVector dv_init(numDiscreteIntVars
 		    + numDiscreteRealVars
 		    + numDiscreteStringVars);

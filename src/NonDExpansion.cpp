@@ -782,7 +782,7 @@ void NonDExpansion::initialize_expansion()
   // are invariant in std distribution cases despite updates from above).
   initialPtU.size(numContinuousVars);
   if (allVars)
-    uSpaceModel.trans_X_to_U(iteratedModel.continuous_variables(), initialPtU);
+    uSpaceModel.trans_X_to_U(iteratedModel.current_variables().continuous_variables(), initialPtU);
   RealVector u_means = uSpaceModel.multivariate_distribution().means();
   //const SharedVariablesData& svd
   //  = iteratedModel.current_variables().shared_data();
@@ -805,7 +805,7 @@ void NonDExpansion::compute_expansion()
 #ifdef DERIV_DEBUG
   // numerical verification of analytic Jacobian/Hessian routines
   RealVector rdv_u;
-  uSpaceModel.trans_X_to_U(iteratedModel.continuous_variables(), rdv_u);
+  uSpaceModel.trans_X_to_U(iteratedModel.current_variables().continuous_variables(), rdv_u);
   Pecos::ProbabilityTransformation& nataf
     = uSpaceModel.probability_transformation();
   nataf.verify_trans_jacobian_hessian(rdv_u);//(rdv_x);
@@ -951,7 +951,7 @@ void NonDExpansion::compute_expansion()
       // finalStats using subIterator.response_results_active_set().
       if (useDerivs) {
 	SizetMultiArrayConstView cv_ids
-	  = iteratedModel.continuous_variable_ids();
+	  = iteratedModel.current_variables().continuous_variable_ids();
 	if (sampler_grad) { // merge cv_ids with final_dvv
 	  SizetSet merged_set; SizetArray merged_dvv;
 	  merged_set.insert(cv_ids.begin(), cv_ids.end());
@@ -974,7 +974,7 @@ void NonDExpansion::compute_expansion()
       else if (sampler_grad)
 	sampler_set.derivative_vector(final_dvv);
       else // derivs not needed, but correct DVV len needed for MPI buffers
-	sampler_set.derivative_vector(iteratedModel.continuous_variable_ids());
+	sampler_set.derivative_vector(iteratedModel.current_variables().continuous_variable_ids());
 
       // Build the orthogonal/interpolation polynomial approximations:
       u_space_sampler.active_set(sampler_set);
@@ -2682,7 +2682,7 @@ void NonDExpansion::compute_statistics(short results_state)
   // sensitivities, expansion/importance sampling for all vars mode
   // (uses ALEATORY_UNCERTAIN sampling mode), and external uses of the
   // emulator model (emulator-based inference).
-  //uSpaceModel.continuous_variables(initialPtU);
+  //uSpaceModel.current_variables().continuous_variables(initialPtU);
 
   switch (results_state) {
   case REFINEMENT_RESULTS:
@@ -2709,7 +2709,7 @@ void NonDExpansion::compute_statistics(short results_state)
     case Pecos::NO_METRIC: // possible for multifidelity_expansion()
       compute_moments();
       if (totalLevelRequests) {
-	if (allVars) uSpaceModel.continuous_variables(initialPtU); // see top
+	if (allVars) uSpaceModel.current_variables().continuous_variables(initialPtU); // see top
 	compute_level_mappings();
       }
       break;
@@ -2719,17 +2719,17 @@ void NonDExpansion::compute_statistics(short results_state)
 	compute_off_diagonal_covariance();
       break;
     case Pecos::MIXED_STATS_METRIC:
-      if (allVars) uSpaceModel.continuous_variables(initialPtU); // see top
+      if (allVars) uSpaceModel.current_variables().continuous_variables(initialPtU); // see top
       compute_moments(); compute_level_mappings();
       break;
     case Pecos::LEVEL_STATS_METRIC:
-      if (allVars) uSpaceModel.continuous_variables(initialPtU); // see top
+      if (allVars) uSpaceModel.current_variables().continuous_variables(initialPtU); // see top
       compute_level_mappings();
       break;
     }
     break;
   case FINAL_RESULTS:
-    uSpaceModel.continuous_variables(initialPtU); // see top comment
+    uSpaceModel.current_variables().continuous_variables(initialPtU); // see top comment
     // -----------------------------
     // Calculate analytic statistics: includes derivs + finalStats updating
     // -----------------------------
@@ -3812,7 +3812,7 @@ void NonDExpansion::update_final_statistics_gradients()
     // uncorrelated and the jacobian matrix is diagonal with terms 2./range.
     const SharedVariablesData& svd
       = iteratedModel.current_variables().shared_data();
-    SizetMultiArrayConstView cv_ids = iteratedModel.continuous_variable_ids();
+    SizetMultiArrayConstView cv_ids = iteratedModel.current_variables().continuous_variable_ids();
     const SizetArray& final_dvv
       = finalStatistics.active_set_derivative_vector();
     const std::vector<Pecos::RandomVariable>& x_ran_vars

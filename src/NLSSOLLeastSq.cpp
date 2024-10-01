@@ -112,7 +112,7 @@ least_sq_eval(int& mode, int& m, int& n, int& nrowfj, double* x, double* f,
     // and perform an evaluate() prior to data recovery.
     RealVector local_des_vars(n);
     copy_data(x, n, local_des_vars);
-    nlssolInstance->iteratedModel.continuous_variables(local_des_vars);
+    nlssolInstance->iteratedModel.current_variables().continuous_variables(local_des_vars);
     nlssolInstance->activeSet.request_values(asv_request);
     nlssolInstance->iteratedModel.evaluate(nlssolInstance->activeSet);
     if (++nlssolInstance->fnEvalCntr == nlssolInstance->maxFunctionEvals) {
@@ -195,7 +195,7 @@ void NLSSOLLeastSq::core_run()
   // initialize local_des_vars with DB initial point.  Variables are updated 
   // in constraint_eval/least_sq_eval
   RealVector local_des_vars;
-  copy_data(iteratedModel.continuous_variables(), local_des_vars);
+  copy_data(iteratedModel.current_variables().continuous_variables(), local_des_vars);
 
   // Augmentation of bounds appears here rather than in the constructor because
   // these bounds must be updated from model bounds each time an iterator is

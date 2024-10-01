@@ -293,7 +293,7 @@ void DOTOptimizer::initialize_run()
   dotInfo = 0; // Initialize to 0 before calling DOT
 
   // initialize the optimization starting point
-  copy_data(iteratedModel.continuous_variables(), designVars);
+  copy_data(iteratedModel.current_variables().continuous_variables(), designVars);
 }
 
 
@@ -393,7 +393,7 @@ void DOTOptimizer::core_run()
       }
     }
 
-    iteratedModel.continuous_variables(designVars);
+    iteratedModel.current_variables().continuous_variables(designVars);
     iteratedModel.evaluate(activeSet);
     const Response& local_response = iteratedModel.current_response();
 

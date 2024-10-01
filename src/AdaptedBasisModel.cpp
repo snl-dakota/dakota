@@ -606,7 +606,7 @@ void AdaptedBasisModel::uncertain_vars_to_subspace()
     cv_types[boost::indices[idx_range(0, reducedRank)]]);
 
   // Set currentVariables to means of active variables:
-  continuous_variables(mu_y);
+  current_variables().continuous_variables(mu_y);
 
   // update variable labels for adapted basis
   StringMultiArray adapted_basis_var_labels(boost::extents[reducedRank]);

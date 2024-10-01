@@ -144,8 +144,8 @@ void HierarchSurrBasedLocalMinimizer::pre_run()
 void HierarchSurrBasedLocalMinimizer::post_run(std::ostream& s)
 {
   // restore original/global bounds
-  //approxSubProbModel.continuous_variables(initialPoint);
-  //if (recastSubProb) iteratedModel.continuous_variables(initialPoint);
+  //approxSubProbModel.current_variables().continuous_variables(initialPoint);
+  //if (recastSubProb) iteratedModel.current_variables().continuous_variables(initialPoint);
   approxSubProbModel.continuous_lower_bounds(globalLowerBnds);
   approxSubProbModel.continuous_upper_bounds(globalUpperBnds);
 
@@ -406,7 +406,7 @@ void HierarchSurrBasedLocalMinimizer::build_center_truth(size_t tr_index)
   SurrBasedLevelData& tr_data = trustRegions[tr_index];
 
   // build level approximation and retrieve/correct response center truth
-  iteratedModel.active_variables(tr_data.vars_center());
+  iteratedModel.current_variables().active_variables(tr_data.vars_center());
   // update bounds (can affect finite differencing)
   iteratedModel.continuous_lower_bounds(tr_data.tr_lower_bounds());
   iteratedModel.continuous_upper_bounds(tr_data.tr_upper_bounds());
@@ -484,7 +484,7 @@ void HierarchSurrBasedLocalMinimizer::verify(size_t tr_index)
   unsigned short m_index = iteratedModel.active_truth_model_form();
   iteratedModel.component_parallel_mode(m_index + 1);
   //iteratedModel.component_parallel_mode(TRUTH_MODEL_MODE);
-  truth_model.active_variables(vars_star);
+  truth_model.current_variables().active_variables(vars_star);
   truth_model.evaluate(tr_data.active_set_star(TRUTH_RESPONSE));
 
   // Apply correction recursively so that this truth response is consistent
@@ -539,7 +539,7 @@ find_center_truth(size_t tr_index, bool search_db)
     unsigned short m_index = iteratedModel.active_truth_model_form();
     iteratedModel.component_parallel_mode(m_index + 1);
     //iteratedModel.component_parallel_mode(TRUTH_MODEL_MODE);
-    truth_model.active_variables(tr_data.vars_center());
+    truth_model.current_variables().active_variables(tr_data.vars_center());
     truth_model.evaluate(tr_data.active_set_center(TRUTH_RESPONSE));
 
     tr_data.response_center(truth_model.current_response(),
@@ -573,7 +573,7 @@ find_star_truth(size_t tr_index, bool search_db)
     unsigned short m_index = iteratedModel.active_truth_model_form();
     iteratedModel.component_parallel_mode(m_index + 1);
     //iteratedModel.component_parallel_mode(TRUTH_MODEL_MODE);
-    truth_model.active_variables(tr_data.vars_star());
+    truth_model.current_variables().active_variables(tr_data.vars_star());
     truth_model.evaluate(tr_data.active_set_star(TRUTH_RESPONSE)); // vals only
 
     tr_data.response_star(truth_model.current_response(),
@@ -597,7 +597,7 @@ void HierarchSurrBasedLocalMinimizer::find_center_approx(size_t tr_index)
     iteratedModel.component_parallel_mode(m_index + 1);
     //iteratedModel.component_parallel_mode(SURROGATE_MODEL_MODE);
     iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
-    iteratedModel.active_variables(v_center);
+    iteratedModel.current_variables().active_variables(v_center);
     iteratedModel.evaluate(tr_data.active_set_center(APPROX_RESPONSE));
     tr_data.response_center(iteratedModel.current_response(),
 			    UNCORR_APPROX_RESPONSE);
@@ -620,7 +620,7 @@ void HierarchSurrBasedLocalMinimizer::find_star_approx(size_t tr_index)
     iteratedModel.component_parallel_mode(m_index + 1);
     //iteratedModel.component_parallel_mode(SURROGATE_MODEL_MODE);
     iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
-    iteratedModel.active_variables(v_star);
+    iteratedModel.current_variables().active_variables(v_star);
     iteratedModel.evaluate(tr_data.active_set_star(APPROX_RESPONSE));
     tr_data.response_star(iteratedModel.current_response(),
 			  UNCORR_APPROX_RESPONSE);
@@ -838,7 +838,7 @@ RealVector HierarchSurrBasedLocalMinimizer::
 optimize(const RealVector &x, size_t max_iter, int index)
 {
   // Update starting point for optimization:
-  approxSubProbModel.continuous_variables(x);
+  approxSubProbModel.current_variables().continuous_variables(x);
 
   // Set the max iterations for this level:
   approxSubProbMinimizer.maximum_iterations(max_iter);

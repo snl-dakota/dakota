@@ -461,7 +461,7 @@ void EnsembleSurrModel::init_model_mapped_variables(Model& model)
       m_index = find_index(model.all_continuous_variable_labels(), surr_label);
       // push value from currentVariables to sub-ordinate variables
       if (m_index != _NPOS)
-	model.all_continuous_variable(
+	model.current_variables().all_continuous_variable(
 	  currentVariables.all_continuous_variables()[ac_index1], m_index);
     }
     else if (adi_index1 != _NPOS) {
@@ -469,7 +469,7 @@ void EnsembleSurrModel::init_model_mapped_variables(Model& model)
 	= currentVariables.all_discrete_int_variable_labels()[adi_index1];
       m_index = find_index(model.all_discrete_int_variable_labels(),surr_label);
       if (m_index != _NPOS)
-	model.all_discrete_int_variable(
+	model.current_variables().all_discrete_int_variable(
 	  currentVariables.all_discrete_int_variables()[adi_index1], m_index);
     }
     else if (ads_index1 != _NPOS) {
@@ -478,7 +478,7 @@ void EnsembleSurrModel::init_model_mapped_variables(Model& model)
       m_index = find_index(model.all_discrete_string_variable_labels(),
 			   surr_label);
       if (m_index != _NPOS)
-	model.all_discrete_string_variable(
+	model.current_variables().all_discrete_string_variable(
 	  currentVariables.all_discrete_string_variables()[ads_index1],m_index);
     }
     else if (adr_index1 != _NPOS) {
@@ -487,7 +487,7 @@ void EnsembleSurrModel::init_model_mapped_variables(Model& model)
       m_index = find_index(model.all_discrete_real_variable_labels(),
 			   surr_label);
       if (m_index != _NPOS)
-	model.all_discrete_real_variable(
+	model.current_variables().all_discrete_real_variable(
 	  currentVariables.all_discrete_real_variables()[adr_index1], m_index);
     }
     else {

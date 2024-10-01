@@ -49,11 +49,11 @@ void NonDGlobalEvidence::set_cell_bounds()
   } 
 
   for (j=0; j<numDiscSetIntUncVars; ++j)
-    intervalOptModel.discrete_int_variable(cellIntSetBounds[cellCntr][j],
+    intervalOptModel.current_variables().discrete_int_variable(cellIntSetBounds[cellCntr][j],
 					   j+numDiscIntervalVars);
 
   for (j=0; j<numDiscSetRealUncVars; ++j)
-    intervalOptModel.discrete_real_variable(cellRealSetBounds[cellCntr][j],j);
+    intervalOptModel.current_variables().discrete_real_variable(cellRealSetBounds[cellCntr][j],j);
 }
 
 
@@ -153,28 +153,28 @@ void NonDGlobalEvidence::get_best_sample(bool maximize, bool eval_approx)
       Cout << "No function evaluations were found in cell. Truth function is "
 	   << "set to DBL_MAX and approxFnStar is evaluated at midpoint.\n";
       for (i=0; i<numContIntervalVars; ++i)
-	fHatModel.continuous_variable(
+	fHatModel.current_variables().continuous_variable(
 	  ( cellContLowerBounds[cellCntr][i] + 
 	    cellContUpperBounds[cellCntr][i] ) / 2., i);
       for (i=0; i<numDiscIntervalVars; ++i)
-	fHatModel.discrete_int_variable(
+	fHatModel.current_variables().discrete_int_variable(
 	  ( cellIntRangeLowerBounds[cellCntr][i] + 
 	    cellIntRangeUpperBounds[cellCntr][i] ) / 2, i);
       for (i=0; i<numDiscSetIntUncVars; ++i)
-	fHatModel.discrete_int_variable(
+	fHatModel.current_variables().discrete_int_variable(
 	  cellIntSetBounds[cellCntr][i], i+numDiscIntervalVars);
       for (i=0; i<numDiscSetRealUncVars; ++i)
-	fHatModel.discrete_real_variable(
+	fHatModel.current_variables().discrete_real_variable(
 	  cellRealSetBounds[cellCntr][i], i);
     }
     else {
       const Pecos::SurrogateDataVars& sdv = sdv_array[index_star];
       if (numContIntervalVars)
-	fHatModel.continuous_variables(sdv.continuous_variables());
+	fHatModel.current_variables().continuous_variables(sdv.continuous_variables());
       if (numDiscIntervalVars || numDiscSetIntUncVars)
-	fHatModel.discrete_int_variables(sdv.discrete_int_variables());
+	fHatModel.current_variables().discrete_int_variables(sdv.discrete_int_variables());
       if (numDiscSetRealUncVars)
-	fHatModel.discrete_real_variables(sdv.discrete_real_variables());
+	fHatModel.current_variables().discrete_real_variables(sdv.discrete_real_variables());
     }
 		
     ActiveSet set = fHatModel.current_response().active_set();

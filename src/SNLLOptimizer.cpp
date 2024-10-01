@@ -813,7 +813,7 @@ nlf0_evaluator(int n, const RealVector& x, double& f, int& result_mode)
        lastFnEvalLocn != CON_EVALUATOR || x != lastEvalVars) {
     // data not available from constraint0_evaluator() so perform
     // a new function evaluation.
-    snllOptInstance->iteratedModel.continuous_variables(x);
+    snllOptInstance->iteratedModel.current_variables().continuous_variables(x);
     snllOptInstance->iteratedModel.evaluate();// default active set
     // Should constraints be evaluated (if present)?  Depends on what OPT++ is
     // doing.  Since we know this eval is not aligned with a preceding
@@ -885,7 +885,7 @@ nlf1_evaluator(int mode, int n, const RealVector& x, double& f,
       x != lastEvalVars) {
     // data not available from constraint0_evaluator() so perform
     // a new function evaluation.
-    snllOptInstance->iteratedModel.continuous_variables(x);
+    snllOptInstance->iteratedModel.current_variables().continuous_variables(x);
 
     // Should constraints be evaluated (if present)?  Depends on what OPT++ is
     // doing.  Since we know this eval is not aligned with a preceding
@@ -974,7 +974,7 @@ nlf2_evaluator(int mode, int n, const RealVector& x, double& f,
       x != lastEvalVars) {
     // data not available from constraint0_evaluator() so perform
     // a new function evaluation.
-    snllOptInstance->iteratedModel.continuous_variables(x);
+    snllOptInstance->iteratedModel.current_variables().continuous_variables(x);
     // Should constraints be evaluated (if present)?  Depends on what OPT++ is
     // doing.  Since we know this eval is not aligned with a preceding
     // constraint eval, assume for now that a matching constraint eval might
@@ -1027,7 +1027,7 @@ constraint0_evaluator(int n, const RealVector& x, RealVector& g,
   // set model variables prior to evaluate()
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLOptimizer::constraint0_evaluator vars = \n" << x;
-  snllOptInstance->iteratedModel.continuous_variables(x);
+  snllOptInstance->iteratedModel.current_variables().continuous_variables(x);
 
   snllOptInstance->iteratedModel.evaluate(); // default active set
   lastFnEvalLocn = CON_EVALUATOR;
@@ -1053,7 +1053,7 @@ constraint1_evaluator(int mode, int n, const RealVector& x, RealVector& g,
   // set model variables and active set prior to evaluate()
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLOptimizer::constraint1_evaluator vars = \n" << x;
-  snllOptInstance->iteratedModel.continuous_variables(x);
+  snllOptInstance->iteratedModel.current_variables().continuous_variables(x);
 
   snllOptInstance->activeSet.request_values(mode);
   snllOptInstance->iteratedModel.evaluate(snllOptInstance->activeSet);
@@ -1091,7 +1091,7 @@ constraint2_evaluator(int mode, int n, const RealVector& x, RealVector& g,
   // set model variables and active set prior to evaluate().
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLOptimizer::constraint2_evaluator vars = \n" << x;
-  snllOptInstance->iteratedModel.continuous_variables(x);
+  snllOptInstance->iteratedModel.current_variables().continuous_variables(x);
 
   snllOptInstance->activeSet.request_values(mode);
   snllOptInstance->iteratedModel.evaluate(snllOptInstance->activeSet);
@@ -1132,7 +1132,7 @@ void SNLLOptimizer::initialize_run()
 
     // convenience function from SNLLBase
     snll_initialize_run(nlfObjective, nlpConstraint,
-			iteratedModel.continuous_variables(),
+			iteratedModel.current_variables().continuous_variables(),
 			boundConstraintFlag,
 			iteratedModel.continuous_lower_bounds(),
 			iteratedModel.continuous_upper_bounds(),

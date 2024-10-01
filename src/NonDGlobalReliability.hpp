@@ -161,13 +161,13 @@ inline void NonDGlobalReliability::
 x_truth_evaluation(const RealVector& c_vars_u, short mode)
 {
   RealVector c_vars_x;
-  SizetMultiArrayConstView x_cv_ids = iteratedModel.continuous_variable_ids(),
+  SizetMultiArrayConstView x_cv_ids = iteratedModel.current_variables().continuous_variable_ids(),
     u_cv_ids = (mppSearchType == SUBMETHOD_EGRA_X) ?
-    uSpaceModel.continuous_variable_ids() :
-    uSpaceModel.subordinate_model().continuous_variable_ids();
+    uSpaceModel.current_variables().continuous_variable_ids() :
+    uSpaceModel.subordinate_model().current_variables().continuous_variable_ids();
   uSpaceModel.probability_transformation().trans_U_to_X(c_vars_u, u_cv_ids,
 							c_vars_x, x_cv_ids);
-  iteratedModel.continuous_variables(c_vars_x);
+  iteratedModel.current_variables().continuous_variables(c_vars_x);
 
   x_truth_evaluation(mode);
 }
@@ -179,7 +179,7 @@ u_truth_evaluation(const RealVector& c_vars_u, short mode)
   uSpaceModel.component_parallel_mode(TRUTH_MODEL_MODE); // Recast forwards
   uSpaceModel.surrogate_response_mode(BYPASS_SURROGATE); // Recast forwards
 
-  uSpaceModel.continuous_variables(c_vars_u);
+  uSpaceModel.current_variables().continuous_variables(c_vars_u);
   ActiveSet set = uSpaceModel.current_response().active_set();
   set.request_values(0); set.request_value(mode, respFnCount);
   uSpaceModel.evaluate(set);
@@ -193,7 +193,7 @@ u_truth_evaluation(const RealVector& c_vars_u, short mode)
 inline void NonDGlobalReliability::
 u_evaluation(const RealVector& c_vars_u, short mode)
 {
-  uSpaceModel.continuous_variables(c_vars_u);
+  uSpaceModel.current_variables().continuous_variables(c_vars_u);
   ActiveSet set = uSpaceModel.current_response().active_set();
   set.request_values(0); set.request_value(mode, respFnCount);
   uSpaceModel.evaluate(set);

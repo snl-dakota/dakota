@@ -484,7 +484,7 @@ void SeqHybridMetaIterator::run_sequential_adaptive()
       // Get best pt. from completed iteration.
       Variables vars_star = curr_iterator.variables_results();
       // Set best pt. as starting point for subsequent iterator
-      selectedModels[seqCount+1].active_variables(vars_star);
+      selectedModels[seqCount+1].current_variables().active_variables(vars_star);
     }
 
     // Send the termination message to the servers for this iterator/model

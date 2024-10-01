@@ -38,10 +38,10 @@ void RichExtrapVerification::pre_run()
   // Capture any changes resulting from the strategy layer's
   // passing of best variable info between iterators.
   if (studyType == ) {
-    copy_data(iteratedModel.continuous_variables(),     initialCVPoint); // copy
-    copy_data(iteratedModel.discrete_int_variables(),   initialDIVPoint);// copy
-    copy_data(iteratedModel.discrete_string_variables(),initialDSVPoint);// copy
-    copy_data(iteratedModel.discrete_real_variables(),  initialDRVPoint);// copy
+    copy_data(iteratedModel.current_variables().continuous_variables(),     initialCVPoint); // copy
+    copy_data(iteratedModel.current_variables().discrete_int_variables(),   initialDIVPoint);// copy
+    copy_data(iteratedModel.current_variables().discrete_string_variables(),initialDSVPoint);// copy
+    copy_data(iteratedModel.current_variables().discrete_real_variables(),  initialDRVPoint);// copy
   }
 
   size_t i, num_vars = numContinuousVars     + numDiscreteIntVars
@@ -65,7 +65,7 @@ void RichExtrapVerification::core_run()
   evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
   */
 
-  initialCVars = iteratedModel.continuous_variables();
+  initialCVars = iteratedModel.current_variables().continuous_variables();
   numFactors   = initialCVars.length();
   if (refinementRefPt.empty())
     refinementRefPt.sizeUninitialized(numFunctions);
@@ -104,13 +104,13 @@ extrapolation(const RealVector& refine_triple, RealMatrix& qoi_triples)
 
   ShortArray asrv(numFunctions, 1); // all fns can be evaluated in this case
   activeSet.request_vector(asrv);
-  iteratedModel.continuous_variables(initialCVars);// reset prior to eval triple
+  iteratedModel.current_variables().continuous_variables(initialCVars);// reset prior to eval triple
 
   for (size_t i=0; i<3; i++) {
-    iteratedModel.continuous_variable(refine_triple[i], factorIndex);
-    //iteratedModel.discrete_int_variables(di_vars);
-    //iteratedModel.discrete_string_variables(ds_vars);
-    //iteratedModel.discrete_real_variables(dr_vars);
+    iteratedModel.current_variables().continuous_variable(refine_triple[i], factorIndex);
+    //iteratedModel.current_variables().discrete_int_variables(di_vars);
+    //iteratedModel.current_variables().discrete_string_variables(ds_vars);
+    //iteratedModel.current_variables().discrete_real_variables(dr_vars);
     iteratedModel.evaluate_nowait(activeSet);
   }
   const IntResponseMap& response_map = iteratedModel.synchronize();

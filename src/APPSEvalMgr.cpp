@@ -22,7 +22,7 @@ namespace Dakota {
 
 APPSEvalMgr::APPSEvalMgr(Optimizer& opt, Model& model) :
   dakOpt(opt), iteratedModel(model), modelAsynchFlag(1), blockingSynch(0),
-  numWorkersUsed(0), numWorkersTotal(1), xTrial(model.continuous_variables())
+  numWorkersUsed(0), numWorkersTotal(1), xTrial(model.current_variables().continuous_variables())
 {
   // don't use the probDescDB so that this ctor may be used with both
   // the standard and on-the-fly APPSOptimizer ctors

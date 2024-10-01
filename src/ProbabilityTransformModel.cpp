@@ -112,76 +112,76 @@ void ProbabilityTransformModel::initialize_dakota_variable_types()
   // continuous_{probability_density,distribution_bounds,distribution_moment}())
   if (cdv)
     for (i=0; i<num_cdv; ++i, ++rv_cntr, ++cv_cntr)
-      continuous_variable_type(
+      current_variables().continuous_variable_type(
 	pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), cv_cntr);
   else
     rv_cntr += num_cdv;
   if (ddv) {
     for (i=0; i<num_ddiv; ++i, ++rv_cntr, ++div_cntr)
-      discrete_int_variable_type(
+      current_variables().discrete_int_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), div_cntr);
     for (i=0; i<num_ddsv; ++i, ++rv_cntr, ++dsv_cntr)
-      discrete_string_variable_type(
+      current_variables().discrete_string_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), dsv_cntr);
     for (i=0; i<num_ddrv; ++i, ++rv_cntr, ++drv_cntr)
-      discrete_real_variable_type(
+      current_variables().discrete_real_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), drv_cntr);
   }
   else
     rv_cntr += num_ddiv + num_ddsv + num_ddrv;
   if (cauv)
     for (i=0; i<num_cauv; ++i, ++rv_cntr, ++cv_cntr)
-      continuous_variable_type(
+      current_variables().continuous_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), cv_cntr);
   else
     rv_cntr += num_cauv;
   if (dauv) {
     for (i=0; i<num_dauiv; ++i, ++rv_cntr, ++div_cntr)
-      discrete_int_variable_type(
+      current_variables().discrete_int_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), div_cntr);
     for (i=0; i<num_dausv; ++i, ++rv_cntr, ++dsv_cntr)
-      discrete_string_variable_type(
+      current_variables().discrete_string_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), dsv_cntr);
     for (i=0; i<num_daurv; ++i, ++rv_cntr, ++drv_cntr)
-      discrete_real_variable_type(
+      current_variables().discrete_real_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), drv_cntr);
   }
   else
     rv_cntr += num_dauiv + num_dausv + num_daurv;
   if (ceuv)
     for (i=0; i<num_ceuv; ++i, ++rv_cntr, ++cv_cntr)
-      continuous_variable_type(
+      current_variables().continuous_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), cv_cntr);
   else
     rv_cntr += num_ceuv;
   if (deuv) {
     for (i=0; i<num_deuiv; ++i, ++rv_cntr, ++div_cntr)
-      discrete_int_variable_type(
+      current_variables().discrete_int_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), div_cntr);
     for (i=0; i<num_deusv; ++i, ++rv_cntr, ++dsv_cntr)
-      discrete_string_variable_type(
+      current_variables().discrete_string_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), dsv_cntr);
     for (i=0; i<num_deurv; ++i, ++rv_cntr, ++drv_cntr)
-      discrete_real_variable_type(
+      current_variables().discrete_real_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), drv_cntr);
   }
   else
     rv_cntr += num_deuiv + num_deusv + num_deurv;
   if (csv)
     for (i=0; i<num_csv; ++i, ++rv_cntr, ++cv_cntr)
-      continuous_variable_type(
+      current_variables().continuous_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), cv_cntr);
   else
     rv_cntr += num_csv;
   if (dsv) {
     for (i=0; i<num_dsiv; ++i, ++rv_cntr, ++div_cntr)
-      discrete_int_variable_type(
+      current_variables().discrete_int_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), div_cntr);
     for (i=0; i<num_dssv; ++i, ++rv_cntr, ++dsv_cntr)
-      discrete_string_variable_type(
+      current_variables().discrete_string_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), dsv_cntr);
     for (i=0; i<num_dsrv; ++i, ++rv_cntr, ++drv_cntr)
-      discrete_real_variable_type(
+      current_variables().discrete_real_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), drv_cntr);
   }
   //else

@@ -267,7 +267,7 @@ void NonDEnsembleSampling::initialize_final_statistics()
   case ESTIMATOR_PERFORMANCE: { // MSE in stat goal(s) used for method selection
     size_t num_final = 2;
     ActiveSet set(num_final);//, num_active_vars); // default RV = 1
-    set.derivative_vector(iteratedModel.inactive_continuous_variable_ids());
+    set.derivative_vector(iteratedModel.current_variables().inactive_continuous_variable_ids());
     finalStatistics = Response(SIMULATION_RESPONSE, set);
 
     StringArray stats_labels(num_final);

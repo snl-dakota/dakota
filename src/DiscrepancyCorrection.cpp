@@ -30,7 +30,7 @@ initialize(Model& surr_model, const SizetSet& surr_fn_indices,
 	   String approx_type, short approx_order)
 {
   surrModel = surr_model; // shallow copy
-  numFns = surr_model.qoi(); numVars = surr_model.cv();
+  numFns = surr_model.qoi(); numVars = surr_model.current_variables().cv();
 
   surrogateFnIndices = surr_fn_indices;
   // = surrModel.surrogate_function_indices() would work for DataFitSurrModel,
@@ -856,7 +856,7 @@ search_db(const Variables& search_vars, const ShortArray& search_asv)
 
   if (cache_it == data_pairs.get<hashed>().end()) {
     // perform approx fn eval to retrieve missing data
-    surrModel.active_variables(search_vars);
+    surrModel.current_variables().active_variables(search_vars);
     surrModel.evaluate(search_set);
     return surrModel.current_response();
   }
