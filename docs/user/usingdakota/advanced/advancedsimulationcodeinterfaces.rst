@@ -506,7 +506,7 @@ The Python direct driver is selected with, for example,
      interface,
        python
          # numpy
-         analysis_drivers = 'python_module:analysis_function'
+         analysis_drivers = 'python_module.analysis_function'
 
 where ``python_module`` denotes the module (file ``python_module.py``)
 Dakota will attempt
