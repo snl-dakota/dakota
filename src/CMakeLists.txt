@@ -412,7 +412,7 @@ set(util_src ParallelLibrary.cpp IteratorScheduler.cpp MPIPackBuffer.cpp
     DakotaTPLDataTransfer.cpp RestartVersion.cpp tolerance_intervals.cpp
     ParametersFileWriter.cpp ApreproParametersFileWriter.cpp StandardParametersFileWriter.cpp
     JSONParametersFileWriter.cpp ResultsFileReader.cpp StandardResultsFileReader.cpp
-    JSONResultsFileReader.cpp JSONResultsParser.cpp
+    JSONResultsFileReader.cpp JSONResultsParser.cpp model_utils.cpp
     )
 
 if(DAKOTA_HAVE_HDF5)

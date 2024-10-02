@@ -20,6 +20,7 @@
 
 #include "dakota_system_defs.hpp"
 #include "DakotaModel.hpp"
+#include "model_utils.hpp"
 // Needed for adapter utils
 #include "DakotaOptimizer.hpp"
 
@@ -86,7 +87,7 @@ void COLINApplication::set_problem(Model& model) {
     num_dsv = model.current_variables().dsv(), num_dv = num_div + num_drv + num_dsv;
   _num_int_vars = num_dv;
   if (num_dv) {
-    const BitArray&       di_set_bits = model.discrete_int_sets();
+    const BitArray&       di_set_bits = ModelUtils::discrete_int_sets(model);
     const IntVector&      lower_bnds  = model.discrete_int_lower_bounds();
     const IntVector&      upper_bnds  = model.discrete_int_upper_bounds();
     const IntSetArray&    dsiv_values = model.discrete_set_int_values();
