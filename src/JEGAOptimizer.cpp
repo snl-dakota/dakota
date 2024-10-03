@@ -1452,7 +1452,7 @@ JEGAOptimizer::LoadTheDesignVariables(
     }
 
     // Next, load in the "discrete set of real" variables.
-    const RealSetArray& dsrv = m.discrete_set_real_values();
+    const RealSetArray& dsrv = ModelUtils::discrete_set_real_values(m);
     StringMultiArrayConstView drlabels = m.discrete_real_variable_labels();
     for(i=0; i<this->numDiscreteRealVars; ++i)
     {
@@ -1466,7 +1466,7 @@ JEGAOptimizer::LoadTheDesignVariables(
     // Finally, load in the "discrete set of string" variables. These must
     // be mapped to discrete integer variables.
     StringMultiArrayConstView dslabels = m.discrete_string_variable_labels();
-    const StringSetArray& dssv_values = m.discrete_set_string_values();
+    const StringSetArray& dssv_values = ModelUtils::discrete_set_string_values(m);
     for (i=0; i<this->numDiscreteStringVars; ++i) {
       const size_t &num_elements = dssv_values[i].size(); //assume > 0
       IntArray element_index(num_elements);
@@ -2048,7 +2048,7 @@ JEGAOptimizer::Evaluator::SeparateVariables(
     // Finally, process the "discrete set of string" variables.
     // These will also be discrete in JEGA, and must be mapped
     // back to their associated string values.
-    const StringSetArray& dssv_values = _model.discrete_set_string_values();
+    const StringSetArray& dssv_values = ModelUtils::discrete_set_string_values(_model);
     for(i=0; i<num_dsv; ++i, ++dvi_cntr)
     {
       EDDY_ASSERT(dvis[dvi_cntr]->IsDiscrete());

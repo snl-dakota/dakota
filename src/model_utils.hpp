@@ -15,5 +15,17 @@ namespace Dakota {
         /// return the sets of values available for each of the active
         /// discrete set integer variables (aggregated in activeDiscSetIntValues)
         const IntSetArray& discrete_set_int_values(Model &model, short active_view);
+        /// return the sets of values available for each of the active
+        /// discrete set string variables (aggregated in activeDiscSetStringValues)
+        const StringSetArray& discrete_set_string_values(Model &model);
+        /// return the sets of values available for each of the active
+        /// discrete set string variables (aggregated in activeDiscSetStringValues)
+        const StringSetArray& discrete_set_string_values(Model &model, short active_view);
+        /// return the sets of values available for each of the active
+        /// discrete set real variables (aggregated in activeDiscSetRealValues)
+        const RealSetArray& discrete_set_real_values(Model &model);
+        /// return the sets of values available for each of the active
+        /// discrete set real variables (aggregated in activeDiscSetRealValues)
+        const RealSetArray& discrete_set_real_values(Model &model, short active_view);
     }
 }

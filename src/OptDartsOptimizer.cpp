@@ -143,7 +143,7 @@ void OptDartsOptimizer::load_parameters(Model &model)
 
      const BitArray& int_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
      const IntSetArray& initial_point_set_int = ModelUtils::discrete_set_int_values(iteratedModel);
-     const RealSetArray& initial_point_set_real = iteratedModel.discrete_set_real_values();
+     const RealSetArray& initial_point_set_real = ModelUtils::discrete_set_real_values(iteratedModel);
 
      // Define Output Types
      // responses.

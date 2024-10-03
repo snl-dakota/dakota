@@ -302,6 +302,289 @@ namespace Dakota {
             return adsi_vals;
         }
 
+        const StringSetArray& discrete_set_string_values(Model &model) {
+                return discrete_set_string_values(model, model.current_variables().view().first);
+        }
+
+        const StringSetArray& discrete_set_string_values(Model &model, short active_view) {
+
+            // aggregation of the admissible value sets for all active discrete
+            // set string variables
+            StringSetArray adss_vals;
+
+            auto &mvd = model.multivariate_distribution();
+            auto &cv = model.current_variables();
+
+            std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+                std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+                (mvd.multivar_dist_rep());
+            const SharedVariablesData& svd = cv.shared_data();
+            switch (active_view) {
+                case MIXED_DESIGN: case RELAXED_DESIGN: {
+                    size_t num_cv, num_div, num_dsv, num_drv;      
+                    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+                    mvd_rep->pull_parameters<StringSet>(num_cv + num_div, num_dsv,
+                    Pecos::DSS_VALUES, adss_vals);
+                    break;
+                }
+                case MIXED_ALEATORY_UNCERTAIN: case RELAXED_ALEATORY_UNCERTAIN: {
+                    StringRealMapArray h_pt_prs;
+                    mvd_rep->pull_parameters<StringRealMap>(Pecos::HISTOGRAM_PT_STRING,
+                    Pecos::H_PT_STR_PAIRS, h_pt_prs);
+                    size_t i, num_dauss = h_pt_prs.size();
+                    adss_vals.resize(num_dauss);
+                    for (i=0; i<num_dauss; ++i)
+                        map_keys_to_set(h_pt_prs[i], adss_vals[i]);
+                    break;
+                }
+                case MIXED_EPISTEMIC_UNCERTAIN: case RELAXED_EPISTEMIC_UNCERTAIN: {
+                    StringRealMapArray deuss_vals_probs;
+                    mvd_rep->pull_parameters<StringRealMap>(
+                    Pecos::DISCRETE_UNCERTAIN_SET_STRING, Pecos::DUSS_VALUES_PROBS,
+                    deuss_vals_probs);
+                    size_t i, num_deuss = deuss_vals_probs.size();
+                    adss_vals.resize(num_deuss);
+                    for (i=0; i<num_deuss; ++i)
+                        map_keys_to_set(deuss_vals_probs[i], adss_vals[i]);
+                    break;
+                }
+                case MIXED_UNCERTAIN: case RELAXED_UNCERTAIN: {
+                    StringRealMapArray h_pt_prs, deuss_vals_probs;
+                    mvd_rep->pull_parameters<StringRealMap>(Pecos::HISTOGRAM_PT_STRING,
+                    Pecos::H_PT_STR_PAIRS, h_pt_prs);
+                    mvd_rep->pull_parameters<StringRealMap>(
+                    Pecos::DISCRETE_UNCERTAIN_SET_STRING,
+                    Pecos::DUSS_VALUES_PROBS, deuss_vals_probs);
+                    size_t i, num_dauss = h_pt_prs.size(), num_deuss = deuss_vals_probs.size();
+                    adss_vals.resize(num_dauss + num_deuss);
+                    for (i=0; i<num_dauss; ++i)
+                        map_keys_to_set(h_pt_prs[i], adss_vals[i]);
+                    for (i=0; i<num_deuss; ++i)
+                        map_keys_to_set(deuss_vals_probs[i],
+                            adss_vals[i+num_dauss]);
+                    break;
+                }
+                case MIXED_STATE: case RELAXED_STATE: {
+                    size_t num_cv, num_div, num_dsv, num_drv, start_rv = 0;
+                    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+                    start_rv += num_cv + num_div + num_dsv + num_drv;
+                    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+                    start_rv += num_cv + num_div + num_dsv + num_drv;
+                    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+                    start_rv += num_cv + num_div + num_dsv + num_drv;
+                    svd.state_counts(num_cv, num_div, num_dsv, num_drv);
+                    start_rv += num_cv + num_div;
+                    mvd_rep->pull_parameters<StringSet>(start_rv, num_dsv, Pecos::DSS_VALUES,
+                                    adss_vals);
+                    break;
+                }
+                case MIXED_ALL: case RELAXED_ALL: {
+                    StringRealMapArray h_pt_prs, deuss_vals_probs;
+                    mvd_rep->pull_parameters<StringRealMap>(Pecos::HISTOGRAM_PT_STRING,
+                    Pecos::H_PT_STR_PAIRS, h_pt_prs);
+                    mvd_rep->pull_parameters<StringRealMap>(
+                    Pecos::DISCRETE_UNCERTAIN_SET_STRING, Pecos::DUSS_VALUES_PROBS,
+                    deuss_vals_probs);
+                    size_t i, ds_cntr = 0,
+                    num_ddss  = svd.vc_lookup(DISCRETE_DESIGN_SET_STRING),
+                    num_dauss = h_pt_prs.size(), num_deuss= deuss_vals_probs.size(),
+                    num_dsss  = svd.vc_lookup(DISCRETE_STATE_SET_STRING);
+                    adss_vals.resize(num_ddss + num_dauss +
+                                    num_deuss + num_dsss);
+                    size_t num_cv, num_div, num_dsv, num_drv;
+                    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+                    size_t rv_cntr = num_cv + num_div;
+                    for (i=0; i<num_ddss; ++i, ++rv_cntr, ++ds_cntr)
+                        mvd_rep->pull_parameter<StringSet>(rv_cntr, Pecos::DSS_VALUES,
+                                    adss_vals[ds_cntr]);
+                    rv_cntr += num_drv;
+                    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+                    for (i=0; i<num_dauss; ++i, ++ds_cntr)
+                        map_keys_to_set(h_pt_prs[i], adss_vals[ds_cntr]);
+                    rv_cntr += num_cv + num_div + num_dsv + num_drv;
+                    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+                    for (i=0; i<num_deuss; ++i, ++ds_cntr)
+                        map_keys_to_set(deuss_vals_probs[i], adss_vals[ds_cntr]);
+                    rv_cntr += num_cv + num_div + num_dsv + num_drv;
+                    svd.state_counts(num_cv, num_div, num_dsv, num_drv);
+                    rv_cntr += num_cv + num_div;
+                    for (i=0; i<num_dsss; ++i, ++rv_cntr, ++ds_cntr)
+                        mvd_rep->pull_parameter<StringSet>(rv_cntr, Pecos::DSS_VALUES,
+                                    adss_vals[ds_cntr]);
+                    break;
+                }
+            }
+
+
+            return adss_vals;
+        }
+
+
+        const RealSetArray& discrete_set_real_values(Model &model) {
+                return discrete_set_real_values(model, model.current_variables().view().first);
+        }
+
+        const RealSetArray& discrete_set_real_values(Model &model, short active_view) {
+            // aggregation of the admissible value sets for all active discrete
+            // set real variables
+            RealSetArray adsr_vals;
+
+            auto &mvd = model.multivariate_distribution();
+            auto &cv = model.current_variables();
+
+
+            std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+                std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
+                (mvd.multivar_dist_rep());
+            const SharedVariablesData& svd = cv.shared_data();
+            switch (active_view) {
+                case MIXED_DESIGN: {
+                    size_t num_cv, num_div, num_dsv, num_drv;      
+                    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+                    mvd_rep->pull_parameters<RealSet>(num_cv + num_div + num_dsv, num_drv,
+                    Pecos::DSR_VALUES, adsr_vals);
+                    break;
+                }
+                case MIXED_ALEATORY_UNCERTAIN: {
+                    RealRealMapArray h_pt_prs;
+                    mvd_rep->pull_parameters<RealRealMap>(Pecos::HISTOGRAM_PT_REAL,
+                    Pecos::H_PT_REAL_PAIRS, h_pt_prs);
+                    size_t i, num_dausr = h_pt_prs.size();
+                    adsr_vals.resize(num_dausr);
+                    for (i=0; i<num_dausr; ++i)
+                        map_keys_to_set(h_pt_prs[i], adsr_vals[i]);
+                    break;
+                }
+                case MIXED_EPISTEMIC_UNCERTAIN: {
+                    RealRealMapArray deusr_vals_probs;
+                    mvd_rep->pull_parameters<RealRealMap>(Pecos::DISCRETE_UNCERTAIN_SET_REAL,
+                    Pecos::DUSR_VALUES_PROBS, deusr_vals_probs);
+                    size_t i, num_deusr = deusr_vals_probs.size();
+                    adsr_vals.resize(num_deusr);
+                    for (i=0; i<num_deusr; ++i)
+                        map_keys_to_set(deusr_vals_probs[i], adsr_vals[i]);
+                    break;
+                }
+                case MIXED_UNCERTAIN: {
+                    RealRealMapArray h_pt_prs, deusr_vals_probs;
+                    mvd_rep->pull_parameters<RealRealMap>(Pecos::HISTOGRAM_PT_REAL,
+                    Pecos::H_PT_REAL_PAIRS, h_pt_prs);
+                    mvd_rep->pull_parameters<RealRealMap>(Pecos::DISCRETE_UNCERTAIN_SET_REAL,
+                    Pecos::DUSR_VALUES_PROBS, deusr_vals_probs);
+                    size_t i, num_dausr = h_pt_prs.size(), num_deusr = deusr_vals_probs.size();
+                    adsr_vals.resize(num_dausr + num_deusr);
+                    for (i=0; i<num_dausr; ++i)
+                        map_keys_to_set(h_pt_prs[i], adsr_vals[i]);
+                    for (i=0; i<num_deusr; ++i)
+                        map_keys_to_set(deusr_vals_probs[i],adsr_vals[i+num_dausr]);
+                    break;
+                }
+                case MIXED_STATE: {
+                    size_t num_cv, num_div, num_dsv, num_drv, start_rv = 0;
+                    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+                    start_rv += num_cv + num_div + num_dsv + num_drv;
+                    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+                    start_rv += num_cv + num_div + num_dsv + num_drv;
+                    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+                    start_rv += num_cv + num_div + num_dsv + num_drv;
+                    svd.state_counts(num_cv, num_div, num_dsv, num_drv);
+                    start_rv += num_cv + num_div + num_dsv;
+                    mvd_rep->pull_parameters<RealSet>(start_rv, num_drv, Pecos::DSR_VALUES,
+                                    adsr_vals);
+                    break;
+                }
+                case MIXED_ALL: {
+                    RealRealMapArray h_pt_prs, deusr_vals_probs;
+                    mvd_rep->pull_parameters<RealRealMap>(Pecos::HISTOGRAM_PT_REAL,
+                    Pecos::H_PT_REAL_PAIRS, h_pt_prs);
+                    mvd_rep->pull_parameters<RealRealMap>(Pecos::DISCRETE_UNCERTAIN_SET_REAL,
+                    Pecos::DUSR_VALUES_PROBS, deusr_vals_probs);
+                    size_t i, dr_cntr = 0, num_dausr = h_pt_prs.size(),
+                    num_deusr = deusr_vals_probs.size(),
+                    num_dssr  = svd.vc_lookup(DISCRETE_STATE_SET_REAL);
+                    size_t num_cv, num_div, num_dsv, num_drv;
+                    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+                    adsr_vals.resize(num_drv + num_dausr + num_deusr + num_dssr);
+                    size_t rv_cntr = num_cv + num_div + num_dsv;
+                    for (i=0; i<num_drv; ++i, ++rv_cntr, ++dr_cntr)
+                        mvd_rep->pull_parameter<RealSet>(rv_cntr, Pecos::DSR_VALUES,
+                                    adsr_vals[dr_cntr]);
+                    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+                    for (i=0; i<num_dausr; ++i, ++dr_cntr)
+                        map_keys_to_set(h_pt_prs[i], adsr_vals[dr_cntr]);
+                    rv_cntr += num_cv + num_div + num_dsv + num_drv;
+                    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+                    for (i=0; i<num_deusr; ++i, ++dr_cntr)
+                        map_keys_to_set(deusr_vals_probs[i], adsr_vals[dr_cntr]);
+                    rv_cntr += num_cv + num_div + num_dsv + num_drv;
+                    svd.state_counts(num_cv, num_div, num_dsv, num_drv);
+                    rv_cntr += num_cv + num_div + num_dsv;
+                    for (i=0; i<num_drv; ++i, ++rv_cntr, ++dr_cntr)
+                        mvd_rep->pull_parameter<RealSet>(rv_cntr, Pecos::DSR_VALUES,
+                                    adsr_vals[dr_cntr]);
+                    break;
+                }
+                default: { // RELAXED_*
+                    const BitArray&    all_relax_dr = svd.all_relaxed_discrete_real();
+                    const SizetArray&    all_totals = svd.components_totals();
+                    const SizetArray& active_totals = svd.active_components_totals();
+                    size_t i, num_cv, num_div, num_dsv, num_drv,
+                        dr_cntr = 0, ardr_cntr = 0, rv_cntr = 0;
+                    // discrete design
+                    svd.design_counts(num_cv, num_div, num_dsv, num_drv);
+                    if (active_totals[TOTAL_DDRV]) {
+                        rv_cntr = num_cv + num_div + num_dsv;
+                        for (i=0; i<num_drv; ++i, ++ardr_cntr, ++rv_cntr)
+                            if (!all_relax_dr[ardr_cntr]) // part of active discrete vars
+                                mvd_rep->pull_parameter<RealSet>(rv_cntr, Pecos::DSR_VALUES,
+                                        adsr_vals[dr_cntr++]);
+                    } else {
+                        ardr_cntr += num_drv;
+                        rv_cntr   += num_cv + num_div + num_dsv + num_drv;
+                    }
+                    // discrete aleatory uncertain
+                    svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+                    if (active_totals[TOTAL_DAURV]) {
+                        RealRealMapArray h_pt_prs;
+                        mvd_rep->pull_parameters<RealRealMap>(Pecos::HISTOGRAM_PT_REAL,
+                            Pecos::H_PT_REAL_PAIRS, h_pt_prs);
+                        size_t num_dausr = h_pt_prs.size(); 
+                        for (i=0; i<num_dausr; ++i, ++ardr_cntr)
+                            if (!all_relax_dr[ardr_cntr]) // part of active discrete vars
+                                map_keys_to_set(h_pt_prs[i], adsr_vals[dr_cntr++]);
+                    } else
+                        ardr_cntr += num_drv;
+                    rv_cntr += num_cv + num_div + num_dsv + num_drv;
+                    // discrete epistemic uncertain
+                    svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+                    if (active_totals[TOTAL_DEURV]) {
+                        RealRealMapArray deusr_vals_probs;
+                        mvd_rep->pull_parameters<RealRealMap>(Pecos::DISCRETE_UNCERTAIN_SET_REAL,
+                            Pecos::DUSR_VALUES_PROBS, deusr_vals_probs);
+                        size_t num_deusr = deusr_vals_probs.size();
+                        for (i=0; i<num_deusr; ++i, ++ardr_cntr)
+                            if (!all_relax_dr[ardr_cntr]) // part of active discrete vars
+                                map_keys_to_set(deusr_vals_probs[i],
+                                    adsr_vals[dr_cntr++]);
+                    } else
+                        ardr_cntr += num_drv;
+                    rv_cntr += num_cv + num_div + num_dsv + num_drv;
+                    // discrete state
+                    if (active_totals[TOTAL_DSRV]) {
+                        svd.state_counts(num_cv, num_div, num_dsv, num_drv);
+                        rv_cntr += num_cv + num_div + num_dsv;
+                        for (i=0; i<num_drv; ++i, ++ardr_cntr, ++rv_cntr)
+                            if (!all_relax_dr[ardr_cntr]) // part of active discrete vars
+                                mvd_rep->pull_parameter<RealSet>(rv_cntr, Pecos::DSR_VALUES,
+                                        adsr_vals[dr_cntr++]);
+                    }
+                    break;
+                }
+            }
+
+            return adsr_vals;
+        }
+
 
     }
 }

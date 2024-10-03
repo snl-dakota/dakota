@@ -174,8 +174,8 @@ bool get_variable_bounds( Model &                   model, // would like to make
 
   const BitArray& int_set_bits = ModelUtils::discrete_int_sets(model); // appears to be able to modify the model object ...
   const IntSetArray& init_pt_set_int = ModelUtils::discrete_set_int_values(model);
-  const RealSetArray& init_pt_set_real = model.discrete_set_real_values();
-  const StringSetArray& init_pt_set_string = model.discrete_set_string_values();
+  const RealSetArray& init_pt_set_real = ModelUtils::discrete_set_real_values(model);
+  const StringSetArray& init_pt_set_string = ModelUtils::discrete_set_string_values(model);
 
   // Sanity checks ?
 
@@ -810,8 +810,8 @@ void set_variables( const VectorType & source,
 
   const BitArray& int_set_bits = ModelUtils::discrete_int_sets(model);
   const IntSetArray& set_int_vars = ModelUtils::discrete_set_int_values(model);
-  const RealSetArray& set_real_vars = model.discrete_set_real_values();
-  const StringSetArray& set_string_vars = model.discrete_set_string_values();
+  const RealSetArray& set_real_vars = ModelUtils::discrete_set_real_values(model);
+  const StringSetArray& set_string_vars = ModelUtils::discrete_set_string_values(model);
 
   RealVector contVars(num_cont_vars);
   IntVector  discIntVars(num_disc_int_vars);
@@ -858,8 +858,8 @@ void get_variables( Model & model,
 
   const BitArray& int_set_bits = ModelUtils::discrete_int_sets(model);
   const IntSetArray& pt_set_int = ModelUtils::discrete_set_int_values(model);
-  const RealSetArray& pt_set_real = model.discrete_set_real_values();
-  const StringSetArray& pt_set_string = model.discrete_set_string_values();
+  const RealSetArray& pt_set_real = ModelUtils::discrete_set_real_values(model);
+  const StringSetArray& pt_set_string = ModelUtils::discrete_set_string_values(model);
 
   int offset = 0;
   copy_data_partial(cvars, 0, vec, offset, cvars.length());

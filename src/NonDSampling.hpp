@@ -11,6 +11,7 @@
 #define NOND_SAMPLING_H
 
 #include "dakota_data_types.hpp"
+#include "model_utils.hpp"
 #include "DakotaNonD.hpp"
 #include "LHSDriver.hpp"
 #include "SensAnalysisGlobal.hpp"
@@ -645,7 +646,7 @@ sample_to_type(const Real* sample_vars, Variables& vars, size_t& cv_index,
     // Note: Model::activeDiscSetStringValues is cached, so no penalty for
     //       repeated query with same view
     sample_to_dsv(sample_vars, vars, dsv_index, num_dsv, samp_index,
-		  model.discrete_set_string_values(all_view));
+		  ModelUtils::discrete_set_string_values(model, all_view));
   }
   sample_to_drv(sample_vars, vars, drv_index, num_drv, samp_index);
 }
@@ -664,7 +665,7 @@ sample_to_cv_type(const Real* sample_vars, Variables& vars, size_t& cv_index,
   //if (num_dsv) {
     //short active_view = vars.view().first, all_view = () ? : ;
     //sample_to_dsv(sample_vars, vars, dsv_index,num_dsv,samp_index,
-    //              model.discrete_set_string_values(all_view));
+    //              ModelUtils::discrete_set_string_values(model, all_view));
   //}
   //sample_to_drv(sample_vars, vars, drv_index, num_drv, samp_index);
 }

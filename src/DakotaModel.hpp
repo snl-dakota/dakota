@@ -11,6 +11,7 @@
 #define DAKOTA_MODEL_H
 
 #include "dakota_data_types.hpp"
+#include "model_utils.hpp"
 #include "MPIManager.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaVariables.hpp"
@@ -643,24 +644,6 @@ public:
 
   // VARIABLES
 
-  // define and return discreteStringSets
-  //const BitArray& discrete_string_sets();
-  // define and return discreteRealSets
-  //const BitArray& discrete_real_sets();
-
-
-  /// return the sets of values available for each of the active
-  /// discrete set string variables (aggregated in activeDiscSetStringValues)
-  const StringSetArray& discrete_set_string_values();
-  /// return the sets of values available for each of the active
-  /// discrete set string variables (aggregated in activeDiscSetStringValues)
-  const StringSetArray& discrete_set_string_values(short active_view);
-  /// return the sets of values available for each of the active
-  /// discrete set real variables (aggregated in activeDiscSetRealValues)
-  const RealSetArray& discrete_set_real_values();
-  /// return the sets of values available for each of the active
-  /// discrete set real variables (aggregated in activeDiscSetRealValues)
-  const RealSetArray& discrete_set_real_values(short active_view);
 
   /// return mvDist
   Pecos::MultivariateDistribution& multivariate_distribution();
@@ -1542,27 +1525,6 @@ private:
   /// used to cache the data returned from derived_synchronize_nowait() prior
   /// to sequential input into the graphics
   IntResponseMap graphicsRespMap;
-
-  /// aggregation of the admissible value sets for all active discrete
-  /// set string variables
-  StringSetArray activeDiscSetStringValues;
-  /// aggregation of the admissible value sets for all active discrete
-  /// set real variables
-  RealSetArray activeDiscSetRealValues;
-  // key for identifying discrete string set variables within the active
-  // discrete string variables
-  //BitArray discreteStringSets;
-  // key for identifying discrete real set variables within the active
-  // discrete real variables
-  //BitArray discreteRealSets;
-
-  /// previous view used in discrete_set_string_values(view): avoids
-  /// recomputation of activeDiscSetStringValues
-  short prevDSSView;
-  /// previous view used in discrete_set_real_values(view): avoids
-  /// recomputation of activeDiscSetRealValues
-  short prevDSRView;
-
   /// used to collect sub-models for subordinate_models()
   ModelList modelList;
   /// a key indicating which models within a model recursion involve recasting
@@ -1669,25 +1631,6 @@ inline void Model::discrete_state_set_real_values(const RealSetArray& rsa)
   else          discreteStateSetRealValues = rsa;
 }
 */
-
-inline const StringSetArray& Model::discrete_set_string_values()
-{
-  if (modelRep)
-    return modelRep->
-      discrete_set_string_values(modelRep->currentVariables.view().first);
-  else
-    return discrete_set_string_values(currentVariables.view().first);
-}
-
-
-inline const RealSetArray& Model::discrete_set_real_values()
-{
-  if (modelRep)
-    return modelRep->
-      discrete_set_real_values(modelRep->currentVariables.view().first);
-  else
-    return discrete_set_real_values(currentVariables.view().first);
-}
 
 
 inline Pecos::MultivariateDistribution& Model::multivariate_distribution()

@@ -91,8 +91,8 @@ void COLINApplication::set_problem(Model& model) {
     const IntVector&      lower_bnds  = model.discrete_int_lower_bounds();
     const IntVector&      upper_bnds  = model.discrete_int_upper_bounds();
     const IntSetArray&    dsiv_values = ModelUtils::discrete_set_int_values(model);
-    const RealSetArray&   dsrv_values = model.discrete_set_real_values();
-    const StringSetArray& dssv_values = model.discrete_set_string_values();
+    const RealSetArray&   dsrv_values = ModelUtils::discrete_set_real_values(model);
+    const StringSetArray& dssv_values = ModelUtils::discrete_set_string_values(model);
     // Need temporary storage in which to consolidate all types of
     // discrete variables;
 
@@ -365,8 +365,8 @@ colin_request_to_dakota_request(const utilib::Any &domain,
 
   const     BitArray&   di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
   const IntSetArray&    dsiv_values = ModelUtils::discrete_set_int_values(iteratedModel);
-  const RealSetArray&   dsrv_values = iteratedModel.discrete_set_real_values();
-  const StringSetArray& dssv_values = iteratedModel.discrete_set_string_values();
+  const RealSetArray&   dsrv_values = ModelUtils::discrete_set_real_values(iteratedModel);
+  const StringSetArray& dssv_values = ModelUtils::discrete_set_string_values(iteratedModel);
 
   // Assign COLIN integer variables to DAKOTA discrete integer variables.
   // Remember, COLIN is operating on the index for the set discrete

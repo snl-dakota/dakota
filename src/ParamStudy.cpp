@@ -399,7 +399,7 @@ void ParamStudy::post_run(std::ostream& s)
   bool log_resp_flag = (!subIteratorFlag);
   if (methodName == MULTIDIM_PARAMETER_STUDY && log_resp_flag) {
     pStudyDACESensGlobal.compute_correlations(allVariables, allResponses, 
-      iteratedModel.discrete_set_string_values()); // to map string variable
+      ModelUtils::discrete_set_string_values(iteratedModel)); // to map string variable
                                                    // values back to indices
     if(resultsDB.active()) {
       pStudyDACESensGlobal.archive_correlations(run_identifier(), resultsDB,
@@ -444,8 +444,8 @@ void ParamStudy::vector_loop()
 
   const BitArray&      di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
   const IntSetArray&    dsi_values = ModelUtils::discrete_set_int_values(iteratedModel);
-  const StringSetArray& dss_values = iteratedModel.discrete_set_string_values();
-  const RealSetArray&   dsr_values = iteratedModel.discrete_set_real_values();
+  const StringSetArray& dss_values = ModelUtils::discrete_set_string_values(iteratedModel);
+  const RealSetArray&   dsr_values = ModelUtils::discrete_set_real_values(iteratedModel);
   size_t i, j, dsi_cntr;
 
   for (i=0; i<=numSteps; ++i) {
@@ -545,7 +545,7 @@ void ParamStudy::centered_loop()
   }
 
   // Evaluate +/- steps for each discrete string variable
-  const StringSetArray& dss_values = iteratedModel.discrete_set_string_values();
+  const StringSetArray& dss_values = ModelUtils::discrete_set_string_values(iteratedModel);
   for (k=0; k<numDiscreteStringVars; ++k) {
     int i, num_steps_k = discStringStepsPerVariable[k];
     const StringSet& dss_vals_k = dss_values[k];
@@ -559,7 +559,7 @@ void ParamStudy::centered_loop()
   }
 
   // Evaluate +/- steps for each discrete real variable
-  const RealSetArray& dsr_values = iteratedModel.discrete_set_real_values();
+  const RealSetArray& dsr_values = ModelUtils::discrete_set_real_values(iteratedModel);
   for (k=0; k<numDiscreteRealVars; ++k) {
     int i, num_steps_k = discRealStepsPerVariable[k];
     const RealSet& dsr_vals_k = dsr_values[k];
@@ -581,8 +581,8 @@ void ParamStudy::multidim_loop()
 
   const BitArray&      di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
   const IntSetArray&    dsi_values = ModelUtils::discrete_set_int_values(iteratedModel);
-  const StringSetArray& dss_values = iteratedModel.discrete_set_string_values();
-  const RealSetArray&   dsr_values = iteratedModel.discrete_set_real_values();
+  const StringSetArray& dss_values = ModelUtils::discrete_set_string_values(iteratedModel);
+  const RealSetArray&   dsr_values = ModelUtils::discrete_set_real_values(iteratedModel);
   size_t i, j, p_cntr, dsi_cntr,
     num_c_di_vars    = numContinuousVars + numDiscreteIntVars,
     num_c_di_ds_vars = num_c_di_vars + numDiscreteStringVars,
@@ -696,7 +696,7 @@ load_distribute_points(const String& points_filename,
       }
 
     // validate discrete string sets read
-    const StringSetArray& dss_vals = iteratedModel.discrete_set_string_values();
+    const StringSetArray& dss_vals = ModelUtils::discrete_set_string_values(iteratedModel);
     for (size_t j=0; j<numDiscreteStringVars; ++j)
       if (set_value_to_index(listDSVPoints[i][j], dss_vals[j]) == _NPOS) {
         Cerr << "\nError: list value " << listDSVPoints[i][j] 
@@ -705,7 +705,7 @@ load_distribute_points(const String& points_filename,
         err = true;
       }
 
-    const RealSetArray& dsr_vals = iteratedModel.discrete_set_real_values();
+    const RealSetArray& dsr_vals = ModelUtils::discrete_set_real_values(iteratedModel);
     for (size_t j=0; j<numDiscreteRealVars; ++j)
       if (set_value_to_index(listDRVPoints[i][j], dsr_vals[j]) == _NPOS) {
         Cerr << "\nError: list value " << listDRVPoints[i][j] 
@@ -744,8 +744,8 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
 
   const BitArray&      di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
   const IntSetArray&    dsi_values = ModelUtils::discrete_set_int_values(iteratedModel);
-  const StringSetArray& dss_values = iteratedModel.discrete_set_string_values();
-  const RealSetArray&   dsr_values = iteratedModel.discrete_set_real_values();
+  const StringSetArray& dss_values = ModelUtils::discrete_set_string_values(iteratedModel);
+  const RealSetArray&   dsr_values = ModelUtils::discrete_set_real_values(iteratedModel);
 
   bool err = false;
   RealVector empty_rv; IntVector empty_iv; StringMultiArray empty_sa;
@@ -879,8 +879,8 @@ void ParamStudy::distribute_partitions()
 
   const BitArray&      di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
   const IntSetArray&    dsi_values = ModelUtils::discrete_set_int_values(iteratedModel);
-  const StringSetArray& dss_values = iteratedModel.discrete_set_string_values();
-  const RealSetArray&   dsr_values = iteratedModel.discrete_set_real_values();
+  const StringSetArray& dss_values = ModelUtils::discrete_set_string_values(iteratedModel);
+  const RealSetArray&   dsr_values = ModelUtils::discrete_set_real_values(iteratedModel);
 
   size_t i, dsi_cntr; unsigned short part;
   for (i=0; i<numContinuousVars; ++i) {
@@ -958,8 +958,8 @@ void ParamStudy::final_point_to_step_vector()
 
   const BitArray&      di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
   const IntSetArray&    dsi_values = ModelUtils::discrete_set_int_values(iteratedModel);
-  const StringSetArray& dss_values = iteratedModel.discrete_set_string_values();
-  const RealSetArray&   dsr_values = iteratedModel.discrete_set_real_values();
+  const StringSetArray& dss_values = ModelUtils::discrete_set_string_values(iteratedModel);
+  const RealSetArray&   dsr_values = ModelUtils::discrete_set_real_values(iteratedModel);
   size_t j, dsi_cntr;
 
   // active continuous
@@ -1034,8 +1034,8 @@ check_sets(const IntVector& c_steps,  const IntVector& di_steps,
 
   const BitArray&      di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
   const IntSetArray&    dsi_values = ModelUtils::discrete_set_int_values(iteratedModel);
-  const StringSetArray& dss_values = iteratedModel.discrete_set_string_values();
-  const RealSetArray&   dsr_values = iteratedModel.discrete_set_real_values();
+  const StringSetArray& dss_values = ModelUtils::discrete_set_string_values(iteratedModel);
+  const RealSetArray&   dsr_values = ModelUtils::discrete_set_real_values(iteratedModel);
   size_t j, dsi_cntr;
   bool err = false;
 

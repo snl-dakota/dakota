@@ -10,6 +10,7 @@
 #include "dakota_data_types.hpp"
 #include "dakota_system_defs.hpp"
 #include "DakotaModel.hpp"
+#include "model_utils.hpp"
 #include "DakotaResponse.hpp"
 #include "NonDSampling.hpp"
 #include "ProblemDescDB.hpp"
@@ -644,7 +645,7 @@ variables_to_sample(const Variables& vars, Real* sample_vars)
       ( active_view >= RELAXED_DESIGN && active_view <= RELAXED_STATE ) );
     short all_view = (relax) ? RELAXED_ALL : MIXED_ALL;
     const StringSetArray& dss_values
-      = iteratedModel.discrete_set_string_values(all_view);
+      = ModelUtils::discrete_set_string_values(iteratedModel, all_view);
     end = adsv_start + num_adsv;
     for (i=adsv_start; i<end; ++i)
       sample_vars[svd.adsv_index_to_all_index(i)] = (Real)set_value_to_index(

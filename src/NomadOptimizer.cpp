@@ -277,8 +277,8 @@ void NomadOptimizer::core_run()
 
   const BitArray& int_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
   const IntSetArray& set_int_vars = ModelUtils::discrete_set_int_values(iteratedModel);
-  const RealSetArray& set_real_vars = iteratedModel.discrete_set_real_values();
-  const StringSetArray& set_string_vars = iteratedModel.discrete_set_string_values();
+  const RealSetArray& set_real_vars = ModelUtils::discrete_set_real_values(iteratedModel);
+  const StringSetArray& set_string_vars = ModelUtils::discrete_set_string_values(iteratedModel);
 
   size_t j, dsi_cntr;
 
@@ -460,8 +460,8 @@ void NomadOptimizer::Evaluator::set_variables(const NOMAD::Eval_Point &x) const
 
   const BitArray& int_set_bits = ModelUtils::discrete_int_sets(_model);
   const IntSetArray&  set_int_vars = ModelUtils::discrete_set_int_values(_model);
-  const RealSetArray& set_real_vars = _model.discrete_set_real_values();
-  const StringSetArray& set_string_vars = _model.discrete_set_string_values();
+  const RealSetArray& set_real_vars = ModelUtils::discrete_set_real_values(_model);
+  const StringSetArray& set_string_vars = ModelUtils::discrete_set_string_values(_model);
 
   size_t i, dsi_cntr;
 
@@ -644,9 +644,9 @@ void NomadOptimizer::load_parameters(Model &model, NOMAD::Parameters &p)
   const IntSetArray& initial_point_set_int = 
     ModelUtils::discrete_set_int_values(iteratedModel);
   const RealSetArray& initial_point_set_real = 
-    iteratedModel.discrete_set_real_values();
+    ModelUtils::discrete_set_real_values(iteratedModel);
   const StringSetArray& initial_point_set_string = 
-    iteratedModel.discrete_set_string_values();
+    ModelUtils::discrete_set_string_values(iteratedModel);
 
   RealMatrix tmp_categorical_adjacency;
 

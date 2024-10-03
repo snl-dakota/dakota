@@ -374,8 +374,8 @@ void COLINOptimizer::core_run()
 
     const       BitArray& di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
     const    IntSetArray& dsiv_values = ModelUtils::discrete_set_int_values(iteratedModel);
-    const   RealSetArray& dsrv_values = iteratedModel.discrete_set_real_values();
-    const StringSetArray& dssv_values = iteratedModel.discrete_set_string_values();
+    const   RealSetArray& dsrv_values = ModelUtils::discrete_set_real_values(iteratedModel);
+    const StringSetArray& dssv_values = ModelUtils::discrete_set_string_values(iteratedModel);
     size_t i, index, dsi_cntr;
     for (i=0, dsi_cntr=0; i<numDiscreteIntVars; ++i) {
       if (di_set_bits[i]) { // this active discrete int var is a set type
@@ -994,8 +994,8 @@ void COLINOptimizer::post_run(std::ostream& s)
 
   const       BitArray& di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
   const    IntSetArray& dsiv_values = ModelUtils::discrete_set_int_values(iteratedModel);
-  const   RealSetArray& dsrv_values = iteratedModel.discrete_set_real_values();
-  const StringSetArray& dssv_values = iteratedModel.discrete_set_string_values();
+  const   RealSetArray& dsrv_values = ModelUtils::discrete_set_real_values(iteratedModel);
+  const StringSetArray& dssv_values = ModelUtils::discrete_set_string_values(iteratedModel);
   size_t i, j, dsi_cntr;
 
   // Iterate through points returned by COLIN.
