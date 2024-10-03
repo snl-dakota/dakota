@@ -1427,7 +1427,7 @@ JEGAOptimizer::LoadTheDesignVariables(
 
     const RealVector& clbs = m.continuous_lower_bounds();
     const RealVector& cubs = m.continuous_upper_bounds();
-    StringMultiArrayConstView clabels = m.continuous_variable_labels();
+    StringMultiArrayConstView clabels = m.current_variables().continuous_variable_labels();
     for(i=0; i<this->numContinuousVars; ++i)
       pConfig.AddContinuumRealVariable(clabels[i], clbs[i], cubs[i], 6);
 
@@ -1436,7 +1436,7 @@ JEGAOptimizer::LoadTheDesignVariables(
     // discrete_variable_labels.
     const IntVector& dilbs = m.discrete_int_lower_bounds();
     const IntVector& diubs = m.discrete_int_upper_bounds();
-    StringMultiArrayConstView dilabels = m.discrete_int_variable_labels();
+    StringMultiArrayConstView dilabels = m.current_variables().discrete_int_variable_labels();
     const BitArray& di_set_bits = ModelUtils::discrete_int_sets(m);
     const IntSetArray& dsiv = ModelUtils::discrete_set_int_values(m);
     for(i=0, dsi_cntr=0; i<this->numDiscreteIntVars; ++i)
@@ -1453,7 +1453,7 @@ JEGAOptimizer::LoadTheDesignVariables(
 
     // Next, load in the "discrete set of real" variables.
     const RealSetArray& dsrv = ModelUtils::discrete_set_real_values(m);
-    StringMultiArrayConstView drlabels = m.discrete_real_variable_labels();
+    StringMultiArrayConstView drlabels = m.current_variables().discrete_real_variable_labels();
     for(i=0; i<this->numDiscreteRealVars; ++i)
     {
       const RealSet& dak_set = dsrv[i];
@@ -1465,7 +1465,7 @@ JEGAOptimizer::LoadTheDesignVariables(
 
     // Finally, load in the "discrete set of string" variables. These must
     // be mapped to discrete integer variables.
-    StringMultiArrayConstView dslabels = m.discrete_string_variable_labels();
+    StringMultiArrayConstView dslabels = m.current_variables().discrete_string_variable_labels();
     const StringSetArray& dssv_values = ModelUtils::discrete_set_string_values(m);
     for (i=0; i<this->numDiscreteStringVars; ++i) {
       const size_t &num_elements = dssv_values[i].size(); //assume > 0

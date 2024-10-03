@@ -492,7 +492,7 @@ update_trust_region_data(SurrBasedLevelData& tr_data,
   const RealVector& tr_lower_bnds = tr_data.tr_lower_bounds();
   const RealVector& tr_upper_bnds = tr_data.tr_upper_bounds();
   StringMultiArrayConstView c_vars_labels
-    = iteratedModel.continuous_variable_labels();
+    = iteratedModel.current_variables().continuous_variable_labels();
   for (i=0; i<numContinuousVars; ++i)
     Cout << std::setw(16) << c_vars_labels[i] << ':' << std::setw(wpp9)
 	 << tr_lower_bnds[i] << std::setw(wpp9) << cv_center[i]

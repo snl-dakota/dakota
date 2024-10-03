@@ -2743,7 +2743,7 @@ void NonDExpansion::compute_statistics(short results_state)
     update_final_statistics(); // augments updates embedded above
     if (resultsDB.active()) { // archive the active variables with the results
       resultsDB.insert(run_identifier(), resultsNames.cv_labels, 
-		       iteratedModel.continuous_variable_labels());
+		       iteratedModel.current_variables().continuous_variable_labels());
       resultsDB.insert(run_identifier(), resultsNames.fn_labels, 
 		       iteratedModel.response_labels());
     }
@@ -3639,7 +3639,7 @@ void NonDExpansion::archive_sobol_indices() {
 
   const StringArray& fn_labels = iteratedModel.response_labels();
   StringMultiArrayConstView cv_labels
-    = iteratedModel.continuous_variable_labels();
+    = iteratedModel.current_variables().continuous_variable_labels();
 
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   // Map from index to variable labels
@@ -4005,7 +4005,7 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
 
   const StringArray& fn_labels = iteratedModel.response_labels();
   StringMultiArrayConstView cv_labels
-    = iteratedModel.continuous_variable_labels();
+    = iteratedModel.current_variables().continuous_variable_labels();
 
   // construct labels corresponding to (aggregated) sobol index map
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();

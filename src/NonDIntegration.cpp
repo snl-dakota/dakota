@@ -145,7 +145,7 @@ void NonDIntegration::print_points_weights(const String& tabular_name)
     if (weights)
       pts_wts_file << std::setw(write_precision+6) << "weight ";
     write_data_tabular(pts_wts_file,
-		       iteratedModel.continuous_variable_labels());
+		       iteratedModel.current_variables().continuous_variable_labels());
     pts_wts_file << '\n';
     for (i=0; i<num_pts; ++i) {
       pts_wts_file << std::setw(6) << i+1 << ' ';

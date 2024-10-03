@@ -288,7 +288,7 @@ void DataTransformModel::update_cv_skip_hyperparams(const Model& model)
   const RealVector& acv_l_bnds = model.all_continuous_lower_bounds();
   const RealVector& acv_u_bnds = model.all_continuous_upper_bounds();
   StringMultiArrayConstView acv_labels
-    = model.all_continuous_variable_labels();
+    = model.current_variables().all_continuous_variable_labels();
 
   // active complement [0, cv_begin), followed by active [cv_begin, cv_end)
   for (i=0; i<cv_end; ++i) {
@@ -985,7 +985,7 @@ void DataTransformModel::init_continuous_vars()
   const SharedVariablesData& svd = subModel.current_variables().shared_data();
   const SizetArray& sm_vc_totals = svd.components_totals();
   const RealVector& sm_acv = subModel.current_variables().all_continuous_variables();
-  StringMultiArrayConstView sm_acvl = subModel.all_continuous_variable_labels();
+  StringMultiArrayConstView sm_acvl = subModel.current_variables().all_continuous_variable_labels();
   const RealVector & sm_aclb = subModel.all_continuous_lower_bounds();
   const RealVector & sm_acub = subModel.all_continuous_upper_bounds();
 
@@ -1000,7 +1000,7 @@ void DataTransformModel::init_continuous_vars()
     size_t num_cvars = sm_vc_totals[vci];
     for (size_t i=0; i<num_cvars; ++i) {
       current_variables().all_continuous_variable(sm_acv[sm_offset], dtm_offset);
-      all_continuous_variable_label(sm_acvl[sm_offset], dtm_offset);
+      current_variables().all_continuous_variable_label(sm_acvl[sm_offset], dtm_offset);
       all_continuous_lower_bound(sm_aclb[sm_offset], dtm_offset);
       all_continuous_upper_bound(sm_acub[sm_offset], dtm_offset);
       ++sm_offset;
@@ -1012,7 +1012,7 @@ void DataTransformModel::init_continuous_vars()
 	expData.hyperparam_labels(obsErrorMultiplierMode);
       for (size_t i=0; i<numHyperparams; ++i) {
 	current_variables().all_continuous_variable(1.0, dtm_offset);
-	all_continuous_variable_label(hyper_labels[i], dtm_offset);
+	current_variables().all_continuous_variable_label(hyper_labels[i], dtm_offset);
 	all_continuous_lower_bound(0.0, dtm_offset);
 	all_continuous_upper_bound(std::numeric_limits<double>::infinity(),
 				   dtm_offset);

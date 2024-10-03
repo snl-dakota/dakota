@@ -320,7 +320,7 @@ void SubspaceModel::update_var_labels()
     subspace_var_labels[i] = "ssv_" + std::to_string(i+1);
   }
 
-  continuous_variable_labels(
+  current_variables().continuous_variable_labels(
     subspace_var_labels[boost::indices[idx_range(0, reducedRank)]]);
 }
 

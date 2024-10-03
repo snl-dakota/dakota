@@ -293,7 +293,7 @@ void RichExtrapVerification::post_run(std::ostream& s)
 void RichExtrapVerification::print_results(std::ostream& s, short results_state)
 {
   StringArray cv_labels;
-  copy_data(iteratedModel.continuous_variable_labels(), cv_labels);
+  copy_data(iteratedModel.current_variables().continuous_variable_labels(), cv_labels);
   const StringArray& fn_labels = iteratedModel.response_labels();
 
   // Print resulting order and error estimates

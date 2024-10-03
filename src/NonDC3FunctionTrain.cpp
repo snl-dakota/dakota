@@ -723,7 +723,7 @@ void NonDC3FunctionTrain::print_sobol_indices(std::ostream& s)
   const StringArray& fn_labels = iteratedModel.response_labels();
 
   StringMultiArrayConstView cv_labels
-    = iteratedModel.continuous_variable_labels();
+    = iteratedModel.current_variables().continuous_variable_labels();
 
   // print sobol indices per response function
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
@@ -750,7 +750,7 @@ void NonDC3FunctionTrain::print_sobol_indices(std::ostream& s)
     //if (vbdOrderLimit != 1) { 
       s << std::setw(39) << "Interaction\n";
       StringMultiArrayConstView cv_labels
-        = iteratedModel.continuous_variable_labels();
+        = iteratedModel.current_variables().continuous_variable_labels();
             
       struct SPrintArgs pa;
       pa.s = &s;

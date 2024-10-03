@@ -613,7 +613,7 @@ void AdaptedBasisModel::uncertain_vars_to_subspace()
   for (int i = 0; i < reducedRank; i++)
     adapted_basis_var_labels[i]
       = "abv_" + std::to_string(i+1);
-  continuous_variable_labels(
+  current_variables().continuous_variable_labels(
     adapted_basis_var_labels[boost::indices[idx_range(0, reducedRank)]]);
 }
 

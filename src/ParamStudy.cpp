@@ -327,13 +327,13 @@ void ParamStudy::archive_allocate_sets() const
     size_t num_evals = (compactMode) ? allSamples.numCols() : allVariables.size();
 
     StringMultiArrayConstView cv_labels
-                = iteratedModel.continuous_variable_labels();
+                = iteratedModel.current_variables().continuous_variable_labels();
     StringMultiArrayConstView div_labels
-                = iteratedModel.discrete_int_variable_labels();
+                = iteratedModel.current_variables().discrete_int_variable_labels();
     StringMultiArrayConstView dsv_labels
-                = iteratedModel.discrete_string_variable_labels();
+                = iteratedModel.current_variables().discrete_string_variable_labels();
     StringMultiArrayConstView drv_labels
-                = iteratedModel.discrete_real_variable_labels();
+                = iteratedModel.current_variables().discrete_real_variable_labels();
 
     const StringArray& resp_labels 
                 = iteratedModel.response_labels();
@@ -403,7 +403,7 @@ void ParamStudy::post_run(std::ostream& s)
                                                    // values back to indices
     if(resultsDB.active()) {
       pStudyDACESensGlobal.archive_correlations(run_identifier(), resultsDB,
-                                        iteratedModel.ordered_labels(),
+                                        iteratedModel.current_variables().ordered_labels(ACTIVE_VARS),
                                         iteratedModel.response_labels());
     }
 
@@ -784,7 +784,7 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
             = set_index_to_value(div_combined[j], dsi_values[dsi_cntr]);
         } catch(std::out_of_range e) {
           Cerr << e.what() << " for variable '" 
-            << iteratedModel.discrete_int_variable_labels()[j] << "' in method '" 
+            << iteratedModel.current_variables().discrete_int_variable_labels()[j] << "' in method '" 
             << method_id() << "'\n";
           abort_handler(-1);
         }
@@ -806,7 +806,7 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
           list_dsv_i[j] = set_index_to_value(dsv_indices[j], dss_values[j]);
       } catch(std::out_of_range e) {
           Cerr << e.what() << " for variable '" 
-            << iteratedModel.discrete_string_variable_labels()[j] << "' in method '" 
+            << iteratedModel.current_variables().discrete_string_variable_labels()[j] << "' in method '" 
             << method_id() << "'\n";
           abort_handler(-1);
       }
@@ -825,7 +825,7 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
           list_drv_i[j] = set_index_to_value(drv_indices[j], dsr_values[j]);
       } catch (std::out_of_range e) {
           Cerr << e.what() << " for variable '" 
-            << iteratedModel.discrete_real_variable_labels()[j] << "' in method '" 
+            << iteratedModel.current_variables().discrete_real_variable_labels()[j] << "' in method '" 
             << method_id() << "'\n";
           abort_handler(-1);
       }
@@ -1087,13 +1087,13 @@ check_sets(const IntVector& c_steps,  const IntVector& di_steps,
 void ParamStudy::archive_allocate_cps() const
 {
   StringMultiArrayConstView cv_labels
-    = iteratedModel.continuous_variable_labels();
+    = iteratedModel.current_variables().continuous_variable_labels();
   StringMultiArrayConstView div_labels
-    = iteratedModel.discrete_int_variable_labels();
+    = iteratedModel.current_variables().discrete_int_variable_labels();
   StringMultiArrayConstView dsv_labels
-    = iteratedModel.discrete_string_variable_labels();
+    = iteratedModel.current_variables().discrete_string_variable_labels();
   StringMultiArrayConstView drv_labels
-    = iteratedModel.discrete_real_variable_labels();
+    = iteratedModel.current_variables().discrete_real_variable_labels();
   const StringArray& resp_labels
     = iteratedModel.response_labels();
 
@@ -1159,13 +1159,13 @@ void ParamStudy::archive_cps_vars(const Model& model, size_t idx) const
   const RealVector& dr_vars = model.current_variables().discrete_real_variables();
 
   StringMultiArrayConstView cv_labels
-    = iteratedModel.continuous_variable_labels();
+    = iteratedModel.current_variables().continuous_variable_labels();
   StringMultiArrayConstView div_labels
-    = iteratedModel.discrete_int_variable_labels();
+    = iteratedModel.current_variables().discrete_int_variable_labels();
   StringMultiArrayConstView dsv_labels
-    = iteratedModel.discrete_string_variable_labels();
+    = iteratedModel.current_variables().discrete_string_variable_labels();
   StringMultiArrayConstView drv_labels
-    = iteratedModel.discrete_real_variable_labels();
+    = iteratedModel.current_variables().discrete_real_variable_labels();
   const StringArray& resp_labels
     = iteratedModel.response_labels();
 
@@ -1234,13 +1234,13 @@ void ParamStudy::archive_cps_vars(const Model& model, size_t idx) const
 void ParamStudy::archive_cps_resp(const Response& response, size_t idx) const
 {
   StringMultiArrayConstView cv_labels
-    = iteratedModel.continuous_variable_labels();
+    = iteratedModel.current_variables().continuous_variable_labels();
   StringMultiArrayConstView div_labels
-    = iteratedModel.discrete_int_variable_labels();
+    = iteratedModel.current_variables().discrete_int_variable_labels();
   StringMultiArrayConstView dsv_labels
-    = iteratedModel.discrete_string_variable_labels();
+    = iteratedModel.current_variables().discrete_string_variable_labels();
   StringMultiArrayConstView drv_labels
-    = iteratedModel.discrete_real_variable_labels();
+    = iteratedModel.current_variables().discrete_real_variable_labels();
   const StringArray& resp_labels
     = iteratedModel.response_labels();
 

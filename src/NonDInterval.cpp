@@ -313,13 +313,13 @@ void NonDInterval::calculate_cells_and_bpas()
   }
 
   StringMultiArrayConstView cv_labels
-    = iteratedModel.continuous_variable_labels();
+    = iteratedModel.current_variables().continuous_variable_labels();
   StringMultiArrayConstView div_labels
-    = iteratedModel.discrete_int_variable_labels();
+    = iteratedModel.current_variables().discrete_int_variable_labels();
   //StringMultiArrayConstView dsv_labels
-  //  = iteratedModel.discrete_string_variable_labels();
+  //  = iteratedModel.current_variables().discrete_string_variable_labels();
   StringMultiArrayConstView drv_labels
-    = iteratedModel.discrete_real_variable_labels();
+    = iteratedModel.current_variables().discrete_real_variable_labels();
   for (i=0; i<numCells; ++i) {
     Cout << "Cell " << i+1 << ":\n";
     for (j=0; j<num_ciu; ++j)

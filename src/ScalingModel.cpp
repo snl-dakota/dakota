@@ -333,7 +333,7 @@ void ScalingModel::initialize_scaling(Model& sub_model)
 
   if (outputLevel > NORMAL_OUTPUT && varsScaleFlag) {
     StringArray cv_labels;
-    copy_data(continuous_variable_labels(), cv_labels);
+    copy_data(current_variables().continuous_variable_labels(), cv_labels);
     print_scaling("Continuous design variable scales", cvScaleTypes,
                   cvScaleMultipliers, cvScaleOffsets, cv_labels);
   }

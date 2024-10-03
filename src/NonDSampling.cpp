@@ -973,10 +973,10 @@ compute_statistics(const RealMatrix&     vars_samples,
 		   const IntResponseMap& resp_samples)
 {
   StringMultiArrayConstView
-    acv_labels  = iteratedModel.all_continuous_variable_labels(),
-    adiv_labels = iteratedModel.all_discrete_int_variable_labels(),
-    adsv_labels = iteratedModel.all_discrete_string_variable_labels(),
-    adrv_labels = iteratedModel.all_discrete_real_variable_labels();
+    acv_labels  = iteratedModel.current_variables().all_continuous_variable_labels(),
+    adiv_labels = iteratedModel.current_variables().all_discrete_int_variable_labels(),
+    adsv_labels = iteratedModel.current_variables().all_discrete_string_variable_labels(),
+    adrv_labels = iteratedModel.current_variables().all_discrete_real_variable_labels();
   size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
     drv_start, num_drv;
   mode_counts(iteratedModel.current_variables(), cv_start, num_cv,
@@ -1832,7 +1832,7 @@ void NonDSampling::print_statistics(std::ostream& s) const
   }
 
   if (!subIteratorFlag) {
-    nonDSampCorr.print_correlations(s, iteratedModel.ordered_labels(), iteratedModel.response_labels());
+    nonDSampCorr.print_correlations(s, iteratedModel.current_variables().ordered_labels(ACTIVE_VARS), iteratedModel.response_labels());
   }
 
   if (wilksFlag) {
@@ -1848,7 +1848,7 @@ void NonDSampling::print_statistics(std::ostream& s) const
       Cerr << "Warning: std regression coefficients printing requested in conjunction with epstemic variables" << std::endl;
     }
 
-    nonDSampCorr.print_std_regress_coeffs(s, iteratedModel.ordered_labels(), iteratedModel.response_labels());
+    nonDSampCorr.print_std_regress_coeffs(s, iteratedModel.current_variables().ordered_labels(ACTIVE_VARS), iteratedModel.response_labels());
   }
 
   if (toleranceIntervalsFlag) {

@@ -740,7 +740,7 @@ void NonDLHSSampling::post_run(std::ostream& s)
                                                   allResponses);
       nonDSampCorr.archive_sobol_indices(run_identifier(),
                                          resultsDB,
-                                         iteratedModel.ordered_labels(),
+                                         iteratedModel.current_variables().ordered_labels(ACTIVE_VARS),
                                          iteratedModel.response_labels(),
                                          vbdDropTol); // set in DakotaAnalyzer constructor
     }
@@ -1032,7 +1032,7 @@ void NonDLHSSampling::print_results(std::ostream& s, short results_state)
     Analyzer::print_results(s, results_state);
   if (vbdFlag)
     nonDSampCorr.print_sobol_indices(s,
-                                     iteratedModel.ordered_labels(),
+                                     iteratedModel.current_variables().ordered_labels(ACTIVE_VARS),
                                      iteratedModel.response_labels(),
                                      vbdDropTol); // set in DakotaAnalyzer constructor
   else if (statsFlag) {
@@ -1097,14 +1097,14 @@ void NonDLHSSampling::archive_results(int num_samples, size_t inc_id) {
 
   // Archive correlations
   if (!subIteratorFlag) {
-    nonDSampCorr.archive_correlations(run_identifier(), resultsDB, iteratedModel.ordered_labels(),
+    nonDSampCorr.archive_correlations(run_identifier(), resultsDB, iteratedModel.current_variables().ordered_labels(ACTIVE_VARS),
                                       iteratedModel.response_labels(),inc_id);
   }
 
   // Archive Standardized Regression Coefficients
   if (stdRegressionCoeffs) {
     nonDSampCorr.archive_std_regress_coeffs(run_identifier(), resultsDB,
-                                            iteratedModel.ordered_labels(),
+                                            iteratedModel.current_variables().ordered_labels(ACTIVE_VARS),
                                             iteratedModel.response_labels(), inc_id);
   }
 

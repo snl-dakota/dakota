@@ -245,7 +245,7 @@ void LeastSq::print_results(std::ostream& s, short results_state)
     s << "Confidence Intervals on Calibrated Parameters:\n";
 
     StringMultiArrayConstView cv_labels
-      = iteratedModel.continuous_variable_labels();
+      = iteratedModel.current_variables().continuous_variable_labels();
     for (size_t i = 0; i < numContinuousVars; i++)
       s << std::setw(14) << cv_labels[i] << ": [ "
 	<< setw(write_precision+6) << confBoundsLower[i] << ", "
@@ -668,7 +668,7 @@ void LeastSq::archive_best_results() {
   if(!resultsDB.active() || expData.num_experiments() > 1) return;
 
   StringMultiArrayConstView cv_labels
-    = iteratedModel.continuous_variable_labels();
+    = iteratedModel.current_variables().continuous_variable_labels();
   DimScaleMap scales;
   scales.emplace(0, StringScale("variables", cv_labels));
   scales.emplace(1, StringScale("bounds", {"lower", "upper"}));

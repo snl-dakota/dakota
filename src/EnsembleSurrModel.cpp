@@ -458,7 +458,7 @@ void EnsembleSurrModel::init_model_mapped_variables(Model& model)
       const String& surr_label
 	= currentVariables.all_continuous_variable_labels()[ac_index1];
       // map this to sub-ordinate label variables
-      m_index = find_index(model.all_continuous_variable_labels(), surr_label);
+      m_index = find_index(model.current_variables().all_continuous_variable_labels(), surr_label);
       // push value from currentVariables to sub-ordinate variables
       if (m_index != _NPOS)
 	model.current_variables().all_continuous_variable(
@@ -467,7 +467,7 @@ void EnsembleSurrModel::init_model_mapped_variables(Model& model)
     else if (adi_index1 != _NPOS) {
       const String& surr_label
 	= currentVariables.all_discrete_int_variable_labels()[adi_index1];
-      m_index = find_index(model.all_discrete_int_variable_labels(),surr_label);
+      m_index = find_index(model.current_variables().all_discrete_int_variable_labels(),surr_label);
       if (m_index != _NPOS)
 	model.current_variables().all_discrete_int_variable(
 	  currentVariables.all_discrete_int_variables()[adi_index1], m_index);
@@ -475,7 +475,7 @@ void EnsembleSurrModel::init_model_mapped_variables(Model& model)
     else if (ads_index1 != _NPOS) {
       const String& surr_label
 	= currentVariables.all_discrete_string_variable_labels()[ads_index1];
-      m_index = find_index(model.all_discrete_string_variable_labels(),
+      m_index = find_index(model.current_variables().all_discrete_string_variable_labels(),
 			   surr_label);
       if (m_index != _NPOS)
 	model.current_variables().all_discrete_string_variable(
@@ -484,7 +484,7 @@ void EnsembleSurrModel::init_model_mapped_variables(Model& model)
     else if (adr_index1 != _NPOS) {
       const String& surr_label
 	= currentVariables.all_discrete_real_variable_labels()[adr_index1];
-      m_index = find_index(model.all_discrete_real_variable_labels(),
+      m_index = find_index(model.current_variables().all_discrete_real_variable_labels(),
 			   surr_label);
       if (m_index != _NPOS)
 	model.current_variables().all_discrete_real_variable(

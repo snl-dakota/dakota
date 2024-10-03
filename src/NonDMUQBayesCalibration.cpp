@@ -457,10 +457,10 @@ void NonDMUQBayesCalibration::
 print_variables(std::ostream& s, const RealVector& c_vars)
 {
   StringMultiArrayConstView cv_labels =
-    iteratedModel.continuous_variable_labels();
+    iteratedModel.current_variables().continuous_variable_labels();
   // the residualModel includes any hyper-parameters
   StringArray combined_labels;
-  copy_data(residualModel.continuous_variable_labels(), combined_labels);
+  copy_data(residualModel.current_variables().continuous_variable_labels(), combined_labels);
 
   size_t wpp7 = write_precision+7;
 

@@ -842,39 +842,39 @@ resolve_map1(const String& map1, size_t& ac_index1, size_t& adi_index1,
 	     short& inactive_sm_view)
 {
   adi_index1 = ads_index1 = adr_index1 = _NPOS;
-  ac_index1 = find_index(subModel.all_continuous_variable_labels(), map1);
+  ac_index1 = find_index(subModel.current_variables().all_continuous_variable_labels(), map1);
   if (ac_index1 == _NPOS) {
-    adi_index1 = find_index(subModel.all_discrete_int_variable_labels(), map1);
+    adi_index1 = find_index(subModel.current_variables().all_discrete_int_variable_labels(), map1);
     if (adi_index1 == _NPOS) {
       ads_index1
-	= find_index(subModel.all_discrete_string_variable_labels(), map1);
+	= find_index(subModel.current_variables().all_discrete_string_variable_labels(), map1);
       if (ads_index1 == _NPOS) {
 	adr_index1
-	  = find_index(subModel.all_discrete_real_variable_labels(), map1);
+	  = find_index(subModel.current_variables().all_discrete_real_variable_labels(), map1);
         if (adr_index1 == _NPOS) {
 	  Cerr << "\nError: primary mapping " << map1 << " could not be "
 	       << "matched within any sub-model variable labels." << std::endl;
 	  abort_handler(MODEL_ERROR);
 	}
-	else if (find_index(subModel.discrete_real_variable_labels(), map1)
+	else if (find_index(subModel.current_variables().discrete_real_variable_labels(), map1)
 		 == _NPOS) // inactive DRV target
 	  update_inactive_view(
 	    subModel.current_variables().all_discrete_real_variable_types()[adr_index1],
 	    inactive_sm_view);
       }
-      else if (find_index(subModel.discrete_string_variable_labels(), map1)
+      else if (find_index(subModel.current_variables().discrete_string_variable_labels(), map1)
 	       == _NPOS) // inactive DSV target
 	update_inactive_view(
 	  subModel.current_variables().all_discrete_string_variable_types()[ads_index1],
 	  inactive_sm_view);
     }
-    else if (find_index(subModel.discrete_int_variable_labels(), map1)
+    else if (find_index(subModel.current_variables().discrete_int_variable_labels(), map1)
 	     == _NPOS) // inactive DIV target
       update_inactive_view(
 	subModel.current_variables().all_discrete_int_variable_types()[adi_index1],
 	inactive_sm_view);
   }
-  else if (find_index(subModel.continuous_variable_labels(), map1)
+  else if (find_index(subModel.current_variables().continuous_variable_labels(), map1)
 	   == _NPOS) // inactive CV target
     update_inactive_view(subModel.current_variables().all_continuous_variable_types()[ac_index1],
 			 inactive_sm_view);
@@ -2257,7 +2257,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
 	      svd.cv_index_to_all_index(i),
 	      sm_svd.acv_index_to_all_index(pacvm_index));
 	    if (firstUpdate)
-	      subModel.all_continuous_variable_label(curr_c_labels[i],
+	      subModel.current_variables().all_continuous_variable_label(curr_c_labels[i],
 						     pacvm_index);
 	  }
 	}
@@ -2315,7 +2315,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
 	      svd.div_index_to_all_index(i),
 	      sm_svd.adiv_index_to_all_index(padivm_index));
 	    if (firstUpdate)
-	      subModel.all_discrete_int_variable_label(curr_di_labels[i],
+	      subModel.current_variables().all_discrete_int_variable_label(curr_di_labels[i],
 						       padivm_index);
 	  }
 	}
@@ -2367,7 +2367,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
 	      svd.dsv_index_to_all_index(i),
 	      sm_svd.adsv_index_to_all_index(padsvm_index));
 	    if (firstUpdate)
-	      subModel.all_discrete_string_variable_label(curr_ds_labels[i],
+	      subModel.current_variables().all_discrete_string_variable_label(curr_ds_labels[i],
 							  padsvm_index);
 	  }
 	}
@@ -2425,7 +2425,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
 	      svd.drv_index_to_all_index(i),
 	      sm_svd.adrv_index_to_all_index(padrvm_index));
 	    if (firstUpdate)
-	      subModel.all_discrete_real_variable_label(curr_dr_labels[i],
+	      subModel.current_variables().all_discrete_real_variable_label(curr_dr_labels[i],
 							padrvm_index);
 	  }
 	}
@@ -2451,7 +2451,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
       subModel.all_continuous_lower_bound(curr_ac_l_bnds[curr_i], c1_index);
       subModel.all_continuous_upper_bound(curr_ac_u_bnds[curr_i], c1_index);
       if (firstUpdate) {
-	subModel.all_continuous_variable_label(curr_ac_labels[curr_i],c1_index);
+	subModel.current_variables().all_continuous_variable_label(curr_ac_labels[curr_i],c1_index);
 	// Note: this is more general than just bounds (all dist params):
 	sm_mvd_rep->pull_distribution_parameters(mvDist,
 	  svd.ccv_index_to_all_index(i),
@@ -2476,7 +2476,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
       subModel.all_discrete_int_lower_bound(curr_adi_l_bnds[curr_i], c1_index);
       subModel.all_discrete_int_upper_bound(curr_adi_u_bnds[curr_i], c1_index);
       if (firstUpdate) {
-	subModel.all_discrete_int_variable_label(curr_adi_labels[curr_i],
+	subModel.current_variables().all_discrete_int_variable_label(curr_adi_labels[curr_i],
 						 c1_index);
 	// Note: this is more general than just bounds (all dist params):
 	sm_mvd_rep->pull_distribution_parameters(mvDist,
@@ -2499,7 +2499,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
       c1_index = complement1ADSVarMapIndices[i];
       subModel.current_variables().all_discrete_string_variable(curr_ads_vars[curr_i], c1_index);
       if (firstUpdate) {
-	subModel.all_discrete_string_variable_label(curr_ads_labels[curr_i],
+	subModel.current_variables().all_discrete_string_variable_label(curr_ads_labels[curr_i],
 						    c1_index);
 	// Note: this is more general than just bounds (all dist params):
 	sm_mvd_rep->pull_distribution_parameters(mvDist,
@@ -2525,7 +2525,7 @@ update_sub_model(const Variables& vars, const Constraints& cons)
       subModel.all_discrete_real_lower_bound(curr_adr_l_bnds[curr_i], c1_index);
       subModel.all_discrete_real_upper_bound(curr_adr_u_bnds[curr_i], c1_index);
       if (firstUpdate) {
-	subModel.all_discrete_real_variable_label(curr_adr_labels[curr_i],
+	subModel.current_variables().all_discrete_real_variable_label(curr_adr_labels[curr_i],
 						  c1_index);
 	// Note: this is more general than just bounds (all dist params):
 	sm_mvd_rep->pull_distribution_parameters(mvDist,

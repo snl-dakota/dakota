@@ -408,7 +408,7 @@ void RandomFieldModel::initialize_rf_coeffs()
     normal_ub.resize(num_sm_normal + actualReducedRank);
     // BMA TODO: update label management to not assume normal are leading vars
     StringMultiArrayConstView sm_cv_labels = 
-      subModel.continuous_variable_labels();
+      subModel.current_variables().continuous_variable_labels();
     for (int i=0 ; i<num_sm_normal; ++i)
       currentVariables.continuous_variable_label(sm_cv_labels[i], i);
     for (int i=0; i<actualReducedRank; ++i) {

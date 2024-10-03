@@ -1021,7 +1021,7 @@ void RecastModel::update_all_variables(const Model& model)
     userDefinedConstraints.all_continuous_upper_bounds(
       model.all_continuous_upper_bounds());
     currentVariables.all_continuous_variable_labels(
-      model.all_continuous_variable_labels());
+      model.current_variables().all_continuous_variable_labels());
   }
   else if (num_acv - currentVariables.cv() == num_sm_acv - model.current_variables().cv())
     update_continuous_variables_active_complement_from_model(model);
@@ -1043,7 +1043,7 @@ void RecastModel::update_all_discrete_variables(const Model& model)
     userDefinedConstraints.all_discrete_int_upper_bounds(
       model.all_discrete_int_upper_bounds());
     currentVariables.all_discrete_int_variable_labels(
-      model.all_discrete_int_variable_labels());
+      model.current_variables().all_discrete_int_variable_labels());
   }
   else if (num_adiv - currentVariables.div() == num_sm_adiv - model.current_variables().div())
     update_discrete_int_variables_active_complement_from_model(model);
@@ -1053,7 +1053,7 @@ void RecastModel::update_all_discrete_variables(const Model& model)
     currentVariables.all_discrete_string_variables(
       model.current_variables().all_discrete_string_variables());
     currentVariables.all_discrete_string_variable_labels(
-      model.all_discrete_string_variable_labels());
+      model.current_variables().all_discrete_string_variable_labels());
   }
   else if (num_adsv - currentVariables.dsv() == num_sm_adsv - model.current_variables().dsv())
     update_discrete_string_variables_active_complement_from_model(model);
@@ -1067,7 +1067,7 @@ void RecastModel::update_all_discrete_variables(const Model& model)
     userDefinedConstraints.all_discrete_real_upper_bounds(
       model.all_discrete_real_upper_bounds());
     currentVariables.all_discrete_real_variable_labels(
-      model.all_discrete_real_variable_labels());
+      model.current_variables().all_discrete_real_variable_labels());
   }
   else if (num_adrv - currentVariables.drv() == num_sm_adrv - model.current_variables().drv())
     update_discrete_real_variables_active_complement_from_model(model);
@@ -1102,7 +1102,7 @@ void RecastModel::update_discrete_variable_bounds(const Model& model)
 void RecastModel::update_variable_labels(const Model& model)
 {
   currentVariables.all_continuous_variable_labels
-    ( model.all_continuous_variable_labels());
+    ( model.current_variables().all_continuous_variable_labels());
 
   update_discrete_variable_labels(model);
 }
@@ -1111,11 +1111,11 @@ void RecastModel::update_variable_labels(const Model& model)
 void RecastModel::update_discrete_variable_labels(const Model& model)
 {
   currentVariables.all_discrete_int_variable_labels
-    (model.all_discrete_int_variable_labels());
+    (model.current_variables().all_discrete_int_variable_labels());
   currentVariables.all_discrete_string_variable_labels
-    (model.all_discrete_string_variable_labels());
+    (model.current_variables().all_discrete_string_variable_labels());
   currentVariables.all_discrete_real_variable_labels
-    (model.all_discrete_real_variable_labels());
+    (model.current_variables().all_discrete_real_variable_labels());
 }
 */
 
@@ -1160,7 +1160,7 @@ update_continuous_variables_active_complement_from_model(const Model& model)
   const RealVector& acv_l_bnds = model.all_continuous_lower_bounds();
   const RealVector& acv_u_bnds = model.all_continuous_upper_bounds();
   StringMultiArrayConstView acv_labels
-    = model.all_continuous_variable_labels();
+    = model.current_variables().all_continuous_variable_labels();
   for (i=0; i<cv_begin; ++i) {
     currentVariables.all_continuous_variable(acv[i], i);
     userDefinedConstraints.all_continuous_lower_bound(acv_l_bnds[i], i);
@@ -1207,7 +1207,7 @@ update_discrete_int_variables_active_complement_from_model(const Model& model)
   const IntVector& adiv_l_bnds = model.all_discrete_int_lower_bounds();
   const IntVector& adiv_u_bnds = model.all_discrete_int_upper_bounds();
   StringMultiArrayConstView adiv_labels
-    = model.all_discrete_int_variable_labels();
+    = model.current_variables().all_discrete_int_variable_labels();
   for (i=0; i<div_begin; ++i) {
     currentVariables.all_discrete_int_variable(adiv[i], i);
     userDefinedConstraints.all_discrete_int_lower_bound(adiv_l_bnds[i], i);
@@ -1255,7 +1255,7 @@ update_discrete_string_variables_active_complement_from_model(
     num_adsv = currentVariables.adsv();
   StringMultiArrayConstView adsv = model.current_variables().all_discrete_string_variables();
   StringMultiArrayConstView adsv_labels
-    = model.all_discrete_string_variable_labels();
+    = model.current_variables().all_discrete_string_variable_labels();
   for (i=0; i<dsv_begin; ++i) {
     currentVariables.all_discrete_string_variable(adsv[i], i);
     currentVariables.all_discrete_string_variable_label(adsv_labels[i], i);
@@ -1299,7 +1299,7 @@ update_discrete_real_variables_active_complement_from_model(const Model& model)
   const RealVector& adrv_l_bnds = model.all_discrete_real_lower_bounds();
   const RealVector& adrv_u_bnds = model.all_discrete_real_upper_bounds();
   StringMultiArrayConstView adrv_labels
-    = model.all_discrete_real_variable_labels();
+    = model.current_variables().all_discrete_real_variable_labels();
   for (i=0; i<drv_begin; ++i) {
     currentVariables.all_discrete_real_variable(adrv[i], i);
     userDefinedConstraints.all_discrete_real_lower_bound(adrv_l_bnds[i], i);

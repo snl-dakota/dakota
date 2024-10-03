@@ -1262,7 +1262,7 @@ void NonDBayesCalibration::print_hi2lo_chain_moments()
     return;
 
   StringArray combined_labels;
-  copy_data(residualModel.continuous_variable_labels(), 
+  copy_data(residualModel.current_variables().continuous_variable_labels(), 
    	        combined_labels);
   NonDSampling::print_moments(Cout, chainStats, RealMatrix(), 
   "posterior variable", Pecos::STANDARD_MOMENTS, combined_labels, false); 
@@ -2912,7 +2912,7 @@ calculate_kde()
   std::ofstream export_kde;
   size_t wpp4 = write_precision+4;
   StringArray var_labels;
-  copy_data(residualModel.continuous_variable_labels(),var_labels);
+  copy_data(residualModel.current_variables().continuous_variable_labels(),var_labels);
   const StringArray& resp_labels = 
     		     mcmcModel.current_response().function_labels();
   TabularIO::open_file(export_kde, "kde_posterior.dat",
@@ -3204,7 +3204,7 @@ void NonDBayesCalibration::print_results(std::ostream& s, short results_state)
 {
   // Print chain moments
   StringArray combined_labels;
-  copy_data(residualModel.continuous_variable_labels(), combined_labels);
+  copy_data(residualModel.current_variables().continuous_variable_labels(), combined_labels);
   NonDSampling::print_moments(s, chainStats, RealMatrix(), 
       "posterior variable", Pecos::STANDARD_MOMENTS, combined_labels, false); 
   // Print response moments
@@ -3233,10 +3233,10 @@ void NonDBayesCalibration::
 print_variables(std::ostream& s, const RealVector& c_vars)
 {
   StringMultiArrayConstView cv_labels =
-    iteratedModel.continuous_variable_labels();
+    iteratedModel.current_variables().continuous_variable_labels();
   // the residualModel includes any hyper-parameters
   StringArray combined_labels;
-  copy_data(residualModel.continuous_variable_labels(), combined_labels);
+  copy_data(residualModel.current_variables().continuous_variable_labels(), combined_labels);
 
   size_t wpp7 = write_precision+7;
 
@@ -3714,7 +3714,7 @@ void NonDBayesCalibration::print_batch_means_intervals(std::ostream& s)
   
   int num_vars = acceptanceChain.numRows();
   StringArray var_labels;
-  copy_data(residualModel.continuous_variable_labels(),	var_labels);
+  copy_data(residualModel.current_variables().continuous_variable_labels(),	var_labels);
   RealMatrix variables_mean_interval_mat, variables_mean_batch_means;
   batch_means_interval(acceptanceChain, variables_mean_interval_mat,
                        variables_mean_batch_means, 1, alpha);
