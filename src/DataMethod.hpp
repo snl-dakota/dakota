@@ -1383,6 +1383,45 @@ public:
   /// MALA step size
   Real malaStepSize;
 
+  /// DILI Hessian type
+  String diliHessianType;
+
+  /// DILI adaptation interval
+  int diliAdaptInterval;
+
+  /// DILI adaptation start
+  int diliAdaptStart;
+
+  /// DILI adaptation end
+  int diliAdaptEnd;
+
+  /// DILI initial weight
+  int diliInitialWeight;
+
+  /// DILI Hessian tolerance
+  Real diliHessTolerance;
+
+  /// DILI LIS tolerance
+  Real diliLISTolerance;
+
+  /// DILI stochastic eigensolver maximum number of eigenvalues to compute
+  int diliSesNumEigs;
+
+  /// DILI stochastic eigensolver relative tolerance
+  Real diliSesRelTol;
+
+  /// DILI stochastic eigensolver absolute tolerance
+  Real diliSesAbsTol;
+
+  /// DILI stochastic eigensolver expected number of eigenvalues that are larger than the tolerances
+  int diliSesExpRank;
+
+  /// DILI stochastic eigensolver oversampling factor
+  int diliSesOversFactor;
+
+  /// DILI stochastic eigensolver block size
+  int diliSesBlockSize;
+
   // Parameter Study
 
   /// the \c final_point specification in \ref MethodPSVPS

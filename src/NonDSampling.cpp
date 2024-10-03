@@ -1216,10 +1216,16 @@ compute_moments(const RealVectorArray& fn_samples, RealMatrix& moment_stats,
 
     Real* moments_i = moment_stats[i];
     Pecos::accumulate_mean(fn_samples, i, num_samp, moments_i[0]);
-    if (num_samp != num_obs)
+    if (num_samp != num_obs) {
+      std::cout << "In NonDSampling::compute_moments(2)"
+	        << ", Warning: sampling statistics for quantity " << i+1 << " omit "
+                << num_obs-num_samp << " failed evaluations out of " << num_obs
+		<< " samples." << std::endl;
+
       Cerr << "Warning: sampling statistics for quantity " << i+1 << " omit "
 	   << num_obs-num_samp << " failed evaluations out of " << num_obs
 	   << " samples.\n";
+    }
 
     if (num_samp)
       Pecos::accumulate_moments(fn_samples, i, moments_type, moments_i);

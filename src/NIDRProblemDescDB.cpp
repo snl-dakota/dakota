@@ -6677,6 +6677,7 @@ static Method_mp_lit
 	MP2(mcmcType,metropolis_hastings),
 	MP2(mcmcType,multilevel),
 	MP2(mcmcType,mala),
+	MP2(mcmcType,dili),
 	MP2(modelDiscrepancyType,global_kriging),
 	MP2(modelDiscrepancyType,global_polynomial),
 	MP2(mutationType,bit_random),
@@ -6800,7 +6801,11 @@ static Real
 	MP_(xConvTol),
 	MP_(drScale),
 	MP_(amScale),
-	MP_(malaStepSize);
+	MP_(malaStepSize),
+        MP_(diliHessTolerance),
+        MP_(diliLISTolerance),
+        MP_(diliSesRelTol),
+        MP_(diliSesAbsTol);
 
 static RealVector
 	MP_(anisoDimPref),
@@ -6896,7 +6901,8 @@ static String
         MP_(subModelPointer),
         MP_(generatingVectorFileName),
         MP_(generatingMatricesFileName),
-        MP_(drScaleType);
+        MP_(drScaleType),
+        MP_(diliHessianType);
 
 static StringArray
 	MP_(hybridMethodNames),
@@ -7030,7 +7036,15 @@ static int
 	MP_(scrambleSize),
 	MP_(drNumStages),
 	MP_(amPeriodNumSteps),
-	MP_(amStartingStep);
+	MP_(amStartingStep),
+        MP_(diliAdaptInterval),
+        MP_(diliAdaptStart),
+        MP_(diliAdaptEnd),
+        MP_(diliInitialWeight),
+        MP_(diliSesNumEigs),
+        MP_(diliSesExpRank),
+        MP_(diliSesOversFactor),
+        MP_(diliSesBlockSize);
 
 static size_t
 	MP_(collocationPoints),
