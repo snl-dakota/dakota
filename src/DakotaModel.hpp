@@ -643,22 +643,12 @@ public:
 
   // VARIABLES
 
-  // array indicating which discrete integer variables are set vs. range?
-  /// define and return discreteIntSets using active view from currentVariables
-  const BitArray& discrete_int_sets();
-  /// define and return discreteIntSets using passed active view
-  const BitArray& discrete_int_sets(short active_view);
   // define and return discreteStringSets
   //const BitArray& discrete_string_sets();
   // define and return discreteRealSets
   //const BitArray& discrete_real_sets();
 
-  /// return the sets of values available for each of the active
-  /// discrete set integer variables (aggregated in activeDiscSetIntValues)
-  const IntSetArray& discrete_set_int_values();
-  /// return the sets of values available for each of the active
-  /// discrete set integer variables (aggregated in activeDiscSetIntValues)
-  const IntSetArray& discrete_set_int_values(short active_view);
+
   /// return the sets of values available for each of the active
   /// discrete set string variables (aggregated in activeDiscSetStringValues)
   const StringSetArray& discrete_set_string_values();
@@ -1554,17 +1544,11 @@ private:
   IntResponseMap graphicsRespMap;
 
   /// aggregation of the admissible value sets for all active discrete
-  /// set integer variables
-  IntSetArray activeDiscSetIntValues;
-  /// aggregation of the admissible value sets for all active discrete
   /// set string variables
   StringSetArray activeDiscSetStringValues;
   /// aggregation of the admissible value sets for all active discrete
   /// set real variables
   RealSetArray activeDiscSetRealValues;
-  /// key for identifying discrete integer set variables within the
-  /// active discrete integer variables
-  BitArray discreteIntSets;
   // key for identifying discrete string set variables within the active
   // discrete string variables
   //BitArray discreteStringSets;
@@ -1572,9 +1556,6 @@ private:
   // discrete real variables
   //BitArray discreteRealSets;
 
-  /// previous view used in discrete_set_int_values(view): avoids
-  /// recomputation of activeDiscSetIntValues
-  short prevDSIView;
   /// previous view used in discrete_set_string_values(view): avoids
   /// recomputation of activeDiscSetStringValues
   short prevDSSView;
@@ -1688,26 +1669,6 @@ inline void Model::discrete_state_set_real_values(const RealSetArray& rsa)
   else          discreteStateSetRealValues = rsa;
 }
 */
-
-
-inline const BitArray& Model::discrete_int_sets()
-{
-  if (modelRep)
-    return modelRep->discrete_int_sets(modelRep->currentVariables.view().first);
-  else
-    return discrete_int_sets(currentVariables.view().first);
-}
-
-
-inline const IntSetArray& Model::discrete_set_int_values()
-{
-  if (modelRep)
-    return modelRep->
-      discrete_set_int_values(modelRep->currentVariables.view().first);
-  else
-    return discrete_set_int_values(currentVariables.view().first);
-}
-
 
 inline const StringSetArray& Model::discrete_set_string_values()
 {

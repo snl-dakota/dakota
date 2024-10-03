@@ -108,6 +108,7 @@ Includes
 #include <JEGAOptimizer.hpp>
 #include <ProblemDescDB.hpp>
 #include <MarginalsCorrDistribution.hpp>
+#include <model_utils.hpp>
 
 // Eddy utility includes.
 #include <utilities/include/EDDY_DebugScope.hpp>
@@ -1436,8 +1437,8 @@ JEGAOptimizer::LoadTheDesignVariables(
     const IntVector& dilbs = m.discrete_int_lower_bounds();
     const IntVector& diubs = m.discrete_int_upper_bounds();
     StringMultiArrayConstView dilabels = m.discrete_int_variable_labels();
-    const BitArray& di_set_bits = m.discrete_int_sets();
-    const IntSetArray& dsiv = m.discrete_set_int_values();
+    const BitArray& di_set_bits = ModelUtils::discrete_int_sets(m);
+    const IntSetArray& dsiv = ModelUtils::discrete_set_int_values(m);
     for(i=0, dsi_cntr=0; i<this->numDiscreteIntVars; ++i)
     {
       if (di_set_bits[i]) { // discrete set variables
@@ -2025,7 +2026,7 @@ JEGAOptimizer::Evaluator::SeparateVariables(
     }
 
     // Move on to the DAKOTA discrete integer {range,set} variables.
-    const BitArray& di_set_bits = this->_model.discrete_int_sets();
+    const BitArray& di_set_bits = ModelUtils::discrete_int_sets(this->_model);
     for(i=0; i<num_div; ++i, ++dvi_cntr)
     {
       if (di_set_bits[i]) { // set variables are discrete nature in JEGA

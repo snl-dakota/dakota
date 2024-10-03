@@ -8,6 +8,7 @@
     _______________________________________________________________________ */
 
 #include "ProblemDescDB.hpp"
+#include "model_utils.hpp"
 
 #include <algorithm>
 #include <sstream>
@@ -140,8 +141,8 @@ void OptDartsOptimizer::load_parameters(Model &model)
      const RealVector& lower_bound_real = model.discrete_real_lower_bounds();
      const RealVector& upper_bound_real = model.discrete_real_upper_bounds();
 
-     const BitArray& int_set_bits = iteratedModel.discrete_int_sets();
-     const IntSetArray& initial_point_set_int = iteratedModel.discrete_set_int_values();
+     const BitArray& int_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
+     const IntSetArray& initial_point_set_int = ModelUtils::discrete_set_int_values(iteratedModel);
      const RealSetArray& initial_point_set_real = iteratedModel.discrete_set_real_values();
 
      // Define Output Types

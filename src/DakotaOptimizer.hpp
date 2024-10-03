@@ -10,6 +10,7 @@
 #define DAKOTA_OPTIMIZER_H
 
 #include "DakotaMinimizer.hpp"
+#include "model_utils.hpp"
 
 namespace Dakota {
 
@@ -171,8 +172,8 @@ bool get_variable_bounds( Model &                   model, // would like to make
   const RealVector& lower_bnds_real = model.discrete_real_lower_bounds();
   const RealVector& upper_bnds_real = model.discrete_real_upper_bounds();
 
-  const BitArray& int_set_bits = model.discrete_int_sets(); // appears to be able to modify the model object ...
-  const IntSetArray& init_pt_set_int = model.discrete_set_int_values();
+  const BitArray& int_set_bits = ModelUtils::discrete_int_sets(model); // appears to be able to modify the model object ...
+  const IntSetArray& init_pt_set_int = ModelUtils::discrete_set_int_values(model);
   const RealSetArray& init_pt_set_real = model.discrete_set_real_values();
   const StringSetArray& init_pt_set_string = model.discrete_set_string_values();
 
@@ -807,8 +808,8 @@ void set_variables( const VectorType & source,
   int num_disc_real_vars = vars.drv();
   int num_disc_string_vars = vars.dsv();
 
-  const BitArray& int_set_bits = model.discrete_int_sets();
-  const IntSetArray& set_int_vars = model.discrete_set_int_values();
+  const BitArray& int_set_bits = ModelUtils::discrete_int_sets(model);
+  const IntSetArray& set_int_vars = ModelUtils::discrete_set_int_values(model);
   const RealSetArray& set_real_vars = model.discrete_set_real_values();
   const StringSetArray& set_string_vars = model.discrete_set_string_values();
 
@@ -855,8 +856,8 @@ void get_variables( Model & model,
     abort_handler(-1);
   }
 
-  const BitArray& int_set_bits = model.discrete_int_sets();
-  const IntSetArray& pt_set_int = model.discrete_set_int_values();
+  const BitArray& int_set_bits = ModelUtils::discrete_int_sets(model);
+  const IntSetArray& pt_set_int = ModelUtils::discrete_set_int_values(model);
   const RealSetArray& pt_set_real = model.discrete_set_real_values();
   const StringSetArray& pt_set_string = model.discrete_set_string_values();
 

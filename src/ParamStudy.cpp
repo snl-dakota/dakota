@@ -17,6 +17,7 @@
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "PolynomialApproximation.hpp"
+#include "model_utils.hpp"
 
 static const char rcsId[]="@(#) $Id: ParamStudy.cpp 7024 2010-10-16 01:24:42Z mseldre $";
 
@@ -441,8 +442,8 @@ void ParamStudy::vector_loop()
   // magnitude & direction.  The number of fn. evaluations in the study is
   // numSteps + 1 since the initial point is also evaluated.
 
-  const BitArray&      di_set_bits = iteratedModel.discrete_int_sets();
-  const IntSetArray&    dsi_values = iteratedModel.discrete_set_int_values();
+  const BitArray&      di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
+  const IntSetArray&    dsi_values = ModelUtils::discrete_set_int_values(iteratedModel);
   const StringSetArray& dss_values = iteratedModel.discrete_set_string_values();
   const RealSetArray&   dsr_values = iteratedModel.discrete_set_real_values();
   size_t i, j, dsi_cntr;
@@ -517,8 +518,8 @@ void ParamStudy::centered_loop()
   }
 
   // Evaluate +/- steps for each discrete int variable
-  const BitArray&   di_set_bits = iteratedModel.discrete_int_sets();
-  const IntSetArray& dsi_values = iteratedModel.discrete_set_int_values();
+  const BitArray&   di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
+  const IntSetArray& dsi_values = ModelUtils::discrete_set_int_values(iteratedModel);
   for (k=0; k<numDiscreteIntVars; ++k) {
     int i, num_steps_k = discIntStepsPerVariable[k];
     if (di_set_bits[k]) {
@@ -578,8 +579,8 @@ void ParamStudy::multidim_loop()
   // Perform a multidimensional parameter study based on the number of 
   // partitions specified for each variable.
 
-  const BitArray&      di_set_bits = iteratedModel.discrete_int_sets();
-  const IntSetArray&    dsi_values = iteratedModel.discrete_set_int_values();
+  const BitArray&      di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
+  const IntSetArray&    dsi_values = ModelUtils::discrete_set_int_values(iteratedModel);
   const StringSetArray& dss_values = iteratedModel.discrete_set_string_values();
   const RealSetArray&   dsr_values = iteratedModel.discrete_set_real_values();
   size_t i, j, p_cntr, dsi_cntr,
@@ -667,8 +668,8 @@ load_distribute_points(const String& points_filename,
       }
 
     // validate discrete integers (sets and ranges) read
-    const BitArray& di_set_bits = iteratedModel.discrete_int_sets();
-    const IntSetArray& dsi_vals = iteratedModel.discrete_set_int_values();
+    const BitArray& di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
+    const IntSetArray& dsi_vals = ModelUtils::discrete_set_int_values(iteratedModel);
     const IntVector& di_lb = iteratedModel.discrete_int_lower_bounds();
     const IntVector& di_ub = iteratedModel.discrete_int_upper_bounds();
 
@@ -741,8 +742,8 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
     listDSVPoints.resize(boost::extents[numEvals][numDiscreteStringVars]);
   if (numDiscreteRealVars) listDRVPoints.resize(numEvals);
 
-  const BitArray&      di_set_bits = iteratedModel.discrete_int_sets();
-  const IntSetArray&    dsi_values = iteratedModel.discrete_set_int_values();
+  const BitArray&      di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
+  const IntSetArray&    dsi_values = ModelUtils::discrete_set_int_values(iteratedModel);
   const StringSetArray& dss_values = iteratedModel.discrete_set_string_values();
   const RealSetArray&   dsr_values = iteratedModel.discrete_set_real_values();
 
@@ -876,8 +877,8 @@ void ParamStudy::distribute_partitions()
   const RealVector& dr_l_bnds = iteratedModel.discrete_real_lower_bounds();
   const RealVector& dr_u_bnds = iteratedModel.discrete_real_upper_bounds();
 
-  const BitArray&      di_set_bits = iteratedModel.discrete_int_sets();
-  const IntSetArray&    dsi_values = iteratedModel.discrete_set_int_values();
+  const BitArray&      di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
+  const IntSetArray&    dsi_values = ModelUtils::discrete_set_int_values(iteratedModel);
   const StringSetArray& dss_values = iteratedModel.discrete_set_string_values();
   const RealSetArray&   dsr_values = iteratedModel.discrete_set_real_values();
 
@@ -955,8 +956,8 @@ void ParamStudy::final_point_to_step_vector()
   //StringMultiArray dsv_final;
   //distribute(finalPoint, cv_final, div_final, dsv_final, drv_final);
 
-  const BitArray&      di_set_bits = iteratedModel.discrete_int_sets();
-  const IntSetArray&    dsi_values = iteratedModel.discrete_set_int_values();
+  const BitArray&      di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
+  const IntSetArray&    dsi_values = ModelUtils::discrete_set_int_values(iteratedModel);
   const StringSetArray& dss_values = iteratedModel.discrete_set_string_values();
   const RealSetArray&   dsr_values = iteratedModel.discrete_set_real_values();
   size_t j, dsi_cntr;
@@ -1031,8 +1032,8 @@ check_sets(const IntVector& c_steps,  const IntVector& di_steps,
   // multi-iterator execution with updated initial points.  Nonetheless,
   // verify proper set support for specified steps.
 
-  const BitArray&      di_set_bits = iteratedModel.discrete_int_sets();
-  const IntSetArray&    dsi_values = iteratedModel.discrete_set_int_values();
+  const BitArray&      di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
+  const IntSetArray&    dsi_values = ModelUtils::discrete_set_int_values(iteratedModel);
   const StringSetArray& dss_values = iteratedModel.discrete_set_string_values();
   const RealSetArray&   dsr_values = iteratedModel.discrete_set_real_values();
   size_t j, dsi_cntr;

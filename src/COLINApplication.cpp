@@ -90,7 +90,7 @@ void COLINApplication::set_problem(Model& model) {
     const BitArray&       di_set_bits = ModelUtils::discrete_int_sets(model);
     const IntVector&      lower_bnds  = model.discrete_int_lower_bounds();
     const IntVector&      upper_bnds  = model.discrete_int_upper_bounds();
-    const IntSetArray&    dsiv_values = model.discrete_set_int_values();
+    const IntSetArray&    dsiv_values = ModelUtils::discrete_set_int_values(model);
     const RealSetArray&   dsrv_values = model.discrete_set_real_values();
     const StringSetArray& dssv_values = model.discrete_set_string_values();
     // Need temporary storage in which to consolidate all types of
@@ -363,8 +363,8 @@ colin_request_to_dakota_request(const utilib::Any &domain,
   // One specification type for discrete variables is a set of values.
   // Get that list of values if the user provided one.
 
-  const     BitArray&   di_set_bits = iteratedModel.discrete_int_sets();
-  const IntSetArray&    dsiv_values = iteratedModel.discrete_set_int_values();
+  const     BitArray&   di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
+  const IntSetArray&    dsiv_values = ModelUtils::discrete_set_int_values(iteratedModel);
   const RealSetArray&   dsrv_values = iteratedModel.discrete_set_real_values();
   const StringSetArray& dssv_values = iteratedModel.discrete_set_string_values();
 

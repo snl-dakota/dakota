@@ -12,6 +12,8 @@
 #include "ProblemDescDB.hpp"
 #include "ParamResponsePair.hpp"
 #include "PRPMultiIndex.hpp"
+#include "model_utils.hpp"
+
 using Dakota::RealVector;
 using Dakota::IntVector;
 
@@ -370,8 +372,8 @@ void COLINOptimizer::core_run()
     // is necessary to allow usage beyond design optimization; e.g., for
     // epistemic interval estimation.
 
-    const       BitArray& di_set_bits = iteratedModel.discrete_int_sets();
-    const    IntSetArray& dsiv_values = iteratedModel.discrete_set_int_values();
+    const       BitArray& di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
+    const    IntSetArray& dsiv_values = ModelUtils::discrete_set_int_values(iteratedModel);
     const   RealSetArray& dsrv_values = iteratedModel.discrete_set_real_values();
     const StringSetArray& dssv_values = iteratedModel.discrete_set_string_values();
     size_t i, index, dsi_cntr;
@@ -990,8 +992,8 @@ void COLINOptimizer::post_run(std::ostream& s)
   // determine the size of those sets and the number of non-set
   // integer variables.
 
-  const       BitArray& di_set_bits = iteratedModel.discrete_int_sets();
-  const    IntSetArray& dsiv_values = iteratedModel.discrete_set_int_values();
+  const       BitArray& di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
+  const    IntSetArray& dsiv_values = ModelUtils::discrete_set_int_values(iteratedModel);
   const   RealSetArray& dsrv_values = iteratedModel.discrete_set_real_values();
   const StringSetArray& dssv_values = iteratedModel.discrete_set_string_values();
   size_t i, j, dsi_cntr;

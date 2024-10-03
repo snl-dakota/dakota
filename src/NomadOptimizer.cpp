@@ -21,7 +21,7 @@
 
 #include <nomad.hpp>
 #include "NomadOptimizer.hpp"
-
+#include "model_utils.hpp"
 
 using namespace std;
 
@@ -275,8 +275,8 @@ void NomadOptimizer::core_run()
   IntVector  discIntVars(numDiscreteIntVars);
   RealVector discRealVars(numDiscreteRealVars);
 
-  const BitArray& int_set_bits = iteratedModel.discrete_int_sets();
-  const IntSetArray& set_int_vars = iteratedModel.discrete_set_int_values();
+  const BitArray& int_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
+  const IntSetArray& set_int_vars = ModelUtils::discrete_set_int_values(iteratedModel);
   const RealSetArray& set_real_vars = iteratedModel.discrete_set_real_values();
   const StringSetArray& set_string_vars = iteratedModel.discrete_set_string_values();
 
@@ -458,8 +458,8 @@ void NomadOptimizer::Evaluator::set_variables(const NOMAD::Eval_Point &x) const
   IntVector  discIntVars(n_disc_int_vars);
   RealVector discRealVars(n_disc_real_vars);
 
-  const BitArray& int_set_bits = _model.discrete_int_sets();
-  const IntSetArray&  set_int_vars = _model.discrete_set_int_values();
+  const BitArray& int_set_bits = ModelUtils::discrete_int_sets(_model);
+  const IntSetArray&  set_int_vars = ModelUtils::discrete_set_int_values(_model);
   const RealSetArray& set_real_vars = _model.discrete_set_real_values();
   const StringSetArray& set_string_vars = _model.discrete_set_string_values();
 
@@ -640,9 +640,9 @@ void NomadOptimizer::load_parameters(Model &model, NOMAD::Parameters &p)
   const StringMultiArrayConstView initial_point_string = 
     model.current_variables().discrete_string_variables();
 
-  const BitArray& int_set_bits = iteratedModel.discrete_int_sets();
+  const BitArray& int_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
   const IntSetArray& initial_point_set_int = 
-    iteratedModel.discrete_set_int_values();
+    ModelUtils::discrete_set_int_values(iteratedModel);
   const RealSetArray& initial_point_set_real = 
     iteratedModel.discrete_set_real_values();
   const StringSetArray& initial_point_set_string = 
