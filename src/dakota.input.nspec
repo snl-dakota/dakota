@@ -5974,6 +5974,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
         metropolis_hastings {N_mdm(lit,mcmcType_metropolis_hastings)}
         |
         mala {N_mdm(lit,mcmcType_mala)}
+        |
+        dili {N_mdm(lit,mcmcType_dili)}
        ]
       [ pre_solve {0}
         sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}
@@ -5989,6 +5991,19 @@ KEYWORD method {N_mdm3(start,0,stop)}
       [ am_starting_step INTEGER {N_mdm(int,amStartingStep)} ]
       [ am_scale REAL {N_mdm(Real,amScale)} ]
       [ mala_step_size REAL {N_mdm(Real,malaStepSize)} ]
+      [ dili_hessian_type STRING {N_mdm(str,diliHessianType)} ]
+      [ dili_adapt_interval INTEGER {N_mdm(int,diliAdaptInterval)} ]
+      [ dili_adapt_start INTEGER {N_mdm(int,diliAdaptStart)} ]
+      [ dili_adapt_end INTEGER {N_mdm(int,diliAdaptEnd)} ]
+      [ dili_initial_weight INTEGER {N_mdm(int,diliInitialWeight)} ]
+      [ dili_hess_tolerance REAL {N_mdm(Real,diliHessTolerance)} ]
+      [ dili_lis_tolerance REAL {N_mdm(Real,diliLISTolerance)} ]
+      [ dili_ses_num_eigs INTEGER {N_mdm(int,diliSesNumEigs)} ]
+      [ dili_ses_rel_tol REAL {N_mdm(Real,diliSesRelTol)} ]
+      [ dili_ses_abs_tol REAL {N_mdm(Real,diliSesAbsTol)} ]
+      [ dili_ses_exp_rank INTEGER {N_mdm(int,diliSesExpRank)} ]
+      [ dili_ses_overs_factor INTEGER {N_mdm(int,diliSesOversFactor)} ]
+      [ dili_ses_block_size INTEGER {N_mdm(int,diliSesBlockSize)} ]
       [ proposal_covariance {N_mdm(lit,proposalCovType_user)}
         ( prior {N_mdm(lit,proposalCovType_prior)}
           [ multiplier REAL > 0.0 {N_mdm(Real,priorPropCovMult)} ]

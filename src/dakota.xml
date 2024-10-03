@@ -3694,13 +3694,14 @@
           &method_export_samples_format;
         </keyword>
 	      <optional>
-          <oneOf label="MCMC Algorithm" >
+                <oneOf label="MCMC Algorithm" >
                   <keyword  id="dram" name="dram" code="{N_mdm(lit,mcmcType_dram)}" label="dram"  default="dram" />
                   <keyword  id="delayed_rejection" name="delayed_rejection" code="{N_mdm(lit,mcmcType_delayed_rejection)}" label="delayed_rejection"  default="dram" />
                   <keyword  id="adaptive_metropolis" name="adaptive_metropolis" code="{N_mdm(lit,mcmcType_adaptive_metropolis)}" label="adaptive_metropolis"  default="dram" />
                   <keyword  id="metropolis_hastings" name="metropolis_hastings" code="{N_mdm(lit,mcmcType_metropolis_hastings)}" label="metropolis_hastings"  default="dram" />
                   <keyword  id="mala" name="mala" code="{N_mdm(lit,mcmcType_mala)}" label="mala"  default="dram" />
-          </oneOf>
+                  <keyword  id="dili" name="dili" code="{N_mdm(lit,mcmcType_dili)}" label="dili"  default="dram" />
+		</oneOf>
 	      </optional>
         <keyword  id="pre_solve" name="pre_solve" code="{0}" label="pre_solve"  minOccurs="0" default="nip pre-solve for emulators" >
           <oneOf label="Pre-solve Optimizer">
@@ -3729,6 +3730,45 @@
 	      </keyword>
 	      <keyword  id="mala_step_size" name="mala_step_size" code="{N_mdm(Real,malaStepSize)}" label="Step size for MALA"  minOccurs="0" maxOccurs="1" default="1.0" >
 		<param type="REAL" />
+	      </keyword>
+	      <keyword  id="dili_hessian_type" name="dili_hessian_type" code="{N_mdm(str,diliHessianType)}" label="Hessian type for Dimension-Independent Likelihood-Informed"  minOccurs="0" maxOccurs="1" default="GaussNewton" >
+		<param type="STRING" />
+	      </keyword>
+	      <keyword  id="dili_adapt_interval" name="dili_adapt_interval" code="{N_mdm(int,diliAdaptInterval)}" label="Adaptation interval for Dimension-Independent Likelihood-Informed"  minOccurs="0" maxOccurs="1" default="-1" >
+		<param type="INTEGER" />
+	      </keyword>
+	      <keyword  id="dili_adapt_start" name="dili_adapt_start" code="{N_mdm(int,diliAdaptStart)}" label="Adaptation start for Dimension-Independent Likelihood-Informed"  minOccurs="0" maxOccurs="1" default="1" >
+		<param type="INTEGER" />
+	      </keyword>
+	      <keyword  id="dili_adapt_end" name="dili_adapt_end" code="{N_mdm(int,diliAdaptEnd)}" label="Adaptation end for Dimension-Independent Likelihood-Informed"  minOccurs="0" maxOccurs="1" default="-1" >
+		<param type="INTEGER" />
+	      </keyword>
+	      <keyword  id="dili_initial_weight" name="dili_initial_weight" code="{N_mdm(int,diliInitialWeight)}" label="Initial weight for Dimension-Independent Likelihood-Informed"  minOccurs="0" maxOccurs="1" default="100" >
+		<param type="INTEGER" />
+	      </keyword>
+	      <keyword  id="dili_hess_tolerance" name="dili_hess_tolerance" code="{N_mdm(Real,diliHessTolerance)}" label="Hessian tolerance for Dimension-Independent Likelihood-Informed"  minOccurs="0" maxOccurs="1" default="1.0e-4" >
+		<param type="REAL" />
+	      </keyword>
+	      <keyword  id="dili_lis_tolerance" name="dili_lis_tolerance" code="{N_mdm(Real,diliLISTolerance)}" label="LIS tolerance for Dimension-Independent Likelihood-Informed"  minOccurs="0" maxOccurs="1" default="0.1" >
+		<param type="REAL" />
+	      </keyword>
+	      <keyword  id="dili_ses_num_eigs" name="dili_ses_num_eigs" code="{N_mdm(int,diliSesNumEigs)}" label="Max number of eigenvalues to compute through the stochastic eigensolver in DILI"  minOccurs="0" maxOccurs="1" default="2" >
+		<param type="INTEGER" />
+	      </keyword>
+	      <keyword  id="dili_ses_rel_tol" name="dili_ses_rel_tol" code="{N_mdm(Real,diliSesRelTol)}" label="Fraction of the largest eigenvalue, used as stopping criteria in the stochastic eigensolver in DILI"  minOccurs="0" maxOccurs="1" default="0.001" >
+		<param type="REAL" />
+	      </keyword>
+	      <keyword  id="dili_ses_abs_tol" name="dili_ses_abs_tol" code="{N_mdm(Real,diliSesAbsTol)}" label="Value of the smallest eigenvalue, used as stopping criteria in the stochastic eigensolver in DILI"  minOccurs="0" maxOccurs="1" default="0.0" >
+		<param type="REAL" />
+	      </keyword>
+	      <keyword  id="dili_ses_exp_rank" name="dili_ses_exp_rank" code="{N_mdm(int,diliSesExpRank)}" label="Expected number of eigenvalues that are larger than the tolerances; used to decide the initial number of samples to compute in the stochastic eigensolver in DILI"  minOccurs="0" maxOccurs="1" default="2" >
+		<param type="INTEGER" />
+	      </keyword>
+	      <keyword  id="dili_ses_overs_factor" name="dili_ses_overs_factor" code="{N_mdm(int,diliSesOversFactor)}" label="When computing a rank 'r' eigenvalue decomposition, 'r + oversampling factor' matvecs are used in the stochastic eigensolver in DILI"  minOccurs="0" maxOccurs="1" default="2" >
+		<param type="INTEGER" />
+	      </keyword>
+	      <keyword  id="dili_ses_block_size" name="dili_ses_block_size" code="{N_mdm(int,diliSesBlockSize)}" label="The number of new random matvecs to compute when the current eigenvalues do not satisfy the stopping criteria in stochastic eigensolver in DILI"  minOccurs="0" maxOccurs="1" default="2" >
+		<param type="INTEGER" />
 	      </keyword>
               &bayes_proposal_covariance;
 	    </keyword>
