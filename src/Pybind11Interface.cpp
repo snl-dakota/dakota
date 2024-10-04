@@ -170,6 +170,13 @@ void Pybind11Interface::initialize_driver(const String& ac_name)
   if( !py11Active )
   {
     size_t pos = ac_name.find(":");
+    if ( pos != std::string::npos )
+      Cerr << "Warning: delimiter \":\" in "
+           << "\"python_module:analysis_function\" is deprecated.  Replace with "
+           << "\".\" delimiter" << std::endl;
+
+    else
+      pos = ac_name.find(".");
     std::string module_name = ac_name.substr(0,pos);
     std::string function_name = ac_name.substr(pos+1);
 

@@ -2646,14 +2646,16 @@ void NonDBayesCalibration::compute_statistics()
 
   NonDSampling::compute_moments(filtered_chain, chainStats,
 				Pecos::STANDARD_MOMENTS);
+
   NonDSampling::compute_moments(filteredFnVals, fnStats,
 				Pecos::STANDARD_MOMENTS);
   if (!requestedProbLevels[0].empty())
     compute_intervals();
 
   // Print tabular file for the filtered chain
-  if (!exportMCMCFilename.empty() || outputLevel >= NORMAL_OUTPUT)
+  if (!exportMCMCFilename.empty() || outputLevel >= NORMAL_OUTPUT) {
     export_chain(filtered_chain, filteredFnVals);
+  }
 
   if (posteriorStatsKL)
     kl_post_prior(acceptanceChain);

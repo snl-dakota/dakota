@@ -202,6 +202,19 @@ DataMethodRep::DataMethodRep():
   amStartingStep(100),
   amScale(1.0),
   malaStepSize(1.0),
+  diliHessianType("GaussNewton"),
+  diliAdaptInterval(-1),
+  diliAdaptStart(1),
+  diliAdaptEnd(-1),
+  diliInitialWeight(100),
+  diliHessTolerance(1.0e-4),
+  diliLISTolerance(0.1),
+  diliSesNumEigs(2),
+  diliSesRelTol(0.001),
+  diliSesAbsTol(0.0),
+  diliSesExpRank(2),
+  diliSesOversFactor(2),
+  diliSesBlockSize(2),
   // Parameter Study
   numSteps(0), pstudyFileFormat(TABULAR_ANNOTATED), pstudyFileActive(false),
   // Verification
@@ -383,6 +396,19 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << amStartingStep
     << amScale
     << malaStepSize
+    << diliHessianType
+    << diliAdaptInterval
+    << diliAdaptStart
+    << diliAdaptEnd
+    << diliInitialWeight
+    << diliHessTolerance
+    << diliLISTolerance
+    << diliSesNumEigs
+    << diliSesRelTol
+    << diliSesAbsTol
+    << diliSesExpRank
+    << diliSesOversFactor
+    << diliSesBlockSize
     << dataDistType << dataDistCovInputType << dataDistMeans
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
@@ -571,6 +597,19 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> amStartingStep
     >> amScale
     >> malaStepSize
+    >> diliHessianType
+    >> diliAdaptInterval
+    >> diliAdaptStart
+    >> diliAdaptEnd
+    >> diliInitialWeight
+    >> diliHessTolerance
+    >> diliLISTolerance
+    >> diliSesNumEigs
+    >> diliSesRelTol
+    >> diliSesAbsTol
+    >> diliSesExpRank
+    >> diliSesOversFactor
+    >> diliSesBlockSize
     >> dataDistType >> dataDistCovInputType >> dataDistMeans
     >> dataDistCovariance >> dataDistFile >> posteriorDensityExportFilename
     >> posteriorSamplesExportFilename >> posteriorSamplesImportFilename
@@ -759,6 +798,19 @@ void DataMethodRep::write(std::ostream& s) const
     << amStartingStep
     << amScale
     << malaStepSize
+    << diliHessianType
+    << diliAdaptInterval
+    << diliAdaptStart
+    << diliAdaptEnd
+    << diliInitialWeight
+    << diliHessTolerance
+    << diliLISTolerance
+    << diliSesNumEigs
+    << diliSesRelTol
+    << diliSesAbsTol
+    << diliSesExpRank
+    << diliSesOversFactor
+    << diliSesBlockSize
     << dataDistType << dataDistCovInputType << dataDistMeans
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename

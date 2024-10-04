@@ -8,13 +8,14 @@
     _______________________________________________________________________ */
 
 #include "NonDMUQBayesCalibration.hpp"
-#include "MUQ/Modeling/WorkGraphPiece.h"
-#include "MUQ/Modeling/ModGraphPiece.h"
 #include "ProblemDescDB.hpp"
 #include "DakotaModel.hpp"
-#include "ProbabilityTransformation.hpp"
 #include "NonDSampling.hpp"
 #include "PRPMultiIndex.hpp"
+#include "WorkdirHelper.hpp"
+
+#include "MUQ/Modeling/WorkGraphPiece.h"
+#include "MUQ/Modeling/ModGraphPiece.h"
 #include "MUQ/Utilities/RandomGenerator.h"
 #include "MUQ/Utilities/AnyHelpers.h"
 #include "MUQ/SamplingAlgorithms/MHProposal.h"
@@ -22,8 +23,8 @@
 #include "MUQ/SamplingAlgorithms/MHKernel.h"
 #include "MUQ/SamplingAlgorithms/DRKernel.h"
 #include "MUQ/SamplingAlgorithms/MALAProposal.h"
-#include "WorkdirHelper.hpp"
-
+#include "MUQ/SamplingAlgorithms/DILIKernel.h"
+#include "MUQ/Modeling/Distributions/Gaussian.h"
 
 #include <boost/property_tree/ptree.hpp>
 
@@ -50,7 +51,20 @@ NonDMUQBayesCalibration(ProblemDescDB& problem_db, Model& model):
   amPeriodNumSteps(probDescDB.get_int("method.nond.am_period_num_steps")),
   amStartingStep(probDescDB.get_int("method.nond.am_starting_step")),
   amScale(probDescDB.get_real("method.nond.am_scale")),
-  malaStepSize(probDescDB.get_real("method.nond.mala_step_size"))
+  malaStepSize(probDescDB.get_real("method.nond.mala_step_size")),
+  diliHessianType(probDescDB.get_string("method.nond.dili_hessian_type")),
+  diliAdaptInterval(probDescDB.get_int("method.nond.dili_adapt_interval")),
+  diliAdaptStart(probDescDB.get_int("method.nond.dili_adapt_start")),
+  diliAdaptEnd(probDescDB.get_int("method.nond.dili_adapt_end")),
+  diliInitialWeight(probDescDB.get_int("method.nond.dili_initial_weight")),
+  diliHessTolerance(probDescDB.get_real("method.nond.dili_hess_tolerance")),
+  diliLISTolerance(probDescDB.get_real("method.nond.dili_lis_tolerance")),
+  diliSesNumEigs(probDescDB.get_int("method.nond.dili_ses_num_eigs")),
+  diliSesRelTol(probDescDB.get_real("method.nond.dili_ses_rel_tol")),
+  diliSesAbsTol(probDescDB.get_real("method.nond.dili_ses_abs_tol")),
+  diliSesExpRank(probDescDB.get_int("method.nond.dili_ses_exp_rank")),
+  diliSesOversFactor(probDescDB.get_int("method.nond.dili_ses_overs_factor")),
+  diliSesBlockSize(probDescDB.get_int("method.nond.dili_ses_block_size"))
 {
   // MUQ does not yet support hyper-parameter multiplier calibration
   if(numHyperparams != 0) {
@@ -70,12 +84,49 @@ NonDMUQBayesCalibration(ProblemDescDB& problem_db, Model& model):
       // Ok
     }
     else {
-      Cerr << "\nError: NonDMUQBayesCalibration::constructor(): MALA is being requested, but code will not able to compute gradient!"
+      Cerr << "\nError: NonDMUQBayesCalibration::constructor(): MALA is being requested, but code will not be able to compute gradient!"
            << " Current gradient type is '" << grad_type << "'."
            << " When MALA is requested, the three acceptable options for 'gradient type' are"
            << " (i) 'analytic', or"
            << " (ii) 'mixed', or"
            << " (iii) 'numerical' (with 'method source' equal to 'dakota')."
+           << '\n';
+      abort_handler(METHOD_ERROR);
+    }
+  }
+
+  if (mcmcType == "dili") {
+    std::vector<Pecos::RandomVariable>& variables = residualModel.multivariate_distribution().random_variables();
+
+    bool all_rvs_are_Gaussian(true);
+    std::uint64_t numGaussianRVs(0);
+    for ( Pecos::RandomVariable variable : variables     ) {
+      if ((variable.type() == Pecos::CONTINUOUS_RANGE    ) ||
+          (variable.type() == Pecos::DISCRETE_RANGE      ) ||
+          (variable.type() == Pecos::DISCRETE_SET_INT    ) ||
+          (variable.type() == Pecos::DISCRETE_SET_STRING ) ||
+          (variable.type() == Pecos::DISCRETE_SET_REAL   ) ||
+          (variable.type() == Pecos::STOCHASTIC_EXPANSION)) {
+        // Ok
+      }
+      else if (variable.type() == Pecos::NORMAL) {
+        // Ok
+        numGaussianRVs += 1;
+      }
+      else {
+        all_rvs_are_Gaussian = false;
+        break;
+      }
+    }
+
+    if ((all_rvs_are_Gaussian == true             ) &&
+        (numGaussianRVs       == numContinuousVars)) {
+      // Ok
+    }
+    else {
+      Cerr << "\nError: NonDMUQBayesCalibration::constructor(): DILI is being requested, but not all random variables are Gaussian!"
+           << " numContinuousVars=" << numContinuousVars
+           << " numGaussianRVs="    << numGaussianRVs
            << '\n';
       abort_handler(METHOD_ERROR);
     }
@@ -88,7 +139,6 @@ NonDMUQBayesCalibration::~NonDMUQBayesCalibration()
 
 
 double MUQLikelihood::LogDensityImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs) {
-
   // Extract parameter vector from MUQ's inputs vector
   // (which lives in the ModPiece base class)
   Eigen::VectorXd const& c_vars = inputs.at(0);
@@ -172,7 +222,6 @@ Eigen::VectorXd MUQLikelihood::GradLogDensityImpl(unsigned int wrt,
 }
 
 double MUQPrior::LogDensityImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs) {
-  
   // Extract parameter vector from MUQ's inputs vector
   // (which lives in the ModPiece base class)
   Eigen::VectorXd const& c_vars = inputs.at(0);
@@ -191,8 +240,9 @@ double MUQPrior::LogDensityImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const
   return log_prior;
 }
 
-Eigen::VectorXd MUQPrior::GradLogDensityImpl(unsigned int wrt,
-                                             muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs) {
+Eigen::VectorXd MUQPrior::GradLogDensityImpl( unsigned int wrt
+                                            , muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs
+                                            ) {
   Eigen::VectorXd const & input_vec(inputs.at(0));
   size_t input_vec_size(input_vec.size());
   Eigen::VectorXd output_vec(input_vec_size);
@@ -216,13 +266,16 @@ Eigen::VectorXd MUQPrior::GradLogDensityImpl(unsigned int wrt,
 void NonDMUQBayesCalibration::specify_prior()
 {
   nonDMUQInstance = this;
-  distPtr = std::make_shared<muq::Modeling::Distribution>(numContinuousVars);
-  MUQPriorPtr = std::make_shared<MUQPrior>(nonDMUQInstance, distPtr);
+  Eigen::VectorXi input_sizes(1);
+  input_sizes(0) = numContinuousVars;
+  MUQPriorPtr = std::make_shared<MUQPrior>(nonDMUQInstance, input_sizes);
 }
 
 void NonDMUQBayesCalibration::specify_likelihood()
 {
-  MUQLikelihoodPtr = std::make_shared<MUQLikelihood>(nonDMUQInstance, distPtr);
+  Eigen::VectorXi input_sizes(1);
+  input_sizes(0) = numContinuousVars;
+  MUQLikelihoodPtr = std::make_shared<MUQLikelihood>(nonDMUQInstance, input_sizes);
 }
 
 void NonDMUQBayesCalibration::init_bayesian_solver()
@@ -232,10 +285,35 @@ void NonDMUQBayesCalibration::init_bayesian_solver()
   parameterPtr = std::make_shared<muq::Modeling::IdentityOperator>(numContinuousVars);
   workGraph = std::make_shared<muq::Modeling::WorkGraph>();
 
-  workGraph->AddNode(parameterPtr,     "Parameters");
-  workGraph->AddNode(MUQLikelihoodPtr, "Likelihood");
-  workGraph->AddNode(MUQPriorPtr,      "Prior");
-  workGraph->AddNode(posteriorPtr,     "Posterior");
+  workGraph->AddNode(parameterPtr, "Parameters");
+  if (mcmcType == "dili") {
+    Eigen::VectorXd muqGaussianPriorMu = Eigen::VectorXd::Zero(numContinuousVars);
+    Eigen::MatrixXd muqGaussianPriorCovMatrix = Eigen::MatrixXd::Zero(numContinuousVars,numContinuousVars);
+
+    std::vector<Pecos::RandomVariable>& variables = residualModel.multivariate_distribution().random_variables();
+    size_t i(0);
+    for ( Pecos::RandomVariable variable : variables ) {
+      if (variable.type() == Pecos::NORMAL) {
+        muqGaussianPriorMu[i] = variable.mean();
+        muqGaussianPriorCovMatrix(i, i) = variable.variance();
+        i += 1;
+      }
+    }
+    //std::cout << "In NonDMUQBayesCalibration::init_bayesian_solver()"
+    //          << ": 'dili' case"
+    //          << ", muqGaussianPriorMu = "        << muqGaussianPriorMu
+    //          << ", muqGaussianPriorCovMatrix = " << muqGaussianPriorCovMatrix
+    //          << std::endl;
+    std::shared_ptr<muq::Modeling::Gaussian> muqGaussianPrior(new muq::Modeling::Gaussian(muqGaussianPriorMu, muqGaussianPriorCovMatrix));
+
+    workGraph->AddNode(MUQLikelihoodPtr, "Likelihood");
+    workGraph->AddNode(muqGaussianPrior->AsDensity(), "Prior");
+  }
+  else {
+    workGraph->AddNode(MUQLikelihoodPtr, "Likelihood");
+    workGraph->AddNode(MUQPriorPtr, "Prior");
+  }
+  workGraph->AddNode(posteriorPtr, "Posterior");
 
   workGraph->AddEdge("Parameters", 0, "Prior",      0); // 0 = index of input,output
   workGraph->AddEdge("Parameters", 0, "Likelihood", 0); // 0 = index of input,output
@@ -256,22 +334,65 @@ void NonDMUQBayesCalibration::init_bayesian_solver()
   pt.put("PrintLevel",0);
 
   pt.put("KernelList", "Kernel1"); // the transition kernel
-  if (mcmcType == "metropolis_hastings" || mcmcType == "adaptive_metropolis" || mcmcType == "mala") {
+  if (( mcmcType == "metropolis_hastings" ) ||
+      ( mcmcType == "adaptive_metropolis" ) ||
+      ( mcmcType == "mala"                ) ||
+      ( mcmcType == "dili"                )) {
     pt.put("Kernel1.Method","MHKernel");
   }
-  else if (mcmcType == "delayed_rejection" || mcmcType == "dram") {
+  else if (( mcmcType == "delayed_rejection" ) ||
+           ( mcmcType == "dram"              )) {
     pt.put("Kernel1.Method","DRKernel");
   }
 
   // Delayed rejection knobs
-  if (mcmcType == "delayed_rejection" || mcmcType == "dram") {
+  if (( mcmcType == "delayed_rejection" ) ||
+      ( mcmcType == "dram"              )) {
     pt.put("Kernel1.NumStages",drNumStages);
     pt.put("Kernel1.Scale",drScale);
     pt.put("Kernel1.ScaleType",drScaleType);
   }
 
-  pt.put("Kernel1.Proposal", "MyProposal"); // the proposal
-  // Metropolis-Hastings/DR with or without adaptivity
+  // DILI knobs
+  if (mcmcType == "dili") {
+    pt.put("Kernel1.HessianType",diliHessianType);
+    pt.put("Kernel1.Adapt Interval",diliAdaptInterval);
+    pt.put("Kernel1.Adapt Start",diliAdaptStart);
+    pt.put("Kernel1.Adapt End",diliAdaptEnd);
+    pt.put("Kernel1.Initial Weight",diliInitialWeight);
+    pt.put("Kernel1.Hess Tolerance",diliHessTolerance);
+    pt.put("Kernel1.LIS Tolerance",diliLISTolerance);
+
+    pt.put("Kernel1.Eigensolver Block", "EigOpts");
+    pt.put("Kernel1.EigOpts.NumEigs", diliSesNumEigs); // 2
+    pt.put("Kernel1.EigOpts.RelativeTolerance", diliSesRelTol); // 1e-3
+    pt.put("Kernel1.EigOpts.AbsoluteTolerance", diliSesAbsTol); // 0.0
+    pt.put("Kernel1.EigOpts.ExpectedRank", diliSesExpRank); // 2
+    pt.put("Kernel1.EigOpts.OversamplingFactor", diliSesOversFactor); // 2
+    pt.put("Kernel1.EigOpts.BlockSize", diliSesBlockSize); // 2
+    //pt.put("Kernel1.EigOpts.Verbosity",0);
+
+    pt.put("Kernel1.LIS Block", "LIS");
+    pt.put("Kernel1.LIS.Method", "MHKernel");
+    pt.put("Kernel1.LIS.Proposal", "MyProposal");
+    pt.put("Kernel1.LIS.MyProposal.Method", "MHProposal");
+    pt.put("Kernel1.LIS.MyProposal.ProposalVariance", 1.0);
+
+    pt.put("Kernel1.CS Block", "CS");
+    pt.put("Kernel1.CS.Method", "MHKernel");
+    pt.put("Kernel1.CS.Proposal", "MyProposal");
+    pt.put("Kernel1.CS.MyProposal.Method", "CrankNicolsonProposal");
+    pt.put("Kernel1.CS.MyProposal.Beta", 1.0);
+    pt.put("Kernel1.CS.MyProposal.PriorNode", "Prior");
+  }
+
+  if (mcmcType == "dili") {
+    // Do nothing
+  }
+  else {
+    pt.put("Kernel1.Proposal", "MyProposal"); // the proposal
+  }
+
   if (mcmcType == "metropolis_hastings" || mcmcType == "delayed_rejection") {
     pt.put("Kernel1.MyProposal.Method","MHProposal");
   }
@@ -282,16 +403,16 @@ void NonDMUQBayesCalibration::init_bayesian_solver()
     pt.put("Kernel1.MyProposal.Method","MALAProposal");
   }
 
-  // MALA knobs
-  if (mcmcType == "mala") {
-    pt.put("Kernel1.MyProposal.StepSize",malaStepSize);
-  }
-
   // Adaptive Metropolis knobs
   if (mcmcType == "adaptive_metropolis" || mcmcType == "dram") {
     pt.put("Kernel1.MyProposal.AdaptSteps",amPeriodNumSteps);
     pt.put("Kernel1.MyProposal.AdaptStart",amStartingStep);
     pt.put("Kernel1.MyProposal.AdaptScale",amScale);
+  }
+
+  // MALA knobs
+  if (mcmcType == "mala") {
+    pt.put("Kernel1.MyProposal.StepSize",malaStepSize);
   }
 
   boost::property_tree::ptree kernOpts = pt.get_child("Kernel1");
@@ -342,6 +463,9 @@ void NonDMUQBayesCalibration::init_bayesian_solver()
   }
   else if (mcmcType == "mala") {
     kernels.at(0) = std::make_shared<muq::SamplingAlgorithms::MHKernel>(kernOpts, problem, proposal);
+  }
+  else if (mcmcType == "dili") {
+    kernels.at(0) = std::make_shared<muq::SamplingAlgorithms::DILIKernel>(kernOpts, problem);
   }
 
   mcmc = std::make_shared<muq::SamplingAlgorithms::SingleChainMCMC>(pt,kernels);
@@ -439,7 +563,9 @@ void NonDMUQBayesCalibration::log_best()
 void NonDMUQBayesCalibration::
 print_results(std::ostream& s, short results_state)
 {
-  if (bestSamples.empty()) return;
+  if (bestSamples.empty()) {
+    return;
+  }
 
   // ----------------------------------------
   // Output best sample which appoximates MAP
@@ -585,15 +711,15 @@ void NonDMUQBayesCalibration::cache_chain()
       lookup_pr.variables(lookup_vars);
       PRPCacheHIter cache_it = lookup_by_val(data_pairs, lookup_pr);
       if (cache_it == data_pairs.get<hashed>().end()) {
-  ++lookup_failures;
-  // Set NaN in the chain points to avoid misleading the user
-  RealVector nan_fn_vals(mcmcModel.current_response().function_values().length());
-  nan_fn_vals = std::numeric_limits<double>::quiet_NaN();
-  Teuchos::setCol(nan_fn_vals, i, acceptedFnVals);
+        ++lookup_failures;
+        // Set NaN in the chain points to avoid misleading the user
+        RealVector nan_fn_vals(mcmcModel.current_response().function_values().length());
+        nan_fn_vals = std::numeric_limits<double>::quiet_NaN();
+        Teuchos::setCol(nan_fn_vals, i, acceptedFnVals);
       }
       else {
-  const RealVector& fn_vals = cache_it->response().function_values();
-  Teuchos::setCol(fn_vals, i, acceptedFnVals);
+        const RealVector& fn_vals = cache_it->response().function_values();
+        Teuchos::setCol(fn_vals, i, acceptedFnVals);
       }
     }
 

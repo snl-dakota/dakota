@@ -1,0 +1,69 @@
+#@ s*: Label=FastTest
+#@ *: DakotaConfig=HAVE_MUQ
+#@ *: ReqFiles=dakota_springs_4d_displacement.dat,dakota_springs_4d_fork.py
+
+environment,
+  tabular_data
+
+method,
+  bayes_calibration muq
+  dili
+  seed = 34784
+  chain_samples = 300
+  proposal_covariance
+    diagonal
+      values 1.e8 1.e8 1.e8 1.e8
+  dr_num_stages = 2
+  dr_scale_type = 'Power'
+  dr_scale = 1.2
+  am_period_num_steps = 20
+  am_starting_step = 20
+  am_scale = 0.1
+  mala_step_size = 1.0
+  dili_hessian_type = 'Exact'
+  dili_adapt_interval = 100
+  dili_adapt_start = 1
+  dili_adapt_end = -1
+  dili_initial_weight = 50
+  dili_hess_tolerance = 1.e-4
+  dili_lis_tolerance = 0.1
+  dili_ses_num_eigs = 2
+  dili_ses_rel_tol = 0.001
+  dili_ses_abs_tol = 0.0
+  dili_ses_exp_rank = 1
+  dili_ses_overs_factor = 2
+  dili_ses_block_size = 2
+# output debug
+
+variables,
+  normal_uncertain 4
+    descriptors 'k1' 'k2' 'k3' 'k4'
+    means          2.0e5 2.0e5 2.0e5 2.0e5
+    std_deviations 1.0e5 1.0e5 1.0e5 1.0e5
+    initial_point  2.4e4 2.4e4 2.4e4 2.4e4
+  continuous_state 7
+    descriptors 'F1' 'k5' 'k6' 'k7' 'k8' 'k9' 'k10'
+    initial_state 10 1.e5 1.e5 1.e5 1.e5 1.e5 1.e5
+
+interface,
+  analysis_drivers 'dakota_springs_4d_fork.py'
+    fork
+    parameters_file 'params.in'
+    results_file 'results.out'
+# analysis_drivers 'dakota_springs_4d_python:decorated_driver'
+#   python
+#   parameters_file 'params.in'
+#   results_file 'results.out'
+#file_tag
+#file_save
+#asynchronous evaluation_concurrency 16
+
+responses,
+  calibration_terms = 1
+    calibration_data_file = 'dakota_springs_4d_displacement.dat'
+      freeform
+      num_experiments = 1
+      variance_type = 'scalar'
+    descriptors 'd'
+    analytic_gradients
+    no_hessians
