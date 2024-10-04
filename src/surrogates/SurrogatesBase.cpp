@@ -30,14 +30,34 @@ Surrogate::Surrogate(const MatrixXd& samples, const MatrixXd& response,
 
 Surrogate::~Surrogate() {}
 
-MatrixXd Surrogate::gradient(const MatrixXd& eval_points, const int qoi) {
-  silence_unused_args(eval_points, qoi);
+VectorXd Surrogate::value(const MatrixXd& eval_points) {
+  silence_unused_args(eval_points);
+  throw(std::runtime_error("Surrogate does not implement value(...)"));
+}
+
+VectorXd Surrogate::values(const MatrixXd& eval_points) {
+  silence_unused_args(eval_points);
+  throw(std::runtime_error("Surrogate does not implement values(...)"));
+}
+
+MatrixXd Surrogate::gradient(const MatrixXd& eval_points) {
+  silence_unused_args(eval_points);
   throw(std::runtime_error("Surrogate does not implement gradient(...)"));
 }
 
-MatrixXd Surrogate::hessian(const MatrixXd& eval_point, const int qoi) {
-  silence_unused_args(eval_point, qoi);
+MatrixXd Surrogate::gradients(const MatrixXd& eval_points) {
+  silence_unused_args(eval_points);
+  throw(std::runtime_error("Surrogate does not implement gradients(...)"));
+}
+
+MatrixXd Surrogate::hessian(const MatrixXd& eval_point) {
+  silence_unused_args(eval_point);
   throw(std::runtime_error("Surrogate does not implement hessian(...)"));
+}
+
+MatrixXd Surrogate::hessians(const MatrixXd& eval_point) {
+  silence_unused_args(eval_point);
+  throw(std::runtime_error("Surrogate does not implement hessians(...)"));
 }
 
 void Surrogate::variable_labels(const std::vector<std::string>& var_labels) {
@@ -80,7 +100,7 @@ VectorXd Surrogate::evaluate_metrics(const StringArray& mnames,
   VectorXd metrics(num_metrics);
 
   for (int m = 0; m < num_metrics; m++) {
-    surr_values = this->value(points,0);
+    surr_values = this->value(points);
     metrics(m) =
         util::compute_metric(surr_values, ref_values.col(0), mnames[m]);
   }

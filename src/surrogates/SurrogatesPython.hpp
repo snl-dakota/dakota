@@ -77,60 +77,37 @@ class Python : public Surrogate {
   void build(const MatrixXd& samples, const MatrixXd& response) override;
 
   /**
-   *  \brief Evaluate the python surrogate at a set of prediction points for
-   * a single QoI. \param[in] eval_points Matrix of prediction points - (num_pts
-   * by num_features). \param[in] qoi Index for surrogate QoI. \returns Values
+   *  \brief Evaluate the scalar python surrogate at a set of prediction points.
+   * \param[in] eval_points Matrix of prediction points - (num_pts
+   * by num_features). \returns Values
    * of the python surrogate at the prediction points - (num_pts)
-   */
-  VectorXd value(const MatrixXd& eval_points, const int qoi) override;
-
-  /**
-   *  \brief Evaluate the python surrogate at a set of prediction points for
-   * QoI index 0. \param[in] eval_points Matrix of prediction points - (num_pts
-   * by num_features). \returns Values of the python surrogate at the
-   * prediction points - (num_pts)
    */
   VectorXd value(const MatrixXd& eval_points) override;
 
   /**
-   *  \brief Evaluate the gradient of the python surrogate at a set of
-   * prediction points for a single QoI. \param[in] eval_points Coordinates of
-   * the prediction points - (num_pts by num_features). \param[in] qoi Index of
-   * response/QOI for which to compute derivatives. \returns Matrix of gradient
+   *  \brief Evaluate the field python surrogate at a set of prediction points.
+   * \param[in] eval_points Matrix of prediction points - (num_pts
+   * by num_features). \returns Values of the python surrogate at the
+   * prediction points - (num_pts)
+   */
+  VectorXd values(const MatrixXd& eval_points) override;
+
+  /**
+   *  \brief Evaluate the gradient of the python scalar surrogate at a set of
+   * prediction points. \param[in] eval_points Coordinates of
+   * the prediction points - (num_pts by num_features). 
+   * \returns Matrix of gradient
    * vectors at the prediction points - (num_pts by num_features).
    */
-  MatrixXd gradient(const MatrixXd& eval_points, const int qoi) override;
+  MatrixXd gradient(const MatrixXd& eval_points) override;
 
   /**
-   *  \brief Evaluate the gradient of the python surrogate at a set of
-   * prediction points for QoI index 0. \param[in] eval_points Coordinates of
-   * the prediction points - (num_pts by num_features). \returns Matrix of
-   * gradient vectors at the prediction points - (num_pts by num_features).
-   */
-  MatrixXd gradient(const MatrixXd& eval_points) {
-    return Surrogate::gradient(eval_points);
-  }
-
-  /**
-   *  \brief Evaluate the Hessian of the python surrogate at a single point
-   *  for a single QoI.
-   *  \param[in] eval_point Coordinates of the prediction point - (1 by
-   * num_features). \param[in] qoi Index of response/QOI for which to compute
-   * derivatives. \returns Hessian matrix at the prediction point -
-   *  (num_features by num_features).
-   */
-  MatrixXd hessian(const MatrixXd& eval_point, const int qoi) override;
-
-  /**
-   *  \brief Evaluate the Hessian of the python surrogate at a single point
-   *  for QoI index 0.
+   *  \brief Evaluate the Hessian of the python scalar surrogate at a single point.
    *  \param[in] eval_point Coordinates of the prediction point - (1 by
    * num_features). \returns Hessian matrix at the prediction point -
    *  (num_features by num_features).
    */
-  MatrixXd hessian(const MatrixXd& eval_point) {
-    return Surrogate::hessian(eval_point);
-  }
+  MatrixXd hessian(const MatrixXd& eval_point) override;
 
   std::shared_ptr<Surrogate> clone() const override {
     return std::make_shared<Python>(moduleAndClassName);

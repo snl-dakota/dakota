@@ -251,7 +251,7 @@ SurrogatesBaseApprox::value(const RealVector& c_vars)
   }
 
   Eigen::Map<Eigen::RowVectorXd> eval_point(c_vars.values(), c_vars.length());
-  return model->value(eval_point, 0)(0);
+  return model->value(eval_point)(0);
 }
     
 RealVector
@@ -264,7 +264,7 @@ SurrogatesBaseApprox::values(const RealVector& c_vars)
   }
 
   Eigen::Map<Eigen::RowVectorXd> eval_point(c_vars.values(), c_vars.length());
-  VectorXd vals = model->value(eval_point);
+  VectorXd vals = model->values(eval_point);
 
   RealVector ret_vals(vals.size());
   for (size_t j = 0; j < vals.size(); j++)

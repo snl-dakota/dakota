@@ -124,14 +124,10 @@ bool Python::diagnostics_available()
 { return !isField; }
 
 
-VectorXd Python::value(const MatrixXd& eval_points,
-                       const int qoi) {
+VectorXd Python::value(const MatrixXd& eval_points) {
+
   assert( pyModuleActive );
   assert( Py_IsInitialized() );
-
-  /* Surrogate models don't yet support multiple responses */
-  silence_unused_args(qoi);
-  assert(qoi == 0);
 
   // Hard-coded method for now; could expose to user - RWH
   const std::string fn_name("predict");
@@ -145,7 +141,7 @@ VectorXd Python::value(const MatrixXd& eval_points,
 }
 
 
-VectorXd Python::value(const MatrixXd& eval_points) {
+VectorXd Python::values(const MatrixXd& eval_points) {
 
   assert( pyModuleActive );
   assert( Py_IsInitialized() );
@@ -162,14 +158,9 @@ VectorXd Python::value(const MatrixXd& eval_points) {
 }
 
 
-MatrixXd Python::gradient(const MatrixXd& eval_points,
-                          const int qoi) {
+MatrixXd Python::gradient(const MatrixXd& eval_points) {
   assert( pyModuleActive );
   assert( Py_IsInitialized() );
-
-  /* Surrogate models don't yet support multiple responses */
-  silence_unused_args(qoi);
-  assert(qoi == 0);
 
   // Hard-coded method for now; could expose to user - RWH
   // We could add a check for this method (attribute) above in the
@@ -192,14 +183,12 @@ MatrixXd Python::gradient(const MatrixXd& eval_points,
 }
 
 
-MatrixXd Python::hessian(const MatrixXd& eval_point,
-                         const int qoi) {
+MatrixXd Python::hessian(const MatrixXd& eval_point) {
+
   assert( pyModuleActive );
   assert( Py_IsInitialized() );
 
   silence_unused_args(eval_point);
-  silence_unused_args(qoi);
-  assert(qoi == 0);
   throw(std::runtime_error("hessian is not currently supported."));
 }
 
