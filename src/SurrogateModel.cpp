@@ -268,17 +268,17 @@ void SurrogateModel::init_model_labels(Model& sub_model)
   // labels: update model with current{Variables,Response} descriptors
   // inactive vars / bounds: propagate inactive vars when necessary
 
-  if (sub_model.response_labels().empty()) // should not happen
+  if (sub_model.current_response().function_labels().empty()) // should not happen
     switch (responseMode) {
     case AGGREGATED_MODELS: case AGGREGATED_MODEL_PAIR: {
       StringArray qoi_labels;
       copy_data_partial(currentResponse.function_labels(),
 			0, sub_model.qoi(), qoi_labels);
-      sub_model.response_labels(qoi_labels);
+      sub_model.current_response().function_labels(qoi_labels);
       break;
     }
     default:
-      sub_model.response_labels(currentResponse.function_labels()); break;
+      sub_model.current_response().function_labels(currentResponse.function_labels()); break;
     }
 
   // ***************************************************************************
@@ -503,7 +503,7 @@ void SurrogateModel::update_response_from_model(const Model& sub_model)
       currentResponse.function_labels().empty()) // should not happen
     switch (responseMode) {
     case AGGREGATED_MODELS: case AGGREGATED_MODEL_PAIR: {
-      const StringArray& model_labels = sub_model.response_labels();
+      const StringArray& model_labels = sub_model.current_response().function_labels();
       size_t i, start = 0, num_fns = currentResponse.num_functions(),
 	qoi = sub_model.qoi(), num_repl = num_fns / qoi;
       StringArray repl_labels(num_fns);
@@ -513,7 +513,7 @@ void SurrogateModel::update_response_from_model(const Model& sub_model)
       break;
     }
     default:
-      currentResponse.function_labels(sub_model.response_labels()); break;
+      currentResponse.function_labels(sub_model.current_response().function_labels()); break;
     }
 
   // weights and sense for primary response functions

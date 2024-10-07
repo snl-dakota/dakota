@@ -1079,7 +1079,7 @@ bool NonDRKDDarts::resize()
         
         StringMultiArrayConstView uv_labels
         = iteratedModel.current_variables().continuous_variable_labels();
-        const StringArray& fn_labels = iteratedModel.response_labels();
+        const StringArray& fn_labels = iteratedModel.current_response().function_labels();
         
         std::cout << std::endl;
         

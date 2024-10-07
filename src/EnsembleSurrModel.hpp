@@ -482,7 +482,7 @@ inline size_t EnsembleSurrModel::qoi() const
   case AGGREGATED_MODELS:  case AGGREGATED_MODEL_PAIR:
     return truthModel.qoi();  break;
   default:
-    return response_size();   break;
+    return current_response().num_functions();   break;
   }
 }
 

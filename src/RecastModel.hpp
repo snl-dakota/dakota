@@ -827,7 +827,7 @@ inline void RecastModel::resize_from_subordinate_model(size_t depth)
 
   // pull sizing updates from subModel: reflect aggregated counts, if present,
   // by accessing count from response rather than virtual count from Model
-  numFns = subModel.response_size();
+  numFns = subModel.current_response().num_functions();
   if (currentResponse.num_functions() != numFns) {
     resize_response_mapping(); // requires current sizes before reshape below
     currentResponse.reshape(numFns, currentVariables.cv(),

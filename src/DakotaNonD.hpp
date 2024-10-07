@@ -551,12 +551,12 @@ inline void NonD::response_results_active_set(const ActiveSet& set)
 
 inline void NonD::print_level_mappings(std::ostream& s) const
 {
-  print_level_mappings(s, "response function", iteratedModel.response_labels());
+  print_level_mappings(s, "response function", iteratedModel.current_response().function_labels());
 }
 
 
 inline void NonD::print_densities(std::ostream& s) const
-{ print_densities(s, "response function", iteratedModel.response_labels()); }
+{ print_densities(s, "response function", iteratedModel.current_response().function_labels()); }
 
 
 inline bool NonD::discrepancy_sample_counts() const

@@ -3482,7 +3482,7 @@ size_t Model::qoi() const
   if (modelRep) // envelope fwd to letter
     return modelRep->qoi();
   else // default for models without aggregation
-    return response_size();
+    return current_response().num_functions();
 }
 
 
@@ -5580,7 +5580,7 @@ void Model::evaluate(const RealMatrix& samples_matrix,
   // TODO: option for setting its active or inactive variables
 
   RealMatrix::ordinalType i, num_evals = samples_matrix.numCols();
-  resp_matrix.shape(model.response_size(), num_evals);
+  resp_matrix.shape(model.current_response().num_functions(), num_evals);
 
   for (i=0; i<num_evals; ++i) {
 
@@ -5613,7 +5613,7 @@ void Model::evaluate(const VariablesArray& sample_vars,
   // TODO: option for setting its active or inactive variables
 
   RealMatrix::ordinalType i, num_evals = sample_vars.size();
-  resp_matrix.shape(model.response_size(), num_evals);
+  resp_matrix.shape(model.current_response().num_functions(), num_evals);
 
   for (i=0; i<num_evals; ++i) {
     model.current_variables().active_variables(sample_vars[i]);

@@ -1494,7 +1494,7 @@ JEGAOptimizer::LoadTheObjectiveFunctions(
     // Dakota will soon support mixed extremization schemes.
     // Dakota does not support labeling objectives.  Until it does,
     // we will create a label that looks like "Nature Type Index".
-    const StringArray&  labels = iteratedModel.response_labels();
+    const StringArray&  labels = iteratedModel.current_response().function_labels();
     const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
     bool use_sense = !max_sense.empty();
     for(size_t i=0; i<this->numObjectiveFns; ++i)

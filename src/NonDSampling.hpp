@@ -445,14 +445,14 @@ inline void NonDSampling::compute_moments(const RealVectorArray& fn_samples)
 {
   SizetArray sample_counts;
   compute_moments(fn_samples, sample_counts, momentStats,
-		  finalMomentsType, iteratedModel.response_labels());
+		  finalMomentsType, iteratedModel.current_response().function_labels());
 }
 
 
 inline void NonDSampling::compute_moments(const IntResponseMap& samples)
 {
   compute_moments(samples, momentStats, momentGrads, momentCIs,
-		  finalMomentsType, iteratedModel.response_labels());
+		  finalMomentsType, iteratedModel.current_response().function_labels());
 }
 
 
@@ -465,7 +465,7 @@ inline void NonDSampling::compute_intervals(const IntResponseMap& samples)
 
 
 inline void NonDSampling::print_intervals(std::ostream& s) const
-{ print_intervals(s, "response function", iteratedModel.response_labels()); }
+{ print_intervals(s, "response function", iteratedModel.current_response().function_labels()); }
 
 
 inline void NonDSampling::
@@ -479,7 +479,7 @@ print_moments(std::ostream& s, String qoi_type,
 
 
 inline void NonDSampling::print_moments(std::ostream& s) const
-{ print_moments(s, "response function", iteratedModel.response_labels()); }
+{ print_moments(s, "response function", iteratedModel.current_response().function_labels()); }
 
 
 inline void NonDSampling::sampling_reference(size_t samples_ref)

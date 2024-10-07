@@ -2808,7 +2808,7 @@ int num_filtered, size_t num_exp, size_t num_concatenated)
   
   // Augment function values with experimental uncertainty for prediction ints
   // Generate normal errors using LHS
-  /*int num_res = residualModel.response_size();
+  /*int num_res = residualModel.current_response().num_functions();
     RealVector means_vec(num_res), lower_bnds(num_res), upper_bnds(num_res);
     */
   RealVector means_vec(numFunctions), lower_bnds(numFunctions), 

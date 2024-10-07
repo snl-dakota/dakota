@@ -416,7 +416,7 @@ void ScalingModel::initialize_scaling(Model& sub_model)
       (primaryRespScaleFlag || secondaryRespScaleFlag) )
     print_scaling("Response scales", responseScaleTypes,
                   responseScaleMultipliers, responseScaleOffsets,
-                  sub_model.response_labels());
+                  sub_model.current_response().function_labels());
 
   // LINEAR CONSTRAINT SCALING:
   // computed scales account for scaling in CVs x

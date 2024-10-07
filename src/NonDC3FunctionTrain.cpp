@@ -670,7 +670,7 @@ void NonDC3FunctionTrain::print_moments(std::ostream& s)
   s << std::scientific << std::setprecision(write_precision);
 
   // std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  const StringArray& fn_labels = iteratedModel.response_labels();
+  const StringArray& fn_labels = iteratedModel.current_response().function_labels();
   size_t i, j, width = write_precision+7;
 
   s << "\nMoment statistics for each response function:\n";
@@ -720,7 +720,7 @@ void NonDC3FunctionTrain::print_sobol_indices(std::ostream& s)
 {
   s << "\nGlobal sensitivity indices for each response function:\n";
 
-  const StringArray& fn_labels = iteratedModel.response_labels();
+  const StringArray& fn_labels = iteratedModel.current_response().function_labels();
 
   StringMultiArrayConstView cv_labels
     = iteratedModel.current_variables().continuous_variable_labels();

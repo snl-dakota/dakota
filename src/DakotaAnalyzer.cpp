@@ -100,7 +100,7 @@ bool Analyzer::resize()
   numDiscreteIntVars    = iteratedModel.current_variables().div();
   numDiscreteStringVars = iteratedModel.current_variables().dsv();
   numDiscreteRealVars   = iteratedModel.current_variables().drv();
-  numFunctions          = iteratedModel.response_size();
+  numFunctions          = iteratedModel.current_response().num_functions();
 
   return parent_reinit_comms;
 }
@@ -119,7 +119,7 @@ void Analyzer::update_from_model(const Model& model)
 
   numContinuousVars     = model.current_variables().cv();  numDiscreteIntVars  = model.current_variables().div();
   numDiscreteStringVars = model.current_variables().dsv(); numDiscreteRealVars = model.current_variables().drv();
-  numFunctions          = model.response_size();
+  numFunctions          = model.current_response().num_functions();
 
   bool err_flag = false;
   // Check for correct bit associated within methodName

@@ -294,7 +294,7 @@ void RichExtrapVerification::print_results(std::ostream& s, short results_state)
 {
   StringArray cv_labels;
   copy_data(iteratedModel.current_variables().continuous_variable_labels(), cv_labels);
-  const StringArray& fn_labels = iteratedModel.response_labels();
+  const StringArray& fn_labels = iteratedModel.current_response().function_labels();
 
   // Print resulting order and error estimates
   Cout << "\nRefinement Rate = " << refinementRate;

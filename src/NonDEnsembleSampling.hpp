@@ -296,10 +296,10 @@ inline Real NonDEnsembleSampling::estimator_cost_metric()
 
 inline void NonDEnsembleSampling::resize_active_set()
 {
-  size_t m_resp_len = iteratedModel.response_size();
+  size_t m_resp_len = iteratedModel.current_response().num_functions();
   if (activeSet.request_vector().size() != m_resp_len) {
-    // synch activeSet with iteratedModel.response_size()
-    activeSet.reshape(iteratedModel.response_size());
+    // synch activeSet with iteratedModel.current_response().num_functions()
+    activeSet.reshape(iteratedModel.current_response().num_functions());
     activeSet.request_values(1);
   }
 }

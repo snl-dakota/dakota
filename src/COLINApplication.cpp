@@ -404,7 +404,7 @@ colin_request_to_dakota_request(const utilib::Any &domain,
 
   // TODO: gradient support
 
-  ShortArray asv(iteratedModel.response_size());
+  ShortArray asv(iteratedModel.current_response().num_functions());
 
   AppRequest::request_map_t::const_iterator req_it  = requests.begin();
   AppRequest::request_map_t::const_iterator req_end = requests.end();

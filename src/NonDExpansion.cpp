@@ -2745,7 +2745,7 @@ void NonDExpansion::compute_statistics(short results_state)
       resultsDB.insert(run_identifier(), resultsNames.cv_labels, 
 		       iteratedModel.current_variables().continuous_variable_labels());
       resultsDB.insert(run_identifier(), resultsNames.fn_labels, 
-		       iteratedModel.response_labels());
+		       iteratedModel.current_response().function_labels());
     }
     archive_moments();
     archive_coefficients();
@@ -3583,7 +3583,7 @@ void NonDExpansion::archive_moments()
     md_moments["Row Labels"]
       = make_metadatavalue(moment_1, moment_2, moment_3, moment_4);
     md_moments["Column Labels"]
-      = make_metadatavalue(iteratedModel.response_labels());  
+      = make_metadatavalue(iteratedModel.current_response().function_labels());  
 	  
     if (exp_active) {
       resultsDB.insert(run_identifier(), resultsNames.moments_central_exp, exp_matrix, md_moments);
@@ -3599,7 +3599,7 @@ void NonDExpansion::archive_moments()
           Pecos::PolynomialApproximation::standardize_moments(poly_approxs[i].expansion_moments(), moments);
         }
         resultsDB.insert(run_identifier(), {String("expansion_moments"),
-            iteratedModel.response_labels()[i]},
+            iteratedModel.current_response().function_labels()[i]},
             moments,
             scales);
       }
@@ -3619,7 +3619,7 @@ void NonDExpansion::archive_moments()
           Pecos::PolynomialApproximation::standardize_moments(poly_approxs[i].numerical_integration_moments(), moments);
         }
         resultsDB.insert(run_identifier(), {String("integration_moments"),
-            iteratedModel.response_labels()[i]},
+            iteratedModel.current_response().function_labels()[i]},
             moments,
 	    scales);
       }
@@ -3637,7 +3637,7 @@ void NonDExpansion::archive_sobol_indices() {
   // expansion_coefficient_flag and non-negligible variance
   if(!resultsDB.active()) return;
 
-  const StringArray& fn_labels = iteratedModel.response_labels();
+  const StringArray& fn_labels = iteratedModel.current_response().function_labels();
   StringMultiArrayConstView cv_labels
     = iteratedModel.current_variables().continuous_variable_labels();
 
@@ -3872,7 +3872,7 @@ void NonDExpansion::print_moments(std::ostream& s)
   s << std::scientific << std::setprecision(write_precision);
 
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  const StringArray& fn_labels = iteratedModel.response_labels();
+  const StringArray& fn_labels = iteratedModel.current_response().function_labels();
   size_t i, j, width = write_precision+7;
 
   s << "\nMoment statistics for each response function:\n";
@@ -4003,7 +4003,7 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
  
   s << "\nGlobal sensitivity indices for each response function:\n";
 
-  const StringArray& fn_labels = iteratedModel.response_labels();
+  const StringArray& fn_labels = iteratedModel.current_response().function_labels();
   StringMultiArrayConstView cv_labels
     = iteratedModel.current_variables().continuous_variable_labels();
 
@@ -4116,7 +4116,7 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
 
 void NonDExpansion::print_local_sensitivity(std::ostream& s)
 {
-  const StringArray& fn_labels = iteratedModel.response_labels();
+  const StringArray& fn_labels = iteratedModel.current_response().function_labels();
   s << "\nLocal sensitivities for each response function evaluated at "
     << "uncertain variable means:\n";
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();

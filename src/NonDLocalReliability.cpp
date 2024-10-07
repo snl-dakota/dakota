@@ -2755,7 +2755,7 @@ void NonDLocalReliability::print_results(std::ostream& s, short results_state)
   size_t i, j, k, cntr, width = write_precision+7;
   StringMultiArrayConstView uv_labels
     = iteratedModel.current_variables().continuous_variable_labels();
-  const StringArray& fn_labels = iteratedModel.response_labels();
+  const StringArray& fn_labels = iteratedModel.current_response().function_labels();
   s << "-----------------------------------------------------------------\n";
 
   if (warningBits) {

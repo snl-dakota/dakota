@@ -336,7 +336,7 @@ void ParamStudy::archive_allocate_sets() const
                 = iteratedModel.current_variables().discrete_real_variable_labels();
 
     const StringArray& resp_labels 
-                = iteratedModel.response_labels();
+                = iteratedModel.current_response().function_labels();
 
     if( numContinuousVars ) {
       DimScaleMap scales;
@@ -404,7 +404,7 @@ void ParamStudy::post_run(std::ostream& s)
     if(resultsDB.active()) {
       pStudyDACESensGlobal.archive_correlations(run_identifier(), resultsDB,
                                         iteratedModel.current_variables().ordered_labels(ACTIVE_VARS),
-                                        iteratedModel.response_labels());
+                                        iteratedModel.current_response().function_labels());
     }
 
   }
@@ -1095,7 +1095,7 @@ void ParamStudy::archive_allocate_cps() const
   StringMultiArrayConstView drv_labels
     = iteratedModel.current_variables().discrete_real_variable_labels();
   const StringArray& resp_labels
-    = iteratedModel.response_labels();
+    = iteratedModel.current_response().function_labels();
 
   DimScaleMap resp_scales;
   resp_scales.emplace(1, StringScale("responses", resp_labels));
@@ -1167,7 +1167,7 @@ void ParamStudy::archive_cps_vars(const Model& model, size_t idx) const
   StringMultiArrayConstView drv_labels
     = iteratedModel.current_variables().discrete_real_variable_labels();
   const StringArray& resp_labels
-    = iteratedModel.response_labels();
+    = iteratedModel.current_response().function_labels();
 
   // center point: store values in midpoint of each var's step results
   if (idx == 0) {
@@ -1242,7 +1242,7 @@ void ParamStudy::archive_cps_resp(const Response& response, size_t idx) const
   StringMultiArrayConstView drv_labels
     = iteratedModel.current_variables().discrete_real_variable_labels();
   const StringArray& resp_labels
-    = iteratedModel.response_labels();
+    = iteratedModel.current_response().function_labels();
 
   const RealVector& resp_vec = response.function_values();
 

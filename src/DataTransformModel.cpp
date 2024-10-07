@@ -1265,7 +1265,7 @@ void DataTransformModel::archive_best_original(const ResultsManager &results_db,
   if(!results_db.active())  return;
   
   DimScaleMap scales;
-  scales.emplace(0, StringScale("responses", subModel.response_labels(), 
+  scales.emplace(0, StringScale("responses", subModel.current_response().function_labels(), 
                                 ScaleScope::SHARED)
                 );
 

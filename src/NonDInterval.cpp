@@ -107,7 +107,7 @@ void NonDInterval::initialize_final_statistics()
   size_t i, j, num_levels, cntr = 0;
   StringArray stats_labels(num_final_stats);
   if (singleIntervalFlag) {
-    const StringArray& fn_labels = iteratedModel.response_labels();
+    const StringArray& fn_labels = iteratedModel.current_response().function_labels();
     for (i=0; i<numFunctions; ++i) {
       stats_labels[cntr++] = fn_labels[i] + String("_min");
       stats_labels[cntr++] = fn_labels[i] + String("_max");
@@ -564,7 +564,7 @@ void NonDInterval::compute_evidence_statistics()
 
 void NonDInterval::print_results(std::ostream& s, short results_state)
 {
-  const StringArray& fn_labels = iteratedModel.response_labels();
+  const StringArray& fn_labels = iteratedModel.current_response().function_labels();
   s << "------------------------------------------------------------------\n"
     << std::scientific << std::setprecision(write_precision);
 

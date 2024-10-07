@@ -219,7 +219,7 @@ RecastModel::RecastModel(const Model& sub_model):
   invSecRespMapping(NULL)
 { 
   init_basic();
-  numFns = sub_model.response_size(); // not defined in ctor chain
+  numFns = sub_model.current_response().num_functions(); // not defined in ctor chain
 }
 
 
@@ -652,7 +652,7 @@ transform_set(const Variables& recast_vars, const ActiveSet& recast_set,
   // input/output mappings, the recast_asv request is augmented with
   // additional data requirements derived from chain rule differentiation.
   // The default sub-model DVV is just a copy of the recast DVV.
-  ShortArray sub_model_asv(subModel.response_size(), 0);
+  ShortArray sub_model_asv(subModel.current_response().num_functions(), 0);
   for (i=0; i<num_recast_fns; i++) {
     short asv_val = recast_asv[i];
     // For nonlinear variable mappings, gradient required to transform Hessian.
@@ -739,7 +739,7 @@ inverse_transform_set(const Variables& sub_model_vars,
   // input/output mappings, the recast_asv request is augmented with
   // additional data requirements derived from chain rule differentiation.
   // The default sub-model DVV is just a copy of the recast DVV.
-  ShortArray sub_model_asv(subModel.response_size(), 0);
+  ShortArray sub_model_asv(subModel.current_response().num_functions(), 0);
   for (i=0; i<num_recast_fns; i++) {
     short asv_val = recast_asv[i];
     // For nonlinear variable mappings, gradient required to transform Hessian.
@@ -1346,7 +1346,7 @@ void RecastModel::update_primary_response(const Model& model)
   primaryRespFnSense = model.primary_response_fn_sense();
 
   // primary response function labels
-  const StringArray& sm_resp_labels = model.response_labels();
+  const StringArray& sm_resp_labels = model.current_response().function_labels();
   size_t i, num_primary = numFns 
     - userDefinedConstraints.num_nonlinear_eq_constraints()
     - userDefinedConstraints.num_nonlinear_ineq_constraints();
@@ -1358,12 +1358,12 @@ void RecastModel::update_primary_response(const Model& model)
 void RecastModel::update_secondary_response(const Model& model)
 {
   // secondary response function labels
-  const StringArray& sm_resp_labels = model.response_labels();
+  const StringArray& sm_resp_labels = model.current_response().function_labels();
   size_t i,
     num_nln_con = userDefinedConstraints.num_nonlinear_eq_constraints() +
     userDefinedConstraints.num_nonlinear_ineq_constraints(),
     num_primary    = numFns - num_nln_con,
-    num_sm_primary = model.response_size() - num_nln_con;
+    num_sm_primary = model.current_response().num_functions() - num_nln_con;
   for (i=0; i<num_nln_con; i++)
     currentResponse.shared_data().function_label
       (sm_resp_labels[num_sm_primary+i], num_primary+i);
@@ -1430,10 +1430,10 @@ const RealVector& RecastModel::error_estimates()
 void RecastModel::resize_response_mapping()
 {
   // reshaping primaryRespMapIndices, secondaryRespMapIndices
-  size_t num_curr_fns       = response_size(),
+  size_t num_curr_fns       = current_response().num_functions(),
          num_curr_secondary = num_secondary_fns(),
          num_curr_primary   = num_curr_fns - num_curr_secondary,
-         num_sm_fns         = subModel.response_size(),
+         num_sm_fns         = subModel.current_response().num_functions(),
          num_sm_secondary   = subModel.num_secondary_fns(),
          num_sm_primary     = num_sm_fns - num_sm_secondary,
          num_replicates, num_ind, offset, i, j, k;

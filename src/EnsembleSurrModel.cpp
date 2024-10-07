@@ -1821,7 +1821,7 @@ void EnsembleSurrModel::resize_response(bool use_virtual_counts)
     num_truth_md = truthModel.current_response().metadata().size(),
     num_truth_fns = (use_virtual_counts) ?
     truthModel.qoi() : // allow models to consume lower-level aggregations
-    truthModel.response_size(); // raw counts align w/ currentResponse raw count
+    truthModel.current_response().num_functions(); // raw counts align w/ currentResponse raw count
 
   switch (responseMode) {
   case AGGREGATED_MODELS: {
@@ -1830,7 +1830,7 @@ void EnsembleSurrModel::resize_response(bool use_virtual_counts)
     for (i=0; i<num_surr; ++i) {
       unsigned short form = surrModelKeys[i].retrieve_model_form();
       Model& model_i = model_from_index(form);
-      numFns += (use_virtual_counts) ? model_i.qoi() : model_i.response_size();
+      numFns += (use_virtual_counts) ? model_i.qoi() : model_i.current_response().num_functions();
       num_meta += model_i.current_response().metadata().size();
     }
     //size_t multiplier = num_surr + 1;
@@ -1844,7 +1844,7 @@ void EnsembleSurrModel::resize_response(bool use_virtual_counts)
     Model& lf_model = active_surrogate_model(0);
     size_t num_lf_meta = lf_model.current_response().metadata().size(),
       num_lf_fns = (use_virtual_counts) ?
-        lf_model.qoi() : lf_model.response_size();
+        lf_model.qoi() : lf_model.current_response().num_functions();
     switch (responseMode) {
     case AGGREGATED_MODEL_PAIR:
       numFns   = num_truth_fns + num_lf_fns;

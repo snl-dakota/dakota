@@ -220,7 +220,7 @@ void Optimizer::print_results(std::ostream& s, short results_state)
   Model orig_model = original_model();
   const String& interface_id = orig_model.interface_id(); 
   // use asv = 1's
-  ActiveSet search_set(orig_model.response_size(), numContinuousVars);
+  ActiveSet search_set(orig_model.current_response().num_functions(), numContinuousVars);
   // -------------------------------------
   // Single and Multipoint results summary
   // -------------------------------------

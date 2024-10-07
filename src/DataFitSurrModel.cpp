@@ -1339,7 +1339,7 @@ void DataFitSurrModel::run_dace()
   // resize_from_subordinate_model(), but can be overwritten by top-level
   // Iterator (e.g., NonDExpansion::compute_expansion()
   const ShortArray& dace_asv = daceIterator.active_set_request_vector();
-  if (dace_asv.size() != actualModel.response_size()) {
+  if (dace_asv.size() != actualModel.current_response().num_functions()) {
     ShortArray actual_asv;
     asv_inflate_build(dace_asv, actual_asv);
     daceIterator.active_set_request_vector(actual_asv);
@@ -2096,7 +2096,7 @@ asv_inflate_build(const ShortArray& orig_asv, ShortArray& actual_asv)
 {
   // DataFitSurrModel consumes replicates from any response aggregations
   // occurring in actualModel
-  size_t num_orig = orig_asv.size(), num_actual = actualModel.response_size();
+  size_t num_orig = orig_asv.size(), num_actual = actualModel.current_response().num_functions();
   if (num_actual < num_orig || num_actual % num_orig) {
     Cerr << "Error: ASV size mismatch in DataFitSurrModel::asv_inflate_build()."
 	 << std::endl;
@@ -2136,7 +2136,7 @@ asv_split(const ShortArray& orig_asv, ShortArray& approx_asv,
 
   // DataFitSurrModel consumes replicates from any response aggregations
   // occurring in actualModel
-  size_t num_orig = orig_asv.size(), num_actual = actualModel.response_size();
+  size_t num_orig = orig_asv.size(), num_actual = actualModel.current_response().num_functions();
   if (num_orig != numFns || num_actual < num_orig || num_actual % num_orig) {
     Cerr << "Error: ASV size mismatch in DataFitSurrModel::asv_split()."
 	 << std::endl;

@@ -610,9 +610,6 @@ public:
   /// estimate messageLengths for a model
   void estimate_message_lengths();
 
-  /// return (potentially aggregated) size of response vector in currentResponse
-  size_t response_size() const;
-
   /// initialize modelList and recastFlags for data import/export
   bool manage_data_recastings();
   /// return true if recastFlags is defined
@@ -651,11 +648,6 @@ public:
   const Pecos::MultivariateDistribution& multivariate_distribution() const;
   // set mvDist
   //void multivariate_distribution(const Pecos::MultivariateDistribution& dist);
-
-  /// return the response labels from currentResponse
-  const StringArray& response_labels() const;
-  /// set the response labels in currentResponse
-  void response_labels(const StringArray& resp_labels);
 
   // BOUNDS
 
@@ -852,6 +844,8 @@ public:
   Constraints& user_defined_constraints();
   /// return the current response (currentResponse)
   const Response& current_response() const;
+  /// return the current response (currentResponse)
+  Response& current_response();
   /// return the problem description database (probDescDB)
   ProblemDescDB& problem_description_db() const;
   /// return the parallel library (parallelLib)
@@ -1570,27 +1564,6 @@ multivariate_distribution() const
 //   if (modelRep) modelRep->mvDist = dist;
 //   else          mvDist = dist;
 // }
-
-
-inline size_t Model::response_size() const
-{
-  return (modelRep) ? modelRep->currentResponse.num_functions()
-                    : currentResponse.num_functions();
-}
-
-
-inline const StringArray& Model::response_labels() const
-{
-  return (modelRep) ? modelRep->currentResponse.function_labels()
-                    : currentResponse.function_labels();
-}
-
-
-inline void Model::response_labels(const StringArray& resp_labels)
-{
-  if (modelRep) modelRep->currentResponse.function_labels(resp_labels);
-  else          currentResponse.function_labels(resp_labels);
-}
 
 
 inline const RealVector& Model::continuous_lower_bounds() const
@@ -2413,6 +2386,10 @@ inline const Response& Model::current_response() const
 { return (modelRep) ? modelRep->currentResponse : currentResponse; }
 
 
+inline Response& Model::current_response()
+{ return (modelRep) ? modelRep->currentResponse : currentResponse; }
+
+
 inline ProblemDescDB& Model::problem_description_db() const
 { return (modelRep) ? modelRep->probDescDB : probDescDB; }
 
@@ -2443,7 +2420,7 @@ inline size_t Model::num_secondary_fns() const
 inline size_t Model::num_primary_fns() const
 {
   return (modelRep) ? modelRep->num_primary_fns() :
-    response_size() - num_secondary_fns();
+    current_response().num_functions() - num_secondary_fns();
 }
 
 

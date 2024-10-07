@@ -1114,7 +1114,7 @@ constraint_penalty(const Real& c_viol, const RealVector& u)
 void NonDGlobalReliability::print_results(std::ostream& s, short results_state)
 {
   size_t i, j, wpp7 = write_precision + 7;
-  const StringArray& fn_labels = iteratedModel.response_labels();
+  const StringArray& fn_labels = iteratedModel.current_response().function_labels();
   s << "-----------------------------------------------------------------------"
     << "------";
 
