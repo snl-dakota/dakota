@@ -5,13 +5,13 @@
 namespace Dakota {
     namespace ModelUtils {
 
-        const BitArray& discrete_int_sets(Model &model) {
+        BitArray discrete_int_sets(Model &model) {
             Variables &cv = model.current_variables();
             return discrete_int_sets(model, cv.view().first);
         }
 
 
-        const BitArray& discrete_int_sets(Model &model, short active_view) {
+        BitArray discrete_int_sets(Model &model, short active_view) {
             // identify discrete integer sets within active discrete int variables
             // (excluding discrete integer ranges)
             Variables &cv = model.current_variables();
@@ -117,11 +117,11 @@ namespace Dakota {
         }
 
 
-        const IntSetArray& discrete_set_int_values(Model &model) {
-            discrete_set_int_values(model, model.current_variables().view().first);
+        IntSetArray discrete_set_int_values(Model &model) {
+            return discrete_set_int_values(model, model.current_variables().view().first);
         }
 
-        const IntSetArray& discrete_set_int_values(Model &model, short active_view) {
+        IntSetArray discrete_set_int_values(Model &model, short active_view) {
 
             
             // aggregation of the admissible value sets for all active discrete
@@ -302,11 +302,11 @@ namespace Dakota {
             return adsi_vals;
         }
 
-        const StringSetArray& discrete_set_string_values(Model &model) {
+        StringSetArray discrete_set_string_values(Model &model) {
                 return discrete_set_string_values(model, model.current_variables().view().first);
         }
 
-        const StringSetArray& discrete_set_string_values(Model &model, short active_view) {
+        StringSetArray discrete_set_string_values(Model &model, short active_view) {
 
             // aggregation of the admissible value sets for all active discrete
             // set string variables
@@ -420,11 +420,11 @@ namespace Dakota {
         }
 
 
-        const RealSetArray& discrete_set_real_values(Model &model) {
+        RealSetArray discrete_set_real_values(Model &model) {
                 return discrete_set_real_values(model, model.current_variables().view().first);
         }
 
-        const RealSetArray& discrete_set_real_values(Model &model, short active_view) {
+        RealSetArray discrete_set_real_values(Model &model, short active_view) {
             // aggregation of the admissible value sets for all active discrete
             // set real variables
             RealSetArray adsr_vals;
