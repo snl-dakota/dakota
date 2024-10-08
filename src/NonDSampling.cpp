@@ -299,7 +299,7 @@ get_parameter_sets(Model& model, const size_t num_samples,
       // loss of sampleRanks control is OK since NonDIncremLHS uses ACTIVE mode.
       // TO DO: add support for uniform discrete
       lhsDriver.generate_uniform_samples(ModelUtils::continuous_lower_bounds(model),
-					 model.continuous_upper_bounds(),
+					 ModelUtils::continuous_upper_bounds(model),
 					 corr, num_samples, design_matrix); 
     }
     else if (samplingVarsMode == ALL_UNIFORM) {

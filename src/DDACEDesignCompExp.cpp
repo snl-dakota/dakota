@@ -248,7 +248,7 @@ get_parameter_sets(Model& model, const size_t num_samples,
     double* dace_points = new double [numContinuousVars*num_samples];
     copy_data(sample_points, dace_points, numContinuousVars*num_samples);
     const RealVector& c_l_bnds = ModelUtils::continuous_lower_bounds(model);
-    const RealVector& c_u_bnds = model.continuous_upper_bounds();
+    const RealVector& c_u_bnds = ModelUtils::continuous_upper_bounds(model);
     for (int i=0; i<numContinuousVars; i++) {
       const double& offset = c_l_bnds[i];
       double norm = 1. / (c_u_bnds[i] - c_l_bnds[i]);
@@ -272,7 +272,7 @@ DDACEDesignCompExp::create_sampler(Model& model)
   // It would be nice to detect this and automatically delete any uncertain
   // variables (from numContinuousVars & local_vars).
   const RealVector& c_l_bnds = ModelUtils::continuous_lower_bounds(model);
-  const RealVector& c_u_bnds = model.continuous_upper_bounds();
+  const RealVector& c_u_bnds = ModelUtils::continuous_upper_bounds(model);
   if (c_l_bnds.length() != numContinuousVars || 
       c_u_bnds.length() != numContinuousVars) {
     Cerr << "\nError: Mismatch in number of active variables and length of"

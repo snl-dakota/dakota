@@ -278,7 +278,7 @@ void CONMINOptimizer::initialize_run()
   // copy DAKOTA arrays to CONMIN arrays and check for the existence of bounds.
   const RealVector& local_cdv  = iteratedModel.current_variables().continuous_variables();
   const RealVector& lower_bnds = ModelUtils::continuous_lower_bounds(iteratedModel);
-  const RealVector& upper_bnds = iteratedModel.continuous_upper_bounds();
+  const RealVector& upper_bnds = ModelUtils::continuous_upper_bounds(iteratedModel);
   for (i=0; i<numContinuousVars; i++) {
     conminDesVars[i]   = local_cdv[i];
     conminLowerBnds[i] = lower_bnds[i];

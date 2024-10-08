@@ -164,7 +164,7 @@ void NonDGPImpSampling::core_run()
   //RealVector rhoEmul0(numEmulEval);
   //RealVector rhoEmul2(numEmulEval);
   int num_problem_vars=iteratedModel.current_variables().acv();
-  RealVector c_upper = iteratedModel.continuous_upper_bounds(), 
+  RealVector c_upper = ModelUtils::continuous_upper_bounds(iteratedModel), 
              c_lower = ModelUtils::continuous_lower_bounds(iteratedModel);
 
   int i,j,k;

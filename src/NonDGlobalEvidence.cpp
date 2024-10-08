@@ -38,7 +38,7 @@ void NonDGlobalEvidence::set_cell_bounds()
   size_t j; 
   for (j=0; j<numContIntervalVars; ++j) {
     ModelUtils::continuous_lower_bound(intervalOptModel, cellContLowerBounds[cellCntr][j],j);
-    intervalOptModel.continuous_upper_bound(cellContUpperBounds[cellCntr][j],j);
+    ModelUtils::continuous_upper_bound(intervalOptModel, cellContUpperBounds[cellCntr][j],j);
   }
    
   for (j=0; j<numDiscIntervalVars; ++j) {

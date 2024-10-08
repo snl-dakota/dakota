@@ -352,7 +352,7 @@ void SurrBasedLocalMinimizer::pre_run()
   // will be reset to the TR bounds
   copy_data(iteratedModel.current_variables().continuous_variables(),    initialPoint);
   copy_data(ModelUtils::continuous_lower_bounds(iteratedModel), globalLowerBnds);
-  copy_data(iteratedModel.continuous_upper_bounds(), globalUpperBnds);
+  copy_data(ModelUtils::continuous_upper_bounds(iteratedModel), globalUpperBnds);
 }
 
 
@@ -507,7 +507,7 @@ update_approx_sub_problem(SurrBasedLevelData& tr_data)
 {
   approxSubProbModel.current_variables().active_variables(tr_data.vars_center());
   ModelUtils::continuous_lower_bounds(approxSubProbModel, tr_data.tr_lower_bounds());
-  approxSubProbModel.continuous_upper_bounds(tr_data.tr_upper_bounds());
+  ModelUtils::continuous_upper_bounds(approxSubProbModel, tr_data.tr_upper_bounds());
 
   if ( trConstraintRelax > NO_RELAX ) // relax constraints if requested
     relax_constraints(tr_data);

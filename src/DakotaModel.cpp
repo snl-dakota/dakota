@@ -1116,7 +1116,7 @@ Model::initialize_x0_bounds(const SizetArray& original_dvv,
   const RealVector& c_l_bnds = (active_derivs) ? ModelUtils::continuous_lower_bounds(*this) :
     ( (inactive_derivs) ? inactive_continuous_lower_bounds() :
       all_continuous_lower_bounds() );
-  const RealVector& c_u_bnds = (active_derivs) ? continuous_upper_bounds() :
+  const RealVector& c_u_bnds = (active_derivs) ? ModelUtils::continuous_upper_bounds(*this) :
     ( (inactive_derivs) ? inactive_continuous_upper_bounds() :
       all_continuous_upper_bounds() );
   SizetMultiArrayConstView cv_ids = (active_derivs) ?

@@ -312,7 +312,7 @@ void ScalingModel::initialize_scaling(Model& sub_model)
   varsScaleFlag = scaling_active(cdv_spec_types);
 
   copy_data(ModelUtils::continuous_lower_bounds(sub_model), lbs); // view->copy
-  copy_data(sub_model.continuous_upper_bounds(), ubs); // view->copy
+  copy_data(ModelUtils::continuous_upper_bounds(sub_model), ubs); // view->copy
 
   
   if (contains(cdv_spec_types, SCALE_LOG) && num_lin_cons > 0) {
@@ -326,7 +326,7 @@ void ScalingModel::initialize_scaling(Model& sub_model)
                   cvScaleMultipliers, cvScaleOffsets);
 
   ModelUtils::continuous_lower_bounds(*this, lbs);
-  continuous_upper_bounds(ubs);
+  ModelUtils::continuous_upper_bounds(*this, ubs);
   current_variables().continuous_variables(
                        modify_n2s(sub_model.current_variables().continuous_variables(), cvScaleTypes,
                                   cvScaleMultipliers, cvScaleOffsets) );

@@ -368,7 +368,7 @@ void NCSUOptimizer::core_run()
     // in constraint_eval/objective_eval
     copy_data(iteratedModel.current_variables().continuous_variables(), local_des_vars);
     copy_data(ModelUtils::continuous_lower_bounds(iteratedModel), lowerBounds);
-    copy_data(iteratedModel.continuous_upper_bounds(), upperBounds);
+    copy_data(ModelUtils::continuous_upper_bounds(iteratedModel), upperBounds);
   } 
   else
     local_des_vars.size(num_cv);

@@ -110,7 +110,7 @@ void PSUADEDesignCompExp::post_run(std::ostream& s)
 
   // since MOAT uses pointers, make copies of the data
   const RealVector& lb = ModelUtils::continuous_lower_bounds(iteratedModel);
-  const RealVector& ub = iteratedModel.continuous_upper_bounds();
+  const RealVector& ub = ModelUtils::continuous_upper_bounds(iteratedModel);
   psuade_adata.iLowerB_ = new double [numContinuousVars];
   psuade_adata.iUpperB_ = new double [numContinuousVars];
   for (int i=0; i<numContinuousVars; i++) {
@@ -174,7 +174,7 @@ void PSUADEDesignCompExp::get_parameter_sets(Model& model)
 
   // make copies since we'll pass pointers to MOAT
   const RealVector& c_l_bnds = ModelUtils::continuous_lower_bounds(model);
-  const RealVector& c_u_bnds = model.continuous_upper_bounds();
+  const RealVector& c_u_bnds = ModelUtils::continuous_upper_bounds(model);
   if (c_l_bnds.length() != numContinuousVars || 
       c_u_bnds.length() != numContinuousVars) {
     Cerr << "\nError: Mismatch in number of active variables and length of"

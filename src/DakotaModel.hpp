@@ -651,14 +651,6 @@ public:
 
   // BOUNDS
 
-  /// return the active continuous upper bounds from userDefinedConstraints
-  const RealVector& continuous_upper_bounds() const;
-  /// return an active continuous upper bound from userDefinedConstraints
-  Real continuous_upper_bound(size_t i) const;
-  /// set the active continuous upper bounds in userDefinedConstraints
-  void continuous_upper_bounds(const RealVector& c_u_bnds);
-  /// set the i-th active continuous upper bound from userDefinedConstraints
-  void continuous_upper_bound(Real c_u_bnd, size_t i);
   /// return the active discrete int lower bounds from userDefinedConstraints
   const IntVector& discrete_int_lower_bounds() const;
   /// return an active discrete int lower bound from userDefinedConstraints
@@ -1556,46 +1548,6 @@ multivariate_distribution() const
 //   if (modelRep) modelRep->mvDist = dist;
 //   else          mvDist = dist;
 // }
-
-
-inline const RealVector& Model::continuous_upper_bounds() const
-{
-  return (modelRep) ? modelRep->userDefinedConstraints.continuous_upper_bounds()
-                    : userDefinedConstraints.continuous_upper_bounds();
-}
-
-
-inline Real Model::continuous_upper_bound(size_t i) const
-{
-  return (modelRep) ? modelRep->userDefinedConstraints.continuous_upper_bound(i)
-                    : userDefinedConstraints.continuous_upper_bound(i);
-}
-
-
-inline void Model::continuous_upper_bounds(const RealVector& c_u_bnds)
-{
-  if (modelRep)
-    modelRep->continuous_upper_bounds(c_u_bnds);
-  else {
-    userDefinedConstraints.continuous_upper_bounds(c_u_bnds);
-    if (mvDist.global_bounds())
-      mvDist.upper_bounds(c_u_bnds,
-	currentVariables.shared_data().cv_to_all_mask());
-  }
-}
-
-
-inline void Model::continuous_upper_bound(Real c_u_bnd, size_t i)
-{
-  if (modelRep)
-    modelRep->continuous_upper_bound(c_u_bnd, i);
-  else {
-    userDefinedConstraints.continuous_upper_bound(c_u_bnd, i);
-    if (mvDist.global_bounds())
-      mvDist.upper_bound(c_u_bnd,
-	currentVariables.shared_data().cv_index_to_all_index(i));
-  }
-}
 
 
 inline const IntVector& Model::discrete_int_lower_bounds() const

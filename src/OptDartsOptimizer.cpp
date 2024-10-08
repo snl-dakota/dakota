@@ -68,7 +68,7 @@ void OptDartsOptimizer::core_run()
     double* xmax = new double[num_dim];
     
     const RealVector&  lower_bounds = ModelUtils::continuous_lower_bounds(iteratedModel);
-    const RealVector&  upper_bounds = iteratedModel.continuous_upper_bounds();
+    const RealVector&  upper_bounds = ModelUtils::continuous_upper_bounds(iteratedModel);
     
     // default domain is for the Herbie Function
     for (size_t idim = 0; idim < num_dim; idim++)
@@ -131,7 +131,7 @@ void OptDartsOptimizer::load_parameters(Model &model)
      
      const RealVector& initial_point_cont = model.current_variables().continuous_variables();
      const RealVector& lower_bound_cont = ModelUtils::continuous_lower_bounds(model);
-     const RealVector& upper_bound_cont = model.continuous_upper_bounds();
+     const RealVector& upper_bound_cont = ModelUtils::continuous_upper_bounds(model);
 
      const IntVector& initial_point_int = model.current_variables().discrete_int_variables();
      const IntVector& lower_bound_int = model.discrete_int_lower_bounds();

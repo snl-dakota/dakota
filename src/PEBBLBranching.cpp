@@ -70,13 +70,13 @@ void PebbldBranchSub::setRootComputation()
   // not existing.
   cont_vars.resize(subModel.current_variables().continuous_variables().length());
   lower_bounds.resize(ModelUtils::continuous_lower_bounds(subModel).length());
-  upper_bounds.resize(subModel.continuous_upper_bounds().length());
+  upper_bounds.resize(ModelUtils::continuous_upper_bounds(subModel).length());
   for (int i=0; i<subModel.current_variables().continuous_variables().length(); i++)
     cont_vars[i] = subModel.current_variables().continuous_variables()[i];
   for (int i=0; i<ModelUtils::continuous_lower_bounds(subModel).length(); i++)
     lower_bounds[i] = ModelUtils::continuous_lower_bounds(subModel)[i];
-  for (int i=0; i<subModel.continuous_upper_bounds().length(); i++)
-    upper_bounds[i] = subModel.continuous_upper_bounds()[i];
+  for (int i=0; i<ModelUtils::continuous_upper_bounds(subModel).length(); i++)
+    upper_bounds[i] = ModelUtils::continuous_upper_bounds(subModel)[i];
 }
 
 void PebbldBranchSub::boundComputation(double* controlParam)
@@ -87,7 +87,7 @@ void PebbldBranchSub::boundComputation(double* controlParam)
   // Reset the model variable values and bounds for the sub-problem.
   subModel.current_variables().continuous_variables(cont_vars);
   ModelUtils::continuous_lower_bounds(subModel, lower_bounds);
-  subModel.continuous_upper_bounds(upper_bounds);
+  ModelUtils::continuous_upper_bounds(subModel, upper_bounds);
 
   // Run the solver.
   subNLPSolver.run();
@@ -198,12 +198,12 @@ void PebbldBranchSub::pebbldSubAsChildOf(PebbldBranchSub* parent, int _splitVar,
   // deep copy.
   cont_vars.resize(subModel.current_variables().continuous_variables().length());
   lower_bounds.resize(ModelUtils::continuous_lower_bounds(subModel).length());
-  upper_bounds.resize(subModel.continuous_upper_bounds().length());
+  upper_bounds.resize(ModelUtils::continuous_upper_bounds(subModel).length());
   for (int i=0; i<subModel.current_variables().continuous_variables().length(); i++)
     cont_vars[i] = _candidate_x[i];
   for (int i=0; i<ModelUtils::continuous_lower_bounds(subModel).length(); i++)
     lower_bounds[i] = _lower_bounds[i];
-  for (int i=0; i<subModel.continuous_upper_bounds().length(); i++)
+  for (int i=0; i<ModelUtils::continuous_upper_bounds(subModel).length(); i++)
     upper_bounds[i] = _upper_bounds[i];
 
   // Reset the bounds for this sub-problem.  Also move the initial

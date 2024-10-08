@@ -488,7 +488,7 @@ void SNLLLeastSq::initialize_run()
 		      iteratedModel.current_variables().continuous_variables(), 
 		      boundConstraintFlag, 
 		      ModelUtils::continuous_lower_bounds(iteratedModel),
-		      iteratedModel.continuous_upper_bounds(),
+		      ModelUtils::continuous_upper_bounds(iteratedModel),
 		      iteratedModel.linear_ineq_constraint_coeffs(),
 		      iteratedModel.linear_ineq_constraint_lower_bounds(),
 		      iteratedModel.linear_ineq_constraint_upper_bounds(),

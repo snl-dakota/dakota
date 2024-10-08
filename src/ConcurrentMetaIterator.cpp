@@ -288,7 +288,7 @@ void ConcurrentMetaIterator::pre_run()
 	RealVector lower_bnds, upper_bnds;
 	if (methodName == MULTI_START) {
 	  lower_bnds = ModelUtils::continuous_lower_bounds(iteratedModel); // view OK
-	  upper_bnds = iteratedModel.continuous_upper_bounds(); // view OK
+	  upper_bnds = ModelUtils::continuous_upper_bounds(iteratedModel); // view OK
 	}
 	else {
 	  lower_bnds.sizeUninitialized(paramSetLen); lower_bnds = 0.;

@@ -397,7 +397,7 @@ BOOST_AUTO_TEST_CASE(test_text_book_bound_const_reset)
   new_upper_bnds[0] = 2.0;
   new_upper_bnds[1] = 0.3;
   new_upper_bnds[2] = 0.6;
-  model.continuous_upper_bounds(new_upper_bnds);
+  ModelUtils::continuous_upper_bounds(model, new_upper_bnds);
 
   // Now also test resetting some ROL solver options, eg max iters and tolerance
   Teuchos::ParameterList new_options;

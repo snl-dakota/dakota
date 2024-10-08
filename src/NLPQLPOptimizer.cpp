@@ -233,7 +233,7 @@ void NLPQLPOptimizer::core_run()
   const RealVector& cdv_lower_bnds
     = ModelUtils::continuous_lower_bounds(iteratedModel);
   const RealVector& cdv_upper_bnds
-    = iteratedModel.continuous_upper_bounds();
+    = ModelUtils::continuous_upper_bounds(iteratedModel);
   size_t i, j, fn_eval_cntr,
     num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints(),
     num_nln_eq   = iteratedModel.num_nonlinear_eq_constraints();

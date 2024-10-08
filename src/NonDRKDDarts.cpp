@@ -233,7 +233,7 @@ bool NonDRKDDarts::resize()
         _xmax = new double[_num_dim];
         
         const RealVector&  lower_bounds = ModelUtils::continuous_lower_bounds(iteratedModel);
-        const RealVector&  upper_bounds = iteratedModel.continuous_upper_bounds();
+        const RealVector&  upper_bounds = ModelUtils::continuous_upper_bounds(iteratedModel);
         
         for (size_t idim = 0; idim < _num_dim; idim++)
         {

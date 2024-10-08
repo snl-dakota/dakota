@@ -657,7 +657,7 @@ load_distribute_points(const String& points_filename,
 
     // validate continuous values read
     const RealVector& c_lb = ModelUtils::continuous_lower_bounds(iteratedModel);
-    const RealVector& c_ub = iteratedModel.continuous_upper_bounds();
+    const RealVector& c_ub = ModelUtils::continuous_upper_bounds(iteratedModel);
 
     for (size_t j=0; j<numContinuousVars; ++j)
       if (listCVPoints[i][j] < c_lb[j] || listCVPoints[i][j] > c_ub[j]) {
@@ -871,7 +871,7 @@ void ParamStudy::distribute_partitions()
   const RealVector&         dr_vars = iteratedModel.current_variables().discrete_real_variables();
 
   const RealVector&  c_l_bnds = ModelUtils::continuous_lower_bounds(iteratedModel);
-  const RealVector&  c_u_bnds = iteratedModel.continuous_upper_bounds();
+  const RealVector&  c_u_bnds = ModelUtils::continuous_upper_bounds(iteratedModel);
   const IntVector&  di_l_bnds = iteratedModel.discrete_int_lower_bounds();
   const IntVector&  di_u_bnds = iteratedModel.discrete_int_upper_bounds();
   const RealVector& dr_l_bnds = iteratedModel.discrete_real_lower_bounds();

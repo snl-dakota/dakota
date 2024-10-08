@@ -36,7 +36,7 @@ void NonDLocalEvidence::set_cell_bounds()
   size_t j ;
   for (j=0; j<numContIntervalVars; j++) {
     ModelUtils::continuous_lower_bound(minMaxModel, cellContLowerBounds[cellCntr][j],j);
-    minMaxModel.continuous_upper_bound(cellContUpperBounds[cellCntr][j],j);
+    ModelUtils::continuous_upper_bound(minMaxModel, cellContUpperBounds[cellCntr][j],j);
   }
 
   for (j=0; j<(numDiscIntervalVars); j++) {

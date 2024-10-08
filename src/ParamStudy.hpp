@@ -573,7 +573,7 @@ inline bool ParamStudy::check_finite_bounds()
   Real dbl_inf = std::numeric_limits<Real>::infinity();
   if (numContinuousVars) {
     const RealVector& c_l_bnds = ModelUtils::continuous_lower_bounds(iteratedModel);
-    const RealVector& c_u_bnds = iteratedModel.continuous_upper_bounds();
+    const RealVector& c_u_bnds = ModelUtils::continuous_upper_bounds(iteratedModel);
     for (i=0; i<numContinuousVars; ++i)
       if (c_l_bnds[i] == -dbl_inf || c_u_bnds[i] == dbl_inf)
 	{ bnds_err = true; break; }

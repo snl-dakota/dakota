@@ -1212,7 +1212,7 @@ void EffGlobalMinimizer::debug_plots()
       eif_out << std::scientific;
       RealVector test_pt(2);
       const RealVector& lbnd = ModelUtils::continuous_lower_bounds(fHatModel);
-      const RealVector& ubnd = fHatModel.continuous_upper_bounds();
+      const RealVector& ubnd = ModelUtils::continuous_upper_bounds(fHatModel);
       Real interval0 = (ubnd[0] - lbnd[0])/100.,
 	   interval1 = (ubnd[1] - lbnd[1])/100.;
       for (j=0; j<101; j++) {

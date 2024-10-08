@@ -215,10 +215,10 @@ void DataFitSurrBasedLocalMinimizer::post_run(std::ostream& s)
   //approxSubProbModel.current_variables().continuous_variables(initialPoint);
   //if (recastSubProb) iteratedModel.current_variables().continuous_variables(initialPoint);
   ModelUtils::continuous_lower_bounds(approxSubProbModel, globalLowerBnds);
-  approxSubProbModel.continuous_upper_bounds(globalUpperBnds);
+  ModelUtils::continuous_upper_bounds(approxSubProbModel, globalUpperBnds);
   if (recastSubProb) { // propagate to DFSModel
     ModelUtils::continuous_lower_bounds(iteratedModel, globalLowerBnds);
-    iteratedModel.continuous_upper_bounds(globalUpperBnds);
+    ModelUtils::continuous_upper_bounds(iteratedModel, globalUpperBnds);
   }
   if (trConstraintRelax > NO_RELAX) {
     approxSubProbModel.nonlinear_ineq_constraint_lower_bounds(
@@ -301,7 +301,7 @@ bool DataFitSurrBasedLocalMinimizer::build_global()
 
     // propagate build bounds to DFSModel
     ModelUtils::continuous_lower_bounds(iteratedModel, trustRegionData.tr_lower_bounds());
-    iteratedModel.continuous_upper_bounds(trustRegionData.tr_upper_bounds());
+    ModelUtils::continuous_upper_bounds(iteratedModel, trustRegionData.tr_upper_bounds());
 
     // embed_correction is true if surrogate supports anchor constraints
     embed_correction = iteratedModel.build_approximation(
@@ -326,7 +326,7 @@ bool DataFitSurrBasedLocalMinimizer::build_centered()
 
   // propagate build bounds to DFSModel (e.g., for finite difference bounds)
   ModelUtils::continuous_lower_bounds(iteratedModel, trustRegionData.tr_lower_bounds());
-  iteratedModel.continuous_upper_bounds(trustRegionData.tr_upper_bounds());
+  ModelUtils::continuous_upper_bounds(iteratedModel, trustRegionData.tr_upper_bounds());
 
   // Evaluate the truth model at the center of the trust region.
   // Local needs values/grads & may need Hessians depending on order of

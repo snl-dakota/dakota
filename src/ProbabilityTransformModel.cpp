@@ -291,7 +291,7 @@ update_model_bounds(bool truncate_bnds, Real bnd)
 	case Pecos::HISTOGRAM_BIN:
 	  // bounded distributions: x-space has desired bounds
 	  c_l_bnds[cv_cntr] = ModelUtils::continuous_lower_bound(subModel, cv_cntr);
-	  c_u_bnds[cv_cntr] = subModel.continuous_upper_bound(cv_cntr);
+	  c_u_bnds[cv_cntr] = ModelUtils::continuous_upper_bound(subModel, cv_cntr);
 	  break;
 	// Note: Could use subModel bounds for the following cases as well
 	// except NIDR uses +/-3 sigma, whereas here we're using +/-10 sigma
@@ -335,7 +335,7 @@ update_model_bounds(bool truncate_bnds, Real bnd)
 	case Pecos::CONTINUOUS_INTERVAL_UNCERTAIN:
 	  // bounded distributions: x-space has desired bounds
 	  c_l_bnds[cv_cntr] = ModelUtils::continuous_lower_bound(subModel, cv_cntr);
-	  c_u_bnds[cv_cntr] = subModel.continuous_upper_bound(cv_cntr);
+	  c_u_bnds[cv_cntr] = ModelUtils::continuous_upper_bound(subModel, cv_cntr);
 	  break;
 	}
       }
@@ -378,7 +378,7 @@ update_model_bounds(bool truncate_bnds, Real bnd)
 	case Pecos::HISTOGRAM_BIN:                     // bounded distributions
 	  // 2-sided: can rely on subModel bounds
 	  c_l_bnds[cv_cntr] = ModelUtils::continuous_lower_bound(subModel, cv_cntr);
-	  c_u_bnds[cv_cntr] = subModel.continuous_upper_bound(cv_cntr); break;
+	  c_u_bnds[cv_cntr] = ModelUtils::continuous_upper_bound(subModel, cv_cntr); break;
 	}
       }
     }
@@ -393,7 +393,7 @@ update_model_bounds(bool truncate_bnds, Real bnd)
 	case Pecos::CONTINUOUS_INTERVAL_UNCERTAIN:
 	  // bounded distributions: x-space has desired bounds
 	  c_l_bnds[cv_cntr] = ModelUtils::continuous_lower_bound(subModel, cv_cntr);
-	  c_u_bnds[cv_cntr] = subModel.continuous_upper_bound(cv_cntr);
+	  c_u_bnds[cv_cntr] = ModelUtils::continuous_upper_bound(subModel, cv_cntr);
 	  break;
 	}
       }
@@ -407,7 +407,8 @@ update_model_bounds(bool truncate_bnds, Real bnd)
     //rv_cntr += num_csv + num_dsiv + num_dssv + num_dsrv;
   }
 
-  ModelUtils::continuous_lower_bounds(*this, c_l_bnds);  continuous_upper_bounds(c_u_bnds);
+  ModelUtils::continuous_lower_bounds(*this, c_l_bnds);
+  ModelUtils::continuous_upper_bounds(*this, c_u_bnds);
 }
 
 

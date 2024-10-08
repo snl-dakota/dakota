@@ -73,7 +73,7 @@ void COLINApplication::set_problem(Model& model) {
   if (num_real_vars > 0)
   {
     _real_lower_bounds = ModelUtils::continuous_lower_bounds(model);
-    _real_upper_bounds = model.continuous_upper_bounds();
+    _real_upper_bounds = ModelUtils::continuous_upper_bounds(model);
   }
 
   // One specification type for discrete variables is a set of values.

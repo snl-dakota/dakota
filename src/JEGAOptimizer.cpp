@@ -1426,7 +1426,7 @@ JEGAOptimizer::LoadTheDesignVariables(
 //corresponding type.  Not sure what exactly pConfig is, though.
 
     const RealVector& clbs = ModelUtils::continuous_lower_bounds(m);
-    const RealVector& cubs = m.continuous_upper_bounds();
+    const RealVector& cubs = ModelUtils::continuous_upper_bounds(m);
     StringMultiArrayConstView clabels = m.current_variables().continuous_variable_labels();
     for(i=0; i<this->numContinuousVars; ++i)
       pConfig.AddContinuumRealVariable(clabels[i], clbs[i], cubs[i], 6);

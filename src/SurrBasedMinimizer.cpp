@@ -92,7 +92,7 @@ void SurrBasedMinimizer::initialize_from_model(Model& model)
   // return empty vectors) and are not set to the +/- infinity defaults (TR
   // size is relative to the global bounded region).
   const RealVector& lower_bnds = ModelUtils::continuous_lower_bounds(model);
-  const RealVector& upper_bnds = model.continuous_upper_bounds();
+  const RealVector& upper_bnds = ModelUtils::continuous_upper_bounds(model);
   if (lower_bnds.length() != numContinuousVars ||
       upper_bnds.length() != numContinuousVars) {
     Cerr << "\nError: mismatch in length of variable bounds array in "
@@ -203,7 +203,7 @@ update_lagrange_multipliers(const RealVector& fn_vals,
     const BoolDeque& sense = iteratedModel.primary_response_fn_sense();
     const RealVector&  wts = iteratedModel.primary_response_fn_weights();
     const RealVector& lower_bnds = ModelUtils::continuous_lower_bounds(iteratedModel);
-    const RealVector& upper_bnds = iteratedModel.continuous_upper_bounds();
+    const RealVector& upper_bnds = ModelUtils::continuous_upper_bounds(iteratedModel);
     objective_gradient(fn_vals, fn_grads, sense, wts, m_grad_f);
 
     RealVector A(num_active_lag*numContinuousVars);

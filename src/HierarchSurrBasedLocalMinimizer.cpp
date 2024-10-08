@@ -147,7 +147,7 @@ void HierarchSurrBasedLocalMinimizer::post_run(std::ostream& s)
   //approxSubProbModel.current_variables().continuous_variables(initialPoint);
   //if (recastSubProb) iteratedModel.current_variables().continuous_variables(initialPoint);
   ModelUtils::continuous_lower_bounds(approxSubProbModel, globalLowerBnds);
-  approxSubProbModel.continuous_upper_bounds(globalUpperBnds);
+  ModelUtils::continuous_upper_bounds(approxSubProbModel, globalUpperBnds);
 
   size_t last_index = trustRegions.size() - 1;
   SurrBasedLevelData& tr_last = trustRegions[last_index];
@@ -409,7 +409,7 @@ void HierarchSurrBasedLocalMinimizer::build_center_truth(size_t tr_index)
   iteratedModel.current_variables().active_variables(tr_data.vars_center());
   // update bounds (can affect finite differencing)
   ModelUtils::continuous_lower_bounds(iteratedModel, tr_data.tr_lower_bounds());
-  iteratedModel.continuous_upper_bounds(tr_data.tr_upper_bounds());
+  ModelUtils::continuous_upper_bounds(iteratedModel, tr_data.tr_upper_bounds());
 
   // build
   iteratedModel.build_approximation();

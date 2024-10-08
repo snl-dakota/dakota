@@ -73,7 +73,7 @@ void get_bounds( const Model & model,
                        VecT  & upper_target)
 {
   const RealVector& c_l_bnds = ModelUtils::continuous_lower_bounds(model);
-  const RealVector& c_u_bnds = model.continuous_upper_bounds();
+  const RealVector& c_u_bnds = ModelUtils::continuous_upper_bounds(model);
 
   for( int i=0; i<c_l_bnds.length(); ++i )
   {
@@ -164,7 +164,7 @@ bool get_variable_bounds( Model &                   model, // would like to make
                           typename AdapterT::VecT & upper)
 {
   const RealVector& lower_bnds_cont = ModelUtils::continuous_lower_bounds(model);
-  const RealVector& upper_bnds_cont = model.continuous_upper_bounds();
+  const RealVector& upper_bnds_cont = ModelUtils::continuous_upper_bounds(model);
 
   const IntVector& lower_bnds_int = model.discrete_int_lower_bounds();
   const IntVector& upper_bnds_int = model.discrete_int_upper_bounds();

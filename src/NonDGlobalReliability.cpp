@@ -465,10 +465,10 @@ void NonDGlobalReliability::optimize_gaussian_process()
     //   are all unbounded and global bounds are set to +/-5.
     RealVector x_l_bnds, x_u_bnds;
     uSpaceModel.trans_U_to_X(ModelUtils::continuous_lower_bounds(uSpaceModel), x_l_bnds);
-    uSpaceModel.trans_U_to_X(uSpaceModel.continuous_upper_bounds(), x_u_bnds);
+    uSpaceModel.trans_U_to_X(ModelUtils::continuous_upper_bounds(uSpaceModel), x_u_bnds);
     Model& g_hat_x_model = uSpaceModel.subordinate_model();
     ModelUtils::continuous_lower_bounds(g_hat_x_model, x_l_bnds);
-    g_hat_x_model.continuous_upper_bounds(x_u_bnds);
+    ModelUtils::continuous_upper_bounds(g_hat_x_model, x_u_bnds);
   }
 
   // Build initial GP once for all response functions

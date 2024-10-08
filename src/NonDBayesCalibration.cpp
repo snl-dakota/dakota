@@ -248,7 +248,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     Real dbl_inf = std::numeric_limits<Real>::infinity();
     for (i=0; i<numHyperparams; ++i) {
       ModelUtils::continuous_lower_bound(residualModel, 0.0, numContinuousVars + i);
-      residualModel.continuous_upper_bound(dbl_inf, numContinuousVars + i);
+      ModelUtils::continuous_upper_bound(residualModel, dbl_inf, numContinuousVars + i);
     }
   }
   else if (orig_view == mcmcModel.current_variables().view())
