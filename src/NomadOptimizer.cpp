@@ -626,7 +626,7 @@ void NomadOptimizer::load_parameters(Model &model, NOMAD::Parameters &p)
   NOMAD::Point _lower_bound (numTotalVars);
      
   const RealVector& initial_point_cont = model.current_variables().continuous_variables();
-  const RealVector& lower_bound_cont = model.continuous_lower_bounds();
+  const RealVector& lower_bound_cont = ModelUtils::continuous_lower_bounds(model);
   const RealVector& upper_bound_cont = model.continuous_upper_bounds();
 
   const IntVector& initial_point_int = model.current_variables().discrete_int_variables();

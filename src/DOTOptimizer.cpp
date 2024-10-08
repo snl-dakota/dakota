@@ -238,7 +238,7 @@ void DOTOptimizer::allocate_workspace()
 {
   // Use the dot510 routine to compute work array sizes.
   int nrb, ngmax, ncola = 0, num_cv = numContinuousVars;
-  const RealVector& lower_bnds = iteratedModel.continuous_lower_bounds();
+  const RealVector& lower_bnds = ModelUtils::continuous_lower_bounds(iteratedModel);
   const RealVector& upper_bnds = iteratedModel.continuous_upper_bounds();
   DOT510_F77(num_cv, numDotConstr, ncola, dotMethod, realWorkSpaceSize,
 	     intWorkSpaceSize, nrb, ngmax, lower_bnds.values(),
@@ -309,7 +309,7 @@ void DOTOptimizer::core_run()
   int min_max = (!max_sense.empty() && max_sense[0]) ? 1 : 0;
 
   // Initialize local bounds and linear constraints
-  const RealVector& lower_bnds = iteratedModel.continuous_lower_bounds();
+  const RealVector& lower_bnds = ModelUtils::continuous_lower_bounds(iteratedModel);
   const RealVector& upper_bnds = iteratedModel.continuous_upper_bounds();
   size_t num_lin_ineq = iteratedModel.num_linear_ineq_constraints(),
          num_lin_eq   = iteratedModel.num_linear_eq_constraints();

@@ -17,6 +17,7 @@
 #include <boost/test/included/unit_test.hpp>
 
 #include "ROLOptimizer.hpp"
+#include "model_utils.hpp"
 
 using namespace Dakota;
 
@@ -390,7 +391,7 @@ BOOST_AUTO_TEST_CASE(test_text_book_bound_const_reset)
   new_lower_bnds[0] = 0.0;
   new_lower_bnds[1] = 0.0;
   new_lower_bnds[2] = 0.0;
-  model.continuous_lower_bounds(new_lower_bnds);
+  ModelUtils::continuous_lower_bounds(model, new_lower_bnds);
 
   RealVector new_upper_bnds(vars.cv());
   new_upper_bnds[0] = 2.0;

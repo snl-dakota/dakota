@@ -214,10 +214,10 @@ void DataFitSurrBasedLocalMinimizer::post_run(std::ostream& s)
   // restore original/global bounds
   //approxSubProbModel.current_variables().continuous_variables(initialPoint);
   //if (recastSubProb) iteratedModel.current_variables().continuous_variables(initialPoint);
-  approxSubProbModel.continuous_lower_bounds(globalLowerBnds);
+  ModelUtils::continuous_lower_bounds(approxSubProbModel, globalLowerBnds);
   approxSubProbModel.continuous_upper_bounds(globalUpperBnds);
   if (recastSubProb) { // propagate to DFSModel
-    iteratedModel.continuous_lower_bounds(globalLowerBnds);
+    ModelUtils::continuous_lower_bounds(iteratedModel, globalLowerBnds);
     iteratedModel.continuous_upper_bounds(globalUpperBnds);
   }
   if (trConstraintRelax > NO_RELAX) {
@@ -300,7 +300,7 @@ bool DataFitSurrBasedLocalMinimizer::build_global()
   if (!trustRegionData.converged()) {
 
     // propagate build bounds to DFSModel
-    iteratedModel.continuous_lower_bounds(trustRegionData.tr_lower_bounds());
+    ModelUtils::continuous_lower_bounds(iteratedModel, trustRegionData.tr_lower_bounds());
     iteratedModel.continuous_upper_bounds(trustRegionData.tr_upper_bounds());
 
     // embed_correction is true if surrogate supports anchor constraints
@@ -325,7 +325,7 @@ bool DataFitSurrBasedLocalMinimizer::build_centered()
   // local/multipt/hierarchical with new center
 
   // propagate build bounds to DFSModel (e.g., for finite difference bounds)
-  iteratedModel.continuous_lower_bounds(trustRegionData.tr_lower_bounds());
+  ModelUtils::continuous_lower_bounds(iteratedModel, trustRegionData.tr_lower_bounds());
   iteratedModel.continuous_upper_bounds(trustRegionData.tr_upper_bounds());
 
   // Evaluate the truth model at the center of the trust region.

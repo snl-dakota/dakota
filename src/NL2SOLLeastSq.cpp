@@ -442,7 +442,7 @@ void NL2SOLLeastSq::core_run()
   copy_data(iteratedModel.current_variables().continuous_variables(), x, p);
 
   if (boundConstraintFlag) {
-    const RealVector& Lb = iteratedModel.continuous_lower_bounds();
+    const RealVector& Lb = ModelUtils::continuous_lower_bounds(iteratedModel);
     const RealVector& Ub = iteratedModel.continuous_upper_bounds();
     for(i = j = 0; i < p; i++) {
       b[j++] = Lb[i];

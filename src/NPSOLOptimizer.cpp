@@ -449,7 +449,7 @@ void NPSOLOptimizer::find_optimum_on_model()
   // these bounds must be updated from model bounds each time an iterator is
   // run within the B&B minimizer.
   RealVector augmented_l_bnds, augmented_u_bnds;
-  aggregate_bounds(iteratedModel.continuous_lower_bounds(),
+  aggregate_bounds(ModelUtils::continuous_lower_bounds(iteratedModel),
 		   iteratedModel.continuous_upper_bounds(),
 		   iteratedModel.linear_ineq_constraint_lower_bounds(),
 		   iteratedModel.linear_ineq_constraint_upper_bounds(),

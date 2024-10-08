@@ -275,7 +275,7 @@ void NonDPOFDarts::core_run()
         _xmin = new double[_n_dim];
         _xmax = new double[_n_dim];
         
-        const RealVector&  lower_bounds = iteratedModel.continuous_lower_bounds();
+        const RealVector&  lower_bounds = ModelUtils::continuous_lower_bounds(iteratedModel);
         const RealVector&  upper_bounds = iteratedModel.continuous_upper_bounds();
         
         for (size_t idim = 0; idim < _n_dim; idim++)

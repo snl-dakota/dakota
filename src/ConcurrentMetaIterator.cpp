@@ -287,7 +287,7 @@ void ConcurrentMetaIterator::pre_run()
 	// set up bounds for uniform sampling
 	RealVector lower_bnds, upper_bnds;
 	if (methodName == MULTI_START) {
-	  lower_bnds = iteratedModel.continuous_lower_bounds(); // view OK
+	  lower_bnds = ModelUtils::continuous_lower_bounds(iteratedModel); // view OK
 	  upper_bnds = iteratedModel.continuous_upper_bounds(); // view OK
 	}
 	else {

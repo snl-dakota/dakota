@@ -231,7 +231,7 @@ void NLPQLPOptimizer::core_run()
   // TO DO: utilize L concurrency with evaluate_nowait()/synchronize()
 
   const RealVector& cdv_lower_bnds
-    = iteratedModel.continuous_lower_bounds();
+    = ModelUtils::continuous_lower_bounds(iteratedModel);
   const RealVector& cdv_upper_bnds
     = iteratedModel.continuous_upper_bounds();
   size_t i, j, fn_eval_cntr,

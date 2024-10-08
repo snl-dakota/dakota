@@ -1425,7 +1425,7 @@ JEGAOptimizer::LoadTheDesignVariables(
 //far as I can tell, the JEGA vectors are all just std vectors of the
 //corresponding type.  Not sure what exactly pConfig is, though.
 
-    const RealVector& clbs = m.continuous_lower_bounds();
+    const RealVector& clbs = ModelUtils::continuous_lower_bounds(m);
     const RealVector& cubs = m.continuous_upper_bounds();
     StringMultiArrayConstView clabels = m.current_variables().continuous_variable_labels();
     for(i=0; i<this->numContinuousVars; ++i)

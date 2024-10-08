@@ -809,7 +809,7 @@ check_rebuild(const RealVector& ref_icv,        const IntVector&  ref_idiv,
 	while (sub_model.model_type() == "recast")
 	  sub_model = sub_model.subordinate_model();
 
-	if (ref_c_l_bnds  != sub_model.continuous_lower_bounds()    ||
+	if (ref_c_l_bnds  != ModelUtils::continuous_lower_bounds(sub_model)    ||
 	    ref_c_u_bnds  != sub_model.continuous_upper_bounds()    ||
 	    ref_di_l_bnds != sub_model.discrete_int_lower_bounds()  ||
 	    ref_di_u_bnds != sub_model.discrete_int_upper_bounds()  ||

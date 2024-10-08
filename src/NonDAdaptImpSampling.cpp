@@ -597,7 +597,7 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& var_samples_u)
     // samples.  This feature is used for surrogates with bounded build data
     // (e.g., GPs in EGRA --> prevents the rep point selection from wandering
     // off and extrapolating on the GP trend function).
-    const RealVector& c_l_bnds = uSpaceModel.continuous_lower_bounds();
+    const RealVector& c_l_bnds = ModelUtils::continuous_lower_bounds(uSpaceModel);
     const RealVector& c_u_bnds = uSpaceModel.continuous_upper_bounds();
     for (i=0; i<numCAUV; ++i) {
       n_l_bnds[i] = c_l_bnds[i+startCAUV];

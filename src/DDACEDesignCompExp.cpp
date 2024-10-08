@@ -247,7 +247,7 @@ get_parameter_sets(Model& model, const size_t num_samples,
   if (volQualityFlag) {
     double* dace_points = new double [numContinuousVars*num_samples];
     copy_data(sample_points, dace_points, numContinuousVars*num_samples);
-    const RealVector& c_l_bnds = model.continuous_lower_bounds();
+    const RealVector& c_l_bnds = ModelUtils::continuous_lower_bounds(model);
     const RealVector& c_u_bnds = model.continuous_upper_bounds();
     for (int i=0; i<numContinuousVars; i++) {
       const double& offset = c_l_bnds[i];
@@ -271,7 +271,7 @@ DDACEDesignCompExp::create_sampler(Model& model)
   // variables, since they do not currently have global bounds specifications.
   // It would be nice to detect this and automatically delete any uncertain
   // variables (from numContinuousVars & local_vars).
-  const RealVector& c_l_bnds = model.continuous_lower_bounds();
+  const RealVector& c_l_bnds = ModelUtils::continuous_lower_bounds(model);
   const RealVector& c_u_bnds = model.continuous_upper_bounds();
   if (c_l_bnds.length() != numContinuousVars || 
       c_u_bnds.length() != numContinuousVars) {

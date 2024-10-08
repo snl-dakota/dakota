@@ -72,7 +72,7 @@ void COLINApplication::set_problem(Model& model) {
   _num_real_vars = model.current_variables().cv();
   if (num_real_vars > 0)
   {
-    _real_lower_bounds = model.continuous_lower_bounds();
+    _real_lower_bounds = ModelUtils::continuous_lower_bounds(model);
     _real_upper_bounds = model.continuous_upper_bounds();
   }
 

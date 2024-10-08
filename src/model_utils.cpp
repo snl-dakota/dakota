@@ -5,16 +5,16 @@
 namespace Dakota {
     namespace ModelUtils {
 
-        BitArray discrete_int_sets(Model &model) {
-            Variables &cv = model.current_variables();
+        BitArray discrete_int_sets(const Model &model) {
+            const Variables &cv = model.current_variables();
             return discrete_int_sets(model, cv.view().first);
         }
 
 
-        BitArray discrete_int_sets(Model &model, short active_view) {
+        BitArray discrete_int_sets(const Model &model, short active_view) {
             // identify discrete integer sets within active discrete int variables
             // (excluding discrete integer ranges)
-            Variables &cv = model.current_variables();
+            const Variables &cv = model.current_variables();
 
             bool relax = (active_view == RELAXED_ALL ||
                 ( active_view >= RELAXED_DESIGN && active_view <= RELAXED_STATE ) );
@@ -117,19 +117,19 @@ namespace Dakota {
         }
 
 
-        IntSetArray discrete_set_int_values(Model &model) {
+        IntSetArray discrete_set_int_values(const Model &model) {
             return discrete_set_int_values(model, model.current_variables().view().first);
         }
 
-        IntSetArray discrete_set_int_values(Model &model, short active_view) {
+        IntSetArray discrete_set_int_values(const Model &model, short active_view) {
 
             
             // aggregation of the admissible value sets for all active discrete
             // set integer variables
             IntSetArray adsi_vals;
             
-            auto &mvd = model.multivariate_distribution();
-            auto &cv = model.current_variables();
+            const auto &mvd = model.multivariate_distribution();
+            const auto &cv = model.current_variables();
 
             std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
                 std::static_pointer_cast<Pecos::MarginalsCorrDistribution>(mvd.multivar_dist_rep());
@@ -302,18 +302,18 @@ namespace Dakota {
             return adsi_vals;
         }
 
-        StringSetArray discrete_set_string_values(Model &model) {
+        StringSetArray discrete_set_string_values(const Model &model) {
                 return discrete_set_string_values(model, model.current_variables().view().first);
         }
 
-        StringSetArray discrete_set_string_values(Model &model, short active_view) {
+        StringSetArray discrete_set_string_values(const Model &model, short active_view) {
 
             // aggregation of the admissible value sets for all active discrete
             // set string variables
             StringSetArray adss_vals;
 
-            auto &mvd = model.multivariate_distribution();
-            auto &cv = model.current_variables();
+            const auto &mvd = model.multivariate_distribution();
+            const auto &cv = model.current_variables();
 
             std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
                 std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
@@ -420,17 +420,17 @@ namespace Dakota {
         }
 
 
-        RealSetArray discrete_set_real_values(Model &model) {
+        RealSetArray discrete_set_real_values(const Model &model) {
                 return discrete_set_real_values(model, model.current_variables().view().first);
         }
 
-        RealSetArray discrete_set_real_values(Model &model, short active_view) {
+        RealSetArray discrete_set_real_values(const Model &model, short active_view) {
             // aggregation of the admissible value sets for all active discrete
             // set real variables
             RealSetArray adsr_vals;
 
-            auto &mvd = model.multivariate_distribution();
-            auto &cv = model.current_variables();
+            const auto &mvd = model.multivariate_distribution();
+            const auto &cv = model.current_variables();
 
 
             std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
@@ -585,6 +585,407 @@ namespace Dakota {
             return adsr_vals;
         }
 
+
+        const RealVector& continuous_lower_bounds(const Model &model) {
+            model.user_defined_constraints().continuous_lower_bounds();
+        }
+
+
+        Real continuous_lower_bound(const Model &model, size_t i) {
+            return model.user_defined_constraints().continuous_lower_bound(i);
+        }
+
+
+        void continuous_lower_bounds(Model &model, const RealVector& c_l_bnds) {
+
+            model.user_defined_constraints().continuous_lower_bounds(c_l_bnds);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.lower_bounds(c_l_bnds, 
+                    model.current_variables().shared_data().cv_to_all_mask());
+        }
+
+
+        void continuous_lower_bound(Model &model, Real c_l_bnd, size_t i) {
+            model.user_defined_constraints().continuous_lower_bound(c_l_bnd, i);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.lower_bound(c_l_bnd,
+                    model.current_variables().shared_data().cv_index_to_all_index(i));
+        }
+
+
+        const RealVector& continuous_upper_bounds(const Model &model) {
+            return model.user_defined_constraints().continuous_upper_bounds();
+        }
+
+
+        Real continuous_upper_bound(const Model &model, size_t i) {
+            return model.user_defined_constraints().continuous_upper_bound(i);
+        }
+
+
+        void continuous_upper_bounds(Model &model, const RealVector& c_u_bnds) {
+            model.user_defined_constraints().continuous_upper_bounds(c_u_bnds);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.upper_bounds(c_u_bnds,
+                    model.current_variables().shared_data().cv_to_all_mask());
+
+        }
+
+
+        void continuous_upper_bound(Model &model, Real c_u_bnd, size_t i) {
+            model.user_defined_constraints().continuous_upper_bound(c_u_bnd, i);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.upper_bound(c_u_bnd,
+                    model.current_variables().shared_data().cv_index_to_all_index(i));
+        }
+
+
+        const IntVector& discrete_int_lower_bounds(const Model &model) {
+            return model.user_defined_constraints().discrete_int_lower_bounds();
+        }
+
+
+        int discrete_int_lower_bound(const Model &model, size_t i) {
+            return model.user_defined_constraints().discrete_int_lower_bound(i);
+        }
+
+
+        void discrete_int_lower_bounds(Model &model, const IntVector& d_l_bnds) {
+
+            model.user_defined_constraints().discrete_int_lower_bounds(d_l_bnds);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.lower_bounds(d_l_bnds,
+                    model.current_variables().shared_data().div_to_all_mask());
+        }
+
+
+        void discrete_int_lower_bound(Model &model, int d_l_bnd, size_t i) {
+            model.user_defined_constraints().discrete_int_lower_bound(d_l_bnd, i);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.lower_bound(d_l_bnd,
+                    model.current_variables().shared_data().div_index_to_all_index(i));
+        }
+
+
+        const IntVector& discrete_int_upper_bounds(const Model &model) {
+            return model.user_defined_constraints().discrete_int_upper_bounds();
+        }
+
+
+        int discrete_int_upper_bound(const Model &model, size_t i) {
+            return model.user_defined_constraints().discrete_int_upper_bound(i);
+        }
+
+
+        void discrete_int_upper_bounds(Model &model, const IntVector& d_u_bnds) {
+
+            model.user_defined_constraints().discrete_int_upper_bounds(d_u_bnds);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.upper_bounds(d_u_bnds,
+                    model.current_variables().shared_data().div_to_all_mask());
+        }
+
+
+        void discrete_int_upper_bound(Model &model, int d_u_bnd, size_t i) {
+            model.user_defined_constraints().discrete_int_upper_bound(d_u_bnd, i);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.upper_bound(d_u_bnd,
+                    model.current_variables().shared_data().div_index_to_all_index(i));
+        }
+
+
+        const RealVector& discrete_real_lower_bounds(const Model &model) {
+            return model.user_defined_constraints().discrete_real_lower_bounds();
+        }
+
+
+        Real discrete_real_lower_bound(const Model &model, size_t i) {
+            return model.user_defined_constraints().discrete_real_lower_bound(i);
+        }
+
+
+        void discrete_real_lower_bounds(Model &model, const RealVector& d_l_bnds) {
+            model.user_defined_constraints().discrete_real_lower_bounds(d_l_bnds);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.lower_bounds(d_l_bnds,
+                    model.current_variables().shared_data().drv_to_all_mask());
+        }
+
+
+        void discrete_real_lower_bound(Model &model, Real d_l_bnd, size_t i) {
+            model.user_defined_constraints().discrete_real_lower_bound(d_l_bnd, i);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.lower_bound(d_l_bnd,
+                    model.current_variables().shared_data().drv_index_to_all_index(i));
+        }
+
+
+        const RealVector& discrete_real_upper_bounds(const Model &model) {
+            return model.user_defined_constraints().discrete_real_upper_bounds();
+        }
+
+
+        Real discrete_real_upper_bound(const Model &model, size_t i) {
+            return model.user_defined_constraints().discrete_real_upper_bound(i);
+        }
+
+
+        void discrete_real_upper_bounds(Model &model, const RealVector& d_u_bnds) {
+            model.user_defined_constraints().discrete_real_upper_bounds(d_u_bnds);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.upper_bounds(d_u_bnds,
+                    model.current_variables().shared_data().drv_to_all_mask());
+        }
+
+
+        void discrete_real_upper_bound(Model &model, Real d_u_bnd, size_t i) {
+            model.user_defined_constraints().discrete_real_upper_bound(d_u_bnd, i);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.upper_bound(d_u_bnd,
+                    model.current_variables().shared_data().drv_index_to_all_index(i));
+        }
+
+
+        const RealVector& inactive_continuous_lower_bounds(const Model &model) {
+            return model.user_defined_constraints().inactive_continuous_lower_bounds();
+        }
+
+
+        void 
+        inactive_continuous_lower_bounds(Model &model, const RealVector& i_c_l_bnds) {
+        
+            model.user_defined_constraints().inactive_continuous_lower_bounds(i_c_l_bnds);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.lower_bounds(i_c_l_bnds,
+                    model.current_variables().shared_data().icv_to_all_mask());
+        }
+
+
+        const RealVector& inactive_continuous_upper_bounds(const Model &model) {
+            return model.user_defined_constraints().inactive_continuous_upper_bounds();
+        }
+
+
+        void 
+        inactive_continuous_upper_bounds(Model &model, const RealVector& i_c_u_bnds) {
+            model.user_defined_constraints().inactive_continuous_upper_bounds(i_c_u_bnds);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.upper_bounds(i_c_u_bnds,
+                    model.current_variables().shared_data().icv_to_all_mask());
+        }
+
+
+        const IntVector& inactive_discrete_int_lower_bounds(const Model &model) {
+            return model.user_defined_constraints().inactive_discrete_int_lower_bounds();
+        }
+
+
+        void 
+        inactive_discrete_int_lower_bounds(Model &model, const IntVector& i_d_l_bnds) {
+            model.user_defined_constraints().inactive_discrete_int_lower_bounds(i_d_l_bnds);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.lower_bounds(i_d_l_bnds,
+                    model.current_variables().shared_data().idiv_to_all_mask());
+        }
+
+
+        const IntVector& inactive_discrete_int_upper_bounds(const Model &model) {
+            return model.user_defined_constraints().inactive_discrete_int_upper_bounds();
+        }
+
+
+        void 
+        inactive_discrete_int_upper_bounds(Model &model, const IntVector& i_d_u_bnds) {
+            model.user_defined_constraints().inactive_discrete_int_upper_bounds(i_d_u_bnds);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.upper_bounds(i_d_u_bnds,
+                    model.current_variables().shared_data().idiv_to_all_mask());
+        
+        }
+
+
+        const RealVector& inactive_discrete_real_lower_bounds(const Model &model) {
+            return model.user_defined_constraints().inactive_discrete_real_lower_bounds();
+        }
+
+
+        void 
+        inactive_discrete_real_lower_bounds(Model &model, const RealVector& i_d_l_bnds) {
+            model.user_defined_constraints().inactive_discrete_real_lower_bounds(i_d_l_bnds);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.lower_bounds(i_d_l_bnds,
+                    model.current_variables().shared_data().idrv_to_all_mask());
+        }
+
+
+        const RealVector& inactive_discrete_real_upper_bounds(const Model &model) {
+            return model.user_defined_constraints().inactive_discrete_real_upper_bounds();
+        }
+
+
+        void 
+        inactive_discrete_real_upper_bounds(Model &model, const RealVector& i_d_u_bnds) {
+            model.user_defined_constraints().inactive_discrete_real_upper_bounds(i_d_u_bnds);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.upper_bounds(i_d_u_bnds,
+                    model.current_variables().shared_data().idrv_to_all_mask());
+        }
+
+
+        const RealVector& all_continuous_lower_bounds(const Model &model) {
+            return  model.user_defined_constraints().all_continuous_lower_bounds();
+        }
+
+
+        void all_continuous_lower_bounds(Model &model, const RealVector& a_c_l_bnds) {
+            model.user_defined_constraints().all_continuous_lower_bounds(a_c_l_bnds);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.lower_bounds(a_c_l_bnds,
+                    model.current_variables().shared_data().acv_to_all_mask());
+        }
+
+
+        void all_continuous_lower_bound(Model &model, Real a_c_l_bnd, size_t i) {
+            model.user_defined_constraints().all_continuous_lower_bound(a_c_l_bnd, i);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.lower_bound(a_c_l_bnd,
+                    model.current_variables().shared_data().acv_index_to_all_index(i));
+        }
+
+
+        const RealVector& all_continuous_upper_bounds(const Model &model) {
+            return model.user_defined_constraints().all_continuous_upper_bounds();
+        }
+
+
+        void all_continuous_upper_bounds(Model &model, const RealVector& a_c_u_bnds) {
+            model.user_defined_constraints().all_continuous_upper_bounds(a_c_u_bnds);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.upper_bounds(a_c_u_bnds,
+                    model.current_variables().shared_data().acv_to_all_mask());
+        }
+
+
+        void all_continuous_upper_bound(Model &model, Real a_c_u_bnd, size_t i) {
+            model.user_defined_constraints().all_continuous_upper_bound(a_c_u_bnd, i);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.upper_bound(a_c_u_bnd,
+                    model.current_variables().shared_data().acv_index_to_all_index(i));
+        }
+
+
+        const IntVector& all_discrete_int_lower_bounds(const Model &model) {
+            return model.user_defined_constraints().all_discrete_int_lower_bounds();
+        }
+
+
+        void all_discrete_int_lower_bounds(Model &model, const IntVector& a_d_l_bnds) {
+            model.user_defined_constraints().all_discrete_int_lower_bounds(a_d_l_bnds);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.lower_bounds(a_d_l_bnds,
+                    model.current_variables().shared_data().adiv_to_all_mask());
+        }
+
+
+        void all_discrete_int_lower_bound(Model &model, int a_d_l_bnd, size_t i) {
+            model.user_defined_constraints().all_discrete_int_lower_bound(a_d_l_bnd, i);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.lower_bound(a_d_l_bnd,
+                    model.current_variables().shared_data().adiv_index_to_all_index(i));
+        }
+
+
+        const IntVector& all_discrete_int_upper_bounds(const Model &model) {
+        return model.user_defined_constraints().all_discrete_int_upper_bounds();
+        }
+
+
+        void all_discrete_int_upper_bounds(Model &model, const IntVector& a_d_u_bnds) {
+            model.user_defined_constraints().all_discrete_int_upper_bounds(a_d_u_bnds);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.upper_bounds(a_d_u_bnds,
+                    model.current_variables().shared_data().adiv_to_all_mask());
+        }
+
+
+        void all_discrete_int_upper_bound(Model &model, int a_d_u_bnd, size_t i) {
+            model.user_defined_constraints().all_discrete_int_upper_bound(a_d_u_bnd, i);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.upper_bound(a_d_u_bnd,
+                    model.current_variables().shared_data().adiv_index_to_all_index(i));
+        }
+
+
+        const RealVector& all_discrete_real_lower_bounds(const Model &model) {
+            return model.user_defined_constraints().all_discrete_real_lower_bounds();
+        }
+
+
+        void all_discrete_real_lower_bounds(Model &model, const RealVector& a_d_l_bnds) {
+            model.user_defined_constraints().all_discrete_real_lower_bounds(a_d_l_bnds);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.lower_bounds(a_d_l_bnds,
+                    model.current_variables().shared_data().adrv_to_all_mask());
+        }
+
+
+        void all_discrete_real_lower_bound(Model &model, Real a_d_l_bnd, size_t i) {
+            model.user_defined_constraints().all_discrete_real_lower_bound(a_d_l_bnd, i);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.lower_bound(a_d_l_bnd,
+                    model.current_variables().shared_data().adrv_index_to_all_index(i));
+        }
+
+
+        const RealVector& all_discrete_real_upper_bounds(const Model &model) {
+            return model.user_defined_constraints().all_discrete_real_upper_bounds();
+        }
+
+
+        void all_discrete_real_upper_bounds(Model &model, const RealVector& a_d_u_bnds) {
+            model.user_defined_constraints().all_discrete_real_upper_bounds(a_d_u_bnds);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.upper_bounds(a_d_u_bnds,
+                    model.current_variables().shared_data().adrv_to_all_mask());
+        }
+
+
+        void all_discrete_real_upper_bound(Model &model, Real a_d_u_bnd, size_t i) {
+            model.user_defined_constraints().all_discrete_real_upper_bound(a_d_u_bnd, i);
+            auto & mvd = model.multivariate_distribution();
+            if (mvd.global_bounds())
+                mvd.upper_bound(a_d_u_bnd,
+                    model.current_variables().shared_data().adrv_index_to_all_index(i));
+        }
 
     }
 }

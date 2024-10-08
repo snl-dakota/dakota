@@ -1134,7 +1134,7 @@ void SNLLOptimizer::initialize_run()
     snll_initialize_run(nlfObjective, nlpConstraint,
 			iteratedModel.current_variables().continuous_variables(),
 			boundConstraintFlag,
-			iteratedModel.continuous_lower_bounds(),
+			ModelUtils::continuous_lower_bounds(iteratedModel),
 			iteratedModel.continuous_upper_bounds(),
 			iteratedModel.linear_ineq_constraint_coeffs(),
 			iteratedModel.linear_ineq_constraint_lower_bounds(),

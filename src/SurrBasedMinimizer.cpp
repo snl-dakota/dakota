@@ -91,7 +91,7 @@ void SurrBasedMinimizer::initialize_from_model(Model& model)
   // Verify that global bounds are available (some Constraints types can
   // return empty vectors) and are not set to the +/- infinity defaults (TR
   // size is relative to the global bounded region).
-  const RealVector& lower_bnds = model.continuous_lower_bounds();
+  const RealVector& lower_bnds = ModelUtils::continuous_lower_bounds(model);
   const RealVector& upper_bnds = model.continuous_upper_bounds();
   if (lower_bnds.length() != numContinuousVars ||
       upper_bnds.length() != numContinuousVars) {
@@ -202,7 +202,7 @@ update_lagrange_multipliers(const RealVector& fn_vals,
     RealVector m_grad_f;
     const BoolDeque& sense = iteratedModel.primary_response_fn_sense();
     const RealVector&  wts = iteratedModel.primary_response_fn_weights();
-    const RealVector& lower_bnds = iteratedModel.continuous_lower_bounds();
+    const RealVector& lower_bnds = ModelUtils::continuous_lower_bounds(iteratedModel);
     const RealVector& upper_bnds = iteratedModel.continuous_upper_bounds();
     objective_gradient(fn_vals, fn_grads, sense, wts, m_grad_f);
 

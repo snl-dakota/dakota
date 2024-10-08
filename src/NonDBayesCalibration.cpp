@@ -247,7 +247,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     // update bounds for hyper-parameters
     Real dbl_inf = std::numeric_limits<Real>::infinity();
     for (i=0; i<numHyperparams; ++i) {
-      residualModel.continuous_lower_bound(0.0,     numContinuousVars + i);
+      ModelUtils::continuous_lower_bound(residualModel, 0.0, numContinuousVars + i);
       residualModel.continuous_upper_bound(dbl_inf, numContinuousVars + i);
     }
   }

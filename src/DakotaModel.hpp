@@ -651,14 +651,6 @@ public:
 
   // BOUNDS
 
-  /// return the active continuous lower bounds from userDefinedConstraints
-  const RealVector& continuous_lower_bounds() const;
-  /// return an active continuous lower bound from userDefinedConstraints
-  Real continuous_lower_bound(size_t i) const;
-  /// set the active continuous lower bounds in userDefinedConstraints
-  void continuous_lower_bounds(const RealVector& c_l_bnds);
-  /// set the i-th active continuous lower bound in userDefinedConstraints
-  void continuous_lower_bound(Real c_l_bnd, size_t i);
   /// return the active continuous upper bounds from userDefinedConstraints
   const RealVector& continuous_upper_bounds() const;
   /// return an active continuous upper bound from userDefinedConstraints
@@ -1564,46 +1556,6 @@ multivariate_distribution() const
 //   if (modelRep) modelRep->mvDist = dist;
 //   else          mvDist = dist;
 // }
-
-
-inline const RealVector& Model::continuous_lower_bounds() const
-{
-  return (modelRep) ? modelRep->userDefinedConstraints.continuous_lower_bounds()
-                    : userDefinedConstraints.continuous_lower_bounds();
-}
-
-
-inline Real Model::continuous_lower_bound(size_t i) const
-{
-  return (modelRep) ? modelRep->userDefinedConstraints.continuous_lower_bound(i)
-                    : userDefinedConstraints.continuous_lower_bound(i);
-}
-
-
-inline void Model::continuous_lower_bounds(const RealVector& c_l_bnds)
-{
-  if (modelRep)
-    modelRep->continuous_lower_bounds(c_l_bnds);
-  else {
-    userDefinedConstraints.continuous_lower_bounds(c_l_bnds);
-    if (mvDist.global_bounds())
-      mvDist.lower_bounds(c_l_bnds,
-	currentVariables.shared_data().cv_to_all_mask());
-  }
-}
-
-
-inline void Model::continuous_lower_bound(Real c_l_bnd, size_t i)
-{
-  if (modelRep)
-    modelRep->continuous_lower_bound(c_l_bnd, i);
-  else {
-    userDefinedConstraints.continuous_lower_bound(c_l_bnd, i);
-    if (mvDist.global_bounds())
-      mvDist.lower_bound(c_l_bnd,
-	currentVariables.shared_data().cv_index_to_all_index(i));
-  }
-}
 
 
 inline const RealVector& Model::continuous_upper_bounds() const

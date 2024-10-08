@@ -146,7 +146,7 @@ void HierarchSurrBasedLocalMinimizer::post_run(std::ostream& s)
   // restore original/global bounds
   //approxSubProbModel.current_variables().continuous_variables(initialPoint);
   //if (recastSubProb) iteratedModel.current_variables().continuous_variables(initialPoint);
-  approxSubProbModel.continuous_lower_bounds(globalLowerBnds);
+  ModelUtils::continuous_lower_bounds(approxSubProbModel, globalLowerBnds);
   approxSubProbModel.continuous_upper_bounds(globalUpperBnds);
 
   size_t last_index = trustRegions.size() - 1;
@@ -408,7 +408,7 @@ void HierarchSurrBasedLocalMinimizer::build_center_truth(size_t tr_index)
   // build level approximation and retrieve/correct response center truth
   iteratedModel.current_variables().active_variables(tr_data.vars_center());
   // update bounds (can affect finite differencing)
-  iteratedModel.continuous_lower_bounds(tr_data.tr_lower_bounds());
+  ModelUtils::continuous_lower_bounds(iteratedModel, tr_data.tr_lower_bounds());
   iteratedModel.continuous_upper_bounds(tr_data.tr_upper_bounds());
 
   // build

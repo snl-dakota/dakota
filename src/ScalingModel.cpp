@@ -311,7 +311,7 @@ void ScalingModel::initialize_scaling(Model& sub_model)
   const RealVector& cdv_scales = scalingOpts.cvScales;
   varsScaleFlag = scaling_active(cdv_spec_types);
 
-  copy_data(sub_model.continuous_lower_bounds(), lbs); // view->copy
+  copy_data(ModelUtils::continuous_lower_bounds(sub_model), lbs); // view->copy
   copy_data(sub_model.continuous_upper_bounds(), ubs); // view->copy
 
   
@@ -325,7 +325,7 @@ void ScalingModel::initialize_scaling(Model& sub_model)
                   cdv_spec_types, cdv_scales, cvScaleTypes,
                   cvScaleMultipliers, cvScaleOffsets);
 
-  continuous_lower_bounds(lbs);
+  ModelUtils::continuous_lower_bounds(*this, lbs);
   continuous_upper_bounds(ubs);
   current_variables().continuous_variables(
                        modify_n2s(sub_model.current_variables().continuous_variables(), cvScaleTypes,

@@ -109,7 +109,7 @@ void PSUADEDesignCompExp::post_run(std::ostream& s)
   psuade_adata.nSamples_ = numSamples;
 
   // since MOAT uses pointers, make copies of the data
-  const RealVector& lb = iteratedModel.continuous_lower_bounds();
+  const RealVector& lb = ModelUtils::continuous_lower_bounds(iteratedModel);
   const RealVector& ub = iteratedModel.continuous_upper_bounds();
   psuade_adata.iLowerB_ = new double [numContinuousVars];
   psuade_adata.iUpperB_ = new double [numContinuousVars];
@@ -173,7 +173,7 @@ void PSUADEDesignCompExp::get_parameter_sets(Model& model)
   // variables (from numContinuousVars & local_vars).
 
   // make copies since we'll pass pointers to MOAT
-  const RealVector& c_l_bnds = model.continuous_lower_bounds();
+  const RealVector& c_l_bnds = ModelUtils::continuous_lower_bounds(model);
   const RealVector& c_u_bnds = model.continuous_upper_bounds();
   if (c_l_bnds.length() != numContinuousVars || 
       c_u_bnds.length() != numContinuousVars) {

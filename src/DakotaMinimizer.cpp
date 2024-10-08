@@ -261,7 +261,7 @@ void Minimizer::update_from_model(const Model& model)
 
   // set boundConstraintFlag
   size_t i;
-  const RealVector& c_l_bnds = model.continuous_lower_bounds();
+  const RealVector& c_l_bnds = ModelUtils::continuous_lower_bounds(model);
   const RealVector& c_u_bnds = model.continuous_upper_bounds();
   //Cout << "Continuous lower bounds:\n" << c_l_bnds
   //     << "Continuous upper bounds:\n" << c_u_bnds;

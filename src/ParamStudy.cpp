@@ -656,7 +656,7 @@ load_distribute_points(const String& points_filename,
   for (size_t i=0; i<numEvals; ++i) {
 
     // validate continuous values read
-    const RealVector& c_lb = iteratedModel.continuous_lower_bounds();
+    const RealVector& c_lb = ModelUtils::continuous_lower_bounds(iteratedModel);
     const RealVector& c_ub = iteratedModel.continuous_upper_bounds();
 
     for (size_t j=0; j<numContinuousVars; ++j)
@@ -870,7 +870,7 @@ void ParamStudy::distribute_partitions()
   StringMultiArrayConstView ds_vars = iteratedModel.current_variables().discrete_string_variables();
   const RealVector&         dr_vars = iteratedModel.current_variables().discrete_real_variables();
 
-  const RealVector&  c_l_bnds = iteratedModel.continuous_lower_bounds();
+  const RealVector&  c_l_bnds = ModelUtils::continuous_lower_bounds(iteratedModel);
   const RealVector&  c_u_bnds = iteratedModel.continuous_upper_bounds();
   const IntVector&  di_l_bnds = iteratedModel.discrete_int_lower_bounds();
   const IntVector&  di_u_bnds = iteratedModel.discrete_int_upper_bounds();

@@ -1005,7 +1005,7 @@ void DataFitSurrModel::update_global_reference()
     while (sub_model.model_type() == "recast")
       sub_model = sub_model.subordinate_model();
     // update referenceCLBnds/referenceCUBnds/referenceDLBnds/referenceDUBnds
-    copy_data(sub_model.continuous_lower_bounds(),    referenceCLBnds);
+    copy_data(ModelUtils::continuous_lower_bounds(sub_model),    referenceCLBnds);
     copy_data(sub_model.continuous_upper_bounds(),    referenceCUBnds);
     copy_data(sub_model.discrete_int_lower_bounds(),  referenceDILBnds);
     copy_data(sub_model.discrete_int_upper_bounds(),  referenceDIUBnds);
@@ -1059,7 +1059,7 @@ void DataFitSurrModel::build_approx_interface()
       userDefinedConstraints.discrete_real_upper_bounds());
   else { // employ sub-model vars view, if available
     approxInterface.build_approximation(
-      actualModel.continuous_lower_bounds(),
+      ModelUtils::continuous_lower_bounds(actualModel),
       actualModel.continuous_upper_bounds(),
       actualModel.discrete_int_lower_bounds(),
       actualModel.discrete_int_upper_bounds(),

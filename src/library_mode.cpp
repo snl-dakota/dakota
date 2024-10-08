@@ -15,6 +15,7 @@
 #include "ProblemDescDB.hpp"
 #include "LibraryEnvironment.hpp"
 #include "DakotaModel.hpp"
+#include "model_utils.hpp"
 #include "DakotaInterface.hpp"
 #include "PluginSerialDirectApplicInterface.hpp"
 #include "PluginParallelDirectApplicInterface.hpp"
@@ -368,9 +369,9 @@ void run_dakota_mixed(const char* dakota_input_file, bool mpirun_flag)
       // Change initial guess:
       //ml_iter->continuous_variables(T);
       // Change a lower bound:
-      Dakota::RealVector lb(ml_iter->continuous_lower_bounds()); // copy
+      Dakota::RealVector lb(Dakota::ModelUtils::continuous_lower_bounds(*ml_iter)); // copy
       lb[0] += 0.1;
-      ml_iter->continuous_lower_bounds(lb);
+      Dakota::ModelUtils::continuous_lower_bounds(*ml_iter, lb);
     }
   }
 

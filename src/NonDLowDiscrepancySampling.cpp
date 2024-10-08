@@ -145,7 +145,7 @@ void NonDLowDiscrepancySampling::get_parameter_sets(
         
         /// Scale points from [0, 1) to the given lower and upper bounds
         scale(
-          model.continuous_lower_bounds(), 
+          ModelUtils::continuous_lower_bounds(model), 
           model.continuous_upper_bounds(), 
           allSamples
         );

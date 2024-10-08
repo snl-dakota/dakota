@@ -290,7 +290,7 @@ update_model_bounds(bool truncate_bnds, Real bnd)
 	case Pecos::LOGUNIFORM: case Pecos::TRIANGULAR:
 	case Pecos::HISTOGRAM_BIN:
 	  // bounded distributions: x-space has desired bounds
-	  c_l_bnds[cv_cntr] = subModel.continuous_lower_bound(cv_cntr);
+	  c_l_bnds[cv_cntr] = ModelUtils::continuous_lower_bound(subModel, cv_cntr);
 	  c_u_bnds[cv_cntr] = subModel.continuous_upper_bound(cv_cntr);
 	  break;
 	// Note: Could use subModel bounds for the following cases as well
@@ -334,7 +334,7 @@ update_model_bounds(bool truncate_bnds, Real bnd)
 	switch (u_types[rv_cntr]) {
 	case Pecos::CONTINUOUS_INTERVAL_UNCERTAIN:
 	  // bounded distributions: x-space has desired bounds
-	  c_l_bnds[cv_cntr] = subModel.continuous_lower_bound(cv_cntr);
+	  c_l_bnds[cv_cntr] = ModelUtils::continuous_lower_bound(subModel, cv_cntr);
 	  c_u_bnds[cv_cntr] = subModel.continuous_upper_bound(cv_cntr);
 	  break;
 	}
@@ -377,7 +377,7 @@ update_model_bounds(bool truncate_bnds, Real bnd)
 	case Pecos::LOGUNIFORM:  case Pecos::TRIANGULAR:
 	case Pecos::HISTOGRAM_BIN:                     // bounded distributions
 	  // 2-sided: can rely on subModel bounds
-	  c_l_bnds[cv_cntr] = subModel.continuous_lower_bound(cv_cntr);
+	  c_l_bnds[cv_cntr] = ModelUtils::continuous_lower_bound(subModel, cv_cntr);
 	  c_u_bnds[cv_cntr] = subModel.continuous_upper_bound(cv_cntr); break;
 	}
       }
@@ -392,7 +392,7 @@ update_model_bounds(bool truncate_bnds, Real bnd)
 	switch (u_types[rv_cntr]) {
 	case Pecos::CONTINUOUS_INTERVAL_UNCERTAIN:
 	  // bounded distributions: x-space has desired bounds
-	  c_l_bnds[cv_cntr] = subModel.continuous_lower_bound(cv_cntr);
+	  c_l_bnds[cv_cntr] = ModelUtils::continuous_lower_bound(subModel, cv_cntr);
 	  c_u_bnds[cv_cntr] = subModel.continuous_upper_bound(cv_cntr);
 	  break;
 	}
@@ -407,7 +407,7 @@ update_model_bounds(bool truncate_bnds, Real bnd)
     //rv_cntr += num_csv + num_dsiv + num_dssv + num_dsrv;
   }
 
-  continuous_lower_bounds(c_l_bnds);  continuous_upper_bounds(c_u_bnds);
+  ModelUtils::continuous_lower_bounds(*this, c_l_bnds);  continuous_upper_bounds(c_u_bnds);
 }
 
 

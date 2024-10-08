@@ -367,7 +367,7 @@ void NCSUOptimizer::core_run()
     // initialize local_des_vars with DB initial point.  Variables are updated 
     // in constraint_eval/objective_eval
     copy_data(iteratedModel.current_variables().continuous_variables(), local_des_vars);
-    copy_data(iteratedModel.continuous_lower_bounds(), lowerBounds);
+    copy_data(ModelUtils::continuous_lower_bounds(iteratedModel), lowerBounds);
     copy_data(iteratedModel.continuous_upper_bounds(), upperBounds);
   } 
   else

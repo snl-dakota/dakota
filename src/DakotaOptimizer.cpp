@@ -55,7 +55,7 @@ Optimizer(ProblemDescDB& problem_db, Model& model,
   }
   // RWH: Check for finite bound constraints for Coliny global optimizers
   if ( (methodName == COLINY_DIRECT) || (methodName == COLINY_EA) ) {
-    const RealVector& c_l_bnds = model.continuous_lower_bounds();
+    const RealVector& c_l_bnds = ModelUtils::continuous_lower_bounds(model);
     const RealVector& c_u_bnds = model.continuous_upper_bounds();
     for (size_t i=0; i<numContinuousVars; ++i)
       if (c_l_bnds[i] <= -bigRealBoundSize || c_u_bnds[i] >= bigRealBoundSize) {

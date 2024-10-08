@@ -170,7 +170,7 @@ void NOWPACOptimizer::core_run()
 {
   //////////////////////////////////////////////////////////////////////////
   // Set bound constraints at run time to catch late updates
-  nowpacEvaluator.set_unscaled_bounds(iteratedModel.continuous_lower_bounds(), 
+  nowpacEvaluator.set_unscaled_bounds(ModelUtils::continuous_lower_bounds(iteratedModel), 
 				      iteratedModel.continuous_upper_bounds());
 
   // allocate arrays passed to optimization solver

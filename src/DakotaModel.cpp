@@ -1113,7 +1113,7 @@ Model::initialize_x0_bounds(const SizetArray& original_dvv,
     copy_data(currentVariables.all_continuous_variables(), x0);    // view->copy
 
   // define c_l_bnds, c_u_bnds, cv_ids, cv_types
-  const RealVector& c_l_bnds = (active_derivs) ? continuous_lower_bounds() :
+  const RealVector& c_l_bnds = (active_derivs) ? ModelUtils::continuous_lower_bounds(*this) :
     ( (inactive_derivs) ? inactive_continuous_lower_bounds() :
       all_continuous_lower_bounds() );
   const RealVector& c_u_bnds = (active_derivs) ? continuous_upper_bounds() :

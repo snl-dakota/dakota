@@ -265,7 +265,7 @@ get_parameter_sets(Model& model, const size_t num_samples,
   // variables, since they do not currently have global bounds specifications.
   // It would be nice to detect this and automatically delete any uncertain
   // variables (from numContinuousVars & local_vars).
-  const RealVector& c_l_bnds = model.continuous_lower_bounds();
+  const RealVector& c_l_bnds = ModelUtils::continuous_lower_bounds(model);
   const RealVector& c_u_bnds = model.continuous_upper_bounds();
   if (c_l_bnds.length() != numContinuousVars || 
       c_u_bnds.length() != numContinuousVars) {
