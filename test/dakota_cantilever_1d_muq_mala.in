@@ -9,18 +9,12 @@ environment,
 method,
   bayes_calibration muq
   mala
+    step_size = 1.0
   seed = 34784
   chain_samples = 500
   proposal_covariance
     diagonal
       values 1.0e16
-  dr_num_stages = 1
-  dr_scale_type = 'Power'
-  dr_scale = 1.2
-  am_period_num_steps = 20
-  am_starting_step = 20
-  am_scale = 0.1
-  mala_step_size = 1.0
 # output debug
 
 variables,

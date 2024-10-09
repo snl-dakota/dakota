@@ -8,31 +8,24 @@ environment,
 method,
   bayes_calibration muq
   dili
+    hessian_type = 'Exact'
+    adapt_interval = 100
+    adapt_start = 1
+    adapt_end = -1
+    initial_weight = 50
+    hess_tolerance = 1.e-4
+    lis_tolerance = 0.1
+    ses_num_eigs = 2
+    ses_rel_tol = 0.001
+    ses_abs_tol = 0.0
+    ses_exp_rank = 1
+    ses_overs_factor = 2
+    ses_block_size = 2
   seed = 34784
   chain_samples = 300
   proposal_covariance
     diagonal
       values 1.e8 1.e8 1.e8 1.e8
-  dr_num_stages = 2
-  dr_scale_type = 'Power'
-  dr_scale = 1.2
-  am_period_num_steps = 20
-  am_starting_step = 20
-  am_scale = 0.1
-  mala_step_size = 1.0
-  dili_hessian_type = 'Exact'
-  dili_adapt_interval = 100
-  dili_adapt_start = 1
-  dili_adapt_end = -1
-  dili_initial_weight = 50
-  dili_hess_tolerance = 1.e-4
-  dili_lis_tolerance = 0.1
-  dili_ses_num_eigs = 2
-  dili_ses_rel_tol = 0.001
-  dili_ses_abs_tol = 0.0
-  dili_ses_exp_rank = 1
-  dili_ses_overs_factor = 2
-  dili_ses_block_size = 2
 # output debug
 
 variables,
