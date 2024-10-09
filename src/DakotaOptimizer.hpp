@@ -169,8 +169,8 @@ bool get_variable_bounds( Model &                   model, // would like to make
   const IntVector& lower_bnds_int = ModelUtils::discrete_int_lower_bounds(model);
   const IntVector& upper_bnds_int = ModelUtils::discrete_int_upper_bounds(model);
 
-  const RealVector& lower_bnds_real = model.discrete_real_lower_bounds();
-  const RealVector& upper_bnds_real = model.discrete_real_upper_bounds();
+  const RealVector& lower_bnds_real = ModelUtils::discrete_real_lower_bounds(model);
+  const RealVector& upper_bnds_real = ModelUtils::discrete_real_upper_bounds(model);
 
   const BitArray& int_set_bits = ModelUtils::discrete_int_sets(model); // appears to be able to modify the model object ...
   const IntSetArray& init_pt_set_int = ModelUtils::discrete_set_int_values(model);

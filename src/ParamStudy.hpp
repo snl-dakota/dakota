@@ -586,8 +586,8 @@ inline bool ParamStudy::check_finite_bounds()
 	{ bnds_err = true; break; }
   }
   if (numDiscreteRealVars) {
-    const RealVector& dr_l_bnds = iteratedModel.discrete_real_lower_bounds();
-    const RealVector& dr_u_bnds = iteratedModel.discrete_real_upper_bounds();
+    const RealVector& dr_l_bnds = ModelUtils::discrete_real_lower_bounds(iteratedModel);
+    const RealVector& dr_u_bnds = ModelUtils::discrete_real_upper_bounds(iteratedModel);
     for (i=0; i<numDiscreteRealVars; ++i)
       if (dr_l_bnds[i] == -dbl_inf || dr_u_bnds[i] == dbl_inf)
 	{ bnds_err = true; break; }

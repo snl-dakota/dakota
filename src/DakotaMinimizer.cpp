@@ -273,8 +273,8 @@ void Minimizer::update_from_model(const Model& model)
   if (discrete_bounds) {
     const IntVector&  di_l_bnds = ModelUtils::discrete_int_lower_bounds(model);
     const IntVector&  di_u_bnds = ModelUtils::discrete_int_upper_bounds(model);
-    const RealVector& dr_l_bnds = model.discrete_real_lower_bounds();
-    const RealVector& dr_u_bnds = model.discrete_real_upper_bounds();
+    const RealVector& dr_l_bnds = ModelUtils::discrete_real_lower_bounds(model);
+    const RealVector& dr_u_bnds = ModelUtils::discrete_real_upper_bounds(model);
     for (i=0; i<numDiscreteIntVars; ++i)
       if (di_l_bnds[i] > -bigIntBoundSize || di_u_bnds[i] < bigIntBoundSize)
 	{ boundConstraintFlag = true; break; }

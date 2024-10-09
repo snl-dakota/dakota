@@ -1009,8 +1009,8 @@ void DataFitSurrModel::update_global_reference()
     copy_data(ModelUtils::continuous_upper_bounds(sub_model),    referenceCUBnds);
     copy_data(ModelUtils::discrete_int_lower_bounds(sub_model),  referenceDILBnds);
     copy_data(ModelUtils::discrete_int_upper_bounds(sub_model),  referenceDIUBnds);
-    copy_data(sub_model.discrete_real_lower_bounds(), referenceDRLBnds);
-    copy_data(sub_model.discrete_real_upper_bounds(), referenceDRUBnds);
+    copy_data(ModelUtils::discrete_real_lower_bounds(sub_model), referenceDRLBnds);
+    copy_data(ModelUtils::discrete_real_upper_bounds(sub_model), referenceDRUBnds);
   }
   else {
     const Constraints& cons = (actualModel.is_null()) ? userDefinedConstraints :
@@ -1063,8 +1063,8 @@ void DataFitSurrModel::build_approx_interface()
       ModelUtils::continuous_upper_bounds(actualModel),
       ModelUtils::discrete_int_lower_bounds(actualModel),
       ModelUtils::discrete_int_upper_bounds(actualModel),
-      actualModel.discrete_real_lower_bounds(),
-      actualModel.discrete_real_upper_bounds());
+      ModelUtils::discrete_real_lower_bounds(actualModel),
+      ModelUtils::discrete_real_upper_bounds(actualModel));
   }
   if (exportSurrogate) {
     // skip the ApproximationInterface layer and go directly to

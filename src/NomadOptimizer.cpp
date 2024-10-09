@@ -634,8 +634,8 @@ void NomadOptimizer::load_parameters(Model &model, NOMAD::Parameters &p)
   const IntVector& upper_bound_int = ModelUtils::discrete_int_upper_bounds(model);
 
   const RealVector& initial_point_real = model.current_variables().discrete_real_variables();
-  const RealVector& lower_bound_real = model.discrete_real_lower_bounds();
-  const RealVector& upper_bound_real = model.discrete_real_upper_bounds();
+  const RealVector& lower_bound_real = ModelUtils::discrete_real_lower_bounds(model);
+  const RealVector& upper_bound_real = ModelUtils::discrete_real_upper_bounds(model);
 
   const StringMultiArrayConstView initial_point_string = 
     model.current_variables().discrete_string_variables();

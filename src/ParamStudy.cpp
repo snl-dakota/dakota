@@ -874,8 +874,8 @@ void ParamStudy::distribute_partitions()
   const RealVector&  c_u_bnds = ModelUtils::continuous_upper_bounds(iteratedModel);
   const IntVector&  di_l_bnds = ModelUtils::discrete_int_lower_bounds(iteratedModel);
   const IntVector&  di_u_bnds = ModelUtils::discrete_int_upper_bounds(iteratedModel);
-  const RealVector& dr_l_bnds = iteratedModel.discrete_real_lower_bounds();
-  const RealVector& dr_u_bnds = iteratedModel.discrete_real_upper_bounds();
+  const RealVector& dr_l_bnds = ModelUtils::discrete_real_lower_bounds(iteratedModel);
+  const RealVector& dr_u_bnds = ModelUtils::discrete_real_upper_bounds(iteratedModel);
 
   const BitArray&      di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
   const IntSetArray&    dsi_values = ModelUtils::discrete_set_int_values(iteratedModel);
