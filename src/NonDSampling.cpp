@@ -306,8 +306,8 @@ get_parameter_sets(Model& model, const size_t num_samples,
       // sample uniformly from ALL lower/upper bnds with model in distinct view.
       // loss of sampleRanks control is OK since NonDIncremLHS uses ACTIVE mode.
       // TO DO: add support for uniform discrete
-      lhsDriver.generate_uniform_samples(model.all_continuous_lower_bounds(),
-					 model.all_continuous_upper_bounds(),
+      lhsDriver.generate_uniform_samples(ModelUtils::all_continuous_lower_bounds(model),
+					 ModelUtils::all_continuous_upper_bounds(model),
 					 corr, num_samples, design_matrix); 
     }
     else { // A, E, A+E UNCERTAIN_UNIFORM
@@ -322,8 +322,8 @@ get_parameter_sets(Model& model, const size_t num_samples,
 	     << "uniform mode" << std::endl;
 	abort_handler(METHOD_ERROR);
       }
-      const RealVector& all_c_l_bnds = model.all_continuous_lower_bounds();
-      const RealVector& all_c_u_bnds = model.all_continuous_upper_bounds();
+      const RealVector& all_c_l_bnds = ModelUtils::all_continuous_lower_bounds(model);
+      const RealVector& all_c_u_bnds = ModelUtils::all_continuous_upper_bounds(model);
       RealVector uncertain_c_l_bnds(Teuchos::View,
 	const_cast<Real*>(&all_c_l_bnds[start_acv]), num_acv);
       RealVector uncertain_c_u_bnds(Teuchos::View,

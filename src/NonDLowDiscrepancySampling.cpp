@@ -159,8 +159,8 @@ void NonDLowDiscrepancySampling::get_parameter_sets(
 
         /// Scale points from [0, 1) to the given lower and upper bounds
         scale(
-          model.all_continuous_lower_bounds(), 
-          model.all_continuous_upper_bounds(), 
+          ModelUtils::all_continuous_lower_bounds(model), 
+          ModelUtils::all_continuous_upper_bounds(model), 
           allSamples
         );
       }
@@ -178,8 +178,8 @@ void NonDLowDiscrepancySampling::get_parameter_sets(
           abort_handler(METHOD_ERROR);
         }
         /// This is copied from 'NonDSampling'
-        const RealVector& all_c_l_bnds = model.all_continuous_lower_bounds();
-        const RealVector& all_c_u_bnds = model.all_continuous_upper_bounds();
+        const RealVector& all_c_l_bnds = ModelUtils::all_continuous_lower_bounds(model);
+        const RealVector& all_c_u_bnds = ModelUtils::all_continuous_upper_bounds(model);
         RealVector uncertain_c_l_bnds(Teuchos::View,
           const_cast<Real*>(&all_c_l_bnds[start_acv]), num_acv);
         RealVector uncertain_c_u_bnds(Teuchos::View,

@@ -2250,8 +2250,8 @@ update_sub_model(const Variables& vars, const Constraints& cons)
 	if (sacvm_target == Pecos::NO_TARGET) {
 	  subModel.current_variables().all_continuous_variable(curr_c_vars[i], pacvm_index);
 	  if (extraCVarsData[i]) { // default mapping between consistent types
-	    subModel.all_continuous_lower_bound(curr_c_l_bnds[i], pacvm_index);
-	    subModel.all_continuous_upper_bound(curr_c_u_bnds[i], pacvm_index);
+	    ModelUtils::all_continuous_lower_bound(subModel, curr_c_l_bnds[i], pacvm_index);
+	    ModelUtils::all_continuous_upper_bound(subModel, curr_c_u_bnds[i], pacvm_index);
 	    // Note: this is more general than just bounds (all dist params):
 	    sm_mvd_rep->pull_distribution_parameters(mvDist,
 	      svd.cv_index_to_all_index(i),
@@ -2306,9 +2306,9 @@ update_sub_model(const Variables& vars, const Constraints& cons)
 	if (sadivm_target == Pecos::NO_TARGET) {
 	  subModel.current_variables().all_discrete_int_variable(curr_di_vars[i], padivm_index);
 	  if (extraDIVarsData[i]) { // default mapping between consistent types
-	    subModel.all_discrete_int_lower_bound(curr_di_l_bnds[i],
+	    ModelUtils::all_discrete_int_lower_bound(subModel, curr_di_l_bnds[i],
 						  padivm_index);
-	    subModel.all_discrete_int_upper_bound(curr_di_u_bnds[i],
+	    ModelUtils::all_discrete_int_upper_bound(subModel, curr_di_u_bnds[i],
 						  padivm_index);
 	    // Note: this is more general than just bounds (all dist params):
 	    sm_mvd_rep->pull_distribution_parameters(mvDist,
@@ -2416,9 +2416,9 @@ update_sub_model(const Variables& vars, const Constraints& cons)
 	if (sadrvm_target == Pecos::NO_TARGET) {
 	  subModel.current_variables().all_discrete_real_variable(curr_dr_vars[i], padrvm_index);
 	  if (extraDRVarsData[i]) { // default mapping between consistent types
-	    subModel.all_discrete_real_lower_bound(curr_dr_l_bnds[i],
+	    ModelUtils::all_discrete_real_lower_bound(subModel, curr_dr_l_bnds[i],
 						   padrvm_index);
-	    subModel.all_discrete_real_upper_bound(curr_dr_u_bnds[i],
+	    ModelUtils::all_discrete_real_upper_bound(subModel, curr_dr_u_bnds[i],
 						   padrvm_index);
 	    // Note: this is more general than just bounds (all dist params):
 	    sm_mvd_rep->pull_distribution_parameters(mvDist,
@@ -2448,8 +2448,8 @@ update_sub_model(const Variables& vars, const Constraints& cons)
       curr_i = svd.ccv_index_to_acv_index(i);
       c1_index = complement1ACVarMapIndices[i];
       subModel.current_variables().all_continuous_variable(curr_ac_vars[curr_i], c1_index);
-      subModel.all_continuous_lower_bound(curr_ac_l_bnds[curr_i], c1_index);
-      subModel.all_continuous_upper_bound(curr_ac_u_bnds[curr_i], c1_index);
+      ModelUtils::all_continuous_lower_bound(subModel, curr_ac_l_bnds[curr_i], c1_index);
+      ModelUtils::all_continuous_upper_bound(subModel, curr_ac_u_bnds[curr_i], c1_index);
       if (firstUpdate) {
 	subModel.current_variables().all_continuous_variable_label(curr_ac_labels[curr_i],c1_index);
 	// Note: this is more general than just bounds (all dist params):
@@ -2473,8 +2473,8 @@ update_sub_model(const Variables& vars, const Constraints& cons)
       curr_i = svd.cdiv_index_to_adiv_index(i);
       c1_index = complement1ADIVarMapIndices[i];
       subModel.current_variables().all_discrete_int_variable(curr_adi_vars[curr_i], c1_index);
-      subModel.all_discrete_int_lower_bound(curr_adi_l_bnds[curr_i], c1_index);
-      subModel.all_discrete_int_upper_bound(curr_adi_u_bnds[curr_i], c1_index);
+      ModelUtils::all_discrete_int_lower_bound(subModel, curr_adi_l_bnds[curr_i], c1_index);
+      ModelUtils::all_discrete_int_upper_bound(subModel, curr_adi_u_bnds[curr_i], c1_index);
       if (firstUpdate) {
 	subModel.current_variables().all_discrete_int_variable_label(curr_adi_labels[curr_i],
 						 c1_index);
@@ -2522,8 +2522,8 @@ update_sub_model(const Variables& vars, const Constraints& cons)
       curr_i = svd.cdrv_index_to_adrv_index(i);
       c1_index = complement1ADRVarMapIndices[i];
       subModel.current_variables().all_discrete_real_variable(curr_adr_vars[curr_i], c1_index);
-      subModel.all_discrete_real_lower_bound(curr_adr_l_bnds[curr_i], c1_index);
-      subModel.all_discrete_real_upper_bound(curr_adr_u_bnds[curr_i], c1_index);
+      ModelUtils::all_discrete_real_lower_bound(subModel, curr_adr_l_bnds[curr_i], c1_index);
+      ModelUtils::all_discrete_real_upper_bound(subModel, curr_adr_u_bnds[curr_i], c1_index);
       if (firstUpdate) {
 	subModel.current_variables().all_discrete_real_variable_label(curr_adr_labels[curr_i],
 						  c1_index);
@@ -2557,14 +2557,14 @@ real_variable_mapping(Real r_var, size_t av_index, short svm_target)
   case Pecos::BE_LWR_BND:
     sm_mvd_rep->push_parameter(sm_svd.acv_index_to_all_index(av_index),
 			       svm_target, r_var);
-    subModel.all_continuous_lower_bound(r_var, av_index);
+    ModelUtils::all_continuous_lower_bound(subModel, r_var, av_index);
     break;
   case Pecos::CR_UPR_BND:  case Pecos::N_UPR_BND:  case Pecos::LN_UPR_BND:
   case Pecos::U_UPR_BND:   case Pecos::LU_UPR_BND: case Pecos::T_UPR_BND:
   case Pecos::BE_UPR_BND:
     sm_mvd_rep->push_parameter(sm_svd.acv_index_to_all_index(av_index),
 			       svm_target, r_var);
-    subModel.all_continuous_upper_bound(r_var, av_index);
+    ModelUtils::all_continuous_upper_bound(subModel, r_var, av_index);
     break;
   case Pecos::N_MEAN:      case Pecos::N_STD_DEV:  case Pecos::LN_MEAN:
   case Pecos::LN_STD_DEV:  case Pecos::LN_LAMBDA:  case Pecos::LN_ZETA:
@@ -2600,12 +2600,12 @@ real_variable_mapping(Real r_var, size_t av_index, short svm_target)
     if (l_bnd > -dbl_inf) {
       Real new_l_bnd = l_bnd + delta;
       sm_mvd_rep->push_parameter(rv_index, Pecos::N_LWR_BND, new_l_bnd);
-      subModel.all_continuous_lower_bound(new_l_bnd, av_index);
+      ModelUtils::all_continuous_lower_bound(subModel, new_l_bnd, av_index);
     }
     if (u_bnd <  dbl_inf) {
       Real new_u_bnd = u_bnd + delta;
       sm_mvd_rep->push_parameter(rv_index, Pecos::N_UPR_BND, new_u_bnd);
-      subModel.all_continuous_upper_bound(new_u_bnd, av_index);   
+      ModelUtils::all_continuous_upper_bound(subModel, new_u_bnd, av_index);   
     }
     break;
   }
@@ -2623,13 +2623,13 @@ real_variable_mapping(Real r_var, size_t av_index, short svm_target)
       Real num_sig_l = (mean - l_bnd) / stdev,
 	   new_l_bnd = mean - num_sig_l * r_var;
       sm_mvd_rep->push_parameter(rv_index, Pecos::N_LWR_BND, new_l_bnd);
-      subModel.all_continuous_lower_bound(new_l_bnd, av_index);
+      ModelUtils::all_continuous_lower_bound(subModel, new_l_bnd, av_index);
     }
     if (u_bnd <  dbl_inf) {
       Real num_sig_u = (u_bnd - mean) / stdev,
 	   new_u_bnd = mean + num_sig_u * r_var;
       sm_mvd_rep->push_parameter(rv_index, Pecos::N_UPR_BND, new_u_bnd);
-      subModel.all_continuous_upper_bound(new_u_bnd, av_index);   
+      ModelUtils::all_continuous_upper_bound(subModel, new_u_bnd, av_index);   
     }
     break;
   }
@@ -2649,8 +2649,8 @@ real_variable_mapping(Real r_var, size_t av_index, short svm_target)
       new_l_bnd = l_bnd + delta, new_u_bnd = u_bnd + delta;
     sm_mvd_rep->push_parameter(rv_index, Pecos::U_LWR_BND, new_l_bnd);
     sm_mvd_rep->push_parameter(rv_index, Pecos::U_UPR_BND, new_u_bnd);
-    subModel.all_continuous_lower_bound(new_l_bnd, av_index);
-    subModel.all_continuous_upper_bound(new_u_bnd, av_index);   
+    ModelUtils::all_continuous_lower_bound(subModel, new_l_bnd, av_index);
+    ModelUtils::all_continuous_upper_bound(subModel, new_u_bnd, av_index);   
     break;
   }
   case Pecos::U_SCALE: {
@@ -2663,8 +2663,8 @@ real_variable_mapping(Real r_var, size_t av_index, short svm_target)
       new_l_bnd = center-half_range, new_u_bnd = center+half_range;
     sm_mvd_rep->push_parameter(rv_index, Pecos::U_LWR_BND, new_l_bnd);
     sm_mvd_rep->push_parameter(rv_index, Pecos::U_UPR_BND, new_u_bnd);
-    subModel.all_continuous_lower_bound(new_l_bnd, av_index);
-    subModel.all_continuous_upper_bound(new_u_bnd, av_index);   
+    ModelUtils::all_continuous_lower_bound(subModel, new_l_bnd, av_index);
+    ModelUtils::all_continuous_upper_bound(subModel, new_u_bnd, av_index);   
     break;
   }
   // T_{MODE,LWR_BND,UPR_BND} change individual dist parameters only.
@@ -2685,8 +2685,8 @@ real_variable_mapping(Real r_var, size_t av_index, short svm_target)
     sm_mvd_rep->push_parameter(rv_index, Pecos::T_MODE,    r_var);
     sm_mvd_rep->push_parameter(rv_index, Pecos::T_LWR_BND, new_l_bnd);
     sm_mvd_rep->push_parameter(rv_index, Pecos::T_UPR_BND, new_u_bnd);
-    subModel.all_continuous_lower_bound(new_l_bnd, av_index);
-    subModel.all_continuous_upper_bound(new_u_bnd, av_index);   
+    ModelUtils::all_continuous_lower_bound(subModel, new_l_bnd, av_index);
+    ModelUtils::all_continuous_upper_bound(subModel, new_u_bnd, av_index);   
     break;
   }
   case Pecos::T_SCALE: {
@@ -2701,8 +2701,8 @@ real_variable_mapping(Real r_var, size_t av_index, short svm_target)
       new_u_bnd = mode + perc_u * r_var;
     sm_mvd_rep->push_parameter(rv_index, Pecos::T_LWR_BND, new_l_bnd);
     sm_mvd_rep->push_parameter(rv_index, Pecos::T_UPR_BND, new_u_bnd);
-    subModel.all_continuous_lower_bound(new_l_bnd, av_index);
-    subModel.all_continuous_upper_bound(new_u_bnd, av_index);   
+    ModelUtils::all_continuous_lower_bound(subModel, new_l_bnd, av_index);
+    ModelUtils::all_continuous_upper_bound(subModel, new_u_bnd, av_index);   
     break;
   }
   case Pecos::NO_TARGET: default:
@@ -2729,12 +2729,12 @@ integer_variable_mapping(int i_var, size_t av_index, short svm_target)
   case Pecos::DR_LWR_BND:
     sm_mvd_rep->push_parameter(sm_svd.adiv_index_to_all_index(av_index),
 			       svm_target, i_var);
-    subModel.all_discrete_int_lower_bound(i_var, av_index);
+    ModelUtils::all_discrete_int_lower_bound(subModel, i_var, av_index);
     break;
   case Pecos::DR_UPR_BND:
     sm_mvd_rep->push_parameter(sm_svd.adiv_index_to_all_index(av_index),
 			       svm_target, i_var);
-    subModel.all_discrete_int_upper_bound(i_var, av_index);
+    ModelUtils::all_discrete_int_upper_bound(subModel, i_var, av_index);
     break;
   case Pecos::BI_TRIALS:    case Pecos::NBI_TRIALS:
   case Pecos::HGE_TOT_POP:  case Pecos::HGE_SEL_POP:  case Pecos::HGE_DRAWN: {

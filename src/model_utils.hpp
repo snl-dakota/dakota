@@ -123,7 +123,7 @@ namespace Dakota {
         void all_discrete_int_lower_bounds(Model &model, const IntVector& a_d_l_bnds);
         /// set a lower bound within all discrete lower bounds in
         /// userDefinedConstraints
-        void all_discrete_int_lower_bound(int a_d_l_bnd, size_t i);
+        void all_discrete_int_lower_bound(Model &model, int a_d_l_bnd, size_t i);
         /// return all discrete upper bounds in userDefinedConstraints
         const IntVector& all_discrete_int_upper_bounds(const Model &model);
         /// set all discrete upper bounds in userDefinedConstraints

@@ -285,8 +285,8 @@ void DataTransformModel::update_cv_skip_hyperparams(const Model& model)
     cv_end = cv_begin + num_cv,
     num_acv = sm_vars.acv();
   const RealVector& acv = model.current_variables().all_continuous_variables();
-  const RealVector& acv_l_bnds = model.all_continuous_lower_bounds();
-  const RealVector& acv_u_bnds = model.all_continuous_upper_bounds();
+  const RealVector& acv_l_bnds = ModelUtils::all_continuous_lower_bounds(model);
+  const RealVector& acv_u_bnds = ModelUtils::all_continuous_upper_bounds(model);
   StringMultiArrayConstView acv_labels
     = model.current_variables().all_continuous_variable_labels();
 
@@ -986,8 +986,8 @@ void DataTransformModel::init_continuous_vars()
   const SizetArray& sm_vc_totals = svd.components_totals();
   const RealVector& sm_acv = subModel.current_variables().all_continuous_variables();
   StringMultiArrayConstView sm_acvl = subModel.current_variables().all_continuous_variable_labels();
-  const RealVector & sm_aclb = subModel.all_continuous_lower_bounds();
-  const RealVector & sm_acub = subModel.all_continuous_upper_bounds();
+  const RealVector & sm_aclb = ModelUtils::all_continuous_lower_bounds(subModel);
+  const RealVector & sm_acub = ModelUtils::all_continuous_upper_bounds(subModel);
 
   int continuous_vc_inds[4] = {TOTAL_CDV, TOTAL_CAUV, TOTAL_CEUV, TOTAL_CSV};
   int hyperparam_vc_ind = get_hyperparam_vc_index(subModel);
