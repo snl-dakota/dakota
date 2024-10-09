@@ -187,7 +187,6 @@ bool get_variable_bounds( Model &                   model, // would like to make
                            AdapterT::noValue());
 
   int offset = model.current_variables().cv();
-  std::cout << "After DakotaOptimizer.hpp:189. offset=" << offset << std::endl;
   allSet = allSet && 
            get_mixed_bounds( 
                    int_set_bits,
@@ -201,13 +200,6 @@ bool get_variable_bounds( Model &                   model, // would like to make
                    offset);
 
   offset += model.current_variables().div();
-  std::cout << "After DakotaOptimizer.hpp:203. offset=" << offset << std::endl;
-  std::cout << "init_pt_set_int:\n";
-  std::cout << " size: " << init_pt_set_int.size() << std::endl;
-  std::cout << " contents:\n";
-  for(const auto & v : init_pt_set_int)
-      std::cout << v << std::endl;
-
   get_bounds(init_pt_set_real, lower, upper, offset);
 
   offset += model.current_variables().drv();
