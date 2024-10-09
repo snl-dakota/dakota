@@ -670,8 +670,8 @@ load_distribute_points(const String& points_filename,
     // validate discrete integers (sets and ranges) read
     const BitArray& di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
     const IntSetArray& dsi_vals = ModelUtils::discrete_set_int_values(iteratedModel);
-    const IntVector& di_lb = iteratedModel.discrete_int_lower_bounds();
-    const IntVector& di_ub = iteratedModel.discrete_int_upper_bounds();
+    const IntVector& di_lb = ModelUtils::discrete_int_lower_bounds(iteratedModel);
+    const IntVector& di_ub = ModelUtils::discrete_int_upper_bounds(iteratedModel);
 
     for (size_t j=0, dsi_cntr=0; j<numDiscreteIntVars; ++j)
       if (di_set_bits[j]) {
@@ -872,8 +872,8 @@ void ParamStudy::distribute_partitions()
 
   const RealVector&  c_l_bnds = ModelUtils::continuous_lower_bounds(iteratedModel);
   const RealVector&  c_u_bnds = ModelUtils::continuous_upper_bounds(iteratedModel);
-  const IntVector&  di_l_bnds = iteratedModel.discrete_int_lower_bounds();
-  const IntVector&  di_u_bnds = iteratedModel.discrete_int_upper_bounds();
+  const IntVector&  di_l_bnds = ModelUtils::discrete_int_lower_bounds(iteratedModel);
+  const IntVector&  di_u_bnds = ModelUtils::discrete_int_upper_bounds(iteratedModel);
   const RealVector& dr_l_bnds = iteratedModel.discrete_real_lower_bounds();
   const RealVector& dr_u_bnds = iteratedModel.discrete_real_upper_bounds();
 

@@ -271,8 +271,8 @@ void Minimizer::update_from_model(const Model& model)
   bool discrete_bounds = (methodName == MOGA || methodName == SOGA ||
 			  methodName == COLINY_EA);
   if (discrete_bounds) {
-    const IntVector&  di_l_bnds = model.discrete_int_lower_bounds();
-    const IntVector&  di_u_bnds = model.discrete_int_upper_bounds();
+    const IntVector&  di_l_bnds = ModelUtils::discrete_int_lower_bounds(model);
+    const IntVector&  di_u_bnds = ModelUtils::discrete_int_upper_bounds(model);
     const RealVector& dr_l_bnds = model.discrete_real_lower_bounds();
     const RealVector& dr_u_bnds = model.discrete_real_upper_bounds();
     for (i=0; i<numDiscreteIntVars; ++i)

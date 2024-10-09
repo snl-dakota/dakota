@@ -40,8 +40,8 @@ void NonDLocalEvidence::set_cell_bounds()
   }
 
   for (j=0; j<(numDiscIntervalVars); j++) {
-    minMaxModel.discrete_int_lower_bound(cellIntRangeLowerBounds[cellCntr][j],j);
-    minMaxModel.discrete_int_upper_bound(cellIntRangeUpperBounds[cellCntr][j],j);
+    ModelUtils::discrete_int_lower_bound(minMaxModel, cellIntRangeLowerBounds[cellCntr][j],j);
+    ModelUtils::discrete_int_upper_bound(minMaxModel, cellIntRangeUpperBounds[cellCntr][j],j);
   }
 
   for (j=0; j<numDiscSetIntUncVars; j++) {

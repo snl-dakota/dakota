@@ -42,9 +42,9 @@ void NonDGlobalEvidence::set_cell_bounds()
   }
    
   for (j=0; j<numDiscIntervalVars; ++j) {
-    intervalOptModel.discrete_int_lower_bound(
+    ModelUtils::discrete_int_lower_bound(intervalOptModel, 
       cellIntRangeLowerBounds[cellCntr][j], j);
-    intervalOptModel.discrete_int_upper_bound(
+    ModelUtils::discrete_int_upper_bound(intervalOptModel, 
       cellIntRangeUpperBounds[cellCntr][j], j);
   } 
 

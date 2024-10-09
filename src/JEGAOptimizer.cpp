@@ -1434,8 +1434,8 @@ JEGAOptimizer::LoadTheDesignVariables(
     // now move on to the discrete variables.  The data for those is in the
     // Model as discrete_lower_bounds, discrete_upper_bounds, and
     // discrete_variable_labels.
-    const IntVector& dilbs = m.discrete_int_lower_bounds();
-    const IntVector& diubs = m.discrete_int_upper_bounds();
+    const IntVector& dilbs = ModelUtils::discrete_int_lower_bounds(m);
+    const IntVector& diubs = ModelUtils::discrete_int_upper_bounds(m);
     StringMultiArrayConstView dilabels = m.current_variables().discrete_int_variable_labels();
     const BitArray& di_set_bits = ModelUtils::discrete_int_sets(m);
     const IntSetArray& dsiv = ModelUtils::discrete_set_int_values(m);

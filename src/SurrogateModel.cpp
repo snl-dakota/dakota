@@ -811,8 +811,8 @@ check_rebuild(const RealVector& ref_icv,        const IntVector&  ref_idiv,
 
 	if (ref_c_l_bnds  != ModelUtils::continuous_lower_bounds(sub_model)    ||
 	    ref_c_u_bnds  != ModelUtils::continuous_upper_bounds(sub_model)    ||
-	    ref_di_l_bnds != sub_model.discrete_int_lower_bounds()  ||
-	    ref_di_u_bnds != sub_model.discrete_int_upper_bounds()  ||
+	    ref_di_l_bnds != ModelUtils::discrete_int_lower_bounds(sub_model)  ||
+	    ref_di_u_bnds != ModelUtils::discrete_int_upper_bounds(sub_model)  ||
 	    // no discrete string bounds
 	    ref_dr_l_bnds != sub_model.discrete_real_lower_bounds() ||
 	    ref_dr_u_bnds != sub_model.discrete_real_upper_bounds())

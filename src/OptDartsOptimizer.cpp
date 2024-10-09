@@ -134,8 +134,8 @@ void OptDartsOptimizer::load_parameters(Model &model)
      const RealVector& upper_bound_cont = ModelUtils::continuous_upper_bounds(model);
 
      const IntVector& initial_point_int = model.current_variables().discrete_int_variables();
-     const IntVector& lower_bound_int = model.discrete_int_lower_bounds();
-     const IntVector& upper_bound_int = model.discrete_int_upper_bounds();
+     const IntVector& lower_bound_int = ModelUtils::discrete_int_lower_bounds(model);
+     const IntVector& upper_bound_int = ModelUtils::discrete_int_upper_bounds(model);
 
      const RealVector& initial_point_real = model.current_variables().discrete_real_variables();
      const RealVector& lower_bound_real = model.discrete_real_lower_bounds();

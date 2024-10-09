@@ -88,8 +88,8 @@ void COLINApplication::set_problem(Model& model) {
   _num_int_vars = num_dv;
   if (num_dv) {
     const BitArray&       di_set_bits = ModelUtils::discrete_int_sets(model);
-    const IntVector&      lower_bnds  = model.discrete_int_lower_bounds();
-    const IntVector&      upper_bnds  = model.discrete_int_upper_bounds();
+    const IntVector&      lower_bnds  = ModelUtils::discrete_int_lower_bounds(model);
+    const IntVector&      upper_bnds  = ModelUtils::discrete_int_upper_bounds(model);
     const IntSetArray&    dsiv_values = ModelUtils::discrete_set_int_values(model);
     const RealSetArray&   dsrv_values = ModelUtils::discrete_set_real_values(model);
     const StringSetArray& dssv_values = ModelUtils::discrete_set_string_values(model);

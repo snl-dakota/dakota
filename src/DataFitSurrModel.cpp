@@ -1007,8 +1007,8 @@ void DataFitSurrModel::update_global_reference()
     // update referenceCLBnds/referenceCUBnds/referenceDLBnds/referenceDUBnds
     copy_data(ModelUtils::continuous_lower_bounds(sub_model),    referenceCLBnds);
     copy_data(ModelUtils::continuous_upper_bounds(sub_model),    referenceCUBnds);
-    copy_data(sub_model.discrete_int_lower_bounds(),  referenceDILBnds);
-    copy_data(sub_model.discrete_int_upper_bounds(),  referenceDIUBnds);
+    copy_data(ModelUtils::discrete_int_lower_bounds(sub_model),  referenceDILBnds);
+    copy_data(ModelUtils::discrete_int_upper_bounds(sub_model),  referenceDIUBnds);
     copy_data(sub_model.discrete_real_lower_bounds(), referenceDRLBnds);
     copy_data(sub_model.discrete_real_upper_bounds(), referenceDRUBnds);
   }
@@ -1061,8 +1061,8 @@ void DataFitSurrModel::build_approx_interface()
     approxInterface.build_approximation(
       ModelUtils::continuous_lower_bounds(actualModel),
       ModelUtils::continuous_upper_bounds(actualModel),
-      actualModel.discrete_int_lower_bounds(),
-      actualModel.discrete_int_upper_bounds(),
+      ModelUtils::discrete_int_lower_bounds(actualModel),
+      ModelUtils::discrete_int_upper_bounds(actualModel),
       actualModel.discrete_real_lower_bounds(),
       actualModel.discrete_real_upper_bounds());
   }

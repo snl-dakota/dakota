@@ -651,23 +651,6 @@ public:
 
   // BOUNDS
 
-  /// return the active discrete int lower bounds from userDefinedConstraints
-  const IntVector& discrete_int_lower_bounds() const;
-  /// return an active discrete int lower bound from userDefinedConstraints
-  int discrete_int_lower_bound(size_t i) const;
-  /// set the active discrete int lower bounds in userDefinedConstraints
-  void discrete_int_lower_bounds(const IntVector& d_l_bnds);
-  /// set the i-th active discrete int lower bound in userDefinedConstraints
-  void discrete_int_lower_bound(int d_l_bnd, size_t i);
-  /// return the active discrete int upper bounds from userDefinedConstraints
-  const IntVector& discrete_int_upper_bounds() const;
-  /// return an active discrete int upper bound from userDefinedConstraints
-  int discrete_int_upper_bound(size_t i) const;
-  /// set the active discrete int upper bounds in userDefinedConstraints
-  void discrete_int_upper_bounds(const IntVector& d_u_bnds);
-  /// set the i-th active discrete int upper bound in userDefinedConstraints
-  void discrete_int_upper_bound(int d_u_bnd, size_t i);
-  /// return the active discrete real lower bounds from userDefinedConstraints
   const RealVector& discrete_real_lower_bounds() const;
   /// return an active discrete real lower bound from userDefinedConstraints
   Real discrete_real_lower_bound(size_t i) const;
@@ -1548,90 +1531,6 @@ multivariate_distribution() const
 //   if (modelRep) modelRep->mvDist = dist;
 //   else          mvDist = dist;
 // }
-
-
-inline const IntVector& Model::discrete_int_lower_bounds() const
-{
-  return (modelRep) ?
-    modelRep->userDefinedConstraints.discrete_int_lower_bounds() :
-    userDefinedConstraints.discrete_int_lower_bounds();
-}
-
-
-inline int Model::discrete_int_lower_bound(size_t i) const
-{
-  return (modelRep) ?
-    modelRep->userDefinedConstraints.discrete_int_lower_bound(i) :
-    userDefinedConstraints.discrete_int_lower_bound(i);
-}
-
-
-inline void Model::discrete_int_lower_bounds(const IntVector& d_l_bnds)
-{
-  if (modelRep)
-    modelRep->discrete_int_lower_bounds(d_l_bnds);
-  else {
-    userDefinedConstraints.discrete_int_lower_bounds(d_l_bnds);
-    if (mvDist.global_bounds())
-      mvDist.lower_bounds(d_l_bnds,
-	currentVariables.shared_data().div_to_all_mask());
-  }
-}
-
-
-inline void Model::discrete_int_lower_bound(int d_l_bnd, size_t i)
-{
-  if (modelRep)
-    modelRep->discrete_int_lower_bound(d_l_bnd, i);
-  else {
-    userDefinedConstraints.discrete_int_lower_bound(d_l_bnd, i);
-    if (mvDist.global_bounds())
-      mvDist.lower_bound(d_l_bnd,
-	currentVariables.shared_data().div_index_to_all_index(i));
-  }
-}
-
-
-inline const IntVector& Model::discrete_int_upper_bounds() const
-{
-  return (modelRep) ?
-    modelRep->userDefinedConstraints.discrete_int_upper_bounds() :
-    userDefinedConstraints.discrete_int_upper_bounds();
-}
-
-
-inline int Model::discrete_int_upper_bound(size_t i) const
-{
-  return (modelRep) ?
-    modelRep->userDefinedConstraints.discrete_int_upper_bound(i) :
-    userDefinedConstraints.discrete_int_upper_bound(i);
-}
-
-
-inline void Model::discrete_int_upper_bounds(const IntVector& d_u_bnds)
-{
-  if (modelRep)
-    modelRep->discrete_int_upper_bounds(d_u_bnds);
-  else {
-    userDefinedConstraints.discrete_int_upper_bounds(d_u_bnds);
-    if (mvDist.global_bounds())
-      mvDist.upper_bounds(d_u_bnds,
-	currentVariables.shared_data().div_to_all_mask());
-  }
-}
-
-
-inline void Model::discrete_int_upper_bound(int d_u_bnd, size_t i)
-{
-  if (modelRep)
-    modelRep->discrete_int_upper_bound(d_u_bnd, i);
-  else {
-    userDefinedConstraints.discrete_int_upper_bound(d_u_bnd, i);
-    if (mvDist.global_bounds())
-      mvDist.upper_bound(d_u_bnd,
-	currentVariables.shared_data().div_index_to_all_index(i));
-  }
-}
 
 
 inline const RealVector& Model::discrete_real_lower_bounds() const

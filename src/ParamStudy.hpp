@@ -579,8 +579,8 @@ inline bool ParamStudy::check_finite_bounds()
 	{ bnds_err = true; break; }
   }
   if (numDiscreteIntVars) {
-    const IntVector& di_l_bnds = iteratedModel.discrete_int_lower_bounds();
-    const IntVector& di_u_bnds = iteratedModel.discrete_int_upper_bounds();
+    const IntVector& di_l_bnds = ModelUtils::discrete_int_lower_bounds(iteratedModel);
+    const IntVector& di_u_bnds = ModelUtils::discrete_int_upper_bounds(iteratedModel);
     for (i=0; i<numDiscreteIntVars; ++i)
       if (di_l_bnds[i] <= INT_MIN || di_u_bnds[i] >= INT_MAX)
 	{ bnds_err = true; break; }

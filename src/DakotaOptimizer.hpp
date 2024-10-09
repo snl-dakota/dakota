@@ -166,8 +166,8 @@ bool get_variable_bounds( Model &                   model, // would like to make
   const RealVector& lower_bnds_cont = ModelUtils::continuous_lower_bounds(model);
   const RealVector& upper_bnds_cont = ModelUtils::continuous_upper_bounds(model);
 
-  const IntVector& lower_bnds_int = model.discrete_int_lower_bounds();
-  const IntVector& upper_bnds_int = model.discrete_int_upper_bounds();
+  const IntVector& lower_bnds_int = ModelUtils::discrete_int_lower_bounds(model);
+  const IntVector& upper_bnds_int = ModelUtils::discrete_int_upper_bounds(model);
 
   const RealVector& lower_bnds_real = model.discrete_real_lower_bounds();
   const RealVector& upper_bnds_real = model.discrete_real_upper_bounds();
