@@ -1525,58 +1525,6 @@ multivariate_distribution() const
 { return (modelRep) ? modelRep->mvDist : mvDist; }
 
 
-// inline void Model::
-// multivariate_distribution(const Pecos::MultivariateDistribution& dist)
-// {
-//   if (modelRep) modelRep->mvDist = dist;
-//   else          mvDist = dist;
-// }
-
-
-inline const RealVector& Model::inactive_continuous_lower_bounds() const
-{
-  return (modelRep) ? 
-    modelRep->userDefinedConstraints.inactive_continuous_lower_bounds() :
-    userDefinedConstraints.inactive_continuous_lower_bounds();
-}
-
-
-inline void Model::
-inactive_continuous_lower_bounds(const RealVector& i_c_l_bnds)
-{
-  if (modelRep)
-    modelRep->inactive_continuous_lower_bounds(i_c_l_bnds);
-  else {
-    userDefinedConstraints.inactive_continuous_lower_bounds(i_c_l_bnds);
-    if (mvDist.global_bounds())
-      mvDist.lower_bounds(i_c_l_bnds,
-	currentVariables.shared_data().icv_to_all_mask());
-  }
-}
-
-
-inline const RealVector& Model::inactive_continuous_upper_bounds() const
-{
-  return (modelRep) ? 
-    modelRep->userDefinedConstraints.inactive_continuous_upper_bounds() :
-    userDefinedConstraints.inactive_continuous_upper_bounds();
-}
-
-
-inline void Model::
-inactive_continuous_upper_bounds(const RealVector& i_c_u_bnds)
-{
-  if (modelRep)
-    modelRep->inactive_continuous_upper_bounds(i_c_u_bnds);
-  else {
-    userDefinedConstraints.inactive_continuous_upper_bounds(i_c_u_bnds);
-    if (mvDist.global_bounds())
-      mvDist.upper_bounds(i_c_u_bnds,
-	currentVariables.shared_data().icv_to_all_mask());
-  }
-}
-
-
 inline const IntVector& Model::inactive_discrete_int_lower_bounds() const
 {
   return (modelRep) ? 
