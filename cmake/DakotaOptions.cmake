@@ -158,7 +158,7 @@ option(DAKOTA_DISABLE_FPE_TRAPS
 # -----
 
 option(DAKOTA_HAVE_GSL "Toggle GSL support, default is disabled" OFF)
-option(DAKOTA_HAVE_HDF5 "Toggle HDF5 support, default is disabled" ON)
+option(DAKOTA_HAVE_HDF5 "Toggle HDF5 support, default is disabled" OFF)
 option(HAVE_X_GRAPHICS "Build the Dakota/Motif Graphics package." OFF)
 
 
@@ -210,7 +210,7 @@ option(HAVE_NCSUOPT "Build the NCSUOPT package." ON)
 option(HAVE_NL2SOL "Build the NL2SOL package." ON)
 option(HAVE_NLPQL "Build the NLPQL package." ON)
 option(HAVE_NOMAD "Build the NOMAD package." ON)
-option(HAVE_MUQ "Build the MIT MUQ package (experimental)." ON)
+option(HAVE_MUQ "Build the MIT MUQ package (experimental)." OFF)
 option(HAVE_NOWPAC "Build the SNOWPAC package (experimental)." OFF)
 option(HAVE_NPSOL "Build the NPSOL package." ON)
 option(HAVE_OPTPP "Build the OPTPP package." ON)
