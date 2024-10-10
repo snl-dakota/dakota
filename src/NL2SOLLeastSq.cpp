@@ -194,7 +194,7 @@ calcr(int *np, int *pp, Real *x, int *nfp, Real *r, int *ui, void *ur, Vf vf)
   if (q->newR)
 	Rswapchk(q);
   copy_data(x, p, xd);
-  nl2solInstance->iteratedModel.current_variables().continuous_variables(xd);
+  ModelUtils::continuous_variables(nl2solInstance->iteratedModel, xd);
   nl2solInstance->activeSet.request_values(spec + 1);
   nl2solInstance->iteratedModel.evaluate(nl2solInstance->activeSet);
   const Response& lr = nl2solInstance->iteratedModel.current_response();
@@ -267,7 +267,7 @@ calcj(int *np, int *pp, Real *x, int *nfp, Real *J, int *ui, void *ur, Vf vf)
 	}
     RealVector xd(p);
     copy_data(x, p, xd);
-    nl2solInstance->iteratedModel.current_variables().continuous_variables(xd);
+    ModelUtils::continuous_variables(nl2solInstance->iteratedModel, xd);
 
     nl2solInstance->activeSet.request_values(2);
     nl2solInstance->iteratedModel.evaluate(nl2solInstance->activeSet);
@@ -439,7 +439,7 @@ void NL2SOLLeastSq::core_run()
   if (xftol > 0)
     v[v_xftol] = xftol;
 
-  copy_data(iteratedModel.current_variables().continuous_variables(), x, p);
+  copy_data(ModelUtils::continuous_variables(iteratedModel), x, p);
 
   if (boundConstraintFlag) {
     const RealVector& Lb = ModelUtils::continuous_lower_bounds(iteratedModel);

@@ -899,7 +899,7 @@ bool NonDRKDDarts::resize()
         RealVector newX(_num_dim);
         for (size_t idim = 0; idim < _num_dim; idim++) newX[idim] = x[idim];
         
-        iteratedModel.current_variables().continuous_variables(newX);
+        ModelUtils::continuous_variables(iteratedModel, newX);
         // bypass the surrogate model to evaluate the underlying truth model
         iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
         iteratedModel.evaluate();
@@ -931,7 +931,7 @@ bool NonDRKDDarts::resize()
     {
         // this copy could be moved outside the loop for memory efficiency
         for (size_t vi = 0; vi < numContinuousVars; ++vi)
-            iteratedModel.current_variables().continuous_variable(x[vi], vi);
+            ModelUtils::continuous_variable(iteratedModel, x[vi], vi);
         // TODO: use active_set_vector for efficiency if you truly only
         // need 1 response function?
         
@@ -1078,8 +1078,8 @@ bool NonDRKDDarts::resize()
         size_t width = write_precision+7, w2p2 = 2*width+2, w3p4 = 3*width+4;
         
         StringMultiArrayConstView uv_labels
-        = iteratedModel.current_variables().continuous_variable_labels();
-        const StringArray& fn_labels = iteratedModel.current_response().function_labels();
+        = ModelUtils::continuous_variable_labels(iteratedModel);
+        const StringArray& fn_labels = ModelUtils::response_labels(iteratedModel);
         
         std::cout << std::endl;
         

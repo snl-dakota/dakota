@@ -58,11 +58,11 @@ void NonDGlobalSingleInterval::get_best_sample(bool maximize, bool eval_approx)
   if (eval_approx) {
     const Pecos::SurrogateDataVars& sdv = sdv_array[index_star];
     if (numContIntervalVars)
-      fHatModel.current_variables().continuous_variables(sdv.continuous_variables());
+      ModelUtils::continuous_variables(fHatModel, sdv.continuous_variables());
     if (numDiscIntervalVars || numDiscSetIntUncVars)
-      fHatModel.current_variables().discrete_int_variables(sdv.discrete_int_variables());
+      ModelUtils::discrete_int_variables(fHatModel, sdv.discrete_int_variables());
     if (numDiscSetRealUncVars)
-      fHatModel.current_variables().discrete_real_variables(sdv.discrete_real_variables());
+      ModelUtils::discrete_real_variables(fHatModel, sdv.discrete_real_variables());
     ActiveSet set = fHatModel.current_response().active_set();
     set.request_values(0); set.request_value(1, respFnCntr);
     fHatModel.evaluate(set);

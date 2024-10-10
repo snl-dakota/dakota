@@ -638,7 +638,7 @@ qoi_eval(size_t num_samp, const double* var_sets, double* qoi_sets, void* args)
   RealVector cv_i(num_cv, false);
   for (size_t i=0; i<num_samp; ++i) {
     copy_data(var_sets+num_cv*i, num_cv, cv_i);
-    c3Instance->iteratedModel.current_variables().continuous_variables(cv_i);
+    c3ModelUtils::continuous_variables(Instance->iteratedModel, cv_i);
     if (asynch_flag)
       c3Instance->iteratedModel.evaluate_nowait();
     else {
@@ -670,7 +670,7 @@ void NonDC3FunctionTrain::print_moments(std::ostream& s)
   s << std::scientific << std::setprecision(write_precision);
 
   // std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  const StringArray& fn_labels = iteratedModel.current_response().function_labels();
+  const StringArray& fn_labels = ModelUtils::response_labels(iteratedModel);
   size_t i, j, width = write_precision+7;
 
   s << "\nMoment statistics for each response function:\n";
@@ -720,10 +720,10 @@ void NonDC3FunctionTrain::print_sobol_indices(std::ostream& s)
 {
   s << "\nGlobal sensitivity indices for each response function:\n";
 
-  const StringArray& fn_labels = iteratedModel.current_response().function_labels();
+  const StringArray& fn_labels = ModelUtils::response_labels(iteratedModel);
 
   StringMultiArrayConstView cv_labels
-    = iteratedModel.current_variables().continuous_variable_labels();
+    = ModelUtils::continuous_variable_labels(iteratedModel);
 
   // print sobol indices per response function
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
@@ -750,7 +750,7 @@ void NonDC3FunctionTrain::print_sobol_indices(std::ostream& s)
     //if (vbdOrderLimit != 1) { 
       s << std::setw(39) << "Interaction\n";
       StringMultiArrayConstView cv_labels
-        = iteratedModel.current_variables().continuous_variable_labels();
+        = ModelUtils::continuous_variable_labels(iteratedModel);
             
       struct SPrintArgs pa;
       pa.s = &s;

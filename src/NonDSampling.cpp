@@ -973,10 +973,10 @@ compute_statistics(const RealMatrix&     vars_samples,
 		   const IntResponseMap& resp_samples)
 {
   StringMultiArrayConstView
-    acv_labels  = iteratedModel.current_variables().all_continuous_variable_labels(),
-    adiv_labels = iteratedModel.current_variables().all_discrete_int_variable_labels(),
-    adsv_labels = iteratedModel.current_variables().all_discrete_string_variable_labels(),
-    adrv_labels = iteratedModel.current_variables().all_discrete_real_variable_labels();
+    acv_labels  = ModelUtils::all_continuous_variable_labels(iteratedModel),
+    adiv_labels = ModelUtils::all_discrete_int_variable_labels(iteratedModel),
+    adsv_labels = ModelUtils::all_discrete_string_variable_labels(iteratedModel),
+    adrv_labels = ModelUtils::all_discrete_real_variable_labels(iteratedModel);
   size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
     drv_start, num_drv;
   mode_counts(iteratedModel.current_variables(), cv_start, num_cv,
@@ -1002,7 +1002,7 @@ compute_statistics(const RealMatrix&     vars_samples,
     if (num_drv)
       resultsDB.insert(run_identifier(), resultsNames.drv_labels, drv_labels);
     resultsDB.insert(run_identifier(), resultsNames.fn_labels, 
-		     iteratedModel.current_response().function_labels());
+		     ModelUtils::response_labels(iteratedModel));
   }
 
   if (epistemicStats) { // Epistemic/mixed
@@ -1047,7 +1047,7 @@ compute_intervals(RealRealPairArray& extreme_fns, const IntResponseMap& samples)
   // For the samples array, calculate min/max response intervals
 
   size_t i, j, num_obs = samples.size(), num_samp;
-  const StringArray& resp_labels = iteratedModel.current_response().function_labels();
+  const StringArray& resp_labels = ModelUtils::response_labels(iteratedModel);
 
   extreme_fns.resize(numFunctions);
   IntRespMCIter it;
@@ -1349,7 +1349,7 @@ archive_moments(size_t inc_id)
 {
   if(!resultsDB.active()) return;
  
-  const StringArray &labels = iteratedModel.current_response().function_labels();
+  const StringArray &labels = ModelUtils::response_labels(iteratedModel);
 
   // archive the moments to results DB
   MetaDataType md_moments;
@@ -1391,7 +1391,7 @@ archive_moment_confidence_intervals(size_t inc_id)
   if(!resultsDB.active())
     return;
 
-  const StringArray &labels = iteratedModel.current_response().function_labels();
+  const StringArray &labels = ModelUtils::response_labels(iteratedModel);
   // archive the confidence intervals to results DB
   MetaDataType md;
   md["Row Labels"] = (finalMomentsType == Pecos::CENTRAL_MOMENTS) ?
@@ -1428,7 +1428,7 @@ archive_moment_confidence_intervals(size_t inc_id)
 
 void NonDSampling::
 archive_extreme_responses(size_t inc_id) {
-  const StringArray &labels = iteratedModel.current_response().function_labels();
+  const StringArray &labels = ModelUtils::response_labels(iteratedModel);
   StringArray location;
   if(inc_id) location.push_back(String("increment:") + std::to_string(inc_id));
   location.push_back("extreme_responses");
@@ -1578,7 +1578,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
   // > CDF/CCDF mappings of response levels to probability/reliability levels
   // > CDF/CCDF mappings of probability/reliability levels to response levels
   size_t i, j, k, num_obs = samples.size(), num_samp, bin_accumulator;
-  const StringArray& resp_labels = iteratedModel.current_response().function_labels();
+  const StringArray& resp_labels = ModelUtils::response_labels(iteratedModel);
   std::multiset<Real> sorted_samples; // STL-based array for sorting
   SizetArray bins; Real min, max, sample;
 
@@ -1832,7 +1832,7 @@ void NonDSampling::print_statistics(std::ostream& s) const
   }
 
   if (!subIteratorFlag) {
-    nonDSampCorr.print_correlations(s, iteratedModel.current_variables().ordered_labels(ACTIVE_VARS), iteratedModel.current_response().function_labels());
+    nonDSampCorr.print_correlations(s, iteratedModel.current_variables().ordered_labels(ACTIVE_VARS), ModelUtils::response_labels(iteratedModel));
   }
 
   if (wilksFlag) {
@@ -1848,7 +1848,7 @@ void NonDSampling::print_statistics(std::ostream& s) const
       Cerr << "Warning: std regression coefficients printing requested in conjunction with epstemic variables" << std::endl;
     }
 
-    nonDSampCorr.print_std_regress_coeffs(s, iteratedModel.current_variables().ordered_labels(ACTIVE_VARS), iteratedModel.current_response().function_labels());
+    nonDSampCorr.print_std_regress_coeffs(s, iteratedModel.current_variables().ordered_labels(ACTIVE_VARS), ModelUtils::response_labels(iteratedModel));
   }
 
   if (toleranceIntervalsFlag) {
@@ -1951,7 +1951,7 @@ print_wilks_stastics(std::ostream& s) const
     s << "\n\n" << "Wilks Statistics for "
       << (wilks_twosided ? "Two-" : "One-") << "Sided "
       << 100.0*wilksBeta << "% Confidence Level, Order = " << wilksOrder 
-      << " for "  << iteratedModel.current_response().function_labels()[fn_index] << ":\n\n";
+      << " for "  << ModelUtils::response_labels(iteratedModel)[fn_index] << ":\n\n";
 
     if(wilks_twosided) {
       s << "    Coverage Level     Lower Bound        Upper Bound     Number of Samples\n"
@@ -2026,7 +2026,7 @@ print_tolerance_intervals_statistics(std::ostream& s) const
     << std::scientific << std::setprecision(write_precision);
   for (size_t i = 0; i < numFunctions; ++i) {
     s << std::setw(response_label_width)
-      << iteratedModel.current_response().function_labels()[i]
+      << ModelUtils::response_labels(iteratedModel)[i]
       << ' ' << std::setw(width) << tiDstienMus[i]
       << ' ' << std::setw(width) << tiSampleSigmas[i]
       << ' ' << std::setw(width) << tiDeltaMultiplicativeFactor
@@ -2049,7 +2049,7 @@ archive_tolerance_intervals(size_t inc_id)
 
   Teuchos::SerialDenseVector<int,double> tmpValues(6);
   for(size_t i = 0; i < numFunctions; ++i) {
-    location.back() = iteratedModel.current_response().function_labels()[i];
+    location.back() = ModelUtils::response_labels(iteratedModel)[i];
     DimScaleMap scales;
     scales.emplace( 0
                   , StringScale( "tolerance_intervals"

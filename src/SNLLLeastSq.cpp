@@ -277,7 +277,7 @@ nlf2_evaluator_gn(int mode, int n, const RealVector& x, double& f,
       x != lastEvalVars) {
     // data not available from constraint evaluator, so perform
     // a new function evaluation.
-    snllLSqInstance->iteratedModel.current_variables().continuous_variables(x);
+    ModelUtils::continuous_variables(snllLSqInstance->iteratedModel, x);
     ShortArray local_asv(snllLSqInstance->numFunctions, lsq_mode);
     // Should constraints be evaluated (if present)?  Depends on what OPT++
     // is doing.  Since we know this eval is not aligned with a preceding
@@ -377,7 +377,7 @@ constraint1_evaluator_gn(int mode, int n, const RealVector& x, RealVector& g,
   if (snllLSqInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLLeastSq::constraint1_evaluator_gn vars = \n"
          << x;
-  snllLSqInstance->iteratedModel.current_variables().continuous_variables(x);
+  ModelUtils::continuous_variables(snllLSqInstance->iteratedModel, x);
 
   size_t i;
   ShortArray local_asv(snllLSqInstance->numFunctions, lsq_mode);
@@ -442,7 +442,7 @@ constraint2_evaluator_gn(int mode, int n, const RealVector& x, RealVector& g,
   if (snllLSqInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLLeastSq::constraint2_evaluator_gn vars = \n"
          << x;
-  snllLSqInstance->iteratedModel.current_variables().continuous_variables(x);
+  ModelUtils::continuous_variables(snllLSqInstance->iteratedModel, x);
 
   size_t i;
   ShortArray local_asv(snllLSqInstance->numFunctions, lsq_mode);
@@ -485,7 +485,7 @@ void SNLLLeastSq::initialize_run()
 
   // convenience function from SNLLBase
   snll_initialize_run(nlfObjective, nlpConstraint,
-		      iteratedModel.current_variables().continuous_variables(), 
+		      ModelUtils::continuous_variables(iteratedModel), 
 		      boundConstraintFlag, 
 		      ModelUtils::continuous_lower_bounds(iteratedModel),
 		      ModelUtils::continuous_upper_bounds(iteratedModel),

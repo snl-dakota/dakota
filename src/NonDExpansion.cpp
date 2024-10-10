@@ -782,7 +782,7 @@ void NonDExpansion::initialize_expansion()
   // are invariant in std distribution cases despite updates from above).
   initialPtU.size(numContinuousVars);
   if (allVars)
-    uSpaceModel.trans_X_to_U(iteratedModel.current_variables().continuous_variables(), initialPtU);
+    uSpaceModel.trans_X_to_U(ModelUtils::continuous_variables(iteratedModel), initialPtU);
   RealVector u_means = uSpaceModel.multivariate_distribution().means();
   //const SharedVariablesData& svd
   //  = iteratedModel.current_variables().shared_data();
@@ -805,7 +805,7 @@ void NonDExpansion::compute_expansion()
 #ifdef DERIV_DEBUG
   // numerical verification of analytic Jacobian/Hessian routines
   RealVector rdv_u;
-  uSpaceModel.trans_X_to_U(iteratedModel.current_variables().continuous_variables(), rdv_u);
+  uSpaceModel.trans_X_to_U(ModelUtils::continuous_variables(iteratedModel), rdv_u);
   Pecos::ProbabilityTransformation& nataf
     = uSpaceModel.probability_transformation();
   nataf.verify_trans_jacobian_hessian(rdv_u);//(rdv_x);
@@ -951,7 +951,7 @@ void NonDExpansion::compute_expansion()
       // finalStats using subIterator.response_results_active_set().
       if (useDerivs) {
 	SizetMultiArrayConstView cv_ids
-	  = iteratedModel.current_variables().continuous_variable_ids();
+	  = ModelUtils::continuous_variable_ids(iteratedModel);
 	if (sampler_grad) { // merge cv_ids with final_dvv
 	  SizetSet merged_set; SizetArray merged_dvv;
 	  merged_set.insert(cv_ids.begin(), cv_ids.end());
@@ -974,7 +974,7 @@ void NonDExpansion::compute_expansion()
       else if (sampler_grad)
 	sampler_set.derivative_vector(final_dvv);
       else // derivs not needed, but correct DVV len needed for MPI buffers
-	sampler_set.derivative_vector(iteratedModel.current_variables().continuous_variable_ids());
+	sampler_set.derivative_vector(ModelUtils::continuous_variable_ids(iteratedModel));
 
       // Build the orthogonal/interpolation polynomial approximations:
       u_space_sampler.active_set(sampler_set);
@@ -2682,7 +2682,7 @@ void NonDExpansion::compute_statistics(short results_state)
   // sensitivities, expansion/importance sampling for all vars mode
   // (uses ALEATORY_UNCERTAIN sampling mode), and external uses of the
   // emulator model (emulator-based inference).
-  //uSpaceModel.current_variables().continuous_variables(initialPtU);
+  //ModelUtils::continuous_variables(uSpaceModel, initialPtU);
 
   switch (results_state) {
   case REFINEMENT_RESULTS:
@@ -2709,7 +2709,7 @@ void NonDExpansion::compute_statistics(short results_state)
     case Pecos::NO_METRIC: // possible for multifidelity_expansion()
       compute_moments();
       if (totalLevelRequests) {
-	if (allVars) uSpaceModel.current_variables().continuous_variables(initialPtU); // see top
+	if (allVars) ModelUtils::continuous_variables(uSpaceModel, initialPtU); // see top
 	compute_level_mappings();
       }
       break;
@@ -2719,17 +2719,17 @@ void NonDExpansion::compute_statistics(short results_state)
 	compute_off_diagonal_covariance();
       break;
     case Pecos::MIXED_STATS_METRIC:
-      if (allVars) uSpaceModel.current_variables().continuous_variables(initialPtU); // see top
+      if (allVars) ModelUtils::continuous_variables(uSpaceModel, initialPtU); // see top
       compute_moments(); compute_level_mappings();
       break;
     case Pecos::LEVEL_STATS_METRIC:
-      if (allVars) uSpaceModel.current_variables().continuous_variables(initialPtU); // see top
+      if (allVars) ModelUtils::continuous_variables(uSpaceModel, initialPtU); // see top
       compute_level_mappings();
       break;
     }
     break;
   case FINAL_RESULTS:
-    uSpaceModel.current_variables().continuous_variables(initialPtU); // see top comment
+    ModelUtils::continuous_variables(uSpaceModel, initialPtU); // see top comment
     // -----------------------------
     // Calculate analytic statistics: includes derivs + finalStats updating
     // -----------------------------
@@ -2743,9 +2743,9 @@ void NonDExpansion::compute_statistics(short results_state)
     update_final_statistics(); // augments updates embedded above
     if (resultsDB.active()) { // archive the active variables with the results
       resultsDB.insert(run_identifier(), resultsNames.cv_labels, 
-		       iteratedModel.current_variables().continuous_variable_labels());
+		       ModelUtils::continuous_variable_labels(iteratedModel));
       resultsDB.insert(run_identifier(), resultsNames.fn_labels, 
-		       iteratedModel.current_response().function_labels());
+		       ModelUtils::response_labels(iteratedModel));
     }
     archive_moments();
     archive_coefficients();
@@ -3583,7 +3583,7 @@ void NonDExpansion::archive_moments()
     md_moments["Row Labels"]
       = make_metadatavalue(moment_1, moment_2, moment_3, moment_4);
     md_moments["Column Labels"]
-      = make_metadatavalue(iteratedModel.current_response().function_labels());  
+      = make_metadatavalue(ModelUtils::response_labels(iteratedModel));  
 	  
     if (exp_active) {
       resultsDB.insert(run_identifier(), resultsNames.moments_central_exp, exp_matrix, md_moments);
@@ -3599,7 +3599,7 @@ void NonDExpansion::archive_moments()
           Pecos::PolynomialApproximation::standardize_moments(poly_approxs[i].expansion_moments(), moments);
         }
         resultsDB.insert(run_identifier(), {String("expansion_moments"),
-            iteratedModel.current_response().function_labels()[i]},
+            ModelUtils::response_labels(iteratedModel)[i]},
             moments,
             scales);
       }
@@ -3619,7 +3619,7 @@ void NonDExpansion::archive_moments()
           Pecos::PolynomialApproximation::standardize_moments(poly_approxs[i].numerical_integration_moments(), moments);
         }
         resultsDB.insert(run_identifier(), {String("integration_moments"),
-            iteratedModel.current_response().function_labels()[i]},
+            ModelUtils::response_labels(iteratedModel)[i]},
             moments,
 	    scales);
       }
@@ -3637,9 +3637,9 @@ void NonDExpansion::archive_sobol_indices() {
   // expansion_coefficient_flag and non-negligible variance
   if(!resultsDB.active()) return;
 
-  const StringArray& fn_labels = iteratedModel.current_response().function_labels();
+  const StringArray& fn_labels = ModelUtils::response_labels(iteratedModel);
   StringMultiArrayConstView cv_labels
-    = iteratedModel.current_variables().continuous_variable_labels();
+    = ModelUtils::continuous_variable_labels(iteratedModel);
 
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   // Map from index to variable labels
@@ -3812,7 +3812,7 @@ void NonDExpansion::update_final_statistics_gradients()
     // uncorrelated and the jacobian matrix is diagonal with terms 2./range.
     const SharedVariablesData& svd
       = iteratedModel.current_variables().shared_data();
-    SizetMultiArrayConstView cv_ids = iteratedModel.current_variables().continuous_variable_ids();
+    SizetMultiArrayConstView cv_ids = ModelUtils::continuous_variable_ids(iteratedModel);
     const SizetArray& final_dvv
       = finalStatistics.active_set_derivative_vector();
     const std::vector<Pecos::RandomVariable>& x_ran_vars
@@ -3872,7 +3872,7 @@ void NonDExpansion::print_moments(std::ostream& s)
   s << std::scientific << std::setprecision(write_precision);
 
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  const StringArray& fn_labels = iteratedModel.current_response().function_labels();
+  const StringArray& fn_labels = ModelUtils::response_labels(iteratedModel);
   size_t i, j, width = write_precision+7;
 
   s << "\nMoment statistics for each response function:\n";
@@ -4003,9 +4003,9 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
  
   s << "\nGlobal sensitivity indices for each response function:\n";
 
-  const StringArray& fn_labels = iteratedModel.current_response().function_labels();
+  const StringArray& fn_labels = ModelUtils::response_labels(iteratedModel);
   StringMultiArrayConstView cv_labels
-    = iteratedModel.current_variables().continuous_variable_labels();
+    = ModelUtils::continuous_variable_labels(iteratedModel);
 
   // construct labels corresponding to (aggregated) sobol index map
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
@@ -4116,7 +4116,7 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
 
 void NonDExpansion::print_local_sensitivity(std::ostream& s)
 {
-  const StringArray& fn_labels = iteratedModel.current_response().function_labels();
+  const StringArray& fn_labels = ModelUtils::response_labels(iteratedModel);
   s << "\nLocal sensitivities for each response function evaluated at "
     << "uncertain variable means:\n";
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();

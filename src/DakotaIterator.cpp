@@ -1985,7 +1985,7 @@ void Iterator::export_final_surrogates(Model& data_fit_surr_model)
   // BMA: Seems might be better encapsulated in a DataFitSurrModel
   // Also, dynamic cast the contained model and bail if wrong?
 
-  const auto& resp_labels = data_fit_surr_model.current_response().function_labels();
+  const auto& resp_labels = ModelUtils::response_labels(data_fit_surr_model);
   auto& approxs = data_fit_surr_model.approximations();
   if (resp_labels.size() != approxs.size()) {
     Cerr << "\nError: Method cannot export_model(s) due to improperly sized "

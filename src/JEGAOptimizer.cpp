@@ -1494,7 +1494,7 @@ JEGAOptimizer::LoadTheObjectiveFunctions(
     // Dakota will soon support mixed extremization schemes.
     // Dakota does not support labeling objectives.  Until it does,
     // we will create a label that looks like "Nature Type Index".
-    const StringArray&  labels = iteratedModel.current_response().function_labels();
+    const StringArray&  labels = ModelUtils::response_labels(iteratedModel);
     const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
     bool use_sense = !max_sense.empty();
     for(size_t i=0; i<this->numObjectiveFns; ++i)
@@ -1987,8 +1987,8 @@ JEGAOptimizer::Evaluator::SeparateVariables(
 {
     EDDY_FUNC_DEBUGSCOPE
 
-    size_t num_cv  = this->_model.current_variables().cv(), num_div = this->_model.current_variables().div(),
-           num_drv = this->_model.current_variables().drv(), num_dsv = this->_model.current_variables().dsv();
+    size_t num_cv  = ModelUtils::cv(this->_model), num_div = ModelUtils::div(this->_model),
+           num_drv = ModelUtils::drv(this->_model), num_dsv = ModelUtils::dsv(this->_model);
 
     // "into" containers may not yet be sized. If not, size them.  If they are,
     // don't size them b/c it will be a lot of wasted effort.
@@ -2175,12 +2175,12 @@ JEGAOptimizer::Evaluator::Evaluate(
         // send this guy out for evaluation using the _model.
 
         // first, set the current values of the variables in the model
-        this->_model.current_variables().continuous_variables(contVars);
-        this->_model.current_variables().discrete_int_variables(discIntVars);
-        this->_model.current_variables().discrete_real_variables(discRealVars);
+        ModelUtils::continuous_variables(this->_model, contVars);
+        ModelUtils::discrete_int_variables(this->_model, discIntVars);
+        ModelUtils::discrete_real_variables(this->_model, discRealVars);
 	// Strings set by calling single value setter for each
 	for (size_t i=0; i<discStringVars.num_elements(); ++i)
-	  this->_model.current_variables().discrete_string_variable(discStringVars[i],i);
+	  ModelUtils::discrete_string_variable(this->_model, discStringVars[i],i);
 	// Could use discrete_string_varables to avoid overhead of repeated 
 	// function calls, but it takes a StringMultiArrayConstView, which
 	// must be created from discStringVars. Maybe there's a simpler way,
@@ -2188,7 +2188,7 @@ JEGAOptimizer::Evaluator::Evaluate(
 	// const size_t &dsv_len = discStringVars.num_elements();
 	// StringMultiArrayConstView dsv_view = discStringVars[ 
 	//   boost::indices[idx_range(0,dsv_len)]];
-        // this->_model.current_variables().discrete_string_variables(dsv_view);
+        // ModelUtils::discrete_string_variables(this->_model, dsv_view);
 	
         // now request the evaluation in synchronous or asyncronous mode.
         if(this->_model.asynch_flag())

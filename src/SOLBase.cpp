@@ -571,7 +571,7 @@ constraint_eval(int& mode, int& ncnln, int& n, int& nrowj, int* needc,
 
     // Update model variables from x for use in evaluate()
     RealVector local_des_vars(Teuchos::Copy, x, n);
-    optLSqInstance->iteratedModel.current_variables().continuous_variables(local_des_vars);
+    ModelUtils::continuous_variables(optLSqInstance->iteratedModel, local_des_vars);
 
     optLSqInstance->activeSet.request_vector(local_asv);
     optLSqInstance->iteratedModel.evaluate(optLSqInstance->activeSet);

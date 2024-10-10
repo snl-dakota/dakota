@@ -5504,28 +5504,28 @@ void Model::active_variables(const RealVector& config_vars, Model& model)
 
   size_t offset = 0;  // current index into configuration variables
 
-  RealVector ccv(Teuchos::View, config_vars.values() + offset, model.current_variables().cv());
-  model.current_variables().continuous_variables(ccv);
-  offset += model.current_variables().cv();
+  RealVector ccv(Teuchos::View, config_vars.values() + offset, ModelUtils::cv(model));
+  ModelUtils::continuous_variables(model, ccv);
+  offset += ModelUtils::cv(model);
 
-  RealVector dicv(Teuchos::View, config_vars.values() + offset, model.current_variables().div());
-  IntVector dicv_as_int(model.current_variables().div());
+  RealVector dicv(Teuchos::View, config_vars.values() + offset, ModelUtils::div(model));
+  IntVector dicv_as_int(ModelUtils::div(model));
   iround(dicv, dicv_as_int);
-  model.current_variables().discrete_int_variables(dicv_as_int);
-  offset += model.current_variables().div();
+  ModelUtils::discrete_int_variables(model, dicv_as_int);
+  offset += ModelUtils::div(model);
 
-  RealVector dscv(Teuchos::View, config_vars.values() + offset, model.current_variables().dsv());
+  RealVector dscv(Teuchos::View, config_vars.values() + offset, ModelUtils::dsv(model));
   const StringSetArray& discrete_str_vals = ModelUtils::discrete_set_string_values(model);
-  for (size_t i=0; i<model.current_variables().dsv(); ++i) {
+  for (size_t i=0; i<ModelUtils::dsv(model); ++i) {
     String str_value = 
       set_index_to_value(boost::math::iround(dscv[i]), discrete_str_vals[i]);
-    model.current_variables().discrete_string_variable(str_value, i);
+    ModelUtils::discrete_string_variable(model, str_value, i);
   }
-  offset += model.current_variables().dsv();
+  offset += ModelUtils::dsv(model);
 
-  RealVector drcv(Teuchos::View, config_vars.values() + offset, model.current_variables().drv());
-  model.current_variables().discrete_real_variables(drcv);
-  //offset += model.current_variables().drv();
+  RealVector drcv(Teuchos::View, config_vars.values() + offset, ModelUtils::drv(model));
+  ModelUtils::discrete_real_variables(model, drcv);
+  //offset += ModelUtils::drv(model);
 }
 
 
@@ -5547,30 +5547,30 @@ void Model::inactive_variables(const RealVector& config_vars, Model& model,
 
   size_t offset = 0;  // current index into configuration variables
 
-  RealVector ccv(Teuchos::View, config_vars.values() + offset, model.current_variables().icv());
+  RealVector ccv(Teuchos::View, config_vars.values() + offset, ModelUtils::icv(model));
   vars.inactive_continuous_variables(ccv);
-  offset += model.current_variables().icv();
+  offset += ModelUtils::icv(model);
 
-  RealVector dicv(Teuchos::View, config_vars.values() + offset, model.current_variables().idiv());
-  IntVector dicv_as_int(model.current_variables().idiv());
+  RealVector dicv(Teuchos::View, config_vars.values() + offset, ModelUtils::idiv(model));
+  IntVector dicv_as_int(ModelUtils::idiv(model));
   iround(dicv, dicv_as_int);
   vars.inactive_discrete_int_variables(dicv_as_int);
-  offset += model.current_variables().idiv();
+  offset += ModelUtils::idiv(model);
 
-  RealVector dscv(Teuchos::View, config_vars.values() + offset, model.current_variables().idsv());
+  RealVector dscv(Teuchos::View, config_vars.values() + offset, ModelUtils::idsv(model));
   // the admissible _inactive_ discrete string values
   const StringSetArray& discrete_str_vals =
     ModelUtils::discrete_set_string_values(model, model.current_variables().view().second);
-  for (size_t i=0; i<model.current_variables().idsv(); ++i) {
+  for (size_t i=0; i<ModelUtils::idsv(model); ++i) {
     String str_value = 
       set_index_to_value(boost::math::iround(dscv[i]), discrete_str_vals[i]);
     vars.inactive_discrete_string_variable(str_value, i);
   }
-  offset += model.current_variables().idsv();
+  offset += ModelUtils::idsv(model);
 
-  RealVector drcv(Teuchos::View, config_vars.values() + offset, model.current_variables().idrv());
+  RealVector drcv(Teuchos::View, config_vars.values() + offset, ModelUtils::idrv(model));
   vars.inactive_discrete_real_variables(drcv);
-  //offset += model.current_variables().idrv();
+  //offset += ModelUtils::idrv(model);
 }
 
 
@@ -5580,7 +5580,7 @@ void Model::evaluate(const RealMatrix& samples_matrix,
   // TODO: option for setting its active or inactive variables
 
   RealMatrix::ordinalType i, num_evals = samples_matrix.numCols();
-  resp_matrix.shape(model.current_response().num_functions(), num_evals);
+  resp_matrix.shape(ModelUtils::response_size(model), num_evals);
 
   for (i=0; i<num_evals; ++i) {
 
@@ -5613,10 +5613,10 @@ void Model::evaluate(const VariablesArray& sample_vars,
   // TODO: option for setting its active or inactive variables
 
   RealMatrix::ordinalType i, num_evals = sample_vars.size();
-  resp_matrix.shape(model.current_response().num_functions(), num_evals);
+  resp_matrix.shape(ModelUtils::response_size(model), num_evals);
 
   for (i=0; i<num_evals; ++i) {
-    model.current_variables().active_variables(sample_vars[i]);
+    ModelUtils::active_variables(model, sample_vars[i]);
     if (model.asynch_flag())
       model.evaluate_nowait();
     else {

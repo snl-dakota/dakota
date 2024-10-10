@@ -339,7 +339,7 @@ objective_eval(int& mode, int& n, double* x, double& f, double* gradf,
     // and perform an evaluate() prior to data recovery.
     RealVector local_des_vars(n, false);
     copy_data(x, n, local_des_vars);
-    npsolInstance->iteratedModel.current_variables().continuous_variables(local_des_vars);
+    ModelUtils::continuous_variables(npsolInstance->iteratedModel, local_des_vars);
     npsolInstance->activeSet.request_values(asv_request);
     npsolInstance->
       iteratedModel.evaluate(npsolInstance->activeSet);
@@ -444,7 +444,7 @@ void NPSOLOptimizer::find_optimum_on_model()
   // initialize local_des_vars with DB initial point.  Variables are updated 
   // in constraint_eval/objective_eval
   RealVector local_des_vars;
-  copy_data(iteratedModel.current_variables().continuous_variables(), local_des_vars);
+  copy_data(ModelUtils::continuous_variables(iteratedModel), local_des_vars);
 
   // these bounds must be updated from model bounds each time an iterator is
   // run within the B&B minimizer.

@@ -272,7 +272,7 @@ void NonD::initialize_response_covariance()
 void NonD::initialize_final_statistics()
 {
   size_t i, j, num_levels, cntr = 0, rl_len = 0, num_final_stats,
-    num_active_vars = iteratedModel.current_variables().cv();
+    num_active_vars = ModelUtils::cv(iteratedModel);
   if (epistemicStats)
     num_final_stats = 2*numFunctions;
   else { // aleatory UQ
@@ -297,7 +297,7 @@ void NonD::initialize_final_statistics()
   //   subIterator construction follows in NestedModel::derived_init_comms()
   //   --> invocation of this fn from NonD ctors should have inactive view
   ActiveSet stats_set(num_final_stats);//, num_active_vars); // default RV = 1
-  stats_set.derivative_vector(iteratedModel.current_variables().inactive_continuous_variable_ids());
+  stats_set.derivative_vector(ModelUtils::inactive_continuous_variable_ids(iteratedModel));
   finalStatistics = Response(SIMULATION_RESPONSE, stats_set);
 
   // Assign meaningful labels to finalStatistics (appear in NestedModel output)
@@ -1128,7 +1128,7 @@ print_level_mappings(std::ostream& s, const RealVector& level_maps,
 
   size_t i, j, cntr,
     width = write_precision+7, w2p2 = 2*width+2, w3p4 = 3*width+4;
-  const StringArray& qoi_labels = iteratedModel.current_response().function_labels();
+  const StringArray& qoi_labels = ModelUtils::response_labels(iteratedModel);
   for (i=0, cntr=0; i<numFunctions; ++i) {
     if (moment_offset) cntr += 2; // skip over moments, if present
     if (cdfFlag) s << "Cumulative Distribution Function (CDF) for ";
@@ -1617,7 +1617,7 @@ void NonD::archive_from_resp(size_t i, size_t inc_id)
  
   DimScaleMap scale;
   scale.emplace(0, RealScale("response_levels", requestedRespLevels[i]));
-  const StringArray &labels = iteratedModel.current_response().function_labels();
+  const StringArray &labels = ModelUtils::response_labels(iteratedModel);
   RealVector *result;
 
   // TODO: could use SetCol?
@@ -1665,7 +1665,7 @@ void NonD::archive_to_resp(size_t i, size_t inc_id)
   if (!resultsDB.active())  return;
 
   DimScaleMap scale;
-  const StringArray &labels = iteratedModel.current_response().function_labels();
+  const StringArray &labels = ModelUtils::response_labels(iteratedModel);
   StringArray location;
   size_t r_index = 0;
   if(inc_id) {
@@ -1757,7 +1757,7 @@ void NonD::archive_pdf(size_t i, size_t inc_id) // const
   resultsDB.array_insert<RealMatrix>
     (run_identifier(), resultsNames.pdf_histograms, i, pdf);
 
-  const StringArray &labels = iteratedModel.current_response().function_labels();
+  const StringArray &labels = ModelUtils::response_labels(iteratedModel);
   StringArray location;
   if(inc_id) location.push_back(String("increment:") + std::to_string(inc_id));
   location.push_back("probability_density");

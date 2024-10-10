@@ -498,7 +498,7 @@ void EffGlobalMinimizer::
 append_liar(const Variables& vars_star, int liar_id, bool rebuild)
 {
   // get approximate (liar) response value for optimal point (vars_star)
-  fHatModel.current_variables().active_variables(vars_star);
+  ModelUtils::active_variables(fHatModel, vars_star);
   fHatModel.evaluate();
   const Response& fhat_resp_star = fHatModel.current_response();
 
@@ -600,12 +600,12 @@ void EffGlobalMinimizer::backfill_batch(size_t new_acq, size_t new_expl)
     // properly sequence backfill evaluations across the two queues so that
     // the liar/truth sequences are synchronized, enabling id-based replacement
     if (a_id < e_id) {
-      iteratedModel.current_variables().active_variables(a_cit->second);
+      ModelUtils::active_variables(iteratedModel, a_cit->second);
       iteratedModel.evaluate_nowait(set);
       a_id = extract_id(++a_cit, varsAcquisitionMap);
     }
     else if (e_id < a_id) {
-      iteratedModel.current_variables().active_variables(e_cit->second);
+      ModelUtils::active_variables(iteratedModel, e_cit->second);
       iteratedModel.evaluate_nowait(set);
       e_id = extract_id(++e_cit, varsExplorationMap);
     }
@@ -626,12 +626,12 @@ void EffGlobalMinimizer::launch_batch()
   IntVarsMIter v_it;
   for (v_it =varsAcquisitionMap.begin();
        v_it!=varsAcquisitionMap.end(); ++v_it) {
-    iteratedModel.current_variables().active_variables(v_it->second);
+    ModelUtils::active_variables(iteratedModel, v_it->second);
     iteratedModel.evaluate_nowait(set);
   }
   for (v_it =varsExplorationMap.begin();
        v_it!=varsExplorationMap.end(); ++v_it) {
-    iteratedModel.current_variables().active_variables(v_it->second);
+    ModelUtils::active_variables(iteratedModel, v_it->second);
     iteratedModel.evaluate_nowait(set);
   }
 }
@@ -640,7 +640,7 @@ void EffGlobalMinimizer::launch_batch()
 void EffGlobalMinimizer::launch_single(const Variables& vars_star)
 {
   // serial evaluation
-  iteratedModel.current_variables().active_variables(vars_star);
+  ModelUtils::active_variables(iteratedModel, vars_star);
   ActiveSet set = iteratedModel.current_response().active_set();
   set.request_values(dataOrder);
   iteratedModel.evaluate(set);
@@ -711,7 +711,7 @@ void EffGlobalMinimizer::compute_best_sample()
 
     const RealVector& cv = sdv_array_0[i].continuous_variables();
 
-    fHatModel.current_variables().continuous_variables(cv);
+    ModelUtils::continuous_variables(fHatModel, cv);
     fHatModel.evaluate();
     const RealVector& f_hat = fHatModel.current_response().function_values();
     merit_fn = augmented_lagrangian(f_hat);
@@ -1189,7 +1189,7 @@ void EffGlobalMinimizer::debug_plots()
     const Pecos::SurrogateData& gp_data = fHatModel.approximation_data(i);
     const Pecos::SDVArray& sdv_array = gp_data.variables_data();
     const Pecos::SDRArray& sdr_array = gp_data.response_data();
-    size_t j, k, num_data_pts = gp_data.size(), num_vars = fHatModel.current_variables().cv();
+    size_t j, k, num_data_pts = gp_data.size(), num_vars = ModelUtils::cv(fHatModel);
     for (j=0; j<num_data_pts; ++j) {
       s_out << '\n';
       const RealVector& sample = sdv_array[j].continuous_variables();
@@ -1220,7 +1220,7 @@ void EffGlobalMinimizer::debug_plots()
 	for (k=0; k<101; k++) {
 	  test_pt[1] = lbnd[1] + float(k) * interval1;
 
-	  fHatModel.current_variables().continuous_variables(test_pt);
+	  ModelUtils::continuous_variables(fHatModel, test_pt);
 	  fHatModel.evaluate();
 	  const Response& gp_resp = fHatModel.current_response();
 	  const RealVector& gp_fn = gp_resp.function_values();

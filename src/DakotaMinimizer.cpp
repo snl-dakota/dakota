@@ -130,9 +130,9 @@ void Minimizer::update_from_model(const Model& model)
 {
   Iterator::update_from_model(model);
 
-  numContinuousVars     = model.current_variables().cv();  numDiscreteIntVars  = model.current_variables().div();
-  numDiscreteStringVars = model.current_variables().dsv(); numDiscreteRealVars = model.current_variables().drv();
-  numFunctions          = model.current_response().num_functions();
+  numContinuousVars     = ModelUtils::cv(model);  numDiscreteIntVars  = ModelUtils::div(model);
+  numDiscreteStringVars = ModelUtils::dsv(model); numDiscreteRealVars = ModelUtils::drv(model);
+  numFunctions          = ModelUtils::response_size(model);
 
   bool err_flag = false;
   // Check for correct bit associated within methodName
@@ -343,11 +343,11 @@ void Minimizer::initialize_run()
     
     // Could be lighter weight, but don't have a way to update only inactive
     bestVariablesArray.front().all_continuous_variables(
-      usermodel.current_variables().all_continuous_variables());
+      ModelUtils::all_continuous_variables(usermodel));
     bestVariablesArray.front().all_discrete_int_variables(
-      usermodel.current_variables().all_discrete_int_variables());
+      ModelUtils::all_discrete_int_variables(usermodel));
     bestVariablesArray.front().all_discrete_real_variables(
-      usermodel.current_variables().all_discrete_real_variables());
+      ModelUtils::all_discrete_real_variables(usermodel));
   }
 }
 
@@ -426,7 +426,7 @@ void Minimizer::data_transform_model()
 
   // update sizes in Iterator view from the RecastModel
   numIterPrimaryFns = numTotalCalibTerms = iteratedModel.num_primary_fns();
-  numFunctions = iteratedModel.current_response().num_functions();
+  numFunctions = ModelUtils::response_size(iteratedModel);
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "Adjusted number of calibration terms: " << numTotalCalibTerms 
 	 << std::endl;
@@ -1158,7 +1158,7 @@ void Minimizer::archive_best_results()
   Model orig_model = original_model();
   const String& interface_id = orig_model.interface_id();
   // use asv = 1's
-  ActiveSet search_set(orig_model.current_response().num_functions(), numContinuousVars);
+  ActiveSet search_set(ModelUtils::response_size(orig_model), numContinuousVars);
   int eval_id;
 
   if(numNonlinearConstraints)

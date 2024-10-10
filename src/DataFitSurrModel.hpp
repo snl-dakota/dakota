@@ -703,7 +703,7 @@ inline void DataFitSurrModel::resize_from_subordinate_model(size_t depth)
     if (!daceIterator.is_null()) {
       const ActiveSet&  dace_set = daceIterator.active_set();
       const ShortArray& dace_asv = dace_set.request_vector();
-      size_t num_am_resp = actualModel.current_response().num_functions(),
+      size_t num_am_resp = ModelUtils::response_size(actualModel),
 	   num_dace_resp = dace_asv.size();
       if (num_am_resp != num_dace_resp) {
 	ActiveSet new_set(dace_set); // deep copy

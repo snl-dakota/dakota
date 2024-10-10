@@ -827,7 +827,7 @@ inline void RecastModel::resize_from_subordinate_model(size_t depth)
 
   // pull sizing updates from subModel: reflect aggregated counts, if present,
   // by accessing count from response rather than virtual count from Model
-  numFns = subModel.current_response().num_functions();
+  numFns = ModelUtils::response_size(subModel);
   if (currentResponse.num_functions() != numFns) {
     resize_response_mapping(); // requires current sizes before reshape below
     currentResponse.reshape(numFns, currentVariables.cv(),
@@ -835,7 +835,7 @@ inline void RecastModel::resize_from_subordinate_model(size_t depth)
                             !currentResponse.function_hessians().empty());
   }
 
-  //size_t num_sm_acv = subModel.current_variables().acv(), ...;
+  //size_t num_sm_acv = ModelUtils::acv(subModel), ...;
   //if (currentVariables.acv() != num_sm_acv || ...)
   //  currentVariables.reshape(num_sm_acv,num_sm_adiv,num_sm_adsv,num_sm_adrv);
 }

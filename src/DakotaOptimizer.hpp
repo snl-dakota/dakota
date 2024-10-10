@@ -21,9 +21,9 @@ template <typename VecT>
 void get_initial_values( const Model & model,
                                VecT  & values)
 {
-  const RealVector& initial_points = model.current_variables().continuous_variables();
+  const RealVector& initial_points = ModelUtils::continuous_variables(model);
 
-  for(int i=0; i<model.current_variables().cv(); ++i)
+  for(int i=0; i<ModelUtils::cv(model); ++i)
     values[i] = initial_points[i];
 }
 
@@ -186,7 +186,7 @@ bool get_variable_bounds( Model &                   model, // would like to make
                            big_real_bound_size,
                            AdapterT::noValue());
 
-  int offset = model.current_variables().cv();
+  int offset = ModelUtils::cv(model);
   allSet = allSet && 
            get_mixed_bounds( 
                    int_set_bits,
@@ -199,10 +199,10 @@ bool get_variable_bounds( Model &                   model, // would like to make
                    (int)AdapterT::noValue(),
                    offset);
 
-  offset += model.current_variables().div();
+  offset += ModelUtils::div(model);
   get_bounds(init_pt_set_real, lower, upper, offset);
 
-  offset += model.current_variables().drv();
+  offset += ModelUtils::drv(model);
   get_bounds(init_pt_set_string, lower, upper, offset);
 
   return allSet;
@@ -385,7 +385,7 @@ void apply_nonlinear_constraints( const Model & model,
 {
   size_t num_resp = 1; // does this need to be generalized to more than one response value? - RWH
 
-  size_t num_continuous_vars         = model.current_variables().cv();
+  size_t num_continuous_vars         = ModelUtils::cv(model);
 
   size_t num_linear_consts           = ( etype == CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
                                                    model.num_linear_eq_constraints() :
@@ -841,16 +841,16 @@ template <typename VectorType>
 void get_variables( Model & model,
                     VectorType & vec)
 {
-  const RealVector& cvars = model.current_variables().continuous_variables();
-  const IntVector& divars = model.current_variables().discrete_int_variables();
-  const RealVector& drvars = model.current_variables().discrete_real_variables();
-  const StringMultiArrayConstView dsvars = model.current_variables().discrete_string_variables();
+  const RealVector& cvars = ModelUtils::continuous_variables(model);
+  const IntVector& divars = ModelUtils::discrete_int_variables(model);
+  const RealVector& drvars = ModelUtils::discrete_real_variables(model);
+  const StringMultiArrayConstView dsvars = ModelUtils::discrete_string_variables(model);
 
   // Could do a sanity check ?
-  if( (model.current_variables().cv()  !=  cvars.length()) ||
-      (model.current_variables().div() != divars.length()) ||
-      (model.current_variables().drv() != drvars.length()) ||
-      (model.current_variables().dsv() != dsvars.size())   )
+  if( (ModelUtils::cv(model)  !=  cvars.length()) ||
+      (ModelUtils::div(model) != divars.length()) ||
+      (ModelUtils::drv(model) != drvars.length()) ||
+      (ModelUtils::dsv(model) != dsvars.size())   )
   {
     Cerr << "\nget_variables Error: model variables have inconsistent lengths." << std::endl;
     abort_handler(-1);

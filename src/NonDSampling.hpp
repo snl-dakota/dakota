@@ -445,14 +445,14 @@ inline void NonDSampling::compute_moments(const RealVectorArray& fn_samples)
 {
   SizetArray sample_counts;
   compute_moments(fn_samples, sample_counts, momentStats,
-		  finalMomentsType, iteratedModel.current_response().function_labels());
+		  finalMomentsType, ModelUtils::response_labels(iteratedModel));
 }
 
 
 inline void NonDSampling::compute_moments(const IntResponseMap& samples)
 {
   compute_moments(samples, momentStats, momentGrads, momentCIs,
-		  finalMomentsType, iteratedModel.current_response().function_labels());
+		  finalMomentsType, ModelUtils::response_labels(iteratedModel));
 }
 
 
@@ -465,7 +465,7 @@ inline void NonDSampling::compute_intervals(const IntResponseMap& samples)
 
 
 inline void NonDSampling::print_intervals(std::ostream& s) const
-{ print_intervals(s, "response function", iteratedModel.current_response().function_labels()); }
+{ print_intervals(s, "response function", ModelUtils::response_labels(iteratedModel)); }
 
 
 inline void NonDSampling::
@@ -479,7 +479,7 @@ print_moments(std::ostream& s, String qoi_type,
 
 
 inline void NonDSampling::print_moments(std::ostream& s) const
-{ print_moments(s, "response function", iteratedModel.current_response().function_labels()); }
+{ print_moments(s, "response function", ModelUtils::response_labels(iteratedModel)); }
 
 
 inline void NonDSampling::sampling_reference(size_t samples_ref)
@@ -545,8 +545,8 @@ transform_samples(Model& src_model, Model& tgt_model, bool x_to_u)
     tgt_model.probability_transformation() :
     src_model.probability_transformation();
 
-  transform_samples(nataf, allSamples, src_model.current_variables().continuous_variable_ids(),
-		    tgt_model.current_variables().continuous_variable_ids(), x_to_u);
+  transform_samples(nataf, allSamples, ModelUtils::continuous_variable_ids(src_model),
+		    ModelUtils::continuous_variable_ids(tgt_model), x_to_u);
 }
 
 
@@ -555,7 +555,7 @@ inline void NonDSampling::
 transform_samples(Pecos::ProbabilityTransformation& nataf, bool x_to_u)
 {
   // No model recursion available, assume same x/u ids for mapping:
-  SizetMultiArrayConstView cv_ids = iteratedModel.current_variables().continuous_variable_ids();
+  SizetMultiArrayConstView cv_ids = ModelUtils::continuous_variable_ids(iteratedModel);
   transform_samples(nataf, allSamples, cv_ids, cv_ids, x_to_u);
 }
 
@@ -565,7 +565,7 @@ transform_samples(Pecos::ProbabilityTransformation& nataf,
 		  RealMatrix& sample_matrix, bool x_to_u)
 {
   // No model recursion available, assume same x/u ids for mapping:
-  SizetMultiArrayConstView cv_ids = iteratedModel.current_variables().continuous_variable_ids();
+  SizetMultiArrayConstView cv_ids = ModelUtils::continuous_variable_ids(iteratedModel);
   transform_samples(nataf, sample_matrix, cv_ids, cv_ids, x_to_u);
 }
 

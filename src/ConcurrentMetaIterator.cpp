@@ -256,7 +256,7 @@ void ConcurrentMetaIterator::pre_run()
 
   // initialize initialPt
   if (methodName != MULTI_START)
-    copy_data(iteratedModel.current_variables().continuous_variables(), initialPt); // view->copy
+    copy_data(ModelUtils::continuous_variables(iteratedModel), initialPt); // view->copy
 
   // estimate params_msg_len & results_msg_len and publish to IteratorScheduler
   int params_msg_len = 0, results_msg_len; // peer sched doesn't send params

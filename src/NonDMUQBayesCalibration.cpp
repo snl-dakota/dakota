@@ -355,7 +355,7 @@ void NonDMUQBayesCalibration::calibrate()
 {
   int N =  (chainSamples > 0) ? chainSamples : 1000;
   size_t num_cv = numContinuousVars;
-  const RealVector& init_point = nonDMUQInstance->mcmcModel.current_variables().continuous_variables();
+  const RealVector& init_point = ModelUtils::continuous_variables(nonDMUQInstance->mcmcModel);
   Eigen::VectorXd init_pt(num_cv);
   for (size_t i(0); i < num_cv; ++i)
     init_pt[i] = init_point[i];
@@ -457,10 +457,10 @@ void NonDMUQBayesCalibration::
 print_variables(std::ostream& s, const RealVector& c_vars)
 {
   StringMultiArrayConstView cv_labels =
-    iteratedModel.current_variables().continuous_variable_labels();
+    ModelUtils::continuous_variable_labels(iteratedModel);
   // the residualModel includes any hyper-parameters
   StringArray combined_labels;
-  copy_data(residualModel.current_variables().continuous_variable_labels(), combined_labels);
+  copy_data(ModelUtils::continuous_variable_labels(residualModel), combined_labels);
 
   size_t wpp7 = write_precision+7;
 
@@ -556,7 +556,7 @@ void NonDMUQBayesCalibration::cache_chain()
     // now retreive function values
 
     if (mcmcModelHasSurrogate) {
-      nonDMUQInstance->mcmcModel.current_variables().active_variables(lookup_vars);
+      ModelUtils::active_variables(nonDMUQInstance->mcmcModel, lookup_vars);
       nonDMUQInstance->mcmcModel.evaluate(lookup_resp.active_set());
       const RealVector& fn_vals = nonDMUQInstance->mcmcModel.current_response().function_values();
       Teuchos::setCol(fn_vals, i, acceptedFnVals);

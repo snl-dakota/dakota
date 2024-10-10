@@ -108,19 +108,19 @@ void PStudyDACE::print_results(std::ostream& s, short results_state)
   if (vbdFlag)
     pStudyDACESensGlobal.print_sobol_indices(s,
                                              iteratedModel.current_variables().ordered_labels(ACTIVE_VARS),
-                                             iteratedModel.current_response().function_labels(),
+                                             ModelUtils::response_labels(iteratedModel),
                                              vbdDropTol); // set in DakotaAnalyzer constructor
 
   if (pStudyDACESensGlobal.correlations_computed()) {
     if (compactMode) { // FSU, DDACE, PSUADE ignore active discrete vars
       StringArray cv_labels;
-      copy_data(iteratedModel.current_variables().continuous_variable_labels(), cv_labels);
-      pStudyDACESensGlobal.print_correlations(s, cv_labels, iteratedModel.current_response().function_labels());
+      copy_data(ModelUtils::continuous_variable_labels(iteratedModel), cv_labels);
+      pStudyDACESensGlobal.print_correlations(s, cv_labels, ModelUtils::response_labels(iteratedModel));
     }
     else // ParamStudy includes active discrete vars
       pStudyDACESensGlobal.print_correlations(s,
         iteratedModel.current_variables().ordered_labels(ACTIVE_VARS),
-        iteratedModel.current_response().function_labels());
+        ModelUtils::response_labels(iteratedModel));
   }
 }
 

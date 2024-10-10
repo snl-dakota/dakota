@@ -45,11 +45,11 @@ void NonDLocalEvidence::set_cell_bounds()
   }
 
   for (j=0; j<numDiscSetIntUncVars; j++) {
-    minMaxModel.current_variables().discrete_int_variable(cellIntSetBounds[cellCntr][j],j+numDiscIntervalVars);
+    ModelUtils::discrete_int_variable(minMaxModel, cellIntSetBounds[cellCntr][j],j+numDiscIntervalVars);
   }
 
   for (j=0; j<numDiscSetRealUncVars; j++) {
-    minMaxModel.current_variables().discrete_real_variable(cellRealSetBounds[cellCntr][j],j);
+    ModelUtils::discrete_real_variable(minMaxModel, cellRealSetBounds[cellCntr][j],j);
   }
 
 }

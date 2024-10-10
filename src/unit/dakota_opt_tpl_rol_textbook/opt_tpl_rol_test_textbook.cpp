@@ -385,7 +385,7 @@ BOOST_AUTO_TEST_CASE(test_text_book_bound_const_reset)
   new_initial_vals[0] = 0.0; // These values require more ROL iterations and allow testing of new options below.
   new_initial_vals[1] = 0.0;
   new_initial_vals[2] = 0.0;
-  model.current_variables().continuous_variables(new_initial_vals);
+  ModelUtils::continuous_variables(model, new_initial_vals);
 
   RealVector new_lower_bnds(vars.cv());
   new_lower_bnds[0] = 0.0;

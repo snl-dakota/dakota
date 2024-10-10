@@ -141,7 +141,7 @@ void NOWPACOptimizer::initialize_options()
 
   // Scale the design variables since the TR size controls are absolute, not
   // relative.  Based on the default max TR size of 1., scale to [-1,1].
-  RealArray l_bnds, u_bnds; size_t num_v = iteratedModel.current_variables().cv();
+  RealArray l_bnds, u_bnds; size_t num_v = ModelUtils::cv(iteratedModel);
   l_bnds.assign(num_v, -1.); u_bnds.assign(num_v, 1.);
   nowpacSolver.set_lower_bounds(l_bnds);
   nowpacSolver.set_upper_bounds(u_bnds);
@@ -175,7 +175,7 @@ void NOWPACOptimizer::core_run()
 
   // allocate arrays passed to optimization solver
   RealArray x_star; RealArray obj_star;
-  nowpacEvaluator.scale(iteratedModel.current_variables().continuous_variables(), x_star);
+  nowpacEvaluator.scale(ModelUtils::continuous_variables(iteratedModel), x_star);
   // create data object for nowpac output ( required for warm start )
   BlackBoxData bb_data(numFunctions, numContinuousVars);
 

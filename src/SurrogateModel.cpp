@@ -82,8 +82,8 @@ bool SurrogateModel::check_active_variables(const Model& sub_model)
   if ( active_view == sm_active_view ) {
     // common cases: Distinct on Distinct (e.g., opt/UQ on local/multipt/hier)
     //               All on All           (e.g., DACE/PStudy on global)
-    size_t sm_cv = sub_model.current_variables().cv(),  sm_div = sub_model.current_variables().div(),
-      sm_dsv = sub_model.current_variables().dsv(),     sm_drv = sub_model.current_variables().drv(),
+    size_t sm_cv = ModelUtils::cv(sub_model),  sm_div = ModelUtils::div(sub_model),
+      sm_dsv = ModelUtils::dsv(sub_model),     sm_drv = ModelUtils::drv(sub_model),
       cv  = currentVariables.cv(),  div = currentVariables.div(),
       dsv = currentVariables.dsv(), drv = currentVariables.drv();
     if (sm_cv != cv || sm_div != div || sm_dsv != dsv || sm_drv != drv) {
@@ -101,8 +101,8 @@ bool SurrogateModel::check_active_variables(const Model& sub_model)
   else if ( ( sm_active_view == RELAXED_ALL || sm_active_view == MIXED_ALL ) &&
 	    active_view >= RELAXED_DESIGN ) {
     // common case: Distinct on All (e.g., opt/UQ on global surrogate)
-    size_t sm_cv  = sub_model.current_variables().cv(),   sm_div = sub_model.current_variables().div(),
-      sm_dsv  = sub_model.current_variables().dsv(),      sm_drv = sub_model.current_variables().drv(),
+    size_t sm_cv  = ModelUtils::cv(sub_model),   sm_div = ModelUtils::div(sub_model),
+      sm_dsv  = ModelUtils::dsv(sub_model),      sm_drv = ModelUtils::drv(sub_model),
       acv  = currentVariables.acv(),  adiv = currentVariables.adiv(),
       adsv = currentVariables.adsv(), adrv = currentVariables.adrv();
     if (sm_cv != acv || sm_div != adiv || sm_dsv != adsv || sm_drv != adrv) {
@@ -122,8 +122,8 @@ bool SurrogateModel::check_active_variables(const Model& sub_model)
     // common case: All on Distinct (e.g., DACE/PStudy on local/multipt/hier)
     // Note: force_rebuild() is critical for this case (prevents interrogation
     // of a surrogate for inconsistent values for vars not included in build)
-    size_t sm_acv = sub_model.current_variables().acv(), sm_adiv = sub_model.current_variables().adiv(),
-      sm_adsv = sub_model.current_variables().adsv(),    sm_adrv = sub_model.current_variables().adrv(),
+    size_t sm_acv = ModelUtils::acv(sub_model), sm_adiv = ModelUtils::adiv(sub_model),
+      sm_adsv = ModelUtils::adsv(sub_model),    sm_adrv = ModelUtils::adrv(sub_model),
       cv  = currentVariables.cv(),   div = currentVariables.div(),
       dsv = currentVariables.dsv(),  drv = currentVariables.drv();
     if (sm_acv != cv || sm_adiv != div || sm_adsv != dsv || sm_adrv != drv) {
@@ -154,8 +154,8 @@ bool SurrogateModel::check_inactive_variables(const Model& sub_model)
   //   inactive state (config vars) and allow active parameterization to vary.
   // > For hi2lo, this implies that the active variable subset could be null
   //   for HF, as the active calibration variables only exist for LF.
-  size_t sm_icv = sub_model.current_variables().icv(),  sm_idiv = sub_model.current_variables().idiv(),
-    sm_idsv = sub_model.current_variables().idsv(),     sm_idrv = sub_model.current_variables().idrv(),
+  size_t sm_icv = ModelUtils::icv(sub_model),  sm_idiv = ModelUtils::idiv(sub_model),
+    sm_idsv = ModelUtils::idsv(sub_model),     sm_idrv = ModelUtils::idrv(sub_model),
     icv  = currentVariables.icv(),  idiv = currentVariables.idiv(),
     idsv = currentVariables.idsv(), idrv = currentVariables.idrv();
   if (sm_icv != icv || sm_idiv != idiv || sm_idsv != idsv || sm_idrv != idrv) {
@@ -216,16 +216,16 @@ void SurrogateModel::init_model_constraints(Model& sub_model)
 
   size_t num_cv  = currentVariables.cv(),  num_div = currentVariables.div(),
          num_drv = currentVariables.drv(), num_dsv = currentVariables.dsv(),
-      num_sm_cv  = sub_model.current_variables().cv(),         num_sm_div = sub_model.current_variables().div(),
-      num_sm_dsv = sub_model.current_variables().dsv(),        num_sm_drv = sub_model.current_variables().drv();
+      num_sm_cv  = ModelUtils::cv(sub_model),         num_sm_div = ModelUtils::div(sub_model),
+      num_sm_dsv = ModelUtils::dsv(sub_model),        num_sm_drv = ModelUtils::drv(sub_model);
 
   // linear constraints (apply to active cv,div,drv)
 
   bool lin_ineq = (userDefinedConstraints.num_linear_ineq_constraints() > 0),
        lin_eq   = (userDefinedConstraints.num_linear_eq_constraints()   > 0);
-  if ( (lin_ineq || lin_eq) && (sub_model.current_variables().cv()  != currentVariables.cv()  ||
-				sub_model.current_variables().div() != currentVariables.div() ||
-				sub_model.current_variables().drv() != currentVariables.drv()) ) {
+  if ( (lin_ineq || lin_eq) && (ModelUtils::cv(sub_model)  != currentVariables.cv()  ||
+				ModelUtils::div(sub_model) != currentVariables.div() ||
+				ModelUtils::drv(sub_model) != currentVariables.drv()) ) {
     // the views don't necessarily have to be the same, but number of active
     // continuous and active discrete int,real variables have to be consistent
     Cerr << "Error: cannot update linear constraints in SurrogateModel::"
@@ -268,17 +268,17 @@ void SurrogateModel::init_model_labels(Model& sub_model)
   // labels: update model with current{Variables,Response} descriptors
   // inactive vars / bounds: propagate inactive vars when necessary
 
-  if (sub_model.current_response().function_labels().empty()) // should not happen
+  if (ModelUtils::response_labels(sub_model).empty()) // should not happen
     switch (responseMode) {
     case AGGREGATED_MODELS: case AGGREGATED_MODEL_PAIR: {
       StringArray qoi_labels;
       copy_data_partial(currentResponse.function_labels(),
 			0, sub_model.qoi(), qoi_labels);
-      sub_model.current_response().function_labels(qoi_labels);
+      ModelUtils::response_labels(sub_model, qoi_labels);
       break;
     }
     default:
-      sub_model.current_response().function_labels(currentResponse.function_labels()); break;
+      ModelUtils::response_labels(sub_model, currentResponse.function_labels()); break;
     }
 
   // ***************************************************************************
@@ -503,7 +503,7 @@ void SurrogateModel::update_response_from_model(const Model& sub_model)
       currentResponse.function_labels().empty()) // should not happen
     switch (responseMode) {
     case AGGREGATED_MODELS: case AGGREGATED_MODEL_PAIR: {
-      const StringArray& model_labels = sub_model.current_response().function_labels();
+      const StringArray& model_labels = ModelUtils::response_labels(sub_model);
       size_t i, start = 0, num_fns = currentResponse.num_functions(),
 	qoi = sub_model.qoi(), num_repl = num_fns / qoi;
       StringArray repl_labels(num_fns);
@@ -513,7 +513,7 @@ void SurrogateModel::update_response_from_model(const Model& sub_model)
       break;
     }
     default:
-      currentResponse.function_labels(sub_model.current_response().function_labels()); break;
+      currentResponse.function_labels(ModelUtils::response_labels(sub_model)); break;
     }
 
   // weights and sense for primary response functions
@@ -525,9 +525,9 @@ void SurrogateModel::update_response_from_model(const Model& sub_model)
 
   bool lin_ineq = (sub_model.num_linear_ineq_constraints() > 0),
        lin_eq   = (sub_model.num_linear_eq_constraints()   > 0);
-  if ( (lin_ineq || lin_eq) && (sub_model.current_variables().cv()  != currentVariables.cv()  ||
-				sub_model.current_variables().div() != currentVariables.div() ||
-				sub_model.current_variables().drv() != currentVariables.drv()) ) {
+  if ( (lin_ineq || lin_eq) && (ModelUtils::cv(sub_model)  != currentVariables.cv()  ||
+				ModelUtils::div(sub_model) != currentVariables.div() ||
+				ModelUtils::drv(sub_model) != currentVariables.drv()) ) {
     // the views don't necessarily have to be the same, but the number of
     // active continuous and active discrete variables have to be consistent
     Cerr << "Error: cannot update linear constraints in SurrogateModel::update"
@@ -778,10 +778,10 @@ check_rebuild(const RealVector& ref_icv,        const IntVector&  ref_idiv,
     Model sub_model = actual_model.subordinate_model();
     while (sub_model.model_type() == "recast")
       sub_model = sub_model.subordinate_model();
-    if ( ref_icv  != sub_model.current_variables().inactive_continuous_variables()      ||
-         ref_idiv != sub_model.current_variables().inactive_discrete_int_variables()    ||
-         ref_idsv != sub_model.current_variables().inactive_discrete_string_variables() ||
-         ref_idrv != sub_model.current_variables().inactive_discrete_real_variables() )
+    if ( ref_icv  != ModelUtils::inactive_continuous_variables(sub_model)      ||
+         ref_idiv != ModelUtils::inactive_discrete_int_variables(sub_model)    ||
+         ref_idsv != ModelUtils::inactive_discrete_string_variables(sub_model) ||
+         ref_idrv != ModelUtils::inactive_discrete_real_variables(sub_model) )
       return true;
     */
 

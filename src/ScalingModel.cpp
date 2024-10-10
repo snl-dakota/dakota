@@ -87,7 +87,7 @@ ScalingModel(Model& sub_model):
 
   // We assume the mapping is for all active variables
   size_t total_active_vars = 
-    sub_model.current_variables().cv() + sub_model.current_variables().div() + sub_model.current_variables().dsv() + sub_model.current_variables().drv();
+    ModelUtils::cv(sub_model) + ModelUtils::div(sub_model) + ModelUtils::dsv(sub_model) + ModelUtils::drv(sub_model);
   Sizet2DArray vars_map_indices(total_active_vars);
   bool nonlinear_vars_mapping = false;
   for (size_t i=0; i<total_active_vars; ++i) {
@@ -328,7 +328,7 @@ void ScalingModel::initialize_scaling(Model& sub_model)
   ModelUtils::continuous_lower_bounds(*this, lbs);
   ModelUtils::continuous_upper_bounds(*this, ubs);
   current_variables().continuous_variables(
-                       modify_n2s(sub_model.current_variables().continuous_variables(), cvScaleTypes,
+                       modify_n2s(ModelUtils::continuous_variables(sub_model), cvScaleTypes,
                                   cvScaleMultipliers, cvScaleOffsets) );
 
   if (outputLevel > NORMAL_OUTPUT && varsScaleFlag) {
@@ -416,7 +416,7 @@ void ScalingModel::initialize_scaling(Model& sub_model)
       (primaryRespScaleFlag || secondaryRespScaleFlag) )
     print_scaling("Response scales", responseScaleTypes,
                   responseScaleMultipliers, responseScaleOffsets,
-                  sub_model.current_response().function_labels());
+                  ModelUtils::response_labels(sub_model));
 
   // LINEAR CONSTRAINT SCALING:
   // computed scales account for scaling in CVs x

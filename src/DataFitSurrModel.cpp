@@ -1099,7 +1099,7 @@ void DataFitSurrModel::build_local_multipoint()
   // Evaluate value and derivatives using actualModel
   ActiveSet set = actualModel.current_response().active_set(); // copy
   set.request_vector(actual_asv);
-  set.derivative_vector(actualModel.current_variables().continuous_variable_ids());
+  set.derivative_vector(ModelUtils::continuous_variable_ids(actualModel));
   actualModel.evaluate(set);
 
   // construct a new approximation using this actualModel evaluation
@@ -1148,9 +1148,9 @@ void DataFitSurrModel::build_global()
       num_dr_vars = currentVariables.drv();
     }
     else {
-      num_c_vars  = actualModel.current_variables().cv();
-      num_di_vars = actualModel.current_variables().div();
-      num_dr_vars = actualModel.current_variables().drv();
+      num_c_vars  = ModelUtils::cv(actualModel);
+      num_di_vars = ModelUtils::div(actualModel);
+      num_dr_vars = ModelUtils::drv(actualModel);
     }
 
     // Process PRPCache using default iterators (index 0 = ordered_non_unique).
@@ -1339,7 +1339,7 @@ void DataFitSurrModel::run_dace()
   // resize_from_subordinate_model(), but can be overwritten by top-level
   // Iterator (e.g., NonDExpansion::compute_expansion()
   const ShortArray& dace_asv = daceIterator.active_set_request_vector();
-  if (dace_asv.size() != actualModel.current_response().num_functions()) {
+  if (dace_asv.size() != ModelUtils::response_size(actualModel)) {
     ShortArray actual_asv;
     asv_inflate_build(dace_asv, actual_asv);
     daceIterator.active_set_request_vector(actual_asv);
@@ -2096,7 +2096,7 @@ asv_inflate_build(const ShortArray& orig_asv, ShortArray& actual_asv)
 {
   // DataFitSurrModel consumes replicates from any response aggregations
   // occurring in actualModel
-  size_t num_orig = orig_asv.size(), num_actual = actualModel.current_response().num_functions();
+  size_t num_orig = orig_asv.size(), num_actual = ModelUtils::response_size(actualModel);
   if (num_actual < num_orig || num_actual % num_orig) {
     Cerr << "Error: ASV size mismatch in DataFitSurrModel::asv_inflate_build()."
 	 << std::endl;
@@ -2136,7 +2136,7 @@ asv_split(const ShortArray& orig_asv, ShortArray& approx_asv,
 
   // DataFitSurrModel consumes replicates from any response aggregations
   // occurring in actualModel
-  size_t num_orig = orig_asv.size(), num_actual = actualModel.current_response().num_functions();
+  size_t num_orig = orig_asv.size(), num_actual = ModelUtils::response_size(actualModel);
   if (num_orig != numFns || num_actual < num_orig || num_actual % num_orig) {
     Cerr << "Error: ASV size mismatch in DataFitSurrModel::asv_split()."
 	 << std::endl;

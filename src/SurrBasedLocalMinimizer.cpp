@@ -350,7 +350,7 @@ void SurrBasedLocalMinimizer::pre_run()
   // need copies of initial point and initial global bounds, since iteratedModel
   // continuous vars will be reset to the TR center and iteratedModel bounds
   // will be reset to the TR bounds
-  copy_data(iteratedModel.current_variables().continuous_variables(),    initialPoint);
+  copy_data(ModelUtils::continuous_variables(iteratedModel),    initialPoint);
   copy_data(ModelUtils::continuous_lower_bounds(iteratedModel), globalLowerBnds);
   copy_data(ModelUtils::continuous_upper_bounds(iteratedModel), globalUpperBnds);
 }
@@ -492,7 +492,7 @@ update_trust_region_data(SurrBasedLevelData& tr_data,
   const RealVector& tr_lower_bnds = tr_data.tr_lower_bounds();
   const RealVector& tr_upper_bnds = tr_data.tr_upper_bounds();
   StringMultiArrayConstView c_vars_labels
-    = iteratedModel.current_variables().continuous_variable_labels();
+    = ModelUtils::continuous_variable_labels(iteratedModel);
   for (i=0; i<numContinuousVars; ++i)
     Cout << std::setw(16) << c_vars_labels[i] << ':' << std::setw(wpp9)
 	 << tr_lower_bnds[i] << std::setw(wpp9) << cv_center[i]
@@ -505,7 +505,7 @@ update_trust_region_data(SurrBasedLevelData& tr_data,
 void SurrBasedLocalMinimizer::
 update_approx_sub_problem(SurrBasedLevelData& tr_data)
 {
-  approxSubProbModel.current_variables().active_variables(tr_data.vars_center());
+  ModelUtils::active_variables(approxSubProbModel, tr_data.vars_center());
   ModelUtils::continuous_lower_bounds(approxSubProbModel, tr_data.tr_lower_bounds());
   ModelUtils::continuous_upper_bounds(approxSubProbModel, tr_data.tr_upper_bounds());
 
@@ -1541,7 +1541,7 @@ hom_constraint_eval(int& mode, int& ncnln, int& n, int& nrowj, int* needc,
   // tau_minimizer instantiation in relax_constraints()).
 
   // set active set vector in approxSubProbModel
-  size_t num_fns = sblmInstance->approxSubProbModel.current_response().num_functions(),
+  size_t num_fns = ModelUtils::response_size(sblmInstance->approxSubProbModel),
      num_obj_fns = num_fns - ncnln; // 1 if recast, numUserPrimaryFns if not
   ShortArray local_asv(num_fns, 0);
   for (int i=0; i<ncnln; ++i)
@@ -1554,7 +1554,7 @@ hom_constraint_eval(int& mode, int& ncnln, int& n, int& nrowj, int* needc,
   //RealVector local_des_vars(n-1);
   // WJB: copy vs. view?? copy_data(&tau_and_x[1], n-1, local_des_vars);
   RealVector local_des_vars(Teuchos::View, &tau_and_x[1], n-1);
-  sblmInstance->approxSubProbModel.current_variables().continuous_variables(local_des_vars);
+  ModelUtils::continuous_variables(sblmInstance->approxSubProbModel, local_des_vars);
 
   // compute response
   sblmInstance->approxSubProbModel.evaluate(local_set);

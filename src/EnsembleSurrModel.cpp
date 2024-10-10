@@ -458,36 +458,36 @@ void EnsembleSurrModel::init_model_mapped_variables(Model& model)
       const String& surr_label
 	= currentVariables.all_continuous_variable_labels()[ac_index1];
       // map this to sub-ordinate label variables
-      m_index = find_index(model.current_variables().all_continuous_variable_labels(), surr_label);
+      m_index = find_index(ModelUtils::all_continuous_variable_labels(model), surr_label);
       // push value from currentVariables to sub-ordinate variables
       if (m_index != _NPOS)
-	model.current_variables().all_continuous_variable(
+	ModelUtils::all_continuous_variable(model, 
 	  currentVariables.all_continuous_variables()[ac_index1], m_index);
     }
     else if (adi_index1 != _NPOS) {
       const String& surr_label
 	= currentVariables.all_discrete_int_variable_labels()[adi_index1];
-      m_index = find_index(model.current_variables().all_discrete_int_variable_labels(),surr_label);
+      m_index = find_index(ModelUtils::all_discrete_int_variable_labels(model),surr_label);
       if (m_index != _NPOS)
-	model.current_variables().all_discrete_int_variable(
+	ModelUtils::all_discrete_int_variable(model, 
 	  currentVariables.all_discrete_int_variables()[adi_index1], m_index);
     }
     else if (ads_index1 != _NPOS) {
       const String& surr_label
 	= currentVariables.all_discrete_string_variable_labels()[ads_index1];
-      m_index = find_index(model.current_variables().all_discrete_string_variable_labels(),
+      m_index = find_index(ModelUtils::all_discrete_string_variable_labels(model),
 			   surr_label);
       if (m_index != _NPOS)
-	model.current_variables().all_discrete_string_variable(
+	ModelUtils::all_discrete_string_variable(model, 
 	  currentVariables.all_discrete_string_variables()[ads_index1],m_index);
     }
     else if (adr_index1 != _NPOS) {
       const String& surr_label
 	= currentVariables.all_discrete_real_variable_labels()[adr_index1];
-      m_index = find_index(model.current_variables().all_discrete_real_variable_labels(),
+      m_index = find_index(ModelUtils::all_discrete_real_variable_labels(model),
 			   surr_label);
       if (m_index != _NPOS)
-	model.current_variables().all_discrete_real_variable(
+	ModelUtils::all_discrete_real_variable(model, 
 	  currentVariables.all_discrete_real_variables()[adr_index1], m_index);
     }
     else {
@@ -1821,7 +1821,7 @@ void EnsembleSurrModel::resize_response(bool use_virtual_counts)
     num_truth_md = truthModel.current_response().metadata().size(),
     num_truth_fns = (use_virtual_counts) ?
     truthModel.qoi() : // allow models to consume lower-level aggregations
-    truthModel.current_response().num_functions(); // raw counts align w/ currentResponse raw count
+    ModelUtils::response_size(truthModel); // raw counts align w/ currentResponse raw count
 
   switch (responseMode) {
   case AGGREGATED_MODELS: {
@@ -1844,7 +1844,7 @@ void EnsembleSurrModel::resize_response(bool use_virtual_counts)
     Model& lf_model = active_surrogate_model(0);
     size_t num_lf_meta = lf_model.current_response().metadata().size(),
       num_lf_fns = (use_virtual_counts) ?
-        lf_model.qoi() : lf_model.current_response().num_functions();
+        lf_model.qoi() : ModelUtils::response_size(lf_model);
     switch (responseMode) {
     case AGGREGATED_MODEL_PAIR:
       numFns   = num_truth_fns + num_lf_fns;

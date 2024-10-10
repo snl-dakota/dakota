@@ -60,7 +60,7 @@ DataTransformModel(const Model& sub_model, ExperimentData& exp_data,
        ( active_sm_view != RELAXED_ALL && active_sm_view != MIXED_ALL ) ) {
     subModel.inactive_view(MIXED_STATE);
     int num_state_vars =
-      subModel.current_variables().icv() + subModel.current_variables().idiv() + subModel.current_variables().idsv() + subModel.current_variables().idrv();
+      ModelUtils::icv(subModel) + ModelUtils::idiv(subModel) + ModelUtils::idsv(subModel) + ModelUtils::idrv(subModel);
     if (num_state_vars != num_config_vars) {
       Cerr << "\nError: (DataTransformModel) Number of state "
 	   << "variables = " << num_state_vars << " must match\n       number "
@@ -86,8 +86,8 @@ DataTransformModel(const Model& sub_model, ExperimentData& exp_data,
   // For now, we assume that any hyper-parameters are appended to the
   // active continuous variables, and that active discrete int,
   // string, real follow in both the recast and sub-model
-  size_t submodel_cv = sub_model.current_variables().cv();
-  size_t submodel_dv = sub_model.current_variables().div() + sub_model.current_variables().dsv() + sub_model.current_variables().drv();
+  size_t submodel_cv = ModelUtils::cv(sub_model);
+  size_t submodel_dv = ModelUtils::div(sub_model) + ModelUtils::dsv(sub_model) + ModelUtils::drv(sub_model);
   Sizet2DArray vars_map_indices(submodel_cv + submodel_dv);
   for (size_t i=0; i<submodel_cv; ++i) {
     vars_map_indices[i].resize(1);
@@ -284,11 +284,11 @@ void DataTransformModel::update_cv_skip_hyperparams(const Model& model)
     num_cv  = sm_vars.cv(), // omits any hyper-parameters
     cv_end = cv_begin + num_cv,
     num_acv = sm_vars.acv();
-  const RealVector& acv = model.current_variables().all_continuous_variables();
+  const RealVector& acv = ModelUtils::all_continuous_variables(model);
   const RealVector& acv_l_bnds = ModelUtils::all_continuous_lower_bounds(model);
   const RealVector& acv_u_bnds = ModelUtils::all_continuous_upper_bounds(model);
   StringMultiArrayConstView acv_labels
-    = model.current_variables().all_continuous_variable_labels();
+    = ModelUtils::all_continuous_variable_labels(model);
 
   // active complement [0, cv_begin), followed by active [cv_begin, cv_end)
   for (i=0; i<cv_end; ++i) {
@@ -984,8 +984,8 @@ void DataTransformModel::init_continuous_vars()
 {
   const SharedVariablesData& svd = subModel.current_variables().shared_data();
   const SizetArray& sm_vc_totals = svd.components_totals();
-  const RealVector& sm_acv = subModel.current_variables().all_continuous_variables();
-  StringMultiArrayConstView sm_acvl = subModel.current_variables().all_continuous_variable_labels();
+  const RealVector& sm_acv = ModelUtils::all_continuous_variables(subModel);
+  StringMultiArrayConstView sm_acvl = ModelUtils::all_continuous_variable_labels(subModel);
   const RealVector & sm_aclb = ModelUtils::all_continuous_lower_bounds(subModel);
   const RealVector & sm_acub = ModelUtils::all_continuous_upper_bounds(subModel);
 
@@ -1265,7 +1265,7 @@ void DataTransformModel::archive_best_original(const ResultsManager &results_db,
   if(!results_db.active())  return;
   
   DimScaleMap scales;
-  scales.emplace(0, StringScale("responses", subModel.current_response().function_labels(), 
+  scales.emplace(0, StringScale("responses", ModelUtils::response_labels(subModel), 
                                 ScaleScope::SHARED)
                 );
 

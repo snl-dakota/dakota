@@ -272,14 +272,14 @@ void NonDLowDiscrepancySampling::transform(
     /// First transform from standard uniform to standard normal
     Pecos::ProbabilityTransformation& uNataf = 
       uSpaceModel.probability_transformation();
-    transform_samples(uNataf, sample_matrix, model.current_variables().continuous_variable_ids(), 
-      model.current_variables().continuous_variable_ids(), false);
+    transform_samples(uNataf, sample_matrix, ModelUtils::continuous_variable_ids(model), 
+      ModelUtils::continuous_variable_ids(model), false);
 
     // Then transform from standard normal to actual model
     Pecos::ProbabilityTransformation& vNataf = 
       vSpaceModel.probability_transformation();
-    transform_samples(vNataf, sample_matrix, model.current_variables().continuous_variable_ids(), 
-      model.current_variables().continuous_variable_ids(), false);
+    transform_samples(vNataf, sample_matrix, ModelUtils::continuous_variable_ids(model), 
+      ModelUtils::continuous_variable_ids(model), false);
   }
   else // If uncorrelated, directly apply the transform
   {
@@ -292,8 +292,8 @@ void NonDLowDiscrepancySampling::transform(
     /// Transform samples using Nataf transformation (component-wise inverse CDF)
     Pecos::ProbabilityTransformation& uNataf = 
       uSpaceModel.probability_transformation();
-    transform_samples(uNataf, sample_matrix, model.current_variables().continuous_variable_ids(), 
-      model.current_variables().continuous_variable_ids(), false);
+    transform_samples(uNataf, sample_matrix, ModelUtils::continuous_variable_ids(model), 
+      ModelUtils::continuous_variable_ids(model), false);
   } 
 }
 

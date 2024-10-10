@@ -165,7 +165,7 @@ inline void ConcurrentMetaIterator::initialize_model()
     }
   }
   else
-    paramSetLen = iteratedModel.current_variables().cv();
+    paramSetLen = ModelUtils::cv(iteratedModel);
 }
 
 
@@ -173,9 +173,9 @@ inline void ConcurrentMetaIterator::
 initialize_iterator(const RealVector& param_set)
 {
   if (methodName == MULTI_START)
-    iteratedModel.current_variables().continuous_variables(param_set);
+    ModelUtils::continuous_variables(iteratedModel, param_set);
   else {
-    iteratedModel.current_variables().continuous_variables(initialPt); // reset
+    ModelUtils::continuous_variables(iteratedModel, initialPt); // reset
     iteratedModel.primary_response_fn_weights(param_set);
   }
 }

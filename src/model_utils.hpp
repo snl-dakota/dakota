@@ -29,6 +29,216 @@ namespace Dakota {
         RealSetArray discrete_set_real_values(const Model &model, short active_view);
 
 
+        size_t tv(const Model &model);
+
+        size_t cv(const Model &model);
+
+        size_t div(const Model &model);
+
+        size_t dsv(const Model &model);
+
+        size_t drv(const Model &model);
+
+        size_t icv(const Model &model);
+
+        size_t idiv(const Model &model);
+
+        size_t idsv(const Model &model);
+
+        size_t idrv(const Model &model);
+
+        size_t acv(const Model &model);
+
+        size_t adiv(const Model &model);
+
+        size_t adsv(const Model &model);
+
+        size_t adrv(const Model &model);
+
+        void active_variables(Model &model, const Variables& vars);
+
+        void inactive_variables(Model &model, const Variables& vars);
+
+        const RealVector& continuous_variables(const Model &model);
+
+        Real continuous_variable(const Model &model, size_t i);
+
+        void continuous_variables(Model &model, const RealVector& c_vars);
+
+        void continuous_variable(Model &model, Real c_var, size_t i);
+
+        const IntVector& discrete_int_variables(const Model &model);
+
+        int discrete_int_variable(const Model &model, size_t i);
+
+        void discrete_int_variables(Model &model, const IntVector& d_vars);
+
+        void discrete_int_variable(Model &model, int d_var, size_t i);
+
+        StringMultiArrayConstView discrete_string_variables(const Model &model);
+
+        const String& discrete_string_variable(const Model &model, size_t i);
+
+        void discrete_string_variables(Model &model, StringMultiArrayConstView d_vars);
+
+        void discrete_string_variable(Model &model, const String& d_var, size_t i);
+
+        const RealVector& discrete_real_variables(const Model &model);
+
+        Real discrete_real_variable(const Model &model, size_t i);
+
+        void discrete_real_variables(Model &model, const RealVector& d_vars);
+
+        void discrete_real_variable(Model &model, Real d_var, size_t i);
+
+        UShortMultiArrayConstView continuous_variable_types(const Model &model);
+
+        void continuous_variable_types(Model &model, UShortMultiArrayConstView cv_types);
+
+        void continuous_variable_type(Model &model, unsigned short cv_type, size_t i);
+
+        UShortMultiArrayConstView discrete_int_variable_types(const Model &model);
+
+        void discrete_int_variable_types(Model &model, UShortMultiArrayConstView div_types);
+
+        void discrete_int_variable_type(Model &model, unsigned short div_type, size_t i);
+
+        UShortMultiArrayConstView discrete_string_variable_types(const Model &model);
+
+        void discrete_string_variable_types(Model &model, UShortMultiArrayConstView dsv_types);
+
+        void discrete_string_variable_type(Model &model, unsigned short dsv_type, size_t i);
+
+        UShortMultiArrayConstView discrete_real_variable_types(const Model &model);
+
+        void discrete_real_variable_types(Model &model, UShortMultiArrayConstView drv_types);
+
+        void discrete_real_variable_type(Model &model, unsigned short drv_type, size_t i);
+
+        SizetMultiArrayConstView continuous_variable_ids(const Model &model);
+
+        void continuous_variable_ids(Model &model, SizetMultiArrayConstView cv_ids);
+
+        void continuous_variable_id(Model &model, size_t cv_id, size_t i);
+
+        const RealVector& inactive_continuous_variables(const Model &model);
+
+        void inactive_continuous_variables(Model &model, const RealVector& i_c_vars);
+
+        const IntVector& inactive_discrete_int_variables(const Model &model);
+
+        void inactive_discrete_int_variables(Model &model, const IntVector& i_d_vars);
+
+        StringMultiArrayConstView inactive_discrete_string_variables(const Model &model);
+
+        void inactive_discrete_string_variables(Model &model, StringMultiArrayConstView i_d_vars);
+
+        const RealVector& inactive_discrete_real_variables(const Model &model);
+
+        void inactive_discrete_real_variables(Model &model, const RealVector& i_d_vars);
+
+        UShortMultiArrayConstView inactive_continuous_variable_types(const Model &model);
+
+        SizetMultiArrayConstView inactive_continuous_variable_ids(const Model &model);
+
+        const RealVector& all_continuous_variables(const Model &model);
+
+        void all_continuous_variables(Model &model, const RealVector& a_c_vars);
+
+        void all_continuous_variable(Model &model, Real a_c_var, size_t i);
+
+        const IntVector& all_discrete_int_variables(const Model &model);
+
+        void all_discrete_int_variables(Model &model, const IntVector& a_d_vars);
+
+        void all_discrete_int_variable(Model &model, int a_d_var, size_t i);
+
+        StringMultiArrayConstView all_discrete_string_variables(const Model &model);
+
+        void all_discrete_string_variables(Model &model, StringMultiArrayConstView a_d_vars);
+
+        void all_discrete_string_variable(Model &model, const String& a_d_var, size_t i);
+
+        const RealVector& all_discrete_real_variables(const Model &model);
+
+        void all_discrete_real_variables(Model &model, const RealVector& a_d_vars);
+
+        void all_discrete_real_variable(Model &model, Real a_d_var, size_t i);
+
+        UShortMultiArrayConstView all_continuous_variable_types(const Model &model);
+
+        UShortMultiArrayConstView all_discrete_int_variable_types(const Model &model);
+
+        UShortMultiArrayConstView all_discrete_string_variable_types(const Model &model);
+
+        UShortMultiArrayConstView all_discrete_real_variable_types(const Model &model);
+
+        SizetMultiArrayConstView all_continuous_variable_ids(const Model &model);
+
+        StringMultiArrayConstView continuous_variable_labels(const Model &model);
+
+        void continuous_variable_labels(Model &model, StringMultiArrayConstView c_v_labels);
+
+        StringMultiArrayConstView discrete_int_variable_labels(const Model &model);
+
+        void discrete_int_variable_labels(Model &model, StringMultiArrayConstView d_v_labels);
+
+        StringMultiArrayConstView discrete_string_variable_labels(const Model &model);
+
+        void discrete_string_variable_labels(Model &model, StringMultiArrayConstView d_v_labels);
+
+        StringMultiArrayConstView discrete_real_variable_labels(const Model &model);
+
+        void discrete_real_variable_labels(Model &model, StringMultiArrayConstView d_v_labels);
+
+        StringMultiArrayConstView inactive_continuous_variable_labels(const Model &model);
+
+        void inactive_continuous_variable_labels(Model &model, StringMultiArrayConstView i_c_v_labels);
+
+        StringMultiArrayConstView inactive_discrete_int_variable_labels(const Model &model);
+
+        void inactive_discrete_int_variable_labels(Model &model, StringMultiArrayConstView i_d_v_labels);
+
+        StringMultiArrayConstView inactive_discrete_string_variable_labels(const Model &model);
+
+        void inactive_discrete_string_variable_labels(Model &model, StringMultiArrayConstView i_d_v_labels);
+
+        StringMultiArrayConstView inactive_discrete_real_variable_labels(const Model &model);
+
+        void inactive_discrete_real_variable_labels(Model &model, StringMultiArrayConstView i_d_v_labels);
+
+        StringMultiArrayConstView all_continuous_variable_labels(const Model &model);
+
+        void all_continuous_variable_labels(Model &model, StringMultiArrayConstView a_c_v_labels);
+
+        void all_continuous_variable_label(Model &model, const String& a_c_v_label, size_t i);
+
+        StringMultiArrayConstView all_discrete_int_variable_labels(const Model &model);
+
+        void all_discrete_int_variable_labels(Model &model, StringMultiArrayConstView a_d_v_labels);
+
+        void all_discrete_int_variable_label(Model &model, const String& a_d_v_label, size_t i);
+
+        StringMultiArrayConstView all_discrete_string_variable_labels(const Model &model);
+
+        void all_discrete_string_variable_labels(Model &model, StringMultiArrayConstView a_d_v_labels);
+
+        void all_discrete_string_variable_label(Model &model, const String& a_d_v_label, size_t i);
+
+        StringMultiArrayConstView all_discrete_real_variable_labels(const Model &model);
+
+        void all_discrete_real_variable_labels(Model &model, StringMultiArrayConstView a_d_v_labels);
+
+        void all_discrete_real_variable_label(Model &model, const String& a_d_v_label, size_t i);
+
+        size_t response_size(const Model &model);
+
+        const StringArray& response_labels(const Model &model);
+
+        void response_labels(Model &model, const StringArray& resp_labels);
+
+
+
          /// return the active continuous lower bounds from userDefinedConstraints
         const RealVector& continuous_lower_bounds(const Model &model);
         /// return an active continuous lower bound from userDefinedConstraints

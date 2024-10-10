@@ -100,14 +100,14 @@ void NonDInterval::initialize_final_statistics()
   // default response ASV/DVV may be overridden by NestedModel update
   // in subIterator.response_results_active_set(sub_iterator_set)
   ActiveSet stats_set(num_final_stats);
-  stats_set.derivative_vector(iteratedModel.current_variables().inactive_continuous_variable_ids());
+  stats_set.derivative_vector(ModelUtils::inactive_continuous_variable_ids(iteratedModel));
   finalStatistics = Response(SIMULATION_RESPONSE, stats_set);
 
   // Assign meaningful fn labels to final stats (appear in NestedModel output)
   size_t i, j, num_levels, cntr = 0;
   StringArray stats_labels(num_final_stats);
   if (singleIntervalFlag) {
-    const StringArray& fn_labels = iteratedModel.current_response().function_labels();
+    const StringArray& fn_labels = ModelUtils::response_labels(iteratedModel);
     for (i=0; i<numFunctions; ++i) {
       stats_labels[cntr++] = fn_labels[i] + String("_min");
       stats_labels[cntr++] = fn_labels[i] + String("_max");
@@ -313,13 +313,13 @@ void NonDInterval::calculate_cells_and_bpas()
   }
 
   StringMultiArrayConstView cv_labels
-    = iteratedModel.current_variables().continuous_variable_labels();
+    = ModelUtils::continuous_variable_labels(iteratedModel);
   StringMultiArrayConstView div_labels
-    = iteratedModel.current_variables().discrete_int_variable_labels();
+    = ModelUtils::discrete_int_variable_labels(iteratedModel);
   //StringMultiArrayConstView dsv_labels
-  //  = iteratedModel.current_variables().discrete_string_variable_labels();
+  //  = ModelUtils::discrete_string_variable_labels(iteratedModel);
   StringMultiArrayConstView drv_labels
-    = iteratedModel.current_variables().discrete_real_variable_labels();
+    = ModelUtils::discrete_real_variable_labels(iteratedModel);
   for (i=0; i<numCells; ++i) {
     Cout << "Cell " << i+1 << ":\n";
     for (j=0; j<num_ciu; ++j)
@@ -564,7 +564,7 @@ void NonDInterval::compute_evidence_statistics()
 
 void NonDInterval::print_results(std::ostream& s, short results_state)
 {
-  const StringArray& fn_labels = iteratedModel.current_response().function_labels();
+  const StringArray& fn_labels = ModelUtils::response_labels(iteratedModel);
   s << "------------------------------------------------------------------\n"
     << std::scientific << std::setprecision(write_precision);
 

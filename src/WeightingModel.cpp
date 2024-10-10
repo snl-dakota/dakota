@@ -36,7 +36,7 @@ WeightingModel::WeightingModel(Model& sub_model
 
   // TODO: this could generalize to arbitrary variable types...
   // TODO: is this sufficiently general for Bayesian hyperparameters?
-  size_t num_cv = sub_model.current_variables().cv();
+  size_t num_cv = ModelUtils::cv(sub_model);
   Sizet2DArray vars_map_indices(num_cv, SizetArray(1));
   for (size_t i=0; i<num_cv; ++i)
     vars_map_indices[i][0] = i;

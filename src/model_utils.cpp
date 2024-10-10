@@ -586,6 +586,428 @@ namespace Dakota {
         }
 
 
+        size_t tv(const Model &model) {
+            return model.current_variables().tv();
+        }
+
+        size_t cv(const Model &model) {
+            return model.current_variables().cv();
+        }
+
+        size_t div(const Model &model) {
+            return model.current_variables().div();
+        }
+
+        size_t dsv(const Model &model) {
+            return model.current_variables().dsv();
+        }
+
+        size_t drv(const Model &model) {
+            return model.current_variables().drv();
+        }
+
+        size_t icv(const Model &model) {
+            return model.current_variables().icv();
+        }
+
+        size_t idiv(const Model &model) {
+            return model.current_variables().idiv();
+        }
+
+        size_t idsv(const Model &model) {
+            return model.current_variables().idsv();
+        }
+
+        size_t idrv(const Model &model) {
+            return model.current_variables().idrv();
+        }
+
+        size_t acv(const Model &model) {
+            return model.current_variables().acv();
+        }
+
+        size_t adiv(const Model &model) {
+            return model.current_variables().adiv();
+        }
+
+        size_t adsv(const Model &model) {
+            return model.current_variables().adsv();
+        }
+
+        size_t adrv(const Model &model) {
+            return model.current_variables().adrv();
+        }
+
+        void active_variables(Model &model, const Variables& vars) {
+            model.current_variables().active_variables(vars);
+        }
+
+        void inactive_variables(Model &model, const Variables& vars) {
+            model.current_variables().inactive_variables(vars);
+        }
+
+        const RealVector& continuous_variables(const Model &model) {
+            return model.current_variables().continuous_variables();
+        }
+
+        Real continuous_variable(const Model &model, size_t i) {
+            return model.current_variables().continuous_variable(i);
+        }
+
+        void continuous_variables(Model &model, const RealVector& c_vars) {
+            model.current_variables().continuous_variables(c_vars);
+        }
+
+        void continuous_variable(Model &model, Real c_var, size_t i) {
+            model.current_variables().continuous_variable(c_var, i);
+        }
+
+        const IntVector& discrete_int_variables(const Model &model) {
+            return model.current_variables().discrete_int_variables();
+        }
+
+        int discrete_int_variable(const Model &model, size_t i) {
+            return model.current_variables().discrete_int_variable(i);
+        }
+
+        void discrete_int_variables(Model &model, const IntVector& d_vars) {
+            model.current_variables().discrete_int_variables(d_vars);
+        }
+
+        void discrete_int_variable(Model &model, int d_var, size_t i) {
+            model.current_variables().discrete_int_variable(d_var, i);
+        }
+
+        StringMultiArrayConstView discrete_string_variables(const Model &model) {
+            return model.current_variables().discrete_string_variables();
+        }
+
+        const String& discrete_string_variable(const Model &model, size_t i) {
+            return model.current_variables().discrete_string_variable(i);
+        }
+
+        void discrete_string_variables(Model &model, StringMultiArrayConstView d_vars) {
+            model.current_variables().discrete_string_variables(d_vars);
+        }
+
+        void discrete_string_variable(Model &model, const String& d_var, size_t i) {
+            model.current_variables().discrete_string_variable(d_var, i);
+        }
+
+        const RealVector& discrete_real_variables(const Model &model) {
+            return model.current_variables().discrete_real_variables();
+        }
+
+        Real discrete_real_variable(const Model &model, size_t i) {
+            return model.current_variables().discrete_real_variable(i);
+        }
+
+        void discrete_real_variables(Model &model, const RealVector& d_vars) {
+            model.current_variables().discrete_real_variables(d_vars);
+        }
+
+        void discrete_real_variable(Model &model, Real d_var, size_t i) {
+            model.current_variables().discrete_real_variable(d_var, i);
+        }
+
+        UShortMultiArrayConstView continuous_variable_types(const Model &model) {
+            return model.current_variables().continuous_variable_types();
+        }
+
+        void continuous_variable_types(Model &model, UShortMultiArrayConstView cv_types) {
+            model.current_variables().continuous_variable_types(cv_types);
+        }
+
+        void continuous_variable_type(Model &model, unsigned short cv_type, size_t i) {
+            model.current_variables().continuous_variable_type(cv_type, i);
+        }
+
+        UShortMultiArrayConstView discrete_int_variable_types(const Model &model) {
+            return model.current_variables().discrete_int_variable_types();
+        }
+
+        void discrete_int_variable_types(Model &model, UShortMultiArrayConstView div_types) {
+            model.current_variables().discrete_int_variable_types(div_types);
+        }
+
+        void discrete_int_variable_type(Model &model, unsigned short div_type, size_t i) {
+            model.current_variables().discrete_int_variable_type(div_type, i);
+        }
+
+        UShortMultiArrayConstView discrete_string_variable_types(const Model &model) {
+            return model.current_variables().discrete_string_variable_types();
+        }
+
+        void discrete_string_variable_types(Model &model, UShortMultiArrayConstView dsv_types) {
+            model.current_variables().discrete_string_variable_types(dsv_types);
+        }
+
+        void discrete_string_variable_type(Model &model, unsigned short dsv_type, size_t i) {
+            model.current_variables().discrete_string_variable_type(dsv_type, i);
+        }
+
+        UShortMultiArrayConstView discrete_real_variable_types(const Model &model) {
+            return model.current_variables().discrete_real_variable_types();
+        }
+
+        void discrete_real_variable_types(Model &model, UShortMultiArrayConstView drv_types) {
+            model.current_variables().discrete_real_variable_types(drv_types);
+        }
+
+        void discrete_real_variable_type(Model &model, unsigned short drv_type, size_t i) {
+            model.current_variables().discrete_real_variable_type(drv_type, i);
+        }
+
+        SizetMultiArrayConstView continuous_variable_ids(const Model &model) {
+            return model.current_variables().continuous_variable_ids();
+        }
+
+        void continuous_variable_ids(Model &model, SizetMultiArrayConstView cv_ids) {
+            model.current_variables().continuous_variable_ids(cv_ids);
+        }
+
+        void continuous_variable_id(Model &model, size_t cv_id, size_t i) {
+            model.current_variables().continuous_variable_id(cv_id, i);
+        }
+
+        const RealVector& inactive_continuous_variables(const Model &model) {
+            return model.current_variables().inactive_continuous_variables();
+        }
+
+        void inactive_continuous_variables(Model &model, const RealVector& i_c_vars) {
+            model.current_variables().inactive_continuous_variables(i_c_vars);
+        }
+
+        const IntVector& inactive_discrete_int_variables(const Model &model) {
+            return model.current_variables().inactive_discrete_int_variables();
+        }
+
+        void inactive_discrete_int_variables(Model &model, const IntVector& i_d_vars) {
+            model.current_variables().inactive_discrete_int_variables(i_d_vars);
+        }
+
+        StringMultiArrayConstView inactive_discrete_string_variables(const Model &model) {
+            return model.current_variables().inactive_discrete_string_variables();
+        }
+
+        void inactive_discrete_string_variables(Model &model, StringMultiArrayConstView i_d_vars) {
+            model.current_variables().inactive_discrete_string_variables(i_d_vars);
+        }
+
+        const RealVector& inactive_discrete_real_variables(const Model &model) {
+            return model.current_variables().inactive_discrete_real_variables();
+        }
+
+        void inactive_discrete_real_variables(Model &model, const RealVector& i_d_vars) {
+            model.current_variables().inactive_discrete_real_variables(i_d_vars);
+        }
+
+        UShortMultiArrayConstView inactive_continuous_variable_types(const Model &model) {
+            return model.current_variables().inactive_continuous_variable_types();
+        }
+
+        SizetMultiArrayConstView inactive_continuous_variable_ids(const Model &model) {
+            return model.current_variables().inactive_continuous_variable_ids();
+        }
+
+        const RealVector& all_continuous_variables(const Model &model) {
+            return model.current_variables().all_continuous_variables();
+        }
+
+        void all_continuous_variables(Model &model, const RealVector& a_c_vars) {
+            model.current_variables().all_continuous_variables(a_c_vars);
+        }
+
+        void all_continuous_variable(Model &model, Real a_c_var, size_t i) {
+            model.current_variables().all_continuous_variable(a_c_var, i);
+        }
+
+        const IntVector& all_discrete_int_variables(const Model &model) {
+            return model.current_variables().all_discrete_int_variables();
+        }
+
+        void all_discrete_int_variables(Model &model, const IntVector& a_d_vars) {
+            model.current_variables().all_discrete_int_variables(a_d_vars);
+        }
+
+        void all_discrete_int_variable(Model &model, int a_d_var, size_t i) {
+            model.current_variables().all_discrete_int_variable(a_d_var, i);
+        }
+
+        StringMultiArrayConstView all_discrete_string_variables(const Model &model) {
+            return model.current_variables().all_discrete_string_variables();
+        }
+
+        void all_discrete_string_variables(Model &model, StringMultiArrayConstView a_d_vars) {
+            model.current_variables().all_discrete_string_variables(a_d_vars);
+        }
+
+        void all_discrete_string_variable(Model &model, const String& a_d_var, size_t i) {
+            model.current_variables().all_discrete_string_variable(a_d_var, i);
+        }
+
+        const RealVector& all_discrete_real_variables(const Model &model) {
+            return model.current_variables().all_discrete_real_variables();
+        }
+
+        void all_discrete_real_variables(Model &model, const RealVector& a_d_vars) {
+            model.current_variables().all_discrete_real_variables(a_d_vars);
+        }
+
+        void all_discrete_real_variable(Model &model, Real a_d_var, size_t i) {
+            model.current_variables().all_discrete_real_variable(a_d_var, i);
+        }
+
+        UShortMultiArrayConstView all_continuous_variable_types(const Model &model) {
+            return model.current_variables().all_continuous_variable_types();
+        }
+
+        UShortMultiArrayConstView all_discrete_int_variable_types(const Model &model) {
+            return model.current_variables().all_discrete_int_variable_types();
+        }
+
+        UShortMultiArrayConstView all_discrete_string_variable_types(const Model &model) {
+            return model.current_variables().all_discrete_string_variable_types();
+        }
+
+        UShortMultiArrayConstView all_discrete_real_variable_types(const Model &model) {
+            return model.current_variables().all_discrete_real_variable_types();
+        }
+
+        SizetMultiArrayConstView all_continuous_variable_ids(const Model &model) {
+            return model.current_variables().all_continuous_variable_ids();
+        }
+
+
+        StringMultiArrayConstView continuous_variable_labels(const Model &model) {
+            return model.current_variables().continuous_variable_labels();
+        }
+
+        void continuous_variable_labels(Model &model, StringMultiArrayConstView c_v_labels) {
+            model.current_variables().continuous_variable_labels(c_v_labels);
+        }
+
+        StringMultiArrayConstView discrete_int_variable_labels(const Model &model) {
+            return model.current_variables().discrete_int_variable_labels();
+        }
+
+        void discrete_int_variable_labels(Model &model, StringMultiArrayConstView d_v_labels) {
+            model.current_variables().discrete_int_variable_labels(d_v_labels);
+        }
+
+        StringMultiArrayConstView discrete_string_variable_labels(const Model &model) {
+            return model.current_variables().discrete_string_variable_labels();
+        }
+
+        void discrete_string_variable_labels(Model &model, StringMultiArrayConstView d_v_labels) {
+            model.current_variables().discrete_string_variable_labels(d_v_labels);
+        }
+
+        StringMultiArrayConstView discrete_real_variable_labels(const Model &model) {
+            return model.current_variables().discrete_real_variable_labels();
+        }
+
+        void discrete_real_variable_labels(Model &model, StringMultiArrayConstView d_v_labels) {
+            model.current_variables().discrete_real_variable_labels(d_v_labels);
+        }
+
+        StringMultiArrayConstView inactive_continuous_variable_labels(const Model &model) {
+            return model.current_variables().inactive_continuous_variable_labels();
+        }
+
+        void inactive_continuous_variable_labels(Model &model, StringMultiArrayConstView i_c_v_labels) {
+            model.current_variables().inactive_continuous_variable_labels(i_c_v_labels);
+        }
+
+        StringMultiArrayConstView inactive_discrete_int_variable_labels(const Model &model) {
+            return model.current_variables().inactive_discrete_int_variable_labels();
+        }
+
+        void inactive_discrete_int_variable_labels(Model &model, StringMultiArrayConstView i_d_v_labels) {
+            model.current_variables().inactive_discrete_int_variable_labels(i_d_v_labels);
+        }
+
+        StringMultiArrayConstView inactive_discrete_string_variable_labels(const Model &model) {
+            return model.current_variables().inactive_discrete_string_variable_labels();
+        }
+
+        void inactive_discrete_string_variable_labels(Model &model, StringMultiArrayConstView i_d_v_labels) {
+            model.current_variables().inactive_discrete_string_variable_labels(i_d_v_labels);
+        }
+
+        StringMultiArrayConstView inactive_discrete_real_variable_labels(const Model &model) {
+            return model.current_variables().inactive_discrete_real_variable_labels();
+        }
+
+        void inactive_discrete_real_variable_labels(Model &model, StringMultiArrayConstView i_d_v_labels) {
+            model.current_variables().inactive_discrete_real_variable_labels(i_d_v_labels);
+        }
+
+        StringMultiArrayConstView all_continuous_variable_labels(const Model &model) {
+            return model.current_variables().all_continuous_variable_labels();
+        }
+
+        void all_continuous_variable_labels(Model &model, StringMultiArrayConstView a_c_v_labels) {
+            model.current_variables().all_continuous_variable_labels(a_c_v_labels);
+        }
+
+        void all_continuous_variable_label(Model &model, const String& a_c_v_label, size_t i) {
+            model.current_variables().all_continuous_variable_label(a_c_v_label, i);
+        }
+
+        StringMultiArrayConstView all_discrete_int_variable_labels(const Model &model) {
+            return model.current_variables().all_discrete_int_variable_labels();
+        }
+
+        void all_discrete_int_variable_labels(Model &model, StringMultiArrayConstView a_d_v_labels) {
+            model.current_variables().all_discrete_int_variable_labels(a_d_v_labels);
+        }
+
+        void all_discrete_int_variable_label(Model &model, const String& a_d_v_label, size_t i) {
+            model.current_variables().all_discrete_int_variable_label(a_d_v_label, i);
+        }
+
+        StringMultiArrayConstView all_discrete_string_variable_labels(const Model &model) {
+            return model.current_variables().all_discrete_string_variable_labels();
+        }
+
+        void all_discrete_string_variable_labels(Model &model, StringMultiArrayConstView a_d_v_labels) {
+            model.current_variables().all_discrete_string_variable_labels(a_d_v_labels);
+        }
+
+        void all_discrete_string_variable_label(Model &model, const String& a_d_v_label, size_t i) {
+            model.current_variables().all_discrete_string_variable_label(a_d_v_label, i);
+        }
+
+        StringMultiArrayConstView all_discrete_real_variable_labels(const Model &model) {
+            return model.current_variables().all_discrete_real_variable_labels();
+        }
+
+        void all_discrete_real_variable_labels(Model &model, StringMultiArrayConstView a_d_v_labels) {
+            model.current_variables().all_discrete_real_variable_labels(a_d_v_labels);
+        }
+
+        void all_discrete_real_variable_label(Model &model, const String& a_d_v_label, size_t i) {
+            model.current_variables().all_discrete_real_variable_label(a_d_v_label, i);
+        }
+
+
+        size_t response_size(const Model &model) {
+            return model.current_response().num_functions();
+        }
+
+        const StringArray& response_labels(const Model &model) {
+            return model.current_response().function_labels();
+        }
+
+        void response_labels(Model &model, const StringArray& resp_labels) {
+            model.current_response().function_labels(resp_labels);
+        }
+
+
+
+
+
         const RealVector& continuous_lower_bounds(const Model &model) {
             model.user_defined_constraints().continuous_lower_bounds();
         }

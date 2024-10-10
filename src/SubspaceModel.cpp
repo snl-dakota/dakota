@@ -20,7 +20,7 @@ SubspaceModel* SubspaceModel::smInstance(NULL);
 
 SubspaceModel::SubspaceModel(ProblemDescDB& problem_db, const Model& sub_model):
   RecastModel(problem_db, sub_model), randomSeed(24620),
-  numFullspaceVars(subModel.current_variables().cv()),
+  numFullspaceVars(ModelUtils::cv(subModel)),
   // default is 0 for no user override, but only used for AdaptedBasis at
   // this time (ActiveSubspace overwrites with basis truncation procedure):
   reducedRank(problem_db.get_int("model.subspace.dimension")),
@@ -33,7 +33,7 @@ SubspaceModel::SubspaceModel(ProblemDescDB& problem_db, const Model& sub_model):
 SubspaceModel::
 SubspaceModel(const Model& sub_model, unsigned int dimension,
 	      short output_level) :
-  RecastModel(sub_model), numFullspaceVars(sub_model.current_variables().cv()),
+  RecastModel(sub_model), numFullspaceVars(ModelUtils::cv(sub_model)),
   reducedRank(dimension), offlineEvalConcurrency(1), onlineEvalConcurrency(1)
 {
   outputLevel = output_level;
@@ -54,7 +54,7 @@ void SubspaceModel::validate_inputs()
 
   // validate variables specification
   // BMA TODO: allow other variable types
-  if (subModel.current_variables().div() > 0 || subModel.current_variables().dsv() > 0 || subModel.current_variables().drv() > 0) {
+  if (ModelUtils::div(subModel) > 0 || ModelUtils::dsv(subModel) > 0 || ModelUtils::drv(subModel) > 0) {
     error_flag = true;
     Cerr << "\nError (subspace model): only normal uncertain variables are "
          << "supported;\n                        remove other variable "
@@ -131,8 +131,8 @@ initialize_base_recast(
 
   // We assume the mapping is for all active variables, but only
   // continuous for the active subspace
-  size_t submodel_cv = subModel.current_variables().cv();
-  size_t submodel_dv = subModel.current_variables().div() + subModel.current_variables().dsv() + subModel.current_variables().drv();
+  size_t submodel_cv = ModelUtils::cv(subModel);
+  size_t submodel_dv = ModelUtils::div(subModel) + ModelUtils::dsv(subModel) + ModelUtils::drv(subModel);
   size_t submodel_vars = submodel_cv + submodel_dv;
   size_t recast_cv   = reducedRank;
   size_t recast_vars = recast_cv + submodel_dv;
@@ -207,7 +207,7 @@ SizetArray SubspaceModel::resize_variable_totals()
 {
   const SharedVariablesData& svd = subModel.current_variables().shared_data();
   SizetArray vc_totals = svd.components_totals(); // copy to be updated
-  if (reducedRank != subModel.current_variables().cv()) {
+  if (reducedRank != ModelUtils::cv(subModel)) {
     short active_view = subModel.current_variables().view().first;
     switch (active_view) {
     case MIXED_DESIGN:               case RELAXED_DESIGN:

@@ -38,10 +38,10 @@ void RichExtrapVerification::pre_run()
   // Capture any changes resulting from the strategy layer's
   // passing of best variable info between iterators.
   if (studyType == ) {
-    copy_data(iteratedModel.current_variables().continuous_variables(),     initialCVPoint); // copy
-    copy_data(iteratedModel.current_variables().discrete_int_variables(),   initialDIVPoint);// copy
-    copy_data(iteratedModel.current_variables().discrete_string_variables(),initialDSVPoint);// copy
-    copy_data(iteratedModel.current_variables().discrete_real_variables(),  initialDRVPoint);// copy
+    copy_data(ModelUtils::continuous_variables(iteratedModel),     initialCVPoint); // copy
+    copy_data(ModelUtils::discrete_int_variables(iteratedModel),   initialDIVPoint);// copy
+    copy_data(ModelUtils::discrete_string_variables(iteratedModel),initialDSVPoint);// copy
+    copy_data(ModelUtils::discrete_real_variables(iteratedModel),  initialDRVPoint);// copy
   }
 
   size_t i, num_vars = numContinuousVars     + numDiscreteIntVars
@@ -65,7 +65,7 @@ void RichExtrapVerification::core_run()
   evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
   */
 
-  initialCVars = iteratedModel.current_variables().continuous_variables();
+  initialCVars = ModelUtils::continuous_variables(iteratedModel);
   numFactors   = initialCVars.length();
   if (refinementRefPt.empty())
     refinementRefPt.sizeUninitialized(numFunctions);
@@ -104,13 +104,13 @@ extrapolation(const RealVector& refine_triple, RealMatrix& qoi_triples)
 
   ShortArray asrv(numFunctions, 1); // all fns can be evaluated in this case
   activeSet.request_vector(asrv);
-  iteratedModel.current_variables().continuous_variables(initialCVars);// reset prior to eval triple
+  ModelUtils::continuous_variables(iteratedModel, initialCVars);// reset prior to eval triple
 
   for (size_t i=0; i<3; i++) {
-    iteratedModel.current_variables().continuous_variable(refine_triple[i], factorIndex);
-    //iteratedModel.current_variables().discrete_int_variables(di_vars);
-    //iteratedModel.current_variables().discrete_string_variables(ds_vars);
-    //iteratedModel.current_variables().discrete_real_variables(dr_vars);
+    ModelUtils::continuous_variable(iteratedModel, refine_triple[i], factorIndex);
+    //ModelUtils::discrete_int_variables(iteratedModel, di_vars);
+    //ModelUtils::discrete_string_variables(iteratedModel, ds_vars);
+    //ModelUtils::discrete_real_variables(iteratedModel, dr_vars);
     iteratedModel.evaluate_nowait(activeSet);
   }
   const IntResponseMap& response_map = iteratedModel.synchronize();
@@ -293,8 +293,8 @@ void RichExtrapVerification::post_run(std::ostream& s)
 void RichExtrapVerification::print_results(std::ostream& s, short results_state)
 {
   StringArray cv_labels;
-  copy_data(iteratedModel.current_variables().continuous_variable_labels(), cv_labels);
-  const StringArray& fn_labels = iteratedModel.current_response().function_labels();
+  copy_data(ModelUtils::continuous_variable_labels(iteratedModel), cv_labels);
+  const StringArray& fn_labels = ModelUtils::response_labels(iteratedModel);
 
   // Print resulting order and error estimates
   Cout << "\nRefinement Rate = " << refinementRate;

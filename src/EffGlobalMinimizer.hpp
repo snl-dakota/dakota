@@ -435,7 +435,7 @@ inline void EffGlobalMinimizer::pop_liar_response(int liar_id)
 
 inline void EffGlobalMinimizer::debug_print_values(const Variables& vars)
 {
-  fHatModel.current_variables().active_variables(vars);
+  ModelUtils::active_variables(fHatModel, vars);
   fHatModel.evaluate();
   const RealVector& mean = fHatModel.current_response().function_values();
   RealVector variance = fHatModel.approximation_variances(vars),

@@ -232,7 +232,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     num_augment_cv = num_orig_cv + numHyperparams;
   mapSoln.sizeUninitialized(num_augment_cv);
   // allow mcmcModel to be in either distinct or all view
-  copy_data_partial(mcmcModel.current_variables().all_continuous_variables(), (int)orig_cv_start,
+  copy_data_partial(ModelUtils::all_continuous_variables(mcmcModel), (int)orig_cv_start,
 		    (int)num_orig_cv, mapSoln, 0);
   for (i=0; i<numHyperparams; ++i)
     mapSoln[num_orig_cv + i] = invGammaDists[i].mode();
@@ -264,11 +264,11 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   init_map_optimizer();
   construct_map_model();
 
-  //Cout << "\n  iteratedModel num cv = " << iteratedModel.current_variables().cv() << " mvd active = " << iteratedModel.multivariate_distribution().active_variables().count()
-  //     << "\n  mcmcModel     num cv = " << mcmcModel.current_variables().cv() << " mvd active = " << mcmcModel.multivariate_distribution().active_variables().count()
-  //     << "\n  residualModel num cv = " << residualModel.current_variables().cv() << " mvd active = " << residualModel.multivariate_distribution().active_variables().count() << std::endl;
+  //Cout << "\n  iteratedModel num cv = " << ModelUtils::cv(iteratedModel) << " mvd active = " << iteratedModel.multivariate_distribution().active_variables().count()
+  //     << "\n  mcmcModel     num cv = " << ModelUtils::cv(mcmcModel) << " mvd active = " << mcmcModel.multivariate_distribution().active_variables().count()
+  //     << "\n  residualModel num cv = " << ModelUtils::cv(residualModel) << " mvd active = " << residualModel.multivariate_distribution().active_variables().count() << std::endl;
   //if (mapOptAlgOverride != SUBMETHOD_NONE)
-  //  Cout << "\n  negLogPostModel num cv = "<< negLogPostModel.current_variables().cv()<<std::endl;
+  //  Cout << "\n  negLogPostModel num cv = "<< ModelUtils::cv(negLogPostModel)<<std::endl;
 
   int mcmc_concurrency = 1; // prior to concurrent chains
   maxEvalConcurrency *= mcmc_concurrency;
@@ -864,7 +864,7 @@ void NonDBayesCalibration::map_pre_solve()
        << std::endl;
   // set initial point pulled from mcmcModel at construct time or
   // warm start from previous map soln computed from previous emulator
-  negLogPostModel.current_variables().continuous_variables(mapSoln);
+  ModelUtils::continuous_variables(negLogPostModel, mapSoln);
 
   mapOptimizer.run();
   //negLogPostModel.print_evaluation_summary(Cout);
@@ -1103,8 +1103,8 @@ void NonDBayesCalibration::calibrate_to_hifi()
 
   // TODO? Make a struct?
   const RealVector initial_pt(Teuchos::Copy, 
-			      mcmcModel.current_variables().continuous_variables().values(), 
-			      mcmcModel.current_variables().continuous_variables().length());
+			      ModelUtils::continuous_variables(mcmcModel).values(), 
+			      ModelUtils::continuous_variables(mcmcModel).length());
   int random_seed = randomSeed;  // locally incremented
   int num_exp;
   int max_hifi = (maxHifiEvals >= 0) ? maxHifiEvals : numCandidates;
@@ -1115,7 +1115,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
 
   // We assume the hifiModel's active variables are the config vars
   int num_design_vars =
-    hifiModel.current_variables().cv() + hifiModel.current_variables().div() + hifiModel.current_variables().dsv() + hifiModel.current_variables().drv();
+    ModelUtils::cv(hifiModel) + ModelUtils::div(hifiModel) + ModelUtils::dsv(hifiModel) + ModelUtils::drv(hifiModel);
   VariablesArray design_matrix, optimal_config_matrix;
   size_and_fill(hifiModel.current_variables().shared_data(), numCandidates,
 		design_matrix);
@@ -1157,7 +1157,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
     construct_map_optimizer(); 
 
     // BMA TODO: this doesn't permit use of hyperparameters (see main ctor)
-    mcmcModel.current_variables().continuous_variables(initial_pt);
+    ModelUtils::continuous_variables(mcmcModel, initial_pt);
     // TNP TODO: expose opt_for_map() and run_chain() 
     calibrate();
 
@@ -1262,12 +1262,12 @@ void NonDBayesCalibration::print_hi2lo_chain_moments()
     return;
 
   StringArray combined_labels;
-  copy_data(residualModel.current_variables().continuous_variable_labels(), 
+  copy_data(ModelUtils::continuous_variable_labels(residualModel), 
    	        combined_labels);
   NonDSampling::print_moments(Cout, chainStats, RealMatrix(), 
   "posterior variable", Pecos::STANDARD_MOMENTS, combined_labels, false); 
   // Print response moments
-  StringArray resp_labels = mcmcModel.current_response().function_labels();
+  StringArray resp_labels = ModelUtils::response_labels(mcmcModel);
   NonDSampling::print_moments(Cout, fnStats, RealMatrix(), 
       "response function", Pecos::STANDARD_MOMENTS, resp_labels, false); 
 }
@@ -1682,7 +1682,7 @@ void NonDBayesCalibration::build_scalar_discrepancy()
   int num_cols = acc_chain_transpose.numCols();
   RealVector ave_params(num_cols);
   compute_col_means(acc_chain_transpose, ave_params); 
-  mcmcModel.current_variables().continuous_variables(ave_params);
+  ModelUtils::continuous_variables(mcmcModel, ave_params);
   
   int num_exp = expData.num_experiments();
   size_t num_configvars = expData.num_config_vars();
@@ -1797,7 +1797,7 @@ void NonDBayesCalibration::build_scalar_discrepancy()
       zero_response.function_value(0,j);
     RealVector config_vec = Teuchos::getCol(Teuchos::View, configpred_mat, i);
     Model::inactive_variables(config_vec, mcmcModel);
-    mcmcModel.current_variables().continuous_variables(ave_params); //KAM -delete later
+    ModelUtils::continuous_variables(mcmcModel, ave_params); //KAM -delete later
     mcmcModel.evaluate();
     Variables configpred = configpred_array[i];
     Response simresponse_pred = mcmcModel.current_response();
@@ -1847,7 +1847,7 @@ void NonDBayesCalibration::build_field_discrepancy()
   int num_cols = acc_chain_transpose.numCols();
   RealVector ave_params(num_cols);
   compute_col_means(acc_chain_transpose, ave_params); 
-  mcmcModel.current_variables().continuous_variables(ave_params);
+  ModelUtils::continuous_variables(mcmcModel, ave_params);
   //mcmcModel.evaluate();
 
   int num_exp = expData.num_experiments();
@@ -2087,7 +2087,7 @@ void NonDBayesCalibration::export_discrepancy(RealMatrix&
   int num_pred = pred_config_mat.numCols();
   Variables output_vars = mcmcModel.current_variables().copy(); 
   const StringArray& resp_labels = 
-    		     mcmcModel.current_response().function_labels();
+    		     ModelUtils::response_labels(mcmcModel);
   size_t wpp4 = write_precision+4;
 
   // Discrepancy responses file output
@@ -2196,7 +2196,7 @@ void NonDBayesCalibration::export_field_discrepancy(RealMatrix& pred_vars_mat)
   size_t num_field_groups = expData.num_fields();
   Variables output_vars = mcmcModel.current_variables().copy();
   const StringArray& resp_labels = 
-    		     mcmcModel.current_response().function_labels();
+    		     ModelUtils::response_labels(mcmcModel);
   size_t wpp4 = write_precision+4;
 
   // Discrepancy responses file output
@@ -2442,7 +2442,7 @@ get_positive_definite_covariance_from_hessian(const RealSymMatrix &hessian,
 
   // Option 1: if augmenting with Hessian of negative log prior
   //           Hess of neg log posterior = Hess of misfit - Hess of log prior
-  //const RealVector& c_vars = mcmcModel.current_variables().continuous_variables();
+  //const RealVector& c_vars = ModelUtils::continuous_variables(mcmcModel);
   //augment_hessian_with_log_prior(log_hess, c_vars);
 
   // Option 2: if preconditioning with prior covariance using L^T H L
@@ -2740,7 +2740,7 @@ void NonDBayesCalibration::compute_intervals()
   size_t num_exp = expData.num_experiments();
   size_t num_concatenated = num_exp*num_filtered;
 
-  const StringArray& resp = mcmcModel.current_response().function_labels(); 
+  const StringArray& resp = ModelUtils::response_labels(mcmcModel); 
   size_t width = write_precision+7;
   
   // Calculate +/- 2sigma credibility intervals
@@ -2808,7 +2808,7 @@ int num_filtered, size_t num_exp, size_t num_concatenated)
   
   // Augment function values with experimental uncertainty for prediction ints
   // Generate normal errors using LHS
-  /*int num_res = residualModel.current_response().num_functions();
+  /*int num_res = ModelUtils::response_size(residualModel);
     RealVector means_vec(num_res), lower_bnds(num_res), upper_bnds(num_res);
     */
   RealVector means_vec(numFunctions), lower_bnds(numFunctions), 
@@ -2850,12 +2850,12 @@ export_chain(RealMatrix& filtered_chain, RealMatrix& filtered_fn_vals)
 
   // When outputting only chain responses
   const StringArray& resp_labels = 
-    mcmcModel.current_response().function_labels();
+    ModelUtils::response_labels(mcmcModel);
   // When outputting experimental responses
   /*
   size_t num_exp = expData.num_experiments();
   StringArray resp_labels;
-  const StringArray& resp = mcmcModel.current_response().function_labels(); 
+  const StringArray& resp = ModelUtils::response_labels(mcmcModel); 
   for (size_t i=0; i<num_exp+1; ++i){
     for (size_t k=0; k<numFunctions; ++k){
       resp_labels.push_back(resp[k]);
@@ -2912,9 +2912,9 @@ calculate_kde()
   std::ofstream export_kde;
   size_t wpp4 = write_precision+4;
   StringArray var_labels;
-  copy_data(residualModel.current_variables().continuous_variable_labels(),var_labels);
+  copy_data(ModelUtils::continuous_variable_labels(residualModel),var_labels);
   const StringArray& resp_labels = 
-    		     mcmcModel.current_response().function_labels();
+    		     ModelUtils::response_labels(mcmcModel);
   TabularIO::open_file(export_kde, "kde_posterior.dat",
 			"NonDBayesCalibration kde posterior export");
   
@@ -2978,7 +2978,7 @@ void NonDBayesCalibration::calculate_evidence()
       RealVector params = Teuchos::getCol(Teuchos::View, prior_dist_samples, i);
       RealVector cont_params = params;
       cont_params.resize(numContinuousVars);  
-      residualModel.current_variables().continuous_variables(cont_params);
+      ModelUtils::continuous_variables(residualModel, cont_params);
       residualModel.evaluate();
       RealVector residual = residualModel.current_response().function_values();
       double log_like = log_likelihood(residual, params);
@@ -3004,7 +3004,7 @@ void NonDBayesCalibration::calculate_evidence()
     const RealVector& map_c_vars
       = mapOptimizer.variables_results().continuous_variables();
     //estimate likelihood at MAP point: 
-    residualModel.current_variables().continuous_variables(map_c_vars);
+    ModelUtils::continuous_variables(residualModel, map_c_vars);
     ActiveSet resAS = residualModel.current_response().active_set();
     resAS.request_values(7);
     residualModel.evaluate(resAS);
@@ -3065,7 +3065,7 @@ void NonDBayesCalibration::print_intervals_file
  RealMatrix& predVals, int num_filtered, size_t num_concatenated)
 {
   
-  const StringArray& resp = mcmcModel.current_response().function_labels(); 
+  const StringArray& resp = ModelUtils::response_labels(mcmcModel); 
   size_t width = write_precision+7;
   double alpha;
   int lower_index;
@@ -3134,7 +3134,7 @@ void NonDBayesCalibration::print_intervals_screen
 (std::ostream& s, RealMatrix& filteredFnVals_transpose, 
  RealMatrix& predVals_transpose, int num_filtered)
 {
-  const StringArray& resp = mcmcModel.current_response().function_labels(); 
+  const StringArray& resp = ModelUtils::response_labels(mcmcModel); 
   size_t width = write_precision+7;
   double alpha;
   int lower_index;
@@ -3204,11 +3204,11 @@ void NonDBayesCalibration::print_results(std::ostream& s, short results_state)
 {
   // Print chain moments
   StringArray combined_labels;
-  copy_data(residualModel.current_variables().continuous_variable_labels(), combined_labels);
+  copy_data(ModelUtils::continuous_variable_labels(residualModel), combined_labels);
   NonDSampling::print_moments(s, chainStats, RealMatrix(), 
       "posterior variable", Pecos::STANDARD_MOMENTS, combined_labels, false); 
   // Print response moments
-  StringArray resp_labels = mcmcModel.current_response().function_labels();
+  StringArray resp_labels = ModelUtils::response_labels(mcmcModel);
   NonDSampling::print_moments(s, fnStats, RealMatrix(), 
       "response function", Pecos::STANDARD_MOMENTS, resp_labels, false); 
   
@@ -3233,10 +3233,10 @@ void NonDBayesCalibration::
 print_variables(std::ostream& s, const RealVector& c_vars)
 {
   StringMultiArrayConstView cv_labels =
-    iteratedModel.current_variables().continuous_variable_labels();
+    ModelUtils::continuous_variable_labels(iteratedModel);
   // the residualModel includes any hyper-parameters
   StringArray combined_labels;
-  copy_data(residualModel.current_variables().continuous_variable_labels(), combined_labels);
+  copy_data(ModelUtils::continuous_variable_labels(residualModel), combined_labels);
 
   size_t wpp7 = write_precision+7;
 
@@ -3714,7 +3714,7 @@ void NonDBayesCalibration::print_batch_means_intervals(std::ostream& s)
   
   int num_vars = acceptanceChain.numRows();
   StringArray var_labels;
-  copy_data(residualModel.current_variables().continuous_variable_labels(),	var_labels);
+  copy_data(ModelUtils::continuous_variable_labels(residualModel),	var_labels);
   RealMatrix variables_mean_interval_mat, variables_mean_batch_means;
   batch_means_interval(acceptanceChain, variables_mean_interval_mat,
                        variables_mean_batch_means, 1, alpha);
@@ -3723,7 +3723,7 @@ void NonDBayesCalibration::print_batch_means_intervals(std::ostream& s)
                        variables_var_batch_means, 2, alpha);
   
   int num_responses = acceptedFnVals.numRows();
-  StringArray resp_labels = mcmcModel.current_response().function_labels();
+  StringArray resp_labels = ModelUtils::response_labels(mcmcModel);
   RealMatrix responses_mean_interval_mat, responses_mean_batch_means;
   batch_means_interval(acceptedFnVals, responses_mean_interval_mat,
                        responses_mean_batch_means, 1, alpha);

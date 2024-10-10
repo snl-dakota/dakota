@@ -226,7 +226,7 @@ void LeastSq::print_results(std::ostream& s, short results_state)
   Model orig_model = original_model();
   const String& interface_id = orig_model.interface_id(); 
   // use asv = 1's
-  ActiveSet search_set(orig_model.current_response().num_functions(), numContinuousVars);
+  ActiveSet search_set(ModelUtils::response_size(orig_model), numContinuousVars);
 
   activeSet.request_values(1);
   print_best_eval_ids(iteratedModel.interface_id(), best_vars, activeSet, s);
@@ -245,7 +245,7 @@ void LeastSq::print_results(std::ostream& s, short results_state)
     s << "Confidence Intervals on Calibrated Parameters:\n";
 
     StringMultiArrayConstView cv_labels
-      = iteratedModel.current_variables().continuous_variable_labels();
+      = ModelUtils::continuous_variable_labels(iteratedModel);
     for (size_t i = 0; i < numContinuousVars; i++)
       s << std::setw(14) << cv_labels[i] << ": [ "
 	<< setw(write_precision+6) << confBoundsLower[i] << ", "
@@ -471,7 +471,7 @@ void LeastSq::post_run(std::ostream& s)
     //    eval iterated model; save iter_fns and conditionally save native_fns
     // else if (!native_fns)
     //    eval original model; save native_fns
-    iteratedModel.current_variables().continuous_variables(iter_vars.continuous_variables());
+    ModelUtils::continuous_variables(iteratedModel, iter_vars.continuous_variables());
     activeSet.request_values(0);
     for (size_t i=0; i<numLeastSqTerms; ++i)
       activeSet.request_value(1, i);
@@ -495,7 +495,7 @@ void LeastSq::post_run(std::ostream& s)
     // For now, we populate iter_resp, then partially undo the scaling in
     // get_confidence_intervals.  Could instead get the eval from
     // original_model and transform it up.
-    iteratedModel.current_variables().continuous_variables(iter_vars.continuous_variables());
+    ModelUtils::continuous_variables(iteratedModel, iter_vars.continuous_variables());
     activeSet.request_values(0);
     for (size_t i=0; i<numLeastSqTerms; ++i)
       activeSet.request_value(2, i);
@@ -668,7 +668,7 @@ void LeastSq::archive_best_results() {
   if(!resultsDB.active() || expData.num_experiments() > 1) return;
 
   StringMultiArrayConstView cv_labels
-    = iteratedModel.current_variables().continuous_variable_labels();
+    = ModelUtils::continuous_variable_labels(iteratedModel);
   DimScaleMap scales;
   scales.emplace(0, StringScale("variables", cv_labels));
   scales.emplace(1, StringScale("bounds", {"lower", "upper"}));

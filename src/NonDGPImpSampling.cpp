@@ -163,7 +163,7 @@ void NonDGPImpSampling::core_run()
   rhoMix.resize(numPtsTotal);
   //RealVector rhoEmul0(numEmulEval);
   //RealVector rhoEmul2(numEmulEval);
-  int num_problem_vars=iteratedModel.current_variables().acv();
+  int num_problem_vars=ModelUtils::acv(iteratedModel);
   RealVector c_upper = ModelUtils::continuous_upper_bounds(iteratedModel), 
              c_lower = ModelUtils::continuous_lower_bounds(iteratedModel);
 
@@ -232,7 +232,7 @@ void NonDGPImpSampling::core_run()
           gpCvars[i] = temp_cvars;
           //Cout << "input is " << gpCvars[i] << '\n';
 	  // update gpModel currentVariables for use in approx_variances()
-	  gpModel.current_variables().continuous_variables(temp_cvars);
+	  ModelUtils::continuous_variables(gpModel, temp_cvars);
           gpVar[i]
 	    = gpModel.approximation_variances(gpModel.current_variables());
           //Cout << "variance is " << gpVar[i];
@@ -288,7 +288,7 @@ void NonDGPImpSampling::core_run()
             gpCvars[i] = temp_cvars;
             //Cout << "input is " << gpCvars[i] << '\n';
 	    // update gpModel currentVariables for use in approx_variances()
-	    gpModel.current_variables().continuous_variables(temp_cvars);
+	    ModelUtils::continuous_variables(gpModel, temp_cvars);
             gpVar[i]
 	      = gpModel.approximation_variances(gpModel.current_variables());
             //Cout << "variance is " << gpVar[i];
@@ -337,7 +337,7 @@ void NonDGPImpSampling::core_run()
           new_X = drawNewX(k);
          
          // add new_X to the build points and append approximation
-        iteratedModel.current_variables().continuous_variables(new_X);
+        ModelUtils::continuous_variables(iteratedModel, new_X);
         iteratedModel.evaluate();
         IntResponsePair resp_truth(iteratedModel.evaluation_id(),
                                    iteratedModel.current_response());
@@ -387,7 +387,7 @@ void NonDGPImpSampling::core_run()
           RealVector this_var;
           RealVector exp_ind_this(numPtsTotal);
           for (k = 0; k < numPtsTotal; k++){ 
-            gpModel.current_variables().continuous_variables(gp_final_data[k]);
+            ModelUtils::continuous_variables(gpModel, gp_final_data[k]);
             gpModel.evaluate();
             this_mean = gpModel.current_response().function_values();
             this_var

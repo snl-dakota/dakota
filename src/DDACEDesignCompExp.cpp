@@ -508,7 +508,7 @@ void DDACEDesignCompExp::compute_main_effects()
     abort_handler(-1);
   }
 
-  const StringArray& fn_labels = iteratedModel.current_response().function_labels();
+  const StringArray& fn_labels = ModelUtils::response_labels(iteratedModel);
   IntRespMCIter r_it; size_t f, s, v;
   std::vector<double> resp_fn_samples(numSamples);
   std::vector<int> symbols_map_factor(numSamples);
