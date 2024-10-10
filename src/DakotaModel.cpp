@@ -1114,11 +1114,11 @@ Model::initialize_x0_bounds(const SizetArray& original_dvv,
 
   // define c_l_bnds, c_u_bnds, cv_ids, cv_types
   const RealVector& c_l_bnds = (active_derivs) ? ModelUtils::continuous_lower_bounds(*this) :
-    ( (inactive_derivs) ? inactive_continuous_lower_bounds() :
-      all_continuous_lower_bounds() );
+    ( (inactive_derivs) ? ModelUtils::inactive_continuous_lower_bounds(*this) :
+      ModelUtils::all_continuous_lower_bounds(*this) );
   const RealVector& c_u_bnds = (active_derivs) ? ModelUtils::continuous_upper_bounds(*this) :
-    ( (inactive_derivs) ? inactive_continuous_upper_bounds() :
-      all_continuous_upper_bounds() );
+    ( (inactive_derivs) ? ModelUtils::inactive_continuous_upper_bounds(*this) :
+      ModelUtils::all_continuous_upper_bounds(*this) );
   SizetMultiArrayConstView cv_ids = (active_derivs) ?
     current_variables().continuous_variable_ids() :
     ( (inactive_derivs) ? current_variables().inactive_continuous_variable_ids() : 

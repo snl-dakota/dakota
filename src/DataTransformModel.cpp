@@ -1001,8 +1001,8 @@ void DataTransformModel::init_continuous_vars()
     for (size_t i=0; i<num_cvars; ++i) {
       current_variables().all_continuous_variable(sm_acv[sm_offset], dtm_offset);
       current_variables().all_continuous_variable_label(sm_acvl[sm_offset], dtm_offset);
-      all_continuous_lower_bound(sm_aclb[sm_offset], dtm_offset);
-      all_continuous_upper_bound(sm_acub[sm_offset], dtm_offset);
+      ModelUtils::all_continuous_lower_bound(*this, sm_aclb[sm_offset], dtm_offset);
+      ModelUtils::all_continuous_upper_bound(*this, sm_acub[sm_offset], dtm_offset);
       ++sm_offset;
       ++dtm_offset;
     }
@@ -1013,8 +1013,8 @@ void DataTransformModel::init_continuous_vars()
       for (size_t i=0; i<numHyperparams; ++i) {
 	current_variables().all_continuous_variable(1.0, dtm_offset);
 	current_variables().all_continuous_variable_label(hyper_labels[i], dtm_offset);
-	all_continuous_lower_bound(0.0, dtm_offset);
-	all_continuous_upper_bound(std::numeric_limits<double>::infinity(),
+	ModelUtils::all_continuous_lower_bound(*this, 0.0, dtm_offset);
+	ModelUtils::all_continuous_upper_bound(*this, std::numeric_limits<double>::infinity(),
 				   dtm_offset);
 	++dtm_offset;
       }
