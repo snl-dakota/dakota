@@ -1944,6 +1944,8 @@ void NonDMultilevBLUESampling::prune_model_groups()
   bool online = (pilotMgmtMode == ONLINE_PILOT ||
 		 pilotMgmtMode == ONLINE_PILOT_PROJECTION);
   if (online && pilotGroupSampling == SHARED_PILOT) { // most common case
+    // logic here is to make use of disproportionate investment in all_group,
+    // irregardless of all_group conditioning
     size_t all_group = numGroups - 1;
     if (!retainedModelGroups[all_group]) {
       if (outputLevel >= DEBUG_OUTPUT)

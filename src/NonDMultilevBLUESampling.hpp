@@ -395,6 +395,9 @@ inline void NonDMultilevBLUESampling::update_search_algorithm()
 {
   size_t num_g = num_active_groups();  bool warn = false;
   if (num_g > DIRECT_DIMENSION_LIMIT) {
+    // Note: any package config-related demotions to optSubProblemSolver have
+    // already occurred in sub_optimizer_select(), so only need to be concerned
+    // with dimension-related demotions
     switch (optSubProblemSolver) {
     case SUBMETHOD_DIRECT_NPSOL_OPTPP:
       optSubProblemSolver = SUBMETHOD_NPSOL_OPTPP;  warn = true;  break;
