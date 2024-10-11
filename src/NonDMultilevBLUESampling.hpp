@@ -163,8 +163,8 @@ private:
   /// find group and model indices for HF reference variance
   void find_hf_sample_reference(const SizetArray& N_G,  size_t& ref_group,
 				size_t& ref_model_index);
-  /// ensure a HF group is retained after run-time throttling
-  size_t retain_hf_group();
+  /// find the best-conditioned group that contains the HF model
+  size_t best_conditioned_hf_group();
 
   void enforce_bounds_linear_constraints(RealVector& soln_vars);
   void specify_parameter_bounds(RealVector& x_lb, RealVector& x_ub);
@@ -508,7 +508,7 @@ find_hf_sample_reference(const SizetArray& N_G, size_t& ref_group,
 }
 
 
-inline size_t NonDMultilevBLUESampling::retain_hf_group()
+inline size_t NonDMultilevBLUESampling::best_conditioned_hf_group()
 {
   //size_t skip_front = numGroups - retainedModelGroups.count();
   //std::advance(rit, skip_front);
@@ -517,10 +517,19 @@ inline size_t NonDMultilevBLUESampling::retain_hf_group()
   for (rit = groupCovCondMap.rbegin(); rit!=groupCovCondMap.rend(); ++rit) {
     group = rit->second;
     if (modelGroups[group].back() == numApprox)
+      return group;
+  }
+  /* This further distinguishes best conditioned group as retained or
+     discarded, which is too specific -- not needed in all use cases
+  for (rit = groupCovCondMap.rbegin(); rit!=groupCovCondMap.rend(); ++rit) {
+    group = rit->second;
+    if (modelGroups[group].back() == numApprox)
       return (retainedModelGroups[group]) ?
 	_NPOS : // a HF group has already been retained
 	group;  // return a discard to add (highest rcond)
   }
+  */
+
   return _NPOS; // none available to retain (should not happen)
 }
 

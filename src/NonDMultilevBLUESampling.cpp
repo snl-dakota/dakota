@@ -791,32 +791,29 @@ enforce_augmented_linear_ineq_constraints(RealVector& soln_vars)
   // contributions are discarded in a way that linear ineq cannot support)
   bool hf_sampled = false;
   for (v=last_v; v>=0; --v)
-    if (lin_ineq_coeffs(0, v) == 1. && // group contains HF
-	soln_vars[v] >= lb)            // this group is sampled
+    if (lin_ineq_coeffs(0, v) == 1. && // active group contains HF
+	soln_vars[v] >= lb)            // active group is sampled
       { hf_sampled = true; break; }
 
   // Ensure that we have at least one sample for one of the groups containing
   // the HF reference model.  This is already satisfied by pilot sampling for
-  // current group definitions used by online/projection modes.
-  if (!hf_sampled) {
-    // Simply work backwards from last v to first (subsumes all_group cases)
-    for (v=last_v; v>=0; --v)
-      if (lin_ineq_coeffs(0, v) == 1.) // this group is sampled
-	{ soln_vars[v] += lb; break; } // preserve any previous nudge
-
-    /*
+  // current group definitions used by online modes.
+  if (!hf_sampled)
     switch (groupThrottleType) {
-    case RCOND_TOLERANCE_THROTTLE:
-    case RCOND_BEST_COUNT_THROTTLE:
-      // could search for best HF group to augment...
-      break;
-    default: {
-      size_t all_group = numGroups - 1; // last group = all models
-      soln_vars[all_group] += 1.; // preserve any previous nudge
+    case RCOND_TOLERANCE_THROTTLE: case RCOND_BEST_COUNT_THROTTLE: {
+      // prune_model_groups() has already added a HF group if necessary
+      v = all_to_active_group(best_conditioned_hf_group());
+      soln_vars[v] += lb;
       break;
     }
-    */
-  }
+    default:
+      // no rcond ranking: work backwards from last v to first
+      // (subsumes all_group cases)
+      for (v=last_v; v>=0; --v)
+	if (lin_ineq_coeffs(0, v) == 1.) // active group contains HF
+	  { soln_vars[v] += lb; break; } // preserve any previous nudge
+      break;
+    }
 }
 
 
@@ -1939,13 +1936,13 @@ void NonDMultilevBLUESampling::prune_model_groups()
   // Need at least 1 group that contains the HF reference model
   //
   // APPROACH 1: always include all_group (as with other throttles)
-  // > this group always has shared/indep pilot samples for online or
-  //   offline_N_lwr = 2 for offline, but covariance may be poorly conditioned
+  // > this group always has shared/indep pilot samples for online, but
+  //   covariance may be poorly conditioned
   bool online = (pilotMgmtMode == ONLINE_PILOT ||
 		 pilotMgmtMode == ONLINE_PILOT_PROJECTION);
   if (online && pilotGroupSampling == SHARED_PILOT) { // most common case
     // logic here is to make use of disproportionate investment in all_group,
-    // irregardless of all_group conditioning
+    // irregardless of its conditioning
     size_t all_group = numGroups - 1;
     if (!retainedModelGroups[all_group]) {
       if (outputLevel >= DEBUG_OUTPUT)
@@ -1953,14 +1950,17 @@ void NonDMultilevBLUESampling::prune_model_groups()
       retainedModelGroups.set(all_group);
     }
   }
-  // APPROACH 2: iff no HF group, add the best-conditioned discard
-  // > this group may have zero samples if online SHARED_PILOT --> bad Psi
-  else {
-    size_t g_index = retain_hf_group();
-    if (g_index != _NPOS) {
+  // APPROACH 2: iff no HF group, add the best-conditioned discard with HF
+  // > unlike online all_group, this group may have zero samples
+  //   --> enforce_{nudge,bounds}()
+  else {//if (!hf_group_retained()) {
+    size_t hf_group = best_conditioned_hf_group();
+    // if retainedModelGroups[hf_group] then at least 1 HF group is above
+    // rcond cutoff, else augment with best HF discard
+    if (!retainedModelGroups[hf_group]) {
       if (outputLevel >= DEBUG_OUTPUT)
-	Cout << "Augment: add HF group = " << g_index << '\n';
-      retainedModelGroups.set(g_index); // Augment
+	Cout << "Augment: add HF group = " << hf_group << '\n';
+      retainedModelGroups.set(hf_group); // Augment
     }
   }
 
