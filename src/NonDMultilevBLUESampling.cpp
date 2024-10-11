@@ -950,6 +950,7 @@ analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
   // This is ACV-like in that it is not recursive, but it neglects covariance C
   // among approximations.  It is also insensitive to model sequencing.
 
+  // Allow r<1 since only an initial guess for unbounded groups
   RealVector avg_eval_ratios;  bool lower_bounded_r = false;
   cvmc_ensemble_solutions(rho2_LH, sequenceCost, avg_eval_ratios,
 			  lower_bounded_r);

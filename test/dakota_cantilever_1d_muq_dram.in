@@ -8,18 +8,17 @@ environment,
 method,
   bayes_calibration muq
   dram
+    num_stages = 1
+    scale_type = 'Power'
+    delay_scale = 1.2
+    period_num_steps = 20
+    starting_step = 20
+    adapt_scale = 0.1
   seed = 34784
   chain_samples = 500
   proposal_covariance
     diagonal
       values 1.0e16
-  dr_num_stages = 1
-  dr_scale_type = 'Power'
-  dr_scale = 1.2
-  am_period_num_steps = 20
-  am_starting_step = 20
-  am_scale = 0.1
-  mala_step_size = 0.1
 # output debug
   export_chain_points_file 'chain_samples.dat'
 # pre_solve sqp    #s1

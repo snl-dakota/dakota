@@ -1288,6 +1288,60 @@ derived_synchronize_combine_nowait(IntResponseMapArray& model_resp_maps,
   }
 }
 
+Model& EnsembleSurrModel::model_from_index(unsigned short m_index)
+{
+  size_t num_approx = approxModels.size();
+  if      (m_index <  num_approx) return approxModels[m_index];
+  else if (m_index == num_approx) return truthModel;
+  else { // includes _NPOS
+    Cerr << "Error: model index (" << m_index << ") out of range in "
+	 << "EnsembleSurrModel::model_from_index()" << std::endl;
+    abort_handler(MODEL_ERROR);
+    return dummy_model;
+  }
+}
+
+
+const Model& EnsembleSurrModel::
+model_from_index(unsigned short m_index) const
+{
+  size_t num_approx = approxModels.size();
+  if      (m_index <  num_approx) return approxModels[m_index];
+  else if (m_index == num_approx) return truthModel;
+  else { // includes _NPOS
+    Cerr << "Error: model index (" << m_index << ") out of range in "
+	 << "EnsembleSurrModel::model_from_index()" << std::endl;
+    abort_handler(MODEL_ERROR);
+    return dummy_model;
+  }
+}
+
+
+Model& EnsembleSurrModel::approx_model_from_index(unsigned short m_index)
+{
+  size_t num_approx = approxModels.size();
+  if (m_index <  num_approx) return approxModels[m_index];
+  else { // includes _NPOS
+    Cerr << "Error: model index (" << m_index << ") out of range in "
+	 << "EnsembleSurrModel::approx_model_from_index()" << std::endl;
+    abort_handler(MODEL_ERROR);
+    return dummy_model;
+  }
+}
+
+
+const Model& EnsembleSurrModel::
+approx_model_from_index(unsigned short m_index) const
+{
+  size_t num_approx = approxModels.size();
+  if (m_index <  num_approx) return approxModels[m_index];
+  else { // includes _NPOS
+    Cerr << "Error: model index (" << m_index << ") out of range in "
+	 << "EnsembleSurrModel::approx_model_from_index()" << std::endl;
+    abort_handler(MODEL_ERROR);
+    return dummy_model;
+  }
+}
 
 void EnsembleSurrModel::
 asv_split(const ShortArray& orig_asv, ShortArray& approx_asv,

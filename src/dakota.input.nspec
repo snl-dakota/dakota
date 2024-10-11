@@ -5965,15 +5965,48 @@ KEYWORD method {N_mdm3(start,0,stop)}
          ]
        ]
       [ 
-        dram {N_mdm(lit,mcmcType_dram)}
+        ( adaptive_metropolis {N_mdm(lit,mcmcType_adaptive_metropolis)}
+          [ period_num_steps INTEGER {N_mdm(int,amPeriodNumSteps)} ]
+          [ starting_step INTEGER {N_mdm(int,amStartingStep)} ]
+          [ adapt_scale REAL {N_mdm(Real,amScale)} ]
+         )
         |
-        delayed_rejection {N_mdm(lit,mcmcType_delayed_rejection)}
+        ( delayed_rejection {N_mdm(lit,mcmcType_delayed_rejection)}
+          [ num_stages INTEGER {N_mdm(int,drNumStages)} ]
+          [ scale_type STRING {N_mdm(str,drScaleType)} ]
+          [ delay_scale REAL {N_mdm(Real,drScale)} ]
+         )
         |
-        adaptive_metropolis {N_mdm(lit,mcmcType_adaptive_metropolis)}
+        ( dili {N_mdm(lit,mcmcType_dili)}
+          [ hessian_type STRING {N_mdm(str,diliHessianType)} ]
+          [ adapt_interval INTEGER {N_mdm(int,diliAdaptInterval)} ]
+          [ adapt_start INTEGER {N_mdm(int,diliAdaptStart)} ]
+          [ adapt_end INTEGER {N_mdm(int,diliAdaptEnd)} ]
+          [ initial_weight INTEGER {N_mdm(int,diliInitialWeight)} ]
+          [ hess_tolerance REAL {N_mdm(Real,diliHessTolerance)} ]
+          [ lis_tolerance REAL {N_mdm(Real,diliLISTolerance)} ]
+          [ ses_num_eigs INTEGER {N_mdm(int,diliSesNumEigs)} ]
+          [ ses_rel_tol REAL {N_mdm(Real,diliSesRelTol)} ]
+          [ ses_abs_tol REAL {N_mdm(Real,diliSesAbsTol)} ]
+          [ ses_exp_rank INTEGER {N_mdm(int,diliSesExpRank)} ]
+          [ ses_overs_factor INTEGER {N_mdm(int,diliSesOversFactor)} ]
+          [ ses_block_size INTEGER {N_mdm(int,diliSesBlockSize)} ]
+         )
+        |
+        ( dram {N_mdm(lit,mcmcType_dram)}
+          [ num_stages INTEGER {N_mdm(int,drNumStages)} ]
+          [ scale_type STRING {N_mdm(str,drScaleType)} ]
+          [ delay_scale REAL {N_mdm(Real,drScale)} ]
+          [ period_num_steps INTEGER {N_mdm(int,amPeriodNumSteps)} ]
+          [ starting_step INTEGER {N_mdm(int,amStartingStep)} ]
+          [ adapt_scale REAL {N_mdm(Real,amScale)} ]
+         )
+        |
+        ( mala {N_mdm(lit,mcmcType_mala)}
+          [ step_size REAL {N_mdm(Real,malaStepSize)} ]
+         )
         |
         metropolis_hastings {N_mdm(lit,mcmcType_metropolis_hastings)}
-        |
-        mala {N_mdm(lit,mcmcType_mala)}
        ]
       [ pre_solve {0}
         sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}
@@ -5982,13 +6015,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
         |
         none {N_mdm(utype,optSubProbSolver_SUBMETHOD_NONE)}
        ]
-      [ dr_num_stages INTEGER {N_mdm(int,drNumStages)} ]
-      [ dr_scale_type STRING {N_mdm(str,drScaleType)} ]
-      [ dr_scale REAL {N_mdm(Real,drScale)} ]
-      [ am_period_num_steps INTEGER {N_mdm(int,amPeriodNumSteps)} ]
-      [ am_starting_step INTEGER {N_mdm(int,amStartingStep)} ]
-      [ am_scale REAL {N_mdm(Real,amScale)} ]
-      [ mala_step_size REAL {N_mdm(Real,malaStepSize)} ]
       [ proposal_covariance {N_mdm(lit,proposalCovType_user)}
         ( prior {N_mdm(lit,proposalCovType_prior)}
           [ multiplier REAL > 0.0 {N_mdm(Real,priorPropCovMult)} ]
