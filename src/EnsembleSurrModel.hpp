@@ -817,65 +817,6 @@ inline Pecos::ActiveKey& EnsembleSurrModel::key_from_index(size_t k_index)
 }
 
 
-inline Model& EnsembleSurrModel::model_from_index(unsigned short m_index)
-{
-  size_t num_approx = approxModels.size();
-  if      (m_index <  num_approx) return approxModels[m_index];
-  else if (m_index == num_approx) return truthModel;
-  else { // includes _NPOS
-    Cerr << "Error: model index (" << m_index << ") out of range in "
-	 << "EnsembleSurrModel::model_from_index()" << std::endl;
-    abort_handler(MODEL_ERROR);
-    extern Model dummy_model; // defined in DakotaModel.cpp
-    return dummy_model;
-  }
-}
-
-
-inline const Model& EnsembleSurrModel::
-model_from_index(unsigned short m_index) const
-{
-  size_t num_approx = approxModels.size();
-  if      (m_index <  num_approx) return approxModels[m_index];
-  else if (m_index == num_approx) return truthModel;
-  else { // includes _NPOS
-    Cerr << "Error: model index (" << m_index << ") out of range in "
-	 << "EnsembleSurrModel::model_from_index()" << std::endl;
-    abort_handler(MODEL_ERROR);
-    extern Model dummy_model; // defined in DakotaModel.cpp
-    return dummy_model;
-  }
-}
-
-
-inline Model& EnsembleSurrModel::approx_model_from_index(unsigned short m_index)
-{
-  size_t num_approx = approxModels.size();
-  if (m_index <  num_approx) return approxModels[m_index];
-  else { // includes _NPOS
-    Cerr << "Error: model index (" << m_index << ") out of range in "
-	 << "EnsembleSurrModel::approx_model_from_index()" << std::endl;
-    abort_handler(MODEL_ERROR);
-    extern Model dummy_model; // defined in DakotaModel.cpp
-    return dummy_model;
-  }
-}
-
-
-inline const Model& EnsembleSurrModel::
-approx_model_from_index(unsigned short m_index) const
-{
-  size_t num_approx = approxModels.size();
-  if (m_index <  num_approx) return approxModels[m_index];
-  else { // includes _NPOS
-    Cerr << "Error: model index (" << m_index << ") out of range in "
-	 << "EnsembleSurrModel::approx_model_from_index()" << std::endl;
-    abort_handler(MODEL_ERROR);
-    extern Model dummy_model; // defined in DakotaModel.cpp
-    return dummy_model;
-  }
-}
-
 
 inline bool EnsembleSurrModel::find_model_in_keys(unsigned short m_index)
 {
