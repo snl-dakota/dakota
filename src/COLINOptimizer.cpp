@@ -1202,14 +1202,14 @@ double COLINOptimizer::constraint_violation(const Response& tmpResponseHolder)
   // Need number of constraints and bounds so we can determine
   // constraint violation.
 
-  size_t num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints(),
-         num_nln_eq   = iteratedModel.num_nonlinear_eq_constraints();
+  size_t num_nln_ineq = ModelUtils::num_nonlinear_ineq_constraints(iteratedModel),
+         num_nln_eq   = ModelUtils::num_nonlinear_eq_constraints(iteratedModel);
   const RealVector& nln_ineq_lwr_bnds
-    = iteratedModel.nonlinear_ineq_constraint_lower_bounds();
+    = ModelUtils::nonlinear_ineq_constraint_lower_bounds(iteratedModel);
   const RealVector& nln_ineq_upr_bnds
-    = iteratedModel.nonlinear_ineq_constraint_upper_bounds();
+    = ModelUtils::nonlinear_ineq_constraint_upper_bounds(iteratedModel);
   const RealVector& nln_eq_targets
-    = iteratedModel.nonlinear_eq_constraint_targets();
+    = ModelUtils::nonlinear_eq_constraint_targets(iteratedModel);
 
   // Compute constraint violation for nonlinear inequality and
   // equality constraints using sum of squares of component-wise

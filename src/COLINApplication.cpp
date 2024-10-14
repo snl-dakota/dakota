@@ -186,28 +186,28 @@ void COLINApplication::set_problem(Model& model) {
   // User beware.  Need to confirm which algorithms do and don't
   // handle linear constraints and how.
 
-  _num_linear_constraints = model.num_linear_ineq_constraints() +
-    model.num_linear_eq_constraints();
+  _num_linear_constraints = ModelUtils::num_linear_ineq_constraints(model) +
+    ModelUtils::num_linear_eq_constraints(model);
 
   if (num_linear_constraints > 0) {
 
     RealMatrix linear_coeffs( num_linear_constraints.as<size_t>(), 
                               domain_size.as<size_t>() );
 
-    const RealMatrix& linear_ineq_coeffs = model.linear_ineq_constraint_coeffs();
-    const RealMatrix& linear_eq_coeffs = model.linear_eq_constraint_coeffs();
+    const RealMatrix& linear_ineq_coeffs = ModelUtils::linear_ineq_constraint_coeffs(model);
+    const RealMatrix& linear_eq_coeffs = ModelUtils::linear_eq_constraint_coeffs(model);
 
     // Populate the coefficient matrix, first with inequality
     // coefficients, then with equality coefficients.
 
     size_t ndx = 0, ndy = 0;
-    for (i=0; i<model.num_linear_ineq_constraints(); i++) {
+    for (i=0; i<ModelUtils::num_linear_ineq_constraints(model); i++) {
       for (j=0; domain_size>j; j++)
 	linear_coeffs(ndx,ndy++) = linear_ineq_coeffs(i,j);
       ndx++;
     }
 
-    for (i=0; i<model.num_linear_eq_constraints(); i++) {
+    for (i=0; i<ModelUtils::num_linear_eq_constraints(model); i++) {
       for (j=0; domain_size>j; j++)
 	linear_coeffs(ndx,ndy++) = linear_eq_coeffs(i,j);
       ndx++;
@@ -218,20 +218,20 @@ void COLINApplication::set_problem(Model& model) {
    RealVector bounds(num_linear_constraints.as<size_t>());
 
    const RealVector& lin_ineq_lower
-     = model.linear_ineq_constraint_lower_bounds();
+     = ModelUtils::linear_ineq_constraint_lower_bounds(model);
    const RealVector& lin_ineq_upper
-     = model.linear_ineq_constraint_upper_bounds();
+     = ModelUtils::linear_ineq_constraint_upper_bounds(model);
    const RealVector& lin_eq_targets
-     = model.linear_eq_constraint_targets();
+     = ModelUtils::linear_eq_constraint_targets(model);
 
    // Lower bounds and equality targets go together in COLIN lower
    // bounds.
 
-   for (i=0; i<model.num_linear_ineq_constraints(); i++) 
+   for (i=0; i<ModelUtils::num_linear_ineq_constraints(model); i++) 
      bounds[i] = lin_ineq_lower[i];
 
-   ndx = model.num_linear_ineq_constraints();
-   for (i=0; i<model.num_linear_eq_constraints(); i++, ndx++)
+   ndx = ModelUtils::num_linear_ineq_constraints(model);
+   for (i=0; i<ModelUtils::num_linear_eq_constraints(model); i++, ndx++)
      bounds[ndx] = lin_eq_targets[i];
 
    _linear_constraint_lower_bounds = bounds;
@@ -239,11 +239,11 @@ void COLINApplication::set_problem(Model& model) {
    // Upper bounds and equality targets go together in COLIN upper
    // bounds.
 
-   for (i=0; i<model.num_linear_ineq_constraints(); i++) 
+   for (i=0; i<ModelUtils::num_linear_ineq_constraints(model); i++) 
      bounds[i] = lin_ineq_upper[i];
 
-   ndx = model.num_linear_ineq_constraints();
-   for (i=0; i<model.num_linear_eq_constraints(); i++, ndx++)
+   ndx = ModelUtils::num_linear_ineq_constraints(model);
+   for (i=0; i<ModelUtils::num_linear_eq_constraints(model); i++, ndx++)
      bounds[ndx] = lin_eq_targets[i];
 
    _linear_constraint_upper_bounds = bounds;

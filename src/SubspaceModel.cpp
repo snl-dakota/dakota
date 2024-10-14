@@ -161,7 +161,7 @@ initialize_base_recast(
   // TODO: can RecastModel tolerate empty indices when no map is present?
   size_t num_primary   = subModel.num_primary_fns(),
          num_secondary = subModel.num_secondary_fns(),
-         recast_secondary_offset = subModel.num_nonlinear_ineq_constraints();
+         recast_secondary_offset = ModelUtils::num_nonlinear_ineq_constraints(subModel);
   BoolDequeArray nonlinear_resp_mapping(numFns, BoolDeque(numFns, false));
   Sizet2DArray primary_resp_map_indices(num_primary),
              secondary_resp_map_indices(num_secondary);

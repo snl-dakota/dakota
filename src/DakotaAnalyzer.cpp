@@ -750,14 +750,14 @@ void Analyzer::compute_best_metrics(const Response& response,
   else // no "best" metric currently defined for generic response fns
     return;
   Real& constr_viol   = metrics.first; constr_viol = 0.0;
-  size_t num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints(),
-         num_nln_eq   = iteratedModel.num_nonlinear_eq_constraints();
+  size_t num_nln_ineq = ModelUtils::num_nonlinear_ineq_constraints(iteratedModel),
+         num_nln_eq   = ModelUtils::num_nonlinear_eq_constraints(iteratedModel);
   const RealVector& nln_ineq_lwr_bnds
-    = iteratedModel.nonlinear_ineq_constraint_lower_bounds();
+    = ModelUtils::nonlinear_ineq_constraint_lower_bounds(iteratedModel);
   const RealVector& nln_ineq_upr_bnds
-    = iteratedModel.nonlinear_ineq_constraint_upper_bounds();
+    = ModelUtils::nonlinear_ineq_constraint_upper_bounds(iteratedModel);
   const RealVector& nln_eq_targets
-    = iteratedModel.nonlinear_eq_constraint_targets();
+    = ModelUtils::nonlinear_eq_constraint_targets(iteratedModel);
   for (i=0; i<num_nln_ineq; i++) { // ineq constraint violation (default tol=0)
     size_t index = i + constr_offset;
     Real ineq_con = fn_vals[index];

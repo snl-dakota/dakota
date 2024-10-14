@@ -152,11 +152,11 @@ void OptDartsOptimizer::load_parameters(Model &model)
      //		nonlinear_equality_constraints
 
      const RealVector& nln_ineq_lwr_bnds
-       = iteratedModel.nonlinear_ineq_constraint_lower_bounds();
+       = ModelUtils::nonlinear_ineq_constraint_lower_bounds(iteratedModel);
      const RealVector& nln_ineq_upr_bnds
-       = iteratedModel.nonlinear_ineq_constraint_upper_bounds();
+       = ModelUtils::nonlinear_ineq_constraint_upper_bounds(iteratedModel);
      const RealVector& nln_eq_targets
-       = iteratedModel.nonlinear_eq_constraint_targets();
+       = ModelUtils::nonlinear_eq_constraint_targets(iteratedModel);
 
 }
     

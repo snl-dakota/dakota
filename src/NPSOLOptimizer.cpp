@@ -431,8 +431,8 @@ void NPSOLOptimizer::find_optimum_on_model()
   RealVector local_f_grad(numContinuousVars, true);
 
   allocate_arrays(numContinuousVars, numNonlinearConstraints,
-		  iteratedModel.linear_ineq_constraint_coeffs(),
-		  iteratedModel.linear_eq_constraint_coeffs());
+		  ModelUtils::linear_ineq_constraint_coeffs(iteratedModel),
+		  ModelUtils::linear_eq_constraint_coeffs(iteratedModel));
   allocate_workspace(numContinuousVars, numNonlinearConstraints,
                      numLinearConstraints, 0);
 
@@ -451,12 +451,12 @@ void NPSOLOptimizer::find_optimum_on_model()
   RealVector augmented_l_bnds, augmented_u_bnds;
   aggregate_bounds(ModelUtils::continuous_lower_bounds(iteratedModel),
 		   ModelUtils::continuous_upper_bounds(iteratedModel),
-		   iteratedModel.linear_ineq_constraint_lower_bounds(),
-		   iteratedModel.linear_ineq_constraint_upper_bounds(),
-		   iteratedModel.linear_eq_constraint_targets(),
-		   iteratedModel.nonlinear_ineq_constraint_lower_bounds(),
-		   iteratedModel.nonlinear_ineq_constraint_upper_bounds(),
-		   iteratedModel.nonlinear_eq_constraint_targets(),
+		   ModelUtils::linear_ineq_constraint_lower_bounds(iteratedModel),
+		   ModelUtils::linear_ineq_constraint_upper_bounds(iteratedModel),
+		   ModelUtils::linear_eq_constraint_targets(iteratedModel),
+		   ModelUtils::nonlinear_ineq_constraint_lower_bounds(iteratedModel),
+		   ModelUtils::nonlinear_ineq_constraint_upper_bounds(iteratedModel),
+		   ModelUtils::nonlinear_eq_constraint_targets(iteratedModel),
 		   augmented_l_bnds, augmented_u_bnds);
 
   NPSOL_F77( num_cv, num_linear_constraints, num_nonlinear_constraints, 

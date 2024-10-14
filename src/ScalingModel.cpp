@@ -45,7 +45,7 @@ ScalingModel(Model& sub_model):
   RecastModel(sub_model, SizetArray(), BitArray(), BitArray(),
 	      sub_model.current_variables().view(),
 	      sub_model.num_primary_fns(), sub_model.num_secondary_fns(),
-	      sub_model.num_nonlinear_ineq_constraints(),
+	      ModelUtils::num_nonlinear_ineq_constraints(sub_model),
 	      response_order(sub_model))
 {
   if (outputLevel >= DEBUG_OUTPUT)
@@ -370,8 +370,8 @@ void ScalingModel::initialize_scaling(Model& sub_model)
   const RealVector& nln_ineq_scales = scalingOpts.nlnIneqScales;
   secondaryRespScaleFlag = scaling_active(nln_ineq_spec_types);
 
-  lbs = sub_model.nonlinear_ineq_constraint_lower_bounds();
-  ubs = sub_model.nonlinear_ineq_constraint_upper_bounds();
+  lbs = ModelUtils::nonlinear_ineq_constraint_lower_bounds(sub_model);
+  ubs = ModelUtils::nonlinear_ineq_constraint_upper_bounds(sub_model);
 
   compute_scaling(BOUNDS, num_nln_ineq, lbs, ubs,
                   targets, nln_ineq_spec_types, nln_ineq_scales, tmp_types,
@@ -395,7 +395,7 @@ void ScalingModel::initialize_scaling(Model& sub_model)
     = (secondaryRespScaleFlag || scaling_active(nln_eq_spec_types));
 
   lbs.size(0); ubs.size(0);
-  targets = sub_model.nonlinear_eq_constraint_targets();
+  targets = ModelUtils::nonlinear_eq_constraint_targets(sub_model);
   compute_scaling(TARGET, num_nln_eq,
                   lbs, ubs, targets, nln_eq_spec_types, nln_eq_scales,
                   tmp_types, tmp_multipliers, tmp_offsets);
@@ -442,12 +442,12 @@ void ScalingModel::initialize_scaling(Model& sub_model)
 
   linearIneqScaleOffsets.resize(num_lin_ineq);
 
-  lbs = sub_model.linear_ineq_constraint_lower_bounds();
-  ubs = sub_model.linear_ineq_constraint_upper_bounds();
+  lbs = ModelUtils::linear_ineq_constraint_lower_bounds(sub_model);
+  ubs = ModelUtils::linear_ineq_constraint_upper_bounds(sub_model);
   targets.size(0);
 
   const RealMatrix& lin_ineq_coeffs
-    = sub_model.linear_ineq_constraint_coeffs();
+    = ModelUtils::linear_ineq_constraint_coeffs(sub_model);
   for (int i=0; i<num_lin_ineq; ++i) {
 
     // compute A_i*cvScaleOffset for current constraint -- discrete variables
@@ -494,10 +494,10 @@ void ScalingModel::initialize_scaling(Model& sub_model)
   linearEqScaleOffsets.resize(num_lin_eq);
 
   lbs.size(0); ubs.size(0);
-  targets = sub_model.linear_eq_constraint_targets();
+  targets = ModelUtils::linear_eq_constraint_targets(sub_model);
 
   const RealMatrix& lin_eq_coeffs
-    = sub_model.linear_eq_constraint_coeffs();
+    = ModelUtils::linear_eq_constraint_coeffs(sub_model);
   for (int i=0; i<num_lin_eq; ++i) {
     // compute A_i*cvScaleOffset for current constraint
     linearEqScaleOffsets[i] = 0.0;

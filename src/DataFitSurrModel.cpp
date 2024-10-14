@@ -266,8 +266,8 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
     initialize_active_types(mvDist);
 
   // update constraint counts in userDefinedConstraints
-  userDefinedConstraints.reshape(actualModel.num_nonlinear_ineq_constraints(),
-				 actualModel.num_nonlinear_eq_constraints(),
+  userDefinedConstraints.reshape(ModelUtils::num_nonlinear_ineq_constraints(actualModel),
+				 ModelUtils::num_nonlinear_eq_constraints(actualModel),
 				 currentVariables.shared_data());
 
   update_from_model(actualModel);

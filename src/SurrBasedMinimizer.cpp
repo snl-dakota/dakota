@@ -84,9 +84,9 @@ void SurrBasedMinimizer::initialize_from_model(Model& model)
   }
 
   // initialize attributes for merit function calculations
-  origNonlinIneqLowerBnds = model.nonlinear_ineq_constraint_lower_bounds();
-  origNonlinIneqUpperBnds = model.nonlinear_ineq_constraint_upper_bounds();
-  origNonlinEqTargets     = model.nonlinear_eq_constraint_targets();
+  origNonlinIneqLowerBnds = ModelUtils::nonlinear_ineq_constraint_lower_bounds(model);
+  origNonlinIneqUpperBnds = ModelUtils::nonlinear_ineq_constraint_upper_bounds(model);
+  origNonlinEqTargets     = ModelUtils::nonlinear_eq_constraint_targets(model);
 
   // Verify that global bounds are available (some Constraints types can
   // return empty vectors) and are not set to the +/- infinity defaults (TR

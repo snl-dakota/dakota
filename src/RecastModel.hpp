@@ -1163,8 +1163,8 @@ inline void RecastModel::fine_grained_evaluation_counters()
 
 inline void RecastModel::update_linear_constraints(const Model& model)
 {
-  if (model.num_linear_ineq_constraints() ||
-      model.num_linear_eq_constraints())
+  if (ModelUtils::num_linear_ineq_constraints(model) ||
+      ModelUtils::num_linear_eq_constraints(model))
     userDefinedConstraints.update_linear_constraints(
       model.user_defined_constraints());
 }

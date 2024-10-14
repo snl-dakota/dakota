@@ -489,14 +489,14 @@ void SNLLLeastSq::initialize_run()
 		      boundConstraintFlag, 
 		      ModelUtils::continuous_lower_bounds(iteratedModel),
 		      ModelUtils::continuous_upper_bounds(iteratedModel),
-		      iteratedModel.linear_ineq_constraint_coeffs(),
-		      iteratedModel.linear_ineq_constraint_lower_bounds(),
-		      iteratedModel.linear_ineq_constraint_upper_bounds(),
-		      iteratedModel.linear_eq_constraint_coeffs(),
-		      iteratedModel.linear_eq_constraint_targets(),
-		      iteratedModel.nonlinear_ineq_constraint_lower_bounds(),
-		      iteratedModel.nonlinear_ineq_constraint_upper_bounds(),
-		      iteratedModel.nonlinear_eq_constraint_targets());
+		      ModelUtils::linear_ineq_constraint_coeffs(iteratedModel),
+		      ModelUtils::linear_ineq_constraint_lower_bounds(iteratedModel),
+		      ModelUtils::linear_ineq_constraint_upper_bounds(iteratedModel),
+		      ModelUtils::linear_eq_constraint_coeffs(iteratedModel),
+		      ModelUtils::linear_eq_constraint_targets(iteratedModel),
+		      ModelUtils::nonlinear_ineq_constraint_lower_bounds(iteratedModel),
+		      ModelUtils::nonlinear_ineq_constraint_upper_bounds(iteratedModel),
+		      ModelUtils::nonlinear_eq_constraint_targets(iteratedModel));
 
   // set modeOverrideFlag based on method/search strategy, speculative 
   // gradient, or constant asv selections.  Notes:

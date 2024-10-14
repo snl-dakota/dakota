@@ -229,10 +229,10 @@ void NOWPACOptimizer::core_run()
     best_fns[(*i_iter)+numUserPrimaryFns] =
       (obj_star[++cntr] - (*o_iter))/(*m_iter);
   /*
-    size_t i, offset = iteratedModel.num_nonlinear_ineq_constraints() + 1,
-    num_nln_eq = iteratedModel.num_nonlinear_eq_constraints();
+    size_t i, offset = ModelUtils::num_nonlinear_ineq_constraints(iteratedModel) + 1,
+    num_nln_eq = ModelUtils::num_nonlinear_eq_constraints(iteratedModel);
     const RealVector& nln_eq_targets
-    = iteratedModel.nonlinear_eq_constraint_targets();
+    = ModelUtils::nonlinear_eq_constraint_targets(iteratedModel);
     for (i=0; i<num_nln_eq; i++)
     best_fns[i+offset] = fn_star[++cntr] + nln_eq_targets[i];
   */
@@ -247,12 +247,12 @@ void NOWPACBlackBoxEvaluator::allocate_constraints()
   // two oppositely-signed inequalities due to the interior path requirement.
   // Hard error for now...
   bool constraint_err = false;
-  if (iteratedModel.num_nonlinear_eq_constraints()) {
+  if (ModelUtils::num_nonlinear_eq_constraints(iteratedModel)) {
     Cerr << "Error: NOWPAC does not support nonlinear equality constraints."
 	 << std::endl;
     constraint_err = true;
   }
-  if (iteratedModel.num_linear_eq_constraints()) {
+  if (ModelUtils::num_linear_eq_constraints(iteratedModel)) {
     Cerr << "Error: NOWPAC does not support linear equality constraints."
 	 << std::endl;
     constraint_err = true;
@@ -271,11 +271,11 @@ void NOWPACBlackBoxEvaluator::allocate_constraints()
   // Compute number of 1-sided inequalities to pass to NOWPAC and the mappings
   // (indices, multipliers, offsets) between DAKOTA and NOWPAC constraints.
   numNowpacIneqConstr = 0;
-  size_t i, num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints();
+  size_t i, num_nln_ineq = ModelUtils::num_nonlinear_ineq_constraints(iteratedModel);
   const RealVector& nln_ineq_lwr_bnds
-    = iteratedModel.nonlinear_ineq_constraint_lower_bounds();
+    = ModelUtils::nonlinear_ineq_constraint_lower_bounds(iteratedModel);
   const RealVector& nln_ineq_upr_bnds
-    = iteratedModel.nonlinear_ineq_constraint_upper_bounds();
+    = ModelUtils::nonlinear_ineq_constraint_upper_bounds(iteratedModel);
   for (i=0; i<num_nln_ineq; i++) {
     if (nln_ineq_lwr_bnds[i] > -BIG_REAL_BOUND) {
       ++numNowpacIneqConstr;
@@ -292,11 +292,11 @@ void NOWPACBlackBoxEvaluator::allocate_constraints()
       nonlinIneqConMappingOffsets.push_back(-nln_ineq_upr_bnds[i]);
     }
   }
-  size_t num_lin_ineq = iteratedModel.num_linear_ineq_constraints();
+  size_t num_lin_ineq = ModelUtils::num_linear_ineq_constraints(iteratedModel);
   const RealVector& lin_ineq_lwr_bnds
-    = iteratedModel.linear_ineq_constraint_lower_bounds();
+    = ModelUtils::linear_ineq_constraint_lower_bounds(iteratedModel);
   const RealVector& lin_ineq_upr_bnds
-    = iteratedModel.linear_ineq_constraint_upper_bounds();
+    = ModelUtils::linear_ineq_constraint_upper_bounds(iteratedModel);
   for (i=0; i<num_lin_ineq; i++) {
     if (lin_ineq_lwr_bnds[i] > -BIG_REAL_BOUND) {
       ++numNowpacIneqConstr;
@@ -349,7 +349,7 @@ evaluate(RealArray const &x, RealArray &vals, void *param)
 
   // apply linear inequality constraint mappings
   const RealMatrix& lin_ineq_coeffs
-    = iteratedModel.linear_ineq_constraint_coeffs();
+    = ModelUtils::linear_ineq_constraint_coeffs(iteratedModel);
   size_t j, num_cv = x.size();
   for (i_iter  = linIneqConMappingIndices.begin(),
        m_iter  = linIneqConMappingMultipliers.begin(),
@@ -408,7 +408,7 @@ evaluate(RealArray const &x, RealArray &vals, RealArray &noise, void *param)
 
   // apply linear inequality constraint mappings
   const RealMatrix& lin_ineq_coeffs
-    = iteratedModel.linear_ineq_constraint_coeffs();
+    = ModelUtils::linear_ineq_constraint_coeffs(iteratedModel);
   size_t j, num_cv = x.size();
   for (i_iter  = linIneqConMappingIndices.begin(),
        m_iter  = linIneqConMappingMultipliers.begin(),

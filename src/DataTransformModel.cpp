@@ -43,7 +43,7 @@ DataTransformModel(const Model& sub_model, ExperimentData& exp_data,
   RecastModel(sub_model, variables_expand(sub_model, num_hyper),
 	      BitArray(), BitArray(), recast_vars_view,
 	      exp_data.num_total_exppoints(), sub_model.num_secondary_fns(),
-	      sub_model.num_nonlinear_ineq_constraints(),
+	      ModelUtils::num_nonlinear_ineq_constraints(sub_model),
               response_order(sub_model, recast_resp_deriv_order)), 
   expData(exp_data), numHyperparams(num_hyper),
   obsErrorMultiplierMode(mult_mode)
@@ -312,9 +312,9 @@ void DataTransformModel::update_cv_skip_hyperparams(const Model& model)
 
 void DataTransformModel::expand_linear_constraints(const Model& model)
 {
-  if (model.num_linear_ineq_constraints()) {
+  if (ModelUtils::num_linear_ineq_constraints(model)) {
 
-    const RealMatrix& sm_coeffs = model.linear_ineq_constraint_coeffs();
+    const RealMatrix& sm_coeffs = ModelUtils::linear_ineq_constraint_coeffs(model);
     RealMatrix dt_coeffs(sm_coeffs.numRows(),
 			 sm_coeffs.numCols() + numHyperparams);
     RealMatrix sm_subset(Teuchos::View, dt_coeffs, sm_coeffs.numRows(),
@@ -323,14 +323,14 @@ void DataTransformModel::expand_linear_constraints(const Model& model)
     userDefinedConstraints.linear_ineq_constraint_coeffs(dt_coeffs);
 
     userDefinedConstraints.linear_ineq_constraint_lower_bounds
-      (model.linear_ineq_constraint_lower_bounds());
+      (ModelUtils::linear_ineq_constraint_lower_bounds(model));
     userDefinedConstraints.linear_ineq_constraint_upper_bounds
-      (model.linear_ineq_constraint_upper_bounds());
+      (ModelUtils::linear_ineq_constraint_upper_bounds(model));
   }
 
-  if (model.num_linear_eq_constraints()) {
+  if (ModelUtils::num_linear_eq_constraints(model)) {
 
-    const RealMatrix& sm_coeffs = model.linear_eq_constraint_coeffs();
+    const RealMatrix& sm_coeffs = ModelUtils::linear_eq_constraint_coeffs(model);
     RealMatrix dt_coeffs(sm_coeffs.numRows(),
 			 sm_coeffs.numCols() + numHyperparams);
     RealMatrix sm_subset(Teuchos::View, dt_coeffs, sm_coeffs.numRows(),
@@ -339,7 +339,7 @@ void DataTransformModel::expand_linear_constraints(const Model& model)
     userDefinedConstraints.linear_eq_constraint_coeffs(dt_coeffs);
 
     userDefinedConstraints.linear_eq_constraint_targets
-      (model.linear_eq_constraint_targets());
+      (ModelUtils::linear_eq_constraint_targets(model));
   }
 }
 

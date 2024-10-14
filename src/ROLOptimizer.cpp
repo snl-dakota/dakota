@@ -297,13 +297,13 @@ void ROLOptimizer::set_problem()
 
     // Get the inequality bounds from Dakota and transfer them into
     // the ROL vectors. 
-    copy_data_partial(iteratedModel.linear_ineq_constraint_lower_bounds(),
+    copy_data_partial(ModelUtils::linear_ineq_constraint_lower_bounds(iteratedModel),
 		      *ineq_l_rcp, 0);
-    copy_data_partial(iteratedModel.linear_ineq_constraint_upper_bounds(),
+    copy_data_partial(ModelUtils::linear_ineq_constraint_upper_bounds(iteratedModel),
 		      *ineq_u_rcp, 0);
-    copy_data_partial(iteratedModel.nonlinear_ineq_constraint_lower_bounds(),
+    copy_data_partial(ModelUtils::nonlinear_ineq_constraint_lower_bounds(iteratedModel),
 		      *ineq_l_rcp, numLinearIneqConstraints);
-    copy_data_partial(iteratedModel.nonlinear_ineq_constraint_upper_bounds(),
+    copy_data_partial(ModelUtils::nonlinear_ineq_constraint_upper_bounds(iteratedModel),
 		      *ineq_u_rcp, numLinearIneqConstraints);
 
     // Set bounds greater (less) than ROL_INF (ROL_NINF) to ROL_INF
@@ -602,7 +602,7 @@ DakotaROLObjectiveHess::invHessVec(std::vector<Real> &h,
 DakotaROLIneqConstraints::DakotaROLIneqConstraints(Model & model) :
   dakotaModel(model)
 {
-  haveNlnConst = model.num_nonlinear_ineq_constraints() > 0;
+  haveNlnConst = ModelUtils::num_nonlinear_ineq_constraints(model) > 0;
 
 } // ineqConstraints constructor
 
@@ -639,7 +639,7 @@ DakotaROLIneqConstraintsGrad::applyJacobian(std::vector<Real> &jv,
     const std::vector<Real> &v, const std::vector<Real> &x, Real &tol)
 {
   // Matrix-vector multiply to apply linear constraint Jacobian.
-  const RealMatrix & lin_ineq_coeffs = dakotaModel.linear_ineq_constraint_coeffs();
+  const RealMatrix & lin_ineq_coeffs = ModelUtils::linear_ineq_constraint_coeffs(dakotaModel);
   apply_matrix_partial(lin_ineq_coeffs, v, jv);
 
   // Apply nonlinear constraint Jacobian.
@@ -663,7 +663,7 @@ DakotaROLIneqConstraintsGrad::applyAdjointJacobian(std::vector<Real> &ajv,
 
   // Matrix-vector multiply to apply transpose of linear constraint
   // Jacobian.
-  const RealMatrix & lin_ineq_coeffs = dakotaModel.linear_ineq_constraint_coeffs();
+  const RealMatrix & lin_ineq_coeffs = ModelUtils::linear_ineq_constraint_coeffs(dakotaModel);
   apply_matrix_transpose_partial(lin_ineq_coeffs, v, ajv);
 
   // Apply transpose of nonlinear constraint Jacobian.
@@ -706,7 +706,7 @@ DakotaROLIneqConstraintsHess::applyAdjointHessian( std::vector<Real> & ahuv,
     RealSymMatrix hu(dakotaModel.current_response().function_hessian(1));
     hu *= u[0];
 
-    for( size_t i=1; i<dakotaModel.num_nonlinear_ineq_constraints(); ++i )
+    for( size_t i=1; i<ModelUtils::num_nonlinear_ineq_constraints(dakotaModel); ++i )
     {
       RealSymMatrix temp_hu(dakotaModel.current_response().function_hessian(1+i));
       temp_hu *= u[i];
@@ -727,7 +727,7 @@ DakotaROLIneqConstraintsHess::applyAdjointHessian( std::vector<Real> & ahuv,
 DakotaROLEqConstraints::DakotaROLEqConstraints(Model & model) :
   dakotaModel(model)
 {
-  haveNlnConst = model.num_nonlinear_eq_constraints() > 0;
+  haveNlnConst = ModelUtils::num_nonlinear_eq_constraints(model) > 0;
 
 } // eqContraints constructor
 
@@ -766,7 +766,7 @@ DakotaROLEqConstraintsGrad::applyJacobian(std::vector<Real> &jv,
     const std::vector<Real> &v, const std::vector<Real> &x, Real &tol)
 {
   // Matrix-vector multiply to apply linear constraint Jacobian.
-  const RealMatrix & lin_eq_coeffs = dakotaModel.linear_eq_constraint_coeffs();
+  const RealMatrix & lin_eq_coeffs = ModelUtils::linear_eq_constraint_coeffs(dakotaModel);
   apply_matrix_partial(lin_eq_coeffs, v, jv);
 
   // Apply nonlinear constraint Jacobian.
@@ -790,7 +790,7 @@ DakotaROLEqConstraintsGrad::applyAdjointJacobian(std::vector<Real> &ajv,
 
   // Matrix-vector multiply to apply transpose of linear constraint
   // Jacobian.
-  const RealMatrix & lin_eq_coeffs = dakotaModel.linear_eq_constraint_coeffs();
+  const RealMatrix & lin_eq_coeffs = ModelUtils::linear_eq_constraint_coeffs(dakotaModel);
   apply_matrix_transpose_partial(lin_eq_coeffs, v, ajv);
 
   // Apply transpose of nonlinear constraint Jacobian.
@@ -829,14 +829,14 @@ DakotaROLEqConstraintsHess::applyAdjointHessian( std::vector<Real> & ahuv,
   // apply nonlinear constraint Hessian (might be empty)
   if (haveNlnConst) {
 
-    size_t num_nln_ineq_constraints = dakotaModel.num_nonlinear_ineq_constraints();
+    size_t num_nln_ineq_constraints = ModelUtils::num_nonlinear_ineq_constraints(dakotaModel);
     // make sure that model is current
     update_model(dakotaModel, x);
 
     RealSymMatrix hu(dakotaModel.current_response().function_hessian(1+num_nln_ineq_constraints));
     hu *= u[0];
 
-    for( size_t i=1; i<dakotaModel.num_nonlinear_eq_constraints(); ++i )
+    for( size_t i=1; i<ModelUtils::num_nonlinear_eq_constraints(dakotaModel); ++i )
     {
       RealSymMatrix temp_hu(dakotaModel.current_response().function_hessian(1+num_nln_ineq_constraints+i));
       temp_hu *= u[i];

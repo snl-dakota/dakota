@@ -185,8 +185,8 @@ RecastModel(const Model& sub_model, const ShortShortPair& recast_vars_view):
   initialize_data_from_submodel();
 
   bool consistent_vars = true;
-  init_constraints(consistent_vars, sub_model.num_nonlinear_ineq_constraints(),
-		   sub_model.num_nonlinear_eq_constraints());
+  init_constraints(consistent_vars, ModelUtils::num_nonlinear_ineq_constraints(sub_model),
+		   ModelUtils::num_nonlinear_eq_constraints(sub_model));
   init_distribution(consistent_vars);
 
   currentResponse = subModel.current_response().copy();
@@ -1369,15 +1369,15 @@ void RecastModel::update_secondary_response(const Model& model)
       (sm_resp_labels[num_sm_primary+i], num_primary+i);
 
   // nonlinear constraint bounds/targets
-  if (model.num_nonlinear_ineq_constraints()) {
+  if (ModelUtils::num_nonlinear_ineq_constraints(model)) {
     userDefinedConstraints.nonlinear_ineq_constraint_lower_bounds
-      (model.nonlinear_ineq_constraint_lower_bounds());
+      (ModelUtils::nonlinear_ineq_constraint_lower_bounds(model));
     userDefinedConstraints.nonlinear_ineq_constraint_upper_bounds
-      (model.nonlinear_ineq_constraint_upper_bounds());
+      (ModelUtils::nonlinear_ineq_constraint_upper_bounds(model));
   }
-  if (model.num_nonlinear_eq_constraints())
+  if (ModelUtils::num_nonlinear_eq_constraints(model))
     userDefinedConstraints.nonlinear_eq_constraint_targets
-      (model.nonlinear_eq_constraint_targets());
+      (ModelUtils::nonlinear_eq_constraint_targets(model));
 }
 
 

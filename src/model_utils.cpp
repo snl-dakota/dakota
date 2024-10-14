@@ -1409,5 +1409,87 @@ namespace Dakota {
                     model.current_variables().shared_data().adrv_index_to_all_index(i));
         }
 
+
+        size_t num_linear_ineq_constraints(const Model &model) {
+            return model.user_defined_constraints().num_linear_ineq_constraints();
+        }
+
+        size_t num_linear_eq_constraints(const Model &model) {
+            return model.user_defined_constraints().num_linear_eq_constraints();
+        }
+
+        const RealMatrix& linear_ineq_constraint_coeffs(const Model &model) {
+            return model.user_defined_constraints().linear_ineq_constraint_coeffs();
+        }
+
+        void linear_ineq_constraint_coeffs(Model &model, const RealMatrix& lin_ineq_coeffs) {
+            model.user_defined_constraints().linear_ineq_constraint_coeffs(lin_ineq_coeffs);
+        }
+
+        const RealVector& linear_ineq_constraint_lower_bounds(const Model &model) {
+            return model.user_defined_constraints().linear_ineq_constraint_lower_bounds();
+        }
+
+        void linear_ineq_constraint_lower_bounds(Model &model, const RealVector& lin_ineq_l_bnds) {
+            model.user_defined_constraints().linear_ineq_constraint_lower_bounds(lin_ineq_l_bnds);
+        }
+
+        const RealVector& linear_ineq_constraint_upper_bounds(const Model &model) {
+            return model.user_defined_constraints().linear_ineq_constraint_upper_bounds();
+        }
+
+        void linear_ineq_constraint_upper_bounds(Model &model, const RealVector& lin_ineq_u_bnds) {
+            model.user_defined_constraints().linear_ineq_constraint_upper_bounds(lin_ineq_u_bnds);
+        }
+
+        const RealMatrix& linear_eq_constraint_coeffs(const Model &model) {
+            return model.user_defined_constraints().linear_eq_constraint_coeffs();
+        }
+
+        void linear_eq_constraint_coeffs(Model &model, const RealMatrix& lin_eq_coeffs) {
+            model.user_defined_constraints().linear_eq_constraint_coeffs(lin_eq_coeffs);
+        }
+
+        const RealVector& linear_eq_constraint_targets(const Model &model) {
+            return model.user_defined_constraints().linear_eq_constraint_targets();
+        }
+
+        void linear_eq_constraint_targets(Model &model, const RealVector& lin_eq_targets) {
+            model.user_defined_constraints().linear_eq_constraint_targets(lin_eq_targets);
+        }
+
+        size_t num_nonlinear_ineq_constraints(const Model &model) {
+            return model.user_defined_constraints().num_nonlinear_ineq_constraints();
+        }
+
+        size_t num_nonlinear_eq_constraints(const Model &model) {
+            return model.user_defined_constraints().num_nonlinear_eq_constraints();
+        }
+
+        const RealVector& nonlinear_ineq_constraint_lower_bounds(const Model &model) {
+            return model.user_defined_constraints().nonlinear_ineq_constraint_lower_bounds();
+        }
+
+        void nonlinear_ineq_constraint_lower_bounds(Model &model, const RealVector& nln_ineq_l_bnds) {
+            model.user_defined_constraints().nonlinear_ineq_constraint_lower_bounds(nln_ineq_l_bnds);
+        }
+
+        const RealVector& nonlinear_ineq_constraint_upper_bounds(const Model &model) {
+            return model.user_defined_constraints().nonlinear_ineq_constraint_upper_bounds();
+        }
+
+        void nonlinear_ineq_constraint_upper_bounds(Model &model, const RealVector& nln_ineq_u_bnds) {
+            model.user_defined_constraints().nonlinear_ineq_constraint_upper_bounds(nln_ineq_u_bnds);
+        }
+
+        const RealVector& nonlinear_eq_constraint_targets(const Model &model) {
+            return model.user_defined_constraints().nonlinear_eq_constraint_targets();
+        }
+
+        void nonlinear_eq_constraint_targets(Model &model, const RealVector& nln_eq_targets) {
+            model.user_defined_constraints().nonlinear_eq_constraint_targets(nln_eq_targets);
+        }
+
+
     }
 }

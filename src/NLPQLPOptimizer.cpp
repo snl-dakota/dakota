@@ -130,8 +130,8 @@ void NLPQLPOptimizer::allocate_constraints()
                   linIneqConMappingMultipliers,
                   linIneqConMappingOffsets);
 
-  numEqConstraints = iteratedModel.num_nonlinear_eq_constraints()
-                   + iteratedModel.num_linear_eq_constraints();
+  numEqConstraints = ModelUtils::num_nonlinear_eq_constraints(iteratedModel)
+                   + ModelUtils::num_linear_eq_constraints(iteratedModel);
 
   numNlpqlConstr   = numEqConstraints
                    + constraintMapIndices.size()
@@ -235,14 +235,14 @@ void NLPQLPOptimizer::core_run()
   const RealVector& cdv_upper_bnds
     = ModelUtils::continuous_upper_bounds(iteratedModel);
   size_t i, j, fn_eval_cntr,
-    num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints(),
-    num_nln_eq   = iteratedModel.num_nonlinear_eq_constraints();
+    num_nln_ineq = ModelUtils::num_nonlinear_ineq_constraints(iteratedModel),
+    num_nln_eq   = ModelUtils::num_nonlinear_eq_constraints(iteratedModel);
   const RealMatrix& lin_ineq_coeffs
-    = iteratedModel.linear_ineq_constraint_coeffs();
+    = ModelUtils::linear_ineq_constraint_coeffs(iteratedModel);
   const RealMatrix& lin_eq_coeffs
-    = iteratedModel.linear_eq_constraint_coeffs();
+    = ModelUtils::linear_eq_constraint_coeffs(iteratedModel);
   const RealVector& lin_eq_targets
-    = iteratedModel.linear_eq_constraint_targets();
+    = ModelUtils::linear_eq_constraint_targets(iteratedModel);
 
   // Any MOO/NLS recasting is responsible for setting the scalar min/max
   // sense within the recast.

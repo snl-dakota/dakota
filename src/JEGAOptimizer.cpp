@@ -311,8 +311,8 @@ class JEGAOptimizer::Evaluator :
             ) const
         {
             EDDY_FUNC_DEBUGSCOPE
-            return this->_model.num_nonlinear_eq_constraints() +
-                   this->_model.num_nonlinear_ineq_constraints();
+            return ModelUtils::num_nonlinear_eq_constraints(this->_model) +
+                   ModelUtils::num_nonlinear_ineq_constraints(this->_model);
         }
 
         /// Returns the number of linear constraints for the problem.
@@ -328,8 +328,8 @@ class JEGAOptimizer::Evaluator :
             ) const
         {
             EDDY_FUNC_DEBUGSCOPE
-            return this->_model.num_linear_eq_constraints() +
-                   this->_model.num_linear_ineq_constraints();
+            return ModelUtils::num_linear_eq_constraints(this->_model) +
+                   ModelUtils::num_linear_ineq_constraints(this->_model);
         }
 
     /*

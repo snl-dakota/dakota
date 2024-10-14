@@ -200,10 +200,10 @@ void Minimizer::update_from_model(const Model& model)
   vendorNumericalGradFlag
     = (grad_type == "numerical" && model.method_source() == "vendor");
 
-  numNonlinearIneqConstraints = model.num_nonlinear_ineq_constraints();
-  numNonlinearEqConstraints   = model.num_nonlinear_eq_constraints();
-  numLinearIneqConstraints    = model.num_linear_ineq_constraints(); 
-  numLinearEqConstraints      = model.num_linear_eq_constraints();
+  numNonlinearIneqConstraints = ModelUtils::num_nonlinear_ineq_constraints(model);
+  numNonlinearEqConstraints   = ModelUtils::num_nonlinear_eq_constraints(model);
+  numLinearIneqConstraints    = ModelUtils::num_linear_ineq_constraints(model); 
+  numLinearEqConstraints      = ModelUtils::num_linear_eq_constraints(model);
   numNonlinearConstraints     = numNonlinearIneqConstraints
                               + numNonlinearEqConstraints;
   numLinearConstraints = numLinearIneqConstraints + numLinearEqConstraints;

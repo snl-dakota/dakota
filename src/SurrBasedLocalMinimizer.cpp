@@ -516,9 +516,9 @@ update_approx_sub_problem(SurrBasedLevelData& tr_data)
     // function in RecastModel) won't auto-propagate nonlinear constraint
     // bounds for a general mapping --> recast client must propagate based
     // on the specific nature of the mapping
-    approxSubProbModel.nonlinear_ineq_constraint_lower_bounds(
+    ModelUtils::nonlinear_ineq_constraint_lower_bounds(approxSubProbModel, 
       origNonlinIneqLowerBnds);
-    approxSubProbModel.nonlinear_ineq_constraint_upper_bounds(
+    ModelUtils::nonlinear_ineq_constraint_upper_bounds(approxSubProbModel, 
       origNonlinIneqUpperBnds);
   }
 }
@@ -1119,13 +1119,13 @@ approx_subprob_objective_eval(const Variables& surrogate_vars,
     bool no_sub_prob_con = (sblmInstance->approxSubProbCon == NO_CONSTRAINTS);
     const RealVector& nln_ineq_l_bnds = (no_sub_prob_con) ? 
       sblmInstance->origNonlinIneqLowerBnds :
-      sblmInstance->approxSubProbModel.nonlinear_ineq_constraint_lower_bounds();
+      ModelUtils::nonlinear_ineq_constraint_lower_bounds(sblmInstance->approxSubProbModel);
     const RealVector& nln_ineq_u_bnds = (no_sub_prob_con) ?
       sblmInstance->origNonlinIneqUpperBnds :
-      sblmInstance->approxSubProbModel.nonlinear_ineq_constraint_upper_bounds();
+      ModelUtils::nonlinear_ineq_constraint_upper_bounds(sblmInstance->approxSubProbModel);
     const RealVector& nln_eq_tgts = (no_sub_prob_con) ?
       sblmInstance->origNonlinEqTargets :
-      sblmInstance->approxSubProbModel.nonlinear_eq_constraint_targets();
+      ModelUtils::nonlinear_eq_constraint_targets(sblmInstance->approxSubProbModel);
 
     if (recast_asv[0] & 1) {
       Real recast_fn;
@@ -1458,9 +1458,9 @@ void SurrBasedLocalMinimizer::relax_constraints(SurrBasedLevelData& tr_data)
 	  nln_ineq_l_bnds[i] += (1.-tau)*nonlinIneqLowerBndsSlack[i];
 	  nln_ineq_u_bnds[i] += (1.-tau)*nonlinIneqUpperBndsSlack[i];
 	}
-	approxSubProbModel.nonlinear_ineq_constraint_lower_bounds(
+	ModelUtils::nonlinear_ineq_constraint_lower_bounds(approxSubProbModel, 
 	  nln_ineq_l_bnds);
-	approxSubProbModel.nonlinear_ineq_constraint_upper_bounds(
+	ModelUtils::nonlinear_ineq_constraint_upper_bounds(approxSubProbModel, 
           nln_ineq_u_bnds);
       }
       
@@ -1472,7 +1472,7 @@ void SurrBasedLocalMinimizer::relax_constraints(SurrBasedLevelData& tr_data)
 	// update constraint bounds to be used with SBLM iteration
 	for(size_t i=0; i<numNonlinearEqConstraints; ++i)
 	  nln_eq_targets[i] += (1.-tau)*nonlinEqTargetsSlack[i];
-       	approxSubProbModel.nonlinear_eq_constraint_targets(nln_eq_targets);
+       	ModelUtils::nonlinear_eq_constraint_targets(approxSubProbModel, nln_eq_targets);
       }
 
     } // tau < 1.

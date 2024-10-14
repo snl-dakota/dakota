@@ -142,10 +142,10 @@ void CONMINOptimizer::allocate_constraints()
   // This is the reason behind the Modified MFD in DOT.  See Vanderplaats' book,
   // Numer. Opt. Techniques for Eng. Design, for additional details.
   size_t 
-    num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints(),
-    num_nln_eq   = iteratedModel.num_nonlinear_eq_constraints(),
-    num_lin_ineq = iteratedModel.num_linear_ineq_constraints(),
-    num_lin_eq   = iteratedModel.num_linear_eq_constraints();
+    num_nln_ineq = ModelUtils::num_nonlinear_ineq_constraints(iteratedModel),
+    num_nln_eq   = ModelUtils::num_nonlinear_eq_constraints(iteratedModel),
+    num_lin_ineq = ModelUtils::num_linear_ineq_constraints(iteratedModel),
+    num_lin_eq   = ModelUtils::num_linear_eq_constraints(iteratedModel);
   numConminNlnConstr = 2*num_nln_eq;
   numConminNlnConstr += (int)constraintMapOffsets.size();
 
@@ -334,12 +334,12 @@ void CONMINOptimizer::core_run()
 
   // Initialize local vars and linear constraints
   RealVector local_cdv(numContinuousVars);
-  size_t num_lin_ineq = iteratedModel.num_linear_ineq_constraints(),
-    num_lin_eq = iteratedModel.num_linear_eq_constraints();
+  size_t num_lin_ineq = ModelUtils::num_linear_ineq_constraints(iteratedModel),
+    num_lin_eq = ModelUtils::num_linear_eq_constraints(iteratedModel);
   const RealMatrix& lin_ineq_coeffs
-    = iteratedModel.linear_ineq_constraint_coeffs();
+    = ModelUtils::linear_ineq_constraint_coeffs(iteratedModel);
   const RealMatrix& lin_eq_coeffs
-    = iteratedModel.linear_eq_constraint_coeffs();
+    = ModelUtils::linear_eq_constraint_coeffs(iteratedModel);
   const String& grad_type = iteratedModel.gradient_type();
 
   // Start FOR loop to execute calls to CONMIN

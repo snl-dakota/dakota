@@ -303,7 +303,7 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
   // use the following instead:
   //mppModel.assign_rep(new RecastModel(uSpaceModel, ..., 1, 1, 0, ...), false);
   //RealVector nln_eq_targets(1, 0.);
-  //mppModel.nonlinear_eq_constraint_targets(nln_eq_targets);
+  //ModelUtils::nonlinear_eq_constraint_targets(mppModel, nln_eq_targets);
 
   // must use alternate NoDB ctor chain
   size_t max_iter = 1000, max_eval = 10000;

@@ -233,30 +233,30 @@ void SurrogateModel::init_model_constraints(Model& sub_model)
     abort_handler(MODEL_ERROR);
   }
   if (lin_ineq) {
-    sub_model.linear_ineq_constraint_coeffs(
+    ModelUtils::linear_ineq_constraint_coeffs(sub_model, 
       userDefinedConstraints.linear_ineq_constraint_coeffs());
-    sub_model.linear_ineq_constraint_lower_bounds(
+    ModelUtils::linear_ineq_constraint_lower_bounds(sub_model, 
       userDefinedConstraints.linear_ineq_constraint_lower_bounds());
-    sub_model.linear_ineq_constraint_upper_bounds(
+    ModelUtils::linear_ineq_constraint_upper_bounds(sub_model, 
       userDefinedConstraints.linear_ineq_constraint_upper_bounds());
   }
   if (lin_eq) {
-    sub_model.linear_eq_constraint_coeffs(
+    ModelUtils::linear_eq_constraint_coeffs(sub_model, 
       userDefinedConstraints.linear_eq_constraint_coeffs());
-    sub_model.linear_eq_constraint_targets(
+    ModelUtils::linear_eq_constraint_targets(sub_model, 
       userDefinedConstraints.linear_eq_constraint_targets());
   }
 
   // nonlinear constraints
 
   if (userDefinedConstraints.num_nonlinear_ineq_constraints()) {
-    sub_model.nonlinear_ineq_constraint_lower_bounds(
+    ModelUtils::nonlinear_ineq_constraint_lower_bounds(sub_model, 
       userDefinedConstraints.nonlinear_ineq_constraint_lower_bounds());
-    sub_model.nonlinear_ineq_constraint_upper_bounds(
+    ModelUtils::nonlinear_ineq_constraint_upper_bounds(sub_model, 
       userDefinedConstraints.nonlinear_ineq_constraint_upper_bounds());
   }
   if (userDefinedConstraints.num_nonlinear_eq_constraints())
-    sub_model.nonlinear_eq_constraint_targets(
+    ModelUtils::nonlinear_eq_constraint_targets(sub_model, 
       userDefinedConstraints.nonlinear_eq_constraint_targets());
 }
 
@@ -523,8 +523,8 @@ void SurrogateModel::update_response_from_model(const Model& sub_model)
 
   // linear constraints
 
-  bool lin_ineq = (sub_model.num_linear_ineq_constraints() > 0),
-       lin_eq   = (sub_model.num_linear_eq_constraints()   > 0);
+  bool lin_ineq = (ModelUtils::num_linear_ineq_constraints(sub_model) > 0),
+       lin_eq   = (ModelUtils::num_linear_eq_constraints(sub_model)   > 0);
   if ( (lin_ineq || lin_eq) && (ModelUtils::cv(sub_model)  != currentVariables.cv()  ||
 				ModelUtils::div(sub_model) != currentVariables.div() ||
 				ModelUtils::drv(sub_model) != currentVariables.drv()) ) {
@@ -536,30 +536,30 @@ void SurrogateModel::update_response_from_model(const Model& sub_model)
   }
   if (lin_ineq) {
     userDefinedConstraints.linear_ineq_constraint_coeffs(
-      sub_model.linear_ineq_constraint_coeffs());
+      ModelUtils::linear_ineq_constraint_coeffs(sub_model));
     userDefinedConstraints.linear_ineq_constraint_lower_bounds(
-      sub_model.linear_ineq_constraint_lower_bounds());
+      ModelUtils::linear_ineq_constraint_lower_bounds(sub_model));
     userDefinedConstraints.linear_ineq_constraint_upper_bounds(
-      sub_model.linear_ineq_constraint_upper_bounds());
+      ModelUtils::linear_ineq_constraint_upper_bounds(sub_model));
   }
   if (lin_eq) {
     userDefinedConstraints.linear_eq_constraint_coeffs(
-      sub_model.linear_eq_constraint_coeffs());
+      ModelUtils::linear_eq_constraint_coeffs(sub_model));
     userDefinedConstraints.linear_eq_constraint_targets(
-      sub_model.linear_eq_constraint_targets());
+      ModelUtils::linear_eq_constraint_targets(sub_model));
   }
 
   // nonlinear constraints
 
-  if (sub_model.num_nonlinear_ineq_constraints()) {
+  if (ModelUtils::num_nonlinear_ineq_constraints(sub_model)) {
     userDefinedConstraints.nonlinear_ineq_constraint_lower_bounds(
-      sub_model.nonlinear_ineq_constraint_lower_bounds());
+      ModelUtils::nonlinear_ineq_constraint_lower_bounds(sub_model));
     userDefinedConstraints.nonlinear_ineq_constraint_upper_bounds(
-      sub_model.nonlinear_ineq_constraint_upper_bounds());
+      ModelUtils::nonlinear_ineq_constraint_upper_bounds(sub_model));
   }
-  if (sub_model.num_nonlinear_eq_constraints())
+  if (ModelUtils::num_nonlinear_eq_constraints(sub_model))
     userDefinedConstraints.nonlinear_eq_constraint_targets(
-      sub_model.nonlinear_eq_constraint_targets());
+      ModelUtils::nonlinear_eq_constraint_targets(sub_model));
 }
 
 

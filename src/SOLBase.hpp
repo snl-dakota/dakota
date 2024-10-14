@@ -267,12 +267,12 @@ augment_bounds(RealVector& aggregate_l_bnds, RealVector& aggregate_u_bnds,
 	       const Model& model)
 {
   augment_bounds(aggregate_l_bnds, aggregate_u_bnds,
-		 model.linear_ineq_constraint_lower_bounds(),
-		 model.linear_ineq_constraint_upper_bounds(),
-		 model.linear_eq_constraint_targets(),
-		 model.nonlinear_ineq_constraint_lower_bounds(),
-		 model.nonlinear_ineq_constraint_upper_bounds(),
-		 model.nonlinear_eq_constraint_targets());
+		 ModelUtils::linear_ineq_constraint_lower_bounds(model),
+		 ModelUtils::linear_ineq_constraint_upper_bounds(model),
+		 ModelUtils::linear_eq_constraint_targets(model),
+		 ModelUtils::nonlinear_ineq_constraint_lower_bounds(model),
+		 ModelUtils::nonlinear_ineq_constraint_upper_bounds(model),
+		 ModelUtils::nonlinear_eq_constraint_targets(model));
 }
 */
 

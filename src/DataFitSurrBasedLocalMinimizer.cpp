@@ -221,11 +221,11 @@ void DataFitSurrBasedLocalMinimizer::post_run(std::ostream& s)
     ModelUtils::continuous_upper_bounds(iteratedModel, globalUpperBnds);
   }
   if (trConstraintRelax > NO_RELAX) {
-    approxSubProbModel.nonlinear_ineq_constraint_lower_bounds(
+    ModelUtils::nonlinear_ineq_constraint_lower_bounds(approxSubProbModel, 
       origNonlinIneqLowerBnds);
-    approxSubProbModel.nonlinear_ineq_constraint_upper_bounds(
+    ModelUtils::nonlinear_ineq_constraint_upper_bounds(approxSubProbModel, 
       origNonlinIneqUpperBnds);
-    approxSubProbModel.nonlinear_eq_constraint_targets(origNonlinEqTargets);
+    ModelUtils::nonlinear_eq_constraint_targets(approxSubProbModel, origNonlinEqTargets);
   }
 
   bestVariablesArray.front().active_variables(trustRegionData.vars_center());

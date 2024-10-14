@@ -256,7 +256,7 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
 			(uSpaceModel, recast_vars_comps_total, all_relax_di,
 			 all_relax_dr, orig_view, 1, 1, 0, recast_resp_order));
     RealVector nln_eq_targets(1, false); nln_eq_targets = 0.;
-    mppModel.nonlinear_eq_constraint_targets(nln_eq_targets);
+    ModelUtils::nonlinear_eq_constraint_targets(mppModel, nln_eq_targets);
 
     // Use NPSOL/OPT++ in "user_functions" mode to perform the MPP search
     if (npsolFlag) {

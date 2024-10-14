@@ -182,8 +182,8 @@ void NLSSOLLeastSq::core_run()
   double*    local_lsq_grads = new double [numLeastSqTerms*numContinuousVars];
 
   allocate_arrays(numContinuousVars, numNonlinearConstraints,
-		  iteratedModel.linear_ineq_constraint_coeffs(),
-		  iteratedModel.linear_eq_constraint_coeffs());
+		  ModelUtils::linear_ineq_constraint_coeffs(iteratedModel),
+		  ModelUtils::linear_eq_constraint_coeffs(iteratedModel));
   allocate_workspace(numContinuousVars, numNonlinearConstraints,
                      numLinearConstraints, numLeastSqTerms);
 
@@ -203,12 +203,12 @@ void NLSSOLLeastSq::core_run()
   RealVector augmented_l_bnds, augmented_u_bnds;
   aggregate_bounds(ModelUtils::continuous_lower_bounds(iteratedModel),
 		   ModelUtils::continuous_upper_bounds(iteratedModel),
-		   iteratedModel.linear_ineq_constraint_lower_bounds(),
-		   iteratedModel.linear_ineq_constraint_upper_bounds(),
-		   iteratedModel.linear_eq_constraint_targets(),
-		   iteratedModel.nonlinear_ineq_constraint_lower_bounds(),
-		   iteratedModel.nonlinear_ineq_constraint_upper_bounds(),
-		   iteratedModel.nonlinear_eq_constraint_targets(),
+		   ModelUtils::linear_ineq_constraint_lower_bounds(iteratedModel),
+		   ModelUtils::linear_ineq_constraint_upper_bounds(iteratedModel),
+		   ModelUtils::linear_eq_constraint_targets(iteratedModel),
+		   ModelUtils::nonlinear_ineq_constraint_lower_bounds(iteratedModel),
+		   ModelUtils::nonlinear_ineq_constraint_upper_bounds(iteratedModel),
+		   ModelUtils::nonlinear_eq_constraint_targets(iteratedModel),
 		   augmented_l_bnds, augmented_u_bnds);
 
   NLSSOL_F77( num_least_sq_terms, num_cv, num_linear_constraints,

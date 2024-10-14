@@ -323,7 +323,7 @@ void RandomFieldModel::initialize_recast()
   size_t num_primary = subModel.num_primary_fns(),
     num_secondary    = subModel.num_secondary_fns(),
     num_recast_fns   = num_primary + num_secondary,
-    recast_secondary_offset = subModel.num_nonlinear_ineq_constraints();
+    recast_secondary_offset = ModelUtils::num_nonlinear_ineq_constraints(subModel);
 
   Sizet2DArray primary_resp_map_indices(num_primary);
   for (size_t i=0; i<num_primary; i++) {

@@ -829,7 +829,7 @@ void NomadOptimizer::load_parameters(Model &model, NOMAD::Parameters &p)
   //		nonlinear_equality_constraints
 
   const RealVector& nln_eq_targets
-    = iteratedModel.nonlinear_eq_constraint_targets();
+    = ModelUtils::nonlinear_eq_constraint_targets(iteratedModel);
 
   numNomadNonlinearIneqConstraints = numNonlinearIneqConstraintsFound;
 

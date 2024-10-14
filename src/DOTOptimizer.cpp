@@ -161,10 +161,10 @@ void DOTOptimizer::allocate_constraints()
   // mappings (indices, multipliers, offsets) between the DAKOTA constraints
   // and the DOT constraints.  TO DO: support for automatic constraint scaling.
   size_t 
-    num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints(),
-    num_nln_eq   = iteratedModel.num_nonlinear_eq_constraints(),
-    num_lin_ineq = iteratedModel.num_linear_ineq_constraints(),
-    num_lin_eq   = iteratedModel.num_linear_eq_constraints();
+    num_nln_ineq = ModelUtils::num_nonlinear_ineq_constraints(iteratedModel),
+    num_nln_eq   = ModelUtils::num_nonlinear_eq_constraints(iteratedModel),
+    num_lin_ineq = ModelUtils::num_linear_ineq_constraints(iteratedModel),
+    num_lin_eq   = ModelUtils::num_linear_eq_constraints(iteratedModel);
   numDotNlnConstr = 2*num_nln_eq;
   numDotNlnConstr += numNonlinearIneqConstraintsFound;
 
@@ -311,12 +311,12 @@ void DOTOptimizer::core_run()
   // Initialize local bounds and linear constraints
   const RealVector& lower_bnds = ModelUtils::continuous_lower_bounds(iteratedModel);
   const RealVector& upper_bnds = ModelUtils::continuous_upper_bounds(iteratedModel);
-  size_t num_lin_ineq = iteratedModel.num_linear_ineq_constraints(),
-         num_lin_eq   = iteratedModel.num_linear_eq_constraints();
+  size_t num_lin_ineq = ModelUtils::num_linear_ineq_constraints(iteratedModel),
+         num_lin_eq   = ModelUtils::num_linear_eq_constraints(iteratedModel);
   const RealMatrix& lin_ineq_coeffs
-    = iteratedModel.linear_ineq_constraint_coeffs();
+    = ModelUtils::linear_ineq_constraint_coeffs(iteratedModel);
   const RealMatrix& lin_eq_coeffs
-    = iteratedModel.linear_eq_constraint_coeffs();
+    = ModelUtils::linear_eq_constraint_coeffs(iteratedModel);
 
   for (fn_eval_cntr=1; fn_eval_cntr<=maxFunctionEvals; fn_eval_cntr++) {
 
