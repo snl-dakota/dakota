@@ -32,7 +32,7 @@ public:
   /// constructor
   RichExtrapVerification(ProblemDescDB& problem_db, Model& model);
   /// destructor
-  ~RichExtrapVerification();
+  ~RichExtrapVerification() override;
     
   //
   //- Heading: Virtual member function redefinitions
@@ -40,10 +40,10 @@ public:
 
   //void initialize_run();
   //void pre_run();
-  void core_run();
+  void core_run() override;
   //void post_run(std::ostream& s);
   //void finalize_run();
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
 private:
 

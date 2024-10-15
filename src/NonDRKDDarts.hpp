@@ -34,14 +34,14 @@ public:
     
     NonDRKDDarts(ProblemDescDB& problem_db, Model& model); ///< constructor
 
-    ~NonDRKDDarts();                                       ///< destructor
+    ~NonDRKDDarts() override;                                       ///< destructor
 
     //
     //- Heading: Virtual function redefinitions
     //
 
-    bool resize();
-    void core_run();
+    bool resize() override;
+    void core_run() override;
 
 protected:
     
@@ -55,7 +55,7 @@ protected:
     // computing statistics on the ensemble of results.
     
     /// generate samples
-    void pre_run();
+    void pre_run() override;
     
     void initiate_random_number_generator(unsigned long x);
     
@@ -113,7 +113,7 @@ protected:
     
     /// generate statistics
     
-    void post_run(std::ostream& s);
+    void post_run(std::ostream& s) override;
     
     void print_integration_results(std::ostream& s);
     

@@ -38,14 +38,14 @@ public:
   //
 
   NonDLHSEvidence(ProblemDescDB& problem_db, Model& model); ///< constructor
-  ~NonDLHSEvidence();                                       ///< destructor
+  ~NonDLHSEvidence() override;                                       ///< destructor
 
   //
   //- Heading: virtual function redefinitions
   //
 
-  void initialize();
-  void post_process_samples();
+  void initialize() override;
+  void post_process_samples() override;
 
 private:
 

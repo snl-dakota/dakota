@@ -38,7 +38,7 @@ public:
   /// standard constructor
   NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model);
   /// destructor
-  ~NonDMultilevelSampling();
+  ~NonDMultilevelSampling() override;
 
 protected:
 
@@ -47,15 +47,15 @@ protected:
   //
 
   //void pre_run();
-  void core_run();
+  void core_run() override;
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
-  void print_variance_reduction(std::ostream& s);
+  void print_variance_reduction(std::ostream& s) override;
 
   void nested_response_mappings(const RealMatrix& primary_coeffs,
-				const RealMatrix& secondary_coeffs);
+				const RealMatrix& secondary_coeffs) override;
 
-  bool discrepancy_sample_counts() const;
+  bool discrepancy_sample_counts() const override;
 
   //
   //- Heading: Member functions

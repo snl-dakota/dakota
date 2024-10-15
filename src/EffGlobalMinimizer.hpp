@@ -32,19 +32,19 @@ class EffGlobalTraits: public TraitsBase
   EffGlobalTraits() { }
 
   /// destructor
-  virtual ~EffGlobalTraits() { }
+  ~EffGlobalTraits() override { }
 
   /// A temporary query used in the refactor
-  virtual bool is_derived() { return true; }
+  bool is_derived() override { return true; }
 
   /// Return the flag indicating whether method supports continuous variables
-  bool supports_continuous_variables() { return true; }
+  bool supports_continuous_variables() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear equalities
-  bool supports_nonlinear_equality() { return true; }
+  bool supports_nonlinear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear inequalities
-  bool supports_nonlinear_inequality() { return true; }
+  bool supports_nonlinear_inequality() override { return true; }
 };
 
 
@@ -67,7 +67,7 @@ public:
 		     int seed, bool use_derivs, size_t max_iter,
 		     size_t max_eval, Real conv_tol);
   /// destructor
-  ~EffGlobalMinimizer();
+  ~EffGlobalMinimizer() override;
 
   //
   //- Heading: Virtual function redefinitions
@@ -77,11 +77,11 @@ public:
   //void derived_set_communicators(ParLevLIter pl_iter);
   //void derived_free_communicators(ParLevLIter pl_iter);
 
-  void pre_run();
-  void core_run();
-  void post_run(std::ostream& s);
+  void pre_run() override;
+  void core_run() override;
+  void post_run(std::ostream& s) override;
 
-  const Model& algorithm_space_model() const;
+  const Model& algorithm_space_model() const override;
 
   //void declare_sources();
 

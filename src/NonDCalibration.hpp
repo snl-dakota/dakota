@@ -31,13 +31,13 @@ public:
   /// standard constructor
   NonDCalibration(ProblemDescDB& problem_db, Model& model);
   /// destructor
-  ~NonDCalibration();
+  ~NonDCalibration() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
   
-  bool resize();
+  bool resize() override;
 
 protected:
 

@@ -31,7 +31,7 @@ public:
   ScalingModel(Model& sub_model);
 
   /// destructor
-  ~ScalingModel();
+  ~ScalingModel() override;
 
   /// ---
   /// Public members for help in final results recovery
@@ -61,7 +61,7 @@ public:
 			   int start_offset, int num_responses,
 			   bool response_unscale = true) const;
   
-  ActiveSet default_active_set();
+  ActiveSet default_active_set() override;
 
 protected:
 
@@ -69,7 +69,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void assign_instance();
+  void assign_instance() override;
 
   void init_metadata() override { /* no-op to leave metadata intact */}
 

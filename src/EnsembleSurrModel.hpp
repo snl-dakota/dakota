@@ -38,7 +38,7 @@ public:
   //
 
   EnsembleSurrModel(ProblemDescDB& problem_db); ///< constructor
-  ~EnsembleSurrModel();                         ///< destructor
+  ~EnsembleSurrModel() override;                         ///< destructor
 
   //
   //- Heading: Member functions
@@ -51,15 +51,15 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  bool initialize_mapping(ParLevLIter pl_iter);
-  bool finalize_mapping();
+  bool initialize_mapping(ParLevLIter pl_iter) override;
+  bool finalize_mapping() override;
 
-  void derived_evaluate(const ActiveSet& set);
-  void derived_evaluate_nowait(const ActiveSet& set);
+  void derived_evaluate(const ActiveSet& set) override;
+  void derived_evaluate_nowait(const ActiveSet& set) override;
 
-  size_t qoi() const;
+  size_t qoi() const override;
 
-  void init_model(Model& model);
+  void init_model(Model& model) override;
 
   void nested_variable_mappings(const SizetArray& c_index1,
 				const SizetArray& di_index1,
@@ -68,160 +68,160 @@ protected:
 				const ShortArray& c_target2,
 				const ShortArray& di_target2,
 				const ShortArray& ds_target2,
-				const ShortArray& dr_target2);
+				const ShortArray& dr_target2) override;
 
-  const SizetArray& nested_acv1_indices() const;
-  const ShortArray& nested_acv2_targets() const;
-  short query_distribution_parameter_derivatives() const;
+  const SizetArray& nested_acv1_indices() const override;
+  const ShortArray& nested_acv2_targets() const override;
+  short query_distribution_parameter_derivatives() const override;
 
-  void check_submodel_compatibility(const Model& sub_model);
+  void check_submodel_compatibility(const Model& sub_model) override;
 
-  const IntResponseMap& derived_synchronize();
-  const IntResponseMap& derived_synchronize_nowait();
+  const IntResponseMap& derived_synchronize() override;
+  const IntResponseMap& derived_synchronize_nowait() override;
 
-  void stop_servers();
+  void stop_servers() override;
 
-  bool multifidelity() const;
-  bool multilevel() const;
-  bool multilevel_multifidelity() const;
+  bool multifidelity() const override;
+  bool multilevel() const override;
+  bool multilevel_multifidelity() const override;
 
-  short ensemble_precedence() const;
-  void ensemble_precedence(short mlmf_prec, bool update_default = true);
+  short ensemble_precedence() const override;
+  void ensemble_precedence(short mlmf_prec, bool update_default = true) override;
 
   /// set responseMode and pass any bypass request on to the high
   /// fidelity model for any lower-level surrogate recursions
-  void surrogate_response_mode(short mode);
+  void surrogate_response_mode(short mode) override;
 
   /// (re)set the surrogate index set in SurrogateModel::surrogateFnIndices
-  void surrogate_function_indices(const SizetSet& surr_fn_indices);
+  void surrogate_function_indices(const SizetSet& surr_fn_indices) override;
 
   // return truthModel interface identifier?
   //const String& interface_id() const;
 
   /// set the evaluation counter reference points for the EnsembleSurrModel
   /// (request forwarded to truth and surrogate models)
-  void set_evaluation_reference();
+  void set_evaluation_reference() override;
 
-  void create_tabular_datastream();
-  void derived_auto_graphics(const Variables& vars, const Response& resp);
+  void create_tabular_datastream() override;
+  void derived_auto_graphics(const Variables& vars, const Response& resp) override;
 
-  size_t insert_response_start(size_t position);
+  size_t insert_response_start(size_t position) override;
   void insert_metadata(const RealArray& md, size_t position,
-		       Response& agg_response);
+		       Response& agg_response) override;
 
-  DiscrepancyCorrection& discrepancy_correction();
-  void correction_type(short corr_type);
-  unsigned short correction_mode() const;
-  void correction_mode(unsigned short corr_mode);
+  DiscrepancyCorrection& discrepancy_correction() override;
+  void correction_type(short corr_type) override;
+  unsigned short correction_mode() const override;
+  void correction_mode(unsigned short corr_mode) override;
 
-  bool force_rebuild();
+  bool force_rebuild() override;
 
   /// use the high fidelity model to compute the truth values needed for
   /// correction of the low fidelity model results
-  void build_approximation();
+  void build_approximation() override;
   // Uses the c_vars/response anchor point to define highFidResponse
   //bool build_approximation(const RealVector& c_vars,const Response& response);
 
   /// return approxModels[i]
-  Model& surrogate_model(size_t i = _NPOS);
+  Model& surrogate_model(size_t i = _NPOS) override;
   /// return approxModels[i]
-  const Model& surrogate_model(size_t i = _NPOS) const;
+  const Model& surrogate_model(size_t i = _NPOS) const override;
   /// return truthModel
-  Model& truth_model();
+  Model& truth_model() override;
   /// return truthModel
-  const Model& truth_model() const;
+  const Model& truth_model() const override;
 
   /// return the model form corresponding to surrModelKeys[i]
-  unsigned short active_surrogate_model_form(size_t i) const;
+  unsigned short active_surrogate_model_form(size_t i) const override;
   /// return the model form corresponding to truthModelKey
-  unsigned short active_truth_model_form() const;
+  unsigned short active_truth_model_form() const override;
 
   /// return the model corresponding to surrModelKeys[i] (spanning either
   /// model forms or resolutions)
-  Model& active_surrogate_model(size_t i = _NPOS);
+  Model& active_surrogate_model(size_t i = _NPOS) override;
   /// return the model corresponding to surrModelKeys[i] (spanning either
   /// model forms or resolutions)
-  const Model& active_surrogate_model(size_t i = _NPOS) const;
+  const Model& active_surrogate_model(size_t i = _NPOS) const override;
   /// return the model corresponding to truthModelKey
-  Model& active_truth_model();
+  Model& active_truth_model() override;
   /// return the model corresponding to truthModelKey
-  const Model& active_truth_model() const;
+  const Model& active_truth_model() const override;
 
   /// return true if there is an active truth model indicated by truthModelKey
-  bool active_truth_key() const;
+  bool active_truth_key() const override;
   /// return the number of active surrogate models indicated by surrModelKeys
-  size_t active_surrogate_keys() const;
+  size_t active_surrogate_keys() const override;
 
   /// define the active model key and extract {truth,surr}ModelKeys
-  void active_model_key(const Pecos::ActiveKey& key);
+  void active_model_key(const Pecos::ActiveKey& key) override;
   /// remove keys for any approximations underlying {truth,approx}Models
-  void clear_model_keys();
+  void clear_model_keys() override;
 
   /// return {approxModels,truthModel} and, optionally, their
   /// sub-model recursions
-  void derived_subordinate_models(ModelList& ml, bool recurse_flag);
+  void derived_subordinate_models(ModelList& ml, bool recurse_flag) override;
 
   /// resize currentResponse if needed when one of the subordinate
   /// models has been resized
-  void resize_from_subordinate_model(size_t depth = SZ_MAX);
+  void resize_from_subordinate_model(size_t depth = SZ_MAX) override;
   /// update currentVariables using non-active data from the passed model
   /// (one of {approxModels,truthModel})
-  void update_from_subordinate_model(size_t depth = SZ_MAX);
+  void update_from_subordinate_model(size_t depth = SZ_MAX) override;
 
   /// set the relative weightings for multiple objective functions or least
   /// squares terms and optionally recurses into LF/HF models
   void primary_response_fn_weights(const RealVector& wts,
-                                   bool recurse_flag = true);
+                                   bool recurse_flag = true) override;
 
   /// update component parallel mode for supporting parallelism in
   /// the low ad high fidelity models
-  void component_parallel_mode(short mode);
+  void component_parallel_mode(short mode) override;
 
-  IntIntPair estimate_partition_bounds(int max_eval_concurrency);
+  IntIntPair estimate_partition_bounds(int max_eval_concurrency) override;
 
   /// set up parallel operations for the array of subordinate models
   /// {approxModels,truthModel}
   void derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-                                  bool recurse_flag = true);
+                                  bool recurse_flag = true) override;
   /// set up serial operations for the array of subordinate models
   /// {approxModels,truthModel}
-  void derived_init_serial();
+  void derived_init_serial() override;
   /// set active parallel configuration within the current low and
   /// high fidelity models identified by {low,high}FidelityKey
   void derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-                                 bool recurse_flag = true);
+                                 bool recurse_flag = true) override;
   /// deallocate communicator partitions for the EnsembleSurrModel
   /// (request forwarded to the the array of subordinate models
   /// {approxModels,truthModel})
   void derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-                                  bool recurse_flag = true);
+                                  bool recurse_flag = true) override;
 
   /// Service the low and high fidelity model job requests received from the
   /// master; completes when termination message received from stop_servers().
-  void serve_run(ParLevLIter pl_iter, int max_eval_concurrency);
+  void serve_run(ParLevLIter pl_iter, int max_eval_concurrency) override;
 
   /// update the Model's inactive view based on higher level (nested)
   /// context and optionally recurse into
-  void inactive_view(short view, bool recurse_flag = true);
+  void inactive_view(short view, bool recurse_flag = true) override;
 
   /// if recurse_flag, return true if evaluation cache usage in
   /// subordinate models {approxModels,truthModel}
-  bool evaluation_cache(bool recurse_flag = true) const;
+  bool evaluation_cache(bool recurse_flag = true) const override;
   /// if recurse_flag, return true if restart file usage in
   /// subordinate models {approxModels,truthModel}
-  bool restart_file(bool recurse_flag = true) const;
+  bool restart_file(bool recurse_flag = true) const override;
 
   /// request fine-grained evaluation reporting within the low and high
   /// fidelity models
-  void fine_grained_evaluation_counters();
+  void fine_grained_evaluation_counters() override;
   /// print the evaluation summary for the EnsembleSurrModel
   /// (request forwarded to the low and high fidelity models)
   void print_evaluation_summary(std::ostream& s, bool minimal_header = false,
-                                bool relative_count = true) const;
+                                bool relative_count = true) const override;
 
   /// set the warm start flag, including for the subordinate models
   /// {approxModels,truthModel}
-  void warm_start_flag(const bool flag);
+  void warm_start_flag(const bool flag) override;
 
   //
   //- Heading: member functions
@@ -412,10 +412,10 @@ private:
   /// helper function for applying a single response correction corresponding
   /// to deltaCorr[paired_key]
   void single_apply(const Variables& vars, Response& resp,
-		    const Pecos::ActiveKey& paired_key);
+		    const Pecos::ActiveKey& paired_key) override;
   /// helper function for applying a correction across a sequence of
   /// model forms or discretization levels
-  void recursive_apply(const Variables& vars, Response& resp);
+  void recursive_apply(const Variables& vars, Response& resp) override;
 
   //
   //- Heading: Data

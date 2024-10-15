@@ -77,7 +77,7 @@ public:
 
   /// Randomize this digital net
   /// NOTE: required for 'unique' sampling in `NonDLowDiscrepancySampling`
-  inline void randomize() { digital_shift(); scramble(); }
+  inline void randomize() override { digital_shift(); scramble(); }
 
   /// Digitally shift this digital net
   void digital_shift() { digital_shift(generate_system_seed()); }
@@ -168,7 +168,7 @@ private:
     const size_t nMin,
     const size_t nMax,
     RealMatrix& points
-  );
+  ) override;
 
   /// Get the next point of the sequence represented as an unsigned integer
   /// vector

@@ -33,28 +33,28 @@ class SurrBasedGlobalTraits: public TraitsBase
   SurrBasedGlobalTraits() { }
 
   /// destructor
-  virtual ~SurrBasedGlobalTraits() { }
+  ~SurrBasedGlobalTraits() override { }
 
   /// A temporary query used in the refactor
-  virtual bool is_derived() { return true; }
+  bool is_derived() override { return true; }
 
   /// Return the flag indicating whether method supports continuous variables
-  bool supports_continuous_variables() { return true; }
+  bool supports_continuous_variables() override { return true; }
 
   /// Return the flag indicating whether method supports discrete variables
-  bool supports_discrete_variables() { return true; }
+  bool supports_discrete_variables() override { return true; }
   
   /// Return the flag indicating whether method supports linear equalities
-  bool supports_linear_equality() { return true; }
+  bool supports_linear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports linear inequalities
-  bool supports_linear_inequality() { return true; }
+  bool supports_linear_inequality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear equalities
-  bool supports_nonlinear_equality() { return true; }
+  bool supports_nonlinear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear inequalities
-  bool supports_nonlinear_inequality() { return true; }
+  bool supports_nonlinear_inequality() override { return true; }
 };
 
 
@@ -76,7 +76,7 @@ public:
   /// constructor
   SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, Model& model);
   /// destructor
-  ~SurrBasedGlobalMinimizer();
+  ~SurrBasedGlobalMinimizer() override;
 
 protected:
 
@@ -85,16 +85,16 @@ protected:
   //
 
   /// initialize graphics customized for surrogate-based iteration
-  void initialize_graphics(int iterator_server_id = 1);
+  void initialize_graphics(int iterator_server_id = 1) override;
 
   /// Performs global surrogate-based optimization by repeatedly
   /// optimizing on and improving surrogates of the response functions.
-  void core_run();
+  void core_run() override;
 
   // Global surrogate-based methods cannot yet accept multiple initial points
   //bool accepts_multiple_points() const;
   /// Global surrogate-based methods can return multiple points
-  bool returns_multiple_points() const;
+  bool returns_multiple_points() const override;
 
 private:
 

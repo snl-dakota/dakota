@@ -82,7 +82,7 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
 
 protected:
 
@@ -98,13 +98,13 @@ protected:
   NonDIntegration(unsigned short method_name, Model& model,
 		  const RealVector& dim_pref);
   /// destructor
-  ~NonDIntegration();
+  ~NonDIntegration() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  void core_run();
+  void core_run() override;
 
   //
   //- Heading: Member functions

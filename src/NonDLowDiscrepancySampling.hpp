@@ -47,7 +47,7 @@ public:
   );
 
   /// Destructor
-  ~NonDLowDiscrepancySampling();
+  ~NonDLowDiscrepancySampling() override;
 
 protected:
 
@@ -59,14 +59,14 @@ protected:
   /// the rank-1 lattice points
   void get_parameter_sets(
     Model& model
-  );
+  ) override;
 
   /// Same as above, but store the lattice points in the given matrix
   void get_parameter_sets(
     Model& model,
     const size_t num_samples, 
     RealMatrix& sample_matrix
-  );
+  ) override;
                           
   /// Same as above, but allow verbose outputs
   void get_parameter_sets(

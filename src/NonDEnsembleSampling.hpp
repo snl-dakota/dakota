@@ -34,13 +34,13 @@ public:
   NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model);
   /// destructor (virtual declaration should be redundant with ~Iterator,
   /// but this is top of MLMF diamond so doesn't hurt to be explicit)
-  ~NonDEnsembleSampling();
+  ~NonDEnsembleSampling() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
 
 protected:
 
@@ -59,16 +59,16 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void pre_run();
+  void pre_run() override;
   //void core_run();
-  void post_run(std::ostream& s);
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void post_run(std::ostream& s) override;
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
-  void initialize_final_statistics();
-  void update_final_statistics();
+  void initialize_final_statistics() override;
+  void update_final_statistics() override;
 
-  bool seed_updated();
-  void active_set_mapping();
+  bool seed_updated() override;
+  void active_set_mapping() override;
 
   //
   //- Heading: Member functions

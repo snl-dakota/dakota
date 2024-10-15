@@ -39,31 +39,31 @@ public:
   APPSEvalMgr(Optimizer&, Model& model);
 
   /// destructor
-  ~APPSEvalMgr() {};
+  ~APPSEvalMgr() override {};
     
   //
   //- Heading: Virtual function redefinitions
   //
 
   /// tells APPS whether or not there is a processor available to perform a function evaluation
-  bool isReadyForWork() const;
+  bool isReadyForWork() const override;
 
   /// performs a function evaluation at APPS-provided x_in
   bool submit(const int apps_tag, const HOPSPACK::Vector& apps_xtrial,
-	      const HOPSPACK::EvalRequestType apps_request);
+	      const HOPSPACK::EvalRequestType apps_request) override;
 
   /// returns a function value to APPS
   int recv(int& apps_tag, HOPSPACK::Vector& apps_f,
 	   HOPSPACK::Vector& apps_cEqs, HOPSPACK::Vector& apps_cIneqs,
-	   string& apps_msg);
+	   string& apps_msg) override;
 
   /// return the type of the Dakota linked evaluator
-  std::string getEvaluatorType(void) const;
+  std::string getEvaluatorType(void) const override;
 
   /// empty implementation of debug info needed to complete the interface
-  void printDebugInfo(void) const {};
+  void printDebugInfo(void) const override {};
   /// empty implementation of timing info needed to complete the interface
-  void printTimingInfo(void) const {};
+  void printTimingInfo(void) const override {};
 
   //
   //- Heading: Convenience functions

@@ -34,7 +34,7 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
   
 protected:
   
@@ -47,13 +47,13 @@ protected:
   /// alternate constructor
   MetaIterator(ProblemDescDB& problem_db, Model& model);
   /// destructor
-  ~MetaIterator();
+  ~MetaIterator() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  void post_run(std::ostream& s);
+  void post_run(std::ostream& s) override;
 
   //
   //- Heading: Convenience member functions

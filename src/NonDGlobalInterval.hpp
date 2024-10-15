@@ -37,21 +37,21 @@ public:
   //
 
   NonDGlobalInterval(ProblemDescDB& problem_db, Model& model); ///< constructor
-  ~NonDGlobalInterval();                                       ///< destructor
+  ~NonDGlobalInterval() override;                                       ///< destructor
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  void derived_init_communicators(ParLevLIter pl_iter);
-  void derived_set_communicators(ParLevLIter pl_iter);
-  void derived_free_communicators(ParLevLIter pl_iter);
+  void derived_init_communicators(ParLevLIter pl_iter) override;
+  void derived_set_communicators(ParLevLIter pl_iter) override;
+  void derived_free_communicators(ParLevLIter pl_iter) override;
 
   /// Performs an optimization to determine interval bounds for an entire
   /// function or interval bounds on a particular statistical estimator
-  void core_run();
+  void core_run() override;
 
-  const Model& algorithm_space_model() const;
+  const Model& algorithm_space_model() const override;
 
 protected:
 

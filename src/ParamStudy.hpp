@@ -40,17 +40,17 @@ public:
   //
 
   ParamStudy(ProblemDescDB& problem_db, Model& model); ///< constructor
-  ~ParamStudy();                                       ///< destructor
+  ~ParamStudy() override;                                       ///< destructor
     
   //
   //- Heading: Virtual member function redefinitions
   //
   
-  bool resize();
-  void pre_run();
-  void core_run();
-  void post_input();
-  void post_run(std::ostream& s);
+  bool resize() override;
+  void pre_run() override;
+  void core_run() override;
+  void post_input() override;
+  void post_run(std::ostream& s) override;
 
   /// Archive variables for parameter set idx
   void archive_model_variables(const Model&, size_t idx) const override;

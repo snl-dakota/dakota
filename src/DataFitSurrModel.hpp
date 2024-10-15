@@ -57,7 +57,7 @@ public:
 		   const String& export_approx_points_file = String(),
 		   unsigned short export_approx_format = TABULAR_ANNOTATED);
   /// destructor
-  ~DataFitSurrModel();
+  ~DataFitSurrModel() override;
 
   //
   //- Heading: Member functions
@@ -68,7 +68,7 @@ public:
   /// return points required for build according to pointsManagement mode
   int required_points();
 
-  void declare_sources();
+  void declare_sources() override;
 
 protected:
 
@@ -76,17 +76,17 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  size_t qoi() const;
+  size_t qoi() const override;
 
-  DiscrepancyCorrection& discrepancy_correction();
-  void correction_type(short corr_type);
+  DiscrepancyCorrection& discrepancy_correction() override;
+  void correction_type(short corr_type) override;
 
-  bool initialize_mapping(ParLevLIter pl_iter);
-  bool finalize_mapping();
+  bool initialize_mapping(ParLevLIter pl_iter) override;
+  bool finalize_mapping() override;
 
   //void init_model(Model& model);
-  void update_model(Model& model);
-  void update_from_model(const Model& model);
+  void update_model(Model& model) override;
+  void update_from_model(const Model& model) override;
 
   void nested_variable_mappings(const SizetArray& c_index1,
 				const SizetArray& di_index1,
@@ -95,22 +95,22 @@ protected:
 				const ShortArray& c_target2,
 				const ShortArray& di_target2,
 				const ShortArray& ds_target2,
-				const ShortArray& dr_target2);
-  const SizetArray& nested_acv1_indices() const;
-  const ShortArray& nested_acv2_targets() const;
-  short query_distribution_parameter_derivatives() const;
+				const ShortArray& dr_target2) override;
+  const SizetArray& nested_acv1_indices() const override;
+  const ShortArray& nested_acv2_targets() const override;
+  short query_distribution_parameter_derivatives() const override;
 
-  void check_submodel_compatibility(const Model& sub_model);
+  void check_submodel_compatibility(const Model& sub_model) override;
 
   // Perform the response computation portions specific to this derived 
   // class.  In this case, it simply employs approxInterface.map()/synch()/
   // synch_nowait() where approxInterface is a local, multipoint, or global
   // approximation.
 
-  void derived_evaluate(const ActiveSet& set);
-  void derived_evaluate_nowait(const ActiveSet& set);
-  const IntResponseMap& derived_synchronize();
-  const IntResponseMap& derived_synchronize_nowait();
+  void derived_evaluate(const ActiveSet& set) override;
+  void derived_evaluate_nowait(const ActiveSet& set) override;
+  const IntResponseMap& derived_synchronize() override;
+  const IntResponseMap& derived_synchronize_nowait() override;
 
   /// map incoming ASV into actual request for surrogate construction, managing
   /// any mismatch in sizes due to response aggregation modes in actualModel
@@ -122,41 +122,41 @@ protected:
 		 ShortArray& approx_asv);
 
   /// return daceIterator
-  Iterator& subordinate_iterator();
+  Iterator& subordinate_iterator() override;
 
   /// set active model key within approxInterface
-  void active_model_key(const Pecos::ActiveKey& key);
+  void active_model_key(const Pecos::ActiveKey& key) override;
   /// remove all model keys within approxInterface
-  void clear_model_keys();
+  void clear_model_keys() override;
 
   /// return this model instance
-  Model& surrogate_model(size_t i = _NPOS);
+  Model& surrogate_model(size_t i = _NPOS) override;
   /// return this model instance
-  const Model& surrogate_model(size_t i = _NPOS) const;
+  const Model& surrogate_model(size_t i = _NPOS) const override;
   /// return actualModel
-  Model& truth_model();
+  Model& truth_model() override;
   /// return actualModel
-  const Model& truth_model() const;
+  const Model& truth_model() const override;
 
   /// return actualModel (and optionally its sub-models)
-  void derived_subordinate_models(ModelList& ml, bool recurse_flag);
+  void derived_subordinate_models(ModelList& ml, bool recurse_flag) override;
   /// pass request to actualModel if recursing
-  void resize_from_subordinate_model(size_t depth = SZ_MAX);
+  void resize_from_subordinate_model(size_t depth = SZ_MAX) override;
   /// pass request to actualModel if recursing and then update from it
-  void update_from_subordinate_model(size_t depth = SZ_MAX);
+  void update_from_subordinate_model(size_t depth = SZ_MAX) override;
   /// return approxInterface
-  Interface& derived_interface();
+  Interface& derived_interface() override;
 
   /// set the relative weightings for multiple objective functions or least
   /// squares terms and optionally recurses into actualModel
   void primary_response_fn_weights(const RealVector& wts,
-				   bool recurse_flag = true);
+				   bool recurse_flag = true) override;
 
   /// set responseMode and pass any bypass request on to actualModel for
   /// any lower-level surrogates.
-  void surrogate_response_mode(short mode);
+  void surrogate_response_mode(short mode) override;
   /// set approxInterface.sharedData.discrepEmulationMode
-  void discrepancy_emulation_mode(short mode);
+  void discrepancy_emulation_mode(short mode) override;
 
   // link together more than one SurrogateData instance within
   // approxInterface.functionSurfaces[i].approxData[j]
@@ -164,165 +164,165 @@ protected:
 
   /// (re)set the surrogate index set in SurrogateModel::surrogateFnIndices
   /// and ApproximationInterface::approxFnIndices
-  void surrogate_function_indices(const SizetSet& surr_fn_indices);
+  void surrogate_function_indices(const SizetSet& surr_fn_indices) override;
 
-  bool force_rebuild();
+  bool force_rebuild() override;
 
   /// Builds the local/multipoint/global approximation using
   /// daceIterator/actualModel to generate new data points
-  void build_approximation();
+  void build_approximation() override;
   /// Builds the local/multipoint/global approximation using
   /// daceIterator/actualModel to generate new data points that
   /// augment the passed vars/response anchor point
   bool build_approximation(const Variables& vars,
-			   const IntResponsePair& response_pr);
+			   const IntResponsePair& response_pr) override;
 
   /// Rebuilds the local/multipoint/global approximation using
   /// daceIterator/actualModel to generate an increment of appended data
-  void rebuild_approximation();
+  void rebuild_approximation() override;
   /// Rebuilds the local/multipoint/global approximation using
   /// the passed response data for a single sample
-  void rebuild_approximation(const IntResponsePair& response_pr);
+  void rebuild_approximation(const IntResponsePair& response_pr) override;
   /// Rebuilds the local/multipoint/global approximation using
   /// the passed response data for a set of samples
-  void rebuild_approximation(const IntResponseMap& resp_map);
+  void rebuild_approximation(const IntResponseMap& resp_map) override;
 
   /// replaces the approximation data with daceIterator results and
   /// rebuilds the approximation if requested
-  void update_approximation(bool rebuild_flag);
+  void update_approximation(bool rebuild_flag) override;
   /// replaces the anchor point, and rebuilds the approximation if requested
   void update_approximation(const Variables& vars,
 			    const IntResponsePair& response_pr,
-			    bool rebuild_flag);
+			    bool rebuild_flag) override;
   /// replaces the current points array and rebuilds the approximation
   /// if requested
   void update_approximation(const VariablesArray& vars_array,
-			    const IntResponseMap& resp_map, bool rebuild_flag);
+			    const IntResponseMap& resp_map, bool rebuild_flag) override;
   /// replaces the current points array and rebuilds the approximation
   /// if requested
   void update_approximation(const RealMatrix& samples,
-			    const IntResponseMap& resp_map, bool rebuild_flag);
+			    const IntResponseMap& resp_map, bool rebuild_flag) override;
 
   /// appends daceIterator results to a global approximation and rebuilds
   /// it if requested
-  void append_approximation(bool rebuild_flag);
+  void append_approximation(bool rebuild_flag) override;
   /// appends a point to a global approximation and rebuilds it if requested
   void append_approximation(const Variables& vars,
 			    const IntResponsePair& response_pr,
-			    bool rebuild_flag);
+			    bool rebuild_flag) override;
   /// appends a matrix of points to a global approximation and rebuilds it
   /// if requested
   void append_approximation(const RealMatrix& samples,
-			    const IntResponseMap& resp_map, bool rebuild_flag);
+			    const IntResponseMap& resp_map, bool rebuild_flag) override;
   /// appends an array of points to a global approximation and rebuilds it
   /// if requested
   void append_approximation(const VariablesArray& vars_array,
-			    const IntResponseMap& resp_map, bool rebuild_flag);
+			    const IntResponseMap& resp_map, bool rebuild_flag) override;
   /// appends an map of points to a global approximation and rebuilds it
   /// if requested
   void append_approximation(const IntVariablesMap& vars_map,
-			    const IntResponseMap&  resp_map, bool rebuild_flag);
+			    const IntResponseMap&  resp_map, bool rebuild_flag) override;
 
   void replace_approximation(const IntResponsePair& response_pr,
-			     bool rebuild_flag);
-  void replace_approximation(const IntResponseMap& resp_map, bool rebuild_flag);
-  void track_evaluation_ids(bool track);
+			     bool rebuild_flag) override;
+  void replace_approximation(const IntResponseMap& resp_map, bool rebuild_flag) override;
+  void track_evaluation_ids(bool track) override;
 
-  void pop_approximation(bool save_surr_data, bool rebuild_flag = false);
+  void pop_approximation(bool save_surr_data, bool rebuild_flag = false) override;
 
-  void push_approximation();
-  bool push_available();
+  void push_approximation() override;
+  bool push_available() override;
 
-  void finalize_approximation();
+  void finalize_approximation() override;
 
   /// combine all level approximations into a separate composite approximation
-  void combine_approximation();
+  void combine_approximation() override;
   /// promote the combined approximation into the active one
-  void combined_to_active(bool clear_combined = true);
+  void combined_to_active(bool clear_combined = true) override;
 
   /// clear inactive data stored in the approxInterface
-  void clear_inactive();
+  void clear_inactive() override;
 
   /// query approxInterface for available advancements in order, rank, etc.
-  bool advancement_available();
+  bool advancement_available() override;
   /// query approxInterface for updates in formulation (requiring a rebuild)
-  bool formulation_updated() const;
+  bool formulation_updated() const override;
   /// update the formulation status in approxInterface
-  void formulation_updated(bool update);
+  void formulation_updated(bool update) override;
   
   /// execute the DACE iterator to generate build data
-  void run_dace();
+  void run_dace() override;
 
   /// retrieve the SharedApproxData from approxInterface
-  SharedApproxData& shared_approximation();
+  SharedApproxData& shared_approximation() override;
   /// retrieve the set of Approximations from approxInterface
-  std::vector<Approximation>& approximations();
+  std::vector<Approximation>& approximations() override;
   /// return the approximation coefficients from each Approximation
   /// (request forwarded to approxInterface)
-  const RealVectorArray& approximation_coefficients(bool normalized = false);
+  const RealVectorArray& approximation_coefficients(bool normalized = false) override;
   /// set the approximation coefficients within each Approximation
   /// (request forwarded to approxInterface)
   void approximation_coefficients(const RealVectorArray& approx_coeffs,
-				  bool normalized = false);
+				  bool normalized = false) override;
   /// return the approximation variance from each Approximation
   /// (request forwarded to approxInterface)
-  const RealVector& approximation_variances(const Variables& vars);
+  const RealVector& approximation_variances(const Variables& vars) override;
   /// return the approximation data from a particular Approximation
   /// (request forwarded to approxInterface)
-  const Pecos::SurrogateData& approximation_data(size_t fn_index);
+  const Pecos::SurrogateData& approximation_data(size_t fn_index) override;
 
   /// update component parallel mode for supporting parallelism in actualModel
-  void component_parallel_mode(short mode);
+  void component_parallel_mode(short mode) override;
 
-  IntIntPair estimate_partition_bounds(int max_eval_concurrency);
+  IntIntPair estimate_partition_bounds(int max_eval_concurrency) override;
 
   /// set up actualModel for parallel operations
   void derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-				  bool recurse_flag = true);
+				  bool recurse_flag = true) override;
   /// set up actualModel for serial operations.
-  void derived_init_serial();
+  void derived_init_serial() override;
   /// set active parallel configuration within actualModel
   void derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-				 bool recurse_flag = true);
+				 bool recurse_flag = true) override;
   /// deallocate communicator partitions for the DataFitSurrModel
   /// (request forwarded to actualModel)
   void derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-				  bool recurse_flag = true);
+				  bool recurse_flag = true) override;
 
   /// Service actualModel job requests received from the master.
   /// Completes when a termination message is received from stop_servers().
-  void serve_run(ParLevLIter pl_iter, int max_eval_concurrency);
+  void serve_run(ParLevLIter pl_iter, int max_eval_concurrency) override;
   /// Executed by the master to terminate actualModel server operations
   /// when DataFitSurrModel iteration is complete.
-  void stop_servers();
+  void stop_servers() override;
 
   /// update the Model's active view based on higher level context
   /// and optionally recurse into actualModel
-  void active_view(short view, bool recurse_flag = true);
+  void active_view(short view, bool recurse_flag = true) override;
   /// update the Model's inactive view based on higher level context
   /// and optionally recurse into actualModel
-  void inactive_view(short view, bool recurse_flag = true);
+  void inactive_view(short view, bool recurse_flag = true) override;
 
   /// return the approxInterface identifier
-  const String& interface_id() const;
+  const String& interface_id() const override;
   /// if recurse_flag, return the actualModel evaluation cache usage
-  bool evaluation_cache(bool recurse_flag = true) const;
+  bool evaluation_cache(bool recurse_flag = true) const override;
   /// if recurse_flag, return the actualModel restart file usage
-  bool restart_file(bool recurse_flag = true) const;
+  bool restart_file(bool recurse_flag = true) const override;
 
   /// set the evaluation counter reference points for the DataFitSurrModel
   /// (request forwarded to approxInterface and actualModel)
-  void set_evaluation_reference();
+  void set_evaluation_reference() override;
   /// request fine-grained evaluation reporting within approxInterface
   /// and actualModel
-  void fine_grained_evaluation_counters();
+  void fine_grained_evaluation_counters() override;
   /// print the evaluation summary for the DataFitSurrModel
   /// (request forwarded to approxInterface and actualModel)
   void print_evaluation_summary(std::ostream& s, bool minimal_header = false,
-				bool relative_count = true) const;
+				bool relative_count = true) const override;
 
   /// set the warm start flag, including actualModel
-  void warm_start_flag(const bool flag);
+  void warm_start_flag(const bool flag) override;
 
   ActiveSet default_interface_active_set();
 

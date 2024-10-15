@@ -30,13 +30,13 @@ public:
 
   ExecutableEnvironment();                       ///< default constructor
   ExecutableEnvironment(int argc, char* argv[]); ///< constructor
-  ~ExecutableEnvironment();                      ///< destructor
+  ~ExecutableEnvironment() override;                      ///< destructor
     
   //
   //- Heading: Virtual function redefinitions
   //
 
-  void execute();
+  void execute() override;
 
   //
   //- Heading: Member functions

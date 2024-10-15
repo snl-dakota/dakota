@@ -35,10 +35,10 @@ public:
   /// Default Constructor
   PebbldBranching();
   /// Destructor
-  ~PebbldBranching();
+  ~PebbldBranching() override;
 
   /// Method that returns an empty Sub-Branch
-  pebbl::branchSub* blankSub();
+  pebbl::branchSub* blankSub() override;
   void setModel(Model& model) {parentModel = model;};
   void setIterator(Iterator& iterator) {nlpSolver = iterator;};
 };
@@ -72,32 +72,32 @@ public:
   /// Constructor
   PebbldBranchSub();
   /// Destructor
-  ~PebbldBranchSub();
+  ~PebbldBranchSub() override;
 
   /// Returns a reference to the corresponding main Branching object.
   PebbldBranching* global() const;
   /// Returns a reference to the corresponding main Branching object.
-  pebbl::branching* bGlobal() const;
+  pebbl::branching* bGlobal() const override;
   /// Method that sets up the main Branching object.
   void setGlobalInfo(PebbldBranching* global_);
   /// Method that is called when declaring the current node as a root node.
-  void setRootComputation();
+  void setRootComputation() override;
   /// Method that does the Bounding Operation.
   /// In other words, it calls the optimization algorithm on the
   /// relaxed domain
-  void boundComputation(double* controlParam);
+  void boundComputation(double* controlParam) override;
   /// Method called after the bounding operation, returns true if 
   /// the bounding resulted in a possible solution to the original
   /// non-relaxed problem.
-  bool candidateSolution();
+  bool candidateSolution() override;
   /// Method that returns a PEBBL-based solution. 
-  pebbl::solution* extractSolution();
+  pebbl::solution* extractSolution() override;
   /// Method that determines how many branches are created and how.
   /// Returns the number of branches created from this object.
-  int splitComputation();
+  int splitComputation() override;
   /// Method that returns a new PebbldBranchSub object based on 
   /// Objective Function improvements and the number of branches.
-  pebbl::branchSub* makeChild(int whichChild);
+  pebbl::branchSub* makeChild(int whichChild) override;
   /// Method that creates a new PebbldBranching object.
   void pebbldSubAsChildOf(PebbldBranchSub* parent, int splitVar, int whichChild, std::vector<double> _candidate_x, RealVector _lower_bounds, RealVector _upper_bounds);
 };

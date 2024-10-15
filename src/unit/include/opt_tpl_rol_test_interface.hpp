@@ -28,7 +28,7 @@ public:
   RolTestInterface(const std::string& problem_name,
 		     const Dakota::ProblemDescDB& problem_db);
 
-  ~RolTestInterface() {  /* empty dtor */  }
+  ~RolTestInterface() override {  /* empty dtor */  }
 
   /// execute an analysis code portion of a direct evaluation invocation
   int derived_map_ac(const Dakota::String& ac_name) override;

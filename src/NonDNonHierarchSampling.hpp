@@ -261,7 +261,7 @@ public:
   /// standard constructor
   NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model);
   /// destructor
-  ~NonDNonHierarchSampling();
+  ~NonDNonHierarchSampling() override;
 
   //
   //- Heading: Virtual function redefinitions
@@ -275,16 +275,16 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void pre_run();
+  void pre_run() override;
   //void core_run();
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
   //void print_variance_reduction(std::ostream& s);
 
   /// return name of active optimizer method
-  unsigned short uses_method() const;
+  unsigned short uses_method() const override;
   /// perform a numerical solver method switch due to a detected conflict
-  void method_recourse(unsigned short method_name);
+  void method_recourse(unsigned short method_name) override;
 
   //
   //- Heading: New virtual functions

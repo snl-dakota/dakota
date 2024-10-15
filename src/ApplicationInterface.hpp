@@ -44,7 +44,7 @@ public:
   //
 
   ApplicationInterface(const ProblemDescDB& problem_db); ///< constructor
-  ~ApplicationInterface();                               ///< destructor
+  ~ApplicationInterface() override;                               ///< destructor
 
 protected:
 
@@ -57,26 +57,26 @@ protected:
   //
 
   void init_communicators(const IntArray& message_lengths, 
-			  int max_eval_concurrency);
+			  int max_eval_concurrency) override;
   void set_communicators(const IntArray& message_lengths,
-			 int max_eval_concurrency);
+			 int max_eval_concurrency) override;
   //void free_communicators();
 
-  void init_serial();
+  void init_serial() override;
 
   /// return asynchLocalEvalConcurrency
-  int asynch_local_evaluation_concurrency() const;
+  int asynch_local_evaluation_concurrency() const override;
 
   /// return interfaceSynchronization
-  short interface_synchronization() const;
+  short interface_synchronization() const override;
 
   /// return evalCacheFlag
-  bool evaluation_cache() const;
+  bool evaluation_cache() const override;
   /// return evalCacheFlag
-  bool restart_file() const;
+  bool restart_file() const override;
 
   /// form and return the final evaluation ID tag, appending iface ID if needed
-  String final_eval_id_tag(int fn_eval_id);
+  String final_eval_id_tag(int fn_eval_id) override;
 
   // Placeholders for external layer of filtering (common I/O operations
   // such as d.v. linking and response time history smoothing)
@@ -90,7 +90,7 @@ protected:
   /// Provides a "mapping" of variables to responses using a simulation.
   /// Protected due to Interface letter-envelope idiom.
   void map(const Variables& vars, const ActiveSet& set, Response& response,
-	   bool asynch_flag = false);
+	   bool asynch_flag = false) override;
 
   /// manages a simulation failure using abort/retry/recover/continuation
   void manage_failure(const Variables& vars, const ActiveSet& set,
@@ -98,17 +98,17 @@ protected:
 
   /// executes a blocking schedule for asynchronous evaluations in the
   /// beforeSynchCorePRPQueue and returns all jobs
-  const IntResponseMap& synchronize();
+  const IntResponseMap& synchronize() override;
 
   /// executes a nonblocking schedule for asynchronous evaluations in the
   /// beforeSynchCorePRPQueue and returns a partial set of completed jobs
-  const IntResponseMap& synchronize_nowait();
+  const IntResponseMap& synchronize_nowait() override;
 
   /// run on evaluation servers to serve the iterator master
-  void serve_evaluations();
+  void serve_evaluations() override;
 
   /// used by the iterator master to terminate evaluation servers
-  void stop_evaluation_servers();
+  void stop_evaluation_servers() override;
 
   /// checks on multiprocessor analysis configuration
   bool check_multiprocessor_analysis(bool warn);

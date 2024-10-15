@@ -43,13 +43,13 @@ public:
 		       short rule_nest, short rule_growth,
 		       bool piecewise_basis, bool use_derivs);
   /// destructor
-  ~NonDStochCollocation();
+  ~NonDStochCollocation() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
 
 protected:
 
@@ -74,14 +74,14 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void resolve_inputs(short& u_space_type, short& data_order);
-  void initialize_u_space_model();
+  void resolve_inputs(short& u_space_type, short& data_order) override;
+  void initialize_u_space_model() override;
 
   //void initialize_expansion();
   //void compute_expansion();
 
-  Real compute_covariance_metric(bool revert, bool print_metric);
-  Real compute_level_mappings_metric(bool revert, bool print_metric);
+  Real compute_covariance_metric(bool revert, bool print_metric) override;
+  Real compute_level_mappings_metric(bool revert, bool print_metric) override;
   //Real compute_final_statistics_metric(bool revert, bool print_metric);
 
   //void compute_statistics(short results_state = FINAL_RESULTS);

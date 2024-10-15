@@ -54,28 +54,28 @@ class NPSOLTraits: public TraitsBase
   NPSOLTraits() { }
 
   /// destructor
-  virtual ~NPSOLTraits() { }
+  ~NPSOLTraits() override { }
 
   /// A temporary query used in the refactor
-  virtual bool is_derived() { return true; }
+  bool is_derived() override { return true; }
 
   /// Return the flag indicating whether method supports continuous variables
-  bool supports_continuous_variables() { return true; }
+  bool supports_continuous_variables() override { return true; }
 
   /// Return the flag indicating whether method supports linear equalities
-  bool supports_linear_equality() { return true; }
+  bool supports_linear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports linear inequalities
-  bool supports_linear_inequality() { return true; }
+  bool supports_linear_inequality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear equalities
-  bool supports_nonlinear_equality() { return true; }
+  bool supports_nonlinear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear inequalities
-  bool supports_nonlinear_inequality() { return true; }
+  bool supports_nonlinear_inequality() override { return true; }
 
   /// Return the format used for nonlinear inequality constraints
-  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override
     { return NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED; }
 
 };
@@ -118,22 +118,22 @@ public:
 		 Real fdss = 0., Real fn_precision = 0., Real feas_tol = 0.,
 		 Real lin_feas_tol = 0., Real nonlin_feas_tol = 0.);
 
-  ~NPSOLOptimizer(); ///< destructor
+  ~NPSOLOptimizer() override; ///< destructor
     
   //
   //- Heading: Virtual function redefinitions
   //
 
   //void pre_run();
-  void core_run();
+  void core_run() override;
 
-  void declare_sources();
+  void declare_sources() override;
 
-  void check_sub_iterator_conflict();
+  void check_sub_iterator_conflict() override;
 
   // updaters for user-functions mode:
 
-  void initial_point(const RealVector& pt);
+  void initial_point(const RealVector& pt) override;
   void update_callback_data(const RealVector& cv_initial,
 			    const RealVector& cv_lower_bnds,
 			    const RealVector& cv_upper_bnds,
@@ -144,8 +144,8 @@ public:
 			    const RealVector& lin_eq_targets,
 			    const RealVector& nln_ineq_l_bnds,
 			    const RealVector& nln_ineq_u_bnds,
-			    const RealVector& nln_eq_targets);
-  const RealMatrix& callback_linear_ineq_coefficients() const;
+			    const RealVector& nln_eq_targets) override;
+  const RealMatrix& callback_linear_ineq_coefficients() const override;
   //const RealVector& callback_linear_ineq_lower_bounds() const;
   //const RealVector& callback_linear_ineq_upper_bounds() const;
 

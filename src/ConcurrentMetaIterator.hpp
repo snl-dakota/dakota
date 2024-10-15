@@ -48,7 +48,7 @@ public:
   /// alternate constructor
   ConcurrentMetaIterator(ProblemDescDB& problem_db, Model& model);
   /// destructor
-  ~ConcurrentMetaIterator();
+  ~ConcurrentMetaIterator() override;
 
 protected:
 
@@ -56,29 +56,29 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void pre_run();
+  void pre_run() override;
   /// Performs the concurrent iteration by executing selectedIterator on
   /// iteratedModel multiple times in parallel for different parameter sets
-  void core_run();
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void core_run() override;
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
-  void derived_init_communicators(ParLevLIter pl_iter);
-  void derived_set_communicators(ParLevLIter pl_iter);
-  void derived_free_communicators(ParLevLIter pl_iter);
+  void derived_init_communicators(ParLevLIter pl_iter) override;
+  void derived_set_communicators(ParLevLIter pl_iter) override;
+  void derived_free_communicators(ParLevLIter pl_iter) override;
 
-  IntIntPair estimate_partition_bounds();
+  IntIntPair estimate_partition_bounds() override;
 
-  void initialize_iterator(int job_index);
-  void pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index);
+  void initialize_iterator(int job_index) override;
+  void pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index) override;
   void unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer,
-				    int job_index);
-  void pack_results_buffer(MPIPackBuffer& send_buffer, int job_index);
-  void unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index);
-  void update_local_results(int job_index);
+				    int job_index) override;
+  void pack_results_buffer(MPIPackBuffer& send_buffer, int job_index) override;
+  void unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index) override;
+  void update_local_results(int job_index) override;
 
-  const Model& algorithm_space_model() const;
+  const Model& algorithm_space_model() const override;
 
-  virtual void declare_sources();
+  void declare_sources() override;
 
 private:
 

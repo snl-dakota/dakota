@@ -44,16 +44,16 @@ public:
   //
 
   NonDPOFDarts(ProblemDescDB& problem_db, Model& model); ///< constructor
-  ~NonDPOFDarts();                                       ///< destructor
+  ~NonDPOFDarts() override;                                       ///< destructor
 
   //
   //- Heading: Virtual member function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
 
   /// perform POFDart analysis and return probability of failure 
-  void core_run();
+  void core_run() override;
 
 protected:
 
@@ -72,7 +72,7 @@ protected:
     void execute(size_t kd);
     
     /// print the final statistics
-    void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+    void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
     
     
     //////////////////////////////////////////////////////////////

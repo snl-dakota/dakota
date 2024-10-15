@@ -34,7 +34,7 @@ public:
   NonDHierarchSampling(ProblemDescDB& problem_db, Model& model);
   /// destructor (virtual declaration should be redundant with ~Iterator,
   /// but this is top of MLMF diamond so doesn't hurt to be explicit)
-  virtual ~NonDHierarchSampling();
+  ~NonDHierarchSampling() override;
 
   //
   //- Heading: Virtual function redefinitions
@@ -53,7 +53,7 @@ protected:
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
-  Real estimator_accuracy_metric();
+  Real estimator_accuracy_metric() override;
 
   //
   //- Heading: Member functions

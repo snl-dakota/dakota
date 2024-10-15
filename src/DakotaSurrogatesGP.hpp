@@ -37,7 +37,7 @@ public:
   /// alternate constructor
   SurrogatesGPApprox(const SharedApproxData& shared_data);
   /// destructor
-  ~SurrogatesGPApprox() { }
+  ~SurrogatesGPApprox() override { }
 
 protected:
 

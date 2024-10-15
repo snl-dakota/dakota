@@ -58,15 +58,15 @@ public:
 		 const RealVector& dim_pref, short driver_mode,
 		 int num_sub_samples, int seed);
 
-  ~NonDQuadrature();                                       ///< destructor
+  ~NonDQuadrature() override;                                       ///< destructor
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  void increment_grid();
-  void decrement_grid();
-  void evaluate_grid_increment();
+  void increment_grid() override;
+  void decrement_grid() override;
+  void evaluate_grid_increment() override;
 
   //
   //- Heading: Member functions
@@ -77,7 +77,7 @@ public:
 
   /// set Pecos::TensorProductDriver::quadOrder to dimension orders indicated by
   /// quadOrderSpec & dimPrefSpec, following refinement or sequence advancement
-  void reset();
+  void reset() override;
 
   /// return Pecos::TensorProductDriver::quadOrder
   const Pecos::UShortArray& quadrature_order() const;
@@ -104,19 +104,19 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis);
+  void initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis) override;
 
-  void get_parameter_sets(Model& model);
+  void get_parameter_sets(Model& model) override;
 
-  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag);
-  void sampling_reference(size_t samples_ref);
+  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag) override;
+  void sampling_reference(size_t samples_ref) override;
 
-  void increment_grid_preference(const RealVector& dim_pref);
-  void increment_grid_preference();
+  void increment_grid_preference(const RealVector& dim_pref) override;
+  void increment_grid_preference() override;
 
-  size_t num_samples() const;
+  size_t num_samples() const override;
 
-  void random_seed(int seed);
+  void random_seed(int seed) override;
 
 private:
 

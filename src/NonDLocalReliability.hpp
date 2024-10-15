@@ -50,26 +50,26 @@ public:
   /// constructor
   NonDLocalReliability(ProblemDescDB& problem_db, Model& model);
   /// destructor
-  ~NonDLocalReliability();
+  ~NonDLocalReliability() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  void derived_init_communicators(ParLevLIter pl_iter);
-  void derived_set_communicators(ParLevLIter pl_iter);
-  void derived_free_communicators(ParLevLIter pl_iter);
+  void derived_init_communicators(ParLevLIter pl_iter) override;
+  void derived_set_communicators(ParLevLIter pl_iter) override;
+  void derived_free_communicators(ParLevLIter pl_iter) override;
 
   /// initialize graphics customized for local reliability methods
-  void initialize_graphics(int iterator_server_id = 1);
+  void initialize_graphics(int iterator_server_id = 1) override;
 
-  void pre_run();
-  void core_run();
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void pre_run() override;
+  void core_run() override;
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
-  void check_sub_iterator_conflict();
-  unsigned short uses_method() const;
-  void method_recourse(unsigned short method_name);
+  void check_sub_iterator_conflict() override;
+  unsigned short uses_method() const override;
+  void method_recourse(unsigned short method_name) override;
 
 private:
 

@@ -61,13 +61,13 @@ public:
 		      short u_space_type, const ShortShortPair& approx_view);
 
   /// destructor
-  ~NonDPolynomialChaos();
+  ~NonDPolynomialChaos() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
 
 protected:
 
@@ -103,44 +103,44 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void derived_init_communicators(ParLevLIter pl_iter);
-  void derived_set_communicators(ParLevLIter pl_iter);
-  void derived_free_communicators(ParLevLIter pl_iter);
+  void derived_init_communicators(ParLevLIter pl_iter) override;
+  void derived_set_communicators(ParLevLIter pl_iter) override;
+  void derived_free_communicators(ParLevLIter pl_iter) override;
 
-  void resolve_inputs(short& u_space_type, short& data_order);
+  void resolve_inputs(short& u_space_type, short& data_order) override;
 
-  void initialize_u_space_model();
+  void initialize_u_space_model() override;
 
-  size_t collocation_points() const;
+  size_t collocation_points() const override;
 
   //void initialize_expansion();
-  void compute_expansion();
+  void compute_expansion() override;
 
   void select_refinement_points(const RealVectorArray& candidate_samples,
 				unsigned short batch_size,
-				RealMatrix& best_samples);
+				RealMatrix& best_samples) override;
 
   void select_refinement_points_deprecated(
     const RealVectorArray& candidate_samples, unsigned short batch_size,
     RealMatrix& best_samples);
 
   void append_expansion(const RealMatrix& samples,
-			const IntResponseMap& resp_map);
+			const IntResponseMap& resp_map) override;
 
-  void update_samples_from_order_increment();
-  void sample_allocation_metric(Real& sparsity_metric, Real power);
+  void update_samples_from_order_increment() override;
+  void sample_allocation_metric(Real& sparsity_metric, Real power) override;
 
   /// Inherit to allow on-the-fly instances to customize behavior
-  virtual void post_run(std::ostream& s) override;
+  void post_run(std::ostream& s) override;
   /// print the final coefficients and final statistics
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
   /// print the PCE coefficient array for the orthogonal basis
   void print_coefficients(std::ostream& s);
   /// export the PCE coefficient array to expansionExportFile
   void export_coefficients();
 
   /// archive the PCE coefficient array for the orthogonal basis
-  void archive_coefficients();
+  void archive_coefficients() override;
 
   //
   //- Heading: Member functions

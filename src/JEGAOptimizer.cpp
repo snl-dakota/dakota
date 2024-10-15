@@ -359,11 +359,11 @@ class JEGAOptimizer::Evaluator :
          * \param group The group of Design class objects to be evaluated.
          * \return true if all evaluations completed and false otherwise.
          */
-        virtual
+        
         bool
         Evaluate(
             DesignGroup& group
-            );
+            ) override;
 
         /// This method cannot be used!!
         /**
@@ -378,11 +378,11 @@ class JEGAOptimizer::Evaluator :
          *         otherwise.  Never actually returns here.  Issues a fatal
          *         error.  Otherwise, it would always return false.
          */
-        virtual
+        
         bool
         Evaluate(
             Design& des
-            )
+            ) override
         {
             EDDY_FUNC_DEBUGSCOPE
 
@@ -399,10 +399,10 @@ class JEGAOptimizer::Evaluator :
         /**
          * \return See Name().
          */
-        virtual
+        
         std::string
         GetName(
-            ) const
+            ) const override
         {
             EDDY_FUNC_DEBUGSCOPE
             return Evaluator::Name();
@@ -412,10 +412,10 @@ class JEGAOptimizer::Evaluator :
         /**
          * \return See Description().
          */
-        virtual
+        
         std::string
         GetDescription(
-            ) const
+            ) const override
         {
             EDDY_FUNC_DEBUGSCOPE
             return Evaluator::Description();
@@ -428,11 +428,11 @@ class JEGAOptimizer::Evaluator :
          * \param algorithm The GA for which the clone is being created.
          * \return A clone of this operator.
          */
-        virtual
+        
         GeneticAlgorithmOperator*
         Clone(
             GeneticAlgorithm& algorithm
-            ) const
+            ) const override
         {
             EDDY_FUNC_DEBUGSCOPE
             return new Evaluator(*this, algorithm, _model);
@@ -554,11 +554,11 @@ class JEGAOptimizer::EvaluatorCreator :
          * \param alg The GA for which the evaluator is to be created.
          * \return A pointer to a newly created Evaluator.
          */
-        virtual
+        
         GeneticAlgorithmEvaluator*
         CreateEvaluator(
             GeneticAlgorithm& alg
-            )
+            ) override
         {
             EDDY_FUNC_DEBUGSCOPE
 	      return new Evaluator(alg, _theModel);

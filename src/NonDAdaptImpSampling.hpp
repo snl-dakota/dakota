@@ -41,16 +41,16 @@ public:
 		       bool x_space_model, bool use_model_bounds,
 		       bool track_extreme);
   /// destructor
-  ~NonDAdaptImpSampling();
+  ~NonDAdaptImpSampling() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  bool resize();
-  void derived_init_communicators(ParLevLIter pl_iter);
-  void derived_set_communicators(ParLevLIter pl_iter);
-  void derived_free_communicators(ParLevLIter pl_iter);
+  bool resize() override;
+  void derived_init_communicators(ParLevLIter pl_iter) override;
+  void derived_set_communicators(ParLevLIter pl_iter) override;
+  void derived_free_communicators(ParLevLIter pl_iter) override;
 
   void nested_variable_mappings(const SizetArray& c_index1,
 				const SizetArray& di_index1,
@@ -59,16 +59,16 @@ public:
 				const ShortArray& c_target2,
 				const ShortArray& di_target2,
 				const ShortArray& ds_target2,
-				const ShortArray& dr_target2);
+				const ShortArray& dr_target2) override;
 
   /// performs adaptive importance sampling and computes probability of failure
-  void core_run();
+  void core_run() override;
 
   /// print the final statistics
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
   /// return importanceSamplingType
-  unsigned short sampling_scheme() const;
+  unsigned short sampling_scheme() const override;
   /// return refineSamples
   int refinement_samples() const;
 

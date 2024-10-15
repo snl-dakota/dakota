@@ -42,7 +42,7 @@ public:
 			  unsigned short soft_conv_limit,
 			  std::shared_ptr<TraitsBase> traits);
   /// destructor
-  ~SurrBasedLocalMinimizer();
+  ~SurrBasedLocalMinimizer() override;
 
 protected:
 
@@ -51,17 +51,17 @@ protected:
   //
 
   /// initialize graphics customized for surrogate-based iteration
-  void initialize_graphics(int iterator_server_id = 1);
+  void initialize_graphics(int iterator_server_id = 1) override;
 
-  void pre_run();
+  void pre_run() override;
 
   /// Performs local surrogate-based minimization by minimizing local,
   /// global, or hierarchical surrogates over a series of trust regions.
-  void core_run();
+  void core_run() override;
 
-  void post_run(std::ostream& s);
+  void post_run(std::ostream& s) override;
 
-  void reset();
+  void reset() override;
 
   //
   //- Heading: New Virtual functions

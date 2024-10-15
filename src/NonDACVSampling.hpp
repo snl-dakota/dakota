@@ -34,7 +34,7 @@ public:
   /// standard constructor
   NonDACVSampling(ProblemDescDB& problem_db, Model& model);
   /// destructor
-  ~NonDACVSampling();
+  ~NonDACVSampling() override;
 
 protected:
 
@@ -43,15 +43,15 @@ protected:
   //
 
   //void pre_run();
-  void core_run();
+  void core_run() override;
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
-  Real estimator_accuracy_metric();
+  Real estimator_accuracy_metric() override;
   //Real estimator_cost_metric();
-  void print_variance_reduction(std::ostream& s);
+  void print_variance_reduction(std::ostream& s) override;
 
   void estimator_variance_ratios(const RealVector& r_and_N,
-				 RealVector& estvar_ratios);
+				 RealVector& estvar_ratios) override;
 
   //
   //- Heading: member functions

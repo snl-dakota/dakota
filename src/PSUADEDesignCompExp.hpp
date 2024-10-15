@@ -36,13 +36,13 @@ public:
   /// primary constructor for building a standard DACE iterator
   PSUADEDesignCompExp(ProblemDescDB& problem_db, Model& model);
   /// destructor
-  ~PSUADEDesignCompExp();
+  ~PSUADEDesignCompExp() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
     
 protected:
 
@@ -50,16 +50,16 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void pre_run();
-  void post_input();
-  void core_run();
-  void post_run(std::ostream& s);
+  void pre_run() override;
+  void post_input() override;
+  void core_run() override;
+  void post_run(std::ostream& s) override;
 
-  size_t num_samples() const;
-  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag);
-  unsigned short sampling_scheme() const;
-  void vary_pattern(bool pattern_flag);
-  void get_parameter_sets(Model& model);
+  size_t num_samples() const override;
+  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag) override;
+  unsigned short sampling_scheme() const override;
+  void vary_pattern(bool pattern_flag) override;
+  void get_parameter_sets(Model& model) override;
 
 private:
 

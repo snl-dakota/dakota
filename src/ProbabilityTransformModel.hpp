@@ -34,7 +34,7 @@ public:
 			    bool truncate_bnds = false, Real bnd = 10.);
 
   /// destructor
-  ~ProbabilityTransformModel();
+  ~ProbabilityTransformModel() override;
 
   //
   //- Heading: Member functions
@@ -52,12 +52,12 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  Pecos::ProbabilityTransformation& probability_transformation();
+  Pecos::ProbabilityTransformation& probability_transformation() override;
 
   //bool initialize_mapping(ParLevLIter pl_iter);
   //bool finalize_mapping();
-  bool resize_pending() const;
-  void update_from_subordinate_model(size_t depth = SZ_MAX);
+  bool resize_pending() const override;
+  void update_from_subordinate_model(size_t depth = SZ_MAX) override;
 
   /// set primaryACVarMapIndices and secondaryACVarMapTargets (only, for now)
   void nested_variable_mappings(const SizetArray& c_index1,
@@ -67,38 +67,38 @@ protected:
 				const ShortArray& c_target2,
 				const ShortArray& di_target2,
 				const ShortArray& ds_target2,
-				const ShortArray& dr_target2);
+				const ShortArray& dr_target2) override;
   /// return primaryACVarMapIndices
-  const SizetArray& nested_acv1_indices() const;
+  const SizetArray& nested_acv1_indices() const override;
   /// return secondaryACVarMapTargets
-  const ShortArray& nested_acv2_targets() const;
+  const ShortArray& nested_acv2_targets() const override;
   
   /// calculate and return potential state of distribution parameter
   /// derivatives, but do not cache value in distParamDerivs
-  short query_distribution_parameter_derivatives() const;
+  short query_distribution_parameter_derivatives() const override;
   /// activate distParamDerivs to {NO,MIXED,ALL}_DERIVS
-  void activate_distribution_parameter_derivatives();
+  void activate_distribution_parameter_derivatives() override;
   /// reset distParamDerivs to NO_DERIVS
-  void deactivate_distribution_parameter_derivatives();
+  void deactivate_distribution_parameter_derivatives() override;
 
-  void assign_instance();
+  void assign_instance() override;
 
   void init_metadata() override { /* no-op to leave metadata intact */}
 
-  void trans_U_to_X(const RealVector& u_c_vars, RealVector& x_c_vars);
+  void trans_U_to_X(const RealVector& u_c_vars, RealVector& x_c_vars) override;
   void trans_U_to_X(const Variables&  u_vars,   Variables&  x_vars);
-  void trans_X_to_U(const RealVector& x_c_vars, RealVector& u_c_vars);
+  void trans_X_to_U(const RealVector& x_c_vars, RealVector& u_c_vars) override;
   void trans_X_to_U(const Variables&  x_vars,   Variables&  u_vars);
 
   void trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
-			 const RealVector& x_vars);
+			 const RealVector& x_vars) override;
   void trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
-			 const RealVector& x_vars);
+			 const RealVector& x_vars) override;
   void trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
-			 const RealVector& x_vars);
+			 const RealVector& x_vars) override;
   void trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
 			 RealSymMatrix& fn_hess_u, const RealVector& x_vars,
-			 const RealVector& fn_grad_x);
+			 const RealVector& fn_grad_x) override;
 
   //
   //- Heading: Member functions

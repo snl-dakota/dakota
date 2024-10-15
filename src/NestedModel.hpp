@@ -49,9 +49,9 @@ public:
   //
 
   NestedModel(ProblemDescDB& problem_db); ///< constructor
-  ~NestedModel();                         ///< destructor
+  ~NestedModel() override;                         ///< destructor
 
-  void declare_sources();
+  void declare_sources() override;
 
 protected:
 
@@ -66,86 +66,86 @@ protected:
   // In this case, this involves running the subIterator on the subModel.
 
   /// portion of evaluate() specific to NestedModel
-  void derived_evaluate(const ActiveSet& set);
+  void derived_evaluate(const ActiveSet& set) override;
   /// portion of evaluate_nowait() specific to NestedModel
-  void derived_evaluate_nowait(const ActiveSet& set);
+  void derived_evaluate_nowait(const ActiveSet& set) override;
   /// portion of synchronize() specific to NestedModel
-  const IntResponseMap& derived_synchronize();
+  const IntResponseMap& derived_synchronize() override;
   // portion of synchronize_nowait() specific to NestedModel
   //const IntResponseMap& derived_synchronize_nowait();
 
   /// return subIterator
-  Iterator& subordinate_iterator();
+  Iterator& subordinate_iterator() override;
   /// return subModel
-  Model& subordinate_model();
+  Model& subordinate_model() override;
   /// return subModel
-  void derived_subordinate_models(ModelList& ml, bool recurse_flag);
+  void derived_subordinate_models(ModelList& ml, bool recurse_flag) override;
   /// return optionalInterface
-  Interface& derived_interface();
+  Interface& derived_interface() override;
 
   /// retrieve error estimates corresponding to the subIterator's response
   /// results (e.g., statistical MSE for subordinate UQ).
-  const RealVector& error_estimates();
+  const RealVector& error_estimates() override;
 
   /// pass a bypass request on to the subModel for any lower-level surrogates
-  void surrogate_response_mode(short mode);
+  void surrogate_response_mode(short mode) override;
 
   /// update component parallel mode for supporting parallelism in
   /// optionalInterface and subModel
-  void component_parallel_mode(short mode);
+  void component_parallel_mode(short mode) override;
 
   /// return subIteratorSched.miPLIndex
-  size_t mi_parallel_level_index() const;
+  size_t mi_parallel_level_index() const override;
 
   /// return optionalInterface synchronization setting
-  short local_eval_synchronization();
+  short local_eval_synchronization() override;
   /// return optionalInterface asynchronous evaluation concurrency
-  int local_eval_concurrency();
+  int local_eval_concurrency() override;
   /// flag which prevents overloading the master with a multiprocessor
   /// evaluation (forwarded to optionalInterface)
-  bool derived_master_overload() const;
+  bool derived_master_overload() const override;
 
-  IntIntPair estimate_partition_bounds(int max_eval_concurrency);
+  IntIntPair estimate_partition_bounds(int max_eval_concurrency) override;
 
   /// set up optionalInterface and subModel for parallel operations
   void derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-				  bool recurse_flag = true);
+				  bool recurse_flag = true) override;
   /// set up optionalInterface and subModel for serial operations.
-  void derived_init_serial();
+  void derived_init_serial() override;
   /// set active parallel configuration within subModel
   void derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-				 bool recurse_flag = true);
+				 bool recurse_flag = true) override;
   /// deallocate communicator partitions for the NestedModel
   /// (forwarded to optionalInterface and subModel)
   void derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-				  bool recurse_flag = true);
+				  bool recurse_flag = true) override;
 
   /// Service optionalInterface and subModel job requests received from
   /// the master.  Completes when a termination message is received from
   /// stop_servers().
-  void serve_run(ParLevLIter pl_iter, int max_eval_concurrency);
+  void serve_run(ParLevLIter pl_iter, int max_eval_concurrency) override;
   /// Executed by the master to terminate server operations for subModel and
   /// optionalInterface when iteration on the NestedModel is complete.
-  void stop_servers();
+  void stop_servers() override;
 
   /// return the optionalInterface identifier
-  const String& interface_id() const;
+  const String& interface_id() const override;
   /// Return the current evaluation id for the NestedModel
-  int derived_evaluation_id() const;
+  int derived_evaluation_id() const override;
 
   /// set the evaluation counter reference points for the NestedModel
   /// (request forwarded to optionalInterface and subModel)
-  void set_evaluation_reference();
+  void set_evaluation_reference() override;
   /// request fine-grained evaluation reporting within optionalInterface
   /// and subModel
-  void fine_grained_evaluation_counters();
+  void fine_grained_evaluation_counters() override;
   /// print the evaluation summary for the NestedModel
   /// (request forwarded to optionalInterface and subModel)
   void print_evaluation_summary(std::ostream& s, bool minimal_header = false,
-				bool relative_count = true) const;
+				bool relative_count = true) const override;
 
   /// set the warm start flag, including actualModel
-  void warm_start_flag(const bool flag);
+  void warm_start_flag(const bool flag) override;
 
   //
   //- Heading: Member functions

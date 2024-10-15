@@ -32,7 +32,7 @@ public:
   /// standard constructor
   NonDSurrogateExpansion(ProblemDescDB& problem_db, Model& model);
   /// destructor
-  ~NonDSurrogateExpansion();
+  ~NonDSurrogateExpansion() override;
 
   //
   //- Heading: Virtual function redefinitions

@@ -35,20 +35,20 @@ public:
   /// constructor
   NonDGlobalReliability(ProblemDescDB& problem_db, Model& model);
   /// destructor
-  ~NonDGlobalReliability();
+  ~NonDGlobalReliability() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  bool resize();
-  void derived_init_communicators(ParLevLIter pl_iter);
-  void derived_set_communicators(ParLevLIter pl_iter);
-  void derived_free_communicators(ParLevLIter pl_iter);
+  bool resize() override;
+  void derived_init_communicators(ParLevLIter pl_iter) override;
+  void derived_set_communicators(ParLevLIter pl_iter) override;
+  void derived_free_communicators(ParLevLIter pl_iter) override;
 
-  void pre_run();
-  void core_run();
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void pre_run() override;
+  void core_run() override;
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
 private:
 

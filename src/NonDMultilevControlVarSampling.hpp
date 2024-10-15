@@ -35,7 +35,7 @@ public:
   /// standard constructor
   NonDMultilevControlVarSampling(ProblemDescDB& problem_db, Model& model);
   /// destructor
-  ~NonDMultilevControlVarSampling();
+  ~NonDMultilevControlVarSampling() override;
 
 protected:
 
@@ -43,13 +43,13 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void pre_run();
-  void core_run();
+  void pre_run() override;
+  void core_run() override;
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
-  void print_variance_reduction(std::ostream& s);
+  void print_variance_reduction(std::ostream& s) override;
 
-  bool discrepancy_sample_counts() const;
+  bool discrepancy_sample_counts() const override;
 
 private:
 

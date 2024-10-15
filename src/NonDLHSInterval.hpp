@@ -31,18 +31,18 @@ public:
   //
 
   NonDLHSInterval(ProblemDescDB& problem_db, Model& model); ///< constructor
-  ~NonDLHSInterval();                                       ///< destructor
+  ~NonDLHSInterval() override;                                       ///< destructor
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  void derived_init_communicators(ParLevLIter pl_iter);
-  void derived_set_communicators(ParLevLIter pl_iter);
-  void derived_free_communicators(ParLevLIter pl_iter);
+  void derived_init_communicators(ParLevLIter pl_iter) override;
+  void derived_set_communicators(ParLevLIter pl_iter) override;
+  void derived_free_communicators(ParLevLIter pl_iter) override;
 
   /// performs an epistemic uncertainty propagation using LHS samples
-  void core_run();
+  void core_run() override;
 
 protected:
 

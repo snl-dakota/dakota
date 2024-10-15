@@ -46,48 +46,48 @@ protected:
 		 const ActiveSet& surr_set, short corr_type,
 		 short output_level);
   /// destructor
-  ~SurrogateModel();
+  ~SurrogateModel() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  Pecos::ProbabilityTransformation& probability_transformation();
+  Pecos::ProbabilityTransformation& probability_transformation() override;
 
-  void activate_distribution_parameter_derivatives();
-  void deactivate_distribution_parameter_derivatives();
+  void activate_distribution_parameter_derivatives() override;
+  void deactivate_distribution_parameter_derivatives() override;
 
-  void trans_U_to_X(const RealVector& u_c_vars, RealVector& x_c_vars);
-  void trans_X_to_U(const RealVector& x_c_vars, RealVector& u_c_vars);
+  void trans_U_to_X(const RealVector& u_c_vars, RealVector& x_c_vars) override;
+  void trans_X_to_U(const RealVector& x_c_vars, RealVector& u_c_vars) override;
 
   void trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
-			 const RealVector& x_vars);
+			 const RealVector& x_vars) override;
   void trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
-			 const RealVector& x_vars);
+			 const RealVector& x_vars) override;
   void trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
-			 const RealVector& x_vars);
+			 const RealVector& x_vars) override;
   void trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
 			 RealSymMatrix& fn_hess_u, const RealVector& x_vars,
-			 const RealVector& fn_grad_x);
+			 const RealVector& fn_grad_x) override;
 
   //bool initialize_mapping(ParLevLIter pl_iter);
   //bool finalize_mapping();
 
   /// return truth_model()
-  Model& subordinate_model();
+  Model& subordinate_model() override;
 
-  void active_model_key(const Pecos::ActiveKey& key);
-  const Pecos::ActiveKey& active_model_key() const;
+  void active_model_key(const Pecos::ActiveKey& key) override;
+  const Pecos::ActiveKey& active_model_key() const override;
 
-  short surrogate_response_mode() const;
-  short correction_type() const;
-  short correction_order() const;
+  short surrogate_response_mode() const override;
+  short correction_type() const override;
+  short correction_order() const override;
 
   /// return the current evaluation id for this Model
-  int derived_evaluation_id() const;
+  int derived_evaluation_id() const override;
 
   /// return miPLIndex
-  size_t mi_parallel_level_index() const;
+  size_t mi_parallel_level_index() const override;
 
   //
   //- Heading: New virtual functions

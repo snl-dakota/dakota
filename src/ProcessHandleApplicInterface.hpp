@@ -34,7 +34,7 @@ public:
   /// constructor
   ProcessHandleApplicInterface(const ProblemDescDB& problem_db);
   /// destructor
-  ~ProcessHandleApplicInterface();
+  ~ProcessHandleApplicInterface() override;
 
 protected:
 
@@ -42,14 +42,14 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  int synchronous_local_analysis(int analysis_id);
+  int synchronous_local_analysis(int analysis_id) override;
 
-  void init_communicators_checks(int max_eval_concurrency);
-  void set_communicators_checks(int max_eval_concurrency);
+  void init_communicators_checks(int max_eval_concurrency) override;
+  void set_communicators_checks(int max_eval_concurrency) override;
 
-  void map_bookkeeping(pid_t pid, int fn_eval_id);
+  void map_bookkeeping(pid_t pid, int fn_eval_id) override;
 
-  pid_t create_evaluation_process(bool block_flag);
+  pid_t create_evaluation_process(bool block_flag) override;
 
   //
   //- Heading: New virtual functions

@@ -27,32 +27,32 @@ class CONMINTraits: public TraitsBase
   CONMINTraits() { }
 
   /// destructor
-  virtual ~CONMINTraits() { }
+  ~CONMINTraits() override { }
 
   /// A temporary query used in the refactor
-  virtual bool is_derived() { return true; }
+  bool is_derived() override { return true; }
 
   /// Return the flag indicating whether method supports continuous variables
-  bool supports_continuous_variables() { return true; }
+  bool supports_continuous_variables() override { return true; }
 
   /// Return the flag indicating whether method supports linear equalities
-  bool supports_linear_equality() { return true; }
+  bool supports_linear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports linear inequalities
-  bool supports_linear_inequality() { return true; }
+  bool supports_linear_inequality() override { return true; }
 
   /// Return the format used for linear inequality constraints
-  LINEAR_INEQUALITY_FORMAT linear_inequality_format()
+  LINEAR_INEQUALITY_FORMAT linear_inequality_format() override
     { return LINEAR_INEQUALITY_FORMAT::ONE_SIDED_UPPER; }
 
   /// Return the flag indicating whether method supports nonlinear equalities
-  bool supports_nonlinear_equality() { return true; }
+  bool supports_nonlinear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear inequalities
-  bool supports_nonlinear_inequality() { return true; }
+  bool supports_nonlinear_inequality() override { return true; }
 
   /// Return the format used for nonlinear inequality constraints
-  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override
     { return NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_UPPER; }
 };
 
@@ -91,13 +91,13 @@ public:
   /// alternate constructor; construct without ProblemDescDB
   CONMINOptimizer(const String& method_string, Model& model);
   /// destructor
-  ~CONMINOptimizer();
+  ~CONMINOptimizer() override;
 
   //
   //- Heading: Virtual member function redefinitions
   //
 
-  void core_run();
+  void core_run() override;
 
 protected:
 
@@ -105,9 +105,9 @@ protected:
   //- Heading: Virtual member function redefinitions
   //
 
-  void initialize_run();
+  void initialize_run() override;
 
-  void check_sub_iterator_conflict();
+  void check_sub_iterator_conflict() override;
 
 private:
 

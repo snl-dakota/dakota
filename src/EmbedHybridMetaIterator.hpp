@@ -38,7 +38,7 @@ public:
   /// alternate constructor
   EmbedHybridMetaIterator(ProblemDescDB& problem_db, Model& model);
   /// destructor
-  ~EmbedHybridMetaIterator();
+  ~EmbedHybridMetaIterator() override;
     
 protected:
   
@@ -48,18 +48,18 @@ protected:
 
   /// Performs the hybrid iteration by executing global and local
   /// iterators, using a set of models that may vary in fidelity
-  void core_run();
+  void core_run() override;
 
-  void derived_init_communicators(ParLevLIter pl_iter);
-  void derived_set_communicators(ParLevLIter pl_iter);
-  void derived_free_communicators(ParLevLIter pl_iter);
+  void derived_init_communicators(ParLevLIter pl_iter) override;
+  void derived_set_communicators(ParLevLIter pl_iter) override;
+  void derived_free_communicators(ParLevLIter pl_iter) override;
 
-  IntIntPair estimate_partition_bounds();
+  IntIntPair estimate_partition_bounds() override;
 
   /// return the final solution from the embedded hybrid (variables)
-  const Variables& variables_results() const;
+  const Variables& variables_results() const override;
   /// return the final solution from the embedded hybrid (response)
-  const Response&  response_results() const;
+  const Response&  response_results() const override;
 
 private:
 

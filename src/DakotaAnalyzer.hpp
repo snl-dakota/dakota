@@ -33,12 +33,12 @@ public:
   //- Heading: Virtual member function redefinitions
   //
 
-  const VariablesArray& all_variables();
-  const RealMatrix&     all_samples();
-  const IntResponseMap& all_responses() const;
-  bool resize();
+  const VariablesArray& all_variables() override;
+  const RealMatrix&     all_samples() override;
+  const IntResponseMap& all_responses() const override;
+  bool resize() override;
 
-  size_t num_samples() const;
+  size_t num_samples() const override;
 
   //
   //- Heading: Virtual functions
@@ -66,7 +66,7 @@ protected:
   /// alternate constructor for instantiations "on the fly" without a Model
   Analyzer(unsigned short method_name);
   /// destructor
-  ~Analyzer();
+  ~Analyzer() override;
 
   //
   //- Heading: Virtual functions
@@ -97,28 +97,28 @@ protected:
   //- Heading: Virtual member function redefinitions
   //
 
-  void update_from_model(const Model& model);
+  void update_from_model(const Model& model) override;
 
-  void initialize_run();
-  void pre_run();
-  void post_run(std::ostream& s);
-  void finalize_run();
+  void initialize_run() override;
+  void pre_run() override;
+  void post_run(std::ostream& s) override;
+  void finalize_run() override;
 
-  void pre_output();
+  void pre_output() override;
 
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
-  const Model& algorithm_space_model() const;
+  const Model& algorithm_space_model() const override;
 
-  const Variables&      variables_results() const;
-  const Response&       response_results()  const;
-  const VariablesArray& variables_array_results();
-  const ResponseArray&  response_array_results();
+  const Variables&      variables_results() const override;
+  const Response&       response_results()  const override;
+  const VariablesArray& variables_array_results() override;
+  const ResponseArray&  response_array_results() override;
 
-  void response_results_active_set(const ActiveSet& set);
+  void response_results_active_set(const ActiveSet& set) override;
 
-  bool compact_mode() const;
-  bool returns_multiple_points() const;
+  bool compact_mode() const override;
+  bool returns_multiple_points() const override;
 
   //
   //- Heading: Member functions

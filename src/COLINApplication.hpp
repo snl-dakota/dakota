@@ -44,7 +44,7 @@ public:
   COLINApplication(Model& model);
 
   /// Destructor.
-  ~COLINApplication()
+  ~COLINApplication() override
   { /* empty destructor */ }
 
   /// Helper function called after default construction to extract problem
@@ -61,26 +61,26 @@ public:
 
   /// Schedule one or more requests at specified domain point,
   /// returning a DAKOTA-specific evaluation tracking ID.
-  virtual utilib::Any 
+  utilib::Any 
   spawn_evaluation_impl(const utilib::Any &domain,
 		   const colin::AppRequest::request_map_t &requests,
-		   utilib::seed_t &seed);
+		   utilib::seed_t &seed) override;
 
   /// Check to see if there are any function values ready to be collected.
-  virtual bool
-  evaluation_available();
+  bool
+  evaluation_available() override;
 
   /// Perform a function evaluation at t given point.
-  virtual void
+  void
   perform_evaluation_impl(const utilib::Any &domain,
                      const colin::AppRequest::request_map_t &requests,
                      utilib::seed_t &seed,
-                     colin::AppResponse::response_map_t &colin_responses);
+                     colin::AppResponse::response_map_t &colin_responses) override;
 
   /// Collect a completed evaluation from DAKOTA.
-  virtual utilib::Any
+  utilib::Any
   collect_evaluation_impl(colin::AppResponse::response_map_t &responses,
-		     utilib::seed_t &seed);
+		     utilib::seed_t &seed) override;
 
   /// Helper function to convert evaluation request data from COLIN
   /// structures to DAKOTA structures.
@@ -96,8 +96,8 @@ public:
 				    colin::AppResponse::response_map_t &colin_responses);
 
   /// Map the domain point into data type desired by this application context.
-  virtual bool map_domain (const utilib::Any &src, utilib::Any &native, 
-			   bool forward = true) const;
+  bool map_domain (const utilib::Any &src, utilib::Any &native, 
+			   bool forward = true) const override;
 
 protected:
 

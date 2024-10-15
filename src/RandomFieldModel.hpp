@@ -39,16 +39,16 @@ public:
   /// Problem database constructor
   RandomFieldModel(ProblemDescDB& problem_db);
   /// destructor
-  ~RandomFieldModel();
+  ~RandomFieldModel() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
   /// for KL models, the model is augmented with the random coeffs of the KL
-  bool initialize_mapping(ParLevLIter pl_iter);
+  bool initialize_mapping(ParLevLIter pl_iter) override;
   //bool finalize_mapping();
-  bool resize_pending() const;
+  bool resize_pending() const override;
 
 protected:
 
@@ -70,7 +70,7 @@ protected:
 				  bool recurse_flag);
   */
 
-  void assign_instance();
+  void assign_instance() override;
 
   // ---
   // Construct time convenience functions
@@ -132,9 +132,9 @@ protected:
 			  ActiveSet& sub_model_set);
 
   /// generate a random field realization, then evaluate the submodel
-  void derived_evaluate(const ActiveSet& set);
+  void derived_evaluate(const ActiveSet& set) override;
   /// generate a random field realization, then evaluate the submodel (asynch)
-  void derived_evaluate_nowait(const ActiveSet& set);
+  void derived_evaluate_nowait(const ActiveSet& set) override;
 
   /// generate a KL realization and write to file
   void generate_kl_realization();

@@ -40,16 +40,16 @@ public:
 		short rule_nest, short rule_growth, bool piecewise_basis,
 		bool use_derivs);
   /// destructor
-  ~NonDExpansion();
+  ~NonDExpansion() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  bool resize();
-  void derived_init_communicators(ParLevLIter pl_iter);
-  void derived_set_communicators(ParLevLIter pl_iter);
-  void derived_free_communicators(ParLevLIter pl_iter);
+  bool resize() override;
+  void derived_init_communicators(ParLevLIter pl_iter) override;
+  void derived_set_communicators(ParLevLIter pl_iter) override;
+  void derived_free_communicators(ParLevLIter pl_iter) override;
 
   void nested_variable_mappings(const SizetArray& c_index1,
 				const SizetArray& di_index1,
@@ -58,14 +58,14 @@ public:
 				const ShortArray& c_target2,
 				const ShortArray& di_target2,
 				const ShortArray& ds_target2,
-				const ShortArray& dr_target2);
+				const ShortArray& dr_target2) override;
 
   /// perform a forward uncertainty propagation using PCE/SC methods
-  void core_run();
+  void core_run() override;
   /// print the final statistics
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
-  const Model& algorithm_space_model() const;
+  const Model& algorithm_space_model() const override;
 
   //
   //- Heading: Virtual functions
@@ -180,9 +180,9 @@ protected:
   //
 
   /// set covarianceControl defaults and shape respCovariance
-  void initialize_response_covariance();
+  void initialize_response_covariance() override;
   /// update function values within finalStatistics
-  void update_final_statistics();
+  void update_final_statistics() override;
   /// update function gradients within finalStatistics
   void update_final_statistics_gradients();
 

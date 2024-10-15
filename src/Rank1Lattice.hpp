@@ -69,7 +69,7 @@ public:
 
   /// Randomize this rank-1 lattice rule
   /// NOTE: required for 'unique' sampling in `NonDLowDiscrepancySampling`
-  inline void randomize() { random_shift(); }
+  inline void randomize() override { random_shift(); }
 
   /// Randomly shift this rank-1 lattice rule
   void random_shift() { random_shift(generate_system_seed()); }
@@ -127,7 +127,7 @@ private:
     const size_t nMin,
     const size_t nMax,
     RealMatrix& points
-  );
+  ) override;
 
   /// Position of the `k`th lattice point in RANK_1_LATTICE_NATURAL_ORDERING
   inline UInt32 reorder_natural(

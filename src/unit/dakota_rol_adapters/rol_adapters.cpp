@@ -67,7 +67,7 @@ class DakotaModelObjective : public FactoryT::RObjT
     { 
     }
 
-    Real value(const typename FactoryT::VT &x, Real &tol)
+    Real value(const typename FactoryT::VT &x, Real &tol) override
     {
       Real result = 0;
       dakModel->current_variables().continuous_variable(x[0], 0);

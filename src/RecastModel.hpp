@@ -95,7 +95,7 @@ public:
   RecastModel(const Model& sub_model);
 
   /// destructor
-  ~RecastModel();
+  ~RecastModel() override;
 
   //
   //- Heading: Member functions
@@ -180,10 +180,10 @@ public:
   /// override the submodel's derivative estimation behavior
   void submodel_supports_derivative_estimation(bool sed_flag);
   
-  String root_model_id();
+  String root_model_id() override;
 
-  ActiveSet default_active_set();
-  void declare_sources();
+  ActiveSet default_active_set() override;
+  void declare_sources() override;
 
   /// return nonlinearVarsMapping
   bool nonlinear_variables_mapping() const;
@@ -194,10 +194,10 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  Pecos::ProbabilityTransformation& probability_transformation();
+  Pecos::ProbabilityTransformation& probability_transformation() override;
 
-  bool initialize_mapping(ParLevLIter pl_iter);
-  bool finalize_mapping();
+  bool initialize_mapping(ParLevLIter pl_iter) override;
+  bool finalize_mapping() override;
 
   void nested_variable_mappings(const SizetArray& c_index1,
 				const SizetArray& di_index1,
@@ -206,243 +206,243 @@ protected:
 				const ShortArray& c_target2,
 				const ShortArray& di_target2,
 				const ShortArray& ds_target2,
-				const ShortArray& dr_target2);
-  const SizetArray& nested_acv1_indices() const;
-  const ShortArray& nested_acv2_targets() const;
-  short query_distribution_parameter_derivatives() const;
-  void activate_distribution_parameter_derivatives();
-  void deactivate_distribution_parameter_derivatives();
+				const ShortArray& dr_target2) override;
+  const SizetArray& nested_acv1_indices() const override;
+  const ShortArray& nested_acv2_targets() const override;
+  short query_distribution_parameter_derivatives() const override;
+  void activate_distribution_parameter_derivatives() override;
+  void deactivate_distribution_parameter_derivatives() override;
 
   void trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
-			 const RealVector& x_vars);
+			 const RealVector& x_vars) override;
   void trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
-			 const RealVector& x_vars);
+			 const RealVector& x_vars) override;
   void trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
-			 const RealVector& x_vars);
+			 const RealVector& x_vars) override;
   void trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
 			 RealSymMatrix& fn_hess_u, const RealVector& x_vars,
-			 const RealVector& fn_grad_x);
+			 const RealVector& fn_grad_x) override;
 
-  size_t qoi() const;
+  size_t qoi() const override;
 
   /// portion of evaluate() specific to RecastModel
   /// (forward to subModel.evaluate())
-  void derived_evaluate(const ActiveSet& set);
+  void derived_evaluate(const ActiveSet& set) override;
   /// portion of evaluate_nowait() specific to RecastModel
   /// (forward to subModel.evaluate_nowait())
-  void derived_evaluate_nowait(const ActiveSet& set);
+  void derived_evaluate_nowait(const ActiveSet& set) override;
   /// portion of synchronize() specific to RecastModel
   /// (forward to subModel.synchronize())
-  const IntResponseMap& derived_synchronize();
+  const IntResponseMap& derived_synchronize() override;
   /// portion of synchronize_nowait() specific to RecastModel
   /// (forward to subModel.synchronize_nowait())
-  const IntResponseMap& derived_synchronize_nowait();
+  const IntResponseMap& derived_synchronize_nowait() override;
 
   /// return sub-iterator, if present, within subModel
-  Iterator& subordinate_iterator();
+  Iterator& subordinate_iterator() override;
   /// return subModel
-  Model& subordinate_model();
+  Model& subordinate_model() override;
 
   /// set key in subModel
-  void active_model_key(const Pecos::ActiveKey& key);
+  void active_model_key(const Pecos::ActiveKey& key) override;
   /// return key from subModel
-  const Pecos::ActiveKey& active_model_key() const;
+  const Pecos::ActiveKey& active_model_key() const override;
   /// remove keys in subModel
-  void clear_model_keys();
+  void clear_model_keys() override;
 
   /// return the i-th surrogate model within subModel
-  Model& surrogate_model(size_t i = _NPOS);
+  Model& surrogate_model(size_t i = _NPOS) override;
   /// return the i-th surrogate model within subModel
-  const Model& surrogate_model(size_t i = _NPOS) const;
+  const Model& surrogate_model(size_t i = _NPOS) const override;
   /// return the i-th active surrogate model within subModel
-  Model& active_surrogate_model(size_t i = _NPOS);
+  Model& active_surrogate_model(size_t i = _NPOS) override;
   /// return the i-th active surrogate model within subModel
-  const Model& active_surrogate_model(size_t i = _NPOS) const;
+  const Model& active_surrogate_model(size_t i = _NPOS) const override;
 
   /// return the truth model within subModel
-  Model& truth_model();
+  Model& truth_model() override;
   /// return the truth model within subModel
-  const Model& truth_model() const;
+  const Model& truth_model() const override;
   /// return the active truth model within subModel
-  Model& active_truth_model();
+  Model& active_truth_model() override;
   /// return the active truth model within subModel
-  const Model& active_truth_model() const;
+  const Model& active_truth_model() const override;
 
   /// add subModel to list and recurse into subModel
-  void derived_subordinate_models(ModelList& ml, bool recurse_flag);
+  void derived_subordinate_models(ModelList& ml, bool recurse_flag) override;
   /// pass request to subModel if recursing and then resize from its results
-  void resize_from_subordinate_model(size_t depth = SZ_MAX);
+  void resize_from_subordinate_model(size_t depth = SZ_MAX) override;
   /// pass request to subModel if recursing and then update from its results
-  void update_from_subordinate_model(size_t depth = SZ_MAX);
+  void update_from_subordinate_model(size_t depth = SZ_MAX) override;
   /// return subModel interface
-  Interface& derived_interface();
+  Interface& derived_interface() override;
 
   /// return size of subModel::solnControlCostMap
-  size_t solution_levels() const;
+  size_t solution_levels() const override;
   /// activate entry in subModel::solnControlCostMap
-  void solution_level_cost_index(size_t cost_index);
+  void solution_level_cost_index(size_t cost_index) override;
   /// return active entry in subModel::solnControlCostMap
-  size_t solution_level_cost_index() const;
+  size_t solution_level_cost_index() const override;
   /// return cost estimates from subModel::solnControlCostMap
-  RealVector solution_level_costs() const;
+  RealVector solution_level_costs() const override;
   /// return active cost estimate from subModel::solnControlCostMap
-  Real solution_level_cost() const;
+  Real solution_level_cost() const override;
 
   /// set the relative weightings for multiple objective functions or least
   /// squares terms and optionally recurses into subModel
   void primary_response_fn_weights(const RealVector& wts,
-				   bool recurse_flag = true);
+				   bool recurse_flag = true) override;
 
   /// update the subModel's surrogate response function indices
   /// (DataFitSurrModel::surrogateFnIndices)
-  void surrogate_function_indices(const SizetSet& surr_fn_indices);
+  void surrogate_function_indices(const SizetSet& surr_fn_indices) override;
 
   /// update the subModel's surrogate response mode
   /// (SurrogateModel::responseMode)
-  void surrogate_response_mode(short mode);
+  void surrogate_response_mode(short mode) override;
   /// update the subModel's discrepancy emulation mode
-  void discrepancy_emulation_mode(short mode);
+  void discrepancy_emulation_mode(short mode) override;
 
   // link SurrogateData instances within the subModel
   //void link_multilevel_approximation_data();
 
   /// retrieve subModel's correction type
-  short correction_type() const;
+  short correction_type() const override;
   /// update subModel's correction type
-  void correction_type(short corr_type);
+  void correction_type(short corr_type) override;
   /// retrieve subModel's correction order
-  short correction_order() const;
+  short correction_order() const override;
 
   /// retrieve error estimates corresponding to the subModel
-  const RealVector& error_estimates();
+  const RealVector& error_estimates() override;
 
   /// builds the subModel approximation
-  void build_approximation();
+  void build_approximation() override;
   /// builds the subModel approximation
   bool build_approximation(const Variables& vars,
-			   const IntResponsePair& response_pr);
+			   const IntResponsePair& response_pr) override;
   /// updates a subModel approximation
-  void rebuild_approximation();
+  void rebuild_approximation() override;
 
   /// replaces data in the subModel approximation
-  void update_approximation(bool rebuild_flag);
+  void update_approximation(bool rebuild_flag) override;
   /// replaces data in the subModel approximation
   void update_approximation(const Variables& vars,
 			    const IntResponsePair& response_pr,
-			    bool rebuild_flag);
+			    bool rebuild_flag) override;
   /// replaces data in the subModel approximation
   void update_approximation(const VariablesArray& vars_array,
-			    const IntResponseMap& resp_map, bool rebuild_flag);
+			    const IntResponseMap& resp_map, bool rebuild_flag) override;
 
   /// appends data to the subModel approximation
-  void append_approximation(bool rebuild_flag);
+  void append_approximation(bool rebuild_flag) override;
   /// appends data to the subModel approximation
   void append_approximation(const Variables& vars,
 			    const IntResponsePair& response_pr,
-			    bool rebuild_flag);
+			    bool rebuild_flag) override;
   /// appends data to the subModel approximation
   void append_approximation(const VariablesArray& vars_array,
-			    const IntResponseMap& resp_map, bool rebuild_flag);
+			    const IntResponseMap& resp_map, bool rebuild_flag) override;
 
-  void pop_approximation(bool save_surr_data, bool rebuild_flag = false);
-  void push_approximation();
-  bool push_available();
-  void finalize_approximation();
-  void combine_approximation();
-  void combined_to_active(bool clear_combined = true);
+  void pop_approximation(bool save_surr_data, bool rebuild_flag = false) override;
+  void push_approximation() override;
+  bool push_available() override;
+  void finalize_approximation() override;
+  void combine_approximation() override;
+  void combined_to_active(bool clear_combined = true) override;
 
   /*
   void store_approximation(size_t index = _NPOS);
   void restore_approximation(size_t index = _NPOS);
   void remove_stored_approximation(size_t index = _NPOS);
   */
-  void clear_inactive();
+  void clear_inactive() override;
 
   /// retrieve the set of Approximations from the subModel
-  std::vector<Approximation>& approximations();
+  std::vector<Approximation>& approximations() override;
   /// retrieve the approximation coefficients from the subModel
-  const RealVectorArray& approximation_coefficients(bool normalized = false);
+  const RealVectorArray& approximation_coefficients(bool normalized = false) override;
   /// set the approximation coefficients within the subModel
   void approximation_coefficients(const RealVectorArray& approx_coeffs,
-				  bool normalized = false);
+				  bool normalized = false) override;
   /// retrieve the approximation variances from the subModel
-  const RealVector& approximation_variances(const Variables& vars);
+  const RealVector& approximation_variances(const Variables& vars) override;
   /// retrieve the approximation data from the subModel
-  const Pecos::SurrogateData& approximation_data(size_t fn_index);
+  const Pecos::SurrogateData& approximation_data(size_t fn_index) override;
 
   /// RecastModel only supports parallelism in subModel, so this
   /// virtual function redefinition is simply a sanity check.
-  void component_parallel_mode(short mode);
+  void component_parallel_mode(short mode) override;
 
   /// return subModel's MI parallel level index
-  size_t mi_parallel_level_index() const;
+  size_t mi_parallel_level_index() const override;
 
   /// return subModel local synchronization setting
-  short local_eval_synchronization();
+  short local_eval_synchronization() override;
   /// return subModel local evaluation concurrency
-  int local_eval_concurrency();
+  int local_eval_concurrency() override;
   /// flag which prevents overloading the master with a multiprocessor
   /// evaluation (request forwarded to subModel)
-  bool derived_master_overload() const;
+  bool derived_master_overload() const override;
 
-  IntIntPair estimate_partition_bounds(int max_eval_concurrency);
+  IntIntPair estimate_partition_bounds(int max_eval_concurrency) override;
 
   /// set up RecastModel for parallel operations (request forwarded to subModel)
   void derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-				  bool recurse_flag = true);
+				  bool recurse_flag = true) override;
   /// set up RecastModel for serial operations (request forwarded to subModel).
-  void derived_init_serial();
+  void derived_init_serial() override;
   /// set active parallel configuration within subModel
   void derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-				 bool recurse_flag = true);
+				 bool recurse_flag = true) override;
   /// deallocate communicator partitions for the RecastModel (request forwarded
   /// to subModel)
   void derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-				  bool recurse_flag = true);
+				  bool recurse_flag = true) override;
 
   /// Service subModel job requests received from the master.
   /// Completes when a termination message is received from stop_servers().
-  void serve_run(ParLevLIter pl_iter, int max_eval_concurrency);
+  void serve_run(ParLevLIter pl_iter, int max_eval_concurrency) override;
   /// executed by the master to terminate subModel server operations
   /// when RecastModel iteration is complete.
-  void stop_servers();
+  void stop_servers() override;
 
   /// update the Model's active view based on higher level context
   /// and optionally recurse into subModel
-  void active_view(short view, bool recurse_flag = true);
+  void active_view(short view, bool recurse_flag = true) override;
   /// update the Model's inactive view based on higher level context
   /// and optionally recurse into subModel
-  void inactive_view(short view, bool recurse_flag = true);
+  void inactive_view(short view, bool recurse_flag = true) override;
 
   /// return the subModel interface identifier
-  const String& interface_id() const;
+  const String& interface_id() const override;
   /// if recurse_flag, return the subModel evaluation cache usage
-  bool evaluation_cache(bool recurse_flag = true) const;
+  bool evaluation_cache(bool recurse_flag = true) const override;
   /// if recurse_flag, return the subModel restart file usage
-  bool restart_file(bool recurse_flag = true) const;
+  bool restart_file(bool recurse_flag = true) const override;
 
   /// return the current evaluation id for the RecastModel
-  int derived_evaluation_id() const;
+  int derived_evaluation_id() const override;
   /// set the evaluation counter reference points for the RecastModel
   /// (request forwarded to subModel)
-  void set_evaluation_reference();
+  void set_evaluation_reference() override;
   /// request fine-grained evaluation reporting within subModel
-  void fine_grained_evaluation_counters();
+  void fine_grained_evaluation_counters() override;
   /// print the evaluation summary for the RecastModel (request
   /// forwarded to subModel)
   void print_evaluation_summary(std::ostream& s, bool minimal_header = false,
-				bool relative_count = true) const;
+				bool relative_count = true) const override;
 
   /// set the warm start flag, including the orderedModels
-  void warm_start_flag(const bool flag);
+  void warm_start_flag(const bool flag) override;
 
   /// set the hierarchical eval ID tag prefix
-  void eval_tag_prefix(const String& eval_id_str);
+  void eval_tag_prefix(const String& eval_id_str) override;
 
   /// RecastModel may need to map variables, asv before DB lookup, or
   /// responses after lookup
   bool db_lookup(const Variables& search_vars, 
-		 const ActiveSet& search_set, Response& found_resp);
+		 const ActiveSet& search_set, Response& found_resp) override;
 
   //
   //- Heading: New virtual functions

@@ -42,7 +42,7 @@ public:
   NonDSampling(Model& model, const RealMatrix& sample_matrix);
 
   /// destructor
-  ~NonDSampling();
+  ~NonDSampling() override;
 
   //
   //- Heading: Public member functions
@@ -144,7 +144,7 @@ public:
 
   /// update finalStatistics from minValues/maxValues, momentStats,
   /// and computedProbLevels/computedRelLevels/computedRespLevels
-  void update_final_statistics();
+  void update_final_statistics() override;
 
   /// calculates the number of samples using the Wilks formula
   /// Static so I can test without instantiating a NonDSampling object - RWH
@@ -188,7 +188,7 @@ public:
 			 bool x_to_u = true);
 
   /// return sampleType
-  unsigned short sampling_scheme() const;
+  unsigned short sampling_scheme() const override;
   /// return rngName
   const String& random_number_generator() const;
 
@@ -219,31 +219,31 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void pre_run();
-  void core_run();
+  void pre_run() override;
+  void core_run() override;
 
-  size_t num_samples() const;
+  size_t num_samples() const override;
 
   /// resets number of samples and sampling flags
-  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag);
+  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag) override;
 
   /// set reference number of samples, which is a lower bound during reset 
-  void sampling_reference(size_t samples_ref);
+  void sampling_reference(size_t samples_ref) override;
 
   /// assign randomSeed
-  void random_seed(int seed);
+  void random_seed(int seed) override;
 
   /// set varyPattern
-  void vary_pattern(bool pattern_flag);
+  void vary_pattern(bool pattern_flag) override;
 
   /// Uses lhsDriver to generate a set of samples from the
   /// distributions/bounds defined in the incoming model.
-  void get_parameter_sets(Model& model);
+  void get_parameter_sets(Model& model) override;
   /// Uses lhsDriver to generate a set of samples from the
   /// distributions/bounds defined in the incoming model and populates
   /// the specified design matrix.
   void get_parameter_sets(Model& model, const size_t num_samples, 
-                          RealMatrix& design_matrix);
+                          RealMatrix& design_matrix) override;
   /// core of get_parameter_sets that accepts message print control
   void get_parameter_sets(Model& model, const size_t num_samples,
                           RealMatrix& design_matrix, bool write_msg);
@@ -259,14 +259,14 @@ protected:
                           RealSymMatrix& correl);
 
   /// Override default update of continuous vars only
-  void update_model_from_sample(Model& model, const Real* sample_vars);
+  void update_model_from_sample(Model& model, const Real* sample_vars) override;
   /// override default mapping of continuous variables only
-  void sample_to_variables(const Real* sample_vars, Variables& vars);
+  void sample_to_variables(const Real* sample_vars, Variables& vars) override;
   /// override default mapping of continuous variables only
-  void variables_to_sample(const Variables& vars, Real* sample_vars);
+  void variables_to_sample(const Variables& vars, Real* sample_vars) override;
 
   /// return error estimates associated with each of the finalStatistics
-  const RealSymMatrix& response_error_estimates() const;
+  const RealSymMatrix& response_error_estimates() const override;
 
   //
   //- Heading: New virtual functions

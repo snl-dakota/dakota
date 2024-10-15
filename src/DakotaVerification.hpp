@@ -28,7 +28,7 @@ public:
   //- Heading: Virtual member function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
 
 protected:
 
@@ -41,13 +41,13 @@ protected:
   /// alternate constructor for instantiations "on the fly"
   Verification(unsigned short method_name, Model& model);
   /// destructor
-  ~Verification();
+  ~Verification() override;
     
   //
   //- Heading: Virtual member function redefinitions
   //
 
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
   //
   //- Heading: Member functions

@@ -59,7 +59,7 @@ public:
   //- Heading: Virtual member function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
 
   //
   //- Heading: Set/get routines
@@ -92,23 +92,23 @@ protected:
   NonD(unsigned short method_name, const RealVector& lower_bnds,
        const RealVector& upper_bnds);
 
-  ~NonD(); ///< destructor
+  ~NonD() override; ///< destructor
 
   //
   //- Heading: Virtual member function redefinitions
   //
 
-  void derived_set_communicators(ParLevLIter pl_iter);
+  void derived_set_communicators(ParLevLIter pl_iter) override;
 
-  void initialize_run();
-  void finalize_run();
+  void initialize_run() override;
+  void finalize_run() override;
 
   // return the final uncertain variables from the nondeterministic iteration
   //const Variables& variables_results() const;
   /// return the final statistics from the nondeterministic iteration
-  const Response& response_results() const;
+  const Response& response_results() const override;
   /// set the active set within finalStatistics
-  void response_results_active_set(const ActiveSet& set);
+  void response_results_active_set(const ActiveSet& set) override;
 
   //
   //- Heading: New virtual member functions

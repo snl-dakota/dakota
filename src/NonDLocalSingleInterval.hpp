@@ -37,7 +37,7 @@ public:
   /// constructor
   NonDLocalSingleInterval(ProblemDescDB& problem_db, Model& model);
   /// destructor
-  ~NonDLocalSingleInterval();
+  ~NonDLocalSingleInterval() override;
 
 protected:
 
@@ -45,8 +45,8 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void initialize();
-  void post_process_cell_results(bool maximize);
+  void initialize() override;
+  void post_process_cell_results(bool maximize) override;
 
 private:
 

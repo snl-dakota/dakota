@@ -122,13 +122,13 @@ class ReducedBasis
     class Untruncated : public TruncationCondition {
       public:
         Untruncated();
-        int get_num_components(const ReducedBasis &) const;
+        int get_num_components(const ReducedBasis &) const override;
     };
 
     class VarianceExplained : public TruncationCondition {
       public:
         VarianceExplained(Real var_exp);
-        int get_num_components(const ReducedBasis &) const;
+        int get_num_components(const ReducedBasis &) const override;
 
       private:
         Real variance_explained;
@@ -137,7 +137,7 @@ class ReducedBasis
     class HeuristicVarianceExplained : public TruncationCondition {
       public:
         HeuristicVarianceExplained(Real var_exp);
-        int get_num_components(const ReducedBasis &) const;
+        int get_num_components(const ReducedBasis &) const override;
 
       private:
         Real variance_explained;
@@ -147,7 +147,7 @@ class ReducedBasis
       public:
         NumComponents(int num_comp);
 
-        int get_num_components(const ReducedBasis &) const;
+        int get_num_components(const ReducedBasis &) const override;
 
       private:
         int num_components;

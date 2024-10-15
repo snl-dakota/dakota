@@ -34,7 +34,7 @@ protected:
   //
 
   NonDReliability(ProblemDescDB& problem_db, Model& model); ///< constructor
-  ~NonDReliability();                                       ///< destructor
+  ~NonDReliability() override;                                       ///< destructor
 
   //
   //- Heading: Virtual function redefinitions
@@ -47,13 +47,13 @@ protected:
 				const ShortArray& c_target2,
 				const ShortArray& di_target2,
 				const ShortArray& ds_target2,
-				const ShortArray& dr_target2);
+				const ShortArray& dr_target2) override;
 
-  bool resize();
+  bool resize() override;
   //void pre_run();
-  void post_run(std::ostream& s);
+  void post_run(std::ostream& s) override;
 
-  const Model& algorithm_space_model() const;
+  const Model& algorithm_space_model() const override;
 
   //
   //- Heading: Data members

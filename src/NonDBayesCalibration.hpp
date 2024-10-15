@@ -39,7 +39,7 @@ public:
   /// standard constructor
   NonDBayesCalibration(ProblemDescDB& problem_db, Model& model);
   /// destructor
-  ~NonDBayesCalibration();
+  ~NonDBayesCalibration() override;
 
   //
   //- Heading: Member functions
@@ -84,21 +84,21 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void pre_run();
-  void core_run();
+  void pre_run() override;
+  void core_run() override;
 
-  void derived_init_communicators(ParLevLIter pl_iter);
-  void derived_set_communicators(ParLevLIter pl_iter);
-  void derived_free_communicators(ParLevLIter pl_iter);
+  void derived_init_communicators(ParLevLIter pl_iter) override;
+  void derived_set_communicators(ParLevLIter pl_iter) override;
+  void derived_free_communicators(ParLevLIter pl_iter) override;
 
-  virtual void print_results(std::ostream& s, 
-      short results_state = FINAL_RESULTS);
+  void print_results(std::ostream& s, 
+      short results_state = FINAL_RESULTS) override;
   /// convenience function to print calibration parameters, e.g., for
   /// MAP / best parameters
   void print_variables(std::ostream& s, const RealVector& c_vars);
 
 
-  const Model& algorithm_space_model() const;
+  const Model& algorithm_space_model() const override;
 
   //
   //- Heading: New virtual functions

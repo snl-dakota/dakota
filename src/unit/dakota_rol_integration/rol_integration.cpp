@@ -36,7 +36,7 @@ public:
   ObjectiveQL() : coeff({-21.98,-1.26,61.39,5.3,101.3}) { 
   }
 
-  Real value(const std::vector<Real> &x, Real &tol) {
+  Real value(const std::vector<Real> &x, Real &tol) override {
     Real result = 0;
     for( int i=0; i<5; ++i ) {
       result +=x[i]*(0.5*x[i]+coeff[i]);
@@ -44,13 +44,13 @@ public:
     return result;
   }
 
-  void gradient( std::vector<Real> &g, const std::vector<Real> &x, Real &tol ) {
+  void gradient( std::vector<Real> &g, const std::vector<Real> &x, Real &tol ) override {
     for( int i=0; i<5; ++i ) {
       g[i] = x[i]+coeff[i];
     }  
   }
 
-  void hessVec( std::vector<Real> &hv, const std::vector<Real> &v, const std::vector<Real> &x, Real &tol ) {
+  void hessVec( std::vector<Real> &hv, const std::vector<Real> &v, const std::vector<Real> &x, Real &tol ) override {
     hv = v;
   }
 
@@ -67,28 +67,28 @@ private:
 public:
   InequalityQL() : coeff({-7.56,0.0,0.0,0.0,0.5}), offset(39.1) {}
 
-  void value( std::vector<Real> &c, const std::vector<Real> &x, Real &tol) {
+  void value( std::vector<Real> &c, const std::vector<Real> &x, Real &tol) override {
     c[0] = offset;
     for( int i=0; i<5; ++i ) {
       c[0] += coeff[i]*x[i];
     }
   }
 
-  void applyJacobian(  std::vector<Real> &jv, const std::vector<Real> &v ,const std::vector<Real> &x, Real &tol ) {
+  void applyJacobian(  std::vector<Real> &jv, const std::vector<Real> &v ,const std::vector<Real> &x, Real &tol ) override {
     jv[0] = 0;
     for( int i=0; i<5; ++i ) {
       jv[0] += coeff[i]*v[i];
     }
   }
 
-  void applyAdjointJacobian( std::vector<Real> &ajv, const std::vector<Real> &v ,const std::vector<Real> &x, Real &tol ) {
+  void applyAdjointJacobian( std::vector<Real> &ajv, const std::vector<Real> &v ,const std::vector<Real> &x, Real &tol ) override {
     for( int i=0; i<5; ++i ) {
       ajv[i] = v[0]*coeff[i];
     }
   }
 
   void applyAdjointHessian( std::vector<Real> &ahuv, const std::vector<Real> &u,
-                       const std::vector<Real> &v ,const std::vector<Real> &x, Real &tol ) {
+                       const std::vector<Real> &v ,const std::vector<Real> &x, Real &tol ) override {
     ahuv.assign(5,0.0);
   }
 

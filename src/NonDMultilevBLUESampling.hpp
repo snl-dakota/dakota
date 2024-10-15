@@ -34,7 +34,7 @@ public:
   /// standard constructor
   NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model);
   /// destructor
-  ~NonDMultilevBLUESampling();
+  ~NonDMultilevBLUESampling() override;
 
 protected:
 
@@ -43,38 +43,38 @@ protected:
   //
 
   //void pre_run();
-  void core_run();
+  void core_run() override;
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
-  Real estimator_accuracy_metric();
+  Real estimator_accuracy_metric() override;
   //Real estimator_cost_metric();
   void print_multigroup_summary(std::ostream& s, const String& summary_type,
-				bool projections);
-  void print_variance_reduction(std::ostream& s);
+				bool projections) override;
+  void print_variance_reduction(std::ostream& s) override;
 
   //void estimator_variance_ratios(const RealVector& r_and_N,
   //				   RealVector& estvar_ratios);
-  Real average_estimator_variance(const RealVector& cd_vars);
+  Real average_estimator_variance(const RealVector& cd_vars) override;
 
   void numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
-				 size_t& num_nln_con);
+				 size_t& num_nln_con) override;
   void numerical_solution_bounds_constraints(const MFSolutionData& soln,
     RealVector& x0, RealVector& x_lb, RealVector& x_ub,
     RealVector& lin_ineq_lb, RealVector& lin_ineq_ub, RealVector& lin_eq_tgt,
     RealVector& nln_ineq_lb, RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
-    RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs);
+    RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs) override;
   void derived_finite_solution_bounds(const RealVector& x0, RealVector& x_lb,
-				      RealVector& x_ub, Real budget);
+				      RealVector& x_ub, Real budget) override;
 
-  void apply_mc_reference(RealVector& mc_targets);
+  void apply_mc_reference(RealVector& mc_targets) override;
 
   void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 				       RealVector& lin_ineq_lb,
-				       RealVector& lin_ineq_ub);
+				       RealVector& lin_ineq_ub) override;
   Real augmented_linear_ineq_violations(const RealVector& cd_vars,
 					const RealMatrix& lin_ineq_coeffs,
 					const RealVector& lin_ineq_lb,
-					const RealVector& lin_ineq_ub);
+					const RealVector& lin_ineq_ub) override;
 
   //
   //- Heading: member functions

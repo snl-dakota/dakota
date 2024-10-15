@@ -39,7 +39,7 @@ public:
   // alternate constructor for instantiations "on the fly"
   NonDCubature(Model& model, unsigned short cub_int_order);
 
-  ~NonDCubature();                                       ///< destructor
+  ~NonDCubature() override;                                       ///< destructor
 
   //
   //- Heading: Member functions
@@ -60,20 +60,20 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis);
+  void initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis) override;
 
-  void get_parameter_sets(Model& model);
+  void get_parameter_sets(Model& model) override;
 
-  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag);
+  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag) override;
 
-  void increment_grid();
-  void increment_grid_preference(const RealVector& dim_pref);
-  void increment_grid_preference();
-  void decrement_grid();
+  void increment_grid() override;
+  void increment_grid_preference(const RealVector& dim_pref) override;
+  void increment_grid_preference() override;
+  void decrement_grid() override;
 
-  void reset();
+  void reset() override;
 
-  size_t num_samples() const;
+  size_t num_samples() const override;
 
 private:
 

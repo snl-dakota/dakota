@@ -43,23 +43,23 @@ public:
 		short output_level);
 
   /// destructor
-  ~SubspaceModel();
+  ~SubspaceModel() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  bool initialize_mapping(ParLevLIter pl_iter);
+  bool initialize_mapping(ParLevLIter pl_iter) override;
   //bool finalize_mapping();
-  bool resize_pending() const;
+  bool resize_pending() const override;
 
   /// called from IteratorScheduler::init_iterator() for iteratorComm rank 0 to
   /// terminate serve_init_mapping() on other iteratorComm processors
-  void stop_init_mapping(ParLevLIter pl_iter);
+  void stop_init_mapping(ParLevLIter pl_iter) override;
 
   /// called from IteratorScheduler::init_iterator() for iteratorComm rank != 0
   /// to balance resize() calls on iteratorComm rank 0
-  int serve_init_mapping(ParLevLIter pl_iter);
+  int serve_init_mapping(ParLevLIter pl_iter) override;
 
   //
   //- Heading: accessors
@@ -74,24 +74,24 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void derived_evaluate(const ActiveSet& set);
-  void derived_evaluate_nowait(const ActiveSet& set);
-  const IntResponseMap& derived_synchronize();
-  const IntResponseMap& derived_synchronize_nowait();
+  void derived_evaluate(const ActiveSet& set) override;
+  void derived_evaluate_nowait(const ActiveSet& set) override;
+  const IntResponseMap& derived_synchronize() override;
+  const IntResponseMap& derived_synchronize_nowait() override;
 
   /// update component parallel mode for supporting parallelism in
   /// the offline and online phases
-  void component_parallel_mode(short mode);
+  void component_parallel_mode(short mode) override;
 
   /// Service the offline and online phase job requests received from the
   /// master; completes when termination message received from stop_servers().
-  void serve_run(ParLevLIter pl_iter, int max_eval_concurrency);
+  void serve_run(ParLevLIter pl_iter, int max_eval_concurrency) override;
 
   /// Executed by the master to terminate the offline and online phase
   /// server operations when iteration on the SubspaceModel is complete
-  void stop_servers();
+  void stop_servers() override;
 
-  void assign_instance();
+  void assign_instance() override;
 
   // ---
   // New virtual functions

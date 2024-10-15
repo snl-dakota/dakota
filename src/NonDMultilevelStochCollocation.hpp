@@ -42,13 +42,13 @@ public:
     short covar_control, short ml_alloc_cntl, short ml_discrep,
     short rule_nest, short rule_growth, bool piecewise_basis, bool use_derivs);
   /// destructor
-  ~NonDMultilevelStochCollocation();
+  ~NonDMultilevelStochCollocation() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
 
 protected:
 
@@ -56,19 +56,19 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void initialize_u_space_model();
+  void initialize_u_space_model() override;
 
-  void core_run();
+  void core_run() override;
 
-  int random_seed() const;
-  int first_seed() const;
+  int random_seed() const override;
+  int first_seed() const override;
 
-  void assign_specification_sequence();
-  void increment_specification_sequence();
+  void assign_specification_sequence() override;
+  void increment_specification_sequence() override;
 
   //void combined_to_active();
 
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
 private:
 

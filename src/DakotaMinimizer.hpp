@@ -78,7 +78,7 @@ public:
   //- Heading: Virtual member function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
 
 protected:
 
@@ -109,19 +109,19 @@ protected:
 	    std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// destructor
-  ~Minimizer();
+  ~Minimizer() override;
 
   //
   //- Heading: Virtual member function redefinitions
   //
 
-  void update_from_model(const Model& model);
+  void update_from_model(const Model& model) override;
 
-  void initialize_run();
-  void post_run(std::ostream& s);
-  void finalize_run();
+  void initialize_run() override;
+  void post_run(std::ostream& s) override;
+  void finalize_run() override;
 
-  const Model& algorithm_space_model() const;
+  const Model& algorithm_space_model() const override;
 
   //
   //- Heading: New virtual functions

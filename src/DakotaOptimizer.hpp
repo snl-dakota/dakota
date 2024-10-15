@@ -504,16 +504,16 @@ protected:
 	    size_t num_lin_eq, size_t num_nln_ineq, size_t num_nln_eq, std::shared_ptr<TraitsBase> traits);
 
   /// destructor
-  ~Optimizer();
+  ~Optimizer() override;
 
   //
   //- Heading: Virtual member function redefinitions
   //
 
-  void initialize_run();
-  void post_run(std::ostream& s);
-  void finalize_run();
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void initialize_run() override;
+  void post_run(std::ostream& s) override;
+  void finalize_run() override;
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
   // Configure data transfer helper/adapters
   void configure_constraint_maps();

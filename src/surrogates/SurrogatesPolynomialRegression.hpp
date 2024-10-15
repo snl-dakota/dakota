@@ -83,7 +83,7 @@ class PolynomialRegression : public Surrogate {
                        const std::string& param_list_yaml_filename);
 
   /// Default destructor
-  ~PolynomialRegression();
+  ~PolynomialRegression() override;
 
   /**
    * \brief Constructs a basis matrix for a set of samples according to the
