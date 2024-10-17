@@ -1541,9 +1541,9 @@ JEGAOptimizer::LoadTheConstraints(
     // functions, Dakota does not allow labeling of constraints.
     // we will create a label that looks like "Nature Type Index".
     const RealVector& nln_ineq_lwr_bnds
-        = m.nonlinear_ineq_constraint_lower_bounds();
+        = ModelUtils::nonlinear_ineq_constraint_lower_bounds(m);
     const RealVector& nln_ineq_upr_bnds
-        = m.nonlinear_ineq_constraint_upper_bounds();
+        = ModelUtils::nonlinear_ineq_constraint_upper_bounds(m);
 
 //PDH: Dakota nonlinear constraints to JEGA nonlinear constraints.
 //     Don't know what the JEGA data structure is.  These are all
@@ -1561,7 +1561,7 @@ JEGAOptimizer::LoadTheConstraints(
 
     // now do non-linear equality constraints.  The information we need for
     // these is in nonlinear_eq_constraint_targets.
-    const RealVector& nln_eq_targets = m.nonlinear_eq_constraint_targets();
+    const RealVector& nln_eq_targets = ModelUtils::nonlinear_eq_constraint_targets(m);
     for(size_t i=0; i<this->numNonlinearEqConstraints; ++i)
         pConfig.AddNonlinearEqualityConstraint(
             "Non-Linear Equality " + asstring(i), nln_eq_targets[i]
@@ -1579,11 +1579,11 @@ JEGAOptimizer::LoadTheConstraints(
     // In addition to bounds, these accept coefficients for possible shortcut
     // evaluation.  That information is in linear_ineq_constraint_coeffs.
     const RealVector& lin_ineq_lwr_bnds
-        = m.linear_ineq_constraint_lower_bounds();
+        = ModelUtils::linear_ineq_constraint_lower_bounds(m);
     const RealVector& lin_ineq_upr_bnds
-        = m.linear_ineq_constraint_upper_bounds();
+        = ModelUtils::linear_ineq_constraint_upper_bounds(m);
     const RealMatrix& lin_ineq_coeffs
-        = m.linear_ineq_constraint_coeffs();
+        = ModelUtils::linear_ineq_constraint_coeffs(m);
 
     JEGA::DoubleVector lin_ineq_coeffs_row(lin_ineq_coeffs.numCols());
 
@@ -1605,8 +1605,8 @@ JEGAOptimizer::LoadTheConstraints(
     // is in lin_eq_targets. In addition to targets, these accept coefficients
     // for possible shortcut evaluation.  That information is in
     // linear_eq_constraint_coeffs.
-    const RealVector& lin_eq_targets = m.linear_eq_constraint_targets();
-    const RealMatrix& lin_eq_coeffs = m.linear_eq_constraint_coeffs();
+    const RealVector& lin_eq_targets = ModelUtils::linear_eq_constraint_targets(m);
+    const RealMatrix& lin_eq_coeffs = ModelUtils::linear_eq_constraint_coeffs(m);
 
     JEGA::DoubleVector lin_eq_coeffs_row(lin_eq_coeffs.numCols());
 

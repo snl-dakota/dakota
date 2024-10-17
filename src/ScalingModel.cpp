@@ -187,7 +187,7 @@ void ScalingModel::resp_scaled2native(const Variables& native_vars,
       need_resp_trans_byvars(updated_resp.active_set_request_vector(), 0,
                              num_primary_fns())){
     size_t num_nln_cons = 
-      num_nonlinear_ineq_constraints() + num_nonlinear_eq_constraints();
+      ModelUtils::num_nonlinear_ineq_constraints(*this) + ModelUtils::num_nonlinear_eq_constraints(*this);
     Response tmp_response = updated_resp.copy();
     if (primaryRespScaleFlag || 
         need_resp_trans_byvars(tmp_response.active_set_request_vector(), 0,
@@ -226,7 +226,7 @@ secondary_resp_scaled2native(const RealVector& scaled_nln_cons,
                              RealVector& native_fns) const
 {
   size_t num_nln_cons = 
-    num_nonlinear_ineq_constraints() + num_nonlinear_eq_constraints();
+    ModelUtils::num_nonlinear_ineq_constraints(*this) + ModelUtils::num_nonlinear_eq_constraints(*this);
   if (secondaryRespScaleFlag || 
       need_resp_trans_byvars(asv, num_primary_fns(), num_nln_cons)) {
     // scale all functions, but only copy constraints
@@ -289,10 +289,10 @@ void ScalingModel::initialize_scaling(Model& sub_model)
   sub_model.supports_derivative_estimation(false);
 
   size_t num_cv = current_variables().cv(), num_primary = num_primary_fns(),
-    num_nln_ineq = num_nonlinear_ineq_constraints(),
-    num_nln_eq = num_nonlinear_eq_constraints(),
-    num_lin_ineq = num_linear_ineq_constraints(),
-    num_lin_eq = num_linear_eq_constraints(),
+    num_nln_ineq = ModelUtils::num_nonlinear_ineq_constraints(*this),
+    num_nln_eq = ModelUtils::num_nonlinear_eq_constraints(*this),
+    num_lin_ineq = ModelUtils::num_linear_ineq_constraints(*this),
+    num_lin_eq = ModelUtils::num_linear_eq_constraints(*this),
     num_lin_cons = num_lin_ineq + num_lin_eq;
 
   // temporary arrays
@@ -383,8 +383,8 @@ void ScalingModel::initialize_scaling(Model& sub_model)
     responseScaleOffsets[num_primary+i]     = tmp_offsets[i];
   }
 
-  nonlinear_ineq_constraint_lower_bounds(lbs);
-  nonlinear_ineq_constraint_upper_bounds(ubs);
+  ModelUtils::nonlinear_ineq_constraint_lower_bounds(*this, lbs);
+  ModelUtils::nonlinear_ineq_constraint_upper_bounds(*this, ubs);
 
   // --------------------
   // NONLINEAR EQUALITY
@@ -410,7 +410,7 @@ void ScalingModel::initialize_scaling(Model& sub_model)
       = tmp_offsets[i];
   }
 
-  nonlinear_eq_constraint_targets(targets);
+  ModelUtils::nonlinear_eq_constraint_targets(*this, targets);
 
   if (outputLevel > NORMAL_OUTPUT && 
       (primaryRespScaleFlag || secondaryRespScaleFlag) )
@@ -465,9 +465,9 @@ void ScalingModel::initialize_scaling(Model& sub_model)
                   linearIneqScaleTypes, linearIneqScaleMultipliers, 
                   tmp_offsets);
 
-  linear_ineq_constraint_lower_bounds(lbs);
-  linear_ineq_constraint_upper_bounds(ubs);
-  linear_ineq_constraint_coeffs(
+  ModelUtils::linear_ineq_constraint_lower_bounds(*this, lbs);
+  ModelUtils::linear_ineq_constraint_upper_bounds(*this, ubs);
+  ModelUtils::linear_ineq_constraint_coeffs(*this, 
                                 lin_coeffs_modify_n2s(lin_ineq_coeffs, cvScaleMultipliers, 
                                                       linearIneqScaleMultipliers) );
 
@@ -511,8 +511,8 @@ void ScalingModel::initialize_scaling(Model& sub_model)
                   linearEqScaleTypes, linearEqScaleMultipliers, 
                   tmp_offsets);
 
-  linear_eq_constraint_targets(targets);
-  linear_eq_constraint_coeffs(
+  ModelUtils::linear_eq_constraint_targets(*this, targets);
+  ModelUtils::linear_eq_constraint_coeffs(*this,
                               lin_coeffs_modify_n2s(lin_eq_coeffs, cvScaleMultipliers, 
                                                     linearEqScaleMultipliers) );
 
@@ -896,8 +896,8 @@ secondary_resp_scaler(const Variables& native_vars,
   // need to scale if secondary responses are scaled or (variables are
   // scaled and grad or hess requested)
   size_t start_offset = scaleModelInstance->num_primary_fns();
-  size_t num_nln_cons = scaleModelInstance->num_nonlinear_ineq_constraints() +
-    scaleModelInstance->num_nonlinear_eq_constraints();
+  size_t num_nln_cons = ModelUtils::num_nonlinear_ineq_constraints(*scaleModelInstance) +
+    ModelUtils::num_nonlinear_eq_constraints(*scaleModelInstance);
   bool scale_transform_needed = 
     scaleModelInstance->secondaryRespScaleFlag ||
     scaleModelInstance->need_resp_trans_byvars
