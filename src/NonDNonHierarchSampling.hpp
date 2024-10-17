@@ -1589,9 +1589,12 @@ inline void NonDNonHierarchSampling::
 compute_variance(Real sum_Q, Real sum_QQ, size_t num_Q, Real& var_Q)
 		 //size_t num_QQ, // this count is the same as num_Q
 {
+  if (num_Q <= 1)
+    var_Q = (num_Q) ? 0. : std::numeric_limits<double>::quiet_NaN();
   // unbiased sample variance estimator = 1/(N-1) sum[(Q_i - Q-bar)^2]
   // = 1/(N-1) [ sum_QQ - N Q-bar^2 ] = 1/(N-1) [ sum_QQ - sum_Q^2 / N ]
-  var_Q = (sum_QQ - sum_Q * sum_Q / num_Q) / (num_Q - 1);
+  else
+    var_Q = (sum_QQ - sum_Q * sum_Q / num_Q) / (num_Q - 1);
 
   //Cout << "compute_variance: sum_Q = " << sum_Q << " sum_QQ = " << sum_QQ
   //     << " num_Q = " << num_Q << " var_Q = " << var_Q << std::endl;
@@ -1614,6 +1617,13 @@ compute_correlation(Real sum_Q1, Real sum_Q2, Real sum_Q1Q1, Real sum_Q1Q2,
 		    Real sum_Q2Q2, size_t N_shared, Real& var_Q1,
 		    Real& var_Q2, Real& rho2_Q1Q2)
 {
+  if (N_shared <= 1) {
+    Real nan = std::numeric_limits<double>::quiet_NaN();
+    if (N_shared) var_Q1 = var_Q2 = 0.;
+    else          var_Q1 = var_Q2 = nan;
+    rho2_Q1Q2 = nan;  return;
+  }
+
   // unbiased mean estimator
   Real mu_Q1 = sum_Q1 / N_shared, mu_Q2 = sum_Q2 / N_shared,
      num_sm1 = (Real)(N_shared - 1);
@@ -1635,13 +1645,16 @@ inline void NonDNonHierarchSampling::
 compute_covariance(Real sum_Q1, Real sum_Q2, Real sum_Q1Q2, size_t N_shared,
 		   Real& cov_Q1Q2)
 {
-  Real bessel_corr = (Real)N_shared / (Real)(N_shared - 1);
-
-  // unbiased mean X-bar = 1/N * sum
-  Real mu_Q1 = sum_Q1 / N_shared,  mu_Q2 = sum_Q2 / N_shared;
-  // unbiased sample covariance = 1/(N-1) sum[(X_i - X-bar)(Y_i - Y-bar)]
-  // = 1/(N-1) [N RawMom_XY - N X-bar Y-bar] = bessel [RawMom_XY - X-bar Y-bar]
-  cov_Q1Q2 = (sum_Q1Q2 / N_shared - mu_Q1 * mu_Q2) * bessel_corr;
+  if (N_shared <= 1)
+    cov_Q1Q2 = (N_shared) ? 0. : std::numeric_limits<double>::quiet_NaN();
+  else {
+    // unbiased mean X-bar = 1/N * sum
+    Real bessel_corr = (Real)N_shared / (Real)(N_shared - 1),
+      mu_Q1 = sum_Q1 / N_shared,  mu_Q2 = sum_Q2 / N_shared;
+    // unbiased sample covariance = 1/(N-1) sum[(X_i - X-bar)(Y_i - Y-bar)]
+    // = 1/(N-1) [N RawMom_XY - N X-bar Y-bar] = bessel[RawMom_XY - X-bar Y-bar]
+    cov_Q1Q2 = (sum_Q1Q2 / N_shared - mu_Q1 * mu_Q2) * bessel_corr;
+  }
 
   //Cout << "compute_covariance: sum_Q1 = " << sum_Q1 << " sum_Q2 = " << sum_Q2
   //     << " sum_Q1Q2 = " << sum_Q1Q2 << " num_shared = " << num_shared
