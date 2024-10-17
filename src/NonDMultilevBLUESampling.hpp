@@ -457,7 +457,7 @@ increment_allocations(const MFSolutionData& soln, SizetArray& N_G_alloc,
     N_G_alloc[group] += delta_N_G[group];
 }
 
-
+/** Overload for 2D array: NGroupActual */
 inline void NonDMultilevBLUESampling::
 find_hf_sample_reference(const Sizet2DArray& N_G, size_t& ref_group,
 			 size_t& ref_model_index)
@@ -483,6 +483,7 @@ find_hf_sample_reference(const Sizet2DArray& N_G, size_t& ref_group,
 }
 
 
+/** Overload for 1D array: NGroupAlloc */
 inline void NonDMultilevBLUESampling::
 find_hf_sample_reference(const SizetArray& N_G, size_t& ref_group,
 			 size_t& ref_model_index)
@@ -916,14 +917,24 @@ inline void NonDMultilevBLUESampling::apply_mc_reference(RealVector& mc_targets)
 {
   // derived implementation (varH is not used by ML BLUE)
 
+  // used by NonDNonHierarchSampling::finite_solution_bounds() for accuracy
+  // constrained cases, which are disallowed for offline pilot modes
+
+  // mirrors find_hf_sample_reference() logic in print_variance_reduction()
+  size_t ref_group, ref_model_index;
+  switch (pilotMgmtMode) {
+  case OFFLINE_PILOT:  case OFFLINE_PILOT_PROJECTION:
+    // should not happen (estVarIter0 not available)
+    ref_group = numGroups - 1;  ref_model_index = numApprox;             break;
+  default:
+    find_hf_sample_reference(NGroupActual, ref_group, ref_model_index);  break;
+  }
+
+  const RealSymMatrixArray& cov_GG_g = covGG[ref_group];
   if (mc_targets.length() != numFunctions)
     mc_targets.sizeUninitialized(numFunctions);
-  //UShortArray hf_only_group(1);  hf_only_group[0] = numApprox;
-  //size_t hf_index = find_index(modelGroups, hf_only_group);
-  size_t all_group = numGroups - 1;// for all throttles, last group = all models
-  const RealSymMatrixArray& cov_GG_g = covGG[all_group];//[hf_index];
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    mc_targets[qoi] = cov_GG_g[qoi](numApprox,numApprox)
+    mc_targets[qoi] = cov_GG_g[qoi](ref_model_index,ref_model_index)
                     / ( convergenceTol * estVarIter0[qoi] );
 }
 
