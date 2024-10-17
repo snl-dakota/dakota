@@ -1009,7 +1009,7 @@ namespace Dakota {
 
 
         const RealVector& continuous_lower_bounds(const Model &model) {
-            model.user_defined_constraints().continuous_lower_bounds();
+            return model.user_defined_constraints().continuous_lower_bounds();
         }
 
 
