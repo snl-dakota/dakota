@@ -46,8 +46,9 @@ for running the :ref:`pyprepro pre-processing utility<interfaces:dprepro-and-pyp
 One of the nice things about the pyprepro node is that is does not require explicit connector lines to be drawn from each parameter node into itself.  Rather, the
 mere presence of global parameter values is enough for the pyprepro node to work with.  The "aprepro" node could be used in exactly the same way.
 
-Using the Project Explorer view, not the Palette view, drag the "cantilever" executable file onto the canvas.  NGW will automatically convert "cantilever" to a file
-node.  Do the same for the "cantilever.template" file that we previously marked up.
+Using the Project Explorer view, not the Palette view, drag the "cantilever" executable file onto the canvas. Select the "a plain file node"
+radio button and click OK.  NGW will automatically convert "cantilever" to a file node.  Do the same for the "cantilever.template" file that we 
+previously marked up.
 
 .. image:: img/NewDakotaStudy_Drivers_Workflow_9.png
    :alt: New file nodes
@@ -61,7 +62,7 @@ which template file to place the global parameter values in.
 Simulation Model Execution
 --------------------------
 
-Let's focus on executing the simulation model next.  Using the Palette, expand the Pipes folder and drag the "externalProcess" node onto the canvas.
+Let's focus on executing the simulation model next.  Using the Palette, expand the Applications folder and drag the "externalProcess" node onto the canvas.
 This node is responsible for performing the execution of our black-box simulation model.
 
 .. image:: img/NewDakotaStudy_Drivers_Workflow_11.png
