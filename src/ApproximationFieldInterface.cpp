@@ -34,9 +34,9 @@ ApproximationFieldInterface(ProblemDescDB& problem_db, const Variables& am_vars,
     sum_fields += field_lengths[i];
   }
   numScalars = (int)numSurfaces - sum_fields;
-  Cout << "\nApproximationInterface: numSurfaces, numFields, numScalars --> " << numSurfaces << ", "
-                                                                              << numFields << ", "
-                                                                              << numScalars << std::endl;
+  //Cout << "\nApproximationInterface: numSurfaces, numFields, numScalars --> " << numSurfaces << ", "
+  //                                                                            << numFields << ", "
+  //                                                                            << numScalars << std::endl;
   // Create field and component indices which respect the incoming
   // sorted function ids
   std::vector<size_t> all_indices;
@@ -66,22 +66,22 @@ ApproximationFieldInterface(ProblemDescDB& problem_db, const Variables& am_vars,
     for (auto const & fid : fieldFnIndices[i] )
       field_labels[i].push_back(labels[fid]);
 
-  Cout << "Scalar approx indices:" << std::endl;
-  for (int i=0; i<numScalars; ++i ) {
-    auto id = *(all_indices.begin()+i);
-    Cout << id << ", \"" << labels[id] << "\"" << std::endl;
-  }
-  Cout << "Field approx indices:" << std::endl;
-  for (int i=0; i<numFields; ++i ) {
-    Cout << i << ": ";
-    for (size_t idx=0; idx<fieldFnIndices[i].size(); ++idx )
-      Cout << fieldFnIndices[i][idx] << "\"" << field_labels[i][idx] << "\"  ";
-    Cout << std::endl;
-  }
-  Cout << "Function to Surface Id map:" << std::endl;
-  for (auto const & m:fn2SurfaceIdMap)
-    Cout << m.first << " --> field: " << m.second 
-         << ", component: " << fn2SurfaceComponentMap[m.first] << std::endl;
+  //Cout << "Scalar approx indices:" << std::endl;
+  //for (int i=0; i<numScalars; ++i ) {
+  //  auto id = *(all_indices.begin()+i);
+  //  Cout << id << ", \"" << labels[id] << "\"" << std::endl;
+  //}
+  //Cout << "Field approx indices:" << std::endl;
+  //for (int i=0; i<numFields; ++i ) {
+  //  Cout << i << ": ";
+  //  for (size_t idx=0; idx<fieldFnIndices[i].size(); ++idx )
+  //    Cout << fieldFnIndices[i][idx] << "\"" << field_labels[i][idx] << "\"  ";
+  //  Cout << std::endl;
+  //}
+  //Cout << "Function to Surface Id map:" << std::endl;
+  //for (auto const & m:fn2SurfaceIdMap)
+  //  Cout << m.first << " --> field: " << m.second 
+  //       << ", component: " << fn2SurfaceComponentMap[m.first] << std::endl;
 
 
   // Reconstruction to allow field-based approximations
