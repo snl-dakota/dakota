@@ -1,5 +1,23 @@
 # Install Dakota's Windows DLL dependencies, including Intel runtime
 
+function(find_lib_path base_path result_var)
+    # Define the paths to check
+    get_filename_component(path_ia32
+      "${base_path}/redist/ia32/compiler" ABSOLUTE)
+    get_filename_component(path_intel64
+      "${base_path}/redist/intel64/compiler" ABSOLUTE)
+
+    # Check if either directory exists
+    if(EXISTS "${path_ia32}")
+        set(${result_var} "${path_ia32}" PARENT_SCOPE)
+    elseif(EXISTS "${path_intel64}")
+        set(${result_var} "${path_intel64}" PARENT_SCOPE)
+    else()
+        set(${result_var} "${base_path}" PARENT_SCOPE)
+    endif()
+
+endfunction()
+
 # Prior to calling the CMake InstallRequiredSystemLibraries, append
 # the Intel libraries to CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS.
 
@@ -7,15 +25,14 @@
 # e.g., set(ifort_libpath "c:/Program Files/Intel/Compiler/11.1/065/lib/ia32")
 if (DEFINED ENV{INTEL_DEV_REDIST})
   # This should work for at least Intel 2013 -- 2017
-  get_filename_component(ifort_libpath
-    "$ENV{INTEL_DEV_REDIST}/redist/ia32/compiler" ABSOLUTE)
+  find_lib_path("$ENV{INTEL_DEV_REDIST}" ifort_libpath)
+
 elseif(DEFINED ENV{IFORT_COMPILER11})
-  get_filename_component(ifort_libpath 
-    "$ENV{IFORT_COMPILER11}/lib/ia32" ABSOLUTE)
+  find_lib_path("$ENV{IFORT_COMPILER11}" ifort_libpath)
 elseif (DEFINED ENV{IFORT_COMPILER12})
-  get_filename_component(ifort_libpath
-    "$ENV{IFORT_COMPILER12}/redist/ia32/compiler" ABSOLUTE)
+  find_lib_path("$ENV{IFORT_COMPILER12}" ifort_libpath)
 endif()
+
 
 if(DEFINED ifort_libpath)
   message(STATUS "Installing Intel Fortran libraries from ${ifort_libpath}")
@@ -57,3 +74,4 @@ endif()
 include(InstallRequiredSystemLibraries)
 
 message(STATUS "Installing system DLLs: ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS}")
+

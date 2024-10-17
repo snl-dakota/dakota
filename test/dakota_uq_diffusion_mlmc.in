@@ -32,11 +32,11 @@ method,
 #	    optimization 
 	  qoi_aggregation = sum	 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#p0,#p1
 	  convergence_tolerance = .1			#s0,#s3,#s6,#p0,#p1
-#	  convergence_tolerance = .01			#s1,#s4,#s7,#s9,#s10,#s14,#s15,#s16,#s17,#s18,#s19
+#	  convergence_tolerance = .01			#s1,#s4,#s7,#s9,#s10,#s15,#s16,#s17,#s18,#s19
 #	  convergence_tolerance = .001			#s2,#s5,#s8
 #	  convergence_tolerance_type = relative		#s0,#s6,#s2,#s7
 #	  max_function_evaluations = 100		#s11,#s12
-#	  max_function_evaluations = 5000		#s13
+#	  max_function_evaluations = 5000		#s13,#s14
 	output silent
 
 model,
@@ -49,8 +49,8 @@ model,
 	simulation
 	  solution_level_control = 'mesh_size'
 # dense matrices --> direct solvers --> cubic growth in expense
-	  solution_level_cost = 1. 8. 64. 512. 4096. 	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s14,#s15,#s16,#s17,#s18,#s19,#p0,#p1
-#	  solution_level_cost = 1. 4. 16. 64. 256.	#s13
+	  solution_level_cost = 1. 8. 64. 512. 4096. 	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s15,#s16,#s17,#s18,#s19,#p0,#p1
+#	  solution_level_cost = 1. 4. 16. 64. 256.	#s13,#s14
 
 variables,
 	uniform_uncertain = 9	 # number of cosine terms in soln expansion

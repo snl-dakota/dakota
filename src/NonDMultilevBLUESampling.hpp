@@ -163,6 +163,23 @@ private:
   /// find group and model indices for HF reference variance
   void find_hf_sample_reference(const SizetArray& N_G,  size_t& ref_group,
 				size_t& ref_model_index);
+  /// find the best-conditioned group that contains the HF model
+  size_t best_conditioned_hf_group();
+
+  void enforce_bounds_linear_constraints(RealVector& soln_vars);
+  void specify_parameter_bounds(RealVector& x_lb, RealVector& x_ub);
+  void specify_initial_parameters(const MFSolutionData& soln, RealVector& x0,
+				  const RealVector& x_lb,
+				  const RealVector& x_ub);
+  void specify_linear_constraints(RealVector& lin_ineq_lb,
+				  RealVector& lin_ineq_ub,
+				  RealVector& lin_eq_tgt,
+				  RealMatrix& lin_ineq_coeffs,
+				  RealMatrix& lin_eq_coeffs);
+  void specify_nonlinear_constraints(RealVector& nln_ineq_lb,
+				     RealVector& nln_ineq_ub,
+				     RealVector& nln_eq_tgt);
+  void enforce_augmented_linear_ineq_constraints(RealVector& soln_vars);
 
   void project_mc_estimator_variance(const RealSymMatrixArray& cov_GG_g,
 				     size_t H_index,
@@ -193,7 +210,7 @@ private:
 			     const Sizet2DArray& N_G,
 			     RealSymMatrix2DArray& cov_GG,
 			     RealSymMatrix2DArray& cov_GG_inv,
-			     bool update_prev = false);
+			     const SizetArray& N_G_ref = SizetArray());
   void compute_GG_covariance(const RealMatrix& sum_G_g,
 			     const RealSymMatrixArray& sum_GG_g,
 			     const SizetArray& num_G_g,
@@ -211,10 +228,10 @@ private:
   void analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
 					     const SizetArray& ratios_to_groups,
 					     MFSolutionData& soln);
-  void analytic_ratios_to_solution_variables(const RealVector& avg_eval_ratios,
-					     Real avg_hf_target,
-					     const SizetArray& ratios_to_groups,
-					     RealVector& soln_vars);
+  void ratios_target_to_solution_variables(const RealVector& avg_eval_ratios,
+					   Real avg_hf_target,
+					   const SizetArray& ratios_to_groups,
+					   RealVector& soln_vars);
 
   /// return size of active subset of modelGroups defined by retainedModelGroups
   size_t num_active_groups() const;
@@ -295,10 +312,6 @@ private:
   /// counter for sample allocations, per group
   SizetArray   NGroupAlloc;
 
-  /// counter for sample accumulations when evaluating covariance
-  /// using SHARED_PILOT mode
-  SizetArray   NGroupShared;
-
   /// final solution data for BLUE
   MFSolutionData blueSolnData;
 
@@ -378,6 +391,9 @@ inline void NonDMultilevBLUESampling::update_search_algorithm()
 {
   size_t num_g = num_active_groups();  bool warn = false;
   if (num_g > DIRECT_DIMENSION_LIMIT) {
+    // Note: any package config-related demotions to optSubProblemSolver have
+    // already occurred in sub_optimizer_select(), so only need to be concerned
+    // with dimension-related demotions
     switch (optSubProblemSolver) {
     case SUBMETHOD_DIRECT_NPSOL_OPTPP:
       optSubProblemSolver = SUBMETHOD_NPSOL_OPTPP;  warn = true;  break;
@@ -444,14 +460,15 @@ find_hf_sample_reference(const Sizet2DArray& N_G, size_t& ref_group,
 {
   ref_group = ref_model_index = SZ_MAX;
   Real ref_samples = 0., group_samples;
-  size_t g, num_groups = modelGroups.size(), hf_index;
+  size_t g, num_groups = modelGroups.size();
   for (g=0; g<num_groups; ++g) {
-    hf_index = find_index(modelGroups[g], numApprox); // index of HF model
-    if (hf_index != _NPOS) { // HF model is present
+    UShortArray& group_g = modelGroups[g];
+    // find_index() is unnecessary assuming groups have ordered models
+    if (group_g.back() == numApprox) { // HF model is present
       group_samples = average(N_G[g]);
       // Note: not protected from 1 sample -> Cov = nan from bessel corr
       if (group_samples > ref_samples) {
-	ref_group   = g;  ref_model_index = hf_index;
+	ref_group   = g;  ref_model_index = group_g.size() - 1;
 	ref_samples = group_samples;
       }
     }
@@ -468,14 +485,15 @@ find_hf_sample_reference(const SizetArray& N_G, size_t& ref_group,
 {
   ref_group = ref_model_index = SZ_MAX;
   Real ref_samples = 0., group_samples;
-  size_t g, num_groups = modelGroups.size(), hf_index;
+  size_t g, num_groups = modelGroups.size();
   for (g=0; g<num_groups; ++g) {
-    hf_index = find_index(modelGroups[g], numApprox); // index of HF model
-    if (hf_index != _NPOS) { // HF model is present
+    UShortArray& group_g = modelGroups[g];
+    // find_index() is unnecessary assuming groups have ordered models
+    if (group_g.back() == numApprox) { // HF model is present
       group_samples = N_G[g];
       // Note: not protected from 1 sample -> Cov = nan from bessel corr
       if (group_samples > ref_samples) {
-	ref_group   = g;  ref_model_index = hf_index;
+	ref_group   = g;  ref_model_index = group_g.size() - 1;
 	ref_samples = group_samples;
       }
     }
@@ -483,6 +501,32 @@ find_hf_sample_reference(const SizetArray& N_G, size_t& ref_group,
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "HF sample reference located in group " << ref_group
 	 << " at index " << ref_model_index << std::endl;
+}
+
+
+inline size_t NonDMultilevBLUESampling::best_conditioned_hf_group()
+{
+  //size_t skip_front = numGroups - retainedModelGroups.count();
+  //std::advance(rit, skip_front);
+
+  std::multimap<Real, size_t>::reverse_iterator rit;  size_t group;
+  for (rit = groupCovCondMap.rbegin(); rit!=groupCovCondMap.rend(); ++rit) {
+    group = rit->second;
+    if (modelGroups[group].back() == numApprox)
+      return group;
+  }
+  /* This further distinguishes best conditioned group as retained or
+     discarded, which is too specific -- not needed in all use cases
+  for (rit = groupCovCondMap.rbegin(); rit!=groupCovCondMap.rend(); ++rit) {
+    group = rit->second;
+    if (modelGroups[group].back() == numApprox)
+      return (retainedModelGroups[group]) ?
+	_NPOS : // a HF group has already been retained
+	group;  // return a discard to add (highest rcond)
+  }
+  */
+
+  return _NPOS; // none available to retain (should not happen)
 }
 
 
@@ -834,33 +878,6 @@ average_estimator_variance(const RealVector& cd_vars)
   RealVector estvar;
   estimator_variance(cd_vars, estvar);
   return average(estvar);
-}
-
-
-inline void NonDMultilevBLUESampling::
-blue_raw_moments(IntRealMatrixArrayMap& sum_G,
-		 IntRealSymMatrix2DArrayMap& sum_GG,
-		 const Sizet2DArray& N_G_actual, RealMatrix& H_raw_mom)
-{
-  RealVectorArray mu_hat;
-  for (int mom=1; mom<=4; ++mom) {
-    if (outputLevel >= NORMAL_OUTPUT)
-      Cout << "Moment " << mom << " estimator:\n";
-    RealMatrixArray& sum_G_m = sum_G[mom];
-    if (mom == 1 && ( pilotMgmtMode == ONLINE_PILOT ||
-		      pilotMgmtMode == ONLINE_PILOT_PROJECTION ) ) {
-      // online covar avail for mean
-      compute_mu_hat(covGGinv, sum_G_m, N_G_actual, mu_hat);
-    }
-    else { // generate new covariance data
-      RealSymMatrix2DArray& sum_GG_m = sum_GG[mom];
-      RealSymMatrix2DArray cov_GG, cov_GG_inv;
-      compute_GG_covariance(sum_G_m, sum_GG_m, N_G_actual, cov_GG, cov_GG_inv);
-      compute_mu_hat(cov_GG_inv, sum_G_m, N_G_actual, mu_hat);
-    }
-    for (size_t qoi=0; qoi<numFunctions; ++qoi)
-      H_raw_mom(mom-1, qoi) = mu_hat[qoi][numApprox]; // last model
-  }
 }
 
 

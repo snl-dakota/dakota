@@ -276,7 +276,6 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
     size_t all_group = numGroups - 1; // last group = all models
     NGroupAlloc[all_group] = delta_N_G[all_group];
     shared_covariance_iteration(sum_G, sum_GG, delta_N_G);
-    NGroupShared = NGroupActual[all_group];// cache for update_prev in covar est
     reset_relaxation(); // for initial increments for all other groups
   }
   // online iteration for independent covariance estimation:
@@ -358,8 +357,14 @@ void NonDMultilevBLUESampling::ml_blue_pilot_projection()
     initialize_group_counts(NGroupActual);  NGroupAlloc.assign(numGroups, 0);
   }
   else { // ONLINE_PILOT_PROJECTION
-    evaluate_pilot(sum_G, sum_GG, NGroupActual, true); // initialize+accumulate
-    NGroupAlloc = pilotSamples;
+    if (pilotGroupSampling == SHARED_PILOT) {
+      NGroupAlloc.assign(numGroups, 0);
+      size_t all_group = numGroups - 1; // last group = all models
+      NGroupAlloc[all_group] = pilotSamples[all_group];
+    }
+    else NGroupAlloc = pilotSamples;
+    // initialize + accumulate online counts
+    evaluate_pilot(sum_G, sum_GG, NGroupActual, true);
   }
 
   // -------------------------------------
@@ -402,8 +407,11 @@ shared_covariance_iteration(IntRealMatrixArrayMap& sum_G,
     shared_increment("blue_");
     // accumulate for one group only and reuse for group covariances
     accumulate_blue_sums(sum_G, sum_GG, NGroupActual, all_group, allResponses);
+    // update covariances, recomputing model group pruning if active
     compute_GG_covariance(sum_G[1][all_group], sum_GG[1][all_group],
 			  NGroupActual[all_group], covGG, covGGinv);
+    prune_model_groups(); // redefined from scatch each iteration
+
     if (mlmfIter == 0 && costSource != USER_COST_SPEC)
       { recover_online_cost(allResponses); update_model_group_costs(); }
     increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox+1,
@@ -415,6 +423,8 @@ shared_covariance_iteration(IntRealMatrixArrayMap& sum_G,
     // compute the LF/HF evaluation ratios from shared samples and compute
     // ratio of MC and BLUE mean sq errors (which incorporates anticipated
     // variance reduction from application of avg_eval_ratios).
+    // > numerical soln is subject to latest group pruning (rcond throttles),
+    //   but all_group is retained in prune_model_groups() for this case
     compute_allocations(blueSolnData, NGroupActual, NGroupAlloc, delta_N_G);
     // only increment NGroupAlloc[all_group]
     increment_allocations(blueSolnData, NGroupAlloc, delta_N_G, all_group);
@@ -441,6 +451,11 @@ independent_covariance_iteration(IntRealMatrixArrayMap& sum_G,
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\n>>>>> multilevel_blue: online iteration for independent "
 	 << "covariance." << std::endl;
+
+  SizetArray N_G_ref;
+  if (pilotGroupSampling == SHARED_PILOT)
+    N_G_ref = NGroupActual[numGroups - 1]; // for compute_GG_covariance()
+
   while (!zeros(delta_N_G) && mlmfIter <= maxIterations) {
 
     // -----------------------------------------------
@@ -448,16 +463,15 @@ independent_covariance_iteration(IntRealMatrixArrayMap& sum_G,
     // -----------------------------------------------
     group_increments(delta_N_G, "blue_"); // spans ALL model groups, blocking
     accumulate_blue_sums(sum_G, sum_GG, NGroupActual, batchResponsesMap);
-
-    bool update_prev = (pilotGroupSampling == SHARED_PILOT);
-    compute_GG_covariance(sum_G[1], sum_GG[1], NGroupActual, covGG, covGGinv,
-			  update_prev);
+    compute_GG_covariance(sum_G[1], sum_GG[1], NGroupActual,
+			  covGG, covGGinv, N_G_ref);
+    prune_model_groups(); // redefined from scatch each iteration
     // While online cost recovery could be continuously updated, we restrict
     // to the pilot and do not not update on subsequent iterations.  We could
     // potentially mirror the covariance updates with cost updates, but seems
     // likely to induce thrash when run times are not robust.
     if (mlmfIter == 0 && costSource != USER_COST_SPEC)
-        /*&&pilotGroupSampling==INDEPENDENT_PILOT*/
+        /* && pilotGroupSampling == INDEPENDENT_PILOT */
       { recover_online_cost(batchResponsesMap); update_model_group_costs(); }
     increment_equivalent_cost(delta_N_G, modelGroupCost,
 			      sequenceCost[numApprox], equivHFEvals);
@@ -498,12 +512,11 @@ evaluate_pilot(RealMatrixArray& sum_G_pilot, RealSymMatrix2DArray& sum_GG_pilot,
     numSamples = pilotSamples[all_group];
     shared_increment("blue_");
     // accumulate for one group only and reuse for group covariances
-    RealMatrix&          sum_G_all =    sum_G_pilot[all_group];
-    RealSymMatrixArray& sum_GG_all =   sum_GG_pilot[all_group];
-    SizetArray&              N_all = N_shared_pilot[all_group];
-    accumulate_blue_sums(sum_G_all, sum_GG_all, N_all, all_group, allResponses);
-    compute_GG_covariance(sum_G_all, sum_GG_all, N_all, covGG, covGGinv);
-    NGroupShared = N_all; // cache a copy (not currently used for offline/proj)
+    RealMatrix&          sum_G_sh =    sum_G_pilot[all_group];
+    RealSymMatrixArray& sum_GG_sh =   sum_GG_pilot[all_group];
+    SizetArray&              N_sh = N_shared_pilot[all_group];
+    accumulate_blue_sums(sum_G_sh, sum_GG_sh, N_sh, all_group, allResponses);
+    compute_GG_covariance(sum_G_sh, sum_GG_sh, N_sh, covGG, covGGinv);
     if (costSource != USER_COST_SPEC)
       { recover_online_cost(allResponses); update_model_group_costs(); }
     if (incr_cost)
@@ -523,6 +536,7 @@ evaluate_pilot(RealMatrixArray& sum_G_pilot, RealSymMatrix2DArray& sum_GG_pilot,
 				sequenceCost[numApprox], equivHFEvals);
     clear_batches();
   }
+  prune_model_groups();
 }
 
 
@@ -575,58 +589,15 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   // Formulate the optimization sub-problem: initial pt, bnds, constraints
   // --------------------------------------
 
-  size_t g, v, lin_offset = 0, num_v = num_active_groups();
-  const RealVector& soln_vars = soln.solution_variables();
-  //Real offline_N_lwr = 2.; //(finalStatsType == QOI_STATISTICS) ? 2. : 1.;
-
-  // Initial point and parameter bounds.  Note: some minimizers require finite
-  // bounds --> these updates are performed in finite_solution_bounds()
-
-  x_ub = DBL_MAX; // no upper bounds for groups
-  if (pilotMgmtMode == OFFLINE_PILOT ||
-      pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
-    x_lb = 0.; // no group lower bounds for OFFLINE case (NUDGE enforced below)
-    lin_offset = 1; // see augment_linear_ineq_constraints() for definition
-  }
-  else {
-    // Assign sunk cost to full group and optimize w/ this as a constraint.
-    // > One could argue for only lower-bounding with actual incurred samples,
-    //   but have elected elsewhere to be consistent with backfill logic.
-    // > Note: only NGroup*[all_group] is advanced in shared_covariance_iter()
-    for (v=0; v<num_v; ++v) {
-      g = active_to_all_group(v);
-      x_lb[v] = (backfillFailures) ?
-	average(NGroupActual[g]) : (Real)NGroupAlloc[g];
-    }
-  }
+  specify_parameter_bounds(x_lb, x_ub);
   enforce_nudge(x_lb); // nudge away from 0 if needed
-  if (soln_vars.empty()) x0 = x_lb;
-  else if (soln_vars.length() != num_v)
-    deflate(soln_vars, retainedModelGroups, x0);
-  else                   x0 = soln_vars;
-  // x0 can undershoot x_lb if an OFFLINE mode, but enforce generally
-  enforce_bounds(x0, x_lb, x_ub);
 
-  // Linear and nonlinear constraints:
+  specify_initial_parameters(soln, x0, x_lb, x_ub);
+  enforce_bounds(x0, x_lb, x_ub);// for example, x0 can undershoot lb if OFFLINE
 
-  switch (optSubProblemForm) {
-  case N_GROUP_LINEAR_CONSTRAINT: { // linear inequality constraint on budget:
-    // \Sum_grp_i w_grp_i        N_grp_i <= equiv_HF * w_HF
-    // \Sum_grp_i w_grp_i / w_HF N_grp_i <= equivHF
-    Real cost_H = sequenceCost[numApprox];
-    lin_ineq_lb[lin_offset] = -DBL_MAX; // no lb
-    lin_ineq_ub[lin_offset] = (Real)maxFunctionEvals;//budget;
-    for (v=0; v<num_v; ++v) {
-      g = active_to_all_group(v);
-      lin_ineq_coeffs(lin_offset, v) = modelGroupCost[g] / cost_H;
-    }
-    break;
-  }
-  case N_GROUP_LINEAR_OBJECTIVE: // nonlinear accuracy constraint: ub on estvar
-    nln_ineq_lb = -DBL_MAX;   // no lower bnd
-    nln_ineq_ub = std::log(convergenceTol * average(estVarIter0));
-    break;
-  }
+  specify_linear_constraints(lin_ineq_lb, lin_ineq_ub, lin_eq_tgt,
+			     lin_ineq_coeffs, lin_eq_coeffs);
+  specify_nonlinear_constraints(nln_ineq_lb, nln_ineq_ub, nln_eq_tgt);
 }
 
 
@@ -712,6 +683,147 @@ augmented_linear_ineq_violations(const RealVector& cd_vars,
     //}
   }
   return quad_viol;
+}
+
+
+void NonDMultilevBLUESampling::
+enforce_bounds_linear_constraints(RealVector& soln_vars)
+{
+  // This function applies ML BLUE requirements to an (analytic) initial guess
+  // from another estimator (MFMC, CVMC).  These requirements are focused on
+  // having the matrix solution be well-posed, rather than enforcing constraints
+  // on accuracy or budget.
+
+  size_t num_v = num_active_groups();
+  RealVector x_lb(num_v), x_ub(num_v);
+  specify_parameter_bounds(x_lb, x_ub);
+  enforce_nudge(x_lb); // nudge away from 0 if needed
+  enforce_bounds(soln_vars, x_lb, x_ub);
+  enforce_augmented_linear_ineq_constraints(soln_vars);
+}
+
+
+void NonDMultilevBLUESampling::
+specify_parameter_bounds(RealVector& x_lb, RealVector& x_ub)
+{
+  // Solver parameter bounds.  Note: some minimizers require finite
+  // bounds --> these updates are performed in finite_solution_bounds()
+
+  x_ub = DBL_MAX; // no upper bounds for groups
+  if (pilotMgmtMode == OFFLINE_PILOT ||
+      pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
+    x_lb = 0.; // no group lower bounds for OFFLINE case (NUDGE enforced below)
+  else {
+    // Assign sunk cost to full group and optimize w/ this as a constraint.
+    // > One could argue for only lower-bounding with actual incurred samples,
+    //   but have elected elsewhere to be consistent with backfill logic.
+    // > Note: only NGroup*[all_group] is advanced in shared_covariance_iter()
+    size_t g, v, num_v = x_lb.length();
+    for (v=0; v<num_v; ++v) {
+      g = active_to_all_group(v);
+      x_lb[v] = (backfillFailures) ?
+	average(NGroupActual[g]) : (Real)NGroupAlloc[g];
+    }
+  }
+  //enforce_nudge(x_lb); // nudge away from 0 if needed
+}
+
+
+void NonDMultilevBLUESampling::
+specify_initial_parameters(const MFSolutionData& soln, RealVector& x0,
+			   const RealVector& x_lb, const RealVector& x_ub)
+{
+  const RealVector& soln_vars = soln.solution_variables();
+  if (soln_vars.empty()) x0 = x_lb;
+  else {
+    size_t num_v = num_active_groups();
+    if (soln_vars.length() != num_v)
+      deflate(soln_vars, retainedModelGroups, x0);
+    else                 x0 = soln_vars;
+  }
+}
+
+
+void NonDMultilevBLUESampling::
+specify_linear_constraints(RealVector& lin_ineq_lb, RealVector& lin_ineq_ub,
+			   RealVector& lin_eq_tgt,  RealMatrix& lin_ineq_coeffs,
+			   RealMatrix& lin_eq_coeffs)
+{
+  switch (optSubProblemForm) {
+  case N_GROUP_LINEAR_CONSTRAINT: { // linear inequality constraint on budget:
+    // \Sum_grp_i w_grp_i        N_grp_i <= equiv_HF * w_HF
+    // \Sum_grp_i w_grp_i / w_HF N_grp_i <= equivHF
+    Real cost_H = sequenceCost[numApprox];
+    size_t g, v, num_v = num_active_groups(),
+      lin_offset = (pilotMgmtMode == OFFLINE_PILOT ||
+		    pilotMgmtMode == OFFLINE_PILOT_PROJECTION) ? 1 : 0;
+    lin_ineq_lb[lin_offset] = -DBL_MAX; // no lb
+    lin_ineq_ub[lin_offset] = (Real)maxFunctionEvals;//budget;
+    for (v=0; v<num_v; ++v) {
+      g = active_to_all_group(v);
+      lin_ineq_coeffs(lin_offset, v) = modelGroupCost[g] / cost_H;
+    }
+    break;
+  }
+  }
+}
+
+
+void NonDMultilevBLUESampling::
+specify_nonlinear_constraints(RealVector& nln_ineq_lb, RealVector& nln_ineq_ub,
+			      RealVector& nln_eq_tgt)
+{
+  switch (optSubProblemForm) {
+  case N_GROUP_LINEAR_OBJECTIVE: // nonlinear accuracy constraint: ub on estvar
+    nln_ineq_lb = -DBL_MAX;   // no lower bnd
+    nln_ineq_ub = std::log(convergenceTol * average(estVarIter0));
+    break;
+  }
+}
+
+
+void NonDMultilevBLUESampling::
+enforce_augmented_linear_ineq_constraints(RealVector& soln_vars)
+{
+  if ( pilotMgmtMode == ONLINE_PILOT ||
+       pilotMgmtMode == ONLINE_PILOT_PROJECTION ) // no augmented linear ineq
+    return;
+
+  RealMatrix lin_ineq_coeffs(1, soln_vars.length());
+  RealVector lin_ineq_lb(1), lin_ineq_ub(1);
+  augment_linear_ineq_constraints(lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub);
+
+  size_t g;  int v, num_v = soln_vars.length(), last_v = num_v - 1;
+  Real lb = 1.;
+  // Assess presence of at least 1 sample in a HF group (any partial
+  // contributions are discarded in a way that linear ineq cannot support)
+  bool hf_sampled = false;
+  for (v=last_v; v>=0; --v)
+    if (lin_ineq_coeffs(0, v) == 1. && // active group contains HF
+	soln_vars[v] >= lb)            // active group is sampled
+      { hf_sampled = true; break; }
+
+  // Ensure that we have at least one sample for one of the groups containing
+  // the HF reference model.  This is already satisfied by pilot sampling for
+  // current group definitions used by online modes.
+  if (!hf_sampled)
+    switch (groupThrottleType) {
+    case RCOND_TOLERANCE_THROTTLE: case RCOND_BEST_COUNT_THROTTLE: {
+      // > prune_model_groups() has already added a HF group if necessary
+      // > Note that the best conditioned will usually be the HF-only group
+      //   with group covariance rcond = 1
+      v = all_to_active_group(best_conditioned_hf_group());
+      soln_vars[v] += lb;
+      break;
+    }
+    default:
+      // no rcond ranking: work backwards from last v to first
+      // (subsumes all_group cases)
+      for (v=last_v; v>=0; --v)
+	if (lin_ineq_coeffs(0, v) == 1.) // active group contains HF
+	  { soln_vars[v] += lb; break; } // preserve any previous nudge
+      break;
+    }
 }
 
 
@@ -809,6 +921,19 @@ analytic_initialization_from_mfmc(const RealMatrix& rho2_LH,
     mfmc_reordered_analytic_solution(approx_set, rho2_LH, sequenceCost,
 				     approx_sequence, avg_eval_ratios,
 				     lower_bounded_r, monotonic_r);
+  /* Desirable to start from avg_hf_target for MFMC rather than N_shared
+  if (maxFunctionEvals == SZ_MAX) // accuracy-constrained
+    // Compute avg_hf_target only based on MFMC estvar, bypassing ML BLUE estvar
+    // Note: dissimilar to ACV,GenACV logic
+    RealVector estvar_ratios;
+    mfmc_estvar_ratios(rho2_LH, avg_eval_ratios, approx_sequence,estvar_ratios);
+    avg_hf_target = update_hf_target(estvar_ratios, NGroupActual[all_group],
+				     estVarIter0); // valid within MFMC context
+  }
+  else
+    avg_hf_target = allocate_budget(avg_eval_ratios, cost, budget);
+               // = scale_to_target(...);
+  */
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Initial guess from analytic MFMC (unscaled eval ratios):\n"
 	 << avg_eval_ratios << std::endl;
@@ -839,6 +964,13 @@ analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
   RealVector avg_eval_ratios;  bool lower_bounded_r = false;
   cvmc_ensemble_solutions(rho2_LH, sequenceCost, avg_eval_ratios,
 			  lower_bounded_r);
+  /*
+  if (maxFunctionEvals == SZ_MAX) // accuracy-constrained
+    avg_hf_target = update_hf_target(cvmc_estvar, N_sh, estVarIter0);
+  else
+    avg_hf_target = allocate_budget(avg_eval_ratios, cost, budget);
+               // = scale_to_target(...);
+  */
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Initial guess from ensemble CVMC (unscaled eval ratios):\n"
 	 << avg_eval_ratios << std::endl;
@@ -868,29 +1000,28 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
 
   bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
 		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
-  Real avg_hf_target, offline_N_lwr = 2.,
-    N_sh = (offline) ? offline_N_lwr : (Real)pilotSamples[all_group];
-  if (maxFunctionEvals == SZ_MAX) { // accuracy-constrained
-    /*
-    // Compute avg_hf_target only based on MFMC estvar, bypassing ML BLUE estvar
-    // Note: dissimilar to ACV,GenACV logic
-    RealVector estvar_ratios;
-    mfmc_estvar_ratios(rho2_LH, avg_eval_ratios, approx_sequence,estvar_ratios);
-    avg_hf_target = update_hf_target(estvar_ratios, NGroupActual[all_group],
-				     estVarIter0); // valid within MFMC context
-    */
-
-    // As in ACV,GenACV, employ ML BLUE's native estvar for accuracy scaling
-    RealVector soln_vars, mlblue_estvar;
-    analytic_ratios_to_solution_variables(avg_eval_ratios, N_sh,
-					  ratios_to_groups, soln_vars);
-    estimator_variance(soln_vars, mlblue_estvar); // MFMC+pilot -> ML BLUE
+  Real avg_hf_target;
+  if (maxFunctionEvals == SZ_MAX) { // accuracy-constrained -> online only
+    // As for {ACV,GenACV}, employ ML BLUE's native estvar for accuracy scaling
+    RealVector soln_vars, mlblue_estvar;  SizetArray N_shared;
+    // Rather than estimating avg_hf_target for MFMC/CVMC (based on estvar and
+    // estVarIter0 from MFMC/CVMC), we instead employ pilot_samp to provide a
+    // baseline estvar for ML BLUE, and then scale toward an avg_hf_target for
+    // ML BLUE based on this estvar relative to estVarIter0.
+    size_t pilot_samp = pilotSamples[all_group];
+    ratios_target_to_solution_variables(avg_eval_ratios, (Real)pilot_samp,
+					ratios_to_groups, soln_vars);
+    enforce_bounds_linear_constraints(soln_vars); // for valid estvar
+    estimator_variance(soln_vars, mlblue_estvar); // compute ML BLUE estvar
     // the assumed scaling with N_sh is not generally valid for ML BLUE,
     // but is reasonable for emulation of MFMC
-    avg_hf_target = update_hf_target(mlblue_estvar, N_sh, estVarIter0);
+    N_shared.assign(numFunctions, pilot_samp); // online
+    avg_hf_target = update_hf_target(mlblue_estvar, N_shared, estVarIter0);
   }
-  else {
-    Real remaining = (Real)maxFunctionEvals, cost_H = sequenceCost[numApprox];
+  else { // budget-constrained -> online or offline
+    Real remaining = (Real)maxFunctionEvals,
+      cost_H = sequenceCost[numApprox], offline_N_lwr = 2.,
+      N_shared = (offline) ? offline_N_lwr : (Real)pilotSamples[all_group];
     if (!offline && pilotGroupSampling != SHARED_PILOT) {
       BitArray inactive(numGroups);  inactive.set();
       size_t g, r, num_r = ratios_to_groups.size(); // numApprox+1
@@ -905,15 +1036,16 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
     }
     if (remaining > 0.)
       // scale_to_target() employs allocate_budget() and rescales for lower bnds
-      scale_to_target(N_sh, sequenceCost, avg_eval_ratios, avg_hf_target,
-		      remaining, 0.); // no lower bound for offline
+      scale_to_target(N_shared, sequenceCost, avg_eval_ratios, avg_hf_target,
+		      remaining, offline_N_lwr);
     else // budget exhausted
-      { avg_hf_target = N_sh;  avg_eval_ratios = 1.; }
+      { avg_hf_target = N_shared; avg_eval_ratios = 1.; }
   }
 
   RealVector mlblue_vars;
-  analytic_ratios_to_solution_variables(avg_eval_ratios, avg_hf_target,
-					ratios_to_groups, mlblue_vars);
+  ratios_target_to_solution_variables(avg_eval_ratios, avg_hf_target,
+				      ratios_to_groups, mlblue_vars);
+  enforce_bounds_linear_constraints(mlblue_vars); // enforce again
   soln.solution_variables(mlblue_vars);
 
   if (outputLevel >= DEBUG_OUTPUT) {
@@ -924,10 +1056,10 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
 
 
 void NonDMultilevBLUESampling::
-analytic_ratios_to_solution_variables(const RealVector& avg_eval_ratios,
-				      Real avg_hf_target,
-				      const SizetArray& ratios_to_groups,
-				      RealVector& soln_vars)
+ratios_target_to_solution_variables(const RealVector& avg_eval_ratios,
+				    Real avg_hf_target,
+				    const SizetArray& ratios_to_groups,
+				    RealVector& soln_vars)
 {
   // Convert avg_{eval_ratios,hf_target} for MFMC/CVMC to soln_vars for ML BLUE
   // > We assume for now that the MFMC/CVMC groups for which eval ratios are
@@ -938,35 +1070,36 @@ analytic_ratios_to_solution_variables(const RealVector& avg_eval_ratios,
   //   MFMC/CVMC model groupings within modelGroups.
 
   // Initialize soln_vars
-  size_t r, num_r = avg_eval_ratios.length(), v, g, g_index,
-    num_v = num_active_groups();
-  if (soln_vars.length() != num_v)
-    soln_vars.sizeUninitialized(num_v); // init to 0
-  if (pilotMgmtMode == OFFLINE_PILOT ||
-      pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
-    soln_vars = 0.;
-  else if (pilotGroupSampling == SHARED_PILOT) {
-    soln_vars = 0.;
-    // last group = all models is always present in modelGroups,
-    // but may be omitted due to active group throttling
-    size_t all_group = numGroups - 1;
-    v = all_to_active_group(all_group); // group g -> active v
-    if (v != _NPOS)
-      soln_vars[v] = (Real)pilotSamples[all_group]; // likely overwritten
-  }
-  else // INDEPENDENT_PILOT
-    for (v=0; v<num_v; ++v) {
-      g = active_to_all_group(v);       // active v -> group g
-      soln_vars[v] = (g == _NPOS) ? 0. : (Real)pilotSamples[g];
+  size_t v, num_v = num_active_groups(), g;
+  if (soln_vars.length() != num_v) soln_vars.size(num_v); // init to 0
+  else                             soln_vars = 0.;
+  if (pilotMgmtMode == ONLINE_PILOT ||
+      pilotMgmtMode == ONLINE_PILOT_PROJECTION) {
+    if (pilotGroupSampling == SHARED_PILOT) {
+      // last group = all models is always present in modelGroups,
+      // but may be omitted due to active group throttling
+      size_t all_group = numGroups - 1;
+      v = all_to_active_group(all_group); // group g -> active v
+      if (v != _NPOS)
+	soln_vars[v] = (Real)pilotSamples[all_group];
     }
+    else // INDEPENDENT_PILOT
+      for (v=0; v<num_v; ++v) {
+	g = active_to_all_group(v);       // active v -> group g
+	if (g != _NPOS)
+	  soln_vars[v] = (Real)pilotSamples[g];
+      }
+  }
 
   // Define soln_vars for active groups using avg_{eval_ratios,hf_target}
+  size_t r, num_r = avg_eval_ratios.length();  Real N_samp;
   for (r=0; r<=num_r; ++r) {
-    g_index = ratios_to_groups[r];      // eval ratio r -> group g
-    if (g_index != _NPOS) {
-      v = all_to_active_group(g_index); // group g -> active v
-      soln_vars[v] = (r < num_r) ? avg_hf_target * avg_eval_ratios[r]
-	                         : avg_hf_target;
+    g = ratios_to_groups[r];      // eval ratio r -> group g
+    if (g != _NPOS) {
+      v = all_to_active_group(g); // group g -> active v
+      N_samp = avg_hf_target;
+      if (r < num_r)             N_samp *= avg_eval_ratios[r];
+      if (N_samp > soln_vars[v]) soln_vars[v] = N_samp; // emerge from pilot
     }
   }
 }
@@ -1081,6 +1214,40 @@ finalize_counts(const Sizet2DArray& N_G_actual, const SizetArray& N_G_alloc)
       if (N_l_actual_fl.empty()) N_l_actual_fl = N_G_actual_g;
       else     increment_samples(N_l_actual_fl,  N_G_actual_g);
     }
+  }
+}
+
+
+void NonDMultilevBLUESampling::
+blue_raw_moments(IntRealMatrixArrayMap& sum_G,
+		 IntRealSymMatrix2DArrayMap& sum_GG,
+		 const Sizet2DArray& N_G_actual, RealMatrix& H_raw_mom)
+{
+  RealVectorArray mu_hat;
+  for (int mom=1; mom<=4; ++mom) {
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "Moment " << mom << " estimator:\n";
+    RealMatrixArray& sum_G_m = sum_G[mom];
+    if (mom == 1 && ( pilotMgmtMode == ONLINE_PILOT ||
+		      pilotMgmtMode == ONLINE_PILOT_PROJECTION ) ) {
+      // online covar avail for mean
+      compute_mu_hat(covGGinv, sum_G_m, N_G_actual, mu_hat);
+    }
+    else {
+      // generate new online covariance data
+      RealSymMatrix2DArray& sum_GG_m = sum_GG[mom];
+      RealSymMatrix2DArray cov_GG, cov_GG_inv;
+      // Update model group pruning or stick with set from final iteration?
+      // For:     online:  condition rankings will change for higher moments
+      //          offline: online dataset differs, perhaps significantly
+      // Against: sample allocations were based on final iteration's pruning
+      //          and we should utilize this final set for the final moments
+      compute_GG_covariance(sum_G_m, sum_GG_m, N_G_actual, cov_GG, cov_GG_inv);
+      //prune_model_groups(); // "Against" selected
+      compute_mu_hat(cov_GG_inv, sum_G_m, N_G_actual, mu_hat);
+    }
+    for (size_t qoi=0; qoi<numFunctions; ++qoi)
+      H_raw_mom(mom-1, qoi) = mu_hat[qoi][numApprox]; // last model
   }
 }
 
@@ -1375,16 +1542,17 @@ accumulate_blue_sums(RealMatrix& sum_G_g, RealSymMatrixArray& sum_GG_g,
 void NonDMultilevBLUESampling::
 compute_GG_covariance(const RealMatrixArray& sum_G,
 		      const RealSymMatrix2DArray& sum_GG,
-		      const Sizet2DArray& num_G,
-		      RealSymMatrix2DArray& cov_GG,
-		      RealSymMatrix2DArray& cov_GG_inv, bool update_prev)
+		      const Sizet2DArray& num_G, RealSymMatrix2DArray& cov_GG,
+		      RealSymMatrix2DArray& cov_GG_inv,
+		      const SizetArray& N_G_ref)
 {
   initialize_rsm2a(cov_GG);  initialize_rsm2a(cov_GG_inv); // bypass if sized
 
   size_t g, m, m2, num_models, qoi, num_G_gq;
-  Real sum_G_gqm;  int code;  RealVector rcond(numFunctions);
-  bool rcond_throttle = (groupThrottleType == RCOND_TOLERANCE_THROTTLE ||
-			 groupThrottleType == RCOND_BEST_COUNT_THROTTLE);
+  Real sum_G_gqm;  RealVector rcond(numFunctions);
+  bool rcond_throttle  = (groupThrottleType == RCOND_TOLERANCE_THROTTLE ||
+			  groupThrottleType == RCOND_BEST_COUNT_THROTTLE),
+       relative_update = !N_G_ref.empty();
   if (rcond_throttle) groupCovCondMap.clear();
 
   for (g=0; g<numGroups; ++g) {
@@ -1396,9 +1564,11 @@ compute_GG_covariance(const RealMatrixArray& sum_G,
     for (qoi=0; qoi<numFunctions; ++qoi) {
       num_G_gq = num_G_g[qoi];
       // ONLINE_PILOT + SHARED_PILOT: only update to independent covar if equal
-      // or greater samples than shared
-      if ( ( update_prev && num_G_gq >= NGroupShared[qoi]) ||
-	   (!update_prev && num_G_gq >  1) ) { // sufficient to define new
+      // or greater samples than shared.  This sticks with the shared covariance
+      // approximation during iterative allocations, until superceded.  Final
+      // moment estimation instead relies on final online covariances.
+      if ( ( relative_update && num_G_gq >= N_G_ref[qoi]) ||
+	   (!relative_update && num_G_gq >  1) ) { // sufficient to define new: *** group covariance omitted for active lb of HF group at 1 online sample ***
 	const RealSymMatrix& sum_GG_gq = sum_GG[g][qoi];
 	RealSymMatrix&       cov_GG_gq = cov_GG_g[qoi];
 	if (cov_GG_gq.empty()) cov_GG_gq.shape(num_models);
@@ -1410,22 +1580,13 @@ compute_GG_covariance(const RealMatrixArray& sum_G,
 	}
 	compute_C_inverse(cov_GG_gq, cov_GG_inv_g[qoi], g, qoi, rcond[qoi]);
       }
-      else if (!update_prev) // inadequate samples to define covar
+      else if (!relative_update) // inadequate samples to define covar
 	{ cov_GG_g[qoi].shape(0); cov_GG_inv_g[qoi].shape(0); rcond[qoi] = 0.; }
       //else: leave as previous shared covariance and covariance-inverse
     }
     if (rcond_throttle)
       groupCovCondMap.insert(std::pair<Real,size_t>(average(rcond), g));
   }
-
-  // precompute 2D array of C_k inverses for numerical solver use
-  // (Phi-inverse is dependent on N_G, but C-inverse is not)
-  //compute_C_inverse(cov_GG, cov_GG_inv);
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "In compute_GG_covariance(), cov_GG:\n" << cov_GG
-	 << "cov_GG inverse:\n" << cov_GG_inv << std::endl;
-
-  prune_model_groups(); // redefined from scratch on each call
 }
 
 
@@ -1479,11 +1640,6 @@ compute_GG_covariance(const RealMatrix& sum_G_g,
   // precompute 2D array of C_k inverses for numerical solver use
   // (Phi-inverse is dependent on N_G, but C-inverse is not)
   compute_C_inverse(cov_GG, cov_GG_inv);
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "In compute_GG_covariance(), cov_GG:\n" << cov_GG
-	 << "cov_GG inverse:\n" << cov_GG_inv << std::endl;
-
-  prune_model_groups(); // redefined from scratch on each call
 }
 
 
@@ -1522,123 +1678,123 @@ compute_C_inverse(const RealSymMatrix& cov_GG_gq, RealSymMatrix& cov_GG_inv_gq,
 		  size_t group, size_t qoi, Real& rcond)
 {
   if (cov_GG_gq.empty()) // insufficient samples to define cov_GG
-    { cov_GG_inv_gq.shape(0); }
-  else {
+    { cov_GG_inv_gq.shape(0); rcond = 0.; return; }
 
-    /* This approach has not been effective for ill-conditioned cov_GG:
-    int r, nr = cov_GG_gq.numRows();
-    cov_GG_inv_gq.shape(nr);
-    RealSymMatrix A(cov_GG_gq);  RealMatrix X(nr, nr), B(nr, nr);
-    for (r=0; r<nr; ++r) B(r,r) = 1.; // identity
-    // Leverage both the soln refinement in solve() and equilibration during
-    // factorization (inverting C in place can only leverage the latter).
-    RealSpdSolver spd_solver;
-    spd_solver.setMatrix( Teuchos::rcp(&A,false));
-    spd_solver.setVectors(Teuchos::rcp(&X, false), Teuchos::rcp(&B, false));
-    if (spd_solver.shouldEquilibrate())
-     spd_solver.factorWithEquilibration(true);
-    spd_solver.solveToRefinedSolution(true);
-    int code = spd_solver.solve();
-    copy_data(X, cov_GG_inv_gq); // Dense to SymDense
-    */
+  /* This approach has not been effective for ill-conditioned cov_GG:
+  int r, nr = cov_GG_gq.numRows();
+  cov_GG_inv_gq.shape(nr);
+  RealSymMatrix A(cov_GG_gq);  RealMatrix X(nr, nr), B(nr, nr);
+  for (r=0; r<nr; ++r) B(r,r) = 1.; // identity
+  // Leverage both the soln refinement in solve() and equilibration during
+  // factorization (inverting C in place can only leverage the latter).
+  RealSpdSolver spd_solver;
+  spd_solver.setMatrix( Teuchos::rcp(&A,false));
+  spd_solver.setVectors(Teuchos::rcp(&X, false), Teuchos::rcp(&B, false));
+  if (spd_solver.shouldEquilibrate())
+    spd_solver.factorWithEquilibration(true);
+  spd_solver.solveToRefinedSolution(true);
+  int code = spd_solver.solve();
+  copy_data(X, cov_GG_inv_gq); // Dense to SymDense
+  */
 
-    /* Detection of ill-conditioning in Cholesky factorization has been
-       observed to be insuffienct to prevent blow-up within invert() -->
-       use SVD at all times rather than as a fallback.
-    cov_GG_inv_gq = cov_GG_gq; // copy for inversion in place
-    RealSpdSolver spd_solver;
-    spd_solver.setMatrix(Teuchos::rcp(&cov_GG_inv_gq, false));
-    // Equilibration scales the system to improve solution conditioning; it
-    // involves equilibrateMatrix() and equilibrateRHS() prior to solve,
-    // followed by unequilibrateLHS() after solve.  Here, we factor/invert C
-    // without equilibration as we assemble C-inverse into Psi without any
-    // solve(); otherwise C-inverse would be the inverse of the equilibrated
-    // matrix and there is no corresponding unequilibrate to use at that point.
-    // Downstream, solves using the assembled Psi are equilibrated as needed.
+  /* Detection of ill-conditioning in Cholesky factorization has been
+     observed to be insufficient to prevent blow-up within invert() -->
+     use SVD at all times rather than as a fallback.
+  cov_GG_inv_gq = cov_GG_gq; // copy for inversion in place
+  RealSpdSolver spd_solver;
+  spd_solver.setMatrix(Teuchos::rcp(&cov_GG_inv_gq, false));
+  // Equilibration scales the system to improve solution conditioning; it
+  // involves equilibrateMatrix() and equilibrateRHS() prior to solve,
+  // followed by unequilibrateLHS() after solve.  Here, we factor/invert C
+  // without equilibration as we assemble C-inverse into Psi without any
+  // solve(); otherwise C-inverse would be the inverse of the equilibrated
+  // matrix and there is no corresponding unequilibrate to use at that point.
+  // Downstream, solves using the assembled Psi are equilibrated as needed.
 
-    // factor() is embedded within both reciprocalConditionEstimate() and
-    // invert(), so this return code is the furthest upstream
-    int fact_code = spd_solver.factor(); // Real rcond;
-    //int rcond_code = spd_solver.reciprocalConditionEstimate(rcond);
-    //int   inv_code = spd_solver.invert(); // in place
-    if (fact_code) { // only traps extreme cases
-      Cerr << "Warning: failure in group covariance factorization in ML BLUE::"
-	   << "compute_C_inverse()\n         for group " << group << " QoI "
-	   << qoi //<< " with C:\n" << cov_GG_gq
-	   << " (LAPACK error: leading minor of order " << fact_code
-	   << " is not positive definite,\n       and the factorization could "
-	   << "not be completed).  Resorting to pseudo-inverse via SVD."
-	   << std::endl;
+  // factor() is embedded within both reciprocalConditionEstimate() and
+  // invert(), so this return code is the furthest upstream
+  int fact_code = spd_solver.factor(); // Real rcond;
+  //int rcond_code = spd_solver.reciprocalConditionEstimate(rcond);
+  //int   inv_code = spd_solver.invert(); // in place
+  if (fact_code) { // only traps extreme cases
+    Cerr << "Warning: failure in group covariance factorization in ML BLUE::"
+         << "compute_C_inverse()\n         for group " << group << " QoI "
+	 << qoi //<< " with C:\n" << cov_GG_gq
+	 << " (LAPACK error: leading minor of order " << fact_code
+	 << " is not positive definite,\n       and the factorization could "
+	 << "not be completed).  Resorting to pseudo-inverse via SVD."
+	 << std::endl;
 
-      // This drops the group contribution to Psi but probably also need
-      // to drop the group design var from the numerical soln to prevent
-      // unconstrained behavior there.
-      cov_GG_inv_gq.shape(0);
-    }
-    else { // bad inverses can still occur
-      spd_solver.invert();
-      //if (outputLevel >= DEBUG_OUTPUT)
-        Cout << "LL^T inverse for group " << group << " QoI " << qoi << ":\n"
-	     << cov_GG_inv_gq << std::endl;
-    }
-    */
-
-    /*
-    // SYEV not consistent with Cholesky-based inverse for well conditioned
-    // Need to review Petra2014
-    RealVector eigen_vals;  RealMatrix eigen_vecs;
-    symmetric_eigenvalue_decomposition( cov_GG_gq, eigen_vals, eigen_vecs );
-    //if (outputLevel >= DEBUG_OUTPUT)
-    //  Cout << "SYEV eigenvalues for " << group << " QoI " << qoi << ":\n"
-    // 	     << eigen_vals << std::endl;
-    // Form V and D
-    Real ev_tol = std::sqrt(DBL_EPSILON); // Petra2014 suggests tol=1 in Fig 5.2
-    int n, r, num_rows = eigen_vals.length(), num_neglect = 0;
-    for (n=0; n<num_rows; ++n) // returned in increasing order
-      if ( eigen_vals[n] <= ev_tol ) ++num_neglect;
-      else                           break;
-    int num_low_rank = num_rows - num_neglect, offset_r;
-    RealSymMatrix D(num_low_rank); // init to 0;    r x r diagonal matrix
-    RealMatrix V(num_rows, num_low_rank, false); // n x r matrix for r retained
-    for (r=0; r<num_low_rank; ++r) {
-      offset_r = r + num_neglect;
-      Real lambda = eigen_vals[offset_r];
-      D(r,r) = lambda / (lambda + 1.); // Sherman-Morrison-Woodbury
-      for (n=0; n<num_rows; ++n)
-	V(n,r) = eigen_vecs(n,offset_r); // copy column
-    }
-    // Form inverse = I - V D V^T
-    // inv(hessian) of posterior = L (I - V D V^T) L^T for prior Cholesky L
-    cov_GG_inv_gq.shapeUninitialized(num_rows);
-    Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., D, V, cov_GG_inv_gq);
-    for (n=0; n<num_rows; ++n)
-      cov_GG_inv_gq(n,n) += 1.;
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Pseudo-inverse by SYEV for group " << group << " QoI " << qoi
-	   << ":\n" << cov_GG_inv_gq << std::endl;
-    */
-
-    // Rely on SVD (full or pseudo-inverse as dictated by singular vals)
-    RealMatrix A, A_inv;
-    copy_data(cov_GG_gq, A);         // RealSymMatrix to RealMatrix
-    pseudo_inverse(A, A_inv, rcond);
-    copy_data(A_inv, cov_GG_inv_gq); // RealMatrix to RealSymMatrix
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Pseudo-inverse by SVD for group " << group << " QoI " << qoi
-	   << ": rcond = " << rcond << " Inverse =\n" << cov_GG_inv_gq
-	   << "\n--------------\n" << std::endl;
- 
-    // Alternatives:
-    // > Pseudo-inverse for covariances: is symmetric_eigenvalue_decomp()
-    //   preferred to SVD for case of symmetric matrices?
-    // > SVD for both C and Psi? or just for Psi while dropping C_k groups that
-    //   are ill-conditioned? --> factor() has inadequate detection so would
-    //   still access to eigen/singular values).
-    // > Schaden and Ullmann suggest + \delta I nugget offset, but again this
-    //   seems best combined with a detection scheme
-    // > SDP solvers (helps only with Psi solve --> issues with C-inverse must
-    //   be addressed separately)
+    // This drops the group contribution to Psi but probably also need
+    // to drop the group design var from the numerical soln to prevent
+    // unconstrained behavior there.
+    cov_GG_inv_gq.shape(0);
   }
+  else { // bad inverses can still occur
+    spd_solver.invert();
+    //if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "LL^T inverse for group " << group << " QoI " << qoi << ":\n"
+           << cov_GG_inv_gq << std::endl;
+  }
+  */
+
+  /*
+  // SYEV not consistent with Cholesky-based inverse for well conditioned
+  // Need to review Petra2014
+  RealVector eigen_vals;  RealMatrix eigen_vecs;
+  symmetric_eigenvalue_decomposition( cov_GG_gq, eigen_vals, eigen_vecs );
+  //if (outputLevel >= DEBUG_OUTPUT)
+  //  Cout << "SYEV eigenvalues for " << group << " QoI " << qoi << ":\n"
+  // 	     << eigen_vals << std::endl;
+  // Form V and D
+  Real ev_tol = std::sqrt(DBL_EPSILON); // Petra2014 suggests tol=1 in Fig 5.2
+  int n, r, num_rows = eigen_vals.length(), num_neglect = 0;
+  for (n=0; n<num_rows; ++n) // returned in increasing order
+    if ( eigen_vals[n] <= ev_tol ) ++num_neglect;
+    else                           break;
+  int num_low_rank = num_rows - num_neglect, offset_r;
+  RealSymMatrix D(num_low_rank); // init to 0;    r x r diagonal matrix
+  RealMatrix V(num_rows, num_low_rank, false); // n x r matrix for r retained
+  for (r=0; r<num_low_rank; ++r) {
+    offset_r = r + num_neglect;
+    Real lambda = eigen_vals[offset_r];
+    D(r,r) = lambda / (lambda + 1.); // Sherman-Morrison-Woodbury
+    for (n=0; n<num_rows; ++n)
+      V(n,r) = eigen_vecs(n,offset_r); // copy column
+  }
+  // Form inverse = I - V D V^T
+  // inv(hessian) of posterior = L (I - V D V^T) L^T for prior Cholesky L
+  cov_GG_inv_gq.shapeUninitialized(num_rows);
+  Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., D, V, cov_GG_inv_gq);
+  for (n=0; n<num_rows; ++n)
+    cov_GG_inv_gq(n,n) += 1.;
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Pseudo-inverse by SYEV for group " << group << " QoI " << qoi
+	 << ":\n" << cov_GG_inv_gq << std::endl;
+  */
+
+  // Rely on SVD (full or pseudo-inverse as dictated by singular vals)
+  RealMatrix A, A_inv;
+  copy_data(cov_GG_gq, A);         // RealSymMatrix to RealMatrix
+  pseudo_inverse(A, A_inv, rcond);
+  copy_data(A_inv, cov_GG_inv_gq); // RealMatrix to RealSymMatrix
+
+  //if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "In compute_C_inverse() for group " << group << " QoI " << qoi
+	 << ", covariance =\n" << cov_GG_gq << "Pseudo-inverse by truncated "
+	 << "SVD: rcond = " << rcond << ", inverse covariance =\n"
+	 << cov_GG_inv_gq << "\n--------------\n" << std::endl;
+ 
+  // Alternatives:
+  // > Pseudo-inverse for covariances: is symmetric_eigenvalue_decomp()
+  //   preferred to SVD for case of symmetric matrices?
+  // > SVD for both C and Psi? or just for Psi while dropping C_k groups that
+  //   are ill-conditioned? --> factor() has inadequate detection so would
+  //   still access to eigen/singular values).
+  // > Schaden and Ullmann suggest + \delta I nugget offset, but again this
+  //   seems best combined with a detection scheme
+  // > SDP solvers (helps only with Psi solve --> issues with C-inverse must
+  //   be addressed separately)
 }
 
 
@@ -1811,8 +1967,39 @@ void NonDMultilevBLUESampling::prune_model_groups()
     break;
   }
 
-  // TO DO: currently allowing all_group to be pruned, which is Ok for cov_GG
-  // TO DO: number of remaining groups may exceed max for global opt --> modify method as needed.
+  // Need at least 1 group that contains the HF reference model
+  //
+  // APPROACH 1: always include all_group (as with other throttles)
+  // > this group always has shared/indep pilot samples for online, but
+  //   covariance may be poorly conditioned
+  bool online = (pilotMgmtMode == ONLINE_PILOT ||
+		 pilotMgmtMode == ONLINE_PILOT_PROJECTION);
+  if (online && pilotGroupSampling == SHARED_PILOT) { // most common cases
+    // logic for both online modes is to make use of disproportionate investment
+    // in all_group, irregardless of its conditioning.  Further, ONLINE_PILOT
+    // mode iterates based on increments to the shared all_group in
+    // shared_covariance_iteration().
+    size_t all_group = numGroups - 1;
+    if (!retainedModelGroups[all_group]) {
+      if (outputLevel >= DEBUG_OUTPUT)
+	Cout << "Augment: add HF group = " << all_group << '\n';
+      retainedModelGroups.set(all_group);
+    }
+  }
+  // APPROACH 2: iff no HF group, add the best-conditioned discard with HF
+  // > unlike online all_group, this group may have zero samples
+  //   --> enforce_{nudge,bounds}()
+  else {//if (!hf_group_retained()) {
+    size_t hf_group = best_conditioned_hf_group();
+    // if retainedModelGroups[hf_group] then at least 1 HF group is above
+    // rcond cutoff, else augment with best HF discard
+    if (!retainedModelGroups[hf_group]) {
+      if (outputLevel >= DEBUG_OUTPUT)
+	Cout << "Augment: add HF group = " << hf_group << '\n';
+      retainedModelGroups.set(hf_group); // Augment
+    }
+  }
+
   if (outputLevel >= DEBUG_OUTPUT) {
     Cout << "Retained group count = " << retainedModelGroups.count() << '\n';
     for (size_t g=0; g<numGroups; ++g)

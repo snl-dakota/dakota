@@ -89,15 +89,15 @@ Test Number 6 succeeded
  Equivalent ML BLUE ratio:              1.7869748274196864e-02
 Test Number 7 succeeded
 <<<<< Function evaluation summary (HF_INT): 75 total (75 new, 0 duplicate)
-<<<<< Projected number of equivalent high fidelity evaluations: 4.2005078125000000e+02
+<<<<< Projected number of equivalent high fidelity evaluations: 4.9998828125000000e+02
 <<<<< Incurred cost in equivalent high fidelity evaluations: 2.6660156250000000e+01
 <<<<< Variance for mean estimator:
     Initial pilot (   25 ML samples):   5.9464718256041335e-07
   Projected MC    (   25 HF samples):   4.1006897417588783e-06
-  Projected ML BLUE (sample profile):   4.4621183030276127e-09
-  Projected ML BLUE ratio  (1 - R^2):   1.0881384801166912e-03
- Equivalent MC    (  420 HF samples):   2.4405916646291671e-07
- Equivalent ML BLUE ratio:              1.8282936747248148e-02
+  Projected ML BLUE (sample profile):   3.8276047318689373e-09
+  Projected ML BLUE ratio  (1 - R^2):   9.3340510326616211e-04
+ Equivalent MC    (  500 HF samples):   2.0503929269636650e-07
+ Equivalent ML BLUE ratio:              1.8667664531681085e-02
 Test Number 8 succeeded
 <<<<< Function evaluation summary (HF_INT): 46619 total (46619 new, 0 duplicate)
 <<<<< Online number of equivalent high fidelity evaluations: 4.4917578125000000e+02
@@ -141,15 +141,15 @@ Sample moment statistics for each response function:
  response_fn_3  2.5342566666110535e-02  6.6352756309522266e-03  7.7430057407282327e-01 -1.4346776288099816e-01
 Test Number 11 succeeded
 <<<<< Function evaluation summary (HF_INT): 75 total (75 new, 0 duplicate)
-<<<<< Projected number of equivalent high fidelity evaluations: 3.1900390625000000e+02
+<<<<< Projected number of equivalent high fidelity evaluations: 3.2684765625000000e+02
 <<<<< Incurred cost in equivalent high fidelity evaluations: 2.6660156250000000e+01
 <<<<< Variance for mean estimator:
     Initial pilot (   25 ML samples):   5.9464718256041335e-07
   Projected MC    (   25 HF samples):   4.1006897417588783e-06
-  Projected ML BLUE (sample profile):   5.9467095244888461e-09
-  Projected ML BLUE ratio  (1 - R^2):   1.4501729950284336e-03
- Equivalent MC    (  319 HF samples):   3.2136673418547511e-07
- Equivalent ML BLUE ratio:              1.8504434006093282e-02
+  Projected ML BLUE (sample profile):   5.9464718256038503e-09
+  Projected ML BLUE ratio  (1 - R^2):   1.4501150294421628e-03
+ Equivalent MC    (  327 HF samples):   3.1365451635840503e-07
+ Equivalent ML BLUE ratio:              1.8958667946642822e-02
 Test Number 12 succeeded
 <<<<< Function evaluation summary (HF_INT): 59853 total (59853 new, 0 duplicate)
 <<<<< Online number of equivalent high fidelity evaluations: 4.9999218750000000e+02

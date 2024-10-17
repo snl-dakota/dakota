@@ -50,6 +50,8 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
   optSubProblemSolver = sub_optimizer_select(
     probDescDB.get_ushort("method.nond.opt_subproblem_solver"),
     SUBMETHOD_DIRECT_NPSOL_OPTPP); // default is global + competed local
+  if (!optSubProblemSolver) // error messages output by sub_optimizer_select()
+    abort_handler(METHOD_ERROR);
 
   size_t num_forms_resolutions;
   configure_enumeration(num_forms_resolutions, sequenceType);
@@ -1783,7 +1785,7 @@ recover_results(const RealVector& cv_star, const RealVector& fn_star,
 }
 
 
-void NonDNonHierarchSampling::method_recourse(unsigned short method_name)
+void NonDNonHierarchSampling::method_recourse(unsigned short outer_method)
 {
   // NonDNonHierarchSampling numerical solves must protect use of Fortran
   // solvers at this level from conflicting with use at a higher level.
@@ -1791,8 +1793,8 @@ void NonDNonHierarchSampling::method_recourse(unsigned short method_name)
   // check_sub_iterator_conflict(), since solver execution does not span
   // any Model evaluations.
 
-  bool sol_conflict = (method_name == NPSOL_SQP || method_name == NLSSOL_SQP),
-    ncsu_conflict = (method_name == NCSU_DIRECT), have_npsol = false,
+  bool sol_conflict = (outer_method == NPSOL_SQP || outer_method == NLSSOL_SQP),
+    ncsu_conflict = (outer_method == NCSU_DIRECT), have_npsol = false,
     have_optpp = false, have_ncsu = false, err_flag = false;
 #ifdef HAVE_NPSOL
   have_npsol = true;
