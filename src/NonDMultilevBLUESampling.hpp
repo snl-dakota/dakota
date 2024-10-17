@@ -210,7 +210,7 @@ private:
 			     const Sizet2DArray& N_G,
 			     RealSymMatrix2DArray& cov_GG,
 			     RealSymMatrix2DArray& cov_GG_inv,
-			     bool update_prev = false);
+			     const SizetArray& N_G_ref = SizetArray());
   void compute_GG_covariance(const RealMatrix& sum_G_g,
 			     const RealSymMatrixArray& sum_GG_g,
 			     const SizetArray& num_G_g,
@@ -311,10 +311,6 @@ private:
   Sizet2DArray NGroupActual;
   /// counter for sample allocations, per group
   SizetArray   NGroupAlloc;
-
-  /// counter for sample accumulations when evaluating covariance
-  /// using SHARED_PILOT mode
-  SizetArray   NGroupShared;
 
   /// final solution data for BLUE
   MFSolutionData blueSolnData;
@@ -883,33 +879,6 @@ average_estimator_variance(const RealVector& cd_vars)
   RealVector estvar;
   estimator_variance(cd_vars, estvar);
   return average(estvar);
-}
-
-
-inline void NonDMultilevBLUESampling::
-blue_raw_moments(IntRealMatrixArrayMap& sum_G,
-		 IntRealSymMatrix2DArrayMap& sum_GG,
-		 const Sizet2DArray& N_G_actual, RealMatrix& H_raw_mom)
-{
-  RealVectorArray mu_hat;
-  for (int mom=1; mom<=4; ++mom) {
-    if (outputLevel >= NORMAL_OUTPUT)
-      Cout << "Moment " << mom << " estimator:\n";
-    RealMatrixArray& sum_G_m = sum_G[mom];
-    if (mom == 1 && ( pilotMgmtMode == ONLINE_PILOT ||
-		      pilotMgmtMode == ONLINE_PILOT_PROJECTION ) ) {
-      // online covar avail for mean
-      compute_mu_hat(covGGinv, sum_G_m, N_G_actual, mu_hat);
-    }
-    else { // generate new covariance data
-      RealSymMatrix2DArray& sum_GG_m = sum_GG[mom];
-      RealSymMatrix2DArray cov_GG, cov_GG_inv;
-      compute_GG_covariance(sum_G_m, sum_GG_m, N_G_actual, cov_GG, cov_GG_inv);
-      compute_mu_hat(cov_GG_inv, sum_G_m, N_G_actual, mu_hat);
-    }
-    for (size_t qoi=0; qoi<numFunctions; ++qoi)
-      H_raw_mom(mom-1, qoi) = mu_hat[qoi][numApprox]; // last model
-  }
 }
 
 
