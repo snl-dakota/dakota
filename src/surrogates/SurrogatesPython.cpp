@@ -171,10 +171,28 @@ MatrixXd Python::hessian(const MatrixXd& eval_point,
   assert( pyModuleActive );
   assert( Py_IsInitialized() );
 
-  silence_unused_args(eval_point);
+  /* Surrogate models don't yet support multiple responses */
   silence_unused_args(qoi);
   assert(qoi == 0);
-  throw(std::runtime_error("hessian is not currently supported."));
+
+  // Hard-coded method for now; could expose to user - RWH
+  // We could add a check for this method (attribute) above in the
+  // req_attrs if we knew it was needed at the time of our construction.
+  const std::string fn_name("hessian");
+  py::object py_surr_hess;
+  try {
+    py_surr_hess = pySurrogate.attr(fn_name.c_str());
+  }
+  catch(py::error_already_set &e) {
+    if (e.matches(PyExc_AttributeError)) {
+      std::cerr << "Module '" << moduleAndClassName << "' does not "
+        << "contain required method '" << fn_name << "'"
+        << std::endl;
+      throw;
+    }
+  }
+
+  return py_surr_hess(eval_point).cast<MatrixXd>();
 }
 
 }  // namespace surrogates
