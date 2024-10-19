@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE(test_metadata_non_numeric_throws)
       
   JRP test(j);
   BOOST_CHECK_EXCEPTION(test.metadata("time"), JRPE,
-		  msg_matches("In JSON results object, metadata value for 'time' is non-numeric"));
+		  msg_matches("In JSON results object, metadata value for 'time' could not be converted to a number"));
 }
 
 
@@ -175,7 +175,7 @@ BOOST_AUTO_TEST_CASE(test_function_non_numeric_throws)
       
   JRP test(j);
   BOOST_CHECK_EXCEPTION(test.function("response_fn_1"), JRPE,
-		  msg_matches("In JSON results object, function value for 'response_fn_1' is non-numeric"));
+		  msg_matches("In JSON results object, function value for 'response_fn_1' could not be converted to a number"));
 }
 
 // #####################################################################################
@@ -248,7 +248,7 @@ BOOST_AUTO_TEST_CASE(test_gradient_non_numeric_throws)
       
   JRP test(j);
   BOOST_CHECK_EXCEPTION(test.gradient("response_fn_1"), JRPE,
-		  msg_matches("In JSON results object, gradient for 'response_fn_1' contains a non-numeric entry"));
+		  msg_matches("In JSON results object, gradient for 'response_fn_1' contains an element that could not be converted to a number"));
 }
 
 // #####################################################################################
@@ -356,7 +356,7 @@ BOOST_AUTO_TEST_CASE(test_hessian_non_numeric_throws)
       
   JRP test(j);
   BOOST_CHECK_EXCEPTION(test.hessian("response_fn_1"), JRPE,
-		  msg_matches("In JSON results object, Hessian for 'response_fn_1' contains a non-numeric entry"));
+		  msg_matches("In JSON results object, Hessian for 'response_fn_1' contains an element that could not be converted to a number"));
 }
 
 

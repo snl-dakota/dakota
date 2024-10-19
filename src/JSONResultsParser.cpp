@@ -1,7 +1,17 @@
 #include "JSONResultsParser.hpp"
 #include <iostream>
+#include <string>
 
 namespace Dakota {
+
+struct JSONDoubleElement {
+  double value;
+};
+
+void from_json(const json &j, JSONDoubleElement &e) {
+     e.value = (j.is_number()) ? j.template get<double>() :
+            std::stod(j.template get<std::string>());
+}
 
 JSONResultsParser::JSONResultsParser(const json& j) : jref(j), failedFlag(false) {
     if(!jref.is_object())
@@ -27,10 +37,13 @@ double JSONResultsParser::metadata(const std::string& label) const {
                                      label + "'");
     double result;
     try {
-        result = jref["metadata"][label].template get<double>();
+        result = jref["metadata"][label].template get<JSONDoubleElement>().value;
     } catch(const nlohmann::detail::type_error& e) {
-	   throw JSONResultsParserError(std::string("In JSON results object, metadata value for '") 
-				   + label + "' is non-numeric");
+	throw JSONResultsParserError(std::string("In JSON results object, metadata value for '") 
+				   + label + "' could not be converted to a number");
+    } catch(const std::invalid_argument &e) {
+        			throw JSONResultsParserError(std::string("In JSON results object, metadata value for '") 
+				   + label + "' could not be converted to a number");
     }
     return result;
 }
@@ -43,11 +56,15 @@ double JSONResultsParser::function(const std::string& label) const {
                                      label + "'");
     double result;
     try {
-        result = jref["functions"][label].template get<double>();
+        result = jref["functions"][label].template get<JSONDoubleElement>().value;
     } catch(const nlohmann::detail::type_error& e) {
 	   throw JSONResultsParserError(std::string("In JSON results object, function value for '") 
-				   + label + "' is non-numeric");
+				   + label + "' could not be converted to a number");
+    } catch(const std::invalid_argument &e) {
+	   throw JSONResultsParserError(std::string("In JSON results object, function value for '") 
+				   + label + "' could not be converted to a number");
     }
+
     return result;
 }
 
@@ -63,18 +80,21 @@ RealVector JSONResultsParser::gradient(const std::string& label) const {
     RealVector grad(n);
     for(int i = 0; i < n; ++i) {
         try {
-            grad[i] = jref["gradients"][label][i].template get<double>();
+            grad[i] = jref["gradients"][label][i].template get<JSONDoubleElement>().value;
 	} catch(const nlohmann::detail::type_error& e) {
             throw JSONResultsParserError(std::string("In JSON results object, gradient for '") + label + "' contains " +
-			    "a non-numeric entry");
-	}
+				   "an element that could not be converted to a number");
+	} catch(const std::invalid_argument &e) {
+            throw JSONResultsParserError(std::string("In JSON results object, gradient for '") + label + "' contains " +
+				   "an element that could not be converted to a number");
+        }
     }
     return grad;
 }
 
 RealSymMatrix JSONResultsParser::hessian(const std::string& label) const {
     if(!hasHessians)
-         throw JSONResultsParserError("JSON results object does not contain 'hessians', or it's not an object");
+        throw JSONResultsParserError("JSON results object does not contain 'hessians', or it's not an object");
     if(!jref["hessians"].contains(label))
          throw JSONResultsParserError(std::string("'hessians' object in JSON results object does not contain '") +
                                      label + "'");
@@ -94,13 +114,18 @@ RealSymMatrix JSONResultsParser::hessian(const std::string& label) const {
     for(int i = 0; i < n; ++i) {
         for(int j = 0; j <= i; ++j) {
 	    try {
-                hessian(i, j) = jhess[i][j].template get<double>();
+                hessian(i, j) = jhess[i][j].template get<JSONDoubleElement>().value;
 	    } catch(const nlohmann::detail::type_error& e) {
                  throw JSONResultsParserError(std::string("In JSON results object, Hessian for '") + 
-				 label + "' contains a non-numeric entry");
-	    }
+				   label + "' contains an element that could not be converted to a number");
+	    } catch(const std::invalid_argument &e) {
+                 throw JSONResultsParserError(std::string("In JSON results object, Hessian for '") + 
+				   label + "' contains an element that could not be converted to a number");
+            }
 	}
     }
     return hessian;
 }
 }
+#include "JSONResultsParser.hpp"
+#include <iostream>
