@@ -115,9 +115,15 @@ protected:
 			      const SizetArray& N_G_alloc,
 			      SizetArray& delta_N_G);
 
-  void blue_raw_moments(IntRealMatrixArrayMap& sum_G,
-			IntRealSymMatrix2DArrayMap& sum_GG,
-			const Sizet2DArray& N_G_actual, RealMatrix& H_raw_mom);
+  void blue_raw_moments(IntRealMatrixArrayMap& sum_G_online,
+			IntRealSymMatrix2DArrayMap& sum_GG_online,
+			const Sizet2DArray& N_G_online, RealMatrix& H_raw_mom);
+  void blue_raw_moments(IntRealMatrixArrayMap& sum_G_covar,
+			IntRealSymMatrix2DArrayMap& sum_GG_covar,
+			const Sizet2DArray& N_G_covar,
+			IntRealMatrixArrayMap& sum_G_online,
+			IntRealSymMatrix2DArrayMap& sum_GG_online,
+			const Sizet2DArray& N_G_online, RealMatrix& H_raw_mom);
 
   void finalize_counts(const Sizet2DArray& N_G_actual,
 		       const SizetArray& N_G_alloc);
@@ -145,6 +151,9 @@ private:
 
   void evaluate_pilot(RealMatrixArray& sum_G_pilot,
 		      RealSymMatrix2DArray& sum_GG_pilot,
+		      Sizet2DArray& N_shared_pilot, bool incr_cost);
+  void evaluate_pilot(IntRealMatrixArrayMap& sum_G_pilot,
+		      IntRealSymMatrix2DArrayMap& sum_GG_pilot,
 		      Sizet2DArray& N_shared_pilot, bool incr_cost);
 
   void update_model_group_costs();
