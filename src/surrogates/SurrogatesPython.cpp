@@ -188,10 +188,6 @@ MatrixXd Python::hessian(const MatrixXd& eval_point) {
   assert( pyModuleActive );
   assert( Py_IsInitialized() );
 
-  /* Surrogate models don't yet support multiple responses */
-  silence_unused_args(qoi);
-  assert(qoi == 0);
-
   // Hard-coded method for now; could expose to user - RWH
   // We could add a check for this method (attribute) above in the
   // req_attrs if we knew it was needed at the time of our construction.
