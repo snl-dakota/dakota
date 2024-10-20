@@ -79,11 +79,15 @@ protected:
 
   const RealVector& gradient(const Variables& vars) override;
 
+  const RealSymMatrix& hessian(const Variables& vars) override;
+
   Real value(const RealVector& c_vars) override;
 
   RealVector values(const RealVector& c_vars) override;
 
   const RealVector& gradient(const RealVector& c_vars) override;
+
+  const RealSymMatrix& hessian(const RealVector& c_vars) override;
 
   /// set the surrogate's verbosity level according to Dakota's verbosity
   void set_verbosity();

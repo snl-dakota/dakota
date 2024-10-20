@@ -44,6 +44,13 @@ class Surrogate:
         return grad.T
 
 
+    def hessian(self, pts):
+
+        num_vals = pts.shape[1]
+        hess = np.zeros(shape=(num_vals, num_vals))
+        return hess
+
+
 def expanded_text_book_numpy(params):
 
     num_fns = params["functions"]

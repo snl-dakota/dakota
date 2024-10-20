@@ -226,6 +226,12 @@ const RealVector& SurrogatesBaseApprox::gradient(const Variables& vars)
 }
 
 
+const RealSymMatrix& SurrogatesBaseApprox::hessian(const Variables& vars)
+{
+  return hessian(map_eval_vars(vars));
+}
+
+
 RealVector SurrogatesBaseApprox::map_eval_vars(const Variables& vars)
 {
   if (modelIsImported)
@@ -290,6 +296,26 @@ const RealVector& SurrogatesBaseApprox::gradient(const RealVector& c_vars)
   // BMA TODO: redesign Approximation to not return the class member
   // as its state could be invalidated
   return approxGradient;
+}
+
+
+const RealSymMatrix& SurrogatesBaseApprox::hessian(const RealVector& c_vars)
+{
+  const size_t num_evals = 1;
+  const size_t num_vars = c_vars.length();
+
+  Eigen::Map<Eigen::MatrixXd> eval_pts(c_vars.values(), num_evals, num_vars);
+
+  // not sending Eigen view of approxGradient as model->gradient calls resize()
+  MatrixXd pred_hess = model->hessian(eval_pts);
+  Cout << "SurrogatesBaseApprox::hessian :\n" << pred_hess << std::endl;
+
+  approxHessian.reshape(c_vars.length());
+  for (size_t i = 0; i < num_vars; i++)
+    for(size_t j = 0; j <= i; j++)
+      approxHessian(i,j) = pred_hess(i,j);
+
+  return approxHessian;
 }
 
 

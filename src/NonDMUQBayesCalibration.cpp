@@ -24,7 +24,6 @@
 #include "MUQ/SamplingAlgorithms/DRKernel.h"
 #include "MUQ/SamplingAlgorithms/MALAProposal.h"
 #include "MUQ/SamplingAlgorithms/DILIKernel.h"
-#include "MUQ/Modeling/Distributions/Gaussian.h"
 
 #include <boost/property_tree/ptree.hpp>
 
@@ -304,7 +303,7 @@ void NonDMUQBayesCalibration::init_bayesian_solver()
     //          << ", muqGaussianPriorMu = "        << muqGaussianPriorMu
     //          << ", muqGaussianPriorCovMatrix = " << muqGaussianPriorCovMatrix
     //          << std::endl;
-    std::shared_ptr<muq::Modeling::Gaussian> muqGaussianPrior(new muq::Modeling::Gaussian(muqGaussianPriorMu, muqGaussianPriorCovMatrix));
+    muqGaussianPrior = std::make_shared<muq::Modeling::Gaussian>(muqGaussianPriorMu, muqGaussianPriorCovMatrix);
 
     workGraph->AddNode(MUQLikelihoodPtr, "Likelihood");
     workGraph->AddNode(muqGaussianPrior->AsDensity(), "Prior");
@@ -507,11 +506,19 @@ void NonDMUQBayesCalibration::calibrate()
   const std::string filename = "MUQDiagnostics/mcmc_output.h5";
   samps->WriteToFile(filename);
 
-  // update bestSamples with highest posterior probability points
-  log_best();
+  if (mcmcType == "dili") {
+    // Populate 'acceptanceChain' and 'acceptedFnVals' before calling 'log_best()'
+    cache_chain();
+    // Use 'acceptedFnVals' to compute best chain position
+    log_best();
+  }
+  else {
+    // update bestSamples with highest posterior probability points
+    log_best();
 
-  // populate acceptanceChain, acceptedFnVals
-  cache_chain();
+    // populate acceptanceChain, acceptedFnVals
+    cache_chain();
+  }
 
   // Generate useful stats from the posterior samples
   // compute_statistics();
@@ -534,6 +541,7 @@ void NonDMUQBayesCalibration::log_best()
   Eigen::VectorXd sample;
   RealVector mcmc_rv(numContinuousVars, false);
   std::shared_ptr<muq::SamplingAlgorithms::SamplingState> states;
+  RealVector fnValsForDili(numFunctions, false);
 
   // for each sample
   for (unsigned int i(0); i < samps->size(); ++i) {
@@ -546,12 +554,23 @@ void NonDMUQBayesCalibration::log_best()
     for (int j(0); j < numContinuousVars; ++j)
       mcmc_rv(j) = sample(j);
 
-    auto it = states->meta.find("LogTarget");
-    if ( it != states->meta.end() ) {
-      log_posterior = muq::Utilities::AnyCast(states->meta["LogTarget"]);
+    if (mcmcType == "dili") {
+      Real log_prior = muqGaussianPrior->LogDensity(sample);
+      fnValsForDili = Teuchos::getCol(Teuchos::DataAccess::Copy, acceptedFnVals, static_cast<int>(i));
+      Real log_like = nonDMUQInstance->log_likelihood(fnValsForDili, mcmc_rv);
+      Real log_posterior = log_like + log_prior;
       bestSamples.insert(std::make_pair(log_posterior, mcmc_rv));
       if (bestSamples.size() > numBestSamples)
         bestSamples.erase(bestSamples.begin()); // pop front (lowest prob)
+    }
+    else {
+      auto it = states->meta.find("LogTarget");
+      if ( it != states->meta.end() ) {
+        log_posterior = muq::Utilities::AnyCast(states->meta["LogTarget"]);
+        bestSamples.insert(std::make_pair(log_posterior, mcmc_rv));
+        if (bestSamples.size() > numBestSamples)
+          bestSamples.erase(bestSamples.begin()); // pop front (lowest prob)
+      }
     }
 
   }
