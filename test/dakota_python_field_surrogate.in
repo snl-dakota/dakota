@@ -49,7 +49,7 @@ variables,
 
 interface,
         python
-          analysis_driver = 'surrogate_polynomial:funcs'
+          analysis_driver = 'surrogate_polynomial.funcs'
         id_interface = 'I1'
 
 responses,

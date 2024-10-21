@@ -308,7 +308,6 @@ const RealSymMatrix& SurrogatesBaseApprox::hessian(const RealVector& c_vars)
 
   // not sending Eigen view of approxGradient as model->gradient calls resize()
   MatrixXd pred_hess = model->hessian(eval_pts);
-  Cout << "SurrogatesBaseApprox::hessian :\n" << pred_hess << std::endl;
 
   approxHessian.reshape(c_vars.length());
   for (size_t i = 0; i < num_vars; i++)

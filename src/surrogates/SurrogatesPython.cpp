@@ -134,7 +134,6 @@ VectorXd Python::value(const MatrixXd& eval_points) {
   py::object py_surr_eval = pySurrogate.attr(fn_name.c_str());
 
   auto vals = py_surr_eval(eval_points).cast<VectorXd>();
-  std::cout << "Scalar surrogate values:\n" << vals << std::endl;
 
   return vals;//.col(0);
   //return py_surr_eval(eval_points).cast<VectorXd>();
@@ -151,7 +150,6 @@ VectorXd Python::values(const MatrixXd& eval_points) {
   py::object py_surr_eval = pySurrogate.attr(fn_name.c_str());
 
   auto vals = py_surr_eval(eval_points).cast<MatrixXd>();
-  std::cout << "Field surrogate values:\n" << vals << std::endl;
 
   return vals.row(0);
   //return py_surr_eval(eval_points).cast<VectorXd>();
