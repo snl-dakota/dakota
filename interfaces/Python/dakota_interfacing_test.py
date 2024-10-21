@@ -5,7 +5,7 @@ import os
 import unittest
 
 __author__ = 'J. Adam Stephens'
-__copyright__ = 'Copyright 2014-2023 National Technology & Engineering Solutions of Sandia, LLC (NTESS)'
+__copyright__ = 'Copyright 2014-2024 National Technology & Engineering Solutions of Sandia, LLC (NTESS)'
 __license__ = 'GNU Lesser General Public License'
 
 try: # Python 2/3 compatible import of StringIO
@@ -37,7 +37,7 @@ apreproParams = apreproParamsNoMetadata + """                    { DAKOTA_METADA
 """
 
 # 6.15 and older format
-dakotaParamsNoMetadata = """                                          3 variables
+standardParamsNoMetadata = """                                          3 variables
                       7.488318331306800e-01 x1
                       2.188638686202466e-01 x2
                                     foo bar dussv_1
@@ -53,11 +53,11 @@ dakotaParamsNoMetadata = """                                          3 variable
 """
 
 # 6.16 and newer format
-dakotaParams = dakotaParamsNoMetadata + """                                          1 metadata
+standardParams = standardParamsNoMetadata + """                                          1 metadata
                                     seconds MD_1
 """
 
-dakotaSingleEvalBatchParams = """                                          3 variables
+standardSingleEvalBatchParams = """                                          3 variables
                       7.488318331306800e-01 x1
                       2.188638686202466e-01 x2
                                     foo bar dussv_1
@@ -72,7 +72,7 @@ dakotaSingleEvalBatchParams = """                                          3 var
 """
 
 
-dakotaBatchParams = """                                          2 variables
+standardBatchParams = """                                          2 variables
                       2.109465794009156e-01 x1
                      -9.675715913879684e-01 x2
                                           1 functions
@@ -174,7 +174,109 @@ direct_sparse_params = {
     "eval_id": 1
 }
 
+# JSON params
 
+# Dakota 6.21 and newer
+jsonParams = """
+{
+    "analysis_components": [
+        {
+            "component": "a b",
+            "driver": "batchdriver.py"
+        },
+        {
+            "component": "b",
+            "driver": "batchdriver.py"
+        }
+    ],
+    "derivative_variables": [
+        1,
+        2
+    ],
+    "eval_id": "1",
+    "metadata": [
+        "seconds"
+    ],
+    "responses": [
+        {
+            "active_set": 1,
+            "label": "response_fn_1"
+        }
+    ],
+    "variables": [
+        {
+            "label": "x1",
+            "value": 7.488318331306800e-01 
+        },
+        {
+            "label": "x2",
+            "value": 2.188638686202466e-01 
+        },
+        {
+            "label": "dussv_1",
+            "value": "foo bar"
+        }
+    ]
+}
+"""
+jsonBatchParams = """
+[
+    {
+        "analysis_components": [],
+        "derivative_variables": [
+            1,
+            2
+        ],
+        "eval_id": "1:1",
+        "metadata": [
+            "seconds"
+        ],
+        "responses": [
+            {
+                "active_set": 1,
+                "label": "obj_fn"
+            }
+        ],
+        "variables": [
+            {
+                "label": "x1",
+                "value": 0.2109465794009156
+            },
+            {
+                "label": "x2",
+                "value": -0.9675715913879684
+            }
+        ]
+    },
+    {
+        "analysis_components": [],
+        "derivative_variables": [
+            1,
+            2
+        ],
+        "eval_id": "1:2",
+        "metadata": [
+            "seconds"
+        ],
+        "responses": [
+            {
+                "active_set": 1,
+                "label": "obj_fn"
+            }
+        ],
+        "variables": [
+            {
+                "label": "x1",
+                "value": 0.3222614371054804
+            },
+            {
+                "label": "x2",
+                "value": 0.04946014218730854
+            }
+        ]
+    }
+]
+"""
 
 # Helper functions needed for Python < 2.7
 def set_function(r):
@@ -207,14 +309,14 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         self.assertEqual(p.eval_id, "1")
         self.assertEqual(p.num_metadata, 1)
         self.assertEqual(p.metadata[0], "seconds")
-        self.assertTrue(p.aprepro_format)
+        self.assertEqual(p.format, di.APREPRO)
         
         self.assertEqual(r.num_responses, 1)
         self.assertEqual(r.descriptors, ["response_fn_1"])
         self.assertEqual(r["response_fn_1"].asv, (True, False, False))
         self.assertEqual(r.num_deriv_vars, 2)
         self.assertEqual(r.deriv_vars, ["x1","x2"])
-        self.assertTrue(r.aprepro_format)
+        self.assertEqual(r.format, di.APREPRO)
         self.assertEqual(r.results_file, "results.out")
 
     def test_metadataless_aprepro_format(self):
@@ -223,11 +325,11 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         p, r = di.interfacing._read_parameters_stream(stream=pio, results_file="results.out")
         self.assertEqual(p.num_variables, 3)
         self.assertEqual(p.num_metadata, 0)
-        self.assertTrue(p.aprepro_format)
+        self.assertEqual(p.format, di.APREPRO)
 
-    def test_dakota_format(self):
+    def test_standard_format(self):
         """Confirm that Dakota format Parameters files are parsed correctly."""
-        pio = StringIO.StringIO(dakotaParams % 1)
+        pio = StringIO.StringIO(standardParams % 1)
         p, r = di.interfacing._read_parameters_stream(stream=pio, results_file="results.out")
         self.assertEqual(p.num_variables, 3)
         self.assertEqual(p.descriptors, ["x1","x2","dussv_1"])
@@ -240,7 +342,7 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         self.assertEqual(p.eval_id, "1")
         self.assertEqual(p.num_metadata, 1)
         self.assertEqual(p.metadata[0], "seconds")
-        self.assertFalse(p.aprepro_format)
+        self.assertEqual(p.format, di.STANDARD)
         
         self.assertEqual(r.num_responses, 1)
         self.assertEqual(r.descriptors, ["response_fn_1"])
@@ -248,21 +350,47 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         self.assertEqual(r.num_deriv_vars, 2)
         self.assertEqual(r.deriv_vars, ["x1","x2"])
         self.assertEqual(r.eval_id, "1")
-        self.assertFalse(r.aprepro_format)
+        self.assertEqual(r.format, di.STANDARD)
         self.assertEqual(r.results_file, "results.out")
 
-    def test_metadataless_dakota_format(self):
+    def test_metadataless_standard_format(self):
         """Coarse test parsing legacy metadata-less dakota format Parameters files."""
-        pio = StringIO.StringIO(dakotaParamsNoMetadata % 1)
+        pio = StringIO.StringIO(standardParamsNoMetadata % 1)
         p, r = di.interfacing._read_parameters_stream(stream=pio, results_file="results.out")
         self.assertEqual(p.num_variables, 3)
         self.assertEqual(p.num_metadata, 0)
-        self.assertFalse(p.aprepro_format)
+        self.assertEqual(p.format, di.STANDARD)
+
+    def test_json_format(self):
+        """Confirm that Dakota format Parameters files are parsed correctly."""
+        pio = StringIO.StringIO(jsonParams)
+        p, r = di.interfacing._read_parameters_stream(stream=pio, results_file="results.out")
+        self.assertEqual(p.num_variables, 3)
+        self.assertEqual(p.descriptors, ["x1","x2","dussv_1"])
+        self.assertAlmostEqual(p["x1"], 7.488318331306800e-01)
+        self.assertAlmostEqual(p["x2"], 2.188638686202466e-01)
+        self.assertEqual(p["dussv_1"], "foo bar")
+        self.assertEqual(p.num_an_comps, 2)
+        self.assertEqual(p.an_comps[0], "a b")
+        self.assertEqual(p.an_comps[1], "b")
+        self.assertEqual(p.eval_id, "1")
+        self.assertEqual(p.num_metadata, 1)
+        self.assertEqual(p.metadata[0], "seconds")
+        self.assertEqual(p.format, di.JSON)
+        
+        self.assertEqual(r.num_responses, 1)
+        self.assertEqual(r.descriptors, ["response_fn_1"])
+        self.assertEqual(r["response_fn_1"].asv, (True, False, False))
+        self.assertEqual(r.num_deriv_vars, 2)
+        self.assertEqual(r.deriv_vars, ["x1","x2"])
+        self.assertEqual(r.eval_id, "1")
+        self.assertEqual(r.format, di.JSON)
+        self.assertEqual(r.results_file, "results.out")
 
     def test_asv(self):
         """Results behaves according to the ASV when response data is set."""
         # Function only
-        pio = StringIO.StringIO(dakotaParams % 1)
+        pio = StringIO.StringIO(standardParams % 1)
         p, r = di.interfacing._read_parameters_stream(stream=pio)
         set_function(r)
         self.assertRaises(di.interfacing.ResponseError, set_gradient, r)
@@ -270,7 +398,7 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         set_metadata(r, "seconds", 42.0)
         r.write(StringIO.StringIO())
         # Gradient only
-        pio = StringIO.StringIO(dakotaParams % 2)
+        pio = StringIO.StringIO(standardParams % 2)
         p, r = di.interfacing._read_parameters_stream(stream=pio)
         self.assertRaises(di.interfacing.ResponseError, set_function, r)
         set_gradient(r)
@@ -278,7 +406,7 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         set_metadata(r, 0, 42.0)
         r.write(StringIO.StringIO())
         # Hessian only
-        pio = StringIO.StringIO(dakotaParams % 4)
+        pio = StringIO.StringIO(standardParams % 4)
         p, r = di.interfacing._read_parameters_stream(stream=pio)
         self.assertRaises(di.interfacing.ResponseError, set_function, r)
         self.assertRaises(di.interfacing.ResponseError, set_gradient, r)
@@ -290,7 +418,7 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         """Confirm that ASV is ignored."""
         # Test exceptions
         for i in range(1,8):
-            sio = StringIO.StringIO(dakotaParams % i)
+            sio = StringIO.StringIO(standardParams % i)
             p, r = di.interfacing._read_parameters_stream(stream=sio,ignore_asv=True)
             set_function(r) 
             set_gradient(r) 
@@ -298,7 +426,7 @@ class dakotaInterfacingTestCase(unittest.TestCase):
             set_metadata(r, 0, 42.0)
             r.write(StringIO.StringIO())
         # Test write-time ignoring
-        sio = StringIO.StringIO(dakotaParams % 3)
+        sio = StringIO.StringIO(standardParams % 3)
         p, r = di.interfacing._read_parameters_stream(stream=sio,ignore_asv=False)
         set_function(r)
         set_metadata(r, "seconds", 42.0)
@@ -311,7 +439,7 @@ class dakotaInterfacingTestCase(unittest.TestCase):
     
     def test_results_write(self):
         """Verify Written test results"""
-        sio = StringIO.StringIO(dakotaParams % 7)
+        sio = StringIO.StringIO(standardParams % 7)
         p, r = di.interfacing._read_parameters_stream(stream=sio)
         set_function(r) 
         set_gradient(r) 
@@ -333,16 +461,24 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         expected = "FAIL\n"
         self.assertEqual(rio.getvalue(), expected)
 
-    def test_batch_support(self):
-        """Verify that batch-format params and results files are handled correctly"""
-       
+    def test_standard_batch_support(self):
+        """Verify that standard format batch params and results files are handled correctly"""
+        sio = StringIO.StringIO(standardBatchParams)
+        self.batch_support_helper(sio)
+
+    def test_json_batch_support(self):
+        """Verify that standard format batch params and results files are handled correctly"""
+        sio = StringIO.StringIO(jsonBatchParams)
+        self.batch_support_helper(sio)
+
+    def batch_support_helper(self, stream):
         num_vars = 2
         num_fns = 1
         x1_vals = [2.109465794009156e-01, 3.222614371054804e-01]
         batch_id = 1
         eval_ids = ["1:1", "1:2"]
-        sio = StringIO.StringIO(dakotaBatchParams)
-        p, r = di.interfacing._read_parameters_stream(sio, False, True, None)
+        
+        p, r = di.interfacing._read_parameters_stream(stream, False, True, None)
         # correct number of parameter sets and response sets
         self.assertEqual(len(p),2)
         self.assertEqual(len(r),2)
@@ -387,7 +523,7 @@ class dakotaInterfacingTestCase(unittest.TestCase):
     
     def test_single_eval_batch(self):
         """Verify that batch objects are returned for batch = True"""
-        pio = StringIO.StringIO(dakotaSingleEvalBatchParams)
+        pio = StringIO.StringIO(standardSingleEvalBatchParams)
         p, r = di.interfacing._read_parameters_stream(stream=pio, 
                            batch=True, results_file="results.out")
         self.assertIsInstance(p, di.interfacing.BatchParameters)
@@ -397,7 +533,7 @@ class dakotaInterfacingTestCase(unittest.TestCase):
 
     def test_batch_getitem(self):
         """Verify that Results objects are returned correctly by getitem"""
-        sio = StringIO.StringIO(dakotaBatchParams)
+        sio = StringIO.StringIO(standardBatchParams)
         batch_params, batch_results = di.interfacing._read_parameters_stream(sio, False, True, None)
         temp_results = batch_results[0]
         self.assertTrue(temp_results is batch_results[0])
@@ -405,7 +541,7 @@ class dakotaInterfacingTestCase(unittest.TestCase):
     def test_batch_setitem(self):
         """Verify that Results objects are not copied by BatchParameters setter"""
        
-        sio = StringIO.StringIO(dakotaBatchParams)
+        sio = StringIO.StringIO(standardBatchParams)
         batch_params, batch_results = di.interfacing._read_parameters_stream(sio, False, True, None)
         temp_results = batch_results[0]
         batch_results[0] = temp_results
@@ -413,14 +549,14 @@ class dakotaInterfacingTestCase(unittest.TestCase):
 
     def test_batch_setting_exception(self):
         """Ensure BatchSettingError is raised when batch=True"""
-        pio = StringIO.StringIO(dakotaParams % 1)
+        pio = StringIO.StringIO(standardParams % 1)
         with self.assertRaises(di.interfacing.BatchSettingError):
             p, r = di.interfacing._read_parameters_stream(stream=pio, 
                            batch=True, results_file="results.out")
 
     def test_type_inference(self):
         """With infer_types set to False, verify variables are all strings"""
-        pio = StringIO.StringIO(dakotaParams % 1)
+        pio = StringIO.StringIO(standardParams % 1)
         p, r = di.interfacing._read_parameters_stream(stream=pio, results_file="results.out", infer_types=True)
         self.assertIsInstance(p["x1"], float)
         self.assertIsInstance(p["x2"], float)
@@ -428,7 +564,7 @@ class dakotaInterfacingTestCase(unittest.TestCase):
 
     def test_no_type_inference(self):
         """With infer_types set to False, verify variables are all strings"""
-        pio = StringIO.StringIO(dakotaParams % 1)
+        pio = StringIO.StringIO(standardParams % 1)
         p, r = di.interfacing._read_parameters_stream(stream=pio, results_file="results.out", infer_types=False)
         self.assertIsInstance(p["x1"], str)
         self.assertIsInstance(p["x2"], str)
@@ -436,7 +572,7 @@ class dakotaInterfacingTestCase(unittest.TestCase):
 
     def test_types_list(self):
         """With infer_types set to False, verify variables are all strings"""
-        pio = StringIO.StringIO(dakotaParams % 1)
+        pio = StringIO.StringIO(standardParams % 1)
         p, r = di.interfacing._read_parameters_stream(stream=pio, results_file="results.out", types=[str]*3)
         self.assertIsInstance(p["x1"], str)
         self.assertIsInstance(p["x2"], str)
@@ -444,13 +580,13 @@ class dakotaInterfacingTestCase(unittest.TestCase):
 
     def test_types_list_wrong_length(self):
         """With infer_types set to False, verify variables are all strings"""
-        pio = StringIO.StringIO(dakotaParams % 1)
+        pio = StringIO.StringIO(standardParams % 1)
         with self.assertRaises(di.BadTypesOverride):
             di.interfacing._read_parameters_stream(stream=pio, results_file="results.out", types=[str]*2)
 
     def test_types_list(self):
         """With infer_types set to False, verify variables are all strings"""
-        pio = StringIO.StringIO(dakotaParams % 1)
+        pio = StringIO.StringIO(standardParams % 1)
         types = {"x1": str, "x2": str, "dussv_1": str}
         p, r = di.interfacing._read_parameters_stream(stream=pio, results_file="results.out", types=types)
         self.assertIsInstance(p["x1"], str)
@@ -459,7 +595,7 @@ class dakotaInterfacingTestCase(unittest.TestCase):
 
     def test_results_metadata(self):
         """Verify metadata by index vs. label"""
-        sio = StringIO.StringIO(dakotaParams % 3)
+        sio = StringIO.StringIO(standardParams % 3)
         p, r = di.interfacing._read_parameters_stream(stream=sio)
         set_function(r)
         set_gradient(r)
@@ -473,7 +609,7 @@ class dakotaInterfacingTestCase(unittest.TestCase):
     def test_dprepro(self):
         """Verify that templates are substituted correctly"""
  
-        sio = StringIO.StringIO(dakotaParams % 3)
+        sio = StringIO.StringIO(standardParams % 3)
         p, r = di.interfacing._read_parameters_stream(stream=sio)
 
         # Test insertion of DakotaParams and DakotaResults
@@ -607,24 +743,24 @@ class dakotaInterfacingTestCase(unittest.TestCase):
 
 class PythonDirectInterfaceTest(unittest.TestCase):
     def test_parameters_from_dict_variable_order(self):
-        params, _ = di.read_params_from_dict(direct_dense_params)
+        params, _ = di.interfacing._read_params_from_dict(direct_dense_params)
         labels = [label for label in params]
         self.assertListEqual(direct_dense_params["variable_labels"], labels)
         
     def test_parameters_from_dict_variable_types(self):        
-        params, _ = di.read_params_from_dict(direct_dense_params)
+        params, _ = di.interfacing._read_params_from_dict(direct_dense_params)
         expected_types = [float, int, str, float, float]
         actual_types = [type(value) for label, value in params.items()]
         self.assertListEqual(expected_types, actual_types)
 
     def test_parameters_from_dict_variable_types(self):        
-        params, _ = di.read_params_from_dict(direct_dense_params)
+        params, _ = di.interfacing._read_params_from_dict(direct_dense_params)
         expected_types = [float, int, str, float, float]
         actual_types = [type(value) for label, value in params.items()]
         self.assertListEqual(expected_types, actual_types)
 
     def test_parameters_from_dict_variable_values(self):
-        params, _ = di.read_params_from_dict(direct_dense_params)
+        params, _ = di.interfacing._read_params_from_dict(direct_dense_params)
         expected_values = []
         expected_values.append(direct_dense_params["cv"][0])
         expected_values += direct_dense_params["div"]
@@ -636,7 +772,7 @@ class PythonDirectInterfaceTest(unittest.TestCase):
             self.assertAlmostEqual(e, a)
 
     def test_parameters_from_dict_asv(self):
-        _, results = di.read_params_from_dict(direct_dense_params)
+        _, results = di.interfacing._read_params_from_dict(direct_dense_params)
         def asv_to_int(asv):
             r = 0
             if asv.function:
@@ -652,12 +788,12 @@ class PythonDirectInterfaceTest(unittest.TestCase):
         self.assertListEqual(expected_asv, actual_asv)
 
     def test_parameters_from_dict_dvv(self):
-        _, results = di.read_params_from_dict(direct_dense_params)
+        _, results = di.interfacing._read_params_from_dict(direct_dense_params)
         expected_dvv = [direct_dense_params["cv_labels"][id-1] for id in direct_dense_params["dvv"]]
         self.assertListEqual(expected_dvv, results.deriv_vars)
     
     def test_parameters_from_dict_eval_id(self):
-        params, results = di.read_params_from_dict(direct_dense_params)
+        params, results = di.interfacing._read_params_from_dict(direct_dense_params)
         expected_eid = str(direct_dense_params["eval_id"])
         params_eid = params.eval_id
         results_eid = results.eval_id
@@ -665,25 +801,25 @@ class PythonDirectInterfaceTest(unittest.TestCase):
         self.assertEqual(expected_eid, results_eid)
 
     def test_parameters_from_dict_function_labels(self):
-        _, results = di.read_params_from_dict(direct_dense_params)
+        _, results = di.interfacing._read_params_from_dict(direct_dense_params)
         expected_labels = direct_dense_params["function_labels"] 
         actual_labels = [label for label in results]
         self.assertListEqual(expected_labels, actual_labels)
 
     def test_parameters_from_dict_an_comps(self):
-        params, _ = di.read_params_from_dict(direct_dense_params)
+        params, _ = di.interfacing._read_params_from_dict(direct_dense_params)
         expected_ac = direct_dense_params["analysis_components"]
         actual_ac = params.an_comps
         self.assertListEqual(expected_ac, actual_ac)
 
     def test_parameters_from_dict_metadata(self):
-        _, results = di.read_params_from_dict(direct_dense_params)
+        _, results = di.interfacing._read_params_from_dict(direct_dense_params)
         expected_md = direct_dense_params["metadata_labels"]
         actual_md = [md for md in results.metadata]
         self.assertListEqual(expected_md, actual_md)
 
     def test_parameters_from_dict_num_vars_funcs(self):
-        params, results = di.read_params_from_dict(direct_dense_params)
+        params, results = di.interfacing._read_params_from_dict(direct_dense_params)
         expected_nv = direct_dense_params["variables"]
         expected_nf = direct_dense_params["functions"]
         actual_nv = params.num_variables
@@ -692,7 +828,7 @@ class PythonDirectInterfaceTest(unittest.TestCase):
         self.assertEqual(expected_nf, actual_nf)
 
     def test_return_direct_results_dict(self):
-        _, results = di.read_params_from_dict(direct_dense_params)
+        _, results = di.interfacing._read_params_from_dict(direct_dense_params)
         for i in range(3):
             results[i].function = i + 1.0
             results[i].gradient = [i + 1.0]
@@ -732,12 +868,12 @@ class PythonDirectInterfaceTest(unittest.TestCase):
         self.assertIsInstance(d["fnHessians"], list)
 
     def test_return_direct_results_dict_asv_problem(self):
-        _, results = di.read_params_from_dict(direct_dense_params)
+        _, results = di.interfacing._read_params_from_dict(direct_dense_params)
         with self.assertRaises(di.ResponseError):
             results.return_direct_results_dict()
 
     def test_return_direct_results_dict_metadata_problem(self):
-        _, results = di.read_params_from_dict(direct_dense_params)
+        _, results = di.interfacing._read_params_from_dict(direct_dense_params)
         for i in range(3):
             results[i].function = i + 1.0
             results[i].gradient = [i + 1.0]
@@ -746,7 +882,7 @@ class PythonDirectInterfaceTest(unittest.TestCase):
             results.return_direct_results_dict()
 
     def test_parameters_from_dict_sparse(self):
-        params, results = di.read_params_from_dict(direct_sparse_params)
+        params, results = di.interfacing._read_params_from_dict(direct_sparse_params)
         labels = [label for label in params]
         self.assertListEqual(direct_sparse_params["variable_labels"], labels)
         self.assertEqual(params[0], direct_sparse_params["cv"][0])
@@ -757,7 +893,7 @@ class PythonDirectInterfaceTest(unittest.TestCase):
 class TestDeepCopy(unittest.TestCase):
     def test_results(self):
         """Results objects are correctly deepcopied"""
-        pio = StringIO.StringIO(dakotaParams % 3)
+        pio = StringIO.StringIO(standardParams % 3)
         _, r = di.interfacing._read_parameters_stream(stream=pio, results_file="results.out")
         r["response_fn_1"].gradient = [1.0, 2.0]
         cr = copy.deepcopy(r)
@@ -768,7 +904,7 @@ class TestDeepCopy(unittest.TestCase):
 
     def test_parameters(self):
         """Results objects are correctly deepcopied"""
-        pio = StringIO.StringIO(dakotaParams % 3)
+        pio = StringIO.StringIO(standardParams % 3)
         p, _ = di.interfacing._read_parameters_stream(stream=pio, results_file="results.out")
         cp = copy.deepcopy(p)
         self.assertFalse(p is cp)
@@ -777,14 +913,14 @@ class TestDeepCopy(unittest.TestCase):
         self.assertListEqual(p.metadata, cp.metadata)
 
     def test_batch_parameters(self):
-        sio = StringIO.StringIO(dakotaBatchParams)
+        sio = StringIO.StringIO(standardBatchParams)
         p, _ = di.interfacing._read_parameters_stream(sio, False, True, None)
         cp = copy.deepcopy(p)
         self.assertFalse(cp is p)
         self.assertFalse(cp[0] is p[0])
 
     def test_batch_results(self):
-        sio = StringIO.StringIO(dakotaBatchParams)
+        sio = StringIO.StringIO(standardBatchParams)
         _, r = di.interfacing._read_parameters_stream(sio, False, True, None)
         cr = copy.deepcopy(r)
         self.assertFalse(cr is r)
@@ -797,9 +933,9 @@ class TestBatchSplitter(unittest.TestCase):
     def setUp(self) -> None:
         self.dakota_batch_params_file = "test_batch_splitter_dakota_batch.in"
         with open(self.dakota_batch_params_file, "w") as f:
-            print(dakotaBatchParams, file=f)
+            print(standardBatchParams, file=f)
         
-        batch_lines = dakotaBatchParams.split('\n')
+        batch_lines = standardBatchParams.split('\n')
         batch_lines = [line + "\n" for line in batch_lines]
         self.dakota_batch_params_lines = [batch_lines[:12], batch_lines[12:]]
 
