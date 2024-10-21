@@ -110,60 +110,29 @@ class GaussianProcess : public Surrogate {
   void build(const MatrixXd& eval_points, const MatrixXd& response) override;
 
   /**
-   *  \brief Evaluate the Gaussian Process at a set of prediction points for a
-   * single qoi. \param[in] eval_points Matrix for prediction points -
-   * (num_points by num_features). \param[in] qoi Index for surrogate QoI.
+   *  \brief Evaluate the scalar Gaussian Process at a set of prediction points.
+   * \param[in] eval_points Matrix for prediction points -
+   * (num_points by num_features). 
    *  \returns Mean of the Gaussian process at the prediction points.
    */
-  VectorXd value(const MatrixXd& eval_points, const int qoi) override;
+  VectorXd value(const MatrixXd& eval_points) override;
 
   /**
-   *  \brief Evaluate the Gaussian Process at a set of prediction points for QoI
-   * index 0. \param[in] eval_points Matrix for prediction points - (num_points
-   * by num_features). \returns Mean of the Gaussian process at the prediction
-   * points.
-   */
-  VectorXd value(const MatrixXd& eval_points) {
-    return Surrogate::value(eval_points);
-  }
+   *  \brief Evaluate the gradient of the scalar Gaussian process at a set of
+   * prediction points. \param[in] eval_points Coordinates of
+   * the prediction points - (num_pts by num_features). \returns
+   * Matrix of gradient vectors at the prediction points - (num_pts
+   * by num_features). 
+   * */
+  MatrixXd gradient(const MatrixXd& eval_points) override;
 
   /**
-   *  \brief Evaluate the gradient of the Gaussian process at a set of
-   * prediction points for a single QoI. \param[in] eval_points Coordinates of
-   * the prediction points - (num_pts by num_features). \param[in] qoi Index of
-   * response/QoI for which to compute derivatives. \returns Matrix of gradient
-   * vectors at the prediction points - (num_pts by num_features).
-   */
-  MatrixXd gradient(const MatrixXd& eval_points, const int qoi) override;
-
-  /**
-   *  \brief Evaluate the gradient of the Gaussian process at a set of
-   * prediction points for QoI index 0. \param[in] eval_points Coordinates of
-   * the prediction points - (num_pts by num_features). \returns Matrix of
-   * gradient vectors at the prediction points - (num_pts by num_features).
-   */
-  MatrixXd gradient(const MatrixXd& eval_points) {
-    return Surrogate::gradient(eval_points);
-  }
-
-  /**
-   *  \brief Evaluate the Hessian of the Gaussian process at a single point for
-   * a single QoI. \param[in] eval_point Coordinates of the prediction point -
-   * (1 by num_features). \param[in] qoi Index of response/QoI for which to
-   * compute derivatives \returns Hessian matrix at the prediction point -
+   *  \brief Evaluate the Hessian of the scalar Gaussian process at a single point.
+   * \param[in] eval_point Coordinates of the prediction point -
+   * (1 by num_features). \returns Hessian matrix at the prediction point -
    *  (num_features by num_features).
    */
-  MatrixXd hessian(const MatrixXd& eval_point, const int qoi) override;
-
-  /**
-   *  \brief Evaluate the Hessian of the Gaussian process at a single point for
-   * QoI index 0. \param[in] eval_point Coordinates of the prediction point - (1
-   * by num_features). \returns Hessian matrix at the prediction point -
-   *  (num_features by num_features).
-   */
-  MatrixXd hessian(const MatrixXd& eval_point) {
-    return Surrogate::hessian(eval_point);
-  }
+  MatrixXd hessian(const MatrixXd& eval_point) override;
 
   /**
    *  \brief Evaluate the covariance matrix for the Gaussian Process at a set of

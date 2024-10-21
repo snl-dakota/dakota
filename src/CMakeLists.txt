@@ -451,8 +451,9 @@ set(constraint_src DakotaConstraints.cpp MixedVarConstraints.cpp
     RelaxedVarConstraints.cpp)
 
 ## Interface sources.
-set(interface_src DakotaInterface.cpp ApproximationInterface.cpp
-    DakotaApproximation.cpp TaylorApproximation.cpp TANA3Approximation.cpp QMEApproximation.cpp
+set(interface_src DakotaInterface.cpp ApproximationInterface.cpp ApproximationFieldInterface.cpp
+  DakotaApproximation.cpp DakotaFieldApproximation.cpp
+    TaylorApproximation.cpp TANA3Approximation.cpp QMEApproximation.cpp
     GaussProcApproximation.cpp VPSApproximation.cpp 
     PecosApproximation.cpp SharedApproxData.cpp
     SharedPecosApproxData.cpp

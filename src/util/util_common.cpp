@@ -30,7 +30,7 @@ bool matrix_equals(const MatrixXd& A, const MatrixXd& B, double tol) {
   if ((A.rows() != B.rows()) || (A.cols() != B.cols())) {
     std::cout << A.rows() << "," << A.cols() << std::endl;
     std::cout << B.rows() << "," << B.cols() << std::endl;
-    error("matrix_equals() matrices sizes are inconsistent");
+    error("matrix_equals() matrix sizes are inconsistent");
   }
   for (int j = 0; j < A.cols(); j++) {
     for (int i = 0; i < A.rows(); i++) {

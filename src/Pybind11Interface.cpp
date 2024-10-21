@@ -70,9 +70,10 @@ Pybind11Interface::Pybind11Interface(const ProblemDescDB& problem_db)
 
 Pybind11Interface::~Pybind11Interface() {
   if (ownPython && Py_IsInitialized()) {
-    py::finalize_interpreter();
-    if (outputLevel >= NORMAL_OUTPUT)
-      Cout << "Python interpreter terminated." << std::endl;
+    // This appears to cause a segfault when other classes use pybind11 objects
+    //py::finalize_interpreter();
+    //if (outputLevel >= NORMAL_OUTPUT)
+    //  Cout << "Python interpreter terminated." << std::endl;
   }
 }
 

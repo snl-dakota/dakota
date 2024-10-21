@@ -42,6 +42,7 @@ class SharedApproxData
   //
 
   friend class Approximation;
+  friend class FieldApproximation;
   friend class TaylorApproximation;
   friend class TANA3Approximation;
   friend class QMEApproximation;

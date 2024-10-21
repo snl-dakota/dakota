@@ -283,10 +283,7 @@ void GaussianProcess::build(const MatrixXd& samples, const MatrixXd& response) {
   */
 }
 
-VectorXd GaussianProcess::value(const MatrixXd& eval_points, const int qoi) {
-  /* Surrogate models don't yet support multiple responses */
-  silence_unused_args(qoi);
-  assert(qoi == 0);
+VectorXd GaussianProcess::value(const MatrixXd& eval_points) {
 
   if (eval_points.cols() != numVariables) {
     throw(
@@ -326,10 +323,7 @@ VectorXd GaussianProcess::value(const MatrixXd& eval_points, const int qoi) {
   return responseScaleFactor * approx_values.array() + responseOffset;
 }
 
-MatrixXd GaussianProcess::gradient(const MatrixXd& eval_points, const int qoi) {
-  /* Surrogate models don't yet support multiple responses */
-  silence_unused_args(qoi);
-  assert(qoi == 0);
+MatrixXd GaussianProcess::gradient(const MatrixXd& eval_points) {
 
   if (eval_points.cols() != numVariables) {
     throw(std::runtime_error(
@@ -374,10 +368,7 @@ MatrixXd GaussianProcess::gradient(const MatrixXd& eval_points, const int qoi) {
   return responseScaleFactor * gradient;
 }
 
-MatrixXd GaussianProcess::hessian(const MatrixXd& eval_point, const int qoi) {
-  /* Surrogate models don't yet support multiple responses */
-  silence_unused_args(qoi);
-  assert(qoi == 0);
+MatrixXd GaussianProcess::hessian(const MatrixXd& eval_point) {
 
   if (eval_point.rows() != 1) {
     throw(std::runtime_error(
