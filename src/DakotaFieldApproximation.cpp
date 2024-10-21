@@ -74,7 +74,10 @@ get_field_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
     Cout << "\t\"" << label << "\"" << std::endl;
 
   // The only dervived Field approximation at present.
-  auto approx = std::make_shared<SurrogatesPythonApprox>(problem_db, shared_data, approx_labels);
+  std::shared_ptr<FieldApproximation> approx;
+#ifdef HAVE_DAKOTA_PYTHON_SURROGATES
+  approx = std::make_shared<SurrogatesPythonApprox>(problem_db, shared_data, approx_labels);
+#endif
 
   return approx;
 }
