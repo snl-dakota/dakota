@@ -77,19 +77,19 @@ if(DAKOTA_PYTHON_SURROGATES)
   # packaging scheme we're using
   # TODO: Need to always compile libs PIC when using Python
   # TODO: Consider -undefined dynamic_lookup link flag on Mac
-  pybind11_add_module(dak_surrogates surrogates_python.cpp)
+  pybind11_add_module(surrogates surrogates_python.cpp)
   # TODO: transitive includes when merging from devel
-  target_include_directories(dak_surrogates PRIVATE ${Teuchos_INCLUDE_DIRS})
-  target_link_libraries(dak_surrogates PRIVATE dakota_surrogates
+  target_include_directories(surrogates PRIVATE ${Teuchos_INCLUDE_DIRS})
+  target_link_libraries(surrogates PRIVATE dakota_surrogates
     ${Teuchos_LIBRARIES})
   if (APPLE)
-    set_target_properties(dak_surrogates PROPERTIES INSTALL_RPATH
+    set_target_properties(surrogates PROPERTIES INSTALL_RPATH
       "@rpath;@rpath/../../../../../lib;@rpath/../../../../../bin")
   elseif (UNIX)
-    set_target_properties(dak_surrogates PROPERTIES INSTALL_RPATH
+    set_target_properties(surrogates PROPERTIES INSTALL_RPATH
       "\$ORIGIN;\$ORIGIN/../../../../../lib;\$ORIGIN/../../../../../bin")
   endif()
-  install(TARGETS dak_surrogates EXPORT ${ExportTarget}
+  install(TARGETS surrogates EXPORT ${ExportTarget}
     DESTINATION share/dakota/Python/dakota/surrogates/)
   install(FILES __init__.py DESTINATION share/dakota/Python/dakota/surrogates)
 endif()

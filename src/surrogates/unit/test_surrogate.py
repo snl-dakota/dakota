@@ -14,7 +14,7 @@ import sys
 if len(sys.argv) > 1:
     surr_lib_path = sys.argv[1]
     sys.path.append(surr_lib_path)
-import dak_surrogates as daksurr
+import surrogates as daksurr
 
 np.random.seed(44)
 
