@@ -97,16 +97,16 @@ protected:
 			   const RealVector& fn_vals, const ShortArray& asv,
 			   size_t approx);
 
-  void acv_raw_moments(IntRealMatrixMap& sum_L_shared,
-		       IntRealVectorMap& sum_H_shared,
-		       IntRealSymMatrixArrayMap& sum_LL_shared,
-		       IntRealMatrixMap& sum_LH_shared,
-		       const SizetArray& N_shared, const MFSolutionData& soln,
-		       IntRealMatrixMap& sum_L_baseline,
+  void acv_raw_moments(IntRealMatrixMap& sum_L_baseline,
 		       IntRealVectorMap& sum_H_baseline,
-		       const SizetArray& N_baseline, 
+		       IntRealSymMatrixArrayMap& sum_LL_baseline,
+		       IntRealMatrixMap& sum_LH_baseline,
+		       const SizetArray& N_baseline,
+		       IntRealMatrixMap& sum_L_shared,
+		       const Sizet2DArray& N_L_shared,
 		       IntRealMatrixMap& sum_L_refined,
-		       const Sizet2DArray& N_L_refined);
+		       const Sizet2DArray& N_L_refined,
+		       const MFSolutionData& soln);
 
   void compute_acv_control_covariances(RealMatrix& sum_L, Real sum_H_q,
 				       RealSymMatrix& sum_LL_q,
@@ -156,29 +156,32 @@ private:
 
   void approx_increments(IntRealMatrixMap& sum_L_baseline,
 			 const SizetArray& N_H_actual, size_t N_H_alloc,
-			 const MFSolutionData& soln,
-			 IntRealMatrixMap&  sum_L_refined,
+			 IntRealMatrixMap& sum_L_shared,
+			 Sizet2DArray& N_L_actual_shared,
+			 IntRealMatrixMap& sum_L_refined,
 			 Sizet2DArray& N_L_actual_refined,
-			 SizetArray&    N_L_alloc_refined);
+			 SizetArray& N_L_alloc_refined,
+			 const MFSolutionData& soln);
 
   void update_model_groups();
   void update_model_groups(const SizetArray& approx_sequence);
 
   void precompute_acv_controls(const RealVector& avg_eval_ratios);
 
-  void compute_acv_controls(IntRealMatrixMap& sum_L_shared,
-			    IntRealVectorMap& sum_H_shared,
-			    IntRealSymMatrixArrayMap& sum_LL_shared,
-			    IntRealMatrixMap& sum_LH_shared,
-			    const SizetArray& N_shared, RealVectorArray& beta);
+  void compute_acv_controls(IntRealMatrixMap& sum_L_baseline,
+			    IntRealVectorMap& sum_H_baseline,
+			    IntRealSymMatrixArrayMap& sum_LL_baseline,
+			    IntRealMatrixMap& sum_LH_baseline,
+			    const SizetArray& N_baseline,RealVectorArray& beta);
   void compute_acv_control(RealMatrix& sum_L_m, Real sum_H_mq,
 			   RealSymMatrix& sum_LL_mq, RealMatrix& sum_LH_m,
 			   size_t N_shared_q, size_t mom, size_t qoi,
 			   RealVector& beta);
 
-  void apply_acv_controls(IntRealMatrixMap& sum_L_baseline,
-			  IntRealVectorMap& sum_H_baseline,
+  void apply_acv_controls(IntRealVectorMap& sum_H_baseline,
 			  const SizetArray& N_baseline,
+			  IntRealMatrixMap& sum_L_shared,
+			  const Sizet2DArray& N_L_shared,
 			  IntRealMatrixMap& sum_L_refined,
 			  const Sizet2DArray& N_L_refined,
 			  const RealVectorArray& beta, RealMatrix& H_raw_mom);

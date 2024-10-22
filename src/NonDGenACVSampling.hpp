@@ -132,10 +132,13 @@ private:
   void generalized_acv_pilot_projection();
 
   void approx_increments(IntRealMatrixMap& sum_L_baseline,
-			 IntRealVectorMap& sum_H,
-			 IntRealSymMatrixArrayMap& sum_LL,
-			 IntRealMatrixMap& sum_LH, const SizetArray& N_H_actual,
-			 size_t N_H_alloc, const MFSolutionData& soln);
+			 const SizetArray& N_H_actual, size_t N_H_alloc,
+			 IntRealMatrixMap& sum_L_shared,
+			 Sizet2DArray& N_L_actual_shared,
+			 IntRealMatrixMap& sum_L_refined,
+			 Sizet2DArray& N_L_actual_refined,
+			 SizetArray& N_L_alloc_refined,
+			 const MFSolutionData& soln);
 
   void update_model_groups();
   void update_model_groups(const UShortList& root_list);
@@ -144,18 +147,33 @@ private:
   void compute_ratios(const RealMatrix& var_L, MFSolutionData& solution);
 
   void genacv_raw_moments(IntRealMatrixMap& sum_L_baseline,
+			  IntRealVectorMap& sum_H_baseline,
+			  IntRealSymMatrixArrayMap& sum_LL_baseline,
+			  IntRealMatrixMap& sum_LH_baseline,
+			  const SizetArray& N_baseline,
 			  IntRealMatrixMap& sum_L_shared,
+			  const Sizet2DArray& N_L_shared, 
 			  IntRealMatrixMap& sum_L_refined,
-			  IntRealVectorMap& sum_H,
-			  IntRealSymMatrixArrayMap& sum_LL,
-			  IntRealMatrixMap& sum_LH,
-			  const RealVector& avg_eval_ratios,
-			  const Sizet2DArray& N_L_shared,
 			  const Sizet2DArray& N_L_refined,
-			  const SizetArray& N_H, RealMatrix& H_raw_mom);
+			  const MFSolutionData& soln);
 
   void precompute_genacv_controls(const RealVector& avg_eval_ratios,
-				  const SizetArray& N_shared);
+				  const SizetArray& N_baseline);
+  void compute_genacv_controls(IntRealMatrixMap& sum_L_baseline,
+			       IntRealVectorMap& sum_H_baseline,
+			       IntRealSymMatrixArrayMap& sum_LL_baseline,
+			       IntRealMatrixMap& sum_LH_baseline,
+			       const SizetArray& N_baseline,
+			       RealVectorArray& beta);
+  void apply_genacv_controls(IntRealVectorMap& sum_H_baseline,
+			     const SizetArray& N_baseline,
+			     IntRealMatrixMap& sum_L_shared,
+			     const Sizet2DArray& N_L_shared,
+			     IntRealMatrixMap& sum_L_refined,
+			     const Sizet2DArray& N_L_refined,
+			     const RealVectorArray& beta,
+			     RealMatrix& H_raw_mom);
+
   void compute_genacv_control(RealMatrix& sum_L_base_m, Real sum_H_mq,
 			       RealSymMatrix& sum_LL_mq, RealMatrix& sum_LH_m,
 			       size_t N_shared_q, size_t mom, size_t qoi,

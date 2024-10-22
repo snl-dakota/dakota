@@ -156,13 +156,15 @@ void NonDACVSampling::approximate_control_variate_online_pilot()
   // Only QOI_STATISTICS requires application of oversample ratios and
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
   if (finalStatsType == QOI_STATISTICS) {
-    IntRealMatrixMap sum_L_refined;  Sizet2DArray N_L_actual_refined;
+    IntRealMatrixMap sum_L_shared, sum_L_refined;
+    Sizet2DArray N_L_actual_shared, N_L_actual_refined;
     SizetArray N_L_alloc_refined;
-    approx_increments(sum_L_baselineH, N_H_actual, N_H_alloc, acvSolnData,
-		      sum_L_refined, N_L_actual_refined, N_L_alloc_refined);
+    approx_increments(sum_L_baselineH, N_H_actual, N_H_alloc, sum_L_shared,
+		      N_L_actual_shared, sum_L_refined, N_L_actual_refined,
+		      N_L_alloc_refined, acvSolnData);
     acv_raw_moments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
-		    acvSolnData, sum_L_baselineH, sum_H, N_H_actual,
-		    sum_L_refined, N_L_actual_refined);
+		    sum_L_shared, N_L_actual_shared, sum_L_refined,
+		    N_L_actual_refined, acvSolnData);
     finalize_counts(N_L_actual_refined, N_L_alloc_refined);
   }
   else // N_H is final --> do not compute any deltaNActualHF (from maxIter exit)
@@ -221,13 +223,15 @@ void NonDACVSampling::approximate_control_variate_offline_pilot()
   increment_equivalent_cost(numSamples, sequenceCost, 0,numGroups,equivHFEvals);
 
   // perform LF increments for the online sample profile
-  IntRealMatrixMap sum_L_refined;  Sizet2DArray N_L_actual_refined;
+  IntRealMatrixMap sum_L_shared, sum_L_refined;
+  Sizet2DArray N_L_actual_shared, N_L_actual_refined;
   SizetArray N_L_alloc_refined;
-  approx_increments(sum_L_baselineH, N_H_actual, N_H_alloc, acvSolnData,
-		    sum_L_refined, N_L_actual_refined, N_L_alloc_refined);
+  approx_increments(sum_L_baselineH, N_H_actual, N_H_alloc, sum_L_shared,
+		    N_L_actual_shared, sum_L_refined, N_L_actual_refined,
+		    N_L_alloc_refined, acvSolnData);
   acv_raw_moments(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
-		  N_shared_pilot, acvSolnData, sum_L_baselineH, sum_H,
-		  N_H_actual, sum_L_refined, N_L_actual_refined);
+		  N_shared_pilot, sum_L_shared, N_L_actual_shared,
+		  sum_L_refined, N_L_actual_refined, acvSolnData);
   finalize_counts(N_L_actual_refined, N_L_alloc_refined);
 }
 
@@ -360,9 +364,11 @@ compute_LH_statistics(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
 void NonDACVSampling::
 approx_increments(IntRealMatrixMap& sum_L_baseline,
 		  const SizetArray& N_H_actual, size_t N_H_alloc,
-		  const MFSolutionData& soln, IntRealMatrixMap& sum_L_refined,
+		  IntRealMatrixMap& sum_L_shared,
+		  Sizet2DArray& N_L_actual_shared,
+		  IntRealMatrixMap& sum_L_refined,
 		  Sizet2DArray& N_L_actual_refined,
-		  SizetArray& N_L_alloc_refined)
+		  SizetArray& N_L_alloc_refined, const MFSolutionData& soln)
 {
   // Note: these results do not affect the iteration above and can be
   // performed after N_H has converged
@@ -388,7 +394,7 @@ approx_increments(IntRealMatrixMap& sum_L_baseline,
   // --------------------------------------------
   // Perform approximation increments in parallel
   // --------------------------------------------
-  Sizet2DArray N_L_actual_shared;  SizetArray delta_N_G(numGroups);
+  SizetArray delta_N_G(numGroups);
   inflate(N_H_actual, N_L_actual_shared); inflate(N_H_alloc, N_L_alloc_refined);
   const RealVector& soln_vars = soln.solution_variables();
   size_t last_g = numGroups - 1;  delta_N_G[last_g] = 0;
@@ -410,7 +416,7 @@ approx_increments(IntRealMatrixMap& sum_L_baseline,
   accumulate_group_sums(sum_G, N_G_actual, batchResponsesMap);
   clear_batches();
   // Map from "horizontal" group incr to "vertical" model incr (see JCP: ACV)
-  IntRealMatrixMap sum_L_shared = sum_L_baseline; // shared group not in overlay
+  sum_L_shared = sum_L_baseline; // shared group not in overlay
   overlay_approx_group_sums(sum_G, N_G_actual, sum_L_shared, sum_L_refined,
 			    N_L_actual_shared, N_L_actual_refined);
 }
@@ -441,79 +447,79 @@ acv_raw_moments(IntRealMatrixMap& sum_L_baseline,
 
 
 void NonDACVSampling::
-acv_raw_moments(IntRealMatrixMap& sum_L_shared, IntRealVectorMap& sum_H_shared,
-		IntRealSymMatrixArrayMap& sum_LL_shared,
-		IntRealMatrixMap& sum_LH_shared, const SizetArray& N_shared,
-		const MFSolutionData& soln, IntRealMatrixMap& sum_L_baseline,
-		IntRealVectorMap& sum_H_baseline, const SizetArray& N_baseline, 
+acv_raw_moments(IntRealMatrixMap& sum_L_baseline,
+		IntRealVectorMap& sum_H_baseline,
+		IntRealSymMatrixArrayMap& sum_LL_baseline,
+		IntRealMatrixMap& sum_LH_baseline, const SizetArray& N_baseline,
+		IntRealMatrixMap& sum_L_shared, const Sizet2DArray& N_L_shared,
 		IntRealMatrixMap& sum_L_refined,
-		const Sizet2DArray& N_L_refined)
+		const Sizet2DArray& N_L_refined, const MFSolutionData& soln)
 {
   // ------------------------------------
   // Compute/apply CV to estimate moments
   // ------------------------------------
   RealMatrix H_raw_mom(4, numFunctions);  RealVectorArray beta(4);
   precompute_acv_controls(soln.solution_ratios());
-  compute_acv_controls(sum_L_shared, sum_H_shared, sum_LL_shared, sum_LH_shared,
-		       N_shared, beta);
-  apply_acv_controls(sum_L_baseline, sum_H_baseline, N_baseline, sum_L_refined,
-		     N_L_refined, beta, H_raw_mom);
+  compute_acv_controls(sum_L_baseline, sum_H_baseline, sum_LL_baseline,
+		       sum_LH_baseline, N_baseline, beta);
+  apply_acv_controls(sum_H_baseline, N_baseline, sum_L_shared, N_L_shared,
+		     sum_L_refined, N_L_refined, beta, H_raw_mom);
   convert_moments(H_raw_mom, momentStats); // uncentered to final (central|std)
 }
 
 
 void NonDACVSampling::
-compute_acv_controls(IntRealMatrixMap& sum_L_shared,
-		     IntRealVectorMap& sum_H_shared,
-		     IntRealSymMatrixArrayMap& sum_LL_shared,
-		     IntRealMatrixMap& sum_LH_shared,
-		     const SizetArray& N_shared, RealVectorArray& beta)
+compute_acv_controls(IntRealMatrixMap& sum_L_baseline,
+		     IntRealVectorMap& sum_H_baseline,
+		     IntRealSymMatrixArrayMap& sum_LL_baseline,
+		     IntRealMatrixMap& sum_LH_baseline,
+		     const SizetArray& N_baseline, RealVectorArray& beta)
 {
   size_t qoi;
   for (int mom=1; mom<=4; ++mom) {
-    RealMatrix&          sum_L_m =  sum_L_shared[mom];
-    RealVector&          sum_H_m =  sum_H_shared[mom];
-    RealSymMatrixArray& sum_LL_m = sum_LL_shared[mom];
-    RealMatrix&         sum_LH_m = sum_LH_shared[mom];
-    RealVector&           beta_m =          beta[mom];
+    RealMatrix&          sum_L_m =  sum_L_baseline[mom];
+    RealVector&          sum_H_m =  sum_H_baseline[mom];
+    RealSymMatrixArray& sum_LL_m = sum_LL_baseline[mom];
+    RealMatrix&         sum_LH_m = sum_LH_baseline[mom];
+    RealVector&           beta_m =          beta[mom-1];
     beta_m.sizeUninitialized(numApprox);
     for (qoi=0; qoi<numFunctions; ++qoi)
       compute_acv_control(sum_L_m, sum_H_m[qoi], sum_LL_m[qoi], sum_LH_m,
-			  N_shared[qoi], mom, qoi, beta_m);
+			  N_baseline[qoi], mom, qoi, beta_m);
       // *** TO DO: support shared_approx_increment() --> baselineL
   }
 }
 
 
 void NonDACVSampling::
-apply_acv_controls(IntRealMatrixMap& sum_L_baseline,
-		   IntRealVectorMap& sum_H_baseline,
+apply_acv_controls(IntRealVectorMap& sum_H_baseline,
 		   const SizetArray& N_baseline,
+		   IntRealMatrixMap& sum_L_shared,
+		   const Sizet2DArray& N_L_shared,
 		   IntRealMatrixMap& sum_L_refined,
 		   const Sizet2DArray& N_L_refined,
 		   const RealVectorArray& beta, RealMatrix& H_raw_mom)
 {
   if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(4, numFunctions);
 
-  size_t approx, qoi, N_base_q;
+  size_t approx, qoi;
   for (int mom=1; mom<=4; ++mom) {
-    RealMatrix& sum_L_base_m = sum_L_baseline[mom];
     RealVector& sum_H_base_m = sum_H_baseline[mom];
+    RealMatrix&   sum_L_sh_m =   sum_L_shared[mom];
     RealMatrix&  sum_L_ref_m =  sum_L_refined[mom];
-    const RealVector& beta_m =           beta[mom];
+    const RealVector& beta_m =           beta[mom-1];
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Moment " << mom << " estimator:\n";
     for (qoi=0; qoi<numFunctions; ++qoi) {
-      N_base_q = N_baseline[qoi];
       Real& H_raw_mq = H_raw_mom(mom-1, qoi);
-      H_raw_mq = sum_H_base_m[qoi] / N_base_q; // first term to be augmented
+      H_raw_mq = sum_H_base_m[qoi] / N_baseline[qoi];// 1st term to be augmented
       for (approx=0; approx<numApprox; ++approx) {
 	if (outputLevel >= NORMAL_OUTPUT)
 	  Cout << "   QoI " << qoi+1 << " Approx " << approx+1 << ": control "
 	       << "variate beta = " << std::setw(9) << beta_m[approx] << '\n';
 	// Peer DAG: shared sums/counts are fixed at N_H baseline for all approx
-	apply_control(sum_L_base_m(qoi,approx), N_base_q,
-		      sum_L_ref_m(qoi,approx),  N_L_refined[approx][qoi],
+	apply_control(sum_L_sh_m(qoi,approx),  N_L_shared[approx][qoi],
+		      sum_L_ref_m(qoi,approx), N_L_refined[approx][qoi],
 		      beta_m[approx], H_raw_mq);
       }
     }
