@@ -252,7 +252,7 @@ map(const Variables& vars, const ActiveSet& set, Response& response,
       fn_index = *it;
       Approximation & approx = function_surface(fn_index);
       if (core_asv[fn_index] & 1) {
-        if( 1 == approx.num_components() ) {
+        if( approx.num_components() < 2 ) {
           Real approx_fn = function_surface(fn_index).value(surf_vars);
           //if (approx_scale_len)  fn_val *= approxScale[fn_index];
           //if (approx_offset_len) fn_val += approxOffset[fn_index];
@@ -290,8 +290,9 @@ map(const Variables& vars, const ActiveSet& set, Response& response,
 				       assign_indices, curr_indices);
       }
       // Handle indexing for fields
-      for (size_t c=0; c<approx.num_components()-1; ++c)
-        ++it;
+      if( approx.num_components() > 0 )
+        for (size_t c=0; c<approx.num_components()-1; ++c)
+          ++it;
     }
   }
 
