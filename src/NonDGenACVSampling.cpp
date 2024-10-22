@@ -1831,7 +1831,7 @@ genacv_raw_moments(IntRealMatrixMap& sum_L_baseline,
 {
   if (H_raw_mom.empty()) H_raw_mom.shapeUninitialized(4, numFunctions);
 
-  precompute_genacv_control(avg_eval_ratios, N_H);
+  precompute_genacv_controls(avg_eval_ratios, N_H);
 
   const UShortArray& approx_set = activeModelSetIter->first;
   size_t approx, inflate_approx, num_approx = approx_set.size(), qoi, N_H_q;

@@ -118,9 +118,9 @@ protected:
   void blue_raw_moments(IntRealMatrixArrayMap& sum_G_online,
 			IntRealSymMatrix2DArrayMap& sum_GG_online,
 			const Sizet2DArray& N_G_online, RealMatrix& H_raw_mom);
-  void blue_raw_moments(IntRealMatrixArrayMap& sum_G_covar,
-			IntRealSymMatrix2DArrayMap& sum_GG_covar,
-			const Sizet2DArray& N_G_covar,
+  void blue_raw_moments(IntRealMatrixArrayMap& sum_G_offline,
+			IntRealSymMatrix2DArrayMap& sum_GG_offline,
+			const Sizet2DArray& N_G_offline,
 			IntRealMatrixArrayMap& sum_G_online,
 			IntRealSymMatrix2DArrayMap& sum_GG_online,
 			const Sizet2DArray& N_G_online, RealMatrix& H_raw_mom);

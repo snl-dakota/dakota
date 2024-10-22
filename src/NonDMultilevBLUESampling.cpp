@@ -285,8 +285,7 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
   if (finalStatsType == QOI_STATISTICS) {
     RealMatrix H_raw_mom(4, numFunctions);
-    blue_raw_moments(sum_G, sum_GG, NGroupActual,             // covar estimates
-		     sum_G, sum_GG, NGroupActual, H_raw_mom); // mu-hat solves
+    blue_raw_moments(sum_G, sum_GG, NGroupActual, H_raw_mom); // online version
     convert_moments(H_raw_mom, momentStats);
   }
 
@@ -1301,9 +1300,9 @@ blue_raw_moments(IntRealMatrixArrayMap& sum_G_online,
 
 
 void NonDMultilevBLUESampling::
-blue_raw_moments(IntRealMatrixArrayMap& sum_G_covar,
-		 IntRealSymMatrix2DArrayMap& sum_GG_covar,
-		 const Sizet2DArray& N_G_covar,
+blue_raw_moments(IntRealMatrixArrayMap& sum_G_offline,
+		 IntRealSymMatrix2DArrayMap& sum_GG_offline,
+		 const Sizet2DArray& N_G_offline,
 		 IntRealMatrixArrayMap& sum_G_online,
 		 IntRealSymMatrix2DArrayMap& sum_GG_online,
 		 const Sizet2DArray& N_G_online, RealMatrix& H_raw_mom)
@@ -1334,16 +1333,16 @@ blue_raw_moments(IntRealMatrixArrayMap& sum_G_covar,
     if (mom == 1) // Use offline covar + online sum to solve for mean
       compute_mu_hat(covGGinv, sum_G_online_m, N_G_online, mu_hat);
     else {
-      RealMatrixArray&       sum_G_covar_m  = sum_G_covar[mom];
-      RealSymMatrix2DArray& sum_GG_covar_m = sum_GG_covar[mom];
+      RealMatrixArray&       sum_G_offline_m  = sum_G_offline[mom];
+      RealSymMatrix2DArray& sum_GG_offline_m = sum_GG_offline[mom];
       // compute covariances for higher-order moments using offline sums
       RealSymMatrix2DArray cov_GG, cov_GG_inv;
       if (pilotGroupSampling == SHARED_PILOT)
-	compute_GG_covariance( sum_G_covar_m[all_group],
-			      sum_GG_covar_m[all_group],
-			      N_G_covar[all_group], cov_GG, cov_GG_inv);
+	compute_GG_covariance( sum_G_offline_m[all_group],
+			      sum_GG_offline_m[all_group],
+			      N_G_offline[all_group], cov_GG, cov_GG_inv);
       else
-	compute_GG_covariance(sum_G_covar_m, sum_GG_covar_m, N_G_covar,
+	compute_GG_covariance(sum_G_offline_m, sum_GG_offline_m, N_G_offline,
 			      cov_GG, cov_GG_inv);
       // Update model group pruning or stick with set from final iteration?
       // (Psi solve still needed although optimization cycles are complete.)
