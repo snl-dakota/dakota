@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from __future__ import print_function
 import copy
+import json
 import os
 import unittest
 
@@ -292,7 +293,7 @@ def set_metadata(r, key, value):
     r.metadata[key] = value
 
 
-class dakotaInterfacingTestCase(unittest.TestCase):
+class ReadParametersTest(unittest.TestCase):
 
     def test_aprepro_format(self):
         """Confirm that aprepro format Parameters files are parsed correctly."""
@@ -437,7 +438,7 @@ class dakotaInterfacingTestCase(unittest.TestCase):
 """
         self.assertEqual(rio.getvalue(), expected)
     
-    def test_results_write(self):
+    def test_standard_results_write(self):
         """Verify Written test results"""
         sio = StringIO.StringIO(standardParams % 7)
         p, r = di.interfacing._read_parameters_stream(stream=sio)
@@ -460,6 +461,69 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         r.write(stream=rio)
         expected = "FAIL\n"
         self.assertEqual(rio.getvalue(), expected)
+
+    def test_json_function_and_metadata_results_write(self):
+        """Verify Written test results"""
+        sio = StringIO.StringIO(jsonParams)
+        p, r = di.interfacing._read_parameters_stream(stream=sio)
+        set_function(r) 
+        set_metadata(r, "seconds", 42.0)
+        rio = StringIO.StringIO()
+        r.write(stream=rio, json=True)
+        jr = json.loads(rio.getvalue())
+        self.assertEqual(jr["functions"]["response_fn_1"],5.0)
+        self.assertEqual(jr["metadata"]["seconds"],42.0)
+
+    def test_json_gradient_results_write(self):
+        """Verify Written test results"""
+        jp = json.loads(jsonParams)
+        jp["responses"][0]["active_set"] = 3
+        sio = StringIO.StringIO(json.dumps(jp))
+        _, r = di.interfacing._read_parameters_stream(stream=sio)
+        set_function(r) 
+        set_gradient(r)
+        set_metadata(r, "seconds", 42.0)
+        rio = StringIO.StringIO()
+        r.write(stream=rio, json=True)
+        jr = json.loads(rio.getvalue())
+        self.assertEqual(jr["functions"]["response_fn_1"],5.0)
+        self.assertAlmostEqual(jr["gradients"]["response_fn_1"][0], 1.0189673084127668E-266)
+        self.assertAlmostEqual(jr["gradients"]["response_fn_1"][1], -6.3508646783183408E-264)
+
+    def test_json_nonfinite_results_write(self):
+        """Verify Written test results"""
+        jp = json.loads(jsonParams)
+        jp["responses"][0]["active_set"] = 7
+        sio = StringIO.StringIO(json.dumps(jp))
+        _, r = di.interfacing._read_parameters_stream(stream=sio)
+        r["response_fn_1"].function = float("NaN")
+        r.metadata["seconds"] = float("Inf")
+        r["response_fn_1"].gradient = [float("-Inf"), "4.0"]
+        r["response_fn_1"].hessian = [
+            [1.0, float("NaN")],
+            [float("Nan"), float("Inf")]
+        ]
+        rio = StringIO.StringIO()
+        r.write(stream=rio, json=True)
+        jr = json.loads(rio.getvalue())
+        self.assertEqual(jr["functions"]["response_fn_1"], "NaN")
+        self.assertEqual(jr["metadata"]["seconds"], "Inf")
+        self.assertEqual(jr["gradients"]["response_fn_1"][0], "-Inf")
+        self.assertEqual(jr["gradients"]["response_fn_1"][1], 4.0)
+
+        self.assertEqual(jr["hessians"]["response_fn_1"][0][0], 1.0)
+        self.assertEqual(jr["hessians"]["response_fn_1"][0][1], "NaN")
+        self.assertEqual(jr["hessians"]["response_fn_1"][1][0], "NaN")
+        self.assertEqual(jr["hessians"]["response_fn_1"][1][1], "Inf")   
+    
+    def test_json_failed_results_write(self):
+        sio = StringIO.StringIO(jsonParams)
+        _, r = di.interfacing._read_parameters_stream(stream=sio)
+        r.fail()
+        rio = StringIO.StringIO()
+        r.write(stream=rio, json=True)
+        jr = json.loads(rio.getvalue())
+        self.assertTrue(jr["fail"])
 
     def test_standard_batch_support(self):
         """Verify that standard format batch params and results files are handled correctly"""
@@ -605,37 +669,10 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         # set via index, retrieve via label
         set_metadata(r, 0, 3.4)
         self.assertAlmostEqual(r.metadata["seconds"], 3.4)
-
-    def test_dprepro(self):
-        """Verify that templates are substituted correctly"""
  
-        sio = StringIO.StringIO(standardParams % 3)
-        p, r = di.interfacing._read_parameters_stream(stream=sio)
 
-        # Test insertion of DakotaParams and DakotaResults
-        tpl = """{"%3.1f" % DakotaParams["x1"]}
-{"%3.1f" % x1}
-{DakotaResults[0].asv.function}
-"""
-        result = di.dprepro(tpl, parameters=p, results=r)
-        solution = "0.7\n0.7\nTrue\n"
-        self.assertEqual(result,solution) 
-        # Test insertion of extra "include" parameters
-        extra = {"foo":5}
-        tpl = """{"%3.1f" % DakotaParams["x1"]}
-{"%3.1f" % x1}
-{DakotaResults[0].asv.function}
-{foo}
-"""  
-        result = di.dprepro(tpl, parameters=p, results=r, include=extra)
-        solution = "0.7\n0.7\nTrue\n5\n"
-        self.assertEqual(result,solution)
-        # Test without DakotaParams or DakotaResults
-        tpl = "{foo}"
-        result = di.dprepro(tpl,include=extra)
-        solution = "5"
-        self.assertEqual(result,solution)
- 
+
+class ParallelTest(unittest.TestCase):
     def test_slurm_info(self):
         """Info correctly extracted from the environment."""
         # Check env without SLURM_JOBID set
@@ -739,6 +776,38 @@ class dakotaInterfacingTestCase(unittest.TestCase):
         self.assertRaises(parallel.ResourceError,parallel._calc_num_tiles,
                     tile_size=16, tasks_per_node=16, num_nodes=1, 
                     dedicated_master='TILE')
+
+
+class DpreproTest(unittest.TestCase):
+    def test_dprepro(self):
+        """Verify that templates are substituted correctly"""
+ 
+        sio = StringIO.StringIO(standardParams % 3)
+        p, r = di.interfacing._read_parameters_stream(stream=sio)
+
+        # Test insertion of DakotaParams and DakotaResults
+        tpl = """{"%3.1f" % DakotaParams["x1"]}
+{"%3.1f" % x1}
+{DakotaResults[0].asv.function}
+"""
+        result = di.dprepro(tpl, parameters=p, results=r)
+        solution = "0.7\n0.7\nTrue\n"
+        self.assertEqual(result,solution) 
+        # Test insertion of extra "include" parameters
+        extra = {"foo":5}
+        tpl = """{"%3.1f" % DakotaParams["x1"]}
+{"%3.1f" % x1}
+{DakotaResults[0].asv.function}
+{foo}
+"""  
+        result = di.dprepro(tpl, parameters=p, results=r, include=extra)
+        solution = "0.7\n0.7\nTrue\n5\n"
+        self.assertEqual(result,solution)
+        # Test without DakotaParams or DakotaResults
+        tpl = "{foo}"
+        result = di.dprepro(tpl,include=extra)
+        solution = "5"
+        self.assertEqual(result,solution)
 
 
 class PythonDirectInterfaceTest(unittest.TestCase):

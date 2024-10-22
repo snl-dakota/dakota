@@ -1,4 +1,6 @@
-
+# This suite of tests ensure that parameters and results file format keywords 
+# are behaving as expected, and that JSON format files are being written
+# and read by Dakota as intended.
 
 method
   list_parameter_study

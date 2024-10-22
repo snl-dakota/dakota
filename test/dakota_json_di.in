@@ -1,0 +1,35 @@
+# This file contains integration tests for dakota.interfacing and JSON,
+# including limited testing of Dakota's ability to properly interpret 
+# string-encoded non-finite numbers in JSON results files. By using
+# objective functions as the response type, we cause the baseline
+# to contain -inf as the best point for s0 and NaN for s1. The driver
+# also returns non-finite numbers for the metadata and elements of
+# the gradients and hessians. These don't affect the baseline, but
+# it does at least verify that doesn't Dakota crash.
+
+method
+  list_parameter_study
+    list_of_points  
+                    0.0  0.0  #s0        # return -inf on this point
+                    1.0  0.5  #s0        # return 0.0 on this point
+#                   0.5  0.0  #s1        # return NaN on this point
+
+variables
+  continuous_design 2
+    descriptors 'x1' 'x2'
+
+responses
+  objective_functions 1
+    descriptors 'f'
+    analytic_gradients
+    analytic_hessians
+  metadata 'seconds'
+
+interface
+  analysis_drivers '@Python_EXECUTABLE@ dakota_json_di.py'
+  fork
+  parameters_file 'params.in'
+  results_file 'results.out'
+  parameters_format json
+  results_format json
+  

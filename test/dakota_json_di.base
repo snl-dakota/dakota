@@ -1,0 +1,16 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 2 total (2 new, 0 duplicate)
+<<<<< Best parameters          =
+                      0.0000000000e+00 x1
+                      0.0000000000e+00 x2
+<<<<< Best objective function  =
+                                  -inf
+<<<<< Best evaluation ID: 1
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 1 total (1 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      0.0000000000e+00 x2
+<<<<< Best objective function  =
+                                   nan
+<<<<< Best evaluation ID: 1
