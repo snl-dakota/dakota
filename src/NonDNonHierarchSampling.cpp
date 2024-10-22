@@ -763,7 +763,7 @@ overlay_approx_group_sums(const IntRealMatrixArrayMap& sum_G,
     const SizetArray&  num_G_g =  N_G_actual[g];
     if (zeros(num_G_g)) continue; // all-models group has delta = 0
     const UShortArray& group_g = modelGroups[g];
-    last_m_index = group_g.size() - 1;
+    last_m_index = group_g.size() - 1; // this index defines refined set
 
     for (m=0; m<last_m_index; ++m) {
       model = group_g[m];

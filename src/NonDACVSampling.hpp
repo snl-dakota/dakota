@@ -69,6 +69,12 @@ protected:
 		      RealSymMatrixArray& sum_LL_pilot,
 		      RealMatrix& sum_LH_pilot, RealVector& sum_HH_pilot,
 		      SizetArray& N_shared_pilot, bool incr_cost);
+  void evaluate_pilot(IntRealMatrixMap& sum_L_pilot,
+		      IntRealVectorMap& sum_H_pilot,
+		      IntRealSymMatrixArrayMap& sum_LL_pilot,
+		      IntRealMatrixMap& sum_LH_pilot, RealVector& sum_HH_pilot,
+		      SizetArray& N_shared_pilot, bool incr_cost);
+
   void compute_LH_statistics(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
 			     RealSymMatrixArray& sum_LL_pilot,
 			     RealMatrix& sum_LH_pilot, RealVector& sum_HH_pilot,
@@ -91,15 +97,16 @@ protected:
 			   const RealVector& fn_vals, const ShortArray& asv,
 			   size_t approx);
 
-  void acv_raw_moments(IntRealMatrixMap& sum_L_shared,
+  void acv_raw_moments(IntRealMatrixMap& sum_L_baseline,
+		       IntRealVectorMap& sum_H_baseline,
+		       IntRealSymMatrixArrayMap& sum_LL_baseline,
+		       IntRealMatrixMap& sum_LH_baseline,
+		       const SizetArray& N_baseline,
+		       IntRealMatrixMap& sum_L_shared,
+		       const Sizet2DArray& N_L_shared,
 		       IntRealMatrixMap& sum_L_refined,
-		       IntRealVectorMap& sum_H,
-		       IntRealSymMatrixArrayMap& sum_LL,
-		       IntRealMatrixMap& sum_LH,
-		       const RealVector& avg_eval_ratios,
-		       const SizetArray& N_shared,
 		       const Sizet2DArray& N_L_refined,
-		       RealMatrix& H_raw_mom);
+		       const MFSolutionData& soln);
 
   void compute_acv_control_covariances(RealMatrix& sum_L, Real sum_H_q,
 				       RealSymMatrix& sum_LL_q,
@@ -148,21 +155,36 @@ private:
   void approximate_control_variate_pilot_projection();
 
   void approx_increments(IntRealMatrixMap& sum_L_baseline,
-			 IntRealVectorMap& sum_H,
-			 IntRealSymMatrixArrayMap& sum_LL,
-			 IntRealMatrixMap& sum_LH, const SizetArray& N_H_actual,
-			 size_t N_H_alloc, const MFSolutionData& soln);
+			 const SizetArray& N_H_actual, size_t N_H_alloc,
+			 IntRealMatrixMap& sum_L_shared,
+			 Sizet2DArray& N_L_actual_shared,
+			 IntRealMatrixMap& sum_L_refined,
+			 Sizet2DArray& N_L_actual_refined,
+			 SizetArray& N_L_alloc_refined,
+			 const MFSolutionData& soln);
 
   void update_model_groups();
   void update_model_groups(const SizetArray& approx_sequence);
 
-  void precompute_acv_control(const RealVector& avg_eval_ratios,
-			      const SizetArray& N_shared);
+  void precompute_acv_controls(const RealVector& avg_eval_ratios);
 
-  void compute_acv_control(RealMatrix& sum_L_base_m, Real sum_H_mq,
+  void compute_acv_controls(IntRealMatrixMap& sum_L_baseline,
+			    IntRealVectorMap& sum_H_baseline,
+			    IntRealSymMatrixArrayMap& sum_LL_baseline,
+			    IntRealMatrixMap& sum_LH_baseline,
+			    const SizetArray& N_baseline,RealVectorArray& beta);
+  void compute_acv_control(RealMatrix& sum_L_m, Real sum_H_mq,
 			   RealSymMatrix& sum_LL_mq, RealMatrix& sum_LH_m,
 			   size_t N_shared_q, size_t mom, size_t qoi,
 			   RealVector& beta);
+
+  void apply_acv_controls(IntRealVectorMap& sum_H_baseline,
+			  const SizetArray& N_baseline,
+			  IntRealMatrixMap& sum_L_shared,
+			  const Sizet2DArray& N_L_shared,
+			  IntRealMatrixMap& sum_L_refined,
+			  const Sizet2DArray& N_L_refined,
+			  const RealVectorArray& beta, RealMatrix& H_raw_mom);
 
   void analytic_initialization_from_mfmc(const RealMatrix& rho2_LH,
 					 Real avg_N_H, MFSolutionData& soln);
@@ -702,8 +724,7 @@ solve_for_acv_control(const RealSymMatrix& cov_LL, const RealSymMatrix& F,
 
 
 inline void NonDACVSampling::
-precompute_acv_control(const RealVector& avg_eval_ratios,
-		       const SizetArray& N_shared)
+precompute_acv_controls(const RealVector& avg_eval_ratios)
 {
   //RealSymMatrix F;
   compute_F_matrix(avg_eval_ratios, FMat);
@@ -711,7 +732,7 @@ precompute_acv_control(const RealVector& avg_eval_ratios,
 
 
 inline void NonDACVSampling::
-compute_acv_control(RealMatrix& sum_L_base_m, Real sum_H_mq,
+compute_acv_control(RealMatrix& sum_L_m, Real sum_H_mq,
 		    RealSymMatrix& sum_LL_mq, RealMatrix& sum_LH_m,
 		    size_t N_shared_q, size_t mom, size_t qoi, RealVector& beta)
 {
@@ -727,7 +748,7 @@ compute_acv_control(RealMatrix& sum_L_base_m, Real sum_H_mq,
     //   self-consistency in data sets, even when more accurate offline
     //   covariances may be available
     RealSymMatrix cov_LL; RealMatrix cov_LH;
-    compute_acv_control_covariances(sum_L_base_m, sum_H_mq, sum_LL_mq, sum_LH_m,
+    compute_acv_control_covariances(sum_L_m, sum_H_mq, sum_LL_mq, sum_LH_m,
 				    N_shared_q, qoi, cov_LL, cov_LH);
     // forward to overload:
     solve_for_acv_control(cov_LL, FMat, cov_LH, qoi, beta);

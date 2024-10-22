@@ -285,7 +285,7 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
   if (finalStatsType == QOI_STATISTICS) {
     RealMatrix H_raw_mom(4, numFunctions);
-    blue_raw_moments(sum_G, sum_GG, NGroupActual, H_raw_mom);
+    blue_raw_moments(sum_G, sum_GG, NGroupActual, H_raw_mom); // online version
     convert_moments(H_raw_mom, momentStats);
   }
 
@@ -302,7 +302,7 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
   // --------------------------------------------------------------
   // Compute covar GG from (oracle) pilot treated as "offline" cost
   // --------------------------------------------------------------
-  RealMatrixArray sum_G_pilot; RealSymMatrix2DArray sum_GG_pilot;
+  IntRealMatrixArrayMap sum_G_pilot; IntRealSymMatrix2DArrayMap sum_GG_pilot;
   Sizet2DArray N_pilot;
   evaluate_pilot(sum_G_pilot, sum_GG_pilot, N_pilot, false);
 
@@ -334,7 +334,8 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
   clear_batches();
   // extract moments
   RealMatrix H_raw_mom(4, numFunctions);
-  blue_raw_moments(sum_G, sum_GG, NGroupActual, H_raw_mom);
+  blue_raw_moments(sum_G_pilot, sum_GG_pilot, N_pilot,      // offline for covar
+		   sum_G, sum_GG, NGroupActual, H_raw_mom); // online for mu-hat
   convert_moments(H_raw_mom, momentStats);
   // finalize
   finalize_counts(NGroupActual, NGroupAlloc);
@@ -528,6 +529,56 @@ evaluate_pilot(RealMatrixArray& sum_G_pilot, RealSymMatrix2DArray& sum_GG_pilot,
     accumulate_blue_sums(sum_G_pilot, sum_GG_pilot, N_shared_pilot,
 			 batchResponsesMap);
     compute_GG_covariance(sum_G_pilot, sum_GG_pilot, N_shared_pilot,
+			  covGG, covGGinv);
+    if (costSource != USER_COST_SPEC)
+      { recover_online_cost(batchResponsesMap); update_model_group_costs(); }
+    if (incr_cost)
+      increment_equivalent_cost(pilotSamples, modelGroupCost,
+				sequenceCost[numApprox], equivHFEvals);
+    clear_batches();
+  }
+  prune_model_groups();
+}
+
+
+void NonDMultilevBLUESampling::
+evaluate_pilot(IntRealMatrixArrayMap& sum_G_pilot,
+	       IntRealSymMatrix2DArrayMap& sum_GG_pilot,
+	       Sizet2DArray& N_shared_pilot, bool incr_cost)
+{
+  initialize_group_sums(sum_G_pilot, sum_GG_pilot);
+  initialize_group_counts(N_shared_pilot);//, N_GG_pilot);
+
+  // ----------------------------------------
+  // Compute var L,H & covar LL,LH from pilot
+  // ----------------------------------------
+  // INDEPENDENT_PILOT: independent pilot samples for each group = expensive
+  //   initialization; straightforward to augment all groups with increments,
+  //   but likely that not all groups will get allocated with N_g > N_pilot.
+  // SHARED_PILOT: shared pilot sample is (much) less expensive initialization
+  //   for initial estimates of covGG; subsequent allocations are independent,
+  //   but shared pilot only reused once (all-model group).  Saves cost for
+  //   groups that are not selected for investment.
+  if (pilotGroupSampling == SHARED_PILOT) {
+    size_t all_group = numGroups - 1; // last group = all models
+    numSamples = pilotSamples[all_group];
+    shared_increment("blue_");
+    // accumulate for one group only and reuse for group covariances
+    accumulate_blue_sums(sum_G_pilot, sum_GG_pilot, N_shared_pilot, all_group,
+			 allResponses);
+    compute_GG_covariance(sum_G_pilot[1][all_group], sum_GG_pilot[1][all_group],
+			  N_shared_pilot[all_group], covGG, covGGinv);
+    if (costSource != USER_COST_SPEC)
+      { recover_online_cost(allResponses); update_model_group_costs(); }
+    if (incr_cost)
+      increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox+1,
+				equivHFEvals);
+  }
+  else {
+    group_increments(pilotSamples, "blue_"); // all groups, independent samples
+    accumulate_blue_sums(sum_G_pilot, sum_GG_pilot, N_shared_pilot,
+			 batchResponsesMap);
+    compute_GG_covariance(sum_G_pilot[1], sum_GG_pilot[1], N_shared_pilot,
 			  covGG, covGGinv);
     if (costSource != USER_COST_SPEC)
       { recover_online_cost(batchResponsesMap); update_model_group_costs(); }
@@ -1219,33 +1270,92 @@ finalize_counts(const Sizet2DArray& N_G_actual, const SizetArray& N_G_alloc)
 
 
 void NonDMultilevBLUESampling::
-blue_raw_moments(IntRealMatrixArrayMap& sum_G,
-		 IntRealSymMatrix2DArrayMap& sum_GG,
-		 const Sizet2DArray& N_G_actual, RealMatrix& H_raw_mom)
+blue_raw_moments(IntRealMatrixArrayMap& sum_G_online,
+		 IntRealSymMatrix2DArrayMap& sum_GG_online,
+		 const Sizet2DArray& N_G_online, RealMatrix& H_raw_mom)
 {
+  // For ONLINE_PILOT where covar and sums use latest accumulations
+
   RealVectorArray mu_hat;
   for (int mom=1; mom<=4; ++mom) {
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Moment " << mom << " estimator:\n";
-    RealMatrixArray& sum_G_m = sum_G[mom];
-    if (mom == 1 && ( pilotMgmtMode == ONLINE_PILOT ||
-		      pilotMgmtMode == ONLINE_PILOT_PROJECTION ) ) {
-      // online covar avail for mean
-      compute_mu_hat(covGGinv, sum_G_m, N_G_actual, mu_hat);
-    }
-    else {
-      // generate new online covariance data
-      RealSymMatrix2DArray& sum_GG_m = sum_GG[mom];
+    RealMatrixArray&       sum_G_online_m  = sum_G_online[mom];
+    RealSymMatrix2DArray& sum_GG_online_m = sum_GG_online[mom];
+
+    if (mom == 1) // Use online covar + online sum to solve for mean
+      compute_mu_hat(covGGinv, sum_G_online_m, N_G_online, mu_hat);
+    else { // compute covariances for higher-order moment solves
       RealSymMatrix2DArray cov_GG, cov_GG_inv;
+      compute_GG_covariance(sum_G_online_m, sum_GG_online_m, N_G_online,
+			    cov_GG, cov_GG_inv);
+      //prune_model_groups(); // "Against" selected
+      compute_mu_hat(cov_GG_inv, sum_G_online_m, N_G_online, mu_hat);
+    }
+
+    for (size_t qoi=0; qoi<numFunctions; ++qoi)
+      H_raw_mom(mom-1, qoi) = mu_hat[qoi][numApprox]; // last model
+  }
+}
+
+
+void NonDMultilevBLUESampling::
+blue_raw_moments(IntRealMatrixArrayMap& sum_G_offline,
+		 IntRealSymMatrix2DArrayMap& sum_GG_offline,
+		 const Sizet2DArray& N_G_offline,
+		 IntRealMatrixArrayMap& sum_G_online,
+		 IntRealSymMatrix2DArrayMap& sum_GG_online,
+		 const Sizet2DArray& N_G_online, RealMatrix& H_raw_mom)
+{
+  // For OFFLINE_PILOT where covar is offline and sums are online
+
+  // Ambiguity arises when ML BLUE reuses covGG for moment solves (also occurs
+  // with control variate beta in MFMC/ACV/GenACV).
+  // > Online-only approach above incurs issues with sample reqmts for online
+  //   covar (offline_N_lwr = 2).
+  // > This can be avoided in approach below by mixing offline var/covar +
+  //   online sample accumulations: var/covar are consistently offline/Oracle,
+  //   but mu-hat solves become inconsistent in online/offline.
+  // Prefer to avoid additional padding in linear constraints for online opt.
+
+  RealVectorArray mu_hat;  size_t all_group = numGroups - 1;
+  for (int mom=1; mom<=4; ++mom) {
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "Moment " << mom << " estimator:\n";
+    RealMatrixArray&       sum_G_online_m  = sum_G_online[mom];
+    RealSymMatrix2DArray& sum_GG_online_m = sum_GG_online[mom];
+
+    // This approach has consistency in that it uses the same var/covar data
+    // throughout, but inconsistency in mixing offline group covariances with
+    // online sums for compute_mu_hat(). Note: could precompute offline covar
+    // for all moments or store offline sums for these covariances, deferring
+    // computation until needed here.  Using the latter approach for now.
+    if (mom == 1) // Use offline covar + online sum to solve for mean
+      compute_mu_hat(covGGinv, sum_G_online_m, N_G_online, mu_hat);
+    else {
+      RealMatrixArray&       sum_G_offline_m  = sum_G_offline[mom];
+      RealSymMatrix2DArray& sum_GG_offline_m = sum_GG_offline[mom];
+      // compute covariances for higher-order moments using offline sums
+      RealSymMatrix2DArray cov_GG, cov_GG_inv;
+      if (pilotGroupSampling == SHARED_PILOT)
+	compute_GG_covariance( sum_G_offline_m[all_group],
+			      sum_GG_offline_m[all_group],
+			      N_G_offline[all_group], cov_GG, cov_GG_inv);
+      else
+	compute_GG_covariance(sum_G_offline_m, sum_GG_offline_m, N_G_offline,
+			      cov_GG, cov_GG_inv);
       // Update model group pruning or stick with set from final iteration?
+      // (Psi solve still needed although optimization cycles are complete.)
       // For:     online:  condition rankings will change for higher moments
       //          offline: online dataset differs, perhaps significantly
       // Against: sample allocations were based on final iteration's pruning
       //          and we should utilize this final set for the final moments
-      compute_GG_covariance(sum_G_m, sum_GG_m, N_G_actual, cov_GG, cov_GG_inv);
       //prune_model_groups(); // "Against" selected
-      compute_mu_hat(cov_GG_inv, sum_G_m, N_G_actual, mu_hat);
+
+      // solve for mu-hat using online sums
+      compute_mu_hat(cov_GG_inv, sum_G_online_m, N_G_online, mu_hat);
     }
+
     for (size_t qoi=0; qoi<numFunctions; ++qoi)
       H_raw_mom(mom-1, qoi) = mu_hat[qoi][numApprox]; // last model
   }
