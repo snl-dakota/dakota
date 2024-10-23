@@ -1171,9 +1171,8 @@ finite_solution_bounds(const RealVector& x0, RealVector& x_lb, RealVector& x_ub)
 
     // "budget_exhausted" logic protects numerical solutions for budget-
     // constrained cases in:
-    // > NonD{ACV,GenACV}Sampling::compute_ratios()
+    // > NonD{ACV,GenACV,MultilevBLUE}Sampling::compute_allocations()
     // > NonDMultifidelitySampling::mfmc_numerical_solution()
-    // > NonDMultilevBLUESampling::compute_allocations()
     // but accuracy-constrained cases estimate hf_targets above, where it is
     // possible for the pilot to overshoot this target, such that we need to
     // protect against x_ub < x_lb.

@@ -231,7 +231,7 @@ private:
   Real compute_R_sq(const RealSymMatrix& C, const RealSymMatrix& F,
 		    const RealMatrix& c, size_t qoi, Real var_H_q);
 
-  void compute_ratios(const RealMatrix& var_L, MFSolutionData& soln);
+  void compute_allocations(const RealMatrix& var_L, MFSolutionData& soln);
 
   void acv_estvar_ratios(const RealSymMatrix& F, RealVector& estvar_ratios);
   //Real acv_estimator_variance(const RealVector& avg_eval_ratios,

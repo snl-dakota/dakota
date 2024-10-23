@@ -641,7 +641,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
     compute_LH_statistics(sum_L_baselineH[1], sum_H[1], sum_LL[1], sum_LH[1],
 			  sum_HH, N_H_actual, var_L, varH, covLL, covLH);
 
-    if (mlmfIter == 0) precompute_ratios(); // metrics not dependent on DAG
+    if (mlmfIter == 0) precompute_allocations(); // metrics not dependent on DAG
     for (activeModelSetIter  = modelDAGs.begin();
 	 activeModelSetIter != modelDAGs.end(); ++activeModelSetIter) {
       const UShortArray& approx_set = activeModelSetIter->first;
@@ -663,7 +663,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
 	// ratio of MC and ACV mean sq errors (which incorporates anticipated
 	// variance reduction from application of avg_eval_ratios).
 	MFSolutionData& soln = dagSolns[soln_key];
-	compute_ratios(var_L, soln);
+	compute_allocations(var_L, soln);
 	update_best(soln);// store state for restoration
 	//reset_acv(); // reset state for next ACV execution
       }
@@ -727,7 +727,7 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
-  precompute_ratios(); // compute metrics not dependent on active DAG
+  precompute_allocations(); // compute metrics not dependent on active DAG
   std::pair<UShortArray, UShortArray> soln_key;
   for (activeModelSetIter  = modelDAGs.begin();
        activeModelSetIter != modelDAGs.end(); ++activeModelSetIter) {
@@ -750,7 +750,7 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
       // ratio of MC and ACV mean sq errors (which incorporates anticipated
       // variance reduction from application of avg_eval_ratios).
       MFSolutionData& soln = dagSolns[soln_key];
-      compute_ratios(var_L, soln);
+      compute_allocations(var_L, soln);
       update_best(soln); // store state for restoration
       //reset_acv(); // reset state for next ACV execution
     }
@@ -830,7 +830,7 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
   // -----------------------------------
   // Compute "online" sample increments:
   // -----------------------------------
-  precompute_ratios(); // compute metrics not dependent on active DAG
+  precompute_allocations(); // compute metrics not dependent on active DAG
   for (activeModelSetIter  = modelDAGs.begin();
        activeModelSetIter != modelDAGs.end(); ++activeModelSetIter) {
     const UShortArray&  approx_set = activeModelSetIter->first;
@@ -851,7 +851,7 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
       // ratio of MC and ACV mean sq errors (which incorporates anticipated
       // variance reduction from application of avg_eval_ratios).
       MFSolutionData& soln = dagSolns[soln_key];
-      compute_ratios(var_L, soln);
+      compute_allocations(var_L, soln);
       update_best(soln); // store state for restoration
       //reset_acv(); // reset state for next ACV execution
     }
@@ -1017,7 +1017,8 @@ genacv_raw_moments(IntRealMatrixMap& sum_L_covar, IntRealVectorMap& sum_H_covar,
 		   IntRealMatrixMap& sum_L_refined,
 		   const Sizet2DArray& N_L_refined, const MFSolutionData& soln)
 {
-  precompute_genacv_controls(soln.solution_ratios(), N_baseline); // *** which N? ***  N_covar ?  N_online = eval_ratios * N_baseline ?
+  // no need to check optSubProblemForm since MFSolutionData stores as N_vec
+  precompute_genacv_controls(soln.solution_variables());
 
   const UShortArray& approx_set = activeModelSetIter->first;
   size_t qoi, approx, inflate_approx, num_approx = approx_set.size();
@@ -1066,7 +1067,7 @@ genacv_raw_moments(IntRealMatrixMap& sum_L_covar, IntRealVectorMap& sum_H_covar,
 }
 
 
-void NonDGenACVSampling::precompute_ratios()
+void NonDGenACVSampling::precompute_allocations()
 {
   if (pilotMgmtMode == ONLINE_PILOT ||
       pilotMgmtMode == ONLINE_PILOT_PROJECTION)
@@ -1075,7 +1076,7 @@ void NonDGenACVSampling::precompute_ratios()
 
 
 void NonDGenACVSampling::
-compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
+compute_allocations(const RealMatrix& var_L, MFSolutionData& soln)
 {
   // --------------------------------------
   // Configure the optimization sub-problem

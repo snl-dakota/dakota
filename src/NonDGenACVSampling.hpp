@@ -150,8 +150,8 @@ private:
   void update_model_groups();
   void update_model_groups(const UShortList& root_list);
 
-  void precompute_ratios();
-  void compute_ratios(const RealMatrix& var_L, MFSolutionData& solution);
+  void precompute_allocations();
+  void compute_allocations(const RealMatrix& var_L, MFSolutionData& solution);
 
   void genacv_raw_moments(IntRealMatrixMap& sum_L_covar,
 			  IntRealVectorMap& sum_H_covar,
@@ -166,8 +166,7 @@ private:
 			  const Sizet2DArray& N_L_refined,
 			  const MFSolutionData& soln);
 
-  void precompute_genacv_controls(const RealVector& avg_eval_ratios,
-				  const SizetArray& N_baseline);
+  void precompute_genacv_controls(const RealVector& soln_vars);
 
   void compute_genacv_control(RealMatrix& sum_L_m, Real sum_H_mq,
 			      RealSymMatrix& sum_LL_mq, RealMatrix& sum_LH_m,
@@ -550,15 +549,13 @@ compute_R_sq(const RealSymMatrix& C, const RealSymMatrix& G,
 
 
 inline void NonDGenACVSampling::
-precompute_genacv_controls(const RealVector& avg_eval_ratios,
-			   const SizetArray& N_shared)
+precompute_genacv_controls(const RealVector& soln_vars)
 {
   // Note: while G,g have a more explicit dependence on N_shared[qoi] than F,
   // we mirror the averaged sample allocations and compute G,g once
-  RealVector N_vec, inflate_N_vec;
-  r_and_N_to_N_vec(avg_eval_ratios, average(N_shared), N_vec);
-  inflate_variables(N_vec, inflate_N_vec, activeModelSetIter->first);
-  compute_parameterized_G_g(inflate_N_vec);
+  RealVector inflate_soln_vars;
+  inflate_variables(soln_vars, inflate_soln_vars, activeModelSetIter->first);
+  compute_parameterized_G_g(inflate_soln_vars);
 }
 
 

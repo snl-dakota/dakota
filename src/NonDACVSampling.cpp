@@ -149,7 +149,7 @@ void NonDACVSampling::approximate_control_variate_online_pilot()
     // compute the LF/HF evaluation ratios from shared samples and compute
     // ratio of MC and ACV mean sq errors (which incorporates anticipated
     // variance reduction from application of avg_eval_ratios).
-    compute_ratios(var_L, acvSolnData);
+    compute_allocations(var_L, acvSolnData);
     ++mlmfIter;  advance_relaxation();
   }
 
@@ -209,7 +209,7 @@ void NonDACVSampling::approximate_control_variate_offline_pilot()
   // compute the LF/HF evaluation ratios from shared samples and compute
   // ratio of MC and ACV mean sq errors (which incorporates anticipated
   // variance reduction from application of avg_eval_ratios).
-  compute_ratios(var_L, acvSolnData);
+  compute_allocations(var_L, acvSolnData);
   ++mlmfIter;
 
   // -----------------------------------
@@ -278,7 +278,7 @@ void NonDACVSampling::approximate_control_variate_pilot_projection()
   // compute the LF/HF evaluation ratios from shared samples and compute
   // ratio of MC and ACV mean sq errors (which incorporates anticipated
   // variance reduction from application of avg_eval_ratios).
-  compute_ratios(var_L, acvSolnData);
+  compute_allocations(var_L, acvSolnData);
   ++mlmfIter;
 
   // No LF increments or final moments for pilot projection
@@ -353,7 +353,7 @@ compute_LH_statistics(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
 		      RealVector& var_H, RealSymMatrixArray& cov_LL,
 		      RealMatrix& cov_LH)
 {
-  if (mlmfIter == 0) // see var_L usage in compute_ratios()
+  if (mlmfIter == 0) // see var_L usage in compute_allocations()
     compute_L_variance(sum_L_pilot, sum_LL_pilot, N_pilot, var_L);
   compute_variance(sum_H_pilot, sum_HH_pilot, N_pilot, var_H);
   compute_LL_covariance(sum_L_pilot,//_baselineL,
@@ -539,7 +539,7 @@ void NonDACVSampling::update_model_groups(const SizetArray& approx_sequence)
 
 
 void NonDACVSampling::
-compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
+compute_allocations(const RealMatrix& var_L, MFSolutionData& soln)
 {
   // Solve the optimization sub-problem using an initial guess from either
   // related analytic solutions (iter == 0) or warm started from the previous
