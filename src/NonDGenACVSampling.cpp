@@ -1017,63 +1017,33 @@ genacv_raw_moments(IntRealMatrixMap& sum_L_covar, IntRealVectorMap& sum_H_covar,
 		   IntRealMatrixMap& sum_L_refined,
 		   const Sizet2DArray& N_L_refined, const MFSolutionData& soln)
 {
-  // ------------------------------------
-  // Compute/apply CV to estimate moments
-  // ------------------------------------
-  RealVector2DArray beta(4);
   precompute_genacv_controls(soln.solution_ratios(), N_baseline); // *** which N? ***  N_covar ?  N_online = eval_ratios * N_baseline ?
-  compute_genacv_controls(sum_L_covar, sum_H_covar, sum_LL_covar,
-			  sum_LH_covar, N_covar, beta);
-  apply_genacv_controls(sum_H_baseline, N_baseline, sum_L_shared, N_L_shared,
-			sum_L_refined, N_L_refined, beta);
-}
 
-
-void NonDGenACVSampling::
-compute_genacv_controls(IntRealMatrixMap& sum_L_covar,
-			IntRealVectorMap& sum_H_covar,
-			IntRealSymMatrixArrayMap& sum_LL_covar,
-			IntRealMatrixMap& sum_LH_covar,
-			const SizetArray& N_covar, RealVector2DArray& beta)
-{
   const UShortArray& approx_set = activeModelSetIter->first;
-  size_t qoi, num_approx = approx_set.size();
+  size_t qoi, approx, inflate_approx, num_approx = approx_set.size();
+  RealMatrix H_raw_mom(4, numFunctions);  RealVector beta(num_approx);
   for (int mom=1; mom<=4; ++mom) {
-    RealMatrix&          sum_L_m =  sum_L_covar[mom];
-    RealVector&          sum_H_m =  sum_H_covar[mom];
-    RealSymMatrixArray& sum_LL_m = sum_LL_covar[mom];
-    RealMatrix&         sum_LH_m = sum_LH_covar[mom];
-    RealVectorArray&      beta_m =         beta[mom-1];
-    beta_m.resize(numFunctions);
-    for (qoi=0; qoi<numFunctions; ++qoi)
-      compute_genacv_control(sum_L_m, sum_H_m[qoi], sum_LL_m[qoi], sum_LH_m,
-			     N_covar[qoi], mom, qoi, approx_set, beta_m[qoi]);
-      // *** TO DO: support shared_approx_increment() --> baselineL
-  }
-}
-
-
-void NonDGenACVSampling::
-apply_genacv_controls(IntRealVectorMap& sum_H_baseline,
-		      const SizetArray& N_baseline,
-		      IntRealMatrixMap& sum_L_shared,
-		      const Sizet2DArray& N_L_shared,
-		      IntRealMatrixMap& sum_L_refined,
-		      const Sizet2DArray& N_L_refined,
-		      const RealVector2DArray& beta)
-{
-  RealMatrix H_raw_mom(4, numFunctions);
-  const UShortArray& approx_set = activeModelSetIter->first;
-  size_t approx, inflate_approx, num_approx = approx_set.size(), qoi;
-  for (int mom=1; mom<=4; ++mom) {
-    RealVector&      sum_H_base_m = sum_H_baseline[mom];
-    RealMatrix&        sum_L_sh_m =   sum_L_shared[mom];
-    RealMatrix&       sum_L_ref_m =  sum_L_refined[mom];
-    const RealVectorArray& beta_m =           beta[mom-1];
+    RealMatrix&          sum_L_m =    sum_L_covar[mom];
+    RealVector&          sum_H_m =    sum_H_covar[mom];
+    RealSymMatrixArray& sum_LL_m =   sum_LL_covar[mom];
+    RealMatrix&         sum_LH_m =   sum_LH_covar[mom];
+    RealVector&     sum_H_base_m = sum_H_baseline[mom];
+    RealMatrix&       sum_L_sh_m =   sum_L_shared[mom];
+    RealMatrix&      sum_L_ref_m =  sum_L_refined[mom];
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Moment " << mom << " estimator:\n";
     for (qoi=0; qoi<numFunctions; ++qoi) {
-      const RealVector& beta_mq = beta_m[qoi];
+      // --------------------------------------
+      // Compute beta for control variate terms
+      // --------------------------------------
+      // > uses either online or offline samples for covariance
+      // > TO DO: support shared_approx_increment() --> baselineL
+      compute_genacv_control(sum_L_m, sum_H_m[qoi], sum_LL_m[qoi], sum_LH_m,
+			     N_covar[qoi], mom, qoi, approx_set, beta);
+      // ------------------------------------------------------
+      // Evaluate control variate terms to estimate raw moments
+      // ------------------------------------------------------
+      // > uses online samples for baseline, shared, refined
       Real& H_raw_mq = H_raw_mom(mom-1, qoi);
       H_raw_mq = sum_H_base_m[qoi] / N_baseline[qoi];// 1st term to be augmented
       for (approx=0; approx<num_approx; ++approx) {
@@ -1081,13 +1051,12 @@ apply_genacv_controls(IntRealVectorMap& sum_H_baseline,
 	if (outputLevel >= NORMAL_OUTPUT)
 	  Cout << "   QoI " << qoi+1 << " Approx " << inflate_approx+1
 	       << ": control variate beta = " << std::setw(9)
-	       << beta_m[approx] << '\n';
-	// For ACV, shared counts are fixed at N_H for all approx
+	       << beta[approx] << '\n';
 	apply_control(sum_L_sh_m(qoi,inflate_approx),
 		      N_L_shared[inflate_approx][qoi],
 		      sum_L_ref_m(qoi,inflate_approx),
 		      N_L_refined[inflate_approx][qoi],
-		      beta_mq[approx], H_raw_mq);
+		      beta[approx], H_raw_mq);
       }
     }
   }
