@@ -711,6 +711,46 @@ cvmc_ensemble_solutions(const RealMatrix& rho2_LH, const RealVector& cost,
 }
 
 
+void NonDNonHierarchSampling::
+raw_moments(IntRealVectorMap& sum_H_baseline, const SizetArray& N_baseline,
+	    IntRealMatrixMap& sum_L_shared,  const Sizet2DArray& N_L_shared,
+	    IntRealMatrixMap& sum_L_refined, const Sizet2DArray& N_L_refined,
+	    const RealVector2DArray& beta)
+{
+  RealMatrix H_raw_mom(4, numFunctions);
+  // ----------------------------
+  // Apply CV to estimate moments
+  // ----------------------------
+  size_t approx, qoi;
+  for (int mom=1; mom<=4; ++mom) {
+    RealVector&      sum_H_base_m = sum_H_baseline[mom];
+    RealMatrix&        sum_L_sh_m =   sum_L_shared[mom];
+    RealMatrix&       sum_L_ref_m =  sum_L_refined[mom];
+    const RealVectorArray& beta_m =           beta[mom-1];
+
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "Moment " << mom << " estimator:\n";
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+      const RealVector& beta_mq = beta_m[qoi];
+      Real& H_raw_mq = H_raw_mom(mom-1, qoi);
+      H_raw_mq = sum_H_base_m[qoi] / N_baseline[qoi];// 1st term to be augmented
+      for (approx=0; approx<numApprox; ++approx) {
+	if (outputLevel >= NORMAL_OUTPUT)
+	  Cout << "   QoI " << qoi+1 << " Approx " << approx+1 << ": control "
+	       << "variate beta = " << std::setw(9) << beta_m[approx] << '\n';
+	// For MFMC, shared accumulators and counts telescope pairwise
+	apply_control(sum_L_sh_m(qoi,approx),  N_L_shared[approx][qoi],
+		      sum_L_ref_m(qoi,approx), N_L_refined[approx][qoi],
+		      beta_mq[approx], H_raw_mq);
+      }
+    }
+  }
+  if (outputLevel >= NORMAL_OUTPUT) Cout << std::endl;
+
+  convert_moments(H_raw_mom, momentStats); // uncentered to final (central|std)
+}
+
+
 void NonDNonHierarchSampling::update_model_group_costs()
 {
   // modelGroupCost used in finite_solution_bounds() for
@@ -742,103 +782,6 @@ void NonDNonHierarchSampling::update_model_group_costs()
       group_cost += sequenceCost[group_g[m]];
   }
 }
-
-
-void NonDNonHierarchSampling::
-overlay_approx_group_sums(const IntRealMatrixArrayMap& sum_G,
-			  const Sizet2DArray& N_G_actual,
-			  IntRealMatrixMap& sum_L_shared,
-			  IntRealMatrixMap& sum_L_refined,
-			  Sizet2DArray& N_L_actual_shared,
-			  Sizet2DArray& N_L_actual_refined)
-{
-  // omit the last group (all-models) since (i) there is no HF increment
-  // (delta_N_G[numApprox] is assigned 0 in approx_increments()) and
-  // (ii) any HF refinement would be out of range for L accumulations.  
-  size_t m, g, num_L_groups = modelGroups.size() - 1, last_m_index;
-  unsigned short model, last_model;
-  IntRealMatrixArrayMap::const_iterator g_cit;
-  IntRealMatrixMap::iterator s_it;
-  for (g=0; g<num_L_groups; ++g) {
-    const SizetArray&  num_G_g =  N_G_actual[g];
-    if (zeros(num_G_g)) continue; // all-models group has delta = 0
-    const UShortArray& group_g = modelGroups[g];
-    last_m_index = group_g.size() - 1; // this index defines refined set
-
-    for (m=0; m<last_m_index; ++m) {
-      model = group_g[m];
-      // counters (span all moments):
-      increment_samples(N_L_actual_shared[model], num_G_g);
-      // accumulators for each moment:
-      for (s_it =sum_L_shared.begin(), g_cit =sum_G.begin();
-	   s_it!=sum_L_shared.end() && g_cit!=sum_G.end(); ++g_cit, ++s_it)
-	increment_sums(s_it->second[model], g_cit->second[g][m], numFunctions);
-    }
-  }
-
-  // avoid redundant accumulations: copy shared state prior to refinement
-  // (includes inflations from HF to L_shared)
-  sum_L_refined      = sum_L_shared;
-  N_L_actual_refined = N_L_actual_shared;
-
-  for (g=0; g<num_L_groups; ++g) {
-    const SizetArray&  num_G_g =  N_G_actual[g];
-    if (zeros(num_G_g)) continue; // all-models group has delta = 0
-    const UShortArray& group_g = modelGroups[g];
-    // Note: HF model index is out of range for N_L --> num_G_g=0 protects this
-    last_m_index = group_g.size() - 1;  last_model = group_g[last_m_index];
-    // counters (span all moments):
-    increment_samples(N_L_actual_refined[last_model], num_G_g);
-    // accumulators for each moment:
-    for (s_it =sum_L_refined.begin(), g_cit =sum_G.begin();
-	 s_it!=sum_L_refined.end() && g_cit!=sum_G.end(); ++s_it, ++g_cit)
-      increment_sums(s_it->second[last_model], g_cit->second[g][last_m_index],
-		     numFunctions);
-  }
-}
-
-
-/* Case for ACV peer DAG (special case of more general implementation above)
-void NonDNonHierarchSampling::
-overlay_approx_group_sums(const IntRealMatrixArrayMap& sum_G,
-			  const Sizet2DArray& N_G_actual,
-			  IntRealMatrixMap& sum_L_refined,
-			  Sizet2DArray& N_L_actual_refined)
-{
-  // omit the last group (all-models) since (i) there is no HF increment
-  // (delta_N_G[numApprox] is assigned 0 in approx_increments()) and
-  // (ii) any HF refinement would be out of range for L accumulations.  
-
-  // avoid redundant accumulations by augmenting refined starting from shared
-  N_L_actual_refined = N_L_actual_shared; // not in overloads API -> do upstream
-  sum_L_refined      = sum_L_shared;      // not in overloads API -> do upstream
-
-  size_t m, g, num_L_groups = modelGroups.size() - 1, num_models;
-  unsigned short approx;
-  IntRealMatrixArrayMap::const_iterator g_cit;
-  IntRealMatrixMap::iterator s_it, r_it;
-  for (g=0; g<num_L_groups; ++g) {
-    const SizetArray&  num_G_g =  N_G_actual[g];
-    const UShortArray& group_g = modelGroups[g];
-    // all-models group has delta = 0; singleton model groups may bypass
-    if (zeros(num_G_g)) continue;
-    num_models = group_g.size();
-
-    // counters (span all moments):
-    for (m=0; m<num_models; ++m)
-      increment_samples(N_L_actual_refined[group_g[m]], num_G_g);
-
-    // accumulators for each moment:
-    for (s_it =sum_L_refined.begin(), g_cit =sum_G.begin();
-	 s_it!=sum_L_refined.end() && g_cit!=sum_G.end(); ++g_cit, ++s_it) {
-      const RealMatrix& sum_G_mg    = g_cit->second[g];
-      RealMatrix&       sum_L_ref_m =  s_it->second;
-      for (m=0; m<num_models; ++m)
-	increment_sums(sum_L_ref_m[group_g[m]], sum_G_mg[m], numFunctions);
-    }
-  }
-}
-*/
 
 
 void NonDNonHierarchSampling::

@@ -140,16 +140,25 @@ private:
 			 SizetArray& N_L_alloc_refined,
 			 const MFSolutionData& soln);
 
+  void overlay_group_sums(const IntRealMatrixArrayMap& sum_G,
+			  const Sizet2DArray& N_G_actual,
+			  IntRealMatrixMap& sum_L_shared,
+			  Sizet2DArray& N_L_actual_shared,
+			  IntRealMatrixMap& sum_L_refined,
+			  Sizet2DArray& N_L_actual_refined);
+
   void update_model_groups();
   void update_model_groups(const UShortList& root_list);
 
   void precompute_ratios();
   void compute_ratios(const RealMatrix& var_L, MFSolutionData& solution);
 
-  void genacv_raw_moments(IntRealMatrixMap& sum_L_baseline,
+  void genacv_raw_moments(IntRealMatrixMap& sum_L_covar,
+			  IntRealVectorMap& sum_H_covar,
+			  IntRealSymMatrixArrayMap& sum_LL_covar,
+			  IntRealMatrixMap& sum_LH_covar,
+			  const SizetArray& N_covar,
 			  IntRealVectorMap& sum_H_baseline,
-			  IntRealSymMatrixArrayMap& sum_LL_baseline,
-			  IntRealMatrixMap& sum_LH_baseline,
 			  const SizetArray& N_baseline,
 			  IntRealMatrixMap& sum_L_shared,
 			  const Sizet2DArray& N_L_shared, 
@@ -159,20 +168,19 @@ private:
 
   void precompute_genacv_controls(const RealVector& avg_eval_ratios,
 				  const SizetArray& N_baseline);
-  void compute_genacv_controls(IntRealMatrixMap& sum_L_baseline,
-			       IntRealVectorMap& sum_H_baseline,
-			       IntRealSymMatrixArrayMap& sum_LL_baseline,
-			       IntRealMatrixMap& sum_LH_baseline,
-			       const SizetArray& N_baseline,
-			       RealVectorArray& beta);
+  void compute_genacv_controls(IntRealMatrixMap& sum_L_covar,
+			       IntRealVectorMap& sum_H_covar,
+			       IntRealSymMatrixArrayMap& sum_LL_covar,
+			       IntRealMatrixMap& sum_LH_covar,
+			       const SizetArray& N_covar,
+			       RealVector2DArray& beta);
   void apply_genacv_controls(IntRealVectorMap& sum_H_baseline,
 			     const SizetArray& N_baseline,
 			     IntRealMatrixMap& sum_L_shared,
 			     const Sizet2DArray& N_L_shared,
 			     IntRealMatrixMap& sum_L_refined,
 			     const Sizet2DArray& N_L_refined,
-			     const RealVectorArray& beta,
-			     RealMatrix& H_raw_mom);
+			     const RealVector2DArray& beta);
 
   void compute_genacv_control(RealMatrix& sum_L_base_m, Real sum_H_mq,
 			       RealSymMatrix& sum_LL_mq, RealMatrix& sum_LH_m,
