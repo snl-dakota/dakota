@@ -105,17 +105,10 @@ private:
 			 SizetArray& N_L_alloc_refined,
 			 const MFSolutionData& soln);
 
-  void overlay_hierarchical_group_sums(const IntRealMatrixArrayMap& sum_G,
-				       const Sizet2DArray& N_G_actual,
-				       IntRealMatrixMap& sum_L_shared,
-				       Sizet2DArray& N_L_actual_shared,
-				       IntRealMatrixMap& sum_L_refined,
-				       Sizet2DArray& N_L_actual_refined);
-
-  void mf_raw_moments(IntRealMatrixMap& sum_L_covar,
-		      IntRealVectorMap& sum_H_covar,
-		      IntRealMatrixMap& sum_LL_covar,
-		      IntRealMatrixMap& sum_LH_covar,
+  void mf_raw_moments(const IntRealMatrixMap& sum_L_covar,
+		      const IntRealVectorMap& sum_H_covar,
+		      const IntRealMatrixMap& sum_LL_covar,
+		      const IntRealMatrixMap& sum_LH_covar,
 		      const SizetArray& N_covar, RealVector2DArray& beta);
 
   // shared_increment() cases:

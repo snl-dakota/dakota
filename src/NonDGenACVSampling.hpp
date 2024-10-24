@@ -140,37 +140,31 @@ private:
 			 SizetArray& N_L_alloc_refined,
 			 const MFSolutionData& soln);
 
-  void overlay_group_sums(const IntRealMatrixArrayMap& sum_G,
-			  const Sizet2DArray& N_G_actual,
-			  IntRealMatrixMap& sum_L_shared,
-			  Sizet2DArray& N_L_actual_shared,
-			  IntRealMatrixMap& sum_L_refined,
-			  Sizet2DArray& N_L_actual_refined);
-
   void update_model_groups();
   void update_model_groups(const UShortList& root_list);
 
   void precompute_allocations();
   void compute_allocations(const RealMatrix& var_L, MFSolutionData& solution);
 
-  void genacv_raw_moments(IntRealMatrixMap& sum_L_covar,
-			  IntRealVectorMap& sum_H_covar,
-			  IntRealSymMatrixArrayMap& sum_LL_covar,
-			  IntRealMatrixMap& sum_LH_covar,
+  void genacv_raw_moments(const IntRealMatrixMap& sum_L_covar,
+			  const IntRealVectorMap& sum_H_covar,
+			  const IntRealSymMatrixArrayMap& sum_LL_covar,
+			  const IntRealMatrixMap& sum_LH_covar,
 			  const SizetArray& N_covar,
-			  IntRealVectorMap& sum_H_baseline,
+			  const IntRealVectorMap& sum_H_baseline,
 			  const SizetArray& N_baseline,
-			  IntRealMatrixMap& sum_L_shared,
+			  const IntRealMatrixMap& sum_L_shared,
 			  const Sizet2DArray& N_L_shared, 
-			  IntRealMatrixMap& sum_L_refined,
+			  const IntRealMatrixMap& sum_L_refined,
 			  const Sizet2DArray& N_L_refined,
 			  const MFSolutionData& soln);
 
   void precompute_genacv_controls(const RealVector& soln_vars);
 
-  void compute_genacv_control(RealMatrix& sum_L_m, Real sum_H_mq,
-			      RealSymMatrix& sum_LL_mq, RealMatrix& sum_LH_m,
-			      size_t N_shared_q, size_t mom, size_t qoi,
+  void compute_genacv_control(const RealMatrix& sum_L_m, Real sum_H_mq,
+			      const RealSymMatrix& sum_LL_mq,
+			      const RealMatrix& sum_LH_m, size_t N_shared_q,
+			      size_t mom, size_t qoi,
 			      const UShortArray& approx_set, RealVector& beta);
 
   void analytic_initialization_from_mfmc(const UShortArray& approx_set,
@@ -575,10 +569,11 @@ solve_for_genacv_control(const RealSymMatrix& cov_LL, const RealSymMatrix& G,
 
 
 inline void NonDGenACVSampling::
-compute_genacv_control(RealMatrix& sum_L_m, Real sum_H_mq,
-		       RealSymMatrix& sum_LL_mq, RealMatrix& sum_LH_m,
-		       size_t N_shared_q, size_t mom, size_t qoi,
-		       const UShortArray& approx_set, RealVector& beta)
+compute_genacv_control(const RealMatrix& sum_L_m, Real sum_H_mq,
+		       const RealSymMatrix& sum_LL_mq,
+		       const RealMatrix& sum_LH_m, size_t N_shared_q,
+		       size_t mom, size_t qoi, const UShortArray& approx_set,
+		       RealVector& beta)
 {
   if (mom == 1) // online|offline covariances available for mean
     solve_for_genacv_control(covLL[qoi], GMat, covLH, gVec, qoi,

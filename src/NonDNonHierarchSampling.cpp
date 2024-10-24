@@ -712,10 +712,12 @@ cvmc_ensemble_solutions(const RealMatrix& rho2_LH, const RealVector& cost,
 
 
 void NonDNonHierarchSampling::
-raw_moments(IntRealVectorMap& sum_H_baseline, const SizetArray& N_baseline,
-	    IntRealMatrixMap& sum_L_shared,  const Sizet2DArray& N_L_shared,
-	    IntRealMatrixMap& sum_L_refined, const Sizet2DArray& N_L_refined,
-	    const RealVector2DArray& beta)
+raw_moments(const IntRealVectorMap& sum_H_baseline,
+	    const SizetArray& N_baseline,
+	    const IntRealMatrixMap& sum_L_shared,
+	    const Sizet2DArray& N_L_shared,
+	    const IntRealMatrixMap& sum_L_refined,
+	    const Sizet2DArray& N_L_refined, const RealVector2DArray& beta)
 {
   RealMatrix H_raw_mom(4, numFunctions);
   // ----------------------------
@@ -723,10 +725,10 @@ raw_moments(IntRealVectorMap& sum_H_baseline, const SizetArray& N_baseline,
   // ----------------------------
   size_t approx, qoi;
   for (int mom=1; mom<=4; ++mom) {
-    RealVector&      sum_H_base_m = sum_H_baseline[mom];
-    RealMatrix&        sum_L_sh_m =   sum_L_shared[mom];
-    RealMatrix&       sum_L_ref_m =  sum_L_refined[mom];
-    const RealVectorArray& beta_m =           beta[mom-1];
+    const RealVector& sum_H_base_m = sum_H_baseline.at(mom);
+    const RealMatrix&   sum_L_sh_m =   sum_L_shared.at(mom);
+    const RealMatrix&  sum_L_ref_m =  sum_L_refined.at(mom);
+    const RealVectorArray&  beta_m =              beta[mom-1];
 
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Moment " << mom << " estimator:\n";
@@ -780,6 +782,68 @@ void NonDNonHierarchSampling::update_model_group_costs()
     num_models = group_g.size();
     for (m=0; m<num_models; ++m)
       group_cost += sequenceCost[group_g[m]];
+  }
+}
+
+
+void NonDNonHierarchSampling::
+overlay_group_sums(const IntRealMatrixArrayMap& sum_G,
+		   const Sizet2DArray& N_G_actual,
+		   IntRealMatrixMap& sum_L_shared,
+		   Sizet2DArray& N_L_actual_shared,
+		   IntRealMatrixMap& sum_L_refined,
+		   Sizet2DArray& N_L_actual_refined)
+{
+  // This base implementation requires that the last model in the group
+  // corresponds to the root of a reverse DAG, which then defines the "shared"
+  // model accumulation as well as the basis for "refined" accumulations.
+  // GenACV satisfies this requirement via unroll_reverse_dag_from_root(rt,grp)
+  // and MFMC satisfies using ordered pyramid groups.
+  // > ACV can use a more streamlined implementation since a peer DAG can
+  //   bypass sum_L_shared accumulations (first loop below).
+  // > We omit the last group (all-models) since (i) there is no HF increment
+  //   (delta_N_G[numApprox] is assigned 0 in approx_increments()) and
+  //   (ii) any HF refinement would be out of range for L accumulations.
+
+  size_t m, g, num_L_groups = modelGroups.size() - 1, last_m_index;
+  unsigned short model, last_model;
+  IntRealMatrixArrayMap::const_iterator g_cit;
+  IntRealMatrixMap::iterator s_it;
+  for (g=0; g<num_L_groups; ++g) {
+    const SizetArray&  num_G_g =  N_G_actual[g];
+    if (zeros(num_G_g)) continue; // all-models group has delta = 0
+    const UShortArray& group_g = modelGroups[g];
+    last_m_index = group_g.size() - 1; // this index defines refined set
+
+    for (m=0; m<last_m_index; ++m) {
+      model = group_g[m];
+      // counters (span all moments):
+      increment_samples(N_L_actual_shared[model], num_G_g);
+      // accumulators for each moment:
+      for (s_it =sum_L_shared.begin(), g_cit =sum_G.begin();
+	   s_it!=sum_L_shared.end() && g_cit!=sum_G.end(); ++g_cit, ++s_it)
+	increment_sums(s_it->second[model], g_cit->second[g][m], numFunctions);
+    }
+  }
+
+  // avoid redundant accumulations: copy shared state prior to refinement
+  // (includes inflations from HF to L_shared)
+  sum_L_refined      = sum_L_shared;
+  N_L_actual_refined = N_L_actual_shared;
+
+  for (g=0; g<num_L_groups; ++g) {
+    const SizetArray&  num_G_g =  N_G_actual[g];
+    if (zeros(num_G_g)) continue; // all-models group has delta = 0
+    const UShortArray& group_g = modelGroups[g];
+    // Note: HF model index is out of range for N_L --> num_G_g=0 protects this
+    last_m_index = group_g.size() - 1;  last_model = group_g[last_m_index];
+    // counters (span all moments):
+    increment_samples(N_L_actual_refined[last_model], num_G_g);
+    // accumulators for each moment:
+    for (s_it =sum_L_refined.begin(), g_cit =sum_G.begin();
+	 s_it!=sum_L_refined.end() && g_cit!=sum_G.end(); ++s_it, ++g_cit)
+      increment_sums(s_it->second[last_model], g_cit->second[g][last_m_index],
+		     numFunctions);
   }
 }
 

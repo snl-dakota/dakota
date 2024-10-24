@@ -452,77 +452,24 @@ approx_increments(IntRealMatrixMap& sum_L_baseline,
   clear_batches();
   // Map from "horizontal" group incr to "vertical" model incr (see JCP: ACV)
   sum_L_shared = sum_L_baseline;  inflate(N_H_actual, N_L_actual_shared);
-  overlay_hierarchical_group_sums(sum_G,         N_G_actual,
-				  sum_L_shared,  N_L_actual_shared,
-				  sum_L_refined, N_L_actual_refined);
+  overlay_group_sums(sum_G,         N_G_actual,
+		     sum_L_shared,  N_L_actual_shared,
+		     sum_L_refined, N_L_actual_refined);
 }
 
 
 void NonDMultifidelitySampling::
-overlay_hierarchical_group_sums(const IntRealMatrixArrayMap& sum_G,
-				const Sizet2DArray& N_G_actual,
-				IntRealMatrixMap& sum_L_shared,
-				Sizet2DArray& N_L_actual_shared,
-				IntRealMatrixMap& sum_L_refined,
-				Sizet2DArray& N_L_actual_refined)
-{
-  // omit the last group (all-models) since (i) there is no HF increment
-  // (delta_N_G[numApprox] is assigned 0 in approx_increments()) and
-  // (ii) any HF refinement would be out of range for L accumulations.
-
-  size_t m, g, num_L_groups = modelGroups.size() - 1, last_m_index;
-  unsigned short model, last_model;
-  IntRealMatrixArrayMap::const_iterator g_cit;
-  IntRealMatrixMap::iterator s_it;
-  for (g=0; g<num_L_groups; ++g) {
-    const SizetArray&  num_G_g =  N_G_actual[g];
-    if (zeros(num_G_g)) continue; // all-models group has delta = 0
-    const UShortArray& group_g = modelGroups[g];
-    last_m_index = group_g.size() - 1; // this index defines refined set
-
-    for (m=0; m<last_m_index; ++m) {
-      model = group_g[m];
-      // counters (span all moments):
-      increment_samples(N_L_actual_shared[model], num_G_g);
-      // accumulators for each moment:
-      for (s_it =sum_L_shared.begin(), g_cit =sum_G.begin();
-	   s_it!=sum_L_shared.end() && g_cit!=sum_G.end(); ++g_cit, ++s_it)
-	increment_sums(s_it->second[model], g_cit->second[g][m], numFunctions);
-    }
-  }
-
-  // avoid redundant accumulations: copy shared state prior to refinement
-  // (includes inflations from HF to L_shared)
-  sum_L_refined      = sum_L_shared;
-  N_L_actual_refined = N_L_actual_shared;
-
-  for (g=0; g<num_L_groups; ++g) {
-    const SizetArray&  num_G_g =  N_G_actual[g];
-    if (zeros(num_G_g)) continue; // all-models group has delta = 0
-    const UShortArray& group_g = modelGroups[g];
-    // Note: HF model index is out of range for N_L --> num_G_g=0 protects this
-    last_m_index = group_g.size() - 1;  last_model = group_g[last_m_index];
-    // counters (span all moments):
-    increment_samples(N_L_actual_refined[last_model], num_G_g);
-    // accumulators for each moment:
-    for (s_it =sum_L_refined.begin(), g_cit =sum_G.begin();
-	 s_it!=sum_L_refined.end() && g_cit!=sum_G.end(); ++s_it, ++g_cit)
-      increment_sums(s_it->second[last_model], g_cit->second[g][last_m_index],
-		     numFunctions);
-  }
-}
-
-
-void NonDMultifidelitySampling::
-mf_raw_moments(IntRealMatrixMap& sum_L_covar,  IntRealVectorMap& sum_H_covar,
-	       IntRealMatrixMap& sum_LL_covar, IntRealMatrixMap& sum_LH_covar,
-	       const SizetArray& N_covar,    //const MFSolutionData& soln,
+mf_raw_moments(const IntRealMatrixMap& sum_L_covar,
+	       const IntRealVectorMap& sum_H_covar,
+	       const IntRealMatrixMap& sum_LL_covar,
+	       const IntRealMatrixMap& sum_LH_covar, const SizetArray& N_covar,
+	       //const MFSolutionData& soln,
 	       RealVector2DArray& beta)
 {
   // ------------------------------------
   // Compute/apply CV to estimate moments
   // ------------------------------------
-  //precompute_mf_control(soln.solution_ratios());
+  //precompute_mf_control(soln.solution_variables());
 
   // Note: ACV-like numerical solutions solve all-at-once for beta as a vector
   // > beta = [ C o F ]^{-1} [diag(F) o c] which, for diagonal F in MFMC,
@@ -532,11 +479,11 @@ mf_raw_moments(IntRealMatrixMap& sum_L_covar,  IntRealVectorMap& sum_H_covar,
 
   Real sum_H_mq;  size_t approx, qoi, N_base_q;
   for (int mom=1; mom<=4; ++mom) {
-    RealMatrix&     sum_L_m =  sum_L_covar[mom];
-    RealVector&     sum_H_m =  sum_H_covar[mom];
-    RealMatrix&    sum_LL_m = sum_LL_covar[mom];
-    RealMatrix&    sum_LH_m = sum_LH_covar[mom];
-    RealVectorArray& beta_m =         beta[mom-1];
+    const RealMatrix&  sum_L_m =  sum_L_covar.at(mom);
+    const RealVector&  sum_H_m =  sum_H_covar.at(mom);
+    const RealMatrix& sum_LL_m = sum_LL_covar.at(mom);
+    const RealMatrix& sum_LH_m = sum_LH_covar.at(mom);
+    RealVectorArray&    beta_m =         beta[mom-1];
     beta_m.resize(numFunctions);
 
     for (qoi=0; qoi<numFunctions; ++qoi) {

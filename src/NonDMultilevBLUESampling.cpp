@@ -1270,8 +1270,8 @@ finalize_counts(const Sizet2DArray& N_G_actual, const SizetArray& N_G_alloc)
 
 
 void NonDMultilevBLUESampling::
-blue_raw_moments(IntRealMatrixArrayMap& sum_G_online,
-		 IntRealSymMatrix2DArrayMap& sum_GG_online,
+blue_raw_moments(const IntRealMatrixArrayMap& sum_G_online,
+		 const IntRealSymMatrix2DArrayMap& sum_GG_online,
 		 const Sizet2DArray& N_G_online, RealMatrix& H_raw_mom)
 {
   // For ONLINE_PILOT where covar and sums use latest accumulations
@@ -1280,8 +1280,8 @@ blue_raw_moments(IntRealMatrixArrayMap& sum_G_online,
   for (int mom=1; mom<=4; ++mom) {
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Moment " << mom << " estimator:\n";
-    RealMatrixArray&       sum_G_online_m  = sum_G_online[mom];
-    RealSymMatrix2DArray& sum_GG_online_m = sum_GG_online[mom];
+    const RealMatrixArray&       sum_G_online_m  = sum_G_online.at(mom);
+    const RealSymMatrix2DArray& sum_GG_online_m = sum_GG_online.at(mom);
 
     if (mom == 1) // Use online covar + online sum to solve for mean
       compute_mu_hat(covGGinv, sum_G_online_m, N_G_online, mu_hat);
@@ -1300,11 +1300,11 @@ blue_raw_moments(IntRealMatrixArrayMap& sum_G_online,
 
 
 void NonDMultilevBLUESampling::
-blue_raw_moments(IntRealMatrixArrayMap& sum_G_offline,
-		 IntRealSymMatrix2DArrayMap& sum_GG_offline,
+blue_raw_moments(const IntRealMatrixArrayMap& sum_G_offline,
+		 const IntRealSymMatrix2DArrayMap& sum_GG_offline,
 		 const Sizet2DArray& N_G_offline,
-		 IntRealMatrixArrayMap& sum_G_online,
-		 IntRealSymMatrix2DArrayMap& sum_GG_online,
+		 const IntRealMatrixArrayMap& sum_G_online,
+		 const IntRealSymMatrix2DArrayMap& sum_GG_online,
 		 const Sizet2DArray& N_G_online, RealMatrix& H_raw_mom)
 {
   // For OFFLINE_PILOT where covar is offline and sums are online
@@ -1322,8 +1322,8 @@ blue_raw_moments(IntRealMatrixArrayMap& sum_G_offline,
   for (int mom=1; mom<=4; ++mom) {
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Moment " << mom << " estimator:\n";
-    RealMatrixArray&       sum_G_online_m  = sum_G_online[mom];
-    RealSymMatrix2DArray& sum_GG_online_m = sum_GG_online[mom];
+    const RealMatrixArray&       sum_G_online_m  = sum_G_online.at(mom);
+    const RealSymMatrix2DArray& sum_GG_online_m = sum_GG_online.at(mom);
 
     // This approach has consistency in that it uses the same var/covar data
     // throughout, but inconsistency in mixing offline group covariances with
@@ -1333,8 +1333,8 @@ blue_raw_moments(IntRealMatrixArrayMap& sum_G_offline,
     if (mom == 1) // Use offline covar + online sum to solve for mean
       compute_mu_hat(covGGinv, sum_G_online_m, N_G_online, mu_hat);
     else {
-      RealMatrixArray&       sum_G_offline_m  = sum_G_offline[mom];
-      RealSymMatrix2DArray& sum_GG_offline_m = sum_GG_offline[mom];
+      const RealMatrixArray&       sum_G_offline_m  = sum_G_offline.at(mom);
+      const RealSymMatrix2DArray& sum_GG_offline_m = sum_GG_offline.at(mom);
       // compute covariances for higher-order moments using offline sums
       RealSymMatrix2DArray cov_GG, cov_GG_inv;
       if (pilotGroupSampling == SHARED_PILOT)

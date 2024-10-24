@@ -115,14 +115,14 @@ protected:
 			      const SizetArray& N_G_alloc,
 			      SizetArray& delta_N_G);
 
-  void blue_raw_moments(IntRealMatrixArrayMap& sum_G_online,
-			IntRealSymMatrix2DArrayMap& sum_GG_online,
+  void blue_raw_moments(const IntRealMatrixArrayMap& sum_G_online,
+			const IntRealSymMatrix2DArrayMap& sum_GG_online,
 			const Sizet2DArray& N_G_online, RealMatrix& H_raw_mom);
-  void blue_raw_moments(IntRealMatrixArrayMap& sum_G_offline,
-			IntRealSymMatrix2DArrayMap& sum_GG_offline,
+  void blue_raw_moments(const IntRealMatrixArrayMap& sum_G_offline,
+			const IntRealSymMatrix2DArrayMap& sum_GG_offline,
 			const Sizet2DArray& N_G_offline,
-			IntRealMatrixArrayMap& sum_G_online,
-			IntRealSymMatrix2DArrayMap& sum_GG_online,
+			const IntRealMatrixArrayMap& sum_G_online,
+			const IntRealSymMatrix2DArrayMap& sum_GG_online,
 			const Sizet2DArray& N_G_online, RealMatrix& H_raw_mom);
 
   void finalize_counts(const Sizet2DArray& N_G_actual,

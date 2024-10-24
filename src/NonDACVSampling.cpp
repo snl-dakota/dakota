@@ -463,9 +463,10 @@ overlay_peer_group_sums(const IntRealMatrixArrayMap& sum_G,
 
 
 void NonDACVSampling::
-acv_raw_moments(IntRealMatrixMap& sum_L_covar, IntRealVectorMap& sum_H_covar,
-		IntRealSymMatrixArrayMap& sum_LL_covar,
-		IntRealMatrixMap& sum_LH_covar, const SizetArray& N_covar,
+acv_raw_moments(const IntRealMatrixMap& sum_L_covar,
+		const IntRealVectorMap& sum_H_covar,
+		const IntRealSymMatrixArrayMap& sum_LL_covar,
+		const IntRealMatrixMap& sum_LH_covar, const SizetArray& N_covar,
 		const MFSolutionData& soln, RealVector2DArray& beta)
 {
   // ------------------------------
@@ -475,11 +476,11 @@ acv_raw_moments(IntRealMatrixMap& sum_L_covar, IntRealVectorMap& sum_H_covar,
 
   size_t qoi;
   for (int mom=1; mom<=4; ++mom) {
-    RealMatrix&          sum_L_m =  sum_L_covar[mom];
-    RealVector&          sum_H_m =  sum_H_covar[mom];
-    RealSymMatrixArray& sum_LL_m = sum_LL_covar[mom];
-    RealMatrix&         sum_LH_m = sum_LH_covar[mom];
-    RealVectorArray&      beta_m =            beta[mom-1];
+    const RealMatrix&          sum_L_m =  sum_L_covar.at(mom);
+    const RealVector&          sum_H_m =  sum_H_covar.at(mom);
+    const RealSymMatrixArray& sum_LL_m = sum_LL_covar.at(mom);
+    const RealMatrix&         sum_LH_m = sum_LH_covar.at(mom);
+    RealVectorArray&            beta_m =            beta[mom-1];
     beta_m.resize(numFunctions);
     for (qoi=0; qoi<numFunctions; ++qoi)
       compute_acv_control(sum_L_m, sum_H_m[qoi], sum_LL_m[qoi], sum_LH_m,

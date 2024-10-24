@@ -494,7 +494,7 @@ void NonDGenACVSampling::update_model_groups()
     unroll_reverse_dag_from_root(numApprox, modelGroups[num_approx]);
     break;
   case SUBMETHOD_ACV_IS:  case SUBMETHOD_ACV_RD: {
-    // same model groupings, only differ in z1/z2 sample set definitions
+    // IS,RD = same model groupings, only differ in z1/z2 sample sets
     unsigned short root;
     for (g=0; g<num_approx; ++g) {
       root = approx_set[g];
@@ -940,81 +940,29 @@ approx_increments(IntRealMatrixMap& sum_L_baseline,
   Sizet2DArray     N_G_actual;  initialize_group_counts(N_G_actual);
   accumulate_group_sums(sum_G, N_G_actual, batchResponsesMap);
   clear_batches();
-  // Map from "horizontal" group incr to "vertical" model incr (see JCP: ACV)
+  // Map from "horizontal" group incr to "vertical" model incr (see JCP: ACV).
+  // > Base class overlay_group_sums() can be used for arbitrary DAG
+  //   since modelGroups are defined with each group's root at the end
+  //   (see unroll_reverse_dag_from_root(root,group)).  This is necessary
+  //   to correctly define the "shared" accumulations.
   sum_L_shared = sum_L_baseline;
   overlay_group_sums(sum_G,         N_G_actual,
 		     sum_L_shared,  N_L_actual_shared,
-		     sum_L_refined, N_L_actual_refined); // ***
-}
-
-
-// *** TO DO ***
-// *** TO DO ***: how did this work previously for general DAG ???
-// *** TO DO ***
-void NonDGenACVSampling::
-overlay_group_sums(const IntRealMatrixArrayMap& sum_G,
-		   const Sizet2DArray& N_G_actual,
-		   IntRealMatrixMap& sum_L_shared,
-		   Sizet2DArray& N_L_actual_shared,
-		   IntRealMatrixMap& sum_L_refined,
-		   Sizet2DArray& N_L_actual_refined)
-{
-  // omit the last group (all-models) since (i) there is no HF increment
-  // (delta_N_G[numApprox] is assigned 0 in approx_increments()) and
-  // (ii) any HF refinement would be out of range for L accumulations.
-
-  size_t m, g, num_L_groups = modelGroups.size() - 1, last_m_index;
-  unsigned short model, last_model;
-  IntRealMatrixArrayMap::const_iterator g_cit;
-  IntRealMatrixMap::iterator s_it;
-  for (g=0; g<num_L_groups; ++g) {
-    const SizetArray&  num_G_g =  N_G_actual[g];
-    if (zeros(num_G_g)) continue; // all-models group has delta = 0
-    const UShortArray& group_g = modelGroups[g];
-    last_m_index = group_g.size() - 1; // this index defines refined set
-
-    for (m=0; m<last_m_index; ++m) {
-      model = group_g[m];
-      // counters (span all moments):
-      increment_samples(N_L_actual_shared[model], num_G_g);
-      // accumulators for each moment:
-      for (s_it =sum_L_shared.begin(), g_cit =sum_G.begin();
-	   s_it!=sum_L_shared.end() && g_cit!=sum_G.end(); ++g_cit, ++s_it)
-	increment_sums(s_it->second[model], g_cit->second[g][m], numFunctions);
-    }
-  }
-
-  // avoid redundant accumulations: copy shared state prior to refinement
-  // (includes inflations from HF to L_shared)
-  sum_L_refined      = sum_L_shared;
-  N_L_actual_refined = N_L_actual_shared;
-
-  for (g=0; g<num_L_groups; ++g) {
-    const SizetArray&  num_G_g =  N_G_actual[g];
-    if (zeros(num_G_g)) continue; // all-models group has delta = 0
-    const UShortArray& group_g = modelGroups[g];
-    // Note: HF model index is out of range for N_L --> num_G_g=0 protects this
-    last_m_index = group_g.size() - 1;  last_model = group_g[last_m_index];
-    // counters (span all moments):
-    increment_samples(N_L_actual_refined[last_model], num_G_g);
-    // accumulators for each moment:
-    for (s_it =sum_L_refined.begin(), g_cit =sum_G.begin();
-	 s_it!=sum_L_refined.end() && g_cit!=sum_G.end(); ++s_it, ++g_cit)
-      increment_sums(s_it->second[last_model], g_cit->second[g][last_m_index],
-		     numFunctions);
-  }
+		     sum_L_refined, N_L_actual_refined);
 }
 
 
 void NonDGenACVSampling::
-genacv_raw_moments(IntRealMatrixMap& sum_L_covar, IntRealVectorMap& sum_H_covar,
-		   IntRealSymMatrixArrayMap& sum_LL_covar,
-		   IntRealMatrixMap& sum_LH_covar, const SizetArray& N_covar,
-		   IntRealVectorMap& sum_H_baseline,
+genacv_raw_moments(const IntRealMatrixMap& sum_L_covar,
+		   const IntRealVectorMap& sum_H_covar,
+		   const IntRealSymMatrixArrayMap& sum_LL_covar,
+		   const IntRealMatrixMap& sum_LH_covar,
+		   const SizetArray& N_covar,
+		   const IntRealVectorMap& sum_H_baseline,
 		   const SizetArray& N_baseline,
-		   IntRealMatrixMap& sum_L_shared,
+		   const IntRealMatrixMap& sum_L_shared,
 		   const Sizet2DArray& N_L_shared, 
-		   IntRealMatrixMap& sum_L_refined,
+		   const IntRealMatrixMap& sum_L_refined,
 		   const Sizet2DArray& N_L_refined, const MFSolutionData& soln)
 {
   // no need to check optSubProblemForm since MFSolutionData stores as N_vec
@@ -1024,13 +972,13 @@ genacv_raw_moments(IntRealMatrixMap& sum_L_covar, IntRealVectorMap& sum_H_covar,
   size_t qoi, approx, inflate_approx, num_approx = approx_set.size();
   RealMatrix H_raw_mom(4, numFunctions);  RealVector beta(num_approx);
   for (int mom=1; mom<=4; ++mom) {
-    RealMatrix&          sum_L_m =    sum_L_covar[mom];
-    RealVector&          sum_H_m =    sum_H_covar[mom];
-    RealSymMatrixArray& sum_LL_m =   sum_LL_covar[mom];
-    RealMatrix&         sum_LH_m =   sum_LH_covar[mom];
-    RealVector&     sum_H_base_m = sum_H_baseline[mom];
-    RealMatrix&       sum_L_sh_m =   sum_L_shared[mom];
-    RealMatrix&      sum_L_ref_m =  sum_L_refined[mom];
+    const RealMatrix&          sum_L_m =    sum_L_covar.at(mom);
+    const RealVector&          sum_H_m =    sum_H_covar.at(mom);
+    const RealSymMatrixArray& sum_LL_m =   sum_LL_covar.at(mom);
+    const RealMatrix&         sum_LH_m =   sum_LH_covar.at(mom);
+    const RealVector&     sum_H_base_m = sum_H_baseline.at(mom);
+    const RealMatrix&       sum_L_sh_m =   sum_L_shared.at(mom);
+    const RealMatrix&      sum_L_ref_m =  sum_L_refined.at(mom);
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Moment " << mom << " estimator:\n";
     for (qoi=0; qoi<numFunctions; ++qoi) {

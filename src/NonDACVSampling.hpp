@@ -97,10 +97,11 @@ protected:
 			   const RealVector& fn_vals, const ShortArray& asv,
 			   size_t approx);
 
-  void compute_acv_control_covariances(RealMatrix& sum_L, Real sum_H_q,
-				       RealSymMatrix& sum_LL_q,
-				       RealMatrix& sum_LH, size_t N_shared_q,
-				       size_t qoi, RealSymMatrix& cov_LL,
+  void compute_acv_control_covariances(const RealMatrix& sum_L, Real sum_H_q,
+				       const RealSymMatrix& sum_LL_q,
+				       const RealMatrix& sum_LH,
+				       size_t N_shared_q, size_t qoi,
+				       RealSymMatrix& cov_LL,
 				       RealMatrix& cov_LH);
 
   void update_projected_lf_samples(const MFSolutionData& soln,
@@ -162,19 +163,19 @@ private:
   void update_model_groups();
   void update_model_groups(const SizetArray& approx_sequence);
 
-  void acv_raw_moments(IntRealMatrixMap& sum_L_covar,
-		       IntRealVectorMap& sum_H_covar,
-		       IntRealSymMatrixArrayMap& sum_LL_covar,
-		       IntRealMatrixMap& sum_LH_covar,
+  void acv_raw_moments(const IntRealMatrixMap& sum_L_covar,
+		       const IntRealVectorMap& sum_H_covar,
+		       const IntRealSymMatrixArrayMap& sum_LL_covar,
+		       const IntRealMatrixMap& sum_LH_covar,
 		       const SizetArray& N_covar,
 		       const MFSolutionData& soln, RealVector2DArray& beta);
 
   void precompute_acv_controls(const RealVector& avg_eval_ratios);
 
-  void compute_acv_control(RealMatrix& sum_L_m, Real sum_H_mq,
-			   RealSymMatrix& sum_LL_mq, RealMatrix& sum_LH_m,
-			   size_t N_shared_q, size_t mom, size_t qoi,
-			   RealVector& beta);
+  void compute_acv_control(const RealMatrix& sum_L_m, Real sum_H_mq,
+			   const RealSymMatrix& sum_LL_mq,
+			   const RealMatrix& sum_LH_m, size_t N_shared_q,
+			   size_t mom, size_t qoi, RealVector& beta);
 
   void analytic_initialization_from_mfmc(const RealMatrix& rho2_LH,
 					 Real avg_N_H, MFSolutionData& soln);
@@ -678,10 +679,11 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
 
 
 inline void NonDACVSampling::
-compute_acv_control_covariances(RealMatrix& sum_L, Real sum_H_q,
-				RealSymMatrix& sum_LL_q, RealMatrix& sum_LH,
-				size_t N_shared_q, size_t qoi,
-				RealSymMatrix& cov_LL, RealMatrix& cov_LH)
+compute_acv_control_covariances(const RealMatrix& sum_L, Real sum_H_q,
+				const RealSymMatrix& sum_LL_q,
+				const RealMatrix& sum_LH, size_t N_shared_q,
+				size_t qoi, RealSymMatrix& cov_LL,
+				RealMatrix& cov_LH)
 {
   // compute cov_LL, cov_LH, var_H across numApprox for a particular QoI
   // > cov_LH is sized for all qoi but only 1 row is used
@@ -722,8 +724,8 @@ precompute_acv_controls(const RealVector& avg_eval_ratios)
 
 
 inline void NonDACVSampling::
-compute_acv_control(RealMatrix& sum_L_m, Real sum_H_mq,
-		    RealSymMatrix& sum_LL_mq, RealMatrix& sum_LH_m,
+compute_acv_control(const RealMatrix& sum_L_m, Real sum_H_mq,
+		    const RealSymMatrix& sum_LL_mq, const RealMatrix& sum_LH_m,
 		    size_t N_shared_q, size_t mom, size_t qoi, RealVector& beta)
 {
   if (mom == 1) // online|offline covariances available for mean

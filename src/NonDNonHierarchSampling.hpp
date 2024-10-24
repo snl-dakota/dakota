@@ -543,6 +543,13 @@ protected:
   void group_to_root_reverse_dag(const UShortArray& model_group,
 				 unsigned short& root, UShortSet& rev_dag);
 
+  void overlay_group_sums(const IntRealMatrixArrayMap& sum_G,
+			  const Sizet2DArray& N_G_actual,
+			  IntRealMatrixMap& sum_L_shared,
+			  Sizet2DArray& N_L_actual_shared,
+			  IntRealMatrixMap& sum_L_refined,
+			  Sizet2DArray& N_L_actual_refined);
+
   //bool mfmc_model_grouping(const UShortArray& model_group) const;
   //bool cvmc_model_grouping(const UShortArray& model_group) const;
   void mfmc_model_group(size_t last_index, UShortArray& model_group) const;
@@ -615,11 +622,11 @@ protected:
   bool ordered_approx_sequence(const RealMatrix& metric,
 			       const UShortArray& approx_set);
 
-  void raw_moments(IntRealVectorMap& sum_H_baseline,
+  void raw_moments(const IntRealVectorMap& sum_H_baseline,
 		   const SizetArray& N_baseline,
-		   IntRealMatrixMap& sum_L_shared,
+		   const IntRealMatrixMap& sum_L_shared,
 		   const Sizet2DArray& N_L_shared,
-		   IntRealMatrixMap& sum_L_refined,
+		   const IntRealMatrixMap& sum_L_refined,
 		   const Sizet2DArray& N_L_refined,
 		   const RealVector2DArray& beta);
 
