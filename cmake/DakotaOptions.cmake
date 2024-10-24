@@ -89,6 +89,12 @@ option(DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY
   "Dakota Python direct interface uses NumPy (only has effect when DAKOTA_PYTHON_DIRECT_INTERFACE is ON)" 
   ON
   )
+
+# Default off the legacy direct Python interface. It doesn't work with Numpy 2,
+# and we don't intend to update it. Option is ignored if DAKOTA_PYTHON_DIRECT_INTERFACE
+# is not ON.
+option(DAKOTA_PYTHON_DIRECT_INTERFACE_LEGACY "Dakota legacy Python direct interface; default OFF" OFF)
+
 # Top-level dakota.environment Python wrapper defaults off to avoid
 # Python library deps
 option(DAKOTA_PYTHON_WRAPPER

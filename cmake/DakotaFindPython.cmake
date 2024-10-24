@@ -9,15 +9,41 @@ macro(dakota_find_python)
 	DAKOTA_PYTHON_WRAPPER OR DAKOTA_PYBIND11)
       message(STATUS "Dakota enabling Python (Development) for direct or surrogate interface")
       list(APPEND dakota_python_components Development)
+      
+      if (DAKOTA_PYTHON_DIRECT_INTERFACE_LEGACY)
+        if (DAKOTA_PYTHON_DIRECT_INTERFACE)
+		message(STATUS "Dakota enabling legacy Python direct interface")
+	else()
+		message(WARNING "Request to enable Dakota's legacy Python direct interface ignored; set DAKOTA_PYTHON_DIRECT_INTERFACE to ON to use it")
+        endif()
+      endif()
 
       if (DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY)
-	message(STATUS "Dakota enabling Python direct interface with NumPy")
-	list(APPEND dakota_python_components NumPy)
+	if (DAKOTA_PYTHON_DIRECT_INTERFACE)
+          message(STATUS "Dakota enabling Python direct interface with NumPy")
+	  list(APPEND dakota_python_components NumPy)
+	else()
+		message(WARNING "Request to enable NumPy in Dakota's Python direct interface ignored; set DAKOTA_PYTHON_DIRECT_INTERFACE to ON to use it")
+	endif()
       endif()
 
     endif()
 
     find_package(Python REQUIRED ${dakota_python_components})
+
+    if (DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY)
+	    message(STATUS "NumPy version ${Python_NumPy_VERSION} found at ${Python_NumPy_INCLUDE_DIRS}")
+        if (DAKOTA_PYTHON_DIRECT_INTERFACE_LEGACY)
+          string(FIND ${Python_NumPy_VERSION} "." first_dot)
+	  if(first_dot GREATER -1)
+	    string(SUBSTRING ${Python_NumPy_VERSION} 0 ${first_dot} MAJOR_VERSION)
+	    if(MAJOR_VERSION GREATER 1)
+              message(FATAL_ERROR "Dakota legacy Python direct interface incompatible with NumPy version 2+; set DAKOTA_PYTHON_DIRECT_INTERFACE_LEGACY to OFF")
+	    endif()
+	  endif()
+        endif()
+    endif()
+
 
     # pybind11, C3, Acro, etc., use older CMake FindPythonInterp, so we
     # coerce it to use same as Dakota; more complex situations may

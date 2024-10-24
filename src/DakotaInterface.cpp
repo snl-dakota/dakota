@@ -26,7 +26,7 @@
 #ifdef DAKOTA_MATLAB
 #include "MatlabInterface.hpp"
 #endif // DAKOTA_MATLAB
-#ifdef DAKOTA_PYTHON
+#ifdef DAKOTA_PYTHON_LEGACY
 #include "PythonInterface.hpp"
 #endif // DAKOTA_PYTHON
 #ifdef DAKOTA_PYBIND11
@@ -216,7 +216,7 @@ std::shared_ptr<Interface> Interface::get_interface(ProblemDescDB& problem_db)
 #elif defined(_WIN32) // or _MSC_VER (native MSVS compilers)
     return std::make_shared<SpawnApplicInterface>(problem_db);
 #else
-    Cerr << "Fork interface requested, but not enabled in this DAKOTA "
+    Cerr << "Fork interface requested, but not enabled in this Dakota "
 	 << "executable." << std::endl;
     return std::shared_ptr<Interface>();
 #endif
@@ -241,17 +241,17 @@ std::shared_ptr<Interface> Interface::get_interface(ProblemDescDB& problem_db)
     return std::make_shared<MatlabInterface>(problem_db);
 #else
     Cerr << "Direct Matlab interface requested, but not enabled in this "
-	 << "DAKOTA executable." << std::endl;
+	 << "Dakota executable." << std::endl;
     return std::shared_ptr<Interface>();
 #endif
   }
 
   else if (interface_type == LEGACY_PYTHON_INTERFACE) {
-#ifdef DAKOTA_PYTHON
+#ifdef DAKOTA_PYTHON_LEGACY
     return std::make_shared<PythonInterface>(problem_db);
 #else
     Cerr << "Direct Legacy Python interface requested, but not enabled in this "
-	 << "DAKOTA executable." << std::endl;
+	 << "Dakota executable." << std::endl;
     return std::shared_ptr<Interface>();
 #endif
   }
@@ -261,7 +261,7 @@ std::shared_ptr<Interface> Interface::get_interface(ProblemDescDB& problem_db)
     return std::make_shared<Pybind11Interface>(problem_db);
 #else
     Cerr << "Python interface requested, but not enabled in this "
-	 << "DAKOTA executable." << std::endl;
+	 << "Dakota executable." << std::endl;
     return std::shared_ptr<Interface>();
 #endif
   }
@@ -271,7 +271,7 @@ std::shared_ptr<Interface> Interface::get_interface(ProblemDescDB& problem_db)
     return std::make_shared<ScilabInterface>(problem_db);
 #else
     Cerr << "Direct Scilab interface requested, but not enabled in this "
-	 << "DAKOTA executable." << std::endl;
+	 << "Dakota executable." << std::endl;
     return std::shared_ptr<Interface>();
 #endif
   }
@@ -527,7 +527,7 @@ init_algebraic_mappings(const Variables& vars, const Response& response)
     //size_t adv_index = find_index(adv_labels, algebraicVarTags[i]);
     if (acv_index == _NPOS) { // && adv_index == _NPOS) {
       Cerr << "\nError: AMPL column label " << algebraicVarTags[i] << " does "
-	   <<"not exist in DAKOTA continuous variable descriptors.\n"
+	   <<"not exist in Dakota continuous variable descriptors.\n"
 	   << std::endl;
       abort_handler(INTERFACE_ERROR);
     }
@@ -544,7 +544,7 @@ init_algebraic_mappings(const Variables& vars, const Response& response)
     size_t fn_index = Pecos::find_index(fn_labels, algebraicFnTags[i]);
     if (fn_index == _NPOS) {
       Cerr << "\nError: AMPL row label " << algebraicFnTags[i] << " does not "
-	   <<"exist in DAKOTA response descriptors.\n" << std::endl;
+	   <<"exist in Dakota response descriptors.\n" << std::endl;
       abort_handler(INTERFACE_ERROR);
     }
     else
