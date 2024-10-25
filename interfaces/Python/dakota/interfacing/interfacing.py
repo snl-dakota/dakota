@@ -53,6 +53,9 @@ class ResultsUpdateError(Exception):
 class BadTypesOverride(Exception):
     pass
 
+class EvalNumberError(Exception):
+    pass
+
 # Constants
 # specify an unnamed results file
 UNNAMED = True
@@ -67,6 +70,7 @@ Key = NewType('Key', Union[int, str])
 VarValue = NewType('VarValue', Union[int, str, float])
 Gradient = NewType('Gradient', Iterable[float])
 Hessian = NewType ('Hessian', Iterable[Iterable[float]])
+FileFormat = NewType('FileFormat', int)
 
 #### Class definitions
 
@@ -703,8 +707,10 @@ class BatchSplitter:
         parameters_file (str): Name of batch parameters file; if none, 1st command line argument is used
 
     Attributes:
-        parameters_file: Name of parameters file
+        batch_id: ID of the batch
+        eval_nums: List of evaluation numbers
         format: format of parameters file ("DAKOTA" or "APREPRO")
+        parameters_file: Name of parameters file
     """
     def __init__(self, parameters_file: str=None):
         self._parameters_file = sys.argv[1] if parameters_file is None else parameters_file
@@ -760,9 +766,12 @@ class BatchSplitter:
         Lines end with newline
         """
         lines = []
-        start_line_num = 1 if index == 0 else self._ending_line_numbers[index-1]
-        for i in range(start_line_num, self._ending_line_numbers[index]):
-            lines.append(linecache.getline(self._parameters_file, i))
+        try:
+            start_line_num = 1 if index == 0 else self._ending_line_numbers[index-1]
+            for i in range(start_line_num, self._ending_line_numbers[index]):
+                lines.append(linecache.getline(self._parameters_file, i))
+        except IndexError:
+            raise IndexError(f"no evaluate with index {index}")
         return lines
 
     @property
@@ -786,15 +795,24 @@ class BatchSplitter:
         return self._parameters_file
     
     @property
-    def format(self) -> str:
-        return self._format
+    def format(self) -> FileFormat:
+        return STANDARD if self._format == "DAKOTA" else APREPRO
 
-    def write(self, index: int, filename: str) -> None:
-        """Write parameter set with index to filename"""
-        lines = self[index]
+    def write(self, filename:  str, index: int = None, eval_num: int = None) -> None:
+        """Write the parameter set referred to either by 0-based index or Dakota evaluation number to file"""
+        if (index is None and eval_num is None) or (index is not None and eval_num is not None):
+            raise ValueError("BatchSplitter.write must be called with either an index or eval_num")
+        idx = self._index_from_eval_num(eval_num) if eval_num is not None else index
+        lines = self[idx]
         with open(filename, "w") as f:
             f.writelines(lines)
-
+    
+    def _index_from_eval_num(self, eval_num: int) -> int:
+        try:
+            idx = self._eval_nums.index(eval_num)
+        except ValueError:
+            raise EvalNumberError(f"Batch does not contain a parameter set with evaluation number {eval_num}")
+        return idx
 
 ### Free functions for reading and writing parameters and results files
 
