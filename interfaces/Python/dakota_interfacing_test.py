@@ -1030,7 +1030,7 @@ class TestBatchSplitter(unittest.TestCase):
 
     def test_format_dakota_batch_params(self):
         b = di.BatchSplitter(self.dakota_batch_params_file)
-        self.assertEqual(b.format, "DAKOTA")
+        self.assertEqual(b.format, di.STANDARD)
 
     def test_get_dakota_batch_params(self):
         b = di.BatchSplitter(self.dakota_batch_params_file)
@@ -1044,7 +1044,7 @@ class TestBatchSplitter(unittest.TestCase):
 
     def test_format_aprepro_batch_params(self):
         b = di.BatchSplitter(self.aprepro_batch_params_file)
-        self.assertEqual(b.format, "APREPRO")
+        self.assertEqual(b.format, di.APREPRO)
  
     def test_get_aprepro_batch_params(self):
         b = di.BatchSplitter(self.aprepro_batch_params_file)
@@ -1056,7 +1056,41 @@ class TestBatchSplitter(unittest.TestCase):
         self.assertEqual(b.batch_id, "1")
         self.assertListEqual(b.eval_nums,[1, 2])
 
+    def test_write_by_index(self):
+        filename = "test_write_by_index.in"
+        b = di.BatchSplitter(self.dakota_batch_params_file)
+        b.write(filename, index=0)
+        with open(filename, "r") as f:
+            lines = f.readlines()
+        self.assertTrue("1:1 eval_id" in lines[9])
 
-    
+    def test_write_by_eval_num(self):
+        filename = "test_write_by_index.in"
+        b = di.BatchSplitter(self.dakota_batch_params_file)
+        b.write(filename, eval_num=2)
+        with open(filename, "r") as f:
+            lines = f.readlines()
+        self.assertTrue("1:2 eval_id" in lines[9])
+
+    def test_write_bad_index_raises(self):
+        b = di.BatchSplitter(self.dakota_batch_params_file)
+        with self.assertRaises(IndexError):
+            b.write("foo", index=2)
+
+    def test_write_bad_eval_num_raises(self):
+        b = di.BatchSplitter(self.dakota_batch_params_file)
+        with self.assertRaises(di.EvalNumberError):
+            b.write("foo", eval_num=0)
+
+    def test_write_no_spec_raises(self):
+        b = di.BatchSplitter(self.dakota_batch_params_file)
+        with self.assertRaises(ValueError):
+            b.write("foo")
+ 
+    def test_write_both_spec_raises(self):
+        b = di.BatchSplitter(self.dakota_batch_params_file)
+        with self.assertRaises(ValueError):
+            b.write("foo", index=0, eval_num=1)
+  
 
 unittest.main()
