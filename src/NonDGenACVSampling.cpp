@@ -1285,7 +1285,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
   // For offline mode, online allocations must be lower bounded for numerics:
-  Real offline_N_lwr = 2.; //(finalStatsType == QOI_STATISTICS) ? 2. : 1.;
+  Real offline_N_lwr = 1.; //(finalStatsType == QOI_STATISTICS) ? 2. : 1.;
   bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
 		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
 

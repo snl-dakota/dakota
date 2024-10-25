@@ -219,38 +219,38 @@ Test Number 14 succeeded
  Equivalent MFMC ratio:               1.2989582954921581e-02
 Test Number 15 succeeded
 <<<<< Function evaluation summary (HF_INT): 125 total (125 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 4.9996484375000000e+02
+<<<<< Online number of equivalent high fidelity evaluations: 4.9994140625000000e+02
 <<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000000000e+00
 <<<<< Variance for mean estimator:
-     Online   MC (    2 HF samples):  5.1258621771986297e-05
-     Online MFMC (sample profile):    2.5406886814607374e-09
-     Online MFMC ratio (1 - R^2):     4.9566074811033385e-05
- Equivalent   MC (  500 HF samples):  2.0504890458904910e-07
- Equivalent MFMC ratio:               1.2390647424099559e-02
+     Online   MC (    1 HF samples):  1.0251724354397259e-04
+     Online MFMC (sample profile):    2.5362252515173162e-09
+     Online MFMC ratio (1 - R^2):     2.4739499071972769e-05
+ Equivalent   MC (  500 HF samples):  2.0505851738295101e-07
+ Equivalent MFMC ratio:               1.2368299955962635e-02
 Test Number 16 succeeded
-<<<<< Function evaluation summary (HF_INT): 79915 total (79915 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 4.9996484375000000e+02
+<<<<< Function evaluation summary (HF_INT): 80074 total (80074 new, 0 duplicate)
+<<<<< Online number of equivalent high fidelity evaluations: 4.9994140625000000e+02
 <<<<< Variance for mean estimator:
-     Online   MC (    2 HF samples):  5.1258621771986297e-05
-     Online MFMC (sample profile):    2.5406886814607374e-09
-     Online MFMC ratio (1 - R^2):     4.9566074811033385e-05
- Equivalent   MC (  500 HF samples):  2.0504890458904910e-07
- Equivalent MFMC ratio:               1.2390647424099559e-02
+     Online   MC (    1 HF samples):  1.0251724354397259e-04
+     Online MFMC (sample profile):    2.5362252515173162e-09
+     Online MFMC ratio (1 - R^2):     2.4739499071972769e-05
+ Equivalent   MC (  500 HF samples):  2.0505851738295101e-07
+ Equivalent MFMC ratio:               1.2368299955962635e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5331423041605450e-02  6.6261438354457396e-03  7.7757282099833180e-01 -1.3929306707122224e-01
- response_fn_2  1.2915853540932840e-01  1.3584731568540606e-02  7.1017498079873886e-01 -5.9232346709402428e-01
- response_fn_3  2.5331423043570084e-02  6.6261438340444144e-03  7.7757282052165588e-01 -1.3929306680187237e-01
+ response_fn_1  2.5328819833688340e-02  6.6259777895863814e-03  7.8181834303128439e-01 -1.1718117162082153e-01
+ response_fn_2  1.2912865801318146e-01  1.3589989717322892e-02  7.2390886370574203e-01 -5.7644070279283044e-01
+ response_fn_3  2.5328819829785371e-02  6.6259777830975182e-03  7.8181834322211818e-01 -1.1718116585292737e-01
 Test Number 17 succeeded
 <<<<< Function evaluation summary (HF_INT): 500 total (500 new, 0 duplicate)
-<<<<< Projected number of equivalent high fidelity evaluations: 5.0198046875000000e+02
+<<<<< Projected number of equivalent high fidelity evaluations: 5.0098046875000000e+02
 <<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000000000e+00
 <<<<< Variance for mean estimator:
-  Projected   MC (    2 HF samples):  5.2079082084064088e-05
-  Projected MFMC (sample profile):    5.6528080181650875e-09
-  Projected MFMC ratio (1 - R^2):     1.0854277364260258e-04
- Equivalent   MC (  502 HF samples):  2.0749445576537320e-07
- Equivalent MFMC ratio:               2.7243176196269391e-02
+  Projected   MC (    1 HF samples):  1.0415816416812818e-04
+  Projected MFMC (sample profile):    5.6547661715845914e-09
+  Projected MFMC ratio (1 - R^2):     5.4290186628643736e-05
+ Equivalent   MC (  501 HF samples):  2.0790863250220906e-07
+ Equivalent MFMC ratio:               2.7198323145742921e-02
 Test Number 18 succeeded
 <<<<< Function evaluation summary (HF_INT): 155 total (155 new, 0 duplicate)
 <<<<< Online number of equivalent high fidelity evaluations: 2.5000078515625000e+05

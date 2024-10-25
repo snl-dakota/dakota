@@ -9,7 +9,7 @@ method,
 #	  solution_mode online_projection	#s6,#s7,#s8,#s9,#s10,#s11
 #	  pilot_samples = 50			#s6,#s7,#s8,#s9,#s10,#s11
 # can't use DIRECT on full set of 2^8 groups
-	  competed_local # TO DO: auto demote from global for #group > 64
+	  competed_local # can also auto demote from global for #group > 64
 #	  group_throttle     	#s1,#s2,#s3,#s4,#s5,#s7,#s8,#s9,#s10,#s11
 #	    mfmc_groups			#s1,#s7
 #	    common_groups		#s2,#s8

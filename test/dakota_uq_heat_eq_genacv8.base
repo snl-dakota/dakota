@@ -1,55 +1,55 @@
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 1.0001576585e+03
+<<<<< Online number of equivalent high fidelity evaluations: 1.0003172545e+03
 <<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000e+00
 <<<<< Variance for mean estimator:
-     Online   MC (   21 HF samples):  4.0649405243e+02
-     Online  ACV (sample profile):    1.8363640999e-03
-     Online  ACV ratio (1 - R^2):     4.5175669581e-06
- Equivalent   MC ( 1000 HF samples):  8.5350294812e+00
- Equivalent  ACV ratio:               2.1515615194e-04
+     Online   MC (  280 HF samples):  3.0487053932e+01
+     Online  ACV (sample profile):    6.7987134367e-03
+     Online  ACV ratio (1 - R^2):     2.2300329352e-04
+ Equivalent   MC ( 1000 HF samples):  8.5336677568e+00
+ Equivalent  ACV ratio:               7.9669300826e-04
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 8.9880737723e+02
+<<<<< Online number of equivalent high fidelity evaluations: 9.9987294643e+02
 <<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000e+00
 <<<<< Variance for mean estimator:
-     Online   MC (  129 HF samples):  6.6173450395e+01
-     Online  ACV (sample profile):    2.4687309571e-03
-     Online  ACV ratio (1 - R^2):     3.7306970429e-05
- Equivalent   MC (  899 HF samples):  9.4974466356e+00
- Equivalent  ACV ratio:               2.5993628096e-04
+     Online   MC (   54 HF samples):  1.5808102039e+02
+     Online  ACV (sample profile):    1.8302644030e-03
+     Online  ACV ratio (1 - R^2):     1.1578014859e-05
+ Equivalent   MC ( 1000 HF samples):  8.5374598157e+00
+ Equivalent  ACV ratio:               2.1438044132e-04
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 1.0002384866e+03
+<<<<< Online number of equivalent high fidelity evaluations: 1.0001381384e+03
 <<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000e+00
 <<<<< Variance for mean estimator:
-     Online   MC (    6 HF samples):  1.4227291835e+03
-     Online  ACV (sample profile):    1.1696786311e-03
-     Online  ACV ratio (1 - R^2):     8.2213723078e-07
- Equivalent   MC ( 1000 HF samples):  8.5343397752e+00
- Equivalent  ACV ratio:               1.3705554992e-04
+     Online   MC (   76 HF samples):  1.1232072501e+02
+     Online  ACV (sample profile):    1.2762303265e-03
+     Online  ACV ratio (1 - R^2):     1.1362376145e-05
+ Equivalent   MC ( 1000 HF samples):  8.5351960627e+00
+ Equivalent  ACV ratio:               1.4952560165e-04
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 1.0003518460e+03
+<<<<< Online number of equivalent high fidelity evaluations: 1.0002809710e+03
 <<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000e+00
 <<<<< Variance for mean estimator:
-     Online   MC (  167 HF samples):  5.1116018569e+01
-     Online  ACV (sample profile):    1.3272615875e-03
-     Online  ACV ratio (1 - R^2):     2.5965668388e-05
- Equivalent   MC ( 1000 HF samples):  8.5333726681e+00
- Equivalent  ACV ratio:               1.5553775032e-04
+     Online   MC (   74 HF samples):  1.1535642028e+02
+     Online  ACV (sample profile):    1.2760623978e-03
+     Online  ACV ratio (1 - R^2):     1.1061910509e-05
+ Equivalent   MC ( 1000 HF samples):  8.5339773010e+00
+ Equivalent  ACV ratio:               1.4952727818e-04
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 9.9997929688e+02
+<<<<< Online number of equivalent high fidelity evaluations: 1.0002809710e+03
 <<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000e+00
 <<<<< Variance for mean estimator:
-     Online   MC (   77 HF samples):  1.1086201430e+02
-     Online  ACV (sample profile):    1.2820327315e-03
-     Online  ACV ratio (1 - R^2):     1.1564220077e-05
- Equivalent   MC ( 1000 HF samples):  8.5365518342e+00
- Equivalent  ACV ratio:               1.5018156703e-04
+     Online   MC (   74 HF samples):  1.1535642028e+02
+     Online  ACV (sample profile):    1.2760623978e-03
+     Online  ACV ratio (1 - R^2):     1.1061910509e-05
+ Equivalent   MC ( 1000 HF samples):  8.5339773010e+00
+ Equivalent  ACV ratio:               1.4952727818e-04

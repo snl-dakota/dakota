@@ -772,8 +772,7 @@ specify_parameter_bounds(RealVector& x_lb, RealVector& x_ub)
     size_t g, v, num_v = x_lb.length();
     for (v=0; v<num_v; ++v) {
       g = active_to_all_group(v);
-      x_lb[v] = (backfillFailures) ?
-	average(NGroupActual[g]) : (Real)NGroupAlloc[g];
+      x_lb[v] = (backfillFailures) ? average(NGroupActual[g]) : (Real)NGroupAlloc[g];
     }
   }
   //enforce_nudge(x_lb); // nudge away from 0 if needed
@@ -788,9 +787,8 @@ specify_initial_parameters(const MFSolutionData& soln, RealVector& x0,
   if (soln_vars.empty()) x0 = x_lb;
   else {
     size_t num_v = num_active_groups();
-    if (soln_vars.length() != num_v)
-      deflate(soln_vars, retainedModelGroups, x0);
-    else                 x0 = soln_vars;
+    if (soln_vars.length() != num_v) deflate(soln_vars, retainedModelGroups, x0);
+    else                             x0 = soln_vars;
   }
 }
 
@@ -1071,7 +1069,7 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
   }
   else { // budget-constrained -> online or offline
     Real remaining = (Real)maxFunctionEvals,
-      cost_H = sequenceCost[numApprox], offline_N_lwr = 2.,
+      cost_H = sequenceCost[numApprox], offline_N_lwr = 1.,
       N_shared = (offline) ? offline_N_lwr : (Real)pilotSamples[all_group];
     if (!offline && pilotGroupSampling != SHARED_PILOT) {
       BitArray inactive(numGroups);  inactive.set();
@@ -1311,11 +1309,11 @@ blue_raw_moments(const IntRealMatrixArrayMap& sum_G_offline,
 
   // Ambiguity arises when ML BLUE reuses covGG for moment solves (also occurs
   // with control variate beta in MFMC/ACV/GenACV).
-  // > Online-only approach above incurs issues with sample reqmts for online
-  //   covar (offline_N_lwr = 2).
+  // > approach above with offline pilot + online-only moment roll-up incurs issues
+  //   with sample reqmts for online covar (offline_N_lwr = 2).
   // > This can be avoided in approach below by mixing offline var/covar +
   //   online sample accumulations: var/covar are consistently offline/Oracle,
-  //   but mu-hat solves become inconsistent in online/offline.
+  //   but mu-hat solves are inconsistent in online/offline data.
   // Prefer to avoid additional padding in linear constraints for online opt.
 
   RealVectorArray mu_hat;  size_t all_group = numGroups - 1;
@@ -1889,7 +1887,7 @@ compute_C_inverse(const RealSymMatrix& cov_GG_gq, RealSymMatrix& cov_GG_inv_gq,
   pseudo_inverse(A, A_inv, rcond);
   copy_data(A_inv, cov_GG_inv_gq); // RealMatrix to RealSymMatrix
 
-  //if (outputLevel >= DEBUG_OUTPUT)
+  if (outputLevel >= DEBUG_OUTPUT)
     Cout << "In compute_C_inverse() for group " << group << " QoI " << qoi
 	 << ", covariance =\n" << cov_GG_gq << "Pseudo-inverse by truncated "
 	 << "SVD: rcond = " << rcond << ", inverse covariance =\n"

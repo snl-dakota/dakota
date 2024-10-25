@@ -23,47 +23,47 @@ Test Number 1 succeeded
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 4000 total (4000 new, 0 duplicate)
 <<<<< Function evaluation summary: 4000 total (4000 new, 0 duplicate)
-<<<<< Projected number of equivalent high fidelity evaluations: 1.0004884576e+03
+<<<<< Projected number of equivalent high fidelity evaluations: 1.0004817634e+03
 <<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000e+00
 <<<<< Variance for mean estimator:
   Projected MC    (   21 HF samples):   5.1920005669e+02
-  Projected ML BLUE (sample profile):   1.3248412372e-02
-  Projected ML BLUE ratio  (1 - R^2):   2.5516970195e-05
- Equivalent MC    ( 1000 HF samples):   1.0897878039e+01
- Equivalent ML BLUE ratio:              1.2156873406e-03
+  Projected ML BLUE (sample profile):   1.3248412371e-02
+  Projected ML BLUE ratio  (1 - R^2):   2.5516970194e-05
+ Equivalent MC    ( 1000 HF samples):   1.0897950957e+01
+ Equivalent ML BLUE ratio:              1.2156792065e-03
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 4000 total (4000 new, 0 duplicate)
 <<<<< Function evaluation summary: 4000 total (4000 new, 0 duplicate)
-<<<<< Projected number of equivalent high fidelity evaluations: 1.0007769844e+03
+<<<<< Projected number of equivalent high fidelity evaluations: 1.0007707210e+03
 <<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000e+00
 <<<<< Variance for mean estimator:
   Projected MC    (   62 HF samples):   1.7585808372e+02
-  Projected ML BLUE (sample profile):   1.7840391204e-03
-  Projected ML BLUE ratio  (1 - R^2):   1.0144766067e-05
- Equivalent MC    ( 1001 HF samples):   1.0894736151e+01
- Equivalent ML BLUE ratio:              1.6375239342e-04
+  Projected ML BLUE (sample profile):   1.7840391399e-03
+  Projected ML BLUE ratio  (1 - R^2):   1.0144766178e-05
+ Equivalent MC    ( 1001 HF samples):   1.0894804336e+01
+ Equivalent ML BLUE ratio:              1.6375137036e-04
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 4000 total (4000 new, 0 duplicate)
 <<<<< Function evaluation summary: 4000 total (4000 new, 0 duplicate)
-<<<<< Projected number of equivalent high fidelity evaluations: 9.9819381696e+02
+<<<<< Projected number of equivalent high fidelity evaluations: 9.9819370536e+02
 <<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000e+00
 <<<<< Variance for mean estimator:
-  Projected MC    (    3 HF samples):   3.6344003968e+03
-  Projected ML BLUE (sample profile):   3.4270428550e-02
-  Projected ML BLUE ratio  (1 - R^2):   9.4294587298e-06
- Equivalent MC    (  998 HF samples):   1.0922930001e+01
- Equivalent ML BLUE ratio:              3.1374758005e-03
+  Projected MC    (   21 HF samples):   5.1920005669e+02
+  Projected ML BLUE (sample profile):   3.8834066305e-02
+  Projected ML BLUE ratio  (1 - R^2):   7.4795959293e-05
+ Equivalent MC    (  998 HF samples):   1.0922931223e+01
+ Equivalent ML BLUE ratio:              3.5552788453e-03
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 4000 total (4000 new, 0 duplicate)
 <<<<< Function evaluation summary: 4000 total (4000 new, 0 duplicate)
-<<<<< Projected number of equivalent high fidelity evaluations: 9.9996564286e+02
+<<<<< Projected number of equivalent high fidelity evaluations: 9.9740232589e+02
 <<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000e+00
 <<<<< Variance for mean estimator:
-  Projected MC    (    1 HF samples):   1.0903201191e+04
-  Projected ML BLUE (sample profile):   2.7780522216e-02
-  Projected ML BLUE ratio  (1 - R^2):   2.5479234704e-06
- Equivalent MC    ( 1000 HF samples):   1.0903575806e+01
- Equivalent ML BLUE ratio:              2.5478359310e-03
+  Projected MC    (    5 HF samples):   2.1806402381e+03
+  Projected ML BLUE (sample profile):   7.1328074059e-02
+  Projected ML BLUE ratio  (1 - R^2):   3.2709693609e-05
+ Equivalent MC    (  997 HF samples):   1.0931597919e+01
+ Equivalent ML BLUE ratio:              6.5249448969e-03
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)

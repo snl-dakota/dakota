@@ -588,7 +588,7 @@ protected:
 
   void scale_to_target(Real avg_N_H, const RealVector& cost,
 		       RealVector& avg_eval_ratios, Real& avg_hf_target,
-		       Real budget, Real offline_N_lwr = 2);
+		       Real budget, Real offline_N_lwr = 1.);
   void scale_to_budget_with_pilot(RealVector& avg_eval_ratios,
 				  const RealVector& cost, Real avg_N_H,
 				  Real budget);

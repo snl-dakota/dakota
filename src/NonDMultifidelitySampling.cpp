@@ -351,13 +351,13 @@ update_projected_samples(const MFSolutionData& soln,
   size_t alloc_incr = one_sided_delta(N_H_alloc, hf_target),
     actual_incr = (backfillFailures) ?
       one_sided_delta(N_H_actual, hf_target) : alloc_incr;
-  // For analytic solns, mirror the CDV lower bound for numerical solutions --
-  // see rationale in NonDNonHierarchSampling::ensemble_numerical_solution()
+  // For analytic solns, mirror CDV lower bnd for numerical solns; see rationale
+  // in NonDNonHierarchSampling::numerical_solution_bounds_constraints()
   if ( ( pilotMgmtMode == OFFLINE_PILOT ||
 	 pilotMgmtMode == OFFLINE_PILOT_PROJECTION ) &&
        ( optSubProblemForm == ANALYTIC_SOLUTION ||
 	 optSubProblemForm == REORDERED_ANALYTIC_SOLUTION ) ) {
-    size_t offline_N_lwr = 2; //(finalStatsType == QOI_STATISTICS) ? 2 : 1;
+    size_t offline_N_lwr = 1; //(finalStatsType == QOI_STATISTICS) ? 2 : 1;
     alloc_incr  = std::max(alloc_incr,  offline_N_lwr);
     actual_incr = std::max(actual_incr, offline_N_lwr);
   }
@@ -1374,7 +1374,7 @@ mfmc_estimator_variance(const RealMatrix& rho2_LH, const RealVector& var_H,
   case ANALYTIC_SOLUTION:  case REORDERED_ANALYTIC_SOLUTION: {
 
     Real avg_N_H = average(N_H), avg_hf_target = soln.solution_reference(),
-      budget = (Real)maxFunctionEvals, offline_N_lwr = 2.;
+      budget = (Real)maxFunctionEvals, offline_N_lwr = 1.;
     RealVector avg_eval_ratios = soln.solution_ratios(); // copy
     // Take credit for pilot and other modifications to analytic soln:
     // > rather than scale_to_target(), analytic cases use the intersection of

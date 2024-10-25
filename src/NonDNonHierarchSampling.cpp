@@ -1050,7 +1050,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   // Nonzero lower bound ensures replacement of allSamples after offline pilot.
   bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
 		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
-  Real offline_N_lwr = 2.; //(finalStatsType == QOI_STATISTICS) ? 2. : 1.;
+  Real offline_N_lwr = 1.; //(finalStatsType == QOI_STATISTICS) ? 2. : 1.;
 
   // --------------------------------------
   // Formulate the optimization sub-problem: initial pt, bnds, constraints
