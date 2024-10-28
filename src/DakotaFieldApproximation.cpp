@@ -22,7 +22,7 @@ FieldApproximation::
 FieldApproximation(BaseConstructor, const ProblemDescDB& problem_db,
                    const SharedApproxData& shared_data, 
                    const StringArray& approx_labels):
-  Approximation(BaseConstructor(), problem_db, shared_data, String("field")),
+  Approximation(BaseConstructor(), problem_db, shared_data, approx_labels.at(0)),
   numComponents(approx_labels.size())
 { /* empty ctor */ }
 
