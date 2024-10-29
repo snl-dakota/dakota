@@ -40,9 +40,10 @@ variables,
 
 interface,
     python
-      analysis_driver = 'driver_text_book:text_book'		#s0
+      analysis_driver = 'driver_text_book.text_book'		#s0
 #      analysis_driver = 'driver_text_book:text_book_batch'	#s1
 #      batch							#s1
+    analysis_components 'a' 'b'
 
 responses,
   descriptors = 'f1' 'c1' 'c2'

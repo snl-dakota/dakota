@@ -7,7 +7,7 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-
+#include <algorithm>
 #include <pybind11/numpy.h>
 
 #include "Pybind11Interface.hpp"
@@ -125,14 +125,16 @@ void Pybind11Interface::wait_local_evaluations(PRPQueue& prp_queue)
   // TODO: refactor to avoid passing through local class members for
   // variables and responses (inherit directly from ApplicationInterface)
 
+  ++batchIdCntr;
+  
   initialize_driver(analysisDrivers[0]);
-
   // in this case the user's python function is to be called with
   // list<dict>, one list entry per eval
 
   py::list py_requests;
   for (const auto& prp : prp_queue) {
     set_local_data(prp.variables(), prp.active_set(), prp.response());
+    currEvalId = prp.eval_id();
     py_requests.append(params_to_dict());
   }
 
@@ -239,6 +241,8 @@ py::dict Pybind11Interface::pack_kwargs() const
   py::list fn_labels     = copy_array_to_pybind11<py::list,StringArray,String>(fnLabels);
   py::list md_labels     = copy_array_to_pybind11<py::list,StringArray,String>(metaDataLabels);
 
+  std::string eval_id(eval_id_string());
+
   py::dict kwargs = py::dict(
       "variables"_a             = numVars,
       "functions"_a             = numFns,
@@ -257,7 +261,7 @@ py::dict Pybind11Interface::pack_kwargs() const
       "asv"_a                   = asv,
       "dvv"_a                   = dvv,
       "analysis_components"_a   = an_comps,
-      "eval_id"_a               = currEvalId);
+      "eval_id"_a               = eval_id);
 
   return kwargs;
 }
@@ -375,6 +379,15 @@ bool Pybind11Interface::expect_derivative(const ShortArray& asv,
 		     [deriv_type](short a){ return (a & deriv_type); });
 }
 
+std::string Pybind11Interface::eval_id_string() const {
+  std::string eval_id;
+  if(!evalTagPrefix.empty())
+    eval_id = evalTagPrefix + ":";
+  if(batchEval)
+    eval_id += std::to_string(batchIdCntr) + ":";
+  eval_id += std::to_string(currEvalId);
+  return eval_id;
+}
 
 
 } //namespace Dakota
