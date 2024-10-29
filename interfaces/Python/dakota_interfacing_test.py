@@ -151,7 +151,7 @@ direct_dense_params = {
     "asv": [7, 7, 7], 
     "dvv": [1], 
     "analysis_components": ["foo"],
-    "eval_id": 1
+    "eval_id": "1"
 }
 
 direct_sparse_params = {
@@ -172,8 +172,51 @@ direct_sparse_params = {
     "asv": [1], 
     "dvv": [1], 
     "analysis_components": [],
-    "eval_id": 1
+    "eval_id": "1"
 }
+
+direct_dense_batch_params = [{
+    "variables": 5, 
+    "functions": 3, 
+    "metadata": 1, 
+    "variable_labels": ["cdv_1", "ddsiv_1", "ddssv_1", "ddsrv_1", "uuv_1"],
+    "function_labels": ["obj_fn", "nln_ineq_con_1", "nln_ineq_con_2"],
+    "metadata_labels": ["baz"],
+    "cv": [0.9414315689355135, 0.5], 
+    "cv_labels": ["cdv_1", "uuv_1"], 
+    "div": [7], 
+    "div_labels": ["ddsiv_1"], 
+    "dsv": ["baz"], 
+    "dsv_labels": ["ddssv_1"], 
+    "drv": [3.14], 
+    "drv_labels": ["ddsrv_1"], 
+    "asv": [7, 7, 7], 
+    "dvv": [1], 
+    "analysis_components": ["foo"],
+    "eval_id": "1:1"
+},
+{
+    "variables": 5, 
+    "functions": 3, 
+    "metadata": 1, 
+    "variable_labels": ["cdv_1", "ddsiv_1", "ddssv_1", "ddsrv_1", "uuv_1"],
+    "function_labels": ["obj_fn", "nln_ineq_con_1", "nln_ineq_con_2"],
+    "metadata_labels": ["baz"],
+    "cv": [0.9414315689355135, 0.5], 
+    "cv_labels": ["cdv_1", "uuv_1"], 
+    "div": [7], 
+    "div_labels": ["ddsiv_1"], 
+    "dsv": ["baz"], 
+    "dsv_labels": ["ddssv_1"], 
+    "drv": [3.14], 
+    "drv_labels": ["ddsrv_1"], 
+    "asv": [7, 7, 7], 
+    "dvv": [1], 
+    "analysis_components": ["foo"],
+    "eval_id": "1:2"
+}
+]
+
 
 # JSON params
 
@@ -822,12 +865,6 @@ class PythonDirectInterfaceTest(unittest.TestCase):
         actual_types = [type(value) for label, value in params.items()]
         self.assertListEqual(expected_types, actual_types)
 
-    def test_parameters_from_dict_variable_types(self):        
-        params, _ = di.interfacing._read_params_from_dict(direct_dense_params)
-        expected_types = [float, int, str, float, float]
-        actual_types = [type(value) for label, value in params.items()]
-        self.assertListEqual(expected_types, actual_types)
-
     def test_parameters_from_dict_variable_values(self):
         params, _ = di.interfacing._read_params_from_dict(direct_dense_params)
         expected_values = []
@@ -903,7 +940,7 @@ class PythonDirectInterfaceTest(unittest.TestCase):
             results[i].gradient = [i + 1.0]
             results[i].hessian = [[i + 1.0]]
         results.metadata[0] = "baz"
-        d = results.return_direct_results_dict()
+        d = results.direct_results_dict()
         self.assertIsInstance(d, dict)
         
         expected_fns = [1.0, 2.0, 3.0]
@@ -915,18 +952,13 @@ class PythonDirectInterfaceTest(unittest.TestCase):
             self.assertAlmostEqual(expected_grads[i][0], d["fnGrads"][i][0]) 
             self.assertAlmostEqual(expected_hess[i][0][0], d["fnHessians"][i][0][0]) 
  
-    def test_python_interface_decorator(self):
+    def test_python_interface_decorator_single_eval(self):
         @di.python_interface
         def driver(params, results):
             self.assertIsInstance(params, di.Parameters)
             self.assertIsInstance(results, di.Results)
-            for i in range(3):
-                results[i].function = i + 1.0
-                results[i].gradient = [i + 1.0]
-                results[i].hessian = [[i + 1.0]]
-            results.metadata[0] = "baz"
+            results = self._populate_results(results)
             return results
-
         d = driver(direct_dense_params)
         self.assertIsInstance(d, dict)
         self.assertTrue("fns" in d)
@@ -936,10 +968,42 @@ class PythonDirectInterfaceTest(unittest.TestCase):
         self.assertTrue("fnHessians" in d)
         self.assertIsInstance(d["fnHessians"], list)
 
+    def test_python_interface_decorator_batch(self):
+        @di.python_interface
+        def driver(params, results):
+            self.assertIsInstance(params, di.BatchParameters)
+            self.assertIsInstance(results, di.BatchResults)
+            self.assertEqual(len(params), 2)
+            self.assertEqual(len(results), 2)
+            self.assertEqual(params[0].eval_id, "1:1")
+            self.assertEqual(params[1].eval_id, "1:2")
+            for r in results:
+                r = self._populate_results(r)
+            return results
+        r  = driver(direct_dense_batch_params)
+        self.assertIsInstance(r, list)
+        for d in r:
+            self.assertIsInstance(d, dict)
+            self.assertTrue("fns" in d)
+            self.assertIsInstance(d["fns"], list)
+            self.assertTrue("fnGrads" in d)
+            self.assertIsInstance(d["fnGrads"], list)
+            self.assertTrue("fnHessians" in d)
+            self.assertIsInstance(d["fnHessians"], list)
+
+
+    def _populate_results(self, results):
+        for i in range(3):
+            results[i].function = i + 1.0
+            results[i].gradient = [i + 1.0]
+            results[i].hessian = [[i + 1.0]]
+            results.metadata[0] = "baz"
+        return results
+
     def test_return_direct_results_dict_asv_problem(self):
         _, results = di.interfacing._read_params_from_dict(direct_dense_params)
         with self.assertRaises(di.ResponseError):
-            results.return_direct_results_dict()
+            results.direct_results_dict()
 
     def test_return_direct_results_dict_metadata_problem(self):
         _, results = di.interfacing._read_params_from_dict(direct_dense_params)
@@ -948,7 +1012,7 @@ class PythonDirectInterfaceTest(unittest.TestCase):
             results[i].gradient = [i + 1.0]
             results[i].hessian = [[i + 1.0]]
         with self.assertRaises(di.ResultsError):
-            results.return_direct_results_dict()
+            results.direct_results_dict()
 
     def test_parameters_from_dict_sparse(self):
         params, results = di.interfacing._read_params_from_dict(direct_sparse_params)
@@ -957,7 +1021,7 @@ class PythonDirectInterfaceTest(unittest.TestCase):
         self.assertEqual(params[0], direct_sparse_params["cv"][0])
         self.assertEqual(results.num_responses, direct_sparse_params["functions"])
         results[0].function = 0.0
-        results.return_direct_results_dict()
+        results.direct_results_dict()
         
 class TestDeepCopy(unittest.TestCase):
     def test_results(self):

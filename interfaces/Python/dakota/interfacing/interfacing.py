@@ -8,9 +8,10 @@ import functools
 import json
 import linecache
 import math
+import pprint
 import re
 import sys
-from typing import Generator, Iterable, List, NewType, Tuple, Union
+from typing import Generator, Iterable, List, NewType, Tuple, Union, Dict
 import copy
 from . import dprepro as dprepro_mod
 
@@ -63,6 +64,7 @@ UNNAMED = True
 APREPRO = 1
 STANDARD = 1
 JSON = 2
+DIRECT = 3
 
 #### Types
 
@@ -91,7 +93,7 @@ class Parameters:
         an_comps: List of strings containing the analysis components.
         eval_id: Evaluation id (string).
         eval_num: Evaluation number (final token in eval_id) (int).
-        format: constant indicating format of the file, APREPRO (1), STANDARD (2), or JSON (3)
+        format: constant indicating format of the file, APREPRO (1), STANDARD (2), JSON (3), or DIRECT (4)
         descriptors: List of the variable descriptors (read-only)
         num_variables: Number of variables (read-only)
         num_an_comps: Number of analysis components (read-only)
@@ -99,17 +101,17 @@ class Parameters:
         num_metadata: Number of requested metadata fields (read-only)
     """
 
-    def __init__(self, format: int, variables: dict, an_comps: dict, 
-                 eval_id: str, metadata: list, infer_types: True, types=None) -> None:
+    def __init__(self, format: FileFormat, variables: Dict[str, VarValue], an_comps: List[str], 
+            eval_id: str, metadata: List[str], infer_types: True, types: Union[list, dict]=None) -> None:
         self.format = format
-        if format not in (APREPRO, STANDARD, JSON):
-            raise TypeError("format parameter must be APREPRO, STANDARD, or JSON")
+        if format not in (APREPRO, STANDARD, JSON, DIRECT):
+            raise TypeError("format parameter must be APREPRO, STANDARD, JSON, or DIRECT")
         self._variables = copy.deepcopy(variables)
         self.an_comps = list(an_comps)
         self.eval_id = str(eval_id)
         self.eval_num = int(eval_id.split(":")[-1])
         self.metadata = list(metadata)
-        if self.format != JSON:  # JSON format files are presumed to have the proper types
+        if self.format in (APREPRO, STANDARD):  # JSON and DIRECT formats are presumed to have the proper types
             if isinstance(types, list):
                 self._set_types_from_list(types)
             elif isinstance(types, dict):
@@ -394,8 +396,8 @@ class Results:
             deriv_vars: List[str], eval_id: str, metadata: List[str],
             ignore_asv: bool=False, results_file: str=None):
         self.format = format
-        if format not in (APREPRO, STANDARD, JSON):
-            raise TypeError("format parameter must be APREPRO, STANDARD, or JSON")
+        if format not in (APREPRO, STANDARD, JSON, DIRECT):
+            raise TypeError("format parameter must be APREPRO, STANDARD, JSON, or DIRECT")
         self.ignore_asv = ignore_asv
         self._deriv_vars = deriv_vars[:]
         num_deriv_vars = len(deriv_vars)
@@ -487,7 +489,7 @@ class Results:
         else:
             write_function(stream, self, my_ignore_asv)
 
-    def return_direct_results_dict(self, ignore_asv: Union[bool, None]=None) -> dict:
+    def direct_results_dict(self, ignore_asv: Union[bool, None]=None) -> dict:
         """Create and return a direct python interface results dictionary.
 
         Keyword Args:
@@ -678,6 +680,10 @@ class BatchResults:
     def _write_batch_to_json(self, stream: io.IOBase, ignore_asv: bool) -> None:
         json_batch = [_encode_results_as_json(r, ignore_asv) for r in self._eval_results]
         json.dump(json_batch, stream)
+        
+    def direct_results_dict(self):
+        return [r.direct_results_dict() for r in self._eval_results]
+            
                 
     def __len__(self) -> int:
         return len(self._eval_results)
@@ -1171,8 +1177,17 @@ def _read_evals_from_json(stream, ignore_asv, results_file, infer_types, types):
     return params_set, results_set
 
 
-def _read_params_from_dict(parameters=None, results_file=None, 
-        ignore_asv=False, batch=False, infer_types=True, types=None):
+def _extract_value(label: str, labels: List[str], values: List[VarValue]) -> VarValue:
+    try:
+        index = labels.index(label)
+        value = values[index]
+    except ValueError:
+        value = None
+    return value
+    
+
+
+def _read_params_from_dict(parameters=None):
     """Process parameters and results using Dakota parameters disctionary from python interface driver.
     
     Keyword Args:
@@ -1181,56 +1196,38 @@ def _read_params_from_dict(parameters=None, results_file=None,
             
     Raises:
     """
-
-    vars_to_type = {
-                     "cv"  : float,
-                     "div" : int,
-                     "dsv" : str,
-                     "drv" : float
-                   }
-
-    assigned_types = {}
-    dakota_input = []
-    key = "variables"
-    dakota_input.append(str(parameters[key])+" "+key+"\n")
-    for label in parameters["variable_labels"]:
-        for domain, vtype in vars_to_type.items():
-            try:
-                idx = parameters[domain+"_labels"].index(label)
-            except ValueError:
-                continue
-            else:
-                dakota_input.append(str(parameters[domain][idx]) + " " + label + "\n")
-                assigned_types[label] = vtype
-               
-    key = "functions"
-    dakota_input.append(str(parameters[key])+" "+key+"\n")
-    for i, val in enumerate(parameters["asv"]):
-        label = "ASV_"+str(i+1)+":"+parameters["function_labels"][i]
-        dakota_input.append(str(val)+" "+label+"\n")
-
-    key = "dvv"
-    dakota_input.append(str(len(parameters[key]))+" derivative_variables\n")
-    for i, val in enumerate(parameters["dvv"]):
-        label = "DVV_"+str(i)+":"+parameters["variable_labels"][val-1]
-        dakota_input.append(str(parameters["dvv"][i])+" "+label+"\n")
-
-    key = "analysis_components"
-    num_an_comp = len(parameters[key])
-    dakota_input.append(str(num_an_comp) + " " + key + "\n")
-    for i, an_comp in enumerate(parameters[key]):
-        dakota_input.append(an_comp + " AC_" + str(i+1) + ":python_direct\n")
-
-    key = "eval_id"
-    dakota_input.append(str(parameters[key])+" eval_id\n")
-
-    key = "metadata"
-    dakota_input.append(str(parameters[key]) + " metadata\n")
-    for i, md in enumerate(parameters["metadata_labels"]):
-        dakota_input.append(md + " MD_" + str(i+1) + "\n")
-
-    io_stream = io.StringIO("".join(dakota_input))
-    return _read_parameters_stream(io_stream, ignore_asv, batch, results_file, infer_types=False, types=assigned_types)
+    batch = isinstance(parameters, list)
+    if not batch:
+        parameters = [parameters]
+    params_list = []
+    results_list = []
+    for p in parameters:
+        variables = collections.OrderedDict()
+        for label in p["variable_labels"]:
+            for var_type in ("cv", "div", "dsv", "drv"):
+                var_val = _extract_value(label, p[f"{var_type}_labels"], p[var_type])
+                if var_val:
+                    break
+            variables[label] = var_val
+        
+        responses = collections.OrderedDict()
+        for label, active_set in zip(p["function_labels"], p["asv"]):
+            responses[label] = active_set
+        
+        dvv = []
+        for id in p["dvv"]:
+            dvv.append(p["variable_labels"][id-1])
+        
+        params_list.append(Parameters(DIRECT, variables, p["analysis_components"], p["eval_id"], p["metadata_labels"], False))
+        results_list.append(Results(DIRECT, responses, dvv, p["eval_id"], p["metadata_labels"], False))
+    if batch:
+        params = BatchParameters(params_list)
+        results = BatchResults(results_list)
+    else:
+        params = params_list[0]
+        results = results_list[0]
+    return params, results
+    
 
 
 def read_parameters_file(parameters_file: Union[str, None] = None, results_file : Union[str, None] = None, 
@@ -1355,13 +1352,14 @@ def dprepro(template: Union[str, io.IOBase], parameters: Parameters=None, result
             f.write(output_string)
 
 
+
 def python_interface(fn):
     """ Decorator to wrap direct Python callbacks """
     @functools.wraps(fn)
     def wrapper(direct_interface_dict):
         params, results = _read_params_from_dict(direct_interface_dict)
         results = fn(params, results)
-        return results.return_direct_results_dict()
+        return results.direct_results_dict()
     return wrapper
 
 
