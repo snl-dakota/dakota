@@ -4,6 +4,7 @@
 
 namespace Dakota {
     class Model;
+    class ProblemDescDB;
     namespace ModelUtils {
         /// define and return discreteIntSets using active view from currentVariables
         BitArray discrete_int_sets(const Model &model);
@@ -576,5 +577,7 @@ namespace Dakota {
         /// set the nonlinear equality constraint targets
         void nonlinear_eq_constraint_targets(Model &model, const RealVector& nln_eq_targets);
 
+        /// construct the appropriate derived model type as given by the modelType attribute
+        std::shared_ptr<Model> get_model(ProblemDescDB& problem_db);
     }
 }

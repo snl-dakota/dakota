@@ -307,31 +307,7 @@ Model::Model(ProblemDescDB& problem_db):
     appropriate derived type, as given by the modelType attribute. */
 std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db)
 {
-  // These instantiations will NOT recurse on the Model(problem_db)
-  // constructor due to the use of BaseConstructor.
-
-  const String& model_type = problem_db.get_string("model.type");
-  if ( model_type == "simulation" )
-    return std::make_shared<SimulationModel>(problem_db);
-  else if ( model_type == "nested")
-    return std::make_shared<NestedModel>(problem_db);
-  else if ( model_type == "surrogate") {
-    const String& surr_type = problem_db.get_string("model.surrogate.type");
-    if (surr_type == "ensemble")
-      return std::make_shared<EnsembleSurrModel>(problem_db);
-    else // all other surrogates (local/multipt/global) managed by DataFitSurr
-      return std::make_shared<DataFitSurrModel>(problem_db);
-  }
-  else if ( model_type == "active_subspace" )
-    return std::make_shared<ActiveSubspaceModel>(problem_db);
-  else if ( model_type == "adapted_basis" )
-    return std::make_shared<AdaptedBasisModel>(problem_db);
-  else if ( model_type == "random_field" )
-    return std::make_shared<RandomFieldModel>(problem_db);
-  else
-    Cerr << "Invalid model type: " << model_type << std::endl;
-
-  return std::shared_ptr<Model>();
+  return ModelUtils::get_model(problem_db);
 }
 
 
