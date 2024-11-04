@@ -482,19 +482,15 @@ function is shown in Figure :numref:`advint:figure:matlabrosen`.
 Python
 ~~~~~~
 
-Dakota’s Python direct interface has been tested on Linux with Python 2
-and 3. When enabled, it allows Dakota to make function evaluation calls
-directly to an analysis function in a user-provided Python module. Data
-may flow between Dakota and Python either in multiply-subscripted lists
-or NumPy arrays.
+When enabled, Dakota's direct Python interface allows it to make function
+evaluation calls directly to an analysis function in a user-provided Python
+module. Data may flow between Dakota and Python either in multiply-subscripted
+lists or NumPy arrays.
 
-| The Python direct interface must be enabled when compiling Dakota. Set
-  the CMake variable
-| ``DAKOTA_PYTHON:BOOL=ON``, and optionally
-  ``DAKOTA_PYTHON_NUMPY:BOOL=ON`` (default is ON) to use Dakota’s NumPy
-  array interface (requires NumPy installation providing arrayobject.h).
-  If NumPy is not enabled, Dakota will use multiply-subscripted lists
-  for data flow.
+The Python direct interface is enabled by default when compiling Dakota. It is controlled
+using the CMake boolean options ``DAKOTA_PYTHON_DIRECT_INTERFACE`` and ``DAKOTA_PYBIND11``
+(``DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY`` determines whether Dakota is built with support
+for using NumPy arrays).
 
 An example of using the Python direct interface with both lists and
 arrays is included in
@@ -509,9 +505,8 @@ The Python direct driver is selected with, for example,
          analysis_drivers = 'python_module.analysis_function'
 
 where ``python_module`` denotes the module (file ``python_module.py``)
-Dakota will attempt
-to import into the Python environment and ``analysis_function`` denotes
-the function to call when evaluating a parameter set. If the Python
+Dakota will attempt to import into the Python environment and ``analysis_function``
+denotes the function to call when evaluating a parameter set. If the Python
 module is not in the directory from which Dakota is started, setting the
 ``PYTHONPATH`` environment variable to include its location can help the
 Python engine find it. The optional ``numpy`` keyword indicates Dakota
@@ -575,8 +570,21 @@ more details.
    +---------------------+-----------------------------------------------+
    | analysis_components | list of analysis components strings           |
    +---------------------+-----------------------------------------------+
-   | eval_id             | one-based evaluation ID number                |
+   | eval_id             | one-based evaluation ID string                |
    +---------------------+-----------------------------------------------+
+
+The Python direct interface can be used to perform :ref:`batch evaluations <interfaces:batch>`.
+When the :dakkw:`interface-batch` keyword is included in the interface specification, Dakota
+calls the user-provided Python function with a *list* of parameter dictionaries, and it is
+expected to return a list of results dictionaries.
+
+In addition, the ``python_interface`` decorator provided
+in the :ref:`dakota.interfacing <interfaces:dakota.interfacing>` module handles
+interconversion between parameters and results dictionaries and objects
+of the ``Parameters`` and ``Results`` classes (or ``BatchParameters`` and 
+``BatchResults`` when performing batch evaluations). Examples of using the
+``python_interface`` decorator for batch and sequential evaluations are available
+in ``dakota/share/dakota/examples/official/drivers/Python/linked_id/``.
 
 .. _`advint:scilab`:
 
