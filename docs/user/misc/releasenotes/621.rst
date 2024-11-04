@@ -10,11 +10,28 @@ Version 6.21 (2024/11/15)
 
 *Documentation:* 
 
-**Highlight: JSON format parameters and results files**
+**Highlight: JSON parameters and results files**
+
+This release adds support for parameters and results files in JSON format, which
+is intended to simplify driver development.
 
 *Enabling / Accessing:* 
 
+Two new keyword groups were added to the interface portion of the input file,
+:dakkw:`interface-analysis_drivers-fork-parameters_format` and 
+:dakkw:`interface-analysis_drivers-fork-results_format`. The ``json`` keyword within 
+these groups is used to select JSON format files.
+
+In addition, the :dakkw:`interface-analysis_drivers-fork-parameters_format-aprepro` 
+keyword was moved to the ``parameters_format`` group, and the 
+:dakkw:`interface-analysis_drivers-fork-results_format-standard-labeled` keyword
+is now located in the ``results_format`` group.
+
 *Documentation:* 
+
+The User's Manual describes the schemas for JSON :ref:`parameters <variables:parameters:json>`
+and :ref:`results <responses:results:json>` files.
+
 
 **Highlight: MLMF Updates**
 
@@ -25,6 +42,12 @@ Version 6.21 (2024/11/15)
 **Improvements by Category**
 
 *Interfaces, Input/Output*
+
+- Writing evaluations by evaluation ID is supported by the :class:`BatchSplitter` class 
+  in the :ref:`dakota.interfacing <interfaces:dakota.interfacing>` module.
+- The :func:`python_interface` decorator in the 
+  :ref:`dakota.interfacing <interfaces:dakota.interfacing>` module now supports batch evaluations.
+
 
 *Models*
 
@@ -43,11 +66,17 @@ Version 6.21 (2024/11/15)
  
 **Miscellaneous Enhancements and Bugfixes**
 
-- Enh:
-- Bug fix: JEGA global log file is closed when the environment is
-  destructed.
+- Enh: When building Dakota from source with the Python direct interface enabled, NumPy 2 is supported.
+- Bug fix: JEGA global log file is closed when the environment is destructed.
 
 **Deprecated and Changed**
+
+- The :dakkw:`interface-analysis_drivers-fork-parameters_format-aprepro` keyword was moved
+  to the :dakkw:`interface-analysis_drivers-fork-parameters_format` group, and the 
+  :dakkw:`interface-analysis_drivers-fork-results_format-standard-labeled` keyword is now 
+  located in the :dakkw:`interface-analysis_drivers-fork-results_format`
+  group.
+
 
 **Compatibility**
 

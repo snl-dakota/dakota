@@ -11,6 +11,7 @@ Dakota
 .. toctree::
    :maxdepth: 1
    
+   releasenotes/621
    releasenotes/620
    releasenotes/619
    releasenotes/618
