@@ -1,19 +1,24 @@
 .. _`interfaces:dakota.interfacing`:
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-Parameters and Results Using the Python dakota.interfacing module
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""
+The Python dakota.interfacing module
+""""""""""""""""""""""""""""""""""""
 
-The Python module ``dakota.interfacing`` provides a Python interface
-to read and write Dakota parameters and results files, respectively.
-Because of this, ``dakota.interfacing`` can greatly simplify
-development of black-box interfaces. The benefit may be greatest when
-one or more phases of the interface (pre-processing, execution,
-post-processing) is written in Python.
+The Python module ``dakota.interfacing`` has several features that aid development
+of analysis drivers.
+
+* Parse Dakota parameters files into easy-to-use :class:`Parameters` objects, which provide
+  dict-like access to variable values and other evaluation information,
+* Add response data to :class:`Results` objects, which can be conveniently written to Dakota results files,
+* Configure templates,
+* Split batch parameters files into files for individual evaluations,
 
 The following sections describe the components of
 ``dakota.interfacing``. These components include:
 
+-  The :func:`read_parameters_file` function. Constructs :class:`Parameters`,
+   :class:`Results`, :class:`BatchParameters`, and :class:`BatchResults` objects from a
+   Dakota parameters file.
 -  The :class:`Parameters` class. Makes available the variable information
    for a single evaluation
 -  The :class:`Results` class. Collects results for a single evaluation and
@@ -21,12 +26,15 @@ The following sections describe the components of
 -  The :class:`BatchParameters` and :class:`BatchResults` classes. Containers for
    multiple :class:`Parameters` and :class:`Results` objects; used when
    evaluations are performed by Dakota in :ref:`batch mode <interfaces:batch>`
--  The :class:`BatchSplitter`, for splitting batch parameters files into the text
+-  The :func:`dprepro` function, which provides programmatic access to the `dprepro`
+   tool for template configuration. 
+-  The :class:`BatchSplitter` class, for splitting batch parameters files into the text
    for individual evaluations. Useful when converting an existing workflow that
    expects individual parameters files to work with Dakota's batch interface.
--  The :func:`read_parameters_file` function. Constructs :class:`Parameters`,
-   :class:`Results`, :class:`BatchParameters`, and :class:`BatchResults` objects from a
-   Dakota parameters file.
+-  The :func:`python_interface` decorator, which eases use of Dakota's direct `python`
+   interface by transparently converting the (lists of) dictionaries it provides and
+   expects to objects of :class:`Parameters` and :class:`Results` or :class:`BatchParameters` and
+   :class:`BatchResults`.
 
 API
 ~~~
@@ -121,9 +129,9 @@ API
      
       Evaluation number (final token in eval_id) (int).
       
-   .. attribute:: aprepro_format
+   .. attribute:: format
    
-      Boolean indicating whether the parameters file was in aprepro (True) or Dakota (False) format.
+      Integer constant defined in the module indicating the format of the parameters source (STANDARD, APREPRO, JSON, DIRECT).
       
    .. attribute:: descriptors
    
@@ -177,9 +185,9 @@ API
    
       Evaluation number (final token in eval_id) (int).
       
-   .. attribute:: aprepro_format
+   .. attribute:: format
    
-      Boolean indicating whether the parameters file was in aprepro (True) or Dakota (False) format.
+      Integer constant defined in the module indicating the format of the parameters source (STANDARD, APREPRO, JSON, DIRECT).
       
    .. attribute:: descriptors
    
@@ -282,8 +290,9 @@ API
 .. class:: BatchSplitter
 
     A :class:`BatchSplitter` object splits a batch paramters file into the text of individual parameter sets. The parameter sets are 
-    accessible as lists of newline terminated strings, in dakota or aprepro format, by 0-based index or by iterating the object. A specified
-    parameter set can also be written to file. Calling `len()` on the object returns the number of evaluations in the batch.
+    accessible as lists of newline terminated strings, in standard dakota or aprepro format, by 0-based index, 1-based evaluation id, or 
+    by iterating the object. A specified parameter set can also be written to file. Calling `len()` on the object returns the number of
+    evaluations in the batch.
 
    .. method:: BatchSplitter (parameters_file=None)
 
@@ -304,15 +313,27 @@ API
 
    .. attribute:: format
 
-      Format of the file, "DAKOTA" or "APREPRO" (string)
+      Format of the file, indicated by integer constant defined in the module, STANDARD or APREPRO (int)
       
-   .. method:: write (index, filename)
+   .. method:: write (filename, index=None, eval_id=None)
    
-      Write parameters for one evaluation to a file.
+      Write parameters for one evaluation to a file. One or the other of index or eval_num must be specified.
       
-      :param index: Index of parameters set (int)
       :param filename: Filepath (string or pathlib.Path)
+      :param index: Index of parameters set (int)
+      :param eval_num: 1-based ID of evaluation
  
+.. function:: python_interface()
+
+    Decorator that converts the (list of) parameter dictionaries passed to the decorared function
+    by :ref:`Dakota's direct python interface <advint:existingdirect:python>` to :class:`Parameters`
+    and :class:`Results` objects (for sequential evaluations) or :class:`BatchParameters` and 
+    :class:`BatchResults` objects (for batch evaluations), and the :class:`Results` or
+    :class:`BatchResults` objects returned by the function to the expected (list of) results dictionaries.
+
+
+
+
 Processing Templates
 ~~~~~~~~~~~~~~~~~~~~
 
