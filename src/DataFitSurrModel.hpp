@@ -415,6 +415,7 @@ private:
   /// (optional for global, required for local)
   /** actualModel is unrestricted in type; arbitrary nestings are possible. */
   Model actualModel;
+  Model * pActualModel;
   /// selects parameter sets on which to evaluate actualModel in order
   /// to generate the necessary data for building global approximations
   /// (optional for global since restart data may also be used)
