@@ -55,6 +55,7 @@ Minimizer(ProblemDescDB& problem_db, Model& model,
   scaleFlag(probDescDB.get_bool("method.scaling")), iteratedModel{Iterator::iterated_model()}
 {
   iteratedModel = model;
+  pIteratedModel = &iteratedModel;
   update_from_model(iteratedModel); // variable,response counts & checks
 
   // Re-assign Iterator defaults specialized to Minimizer branch
@@ -78,6 +79,7 @@ Minimizer(unsigned short method_name, Model& model,
   calibrationDataFlag(false), numExperiments(0), numTotalCalibTerms(0),
   scaleFlag(false), iteratedModel{Iterator::iterated_model()}
 {
+  pIteratedModel = &iteratedModel;
   update_from_model(iteratedModel); // variable,constraint counts & checks
 }
 
@@ -91,6 +93,7 @@ Minimizer(Model& model, size_t max_iter, size_t max_eval, Real conv_tol,
   calibrationDataFlag(false), numExperiments(0), numTotalCalibTerms(0),
   scaleFlag(false), iteratedModel{Iterator::iterated_model()}
 {
+  pIteratedModel = &iteratedModel;
   update_from_model(iteratedModel); // variable,constraint counts & checks
 }
 
@@ -111,7 +114,9 @@ Minimizer(unsigned short method_name, size_t num_lin_ineq, size_t num_lin_eq,
   speculativeFlag(false), optimizationFlag(true), 
   calibrationDataFlag(false), numExperiments(0), numTotalCalibTerms(0),
   scaleFlag(false), iteratedModel{Iterator::iterated_model()}
-{ }
+{ 
+  pIteratedModel = &iteratedModel;
+}
 
 
 bool Minimizer::resize()
@@ -305,9 +310,13 @@ void Minimizer::initialize_run()
     // of a recursion.  On subsequent passes, it may correspond to the inner
     // iterator.  The Iterator scope should not matter for the iteratedModel
     // mapping initialize/finalize.
-    if (!iteratedModel.mapping_initialized()) {
+    if (!check_model_consistency() ) {
+      Cerr << "Model pointer is not consistent with iteratedModel ... " << std::endl; 
+      abort_handler(-1);
+    }
+    if (!pIteratedModel->mapping_initialized()) {
       ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator();
-      bool var_size_changed = iteratedModel.initialize_mapping(pl_iter);
+      bool var_size_changed = pIteratedModel->initialize_mapping(pl_iter);
       if (var_size_changed)
         /*bool reinit_comms =*/ resize(); // ignore return value
     }
@@ -316,7 +325,7 @@ void Minimizer::initialize_run()
     // (previously managed via presence/absence of ostream)
     //if (!subIteratorFlag)
     if (summaryOutputFlag)
-      iteratedModel.set_evaluation_reference();
+      pIteratedModel->set_evaluation_reference();
   }
 
   // Track any previous object instance in case of recursion.  Note that
@@ -357,8 +366,8 @@ void Minimizer::post_run(std::ostream& s)
   archive_best_results();
   if (summaryOutputFlag) {
     // Print the function evaluation summary for all Iterators
-    if (!iteratedModel.is_null())
-      iteratedModel.print_evaluation_summary(s); // full hdr, relative counts
+    if (!pIteratedModel->is_null())
+      pIteratedModel->print_evaluation_summary(s); // full hdr, relative counts
 
     // The remaining final results output varies by iterator branch
     print_results(s);
@@ -374,10 +383,10 @@ void Minimizer::finalize_run()
   // Finalize an initialized mapping.  This will correspond to the first
   // finalize_run() with an uninitialized mapping, such as the inner-iterator
   // in a recursion.
-  if (!iteratedModel.is_null() && iteratedModel.mapping_initialized()) {
+  if (!pIteratedModel->is_null() && pIteratedModel->mapping_initialized()) {
     // paired to matching call to Model.initialize_mapping() in
     // initialize_run() above
-    bool var_size_changed = iteratedModel.finalize_mapping();
+    bool var_size_changed = pIteratedModel->finalize_mapping();
     if (var_size_changed)
       /*bool reinit_comms =*/ resize(); // ignore return value
   }
@@ -411,7 +420,7 @@ void Minimizer::data_transform_model()
       abort_handler(-1);
   }
   // TODO: verify: we don't want to weight by missing sigma: all = 1.0
-  expData.load_data("Least Squares", iteratedModel.current_variables());
+  expData.load_data("Least Squares", pIteratedModel->current_variables());
 
   if (numNonlinearConstraints > 0 && numExperiments > 1 &&
       expData.num_config_vars() > 0)
@@ -419,13 +428,13 @@ void Minimizer::data_transform_model()
 	 << "experiment\nconfigurations, the returned constraint values must be"
 	 << " the same across\nconfigurations." << std::endl;
 
-  iteratedModel.assign_rep(std::make_shared<DataTransformModel>(
-    iteratedModel, expData, iteratedModel.current_variables().view()));
+  pIteratedModel->assign_rep(std::make_shared<DataTransformModel>(
+    iteratedModel, expData, pIteratedModel->current_variables().view()));
   ++myModelLayers;
   dataTransformModel = iteratedModel;
 
   // update sizes in Iterator view from the RecastModel
-  numIterPrimaryFns = numTotalCalibTerms = iteratedModel.num_primary_fns();
+  numIterPrimaryFns = numTotalCalibTerms = pIteratedModel->num_primary_fns();
   numFunctions = ModelUtils::response_size(iteratedModel);
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "Adjusted number of calibration terms: " << numTotalCalibTerms 
@@ -1227,7 +1236,7 @@ local_recast_retrieve(const Variables& vars, Response& response) const
   // may not exist a single DB eval with both functions, constraints)
   ActiveSet lookup_set(response.active_set());
   PRPCacheHIter cache_it
-    = lookup_by_val(data_pairs, iteratedModel.interface_id(), vars, lookup_set);
+    = lookup_by_val(data_pairs, pIteratedModel->interface_id(), vars, lookup_set);
   if (cache_it == data_pairs.get<hashed>().end()) {
     Cerr << "Warning: failure in recovery of final values for locally recast "
 	 << "optimization." << std::endl;

@@ -80,6 +80,10 @@ public:
 
   bool resize() override;
 
+  // Check if the pIteratedModel pointer is consistent with iteratedModel
+  // ... used for refactoring
+  bool check_model_consistency() const;
+
 protected:
 
   //
@@ -314,6 +318,7 @@ protected:
   std::shared_ptr<TPLDataTransfer> dataTransferHandler;
 
   Model& iteratedModel;
+  Model* pIteratedModel;
 
 private:
 
@@ -385,6 +390,11 @@ inline void Minimizer::reshape_best(size_t num_cv, size_t num_fns)
   }
 }
 
+
+inline bool Minimizer::check_model_consistency() const
+{
+  return (pIteratedModel != NULL) && (pIteratedModel == &iteratedModel);
+}
 
 //inline void Minimizer::initialize_iterator(int job_index)
 //{ } // default = no-op
