@@ -490,7 +490,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     if (daceIterator.is_null()) {
       // store within empty envelope for later use in derived_{set,free}_comms
       daceIterator.maximum_evaluation_concurrency(min_conc);
-      daceIterator.iterated_model(actualModel);
+      daceIterator.iterated_model(*pActualModel);
       // init comms for actualModel
       probDescDB.set_db_model_nodes(pActualModel->model_id());
       pActualModel->init_communicators(pl_iter, min_conc);
@@ -526,7 +526,7 @@ void DataFitSurrModel::build_approximation()
   Cout << "\n>>>>> Building " << surrogateType << " approximations.\n";
 
   // update actualModel w/ variable values/bounds/labels
-  update_model(actualModel);
+  update_model(*pActualModel);
 
   // build a local, multipoint, or global data fit approximation.
   if (strbegins(surrogateType, "local_") ||
@@ -559,7 +559,7 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr)
   Cout << "\n>>>>> Building " << surrogateType << " approximations.\n";
 
   // update actualModel w/ variable values/bounds/labels
-  update_model(actualModel);
+  update_model(*pActualModel);
 
   // build a local, multipoint, or global data fit approximation.
   if (strbegins(surrogateType, "local_") ||
@@ -592,7 +592,7 @@ void DataFitSurrModel::rebuild_approximation()
     Cout << "\n>>>>> Rebuilding " << surrogateType << " approximations.\n";
 
   // update actualModel w/ variable values/bounds/labels
-  update_model(actualModel);
+  update_model(*pActualModel);
 
   // rebuild a local, multipoint, or global data fit approximation
   if (strbegins(surrogateType, "local_") ||
@@ -1064,12 +1064,12 @@ void DataFitSurrModel::build_approx_interface()
       userDefinedConstraints.discrete_real_upper_bounds());
   else { // employ sub-model vars view, if available
     approxInterface.build_approximation(
-      ModelUtils::continuous_lower_bounds(actualModel),
-      ModelUtils::continuous_upper_bounds(actualModel),
-      ModelUtils::discrete_int_lower_bounds(actualModel),
-      ModelUtils::discrete_int_upper_bounds(actualModel),
-      ModelUtils::discrete_real_lower_bounds(actualModel),
-      ModelUtils::discrete_real_upper_bounds(actualModel));
+      ModelUtils::continuous_lower_bounds(*pActualModel),
+      ModelUtils::continuous_upper_bounds(*pActualModel),
+      ModelUtils::discrete_int_lower_bounds(*pActualModel),
+      ModelUtils::discrete_int_upper_bounds(*pActualModel),
+      ModelUtils::discrete_real_lower_bounds(*pActualModel),
+      ModelUtils::discrete_real_upper_bounds(*pActualModel));
   }
   if (exportSurrogate) {
     // skip the ApproximationInterface layer and go directly to
@@ -1104,7 +1104,7 @@ void DataFitSurrModel::build_local_multipoint()
   // Evaluate value and derivatives using actualModel
   ActiveSet set = pActualModel->current_response().active_set(); // copy
   set.request_vector(actual_asv);
-  set.derivative_vector(ModelUtils::continuous_variable_ids(actualModel));
+  set.derivative_vector(ModelUtils::continuous_variable_ids(*pActualModel));
   pActualModel->evaluate(set);
 
   // construct a new approximation using this actualModel evaluation
@@ -1153,9 +1153,9 @@ void DataFitSurrModel::build_global()
       num_dr_vars = currentVariables.drv();
     }
     else {
-      num_c_vars  = ModelUtils::cv(actualModel);
-      num_di_vars = ModelUtils::div(actualModel);
-      num_dr_vars = ModelUtils::drv(actualModel);
+      num_c_vars  = ModelUtils::cv(*pActualModel);
+      num_di_vars = ModelUtils::div(*pActualModel);
+      num_dr_vars = ModelUtils::drv(*pActualModel);
     }
 
     // Process PRPCache using default iterators (index 0 = ordered_non_unique).
@@ -1344,7 +1344,7 @@ void DataFitSurrModel::run_dace()
   // resize_from_subordinate_model(), but can be overwritten by top-level
   // Iterator (e.g., NonDExpansion::compute_expansion()
   const ShortArray& dace_asv = daceIterator.active_set_request_vector();
-  if (dace_asv.size() != ModelUtils::response_size(actualModel)) {
+  if (dace_asv.size() != ModelUtils::response_size(*pActualModel)) {
     ShortArray actual_asv;
     asv_inflate_build(dace_asv, actual_asv);
     daceIterator.active_set_request_vector(actual_asv);
@@ -1599,7 +1599,7 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
   // -----------------------------
   if (actual_eval) {
     component_parallel_mode(TRUTH_MODEL_MODE);
-    update_model(actualModel); // update variables/bounds/labels in actualModel
+    update_model(*pActualModel); // update variables/bounds/labels in actualModel
     switch (responseMode) {
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
       ActiveSet actual_set = set;
@@ -1757,7 +1757,7 @@ void DataFitSurrModel::derived_evaluate_nowait(const ActiveSet& set)
   // -----------------------------
   if (actual_eval) {
     // don't need to set component parallel mode since this only queues the job
-    update_model(actualModel); // update variables/bounds/labels in actualModel
+    update_model(*pActualModel); // update variables/bounds/labels in actualModel
     switch (responseMode) {
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
       ActiveSet actual_set = set;
@@ -1847,9 +1847,9 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize()
 
     // update map keys to use surrModelEvalCntr
     if (approx_evals)
-      rekey_synch(actualModel, block, truthIdMap, actual_resp_map_rekey);
+      rekey_synch(*pActualModel, block, truthIdMap, actual_resp_map_rekey);
     else {
-      rekey_synch(actualModel, block, truthIdMap, surrResponseMap);
+      rekey_synch(*pActualModel, block, truthIdMap, surrResponseMap);
       return surrResponseMap; // if no approx evals, return actual results
     }
   }
@@ -1944,9 +1944,9 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
 
     // update map keys to use surrModelEvalCntr
     if (approx_evals)
-      rekey_synch(actualModel, block, truthIdMap, actual_resp_map_rekey);
+      rekey_synch(*pActualModel, block, truthIdMap, actual_resp_map_rekey);
     else {
-      rekey_synch(actualModel, block, truthIdMap, surrResponseMap);
+      rekey_synch(*pActualModel, block, truthIdMap, surrResponseMap);
       return surrResponseMap; // if no approx evals, return actual results
     }
   }
@@ -2101,7 +2101,7 @@ asv_inflate_build(const ShortArray& orig_asv, ShortArray& actual_asv)
 {
   // DataFitSurrModel consumes replicates from any response aggregations
   // occurring in actualModel
-  size_t num_orig = orig_asv.size(), num_actual = ModelUtils::response_size(actualModel);
+  size_t num_orig = orig_asv.size(), num_actual = ModelUtils::response_size(*pActualModel);
   if (num_actual < num_orig || num_actual % num_orig) {
     Cerr << "Error: ASV size mismatch in DataFitSurrModel::asv_inflate_build()."
 	 << std::endl;
@@ -2141,7 +2141,7 @@ asv_split(const ShortArray& orig_asv, ShortArray& approx_asv,
 
   // DataFitSurrModel consumes replicates from any response aggregations
   // occurring in actualModel
-  size_t num_orig = orig_asv.size(), num_actual = ModelUtils::response_size(actualModel);
+  size_t num_orig = orig_asv.size(), num_actual = ModelUtils::response_size(*pActualModel);
   if (num_orig != numFns || num_actual < num_orig || num_actual % num_orig) {
     Cerr << "Error: ASV size mismatch in DataFitSurrModel::asv_split()."
 	 << std::endl;
