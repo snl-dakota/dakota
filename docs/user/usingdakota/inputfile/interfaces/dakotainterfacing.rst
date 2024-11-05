@@ -217,12 +217,13 @@ API
    
       Set the FAIL attribute. When the results file is written, it will contain only the word FAIL, triggering :ref:`Dakota’s failure capturing behavior <failure>`.
    
-   .. method:: write (stream=None, ignore_asv=None)
+   .. method:: write (stream=None, ignore_asv=None, json=False)
    
       Write the results to the Dakota results file.
       
       :param stream: If *stream* is set, it overrides the results file name provided at construct time. It must be an open file-like object, rather than the name of a file.
       :param ignore_asv: If *ignore_asv* is True, the file will be written even if information requested via the active set vector is missing.
+      :param json: Write results files in JSON format if True.
 
 .. note::
       
@@ -279,13 +280,14 @@ API
    
       The "id" of this batch of evaluations, reported by Dakota (string)
 
-   .. method:: write (stream=None, ignore_asv=None) 
+   .. method:: write (stream=None, ignore_asv=None, json=False) 
    
       :param stream: If *stream* is set, it overrides the results file name
                      provided at construct time. It must be an open file-like object,
                      rather than the name of a file.
       :param ignore_asv: If *ignore_asv* is True, the file will be written even
                          if information requested via the active set vector is missing.
+      :param json: Write results files in JSON format if True.
 
 .. class:: BatchSplitter
 
