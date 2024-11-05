@@ -47,7 +47,8 @@ and :ref:`results <responses:results:json>` files.
   in the :ref:`dakota.interfacing <interfaces:dakota.interfacing>` module.
 - The :func:`python_interface` decorator in the 
   :ref:`dakota.interfacing <interfaces:dakota.interfacing>` module now supports batch evaluations.
-
+- Support for reading and writing JSON parameters and results files was added to
+  :ref:`dakota.interfacing <interfaces:dakota.interfacing>`.
 
 *Models*
 
