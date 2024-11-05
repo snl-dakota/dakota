@@ -68,6 +68,8 @@ and :ref:`results <responses:results:json>` files.
 
 - Enh: When building Dakota from source with the Python direct interface enabled, NumPy 2 is supported.
 - Bug fix: JEGA global log file is closed when the environment is destructed.
+- Bug fix: When performing batch evaluations with the Python direct interface, the evaluation ID is now
+  correctly reported.
 
 **Deprecated and Changed**
 
@@ -76,7 +78,9 @@ and :ref:`results <responses:results:json>` files.
   :dakkw:`interface-analysis_drivers-fork-results_format-standard-labeled` keyword is now 
   located in the :dakkw:`interface-analysis_drivers-fork-results_format`
   group.
-
+- The legacy Python interface is no longer enabledin binary downloads. It is also disabled by
+  default when building from source.
+- The "eval_id" is in the direct Python parameters diciontary is now a string.
 
 **Compatibility**
 
