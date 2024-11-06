@@ -63,8 +63,8 @@ ScalingModel(Model& sub_model):
   // TODO: review whether disconnecting the mvDist can cause problems
   // for clients of Model.
   varsScaleFlag = scaling_active(scalingOpts.cvScaleTypes);
-  mvDist = varsScaleFlag ? subModel.multivariate_distribution().copy() :
-    subModel.multivariate_distribution();
+  mvDist = varsScaleFlag ? pSubModel->multivariate_distribution().copy() :
+    pSubModel->multivariate_distribution();
 
   initialize_scaling(sub_model);
 
@@ -1336,7 +1336,7 @@ ActiveSet ScalingModel::default_active_set() {
   set.derivative_vector(currentVariables.all_continuous_variable_ids());
   bool has_deriv_vars = set.derivative_vector().size() != 0;
   // The ScalingModel can return at least everything that the submodel can.
-  ShortArray asv(subModel.default_active_set().request_vector());
+  ShortArray asv(pSubModel->default_active_set().request_vector());
 
   // In addition, if mixed or numerical gradients are active, the ScalingModel
   // can return gradients for all responses
