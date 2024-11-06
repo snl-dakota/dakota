@@ -98,7 +98,7 @@ primary_resp_weighter(const Variables& sub_model_vars,
 
   // weights are available in the sub-model, but not in *this
   const RealVector& lsq_weights = weightModelInstance->
-    subModel.primary_response_fn_weights();
+    pSubModel->primary_response_fn_weights();
   RealVector wt_fn_vals = weighted_response.function_values_view();
   const ShortArray& asv = weighted_response.active_set_request_vector();
   const RealVector& sm_fn_vals = sub_model_response.function_values();

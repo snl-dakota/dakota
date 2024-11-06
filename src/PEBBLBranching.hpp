@@ -53,6 +53,7 @@ protected:
   PebbldBranching* globalPtr;
   /// Model used for sub-problem
   Model subModel;
+  Model* pSubModel;
   /// Solver used for sub-problems
   Iterator subNLPSolver;
   /// Candidate solution after solving sub-problem (also the bound)

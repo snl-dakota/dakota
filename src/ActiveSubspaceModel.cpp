@@ -61,7 +61,7 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
 
   validate_inputs();
   
-  offlineEvalConcurrency = initialSamples * subModel.derivative_concurrency();
+  offlineEvalConcurrency = initialSamples * pSubModel->derivative_concurrency();
 
   // initialize the fullspace derivative sampler; this
   // will configure it to perform initialSamples
@@ -157,7 +157,7 @@ void ActiveSubspaceModel::validate_inputs()
   }
 
   // validate response data
-  if (subModel.gradient_type() == "none") {
+  if (pSubModel->gradient_type() == "none") {
     error_flag = true;
     Cerr << "\nError (subspace model): gradients are required;"
          << "\n                        Please select numerical, analytic "
@@ -255,7 +255,7 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
   // -----------------------
   std::shared_ptr<Pecos::MarginalsCorrDistribution> native_dist_rep =
     std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
-    (subModel.multivariate_distribution().multivar_dist_rep());
+    (pSubModel->multivariate_distribution().multivar_dist_rep());
   std::shared_ptr<Pecos::MarginalsCorrDistribution> reduced_dist_rep =
     std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
     (mvDist.multivar_dist_rep());
@@ -923,7 +923,7 @@ unsigned int ActiveSubspaceModel::compute_cross_validation_metric()
     // Create a local active subspace model using the light-weight constructor:
     Model asm_model_tmp;
     asm_model_tmp.assign_rep(std::make_shared<ActiveSubspaceModel>
-			     (subModel, ii, leftSingularVectors, QUIET_OUTPUT));
+			     (*pSubModel, ii, leftSingularVectors, QUIET_OUTPUT));
 
     String sample_reuse, approx_type = "global_moving_least_squares";
     ActiveSet surr_set = currentResponse.active_set(); // copy
@@ -1114,7 +1114,7 @@ void ActiveSubspaceModel::build_surrogate()
   //   but this seems unimportant following final subspace creation (and
   //   additional data could be added to the lightweight ctor if/when needed).
   Model asm_model;
-  asm_model.assign_rep(std::make_shared<ActiveSubspaceModel>(subModel,
+  asm_model.assign_rep(std::make_shared<ActiveSubspaceModel>(*pSubModel,
     reducedRank, leftSingularVectors, QUIET_OUTPUT)); // partitioned to W1,W2
 
   String sample_reuse = "", approx_type = "global_moving_least_squares";
@@ -1373,7 +1373,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     if (!mappingInitialized)
       fullspaceSampler.init_communicators(pl_iter);
 
-    subModel.init_communicators(pl_iter, max_eval_concurrency);
+    pSubModel->init_communicators(pl_iter, max_eval_concurrency);
   }
 }
 
@@ -1388,12 +1388,12 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     if (!mappingInitialized)
       fullspaceSampler.set_communicators(pl_iter);
 
-    subModel.set_communicators(pl_iter, max_eval_concurrency);
+    pSubModel->set_communicators(pl_iter, max_eval_concurrency);
 
     // RecastModels do not utilize default set_ie_asynchronous_mode() as
     // they do not define the ie_parallel_level
-    asynchEvalFlag = subModel.asynch_flag();
-    evaluationCapacity = subModel.evaluation_capacity();
+    asynchEvalFlag = pSubModel->asynch_flag();
+    evaluationCapacity = pSubModel->evaluation_capacity();
   }
 }
 
@@ -1405,7 +1405,7 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   if (recurse_flag) {
     fullspaceSampler.free_communicators(pl_iter);
 
-    subModel.free_communicators(pl_iter, max_eval_concurrency);
+    pSubModel->free_communicators(pl_iter, max_eval_concurrency);
   }
 }
 
@@ -1419,7 +1419,7 @@ void ActiveSubspaceModel::init_fullspace_sampler(unsigned short sample_type)
 
   // configure this sampler initially to work with initialSamples
   auto ndlhss =
-    std::make_shared<NonDLHSSampling>(subModel, sample_type, initialSamples,
+    std::make_shared<NonDLHSSampling>(*pSubModel, sample_type, initialSamples,
 				      randomSeed, rng, true);
   fullspaceSampler.assign_rep(ndlhss);
 

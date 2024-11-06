@@ -898,7 +898,7 @@ surrogate_function_indices(const SizetSet& surr_fn_indices)
 // and NestedModels only fwd if BYPASS_SURROGATE (to support recursive bypass),
 // but Recast should allow mode set followed by reset for underlying surrogate.
 inline void RecastModel::surrogate_response_mode(short mode)
-{ /* if (mode == BYPASS_SURROGATE) */ subModel.surrogate_response_mode(mode); }
+{ /* if (mode == BYPASS_SURROGATE) */ pSubModel->surrogate_response_mode(mode); }
 
 
 inline void RecastModel::discrepancy_emulation_mode(short mode)

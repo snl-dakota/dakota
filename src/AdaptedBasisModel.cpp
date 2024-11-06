@@ -137,7 +137,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   if (recurse_flag) {
     //if (!mappingInitialized)
       pcePilotExpansion.init_communicators(pl_iter);
-    subModel.init_communicators(pl_iter, max_eval_concurrency);
+    pSubModel->init_communicators(pl_iter, max_eval_concurrency);
   }
 }
 
@@ -152,12 +152,12 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     //if (!mappingInitialized)
       pcePilotExpansion.set_communicators(pl_iter);
 
-    subModel.set_communicators(pl_iter, max_eval_concurrency);
+    pSubModel->set_communicators(pl_iter, max_eval_concurrency);
 
     // RecastModels do not utilize default set_ie_asynchronous_mode() as
     // they do not define the ie_parallel_level
-    asynchEvalFlag = subModel.asynch_flag();
-    evaluationCapacity = subModel.evaluation_capacity();
+    asynchEvalFlag = pSubModel->asynch_flag();
+    evaluationCapacity = pSubModel->evaluation_capacity();
   }
 }
 
@@ -168,7 +168,7 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 {
   if (recurse_flag) {
     pcePilotExpansion.free_communicators(pl_iter);
-    subModel.free_communicators(pl_iter, max_eval_concurrency);
+    pSubModel->free_communicators(pl_iter, max_eval_concurrency);
   }
 }
 
