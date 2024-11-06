@@ -536,6 +536,7 @@ protected:
 
   /// the sub-model underlying the transformations
   Model subModel;
+  Model* pSubModel;
 
   /// local evaluation id counter used for id mapping
   int recastModelEvalCntr;
