@@ -53,6 +53,7 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
     probDescDB.get_real("model.active_subspace.cv.decrease_tolerance")),
   cvMaxRank(problem_db.get_int("model.active_subspace.cv.max_rank"))
 {
+  pSurrogateModel = &surrogateModel;
   modelType = "active_subspace";
   modelId = RecastModel::recast_model_id(root_model_id(), "ACTIVE_SUBSPACE");
   // Set seed of bootstrap sampler:
@@ -91,6 +92,7 @@ ActiveSubspaceModel(const Model& sub_model, unsigned int dimension,
   gradientScaleFactors(RealArray(numFns, 1.)), buildSurrogate(false),
   refinementSamples(0), subspaceNormalization(SUBSPACE_NORM_DEFAULT)
 {
+  pSurrogateModel = &surrogateModel;
   modelType = "active_subspace";
   modelId = RecastModel::recast_model_id(root_model_id(), "ACTIVE_SUBSPACE");
 
@@ -1123,7 +1125,7 @@ void ActiveSubspaceModel::build_surrogate()
   short corr_order = -1, corr_type = NO_CORRECTION, data_order = 1;
   Iterator dace_iterator;
 
-  surrogateModel.assign_rep(std::make_shared<DataFitSurrModel>(dace_iterator,
+  pSurrogateModel->assign_rep(std::make_shared<DataFitSurrModel>(dace_iterator,
     asm_model, surr_set, surr_view, approx_type, approx_order, corr_type,
     corr_order, data_order, outputLevel, sample_reuse));
 
@@ -1171,7 +1173,7 @@ void ActiveSubspaceModel::build_surrogate()
     }
   }
 
-  surrogateModel.append_approximation(all_vars_y, all_responses,
+  pSurrogateModel->append_approximation(all_vars_y, all_responses,
                                       (refinementSamples == 0));
 
   // If user requested refinement_samples for building the surrogate evaluate
@@ -1202,7 +1204,7 @@ void ActiveSubspaceModel::build_surrogate()
                       W1.values(), k, all_vars_x_ref.values(), k, beta,
                       all_vars_y_ref.values(), m);
 
-    surrogateModel.append_approximation(all_vars_y_ref, all_responses_ref,true);
+    pSurrogateModel->append_approximation(all_vars_y_ref, all_responses_ref,true);
   }
 }
 
@@ -1280,11 +1282,11 @@ void ActiveSubspaceModel::derived_evaluate(const ActiveSet& set)
   if (buildSurrogate) {
     ++recastModelEvalCntr;
 
-    update_model_active_variables(surrogateModel);
-    surrogateModel.evaluate(set);
+    update_model_active_variables(*pSurrogateModel);
+    pSurrogateModel->evaluate(set);
 
     currentResponse.active_set(set);
-    currentResponse.update(surrogateModel.current_response());
+    currentResponse.update(pSurrogateModel->current_response());
   }
   else
     RecastModel::derived_evaluate(set);
@@ -1304,11 +1306,11 @@ void ActiveSubspaceModel::derived_evaluate_nowait(const ActiveSet& set)
   if (buildSurrogate) {
     ++recastModelEvalCntr;
 
-    update_model_active_variables(surrogateModel);
-    surrogateModel.evaluate_nowait(set);
+    update_model_active_variables(*pSurrogateModel);
+    pSurrogateModel->evaluate_nowait(set);
 
     // store map from surrogateModel eval id to ActiveSubspaceModel id
-    surrIdMap[surrogateModel.evaluation_id()] = recastModelEvalCntr;
+    surrIdMap[pSurrogateModel->evaluation_id()] = recastModelEvalCntr;
   }
   else
     RecastModel::derived_evaluate_nowait(set);
@@ -1327,7 +1329,7 @@ const IntResponseMap& ActiveSubspaceModel::derived_synchronize()
 
   if (buildSurrogate) {
     surrResponseMap.clear();
-    rekey_synch(surrogateModel, true, surrIdMap, surrResponseMap);
+    rekey_synch(*pSurrogateModel, true, surrIdMap, surrResponseMap);
     return surrResponseMap;
   }
   else
@@ -1347,7 +1349,7 @@ const IntResponseMap& ActiveSubspaceModel::derived_synchronize_nowait()
 
   if (buildSurrogate) {
     surrResponseMap.clear();
-    rekey_synch(surrogateModel, false, surrIdMap, surrResponseMap);
+    rekey_synch(*pSurrogateModel, false, surrIdMap, surrResponseMap);
     return surrResponseMap;
   }
   else

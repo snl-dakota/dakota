@@ -287,6 +287,7 @@ protected:
 
   /// model containing a surrogate built over the active subspace
   Model surrogateModel;
+  Model* pSurrogateModel;
 
   /// flag specifying whether or not a surrogate is built over the subspace
   bool buildSurrogate;
