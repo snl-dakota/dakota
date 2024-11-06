@@ -107,35 +107,34 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     }
     else {
       actualModel = problem_db.get_model();
-      // pActualModel = &actualModel; // is this needed ? RWH
+      pActualModel = &actualModel; // is this needed ? RWH
       // leave mvDist as initialized in Model ctor (from variables spec)
     }
 
     if (basis_expansion) {
       const Model& db_model = problem_db.get_model();
-      actualModel.assign_rep(std::make_shared<ProbabilityTransformModel>(
+      pActualModel->assign_rep(std::make_shared<ProbabilityTransformModel>(
 	db_model, u_space_type));
-      // pActualModel = &actualModel; // is this needed ? RWH
       // overwrite mvDist from Model ctor by copying transformed u-space dist
       // (keep them distinct to allow for different active views).
       // construct time augmented with run time pull_distribution_parameters().
-      mvDist = actualModel.multivariate_distribution().copy();
+      mvDist = pActualModel->multivariate_distribution().copy();
     }
 
     // ensure consistency of inputs/outputs between actual and approx
-    check_submodel_compatibility(actualModel);
+    check_submodel_compatibility(*pActualModel);
   }
 
   // Instantiate dace iterator from DB
   if (dace_construct) {
-    daceIterator = problem_db.get_iterator(actualModel); // no meta-iterators
+    daceIterator = problem_db.get_iterator(*pActualModel); // no meta-iterators
     daceIterator.sub_iterator_flag(true);
     // if outer level output is verbose/debug and actualModel verbosity is
     // defined by the DACE method spec, request fine-grained evaluation
     // reporting for purposes of the final output summary.  This allows verbose
     // final summaries without verbose output on every dace-iterator completion.
     if (outputLevel > NORMAL_OUTPUT)
-      actualModel.fine_grained_evaluation_counters();
+      pActualModel->fine_grained_evaluation_counters();
   }
 
   // reset all method/model pointers
@@ -162,18 +161,18 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   // approximation variables is defined by the active variable set in
   // the sub-model, and any conversions based on differing variable
   // views must be performed in ApproximationInterface::map().
-  const Variables& vars = (actualModel.is_null()) ? currentVariables :
-    actualModel.current_variables();
+  const Variables& vars = (pActualModel->is_null()) ? currentVariables :
+    pActualModel->current_variables();
   bool cache = false; String am_interface_id;
-  if (!actualModel.is_null()) {
-    am_interface_id = actualModel.interface_id();
+  if (!pActualModel->is_null()) {
+    am_interface_id = pActualModel->interface_id();
     // for ApproximationInterface to be able to look up actualModel eval records
     // within data_pairs, the actualModel must have an active evaluation cache
     // and derivative estimation (which causes consolidation of Interface evals
     // within Model evals, breaking Model eval lookups) must be off.
     // Note: use of ProbabilityTransform recursion prevents data_pairs lookup
-    if ( actualModel.evaluation_cache(false) &&
-	!actualModel.derivative_estimation())
+    if ( pActualModel->evaluation_cache(false) &&
+	!pActualModel->derivative_estimation())
       cache = true;
   }
   // size approxInterface based on currentResponse, which is constructed from
@@ -271,12 +270,12 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
     initialize_active_types(mvDist);
 
   // update constraint counts in userDefinedConstraints
-  userDefinedConstraints.reshape(ModelUtils::num_nonlinear_ineq_constraints(actualModel),
-				 ModelUtils::num_nonlinear_eq_constraints(actualModel),
+  userDefinedConstraints.reshape(ModelUtils::num_nonlinear_ineq_constraints(*pActualModel),
+				 ModelUtils::num_nonlinear_eq_constraints(*pActualModel),
 				 currentVariables.shared_data());
 
-  update_from_model(actualModel);
-  check_submodel_compatibility(actualModel);
+  update_from_model(*pActualModel);
+  check_submodel_compatibility(*pActualModel);
 
   // for ApproximationInterface to be able to look up actualModel eval records
   // within data_pairs, the actualModel must have an active evaluation cache
