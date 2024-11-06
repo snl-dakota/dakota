@@ -284,8 +284,10 @@ protected:
 
   /// the single truth reference model
   Model truthModel;
+  Model* pTruthModel;
   /// set of model approximations
   ModelArray approxModels;
+  std::vector<Model*> pApproxModels;
 
   /// key defining active model form / resolution level for the truth model
   Pecos::ActiveKey truthModelKey;
@@ -480,7 +482,7 @@ inline size_t EnsembleSurrModel::qoi() const
   // resize_response() aggregates {truth,approx} model response fns
   switch (responseMode) {
   case AGGREGATED_MODELS:  case AGGREGATED_MODEL_PAIR:
-    return truthModel.qoi();  break;
+    return pTruthModel->qoi();  break;
   default:
     return current_response().num_functions();   break;
   }
@@ -517,13 +519,13 @@ nested_variable_mappings(const SizetArray& c_index1,
   //secondaryADSVarMapTargets = ds_target2;
   //secondaryADRVarMapTargets = dr_target2;
 
-  size_t i, num_approx = approxModels.size();
+  size_t i, num_approx = pApproxModels.size();
   for (i=0; i<num_approx; ++i)
-    approxModels[i].nested_variable_mappings(c_index1, di_index1, ds_index1,
+    pApproxModels[i]->nested_variable_mappings(c_index1, di_index1, ds_index1,
 					     dr_index1, c_target2, di_target2,
 					     ds_target2, dr_target2);
 
-  truthModel.nested_variable_mappings(c_index1, di_index1, ds_index1,
+  pTruthModel->nested_variable_mappings(c_index1, di_index1, ds_index1,
 				      dr_index1, c_target2, di_target2,
 				      ds_target2, dr_target2);
 }
@@ -534,12 +536,12 @@ inline const SizetArray& EnsembleSurrModel::nested_acv1_indices() const
 
 
 inline const ShortArray& EnsembleSurrModel::nested_acv2_targets() const
-{ return truthModel.nested_acv2_targets(); }//secondaryACVarMapTargets
+{ return pTruthModel->nested_acv2_targets(); }//secondaryACVarMapTargets
 
 
 inline short EnsembleSurrModel::
 query_distribution_parameter_derivatives() const
-{ return truthModel.query_distribution_parameter_derivatives(); }
+{ return pTruthModel->query_distribution_parameter_derivatives(); }
 
 
 inline bool EnsembleSurrModel::force_rebuild()
@@ -573,23 +575,23 @@ inline bool EnsembleSurrModel::multifidelity() const
   //   configure_sequence() based on the ML/MF algorithm selection;
   //   otherwise defaults to true
 
-  return ( approxModels.size() &&
+  return ( pApproxModels.size() &&
 	   ( ensemblePrecedence == MULTIFIDELITY_PRECEDENCE ||
-	     truthModel.solution_levels() <= 1 ) );
+	     pTruthModel->solution_levels() <= 1 ) );
 }
 
 
 inline bool EnsembleSurrModel::multilevel() const
 {
-  return ( truthModel.solution_levels() > 1 &&
+  return ( pTruthModel->solution_levels() > 1 &&
 	   ( ensemblePrecedence == MULTILEVEL_PRECEDENCE ||
-	     approxModels.empty() ) );
+	     pApproxModels.empty() ) );
 }
 
 
 inline bool EnsembleSurrModel::multilevel_multifidelity() const
 {
-  return ( !approxModels.empty() && truthModel.solution_levels() > 1 &&
+  return ( !pApproxModels.empty() && pTruthModel->solution_levels() > 1 &&
 	   ( ensemblePrecedence != MULTILEVEL_PRECEDENCE &&
 	     ensemblePrecedence != MULTIFIDELITY_PRECEDENCE) );
 }
@@ -677,7 +679,7 @@ surrogate_response_mode(short mode)//, bool update_keys)
   case BYPASS_SURROGATE:
     // don't propagate to approx models since point of a surrogate bypass
     // is to get a surrogate-free truth evaluation
-    truthModel.surrogate_response_mode(mode);  break;
+    pTruthModel->surrogate_response_mode(mode);  break;
   //case AGGREGATED_MODELS: case AGGREGATED_MODEL_PAIR:
   //  resize_for_mode = true;                    break;
   }
@@ -729,10 +731,10 @@ inline void EnsembleSurrModel::stop_servers()
 
 inline bool EnsembleSurrModel::matching_all_interface_ids()
 {
-  size_t i, num_approx = approxModels.size();
-  const String& hf_id  = truthModel.interface_id();
+  size_t i, num_approx = pApproxModels.size();
+  const String& hf_id  = pTruthModel->interface_id();
   for (i=0; i<num_approx; ++i)
-    if (approxModels[i].interface_id() != hf_id)
+    if (pApproxModels[i]->interface_id() != hf_id)
       return false;
   return true;
 }
@@ -741,7 +743,7 @@ inline bool EnsembleSurrModel::matching_all_interface_ids()
 inline bool EnsembleSurrModel::matching_active_interface_ids()
 {
   size_t i, num_approx = surrModelKeys.size();  unsigned short lf_form;
-  const String& hf_id  = truthModel.interface_id();
+  const String& hf_id  = pTruthModel->interface_id();
   for (i=0; i<num_approx; ++i) {
     lf_form = surrModelKeys[i].retrieve_model_form();
     if (model_from_index(lf_form).interface_id() != hf_id)
@@ -819,9 +821,9 @@ inline Pecos::ActiveKey& EnsembleSurrModel::key_from_index(size_t k_index)
 
 inline Model& EnsembleSurrModel::model_from_index(unsigned short m_index)
 {
-  size_t num_approx = approxModels.size();
-  if      (m_index <  num_approx) return approxModels[m_index];
-  else if (m_index == num_approx) return truthModel;
+  size_t num_approx = pApproxModels.size();
+  if      (m_index <  num_approx) return *pApproxModels[m_index];
+  else if (m_index == num_approx) return *pTruthModel;
   else { // includes _NPOS
     Cerr << "Error: model index (" << m_index << ") out of range in "
 	 << "EnsembleSurrModel::model_from_index()" << std::endl;
@@ -833,9 +835,9 @@ inline Model& EnsembleSurrModel::model_from_index(unsigned short m_index)
 inline const Model& EnsembleSurrModel::
 model_from_index(unsigned short m_index) const
 {
-  size_t num_approx = approxModels.size();
-  if      (m_index <  num_approx) return approxModels[m_index];
-  else if (m_index == num_approx) return truthModel;
+  size_t num_approx = pApproxModels.size();
+  if      (m_index <  num_approx) return *pApproxModels[m_index];
+  else if (m_index == num_approx) return *pTruthModel;
   else { // includes _NPOS
     Cerr << "Error: model index (" << m_index << ") out of range in "
 	 << "EnsembleSurrModel::model_from_index()" << std::endl;
@@ -846,8 +848,8 @@ model_from_index(unsigned short m_index) const
 
 inline Model& EnsembleSurrModel::approx_model_from_index(unsigned short m_index)
 {
-  size_t num_approx = approxModels.size();
-  if (m_index <  num_approx) return approxModels[m_index];
+  size_t num_approx = pApproxModels.size();
+  if (m_index <  num_approx) return *pApproxModels[m_index];
   else { // includes _NPOS
     Cerr << "Error: model index (" << m_index << ") out of range in "
 	 << "EnsembleSurrModel::approx_model_from_index()" << std::endl;
@@ -859,8 +861,8 @@ inline Model& EnsembleSurrModel::approx_model_from_index(unsigned short m_index)
 inline const Model& EnsembleSurrModel::
 approx_model_from_index(unsigned short m_index) const
 {
-  size_t num_approx = approxModels.size();
-  if (m_index <  num_approx) return approxModels[m_index];
+  size_t num_approx = pApproxModels.size();
+  if (m_index <  num_approx) return *pApproxModels[m_index];
   else { // includes _NPOS
     Cerr << "Error: model index (" << m_index << ") out of range in "
 	 << "EnsembleSurrModel::approx_model_from_index()" << std::endl;
@@ -926,7 +928,7 @@ inline Model& EnsembleSurrModel::active_truth_model()
   if (hf_form == USHRT_MAX) { // should not happen
     Cerr << "Warning: resorting to default model form in EnsembleSurrModel::"
 	 << "truth_model()" << std::endl;
-    return truthModel;
+    return *pTruthModel;
   }
   else return model_from_index(hf_form);
 }
@@ -938,7 +940,7 @@ inline const Model& EnsembleSurrModel::active_truth_model() const
   if (hf_form == USHRT_MAX) { // should not happen
     Cerr << "Warning: resorting to default model form in EnsembleSurrModel::"
 	 << "truth_model()" << std::endl;
-    return truthModel;
+    return *pTruthModel;
   }
   else return model_from_index(hf_form);
 }
@@ -953,11 +955,11 @@ inline size_t EnsembleSurrModel::active_surrogate_keys() const
 
 
 inline Model& EnsembleSurrModel::truth_model()
-{ return truthModel; }
+{ return *pTruthModel; }
 
 
 inline const Model& EnsembleSurrModel::truth_model() const
-{ return truthModel; }
+{ return *pTruthModel; }
 
 
 inline void EnsembleSurrModel::assign_truth_key()
@@ -998,10 +1000,10 @@ inline void EnsembleSurrModel::assign_key(size_t i)
 
 inline void EnsembleSurrModel::clear_model_keys()
 {
-  size_t i, num_approx = approxModels.size();
+  size_t i, num_approx = pApproxModels.size();
   for (i=0; i<num_approx; ++i)
-    approxModels[i].clear_model_keys();
-  truthModel.clear_model_keys();
+    pApproxModels[i]->clear_model_keys();
+  pTruthModel->clear_model_keys();
 }
 
 
@@ -1099,16 +1101,16 @@ inline bool EnsembleSurrModel::test_asv(const ShortArray& asv)
 inline void EnsembleSurrModel::
 derived_subordinate_models(ModelList& ml, bool recurse_flag)
 {
-  size_t i, num_approx = approxModels.size();
+  size_t i, num_approx = pApproxModels.size();
   for (i=0; i<num_approx; ++i) {
-    ml.push_back(approxModels[i]);
+    ml.push_back(*pApproxModels[i]);
     if (recurse_flag)
-      approxModels[i].derived_subordinate_models(ml, true);
+      pApproxModels[i]->derived_subordinate_models(ml, true);
   }
   // models are ordered low to high, so append truth last
-  ml.push_back(truthModel);
+  ml.push_back(*pTruthModel);
   if (recurse_flag)
-    truthModel.derived_subordinate_models(ml, true);
+    pTruthModel->derived_subordinate_models(ml, true);
 }
 
 
@@ -1169,10 +1171,10 @@ primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
 {
   primaryRespFnWts = wts;
   if (recurse_flag) {
-    size_t i, num_approx = approxModels.size();
+    size_t i, num_approx = pApproxModels.size();
     for (i=0; i<num_approx; ++i)
-      approxModels[i].primary_response_fn_weights(wts, recurse_flag);
-    truthModel.primary_response_fn_weights(wts, recurse_flag);
+      pApproxModels[i]->primary_response_fn_weights(wts, recurse_flag);
+    pTruthModel->primary_response_fn_weights(wts, recurse_flag);
   }
 }
 
@@ -1183,13 +1185,13 @@ estimate_partition_bounds(int max_eval_concurrency)
   // responseMode is a run-time setting, so we are conservative on usage of
   // max_eval_concurrency as in derived_init_communicators()
 
-  probDescDB.set_db_model_nodes(truthModel.model_id());
+  probDescDB.set_db_model_nodes(pTruthModel->model_id());
   IntIntPair min_max_i,
-    min_max = truthModel.estimate_partition_bounds(max_eval_concurrency);
+    min_max = pTruthModel->estimate_partition_bounds(max_eval_concurrency);
 
-  size_t i, num_approx = approxModels.size();
+  size_t i, num_approx = pApproxModels.size();
   for (i=0; i<num_approx; ++i) {
-    Model& model_i = approxModels[i];
+    Model& model_i = *pApproxModels[i];
     probDescDB.set_db_model_nodes(model_i.model_id());
     min_max_i = model_i.estimate_partition_bounds(max_eval_concurrency);
     if (min_max_i.first  < min_max.first)  min_max.first  = min_max_i.first;
@@ -1204,10 +1206,10 @@ estimate_partition_bounds(int max_eval_concurrency)
 
 inline void EnsembleSurrModel::derived_init_serial()
 {
-  size_t i, num_approx = approxModels.size();
+  size_t i, num_approx = pApproxModels.size();
   for (i=0; i<num_approx; ++i)
-    approxModels[i].init_serial();
-  truthModel.init_serial();
+    pApproxModels[i]->init_serial();
+  pTruthModel->init_serial();
 }
 
 
@@ -1230,10 +1232,10 @@ inline void EnsembleSurrModel::inactive_view(short view, bool recurse_flag)
   currentVariables.inactive_view(view);
   userDefinedConstraints.inactive_view(view);
   if (recurse_flag) {
-    size_t i, num_approx = approxModels.size();
+    size_t i, num_approx = pApproxModels.size();
     for (i=0; i<num_approx; ++i)
-      approxModels[i].inactive_view(view, recurse_flag);
-    truthModel.inactive_view(view, recurse_flag);
+      pApproxModels[i]->inactive_view(view, recurse_flag);
+    pTruthModel->inactive_view(view, recurse_flag);
   }
 }
 
@@ -1241,11 +1243,11 @@ inline void EnsembleSurrModel::inactive_view(short view, bool recurse_flag)
 inline bool EnsembleSurrModel::evaluation_cache(bool recurse_flag) const
 {
   if (recurse_flag) {
-    if (truthModel.evaluation_cache(recurse_flag))
+    if (pTruthModel->evaluation_cache(recurse_flag))
       return true;
-    size_t i, num_approx = approxModels.size();
+    size_t i, num_approx = pApproxModels.size();
     for (i=0; i<num_approx; ++i)
-      if (approxModels[i].evaluation_cache(recurse_flag))
+      if (pApproxModels[i]->evaluation_cache(recurse_flag))
 	return true;
     return false;
   }
@@ -1257,11 +1259,11 @@ inline bool EnsembleSurrModel::evaluation_cache(bool recurse_flag) const
 inline bool EnsembleSurrModel::restart_file(bool recurse_flag) const
 {
   if (recurse_flag) {
-    if (truthModel.restart_file(recurse_flag))
+    if (pTruthModel->restart_file(recurse_flag))
       return true;
-    size_t i, num_approx = approxModels.size();
+    size_t i, num_approx = pApproxModels.size();
     for (i=0; i<num_approx; ++i)
-      if (approxModels[i].restart_file(recurse_flag))
+      if (pApproxModels[i]->restart_file(recurse_flag))
 	return true;
     return false;
   }
@@ -1272,10 +1274,10 @@ inline bool EnsembleSurrModel::restart_file(bool recurse_flag) const
 
 inline void EnsembleSurrModel::fine_grained_evaluation_counters()
 {
-  size_t i, num_approx = approxModels.size();
+  size_t i, num_approx = pApproxModels.size();
   for (i=0; i<num_approx; ++i)
-    approxModels[i].fine_grained_evaluation_counters();
-  truthModel.fine_grained_evaluation_counters();
+    pApproxModels[i]->fine_grained_evaluation_counters();
+  pTruthModel->fine_grained_evaluation_counters();
 }
 
 
@@ -1283,11 +1285,11 @@ inline void EnsembleSurrModel::
 print_evaluation_summary(std::ostream& s, bool minimal_header,
                          bool relative_count) const
 {
-  size_t i, num_approx = approxModels.size();
+  size_t i, num_approx = pApproxModels.size();
   for (i=0; i<num_approx; ++i)
-    approxModels[i].print_evaluation_summary(s, minimal_header, relative_count);
+    pApproxModels[i]->print_evaluation_summary(s, minimal_header, relative_count);
   // emulate low to high ordering
-  truthModel.print_evaluation_summary(s, minimal_header, relative_count);
+  pTruthModel->print_evaluation_summary(s, minimal_header, relative_count);
 }
 
 
@@ -1296,10 +1298,10 @@ inline void EnsembleSurrModel::warm_start_flag(const bool flag)
   // Note: supportsEstimDerivs prevents quasi-Newton Hessian accumulations
   warmStartFlag = flag; // for completeness
 
-  size_t i, num_approx = approxModels.size();
+  size_t i, num_approx = pApproxModels.size();
   for (i=0; i<num_approx; ++i)
-    approxModels[i].warm_start_flag(flag);
-  truthModel.warm_start_flag(flag);
+    pApproxModels[i]->warm_start_flag(flag);
+  pTruthModel->warm_start_flag(flag);
 }
 
 

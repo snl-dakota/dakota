@@ -34,16 +34,22 @@ EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db):
   if (truth_model_spec) ++num_models;
   size_t num_approx = num_models - 1;
 
+  // approxModels is now a container of models with corresponding pointers in pApproxModels.
+  // The orignial population relied on Model copies of the const & returned by get_model.
+  // I think we'll need to handle this with shared_ptr's.
   approxModels.resize(num_approx);
+  pApproxModels.resize(num_approx);
   for (i=0; i<num_approx; ++i) {
     problem_db.set_db_model_nodes(ensemble_model_ptrs[i]);
     approxModels[i] = problem_db.get_model();
-    check_submodel_compatibility(approxModels[i]);
+    pApproxModels[i] = &approxModels[i];
+    check_submodel_compatibility(*pApproxModels[i]);
   }
   if (truth_model_spec) problem_db.set_db_model_nodes(truth_model_ptr);
   else problem_db.set_db_model_nodes(ensemble_model_ptrs[num_approx]);
   truthModel = problem_db.get_model();
-  check_submodel_compatibility(truthModel);
+  pTruthModel = &truthModel;
+  check_submodel_compatibility(*pTruthModel);
 
   problem_db.set_db_model_nodes(model_index); // restore
 
@@ -85,19 +91,19 @@ void EnsembleSurrModel::assign_default_keys(short mode)
 
   // For now, use design of all models are active and specific fn sets are
   // requested via ASV.
-  unsigned short id = 0, num_approx = approxModels.size();
-  size_t truth_soln_lev = truthModel.solution_levels();
+  unsigned short id = 0, num_approx = pApproxModels.size();
+  size_t truth_soln_lev = pTruthModel->solution_levels();
   short reduction = Pecos::RAW_DATA; // most modes are raw data w/ no reduction
   switch (mode) {
   case AGGREGATED_MODELS: { //case DEFAULT_SURROGATE_RESP_MODE:
     size_t i, j, truth_index = truth_soln_lev - 1, num_lev, cntr = 0,
       num_combinations = truth_soln_lev;
     for (i=0; i<num_approx; ++i)
-      num_combinations += approxModels[i].solution_levels();
+      num_combinations += pApproxModels[i]->solution_levels();
     // arrange surrogate keys head to tail
     surrModelKeys.resize(num_combinations-1);
     for (i=0; i<num_approx; ++i) {
-      num_lev = approxModels[i].solution_levels();
+      num_lev = pApproxModels[i]->solution_levels();
       for (j=0; j<num_lev; ++j, ++cntr)
 	surrModelKeys[cntr] = Pecos::ActiveKey(id, Pecos::RAW_DATA, i, j);
     }
@@ -118,14 +124,14 @@ void EnsembleSurrModel::assign_default_keys(short mode)
     }
     else if (multifidelity()) { // first and last model form (no soln levels)
       truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx,
-				       truthModel.solution_level_cost_index());
+				       pTruthModel->solution_level_cost_index());
       surrModelKeys.resize(1);
       // Note: for modeKeyBufferSize estimation, must maintain consistency with
       // NonDExpansion::configure_{sequence,indices}() and key definition for
       // NonDMultilevelSampling::control_variate_mc() in terms of SZ_MAX usage,
       // since this suppresses allocation of a solution level array.
       surrModelKeys[0]  = Pecos::ActiveKey(id, Pecos::RAW_DATA, 0,
-        approxModels[0].solution_level_cost_index());
+        pApproxModels[0]->solution_level_cost_index());
     }
     else if (multilevel()) {
       truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA,
@@ -180,8 +186,8 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 
   if (recurse_flag) {
     size_t i, model_index = probDescDB.get_db_model_node(), // for restoration
-              num_models  = approxModels.size();
-    if (!truthModel.is_null()) ++num_models;
+              num_models  = pApproxModels.size();
+    if (!pTruthModel->is_null()) ++num_models;
 
     // For now, use the DB method name to construct a list of methods that
     // might perform gradient-based minimization.  Note: EnsembleSurrModel
@@ -319,8 +325,8 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
       // specialization and just generalize init/set/free to use the max
       // of the two values...
 
-      size_t i, num_models = approxModels.size();  int cap_i;
-      if (!truthModel.is_null()) ++num_models;
+      size_t i, num_models = pApproxModels.size();  int cap_i;
+      if (!pTruthModel->is_null()) ++num_models;
       asynchEvalFlag = false;  evaluationCapacity = 1;
       for (i=0; i<num_models; ++i) {
 	Model& model_i = model_from_index(i);
@@ -349,8 +355,8 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 {
   if (recurse_flag) {
 
-    size_t i, num_models = approxModels.size();
-    if (!truthModel.is_null()) ++num_models;
+    size_t i, num_models = pApproxModels.size();
+    if (!pTruthModel->is_null()) ++num_models;
     bool extra_deriv_config = true; // falls through if not defined
     for (i=0; i<num_models; ++i) {
       Model& model_i = model_from_index(i);
@@ -392,14 +398,14 @@ bool EnsembleSurrModel::initialize_mapping(ParLevLIter pl_iter)
 
   // push inactive variable values/bounds from currentVariables and
   // userDefinedConstraints into {truthModel,approxModels}
-  size_t i, num_approx = approxModels.size();
+  size_t i, num_approx = pApproxModels.size();
   for (i=0; i<num_approx; ++i) {
-    approxModels[i].initialize_mapping(pl_iter);
-    init_model(approxModels[i]);
+    pApproxModels[i]->initialize_mapping(pl_iter);
+    init_model(*pApproxModels[i]);
   }
 
-  truthModel.initialize_mapping(pl_iter);
-  init_model(truthModel);
+  pTruthModel->initialize_mapping(pl_iter);
+  init_model(*pTruthModel);
 
   return false; // no change to problem size
 }
@@ -411,11 +417,11 @@ bool EnsembleSurrModel::initialize_mapping(ParLevLIter pl_iter)
     execution within Model::initialize_mapping(). */
 bool EnsembleSurrModel::finalize_mapping()
 {
-  size_t i, num_approx = approxModels.size();
+  size_t i, num_approx = pApproxModels.size();
   for (i=0; i<num_approx; ++i)
-    approxModels[i].finalize_mapping();
+    pApproxModels[i]->finalize_mapping();
 
-  truthModel.finalize_mapping();
+  pTruthModel->finalize_mapping();
 
   Model::finalize_mapping();
 
@@ -1498,11 +1504,11 @@ void EnsembleSurrModel::create_tabular_datastream()
     // NonDEnsembleSampling::sequenceType, so we tabulate both model forms
     // and resolutions.
     size_t l, num_l, m, num_approx, num_m, num_m_l = 0;
-    num_m = num_approx = approxModels.size();
+    num_m = num_approx = pApproxModels.size();
     for (m=0; m<num_approx; ++m)
-      num_m_l += approxModels[m].solution_levels();
-    if (!truthModel.is_null())
-      { ++num_m; num_m_l += truthModel.solution_levels(); }
+      num_m_l += pApproxModels[m]->solution_levels();
+    if (!pTruthModel->is_null())
+      { ++num_m; num_m_l += pTruthModel->solution_levels(); }
     // -------------
     // Interface ids
     // -------------
@@ -1612,7 +1618,7 @@ void EnsembleSurrModel::create_tabular_datastream()
       mgr.append_tabular_header(hf_vars, 0, solnCntlAVIndex); // leading set
 
       // output paired solution control values
-      const String& soln_cntl_label = solution_control_label(truthModel);
+      const String& soln_cntl_label = solution_control_label(*pTruthModel);
       StringArray tab_labels(2);
       tab_labels[0] = soln_cntl_label + "_L";  // = "HF_" + soln_cntl_label;
       tab_labels[1] = soln_cntl_label + "_Lm1";// = "LF_" + soln_cntl_label;
@@ -1686,15 +1692,15 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
   switch (responseMode) {
 
   case AGGREGATED_MODELS: { // use same #Cols since commonly alternated
-    size_t m, num_m = approxModels.size();
-    if (!truthModel.is_null()) ++num_m;
+    size_t m, num_m = pApproxModels.size();
+    if (!pTruthModel->is_null()) ++num_m;
     // -------------
     // Interface ids
     // -------------
     bool one_iface_id = matching_all_interface_ids();
     StringArray iface_ids;
     if (one_iface_id) // invariant (sameInterfaceInstance can vary at run time)
-      iface_ids.push_back(truthModel.interface_id());
+      iface_ids.push_back(pTruthModel->interface_id());
     else
       for (m=0; m<num_m; ++m) {
 	if (find_model_in_keys(m))
@@ -1818,10 +1824,10 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
 void EnsembleSurrModel::resize_response(bool use_virtual_counts)
 {
   size_t num_meta,
-    num_truth_md = truthModel.current_response().metadata().size(),
+    num_truth_md = pTruthModel->current_response().metadata().size(),
     num_truth_fns = (use_virtual_counts) ?
-    truthModel.qoi() : // allow models to consume lower-level aggregations
-    ModelUtils::response_size(truthModel); // raw counts align w/ currentResponse raw count
+    pTruthModel->qoi() : // allow models to consume lower-level aggregations
+    ModelUtils::response_size(*pTruthModel); // raw counts align w/ currentResponse raw count
 
   switch (responseMode) {
   case AGGREGATED_MODELS: {
@@ -2268,7 +2274,7 @@ void EnsembleSurrModel::recursive_apply(const Variables& vars, Response& resp)
     single_apply(vars, resp, activeKey);
     break;
   case FULL_MODEL_FORM_CORRECTION: {
-    size_t num_models = approxModels.size() + 1;
+    size_t num_models = pApproxModels.size() + 1;
     Pecos::ActiveKey& surr_key0 = surrModelKeys[0];
     unsigned short i, lf_form = surr_key0.retrieve_model_form();
     // perform a 1D sweep starting from current surrModelKey; this could be
