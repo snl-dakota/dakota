@@ -445,9 +445,9 @@ void RandomFieldModel::vars_mapping(const Variables& recast_augmented_vars,
 
     // BMA TODO: generalize this for other views; for now, assume cv()
     // starts with normal uncertain
-    size_t num_sm_cv = ModelUtils::cv(rfmInstance->subModel);
+    size_t num_sm_cv = ModelUtils::cv(*rfmInstance->pSubModel);
     UShortMultiArrayConstView sm_cv_types
-      = ModelUtils::continuous_variable_types(rfmInstance->subModel);
+      = ModelUtils::continuous_variable_types(*rfmInstance->pSubModel);
     size_t num_sm_normal
       = std::count(sm_cv_types.begin(), sm_cv_types.end(), NORMAL_UNCERTAIN);
 
