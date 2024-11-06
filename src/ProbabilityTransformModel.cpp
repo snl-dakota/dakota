@@ -81,7 +81,7 @@ ProbabilityTransformModel(const Model& x_model, short u_space_type,
   // transformation is sufficient for this purpose.
   inverse_mappings(vars_x_to_u_mapping, NULL, NULL, NULL);
   // initialize currentVariables based on subModel initial state
-  inverse_transform_variables(subModel.current_variables(), currentVariables);
+  inverse_transform_variables(pSubModel->current_variables(), currentVariables);
 }
 
 
@@ -205,7 +205,7 @@ update_model_bounds(bool truncate_bnds, Real bnd)
 
   const Pecos::ShortArray& u_types = mvDist.random_variable_types();
   const std::vector<Pecos::RandomVariable>& x_rv
-    = subModel.multivariate_distribution().random_variables();
+    = pSubModel->multivariate_distribution().random_variables();
   size_t num_cv = currentVariables.cv(), num_rv = u_types.size();
   // [-1,1] are u-space bounds for design, state, epistemic, uniform, & beta
   RealVector c_l_bnds(num_cv, false);  c_l_bnds = -1.;
@@ -290,8 +290,8 @@ update_model_bounds(bool truncate_bnds, Real bnd)
 	case Pecos::LOGUNIFORM: case Pecos::TRIANGULAR:
 	case Pecos::HISTOGRAM_BIN:
 	  // bounded distributions: x-space has desired bounds
-	  c_l_bnds[cv_cntr] = ModelUtils::continuous_lower_bound(subModel, cv_cntr);
-	  c_u_bnds[cv_cntr] = ModelUtils::continuous_upper_bound(subModel, cv_cntr);
+	  c_l_bnds[cv_cntr] = ModelUtils::continuous_lower_bound(*pSubModel, cv_cntr);
+	  c_u_bnds[cv_cntr] = ModelUtils::continuous_upper_bound(*pSubModel, cv_cntr);
 	  break;
 	// Note: Could use subModel bounds for the following cases as well
 	// except NIDR uses +/-3 sigma, whereas here we're using +/-10 sigma
@@ -334,8 +334,8 @@ update_model_bounds(bool truncate_bnds, Real bnd)
 	switch (u_types[rv_cntr]) {
 	case Pecos::CONTINUOUS_INTERVAL_UNCERTAIN:
 	  // bounded distributions: x-space has desired bounds
-	  c_l_bnds[cv_cntr] = ModelUtils::continuous_lower_bound(subModel, cv_cntr);
-	  c_u_bnds[cv_cntr] = ModelUtils::continuous_upper_bound(subModel, cv_cntr);
+	  c_l_bnds[cv_cntr] = ModelUtils::continuous_lower_bound(*pSubModel, cv_cntr);
+	  c_u_bnds[cv_cntr] = ModelUtils::continuous_upper_bound(*pSubModel, cv_cntr);
 	  break;
 	}
       }
@@ -377,8 +377,8 @@ update_model_bounds(bool truncate_bnds, Real bnd)
 	case Pecos::LOGUNIFORM:  case Pecos::TRIANGULAR:
 	case Pecos::HISTOGRAM_BIN:                     // bounded distributions
 	  // 2-sided: can rely on subModel bounds
-	  c_l_bnds[cv_cntr] = ModelUtils::continuous_lower_bound(subModel, cv_cntr);
-	  c_u_bnds[cv_cntr] = ModelUtils::continuous_upper_bound(subModel, cv_cntr); break;
+	  c_l_bnds[cv_cntr] = ModelUtils::continuous_lower_bound(*pSubModel, cv_cntr);
+	  c_u_bnds[cv_cntr] = ModelUtils::continuous_upper_bound(*pSubModel, cv_cntr); break;
 	}
       }
     }
@@ -392,8 +392,8 @@ update_model_bounds(bool truncate_bnds, Real bnd)
 	switch (u_types[rv_cntr]) {
 	case Pecos::CONTINUOUS_INTERVAL_UNCERTAIN:
 	  // bounded distributions: x-space has desired bounds
-	  c_l_bnds[cv_cntr] = ModelUtils::continuous_lower_bound(subModel, cv_cntr);
-	  c_u_bnds[cv_cntr] = ModelUtils::continuous_upper_bound(subModel, cv_cntr);
+	  c_l_bnds[cv_cntr] = ModelUtils::continuous_lower_bound(*pSubModel, cv_cntr);
+	  c_u_bnds[cv_cntr] = ModelUtils::continuous_upper_bound(*pSubModel, cv_cntr);
 	  break;
 	}
       }
@@ -532,7 +532,7 @@ initialize_distribution_types(short u_space_type,
 void ProbabilityTransformModel::verify_correlation_support(short u_space_type)
 {
   Pecos::MultivariateDistribution& x_dist
-    = subModel.multivariate_distribution();
+    = pSubModel->multivariate_distribution();
   if (x_dist.correlation()) {
     const Pecos::ShortArray&   x_types = x_dist.random_variable_types();
     const Pecos::ShortArray&   u_types = mvDist.random_variable_types();
@@ -626,7 +626,7 @@ unsigned short ProbabilityTransformModel::
 pecos_to_dakota_variable_type(unsigned short pecos_var_type, size_t rv_index)
 {
   const SizetArray& vc_totals
-    = subModel.current_variables().shared_data().components_totals();
+    = pSubModel->current_variables().shared_data().components_totals();
   switch (pecos_var_type) {
   case Pecos::CONTINUOUS_RANGE:    // non-unique mapping
     return (rv_index < vc_totals[TOTAL_CDV]) ? // not subject to active subsets
@@ -725,7 +725,7 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
   const ShortArray& x_asv = x_response.active_set_request_vector();
   const SizetArray& x_dvv = x_response.active_set_derivative_vector();
   Pecos::MultivariateDistribution& x_dist
-    = ptmInstance->subModel.multivariate_distribution();
+    = ptmInstance->pSubModel->multivariate_distribution();
   size_t i, j, num_fns = x_asv.size(), num_deriv_vars = x_dvv.size();
   if (u_asv.size() != num_fns) {
     Cerr << "Error: inconsistent response function definition in Probability"
@@ -859,7 +859,7 @@ set_u_to_x_mapping(const Variables& u_vars, const ActiveSet& u_set,
 		   ActiveSet& x_set)
 {
   Pecos::MultivariateDistribution& x_dist
-    = ptmInstance->subModel.multivariate_distribution();
+    = ptmInstance->pSubModel->multivariate_distribution();
   //if (ptmInstance->distParamDerivs > NO_DERIVS) {
   //}
   //else
