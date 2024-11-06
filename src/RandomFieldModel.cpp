@@ -167,7 +167,7 @@ void RandomFieldModel::get_field_data()
     // BMA TODO: relax assumption of allSamples / compactMode
     // Generalize to discrete vars
     if (expansionForm == RF_PCA_GP) {
-      rfBuildVars.reshape(ModelUtils::cv(subModel), num_samples);
+      rfBuildVars.reshape(ModelUtils::cv(*pSubModel), num_samples);
       rfBuildVars.assign(daceIterator.all_samples());
     }
     rfBuildData.reshape(num_samples, numFns);
@@ -239,7 +239,7 @@ void RandomFieldModel::identify_field_model()
     SharedApproxData sharedData;
 
     // BMA TODO: generalize to discrete vars if possible
-    sharedData = SharedApproxData(approx_type, approx_order, ModelUtils::cv(subModel),
+    sharedData = SharedApproxData(approx_type, approx_order, ModelUtils::cv(*pSubModel),
                                   data_order, output_level);
 
     // build one GP for each Principal Component
@@ -289,11 +289,11 @@ void RandomFieldModel::initialize_recast()
   // We assume the mapping is for all active variables, but only
   // normal uncertain get modified
   size_t submodel_vars = 
-    ModelUtils::cv(subModel)+ ModelUtils::div(subModel) + ModelUtils::dsv(subModel) + ModelUtils::drv(subModel);
+    ModelUtils::cv(*pSubModel)+ ModelUtils::div(*pSubModel) + ModelUtils::dsv(*pSubModel) + ModelUtils::drv(*pSubModel);
   size_t recast_vars = submodel_vars + actualReducedRank;
 
   // BMA TODO: This is wrong!  Assumes normal lead the cv array!
-  UShortMultiArrayConstView sm_cv_types = ModelUtils::continuous_variable_types(subModel);
+  UShortMultiArrayConstView sm_cv_types = ModelUtils::continuous_variable_types(*pSubModel);
   size_t num_sm_normal
     = std::count(sm_cv_types.begin(), sm_cv_types.end(), NORMAL_UNCERTAIN);
 
@@ -320,10 +320,10 @@ void RandomFieldModel::initialize_recast()
   // Primary and secondary mapping are one-to-one (NULL callbacks)
   // TODO: can we get RecastModel to tolerate empty indices when no
   // map is present?
-  size_t num_primary = subModel.num_primary_fns(),
-    num_secondary    = subModel.num_secondary_fns(),
+  size_t num_primary = pSubModel->num_primary_fns(),
+    num_secondary    = pSubModel->num_secondary_fns(),
     num_recast_fns   = num_primary + num_secondary,
-    recast_secondary_offset = ModelUtils::num_nonlinear_ineq_constraints(subModel);
+    recast_secondary_offset = ModelUtils::num_nonlinear_ineq_constraints(*pSubModel);
 
   Sizet2DArray primary_resp_map_indices(num_primary);
   for (size_t i=0; i<num_primary; i++) {
@@ -341,13 +341,13 @@ void RandomFieldModel::initialize_recast()
 
   // Initial response order for the newly built subspace model same as
   // the subModel (does not augment with gradient request)
-  const Response& curr_resp = subModel.current_response();
+  const Response& curr_resp = pSubModel->current_response();
   short recast_resp_order = 1; // recast resp order to be same as original resp
   if (!curr_resp.function_gradients().empty()) recast_resp_order |= 2;
   if (!curr_resp.function_hessians().empty())  recast_resp_order |= 4;
 
   bool copy_values;
-  RecastModel::init_sizes(subModel.current_variables().view(), vars_comps_total,
+  RecastModel::init_sizes(pSubModel->current_variables().view(), vars_comps_total,
 			  all_relax_di, all_relax_dr, num_primary,
 			  num_secondary, recast_secondary_offset,
 			  recast_resp_order, copy_values);
@@ -366,7 +366,7 @@ void RandomFieldModel::initialize_recast()
 /// TODO: augment normal uncVars for KL case
 SizetArray RandomFieldModel::variables_resize()
 {
-  const SharedVariablesData& svd = subModel.current_variables().shared_data();
+  const SharedVariablesData& svd = pSubModel->current_variables().shared_data();
   SizetArray vc_totals = svd.components_totals();
 
   // the map size only changes for KL to augment the coeffs by
@@ -390,7 +390,7 @@ void RandomFieldModel::initialize_rf_coeffs()
 
     // get submodel normal parameters (could get from current object as well)
     const Pecos::MultivariateDistribution& sm_dist
-      = subModel.multivariate_distribution();
+      = pSubModel->multivariate_distribution();
     std::shared_ptr<Pecos::MarginalsCorrDistribution> sm_mvd_rep =
       std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
       (sm_dist.multivar_dist_rep());
@@ -408,7 +408,7 @@ void RandomFieldModel::initialize_rf_coeffs()
     normal_ub.resize(num_sm_normal + actualReducedRank);
     // BMA TODO: update label management to not assume normal are leading vars
     StringMultiArrayConstView sm_cv_labels = 
-      ModelUtils::continuous_variable_labels(subModel);
+      ModelUtils::continuous_variable_labels(*pSubModel);
     for (int i=0 ; i<num_sm_normal; ++i)
       currentVariables.continuous_variable_label(sm_cv_labels[i], i);
     for (int i=0; i<actualReducedRank; ++i) {
@@ -518,7 +518,7 @@ void RandomFieldModel::generate_kl_realization()
   // BMA TODO: properly extract the N(0,1) vars from their place in
   // the overall vector when not in aleatory view (what's in the total
   // vector depends on the view...)
-  UShortMultiArrayConstView sm_cv_types = ModelUtils::continuous_variable_types(subModel);
+  UShortMultiArrayConstView sm_cv_types = ModelUtils::continuous_variable_types(*pSubModel);
   size_t num_sm_normal
     = std::count(sm_cv_types.begin(), sm_cv_types.end(), NORMAL_UNCERTAIN);
   const RealVector& augmented_cvars = currentVariables.continuous_variables();
