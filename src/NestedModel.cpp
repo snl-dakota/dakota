@@ -117,12 +117,13 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
   problem_db.set_db_list_nodes(subMethodPointer); // even if empty
 
   subModel = problem_db.get_model();
+  pSubModel = &subModel;
   //check_submodel_compatibility(subModel); // sanity checks performed below
   // if outer level output is verbose/debug, request fine-grained evaluation 
   // reporting for purposes of the final output summary.  This allows verbose
   // final summaries without verbose output on every sub-iterator completion.
   if (outputLevel > NORMAL_OUTPUT)
-    subModel.fine_grained_evaluation_counters();
+    pSubModel->fine_grained_evaluation_counters();
 
   problem_db.set_db_method_node(method_index); // restore method only
   problem_db.set_db_model_nodes(model_index);  // restore all model nodes
@@ -175,13 +176,13 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
   UShortMultiArrayConstView curr_dr_types
     = currentVariables.discrete_real_variable_types();
   UShortMultiArrayConstView submodel_a_c_types
-    = ModelUtils::all_continuous_variable_types(subModel);
+    = ModelUtils::all_continuous_variable_types(*pSubModel);
   UShortMultiArrayConstView submodel_a_di_types
-    = ModelUtils::all_discrete_int_variable_types(subModel);
+    = ModelUtils::all_discrete_int_variable_types(*pSubModel);
   UShortMultiArrayConstView submodel_a_ds_types
-    = ModelUtils::all_discrete_string_variable_types(subModel);
+    = ModelUtils::all_discrete_string_variable_types(*pSubModel);
   UShortMultiArrayConstView submodel_a_dr_types
-    = ModelUtils::all_discrete_real_variable_types(subModel);
+    = ModelUtils::all_discrete_real_variable_types(*pSubModel);
   size_t curr_i, sm_acv_cntr = 0, sm_adiv_cntr = 0, sm_adsv_cntr = 0,
     sm_adrv_cntr = 0, sm_acv_avail = 0, sm_adiv_avail = 0, sm_adsv_avail = 0,
     sm_adrv_avail = 0;
@@ -539,7 +540,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
   // since any model recastings will pick up the inactive view (and inactive
   // view differences cause problems with recursion updating).
   if (inactive_sm_view != EMPTY_VIEW)
-    subModel.inactive_view(inactive_sm_view); // recurse
+    pSubModel->inactive_view(inactive_sm_view); // recurse
 
   currentResponse.reshape_metadata(0);
 }
@@ -594,7 +595,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   subIteratorSched.update(modelPCIter);
   // > define min and max processors per iterator
   IntIntPair ppi_pr
-    = subIteratorSched.configure(probDescDB, subIterator, subModel);
+    = subIteratorSched.configure(probDescDB, subIterator, *pSubModel);
   // > passed in max_eval_concurrency is the outer nested model concurrency
   subIteratorSched.partition(max_eval_concurrency, ppi_pr);
   // > now augment prev subIterator instantiations for additional mi_pl ranks
@@ -602,7 +603,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   // > idle server is managed here; a dedicated master processor is managed
   //   within IteratorScheduler::init_iterator().
   if (subIteratorSched.iteratorServerId <= subIteratorSched.numIteratorServers)
-    subIteratorSched.init_iterator(probDescDB, subIterator, subModel);
+    subIteratorSched.init_iterator(probDescDB, subIterator, *pSubModel);
 
   // > restore all DB nodes
   probDescDB.set_db_method_node(method_index);
@@ -842,41 +843,41 @@ resolve_map1(const String& map1, size_t& ac_index1, size_t& adi_index1,
 	     short& inactive_sm_view)
 {
   adi_index1 = ads_index1 = adr_index1 = _NPOS;
-  ac_index1 = find_index(ModelUtils::all_continuous_variable_labels(subModel), map1);
+  ac_index1 = find_index(ModelUtils::all_continuous_variable_labels(*pSubModel), map1);
   if (ac_index1 == _NPOS) {
-    adi_index1 = find_index(ModelUtils::all_discrete_int_variable_labels(subModel), map1);
+    adi_index1 = find_index(ModelUtils::all_discrete_int_variable_labels(*pSubModel), map1);
     if (adi_index1 == _NPOS) {
       ads_index1
-	= find_index(ModelUtils::all_discrete_string_variable_labels(subModel), map1);
+	= find_index(ModelUtils::all_discrete_string_variable_labels(*pSubModel), map1);
       if (ads_index1 == _NPOS) {
 	adr_index1
-	  = find_index(ModelUtils::all_discrete_real_variable_labels(subModel), map1);
+	  = find_index(ModelUtils::all_discrete_real_variable_labels(*pSubModel), map1);
         if (adr_index1 == _NPOS) {
 	  Cerr << "\nError: primary mapping " << map1 << " could not be "
 	       << "matched within any sub-model variable labels." << std::endl;
 	  abort_handler(MODEL_ERROR);
 	}
-	else if (find_index(ModelUtils::discrete_real_variable_labels(subModel), map1)
+	else if (find_index(ModelUtils::discrete_real_variable_labels(*pSubModel), map1)
 		 == _NPOS) // inactive DRV target
 	  update_inactive_view(
-	    ModelUtils::all_discrete_real_variable_types(subModel)[adr_index1],
+	    ModelUtils::all_discrete_real_variable_types(*pSubModel)[adr_index1],
 	    inactive_sm_view);
       }
-      else if (find_index(ModelUtils::discrete_string_variable_labels(subModel), map1)
+      else if (find_index(ModelUtils::discrete_string_variable_labels(*pSubModel), map1)
 	       == _NPOS) // inactive DSV target
 	update_inactive_view(
-	  ModelUtils::all_discrete_string_variable_types(subModel)[ads_index1],
+	  ModelUtils::all_discrete_string_variable_types(*pSubModel)[ads_index1],
 	  inactive_sm_view);
     }
-    else if (find_index(ModelUtils::discrete_int_variable_labels(subModel), map1)
+    else if (find_index(ModelUtils::discrete_int_variable_labels(*pSubModel), map1)
 	     == _NPOS) // inactive DIV target
       update_inactive_view(
-	ModelUtils::all_discrete_int_variable_types(subModel)[adi_index1],
+	ModelUtils::all_discrete_int_variable_types(*pSubModel)[adi_index1],
 	inactive_sm_view);
   }
-  else if (find_index(ModelUtils::continuous_variable_labels(subModel), map1)
+  else if (find_index(ModelUtils::continuous_variable_labels(*pSubModel), map1)
 	   == _NPOS) // inactive CV target
-    update_inactive_view(ModelUtils::all_continuous_variable_types(subModel)[ac_index1],
+    update_inactive_view(ModelUtils::all_continuous_variable_types(*pSubModel)[ac_index1],
 			 inactive_sm_view);
 
   active1ACVarMapIndices[curr_index]  =  ac_index1;
@@ -900,7 +901,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
 	= active2ADSVarMapTargets[curr_index]
 	= active2ADRVarMapTargets[curr_index] = Pecos::NO_TARGET;
     else if (ac_index1 != _NPOS) {
-      unsigned short type = ModelUtils::all_continuous_variable_types(subModel)[ac_index1];
+      unsigned short type = ModelUtils::all_continuous_variable_types(*pSubModel)[ac_index1];
       if (type == CONTINUOUS_DESIGN || type == CONTINUOUS_STATE) {
 	if (map2 == "lower_bound")
 	  active2ACVarMapTargets[curr_index] = Pecos::CR_LWR_BND;
@@ -1082,7 +1083,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
     }
     else if (adi_index1 != _NPOS) {
       unsigned short type
-	= ModelUtils::all_discrete_int_variable_types(subModel)[adi_index1];
+	= ModelUtils::all_discrete_int_variable_types(*pSubModel)[adi_index1];
       if (type == POISSON_UNCERTAIN) {
 	if (map2 == "lambda")
 	  active2ADIVarMapTargets[curr_index] = Pecos::P_LAMBDA;
@@ -1130,7 +1131,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
     }
     else if (ads_index1 != _NPOS) {
       unsigned short type
-	= ModelUtils::all_discrete_string_variable_types(subModel)[ads_index1];
+	= ModelUtils::all_discrete_string_variable_types(*pSubModel)[ads_index1];
       Cerr << "\nError: " << type << " variable type not supported in "
 	   << "secondary real mappings\n       for primary discrete string "
 	   << "variable targets." << std::endl;
@@ -1140,7 +1141,7 @@ resolve_real_variable_mapping(const String& map1, const String& map2,
     }
     else if (adr_index1 != _NPOS) {
       unsigned short type
-	= ModelUtils::all_discrete_real_variable_types(subModel)[adr_index1];
+	= ModelUtils::all_discrete_real_variable_types(*pSubModel)[adr_index1];
       Cerr << "\nError: " << type << " variable type not supported in "
 	   << "secondary real mappings\n       for primary discrete real "
 	   << "variable targets." << std::endl;
@@ -1166,7 +1167,7 @@ resolve_integer_variable_mapping(const String& map1, const String& map2,
 	= active2ADSVarMapTargets[curr_index]
 	= active2ADRVarMapTargets[curr_index] = Pecos::NO_TARGET;
     else if (ac_index1 != _NPOS) {
-      unsigned short type = ModelUtils::all_continuous_variable_types(subModel)[ac_index1];
+      unsigned short type = ModelUtils::all_continuous_variable_types(*pSubModel)[ac_index1];
       Cerr << "\nError: " << type << " variable type not supported in "
 	   << "secondary integer mappings\n       for primary continuous "
 	   << "variable targets." << std::endl;
@@ -1176,7 +1177,7 @@ resolve_integer_variable_mapping(const String& map1, const String& map2,
     }
     else if (adi_index1 != _NPOS) {
       unsigned short type
-	= ModelUtils::all_discrete_int_variable_types(subModel)[adi_index1];
+	= ModelUtils::all_discrete_int_variable_types(*pSubModel)[adi_index1];
       if (type == DISCRETE_DESIGN_RANGE || type == DISCRETE_STATE_RANGE) {
 	if (map2 == "lower_bound")
 	  active2ADIVarMapTargets[curr_index] = Pecos::DR_LWR_BND;
@@ -1230,7 +1231,7 @@ resolve_integer_variable_mapping(const String& map1, const String& map2,
     }
     else if (ads_index1 != _NPOS) {
       unsigned short type
-	= ModelUtils::all_discrete_string_variable_types(subModel)[ads_index1];
+	= ModelUtils::all_discrete_string_variable_types(*pSubModel)[ads_index1];
       Cerr << "\nError: " << type << " variable type not supported in "
 	   << "secondary integer mappings\n       for primary discrete string "
 	   << "variable targets." << std::endl;
@@ -1240,7 +1241,7 @@ resolve_integer_variable_mapping(const String& map1, const String& map2,
     }
     else if (adr_index1 != _NPOS) {
       unsigned short type
-	= ModelUtils::all_discrete_real_variable_types(subModel)[adr_index1];
+	= ModelUtils::all_discrete_real_variable_types(*pSubModel)[adr_index1];
       Cerr << "\nError: " << type << " variable type not supported in "
 	   << "secondary integer mappings\n       for primary discrete real "
 	   << "variable targets." << std::endl;
@@ -1266,7 +1267,7 @@ resolve_string_variable_mapping(const String& map1, const String& map2,
 	= active2ADSVarMapTargets[curr_index]
 	= active2ADRVarMapTargets[curr_index] = Pecos::NO_TARGET;
     else if (ac_index1 != _NPOS) {
-      unsigned short type = ModelUtils::all_continuous_variable_types(subModel)[ac_index1];
+      unsigned short type = ModelUtils::all_continuous_variable_types(*pSubModel)[ac_index1];
       Cerr << "\nError: " << type << " variable type not supported in "
 	   << "secondary string mappings\n       for primary continuous "
 	   << "variable targets." << std::endl;
@@ -1276,7 +1277,7 @@ resolve_string_variable_mapping(const String& map1, const String& map2,
     }
     else if (adi_index1 != _NPOS) {
       unsigned short type
-	= ModelUtils::all_discrete_int_variable_types(subModel)[adi_index1];
+	= ModelUtils::all_discrete_int_variable_types(*pSubModel)[adi_index1];
       Cerr << "\nError: " << type << " variable type not supported in "
 	   << "secondary string mappings\n       for primary discrete integer "
 	   << "variable targets." << std::endl;
@@ -1286,7 +1287,7 @@ resolve_string_variable_mapping(const String& map1, const String& map2,
     }
     else if (ads_index1 != _NPOS) {
       unsigned short type
-	= ModelUtils::all_discrete_string_variable_types(subModel)[ads_index1];
+	= ModelUtils::all_discrete_string_variable_types(*pSubModel)[ads_index1];
       Cerr << "\nError: " << type << " variable type not supported in "
 	   << "secondary string mappings\n       for primary discrete string "
 	   << "variable targets." << std::endl;
@@ -1296,7 +1297,7 @@ resolve_string_variable_mapping(const String& map1, const String& map2,
     }
     else if (adr_index1 != _NPOS) {
       unsigned short type
-	= ModelUtils::all_discrete_real_variable_types(subModel)[adr_index1];
+	= ModelUtils::all_discrete_real_variable_types(*pSubModel)[adr_index1];
       Cerr << "\nError: " << type << " variable type not supported in "
 	   << "secondary string mappings\n       for primary discrete real "
 	   << "variable targets." << std::endl;
@@ -1631,7 +1632,7 @@ set_mapping(const ActiveSet& mapped_set, ActiveSet& opt_interface_set,
     SizetMultiArrayConstView cv_ids
       = currentVariables.continuous_variable_ids();
     SizetMultiArrayConstView sm_acv_ids
-      = ModelUtils::all_continuous_variable_ids(subModel);
+      = ModelUtils::all_continuous_variable_ids(*pSubModel);
 
     /* Old Approach: subIterator must decipher/replace top-level DVV as reqd.
     // Note: the ordering of top-level active variables may differ from the
@@ -2027,11 +2028,11 @@ void NestedModel::component_parallel_mode(short mode)
     // ::schedule_iterators(), but subModel eval scheduling is terminated here.
     else if (componentParallelMode == SUB_MODEL_MODE &&
 	     !subIteratorSched.messagePass) {
-      ParConfigLIter pc_it = subModel.parallel_configuration_iterator();
-      size_t index = subModel.mi_parallel_level_index();
+      ParConfigLIter pc_it = pSubModel->parallel_configuration_iterator();
+      size_t index = pSubModel->mi_parallel_level_index();
       if (pc_it->mi_parallel_level_defined(index) && 
 	  pc_it->mi_parallel_level(index).server_communicator_size() > 1)
-	subModel.stop_servers();
+	pSubModel->stop_servers();
     }
   }
 
@@ -2086,7 +2087,7 @@ void NestedModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
       else { // service the subModel for a single subIterator execution
 	ParLevLIter si_pl_iter // inner context
 	  = modelPCIter->mi_parallel_level_iterator(subIteratorSched.miPLIndex);
-	subModel.serve_run(si_pl_iter,
+	pSubModel->serve_run(si_pl_iter,
 			   subIterator.maximum_evaluation_concurrency());
       }
     }
@@ -2105,7 +2106,7 @@ void NestedModel::update_inactive_view(short new_view, short& view)
     // be inner inactive by computing the complement of the inner active.
     // Can't use inactive types/ids, since inactive is either not defined
     // or not up to date.
-    const Variables& sm_vars = subModel.current_variables();
+    const Variables& sm_vars = pSubModel->current_variables();
     size_t i, num_sm_acv = sm_vars.acv(), num_sm_cv = sm_vars.cv(),
       sm_cv_start = sm_vars.cv_start();
     UShortMultiArrayConstView sm_acv_types
@@ -2163,7 +2164,7 @@ void NestedModel::update_inactive_view(short new_view, short& view)
 void NestedModel::update_inactive_view(unsigned short type, short& view)
 {
   // determine RELAXED or MIXED primary view at sub-model level
-  short new_view, active_sm_view = subModel.current_variables().view().first;
+  short new_view, active_sm_view = pSubModel->current_variables().view().first;
   bool relaxed = ( active_sm_view == RELAXED_ALL ||
 		   ( active_sm_view >= RELAXED_DESIGN &&
 		     active_sm_view <= RELAXED_STATE ) );
@@ -2226,10 +2227,10 @@ update_sub_model(const Variables& vars, const Constraints& cons)
     pacvm_index, padivm_index, padsvm_index, padrvm_index;
   const SharedVariablesData& svd = vars.shared_data();
   const SharedVariablesData& sm_svd
-    = subModel.current_variables().shared_data();
+    = pSubModel->current_variables().shared_data();
   std::shared_ptr<Pecos::MarginalsCorrDistribution> sm_mvd_rep =
     std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
-    (subModel.multivariate_distribution().multivar_dist_rep());
+    (pSubModel->multivariate_distribution().multivar_dist_rep());
 
   // Map ACTIVE CONTINUOUS VARIABLES from currentVariables
   if (num_curr_cv) {
@@ -2248,16 +2249,16 @@ update_sub_model(const Variables& vars, const Constraints& cons)
 	short sacvm_target
 	  = (num_var_map_2) ? active2ACVarMapTargets[curr_i] : Pecos::NO_TARGET;
 	if (sacvm_target == Pecos::NO_TARGET) {
-	  ModelUtils::all_continuous_variable(subModel, curr_c_vars[i], pacvm_index);
+	  ModelUtils::all_continuous_variable(*pSubModel, curr_c_vars[i], pacvm_index);
 	  if (extraCVarsData[i]) { // default mapping between consistent types
-	    ModelUtils::all_continuous_lower_bound(subModel, curr_c_l_bnds[i], pacvm_index);
-	    ModelUtils::all_continuous_upper_bound(subModel, curr_c_u_bnds[i], pacvm_index);
+	    ModelUtils::all_continuous_lower_bound(*pSubModel, curr_c_l_bnds[i], pacvm_index);
+	    ModelUtils::all_continuous_upper_bound(*pSubModel, curr_c_u_bnds[i], pacvm_index);
 	    // Note: this is more general than just bounds (all dist params):
 	    sm_mvd_rep->pull_distribution_parameters(mvDist,
 	      svd.cv_index_to_all_index(i),
 	      sm_svd.acv_index_to_all_index(pacvm_index));
 	    if (firstUpdate)
-	      ModelUtils::all_continuous_variable_label(subModel, curr_c_labels[i],
+	      ModelUtils::all_continuous_variable_label(*pSubModel, curr_c_labels[i],
 						     pacvm_index);
 	  }
 	}
@@ -2304,18 +2305,18 @@ update_sub_model(const Variables& vars, const Constraints& cons)
 	short sadivm_target = (num_var_map_2) ?
 	  active2ADIVarMapTargets[curr_i] : Pecos::NO_TARGET;
 	if (sadivm_target == Pecos::NO_TARGET) {
-	  ModelUtils::all_discrete_int_variable(subModel, curr_di_vars[i], padivm_index);
+	  ModelUtils::all_discrete_int_variable(*pSubModel, curr_di_vars[i], padivm_index);
 	  if (extraDIVarsData[i]) { // default mapping between consistent types
-	    ModelUtils::all_discrete_int_lower_bound(subModel, curr_di_l_bnds[i],
+	    ModelUtils::all_discrete_int_lower_bound(*pSubModel, curr_di_l_bnds[i],
 						  padivm_index);
-	    ModelUtils::all_discrete_int_upper_bound(subModel, curr_di_u_bnds[i],
+	    ModelUtils::all_discrete_int_upper_bound(*pSubModel, curr_di_u_bnds[i],
 						  padivm_index);
 	    // Note: this is more general than just bounds (all dist params):
 	    sm_mvd_rep->pull_distribution_parameters(mvDist,
 	      svd.div_index_to_all_index(i),
 	      sm_svd.adiv_index_to_all_index(padivm_index));
 	    if (firstUpdate)
-	      ModelUtils::all_discrete_int_variable_label(subModel, curr_di_labels[i],
+	      ModelUtils::all_discrete_int_variable_label(*pSubModel, curr_di_labels[i],
 						       padivm_index);
 	  }
 	}
@@ -2360,14 +2361,14 @@ update_sub_model(const Variables& vars, const Constraints& cons)
 	short sadsvm_target = (num_var_map_2) ?
 	  active2ADSVarMapTargets[curr_i] : Pecos::NO_TARGET;
 	if (sadsvm_target == Pecos::NO_TARGET) {
-	  ModelUtils::all_discrete_string_variable(subModel, curr_ds_vars[i], padsvm_index);
+	  ModelUtils::all_discrete_string_variable(*pSubModel, curr_ds_vars[i], padsvm_index);
 	  if (extraDSVarsData[i]) { // default mapping between consistent types
 	    // Note: this is more general than just bounds (all dist params):
 	    sm_mvd_rep->pull_distribution_parameters(mvDist,
 	      svd.dsv_index_to_all_index(i),
 	      sm_svd.adsv_index_to_all_index(padsvm_index));
 	    if (firstUpdate)
-	      ModelUtils::all_discrete_string_variable_label(subModel, curr_ds_labels[i],
+	      ModelUtils::all_discrete_string_variable_label(*pSubModel, curr_ds_labels[i],
 							  padsvm_index);
 	  }
 	}
@@ -2414,18 +2415,18 @@ update_sub_model(const Variables& vars, const Constraints& cons)
 	short sadrvm_target = (num_var_map_2) ?
 	  active2ADRVarMapTargets[curr_i] : Pecos::NO_TARGET;
 	if (sadrvm_target == Pecos::NO_TARGET) {
-	  ModelUtils::all_discrete_real_variable(subModel, curr_dr_vars[i], padrvm_index);
+	  ModelUtils::all_discrete_real_variable(*pSubModel, curr_dr_vars[i], padrvm_index);
 	  if (extraDRVarsData[i]) { // default mapping between consistent types
-	    ModelUtils::all_discrete_real_lower_bound(subModel, curr_dr_l_bnds[i],
+	    ModelUtils::all_discrete_real_lower_bound(*pSubModel, curr_dr_l_bnds[i],
 						   padrvm_index);
-	    ModelUtils::all_discrete_real_upper_bound(subModel, curr_dr_u_bnds[i],
+	    ModelUtils::all_discrete_real_upper_bound(*pSubModel, curr_dr_u_bnds[i],
 						   padrvm_index);
 	    // Note: this is more general than just bounds (all dist params):
 	    sm_mvd_rep->pull_distribution_parameters(mvDist,
 	      svd.drv_index_to_all_index(i),
 	      sm_svd.adrv_index_to_all_index(padrvm_index));
 	    if (firstUpdate)
-	      ModelUtils::all_discrete_real_variable_label(subModel, curr_dr_labels[i],
+	      ModelUtils::all_discrete_real_variable_label(*pSubModel, curr_dr_labels[i],
 							padrvm_index);
 	  }
 	}
@@ -2447,11 +2448,11 @@ update_sub_model(const Variables& vars, const Constraints& cons)
     for (i=0; i<num_curr_ccv; ++i) {
       curr_i = svd.ccv_index_to_acv_index(i);
       c1_index = complement1ACVarMapIndices[i];
-      ModelUtils::all_continuous_variable(subModel, curr_ac_vars[curr_i], c1_index);
-      ModelUtils::all_continuous_lower_bound(subModel, curr_ac_l_bnds[curr_i], c1_index);
-      ModelUtils::all_continuous_upper_bound(subModel, curr_ac_u_bnds[curr_i], c1_index);
+      ModelUtils::all_continuous_variable(*pSubModel, curr_ac_vars[curr_i], c1_index);
+      ModelUtils::all_continuous_lower_bound(*pSubModel, curr_ac_l_bnds[curr_i], c1_index);
+      ModelUtils::all_continuous_upper_bound(*pSubModel, curr_ac_u_bnds[curr_i], c1_index);
       if (firstUpdate) {
-	ModelUtils::all_continuous_variable_label(subModel, curr_ac_labels[curr_i],c1_index);
+	ModelUtils::all_continuous_variable_label(*pSubModel, curr_ac_labels[curr_i],c1_index);
 	// Note: this is more general than just bounds (all dist params):
 	sm_mvd_rep->pull_distribution_parameters(mvDist,
 	  svd.ccv_index_to_all_index(i),
@@ -2472,11 +2473,11 @@ update_sub_model(const Variables& vars, const Constraints& cons)
     for (i=0; i<num_curr_cdiv; ++i) {
       curr_i = svd.cdiv_index_to_adiv_index(i);
       c1_index = complement1ADIVarMapIndices[i];
-      ModelUtils::all_discrete_int_variable(subModel, curr_adi_vars[curr_i], c1_index);
-      ModelUtils::all_discrete_int_lower_bound(subModel, curr_adi_l_bnds[curr_i], c1_index);
-      ModelUtils::all_discrete_int_upper_bound(subModel, curr_adi_u_bnds[curr_i], c1_index);
+      ModelUtils::all_discrete_int_variable(*pSubModel, curr_adi_vars[curr_i], c1_index);
+      ModelUtils::all_discrete_int_lower_bound(*pSubModel, curr_adi_l_bnds[curr_i], c1_index);
+      ModelUtils::all_discrete_int_upper_bound(*pSubModel, curr_adi_u_bnds[curr_i], c1_index);
       if (firstUpdate) {
-	ModelUtils::all_discrete_int_variable_label(subModel, curr_adi_labels[curr_i],
+	ModelUtils::all_discrete_int_variable_label(*pSubModel, curr_adi_labels[curr_i],
 						 c1_index);
 	// Note: this is more general than just bounds (all dist params):
 	sm_mvd_rep->pull_distribution_parameters(mvDist,
@@ -2497,9 +2498,9 @@ update_sub_model(const Variables& vars, const Constraints& cons)
     for (i=0; i<num_curr_cdsv; ++i) {
       curr_i = svd.cdsv_index_to_adsv_index(i);
       c1_index = complement1ADSVarMapIndices[i];
-      ModelUtils::all_discrete_string_variable(subModel, curr_ads_vars[curr_i], c1_index);
+      ModelUtils::all_discrete_string_variable(*pSubModel, curr_ads_vars[curr_i], c1_index);
       if (firstUpdate) {
-	ModelUtils::all_discrete_string_variable_label(subModel, curr_ads_labels[curr_i],
+	ModelUtils::all_discrete_string_variable_label(*pSubModel, curr_ads_labels[curr_i],
 						    c1_index);
 	// Note: this is more general than just bounds (all dist params):
 	sm_mvd_rep->pull_distribution_parameters(mvDist,
@@ -2521,11 +2522,11 @@ update_sub_model(const Variables& vars, const Constraints& cons)
     for (i=0; i<num_curr_cdrv; ++i) {
       curr_i = svd.cdrv_index_to_adrv_index(i);
       c1_index = complement1ADRVarMapIndices[i];
-      ModelUtils::all_discrete_real_variable(subModel, curr_adr_vars[curr_i], c1_index);
-      ModelUtils::all_discrete_real_lower_bound(subModel, curr_adr_l_bnds[curr_i], c1_index);
-      ModelUtils::all_discrete_real_upper_bound(subModel, curr_adr_u_bnds[curr_i], c1_index);
+      ModelUtils::all_discrete_real_variable(*pSubModel, curr_adr_vars[curr_i], c1_index);
+      ModelUtils::all_discrete_real_lower_bound(*pSubModel, curr_adr_l_bnds[curr_i], c1_index);
+      ModelUtils::all_discrete_real_upper_bound(*pSubModel, curr_adr_u_bnds[curr_i], c1_index);
       if (firstUpdate) {
-	ModelUtils::all_discrete_real_variable_label(subModel, curr_adr_labels[curr_i],
+	ModelUtils::all_discrete_real_variable_label(*pSubModel, curr_adr_labels[curr_i],
 						  c1_index);
 	// Note: this is more general than just bounds (all dist params):
 	sm_mvd_rep->pull_distribution_parameters(mvDist,
@@ -2543,13 +2544,13 @@ void NestedModel::
 real_variable_mapping(Real r_var, size_t av_index, short svm_target)
 {
   Pecos::MultivariateDistribution& sm_mvd
-    = subModel.multivariate_distribution();
+    = pSubModel->multivariate_distribution();
   std::shared_ptr<Pecos::MarginalsCorrDistribution> sm_mvd_rep =
     std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
     (sm_mvd.multivar_dist_rep());
 
   const SharedVariablesData& sm_svd
-    = subModel.current_variables().shared_data();
+    = pSubModel->current_variables().shared_data();
 
   switch (svm_target) {
   case Pecos::CR_LWR_BND:  case Pecos::N_LWR_BND:  case Pecos::LN_LWR_BND:
@@ -2557,14 +2558,14 @@ real_variable_mapping(Real r_var, size_t av_index, short svm_target)
   case Pecos::BE_LWR_BND:
     sm_mvd_rep->push_parameter(sm_svd.acv_index_to_all_index(av_index),
 			       svm_target, r_var);
-    ModelUtils::all_continuous_lower_bound(subModel, r_var, av_index);
+    ModelUtils::all_continuous_lower_bound(*pSubModel, r_var, av_index);
     break;
   case Pecos::CR_UPR_BND:  case Pecos::N_UPR_BND:  case Pecos::LN_UPR_BND:
   case Pecos::U_UPR_BND:   case Pecos::LU_UPR_BND: case Pecos::T_UPR_BND:
   case Pecos::BE_UPR_BND:
     sm_mvd_rep->push_parameter(sm_svd.acv_index_to_all_index(av_index),
 			       svm_target, r_var);
-    ModelUtils::all_continuous_upper_bound(subModel, r_var, av_index);
+    ModelUtils::all_continuous_upper_bound(*pSubModel, r_var, av_index);
     break;
   case Pecos::N_MEAN:      case Pecos::N_STD_DEV:  case Pecos::LN_MEAN:
   case Pecos::LN_STD_DEV:  case Pecos::LN_LAMBDA:  case Pecos::LN_ZETA:
@@ -2600,12 +2601,12 @@ real_variable_mapping(Real r_var, size_t av_index, short svm_target)
     if (l_bnd > -dbl_inf) {
       Real new_l_bnd = l_bnd + delta;
       sm_mvd_rep->push_parameter(rv_index, Pecos::N_LWR_BND, new_l_bnd);
-      ModelUtils::all_continuous_lower_bound(subModel, new_l_bnd, av_index);
+      ModelUtils::all_continuous_lower_bound(*pSubModel, new_l_bnd, av_index);
     }
     if (u_bnd <  dbl_inf) {
       Real new_u_bnd = u_bnd + delta;
       sm_mvd_rep->push_parameter(rv_index, Pecos::N_UPR_BND, new_u_bnd);
-      ModelUtils::all_continuous_upper_bound(subModel, new_u_bnd, av_index);   
+      ModelUtils::all_continuous_upper_bound(*pSubModel, new_u_bnd, av_index);   
     }
     break;
   }
@@ -2623,13 +2624,13 @@ real_variable_mapping(Real r_var, size_t av_index, short svm_target)
       Real num_sig_l = (mean - l_bnd) / stdev,
 	   new_l_bnd = mean - num_sig_l * r_var;
       sm_mvd_rep->push_parameter(rv_index, Pecos::N_LWR_BND, new_l_bnd);
-      ModelUtils::all_continuous_lower_bound(subModel, new_l_bnd, av_index);
+      ModelUtils::all_continuous_lower_bound(*pSubModel, new_l_bnd, av_index);
     }
     if (u_bnd <  dbl_inf) {
       Real num_sig_u = (u_bnd - mean) / stdev,
 	   new_u_bnd = mean + num_sig_u * r_var;
       sm_mvd_rep->push_parameter(rv_index, Pecos::N_UPR_BND, new_u_bnd);
-      ModelUtils::all_continuous_upper_bound(subModel, new_u_bnd, av_index);   
+      ModelUtils::all_continuous_upper_bound(*pSubModel, new_u_bnd, av_index);   
     }
     break;
   }
@@ -2649,8 +2650,8 @@ real_variable_mapping(Real r_var, size_t av_index, short svm_target)
       new_l_bnd = l_bnd + delta, new_u_bnd = u_bnd + delta;
     sm_mvd_rep->push_parameter(rv_index, Pecos::U_LWR_BND, new_l_bnd);
     sm_mvd_rep->push_parameter(rv_index, Pecos::U_UPR_BND, new_u_bnd);
-    ModelUtils::all_continuous_lower_bound(subModel, new_l_bnd, av_index);
-    ModelUtils::all_continuous_upper_bound(subModel, new_u_bnd, av_index);   
+    ModelUtils::all_continuous_lower_bound(*pSubModel, new_l_bnd, av_index);
+    ModelUtils::all_continuous_upper_bound(*pSubModel, new_u_bnd, av_index);   
     break;
   }
   case Pecos::U_SCALE: {
@@ -2663,8 +2664,8 @@ real_variable_mapping(Real r_var, size_t av_index, short svm_target)
       new_l_bnd = center-half_range, new_u_bnd = center+half_range;
     sm_mvd_rep->push_parameter(rv_index, Pecos::U_LWR_BND, new_l_bnd);
     sm_mvd_rep->push_parameter(rv_index, Pecos::U_UPR_BND, new_u_bnd);
-    ModelUtils::all_continuous_lower_bound(subModel, new_l_bnd, av_index);
-    ModelUtils::all_continuous_upper_bound(subModel, new_u_bnd, av_index);   
+    ModelUtils::all_continuous_lower_bound(*pSubModel, new_l_bnd, av_index);
+    ModelUtils::all_continuous_upper_bound(*pSubModel, new_u_bnd, av_index);   
     break;
   }
   // T_{MODE,LWR_BND,UPR_BND} change individual dist parameters only.
@@ -2685,8 +2686,8 @@ real_variable_mapping(Real r_var, size_t av_index, short svm_target)
     sm_mvd_rep->push_parameter(rv_index, Pecos::T_MODE,    r_var);
     sm_mvd_rep->push_parameter(rv_index, Pecos::T_LWR_BND, new_l_bnd);
     sm_mvd_rep->push_parameter(rv_index, Pecos::T_UPR_BND, new_u_bnd);
-    ModelUtils::all_continuous_lower_bound(subModel, new_l_bnd, av_index);
-    ModelUtils::all_continuous_upper_bound(subModel, new_u_bnd, av_index);   
+    ModelUtils::all_continuous_lower_bound(*pSubModel, new_l_bnd, av_index);
+    ModelUtils::all_continuous_upper_bound(*pSubModel, new_u_bnd, av_index);   
     break;
   }
   case Pecos::T_SCALE: {
@@ -2701,8 +2702,8 @@ real_variable_mapping(Real r_var, size_t av_index, short svm_target)
       new_u_bnd = mode + perc_u * r_var;
     sm_mvd_rep->push_parameter(rv_index, Pecos::T_LWR_BND, new_l_bnd);
     sm_mvd_rep->push_parameter(rv_index, Pecos::T_UPR_BND, new_u_bnd);
-    ModelUtils::all_continuous_lower_bound(subModel, new_l_bnd, av_index);
-    ModelUtils::all_continuous_upper_bound(subModel, new_u_bnd, av_index);   
+    ModelUtils::all_continuous_lower_bound(*pSubModel, new_l_bnd, av_index);
+    ModelUtils::all_continuous_upper_bound(*pSubModel, new_u_bnd, av_index);   
     break;
   }
   case Pecos::NO_TARGET: default:
@@ -2717,24 +2718,24 @@ void NestedModel::
 integer_variable_mapping(int i_var, size_t av_index, short svm_target)
 {
   Pecos::MultivariateDistribution& sm_mvd
-    = subModel.multivariate_distribution();
+    = pSubModel->multivariate_distribution();
   std::shared_ptr<Pecos::MarginalsCorrDistribution> sm_mvd_rep =
     std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
     (sm_mvd.multivar_dist_rep());
 
   const SharedVariablesData& sm_svd
-    = subModel.current_variables().shared_data();
+    = pSubModel->current_variables().shared_data();
 
   switch (svm_target) {
   case Pecos::DR_LWR_BND:
     sm_mvd_rep->push_parameter(sm_svd.adiv_index_to_all_index(av_index),
 			       svm_target, i_var);
-    ModelUtils::all_discrete_int_lower_bound(subModel, i_var, av_index);
+    ModelUtils::all_discrete_int_lower_bound(*pSubModel, i_var, av_index);
     break;
   case Pecos::DR_UPR_BND:
     sm_mvd_rep->push_parameter(sm_svd.adiv_index_to_all_index(av_index),
 			       svm_target, i_var);
-    ModelUtils::all_discrete_int_upper_bound(subModel, i_var, av_index);
+    ModelUtils::all_discrete_int_upper_bound(*pSubModel, i_var, av_index);
     break;
   case Pecos::BI_TRIALS:    case Pecos::NBI_TRIALS:
   case Pecos::HGE_TOT_POP:  case Pecos::HGE_SEL_POP:  case Pecos::HGE_DRAWN: {
@@ -2756,13 +2757,13 @@ string_variable_mapping(const String& s_var, size_t av_index,
 			short svm_target)
 {
   Pecos::MultivariateDistribution& sm_mvd
-    = subModel.multivariate_distribution();
+    = pSubModel->multivariate_distribution();
   std::shared_ptr<Pecos::MarginalsCorrDistribution> sm_mvd_rep =
     std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
     (sm_mvd.multivar_dist_rep());
 
   const SharedVariablesData& sm_svd
-    = subModel.current_variables().shared_data();
+    = pSubModel->current_variables().shared_data();
 
   switch (svm_target) {
   case Pecos::NO_TARGET: default:
