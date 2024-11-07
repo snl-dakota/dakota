@@ -188,6 +188,7 @@ Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db,
   surrExportPrefix(problem_db.get_string("method.model_export_prefix")),
   surrExportFormat(problem_db.get_ushort("method.model_export_format"))
 {
+  pIteratedModel = &iteratedModel;
   if (methodId.empty())
     methodId = user_auto_id();
 
@@ -213,6 +214,7 @@ Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model,
   evaluationsDBState(EvaluationsDBState::UNINITIALIZED), methodId(no_spec_id()),
   execNum(0), methodTraits(traits)
 {
+  pIteratedModel = &iteratedModel;
   //update_from_model(iteratedModel); // variable/response counts & checks
 }
 
@@ -233,7 +235,9 @@ Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name,
   resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), 
   evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   methodId(no_spec_id()), execNum(0), methodTraits(traits)
-{ /* empty ctor */ }
+{ 
+  pIteratedModel = &iteratedModel;
+}
 
 
 /** This alternate constructor builds base class data for inherited iterators.
@@ -252,6 +256,7 @@ Iterator(NoDBBaseConstructor, Model& model, size_t max_iter, size_t max_eval,
   evaluationsDBState(EvaluationsDBState::UNINITIALIZED), methodId(no_spec_id()),
   execNum(0), methodTraits(traits)
 {
+  pIteratedModel = &iteratedModel;
   //update_from_model(iteratedModel); // variable/response counts & checks
 }
 
@@ -266,7 +271,9 @@ Iterator::Iterator(std::shared_ptr<TraitsBase> traits):
   evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   myModelLayers(0), methodName(DEFAULT_METHOD),
   execNum(0), methodTraits(traits)
-{ /* empty ctor */ }
+{ 
+  pIteratedModel = &iteratedModel;
+}
 
 
 // BMA: Disabled unused ctor when deploying shared_ptr for iteratorRep
@@ -295,6 +302,7 @@ Iterator::Iterator(ProblemDescDB& problem_db,
   methodTraits(traits),
   iteratorRep(get_iterator(problem_db))
 {
+  pIteratedModel = &iteratedModel;
   if ( !iteratorRep ) // bad name or insufficient memory
     abort_handler(METHOD_ERROR);
 }
@@ -306,7 +314,7 @@ bool Iterator::resize()
     return iteratorRep->resize(); // envelope fwd to letter
   else {
     // Update activeSet:
-    activeSet = iteratedModel.current_response().active_set();
+    activeSet = pIteratedModel->current_response().active_set();
     return false; // No need to re-initialize communicators base on what
                   // was done here.
   }
@@ -373,6 +381,7 @@ Iterator::Iterator(ProblemDescDB& problem_db, Model& model, std::shared_ptr<Trai
   // Set the rep pointer to the appropriate iterator type
   iteratorRep(get_iterator(problem_db, model))
 {
+  pIteratedModel = &iteratedModel;
   if ( !iteratorRep ) // bad name or insufficient memory
     abort_handler(METHOD_ERROR);
 }
@@ -689,6 +698,7 @@ Iterator::Iterator(const String& method_string, Model& model, std::shared_ptr<Tr
   // Set the rep pointer to the appropriate iterator type
   iteratorRep(get_iterator(method_string, model))
 {
+  pIteratedModel = &iteratedModel;
   if ( !iteratorRep ) // bad name or insufficient memory
     abort_handler(METHOD_ERROR);
 }
@@ -1188,12 +1198,12 @@ void Iterator::resize_communicators(ParLevLIter pl_iter, bool reinit_comms)
       parallelLib.bcast(mapping_code, *pl_iter);
     }
     init_communicators(pl_iter);
-    if (multiproc) iteratedModel.stop_init_communicators(pl_iter);
+    if (multiproc) pIteratedModel->stop_init_communicators(pl_iter);
   }
 
   // update message lengths for send/receive of parallel jobs (normally
   // performed once in Model::init_communicators() just after construct time)
-  iteratedModel.estimate_message_lengths();
+  pIteratedModel->estimate_message_lengths();
   if (multiproc) {
     short mapping_code = ESTIMATE_MESSAGE_LENGTHS;
     parallelLib.bcast(mapping_code, *pl_iter);
@@ -1265,8 +1275,8 @@ void Iterator::derived_init_communicators(ParLevLIter pl_iter)
 {
   if (iteratorRep) // envelope fwd to letter
     iteratorRep->derived_init_communicators(pl_iter);
-  else if (!iteratedModel.is_null()) // default: init comms for iteratedModel
-    iteratedModel.init_communicators(pl_iter, maxEvalConcurrency); // recurse
+  else if (!pIteratedModel->is_null()) // default: init comms for iteratedModel
+    pIteratedModel->init_communicators(pl_iter, maxEvalConcurrency); // recurse
 }
 
 
@@ -1305,8 +1315,8 @@ void Iterator::derived_set_communicators(ParLevLIter pl_iter)
 {
   if (iteratorRep) // envelope fwd to letter
     iteratorRep->derived_set_communicators(pl_iter);
-  else if (!iteratedModel.is_null()) // default: set comms within iteratedModel
-    iteratedModel.set_communicators(pl_iter, maxEvalConcurrency);  // recurse
+  else if (!pIteratedModel->is_null()) // default: set comms within iteratedModel
+    pIteratedModel->set_communicators(pl_iter, maxEvalConcurrency);  // recurse
 }
 
 
@@ -1335,8 +1345,8 @@ void Iterator::derived_free_communicators(ParLevLIter pl_iter)
 {
   if (iteratorRep) // envelope fwd to letter
     iteratorRep->derived_free_communicators(pl_iter);
-  else if (!iteratedModel.is_null()) // default: free comms on iteratedModel
-    iteratedModel.free_communicators(pl_iter, maxEvalConcurrency); // recurse
+  else if (!pIteratedModel->is_null()) // default: free comms on iteratedModel
+    pIteratedModel->free_communicators(pl_iter, maxEvalConcurrency); // recurse
 }
 
 
@@ -1661,7 +1671,7 @@ void Iterator::initialize_graphics(int iterator_server_id)
   if (iteratorRep)
     iteratorRep->initialize_graphics(iterator_server_id);
   else
-    initialize_model_graphics(iteratedModel, iterator_server_id);
+    initialize_model_graphics(*pIteratedModel, iterator_server_id);
 }
 
 
@@ -1836,7 +1846,7 @@ IntIntPair Iterator::estimate_partition_bounds()
 {
   return (iteratorRep) ?
     iteratorRep->estimate_partition_bounds() : // MetaIterators
-    iteratedModel.estimate_partition_bounds(maxEvalConcurrency); // default defn
+    pIteratedModel->estimate_partition_bounds(maxEvalConcurrency); // default defn
 }
 
 
@@ -1870,7 +1880,7 @@ nested_variable_mappings(const SizetArray& c_index1,
       nested_variable_mappings(c_index1,  di_index1,  ds_index1,  dr_index1,
 			       c_target2, di_target2, ds_target2, dr_target2);
   else // default implementation: pass along to Model hierarchy
-    iteratedModel.nested_variable_mappings(c_index1,  di_index1,  ds_index1,
+    pIteratedModel->nested_variable_mappings(c_index1,  di_index1,  ds_index1,
 					   dr_index1, c_target2, di_target2,
 					   ds_target2, dr_target2);
 }
@@ -1948,7 +1958,7 @@ void Iterator::eval_tag_prefix(const String& eval_id_str)
   if (iteratorRep)
     iteratorRep->eval_tag_prefix(eval_id_str);
   else
-    iteratedModel.eval_tag_prefix(eval_id_str);
+    pIteratedModel->eval_tag_prefix(eval_id_str);
 }
 
 /** Rationale: The parser allows multiple user-specified methods with

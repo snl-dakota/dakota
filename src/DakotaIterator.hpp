@@ -575,7 +575,7 @@ private:
   /// the model to be iterated (for iterators and meta-iterators
   /// employing a single model instance)
   Model iteratedModel;
-  //Model* pIteratedModel;
+  Model* pIteratedModel;
 
   /// method identifier string from the input file, or an
   /// auto-generated ID, such that each instance of an Iterator has a
@@ -638,17 +638,17 @@ inline void Iterator::iterated_model(const Model& model)
 {
   if (iteratorRep) {
     iteratorRep->iteratedModel = model;
-    //iteratorRep->pIteratedModel = &iteratorRep->iteratedModel;
+    iteratorRep->pIteratedModel = &iteratorRep->iteratedModel;
   }
   else {
     iteratedModel = model; 
-    //pIteratedModel = &iteratedModel; 
+    pIteratedModel = &iteratedModel; 
   }
 }
 
 
 inline Model& Iterator::iterated_model()
-{ return (iteratorRep) ? iteratorRep->iteratedModel : iteratedModel; }
+{ return (iteratorRep) ? *iteratorRep->pIteratedModel : *pIteratedModel; }
 
 
 inline ProblemDescDB& Iterator::problem_description_db() const
