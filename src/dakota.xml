@@ -3718,7 +3718,7 @@
                       </keyword>
                   </keyword>
                   <keyword  id="dili" name="dili" code="{N_mdm(lit,mcmcType_dili)}" label="dili"  default="dram" >
-                      <keyword  id="hessian_type12" name="hessian_type" code="{N_mdm(str,diliHessianType)}" label="Hessian type for Dimension-Independent Likelihood-Informed"  minOccurs="0" default="GaussNewton" >
+                      <keyword  id="hessian_type" name="hessian_type" code="{N_mdm(str,diliHessianType)}" label="Hessian type for Dimension-Independent Likelihood-Informed"  minOccurs="0" default="GaussNewton" >
                         <param type="STRING" />
                       </keyword>
                       <keyword  id="adapt_interval" name="adapt_interval" code="{N_mdm(int,diliAdaptInterval)}" label="Adaptation interval for Dimension-Independent Likelihood-Informed"  minOccurs="0" default="-1" >
