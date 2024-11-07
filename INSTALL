@@ -96,7 +96,7 @@ zip).
  * See Section III below to test binary installion.
 
 -----------------------------------------------------------------------
-I. Install Unix-Like Binary (Linux RHEL7/8 or binary compatible, macOS)
+I. Install Unix-Like Binary (Linux RHEL8 or binary compatible, macOS)
 -----------------------------------------------------------------------
 
 1. Extract archive file into suitable install location, e.g. /home/username.
@@ -116,7 +116,12 @@ I. Install Unix-Like Binary (Linux RHEL7/8 or binary compatible, macOS)
    directory,
 	/path/to/Dakota/install/directory/dakota
 
-2. Make sure Dakota executables (and optionally test files and current
+2. Because Dakota exexecutables are not signed, they will not run on
+   macOS until clearing their attributes. Use the command:
+
+        xattr -cr $INSTALL_DIR
+
+3. Make sure Dakota executables (and optionally test files and current
    directory) are available on the PATH by typing 'which dakota' at command
    line prompt. 
 
@@ -133,7 +138,7 @@ I. Install Unix-Like Binary (Linux RHEL7/8 or binary compatible, macOS)
         /usr/bin/which: no dakota in (/usr/local/bin:/usr/local/sbin)
    Continue with step #3 to set your PATH variable.
 
-3. If your PATH is not set correctly, make the following change to your
+4. If your PATH is not set correctly, make the following change to your
    appropriate shell login script:
 
    Bash shell
@@ -165,7 +170,7 @@ I. Install Unix-Like Binary (Linux RHEL7/8 or binary compatible, macOS)
       
       $ source ~/.cshrc
 
-4. To use the dakota Python package (and to enjoy the full features of
+5. To use the dakota Python package (and to enjoy the full features of
    dprepro), add the path $INSTALL_DIR/share/dakota/Python/ to the environment 
    variable PYTHONPATH. Adapt the instructions in step 3 by substituting 
    PYTHONPATH where you see PATH to make this change persistent. After 
