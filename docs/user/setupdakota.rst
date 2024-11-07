@@ -129,7 +129,7 @@ Extract archive file into suitable install location, e.g. $HOME.  If you have ro
    $ cd /path/to/Dakota/install/directory
    $ tar xzvf /path/to/Dakota-release.platform.tar.gz
 
-Rename the extracted Dakota binary executable directory:
+If you wish, rename the extracted Dakota binary executable directory to something more convenient:
 
 .. code-block::
 
@@ -137,7 +137,17 @@ Rename the extracted Dakota binary executable directory:
    dakota-release.platform
    $ mv dakota-release.platform Dakota
 
-Set up your platform environment to access the Dakota executable, libraries, and tests.
+Because Dakota executables are not signed, their attributes must be cleared before they will work On macOS.
+To do so, run the following command, substituting the path of your Dakota install for "Dakota":
+
+.. code-block::
+   
+   $ xattr -cr Dakota
+
+
+
+:ref:`Set up your platform environment <setupdakota-environment>` to access the Dakota executable, libraries, 
+and tests.
 
 
 ----------------------
