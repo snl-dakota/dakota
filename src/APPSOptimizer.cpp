@@ -18,7 +18,7 @@ APPSOptimizer::APPSOptimizer(ProblemDescDB& problem_db, Model& model):
 {
   // (iteratedModel initialized in Optimizer(Model&))
 
-  evalMgr = new APPSEvalMgr(*this, iteratedModel);
+  evalMgr = new APPSEvalMgr(*this, *pIteratedModel);
   set_apps_parameters(); // set specification values using DB
 }
 
@@ -27,7 +27,7 @@ APPSOptimizer::APPSOptimizer(Model& model):
 {
   // (iteratedModel initialized in Optimizer(Model&))
 
-  evalMgr = new APPSEvalMgr(*this, iteratedModel);
+  evalMgr = new APPSEvalMgr(*this, *pIteratedModel);
   set_apps_parameters(); // set specification values using DB
 }
 
@@ -51,8 +51,8 @@ void APPSOptimizer::core_run()
   // Tell the evalMgr whether or not to do asynchronous evaluations
   // and maximum available concurrency.
 
-  evalMgr->set_asynch_flag(iteratedModel.asynch_flag());
-  evalMgr->set_total_workers(iteratedModel.evaluation_capacity());
+  evalMgr->set_asynch_flag(pIteratedModel->asynch_flag());
+  evalMgr->set_total_workers(pIteratedModel->evaluation_capacity());
 
   // Initialize variable values and define constraints.
 
@@ -79,7 +79,7 @@ void APPSOptimizer::core_run()
 //     setBestVariables(...)
 //     setBestResponses(...)
 
-  set_variables<>(bestX, iteratedModel, bestVariablesArray.front());
+  set_variables<>(bestX, *pIteratedModel, bestVariablesArray.front());
 
   // Retrieve the best responses and convert from HOPS vector to
   // DAKOTA vector.
@@ -91,7 +91,7 @@ void APPSOptimizer::core_run()
 
   // else local_objective_recast_retrieve() is used in Optimizer::post_run()
   bool set_objectives = !localObjectiveRecast;
-  set_best_responses<AppsTraits>( optimizer, iteratedModel,
+  set_best_responses<AppsTraits>( optimizer, *pIteratedModel,
 				  set_objectives, numUserPrimaryFns,
 				  constraintMapIndices,
 				  constraintMapMultipliers,
@@ -327,7 +327,7 @@ void APPSOptimizer::initialize_variables_and_constraints()
   vector<char> variable_types(numTotalVars, 'C');
 
   // For now this requires that the target vector, eg init_point, be allocated properly.
-  get_variables<HOPSPACK::Vector>(iteratedModel, init_point);
+  get_variables<HOPSPACK::Vector>(*pIteratedModel, init_point);
 
   bool setScales = !get_variable_bounds_from_dakota<AppsTraits>( lower, upper );
 

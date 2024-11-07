@@ -103,6 +103,7 @@ protected:
 
   /// Shallow copy of the model on which COLIN will iterate.
   Model iteratedModel;
+  Model* pIteratedModel;
 
   /// Flag for COLIN synchronous behavior (Pattern Search only).
   bool blockingSynch;

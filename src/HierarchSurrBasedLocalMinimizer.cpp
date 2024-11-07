@@ -31,8 +31,8 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   minimizeIndex(0), nestedTrustRegions(true), multiLev(false)
 {
   // check iteratedModel for model form hierarchy and/or discretization levels
-  if (iteratedModel.surrogate_type() == "ensemble")
-    iteratedModel.surrogate_response_mode(AUTO_CORRECTED_SURROGATE);
+  if (pIteratedModel->surrogate_type() == "ensemble")
+    pIteratedModel->surrogate_response_mode(AUTO_CORRECTED_SURROGATE);
   else {
     Cerr << "Error: HierarchSurrBasedLocalMinimizer requires an ensemble "
          << "surrogate model specification." << std::endl;
@@ -40,7 +40,7 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model):
   }
 
   // Get number of model fidelities and number of levels for each fidelity:
-  ModelList& models = iteratedModel.subordinate_models(false);
+  ModelList& models = pIteratedModel->subordinate_models(false);
   numFid = models.size(); numLev.resize(numFid);
   ModelLIter ml_iter; size_t i;
   for (ml_iter=models.begin(), i=0; i<numFid; ++ml_iter, ++i) {
@@ -128,7 +128,7 @@ void HierarchSurrBasedLocalMinimizer::pre_run()
 
     tr_data.reset(); // soft conv count, status bits, filter
 
-    tr_data.vars_center(iteratedModel.current_variables());// sets NEW_CENTER
+    tr_data.vars_center(pIteratedModel->current_variables());// sets NEW_CENTER
 
     // set TR factor (TR bounds defined during update_trust_region())
     tr_data.trust_region_factor(origTrustRegionFactor[i]); // sets NEW_TR_FACTOR
@@ -380,7 +380,7 @@ void HierarchSurrBasedLocalMinimizer::build()
       find_center_approx(index); // find/eval *uncorrected* center approx
 
       // Compute additive/multiplicative correction
-      DiscrepancyCorrection& delta = iteratedModel.discrepancy_correction();
+      DiscrepancyCorrection& delta = pIteratedModel->discrepancy_correction();
       delta.compute(tr_data.vars_center(),
 		    tr_data.response_center(UNCORR_TRUTH_RESPONSE),
 		    tr_data.response_center(UNCORR_APPROX_RESPONSE));
@@ -406,13 +406,13 @@ void HierarchSurrBasedLocalMinimizer::build_center_truth(size_t tr_index)
   SurrBasedLevelData& tr_data = trustRegions[tr_index];
 
   // build level approximation and retrieve/correct response center truth
-  ModelUtils::active_variables(iteratedModel, tr_data.vars_center());
+  ModelUtils::active_variables(*pIteratedModel, tr_data.vars_center());
   // update bounds (can affect finite differencing)
-  ModelUtils::continuous_lower_bounds(iteratedModel, tr_data.tr_lower_bounds());
-  ModelUtils::continuous_upper_bounds(iteratedModel, tr_data.tr_upper_bounds());
+  ModelUtils::continuous_lower_bounds(*pIteratedModel, tr_data.tr_lower_bounds());
+  ModelUtils::continuous_upper_bounds(*pIteratedModel, tr_data.tr_upper_bounds());
 
   // build
-  iteratedModel.build_approximation();
+  pIteratedModel->build_approximation();
   tr_data.set_status_bits(CENTER_BUILT);
 
   // Extract truth model evaluation.
@@ -434,15 +434,15 @@ void HierarchSurrBasedLocalMinimizer::minimize()
   set_active_model(minimizeIndex);
 
   // set up recursive corrections across all model forms
-  iteratedModel.correction_mode(FULL_MODEL_FORM_CORRECTION);
+  pIteratedModel->correction_mode(FULL_MODEL_FORM_CORRECTION);
 
   // Set the trust region center and bounds for approxSubProbOptimizer
   SurrBasedLevelData& tr_min = trustRegions[minimizeIndex];
   update_approx_sub_problem(tr_min);
 
   // solve the approximate optimization sub-problem:
-  unsigned short m_index = iteratedModel.active_surrogate_model_form(0);
-  iteratedModel.component_parallel_mode(m_index + 1);
+  unsigned short m_index = pIteratedModel->active_surrogate_model_form(0);
+  pIteratedModel->component_parallel_mode(m_index + 1);
   //iteratedModel.component_parallel_mode(SURROGATE_MODEL_MODE);
   SurrBasedLocalMinimizer::minimize();
 
@@ -458,7 +458,7 @@ void HierarchSurrBasedLocalMinimizer::minimize()
     find_star_approx(minimizeIndex); // -> uncorrected resp_star_approx
     // apply correction and store
     Response corr_resp(tr_min.response_star(UNCORR_APPROX_RESPONSE).copy());
-    iteratedModel.recursive_apply(v_star, corr_resp);
+    pIteratedModel->recursive_apply(v_star, corr_resp);
     tr_min.response_star(corr_resp, CORR_APPROX_RESPONSE);
   }
   else // retrieve corrected final results
@@ -478,11 +478,11 @@ void HierarchSurrBasedLocalMinimizer::verify(size_t tr_index)
   Variables& vars_star = tr_data.vars_star(); // candidate iterate
 
   set_active_model(tr_index);
-  Model& truth_model = iteratedModel.active_truth_model();
+  Model& truth_model = pIteratedModel->active_truth_model();
 
   Cout << "\n>>>>> Evaluating approximate solution with truth model.\n";
-  unsigned short m_index = iteratedModel.active_truth_model_form();
-  iteratedModel.component_parallel_mode(m_index + 1);
+  unsigned short m_index = pIteratedModel->active_truth_model_form();
+  pIteratedModel->component_parallel_mode(m_index + 1);
   //iteratedModel.component_parallel_mode(TRUTH_MODEL_MODE);
   ModelUtils::active_variables(truth_model, vars_star);
   truth_model.evaluate(tr_data.active_set_star(TRUTH_RESPONSE));
@@ -519,7 +519,7 @@ find_center_truth(size_t tr_index, bool search_db)
 {
   SurrBasedLevelData& tr_data = trustRegions[tr_index];
   const Variables&   v_center = tr_data.vars_center();
-  Model&          truth_model = iteratedModel.active_truth_model();
+  Model&          truth_model = pIteratedModel->active_truth_model();
 
   bool truth_found;
   if (search_db)
@@ -536,8 +536,8 @@ find_center_truth(size_t tr_index, bool search_db)
 
     // since we're bypassing iteratedModel, iteratedModel.serve()
     // must be in the correct server mode.
-    unsigned short m_index = iteratedModel.active_truth_model_form();
-    iteratedModel.component_parallel_mode(m_index + 1);
+    unsigned short m_index = pIteratedModel->active_truth_model_form();
+    pIteratedModel->component_parallel_mode(m_index + 1);
     //iteratedModel.component_parallel_mode(TRUTH_MODEL_MODE);
     ModelUtils::active_variables(truth_model, tr_data.vars_center());
     truth_model.evaluate(tr_data.active_set_center(TRUTH_RESPONSE));
@@ -553,7 +553,7 @@ find_star_truth(size_t tr_index, bool search_db)
 {
   SurrBasedLevelData& tr_data = trustRegions[tr_index];
   const Variables&     v_star = tr_data.vars_star();
-  Model&          truth_model = iteratedModel.active_truth_model();
+  Model&          truth_model = pIteratedModel->active_truth_model();
 
   bool truth_found;
   if (search_db)
@@ -570,8 +570,8 @@ find_star_truth(size_t tr_index, bool search_db)
 
     // since we're bypassing iteratedModel, iteratedModel.serve()
     // must be in the correct server mode.
-    unsigned short m_index = iteratedModel.active_truth_model_form();
-    iteratedModel.component_parallel_mode(m_index + 1);
+    unsigned short m_index = pIteratedModel->active_truth_model_form();
+    pIteratedModel->component_parallel_mode(m_index + 1);
     //iteratedModel.component_parallel_mode(TRUTH_MODEL_MODE);
     ModelUtils::active_variables(truth_model, tr_data.vars_star());
     truth_model.evaluate(tr_data.active_set_star(TRUTH_RESPONSE)); // vals only
@@ -593,13 +593,13 @@ void HierarchSurrBasedLocalMinimizer::find_center_approx(size_t tr_index)
 
   if (!approx_found) {
     Cout <<"\n>>>>> Evaluating approximation at trust region center.\n";
-    unsigned short m_index = iteratedModel.active_surrogate_model_form(0);
-    iteratedModel.component_parallel_mode(m_index + 1);
+    unsigned short m_index = pIteratedModel->active_surrogate_model_form(0);
+    pIteratedModel->component_parallel_mode(m_index + 1);
     //iteratedModel.component_parallel_mode(SURROGATE_MODEL_MODE);
-    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
-    ModelUtils::active_variables(iteratedModel, v_center);
-    iteratedModel.evaluate(tr_data.active_set_center(APPROX_RESPONSE));
-    tr_data.response_center(iteratedModel.current_response(),
+    pIteratedModel->surrogate_response_mode(UNCORRECTED_SURROGATE);
+    ModelUtils::active_variables(*pIteratedModel, v_center);
+    pIteratedModel->evaluate(tr_data.active_set_center(APPROX_RESPONSE));
+    tr_data.response_center(pIteratedModel->current_response(),
 			    UNCORR_APPROX_RESPONSE);
   }
 }
@@ -616,13 +616,13 @@ void HierarchSurrBasedLocalMinimizer::find_star_approx(size_t tr_index)
 
   if (!approx_found) {
     Cout <<"\n>>>>> Evaluating approximation at candidate optimum.\n";
-    unsigned short m_index = iteratedModel.active_surrogate_model_form(0);
-    iteratedModel.component_parallel_mode(m_index + 1);
+    unsigned short m_index = pIteratedModel->active_surrogate_model_form(0);
+    pIteratedModel->component_parallel_mode(m_index + 1);
     //iteratedModel.component_parallel_mode(SURROGATE_MODEL_MODE);
-    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
-    ModelUtils::active_variables(iteratedModel, v_star);
-    iteratedModel.evaluate(tr_data.active_set_star(APPROX_RESPONSE));
-    tr_data.response_star(iteratedModel.current_response(),
+    pIteratedModel->surrogate_response_mode(UNCORRECTED_SURROGATE);
+    ModelUtils::active_variables(*pIteratedModel, v_star);
+    pIteratedModel->evaluate(tr_data.active_set_star(APPROX_RESPONSE));
+    tr_data.response_star(pIteratedModel->current_response(),
 			  UNCORR_APPROX_RESPONSE);
   }
 }
@@ -645,7 +645,7 @@ void HierarchSurrBasedLocalMinimizer::correct_center_truth(size_t tr_index)
     Response corrected_resp
       = tr_data.response_center(UNCORR_TRUTH_RESPONSE).copy();
     for (j=next_index; j<num_tr; ++j)
-      iteratedModel.single_apply(center_vars, corrected_resp,
+      pIteratedModel->single_apply(center_vars, corrected_resp,
 				 trustRegions[j].paired_key());
     tr_data.response_center(corrected_resp, CORR_TRUTH_RESPONSE);
   }
@@ -669,7 +669,7 @@ void HierarchSurrBasedLocalMinimizer::correct_star_truth(size_t tr_index)
     Response corrected_resp
       = tr_data.response_star(UNCORR_TRUTH_RESPONSE).copy();
     for (j=next_index; j<num_tr; ++j)
-      iteratedModel.single_apply(star_vars, corrected_resp,
+      pIteratedModel->single_apply(star_vars, corrected_resp,
 				 trustRegions[j].paired_key());
     tr_data.response_star(corrected_resp, CORR_TRUTH_RESPONSE);
   }
@@ -690,7 +690,7 @@ void HierarchSurrBasedLocalMinimizer::correct_center_approx(size_t tr_index)
   Response corrected_resp
     = tr_data.response_center(UNCORR_APPROX_RESPONSE).copy();
   for (j=tr_index; j<num_tr; ++j)
-    iteratedModel.single_apply(center_vars, corrected_resp,
+    pIteratedModel->single_apply(center_vars, corrected_resp,
 			       trustRegions[j].paired_key());
   tr_data.response_center(corrected_resp, CORR_APPROX_RESPONSE);
 }
@@ -710,7 +710,7 @@ void HierarchSurrBasedLocalMinimizer::correct_star_approx(size_t tr_index)
   Response corrected_resp
     = tr_data.response_star(UNCORR_APPROX_RESPONSE).copy();
   for (j=tr_index; j<num_tr; ++j)
-    iteratedModel.single_apply(star_vars, corrected_resp,
+    pIteratedModel->single_apply(star_vars, corrected_resp,
 			       trustRegions[j].paired_key());
   tr_data.response_star(corrected_resp, CORR_APPROX_RESPONSE);
 }
@@ -847,9 +847,9 @@ optimize(const RealVector &x, size_t max_iter, int index)
   set_active_model(index);
 
   // set up recursive corrections across all solution levels
-  iteratedModel.correction_mode(FULL_SOLUTION_LEVEL_CORRECTION);
+  pIteratedModel->correction_mode(FULL_SOLUTION_LEVEL_CORRECTION);
 
-  iteratedModel.surrogate_response_mode(AUTO_CORRECTED_SURROGATE);
+  pIteratedModel->surrogate_response_mode(AUTO_CORRECTED_SURROGATE);
   ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
   approxSubProbMinimizer.run(pl_iter); // pl_iter required for hierarchical
 

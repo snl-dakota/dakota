@@ -44,9 +44,9 @@ NL2SOLLeastSq::NL2SOLLeastSq(ProblemDescDB& problem_db, Model& model):
   // initial TR radius
   lmax0(  probDescDB.get_real("method.nl2sol.initial_trust_radius") )
 {
-  const RealVector&   fd_g_ss = iteratedModel.fd_gradient_step_size();
-  const RealVector& fd_hbg_ss = iteratedModel.fd_hessian_by_grad_step_size();
-  const RealVector& fd_hbf_ss = iteratedModel.fd_hessian_by_fn_step_size();
+  const RealVector&   fd_g_ss = pIteratedModel->fd_gradient_step_size();
+  const RealVector& fd_hbg_ss = pIteratedModel->fd_hessian_by_grad_step_size();
+  const RealVector& fd_hbf_ss = pIteratedModel->fd_hessian_by_fn_step_size();
   if (  !fd_g_ss.empty()) dltfdj =   fd_g_ss[0];
   if (!fd_hbg_ss.empty()) delta0 = fd_hbg_ss[0];
   if (!fd_hbf_ss.empty()) dltfdc = fd_hbf_ss[0];
@@ -77,9 +77,9 @@ NL2SOLLeastSq::NL2SOLLeastSq(Model& model) :
   // initial TR radius
   lmax0(-1.)
 {
-  const RealVector&   fd_g_ss = iteratedModel.fd_gradient_step_size();
-  const RealVector& fd_hbg_ss = iteratedModel.fd_hessian_by_grad_step_size();
-  const RealVector& fd_hbf_ss = iteratedModel.fd_hessian_by_fn_step_size();
+  const RealVector&   fd_g_ss = pIteratedModel->fd_gradient_step_size();
+  const RealVector& fd_hbg_ss = pIteratedModel->fd_hessian_by_grad_step_size();
+  const RealVector& fd_hbf_ss = pIteratedModel->fd_hessian_by_fn_step_size();
   if (  !fd_g_ss.empty()) dltfdj =   fd_g_ss[0];
   if (!fd_hbg_ss.empty()) delta0 = fd_hbg_ss[0];
   if (!fd_hbf_ss.empty()) dltfdc = fd_hbf_ss[0];
@@ -194,10 +194,10 @@ calcr(int *np, int *pp, Real *x, int *nfp, Real *r, int *ui, void *ur, Vf vf)
   if (q->newR)
 	Rswapchk(q);
   copy_data(x, p, xd);
-  ModelUtils::continuous_variables(nl2solInstance->iteratedModel, xd);
+  ModelUtils::continuous_variables(*nl2solInstance->pIteratedModel, xd);
   nl2solInstance->activeSet.request_values(spec + 1);
-  nl2solInstance->iteratedModel.evaluate(nl2solInstance->activeSet);
-  const Response& lr = nl2solInstance->iteratedModel.current_response();
+  nl2solInstance->pIteratedModel->evaluate(nl2solInstance->activeSet);
+  const Response& lr = nl2solInstance->pIteratedModel->current_response();
 
   const RealVector& lf = lr.function_values();
 
@@ -267,11 +267,11 @@ calcj(int *np, int *pp, Real *x, int *nfp, Real *J, int *ui, void *ur, Vf vf)
 	}
     RealVector xd(p);
     copy_data(x, p, xd);
-    ModelUtils::continuous_variables(nl2solInstance->iteratedModel, xd);
+    ModelUtils::continuous_variables(*nl2solInstance->pIteratedModel, xd);
 
     nl2solInstance->activeSet.request_values(2);
-    nl2solInstance->iteratedModel.evaluate(nl2solInstance->activeSet);
-    const Response& lr = nl2solInstance->iteratedModel.current_response();
+    nl2solInstance->pIteratedModel->evaluate(nl2solInstance->activeSet);
+    const Response& lr = nl2solInstance->pIteratedModel->current_response();
 
     const RealMatrix& lg = lr.function_gradients();
     const Real* Gradi;
@@ -338,7 +338,7 @@ void NL2SOLLeastSq::core_run()
   q.RC[3].nf = 0;
   q.ic = 2;
   q.newR = 0;
-  q.specgrad = (speculativeFlag || iteratedModel.gradient_type() == "analytic")
+  q.specgrad = (speculativeFlag || pIteratedModel->gradient_type() == "analytic")
     ? 2 : 0;
   if (vendorNumericalGradFlag)
     q.specgrad = 0;
@@ -439,11 +439,11 @@ void NL2SOLLeastSq::core_run()
   if (xftol > 0)
     v[v_xftol] = xftol;
 
-  copy_data(ModelUtils::continuous_variables(iteratedModel), x, p);
+  copy_data(ModelUtils::continuous_variables(*pIteratedModel), x, p);
 
   if (boundConstraintFlag) {
-    const RealVector& Lb = ModelUtils::continuous_lower_bounds(iteratedModel);
-    const RealVector& Ub = ModelUtils::continuous_upper_bounds(iteratedModel);
+    const RealVector& Lb = ModelUtils::continuous_lower_bounds(*pIteratedModel);
+    const RealVector& Ub = ModelUtils::continuous_upper_bounds(*pIteratedModel);
     for(i = j = 0; i < p; i++) {
       b[j++] = Lb[i];
       b[j++] = Ub[i];

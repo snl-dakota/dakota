@@ -459,7 +459,7 @@ public:
         typename AdapterT::VecT & upper)
     {
       return get_variable_bounds<AdapterT>(
-                            iteratedModel,
+                            *pIteratedModel,
                             bigRealBoundSize,
                             bigIntBoundSize,
                             lower,
@@ -474,7 +474,7 @@ public:
         VecT & cEqs, 
         VecT & cIneqs)
     {
-      return get_responses( iteratedModel,
+      return get_responses( *pIteratedModel,
                             dak_fn_vals, 
                             constraintMapIndices,
                             constraintMapMultipliers,
@@ -563,7 +563,7 @@ protected:
     }
 
     return configure_inequality_constraint_maps(
-        iteratedModel,
+        *pIteratedModel,
         bigRealBoundSize,
         ctype,
         constraintMapIndices,
@@ -582,7 +582,7 @@ protected:
       split_into_one_sided = false;
 
     return configure_equality_constraint_maps(
-        iteratedModel,
+        *pIteratedModel,
         ctype,
         constraintMapIndices,
         index_offset,
@@ -602,7 +602,7 @@ protected:
           typename AdapterT::MatT & lin_eq_coeffs)
   {
     return get_linear_constraints<AdapterT>(
-        iteratedModel,
+        *pIteratedModel,
         bigRealBoundSize,
         lin_ineq_lower_bnds,
         lin_ineq_upper_bnds,

@@ -571,10 +571,10 @@ constraint_eval(int& mode, int& ncnln, int& n, int& nrowj, int* needc,
 
     // Update model variables from x for use in evaluate()
     RealVector local_des_vars(Teuchos::Copy, x, n);
-    ModelUtils::continuous_variables(optLSqInstance->iteratedModel, local_des_vars);
+    ModelUtils::continuous_variables(*optLSqInstance->pIteratedModel, local_des_vars);
 
     optLSqInstance->activeSet.request_vector(local_asv);
-    optLSqInstance->iteratedModel.evaluate(optLSqInstance->activeSet);
+    optLSqInstance->pIteratedModel->evaluate(optLSqInstance->activeSet);
     solInstance->fnEvalCntr++;
   }
   
@@ -582,7 +582,7 @@ constraint_eval(int& mode, int& ncnln, int& n, int& nrowj, int* needc,
   // Could follow local_asv entry-by-entry, but the design below is 
   // easier since the Response structure matches that needed by SOL.
   const Response& local_response
-    = optLSqInstance->iteratedModel.current_response();
+    = optLSqInstance->pIteratedModel->current_response();
   if (asv_request & 1) {
     // Direct use of the array class assignment operator works
     // fine in DOTOptimizer, but causes major memory problems in npsol!

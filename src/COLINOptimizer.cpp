@@ -300,10 +300,10 @@ void COLINOptimizer::core_run()
     // for synchronous.
 
      colinEvalMgr = colin::EvalManagerFactory()
-        .create(iteratedModel.asynch_flag() ? "Concurrent" : "Serial");
+        .create(pIteratedModel->asynch_flag() ? "Concurrent" : "Serial");
      if (colinEvalMgr->has_property("max_concurrency"))
        colinEvalMgr->property("max_concurrency")
-	 = iteratedModel.evaluation_capacity();
+	 = pIteratedModel->evaluation_capacity();
 
      // Instantiate the solver.
 
@@ -313,7 +313,7 @@ void COLINOptimizer::core_run()
     // Initialize the COLINApplication with the appropriate model
     // this will initialize functions, constraints, and bounds
 
-    colinProblem.second->set_problem(iteratedModel);
+    colinProblem.second->set_problem(*pIteratedModel);
     colinProblem.second->set_blocking_synch(blockingSynch);
     colinSolver->set_problem(colinProblem.first);
 
@@ -345,11 +345,11 @@ void COLINOptimizer::core_run()
     // variables.  COLIN does not distinguish between discrete integer
     // and discrete real.
 
-    const RealVector&  cv_init = ModelUtils::continuous_variables(iteratedModel);
-    const IntVector&  div_init = ModelUtils::discrete_int_variables(iteratedModel);
-    const RealVector& drv_init = ModelUtils::discrete_real_variables(iteratedModel);
+    const RealVector&  cv_init = ModelUtils::continuous_variables(*pIteratedModel);
+    const IntVector&  div_init = ModelUtils::discrete_int_variables(*pIteratedModel);
+    const RealVector& drv_init = ModelUtils::discrete_real_variables(*pIteratedModel);
     StringMultiArrayConstView dsv_init = 
-	    ModelUtils::discrete_string_variables(iteratedModel);
+	    ModelUtils::discrete_string_variables(*pIteratedModel);
     IntVector dv_init(numDiscreteIntVars
 		    + numDiscreteRealVars
 		    + numDiscreteStringVars);
@@ -372,10 +372,10 @@ void COLINOptimizer::core_run()
     // is necessary to allow usage beyond design optimization; e.g., for
     // epistemic interval estimation.
 
-    const       BitArray& di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
-    const    IntSetArray& dsiv_values = ModelUtils::discrete_set_int_values(iteratedModel);
-    const   RealSetArray& dsrv_values = ModelUtils::discrete_set_real_values(iteratedModel);
-    const StringSetArray& dssv_values = ModelUtils::discrete_set_string_values(iteratedModel);
+    const       BitArray& di_set_bits = ModelUtils::discrete_int_sets(*pIteratedModel);
+    const    IntSetArray& dsiv_values = ModelUtils::discrete_set_int_values(*pIteratedModel);
+    const   RealSetArray& dsrv_values = ModelUtils::discrete_set_real_values(*pIteratedModel);
+    const StringSetArray& dssv_values = ModelUtils::discrete_set_string_values(*pIteratedModel);
     size_t i, index, dsi_cntr;
     for (i=0, dsi_cntr=0; i<numDiscreteIntVars; ++i) {
       if (di_set_bits[i]) { // this active discrete int var is a set type
@@ -645,7 +645,7 @@ void COLINOptimizer::set_solver_parameters()
 	// asynch case, otherwise single division (a maximum of 2
 	// asynch evals).
 
-	if (iteratedModel.asynch_flag())
+	if (pIteratedModel->asynch_flag())
 	  colinSolver->property("division") = string("multi");
 	else
 	  colinSolver->property("division") = string("single");
@@ -980,11 +980,11 @@ void COLINOptimizer::post_run(std::ostream& s)
   // Temporary data structures needed for sort.
   RealVector cdv;
   IntVector ddv;
-  Variables tmpVariableHolder = iteratedModel.current_variables().copy();
+  Variables tmpVariableHolder = pIteratedModel->current_variables().copy();
   // BMA: Current convention across the code is that bestResponsesArray is
   // sized in the original problem space, even when reduction is active...
   Model& model_for_responses = localObjectiveRecast ?
-    iteratedModel.subordinate_model() : iteratedModel;
+    pIteratedModel->subordinate_model() : *pIteratedModel;
   Response tmpResponseHolder = model_for_responses.current_response().copy();
 
   // One specification type for discrete variables is a set of values.
@@ -992,10 +992,10 @@ void COLINOptimizer::post_run(std::ostream& s)
   // determine the size of those sets and the number of non-set
   // integer variables.
 
-  const       BitArray& di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
-  const    IntSetArray& dsiv_values = ModelUtils::discrete_set_int_values(iteratedModel);
-  const   RealSetArray& dsrv_values = ModelUtils::discrete_set_real_values(iteratedModel);
-  const StringSetArray& dssv_values = ModelUtils::discrete_set_string_values(iteratedModel);
+  const       BitArray& di_set_bits = ModelUtils::discrete_int_sets(*pIteratedModel);
+  const    IntSetArray& dsiv_values = ModelUtils::discrete_set_int_values(*pIteratedModel);
+  const   RealSetArray& dsrv_values = ModelUtils::discrete_set_real_values(*pIteratedModel);
+  const StringSetArray& dssv_values = ModelUtils::discrete_set_string_values(*pIteratedModel);
   size_t i, j, dsi_cntr;
 
   // Iterate through points returned by COLIN.
@@ -1082,8 +1082,8 @@ void COLINOptimizer::post_run(std::ostream& s)
     // as it will get the sense (min/max) correct
     double obj_fn_metric = 
       objective(fn_vals, numObjectiveFns,
-		iteratedModel.primary_response_fn_sense(),
-		iteratedModel.primary_response_fn_weights());
+		pIteratedModel->primary_response_fn_sense(),
+		pIteratedModel->primary_response_fn_weights());
 
     RealRealPair metrics(constraintViolation, obj_fn_metric);
 
@@ -1202,14 +1202,14 @@ double COLINOptimizer::constraint_violation(const Response& tmpResponseHolder)
   // Need number of constraints and bounds so we can determine
   // constraint violation.
 
-  size_t num_nln_ineq = ModelUtils::num_nonlinear_ineq_constraints(iteratedModel),
-         num_nln_eq   = ModelUtils::num_nonlinear_eq_constraints(iteratedModel);
+  size_t num_nln_ineq = ModelUtils::num_nonlinear_ineq_constraints(*pIteratedModel),
+         num_nln_eq   = ModelUtils::num_nonlinear_eq_constraints(*pIteratedModel);
   const RealVector& nln_ineq_lwr_bnds
-    = ModelUtils::nonlinear_ineq_constraint_lower_bounds(iteratedModel);
+    = ModelUtils::nonlinear_ineq_constraint_lower_bounds(*pIteratedModel);
   const RealVector& nln_ineq_upr_bnds
-    = ModelUtils::nonlinear_ineq_constraint_upper_bounds(iteratedModel);
+    = ModelUtils::nonlinear_ineq_constraint_upper_bounds(*pIteratedModel);
   const RealVector& nln_eq_targets
-    = ModelUtils::nonlinear_eq_constraint_targets(iteratedModel);
+    = ModelUtils::nonlinear_eq_constraint_targets(*pIteratedModel);
 
   // Compute constraint violation for nonlinear inequality and
   // equality constraints using sum of squares of component-wise

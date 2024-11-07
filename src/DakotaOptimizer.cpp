@@ -80,19 +80,19 @@ Optimizer(ProblemDescDB& problem_db, Model& model,
   if (methodName == OPTPP_NEWTON) { // || ...) {
     require_hessians = true;
     if (have_lsq) {
-      if (iteratedModel.gradient_type() == "none" ) {
+      if (pIteratedModel->gradient_type() == "none" ) {
         Cerr << "\nError: full Newton optimization of least-squares problem requires calibration term gradients."
              << std::endl;
         err_flag = true;
       }
-      if (numNonlinearConstraints && ( iteratedModel.hessian_type()  == "none" )) {
+      if (numNonlinearConstraints && ( pIteratedModel->hessian_type()  == "none" )) {
         Cerr << "\nError: full Newton optimization of least-squares problem with nonlinear constraints "
              << "requires constraint Hessians.  Alternatively, consider using optpp_g_newton."
              << std::endl;
         err_flag = true;
       }
     }
-    else if (iteratedModel.hessian_type()  == "none") {
+    else if (pIteratedModel->hessian_type()  == "none") {
       Cerr << "\nError: full Newton optimization requires objective Hessians. "
            << "Alternatively, consider using optpp_q_newton."
 	   << std::endl;
@@ -102,7 +102,7 @@ Optimizer(ProblemDescDB& problem_db, Model& model,
 
   // Initialize a best variables instance; bestVariablesArray should
   // be in calling context; so initialized before any recasts
-  bestVariablesArray.push_back(iteratedModel.current_variables().copy());
+  bestVariablesArray.push_back(pIteratedModel->current_variables().copy());
 
   // Check for proper response function definition (optimization or
   // calibration) and manage local recasting (necessary if inbound
@@ -357,7 +357,7 @@ void Optimizer::reduce_model(bool local_nls_recast, bool require_hessians)
   // recast active set if needed for Gauss-Newton LSQ
   void (*set_recast) (const Variables&, const ActiveSet&, ActiveSet&)
     = (local_nls_recast && require_hessians &&
-       iteratedModel.hessian_type() == "none") ? gnewton_set_recast : NULL;
+       pIteratedModel->hessian_type() == "none") ? gnewton_set_recast : NULL;
   void (*pri_resp_recast) (const Variables&, const Variables&,
                            const Response&, Response&) = primary_resp_reducer;
   void (*sec_resp_recast) (const Variables&, const Variables&,
@@ -366,14 +366,14 @@ void Optimizer::reduce_model(bool local_nls_recast, bool require_hessians)
   size_t recast_secondary_offset = numNonlinearIneqConstraints;
   SizetArray recast_vars_comps_total; // default: empty; no change in size
   BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
-  const Response& orig_resp = iteratedModel.current_response();
+  const Response& orig_resp = pIteratedModel->current_response();
   short recast_resp_order = 1; // may differ from orig response
   if (!orig_resp.function_gradients().empty()) recast_resp_order |= 2;
   if (require_hessians)                        recast_resp_order |= 4;
 
-  iteratedModel.assign_rep(std::make_shared<RecastModel>
-    (iteratedModel, var_map_indices, recast_vars_comps_total, all_relax_di,
-     all_relax_dr, nonlinear_vars_map, iteratedModel.current_variables().view(),
+  pIteratedModel->assign_rep(std::make_shared<RecastModel>
+    (*pIteratedModel, var_map_indices, recast_vars_comps_total, all_relax_di,
+     all_relax_dr, nonlinear_vars_map, pIteratedModel->current_variables().view(),
      vars_recast, set_recast, primary_resp_map_indices,
      secondary_resp_map_indices, recast_secondary_offset, recast_resp_order,
      nonlinear_resp_map, pri_resp_recast, sec_resp_recast));
@@ -384,24 +384,24 @@ void Optimizer::reduce_model(bool local_nls_recast, bool require_hessians)
   // allocate space for a Hessian (default copy of sub-model response
   // is insufficient).
   if (set_recast) {
-    Response recast_resp = iteratedModel.current_response(); // shared rep
+    Response recast_resp = pIteratedModel->current_response(); // shared rep
     recast_resp.reshape(num_recast_fns, numContinuousVars, true, true);
   }
 
   // this recast results in a single primary response of type objective
-  iteratedModel.primary_fn_type(OBJECTIVE_FNS);
+  pIteratedModel->primary_fn_type(OBJECTIVE_FNS);
 
   // This transformation consumes weights, so the resulting wrapped
   // model doesn't need them any longer, however don't want to recurse
   // and wipe out in sub-models.  Be explicit in case later
   // update_from_model() is used instead.
   bool recurse_flag = false;
-  iteratedModel.primary_response_fn_weights(RealVector(), recurse_flag);
+  pIteratedModel->primary_response_fn_weights(RealVector(), recurse_flag);
 
   // an empty RecastModel::primaryRespFnSense would be sufficient
   // (reflects the minimize default), but might as well be explicit.
   BoolDeque max_sense(1, false);
-  iteratedModel.primary_response_fn_sense(max_sense);
+  pIteratedModel->primary_response_fn_sense(max_sense);
 }
 
 
@@ -421,7 +421,7 @@ primary_resp_reducer(const Variables& full_vars, const Variables& reduced_vars,
 	 << std::endl;
   }
 
-  Model& sub_model = optimizerInstance->iteratedModel.subordinate_model();
+  Model& sub_model = optimizerInstance->pIteratedModel->subordinate_model();
   optimizerInstance->
     objective_reduction(full_response, sub_model.primary_response_fn_sense(),
 			sub_model.primary_response_fn_weights(), 
@@ -510,7 +510,7 @@ void Optimizer::configure_constraint_maps()
 
     numNonlinearIneqConstraintsFound = 
       configure_inequality_constraint_maps(
-                                  iteratedModel,
+                                  *pIteratedModel,
                                   bigRealBoundSize,
                                   CONSTRAINT_TYPE::NONLINEAR,
                                   constraintMapIndices,
@@ -538,7 +538,7 @@ void Optimizer::initialize_run()
   // from the underlying user model in case of hybrid methods, so
   // should recurse through any local transformations
   if (myModelLayers > 0)
-    iteratedModel.update_from_subordinate_model(myModelLayers-1);
+    pIteratedModel->update_from_subordinate_model(myModelLayers-1);
 
   // Track any previous object instance in case of recursion.  Note that
   // optimizerInstance and minimizerInstance must be tracked separately since
@@ -548,7 +548,7 @@ void Optimizer::initialize_run()
   prevOptInstance   = optimizerInstance;
   optimizerInstance = this;
 
-  if (!iteratedModel.is_null())
+  if (!pIteratedModel->is_null())
     configure_constraint_maps();
 }
 

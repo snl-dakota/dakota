@@ -61,6 +61,7 @@ COLINApplication::COLINApplication(Model& model) :
 void COLINApplication::set_problem(Model& model) {
 
   iteratedModel = model;
+  pIteratedModel = &iteratedModel;
   activeSet = model.current_response().active_set();
 
   // BMA NOTE: For COLIN to relax integer variables, must hand COLIN a
@@ -266,9 +267,9 @@ spawn_evaluation_impl(const utilib::Any &domain,
 
   colin_request_to_dakota_request(domain, requests, seed);
 
-  iteratedModel.evaluate_nowait();
+  pIteratedModel->evaluate_nowait();
 
-  return(iteratedModel.evaluation_id());
+  return(pIteratedModel->evaluation_id());
 }
 
 /** Perform an evaluation at a specified domain point.  Wait for and
@@ -289,9 +290,9 @@ perform_evaluation_impl(const utilib::Any &domain,
 
   colin_request_to_dakota_request(domain, requests, seed);
 
-  iteratedModel.evaluate();
+  pIteratedModel->evaluate();
 
-  dakota_response_to_colin_response(iteratedModel.current_response(), colin_responses);
+  dakota_response_to_colin_response(pIteratedModel->current_response(), colin_responses);
 }
 
 /** Check to see if any asynchronous evaluations have finished.  This
@@ -308,7 +309,7 @@ evaluation_available()
   if (dakota_responses.empty()) {
 
     dakota_responses = (blockingSynch) ?
-      iteratedModel.synchronize() : iteratedModel.synchronize_nowait();
+      pIteratedModel->synchronize() : pIteratedModel->synchronize_nowait();
 
     if (dakota_responses.empty())
       return false;
@@ -353,7 +354,7 @@ colin_request_to_dakota_request(const utilib::Any &domain,
 
   RealVector cdv;
   TypeManager()->lexical_cast(miv.Real(), cdv);
-  ModelUtils::continuous_variables(iteratedModel, cdv);
+  ModelUtils::continuous_variables(*pIteratedModel, cdv);
 
   // Cast the discrete variables from COLIN to a temporary vector.
 
@@ -363,39 +364,39 @@ colin_request_to_dakota_request(const utilib::Any &domain,
   // One specification type for discrete variables is a set of values.
   // Get that list of values if the user provided one.
 
-  const     BitArray&   di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
-  const IntSetArray&    dsiv_values = ModelUtils::discrete_set_int_values(iteratedModel);
-  const RealSetArray&   dsrv_values = ModelUtils::discrete_set_real_values(iteratedModel);
-  const StringSetArray& dssv_values = ModelUtils::discrete_set_string_values(iteratedModel);
+  const     BitArray&   di_set_bits = ModelUtils::discrete_int_sets(*pIteratedModel);
+  const IntSetArray&    dsiv_values = ModelUtils::discrete_set_int_values(*pIteratedModel);
+  const RealSetArray&   dsrv_values = ModelUtils::discrete_set_real_values(*pIteratedModel);
+  const StringSetArray& dssv_values = ModelUtils::discrete_set_string_values(*pIteratedModel);
 
   // Assign COLIN integer variables to DAKOTA discrete integer variables.
   // Remember, COLIN is operating on the index for the set discrete
   // variables.  Get the integer values associated with each index and
   // assign them to DAKOTA integer variables.
 
-  size_t j, dsi_cntr, num_div = ModelUtils::div(iteratedModel),
-    num_drv = ModelUtils::drv(iteratedModel), num_dsv = ModelUtils::dsv(iteratedModel);
+  size_t j, dsi_cntr, num_div = ModelUtils::div(*pIteratedModel),
+    num_drv = ModelUtils::drv(*pIteratedModel), num_dsv = ModelUtils::dsv(*pIteratedModel);
   for (j=0, dsi_cntr=0; j<num_div; ++j) {
     if (di_set_bits[j]) { // this active discrete int var is a set type
       int dakota_value = set_index_to_value(ddv[j], dsiv_values[dsi_cntr]);
-      ModelUtils::discrete_int_variable(iteratedModel, dakota_value, j);
+      ModelUtils::discrete_int_variable(*pIteratedModel, dakota_value, j);
       ++dsi_cntr;
     }
     else                  // this active discrete int var is a range type
-      ModelUtils::discrete_int_variable(iteratedModel, ddv[j], j);
+      ModelUtils::discrete_int_variable(*pIteratedModel, ddv[j], j);
   }
 
   // Likewise for the real set discrete variables.
 
   for (size_t j=0; j<num_drv; ++j) {
     Real dakota_value = set_index_to_value(ddv[j+num_div], dsrv_values[j]);
-    ModelUtils::discrete_real_variable(iteratedModel, dakota_value, j);
+    ModelUtils::discrete_real_variable(*pIteratedModel, dakota_value, j);
   }
 
   // Likelikewise for the string set discrete variables
   for (size_t j=0; j<num_dsv; ++j) {
     String dakota_value = set_index_to_value(ddv[j+num_div+num_drv], dssv_values[j]);
-    ModelUtils::discrete_string_variable(iteratedModel, dakota_value, j);
+    ModelUtils::discrete_string_variable(*pIteratedModel, dakota_value, j);
   }
 
   // Map COLIN info requests (pair<ResponseInfo, *>) to DAKOTA
@@ -404,7 +405,7 @@ colin_request_to_dakota_request(const utilib::Any &domain,
 
   // TODO: gradient support
 
-  ShortArray asv(ModelUtils::response_size(iteratedModel));
+  ShortArray asv(ModelUtils::response_size(*pIteratedModel));
 
   AppRequest::request_map_t::const_iterator req_it  = requests.begin();
   AppRequest::request_map_t::const_iterator req_end = requests.end();

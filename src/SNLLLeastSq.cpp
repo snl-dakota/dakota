@@ -114,8 +114,8 @@ SNLLLeastSq::SNLLLeastSq(ProblemDescDB& problem_db, Model& model):
 
   // convenience function from SNLLBase
   snll_post_instantiate(numContinuousVars, vendorNumericalGradFlag,
-			iteratedModel.interval_type(),
-			iteratedModel.fd_gradient_step_size(), maxIterations,
+			pIteratedModel->interval_type(),
+			pIteratedModel->fd_gradient_step_size(), maxIterations,
 			maxFunctionEvals, convergenceTol, gradientTol, maxStep,
 			boundConstraintFlag, numConstraints, outputLevel,
 			theOptimizer, nlfObjective, NULL, NULL);
@@ -202,8 +202,8 @@ SNLLLeastSq::SNLLLeastSq(const String& method_name, Model& model):
 
   // convenience function from SNLLBase
   snll_post_instantiate(numContinuousVars, vendorNumericalGradFlag,
-			iteratedModel.interval_type(),
-			iteratedModel.fd_gradient_step_size(),
+			pIteratedModel->interval_type(),
+			pIteratedModel->fd_gradient_step_size(),
 			maxIterations, maxFunctionEvals, convergenceTol, 1.e-4,
 			1000., boundConstraintFlag, numConstraints, outputLevel,
 			theOptimizer, nlfObjective, NULL, NULL);
@@ -277,7 +277,7 @@ nlf2_evaluator_gn(int mode, int n, const RealVector& x, double& f,
       x != lastEvalVars) {
     // data not available from constraint evaluator, so perform
     // a new function evaluation.
-    ModelUtils::continuous_variables(snllLSqInstance->iteratedModel, x);
+    ModelUtils::continuous_variables(*snllLSqInstance->pIteratedModel, x);
     ShortArray local_asv(snllLSqInstance->numFunctions, lsq_mode);
     // Should constraints be evaluated (if present)?  Depends on what OPT++
     // is doing.  Since we know this eval is not aligned with a preceding
@@ -292,11 +292,11 @@ nlf2_evaluator_gn(int mode, int n, const RealVector& x, double& f,
       local_asv[i] = 0; //mode & 3; // nonlinear constraints (if present)
 
     snllLSqInstance->activeSet.request_vector(local_asv);
-    snllLSqInstance->iteratedModel.evaluate(snllLSqInstance->activeSet);
+    snllLSqInstance->pIteratedModel->evaluate(snllLSqInstance->activeSet);
     lastFnEvalLocn = NLF_EVALUATOR;
   }
   const Response& local_response
-    = snllLSqInstance->iteratedModel.current_response();
+    = snllLSqInstance->pIteratedModel->current_response();
 
   // Go ahead and always retrieve the references even though this data may not
   // have been requested in the local_asv (in which case it contains 0's).
@@ -377,20 +377,20 @@ constraint1_evaluator_gn(int mode, int n, const RealVector& x, RealVector& g,
   if (snllLSqInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLLeastSq::constraint1_evaluator_gn vars = \n"
          << x;
-  ModelUtils::continuous_variables(snllLSqInstance->iteratedModel, x);
+  ModelUtils::continuous_variables(*snllLSqInstance->pIteratedModel, x);
 
   size_t i;
   ShortArray local_asv(snllLSqInstance->numFunctions, lsq_mode);
   for (i=snllLSqInstance->numLeastSqTerms; i<snllLSqInstance->numFunctions; i++)
     local_asv[i] = mode; // nonlinear constraints
   snllLSqInstance->activeSet.request_vector(local_asv);
-  snllLSqInstance->iteratedModel.evaluate(snllLSqInstance->activeSet);
+  snllLSqInstance->pIteratedModel->evaluate(snllLSqInstance->activeSet);
   lastFnEvalLocn = CON_EVALUATOR;
   lastEvalMode   = lsq_mode;
   lastEvalVars   = x;
 
   const Response& local_response
-    = snllLSqInstance->iteratedModel.current_response();
+    = snllLSqInstance->pIteratedModel->current_response();
   if (mode & 1) { // 1st bit is present, mode = 1, 3, 5, or 7
     snllLSqInstance->copy_con_vals_dak_to_optpp(
       local_response.function_values(), g, snllLSqInstance->numLeastSqTerms);
@@ -442,20 +442,20 @@ constraint2_evaluator_gn(int mode, int n, const RealVector& x, RealVector& g,
   if (snllLSqInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLLeastSq::constraint2_evaluator_gn vars = \n"
          << x;
-  ModelUtils::continuous_variables(snllLSqInstance->iteratedModel, x);
+  ModelUtils::continuous_variables(*snllLSqInstance->pIteratedModel, x);
 
   size_t i;
   ShortArray local_asv(snllLSqInstance->numFunctions, lsq_mode);
   for (i=snllLSqInstance->numLeastSqTerms; i<snllLSqInstance->numFunctions; i++)
     local_asv[i] = mode; // nonlinear constraints
   snllLSqInstance->activeSet.request_vector(local_asv);
-  snllLSqInstance->iteratedModel.evaluate(snllLSqInstance->activeSet);
+  snllLSqInstance->pIteratedModel->evaluate(snllLSqInstance->activeSet);
   lastFnEvalLocn = CON_EVALUATOR;
   lastEvalMode   = lsq_mode;
   lastEvalVars   = x;
 
   const Response& local_response
-    = snllLSqInstance->iteratedModel.current_response();
+    = snllLSqInstance->pIteratedModel->current_response();
   if (mode & 1) { // 1st bit is present, mode = 1, 3, 5, or 7
     snllLSqInstance->
       copy_con_vals_dak_to_optpp(local_response.function_values(), g,
@@ -485,18 +485,18 @@ void SNLLLeastSq::initialize_run()
 
   // convenience function from SNLLBase
   snll_initialize_run(nlfObjective, nlpConstraint,
-		      ModelUtils::continuous_variables(iteratedModel), 
+		      ModelUtils::continuous_variables(*pIteratedModel), 
 		      boundConstraintFlag, 
-		      ModelUtils::continuous_lower_bounds(iteratedModel),
-		      ModelUtils::continuous_upper_bounds(iteratedModel),
-		      ModelUtils::linear_ineq_constraint_coeffs(iteratedModel),
-		      ModelUtils::linear_ineq_constraint_lower_bounds(iteratedModel),
-		      ModelUtils::linear_ineq_constraint_upper_bounds(iteratedModel),
-		      ModelUtils::linear_eq_constraint_coeffs(iteratedModel),
-		      ModelUtils::linear_eq_constraint_targets(iteratedModel),
-		      ModelUtils::nonlinear_ineq_constraint_lower_bounds(iteratedModel),
-		      ModelUtils::nonlinear_ineq_constraint_upper_bounds(iteratedModel),
-		      ModelUtils::nonlinear_eq_constraint_targets(iteratedModel));
+		      ModelUtils::continuous_lower_bounds(*pIteratedModel),
+		      ModelUtils::continuous_upper_bounds(*pIteratedModel),
+		      ModelUtils::linear_ineq_constraint_coeffs(*pIteratedModel),
+		      ModelUtils::linear_ineq_constraint_lower_bounds(*pIteratedModel),
+		      ModelUtils::linear_ineq_constraint_upper_bounds(*pIteratedModel),
+		      ModelUtils::linear_eq_constraint_coeffs(*pIteratedModel),
+		      ModelUtils::linear_eq_constraint_targets(*pIteratedModel),
+		      ModelUtils::nonlinear_ineq_constraint_lower_bounds(*pIteratedModel),
+		      ModelUtils::nonlinear_ineq_constraint_upper_bounds(*pIteratedModel),
+		      ModelUtils::nonlinear_eq_constraint_targets(*pIteratedModel));
 
   // set modeOverrideFlag based on method/search strategy, speculative 
   // gradient, or constant asv selections.  Notes:

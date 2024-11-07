@@ -93,6 +93,7 @@ private:
 
   /// reference to the APPSOptimizer's model passed in the constructor
   Model& iteratedModel;
+  Model* pIteratedModel;
 
   /// flag for asynchronous function evaluations
   bool modelAsynchFlag;

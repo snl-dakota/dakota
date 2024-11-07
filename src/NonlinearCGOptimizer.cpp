@@ -68,7 +68,7 @@ void NonlinearCGOptimizer::core_run()
 
   // TODO: Once DAKOTA moves to Teuchos for its numerical data type,
   // remove the various copies below.  (Also, could use std::copy for some.)
-  copy_data(ModelUtils::continuous_variables(iteratedModel), designVars); // view->copy
+  copy_data(ModelUtils::continuous_variables(*pIteratedModel), designVars); // view->copy
   searchDirection.sizeUninitialized(numContinuousVars);
 
   if (linesearchType > CG_FIXED_STEP)
@@ -79,8 +79,8 @@ void NonlinearCGOptimizer::core_run()
     // get function and gradient -- should discern whether linesearch
     // is in use and only request gradient if appropriate
     activeSet.request_values(3);
-    iteratedModel.evaluate(activeSet);
-    const Response&   response  = iteratedModel.current_response();
+    pIteratedModel->evaluate(activeSet);
+    const Response&   response  = pIteratedModel->current_response();
     const RealVector& functions = response.function_values();
 
     functionCurr = functions[0];
@@ -143,7 +143,7 @@ void NonlinearCGOptimizer::core_run()
 		    1, designVars.values(), 1);
 
     // TODO: this is a duplicate copy in the linesearch case -- rework to avoid
-    ModelUtils::continuous_variables(iteratedModel, designVars);
+    ModelUtils::continuous_variables(*pIteratedModel, designVars);
     
     // archive gradient and derived metric for next iteration
     functionPrev = functionCurr;
@@ -186,7 +186,7 @@ void NonlinearCGOptimizer::compute_direction()
     else {
 
       // Polak-Ribiere or Hestenes-Stiefel
-      gradDiff = iteratedModel.current_response().function_gradient_copy(0);
+      gradDiff = pIteratedModel->current_response().function_gradient_copy(0);
       gradDiff -= gradPrev;
       Real gradCurr_dot_gradDiff = 
 	gradCurr.dot(gradDiff);
@@ -598,10 +598,10 @@ Real NonlinearCGOptimizer::linesearch_eval(const Real& trial_step,
   // evaluate function only 
   for (size_t i=0; i<numContinuousVars; i++)
     trialVars[i] = designVars[i] + trial_step * searchDirection[i];
-  ModelUtils::continuous_variables(iteratedModel, trialVars);
+  ModelUtils::continuous_variables(*pIteratedModel, trialVars);
   activeSet.request_values(req_val);
-  iteratedModel.evaluate(activeSet);
-  const Response& response = iteratedModel.current_response();
+  pIteratedModel->evaluate(activeSet);
+  const Response& response = pIteratedModel->current_response();
   const RealVector& functions = response.function_values();
   
   return(functions[0]);

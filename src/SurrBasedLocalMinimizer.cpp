@@ -80,7 +80,7 @@ void SurrBasedLocalMinimizer::initialize()
 {
   // Verify that iteratedModel is a surrogate model so that
   // approximation-related functions are defined.
-  if (iteratedModel.model_type() != "surrogate") {
+  if (pIteratedModel->model_type() != "surrogate") {
     Cerr << "Error: SurrBasedLocalMinimizer::iteratedModel must be a "
 	 << "surrogate model." << std::endl;
     abort_handler(METHOD_ERROR);
@@ -126,7 +126,7 @@ void SurrBasedLocalMinimizer::initialize()
     softConvLimit = 5;
 
   bestVariablesArray.push_back(
-    iteratedModel.truth_model().current_variables().copy());
+    pIteratedModel->truth_model().current_variables().copy());
 }
 
 
@@ -149,7 +149,7 @@ void SurrBasedLocalMinimizer::initialize_sub_model()
     // different defaults for approxSubProbObj: SINGLE_OBJECTIVE for opt.,
     // ORIGINAL_PRIMARY for NLS.
     recastSubProb = false;
-    approxSubProbModel = iteratedModel; // no recasting: shared representation
+    approxSubProbModel = *pIteratedModel; // no recasting: shared representation
   }
   else { // subproblem must be recast
     recastSubProb = true;
@@ -205,9 +205,9 @@ void SurrBasedLocalMinimizer::initialize_sub_model()
     // = (!optimizationFlag && approxSubProbObj == SINGLE_OBJECTIVE &&
     //    iteratedModel.hessian_type() == "none") ? gnewton_set_recast : NULL;
 
-    approxSubProbModel.assign_rep(std::make_shared<RecastModel>(iteratedModel,
+    approxSubProbModel.assign_rep(std::make_shared<RecastModel>(*pIteratedModel,
       recast_vars_map, recast_vars_comps_total, all_relax_di, all_relax_dr,
-      false, iteratedModel.current_variables().view(), nullptr, set_recast,
+      false, pIteratedModel->current_variables().view(), nullptr, set_recast,
       recast_primary_resp_map, recast_secondary_resp_map, recast_offset,
       recast_resp_order, nonlinear_resp_map, approx_subprob_objective_eval,
       approx_subprob_constraint_eval));
@@ -319,7 +319,7 @@ void SurrBasedLocalMinimizer::initialize_graphics(int iterator_server_id)
 
   // BMA: Left this conditional to avoid breaking other derived classes
   Model& truth_model = (methodName == SURROGATE_BASED_LOCAL) ?
-    iteratedModel.truth_model() : iteratedModel;
+    pIteratedModel->truth_model() : *pIteratedModel;
   OutputManager& mgr = parallelLib.output_manager();
 
   // For graphics, limit (currently) to server id 1, for both ded master
@@ -350,9 +350,9 @@ void SurrBasedLocalMinimizer::pre_run()
   // need copies of initial point and initial global bounds, since iteratedModel
   // continuous vars will be reset to the TR center and iteratedModel bounds
   // will be reset to the TR bounds
-  copy_data(ModelUtils::continuous_variables(iteratedModel),    initialPoint);
-  copy_data(ModelUtils::continuous_lower_bounds(iteratedModel), globalLowerBnds);
-  copy_data(ModelUtils::continuous_upper_bounds(iteratedModel), globalUpperBnds);
+  copy_data(ModelUtils::continuous_variables(*pIteratedModel),    initialPoint);
+  copy_data(ModelUtils::continuous_lower_bounds(*pIteratedModel), globalLowerBnds);
+  copy_data(ModelUtils::continuous_upper_bounds(*pIteratedModel), globalUpperBnds);
 }
 
 
@@ -492,7 +492,7 @@ update_trust_region_data(SurrBasedLevelData& tr_data,
   const RealVector& tr_lower_bnds = tr_data.tr_lower_bounds();
   const RealVector& tr_upper_bnds = tr_data.tr_upper_bounds();
   StringMultiArrayConstView c_vars_labels
-    = ModelUtils::continuous_variable_labels(iteratedModel);
+    = ModelUtils::continuous_variable_labels(*pIteratedModel);
   for (i=0; i<numContinuousVars; ++i)
     Cout << std::setw(16) << c_vars_labels[i] << ':' << std::setw(wpp9)
 	 << tr_lower_bnds[i] << std::setw(wpp9) << cv_center[i]
@@ -527,7 +527,7 @@ update_approx_sub_problem(SurrBasedLevelData& tr_data)
 void SurrBasedLocalMinimizer::minimize()
 {
   Cout << "\n>>>>> Starting approximate optimization cycle.\n";
-  iteratedModel.surrogate_response_mode(AUTO_CORRECTED_SURROGATE);
+  pIteratedModel->surrogate_response_mode(AUTO_CORRECTED_SURROGATE);
 
   ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
   approxSubProbMinimizer.run(pl_iter); // pl_iter required for hierarchical
@@ -576,8 +576,8 @@ compute_trust_region_ratio(SurrBasedLevelData& tr_data, bool check_interior)
   const Response& response_truth = tr_data.response_center(CORR_TRUTH_RESPONSE);
   const RealVector&    fns_truth = response_truth.function_values();
   bool  constraint_viol = (constraint_violation(fns_truth, constraintTol) > 0.);
-  const BoolDeque& sense = iteratedModel.primary_response_fn_sense();
-  const RealVector&  wts = iteratedModel.primary_response_fn_weights();
+  const BoolDeque& sense = pIteratedModel->primary_response_fn_sense();
+  const RealVector&  wts = pIteratedModel->primary_response_fn_weights();
   Real obj_fn_star_truth   = objective(fns_star_truth,   sense, wts);
   Real obj_fn_center_truth = objective(fns_center_truth, sense, wts);
   Real obj_delta = obj_fn_center_truth - obj_fn_star_truth;
@@ -928,8 +928,8 @@ hard_convergence_check(SurrBasedLevelData& tr_data,
   RealVector merit_fn_grad(numContinuousVars, true);
   //if (meritFnType == LAGRANGIAN_MERIT)
   lagrangian_gradient(fns_truth, response_truth.function_gradients(),
-		      iteratedModel.primary_response_fn_sense(),
-		      iteratedModel.primary_response_fn_weights(),
+		      pIteratedModel->primary_response_fn_sense(),
+		      pIteratedModel->primary_response_fn_weights(),
 		      origNonlinIneqLowerBnds, origNonlinIneqUpperBnds,
 		      origNonlinEqTargets, merit_fn_grad);
   //else if (meritFnType == AUGMENTED_LAGRANGIAN_MERIT)
@@ -1018,8 +1018,8 @@ update_penalty(const RealVector& fns_center_truth,
     // and penalty value.  The penalty offset is _not_ updated in this case, and
     // the acceptance of these points becomes less likely as the iteration
     // progresses and the penalty ramps up.
-    const BoolDeque& sense = iteratedModel.primary_response_fn_sense();
-    const RealVector&  wts = iteratedModel.primary_response_fn_weights();
+    const BoolDeque& sense = pIteratedModel->primary_response_fn_sense();
+    const RealVector&  wts = pIteratedModel->primary_response_fn_weights();
     Real obj_delta = objective(fns_star_truth,   sense, wts)
                    - objective(fns_center_truth, sense, wts);
     Real cv_delta  = constraint_violation(fns_star_truth,   constraintTol)
@@ -1113,9 +1113,9 @@ approx_subprob_objective_eval(const Variables& surrogate_vars,
     // the approxSubProbModel has empty bounds/targets, and the original
     // bounds/targets are used.
     const BoolDeque& sense
-      = sblmInstance->iteratedModel.primary_response_fn_sense();
+      = sblmInstance->pIteratedModel->primary_response_fn_sense();
     const RealVector& wts
-      = sblmInstance->iteratedModel.primary_response_fn_weights();
+      = sblmInstance->pIteratedModel->primary_response_fn_weights();
     bool no_sub_prob_con = (sblmInstance->approxSubProbCon == NO_CONSTRAINTS);
     const RealVector& nln_ineq_l_bnds = (no_sub_prob_con) ? 
       sblmInstance->origNonlinIneqLowerBnds :

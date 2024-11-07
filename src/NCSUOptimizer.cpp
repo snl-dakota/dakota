@@ -121,7 +121,7 @@ void NCSUOptimizer::check_sub_iterator_conflict()
   // instance of the same iterator (which would result in data clashes since
   // Fortran does not support object independence).  Recurse through all
   // sub-models and test each sub-iterator for NCSU presence.
-  Iterator sub_iterator = iteratedModel.subordinate_iterator();
+  Iterator sub_iterator = pIteratedModel->subordinate_iterator();
   if (!sub_iterator.is_null() && 
        ( sub_iterator.method_name() == NCSU_DIRECT ||
 	 sub_iterator.uses_method() == SUBMETHOD_DIRECT ||
@@ -129,7 +129,7 @@ void NCSUOptimizer::check_sub_iterator_conflict()
 	 sub_iterator.uses_method() == SUBMETHOD_DIRECT_OPTPP ||
 	 sub_iterator.uses_method() == SUBMETHOD_DIRECT_NPSOL_OPTPP ) )
     sub_iterator.method_recourse(methodName);
-  ModelList& sub_models = iteratedModel.subordinate_models();
+  ModelList& sub_models = pIteratedModel->subordinate_models();
   for (ModelLIter ml_iter = sub_models.begin();
        ml_iter != sub_models.end(); ml_iter++) {
     sub_iterator = ml_iter->subordinate_iterator();
@@ -248,7 +248,7 @@ objective_eval(int *n, double c[], double l[], double u[], int point[],
   // Any MOO/NLS recasting is responsible for setting the scalar min/max
   // sense within the recast.
   const BoolDeque& max_sense
-    = ncsudirectInstance->iteratedModel.primary_response_fn_sense();
+    = ncsudirectInstance->pIteratedModel->primary_response_fn_sense();
   bool max_flag = (!max_sense.empty() && max_sense[0]);
 
 //PDH: double * to RealVector
@@ -285,16 +285,16 @@ objective_eval(int *n, double c[], double l[], double u[], int point[],
 
     if (ncsudirectInstance->setUpType == SETUP_MODEL) {
 
-      ModelUtils::continuous_variables(ncsudirectInstance->iteratedModel, local_des_vars);
+      ModelUtils::continuous_variables(*ncsudirectInstance->pIteratedModel, local_des_vars);
 
       // request the evaluation in synchronous or asynchronous mode
-      if (ncsudirectInstance->iteratedModel.asynch_flag())
-	ncsudirectInstance->iteratedModel.evaluate_nowait();
+      if (ncsudirectInstance->pIteratedModel->asynch_flag())
+	ncsudirectInstance->pIteratedModel->evaluate_nowait();
       else {
-	ncsudirectInstance->iteratedModel.evaluate();
+	ncsudirectInstance->pIteratedModel->evaluate();
 	// record the response in the function vector
 	Real fn_val = ncsudirectInstance->
-	  iteratedModel.current_response().function_value(0);
+	  pIteratedModel->current_response().function_value(0);
 	fvec[cnt+j] = (max_flag) ? -fn_val : fn_val;
 	fvec[cnt+j+(*maxfunc)] = feasible;
       }
@@ -310,11 +310,11 @@ objective_eval(int *n, double c[], double l[], double u[], int point[],
   // If using model and evaluations performed asynchronously, need to record
   // the results now, after blocking until evaluation completion 
   if (ncsudirectInstance->setUpType == SETUP_MODEL &&
-      ncsudirectInstance->iteratedModel.asynch_flag()) { 
+      ncsudirectInstance->pIteratedModel->asynch_flag()) { 
       
     // block and wait for the responses
     const IntResponseMap& response_map
-      = ncsudirectInstance->iteratedModel.synchronize();
+      = ncsudirectInstance->pIteratedModel->synchronize();
     // record the responses in the function vector
     IntRespMCIter r_cit = response_map.begin();
     for (int j=0; j<np; ++j, ++r_cit) {
@@ -366,9 +366,9 @@ void NCSUOptimizer::core_run()
   if (setUpType == SETUP_MODEL) {
     // initialize local_des_vars with DB initial point.  Variables are updated 
     // in constraint_eval/objective_eval
-    copy_data(ModelUtils::continuous_variables(iteratedModel), local_des_vars);
-    copy_data(ModelUtils::continuous_lower_bounds(iteratedModel), lowerBounds);
-    copy_data(ModelUtils::continuous_upper_bounds(iteratedModel), upperBounds);
+    copy_data(ModelUtils::continuous_variables(*pIteratedModel), local_des_vars);
+    copy_data(ModelUtils::continuous_lower_bounds(*pIteratedModel), lowerBounds);
+    copy_data(ModelUtils::continuous_upper_bounds(*pIteratedModel), upperBounds);
   } 
   else
     local_des_vars.size(num_cv);
@@ -443,7 +443,7 @@ void NCSUOptimizer::core_run()
   if (!localObjectiveRecast) { // else local_objective_recast_retrieve()
                                // is used in Optimizer::post_run()
     RealVector best_fns(numFunctions);
-    const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
+    const BoolDeque& max_sense = pIteratedModel->primary_response_fn_sense();
     best_fns[0] = (!max_sense.empty() && max_sense[0]) ? -fmin : fmin;
     bestResponseArray.front().function_values(best_fns);
   }

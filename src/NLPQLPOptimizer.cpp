@@ -123,15 +123,15 @@ void NLPQLPOptimizer::allocate_constraints()
   // This uses the adapter free function directly rather than the method in 
   // Dakota::Optimizer because it populates a different set of map objects.
   configure_inequality_constraint_maps(
-                  iteratedModel,
+                  *pIteratedModel,
                   bigRealBoundSize,
                   CONSTRAINT_TYPE::LINEAR,
                   linIneqConMappingIndices,
                   linIneqConMappingMultipliers,
                   linIneqConMappingOffsets);
 
-  numEqConstraints = ModelUtils::num_nonlinear_eq_constraints(iteratedModel)
-                   + ModelUtils::num_linear_eq_constraints(iteratedModel);
+  numEqConstraints = ModelUtils::num_nonlinear_eq_constraints(*pIteratedModel)
+                   + ModelUtils::num_linear_eq_constraints(*pIteratedModel);
 
   numNlpqlConstr   = numEqConstraints
                    + constraintMapIndices.size()
@@ -193,12 +193,12 @@ void NLPQLPOptimizer::check_sub_iterator_conflict()
   // instance of the same iterator (which would result in data clashes since
   // Fortran does not support object independence).  Recurse through all
   // sub-models and test each sub-iterator for NLPQL presence.
-  Iterator sub_iterator = iteratedModel.subordinate_iterator();
+  Iterator sub_iterator = pIteratedModel->subordinate_iterator();
   if (!sub_iterator.is_null() && 
        ( sub_iterator.method_name() == NLPQL_SQP ||
 	 sub_iterator.uses_method() == SUBMETHOD_NLPQL ) )
     sub_iterator.method_recourse(methodName);
-  ModelList& sub_models = iteratedModel.subordinate_models();
+  ModelList& sub_models = pIteratedModel->subordinate_models();
   for (ModelLIter ml_iter = sub_models.begin();
        ml_iter != sub_models.end(); ml_iter++) {
     sub_iterator = ml_iter->subordinate_iterator();
@@ -218,7 +218,7 @@ void NLPQLPOptimizer::initialize_run()
   allocate_workspace();
   //check_sub_iterator_conflict(); // now virtual and called from Iterator
 
-  const RealVector& local_cdv = ModelUtils::continuous_variables(iteratedModel);
+  const RealVector& local_cdv = ModelUtils::continuous_variables(*pIteratedModel);
   for (size_t i=0; i<numContinuousVars; i++)
     X[i] = local_cdv[i]; // Note: X is [NMAX,L]
 
@@ -231,22 +231,22 @@ void NLPQLPOptimizer::core_run()
   // TO DO: utilize L concurrency with evaluate_nowait()/synchronize()
 
   const RealVector& cdv_lower_bnds
-    = ModelUtils::continuous_lower_bounds(iteratedModel);
+    = ModelUtils::continuous_lower_bounds(*pIteratedModel);
   const RealVector& cdv_upper_bnds
-    = ModelUtils::continuous_upper_bounds(iteratedModel);
+    = ModelUtils::continuous_upper_bounds(*pIteratedModel);
   size_t i, j, fn_eval_cntr,
-    num_nln_ineq = ModelUtils::num_nonlinear_ineq_constraints(iteratedModel),
-    num_nln_eq   = ModelUtils::num_nonlinear_eq_constraints(iteratedModel);
+    num_nln_ineq = ModelUtils::num_nonlinear_ineq_constraints(*pIteratedModel),
+    num_nln_eq   = ModelUtils::num_nonlinear_eq_constraints(*pIteratedModel);
   const RealMatrix& lin_ineq_coeffs
-    = ModelUtils::linear_ineq_constraint_coeffs(iteratedModel);
+    = ModelUtils::linear_ineq_constraint_coeffs(*pIteratedModel);
   const RealMatrix& lin_eq_coeffs
-    = ModelUtils::linear_eq_constraint_coeffs(iteratedModel);
+    = ModelUtils::linear_eq_constraint_coeffs(*pIteratedModel);
   const RealVector& lin_eq_targets
-    = ModelUtils::linear_eq_constraint_targets(iteratedModel);
+    = ModelUtils::linear_eq_constraint_targets(*pIteratedModel);
 
   // Any MOO/NLS recasting is responsible for setting the scalar min/max
   // sense within the recast.
-  const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
+  const BoolDeque& max_sense = pIteratedModel->primary_response_fn_sense();
   bool max_flag = (!max_sense.empty() && max_sense[0]);
 
   // Prior to first call to NLPQLP, initialize X to initial guess,
@@ -279,10 +279,10 @@ void NLPQLPOptimizer::core_run()
     if (fn_eval_cntr > 1) {
       RealVector local_cdv(N, false);
       copy_data(X, N, local_cdv); // Note: X is [NMAX,L]
-      ModelUtils::continuous_variables(iteratedModel, local_cdv);
+      ModelUtils::continuous_variables(*pIteratedModel, local_cdv);
     }
-    iteratedModel.evaluate(activeSet);
-    const Response& local_response = iteratedModel.current_response();
+    pIteratedModel->evaluate(activeSet);
+    const Response& local_response = pIteratedModel->current_response();
 
     // pack up the response function values
     if (IFAIL == 0 || IFAIL == -1) {
@@ -291,7 +291,7 @@ void NLPQLPOptimizer::core_run()
       if( num_nln_eq )  {
         // This is a bit ungainly but is needed to use the adapter (for now) - RWH
         const RealVector sliced_local_fns(Teuchos::View, const_cast<Real*>(&local_fns[num_nln_ineq+1]), num_nln_eq);
-        get_nonlinear_eq_constraints(iteratedModel, sliced_local_fns, G, -1.0);
+        get_nonlinear_eq_constraints(*pIteratedModel, sliced_local_fns, G, -1.0);
       }
       for (i=num_nln_eq; i<numEqConstraints; i++) {
         size_t index = i - num_nln_eq;
@@ -442,7 +442,7 @@ void NLPQLPOptimizer::core_run()
   if( num_nln_eq )  {
     // This is a bit ungainly but is needed to use the adapter (for now) - RWH
     const RealVector viewG(Teuchos::View, G, num_nln_eq);
-    get_nonlinear_eq_constraints(iteratedModel, viewG, best_fns, 1.0,
+    get_nonlinear_eq_constraints(*pIteratedModel, viewG, best_fns, 1.0,
 				 num_nln_ineq+numUserPrimaryFns);
   }
 

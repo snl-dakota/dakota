@@ -31,13 +31,13 @@ SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
 {
   // Verify that iteratedModel is a surrogate model so that
   // approximation-related functions are defined.
-  if (iteratedModel.model_type() != "surrogate") {
+  if (pIteratedModel->model_type() != "surrogate") {
     Cerr << "Error: SurrBasedGlobalMinimizer::iteratedModel must be a "
 	 << "surrogate model." << std::endl;
     abort_handler(-1);
   }
 
-  if (iteratedModel.truth_model().is_null()) {
+  if (pIteratedModel->truth_model().is_null()) {
     Cerr << "Method surrogate_based_global requires a surrogate model that "
             "has an underlying truth model via truth_model_pointer or indirectly "
             "through dace_method_pointer. To optimize on build-once surrogates, "
@@ -52,7 +52,7 @@ SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   // While this copy will be replaced in best update, initialize here
   // since relied on in Minimizer::initialize_run when a sub-iterator
   bestVariablesArray.push_back(
-    iteratedModel.truth_model().current_variables().copy());
+    pIteratedModel->truth_model().current_variables().copy());
 
   // Instantiate the approximate sub-problem minimizer
   const String& approx_method_ptr
@@ -80,7 +80,7 @@ SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   else if (!approx_method_name.empty())
     // Approach 2: instantiate on-the-fly w/o method spec support
     approxSubProbMinimizer
-      = probDescDB.get_iterator(approx_method_name, iteratedModel);
+      = probDescDB.get_iterator(approx_method_name, *pIteratedModel);
 }
 
 
@@ -91,9 +91,9 @@ SurrBasedGlobalMinimizer::~SurrBasedGlobalMinimizer()
 void SurrBasedGlobalMinimizer::core_run()
 {
   // Extract subIterator/subModel(s) from the SurrogateModel
-  Model&    truth_model   = iteratedModel.truth_model();
-  Model&    approx_model  = iteratedModel.surrogate_model();
-  Iterator& dace_iterator = iteratedModel.subordinate_iterator();
+  Model&    truth_model   = pIteratedModel->truth_model();
+  Model&    approx_model  = pIteratedModel->surrogate_model();
+  Iterator& dace_iterator = pIteratedModel->subordinate_iterator();
   
   // This flag controls the method by which we introduce new results data
   // into the surrogate for updating.  Right now, there are two methods
@@ -110,7 +110,7 @@ void SurrBasedGlobalMinimizer::core_run()
     dace_iterator.active_set_request_values(1);
 
   // get data points using sampling, file read, or whatever.
-  iteratedModel.build_approximation();
+  pIteratedModel->build_approximation();
 
   // The points obtained using sampling will not change from here on out nor
   // will the arrays that store them.  We will keep them here for use in
@@ -175,7 +175,7 @@ void SurrBasedGlobalMinimizer::core_run()
     // Variable/response results were generated using the current approximate
     // model.  For appending to the current approximate model, we must evaluate
     // the variable results with the truth model.
-    iteratedModel.component_parallel_mode(TRUTH_MODEL_MODE);
+    pIteratedModel->component_parallel_mode(TRUTH_MODEL_MODE);
     IntResponseMap truth_resp_results;
     for (i=0; i<num_results; i++) {
       // set the current values of the active variables in the truth model

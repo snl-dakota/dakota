@@ -20,7 +20,7 @@ PebbldMinimizer::PebbldMinimizer(ProblemDescDB& problem_db, Model& model):
   // While this copy will be replaced in best update, initialize here
   // since relied on in Minimizer::initialize_run when a sub-iterator
   bestVariablesArray.push_back(
-    iteratedModel.current_variables().copy());
+    pIteratedModel->current_variables().copy());
 
   // Instantiate the approximate sub-problem minimizer
   const String& subprob_method_ptr
@@ -49,7 +49,7 @@ PebbldMinimizer::PebbldMinimizer(ProblemDescDB& problem_db, Model& model):
   else if (!subprob_method_name.empty())
     // Approach 2: instantiate on-the-fly w/o method spec support
     subProbMinimizer
-      = probDescDB.get_iterator(subprob_method_name, iteratedModel);
+      = probDescDB.get_iterator(subprob_method_name, *pIteratedModel);
 
   branchAndBound = new PebbldBranching();
   branchAndBound->setModel(model);
@@ -95,7 +95,7 @@ void PebbldMinimizer::print_results(std::ostream& s, short results_state)
     abort_handler(-1); 
   } 
 
-  const String& interface_id = iteratedModel.interface_id();
+  const String& interface_id = pIteratedModel->interface_id();
   activeSet.request_values(1);
 
   // -------------------------------------

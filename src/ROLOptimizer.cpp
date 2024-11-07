@@ -109,7 +109,7 @@ void ROLOptimizer::core_run()
     ActiveSet search_set(best_resp.active_set());
     search_set.request_values(AS_FUNC);
     best_resp.active_set(search_set);
-    bool db_found = iteratedModel.db_lookup(best_vars, search_set, best_resp);
+    bool db_found = pIteratedModel->db_lookup(best_vars, search_set, best_resp);
 
     // Fall back on re-evaluation if not found.
     if (db_found)
@@ -120,10 +120,10 @@ void ROLOptimizer::core_run()
 
       // Evaluate model for responses at best parameters and set Dakota
       // bestResponseArray.
-      ModelUtils::continuous_variables(iteratedModel, cont_vars);
-      iteratedModel.evaluate();
+      ModelUtils::continuous_variables(*pIteratedModel, cont_vars);
+      pIteratedModel->evaluate();
       const RealVector& best_fns =
-        iteratedModel.current_response().function_values();
+        pIteratedModel->current_response().function_values();
       best_resp.function_values(best_fns);
     }
   }
@@ -169,7 +169,7 @@ void ROLOptimizer::set_problem()
 
   // Dimension ROL variable vector and set initial values.
   rolX.reset(new std::vector<Real>(numContinuousVars, 0.0));
-  get_initial_values(iteratedModel, *rolX);
+  get_initial_values(*pIteratedModel, *rolX);
   x.reset( new ROL::StdVector<Real>(rolX) );
 
   // For TYPE_B and TYPE_EB problems, dimension bounds variable
@@ -181,7 +181,7 @@ void ROLOptimizer::set_problem()
       l_rcp(new std::vector<Real>(numContinuousVars, 0.0));
     Teuchos::RCP<std::vector<Real> >
       u_rcp(new std::vector<Real>(numContinuousVars, 0.0));
-    get_bounds(iteratedModel, *l_rcp, *u_rcp);
+    get_bounds(*pIteratedModel, *l_rcp, *u_rcp);
 
     // Set bounds greater (less) than ROL_INF (ROL_NINF) to ROL_INF
     // (ROL_NINF)
@@ -199,9 +199,9 @@ void ROLOptimizer::set_problem()
   }
 
   // Extract gradient type and method for finite-differencing
-  const String& grad_type     = iteratedModel.gradient_type();
-  const String& method_src    = iteratedModel.method_source();
-  const String& interval_type = iteratedModel.interval_type();
+  const String& grad_type     = pIteratedModel->gradient_type();
+  const String& method_src    = pIteratedModel->method_source();
+  const String& interval_type = pIteratedModel->interval_type();
 
   if (grad_type == "none") {
     Cerr << "\nError: gradient type = none is invalid with ROL.\n"
@@ -228,14 +228,14 @@ void ROLOptimizer::set_problem()
   // parent version
   if ( grad_type == "analytic" || grad_type == "mixed" || 
        ( grad_type == "numerical" && method_src == "dakota" ) ){
-      if (iteratedModel.hessian_type() == "none")
-        obj.reset(new DakotaROLObjectiveGrad(iteratedModel));
+      if (pIteratedModel->hessian_type() == "none")
+        obj.reset(new DakotaROLObjectiveGrad(*pIteratedModel));
       else
-        obj.reset(new DakotaROLObjectiveHess(iteratedModel));
+        obj.reset(new DakotaROLObjectiveHess(*pIteratedModel));
   }
   else {
     // Vendor numerical gradients
-    obj.reset(new DakotaROLObjective(iteratedModel));
+    obj.reset(new DakotaROLObjective(*pIteratedModel));
   }
 
   // If there are equality constraints, create the object and provide
@@ -248,14 +248,14 @@ void ROLOptimizer::set_problem()
     // access to Dakota model
     if ( grad_type == "analytic" || grad_type == "mixed" || 
          ( grad_type == "numerical" && method_src == "dakota" ) ){
-        if (iteratedModel.hessian_type() == "none")
-          eq_const.reset(new DakotaROLEqConstraintsGrad(iteratedModel));
+        if (pIteratedModel->hessian_type() == "none")
+          eq_const.reset(new DakotaROLEqConstraintsGrad(*pIteratedModel));
         else
-          eq_const.reset(new DakotaROLEqConstraintsHess(iteratedModel));
+          eq_const.reset(new DakotaROLEqConstraintsHess(*pIteratedModel));
     }
     else {
       // Vendor numerical gradients
-      eq_const.reset(new DakotaROLEqConstraints(iteratedModel));
+      eq_const.reset(new DakotaROLEqConstraints(*pIteratedModel));
     }
 
     // Initialize Lagrange multipliers for equality constraints.
@@ -274,14 +274,14 @@ void ROLOptimizer::set_problem()
     // access to Dakota model
     if ( grad_type == "analytic" || grad_type == "mixed" || 
          ( grad_type == "numerical" && method_src == "dakota" ) ){
-        if (iteratedModel.hessian_type() == "none")
-          ineq_const.reset(new DakotaROLIneqConstraintsGrad(iteratedModel));
+        if (pIteratedModel->hessian_type() == "none")
+          ineq_const.reset(new DakotaROLIneqConstraintsGrad(*pIteratedModel));
         else
-          ineq_const.reset(new DakotaROLIneqConstraintsHess(iteratedModel));
+          ineq_const.reset(new DakotaROLIneqConstraintsHess(*pIteratedModel));
     }
     else {
       // Vendor numerical gradients
-      ineq_const.reset(new DakotaROLIneqConstraints(iteratedModel));
+      ineq_const.reset(new DakotaROLIneqConstraints(*pIteratedModel));
     }
 
     // Initial Lagrange multipliers for inequality constraints.
@@ -297,13 +297,13 @@ void ROLOptimizer::set_problem()
 
     // Get the inequality bounds from Dakota and transfer them into
     // the ROL vectors. 
-    copy_data_partial(ModelUtils::linear_ineq_constraint_lower_bounds(iteratedModel),
+    copy_data_partial(ModelUtils::linear_ineq_constraint_lower_bounds(*pIteratedModel),
 		      *ineq_l_rcp, 0);
-    copy_data_partial(ModelUtils::linear_ineq_constraint_upper_bounds(iteratedModel),
+    copy_data_partial(ModelUtils::linear_ineq_constraint_upper_bounds(*pIteratedModel),
 		      *ineq_u_rcp, 0);
-    copy_data_partial(ModelUtils::nonlinear_ineq_constraint_lower_bounds(iteratedModel),
+    copy_data_partial(ModelUtils::nonlinear_ineq_constraint_lower_bounds(*pIteratedModel),
 		      *ineq_l_rcp, numLinearIneqConstraints);
-    copy_data_partial(ModelUtils::nonlinear_ineq_constraint_upper_bounds(iteratedModel),
+    copy_data_partial(ModelUtils::nonlinear_ineq_constraint_upper_bounds(*pIteratedModel),
 		      *ineq_u_rcp, numLinearIneqConstraints);
 
     // Set bounds greater (less) than ROL_INF (ROL_NINF) to ROL_INF
@@ -337,7 +337,7 @@ void ROLOptimizer::initialize_run()
   // NOTE: This cannot be set in the consructor (or helper functions associated
   //       with the contructor) because some variables get assigned by base 
   //       class constructors and are not available until all have completed.
-  orig_auto_graphics_flag = iteratedModel.auto_graphics();
+  orig_auto_graphics_flag = pIteratedModel->auto_graphics();
 }
 
 // Helper function to reset ROL data and solver parameters.  This can
@@ -359,7 +359,7 @@ void ROLOptimizer::set_rol_parameters()
 
   // If the user has specified "no_hessians", tell ROL to use its own
   // Hessian approximation.
-  if (iteratedModel.hessian_type() == "none") {
+  if (pIteratedModel->hessian_type() == "none") {
     optSolverParams.sublist("General").sublist("Secant").
       set("Type", "Limited-Memory BFGS");
     optSolverParams.sublist("General").sublist("Secant").

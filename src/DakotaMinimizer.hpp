@@ -351,13 +351,13 @@ inline Real Minimizer::constraint_tolerance() const
 
 /** default definition that gets redefined in selected derived Minimizers */
 inline const Model& Minimizer::algorithm_space_model() const
-{ return iteratedModel; }
+{ return *pIteratedModel; }
 
 
 inline void Minimizer::enforce_null_model()
 {
   // This function is only for updates in "user functions" mode (NPSOL & OPT++)
-  if (!iteratedModel.is_null()) {
+  if (!pIteratedModel->is_null()) {
     Cerr << "Error: callback updaters should not be used when Model data "
 	 << "available." << std::endl;
     abort_handler(METHOD_ERROR);

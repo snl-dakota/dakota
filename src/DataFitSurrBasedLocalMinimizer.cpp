@@ -73,7 +73,7 @@ void DataFitSurrBasedLocalMinimizer::
 initialize_trust_region_data(const String& approx_type, short corr_order)
 {
   // check iteratedModel for model form hierarchy and/or discretization levels
-  if (iteratedModel.surrogate_type() == "ensemble") {
+  if (pIteratedModel->surrogate_type() == "ensemble") {
     Cerr << "Error: DataFitSurrBasedLocalMinimizer requires a local, multipoint"
 	 << ", or global surrogate model specification." << std::endl;
     abort_handler(METHOD_ERROR);
@@ -88,8 +88,8 @@ initialize_trust_region_data(const String& approx_type, short corr_order)
     else                             multiPtApproxFlag = true;
   }
 
-  Model& truth_model  = iteratedModel.truth_model();
-  Model& approx_model = iteratedModel.surrogate_model();
+  Model& truth_model  = pIteratedModel->truth_model();
+  Model& approx_model = pIteratedModel->surrogate_model();
 
   // derivative orders:
   approxSetRequest = truthSetRequest = 1;
@@ -139,7 +139,7 @@ initialize_trust_region_data(const String& approx_type, short corr_order)
   // size the trust region bounds to allow individual updates
   trustRegionData.initialize_bounds(numContinuousVars);
   // Initialize variable/response objects (approx/truth and center/star)
-  trustRegionData.initialize_data(iteratedModel.current_variables(),
+  trustRegionData.initialize_data(pIteratedModel->current_variables(),
 				  approx_model.current_response(),
 				  truth_model.current_response(), false);
   // responseCenterTruth is an IntResponsePair: init the eval_id
@@ -179,12 +179,12 @@ void DataFitSurrBasedLocalMinimizer::pre_run()
   // reset softConvCount, convergence-related status bits, filter
   trustRegionData.reset();
   // initialize TR center from current Model state (sets newCenterFlag)
-  trustRegionData.vars_center(iteratedModel.current_variables());
+  trustRegionData.vars_center(pIteratedModel->current_variables());
   // initialize TR factor
   trustRegionData.trust_region_factor(origTrustRegionFactor[0]);
 
   // Extract subIterator/subModel(s) from the SurrogateModel
-  Iterator& dace_iterator = iteratedModel.subordinate_iterator();
+  Iterator& dace_iterator = pIteratedModel->subordinate_iterator();
 
   // Update DACE settings for global approximations.  Check that dace_iterator
   // is defined (a dace_iterator specification is not required when the data
@@ -217,8 +217,8 @@ void DataFitSurrBasedLocalMinimizer::post_run(std::ostream& s)
   ModelUtils::continuous_lower_bounds(approxSubProbModel, globalLowerBnds);
   ModelUtils::continuous_upper_bounds(approxSubProbModel, globalUpperBnds);
   if (recastSubProb) { // propagate to DFSModel
-    ModelUtils::continuous_lower_bounds(iteratedModel, globalLowerBnds);
-    ModelUtils::continuous_upper_bounds(iteratedModel, globalUpperBnds);
+    ModelUtils::continuous_lower_bounds(*pIteratedModel, globalLowerBnds);
+    ModelUtils::continuous_upper_bounds(*pIteratedModel, globalUpperBnds);
   }
   if (trConstraintRelax > NO_RELAX) {
     ModelUtils::nonlinear_ineq_constraint_lower_bounds(approxSubProbModel, 
@@ -262,7 +262,7 @@ void DataFitSurrBasedLocalMinimizer::build()
     if (trustRegionData.status(NEW_CENTER))
       embed_correction = build_centered();
     else // rejected iterate: append truth data and rebuild
-      iteratedModel.append_approximation(trustRegionData.vars_star(),
+      pIteratedModel->append_approximation(trustRegionData.vars_star(),
 	trustRegionData.response_star_pair(CORR_TRUTH_RESPONSE), true);
   }
   // ----------------------
@@ -275,7 +275,7 @@ void DataFitSurrBasedLocalMinimizer::build()
   // Update graphics for iteration 0 (initial guess).
   if (globalIterCount == 0)
     parallelLib.output_manager().add_tabular_data(trustRegionData.vars_center(),
-      iteratedModel.truth_model().interface_id(),
+      pIteratedModel->truth_model().interface_id(),
       trustRegionData.response_center(CORR_TRUTH_RESPONSE));
 
   if (!trustRegionData.converged())
@@ -300,11 +300,11 @@ bool DataFitSurrBasedLocalMinimizer::build_global()
   if (!trustRegionData.converged()) {
 
     // propagate build bounds to DFSModel
-    ModelUtils::continuous_lower_bounds(iteratedModel, trustRegionData.tr_lower_bounds());
-    ModelUtils::continuous_upper_bounds(iteratedModel, trustRegionData.tr_upper_bounds());
+    ModelUtils::continuous_lower_bounds(*pIteratedModel, trustRegionData.tr_lower_bounds());
+    ModelUtils::continuous_upper_bounds(*pIteratedModel, trustRegionData.tr_upper_bounds());
 
     // embed_correction is true if surrogate supports anchor constraints
-    embed_correction = iteratedModel.build_approximation(
+    embed_correction = pIteratedModel->build_approximation(
       trustRegionData.vars_center(),
       trustRegionData.response_center_pair(CORR_TRUTH_RESPONSE));
     // TO DO: problem with CCD/BB duplication!
@@ -325,14 +325,14 @@ bool DataFitSurrBasedLocalMinimizer::build_centered()
   // local/multipt/hierarchical with new center
 
   // propagate build bounds to DFSModel (e.g., for finite difference bounds)
-  ModelUtils::continuous_lower_bounds(iteratedModel, trustRegionData.tr_lower_bounds());
-  ModelUtils::continuous_upper_bounds(iteratedModel, trustRegionData.tr_upper_bounds());
+  ModelUtils::continuous_lower_bounds(*pIteratedModel, trustRegionData.tr_lower_bounds());
+  ModelUtils::continuous_upper_bounds(*pIteratedModel, trustRegionData.tr_upper_bounds());
 
   // Evaluate the truth model at the center of the trust region.
   // Local needs values/grads & may need Hessians depending on order of
   // series, multipoint needs values/grads, hierarchical needs values &
   // may need grads/Hessians depending on order of correction.
-  iteratedModel.build_approximation();
+  pIteratedModel->build_approximation();
 
   // Retrieve responseCenterTruth if possible, evaluate it if not
   find_center_truth();
@@ -357,11 +357,11 @@ compute_center_correction(bool embed_correction)
   // ******************************************
   // Compute additive/multiplicative correction
   // ******************************************
-  if (iteratedModel.correction_type() && !embed_correction) {
+  if (pIteratedModel->correction_type() && !embed_correction) {
     // -->> local and up to 1st-order multipt do not need correction
     // -->> hierarchical needs compute_correction if new center
     // -->> global needs compute_correction if new center or new bounds
-    DiscrepancyCorrection& delta = iteratedModel.discrepancy_correction();
+    DiscrepancyCorrection& delta = pIteratedModel->discrepancy_correction();
 
     /* DFSBLM::trustRegionData does not store UNCORR_APPROX_RESPONSE!
     Response resp_center_approx(
@@ -394,7 +394,7 @@ void DataFitSurrBasedLocalMinimizer::minimize()
   // *******************************************************
   // Run iterator on approximation (with correction applied)
   // *******************************************************
-  iteratedModel.component_parallel_mode(SURROGATE_MODEL_MODE);
+  pIteratedModel->component_parallel_mode(SURROGATE_MODEL_MODE);
   SurrBasedLocalMinimizer::minimize();
 
   // ****************************************
@@ -406,10 +406,10 @@ void DataFitSurrBasedLocalMinimizer::minimize()
     // search for data fits.  Therefore, reevaluate corrected approximation.
     Cout << "\n>>>>> Evaluating approximate optimum outside of subproblem "
 	 << "recasting.\n";
-    ModelUtils::active_variables(iteratedModel, trustRegionData.vars_star());
+    ModelUtils::active_variables(*pIteratedModel, trustRegionData.vars_star());
     // leave iteratedModel in AUTO_CORRECTED_SURROGATE mode
-    iteratedModel.evaluate(trustRegionData.active_set_star(APPROX_RESPONSE));
-    trustRegionData.response_star(iteratedModel.current_response(),
+    pIteratedModel->evaluate(trustRegionData.active_set_star(APPROX_RESPONSE));
+    trustRegionData.response_star(pIteratedModel->current_response(),
 				  CORR_APPROX_RESPONSE);
   }
   else // Note: fn values only
@@ -426,8 +426,8 @@ void DataFitSurrBasedLocalMinimizer::verify()
   Cout << "\n>>>>> Evaluating approximate solution with actual model.\n";
   // since we're bypassing iteratedModel, iteratedModel.serve()
   // must be in the correct server mode.
-  iteratedModel.component_parallel_mode(TRUTH_MODEL_MODE);
-  Model& truth_model = iteratedModel.truth_model();
+  pIteratedModel->component_parallel_mode(TRUTH_MODEL_MODE);
+  Model& truth_model = pIteratedModel->truth_model();
   ModelUtils::active_variables(truth_model, trustRegionData.vars_star());
   // In all cases (including gradient mode), we only need the truth fn
   // values to validate the predicted optimum.  For gradient mode, we will
@@ -450,7 +450,7 @@ void DataFitSurrBasedLocalMinimizer::verify()
   compute_trust_region_ratio(trustRegionData, globalApproxFlag);
 
   // record the iteration results, even if no change in center iterate
-  ModelUtils::active_variables(iteratedModel, trustRegionData.vars_center());
+  ModelUtils::active_variables(*pIteratedModel, trustRegionData.vars_center());
   OutputManager& output_mgr = parallelLib.output_manager();
   output_mgr.add_tabular_data(trustRegionData.vars_center(),
     truth_model.interface_id(),
@@ -524,7 +524,7 @@ void DataFitSurrBasedLocalMinimizer::find_center_truth()
   }
   else { // local/multipoint: this fn follows build_approximation()
     if (!multiLayerBypassFlag) { // single layer: retrieve from build_approx.
-      Model& truth_model = iteratedModel.truth_model();
+      Model& truth_model = pIteratedModel->truth_model();
       trustRegionData.response_center_pair(truth_model.evaluation_id(),
 	truth_model.current_response(), CORR_TRUTH_RESPONSE);
       found = true;
@@ -535,8 +535,8 @@ void DataFitSurrBasedLocalMinimizer::find_center_truth()
     Cout << "\n>>>>> Evaluating actual model at trust region center.\n";
     // since we're bypassing iteratedModel, iteratedModel.serve()
     // must be in the correct server mode.
-    iteratedModel.component_parallel_mode(TRUTH_MODEL_MODE);
-    Model& truth_model = iteratedModel.truth_model();
+    pIteratedModel->component_parallel_mode(TRUTH_MODEL_MODE);
+    Model& truth_model = pIteratedModel->truth_model();
     ModelUtils::active_variables(truth_model, trustRegionData.vars_center());
     if (multiLayerBypassFlag) {
       short mode = truth_model.surrogate_response_mode();
@@ -600,9 +600,9 @@ void DataFitSurrBasedLocalMinimizer::find_center_approx()
 	 << "region center.\n"; // << responseCenterApprox;
   else { // responseCenterApprox not available
     Cout <<"\n>>>>> Evaluating approximation at trust region center.\n";
-    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
-    iteratedModel.evaluate(trustRegionData.active_set_center(APPROX_RESPONSE));
-    trustRegionData.response_center(iteratedModel.current_response(),
+    pIteratedModel->surrogate_response_mode(UNCORRECTED_SURROGATE);
+    pIteratedModel->evaluate(trustRegionData.active_set_center(APPROX_RESPONSE));
+    trustRegionData.response_center(pIteratedModel->current_response(),
 				    CORR_APPROX_RESPONSE);
   }
 }

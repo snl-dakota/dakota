@@ -51,7 +51,7 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   distanceTol = probDescDB.get_real("method.x_conv_tol");
   if (distanceTol < 0.) distanceTol = 1.e-8;
 
-  bestVariablesArray.push_back(iteratedModel.current_variables().copy());
+  bestVariablesArray.push_back(pIteratedModel->current_variables().copy());
   initialize_multipliers();
 
   // Always build a global Gaussian process model.  No correction is needed.
@@ -119,7 +119,7 @@ EffGlobalMinimizer(Model& model, const String& approx_type, int samples,
   //if (distanceTol < 0.)
     distanceTol = 1.e-8;
 
-  bestVariablesArray.push_back(iteratedModel.current_variables().copy());
+  bestVariablesArray.push_back(pIteratedModel->current_variables().copy());
 
   initialize_multipliers();
   initialize_sub_problem(approx_type, samples, seed, use_derivs, "none");
@@ -158,8 +158,8 @@ initialize_sub_problem(const String& approx_type, int samples, int seed,
 	   << "when derivatives present; use kriging instead." << std::endl;
       abort_handler(METHOD_ERROR);
     }
-    if (iteratedModel.gradient_type() != "none") dataOrder |= 2;
-    if (iteratedModel.hessian_type()  != "none") dataOrder |= 4;
+    if (pIteratedModel->gradient_type() != "none") dataOrder |= 2;
+    if (pIteratedModel->hessian_type()  != "none") dataOrder |= 4;
   }
 
   unsigned short sample_type = SUBMETHOD_DEFAULT;
@@ -167,7 +167,7 @@ initialize_sub_problem(const String& approx_type, int samples, int seed,
   bool vary_pattern = false;// for consistency across any outer loop invocations
 
   Iterator dace_iterator;
-  dace_iterator.assign_rep(std::make_shared<NonDLHSSampling>(iteratedModel,
+  dace_iterator.assign_rep(std::make_shared<NonDLHSSampling>(*pIteratedModel,
     sample_type, samples, seed, rng, vary_pattern, ACTIVE_UNIFORM));
   dace_iterator.active_set_request_values(dataOrder);
 
@@ -175,11 +175,11 @@ initialize_sub_problem(const String& approx_type, int samples, int seed,
   // function over the active/design vars (same view as iteratedModel:
   // not the typical All view for DACE).
   //const Variables& curr_vars = iteratedModel.current_variables();
-  ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
+  ActiveSet gp_set = pIteratedModel->current_response().active_set(); // copy
   gp_set.request_values(1); // no surr deriv evals, but GP may be grad-enhanced
-  const ShortShortPair& gp_view = iteratedModel.current_variables().view();
+  const ShortShortPair& gp_view = pIteratedModel->current_variables().view();
   fHatModel.assign_rep(std::make_shared<DataFitSurrModel>(dace_iterator,
-    iteratedModel, gp_set, gp_view, approx_type, approx_order, corr_type,
+    *pIteratedModel, gp_set, gp_view, approx_type, approx_order, corr_type,
     corr_order, dataOrder, outputLevel, sample_reuse, import_build_points_file,
     import_build_format, import_build_active_only, export_approx_points_file,
     export_approx_format));
@@ -192,7 +192,7 @@ initialize_sub_problem(const String& approx_type, int samples, int seed,
   short recast_resp_order = 1; // nongradient-based optimizers
   approxSubProbModel.assign_rep(std::make_shared<RecastModel>(fHatModel,
     recast_vars_comps_total, all_relax_di, all_relax_dr,
-    iteratedModel.current_variables().view(), 1, 0, 0, recast_resp_order));
+    pIteratedModel->current_variables().view(), 1, 0, 0, recast_resp_order));
 
   // must use alternate NoDB ctor chain
   size_t max_iter = 10000, max_eval = 50000;
@@ -286,7 +286,7 @@ void EffGlobalMinimizer::check_parallelism()
   // batch sizes for serial execution and echo a warning
 
   if (batchSize > 1) {
-    if (iteratedModel.asynch_flag())
+    if (pIteratedModel->asynch_flag())
       parallelFlag = true; // turn parallelFlag on; batchAsynch from user spec
     else { // revert to serial EGO settings
       Cerr << "Warning: concurrent operations not supported by model. "
@@ -321,7 +321,7 @@ void EffGlobalMinimizer::build_gp()
     fHatModel.track_evaluation_ids(true); // enable replacements by eval id
   fHatModel.build_approximation();
   // initialize counter for GP refinements (used for vars{Acq,Expl}Map)
-  batchEvalId = iteratedModel.evaluation_id() + 1;
+  batchEvalId = pIteratedModel->evaluation_id() + 1;
 }
 
 
@@ -529,7 +529,7 @@ void EffGlobalMinimizer::evaluate_batch(bool rebuild)
 
     // launch all jobs defined in batch and block on their completion
     launch_batch();
-    const IntResponseMap& truth_resp_map = iteratedModel.synchronize();
+    const IntResponseMap& truth_resp_map = pIteratedModel->synchronize();
 
     // update the GP approximation with batch results
     // reuse varsAcquisitionMap for composite map to avoid extra copies, as
@@ -553,8 +553,8 @@ void EffGlobalMinimizer::evaluate_batch(bool rebuild)
     launch_single(vars_star);
 
     // update the GP approximation
-    const Response& truth_resp = iteratedModel.current_response();
-    IntResponsePair truth_resp_pr(iteratedModel.evaluation_id(), truth_resp);
+    const Response& truth_resp = pIteratedModel->current_response();
+    IntResponsePair truth_resp_pr(pIteratedModel->evaluation_id(), truth_resp);
     fHatModel.append_approximation(vars_star, truth_resp_pr, rebuild);
 
     // update constraints (truth resp only, not for liar resp)
@@ -573,7 +573,7 @@ bool EffGlobalMinimizer::query_batch(bool rebuild)
 
   // nonblocking synchronize: evaluate truth responses in parallel
   fHatModel.component_parallel_mode(TRUTH_MODEL_MODE);
-  const IntResponseMap& truth_resp_map = iteratedModel.synchronize_nowait();
+  const IntResponseMap& truth_resp_map = pIteratedModel->synchronize_nowait();
   if (truth_resp_map.empty()) return false;
 
   process_truth_response_map(truth_resp_map, rebuild);
@@ -588,7 +588,7 @@ void EffGlobalMinimizer::backfill_batch(size_t new_acq, size_t new_expl)
 
   // queue nonblocking evals for composite batch (acquisition + exploration),
   // launching the trailing map id's in the sequence defined by batchEvalId
-  ActiveSet set = iteratedModel.current_response().active_set();
+  ActiveSet set = pIteratedModel->current_response().active_set();
   set.request_values(dataOrder);
   IntVarsMCIter a_cit = varsAcquisitionMap.begin(),
                 e_cit = varsExplorationMap.begin();
@@ -600,13 +600,13 @@ void EffGlobalMinimizer::backfill_batch(size_t new_acq, size_t new_expl)
     // properly sequence backfill evaluations across the two queues so that
     // the liar/truth sequences are synchronized, enabling id-based replacement
     if (a_id < e_id) {
-      ModelUtils::active_variables(iteratedModel, a_cit->second);
-      iteratedModel.evaluate_nowait(set);
+      ModelUtils::active_variables(*pIteratedModel, a_cit->second);
+      pIteratedModel->evaluate_nowait(set);
       a_id = extract_id(++a_cit, varsAcquisitionMap);
     }
     else if (e_id < a_id) {
-      ModelUtils::active_variables(iteratedModel, e_cit->second);
-      iteratedModel.evaluate_nowait(set);
+      ModelUtils::active_variables(*pIteratedModel, e_cit->second);
+      pIteratedModel->evaluate_nowait(set);
       e_id = extract_id(++e_cit, varsExplorationMap);
     }
     else {
@@ -621,18 +621,18 @@ void EffGlobalMinimizer::backfill_batch(size_t new_acq, size_t new_expl)
 void EffGlobalMinimizer::launch_batch()
 {
   // queue evaluations for composite batch (acquisition + exploration)
-  ActiveSet set = iteratedModel.current_response().active_set();
+  ActiveSet set = pIteratedModel->current_response().active_set();
   set.request_values(dataOrder);
   IntVarsMIter v_it;
   for (v_it =varsAcquisitionMap.begin();
        v_it!=varsAcquisitionMap.end(); ++v_it) {
-    ModelUtils::active_variables(iteratedModel, v_it->second);
-    iteratedModel.evaluate_nowait(set);
+    ModelUtils::active_variables(*pIteratedModel, v_it->second);
+    pIteratedModel->evaluate_nowait(set);
   }
   for (v_it =varsExplorationMap.begin();
        v_it!=varsExplorationMap.end(); ++v_it) {
-    ModelUtils::active_variables(iteratedModel, v_it->second);
-    iteratedModel.evaluate_nowait(set);
+    ModelUtils::active_variables(*pIteratedModel, v_it->second);
+    pIteratedModel->evaluate_nowait(set);
   }
 }
 
@@ -640,10 +640,10 @@ void EffGlobalMinimizer::launch_batch()
 void EffGlobalMinimizer::launch_single(const Variables& vars_star)
 {
   // serial evaluation
-  ModelUtils::active_variables(iteratedModel, vars_star);
-  ActiveSet set = iteratedModel.current_response().active_set();
+  ModelUtils::active_variables(*pIteratedModel, vars_star);
+  ActiveSet set = pIteratedModel->current_response().active_set();
   set.request_values(dataOrder);
-  iteratedModel.evaluate(set);
+  pIteratedModel->evaluate(set);
 }
 
 
@@ -985,8 +985,8 @@ compute_probability_improvement(const RealVector& means,
 {
   // Objective calculation will incorporate any sense changes or
   // weights, such that this is an objective to minimize.
-  Real mean = objective(means, iteratedModel.primary_response_fn_sense(),
-			iteratedModel.primary_response_fn_weights()), stdv;
+  Real mean = objective(means, pIteratedModel->primary_response_fn_sense(),
+			pIteratedModel->primary_response_fn_weights()), stdv;
   if ( numNonlinearConstraints ) {
     // mean_M = mean_f + lambda*EV + r_p*EV*EV
     // stdv_M = stdv_f
@@ -1019,8 +1019,8 @@ compute_expected_improvement(const RealVector& means,
 {
   // Objective calculation will incorporate any sense changes or
   // weights, such that this is an objective to minimize.
-  Real mean = objective(means, iteratedModel.primary_response_fn_sense(),
-			iteratedModel.primary_response_fn_weights()), stdv;
+  Real mean = objective(means, pIteratedModel->primary_response_fn_sense(),
+			pIteratedModel->primary_response_fn_weights()), stdv;
   if ( numNonlinearConstraints ) {
     // mean_M = mean_f + lambda*EV + r_p*EV*EV
     // stdv_M = stdv_f
@@ -1059,8 +1059,8 @@ compute_lower_confidence_bound(const RealVector& means,
 {
   // Objective calculation will incorporate any sense changes or
   // weights, such that this is an objective to minimize.
-  Real mean = objective(means, iteratedModel.primary_response_fn_sense(),
-			iteratedModel.primary_response_fn_weights()), stdv;
+  Real mean = objective(means, pIteratedModel->primary_response_fn_sense(),
+			pIteratedModel->primary_response_fn_weights()), stdv;
   if ( numNonlinearConstraints ) {
     // mean_M = mean_f + lambda*EV + r_p*EV*EV
     // stdv_M = stdv_f

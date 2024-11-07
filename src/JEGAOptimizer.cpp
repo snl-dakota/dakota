@@ -972,7 +972,7 @@ JEGAOptimizer::LoadDakotaResponses(
 //     String variables also need to be remapped.
 
     const Pecos::MultivariateDistribution& mv_dist
-      = iteratedModel.multivariate_distribution();
+      = pIteratedModel->multivariate_distribution();
     std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_dist_rep =
       std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
       (mv_dist.multivar_dist_rep());
@@ -1314,7 +1314,7 @@ JEGAOptimizer::LoadTheParameterDatabase(
         );
  
     // when recasting is active, the weights may be transformed; get off Model
-    dak_rv = &iteratedModel.primary_response_fn_weights();
+    dak_rv = &pIteratedModel->primary_response_fn_weights();
     JEGA::DoubleVector mow_vector(
         dak_rv->values(),
         dak_rv->values() + dak_rv->length()
@@ -1411,7 +1411,7 @@ JEGAOptimizer::LoadTheDesignVariables(
     // is contained in the data structures of the base classes.
     // In particular, the Model (iteratedModel) has most of the
     // info.  We will create a shorthand for it here to ease syntax.
-    Model& m = this->iteratedModel;
+    Model& m = *this->pIteratedModel;
     size_t i, j, dsi_cntr;
 
     // Loop over all continuous variables and add an info object.  Don't worry
@@ -1494,8 +1494,8 @@ JEGAOptimizer::LoadTheObjectiveFunctions(
     // Dakota will soon support mixed extremization schemes.
     // Dakota does not support labeling objectives.  Until it does,
     // we will create a label that looks like "Nature Type Index".
-    const StringArray&  labels = ModelUtils::response_labels(iteratedModel);
-    const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
+    const StringArray&  labels = ModelUtils::response_labels(*pIteratedModel);
+    const BoolDeque& max_sense = pIteratedModel->primary_response_fn_sense();
     bool use_sense = !max_sense.empty();
     for(size_t i=0; i<this->numObjectiveFns; ++i)
       if (use_sense && max_sense[i])
@@ -1522,7 +1522,7 @@ JEGAOptimizer::LoadTheConstraints(
     // is contained in the data structures of the base classes.
     // In particular, the Model (iteratedModel) has most of the
     // info.  We will create a shorthand for it here to ease syntax.
-    const Model& m = this->iteratedModel;
+    const Model& m = *this->pIteratedModel;
 
     /**************************************************************************
 
@@ -1951,7 +1951,7 @@ JEGAOptimizer::JEGAOptimizer(
 	= std::numeric_limits<std::size_t>::max(); // moga returns all Pareto
 
     // We only ever need one EvaluatorCreator so we can create it now.
-    this->_theEvalCreator = new EvaluatorCreator(iteratedModel);
+    this->_theEvalCreator = new EvaluatorCreator(*pIteratedModel);
 
     // Increment object counter
     this->numInstances++;

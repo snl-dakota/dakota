@@ -66,8 +66,8 @@ NPSOLOptimizer::NPSOLOptimizer(ProblemDescDB& problem_db, Model& model):
               probDescDB.get_real("method.function_precision"),
               probDescDB.get_real("method.npsol.linesearch_tolerance"),
               maxIterations, constraintTol, convergenceTol,
-	      iteratedModel.gradient_type(),
-	      iteratedModel.fd_gradient_step_size());
+	      pIteratedModel->gradient_type(),
+	      pIteratedModel->fd_gradient_step_size());
 }
 
 
@@ -80,8 +80,8 @@ NPSOLOptimizer::NPSOLOptimizer(Model& model):
   // invoke SOLBase set function (shared with NLSSOLLeastSq)
   set_options(speculativeFlag, vendorNumericalGradFlag, outputLevel, -1,
 	      1.e-10, 0.9, maxIterations, constraintTol, convergenceTol,
-	      iteratedModel.gradient_type(),
-	      iteratedModel.fd_gradient_step_size());
+	      pIteratedModel->gradient_type(),
+	      pIteratedModel->fd_gradient_step_size());
 }
 
 
@@ -339,10 +339,10 @@ objective_eval(int& mode, int& n, double* x, double& f, double* gradf,
     // and perform an evaluate() prior to data recovery.
     RealVector local_des_vars(n, false);
     copy_data(x, n, local_des_vars);
-    ModelUtils::continuous_variables(npsolInstance->iteratedModel, local_des_vars);
+    ModelUtils::continuous_variables(*npsolInstance->pIteratedModel, local_des_vars);
     npsolInstance->activeSet.request_values(asv_request);
     npsolInstance->
-      iteratedModel.evaluate(npsolInstance->activeSet);
+      pIteratedModel->evaluate(npsolInstance->activeSet);
     if (++npsolInstance->fnEvalCntr == npsolInstance->maxFunctionEvals) {
       mode = -1; // terminate NPSOL (see mode discussion in "User-Supplied
 	         // Subroutines" section of NPSOL manual)
@@ -352,11 +352,11 @@ objective_eval(int& mode, int& n, double* x, double& f, double* gradf,
   }
   
   const Response& local_response
-    = npsolInstance->iteratedModel.current_response();
+    = npsolInstance->pIteratedModel->current_response();
   // Any MOO/NLS recasting is responsible for setting the scalar min/max
   // sense within the recast.
   const BoolDeque& max_sense
-    = npsolInstance->iteratedModel.primary_response_fn_sense();
+    = npsolInstance->pIteratedModel->primary_response_fn_sense();
   bool max_flag = (!max_sense.empty() && max_sense[0]);
   if (asv_request & 1)
     f = (max_flag) ? -local_response.function_value(0) :
@@ -376,7 +376,7 @@ void NPSOLOptimizer::check_sub_iterator_conflict()
 {
   // Run-time check (NestedModel::subIterator is constructed in init_comms())
   if (setUpType == "model")
-    SOLBase::check_sub_iterator_conflict(iteratedModel, methodName);
+    SOLBase::check_sub_iterator_conflict(*pIteratedModel, methodName);
 }
 
 
@@ -431,8 +431,8 @@ void NPSOLOptimizer::find_optimum_on_model()
   RealVector local_f_grad(numContinuousVars, true);
 
   allocate_arrays(numContinuousVars, numNonlinearConstraints,
-		  ModelUtils::linear_ineq_constraint_coeffs(iteratedModel),
-		  ModelUtils::linear_eq_constraint_coeffs(iteratedModel));
+		  ModelUtils::linear_ineq_constraint_coeffs(*pIteratedModel),
+		  ModelUtils::linear_eq_constraint_coeffs(*pIteratedModel));
   allocate_workspace(numContinuousVars, numNonlinearConstraints,
                      numLinearConstraints, 0);
 
@@ -444,19 +444,19 @@ void NPSOLOptimizer::find_optimum_on_model()
   // initialize local_des_vars with DB initial point.  Variables are updated 
   // in constraint_eval/objective_eval
   RealVector local_des_vars;
-  copy_data(ModelUtils::continuous_variables(iteratedModel), local_des_vars);
+  copy_data(ModelUtils::continuous_variables(*pIteratedModel), local_des_vars);
 
   // these bounds must be updated from model bounds each time an iterator is
   // run within the B&B minimizer.
   RealVector augmented_l_bnds, augmented_u_bnds;
-  aggregate_bounds(ModelUtils::continuous_lower_bounds(iteratedModel),
-		   ModelUtils::continuous_upper_bounds(iteratedModel),
-		   ModelUtils::linear_ineq_constraint_lower_bounds(iteratedModel),
-		   ModelUtils::linear_ineq_constraint_upper_bounds(iteratedModel),
-		   ModelUtils::linear_eq_constraint_targets(iteratedModel),
-		   ModelUtils::nonlinear_ineq_constraint_lower_bounds(iteratedModel),
-		   ModelUtils::nonlinear_ineq_constraint_upper_bounds(iteratedModel),
-		   ModelUtils::nonlinear_eq_constraint_targets(iteratedModel),
+  aggregate_bounds(ModelUtils::continuous_lower_bounds(*pIteratedModel),
+		   ModelUtils::continuous_upper_bounds(*pIteratedModel),
+		   ModelUtils::linear_ineq_constraint_lower_bounds(*pIteratedModel),
+		   ModelUtils::linear_ineq_constraint_upper_bounds(*pIteratedModel),
+		   ModelUtils::linear_eq_constraint_targets(*pIteratedModel),
+		   ModelUtils::nonlinear_ineq_constraint_lower_bounds(*pIteratedModel),
+		   ModelUtils::nonlinear_ineq_constraint_upper_bounds(*pIteratedModel),
+		   ModelUtils::nonlinear_eq_constraint_targets(*pIteratedModel),
 		   augmented_l_bnds, augmented_u_bnds);
 
   NPSOL_F77( num_cv, num_linear_constraints, num_nonlinear_constraints, 
@@ -486,7 +486,7 @@ void NPSOLOptimizer::find_optimum_on_model()
     // local_objective_recast_retrieve() is used in Optimizer::post_run()
   }
   else {
-    const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
+    const BoolDeque& max_sense = pIteratedModel->primary_response_fn_sense();
     best_fns[0] = (!max_sense.empty() && max_sense[0]) ?
       -local_f_val : local_f_val;
   }

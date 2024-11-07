@@ -91,9 +91,9 @@ void CONMINOptimizer::initialize()
   DELFUN = DABFUN = convergenceTol; // needed in CONMIN
 
   // Default CONMIN gradients = numerical;forward;vendor setting.
-  const String& grad_type     = iteratedModel.gradient_type();
-  const String& method_src    = iteratedModel.method_source();
-  const String& interval_type = iteratedModel.interval_type();
+  const String& grad_type     = pIteratedModel->gradient_type();
+  const String& method_src    = pIteratedModel->method_source();
+  const String& interval_type = pIteratedModel->interval_type();
   if ( grad_type == "analytic" || grad_type == "mixed" || 
        ( grad_type == "numerical" && method_src == "dakota" ) )
     // Set NFDG=1 before calling CONMIN. This invokes the
@@ -113,7 +113,7 @@ void CONMINOptimizer::initialize()
   else { // Vendor numerical gradients with forward differences
     NFDG = 0; // use CONMIN's default internal forward difference method
 
-    Real fd_grad_ss = iteratedModel.fd_gradient_step_size()[0];
+    Real fd_grad_ss = pIteratedModel->fd_gradient_step_size()[0];
 
     // CONMIN's forward differencing uses fdss*X_i as one would expect
     FDCH = fd_grad_ss;
@@ -142,10 +142,10 @@ void CONMINOptimizer::allocate_constraints()
   // This is the reason behind the Modified MFD in DOT.  See Vanderplaats' book,
   // Numer. Opt. Techniques for Eng. Design, for additional details.
   size_t 
-    num_nln_ineq = ModelUtils::num_nonlinear_ineq_constraints(iteratedModel),
-    num_nln_eq   = ModelUtils::num_nonlinear_eq_constraints(iteratedModel),
-    num_lin_ineq = ModelUtils::num_linear_ineq_constraints(iteratedModel),
-    num_lin_eq   = ModelUtils::num_linear_eq_constraints(iteratedModel);
+    num_nln_ineq = ModelUtils::num_nonlinear_ineq_constraints(*pIteratedModel),
+    num_nln_eq   = ModelUtils::num_nonlinear_eq_constraints(*pIteratedModel),
+    num_lin_ineq = ModelUtils::num_linear_ineq_constraints(*pIteratedModel),
+    num_lin_eq   = ModelUtils::num_linear_eq_constraints(*pIteratedModel);
   numConminNlnConstr = 2*num_nln_eq;
   numConminNlnConstr += (int)constraintMapOffsets.size();
 
@@ -236,13 +236,13 @@ void CONMINOptimizer::check_sub_iterator_conflict()
   // sub-models and test each sub-iterator for CONMIN presence.
   // Note: This check is performed for DOT, CONMIN, and SOLBase, but not
   //       for LHS since it is only active in pre-processing.
-  Iterator sub_iterator = iteratedModel.subordinate_iterator();
+  Iterator sub_iterator = pIteratedModel->subordinate_iterator();
   if (!sub_iterator.is_null() && 
        ( sub_iterator.method_name() == CONMIN_FRCG ||
 	 sub_iterator.method_name() == CONMIN_MFD  ||
 	 sub_iterator.uses_method() == SUBMETHOD_CONMIN ) ) //_MFD,_FRCG,...
     sub_iterator.method_recourse(methodName);
-  ModelList& sub_models = iteratedModel.subordinate_models();
+  ModelList& sub_models = pIteratedModel->subordinate_models();
   for (ModelLIter ml_iter = sub_models.begin();
        ml_iter != sub_models.end(); ml_iter++) {
     sub_iterator = ml_iter->subordinate_iterator();
@@ -276,9 +276,9 @@ void CONMINOptimizer::initialize_run()
   // and CONMIN's conminDesVars has length N1 = numContinuousVars+2
   //
   // copy DAKOTA arrays to CONMIN arrays and check for the existence of bounds.
-  const RealVector& local_cdv  = ModelUtils::continuous_variables(iteratedModel);
-  const RealVector& lower_bnds = ModelUtils::continuous_lower_bounds(iteratedModel);
-  const RealVector& upper_bnds = ModelUtils::continuous_upper_bounds(iteratedModel);
+  const RealVector& local_cdv  = ModelUtils::continuous_variables(*pIteratedModel);
+  const RealVector& lower_bnds = ModelUtils::continuous_lower_bounds(*pIteratedModel);
+  const RealVector& upper_bnds = ModelUtils::continuous_upper_bounds(*pIteratedModel);
   for (i=0; i<numContinuousVars; i++) {
     conminDesVars[i]   = local_cdv[i];
     conminLowerBnds[i] = lower_bnds[i];
@@ -297,7 +297,7 @@ void CONMINOptimizer::core_run()
 
   // Any MOO/NLS recasting is responsible for setting the scalar min/max
   // sense within the recast.
-  const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
+  const BoolDeque& max_sense = pIteratedModel->primary_response_fn_sense();
   bool max_flag = (!max_sense.empty() && max_sense[0]);
 
   // Initialize variables internal to CONMIN
@@ -334,13 +334,13 @@ void CONMINOptimizer::core_run()
 
   // Initialize local vars and linear constraints
   RealVector local_cdv(numContinuousVars);
-  size_t num_lin_ineq = ModelUtils::num_linear_ineq_constraints(iteratedModel),
-    num_lin_eq = ModelUtils::num_linear_eq_constraints(iteratedModel);
+  size_t num_lin_ineq = ModelUtils::num_linear_ineq_constraints(*pIteratedModel),
+    num_lin_eq = ModelUtils::num_linear_eq_constraints(*pIteratedModel);
   const RealMatrix& lin_ineq_coeffs
-    = ModelUtils::linear_ineq_constraint_coeffs(iteratedModel);
+    = ModelUtils::linear_ineq_constraint_coeffs(*pIteratedModel);
   const RealMatrix& lin_eq_coeffs
-    = ModelUtils::linear_eq_constraint_coeffs(iteratedModel);
-  const String& grad_type = iteratedModel.gradient_type();
+    = ModelUtils::linear_eq_constraint_coeffs(*pIteratedModel);
+  const String& grad_type = pIteratedModel->gradient_type();
 
   // Start FOR loop to execute calls to CONMIN
   for (fn_eval_cntr=1; fn_eval_cntr<=maxFunctionEvals; fn_eval_cntr++) {
@@ -407,9 +407,9 @@ void CONMINOptimizer::core_run()
     }
 
     copy_data(conminDesVars, num_cv, local_cdv);
-    ModelUtils::continuous_variables(iteratedModel, local_cdv);
-    iteratedModel.evaluate(activeSet);
-    const Response& local_response = iteratedModel.current_response();
+    ModelUtils::continuous_variables(*pIteratedModel, local_cdv);
+    pIteratedModel->evaluate(activeSet);
+    const Response& local_response = pIteratedModel->current_response();
 
     // Populate proper data for input back to CONMIN through parameter list.
     // This include gradient data, along with the number and indices of

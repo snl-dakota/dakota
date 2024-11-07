@@ -298,7 +298,7 @@ void Minimizer::initialize_run()
 {
   // Verify that iteratedModel is not null (default ctor and some
   // NoDBBaseConstructor ctors leave iteratedModel uninitialized).
-  if (!iteratedModel.is_null()) {
+  if (!pIteratedModel->is_null()) {
     // update context data that is outside scope of local DB specifications.
     // This is needed for reused objects.
     //iteratedModel.db_scope_reset(); // TO DO: need better name?
@@ -345,7 +345,7 @@ void Minimizer::initialize_run()
 
     // Dive into the originally passed model (could keep a shallow copy of it)
     // Don't use a reference here as want a shallow copy, not the instance
-    Model usermodel(iteratedModel);
+    Model usermodel(*pIteratedModel);
     for (unsigned short i=1; i<=myModelLayers; ++i) {
       usermodel = usermodel.subordinate_model();
     }
@@ -397,7 +397,7 @@ Model Minimizer::original_model(unsigned short recasts_left) const
 {
   // Dive into the originally passed model (could keep a shallow copy of it)
   // Don't use a reference here as want a shallow copy, not the instance
-  Model usermodel(iteratedModel);
+  Model usermodel(*pIteratedModel);
   for (unsigned short i=1; i<=myModelLayers - recasts_left; ++i) {
     usermodel = usermodel.subordinate_model();
   }
@@ -429,13 +429,13 @@ void Minimizer::data_transform_model()
 	 << " the same across\nconfigurations." << std::endl;
 
   pIteratedModel->assign_rep(std::make_shared<DataTransformModel>(
-    iteratedModel, expData, pIteratedModel->current_variables().view()));
+    *pIteratedModel, expData, pIteratedModel->current_variables().view()));
   ++myModelLayers;
-  dataTransformModel = iteratedModel;
+  dataTransformModel = *pIteratedModel;
 
   // update sizes in Iterator view from the RecastModel
   numIterPrimaryFns = numTotalCalibTerms = pIteratedModel->num_primary_fns();
-  numFunctions = ModelUtils::response_size(iteratedModel);
+  numFunctions = ModelUtils::response_size(*pIteratedModel);
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "Adjusted number of calibration terms: " << numTotalCalibTerms 
 	 << std::endl;
@@ -469,8 +469,8 @@ void Minimizer::data_transform_model()
 void Minimizer::scale_model()
 {
   // iteratedModel becomes the sub-model of a RecastModel:
-  iteratedModel.assign_rep(std::make_shared<ScalingModel>(iteratedModel));
-  scalingModel = iteratedModel;
+  pIteratedModel->assign_rep(std::make_shared<ScalingModel>(*pIteratedModel));
+  scalingModel = *pIteratedModel;
   ++myModelLayers;
 
 }
