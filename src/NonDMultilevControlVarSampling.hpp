@@ -74,6 +74,27 @@ private:
   void assign_active_key();
 
   /// helper for shared code among offline-pilot and pilot-projection modes
+  void evaluate_pilot(IntRealMatrixMap& sum_Ll_pilot,
+		      IntRealMatrixMap& sum_Llm1_pilot,
+		      //sum_Ll_refined, sum_Llm1_refined,
+		      IntRealMatrixMap& sum_Hl_pilot,
+		      IntRealMatrixMap& sum_Hlm1_pilot,
+		      IntRealMatrixMap& sum_Ll_Ll_pilot,
+		      IntRealMatrixMap& sum_Ll_Llm1_pilot,
+		      IntRealMatrixMap& sum_Llm1_Llm1_pilot,
+		      IntRealMatrixMap& sum_Hl_Ll_pilot,
+		      IntRealMatrixMap& sum_Hl_Llm1_pilot,
+		      IntRealMatrixMap& sum_Hlm1_Ll_pilot,
+		      IntRealMatrixMap& sum_Hlm1_Llm1_pilot,
+		      IntRealMatrixMap& sum_Hl_Hl_pilot,
+		      IntRealMatrixMap& sum_Hl_Hlm1_pilot,
+		      IntRealMatrixMap& sum_Hlm1_Hlm1_pilot,
+		      RealVectorArray& eval_ratios, RealMatrix& Lambda,
+		      RealMatrix& var_YH, SizetArray& N_alloc,
+		      Sizet2DArray& N_actual, RealVector& hf_targets,
+		      RealMatrix& pilot_mom, bool accumulate_cost,
+		      bool pilot_estvar);
+  /// helper for shared code among offline-pilot and pilot-projection modes
   void evaluate_pilot(RealVectorArray& eval_ratios, RealMatrix& Lambda,
 		      RealMatrix& var_YH, SizetArray& N_alloc,
 		      Sizet2DArray& N_actual, RealVector& hf_targets,
