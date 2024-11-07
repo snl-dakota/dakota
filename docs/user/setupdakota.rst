@@ -137,7 +137,7 @@ If you wish, rename the extracted Dakota binary executable directory to somethin
    dakota-release.platform
    $ mv dakota-release.platform Dakota
 
-Because Dakota executables are not signed, their attributes must be cleared before they will work On macOS.
+Because Dakota executables are not signed, their attributes must be cleared before they will work on macOS.
 To do so, run the following command, substituting the path of your Dakota install for "Dakota":
 
 .. code-block::
