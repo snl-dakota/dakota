@@ -42,7 +42,7 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
   // -------------------
   Model g_u_model;
   g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    iteratedModel, u_space_type)); // retain dist bounds
+    *pIteratedModel, u_space_type)); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -122,7 +122,7 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   // -------------------
   Model g_u_model;
   g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    iteratedModel, u_space_type)); // retain dist bounds
+    *pIteratedModel, u_space_type)); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -329,7 +329,7 @@ resolve_inputs(short& u_space_type, short& data_order)
   // within the NestedModel ctor prior to subIterator instantiation.
   data_order = 1;
   if (useDerivs) { // input specification
-    if (iteratedModel.gradient_type()  != "none") data_order |= 2;
+    if (pIteratedModel->gradient_type()  != "none") data_order |= 2;
     //if (iteratedModel.hessian_type() != "none") data_order |= 4; // not yet
 #ifdef ALLOW_GLOBAL_HERMITE_INTERPOLATION
     if (data_order == 1)

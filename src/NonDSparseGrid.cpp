@@ -191,7 +191,7 @@ initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
   // but it is still needed for certain construct time initializations
   // (e.g., max concurrency below):
   numIntDriver.initialize_grid_parameters(
-    iteratedModel.multivariate_distribution()); // 1D pts/wts use level
+    pIteratedModel->multivariate_distribution()); // 1D pts/wts use level
 
   maxEvalConcurrency *= ssgDriver->grid_size(); // requires grid parameters
 }

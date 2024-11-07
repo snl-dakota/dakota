@@ -106,8 +106,8 @@ namespace Dakota
 		short corr_order = -1, data_order = 1, corr_type = NO_CORRECTION;
 		if (probDescDB.get_bool("method.derivative_usage"))
 		{
-		  if (iteratedModel.gradient_type() != "none") data_order |= 2;
-		  if (iteratedModel.hessian_type()  != "none") data_order |= 4;
+		  if (pIteratedModel->gradient_type() != "none") data_order |= 2;
+		  if (pIteratedModel->hessian_type()  != "none") data_order |= 4;
 		}
 
 		bool vary_pattern = false;
@@ -121,7 +121,7 @@ namespace Dakota
                 //**NOTE:  We are hardcoding the sample type to LHS and the approximation type to kriging for now
 		//if (sampleDesign == RANDOM_SAMPLING)
 		//{
-		gpBuild.assign_rep(std::make_shared<NonDLHSSampling>(iteratedModel, SUBMETHOD_DEFAULT,
+		gpBuild.assign_rep(std::make_shared<NonDLHSSampling>(*pIteratedModel, SUBMETHOD_DEFAULT,
 								     samples, randomSeed, rngName,
 								     varyPattern, ACTIVE_UNIFORM));
 		//}
@@ -131,11 +131,11 @@ namespace Dakota
 		//					   sampleDesign));
 		//}
                 approx_type = "global_kriging";
-		ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
+		ActiveSet gp_set = pIteratedModel->current_response().active_set(); // copy
 		gp_set.request_values(1); // no surr deriv evals, but GP may be grad-enhanced
-		const ShortShortPair& gp_view = iteratedModel.current_variables().view();
+		const ShortShortPair& gp_view = pIteratedModel->current_variables().view();
 		gpModel.assign_rep(std::make_shared<DataFitSurrModel>
-				   (gpBuild, iteratedModel,
+				   (gpBuild, *pIteratedModel,
 				    gp_set, gp_view, approx_type, approx_order, corr_type, corr_order, data_order,
 				    outputLevel, sample_reuse, import_pts_file,
 				    probDescDB.get_ushort("method.import_build_format"),
@@ -186,7 +186,7 @@ namespace Dakota
 
   void NonDAdaptiveSampling::derived_init_communicators(ParLevLIter pl_iter)
   {
-    iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);
+    pIteratedModel->init_communicators(pl_iter, maxEvalConcurrency);
 
     // gpEval and gpFinalEval use NoDBBaseConstructor, so no need to
     // manage DB list nodes at this level
@@ -209,7 +209,7 @@ namespace Dakota
     gpFinalEval.free_communicators(pl_iter);
     gpEval.free_communicators(pl_iter);
 
-    iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);
+    pIteratedModel->free_communicators(pl_iter, maxEvalConcurrency);
   }
 
 
@@ -300,11 +300,11 @@ namespace Dakota
 			IntResponseMap responses_to_add;
 			for(int i = 0; i < new_Xs.size(); i++) 
 			{
-				ModelUtils::continuous_variables(iteratedModel, new_Xs[i]);
-				iteratedModel.evaluate();
-				responses_to_add.insert(IntResponsePair(iteratedModel.evaluation_id(),
-										iteratedModel.current_response()));
-				points_to_add.push_back(iteratedModel.current_variables());
+				ModelUtils::continuous_variables(*pIteratedModel, new_Xs[i]);
+				pIteratedModel->evaluate();
+				responses_to_add.insert(IntResponsePair(pIteratedModel->evaluation_id(),
+										pIteratedModel->current_response()));
+				points_to_add.push_back(pIteratedModel->current_variables());
 			}
 
 			gpModel.append_approximation(points_to_add,responses_to_add, true);
@@ -715,13 +715,13 @@ void NonDAdaptiveSampling::output_round_data(int round, int respFnCount)
     RealVectorArray new_Xs = drawNewX(round);
 
     for(int i = 0; i < new_Xs.size(); i++) {
-      ModelUtils::continuous_variables(iteratedModel, new_Xs[i]);
-      iteratedModel.evaluate();
+      ModelUtils::continuous_variables(*pIteratedModel, new_Xs[i]);
+      pIteratedModel->evaluate();
 
       for(int j = 0; j < new_Xs[i].length(); j++)
         candidate_out << new_Xs[i][j] << " ";
       candidate_out 
-        << iteratedModel.current_response().function_value(respFnCount)
+        << pIteratedModel->current_response().function_value(respFnCount)
         << std::endl;
     }
 

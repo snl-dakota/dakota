@@ -78,7 +78,7 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // -------------------
   Model g_u_model;
   g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    iteratedModel, uSpaceType)); // retain dist bounds
+    *pIteratedModel, uSpaceType)); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -180,7 +180,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // -------------------
   Model g_u_model;
   g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    iteratedModel, uSpaceType)); // retain dist bounds
+    *pIteratedModel, uSpaceType)); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -264,7 +264,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // -------------------
   Model g_u_model;
   g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    iteratedModel, uSpaceType)); // retain dist bounds
+    *pIteratedModel, uSpaceType)); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -340,7 +340,7 @@ NonDPolynomialChaos(Model& model, const String& exp_import_file,
   // like mean(x), etc., when appropriate.  This view is retained for g_u_model
   // and uSpaceModel w/o inducing any additional mappings.
   g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    iteratedModel, uSpaceType)); // retain dist bounds
+    *pIteratedModel, uSpaceType)); // retain dist bounds
 
   // --------------------------------
   // Construct G-hat(u) = uSpaceModel
@@ -353,7 +353,7 @@ NonDPolynomialChaos(Model& model, const String& exp_import_file,
   // DFSModel consumes QoI aggregations; supports up to Hessian eval for full
   // Newton MAP pre-solve
   const ActiveSet& approx_set = g_u_model.current_response().active_set();
-  ShortArray pce_asv(iteratedModel.qoi(), 7); // for stand alone mode
+  ShortArray pce_asv(pIteratedModel->qoi(), 7); // for stand alone mode
   ActiveSet  pce_set(pce_asv, approx_set.derivative_vector());
   uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, pce_set, approx_view, approx_type, exp_orders, corr_type,
@@ -699,7 +699,7 @@ bool NonDPolynomialChaos::resize()
   // -------------------
   Model g_u_model;
   g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    iteratedModel, uSpaceType)); // retain dist bounds
+    *pIteratedModel, uSpaceType)); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -839,7 +839,7 @@ void NonDPolynomialChaos::derived_init_communicators(ParLevLIter pl_iter)
 {
   // this is redundant with Model recursions except for PCE coeff import case
   if (!expansionImportFile.empty())
-    iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);
+    pIteratedModel->init_communicators(pl_iter, maxEvalConcurrency);
 
   NonDExpansion::derived_init_communicators(pl_iter);
 }
@@ -849,7 +849,7 @@ void NonDPolynomialChaos::derived_set_communicators(ParLevLIter pl_iter)
 {
   // this is redundant with Model recursions except for PCE coeff import case
   if (!expansionImportFile.empty())
-    iteratedModel.set_communicators(pl_iter, maxEvalConcurrency);
+    pIteratedModel->set_communicators(pl_iter, maxEvalConcurrency);
 
   NonDExpansion::derived_set_communicators(pl_iter);
 }
@@ -861,7 +861,7 @@ void NonDPolynomialChaos::derived_free_communicators(ParLevLIter pl_iter)
 
   // this is redundant with Model recursions except for PCE coeff import case
   if (!expansionImportFile.empty())
-    iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);
+    pIteratedModel->free_communicators(pl_iter, maxEvalConcurrency);
 }
 
 
@@ -883,7 +883,7 @@ resolve_inputs(short& u_space_type, short& data_order)
   // within the NestedModel ctor prior to subIterator instantiation.
   data_order = 1;
   if (useDerivs) { // input specification
-    if (iteratedModel.gradient_type()  != "none") data_order |= 2;
+    if (pIteratedModel->gradient_type()  != "none") data_order |= 2;
     //if (iteratedModel.hessian_type() != "none") data_order |= 4; // not yet
     if (data_order == 1)
       Cerr << "\nWarning: use_derivatives option in polynomial_chaos "
@@ -1266,8 +1266,8 @@ void NonDPolynomialChaos::print_results(std::ostream& s, short results_state)
 void NonDPolynomialChaos::print_coefficients(std::ostream& s)
 {
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  const StringArray& fn_labels = ModelUtils::response_labels(iteratedModel);
-  const Variables&   vars      = iteratedModel.current_variables();
+  const StringArray& fn_labels = ModelUtils::response_labels(*pIteratedModel);
+  const Variables&   vars      = pIteratedModel->current_variables();
   const SizetArray&  ac_totals = vars.shared_data().active_components_totals();
 
   size_t i, width = write_precision+7, num_ceuv = ac_totals[TOTAL_CEUV],

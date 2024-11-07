@@ -66,7 +66,7 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   // -------------------
   Model g_u_model;
   g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    iteratedModel, u_space_type)); // retain dist bnds
+    *pIteratedModel, u_space_type)); // retain dist bnds
 
   // -------------------------
   // Construct u_space_sampler
@@ -171,8 +171,8 @@ size_t NonDC3FunctionTrain::regression_size()
 
 void NonDC3FunctionTrain::check_surrogate()
 {
-  if (iteratedModel.model_type()     == "surrogate" &&
-      iteratedModel.surrogate_type() == "global_function_train") {
+  if (pIteratedModel->model_type()     == "surrogate" &&
+      pIteratedModel->surrogate_type() == "global_function_train") {
     Cerr << "Error: use 'surrogate_based_uq' for UQ using a Model-based "
 	 << "function train specification." << std::endl;
     abort_handler(METHOD_ERROR);
@@ -670,7 +670,7 @@ void NonDC3FunctionTrain::print_moments(std::ostream& s)
   s << std::scientific << std::setprecision(write_precision);
 
   // std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  const StringArray& fn_labels = ModelUtils::response_labels(iteratedModel);
+  const StringArray& fn_labels = ModelUtils::response_labels(*pIteratedModel);
   size_t i, j, width = write_precision+7;
 
   s << "\nMoment statistics for each response function:\n";
@@ -720,10 +720,10 @@ void NonDC3FunctionTrain::print_sobol_indices(std::ostream& s)
 {
   s << "\nGlobal sensitivity indices for each response function:\n";
 
-  const StringArray& fn_labels = ModelUtils::response_labels(iteratedModel);
+  const StringArray& fn_labels = ModelUtils::response_labels(*pIteratedModel);
 
   StringMultiArrayConstView cv_labels
-    = ModelUtils::continuous_variable_labels(iteratedModel);
+    = ModelUtils::continuous_variable_labels(*pIteratedModel);
 
   // print sobol indices per response function
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
@@ -750,7 +750,7 @@ void NonDC3FunctionTrain::print_sobol_indices(std::ostream& s)
     //if (vbdOrderLimit != 1) { 
       s << std::setw(39) << "Interaction\n";
       StringMultiArrayConstView cv_labels
-        = ModelUtils::continuous_variable_labels(iteratedModel);
+        = ModelUtils::continuous_variable_labels(*pIteratedModel);
             
       struct SPrintArgs pa;
       pa.s = &s;

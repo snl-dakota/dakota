@@ -94,7 +94,7 @@ void NonDWASABIBayesCalibration::calibrate()
     = mcmcModel.multivariate_distribution().distribution_bounds(); // all RV
   // Use SVD to convert active CV index (calibration params) to all index (RVs)
   const SharedVariablesData& svd
-    = iteratedModel.current_variables().shared_data();
+    = pIteratedModel->current_variables().shared_data();
   for (size_t i=0; i<numContinuousVars; ++i) {
     const RealRealPair& bnds_i = bnds[svd.cv_index_to_all_index(i)];
     paramMins[i] = bnds_i.first;  paramMaxs[i] = bnds_i.second;

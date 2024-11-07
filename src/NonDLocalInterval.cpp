@@ -51,9 +51,9 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, Model& model):
   SizetArray recast_vars_comps_total;  // default: empty; no change in size
   BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
   short recast_resp_order = 3; // gradient-based quasi-Newton optimizers
-  const ShortShortPair& recast_view = iteratedModel.current_variables().view();
+  const ShortShortPair& recast_view = pIteratedModel->current_variables().view();
   minMaxModel.assign_rep(std::make_shared<RecastModel>
-			 (iteratedModel, recast_vars_comps_total,
+			 (*pIteratedModel, recast_vars_comps_total,
 			  all_relax_di, all_relax_dr, recast_view, 1, 0, 0,
 			  recast_resp_order));
 
@@ -96,14 +96,14 @@ void NonDLocalInterval::check_sub_iterator_conflict()
   // Note 2: forces lower-level to accommodate, even though this level may be
   //         the more flexible one in its ability to switch away from NPSOL.
   if (npsolFlag) {
-    Iterator sub_iterator = iteratedModel.subordinate_iterator();
+    Iterator sub_iterator = pIteratedModel->subordinate_iterator();
     if (!sub_iterator.is_null() && 
 	 ( sub_iterator.method_name() ==  NPSOL_SQP ||
 	   sub_iterator.method_name() == NLSSOL_SQP ||
 	   sub_iterator.uses_method() == SUBMETHOD_NPSOL ||
 	   sub_iterator.uses_method() == SUBMETHOD_NPSOL_OPTPP ) )
       sub_iterator.method_recourse(methodName);
-    ModelList& sub_models = iteratedModel.subordinate_models();
+    ModelList& sub_models = pIteratedModel->subordinate_models();
     for (ModelLIter ml_iter = sub_models.begin();
 	 ml_iter != sub_models.end(); ml_iter++) {
       sub_iterator = ml_iter->subordinate_iterator();
@@ -124,7 +124,7 @@ NonDLocalInterval::~NonDLocalInterval()
 
 void NonDLocalInterval::derived_init_communicators(ParLevLIter pl_iter)
 {
-  iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);
+  pIteratedModel->init_communicators(pl_iter, maxEvalConcurrency);
 
   // miPLIndex needed in method_recourse() prior to assignment in
   // NonD::derived_set_communicators().  While derived_init_communicators()
@@ -151,7 +151,7 @@ void NonDLocalInterval::derived_free_communicators(ParLevLIter pl_iter)
 {
   minMaxOptimizer.free_communicators(pl_iter);
 
-  iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);
+  pIteratedModel->free_communicators(pl_iter, maxEvalConcurrency);
 }
 
 

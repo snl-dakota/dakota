@@ -575,6 +575,7 @@ private:
   /// the model to be iterated (for iterators and meta-iterators
   /// employing a single model instance)
   Model iteratedModel;
+  //Model* pIteratedModel;
 
   /// method identifier string from the input file, or an
   /// auto-generated ID, such that each instance of an Iterator has a
@@ -635,8 +636,14 @@ parallel_configuration_iterator_map() const
 
 inline void Iterator::iterated_model(const Model& model)
 {
-  if (iteratorRep) iteratorRep->iteratedModel = model;
-  else             iteratedModel = model; 
+  if (iteratorRep) {
+    iteratorRep->iteratedModel = model;
+    //iteratorRep->pIteratedModel = &iteratorRep->iteratedModel;
+  }
+  else {
+    iteratedModel = model; 
+    //pIteratedModel = &iteratedModel; 
+  }
 }
 
 

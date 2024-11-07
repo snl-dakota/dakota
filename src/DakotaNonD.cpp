@@ -108,7 +108,7 @@ NonD::NonD(unsigned short method_name, const RealVector& lower_bnds,
 
 void NonD::initialize_counts()
 {
-  const Variables& vars = iteratedModel.current_variables();
+  const Variables& vars = pIteratedModel->current_variables();
   //short active_view = vars.view().first;
   const SizetArray& ac_totals = vars.shared_data().active_components_totals();
   // convenience looping bounds
@@ -133,7 +133,7 @@ bool NonD::resize()
 void NonD::derived_set_communicators(ParLevLIter pl_iter)
 {
   miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
-  iteratedModel.set_communicators(pl_iter, maxEvalConcurrency);
+  pIteratedModel->set_communicators(pl_iter, maxEvalConcurrency);
 }
 
 
@@ -272,7 +272,7 @@ void NonD::initialize_response_covariance()
 void NonD::initialize_final_statistics()
 {
   size_t i, j, num_levels, cntr = 0, rl_len = 0, num_final_stats,
-    num_active_vars = ModelUtils::cv(iteratedModel);
+    num_active_vars = ModelUtils::cv(*pIteratedModel);
   if (epistemicStats)
     num_final_stats = 2*numFunctions;
   else { // aleatory UQ
@@ -297,7 +297,7 @@ void NonD::initialize_final_statistics()
   //   subIterator construction follows in NestedModel::derived_init_comms()
   //   --> invocation of this fn from NonD ctors should have inactive view
   ActiveSet stats_set(num_final_stats);//, num_active_vars); // default RV = 1
-  stats_set.derivative_vector(ModelUtils::inactive_continuous_variable_ids(iteratedModel));
+  stats_set.derivative_vector(ModelUtils::inactive_continuous_variable_ids(*pIteratedModel));
   finalStatistics = Response(SIMULATION_RESPONSE, stats_set);
 
   // Assign meaningful labels to finalStatistics (appear in NestedModel output)
@@ -424,12 +424,12 @@ configure_1d_sequence(size_t& num_steps, size_t& secondary_index,
 {
   // Allow either model forms or discretization levels, but not both
   // (precedence determined by ML/MF calling algorithm)
-  ModelList& sub_models = iteratedModel.subordinate_models(false);
+  ModelList& sub_models = pIteratedModel->subordinate_models(false);
   size_t num_mf = sub_models.size(),
     num_hf_lev  = sub_models.back().solution_levels();
-  bool ml = iteratedModel.multilevel();
+  bool ml = pIteratedModel->multilevel();
 
-  if (ml || iteratedModel.multilevel_multifidelity()) {
+  if (ml || pIteratedModel->multilevel_multifidelity()) {
     // only loop (1D) or outer loop (2D)
     seq_type  = Pecos::RESOLUTION_LEVEL_1D_SEQUENCE;
     num_steps = num_hf_lev;  secondary_index = num_mf - 1;
@@ -437,7 +437,7 @@ configure_1d_sequence(size_t& num_steps, size_t& secondary_index,
       Cerr << "Warning: multiple model forms will be ignored by "
 	   << "NonD::configure_1d_sequence() for ML precedence.\n";
   }
-  else if (iteratedModel.multifidelity()) {
+  else if (pIteratedModel->multifidelity()) {
     seq_type  = Pecos::MODEL_FORM_1D_SEQUENCE;
     num_steps = num_mf;
     // retain each model's active solution control index:
@@ -459,10 +459,10 @@ void NonD::
 configure_2d_sequence(size_t& total_steps, size_t& secondary_index,
 		      short& seq_type)
 {
-  if (iteratedModel.multilevel_multifidelity()) {
+  if (pIteratedModel->multilevel_multifidelity()) {
     seq_type  = Pecos::FORM_RESOLUTION_2D_SEQUENCE;
 
-    ModelList& sub_models = iteratedModel.subordinate_models(false);
+    ModelList& sub_models = pIteratedModel->subordinate_models(false);
     size_t num_mf = sub_models.size(),
       num_hf_lev  = sub_models.back().solution_levels(),
       num_cv_lev  = (num_mf > 1) ?
@@ -488,7 +488,7 @@ configure_enumeration(size_t& num_combinations, short& seq_type)
 
   // Enumerate both model forms and discretization levels
   num_combinations = 0;
-  ModelList& sub_models = iteratedModel.subordinate_models(false);// includes HF
+  ModelList& sub_models = pIteratedModel->subordinate_models(false);// includes HF
   for (ModelLIter m_iter=sub_models.begin(); m_iter!=sub_models.end(); ++m_iter)
     num_combinations += m_iter->solution_levels(); // lower bound of 1
 }
@@ -538,7 +538,7 @@ query_cost(size_t num_steps, short seq_type, RealVector& seq_cost,
   // > Integrated processing no longer invokes query_cost for each model,
   //   now focusing only on the active models
 
-  ModelList& sub_models = iteratedModel.subordinate_models(false);
+  ModelList& sub_models = pIteratedModel->subordinate_models(false);
   size_t m, num_mf = sub_models.size();
   bool user_spec = false, md_recover = false;
   model_cost_spec.resize(num_mf); // Note: not all models are checked
@@ -630,7 +630,7 @@ void NonD::
 test_cost(short seq_type, const BitArray& model_cost_spec,
 	  SizetSizetPairArray& cost_md_indices)
 {
-  ModelList& sub_models = iteratedModel.subordinate_models(false);
+  ModelList& sub_models = pIteratedModel->subordinate_models(false);
   size_t m, num_mf = sub_models.size();  bool err_flag = false;
 
   switch (seq_type) {
@@ -1128,7 +1128,7 @@ print_level_mappings(std::ostream& s, const RealVector& level_maps,
 
   size_t i, j, cntr,
     width = write_precision+7, w2p2 = 2*width+2, w3p4 = 3*width+4;
-  const StringArray& qoi_labels = ModelUtils::response_labels(iteratedModel);
+  const StringArray& qoi_labels = ModelUtils::response_labels(*pIteratedModel);
   for (i=0, cntr=0; i<numFunctions; ++i) {
     if (moment_offset) cntr += 2; // skip over moments, if present
     if (cdfFlag) s << "Cumulative Distribution Function (CDF) for ";
@@ -1617,7 +1617,7 @@ void NonD::archive_from_resp(size_t i, size_t inc_id)
  
   DimScaleMap scale;
   scale.emplace(0, RealScale("response_levels", requestedRespLevels[i]));
-  const StringArray &labels = ModelUtils::response_labels(iteratedModel);
+  const StringArray &labels = ModelUtils::response_labels(*pIteratedModel);
   RealVector *result;
 
   // TODO: could use SetCol?
@@ -1665,7 +1665,7 @@ void NonD::archive_to_resp(size_t i, size_t inc_id)
   if (!resultsDB.active())  return;
 
   DimScaleMap scale;
-  const StringArray &labels = ModelUtils::response_labels(iteratedModel);
+  const StringArray &labels = ModelUtils::response_labels(*pIteratedModel);
   StringArray location;
   size_t r_index = 0;
   if(inc_id) {
@@ -1757,7 +1757,7 @@ void NonD::archive_pdf(size_t i, size_t inc_id) // const
   resultsDB.array_insert<RealMatrix>
     (run_identifier(), resultsNames.pdf_histograms, i, pdf);
 
-  const StringArray &labels = ModelUtils::response_labels(iteratedModel);
+  const StringArray &labels = ModelUtils::response_labels(*pIteratedModel);
   StringArray location;
   if(inc_id) location.push_back(String("increment:") + std::to_string(inc_id));
   location.push_back("probability_density");

@@ -21,8 +21,8 @@ Verification::Verification(ProblemDescDB& problem_db, Model& model):
   Analyzer(problem_db, model)
 {
   // Check for vendor numerical gradients (manage_asv will not work properly)
-  if (iteratedModel.gradient_type() == "numerical" &&
-      iteratedModel.method_source() == "vendor") {
+  if (pIteratedModel->gradient_type() == "numerical" &&
+      pIteratedModel->method_source() == "vendor") {
     Cerr << "\nError: Verification does not contain a vendor algorithm for "
          << "numerical derivatives;\n       please select dakota as the finite "
 	 << "difference method_source." << std::endl;
@@ -35,8 +35,8 @@ Verification::Verification(unsigned short method_name, Model& model):
   Analyzer(method_name, model)
 {
   // Check for vendor numerical gradients (manage_asv will not work properly)
-  if (iteratedModel.gradient_type() == "numerical" &&
-      iteratedModel.method_source() == "vendor") {
+  if (pIteratedModel->gradient_type() == "numerical" &&
+      pIteratedModel->method_source() == "vendor") {
     Cerr << "\nError: Verification does not contain a vendor algorithm for "
          << "numerical derivatives;\n       please select dakota as the finite "
 	 << "difference method_source." << std::endl;

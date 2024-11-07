@@ -287,7 +287,7 @@ distribute(const Teuchos::SerialDenseVector<OrdinalType, ScalarTypeA>& all_data,
   // Extract in order:
   //   cdv/ddiv/ddrv, cauv/dauiv/daurv, ceuv/deuiv/deurv, csv/dsiv/dsrv
   const SharedVariablesData& svd
-    = iteratedModel.current_variables().shared_data();
+    = pIteratedModel->current_variables().shared_data();
   const SizetArray& active_totals = svd.active_components_totals();
   size_t i,
     num_cdv   = active_totals[TOTAL_CDV],  num_ddiv = active_totals[TOTAL_DDIV],
@@ -371,7 +371,7 @@ distribute(const std::vector<ScalarType>& all_data,
   // Extract in order:
   //   cdv/ddiv/ddrv, cauv/dauiv/daurv, ceuv/deuiv/deurv, csv/dsiv/dsrv
   const SharedVariablesData& svd
-    = iteratedModel.current_variables().shared_data();
+    = pIteratedModel->current_variables().shared_data();
   const SizetArray& active_totals = svd.active_components_totals();
   size_t i,
     num_cdv   = active_totals[TOTAL_CDV],  num_ddiv = active_totals[TOTAL_DDIV],
@@ -572,22 +572,22 @@ inline bool ParamStudy::check_finite_bounds()
   size_t i;
   Real dbl_inf = std::numeric_limits<Real>::infinity();
   if (numContinuousVars) {
-    const RealVector& c_l_bnds = ModelUtils::continuous_lower_bounds(iteratedModel);
-    const RealVector& c_u_bnds = ModelUtils::continuous_upper_bounds(iteratedModel);
+    const RealVector& c_l_bnds = ModelUtils::continuous_lower_bounds(*pIteratedModel);
+    const RealVector& c_u_bnds = ModelUtils::continuous_upper_bounds(*pIteratedModel);
     for (i=0; i<numContinuousVars; ++i)
       if (c_l_bnds[i] == -dbl_inf || c_u_bnds[i] == dbl_inf)
 	{ bnds_err = true; break; }
   }
   if (numDiscreteIntVars) {
-    const IntVector& di_l_bnds = ModelUtils::discrete_int_lower_bounds(iteratedModel);
-    const IntVector& di_u_bnds = ModelUtils::discrete_int_upper_bounds(iteratedModel);
+    const IntVector& di_l_bnds = ModelUtils::discrete_int_lower_bounds(*pIteratedModel);
+    const IntVector& di_u_bnds = ModelUtils::discrete_int_upper_bounds(*pIteratedModel);
     for (i=0; i<numDiscreteIntVars; ++i)
       if (di_l_bnds[i] <= INT_MIN || di_u_bnds[i] >= INT_MAX)
 	{ bnds_err = true; break; }
   }
   if (numDiscreteRealVars) {
-    const RealVector& dr_l_bnds = ModelUtils::discrete_real_lower_bounds(iteratedModel);
-    const RealVector& dr_u_bnds = ModelUtils::discrete_real_upper_bounds(iteratedModel);
+    const RealVector& dr_l_bnds = ModelUtils::discrete_real_lower_bounds(*pIteratedModel);
+    const RealVector& dr_u_bnds = ModelUtils::discrete_real_upper_bounds(*pIteratedModel);
     for (i=0; i<numDiscreteRealVars; ++i)
       if (dr_l_bnds[i] == -dbl_inf || dr_u_bnds[i] == dbl_inf)
 	{ bnds_err = true; break; }
@@ -756,7 +756,7 @@ centered_header(const String& type, size_t var_index, int step,
 {
   String& h_string = allHeaders[hdr_index];
   h_string.clear();
-  if (iteratedModel.asynch_flag())
+  if (pIteratedModel->asynch_flag())
     h_string += "\n\n";
   // This code expanded due to MSVC issue with Dakota::String operator +/+=
   // Can be combined once using std::string everywhere

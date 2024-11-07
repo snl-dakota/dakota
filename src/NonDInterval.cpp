@@ -100,14 +100,14 @@ void NonDInterval::initialize_final_statistics()
   // default response ASV/DVV may be overridden by NestedModel update
   // in subIterator.response_results_active_set(sub_iterator_set)
   ActiveSet stats_set(num_final_stats);
-  stats_set.derivative_vector(ModelUtils::inactive_continuous_variable_ids(iteratedModel));
+  stats_set.derivative_vector(ModelUtils::inactive_continuous_variable_ids(*pIteratedModel));
   finalStatistics = Response(SIMULATION_RESPONSE, stats_set);
 
   // Assign meaningful fn labels to final stats (appear in NestedModel output)
   size_t i, j, num_levels, cntr = 0;
   StringArray stats_labels(num_final_stats);
   if (singleIntervalFlag) {
-    const StringArray& fn_labels = ModelUtils::response_labels(iteratedModel);
+    const StringArray& fn_labels = ModelUtils::response_labels(*pIteratedModel);
     for (i=0; i<numFunctions; ++i) {
       stats_labels[cntr++] = fn_labels[i] + String("_min");
       stats_labels[cntr++] = fn_labels[i] + String("_max");
@@ -152,7 +152,7 @@ void NonDInterval::initialize_final_statistics()
 void NonDInterval::calculate_cells_and_bpas()
 {
   Pecos::MultivariateDistribution& mv_dist
-    = iteratedModel.multivariate_distribution();
+    = pIteratedModel->multivariate_distribution();
   std::shared_ptr<Pecos::MarginalsCorrDistribution>mvd_dist_rep =
     std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
     (mv_dist.multivar_dist_rep());
@@ -313,13 +313,13 @@ void NonDInterval::calculate_cells_and_bpas()
   }
 
   StringMultiArrayConstView cv_labels
-    = ModelUtils::continuous_variable_labels(iteratedModel);
+    = ModelUtils::continuous_variable_labels(*pIteratedModel);
   StringMultiArrayConstView div_labels
-    = ModelUtils::discrete_int_variable_labels(iteratedModel);
+    = ModelUtils::discrete_int_variable_labels(*pIteratedModel);
   //StringMultiArrayConstView dsv_labels
-  //  = ModelUtils::discrete_string_variable_labels(iteratedModel);
+  //  = ModelUtils::discrete_string_variable_labels(*pIteratedModel);
   StringMultiArrayConstView drv_labels
-    = ModelUtils::discrete_real_variable_labels(iteratedModel);
+    = ModelUtils::discrete_real_variable_labels(*pIteratedModel);
   for (i=0; i<numCells; ++i) {
     Cout << "Cell " << i+1 << ":\n";
     for (j=0; j<num_ciu; ++j)
@@ -564,7 +564,7 @@ void NonDInterval::compute_evidence_statistics()
 
 void NonDInterval::print_results(std::ostream& s, short results_state)
 {
-  const StringArray& fn_labels = ModelUtils::response_labels(iteratedModel);
+  const StringArray& fn_labels = ModelUtils::response_labels(*pIteratedModel);
   s << "------------------------------------------------------------------\n"
     << std::scientific << std::setprecision(write_precision);
 

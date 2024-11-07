@@ -87,11 +87,11 @@ void NonDIntegration::core_run()
   //  check_variables(x_dist.random_variables());//deferred from alt ctors
 
   // generate integration points
-  get_parameter_sets(iteratedModel);
+  get_parameter_sets(*pIteratedModel);
 
   // convenience function from Analyzer for evaluating parameter sets.  Data
   // flags are set to be compatible with DataFitSurrModel::build_global().
-  evaluate_parameter_sets(iteratedModel);
+  evaluate_parameter_sets(*pIteratedModel);
 
   // Needed for general use outside of NonDPolynomialChaos
   //if (standAloneMode)
@@ -145,7 +145,7 @@ void NonDIntegration::print_points_weights(const String& tabular_name)
     if (weights)
       pts_wts_file << std::setw(write_precision+6) << "weight ";
     write_data_tabular(pts_wts_file,
-		       ModelUtils::continuous_variable_labels(iteratedModel));
+		       ModelUtils::continuous_variable_labels(*pIteratedModel));
     pts_wts_file << '\n';
     for (i=0; i<num_pts; ++i) {
       pts_wts_file << std::setw(6) << i+1 << ' ';

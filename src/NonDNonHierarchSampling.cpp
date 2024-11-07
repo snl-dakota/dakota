@@ -123,7 +123,7 @@ void NonDNonHierarchSampling::assign_active_key()
   std::vector<Pecos::ActiveKey> form_res_keys(numApprox+1);
 
   // case Pecos::FORM_RESOLUTION_ENUMERATION
-  ModelList& sub_models = iteratedModel.subordinate_models(false);// incl HF
+  ModelList& sub_models = pIteratedModel->subordinate_models(false);// incl HF
   size_t m, l, num_lev, cntr = 0;  ModelLIter m_iter;
   for (m=0,m_iter=sub_models.begin(); m_iter!=sub_models.end(); ++m_iter,++m){
     num_lev = m_iter->solution_levels(); // lower bound of 1
@@ -133,7 +133,7 @@ void NonDNonHierarchSampling::assign_active_key()
 
   active_key.aggregate_keys(form_res_keys, Pecos::RAW_DATA);
   //iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
-  iteratedModel.active_model_key(active_key); // data group 0
+  pIteratedModel->active_model_key(active_key); // data group 0
   resize_active_set();
 }
 
@@ -330,8 +330,8 @@ group_increments(SizetArray& delta_N_G, String prepend, bool reverse_order)
       }
     }
 
-  if (iteratedModel.asynch_flag())
-    synchronize_batches(iteratedModel); // schedule all groups (return ignored)
+  if (pIteratedModel->asynch_flag())
+    synchronize_batches(*pIteratedModel); // schedule all groups (return ignored)
 }
 
 
@@ -422,13 +422,13 @@ ensemble_sample_increment(const String& prepend, size_t step, bool new_samples)
 
   if (new_samples) {
     // generate new MC parameter sets
-    get_parameter_sets(iteratedModel);
+    get_parameter_sets(*pIteratedModel);
     // export separate output files for each data set
     export_sample_sets(prepend, step);
   }
 
   // compute allResponses from all{Samples,Variables} using model ensemble
-  evaluate_parameter_sets(iteratedModel); // includes synchronize
+  evaluate_parameter_sets(*pIteratedModel); // includes synchronize
 }
 
 
@@ -439,14 +439,14 @@ ensemble_sample_batch(const String& prepend, size_t step, bool new_samples)
 
   if (new_samples) {
     // generate new MC parameter sets
-    get_parameter_sets(iteratedModel);
+    get_parameter_sets(*pIteratedModel);
     // export separate output files for each data set
     export_sample_sets(prepend, step);
   }
 
   // evaluate all{Samples,Variables} using model ensemble and migrate
   // all{Samples,Variables} to batch{Samples,Variables}Map
-  evaluate_batch(iteratedModel, step); // excludes synchronize
+  evaluate_batch(*pIteratedModel, step); // excludes synchronize
 }
 
 
@@ -455,11 +455,11 @@ export_sample_sets(const String& prepend, size_t step)
 {
   if (exportSampleSets) { // for HF+LF models, use the HF tags
     if (active_set_for_model(numApprox))
-      export_all_samples(prepend, iteratedModel.active_truth_model(),
+      export_all_samples(prepend, pIteratedModel->active_truth_model(),
 			 mlmfIter, step);
     for (size_t i=0; i<numApprox; ++i)
       if (active_set_for_model(i))
-	export_all_samples(prepend, iteratedModel.active_surrogate_model(i),
+	export_all_samples(prepend, pIteratedModel->active_surrogate_model(i),
 			   mlmfIter, step);
   }
 }

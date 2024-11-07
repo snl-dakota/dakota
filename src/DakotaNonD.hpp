@@ -443,7 +443,7 @@ inline short NonD::
 configure_cost(size_t num_steps, short seq_type, RealVector& cost)
 {
   // NonDExpansion uses this fn for enforcing cost from spec (no metadata)
-  size_t m, num_mf = iteratedModel.subordinate_models(false).size();
+  size_t m, num_mf = pIteratedModel->subordinate_models(false).size();
   BitArray model_cost_spec;  SizetSizetPairArray cost_md_indices(num_mf);
   for (m=0; m<num_mf; ++m)
     cost_md_indices[m] = SizetSizetPair(SZ_MAX, 0); // no metadata for any model
@@ -471,7 +471,7 @@ inline short NonD::
 query_cost(size_t num_steps, short seq_type, RealVector& cost)
 {
   // NonDExpansion uses this function for optional cost
-  size_t m, num_mf = iteratedModel.subordinate_models(false).size();
+  size_t m, num_mf = pIteratedModel->subordinate_models(false).size();
   BitArray model_cost_spec;  SizetSizetPairArray cost_md_indices(num_mf);
   for (m=0; m<num_mf; ++m)
     cost_md_indices[m] = SizetSizetPair(SZ_MAX, 0); // no metadata for any model
@@ -551,12 +551,12 @@ inline void NonD::response_results_active_set(const ActiveSet& set)
 
 inline void NonD::print_level_mappings(std::ostream& s) const
 {
-  print_level_mappings(s, "response function", ModelUtils::response_labels(iteratedModel));
+  print_level_mappings(s, "response function", ModelUtils::response_labels(*pIteratedModel));
 }
 
 
 inline void NonD::print_densities(std::ostream& s) const
-{ print_densities(s, "response function", ModelUtils::response_labels(iteratedModel)); }
+{ print_densities(s, "response function", ModelUtils::response_labels(*pIteratedModel)); }
 
 
 inline bool NonD::discrepancy_sample_counts() const
@@ -835,7 +835,7 @@ inflate_approx_samples(const ArrayType& N_l, bool multilev,
   else { // MF case
     num_approx = num_mf - 1;
     if (secondary_index == SZ_MAX) {
-      ModelList& sub_models = iteratedModel.subordinate_models(false);
+      ModelList& sub_models = pIteratedModel->subordinate_models(false);
       ModelLIter m_iter = sub_models.begin();
       size_t m_soln_lev, active_lev;
       for (i=0; i<num_approx && m_iter != sub_models.end(); ++i, ++m_iter) {
@@ -873,7 +873,7 @@ inflate_sequence_samples(const ArrayType& N_l, bool multilev,
   }
   else { // MF case
     if (secondary_index == SZ_MAX) {
-      ModelList& sub_models = iteratedModel.subordinate_models(false);
+      ModelList& sub_models = pIteratedModel->subordinate_models(false);
       ModelLIter m_iter = sub_models.begin();
       size_t m_soln_lev, active_lev;
       for (i=0; i<num_mf && m_iter != sub_models.end(); ++i, ++m_iter) {
@@ -907,7 +907,7 @@ print_multilevel_model_summary(std::ostream& s,
   }
   else {
     bool mf_seq = (seq_type == Pecos::MODEL_FORM_1D_SEQUENCE);
-    ModelList& sub_models = iteratedModel.subordinate_models(false);
+    ModelList& sub_models = pIteratedModel->subordinate_models(false);
     ModelLIter     m_iter = sub_models.begin();
     s << "<<<<< " << type << " samples per model form:\n";
     for (i=0; i<num_mf; ++i, ++m_iter) {

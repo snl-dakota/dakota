@@ -23,7 +23,7 @@ NonDCalibration::NonDCalibration(ProblemDescDB& problem_db, Model& model):
   NonD(problem_db, model),
   calibrationData(probDescDB.get_bool("responses.calibration_data") ||
     !probDescDB.get_string("responses.scalar_data_filename").empty()),
-  expData(problem_db, iteratedModel.current_response().shared_data(), 
+  expData(problem_db, pIteratedModel->current_response().shared_data(), 
 	  outputLevel)
 { 
   // Read in all of the experimental data, including any x configuration 
@@ -31,7 +31,7 @@ NonDCalibration::NonDCalibration(ProblemDescDB& problem_db, Model& model):
   //if (outputLevel > NORMAL_OUTPUT)
   //  Cout << "Read data from file " << calibrationData << '\n';
   if (calibrationData)
-    expData.load_data("NonDCalibration", iteratedModel.current_variables());
+    expData.load_data("NonDCalibration", pIteratedModel->current_variables());
   else if (outputLevel > SILENT_OUTPUT)
     Cout << "No experiment data from files.\nCalibration is assuming the "
 	 << "simulation is returning the residuals" << std::endl;

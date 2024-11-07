@@ -35,7 +35,7 @@ NonDLHSInterval::NonDLHSInterval(ProblemDescDB& problem_db, Model& model):
 
   unsigned short sample_type = SUBMETHOD_DEFAULT;
   bool vary_pattern = false; // for consistency across outer loop invocations
-  lhsSampler.assign_rep(std::make_shared<NonDLHSSampling>(iteratedModel,
+  lhsSampler.assign_rep(std::make_shared<NonDLHSSampling>(*pIteratedModel,
     sample_type, numSamples, seedSpec, rngName, vary_pattern, ACTIVE));
 }
 

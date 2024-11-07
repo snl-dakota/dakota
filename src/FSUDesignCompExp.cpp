@@ -194,9 +194,9 @@ void FSUDesignCompExp::pre_run()
   // If VBD has been selected, generate a series of replicate parameter sets
   // (each of the size specified by the user) in order to compute VBD metrics.
   if (vbdFlag && vbdViaSamplingMethod==VBD_PICK_AND_FREEZE)
-    get_vbd_parameter_sets(iteratedModel, numSamples);
+    get_vbd_parameter_sets(*pIteratedModel, numSamples);
   else
-    get_parameter_sets(iteratedModel);
+    get_parameter_sets(*pIteratedModel);
 }
 
 
@@ -205,7 +205,7 @@ void FSUDesignCompExp::core_run()
   bool compute_corr_flag = (!subIteratorFlag),
     log_resp_flag = (allDataFlag || compute_corr_flag),
     log_best_flag = (numObjFns || numLSqTerms); // opt or NLS data set
-  evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
+  evaluate_parameter_sets(*pIteratedModel, log_resp_flag, log_best_flag);
 }
 
 

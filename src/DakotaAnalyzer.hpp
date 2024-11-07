@@ -222,6 +222,7 @@ protected:
 
   /// Reference to Iterator::iterated_model()
   Model& iteratedModel;
+  Model* pIteratedModel;
 
 private:
 
@@ -267,7 +268,8 @@ private:
 };
 
 
-inline Analyzer::Analyzer() : iteratedModel{Iterator::iterated_model()}
+inline Analyzer::Analyzer() : iteratedModel{Iterator::iterated_model()},
+                             pIteratedModel(&iteratedModel)
 { }
 
 
@@ -278,7 +280,7 @@ inline Analyzer::~Analyzer() { }
     of samples, collocation points, etc. might be costly, provide a default
     implementation here that backs out from the maxEvalConcurrency. */
 inline size_t Analyzer::num_samples() const
-{ return maxEvalConcurrency / iteratedModel.derivative_concurrency(); }
+{ return maxEvalConcurrency / pIteratedModel->derivative_concurrency(); }
 
 
 inline const VariablesArray& Analyzer::all_variables()
@@ -309,7 +311,7 @@ inline void Analyzer::clear_batches()
 
 /** default definition that gets redefined in selected derived Minimizers */
 inline const Model& Analyzer::algorithm_space_model() const
-{ return iteratedModel; }
+{ return *pIteratedModel; }
 
 
 inline const Variables& Analyzer::variables_results() const

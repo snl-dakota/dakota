@@ -997,7 +997,7 @@ finalize_counts(const Sizet2DArray& N_G_actual, const SizetArray& N_G_alloc)
 
   // For now, overlay group samples into model-resolution instance samples
   size_t g, m, num_models, q, mf, rl, m_index;
-  const Pecos::ActiveKey& active_key = iteratedModel.active_model_key();
+  const Pecos::ActiveKey& active_key = pIteratedModel->active_model_key();
   for (g=0; g<numGroups; ++g) {
     const UShortArray& group_g = modelGroups[g];
     num_models = group_g.size();

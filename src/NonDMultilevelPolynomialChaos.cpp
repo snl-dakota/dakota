@@ -55,7 +55,7 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // -------------------
   Model g_u_model;
   g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    iteratedModel, uSpaceType)); // retain dist bounds
+    *pIteratedModel, uSpaceType)); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -157,7 +157,7 @@ NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ Model& model,
   // -------------------
   Model g_u_model;
   g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    iteratedModel, uSpaceType)); // retain dist bounds
+    *pIteratedModel, uSpaceType)); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -245,7 +245,7 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
   // -------------------
   Model g_u_model;
   g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    iteratedModel, uSpaceType)); // retain dist bounds
+    *pIteratedModel, uSpaceType)); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler

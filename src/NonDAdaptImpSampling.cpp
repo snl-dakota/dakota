@@ -61,7 +61,7 @@ NonDAdaptImpSampling(ProblemDescDB& problem_db, Model& model):
 
   statsFlag = true;
   uSpaceModel.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    iteratedModel, STD_NORMAL_U, useModelBounds));
+    *pIteratedModel, STD_NORMAL_U, useModelBounds));
 
   // maxEvalConcurrency defined from initial LHS size (numSamples)
 }

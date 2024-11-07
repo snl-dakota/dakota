@@ -131,7 +131,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
     probDescDB.get_string("method.nond.export_mcmc_points_file")),
   exportMCMCFormat(probDescDB.get_ushort("method.nond.export_samples_format")),
   scaleFlag(probDescDB.get_bool("method.scaling")),
-  weightFlag(!iteratedModel.primary_response_fn_weights().empty())
+  weightFlag(!pIteratedModel->primary_response_fn_weights().empty())
 {
   if (randomSeed)
     Cout << "NonDBayes Seed (user-specified) = "   << randomSeed << std::endl;
@@ -153,9 +153,9 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
        << subSamplingPeriod << "-th sample will be kept in the final chain. "
        << "The \nfinal chain will have length " << num_filtered << ".\n";
 
-  bool ensemble_model = (iteratedModel.model_type()     == "surrogate" &&
-			 iteratedModel.surrogate_type() == "ensemble");
-  short corr_type = iteratedModel.correction_type(),
+  bool ensemble_model = (pIteratedModel->model_type()     == "surrogate" &&
+			 pIteratedModel->surrogate_type() == "ensemble");
+  short corr_type = pIteratedModel->correction_type(),
     mode = (corr_type) ? AUTO_CORRECTED_SURROGATE : UNCORRECTED_SURROGATE;
   switch (emulatorType) {
   case PCE_EMULATOR: case  SC_EMULATOR:
@@ -177,7 +177,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   // standardized_space, since this is currently unsupported.  Note that gamma
   // distribution should be supported but currently results in a seg fault.
   if ( !standardizedSpace &&
-       iteratedModel.multivariate_distribution().correlation() ){
+       pIteratedModel->multivariate_distribution().correlation() ){
     Cerr << "Error: correlation is only supported if user specifies "
 	 << "standardized_space.\n    Only the following types of correlated "
 	 << "random variables are supported:\n    unbounded normal, "
@@ -188,7 +188,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
 
   // update from the default responseMode:
   if (ensemble_model)
-    iteratedModel.surrogate_response_mode(mode);
+    pIteratedModel->surrogate_response_mode(mode);
 
   if (adaptExpDesign) {
     if (!ensemble_model) {
@@ -197,7 +197,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
       abort_handler(PARSE_ERROR);
     }
     // TODO: instead of pulling these models out, change modes on iteratedModel
-    hifiModel = iteratedModel.truth_model(); // not dependent on active key
+    hifiModel = pIteratedModel->truth_model(); // not dependent on active key
 
     int num_exp = expData.num_experiments();
     int num_lhs_samples = std::max(initHifiSamples - num_exp, 0);
@@ -227,7 +227,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, Model& model):
   init_hyper_parameters();
 
   // expand initial point by numHyperparams for use in negLogPostModel
-  const Variables& orig_vars = iteratedModel.current_variables();
+  const Variables& orig_vars = pIteratedModel->current_variables();
   size_t i, orig_cv_start = orig_vars.cv_start(), num_orig_cv = orig_vars.cv(),
     num_augment_cv = num_orig_cv + numHyperparams;
   mapSoln.sizeUninitialized(num_augment_cv);
@@ -281,7 +281,7 @@ void NonDBayesCalibration::construct_mcmc_model()
   // model which should be calibrated
   // TODO: could avoid this lightweight copy entirely, but less clean
   Model inbound_model = 
-    adaptExpDesign ? iteratedModel.surrogate_model() : iteratedModel;
+    adaptExpDesign ? pIteratedModel->surrogate_model() : *pIteratedModel;
 
   switch (emulatorType) {
 
@@ -688,7 +688,7 @@ void NonDBayesCalibration::construct_map_model()
   // RecastModel for bound-constrained argmin(misfit - log prior)
   negLogPostModel.assign_rep(std::make_shared<RecastModel>(residualModel,
     vars_map_indices, recast_vc_totals, all_relax_di, all_relax_dr,
-    nonlinear_vars_map, iteratedModel.current_variables().view(), nullptr,
+    nonlinear_vars_map, pIteratedModel->current_variables().view(), nullptr,
     set_recast, primary_resp_map_indices, secondary_resp_map_indices, 0,
     nlp_resp_order, nonlinear_resp_map, neg_log_post_resp_mapping, nullptr));
 }
@@ -1143,7 +1143,7 @@ void NonDBayesCalibration::calibrate_to_hifi()
     Cout << "Max high-fidelity model runs = " << max_hifi << "\n\n";
   }
 
-  const ShortShortPair& orig_view = iteratedModel.current_variables().view();
+  const ShortShortPair& orig_view = pIteratedModel->current_variables().view();
   while (!stop_metric) {
     
     eval_hi2lo_stop(stop_metric, prev_MI, MI_vec, 
@@ -2386,7 +2386,7 @@ void NonDBayesCalibration::prior_cholesky_factorization()
   priorCovCholFactor.shape(num_params, num_params); // init to 0
 
   if (!standardizedSpace &&
-      iteratedModel.multivariate_distribution().correlation()) { // x_dist
+      pIteratedModel->multivariate_distribution().correlation()) { // x_dist
     Teuchos::SerialSpdDenseSolver<int, Real> corr_solver;
     RealSymMatrix prior_cov_matrix;//= ();
 
@@ -3233,7 +3233,7 @@ void NonDBayesCalibration::
 print_variables(std::ostream& s, const RealVector& c_vars)
 {
   StringMultiArrayConstView cv_labels =
-    ModelUtils::continuous_variable_labels(iteratedModel);
+    ModelUtils::continuous_variable_labels(*pIteratedModel);
   // the residualModel includes any hyper-parameters
   StringArray combined_labels;
   copy_data(ModelUtils::continuous_variable_labels(residualModel), combined_labels);

@@ -71,7 +71,7 @@ void PSUADEDesignCompExp::pre_run()
   enforce_input_rules();
 
   // obtain a set of samples for evaluation
-  get_parameter_sets(iteratedModel);
+  get_parameter_sets(*pIteratedModel);
 }
 
 
@@ -91,7 +91,7 @@ void PSUADEDesignCompExp::core_run()
   //evaluate_parameter_sets(iteratedModel, allDataFlag, true);
   bool log_resp_flag = true, // allResponses required below
        log_best_flag = (numObjFns || numLSqTerms); // opt or NLS data set
-  evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
+  evaluate_parameter_sets(*pIteratedModel, log_resp_flag, log_best_flag);
 }
 
 
@@ -109,8 +109,8 @@ void PSUADEDesignCompExp::post_run(std::ostream& s)
   psuade_adata.nSamples_ = numSamples;
 
   // since MOAT uses pointers, make copies of the data
-  const RealVector& lb = ModelUtils::continuous_lower_bounds(iteratedModel);
-  const RealVector& ub = ModelUtils::continuous_upper_bounds(iteratedModel);
+  const RealVector& lb = ModelUtils::continuous_lower_bounds(*pIteratedModel);
+  const RealVector& ub = ModelUtils::continuous_upper_bounds(*pIteratedModel);
   psuade_adata.iLowerB_ = new double [numContinuousVars];
   psuade_adata.iUpperB_ = new double [numContinuousVars];
   for (int i=0; i<numContinuousVars; i++) {

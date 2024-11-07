@@ -69,11 +69,11 @@ ParamStudy::ParamStudy(ProblemDescDB& problem_db, Model& model):
       // checks only if in check mode; else avoid additional overhead and rely
       // on run-time checks for run-time initialPoint.
       if (numSteps && parallelLib.command_line_check()) {
-	initialCVPoint  = ModelUtils::continuous_variables(iteratedModel);      // view
-	initialDIVPoint = ModelUtils::discrete_int_variables(iteratedModel);    // view
+	initialCVPoint  = ModelUtils::continuous_variables(*pIteratedModel);      // view
+	initialDIVPoint = ModelUtils::discrete_int_variables(*pIteratedModel);    // view
 	initialDSVPoint.resize(boost::extents[numDiscreteStringVars]);
-	initialDSVPoint = ModelUtils::discrete_string_variables(iteratedModel); // copy
-	initialDRVPoint = ModelUtils::discrete_real_variables(iteratedModel);   // view
+	initialDSVPoint = ModelUtils::discrete_string_variables(*pIteratedModel); // copy
+	initialDRVPoint = ModelUtils::discrete_real_variables(*pIteratedModel);   // view
 	final_point_to_step_vector(); // covers check_ranges_sets(numSteps)
       }
     }
@@ -86,10 +86,10 @@ ParamStudy::ParamStudy(ProblemDescDB& problem_db, Model& model):
 	  probDescDB.get_int("method.parameter_study.num_steps")))
 	err_flag = true;
       // discrete initial pts needed for check_sets(); reassigned in pre-run
-      initialDIVPoint = ModelUtils::discrete_int_variables(iteratedModel);    // view
+      initialDIVPoint = ModelUtils::discrete_int_variables(*pIteratedModel);    // view
       initialDSVPoint.resize(boost::extents[numDiscreteStringVars]);
-      initialDSVPoint = ModelUtils::discrete_string_variables(iteratedModel); // copy
-      initialDRVPoint = ModelUtils::discrete_real_variables(iteratedModel);   // view
+      initialDSVPoint = ModelUtils::discrete_string_variables(*pIteratedModel); // copy
+      initialDRVPoint = ModelUtils::discrete_real_variables(*pIteratedModel);   // view
       if (check_ranges_sets(numSteps))
 	err_flag = true;
     }
@@ -102,10 +102,10 @@ ParamStudy::ParamStudy(ProblemDescDB& problem_db, Model& model):
     if (check_steps_per_variable(
 	probDescDB.get_iv("method.parameter_study.steps_per_variable")))
       err_flag = true;
-    initialDIVPoint = ModelUtils::discrete_int_variables(iteratedModel);    // view
+    initialDIVPoint = ModelUtils::discrete_int_variables(*pIteratedModel);    // view
     initialDSVPoint.resize(boost::extents[numDiscreteStringVars]);
-    initialDSVPoint = ModelUtils::discrete_string_variables(iteratedModel); // copy
-    initialDRVPoint = ModelUtils::discrete_real_variables(iteratedModel);   // view
+    initialDSVPoint = ModelUtils::discrete_string_variables(*pIteratedModel); // copy
+    initialDRVPoint = ModelUtils::discrete_real_variables(*pIteratedModel);   // view
     if (check_ranges_sets(contStepsPerVariable, discIntStepsPerVariable,
 			  discStringStepsPerVariable, discRealStepsPerVariable))
       err_flag = true;
@@ -162,7 +162,7 @@ void ParamStudy::pre_run()
   // passing has occurred, then this reassignment is merely repetitive of the 
   // one in the ParamStudy constructor.  If there is a final_point 
   // specification, then contStepVector and numSteps must be (re)computed.
-  const Variables& vars = iteratedModel.current_variables();
+  const Variables& vars = pIteratedModel->current_variables();
   const SharedVariablesData& svd = vars.shared_data();
   if (methodName == VECTOR_PARAMETER_STUDY ||
       methodName == CENTERED_PARAMETER_STUDY) {
@@ -263,7 +263,7 @@ void ParamStudy::core_run()
   bool log_resp_flag = (methodName == MULTIDIM_PARAMETER_STUDY)
     ? (!subIteratorFlag) : false;
   bool log_best_flag = (numObjFns || numLSqTerms); // opt or NLS data set
-  evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
+  evaluate_parameter_sets(*pIteratedModel, log_resp_flag, log_best_flag);
 }
 
 
@@ -327,16 +327,16 @@ void ParamStudy::archive_allocate_sets() const
     size_t num_evals = (compactMode) ? allSamples.numCols() : allVariables.size();
 
     StringMultiArrayConstView cv_labels
-                = ModelUtils::continuous_variable_labels(iteratedModel);
+                = ModelUtils::continuous_variable_labels(*pIteratedModel);
     StringMultiArrayConstView div_labels
-                = ModelUtils::discrete_int_variable_labels(iteratedModel);
+                = ModelUtils::discrete_int_variable_labels(*pIteratedModel);
     StringMultiArrayConstView dsv_labels
-                = ModelUtils::discrete_string_variable_labels(iteratedModel);
+                = ModelUtils::discrete_string_variable_labels(*pIteratedModel);
     StringMultiArrayConstView drv_labels
-                = ModelUtils::discrete_real_variable_labels(iteratedModel);
+                = ModelUtils::discrete_real_variable_labels(*pIteratedModel);
 
     const StringArray& resp_labels 
-                = ModelUtils::response_labels(iteratedModel);
+                = ModelUtils::response_labels(*pIteratedModel);
 
     if( numContinuousVars ) {
       DimScaleMap scales;
@@ -399,12 +399,12 @@ void ParamStudy::post_run(std::ostream& s)
   bool log_resp_flag = (!subIteratorFlag);
   if (methodName == MULTIDIM_PARAMETER_STUDY && log_resp_flag) {
     pStudyDACESensGlobal.compute_correlations(allVariables, allResponses, 
-      ModelUtils::discrete_set_string_values(iteratedModel)); // to map string variable
+      ModelUtils::discrete_set_string_values(*pIteratedModel)); // to map string variable
                                                    // values back to indices
     if(resultsDB.active()) {
       pStudyDACESensGlobal.archive_correlations(run_identifier(), resultsDB,
-                                        iteratedModel.current_variables().ordered_labels(ACTIVE_VARS),
-                                        ModelUtils::response_labels(iteratedModel));
+                                        pIteratedModel->current_variables().ordered_labels(ACTIVE_VARS),
+                                        ModelUtils::response_labels(*pIteratedModel));
     }
 
   }
@@ -442,10 +442,10 @@ void ParamStudy::vector_loop()
   // magnitude & direction.  The number of fn. evaluations in the study is
   // numSteps + 1 since the initial point is also evaluated.
 
-  const BitArray&      di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
-  const IntSetArray&    dsi_values = ModelUtils::discrete_set_int_values(iteratedModel);
-  const StringSetArray& dss_values = ModelUtils::discrete_set_string_values(iteratedModel);
-  const RealSetArray&   dsr_values = ModelUtils::discrete_set_real_values(iteratedModel);
+  const BitArray&      di_set_bits = ModelUtils::discrete_int_sets(*pIteratedModel);
+  const IntSetArray&    dsi_values = ModelUtils::discrete_set_int_values(*pIteratedModel);
+  const StringSetArray& dss_values = ModelUtils::discrete_set_string_values(*pIteratedModel);
+  const RealSetArray&   dsr_values = ModelUtils::discrete_set_real_values(*pIteratedModel);
   size_t i, j, dsi_cntr;
 
   for (i=0; i<=numSteps; ++i) {
@@ -472,7 +472,7 @@ void ParamStudy::vector_loop()
     if (outputLevel > SILENT_OUTPUT) {
       String& h_string = allHeaders[i];
       h_string.clear();
-      if (iteratedModel.asynch_flag())
+      if (pIteratedModel->asynch_flag())
 	h_string += "\n\n";
       if (numSteps == 0) // Allow numSteps == 0 case
 	h_string += ">>>>> Initial_point only (no steps)\n";
@@ -491,7 +491,7 @@ void ParamStudy::centered_loop()
 
   // Always evaluate center point, even if steps_per_variable = 0
   if (outputLevel > SILENT_OUTPUT)
-    allHeaders[cntr] = (iteratedModel.asynch_flag()) ?
+    allHeaders[cntr] = (pIteratedModel->asynch_flag()) ?
       "\n\n>>>>> Centered parameter study evaluation for center point\n" :
       ">>>>> Centered parameter study evaluation for center point\n";
   if (numContinuousVars)
@@ -518,8 +518,8 @@ void ParamStudy::centered_loop()
   }
 
   // Evaluate +/- steps for each discrete int variable
-  const BitArray&   di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
-  const IntSetArray& dsi_values = ModelUtils::discrete_set_int_values(iteratedModel);
+  const BitArray&   di_set_bits = ModelUtils::discrete_int_sets(*pIteratedModel);
+  const IntSetArray& dsi_values = ModelUtils::discrete_set_int_values(*pIteratedModel);
   for (k=0; k<numDiscreteIntVars; ++k) {
     int i, num_steps_k = discIntStepsPerVariable[k];
     if (di_set_bits[k]) {
@@ -545,7 +545,7 @@ void ParamStudy::centered_loop()
   }
 
   // Evaluate +/- steps for each discrete string variable
-  const StringSetArray& dss_values = ModelUtils::discrete_set_string_values(iteratedModel);
+  const StringSetArray& dss_values = ModelUtils::discrete_set_string_values(*pIteratedModel);
   for (k=0; k<numDiscreteStringVars; ++k) {
     int i, num_steps_k = discStringStepsPerVariable[k];
     const StringSet& dss_vals_k = dss_values[k];
@@ -559,7 +559,7 @@ void ParamStudy::centered_loop()
   }
 
   // Evaluate +/- steps for each discrete real variable
-  const RealSetArray& dsr_values = ModelUtils::discrete_set_real_values(iteratedModel);
+  const RealSetArray& dsr_values = ModelUtils::discrete_set_real_values(*pIteratedModel);
   for (k=0; k<numDiscreteRealVars; ++k) {
     int i, num_steps_k = discRealStepsPerVariable[k];
     const RealSet& dsr_vals_k = dsr_values[k];
@@ -579,10 +579,10 @@ void ParamStudy::multidim_loop()
   // Perform a multidimensional parameter study based on the number of 
   // partitions specified for each variable.
 
-  const BitArray&      di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
-  const IntSetArray&    dsi_values = ModelUtils::discrete_set_int_values(iteratedModel);
-  const StringSetArray& dss_values = ModelUtils::discrete_set_string_values(iteratedModel);
-  const RealSetArray&   dsr_values = ModelUtils::discrete_set_real_values(iteratedModel);
+  const BitArray&      di_set_bits = ModelUtils::discrete_int_sets(*pIteratedModel);
+  const IntSetArray&    dsi_values = ModelUtils::discrete_set_int_values(*pIteratedModel);
+  const StringSetArray& dss_values = ModelUtils::discrete_set_string_values(*pIteratedModel);
+  const RealSetArray&   dsr_values = ModelUtils::discrete_set_real_values(*pIteratedModel);
   size_t i, j, p_cntr, dsi_cntr,
     num_c_di_vars    = numContinuousVars + numDiscreteIntVars,
     num_c_di_ds_vars = num_c_di_vars + numDiscreteStringVars,
@@ -635,7 +635,7 @@ load_distribute_points(const String& points_filename,
 
   // the easiest way to read is with a variables object
   // read all variables in spec order into a temporary Variables
-  Variables vars(iteratedModel.current_variables().copy());
+  Variables vars(pIteratedModel->current_variables().copy());
 
   // then map the active data from that variables object into the
   // list*Points arrays and validate it
@@ -647,7 +647,7 @@ load_distribute_points(const String& points_filename,
     read_data_tabular(points_filename, "List Parameter Study", 
 		      listCVPoints, listDIVPoints, listDSVPoints, listDRVPoints,
 		      tabular_format, active_only, 
-		      iteratedModel.current_variables().copy());
+		      pIteratedModel->current_variables().copy());
   if (numEvals == 0) err = true;
 
 
@@ -656,8 +656,8 @@ load_distribute_points(const String& points_filename,
   for (size_t i=0; i<numEvals; ++i) {
 
     // validate continuous values read
-    const RealVector& c_lb = ModelUtils::continuous_lower_bounds(iteratedModel);
-    const RealVector& c_ub = ModelUtils::continuous_upper_bounds(iteratedModel);
+    const RealVector& c_lb = ModelUtils::continuous_lower_bounds(*pIteratedModel);
+    const RealVector& c_ub = ModelUtils::continuous_upper_bounds(*pIteratedModel);
 
     for (size_t j=0; j<numContinuousVars; ++j)
       if (listCVPoints[i][j] < c_lb[j] || listCVPoints[i][j] > c_ub[j]) {
@@ -668,10 +668,10 @@ load_distribute_points(const String& points_filename,
       }
 
     // validate discrete integers (sets and ranges) read
-    const BitArray& di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
-    const IntSetArray& dsi_vals = ModelUtils::discrete_set_int_values(iteratedModel);
-    const IntVector& di_lb = ModelUtils::discrete_int_lower_bounds(iteratedModel);
-    const IntVector& di_ub = ModelUtils::discrete_int_upper_bounds(iteratedModel);
+    const BitArray& di_set_bits = ModelUtils::discrete_int_sets(*pIteratedModel);
+    const IntSetArray& dsi_vals = ModelUtils::discrete_set_int_values(*pIteratedModel);
+    const IntVector& di_lb = ModelUtils::discrete_int_lower_bounds(*pIteratedModel);
+    const IntVector& di_ub = ModelUtils::discrete_int_upper_bounds(*pIteratedModel);
 
     for (size_t j=0, dsi_cntr=0; j<numDiscreteIntVars; ++j)
       if (di_set_bits[j]) {
@@ -696,7 +696,7 @@ load_distribute_points(const String& points_filename,
       }
 
     // validate discrete string sets read
-    const StringSetArray& dss_vals = ModelUtils::discrete_set_string_values(iteratedModel);
+    const StringSetArray& dss_vals = ModelUtils::discrete_set_string_values(*pIteratedModel);
     for (size_t j=0; j<numDiscreteStringVars; ++j)
       if (set_value_to_index(listDSVPoints[i][j], dss_vals[j]) == _NPOS) {
         Cerr << "\nError: list value " << listDSVPoints[i][j] 
@@ -705,7 +705,7 @@ load_distribute_points(const String& points_filename,
         err = true;
       }
 
-    const RealSetArray& dsr_vals = ModelUtils::discrete_set_real_values(iteratedModel);
+    const RealSetArray& dsr_vals = ModelUtils::discrete_set_real_values(*pIteratedModel);
     for (size_t j=0; j<numDiscreteRealVars; ++j)
       if (set_value_to_index(listDRVPoints[i][j], dsr_vals[j]) == _NPOS) {
         Cerr << "\nError: list value " << listDRVPoints[i][j] 
@@ -742,10 +742,10 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
     listDSVPoints.resize(boost::extents[numEvals][numDiscreteStringVars]);
   if (numDiscreteRealVars) listDRVPoints.resize(numEvals);
 
-  const BitArray&      di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
-  const IntSetArray&    dsi_values = ModelUtils::discrete_set_int_values(iteratedModel);
-  const StringSetArray& dss_values = ModelUtils::discrete_set_string_values(iteratedModel);
-  const RealSetArray&   dsr_values = ModelUtils::discrete_set_real_values(iteratedModel);
+  const BitArray&      di_set_bits = ModelUtils::discrete_int_sets(*pIteratedModel);
+  const IntSetArray&    dsi_values = ModelUtils::discrete_set_int_values(*pIteratedModel);
+  const StringSetArray& dss_values = ModelUtils::discrete_set_string_values(*pIteratedModel);
+  const RealSetArray&   dsr_values = ModelUtils::discrete_set_real_values(*pIteratedModel);
 
   bool err = false;
   RealVector empty_rv; IntVector empty_iv; StringMultiArray empty_sa;
@@ -784,7 +784,7 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
             = set_index_to_value(div_combined[j], dsi_values[dsi_cntr]);
         } catch(std::out_of_range e) {
           Cerr << e.what() << " for variable '" 
-            << ModelUtils::discrete_int_variable_labels(iteratedModel)[j] << "' in method '" 
+            << ModelUtils::discrete_int_variable_labels(*pIteratedModel)[j] << "' in method '" 
             << method_id() << "'\n";
           abort_handler(-1);
         }
@@ -806,7 +806,7 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
           list_dsv_i[j] = set_index_to_value(dsv_indices[j], dss_values[j]);
       } catch(std::out_of_range e) {
           Cerr << e.what() << " for variable '" 
-            << ModelUtils::discrete_string_variable_labels(iteratedModel)[j] << "' in method '" 
+            << ModelUtils::discrete_string_variable_labels(*pIteratedModel)[j] << "' in method '" 
             << method_id() << "'\n";
           abort_handler(-1);
       }
@@ -825,7 +825,7 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
           list_drv_i[j] = set_index_to_value(drv_indices[j], dsr_values[j]);
       } catch (std::out_of_range e) {
           Cerr << e.what() << " for variable '" 
-            << ModelUtils::discrete_real_variable_labels(iteratedModel)[j] << "' in method '" 
+            << ModelUtils::discrete_real_variable_labels(*pIteratedModel)[j] << "' in method '" 
             << method_id() << "'\n";
           abort_handler(-1);
       }
@@ -865,22 +865,22 @@ void ParamStudy::distribute_partitions()
   initialDSVPoint.resize(boost::extents[numDiscreteStringVars]);
   initialDRVPoint.sizeUninitialized(numDiscreteRealVars);
 
-  const RealVector&          c_vars = ModelUtils::continuous_variables(iteratedModel);
-  const IntVector&          di_vars = ModelUtils::discrete_int_variables(iteratedModel);
-  StringMultiArrayConstView ds_vars = ModelUtils::discrete_string_variables(iteratedModel);
-  const RealVector&         dr_vars = ModelUtils::discrete_real_variables(iteratedModel);
+  const RealVector&          c_vars = ModelUtils::continuous_variables(*pIteratedModel);
+  const IntVector&          di_vars = ModelUtils::discrete_int_variables(*pIteratedModel);
+  StringMultiArrayConstView ds_vars = ModelUtils::discrete_string_variables(*pIteratedModel);
+  const RealVector&         dr_vars = ModelUtils::discrete_real_variables(*pIteratedModel);
 
-  const RealVector&  c_l_bnds = ModelUtils::continuous_lower_bounds(iteratedModel);
-  const RealVector&  c_u_bnds = ModelUtils::continuous_upper_bounds(iteratedModel);
-  const IntVector&  di_l_bnds = ModelUtils::discrete_int_lower_bounds(iteratedModel);
-  const IntVector&  di_u_bnds = ModelUtils::discrete_int_upper_bounds(iteratedModel);
-  const RealVector& dr_l_bnds = ModelUtils::discrete_real_lower_bounds(iteratedModel);
-  const RealVector& dr_u_bnds = ModelUtils::discrete_real_upper_bounds(iteratedModel);
+  const RealVector&  c_l_bnds = ModelUtils::continuous_lower_bounds(*pIteratedModel);
+  const RealVector&  c_u_bnds = ModelUtils::continuous_upper_bounds(*pIteratedModel);
+  const IntVector&  di_l_bnds = ModelUtils::discrete_int_lower_bounds(*pIteratedModel);
+  const IntVector&  di_u_bnds = ModelUtils::discrete_int_upper_bounds(*pIteratedModel);
+  const RealVector& dr_l_bnds = ModelUtils::discrete_real_lower_bounds(*pIteratedModel);
+  const RealVector& dr_u_bnds = ModelUtils::discrete_real_upper_bounds(*pIteratedModel);
 
-  const BitArray&      di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
-  const IntSetArray&    dsi_values = ModelUtils::discrete_set_int_values(iteratedModel);
-  const StringSetArray& dss_values = ModelUtils::discrete_set_string_values(iteratedModel);
-  const RealSetArray&   dsr_values = ModelUtils::discrete_set_real_values(iteratedModel);
+  const BitArray&      di_set_bits = ModelUtils::discrete_int_sets(*pIteratedModel);
+  const IntSetArray&    dsi_values = ModelUtils::discrete_set_int_values(*pIteratedModel);
+  const StringSetArray& dss_values = ModelUtils::discrete_set_string_values(*pIteratedModel);
+  const RealSetArray&   dsr_values = ModelUtils::discrete_set_real_values(*pIteratedModel);
 
   size_t i, dsi_cntr; unsigned short part;
   for (i=0; i<numContinuousVars; ++i) {
@@ -956,10 +956,10 @@ void ParamStudy::final_point_to_step_vector()
   //StringMultiArray dsv_final;
   //distribute(finalPoint, cv_final, div_final, dsv_final, drv_final);
 
-  const BitArray&      di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
-  const IntSetArray&    dsi_values = ModelUtils::discrete_set_int_values(iteratedModel);
-  const StringSetArray& dss_values = ModelUtils::discrete_set_string_values(iteratedModel);
-  const RealSetArray&   dsr_values = ModelUtils::discrete_set_real_values(iteratedModel);
+  const BitArray&      di_set_bits = ModelUtils::discrete_int_sets(*pIteratedModel);
+  const IntSetArray&    dsi_values = ModelUtils::discrete_set_int_values(*pIteratedModel);
+  const StringSetArray& dss_values = ModelUtils::discrete_set_string_values(*pIteratedModel);
+  const RealSetArray&   dsr_values = ModelUtils::discrete_set_real_values(*pIteratedModel);
   size_t j, dsi_cntr;
 
   // active continuous
@@ -1032,10 +1032,10 @@ check_sets(const IntVector& c_steps,  const IntVector& di_steps,
   // multi-iterator execution with updated initial points.  Nonetheless,
   // verify proper set support for specified steps.
 
-  const BitArray&      di_set_bits = ModelUtils::discrete_int_sets(iteratedModel);
-  const IntSetArray&    dsi_values = ModelUtils::discrete_set_int_values(iteratedModel);
-  const StringSetArray& dss_values = ModelUtils::discrete_set_string_values(iteratedModel);
-  const RealSetArray&   dsr_values = ModelUtils::discrete_set_real_values(iteratedModel);
+  const BitArray&      di_set_bits = ModelUtils::discrete_int_sets(*pIteratedModel);
+  const IntSetArray&    dsi_values = ModelUtils::discrete_set_int_values(*pIteratedModel);
+  const StringSetArray& dss_values = ModelUtils::discrete_set_string_values(*pIteratedModel);
+  const RealSetArray&   dsr_values = ModelUtils::discrete_set_real_values(*pIteratedModel);
   size_t j, dsi_cntr;
   bool err = false;
 
@@ -1087,15 +1087,15 @@ check_sets(const IntVector& c_steps,  const IntVector& di_steps,
 void ParamStudy::archive_allocate_cps() const
 {
   StringMultiArrayConstView cv_labels
-    = ModelUtils::continuous_variable_labels(iteratedModel);
+    = ModelUtils::continuous_variable_labels(*pIteratedModel);
   StringMultiArrayConstView div_labels
-    = ModelUtils::discrete_int_variable_labels(iteratedModel);
+    = ModelUtils::discrete_int_variable_labels(*pIteratedModel);
   StringMultiArrayConstView dsv_labels
-    = ModelUtils::discrete_string_variable_labels(iteratedModel);
+    = ModelUtils::discrete_string_variable_labels(*pIteratedModel);
   StringMultiArrayConstView drv_labels
-    = ModelUtils::discrete_real_variable_labels(iteratedModel);
+    = ModelUtils::discrete_real_variable_labels(*pIteratedModel);
   const StringArray& resp_labels
-    = ModelUtils::response_labels(iteratedModel);
+    = ModelUtils::response_labels(*pIteratedModel);
 
   DimScaleMap resp_scales;
   resp_scales.emplace(1, StringScale("responses", resp_labels));
@@ -1159,15 +1159,15 @@ void ParamStudy::archive_cps_vars(const Model& model, size_t idx) const
   const RealVector& dr_vars = ModelUtils::discrete_real_variables(model);
 
   StringMultiArrayConstView cv_labels
-    = ModelUtils::continuous_variable_labels(iteratedModel);
+    = ModelUtils::continuous_variable_labels(*pIteratedModel);
   StringMultiArrayConstView div_labels
-    = ModelUtils::discrete_int_variable_labels(iteratedModel);
+    = ModelUtils::discrete_int_variable_labels(*pIteratedModel);
   StringMultiArrayConstView dsv_labels
-    = ModelUtils::discrete_string_variable_labels(iteratedModel);
+    = ModelUtils::discrete_string_variable_labels(*pIteratedModel);
   StringMultiArrayConstView drv_labels
-    = ModelUtils::discrete_real_variable_labels(iteratedModel);
+    = ModelUtils::discrete_real_variable_labels(*pIteratedModel);
   const StringArray& resp_labels
-    = ModelUtils::response_labels(iteratedModel);
+    = ModelUtils::response_labels(*pIteratedModel);
 
   // center point: store values in midpoint of each var's step results
   if (idx == 0) {
@@ -1234,15 +1234,15 @@ void ParamStudy::archive_cps_vars(const Model& model, size_t idx) const
 void ParamStudy::archive_cps_resp(const Response& response, size_t idx) const
 {
   StringMultiArrayConstView cv_labels
-    = ModelUtils::continuous_variable_labels(iteratedModel);
+    = ModelUtils::continuous_variable_labels(*pIteratedModel);
   StringMultiArrayConstView div_labels
-    = ModelUtils::discrete_int_variable_labels(iteratedModel);
+    = ModelUtils::discrete_int_variable_labels(*pIteratedModel);
   StringMultiArrayConstView dsv_labels
-    = ModelUtils::discrete_string_variable_labels(iteratedModel);
+    = ModelUtils::discrete_string_variable_labels(*pIteratedModel);
   StringMultiArrayConstView drv_labels
-    = ModelUtils::discrete_real_variable_labels(iteratedModel);
+    = ModelUtils::discrete_real_variable_labels(*pIteratedModel);
   const StringArray& resp_labels
-    = ModelUtils::response_labels(iteratedModel);
+    = ModelUtils::response_labels(*pIteratedModel);
 
   const RealVector& resp_vec = response.function_values();
 

@@ -96,8 +96,8 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
 	     << "when derivatives present; use kriging instead." << std::endl;
 	err_flag = true;
       }
-      if (iteratedModel.gradient_type() != "none") dataOrder |= 2;
-      if (iteratedModel.hessian_type()  != "none") dataOrder |= 4;
+      if (pIteratedModel->gradient_type() != "none") dataOrder |= 2;
+      if (pIteratedModel->hessian_type()  != "none") dataOrder |= 4;
     }
     // get point samples file
     const String& import_pts_file
@@ -110,7 +110,7 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
     // The following uses on the fly derived ctor:
     short mode = (eifFlag) ? ACTIVE_UNIFORM : ACTIVE;
     daceIterator.assign_rep(std::make_shared<NonDLHSSampling>
-			    (iteratedModel, sample_type, numSamples, seedSpec,
+			    (*pIteratedModel, sample_type, numSamples, seedSpec,
 			     rngName, false, mode));
     // only use derivatives if the user requested and they are available
     daceIterator.active_set_request_values(dataOrder);
@@ -124,11 +124,11 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
     UShortArray approx_order(num_uv, trend_order);
     short corr_order = -1, corr_type = NO_CORRECTION;
     //const Variables& curr_vars = iteratedModel.current_variables();
-    ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
+    ActiveSet gp_set = pIteratedModel->current_response().active_set(); // copy
     gp_set.request_values(1);// no surr deriv evals, but GP may be grad-enhanced
-    const ShortShortPair& gp_view = iteratedModel.current_variables().view();
+    const ShortShortPair& gp_view = pIteratedModel->current_variables().view();
     fHatModel.assign_rep(std::make_shared<DataFitSurrModel>(daceIterator,
-      iteratedModel, gp_set, gp_view, approx_type, approx_order, corr_type,
+      *pIteratedModel, gp_set, gp_view, approx_type, approx_order, corr_type,
       corr_order, dataOrder, outputLevel, sample_reuse, import_pts_file,
       probDescDB.get_ushort("method.import_build_format"),
       probDescDB.get_bool("method.import_build_active_only"),
@@ -163,7 +163,7 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
       daceIterator.maximum_evaluation_concurrency());
   }
   else
-    fHatModel = iteratedModel; // shared rep
+    fHatModel = *pIteratedModel; // shared rep
 
   if (err_flag)
     abort_handler(-1);
@@ -174,7 +174,7 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, Model& model):
   SizetArray recast_vars_comps_total;  // default: empty; no change in size
   BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
   short recast_resp_order = 1; // nongradient-based optimizers
-  const ShortShortPair& recast_view = iteratedModel.current_variables().view();
+  const ShortShortPair& recast_view = pIteratedModel->current_variables().view();
   intervalOptModel.assign_rep(std::make_shared<RecastModel>
     (fHatModel, recast_vars_comps_total, all_relax_di, all_relax_dr,
      recast_view, 1, 0, 0, recast_resp_order));
@@ -235,7 +235,7 @@ NonDGlobalInterval::~NonDGlobalInterval()
 
 void NonDGlobalInterval::derived_init_communicators(ParLevLIter pl_iter)
 {
-  iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);
+  pIteratedModel->init_communicators(pl_iter, maxEvalConcurrency);
 
   // intervalOptModel.init_communicators() recursion is currently sufficient
   // for fHatModel.  An additional fHatModel.init_communicators() call would
@@ -272,7 +272,7 @@ void NonDGlobalInterval::derived_free_communicators(ParLevLIter pl_iter)
   //fHatMaxConcurrency = maxEvalConcurrency; // local derivative concurrency
   //fHatModel.free_communicators(pl_iter, fHatMaxConcurrency);
 
-  iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);
+  pIteratedModel->free_communicators(pl_iter, maxEvalConcurrency);
 }
 
 
@@ -498,8 +498,8 @@ void NonDGlobalInterval::evaluate_response_star_truth()
 {
   //fHatModel.component_parallel_mode(TRUTH_MODEL_MODE);
   const Variables& vars_star = intervalOptimizer.variables_results();
-  ModelUtils::active_variables(iteratedModel, vars_star);
-  ActiveSet set = iteratedModel.current_response().active_set();
+  ModelUtils::active_variables(*pIteratedModel, vars_star);
+  ActiveSet set = pIteratedModel->current_response().active_set();
   // GT: Get all responses per function evaluation
   // changing this might break some of the logic needed to determine
   // whether the inner loop surrogate needs to be reconstructed
@@ -507,11 +507,11 @@ void NonDGlobalInterval::evaluate_response_star_truth()
     set.request_values(dataOrder);
   else
     { set.request_values(0); set.request_value(dataOrder, respFnCntr); }
-  iteratedModel.evaluate(set);
+  pIteratedModel->evaluate(set);
 
   // Update the GP approximation
-  IntResponsePair resp_star_truth(iteratedModel.evaluation_id(),
-				  iteratedModel.current_response());
+  IntResponsePair resp_star_truth(pIteratedModel->evaluation_id(),
+				  pIteratedModel->current_response());
   fHatModel.append_approximation(vars_star, resp_star_truth, true);
 }
 

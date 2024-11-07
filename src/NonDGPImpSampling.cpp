@@ -43,8 +43,8 @@ NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, Model& model):
   UShortArray approx_order; // not used by GP/kriging
   short corr_order = -1, data_order = 1, corr_type = NO_CORRECTION;
   if (probDescDB.get_bool("method.derivative_usage")) {
-    if (iteratedModel.gradient_type() != "none") data_order |= 2;
-    if (iteratedModel.hessian_type()  != "none") data_order |= 4;
+    if (pIteratedModel->gradient_type() != "none") data_order |= 2;
+    if (pIteratedModel->hessian_type()  != "none") data_order |= 4;
   }
   unsigned short sample_type = SUBMETHOD_DEFAULT;
   statsFlag = true; //print computed probability levels at end
@@ -58,7 +58,7 @@ NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, Model& model):
   if (!import_pts_file.empty())
     { samples = 0; sample_reuse = "all"; }
 
-  gpBuild.assign_rep(std::make_shared<NonDLHSSampling>(iteratedModel,
+  gpBuild.assign_rep(std::make_shared<NonDLHSSampling>(*pIteratedModel,
     sample_type, samples, randomSeed, rngName, varyPattern, ACTIVE_UNIFORM));
   //distribution 1 which is the distribution that the initial set of samples
   //used to build the initial GP are drawn from this should "ALWAYS" be 
@@ -66,10 +66,10 @@ NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, Model& model):
   //uniform) because it is a set of samples to build a good GP and nothing
   //else.  Rho 0 is the nonminal distribution of the input variable
 
-  ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
+  ActiveSet gp_set = pIteratedModel->current_response().active_set(); // copy
   gp_set.request_values(1); // no surr deriv evals, but GP may be grad-enhanced
-  const ShortShortPair& gp_view = iteratedModel.current_variables().view();
-  gpModel.assign_rep(std::make_shared<DataFitSurrModel>(gpBuild, iteratedModel,
+  const ShortShortPair& gp_view = pIteratedModel->current_variables().view();
+  gpModel.assign_rep(std::make_shared<DataFitSurrModel>(gpBuild, *pIteratedModel,
     gp_set, gp_view, approx_type, approx_order, corr_type, corr_order,
     data_order, outputLevel, sample_reuse, import_pts_file,
     probDescDB.get_ushort("method.import_build_format"),
@@ -88,7 +88,7 @@ NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, Model& model):
 
   //construct sampler to generate one draw from rhoOne distribution, with 
   //seed varying between invocations
-  construct_lhs(sampleRhoOne, iteratedModel, sample_type, 1, randomSeed,
+  construct_lhs(sampleRhoOne, *pIteratedModel, sample_type, 1, randomSeed,
 		rngName, vary_pattern);
 
   initialize_final_statistics();
@@ -113,7 +113,7 @@ bool NonDGPImpSampling::resize()
 
 void NonDGPImpSampling::derived_init_communicators(ParLevLIter pl_iter)
 {
-  iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);
+  pIteratedModel->init_communicators(pl_iter, maxEvalConcurrency);
 
   // gpBuild and gpEval use NoDBBaseConstructor, so no need to
   // manage DB list nodes at this level
@@ -138,7 +138,7 @@ void NonDGPImpSampling::derived_free_communicators(ParLevLIter pl_iter)
   gpEval.free_communicators(pl_iter);
   //gpBuild.free_communicators(pl_iter);
 
-  iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);
+  pIteratedModel->free_communicators(pl_iter, maxEvalConcurrency);
 }
 
 
@@ -163,9 +163,9 @@ void NonDGPImpSampling::core_run()
   rhoMix.resize(numPtsTotal);
   //RealVector rhoEmul0(numEmulEval);
   //RealVector rhoEmul2(numEmulEval);
-  int num_problem_vars=ModelUtils::acv(iteratedModel);
-  RealVector c_upper = ModelUtils::continuous_upper_bounds(iteratedModel), 
-             c_lower = ModelUtils::continuous_lower_bounds(iteratedModel);
+  int num_problem_vars=ModelUtils::acv(*pIteratedModel);
+  RealVector c_upper = ModelUtils::continuous_upper_bounds(*pIteratedModel), 
+             c_lower = ModelUtils::continuous_lower_bounds(*pIteratedModel);
 
   int i,j,k;
  
@@ -337,11 +337,11 @@ void NonDGPImpSampling::core_run()
           new_X = drawNewX(k);
          
          // add new_X to the build points and append approximation
-        ModelUtils::continuous_variables(iteratedModel, new_X);
-        iteratedModel.evaluate();
-        IntResponsePair resp_truth(iteratedModel.evaluation_id(),
-                                   iteratedModel.current_response());
-        gpModel.append_approximation(iteratedModel.current_variables(), resp_truth, true);
+        ModelUtils::continuous_variables(*pIteratedModel, new_X);
+        pIteratedModel->evaluate();
+        IntResponsePair resp_truth(pIteratedModel->evaluation_id(),
+                                   pIteratedModel->current_response());
+        gpModel.append_approximation(pIteratedModel->current_variables(), resp_truth, true);
 	indicator(numSamples+k)
 	  = static_cast<double>((z - sdr_array[numSamples+k].response_function())*cdfMult>0.0); 
         //if (gp_data.response_function(numSamples+k-1)<z) 

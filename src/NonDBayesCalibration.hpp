@@ -574,7 +574,7 @@ Real NonDBayesCalibration::prior_density(const VectorType& vec)
 
   const Pecos::MultivariateDistribution& mv_dist
     = (standardizedSpace) ? residualModel.multivariate_distribution()
-    : iteratedModel.multivariate_distribution();
+    : pIteratedModel->multivariate_distribution();
   if (mv_dist.correlation()) {
     Cerr << "Error: prior_density() uses a product of marginal densities\n"
 	 << "       and can only be used for independent random variables."
@@ -632,7 +632,7 @@ inline Real NonDBayesCalibration::prior_density(const RealVector& vec)
 
   const Pecos::MultivariateDistribution& mv_dist
     = (standardizedSpace) ? residualModel.multivariate_distribution() // u_dist
-    : iteratedModel.multivariate_distribution();                      // x_dist
+    : pIteratedModel->multivariate_distribution();                      // x_dist
 
   Real pdf;
   if (numHyperparams) {
@@ -655,7 +655,7 @@ Real NonDBayesCalibration::log_prior_density(const VectorType& vec)
 {
   const Pecos::MultivariateDistribution& mv_dist
     = (standardizedSpace) ? residualModel.multivariate_distribution()
-    : iteratedModel.multivariate_distribution();
+    : pIteratedModel->multivariate_distribution();
   if (mv_dist.correlation()) {
     Cerr << "Error: log_prior_density() uses a sum of log marginal densities\n"
 	 << "       and can only be used for independent random variables."
@@ -714,7 +714,7 @@ inline Real NonDBayesCalibration::log_prior_density(const RealVector& vec)
 {
   const Pecos::MultivariateDistribution& mv_dist
     = (standardizedSpace) ? residualModel.multivariate_distribution() // u_dist
-    : iteratedModel.multivariate_distribution();                      // x_dist
+    : pIteratedModel->multivariate_distribution();                      // x_dist
 
   Real log_pdf;
   if (numHyperparams) {
@@ -740,12 +740,12 @@ void NonDBayesCalibration::prior_sample(Engine& rng, RealVector& prior_samples)
 
   const Pecos::MultivariateDistribution& mv_dist
     = (standardizedSpace) ? residualModel.multivariate_distribution()
-    : iteratedModel.multivariate_distribution();
+    : pIteratedModel->multivariate_distribution();
   const std::shared_ptr<Pecos::MarginalsCorrDistribution> mv_dist_rep =
     std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
     (mv_dist.multivar_dist_rep());
   const SharedVariablesData& svd
-    = iteratedModel.current_variables().shared_data();
+    = pIteratedModel->current_variables().shared_data();
   if (mv_dist_rep->correlation()) {
     Cerr << "Error: prior_sample() does not support correlated prior samples."
 	 << std::endl;
@@ -772,7 +772,7 @@ void NonDBayesCalibration::prior_mean(VectorType& mean_vec) const
   // returns set of means that correspond to activeVars
   RealVector mvd_means
     = (standardizedSpace) ? residualModel.multivariate_distribution().means()
-    : iteratedModel.multivariate_distribution().means();
+    : pIteratedModel->multivariate_distribution().means();
 
   for (size_t i=0; i<numContinuousVars; ++i)
     mean_vec[i] = mvd_means[i];//[svd.cv_index_to_active_index(i)];
@@ -798,7 +798,7 @@ void NonDBayesCalibration::prior_variance(MatrixType& var_mat) const
   }
   else {
     const Pecos::MultivariateDistribution& x_dist
-      = iteratedModel.multivariate_distribution();
+      = pIteratedModel->multivariate_distribution();
     if (x_dist.correlation()) {
       // returns set of RV stdevs that correspond to activeVars
       RealVector x_std = x_dist.std_deviations();
@@ -837,9 +837,9 @@ augment_gradient_with_log_prior(VectorType1& log_grad, const VectorType2& vec)
   // --> gradient of neg log posterior = misfit gradient - log prior gradient
   const Pecos::MultivariateDistribution& mv_dist
     = (standardizedSpace) ? residualModel.multivariate_distribution()
-    : iteratedModel.multivariate_distribution();
+    : pIteratedModel->multivariate_distribution();
   const SharedVariablesData& svd
-    = iteratedModel.current_variables().shared_data();
+    = pIteratedModel->current_variables().shared_data();
 
   for (size_t i=0; i<numContinuousVars; ++i)
     log_grad[i] -=
@@ -855,9 +855,9 @@ augment_hessian_with_log_prior(MatrixType& log_hess, const VectorType& vec)
   // --> Hessian of neg log posterior = misfit Hessian - log prior Hessian
   const Pecos::MultivariateDistribution& mv_dist
     = (standardizedSpace) ? residualModel.multivariate_distribution()
-    : iteratedModel.multivariate_distribution();
+    : pIteratedModel->multivariate_distribution();
   const SharedVariablesData& svd
-    = iteratedModel.current_variables().shared_data();
+    = pIteratedModel->current_variables().shared_data();
 
   for (size_t i=0; i<numContinuousVars; ++i)
     log_hess(i, i) -=

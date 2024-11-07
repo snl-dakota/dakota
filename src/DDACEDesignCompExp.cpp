@@ -115,9 +115,9 @@ void DDACEDesignCompExp::pre_run()
   // If VBD has been selected, generate a series of replicate parameter sets
   // (each of the size specified by the user) in order to compute VBD metrics.
   if (vbdFlag && vbdViaSamplingMethod==VBD_PICK_AND_FREEZE)
-    get_vbd_parameter_sets(iteratedModel, numSamples);
+    get_vbd_parameter_sets(*pIteratedModel, numSamples);
   else
-    get_parameter_sets(iteratedModel);
+    get_parameter_sets(*pIteratedModel);
 }
 
 
@@ -126,7 +126,7 @@ void DDACEDesignCompExp::core_run()
   bool log_best_flag  = (numObjFns || numLSqTerms), // opt or NLS data set
     compute_corr_flag = (!subIteratorFlag),
     log_resp_flag     = (mainEffectsFlag || allDataFlag || compute_corr_flag);
-  evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
+  evaluate_parameter_sets(*pIteratedModel, log_resp_flag, log_best_flag);
 }
 
 
@@ -154,7 +154,7 @@ void DDACEDesignCompExp::post_run(std::ostream& s)
       abort_handler(-1);
     }
     std::shared_ptr<DDaceSamplerBase> ddace_sampler = 
-      create_sampler(iteratedModel);
+      create_sampler(*pIteratedModel);
     symbolMapping = ddace_sampler->getP();
   }
 
@@ -228,7 +228,7 @@ get_parameter_sets(Model& model, const size_t num_samples,
 
   // in get_parameter_sets, generate the samples; could omit the symbolMapping
   std::shared_ptr<DDaceSamplerBase> ddace_sampler = 
-    create_sampler(iteratedModel);
+    create_sampler(*pIteratedModel);
   ddace_sampler->getSamples(sample_points);
   if (mainEffectsFlag)
     symbolMapping = ddace_sampler->getP();
@@ -508,7 +508,7 @@ void DDACEDesignCompExp::compute_main_effects()
     abort_handler(-1);
   }
 
-  const StringArray& fn_labels = ModelUtils::response_labels(iteratedModel);
+  const StringArray& fn_labels = ModelUtils::response_labels(*pIteratedModel);
   IntRespMCIter r_it; size_t f, s, v;
   std::vector<double> resp_fn_samples(numSamples);
   std::vector<int> symbols_map_factor(numSamples);

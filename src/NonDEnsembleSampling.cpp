@@ -49,15 +49,15 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
 {
   // check iteratedModel for model form hierarchy and/or discretization levels;
   // set initial response mode for set_communicators() (precedes core_run()).
-  if (iteratedModel.surrogate_type() == "ensemble")
-    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
+  if (pIteratedModel->surrogate_type() == "ensemble")
+    pIteratedModel->surrogate_response_mode(AGGREGATED_MODELS);
   else {
     Cerr << "Error: ensemble sampling for multifidelity analysis requires an "
 	 << "ensemble surrogate model specification." << std::endl;
     abort_handler(METHOD_ERROR);
   }
 
-  ModelList& model_ensemble = iteratedModel.subordinate_models(false);
+  ModelList& model_ensemble = pIteratedModel->subordinate_models(false);
   size_t num_mf = model_ensemble.size(), num_lev, prev_lev = SZ_MAX,
     md_index, num_md;
   int m;  ModelLRevIter ml_rit; // reverse iteration for prev_lev tracking
@@ -193,7 +193,7 @@ void NonDEnsembleSampling::pre_run()
 
   // remove default key (empty activeKey) since this interferes with approx
   // combination in MF surrogates.  Also useful for ML/MF re-entrancy.
-  iteratedModel.clear_model_keys();
+  pIteratedModel->clear_model_keys();
 
   // reset shared accumulators
   // Note: numLHSRuns is interpreted differently here (accumulation of LHS runs
@@ -232,7 +232,7 @@ accumulate_online_cost(const IntResponseMap& resp_map, RealVector& accum_cost,
   using std::isfinite;
   size_t m, cntr, start, end, md_index, md_index_m;
   unsigned short mf;  Real cost;  IntRespMCIter r_it;
-  const Pecos::ActiveKey& active_key = iteratedModel.active_model_key();
+  const Pecos::ActiveKey& active_key = pIteratedModel->active_model_key();
 
   for (m=0, cntr=0, start=0; m<=numApprox; ++m) {
     end = start + numFunctions;
@@ -267,7 +267,7 @@ void NonDEnsembleSampling::initialize_final_statistics()
   case ESTIMATOR_PERFORMANCE: { // MSE in stat goal(s) used for method selection
     size_t num_final = 2;
     ActiveSet set(num_final);//, num_active_vars); // default RV = 1
-    set.derivative_vector(ModelUtils::inactive_continuous_variable_ids(iteratedModel));
+    set.derivative_vector(ModelUtils::inactive_continuous_variable_ids(*pIteratedModel));
     finalStatistics = Response(SIMULATION_RESPONSE, set);
 
     StringArray stats_labels(num_final);
@@ -352,7 +352,7 @@ void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
     s << "\nStatistics based on multilevel sample set:\n";
     //print_statistics(s);
     print_moments(s, "response function",
-		  iteratedModel.truth_model().current_response().function_labels());
+		  pIteratedModel->truth_model().current_response().function_labels());
     archive_moments();
   }
 }

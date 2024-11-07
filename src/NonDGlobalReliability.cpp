@@ -128,15 +128,15 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
   unsigned short sample_type = SUBMETHOD_DEFAULT;
   UShortArray approx_order; // not used for GP/kriging
   short corr_order = -1, corr_type = NO_CORRECTION,
-    active_view = iteratedModel.current_variables().view().first;
+    active_view = pIteratedModel->current_variables().view().first;
   if (probDescDB.get_bool("method.derivative_usage")) {
     if (approx_type == "global_gaussian") {
       Cerr << "\nError: efficient_global does not support gaussian_process "
 	   << "when derivatives present; use kriging instead." << std::endl;
       abort_handler(-1);
     }
-    if (iteratedModel.gradient_type() != "none") dataOrder |= 2;
-    if (iteratedModel.hessian_type()  != "none") dataOrder |= 4;
+    if (pIteratedModel->gradient_type() != "none") dataOrder |= 2;
+    if (pIteratedModel->hessian_type()  != "none") dataOrder |= 4;
   }
   String sample_reuse
     = (active_view == RELAXED_ALL || active_view == MIXED_ALL) ? "all" : "none";
@@ -161,7 +161,7 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
 
     // The following uses on the fly derived ctor:
     auto lhs_sampler_rep = std::make_shared<NonDLHSSampling>
-      (iteratedModel, sample_type, samples,
+      (*pIteratedModel, sample_type, samples,
        lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM);
     //unsigned short dace_method = SUBMETHOD_LHS; // submethod enum
     //lhs_sampler_rep = new DDACEDesignCompExp(iteratedModel, samples, symbols,
@@ -176,18 +176,18 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
     // For RBDO with GP over {u}+{d}, view set to All from all_variables spec.
     Model g_hat_x_model;
     SizetSet surr_fn_indices; // Only want functions with requested levels
-    ActiveSet set = iteratedModel.current_response().active_set();// copy
+    ActiveSet set = pIteratedModel->current_response().active_set();// copy
     set.request_values(0);
     for (i=0; i<numFunctions; ++i)
       if (!computedRespLevels[i].empty()) // sized to total req levels above
     	{ set.request_value(dataOrder, i); surr_fn_indices.insert(i); }
     dace_iterator.active_set(set);
     //const Variables& curr_vars = iteratedModel.current_variables();
-    ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
+    ActiveSet gp_set = pIteratedModel->current_response().active_set(); // copy
     gp_set.request_values(1);// no surr deriv evals, but GP may be grad-enhanced
-    const ShortShortPair& gp_view = iteratedModel.current_variables().view();
+    const ShortShortPair& gp_view = pIteratedModel->current_variables().view();
     g_hat_x_model.assign_rep(std::make_shared<DataFitSurrModel>(dace_iterator,
-      iteratedModel, gp_set, gp_view, approx_type, approx_order, corr_type,
+      *pIteratedModel, gp_set, gp_view, approx_type, approx_order, corr_type,
       corr_order, dataOrder, outputLevel, sample_reuse, import_pts_file,
        probDescDB.get_ushort("method.import_build_format"),
        probDescDB.get_bool("method.import_build_active_only"),
@@ -217,7 +217,7 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
     // Recast g(x) to G(u); truncate dist bnds
     Model g_u_model;
     g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-      iteratedModel, STD_NORMAL_U, true, 5.));
+      *pIteratedModel, STD_NORMAL_U, true, 5.));
 
     // For additional generality, could develop on the fly envelope ctor:
     //Iterator dace_iterator(g_u_model, dace_method, ...);
@@ -238,7 +238,7 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
     // typical All view for DACE).
     // For RBDO with GP over {u}+{d}, view set to All from all_variables spec.
     SizetSet surr_fn_indices; // Only want functions with requested levels
-    ActiveSet set = iteratedModel.current_response().active_set();// copy
+    ActiveSet set = pIteratedModel->current_response().active_set();// copy
     set.request_values(0);
     for (i=0; i<numFunctions; ++i)
       if (!computedRespLevels[i].empty()) // sized to total req levels above
@@ -294,7 +294,7 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
   SizetArray recast_vars_comps_total;  // default: empty; no change in size
   BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
   short recast_resp_order = 1; // nongradient-based optimizers
-  const ShortShortPair& mpp_view = iteratedModel.current_variables().view();
+  const ShortShortPair& mpp_view = pIteratedModel->current_variables().view();
   mppModel.assign_rep(std::make_shared<RecastModel>
 		      (uSpaceModel, recast_vars_comps_total, all_relax_di,
 		       all_relax_dr, mpp_view, 1, 0, 0, recast_resp_order));
@@ -360,7 +360,7 @@ bool NonDGlobalReliability::resize()
 
 void NonDGlobalReliability::derived_init_communicators(ParLevLIter pl_iter)
 {
-  iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);
+  pIteratedModel->init_communicators(pl_iter, maxEvalConcurrency);
 
   // mppModel.init_communicators() recursion is currently sufficient for
   // uSpaceModel.  An additional uSpaceModel.init_communicators() call would be
@@ -401,7 +401,7 @@ void NonDGlobalReliability::derived_free_communicators(ParLevLIter pl_iter)
   //uSpaceMaxConcurrency = maxEvalConcurrency; // local derivative concurrency
   //uSpaceModel.free_communicators(pl_iter, uSpaceMaxConcurrency);
 
-  iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);
+  pIteratedModel->free_communicators(pl_iter, maxEvalConcurrency);
 }
 
 
@@ -659,9 +659,9 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	  // Evaluate response_star_truth in x-space
 	  x_truth_evaluation(c_vars_u, dataOrder);
 	  // Update the GP approximation in x-space
-	  IntResponsePair resp_star_truth(iteratedModel.evaluation_id(),
-					  iteratedModel.current_response());
-	  uSpaceModel.append_approximation(iteratedModel.current_variables(),
+	  IntResponsePair resp_star_truth(pIteratedModel->evaluation_id(),
+					  pIteratedModel->current_response());
+	  uSpaceModel.append_approximation(pIteratedModel->current_variables(),
 					   resp_star_truth, true);
 	}
 	else { 
@@ -773,7 +773,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	    // plotting the true function can be expensive, but is available
 	    if (true_plot) {
 	      x_truth_evaluation(u_pt, 1);
-	      const Response& x_resp = iteratedModel.current_response();
+	      const Response& x_resp = pIteratedModel->current_response();
 	      trueOut << '\n' << std::setw(13) << u_pt[0] << ' '
 		      << std::setw(13) << u_pt[1] << ' ' << std::setw(13)
 		      << x_resp.function_value(respFnCount);
@@ -825,7 +825,7 @@ void NonDGlobalReliability::importance_sampling()
     RealVectorArray gp_inputs;
     if (num_levels==0) {
       x_truth_evaluation(1); // c_vars_u?
-      const Response& true_resp = iteratedModel.current_response();
+      const Response& true_resp = pIteratedModel->current_response();
       finalStatistics.function_value(
 	true_resp.function_value(respFnCount), statCount);
     }
@@ -1114,7 +1114,7 @@ constraint_penalty(const Real& c_viol, const RealVector& u)
 void NonDGlobalReliability::print_results(std::ostream& s, short results_state)
 {
   size_t i, j, wpp7 = write_precision + 7;
-  const StringArray& fn_labels = ModelUtils::response_labels(iteratedModel);
+  const StringArray& fn_labels = ModelUtils::response_labels(*pIteratedModel);
   s << "-----------------------------------------------------------------------"
     << "------";
 

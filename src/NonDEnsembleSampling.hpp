@@ -296,10 +296,10 @@ inline Real NonDEnsembleSampling::estimator_cost_metric()
 
 inline void NonDEnsembleSampling::resize_active_set()
 {
-  size_t m_resp_len = ModelUtils::response_size(iteratedModel);
+  size_t m_resp_len = ModelUtils::response_size(*pIteratedModel);
   if (activeSet.request_vector().size() != m_resp_len) {
     // synch activeSet with ModelUtils::response_size(iteratedModel)
-    activeSet.reshape(ModelUtils::response_size(iteratedModel));
+    activeSet.reshape(ModelUtils::response_size(*pIteratedModel));
     activeSet.request_values(1);
   }
 }
@@ -313,7 +313,7 @@ average_online_cost(const RealVector& accum_cost, const SizetArray& num_cost,
   size_t step, num_steps = accum_cost.length();  unsigned short mf;
   //if (num_cost.size() != num_steps) { } // not possible in recover_online_cost
   if (seq_cost.length() != num_steps) seq_cost.sizeUninitialized(num_steps);
-  const Pecos::ActiveKey& active_key = iteratedModel.active_model_key();
+  const Pecos::ActiveKey& active_key = pIteratedModel->active_model_key();
 
   for (step=0; step<num_steps; ++step) {
     mf = active_key.retrieve_model_form(step);

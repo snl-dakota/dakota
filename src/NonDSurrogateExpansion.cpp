@@ -34,17 +34,17 @@ NonDSurrogateExpansion(ProblemDescDB& problem_db, Model& model):
   //  u_space_type = probDescDB.get_short("method.nond.expansion_type");
   //resolve_inputs(u_space_type, data_order);
 
-  if (iteratedModel.model_type() != "surrogate") {
+  if (pIteratedModel->model_type() != "surrogate") {
     Cerr << "Error: NonDSurrogateExpansion requires a surrogate model "
 	 << "specification." << std::endl;
     abort_handler(METHOD_ERROR);
   }
 
-  const String& surr_type = iteratedModel.surrogate_type();
+  const String& surr_type = pIteratedModel->surrogate_type();
   if (surr_type == "global_function_train") {// || surr_type == "global_"
     // transformation, DataFit, and DACE configuration performed by Model spec
     // All expansion config settings are pulled in that ctor chain
-    uSpaceModel = iteratedModel; // shared rep
+    uSpaceModel = *pIteratedModel; // shared rep
 
     // Notes on managing the u-space transformation:
     // > wrapping iteratedModel here applies the transformation on top of the
@@ -124,7 +124,7 @@ void NonDSurrogateExpansion::core_run()
 void NonDSurrogateExpansion::print_results(std::ostream& s)
 {
   if (//iteratedModel.subordinate_models(false).size() == 1 &&
-      iteratedModel.truth_model().solution_levels() > 1) {
+      pIteratedModel->truth_model().solution_levels() > 1) {
     s << "<<<<< Samples per solution level:\n";
     print_multilevel_evaluation_summary(s, NLev);
     s << "<<<<< Equivalent number of high fidelity evaluations: "

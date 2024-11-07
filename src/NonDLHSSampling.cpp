@@ -215,7 +215,7 @@ void NonDLHSSampling::pre_run()
   // Only need to create the pick-freeze samples for the 
   // Saltelli method.
   if (vbdFlag && vbdViaSamplingMethod==VBD_PICK_AND_FREEZE ) {
-    get_vbd_parameter_sets(iteratedModel, numSamples);
+    get_vbd_parameter_sets(*pIteratedModel, numSamples);
     return;
   }
 
@@ -242,7 +242,7 @@ void NonDLHSSampling::pre_run()
   // variable counts suffice?
   size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
     drv_start, num_drv;
-  mode_counts(iteratedModel.current_variables(), cv_start, num_cv, div_start,
+  mode_counts(pIteratedModel->current_variables(), cv_start, num_cv, div_start,
 	      num_div, dsv_start, num_dsv, drv_start, num_drv);
   size_t num_vars = num_cv + num_div + num_dsv + num_drv;
   int previous_samples = 0, total_samples = samples_vec.normOne();
@@ -281,7 +281,7 @@ void NonDLHSSampling::pre_run()
       RealMatrix batch_samples(Teuchos::View, allSamples, 
 			       num_vars, new_samples,  // num row/col
 			       0, previous_samples);   // start row/col
-      get_parameter_sets(iteratedModel, new_samples, batch_samples);
+      get_parameter_sets(*pIteratedModel, new_samples, batch_samples);
     }
     previous_samples += new_samples;
   }
@@ -299,7 +299,7 @@ initial_increm_lhs_set(int new_samples,
   RealMatrix batch_samples(Teuchos::View, full_samples, 
                            num_vars, new_samples, 0, 0);
   sampleRanksMode = GET_RANKS;
-  get_parameter_sets(iteratedModel, new_samples, batch_samples);
+  get_parameter_sets(*pIteratedModel, new_samples, batch_samples);
 
   // sub-matrix of all_ranks to populate
   IntMatrix batch_ranks(Teuchos::View, full_ranks,
@@ -349,9 +349,9 @@ increm_lhs_parameter_set(int previous_samples, int new_samples,
   BoolDequeArray switch_ranks(numContinuousVars, 
                               BoolDeque(previous_samples, false));
   const SharedVariablesData& svd
-    = iteratedModel.current_variables().shared_data();
+    = pIteratedModel->current_variables().shared_data();
   const std::vector<Pecos::RandomVariable>& x_ran_vars
-    = iteratedModel.multivariate_distribution().random_variables();
+    = pIteratedModel->multivariate_distribution().random_variables();
   for (int v=0; v<numContinuousVars; ++v) {
     const Pecos::RandomVariable& rv = x_ran_vars[svd.cv_index_to_all_index(v)];
     for (int s=0; s<previous_samples; ++s) {
@@ -367,7 +367,7 @@ increm_lhs_parameter_set(int previous_samples, int new_samples,
 
   // generate the candidate set for the increment batch
   sampleRanksMode = GET_RANKS;
-  get_parameter_sets(iteratedModel, new_samples, increm_samples);
+  get_parameter_sets(*pIteratedModel, new_samples, increm_samples);
   // Temporarily store the ranks of the new sample in increm_ranks, as
   // they are needed in the combined rank calculation
   store_ranks(increm_samples, increm_ranks);
@@ -414,7 +414,7 @@ increm_lhs_parameter_set(int previous_samples, int new_samples,
   // allocation, so Laura's approach may be better (caches a matrix of
   // half the size)
   RealMatrix all_samples(num_vars, total_samples);
-  get_parameter_sets(iteratedModel, total_samples, all_samples);
+  get_parameter_sets(*pIteratedModel, total_samples, all_samples);
   RealMatrix concat_samples(Teuchos::View, all_samples,
                             num_vars, new_samples, 0, previous_samples);
   increm_samples.assign(concat_samples);
@@ -528,7 +528,7 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
   // counts for more cases, but may not cover all use cases
   size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
     drv_start, num_drv;
-  mode_counts(iteratedModel.current_variables(), cv_start, num_cv, div_start,
+  mode_counts(pIteratedModel->current_variables(), cv_start, num_cv, div_start,
 	      num_div, dsv_start, num_dsv, drv_start, num_drv);
   size_t num_vars = num_cv + num_div + num_dsv + num_drv;
 
@@ -545,7 +545,7 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
 			      num_vars, total_samples, 0, 0);
 
   const Pecos::MultivariateDistribution& x_dist
-    = iteratedModel.multivariate_distribution();
+    = pIteratedModel->multivariate_distribution();
   Pecos::MultivariateDistribution u_dist(Pecos::MARGINALS_CORRELATIONS);
   ProbabilityTransformModel::
     initialize_distribution_types(EXTENDED_U, x_dist.active_variables(),
@@ -581,7 +581,7 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
 
     // generate a parameter set of size candidate
     RealMatrix candidate_samples(num_vars, num_candidates);
-    get_parameter_sets(iteratedModel, num_candidates, candidate_samples);
+    get_parameter_sets(*pIteratedModel, num_candidates, candidate_samples);
     // transform from x to u space; should we make a copy?
     transform_samples(nataf, candidate_samples, true); // x_to_u
 
@@ -621,7 +621,7 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
     double best_det = 0.0;
     for (int cand_i = 0; cand_i < numCandidateDesigns; ++cand_i) {
 
-      get_parameter_sets(iteratedModel, new_samples, curr_new_samples, false);
+      get_parameter_sets(*pIteratedModel, new_samples, curr_new_samples, false);
       transform_samples(nataf, curr_new_samples, true); // x_to_u
 
       // build basis matrix from total sample set (selected_samples
@@ -649,7 +649,7 @@ void NonDLHSSampling::post_input()
 {
   size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
     drv_start, num_drv;
-  mode_counts(iteratedModel.current_variables(), cv_start, num_cv, div_start,
+  mode_counts(pIteratedModel->current_variables(), cv_start, num_cv, div_start,
 	      num_div, dsv_start, num_dsv, drv_start, num_drv);
   size_t num_vars = num_cv + num_div + num_dsv + num_drv;
   // call convenience function from Analyzer
@@ -663,7 +663,7 @@ void NonDLHSSampling::core_run()
 {
   bool log_resp_flag = (allDataFlag || statsFlag);
   bool log_best_flag = !numResponseFunctions; // DACE mode w/ opt or NLS
-  evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
+  evaluate_parameter_sets(*pIteratedModel, log_resp_flag, log_best_flag);
 
   //Needed if we want to do bootstrapping for covariance of 
   //scalarization term cov[mean,sigma]
@@ -740,8 +740,8 @@ void NonDLHSSampling::post_run(std::ostream& s)
                                                   allResponses);
       nonDSampCorr.archive_sobol_indices(run_identifier(),
                                          resultsDB,
-                                         iteratedModel.current_variables().ordered_labels(ACTIVE_VARS),
-                                         ModelUtils::response_labels(iteratedModel),
+                                         pIteratedModel->current_variables().ordered_labels(ACTIVE_VARS),
+                                         ModelUtils::response_labels(*pIteratedModel),
                                          vbdDropTol); // set in DakotaAnalyzer constructor
     }
     else if(!summaryOutputFlag) {
@@ -966,7 +966,7 @@ void NonDLHSSampling::compute_pca(std::ostream& s)
    
   Real pca_coeff;
   RealVector this_pred(numFunctions);
-  get_parameter_sets(iteratedModel); // NOTE:  allSamples is now different
+  get_parameter_sets(*pIteratedModel); // NOTE:  allSamples is now different
 
   if (outputLevel == DEBUG_OUTPUT) {
     s << "All Sample new values " << std::endl;
@@ -1032,8 +1032,8 @@ void NonDLHSSampling::print_results(std::ostream& s, short results_state)
     Analyzer::print_results(s, results_state);
   if (vbdFlag)
     nonDSampCorr.print_sobol_indices(s,
-                                     iteratedModel.current_variables().ordered_labels(ACTIVE_VARS),
-                                     ModelUtils::response_labels(iteratedModel),
+                                     pIteratedModel->current_variables().ordered_labels(ACTIVE_VARS),
+                                     ModelUtils::response_labels(*pIteratedModel),
                                      vbdDropTol); // set in DakotaAnalyzer constructor
   else if (statsFlag) {
     if(refineSamples.length() == 0) {
@@ -1097,15 +1097,15 @@ void NonDLHSSampling::archive_results(int num_samples, size_t inc_id) {
 
   // Archive correlations
   if (!subIteratorFlag) {
-    nonDSampCorr.archive_correlations(run_identifier(), resultsDB, iteratedModel.current_variables().ordered_labels(ACTIVE_VARS),
-                                      ModelUtils::response_labels(iteratedModel),inc_id);
+    nonDSampCorr.archive_correlations(run_identifier(), resultsDB, pIteratedModel->current_variables().ordered_labels(ACTIVE_VARS),
+                                      ModelUtils::response_labels(*pIteratedModel),inc_id);
   }
 
   // Archive Standardized Regression Coefficients
   if (stdRegressionCoeffs) {
     nonDSampCorr.archive_std_regress_coeffs(run_identifier(), resultsDB,
-                                            iteratedModel.current_variables().ordered_labels(ACTIVE_VARS),
-                                            ModelUtils::response_labels(iteratedModel), inc_id);
+                                            pIteratedModel->current_variables().ordered_labels(ACTIVE_VARS),
+                                            ModelUtils::response_labels(*pIteratedModel), inc_id);
   }
 
   if (toleranceIntervalsFlag) {

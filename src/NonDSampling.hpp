@@ -445,14 +445,14 @@ inline void NonDSampling::compute_moments(const RealVectorArray& fn_samples)
 {
   SizetArray sample_counts;
   compute_moments(fn_samples, sample_counts, momentStats,
-		  finalMomentsType, ModelUtils::response_labels(iteratedModel));
+		  finalMomentsType, ModelUtils::response_labels(*pIteratedModel));
 }
 
 
 inline void NonDSampling::compute_moments(const IntResponseMap& samples)
 {
   compute_moments(samples, momentStats, momentGrads, momentCIs,
-		  finalMomentsType, ModelUtils::response_labels(iteratedModel));
+		  finalMomentsType, ModelUtils::response_labels(*pIteratedModel));
 }
 
 
@@ -465,7 +465,7 @@ inline void NonDSampling::compute_intervals(const IntResponseMap& samples)
 
 
 inline void NonDSampling::print_intervals(std::ostream& s) const
-{ print_intervals(s, "response function", ModelUtils::response_labels(iteratedModel)); }
+{ print_intervals(s, "response function", ModelUtils::response_labels(*pIteratedModel)); }
 
 
 inline void NonDSampling::
@@ -479,7 +479,7 @@ print_moments(std::ostream& s, String qoi_type,
 
 
 inline void NonDSampling::print_moments(std::ostream& s) const
-{ print_moments(s, "response function", ModelUtils::response_labels(iteratedModel)); }
+{ print_moments(s, "response function", ModelUtils::response_labels(*pIteratedModel)); }
 
 
 inline void NonDSampling::sampling_reference(size_t samples_ref)
@@ -555,7 +555,7 @@ inline void NonDSampling::
 transform_samples(Pecos::ProbabilityTransformation& nataf, bool x_to_u)
 {
   // No model recursion available, assume same x/u ids for mapping:
-  SizetMultiArrayConstView cv_ids = ModelUtils::continuous_variable_ids(iteratedModel);
+  SizetMultiArrayConstView cv_ids = ModelUtils::continuous_variable_ids(*pIteratedModel);
   transform_samples(nataf, allSamples, cv_ids, cv_ids, x_to_u);
 }
 
@@ -565,7 +565,7 @@ transform_samples(Pecos::ProbabilityTransformation& nataf,
 		  RealMatrix& sample_matrix, bool x_to_u)
 {
   // No model recursion available, assume same x/u ids for mapping:
-  SizetMultiArrayConstView cv_ids = ModelUtils::continuous_variable_ids(iteratedModel);
+  SizetMultiArrayConstView cv_ids = ModelUtils::continuous_variable_ids(*pIteratedModel);
   transform_samples(nataf, sample_matrix, cv_ids, cv_ids, x_to_u);
 }
 
@@ -678,7 +678,7 @@ update_model_from_sample(Model& model, const Real* sample_vars)
 
 inline void NonDSampling::
 sample_to_variables(const Real* sample_vars, Variables& vars)
-{ sample_to_variables(sample_vars, vars, iteratedModel); }
+{ sample_to_variables(sample_vars, vars, *pIteratedModel); }
 // default to iteratedModel for dss values
 
 

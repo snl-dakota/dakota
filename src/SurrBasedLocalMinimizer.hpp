@@ -247,7 +247,7 @@ inline bool SurrBasedLocalMinimizer::
 find_approx_response(const Variables& search_vars, Response& search_resp)
 {
   return find_response(search_vars, search_resp,
-		       iteratedModel.surrogate_model().interface_id(),
+		       pIteratedModel->surrogate_model().interface_id(),
 		       approxSetRequest);
 }
 
@@ -256,7 +256,7 @@ inline bool SurrBasedLocalMinimizer::
 find_truth_response(const Variables& search_vars, Response& search_resp)
 {
   return find_response(search_vars, search_resp,
-		       iteratedModel.truth_model().interface_id(),
+		       pIteratedModel->truth_model().interface_id(),
 		       truthSetRequest);
 }
 

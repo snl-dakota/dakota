@@ -303,7 +303,7 @@ inline void NonDQuadrature::evaluate_grid_increment()
   // detection for now.
 
   tpqDriver->compute_grid(allSamples);//Driver->compute_increment(allSamples);
-  evaluate_parameter_sets(iteratedModel);
+  evaluate_parameter_sets(*pIteratedModel);
   ++numIntegrations;
 }
 

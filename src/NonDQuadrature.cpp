@@ -56,7 +56,7 @@ NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, Model& model):
 		  ( refine_type && nest_override != Pecos::NON_NESTED ) );
   Pecos::ExpansionConfigOptions ec_options(Pecos::QUADRATURE,
     probDescDB.get_short("method.nond.expansion_basis_type"),
-    iteratedModel.correction_type(),
+    pIteratedModel->correction_type(),
     probDescDB.get_short("method.nond.multilevel_discrepancy_emulation"),
     outputLevel, probDescDB.get_bool("method.variance_based_decomp"),
     probDescDB.get_ushort("method.nond.vbd_interaction_order"),
@@ -163,7 +163,7 @@ initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
 {
   tpqDriver->initialize_grid(poly_basis);
   tpqDriver->
-    initialize_grid_parameters(iteratedModel.multivariate_distribution());
+    initialize_grid_parameters(pIteratedModel->multivariate_distribution());
 
   switch (quadMode) {
   case FULL_TENSOR:
