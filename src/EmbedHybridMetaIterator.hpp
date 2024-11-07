@@ -103,8 +103,8 @@ inline IntIntPair EmbedHybridMetaIterator::estimate_partition_bounds()
   const String& local_model_ptr
     = probDescDB.get_string("method.hybrid.local_model_pointer");
 
-  Model& global_model = (singlePassedModel) ? iteratedModel : globalModel;
-  Model& local_model  = (singlePassedModel) ? iteratedModel :  localModel;
+  Model& global_model = (singlePassedModel) ? *pIteratedModel : globalModel;
+  Model& local_model  = (singlePassedModel) ? *pIteratedModel :  localModel;
 
   iterSched.construct_sub_iterator(probDescDB, globalIterator, global_model,
     global_method_ptr,probDescDB.get_string("method.hybrid.global_method_name"),

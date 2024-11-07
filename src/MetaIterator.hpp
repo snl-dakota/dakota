@@ -98,6 +98,7 @@ protected:
 
 
   Model& iteratedModel;
+  Model* pIteratedModel;
 
 private:
 

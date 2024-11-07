@@ -176,7 +176,7 @@ inline SurrBasedLevelData& HierarchSurrBasedLocalMinimizer::trust_region()
 
 
 inline void HierarchSurrBasedLocalMinimizer::set_active_model(size_t tr_index)
-{ iteratedModel.active_model_key(trustRegions[tr_index].paired_key()); }
+{ pIteratedModel->active_model_key(trustRegions[tr_index].paired_key()); }
 
 
 inline void HierarchSurrBasedLocalMinimizer::update_trust_region()

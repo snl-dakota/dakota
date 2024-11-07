@@ -88,7 +88,7 @@ SeqHybridMetaIterator(ProblemDescDB& problem_db, Model& model):
     num_iterators = method_names.size();
     // define an array of strings to use for set_db_model_nodes()
     if (model_ptrs.empty()) // assign array using id from iteratedModel
-      modelStrings.assign(num_iterators, iteratedModel.model_id());
+      modelStrings.assign(num_iterators, pIteratedModel->model_id());
     else {
       size_t num_models = model_ptrs.size();
       for (i=0; i<num_models; ++i)
@@ -126,7 +126,7 @@ void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   for (i=0; i<num_iterators; ++i) {
     // compute min/max processors per iterator for each method
     Iterator& the_iterator = selectedIterators[i];
-    Model& the_model = (singlePassedModel) ? iteratedModel : selectedModels[i];
+    Model& the_model = (singlePassedModel) ? *pIteratedModel : selectedModels[i];
     ppi_pr_i = (lightwtMethodCtor) ?
       estimate_by_name(methodStrings[i], modelStrings[i], the_iterator,
 		       the_model) :
@@ -207,7 +207,7 @@ void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 
   // Instantiate all Models and Iterators
   for (i=0; i<num_iterators; ++i) {
-    Model& the_model = (singlePassedModel) ? iteratedModel : selectedModels[i];
+    Model& the_model = (singlePassedModel) ? *pIteratedModel : selectedModels[i];
     if (lightwtMethodCtor)
       allocate_by_name(methodStrings[i], modelStrings[i],
 		       selectedIterators[i], the_model);
@@ -286,7 +286,7 @@ void SeqHybridMetaIterator::run_sequential()
     // each of these is safe for all processors
     Iterator& curr_iterator = selectedIterators[seqCount];
     Model&    curr_model
-      = (singlePassedModel) ? iteratedModel : selectedModels[seqCount];
+      = (singlePassedModel) ? *pIteratedModel : selectedModels[seqCount];
  
     if (summaryOutputFlag)
       Cout << "\n>>>>> Running Sequential Hybrid with iterator "
@@ -498,7 +498,7 @@ update_local_results(PRPArray& prp_results, int job_id)
 {
   Iterator& curr_iterator = selectedIterators[seqCount];
   Model&    curr_model    = (selectedModels.empty()) ?
-    iteratedModel : selectedModels[seqCount];
+    *pIteratedModel : selectedModels[seqCount];
   // Analyzers do not currently support returns_multiple_points() since the
   // distinction between Hybrid sampling and Multistart sampling is that
   // the former performs fn evals and processes the data (and current

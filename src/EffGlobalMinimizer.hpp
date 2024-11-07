@@ -358,8 +358,8 @@ inline void EffGlobalMinimizer::initialize_counters_limits()
 inline Real EffGlobalMinimizer::augmented_lagrangian(const RealVector& mean)
 {
   return augmented_lagrangian_merit(mean,
-    iteratedModel.primary_response_fn_sense(),
-    iteratedModel.primary_response_fn_weights(), origNonlinIneqLowerBnds,
+    pIteratedModel->primary_response_fn_sense(),
+    pIteratedModel->primary_response_fn_weights(), origNonlinIneqLowerBnds,
     origNonlinIneqUpperBnds, origNonlinEqTargets);
 }
 

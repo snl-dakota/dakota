@@ -59,8 +59,8 @@ void EmbedHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   const String& local_model_ptr
     = probDescDB.get_string("method.hybrid.local_model_pointer");
 
-  Model& global_model = (singlePassedModel) ? iteratedModel : globalModel;
-  Model& local_model  = (singlePassedModel) ? iteratedModel :  localModel;
+  Model& global_model = (singlePassedModel) ? *pIteratedModel : globalModel;
+  Model& local_model  = (singlePassedModel) ? *pIteratedModel :  localModel;
 
   iterSched.update(methodPCIter);
 

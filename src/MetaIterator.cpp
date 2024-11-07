@@ -25,6 +25,7 @@ MetaIterator::MetaIterator(ProblemDescDB& problem_db):
 	    problem_db.get_short("method.iterator_scheduling")),
       iteratedModel{Iterator::iterated_model()}
 {
+  pIteratedModel = &iteratedModel;
   // historical default convergence tolerance
   if (convergenceTol < 0.0) convergenceTol = 1.0e-4;
 
@@ -43,6 +44,7 @@ MetaIterator::MetaIterator(ProblemDescDB& problem_db, Model& model):
       iteratedModel{Iterator::iterated_model()}
 {
   iteratedModel = model;
+  pIteratedModel = &iteratedModel;
   //update_from_model(iteratedModel);
 
   // historical default convergence tolerance
@@ -77,11 +79,11 @@ check_model(const String& method_ptr, const String& model_ptr)
     size_t restore_index = probDescDB.get_db_method_node(); // for restoration
     probDescDB.set_db_method_node(method_ptr);
     if (probDescDB.get_string("method.model_pointer") !=
-	iteratedModel.model_id())
+	pIteratedModel->model_id())
       warn_flag = true;
     probDescDB.set_db_method_node(restore_index);           // restore
   }
-  else if (!model_ptr.empty() && model_ptr != iteratedModel.model_id())
+  else if (!model_ptr.empty() && model_ptr != pIteratedModel->model_id())
     warn_flag = true;
 
   if (warn_flag)
