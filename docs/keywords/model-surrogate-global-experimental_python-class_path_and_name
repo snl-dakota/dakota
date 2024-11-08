@@ -32,7 +32,7 @@ An example python class that implements a linear regression surrogate
 that works for both scalar and vector-valued responses and that includes
 gradient and (trivial) hessian values is the following:
 
-.. code-block::
+.. code-block:: python
 
   class Surrogate:
 
