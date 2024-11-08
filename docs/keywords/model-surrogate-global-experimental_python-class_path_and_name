@@ -2,14 +2,15 @@ Blurb::
 Specify the module and class names of the python surrogate
 
 Description::
-Specify the module and class names of the python surrogate.
-At minimum, the class must contain the methods 'construct' and 'predict'.
-Dakota passes to the former a matrix (num samples x num variables)
-of variable values and a matrix (num samples x 1) of responses to use
-to train the surrogate.  The `predict` method receives a matrix (num
-samples x num variables) and expects a matrix (num samples x 1) of predicted
-values to be returned.  Optional 'gradient' and 'hessian' methods are supported as
-well.
+Specify the module and class names of the python surrogate.  At minimum,
+the class must contain the methods 'construct' and 'predict'.  Dakota
+passes to the former a matrix (num samples x num variables) of variable
+values and a matrix (num samples x num components) of responses to use
+to train the surrogate, where num components is 1 for scalar surrogates.
+The `predict` method receives a matrix (num samples x num variables)
+and expects a matrix (num samples x num components) of predicted values
+to be returned.  Optional 'gradient' and 'hessian' methods are supported
+as well.
 
 Topics::
 
@@ -27,7 +28,9 @@ block via:
       experimental_python
           class_path_and_name = "surrogate_polynomial.Surrogate"
 
-A corresponding python class (complete) could contain:
+An example python class that implements a linear regression surrogate
+for either sclar or field-based responses and that includes gradient and
+(trivial) hessian responses is the following:
 
 .. code-block::
 

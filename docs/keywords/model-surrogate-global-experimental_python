@@ -2,11 +2,10 @@ Blurb::
 Use the experimental python surrogates interface
 
 Description::
-This is an experimental capability that allows the user to expose
-a python-based surrogate to Dakota.  This capability provides much
-flexibility on the python side including support for multiple responses
-comprising both scalar and field-based types as well as optional gradient
-and hessian support.
+This is an experimental capability that allows the user to expose a
+python-based surrogate to Dakota.  This capability provides flexibility
+on the python side including support for both scalar and field-based
+responses as well as optional gradient and hessian support.
 
 Topics::
 
