@@ -4,6 +4,21 @@
 Version 6.21 (2024/11/15)
 """"""""""""""""""""""""""""""""""""""
 
+**Highlight: Numerical robustness for ML BLUE**
+
+The multilevel best linear unbiased estimator (ML BLUE) now uses
+truncated SVD for all matrix solutions (previously handled by Cholesky
+factorization with equilibration), enabling more robust solution
+recovery for resouce allocations and final moment estimates.  This can
+mitigate ill-conditioned for problems with larger group counts, for
+groups containing some level of model redundancy, and for larger
+budgets with more aggressive sample profiles.
+
+*Enabling / Accessing:* New SVD solver strategies are built-in with truncation tolerances tuned from numerical studies.
+
+*Documentation:* Refer to the reference documentation starting from :dakkw:`method-multilevel_blue` for additional information on ML BLUE and its options.  Benchmark examples with three models (tunable problem), five models (steady state diffusion), and 8 models (transient diffusion) are available under dakota/test in the release distribution.
+
+
 **Highlight: New options for using MCMC algorithms from the MUQ library**
 
 This release exposes the DILI (Dimension-Independent Likelihood-Informed subspace :cite:p:`Cui2016109`) MCMC sampler from the 
@@ -45,21 +60,6 @@ The User's Manual describes the schemas for JSON :ref:`parameters <variables:par
 and :ref:`results <responses:results:json>` files.
 
 
-**Highlight: Numerical robustness for ML BLUE**
-
-The multilevel best linear unbiased estimator (ML BLUE) now uses
-truncated SVD for all matrix solutions (previously handled by Cholesky
-factorization with equilibration), enabling more robust solution
-recovery for resouce allocations and final moment estimates.  This can
-mitigate ill-conditioned for problems with larger group counts, for
-groups containing some level of model redundancy, and for larger
-budgets with more aggressive sample profiles.
-
-*Enabling / Accessing:* New SVD solver strategies are built-in with truncation tolerances tuned from numerical studies.
-
-*Documentation:* Refer to the reference documentation starting from :dakkw:`method-multilevel_blue` for additional information on ML BLUE and its options.  Benchmark examples with three models (tunable problem), five models (steady state diffusion), and 8 models (transient diffusion) are available under dakota/test in the release distribution.
-
-
 **Improvements by Category**
 
 *Interfaces, Input/Output*
@@ -92,9 +92,6 @@ budgets with more aggressive sample profiles.
 
 - MAP pre-solve and chain samples export enabled for MUQ methods.
 
-*MLMF Sampling*
-
-
  
 **Miscellaneous Enhancements and Bugfixes**
 
@@ -125,4 +122,3 @@ budgets with more aggressive sample profiles.
 
 - Building Dakota from source now requires a C++14 compliant compiler.
 
-**Other Notes and Known Issues**
