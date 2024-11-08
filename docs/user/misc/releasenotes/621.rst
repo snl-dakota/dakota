@@ -6,10 +6,57 @@ Version 6.21 (2024/11/15)
 
 **Highlight: New options for using MCMC algorithms from the MUQ library**
 
+This release adds support for the DILI MCMC method from MUQ. DILI stands for "dimension-independent likelihood-informed' (:cite:p:`Cui2016109`).
+Moreover, if the user choses to use MUQ (by writing 'bayes_calibration muq' in the input file), the user now has to specify which MCMC method to use.
+
 *Enabling / Accessing:* 
+
+In order to specify which MUQ MCMC method to use, the user can choose among six possible method keywords:
+'adaptive_metropolis', 'delayed_rejection', 'dili', 'dram', 'mala', and 'metropolis_hastings'.
+All eventual parameter keywords available for each of these methods are then grouped under the respective method keyword.
+With the exception of 'metropolis_hastings', and other methods have parameters that can be specified.
+All method keywords and parameter keywords are listed right below.
 
 *Documentation:* 
 
+Regarding adaptive Metropolis, see the four keywords :dakkw:`method-bayes_calibration-muq-adaptive_metropolis`,
+:dakkw:`method-bayes_calibration-muq-adaptive_metropolis-adapt_scale`,
+:dakkw:`method-bayes_calibration-muq-adaptive_metropolis-period_num_steps`, and
+:dakkw:`method-bayes_calibration-muq-adaptive_metropolis-starting_step`.
+
+Regarding delayed rejection, see the four keywords :dakkw:`method-bayes_calibration-muq-delayed_rejection`,
+:dakkw:`method-bayes_calibration-muq-delayed_rejection-delay_scale`,
+:dakkw:`method-bayes_calibration-muq-delayed_rejection-num_stages`, and
+:dakkw:`method-bayes_calibration-muq-delayed_rejection-scale_type`.
+
+Regarding DILI, see the fourteen keywords :dakkw:`method-bayes_calibration-muq-dili`,
+:dakkw:`method-bayes_calibration-muq-dili-adapt_end`,
+:dakkw:`method-bayes_calibration-muq-dili-adapt_interval`,
+:dakkw:`method-bayes_calibration-muq-dili-adapt_start`,
+:dakkw:`method-bayes_calibration-muq-dili-hessian_type`,
+:dakkw:`method-bayes_calibration-muq-dili-hess_tolerance`,
+:dakkw:`method-bayes_calibration-muq-dili-initial_weight`,
+:dakkw:`method-bayes_calibration-muq-dili-lis_tolerance`,
+:dakkw:`method-bayes_calibration-muq-dili-ses_abs_tol`,
+:dakkw:`method-bayes_calibration-muq-dili-ses_block_size`,
+:dakkw:`method-bayes_calibration-muq-dili-ses_exp_rank`,
+:dakkw:`method-bayes_calibration-muq-dili-ses_num_eigs`,
+:dakkw:`method-bayes_calibration-muq-dili-ses_overs_factor`, and
+:dakkw:`method-bayes_calibration-muq-dili-ses_rel_tol`.
+
+Regarding DRAM, see the seven keywords :dakkw:`method-bayes_calibration-muq-dram`,
+:dakkw:`method-bayes_calibration-muq-adaptive_metropolis-adapt_scale`,
+:dakkw:`method-bayes_calibration-muq-adaptive_metropolis-period_num_steps`,
+:dakkw:`method-bayes_calibration-muq-adaptive_metropolis-starting_step`,
+:dakkw:`method-bayes_calibration-muq-delayed_rejection-delay_scale`,
+:dakkw:`method-bayes_calibration-muq-delayed_rejection-num_stages`, and
+:dakkw:`method-bayes_calibration-muq-delayed_rejection-scale_type`.
+       
+Regarding MALA, see the two keywords :dakkw:`method-bayes_calibration-muq-mala` and
+:dakkw:`method-bayes_calibration-muq-mala-step_size`.
+
+Regarding Metropolis-Hastings, see the keyword :dakkw:`method-bayes_calibration-muq-metropolis_hastings`.
+       
 **Highlight: JSON parameters and results files**
 
 This release adds support for parameters and results files in JSON format, which
