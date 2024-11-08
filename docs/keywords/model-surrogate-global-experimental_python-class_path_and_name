@@ -29,8 +29,8 @@ block via:
           class_path_and_name = "surrogate_polynomial.Surrogate"
 
 An example python class that implements a linear regression surrogate
-for either sclar or field-based responses and that includes gradient and
-(trivial) hessian responses is the following:
+that works for both scalar and vector-valued responses and that includes
+gradient and (trivial) hessian values is the following:
 
 .. code-block::
 
