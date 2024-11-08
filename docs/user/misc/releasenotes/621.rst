@@ -45,7 +45,7 @@ The User's Manual describes the schemas for JSON :ref:`parameters <variables:par
 and :ref:`results <responses:results:json>` files.
 
 
-**Highlight: MLMF Updates**
+**Highlight: Numerical robustness for ML BLUE**
 
 The multilevel best linear unbiased estimator (ML BLUE) now uses
 truncated SVD for all matrix solutions (previously handled by Cholesky
@@ -80,9 +80,17 @@ budgets with more aggressive sample profiles.
 
 *UQ Methods*
 
-- Hierarchical DAG enumeration (essentially a reordering of model dependencies) is now available for weighted MLMC and MFMC.
+- Hierarchical DAG enumeration (essentially a reordering of model dependencies) is now available for weighted MLMC and MFMC. See :dakkw:`method-multilevel_sampling-weighted-search_model_graphs` and :dakkw:`method-multifidelity_sampling-search_model_graphs`.
 
-- MAP pre-solve and chain samples export enabled for muq methods
+- Hierarchical sampling methods (MLMC aka ``multilevel_sampling``, and MLCV MC aka ``multilevel_multifidelity_sampling``) extended to support concurrent multi-batch processing.
+
+- New run-time group throttles for ML BLUE: ``best_conditioned`` and ``rcond_tolerance`` now prune groups based on the conditioning of their group covariances.
+
+- Improved robustness for ``offline_pilot`` mode by employing the offline covariances for both sample allocation and final moment rollup.  This relaxes previous contraints on the minimum high-fidelity samples for subsequent online sampling.
+
+- Online cost recovery can now be alternated with pre-specified cost on a per model basis.
+
+- MAP pre-solve and chain samples export enabled for MUQ methods.
 
 *MLMF Sampling*
 
