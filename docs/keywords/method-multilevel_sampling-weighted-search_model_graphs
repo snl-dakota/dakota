@@ -1,18 +1,66 @@
 Blurb::
-For weighted multilevel Monte Carlo, model graph selection options become available
+For weighted multilevel Monte Carlo, this option activates a search over possible hierarchical model graphs
 
 Description::
 Referring to :dakkw:`method-approximate_control_variate-acv_recursive_diff`,
 weighted MLMC is a special case of ACV-RD, resulting in a forward to
 the generalized ACV solver for the case of a fixed hierarchical DAG.
 
-While the DAG is fixed, other search options in generalized
-ACV become available -- see
-:dakkw:`method-multilevel_sampling-weighted-search_model_graphs-model_selection`.
+While the use of a hierarchical DAG is required in MLMC, the approximation
+selections and orderings within this DAG can be varied, so generalized
+ACV capabilities for model graph search (see
+:dakkw:`method-multilevel_sampling-weighted-search_model_graphs-full_recursion`)
+and model selection (see
+:dakkw:`method-multilevel_sampling-weighted-search_model_graphs-model_selection`)
+are available.
+
 
 Topics::
 
 Examples::
+Note that the default for weighted MLMC is no search,
+
+.. code-block::
+
+method,
+        multilevel_sampling
+	  pilot_samples = 20 seed = 1237
+	  weighted
+	  max_function_evaluations = 500
+
+with options to activate search over model ordering,
+
+.. code-block::
+
+method,
+        multilevel_sampling
+	  pilot_samples = 20 seed = 1237
+	  weighted
+	    search_model_graphs full_recursion
+	  max_function_evaluations = 500
+
+over model subset selection,
+
+.. code-block::
+
+method,
+        multilevel_sampling
+	  pilot_samples = 20 seed = 1237
+	  weighted
+	    search_model_graphs no_recursion model_selection
+	  max_function_evaluations = 500
+
+or over both.
+
+.. code-block::
+
+method,
+        multilevel_sampling
+	  pilot_samples = 20 seed = 1237
+	  weighted
+	    search_model_graphs full_recursion model_selection
+	  max_function_evaluations = 500
+
 
 Theory::
 

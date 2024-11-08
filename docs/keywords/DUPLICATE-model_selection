@@ -1,0 +1,83 @@
+Blurb::
+Perform a recursion of admissible model subsets for a given model ensemble
+
+Description::
+For the weighted MLMC
+(:dakkw:`method-multilevel_sampling-weighted-search_model_graphs`),
+MFMC (:dakkw:`method-multifidelity_sampling-search_model_graphs` and
+:cite:p:`peherstorfer2016optimal`), ACV
+(:dakkw:`method-approximate_control_variate` and
+:cite:p:`GORODETSKY2020109257`) and generalized ACV
+(:dakkw:`method-approximate_control_variate-search_model_graphs` and
+:cite:p:`Bomarito2022`) methods, this option specifies an enumerative
+search over all model subsets for a given model ensemble.
+
+All model selection cases forward to the generalized ACV solver,
+subject to certain selections and restrictions.  In the weighted MLMC
+and MFMC cases, a hierarchical DAG is employed across the model
+approximations, where each approximation node points to the next
+approximation of higher fidelity, ending with the truth model at the
+root node.  For these cases, model selection can be used with either a
+fixed (``no_recursion``) or variable (``full_recursion``) model
+ordering within the hierarchical DAG for a particular model subset.
+In the ACV case, a fixed peer DAG is employed, where each active
+approximation node points to the root node (reordering is irrelevant),
+and model selection enumerates the model subset included in the peer
+DAG.  For generalized ACV, model selection may be combined with
+enumeration of admissible DAGs using different DAG recursion throttles.
+
+The model subset (and DAG definition) with the best performance
+(lowest estimator variance for a prescribed budget or lowest cost for
+a prescribed accuracy) is selected for final post-processing.
+
+Topics::
+
+Examples::
+
+Activating model selection for ACV and GenACV:
+
+.. code-block::
+
+    method,
+    	model_pointer = 'ENSEMBLE'
+        approximate_control_variate acv_mf
+    	  pilot_samples = 50 seed = 8674132
+    	  search_model_graphs
+    	    no_recursion		      # ACV case
+    #	    kl_recursion  		      # GenACV case 1 of 3
+    #	    partial_recursion depth_limit = 2 # GenACV case 2 of 3
+    #	    full_recursion    		      # GenACV case 3 of 3
+    	    model_selection		      # this option
+    	  max_function_evaluations = 500
+
+Activating model selection for weighted MLMC:
+
+    method,
+        model_pointer = 'ENSEMBLE'
+        multilevel_sampling weighted
+          pilot_samples = 50 seed = 8674132
+	  search_model_graphs
+    	    no_recursion	      # fixed ordering in hierarchical DAG
+    #	    full_recursion    	      # recur over orderings in hierarchical DAG
+    	    model_selection	      # this option
+        max_function_evaluations = 500
+
+Activating model selection for MFMC:
+
+.. code-block::
+
+    method,
+        model_pointer = 'ENSEMBLE'
+        multifidelity_sampling 
+          pilot_samples = 50 seed = 8674132
+   	  search_model_graphs
+    	    no_recursion	      # fixed ordering in hierarchical DAG
+    #	    full_recursion    	      # recur over orderings in hierarchical DAG
+    	    model_selection	      # this option
+        max_function_evaluations = 500
+
+Theory::
+
+Faq::
+
+See_Also::

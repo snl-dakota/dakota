@@ -2,9 +2,25 @@ Blurb::
 Perform a search over admissible model relationships for a given model ensemble
 
 Description::
-Relative to generalized ACV (:cite:p:`Bomarito2022`), MFMC is restricted
-to a single DAG definition per model subset.  Thus, this keyword is only
-used to search over possible model subsets (refer to \c model_selection).
+Referring to generalized ACV
+(:dakkw:`method-approximate_control_variate-search_model_graphs` and
+:cite:p:`Bomarito2022`), MFMC is a special case of generalized ACV-MF
+(:dakkw:`method-approximate_control_variate-acv_multifidelity) where a
+hierarchical DAG is employed across the model approximations.  As such,
+a MFMC method specification that includes graph search forwards to the
+generalized ACV solver, but with fixing the DAG to be hierarchical
+(each approximation node points to the next approximation of higher
+fidelity/resolution, ending with the truth model at the root node) and
+fixing the sampling scheme to be ACV-MF.
+
+While the use of a hierarchical DAG is required, the approximation
+selections and orderings within this DAG can be varied, so generalized
+ACV capabilities for model graph search (see
+:dakkw:`method-multifidelity_sampling-search_model_graphs-full_recursion`)
+and model selection (see
+:dakkw:`method-multifidelity_sampling-search_model_graphs-model_selection`)
+are available.
+
 
 Topics::
 
