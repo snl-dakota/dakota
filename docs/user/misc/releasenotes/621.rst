@@ -47,9 +47,18 @@ and :ref:`results <responses:results:json>` files.
 
 **Highlight: MLMF Updates**
 
-*Enabling / Accessing:* 
+The multilevel best linear unbiased estimator (ML BLUE) now uses
+truncated SVD for all matrix solutions (previously handled by Cholesky
+factorization with equilibration), enabling more robust solution
+recovery for resouce allocations and final moment estimates.  This can
+mitigate ill-conditioned for problems with larger group counts, for
+groups containing some level of model redundancy, and for larger
+budgets with more aggressive sample profiles.
 
-*Documentation:* 
+*Enabling / Accessing:* New SVD solver strategies are built-in with truncation tolerances tuned from numerical studies.
+
+*Documentation:* Refer to the reference documentation starting from :dakkw:`method-multilevel_blue` for additional information on ML BLUE and its options.  Benchmark examples with three models (tunable problem), five models (steady state diffusion), and 8 models (transient diffusion) are available under dakota/test in the release distribution.
+
 
 **Improvements by Category**
 
@@ -70,6 +79,8 @@ and :ref:`results <responses:results:json>` files.
 *Optimization Methods*
 
 *UQ Methods*
+
+- Hierarchical DAG enumeration (essentially a reordering of model dependencies) is now available for weighted MLMC and MFMC.
 
 - MAP pre-solve and chain samples export enabled for muq methods
 
