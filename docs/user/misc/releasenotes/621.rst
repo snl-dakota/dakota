@@ -104,7 +104,7 @@ budgets with more aggressive sample profiles.
   group.
 - The legacy Python interface is no longer enabled in binary downloads. It is also disabled by
   default when building from source.
-- The "eval_id" is in the direct Python parameters diciontary is now a string.
+- The "eval_id" in the direct Python parameters diciontary is now a string.
 - Many submethod-specific :dakkw:`method-bayes_calibration-muq` keywords were renamed and moved
   to better follow Dakota conventions. For example, the keyword ``dr_num_stages``, a control used
   by the  :dakkw:`method-bayes_calibration-muq-delayed_rejection` and 
