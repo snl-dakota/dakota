@@ -5,7 +5,7 @@ Description::
 Referring to generalized ACV
 (:dakkw:`method-approximate_control_variate-search_model_graphs` and
 :cite:p:`Bomarito2022`), MFMC is a special case of generalized ACV-MF
-(:dakkw:`method-approximate_control_variate-acv_multifidelity) where a
+(:dakkw:`method-approximate_control_variate-acv_multifidelity`) where a
 hierarchical DAG is employed across the model approximations.  As such,
 a MFMC method specification that includes graph search forwards to the
 generalized ACV solver, but with fixing the DAG to be hierarchical

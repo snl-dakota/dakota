@@ -22,7 +22,7 @@ Note that the default for weighted MLMC is no search,
 
 .. code-block::
 
-method,
+    method,
         multilevel_sampling
 	  pilot_samples = 20 seed = 1237
 	  weighted
@@ -32,7 +32,7 @@ with options to activate search over model ordering,
 
 .. code-block::
 
-method,
+    method,
         multilevel_sampling
 	  pilot_samples = 20 seed = 1237
 	  weighted
@@ -43,7 +43,7 @@ over model subset selection,
 
 .. code-block::
 
-method,
+    method,
         multilevel_sampling
 	  pilot_samples = 20 seed = 1237
 	  weighted
@@ -54,7 +54,7 @@ or over both.
 
 .. code-block::
 
-method,
+    method,
         multilevel_sampling
 	  pilot_samples = 20 seed = 1237
 	  weighted

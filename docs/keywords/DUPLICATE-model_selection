@@ -52,6 +52,8 @@ Activating model selection for ACV and GenACV:
 
 Activating model selection for weighted MLMC:
 
+.. code-block::
+
     method,
         model_pointer = 'ENSEMBLE'
         multilevel_sampling weighted
