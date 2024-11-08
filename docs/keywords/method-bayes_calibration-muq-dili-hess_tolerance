@@ -2,7 +2,7 @@ Blurb::
 Parameter for the DILI MCMC algorithm in MUQ
 
 Description::
-abcxyz
+The lower bound on eigenvalues used to construct the low-rank approximation of the global expected Hessian. The default value is '1.e-4'.
 
 Topics::
 

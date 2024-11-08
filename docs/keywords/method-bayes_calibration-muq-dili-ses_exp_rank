@@ -1,8 +1,8 @@
 Blurb::
-Parameter for the DILI MCMC algorithm in MUQ
+Parameter for the stochastic eigensolver used by the DILI MCMC algorithm in MUQ
 
 Description::
-abcxyz
+The expected number of eigenvalues that are larger than the the tolerances. This is used to decide on the initial number of samples to compute. The default value is '2'.
 
 Topics::
 

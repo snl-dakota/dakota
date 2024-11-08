@@ -2,7 +2,7 @@ Blurb::
 Parameter for the DILI MCMC algorithm in MUQ
 
 Description::
-abcxyz
+The number of MCMC steps taken before updating the LIS. The default value is '1'.
 
 Topics::
 

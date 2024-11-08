@@ -1,8 +1,8 @@
 Blurb::
-Parameter for the DILI MCMC algorithm in MUQ
+Parameter for the stochastic eigensolver used by the DILI MCMC algorithm in MUQ
 
 Description::
-abcxyz
+The number of new random matvecs to compute when the current eigenvalues do not satisfy the stopping criteria. The default value is '2'.
 
 Topics::
 

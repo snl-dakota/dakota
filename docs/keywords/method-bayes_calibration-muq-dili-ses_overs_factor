@@ -1,8 +1,8 @@
 Blurb::
-Parameter for the DILI MCMC algorithm in MUQ
+Parameter for the stochastic eigensolver used by the DILI MCMC algorithm in MUQ
 
 Description::
-abcxyz
+When computing a rank 'r' eigenvalue decomposition, 'r+s' matvecs are used, where 's' is the oversampling factor. The default values is '2'.
 
 Topics::
 
