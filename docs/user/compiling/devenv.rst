@@ -9,9 +9,9 @@ dependencies. See sections that follow for suggestions on how to
 satisfy them.
 
 Dakota regression test baselines are based on the recommended Dakota
-RHEL 7 configuration below. Regression tests will typically exhibit
+RHEL 8 configuration below. Regression tests will typically exhibit
 numerical differences when running on other platforms. For developers
-needing to reproduce RHEL 7 baselines on other platforms, e.g., for
+needing to reproduce RHEL 8 baselines on other platforms, e.g., for
 pre-push code verification, a Docker-based build/test process is also
 described in :ref:`devenvironment-main`.
 
@@ -38,7 +38,7 @@ Toolchains
      - >= C99
      - Required
    * - C++ Compiler
-     - >= C++11
+     - >= C++14
      - Required
    * - Fortran Compiler
      - 77, 90
@@ -178,42 +178,6 @@ dependencies using OS package managers, supplementing with compiling
 from source as needed.
 
 ------
-RHEL 7
-------
-
-On RHEL 7 (most recently 7.8), we satisfied Dakota's dependencies with
-the following which are all from either the standard package or EPEL (``yum
-install epel-release``) repositories and installed with yum install.
-
-Core development tools: GCC 4.8.5, Java 11, Python 3.6.8 (alternately
-2.7.5 via the ``python`` package), Perl 5.16.3:
-
-.. code-block::
-
-   yum install git cmake3 gcc gcc-c++ gcc-gfortran java-11-openjdk-devel python3 perl
-
-
-Libraries/runtimes: Boost 1.69, OpenMPI 1.10.3, GSL 1.15.
-
-.. code-block::
-
-   yum install blas blas-devel lapack lapack-devel boost169 boost169-devel openmpi openmpi-devel gsl gsl-devel
-
-Enabling HDF5 requires compiling and installing HDF5 1.10.4 and
-optionally an h5py that uses it. (Dakota may work with, but hasn't
-been verified with, newer HDF5 1.10.x)
-
-If building documentation, see above for Python packages as well.
-
-.. code-block::
- 
-   yum install doxygen texlive-collection-latexrecommended
-
-When configuring use ``cmake3`` and specify Boost include/library
-directories to point to, e.g., ``/usr/include/boost169``.
-
-
-------
 RHEL 8
 ------
 
@@ -293,7 +257,7 @@ Mac OS
 -------
 
 A number of approaches can be used to satisfy Dakota's dependencies on
-Mac OS / OS X. Typically the OS-provided Accelerate linear algebra
+macOS / OS X. Typically the OS-provided Accelerate linear algebra
 suffices. These are listed in reverse chronological order, in hopes of
 archiving useful information, with the first being the most promising
 approach currently.
@@ -313,7 +277,7 @@ approach currently.
 
 .. _devenv-mac-clang-homebrew:
 
-**Verified on MacOS 11 (Big Sur):** System Clang + GFortran
+**Verified on macOS 11 (Big Sur):** System Clang + GFortran
 
 Uses system-provided clang/clang++, perl, python, VecLib/Accelerate,
 with Homebrew GFortran. Demonstrated on Intel MacBook Pro (2020)
@@ -442,7 +406,7 @@ the following tools:
 
 - CMake: install using Windows installer from http://cmake.org
 - Microsoft Visual Studio Community 2019, update 11 (version 16.11)
-- Intel Fortran: Intel Parallel Studio XE 2020, update 4 to work with MSVS
+- The Intel Fortran Compiler from the Visual Studio Marketplace.
 - Python 3.10.6 
 - Strawberry Perl 5.32.1.1
 - Eclipse Temurin JDK 11 (LTS) HotSpot
