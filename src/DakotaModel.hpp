@@ -92,6 +92,8 @@ public:
   //- Heading: Virtual functions
   //
 
+  // *** BASE MODEL (BROADLY USED, OPERATES ON BASE DATA, SUPPORTS RECURSION)
+
   /// return the sub-iterator in nested and surrogate models
   virtual Iterator& subordinate_iterator();
   /// return a single sub-model defined from subModel in nested and recast
@@ -99,18 +101,138 @@ public:
   /// dive through model recursions that may bypass some components.
   virtual Model& subordinate_model();
 
-  /// set the active model key within surrogate data, grid driver,
-  /// and approximation classes that support the management of multiple
-  /// approximation states within surrogate models
-  virtual void active_model_key(const Pecos::ActiveKey& key);
-  /// return the active model key (used by surrogate data, grid driver,
-  /// and approximation classes to support the management of multiple
-  /// approximation states within surrogate models)
-  virtual const Pecos::ActiveKey& active_model_key() const;
-  /// reset by removing all model keys within surrogate data, grid driver,
-  /// and approximation classes that support the management of multiple
-  /// approximation states within surrogate models
-  virtual void clear_model_keys();
+  /// portion of subordinate_models() specific to derived model classes
+  virtual void derived_subordinate_models(ModelList& ml, bool recurse_flag);
+  /// resize vars/resp if needed from the bottom up
+  virtual void resize_from_subordinate_model(size_t depth = SZ_MAX);
+  /// propagate vars/labels/bounds/targets from the bottom up
+  virtual void update_from_subordinate_model(size_t depth = SZ_MAX);
+  /// return the interface employed by the derived model class, if present:
+  /// SimulationModel::userDefinedInterface, DataFitSurrModel::approxInterface,
+  /// or NestedModel::optionalInterface
+  virtual Interface& derived_interface();
+
+  /// set the relative weightings for multiple objective functions or least
+  /// squares terms
+  virtual void primary_response_fn_weights(const RealVector& wts, 
+					   bool recurse_flag = true);
+
+  /// Perform any global updates prior to individual evaluate() calls;
+  /// returns true if the variables size has changed
+  virtual bool initialize_mapping(ParLevLIter pl_iter);
+  /// restore state in preparation for next initialization;
+  /// returns true if the variables size has changed
+  virtual bool finalize_mapping();
+
+  /// called from IteratorScheduler::run_iterator() for iteratorComm rank 0 to
+  /// terminate serve_init_mapping() on other iteratorComm processors
+  virtual void stop_init_mapping(ParLevLIter pl_iter);
+  /// called from IteratorScheduler::run_iterator() for iteratorComm rank != 0
+  /// to balance resize() calls on iteratorComm rank 0
+  virtual int serve_init_mapping(ParLevLIter pl_iter);
+
+  /// called from IteratorScheduler::run_iterator() for iteratorComm rank 0 to
+  /// terminate serve_finalize_mapping() on other iteratorComm processors
+  virtual void stop_finalize_mapping(ParLevLIter pl_iter);
+  /// called from IteratorScheduler::run_iterator() for iteratorComm rank != 0
+  /// to balance resize() calls on iteratorComm rank 0
+  virtual int serve_finalize_mapping(ParLevLIter pl_iter);
+
+  /// retrieve error estimates corresponding to the Model's response
+  /// (could be surrogate error for SurrogateModels, statistical MSE for
+  /// NestedModels, or adjoint error estimates for SimulationModels).
+  /// Errors returned correspond to most recent evaluate().
+  /// TO DO: why not yet bound to SurrogateModel::approximation_variances()?
+  virtual const RealVector& error_estimates();
+
+  /// update componentParallelMode for supporting parallelism in model
+  /// sub-components
+  virtual void component_parallel_mode(short mode);
+
+  /// estimate the minimum and maximum partition sizes that can be
+  /// utilized by this Model
+  virtual IntIntPair estimate_partition_bounds(int max_eval_concurrency);
+
+  /// return the index for the metaiterator-iterator parallelism level within
+  /// ParallelConfiguration::miPLIters that is active for use in a particular
+  /// Model at runtime
+  virtual size_t mi_parallel_level_index() const;
+
+  /// migrate an unmatched response record from active response map (computed
+  /// by synchronize() or synhronize_nowait()) to cached response map
+  virtual void cache_unmatched_response(int raw_id);
+  /// migrate remaining response records from responseMap to cachedResponseMap
+  virtual void cache_unmatched_responses();
+
+  /// return derived model synchronization setting
+  virtual short local_eval_synchronization();
+  /// return derived model asynchronous evaluation concurrency
+  virtual int local_eval_concurrency();
+
+  /// Service job requests received from the master.  Completes when
+  /// a termination message is received from stop_servers().
+  virtual void serve_run(ParLevLIter pl_iter, int max_eval_concurrency);
+  /// Executed by the master to terminate all server operations for a
+  /// particular model when iteration on the model is complete.
+  virtual void stop_servers();
+
+  /// Return a flag indicating the combination of multiprocessor
+  /// evaluations and a dedicated master iterator scheduling.  Used
+  /// in synchronous evaluate functions to prevent the error
+  /// of trying to run a multiprocessor job on the master.
+  virtual bool derived_master_overload() const;
+
+  /// create 2D graphics plots for automatic logging of vars/response data
+  virtual void create_2d_plots();
+  /// create a tabular output stream for automatic logging of vars/response data
+  virtual void create_tabular_datastream();
+
+  /// Update tabular/graphics data with latest variables/response data
+  virtual void derived_auto_graphics(const Variables& vars,
+				     const Response& resp);
+
+  /// update the Model's active view based on a higher level context
+  virtual void active_view(short view, bool recurse_flag = true);
+  /// update the Model's inactive view based on a higher level context
+  virtual void inactive_view(short view, bool recurse_flag = true);
+
+  /// return the interface identifier
+  virtual const String& interface_id() const;
+  /// Return the value of the evaluation id counter for the Model
+  virtual int derived_evaluation_id() const;
+
+  /// Indicates the usage of an evaluation cache by the Model
+  virtual bool evaluation_cache(bool recurse_flag = true) const;
+  /// Indicates the usage of a restart file by the Model
+  virtual bool restart_file(bool recurse_flag = true) const;
+
+  /// Set the reference points for the evaluation counters within the Model
+  virtual void set_evaluation_reference();
+  /// Request fine-grained evaluation reporting within the Model
+  virtual void fine_grained_evaluation_counters();
+  /// Print an evaluation summary for the Model
+  virtual void print_evaluation_summary(std::ostream& s,
+					bool minimal_header = false,
+					bool relative_count = true) const;
+
+  /// set the hierarchical eval ID tag prefix
+  virtual void eval_tag_prefix(const String& eval_id_str);
+
+  /// search the eval database (during derivative estimation); derived
+  /// may need to reimplement due to problem transformations
+  /// (RecastModel); return true if found in DB
+  virtual bool db_lookup(const Variables& search_vars, 
+			 const ActiveSet& search_set, Response& found_resp);
+
+  /// set the warm start flag (warmStartFlag)
+  virtual void warm_start_flag(const bool flag);
+
+  /// Declare a model's sources to the evaluationsDB
+  virtual void declare_sources();
+
+
+  // *** SURROGATE MODELS (BOTH DATA FIT AND ENSEMBLE)
+  // *** Note: RecastModels will implement forwards (TO DO: verify there is no interaction with recasting)
 
   /// return number of unique response functions (managing any aggregations)
   virtual size_t qoi() const;
@@ -138,139 +260,60 @@ public:
   /// return the active truth sub-model in surrogate models
   virtual const Model& active_truth_model() const;
 
+  /// set the active model key within surrogate data, grid driver,
+  /// and approximation classes that support the management of multiple
+  /// approximation states within surrogate models
+  virtual void active_model_key(const Pecos::ActiveKey& key);
+  /// return the active model key (used by surrogate data, grid driver,
+  /// and approximation classes to support the management of multiple
+  /// approximation states within surrogate models)
+  virtual const Pecos::ActiveKey& active_model_key() const;
+  /// reset by removing all model keys within surrogate data, grid driver,
+  /// and approximation classes that support the management of multiple
+  /// approximation states within surrogate models
+  virtual void clear_model_keys();
+
   /// return true if there is an active truth model indicated by truthModelKey
   virtual bool active_truth_key() const;
   /// return the number of active surrogate models indicated by surrModelKeys
   virtual size_t active_surrogate_keys() const;
 
-  /// identify if 1D hierarchy can be defined across model forms
-  virtual bool multifidelity() const;
-  /// identify if 1D hierarchy can be defined across resolution levels
-  virtual bool multilevel() const;
-  /// identify if 2D hierarchy can be defined across both model forms
-  /// and resolution levels
-  virtual bool multilevel_multifidelity() const;
-
-  /// return precedence for ensemble definition: model forms, resolution
-  /// levels, or both
-  virtual short ensemble_precedence() const;
-  /// assign precedence for ensemble definition (model forms or
-  /// resolution levels or both) as determined from algorithm context
-  virtual void ensemble_precedence(short mlmf_prec,
-				   bool update_default = false);
-
-  /// portion of subordinate_models() specific to derived model classes
-  virtual void derived_subordinate_models(ModelList& ml, bool recurse_flag);
-  /// resize vars/resp if needed from the bottom up
-  virtual void resize_from_subordinate_model(size_t depth = SZ_MAX);
-  /// propagate vars/labels/bounds/targets from the bottom up
-  virtual void update_from_subordinate_model(size_t depth = SZ_MAX);
-  /// return the interface employed by the derived model class, if present:
-  /// SimulationModel::userDefinedInterface, DataFitSurrModel::approxInterface,
-  /// or NestedModel::optionalInterface
-  virtual Interface& derived_interface();
-
-  /// number of discrete levels within solution control (SimulationModel)
-  virtual size_t solution_levels() const;
-  /// activate a particular level within the solution level control
-  /// (SimulationModel)
-  virtual void solution_level_cost_index(size_t index);
-  /// return currently active level within the solution level control
-  /// (SimulationModel)
-  virtual size_t solution_level_cost_index() const;
-  /// return ordered cost estimates across solution levels (SimulationModel)
-  virtual RealVector solution_level_costs() const;
-  /// return currently active cost estimate from solution level
-  /// control (SimulationModel)
-  virtual Real solution_level_cost() const;
-
-  /// return type of solution control variable
-  virtual short solution_control_variable_type() const;
-  /// return index of solution control variable within all variables
-  virtual size_t solution_control_variable_index() const;
-  /// return index of solution control variable within all discrete variables
-  virtual size_t solution_control_discrete_variable_index() const;
-
-  /// return the active (integer) value of the solution control
-  virtual int    solution_level_int_value() const;
-  /// return the active (string) value of the solution control
-  virtual String solution_level_string_value() const;
-  /// return the active (real) value of the solution control
-  virtual Real   solution_level_real_value() const;
-
-  /// return index of online cost estimates within metadata
-  virtual size_t cost_metadata_index() const;
-
-  /// set the relative weightings for multiple objective functions or least
-  /// squares terms
-  virtual void primary_response_fn_weights(const RealVector& wts, 
-					   bool recurse_flag = true);
-
-  /// set the (currently active) surrogate function index set
-  virtual void surrogate_function_indices(const SizetSet& surr_fn_indices);
-
-  /// return probability transformation employed by the Model (forwarded along
-  /// to ProbabilityTransformModel recasting)
-  virtual Pecos::ProbabilityTransformation& probability_transformation();
-
-  /// Perform any global updates prior to individual evaluate() calls;
-  /// returns true if the variables size has changed
-  virtual bool initialize_mapping(ParLevLIter pl_iter);
-  /// restore state in preparation for next initialization;
-  /// returns true if the variables size has changed
-  virtual bool finalize_mapping();
-  /// return true if a potential resize is still pending, such that
-  /// sizing-based initialization should be deferred
-  virtual bool resize_pending() const;
-
-  /// set primaryA{C,DI,DS,DR}VarMapIndices, secondaryA{C,DI,DS,DR}VarMapTargets
-  /// (coming from a higher-level NestedModel context to inform derivative est.)
-  virtual void nested_variable_mappings(const SizetArray& c_index1,
-					const SizetArray& di_index1,
-					const SizetArray& ds_index1,
-					const SizetArray& dr_index1,
-					const ShortArray& c_target2,
-					const ShortArray& di_target2,
-					const ShortArray& ds_target2,
-					const ShortArray& dr_target2);
-  /// return primaryACVarMapIndices
-  virtual const SizetArray& nested_acv1_indices() const;
-  /// return secondaryACVarMapTargets
-  virtual const ShortArray& nested_acv2_targets() const;
-  /// calculate and return derivative composition of final results
-  /// w.r.t. distribution parameters (none, all, or mixed)
-  virtual short query_distribution_parameter_derivatives() const;
-  /// activate derivative setting w.r.t. distribution parameters
-  virtual void activate_distribution_parameter_derivatives();
-  /// deactivate derivative setting w.r.t. distribution parameters
-  virtual void deactivate_distribution_parameter_derivatives();
-
-  /// transform u-space variable values to x-space
-  virtual void trans_U_to_X(const RealVector& u_c_vars, RealVector& x_c_vars);
-  /// transform x-space variable values to u-space
-  virtual void trans_X_to_U(const RealVector& x_c_vars, RealVector& u_c_vars);
-
-  /// transform x-space gradient vector to u-space
-  virtual void trans_grad_X_to_U(const RealVector& fn_grad_x,
-				 RealVector& fn_grad_u,
-				 const RealVector& x_vars);
-  /// transform u-space gradient vector to x-space
-  virtual void trans_grad_U_to_X(const RealVector& fn_grad_u,
-				 RealVector& fn_grad_x,
-				 const RealVector& x_vars);
-  /// transform x-space gradient vector to gradient with respect to inserted
-  /// distribution parameters
-  virtual void trans_grad_X_to_S(const RealVector& fn_grad_x,
-				 RealVector& fn_grad_s,
-				 const RealVector& x_vars);
-  /// transform x-space Hessian matrix to u-space
-  virtual void trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
-				 RealSymMatrix& fn_hess_u,
-				 const RealVector& x_vars,
-				 const RealVector& fn_grad_x);
-
   /// build a new SurrogateModel approximation
   virtual void build_approximation();
+
+  /// determine whether a surrogate model rebuild should be forced
+  /// based on changes in the inactive data
+  virtual bool force_rebuild();
+
+    /// set the (currently active) surrogate function index set
+  virtual void surrogate_function_indices(const SizetSet& surr_fn_indices);
+
+  /// set response computation mode used in SurrogateModels for
+  /// forming currentResponse
+  virtual void surrogate_response_mode(short mode);
+  /// return response computation mode used in SurrogateModels for
+  /// forming currentResponse
+  virtual short surrogate_response_mode() const;
+
+  /// return the DiscrepancyCorrection object used by SurrogateModels
+  virtual DiscrepancyCorrection& discrepancy_correction();
+  /// set the correction type from the DiscrepancyCorrection object
+  /// used by SurrogateModels
+  virtual void correction_type(short corr_type);
+  /// return the correction type from the DiscrepancyCorrection object
+  /// used by SurrogateModels
+  virtual short correction_type() const;
+  /// return the correction order from the DiscrepancyCorrection object
+  /// used by SurrogateModels
+  virtual short correction_order() const;
+  /// return correctionMode
+  virtual unsigned short correction_mode() const;
+  /// set correctionMode
+  virtual void correction_mode(unsigned short corr_mode);
+
+
+  // *** DATA FIT SURROGATE MODELS
+
   /// build a new SurrogateModel approximation using/enforcing
   /// anchor response at vars; rebuild if needed
   virtual bool build_approximation(const Variables& vars,
@@ -369,10 +412,6 @@ public:
   // retrieve the responses used to build a surrogate model
   //virtual const ResponseArray build_responses() const;
 
-  /// determine whether a surrogate model rebuild should be forced
-  /// based on changes in the inactive data
-  virtual bool force_rebuild();
-
   /// retrieve the shared approximation data within the ApproximationInterface
   /// of a DataFitSurrModel
   virtual SharedApproxData& shared_approximation();
@@ -396,13 +435,6 @@ public:
   /// a DataFitSurrModel
   virtual const RealVector& approximation_variances(const Variables& vars);
 
-  /// set response computation mode used in SurrogateModels for
-  /// forming currentResponse
-  virtual void surrogate_response_mode(short mode);
-  /// return response computation mode used in SurrogateModels for
-  /// forming currentResponse
-  virtual short surrogate_response_mode() const;
-
   /// set discrepancy emulation mode used in SurrogateModels for
   /// approximating response differences
   virtual void discrepancy_emulation_mode(short mode);
@@ -413,27 +445,55 @@ public:
   // link together more than one SurrogateData instance (DataFitSurrModel)
   //virtual void link_multilevel_approximation_data();
 
-  /// retrieve error estimates corresponding to the Model's response
-  /// (could be surrogate error for SurrogateModels, statistical MSE for
-  /// NestedModels, or adjoint error estimates for SimulationModels).
-  /// Errors returned correspond to most recent evaluate().
-  virtual const RealVector& error_estimates();
 
-  /// return the DiscrepancyCorrection object used by SurrogateModels
-  virtual DiscrepancyCorrection& discrepancy_correction();
-  /// set the correction type from the DiscrepancyCorrection object
-  /// used by SurrogateModels
-  virtual void correction_type(short corr_type);
-  /// return the correction type from the DiscrepancyCorrection object
-  /// used by SurrogateModels
-  virtual short correction_type() const;
-  /// return the correction order from the DiscrepancyCorrection object
-  /// used by SurrogateModels
-  virtual short correction_order() const;
-  /// return correctionMode
-  virtual unsigned short correction_mode() const;
-  /// set correctionMode
-  virtual void correction_mode(unsigned short corr_mode);
+  // *** ENSEMBLE SURROGATE MODELS
+
+  /// identify if 1D hierarchy can be defined across model forms
+  virtual bool multifidelity() const;
+  /// identify if 1D hierarchy can be defined across resolution levels
+  virtual bool multilevel() const;
+  /// identify if 2D hierarchy can be defined across both model forms
+  /// and resolution levels
+  virtual bool multilevel_multifidelity() const;
+
+  /// return precedence for ensemble definition: model forms, resolution
+  /// levels, or both
+  virtual short ensemble_precedence() const;
+  /// assign precedence for ensemble definition (model forms or
+  /// resolution levels or both) as determined from algorithm context
+  virtual void ensemble_precedence(short mlmf_prec,
+				   bool update_default = false);
+
+  /// number of discrete levels within solution control (SimulationModel)
+  virtual size_t solution_levels() const;
+  /// activate a particular level within the solution level control
+  /// (SimulationModel)
+  virtual void solution_level_cost_index(size_t index);
+  /// return currently active level within the solution level control
+  /// (SimulationModel)
+  virtual size_t solution_level_cost_index() const;
+  /// return ordered cost estimates across solution levels (SimulationModel)
+  virtual RealVector solution_level_costs() const;
+  /// return currently active cost estimate from solution level
+  /// control (SimulationModel)
+  virtual Real solution_level_cost() const;
+
+  /// return type of solution control variable
+  virtual short solution_control_variable_type() const;
+  /// return index of solution control variable within all variables
+  virtual size_t solution_control_variable_index() const;
+  /// return index of solution control variable within all discrete variables
+  virtual size_t solution_control_discrete_variable_index() const;
+
+  /// return the active (integer) value of the solution control
+  virtual int    solution_level_int_value() const;
+  /// return the active (string) value of the solution control
+  virtual String solution_level_string_value() const;
+  /// return the active (real) value of the solution control
+  virtual Real   solution_level_real_value() const;
+
+  /// return index of online cost estimates within metadata
+  virtual size_t cost_metadata_index() const;
 
   /// apply a DiscrepancyCorrection to correct an approximation within
   /// an EnsembleSurrModel
@@ -443,108 +503,75 @@ public:
   /// approximation within an EnsembleSurrModel
   virtual void recursive_apply(const Variables& vars, Response& resp);
 
-  /// update componentParallelMode for supporting parallelism in model
-  /// sub-components
-  virtual void component_parallel_mode(short mode);
 
-  /// estimate the minimum and maximum partition sizes that can be
-  /// utilized by this Model
-  virtual IntIntPair estimate_partition_bounds(int max_eval_concurrency);
+  // *** RECAST MODELS
 
-  /// return the index for the metaiterator-iterator parallelism level within
-  /// ParallelConfiguration::miPLIters that is active for use in a particular
-  /// Model at runtime
-  virtual size_t mi_parallel_level_index() const;
+  /// return true if a potential resize is still pending, such that
+  /// sizing-based initialization should be deferred
+  virtual bool resize_pending() const;
 
-  /// migrate an unmatched response record from active response map (computed
-  /// by synchronize() or synhronize_nowait()) to cached response map
-  virtual void cache_unmatched_response(int raw_id);
-  /// migrate remaining response records from responseMap to cachedResponseMap
-  virtual void cache_unmatched_responses();
 
-  /// return derived model synchronization setting
-  virtual short local_eval_synchronization();
-  /// return derived model asynchronous evaluation concurrency
-  virtual int local_eval_concurrency();
+  // *** PROBABILITY TRANSFORM MODELS
 
-  /// Service job requests received from the master.  Completes when
-  /// a termination message is received from stop_servers().
-  virtual void serve_run(ParLevLIter pl_iter, int max_eval_concurrency);
-  /// Executed by the master to terminate all server operations for a
-  /// particular model when iteration on the model is complete.
-  virtual void stop_servers();
+  /// return probability transformation employed by the Model (forwarded along
+  /// to ProbabilityTransformModel recasting)
+  virtual Pecos::ProbabilityTransformation& probability_transformation();
 
-  /// Return a flag indicating the combination of multiprocessor
-  /// evaluations and a dedicated master iterator scheduling.  Used
-  /// in synchronous evaluate functions to prevent the error
-  /// of trying to run a multiprocessor job on the master.
-  virtual bool derived_master_overload() const;
+  /// calculate and return derivative composition of final results
+  /// w.r.t. distribution parameters (none, all, or mixed)
+  virtual short query_distribution_parameter_derivatives() const;
+  /// activate derivative setting w.r.t. distribution parameters
+  virtual void activate_distribution_parameter_derivatives();
+  /// deactivate derivative setting w.r.t. distribution parameters
+  virtual void deactivate_distribution_parameter_derivatives();
 
-  /// create 2D graphics plots for automatic logging of vars/response data
-  virtual void create_2d_plots();
-  /// create a tabular output stream for automatic logging of vars/response data
-  virtual void create_tabular_datastream();
+  /// transform u-space variable values to x-space
+  virtual void trans_U_to_X(const RealVector& u_c_vars, RealVector& x_c_vars);
+  /// transform x-space variable values to u-space
+  virtual void trans_X_to_U(const RealVector& x_c_vars, RealVector& u_c_vars);
 
-  /// Update tabular/graphics data with latest variables/response data
-  virtual void derived_auto_graphics(const Variables& vars,
-				     const Response& resp);
+  /// transform x-space gradient vector to u-space
+  virtual void trans_grad_X_to_U(const RealVector& fn_grad_x,
+				 RealVector& fn_grad_u,
+				 const RealVector& x_vars);
+  /// transform u-space gradient vector to x-space
+  virtual void trans_grad_U_to_X(const RealVector& fn_grad_u,
+				 RealVector& fn_grad_x,
+				 const RealVector& x_vars);
+  /// transform x-space gradient vector to gradient with respect to inserted
+  /// distribution parameters
+  virtual void trans_grad_X_to_S(const RealVector& fn_grad_x,
+				 RealVector& fn_grad_s,
+				 const RealVector& x_vars);
+  /// transform x-space Hessian matrix to u-space
+  virtual void trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
+				 RealSymMatrix& fn_hess_u,
+				 const RealVector& x_vars,
+				 const RealVector& fn_grad_x);
 
-  /// update the Model's active view based on a higher level context
-  virtual void active_view(short view, bool recurse_flag = true);
-  /// update the Model's inactive view based on a higher level context
-  virtual void inactive_view(short view, bool recurse_flag = true);
 
-  /// return the interface identifier
-  virtual const String& interface_id() const;
-  /// Return the value of the evaluation id counter for the Model
-  virtual int derived_evaluation_id() const;
+  // *** NESTED MODELS
 
-  /// Indicates the usage of an evaluation cache by the Model
-  virtual bool evaluation_cache(bool recurse_flag = true) const;
-  /// Indicates the usage of a restart file by the Model
-  virtual bool restart_file(bool recurse_flag = true) const;
-
-  /// Set the reference points for the evaluation counters within the Model
-  virtual void set_evaluation_reference();
-  /// Request fine-grained evaluation reporting within the Model
-  virtual void fine_grained_evaluation_counters();
-  /// Print an evaluation summary for the Model
-  virtual void print_evaluation_summary(std::ostream& s,
-					bool minimal_header = false,
-					bool relative_count = true) const;
-
-  /// set the hierarchical eval ID tag prefix
-  virtual void eval_tag_prefix(const String& eval_id_str);
-
-  /// search the eval database (during derivative estimation); derived
-  /// may need to reimplement due to problem transformations
-  /// (RecastModel); return true if found in DB
-  virtual bool db_lookup(const Variables& search_vars, 
-			 const ActiveSet& search_set, Response& found_resp);
-
-  /// called from IteratorScheduler::run_iterator() for iteratorComm rank 0 to
-  /// terminate serve_init_mapping() on other iteratorComm processors
-  virtual void stop_init_mapping(ParLevLIter pl_iter);
-  /// called from IteratorScheduler::run_iterator() for iteratorComm rank != 0
-  /// to balance resize() calls on iteratorComm rank 0
-  virtual int serve_init_mapping(ParLevLIter pl_iter);
-
-  /// called from IteratorScheduler::run_iterator() for iteratorComm rank 0 to
-  /// terminate serve_finalize_mapping() on other iteratorComm processors
-  virtual void stop_finalize_mapping(ParLevLIter pl_iter);
-  /// called from IteratorScheduler::run_iterator() for iteratorComm rank != 0
-  /// to balance resize() calls on iteratorComm rank 0
-  virtual int serve_finalize_mapping(ParLevLIter pl_iter);
-
-  /// set the warm start flag (warmStartFlag)
-  virtual void warm_start_flag(const bool flag);
-
-  /// Declare a model's sources to the evaluationsDB
-  virtual void declare_sources();
+  /// set primaryA{C,DI,DS,DR}VarMapIndices, secondaryA{C,DI,DS,DR}VarMapTargets
+  /// (coming from a higher-level NestedModel context to inform derivative est.)
+  virtual void nested_variable_mappings(const SizetArray& c_index1,
+					const SizetArray& di_index1,
+					const SizetArray& ds_index1,
+					const SizetArray& dr_index1,
+					const ShortArray& c_target2,
+					const ShortArray& di_target2,
+					const ShortArray& ds_target2,
+					const ShortArray& dr_target2);
+  /// return primaryACVarMapIndices
+  virtual const SizetArray& nested_acv1_indices() const;
+  /// return secondaryACVarMapTargets
+  virtual const ShortArray& nested_acv2_targets() const;
 
   //
   //- Heading: Member functions
   //
+
+  // *** BASE MODEL (BROADLY USED, OPERATES ON BASE DATA)
 
   /// return the sub-models in nested and surrogate models
   ModelList& subordinate_models(bool recurse_flag = true);
@@ -631,17 +658,7 @@ public:
   void iterator_space_to_user_space(const Variables& iter_vars,
 				    const Response&  iter_resp,
 				    Variables& user_vars, Response& user_resp);
-
-  //
-  //- Heading: Set and Inquire functions
-  //
  
-  /// replaces existing letter with a new one
-  void assign_rep(std::shared_ptr<Model> model_rep);
-
-  // VARIABLES
-
-
   /// return mvDist
   Pecos::MultivariateDistribution& multivariate_distribution();
   /// return mvDist
@@ -649,7 +666,6 @@ public:
   // set mvDist
   //void multivariate_distribution(const Pecos::MultivariateDistribution& dist);
 
-  
   /// return the current variables (currentVariables) as const
   /// reference (preferred)
   const Variables& current_variables() const;
@@ -778,12 +794,13 @@ public:
   /// the model as opposed to graphics posting at the strategy level).
   bool auto_graphics() const;
 
-  /// function to check modelRep (does this envelope contain a letter)
-  bool is_null() const;
-
+  /// replaces existing letter with a new one
+  void assign_rep(std::shared_ptr<Model> model_rep);
   /// returns modelRep for access to derived class member functions
   /// that are not mapped to the top Model level
   std::shared_ptr<Model> model_rep() const;
+  /// function to check modelRep (does this envelope contain a letter)
+  bool is_null() const;
 
   /// set the specified configuration to the Model's inactive vars, converting
   /// from real to integer or through index to string value as needed
@@ -841,6 +858,8 @@ protected:
   //- Heading: Virtual functions
   //
 
+  // *** BASE MODEL (BROADLY USED, OPERATES ON BASE DATA, SUPPORTS RECURSION)
+
   /// portion of evaluate() specific to derived model classes
   virtual void derived_evaluate(const ActiveSet& set);
   /// portion of evaluate_nowait() specific to derived model classes
@@ -869,6 +888,8 @@ protected:
   //
   //- Heading: Member functions
   //
+
+  // *** BASE MODEL (BROADLY USED, OPERATES ON BASE DATA)
 
   /// update incoming (sub-)model with active values from currentVariables
   void update_model_active_variables(Model& model);
@@ -1130,6 +1151,8 @@ private:
   //
   //- Heading: Member functions
   //
+
+  // *** BASE MODEL (BROADLY USED, OPERATES ON BASE DATA)
 
   /// Used by the envelope to instantiate the correct letter class
   std::shared_ptr<Model> get_model(ProblemDescDB& problem_db);

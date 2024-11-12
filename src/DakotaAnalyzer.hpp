@@ -130,12 +130,12 @@ protected:
 			       bool log_best_flag = false);
 
   /// perform function evaluations to map a keyed batch of parameter sets
-  /// (allVariablesMap[key]) into a corresponding batch of response sets
-  /// (allResponsesMap[key])
+  /// (batchVariablesMap[key]) into a corresponding batch of response sets
+  /// (batchResponsesMap[key])
   void evaluate_batch(Model& model, int batch_id, bool log_best_flag = false);
   /// perform function evaluations to map a keyed batch of parameter sets
-  /// (allVariablesMap[key]) into a corresponding batch of response sets
-  /// (allResponsesMap[key])
+  /// (batchVariablesMap[key]) into a corresponding batch of response sets
+  /// (batchResponsesMap[key])
   const IntIntResponse2DMap& synchronize_batches(Model& model,
 						 bool log_best_flag = false);
   /// since synchronize returns the aggregation of all evaluated batches,
