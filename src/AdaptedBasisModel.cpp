@@ -385,15 +385,15 @@ void AdaptedBasisModel::compute_subspace()
   //     = J' J
   //   (Eigenvectors of A A' are left singular vectors of A)
 
-  //      *** TO DO: adapt code from  ActiveSubspaceModel::compute_svd() which
-  //          uses svd() helper from dakota_linear_algebra.hpp.
-  //          Apply truncation criterion
+  //   *** TO DO: adapt code from  ActiveSubspaceModel::compute_svd() which
+  //       uses singular_value_decomp() helper from dakota_linear_algebra.hpp.
+  //       Apply truncation criterion.
 
   //// RealVector singular_values;
   //// RealMatrix V_transpose; // right eigenvectors, not used
   // we want left singular vectors but don't overwrite A, so make a deep copy
   //// RealMatrix left_singular_vectors = A_q;
-  //// svd(left_singular_vectors, singular_values, V_transpose);
+  //// singular_value_decomp(left_singular_vectors,singular_values,V_transpose);
 
   //   Truncate eigenvalues of covariance at some pre-selected level
   //     --> dimension \nu reduced from dimension d

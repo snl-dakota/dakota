@@ -108,7 +108,12 @@ def resolve_rpaths(rpaths: List[str], requests: List[str], base_dir: str) -> Lis
             clipped = req[7:]  # remove @rpath
             for rpath in rpaths_paths:
                 abs_path = rpath / clipped
-                if abs_path.exists():
+                try:
+                    abs_path_exists = abs_path.exists()
+                except PermissionError:
+                    logging.warning(f"Existence of {abs_path} could not be determined due to permission problem.")
+                    continue
+                if abs_path_exists:
                     resolved.append(str(abs_path))
                     break
             else:  # couldn't be resolved

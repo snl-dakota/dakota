@@ -1417,8 +1417,10 @@ sub_optimizer_select(unsigned short requested_sub_method,
 #endif
 
   unsigned short assigned_sub_method = SUBMETHOD_NONE;
+
   switch (requested_sub_method) {
   case SUBMETHOD_NPSOL:
+    // "sqp" user specification: hard error if NPSOL is not available
     if (have_npsol) assigned_sub_method = requested_sub_method;
     else
       Cerr << "\nError: this executable not configured with NPSOL SQP.\n       "
@@ -1426,28 +1428,32 @@ sub_optimizer_select(unsigned short requested_sub_method,
     break;
 
   case SUBMETHOD_OPTPP:
+    // "nip" user specification: hard error if OPT++ is not available
     if (have_optpp) assigned_sub_method = requested_sub_method;
     else
       Cerr << "\nError: this executable not configured with OPT++ NIP.\n       "
 	   << "Please select alternate sub-method solver." << std::endl;
     break;
 
-  case SUBMETHOD_NPSOL_OPTPP: // not currently a spec option
+  case SUBMETHOD_NPSOL_OPTPP:
+    // "competed_local" is not solver specific: reconfigure if possible
     if (have_npsol && have_optpp) assigned_sub_method = requested_sub_method;
+    else if (have_npsol) assigned_sub_method = SUBMETHOD_NPSOL;
+    else if (have_optpp) assigned_sub_method = SUBMETHOD_OPTPP;
     else
-      Cerr << "\nError: this executable not configured with both OPT++ and "
-	   << "NPSOL.\n       Please select alternate sub-method solver."
+      Cerr << "\nError: this executable not configured with OPT++ or NPSOL for "
+	   << "competed_local solves.\n       Please select alternate solver."
 	   << std::endl;
     break;
 
-  case SUBMETHOD_DIRECT:
+  case SUBMETHOD_DIRECT: // No matching input request at this time
     if (have_ncsu) assigned_sub_method = requested_sub_method;
     else
       Cerr << "\nError: this executable not configured with NCSU DIRECT.\n"
 	   << "Please select alternate sub-method solver." << std::endl;
     break;
 
-  case SUBMETHOD_DIRECT_NPSOL:
+  case SUBMETHOD_DIRECT_NPSOL: // No matching input request at this time
     if (have_ncsu && have_npsol) assigned_sub_method = requested_sub_method;
     else
       Cerr << "\nError: this executable not configured with both NCSU DIRECT "
@@ -1455,7 +1461,7 @@ sub_optimizer_select(unsigned short requested_sub_method,
 	   << std::endl;
     break;
 
-  case SUBMETHOD_DIRECT_OPTPP:
+  case SUBMETHOD_DIRECT_OPTPP: // No matching input request at this time
     if (have_ncsu && have_optpp) assigned_sub_method = requested_sub_method;
     else
       Cerr << "\nError: this executable not configured with both NCSU DIRECT "
@@ -1464,11 +1470,19 @@ sub_optimizer_select(unsigned short requested_sub_method,
     break;
 
   case SUBMETHOD_DIRECT_NPSOL_OPTPP:
-    if (have_ncsu && have_npsol && have_optpp)
-      assigned_sub_method = requested_sub_method;
+    // "global_local" is not solver specific: reconfigure if possible
+    if (have_ncsu) {
+      if (have_npsol && have_optpp) assigned_sub_method = requested_sub_method;
+      else if (have_npsol) assigned_sub_method = SUBMETHOD_DIRECT_NPSOL;
+      else if (have_optpp) assigned_sub_method = SUBMETHOD_DIRECT_OPTPP;
+      else
+	Cerr << "\nError: this executable not configured with a local solver."
+	     << "\n       Please select alternate sub-method solver."
+	     << std::endl;
+    }
     else
-      Cerr << "\nError: this executable not configured with NCSU DIRECT, NPSOL"
-	   << ", and OPT++.\n       Please select alternate sub-method solver."
+      Cerr << "\nError: this executable not configured with a global solver."
+	   << "\n       Please select alternate sub-method solver."
 	   << std::endl;
     break;
 
@@ -1477,44 +1491,62 @@ sub_optimizer_select(unsigned short requested_sub_method,
     case SUBMETHOD_NPSOL: // use SUBMETHOD_NPSOL if available
       if      (have_npsol) assigned_sub_method = default_sub_method;
       else if (have_optpp) assigned_sub_method = SUBMETHOD_OPTPP;
+      // else leave as SUBMETHOD_NONE
       break;
     case SUBMETHOD_OPTPP: // use SUBMETHOD_OPTPP if available
       if      (have_optpp) assigned_sub_method = default_sub_method;
       else if (have_npsol) assigned_sub_method = SUBMETHOD_NPSOL;
+      // else leave as SUBMETHOD_NONE
       break;
     case SUBMETHOD_NPSOL_OPTPP: // use both OPTPP and NPSOL if available
       if (have_npsol && have_optpp) assigned_sub_method = default_sub_method;
       else if (have_npsol) assigned_sub_method = SUBMETHOD_NPSOL;
       else if (have_optpp) assigned_sub_method = SUBMETHOD_OPTPP;
+      // else leave as SUBMETHOD_NONE
       break;
     case SUBMETHOD_DIRECT:
       if (have_ncsu) assigned_sub_method = default_sub_method;
+      // else leave as SUBMETHOD_NONE
       break;
     case SUBMETHOD_DIRECT_NPSOL:
       if (have_ncsu && have_npsol) assigned_sub_method = default_sub_method;
-      else if (have_ncsu)  assigned_sub_method = SUBMETHOD_DIRECT;
+      else if (have_ncsu) {
+	if (have_optpp) assigned_sub_method = SUBMETHOD_DIRECT_OPTPP;
+	else            assigned_sub_method = SUBMETHOD_DIRECT;
+      }
       else if (have_npsol) assigned_sub_method = SUBMETHOD_NPSOL;
+      else if (have_optpp) assigned_sub_method = SUBMETHOD_OPTPP;
+      // else leave as SUBMETHOD_NONE
       break;
     case SUBMETHOD_DIRECT_OPTPP:
       if (have_ncsu && have_optpp) assigned_sub_method = default_sub_method;
-      else if (have_ncsu)  assigned_sub_method = SUBMETHOD_DIRECT;
+      else if (have_ncsu) {
+	if (have_npsol) assigned_sub_method = SUBMETHOD_DIRECT_NPSOL;
+	else            assigned_sub_method = SUBMETHOD_DIRECT;
+      }
       else if (have_optpp) assigned_sub_method = SUBMETHOD_OPTPP;
+      else if (have_npsol) assigned_sub_method = SUBMETHOD_NPSOL;
+      // else leave as SUBMETHOD_NONE
       break;
     case SUBMETHOD_DIRECT_NPSOL_OPTPP:
       if (have_ncsu) {
 	if (have_npsol && have_optpp) assigned_sub_method = default_sub_method;
 	else if (have_npsol) assigned_sub_method = SUBMETHOD_DIRECT_NPSOL;
 	else if (have_optpp) assigned_sub_method = SUBMETHOD_DIRECT_OPTPP;
+	else                 assigned_sub_method = SUBMETHOD_DIRECT;
       }
       else if (have_npsol && have_optpp)
 	assigned_sub_method = SUBMETHOD_NPSOL_OPTPP;
       else if (have_npsol) assigned_sub_method = SUBMETHOD_NPSOL;
       else if (have_optpp) assigned_sub_method = SUBMETHOD_OPTPP;
+      // else leave as SUBMETHOD_NONE
       break;
     }
     if (assigned_sub_method == SUBMETHOD_NONE)
-      Cerr << "\nError: this executable not configured with an available "
-	   << "sub-method solver." << std::endl;
+      Cerr << "\nError: this executable not configured with a sub-method "
+	   << "solver that can be used as a default.\n       Providing a "
+	   << "solver override that is consistent with the package "
+	   << "configuration may help." << std::endl;
     break;
 
   case SUBMETHOD_NONE:
@@ -1528,10 +1560,10 @@ sub_optimizer_select(unsigned short requested_sub_method,
 	 << " not recognized in NonD::sub_optimizer_select()." << std::endl;
     break;
   }
+
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nSub-method " << assigned_sub_method
 	 << " assigned in NonD::sub_optimizer_select()." << std::endl;
-
   return assigned_sub_method;
 }
 

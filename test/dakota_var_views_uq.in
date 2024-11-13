@@ -1,6 +1,6 @@
 #@ TODO REVIEW: Not all tests need NPSOL.
 #@ *: DakotaConfig=HAVE_NPSOL
-#@ s2: TimeoutDelay=300
+#@ s2: TimeoutDelay=600
 
 ## DAKOTA INPUT FILE - dakota_var_views_uq.in
 

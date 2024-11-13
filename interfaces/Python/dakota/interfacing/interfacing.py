@@ -5,15 +5,18 @@ import io
 import collections
 import copy
 import functools
+import json
 import linecache
+import math
+import pprint
 import re
 import sys
-from typing import List, Tuple
+from typing import Generator, Iterable, List, NewType, Tuple, Union, Dict
 import copy
 from . import dprepro as dprepro_mod
 
 __author__ = 'J. Adam Stephens'
-__copyright__ = 'Copyright 2014-2023 National Technology & Engineering Solutions of Sandia, LLC (NTESS)'
+__copyright__ = 'Copyright 2014-2024 National Technology & Engineering Solutions of Sandia, LLC (NTESS)'
 __license__ = 'GNU Lesser General Public License'
 
 PYTHON3 = True if sys.version_info[0] == 3 else False 
@@ -51,12 +54,29 @@ class ResultsUpdateError(Exception):
 class BadTypesOverride(Exception):
     pass
 
-# Constant used to specify an unnamed results file
+class EvalNumberError(Exception):
+    pass
+
+# Constants
+# specify an unnamed results file
 UNNAMED = True
+# file formats
+APREPRO = 1
+STANDARD = 1
+JSON = 2
+DIRECT = 3
+
+#### Types
+
+Key = NewType('Key', Union[int, str])
+VarValue = NewType('VarValue', Union[int, str, float])
+Gradient = NewType('Gradient', Iterable[float])
+Hessian = NewType ('Hessian', Iterable[Iterable[float]])
+FileFormat = NewType('FileFormat', int)
 
 #### Class definitions
 
-class Parameters(object):
+class Parameters:
     """Access variables and analysis components from a Dakota parameters file
     
     Parameters objects typically should be constructed by the convenience 
@@ -69,14 +89,11 @@ class Parameters(object):
     tuples of descriptor and variable value, and values() method, which
     yields only the values.
 
- and variable value.
-
     Attributes:
         an_comps: List of strings containing the analysis components.
         eval_id: Evaluation id (string).
         eval_num: Evaluation number (final token in eval_id) (int).
-        aprepro_format: Boolean indicating whether the parameters file was in
-            aprepro (True) or Dakota (False) format.
+        format: constant indicating format of the file, APREPRO (1), STANDARD (2), JSON (3), or DIRECT (4)
         descriptors: List of the variable descriptors (read-only)
         num_variables: Number of variables (read-only)
         num_an_comps: Number of analysis components (read-only)
@@ -84,36 +101,39 @@ class Parameters(object):
         num_metadata: Number of requested metadata fields (read-only)
     """
 
-    def __init__(self,aprepro_format=None, variables=None, an_comps=None, 
-                 eval_id=None, metadata=None, infer_types=True, types=None):
-        self.aprepro_format = aprepro_format
+    def __init__(self, format: FileFormat, variables: Dict[str, VarValue], an_comps: List[str], 
+            eval_id: str, metadata: List[str], infer_types: True, types: Union[list, dict]=None) -> None:
+        self.format = format
+        if format not in (APREPRO, STANDARD, JSON, DIRECT):
+            raise TypeError("format parameter must be APREPRO, STANDARD, JSON, or DIRECT")
         self._variables = copy.deepcopy(variables)
         self.an_comps = list(an_comps)
         self.eval_id = str(eval_id)
         self.eval_num = int(eval_id.split(":")[-1])
         self.metadata = list(metadata)
-        if isinstance(types, list):
-            self._set_types_from_list(types)
-        elif isinstance(types, dict):
-            self._set_types_from_dict(infer_types, types)
-        elif infer_types:
-            self._infer_types()
+        if self.format in (APREPRO, STANDARD):  # JSON and DIRECT formats are presumed to have the proper types
+            if isinstance(types, list):
+                self._set_types_from_list(types)
+            elif isinstance(types, dict):
+                self._set_types_from_dict(infer_types, types)
+            elif infer_types:
+                self._infer_types()
         self._batch = False
 
-    def _set_types_from_list(self, types):
+    def _set_types_from_list(self, types: dict) -> None:
         if len(types) != len(self._variables):
             raise BadTypesOverride("Length of types list is %d but number of variables is %d" %(len(types), len(self._variables)))
         for t, (k, v) in zip(types, self._variables.items()):
             self._variables[k] = t(v)
 
-    def _set_types_from_dict(self, infer_types, types):
+    def _set_types_from_dict(self, infer_types: bool, types: dict) -> None:
         for k, v in self._variables.items():
             if k in types:
                 self._variables[k] = types[k](v)
             elif infer_types:
                 self._variables[k] = self._infer_single_type(v)
 
-    def _infer_types(self):
+    def _infer_types(self) -> None:
         # Convert variables to the appropriate type. The possible types
         # are int, float, and string. The variables are already strings.
         # TODO: Consider a user option to override this behavior and keep
@@ -121,7 +141,7 @@ class Parameters(object):
         for k, v in self._variables.items():
             self._variables[k] = self._infer_single_type(v)
 
-    def _infer_single_type(self, v):
+    def _infer_single_type(self, v: str) -> VarValue:
         # string variables often contain underscores and might be mistaken for
         # floats or ints
         converted = v
@@ -141,35 +161,35 @@ class Parameters(object):
     def descriptors(self):
         return [k for k in self._variables.keys()]
 
-    def __getitem__(self,key):
+    def __getitem__(self, key: Key):
         if type(key) is int:
             return self._variables[self.descriptors[key]]
         else:
             return self._variables[key]
 
-    def __setitem__(self,key,value):
+    def __setitem__(self, key: Key, value: VarValue):
         if type(key) is int:
             self._variables[self.descriptors[key]] = value
         else:
             self._variables[key] = value
 
     @property
-    def num_variables(self):
+    def num_variables(self) -> int:
         return len(self._variables)
 
     @property
-    def num_an_comps(self):
+    def num_an_comps(self) -> int:
         return len(self.an_comps)
 
     @property
-    def num_metadata(self):
+    def num_metadata(self) -> int:
         return len(self.metadata)
 
-    def __iter__(self):
+    def __iter__(self) -> Generator[str, None, None]:
         for name in self._variables:
             yield name
 
-    def items(self):
+    def items(self) -> Generator[Tuple[str, VarValue], None, None]:
         if PYTHON3:
             it = self._variables.items()
         else:
@@ -177,7 +197,7 @@ class Parameters(object):
         for name, var in it:
             yield name, var
     
-    def values(self):
+    def values(self) -> VarValue:
         if PYTHON3:
             it = self._variables.values()
         else:
@@ -189,10 +209,10 @@ class Parameters(object):
         self._batch = flag
 
     @property
-    def batch(self):
+    def batch(self) -> bool:
         return self._batch
 
-    def __deepcopy__(self, memo):
+    def __deepcopy__(self, memo) -> 'Parameters':
         cls = self.__class__
         result = cls.__new__(cls)
         memo[id(self)] = result
@@ -206,7 +226,7 @@ _ASVType = collections.namedtuple("_ASVType",["function","gradient","hessian"])
 
 
 # A class to hold the ASV and data for a single response
-class Response(object):
+class Response:
     """Active set vector and data for a single response.
 
     Instances of this class are constructed by Results objects.
@@ -230,7 +250,7 @@ class Response(object):
             (and ignore_asv is False), or if the dimension does not correspond 
             correctly with the number of derivative variables.    
     """
-    def __init__(self, descriptor, num_deriv_vars, ignore_asv, asv):
+    def __init__(self, descriptor: str, num_deriv_vars: int, ignore_asv: bool, asv: int) -> None:
         self._descriptor = descriptor
         self._num_deriv_vars = num_deriv_vars
         int_asv = int(asv)
@@ -242,7 +262,7 @@ class Response(object):
         self._ignore_asv = ignore_asv
         self._batch = False
     
-    def shape_matches(self, other):
+    def shape_matches(self, other: 'Response') -> bool:
         """True if the "shape" of other matches self
 
            Shape includes the descriptor, derivative variables, asv,
@@ -255,18 +275,18 @@ class Response(object):
     
 
     @property
-    def function(self):
+    def function(self) -> float:
         return self._function
 
     @function.setter
-    def function(self,val):
+    def function(self, val: float) -> None:
         if not (self._ignore_asv or self.asv.function):
             raise ResponseError("Function value not requested for '%s'." 
                     % self._descriptor)
         self._function = float(val)
 
     @property
-    def gradient(self):
+    def gradient(self) -> Union[Gradient, None]:
         # try/except needed bc Results._write_results with ignore_csv = True 
         # tests for existence of this member        
         try: 
@@ -275,7 +295,7 @@ class Response(object):
             return None
 
     @gradient.setter
-    def gradient(self,val):
+    def gradient(self, val: Gradient) -> None:
         if not (self._ignore_asv or self.asv.gradient):
             raise ResponseError("Gradient not requested for '%s'." 
                     % self._descriptor)
@@ -285,7 +305,7 @@ class Response(object):
                     "derivative variables.")
 
     @property
-    def hessian(self):
+    def hessian(self) -> Union[Hessian, None]:
         # try/except needed bc Results._write_results with ignore_csv = True 
         # tests for existence of this member        
         try:
@@ -294,7 +314,7 @@ class Response(object):
             return None
 
     @hessian.setter
-    def hessian(self,val):
+    def hessian(self, val: Hessian) -> None:
         if not (self._ignore_asv or self.asv.hessian):
             raise ResponseError("Hessian not requested for '%s'." 
                     % self._descriptor)
@@ -319,7 +339,7 @@ class Response(object):
                 row.append(float(c))
             self._hessian.append(row)
     
-    def __deepcopy__(self, memo):
+    def __deepcopy__(self, memo) -> 'Response':
         cls = self.__class__
         result = cls.__new__(cls)
         memo[id(self)] = result
@@ -346,7 +366,7 @@ class IndexableOrderedDict(collections.OrderedDict):
             return super(IndexableOrderedDict, self).__setitem__(key, value)
 
 
-class Results(object):
+class Results:
     """Collect response data and write to results file.
 
     Results objects typically should be constructed by the convenience function
@@ -372,10 +392,12 @@ class Results(object):
         results_file: Name of results file that will be written
     """
 
-    def __init__(self, aprepro_format=None, responses=None, 
-            deriv_vars=None, eval_id=None, metadata=None,
-            ignore_asv=False, results_file=None):
-        self.aprepro_format = aprepro_format
+    def __init__(self, format: int, responses: dict, 
+            deriv_vars: List[str], eval_id: str, metadata: List[str],
+            ignore_asv: bool=False, results_file: str=None):
+        self.format = format
+        if format not in (APREPRO, STANDARD, JSON, DIRECT):
+            raise TypeError("format parameter must be APREPRO, STANDARD, JSON, or DIRECT")
         self.ignore_asv = ignore_asv
         self._deriv_vars = deriv_vars[:]
         num_deriv_vars = len(deriv_vars)
@@ -392,15 +414,15 @@ class Results(object):
         self._failed = False
         self._batch = False
 
-    def __getitem__(self,key):
+    def __getitem__(self, key: Key) -> Response:
         if type(key) is int:
             return self._responses[self.descriptors[key]]
         else:
             return self._responses[key]
 
-    def format_matches(self, other):
+    def format_matches(self, other: 'Results') -> bool:
         matches = True
-        matches = matches and (self.aprepro_format == other.aprepro_format)
+        matches = matches and (self.format == other.format)
         matches = matches and (self.ignore_asv == other.ignore_asv)
         matches = matches and all(s == o for s, o in 
                                   zip_longest(self._deriv_vars, other._deriv_vars))
@@ -412,7 +434,7 @@ class Results(object):
         matches = matches and (self._batch == other._batch)
         return matches
  
-    def __deepcopy__(self, memo):
+    def __deepcopy__(self, memo) -> 'Results':
         cls = self.__class__
         result = cls.__new__(cls)
         memo[id(self)] = result
@@ -421,47 +443,14 @@ class Results(object):
         return result
         
     @property
-    def num_deriv_vars(self):
+    def num_deriv_vars(self) -> int:
         return len(self._deriv_vars)
 
     @property
-    def num_responses(self):
+    def num_responses(self) -> int:
         return len(self._responses)
 
-    def _write_results(self,stream, ignore_asv):
-        # Write FAIL if set
-        if self._failed:
-            print("FAIL", file=stream)
-            return
-        # Write function values
-        for t, v in self._responses.items():
-            if (v.asv.function or ignore_asv) and v.function is not None:
-                print("%24.16E %s" %(v.function, t), file=stream)
-        # Write gradients
-        for t, v in self._responses.items():
-            if (v.asv.gradient or ignore_asv) and v.gradient is not None:
-                print("[ ",file=stream, end="")
-                for e in v.gradient:
-                    print(" %24.16E" % e,file=stream,end="")
-                print(" ]",file=stream)
-        # Write Hessians
-        for t, v in self._responses.items():
-            if (v.asv.hessian or ignore_asv) and v.hessian is not None:
-                print("[[",file=stream,end="")
-                first = True
-                for r in v.hessian:
-                    if not first:
-                        print("\n  ",file=stream,end="")
-                    first=False
-                    for c in r:
-                        print(" %24.16E" % c,file=stream, end="")
-                print(" ]]",file=stream)
-        # Write metadata
-        for k, v in self.metadata.items():
-            print("%24.16E %s" %(v, k), file=stream)
-
-
-    def write(self, stream=None, ignore_asv=None):
+    def write(self, stream: io.IOBase=None, ignore_asv:bool=None, json: bool=False) -> None:
         """Write the results to the Dakota results file.
 
         Keyword Args:
@@ -483,40 +472,24 @@ class Results(object):
         if self._batch:
             raise BatchWriteError("write() called on Results object in " + \
                     "batch mode. Write using BatchResults container")
+            
+        write_function = _write_json_results if json else _write_standard_results
         my_ignore_asv = self.ignore_asv
         if ignore_asv is not None:
             my_ignore_asv = ignore_asv
 
-        ## Confirm that user has provided all info requested by Dakota
-        if not my_ignore_asv and not self._failed:
-            for t, v in self._responses.items():
-                if v.asv.function and v.function is None:
-                    raise ResponseError("Response '" + t + "' is missing "
-                            "requested function result.") 
-                if v.asv.gradient and v.gradient is None:
-                    raise ResponseError("Response '" + t + "' is missing "
-                            "requested gradient result.")
-                if v.asv.hessian and v.hessian is None:
-                    raise ResponseError("Response '" +t + "' is missing "
-                            "requested Hessian result.")
-
-        if not self._failed:
-            for k, v in self.metadata.items():
-                if v is None:
-                    raise ResultsError("Results object is missing requested "
-                            "metadata field '" + k + "'")
-
+        _check_against_asv(self, my_ignore_asv)
         if stream is None:
             if self.results_file is None:
                 raise MissingSourceError("No stream specified and no "
                         "results_file provided at construct time.")
             else:
                 with open(self.results_file, "w", encoding='utf8') as ofp:
-                    self._write_results(ofp, my_ignore_asv)
+                    write_function(ofp, self, my_ignore_asv)
         else:
-            self._write_results(stream, my_ignore_asv)
+            write_function(stream, self, my_ignore_asv)
 
-    def return_direct_results_dict(self, ignore_asv=None):
+    def direct_results_dict(self, ignore_asv: Union[bool, None]=None) -> dict:
         """Create and return a direct python interface results dictionary.
 
         Keyword Args:
@@ -527,25 +500,7 @@ class Results(object):
         if ignore_asv is not None:
             my_ignore_asv = ignore_asv
 
-        ## Confirm that user has provided all info requested by Dakota
-        if not my_ignore_asv and not self._failed:
-            for t, v in self._responses.items():
-                if v.asv.function and v.function is None:
-                    raise ResponseError("Response '" + t + "' is missing "
-                            "requested function result.") 
-                if v.asv.gradient and v.gradient is None:
-                    raise ResponseError("Response '" + t + "' is missing "
-                            "requested gradient result.")
-                if v.asv.hessian and v.hessian is None:
-                    raise ResponseError("Response '" +t + "' is missing "
-                            "requested Hessian result.")
-       
-        if not self._failed:
-            for k, v in self.metadata.items():
-                if v is None:
-                    raise ResultsError("Results object is missing requested "
-                            "metadata field '" + k + "'")
-
+        _check_against_asv(self, my_ignore_asv)
 
         results_dict = {}
         results_dict['fns'] = []
@@ -561,23 +516,24 @@ class Results(object):
         
         results_dict['metadata'] = [value for label, value in self.metadata.items()] 
         return results_dict
+    
 
-    def _set_batch(self, flag):
+    def _set_batch(self, flag: bool) -> None:
         self._batch = flag
 
     @property
-    def descriptors(self):
+    def descriptors(self) -> List[str]:
         return [k for k in self._responses.keys()]
 
     @property
-    def deriv_vars(self):
+    def deriv_vars(self) -> List[str]:
         return list(self._deriv_vars)
 
-    def __iter__(self):
+    def __iter__(self) -> Generator[str, None, None]:
         for name in self._responses:
             yield name
 
-    def items(self):
+    def items(self) -> Generator[Tuple[str, Response], None, None]:
         if PYTHON3:
             it = self._responses.items()
         else:
@@ -585,7 +541,7 @@ class Results(object):
         for name, response in it:
             yield name, response
     
-    def responses(self):
+    def responses(self) -> Generator[Response, None, None]:
         if PYTHON3:
             it = self._responses.values()
         else:
@@ -593,17 +549,21 @@ class Results(object):
         for value in self._responses.values():
             yield value
 
-    def fail(self):
+    def fail(self) -> None:
         """Set the FAIL attribute. 
         
         When the results file is written, it will contain only the word FAIL"""
         self._failed = True
+        
+    def failed(self) -> bool:
+        return self._failed
 
     @property
-    def batch(self):
+    def batch(self) -> bool:
         return self._batch
 
-class BatchParameters(object):
+                
+class BatchParameters:
     """Access variables and analysis components from a batch parameters file
 
     BatchParameters objects are simple collections of Parameters objects. 
@@ -617,7 +577,7 @@ class BatchParameters(object):
         batch_id: Batch id (string).
     """
 
-    def __init__(self, param_sets=None):
+    def __init__(self, param_sets: List[Parameters]) -> None:
         self._eval_params = param_sets
         eval_id = self._eval_params[0].eval_id
         tokens = eval_id.split(":")
@@ -630,20 +590,20 @@ class BatchParameters(object):
             p._set_batch(True)
 
     @property
-    def batch_id(self):
+    def batch_id(self) -> str:
         return self._batch_id
 
-    def __getitem__(self,index):
+    def __getitem__(self,index) -> Parameters:
         return self._eval_params[index]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._eval_params)
 
-    def __iter__(self):
+    def __iter__(self) -> Generator[Parameters, None, None]:
         for p in self._eval_params:
             yield p
 
-    def __deepcopy__(self, memo):
+    def __deepcopy__(self, memo) -> 'BatchParameters':
         cls = self.__class__
         result = cls.__new__(cls)
         memo[id(self)] = result
@@ -651,7 +611,7 @@ class BatchParameters(object):
             setattr(result, k, copy.deepcopy(v, memo))
         return result
  
-class BatchResults(object):
+class BatchResults:
     """Collect response data and write to results file for a batch evaluation.
 
     BatchResults objects should be constructed by the convenience function
@@ -668,7 +628,7 @@ class BatchResults(object):
         results_file: Name of results file that will be written
     """
 
-    def __init__(self, results_sets):
+    def __init__(self, results_sets: List[Results]) -> None:
         self._eval_results = results_sets
         eval_id = self._eval_results[0].eval_id
         tokens = eval_id.split(":")
@@ -683,24 +643,21 @@ class BatchResults(object):
             r._set_batch(True)
 
     @property
-    def batch_id(self):
+    def batch_id(self) -> str:
         return self._batch_id
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int) -> Results:
         return self._eval_results[index]
 
-    def __setitem__(self, index, other):
+    def __setitem__(self, index: int, other: Results) -> None:
         self._eval_results[index] = other
 
-    def _toggle_batch_write(self, results, stream, ignore_asv):
-        results._set_batch(False)
-        results.write(stream, ignore_asv)
-        results._set_batch(True)
-
-    def write(self, stream=None, ignore_asv=None):
+    def write(self, stream:io.IOBase=None, ignore_asv:bool=None, json: bool=False) -> None:
         my_ignore_asv = self._ignore_asv
         if ignore_asv is not None:
             my_ignore_asv=ignore_asv
+        
+        write_function = self._write_batch_to_json if json else self._write_batch_to_standard        
 
         if stream is None:
             if self._results_file is None:
@@ -708,22 +665,34 @@ class BatchResults(object):
                         "results_file provided at construct time.")
             else:
                 with open(self._results_file, "w", encoding='utf8') as ofp:
-                    for r in self._eval_results:
-                        ofp.write("#\n")
-                        self._toggle_batch_write(r, ofp, my_ignore_asv)
+                    write_function(ofp, my_ignore_asv)
         else:
             for r in self._eval_results:
-                stream.write("#\n")
-                self._toggle_batch_write(r, stream, my_ignore_asv)
+                write_function(stream, my_ignore_asv)
 
-    def __len__(self):
+                
+                
+    def _write_batch_to_standard(self, stream: io.IOBase, ignore_asv: bool) -> None:
+        for r in self._eval_results:
+            stream.write("#\n")
+            _write_standard_results(stream, r, ignore_asv)
+            
+    def _write_batch_to_json(self, stream: io.IOBase, ignore_asv: bool) -> None:
+        json_batch = [_encode_results_as_json(r, ignore_asv) for r in self._eval_results]
+        json.dump(json_batch, stream)
+        
+    def direct_results_dict(self):
+        return [r.direct_results_dict() for r in self._eval_results]
+            
+                
+    def __len__(self) -> int:
         return len(self._eval_results)
 
-    def __iter__(self):
+    def __iter__(self) -> int:
         for r in self._eval_results:
             yield r
 
-    def __deepcopy__(self, memo):
+    def __deepcopy__(self, memo) -> 'BatchResults':
         cls = self.__class__
         result = cls.__new__(cls)
         memo[id(self)] = result
@@ -731,6 +700,238 @@ class BatchResults(object):
             setattr(result, k, copy.deepcopy(v, memo))
         return result
  
+
+class BatchSplitter:
+    """Split a batch parameters files into individual parameters files
+    
+    - Content of individual parameters files as list of newline terminated lines
+      can be accessed by index using [].
+    - Iterating the object yields content of individual parameter files as lists of
+      newline terminated lines.
+
+    Keyword Args:
+        parameters_file (str): Name of batch parameters file; if none, 1st command line argument is used
+
+    Attributes:
+        batch_id: ID of the batch
+        eval_nums: List of evaluation numbers
+        format: format of parameters file ("DAKOTA" or "APREPRO")
+        parameters_file: Name of parameters file
+    """
+    def __init__(self, parameters_file: str=None):
+        self._parameters_file = sys.argv[1] if parameters_file is None else parameters_file
+        self._format = self._detect_format()
+        self._ending_line_numbers, self._batch_id, self._eval_nums = self._parse_parameters_file()
+
+    def _detect_format(self):
+        """Detect format of parameters file
+        
+        Returns:
+            "DAKOTA" or "APREPRO"
+        """
+        with open(self._parameters_file, "r") as f:
+            line = f.readline()
+        dakota_format_match = _pRE["DAKOTA"]["num_variables"].match(line)
+        aprepro_format_match = _pRE["APREPRO"]["num_variables"].match(line)
+        if aprepro_format_match is not None:
+            return "APREPRO"
+        elif dakota_format_match is not None: 
+            return "DAKOTA"
+        else:
+            raise ParamsFormatError("Unrecognized parameters file format.")
+
+    def _parse_parameters_file(self) -> Tuple[List[int], str, List[int]]:
+        """Return a list of ending line numbers for each parameter set
+        
+        Line numbers begin at 1, and ending line numbers are for the first line
+        after the parameter set.
+        """
+        line_numbers = []
+        eval_ids = []
+        with open(self._parameters_file, "r") as f:
+            # Advance past the first line so that the 0th batch is recorded
+            # when the 1st evaluation is reached
+            f.readline() 
+            for i, line in enumerate(f, start=2):
+                if _pRE[self._format]["num_variables"].match(line) is not None:
+                    line_numbers.append(i)
+                eval_id_m = _pRE[self._format]["eval_id"].match(line)
+                if eval_id_m is not None:
+                   eval_ids.append(eval_id_m.group("value"))
+            line_numbers.append(i+1)
+        try:
+            batch_id = eval_ids[0].split(":")[-2]
+        except IndexError:
+            raise BatchSettingError("Parameters file does not appear to be a batch file.")
+        eval_nums = [int(eval_id.split(":")[-1]) for eval_id in eval_ids]
+        return line_numbers, batch_id, eval_nums
+    
+    def __getitem__(self, index: int) -> List[str]:
+        """Return list of lines for parameter set with index idx
+        
+        Lines end with newline
+        """
+        lines = []
+        try:
+            start_line_num = 1 if index == 0 else self._ending_line_numbers[index-1]
+            for i in range(start_line_num, self._ending_line_numbers[index]):
+                lines.append(linecache.getline(self._parameters_file, i))
+        except IndexError:
+            raise IndexError(f"no evaluate with index {index}")
+        return lines
+
+    @property
+    def batch_id(self) -> str:
+        return self._batch_id
+
+    @property
+    def eval_nums(self) -> List[int]:
+        return self._eval_nums
+    
+    def __len__(self) -> int:
+        """Return size of batch"""
+        return len(self._ending_line_numbers)
+    
+    def __iter__(self) -> Generator[List[str], None, None]:
+        for i in range(len(self)):
+            yield self[i]
+
+    @property
+    def parameters_file(self) -> str:
+        return self._parameters_file
+    
+    @property
+    def format(self) -> FileFormat:
+        return STANDARD if self._format == "DAKOTA" else APREPRO
+
+    def write(self, filename:  str, index: int = None, eval_num: int = None) -> None:
+        """Write the parameter set referred to either by 0-based index or Dakota evaluation number to file"""
+        if (index is None and eval_num is None) or (index is not None and eval_num is not None):
+            raise ValueError("BatchSplitter.write must be called with either an index or eval_num")
+        idx = self._index_from_eval_num(eval_num) if eval_num is not None else index
+        lines = self[idx]
+        with open(filename, "w") as f:
+            f.writelines(lines)
+    
+    def _index_from_eval_num(self, eval_num: int) -> int:
+        try:
+            idx = self._eval_nums.index(eval_num)
+        except ValueError:
+            raise EvalNumberError(f"Batch does not contain a parameter set with evaluation number {eval_num}")
+        return idx
+
+### Free functions for reading and writing parameters and results files
+
+def _write_standard_results(stream: io.IOBase, results: Results, ignore_asv: bool) -> None:
+    # Write FAIL if set
+    if results.failed():
+        print("FAIL", file=stream)
+        return
+    # Write function values
+    for t, v in results.items():
+        if (v.asv.function or ignore_asv) and v.function is not None:
+            print("%24.16E %s" %(v.function, t), file=stream)
+    # Write gradients
+    for t, v in results.items():
+        if (v.asv.gradient or ignore_asv) and v.gradient is not None:
+            print("[ ",file=stream, end="")
+            for e in v.gradient:
+                print(" %24.16E" % e,file=stream,end="")
+            print(" ]",file=stream)
+    # Write Hessians
+    for t, v in results.items():
+        if (v.asv.hessian or ignore_asv) and v.hessian is not None:
+            print("[[",file=stream,end="")
+            first = True
+            for r in v.hessian:
+                if not first:
+                    print("\n  ",file=stream,end="")
+                first=False
+                for c in r:
+                    print(" %24.16E" % c,file=stream, end="")
+            print(" ]]",file=stream)
+    # Write metadata
+    for k, v in results.metadata.items():
+        print("%24.16E %s" %(v, k), file=stream)
+        
+        
+def _write_json_results(stream: io.IOBase, results: Results, ignore_asv: bool) -> None:
+    data_for_writing = _encode_results_as_json(results, ignore_asv)
+    json.dump(data_for_writing, stream, indent=4)
+    
+    
+def _encode_results_as_json(results: Results, ignore_asv: bool) -> dict:
+
+    _check_against_asv(results, ignore_asv)
+    if results.failed():
+        return {"fail": True}
+    
+    eval_results = {}
+    
+    # Write function values
+    eval_results["functions"] = {}
+    for t, v in results.items():
+        if (v.asv.function or ignore_asv) and v.function is not None:
+            eval_results["functions"][t] = _replace_non_finite(v.function)
+    if not eval_results["functions"]:
+        del eval_results["functions"]
+        
+    # Write gradients
+    eval_results["gradients"] = {}
+    for t, v in results.items():
+        if (v.asv.gradient or ignore_asv) and v.gradient is not None:
+            eval_results["gradients"][t] = [_replace_non_finite(e) for e in v.gradient]
+    if not eval_results["gradients"]:
+        del eval_results["gradients"]
+            
+    # Write Hessians
+    eval_results["hessians"] = {}
+    for t, v in results.items():
+        if (v.asv.hessian or ignore_asv) and v.hessian is not None:
+            eval_results["hessians"][t] = [[_replace_non_finite(e) for e in row] for row in v.hessian]
+    if not eval_results["hessians"]:
+        del eval_results["hessians"]
+        
+    # Write metadata
+    eval_results["metadata"] = {}
+    for k, v in results.metadata.items():
+        eval_results["metadata"][k] = _replace_non_finite(v)
+    if not eval_results["metadata"]:
+        del eval_results["metadata"]
+    
+    return eval_results       
+    
+
+def _replace_non_finite(value: Union[float, str]) -> Union[float, str]:
+    result = value
+    if math.isnan(value):
+        result = "NaN"
+    elif math.isinf(value):
+        result = "Inf" if value > 0 else "-Inf"
+    return result              
+
+
+def _check_against_asv(results: Results, ignore_asv: bool) -> None:
+    
+    ## Confirm that user has provided all info requested by Dakota
+    if not ignore_asv and not results.failed():
+        for t, v in results.items():
+            if v.asv.function and v.function is None:
+                raise ResponseError("Response '" + t + "' is missing "
+                        "requested function result.") 
+            if v.asv.gradient and v.gradient is None:
+                raise ResponseError("Response '" + t + "' is missing "
+                        "requested gradient result.")
+            if v.asv.hessian and v.hessian is None:
+                raise ResponseError("Response '" +t + "' is missing "
+                        "requested Hessian result.")
+
+    if not results.failed():
+        for k, v in results.metadata.items():
+            if v is None:
+                raise ResultsError("Results object is missing requested "
+                        "metadata field '" + k + "'")
+
 
 ### Free functions and their helpers for constructing objects
 
@@ -847,10 +1048,10 @@ def _read_eval_from_stream(stream=None, ignore_asv=False, results_file=None, inf
     dakota_format_match = _pRE["DAKOTA"]["num_variables"].match(line)
     aprepro_format_match = _pRE["APREPRO"]["num_variables"].match(line)
     if aprepro_format_match is not None:
-        aprepro_format = True
+        format = APREPRO
         useRE = _pRE["APREPRO"]
     elif dakota_format_match is not None: 
-        aprepro_format = False
+        format = STANDARD
         useRE = _pRE["DAKOTA"]
     else:
         raise ParamsFormatError("Unrecognized parameters file format.")
@@ -893,21 +1094,18 @@ def _read_eval_from_stream(stream=None, ignore_asv=False, results_file=None, inf
         metadata.append(v)
     _extract_optional_block(stream, useRE["num_metadata"], useRE["metadata"],
                             store_metadata)
-    return (Parameters(aprepro_format, variables, an_comps, eval_id, metadata, infer_types, types),
-            Results(aprepro_format, responses, deriv_vars, eval_id, metadata, ignore_asv, results_file))
+    return (Parameters(format, variables, an_comps, eval_id, metadata, infer_types, types),
+            Results(format, responses, deriv_vars, eval_id, metadata, ignore_asv, results_file))
+    
 
 def _read_parameters_stream(stream=None, ignore_asv=False, batch=False, 
     results_file=None, infer_types=True, types=None):
     """Extract all evaluations from stream"""
     param_sets = [] # list of Parameters objects
     results_sets = [] # list of Results objects
-    while True:
-        p, r = _read_eval_from_stream(stream, ignore_asv, results_file, infer_types, types)
-        if p and r: # p and r == None indicates end of stream
-            param_sets.append(p)
-            results_sets.append(r)
-        else:
-            break
+    
+    param_sets, results_sets = _read_evals_from_stream(stream, ignore_asv, results_file, infer_types, types)
+       
     if batch:
         return BatchParameters(param_sets), BatchResults(results_sets)
     elif len(param_sets) > 1 and not batch:
@@ -917,8 +1115,79 @@ def _read_parameters_stream(stream=None, ignore_asv=False, batch=False,
         return param_sets[0], results_sets[0]
 
 
-def read_params_from_dict(parameters=None, results_file=None, 
-        ignore_asv=False, batch=False, infer_types=True, types=None):
+def _read_evals_from_stream(stream: io.IOBase, ignore_asv: bool, results_file: str, infer_types: bool, types) -> Tuple[List[Parameters], List[Results]]:
+    try:
+        return _read_evals_from_json(stream, ignore_asv, results_file, infer_types, types)
+    except json.decoder.JSONDecodeError:
+        stream.seek(0)
+    
+    param_sets = []
+    results_sets = []
+    while True:
+        p, r = _read_eval_from_stream(stream, ignore_asv, results_file, infer_types, types)
+        if p and r: # p and r == None indicates end of stream
+            param_sets.append(p)
+            results_sets.append(r)
+        else:
+            break
+    return param_sets, results_sets
+
+
+def _read_evals_from_json(stream, ignore_asv, results_file, infer_types, types):
+    j = json.load(stream)
+    if not isinstance(j, list):
+        j = [j]
+    params_set = []
+    results_set = []
+    for params in j:
+        try:
+            var_labels = [v["label"] for v in params["variables"]]
+            values = [v["value"] for v in params["variables"]]
+            var_dict = collections.OrderedDict()
+            for label, value in zip(var_labels, values):
+                var_dict[label] = value
+        except KeyError:
+            raise ParamsFormatError("'variables' portion of JSON-format evaluation missing or not formatted as expected")
+        try:            
+            response_labels = [r["label"] for r in params["responses"]]
+            active_set_vector = [r["active_set"] for r in params["responses"]]
+            responses_dict = collections.OrderedDict()
+            for label, active_set in zip(response_labels, active_set_vector):
+                responses_dict[label] = active_set
+        except KeyError:
+            raise ParamsFormatError("'responses' portion of JSON-format evaluation missing or not formatted as expected")
+        try:
+            deriv_vars = [var_labels[i-1] for i in params["derivative_variables"]]
+        except (KeyError, IndexError):
+            raise ParamsFormatError("'derivative_variables' portion of JSON-format evaluation missing or not formatted as expected")
+        try:
+            an_comps = [a["component"] for a in params["analysis_components"]]
+        except KeyError:
+            raise ParamsFormatError("'analysis_components' portion of JSON-format evaluation missing or not formatted as expected")
+        try:
+            eval_id = params["eval_id"]
+        except KeyError:
+            raise ParamsFormatError("'eval_id' portion of JSON-format evaluation missing")
+        try:
+            metadata = params["metadata"]
+        except KeyError:
+            raise ParamsFormatError("'metadata' portion of JSON-format evaluation missing")
+        params_set.append(Parameters(JSON, var_dict, an_comps, eval_id, metadata, infer_types, types))
+        results_set.append(Results(JSON, responses_dict, deriv_vars, eval_id, metadata, ignore_asv, results_file))
+    return params_set, results_set
+
+
+def _extract_value(label: str, labels: List[str], values: List[VarValue]) -> VarValue:
+    try:
+        index = labels.index(label)
+        value = values[index]
+    except ValueError:
+        value = None
+    return value
+    
+
+
+def _read_params_from_dict(parameters=None):
     """Process parameters and results using Dakota parameters disctionary from python interface driver.
     
     Keyword Args:
@@ -927,60 +1196,42 @@ def read_params_from_dict(parameters=None, results_file=None,
             
     Raises:
     """
-
-    vars_to_type = {
-                     "cv"  : float,
-                     "div" : int,
-                     "dsv" : str,
-                     "drv" : float
-                   }
-
-    assigned_types = {}
-    dakota_input = []
-    key = "variables"
-    dakota_input.append(str(parameters[key])+" "+key+"\n")
-    for label in parameters["variable_labels"]:
-        for domain, vtype in vars_to_type.items():
-            try:
-                idx = parameters[domain+"_labels"].index(label)
-            except ValueError:
-                continue
-            else:
-                dakota_input.append(str(parameters[domain][idx]) + " " + label + "\n")
-                assigned_types[label] = vtype
-               
-    key = "functions"
-    dakota_input.append(str(parameters[key])+" "+key+"\n")
-    for i, val in enumerate(parameters["asv"]):
-        label = "ASV_"+str(i+1)+":"+parameters["function_labels"][i]
-        dakota_input.append(str(val)+" "+label+"\n")
-
-    key = "dvv"
-    dakota_input.append(str(len(parameters[key]))+" derivative_variables\n")
-    for i, val in enumerate(parameters["dvv"]):
-        label = "DVV_"+str(i)+":"+parameters["variable_labels"][val-1]
-        dakota_input.append(str(parameters["dvv"][i])+" "+label+"\n")
-
-    key = "analysis_components"
-    num_an_comp = len(parameters[key])
-    dakota_input.append(str(num_an_comp) + " " + key + "\n")
-    for i, an_comp in enumerate(parameters[key]):
-        dakota_input.append(an_comp + " AC_" + str(i+1) + ":python_direct\n")
-
-    key = "eval_id"
-    dakota_input.append(str(parameters[key])+" eval_id\n")
-
-    key = "metadata"
-    dakota_input.append(str(parameters[key]) + " metadata\n")
-    for i, md in enumerate(parameters["metadata_labels"]):
-        dakota_input.append(md + " MD_" + str(i+1) + "\n")
-
-    io_stream = io.StringIO("".join(dakota_input))
-    return _read_parameters_stream(io_stream, ignore_asv, batch, results_file, infer_types=False, types=assigned_types)
+    batch = isinstance(parameters, list)
+    if not batch:
+        parameters = [parameters]
+    params_list = []
+    results_list = []
+    for p in parameters:
+        variables = collections.OrderedDict()
+        for label in p["variable_labels"]:
+            for var_type in ("cv", "div", "dsv", "drv"):
+                var_val = _extract_value(label, p[f"{var_type}_labels"], p[var_type])
+                if var_val:
+                    break
+            variables[label] = var_val
+        
+        responses = collections.OrderedDict()
+        for label, active_set in zip(p["function_labels"], p["asv"]):
+            responses[label] = active_set
+        
+        dvv = []
+        for id in p["dvv"]:
+            dvv.append(p["variable_labels"][id-1])
+        
+        params_list.append(Parameters(DIRECT, variables, p["analysis_components"], p["eval_id"], p["metadata_labels"], False))
+        results_list.append(Results(DIRECT, responses, dvv, p["eval_id"], p["metadata_labels"], False))
+    if batch:
+        params = BatchParameters(params_list)
+        results = BatchResults(results_list)
+    else:
+        params = params_list[0]
+        results = results_list[0]
+    return params, results
+    
 
 
-def read_parameters_file(parameters_file=None, results_file=None, 
-        ignore_asv=False, batch=False, infer_types=True, types=None):
+def read_parameters_file(parameters_file: Union[str, None] = None, results_file : Union[str, None] = None, 
+        ignore_asv: bool=False, batch: bool=False, infer_types: bool=True, types: Union[list, dict]=None):
     """Read and parse the Dakota parameters file.
     
     Keyword Args:
@@ -1037,9 +1288,9 @@ def read_parameters_file(parameters_file=None, results_file=None,
         return _read_parameters_stream(ifp, ignore_asv, batch, results_file, infer_types, types)
 
 
-def dprepro(template, parameters=None, results=None, include=None,
-        output=None, fmt='%0.10g', code='%', code_block='{% %}', inline='{ }',
-        warn=True):
+def dprepro(template: Union[str, io.IOBase], parameters: Parameters=None, results: Results=None, include: dict=None,
+        output: Union[str, io.IOBase]=None, fmt: str='%0.10g', code: str='%', code_block: str='{% %}', inline: str='{ }',
+        warn: bool=True):
     """Call dprepro to process a template
     
     The documentation for the command-line version of dprepro explains
@@ -1048,9 +1299,9 @@ def dprepro(template, parameters=None, results=None, include=None,
     available under the name DakotaResults.
 
     Arguments:
-        template: If template is a string, it is assumed to contain a template.
-            If it's a file-like object with a .read() method, the template will
-            be read from it.
+        template: If template is a string, it is treated as the name of a file
+            that contains a template. If it's a file-like object with a .read()
+            method, the template will be read from it.
 
     Keyword Args:
         parameters: Parameters object. The object itself is available for use
@@ -1100,123 +1351,15 @@ def dprepro(template, parameters=None, results=None, include=None,
         with open(output,"w",encoding="utf-8") as f:
             f.write(output_string)
 
+
+
 def python_interface(fn):
-    """ Decorator to wrap direct python callbacks """
+    """ Decorator to wrap direct Python callbacks """
     @functools.wraps(fn)
     def wrapper(direct_interface_dict):
-        params, results = read_params_from_dict(direct_interface_dict)
+        params, results = _read_params_from_dict(direct_interface_dict)
         results = fn(params, results)
-        return results.return_direct_results_dict()
+        return results.direct_results_dict()
     return wrapper
-
-
-class BatchSplitter:
-    """Split a batch parameters files into individual parameters files
-    
-    - Content of individual parameters files as list of newline terminated lines
-      can be accessed by index using [].
-    - Iterating the object yields content of individual parameter files as lists of
-      newline terminated lines.
-
-    Keyword Args:
-        parameters_file (str): Name of batch parameters file; if none, 1st command line argument is used
-
-    Attributes:
-        parameters_file: Name of parameters file
-        format: format of parameters file ("DAKOTA" or "APREPRO")
-    """
-    def __init__(self, parameters_file=None):
-        self._parameters_file = sys.argv[1] if parameters_file is None else parameters_file
-        self._format = self._detect_format()
-        self._ending_line_numbers, self._batch_id, self._eval_nums = self._parse_parameters_file()
-
-    def _detect_format(self):
-        """Detect format of parameters file
-        
-        Returns:
-            "DAKOTA" or "APREPRO"
-        """
-        with open(self._parameters_file, "r") as f:
-            line = f.readline()
-        dakota_format_match = _pRE["DAKOTA"]["num_variables"].match(line)
-        aprepro_format_match = _pRE["APREPRO"]["num_variables"].match(line)
-        if aprepro_format_match is not None:
-            return "APREPRO"
-        elif dakota_format_match is not None: 
-            return "DAKOTA"
-        else:
-            raise ParamsFormatError("Unrecognized parameters file format.")
-
-    def _parse_parameters_file(self) ->Tuple[List[int], str, List[int]]:
-        """Return a list of ending line numbers for each parameter set
-        
-        Line numbers begin at 1, and ending line numbers are for the first line
-        after the parameter set.
-        """
-        line_numbers = []
-        eval_ids = []
-        with open(self._parameters_file, "r") as f:
-            # Advance past the first line so that the 0th batch is recorded
-            # when the 1st evaluation is reached
-            f.readline() 
-            for i, line in enumerate(f, start=2):
-                if _pRE[self._format]["num_variables"].match(line) is not None:
-                    line_numbers.append(i)
-                eval_id_m = _pRE[self._format]["eval_id"].match(line)
-                if eval_id_m is not None:
-                   eval_ids.append(eval_id_m.group("value"))
-            line_numbers.append(i+1)
-        try:
-            batch_id = eval_ids[0].split(":")[-2]
-        except IndexError:
-            raise BatchSettingError("Parameters file does not appear to be a batch file.")
-        eval_nums = [int(eval_id.split(":")[-1]) for eval_id in eval_ids]
-        return line_numbers, batch_id, eval_nums
-    
-    def __getitem__(self, index: int) -> List[str]:
-        """Return list of lines for parameter set with index idx
-        
-        Lines end with newline
-        """
-        lines = []
-        start_line_num = 1 if index == 0 else self._ending_line_numbers[index-1]
-        for i in range(start_line_num, self._ending_line_numbers[index]):
-            lines.append(linecache.getline(self._parameters_file, i))
-        return lines
-
-    @property
-    def batch_id(self):
-        return self._batch_id
-
-    @property
-    def eval_nums(self):
-        return self._eval_nums
-    
-    def __len__(self):
-        """Return size of batch"""
-        return len(self._ending_line_numbers)
-    
-    def __iter__(self) -> None:
-        for i in range(len(self)):
-            yield self[i]
-
-    @property
-    def parameters_file(self) -> str:
-        return self._parameters_file
-    
-    @property
-    def format(self) -> str:
-        return self._format
-
-    def write(self, index: int, filename: str) -> None:
-        """Write parameter set with index to filename"""
-        lines = self[index]
-        with open(filename, "w") as f:
-            f.writelines(lines)
-    
-    
-    
-    
-        
 
 

@@ -1,0 +1,27 @@
+Blurb::
+Perform a full recursion of all admissible DAGs for a given model ensemble
+
+Description::
+A full recursion includes admissible directed acyclic graphs (DAGs)
+up to maximum depth and is equivalent to a ``partial_recursion`` with
+a ``depth_limit`` equal to the number of approximation models.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method,
+    	model_pointer = 'ENSEMBLE'
+    	approximate_control_variate acv_mf
+    	  pilot_samples = 25 seed = 8674132
+    	  search_model_graphs full_recursion
+    	  max_function_evaluations = 500
+
+Theory::
+Refer to :cite:p:`Bomarito2022` for additional details on generalized ACV recursion.
+
+Faq::
+
+See_Also::

@@ -123,28 +123,37 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
   if (relax_fixed > 0.) relaxFactor = relax_fixed; // else initialized to 1.
 
   switch (pilotMgmtMode) {
-  case ONLINE_PILOT_PROJECTION: case OFFLINE_PILOT_PROJECTION: // no iteration
-    maxIterations = 0; //finalCVRefinement = false;
-    if (finalStatsType == QOI_STATISTICS) // currently possible in spec
-      Cerr << "Warning: final_statistics cannot be qoi_statistics in "
-	   << "projection modes.\n         Overriding to performance "
-	   << "projection." << std::endl;
-    finalStatsType = ESTIMATOR_PERFORMANCE;
+  case ONLINE_PILOT_PROJECTION:
+    maxIterations = 0; // no iteration
+    finalStatsType = ESTIMATOR_PERFORMANCE; // no mlmf_final_stats in spec
+    break;
+  case OFFLINE_PILOT_PROJECTION:
+    maxIterations = 0; // no iteration
+    finalStatsType = ESTIMATOR_PERFORMANCE; // no mlmf_final_stats in spec
+    // relative accuracy control with convergenceTol is problematic since
+    // the reference EstVar comes from offline eval with Oracle/overkill N.
+    // Could support an absolute tolerance, but error for now.
+    if (maxFunctionEvals == SZ_MAX) {
+      Cerr << "Error: evaluation budget required for offline projection mode."
+	   << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    break;
+  case ONLINE_PILOT:
+    // MLMF-specific default: don't let allocator get stuck in fine-tuning
+    if (maxIterations == SZ_MAX) maxIterations = 25;
+    if (!finalStatsType) finalStatsType = QOI_STATISTICS; // mode default
     break;
   case OFFLINE_PILOT:
-    maxIterations = 1; //finalCVRefinement = true;
+    maxIterations = 1;
     // convergenceTol option is problematic since the reference EstVar
-    // comes from offline eval with Oracle/overkill N
+    // comes from offline eval with Oracle/overkill N.  Could support an
+    // absolute rather than relative tolerance, but error for now.
     if (maxFunctionEvals == SZ_MAX) {
       Cerr << "Error: evaluation budget required for offline pilot mode."
 	   << std::endl;
       abort_handler(METHOD_ERROR);
     }
-    if (!finalStatsType) finalStatsType = QOI_STATISTICS; // mode default
-    break;
-  case ONLINE_PILOT:
-    // MLMF-specific default: don't let allocator get stuck in fine-tuning
-    if (maxIterations == SZ_MAX) maxIterations = 25;
     if (!finalStatsType) finalStatsType = QOI_STATISTICS; // mode default
     break;
   default:

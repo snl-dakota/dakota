@@ -56,5 +56,6 @@ interface,
 responses,
         response_functions = 1
         analytic_gradients
-        no_hessians
+        no_hessians             #s0,#s2
+#        analytic_hessians       #s1,#s3
 

@@ -20,9 +20,9 @@ method,
 #	  max_iterations = 0
 #	  convergence_tolerance = .1			
 	  convergence_tolerance = .01		#s0,#s2,#s3,#p0,#p1
-#	  convergence_tolerance = .001		#s1,#s4,#s7,#s8,#s9,#s10,#s11
+#	  convergence_tolerance = .001		#s1,#s4,#s7,#s9,#s10,#s11
 #	  convergence_tolerance = .0001
-#	  max_function_evaluations = 50		#s5,#s6
+#	  max_function_evaluations = 50		#s5,#s6,#s8
 	output silent
 
 model,

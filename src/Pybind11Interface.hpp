@@ -60,6 +60,7 @@ class Pybind11Interface: public DirectApplicInterface
     /// Python supports batch only, not true asynch, so this blocks
     virtual void test_local_evaluations(PRPQueue& prp_queue);
 
+  private: 
     /// direct interface to Pybind11 via API
     int pybind11_run(const String& ac_name);
 
@@ -98,6 +99,9 @@ class Pybind11Interface: public DirectApplicInterface
 
     /// return true if the passed asv value is requested for any function
     bool expect_derivative(const ShortArray& asv, const short deriv_type) const;
+
+    /// Compute the evaluation id
+    std::string eval_id_string() const;
 };
 
 

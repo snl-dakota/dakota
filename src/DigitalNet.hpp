@@ -75,9 +75,8 @@ public:
   /// Destructor
   ~DigitalNet();
 
-  /// Randomize this digital net
-  /// NOTE: required for 'unique' sampling in `NonDLowDiscrepancySampling`
-  inline void randomize() override { digital_shift(); scramble(); }
+  /// Reseed this digital net
+  void reseed() override { digital_shift(seedValue); scramble(seedValue); }
 
   /// Digitally shift this digital net
   void digital_shift() { digital_shift(generate_system_seed()); }

@@ -2824,13 +2824,17 @@ MUQ
 MUQ is the MIT Uncertainty Quantification library. See
 https://bitbucket.org/mituq/muq2/src/master/ and
 https://mituq.bitbucket.io/index.html for additional documentation.
-Dakota currently exposes four MCMC approaches from MUQ:
-Metropolis-Hastings, Adaptive Metropolis, Delayed Rejection, and
-Delayed-Rejection Adaptive Metropolis. Dakota’s MUQ integration is
-preliminary, anticipated to extend to use MUQ components for Hamiltonian
-Monte Carlo and Langevin-based sampling. MUQ is an experimental Dakota
-capability, and as such, it is not turned on by default, and must be
-explicitly enabled when compiling Dakota.
+Dakota currently exposes six MCMC approaches from MUQ:
+
+- Adaptive Metroplis (:dakkw:`method-bayes_calibration-muq-adaptive_metropolis`)
+- Delayed rejection (:dakkw:`method-bayes_calibration-muq-delayed_rejection`)
+- Dimension-independent, likelihood informed (:dakkw:`method-bayes_calibration-muq-dili`)
+- Delayed rejection, adaptive Metropolis (:dakkw:`method-bayes_calibration-muq-dram`)
+- Metropolis-adjusted Langevin algorithm (:dakkw:`method-bayes_calibration-muq-mala`)
+- Metropolis-Hastings (:dakkw:`method-bayes_calibration-muq-metropolis_hastings`)
+
+MUQ is an experimental Dakota capability, and as such, it is not turned on by default, 
+and must be explicitly enabled when compiling Dakota.
 
 WASABI
 ~~~~~~

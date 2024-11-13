@@ -102,6 +102,12 @@ private:
   void generate_sub_trees(unsigned short root, const UShortArray& nodes,
 			  unsigned short depth, UShortArray& dag,
 			  UShortArraySet& model_dags);
+  /// recursively generate sub-trees for current root and subordinate nodes,
+  /// restricted to hierarchical DAGs (width = 1)
+  void generate_hierarchical_sub_trees(unsigned short root,
+				       const UShortArray& nodes,
+				       unsigned short depth, UShortArray& dag,
+				       UShortArraySet& model_dags);
   /// for the given DAG and active approimation set, generate the sets
   /// of source nodes that point to given targets
   void generate_reverse_dag(const UShortArray& approx_set,
@@ -126,33 +132,39 @@ private:
   void generalized_acv_pilot_projection();
 
   void approx_increments(IntRealMatrixMap& sum_L_baseline,
-			 IntRealVectorMap& sum_H,
-			 IntRealSymMatrixArrayMap& sum_LL,
-			 IntRealMatrixMap& sum_LH, const SizetArray& N_H_actual,
-			 size_t N_H_alloc, const MFSolutionData& soln);
+			 const SizetArray& N_H_actual, size_t N_H_alloc,
+			 IntRealMatrixMap& sum_L_shared,
+			 Sizet2DArray& N_L_actual_shared,
+			 IntRealMatrixMap& sum_L_refined,
+			 Sizet2DArray& N_L_actual_refined,
+			 SizetArray& N_L_alloc_refined,
+			 const MFSolutionData& soln);
 
   void update_model_groups();
   void update_model_groups(const UShortList& root_list);
 
-  void precompute_ratios();
-  void compute_ratios(const RealMatrix& var_L, MFSolutionData& solution);
+  void precompute_allocations();
+  void compute_allocations(const RealMatrix& var_L, MFSolutionData& solution);
 
-  void genacv_raw_moments(IntRealMatrixMap& sum_L_baseline,
-			  IntRealMatrixMap& sum_L_shared,
-			  IntRealMatrixMap& sum_L_refined,
-			  IntRealVectorMap& sum_H,
-			  IntRealSymMatrixArrayMap& sum_LL,
-			  IntRealMatrixMap& sum_LH,
-			  const RealVector& avg_eval_ratios,
-			  const Sizet2DArray& N_L_shared,
+  void genacv_raw_moments(const IntRealMatrixMap& sum_L_covar,
+			  const IntRealVectorMap& sum_H_covar,
+			  const IntRealSymMatrixArrayMap& sum_LL_covar,
+			  const IntRealMatrixMap& sum_LH_covar,
+			  const SizetArray& N_covar,
+			  const IntRealVectorMap& sum_H_baseline,
+			  const SizetArray& N_baseline,
+			  const IntRealMatrixMap& sum_L_shared,
+			  const Sizet2DArray& N_L_shared, 
+			  const IntRealMatrixMap& sum_L_refined,
 			  const Sizet2DArray& N_L_refined,
-			  const SizetArray& N_H, RealMatrix& H_raw_mom);
+			  const MFSolutionData& soln);
 
-  void precompute_genacv_control(const RealVector& avg_eval_ratios,
-				 const SizetArray& N_shared);
-  void compute_genacv_control(RealMatrix& sum_L_base_m, Real sum_H_mq,
-			      RealSymMatrix& sum_LL_mq, RealMatrix& sum_LH_m,
-			      size_t N_shared_q, size_t mom, size_t qoi,
+  void precompute_genacv_controls(const RealVector& soln_vars);
+
+  void compute_genacv_control(const RealMatrix& sum_L_m, Real sum_H_mq,
+			      const RealSymMatrix& sum_LL_mq,
+			      const RealMatrix& sum_LH_m, size_t N_shared_q,
+			      size_t mom, size_t qoi,
 			      const UShortArray& approx_set, RealVector& beta);
 
   void analytic_initialization_from_mfmc(const UShortArray& approx_set,
@@ -224,7 +236,7 @@ private:
 		       RealVector& avg_eval_ratios, Real& avg_hf_target,
 		       const UShortArray& approx_set,
 		       const UShortList& root_list, Real budget,
-		       Real offline_N_lwr = 2);
+		       Real offline_N_lwr = 1.);
   void enforce_linear_ineq_constraints(RealVector& avg_eval_ratios,
 				       const UShortArray& approx_set,
 				       const UShortList& root_list);
@@ -437,7 +449,7 @@ inflate_variables(const RealVector& cd_vars, RealVector& N_vec,
     size_t hf_form_index, hf_lev_index;
     hf_indices(hf_form_index, hf_lev_index);
     // average_estimator_variance() uses actual (not alloc) to sync with varH
-    // so use same prior to defining G,g in precompute_genacv_control() and
+    // so use same prior to defining G,g in precompute_genacv_controls() and
     // estimator_variance_ratios()
     N_vec[numApprox] = //(backfillFailures) ?
       average(NLevActual[hf_form_index][hf_lev_index]);// :
@@ -472,7 +484,7 @@ solve_for_C_G_c_g(RealSymMatrix& C_G, RealVector& c_g, RealVector& lhs,
   // can only leverage the latter).
 
   size_t n = c_g.length();
-  lhs.size(n); // not sure if initialization matters here...
+  if (lhs.length() != n) lhs.size(n); // not sure if initialization matters
 
   RealSpdSolver spd_solver;  RealSymMatrix C_G_copy;  RealVector c_g_copy;
   // Matrix & RHS get altered by equilibration --> make copies if needed later
@@ -531,15 +543,13 @@ compute_R_sq(const RealSymMatrix& C, const RealSymMatrix& G,
 
 
 inline void NonDGenACVSampling::
-precompute_genacv_control(const RealVector& avg_eval_ratios,
-			  const SizetArray& N_shared)
+precompute_genacv_controls(const RealVector& soln_vars)
 {
   // Note: while G,g have a more explicit dependence on N_shared[qoi] than F,
   // we mirror the averaged sample allocations and compute G,g once
-  RealVector N_vec, inflate_N_vec;
-  r_and_N_to_N_vec(avg_eval_ratios, average(N_shared), N_vec);
-  inflate_variables(N_vec, inflate_N_vec, activeModelSetIter->first);
-  compute_parameterized_G_g(inflate_N_vec);
+  RealVector inflate_soln_vars;
+  inflate_variables(soln_vars, inflate_soln_vars, activeModelSetIter->first);
+  compute_parameterized_G_g(inflate_soln_vars);
 }
 
 
@@ -559,22 +569,20 @@ solve_for_genacv_control(const RealSymMatrix& cov_LL, const RealSymMatrix& G,
 
 
 inline void NonDGenACVSampling::
-compute_genacv_control(RealMatrix& sum_L_base_m, Real sum_H_mq,
-		       RealSymMatrix& sum_LL_mq, RealMatrix& sum_LH_m,
-		       size_t N_shared_q, size_t mom, size_t qoi,
-		       const UShortArray& approx_set, RealVector& beta)
+compute_genacv_control(const RealMatrix& sum_L_m, Real sum_H_mq,
+		       const RealSymMatrix& sum_LL_mq,
+		       const RealMatrix& sum_LH_m, size_t N_shared_q,
+		       size_t mom, size_t qoi, const UShortArray& approx_set,
+		       RealVector& beta)
 {
-  if (mom == 1 && ( pilotMgmtMode == ONLINE_PILOT ||
-		    pilotMgmtMode == ONLINE_PILOT_PROJECTION ) ) {
-    // online covar avail for mean
+  if (mom == 1) // online|offline covariances available for mean
     solve_for_genacv_control(covLL[qoi], GMat, covLH, gVec, qoi,
 			     approx_set, beta);
-  }
   else { // compute variances/covariances for higher-order moment estimators
     // compute cov_LL, cov_LH, var_H across numApprox for a particular QoI
     // > cov_LH is sized for all qoi but only 1 row is used
     RealSymMatrix cov_LL_mq; RealMatrix cov_LH_m;
-    compute_acv_control_covariances(sum_L_base_m, sum_H_mq, sum_LL_mq, sum_LH_m,
+    compute_acv_control_covariances(sum_L_m, sum_H_mq, sum_LL_mq, sum_LH_m,
 				    N_shared_q, qoi, cov_LL_mq, cov_LH_m);
     solve_for_genacv_control(cov_LL_mq, GMat, cov_LH_m, gVec, qoi,
 			     approx_set, beta);

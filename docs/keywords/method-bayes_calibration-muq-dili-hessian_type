@@ -1,0 +1,15 @@
+Blurb::
+Parameter for the DILI MCMC algorithm in MUQ
+
+Description::
+The type of posterior Hessian to use. Either "Exact" or "GaussNewton". The default value is "GaussNewton".
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

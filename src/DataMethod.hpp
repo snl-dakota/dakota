@@ -246,8 +246,9 @@ enum { ONLINE_PILOT,            OFFLINE_PILOT,
 // ML/MF modes for group-based pilot sampling
 enum { SHARED_PILOT, INDEPENDENT_PILOT };
 // Throttles for group-based pilot sampling
-enum { NO_GROUP_THROTTLE=0,     MFMC_ESTIMATOR_GROUPS,
-       COMMON_ESTIMATOR_GROUPS, GROUP_SIZE_THROTTLE };
+enum { NO_GROUP_THROTTLE=0,      MFMC_ESTIMATOR_GROUPS,
+       COMMON_ESTIMATOR_GROUPS,  GROUP_SIZE_THROTTLE,
+       RCOND_TOLERANCE_THROTTLE, RCOND_BEST_COUNT_THROTTLE };
 // Numerical solution modes
 enum { REORDERED_FALLBACK, NUMERICAL_FALLBACK, NUMERICAL_OVERRIDE };
 // options for obtaining cost data for model fidelities/resolutions
@@ -1108,6 +1109,14 @@ public:
   /// restricting the number of group combinations in group estimators by
   /// enforcing a maximum size in terms of the number of models per group
   unsigned short groupSizeThrottle;
+  /// restricting group combinations in group estimators by ranking and
+  /// selecting the best subset of specified count in terms of group
+  /// covariance conditioning
+  size_t rCondBestThrottle;
+  /// restricting group combinations in group estimators by enforcing a
+  /// lower bound on group covariance conditioning (rcond is inverse of
+  /// condition number)
+  Real rCondTolThrottle;
   /// the \c truth_fixed_by_pilot flag for ACV methods
   bool truthPilotConstraint;
   /// option specified for extent of DAG enumeration within
@@ -1373,6 +1382,45 @@ public:
 
   /// MALA step size
   Real malaStepSize;
+
+  /// DILI Hessian type
+  String diliHessianType;
+
+  /// DILI adaptation interval
+  int diliAdaptInterval;
+
+  /// DILI adaptation start
+  int diliAdaptStart;
+
+  /// DILI adaptation end
+  int diliAdaptEnd;
+
+  /// DILI initial weight
+  int diliInitialWeight;
+
+  /// DILI Hessian tolerance
+  Real diliHessTolerance;
+
+  /// DILI LIS tolerance
+  Real diliLISTolerance;
+
+  /// DILI stochastic eigensolver maximum number of eigenvalues to compute
+  int diliSesNumEigs;
+
+  /// DILI stochastic eigensolver relative tolerance
+  Real diliSesRelTol;
+
+  /// DILI stochastic eigensolver absolute tolerance
+  Real diliSesAbsTol;
+
+  /// DILI stochastic eigensolver expected number of eigenvalues that are larger than the tolerances
+  int diliSesExpRank;
+
+  /// DILI stochastic eigensolver oversampling factor
+  int diliSesOversFactor;
+
+  /// DILI stochastic eigensolver block size
+  int diliSesBlockSize;
 
   // Parameter Study
 

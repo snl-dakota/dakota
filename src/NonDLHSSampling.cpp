@@ -102,7 +102,7 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, Model& model):
     }
     // NOTE: Classical D-optimal works with regular LHS by generating
     // candidate designs that are Latin and picking the best.
-    if (sampleType == SUBMETHOD_LHS && outputLevel > SILENT_OUTPUT) {
+    if ((sampleType == SUBMETHOD_LHS || sampleType == SUBMETHOD_LOW_DISCREPANCY_SAMPLING) && outputLevel > SILENT_OUTPUT) {
       if (refineSamples.length())
         Cout << "Warning: 'd_optimal' currently has no effect for incrementally"
              << " refined LHS \n         sampling" << std::endl;
@@ -200,7 +200,9 @@ void NonDLHSSampling::pre_run()
   NonDSampling::pre_run();
 
   bool increm_lhs_active
-    = (sampleType == SUBMETHOD_LHS && !refineSamples.empty());
+    = ( ( sampleType == SUBMETHOD_LHS || 
+            sampleType == SUBMETHOD_LOW_DISCREPANCY_SAMPLING ) &&
+              !refineSamples.empty() );
 
   resize_final_statistics_gradients(); // finalStats ASV available at run time
 
@@ -302,9 +304,11 @@ initial_increm_lhs_set(int new_samples,
   get_parameter_sets(*pIteratedModel, new_samples, batch_samples);
 
   // sub-matrix of all_ranks to populate
-  IntMatrix batch_ranks(Teuchos::View, full_ranks,
+  if ( sampleType != SUBMETHOD_LOW_DISCREPANCY_SAMPLING ) {
+    IntMatrix batch_ranks(Teuchos::View, full_ranks,
                         num_vars, new_samples, 0, 0);
-  store_ranks(batch_samples, batch_ranks);
+    store_ranks(batch_samples, batch_ranks);
+  }
 }
 
 
@@ -333,6 +337,8 @@ increm_lhs_parameter_set(int previous_samples, int new_samples,
   // new samples to populate, Latin w.r.t. initial samples
   RealMatrix increm_samples(Teuchos::View, full_samples, 
                             num_vars, new_samples, 0, previous_samples);
+
+  if ( sampleType != SUBMETHOD_LOW_DISCREPANCY_SAMPLING ) {
 
   // ranks of the previous_samples are already cached here
   const IntMatrix initial_ranks(Teuchos::View, full_ranks, 
@@ -423,6 +429,9 @@ increm_lhs_parameter_set(int previous_samples, int new_samples,
   Cout << "rank_combined\n" << sampleRanks << '\n';// updated by SET_GET_RANKS
   Cout << "Full sample set allSamples\n" << allSamples; 
 #endif //DEBUG
+  } else {
+    get_parameter_sets(iteratedModel, new_samples, increm_samples);
+  }
 }
 
 
@@ -767,7 +776,7 @@ void NonDLHSSampling::update_final_statistics()
   NonDSampling::update_final_statistics();
 
   if (!statsFlag || !finalMomentsType || epistemicStats ||
-      sampleType != SUBMETHOD_RANDOM)
+      !(sampleType == SUBMETHOD_RANDOM || sampleType == SUBMETHOD_LOW_DISCREPANCY_SAMPLING))
     return;
 
   // if MC sampling, assign standard errors for moments within finalStatErrors

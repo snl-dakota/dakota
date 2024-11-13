@@ -1,0 +1,15 @@
+Blurb::
+Parameter for the DILI MCMC algorithm in MUQ
+
+Description::
+How many MCMC steps to take before updating the average Hessian and the likelihood informed subspace. If negative, the LIS will be fixed to the initial value and will not be udpated. The default value is '-1'.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

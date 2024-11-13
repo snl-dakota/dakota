@@ -500,13 +500,15 @@ protected:
   void mfmc_analytic_solution(const UShortArray& approx_set,
 			      const RealMatrix& rho2_LH, const RealVector& cost,
 			      RealVector& avg_eval_ratios,
-			      bool monotonic_r = false);
+			      bool lower_bounded_r = true,
+			      bool     monotonic_r = false);
   void mfmc_reordered_analytic_solution(const UShortArray& approx_set,
 					const RealMatrix& rho2_LH,
 					const RealVector& cost,
 					SizetArray& corr_approx_sequence,
 					RealVector& avg_eval_ratios,
-					bool monotonic_r = false);
+					bool lower_bounded_r = true,
+					bool     monotonic_r = false);
   void mfmc_estvar_ratios(const RealMatrix& rho2_LH,
 			  const RealVector& avg_eval_ratios,
 			  SizetArray& approx_sequence,
@@ -514,7 +516,8 @@ protected:
 
   void cvmc_ensemble_solutions(const RealMatrix& rho2_LH,
 			       const RealVector& cost,
-			       RealVector& avg_eval_ratios);
+			       RealVector& avg_eval_ratios,
+			       bool lower_bounded_r = true);
 
   void pick_mfmc_cvmc_solution(const MFSolutionData& mf_soln, //size_t mf_samp,
 			       const MFSolutionData& cv_soln, //size_t cv_samp,
@@ -525,17 +528,27 @@ protected:
   //void process_group_solution(MFSolutionData& soln, SizetArray& delta_N);
 
   void configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
-			    RealVector& lin_ineq_lb, RealVector& lin_ineq_ub,
-			    RealVector& lin_eq_tgt,  RealVector& nln_ineq_lb,
-			    RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
-			    RealMatrix& lin_ineq_coeffs,
-			    RealMatrix& lin_eq_coeffs);
+			    const RealVector& lin_ineq_lb,
+			    const RealVector& lin_ineq_ub,
+			    const RealVector& lin_eq_tgt,
+			    const RealVector& nln_ineq_lb,
+			    const RealVector& nln_ineq_ub,
+			    const RealVector& nln_eq_tgt,
+			    const RealMatrix& lin_ineq_coeffs,
+			    const RealMatrix& lin_eq_coeffs);
   void run_minimizers(MFSolutionData& soln);
 
   void root_reverse_dag_to_group(unsigned short root, const UShortSet& rev_dag,
 				 UShortArray& model_group);
   void group_to_root_reverse_dag(const UShortArray& model_group,
 				 unsigned short& root, UShortSet& rev_dag);
+
+  void overlay_group_sums(const IntRealMatrixArrayMap& sum_G,
+			  const Sizet2DArray& N_G_actual,
+			  IntRealMatrixMap& sum_L_shared,
+			  Sizet2DArray& N_L_actual_shared,
+			  IntRealMatrixMap& sum_L_refined,
+			  Sizet2DArray& N_L_actual_refined);
 
   //bool mfmc_model_grouping(const UShortArray& model_group) const;
   //bool cvmc_model_grouping(const UShortArray& model_group) const;
@@ -554,13 +567,6 @@ protected:
 
   void update_model_group_costs();
 
-  void overlay_approx_group_sums(const IntRealMatrixArrayMap& sum_G,
-				 const Sizet2DArray& N_G_actual,
-				 IntRealMatrixMap& sum_L_shared,
-				 IntRealMatrixMap& sum_L_refined,
-				 Sizet2DArray& N_L_actual_shared,
-				 Sizet2DArray& N_L_actual_refined);
-
   void print_group(std::ostream& s, size_t g) const;
 
   Real allocate_budget(const RealVector& avg_eval_ratios,
@@ -574,18 +580,15 @@ protected:
 		       const RealVector& avg_eval_ratios,
 		       const RealVector& cost);
 
-  Real update_hf_target(Real avg_estvar, Real avg_N_H,
-			const RealVector& estvar_iter0);
-  Real update_hf_target(Real avg_estvar, const SizetArray& N_H,
-			const RealVector& estvar_iter0);
   Real update_hf_target(const RealVector& estvar, const SizetArray& N_H,
 			const RealVector& estvar_iter0);
   Real update_hf_target(const RealVector& estvar_ratios,
-			const RealVector& var_H,const RealVector& estvar_iter0);
+			const RealVector& var_H,
+			const RealVector& estvar_iter0);
 
   void scale_to_target(Real avg_N_H, const RealVector& cost,
 		       RealVector& avg_eval_ratios, Real& avg_hf_target,
-		       Real budget, Real offline_N_lwr = 2);
+		       Real budget, Real offline_N_lwr = 1.);
   void scale_to_budget_with_pilot(RealVector& avg_eval_ratios,
 				  const RealVector& cost, Real avg_N_H,
 				  Real budget);
@@ -619,6 +622,14 @@ protected:
   bool ordered_approx_sequence(const RealMatrix& metric,
 			       const UShortArray& approx_set);
 
+  void raw_moments(const IntRealVectorMap& sum_H_baseline,
+		   const SizetArray& N_baseline,
+		   const IntRealMatrixMap& sum_L_shared,
+		   const Sizet2DArray& N_L_shared,
+		   const IntRealMatrixMap& sum_L_refined,
+		   const Sizet2DArray& N_L_refined,
+		   const RealVector2DArray& beta);
+
   void apply_control(Real sum_L_shared, size_t num_shared, Real sum_L_refined,
 		     size_t num_refined, Real beta, Real& H_raw_mom);
 
@@ -638,6 +649,15 @@ protected:
   void inflate(const RealVector& avg_eval_ratios, RealMatrix& eval_ratios);
   /// promote scalar to column vector
   void inflate(Real r_i, size_t num_rows, Real* eval_ratios_col);
+  /// promote active vector subset to full vector based on mask
+  void inflate(const RealVector& vec, const BitArray& mask,
+	       RealVector& inflated_vec);
+  /// demote full vector to active subset based on mask
+  void deflate(const RealVector& vec, const BitArray& mask,
+	       RealVector& deflated_vec);
+  /// demote full vector to active subset based on mask
+  void deflate(const SizetArray& vec, const BitArray& mask,
+	       RealVector& deflated_vec);
 
   /// compute a penalty merit function after an optimization solve
   Real nh_penalty_merit(const RealVector& c_vars, const RealVector& fn_vals);
@@ -699,6 +719,15 @@ private:
   /// constaint bound
   Real nh_penalty_merit(Real obj, Real nln_con, Real nln_u_bnd);
 
+  /// local version used during numerical solves
+  /// (objective/constraint is averaged estvar)
+  Real update_hf_target(Real avg_estvar, size_t avg_N_H,
+			const RealVector& estvar_iter0);
+  /// local version used during numerical solves
+  /// (objective/constraint is averaged estvar)
+  Real update_hf_target(Real avg_estvar, const SizetArray& N_H,
+			const RealVector& estvar_iter0);
+
   /// static function used by NPSOL for the objective function
   static void npsol_objective(int& mode, int& n, double* x, double& f,
 			      double* grad_f, int& nstate);
@@ -729,6 +758,9 @@ private:
   /// (objective and nonlinear constraint, if present)
   static void response_evaluator(const Variables& vars, const ActiveSet& set,
 				 Response& response);
+
+  // bound x away from zero
+  //void enforce_nudge(RealVector& x);
 
   //
   //- Heading: Data
@@ -1332,14 +1364,16 @@ enforce_bounds(RealVector& x0, const RealVector& x_lb, const RealVector& x_ub)
 {
   size_t i, len = x0.length();
   if (x_lb.length() != len || x_ub.length() != len) {
-    Cerr << "Error: inconsistent bound sizes in enforce_bounds()." << std::endl;
+    Cerr << "Error: inconsistent bound sizes in enforce_bounds(): (0,l,u) = ("
+	 << len << "," << x_lb.length() << "," << x_ub.length() << ")."
+	 << std::endl;
     abort_handler(METHOD_ERROR);
   }
   for (i=0; i<len; ++i) {
     Real x_lb_i = x_lb[i], x_ub_i = x_ub[i];
     if (x_lb_i > x_ub_i) {
-      Cerr << "Error: inconsistent bound values in enforce_bounds()."
-	   << std::endl;
+      Cerr << "Error: inconsistent bound values in enforce_bounds(): (l,u) = ("
+	   << x_lb_i << "," << x_ub_i << ")." << std::endl;
       abort_handler(METHOD_ERROR);
     }
     Real& x0_i = x0[i];
@@ -1380,7 +1414,7 @@ r_and_N_to_design_vars(const RealVector& avg_eval_ratios, Real N_H,
 
 
 inline Real NonDNonHierarchSampling::
-update_hf_target(Real avg_estvar, Real avg_N_H, const RealVector& estvar_iter0)
+update_hf_target(Real avg_estvar, size_t avg_N_H, const RealVector& estvar_iter0)
 {
   /*
   // Note: there is a circular dependency between estvar_ratios and hf_targets
@@ -1405,14 +1439,12 @@ inline Real NonDNonHierarchSampling::
 update_hf_target(Real avg_estvar, const SizetArray& N_H,
 		 const RealVector& estvar_iter0)
 {
-  /*
   // Note: there is a circular dependency between estvar_ratios and hf_targets
-  RealVector hf_targets(numFunctions, false);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    hf_targets[qoi] = avg_estvar * N_H[qoi]
-                    / (convergenceTol * estvar_iter0[qoi]);
-  Real avg_hf_target = average(hf_targets);
-  */
+  //RealVector hf_targets(numFunctions, false);
+  //for (size_t qoi=0; qoi<numFunctions; ++qoi)
+  //  hf_targets[qoi] = avg_estvar * N_H[qoi]
+  //                  / (convergenceTol * estvar_iter0[qoi]);
+  //Real avg_hf_target = average(hf_targets);
 
   Real avg_hf_target = 0.;
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
@@ -1425,21 +1457,18 @@ update_hf_target(Real avg_estvar, const SizetArray& N_H,
 
 
 inline Real NonDNonHierarchSampling::
-update_hf_target(const RealVector& estvar, const SizetArray& N_H,
+update_hf_target(const RealVector& estvar_ratios, const RealVector& var_H,
 		 const RealVector& estvar_iter0)
 {
-  /*
-  // Note: there is a circular dependency between estvar_ratios and hf_targets
-  RealVector hf_targets(numFunctions, false);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    hf_targets[qoi] = estvar[qoi] * N_H[qoi]
-                    / (convergenceTol * estvar_iter0[qoi]);
-  Real avg_hf_target = average(hf_targets);
-  */
+  //RealVector hf_targets(numFunctions, false);
+  //for (size_t qoi=0; qoi<numFunctions; ++qoi)
+  //  hf_targets[qoi] = var_H[qoi] * estvar_ratios[qoi]
+  //                  / (convergenceTol * estvar_iter0[qoi]);
+  //Real avg_hf_target = average(hf_targets);
 
   Real avg_hf_target = 0.;
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    avg_hf_target += estvar[qoi] * N_H[qoi] / estvar_iter0[qoi];
+    avg_hf_target += estvar_ratios[qoi] * var_H[qoi] / estvar_iter0[qoi];
   avg_hf_target /= convergenceTol * numFunctions;
   Cout << "Scaling profile for convergenceTol = " << convergenceTol
        << ": average HF target = " << avg_hf_target << std::endl;
@@ -1448,20 +1477,19 @@ update_hf_target(const RealVector& estvar, const SizetArray& N_H,
 
 
 inline Real NonDNonHierarchSampling::
-update_hf_target(const RealVector& estvar_ratios, const RealVector& var_H,
+update_hf_target(const RealVector& estvar, const SizetArray& N_H,
 		 const RealVector& estvar_iter0)
 {
-  /*
-  RealVector hf_targets(numFunctions, false);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    hf_targets[qoi] = var_H[qoi] * estvar_ratios[qoi]
-                    / (convergenceTol * estvar_iter0[qoi]);
-  Real avg_hf_target = average(hf_targets);
-  */
+  // Note: there is a circular dependency between estvar_ratios and hf_targets
+  //RealVector hf_targets(numFunctions, false);
+  //for (size_t qoi=0; qoi<numFunctions; ++qoi)
+  //  hf_targets[qoi] = estvar[qoi] * N_H[qoi]
+  //                  / (convergenceTol * estvar_iter0[qoi]);
+  //Real avg_hf_target = average(hf_targets);
 
   Real avg_hf_target = 0.;
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    avg_hf_target += estvar_ratios[qoi] * var_H[qoi] / estvar_iter0[qoi];
+    avg_hf_target += estvar[qoi] * N_H[qoi] / estvar_iter0[qoi];
   avg_hf_target /= convergenceTol * numFunctions;
   Cout << "Scaling profile for convergenceTol = " << convergenceTol
        << ": average HF target = " << avg_hf_target << std::endl;
@@ -1569,9 +1597,12 @@ inline void NonDNonHierarchSampling::
 compute_variance(Real sum_Q, Real sum_QQ, size_t num_Q, Real& var_Q)
 		 //size_t num_QQ, // this count is the same as num_Q
 {
+  if (num_Q <= 1)
+    var_Q = (num_Q) ? 0. : std::numeric_limits<double>::quiet_NaN();
   // unbiased sample variance estimator = 1/(N-1) sum[(Q_i - Q-bar)^2]
   // = 1/(N-1) [ sum_QQ - N Q-bar^2 ] = 1/(N-1) [ sum_QQ - sum_Q^2 / N ]
-  var_Q = (sum_QQ - sum_Q * sum_Q / num_Q) / (num_Q - 1);
+  else
+    var_Q = (sum_QQ - sum_Q * sum_Q / num_Q) / (num_Q - 1);
 
   //Cout << "compute_variance: sum_Q = " << sum_Q << " sum_QQ = " << sum_QQ
   //     << " num_Q = " << num_Q << " var_Q = " << var_Q << std::endl;
@@ -1594,6 +1625,13 @@ compute_correlation(Real sum_Q1, Real sum_Q2, Real sum_Q1Q1, Real sum_Q1Q2,
 		    Real sum_Q2Q2, size_t N_shared, Real& var_Q1,
 		    Real& var_Q2, Real& rho2_Q1Q2)
 {
+  if (N_shared <= 1) {
+    Real nan = std::numeric_limits<double>::quiet_NaN();
+    if (N_shared) var_Q1 = var_Q2 = 0.;
+    else          var_Q1 = var_Q2 = nan;
+    rho2_Q1Q2 = nan;  return;
+  }
+
   // unbiased mean estimator
   Real mu_Q1 = sum_Q1 / N_shared, mu_Q2 = sum_Q2 / N_shared,
      num_sm1 = (Real)(N_shared - 1);
@@ -1615,13 +1653,16 @@ inline void NonDNonHierarchSampling::
 compute_covariance(Real sum_Q1, Real sum_Q2, Real sum_Q1Q2, size_t N_shared,
 		   Real& cov_Q1Q2)
 {
-  Real bessel_corr = (Real)N_shared / (Real)(N_shared - 1);
-
-  // unbiased mean X-bar = 1/N * sum
-  Real mu_Q1 = sum_Q1 / N_shared,  mu_Q2 = sum_Q2 / N_shared;
-  // unbiased sample covariance = 1/(N-1) sum[(X_i - X-bar)(Y_i - Y-bar)]
-  // = 1/(N-1) [N RawMom_XY - N X-bar Y-bar] = bessel [RawMom_XY - X-bar Y-bar]
-  cov_Q1Q2 = (sum_Q1Q2 / N_shared - mu_Q1 * mu_Q2) * bessel_corr;
+  if (N_shared <= 1)
+    cov_Q1Q2 = (N_shared) ? 0. : std::numeric_limits<double>::quiet_NaN();
+  else {
+    // unbiased mean X-bar = 1/N * sum
+    Real bessel_corr = (Real)N_shared / (Real)(N_shared - 1),
+      mu_Q1 = sum_Q1 / N_shared,  mu_Q2 = sum_Q2 / N_shared;
+    // unbiased sample covariance = 1/(N-1) sum[(X_i - X-bar)(Y_i - Y-bar)]
+    // = 1/(N-1) [N RawMom_XY - N X-bar Y-bar] = bessel[RawMom_XY - X-bar Y-bar]
+    cov_Q1Q2 = (sum_Q1Q2 / N_shared - mu_Q1 * mu_Q2) * bessel_corr;
+  }
 
   //Cout << "compute_covariance: sum_Q1 = " << sum_Q1 << " sum_Q2 = " << sum_Q2
   //     << " sum_Q1Q2 = " << sum_Q1Q2 << " num_shared = " << num_shared
@@ -1650,9 +1691,10 @@ inline Real NonDNonHierarchSampling::
 log_average_estvar(const RealVector& cd_vars)
 {
   Real avg_est_var = average_estimator_variance(cd_vars);
-  return (avg_est_var > 0.) ?
-    std::log(avg_est_var) : // use log to flatten contours
-    std::numeric_limits<Real>::quiet_NaN();//Pecos::LARGE_NUMBER;
+  if (avg_est_var > 0.)
+    return std::log(avg_est_var); // use log to flatten contours
+  else
+    return std::numeric_limits<Real>::quiet_NaN();//Pecos::LARGE_NUMBER;
 }
 
 
@@ -1820,6 +1862,65 @@ inflate(Real r_i, size_t num_rows, Real* eval_ratios_col)
   for (size_t row=0; row<num_rows; ++row)
     eval_ratios_col[row] = r_i;
 }
+
+
+inline void NonDNonHierarchSampling::
+inflate(const RealVector& vec, const BitArray& mask, RealVector& inflated_vec)
+{
+  if (mask.empty())
+    copy_data(vec, inflated_vec);
+  else {
+    size_t i, cntr = 0, inflated_len = mask.size();
+    inflated_vec.size(inflated_len); // init to 0
+    for (i=0; i<inflated_len; ++i)
+      if (mask[i])
+	inflated_vec[i] = vec[cntr++];
+  }
+}
+
+
+inline void NonDNonHierarchSampling::
+deflate(const RealVector& vec, const BitArray& mask, RealVector& deflated_vec)
+{
+  if (mask.empty())
+    copy_data(vec, deflated_vec);
+  else {
+    size_t i, cntr = 0, len = vec.length(), deflate_len = mask.count();
+    deflated_vec.sizeUninitialized(deflate_len); // init to 0
+    for (i=0; i<len; ++i)
+      if (mask[i])
+	deflated_vec[cntr++] = vec[i];
+  }
+}
+
+
+inline void NonDNonHierarchSampling::
+deflate(const SizetArray& vec, const BitArray& mask, RealVector& deflated_vec)
+{
+  if (mask.empty())
+    copy_data(vec, deflated_vec);
+  else {
+    size_t i, cntr = 0, len = vec.size(), deflate_len = mask.count();
+    deflated_vec.sizeUninitialized(deflate_len); // init to 0
+    for (i=0; i<len; ++i)
+      if (mask[i])
+	deflated_vec[cntr++] = (Real)vec[i];
+  }
+}
+
+
+/*
+inline void NonDNonHierarchSampling::enforce_nudge(RealVector& x)
+{
+  size_t i, len = x.length();
+  Real lb = //(maxFunctionEvals == SZ_MAX) ?
+    RATIO_NUDGE;
+  //RATIO_NUDGE * std::sqrt(maxFunctionEvals); // hand-tuned heuristic
+  for (i=0; i<len; ++i)
+    if (x[i] < lb)
+      x[i] = lb;
+}
+*/
 
 } // namespace Dakota
 

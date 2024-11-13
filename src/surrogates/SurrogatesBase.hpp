@@ -78,57 +78,51 @@ class Surrogate {
   virtual void build(const MatrixXd& samples, const MatrixXd& response) = 0;
 
   /**
-   *  \brief Evaluate the Surrogate at a set of prediction points for a single
+   *  \brief Evaluate the Surrogate at a set of prediction points for a scalar
    * QoI. \param[in] eval_points Matrix of prediction points - (num_pts by
-   * num_features). \param[in] qoi Index for surrogate QoI. \returns Values of
+   * num_features). \returns Values of
    * the Surrogate at the prediction points - (num_pts).
    */
-  virtual VectorXd value(const MatrixXd& eval_points, const int qoi) = 0;
+  virtual VectorXd value(const MatrixXd& eval_points);
 
   /**
-   *  \brief Evaluate the Surrogate at a set of prediction points for QoI index
-   * 0. \param[in] eval_points Vector of prediction points - (num_features).
+   *  \brief Evaluate the Surrogate at a set of prediction points for field QoIs.
+   *  \param[in] eval_points Vector of prediction points - (num_features).
    *  \returns Values of the Surrogate at the prediction points - (num_pts).
    */
-  VectorXd value(const MatrixXd& eval_points) { return value(eval_points, 0); }
+  virtual VectorXd values(const MatrixXd& eval_points);
 
   /**
-   *  \brief Evaluate the gradient of the Surrogate at a set of prediction
+   *  \brief Evaluate the gradient of the scalar Surrogate at a set of prediction
    * points. \param[in] eval_points Matrix of prediction points - (num_pts by
-   * num_features). \param[in] qoi Index of the quantity of interest for
-   * gradient evaluation - 0 for scalar-valued surrogates. \returns Matrix of
+   * num_features). \returns Matrix of
    * gradient vectors at the prediction points - (num_pts by num_features).
    */
-  virtual MatrixXd gradient(const MatrixXd& eval_points, const int qoi);
+  virtual MatrixXd gradient(const MatrixXd& eval_points);
 
   /**
-   *  \brief Evaluate the gradient of the Surrogate at a set of prediction
-   * points for QoI index 0. \param[in] eval_points Matrix of prediction points
+   *  \brief Evaluate the gradient of the field Surrogate at a set of prediction
+   * points. \param[in] eval_points Matrix of prediction points
    * - (num_pts by num_features). \returns Matrix of gradient vectors at the
    * prediction points - (num_pts by num_features).
    */
-  MatrixXd gradient(const MatrixXd& eval_points) {
-    return gradient(eval_points, 0);
-  }
+  MatrixXd gradients(const MatrixXd& eval_points);
 
   /**
-   *  \brief Evaluate the Hessian of the Surrogate at a single point.
-   *  \param[in] eval_point Coordinates of the prediction point - (1 by
-   * num_features). \param[in] qoi Index of the quantity of interest for Hessian
-   * evaluation - 0 for scalar-valued surrogates. \returns Hessian matrix at the
+   *  \brief Evaluate the Hessian of the scalar Surrogate at a set of prediction
+   *  points. \param[in] eval_point Coordinates of the prediction point - (1 by
+   * num_features). \returns Hessian matrix at the
    * prediction point - (num_features by num_features).
    */
-  virtual MatrixXd hessian(const MatrixXd& eval_point, const int qoi);
+  virtual MatrixXd hessian(const MatrixXd& eval_point);
 
   /**
-   *  \brief Evaluate the Hessian of the Surrogate at a single point for QoI
-   * index 0. \param[in] eval_point Coordinates of the prediction point - (1 by
-   * num_features). \returns Hessian matrix at the prediction point -
-   *  (num_features by num_features).
+   *  \brief Evaluate the Hessian of the field Surrogate at a set of prediction
+   *  points.  \param[in] eval_point Coordinates of the prediction point - (1 by
+   * num_features). \returns Hessian matrix at the
+   * prediction point - (num_features by num_features).
    */
-  MatrixXd hessian(const MatrixXd& eval_point) {
-    return hessian(eval_point, 0);
-  }
+  virtual MatrixXd hessians(const MatrixXd& eval_point);
 
   /**
       \brief Set the variable/feature names
@@ -204,6 +198,11 @@ class Surrogate {
 
   // also demo load via ctor
   //  Surrogate(infile, binary)
+
+  // Allow diagnostics enable/disable
+  virtual bool diagnostics_available() {
+    return true;
+  }
 
   /// Evalute metrics at specified points (within surrogates)
   VectorXd evaluate_metrics(const StringArray& mnames, const MatrixXd& points,

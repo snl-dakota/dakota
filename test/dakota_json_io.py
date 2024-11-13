@@ -140,6 +140,10 @@ if __name__ == '__main__':
     params_file = sys.argv[6]
     results_file = sys.argv[7]
 
+    format_map = {'aprepro': di.APREPRO,
+            'standard': di.STANDARD,
+            'json': di.JSON
+            }
 
     if params_format == 'json':
         variables, function_labels, asv = read_json_parameters(params_file, batch_flag, metadata_flag, an_comp_flag)
@@ -151,7 +155,7 @@ if __name__ == '__main__':
             params = [params]
             results = [results]
         for p, r in zip(params, results):
-            assert(p.aprepro_format == (params_format=='aprepro'))
+            assert(p.format == format_map[params_format])
             eval_vars = [value for value in p.values()]
             eval_labels = r.descriptors
             variables.append(eval_vars)

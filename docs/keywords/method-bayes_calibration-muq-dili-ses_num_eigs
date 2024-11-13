@@ -1,0 +1,15 @@
+Blurb::
+Parameter for the stochastic eigensolver used by the DILI MCMC algorithm in MUQ
+
+Description::
+The maximum number of eigenvalues to compute. Used as stopping criteria. The default value is '2'.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

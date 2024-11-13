@@ -140,8 +140,9 @@ DataMethodRep::DataMethodRep():
   expansionOrder(USHRT_MAX), collocationPoints(SZ_MAX),
   expansionSamples(SZ_MAX),  ensemblePilotSolnMode(ONLINE_PILOT),
   pilotGroupSampling(SHARED_PILOT), groupThrottleType(NO_GROUP_THROTTLE),
-  groupSizeThrottle(USHRT_MAX), truthPilotConstraint(false),
-  dagRecursionType(NO_GRAPH_RECURSION), dagDepthLimit(1),
+  groupSizeThrottle(USHRT_MAX), rCondBestThrottle(SZ_MAX),
+  rCondTolThrottle(DBL_MAX), truthPilotConstraint(false),
+  dagRecursionType(NO_GRAPH_RECURSION), dagDepthLimit(USHRT_MAX),
   modelSelectType(NO_MODEL_SELECTION), relaxFixedFactor(0.),
   relaxRecursiveFactor(0.), allocationTarget(TARGET_MEAN),
   useTargetVarianceOptimizationFlag(false), qoiAggregation(QOI_AGGREGATION_SUM),
@@ -201,6 +202,19 @@ DataMethodRep::DataMethodRep():
   amStartingStep(100),
   amScale(1.0),
   malaStepSize(1.0),
+  diliHessianType("GaussNewton"),
+  diliAdaptInterval(-1),
+  diliAdaptStart(1),
+  diliAdaptEnd(-1),
+  diliInitialWeight(100),
+  diliHessTolerance(1.0e-4),
+  diliLISTolerance(0.1),
+  diliSesNumEigs(2),
+  diliSesRelTol(0.001),
+  diliSesAbsTol(0.0),
+  diliSesExpRank(2),
+  diliSesOversFactor(2),
+  diliSesBlockSize(2),
   // Parameter Study
   numSteps(0), pstudyFileFormat(TABULAR_ANNOTATED), pstudyFileActive(false),
   // Verification
@@ -343,10 +357,11 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << reliabilityIntegration << integrationRefine << refineSamples
     << optSubProbSolver << numericalSolveMode << pilotSamples
     << ensemblePilotSolnMode << pilotGroupSampling << groupThrottleType
-    << groupSizeThrottle << truthPilotConstraint
-    << dagRecursionType << dagDepthLimit << modelSelectType
-    << relaxFactorSequence << relaxFixedFactor << relaxRecursiveFactor
-    << allocationTarget << useTargetVarianceOptimizationFlag
+    << groupSizeThrottle << rCondBestThrottle << rCondTolThrottle
+    << truthPilotConstraint << dagRecursionType << dagDepthLimit
+    << modelSelectType << relaxFactorSequence << relaxFixedFactor
+    << relaxRecursiveFactor << allocationTarget
+    << useTargetVarianceOptimizationFlag
     << qoiAggregation << scalarizationRespCoeffs
     << convergenceToleranceType << convergenceToleranceTarget
     << multilevAllocControl << multilevEstimatorRate
@@ -381,6 +396,19 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << amStartingStep
     << amScale
     << malaStepSize
+    << diliHessianType
+    << diliAdaptInterval
+    << diliAdaptStart
+    << diliAdaptEnd
+    << diliInitialWeight
+    << diliHessTolerance
+    << diliLISTolerance
+    << diliSesNumEigs
+    << diliSesRelTol
+    << diliSesAbsTol
+    << diliSesExpRank
+    << diliSesOversFactor
+    << diliSesBlockSize
     << dataDistType << dataDistCovInputType << dataDistMeans
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
@@ -530,10 +558,11 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> reliabilityIntegration >> integrationRefine >> refineSamples
     >> optSubProbSolver >> numericalSolveMode >> pilotSamples
     >> ensemblePilotSolnMode >> pilotGroupSampling >> groupThrottleType
-    >> groupSizeThrottle >> truthPilotConstraint
-    >> dagRecursionType >> dagDepthLimit >> modelSelectType
-    >> relaxFactorSequence >> relaxFixedFactor >> relaxRecursiveFactor
-    >> allocationTarget >> useTargetVarianceOptimizationFlag
+    >> groupSizeThrottle >> rCondBestThrottle >> rCondTolThrottle
+    >> truthPilotConstraint >> dagRecursionType >> dagDepthLimit
+    >> modelSelectType >> relaxFactorSequence >> relaxFixedFactor
+    >> relaxRecursiveFactor >> allocationTarget
+    >> useTargetVarianceOptimizationFlag
     >> qoiAggregation >> scalarizationRespCoeffs
     >> convergenceToleranceType >> convergenceToleranceTarget
     >> multilevAllocControl >> multilevEstimatorRate
@@ -568,6 +597,19 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> amStartingStep
     >> amScale
     >> malaStepSize
+    >> diliHessianType
+    >> diliAdaptInterval
+    >> diliAdaptStart
+    >> diliAdaptEnd
+    >> diliInitialWeight
+    >> diliHessTolerance
+    >> diliLISTolerance
+    >> diliSesNumEigs
+    >> diliSesRelTol
+    >> diliSesAbsTol
+    >> diliSesExpRank
+    >> diliSesOversFactor
+    >> diliSesBlockSize
     >> dataDistType >> dataDistCovInputType >> dataDistMeans
     >> dataDistCovariance >> dataDistFile >> posteriorDensityExportFilename
     >> posteriorSamplesExportFilename >> posteriorSamplesImportFilename
@@ -717,10 +759,11 @@ void DataMethodRep::write(std::ostream& s) const
     << reliabilityIntegration << integrationRefine << refineSamples
     << optSubProbSolver << numericalSolveMode << pilotSamples
     << ensemblePilotSolnMode << pilotGroupSampling << groupThrottleType
-    << groupSizeThrottle << truthPilotConstraint
-    << dagRecursionType << dagDepthLimit << modelSelectType
-    << relaxFactorSequence << relaxFixedFactor << relaxRecursiveFactor
-    << allocationTarget << useTargetVarianceOptimizationFlag
+    << groupSizeThrottle << rCondBestThrottle << rCondTolThrottle
+    << truthPilotConstraint << dagRecursionType << dagDepthLimit
+    << modelSelectType << relaxFactorSequence << relaxFixedFactor
+    << relaxRecursiveFactor << allocationTarget
+    << useTargetVarianceOptimizationFlag
     << qoiAggregation << scalarizationRespCoeffs
     << convergenceToleranceType << convergenceToleranceTarget
     << multilevAllocControl << multilevEstimatorRate
@@ -755,6 +798,19 @@ void DataMethodRep::write(std::ostream& s) const
     << amStartingStep
     << amScale
     << malaStepSize
+    << diliHessianType
+    << diliAdaptInterval
+    << diliAdaptStart
+    << diliAdaptEnd
+    << diliInitialWeight
+    << diliHessTolerance
+    << diliLISTolerance
+    << diliSesNumEigs
+    << diliSesRelTol
+    << diliSesAbsTol
+    << diliSesExpRank
+    << diliSesOversFactor
+    << diliSesBlockSize
     << dataDistType << dataDistCovInputType << dataDistMeans
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename

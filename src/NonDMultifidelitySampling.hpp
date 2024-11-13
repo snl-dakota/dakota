@@ -78,11 +78,6 @@ protected:
 			 RealVector& avg_eval_ratios, Real& avg_hf_target,
 			 Real budget, Real offline_N_lwr);
 
-  void approx_increments(IntRealMatrixMap& sum_L_baseline,
-			 IntRealVectorMap& sum_H,  IntRealMatrixMap& sum_LL,
-			 IntRealMatrixMap& sum_LH, const SizetArray& N_H_actual,
-			 size_t N_H_alloc, const MFSolutionData& soln);
-
   void update_model_groups();
   void update_model_groups(const SizetArray& approx_sequence);
 
@@ -100,6 +95,21 @@ private:
 			  IntRealVectorMap& sum_H,
 			  IntRealMatrixMap& sum_LL,
 			  IntRealMatrixMap& sum_LH, RealVector& sum_HH);
+
+  void approx_increments(IntRealMatrixMap& sum_L_baseline,
+			 const SizetArray& N_H_actual, size_t N_H_alloc,
+			 IntRealMatrixMap& sum_L_shared,
+			 Sizet2DArray& N_L_actual_shared,
+			 IntRealMatrixMap& sum_L_refined,
+			 Sizet2DArray& N_L_actual_refined,
+			 SizetArray& N_L_alloc_refined,
+			 const MFSolutionData& soln);
+
+  void mf_raw_moments(const IntRealMatrixMap& sum_L_covar,
+		      const IntRealVectorMap& sum_H_covar,
+		      const IntRealMatrixMap& sum_LL_covar,
+		      const IntRealMatrixMap& sum_LH_covar,
+		      const SizetArray& N_covar, RealVector2DArray& beta);
 
   // shared_increment() cases:
   void accumulate_mf_sums(IntRealMatrixMap& sum_L_baseline,
@@ -140,15 +150,6 @@ private:
 				    RealMatrix& cov_LH);
   void matrix_to_diagonal_array(const RealMatrix& var_L,
 				RealSymMatrixArray& cov_LL);
-
-  void mf_raw_moments(IntRealMatrixMap& sum_L_baseline,
-		      IntRealMatrixMap& sum_L_shared,
-		      IntRealMatrixMap& sum_L_refined,
-		      IntRealVectorMap& sum_H,  IntRealMatrixMap& sum_LL,
-		      IntRealMatrixMap& sum_LH, //const RealMatrix& rho2_LH,
-		      const Sizet2DArray& num_L_shared,
-		      const Sizet2DArray& num_L_refined,
-		      const SizetArray& num_H, RealMatrix& H_raw_mom);
 
   //void compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
   //			  size_t num_L, size_t num_H, size_t num_LH,Real& beta);

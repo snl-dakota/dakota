@@ -67,9 +67,8 @@ public:
   /// Destructor
   ~Rank1Lattice();
 
-  /// Randomize this rank-1 lattice rule
-  /// NOTE: required for 'unique' sampling in `NonDLowDiscrepancySampling`
-  inline void randomize() override { random_shift(); }
+  /// Reseed this rank-1 lattice rule
+  void reseed() override { random_shift(seedValue); }
 
   /// Randomly shift this rank-1 lattice rule
   void random_shift() { random_shift(generate_system_seed()); }

@@ -814,61 +814,10 @@ inline Pecos::ActiveKey& EnsembleSurrModel::key_from_index(size_t k_index)
   else { // includes _NPOS
     Cerr << "Error: key index (" << k_index << ") out of range in "
 	 << "EnsembleSurrModel::key_from_index()" << std::endl;
-    abort_handler(MODEL_ERROR);
+    abort_handler(MODEL_ERROR);  return truthModelKey;
   }
 }
 
-
-inline Model& EnsembleSurrModel::model_from_index(unsigned short m_index)
-{
-  size_t num_approx = pApproxModels.size();
-  if      (m_index <  num_approx) return *pApproxModels[m_index];
-  else if (m_index == num_approx) return *pTruthModel;
-  else { // includes _NPOS
-    Cerr << "Error: model index (" << m_index << ") out of range in "
-	 << "EnsembleSurrModel::model_from_index()" << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-}
-
-
-inline const Model& EnsembleSurrModel::
-model_from_index(unsigned short m_index) const
-{
-  size_t num_approx = pApproxModels.size();
-  if      (m_index <  num_approx) return *pApproxModels[m_index];
-  else if (m_index == num_approx) return *pTruthModel;
-  else { // includes _NPOS
-    Cerr << "Error: model index (" << m_index << ") out of range in "
-	 << "EnsembleSurrModel::model_from_index()" << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-}
-
-
-inline Model& EnsembleSurrModel::approx_model_from_index(unsigned short m_index)
-{
-  size_t num_approx = pApproxModels.size();
-  if (m_index <  num_approx) return *pApproxModels[m_index];
-  else { // includes _NPOS
-    Cerr << "Error: model index (" << m_index << ") out of range in "
-	 << "EnsembleSurrModel::approx_model_from_index()" << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-}
-
-
-inline const Model& EnsembleSurrModel::
-approx_model_from_index(unsigned short m_index) const
-{
-  size_t num_approx = pApproxModels.size();
-  if (m_index <  num_approx) return *pApproxModels[m_index];
-  else { // includes _NPOS
-    Cerr << "Error: model index (" << m_index << ") out of range in "
-	 << "EnsembleSurrModel::approx_model_from_index()" << std::endl;
-    abort_handler(MODEL_ERROR);
-  }
-}
 
 
 inline bool EnsembleSurrModel::find_model_in_keys(unsigned short m_index)

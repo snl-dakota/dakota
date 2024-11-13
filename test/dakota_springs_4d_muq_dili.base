@@ -1,0 +1,22 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 630 total (492 new, 138 duplicate)
+<<<<< Best parameters          =
+                      2.4233012973e+04 k1
+                      2.4361301802e+04 k2
+                      2.3691413278e+04 k3
+                      2.5174715950e+04 k4
+<<<<< Best misfit              =
+                      2.5143248532e-06
+<<<<< Best log prior           =
+                     -5.5897035179e+01
+<<<<< Best log posterior       =
+                     -4.6622579426e+01
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+            k1 -1.3458124774e+05  3.4657439091e+04  6.0452084846e+00  3.5253113333e+01
+            k2  1.3087857069e+05  8.9026532082e+03 -1.1563738689e+01  1.3780803139e+02
+            k3  5.2534907491e+04  1.8363459250e+04 -6.6257528134e+00  4.3147180812e+01
+            k4  3.0575826612e+04  1.1668485647e+04 -6.4214841778e+00  4.1666023335e+01
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+           d_1  1.0919916794e-03  1.3359093670e-04  2.1492294769e+00  4.7382520831e+01

@@ -1,0 +1,15 @@
+Blurb::
+Parameter for the DILI MCMC algorithm in MUQ
+
+Description::
+No LIS updates will occur after this number of MCMC steps. If negative, the LIS will continue to be updated until the end of the chain. The default value is '-1'.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

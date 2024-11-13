@@ -130,7 +130,6 @@
 #include "ResultsManager.hpp"
 #include "EvaluationStore.hpp"
 #include "NonDWASABIBayesCalibration.hpp"
-#include "NonDLowDiscrepancySampling.hpp"
 
 #include <boost/bimap.hpp>
 #include <boost/assign.hpp>
@@ -521,25 +520,22 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
 //    return std::make_shared<NonDMUQBayesCalibration>(problem_db, model);break;
 //#endif
   case RANDOM_SAMPLING:
-    switch (probDescDB.get_ushort("method.sample_type")) {
-      case SUBMETHOD_LOW_DISCREPANCY_SAMPLING:
-        return std::make_shared<NonDLowDiscrepancySampling>(problem_db, model);
-	break;
-      default:
-        return std::make_shared<NonDLHSSampling>(problem_db, model); break;
-      }
+    return std::make_shared<NonDLHSSampling>(problem_db, model); break;
   case MULTILEVEL_SAMPLING:
     // Similar to MFMC below, spec options could trigger promotion to GenACV
-    // (which is then restricted to default hierarch DAG for MLMC consistency)
+    // (which is then restricted to hierarchical DAGs for MLMC consistency)
+    // Note that recursion/selection is not available w/o weighting.
     if (probDescDB.get_ushort("method.sub_method") == SUBMETHOD_WEIGHTED_MLMC)
       return std::make_shared<NonDGenACVSampling>(problem_db, model);
     else
       return std::make_shared<NonDMultilevelSampling>(problem_db, model);
     break;
   case MULTIFIDELITY_SAMPLING:
-    if (probDescDB.get_short("method.nond.search_model_graphs.selection"))
+    if (probDescDB.get_short("method.nond.search_model_graphs.recursion") ||
+	probDescDB.get_short("method.nond.search_model_graphs.selection"))
       return std::make_shared<NonDGenACVSampling>(problem_db, model);
-    else
+    else // Note that numerical MFMC reorders models on the fly, similar to
+         // enumeration of hierarchical DAGs (more efficient, less smooth?)
       return std::make_shared<NonDMultifidelitySampling>(problem_db,model);
     break;
   case MULTILEVEL_MULTIFIDELITY_SAMPLING:
@@ -1757,8 +1753,8 @@ const Model& Iterator::algorithm_space_model() const
 	 << "instance." << std::endl;
     abort_handler(METHOD_ERROR);
   }
-  else // envelope fwd to letter
-    return iteratorRep->algorithm_space_model();
+
+  return iteratorRep->algorithm_space_model();
 }
 
 

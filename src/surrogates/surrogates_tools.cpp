@@ -250,7 +250,7 @@ void fd_check_hessian(Surrogate& surr, const MatrixXd& sample,
 
   /* unperturbed value and hessian */
   ref_value = surr.value(sample);
-  ref_hessian = surr.hessian(sample, 0);
+  ref_hessian = surr.hessian(sample);
 
   /* create h and reference value arrays */
   VectorXd h(num_steps);

@@ -14,15 +14,19 @@ Download Dakota
 Command Line + GUI
 ------------------
 
+- **6.21.0** `macOS`__ | `Windows`__ | `Linux (RHEL8)`__
 - **6.20.0** `macOS`__ | `Windows`__ | `Linux (RHEL8)`__
 - **6.19.0** `macOS`__ | `Windows`__ | `Linux (RHEL7)`__ | `Linux (RHEL8)`__
 - **6.18.0** `macOS`__ | `Windows`__ | `Linux (RHEL7)`__ | `Linux (RHEL8)`__
 - **6.17.0** `macOS`__ | `Windows`__ | `Linux (RHEL7)`__ | `Linux (RHEL8)`__
 - **6.16.0** `macOS`__ | `Windows`__ | `Linux (RHEL7)`__ 
 
-.. __: https://github.com/snl-dakota/dakota/releases/download/v6.20.0/dakota-6.20.0-public-darwin.Darwin.arm64-gui_cli.tar.gz
-__ https://github.com/snl-dakota/dakota/releases/download/v6.20.0/dakota-6.20.0-public-windows.Windows.x64-gui_cli.zip
-__ https://github.com/snl-dakota/dakota/releases/download/v6.20.0/dakota-6.20.0-public-rhel8.Linux.x86_64-gui_cli.tar.gz
+.. __: https://github.com/snl-dakota/dakota/releases/download/v6.21.0/dakota-6.21.0-public-darwin.darwin.arm64-gui_cli.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v6.21.0/dakota-6.21.0-public-windows.windows.x64-gui_cli.zip
+__ https://github.com/snl-dakota/dakota/releases/download/v6.21.0/dakota-6.21.0-public-rhel8.linux.x86_64-gui_cli.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v6.20.0/dakota-6.20-public-darwin.darwin.arm64-gui_cli.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v6.20.0/dakota-6.20.0-public-windows.windows.x64-gui_cli.zip
+__ https://github.com/snl-dakota/dakota/releases/download/v6.20.0/dakota-6.20.0-public-rhel8.linux.x86_64-gui_cli.tar.gz
 __ https://github.com/snl-dakota/dakota/releases/download/v6.19.0/dakota-6.19.0-public-darwin.Darwin.x86_64-gui_cli.tar.gz
 __ https://github.com/snl-dakota/dakota/releases/download/v6.19.0/dakota-6.19.0-public-windows.Windows.x64-gui_cli.zip
 __ https://github.com/snl-dakota/dakota/releases/download/v6.19.0/dakota-6.19.0-public-rhel7.Linux.x86_64-gui_cli.tar.gz
@@ -44,13 +48,19 @@ __ https://github.com/snl-dakota/dakota/releases/download/v6.16.0/dakota-6.16.0-
 Command Line Only
 -----------------
 
+- **6.21.0** `macOS`__ | `Windows`__ | `Linux (RHEL8)`__ | `Source (zip)`__ | `Source (tar.gz)`__ 
 - **6.20.0** `macOS`__ | `Windows`__ | `Linux (RHEL8)`__ | `Source (zip)`__ | `Source (tar.gz)`__ 
 - **6.19.0** `macOS`__ | `Windows`__ | `Linux (RHEL7)`__ | `Linux (RHEL8)`__ | `Source (zip)`__ | `Source (tar.gz)`__ 
 - **6.18.0** `macOS`__ | `Windows`__ | `Linux (RHEL7)`__ | `Linux (RHEL8)`__ | `Source (zip)`__ | `Source (tar.gz)`__
 - **6.17.0** `macOS`__ | `Windows`__ | `Linux (RHEL7)`__ | `Linux (RHEL8)`__ | `Source (zip)`__ | `Source (tar.gz)`__
 - **6.16.0** `macOS`__ | `Windows`__ | `Linux (RHEL7)`__ | `Source (zip)`__ | `Source (tar.gz)`__
 
-.. __: https://github.com/snl-dakota/dakota/releases/download/v6.20.0/dakota-6.20.0-public-darwin.Darwin.arm64-cli.tar.gz
+.. __: https://github.com/snl-dakota/dakota/releases/download/v6.21.0/dakota-6.21.0-public-darwin.Darwin.arm64-cli.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v6.21.0/dakota-6.21.0-public-windows.Windows.x64-cli.zip
+__ https://github.com/snl-dakota/dakota/releases/download/v6.21.0/dakota-6.21.0-public-rhel8.Linux.x86_64-cli.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v6.21.0/dakota-6.21.0-public-src-cli.zip
+__ https://github.com/snl-dakota/dakota/releases/download/v6.21.0/dakota-6.21.0-public-src-cli.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v6.20.0/dakota-6.20-public-darwin.Darwin.arm64-cli.tar.gz
 __ https://github.com/snl-dakota/dakota/releases/download/v6.20.0/dakota-6.20.0-public-windows.Windows.x64-cli.zip
 __ https://github.com/snl-dakota/dakota/releases/download/v6.20.0/dakota-6.20.0-public-rhel8.Linux.x86_64-cli.tar.gz
 __ https://github.com/snl-dakota/dakota/releases/download/v6.20.0/dakota-6.20.0-public-src-cli.zip
@@ -83,13 +93,18 @@ __ https://github.com/snl-dakota/dakota/releases/download/v6.16.0/dakota-6.16.0-
 GUI Only
 --------
 
+- **6.21.0** `macOS`__ | `Windows`__ | `Linux`__ | `Source`__
 - **6.20.0** `macOS`__ | `Windows`__ | `Linux`__ | `Source`__
 - **6.19.0** `macOS`__ | `Windows`__ | `Linux`__ | `Source`__
 - **6.18.0** `macOS`__ | `Windows`__ | `Linux`__ | `Source`__
 - **6.17.0** `macOS`__ | `Windows`__ | `Linux`__ | `Source`__
 - **6.16.0** `macOS`__ | `Windows`__ | `Linux`__ | `Source`__
 
-.. __: https://github.com/snl-dakota/dakota/releases/download/v6.20.0/dakota-6.20.0-public-Darwin.x86_64-gui.tar.gz
+.. __: https://github.com/snl-dakota/dakota/releases/download/v6.21.0/dakota-6.21.0-public-Darwin.x86_64-gui.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v6.21.0/dakota-6.21.0-public-Windows.x64-gui.zip
+__ https://github.com/snl-dakota/dakota/releases/download/v6.21.0/dakota-6.21.0-public-Linux.x86_64-gui.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v6.21.0/dakota-6.21.0-public-src-gui.zip
+__ https://github.com/snl-dakota/dakota/releases/download/v6.20.0/dakota-6.20.0-public-Darwin.x86_64-gui.tar.gz
 __ https://github.com/snl-dakota/dakota/releases/download/v6.20.0/dakota-6.20.0-public-Windows.x64-gui.zip
 __ https://github.com/snl-dakota/dakota/releases/download/v6.20.0/dakota-6.20.0-public-Linux.x86_64-gui.tar.gz
 __ https://github.com/snl-dakota/dakota/releases/download/v6.20.0/dakota-6.20.0-public-src-gui.zip
@@ -129,7 +144,7 @@ Extract archive file into suitable install location, e.g. $HOME.  If you have ro
    $ cd /path/to/Dakota/install/directory
    $ tar xzvf /path/to/Dakota-release.platform.tar.gz
 
-Rename the extracted Dakota binary executable directory:
+If you wish, rename the extracted Dakota binary executable directory to something more convenient:
 
 .. code-block::
 
@@ -137,7 +152,17 @@ Rename the extracted Dakota binary executable directory:
    dakota-release.platform
    $ mv dakota-release.platform Dakota
 
-Set up your platform environment to access the Dakota executable, libraries, and tests.
+Because Dakota executables are not signed, their attributes must be cleared before they will work on macOS.
+To do so, run the following command, substituting the path of your Dakota install for "Dakota":
+
+.. code-block::
+   
+   $ xattr -cr Dakota
+
+
+
+:ref:`Set up your platform environment <setupdakota-environment>` to access the Dakota executable, libraries, 
+and tests.
 
 
 ----------------------

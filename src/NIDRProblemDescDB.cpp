@@ -6673,10 +6673,11 @@ static Method_mp_lit
         MP2(meritFunction,merit2_squared),
 	MP2(mcmcType,adaptive_metropolis),
 	MP2(mcmcType,delayed_rejection),
+	MP2(mcmcType,dili),
 	MP2(mcmcType,dram),
+	MP2(mcmcType,mala),
 	MP2(mcmcType,metropolis_hastings),
 	MP2(mcmcType,multilevel),
-	MP2(mcmcType,mala),
 	MP2(modelDiscrepancyType,global_kriging),
 	MP2(modelDiscrepancyType,global_polynomial),
 	MP2(mutationType,bit_random),
@@ -6738,6 +6739,7 @@ static Method_mp_utype_lit
 
 static Real
 	MP_(absConvTol),
+	MP_(amScale),
 	MP_(centeringParam),
 	MP_(collocationRatio),
 	MP_(collocRatioTermsOrder),
@@ -6748,6 +6750,11 @@ static Real
 	MP_(contractStepLength),
 	MP_(convergenceTolerance),
 	MP_(crossoverRate),
+        MP_(diliHessTolerance),
+        MP_(diliLISTolerance),
+        MP_(diliSesAbsTol),
+        MP_(diliSesRelTol),
+	MP_(drScale),
 	MP_(falseConvTol),
 	MP_(functionPrecision),
 	MP_(globalBalanceParam),
@@ -6761,6 +6768,7 @@ static Real
 	MP_(initTRRadius),
 	MP_(lineSearchTolerance),
 	MP_(localBalanceParam),
+	MP_(malaStepSize),
 	MP_(maxBoxSize),
 	MP_(maxStep),
 	MP_(minBoxSize),
@@ -6770,6 +6778,7 @@ static Real
 	MP_(mutationScale),
 	MP_(percentVarianceExplained),
         MP_(priorPropCovMult),
+        MP_(rCondTolThrottle),
 	MP_(refinementRate),
 	MP_(regressionL2Penalty),
 	MP_(relaxFixedFactor),
@@ -6785,6 +6794,8 @@ static Real
 	MP_(stepLenToBoundary),
 	MP_(threshDelta),
 	MP_(threshStepLength),
+	MP_(tiCoverage),
+	MP_(tiConfidenceLevel),
 	MP_(trustRegionContract),
 	MP_(trustRegionContractTrigger),
 	MP_(trustRegionExpand),
@@ -6794,12 +6805,7 @@ static Real
 	MP_(volBoxSize),
 	MP_(vns),
 	MP_(wilksConfidenceLevel),
-	MP_(tiCoverage),
-	MP_(tiConfidenceLevel),
-	MP_(xConvTol),
-	MP_(drScale),
-	MP_(amScale),
-	MP_(malaStepSize);
+        MP_(xConvTol);
 
 static RealVector
 	MP_(anisoDimPref),
@@ -6862,7 +6868,9 @@ static String
         MP_(betaSolverName),
         MP_(dataDistFile),
         MP_(displayFormat),
-	MP_(exportApproxPtsFile),
+        MP_(diliHessianType),
+	MP_(drScaleType),
+        MP_(exportApproxPtsFile),
 	MP_(exportCorrModelFile),
 	MP_(exportCorrVarFile),
 	MP_(exportDiscrepFile),
@@ -6894,8 +6902,7 @@ static String
         MP_(subMethodPointer),
         MP_(subModelPointer),
         MP_(generatingVectorFileName),
-        MP_(generatingMatricesFileName),
-        MP_(drScaleType);
+        MP_(generatingMatricesFileName);
 
 static StringArray
 	MP_(hybridMethodNames),
@@ -6988,6 +6995,8 @@ static short
 */
 
 static int
+	MP_(amPeriodNumSteps),
+	MP_(amStartingStep),
 	MP_(batchSize),
 	MP_(batchSizeExplore),
 	MP_(buildSamples),
@@ -6997,6 +7006,15 @@ static int
 	MP_(contractAfterFail),
 	MP_(covarianceType),
         MP_(crossoverChainPairs),
+        MP_(diliAdaptEnd),
+        MP_(diliAdaptInterval),
+        MP_(diliAdaptStart),
+        MP_(diliInitialWeight),
+        MP_(diliSesBlockSize),
+        MP_(diliSesExpRank),
+        MP_(diliSesNumEigs),
+        MP_(diliSesOversFactor),
+	MP_(drNumStages),
         MP_(emulatorOrder),
 	MP_(expandAfterSuccess),
         MP_(evidenceSamples),
@@ -7026,10 +7044,7 @@ static int
 	MP_(vbdViaSamplingNumBins),
 	MP_(log2MaxPoints),
 	MP_(numberOfBits),
-	MP_(scrambleSize),
-	MP_(drNumStages),
-	MP_(amPeriodNumSteps),
-	MP_(amStartingStep);
+        MP_(scrambleSize);
 
 static size_t
 	MP_(collocationPoints),
@@ -7049,8 +7064,9 @@ static size_t
 	MP_(numOffspring),
 	MP_(numParents),
 	MP_(numPredConfigs),
-  //MP_(startOrder),
-  MP_(startRank);
+	MP_(rCondBestThrottle),
+	//MP_(startOrder),
+	MP_(startRank);
 
 static Method_mp_type
 	MP2s(allocationTarget,TARGET_MEAN),

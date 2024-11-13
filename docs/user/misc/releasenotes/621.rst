@@ -1,0 +1,124 @@
+.. _releasenotes-621:
+
+""""""""""""""""""""""""""""""""""""""
+Version 6.21 (2024/11/14)
+""""""""""""""""""""""""""""""""""""""
+
+**Highlight: Numerical robustness for ML BLUE**
+
+The multilevel best linear unbiased estimator (ML BLUE) now uses
+truncated SVD for all matrix solutions (previously handled by Cholesky
+factorization with equilibration), enabling more robust solution
+recovery for resouce allocations and final moment estimates.  This can
+mitigate ill-conditioned for problems with larger group counts, for
+groups containing some level of model redundancy, and for larger
+budgets with more aggressive sample profiles.
+
+*Enabling / Accessing:* New SVD solver strategies are built-in with truncation tolerances tuned from numerical studies.
+
+*Documentation:* Refer to the reference documentation starting from :dakkw:`method-multilevel_blue` for additional information on ML BLUE and its options.  Benchmark examples with three models (tunable problem), five models (steady state diffusion), and 8 models (transient diffusion) are available under dakota/test in the release distribution.
+
+
+**Highlight: New options for using MCMC algorithms from the MUQ library**
+
+This release exposes the DILI (Dimension-Independent Likelihood-Informed subspace :cite:p:`Cui2016109`) MCMC sampler from the 
+`MIT UQ Library (MUQ) <https://mituq.bitbucket.io/source/_site/index.html>`_.
+
+
+*Enabling / Accessing:* 
+
+Add the :dakkw:`method-bayes_calibration-muq-dili` keyword to the :dakkw:`bayes_calibration muq <method-bayes_calibration-muq>`
+method keyword group to select this submethod. MUQ is available in Linux and macOS downloads, but not yet in Windows. It
+must be enabled when building from source by setting the CMake variable ``DAKOTA_HAVE_MUQ=ON``.
+
+
+*Documentation:* 
+
+Consult Dakota's keyword documentation for the :dakkw:`method-bayes_calibration-muq-dili` method or
+the `MUQ documentation <https://mituq.bitbucket.io/source/_site/latest/index.html>`_.
+
+**Highlight: JSON parameters and results files**
+
+This release adds support for parameters and results files in JSON format, which
+is intended to simplify driver development.
+
+*Enabling / Accessing:* 
+
+Two new keyword groups were added to the interface portion of the input file,
+:dakkw:`interface-analysis_drivers-fork-parameters_format` and 
+:dakkw:`interface-analysis_drivers-fork-results_format`. The ``json`` keyword within 
+these groups is used to select JSON format files.
+
+In addition, the :dakkw:`interface-analysis_drivers-fork-parameters_format-aprepro` 
+keyword was moved to the ``parameters_format`` group, and the 
+:dakkw:`interface-analysis_drivers-fork-results_format-standard-labeled` keyword
+is now located in the ``results_format`` group.
+
+*Documentation:* 
+
+The User's Manual describes the schemas for JSON :ref:`parameters <variables:parameters:json>`
+and :ref:`results <responses:results:json>` files.
+
+
+**Improvements by Category**
+
+*Interfaces, Input/Output*
+
+- Writing evaluations by evaluation ID is supported by the :class:`BatchSplitter` class 
+  in the :ref:`dakota.interfacing <interfaces:dakota.interfacing>` module.
+- The :func:`python_interface` decorator in the 
+  :ref:`dakota.interfacing <interfaces:dakota.interfacing>` module now supports batch evaluations.
+- Support for reading and writing JSON parameters and results files was added to
+  :ref:`dakota.interfacing <interfaces:dakota.interfacing>`.
+
+*Models*
+
+- Vector-valued Python surrogates now supported. Python surrogates now
+  can provide Hessians.
+
+*Optimization Methods*
+
+*UQ Methods*
+
+- Hierarchical DAG enumeration (essentially a reordering of model dependencies) is now available for weighted MLMC and MFMC. See :dakkw:`method-multilevel_sampling-weighted-search_model_graphs` and :dakkw:`method-multifidelity_sampling-search_model_graphs`.
+
+- Hierarchical sampling methods (MLMC aka ``multilevel_sampling``, and MLCV MC aka ``multilevel_multifidelity_sampling``) extended to support concurrent multi-batch processing.
+
+- New run-time group throttles for ML BLUE: ``best_conditioned`` and ``rcond_tolerance`` now prune groups based on the conditioning of their group covariances.
+
+- Improved robustness for ``offline_pilot`` mode by employing the offline covariances for both sample allocation and final moment rollup.  This relaxes previous contraints on the minimum high-fidelity samples for subsequent online sampling.
+
+- Online cost recovery can now be alternated with pre-specified cost on a per model basis.
+
+- MAP pre-solve and chain samples export enabled for MUQ methods.
+
+ 
+**Miscellaneous Enhancements and Bugfixes**
+
+- Enh: When building Dakota from source with the Python direct interface enabled, NumPy 2 is supported.
+- Bug fix: JEGA global log file is closed when the environment is destructed.
+- Bug fix: When performing batch evaluations with the Python direct interface, the evaluation ID is now
+  correctly reported.
+
+**Deprecated and Changed**
+
+- The :dakkw:`interface-analysis_drivers-fork-parameters_format-aprepro` keyword was moved
+  to the :dakkw:`interface-analysis_drivers-fork-parameters_format` group, and the 
+  :dakkw:`interface-analysis_drivers-fork-results_format-standard-labeled` keyword is now 
+  located in the :dakkw:`interface-analysis_drivers-fork-results_format`
+  group.
+- The legacy Python interface is no longer enabled in binary downloads. It is also disabled by
+  default when building from source.
+- The "eval_id" in the direct Python parameters diciontary is now a string.
+- Many submethod-specific :dakkw:`method-bayes_calibration-muq` keywords were renamed and moved
+  to better follow Dakota conventions. For example, the keyword ``dr_num_stages``, a control used
+  by the  :dakkw:`method-bayes_calibration-muq-delayed_rejection` and 
+  :dakkw:`method-bayes_calibration-muq-dram`  algorithms, formerly resided
+  just below the ``muq`` keyword. It has been renamed to
+  :dakkw:`method-bayes_calibration-muq-delayed_rejection-num_stages` and made a subkeyword
+  of both submethods.
+
+**Compatibility**
+
+- Building Dakota from source now requires a C++14 compliant compiler.
+

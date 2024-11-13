@@ -1,0 +1,15 @@
+Blurb::
+Parameter for the stochastic eigensolver used by the DILI MCMC algorithm in MUQ
+
+Description::
+Value of smallest eigenvalue to compute.  Used as stopping criteria. The default value is '0.0'.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

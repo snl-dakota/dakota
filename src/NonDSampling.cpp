@@ -12,8 +12,13 @@
 #include "DakotaModel.hpp"
 #include "model_utils.hpp"
 #include "DakotaResponse.hpp"
+#include "DigitalNet.hpp"
+#include "LDDriverAdapter.hpp"
+#include "LHSDriverAdapter.hpp"
 #include "NonDSampling.hpp"
 #include "ProblemDescDB.hpp"
+#include "Rank1Lattice.hpp"
+#include "SamplerDriver.hpp"
 #include "SensAnalysisGlobal.hpp"
 #include "ProbabilityTransformation.hpp"
 #include "dakota_stat_util.hpp"
@@ -45,7 +50,12 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
   sampleRanksMode(IGNORE_RANKS),
   varyPattern(!probDescDB.get_bool("method.fixed_seed")), 
   backfillDuplicates(probDescDB.get_bool("method.backfill")),
-  wilksFlag(probDescDB.get_bool("method.wilks")), numLHSRuns(0)
+  wilksFlag(probDescDB.get_bool("method.wilks")), numLHSRuns(0),
+  samplerDriver(
+    ( problem_db.get_ushort("method.sample_type") == SUBMETHOD_LOW_DISCREPANCY_SAMPLING ) ?
+      std::unique_ptr<SamplerDriver>(std::make_unique<LDDriverAdapter>(problem_db)) :
+        std::unique_ptr<SamplerDriver>(std::make_unique<LHSDriverAdapter>())
+  )
 {
   // pushed down as some derived classes (MLMC) use a MC default
   //if (!sampleType)
@@ -134,7 +144,8 @@ NonDSampling(unsigned short method_name, Model& model,
   toleranceIntervalsFlag(false),
   statsFlag(false), allDataFlag(true), samplingVarsMode(sampling_vars_mode),
   sampleRanksMode(IGNORE_RANKS), varyPattern(vary_pattern),
-  backfillDuplicates(false), numLHSRuns(0)
+  backfillDuplicates(false), numLHSRuns(0),
+  samplerDriver(std::make_unique<LHSDriverAdapter>())
 {
   subIteratorFlag = true; // suppress some output
 
@@ -170,7 +181,8 @@ NonDSampling(unsigned short sample_type, size_t samples, int seed,
   toleranceIntervalsFlag(false),
   statsFlag(false), allDataFlag(true),
   samplingVarsMode(ACTIVE_UNIFORM), sampleRanksMode(IGNORE_RANKS),
-  varyPattern(true), backfillDuplicates(false), numLHSRuns(0)
+  varyPattern(true), backfillDuplicates(false), numLHSRuns(0),
+  samplerDriver(std::make_unique<LHSDriverAdapter>())
 {
   subIteratorFlag = true; // suppress some output
 
@@ -198,7 +210,8 @@ NonDSampling(unsigned short sample_type, size_t samples, int seed,
   toleranceIntervalsFlag(false),
   statsFlag(false), allDataFlag(true),
   samplingVarsMode(ACTIVE), sampleRanksMode(IGNORE_RANKS), varyPattern(true),
-  backfillDuplicates(false), numLHSRuns(0)
+  backfillDuplicates(false), numLHSRuns(0),
+  samplerDriver(std::make_unique<LHSDriverAdapter>())
 {
   subIteratorFlag = true; // suppress some output
 
@@ -222,7 +235,8 @@ NonDSampling(Model& model, const RealMatrix& sample_matrix):
   toleranceIntervalsFlag(false),
   statsFlag(true), allDataFlag(true),
   samplingVarsMode(ACTIVE), sampleRanksMode(IGNORE_RANKS),
-  varyPattern(false), backfillDuplicates(false), numLHSRuns(0)
+  varyPattern(false), backfillDuplicates(false), numLHSRuns(0),
+  samplerDriver(std::make_unique<LHSDriverAdapter>())
 {
   allSamples = sample_matrix; compactMode = true;
   samplesRef = numSamples = samplesSpec;
@@ -298,7 +312,7 @@ get_parameter_sets(Model& model, const size_t num_samples,
       // or from ALL lower/upper bounds (with model in ALL view).
       // loss of sampleRanks control is OK since NonDIncremLHS uses ACTIVE mode.
       // TO DO: add support for uniform discrete
-      lhsDriver.generate_uniform_samples(ModelUtils::continuous_lower_bounds(model),
+      samplerDriver->generate_uniform_samples(ModelUtils::continuous_lower_bounds(model),
 					 ModelUtils::continuous_upper_bounds(model),
 					 corr, num_samples, design_matrix); 
     }
@@ -306,7 +320,7 @@ get_parameter_sets(Model& model, const size_t num_samples,
       // sample uniformly from ALL lower/upper bnds with model in distinct view.
       // loss of sampleRanks control is OK since NonDIncremLHS uses ACTIVE mode.
       // TO DO: add support for uniform discrete
-      lhsDriver.generate_uniform_samples(ModelUtils::all_continuous_lower_bounds(model),
+      samplerDriver->generate_uniform_samples(ModelUtils::all_continuous_lower_bounds(model),
 					 ModelUtils::all_continuous_upper_bounds(model),
 					 corr, num_samples, design_matrix); 
     }
@@ -330,7 +344,7 @@ get_parameter_sets(Model& model, const size_t num_samples,
 	const_cast<Real*>(&all_c_u_bnds[start_acv]), num_acv);
       // loss of sampleRanks control is OK since NonDIncremLHS uses ACTIVE mode
       // TO DO: add support for uniform discrete
-      lhsDriver.generate_uniform_samples(uncertain_c_l_bnds, uncertain_c_u_bnds,
+      samplerDriver->generate_uniform_samples(uncertain_c_l_bnds, uncertain_c_u_bnds,
 					 corr, num_samples, design_matrix); 
     }
     break;
@@ -340,14 +354,12 @@ get_parameter_sets(Model& model, const size_t num_samples,
     Pecos::MultivariateDistribution& mv_dist
       = model.multivariate_distribution();
     if (backfillDuplicates)
-      lhsDriver.generate_unique_samples(mv_dist.random_variables(),
-	mv_dist.correlation_matrix(), num_samples, design_matrix, sampleRanks,
-	mv_dist.active_variables(), mv_dist.active_correlations());
+      samplerDriver->generate_unique_samples(model, num_samples, design_matrix,
+        sampleRanks, mv_dist.active_variables(), mv_dist.active_correlations());
       // sampleRanks remains empty. See LHSDriver::generate_unique_samples()
     else
-      lhsDriver.generate_samples(mv_dist.random_variables(),
-	mv_dist.correlation_matrix(), num_samples, design_matrix, sampleRanks,
-	mv_dist.active_variables(), mv_dist.active_correlations());
+      samplerDriver->generate_samples(model, num_samples, design_matrix,
+        sampleRanks, mv_dist.active_variables(), mv_dist.active_correlations());
     break;
   }
 
@@ -359,14 +371,12 @@ get_parameter_sets(Model& model, const size_t num_samples,
     Pecos::MultivariateDistribution& mv_dist
       = model.multivariate_distribution();
     if (backfillDuplicates)
-      lhsDriver.generate_unique_samples(mv_dist.random_variables(),
-	mv_dist.correlation_matrix(), num_samples, design_matrix, sampleRanks,
-	active_vars, active_corr);
+      samplerDriver->generate_unique_samples(model, num_samples, design_matrix,
+        sampleRanks, active_vars, active_corr);
       // sampleRanks remains empty. See LHSDriver::generate_unique_samples()
     else
-      lhsDriver.generate_samples(mv_dist.random_variables(),
-	mv_dist.correlation_matrix(), num_samples, design_matrix, sampleRanks,
-	active_vars, active_corr);
+      samplerDriver->generate_samples(model, num_samples, design_matrix,
+        sampleRanks, active_vars, active_corr);
     break;
   }
   }
@@ -382,7 +392,7 @@ get_parameter_sets(const RealVector& lower_bnds, const RealVector& upper_bnds)
 {
   initialize_sample_driver(true, numSamples);
   RealSymMatrix correl; // uncorrelated
-  lhsDriver.generate_uniform_samples(lower_bnds, upper_bnds, correl,
+  samplerDriver->generate_uniform_samples(lower_bnds, upper_bnds, correl,
 				     numSamples, allSamples);
 }
 
@@ -396,7 +406,7 @@ get_parameter_sets(const RealVector& means, const RealVector& std_devs,
                    RealSymMatrix& correl)
 {
   initialize_sample_driver(true, numSamples);
-  lhsDriver.generate_normal_samples(means, std_devs, lower_bnds, upper_bnds,
+  samplerDriver->generate_normal_samples(means, std_devs, lower_bnds, upper_bnds,
 				    correl, numSamples, allSamples);
 }
 
@@ -835,7 +845,7 @@ initialize_sample_driver(bool write_message, size_t num_samples)
   // without a persistent state, such as rnum2).
   bool seed_assigned = false, seed_advanced = false;
   if (numLHSRuns == 0) { // set initial seed
-    lhsDriver.rng(rngName);
+    samplerDriver->rng(rngName);
     if (!seedSpec) { // no user specification --> nonrepeatable behavior
       // Generate initial seed from a system clock.  NOTE: the system clock
       // should not used for multiple LHS calls since (1) clock granularity can
@@ -847,7 +857,7 @@ initialize_sample_driver(bool write_message, size_t num_samples)
       // recreated by specifying the clock-generated seed in the input file.
       randomSeed = generate_system_seed();
     }
-    lhsDriver.seed(randomSeed);  seed_assigned = true;
+    samplerDriver->seed(randomSeed);  seed_assigned = true;
     seed_advanced = seed_updated(); // track seedIndex for ensemble samplers
   }
   // We must distinguish two advancement use cases and allow them to co-exist:
@@ -855,11 +865,11 @@ initialize_sample_driver(bool write_message, size_t num_samples)
   // > an update to Pecos::LHSDriver::randomSeed using LHSDriver::
   //   advance_seed_sequence() in support of varyPattern for rnum2
   else if (seed_updated()) // random_seed_sequence advance
-    { seedSpec = randomSeed; lhsDriver.seed(randomSeed); seed_assigned = true; }
+    { seedSpec = randomSeed; samplerDriver->seed(randomSeed); seed_assigned = true; }
   else if (varyPattern && rngName == "rnum2") // vary pattern by advancing seed
-    { lhsDriver.advance_seed_sequence();                 seed_advanced = true; }
+    { samplerDriver->advance_seed_sequence();                 seed_advanced = true; }
   else if (!varyPattern) // reset orig / machine-generated (don't continue RNG)
-    { lhsDriver.seed(randomSeed);                        seed_assigned = true; }
+    { samplerDriver->seed(randomSeed);                        seed_assigned = true; }
 
   // Needed a way to turn this off when LHS sampling is being used in
   // NonDAdaptImpSampling because it gets written a _LOT_
@@ -874,13 +884,13 @@ initialize_sample_driver(bool write_message, size_t num_samples)
     else if (seed_advanced) {
       if (seedSpec) Cout << " Seed (sequence from user-specified) = ";
       else          Cout << " Seed (sequence from system-generated) = ";
-      Cout << lhsDriver.seed() << '\n';
+      Cout << samplerDriver->seed() << '\n';
     }
     else // default Boost Mersenne twister
       Cout << " Seed not reset from previous LHS execution\n";
   }
 
-  lhsDriver.initialize(sample_string, sampleRanksMode, !subIteratorFlag);
+  samplerDriver->initialize(sample_string, sampleRanksMode, !subIteratorFlag);
   ++numLHSRuns;
 }
 
@@ -963,6 +973,7 @@ void NonDSampling::active_set_mapping()
     or allVariables. */
 void NonDSampling::core_run()
 {
+  Cout << "Hello from NonDSampling::core_run" << std::endl;
   bool log_resp_flag = (allDataFlag || statsFlag), log_best_flag = false;
   evaluate_parameter_sets(*pIteratedModel, log_resp_flag, log_best_flag);
 }
@@ -1206,10 +1217,16 @@ compute_moments(const RealVectorArray& fn_samples, RealMatrix& moment_stats,
 
     Real* moments_i = moment_stats[i];
     Pecos::accumulate_mean(fn_samples, i, num_samp, moments_i[0]);
-    if (num_samp != num_obs)
+    if (num_samp != num_obs) {
+      std::cout << "In NonDSampling::compute_moments(2)"
+	        << ", Warning: sampling statistics for quantity " << i+1 << " omit "
+                << num_obs-num_samp << " failed evaluations out of " << num_obs
+		<< " samples." << std::endl;
+
       Cerr << "Warning: sampling statistics for quantity " << i+1 << " omit "
 	   << num_obs-num_samp << " failed evaluations out of " << num_obs
 	   << " samples.\n";
+    }
 
     if (num_samp)
       Pecos::accumulate_moments(fn_samples, i, moments_type, moments_i);

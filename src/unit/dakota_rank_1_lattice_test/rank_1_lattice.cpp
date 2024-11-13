@@ -483,37 +483,6 @@ BOOST_AUTO_TEST_CASE(lattice_check_random_seed_lattice)
 }
 
 // +-------------------------------------------------------------------------+
-// |                            Test randomization                           |
-// +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(lattice_check_randomization)
-{
-  // Get rank-1 lattice rule
-  Dakota::Rank1Lattice lattice;
-
-  // Generate points from this lattice rule
-  size_t dimension = 10;
-  size_t numPoints = 8;
-  Dakota::RealMatrix points(dimension, numPoints);
-  lattice.get_points(points);
-
-  // Randomize the lattice
-  lattice.randomize();
-
-  // Generate another set of points from this lattice rule
-  Dakota::RealMatrix different_points(dimension, numPoints);
-  lattice.get_points(different_points);
-
-  // Check if the lattice points are different
-  for ( size_t row = 0; row < numPoints; row++ )
-  {
-    for( size_t col = 0; col < dimension; col++ )
-    {
-      BOOST_CHECK_NE(points[row][col], different_points[row][col]);
-    }
-  }
-}
-
-// +-------------------------------------------------------------------------+
 // |                       Test disable randomization                        |
 // +-------------------------------------------------------------------------+
 BOOST_AUTO_TEST_CASE(lattice_check_disabled_randomization)

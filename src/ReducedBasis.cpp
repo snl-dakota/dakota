@@ -62,7 +62,7 @@ ReducedBasis::update_svd(bool do_center)
     center_matrix();
 
   workingMatrix = matrix; // because the matrix gets overwritten by U_matrix values
-  svd(workingMatrix, S_values, VT_matrix);
+  singular_value_decomp(workingMatrix, S_values, VT_matrix);
   U_matrix = workingMatrix;
 
   RealVector ones(S_values.length());
