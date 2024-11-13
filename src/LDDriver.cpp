@@ -48,7 +48,7 @@ void LDDriver::generate_samples(
 )
 {
     // Reshape the sample matrix if needed
-    reshape_sample_matrix(sampleMatrix, model.cv(), numSamples);
+    reshape_sample_matrix(sampleMatrix, ModelUtils::cv(model), numSamples);
 
     // Generate points from the low-discrepancy sequence
     sequence_->get_points(numSamples_, numSamples_ + numSamples, sampleMatrix);
@@ -177,7 +177,7 @@ void LDDriver::transform(
         for (size_t sample = 0; sample < numSamples; ++sample) {
             RealVector uSample(Teuchos::Copy, sampleMatrix[sample], numVariables);
             RealVector xSample(Teuchos::View, sampleMatrix[sample], numVariables);
-            uNataf.trans_U_to_X(uSample, model.continuous_variable_ids(), xSample, model.continuous_variable_ids());
+            uNataf.trans_U_to_X(uSample, ModelUtils::continuous_variable_ids(model), xSample, ModelUtils::continuous_variable_ids(model));
         }
 
         // Then transform from standard normal to actual model
@@ -186,7 +186,7 @@ void LDDriver::transform(
         for (size_t sample = 0; sample < numSamples; ++sample) {
             RealVector uSample(Teuchos::Copy, sampleMatrix[sample], numVariables);
             RealVector xSample(Teuchos::View, sampleMatrix[sample], numVariables);
-            vNataf.trans_U_to_X(uSample, model.continuous_variable_ids(), xSample, model.continuous_variable_ids());
+            vNataf.trans_U_to_X(uSample, ModelUtils::continuous_variable_ids(model), xSample, ModelUtils::continuous_variable_ids(model));
         }
     }
     else // If uncorrelated, directly apply the transform
@@ -203,7 +203,7 @@ void LDDriver::transform(
         for (size_t sample = 0; sample < numSamples; ++sample) {
             RealVector uSample(Teuchos::Copy, sampleMatrix[sample], numVariables);
             RealVector xSample(Teuchos::View, sampleMatrix[sample], numVariables);
-            uNataf.trans_U_to_X(uSample, model.continuous_variable_ids(), xSample, model.continuous_variable_ids());
+            uNataf.trans_U_to_X(uSample, ModelUtils::continuous_variable_ids(model), xSample, ModelUtils::continuous_variable_ids(model));
         }
     } 
 }
