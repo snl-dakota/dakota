@@ -1,7 +1,7 @@
 .. _releasenotes-621:
 
 """"""""""""""""""""""""""""""""""""""
-Version 6.21 (2024/11/15)
+Version 6.21 (2024/11/14)
 """"""""""""""""""""""""""""""""""""""
 
 **Highlight: Numerical robustness for ML BLUE**
