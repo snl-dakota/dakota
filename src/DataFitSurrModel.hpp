@@ -70,6 +70,47 @@ public:
 
   void declare_sources() override;
 
+  void nested_variable_mappings(const SizetArray& c_index1,
+				const SizetArray& di_index1,
+				const SizetArray& ds_index1,
+				const SizetArray& dr_index1,
+				const ShortArray& c_target2,
+				const ShortArray& di_target2,
+				const ShortArray& ds_target2,
+				const ShortArray& dr_target2) override;
+
+  /// combine all level approximations into a separate composite approximation
+  void combine_approximation() override;
+
+  /// Rebuilds the local/multipoint/global approximation using
+  /// daceIterator/actualModel to generate an increment of appended data
+  void rebuild_approximation() override;
+
+
+  /// appends daceIterator results to a global approximation and rebuilds
+  /// it if requested
+  void append_approximation(bool rebuild_flag) override;
+  /// appends a point to a global approximation and rebuilds it if requested
+  void append_approximation(const Variables& vars,
+			    const IntResponsePair& response_pr,
+			    bool rebuild_flag) override;
+  /// appends a matrix of points to a global approximation and rebuilds it
+  /// if requested
+  void append_approximation(const RealMatrix& samples,
+			    const IntResponseMap& resp_map, bool rebuild_flag) override;
+  /// appends an array of points to a global approximation and rebuilds it
+  /// if requested
+  void append_approximation(const VariablesArray& vars_array,
+			    const IntResponseMap& resp_map, bool rebuild_flag) override;
+  /// appends an map of points to a global approximation and rebuilds it
+  /// if requested
+  void append_approximation(const IntVariablesMap& vars_map,
+			    const IntResponseMap&  resp_map, bool rebuild_flag) override;
+          
+  /// return this model instance
+  Model& surrogate_model(size_t i = _NPOS) override;
+  /// return this model instance
+  const Model& surrogate_model(size_t i = _NPOS) const override;
 protected:
 
   //
@@ -88,14 +129,7 @@ protected:
   void update_model(Model& model) override;
   void update_from_model(const Model& model) override;
 
-  void nested_variable_mappings(const SizetArray& c_index1,
-				const SizetArray& di_index1,
-				const SizetArray& ds_index1,
-				const SizetArray& dr_index1,
-				const ShortArray& c_target2,
-				const ShortArray& di_target2,
-				const ShortArray& ds_target2,
-				const ShortArray& dr_target2) override;
+  
   const SizetArray& nested_acv1_indices() const override;
   const ShortArray& nested_acv2_targets() const override;
   short query_distribution_parameter_derivatives() const override;
@@ -129,10 +163,7 @@ protected:
   /// remove all model keys within approxInterface
   void clear_model_keys() override;
 
-  /// return this model instance
-  Model& surrogate_model(size_t i = _NPOS) override;
-  /// return this model instance
-  const Model& surrogate_model(size_t i = _NPOS) const override;
+  
   /// return actualModel
   Model& truth_model() override;
   /// return actualModel
@@ -177,9 +208,7 @@ protected:
   bool build_approximation(const Variables& vars,
 			   const IntResponsePair& response_pr) override;
 
-  /// Rebuilds the local/multipoint/global approximation using
-  /// daceIterator/actualModel to generate an increment of appended data
-  void rebuild_approximation() override;
+
   /// Rebuilds the local/multipoint/global approximation using
   /// the passed response data for a single sample
   void rebuild_approximation(const IntResponsePair& response_pr) override;
@@ -203,25 +232,7 @@ protected:
   void update_approximation(const RealMatrix& samples,
 			    const IntResponseMap& resp_map, bool rebuild_flag) override;
 
-  /// appends daceIterator results to a global approximation and rebuilds
-  /// it if requested
-  void append_approximation(bool rebuild_flag) override;
-  /// appends a point to a global approximation and rebuilds it if requested
-  void append_approximation(const Variables& vars,
-			    const IntResponsePair& response_pr,
-			    bool rebuild_flag) override;
-  /// appends a matrix of points to a global approximation and rebuilds it
-  /// if requested
-  void append_approximation(const RealMatrix& samples,
-			    const IntResponseMap& resp_map, bool rebuild_flag) override;
-  /// appends an array of points to a global approximation and rebuilds it
-  /// if requested
-  void append_approximation(const VariablesArray& vars_array,
-			    const IntResponseMap& resp_map, bool rebuild_flag) override;
-  /// appends an map of points to a global approximation and rebuilds it
-  /// if requested
-  void append_approximation(const IntVariablesMap& vars_map,
-			    const IntResponseMap&  resp_map, bool rebuild_flag) override;
+
 
   void replace_approximation(const IntResponsePair& response_pr,
 			     bool rebuild_flag) override;
@@ -235,8 +246,7 @@ protected:
 
   void finalize_approximation() override;
 
-  /// combine all level approximations into a separate composite approximation
-  void combine_approximation() override;
+
   /// promote the combined approximation into the active one
   void combined_to_active(bool clear_combined = true) override;
 

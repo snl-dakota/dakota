@@ -11,6 +11,7 @@
 #define NOND_EXPANSION_H
 
 #include "DakotaNonD.hpp"
+#include "DataFitSurrModel.hpp"
 
 
 namespace Dakota {
@@ -118,7 +119,7 @@ protected:
   virtual void initialize_u_space_model();
   /// initialize random variable definitions and final stats arrays
   virtual void initialize_expansion();
-  /// form the expansion by calling uSpaceModel.build_approximation()
+  /// form the expansion by calling uSpaceModel->build_approximation()
   virtual void compute_expansion();
   /// finalize mappings for the uSpaceModel
   virtual void finalize_expansion();
@@ -391,7 +392,7 @@ protected:
 
   /// Model representing the approximate response function in u-space,
   /// after u-space recasting and polynomial data fit recursions
-  Model uSpaceModel;
+  std::shared_ptr<SurrogateModel> uSpaceModel;
 
   /// Iterator used for sampling on the uSpaceModel to generate approximate
   /// probability/reliability/response level statistics.  Currently this is
@@ -633,7 +634,7 @@ nested_variable_mappings(const SizetArray& c_index1,
 			 const ShortArray& ds_target2,
 			 const ShortArray& dr_target2)
 {
-  uSpaceModel.nested_variable_mappings(c_index1, di_index1, ds_index1,
+  uSpaceModel->nested_variable_mappings(c_index1, di_index1, ds_index1,
 				       dr_index1, c_target2, di_target2,
 				       ds_target2, dr_target2);
 }
@@ -681,7 +682,7 @@ inline void NonDExpansion::maximum_refinement_iterations(size_t max_refine_iter)
 
 
 inline const Model& NonDExpansion::algorithm_space_model() const
-{ return uSpaceModel; }
+{ return *uSpaceModel; }
 
 
 inline size_t NonDExpansion::collocation_points() const
@@ -713,10 +714,10 @@ inline void NonDExpansion::metric_roll_up(short results_state)
       // combined stat metrics, but Hierarchical SC can efficiently compute
       // deltas based only on active expansions (no combination required)
       if (expansionBasisType != Pecos::HIERARCHICAL_INTERPOLANT)
-	uSpaceModel.combine_approximation();
+	uSpaceModel->combine_approximation();
       break;
     case INTERMEDIATE_RESULTS:
-      uSpaceModel.combine_approximation(); break;
+      uSpaceModel->combine_approximation(); break;
     // FINAL_RESULTS should not occur: no roll up after combined_to_active()
     }
 

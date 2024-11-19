@@ -15,6 +15,7 @@
 #include "DakotaNonD.hpp"
 #include "SamplerDriver.hpp"
 #include "SensAnalysisGlobal.hpp"
+#include "DataFitSurrModel.hpp"
 
 namespace Dakota {
 
@@ -169,8 +170,8 @@ public:
 
   /// transform allSamples using configuration data from the source
   /// and target models
-  void transform_samples(Model& src_model, Model& tgt_model,
-			 bool x_to_u = true);
+  void transform_samples(Model& src_model, SurrogateModel& tgt_model);
+			 
   /// alternate version to transform allSamples.  This is needed since
   /// random variable distribution parameters are not updated until run
   /// time and an imported sample_matrix is typically in x-space.
@@ -541,15 +542,14 @@ inline void NonDSampling::vary_pattern(bool pattern_flag)
 { varyPattern = pattern_flag; }
 
 
+
 inline void NonDSampling::
-transform_samples(Model& src_model, Model& tgt_model, bool x_to_u)
+transform_samples(Model& src_model, SurrogateModel& tgt_model)
 {
-  Pecos::ProbabilityTransformation& nataf = (x_to_u) ?
-    tgt_model.probability_transformation() :
-    src_model.probability_transformation();
+  Pecos::ProbabilityTransformation& nataf = tgt_model.probability_transformation();
 
   transform_samples(nataf, allSamples, ModelUtils::continuous_variable_ids(src_model),
-		    ModelUtils::continuous_variable_ids(tgt_model), x_to_u);
+		    ModelUtils::continuous_variable_ids(tgt_model), true);
 }
 
 

@@ -82,13 +82,13 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   ShortArray asv(g_u_model.qoi(), 3); // for stand alone mode
   ActiveSet mlft_set(asv, recast_set.derivative_vector());
   const ShortShortPair& mlft_view = g_u_model.current_variables().view();
-  uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>(u_space_sampler,
+  uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, mlft_set, mlft_view, approx_type, start_orders, corr_type,
     corr_order, data_order, outputLevel, pt_reuse, importBuildPointsFile,
     probDescDB.get_ushort("method.import_build_format"),
     probDescDB.get_bool("method.import_build_active_only"),
     probDescDB.get_string("method.export_approx_points_file"),
-    probDescDB.get_ushort("method.export_approx_format")));
+    probDescDB.get_ushort("method.export_approx_format"));
   initialize_u_space_model();
 
   // Configure settings for ML allocation (requires uSpaceModel)
@@ -177,7 +177,7 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
   ShortArray asv(g_u_model.qoi(), 7); // TO DO: consider passing in data_mode
   ActiveSet mlft_set(asv, recast_set.derivative_vector());
   const ShortShortPair& mlft_view = g_u_model.current_variables().view();
-  uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>(u_space_sampler,
+  uSpaceModel->assign_rep(std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, mlft_set, mlft_view, approx_type, start_orders, corr_type,
     corr_order, data_order, outputLevel, pt_reuse, import_build_pts_file,
     import_build_format, import_build_active_only));
@@ -202,7 +202,7 @@ NonDMultilevelFunctionTrain::~NonDMultilevelFunctionTrain()
 size_t NonDMultilevelFunctionTrain::regression_size(size_t index)
 {
   // compute initial regression size using a static helper
-  // (uSpaceModel.shared_approximation() is not yet available)
+  // (uSpaceModel->shared_approximation() is not yet available)
 
   bool max_r, max_o;
   switch (c3AdvancementType) {
@@ -248,11 +248,11 @@ void NonDMultilevelFunctionTrain::initialize_u_space_model()
   // SharedC3ApproxData invokes ope_opts_alloc() to construct basis and
   // requires {start,max} order
   const Pecos::MultivariateDistribution& u_dist
-    = uSpaceModel.truth_model().multivariate_distribution();
-  uSpaceModel.shared_approximation().construct_basis(u_dist);
+    = uSpaceModel->truth_model().multivariate_distribution();
+  uSpaceModel->shared_approximation().construct_basis(u_dist);
 
   // emulation mode needed for ApproximationInterface::qoi_set_to_key_index()
-  uSpaceModel.discrepancy_emulation_mode(multilevDiscrepEmulation);
+  uSpaceModel->discrepancy_emulation_mode(multilevDiscrepEmulation);
 }
 
 
@@ -286,7 +286,7 @@ void NonDMultilevelFunctionTrain::core_run()
   if (!summaryOutputFlag) print_results(Cout, FINAL_RESULTS);
 
   // clean up for re-entrancy of ML FT
-  uSpaceModel.clear_inactive();
+  uSpaceModel->clear_inactive();
 
   finalize_expansion();
 }
@@ -306,7 +306,7 @@ void NonDMultilevelFunctionTrain::assign_allocation_control()
       // the underlying low-rank structure of the QoI
       std::shared_ptr<SharedC3ApproxData> shared_data_rep =
 	std::static_pointer_cast<SharedC3ApproxData>(
-	uSpaceModel.shared_approximation().data_rep());
+	uSpaceModel->shared_approximation().data_rep());
       shared_data_rep->set_parameter("adapt_rank", true);
       // Note: C3Approximation::build() defines an appropriate range in the
       //       case of unspecified max rank: [start_r, start_r+max_cv*kick_r]

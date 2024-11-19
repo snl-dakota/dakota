@@ -45,8 +45,11 @@ protected:
 		 const SharedResponseData&  srd, bool share_srd,
 		 const ActiveSet& surr_set, short corr_type,
 		 short output_level);
+
+  public:
   /// destructor
   ~SurrogateModel() override;
+
 
   //
   //- Heading: Virtual function redefinitions
@@ -79,6 +82,8 @@ protected:
   void active_model_key(const Pecos::ActiveKey& key) override;
   const Pecos::ActiveKey& active_model_key() const override;
 
+  protected:
+  
   short surrogate_response_mode() const override;
   short correction_type() const override;
   short correction_order() const override;

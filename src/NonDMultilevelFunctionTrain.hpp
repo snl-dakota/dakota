@@ -184,7 +184,7 @@ push_c3_active(const UShortArray& orders)
   push_c3_max_order(maxOrderSpec); // restore if adapted (no sequence)
   std::shared_ptr<SharedC3ApproxData> shared_data_rep =
     std::static_pointer_cast<SharedC3ApproxData>(
-    uSpaceModel.shared_approximation().data_rep());
+    uSpaceModel->shared_approximation().data_rep());
   shared_data_rep->update_basis(); // propagate order updates to oneApproxOpts
 }
 

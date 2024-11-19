@@ -44,12 +44,14 @@ NonDSurrogateExpansion(ProblemDescDB& problem_db, Model& model):
   if (surr_type == "global_function_train") {// || surr_type == "global_"
     // transformation, DataFit, and DACE configuration performed by Model spec
     // All expansion config settings are pulled in that ctor chain
-    uSpaceModel = *pIteratedModel; // shared rep
+
+    
+    uSpaceModel = std::static_pointer_cast<DataFitSurrModel>(pIteratedModel->model_rep());
 
     // Notes on managing the u-space transformation:
     // > wrapping iteratedModel here applies the transformation on top of the
     //   incoming DataFitSurrModel --> insufficient for internal build.
-    //     uSpaceModel.assign_rep(new ProbabilityTransformModel(iteratedModel,
+    //     uSpaceModel->assign_rep(new ProbabilityTransformModel(iteratedModel,
     //       u_space_type), false); // only affects exp_sampler
     // > modifying the DataFitSurrModel ctor requires care because the
     //   daceIterator spec points to the actualModel spec (when DACE is active)

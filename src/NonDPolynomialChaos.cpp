@@ -123,13 +123,13 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   ShortArray pce_asv(g_u_model.qoi(), 3); // for stand alone mode
   ActiveSet  pce_set(pce_asv, recast_set.derivative_vector());
   const ShortShortPair& pce_view = g_u_model.current_variables().view();
-  uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>(u_space_sampler,
+  uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, pce_set, pce_view, approx_type, exp_orders, corr_type,
     corr_order, data_order, outputLevel, pt_reuse, importBuildPointsFile,
     problem_db.get_ushort("method.import_build_format"),
     problem_db.get_bool("method.import_build_active_only"),
     problem_db.get_string("method.export_approx_points_file"),
-    problem_db.get_ushort("method.export_approx_format")));
+    problem_db.get_ushort("method.export_approx_format"));
   initialize_u_space_model();
 
   // -------------------------------------
@@ -217,9 +217,9 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   ShortArray pce_asv(g_u_model.qoi(), 7);// TO DO: consider passing in data_mode
   ActiveSet  pce_set(pce_asv, recast_set.derivative_vector());
   const ShortShortPair& pce_view = g_u_model.current_variables().view();
-  uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>(u_space_sampler,
+  uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, pce_set, pce_view, approx_type, exp_orders, corr_type,
-    corr_order, data_order, outputLevel, pt_reuse));
+    corr_order, data_order, outputLevel, pt_reuse);
   initialize_u_space_model();
 
   // no expansionSampler, no numSamplesOnExpansion
@@ -294,10 +294,10 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   ShortArray pce_asv(g_u_model.qoi(), 7);// TO DO: consider passing in data_mode
   ActiveSet  pce_set(pce_asv, recast_set.derivative_vector());
   const ShortShortPair& pce_view = g_u_model.current_variables().view();
-  uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>(u_space_sampler,
+  uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, pce_set, pce_view, approx_type, exp_orders, corr_type,
     corr_order, data_order, outputLevel, pt_reuse, importBuildPointsFile,
-    import_build_format, import_build_active_only));
+    import_build_format, import_build_active_only);
   initialize_u_space_model();
 
   // no expansionSampler, no numSamplesOnExpansion
@@ -355,10 +355,10 @@ NonDPolynomialChaos(Model& model, const String& exp_import_file,
   const ActiveSet& approx_set = g_u_model.current_response().active_set();
   ShortArray pce_asv(pIteratedModel->qoi(), 7); // for stand alone mode
   ActiveSet  pce_set(pce_asv, approx_set.derivative_vector());
-  uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>(u_space_sampler,
+  uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, pce_set, approx_view, approx_type, exp_orders, corr_type,
-    corr_order, data_order, outputLevel, pt_reuse));
-  //uSpaceModel.active_view(pce_view, false); // too far downstream...
+    corr_order, data_order, outputLevel, pt_reuse);
+  //uSpaceModel->active_view(pce_view, false); // too far downstream...
   initialize_u_space_model();
 
   // no expansionSampler, no numSamplesOnExpansion
@@ -637,7 +637,7 @@ config_regression(const UShortArray& exp_orders, size_t colloc_pts,
       Pecos::anisotropic_order_to_dimension_preference(dim_quad_order,
 	quad_order, dim_pref);
       // use alternate NonDQuad ctor to filter (deprecated) or sub-sample
-      // quadrature points (uSpaceModel.build_approximation() invokes
+      // quadrature points (uSpaceModel->build_approximation() invokes
       // daceIterator.run()).  The quad order inputs are updated within
       // NonDQuadrature as needed to satisfy min order constraints (but
       // not nested constraints: nestedRules is false to retain m >= p+1).
@@ -787,21 +787,21 @@ bool NonDPolynomialChaos::resize()
       expansionCoeffsApproach == Pecos::INCREMENTAL_SPARSE_GRID ||
       expansionCoeffsApproach == Pecos::CUBATURE) {
     approx_type = "global_projection_orthogonal_polynomial";
-    uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>(u_space_sampler,
+    uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
       g_u_model, pce_set, pce_view, approx_type, exp_orders, corr_type,
-      corr_order, data_order, outputLevel, pt_reuse));
+      corr_order, data_order, outputLevel, pt_reuse);
   }
   else {
     approx_type = "global_regression_orthogonal_polynomial";
     if (!importBuildPointsFile.empty())
       pt_reuse = "all";
     //DataFitSurrModel* orig_dfs_model
-    //  = (DataFitSurrModel*)uSpaceModel.model_rep();
+    //  = (DataFitSurrModel*)uSpaceModel->model_rep();
     //unsigned short import_format = orig_dfs_model->import_build_format();
     //bool      import_active_only = orig_dfs_model->import_build_active_only();
-    uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>(u_space_sampler,
+    uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
       g_u_model, pce_set, pce_view, approx_type, exp_orders, corr_type,
-      corr_order, data_order, outputLevel, pt_reuse)); // no import after resize
+      corr_order, data_order, outputLevel, pt_reuse); // no import after resize
     //, importBuildPointsFile, import_format, import_active_only), false);
   }
 
@@ -899,7 +899,7 @@ void NonDPolynomialChaos::initialize_u_space_model()
   NonDExpansion::initialize_u_space_model();
   configure_pecos_options(); // pulled out of base because C3 does not use it
 
-  SharedApproxData& shared_data = uSpaceModel.shared_approximation();
+  SharedApproxData& shared_data = uSpaceModel->shared_approximation();
   std::shared_ptr<SharedPecosApproxData> shared_data_rep
     = std::static_pointer_cast<SharedPecosApproxData>(shared_data.data_rep());
   // Transfer regression data: cross validation, noise tol, and L2 penalty.
@@ -921,7 +921,7 @@ void NonDPolynomialChaos::initialize_u_space_model()
 
   // DataFitSurrModel copies u-space mvDist from ProbabilityTransformModel
   const Pecos::MultivariateDistribution& u_mvd
-    = uSpaceModel.multivariate_distribution();
+    = uSpaceModel->multivariate_distribution();
   // construct the polynomial basis (shared by integration drivers)
   shared_data.construct_basis(u_mvd);
   // mainly a run-time requirement, but also needed at construct time
@@ -937,7 +937,7 @@ void NonDPolynomialChaos::initialize_u_space_model()
 		  expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
 		  expansionCoeffsApproach == Pecos::INCREMENTAL_SPARSE_GRID);
   if ( num_int || ( tensorRegression && numSamplesOnModel ) ) {
-    shared_data.integration_iterator(uSpaceModel.subordinate_iterator());
+    shared_data.integration_iterator(uSpaceModel->subordinate_iterator());
     initialize_u_space_grid(); // propagates dist param updates
   }
   else // propagate dist param updates in case without IntegrationDriver
@@ -977,12 +977,12 @@ void NonDPolynomialChaos::compute_expansion()
     // post the shared data
     std::shared_ptr<SharedPecosApproxData> data_rep =
       std::static_pointer_cast<SharedPecosApproxData>
-      (uSpaceModel.shared_approximation().data_rep());
+      (uSpaceModel->shared_approximation().data_rep());
     data_rep->allocate(multi_index); // defines multiIndex, sobolIndexMap
 
     // post coefficients to the OrthogPolyApproximation instances (also calls
     // OrthogPolyApproximation::allocate_arrays())
-    uSpaceModel.approximation_coefficients(coeffs_array, normalizedCoeffOutput);
+    uSpaceModel->approximation_coefficients(coeffs_array, normalizedCoeffOutput);
   }
 }
 
@@ -1002,8 +1002,8 @@ select_refinement_points(const RealVectorArray& candidate_samples,
   // across the QoI vector is not necessary.
   // TO DO: utilize static fn instead of 0th poly_approx; this would also
   // facilitate usage from other surrogate types (especially GP).
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  SharedApproxData&          shared_approx = uSpaceModel.shared_approximation();
+  std::vector<Approximation>& poly_approxs = uSpaceModel->approximations();
+  SharedApproxData&          shared_approx = uSpaceModel->shared_approximation();
   std::shared_ptr<SharedPecosApproxData> shared_data_rep
     = std::static_pointer_cast<SharedPecosApproxData>(shared_approx.data_rep());
   const Pecos::SDVArray& sdv_array
@@ -1089,7 +1089,7 @@ select_refinement_points_deprecated(const RealVectorArray& candidate_samples,
   // across the QoI vector is not necessary.
   // TO DO: utilize static fn instead of 0th poly_approx; this would also
   // facilitate usage from other surrogate types (especially GP).
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  std::vector<Approximation>& poly_approxs = uSpaceModel->approximations();
   std::shared_ptr<PecosApproximation> poly_approx_rep =
     std::static_pointer_cast<PecosApproximation>(poly_approxs[0].approx_rep());
 
@@ -1134,7 +1134,7 @@ void NonDPolynomialChaos::increment_order_from_grid()
 {
   std::shared_ptr<SharedPecosApproxData> shared_data_rep =
     std::static_pointer_cast<SharedPecosApproxData>
-    (uSpaceModel.shared_approximation().data_rep());
+    (uSpaceModel->shared_approximation().data_rep());
 
   // update expansion order based on existing collocation ratio and
   // updated number of truth model samples
@@ -1152,7 +1152,7 @@ void NonDPolynomialChaos::update_samples_from_order_increment()
 {
   std::shared_ptr<SharedPecosApproxData> shared_data_rep =
     std::static_pointer_cast<SharedPecosApproxData>
-    (uSpaceModel.shared_approximation().data_rep());
+    (uSpaceModel->shared_approximation().data_rep());
   const UShortArray& exp_order = shared_data_rep->expansion_order();
   size_t exp_terms = (expansionBasisType == Pecos::TENSOR_PRODUCT_BASIS) ?
     Pecos::SharedPolyApproxData::tensor_product_terms(exp_order) :
@@ -1208,7 +1208,7 @@ sample_allocation_metric(Real& sparsity_metric, Real power)
 {
   // case RIP_SAMPLING in NonDExpansion::multilevel_regression():
 
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  std::vector<Approximation>& poly_approxs = uSpaceModel->approximations();
   bool pow_1   = (power == 1.), // simple average
        pow_inf = (power == std::numeric_limits<Real>::max());
   Real sum = 0., max = 0.;
@@ -1265,7 +1265,7 @@ void NonDPolynomialChaos::print_results(std::ostream& s, short results_state)
 
 void NonDPolynomialChaos::print_coefficients(std::ostream& s)
 {
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  std::vector<Approximation>& poly_approxs = uSpaceModel->approximations();
   const StringArray& fn_labels = ModelUtils::response_labels(*pIteratedModel);
   const Variables&   vars      = pIteratedModel->current_variables();
   const SizetArray&  ac_totals = vars.shared_data().active_components_totals();
@@ -1308,7 +1308,7 @@ void NonDPolynomialChaos::export_coefficients()
   }
 
   RealVectorArray coeffs_array(numFunctions);
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  std::vector<Approximation>& poly_approxs = uSpaceModel->approximations();
   for (size_t i=0; i<numFunctions; i++)
     coeffs_array[i] // default returns a vector view; sparse returns a copy
       = poly_approxs[i].approximation_coefficients(normalizedCoeffOutput);
@@ -1317,7 +1317,7 @@ void NonDPolynomialChaos::export_coefficients()
   // Annotation provides questionable value in this context & is off for now.
   std::shared_ptr<SharedPecosApproxData> data_rep =
     std::static_pointer_cast<SharedPecosApproxData>
-    (uSpaceModel.shared_approximation().data_rep());
+    (uSpaceModel->shared_approximation().data_rep());
   String context("polynomial chaos expansion export file");
   TabularIO::write_data_tabular(expansionExportFile, context, coeffs_array,
 				data_rep->multi_index());
@@ -1338,7 +1338,7 @@ void NonDPolynomialChaos::archive_coefficients()
   resultsDB.array_allocate<std::vector<std::string> >
     (run_identifier(), resultsNames.pce_coeff_labels, numFunctions, md);
 
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  std::vector<Approximation>& poly_approxs = uSpaceModel->approximations();
 
   for (size_t i=0; i<numFunctions; i++) {
  

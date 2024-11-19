@@ -72,11 +72,11 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
   ActiveSet  sc_set(sc_asv, recast_set.derivative_vector());
   const ShortShortPair& sc_view = g_u_model.current_variables().view();
   String empty_str; // build data import not supported for structured grids
-  uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>(u_space_sampler,
+  uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, sc_set, sc_view, approx_type, approx_order, corr_type,
     corr_order, data_order, outputLevel, pt_reuse, empty_str, TABULAR_ANNOTATED,
     false, probDescDB.get_string("method.export_approx_points_file"),
-    probDescDB.get_ushort("method.export_approx_format")));
+    probDescDB.get_ushort("method.export_approx_format"));
   initialize_u_space_model();
 
   // -------------------------------
@@ -150,9 +150,9 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   ShortArray sc_asv(g_u_model.qoi(), 3); // TO DO: consider passing in data_mode
   ActiveSet  sc_set(sc_asv, recast_set.derivative_vector());
   const ShortShortPair& sc_view = g_u_model.current_variables().view();
-  uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>(u_space_sampler,
+  uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, sc_set, sc_view, approx_type, approx_order, corr_type,
-    corr_order, data_order, outputLevel, pt_reuse));
+    corr_order, data_order, outputLevel, pt_reuse);
   initialize_u_space_model();
 
   // no expansionSampler, no numSamplesOnExpansion
@@ -389,12 +389,12 @@ void NonDStochCollocation::initialize_u_space_model()
     initialize_covariance();
 
   // Precedes construct_basis() since basis is stored in Pecos driver
-  SharedApproxData& shared_data = uSpaceModel.shared_approximation();
-  shared_data.integration_iterator(uSpaceModel.subordinate_iterator());
+  SharedApproxData& shared_data = uSpaceModel->shared_approximation();
+  shared_data.integration_iterator(uSpaceModel->subordinate_iterator());
 
   // DataFitSurrModel copies u-space mvDist from ProbabilityTransformModel
   const Pecos::MultivariateDistribution& u_mvd
-    = uSpaceModel.multivariate_distribution();
+    = uSpaceModel->multivariate_distribution();
   // construct the polynomial basis (shared by integration drivers)
   shared_data.construct_basis(u_mvd);
   // mainly a run-time requirement, but also needed at construct time
@@ -407,7 +407,7 @@ void NonDStochCollocation::initialize_u_space_model()
 
 void NonDStochCollocation::initialize_covariance()
 {
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  std::vector<Approximation>& poly_approxs = uSpaceModel->approximations();
   size_t i, j;
   for (i=0; i<numFunctions; ++i) {
     std::shared_ptr<PecosApproximation> pa_rep_i =
@@ -422,7 +422,7 @@ void NonDStochCollocation::initialize_covariance()
 
 void NonDStochCollocation::compute_delta_mean(bool update_ref)
 {
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  std::vector<Approximation>& poly_approxs = uSpaceModel->approximations();
   bool   warn_flag = false,
     combined_stats = (statsMetricMode == Pecos::COMBINED_EXPANSION_STATS);
 
@@ -470,7 +470,7 @@ void NonDStochCollocation::compute_delta_mean(bool update_ref)
 void NonDStochCollocation::
 compute_delta_variance(bool update_ref, bool print_metric)
 {
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  std::vector<Approximation>& poly_approxs = uSpaceModel->approximations();
   bool   warn_flag = false,
     combined_stats = (statsMetricMode == Pecos::COMBINED_EXPANSION_STATS);
 
@@ -511,7 +511,7 @@ compute_delta_variance(bool update_ref, bool print_metric)
 void NonDStochCollocation::
 compute_delta_covariance(bool update_ref, bool print_metric)
 {
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  std::vector<Approximation>& poly_approxs = uSpaceModel->approximations();
   bool   warn_flag = false,
     combined_stats = (statsMetricMode == Pecos::COMBINED_EXPANSION_STATS);
   size_t i, j;
@@ -663,7 +663,7 @@ compute_level_mappings_metric(bool revert, bool print_metric)
 
       bool warn_flag   = false,
 	combined_stats = (statsMetricMode == Pecos::COMBINED_EXPANSION_STATS);
-      std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+      std::vector<Approximation>& poly_approxs = uSpaceModel->approximations();
       Real delta, ref, sum_sq = 0., scale_sq = 0., z_bar, beta_bar;
       for (i=0, cntr=0; i<numFunctions; ++i) {
 	size_t rl_len = requestedRespLevels[i].length(),
@@ -814,7 +814,7 @@ compute_final_statistics_metric(bool revert, bool print_metric)
       }
 
       bool warn_flag = false;
-      std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+      std::vector<Approximation>& poly_approxs = uSpaceModel->approximations();
       Real delta, ref, sum_sq = 0., scale_sq = 0., z_bar, beta_bar;
       for (i=0, cntr=0; i<numFunctions; ++i) {
 	size_t rl_len = requestedRespLevels[i].length(),
@@ -966,7 +966,7 @@ void NonDStochCollocation::pull_candidate(RealVector& stats_star)
     // If pulling updated values as in NonDExpansion
     switch (refineMetric) {
     case Pecos::COVARIANCE_METRIC: {
-      std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+      std::vector<Approximation>& poly_approxs = uSpaceModel->approximations();
       std::shared_ptr<PecosApproximation> poly_approx_rep;
       bool full_covar = (covarianceControl == FULL_COVARIANCE),
         combined_stats = (statsMetricMode == Pecos::COMBINED_EXPANSION_STATS);
@@ -1018,7 +1018,7 @@ analytic_delta_level_mappings(const RealVector& level_maps_ref,
     level_maps_new.resize(totalLevelRequests);
 
   size_t i, j, cntr, rl_len, pl_len, bl_len, gl_len, pl_bl_gl_len;
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  std::vector<Approximation>& poly_approxs = uSpaceModel->approximations();
   Real delta, ref, sum_sq = 0., scale_sq = 0., z_bar, beta_bar;
   bool combined_stats = (statsMetricMode == Pecos::COMBINED_EXPANSION_STATS);
   for (i=0, cntr=0; i<numFunctions; ++i) {

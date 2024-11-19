@@ -266,7 +266,7 @@ append_expansion(const RealMatrix& samples, const IntResponseMap& resp_map)
     numSamplesOnModel += resp_map.size();
     increment_order_from_grid();
     // utilize rebuild following expansion updates
-    uSpaceModel.append_approximation(samples, resp_map, true);
+    uSpaceModel->append_approximation(samples, resp_map, true);
     break;
   }
 }
