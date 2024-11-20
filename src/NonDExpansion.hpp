@@ -392,7 +392,7 @@ protected:
 
   /// Model representing the approximate response function in u-space,
   /// after u-space recasting and polynomial data fit recursions
-  std::shared_ptr<SurrogateModel> uSpaceModel;
+  std::shared_ptr<DataFitSurrModel> uSpaceModel;
 
   /// Iterator used for sampling on the uSpaceModel to generate approximate
   /// probability/reliability/response level statistics.  Currently this is

@@ -111,7 +111,6 @@ public:
   Model& surrogate_model(size_t i = _NPOS) override;
   /// return this model instance
   const Model& surrogate_model(size_t i = _NPOS) const override;
-protected:
 
   //
   //- Heading: Virtual function redefinitions

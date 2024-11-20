@@ -647,7 +647,9 @@ construct_expansion_sampler(unsigned short sample_type, const String& rng,
     numSamplesOnExpansion = x_samples.numCols();
     // transform to u space must follow runtime dist param updates,
     // so pass x_samples for now and transform at runtime
-    exp_sampler_rep = std::make_shared<NonDSampling>(*uSpaceModel, x_samples);//u_samples);
+    Model env;
+    env.assign_rep(uSpaceModel);
+    exp_sampler_rep = std::make_shared<NonDSampling>(env, x_samples);//u_samples);
     exp_sampler_rep->requested_levels(requestedRespLevels, requestedProbLevels,
       requestedRelLevels, requestedGenRelLevels, respLevelTarget,
       respLevelTargetReduce, cdfFlag, true); // compute/print PDFs
@@ -663,8 +665,10 @@ construct_expansion_sampler(unsigned short sample_type, const String& rng,
     // sampling mode.  Don't vary sampling pattern since we want to reuse
     // same sampling stencil for different design/epistemic vars or for
     // (goal-oriented) adaptivity.
+    Model env;
+    env.assign_rep(uSpaceModel);
     exp_sampler_rep = std::make_shared<NonDLHSSampling>
-      (*uSpaceModel, sample_type, numSamplesOnExpansion,
+      (env, sample_type, numSamplesOnExpansion,
        first_seed(), rng, false, ALEATORY_UNCERTAIN);//, ALL); *** HACK: ALEATORY_UNCERTAIN needed for aleatory stats but can we adopt the PCE view in cases of approx sample export (potentially resetting after numerical stats eval?)
     //expansionSampler.sampling_reset(numSamplesOnExpansion, true, false);
 
@@ -697,8 +701,10 @@ construct_expansion_sampler(unsigned short sample_type, const String& rng,
       }
       // extreme values needed for defining bounds of PDF bins
       bool vary_pattern = true, track_extreme = pdfOutput;
+      Model env;
+      env.assign_rep(uSpaceModel);
       auto imp_sampler_rep = std::make_shared<NonDAdaptImpSampling>
-	(*uSpaceModel, sample_type, ais_samples, first_seed(), rng, vary_pattern,
+	(env, sample_type, ais_samples, first_seed(), rng, vary_pattern,
 	 integration_refine, cdfFlag, false, false, track_extreme);
       importanceSampler.assign_rep(imp_sampler_rep);
 
@@ -1925,9 +1931,10 @@ void NonDExpansion::update_model_from_samples()
   uSpaceModel->subordinate_iterator().sampling_reference(0);
 
   // enforce total pts (increment managed in DataFitSurrModel::rebuild_global())
-  std::shared_ptr<DataFitSurrModel> dfs_model = 
-    std::static_pointer_cast<DataFitSurrModel>(uSpaceModel->model_rep());
-  dfs_model->total_points(numSamplesOnModel);
+  uSpaceModel->total_points(numSamplesOnModel);
+  //std::shared_ptr<DataFitSurrModel> dfs_model = 
+  //  std::static_pointer_cast<DataFitSurrModel>(uSpaceModel->model_rep());
+  //dfs_model->total_points(numSamplesOnModel);
 }
 
 
