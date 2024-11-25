@@ -518,7 +518,6 @@ set(env_src DakotaEnvironment.cpp ExecutableEnvironment.cpp
 set(iterator_src DakotaIterator.cpp DakotaAnalyzer.cpp DakotaPStudyDACE.cpp
     ParamStudy.cpp DakotaVerification.cpp RichExtrapVerification.cpp 
     DakotaNonD.cpp
-    NonDReliability.cpp NonDLocalReliability.cpp NonDGlobalReliability.cpp
     NonDInterval.cpp NonDLHSInterval.cpp NonDLHSEvidence.cpp 
     NonDLHSSingleInterval.cpp
     NonDLocalInterval.cpp NonDLocalEvidence.cpp NonDLocalSingleInterval.cpp

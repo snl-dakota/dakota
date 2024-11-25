@@ -160,16 +160,9 @@ void LDDriver::transform(
     if ( model.multivariate_distribution().correlation() )
     {
         // vSpaceModel has uncorrelated standard normal random variables
-        Model vSpaceModel;
-        vSpaceModel.assign_rep(
-        std::make_shared<ProbabilityTransformModel>(model, STD_NORMAL_U)
-        );
-
+        ProbabilityTransformModel vSpaceModel(model, STD_NORMAL_U);
         // uSpaceModel has uncorrelated standard uniform random variables
-        Model uSpaceModel;
-        uSpaceModel.assign_rep(
-        std::make_shared<ProbabilityTransformModel>(vSpaceModel, STD_UNIFORM_U)
-        );
+        ProbabilityTransformModel uSpaceModel(vSpaceModel, STD_UNIFORM_U);
 
         // First transform from standard uniform to standard normal
         Pecos::ProbabilityTransformation& uNataf = 
@@ -192,11 +185,7 @@ void LDDriver::transform(
     else // If uncorrelated, directly apply the transform
     {
         // uSpaceModel has uncorrelated standard uniform random variables
-        Model uSpaceModel;
-        uSpaceModel.assign_rep(
-        std::make_shared<ProbabilityTransformModel>(model, STD_UNIFORM_U)
-        );
-
+        ProbabilityTransformModel uSpaceModel(model, STD_UNIFORM_U);
         // Transform samples using Nataf transformation (component-wise inverse CDF)
         Pecos::ProbabilityTransformation& uNataf = 
         uSpaceModel.probability_transformation();

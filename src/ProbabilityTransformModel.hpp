@@ -46,7 +46,6 @@ public:
     const Pecos::MultivariateDistribution& x_dist,
     Pecos::MultivariateDistribution& u_dist);
 
-protected:
 
   //
   //- Heading: Virtual function redefinitions

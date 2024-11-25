@@ -10,7 +10,13 @@
 #ifndef NOND_RELIABILITY_H
 #define NOND_RELIABILITY_H
 
+#include <type_traits>
+#include "dakota_system_defs.hpp"
+#include "ProblemDescDB.hpp"
 #include "DakotaNonD.hpp"
+#include "DataFitSurrModel.hpp"
+#include "ProbabilityTransformModel.hpp"
+#include "ParallelLibrary.hpp"
 
 namespace Dakota {
 
@@ -23,6 +29,14 @@ namespace Dakota {
     global limit state search using Gaussian process models in
     combination with multimodal importance sampling. */
 
+//template <typename T>
+//using EnableIfDFSorPTM = typename std::enable_if<std::is_same<T, DataFitSurrModel>::value || 
+//  std::is_same<T, ProbabilityTransformModel>::value >;
+
+//template <typename T, typename Enable = void>
+//class NonDReliability;
+
+template<typename T>
 class NonDReliability: public NonD
 {
 public:
@@ -61,7 +75,7 @@ protected:
 
   /// Model representing the limit state in u-space, after any
   /// recastings and data fits
-  Model uSpaceModel;
+  std::shared_ptr<T> uSpaceModel;
   /// RecastModel which formulates the optimization subproblem: RIA, PMA, EGO
   Model mppModel;
   /// Iterator which optimizes the mppModel
@@ -106,11 +120,38 @@ protected:
 };
 
 
-inline const Model& NonDReliability::algorithm_space_model() const
-{ return uSpaceModel; }
+template<typename T>
+NonDReliability<T>::NonDReliability(ProblemDescDB& problem_db, Model& model):
+  NonD(problem_db, model),
+  mppSearchType(probDescDB.get_ushort("method.sub_method")),
+  integrationRefinement(
+    probDescDB.get_ushort("method.nond.integration_refinement")),
+  numRelAnalyses(0)
+  //refinementSamples(probDescDB.get_int("method.samples")),
+  //refinementSeed(probDescDB.get_int("method.random_seed"))
+{
+  static_assert(std::is_same<T, DataFitSurrModel>::value || std::is_same<T, ProbabilityTransformModel>::value);
+  // Check for suitable distribution types.
+  if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars) {
+    Cerr << "Error: discrete random variables are not supported in reliability "
+	 << "methods." << std::endl;
+    abort_handler(-1);
+  }
 
+  initialize_final_statistics(); // default statistics set
 
-inline void NonDReliability::
+  // RealVectors are sized within derived classes
+  computedRespLevels.resize(numFunctions);
+  computedProbLevels.resize(numFunctions);
+  computedGenRelLevels.resize(numFunctions);
+}
+
+template<typename T>
+NonDReliability<T>::~NonDReliability()
+{ }
+
+template<typename T>
+inline void NonDReliability<T>::
 nested_variable_mappings(const SizetArray& c_index1,
 			 const SizetArray& di_index1,
 			 const SizetArray& ds_index1,
@@ -120,10 +161,47 @@ nested_variable_mappings(const SizetArray& c_index1,
 			 const ShortArray& ds_target2,
 			 const ShortArray& dr_target2)
 {
-  uSpaceModel.nested_variable_mappings(c_index1, di_index1, ds_index1,
+  uSpaceModel->nested_variable_mappings(c_index1, di_index1, ds_index1,
 				       dr_index1, c_target2, di_target2,
 				       ds_target2, dr_target2);
 }
+
+
+template<typename T>
+bool NonDReliability<T>::resize()
+{
+  bool parent_reinit_comms = NonD::resize();
+
+  initialize_final_statistics(); // default statistics set
+
+  // RealVectors are sized within derived classes
+  computedRespLevels.resize(numFunctions);
+  computedProbLevels.resize(numFunctions);
+  computedGenRelLevels.resize(numFunctions);
+
+  return parent_reinit_comms;
+}
+
+template<typename T>
+inline const Model& NonDReliability<T>::algorithm_space_model() const
+{ 
+  return *uSpaceModel;
+}
+
+template<typename T>
+void NonDReliability<T>::post_run(std::ostream& s)
+{
+  ++numRelAnalyses;
+
+  if (!mppModel.is_null() && mppModel.mapping_initialized()) {
+    /*bool var_size_changed =*/ mppModel.finalize_mapping();
+    //if (var_size_changed) resize();
+  }
+
+  Analyzer::post_run(s);
+}
+
+
 
 } // namespace Dakota
 
