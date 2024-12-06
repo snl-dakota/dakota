@@ -394,12 +394,11 @@ Iterator::Iterator(ProblemDescDB& problem_db, Model& model, std::shared_ptr<Trai
 std::shared_ptr<Iterator>
 Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
 {
-  const unsigned short method_name = problem_db.get_ushort("method.algorithm");
-  const unsigned short sub_method = problem_db.get_ushort("method.sub_method");
+  unsigned short method_name = problem_db.get_ushort("method.algorithm");
 
   switch (method_name) {
   case HYBRID:
-   switch (sub_method) {
+   switch (problem_db.get_ushort("method.sub_method")) {
     case SUBMETHOD_COLLABORATIVE:
       return std::make_shared<CollabHybridMetaIterator>(problem_db, model); break;
     case SUBMETHOD_EMBEDDED:
@@ -419,33 +418,13 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
   case RICHARDSON_EXTRAP:
     return std::make_shared<RichExtrapVerification>(problem_db, model); break;
   case LOCAL_RELIABILITY:
-    switch(sub_method) {
-        case SUBMETHOD_AMV_U:  case SUBMETHOD_AMV_PLUS_U:
-        case SUBMETHOD_TANA_U: case SUBMETHOD_QMEA_U: 
-          return std::make_shared<NonDLocalReliability<DataFitSurrModel> >(problem_db, model); break;
-        case SUBMETHOD_AMV_X:  case SUBMETHOD_AMV_PLUS_X:
-        case SUBMETHOD_TANA_X: case SUBMETHOD_QMEA_X: case SUBMETHOD_NO_APPROX:
-          return std::make_shared<NonDLocalReliability<ProbabilityTransformModel> >(problem_db, model); break;
-        default:
-          Cerr << "Invalid local_reliabilty sub-method type." << std::endl;
-          return std::shared_ptr<Iterator>(); break;
-    }
-    break;
+    return std::make_shared<NonDLocalReliability>(problem_db, model); break;
   case LOCAL_INTERVAL_EST:
     return std::make_shared<NonDLocalSingleInterval>(problem_db, model); break;
   case LOCAL_EVIDENCE:
     return std::make_shared<NonDLocalEvidence>(problem_db, model); break;
   case GLOBAL_RELIABILITY:
-    switch(sub_method) {
-      case SUBMETHOD_EGRA_U:          
-        return std::make_shared<NonDGlobalReliability<DataFitSurrModel> >(problem_db, model); break;
-      case SUBMETHOD_EGRA_X:
-        return std::make_shared<NonDGlobalReliability<ProbabilityTransformModel> >(problem_db, model); break;
-      default:
-          Cerr << "Invalid global_reliabilty sub-method type." << std::endl;
-          return std::shared_ptr<Iterator>(); break;
-    }
-    break;
+    return std::make_shared<NonDGlobalReliability>(problem_db, model); break;
   case GLOBAL_INTERVAL_EST:
     switch (probDescDB.get_ushort("method.nond.opt_subproblem_solver")) {
     case SUBMETHOD_LHS:

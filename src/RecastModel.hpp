@@ -188,7 +188,7 @@ public:
   /// return nonlinearVarsMapping
   bool nonlinear_variables_mapping() const;
 
-
+protected:
 
   //
   //- Heading: Virtual function redefinitions
