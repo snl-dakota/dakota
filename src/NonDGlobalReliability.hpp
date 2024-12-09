@@ -146,14 +146,14 @@ private:
 
 inline void NonDGlobalReliability::x_truth_evaluation(short mode)
 {
-  uSpaceModel.component_parallel_mode(TRUTH_MODEL_MODE); // Recast forwards
+  uSpaceModel->component_parallel_mode(TRUTH_MODEL_MODE); // Recast forwards
 
   ActiveSet set = pIteratedModel->current_response().active_set();
   set.request_values(0); set.request_value(mode, respFnCount);
   pIteratedModel->evaluate(set);
 
   // Not currently necessary as surrogate mode does not employ parallelism:
-  //uSpaceModel.component_parallel_mode(SURROGATE_MODEL_MODE); // restore
+  //uSpaceModel->component_parallel_mode(SURROGATE_MODEL_MODE); // restore
 }
 
 
@@ -163,9 +163,9 @@ x_truth_evaluation(const RealVector& c_vars_u, short mode)
   RealVector c_vars_x;
   SizetMultiArrayConstView x_cv_ids = ModelUtils::continuous_variable_ids(*pIteratedModel),
     u_cv_ids = (mppSearchType == SUBMETHOD_EGRA_X) ?
-    ModelUtils::continuous_variable_ids(uSpaceModel) :
-    uSpaceModel.subordinate_model().current_variables().continuous_variable_ids();
-  uSpaceModel.probability_transformation().trans_U_to_X(c_vars_u, u_cv_ids,
+    ModelUtils::continuous_variable_ids(*uSpaceModel) :
+    uSpaceModel->subordinate_model().current_variables().continuous_variable_ids();
+  uSpaceModel->probability_transformation().trans_U_to_X(c_vars_u, u_cv_ids,
 							c_vars_x, x_cv_ids);
   ModelUtils::continuous_variables(*pIteratedModel, c_vars_x);
 
@@ -176,27 +176,27 @@ x_truth_evaluation(const RealVector& c_vars_u, short mode)
 inline void NonDGlobalReliability::
 u_truth_evaluation(const RealVector& c_vars_u, short mode)
 {
-  uSpaceModel.component_parallel_mode(TRUTH_MODEL_MODE); // Recast forwards
-  uSpaceModel.surrogate_response_mode(BYPASS_SURROGATE); // Recast forwards
+  uSpaceModel->component_parallel_mode(TRUTH_MODEL_MODE); // Recast forwards
+  uSpaceModel->surrogate_response_mode(BYPASS_SURROGATE); // Recast forwards
 
-  ModelUtils::continuous_variables(uSpaceModel, c_vars_u);
-  ActiveSet set = uSpaceModel.current_response().active_set();
+  ModelUtils::continuous_variables(*uSpaceModel, c_vars_u);
+  ActiveSet set = uSpaceModel->current_response().active_set();
   set.request_values(0); set.request_value(mode, respFnCount);
-  uSpaceModel.evaluate(set);
+  uSpaceModel->evaluate(set);
 
-  uSpaceModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // restore
+  uSpaceModel->surrogate_response_mode(UNCORRECTED_SURROGATE); // restore
   // Not currently necessary as surrogate mode does not employ parallelism:
-  //uSpaceModel.component_parallel_mode(SURROGATE_MODEL_MODE); // restore
+  //uSpaceModel->component_parallel_mode(SURROGATE_MODEL_MODE); // restore
 }
 
 
 inline void NonDGlobalReliability::
 u_evaluation(const RealVector& c_vars_u, short mode)
 {
-  ModelUtils::continuous_variables(uSpaceModel, c_vars_u);
-  ActiveSet set = uSpaceModel.current_response().active_set();
+  ModelUtils::continuous_variables(*uSpaceModel, c_vars_u);
+  ActiveSet set = uSpaceModel->current_response().active_set();
   set.request_values(0); set.request_value(mode, respFnCount);
-  uSpaceModel.evaluate(set);
+  uSpaceModel->evaluate(set);
 }
 
 } // namespace Dakota

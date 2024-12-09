@@ -61,9 +61,9 @@ protected:
 
   /// Model representing the limit state in u-space, after any
   /// recastings and data fits
-  Model uSpaceModel;
+  std::shared_ptr<Model> uSpaceModel;
   /// RecastModel which formulates the optimization subproblem: RIA, PMA, EGO
-  Model mppModel;
+  std::shared_ptr<Model> mppModel;
   /// Iterator which optimizes the mppModel
   Iterator mppOptimizer;
 
@@ -107,7 +107,7 @@ protected:
 
 
 inline const Model& NonDReliability::algorithm_space_model() const
-{ return uSpaceModel; }
+{ return *uSpaceModel; }
 
 
 inline void NonDReliability::
@@ -120,7 +120,7 @@ nested_variable_mappings(const SizetArray& c_index1,
 			 const ShortArray& ds_target2,
 			 const ShortArray& dr_target2)
 {
-  uSpaceModel.nested_variable_mappings(c_index1, di_index1, ds_index1,
+  uSpaceModel->nested_variable_mappings(c_index1, di_index1, ds_index1,
 				       dr_index1, c_target2, di_target2,
 				       ds_target2, dr_target2);
 }

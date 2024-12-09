@@ -193,8 +193,8 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
       corr_order, ai_data_order, outputLevel, sample_reuse));
 
     // transform g_hat_x_model from x-space to u-space; truncate distrib bnds
-    uSpaceModel.assign_rep(std::make_shared<ProbabilityTransformModel>(
-      g_hat_x_model, STD_NORMAL_U, true));
+    uSpaceModel = std::make_shared<ProbabilityTransformModel>(
+      g_hat_x_model, STD_NORMAL_U, true);
     break;
   }
   case SUBMETHOD_AMV_U:  case SUBMETHOD_AMV_PLUS_U:
@@ -220,15 +220,15 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     Iterator dace_iterator;
     ActiveSet dfs_set = g_u_model.current_response().active_set(); // copy
     dfs_set.request_values(dfs_set_order);
-    uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>(dace_iterator,
+    uSpaceModel = std::make_shared<DataFitSurrModel>(dace_iterator,
       g_u_model, dfs_set, orig_view, approx_type, approx_order, corr_type,
-      corr_order, ai_data_order, outputLevel, sample_reuse));
+      corr_order, ai_data_order, outputLevel, sample_reuse);
     break;
   }
   case SUBMETHOD_NO_APPROX: { // Recast( iteratedModel )
     // Recast g(x) to G(u); truncate distribution bounds
-    uSpaceModel.assign_rep(std::make_shared<ProbabilityTransformModel>(
-      *pIteratedModel, STD_NORMAL_U, true));
+    uSpaceModel = std::make_shared<ProbabilityTransformModel>(
+      *pIteratedModel, STD_NORMAL_U, true);
     // detect PMA2 condition and augment mppModel data requirements
     bool pma2_flag = false;
     if (integrationOrder == 2)
@@ -245,18 +245,21 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
   // Enable warm starting of Model data (i.e., retain quasi-Hessian
   // accumulations for each QoI).  Test impacts are mixed: helps in some
   // (cantilever), hinders in some (logratio), a wash in some (short_column).
-  uSpaceModel.warm_start_flag(true);//iteratedModel.warm_start_flag(true);
+  uSpaceModel->warm_start_flag(true);//iteratedModel.warm_start_flag(true);
 
   // configure a RecastModel with one objective and one equality constraint
   // using the alternate minimalist constructor
   if (mppSearchType) {
     SizetArray recast_vars_comps_total;  // default: empty; no change in size
     BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relax
-    mppModel.assign_rep(std::make_shared<RecastModel>
-			(uSpaceModel, recast_vars_comps_total, all_relax_di,
-			 all_relax_dr, orig_view, 1, 1, 0, recast_resp_order));
-    RealVector nln_eq_targets(1, false); nln_eq_targets = 0.;
-    ModelUtils::nonlinear_eq_constraint_targets(mppModel, nln_eq_targets);
+    Model u_space_model;
+    u_space_model.assign_rep(uSpaceModel);
+    mppModel = std::make_shared<RecastModel>
+			(u_space_model, recast_vars_comps_total, all_relax_di,
+			 all_relax_dr, orig_view, 1, 1, 0, recast_resp_order);
+    RealVector nln_eq_targets(1, false);
+    nln_eq_targets = 0.;
+    ModelUtils::nonlinear_eq_constraint_targets(*mppModel, nln_eq_targets);
 
     // Use NPSOL/OPT++ in "user_functions" mode to perform the MPP search
     if (npsolFlag) {
@@ -287,14 +290,22 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
       Real conv_tol = -1.; // use NPSOL default
 
 #ifdef HAVE_NPSOL
-      mppOptimizer.assign_rep(std::make_shared<NPSOLOptimizer>
-			      (mppModel, npsol_deriv_level, conv_tol));
+      {
+        Model mpp_model_env;
+        mpp_model_env.assign_rep(mppModel);
+        mppOptimizer.assign_rep(std::make_shared<NPSOLOptimizer>
+			        (mpp_model_env, npsol_deriv_level, conv_tol));
+      }
 #endif
     }
 #ifdef HAVE_OPTPP
     else
-      mppOptimizer.assign_rep(std::make_shared<SNLLOptimizer>
-			      ("optpp_q_newton", mppModel));
+      {
+        Model mpp_model_env;
+        mpp_model_env.assign_rep(mppModel);
+        mppOptimizer.assign_rep(std::make_shared<SNLLOptimizer>
+			        ("optpp_q_newton", *mppModel));
+      }
 #endif
   }
 
@@ -355,15 +366,17 @@ NonDLocalReliability(ProblemDescDB& problem_db, Model& model):
     case SUBMETHOD_AMV_U:  case SUBMETHOD_AMV_PLUS_U:
     case SUBMETHOD_TANA_U: case SUBMETHOD_QMEA_U:
       import_sampler_rep = std::make_shared<NonDAdaptImpSampling>(
-	uSpaceModel.truth_model(), sample_type, refine_samples, refine_seed,
-	rng, vary_pattern, integrationRefinement, cdfFlag, x_model_flag,
-	use_model_bounds, track_extreme);
+        uSpaceModel->truth_model(), sample_type, refine_samples, refine_seed,
+        rng, vary_pattern, integrationRefinement, cdfFlag, x_model_flag,
+        use_model_bounds, track_extreme);
       break;
     case SUBMETHOD_NO_APPROX:
-      import_sampler_rep = std::make_shared<NonDAdaptImpSampling>(uSpaceModel,
-	sample_type, refine_samples, refine_seed, rng, vary_pattern,
-	integrationRefinement, cdfFlag, x_model_flag, use_model_bounds,
-	track_extreme);
+      Model u_space_env;
+      u_space_env.assign_rep(uSpaceModel);
+      import_sampler_rep = std::make_shared<NonDAdaptImpSampling>(u_space_env,
+      sample_type, refine_samples, refine_seed, rng, vary_pattern,
+      integrationRefinement, cdfFlag, x_model_flag, use_model_bounds,
+      track_extreme);
       break;
     }
     importanceSampler.assign_rep(import_sampler_rep);
@@ -421,7 +434,7 @@ void NonDLocalReliability::derived_init_communicators(ParLevLIter pl_iter)
     // specification.  For FORM/SORM, the NPSOL/OPT++ concurrency is the same,
     // but for approximate methods, concurrency is dictated by {grad,hess}Type
     // logic in the instantiate on-the-fly DataFitSurrModel constructor.
-    uSpaceModel.init_communicators(pl_iter, maxEvalConcurrency);
+    uSpaceModel->init_communicators(pl_iter, maxEvalConcurrency);
     // TO DO: distinguish gradient concurrency for truth vs. surrogate?
     //        (probably doesn't matter for surrogate)
 
@@ -443,7 +456,7 @@ void NonDLocalReliability::derived_set_communicators(ParLevLIter pl_iter)
   NonD::derived_set_communicators(pl_iter);
 
   if (mppSearchType) {
-    uSpaceModel.set_communicators(pl_iter, maxEvalConcurrency);
+    uSpaceModel->set_communicators(pl_iter, maxEvalConcurrency);
     mppOptimizer.set_communicators(pl_iter);
     if (integrationRefinement)
       importanceSampler.set_communicators(pl_iter);
@@ -457,7 +470,7 @@ void NonDLocalReliability::derived_free_communicators(ParLevLIter pl_iter)
     if (integrationRefinement)
       importanceSampler.free_communicators(pl_iter);
     mppOptimizer.free_communicators(pl_iter);
-    uSpaceModel.free_communicators(pl_iter, maxEvalConcurrency);
+    uSpaceModel->free_communicators(pl_iter, maxEvalConcurrency);
   }
   pIteratedModel->free_communicators(pl_iter, maxEvalConcurrency);
 }
@@ -544,9 +557,9 @@ void NonDLocalReliability::pre_run()
   // > Note: part of this occurs at DataFit build time. Therefore, take
   //         care to avoid redundancy using mappingInitialized flag.
   if (mppSearchType) {
-    if (!mppModel.mapping_initialized()) {
+    if (!mppModel->mapping_initialized()) {
       ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-      /*bool var_size_changed =*/ mppModel.initialize_mapping(pl_iter);
+      /*bool var_size_changed =*/ mppModel->initialize_mapping(pl_iter);
       //if (var_size_changed) resize();
     }
 
@@ -555,7 +568,7 @@ void NonDLocalReliability::pre_run()
     // so that they are correct when they propagate back down.  There is no
     // need to recur below iteratedModel.
     size_t layers = (mppSearchType == SUBMETHOD_NO_APPROX) ? 2 : 3;
-    mppModel.update_from_subordinate_model(layers-1);
+    mppModel->update_from_subordinate_model(layers-1);
   }
 }
 
@@ -800,7 +813,7 @@ void NonDLocalReliability::mpp_search()
   // and needs to follow nataf.transform_correlations()
   if (numRelAnalyses == 0) {
     if (initialPtUserSpec)
-      uSpaceModel.trans_X_to_U(ModelUtils::continuous_variables(*pIteratedModel),
+      uSpaceModel->trans_X_to_U(ModelUtils::continuous_variables(*pIteratedModel),
 			       initialPtUSpec);
     else {
       // don't use the mean uncertain variable defaults from the parser
@@ -935,7 +948,7 @@ void NonDLocalReliability::mpp_search()
       if (mppSearchType == SUBMETHOD_NO_APPROX && levelCount == 0)
         mostProbPointU = ranVarMeansU;//mostProbPointX = ranVarMeansX;
       Pecos::ProbabilityTransformation& nataf
-	= uSpaceModel.probability_transformation();
+	= uSpaceModel->probability_transformation();
       //nataf.verify_trans_jacobian_hessian(mostProbPointU);
       //nataf.verify_trans_jacobian_hessian(mostProbPointX);
       nataf.verify_design_jacobian(mostProbPointU);
@@ -950,7 +963,7 @@ void NonDLocalReliability::mpp_search()
 	Sizet2DArray vars_map, primary_resp_map, secondary_resp_map;
 	BoolDequeArray nonlinear_resp_map(2);
 	std::shared_ptr<RecastModel> mpp_model_rep =
-	  std::static_pointer_cast<RecastModel>(mppModel.model_rep());
+	  std::static_pointer_cast<RecastModel>(mppModel->model_rep());
 	if (ria_flag) { // RIA: g is in constraint
 	  primary_resp_map.resize(1);   // one objective, no contributors
 	  secondary_resp_map.resize(1); // one constraint, one contributor
@@ -980,7 +993,7 @@ void NonDLocalReliability::mpp_search()
 	      primary_resp_map, secondary_resp_map, nonlinear_resp_map,
 	      PMA_objective_eval, PMA_constraint_eval);	    
 	}
-	ModelUtils::continuous_variables(mppModel, initialPtU);
+	ModelUtils::continuous_variables(*mppModel, initialPtU);
 
         // Execute MPP search and retrieve u-space results
         Cout << "\n>>>>> Initiating search for most probable point (MPP)\n";
@@ -1091,7 +1104,7 @@ void NonDLocalReliability::initial_taylor_series()
     // vars for the (initial) Taylor series expansion in MV/AMV/AMV+.
     Cout << "\n>>>>> Evaluating response at mean values\n";
     if (mppSearchType && mppSearchType < SUBMETHOD_NO_APPROX)
-      uSpaceModel.component_parallel_mode(TRUTH_MODEL_MODE);
+      uSpaceModel->component_parallel_mode(TRUTH_MODEL_MODE);
     ModelUtils::continuous_variables(*pIteratedModel, ranVarMeansX);
     activeSet.request_vector(asrv);
     pIteratedModel->evaluate(activeSet);
@@ -1194,7 +1207,7 @@ void NonDLocalReliability::initialize_class_data()
   // define ranVarMeansU for use in the transformed AMV option
   // (must follow transform_correlations())
   //if (mppSearchType == SUBMETHOD_AMV_U)
-  uSpaceModel.trans_X_to_U(ranVarMeansX, ranVarMeansU);
+  uSpaceModel->trans_X_to_U(ranVarMeansX, ranVarMeansU);
   // or ranVarMeansU = u_dist.means();
 
   /*
@@ -1202,10 +1215,10 @@ void NonDLocalReliability::initialize_class_data()
   // response fns at u = 0 (used for determining signs of reliability indices).
   Cout << "\n>>>>> Evaluating response at median values\n";
   if (mppSearchType && mppSearchType < SUBMETHOD_NO_APPROX)
-    uSpaceModel.component_parallel_mode(TRUTH_MODEL_MODE);
+    uSpaceModel->component_parallel_mode(TRUTH_MODEL_MODE);
   RealVector ep_median_u(numContinuousVars), // inits vals to 0
              ep_median_x(numContinuousVars, false);
-  uSpaceModel.trans_U_to_X(ep_median_u, ep_median_x);
+  uSpaceModel->trans_U_to_X(ep_median_u, ep_median_x);
   ModelUtils::continuous_variables(iteratedModel, ep_median_x);
   activeSet.request_values(0); // initialize
   for (size_t i=0; i<numFunctions; i++)
@@ -1378,7 +1391,7 @@ void NonDLocalReliability::initialize_level_data()
     // restrict the approximation index set
     SizetSet surr_fn_indices;
     surr_fn_indices.insert(respFnCount);
-    uSpaceModel.surrogate_function_indices(surr_fn_indices);
+    uSpaceModel->surrogate_function_indices(surr_fn_indices);
     // construct the approximation
     update_limit_state_surrogate();
   }
@@ -1600,15 +1613,14 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
       mode |= 4;
       // RecastModel::transform_set() normally handles this, but we are
       // bypassing the Recast and pulling iteratedModel data from data_pairs
-      std::shared_ptr<RecastModel> pt_model_rep =
-	std::static_pointer_cast<RecastModel>(uSpaceModel.model_rep());
+      auto pt_model_rep = std::static_pointer_cast<RecastModel>(uSpaceModel);
       if (pt_model_rep->nonlinear_variables_mapping())
 	mode |= 2; // fnGradX needed to transform fnHessX to fnHessU
     }
 
     SizetMultiArrayConstView cv_ids = ModelUtils::continuous_variable_ids(*pIteratedModel);
     if (mode & 6)
-      uSpaceModel.trans_U_to_X(mostProbPointU, mostProbPointX);
+      uSpaceModel->trans_U_to_X(mostProbPointU, mostProbPointX);
     // retrieve previously evaluated gradient information, if possible
     if (mode & 2) { // avail in all RIA/PMA cases (exception: numerical grads)
       // query data_pairs to retrieve the fn gradient at the MPP
@@ -1618,11 +1630,11 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
       ShortArray search_asv(numFunctions, 0);  search_asv[respFnCount] = 2;
       search_set.request_vector(search_asv);
       PRPCacheHIter cache_it = lookup_by_val(data_pairs,
-	pIteratedModel->interface_id(), search_vars, search_set);
+	      pIteratedModel->interface_id(), search_vars, search_set);
       if (cache_it != data_pairs.get<hashed>().end()) {
-	fnGradX = cache_it->response().function_gradient_copy(respFnCount);
-	uSpaceModel.trans_grad_X_to_U(fnGradX, fnGradU, mostProbPointX);
-	found_mode |= 2;
+        fnGradX = cache_it->response().function_gradient_copy(respFnCount);
+        uSpaceModel->trans_grad_X_to_U(fnGradX, fnGradU, mostProbPointX);
+        found_mode |= 2;
       }
     }
     // retrieve previously evaluated Hessian information, if possible
@@ -1638,12 +1650,12 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
       ShortArray search_asv(numFunctions, 0);  search_asv[respFnCount] = 4;
       search_set.request_vector(search_asv);
       PRPCacheHIter cache_it = lookup_by_val(data_pairs,
-	pIteratedModel->interface_id(), search_vars, search_set);
+	    pIteratedModel->interface_id(), search_vars, search_set);
       if (cache_it != data_pairs.get<hashed>().end()) {
         fnHessX = cache_it->response().function_hessian(respFnCount);
-	uSpaceModel.trans_hess_X_to_U(fnHessX, fnHessU, mostProbPointX,fnGradX);
-	curvatureDataAvailable = true; kappaUpdated = false;
-	found_mode |= 4;
+	      uSpaceModel->trans_hess_X_to_U(fnHessX, fnHessU, mostProbPointX,fnGradX);
+        curvatureDataAvailable = true; kappaUpdated = false;
+        found_mode |= 4;
       }
     }
     // evaluate any remaining required data which could not be retrieved
@@ -1806,9 +1818,9 @@ void NonDLocalReliability::update_limit_state_surrogate()
   // After a design variable change, history data (e.g., TANA) needs
   // to be cleared (build_approximation() only calls clear_current_data())
   if (numRelAnalyses && levelCount == 0)
-    uSpaceModel.approximations()[respFnCount].clear_data();
+    uSpaceModel->approximations()[respFnCount].clear_data();
   // build the new local/multipoint approximation
-  uSpaceModel.build_approximation(mpp_vars, response_pr);
+  uSpaceModel->build_approximation(mpp_vars, response_pr);
 }
 
 
@@ -1846,10 +1858,10 @@ void NonDLocalReliability::assign_mean_data()
   for (size_t i=0; i<numContinuousVars; i++)
     fnGradX[i] = fnGradsMeanX(i,respFnCount);
 
-  uSpaceModel.trans_grad_X_to_U(fnGradX, fnGradU, ranVarMeansX);
+  uSpaceModel->trans_grad_X_to_U(fnGradX, fnGradU, ranVarMeansX);
   if (taylorOrder == 2 && pIteratedModel->hessian_type() != "quasi") {
     fnHessX = fnHessiansMeanX[respFnCount];
-    uSpaceModel.trans_hess_X_to_U(fnHessX, fnHessU, ranVarMeansX, fnGradX);
+    uSpaceModel->trans_hess_X_to_U(fnHessX, fnHessU, ranVarMeansX, fnGradX);
     curvatureDataAvailable = true; kappaUpdated = false;
   }
 }
@@ -1858,17 +1870,17 @@ void NonDLocalReliability::assign_mean_data()
 void NonDLocalReliability::truth_evaluation(short mode)
 {
   // the following are no-ops for ReastModel -> SimulationModel (NO_APPROX):
-  uSpaceModel.component_parallel_mode(TRUTH_MODEL_MODE);      // Recast forwards
-  uSpaceModel.surrogate_response_mode(BYPASS_SURROGATE); // Recast forwards
+  uSpaceModel->component_parallel_mode(TRUTH_MODEL_MODE);      // Recast forwards
+  uSpaceModel->surrogate_response_mode(BYPASS_SURROGATE); // Recast forwards
 
-  ModelUtils::continuous_variables(uSpaceModel, mostProbPointU);
+  ModelUtils::continuous_variables(*uSpaceModel, mostProbPointU);
   activeSet.request_values(0);
   activeSet.request_value(mode, respFnCount);
-  uSpaceModel.evaluate(activeSet);
+  uSpaceModel->evaluate(activeSet);
 
   copy_data(ModelUtils::continuous_variables(*pIteratedModel), mostProbPointX);
   const Response& x_resp = pIteratedModel->current_response();
-  const Response& u_resp =   uSpaceModel.current_response();
+  const Response& u_resp =   uSpaceModel->current_response();
   if (mode & 1)
     computedRespLevel = x_resp.function_value(respFnCount);
   if (mode & 2) {
@@ -1885,9 +1897,9 @@ void NonDLocalReliability::truth_evaluation(short mode)
   }
 
   // the following are no-ops for ReastModel -> SimulationModel (NO_APPROX):
-  uSpaceModel.surrogate_response_mode(UNCORRECTED_SURROGATE); // restore
+  uSpaceModel->surrogate_response_mode(UNCORRECTED_SURROGATE); // restore
   // Not currently necessary as surrogate mode does not employ parallelism:
-  //uSpaceModel.component_parallel_mode(SURROGATE_MODEL_MODE); // restore
+  //uSpaceModel->component_parallel_mode(SURROGATE_MODEL_MODE); // restore
 }
 
 
@@ -2190,9 +2202,9 @@ dg_ds_eval(const RealVector& x_vars, const RealVector& fn_grad_x,
   // already available (passed in as fn_grad_x), these sensitivities do not
   // require additional response evaluations.
   short dist_param_derivs
-    = uSpaceModel.query_distribution_parameter_derivatives();
+    = uSpaceModel->query_distribution_parameter_derivatives();
   if (dist_param_derivs == ALL_DERIVS || dist_param_derivs == MIXED_DERIVS)
-    uSpaceModel.trans_grad_X_to_S(fn_grad_x, final_stat_grad, x_vars);
+    uSpaceModel->trans_grad_X_to_S(fn_grad_x, final_stat_grad, x_vars);
 
   // For design vars that are separate from the uncertain vars, perform a new
   // fn eval for dg/ds, where s = inactive/design vars.  This eval must be
@@ -2203,7 +2215,7 @@ dg_ds_eval(const RealVector& x_vars, const RealVector& fn_grad_x,
     Cout << "\n>>>>> Evaluating sensitivity with respect to augmented inactive "
 	 << "variables\n";
     if (mppSearchType && mppSearchType < SUBMETHOD_NO_APPROX)
-      uSpaceModel.component_parallel_mode(TRUTH_MODEL_MODE);
+      uSpaceModel->component_parallel_mode(TRUTH_MODEL_MODE);
     ModelUtils::continuous_variables(*pIteratedModel, x_vars);
     ActiveSet inactive_grad_set = activeSet;
     inactive_grad_set.request_values(0);
@@ -2230,7 +2242,7 @@ dg_ds_eval(const RealVector& x_vars, const RealVector& fn_grad_x,
       final_stat_grad = curr_resp.function_gradient_copy(respFnCount);
     else { // MIXED_DERIVS
       const RealMatrix&     fn_grads = curr_resp.function_gradients();
-      const ShortArray& acv2_targets = uSpaceModel.nested_acv2_targets();
+      const ShortArray& acv2_targets = uSpaceModel->nested_acv2_targets();
       size_t cntr = 0;
       for (i=0; i<num_final_grad_vars; i++)
 	if (acv2_targets[i] == Pecos::NO_TARGET)
@@ -2869,8 +2881,12 @@ void NonDLocalReliability::method_recourse(unsigned short method_name)
     ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
     std::map<size_t, ParConfigLIter> pc_iter_map
       = mppOptimizer.parallel_configuration_iterator_map();
-    mppOptimizer.assign_rep(std::make_shared<SNLLOptimizer>
-			    ("optpp_q_newton", mppModel));
+    {
+      Model mpp_model_env;
+      mpp_model_env.assign_rep(mppModel);
+      mppOptimizer.assign_rep(std::make_shared<SNLLOptimizer>
+			      ("optpp_q_newton", mpp_model_env));
+    }
     mppOptimizer.parallel_configuration_iterator_map(pc_iter_map);
     mppOptimizer.init_communicators(pl_iter); // restore methodPCIter et al.
 #else

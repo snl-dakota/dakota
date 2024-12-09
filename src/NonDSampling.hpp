@@ -170,7 +170,7 @@ public:
 
   /// transform allSamples using configuration data from the source
   /// and target models
-  void transform_samples(Model& src_model, SurrogateModel& tgt_model);
+  void transform_samples(Model& src_model, Model& tgt_model);
 			 
   /// alternate version to transform allSamples.  This is needed since
   /// random variable distribution parameters are not updated until run
@@ -544,7 +544,7 @@ inline void NonDSampling::vary_pattern(bool pattern_flag)
 
 
 inline void NonDSampling::
-transform_samples(Model& src_model, SurrogateModel& tgt_model)
+transform_samples(Model& src_model, Model& tgt_model)
 {
   Pecos::ProbabilityTransformation& nataf = tgt_model.probability_transformation();
 

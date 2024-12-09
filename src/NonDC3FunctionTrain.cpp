@@ -97,9 +97,9 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   ActiveSet ft_set = g_u_model.current_response().active_set(); // copy
   ft_set.request_values(3); // stand-alone mode: surrogate grad evals at most
   const ShortShortPair& ft_view = g_u_model.current_variables().view();
-  uSpaceModel = std::make_unique<DataFitSurrModel>(u_space_sampler,
+  uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, ft_set, ft_view, approx_type, start_orders, corr_type,
-    corr_order, data_order, outputLevel, pt_reuse, importBuildPointsFile,
+    corr_order, data_order, outputLevel, pt_reuse, importBuildPointsFile,s
     probDescDB.get_ushort("method.import_build_format"),
     probDescDB.get_bool("method.import_build_active_only"),
     probDescDB.get_string("method.export_approx_points_file"),
