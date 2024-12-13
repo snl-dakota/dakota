@@ -105,35 +105,35 @@ private:
   void mlmf_increments(const SizetArray& delta_N_l, String prepend);
   /// accumulate sample values for multiple sample batches coming from
   /// mlmf_increments()
+  template <typename SumContainer1, typename SumContainer2> 
   void accumulate_increments(const SizetArray& delta_N_hf,
 			     Sizet2DArray& N_actual, SizetArray& N_alloc,
 			     const RealVector& hf_targets,
-			     IntRealMatrixMap& sum_Ll,
-			     IntRealMatrixMap& sum_Llm1,
-			     IntRealMatrixMap& sum_Hl,
-			     IntRealMatrixMap& sum_Hlm1,
-			     IntRealMatrixMap& sum_Ll_Ll,
-			     IntRealMatrixMap& sum_Ll_Llm1,
-			     IntRealMatrixMap& sum_Llm1_Llm1,
-			     IntRealMatrixMap& sum_Hl_Ll,
-			     IntRealMatrixMap& sum_Hl_Llm1,
-			     IntRealMatrixMap& sum_Hlm1_Ll,
-			     IntRealMatrixMap& sum_Hlm1_Llm1,
-			     IntRealMatrixMap& sum_Hl_Hl,
-			     IntRealMatrixMap& sum_Hl_Hlm1,
-			     IntRealMatrixMap& sum_Hlm1_Hlm1, bool incr_cost);
+			     SumContainer1& sum_Ll, SumContainer1& sum_Llm1,
+			     SumContainer2& sum_Hl, SumContainer2& sum_Hlm1,
+			     SumContainer1& sum_Ll_Ll,
+			     SumContainer1& sum_Ll_Llm1,
+			     SumContainer1& sum_Llm1_Llm1,
+			     SumContainer1& sum_Hl_Ll,
+			     SumContainer1& sum_Hl_Llm1,
+			     SumContainer1& sum_Hlm1_Ll,
+			     SumContainer1& sum_Hlm1_Llm1,
+			     SumContainer1& sum_Hl_Hl,
+			     SumContainer1& sum_Hl_Hlm1,
+			     SumContainer1& sum_Hlm1_Hlm1, bool incr_cost);
 
   /// evaluate multiple sample batches concurrently, where each batch involves
   /// either a single level or level pair for the LF model
   void lf_increments(const SizetArray& delta_N_lf, String prepend);
   /// accumulate sample values for multiple sample batches coming from
   /// lf_increments()
+  template <typename SumContainer> 
   void accumulate_lf_increments(const SizetArray& delta_N_lf,
 				Sizet2DArray& N_actual_lf,
 				SizetArray&   N_alloc_lf,
-				const RealVector& lf_targets,
-				IntRealMatrixMap& sum_Ll_refined,
-				IntRealMatrixMap& sum_Llm1_refined);
+				const RealVectorArray& lf_targets,
+				SumContainer& sum_Ll_refined,
+				SumContainer& sum_Llm1_refined);
 
   /// perform LF sample increment as indicated by evaluation ratios
   size_t lf_increment(const RealVector& eval_ratios, const SizetArray& N_lf,
@@ -421,6 +421,104 @@ inline NonDMultilevControlVarSampling::~NonDMultilevControlVarSampling()
 
 inline bool NonDMultilevControlVarSampling::discrepancy_sample_counts() const
 { return true; }
+
+
+template <typename SumContainer1, typename SumContainer2> 
+void NonDMultilevControlVarSampling::
+accumulate_increments(const SizetArray& delta_N_hf, Sizet2DArray& N_actual_hf,
+		      SizetArray& N_alloc_hf,    const RealVector& hf_targets,
+		      SumContainer1& sum_Ll,        SumContainer1& sum_Llm1,
+		      SumContainer2& sum_Hl,        SumContainer2& sum_Hlm1,
+		      SumContainer1& sum_Ll_Ll,     SumContainer1& sum_Ll_Llm1,
+		      SumContainer1& sum_Llm1_Llm1, SumContainer1& sum_Hl_Ll,
+		      SumContainer1& sum_Hl_Llm1,   SumContainer1& sum_Hlm1_Ll,
+		      SumContainer1& sum_Hlm1_Llm1, SumContainer1& sum_Hl_Hl,
+		      SumContainer1& sum_Hl_Hlm1,
+		      SumContainer1& sum_Hlm1_Hlm1, bool incr_cost)
+{
+  unsigned short group;
+  size_t lev, N_alloc_l, num_mf = NLevActual.size(),
+    num_hf_lev = iteratedModel.truth_model().solution_levels(),
+    num_cv_lev = (num_mf > 1) ?
+    std::min(num_hf_lev, iteratedModel.surrogate_model().solution_levels()) : 0;
+  Real hf_lev_cost, lf_lev_cost, hf_ref_cost = sequenceCost[numApprox];
+
+  for (lev=0, group=0; lev<num_hf_lev; ++lev, ++group) {
+
+    numSamples = delta_N_hf[lev];
+    if (!numSamples) continue;
+
+    N_alloc_l = (backfillFailures && mlmfIter) ?
+      one_sided_delta(N_alloc_hf[lev], hf_targets[lev], relaxFactor) :
+      numSamples;
+    N_alloc_hf[lev] += N_alloc_l;
+
+    IntResponseMap& mlmf_resp_map = batchResponsesMap[lev];
+    if (incr_cost) hf_lev_cost = level_cost(sequenceCost, lev, num_cv_lev);
+
+    // control variate betwen LF and HF for this discretization level:
+    // if unequal number of levels, LF levels are assigned as CV to the
+    // leading set of HF levels, since these tend to have larger variance.
+    if (lev < num_cv_lev) {
+      // process previous and new set of allResponses for MLMF sums;
+      accumulate_mlmf_Qsums(mlmf_resp_map, sum_Ll, sum_Llm1, sum_Hl, sum_Hlm1,
+			    sum_Ll_Ll, sum_Ll_Llm1, sum_Llm1_Llm1, sum_Hl_Ll,
+			    sum_Hl_Llm1, sum_Hlm1_Ll, sum_Hlm1_Llm1,
+			    sum_Hl_Hl, sum_Hl_Hlm1, sum_Hlm1_Hlm1, lev,
+			    N_actual_hf[lev]); // N_actual_lf sync'd downstream
+      if (incr_cost) {
+	lf_lev_cost = level_cost(sequenceCost, lev);
+	increment_mlmf_equivalent_cost(numSamples, hf_lev_cost, numSamples,
+				       lf_lev_cost,hf_ref_cost, equivHFEvals);
+      }
+      //N_alloc_lf[lev] += numSamples; // N_alloc_lf sync'd downstream
+    }
+    else { // no LF for this level; accumulate only multilevel discrepancies
+      // accumulate H sums for lev = 0, Y sums for lev > 0
+      accumulate_ml_Ysums(mlmf_resp_map, sum_Hl, sum_Hl_Hl, lev, num_cv_lev,
+			  N_actual_hf[lev]); // offet for HF lev
+      if (incr_cost)
+	increment_ml_equivalent_cost(numSamples, hf_lev_cost, hf_ref_cost,
+				     equivHFEvals);
+    }
+  }
+  clear_batches();
+}
+
+
+template <typename SumContainer> 
+void NonDMultilevControlVarSampling::
+accumulate_lf_increments(const SizetArray& delta_N_lf,
+			 Sizet2DArray& N_actual_lf, SizetArray& N_alloc_lf,
+			 const RealVectorArray& lf_targets,
+			 SumContainer& sum_Ll_refined,
+			 SumContainer& sum_Llm1_refined)
+{
+  // All CV lf_increment() calls now follow convergence of ML iteration:
+  // > Avoids early mis-estimation of LF increments
+  // > Parallel scheduling benefits from one final large batch of refinements
+
+  unsigned short group;
+  size_t lev, num_mf = NLevActual.size(),
+    num_hf_lev = iteratedModel.truth_model().solution_levels(),
+    num_cv_lev = (num_mf > 1) ?
+    std::min(num_hf_lev, iteratedModel.surrogate_model().solution_levels()) : 0;
+  Real hf_ref_cost = sequenceCost[numApprox];
+
+  for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) {
+    numSamples = delta_N_lf[lev];
+    if (numSamples) {
+      accumulate_mlmf_Qsums(batchResponsesMap[lev], sum_Ll_refined,
+			    sum_Llm1_refined, lev, N_actual_lf[lev]);
+      //if (incr_cost) // cost of LF increments always incurred
+      increment_ml_equivalent_cost(numSamples, level_cost(sequenceCost, lev),
+				   hf_ref_cost, equivHFEvals);
+      N_alloc_lf[lev] += (backfillFailures) ?
+	one_sided_delta(N_alloc_lf[lev], average(lf_targets[lev])) : numSamples;
+    }
+  }
+  clear_batches();
+}
 
 
 inline Real NonDMultilevControlVarSampling::

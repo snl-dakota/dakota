@@ -911,6 +911,94 @@ accumulate_ml_Qsums(const IntResponseMap& resp_map, IntRealMatrixMap& sum_Ql,
 
 void NonDMultilevelSampling::
 accumulate_ml_Ysums(const IntResponseMap& resp_map, IntRealMatrixMap& sum_Y,
+		    IntRealMatrixMap& sum_YY, size_t lev, size_t lev_offset,
+		    SizetArray& num_Y)
+{
+  using std::isfinite;
+  Real q_l, q_l_prod;  int y_ord, yy_ord, active_ord;
+  size_t qoi, offset_l = (lev + lev_offset) * numFunctions;
+  IntRespMCIter r_it; IntRMMIter y_it, yy_it;
+
+  if (lev == 0) {
+    for (r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it) {
+      const RealVector& fn_vals = r_it->second.function_values();
+
+      for (qoi=0; qoi<numFunctions; ++qoi) {
+
+	q_l_prod = q_l = fn_vals[qoi+offset_l];
+	if (isfinite(q_l)) { // neither NaN nor +/-Inf
+
+	  y_it  =  sum_Y.begin();  y_ord  =  y_it->first;
+	  yy_it = sum_YY.begin();  yy_ord = yy_it->first;
+	  active_ord = 1;
+	  while (y_it!=sum_Y.end() || yy_it!=sum_YY.end()) {
+	    // add to sum_Y: running sums across all sample increments
+	    if (y_ord == active_ord) {
+	      y_it->second(qoi,lev) += q_l_prod;  ++y_it;
+	      y_ord = (y_it == sum_Y.end()) ? 0 : y_it->first;
+	    }
+	    // add to sum_YY: running sums across all sample increments
+	    if (yy_ord == active_ord) {
+	      yy_it->second(qoi,lev) += q_l_prod * q_l_prod;  ++yy_it;
+	      yy_ord = (yy_it == sum_YY.end()) ? 0 : yy_it->first;
+	    }
+	    q_l_prod *= q_l; ++active_ord;
+	  }
+
+	  ++num_Y[qoi];
+	}
+      }
+    }
+  }
+  else {
+    Real q_lm1, q_lm1_prod, delta_prod;
+    size_t offset_lm1 = offset_l - numFunctions;
+    for (r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it) {
+      const RealVector& fn_vals = r_it->second.function_values();
+
+      for (qoi=0; qoi<numFunctions; ++qoi) {
+
+	// response mode AGGREGATED_MODEL_PAIR orders low to high fidelity
+	q_lm1_prod = q_lm1 = fn_vals[qoi+offset_lm1];
+	q_l_prod   = q_l   = fn_vals[qoi+offset_l];
+	if (isfinite(q_lm1) && isfinite(q_l)) { // neither NaN nor +/-Inf
+
+	  y_it  =  sum_Y.begin();  y_ord  =  y_it->first;
+	  yy_it = sum_YY.begin();  yy_ord = yy_it->first;
+	  active_ord = 1;
+	  while (y_it!=sum_Y.end() || yy_it!=sum_YY.end()) {
+	    // add to sum_Y: running sums across all sample increments
+	    if (y_ord == active_ord) {
+	      y_it->second(qoi,lev) += q_l_prod - q_lm1_prod; // HF^p-LF^p
+	      ++y_it;  y_ord = (y_it == sum_Y.end()) ? 0 : y_it->first;
+	    }
+	    // add to sum_YY: running sums across all sample increments
+	    if (yy_ord == active_ord) {
+	      delta_prod = q_l_prod - q_lm1_prod;
+	      yy_it->second(qoi,lev) += delta_prod * delta_prod;// (HF^p-LF^p)^2
+	      ++yy_it;  yy_ord = (yy_it == sum_YY.end()) ? 0 : yy_it->first;
+	    }
+	    q_l_prod *= q_l; q_lm1_prod *= q_lm1; ++active_ord;
+	  }
+	  ++num_Y[qoi];
+	}
+      }
+    }
+  }
+
+  if (outputLevel == DEBUG_OUTPUT) {
+    Cout << "Accumulated sums (Y[i]):\n";
+    for (size_t i=1; i<=sum_Y.size(); ++i)
+      Cout << "i = " << i << ":\n" << sum_Y.at(i) << '\n';
+    Cout << "Accumulated sums (YY[i]):\n";
+    for (size_t i=1; i<=sum_YY.size(); ++i)
+      Cout << "i = " << i << ":\n" << sum_YY.at(i) << '\n';
+  }
+}
+
+
+void NonDMultilevelSampling::
+accumulate_ml_Ysums(const IntResponseMap& resp_map, IntRealMatrixMap& sum_Y,
 		    RealMatrix& sum_YY, size_t lev, size_t lev_offset,
 		    SizetArray& num_Y)
 {
