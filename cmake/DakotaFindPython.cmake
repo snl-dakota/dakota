@@ -31,7 +31,7 @@ macro(dakota_find_python)
 
     endif()
 
-    find_package(Python REQUIRED ${dakota_python_components})
+    find_package(Python3 REQUIRED ${dakota_python_components})
 
     if (DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY)
 	message(STATUS "NumPy version ${Python_NumPy_VERSION} found at ${Python_NumPy_INCLUDE_DIRS}")

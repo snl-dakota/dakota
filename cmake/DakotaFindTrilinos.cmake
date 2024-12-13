@@ -38,10 +38,11 @@ macro(dakota_find_trilinos)
       else()
 	# Directory containing TeuchosConfig.cmake at build time
 	set(Teuchos_DIR
-          ${CMAKE_CURRENT_BINARY_DIR}/packages/external/trilinos/packages/teuchos)
+          ${CMAKE_CURRENT_BINARY_DIR}/packages/external/trilinos/cmake_packages/Teuchos)
 	set(Trilinos_ENABLE_Teuchos ON CACHE BOOL
           "Dakota enabling Trilinos Teuchos" FORCE)
-
+        #set(Trilinos_VERBOSE_CONFIGURE OFF CACHE BOOL
+        #  "Dakota enabling Trilinos VERBOSE Configure" FORCE)
 	# Map key Dakota variables to TriBITS variables
 	set( TPL_BLAS_LIBRARIES ${BLAS_LIBS} )
 	set( TPL_LAPACK_LIBRARIES ${LAPACK_LIBS} )
@@ -101,12 +102,6 @@ macro(dakota_find_trilinos)
 
       # Additional setting to prevent multiple targets with the same name
       set(Trilinos_TARGETS_IMPORTED 1)
-
-      find_package( Teuchos NO_MODULE REQUIRED )
-      # Can't get this to work due to ROLConfig.cmake only working once installed
-      #if(HAVE_ROL)
-      #  find_package( ROL NO_MODULE REQUIRED )
-      #endif()
 
     endif() # Trilinos_DIR
 
