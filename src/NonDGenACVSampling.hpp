@@ -265,6 +265,9 @@ private:
   void inflate_variables(const RealVector& cd_vars, RealVector& N_vec,
 			 const UShortArray& approx_set);
 
+  // pretty-print DAG using right arrows from approx set
+  void print_dag(const UShortArray& dag, const UShortArray& approx_set) const;
+
   //
   //- Heading: Data
   //
@@ -625,6 +628,16 @@ inline void NonDGenACVSampling::reset_acv()
 
 inline bool NonDGenACVSampling::valid_variance(Real var) const
 { return (std::isfinite(var) && var > 0.); }
+
+
+inline void NonDGenACVSampling::
+print_dag(const UShortArray& dag, const UShortArray& approx_set) const
+{
+  size_t a, num_approx = approx_set.size();
+  for (a=0; a<num_approx; ++a)
+    Cout << "                     " << approx_set[a] << " -> " << dag[a] <<'\n';
+  //Cout << std::endl;
+}
 
 } // namespace Dakota
 

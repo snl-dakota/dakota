@@ -73,40 +73,67 @@ private:
   /// define the truth and surrogate keys
   void assign_active_key();
 
-  /// helper for shared code among offline-pilot and pilot-projection modes
-  void evaluate_pilot(IntRealMatrixMap& sum_Ll_pilot,
-		      IntRealMatrixMap& sum_Llm1_pilot,
-		      //sum_Ll_refined, sum_Llm1_refined,
-		      IntRealMatrixMap& sum_Hl_pilot,
-		      IntRealMatrixMap& sum_Hlm1_pilot,
-		      IntRealMatrixMap& sum_Ll_Ll_pilot,
-		      IntRealMatrixMap& sum_Ll_Llm1_pilot,
-		      IntRealMatrixMap& sum_Llm1_Llm1_pilot,
-		      IntRealMatrixMap& sum_Hl_Ll_pilot,
-		      IntRealMatrixMap& sum_Hl_Llm1_pilot,
-		      IntRealMatrixMap& sum_Hlm1_Ll_pilot,
-		      IntRealMatrixMap& sum_Hlm1_Llm1_pilot,
-		      IntRealMatrixMap& sum_Hl_Hl_pilot,
-		      IntRealMatrixMap& sum_Hl_Hlm1_pilot,
-		      IntRealMatrixMap& sum_Hlm1_Hlm1_pilot,
-		      RealVectorArray& eval_ratios, RealMatrix& Lambda,
-		      RealMatrix& var_YH, SizetArray& N_alloc,
-		      Sizet2DArray& N_actual, RealVector& hf_targets,
-		      RealMatrix& pilot_mom, bool accumulate_cost,
-		      bool pilot_estvar);
-  /// helper for shared code among offline-pilot and pilot-projection modes
+  /// helper for shared code among online and offline pilot modes
+  void evaluate_levels(IntRealMatrixMap& sum_Ll_pilot,
+		       IntRealMatrixMap& sum_Llm1_pilot,
+		       IntRealMatrixMap& sum_Hl_pilot,
+		       IntRealMatrixMap& sum_Hlm1_pilot,
+		       IntRealMatrixMap& sum_Ll_Ll_pilot,
+		       IntRealMatrixMap& sum_Ll_Llm1_pilot,
+		       IntRealMatrixMap& sum_Llm1_Llm1_pilot,
+		       IntRealMatrixMap& sum_Hl_Ll_pilot,
+		       IntRealMatrixMap& sum_Hl_Llm1_pilot,
+		       IntRealMatrixMap& sum_Hlm1_Ll_pilot,
+		       IntRealMatrixMap& sum_Hlm1_Llm1_pilot,
+		       IntRealMatrixMap& sum_Hl_Hl_pilot,
+		       IntRealMatrixMap& sum_Hl_Hlm1_pilot,
+		       IntRealMatrixMap& sum_Hlm1_Hlm1_pilot,
+		       RealVectorArray& eval_ratios, RealMatrix& Lambda,
+		       RealMatrix& var_YH,     SizetArray& delta_N_hf,
+		       Sizet2DArray& N_actual, SizetArray& N_alloc,
+		       RealVector& hf_targets, bool accumulate_cost,
+		       bool pilot_estvar);
+  /// helper for shared code among pilot-projection modes
   void evaluate_pilot(RealVectorArray& eval_ratios, RealMatrix& Lambda,
-		      RealMatrix& var_YH, SizetArray& N_alloc,
-		      Sizet2DArray& N_actual, RealVector& hf_targets,
+		      RealMatrix& var_YH,    Sizet2DArray& N_actual,
+		      SizetArray& N_alloc,   RealVector& hf_targets,
 		      RealMatrix& pilot_mom, bool accumulate_cost,
 		      bool pilot_estvar);
 
   /// evaluate multiple sample batches concurrently, where each batch involves
   /// either a single level or level pair for both HF and LF models
-  void mlmf_increments(SizetArray& delta_N_l, String prepend);
+  void mlmf_increments(const SizetArray& delta_N_l, String prepend);
+  /// accumulate sample values for multiple sample batches coming from
+  /// mlmf_increments()
+  void accumulate_increments(const SizetArray& delta_N_hf,
+			     Sizet2DArray& N_actual, SizetArray& N_alloc,
+			     const RealVector& hf_targets,
+			     IntRealMatrixMap& sum_Ll,
+			     IntRealMatrixMap& sum_Llm1,
+			     IntRealMatrixMap& sum_Hl,
+			     IntRealMatrixMap& sum_Hlm1,
+			     IntRealMatrixMap& sum_Ll_Ll,
+			     IntRealMatrixMap& sum_Ll_Llm1,
+			     IntRealMatrixMap& sum_Llm1_Llm1,
+			     IntRealMatrixMap& sum_Hl_Ll,
+			     IntRealMatrixMap& sum_Hl_Llm1,
+			     IntRealMatrixMap& sum_Hlm1_Ll,
+			     IntRealMatrixMap& sum_Hlm1_Llm1,
+			     IntRealMatrixMap& sum_Hl_Hl,
+			     IntRealMatrixMap& sum_Hl_Hlm1,
+			     IntRealMatrixMap& sum_Hlm1_Hlm1, bool incr_cost);
+
   /// evaluate multiple sample batches concurrently, where each batch involves
   /// either a single level or level pair for the LF model
-  void lf_increments(SizetArray& delta_N_lf, String prepend);
+  void lf_increments(const SizetArray& delta_N_lf, String prepend);
+  /// accumulate sample values for multiple sample batches coming from
+  /// lf_increments()
+  void accumulate_lf_increments(const SizetArray& delta_N_lf,
+				Sizet2DArray& N_actual_lf,
+				SizetArray&   N_alloc_lf,
+				const RealVector& lf_targets,
+				IntRealMatrixMap& sum_Ll_refined,
+				IntRealMatrixMap& sum_Llm1_refined);
 
   /// perform LF sample increment as indicated by evaluation ratios
   size_t lf_increment(const RealVector& eval_ratios, const SizetArray& N_lf,
@@ -156,14 +183,6 @@ private:
 
   /// apply control variate parameters for MLMF MC to estimate raw
   /// moment contributions
-  void cv_raw_moments(IntRealMatrixMap& sum_L_shared, IntRealMatrixMap& sum_H,
-		      IntRealMatrixMap& sum_LL,       IntRealMatrixMap& sum_LH,
-		      const SizetArray& N_shared,
-		      IntRealMatrixMap& sum_L_refined,
-		      const SizetArray& N_refined, //const RealMatrix& rho2_LH,
-		      size_t lev, RealMatrix& H_raw_mom);
-  /// apply control variate parameters for MLMF MC to estimate raw
-  /// moment contributions
   void cv_raw_moments(IntRealMatrixMap& sum_Ll, IntRealMatrixMap& sum_Llm1,
 		      IntRealMatrixMap& sum_Hl, IntRealMatrixMap& sum_Hlm1,
 		      IntRealMatrixMap& sum_Ll_Ll,
@@ -183,6 +202,38 @@ private:
 		      //const RealMatrix& rho_dot2_LH,
 		      size_t lev, RealMatrix& H_raw_mom);
 
+  /// compute control variate parameters for all moments, levels, qoi
+  void compute_mlmf_controls(IntRealMatrixMap& sum_Ll,
+			     IntRealMatrixMap& sum_Llm1,
+			     IntRealMatrixMap& sum_Hl,
+			     IntRealMatrixMap& sum_Hlm1,
+			     IntRealMatrixMap& sum_Ll_Ll,
+			     IntRealMatrixMap& sum_Ll_Llm1,
+			     IntRealMatrixMap& sum_Llm1_Llm1,
+			     IntRealMatrixMap& sum_Hl_Ll,
+			     IntRealMatrixMap& sum_Hl_Llm1,
+			     IntRealMatrixMap& sum_Hlm1_Ll,
+			     IntRealMatrixMap& sum_Hlm1_Llm1,
+			     IntRealMatrixMap& sum_Hl_Hl,
+			     IntRealMatrixMap& sum_Hl_Hlm1,
+			     IntRealMatrixMap& sum_Hlm1_Hlm1,
+			     const Sizet2DArray& N_shared, size_t num_cv_lev,
+			     RealVector2DArray& beta_2d,
+			     RealVector2DArray& gamma_2d);
+  /// compute control variate parameters for all QoI (given moment, level)
+  void compute_mlmf_controls(const Real* sum_Ll_m, const Real* sum_Llm1_m,
+			     const Real* sum_Hl_m, const Real* sum_Hlm1_m,
+			     const Real* sum_Ll_Ll_m, const Real* sum_Ll_Llm1_m,
+			     const Real* sum_Llm1_Llm1_m,
+			     const Real* sum_Hl_Ll_m,
+			     const Real* sum_Hl_Llm1_m,
+			     const Real* sum_Hlm1_Ll_m,
+			     const Real* sum_Hlm1_Llm1_m,
+			     const Real* sum_Hl_Hl_m,
+			     const Real* sum_Hl_Hlm1_m,
+			     const Real* sum_Hlm1_Hlm1_m,
+			     const SizetArray& N_shared,
+			     RealVector& beta_dot, RealVector& gamma);
   /// compute scalar control variate parameters
   void compute_mlmf_control(Real sum_Ll, Real sum_Llm1, Real sum_Hl,
 			    Real sum_Hlm1, Real sum_Ll_Ll, Real sum_Ll_Llm1,
@@ -192,50 +243,41 @@ private:
 			    Real sum_Hl_Hlm1, Real sum_Hlm1_Hlm1,
 			    size_t N_shared, Real& var_YHl, Real& rho_dot2_LH,
 			    Real& beta_dot, Real& gamma);
-  /// compute matrix control variate parameters
-  void compute_mlmf_control(const RealMatrix& sum_Ll,
-			    const RealMatrix& sum_Llm1,
-			    const RealMatrix& sum_Hl,
-			    const RealMatrix& sum_Hlm1,
-			    const RealMatrix& sum_Ll_Ll,
-			    const RealMatrix& sum_Ll_Llm1,
-			    const RealMatrix& sum_Llm1_Llm1,
-			    const RealMatrix& sum_Hl_Ll,
-			    const RealMatrix& sum_Hl_Llm1,
-			    const RealMatrix& sum_Hlm1_Ll,
-			    const RealMatrix& sum_Hlm1_Llm1,
-			    const RealMatrix& sum_Hl_Hl,
-			    const RealMatrix& sum_Hl_Hlm1,
-			    const RealMatrix& sum_Hlm1_Hlm1,
-			    const SizetArray& N_shared, size_t lev,
-			    RealVector& beta_dot, RealVector& gamma);
 
   /// apply scalar control variate parameter (beta) to approximate HF moment
   void apply_mf_control(Real sum_H, Real sum_L_shared, size_t N_shared,
 			Real sum_L_refined, size_t N_refined, Real beta,
 			Real& H_raw_mom);
   /// apply matrix control variate parameter (beta) to approximate HF moment
-  void apply_mf_control(const RealMatrix& sum_H, const RealMatrix& sum_L_shared,
-			const SizetArray& N_shared,
-			const RealMatrix& sum_L_refined,
-			const SizetArray& N_refined, size_t lev,
-			const RealVector& beta, RealMatrix& H_raw_mom,
-			int mom_index);
+  void apply_mf_controls(const Real* sum_H,           const Real* sum_L_shared,
+			 const SizetArray& N_shared,  const Real* sum_L_refined,
+			 const SizetArray& N_refined, const RealVector& beta,
+			 RealMatrix& H_raw_mom, int m_index);
 
+  /// apply control variate parameter (beta) for all moments, levels, qoi
+  void apply_mlmf_controls(IntRealMatrixMap& sum_Ll, IntRealMatrixMap& sum_Llm1,
+			   IntRealMatrixMap& sum_Hl, IntRealMatrixMap& sum_Hlm1,
+			   const Sizet2DArray& N_shared,
+			   IntRealMatrixMap& sum_Ll_refined,
+			   IntRealMatrixMap& sum_Llm1_refined,
+			   const Sizet2DArray& N_refined, size_t num_cv_lev,
+			   const RealVector2DArray& beta_2d,
+			   const RealVector2DArray& gamma_2d,
+			   RealMatrix& H_raw_mom);
+  /// apply control variate parameters for all QoI (given moment, level)
+  void apply_mlmf_controls(const Real* sum_Hl, const Real* sum_Hlm1,
+			   const Real* sum_Ll, const Real* sum_Llm1,
+			   const SizetArray& N_shared,
+			   const Real*   sum_Ll_refined,
+			   const Real* sum_Llm1_refined,
+			   const SizetArray& N_refined,
+			   const RealVector& beta_dot, const RealVector& gamma,
+			   RealMatrix& H_raw_mom, int m_index);
   /// apply scalar control variate parameter (beta) to approximate HF moment
   void apply_mlmf_control(Real sum_Hl, Real sum_Hlm1, Real sum_Ll,
 			  Real sum_Llm1, size_t N_shared, Real sum_Ll_refined,
 			  Real sum_Llm1_refined, size_t N_refined,
 			  Real beta_dot, Real gamma, Real& H_raw_mom);
-  /// apply matrix control variate parameter (beta) to approximate HF moment
-  void apply_mlmf_control(const RealMatrix& sum_Hl, const RealMatrix& sum_Hlm1,
-			  const RealMatrix& sum_Ll, const RealMatrix& sum_Llm1,
-			  const SizetArray& N_shared,
-			  const RealMatrix& sum_Ll_refined,
-			  const RealMatrix& sum_Llm1_refined,
-			  const SizetArray& N_refined, size_t lev,
-			  const RealVector& beta_dot, const RealVector& gamma,
-			  RealMatrix& H_raw_mom, int mom_index);
 
   /// for pilot projection mode, advance sample counts and accumulated cost
   void update_projected_samples(const RealVector& hf_targets,
@@ -257,18 +299,8 @@ private:
 
   /// initialize the MLMF accumulators for computing means, variances, and
   /// covariances across fidelity levels
-  void initialize_mlmf_sums(IntRealMatrixMap& sum_L_shared,
-			    IntRealMatrixMap& sum_L_refined,
-			    IntRealMatrixMap& sum_H,
-			    IntRealMatrixMap& sum_LL, IntRealMatrixMap& sum_LH,
-			    IntRealMatrixMap& sum_HH, size_t num_ml_lev,
-			    size_t num_cv_lev, size_t num_mom = 4);
-  /// initialize the MLMF accumulators for computing means, variances, and
-  /// covariances across fidelity levels
   void initialize_mlmf_sums(IntRealMatrixMap& sum_Ll,
 			    IntRealMatrixMap& sum_Llm1,
-			    IntRealMatrixMap& sum_Ll_refined,
-			    IntRealMatrixMap& sum_Llm1_refined,
 			    IntRealMatrixMap& sum_Hl,
 			    IntRealMatrixMap& sum_Hlm1,
 			    IntRealMatrixMap& sum_Ll_Ll,
@@ -283,35 +315,22 @@ private:
 			    IntRealMatrixMap& sum_Hlm1_Hlm1,
 			    size_t num_ml_lev, size_t num_cv_lev,
 			    size_t num_mom = 4);
+  /*
+  /// initialize the MLMF accumulators for computing means, variances, and
+  /// covariances across fidelity levels
+  void initialize_mlmf_sums(IntRealMatrixMap& sum_L_shared,
+			    IntRealMatrixMap& sum_L_refined,
+			    IntRealMatrixMap& sum_H,
+			    IntRealMatrixMap& sum_LL, IntRealMatrixMap& sum_LH,
+			    IntRealMatrixMap& sum_HH, size_t num_ml_lev,
+			    size_t num_cv_lev, size_t num_mom = 4);
+  */
 
-  /// update running QoI sums for one model at two levels (sum_Ql, sum_Qlm1)
-  /// using set of model evaluations within allResponses
-  void accumulate_mlmf_Qsums(const IntResponseMap& resp_map,
-			     IntRealMatrixMap& sum_Ql,
-			     IntRealMatrixMap& sum_Qlm1, size_t lev,
-			     SizetArray& num_Q);
   // update running discrepancy sums for one model (sum_Y) using
   // set of model evaluations within allResponses
   //void accumulate_mlmf_Ysums(const IntResponseMap& resp_map,
   // 			     IntRealMatrixMap& sum_Y, size_t lev,
   // 			     SizetArray& num_Y);
-  /// update running QoI sums for two models (sum_L, sum_H, sum_LL, sum_LH,
-  /// and sum_HH) from set of low/high fidelity model evaluations within
-  /// mlmf_resp_map; used for level 0 from other accumulators
-  void accumulate_mlmf_Qsums(const IntResponseMap& mlmf_resp_map,
-			     IntRealMatrixMap& sum_L_shared,
-			     IntRealMatrixMap& sum_L_refined,
-			     IntRealMatrixMap& sum_H,  IntRealMatrixMap& sum_LL,
-			     IntRealMatrixMap& sum_LH, IntRealMatrixMap& sum_HH,
-			     size_t lev, SizetArray& num_L, SizetArray& num_H);
-  /// update running QoI sums for two models (sum_L, sum_H, sum_LL, sum_LH,
-  /// and sum_HH) from set of low/high fidelity model evaluations within
-  /// mlmf_resp_map; used for level 0 from other accumulators
-  void accumulate_mlmf_Qsums(const IntResponseMap& mlmf_resp_map,
-			     RealMatrix& sum_L_shared,RealMatrix& sum_L_refined,
-			     IntRealMatrixMap& sum_H,  RealMatrix& sum_LL,
-			     RealMatrix& sum_LH, RealMatrix& sum_HH,
-			     size_t lev, SizetArray& N_shared);
   // update running two-level discrepancy sums for two models (sum_L,
   // sum_H, sum_LL, sum_LH, and sum_HH) from set of low/high fidelity
   // model evaluations within mlmf_resp_map
@@ -321,13 +340,27 @@ private:
   // 			     IntRealMatrixMap& sum_H,  IntRealMatrixMap& sum_LL,
   // 			     IntRealMatrixMap& sum_LH, IntRealMatrixMap& sum_HH,
   // 			     size_t lev, SizetArray& num_L, SizetArray& num_H);
+
+  // Maps:
+  /// update running QoI sums for one model at two levels (sum_Ql, sum_Qlm1)
+  /// using set of model evaluations within allResponses
+  void accumulate_mlmf_Qsums(const IntResponseMap& resp_map,
+			     IntRealMatrixMap& sum_Ql,
+			     IntRealMatrixMap& sum_Qlm1, size_t lev,
+			     SizetArray& num_Q);
+  /// update running QoI sums for two models (sum_L, sum_H, sum_LL, sum_LH,
+  /// and sum_HH) from set of low/high fidelity model evaluations within
+  /// mlmf_resp_map; used for level 0 from other accumulators
+  void accumulate_mlmf_Qsums(const IntResponseMap& mlmf_resp_map,
+			     IntRealMatrixMap& sum_L_shared,
+			     IntRealMatrixMap& sum_H,  IntRealMatrixMap& sum_LL,
+			     IntRealMatrixMap& sum_LH, IntRealMatrixMap& sum_HH,
+			     size_t lev, SizetArray& N_shared);
   /// update running QoI sums for two models and two levels from set
   /// of low/high fidelity model evaluations within mlmf_resp_map
   void accumulate_mlmf_Qsums(const IntResponseMap& mlmf_resp_map,
 			     IntRealMatrixMap& sum_Ll,
 			     IntRealMatrixMap& sum_Llm1,
-			     IntRealMatrixMap& sum_Ll_refined,
-			     IntRealMatrixMap& sum_Llm1_refined,
 			     IntRealMatrixMap& sum_Hl,
 			     IntRealMatrixMap& sum_Hlm1,
 			     IntRealMatrixMap& sum_Ll_Ll,
@@ -340,14 +373,22 @@ private:
 			     IntRealMatrixMap& sum_Hl_Hl,
 			     IntRealMatrixMap& sum_Hl_Hlm1,
 			     IntRealMatrixMap& sum_Hlm1_Hlm1, size_t lev,
-			     SizetArray& num_L, SizetArray& num_H);
+			     SizetArray& N_shared);
+
+  // Matrices:
+  /// update running QoI sums for two models (sum_L, sum_H, sum_LL, sum_LH,
+  /// and sum_HH) from set of low/high fidelity model evaluations within
+  /// mlmf_resp_map; used for level 0 from other accumulators
+  void accumulate_mlmf_Qsums(const IntResponseMap& mlmf_resp_map,
+			     RealMatrix& sum_L_shared, IntRealMatrixMap& sum_H,
+			     RealMatrix& sum_LL, RealMatrix& sum_LH,
+			     RealMatrix& sum_HH, size_t lev,
+			     SizetArray& N_shared);
   /// update running QoI sums for two models and two levels from set
   /// of low/high fidelity model evaluations within mlmf_resp_map
   void accumulate_mlmf_Qsums(const IntResponseMap& mlmf_resp_map,
 			     RealMatrix& sum_Ll,
 			     RealMatrix& sum_Llm1,
-			     RealMatrix& sum_Ll_refined,
-			     RealMatrix& sum_Llm1_refined,
 			     IntRealMatrixMap& sum_Hl,
 			     IntRealMatrixMap& sum_Hlm1,
 			     RealMatrix& sum_Ll_Ll,
@@ -463,57 +504,14 @@ compute_mf_correlation(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
 
 
 inline void NonDMultilevControlVarSampling::
-compute_mlmf_control(const RealMatrix& sum_Ll, const RealMatrix& sum_Llm1,
-		     const RealMatrix& sum_Hl, const RealMatrix& sum_Hlm1,
-		     const RealMatrix& sum_Ll_Ll, const RealMatrix& sum_Ll_Llm1,
-		     const RealMatrix& sum_Llm1_Llm1,
-		     const RealMatrix& sum_Hl_Ll, const RealMatrix& sum_Hl_Llm1,
-		     const RealMatrix& sum_Hlm1_Ll,
-		     const RealMatrix& sum_Hlm1_Llm1,
-		     const RealMatrix& sum_Hl_Hl, const RealMatrix& sum_Hl_Hlm1,
-		     const RealMatrix& sum_Hlm1_Hlm1,
-		     const SizetArray& N_shared, size_t lev,
-		     RealVector& beta_dot, RealVector& gamma)
-{
-  Real var_YHl, rho_dot2_LH; // not needed for this context
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    compute_mlmf_control(sum_Ll(qoi,lev), sum_Llm1(qoi,lev), sum_Hl(qoi,lev),
-			 sum_Hlm1(qoi,lev), sum_Ll_Ll(qoi,lev),
-			 sum_Ll_Llm1(qoi,lev), sum_Llm1_Llm1(qoi,lev),
-			 sum_Hl_Ll(qoi,lev), sum_Hl_Llm1(qoi,lev),
-			 sum_Hlm1_Ll(qoi,lev), sum_Hlm1_Llm1(qoi,lev),
-			 sum_Hl_Hl(qoi,lev), sum_Hl_Hlm1(qoi,lev),
-			 sum_Hlm1_Hlm1(qoi,lev), N_shared[qoi], var_YHl,
-			 rho_dot2_LH, beta_dot[qoi], gamma[qoi]);
-}
-
-
-inline void NonDMultilevControlVarSampling::
 apply_mf_control(Real sum_H, Real sum_L_shared, size_t N_shared,
 		 Real sum_L_refined, size_t N_refined, Real beta,
 		 Real& H_raw_mom)
 {
   // apply control for HF uncentered raw moment estimates:
-  H_raw_mom = sum_H / N_shared                    // mu_H from shared samples
-            - beta * (sum_L_shared  / N_shared -  // mu_L from shared samples
-		      sum_L_refined / N_refined); // refined_mu_L incl increment
-}
-
-
-inline void NonDMultilevControlVarSampling::
-apply_mf_control(const RealMatrix& sum_H,    const RealMatrix& sum_L_shared,
-		 const SizetArray& N_shared, const RealMatrix& sum_L_refined,
-		 const SizetArray& N_refined, size_t lev,
-		 const RealVector& beta, RealMatrix& H_raw_mom, int mom_index)
-{
-  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    Cout << "   QoI " << qoi+1 << ": control variate beta = "
-	 << std::setw(9) << beta[qoi] << '\n';
-    apply_mf_control(sum_H(qoi,lev), sum_L_shared(qoi,lev), N_shared[qoi],
-		     sum_L_refined(qoi,lev), N_refined[qoi], beta[qoi],
-		     H_raw_mom(mom_index, qoi));
-  }
-  if (numFunctions > 1) Cout << '\n';
+  H_raw_mom += sum_H / N_shared                   // mu_H from shared samples
+             - beta * (sum_L_shared  / N_shared - // mu_L from shared samples
+		       sum_L_refined / N_refined);// refined_mu_L incl increment
 }
 
 
@@ -533,29 +531,7 @@ apply_mlmf_control(Real sum_Hl, Real sum_Hlm1, Real sum_Ll, Real sum_Llm1,
   Real mu_YH            = mu_Hl - mu_Hlm1;
   Real mu_YLdot         = gamma *         mu_Ll -         mu_Llm1;
   Real refined_mu_YLdot = gamma * refined_mu_Ll - refined_mu_Llm1;
-  H_raw_mom             = mu_YH - beta_dot * (mu_YLdot - refined_mu_YLdot);
-}
-
-
-inline void NonDMultilevControlVarSampling::
-apply_mlmf_control(const RealMatrix& sum_Hl, const RealMatrix& sum_Hlm1,
-		   const RealMatrix& sum_Ll, const RealMatrix& sum_Llm1,
-		   const SizetArray& N_shared, const RealMatrix& sum_Ll_refined,
-		   const RealMatrix& sum_Llm1_refined,
-		   const SizetArray& N_refined, size_t lev,
-		   const RealVector& beta_dot, const RealVector& gamma,
-		   RealMatrix& H_raw_mom, int mom_index)
-{
-  for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    Cout << "   QoI " << qoi+1 << ": control variate beta_dot = "
-	 << std::setw(9) << beta_dot[qoi] << '\n';
-    apply_mlmf_control(sum_Hl(qoi,lev), sum_Hlm1(qoi,lev), sum_Ll(qoi,lev),
-		       sum_Llm1(qoi,lev), N_shared[qoi],
-		       sum_Ll_refined(qoi,lev), sum_Llm1_refined(qoi,lev),
-		       N_refined[qoi], beta_dot[qoi], gamma[qoi],
-		       H_raw_mom(mom_index, qoi));
-  }
-  if (numFunctions > 1) Cout << '\n';
+  H_raw_mom            += mu_YH - beta_dot * (mu_YLdot - refined_mu_YLdot);
 }
 
 } // namespace Dakota

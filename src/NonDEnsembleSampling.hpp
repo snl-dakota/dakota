@@ -131,15 +131,21 @@ protected:
   /// compute scalar control variate parameters
   void compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
 			  size_t N_shared, Real& beta);
-  /// compute matrix control variate parameters
-  void compute_mf_control(const RealMatrix& sum_L,  const RealMatrix& sum_H,
-			  const RealMatrix& sum_LL, const RealMatrix& sum_LH,
-			  const SizetArray& N_shared, size_t lev,
-			  RealVector& beta);
-  /// compute vector control variate parameters
-  void compute_mf_control(const RealVector& sum_L, const RealVector& sum_H,
-			  const RealVector& sum_LL, const RealVector& sum_LH,
-			  const SizetArray& N_shared, RealVector& beta);
+  /// compute control variate parameters for pointer
+  void compute_mf_controls(const Real* sum_L, const Real* sum_H,
+			   const Real* sum_LL, const Real* sum_LH,
+			   const SizetArray& N_shared, RealVector& beta);
+  /*
+  /// compute control variate parameters for vector
+  void compute_mf_controls(const RealVector& sum_L, const RealVector& sum_H,
+			   const RealVector& sum_LL, const RealVector& sum_LH,
+			   const SizetArray& N_shared, RealVector& beta);
+  /// compute control variate parameters for matrix
+  void compute_mf_controls(const RealMatrix& sum_L,  const RealMatrix& sum_H,
+			   const RealMatrix& sum_LL, const RealMatrix& sum_LH,
+			   const SizetArray& N_shared, size_t lev,
+			   RealVector& beta);
+  */
 
   /// export allSamples to tagged tabular file
   void export_all_samples(const Model& model, const String& tabular_filename);
@@ -580,9 +586,21 @@ compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
 
 
 inline void NonDEnsembleSampling::
-compute_mf_control(const RealVector& sum_L, const RealVector& sum_H,
-		   const RealVector& sum_LL, const RealVector& sum_LH,
-		   const SizetArray& N_shared, RealVector& beta)
+compute_mf_controls(const Real* sum_L, const Real* sum_H, const Real* sum_LL,
+		    const Real* sum_LH, const SizetArray& N_shared,
+		    RealVector& beta)
+{
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    compute_mf_control(sum_L[qoi], sum_H[qoi], sum_LL[qoi], sum_LH[qoi],
+		       N_shared[qoi], beta[qoi]);
+}
+
+
+/*
+inline void NonDEnsembleSampling::
+compute_mf_controls(const RealVector& sum_L, const RealVector& sum_H,
+		    const RealVector& sum_LL, const RealVector& sum_LH,
+		    const SizetArray& N_shared, RealVector& beta)
 {
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     compute_mf_control(sum_L[qoi], sum_H[qoi], sum_LL[qoi], sum_LH[qoi],
@@ -591,14 +609,15 @@ compute_mf_control(const RealVector& sum_L, const RealVector& sum_H,
 
 
 inline void NonDEnsembleSampling::
-compute_mf_control(const RealMatrix& sum_L,  const RealMatrix& sum_H,
-		   const RealMatrix& sum_LL, const RealMatrix& sum_LH,
-		   const SizetArray& N_shared, size_t lev, RealVector& beta)
+compute_mf_controls(const RealMatrix& sum_L,  const RealMatrix& sum_H,
+		    const RealMatrix& sum_LL, const RealMatrix& sum_LH,
+		    const SizetArray& N_shared, size_t lev, RealVector& beta)
 {
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     compute_mf_control(sum_L(qoi,lev), sum_H(qoi,lev), sum_LL(qoi,lev),
 		       sum_LH(qoi,lev), N_shared[qoi], beta[qoi]);
 }
+*/
 
 
 inline void NonDEnsembleSampling::

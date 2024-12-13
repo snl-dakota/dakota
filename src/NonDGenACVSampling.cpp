@@ -652,9 +652,10 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
 	// sample set definitions are enabled by reversing the DAG direction:
 	const UShortArray& active_dag = *activeDAGIter;
 	soln_key.second  = active_dag;
-	if (outputLevel >= QUIET_OUTPUT)
-	  Cout << "Evaluating active DAG:\n" << active_dag
-	       << "for approximation set:\n" << approx_set << std::endl;
+	if (outputLevel >= QUIET_OUTPUT) {
+	  Cout << "Evaluating active DAG:\n";
+	  print_dag(active_dag, approx_set);
+	}
 	generate_reverse_dag(approx_set, active_dag);
 	// Use default ordering in root list, prior to final eval ratios soln.
 	// Sufficient for finding best DAG, but not for approx_increments().
@@ -739,9 +740,10 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
       // sample set definitions are enabled by reversing the DAG direction:
       const UShortArray& active_dag = *activeDAGIter;
       soln_key.second  = active_dag;
-      if (outputLevel >= QUIET_OUTPUT)
-	Cout << "Evaluating active DAG:\n" << active_dag
-	     << "for approximation set:\n" << approx_set << std::endl;
+      if (outputLevel >= QUIET_OUTPUT) {
+	Cout << "Evaluating active DAG:\n";
+	print_dag(active_dag, approx_set);
+      }
       generate_reverse_dag(approx_set, active_dag);
       // Use default ordering in root list, prior to final eval ratios soln.
       // Sufficient for finding best DAG, but not for approx_increments().
@@ -840,8 +842,10 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
       // sample set definitions are enabled by reversing the DAG direction:
       const UShortArray& active_dag = *activeDAGIter;
       soln_key.second  = active_dag;
-      if (outputLevel >= QUIET_OUTPUT)
-	Cout << "Evaluating active DAG:\n" << active_dag << std::endl;
+      if (outputLevel >= QUIET_OUTPUT) {
+	Cout << "Evaluating active DAG:\n";
+	print_dag(active_dag, approx_set);
+      }
       generate_reverse_dag(approx_set, active_dag);
       // Use default ordering in root list, prior to final eval ratios soln.
       // Sufficient for finding best DAG, but not for approx_increments().
@@ -2017,9 +2021,10 @@ void NonDGenACVSampling::compute_parameterized_G_g(const RealVector& N_vec)
   //Cout << "Full G matrix:\n" << FGMat << "g vector:\n" << gVec << std::endl;
   //exit(0);
 
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "For dag:\n"  << active_dag  << "G matrix:\n" << GMat
-	 << "g vector:\n" << gVec << std::endl;
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Cout << "For dag:\n"; print_dag(active_dag, approx_set);
+    Cout << "G matrix:\n" << GMat << "g vector:\n" << gVec << std::endl;
+  }
 }
 
 
@@ -2101,9 +2106,10 @@ void NonDGenACVSampling::update_best(MFSolutionData& soln)
     bestModelSetIter = activeModelSetIter;
     bestDAGIter      = activeDAGIter;
     meritFnStar      = merit_fn;
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Updating best DAG to:\n" << *bestDAGIter << "for approximation "
-	   << "set:\n" << activeModelSetIter->first << std::endl;
+    if (outputLevel >= DEBUG_OUTPUT) {
+      Cout << "Updating best DAG to:\n";
+      print_dag(*bestDAGIter, bestModelSetIter->first);
+    }
   }
 }
 
@@ -2120,8 +2126,7 @@ void NonDGenACVSampling::restore_best()
 
   const UShortArray& best_models = bestModelSetIter->first;
   const UShortArray& best_dag    = *bestDAGIter;
-  Cout << "\nBest solution from DAG:\n" << best_dag
-       << "for approximation set:\n" << best_models << std::endl;
+  Cout << "\nBest solution from DAG:\n";  print_dag(best_dag, best_models);
   std::pair<UShortArray, UShortArray> soln_key(best_models, best_dag);
   MFSolutionData& best_soln = dagSolns[soln_key];
   if (outputLevel >= DEBUG_OUTPUT)

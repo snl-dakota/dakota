@@ -150,9 +150,6 @@ private:
 		      const Sizet2DArray& num_L_refined,
 		      const SizetArray& num_H, RealMatrix& H_raw_mom);
 
-  //void compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
-  //			  size_t num_L, size_t num_H, size_t num_LH,Real& beta);
-
   void update_projected_lf_samples(const MFSolutionData& soln,
 				   const SizetArray& N_H_actual,
 				   size_t& N_H_alloc,
@@ -249,34 +246,6 @@ matrix_to_diagonal_array(const RealMatrix& var_L, RealSymMatrixArray& cov_LL)
       cov_LL_q(approx,approx) = var_L(qoi,approx);
   }
 }
-
-
-/* Not active.  See notes in NonDNonHierarchSampling::compute_correlation()
-inline void NonDMultifidelitySampling::
-compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
-		   size_t num_L, size_t num_H, size_t num_LH, Real& beta)
-{
-  // unbiased mean estimator X-bar = 1/N * sum
-  // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
-
-  // beta^* = rho_LH sigma_H / sigma_L (same expression as two model case)
-  //        = cov_LH / var_L  (since rho_LH = cov_LH / sigma_H / sigma_L)
-
-  Real mu_L = sum_L / num_L;
-  if (num_L != num_LH || num_H != num_LH) {
-    Real mu_H = sum_H / num_H,
-      var_L  = (sum_LL - mu_L * sum_L) / (Real)(num_L - 1), // bessel corr for L
-    //var_H  = (sum_HH - mu_H * sum_H) / (Real)(num_H - 1), // bessel corr for H
-      cov_LH = (sum_LH - mu_L * mu_H * num_LH) / (Real)(num_LH - 1);// bessel LH
-    beta = cov_LH / var_L;
-  }
-  else // simplify: cancel shared terms
-    beta = (sum_LH - mu_L * sum_H) / (sum_LL - mu_L * sum_L);
-
-  //Cout << "compute_mf_control: num_L = " << num_L << " num_H = " << num_H
-  //     << " num_LH = " << num_LH << " beta = " << beta;
-}
-*/
 
 } // namespace Dakota
 
