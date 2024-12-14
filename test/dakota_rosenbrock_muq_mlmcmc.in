@@ -1,0 +1,57 @@
+#@ *: DakotaConfig=HAVE_MUQ
+
+environment,
+  tabular_data
+
+method,
+  bayes_calibration muq
+  multilevel_mcmc
+    initial_chain_samples = 50
+    target_variance = 0.5
+    subsampling_steps = 12 0
+    greedy_resampling_factor = 0.5
+  proposal_covariance
+    prior
+  seed = 457337
+  model_pointer = 'NONHIER'
+  chain_samples = 1 # not used by muq mlmcmc because of the target_variance
+  export_chain_points_file 'my_chain_samples'
+  output debug
+
+model,
+  id_model = 'NONHIER'
+  surrogate ensemble
+  truth_model = 'HF'
+
+model,
+  id_model = 'HF'
+  simulation
+  solution_level_control = 'level'
+  solution_level_cost = 1 1
+
+variables,
+  uniform_uncertain 2
+	  descriptors  'x1' 'x2'
+	  lower_bounds  -2. -2.
+	  upper_bounds   2.  2.
+	  initial_point -1. 0.9
+ discrete_state_set
+   integer = 1
+      descriptors = 'level'
+      set_values = 0 1
+
+interface,
+  analysis_drivers 'dakota_rosenbrock_muq_mlcmc_driver.py'
+    fork
+    parameters_file 'params.in'
+    results_file 'results.out'
+
+responses,
+  calibration_terms = 2
+    calibration_data_file = 'dakota_rosenbrock_muq_mcmcm.withsigma.dat'
+      freeform
+      num_experiments = 1
+      variance_type = 'scalar'
+    descriptors 'f1' 'f2'
+    no_gradients
+    no_hessians

@@ -6029,6 +6029,13 @@ KEYWORD method {N_mdm3(start,0,stop)}
           [ adapt_scale REAL {N_mdm(Real,amScale)} ]
          )
         |
+        ( multilevel_mcmc {N_mdm(lit,mcmcType_multilevel_mcmc)}
+          [ initial_chain_samples INTEGER {N_mdm(int,mlmcmcInitialChainSamples)} ]
+          target_variance REAL {N_mdm(Real,mlmcmcTargetVariance)}
+          [ greedy_resampling_factor REAL {N_mdm(Real,mlmcmcGreedyResamplingFactor)} ]
+          [ subsampling_steps INTEGERLIST {N_mdm(ivec,mlmcmcSubsamplingSteps)} ]
+         )
+        |
         ( mala {N_mdm(lit,mcmcType_mala)}
           [ step_size REAL {N_mdm(Real,malaStepSize)} ]
          )

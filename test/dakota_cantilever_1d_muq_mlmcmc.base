@@ -1,0 +1,18 @@
+<<<<< Function evaluation summary: 756 total (617 new, 139 duplicate)
+              d: 756 val (617 n, 139 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      6.9795797242e+10 E
+<<<<< Best misfit              =
+                      7.5755004264e-04
+<<<<< Best log prior           =
+                     -2.6937873935e+01
+<<<<< Best log posterior       =
+                     -2.0949814740e+01
+
+Sample moment statistics for each posterior variable:
+                            Mean           Std Dev          Skewness          Kurtosis
+             E  7.3683759760e+10  9.2438970134e+09  7.8313371028e-01  5.2517806663e+00
+
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+           d_1  8.5281874050e-03  1.1633329445e-03  2.5011269984e+00  1.6710608395e+01

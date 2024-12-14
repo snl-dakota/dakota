@@ -15,15 +15,13 @@
 #include "WorkdirHelper.hpp"
 
 #include "MUQ/Modeling/WorkGraphPiece.h"
-#include "MUQ/Modeling/ModGraphPiece.h"
 #include "MUQ/Utilities/RandomGenerator.h"
 #include "MUQ/Utilities/AnyHelpers.h"
-#include "MUQ/SamplingAlgorithms/MHProposal.h"
-#include "MUQ/SamplingAlgorithms/AMProposal.h"
 #include "MUQ/SamplingAlgorithms/MHKernel.h"
 #include "MUQ/SamplingAlgorithms/DRKernel.h"
 #include "MUQ/SamplingAlgorithms/MALAProposal.h"
 #include "MUQ/SamplingAlgorithms/DILIKernel.h"
+#include "MUQ/SamplingAlgorithms/Diagnostics.h"
 
 #include <boost/property_tree/ptree.hpp>
 
@@ -35,8 +33,8 @@ extern PRPCache data_pairs; // global container
 // initialization of statics, not being used yet
 NonDMUQBayesCalibration* NonDMUQBayesCalibration::nonDMUQInstance(NULL);
 
-/** This constructor is called for a standard letter-envelope iterator 
-    instantiation.  In this case, set_db_list_nodes has been called and 
+/** This constructor is called for a standard letter-envelope iterator
+    instantiation.  In this case, set_db_list_nodes has been called and
     probDescDB can be queried for settings from the method specification. */
 NonDMUQBayesCalibration::
 NonDMUQBayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
@@ -63,7 +61,11 @@ NonDMUQBayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model)
   diliSesAbsTol(probDescDB.get_real("method.nond.dili_ses_abs_tol")),
   diliSesExpRank(probDescDB.get_int("method.nond.dili_ses_exp_rank")),
   diliSesOversFactor(probDescDB.get_int("method.nond.dili_ses_overs_factor")),
-  diliSesBlockSize(probDescDB.get_int("method.nond.dili_ses_block_size"))
+  diliSesBlockSize(probDescDB.get_int("method.nond.dili_ses_block_size")),
+  mlmcmcInitialNumSamples(probDescDB.get_int("method.nond.mlmcmc_initial_chain_samples")),
+  mlmcmcTargetVariance(probDescDB.get_real("method.nond.mlmcmc_target_variance")),
+  mlmcmcSubsamplingSteps(probDescDB.get_iv("method.nond.mlmcmc_subsampling_steps")),
+  mlmcmcGreedyResamplingFactor(probDescDB.get_real("method.nond.mlmcmc_greedy_resampling_factor"))
 {
   // MUQ does not yet support hyper-parameter multiplier calibration
   if(numHyperparams != 0) {
@@ -78,7 +80,7 @@ NonDMUQBayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model)
     const String & grad_type  = residualModel->gradient_type();
     const String & method_src = residualModel->method_source();
     if (( grad_type == "analytic" ) ||
-        ( grad_type == "mixed"    ) || 
+        ( grad_type == "mixed"    ) ||
         ( grad_type == "numerical" && method_src == "dakota" )) {
       // Ok
     }
@@ -130,12 +132,50 @@ NonDMUQBayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model)
       abort_handler(METHOD_ERROR);
     }
   }
-}
 
+  if (mcmcType == "multilevel_mcmc"){
+    Cout << "=====================================" << '\n';
+    Cout << "******* MUQ MLMCMC constructor ******" << '\n';
+    Cout << "=====================================" << '\n';
+
+    // first, make sure the numbers of levels set by the user is consistent
+    // across all parameters that should be set per level
+    const int numSolutionLevels = iteratedModel->truth_model()->solution_levels();
+    const int numLevelsFromSubsampSteps = mlmcmcSubsamplingSteps.length();
+    if (numSolutionLevels != numLevelsFromSubsampSteps){
+      Cerr << "\nError: NonDMUQBayesCalibration::constructor(): multilevel_mcmc: "
+           << "found " << numSolutionLevels << " solution controls, "
+           << "but the number of entries for the subsampling_steps = " << numLevelsFromSubsampSteps << ". "
+           << "subsampling_steps must have as many entries as number of levels."
+           << '\n';
+      abort_handler(METHOD_ERROR);
+    }
+
+    mlmcmcNumLevels = numSolutionLevels;
+
+    // problem specific, so not really a good default value
+    // for 1d maybe fewer , so large d maybe we need more to start with
+    Cout << "mlmcmcInitialNumSamples = " << mlmcmcInitialNumSamples << '\n';
+
+    // this is p depenent, and it is dimensional, so base on maybe the initail value of the calibration params
+    Cout << "mlmcmcTargetVariance    = " << mlmcmcTargetVariance << '\n';
+
+    // use same coarse proposal and run mcmc for a bit and integrated autocorr time
+    // so that one knows how many samples to run to get uncorrelated
+    Cout << "mlmcmcSubsamplingSteps  = " << mlmcmcSubsamplingSteps << '\n';
+
+    // in greedy we recomp variances at all the time
+    // this is to avoid recomputing variances all the time or too frequently, 0.5 default
+    Cout << "mlmcmcGreedyResamplingFactor = " << mlmcmcGreedyResamplingFactor << '\n';
+
+    Cout << "numContinuousVars = " << numContinuousVars << "\n";
+    Cout << "mlmcmcNumLevels   = " << mlmcmcNumLevels << "\n";
+    Cout << "=====================================" << '\n';
+  }
+}
 
 NonDMUQBayesCalibration::~NonDMUQBayesCalibration()
 { }
-
 
 double MUQLikelihood::LogDensityImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs) {
   // Extract parameter vector from MUQ's inputs vector
@@ -156,7 +196,7 @@ double MUQLikelihood::LogDensityImpl(muq::Modeling::ref_vector<Eigen::VectorXd> 
   
   const RealVector& residuals = nonDMUQInstancePtr->residualModel->current_response().function_values();
   double log_like = nonDMUQInstancePtr->log_likelihood(residuals, all_params);
-  
+
   if (nonDMUQInstancePtr->outputLevel >= DEBUG_OUTPUT) {
     Cout << "Log likelihood is " << log_like << " Likelihood is "
          << std::exp(log_like) << '\n';
@@ -165,7 +205,7 @@ double MUQLikelihood::LogDensityImpl(muq::Modeling::ref_vector<Eigen::VectorXd> 
     LogLikeOutput.open("NonDMUQLogLike.txt", std::ios::out | std::ios::app);
     // Note: parameter values are in scaled space, if scaling is
     // active; residuals may be scaled by covariance
-    size_t num_total_params = nonDMUQInstancePtr->numContinuousVars + nonDMUQInstancePtr->numHyperparams; 
+    size_t num_total_params = nonDMUQInstancePtr->numContinuousVars + nonDMUQInstancePtr->numHyperparams;
     for (size_t i(0); i < num_total_params; ++i)
       LogLikeOutput << c_vars[i] << ' ' ;
     for (size_t i(0); i < residuals.length(); ++i)
@@ -272,12 +312,26 @@ void NonDMUQBayesCalibration::specify_prior()
 
 void NonDMUQBayesCalibration::specify_likelihood()
 {
+  // for mlmcmc we use a different likelihood
   Eigen::VectorXi input_sizes(1);
   input_sizes(0) = numContinuousVars;
   MUQLikelihoodPtr = std::make_shared<MUQLikelihood>(nonDMUQInstance, input_sizes);
 }
 
-void NonDMUQBayesCalibration::init_bayesian_solver()
+void NonDMUQBayesCalibration::specify_posterior()
+{
+  posteriorPtr = std::make_shared<muq::Modeling::DensityProduct>(2);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+//
+//
+//                            INIT BAYESIAN SOLVER METHODS
+//
+//
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+void NonDMUQBayesCalibration::init_bayesian_solver_single_chain()
 {
   init_proposal_covariance();
 
@@ -422,7 +476,7 @@ void NonDMUQBayesCalibration::init_bayesian_solver()
 
   Eigen::VectorXd propMu = Eigen::VectorXd::Zero(numContinuousVars);
   auto propDist = std::make_shared<muq::Modeling::Gaussian>(propMu, proposalCovMatrix);
-  
+
   // Use the Gaussian proposal distribution to define an MCMC proposal class
   std::shared_ptr<muq::SamplingAlgorithms::MCMCProposal> proposal;
   if (mcmcType == "metropolis_hastings" || mcmcType == "delayed_rejection") {
@@ -470,16 +524,58 @@ void NonDMUQBayesCalibration::init_bayesian_solver()
   mcmc = std::make_shared<muq::SamplingAlgorithms::SingleChainMCMC>(pt,kernels);
 }
 
-
-void NonDMUQBayesCalibration::specify_posterior()
+void NonDMUQBayesCalibration::init_bayesian_solver_mlmcmc()
 {
-  posteriorPtr = std::make_shared<muq::Modeling::DensityProduct>(2);
+  init_proposal_covariance();
+  parameterPtr = std::make_shared<muq::Modeling::IdentityOperator>(numContinuousVars);
+
+  boost::property_tree::ptree options;
+  // number of initial samples for greedy MLMCMC
+  options.put("NumInitialSamples", mlmcmcInitialNumSamples);
+
+  // set the estimator variance to be achieved by greedy algorithm
+  // 13 Dec. 2024: FRIZZI: there is a bug in MUQ in the impl of the Greedy mcmc.
+  // The check for convergence of the multilevel estimator is in fact performed as:
+  //    if (var_mle <= std::pow(e,2))
+  // where "e" is the tolerance to use, which is taken from options.put("GreedyTargetVariance").
+  // Since "e" is actually squared in MUQ, "e" should not be a "variance" but a std deviation.
+  // Until that bug is fixed in MUQ, we can just keep the correct name here
+  // and do the following trick so that the result is what we actually want.
+  const double mlmcmcTargetStdDev = std::sqrt(mlmcmcTargetVariance);
+  options.put("GreedyTargetVariance",  mlmcmcTargetStdDev);
+
+  options.put("verbosity", 1);
+
+  // set the subsampling
+  for (int level=0; level<mlmcmcNumLevels; ++level){
+    std::string tmp = "MLMCMC.Subsampling_" + std::to_string(level);
+    options.put(std::move(tmp), mlmcmcSubsamplingSteps[level]);
+  }
+
+  const RealVector& init_point_from_file = ModelUtils::continuous_variables(*nonDMUQInstance->mcmcModel);
+  mlmcmcCompFactory = std::make_shared<MLMCMCComponentFactory>(
+          options, mlmcmcNumLevels, numContinuousVars, init_point_from_file, nonDMUQInstance);
+  mlmcmcGreedy = std::make_shared<muq::SamplingAlgorithms::GreedyMLMCMC>(options, mlmcmcCompFactory);
 }
 
+void NonDMUQBayesCalibration::init_bayesian_solver(){
+  if ( mcmcType == "multilevel_mcmc") {
+    init_bayesian_solver_mlmcmc();
+  }
+  else{
+    init_bayesian_solver_single_chain();
+  }
+}
 
+//////////////////////////////////////////////////////////////////////////////////////////////
+//
+//
+//                                CALIBRATE METHODS
+//
+//
+//////////////////////////////////////////////////////////////////////////////////////////////
 
-/** Perform the uncertainty quantification */
-void NonDMUQBayesCalibration::calibrate()
+void NonDMUQBayesCalibration::calibrate_single_chain()
 {
   const int N =  (chainSamples > 0) ? chainSamples : 1000;
   const size_t &num_cv = numContinuousVars;
@@ -524,6 +620,68 @@ void NonDMUQBayesCalibration::calibrate()
   // compute_statistics();
 }
 
+
+void NonDMUQBayesCalibration::calibrate_mlmcmc()
+{
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Cout << "***************************\n";
+    Cout << "calibrate_mlmcmc: starting \n";
+    Cout << "***************************\n";
+  }
+
+  // set seed so that we have reproducibility for tests
+  muq::Utilities::RandomGenerator::SetSeed(randomSeed);
+
+  // run the actual mlmcmc
+  auto estimator = mlmcmcGreedy->Run();
+
+  // print telescopic stats
+  Cout << "\n=============================\n";
+  Cout << "Multilevel Summary: \n";
+  Cout << "-----------------------------\n";
+  Cout << " Mean    : " << estimator->Mean().transpose() << std::endl;
+  Cout << " Variance: " << estimator->Variance().transpose() << std::endl;
+  Cout << " MCSE    : " << estimator->StandardError().transpose() << std::endl;
+  Cout << " ESS     : " << estimator->ESS().transpose() << std::endl;
+
+  // get the chain ONLY at the finest level and write that
+  // FRizzi: maybe we will want to output the chain at each level?
+  auto boxes = mlmcmcGreedy->GetBoxes();
+  samps = boxes[boxes.size()-1]->FinestChain()->GetSamples();
+  bfs::path wd( WorkdirHelper::rel_to_abs("MUQDiagnostics") );
+  WorkdirHelper::create_directory(wd, DIR_CLEAN);
+  const std::string filename = "MUQDiagnostics/mcmc_output.h5";
+  samps->WriteToFile(filename);
+
+  if (nonDMUQInstance->outputLevel >= DEBUG_OUTPUT) {
+    Cout << "number of samples taken for each level \n";
+    for (auto box : boxes){
+        Cout << box->FinestChain()->NumSamps() << '\n';
+    }
+  }
+
+  log_best();
+  cache_chain();
+}
+
+/** Perform the uncertainty quantification */
+void NonDMUQBayesCalibration::calibrate()
+{
+  if ( mcmcType == "multilevel_mcmc") {
+    calibrate_mlmcmc();
+  }
+  else{
+    calibrate_single_chain();
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+//
+//
+//                                VARIOUS
+//
+//
+//////////////////////////////////////////////////////////////////////////////////////////////
 
 void NonDMUQBayesCalibration::map_pre_solve()
 {
@@ -603,18 +761,18 @@ print_results(std::ostream& s, short results_state)
   size_t num_total_calib_terms = residualModel->num_primary_fns();
   Real half_nr_log2pi = num_total_calib_terms * HALF_LOG_2PI;
   RealVector hyper_params(numHyperparams);
-  Real half_log_det = 
+  Real half_log_det =
     expData.half_log_cov_determinant(hyper_params, obsErrorMultiplierMode);
   Real misfit = (log_prior - log_post) - half_nr_log2pi - half_log_det;
 
   s <<   "<<<<< Best misfit              ="
     << "\n                     " << std::setw(wpp7) << misfit
-    << "\n<<<<< Best log prior           =" 
+    << "\n<<<<< Best log prior           ="
     << "\n                     " << std::setw(wpp7) << log_prior
     << "\n<<<<< Best log posterior       ="
     << "\n                     " << std::setw(wpp7) << log_post << std::endl;
-  
-  // Print final stats for variables and responses 
+
+  // Print final stats for variables and responses
   NonDBayesCalibration::print_results(s, results_state);
 }
 
@@ -652,10 +810,6 @@ print_variables(std::ostream& s, const RealVector& c_vars)
     acceptedFnVals(numFunctions, chainSamples) */
 void NonDMUQBayesCalibration::cache_chain()
 {
-  acceptanceChain.shapeUninitialized(numContinuousVars + numHyperparams,
-             chainSamples);
-  acceptedFnVals.shapeUninitialized(numFunctions, chainSamples);
-
   // temporaries for evals/lookups
   // the MCMC model omits the hyper params and residual transformations...
   Variables lookup_vars = nonDMUQInstance->mcmcModel->current_variables().copy();
@@ -666,15 +820,19 @@ void NonDMUQBayesCalibration::cache_chain()
   lookup_resp.active_set(lookup_as);
   ParamResponsePair lookup_pr(lookup_vars, interface_id, lookup_resp);
 
-
   Eigen::MatrixXd const& chain = samps->AsMatrix();
 
+  // for mlmcmc the lenght of the chain is not necessarily equal to chainSamples
   unsigned int num_mcmc = chain.cols();
-  if (num_mcmc != chainSamples) {
+  if (num_mcmc != chainSamples && mcmcType != "multilevel_mcmc") {
     Cerr << "\nError: MUQ cache_chain(): chain length is " << num_mcmc
    << "; expected " << chainSamples << '\n';
     abort_handler(METHOD_ERROR);
   }
+
+  // set the correct num of columns here
+  acceptanceChain.shapeUninitialized(numContinuousVars + numHyperparams, num_mcmc);
+  acceptedFnVals.shapeUninitialized(numFunctions, num_mcmc);
 
   unsigned int lookup_failures = 0;
   unsigned int num_params = numContinuousVars + numHyperparams;
@@ -694,7 +852,7 @@ void NonDMUQBayesCalibration::cache_chain()
       for (int j(numContinuousVars); j < num_params; ++j) {
 
         acc_chain_i[j] = chain(j,i); // trailing hyperparams are not transformed
-        
+
       }
       // surrogate needs u-space variables for eval
       if (mcmcModel->model_type() == "surrogate")
@@ -706,19 +864,28 @@ void NonDMUQBayesCalibration::cache_chain()
       // A view that includes calibration params and Dakota-managed
       // hyper-parameters, to facilitate copying from the longer qv
       // into acceptanceChain:
-      RealVector theta_hp(Teuchos::View, acceptanceChain[i], 
+      RealVector theta_hp(Teuchos::View, acceptanceChain[i],
         numContinuousVars + numHyperparams);
       for (int j(0); j < numContinuousVars; ++j) {
         theta_hp(j) = chain(j,i);
         // std::cout << chain(j,i) << std::endl;
       }
       // lookup vars only need the calibration parameters
-      RealVector x_rv(Teuchos::View, acceptanceChain[i], 
+      RealVector x_rv(Teuchos::View, acceptanceChain[i],
           numContinuousVars);
       lookup_vars.continuous_variables(x_rv);
     }
 
     // now retreive function values
+
+    // for mlmcmc i need to set the model to be the finest one
+    // becuase that is where the stats are taken from
+    if (mcmcType == "multilevel_mcmc"){
+      const Pecos::ActiveKey & curr_key = nonDMUQInstance->mcmcModel->active_model_key();
+      Pecos::ActiveKey key;
+      key.form_key(mlmcmcNumLevels-1, curr_key.retrieve_model_form(), mlmcmcNumLevels-1);
+      nonDMUQInstance->residualModel->active_model_key(key);
+    }
 
     if (mcmcModelHasSurrogate) {
       ModelUtils::active_variables(*nonDMUQInstance->mcmcModel, lookup_vars);
@@ -744,12 +911,14 @@ void NonDMUQBayesCalibration::cache_chain()
 
   }
   if (lookup_failures > 0 && outputLevel > SILENT_OUTPUT)
-    Cout << "Warning: could not retrieve function values for " 
+    Cout << "Warning: could not retrieve function values for "
    << lookup_failures << " MCMC chain points." << std::endl;
 }
 
 void NonDMUQBayesCalibration::init_proposal_covariance()
 {
+  std::cout << " init_proposal_covariance \n";
+
   // Size our MUQ covariance matrix and initialize trailing diagonal if
   // calibrating error hyperparams
   proposalCovMatrix =
@@ -760,7 +929,7 @@ void NonDMUQBayesCalibration::init_proposal_covariance()
     Real alpha;
     for (int i(0); i < numHyperparams; ++i) {
       invGammaDists[i].pull_parameter(Pecos::IGA_ALPHA, alpha);
-      proposalCovMatrix(numContinuousVars + i, numContinuousVars + i) = 
+      proposalCovMatrix(numContinuousVars + i, numContinuousVars + i) =
   (alpha > 2.) ? invGammaDists[i].variance() :
   std::pow(0.05*init_point[numContinuousVars + i], 2.);
     }
@@ -797,13 +966,13 @@ void NonDMUQBayesCalibration::prior_proposal_covariance()
     //Cout << "Diagonal elements of the proposal covariance sent to MUQ";
     //if (standardizedSpace) Cout << " (scaled space)";
     //Cout << '\n' << covDiag << '\n';
-    Cout << "MUQ ProposalCovMatrix"; 
+    Cout << "MUQ ProposalCovMatrix";
     if (standardizedSpace) Cout << " (scaled space)";
-    Cout << '\n'; 
+    Cout << '\n';
     for (size_t i(0); i < numContinuousVars; ++i) {
-      for (size_t j(0); j < numContinuousVars; ++j) 
-  Cout <<  proposalCovMatrix(i,j) << "  "; 
-      Cout << '\n'; 
+      for (size_t j(0); j < numContinuousVars; ++j)
+  Cout <<  proposalCovMatrix(i,j) << "  ";
+      Cout << '\n';
     }
   }
 }
@@ -813,7 +982,7 @@ void NonDMUQBayesCalibration::prior_proposal_covariance()
     "matrix" data from either cov_data or cov_filename and populate a
     full Eigen::MatrixXd in proposalCovMatrix with the covariance. */
 void NonDMUQBayesCalibration::
-user_proposal_covariance(const String& input_fmt, const RealVector& cov_data, 
+user_proposal_covariance(const String& input_fmt, const RealVector& cov_data,
        const String& cov_filename)
 {
   // TODO: transform user covariance for use in standardized probability space
@@ -831,7 +1000,7 @@ user_proposal_covariance(const String& input_fmt, const RealVector& cov_data,
   // Sanity check
   if ( cov_data.length() && use_file )
     throw std::runtime_error("You cannot provide both covariance values and a covariance data filename.");
-     
+
   // Read in a general way and then check that the data is consistent
   RealVectorArray values_from_file;
   if ( use_file ) {
@@ -847,7 +1016,7 @@ user_proposal_covariance(const String& input_fmt, const RealVector& cov_data,
       bool row_data = false;
       // Sanity checks
       if ( values_from_file.size() != 1 ) {
-        if ( values_from_file.size() == numContinuousVars ) 
+        if ( values_from_file.size() == numContinuousVars )
           row_data = true;
         else
           throw std::runtime_error("\"diagonal\" MUQ covariance file data should have either 1 column (or row) and "
@@ -880,7 +1049,7 @@ user_proposal_covariance(const String& input_fmt, const RealVector& cov_data,
   else { // "matrix" == input_fmt
     if ( use_file ) {
       // Sanity checks
-      if ( values_from_file.size() != numContinuousVars ) 
+      if ( values_from_file.size() != numContinuousVars )
         throw std::runtime_error("\"matrix\" MUQ covariance file data should have "
                                  +convert_to_string(numContinuousVars)+" columns.  Found "
                                  +convert_to_string(values_from_file.size())+" columns.");
@@ -908,8 +1077,8 @@ user_proposal_covariance(const String& input_fmt, const RealVector& cov_data,
 void NonDMUQBayesCalibration::validate_proposal()
 {
   // validate that provided data is a valid covariance matrix
-  
-  if (outputLevel > NORMAL_OUTPUT) { 
+
+  if (outputLevel > NORMAL_OUTPUT) {
     Cout << "Proposal Covariance " << '\n';
     Cout << proposalCovMatrix << std::endl;
   }

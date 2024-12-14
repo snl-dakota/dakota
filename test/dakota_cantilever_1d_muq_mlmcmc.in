@@ -1,0 +1,61 @@
+#@ *: DakotaConfig=HAVE_MUQ
+#@ *: ReqFiles=dakota_cantilever_1d_displacement.dat,dakota_cantiliver_1d_muq_mlmcmc.py
+
+environment,
+  tabular_data
+
+method,
+  bayes_calibration muq
+  multilevel_mcmc
+    initial_chain_samples = 50
+    target_variance = 1.e19
+    subsampling_steps = 2 0
+    greedy_resampling_factor = 0.5
+  proposal_covariance
+    prior
+  seed = 534783
+  model_pointer = 'NONHIER'
+  chain_samples = 1 # not used by muq mlmcmc because of the target_variance
+  export_chain_points_file 'my_chain_samples'
+  output debug
+
+model,
+  id_model = 'NONHIER'
+  surrogate ensemble
+  truth_model = 'HF'
+
+model,
+  id_model = 'HF'
+  simulation
+  solution_level_control = 'level'
+  solution_level_cost = 1 1
+
+variables,
+  uniform_uncertain 1
+    descriptors 'E'
+    lower_bounds 1.e10
+    upper_bounds  5.1e11
+    initial_point 4e10
+  continuous_state 5
+    descriptors 'L' 'wx' 'wy' 'Fx' 'Fy'
+    initial_state 1 0.01 0.02 3 3
+ discrete_state_set
+   integer = 1
+      descriptors = 'level'
+      set_values = 0 1
+
+interface,
+  analysis_drivers 'dakota_cantilever_1d_muq_mlmcmc.py'
+    fork
+    parameters_file 'params.in'
+    results_file 'results.out'
+
+responses,
+  calibration_terms = 1
+    calibration_data_file = 'dakota_cantilever_1d_displacement.dat'
+      freeform
+      num_experiments = 1
+      variance_type = 'scalar'
+    descriptors 'd'
+    no_gradients
+    no_hessians

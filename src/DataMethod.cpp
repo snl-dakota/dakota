@@ -216,6 +216,10 @@ DataMethodRep::DataMethodRep():
   diliSesExpRank(2),
   diliSesOversFactor(2),
   diliSesBlockSize(2),
+  mlmcmcInitialChainSamples(1000),
+  mlmcmcSubsamplingSteps(0),
+  mlmcmcTargetVariance(0.05),
+  mlmcmcGreedyResamplingFactor(0.5),
   // Parameter Study
   numSteps(0), pstudyFileFormat(TABULAR_ANNOTATED), pstudyFileActive(false),
   // Verification
@@ -411,6 +415,9 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << diliSesExpRank
     << diliSesOversFactor
     << diliSesBlockSize
+    << mlmcmcInitialChainSamples
+    << mlmcmcSubsamplingSteps
+    << mlmcmcTargetVariance
     << dataDistType << dataDistCovInputType << dataDistMeans
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
@@ -613,6 +620,9 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> diliSesExpRank
     >> diliSesOversFactor
     >> diliSesBlockSize
+    >> mlmcmcInitialChainSamples
+    >> mlmcmcSubsamplingSteps
+    >> mlmcmcTargetVariance
     >> dataDistType >> dataDistCovInputType >> dataDistMeans
     >> dataDistCovariance >> dataDistFile >> posteriorDensityExportFilename
     >> posteriorSamplesExportFilename >> posteriorSamplesImportFilename
@@ -815,6 +825,9 @@ void DataMethodRep::write(std::ostream& s) const
     << diliSesExpRank
     << diliSesOversFactor
     << diliSesBlockSize
+    << mlmcmcInitialChainSamples
+    << mlmcmcSubsamplingSteps
+    << mlmcmcTargetVariance
     << dataDistType << dataDistCovInputType << dataDistMeans
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename

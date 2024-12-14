@@ -6676,6 +6676,7 @@ static Method_mp_lit
 	MP2(mcmcType,dili),
 	MP2(mcmcType,dram),
 	MP2(mcmcType,mala),
+	MP2(mcmcType,multilevel_mcmc),
 	MP2(mcmcType,metropolis_hastings),
 	MP2(mcmcType,multilevel),
 	MP2(modelDiscrepancyType,global_kriging),
@@ -6710,6 +6711,16 @@ static Method_mp_lit
 	MP2(trialType,random),
         MP2(useSurrogate,inform_search),
         MP2(useSurrogate,optimize);
+
+static IntVector
+  MP_(mlmcmcSubsamplingSteps);
+
+static Real
+  MP_(mlmcmcTargetVariance),
+  MP_(mlmcmcGreedyResamplingFactor);
+
+static int
+  MP_(mlmcmcInitialChainSamples);
 
 static Method_mp_litc
 	MP3(crossoverType,crossoverRate,shuffle_random),

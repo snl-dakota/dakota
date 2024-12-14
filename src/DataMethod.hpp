@@ -1432,6 +1432,18 @@ public:
   /// DILI stochastic eigensolver block size
   int diliSesBlockSize;
 
+  /// MLMCMC Number of initial samples
+  int mlmcmcInitialChainSamples;
+
+  /// MLMCMC Estimator variance for the greedy algorithm
+  IntVector mlmcmcSubsamplingSteps;
+
+  /// MLMCMC Subsampling steps
+  Real mlmcmcTargetVariance;
+
+  /// MLMCMC Greedy Resampling Factor
+  Real mlmcmcGreedyResamplingFactor;
+
   // Parameter Study
 
   /// the \c final_point specification in \ref MethodPSVPS

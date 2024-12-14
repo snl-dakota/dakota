@@ -3642,7 +3642,7 @@
 		<param type="INTEGER" constraint="> 0" />
 	      </keyword>
 	      &bayes_emulator;
-	      <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space"  minOccurs="0" />		  
+	      <keyword  id="standardized_space" name="standardized_space" code="{N_mdm(true,standardizedSpace)}" label="standardized_space"  minOccurs="0" />
 	      <keyword  id="data_distribution" name="data_distribution" label="Data distribution type"  code="{0}">
 		<oneOf label="Data Distribution">
 		  <keyword  id="gaussian" name="gaussian" code="{0}" label="gaussian"  >
@@ -3702,14 +3702,14 @@
 	    </keyword>
 	    <keyword  id="muq" name="muq" code="{N_mdm(utype,subMethod_SUBMETHOD_MUQ)}" label="muq"  minOccurs="1" >
 	      <keyword  id="chain_samples" name="chain_samples" code="{N_mdm(int,chainSamples)}" label="MCMC chain samples"  default="method-dependent">
-          <alias name="samples" />
-          <param type="INTEGER" />
-        </keyword>
+		<alias name="samples" />
+		<param type="INTEGER" />
+	      </keyword>			      
 	      &bayes_seed_rng;
-        <keyword  id="export_chain_points_file" name="export_chain_points_file" code="{N_mdm(str,exportMCMCPtsFile)}" label="File export of MCMC acceptance chain"  minOccurs="0" default="chain export to default filename" >
-          <param type="OUTPUT_FILE" />
-          &method_export_samples_format;
-        </keyword>
+              <keyword  id="export_chain_points_file" name="export_chain_points_file" code="{N_mdm(str,exportMCMCPtsFile)}" label="File export of MCMC acceptance chain"  minOccurs="0" default="chain export to default filename" >
+		<param type="OUTPUT_FILE" />
+		&method_export_samples_format;
+              </keyword>
 	      <optional>
                 <oneOf label="MCMC Algorithm" >
                   <keyword  id="adaptive_metropolis" name="adaptive_metropolis" code="{N_mdm(lit,mcmcType_adaptive_metropolis)}" label="adaptive_metropolis"  default="dram" >
@@ -3793,6 +3793,20 @@
                       </keyword>
                       <keyword  id="adapt_scale" name="adapt_scale" code="{N_mdm(Real,amScale)}" label="Scale for Adaptive Metropolis"  minOccurs="0" maxOccurs="1" default="1.0" >
                         <param type="REAL" />
+                      </keyword>
+                  </keyword>
+                  <keyword  id="multilevel_mcmc" name="multilevel_mcmc" code="{N_mdm(lit,mcmcType_multilevel_mcmc)}" label="multilevel_mcmc"  default="dram" >
+                      <keyword  id="initial_chain_samples" name="initial_chain_samples" code="{N_mdm(int,mlmcmcInitialChainSamples)}" label="Number of initial samples for MLMCMC"  minOccurs="0" default="100" >
+                        <param type="INTEGER" />
+                      </keyword>
+                      <keyword  id="target_variance" name="target_variance" code="{N_mdm(Real,mlmcmcTargetVariance)}" label="Estimator variance for the MLMCMC greedy algorithm"  minOccurs="0.0001" default="1." >
+                        <param type="REAL" />
+                      </keyword>
+                      <keyword  id="greedy_resampling_factor" name="greedy_resampling_factor" code="{N_mdm(Real,mlmcmcGreedyResamplingFactor)}" label="Resampling factor for the MLMCMC greedy algorithm"  minOccurs="0" maxOccurs="1" default="0.5" >
+                        <param type="REAL" />
+                      </keyword>
+                      <keyword  id="subsampling_steps" name="subsampling_steps" code="{N_mdm(ivec,mlmcmcSubsamplingSteps)}" label="Subsampling steps for MLMCMC"  minOccurs="0" default="None" >
+                        <param type="INTEGERLIST" />
                       </keyword>
                   </keyword>
                   <keyword  id="mala" name="mala" code="{N_mdm(lit,mcmcType_mala)}" label="mala"  default="dram" >
