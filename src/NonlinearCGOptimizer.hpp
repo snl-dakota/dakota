@@ -58,7 +58,7 @@ public:
   //
 
   /// standard constructor
-  NonlinearCGOptimizer(ProblemDescDB& problem_db, Model& model);
+  NonlinearCGOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor      
   ~NonlinearCGOptimizer() override;
 

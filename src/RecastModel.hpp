@@ -49,7 +49,7 @@ public:
 
   /// standard (full) constructor; assumes provided sizes and map
   /// functions are final and constructs all member data
-  RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
+  RecastModel(std::shared_ptr<Model> sub_model, const Sizet2DArray& vars_map_indices,
 	      const SizetArray& vars_comps_total, const BitArray& all_relax_di,
 	      const BitArray& all_relax_dr, bool nonlinear_vars_mapping,
 	      const ShortShortPair& recast_vars_view,
@@ -74,7 +74,7 @@ public:
   /// alternate constructor; uses provided sizes to construct Variables,
   /// Response and Constraints so Model can be passed to an Iterator;
   /// requires subsequent init_maps() call.
-  RecastModel(const Model& sub_model, //size_t num_deriv_vars,
+  RecastModel(std::shared_ptr<Model> sub_model, //size_t num_deriv_vars,
 	      const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
 	      const BitArray& all_relax_dr,
 	      const ShortShortPair& recast_vars_view,
@@ -82,20 +82,17 @@ public:
 	      size_t recast_secondary_offset, short recast_resp_order);
 
   /// alternate constructor; only changes the view (NEED A SUBCLASS FOR THIS?)
-  RecastModel(const Model& sub_model, const ShortShortPair& recast_vars_view);
+  RecastModel(std::shared_ptr<Model>, const ShortShortPair& recast_vars_view);
 
   /// Problem DB-based ctor, e.g., for use in subspace model; assumes
   /// mappings to be initialized later; only initializes based on sub-model
-  RecastModel(ProblemDescDB& problem_db, const Model& sub_model);
+  RecastModel(ProblemDescDB& problem_db, std::shared_ptr<Model> sub_model);
 
   /// lightest constructor used when transform sizes aren't known at
   /// construct time; doesn't initialize variables and responses, so
   /// this Model can't be used to construct an Iterator; requires
   /// subsequent init_sizes() and init_maps() calls.
-  RecastModel(const Model& sub_model);
-
-  /// destructor
-  ~RecastModel() override;
+  RecastModel(std::shared_ptr<Model> sub_model);
 
   //
   //- Heading: Member functions
@@ -188,8 +185,6 @@ public:
   /// return nonlinearVarsMapping
   bool nonlinear_variables_mapping() const;
 
-protected:
-
   //
   //- Heading: Virtual function redefinitions
   //
@@ -241,7 +236,7 @@ protected:
   /// return sub-iterator, if present, within subModel
   Iterator& subordinate_iterator() override;
   /// return subModel
-  Model& subordinate_model() override;
+  std::shared_ptr<Model> subordinate_model() override;
 
   /// set key in subModel
   void active_model_key(const Pecos::ActiveKey& key) override;
@@ -251,22 +246,22 @@ protected:
   void clear_model_keys() override;
 
   /// return the i-th surrogate model within subModel
-  Model& surrogate_model(size_t i = _NPOS) override;
+  std::shared_ptr<Model> surrogate_model(size_t i = _NPOS) override;
   /// return the i-th surrogate model within subModel
-  const Model& surrogate_model(size_t i = _NPOS) const override;
+  std::shared_ptr<const Model> surrogate_model(size_t i = _NPOS) const override;
   /// return the i-th active surrogate model within subModel
-  Model& active_surrogate_model(size_t i = _NPOS) override;
+  std::shared_ptr<Model> active_surrogate_model(size_t i = _NPOS) override;
   /// return the i-th active surrogate model within subModel
-  const Model& active_surrogate_model(size_t i = _NPOS) const override;
+  std::shared_ptr<const Model> active_surrogate_model(size_t i = _NPOS) const override;
 
   /// return the truth model within subModel
-  Model& truth_model() override;
+  std::shared_ptr<Model> truth_model() override;
   /// return the truth model within subModel
-  const Model& truth_model() const override;
+  std::shared_ptr<const Model> truth_model() const override;
   /// return the active truth model within subModel
-  Model& active_truth_model() override;
+  std::shared_ptr<Model> active_truth_model() override;
   /// return the active truth model within subModel
-  const Model& active_truth_model() const override;
+  std::shared_ptr<const Model> active_truth_model() const override;
 
   /// add subModel to list and recurse into subModel
   void derived_subordinate_models(ModelList& ml, bool recurse_flag) override;
@@ -535,8 +530,8 @@ protected:
   //
 
   /// the sub-model underlying the transformations
-  Model subModel;
-  Model* pSubModel;
+  std::shared_ptr<Model> subModel;
+
 
   /// local evaluation id counter used for id mapping
   int recastModelEvalCntr;
@@ -650,28 +645,24 @@ private:
 };
 
 
-inline RecastModel::~RecastModel()
-{ }
-
-
 inline bool RecastModel::nonlinear_variables_mapping() const
 { return nonlinearVarsMapping; }
 
 
 inline void RecastModel::submodel_supports_derivative_estimation(bool sed_flag)
-{ pSubModel->supports_derivative_estimation(sed_flag); }
+{ subModel->supports_derivative_estimation(sed_flag); }
 
 
 inline Pecos::ProbabilityTransformation& RecastModel::
 probability_transformation()
-{ return pSubModel->probability_transformation(); } // forward along
+{ return subModel->probability_transformation(); } // forward along
 
 
 inline bool RecastModel::initialize_mapping(ParLevLIter pl_iter)
 {
   Model::initialize_mapping(pl_iter);
 
-  bool sub_model_resize = pSubModel->initialize_mapping(pl_iter);
+  bool sub_model_resize = subModel->initialize_mapping(pl_iter);
 
   // update message lengths for send/receive of parallel jobs (normally
   // performed once in Model::init_communicators() just after construct time)
@@ -684,7 +675,7 @@ inline bool RecastModel::initialize_mapping(ParLevLIter pl_iter)
 
 inline bool RecastModel::finalize_mapping()
 {
-  bool sub_model_resize = pSubModel->finalize_mapping();
+  bool sub_model_resize = subModel->finalize_mapping();
   Model::finalize_mapping();
   return sub_model_resize;
 }
@@ -701,119 +692,119 @@ nested_variable_mappings(const SizetArray& c_index1,
 			 const ShortArray& dr_target2)
 {
   // forward along to subModel:
-  pSubModel->nested_variable_mappings(c_index1, di_index1, ds_index1,
+  subModel->nested_variable_mappings(c_index1, di_index1, ds_index1,
 				    dr_index1, c_target2, di_target2,
 				    ds_target2, dr_target2);
 }
 
 
 inline const SizetArray& RecastModel::nested_acv1_indices() const
-{ return pSubModel->nested_acv1_indices(); }
+{ return subModel->nested_acv1_indices(); }
 
 
 inline const ShortArray& RecastModel::nested_acv2_targets() const
-{ return pSubModel->nested_acv2_targets(); }
+{ return subModel->nested_acv2_targets(); }
 
 
 inline short RecastModel::query_distribution_parameter_derivatives() const
-{ return pSubModel->query_distribution_parameter_derivatives(); }
+{ return subModel->query_distribution_parameter_derivatives(); }
 
 
 inline void RecastModel::activate_distribution_parameter_derivatives()
-{ pSubModel->activate_distribution_parameter_derivatives(); }
+{ subModel->activate_distribution_parameter_derivatives(); }
 
 
 inline void RecastModel::deactivate_distribution_parameter_derivatives()
-{ pSubModel->deactivate_distribution_parameter_derivatives(); }
+{ subModel->deactivate_distribution_parameter_derivatives(); }
 
 
 inline void RecastModel::
 trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
 		  const RealVector& x_vars)
-{ pSubModel->trans_grad_X_to_U(fn_grad_x, fn_grad_u, x_vars); }
+{ subModel->trans_grad_X_to_U(fn_grad_x, fn_grad_u, x_vars); }
 
 
 inline void RecastModel::
 trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
 		  const RealVector& x_vars)
-{ pSubModel->trans_grad_U_to_X(fn_grad_u, fn_grad_x, x_vars); }
+{ subModel->trans_grad_U_to_X(fn_grad_u, fn_grad_x, x_vars); }
 
 
 inline void RecastModel::
 trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
 		  const RealVector& x_vars)
-{ pSubModel->trans_grad_X_to_S(fn_grad_x, fn_grad_s, x_vars); }
+{ subModel->trans_grad_X_to_S(fn_grad_x, fn_grad_s, x_vars); }
 
 
 inline void RecastModel::
 trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
 		  RealSymMatrix& fn_hess_u, const RealVector& x_vars,
 		  const RealVector& fn_grad_x)
-{ pSubModel->trans_hess_X_to_U(fn_hess_x, fn_hess_u, x_vars, fn_grad_x); }
+{ subModel->trans_hess_X_to_U(fn_hess_x, fn_hess_u, x_vars, fn_grad_x); }
 
 
 inline size_t RecastModel::qoi() const
-{ return pSubModel->qoi(); } // TO DO: check for response mapping
+{ return subModel->qoi(); } // TO DO: check for response mapping
 
 
 inline Iterator& RecastModel::subordinate_iterator()
-{ return pSubModel->subordinate_iterator(); }
+{ return subModel->subordinate_iterator(); }
 
 
-inline Model& RecastModel::subordinate_model()
-{ return *pSubModel; }
+inline std::shared_ptr<Model> RecastModel::subordinate_model()
+{ return subModel; }
 
 
 inline void RecastModel::active_model_key(const Pecos::ActiveKey& key)
-{ pSubModel->active_model_key(key); }
+{ subModel->active_model_key(key); }
 
 
 inline const Pecos::ActiveKey& RecastModel::active_model_key() const
-{ return pSubModel->active_model_key(); }
+{ return subModel->active_model_key(); }
 
 
 inline void RecastModel::clear_model_keys()
-{ pSubModel->clear_model_keys(); }
+{ subModel->clear_model_keys(); }
 
 
-inline Model& RecastModel::surrogate_model(size_t i)
-{ return pSubModel->surrogate_model(i); }
+inline std::shared_ptr<Model> RecastModel::surrogate_model(size_t i)
+{ return subModel->surrogate_model(i); }
 
 
-inline const Model& RecastModel::surrogate_model(size_t i) const
-{ return pSubModel->surrogate_model(i); }
+inline std::shared_ptr<const Model> RecastModel::surrogate_model(size_t i) const
+{ return subModel->surrogate_model(i); }
 
 
-inline Model& RecastModel::active_surrogate_model(size_t i)
-{ return pSubModel->active_surrogate_model(i); }
+inline std::shared_ptr<Model> RecastModel::active_surrogate_model(size_t i)
+{ return subModel->active_surrogate_model(i); }
 
 
-inline const Model& RecastModel::active_surrogate_model(size_t i) const
-{ return pSubModel->active_surrogate_model(i); }
+inline std::shared_ptr<const Model> RecastModel::active_surrogate_model(size_t i) const
+{ return subModel->active_surrogate_model(i); }
 
 
-inline Model& RecastModel::truth_model()
-{ return pSubModel->truth_model(); }
+inline std::shared_ptr<Model> RecastModel::truth_model()
+{ return subModel->truth_model(); }
 
 
-inline const Model& RecastModel::truth_model() const
-{ return pSubModel->truth_model(); }
+inline std::shared_ptr<const Model> RecastModel::truth_model() const
+{ return subModel->truth_model(); }
 
 
-inline Model& RecastModel::active_truth_model()
-{ return pSubModel->active_truth_model(); }
+inline std::shared_ptr<Model> RecastModel::active_truth_model()
+{ return subModel->active_truth_model(); }
 
 
-inline const Model& RecastModel::active_truth_model() const
-{ return pSubModel->active_truth_model(); }
+inline std::shared_ptr<const Model> RecastModel::active_truth_model() const
+{ return subModel->active_truth_model(); }
 
 
 inline void RecastModel::
 derived_subordinate_models(ModelList& ml, bool recurse_flag)
 {
-  ml.push_back(*pSubModel);
+  ml.push_back(subModel);
   if (recurse_flag)
-    pSubModel->derived_subordinate_models(ml, true);
+    subModel->derived_subordinate_models(ml, true);
 }
 
 
@@ -821,14 +812,14 @@ inline void RecastModel::resize_from_subordinate_model(size_t depth)
 {
   // data flows from the bottom-up, so recurse first
   if (depth == SZ_MAX)
-    pSubModel->resize_from_subordinate_model(depth); // retain special value (inf)
+    subModel->resize_from_subordinate_model(depth); // retain special value (inf)
   else if (depth)
-    pSubModel->resize_from_subordinate_model(depth - 1); // decrement
+    subModel->resize_from_subordinate_model(depth - 1); // decrement
   //else depth exhausted --> resize this level only
 
   // pull sizing updates from subModel: reflect aggregated counts, if present,
   // by accessing count from response rather than virtual count from Model
-  numFns = ModelUtils::response_size(*pSubModel);
+  numFns = ModelUtils::response_size(*subModel);
   if (currentResponse.num_functions() != numFns) {
     resize_response_mapping(); // requires current sizes before reshape below
     currentResponse.reshape(numFns, currentVariables.cv(),
@@ -846,38 +837,38 @@ inline void RecastModel::update_from_subordinate_model(size_t depth)
 {
   // data flows from the bottom-up, so recurse first
   if (depth == SZ_MAX)
-    pSubModel->update_from_subordinate_model(depth); // retain special value (inf)
+    subModel->update_from_subordinate_model(depth); // retain special value (inf)
   else if (depth)
-    pSubModel->update_from_subordinate_model(depth - 1); // decrement
+    subModel->update_from_subordinate_model(depth - 1); // decrement
   //else depth exhausted --> update this level only
 
   // now pull the latest updates from subModel
-  update_from_model(*pSubModel);
+  update_from_model(*subModel);
 }
 
 
 inline Interface& RecastModel::derived_interface()
-{ return pSubModel->derived_interface(); }
+{ return subModel->derived_interface(); }
 
 
 inline size_t RecastModel::solution_levels() const
-{ return pSubModel->solution_levels(); }
+{ return subModel->solution_levels(); }
 
 
 inline void RecastModel::solution_level_cost_index(size_t cost_index)
-{ pSubModel->solution_level_cost_index(cost_index); }
+{ subModel->solution_level_cost_index(cost_index); }
 
 
 inline size_t RecastModel::solution_level_cost_index() const
-{ return pSubModel->solution_level_cost_index(); }
+{ return subModel->solution_level_cost_index(); }
 
 
 inline RealVector RecastModel::solution_level_costs() const
-{ return pSubModel->solution_level_costs(); }
+{ return subModel->solution_level_costs(); }
 
 
 inline Real RecastModel::solution_level_cost() const
-{ return pSubModel->solution_level_cost(); }
+{ return subModel->solution_level_cost(); }
 
 
 inline void RecastModel::
@@ -885,24 +876,24 @@ primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
 {
   primaryRespFnWts = wts;
   if (recurse_flag && !primaryRespMapping)
-    pSubModel->primary_response_fn_weights(wts, recurse_flag);
+    subModel->primary_response_fn_weights(wts, recurse_flag);
 }
 
 
 inline void RecastModel::
 surrogate_function_indices(const SizetSet& surr_fn_indices)
-{ pSubModel->surrogate_function_indices(surr_fn_indices); }
+{ subModel->surrogate_function_indices(surr_fn_indices); }
 
 
 // For case of RecastModel, forward to subModel for all cases.  SurrogateModels
 // and NestedModels only fwd if BYPASS_SURROGATE (to support recursive bypass),
 // but Recast should allow mode set followed by reset for underlying surrogate.
 inline void RecastModel::surrogate_response_mode(short mode)
-{ /* if (mode == BYPASS_SURROGATE) */ pSubModel->surrogate_response_mode(mode); }
+{ /* if (mode == BYPASS_SURROGATE) */ subModel->surrogate_response_mode(mode); }
 
 
 inline void RecastModel::discrepancy_emulation_mode(short mode)
-{ pSubModel->discrepancy_emulation_mode(mode); }
+{ subModel->discrepancy_emulation_mode(mode); }
 
 
 //inline void RecastModel::link_multilevel_approximation_data()
@@ -910,85 +901,85 @@ inline void RecastModel::discrepancy_emulation_mode(short mode)
 
 
 inline short RecastModel::correction_type() const
-{ return pSubModel->correction_type(); }
+{ return subModel->correction_type(); }
 
 
 inline void RecastModel::correction_type(short corr_type)
-{ pSubModel->correction_type(corr_type); }
+{ subModel->correction_type(corr_type); }
 
 
 inline short RecastModel::correction_order() const
-{ return pSubModel->correction_order(); }
+{ return subModel->correction_order(); }
 
 
 inline void RecastModel::build_approximation()
-{ pSubModel->build_approximation(); }
+{ subModel->build_approximation(); }
 
 
 inline bool RecastModel::
 build_approximation(const Variables& vars, const IntResponsePair& response_pr)
-{ return pSubModel->build_approximation(vars, response_pr); }
+{ return subModel->build_approximation(vars, response_pr); }
 
 
 inline void RecastModel::rebuild_approximation()
-{ pSubModel->rebuild_approximation(); }
+{ subModel->rebuild_approximation(); }
 
 
 inline void RecastModel::update_approximation(bool rebuild_flag)
-{ pSubModel->update_approximation(rebuild_flag); }
+{ subModel->update_approximation(rebuild_flag); }
 
 
 inline void RecastModel::
 update_approximation(const Variables& vars, const IntResponsePair& response_pr,
 		     bool rebuild_flag)
-{ pSubModel->update_approximation(vars, response_pr, rebuild_flag); }
+{ subModel->update_approximation(vars, response_pr, rebuild_flag); }
 
 
 inline void RecastModel::
 update_approximation(const VariablesArray& vars_array,
 		     const IntResponseMap& resp_map, bool rebuild_flag)
-{ pSubModel->update_approximation(vars_array, resp_map, rebuild_flag); }
+{ subModel->update_approximation(vars_array, resp_map, rebuild_flag); }
 
 
 inline void RecastModel::append_approximation(bool rebuild_flag)
-{ pSubModel->append_approximation(rebuild_flag); }
+{ subModel->append_approximation(rebuild_flag); }
 
 
 inline void RecastModel::
 append_approximation(const Variables& vars, const IntResponsePair& response_pr,
 		     bool rebuild_flag)
-{ pSubModel->append_approximation(vars, response_pr, rebuild_flag); }
+{ subModel->append_approximation(vars, response_pr, rebuild_flag); }
 
 
 inline void RecastModel::
 append_approximation(const VariablesArray& vars_array,
 		     const IntResponseMap& resp_map, bool rebuild_flag)
-{ pSubModel->append_approximation(vars_array, resp_map, rebuild_flag); }
+{ subModel->append_approximation(vars_array, resp_map, rebuild_flag); }
 
 
 inline void RecastModel::
 pop_approximation(bool save_surr_data, bool rebuild_flag)
-{ pSubModel->pop_approximation(save_surr_data, rebuild_flag); }
+{ subModel->pop_approximation(save_surr_data, rebuild_flag); }
 
 
 inline void RecastModel::push_approximation()
-{ pSubModel->push_approximation(); }
+{ subModel->push_approximation(); }
 
 
 inline bool RecastModel::push_available()
-{ return pSubModel->push_available(); }
+{ return subModel->push_available(); }
 
 
 inline void RecastModel::finalize_approximation()
-{ pSubModel->finalize_approximation(); }
+{ subModel->finalize_approximation(); }
 
 
 inline void RecastModel::combine_approximation()
-{ pSubModel->combine_approximation(); }
+{ subModel->combine_approximation(); }
 
 
 inline void RecastModel::combined_to_active(bool clear_combined)
-{ pSubModel->combined_to_active(clear_combined); }
+{ subModel->combined_to_active(clear_combined); }
 
 
 /*
@@ -1006,32 +997,32 @@ inline void RecastModel::remove_stored_approximation(size_t index)
 
 
 inline void RecastModel::clear_inactive()
-{ pSubModel->clear_inactive(); }
+{ subModel->clear_inactive(); }
 
 
 inline std::vector<Approximation>& RecastModel::approximations()
-{ return pSubModel->approximations(); }
+{ return subModel->approximations(); }
 
 
 inline const RealVectorArray& RecastModel::
 approximation_coefficients(bool normalized)
-{ return pSubModel->approximation_coefficients(normalized); }
+{ return subModel->approximation_coefficients(normalized); }
 
 
 inline void RecastModel::
 approximation_coefficients(const RealVectorArray& approx_coeffs,
 			   bool normalized)
-{ pSubModel->approximation_coefficients(approx_coeffs, normalized); }
+{ subModel->approximation_coefficients(approx_coeffs, normalized); }
 
 
 inline const RealVector& RecastModel::
 approximation_variances(const Variables& vars)
-{ return pSubModel->approximation_variances(vars); }
+{ return subModel->approximation_variances(vars); }
 
 
 inline const Pecos::SurrogateData& RecastModel::
 approximation_data(size_t fn_index)
-{ return pSubModel->approximation_data(fn_index); }
+{ return subModel->approximation_data(fn_index); }
 
 
 inline void RecastModel::component_parallel_mode(short mode)
@@ -1046,29 +1037,29 @@ inline void RecastModel::component_parallel_mode(short mode)
   // parallelism, we forward the parallel mode to the subModel.  This differs
   // from all other derived Model implementations (which utilize the mode
   // locally and do not forward it).
-  pSubModel->component_parallel_mode(mode);
+  subModel->component_parallel_mode(mode);
 }
 
 
 inline size_t RecastModel::mi_parallel_level_index() const
-{ return pSubModel->mi_parallel_level_index(); }
+{ return subModel->mi_parallel_level_index(); }
 
 
 inline short RecastModel::local_eval_synchronization()
-{ return pSubModel->local_eval_synchronization(); }
+{ return subModel->local_eval_synchronization(); }
 
 
 inline int RecastModel::local_eval_concurrency()
-{ return pSubModel->local_eval_concurrency(); }
+{ return subModel->local_eval_concurrency(); }
 
 
 inline bool RecastModel::derived_master_overload() const
-{ return pSubModel->derived_master_overload(); }
+{ return subModel->derived_master_overload(); }
 
 
 inline IntIntPair RecastModel::
 estimate_partition_bounds(int max_eval_concurrency)
-{ return pSubModel->estimate_partition_bounds(max_eval_concurrency); }
+{ return subModel->estimate_partition_bounds(max_eval_concurrency); }
 
 
 inline void RecastModel::
@@ -1076,12 +1067,12 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 			   bool recurse_flag)
 {
   if (recurse_flag)
-    pSubModel->init_communicators(pl_iter, max_eval_concurrency);
+    subModel->init_communicators(pl_iter, max_eval_concurrency);
 }
 
 
 inline void RecastModel::derived_init_serial()
-{ pSubModel->init_serial(); }
+{ subModel->init_serial(); }
 
 
 inline void RecastModel::
@@ -1089,12 +1080,12 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 			  bool recurse_flag)
 {
   if (recurse_flag) {
-    pSubModel->set_communicators(pl_iter, max_eval_concurrency);
+    subModel->set_communicators(pl_iter, max_eval_concurrency);
 
     // RecastModels do not utilize default set_ie_asynchronous_mode() as
     // they do not define the ie_parallel_level
-    asynchEvalFlag     = pSubModel->asynch_flag();
-    evaluationCapacity = pSubModel->evaluation_capacity();
+    asynchEvalFlag     = subModel->asynch_flag();
+    evaluationCapacity = subModel->evaluation_capacity();
   }
 }
 
@@ -1104,7 +1095,7 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 			   bool recurse_flag)
 {
   if (recurse_flag)
-    pSubModel->free_communicators(pl_iter, max_eval_concurrency);
+    subModel->free_communicators(pl_iter, max_eval_concurrency);
 }
 
 
@@ -1114,19 +1105,19 @@ serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
   // don't recurse, as subModel.serve() will set subModel comms
   set_communicators(pl_iter, max_eval_concurrency, false);
 
-  pSubModel->serve_run(pl_iter, max_eval_concurrency); // sets subModel comms
+  subModel->serve_run(pl_iter, max_eval_concurrency); // sets subModel comms
 }
 
 
 inline void RecastModel::stop_servers()
-{ pSubModel->stop_servers(); }
+{ subModel->stop_servers(); }
 
 
 inline void RecastModel::active_view(short view, bool recurse_flag)
 {
   Model::active_view(view);
   if (recurse_flag)
-    pSubModel->active_view(view, recurse_flag);
+    subModel->active_view(view, recurse_flag);
 }
 
 
@@ -1134,20 +1125,20 @@ inline void RecastModel::inactive_view(short view, bool recurse_flag)
 {
   Model::inactive_view(view);
   if (recurse_flag)
-    pSubModel->inactive_view(view, recurse_flag);
+    subModel->inactive_view(view, recurse_flag);
 }
 
 
 inline const String& RecastModel::interface_id() const
-{ return pSubModel->interface_id(); }
+{ return subModel->interface_id(); }
 
 
 inline bool RecastModel::evaluation_cache(bool recurse_flag) const
-{ return (recurse_flag) ? pSubModel->evaluation_cache(recurse_flag) : false; }
+{ return (recurse_flag) ? subModel->evaluation_cache(recurse_flag) : false; }
 
 
 inline bool RecastModel::restart_file(bool recurse_flag) const
-{ return (recurse_flag) ? pSubModel->restart_file(recurse_flag) : false; }
+{ return (recurse_flag) ? subModel->restart_file(recurse_flag) : false; }
 
 
 inline int RecastModel::derived_evaluation_id() const
@@ -1155,11 +1146,11 @@ inline int RecastModel::derived_evaluation_id() const
 
 
 inline void RecastModel::set_evaluation_reference()
-{ pSubModel->set_evaluation_reference(); }
+{ subModel->set_evaluation_reference(); }
 
 
 inline void RecastModel::fine_grained_evaluation_counters()
-{ pSubModel->fine_grained_evaluation_counters(); }
+{ subModel->fine_grained_evaluation_counters(); }
 
 
 inline void RecastModel::update_linear_constraints(const Model& model)
@@ -1174,20 +1165,20 @@ inline void RecastModel::update_linear_constraints(const Model& model)
 inline void RecastModel::
 print_evaluation_summary(std::ostream& s, bool minimal_header,
 			 bool relative_count) const
-{ pSubModel->print_evaluation_summary(s, minimal_header, relative_count); }
+{ subModel->print_evaluation_summary(s, minimal_header, relative_count); }
 
 
 inline void RecastModel::warm_start_flag(const bool flag)
 {
   // Note: supportsEstimDerivs prevents quasi-Newton Hessian accumulations
   warmStartFlag = flag;
-  pSubModel->warm_start_flag(flag);
+  subModel->warm_start_flag(flag);
 }
 
 
 /** RecastModel just forwards any tags to its subModel */
 inline void RecastModel::eval_tag_prefix(const String& eval_id_str)
-{ pSubModel->eval_tag_prefix(eval_id_str); }
+{ subModel->eval_tag_prefix(eval_id_str); }
 
 } // namespace Dakota
 

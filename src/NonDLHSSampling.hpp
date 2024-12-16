@@ -48,9 +48,9 @@ public:
   //
 
   /// standard constructor
-  NonDLHSSampling(ProblemDescDB& problem_db, Model& model);
+  NonDLHSSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor for sample generation and evaluation "on the fly"
-  NonDLHSSampling(Model& model, unsigned short sample_type,
+  NonDLHSSampling(std::shared_ptr<Model> model, unsigned short sample_type,
 		  int samples, int seed, const String& rng,
 		  bool vary_pattern = true, short sampling_vars_mode = ACTIVE);
   /// alternate constructor for uniform sample generation "on the fly"

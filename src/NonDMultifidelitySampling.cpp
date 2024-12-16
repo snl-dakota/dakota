@@ -33,7 +33,7 @@ namespace Dakota {
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDMultifidelitySampling::
-NonDMultifidelitySampling(ProblemDescDB& problem_db, Model& model):
+NonDMultifidelitySampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDNonHierarchSampling(problem_db, model),
   numericalSolveMode(problem_db.get_ushort("method.nond.numerical_solve_mode"))
 {

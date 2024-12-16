@@ -35,7 +35,7 @@ public:
   //
 
   /// constructor
-  NonDLocalSingleInterval(ProblemDescDB& problem_db, Model& model);
+  NonDLocalSingleInterval(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
   ~NonDLocalSingleInterval() override;
 

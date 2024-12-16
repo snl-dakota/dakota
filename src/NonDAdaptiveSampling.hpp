@@ -37,7 +37,7 @@ public:
   //
 
   /// standard constructor
-  NonDAdaptiveSampling(ProblemDescDB& problem_db, Model& model);
+  NonDAdaptiveSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
 
   /// alternate constructor for sample generation and evaluation "on the fly"
   /// has not been implemented
@@ -77,7 +77,7 @@ private:
   /// LHS iterator for sampling on the final GP
   Iterator gpFinalEval;
   /// GP model of response, one approximation per response function
-  Model gpModel;
+  std::shared_ptr<Model> gpModel;
   
   /// the number of rounds of additions of size batchSize to add  to the 
   /// original set of LHS samples
@@ -232,7 +232,7 @@ private:
   /// designs.  This can break the fsu_cvt, so it is not used at the moment,
   /// and these designs only affect the initial sample build not the candidate
   /// sets constructed at each round
-  void construct_fsu_sampler(Iterator& u_space_sampler, Model& u_model, 
+  void construct_fsu_sampler(Iterator& u_space_sampler, std::shared_ptr<Model> u_model, 
     int num_samples, int seed, unsigned short sample_type);
 
   /// This function will write an input deck for a multi-start global 

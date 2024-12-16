@@ -32,10 +32,10 @@ protected:
   //
 
   /// constructor
-  SurrBasedMinimizer(ProblemDescDB& problem_db, Model& model,
+  SurrBasedMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model,
 		     std::shared_ptr<TraitsBase> traits);
   /// alternate constructor for instantiations "on the fly"
-  SurrBasedMinimizer(Model& model, size_t max_iter, size_t max_eval,
+  SurrBasedMinimizer(std::shared_ptr<Model> model, size_t max_iter, size_t max_eval,
 		     Real conv_tol, std::shared_ptr<TraitsBase> traits);
   /// destructor
   ~SurrBasedMinimizer() override;

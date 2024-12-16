@@ -30,7 +30,7 @@ public:
   //
 
   /// standard constructor
-  WeightingModel(Model& sub_model);
+  WeightingModel(std::shared_ptr<Model> sub_model);
 
   /// destructor
   ~WeightingModel() override;

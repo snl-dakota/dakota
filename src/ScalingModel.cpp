@@ -38,15 +38,15 @@ ScalingModel* ScalingModel::scaleModelInstance(NULL);
 /** This constructor computes various indices and mappings, then
     updates the properties of the RecastModel */
 ScalingModel::
-ScalingModel(Model& sub_model):
+ScalingModel(std::shared_ptr<Model> sub_model):
   // BMA TODO: should the BitArrays be empty or same as submodel?
   // recast_secondary_offset is the index to the equality constraints within 
   // the secondary responses
   RecastModel(sub_model, SizetArray(), BitArray(), BitArray(),
-	      sub_model.current_variables().view(),
-	      sub_model.num_primary_fns(), sub_model.num_secondary_fns(),
-	      ModelUtils::num_nonlinear_ineq_constraints(sub_model),
-	      response_order(sub_model))
+	      sub_model->current_variables().view(),
+	      sub_model->num_primary_fns(), sub_model->num_secondary_fns(),
+	      ModelUtils::num_nonlinear_ineq_constraints(*sub_model),
+	      response_order(*sub_model))
 {
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Initializing scaling transformation" << std::endl;
@@ -63,14 +63,14 @@ ScalingModel(Model& sub_model):
   // TODO: review whether disconnecting the mvDist can cause problems
   // for clients of Model.
   varsScaleFlag = scaling_active(scalingOpts.cvScaleTypes);
-  mvDist = varsScaleFlag ? pSubModel->multivariate_distribution().copy() :
-    pSubModel->multivariate_distribution();
+  mvDist = varsScaleFlag ? subModel->multivariate_distribution().copy() :
+    subModel->multivariate_distribution();
 
-  initialize_scaling(sub_model);
+  initialize_scaling(*sub_model);
 
   // No change in sizes for scaling
-  size_t num_primary = sub_model.num_primary_fns(),
-    num_secondary    = sub_model.num_secondary_fns(),
+  size_t num_primary = sub_model->num_primary_fns(),
+    num_secondary    = sub_model->num_secondary_fns(),
     num_recast_fns   = num_primary + num_secondary;
 
   // the scaling transformation doesn't change any counts of variables
@@ -87,7 +87,7 @@ ScalingModel(Model& sub_model):
 
   // We assume the mapping is for all active variables
   size_t total_active_vars = 
-    ModelUtils::cv(sub_model) + ModelUtils::div(sub_model) + ModelUtils::dsv(sub_model) + ModelUtils::drv(sub_model);
+    ModelUtils::cv(*sub_model) + ModelUtils::div(*sub_model) + ModelUtils::dsv(*sub_model) + ModelUtils::drv(*sub_model);
   Sizet2DArray vars_map_indices(total_active_vars);
   bool nonlinear_vars_mapping = false;
   for (size_t i=0; i<total_active_vars; ++i) {
@@ -149,13 +149,13 @@ ScalingModel(Model& sub_model):
     inverse_mappings(variables_unscaler, NULL, NULL, NULL);
 
   // Preserve weights through scaling transformation
-  primary_response_fn_weights(sub_model.primary_response_fn_weights());
+  primary_response_fn_weights(sub_model->primary_response_fn_weights());
 
   // Preserve sense through scaling transformation
   // Note: for a specification of negative scaling, we will assume that
   // the user's intent is to overlay the scaling and sense as specified,
   // such that we will not enforce a flip in sense for negative scaling. 
-  primary_response_fn_sense(sub_model.primary_response_fn_sense());
+  primary_response_fn_sense(sub_model->primary_response_fn_sense());
 
   // BMA TODO: consume scales so they aren't here anymore?
 }
@@ -1336,7 +1336,7 @@ ActiveSet ScalingModel::default_active_set() {
   set.derivative_vector(currentVariables.all_continuous_variable_ids());
   bool has_deriv_vars = set.derivative_vector().size() != 0;
   // The ScalingModel can return at least everything that the submodel can.
-  ShortArray asv(pSubModel->default_active_set().request_vector());
+  ShortArray asv(subModel->default_active_set().request_vector());
 
   // In addition, if mixed or numerical gradients are active, the ScalingModel
   // can return gradients for all responses

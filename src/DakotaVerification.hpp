@@ -37,9 +37,9 @@ protected:
   //
 
   /// constructor
-  Verification(ProblemDescDB& problem_db, Model& model);
+  Verification(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor for instantiations "on the fly"
-  Verification(unsigned short method_name, Model& model);
+  Verification(unsigned short method_name, std::shared_ptr<Model> model);
   /// destructor
   ~Verification() override;
     

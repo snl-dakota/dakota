@@ -36,14 +36,11 @@ public:
   //
 
   /// Problem database constructor
-  SubspaceModel(ProblemDescDB& problem_db, const Model& sub_model);
+  SubspaceModel(ProblemDescDB& problem_db, std::shared_ptr<Model> sub_model);
 
   /// lightweight constructor
-  SubspaceModel(const Model& sub_model, unsigned int dimension,
+  SubspaceModel(std::shared_ptr<Model>, unsigned int dimension,
 		short output_level);
-
-  /// destructor
-  ~SubspaceModel() override;
 
   //
   //- Heading: Virtual function redefinitions

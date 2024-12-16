@@ -33,10 +33,10 @@ public:
   //
  
   /// standard constructor
-  NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model);
+  NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /*
   /// alternate constructor for helper iterator
-  NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
+  NonDMultilevelFunctionTrain(unsigned short method_name, std::shared_ptr<Model> model,
 			      const SizetArray& colloc_pts_seq,
 			      const RealVector& dim_pref,
 			      Real colloc_ratio, const SizetArray& pilot,

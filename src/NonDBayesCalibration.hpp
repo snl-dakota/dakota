@@ -37,7 +37,7 @@ public:
   //
 
   /// standard constructor
-  NonDBayesCalibration(ProblemDescDB& problem_db, Model& model);
+  NonDBayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
   ~NonDBayesCalibration() override;
 
@@ -98,7 +98,7 @@ protected:
   void print_variables(std::ostream& s, const RealVector& c_vars);
 
 
-  const Model& algorithm_space_model() const override;
+  std::shared_ptr<Model> algorithm_space_model() override;
 
   //
   //- Heading: New virtual functions
@@ -280,14 +280,14 @@ protected:
   /// Model instance employed in the likelihood function; provides response
   /// function values from Gaussian processes, stochastic expansions (PCE/SC),
   /// or direct access to simulations (no surrogate option)
-  Model mcmcModel;
+  std::shared_ptr<Model> mcmcModel;
 
   /// whether the MCMC Model is a surrogate, or a thin transformation
   /// around a surrogate, so can be cheaply re-evaluated in chain recovery
   bool mcmcModelHasSurrogate;
 
   /// DataTransformModel wrapping the mcmcModel
-  Model residualModel;
+  std::shared_ptr<Model> residualModel;
 
   /// SQP or NIP optimizer for pre-solving for the MAP point prior to MCMC.
   /// This is restricted to emulator cases for now, but as for derivative
@@ -296,7 +296,7 @@ protected:
   Iterator mapOptimizer;
   /// RecastModel for solving for MAP: reduces residualModel to scalar
   /// negative log posterior
-  Model negLogPostModel;
+  std::shared_ptr<Model>negLogPostModel;
   /// user setting of the MAP optimization algorithm type
   unsigned short mapOptAlgOverride;
 
@@ -398,7 +398,7 @@ protected:
   RealVector correctedFieldVariances;
 
   /// a high-fidelity model data source (given by pointer in input)
-  Model hifiModel;
+  std::shared_ptr<Model> hifiModel;
   /// initial high-fidelity model samples
   int initHifiSamples;
   /// LHS iterator to generate hi-fi model data
@@ -560,7 +560,7 @@ private:
 };
 
 
-inline const Model& NonDBayesCalibration::algorithm_space_model() const
+inline std::shared_ptr<Model> NonDBayesCalibration::algorithm_space_model()
 { return residualModel; }
 
 
@@ -573,8 +573,8 @@ Real NonDBayesCalibration::prior_density(const VectorType& vec)
   // which may in turn call back to our GenericVectorRV prior plug-in
 
   const Pecos::MultivariateDistribution& mv_dist
-    = (standardizedSpace) ? residualModel.multivariate_distribution()
-    : pIteratedModel->multivariate_distribution();
+    = (standardizedSpace) ? residualModel->multivariate_distribution()
+    : iteratedModel->multivariate_distribution();
   if (mv_dist.correlation()) {
     Cerr << "Error: prior_density() uses a product of marginal densities\n"
 	 << "       and can only be used for independent random variables."
@@ -631,8 +631,8 @@ inline Real NonDBayesCalibration::prior_density(const RealVector& vec)
   // template specialization supports RealVector (e.g., for MAP pre-solve)
 
   const Pecos::MultivariateDistribution& mv_dist
-    = (standardizedSpace) ? residualModel.multivariate_distribution() // u_dist
-    : pIteratedModel->multivariate_distribution();                      // x_dist
+    = (standardizedSpace) ? residualModel->multivariate_distribution() // u_dist
+    : iteratedModel->multivariate_distribution();                      // x_dist
 
   Real pdf;
   if (numHyperparams) {
@@ -654,8 +654,8 @@ template <typename VectorType>
 Real NonDBayesCalibration::log_prior_density(const VectorType& vec)
 {
   const Pecos::MultivariateDistribution& mv_dist
-    = (standardizedSpace) ? residualModel.multivariate_distribution()
-    : pIteratedModel->multivariate_distribution();
+    = (standardizedSpace) ? residualModel->multivariate_distribution()
+    : iteratedModel->multivariate_distribution();
   if (mv_dist.correlation()) {
     Cerr << "Error: log_prior_density() uses a sum of log marginal densities\n"
 	 << "       and can only be used for independent random variables."
@@ -713,8 +713,8 @@ template <>
 inline Real NonDBayesCalibration::log_prior_density(const RealVector& vec)
 {
   const Pecos::MultivariateDistribution& mv_dist
-    = (standardizedSpace) ? residualModel.multivariate_distribution() // u_dist
-    : pIteratedModel->multivariate_distribution();                      // x_dist
+    = (standardizedSpace) ? residualModel->multivariate_distribution() // u_dist
+    : iteratedModel->multivariate_distribution();                      // x_dist
 
   Real log_pdf;
   if (numHyperparams) {
@@ -739,13 +739,13 @@ void NonDBayesCalibration::prior_sample(Engine& rng, RealVector& prior_samples)
     prior_samples.sizeUninitialized(numContinuousVars + numHyperparams);
 
   const Pecos::MultivariateDistribution& mv_dist
-    = (standardizedSpace) ? residualModel.multivariate_distribution()
-    : pIteratedModel->multivariate_distribution();
+    = (standardizedSpace) ? residualModel->multivariate_distribution()
+    : iteratedModel->multivariate_distribution();
   const std::shared_ptr<Pecos::MarginalsCorrDistribution> mv_dist_rep =
     std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
     (mv_dist.multivar_dist_rep());
   const SharedVariablesData& svd
-    = pIteratedModel->current_variables().shared_data();
+    = iteratedModel->current_variables().shared_data();
   if (mv_dist_rep->correlation()) {
     Cerr << "Error: prior_sample() does not support correlated prior samples."
 	 << std::endl;
@@ -771,8 +771,8 @@ void NonDBayesCalibration::prior_mean(VectorType& mean_vec) const
 
   // returns set of means that correspond to activeVars
   RealVector mvd_means
-    = (standardizedSpace) ? residualModel.multivariate_distribution().means()
-    : pIteratedModel->multivariate_distribution().means();
+    = (standardizedSpace) ? residualModel->multivariate_distribution().means()
+    : iteratedModel->multivariate_distribution().means();
 
   for (size_t i=0; i<numContinuousVars; ++i)
     mean_vec[i] = mvd_means[i];//[svd.cv_index_to_active_index(i)];
@@ -792,13 +792,13 @@ void NonDBayesCalibration::prior_variance(MatrixType& var_mat) const
 
   if (standardizedSpace) {
     // returns set of RV variances that correspond to activeVars
-    RealVector u_var = residualModel.multivariate_distribution().variances();
+    RealVector u_var = residualModel->multivariate_distribution().variances();
     for (size_t i=0; i<numContinuousVars; ++i)
       var_mat(i,i) = u_var[i];//[svd.cv_index_to_active_index(i)];
   }
   else {
     const Pecos::MultivariateDistribution& x_dist
-      = pIteratedModel->multivariate_distribution();
+      = iteratedModel->multivariate_distribution();
     if (x_dist.correlation()) {
       // returns set of RV stdevs that correspond to activeVars
       RealVector x_std = x_dist.std_deviations();
@@ -836,10 +836,10 @@ augment_gradient_with_log_prior(VectorType1& log_grad, const VectorType2& vec)
   // neg log posterior = neg log likelihood + neg log prior = misfit - log prior
   // --> gradient of neg log posterior = misfit gradient - log prior gradient
   const Pecos::MultivariateDistribution& mv_dist
-    = (standardizedSpace) ? residualModel.multivariate_distribution()
-    : pIteratedModel->multivariate_distribution();
+    = (standardizedSpace) ? residualModel->multivariate_distribution()
+    : iteratedModel->multivariate_distribution();
   const SharedVariablesData& svd
-    = pIteratedModel->current_variables().shared_data();
+    = iteratedModel->current_variables().shared_data();
 
   for (size_t i=0; i<numContinuousVars; ++i)
     log_grad[i] -=
@@ -854,10 +854,10 @@ augment_hessian_with_log_prior(MatrixType& log_hess, const VectorType& vec)
   // neg log posterior = neg log likelihood + neg log prior = misfit - log prior
   // --> Hessian of neg log posterior = misfit Hessian - log prior Hessian
   const Pecos::MultivariateDistribution& mv_dist
-    = (standardizedSpace) ? residualModel.multivariate_distribution()
-    : pIteratedModel->multivariate_distribution();
+    = (standardizedSpace) ? residualModel->multivariate_distribution()
+    : iteratedModel->multivariate_distribution();
   const SharedVariablesData& svd
-    = pIteratedModel->current_variables().shared_data();
+    = iteratedModel->current_variables().shared_data();
 
   for (size_t i=0; i<numContinuousVars; ++i)
     log_hess(i, i) -=
@@ -873,7 +873,7 @@ augment_gradient_with_log_prior(RealVector& log_grad, const RealVector& vec)
   // neg log posterior = neg log likelihood + neg log prior = misfit - log prior
   // --> Hessian of neg log posterior = misfit Hessian - log prior Hessian
   const Pecos::MultivariateDistribution& mv_dist
-    = (standardizedSpace) ? residualModel.multivariate_distribution()
+    = (standardizedSpace) ? residualModel->multivariate_distribution()
     : iteratedModel.multivariate_distribution();
 
   log_grad -= mv_dist.log_pdf_gradient(vec);
@@ -887,7 +887,7 @@ augment_hessian_with_log_prior(RealSymMatrix& log_hess, const RealVector& vec)
   // neg log posterior = neg log likelihood + neg log prior = misfit - log prior
   // --> Hessian of neg log posterior = misfit Hessian - log prior Hessian
   const Pecos::MultivariateDistribution& mv_dist
-    = (standardizedSpace) ? residualModel.multivariate_distribution()
+    = (standardizedSpace) ? residualModel->multivariate_distribution()
     : iteratedModel.multivariate_distribution();
 
   log_hess -= mv_dist.log_pdf_hessian(vec); // only need diagonal correction...

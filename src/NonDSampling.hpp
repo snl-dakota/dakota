@@ -40,7 +40,7 @@ public:
 
   /// alternate constructor for evaluating and computing statistics
   /// for the provided set of samples
-  NonDSampling(Model& model, const RealMatrix& sample_matrix);
+  NonDSampling(std::shared_ptr<Model> model, const RealMatrix& sample_matrix);
 
   /// destructor
   ~NonDSampling() override;
@@ -200,9 +200,9 @@ protected:
   //
 
   /// constructor
-  NonDSampling(ProblemDescDB& problem_db, Model& model);
+  NonDSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor for sample generation and evaluation "on the fly"
-  NonDSampling(unsigned short method_name, Model& model,
+  NonDSampling(unsigned short method_name, std::shared_ptr<Model> model,
 	       unsigned short sample_type, size_t samples, int seed,
 	       const String& rng, bool vary_pattern, short sampling_vars_mode);
   /// alternate constructor for sample generation "on the fly"
@@ -239,14 +239,14 @@ protected:
 
   /// Uses samplerDriver to generate a set of samples from the
   /// distributions/bounds defined in the incoming model.
-  void get_parameter_sets(Model& model) override;
+  void get_parameter_sets(std::shared_ptr<Model> model) override;
   /// Uses samplerDriver to generate a set of samples from the
   /// distributions/bounds defined in the incoming model and populates
   /// the specified design matrix.
-  void get_parameter_sets(Model& model, const size_t num_samples, 
+  void get_parameter_sets(std::shared_ptr<Model> model, const size_t num_samples, 
                           RealMatrix& design_matrix) override;
   /// core of get_parameter_sets that accepts message print control
-  void get_parameter_sets(Model& model, const size_t num_samples,
+  void get_parameter_sets(std::shared_ptr<Model> model, const size_t num_samples,
                           RealMatrix& design_matrix, bool write_msg);
   /// Uses samplerDriver to generate a set of uniform samples over
   /// lower_bnds/upper_bnds.
@@ -449,14 +449,14 @@ inline void NonDSampling::compute_moments(const RealVectorArray& fn_samples)
 {
   SizetArray sample_counts;
   compute_moments(fn_samples, sample_counts, momentStats,
-		  finalMomentsType, ModelUtils::response_labels(*pIteratedModel));
+		  finalMomentsType, ModelUtils::response_labels(*iteratedModel));
 }
 
 
 inline void NonDSampling::compute_moments(const IntResponseMap& samples)
 {
   compute_moments(samples, momentStats, momentGrads, momentCIs,
-		  finalMomentsType, ModelUtils::response_labels(*pIteratedModel));
+		  finalMomentsType, ModelUtils::response_labels(*iteratedModel));
 }
 
 
@@ -469,7 +469,7 @@ inline void NonDSampling::compute_intervals(const IntResponseMap& samples)
 
 
 inline void NonDSampling::print_intervals(std::ostream& s) const
-{ print_intervals(s, "response function", ModelUtils::response_labels(*pIteratedModel)); }
+{ print_intervals(s, "response function", ModelUtils::response_labels(*iteratedModel)); }
 
 
 inline void NonDSampling::
@@ -483,7 +483,7 @@ print_moments(std::ostream& s, String qoi_type,
 
 
 inline void NonDSampling::print_moments(std::ostream& s) const
-{ print_moments(s, "response function", ModelUtils::response_labels(*pIteratedModel)); }
+{ print_moments(s, "response function", ModelUtils::response_labels(*iteratedModel)); }
 
 
 inline void NonDSampling::sampling_reference(size_t samples_ref)
@@ -558,7 +558,7 @@ inline void NonDSampling::
 transform_samples(Pecos::ProbabilityTransformation& nataf, bool x_to_u)
 {
   // No model recursion available, assume same x/u ids for mapping:
-  SizetMultiArrayConstView cv_ids = ModelUtils::continuous_variable_ids(*pIteratedModel);
+  SizetMultiArrayConstView cv_ids = ModelUtils::continuous_variable_ids(*iteratedModel);
   transform_samples(nataf, allSamples, cv_ids, cv_ids, x_to_u);
 }
 
@@ -568,7 +568,7 @@ transform_samples(Pecos::ProbabilityTransformation& nataf,
 		  RealMatrix& sample_matrix, bool x_to_u)
 {
   // No model recursion available, assume same x/u ids for mapping:
-  SizetMultiArrayConstView cv_ids = ModelUtils::continuous_variable_ids(*pIteratedModel);
+  SizetMultiArrayConstView cv_ids = ModelUtils::continuous_variable_ids(*iteratedModel);
   transform_samples(nataf, sample_matrix, cv_ids, cv_ids, x_to_u);
 }
 
@@ -577,7 +577,7 @@ transform_samples(Pecos::ProbabilityTransformation& nataf,
     user-defined model in any of the four sampling modes and populates
     the specified design matrix. */
 inline void NonDSampling::
-get_parameter_sets(Model& model, const size_t num_samples,
+get_parameter_sets(std::shared_ptr<Model> model, const size_t num_samples,
 		   RealMatrix& design_matrix)
 { get_parameter_sets(model, num_samples, design_matrix, true); }
 
@@ -585,7 +585,7 @@ get_parameter_sets(Model& model, const size_t num_samples,
 /** This version of get_parameter_sets() extracts data from the
     user-defined model in any of the four sampling modes and populates
     class member allSamples. */
-inline void NonDSampling::get_parameter_sets(Model& model)
+inline void NonDSampling::get_parameter_sets(std::shared_ptr<Model> model)
 { get_parameter_sets(model, numSamples, allSamples); }
 
 
@@ -681,7 +681,7 @@ update_model_from_sample(Model& model, const Real* sample_vars)
 
 inline void NonDSampling::
 sample_to_variables(const Real* sample_vars, Variables& vars)
-{ sample_to_variables(sample_vars, vars, *pIteratedModel); }
+{ sample_to_variables(sample_vars, vars, *iteratedModel); }
 // default to iteratedModel for dss values
 
 

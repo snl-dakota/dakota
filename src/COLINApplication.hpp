@@ -41,7 +41,7 @@ public:
   { /* empty constructor */ }
 
   /// Constructor with Model (not presently used).
-  COLINApplication(Model& model);
+  COLINApplication(std::shared_ptr<Model> model);
 
   /// Destructor.
   ~COLINApplication() override
@@ -49,7 +49,7 @@ public:
 
   /// Helper function called after default construction to extract problem
   /// information from the Model and set it for COLIN.
-  void set_problem(Model& model);
+  void set_problem(std::shared_ptr<Model> model);
 
   /// publishes whether or not COLIN is operating synchronously
   void set_blocking_synch(const bool blockingSynchFlag)
@@ -100,10 +100,9 @@ public:
 			   bool forward = true) const override;
 
 protected:
-
+  
   /// Shallow copy of the model on which COLIN will iterate.
-  Model iteratedModel;
-  Model* pIteratedModel;
+  std::shared_ptr<Model> iteratedModel;
 
   /// Flag for COLIN synchronous behavior (Pattern Search only).
   bool blockingSynch;

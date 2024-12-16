@@ -46,7 +46,7 @@ public:
   /// standard constructor
   ConcurrentMetaIterator(ProblemDescDB& problem_db);
   /// alternate constructor
-  ConcurrentMetaIterator(ProblemDescDB& problem_db, Model& model);
+  ConcurrentMetaIterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
   ~ConcurrentMetaIterator() override;
 
@@ -76,7 +76,7 @@ protected:
   void unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index) override;
   void update_local_results(int job_index) override;
 
-  const Model& algorithm_space_model() const override;
+  std::shared_ptr<Model> algorithm_space_model() override;
 
   void declare_sources() override;
 
@@ -121,8 +121,8 @@ private:
 };
 
 
-inline const Model& ConcurrentMetaIterator::algorithm_space_model() const
-{ return *pIteratedModel; }
+inline std::shared_ptr<Model> ConcurrentMetaIterator::algorithm_space_model()
+{ return iteratedModel; }
 
 
 inline IntIntPair ConcurrentMetaIterator::estimate_partition_bounds()
@@ -136,7 +136,7 @@ inline IntIntPair ConcurrentMetaIterator::estimate_partition_bounds()
   // This function is already rank protected as far as partitioning has occurred
   // to this point.  However, this call may precede derived_init_communicators
   // when the ConcurrentMetaIterator is a sub-iterator.
-  iterSched.construct_sub_iterator(probDescDB, selectedIterator, *pIteratedModel,
+  iterSched.construct_sub_iterator(probDescDB, selectedIterator, iteratedModel,
     probDescDB.get_string("method.sub_method_pointer"),
     probDescDB.get_string("method.sub_method_name"),
     probDescDB.get_string("method.sub_model_pointer"));
@@ -158,14 +158,14 @@ inline void ConcurrentMetaIterator::initialize_model()
     paramSetLen = probDescDB.get_sizet("responses.num_objective_functions");
     // define dummy weights to trigger model recasting in iterator construction
     // (replaced at run-time with weight sets from specification)
-    if (pIteratedModel->primary_response_fn_weights().empty()) {
+    if (iteratedModel->primary_response_fn_weights().empty()) {
       RealVector initial_wts(paramSetLen, false);
       initial_wts = 1./(Real)paramSetLen;
-      pIteratedModel->primary_response_fn_weights(initial_wts); // trigger recast
+      iteratedModel->primary_response_fn_weights(initial_wts); // trigger recast
     }
   }
   else
-    paramSetLen = ModelUtils::cv(*pIteratedModel);
+    paramSetLen = ModelUtils::cv(*iteratedModel);
 }
 
 
@@ -173,10 +173,10 @@ inline void ConcurrentMetaIterator::
 initialize_iterator(const RealVector& param_set)
 {
   if (methodName == MULTI_START)
-    ModelUtils::continuous_variables(*pIteratedModel, param_set);
+    ModelUtils::continuous_variables(*iteratedModel, param_set);
   else {
-    ModelUtils::continuous_variables(*pIteratedModel, initialPt); // reset
-    pIteratedModel->primary_response_fn_weights(param_set);
+    ModelUtils::continuous_variables(*iteratedModel, initialPt); // reset
+    iteratedModel->primary_response_fn_weights(param_set);
   }
 }
 
@@ -213,7 +213,7 @@ inline void ConcurrentMetaIterator::update_local_results(int job_index)
 {
   prpResults[job_index]
     = ParamResponsePair(selectedIterator.variables_results(),
-			pIteratedModel->interface_id(),
+			iteratedModel->interface_id(),
 			selectedIterator.response_results(),
 			job_index+1); // deep copy
 }

@@ -34,8 +34,6 @@ public:
 
   /// Problem database constructor
   AdaptedBasisModel(ProblemDescDB& problem_db);
-  /// destructor
-  ~AdaptedBasisModel() override;
 
 protected:
 
@@ -57,7 +55,7 @@ protected:
   // ---
 
   /// retrieve the sub-Model from the DB to pass up the constructor chain
-  Model get_sub_model(ProblemDescDB& problem_db);
+  std::shared_ptr<Model> get_sub_model(ProblemDescDB& problem_db);
 
   // ---
   // Subspace identification functions: rank-revealing build phase

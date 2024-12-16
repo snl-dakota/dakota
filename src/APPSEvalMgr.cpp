@@ -20,11 +20,10 @@ namespace Dakota {
     Iterate and response values are passed between Dakota and APPSPACK
     via this interface. */
 
-APPSEvalMgr::APPSEvalMgr(Optimizer& opt, Model& model) :
+APPSEvalMgr::APPSEvalMgr(Optimizer& opt, std::shared_ptr<Model> model) :
   dakOpt(opt), iteratedModel(model), modelAsynchFlag(1), blockingSynch(0),
-  numWorkersUsed(0), numWorkersTotal(1), xTrial(ModelUtils::continuous_variables(model))
+  numWorkersUsed(0), numWorkersTotal(1), xTrial(ModelUtils::continuous_variables(*model))
 {
-  pIteratedModel = &iteratedModel;
   // don't use the probDescDB so that this ctor may be used with both
   // the standard and on-the-fly APPSOptimizer ctors
 
@@ -56,7 +55,7 @@ bool APPSEvalMgr::submit(const int apps_tag, const HOPSPACK::Vector& apps_xtrial
 
   if (numWorkersUsed < numWorkersTotal) {
 
-    set_variables<>(apps_xtrial, *pIteratedModel, pIteratedModel->current_variables());
+    set_variables<>(apps_xtrial, *iteratedModel, iteratedModel->current_variables());
 
     numWorkersUsed++;
   }
@@ -71,15 +70,15 @@ bool APPSEvalMgr::submit(const int apps_tag, const HOPSPACK::Vector& apps_xtrial
     // Need to map between DAKOTA and APPS tags for asynchronous
     // evaluations.
 
-    pIteratedModel->evaluate_nowait();
-    tagList[pIteratedModel->evaluation_id()] = apps_tag;
+    iteratedModel->evaluate_nowait();
+    tagList[iteratedModel->evaluation_id()] = apps_tag;
   }
   else {
     // Need to associate responses with APPS tags for synchronous
     // evaluations.
 
-    pIteratedModel->evaluate();
-    functionList[apps_tag] = pIteratedModel->current_response().function_values();
+    iteratedModel->evaluate();
+    functionList[apps_tag] = iteratedModel->current_response().function_values();
   }
 
   return true;
@@ -103,7 +102,7 @@ int APPSEvalMgr::recv(int& apps_tag, HOPSPACK::Vector& apps_f,
 
     if (dakotaResponseMap.empty())
       dakotaResponseMap = (blockingSynch) ?
-	pIteratedModel->synchronize() : pIteratedModel->synchronize_nowait();
+	iteratedModel->synchronize() : iteratedModel->synchronize_nowait();
 
     // Grab the first response (asynchronous) and map from DAKOTA to
     // APPS.  Note that this includes mapping the constraints using

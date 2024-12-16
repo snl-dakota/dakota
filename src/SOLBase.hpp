@@ -43,7 +43,7 @@ public:
   //
 
   SOLBase();             ///< default constructor
-  SOLBase(Model& model); ///< standard constructor
+  SOLBase(std::shared_ptr<Model> model); ///< standard constructor
   ~SOLBase();            ///< destructor
 
 protected:

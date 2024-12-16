@@ -32,9 +32,9 @@ public:
   //
 
   /// standard constructor
-  NonDExpansion(ProblemDescDB& problem_db, Model& model);
+  NonDExpansion(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor
-  NonDExpansion(unsigned short method_name, Model& model,
+  NonDExpansion(unsigned short method_name, std::shared_ptr<Model> model,
 		const ShortShortPair& approx_view, short exp_coeffs_approach,
 		const RealVector& dim_pref, int seed, short refine_type,
 		short refine_control, short covar_control, Real colloc_ratio,
@@ -66,7 +66,7 @@ public:
   /// print the final statistics
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
-  const Model& algorithm_space_model() const override;
+  std::shared_ptr<Model> algorithm_space_model() override;
 
   //
   //- Heading: Virtual functions
@@ -204,26 +204,26 @@ protected:
   void check_dimension_preference(const RealVector& dim_pref) const;
 
   /// assign a NonDCubature instance within u_space_sampler
-  void construct_cubature(Iterator& u_space_sampler, Model& g_u_model,
+  void construct_cubature(Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model,
 			  unsigned short cub_int_order);
   /// assign a NonDQuadrature instance within u_space_sampler based on
   /// a quad_order specification
-  void construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
+  void construct_quadrature(Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model,
 			    unsigned short quad_order,
 			    const RealVector& dim_pref);
   /// assign a NonDQuadrature instance within u_space_sampler that
   /// generates a filtered tensor product sample set
-  void construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
+  void construct_quadrature(Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model,
 			    unsigned short quad_order,
 			    const RealVector& dim_pref, int filtered_samples);
   /// assign a NonDQuadrature instance within u_space_sampler that
   /// samples randomly from a tensor product multi-index
-  void construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
+  void construct_quadrature(Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model,
 			    unsigned short quad_order,
 			    const RealVector& dim_pref,
 			    int random_samples, int seed);
   /// assign a NonDSparseGrid instance within u_space_sampler
-  void construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
+  void construct_sparse_grid(Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model,
 			     unsigned short ssg_level,
 			     const RealVector& dim_pref);
   // assign a NonDIncremLHSSampling instance within u_space_sampler
@@ -681,8 +681,8 @@ inline void NonDExpansion::maximum_refinement_iterations(size_t max_refine_iter)
 { maxRefineIterations = max_refine_iter; }
 
 
-inline const Model& NonDExpansion::algorithm_space_model() const
-{ return *uSpaceModel; }
+inline std::shared_ptr<Model> NonDExpansion::algorithm_space_model()
+{ return uSpaceModel; }
 
 
 inline size_t NonDExpansion::collocation_points() const

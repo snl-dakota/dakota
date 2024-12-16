@@ -32,7 +32,7 @@ namespace Dakota {
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDMultilevelSampling::
-NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
+NonDMultilevelSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDHierarchSampling(problem_db, model),
   allocationTarget(problem_db.get_short("method.nond.allocation_target")),
   useTargetVarianceOptimizationFlag(
@@ -102,7 +102,7 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model):
 
   // Want to define this at construct time for use in EnsembleSurrModel::
   // create_tabular_datastream()
-  pIteratedModel->ensemble_precedence(MULTILEVEL_PRECEDENCE); // prefer ML over MF
+  iteratedModel->ensemble_precedence(MULTILEVEL_PRECEDENCE); // prefer ML over MF
 }
 
 
@@ -161,10 +161,10 @@ void NonDMultilevelSampling::assign_active_key()
     // Note: secondaryIndex is SZ_MAX
     size_t s, lev;
     for (s=0; s<numApprox; ++s) {
-      lev = pIteratedModel->surrogate_model(s).solution_level_cost_index();
+      lev = iteratedModel->surrogate_model(s)->solution_level_cost_index();
       seq_keys[s].form_key(0, s, lev);
     }
-    lev = pIteratedModel->truth_model().solution_level_cost_index();
+    lev = iteratedModel->truth_model()->solution_level_cost_index();
     seq_keys[numApprox].form_key(0, numApprox, lev);
     break;
   }
@@ -176,7 +176,7 @@ void NonDMultilevelSampling::assign_active_key()
 
   Pecos::ActiveKey active_key;
   active_key.aggregate_keys(seq_keys, Pecos::RAW_DATA);
-  pIteratedModel->active_model_key(active_key); // data group 0
+  iteratedModel->active_model_key(active_key); // data group 0
   resize_active_set();
 }
 
@@ -620,7 +620,7 @@ configure_indices(unsigned short group, unsigned short form, size_t lev,
   //   nominal solution level is available prior to assigning active key.
 
   size_t hf_lev = (lev == SZ_MAX) ? // use nominal soln level for each model
-    iteratedModel.truth_model().solution_level_cost_index() : lev;
+    iteratedModel.truth_model()->solution_level_cost_index() : lev;
   Pecos::ActiveKey hf_key;  hf_key.form_key(group, form, hf_lev);
 
   if ( (seq_type == Pecos::MODEL_FORM_1D_SEQUENCE       && form == 0) ||
@@ -682,8 +682,8 @@ ml_increments(SizetArray& delta_N_l, String prepend)
     }
   }
 
-  if (pIteratedModel->asynch_flag())
-    synchronize_batches(*pIteratedModel); // schedule all groups (return ignored)
+  if (iteratedModel->asynch_flag())
+    synchronize_batches(*iteratedModel); // schedule all groups (return ignored)
 }
 
 
@@ -2070,7 +2070,7 @@ compute_error_estimates(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& 
       a_div_b, b_div_a, dummy_grad;
   RealVector cov_bootstrap;
   size_t lev, qoi, cntr = 0, Nlq,
-      num_lev = pIteratedModel->truth_model().solution_levels();
+      num_lev = iteratedModel->truth_model()->solution_levels();
   IntIntPair pr11(1, 1), pr12(1, 2), pr21(2, 1), pr22(2, 2);
   const RealMatrix &sum_Q1l = sum_Ql.at(1), &sum_Q1lm1 = sum_Qlm1.at(1),
       &sum_Q2l = sum_Ql.at(2), &sum_Q2lm1 = sum_Qlm1.at(2),

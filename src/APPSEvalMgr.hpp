@@ -36,7 +36,7 @@ public:
   //
 
   /// constructor
-  APPSEvalMgr(Optimizer&, Model& model);
+  APPSEvalMgr(Optimizer&, std::shared_ptr<Model> model);
 
   /// destructor
   ~APPSEvalMgr() override {};
@@ -92,8 +92,7 @@ private:
   Optimizer& dakOpt;
 
   /// reference to the APPSOptimizer's model passed in the constructor
-  Model& iteratedModel;
-  Model* pIteratedModel;
+  std::shared_ptr<Model> iteratedModel;
 
   /// flag for asynchronous function evaluations
   bool modelAsynchFlag;

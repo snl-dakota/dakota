@@ -22,14 +22,14 @@ static const char rcsId[] = "@(#) $Id: NonDInterval.cpp 6080 2009-09-08 19:03:20
 
 namespace Dakota {
 
-NonDInterval::NonDInterval(ProblemDescDB& problem_db, Model& model):
+NonDInterval::NonDInterval(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonD(problem_db, model),
   singleIntervalFlag(methodName ==  LOCAL_INTERVAL_EST ||
 		     methodName == GLOBAL_INTERVAL_EST)
 {
   bool err_flag = false;
 
-  const SharedVariablesData& svd = model.current_variables().shared_data();
+  const SharedVariablesData& svd = model->current_variables().shared_data();
   const SizetArray&    ac_totals = svd.active_components_totals();
   numContIntervalVars   = ac_totals[TOTAL_CEUV];
   numDiscIntervalVars   = svd.vc_lookup(DISCRETE_INTERVAL_UNCERTAIN);
@@ -100,14 +100,14 @@ void NonDInterval::initialize_final_statistics()
   // default response ASV/DVV may be overridden by NestedModel update
   // in subIterator.response_results_active_set(sub_iterator_set)
   ActiveSet stats_set(num_final_stats);
-  stats_set.derivative_vector(ModelUtils::inactive_continuous_variable_ids(*pIteratedModel));
+  stats_set.derivative_vector(ModelUtils::inactive_continuous_variable_ids(*iteratedModel));
   finalStatistics = Response(SIMULATION_RESPONSE, stats_set);
 
   // Assign meaningful fn labels to final stats (appear in NestedModel output)
   size_t i, j, num_levels, cntr = 0;
   StringArray stats_labels(num_final_stats);
   if (singleIntervalFlag) {
-    const StringArray& fn_labels = ModelUtils::response_labels(*pIteratedModel);
+    const StringArray& fn_labels = ModelUtils::response_labels(*iteratedModel);
     for (i=0; i<numFunctions; ++i) {
       stats_labels[cntr++] = fn_labels[i] + String("_min");
       stats_labels[cntr++] = fn_labels[i] + String("_max");
@@ -152,7 +152,7 @@ void NonDInterval::initialize_final_statistics()
 void NonDInterval::calculate_cells_and_bpas()
 {
   Pecos::MultivariateDistribution& mv_dist
-    = pIteratedModel->multivariate_distribution();
+    = iteratedModel->multivariate_distribution();
   std::shared_ptr<Pecos::MarginalsCorrDistribution>mvd_dist_rep =
     std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
     (mv_dist.multivar_dist_rep());
@@ -313,13 +313,13 @@ void NonDInterval::calculate_cells_and_bpas()
   }
 
   StringMultiArrayConstView cv_labels
-    = ModelUtils::continuous_variable_labels(*pIteratedModel);
+    = ModelUtils::continuous_variable_labels(*iteratedModel);
   StringMultiArrayConstView div_labels
-    = ModelUtils::discrete_int_variable_labels(*pIteratedModel);
+    = ModelUtils::discrete_int_variable_labels(*iteratedModel);
   //StringMultiArrayConstView dsv_labels
-  //  = ModelUtils::discrete_string_variable_labels(*pIteratedModel);
+  //  = ModelUtils::discrete_string_variable_labels(*iteratedModel);
   StringMultiArrayConstView drv_labels
-    = ModelUtils::discrete_real_variable_labels(*pIteratedModel);
+    = ModelUtils::discrete_real_variable_labels(*iteratedModel);
   for (i=0; i<numCells; ++i) {
     Cout << "Cell " << i+1 << ":\n";
     for (j=0; j<num_ciu; ++j)
@@ -564,7 +564,7 @@ void NonDInterval::compute_evidence_statistics()
 
 void NonDInterval::print_results(std::ostream& s, short results_state)
 {
-  const StringArray& fn_labels = ModelUtils::response_labels(*pIteratedModel);
+  const StringArray& fn_labels = ModelUtils::response_labels(*iteratedModel);
   s << "------------------------------------------------------------------\n"
     << std::scientific << std::setprecision(write_precision);
 

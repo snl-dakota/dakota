@@ -35,7 +35,7 @@ public:
   //- Heading: Constructors and destructor
   //
 
-  NonDLocalInterval(ProblemDescDB& problem_db, Model& model); ///< constructor
+  NonDLocalInterval(ProblemDescDB& problem_db, std::shared_ptr<Model> model); ///< constructor
   ~NonDLocalInterval() override;                                       ///< destructor
 
   //
@@ -81,7 +81,7 @@ protected:
   /// local gradient-based optimizer
   Iterator minMaxOptimizer;
   /// recast model which extracts the active objective function
-  Model minMaxModel;
+  std::shared_ptr<Model> minMaxModel;
 
 private:
 

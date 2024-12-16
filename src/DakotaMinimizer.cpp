@@ -40,7 +40,7 @@ Minimizer* Minimizer::minimizerInstance(NULL);
 /** This constructor extracts inherited data for the optimizer and least
     squares branches and performs sanity checking on constraint settings. */
 Minimizer::
-Minimizer(ProblemDescDB& problem_db, Model& model,
+Minimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model,
 	  std::shared_ptr<TraitsBase> traits): 
   Iterator(BaseConstructor(), problem_db, traits),
   constraintTol(probDescDB.get_real("method.constraint_tolerance")),
@@ -50,13 +50,12 @@ Minimizer(ProblemDescDB& problem_db, Model& model,
   optimizationFlag(true),
   calibrationDataFlag(probDescDB.get_bool("responses.calibration_data") ||
     !probDescDB.get_string("responses.scalar_data_filename").empty()),
-  expData(probDescDB, model.current_response().shared_data(), outputLevel),
+  expData(probDescDB, model->current_response().shared_data(), outputLevel),
   numExperiments(0), numTotalCalibTerms(0),
-  scaleFlag(probDescDB.get_bool("method.scaling")), iteratedModel{Iterator::iterated_model()}
+  scaleFlag(probDescDB.get_bool("method.scaling"))
 {
   iteratedModel = model;
-  pIteratedModel = &iteratedModel;
-  update_from_model(iteratedModel); // variable,response counts & checks
+  update_from_model(*iteratedModel); // variable,response counts & checks
 
   // Re-assign Iterator defaults specialized to Minimizer branch
   // DataMethod defaults are assigned a special value of SZ_MAX, for
@@ -71,30 +70,28 @@ Minimizer(ProblemDescDB& problem_db, Model& model,
 
 
 Minimizer::
-Minimizer(unsigned short method_name, Model& model,
+Minimizer(unsigned short method_name, std::shared_ptr<Model> model,
 	  std::shared_ptr<TraitsBase> traits):
   Iterator(NoDBBaseConstructor(), method_name, model, traits),
   constraintTol(0.), bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
   boundConstraintFlag(false), speculativeFlag(false), optimizationFlag(true),
   calibrationDataFlag(false), numExperiments(0), numTotalCalibTerms(0),
-  scaleFlag(false), iteratedModel{Iterator::iterated_model()}
+  scaleFlag(false)
 {
-  pIteratedModel = &iteratedModel;
-  update_from_model(iteratedModel); // variable,constraint counts & checks
+  update_from_model(*iteratedModel); // variable,constraint counts & checks
 }
 
 
 Minimizer::
-Minimizer(Model& model, size_t max_iter, size_t max_eval, Real conv_tol,
+Minimizer(std::shared_ptr<Model> model, size_t max_iter, size_t max_eval, Real conv_tol,
 	  std::shared_ptr<TraitsBase> traits):
   Iterator(NoDBBaseConstructor(), model, max_iter, max_eval, conv_tol, traits),
   constraintTol(0.), bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
   boundConstraintFlag(false), speculativeFlag(false), optimizationFlag(true),
   calibrationDataFlag(false), numExperiments(0), numTotalCalibTerms(0),
-  scaleFlag(false), iteratedModel{Iterator::iterated_model()}
+  scaleFlag(false)
 {
-  pIteratedModel = &iteratedModel;
-  update_from_model(iteratedModel); // variable,constraint counts & checks
+  update_from_model(*iteratedModel); // variable,constraint counts & checks
 }
 
 
@@ -113,10 +110,8 @@ Minimizer(unsigned short method_name, size_t num_lin_ineq, size_t num_lin_eq,
   numUserPrimaryFns(1), numIterPrimaryFns(1), boundConstraintFlag(false),
   speculativeFlag(false), optimizationFlag(true), 
   calibrationDataFlag(false), numExperiments(0), numTotalCalibTerms(0),
-  scaleFlag(false), iteratedModel{Iterator::iterated_model()}
-{ 
-  pIteratedModel = &iteratedModel;
-}
+  scaleFlag(false)
+{ }
 
 
 bool Minimizer::resize()
@@ -298,7 +293,7 @@ void Minimizer::initialize_run()
 {
   // Verify that iteratedModel is not null (default ctor and some
   // NoDBBaseConstructor ctors leave iteratedModel uninitialized).
-  if (!pIteratedModel->is_null()) {
+  if (iteratedModel) {
     // update context data that is outside scope of local DB specifications.
     // This is needed for reused objects.
     //iteratedModel.db_scope_reset(); // TO DO: need better name?
@@ -310,13 +305,9 @@ void Minimizer::initialize_run()
     // of a recursion.  On subsequent passes, it may correspond to the inner
     // iterator.  The Iterator scope should not matter for the iteratedModel
     // mapping initialize/finalize.
-    if (!check_model_consistency() ) {
-      Cerr << "Model pointer is not consistent with iteratedModel ... " << std::endl; 
-      abort_handler(-1);
-    }
-    if (!pIteratedModel->mapping_initialized()) {
+    if (!iteratedModel->mapping_initialized()) {
       ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator();
-      bool var_size_changed = pIteratedModel->initialize_mapping(pl_iter);
+      bool var_size_changed = iteratedModel->initialize_mapping(pl_iter);
       if (var_size_changed)
         /*bool reinit_comms =*/ resize(); // ignore return value
     }
@@ -325,7 +316,7 @@ void Minimizer::initialize_run()
     // (previously managed via presence/absence of ostream)
     //if (!subIteratorFlag)
     if (summaryOutputFlag)
-      pIteratedModel->set_evaluation_reference();
+      iteratedModel->set_evaluation_reference();
   }
 
   // Track any previous object instance in case of recursion.  Note that
@@ -345,18 +336,18 @@ void Minimizer::initialize_run()
 
     // Dive into the originally passed model (could keep a shallow copy of it)
     // Don't use a reference here as want a shallow copy, not the instance
-    Model usermodel(*pIteratedModel);
+    auto usermodel = iteratedModel;
     for (unsigned short i=1; i<=myModelLayers; ++i) {
-      usermodel = usermodel.subordinate_model();
+      usermodel = usermodel->subordinate_model();
     }
     
     // Could be lighter weight, but don't have a way to update only inactive
     bestVariablesArray.front().all_continuous_variables(
-      ModelUtils::all_continuous_variables(usermodel));
+      ModelUtils::all_continuous_variables(*usermodel));
     bestVariablesArray.front().all_discrete_int_variables(
-      ModelUtils::all_discrete_int_variables(usermodel));
+      ModelUtils::all_discrete_int_variables(*usermodel));
     bestVariablesArray.front().all_discrete_real_variables(
-      ModelUtils::all_discrete_real_variables(usermodel));
+      ModelUtils::all_discrete_real_variables(*usermodel));
   }
 }
 
@@ -366,8 +357,8 @@ void Minimizer::post_run(std::ostream& s)
   archive_best_results();
   if (summaryOutputFlag) {
     // Print the function evaluation summary for all Iterators
-    if (!pIteratedModel->is_null())
-      pIteratedModel->print_evaluation_summary(s); // full hdr, relative counts
+    if (iteratedModel)
+      iteratedModel->print_evaluation_summary(s); // full hdr, relative counts
 
     // The remaining final results output varies by iterator branch
     print_results(s);
@@ -383,26 +374,26 @@ void Minimizer::finalize_run()
   // Finalize an initialized mapping.  This will correspond to the first
   // finalize_run() with an uninitialized mapping, such as the inner-iterator
   // in a recursion.
-  if (!pIteratedModel->is_null() && pIteratedModel->mapping_initialized()) {
+  if (iteratedModel && iteratedModel->mapping_initialized()) {
     // paired to matching call to Model.initialize_mapping() in
     // initialize_run() above
-    bool var_size_changed = pIteratedModel->finalize_mapping();
+    bool var_size_changed = iteratedModel->finalize_mapping();
     if (var_size_changed)
       /*bool reinit_comms =*/ resize(); // ignore return value
   }
 }
 
 
-Model Minimizer::original_model(unsigned short recasts_left) const
+std::shared_ptr<Model> Minimizer::original_model(unsigned short recasts_left) const
 {
   // Dive into the originally passed model (could keep a shallow copy of it)
   // Don't use a reference here as want a shallow copy, not the instance
-  Model usermodel(*pIteratedModel);
+  auto usermodel = iteratedModel;
   for (unsigned short i=1; i<=myModelLayers - recasts_left; ++i) {
-    usermodel = usermodel.subordinate_model();
+    usermodel = usermodel->subordinate_model();
   }
 
-  return(usermodel);
+  return usermodel;
 }
 
 
@@ -420,7 +411,7 @@ void Minimizer::data_transform_model()
       abort_handler(-1);
   }
   // TODO: verify: we don't want to weight by missing sigma: all = 1.0
-  expData.load_data("Least Squares", pIteratedModel->current_variables());
+  expData.load_data("Least Squares", iteratedModel->current_variables());
 
   if (numNonlinearConstraints > 0 && numExperiments > 1 &&
       expData.num_config_vars() > 0)
@@ -428,14 +419,14 @@ void Minimizer::data_transform_model()
 	 << "experiment\nconfigurations, the returned constraint values must be"
 	 << " the same across\nconfigurations." << std::endl;
 
-  pIteratedModel->assign_rep(std::make_shared<DataTransformModel>(
-    *pIteratedModel, expData, pIteratedModel->current_variables().view()));
+  iteratedModel = std::make_shared<DataTransformModel>(
+    iteratedModel, expData, iteratedModel->current_variables().view());
   ++myModelLayers;
-  dataTransformModel = *pIteratedModel;
+  dataTransformModel = iteratedModel;
 
   // update sizes in Iterator view from the RecastModel
-  numIterPrimaryFns = numTotalCalibTerms = pIteratedModel->num_primary_fns();
-  numFunctions = ModelUtils::response_size(*pIteratedModel);
+  numIterPrimaryFns = numTotalCalibTerms = iteratedModel->num_primary_fns();
+  numFunctions = ModelUtils::response_size(*iteratedModel);
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "Adjusted number of calibration terms: " << numTotalCalibTerms 
 	 << std::endl;
@@ -469,8 +460,8 @@ void Minimizer::data_transform_model()
 void Minimizer::scale_model()
 {
   // iteratedModel becomes the sub-model of a RecastModel:
-  pIteratedModel->assign_rep(std::make_shared<ScalingModel>(*pIteratedModel));
-  scalingModel = *pIteratedModel;
+  iteratedModel = std::make_shared<ScalingModel>(iteratedModel);
+  scalingModel = iteratedModel;
   ++myModelLayers;
 
 }
@@ -964,7 +955,7 @@ archive_best_residuals() const
   if(!resultsDB.active()) return;
   
   const RealVector& lsq_weights 
-      = original_model().primary_response_fn_weights();
+      = original_model()->primary_response_fn_weights();
   const StrStrSizet &iterator_id = run_identifier();
   size_t num_points = bestResponseArray.size();
 
@@ -1055,10 +1046,10 @@ void Minimizer::resize_best_vars_array(size_t newsize)
     // of the model's current variables for envelope-letter requirements.
 
     // Best point arrays have be sized and scaled in the original user space.  
-    Model usermodel = original_model();
+    auto usermodel = original_model();
     bestVariablesArray.reserve(newsize);
     for(size_t i=curr_size; i<newsize; ++i)
-      bestVariablesArray.push_back(usermodel.current_variables().copy());
+      bestVariablesArray.push_back(usermodel->current_variables().copy());
   }
   // else no size change
 }
@@ -1082,10 +1073,10 @@ void Minimizer::resize_best_resp_array(size_t newsize)
     // of the model's current response for envelope-letter requirements.
 
     // Best point arrays have be sized and scaled in the original user space.  
-    Model usermodel = original_model();
+    auto usermodel = original_model();
     bestResponseArray.reserve(newsize);
     for(size_t i=curr_size; i<newsize; ++i)
-      bestResponseArray.push_back(usermodel.current_response().copy());
+      bestResponseArray.push_back(usermodel->current_response().copy());
   }
   // else no size change
 }
@@ -1164,10 +1155,10 @@ void Minimizer::archive_best_results()
   // must search in the inbound Model's space (and even that may not
   // suffice if there are additional recastings underlying this
   // Optimizer's Model) to find the function evaluation ID number
-  Model orig_model = original_model();
-  const String& interface_id = orig_model.interface_id();
+  auto orig_model = original_model();
+  const String& interface_id = orig_model->interface_id();
   // use asv = 1's
-  ActiveSet search_set(ModelUtils::response_size(orig_model), numContinuousVars);
+  ActiveSet search_set(ModelUtils::response_size(*orig_model), numContinuousVars);
   int eval_id;
 
   if(numNonlinearConstraints)
@@ -1181,8 +1172,7 @@ void Minimizer::archive_best_results()
     archive_best_variables();
   } else { //calibration with data
     std::shared_ptr<DataTransformModel> dt_model_rep =
-      std::static_pointer_cast<DataTransformModel>
-      (dataTransformModel.model_rep());
+      std::static_pointer_cast<DataTransformModel>(dataTransformModel);
     if(dt_model_rep->num_config_vars())
       archive_best_variables(true);
     else
@@ -1236,7 +1226,7 @@ local_recast_retrieve(const Variables& vars, Response& response) const
   // may not exist a single DB eval with both functions, constraints)
   ActiveSet lookup_set(response.active_set());
   PRPCacheHIter cache_it
-    = lookup_by_val(data_pairs, pIteratedModel->interface_id(), vars, lookup_set);
+    = lookup_by_val(data_pairs, iteratedModel->interface_id(), vars, lookup_set);
   if (cache_it == data_pairs.get<hashed>().end()) {
     Cerr << "Warning: failure in recovery of final values for locally recast "
 	 << "optimization." << std::endl;

@@ -42,13 +42,13 @@ void LDDriver::set_seed(int seed) {
 
 // Generate samples of the wrapped low-discrepancy sequence
 void LDDriver::generate_samples(
-    const Model& model,      // The model to get the multivariate distribution from
+    std::shared_ptr<Model> model,      // The model to get the multivariate distribution from
     const size_t numSamples, // Number of samples to generate
     RealMatrix& sampleMatrix // Matrix to store the generated samples (needs to be resized to numVariables x numSamples)
 )
 {
     // Reshape the sample matrix if needed
-    reshape_sample_matrix(sampleMatrix, ModelUtils::cv(model), numSamples);
+    reshape_sample_matrix(sampleMatrix, ModelUtils::cv(*model), numSamples);
 
     // Generate points from the low-discrepancy sequence
     sequence_->get_points(numSamples_, numSamples_ + numSamples, sampleMatrix);
@@ -143,7 +143,7 @@ void LDDriver::scale(
 // Function to transform a given sample matrix from a uniform distribution over [0, 1)
 // to the multivariate distribution defined by the given model
 void LDDriver::transform(
-    const Model& model,      // The model to get the target multivariate distribution from
+    std::shared_ptr<Model> model,      // The model to get the target multivariate distribution from
     RealMatrix& sampleMatrix // The matrix of samples to transform (shape numVariables x numSamples)
 )
 {
@@ -157,53 +157,46 @@ void LDDriver::transform(
     scale(lowerBounds, upperBounds, sampleMatrix); // transform from [0, 1) to [-1, 1)
 
     // If correlated, tranform samples to standard normal first
-    if ( model.multivariate_distribution().correlation() )
+    if ( model->multivariate_distribution().correlation() )
     {
         // vSpaceModel has uncorrelated standard normal random variables
-        Model vSpaceModel;
-        vSpaceModel.assign_rep(
-        std::make_shared<ProbabilityTransformModel>(model, STD_NORMAL_U)
-        );
-
-        // uSpaceModel has uncorrelated standard uniform random variables
-        Model uSpaceModel;
-        uSpaceModel.assign_rep(
-        std::make_shared<ProbabilityTransformModel>(vSpaceModel, STD_UNIFORM_U)
-        );
-
+        auto vSpaceModel = std::make_shared<ProbabilityTransformModel>(model, STD_NORMAL_U);
+        auto uSpaceModel = std::make_shared<ProbabilityTransformModel>(vSpaceModel, STD_UNIFORM_U);
         // First transform from standard uniform to standard normal
         Pecos::ProbabilityTransformation& uNataf = 
-        uSpaceModel.probability_transformation();
+          uSpaceModel->probability_transformation();
         for (size_t sample = 0; sample < numSamples; ++sample) {
             RealVector uSample(Teuchos::Copy, sampleMatrix[sample], numVariables);
             RealVector xSample(Teuchos::View, sampleMatrix[sample], numVariables);
-            uNataf.trans_U_to_X(uSample, ModelUtils::continuous_variable_ids(model), xSample, ModelUtils::continuous_variable_ids(model));
+            uNataf.trans_U_to_X(uSample, 
+			    ModelUtils::continuous_variable_ids(*model), 
+			    xSample, ModelUtils::continuous_variable_ids(*model));
         }
 
         // Then transform from standard normal to actual model
         Pecos::ProbabilityTransformation& vNataf = 
-        vSpaceModel.probability_transformation();
+        vSpaceModel->probability_transformation();
         for (size_t sample = 0; sample < numSamples; ++sample) {
             RealVector uSample(Teuchos::Copy, sampleMatrix[sample], numVariables);
             RealVector xSample(Teuchos::View, sampleMatrix[sample], numVariables);
-            vNataf.trans_U_to_X(uSample, ModelUtils::continuous_variable_ids(model), xSample, ModelUtils::continuous_variable_ids(model));
+            vNataf.trans_U_to_X(uSample,
+			    ModelUtils::continuous_variable_ids(*model), 
+			    xSample, ModelUtils::continuous_variable_ids(*model));
         }
     }
     else // If uncorrelated, directly apply the transform
     {
         // uSpaceModel has uncorrelated standard uniform random variables
-        Model uSpaceModel;
-        uSpaceModel.assign_rep(
-        std::make_shared<ProbabilityTransformModel>(model, STD_UNIFORM_U)
-        );
-
+        auto uSpaceModel = std::make_shared<ProbabilityTransformModel>(model, STD_UNIFORM_U);
         // Transform samples using Nataf transformation (component-wise inverse CDF)
         Pecos::ProbabilityTransformation& uNataf = 
-        uSpaceModel.probability_transformation();
+          uSpaceModel->probability_transformation();
         for (size_t sample = 0; sample < numSamples; ++sample) {
             RealVector uSample(Teuchos::Copy, sampleMatrix[sample], numVariables);
             RealVector xSample(Teuchos::View, sampleMatrix[sample], numVariables);
-            uNataf.trans_U_to_X(uSample, ModelUtils::continuous_variable_ids(model), xSample, ModelUtils::continuous_variable_ids(model));
+            uNataf.trans_U_to_X(uSample, 
+			    ModelUtils::continuous_variable_ids(*model),
+			    xSample, ModelUtils::continuous_variable_ids(*model));
         }
     } 
 }

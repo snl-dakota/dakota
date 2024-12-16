@@ -24,7 +24,7 @@ static const char rcsId[]="@(#) $Id: SurrogateModel.cpp 7024 2010-10-16 01:24:42
 namespace Dakota {
 
 SurrogateModel::SurrogateModel(ProblemDescDB& problem_db):
-  Model(BaseConstructor(), problem_db),
+  Model(problem_db),
   surrogateFnIndices(problem_db.get_szs("model.surrogate.function_indices")),
   responseMode(DEFAULT_SURROGATE_RESP_MODE),
   corrType(problem_db.get_short("model.surrogate.correction_type")),
@@ -53,7 +53,7 @@ SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 	       const SharedResponseData&  srd, bool share_srd,
 	       const ActiveSet& surr_set, short corr_type, short output_level):
   // Allow DFSModel to employ sizing differences (e.g., consuming aggregations)
-  Model(LightWtBaseConstructor(), surr_view, svd, share_svd, srd, share_srd,
+  Model(surr_view, svd, share_svd, srd, share_srd,
 	surr_set, output_level, problem_db, parallel_lib),
   responseMode(DEFAULT_SURROGATE_RESP_MODE), corrType(corr_type), corrOrder(0),
   surrModelEvalCntr(0), approxBuilds(0)
@@ -211,9 +211,6 @@ void SurrogateModel::init_model(Model& model)
     constraints from userDefinedConstraints. */
 void SurrogateModel::init_model_constraints(Model& sub_model)
 {
-  if (sub_model.is_null()) // possible for DataFitSurrModel
-    return;
-
   size_t num_cv  = currentVariables.cv(),  num_div = currentVariables.div(),
          num_drv = currentVariables.drv(), num_dsv = currentVariables.dsv(),
       num_sm_cv  = ModelUtils::cv(sub_model),         num_sm_div = ModelUtils::div(sub_model),
@@ -383,11 +380,11 @@ void SurrogateModel::init_model_inactive_labels(Model& sub_model)
 }
 
 
-void SurrogateModel::update_model(Model& sub_model)
+void SurrogateModel::update_model(std::shared_ptr<Model> sub_model)
 {
-  if (sub_model.is_null()) return; // possible for DataFitSurrModel
-  update_model_active_variables(sub_model); // default operation
-  update_model_active_constraints(sub_model); // default operation
+  if (!sub_model) return; // possible for DataFitSurrModel
+  update_model_active_variables(*sub_model); // default operation
+  update_model_active_constraints(*sub_model); // default operation
   //update_model_distributions(sub_model);
 }
 
@@ -456,12 +453,12 @@ void SurrogateModel::update_model_distributions(Model& sub_model)
 /** Update values and labels in currentVariables and
     bound/linear/nonlinear constraints in userDefinedConstraints from
     variables and constraints data within sub_model. */
-void SurrogateModel::update_from_model(const Model& sub_model)
+void SurrogateModel::update_from_model(std::shared_ptr<Model> sub_model)
 {
-  if (sub_model.is_null()) return; // possible for DataFitSurrModel
-  update_variables_from_model(sub_model);
+  if (!sub_model) return; // possible for DataFitSurrModel
+  update_variables_from_model(*sub_model);
   //update_distributions_from_model(sub_model);
-  update_response_from_model(sub_model);
+  update_response_from_model(*sub_model);
 }
 
 
@@ -711,15 +708,15 @@ check_rebuild(const RealVector& ref_icv,        const IntVector&  ref_idiv,
 
   // for global surrogates, force rebuild for change in active bounds
 
-  Model& actual_model = active_truth_model();
+  auto actual_model = active_truth_model();
 
   // Don't force rebuild for active subspace model:
   // JAM TODO: there's probably a more elegant way to accomodate subspace models
-  if (actual_model.model_type() == "active_subspace")
+  if (actual_model->model_type() == "active_subspace")
     return false;
 
   short approx_active_view = currentVariables.view().first;
-  if (actual_model.is_null()) {
+  if (!actual_model) {
     // compare reference vars against current inactive top-level data
     if ( ref_icv  != currentVariables.inactive_continuous_variables() ||
 	 ref_idiv !=
@@ -746,7 +743,7 @@ check_rebuild(const RealVector& ref_icv,        const IntVector&  ref_idiv,
 	return true;
   }
   else { // actual_model is defined
-    const Variables& actual_vars = actual_model.current_variables();
+    const Variables& actual_vars = actual_model->current_variables();
     short sub_model_active_view  = actual_vars.view().first;
 
     // compare reference vars against current inactive top-level data
@@ -788,7 +785,7 @@ check_rebuild(const RealVector& ref_icv,        const IntVector&  ref_idiv,
     // compare reference bounds against current active top-level data
     if ( strbegins(surrogateType, "global_") ) {
 
-      if (actual_model.model_type() == "recast") {
+      if (actual_model->model_type() == "recast") {
 	// check for internal changes within subModel definition since the
 	// SurrogateModel may be in a standard variable space (such that the
 	// outer level values/bounds do not reflect inner level updates).
@@ -805,17 +802,17 @@ check_rebuild(const RealVector& ref_icv,        const IntVector&  ref_idiv,
 	// Dive through Model recursion to bypass recasting. This is not readily
 	// handled within new Model virtual fns since the type of approximation
 	// (known here, but not w/i virtual fns) could dictate different checks.
-	Model sub_model = actual_model.subordinate_model();
-	while (sub_model.model_type() == "recast")
-	  sub_model = sub_model.subordinate_model();
+	auto sub_model = actual_model->subordinate_model();
+	while (sub_model->model_type() == "recast")
+	  sub_model = sub_model->subordinate_model();
 
-	if (ref_c_l_bnds  != ModelUtils::continuous_lower_bounds(sub_model)    ||
-	    ref_c_u_bnds  != ModelUtils::continuous_upper_bounds(sub_model)    ||
-	    ref_di_l_bnds != ModelUtils::discrete_int_lower_bounds(sub_model)  ||
-	    ref_di_u_bnds != ModelUtils::discrete_int_upper_bounds(sub_model)  ||
+	if (ref_c_l_bnds  != ModelUtils::continuous_lower_bounds(*sub_model)    ||
+	    ref_c_u_bnds  != ModelUtils::continuous_upper_bounds(*sub_model)    ||
+	    ref_di_l_bnds != ModelUtils::discrete_int_lower_bounds(*sub_model)  ||
+	    ref_di_u_bnds != ModelUtils::discrete_int_upper_bounds(*sub_model)  ||
 	    // no discrete string bounds
-	    ref_dr_l_bnds != ModelUtils::discrete_real_lower_bounds(sub_model) ||
-	    ref_dr_u_bnds != ModelUtils::discrete_real_upper_bounds(sub_model))
+	    ref_dr_l_bnds != ModelUtils::discrete_real_lower_bounds(*sub_model) ||
+	    ref_dr_u_bnds != ModelUtils::discrete_real_upper_bounds(*sub_model))
 	  return true;
       }
       else if ( approx_active_view == sub_model_active_view && 
@@ -1144,7 +1141,7 @@ size_t SurrogateModel::insert_response_start(size_t position)
 {
   // default to be overridden, given knowledge of ensemble response sizes
   size_t num_fns
-    = truth_model().current_response().active_set_request_vector().size();
+    = truth_model()->current_response().active_set_request_vector().size();
   return position * num_fns;
 }
 

@@ -16,6 +16,7 @@
 //- Checked by:
 
 #include "dakota_system_defs.hpp"
+#include "model_utils.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "NIDRProblemDescDB.hpp"
@@ -26,6 +27,7 @@
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <string>
+
 
 //#define DEBUG
 //#define MPI_DEBUG
@@ -972,7 +974,7 @@ const Iterator& ProblemDescDB::get_iterator()
 }
 
 
-const Iterator& ProblemDescDB::get_iterator(Model& model)
+const Iterator& ProblemDescDB::get_iterator(std::shared_ptr<Model> model)
 {
   // ProblemDescDB::get_<object> functions operate at the envelope level
   // so that any passing of *this provides the envelope object.
@@ -1006,7 +1008,7 @@ const Iterator& ProblemDescDB::get_iterator(Model& model)
 
 
 const Iterator& ProblemDescDB::
-get_iterator(const String& method_name, Model& model)
+get_iterator(const String& method_name, std::shared_ptr<Model> model)
 {
   // ProblemDescDB::get_<object> functions operate at the envelope level
   // so that any passing of *this provides the envelope object.
@@ -1037,7 +1039,7 @@ get_iterator(const String& method_name, Model& model)
 }
 
 
-const Model& ProblemDescDB::get_model()
+std::shared_ptr<Model> ProblemDescDB::get_model()
 {
   // ProblemDescDB::get_<object> functions operate at the envelope level
   // so that any passing of *this provides the envelope object.
@@ -1062,10 +1064,9 @@ const Model& ProblemDescDB::get_model()
     id_model = "NO_MODEL_ID";
   ModelLIter m_it
     = std::find_if(dbRep->modelList.begin(), dbRep->modelList.end(),
-                   boost::bind(&Model::model_id, _1) == id_model);
+                   [&id_model](std::shared_ptr<Model> m) {return m->model_id() == id_model;});
   if (m_it == dbRep->modelList.end()) {
-    Model new_model(*this);
-    dbRep->modelList.push_back(new_model);
+    dbRep->modelList.push_back(ModelUtils::get_model(*this));
     m_it = --dbRep->modelList.end();
   }
   return *m_it;

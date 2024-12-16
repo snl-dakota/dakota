@@ -459,7 +459,7 @@ public:
         typename AdapterT::VecT & upper)
     {
       return get_variable_bounds<AdapterT>(
-                            *pIteratedModel,
+                            *iteratedModel,
                             bigRealBoundSize,
                             bigIntBoundSize,
                             lower,
@@ -474,7 +474,7 @@ public:
         VecT & cEqs, 
         VecT & cIneqs)
     {
-      return get_responses( *pIteratedModel,
+      return get_responses( *iteratedModel,
                             dak_fn_vals, 
                             constraintMapIndices,
                             constraintMapMultipliers,
@@ -494,10 +494,10 @@ protected:
   /// default constructor
   Optimizer(std::shared_ptr<TraitsBase> traits);
   /// alternate constructor; accepts a model
-  Optimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits);
+  Optimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model, std::shared_ptr<TraitsBase> traits);
 
   /// alternate constructor for "on the fly" instantiations
-  Optimizer(unsigned short method_name, Model& model, std::shared_ptr<TraitsBase> traits);
+  Optimizer(unsigned short method_name, std::shared_ptr<Model> model, std::shared_ptr<TraitsBase> traits);
   /// alternate constructor for "on the fly" instantiations
   Optimizer(unsigned short method_name, size_t num_cv, size_t num_div,
 	    size_t num_dsv, size_t num_drv, size_t num_lin_ineq,
@@ -563,7 +563,7 @@ protected:
     }
 
     return configure_inequality_constraint_maps(
-        *pIteratedModel,
+        *iteratedModel,
         bigRealBoundSize,
         ctype,
         constraintMapIndices,
@@ -582,7 +582,7 @@ protected:
       split_into_one_sided = false;
 
     return configure_equality_constraint_maps(
-        *pIteratedModel,
+        *iteratedModel,
         ctype,
         constraintMapIndices,
         index_offset,
@@ -602,7 +602,7 @@ protected:
           typename AdapterT::MatT & lin_eq_coeffs)
   {
     return get_linear_constraints<AdapterT>(
-        *pIteratedModel,
+        *iteratedModel,
         bigRealBoundSize,
         lin_ineq_lower_bnds,
         lin_ineq_upper_bnds,

@@ -15,7 +15,7 @@ static const char rcsId[]=
 
 namespace Dakota {
 
-extern Model dummy_model; // defined in DakotaModel.cpp
+extern std::shared_ptr<Model> dummy_model; // defined in DakotaModel.cpp
 
 
 EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db):
@@ -34,22 +34,19 @@ EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db):
   if (truth_model_spec) ++num_models;
   size_t num_approx = num_models - 1;
 
-  // approxModels is now a container of models with corresponding pointers in pApproxModels.
+  // approxModels is now a container of models with corresponding pointers in approxModels.
   // The orignial population relied on Model copies of the const & returned by get_model.
   // I think we'll need to handle this with shared_ptr's.
   approxModels.resize(num_approx);
-  pApproxModels.resize(num_approx);
   for (i=0; i<num_approx; ++i) {
     problem_db.set_db_model_nodes(ensemble_model_ptrs[i]);
     approxModels[i] = problem_db.get_model();
-    pApproxModels[i] = &approxModels[i];
-    check_submodel_compatibility(*pApproxModels[i]);
+    check_submodel_compatibility(*approxModels[i]);
   }
   if (truth_model_spec) problem_db.set_db_model_nodes(truth_model_ptr);
   else problem_db.set_db_model_nodes(ensemble_model_ptrs[num_approx]);
   truthModel = problem_db.get_model();
-  pTruthModel = &truthModel;
-  check_submodel_compatibility(*pTruthModel);
+  check_submodel_compatibility(*truthModel);
 
   problem_db.set_db_model_nodes(model_index); // restore
 
@@ -91,19 +88,19 @@ void EnsembleSurrModel::assign_default_keys(short mode)
 
   // For now, use design of all models are active and specific fn sets are
   // requested via ASV.
-  unsigned short id = 0, num_approx = pApproxModels.size();
-  size_t truth_soln_lev = pTruthModel->solution_levels();
+  unsigned short id = 0, num_approx = approxModels.size();
+  size_t truth_soln_lev = truthModel->solution_levels();
   short reduction = Pecos::RAW_DATA; // most modes are raw data w/ no reduction
   switch (mode) {
   case AGGREGATED_MODELS: { //case DEFAULT_SURROGATE_RESP_MODE:
     size_t i, j, truth_index = truth_soln_lev - 1, num_lev, cntr = 0,
       num_combinations = truth_soln_lev;
     for (i=0; i<num_approx; ++i)
-      num_combinations += pApproxModels[i]->solution_levels();
+      num_combinations += approxModels[i]->solution_levels();
     // arrange surrogate keys head to tail
     surrModelKeys.resize(num_combinations-1);
     for (i=0; i<num_approx; ++i) {
-      num_lev = pApproxModels[i]->solution_levels();
+      num_lev = approxModels[i]->solution_levels();
       for (j=0; j<num_lev; ++j, ++cntr)
 	surrModelKeys[cntr] = Pecos::ActiveKey(id, Pecos::RAW_DATA, i, j);
     }
@@ -124,14 +121,14 @@ void EnsembleSurrModel::assign_default_keys(short mode)
     }
     else if (multifidelity()) { // first and last model form (no soln levels)
       truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA, num_approx,
-				       pTruthModel->solution_level_cost_index());
+				       truthModel->solution_level_cost_index());
       surrModelKeys.resize(1);
       // Note: for modeKeyBufferSize estimation, must maintain consistency with
       // NonDExpansion::configure_{sequence,indices}() and key definition for
       // NonDMultilevelSampling::control_variate_mc() in terms of SZ_MAX usage,
       // since this suppresses allocation of a solution level array.
       surrModelKeys[0]  = Pecos::ActiveKey(id, Pecos::RAW_DATA, 0,
-        pApproxModels[0]->solution_level_cost_index());
+        approxModels[0]->solution_level_cost_index());
     }
     else if (multilevel()) {
       truthModelKey = Pecos::ActiveKey(id, Pecos::RAW_DATA,
@@ -186,8 +183,8 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 
   if (recurse_flag) {
     size_t i, model_index = probDescDB.get_db_model_node(), // for restoration
-              num_models  = pApproxModels.size();
-    if (!pTruthModel->is_null()) ++num_models;
+              num_models  = approxModels.size();
+    if (truthModel) ++num_models;
 
     // For now, use the DB method name to construct a list of methods that
     // might perform gradient-based minimization.  Note: EnsembleSurrModel
@@ -200,7 +197,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 			       method_name == LOCAL_EVIDENCE);
 
     for (i=0; i<num_models; ++i) {
-      Model& model_i = model_from_index(i);
+      Model& model_i = *model_from_index(i);
       probDescDB.set_db_model_nodes(model_i.model_id());
       model_i.init_communicators(pl_iter, max_eval_concurrency);
       if (extra_deriv_config)
@@ -296,54 +293,53 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     // the specific case of SBLMinimizer, but the general fragility remains.
     switch (responseMode) {
 
-    // CASES WITH A SINGLE ACTIVE MODEL:
- 
-    case UNCORRECTED_SURROGATE: {
-      Model& lf_model = active_surrogate_model(0);
-      lf_model.set_communicators(pl_iter, max_eval_concurrency);
-      asynchEvalFlag     = lf_model.asynch_flag();
-      evaluationCapacity = lf_model.evaluation_capacity();
-      break;
-    }
-    case BYPASS_SURROGATE: {
-      Model& hf_model = active_truth_model();
-      hf_model.set_communicators(pl_iter, max_eval_concurrency);
-      asynchEvalFlag     = hf_model.asynch_flag();
-      evaluationCapacity = hf_model.evaluation_capacity();
-      break;
-    }
-
-    // CASES WHERE ANY/ALL MODELS COULD BE ACTIVE:
-
-    default: { // AUTO_CORRECTED_SURROGATE, MODEL_DISCREPANCY,
-               // AGGREGATED_MODEL_PAIR, AGGREGATED_MODELS
-
-      // TO DO: this will not be true for multigrid optimization:
-      bool use_deriv_conc = (responseMode == AUTO_CORRECTED_SURROGATE &&
-			     corrType && corrOrder);
-      // Either need detection logic, a passed option, or to abandon the
-      // specialization and just generalize init/set/free to use the max
-      // of the two values...
-
-      size_t i, num_models = pApproxModels.size();  int cap_i;
-      if (!pTruthModel->is_null()) ++num_models;
-      asynchEvalFlag = false;  evaluationCapacity = 1;
-      for (i=0; i<num_models; ++i) {
-	Model& model_i = model_from_index(i);
-	if (use_deriv_conc) {
-	  int deriv_conc_i = model_i.derivative_concurrency();
-	  model_i.set_communicators(pl_iter, deriv_conc_i);
-	  if (deriv_conc_i > 1 && model_i.asynch_flag()) asynchEvalFlag = true;
-	}
-	else {
-	  model_i.set_communicators(pl_iter, max_eval_concurrency);
-	  if (model_i.asynch_flag()) asynchEvalFlag = true;
-	}
-	cap_i = model_i.evaluation_capacity();
-	if (cap_i > evaluationCapacity) evaluationCapacity = cap_i;
+      // CASES WITH A SINGLE ACTIVE MODEL:
+  
+      case UNCORRECTED_SURROGATE: {
+        auto lf_model = active_surrogate_model(0);
+        lf_model->set_communicators(pl_iter, max_eval_concurrency);
+        asynchEvalFlag     = lf_model->asynch_flag();
+        evaluationCapacity = lf_model->evaluation_capacity();
+        break;
       }
-      break;
-    }
+      case BYPASS_SURROGATE: {
+        auto hf_model = active_truth_model();
+        hf_model->set_communicators(pl_iter, max_eval_concurrency);
+        asynchEvalFlag     = hf_model->asynch_flag();
+        evaluationCapacity = hf_model->evaluation_capacity();
+        break;
+      }
+
+      // CASES WHERE ANY/ALL MODELS COULD BE ACTIVE:
+
+      default: { // AUTO_CORRECTED_SURROGATE, MODEL_DISCREPANCY,
+                // AGGREGATED_MODEL_PAIR, AGGREGATED_MODELS
+
+        // TO DO: this will not be true for multigrid optimization:
+        bool use_deriv_conc = (responseMode == AUTO_CORRECTED_SURROGATE &&
+            corrType && corrOrder);
+        // Either need detection logic, a passed option, or to abandon the
+        // specialization and just generalize init/set/free to use the max
+        // of the two values...
+
+        size_t i, num_models = approxModels.size();  int cap_i;
+        if (truthModel) ++num_models;
+        asynchEvalFlag = false;  evaluationCapacity = 1;
+        for (i=0; i<num_models; ++i) {
+          auto model_i = model_from_index(i);
+          if (use_deriv_conc) {
+            int deriv_conc_i = model_i->derivative_concurrency();
+            model_i->set_communicators(pl_iter, deriv_conc_i);
+            if (deriv_conc_i > 1 && model_i->asynch_flag()) asynchEvalFlag = true;
+          } else {
+            model_i->set_communicators(pl_iter, max_eval_concurrency);
+            if (model_i->asynch_flag()) asynchEvalFlag = true;
+          }
+          cap_i = model_i->evaluation_capacity();
+          if (cap_i > evaluationCapacity) evaluationCapacity = cap_i;
+        }
+        break;
+      }
     }
   }
 }
@@ -355,14 +351,14 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 {
   if (recurse_flag) {
 
-    size_t i, num_models = pApproxModels.size();
-    if (!pTruthModel->is_null()) ++num_models;
+    size_t i, num_models = approxModels.size();
+    if (truthModel) ++num_models;
     bool extra_deriv_config = true; // falls through if not defined
     for (i=0; i<num_models; ++i) {
-      Model& model_i = model_from_index(i);
-      model_i.free_communicators(pl_iter, max_eval_concurrency);
+      auto model_i = model_from_index(i);
+      model_i->free_communicators(pl_iter, max_eval_concurrency);
       if (extra_deriv_config)
-        model_i.free_communicators(pl_iter, model_i.derivative_concurrency());
+        model_i->free_communicators(pl_iter, model_i->derivative_concurrency());
     }
 
     // OLD LOGIC:
@@ -398,14 +394,14 @@ bool EnsembleSurrModel::initialize_mapping(ParLevLIter pl_iter)
 
   // push inactive variable values/bounds from currentVariables and
   // userDefinedConstraints into {truthModel,approxModels}
-  size_t i, num_approx = pApproxModels.size();
+  size_t i, num_approx = approxModels.size();
   for (i=0; i<num_approx; ++i) {
-    pApproxModels[i]->initialize_mapping(pl_iter);
-    init_model(*pApproxModels[i]);
+    approxModels[i]->initialize_mapping(pl_iter);
+    init_model(*approxModels[i]);
   }
 
-  pTruthModel->initialize_mapping(pl_iter);
-  init_model(*pTruthModel);
+  truthModel->initialize_mapping(pl_iter);
+  init_model(*truthModel);
 
   return false; // no change to problem size
 }
@@ -417,11 +413,11 @@ bool EnsembleSurrModel::initialize_mapping(ParLevLIter pl_iter)
     execution within Model::initialize_mapping(). */
 bool EnsembleSurrModel::finalize_mapping()
 {
-  size_t i, num_approx = pApproxModels.size();
+  size_t i, num_approx = approxModels.size();
   for (i=0; i<num_approx; ++i)
-    pApproxModels[i]->finalize_mapping();
+    approxModels[i]->finalize_mapping();
 
-  pTruthModel->finalize_mapping();
+  truthModel->finalize_mapping();
 
   Model::finalize_mapping();
 
@@ -517,7 +513,7 @@ void EnsembleSurrModel::derived_evaluate(const ActiveSet& set)
 
   case DEFAULT_SURROGATE_RESP_MODE:
     Cerr << "Error: responseMode remains at default setting in "
-	 << "EnsembleSurrModel::derived_evaluate()" << std::endl;
+	      << "EnsembleSurrModel::derived_evaluate()" << std::endl;
     abort_handler(MODEL_ERROR);
     break;
 
@@ -530,15 +526,15 @@ void EnsembleSurrModel::derived_evaluate(const ActiveSet& set)
     for (i=0; i<num_steps; ++i) {
       ShortArray& asv_i = indiv_asv[i];
       if (test_asv(asv_i)) {
-	assign_key(i);
-	m_index = key_from_index(i).retrieve_model_form();
-	component_parallel_mode(m_index+1); // index to id (0 is reserved)
-	Model& model_i = model_from_index(m_index);
-	if (!sameModelInstance) update_model(model_i);
-	set_i.request_vector(asv_i);
-	model_i.evaluate(set_i);
-	// insert i-th contribution to currentResponse asrv/fns/grads/hessians
-	insert_response(model_i.current_response(), i, currentResponse);
+        assign_key(i);
+        m_index = key_from_index(i).retrieve_model_form();
+        component_parallel_mode(m_index+1); // index to id (0 is reserved)
+        auto model_i = model_from_index(m_index);
+        if (!sameModelInstance) update_model(model_i);
+        set_i.request_vector(asv_i);
+        model_i->evaluate(set_i);
+        // insert i-th contribution to currentResponse asrv/fns/grads/hessians
+        insert_response(model_i->current_response(), i, currentResponse);
       }
     }
     break;
@@ -547,16 +543,16 @@ void EnsembleSurrModel::derived_evaluate(const ActiveSet& set)
   case BYPASS_SURROGATE: {
     if (set.request_vector().size() != qoi()) {
       Cerr << "Error: wrong ASV size for BYPASS_SURROGATE mode in "
-	   << "EnsembleSurrModel::derived_evaluate()" << std::endl;
+	        << "EnsembleSurrModel::derived_evaluate()" << std::endl;
       abort_handler(MODEL_ERROR);
     }
     assign_truth_key();
     m_index = truthModelKey.retrieve_model_form();
     component_parallel_mode(m_index + 1); // index to id
-    Model& hf_model = model_from_index(m_index);
+    auto hf_model = model_from_index(m_index);
     update_model(hf_model);
-    hf_model.evaluate(set);
-    currentResponse.update(hf_model.current_response(), true);// pull metadata
+    hf_model->evaluate(set);
+    currentResponse.update(hf_model->current_response(), true);// pull metadata
     break;
   }
 
@@ -577,16 +573,16 @@ void EnsembleSurrModel::derived_evaluate(const ActiveSet& set)
       mixed_eval = (lo_fi_eval && hi_fi_eval);            break;
     }
     // Extract models corresponding to truthModelKey and surrModelKeys[0]
-    Model&   lf_model = (lo_fi_eval) ? active_surrogate_model(0) : dummy_model;
-    Model&   hf_model = (hi_fi_eval) ? active_truth_model()      : dummy_model;
-    Model& same_model = (hi_fi_eval) ? hf_model : lf_model;
+    auto   lf_model = (lo_fi_eval) ? active_surrogate_model(0) : dummy_model;
+    auto   hf_model = (hi_fi_eval) ? active_truth_model()      : dummy_model;
+    auto same_model = (hi_fi_eval) ? hf_model : lf_model;
     if (hierarchicalTagging) {
-      String eval_tag = evalTagPrefix + '.'+std::to_string(surrModelEvalCntr+1);
+      String eval_tag = evalTagPrefix + '.' + std::to_string(surrModelEvalCntr+1);
       if (sameModelInstance)
-	same_model.eval_tag_prefix(eval_tag);
+	      same_model->eval_tag_prefix(eval_tag);
       else {
-	if (lo_fi_eval) lf_model.eval_tag_prefix(eval_tag);
-	if (hi_fi_eval) hf_model.eval_tag_prefix(eval_tag);
+        if (lo_fi_eval) lf_model->eval_tag_prefix(eval_tag);
+        if (hi_fi_eval) hf_model->eval_tag_prefix(eval_tag);
       }
     }
     if (sameModelInstance) update_model(same_model);
@@ -609,23 +605,23 @@ void EnsembleSurrModel::derived_evaluate(const ActiveSet& set)
       assign_truth_key();
       if (!sameModelInstance) update_model(hf_model);
       switch (responseMode) {
-      case MODEL_DISCREPANCY:
-	hf_model.evaluate(set);
-	hi_fi_response = (sameModelInstance) ? // shared rep
-	  hf_model.current_response().copy() : hf_model.current_response();
-	break;
-      default: { // {UN,AUTO_}CORRECTED_SURROGATE, AGGREGATED_MODEL_PAIR
-	ActiveSet hi_fi_set(hi_fi_asv, set.derivative_vector());
-	hf_model.evaluate(hi_fi_set);
-	if (mixed_eval)
-	  hi_fi_response = (sameModelInstance) ? // deep copy or shared rep
-	    hf_model.current_response().copy() : hf_model.current_response();
-	else {
-	  currentResponse.active_set(hi_fi_set);
-	  currentResponse.update(hf_model.current_response(), true);// pull meta
-	}
-	break;
-      }
+        case MODEL_DISCREPANCY:
+          hf_model->evaluate(set);
+          hi_fi_response = (sameModelInstance) ? // shared rep
+          hf_model->current_response().copy() : hf_model->current_response();
+          break;
+        default: { // {UN,AUTO_}CORRECTED_SURROGATE, AGGREGATED_MODEL_PAIR
+          ActiveSet hi_fi_set(hi_fi_asv, set.derivative_vector());
+          hf_model->evaluate(hi_fi_set);
+          if (mixed_eval)
+            hi_fi_response = (sameModelInstance) ? // deep copy or shared rep
+              hf_model->current_response().copy() : hf_model->current_response();
+          else {
+            currentResponse.active_set(hi_fi_set);
+            currentResponse.update(hf_model->current_response(), true);// pull meta
+          }
+          break;
+        }
       }
     }
     // -----------------------------
@@ -634,11 +630,11 @@ void EnsembleSurrModel::derived_evaluate(const ActiveSet& set)
     if (lo_fi_eval) {
       // pre-process
       switch (responseMode) {
-      case AUTO_CORRECTED_SURROGATE:
-	// if build_approximation has not yet been called, call it now
-	if (!approxBuilds || force_rebuild())
-	  build_approximation();
-	break;
+        case AUTO_CORRECTED_SURROGATE:
+        // if build_approximation has not yet been called, call it now
+        if (!approxBuilds || force_rebuild())
+          build_approximation();
+        break;
       }
       // compute the LF response
       m_index = surrModelKeys[0].retrieve_model_form();
@@ -647,58 +643,59 @@ void EnsembleSurrModel::derived_evaluate(const ActiveSet& set)
       if (!sameModelInstance) update_model(lf_model);
       ActiveSet lo_fi_set;
       switch (responseMode) {
-      case MODEL_DISCREPANCY:
-	lf_model.evaluate(set);        break;
+        case MODEL_DISCREPANCY:
+	        lf_model->evaluate(set);
+          break;
       default: // {UN,AUTO_}CORRECTED_SURROGATE, AGGREGATED_MODEL_PAIR
-	lo_fi_set.request_vector(lo_fi_asv);
-	lo_fi_set.derivative_vector(set.derivative_vector());
-	lf_model.evaluate(lo_fi_set);  break;
+        lo_fi_set.request_vector(lo_fi_asv);
+        lo_fi_set.derivative_vector(set.derivative_vector());
+        lf_model->evaluate(lo_fi_set);  break;
       }
       // post-process
       switch (responseMode) {
-      case AUTO_CORRECTED_SURROGATE: {
-	// LF resp should not be corrected directly (see derived_synchronize())
-	lo_fi_response = lf_model.current_response().copy();
-	recursive_apply(currentVariables, lo_fi_response);
-	if (!mixed_eval) {
-	  currentResponse.active_set(lo_fi_set);
-	  currentResponse.update(lo_fi_response, true); // pull metadata
-	}
-	break;
+        case AUTO_CORRECTED_SURROGATE: {
+          // LF resp should not be corrected directly (see derived_synchronize())
+          lo_fi_response = lf_model->current_response().copy();
+          recursive_apply(currentVariables, lo_fi_response);
+          if (!mixed_eval) {
+            currentResponse.active_set(lo_fi_set);
+            currentResponse.update(lo_fi_response, true); // pull metadata
+          }
+          break;
       }
-      case UNCORRECTED_SURROGATE:
-	if (mixed_eval)
-	  lo_fi_response = lf_model.current_response(); // shared rep
-	else {
-	  currentResponse.active_set(lo_fi_set);
-	  currentResponse.update(lf_model.current_response(), true);// pull meta
-	}
-	break;
+        case UNCORRECTED_SURROGATE:
+          if (mixed_eval)
+            lo_fi_response = lf_model->current_response(); // shared rep
+          else {
+            currentResponse.active_set(lo_fi_set);
+            currentResponse.update(lf_model->current_response(), true);// pull meta
+          }
+          break;
       }
     }
     // ------------------------------
     // perform any LF/HF aggregations
     // ------------------------------
     switch (responseMode) {
-    case MODEL_DISCREPANCY: {
-      // don't update surrogate data within deltaCorr[key]'s Approximations;
-      // just update currentResponse (managed as surrogate data at higher level)
-      bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
-      currentResponse.active_set(set);
-      deltaCorr[activeKey].compute(hi_fi_response, lf_model.current_response(),
-				   currentResponse, quiet_flag);
-      break;
-    }
-    case AGGREGATED_MODEL_PAIR:
-      aggregate_response(lf_model.current_response(), hi_fi_response,
-			 currentResponse);
-      break;
-    case UNCORRECTED_SURROGATE:   case AUTO_CORRECTED_SURROGATE:
-      if (mixed_eval) {
-	currentResponse.active_set(set);
-	response_combine(hi_fi_response, lo_fi_response, currentResponse);
+      case MODEL_DISCREPANCY: {
+        // don't update surrogate data within deltaCorr[key]'s Approximations;
+        // just update currentResponse (managed as surrogate data at higher level)
+        bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
+        currentResponse.active_set(set);
+        deltaCorr[activeKey].compute(hi_fi_response, lf_model->current_response(),
+            currentResponse, quiet_flag);
+        break;
       }
-      break;
+      case AGGREGATED_MODEL_PAIR:
+        aggregate_response(lf_model->current_response(), hi_fi_response,
+        currentResponse);
+        break;
+      case UNCORRECTED_SURROGATE:   case AUTO_CORRECTED_SURROGATE:
+        if (mixed_eval) {
+          currentResponse.active_set(set);
+          response_combine(hi_fi_response, lo_fi_response, currentResponse);
+        }
+        break;
     }
     break;
   }
@@ -722,175 +719,175 @@ void EnsembleSurrModel::derived_evaluate_nowait(const ActiveSet& set)
   unsigned short m_index;
   switch (responseMode) {
 
-  case DEFAULT_SURROGATE_RESP_MODE:
-    Cerr << "Error: responseMode remains at default setting in "
-	 << "EnsembleSurrModel::derived_evaluate_nowait()" << std::endl;
-    abort_handler(MODEL_ERROR);
-    break;
-
-  case AGGREGATED_MODELS: {
-    // extract eval requirements from composite ASV
-    Short2DArray indiv_asv;  asv_split(set.request_vector(), indiv_asv);
-    size_t i, num_steps = indiv_asv.size();
-    ActiveSet set_i(set); // copy DVV
-    if (sameModelInstance) update_model(active_truth_model());
-
-    // first pass for nonblocking models
-    for (i=0; i<num_steps; ++i) {
-      m_index = key_from_index(i).retrieve_model_form();
-      Model& model_i = model_from_index(m_index);
-      ShortArray& asv_i = indiv_asv[i];
-      if (model_i.asynch_flag() && test_asv(asv_i)) {
-	assign_key(i);
-	if (!sameModelInstance) update_model(model_i);
-	set_i.request_vector(asv_i);
-	model_i.evaluate_nowait(set_i);
-	modelIdMaps[i][model_i.evaluation_id()] = surrModelEvalCntr;
-      }
-    }
-    // second pass for blocking models
-    for (i=0; i<num_steps; ++i) {
-      m_index = key_from_index(i).retrieve_model_form();
-      Model& model_i = model_from_index(m_index);
-      ShortArray& asv_i = indiv_asv[i];
-      if (!model_i.asynch_flag() && test_asv(asv_i)) {
-	assign_key(i);
-	component_parallel_mode(m_index+1); // index to id (0 is reserved)
-	if (!sameModelInstance) update_model(model_i);
-	set_i.request_vector(asv_i);
-	model_i.evaluate(set_i);
-	cachedRespMaps[i][surrModelEvalCntr]
-	  = model_i.current_response().copy();
-      }
-    }
-    break;
-  }
-
-  case BYPASS_SURROGATE: {
-    if (set.request_vector().size() != qoi()) {
-      Cerr << "Error: wrong ASV size for BYPASS_SURROGATE mode in "
-	   << "EnsembleSurrModel::derived_evaluate_nowait()" << std::endl;
+    case DEFAULT_SURROGATE_RESP_MODE:
+      Cerr << "Error: responseMode remains at default setting in "
+    << "EnsembleSurrModel::derived_evaluate_nowait()" << std::endl;
       abort_handler(MODEL_ERROR);
-    }
-    assign_truth_key();
-    m_index = truthModelKey.retrieve_model_form();
-    component_parallel_mode(m_index + 1); // index to id
-    Model& hf_model = model_from_index(m_index);
-    update_model(hf_model);
-    hf_model.evaluate_nowait(set); // no need to test for blocking eval
-    modelIdMaps[0][hf_model.evaluation_id()] = surrModelEvalCntr;
-    break;
-  }
+      break;
 
-  default: { // paired cases: manage LF/HF evaluation requirements
-    ShortArray lo_fi_asv, hi_fi_asv;  bool lo_fi_eval, hi_fi_eval;
-    switch (responseMode) {
-    case MODEL_DISCREPANCY:
-      lo_fi_eval = hi_fi_eval = true;                                     break;
-    default: // {UN,AUTO_}CORRECTED_SURROGATE, AGGREGATED_MODEL_PAIR
-      asv_split(set.request_vector(), lo_fi_asv, hi_fi_asv);
-      lo_fi_eval = !lo_fi_asv.empty();  hi_fi_eval = !hi_fi_asv.empty();  break;
-    }
-    // Extract models corresponding to truthModelKey and surrModelKeys[0]
-    Model&   lf_model = (lo_fi_eval) ? active_surrogate_model(0) : dummy_model;
-    Model&   hf_model = (hi_fi_eval) ? active_truth_model()      : dummy_model;
-    Model& same_model = (hi_fi_eval) ? hf_model : lf_model;
-    bool asynch_lo_fi = (lo_fi_eval) ? lf_model.asynch_flag() : false,
-         asynch_hi_fi = (hi_fi_eval) ? hf_model.asynch_flag() : false;
-    if (hierarchicalTagging) {
-      String eval_tag = evalTagPrefix + '.'+std::to_string(surrModelEvalCntr+1);
-      if (sameModelInstance)
-	same_model.eval_tag_prefix(eval_tag);
-      else {
-	if (lo_fi_eval) lf_model.eval_tag_prefix(eval_tag);
-	if (hi_fi_eval) hf_model.eval_tag_prefix(eval_tag);
+    case AGGREGATED_MODELS: {
+      // extract eval requirements from composite ASV
+      Short2DArray indiv_asv;  asv_split(set.request_vector(), indiv_asv);
+      size_t i, num_steps = indiv_asv.size();
+      ActiveSet set_i(set); // copy DVV
+      if (sameModelInstance) update_model(active_truth_model());
+
+      // first pass for nonblocking models
+      for (i=0; i<num_steps; ++i) {
+        m_index = key_from_index(i).retrieve_model_form();
+        auto model_i = model_from_index(m_index);
+        ShortArray& asv_i = indiv_asv[i];
+        if (model_i->asynch_flag() && test_asv(asv_i)) {
+          assign_key(i);
+          if (!sameModelInstance) update_model(model_i);
+          set_i.request_vector(asv_i);
+          model_i->evaluate_nowait(set_i);
+          modelIdMaps[i][model_i->evaluation_id()] = surrModelEvalCntr;
+        }
       }
-    }
-    if (sameModelInstance) update_model(same_model);
-
-    // perform Model updates and define active sets for LF and HF evaluations
-    ActiveSet hi_fi_set, lo_fi_set;
-    if (hi_fi_eval) {
-      // update HF model
-      if (!sameModelInstance) update_model(hf_model);
-      // update hi_fi_set
-      hi_fi_set.derivative_vector(set.derivative_vector());
-      switch (responseMode) {
-      case MODEL_DISCREPANCY:
-	hi_fi_set.request_vector(set.request_vector());  break;
-      default: // {UN,AUTO_}CORRECTED_SURROGATE, AGGREGATED_MODEL_PAIR
-	hi_fi_set.request_vector(hi_fi_asv);             break;
+      // second pass for blocking models
+      for (i=0; i<num_steps; ++i) {
+        m_index = key_from_index(i).retrieve_model_form();
+        auto model_i = model_from_index(m_index);
+        ShortArray& asv_i = indiv_asv[i];
+        if (!model_i->asynch_flag() && test_asv(asv_i)) {
+          assign_key(i);
+          component_parallel_mode(m_index+1); // index to id (0 is reserved)
+          if (!sameModelInstance) update_model(model_i);
+          set_i.request_vector(asv_i);
+          model_i->evaluate(set_i);
+          cachedRespMaps[i][surrModelEvalCntr]
+            = model_i->current_response().copy();
+        }
       }
+      break;
     }
-    if (lo_fi_eval) {
-      // if build_approximation has not yet been called, call it now
-      if ( responseMode == AUTO_CORRECTED_SURROGATE &&
-	   ( !approxBuilds || force_rebuild() ) )
-	build_approximation();
-      // update LF model
-      if (!sameModelInstance) update_model(lf_model);
-      // update lo_fi_set
-      lo_fi_set.derivative_vector(set.derivative_vector());
-      switch (responseMode) {
-      case MODEL_DISCREPANCY:
-	lo_fi_set.request_vector(set.request_vector());  break;
-      default: // {UN,AUTO_}CORRECTED_SURROGATE, AGGREGATED_MODEL_PAIR
-	lo_fi_set.request_vector(lo_fi_asv);             break;
+
+    case BYPASS_SURROGATE: {
+      if (set.request_vector().size() != qoi()) {
+        Cerr << "Error: wrong ASV size for BYPASS_SURROGATE mode in "
+      << "EnsembleSurrModel::derived_evaluate_nowait()" << std::endl;
+        abort_handler(MODEL_ERROR);
       }
-    }
-
-    // asynchEvalFlag is set if _either_ LF or HF is asynchronous, resulting in
-    // use of derived_evaluate_nowait().  To manage general case of mixed
-    // asynch, launch nonblocking evals first, followed by blocking evals.
-
-    // For notes on repetitive setting of model.solution_level_cost_index(), see
-    // derived_evaluate() above.
-
-    // launch nonblocking evals before any blocking ones
-    if (hi_fi_eval && asynch_hi_fi) { // HF model may be executed asynchronously
-      // don't need to set component parallel mode since only queues the job
       assign_truth_key();
-      hf_model.evaluate_nowait(hi_fi_set);
-      // store map from HF eval id to EnsembleSurrModel id
-      modelIdMaps[1][hf_model.evaluation_id()] = surrModelEvalCntr;
-    }
-    if (lo_fi_eval && asynch_lo_fi) { // LF model may be executed asynchronously
-      // don't need to set component parallel mode since only queues the job
-      assign_surrogate_key(0); // only 1 surrogate key when paired
-      lf_model.evaluate_nowait(lo_fi_set);
-      // store map from LF eval id to EnsembleSurrModel id
-      modelIdMaps[0][lf_model.evaluation_id()] = surrModelEvalCntr;
-      // store variables set needed for correction
-      if (responseMode == AUTO_CORRECTED_SURROGATE)
-	rawVarsMap[surrModelEvalCntr] = currentVariables.copy();
-    }
-
-    // now launch any blocking evals
-    if (hi_fi_eval && !asynch_hi_fi) { // execute HF synchronously & cache resp
       m_index = truthModelKey.retrieve_model_form();
-      component_parallel_mode(m_index + 1); // index to id (0 is reserved)
-      assign_truth_key();
-      hf_model.evaluate(hi_fi_set);
-      // not part of rekey_synch(); can rekey to surrModelEvalCntr immediately
-      cachedRespMaps[1][surrModelEvalCntr] = hf_model.current_response().copy();
+      component_parallel_mode(m_index + 1); // index to id
+      auto hf_model = model_from_index(m_index);
+      update_model(hf_model);
+      hf_model->evaluate_nowait(set); // no need to test for blocking eval
+      modelIdMaps[0][hf_model->evaluation_id()] = surrModelEvalCntr;
+      break;
     }
-    if (lo_fi_eval && !asynch_lo_fi) { // execute LF synchronously & cache resp
-      m_index = surrModelKeys[0].retrieve_model_form();
-      component_parallel_mode(m_index + 1); // index to id (0 is reserved)
-      assign_surrogate_key(0);
-      lf_model.evaluate(lo_fi_set);
-      Response lo_fi_response(lf_model.current_response().copy());
-      // correct LF response prior to caching
-      if (responseMode == AUTO_CORRECTED_SURROGATE)
-	// correct synch cases now (asynch cases get corrected in
-	// derived_synchronize_aggregate*)
-	recursive_apply(currentVariables, lo_fi_response);
-      // cache corrected LF response for retrieval during synchronization.
-      // not part of rekey_synch(); can rekey to surrModelEvalCntr immediately.
-      cachedRespMaps[0][surrModelEvalCntr] = lo_fi_response;// deep copied above
+
+    default: { // paired cases: manage LF/HF evaluation requirements
+      ShortArray lo_fi_asv, hi_fi_asv;  bool lo_fi_eval, hi_fi_eval;
+      switch (responseMode) {
+      case MODEL_DISCREPANCY:
+        lo_fi_eval = hi_fi_eval = true;                                     break;
+      default: // {UN,AUTO_}CORRECTED_SURROGATE, AGGREGATED_MODEL_PAIR
+        asv_split(set.request_vector(), lo_fi_asv, hi_fi_asv);
+        lo_fi_eval = !lo_fi_asv.empty();  hi_fi_eval = !hi_fi_asv.empty();  break;
+      }
+      // Extract models corresponding to truthModelKey and surrModelKeys[0]
+      auto   lf_model = (lo_fi_eval) ? active_surrogate_model(0) : dummy_model;
+      auto   hf_model = (hi_fi_eval) ? active_truth_model()      : dummy_model;
+      auto same_model = (hi_fi_eval) ? hf_model : lf_model;
+      bool asynch_lo_fi = (lo_fi_eval) ? lf_model->asynch_flag() : false,
+          asynch_hi_fi = (hi_fi_eval) ? hf_model->asynch_flag() : false;
+      if (hierarchicalTagging) {
+        String eval_tag = evalTagPrefix + '.' + std::to_string(surrModelEvalCntr+1);
+        if (sameModelInstance)
+          same_model->eval_tag_prefix(eval_tag);
+        else {
+          if (lo_fi_eval) lf_model->eval_tag_prefix(eval_tag);
+          if (hi_fi_eval) hf_model->eval_tag_prefix(eval_tag);
+        }
+      }
+      if (sameModelInstance) update_model(same_model);
+
+      // perform Model updates and define active sets for LF and HF evaluations
+      ActiveSet hi_fi_set, lo_fi_set;
+      if (hi_fi_eval) {
+        // update HF model
+        if (!sameModelInstance) update_model(hf_model);
+        // update hi_fi_set
+        hi_fi_set.derivative_vector(set.derivative_vector());
+        switch (responseMode) {
+        case MODEL_DISCREPANCY:
+          hi_fi_set.request_vector(set.request_vector());  break;
+        default: // {UN,AUTO_}CORRECTED_SURROGATE, AGGREGATED_MODEL_PAIR
+          hi_fi_set.request_vector(hi_fi_asv);             break;
+        }
+      }
+      if (lo_fi_eval) {
+        // if build_approximation has not yet been called, call it now
+        if ( responseMode == AUTO_CORRECTED_SURROGATE &&
+          ( !approxBuilds || force_rebuild() ) )
+          build_approximation();
+        // update LF model
+        if (!sameModelInstance) update_model(lf_model);
+        // update lo_fi_set
+        lo_fi_set.derivative_vector(set.derivative_vector());
+        switch (responseMode) {
+          case MODEL_DISCREPANCY:
+            lo_fi_set.request_vector(set.request_vector());  break;
+          default: // {UN,AUTO_}CORRECTED_SURROGATE, AGGREGATED_MODEL_PAIR
+            lo_fi_set.request_vector(lo_fi_asv);             break;
+        }
+      }
+
+      // asynchEvalFlag is set if _either_ LF or HF is asynchronous, resulting in
+      // use of derived_evaluate_nowait().  To manage general case of mixed
+      // asynch, launch nonblocking evals first, followed by blocking evals.
+
+      // For notes on repetitive setting of model.solution_level_cost_index(), see
+      // derived_evaluate() above.
+
+      // launch nonblocking evals before any blocking ones
+      if (hi_fi_eval && asynch_hi_fi) { // HF model may be executed asynchronously
+        // don't need to set component parallel mode since only queues the job
+        assign_truth_key();
+        hf_model->evaluate_nowait(hi_fi_set);
+        // store map from HF eval id to EnsembleSurrModel id
+        modelIdMaps[1][hf_model->evaluation_id()] = surrModelEvalCntr;
+      }
+      if (lo_fi_eval && asynch_lo_fi) { // LF model may be executed asynchronously
+        // don't need to set component parallel mode since only queues the job
+        assign_surrogate_key(0); // only 1 surrogate key when paired
+        lf_model->evaluate_nowait(lo_fi_set);
+        // store map from LF eval id to EnsembleSurrModel id
+        modelIdMaps[0][lf_model->evaluation_id()] = surrModelEvalCntr;
+        // store variables set needed for correction
+        if (responseMode == AUTO_CORRECTED_SURROGATE)
+          rawVarsMap[surrModelEvalCntr] = currentVariables.copy();
+      }
+
+      // now launch any blocking evals
+      if (hi_fi_eval && !asynch_hi_fi) { // execute HF synchronously & cache resp
+        m_index = truthModelKey.retrieve_model_form();
+        component_parallel_mode(m_index + 1); // index to id (0 is reserved)
+        assign_truth_key();
+        hf_model->evaluate(hi_fi_set);
+        // not part of rekey_synch(); can rekey to surrModelEvalCntr immediately
+        cachedRespMaps[1][surrModelEvalCntr] = hf_model->current_response().copy();
+      }
+      if (lo_fi_eval && !asynch_lo_fi) { // execute LF synchronously & cache resp
+        m_index = surrModelKeys[0].retrieve_model_form();
+        component_parallel_mode(m_index + 1); // index to id (0 is reserved)
+        assign_surrogate_key(0);
+        lf_model->evaluate(lo_fi_set);
+        Response lo_fi_response(lf_model->current_response().copy());
+        // correct LF response prior to caching
+        if (responseMode == AUTO_CORRECTED_SURROGATE)
+          // correct synch cases now (asynch cases get corrected in
+          // derived_synchronize_aggregate*)
+          recursive_apply(currentVariables, lo_fi_response);
+        // cache corrected LF response for retrieval during synchronization.
+        // not part of rekey_synch(); can rekey to surrModelEvalCntr immediately.
+        cachedRespMaps[0][surrModelEvalCntr] = lo_fi_response;// deep copied above
+      }
+      break;
     }
-    break;
-  }
   }
 }
 
@@ -951,8 +948,8 @@ derived_synchronize_sequential(IntResponseMapArray& model_resp_maps_rekey,
     m_index = truthModelKey.retrieve_model_form();
     component_parallel_mode(m_index+1); // index to id (0 is reserved)
 
-    rekey_synch(model_from_index(m_index), block, modelIdMaps,
-		model_resp_maps_rekey);
+    rekey_synch(*model_from_index(m_index), block, modelIdMaps,
+		  model_resp_maps_rekey);
   }
   else {
     bool deep_copy, auto_corr = (responseMode == AUTO_CORRECTED_SURROGATE);
@@ -962,7 +959,7 @@ derived_synchronize_sequential(IntResponseMapArray& model_resp_maps_rekey,
       IntIntMap& model_id_map_i = modelIdMaps[i];
       if (!model_id_map_i.empty()) { // synchronize evals for i-th Model
 	component_parallel_mode(m_index+1); // index to id (0 is reserved)
-	Model& model_i = model_from_index(m_index);
+	Model& model_i = *model_from_index(m_index);
 	// Note: unmatched Model::responseMap are moved to Model::
 	//       cachedResponseMap for return on next synchronize()
 	deep_copy = (auto_corr && i < num_surr_keys);
@@ -1294,7 +1291,7 @@ derived_synchronize_combine_nowait(IntResponseMapArray& model_resp_maps,
   }
 }
 
-Model& EnsembleSurrModel::model_from_index(unsigned short m_index)
+std::shared_ptr<Model> EnsembleSurrModel::model_from_index(unsigned short m_index)
 {
   size_t num_approx = approxModels.size();
   if      (m_index <  num_approx) return approxModels[m_index];
@@ -1308,7 +1305,7 @@ Model& EnsembleSurrModel::model_from_index(unsigned short m_index)
 }
 
 
-const Model& EnsembleSurrModel::
+std::shared_ptr<const Model> EnsembleSurrModel::
 model_from_index(unsigned short m_index) const
 {
   size_t num_approx = approxModels.size();
@@ -1323,7 +1320,7 @@ model_from_index(unsigned short m_index) const
 }
 
 
-Model& EnsembleSurrModel::approx_model_from_index(unsigned short m_index)
+std::shared_ptr<Model> EnsembleSurrModel::approx_model_from_index(unsigned short m_index)
 {
   size_t num_approx = approxModels.size();
   if (m_index <  num_approx) return approxModels[m_index];
@@ -1336,7 +1333,7 @@ Model& EnsembleSurrModel::approx_model_from_index(unsigned short m_index)
 }
 
 
-const Model& EnsembleSurrModel::
+std::shared_ptr<const Model> EnsembleSurrModel::
 approx_model_from_index(unsigned short m_index) const
 {
   size_t num_approx = approxModels.size();
@@ -1488,7 +1485,7 @@ void EnsembleSurrModel::active_model_key(const Pecos::ActiveKey& key)
 }
 
 
-Model& EnsembleSurrModel::active_surrogate_model(size_t i)
+std::shared_ptr<Model> EnsembleSurrModel::active_surrogate_model(size_t i)
 {
   unsigned short lf_form;
   switch (responseMode) {
@@ -1514,7 +1511,7 @@ Model& EnsembleSurrModel::active_surrogate_model(size_t i)
 }
 
 
-const Model& EnsembleSurrModel::active_surrogate_model(size_t i) const
+std::shared_ptr<const Model> EnsembleSurrModel::active_surrogate_model(size_t i) const
 {
   unsigned short lf_form;
   switch (responseMode) {
@@ -1558,11 +1555,11 @@ void EnsembleSurrModel::create_tabular_datastream()
     // NonDEnsembleSampling::sequenceType, so we tabulate both model forms
     // and resolutions.
     size_t l, num_l, m, num_approx, num_m, num_m_l = 0;
-    num_m = num_approx = pApproxModels.size();
+    num_m = num_approx = approxModels.size();
     for (m=0; m<num_approx; ++m)
-      num_m_l += pApproxModels[m]->solution_levels();
-    if (!pTruthModel->is_null())
-      { ++num_m; num_m_l += pTruthModel->solution_levels(); }
+      num_m_l += approxModels[m]->solution_levels();
+    if (truthModel)
+      { ++num_m; num_m_l += truthModel->solution_levels(); }
     // -------------
     // Interface ids
     // -------------
@@ -1587,7 +1584,7 @@ void EnsembleSurrModel::create_tabular_datastream()
     // > Note that reading data back in from this composed tabular format is
     //   not currently supported (refer to Variables: read_tabular()).
     size_t     last_m    = num_m - 1;
-    Model&     ref_model = model_from_index(last_m);
+    Model&     ref_model = *model_from_index(last_m);
     Variables& ref_vars  = ref_model.current_variables();
     size_t     scv_index = ref_model.solution_control_variable_index();
     if (scv_index == _NPOS)
@@ -1599,9 +1596,9 @@ void EnsembleSurrModel::create_tabular_datastream()
     }
     StringArray sc_labels;
     for (m=0; m<num_m; ++m) {
-      Model& model_m = model_from_index(m);
+      Model& model_m = *model_from_index(m);
       if (model_m.solution_control_variable_index() != _NPOS)
-	sc_labels.push_back(solution_control_label(model_m) + "_SC" +
+	      sc_labels.push_back(solution_control_label(model_m) + "_SC" +
 			    std::to_string(m+1));
     }
     mgr.append_tabular_header(sc_labels);
@@ -1619,11 +1616,11 @@ void EnsembleSurrModel::create_tabular_datastream()
     // enumerate forms/resolutions and append model + level tags
     for (m=0; m<num_m; ++m) {
       m_l_append = m_append = (num_m > 1) ? "_M" + std::to_string(m+1) : "";
-      num_l = model_from_index(m).solution_levels();
+      num_l = model_from_index(m)->solution_levels();
       for (l=0; l<num_l; ++l) {
-	if (num_l > 1) m_l_append = m_append + "_L" + std::to_string(l+1);
-	for (q=0; q<num_qoi; ++q, ++cntr)
-	  labels[cntr].append(m_l_append);
+        if (num_l > 1) m_l_append = m_append + "_L" + std::to_string(l+1);
+        for (q=0; q<num_qoi; ++q, ++cntr)
+          labels[cntr].append(m_l_append);
       }
     }
     mgr.append_tabular_header(labels, true); // with endl
@@ -1631,12 +1628,12 @@ void EnsembleSurrModel::create_tabular_datastream()
   }
 
   case NO_SURROGATE: //case BYPASS_SURROGATE:
-    mgr.create_tabular_header(active_truth_model().current_variables(),
+    mgr.create_tabular_header(active_truth_model()->current_variables(),
 			      currentResponse);
     break;
 
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
-    mgr.create_tabular_header(active_surrogate_model(0).current_variables(),
+    mgr.create_tabular_header(active_surrogate_model(0)->current_variables(),
 			      currentResponse);
     break;
 
@@ -1660,7 +1657,7 @@ void EnsembleSurrModel::create_tabular_datastream()
     // Variables
     // ---------
     // identify solution level control variable
-    Model&     hf_model = active_truth_model();
+    Model&     hf_model = *active_truth_model();
     Variables& hf_vars  = hf_model.current_variables();
     // must detect ML versus MF since solution level index can exist for MF
     // and be one value per model instance
@@ -1672,7 +1669,7 @@ void EnsembleSurrModel::create_tabular_datastream()
       mgr.append_tabular_header(hf_vars, 0, solnCntlAVIndex); // leading set
 
       // output paired solution control values
-      const String& soln_cntl_label = solution_control_label(*pTruthModel);
+      const String& soln_cntl_label = solution_control_label(*truthModel);
       StringArray tab_labels(2);
       tab_labels[0] = soln_cntl_label + "_L";  // = "HF_" + soln_cntl_label;
       tab_labels[1] = soln_cntl_label + "_Lm1";// = "LF_" + soln_cntl_label;
@@ -1702,7 +1699,7 @@ void EnsembleSurrModel::create_tabular_datastream()
     size_t num_labels = labels.size();
     if (responseMode == MODEL_DISCREPANCY)
       for (q=0; q<num_qoi; ++q)
-	labels[q].insert(0, "Del_");
+	      labels[q].insert(0, "Del_");
     // Detection of the correct response label annotation is imperfect.  Basing
     // label alternation below on active solution level control seems the best
     // option -- improving it would require either knowledge of methodName
@@ -1710,15 +1707,15 @@ void EnsembleSurrModel::create_tabular_datastream()
     // (not known until run time)
     else if (solnCntlAVIndex == _NPOS) {
       for (q=0; q<num_qoi; ++q)
-	labels[q].append("_M");  //labels[q].insert(0, "HF_");
+	      labels[q].append("_M");  //labels[q].insert(0, "HF_");
       for (q=num_qoi; q<num_labels; ++q)
-	labels[q].append("_Mm1");//labels[q].insert(0, "LF_");
+	      labels[q].append("_Mm1");//labels[q].insert(0, "LF_");
     }
     else { // solution levels are present, but they might not be active
       for (q=0; q<num_qoi; ++q)
-	labels[q].append("_L");  //labels[q].insert(0, "HF_");
+	      labels[q].append("_L");  //labels[q].insert(0, "HF_");
       for (q=num_qoi; q<num_labels; ++q)
-	labels[q].append("_Lm1");//labels[q].insert(0, "LF_");
+	      labels[q].append("_Lm1");//labels[q].insert(0, "LF_");
     }
     mgr.append_tabular_header(labels, true); // include EOL
     break;
@@ -1746,20 +1743,20 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
   switch (responseMode) {
 
   case AGGREGATED_MODELS: { // use same #Cols since commonly alternated
-    size_t m, num_m = pApproxModels.size();
-    if (!pTruthModel->is_null()) ++num_m;
+    size_t m, num_m = approxModels.size();
+    if (truthModel) ++num_m;
     // -------------
     // Interface ids
     // -------------
     bool one_iface_id = matching_all_interface_ids();
     StringArray iface_ids;
     if (one_iface_id) // invariant (sameInterfaceInstance can vary at run time)
-      iface_ids.push_back(pTruthModel->interface_id());
+      iface_ids.push_back(truthModel->interface_id());
     else
       for (m=0; m<num_m; ++m) {
-	if (find_model_in_keys(m))
-	  iface_ids.push_back(model_from_index(m).interface_id());
-	else iface_ids.push_back("N/A");
+        if (find_model_in_keys(m))
+          iface_ids.push_back(model_from_index(m)->interface_id());
+        else iface_ids.push_back("N/A");
       }
     output_mgr.add_tabular_data(iface_ids); // includes graphics cntr
     // ---------
@@ -1767,7 +1764,7 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
     // ---------
     // capture correct inactive by using lower-level variables
     size_t     last_m      = num_m - 1;
-    Model&     ref_model   = model_from_index(last_m);
+    Model&     ref_model   = *model_from_index(last_m);
     size_t     scv_index   = ref_model.solution_control_variable_index();
     Variables& export_vars = ref_model.current_variables();
     if (asynchEvalFlag) export_vars.active_variables(vars); // reqd for parallel
@@ -1779,7 +1776,7 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
       output_mgr.add_tabular_data(export_vars, start, end);
     }
     for (m=0; m<num_m; ++m) {
-      Model& model_m = model_from_index(m);
+      Model& model_m = *model_from_index(m);
       if (model_m.solution_control_variable_index() != _NPOS) {
 	if (find_model_in_keys(m)) {
 	  // If sameModelInstance, desired soln cntl was overwritten
@@ -1798,41 +1795,41 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
   }
 
   case NO_SURROGATE: { //case BYPASS_SURROGATE:
-    Model& hf_model = active_truth_model();
-    output_mgr.add_tabular_data(hf_model.current_variables(),
-				hf_model.interface_id(), resp);
+    auto hf_model = active_truth_model();
+    output_mgr.add_tabular_data(hf_model->current_variables(),
+				hf_model->interface_id(), resp);
     break;
   }
 
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
-    Model& lf_model = active_surrogate_model(0);
-    output_mgr.add_tabular_data(lf_model.current_variables(),
-				lf_model.interface_id(), resp);
+    auto lf_model = active_surrogate_model(0);
+    output_mgr.add_tabular_data(lf_model->current_variables(),
+				lf_model->interface_id(), resp);
     break;
   }
 
   case AGGREGATED_MODEL_PAIR: case MODEL_DISCREPANCY: // two models/resolutions
   case BYPASS_SURROGATE: { // use same #Cols since commonly alternated
-    Model& lf_model = active_surrogate_model(0); // rtns dummy_model for BYPASS
-    Model& hf_model = active_truth_model();
+    auto lf_model = active_surrogate_model(0); // rtns dummy_model for BYPASS
+    auto hf_model = active_truth_model();
     // Output interface ids, potentially paired
     bool one_iface_id = matching_all_interface_ids(),
       truth_key = !truthModelKey.empty(),
       surr_key  = (!surrModelKeys.empty() && !surrModelKeys[0].empty());
     StringArray iface_ids;
     if (one_iface_id) // invariant (sameInterfaceInstance can vary at run time)
-      iface_ids.push_back(hf_model.interface_id());
+      iface_ids.push_back(hf_model->interface_id());
     else {
-      if (truth_key) iface_ids.push_back(hf_model.interface_id());
+      if (truth_key) iface_ids.push_back(hf_model->interface_id());
       else           iface_ids.push_back("N/A");//preserve row len
-      if (surr_key)  iface_ids.push_back(lf_model.interface_id());
+      if (surr_key)  iface_ids.push_back(lf_model->interface_id());
       else           iface_ids.push_back("N/A");//preserve row len
     }
     output_mgr.add_tabular_data(iface_ids); // includes graphics cntr
 
     // Output Variables data
     // capture correct inactive by using lower-level variables
-    Variables& export_vars = hf_model.current_variables();
+    Variables& export_vars = hf_model->current_variables();
     if (asynchEvalFlag) export_vars.active_variables(vars); // reqd for parallel
     if (solnCntlAVIndex == _NPOS)
       output_mgr.add_tabular_data(export_vars);
@@ -1843,15 +1840,15 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
       // output paired solution control values (flags are not invariant,
       // but data count is)
       if (sameModelInstance && truth_key && surr_key) {//data count is invariant
-	// HF soln cntl was overwritten by LF and must be temporarily restored
-	assign_truth_key();      add_tabular_solution_level_value(hf_model);
-	assign_surrogate_key(0); add_tabular_solution_level_value(lf_model);
+        // HF soln cntl was overwritten by LF and must be temporarily restored
+        assign_truth_key();      add_tabular_solution_level_value(*hf_model);
+        assign_surrogate_key(0); add_tabular_solution_level_value(*lf_model);
       }
       else { // HF and LF soln levels are not overlapping
-	if (truth_key)  add_tabular_solution_level_value(hf_model);
-	else output_mgr.add_tabular_scalar("N/A");// preserve consistent row len
-	if ( surr_key)  add_tabular_solution_level_value(lf_model);
-	else output_mgr.add_tabular_scalar("N/A");// preserve consistent row len
+        if (truth_key)  add_tabular_solution_level_value(*hf_model);
+        else output_mgr.add_tabular_scalar("N/A");// preserve consistent row len
+        if ( surr_key)  add_tabular_solution_level_value(*lf_model);
+        else output_mgr.add_tabular_scalar("N/A");// preserve consistent row len
       }
 
       // output trailing variables in spec order
@@ -1866,7 +1863,7 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
       output_mgr.add_tabular_data(resp, false); // defer EOL
       size_t q, num_qoi = qoi();
       for (q=0; q<num_qoi; ++q) // pad response data
-	output_mgr.add_tabular_scalar("N/A");
+	      output_mgr.add_tabular_scalar("N/A");
       output_mgr.add_eol(); // now return the row
     }
     break;
@@ -1878,10 +1875,10 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
 void EnsembleSurrModel::resize_response(bool use_virtual_counts)
 {
   size_t num_meta,
-    num_truth_md = pTruthModel->current_response().metadata().size(),
+    num_truth_md = truthModel->current_response().metadata().size(),
     num_truth_fns = (use_virtual_counts) ?
-    pTruthModel->qoi() : // allow models to consume lower-level aggregations
-    ModelUtils::response_size(*pTruthModel); // raw counts align w/ currentResponse raw count
+    truthModel->qoi() : // allow models to consume lower-level aggregations
+    ModelUtils::response_size(*truthModel); // raw counts align w/ currentResponse raw count
 
   switch (responseMode) {
   case AGGREGATED_MODELS: {
@@ -1889,7 +1886,7 @@ void EnsembleSurrModel::resize_response(bool use_virtual_counts)
     numFns = num_truth_fns;  num_meta = num_truth_md;
     for (i=0; i<num_surr; ++i) {
       unsigned short form = surrModelKeys[i].retrieve_model_form();
-      Model& model_i = model_from_index(form);
+      Model& model_i = *model_from_index(form);
       numFns += (use_virtual_counts) ? model_i.qoi() : model_i.current_response().num_functions();
       num_meta += model_i.current_response().metadata().size();
     }
@@ -1901,7 +1898,7 @@ void EnsembleSurrModel::resize_response(bool use_virtual_counts)
   case BYPASS_SURROGATE:       case NO_SURROGATE:
     numFns = num_truth_fns;  num_meta = num_truth_md;  break;
   default:
-    Model& lf_model = active_surrogate_model(0);
+    Model& lf_model = *active_surrogate_model(0);
     size_t num_lf_meta = lf_model.current_response().metadata().size(),
       num_lf_fns = (use_virtual_counts) ?
         lf_model.qoi() : ModelUtils::response_size(lf_model);
@@ -2071,7 +2068,7 @@ void EnsembleSurrModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
       // propagate resolution level to server (redundant since send_evaluation()
       // sends all of variables object, including inactive state)
       //assign_key(m_index);
-      Model& model = model_from_index(m_index);
+      Model& model = *model_from_index(m_index);
       model.serve_run(pl_iter, max_eval_concurrency);
 
       /* Old code supporting paired model cases:
@@ -2150,17 +2147,17 @@ void EnsembleSurrModel::build_approximation()
   // NOTE: For SBO, the low fidelity eval is performed externally and its
   // response is passed into compute_correction.
   // -->> move LF model out and restructure if(!approxBuilds)
-  //ActiveSet temp_set = lf_model.current_response().active_set();
+  //ActiveSet temp_set = lf_model->current_response().active_set();
   //temp_set.request_values(1);
   //if (sameModelInstance) assign_surrogate_key(0);
-  //lf_model.evaluate(temp_set);
-  //const Response& lo_fi_response = lf_model.current_response();
+  //lf_model->evaluate(temp_set);
+  //const Response& lo_fi_response = lf_model->current_response();
 
   assign_truth_key();
-  Model& hf_model = active_truth_model();
+  auto hf_model = active_truth_model();
   if (hierarchicalTagging) {
     String eval_tag = evalTagPrefix + '.' + std::to_string(surrModelEvalCntr+1);
-    hf_model.eval_tag_prefix(eval_tag);
+    hf_model->eval_tag_prefix(eval_tag);
   }
 
   // set EnsembleSurrModel parallelism mode to HF model
@@ -2174,7 +2171,7 @@ void EnsembleSurrModel::build_approximation()
   // store inactive variable values for use in determining whether an
   // automatic rebuild of an approximation is required
   // (reference{C,D}{L,U}Bnds are not needed in the hierarchical case)
-  const Variables& hf_vars = hf_model.current_variables();
+  const Variables& hf_vars = hf_model->current_variables();
   copy_data(hf_vars.inactive_continuous_variables(),
 	    referenceICVars[truthModelKey]);
   copy_data(hf_vars.inactive_discrete_int_variables(),
@@ -2201,8 +2198,8 @@ void EnsembleSurrModel::build_approximation()
 				 truthModelKey, currentResponse.copy())).first;
   ActiveSet hf_set = currentResponse.active_set(); // copy
   hf_set.request_vector(hf_asv);
-  hf_model.evaluate(hf_set);
-  it->second.update(hf_model.current_response());
+  hf_model->evaluate(hf_set);
+  it->second.update(hf_model->current_response());
 
   // could compute the correction to LF model here, but rely on an external
   // call for consistency with DataFitSurr and to facilitate SBO logic.  In
@@ -2328,7 +2325,7 @@ void EnsembleSurrModel::recursive_apply(const Variables& vars, Response& resp)
     single_apply(vars, resp, activeKey);
     break;
   case FULL_MODEL_FORM_CORRECTION: {
-    size_t num_models = pApproxModels.size() + 1;
+    size_t num_models = approxModels.size() + 1;
     Pecos::ActiveKey& surr_key0 = surrModelKeys[0];
     unsigned short i, lf_form = surr_key0.retrieve_model_form();
     // perform a 1D sweep starting from current surrModelKey; this could be
@@ -2353,7 +2350,7 @@ void EnsembleSurrModel::recursive_apply(const Variables& vars, Response& resp)
 	   << "within model key." << std::endl;
       abort_handler(MODEL_ERROR);
     }
-    size_t i, num_levels = active_surrogate_model(0).solution_levels();
+    size_t i, num_levels = active_surrogate_model(0)->solution_levels();
     // perform a 1D sweep starting from current surrModelKey; this could be
     // part of a multidimensional sweep, so don't target truthModelKey at end
     Pecos::ActiveKey paired_key;// = activeKey.copy();

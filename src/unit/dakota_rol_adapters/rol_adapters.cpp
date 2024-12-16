@@ -99,7 +99,7 @@ void rol_quad_solv()
   if (env.parallel_library().mpirun_flag())
     BOOST_CHECK( false ); // This test only works for serial builds
 
-  Dakota::Model & model = *(env.problem_description_db().model_list().begin());
+  Dakota::Model & model = **(env.problem_description_db().model_list().begin());
 
   // ROL stuff from here down ...
 

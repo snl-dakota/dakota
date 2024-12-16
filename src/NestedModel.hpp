@@ -49,7 +49,6 @@ public:
   //
 
   NestedModel(ProblemDescDB& problem_db); ///< constructor
-  ~NestedModel() override;                         ///< destructor
 
   void declare_sources() override;
 
@@ -77,7 +76,7 @@ protected:
   /// return subIterator
   Iterator& subordinate_iterator() override;
   /// return subModel
-  Model& subordinate_model() override;
+  std::shared_ptr<Model> subordinate_model() override;
   /// return subModel
   void derived_subordinate_models(ModelList& ml, bool recurse_flag) override;
   /// return optionalInterface
@@ -280,8 +279,7 @@ private:
       possible.  This is commonly used to support surrogate-based
       optimization under uncertainty by having NestedModels contain
       SurrogateModels and vice versa. */
-  Model subModel;
-  Model* pSubModel;
+  std::shared_ptr<Model> subModel;
   /// job queue for asynchronous execution of subIterator jobs
   PRPQueue subIteratorPRPQueue;
   /// scheduling object for concurrent iterator parallelism
@@ -426,10 +424,6 @@ private:
 };
 
 
-inline NestedModel::~NestedModel()
-{ }
-
-
 /*
 inline bool NestedModel::initialize_mapping(ParLevLIter pl_iter)
 {
@@ -465,16 +459,16 @@ inline Iterator& NestedModel::subordinate_iterator()
 { return subIterator; }
 
 
-inline Model& NestedModel::subordinate_model()
-{ return *pSubModel; }
+inline std::shared_ptr<Model> NestedModel::subordinate_model()
+{ return subModel; }
 
 
 inline void NestedModel::
 derived_subordinate_models(ModelList& ml, bool recurse_flag)
 {
-  ml.push_back(*pSubModel);
+  ml.push_back(subModel);
   if (recurse_flag)
-    pSubModel->derived_subordinate_models(ml, true);
+    subModel->derived_subordinate_models(ml, true);
 }
 
 
@@ -496,7 +490,7 @@ inline const RealVector& NestedModel::error_estimates()
 
 
 inline void NestedModel::surrogate_response_mode(short mode)
-{ if (mode == BYPASS_SURROGATE) pSubModel->surrogate_response_mode(mode); }
+{ if (mode == BYPASS_SURROGATE) subModel->surrogate_response_mode(mode); }
 
 
 /** Used in setting Model::asynchEvalFlag.  subModel synchronization
@@ -549,7 +543,7 @@ estimate_partition_bounds(int max_eval_concurrency)
   }
 
   String empty_str;
-  subIteratorSched.construct_sub_iterator(probDescDB, subIterator, *pSubModel,
+  subIteratorSched.construct_sub_iterator(probDescDB, subIterator, subModel,
     subMethodPointer, empty_str, empty_str);
   IntIntPair min_max, si_min_max = subIterator.estimate_partition_bounds();
 
@@ -569,7 +563,7 @@ inline void NestedModel::derived_init_serial()
   size_t method_index = probDescDB.get_db_method_node(),
          model_index  = probDescDB.get_db_model_node(); // for restoration
   probDescDB.set_db_list_nodes(subMethodPointer);       // even if empty
-  subIterator = probDescDB.get_iterator(*pSubModel);
+  subIterator = probDescDB.get_iterator(subModel);
   probDescDB.set_db_method_node(method_index); // restore method only
   probDescDB.set_db_model_nodes(model_index);  // restore all model nodes
 
@@ -580,7 +574,7 @@ inline void NestedModel::derived_init_serial()
   // ParallelLibrary::resolve_inputs())
   if (!optInterfacePointer.empty())
     optionalInterface.init_serial();
-  pSubModel->init_serial();
+  subModel->init_serial();
 }
 
 
@@ -688,7 +682,7 @@ inline void NestedModel::fine_grained_evaluation_counters()
       = numOptInterfPrimary + numOptInterfIneqCon + numOptInterfEqCon;
     optionalInterface.fine_grained_evaluation_counters(num_oi_fns);
   }
-  pSubModel->fine_grained_evaluation_counters();
+  subModel->fine_grained_evaluation_counters();
 }
 
 
@@ -700,14 +694,14 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
     optionalInterface.print_evaluation_summary(s, minimal_header,
 					       relative_count);
   // subIterator will reset evaluation references, so do not use relative counts
-  pSubModel->print_evaluation_summary(s, minimal_header, false);
+  subModel->print_evaluation_summary(s, minimal_header, false);
 }
 
 
 inline void NestedModel::warm_start_flag(const bool flag)
 {
   warmStartFlag = flag;
-  pSubModel->warm_start_flag(flag);
+  subModel->warm_start_flag(flag);
 }
 
 

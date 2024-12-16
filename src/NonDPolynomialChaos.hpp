@@ -35,9 +35,9 @@ public:
   //
 
   /// standard constructor
-  NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model);
+  NonDPolynomialChaos(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor for numerical integration (tensor, sparse, cubature)
-  NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
+  NonDPolynomialChaos(std::shared_ptr<Model> model, short exp_coeffs_approach,
 		      unsigned short num_int, const RealVector& dim_pref,
 		      short u_space_type, short refine_type,
 		      short refine_control, short covar_control,
@@ -45,7 +45,7 @@ public:
 		      bool piecewise_basis, bool use_derivs,
                       String exp_expansion_file = "");
   /// alternate constructor for regression (least squares, CS, OLI)
-  NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
+  NonDPolynomialChaos(std::shared_ptr<Model> model, short exp_coeffs_approach,
 		      unsigned short exp_order, const RealVector& dim_pref,
 		      size_t colloc_pts, Real colloc_ratio, int seed,
 		      short u_space_type, short refine_type,
@@ -57,7 +57,7 @@ public:
 		      bool import_build_active_only,
                       String exp_expansion_file = "");
   /// alternate constructor for coefficient import
-  NonDPolynomialChaos(Model& model, const String& exp_import_file,
+  NonDPolynomialChaos(std::shared_ptr<Model> model, const String& exp_import_file,
 		      short u_space_type, const ShortShortPair& approx_view);
 
   /// destructor
@@ -79,10 +79,10 @@ protected:
   /// (method_name is not necessary, rather it is just a convenient overload
   /// allowing the derived ML PCE class to bypass the standard PCE ctor)
   NonDPolynomialChaos(unsigned short method_name, ProblemDescDB& problem_db,
-		      Model& model);
+		      std::shared_ptr<Model> model);
   /// base constructor for lightweight construction of multifidelity PCE
   /// using numerical integration
-  NonDPolynomialChaos(unsigned short method_name, Model& model,
+  NonDPolynomialChaos(unsigned short method_name, std::shared_ptr<Model> model,
 		      short exp_coeffs_approach, const RealVector& dim_pref,
 		      short u_space_type, short refine_type,
 		      short refine_control, short covar_control,
@@ -90,7 +90,7 @@ protected:
 		      short rule_growth, bool piecewise_basis, bool use_derivs);
   /// base constructor for lightweight construction of multilevel PCE
   /// using regression
-  NonDPolynomialChaos(unsigned short method_name, Model& model,
+  NonDPolynomialChaos(unsigned short method_name, std::shared_ptr<Model> model,
 		      short exp_coeffs_approach, const RealVector& dim_pref,
 		      short u_space_type, short refine_type,
 		      short refine_control, short covar_control,
@@ -150,12 +150,12 @@ protected:
   /// integration specification
   bool config_integration(unsigned short quad_order, unsigned short ssg_level,
 			  unsigned short cub_int, Iterator& u_space_sampler,
-			  Model& g_u_model, String& approx_type);
+			  std::shared_ptr<Model> g_u_model, String& approx_type);
   /// configure u_space_sampler and approx_type based on expansion_samples
   /// specification
   bool config_expectation(size_t exp_samples, unsigned short sample_type,
 			  int seed, const String& rng,
-			  Iterator& u_space_sampler, Model& g_u_model,
+			  Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model,
 			  String& approx_type);
   /// configure u_space_sampler and approx_type based on regression
   /// specification
@@ -165,7 +165,7 @@ protected:
 			 const UShortArray& tensor_grid_order,
 			 unsigned short sample_type, int seed,
 			 const String& rng, const String& pt_reuse,
-			 Iterator& u_space_sampler, Model& g_u_model,
+			 Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model,
 			 String& approx_type);
 
   /// define an expansion order that is consistent with an advancement in

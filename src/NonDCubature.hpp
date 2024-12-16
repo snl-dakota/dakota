@@ -37,7 +37,7 @@ public:
   //
 
   // alternate constructor for instantiations "on the fly"
-  NonDCubature(Model& model, unsigned short cub_int_order);
+  NonDCubature(std::shared_ptr<Model> model, unsigned short cub_int_order);
 
   ~NonDCubature() override;                                       ///< destructor
 
@@ -54,7 +54,7 @@ protected:
   //- Heading: Constructors and destructor
   //
 
-  NonDCubature(ProblemDescDB& problem_db, Model& model); ///< constructor
+  NonDCubature(ProblemDescDB& problem_db, std::shared_ptr<Model> model); ///< constructor
 
   //
   //- Heading: Virtual function redefinitions
@@ -62,7 +62,7 @@ protected:
 
   void initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis) override;
 
-  void get_parameter_sets(Model& model) override;
+  void get_parameter_sets(std::shared_ptr<Model> model) override;
 
   void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag) override;
 

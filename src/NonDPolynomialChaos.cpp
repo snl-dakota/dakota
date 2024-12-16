@@ -32,7 +32,7 @@ namespace Dakota {
 /** This constructor is called for a standard letter-envelope iterator
     instantiation using the ProblemDescDB. */
 NonDPolynomialChaos::
-NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
+NonDPolynomialChaos(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDExpansion(problem_db, model),
   crossValidation(problem_db.get_bool("method.nond.cross_validation")),
   crossValidNoiseOnly(
@@ -76,9 +76,8 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
-  Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    *pIteratedModel, uSpaceType)); // retain dist bounds
+  auto g_u_model = std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, uSpaceType); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -119,10 +118,10 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
   short corr_order = -1, corr_type = NO_CORRECTION;
   // DFSModel consumes QoI aggregations; supports surrogate grad evals at most
-  const ActiveSet& recast_set = g_u_model.current_response().active_set();
-  ShortArray pce_asv(g_u_model.qoi(), 3); // for stand alone mode
+  const ActiveSet& recast_set = g_u_model->current_response().active_set();
+  ShortArray pce_asv(g_u_model->qoi(), 3); // for stand alone mode
   ActiveSet  pce_set(pce_asv, recast_set.derivative_vector());
-  const ShortShortPair& pce_view = g_u_model.current_variables().view();
+  const ShortShortPair& pce_view = g_u_model->current_variables().view();
   uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, pce_set, pce_view, approx_type, exp_orders, corr_type,
     corr_order, data_order, outputLevel, pt_reuse, importBuildPointsFile,
@@ -152,13 +151,13 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model):
 /** This constructor is used for helper iterator instantiation on the fly
     that employ numerical integration (quadrature, sparse grid, cubature). */
 NonDPolynomialChaos::
-NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
+NonDPolynomialChaos(std::shared_ptr<Model> model, short exp_coeffs_approach,
 		    unsigned short num_int, const RealVector& dim_pref,
 		    short u_space_type, short refine_type, short refine_control,
 		    short covar_control, short rule_nest, short rule_growth,
 		    bool piecewise_basis, bool use_derivs,
                     String exp_expansion_file ):
-  NonDExpansion(POLYNOMIAL_CHAOS, model, model.current_variables().view(),
+  NonDExpansion(POLYNOMIAL_CHAOS, model, model->current_variables().view(),
 		exp_coeffs_approach, dim_pref, 0, refine_type, refine_control,
 		covar_control, 0., rule_nest, rule_growth, piecewise_basis,
 		use_derivs), 
@@ -178,9 +177,8 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
-  Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    *pIteratedModel, uSpaceType)); // retain dist bounds
+  auto g_u_model = std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, uSpaceType); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -213,10 +211,10 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   UShortArray exp_orders; String pt_reuse; // empty for integration approaches
   short corr_order = -1, corr_type = NO_CORRECTION;
   // DFSModel consumes QoI aggregations. Helper mode: support surrogate Hessians
-  const ActiveSet& recast_set = g_u_model.current_response().active_set();
-  ShortArray pce_asv(g_u_model.qoi(), 7);// TO DO: consider passing in data_mode
+  const ActiveSet& recast_set = g_u_model->current_response().active_set();
+  ShortArray pce_asv(g_u_model->qoi(), 7);// TO DO: consider passing in data_mode
   ActiveSet  pce_set(pce_asv, recast_set.derivative_vector());
-  const ShortShortPair& pce_view = g_u_model.current_variables().view();
+  const ShortShortPair& pce_view = g_u_model->current_variables().view();
   uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, pce_set, pce_view, approx_type, exp_orders, corr_type,
     corr_order, data_order, outputLevel, pt_reuse);
@@ -229,7 +227,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 /** This constructor is used for helper iterator instantiation on the fly
     that employ regression (least squares, CS, OLI). */
 NonDPolynomialChaos::
-NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
+NonDPolynomialChaos(std::shared_ptr<Model> model, short exp_coeffs_approach,
 		    unsigned short exp_order, const RealVector& dim_pref,
 		    size_t colloc_pts, Real colloc_ratio,
 		    int seed, short u_space_type, short refine_type,
@@ -240,7 +238,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		    unsigned short import_build_format,
 		    bool import_build_active_only,
                     String exp_expansion_file ):
-  NonDExpansion(POLYNOMIAL_CHAOS, model, model.current_variables().view(),
+  NonDExpansion(POLYNOMIAL_CHAOS, model, model->current_variables().view(),
 		exp_coeffs_approach, dim_pref, seed, refine_type,
 		refine_control, covar_control, colloc_ratio,
 		Pecos::NO_NESTING_OVERRIDE, Pecos::NO_GROWTH_OVERRIDE,
@@ -262,9 +260,8 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
-  Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    *pIteratedModel, uSpaceType)); // retain dist bounds
+  auto g_u_model = std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, uSpaceType); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -290,10 +287,10 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   short corr_order = -1, corr_type = NO_CORRECTION;
   if (!importBuildPointsFile.empty()) pt_reuse = "all";
   // DFSModel: consume any QoI aggregation. Helper mode: support approx Hessians
-  const ActiveSet& recast_set = g_u_model.current_response().active_set();
-  ShortArray pce_asv(g_u_model.qoi(), 7);// TO DO: consider passing in data_mode
+  const ActiveSet& recast_set = g_u_model->current_response().active_set();
+  ShortArray pce_asv(g_u_model->qoi(), 7);// TO DO: consider passing in data_mode
   ActiveSet  pce_set(pce_asv, recast_set.derivative_vector());
-  const ShortShortPair& pce_view = g_u_model.current_variables().view();
+  const ShortShortPair& pce_view = g_u_model->current_variables().view();
   uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, pce_set, pce_view, approx_type, exp_orders, corr_type,
     corr_order, data_order, outputLevel, pt_reuse, importBuildPointsFile,
@@ -307,7 +304,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 /** This constructor is used for helper iterator instantiation on the fly
     that import the PCE coefficients rather than compute them. */
 NonDPolynomialChaos::
-NonDPolynomialChaos(Model& model, const String& exp_import_file,
+NonDPolynomialChaos(std::shared_ptr<Model> model, const String& exp_import_file,
 		    short u_space_type, const ShortShortPair& approx_view):
   NonDExpansion(POLYNOMIAL_CHAOS, model, approx_view, -1, RealVector(), 0,
 		Pecos::NO_REFINEMENT, Pecos::NO_CONTROL, DEFAULT_COVARIANCE,
@@ -333,14 +330,13 @@ NonDPolynomialChaos(Model& model, const String& exp_import_file,
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
-  Model g_u_model;
   // Alternate view for PCE is injected into iteratedModel upstream in the
   // Analyzer ctor, since we want everything upstream in the consistent (ALL)
   // view --> numContinuousVars, allVars, etc., resulting in use of functions
   // like mean(x), etc., when appropriate.  This view is retained for g_u_model
   // and uSpaceModel w/o inducing any additional mappings.
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    *pIteratedModel, uSpaceType)); // retain dist bounds
+  auto g_u_model = std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, uSpaceType); // retain dist bounds
 
   // --------------------------------
   // Construct G-hat(u) = uSpaceModel
@@ -352,8 +348,8 @@ NonDPolynomialChaos(Model& model, const String& exp_import_file,
   short corr_order = -1, corr_type = NO_CORRECTION;
   // DFSModel consumes QoI aggregations; supports up to Hessian eval for full
   // Newton MAP pre-solve
-  const ActiveSet& approx_set = g_u_model.current_response().active_set();
-  ShortArray pce_asv(pIteratedModel->qoi(), 7); // for stand alone mode
+  const ActiveSet& approx_set = g_u_model->current_response().active_set();
+  ShortArray pce_asv(iteratedModel->qoi(), 7); // for stand alone mode
   ActiveSet  pce_set(pce_asv, approx_set.derivative_vector());
   uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, pce_set, approx_view, approx_type, exp_orders, corr_type,
@@ -369,7 +365,7 @@ NonDPolynomialChaos(Model& model, const String& exp_import_file,
     customize the object construction. */
 NonDPolynomialChaos::
 NonDPolynomialChaos(unsigned short method_name, ProblemDescDB& problem_db,
-		    Model& model):
+		    std::shared_ptr<Model> model):
   NonDExpansion(problem_db, model),
   crossValidation(problem_db.get_bool("method.nond.cross_validation")),
   crossValidNoiseOnly(
@@ -400,13 +396,13 @@ NonDPolynomialChaos(unsigned short method_name, ProblemDescDB& problem_db,
     instantiations that employ numerical integration (quadrature, sparse grid,
     cubature). */
 NonDPolynomialChaos::
-NonDPolynomialChaos(unsigned short method_name, Model& model,
+NonDPolynomialChaos(unsigned short method_name, std::shared_ptr<Model> model,
 		    short exp_coeffs_approach, const RealVector& dim_pref,
 		    short u_space_type, short refine_type, short refine_control,
 		    short covar_control, short ml_alloc_control,
 		    short ml_discrep, short rule_nest, short rule_growth,
 		    bool piecewise_basis, bool use_derivs):
-  NonDExpansion(method_name, model, model.current_variables().view(),
+  NonDExpansion(method_name, model, model->current_variables().view(),
 		exp_coeffs_approach, dim_pref, 0, refine_type, refine_control,
 		covar_control, 0., rule_nest, rule_growth, piecewise_basis,
 		use_derivs), 
@@ -425,14 +421,14 @@ NonDPolynomialChaos(unsigned short method_name, Model& model,
 /** This constructor is called by derived class constructors for lightweight
     instantiations that employ regression (least squares, CS, OLI). */
 NonDPolynomialChaos::
-NonDPolynomialChaos(unsigned short method_name, Model& model,
+NonDPolynomialChaos(unsigned short method_name, std::shared_ptr<Model> model,
 		    short exp_coeffs_approach, const RealVector& dim_pref,
 		    short u_space_type, short refine_type, short refine_control,
 		    short covar_control, const SizetArray& colloc_pts_seq,
 		    Real colloc_ratio, short ml_alloc_control, short ml_discrep,
 		    //short rule_nest, short rule_growth,
 		    bool piecewise_basis, bool use_derivs, bool cv_flag):
-  NonDExpansion(method_name, model, model.current_variables().view(),
+  NonDExpansion(method_name, model, model->current_variables().view(),
 		exp_coeffs_approach, dim_pref, 0, refine_type, refine_control,
 		covar_control, colloc_ratio, Pecos::NO_NESTING_OVERRIDE,
 		Pecos::NO_GROWTH_OVERRIDE, piecewise_basis, use_derivs),
@@ -456,7 +452,7 @@ NonDPolynomialChaos::~NonDPolynomialChaos()
 bool NonDPolynomialChaos::
 config_integration(unsigned short quad_order, unsigned short ssg_level,
 		   unsigned short cub_int, Iterator& u_space_sampler,
-		   Model& g_u_model, String& approx_type)
+		   std::shared_ptr<Model> g_u_model, String& approx_type)
 {
   bool num_int = true;
   if (quad_order != USHRT_MAX) {
@@ -485,7 +481,7 @@ config_integration(unsigned short quad_order, unsigned short ssg_level,
 bool NonDPolynomialChaos::
 config_expectation(size_t exp_samples, unsigned short sample_type,
 		   int seed, const String& rng, Iterator& u_space_sampler,
-		   Model& g_u_model, String& approx_type)
+		   std::shared_ptr<Model> g_u_model, String& approx_type)
 {
   if (exp_samples == SZ_MAX)
     return false;
@@ -534,7 +530,7 @@ config_regression(const UShortArray& exp_orders, size_t colloc_pts,
 		  short ls_regress_type, const UShortArray& tensor_grid_order,
 		  unsigned short sample_type, int seed, const String& rng,
 		  const String& pt_reuse, Iterator& u_space_sampler,
-		  Model& g_u_model, String& approx_type)
+		  std::shared_ptr<Model> g_u_model, String& approx_type)
 {
   if (refineType && refineControl > Pecos::UNIFORM_CONTROL) {
     // adaptive precluded since grid anisotropy not readily supported
@@ -697,9 +693,8 @@ bool NonDPolynomialChaos::resize()
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
-  Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    *pIteratedModel, uSpaceType)); // retain dist bounds
+  auto g_u_model = std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, uSpaceType); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -778,10 +773,10 @@ bool NonDPolynomialChaos::resize()
   short corr_order = -1, corr_type = NO_CORRECTION;
   String pt_reuse, approx_type;
   // DFSModel: consume any QoI aggregation. Resize: support approx Hessians
-  const ActiveSet& recast_set = g_u_model.current_response().active_set();
-  ShortArray pce_asv(g_u_model.qoi(), 7);// TO DO: consider passing in data_mode
+  const ActiveSet& recast_set = g_u_model->current_response().active_set();
+  ShortArray pce_asv(g_u_model->qoi(), 7);// TO DO: consider passing in data_mode
   ActiveSet  pce_set(pce_asv, recast_set.derivative_vector());
-  const ShortShortPair& pce_view = g_u_model.current_variables().view();
+  const ShortShortPair& pce_view = g_u_model->current_variables().view();
   if (expansionCoeffsApproach == Pecos::QUADRATURE ||
       expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
       expansionCoeffsApproach == Pecos::INCREMENTAL_SPARSE_GRID ||
@@ -839,7 +834,7 @@ void NonDPolynomialChaos::derived_init_communicators(ParLevLIter pl_iter)
 {
   // this is redundant with Model recursions except for PCE coeff import case
   if (!expansionImportFile.empty())
-    pIteratedModel->init_communicators(pl_iter, maxEvalConcurrency);
+    iteratedModel->init_communicators(pl_iter, maxEvalConcurrency);
 
   NonDExpansion::derived_init_communicators(pl_iter);
 }
@@ -849,7 +844,7 @@ void NonDPolynomialChaos::derived_set_communicators(ParLevLIter pl_iter)
 {
   // this is redundant with Model recursions except for PCE coeff import case
   if (!expansionImportFile.empty())
-    pIteratedModel->set_communicators(pl_iter, maxEvalConcurrency);
+    iteratedModel->set_communicators(pl_iter, maxEvalConcurrency);
 
   NonDExpansion::derived_set_communicators(pl_iter);
 }
@@ -861,7 +856,7 @@ void NonDPolynomialChaos::derived_free_communicators(ParLevLIter pl_iter)
 
   // this is redundant with Model recursions except for PCE coeff import case
   if (!expansionImportFile.empty())
-    pIteratedModel->free_communicators(pl_iter, maxEvalConcurrency);
+    iteratedModel->free_communicators(pl_iter, maxEvalConcurrency);
 }
 
 
@@ -883,7 +878,7 @@ resolve_inputs(short& u_space_type, short& data_order)
   // within the NestedModel ctor prior to subIterator instantiation.
   data_order = 1;
   if (useDerivs) { // input specification
-    if (pIteratedModel->gradient_type()  != "none") data_order |= 2;
+    if (iteratedModel->gradient_type()  != "none") data_order |= 2;
     //if (iteratedModel.hessian_type() != "none") data_order |= 4; // not yet
     if (data_order == 1)
       Cerr << "\nWarning: use_derivatives option in polynomial_chaos "
@@ -1266,8 +1261,8 @@ void NonDPolynomialChaos::print_results(std::ostream& s, short results_state)
 void NonDPolynomialChaos::print_coefficients(std::ostream& s)
 {
   std::vector<Approximation>& poly_approxs = uSpaceModel->approximations();
-  const StringArray& fn_labels = ModelUtils::response_labels(*pIteratedModel);
-  const Variables&   vars      = pIteratedModel->current_variables();
+  const StringArray& fn_labels = ModelUtils::response_labels(*iteratedModel);
+  const Variables&   vars      = iteratedModel->current_variables();
   const SizetArray&  ac_totals = vars.shared_data().active_components_totals();
 
   size_t i, width = write_precision+7, num_ceuv = ac_totals[TOTAL_CEUV],

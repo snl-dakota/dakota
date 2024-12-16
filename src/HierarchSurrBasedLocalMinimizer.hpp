@@ -68,7 +68,7 @@ public:
   //
 
   /// constructor
-  HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model);
+  HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
   ~HierarchSurrBasedLocalMinimizer() override;
 
@@ -176,7 +176,7 @@ inline SurrBasedLevelData& HierarchSurrBasedLocalMinimizer::trust_region()
 
 
 inline void HierarchSurrBasedLocalMinimizer::set_active_model(size_t tr_index)
-{ pIteratedModel->active_model_key(trustRegions[tr_index].paired_key()); }
+{ iteratedModel->active_model_key(trustRegions[tr_index].paired_key()); }
 
 
 inline void HierarchSurrBasedLocalMinimizer::update_trust_region()

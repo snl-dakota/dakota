@@ -17,7 +17,7 @@ static const char rcsId[] = "@(#) $Id: NonDReliability.cpp 6793 2010-05-21 00:07
 namespace Dakota {
 
 
-NonDReliability::NonDReliability(ProblemDescDB& problem_db, Model& model):
+NonDReliability::NonDReliability(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonD(problem_db, model),
   mppSearchType(probDescDB.get_ushort("method.sub_method")),
   integrationRefinement(

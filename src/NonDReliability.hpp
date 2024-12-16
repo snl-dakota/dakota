@@ -33,7 +33,7 @@ protected:
   //- Heading: Constructors and destructor
   //
 
-  NonDReliability(ProblemDescDB& problem_db, Model& model); ///< constructor
+  NonDReliability(ProblemDescDB& problem_db, std::shared_ptr<Model> model); ///< constructor
   ~NonDReliability() override;                                       ///< destructor
 
   //
@@ -53,7 +53,7 @@ protected:
   //void pre_run();
   void post_run(std::ostream& s) override;
 
-  const Model& algorithm_space_model() const override;
+  std::shared_ptr<Model> algorithm_space_model() override;
 
   //
   //- Heading: Data members
@@ -106,8 +106,8 @@ protected:
 };
 
 
-inline const Model& NonDReliability::algorithm_space_model() const
-{ return *uSpaceModel; }
+inline std::shared_ptr<Model> NonDReliability::algorithm_space_model()
+{ return uSpaceModel; }
 
 
 inline void NonDReliability::

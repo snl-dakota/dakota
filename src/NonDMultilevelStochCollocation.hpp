@@ -34,9 +34,9 @@ public:
   //
 
   /// standard constructor
-  NonDMultilevelStochCollocation(ProblemDescDB& problem_db, Model& model);
+  NonDMultilevelStochCollocation(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor
-  NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
+  NonDMultilevelStochCollocation(std::shared_ptr<Model> model, short exp_coeffs_approach,
     const UShortArray& num_int_seq, const RealVector& dim_pref,
     short u_space_type, short refine_type, short refine_control,
     short covar_control, short ml_alloc_cntl, short ml_discrep,

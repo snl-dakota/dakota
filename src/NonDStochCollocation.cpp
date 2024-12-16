@@ -27,7 +27,7 @@ namespace Dakota {
 /** This constructor is called for a standard letter-envelope iterator
     instantiation using the ProblemDescDB. */
 NonDStochCollocation::
-NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
+NonDStochCollocation(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDExpansion(problem_db, model)
 {
   // ----------------
@@ -40,9 +40,8 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
-  Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    *pIteratedModel, u_space_type)); // retain dist bounds
+  auto g_u_model = std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, u_space_type); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -66,11 +65,11 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
   // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
   short corr_order = -1, corr_type = NO_CORRECTION;
   UShortArray approx_order; // empty
-  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  const ActiveSet& recast_set = g_u_model->current_response().active_set();
   // DFSModel: consume any QoI aggregation; support surrogate grad evals at most
-  ShortArray sc_asv(g_u_model.qoi(), 3); // for stand alone mode
+  ShortArray sc_asv(g_u_model->qoi(), 3); // for stand alone mode
   ActiveSet  sc_set(sc_asv, recast_set.derivative_vector());
-  const ShortShortPair& sc_view = g_u_model.current_variables().view();
+  const ShortShortPair& sc_view = g_u_model->current_variables().view();
   String empty_str; // build data import not supported for structured grids
   uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, sc_set, sc_view, approx_type, approx_order, corr_type,
@@ -99,13 +98,13 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
 
 /** This constructor is used for helper iterator instantiation on the fly. */
 NonDStochCollocation::
-NonDStochCollocation(Model& model, short exp_coeffs_approach,
+NonDStochCollocation(std::shared_ptr<Model> model, short exp_coeffs_approach,
 		     unsigned short num_int, const RealVector& dim_pref,
 		     short u_space_type, short refine_type,
 		     short refine_control, short covar_control,
 		     short rule_nest, short rule_growth,
 		     bool piecewise_basis, bool use_derivs):
-  NonDExpansion(STOCH_COLLOCATION, model, model.current_variables().view(),
+  NonDExpansion(STOCH_COLLOCATION, model, model->current_variables().view(),
 		exp_coeffs_approach, dim_pref, 0, refine_type, refine_control,
 		covar_control, 0., rule_nest, rule_growth, piecewise_basis,
 		use_derivs)
@@ -120,9 +119,8 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
-  Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    *pIteratedModel, u_space_type)); // retain dist bounds
+  auto g_u_model =std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, u_space_type); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -144,12 +142,12 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
   short corr_order = -1, corr_type = NO_CORRECTION;
   UShortArray approx_order; // empty
-  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  const ActiveSet& recast_set = g_u_model->current_response().active_set();
   // DFSModel: consume any QoI aggregation.
   // TO DO: support surrogate Hessians in helper mode.
-  ShortArray sc_asv(g_u_model.qoi(), 3); // TO DO: consider passing in data_mode
+  ShortArray sc_asv(g_u_model->qoi(), 3); // TO DO: consider passing in data_mode
   ActiveSet  sc_set(sc_asv, recast_set.derivative_vector());
-  const ShortShortPair& sc_view = g_u_model.current_variables().view();
+  const ShortShortPair& sc_view = g_u_model->current_variables().view();
   uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, sc_set, sc_view, approx_type, approx_order, corr_type,
     corr_order, data_order, outputLevel, pt_reuse);
@@ -163,7 +161,7 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
     customize the object construction. */
 NonDStochCollocation::
 NonDStochCollocation(unsigned short method_name, ProblemDescDB& problem_db,
-		     Model& model):
+		     std::shared_ptr<Model> model):
   NonDExpansion(problem_db, model)
 {
   // Logic delegated to derived class constructor...
@@ -173,13 +171,13 @@ NonDStochCollocation(unsigned short method_name, ProblemDescDB& problem_db,
 /** This constructor is called from derived class constructors that
     customize the object construction. */
 NonDStochCollocation::
-NonDStochCollocation(unsigned short method_name, Model& model,
+NonDStochCollocation(unsigned short method_name, std::shared_ptr<Model> model,
 		     short exp_coeffs_approach, const RealVector& dim_pref,
 		     short refine_type, short refine_control,
 		     short covar_control, short ml_alloc_control,
 		     short ml_discrep, short rule_nest, short rule_growth,
 		     bool piecewise_basis, bool use_derivs):
-  NonDExpansion(method_name, model, model.current_variables().view(),
+  NonDExpansion(method_name, model, model->current_variables().view(),
 		exp_coeffs_approach, dim_pref, 0, refine_type, refine_control,
 		covar_control, 0., rule_nest, rule_growth, piecewise_basis,
 		use_derivs)
@@ -198,7 +196,7 @@ NonDStochCollocation::~NonDStochCollocation()
 void NonDStochCollocation::
 config_integration(unsigned short quad_order, unsigned short ssg_level,
 		   const RealVector& dim_pref, short u_space_type, 
-		   Iterator& u_space_sampler, Model& g_u_model)
+		   Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model)
 {
   // -------------------------
   // Construct u_space_sampler
@@ -263,7 +261,7 @@ config_integration(unsigned short quad_order, unsigned short ssg_level,
 void NonDStochCollocation::
 config_integration(short exp_coeffs_approach, unsigned short num_int,
 		   const RealVector& dim_pref, Iterator& u_space_sampler,
-		   Model& g_u_model)
+		   std::shared_ptr<Model> g_u_model)
 {
   // -------------------------
   // Construct u_space_sampler
@@ -329,7 +327,7 @@ resolve_inputs(short& u_space_type, short& data_order)
   // within the NestedModel ctor prior to subIterator instantiation.
   data_order = 1;
   if (useDerivs) { // input specification
-    if (pIteratedModel->gradient_type()  != "none") data_order |= 2;
+    if (iteratedModel->gradient_type()  != "none") data_order |= 2;
     //if (iteratedModel.hessian_type() != "none") data_order |= 4; // not yet
 #ifdef ALLOW_GLOBAL_HERMITE_INTERPOLATION
     if (data_order == 1)

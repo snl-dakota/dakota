@@ -33,9 +33,9 @@ protected:
   /// default constructor
   LeastSq(std::shared_ptr<TraitsBase> traits);
   /// standard constructor
-  LeastSq(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits);
+  LeastSq(ProblemDescDB& problem_db, std::shared_ptr<Model> model, std::shared_ptr<TraitsBase> traits);
   /// alternate "on the fly" constructor
-  LeastSq(unsigned short method_name, Model& model, std::shared_ptr<TraitsBase> traits);
+  LeastSq(unsigned short method_name, std::shared_ptr<Model> model, std::shared_ptr<TraitsBase> traits);
   /// destructor
   ~LeastSq() override;
 

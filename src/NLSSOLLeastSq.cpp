@@ -46,7 +46,7 @@ NLSSOLLeastSq* NLSSOLLeastSq::nlssolInstance(NULL);
 
 
 /** This is the primary constructor.  It accepts a Model reference. */
-NLSSOLLeastSq::NLSSOLLeastSq(ProblemDescDB& problem_db, Model& model):
+NLSSOLLeastSq::NLSSOLLeastSq(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   LeastSq(problem_db, model, std::shared_ptr<TraitsBase>(new NLSSOLLeastSqTraits())), SOLBase(model)
 {
   // historical default convergence tolerance
@@ -58,21 +58,21 @@ NLSSOLLeastSq::NLSSOLLeastSq(ProblemDescDB& problem_db, Model& model):
               probDescDB.get_real("method.function_precision"),
               probDescDB.get_real("method.npsol.linesearch_tolerance"),
               maxIterations, constraintTol, convergenceTol,
-	      pIteratedModel->gradient_type(),
-	      pIteratedModel->fd_gradient_step_size());
+	      iteratedModel->gradient_type(),
+	      iteratedModel->fd_gradient_step_size());
 }
 
 
 /** This is an alternate constructor which accepts a Model but does
     not have a supporting method specification from the ProblemDescDB. */
-NLSSOLLeastSq::NLSSOLLeastSq(Model& model):
+NLSSOLLeastSq::NLSSOLLeastSq(std::shared_ptr<Model> model):
   LeastSq(NLSSOL_SQP, model, std::shared_ptr<TraitsBase>(new NLSSOLLeastSqTraits())), SOLBase(model)
 {
   // invoke SOLBase set function (shared with NPSOLOptimizer)
   set_options(speculativeFlag, vendorNumericalGradFlag, outputLevel, -1,
 	      1.e-10, 0.9, maxIterations, constraintTol, convergenceTol,
-	      pIteratedModel->gradient_type(),
-	      pIteratedModel->fd_gradient_step_size());
+	      iteratedModel->gradient_type(),
+	      iteratedModel->fd_gradient_step_size());
 }
 
 
@@ -112,9 +112,9 @@ least_sq_eval(int& mode, int& m, int& n, int& nrowfj, double* x, double* f,
     // and perform an evaluate() prior to data recovery.
     RealVector local_des_vars(n);
     copy_data(x, n, local_des_vars);
-    ModelUtils::continuous_variables(*nlssolInstance->pIteratedModel, local_des_vars);
+    ModelUtils::continuous_variables(*nlssolInstance->iteratedModel, local_des_vars);
     nlssolInstance->activeSet.request_values(asv_request);
-    nlssolInstance->pIteratedModel->evaluate(nlssolInstance->activeSet);
+    nlssolInstance->iteratedModel->evaluate(nlssolInstance->activeSet);
     if (++nlssolInstance->fnEvalCntr == nlssolInstance->maxFunctionEvals) {
       mode = -1; // terminate NLSSOL (see mode discussion in "User-Supplied
       // Subroutines" section of NPSOL manual)
@@ -124,7 +124,7 @@ least_sq_eval(int& mode, int& m, int& n, int& nrowfj, double* x, double* f,
   }
   
   const Response& local_response
-    = nlssolInstance->pIteratedModel->current_response();
+    = nlssolInstance->iteratedModel->current_response();
   if (asv_request & 1) {
     const RealVector& local_fn_vals = local_response.function_values();
     for (size_t i=0; i<m; i++)
@@ -146,7 +146,7 @@ void NLSSOLLeastSq::check_sub_iterator_conflict()
 {
   // Run-time check (NestedModel::subIterator is constructed in init_comms())
   //if (setUpType == "model")
-  SOLBase::check_sub_iterator_conflict(*pIteratedModel, methodName);
+  SOLBase::check_sub_iterator_conflict(*iteratedModel, methodName);
 }
 
 
@@ -182,8 +182,8 @@ void NLSSOLLeastSq::core_run()
   double*    local_lsq_grads = new double [numLeastSqTerms*numContinuousVars];
 
   allocate_arrays(numContinuousVars, numNonlinearConstraints,
-		  ModelUtils::linear_ineq_constraint_coeffs(*pIteratedModel),
-		  ModelUtils::linear_eq_constraint_coeffs(*pIteratedModel));
+		  ModelUtils::linear_ineq_constraint_coeffs(*iteratedModel),
+		  ModelUtils::linear_eq_constraint_coeffs(*iteratedModel));
   allocate_workspace(numContinuousVars, numNonlinearConstraints,
                      numLinearConstraints, numLeastSqTerms);
 
@@ -195,20 +195,20 @@ void NLSSOLLeastSq::core_run()
   // initialize local_des_vars with DB initial point.  Variables are updated 
   // in constraint_eval/least_sq_eval
   RealVector local_des_vars;
-  copy_data(ModelUtils::continuous_variables(*pIteratedModel), local_des_vars);
+  copy_data(ModelUtils::continuous_variables(*iteratedModel), local_des_vars);
 
   // Augmentation of bounds appears here rather than in the constructor because
   // these bounds must be updated from model bounds each time an iterator is
   // run within the B&B minimizer.
   RealVector augmented_l_bnds, augmented_u_bnds;
-  aggregate_bounds(ModelUtils::continuous_lower_bounds(*pIteratedModel),
-		   ModelUtils::continuous_upper_bounds(*pIteratedModel),
-		   ModelUtils::linear_ineq_constraint_lower_bounds(*pIteratedModel),
-		   ModelUtils::linear_ineq_constraint_upper_bounds(*pIteratedModel),
-		   ModelUtils::linear_eq_constraint_targets(*pIteratedModel),
-		   ModelUtils::nonlinear_ineq_constraint_lower_bounds(*pIteratedModel),
-		   ModelUtils::nonlinear_ineq_constraint_upper_bounds(*pIteratedModel),
-		   ModelUtils::nonlinear_eq_constraint_targets(*pIteratedModel),
+  aggregate_bounds(ModelUtils::continuous_lower_bounds(*iteratedModel),
+		   ModelUtils::continuous_upper_bounds(*iteratedModel),
+		   ModelUtils::linear_ineq_constraint_lower_bounds(*iteratedModel),
+		   ModelUtils::linear_ineq_constraint_upper_bounds(*iteratedModel),
+		   ModelUtils::linear_eq_constraint_targets(*iteratedModel),
+		   ModelUtils::nonlinear_ineq_constraint_lower_bounds(*iteratedModel),
+		   ModelUtils::nonlinear_ineq_constraint_upper_bounds(*iteratedModel),
+		   ModelUtils::nonlinear_eq_constraint_targets(*iteratedModel),
 		   augmented_l_bnds, augmented_u_bnds);
 
   NLSSOL_F77( num_least_sq_terms, num_cv, num_linear_constraints,

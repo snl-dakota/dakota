@@ -53,10 +53,10 @@ public:
   //
 
   /// Standard constructor
-  ROLOptimizer(ProblemDescDB& problem_db, Model& model);
+  ROLOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
 
   /// Alternate constructor for Iterator instantiations by name
-  ROLOptimizer(const String& method_name, Model& model);
+  ROLOptimizer(const String& method_name, std::shared_ptr<Model> model);
   
   /// Destructor
   ~ROLOptimizer() override {}

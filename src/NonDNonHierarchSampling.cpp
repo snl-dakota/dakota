@@ -42,7 +42,7 @@ NonDNonHierarchSampling* NonDNonHierarchSampling::nonHierSampInstance(NULL);
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDNonHierarchSampling::
-NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
+NonDNonHierarchSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDEnsembleSampling(problem_db, model), optSubProblemForm(0),
   truthFixedByPilot(problem_db.get_bool("method.nond.truth_fixed_by_pilot"))
 {
@@ -125,17 +125,17 @@ void NonDNonHierarchSampling::assign_active_key()
   std::vector<Pecos::ActiveKey> form_res_keys(numApprox+1);
 
   // case Pecos::FORM_RESOLUTION_ENUMERATION
-  ModelList& sub_models = pIteratedModel->subordinate_models(false);// incl HF
+  ModelList& sub_models = iteratedModel->subordinate_models(false);// incl HF
   size_t m, l, num_lev, cntr = 0;  ModelLIter m_iter;
   for (m=0,m_iter=sub_models.begin(); m_iter!=sub_models.end(); ++m_iter,++m){
-    num_lev = m_iter->solution_levels(); // lower bound of 1
+    num_lev = (*m_iter)->solution_levels(); // lower bound of 1
     for (l=0; l<num_lev; ++l, ++cntr)
       form_res_keys[cntr].form_key(0, m, l);
   }
 
   active_key.aggregate_keys(form_res_keys, Pecos::RAW_DATA);
   //iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
-  pIteratedModel->active_model_key(active_key); // data group 0
+  iteratedModel->active_model_key(active_key); // data group 0
   resize_active_set();
 }
 
@@ -332,8 +332,8 @@ group_increments(SizetArray& delta_N_G, String prepend, bool reverse_order)
       }
     }
 
-  if (pIteratedModel->asynch_flag())
-    synchronize_batches(*pIteratedModel); // schedule all groups (return ignored)
+  if (iteratedModel->asynch_flag())
+    synchronize_batches(*iteratedModel); // schedule all groups (return ignored)
 }
 
 
@@ -424,13 +424,13 @@ ensemble_sample_increment(const String& prepend, size_t step, bool new_samples)
 
   if (new_samples) {
     // generate new MC parameter sets
-    get_parameter_sets(*pIteratedModel);
+    get_parameter_sets(iteratedModel);
     // export separate output files for each data set
     export_sample_sets(prepend, step);
   }
 
   // compute allResponses from all{Samples,Variables} using model ensemble
-  evaluate_parameter_sets(*pIteratedModel); // includes synchronize
+  evaluate_parameter_sets(*iteratedModel); // includes synchronize
 }
 
 
@@ -441,14 +441,14 @@ ensemble_sample_batch(const String& prepend, size_t step, bool new_samples)
 
   if (new_samples) {
     // generate new MC parameter sets
-    get_parameter_sets(*pIteratedModel);
+    get_parameter_sets(iteratedModel);
     // export separate output files for each data set
     export_sample_sets(prepend, step);
   }
 
   // evaluate all{Samples,Variables} using model ensemble and migrate
   // all{Samples,Variables} to batch{Samples,Variables}Map
-  evaluate_batch(*pIteratedModel, step); // excludes synchronize
+  evaluate_batch(*iteratedModel, step); // excludes synchronize
 }
 
 
@@ -457,11 +457,11 @@ export_sample_sets(const String& prepend, size_t step)
 {
   if (exportSampleSets) { // for HF+LF models, use the HF tags
     if (active_set_for_model(numApprox))
-      export_all_samples(prepend, pIteratedModel->active_truth_model(),
+      export_all_samples(prepend, *iteratedModel->active_truth_model(),
 			 mlmfIter, step);
     for (size_t i=0; i<numApprox; ++i)
       if (active_set_for_model(i))
-	export_all_samples(prepend, pIteratedModel->active_surrogate_model(i),
+	      export_all_samples(prepend, *iteratedModel->active_surrogate_model(i),
 			   mlmfIter, step);
   }
 }
@@ -1371,12 +1371,12 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
       solvers_0.resize(1);  solvers_0[0] = optSubProblemSolver;         break;
     }
 
-    Model adapt_model, sub_prob_model;
+    std::shared_ptr<Model> adapt_model, sub_prob_model;
     if (use_adapter) {
       // configure the minimization sub-problem
-      adapt_model.assign_rep(std::make_shared<MinimizerAdapterModel>(x0, x_lb,
+      adapt_model = std::make_shared<MinimizerAdapterModel>(x0, x_lb,
         x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
-        lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt, response_evaluator));
+        lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt, response_evaluator);
 
       //////////////////////////////////////////////////////////////////////////
       // For nested optimization, we emulate EstVar*(hp) at the top level,
@@ -1435,32 +1435,32 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
       //////////////////////////////////////////////////////////////////////////
 
       if (use_dfs) {
-	int samples = 100, seed = 12347;      // TO DO: spec
-	unsigned short sample_type = SUBMETHOD_DEFAULT;
-	String rng; // empty string: use default
-	bool vary_pattern = false, use_derivs = false;
-	short corr_type = ADDITIVE_CORRECTION, corr_order = 1, data_order = 1;
-	if (use_derivs) { // Would also need to verify surrogate support
-	  if (adapt_model.gradient_type() != "none") data_order |= 2;
-	  if (adapt_model.hessian_type()  != "none") data_order |= 4;
-	}
-	Iterator dace_iterator;
-	dace_iterator.assign_rep(std::make_shared<NonDLHSSampling>(adapt_model,
-	  sample_type, samples, seed, rng, vary_pattern, ACTIVE_UNIFORM));
-	dace_iterator.active_set_request_values(data_order);
+          int samples = 100, seed = 12347;      // TO DO: spec
+          unsigned short sample_type = SUBMETHOD_DEFAULT;
+          String rng; // empty string: use default
+          bool vary_pattern = false, use_derivs = false;
+          short corr_type = ADDITIVE_CORRECTION, corr_order = 1, data_order = 1;
+        if (use_derivs) { // Would also need to verify surrogate support
+          if (adapt_model->gradient_type() != "none") data_order |= 2;
+          if (adapt_model->hessian_type()  != "none") data_order |= 4;
+        }
+        Iterator dace_iterator;
+        dace_iterator.assign_rep(std::make_shared<NonDLHSSampling>(adapt_model,
+          sample_type, samples, seed, rng, vary_pattern, ACTIVE_UNIFORM));
+        dace_iterator.active_set_request_values(data_order);
 
-	String approx_type("global_kriging"), point_reuse("none");// TO DO: spec
-	UShortArray approx_order; // empty
-	ActiveSet dfs_set = adapt_model.current_response().active_set();// copy
-	dfs_set.request_values(1);
-	const ShortShortPair& dfs_view = adapt_model.current_variables().view();
-	sub_prob_model.assign_rep(std::make_shared<DataFitSurrModel>(
-	  dace_iterator, adapt_model, dfs_set, dfs_view, approx_type,
-	  approx_order, corr_type, corr_order, data_order, SILENT_OUTPUT,
-	  point_reuse));
+        String approx_type("global_kriging"), point_reuse("none");// TO DO: spec
+        UShortArray approx_order; // empty
+        ActiveSet dfs_set = adapt_model->current_response().active_set();// copy
+        dfs_set.request_values(1);
+        const ShortShortPair& dfs_view = adapt_model->current_variables().view();
+        sub_prob_model = std::make_shared<DataFitSurrModel>(
+          dace_iterator, adapt_model, dfs_set, dfs_view, approx_type,
+          approx_order, corr_type, corr_order, data_order, SILENT_OUTPUT,
+          point_reuse);
       }
       else
-	sub_prob_model = adapt_model;
+	      sub_prob_model = adapt_model;
     }
 
     size_t i, j, max_iter = 50000, max_eval = 250000;
@@ -1692,9 +1692,9 @@ void NonDNonHierarchSampling::run_minimizers(MFSolutionData& soln)
       num_solvers = min_ip1.size();
       for (j=0; j<num_solvers; ++j) {
 	Iterator& min_ij = min_ip1[j];
-	Model&  model_ij = min_ij.iterated_model();
-	if (model_ij.is_null())  min_ij.initial_point(vars_star);
-	else                model_ij.current_variables().active_variables(vars_star);
+	auto  model_ij = min_ij.iterated_model();
+	if (!model_ij)  min_ij.initial_point(vars_star);
+	else                model_ij->current_variables().active_variables(vars_star);
       }
     }
   }

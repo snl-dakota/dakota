@@ -33,7 +33,7 @@ public:
   //
 
   /// standard constructor
-  NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model);
+  NonDMultilevBLUESampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
   ~NonDMultilevBLUESampling() override;
 

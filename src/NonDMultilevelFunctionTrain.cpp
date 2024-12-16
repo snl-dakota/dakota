@@ -24,7 +24,7 @@ namespace Dakota {
 /** This constructor is called for a standard letter-envelope iterator
     instantiation using the ProblemDescDB. */
 NonDMultilevelFunctionTrain::
-NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
+NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDC3FunctionTrain(DEFAULT_METHOD, problem_db, model),
   startRankSeqSpec(
     problem_db.get_sza("method.nond.c3function_train.start_rank_sequence")),
@@ -50,7 +50,7 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   // -------------------
   Model g_u_model;
   g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    *pIteratedModel, u_space_type)); // retain dist bounds
+    *iteratedModel, u_space_type)); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -114,7 +114,7 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
 /** This constructor is used for helper iterator instantiation on the fly
     that employ regression.
 NonDMultilevelFunctionTrain::
-NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
+NonDMultilevelFunctionTrain(unsigned short method_name, std::shared_ptr<Model> model,
 			    const SizetArray& colloc_pts_seq,
 			    const RealVector& dim_pref,
 			    Real colloc_ratio, const SizetArray& seed_seq,
@@ -248,7 +248,7 @@ void NonDMultilevelFunctionTrain::initialize_u_space_model()
   // SharedC3ApproxData invokes ope_opts_alloc() to construct basis and
   // requires {start,max} order
   const Pecos::MultivariateDistribution& u_dist
-    = uSpaceModel->truth_model().multivariate_distribution();
+    = uSpaceModel->truth_model()->multivariate_distribution();
   uSpaceModel->shared_approximation().construct_basis(u_dist);
 
   // emulation mode needed for ApproximationInterface::qoi_set_to_key_index()

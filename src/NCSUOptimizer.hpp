@@ -55,15 +55,15 @@ public:
   //
 
   /// standard constructor
-  NCSUOptimizer(ProblemDescDB& problem_db, Model& model);
+  NCSUOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
 
   /// alternate constructor for instantiations "on the fly"
-  NCSUOptimizer(Model& model, size_t max_iter, size_t max_eval,
+  NCSUOptimizer(std::shared_ptr<Model> model, size_t max_iter, size_t max_eval,
 		double min_box_size = -1., double vol_box_size = -1.,
 		double solution_target = -DBL_MAX);
 
   /// alternate constructor for Iterator instantiations by name
-  NCSUOptimizer(Model& model);
+  NCSUOptimizer(std::shared_ptr<Model> model);
 
   /// alternate constructor for instantiations "on the fly"
   NCSUOptimizer(//const RealVector& initial_pt,

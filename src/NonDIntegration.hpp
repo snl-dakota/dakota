@@ -91,11 +91,11 @@ protected:
   //
 
   /// constructor
-  NonDIntegration(ProblemDescDB& problem_db, Model& model);
+  NonDIntegration(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor for instantiations "on the fly"
-  NonDIntegration(unsigned short method_name, Model& model);
+  NonDIntegration(unsigned short method_name, std::shared_ptr<Model> model);
   /// alternate constructor for instantiations "on the fly"
-  NonDIntegration(unsigned short method_name, Model& model,
+  NonDIntegration(unsigned short method_name, std::shared_ptr<Model> model,
 		  const RealVector& dim_pref);
   /// destructor
   ~NonDIntegration() override;

@@ -83,9 +83,9 @@ public:
   //
  
   /// standard constructor
-  NLSSOLLeastSq(ProblemDescDB& problem_db, Model& model);
+  NLSSOLLeastSq(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor
-  NLSSOLLeastSq(Model& model);
+  NLSSOLLeastSq(std::shared_ptr<Model> model);
   /// destructor
   ~NLSSOLLeastSq() override;
 

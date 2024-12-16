@@ -18,7 +18,7 @@
 
 namespace Dakota {
 
-NonDLocalEvidence::NonDLocalEvidence(ProblemDescDB& problem_db, Model& model):
+NonDLocalEvidence::NonDLocalEvidence(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDLocalInterval(problem_db, model)
 { }
 
@@ -35,21 +35,21 @@ void NonDLocalEvidence::set_cell_bounds()
 {
   size_t j ;
   for (j=0; j<numContIntervalVars; j++) {
-    ModelUtils::continuous_lower_bound(minMaxModel, cellContLowerBounds[cellCntr][j],j);
-    ModelUtils::continuous_upper_bound(minMaxModel, cellContUpperBounds[cellCntr][j],j);
+    ModelUtils::continuous_lower_bound(*minMaxModel, cellContLowerBounds[cellCntr][j],j);
+    ModelUtils::continuous_upper_bound(*minMaxModel, cellContUpperBounds[cellCntr][j],j);
   }
 
-  for (j=0; j<(numDiscIntervalVars); j++) {
-    ModelUtils::discrete_int_lower_bound(minMaxModel, cellIntRangeLowerBounds[cellCntr][j],j);
-    ModelUtils::discrete_int_upper_bound(minMaxModel, cellIntRangeUpperBounds[cellCntr][j],j);
+  for (j=0; j<numDiscIntervalVars; j++) {
+    ModelUtils::discrete_int_lower_bound(*minMaxModel, cellIntRangeLowerBounds[cellCntr][j],j);
+    ModelUtils::discrete_int_upper_bound(*minMaxModel, cellIntRangeUpperBounds[cellCntr][j],j);
   }
 
   for (j=0; j<numDiscSetIntUncVars; j++) {
-    ModelUtils::discrete_int_variable(minMaxModel, cellIntSetBounds[cellCntr][j],j+numDiscIntervalVars);
+    ModelUtils::discrete_int_variable(*minMaxModel, cellIntSetBounds[cellCntr][j],j+numDiscIntervalVars);
   }
 
   for (j=0; j<numDiscSetRealUncVars; j++) {
-    ModelUtils::discrete_real_variable(minMaxModel, cellRealSetBounds[cellCntr][j],j);
+    ModelUtils::discrete_real_variable(*minMaxModel, cellRealSetBounds[cellCntr][j],j);
   }
 
 }

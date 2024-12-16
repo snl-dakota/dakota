@@ -35,7 +35,10 @@ namespace Dakota {
     actualModel in order to generate the necessary data for building
     global approximations. */
 
-class DataFitSurrModel: public SurrogateModel
+// std::enable_shared_from_this is a mixin that allows a DataFitSurrModel instance to safely
+// create std::shared_ptrs to itself by calling shared_from_this(). The instance must be held
+// by a std::shared_ptr, and shared_from_this() cannot be called from the constructor.
+class DataFitSurrModel: public SurrogateModel, public std::enable_shared_from_this<DataFitSurrModel>
 {
 public:
   
@@ -46,7 +49,7 @@ public:
   /// constructor
   DataFitSurrModel(ProblemDescDB& problem_db);
   /// alternate constructor for instantiations on the fly
-  DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
+  DataFitSurrModel(Iterator& dace_iterator, std::shared_ptr<Model> actual_model,
 		   const ActiveSet& dfs_set, const ShortShortPair& dfs_view,
 		   const String& approx_type, const UShortArray& approx_order,
 		   short corr_type, short corr_order, short data_order,
@@ -108,9 +111,9 @@ public:
 			    const IntResponseMap&  resp_map, bool rebuild_flag) override;
           
   /// return this model instance
-  Model& surrogate_model(size_t i = _NPOS) override;
+  std::shared_ptr<Model> surrogate_model(size_t i = _NPOS) override;
   /// return this model instance
-  const Model& surrogate_model(size_t i = _NPOS) const override;
+  std::shared_ptr<const Model> surrogate_model(size_t i = _NPOS) const override;
 
   //
   //- Heading: Virtual function redefinitions
@@ -125,8 +128,8 @@ public:
   bool finalize_mapping() override;
 
   //void init_model(Model& model);
-  void update_model(Model& model) override;
-  void update_from_model(const Model& model) override;
+  void update_model(std::shared_ptr<Model> model) override;
+  void update_from_model(std::shared_ptr<Model> model) override;
 
   
   const SizetArray& nested_acv1_indices() const override;
@@ -164,9 +167,9 @@ public:
 
   
   /// return actualModel
-  Model& truth_model() override;
+  std::shared_ptr<Model> truth_model() override;
   /// return actualModel
-  const Model& truth_model() const override;
+  std::shared_ptr<const Model> truth_model() const override;
 
   /// return actualModel (and optionally its sub-models)
   void derived_subordinate_models(ModelList& ml, bool recurse_flag) override;
@@ -423,8 +426,7 @@ private:
   /// the truth model which provides evaluations for building the surrogate
   /// (optional for global, required for local)
   /** actualModel is unrestricted in type; arbitrary nestings are possible. */
-  Model actualModel;
-  Model * pActualModel;
+  std::shared_ptr<Model> actualModel;
   /// selects parameter sets on which to evaluate actualModel in order
   /// to generate the necessary data for building global approximations
   /// (optional for global since restart data may also be used)
@@ -528,25 +530,25 @@ nested_variable_mappings(const SizetArray& c_index1,
 			 const ShortArray& dr_target2)
 {
   // forward along to actualModel:
-  if (!actualModel.is_null())
-    actualModel.nested_variable_mappings(c_index1, di_index1, ds_index1,
+  if (actualModel)
+    actualModel->nested_variable_mappings(c_index1, di_index1, ds_index1,
 					 dr_index1, c_target2, di_target2,
 					 ds_target2, dr_target2);
 }
 
 
 inline const SizetArray& DataFitSurrModel::nested_acv1_indices() const
-{ return actualModel.nested_acv1_indices(); }
+{ return actualModel->nested_acv1_indices(); }
 
 
 inline const ShortArray& DataFitSurrModel::nested_acv2_targets() const
-{ return actualModel.nested_acv2_targets(); }
+{ return actualModel->nested_acv2_targets(); }
 
 
 inline short DataFitSurrModel::query_distribution_parameter_derivatives() const
 {
-  return (actualModel.is_null()) ? NO_DERIVS :
-    actualModel.query_distribution_parameter_derivatives(); // forward along
+  return (!actualModel) ? NO_DERIVS :
+    actualModel->query_distribution_parameter_derivatives(); // forward along
 }
 
 
@@ -563,13 +565,13 @@ inline size_t DataFitSurrModel::qoi() const
 {
   // Response inflation from aggregation does not proliferate above
   // this Model recursion level
-  return (responseMode == AGGREGATED_MODEL_PAIR && !actualModel.is_null()) ?
-    actualModel.qoi() : current_response().num_functions();
+  return (responseMode == AGGREGATED_MODEL_PAIR && actualModel) ?
+    actualModel->qoi() : current_response().num_functions();
 
   //switch (responseMode) {
   //case AGGREGATED_MODEL_PAIR:
-  //  if (actualModel.is_null()) return response_size();
-  //  else                       return actualModel.qoi();
+  //  if (!actualModel) return response_size();
+  //  else                       return actualModel->qoi();
   //  break;
   //default:                     return response_size();    break;
   //}
@@ -636,7 +638,7 @@ inline void DataFitSurrModel::active_model_key(const Pecos::ActiveKey& key)
 
   // recur both components: (actualModel could be hierarchical)
   approxInterface.active_model_key(key);
-  if (!actualModel.is_null()) actualModel.active_model_key(key);
+  if (actualModel) actualModel->active_model_key(key);
 }
 
 
@@ -648,61 +650,57 @@ inline void DataFitSurrModel::discrepancy_emulation_mode(short mode)
 { approxInterface.discrepancy_emulation_mode(mode); }
 
 
-inline Model& DataFitSurrModel::surrogate_model(size_t i)
+inline std::shared_ptr<Model> DataFitSurrModel::surrogate_model(size_t i)
 {
   if (i && i != _NPOS) { // allow either 0 or no index (defaults to _NPOS)
     Cerr << "Error: bad index (" << i << ") in DataFitSurrModel::"
 	 << "surrogate_model()." << std::endl;
     abort_handler(MODEL_ERROR);
   }
-  return *this; // return by reference: OK to return letter instance
-
-  // return by value: letter instance must be returned within an envelope for
-  // representation sharing/reference counting to work properly
-  //Model surr_model;            // empty envelope
-  //surr_model.assign_rep(this); // populate letter, increment reference count
-  //return surr_model;
+  return shared_from_this(); // return a std::shared_ptr to this instance. See
+                             // the note at the beginning of the class defintion.
 }
 
 
-inline const Model& DataFitSurrModel::surrogate_model(size_t i) const
+inline std::shared_ptr<const Model> DataFitSurrModel::surrogate_model(size_t i) const
 {
   if (i && i != _NPOS) { // allow either 0 or no index (defaults to _NPOS)
     Cerr << "Error: bad index (" << i << ") in DataFitSurrModel::"
 	 << "surrogate_model()." << std::endl;
     abort_handler(MODEL_ERROR);
   }
-  return *this; // return of letter (see above)
+  return shared_from_this(); // return a std::shared_ptr to this instance. See
+                             // the note at the beginning of the class defintion.
 }
 
 
-inline Model& DataFitSurrModel::truth_model()
+inline std::shared_ptr<Model> DataFitSurrModel::truth_model()
 { return actualModel; }
 
 
-inline const Model& DataFitSurrModel::truth_model() const
+inline std::shared_ptr<const Model> DataFitSurrModel::truth_model() const
 { return actualModel; }
 
 
 inline void DataFitSurrModel::
 derived_subordinate_models(ModelList& ml, bool recurse_flag)
 {
-  if (!actualModel.is_null()) {
+  if (actualModel) {
     ml.push_back(actualModel);
     if (recurse_flag)
-      actualModel.derived_subordinate_models(ml, recurse_flag);
+      actualModel->derived_subordinate_models(ml, recurse_flag);
   }
 }
 
 
 inline void DataFitSurrModel::resize_from_subordinate_model(size_t depth)
 {
-  if (!actualModel.is_null() && depth) {
+  if (actualModel && depth) {
     // data flows from the bottom-up, so recurse first
     if (depth == SZ_MAX)
-      actualModel.resize_from_subordinate_model(depth); // retain special value
+      actualModel->resize_from_subordinate_model(depth); // retain special value
     else
-      actualModel.resize_from_subordinate_model(depth - 1);
+      actualModel->resize_from_subordinate_model(depth - 1);
 
     // DataFitSurrModel consumes (newly) aggregated data sets through multiple
     // SurrogateData instances --> don't resize locally.
@@ -713,7 +711,7 @@ inline void DataFitSurrModel::resize_from_subordinate_model(size_t depth)
     if (!daceIterator.is_null()) {
       const ActiveSet&  dace_set = daceIterator.active_set();
       const ShortArray& dace_asv = dace_set.request_vector();
-      size_t num_am_resp = ModelUtils::response_size(actualModel),
+      size_t num_am_resp = ModelUtils::response_size(*actualModel),
 	   num_dace_resp = dace_asv.size();
       if (num_am_resp != num_dace_resp) {
 	ActiveSet new_set(dace_set); // deep copy
@@ -727,12 +725,12 @@ inline void DataFitSurrModel::resize_from_subordinate_model(size_t depth)
 
 inline void DataFitSurrModel::update_from_subordinate_model(size_t depth)
 {
-  if (!actualModel.is_null()) {
+  if (actualModel) {
     // data flows from the bottom-up, so recurse first
     if (depth == SZ_MAX)
-      actualModel.update_from_subordinate_model(depth); // retain special value
+      actualModel->update_from_subordinate_model(depth); // retain special value
     else if (depth)
-      actualModel.update_from_subordinate_model(depth - 1);
+      actualModel->update_from_subordinate_model(depth - 1);
     // now pull the latest updates from actualModel
     update_from_model(actualModel);
   }
@@ -747,8 +745,8 @@ inline void DataFitSurrModel::
 primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
 {
   primaryRespFnWts = wts;
-  if (recurse_flag && !actualModel.is_null())
-    actualModel.primary_response_fn_weights(wts, recurse_flag);
+  if (recurse_flag && actualModel)
+    actualModel->primary_response_fn_weights(wts, recurse_flag);
 }
 
 
@@ -777,12 +775,12 @@ inline void DataFitSurrModel::surrogate_response_mode(short mode)
     }
     break;
   case BYPASS_SURROGATE:
-    if (actualModel.is_null()) {
+    if (!actualModel) {
       Cerr << "Error: actualModel must be defined for mode BYPASS_SURROGATE."
 	   << std::endl;
       abort_handler(MODEL_ERROR);
     }
-    actualModel.surrogate_response_mode(mode); // recurse in this case
+    actualModel->surrogate_response_mode(mode); // recurse in this case
     //approxInterface.deactivate_multilevel_approximation_data();
     break;
   case AGGREGATED_MODEL_PAIR:
@@ -903,11 +901,11 @@ estimate_partition_bounds(int max_eval_concurrency)
     probDescDB.set_db_list_nodes(daceIterator.method_id());
     return daceIterator.estimate_partition_bounds();
   }
-  else if (!actualModel.is_null()) {
+  else if (actualModel) {
     int am_max_conc = approxInterface.minimum_points(false)
-                    * actualModel.derivative_concurrency(); // local/multipt
-    probDescDB.set_db_model_nodes(actualModel.model_id());
-    return actualModel.estimate_partition_bounds(am_max_conc);
+                    * actualModel->derivative_concurrency(); // local/multipt
+    probDescDB.set_db_model_nodes(actualModel->model_id());
+    return actualModel->estimate_partition_bounds(am_max_conc);
   }
   else
     return IntIntPair(1, 1);
@@ -918,8 +916,8 @@ inline void DataFitSurrModel::derived_init_serial()
 {
   //approxInterface.init_serial();
 
-  if (!actualModel.is_null())
-    actualModel.init_serial();
+  if (actualModel)
+    actualModel->init_serial();
 }
 
 
@@ -939,8 +937,8 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   if (recurse_flag) {
     if (!daceIterator.is_null())
       daceIterator.set_communicators(pl_iter);
-    else if (!actualModel.is_null())
-      actualModel.init_communicators(pl_iter,
+    else if (actualModel)
+      actualModel->init_communicators(pl_iter,
 	daceIterator.maximum_evaluation_concurrency()); // set in init_comms
   }
 }
@@ -957,8 +955,8 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   if (recurse_flag) {
     if (!daceIterator.is_null())
       daceIterator.free_communicators(pl_iter);
-    else if (!actualModel.is_null())
-      actualModel.free_communicators(pl_iter,
+    else if (actualModel)
+      actualModel->free_communicators(pl_iter,
 	daceIterator.maximum_evaluation_concurrency()); // set in init_comms
   }
 }
@@ -967,35 +965,35 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 inline void DataFitSurrModel::
 serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
 {
-  // don't recurse, as actualModel.serve() will set actualModel comms
+  // don't recurse, as actualModel->serve() will set actualModel comms
   set_communicators(pl_iter, max_eval_concurrency, false);
 
-  if (!actualModel.is_null())
-    actualModel.serve_run(pl_iter,
+  if (actualModel)
+    actualModel->serve_run(pl_iter,
 			  daceIterator.maximum_evaluation_concurrency());
 }
 
 
 inline void DataFitSurrModel::stop_servers()
 {
-  if (!actualModel.is_null())
-    actualModel.stop_servers();
+  if (actualModel)
+    actualModel->stop_servers();
 }
 
 
 inline void DataFitSurrModel::active_view(short view, bool recurse_flag)
 {
   Model::active_view(view);
-  if (recurse_flag && !actualModel.is_null())
-    actualModel.active_view(view, recurse_flag);
+  if (recurse_flag && actualModel)
+    actualModel->active_view(view, recurse_flag);
 }
 
 
 inline void DataFitSurrModel::inactive_view(short view, bool recurse_flag)
 {
   Model::inactive_view(view);
-  if (recurse_flag && !actualModel.is_null())
-    actualModel.inactive_view(view, recurse_flag);
+  if (recurse_flag && actualModel)
+    actualModel->inactive_view(view, recurse_flag);
 }
 
 
@@ -1005,15 +1003,15 @@ inline const String& DataFitSurrModel::interface_id() const
 
 inline bool DataFitSurrModel::evaluation_cache(bool recurse_flag) const
 {
-  return (recurse_flag && !actualModel.is_null()) ?
-    actualModel.evaluation_cache(recurse_flag) : false;
+  return (recurse_flag && actualModel) ?
+    actualModel->evaluation_cache(recurse_flag) : false;
 }
 
 
 inline bool DataFitSurrModel::restart_file(bool recurse_flag) const
 {
-  return (recurse_flag && !actualModel.is_null()) ?
-    actualModel.restart_file(recurse_flag) : false;
+  return (recurse_flag && actualModel) ?
+    actualModel->restart_file(recurse_flag) : false;
 }
 
 
@@ -1022,8 +1020,8 @@ inline void DataFitSurrModel::set_evaluation_reference()
   approxInterface.set_evaluation_reference();
 
   // don't recurse this, since the eval reference is for the top level iteration
-  //if (!actualModel.is_null())
-  //  actualModel.set_evaluation_reference();
+  //if (actualModel)
+  //  actualModel->set_evaluation_reference();
 
   // may want to add this in time
   //surrModelEvalRef = surrModelEvalCntr;
@@ -1033,8 +1031,8 @@ inline void DataFitSurrModel::set_evaluation_reference()
 inline void DataFitSurrModel::fine_grained_evaluation_counters()
 {
   approxInterface.fine_grained_evaluation_counters(numFns);
-  if (!actualModel.is_null())
-    actualModel.fine_grained_evaluation_counters();
+  if (actualModel)
+    actualModel->fine_grained_evaluation_counters();
 }
 
 
@@ -1043,11 +1041,11 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
 			 bool relative_count) const
 {
   approxInterface.print_evaluation_summary(s, minimal_header, relative_count);
-  if (!actualModel.is_null()) {
+  if (actualModel) {
     if (daceIterator.is_null())
-      actualModel.print_evaluation_summary(s, minimal_header, relative_count);
+      actualModel->print_evaluation_summary(s, minimal_header, relative_count);
     else // daceIterator resets the eval reference -> don't use a relative count
-      actualModel.print_evaluation_summary(s, minimal_header, false);
+      actualModel->print_evaluation_summary(s, minimal_header, false);
   }
 }
 
@@ -1055,7 +1053,7 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
 inline void DataFitSurrModel::warm_start_flag(const bool flag)
 {
   warmStartFlag = flag;
-  if (!actualModel.is_null()) actualModel.warm_start_flag(flag);
+  if (actualModel) actualModel->warm_start_flag(flag);
 }
 
 } // namespace Dakota

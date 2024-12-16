@@ -50,12 +50,12 @@ class PebbldMinimizer : public Minimizer
 {
 public:
         /// standard constructor
-        PebbldMinimizer(ProblemDescDB& problem_db, Model& model);
+        PebbldMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
 	/// Constructor
 	/** PebbldMinimizer Constructor
 	    @param model DAKOTA Model object
 	    */
-	PebbldMinimizer(Model &model);
+	PebbldMinimizer(std::shared_ptr<Model> model);
 	/// Constructor
 	/** PebbldMinimizer Constructor
 	    @param model DAKOTA Model object
@@ -63,7 +63,7 @@ public:
 	    @param max_iter Maximum number of iterations
 	    @param max_eval Maximum number of Black Box Evaluations
 	    */
-	 PebbldMinimizer(Model &model, int random_seed,
+	 PebbldMinimizer(std::shared_ptr<Model> model, int random_seed,
 			 size_t max_iter, size_t max_eval);
 	 /// Destructor
          ~PebbldMinimizer() override

@@ -36,7 +36,7 @@ public:
   //
 
   // alternate constructor for instantiations "on the fly"
-  NonDSparseGrid(Model& model, unsigned short ssg_level,
+  NonDSparseGrid(std::shared_ptr<Model> model, unsigned short ssg_level,
 		 const RealVector& dim_pref,
 		 short exp_coeffs_soln_approach, short driver_mode,
 		 short growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH,
@@ -108,7 +108,7 @@ protected:
   //- Heading: Constructors and destructor
   //
 
-  NonDSparseGrid(ProblemDescDB& problem_db, Model& model); ///< constructor
+  NonDSparseGrid(ProblemDescDB& problem_db, std::shared_ptr<Model> model); ///< constructor
 
   //
   //- Heading: Virtual function redefinitions
@@ -116,7 +116,7 @@ protected:
 
   void initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis) override;
 
-  void get_parameter_sets(Model& model) override;
+  void get_parameter_sets(std::shared_ptr<Model> model) override;
 
   //void check_variables(const Pecos::ShortArray& x_types);
 
@@ -218,7 +218,7 @@ inline void NonDSparseGrid::push_set()
 inline void NonDSparseGrid::evaluate_set()
 {
   ssgDriver->compute_trial_grid(allSamples);
-  evaluate_parameter_sets(*pIteratedModel);
+  evaluate_parameter_sets(*iteratedModel);
   ++numIntegrations;
 }
 
@@ -239,7 +239,7 @@ finalize_sets(bool output_sets, bool converged_within_tol, bool reverted)
 inline void NonDSparseGrid::evaluate_grid_increment()
 {
   ssgDriver->compute_increment(allSamples);
-  evaluate_parameter_sets(*pIteratedModel);
+  evaluate_parameter_sets(*iteratedModel);
   ++numIntegrations;
 }
 

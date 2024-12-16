@@ -80,7 +80,7 @@ public:
 class DLSolver: public Optimizer1
 {
 public:
-	DLSolver(Model& model);
+	DLSolver(std::shared_ptr<Model> model);
 	~DLSolver();
 	void core_run();
 

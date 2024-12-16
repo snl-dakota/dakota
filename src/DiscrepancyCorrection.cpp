@@ -25,15 +25,15 @@ namespace Dakota {
 extern PRPCache data_pairs; // global container
 
 void DiscrepancyCorrection::
-initialize(Model& surr_model, const SizetSet& surr_fn_indices,
+initialize(Model* surr_model, const SizetSet& surr_fn_indices,
 	   short    corr_type, short   corr_order,
 	   String approx_type, short approx_order)
 {
-  surrModel = surr_model; // shallow copy
-  numFns = surr_model.qoi(); numVars = ModelUtils::cv(surr_model);
+  surrModel = surr_model;
+  numFns = surr_model->qoi(); numVars = ModelUtils::cv(*surr_model);
 
   surrogateFnIndices = surr_fn_indices;
-  // = surrModel.surrogate_function_indices() would work for DataFitSurrModel,
+  // = surrModel->surrogate_function_indices() would work for DataFitSurrModel,
   // but not for EnsembleSurrModel
 
   initialize(corr_type, corr_order, approx_type, approx_order);
@@ -103,7 +103,7 @@ void DiscrepancyCorrection::initialize_corrections()
     for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
       multCorrections[*it] = Approximation(sharedData);
   }
-  correctionPrevCenterPt = surrModel.current_variables().copy();
+  correctionPrevCenterPt = surrModel->current_variables().copy();
 }
 
 
@@ -149,7 +149,7 @@ compute(const Variables& vars, const Response& truth_response,
   const RealVector&  truth_fns =  truth_response.function_values();
   const RealVector& approx_fns = approx_response.function_values();
   bool fall_back
-    = (computeMultiplicative && correctionOrder >= 1 && surrModel.is_null());
+    = (computeMultiplicative && correctionOrder >= 1 && !surrModel);
   if (correctionType == COMBINED_CORRECTION) truthFnsCenter = truth_fns;
   if (correctionType == COMBINED_CORRECTION || fall_back)
     approxFnsCenter = approx_fns;
@@ -316,7 +316,7 @@ compute(//const Variables& vars,
   const RealVector&  truth_fns =  truth_response.function_values();
   const RealVector& approx_fns = approx_response.function_values();
   bool fall_back
-    = (computeMultiplicative && correctionOrder >= 1 && surrModel.is_null());
+    = (computeMultiplicative && correctionOrder >= 1 && !surrModel);
   //if (correctionType == COMBINED_CORRECTION)
   //  { copy_data(c_vars, correctionCenterPt); truthFnsCenter = truth_fns; }
   if (/*correctionType == COMBINED_CORRECTION ||*/ fall_back)
@@ -725,7 +725,7 @@ apply_multiplicative(const Variables& vars, Response& approx_response)
   RealVector uncorr_fns; RealMatrix uncorr_grads; RealVector empty_rv;
   if (fn_db_search) {
     uncorr_fns.sizeUninitialized(numFns);
-    if (surrModel.is_null()) { // fallback position
+    if (!surrModel) { // fallback position
       Cerr << "Warning: original function values not available at the current "
 	   << "point.\n         Multiplicative correction falling back to "
 	   << "function values from the correction point." << std::endl;
@@ -742,7 +742,7 @@ apply_multiplicative(const Variables& vars, Response& approx_response)
   }
   if (grad_db_search) {
     uncorr_grads.shapeUninitialized(numVars, numFns);
-    if (surrModel.is_null()) { // fallback position
+    if (!surrModel) { // fallback position
       Cerr << "Warning: original function gradients not available at the "
 	   << "current point.\n         Multiplicative correction falling back "
 	   << "to function gradients from the correction point." << std::endl;
@@ -849,16 +849,16 @@ search_db(const Variables& search_vars, const ShortArray& search_asv)
   // neither of these data sets are catalogued in data_pairs.
 
   // query data_pairs to extract the response at the current pt
-  ActiveSet search_set = surrModel.current_response().active_set(); // copy
+  ActiveSet search_set = surrModel->current_response().active_set(); // copy
   search_set.request_vector(search_asv);
-  PRPCacheHIter cache_it = lookup_by_val(data_pairs, surrModel.interface_id(),
+  PRPCacheHIter cache_it = lookup_by_val(data_pairs, surrModel->interface_id(),
 					 search_vars, search_set);
 
   if (cache_it == data_pairs.get<hashed>().end()) {
     // perform approx fn eval to retrieve missing data
-    ModelUtils::active_variables(surrModel, search_vars);
-    surrModel.evaluate(search_set);
-    return surrModel.current_response();
+    ModelUtils::active_variables(*surrModel, search_vars);
+    surrModel->evaluate(search_set);
+    return surrModel->current_response();
   }
   else
     return cache_it->response();

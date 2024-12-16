@@ -36,7 +36,7 @@ public:
   /// standard constructor
   EmbedHybridMetaIterator(ProblemDescDB& problem_db);
   /// alternate constructor
-  EmbedHybridMetaIterator(ProblemDescDB& problem_db, Model& model);
+  EmbedHybridMetaIterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
   ~EmbedHybridMetaIterator() override;
     
@@ -70,12 +70,12 @@ private:
   /// the top-level outer iterator (e.g., global minimizer)
   Iterator globalIterator;
   /// the model employed by the top-level outer iterator
-  Model globalModel;
+  std::shared_ptr<Model> globalModel;
 
   /// the inner iterator (e.g., local minimizer)
   Iterator localIterator;
   /// the model employed by the inner iterator
-  Model localModel;
+  std::shared_ptr<Model> localModel;
 
   /// use of constructor that enforces use of a single passed Model
   bool singlePassedModel;
@@ -103,8 +103,8 @@ inline IntIntPair EmbedHybridMetaIterator::estimate_partition_bounds()
   const String& local_model_ptr
     = probDescDB.get_string("method.hybrid.local_model_pointer");
 
-  Model& global_model = (singlePassedModel) ? *pIteratedModel : globalModel;
-  Model& local_model  = (singlePassedModel) ? *pIteratedModel :  localModel;
+  auto global_model = (singlePassedModel) ? iteratedModel : globalModel;
+  auto local_model  = (singlePassedModel) ? iteratedModel :  localModel;
 
   iterSched.construct_sub_iterator(probDescDB, globalIterator, global_model,
     global_method_ptr,probDescDB.get_string("method.hybrid.global_method_name"),

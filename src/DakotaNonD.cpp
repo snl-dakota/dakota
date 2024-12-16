@@ -26,7 +26,7 @@ namespace Dakota {
 NonD* NonD::nondInstance(NULL);
 
 
-NonD::NonD(ProblemDescDB& problem_db, Model& model):
+NonD::NonD(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   Analyzer(problem_db, model),
   respLevelTarget(problem_db.get_short("method.nond.response_level_target")),
   respLevelTargetReduce(
@@ -67,7 +67,7 @@ NonD::NonD(ProblemDescDB& problem_db, Model& model):
 }
 
 
-NonD::NonD(unsigned short method_name, Model& model):
+NonD::NonD(unsigned short method_name, std::shared_ptr<Model> model):
   Analyzer(method_name, model), totalLevelRequests(0),
   cdfFlag(true), pdfOutput(false), finalMomentsType(Pecos::STANDARD_MOMENTS)
 {
@@ -82,7 +82,7 @@ NonD::NonD(unsigned short method_name, Model& model):
 }
 
 
-NonD::NonD(unsigned short method_name, Model& model,
+NonD::NonD(unsigned short method_name, std::shared_ptr<Model> model,
 	   const ShortShortPair& approx_view):
   Analyzer(method_name, model, approx_view), totalLevelRequests(0),
   cdfFlag(true), pdfOutput(false), finalMomentsType(Pecos::STANDARD_MOMENTS)
@@ -108,7 +108,7 @@ NonD::NonD(unsigned short method_name, const RealVector& lower_bnds,
 
 void NonD::initialize_counts()
 {
-  const Variables& vars = pIteratedModel->current_variables();
+  const Variables& vars = iteratedModel->current_variables();
   //short active_view = vars.view().first;
   const SizetArray& ac_totals = vars.shared_data().active_components_totals();
   // convenience looping bounds
@@ -133,7 +133,7 @@ bool NonD::resize()
 void NonD::derived_set_communicators(ParLevLIter pl_iter)
 {
   miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
-  pIteratedModel->set_communicators(pl_iter, maxEvalConcurrency);
+  iteratedModel->set_communicators(pl_iter, maxEvalConcurrency);
 }
 
 
@@ -245,7 +245,7 @@ void NonD::distribute_levels(RealVectorArray& levels, bool ascending)
 
 
 void NonD::
-construct_lhs(Iterator& u_space_sampler, Model& u_model,
+construct_lhs(Iterator& u_space_sampler, std::shared_ptr<Model> u_model,
 	      unsigned short sample_type, int num_samples, int seed,
 	      const String& rng, bool vary_pattern, short sampling_vars_mode)
 {
@@ -272,7 +272,7 @@ void NonD::initialize_response_covariance()
 void NonD::initialize_final_statistics()
 {
   size_t i, j, num_levels, cntr = 0, rl_len = 0, num_final_stats,
-    num_active_vars = ModelUtils::cv(*pIteratedModel);
+    num_active_vars = ModelUtils::cv(*iteratedModel);
   if (epistemicStats)
     num_final_stats = 2*numFunctions;
   else { // aleatory UQ
@@ -297,7 +297,7 @@ void NonD::initialize_final_statistics()
   //   subIterator construction follows in NestedModel::derived_init_comms()
   //   --> invocation of this fn from NonD ctors should have inactive view
   ActiveSet stats_set(num_final_stats);//, num_active_vars); // default RV = 1
-  stats_set.derivative_vector(ModelUtils::inactive_continuous_variable_ids(*pIteratedModel));
+  stats_set.derivative_vector(ModelUtils::inactive_continuous_variable_ids(*iteratedModel));
   finalStatistics = Response(SIMULATION_RESPONSE, stats_set);
 
   // Assign meaningful labels to finalStatistics (appear in NestedModel output)
@@ -424,12 +424,12 @@ configure_1d_sequence(size_t& num_steps, size_t& secondary_index,
 {
   // Allow either model forms or discretization levels, but not both
   // (precedence determined by ML/MF calling algorithm)
-  ModelList& sub_models = pIteratedModel->subordinate_models(false);
+  ModelList& sub_models = iteratedModel->subordinate_models(false);
   size_t num_mf = sub_models.size(),
-    num_hf_lev  = sub_models.back().solution_levels();
-  bool ml = pIteratedModel->multilevel();
+    num_hf_lev  = sub_models.back()->solution_levels();
+  bool ml = iteratedModel->multilevel();
 
-  if (ml || pIteratedModel->multilevel_multifidelity()) {
+  if (ml || iteratedModel->multilevel_multifidelity()) {
     // only loop (1D) or outer loop (2D)
     seq_type  = Pecos::RESOLUTION_LEVEL_1D_SEQUENCE;
     num_steps = num_hf_lev;  secondary_index = num_mf - 1;
@@ -437,7 +437,7 @@ configure_1d_sequence(size_t& num_steps, size_t& secondary_index,
       Cerr << "Warning: multiple model forms will be ignored by "
 	   << "NonD::configure_1d_sequence() for ML precedence.\n";
   }
-  else if (pIteratedModel->multifidelity()) {
+  else if (iteratedModel->multifidelity()) {
     seq_type  = Pecos::MODEL_FORM_1D_SEQUENCE;
     num_steps = num_mf;
     // retain each model's active solution control index:
@@ -459,14 +459,14 @@ void NonD::
 configure_2d_sequence(size_t& total_steps, size_t& secondary_index,
 		      short& seq_type)
 {
-  if (pIteratedModel->multilevel_multifidelity()) {
+  if (iteratedModel->multilevel_multifidelity()) {
     seq_type  = Pecos::FORM_RESOLUTION_2D_SEQUENCE;
 
-    ModelList& sub_models = pIteratedModel->subordinate_models(false);
+    ModelList& sub_models = iteratedModel->subordinate_models(false);
     size_t num_mf = sub_models.size(),
-      num_hf_lev  = sub_models.back().solution_levels(),
+      num_hf_lev  = sub_models.back()->solution_levels(),
       num_cv_lev  = (num_mf > 1) ?
-      std::min(num_hf_lev, sub_models.front().solution_levels()) : 0;
+      std::min(num_hf_lev, sub_models.front()->solution_levels()) : 0;
     total_steps = num_cv_lev + num_hf_lev;
     secondary_index = SZ_MAX; // not relevant for 2D
   }
@@ -488,9 +488,9 @@ configure_enumeration(size_t& num_combinations, short& seq_type)
 
   // Enumerate both model forms and discretization levels
   num_combinations = 0;
-  ModelList& sub_models = pIteratedModel->subordinate_models(false);// includes HF
-  for (ModelLIter m_iter=sub_models.begin(); m_iter!=sub_models.end(); ++m_iter)
-    num_combinations += m_iter->solution_levels(); // lower bound of 1
+  ModelList& sub_models = iteratedModel->subordinate_models(false);// includes HF
+  for(auto& sm : sub_models)
+    num_combinations += sm->solution_levels(); // lower bound of 1
 }
 
 
@@ -538,7 +538,7 @@ query_cost(size_t num_steps, short seq_type, RealVector& seq_cost,
   // > Integrated processing no longer invokes query_cost for each model,
   //   now focusing only on the active models
 
-  ModelList& sub_models = pIteratedModel->subordinate_models(false);
+  ModelList& sub_models = iteratedModel->subordinate_models(false);
   size_t m, num_mf = sub_models.size();
   bool user_spec = false, md_recover = false;
   model_cost_spec.resize(num_mf); // Note: not all models are checked
@@ -548,8 +548,8 @@ query_cost(size_t num_steps, short seq_type, RealVector& seq_cost,
   // These cases may employ model subsets due to sequence constraints
 
   case Pecos::RESOLUTION_LEVEL_1D_SEQUENCE: {  // ML
-    Model& hf_model = sub_models.back();
-    seq_cost = hf_model.solution_level_costs();
+    auto hf_model = sub_models.back();
+    seq_cost = hf_model->solution_level_costs();
     m = num_mf - 1;
     model_cost_spec[m] = valid_costs(seq_cost);
     if      (model_cost_spec[m])                 user_spec  = true;
@@ -560,7 +560,7 @@ query_cost(size_t num_steps, short seq_type, RealVector& seq_cost,
     seq_cost.sizeUninitialized(num_mf);
     ModelLIter m_iter;
     for (m=0, m_iter=sub_models.begin(); m<num_mf; ++m, ++m_iter) {
-      seq_cost[m] = m_iter->solution_level_cost();// act soln index; 0 if !fnd
+      seq_cost[m] = (*m_iter)->solution_level_cost();// act soln index; 0 if !fnd
       model_cost_spec[m] = valid_cost(seq_cost[m]);
       if      (model_cost_spec[m])                 user_spec  = true;
       else if (cost_md_indices[m].first != SZ_MAX) md_recover = true;
@@ -568,10 +568,11 @@ query_cost(size_t num_steps, short seq_type, RealVector& seq_cost,
     break;
   }
   case Pecos::FORM_RESOLUTION_2D_SEQUENCE: {  // MLMF
-    Model &lf_model = sub_models.front(), &hf_model = sub_models.back();
+    auto lf_model = sub_models.front();
+    auto hf_model = sub_models.back();
     // Cost specifications are optional; match to number of soln control values
-    RealVector lf_costs = sub_models.front().solution_level_costs(),
-	       hf_costs =  sub_models.back().solution_level_costs();
+    RealVector lf_costs = sub_models.front()->solution_level_costs(),
+	       hf_costs =  sub_models.back()->solution_level_costs();
     m = 0;        model_cost_spec[m] = valid_costs(lf_costs);
     if      (model_cost_spec[m])                 user_spec  = true;
     else if (cost_md_indices[m].first != SZ_MAX) md_recover = true;
@@ -591,13 +592,13 @@ query_cost(size_t num_steps, short seq_type, RealVector& seq_cost,
   case Pecos::FORM_RESOLUTION_ENUMERATION: {
     ModelLIter m_iter;  size_t cntr;
     for (m_iter=sub_models.begin(), cntr=0; m_iter!=sub_models.end(); ++m_iter)
-      cntr += m_iter->solution_levels();
+      cntr += (*m_iter)->solution_levels();
     seq_cost.sizeUninitialized(cntr);
     // assemble resolution level costs head to tail across models
     // (model costs are presumed to be more separated than resolution costs)
     for (m=0, cntr=0, m_iter=sub_models.begin(); m_iter!=sub_models.end();
 	 ++m, ++m_iter) {
-      RealVector m_costs = m_iter->solution_level_costs();
+      RealVector m_costs = (*m_iter)->solution_level_costs();
       model_cost_spec[m] = valid_costs(m_costs);
       if      (model_cost_spec[m])                 user_spec  = true;
       else if (cost_md_indices[m].first != SZ_MAX) md_recover = true;
@@ -630,7 +631,7 @@ void NonD::
 test_cost(short seq_type, const BitArray& model_cost_spec,
 	  SizetSizetPairArray& cost_md_indices)
 {
-  ModelList& sub_models = pIteratedModel->subordinate_models(false);
+  ModelList& sub_models = iteratedModel->subordinate_models(false);
   size_t m, num_mf = sub_models.size();  bool err_flag = false;
 
   switch (seq_type) {
@@ -638,25 +639,25 @@ test_cost(short seq_type, const BitArray& model_cost_spec,
   // These cases may employ model subsets due to sequence constraints
 
   case Pecos::RESOLUTION_LEVEL_1D_SEQUENCE: {  // ML
-    Model& hf_model = sub_models.back();  m = num_mf - 1;
-    if (test_cost(model_cost_spec[m], cost_md_indices[m], hf_model.model_id()))
+    auto hf_model = sub_models.back();  m = num_mf - 1;
+    if (test_cost(model_cost_spec[m], cost_md_indices[m], hf_model->model_id()))
       err_flag = true;
     break;
   }
   case Pecos::MODEL_FORM_1D_SEQUENCE: {       // MF
     ModelLIter m_iter;
     for (m=0, m_iter=sub_models.begin(); m<num_mf; ++m, ++m_iter)
-      if (test_cost(model_cost_spec[m], cost_md_indices[m], m_iter->model_id()))
+      if (test_cost(model_cost_spec[m], cost_md_indices[m], (*m_iter)->model_id()))
 	err_flag = true;
     break;
   }
   case Pecos::FORM_RESOLUTION_2D_SEQUENCE: {  // MLMF
     // Cost specifications are optional; match to number of soln control values
-    m = 0;        Model& lf_model = sub_models.front();
-    if (test_cost(model_cost_spec[m], cost_md_indices[m], lf_model.model_id()))
+    m = 0;        auto lf_model = sub_models.front();
+    if (test_cost(model_cost_spec[m], cost_md_indices[m], lf_model->model_id()))
       err_flag = true;
-    m = num_mf-1; Model& hf_model = sub_models.back();
-    if (test_cost(model_cost_spec[m], cost_md_indices[m], hf_model.model_id()))
+    m = num_mf-1; auto hf_model = sub_models.back();
+    if (test_cost(model_cost_spec[m], cost_md_indices[m], hf_model->model_id()))
       err_flag = true;
     break;
   }
@@ -669,7 +670,7 @@ test_cost(short seq_type, const BitArray& model_cost_spec,
     // (model costs are presumed to be more separated than resolution costs)
     for (m=0, cntr=0, m_iter=sub_models.begin(); m_iter!=sub_models.end();
 	 ++m, ++m_iter)
-      if (test_cost(model_cost_spec[m], cost_md_indices[m], m_iter->model_id()))
+      if (test_cost(model_cost_spec[m], cost_md_indices[m], (*m_iter)->model_id()))
 	err_flag = true;
     break;
   }
@@ -1128,7 +1129,7 @@ print_level_mappings(std::ostream& s, const RealVector& level_maps,
 
   size_t i, j, cntr,
     width = write_precision+7, w2p2 = 2*width+2, w3p4 = 3*width+4;
-  const StringArray& qoi_labels = ModelUtils::response_labels(*pIteratedModel);
+  const StringArray& qoi_labels = ModelUtils::response_labels(*iteratedModel);
   for (i=0, cntr=0; i<numFunctions; ++i) {
     if (moment_offset) cntr += 2; // skip over moments, if present
     if (cdfFlag) s << "Cumulative Distribution Function (CDF) for ";
@@ -1649,7 +1650,7 @@ void NonD::archive_from_resp(size_t i, size_t inc_id)
  
   DimScaleMap scale;
   scale.emplace(0, RealScale("response_levels", requestedRespLevels[i]));
-  const StringArray &labels = ModelUtils::response_labels(*pIteratedModel);
+  const StringArray &labels = ModelUtils::response_labels(*iteratedModel);
   RealVector *result;
 
   // TODO: could use SetCol?
@@ -1697,7 +1698,7 @@ void NonD::archive_to_resp(size_t i, size_t inc_id)
   if (!resultsDB.active())  return;
 
   DimScaleMap scale;
-  const StringArray &labels = ModelUtils::response_labels(*pIteratedModel);
+  const StringArray &labels = ModelUtils::response_labels(*iteratedModel);
   StringArray location;
   size_t r_index = 0;
   if(inc_id) {
@@ -1789,7 +1790,7 @@ void NonD::archive_pdf(size_t i, size_t inc_id) // const
   resultsDB.array_insert<RealMatrix>
     (run_identifier(), resultsNames.pdf_histograms, i, pdf);
 
-  const StringArray &labels = ModelUtils::response_labels(*pIteratedModel);
+  const StringArray &labels = ModelUtils::response_labels(*iteratedModel);
   StringArray location;
   if(inc_id) location.push_back(String("increment:") + std::to_string(inc_id));
   location.push_back("probability_density");

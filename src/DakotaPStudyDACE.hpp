@@ -39,9 +39,9 @@ protected:
   //
 
   /// constructor
-  PStudyDACE(ProblemDescDB& problem_db, Model& model);
+  PStudyDACE(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor for instantiations "on the fly"
-  PStudyDACE(unsigned short method_name, Model& model);
+  PStudyDACE(unsigned short method_name, std::shared_ptr<Model> model);
   /// destructor
   ~PStudyDACE() override;
     

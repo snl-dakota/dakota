@@ -29,7 +29,7 @@ public:
   //
 
   /// standard constructor
-  NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model);
+  NonDC3FunctionTrain(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
   ~NonDC3FunctionTrain();
 
@@ -43,7 +43,7 @@ protected:
   /// (method_name is not necessary, rather it is just a convenient overload
   /// allowing the derived ML FT class to bypass the standard FT ctor)
   NonDC3FunctionTrain(unsigned short method_name, ProblemDescDB& problem_db,
-		      Model& model);
+		      std::shared_ptr<Model> model);
 
   //
   //- Heading: Virtual function redefinitions
@@ -81,7 +81,7 @@ protected:
   /// configure u_space_sampler and approx_type based on regression
   /// specification
   bool config_regression(size_t colloc_pts, size_t regress_size, int seed,
-			 Iterator& u_space_sampler, Model& g_u_model);
+			 Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model);
 
   /// Publish options from C3 input specification (not needed if model-driven
   /// specification: already extracted by iteratedModel)

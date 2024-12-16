@@ -15,7 +15,7 @@
 
 namespace Dakota {
 
-NonDGlobalEvidence::NonDGlobalEvidence(ProblemDescDB& problem_db, Model& model):
+NonDGlobalEvidence::NonDGlobalEvidence(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDGlobalInterval(problem_db, model)
 {
   // if the user does not specify the number of samples, 
@@ -37,23 +37,23 @@ void NonDGlobalEvidence::set_cell_bounds()
 {
   size_t j; 
   for (j=0; j<numContIntervalVars; ++j) {
-    ModelUtils::continuous_lower_bound(intervalOptModel, cellContLowerBounds[cellCntr][j],j);
-    ModelUtils::continuous_upper_bound(intervalOptModel, cellContUpperBounds[cellCntr][j],j);
+    ModelUtils::continuous_lower_bound(*intervalOptModel, cellContLowerBounds[cellCntr][j],j);
+    ModelUtils::continuous_upper_bound(*intervalOptModel, cellContUpperBounds[cellCntr][j],j);
   }
    
   for (j=0; j<numDiscIntervalVars; ++j) {
-    ModelUtils::discrete_int_lower_bound(intervalOptModel, 
+    ModelUtils::discrete_int_lower_bound(*intervalOptModel, 
       cellIntRangeLowerBounds[cellCntr][j], j);
-    ModelUtils::discrete_int_upper_bound(intervalOptModel, 
+    ModelUtils::discrete_int_upper_bound(*intervalOptModel, 
       cellIntRangeUpperBounds[cellCntr][j], j);
   } 
 
   for (j=0; j<numDiscSetIntUncVars; ++j)
-    ModelUtils::discrete_int_variable(intervalOptModel, cellIntSetBounds[cellCntr][j],
+    ModelUtils::discrete_int_variable(*intervalOptModel, cellIntSetBounds[cellCntr][j],
 					   j+numDiscIntervalVars);
 
   for (j=0; j<numDiscSetRealUncVars; ++j)
-    ModelUtils::discrete_real_variable(intervalOptModel, cellRealSetBounds[cellCntr][j],j);
+    ModelUtils::discrete_real_variable(*intervalOptModel, cellRealSetBounds[cellCntr][j],j);
 }
 
 
@@ -107,7 +107,7 @@ void NonDGlobalEvidence::get_best_sample(bool maximize, bool eval_approx)
   // to determine fnStar for use in the expected improvement function
 
   const Pecos::SurrogateData& gp_data
-    = fHatModel.approximation_data(respFnCntr);
+    = fHatModel->approximation_data(respFnCntr);
   const Pecos::SDVArray& sdv_array = gp_data.variables_data();
   const Pecos::SDRArray& sdr_array = gp_data.response_data();
 
@@ -153,34 +153,34 @@ void NonDGlobalEvidence::get_best_sample(bool maximize, bool eval_approx)
       Cout << "No function evaluations were found in cell. Truth function is "
 	   << "set to DBL_MAX and approxFnStar is evaluated at midpoint.\n";
       for (i=0; i<numContIntervalVars; ++i)
-	ModelUtils::continuous_variable(fHatModel, 
+	ModelUtils::continuous_variable(*fHatModel, 
 	  ( cellContLowerBounds[cellCntr][i] + 
 	    cellContUpperBounds[cellCntr][i] ) / 2., i);
       for (i=0; i<numDiscIntervalVars; ++i)
-	ModelUtils::discrete_int_variable(fHatModel, 
+	ModelUtils::discrete_int_variable(*fHatModel, 
 	  ( cellIntRangeLowerBounds[cellCntr][i] + 
 	    cellIntRangeUpperBounds[cellCntr][i] ) / 2, i);
       for (i=0; i<numDiscSetIntUncVars; ++i)
-	ModelUtils::discrete_int_variable(fHatModel, 
+	ModelUtils::discrete_int_variable(*fHatModel, 
 	  cellIntSetBounds[cellCntr][i], i+numDiscIntervalVars);
       for (i=0; i<numDiscSetRealUncVars; ++i)
-	ModelUtils::discrete_real_variable(fHatModel, 
+	ModelUtils::discrete_real_variable(*fHatModel, 
 	  cellRealSetBounds[cellCntr][i], i);
     }
     else {
       const Pecos::SurrogateDataVars& sdv = sdv_array[index_star];
       if (numContIntervalVars)
-	ModelUtils::continuous_variables(fHatModel, sdv.continuous_variables());
+	ModelUtils::continuous_variables(*fHatModel, sdv.continuous_variables());
       if (numDiscIntervalVars || numDiscSetIntUncVars)
-	ModelUtils::discrete_int_variables(fHatModel, sdv.discrete_int_variables());
+	ModelUtils::discrete_int_variables(*fHatModel, sdv.discrete_int_variables());
       if (numDiscSetRealUncVars)
-	ModelUtils::discrete_real_variables(fHatModel, sdv.discrete_real_variables());
+	ModelUtils::discrete_real_variables(*fHatModel, sdv.discrete_real_variables());
     }
 		
-    ActiveSet set = fHatModel.current_response().active_set();
+    ActiveSet set = fHatModel->current_response().active_set();
     set.request_values(0); set.request_value(1, respFnCntr);
-    fHatModel.evaluate(set);
-    approxFnStar = fHatModel.current_response().function_value(respFnCntr);
+    fHatModel->evaluate(set);
+    approxFnStar = fHatModel->current_response().function_value(respFnCntr);
   }
 #ifdef DEBUG
   Cout << "truthFnStar: " << truthFnStar << "\napproxFnStar: " << approxFnStar

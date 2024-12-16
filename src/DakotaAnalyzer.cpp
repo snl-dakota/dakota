@@ -28,28 +28,26 @@ extern PRPCache data_pairs;
 
 
 Analyzer::
-Analyzer(ProblemDescDB& problem_db, Model& model):
+Analyzer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   Iterator(BaseConstructor(), problem_db), compactMode(true),
   numObjFns(0), numLSqTerms(0), // default: no best data tracking
   vbdFlag(problem_db.get_bool("method.variance_based_decomp")),
-  writePrecision(problem_db.get_int("environment.output_precision")),
-  iteratedModel{Iterator::iterated_model()}
+  writePrecision(problem_db.get_int("environment.output_precision"))
 {
   // set_db_list_nodes() is set by a higher context
   iteratedModel = model;
-  pIteratedModel = &iteratedModel;
-  update_from_model(*pIteratedModel); // variable/response counts & checks
+  update_from_model(*iteratedModel); // variable/response counts & checks
 
   // assign context-specific defaults
   if (convergenceTol < 0.) convergenceTol = 1.e-4; // historical default
   //if (maxIterations    == SZ_MAX) maxIterations    = 100;
   //if (maxFunctionEvals == SZ_MAX) maxFunctionEvals = 1000;
 
-  if (model.primary_fn_type() == OBJECTIVE_FNS)
-    numObjFns = model.num_primary_fns();
-  else if (model.primary_fn_type() == CALIB_TERMS)
-    numLSqTerms = model.num_primary_fns();
-  else if (model.primary_fn_type() != GENERIC_FNS) {
+  if (model->primary_fn_type() == OBJECTIVE_FNS)
+    numObjFns = model->num_primary_fns();
+  else if (model->primary_fn_type() == CALIB_TERMS)
+    numLSqTerms = model->num_primary_fns();
+  else if (model->primary_fn_type() != GENERIC_FNS) {
     Cerr << "\nError: Unknown primary function type in Analyzer." << std::endl;
     abort_handler(METHOD_ERROR);
   }
@@ -63,49 +61,45 @@ Analyzer(ProblemDescDB& problem_db, Model& model):
 
 
 Analyzer::
-Analyzer(unsigned short method_name, Model& model):
+Analyzer(unsigned short method_name, std::shared_ptr<Model> model):
   Iterator(NoDBBaseConstructor(), method_name, model), compactMode(true),
   numObjFns(0), numLSqTerms(0), // default: no best data tracking
   vbdFlag(false), vbdDropTol(-1.),
-  writePrecision(0),iteratedModel{Iterator::iterated_model()}
+  writePrecision(0)
 {
-  pIteratedModel = &iteratedModel;
-  update_from_model(*pIteratedModel); // variable/response counts & checks
+  update_from_model(*iteratedModel); // variable/response counts & checks
 }
 
 
 Analyzer::
-Analyzer(unsigned short method_name, Model& model,
+Analyzer(unsigned short method_name, std::shared_ptr<Model> model,
 	 const ShortShortPair& view_override):
   Iterator(NoDBBaseConstructor(), method_name, model), compactMode(true),
   numObjFns(0), numLSqTerms(0), // default: no best data tracking
-  writePrecision(0),iteratedModel{Iterator::iterated_model()}
+  writePrecision(0)
 {
-  pIteratedModel = &iteratedModel;
-  if (view_override != pIteratedModel->current_variables().view())
+  if (view_override != iteratedModel->current_variables().view())
     recast_model_view(view_override);
-  update_from_model(*pIteratedModel); // variable/response counts & checks
+  update_from_model(*iteratedModel); // variable/response counts & checks
 }
 
 
 Analyzer::Analyzer(unsigned short method_name):
   Iterator(NoDBBaseConstructor(), method_name), compactMode(true),
   numObjFns(0), numLSqTerms(0), // default: no best data tracking
-  writePrecision(0),iteratedModel{Iterator::iterated_model()}
-{
-  pIteratedModel = &iteratedModel;
-}
+  writePrecision(0)
+{}
 
 
 bool Analyzer::resize()
 {
   bool parent_reinit_comms = Iterator::resize();
 
-  numContinuousVars     = ModelUtils::cv(*pIteratedModel);
-  numDiscreteIntVars    = ModelUtils::div(*pIteratedModel);
-  numDiscreteStringVars = ModelUtils::dsv(*pIteratedModel);
-  numDiscreteRealVars   = ModelUtils::drv(*pIteratedModel);
-  numFunctions          = ModelUtils::response_size(*pIteratedModel);
+  numContinuousVars     = ModelUtils::cv(*iteratedModel);
+  numDiscreteIntVars    = ModelUtils::div(*iteratedModel);
+  numDiscreteStringVars = ModelUtils::dsv(*iteratedModel);
+  numDiscreteRealVars   = ModelUtils::drv(*iteratedModel);
+  numFunctions          = ModelUtils::response_size(*iteratedModel);
 
   return parent_reinit_comms;
 }
@@ -113,8 +107,7 @@ bool Analyzer::resize()
 
 void Analyzer::recast_model_view(const ShortShortPair& view_override)
 {
-  pIteratedModel->assign_rep(
-    std::make_shared<RecastModel>(*pIteratedModel, view_override));
+  iteratedModel = std::make_shared<RecastModel>(iteratedModel, view_override);
 }
 
 
@@ -173,7 +166,7 @@ void Analyzer::initialize_run()
 {
   // Verify that iteratedModel is not null (default ctor and some
   // NoDBBaseConstructor ctors leave iteratedModel uninitialized).
-  if (!pIteratedModel->is_null()) {
+  if (iteratedModel) {
     // update context data that is outside scope of local DB specifications.
     // This is needed for reused objects.
     //iteratedModel.db_scope_reset(); // TO DO: need better name?
@@ -185,9 +178,9 @@ void Analyzer::initialize_run()
     // of a recursion.  On subsequent passes, it may correspond to the inner
     // iterator.  The Iterator scope should not matter for the iteratedModel
     // mapping initialize/finalize.
-    if (!pIteratedModel->mapping_initialized()) {
+    if (!iteratedModel->mapping_initialized()) {
       ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator();
-      bool var_size_changed = pIteratedModel->initialize_mapping(pl_iter);
+      bool var_size_changed = iteratedModel->initialize_mapping(pl_iter);
       if (var_size_changed)
         /*bool reinit_comms =*/ resize(); // Ignore return value
     }
@@ -196,7 +189,7 @@ void Analyzer::initialize_run()
     // (previously managed via presence/absence of ostream)
     //if (!subIteratorFlag)
     if (summaryOutputFlag)
-      pIteratedModel->set_evaluation_reference();
+      iteratedModel->set_evaluation_reference();
   }
 }
 
@@ -209,8 +202,8 @@ void Analyzer::post_run(std::ostream& s)
 {
   if (summaryOutputFlag) {
     // Print the function evaluation summary for all Iterators
-    if (!pIteratedModel->is_null())
-      pIteratedModel->print_evaluation_summary(s); // full hdr, relative counts
+    if (iteratedModel)
+      iteratedModel->print_evaluation_summary(s); // full hdr, relative counts
 
     // The remaining final results output varies by iterator branch
     print_results(s);
@@ -223,8 +216,8 @@ void Analyzer::finalize_run()
   // Finalize an initialized mapping.  This will correspond to the first
   // finalize_run() with an uninitialized mapping, such as the inner-iterator
   // in a recursion.
-  if (!pIteratedModel->is_null() && pIteratedModel->mapping_initialized()) {
-    bool var_size_changed = pIteratedModel->finalize_mapping();
+  if (iteratedModel && iteratedModel->mapping_initialized()) {
+    bool var_size_changed = iteratedModel->finalize_mapping();
     if (var_size_changed)
       /*bool reinit_comms =*/ resize(); // Ignore return value
   }
@@ -435,7 +428,7 @@ void Analyzer::
 sample_to_variables(const Real* sample_c_vars, Variables& vars)
 {
   // pack sample_matrix into vars_array
-  const Variables& model_vars = pIteratedModel->current_variables();
+  const Variables& model_vars = iteratedModel->current_variables();
   if (vars.is_null()) // use minimal data ctor
     vars = Variables(model_vars.shared_data());
   for (size_t i=0; i<numContinuousVars; ++i)
@@ -493,7 +486,7 @@ variables_array_to_samples(const VariablesArray& vars_array,
 
 /** Generate (numvars + 2)*num_samples replicate sets for VBD,
     populating allSamples( numvars, (numvars + 2)*num_samples ) */
-void Analyzer::get_vbd_parameter_sets(Model& model, size_t num_samples)
+void Analyzer::get_vbd_parameter_sets(std::shared_ptr<Model> model, size_t num_samples)
 {
   if (!compactMode) {
     Cerr << "\nError: get_vbd_parameter_sets requires compactMode.\n";
@@ -589,18 +582,18 @@ void Analyzer::pre_output()
   unsigned short tabular_format = 
     parallelLib.program_options().pre_run_output_format();
   TabularIO::write_header_tabular(tabular_file,
-				  pIteratedModel->current_variables(), 
-				  pIteratedModel->current_response(),
+				  iteratedModel->current_variables(), 
+				  iteratedModel->current_response(),
 				  "eval_id", "interface", tabular_format);
 
   tabular_file << std::setprecision(write_precision) 
 	       << std::resetiosflags(std::ios::floatfield);
 
-  Variables vars = pIteratedModel->current_variables().copy();
+  Variables vars = iteratedModel->current_variables().copy();
   for (size_t eval_index = 0; eval_index < num_evals; eval_index++) {
 
     TabularIO::write_leading_columns(tabular_file, eval_index+1, 
-				     pIteratedModel->interface_id(),
+				     iteratedModel->interface_id(),
 				     tabular_format);
     if (compactMode) {
       // allSamples num_vars x num_evals, so each col becomes tabular file row
@@ -654,14 +647,14 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
 
   // Define modelList and recastFlags to support any recastings within
   // a model recursion
-  bool map_to_iter_space = pIteratedModel->manage_data_recastings();
+  bool map_to_iter_space = iteratedModel->manage_data_recastings();
 
   // TO DO: validate/accommodate incoming num_vars since it may be defined
   // from a local sampling mode (see NonDSampling) that differs from active;
   // support for active discrete also varies across the post-run Iterators.
   bool active_only = true; // consistent with PStudyDACE use cases
-  Variables vars(pIteratedModel->current_variables().copy());
-  Response  resp(pIteratedModel->current_response().copy());
+  Variables vars(iteratedModel->current_variables().copy());
+  Response  resp(iteratedModel->current_response().copy());
 
   PRPList import_prp_list;
   bool verbose = (outputLevel > NORMAL_OUTPUT);
@@ -687,8 +680,8 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
   else             allVariables.resize(num_evals);
 
   size_t i; PRPLIter prp_it;
-  bool cache = pIteratedModel->evaluation_cache(), // recurse_flag = true
-     restart = pIteratedModel->restart_file();     // recurse_flag = true
+  bool cache = iteratedModel->evaluation_cache(), // recurse_flag = true
+     restart = iteratedModel->restart_file();     // recurse_flag = true
   Variables iter_vars; Response iter_resp;
   for (i=0, prp_it=import_prp_list.begin(); i<num_evals; ++i, ++prp_it) {
 
@@ -702,7 +695,7 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
 
     // manage any model recastings to promote from user-space to iterator-space
     if (map_to_iter_space)
-      pIteratedModel->user_space_to_iterator_space(pr.variables(), pr.response(),
+      iteratedModel->user_space_to_iterator_space(pr.variables(), pr.response(),
 						 iter_vars, iter_resp);
     else
       { iter_vars = pr.variables(); iter_resp = pr.response(); }
@@ -729,7 +722,7 @@ void Analyzer::compute_best_metrics(const Response& response,
   size_t i, constr_offset;
   const RealVector& fn_vals = response.function_values();
   const RealVector& primary_wts
-    = pIteratedModel->primary_response_fn_weights();
+    = iteratedModel->primary_response_fn_weights();
   Real& obj_fn = metrics.second; obj_fn = 0.0;
   if (numObjFns) {
     constr_offset = numObjFns;
@@ -755,14 +748,14 @@ void Analyzer::compute_best_metrics(const Response& response,
   else // no "best" metric currently defined for generic response fns
     return;
   Real& constr_viol   = metrics.first; constr_viol = 0.0;
-  size_t num_nln_ineq = ModelUtils::num_nonlinear_ineq_constraints(*pIteratedModel),
-         num_nln_eq   = ModelUtils::num_nonlinear_eq_constraints(*pIteratedModel);
+  size_t num_nln_ineq = ModelUtils::num_nonlinear_ineq_constraints(*iteratedModel),
+         num_nln_eq   = ModelUtils::num_nonlinear_eq_constraints(*iteratedModel);
   const RealVector& nln_ineq_lwr_bnds
-    = ModelUtils::nonlinear_ineq_constraint_lower_bounds(*pIteratedModel);
+    = ModelUtils::nonlinear_ineq_constraint_lower_bounds(*iteratedModel);
   const RealVector& nln_ineq_upr_bnds
-    = ModelUtils::nonlinear_ineq_constraint_upper_bounds(*pIteratedModel);
+    = ModelUtils::nonlinear_ineq_constraint_upper_bounds(*iteratedModel);
   const RealVector& nln_eq_targets
-    = ModelUtils::nonlinear_eq_constraint_targets(*pIteratedModel);
+    = ModelUtils::nonlinear_eq_constraint_targets(*iteratedModel);
   for (i=0; i<num_nln_ineq; i++) { // ineq constraint violation (default tol=0)
     size_t index = i + constr_offset;
     Real ineq_con = fn_vals[index];
@@ -792,10 +785,10 @@ update_best(const Real* sample_c_vars, int eval_id, const Response& response)
 
   size_t num_best_map = bestVarsRespMap.size();
   if (num_best_map < numFinalSolutions) { // initialization of best map
-    Variables vars = pIteratedModel->current_variables().copy();
+    Variables vars = iteratedModel->current_variables().copy();
     sample_to_variables(sample_c_vars, vars); // copy sample only when needed
     Response copy_resp = response.copy();
-    ParamResponsePair prp(vars, pIteratedModel->interface_id(), copy_resp,
+    ParamResponsePair prp(vars, iteratedModel->interface_id(), copy_resp,
 			  eval_id, false); // shallow copy since previous deep
     std::pair<RealRealPair, ParamResponsePair> new_pr(metrics, prp);
     bestVarsRespMap.insert(new_pr);
@@ -807,10 +800,10 @@ update_best(const Real* sample_c_vars, int eval_id, const Response& response)
     //                      must be < stored objective
     if (metrics < it->first) { // new best
       bestVarsRespMap.erase(it);
-      Variables vars = pIteratedModel->current_variables().copy();
+      Variables vars = iteratedModel->current_variables().copy();
       sample_to_variables(sample_c_vars, vars); // copy sample only when needed
       Response copy_resp = response.copy();
-      ParamResponsePair prp(vars, pIteratedModel->interface_id(), copy_resp,
+      ParamResponsePair prp(vars, iteratedModel->interface_id(), copy_resp,
 			    eval_id, false); // shallow copy since previous deep
       std::pair<RealRealPair, ParamResponsePair> new_pr(metrics, prp);
       bestVarsRespMap.insert(new_pr);
@@ -831,7 +824,7 @@ update_best(const Variables& vars, int eval_id, const Response& response)
 
   size_t num_best_map = bestVarsRespMap.size();
   if (num_best_map < numFinalSolutions) { // initialization of best map
-    ParamResponsePair prp(vars, pIteratedModel->interface_id(),
+    ParamResponsePair prp(vars, iteratedModel->interface_id(),
 			  response, eval_id); // deep copy
     std::pair<RealRealPair, ParamResponsePair> new_pr(metrics, prp);
     bestVarsRespMap.insert(new_pr);
@@ -843,7 +836,7 @@ update_best(const Variables& vars, int eval_id, const Response& response)
     //                      must be < stored objective
     if (metrics < it->first) { // new best
       bestVarsRespMap.erase(it);
-      ParamResponsePair prp(vars, pIteratedModel->interface_id(),
+      ParamResponsePair prp(vars, iteratedModel->interface_id(),
 			    response, eval_id); // deep copy
       std::pair<RealRealPair, ParamResponsePair> new_pr(metrics, prp);
       bestVarsRespMap.insert(new_pr);
@@ -904,7 +897,7 @@ void Analyzer::vary_pattern(bool pattern_flag)
 }
 
 
-void Analyzer::get_parameter_sets(Model& model)
+void Analyzer::get_parameter_sets(std::shared_ptr<Model> model)
 {
   Cerr << "Error: Analyzer lacking redefinition of virtual get_parameter_sets"
        << "(1) function.\n       This analyzer does not support parameter sets."
@@ -912,7 +905,7 @@ void Analyzer::get_parameter_sets(Model& model)
   abort_handler(METHOD_ERROR);
 }
 
-void Analyzer::get_parameter_sets(Model& model, const size_t num_samples, 
+void Analyzer::get_parameter_sets(std::shared_ptr<Model> model, const size_t num_samples, 
 				  RealMatrix& design_matrix)
 {
   Cerr << "Error: Analyzer lacking redefinition of virtual get_parameter_sets"

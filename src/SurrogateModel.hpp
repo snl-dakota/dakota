@@ -47,9 +47,6 @@ protected:
 		 short output_level);
 
   public:
-  /// destructor
-  ~SurrogateModel() override;
-
 
   //
   //- Heading: Virtual function redefinitions
@@ -77,7 +74,7 @@ protected:
   //bool finalize_mapping();
 
   /// return truth_model()
-  Model& subordinate_model() override;
+  std::shared_ptr<Model> subordinate_model() override;
 
   void active_model_key(const Pecos::ActiveKey& key) override;
   const Pecos::ActiveKey& active_model_key() const override;
@@ -109,9 +106,9 @@ protected:
   virtual void init_model(Model& model);
   /// update model with data that could change per function evaluation
   /// (active variable values/bounds)
-  virtual void update_model(Model& model);
+  virtual void update_model(std::shared_ptr<Model> model);
   /// update current variables/labels/bounds/targets with data from model
-  virtual void update_from_model(const Model& model);
+  virtual void update_from_model(std::shared_ptr<Model> model);
 
   /// compute start index for inserting response data into aggregated response
   virtual size_t insert_response_start(size_t position);
@@ -243,59 +240,55 @@ private:
 };
 
 
-inline SurrogateModel::~SurrogateModel()
-{ }
-
-
 inline Pecos::ProbabilityTransformation& SurrogateModel::
 probability_transformation()
-{ return truth_model().probability_transformation(); } // forward along
+{ return truth_model()->probability_transformation(); } // forward along
 
 
 inline void SurrogateModel::activate_distribution_parameter_derivatives()
-{ truth_model().activate_distribution_parameter_derivatives(); }
+{ truth_model()->activate_distribution_parameter_derivatives(); }
 
 
 inline void SurrogateModel::deactivate_distribution_parameter_derivatives()
-{ truth_model().deactivate_distribution_parameter_derivatives(); }
+{ truth_model()->deactivate_distribution_parameter_derivatives(); }
 
 
 inline void SurrogateModel::
 trans_X_to_U(const RealVector& x_c_vars, RealVector& u_c_vars)
-{ truth_model().trans_X_to_U(x_c_vars, u_c_vars); }
+{ truth_model()->trans_X_to_U(x_c_vars, u_c_vars); }
 
 
 inline void SurrogateModel::
 trans_U_to_X(const RealVector& u_c_vars, RealVector& x_c_vars)
-{ truth_model().trans_U_to_X(u_c_vars, x_c_vars); }
+{ truth_model()->trans_U_to_X(u_c_vars, x_c_vars); }
 
 
 inline void SurrogateModel::
 trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
 		  const RealVector& x_vars)
-{ truth_model().trans_grad_X_to_U(fn_grad_x, fn_grad_u, x_vars); }
+{ truth_model()->trans_grad_X_to_U(fn_grad_x, fn_grad_u, x_vars); }
 
 
 inline void SurrogateModel::
 trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
 		  const RealVector& x_vars)
-{ truth_model().trans_grad_U_to_X(fn_grad_u, fn_grad_x, x_vars); }
+{ truth_model()->trans_grad_U_to_X(fn_grad_u, fn_grad_x, x_vars); }
 
 
 inline void SurrogateModel::
 trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
 		  const RealVector& x_vars)
-{ truth_model().trans_grad_X_to_S(fn_grad_x, fn_grad_s, x_vars); }
+{ truth_model()->trans_grad_X_to_S(fn_grad_x, fn_grad_s, x_vars); }
 
 
 inline void SurrogateModel::
 trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
 		  RealSymMatrix& fn_hess_u, const RealVector& x_vars,
 		  const RealVector& fn_grad_x)
-{ truth_model().trans_hess_X_to_U(fn_hess_x, fn_hess_u, x_vars, fn_grad_x); }
+{ truth_model()->trans_hess_X_to_U(fn_hess_x, fn_hess_u, x_vars, fn_grad_x); }
 
 
-inline Model& SurrogateModel::subordinate_model()
+inline std::shared_ptr<Model> SurrogateModel::subordinate_model()
 { return truth_model(); }
 
 

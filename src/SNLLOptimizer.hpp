@@ -113,10 +113,10 @@ public:
   //
 
   /// standard constructor
-  SNLLOptimizer(ProblemDescDB& problem_db, Model& model);
+  SNLLOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model>);
 
   /// alternate constructor for instantiations "on the fly"
-  SNLLOptimizer(const String& method_string, Model& model);
+  SNLLOptimizer(const String& method_string, std::shared_ptr<Model>);
 
   /// alternate constructor for objective/constraint call-backs;
   /// analytic gradient case

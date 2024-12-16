@@ -90,13 +90,13 @@ public:
   //
 
   /// standard constructor
-  NPSOLOptimizer(ProblemDescDB& problem_db, Model& model);
+  NPSOLOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
 
   /// alternate constructor for Iterator instantiations by name
-  NPSOLOptimizer(Model& model);
+  NPSOLOptimizer(std::shared_ptr<Model> model);
 
   /// alternate constructor for instantiations "on the fly"
-  NPSOLOptimizer(Model& model, int derivative_level, Real conv_tol);
+  NPSOLOptimizer(std::shared_ptr<Model> model, int derivative_level, Real conv_tol);
 
   /// alternate constructor for instantiations "on the fly"
   NPSOLOptimizer(const RealVector& cv_initial,

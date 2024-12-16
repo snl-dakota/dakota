@@ -37,7 +37,7 @@ public:
   //- Heading: Constructors and destructor
   //
 
-  NonDLHSEvidence(ProblemDescDB& problem_db, Model& model); ///< constructor
+  NonDLHSEvidence(ProblemDescDB& problem_db, std::shared_ptr<Model> model); ///< constructor
   ~NonDLHSEvidence() override;                                       ///< destructor
 
   //

@@ -38,7 +38,7 @@ struct SPrintArgs
 /** This constructor is called for a standard letter-envelope iterator
     instantiation using the ProblemDescDB. */
 NonDC3FunctionTrain::
-NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
+NonDC3FunctionTrain(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDExpansion(problem_db, model),
   importBuildPointsFile(
     problem_db.get_string("method.import_build_points_file")),
@@ -66,7 +66,7 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
   // -------------------
   Model g_u_model;
   g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    *pIteratedModel, u_space_type)); // retain dist bnds
+    *iteratedModel, u_space_type)); // retain dist bnds
 
   // -------------------------
   // Construct u_space_sampler
@@ -122,7 +122,7 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, Model& model):
 /** This constructor is called by derived class constructors. */
 NonDC3FunctionTrain::
 NonDC3FunctionTrain(unsigned short method_name, ProblemDescDB& problem_db,
-		    Model& model):
+		    std::shared_ptr<Model> model):
   NonDExpansion(problem_db, model),
   importBuildPointsFile(
     problem_db.get_string("method.import_build_points_file")),
@@ -171,8 +171,8 @@ size_t NonDC3FunctionTrain::regression_size()
 
 void NonDC3FunctionTrain::check_surrogate()
 {
-  if (pIteratedModel->model_type()     == "surrogate" &&
-      pIteratedModel->surrogate_type() == "global_function_train") {
+  if (iteratedModel->model_type()     == "surrogate" &&
+      iteratedModel->surrogate_type() == "global_function_train") {
     Cerr << "Error: use 'surrogate_based_uq' for UQ using a Model-based "
 	 << "function train specification." << std::endl;
     abort_handler(METHOD_ERROR);
@@ -287,7 +287,7 @@ resolve_inputs(short& u_space_type, short& data_order)
 
 bool NonDC3FunctionTrain::
 config_regression(size_t colloc_pts, size_t regress_size, int seed,
-		  Iterator& u_space_sampler, Model& g_u_model)
+		  Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model)
 {
   // Adapted from NonDPolynomialChaos::config_regression()
 
@@ -375,7 +375,7 @@ void NonDC3FunctionTrain::initialize_u_space_model()
   // SharedC3ApproxData invokes ope_opts_alloc() to construct basis and
   // requires {start,max} order
   const Pecos::MultivariateDistribution& u_dist
-    = uSpaceModel->truth_model().multivariate_distribution();
+    = uSpaceModel->truth_model()->multivariate_distribution();
   uSpaceModel->shared_approximation().construct_basis(u_dist);
 }
 
@@ -670,7 +670,7 @@ void NonDC3FunctionTrain::print_moments(std::ostream& s)
   s << std::scientific << std::setprecision(write_precision);
 
   // std::vector<Approximation>& poly_approxs = uSpaceModel->approximations();
-  const StringArray& fn_labels = ModelUtils::response_labels(*pIteratedModel);
+  const StringArray& fn_labels = ModelUtils::response_labels(*iteratedModel);
   size_t i, j, width = write_precision+7;
 
   s << "\nMoment statistics for each response function:\n";
@@ -720,10 +720,10 @@ void NonDC3FunctionTrain::print_sobol_indices(std::ostream& s)
 {
   s << "\nGlobal sensitivity indices for each response function:\n";
 
-  const StringArray& fn_labels = ModelUtils::response_labels(*pIteratedModel);
+  const StringArray& fn_labels = ModelUtils::response_labels(*iteratedModel);
 
   StringMultiArrayConstView cv_labels
-    = ModelUtils::continuous_variable_labels(*pIteratedModel);
+    = ModelUtils::continuous_variable_labels(*iteratedModel);
 
   // print sobol indices per response function
   std::vector<Approximation>& poly_approxs = uSpaceModel->approximations();
@@ -750,7 +750,7 @@ void NonDC3FunctionTrain::print_sobol_indices(std::ostream& s)
     //if (vbdOrderLimit != 1) { 
       s << std::setw(39) << "Interaction\n";
       StringMultiArrayConstView cv_labels
-        = ModelUtils::continuous_variable_labels(*pIteratedModel);
+        = ModelUtils::continuous_variable_labels(*iteratedModel);
             
       struct SPrintArgs pa;
       pa.s = &s;

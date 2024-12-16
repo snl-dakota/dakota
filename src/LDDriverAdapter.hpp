@@ -76,7 +76,7 @@ public:
     }
 
     void generate_unique_samples(
-        const Model& model,
+        std::shared_ptr<Model> model,
         size_t numSamples,
         RealMatrix& samplesArray,
         RealMatrix& sampleRanks,
@@ -88,7 +88,7 @@ public:
     }
 
     void generate_samples(
-        const Model& model,
+        std::shared_ptr<Model> model,
         size_t numSamples,
         RealMatrix& samplesArray,
         RealMatrix& sampleRanks,

@@ -35,7 +35,6 @@ public:
   //
 
   SimulationModel(ProblemDescDB& problem_db); ///< constructor
-  ~SimulationModel() override;                         ///< destructor
   
   /// Return the "default" or maximal ActiveSet for the model
   //ActiveSet default_active_set();
@@ -211,10 +210,6 @@ private:
   /// and derived_synchronize_nowait()
   IntResponseMap simResponseMap;
 };
-
-
-inline SimulationModel::~SimulationModel()
-{ }
 
 
 inline Interface& SimulationModel::derived_interface()

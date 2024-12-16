@@ -27,7 +27,7 @@ namespace Dakota {
 /** This constructor is called for a standard letter-envelope iterator
     instantiation using the ProblemDescDB. */
 NonDMultilevelStochCollocation::
-NonDMultilevelStochCollocation(ProblemDescDB& problem_db, Model& model):
+NonDMultilevelStochCollocation(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDStochCollocation(DEFAULT_METHOD, problem_db, model), // bypass SC ctor
   quadOrderSeqSpec(problem_db.get_usa("method.nond.quadrature_order")),
   ssgLevelSeqSpec(problem_db.get_usa("method.nond.sparse_grid_level")),
@@ -45,9 +45,8 @@ NonDMultilevelStochCollocation(ProblemDescDB& problem_db, Model& model):
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
-  Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    *pIteratedModel, u_space_type)); // retain dist bounds
+  auto g_u_model = std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, u_space_type); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -77,11 +76,11 @@ NonDMultilevelStochCollocation(ProblemDescDB& problem_db, Model& model):
   // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
   short corr_order = -1, corr_type = NO_CORRECTION;
   UShortArray approx_order; // empty
-  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  const ActiveSet& recast_set = g_u_model->current_response().active_set();
   // DFSModel: consume any QoI aggregation; support surrogate gradient evals
-  ShortArray sc_asv(g_u_model.qoi(), 3); // for stand alone mode
+  ShortArray sc_asv(g_u_model->qoi(), 3); // for stand alone mode
   ActiveSet  sc_set(sc_asv, recast_set.derivative_vector());
-  const ShortShortPair& sc_view = g_u_model.current_variables().view();
+  const ShortShortPair& sc_view = g_u_model->current_variables().view();
   String empty_str; // build data import not supported for structured grids
   uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, sc_set, sc_view, approx_type, approx_order, corr_type,
@@ -110,7 +109,7 @@ NonDMultilevelStochCollocation(ProblemDescDB& problem_db, Model& model):
 
 /** This constructor is used for helper iterator instantiation on the fly. */
 NonDMultilevelStochCollocation::
-NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
+NonDMultilevelStochCollocation(std::shared_ptr<Model> model, short exp_coeffs_approach,
 			       const UShortArray& num_int_seq,
 			       const RealVector& dim_pref, short u_space_type,
 			       short refine_type, short refine_control,
@@ -140,9 +139,8 @@ NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
-  Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    *pIteratedModel, u_space_type)); // retain dist bounds
+  auto g_u_model = std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, u_space_type); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -164,12 +162,12 @@ NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
   // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
   short corr_order = -1, corr_type = NO_CORRECTION;
   UShortArray approx_order; // empty
-  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  const ActiveSet& recast_set = g_u_model->current_response().active_set();
   // DFSModel: consume any QoI aggregation.
   // TO DO: support surrogate Hessians in helper mode.
-  ShortArray sc_asv(g_u_model.qoi(), 3); // TO DO: consider passing in data_mode
+  ShortArray sc_asv(g_u_model->qoi(), 3); // TO DO: consider passing in data_mode
   ActiveSet  sc_set(sc_asv, recast_set.derivative_vector());
-  const ShortShortPair& sc_view = g_u_model.current_variables().view();
+  const ShortShortPair& sc_view = g_u_model->current_variables().view();
   uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, sc_set, sc_view, approx_type, approx_order, corr_type,
     corr_order, data_order, outputLevel, pt_reuse);

@@ -20,7 +20,7 @@
 namespace Dakota {
 
 
-NonDLHSInterval::NonDLHSInterval(ProblemDescDB& problem_db, Model& model):
+NonDLHSInterval::NonDLHSInterval(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDInterval(problem_db, model),
   seedSpec(probDescDB.get_int("method.random_seed")),
   numSamples(probDescDB.get_int("method.samples")),
@@ -35,7 +35,7 @@ NonDLHSInterval::NonDLHSInterval(ProblemDescDB& problem_db, Model& model):
 
   unsigned short sample_type = SUBMETHOD_DEFAULT;
   bool vary_pattern = false; // for consistency across outer loop invocations
-  lhsSampler.assign_rep(std::make_shared<NonDLHSSampling>(*pIteratedModel,
+  lhsSampler.assign_rep(std::make_shared<NonDLHSSampling>(iteratedModel,
     sample_type, numSamples, seedSpec, rngName, vary_pattern, ACTIVE));
 }
 

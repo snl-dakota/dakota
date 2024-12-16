@@ -50,10 +50,10 @@ namespace Dakota {
 	  
      public:
        /// Constructor
-       OptDartsOptimizer(ProblemDescDB& problem_db, Model& model);
+       OptDartsOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model>);
 
        /// alternate constructor for Iterator instantiations by name
-       OptDartsOptimizer(Model& model);
+       OptDartsOptimizer(std::shared_ptr<Model>);
 	       
        /// Destructor
        ~OptDartsOptimizer() override;

@@ -34,7 +34,7 @@ public:
   //
     
   /// primary constructor for building a standard DACE iterator
-  PSUADEDesignCompExp(ProblemDescDB& problem_db, Model& model);
+  PSUADEDesignCompExp(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
   ~PSUADEDesignCompExp() override;
 
@@ -59,7 +59,7 @@ protected:
   void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag) override;
   unsigned short sampling_scheme() const override;
   void vary_pattern(bool pattern_flag) override;
-  void get_parameter_sets(Model& model) override;
+  void get_parameter_sets(std::shared_ptr<Model> model) override;
 
 private:
 

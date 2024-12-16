@@ -86,7 +86,7 @@ NonDDREAMBayesCalibration* NonDDREAMBayesCalibration::nonDDREAMInstance(NULL);
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDDREAMBayesCalibration::
-NonDDREAMBayesCalibration(ProblemDescDB& problem_db, Model& model):
+NonDDREAMBayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDBayesCalibration(problem_db, model),
   numChains(probDescDB.get_int("method.dream.num_chains")),
   numCR(probDescDB.get_int("method.dream.num_cr")),
@@ -190,17 +190,17 @@ void NonDDREAMBayesCalibration::calibrate()
   ////////////////////////////////////////////////////////
   int total_num_params = numContinuousVars + numHyperparams;
   
-  const RealVector& init_point = ModelUtils::continuous_variables(mcmcModel);
+  const RealVector& init_point = ModelUtils::continuous_variables(*mcmcModel);
   Cout << "Initial Points " << init_point << '\n';
 
   // resize, initializing to zero
   paramMins.size(total_num_params);
   paramMaxs.size(total_num_params);
   RealRealPairArray bnds
-    = mcmcModel.multivariate_distribution().distribution_bounds(); // all RV
+    = mcmcModel->multivariate_distribution().distribution_bounds(); // all RV
   // Use SVD to convert active CV index (calibration params) to all index (RVs)
   const SharedVariablesData& svd
-    = pIteratedModel->current_variables().shared_data();
+    = iteratedModel->current_variables().shared_data();
   for (size_t i=0; i<numContinuousVars; ++i) {
     const RealRealPair& bnds_i = bnds[svd.cv_index_to_all_index(i)];
     paramMins[i] = bnds_i.first;  paramMaxs[i] = bnds_i.second;
@@ -300,12 +300,12 @@ double NonDDREAMBayesCalibration::sample_likelihood(int par_num, double zp[])
 
   // DREAM searches in either the original space (default for GPs and no
   // emulator) or standardized space (PCE/SC, optional for GP/no emulator).  
-  ModelUtils::continuous_variables(nonDDREAMInstance->residualModel, all_params); 
+  ModelUtils::continuous_variables(*nonDDREAMInstance->residualModel, all_params); 
 
   // Compute simulation response to use in likelihood 
-  nonDDREAMInstance->residualModel.evaluate();
+  nonDDREAMInstance->residualModel->evaluate();
   const RealVector& residuals = 
-    nonDDREAMInstance->residualModel.current_response().function_values();
+    nonDDREAMInstance->residualModel->current_response().function_values();
   double log_like = nonDDREAMInstance->log_likelihood(residuals, all_params);
 
   if (nonDDREAMInstance->outputLevel >= DEBUG_OUTPUT) {
@@ -460,9 +460,9 @@ void NonDDREAMBayesCalibration::archive_acceptance_chain()
 {
   // temporaries for evals/lookups
   // the MCMC model omits the hyper params and residual transformations...
-  Variables lookup_vars = mcmcModel.current_variables().copy();
-  String interface_id = mcmcModel.interface_id();
-  Response lookup_resp = mcmcModel.current_response().copy();
+  Variables lookup_vars = mcmcModel->current_variables().copy();
+  String interface_id = mcmcModel->interface_id();
+  Response lookup_resp = mcmcModel->current_response().copy();
   ActiveSet lookup_as = lookup_resp.active_set();
   lookup_as.request_values(1);
   lookup_resp.active_set(lookup_as);
@@ -478,11 +478,11 @@ void NonDDREAMBayesCalibration::archive_acceptance_chain()
 		      numContinuousVars);
       RealVector x_rv(Teuchos::View, acceptanceChain[sample_index], 
 		      numContinuousVars);
-      mcmcModel.trans_U_to_X(u_rv, x_rv);
+      mcmcModel->trans_U_to_X(u_rv, x_rv);
       // trailing hyperparams are not transformed
 
       // surrogate needs u-space variables for eval
-      if (mcmcModel.model_type() == "surrogate")
+      if (mcmcModel->model_type() == "surrogate")
 	lookup_vars.continuous_variables(u_rv);
       else
 	lookup_vars.continuous_variables(x_rv);
@@ -495,9 +495,9 @@ void NonDDREAMBayesCalibration::archive_acceptance_chain()
 
     // now retreive function values
     if (mcmcModelHasSurrogate) {
-      ModelUtils::active_variables(mcmcModel, lookup_vars);
-      mcmcModel.evaluate(lookup_resp.active_set());
-      const RealVector& fn_vals = mcmcModel.current_response().function_values();
+      ModelUtils::active_variables(*mcmcModel, lookup_vars);
+      mcmcModel->evaluate(lookup_resp.active_set());
+      const RealVector& fn_vals = mcmcModel->current_response().function_values();
       Teuchos::setCol(fn_vals, sample_index, acceptedFnVals);	
     }
     else {
@@ -506,7 +506,7 @@ void NonDDREAMBayesCalibration::archive_acceptance_chain()
       if (cache_it == data_pairs.get<hashed>().end()) {
 	++lookup_failures;
 	// Set NaN in the chain points to avoid misleading the user
-	RealVector nan_fn_vals(mcmcModel.current_response().function_values().length());
+	RealVector nan_fn_vals(mcmcModel->current_response().function_values().length());
 	nan_fn_vals = std::numeric_limits<double>::quiet_NaN();
 	Teuchos::setCol(nan_fn_vals, sample_index, acceptedFnVals);
       }

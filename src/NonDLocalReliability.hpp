@@ -48,7 +48,7 @@ public:
   //
 
   /// constructor
-  NonDLocalReliability(ProblemDescDB& problem_db, Model& model);
+  NonDLocalReliability(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
   ~NonDLocalReliability() override;
 

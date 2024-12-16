@@ -45,16 +45,16 @@ public:
 
   /// alternate constructor for instantiations "on the fly" based on a
   /// quadrature order specification
-  NonDQuadrature(Model& model, unsigned short quad_order,
+  NonDQuadrature(std::shared_ptr<Model> model, unsigned short quad_order,
 		 const RealVector& dim_pref, short driver_mode);
   /// alternate constructor for instantiations "on the fly" that filter a
   /// tensor product sample set to include points with highest sample weights
-  NonDQuadrature(Model& model, unsigned short quad_order,
+  NonDQuadrature(std::shared_ptr<Model> model, unsigned short quad_order,
 		 const RealVector& dim_pref, short driver_mode,
 		 int num_filt_samples);
   /// alternate constructor for instantiations "on the fly" that sub-sample
   /// quadrature rules by sampling randomly from a tensor product multi-index
-  NonDQuadrature(Model& model, unsigned short quad_order,
+  NonDQuadrature(std::shared_ptr<Model> model, unsigned short quad_order,
 		 const RealVector& dim_pref, short driver_mode,
 		 int num_sub_samples, int seed);
 
@@ -98,7 +98,7 @@ protected:
   //- Heading: Constructors and destructor
   //
 
-  NonDQuadrature(ProblemDescDB& problem_db, Model& model); ///< constructor
+  NonDQuadrature(ProblemDescDB& problem_db, std::shared_ptr<Model> model); ///< constructor
 
   //
   //- Heading: Virtual function redefinitions
@@ -106,7 +106,7 @@ protected:
 
   void initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis) override;
 
-  void get_parameter_sets(Model& model) override;
+  void get_parameter_sets(std::shared_ptr<Model> model) override;
 
   void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag) override;
   void sampling_reference(size_t samples_ref) override;
@@ -303,7 +303,7 @@ inline void NonDQuadrature::evaluate_grid_increment()
   // detection for now.
 
   tpqDriver->compute_grid(allSamples);//Driver->compute_increment(allSamples);
-  evaluate_parameter_sets(*pIteratedModel);
+  evaluate_parameter_sets(*iteratedModel);
   ++numIntegrations;
 }
 

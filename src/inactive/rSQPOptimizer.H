@@ -273,28 +273,28 @@ public:
     { return numObjectiveFns; }
     ///
     const RealVector& lin_ineq_lb() const
-    { return pIteratedModel->linear_ineq_constraint_lower_bounds(); }
+    { return iteratedModel->linear_ineq_constraint_lower_bounds(); }
     ///
     const RealVector& lin_ineq_ub() const
-    { return pIteratedModel->linear_ineq_constraint_upper_bounds(); }
+    { return iteratedModel->linear_ineq_constraint_upper_bounds(); }
     ///
     const RealVector& nonlin_ineq_lb() const
-    { return pIteratedModel->nonlinear_ineq_constraint_lower_bounds(); }
+    { return iteratedModel->nonlinear_ineq_constraint_lower_bounds(); }
     ///
     const RealVector& nonlin_ineq_ub() const
-    { return pIteratedModel->nonlinear_ineq_constraint_upper_bounds(); }
+    { return iteratedModel->nonlinear_ineq_constraint_upper_bounds(); }
     ///
     const RealVector& lin_eq_targ() const
-    { return pIteratedModel->linear_eq_constraint_targets(); }
+    { return iteratedModel->linear_eq_constraint_targets(); }
     ///
     const RealVector& nonlin_eq_targ() const
-    { return pIteratedModel->nonlinear_eq_constraint_targets(); }
+    { return iteratedModel->nonlinear_eq_constraint_targets(); }
     ///
     const RealMatrix& lin_eq_jac() const
-    { return pIteratedModel->linear_eq_constraint_coeffs(); }
+    { return iteratedModel->linear_eq_constraint_coeffs(); }
     ///
     const RealMatrix& lin_ineq_jac() const
-    { return pIteratedModel->linear_ineq_constraint_coeffs(); }
+    { return iteratedModel->linear_ineq_constraint_coeffs(); }
     
     /** @name Overridden from Optimizer */
     //@{

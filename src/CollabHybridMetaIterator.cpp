@@ -52,7 +52,7 @@ CollabHybridMetaIterator::CollabHybridMetaIterator(ProblemDescDB& problem_db):
 
 
 CollabHybridMetaIterator::
-CollabHybridMetaIterator(ProblemDescDB& problem_db, Model& model):
+CollabHybridMetaIterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   MetaIterator(problem_db, model), singlePassedModel(true)
   //hybridCollabType(
   //  problem_db.get_string("method.hybrid.collaborative_type"))
@@ -79,7 +79,7 @@ CollabHybridMetaIterator(ProblemDescDB& problem_db, Model& model):
     num_iterators = method_names.size();
     // define an array of strings to use for set_db_model_nodes()
     if (model_ptrs.empty()) // assign array using id from iteratedModel
-      modelStrings.assign(num_iterators, pIteratedModel->model_id());
+      modelStrings.assign(num_iterators, iteratedModel->model_id());
     else {
       size_t num_models = model_ptrs.size();
       for (i=0; i<num_models; ++i)
@@ -122,7 +122,7 @@ void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   for (i=0; i<num_iterators; ++i) {
     // compute min/max processors per iterator for each method
     Iterator& the_iterator = selectedIterators[i];
-    Model& the_model = (singlePassedModel) ? *pIteratedModel : selectedModels[i];
+    auto the_model = (singlePassedModel) ? iteratedModel : selectedModels[i];
     ppi_pr_i = (lightwtMethodCtor) ?
       estimate_by_name(methodStrings[i], modelStrings[i], the_iterator,
 		       the_model) :
@@ -142,7 +142,7 @@ void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 
   // Instantiate all Models and Iterators
   for (i=0; i<num_iterators; ++i) {
-    Model& the_model = (singlePassedModel) ? *pIteratedModel : selectedModels[i];
+    auto the_model = (singlePassedModel) ? iteratedModel : selectedModels[i];
     if (lightwtMethodCtor)
       allocate_by_name(methodStrings[i], modelStrings[i],
 		       selectedIterators[i], the_model);

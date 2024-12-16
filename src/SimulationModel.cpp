@@ -21,7 +21,7 @@ namespace Dakota {
 
 
 SimulationModel::SimulationModel(ProblemDescDB& problem_db):
-  Model(BaseConstructor(), problem_db),
+  Model(problem_db),
   userDefinedInterface(problem_db.get_interface()), solnCntlVarType(EMPTY_TYPE),
   solnCntlADVIndex(_NPOS), solnCntlAVIndex(_NPOS), costMetadataIndex(_NPOS),
   simModelEvalCntr(0)

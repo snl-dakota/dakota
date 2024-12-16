@@ -28,7 +28,7 @@ namespace Dakota {
     and probDescDB can be queried for settings from the method
     specification.  It is not currently used, as there is not yet a
     separate nond_quadrature method specification. */
-NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, Model& model):
+NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDIntegration(problem_db, model),
   quadOrderSpec(probDescDB.get_ushort("method.nond.quadrature_order")),
   numSamples(0), quadMode(FULL_TENSOR)
@@ -41,7 +41,7 @@ NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, Model& model):
   //check_variables(x_dist.random_variables());
   // TO DO: create a ProbabilityTransformModel, if needed
   const Pecos::MultivariateDistribution& u_dist
-    = model.multivariate_distribution();
+    = model->multivariate_distribution();
 
   short refine_type
     = probDescDB.get_short("method.nond.expansion_refinement_type");
@@ -56,7 +56,7 @@ NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, Model& model):
 		  ( refine_type && nest_override != Pecos::NON_NESTED ) );
   Pecos::ExpansionConfigOptions ec_options(Pecos::QUADRATURE,
     probDescDB.get_short("method.nond.expansion_basis_type"),
-    pIteratedModel->correction_type(),
+    iteratedModel->correction_type(),
     probDescDB.get_short("method.nond.multilevel_discrepancy_emulation"),
     outputLevel, probDescDB.get_bool("method.variance_based_decomp"),
     probDescDB.get_ushort("method.nond.vbd_interaction_order"),
@@ -84,7 +84,7 @@ NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, Model& model):
 /** This alternate constructor is used for on-the-fly generation and
     evaluation of numerical quadrature points. */
 NonDQuadrature::
-NonDQuadrature(Model& model, unsigned short quad_order,
+NonDQuadrature(std::shared_ptr<Model> model, unsigned short quad_order,
 	       const RealVector& dim_pref, short driver_mode):
   NonDIntegration(QUADRATURE_INTEGRATION, model, dim_pref), nestedRules(false),
   quadOrderSpec(quad_order), numSamples(0), quadMode(FULL_TENSOR)
@@ -106,7 +106,7 @@ NonDQuadrature(Model& model, unsigned short quad_order,
 /** This alternate constructor is used for on-the-fly generation and
     evaluation of filtered tensor quadrature points. */
 NonDQuadrature::
-NonDQuadrature(Model& model, unsigned short quad_order,
+NonDQuadrature(std::shared_ptr<Model> model, unsigned short quad_order,
 	       const RealVector& dim_pref, short driver_mode,
 	       int num_filt_samples):
   NonDIntegration(QUADRATURE_INTEGRATION, model, dim_pref),
@@ -131,7 +131,7 @@ NonDQuadrature(Model& model, unsigned short quad_order,
 /** This alternate constructor is used for on-the-fly generation and
     evaluation of random sampling from a tensor quadrature multi-index. */
 NonDQuadrature::
-NonDQuadrature(Model& model, unsigned short quad_order,
+NonDQuadrature(std::shared_ptr<Model> model, unsigned short quad_order,
 	       const RealVector& dim_pref, short driver_mode,
 	       int num_sub_samples, int seed): 
   NonDIntegration(QUADRATURE_INTEGRATION, model, dim_pref),
@@ -163,7 +163,7 @@ initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
 {
   tpqDriver->initialize_grid(poly_basis);
   tpqDriver->
-    initialize_grid_parameters(pIteratedModel->multivariate_distribution());
+    initialize_grid_parameters(iteratedModel->multivariate_distribution());
 
   switch (quadMode) {
   case FULL_TENSOR:
@@ -228,11 +228,11 @@ compute_minimum_quadrature_order(size_t min_samples, const RealVector& dim_pref)
 }
 
 
-void NonDQuadrature::get_parameter_sets(Model& model)
+void NonDQuadrature::get_parameter_sets(std::shared_ptr<Model> model)
 {
   // capture any distribution parameter insertions
   if (subIteratorFlag)
-    tpqDriver->initialize_grid_parameters(model.multivariate_distribution());
+    tpqDriver->initialize_grid_parameters(model->multivariate_distribution());
 
   // Precompute quadrature rules (e.g., by defining maximal order for
   // NumGenOrthogPolynomial::solve_eigenproblem()):

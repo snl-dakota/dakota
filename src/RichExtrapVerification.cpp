@@ -19,7 +19,7 @@ static const char rcsId[]="@(#) $Id: RichExtrapVerification.cpp 6972 2010-09-17 
 namespace Dakota {
 
 RichExtrapVerification::
-RichExtrapVerification(ProblemDescDB& problem_db, Model& model):
+RichExtrapVerification(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   Verification(problem_db, model),
   studyType(probDescDB.get_ushort("method.sub_method")),
   refinementRate(probDescDB.get_real("method.verification.refinement_rate"))
@@ -65,7 +65,7 @@ void RichExtrapVerification::core_run()
   evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
   */
 
-  initialCVars = ModelUtils::continuous_variables(*pIteratedModel);
+  initialCVars = ModelUtils::continuous_variables(*iteratedModel);
   numFactors   = initialCVars.length();
   if (refinementRefPt.empty())
     refinementRefPt.sizeUninitialized(numFunctions);
@@ -104,16 +104,16 @@ extrapolation(const RealVector& refine_triple, RealMatrix& qoi_triples)
 
   ShortArray asrv(numFunctions, 1); // all fns can be evaluated in this case
   activeSet.request_vector(asrv);
-  ModelUtils::continuous_variables(*pIteratedModel, initialCVars);// reset prior to eval triple
+  ModelUtils::continuous_variables(*iteratedModel, initialCVars);// reset prior to eval triple
 
   for (size_t i=0; i<3; i++) {
-    ModelUtils::continuous_variable(*pIteratedModel, refine_triple[i], factorIndex);
+    ModelUtils::continuous_variable(*iteratedModel, refine_triple[i], factorIndex);
     //ModelUtils::discrete_int_variables(iteratedModel, di_vars);
     //ModelUtils::discrete_string_variables(iteratedModel, ds_vars);
     //ModelUtils::discrete_real_variables(iteratedModel, dr_vars);
-    pIteratedModel->evaluate_nowait(activeSet);
+    iteratedModel->evaluate_nowait(activeSet);
   }
-  const IntResponseMap& response_map = pIteratedModel->synchronize();
+  const IntResponseMap& response_map = iteratedModel->synchronize();
   IntRespMCIter   r_cit = response_map.begin();
   const Response& resp0 = r_cit->second;
   ++r_cit; const Response& resp1 = r_cit->second;
@@ -293,8 +293,8 @@ void RichExtrapVerification::post_run(std::ostream& s)
 void RichExtrapVerification::print_results(std::ostream& s, short results_state)
 {
   StringArray cv_labels;
-  copy_data(ModelUtils::continuous_variable_labels(*pIteratedModel), cv_labels);
-  const StringArray& fn_labels = ModelUtils::response_labels(*pIteratedModel);
+  copy_data(ModelUtils::continuous_variable_labels(*iteratedModel), cv_labels);
+  const StringArray& fn_labels = ModelUtils::response_labels(*iteratedModel);
 
   // Print resulting order and error estimates
   Cout << "\nRefinement Rate = " << refinementRate;

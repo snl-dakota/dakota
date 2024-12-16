@@ -97,9 +97,9 @@ public:
   //
 
   /// standard constructor
-  SNLLLeastSq(ProblemDescDB& problem_db, Model& model);
+  SNLLLeastSq(ProblemDescDB& problem_db, std::shared_ptr<Model>);
   /// alternate constructor for instantiations without ProblemDescDB support
-  SNLLLeastSq(const String& method_name, Model& model);
+  SNLLLeastSq(const String& method_name, std::shared_ptr<Model>);
   /// destructor
   ~SNLLLeastSq() override;
     

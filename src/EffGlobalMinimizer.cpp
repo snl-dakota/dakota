@@ -34,7 +34,7 @@ EffGlobalMinimizer* EffGlobalMinimizer::effGlobalInstance(NULL);
 
 
 EffGlobalMinimizer::
-EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
+EffGlobalMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   SurrBasedMinimizer(problem_db, model,
 		     std::shared_ptr<TraitsBase>(new EffGlobalTraits())),
   batchSize(probDescDB.get_int("method.batch_size")),
@@ -51,7 +51,7 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
   distanceTol = probDescDB.get_real("method.x_conv_tol");
   if (distanceTol < 0.) distanceTol = 1.e-8;
 
-  bestVariablesArray.push_back(pIteratedModel->current_variables().copy());
+  bestVariablesArray.push_back(iteratedModel->current_variables().copy());
   initialize_multipliers();
 
   // Always build a global Gaussian process model.  No correction is needed.
@@ -88,7 +88,7 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
     const String& advanced_options_file
       = problem_db.get_string("method.advanced_options_file");
     if (!advanced_options_file.empty())
-      set_model_gp_options(fHatModel, advanced_options_file);
+      set_model_gp_options(*fHatModel, advanced_options_file);
 #else
     Cerr << "\nError: efficient_global does not support global_exp_gauss_proc "
          << "when Dakota is built without DAKOTA_MODULE_SURROGATES enabled." << std::endl;
@@ -99,7 +99,7 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model):
 
 
 EffGlobalMinimizer::
-EffGlobalMinimizer(Model& model, const String& approx_type, int samples,
+EffGlobalMinimizer(std::shared_ptr<Model> model, const String& approx_type, int samples,
 		   int seed, bool use_derivs, size_t max_iter, size_t max_eval,
 		   Real conv_tol):
   SurrBasedMinimizer(model, max_iter, max_eval, conv_tol,
@@ -119,7 +119,7 @@ EffGlobalMinimizer(Model& model, const String& approx_type, int samples,
   //if (distanceTol < 0.)
     distanceTol = 1.e-8;
 
-  bestVariablesArray.push_back(pIteratedModel->current_variables().copy());
+  bestVariablesArray.push_back(iteratedModel->current_variables().copy());
 
   initialize_multipliers();
   initialize_sub_problem(approx_type, samples, seed, use_derivs, "none");
@@ -158,8 +158,8 @@ initialize_sub_problem(const String& approx_type, int samples, int seed,
 	   << "when derivatives present; use kriging instead." << std::endl;
       abort_handler(METHOD_ERROR);
     }
-    if (pIteratedModel->gradient_type() != "none") dataOrder |= 2;
-    if (pIteratedModel->hessian_type()  != "none") dataOrder |= 4;
+    if (iteratedModel->gradient_type() != "none") dataOrder |= 2;
+    if (iteratedModel->hessian_type()  != "none") dataOrder |= 4;
   }
 
   unsigned short sample_type = SUBMETHOD_DEFAULT;
@@ -167,7 +167,7 @@ initialize_sub_problem(const String& approx_type, int samples, int seed,
   bool vary_pattern = false;// for consistency across any outer loop invocations
 
   Iterator dace_iterator;
-  dace_iterator.assign_rep(std::make_shared<NonDLHSSampling>(*pIteratedModel,
+  dace_iterator.assign_rep(std::make_shared<NonDLHSSampling>(iteratedModel,
     sample_type, samples, seed, rng, vary_pattern, ACTIVE_UNIFORM));
   dace_iterator.active_set_request_values(dataOrder);
 
@@ -175,14 +175,14 @@ initialize_sub_problem(const String& approx_type, int samples, int seed,
   // function over the active/design vars (same view as iteratedModel:
   // not the typical All view for DACE).
   //const Variables& curr_vars = iteratedModel.current_variables();
-  ActiveSet gp_set = pIteratedModel->current_response().active_set(); // copy
+  ActiveSet gp_set = iteratedModel->current_response().active_set(); // copy
   gp_set.request_values(1); // no surr deriv evals, but GP may be grad-enhanced
-  const ShortShortPair& gp_view = pIteratedModel->current_variables().view();
-  fHatModel.assign_rep(std::make_shared<DataFitSurrModel>(dace_iterator,
-    *pIteratedModel, gp_set, gp_view, approx_type, approx_order, corr_type,
+  const ShortShortPair& gp_view = iteratedModel->current_variables().view();
+  fHatModel = std::make_shared<DataFitSurrModel>(dace_iterator,
+    iteratedModel, gp_set, gp_view, approx_type, approx_order, corr_type,
     corr_order, dataOrder, outputLevel, sample_reuse, import_build_points_file,
     import_build_format, import_build_active_only, export_approx_points_file,
-    export_approx_format));
+    export_approx_format);
 
   // Configure a RecastModel with one objective and no constraints using the
   // alternate minimalist constructor: the recast fn pointers are reset for
@@ -190,9 +190,9 @@ initialize_sub_problem(const String& approx_type, int samples, int seed,
   SizetArray recast_vars_comps_total; // default: empty; no change in size
   BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
   short recast_resp_order = 1; // nongradient-based optimizers
-  approxSubProbModel.assign_rep(std::make_shared<RecastModel>(fHatModel,
+  approxSubProbModel = std::make_shared<RecastModel>(fHatModel,
     recast_vars_comps_total, all_relax_di, all_relax_dr,
-    pIteratedModel->current_variables().view(), 1, 0, 0, recast_resp_order));
+    iteratedModel->current_variables().view(), 1, 0, 0, recast_resp_order);
 
   // must use alternate NoDB ctor chain
   size_t max_iter = 10000, max_eval = 50000;
@@ -226,9 +226,9 @@ void EffGlobalMinimizer::pre_run()
 {
   //Minimizer::pre_run(); // invoke any base class definition (none defined)
 
-  if (!approxSubProbModel.mapping_initialized()) {
+  if (!approxSubProbModel->mapping_initialized()) {
     ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-    /*bool var_size_changed =*/ approxSubProbModel.initialize_mapping(pl_iter);
+    /*bool var_size_changed =*/ approxSubProbModel->initialize_mapping(pl_iter);
     //if (var_size_changed) resize();
   }
 
@@ -273,8 +273,8 @@ void EffGlobalMinimizer::post_run(std::ostream& s)
 {
   retrieve_final_results();
 
-  if (approxSubProbModel.mapping_initialized())
-    approxSubProbModel.finalize_mapping();
+  if (approxSubProbModel->mapping_initialized())
+    approxSubProbModel->finalize_mapping();
 
   Minimizer::post_run(s);
 }
@@ -286,7 +286,7 @@ void EffGlobalMinimizer::check_parallelism()
   // batch sizes for serial execution and echo a warning
 
   if (batchSize > 1) {
-    if (pIteratedModel->asynch_flag())
+    if (iteratedModel->asynch_flag())
       parallelFlag = true; // turn parallelFlag on; batchAsynch from user spec
     else { // revert to serial EGO settings
       Cerr << "Warning: concurrent operations not supported by model. "
@@ -305,23 +305,23 @@ void EffGlobalMinimizer::build_gp()
   // now that variables/labels/bounds/targets have flowed down at run-time from
   // any higher level recursions, propagate them up the instantiate-on-the-fly
   // Model recursion so that they are correct when they propagate back down.
-  approxSubProbModel.update_from_subordinate_model(); // depth = max
+  approxSubProbModel->update_from_subordinate_model(); // depth = max
 
   // (We might want a more selective update from submodel, or make a new
   // specialization of RecastModel.)  Always want to minimize the negative
   // expected improvement as posed in the EIF, which consumes min/max sense
   // and weights, and recasts nonlinear constraints, so we don't let these
   // propagate to the approxSubproblemMinimizer.
-  approxSubProbModel.primary_response_fn_sense(BoolDeque());
-  approxSubProbModel.primary_response_fn_weights(RealVector(), false);//no recur
-  approxSubProbModel.user_defined_constraints().reshape_nonlinear(0, 0);
+  approxSubProbModel->primary_response_fn_sense(BoolDeque());
+  approxSubProbModel->primary_response_fn_weights(RealVector(), false);//no recur
+  approxSubProbModel->user_defined_constraints().reshape_nonlinear(0, 0);
 
   // Build initial GPs for all response functions
   if (batchAsynch)
-    fHatModel.track_evaluation_ids(true); // enable replacements by eval id
-  fHatModel.build_approximation();
+    fHatModel->track_evaluation_ids(true); // enable replacements by eval id
+  fHatModel->build_approximation();
   // initialize counter for GP refinements (used for vars{Acq,Expl}Map)
-  batchEvalId = pIteratedModel->evaluation_id() + 1;
+  batchEvalId = iteratedModel->evaluation_id() + 1;
 }
 
 
@@ -389,7 +389,7 @@ construct_batch_acquisition(size_t new_acq, size_t new_batch)
 
   // set objective ptr for asp_model_rep to EIF_objective_eval for all i
   std::shared_ptr<RecastModel> asp_model_rep
-    = std::static_pointer_cast<RecastModel>(approxSubProbModel.model_rep());
+    = std::static_pointer_cast<RecastModel>(approxSubProbModel);
   asp_model_rep->init_maps(vars_map, false, NULL, NULL, primary_resp_map,
     secondary_resp_map, nonlinear_resp_map, EIF_objective_eval, NULL);
 
@@ -448,7 +448,7 @@ construct_batch_exploration(size_t new_expl, size_t new_batch)
 
   // set objective ptr for asp_model_rep to Variances_objective_eval for all i
   std::shared_ptr<RecastModel> asp_model_rep
-    = std::static_pointer_cast<RecastModel>(approxSubProbModel.model_rep());
+    = std::static_pointer_cast<RecastModel>(approxSubProbModel);
   asp_model_rep->init_maps(vars_map, false, NULL, NULL, primary_resp_map,
     secondary_resp_map, nonlinear_resp_map, Variances_objective_eval, NULL);
 
@@ -498,9 +498,9 @@ void EffGlobalMinimizer::
 append_liar(const Variables& vars_star, int liar_id, bool rebuild)
 {
   // get approximate (liar) response value for optimal point (vars_star)
-  ModelUtils::active_variables(fHatModel, vars_star);
-  fHatModel.evaluate();
-  const Response& fhat_resp_star = fHatModel.current_response();
+  ModelUtils::active_variables(*fHatModel, vars_star);
+  fHatModel->evaluate();
+  const Response& fhat_resp_star = fHatModel->current_response();
 
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "                     " << std::setw(write_precision+7)
@@ -514,14 +514,14 @@ append_liar(const Variables& vars_star, int liar_id, bool rebuild)
     Cout << "\nParallel EGO: appending liar response for evaluation "
 	 << liar_id << ".\n";
   IntResponsePair liar_resp_pr(liar_id, fhat_resp_star);
-  fHatModel.append_approximation(vars_star, liar_resp_pr, rebuild);
-  //numDataPts = fHatModel.approximation_data(0).points(); // updated count
+  fHatModel->append_approximation(vars_star, liar_resp_pr, rebuild);
+  //numDataPts = fHatModel->approximation_data(0).points(); // updated count
 }
 
 
 void EffGlobalMinimizer::evaluate_batch(bool rebuild)
 {
-  fHatModel.component_parallel_mode(TRUTH_MODEL_MODE);
+  fHatModel->component_parallel_mode(TRUTH_MODEL_MODE);
   if (parallelFlag) {
 
     // remove all liar responses prior to appending truth
@@ -529,7 +529,7 @@ void EffGlobalMinimizer::evaluate_batch(bool rebuild)
 
     // launch all jobs defined in batch and block on their completion
     launch_batch();
-    const IntResponseMap& truth_resp_map = pIteratedModel->synchronize();
+    const IntResponseMap& truth_resp_map = iteratedModel->synchronize();
 
     // update the GP approximation with batch results
     // reuse varsAcquisitionMap for composite map to avoid extra copies, as
@@ -538,7 +538,7 @@ void EffGlobalMinimizer::evaluate_batch(bool rebuild)
     // (and call for each varsMap), but adds complexity with little gain.
     varsAcquisitionMap.insert(varsExplorationMap.begin(),
 			      varsExplorationMap.end());
-    fHatModel.append_approximation(varsAcquisitionMap, truth_resp_map, rebuild);
+    fHatModel->append_approximation(varsAcquisitionMap, truth_resp_map, rebuild);
 
     // update constraints (truth resp only, not for liar resp)
     if (numNonlinearConstraints)
@@ -553,9 +553,9 @@ void EffGlobalMinimizer::evaluate_batch(bool rebuild)
     launch_single(vars_star);
 
     // update the GP approximation
-    const Response& truth_resp = pIteratedModel->current_response();
-    IntResponsePair truth_resp_pr(pIteratedModel->evaluation_id(), truth_resp);
-    fHatModel.append_approximation(vars_star, truth_resp_pr, rebuild);
+    const Response& truth_resp = iteratedModel->current_response();
+    IntResponsePair truth_resp_pr(iteratedModel->evaluation_id(), truth_resp);
+    fHatModel->append_approximation(vars_star, truth_resp_pr, rebuild);
 
     // update constraints (truth resp only, not for liar resp)
     if (numNonlinearConstraints)
@@ -572,8 +572,8 @@ bool EffGlobalMinimizer::query_batch(bool rebuild)
   if (empty_queues()) return false;
 
   // nonblocking synchronize: evaluate truth responses in parallel
-  fHatModel.component_parallel_mode(TRUTH_MODEL_MODE);
-  const IntResponseMap& truth_resp_map = pIteratedModel->synchronize_nowait();
+  fHatModel->component_parallel_mode(TRUTH_MODEL_MODE);
+  const IntResponseMap& truth_resp_map = iteratedModel->synchronize_nowait();
   if (truth_resp_map.empty()) return false;
 
   process_truth_response_map(truth_resp_map, rebuild);
@@ -588,7 +588,7 @@ void EffGlobalMinimizer::backfill_batch(size_t new_acq, size_t new_expl)
 
   // queue nonblocking evals for composite batch (acquisition + exploration),
   // launching the trailing map id's in the sequence defined by batchEvalId
-  ActiveSet set = pIteratedModel->current_response().active_set();
+  ActiveSet set = iteratedModel->current_response().active_set();
   set.request_values(dataOrder);
   IntVarsMCIter a_cit = varsAcquisitionMap.begin(),
                 e_cit = varsExplorationMap.begin();
@@ -600,13 +600,13 @@ void EffGlobalMinimizer::backfill_batch(size_t new_acq, size_t new_expl)
     // properly sequence backfill evaluations across the two queues so that
     // the liar/truth sequences are synchronized, enabling id-based replacement
     if (a_id < e_id) {
-      ModelUtils::active_variables(*pIteratedModel, a_cit->second);
-      pIteratedModel->evaluate_nowait(set);
+      ModelUtils::active_variables(*iteratedModel, a_cit->second);
+      iteratedModel->evaluate_nowait(set);
       a_id = extract_id(++a_cit, varsAcquisitionMap);
     }
     else if (e_id < a_id) {
-      ModelUtils::active_variables(*pIteratedModel, e_cit->second);
-      pIteratedModel->evaluate_nowait(set);
+      ModelUtils::active_variables(*iteratedModel, e_cit->second);
+      iteratedModel->evaluate_nowait(set);
       e_id = extract_id(++e_cit, varsExplorationMap);
     }
     else {
@@ -621,18 +621,18 @@ void EffGlobalMinimizer::backfill_batch(size_t new_acq, size_t new_expl)
 void EffGlobalMinimizer::launch_batch()
 {
   // queue evaluations for composite batch (acquisition + exploration)
-  ActiveSet set = pIteratedModel->current_response().active_set();
+  ActiveSet set = iteratedModel->current_response().active_set();
   set.request_values(dataOrder);
   IntVarsMIter v_it;
   for (v_it =varsAcquisitionMap.begin();
        v_it!=varsAcquisitionMap.end(); ++v_it) {
-    ModelUtils::active_variables(*pIteratedModel, v_it->second);
-    pIteratedModel->evaluate_nowait(set);
+    ModelUtils::active_variables(*iteratedModel, v_it->second);
+    iteratedModel->evaluate_nowait(set);
   }
   for (v_it =varsExplorationMap.begin();
        v_it!=varsExplorationMap.end(); ++v_it) {
-    ModelUtils::active_variables(*pIteratedModel, v_it->second);
-    pIteratedModel->evaluate_nowait(set);
+    ModelUtils::active_variables(*iteratedModel, v_it->second);
+    iteratedModel->evaluate_nowait(set);
   }
 }
 
@@ -640,10 +640,10 @@ void EffGlobalMinimizer::launch_batch()
 void EffGlobalMinimizer::launch_single(const Variables& vars_star)
 {
   // serial evaluation
-  ModelUtils::active_variables(*pIteratedModel, vars_star);
-  ActiveSet set = pIteratedModel->current_response().active_set();
+  ModelUtils::active_variables(*iteratedModel, vars_star);
+  ActiveSet set = iteratedModel->current_response().active_set();
   set.request_values(dataOrder);
-  pIteratedModel->evaluate(set);
+  iteratedModel->evaluate(set);
 }
 
 
@@ -653,7 +653,7 @@ process_truth_response_map(const IntResponseMap& truth_resp_map, bool rebuild)
   if (truth_resp_map.empty()) return;
 
   // Process completions: replace liar resp w/ new truth resp based on eval ids
-  fHatModel.replace_approximation(truth_resp_map, rebuild);
+  fHatModel->replace_approximation(truth_resp_map, rebuild);
   // update constraints (truth resp only, not for liar resp)
   if (numNonlinearConstraints)
     update_constraints(truth_resp_map);
@@ -695,14 +695,14 @@ update_variable_maps(const IntResponseMap& truth_resp_map)
 
 
 /** Extract the best merit function from build data through evaluaton
-    of points on fHatModel.  This merit fn value is used within the
+    of points on fHatModel->  This merit fn value is used within the
     EIF during an approximate sub-problem solve. */
 void EffGlobalMinimizer::compute_best_sample()
 {
   // pull the samples and responses from data used to build latest GP
   // to determine meritFnStar for use in the expected improvement function
 
-  const Pecos::SurrogateData& gp_data_0 = fHatModel.approximation_data(0);
+  const Pecos::SurrogateData& gp_data_0 = fHatModel->approximation_data(0);
   const Pecos::SDVArray&    sdv_array_0 = gp_data_0.variables_data();
   size_t i, index_star = 0, num_data_pts = gp_data_0.points();
   Real merit_fn;  meritFnStar = DBL_MAX;
@@ -711,9 +711,9 @@ void EffGlobalMinimizer::compute_best_sample()
 
     const RealVector& cv = sdv_array_0[i].continuous_variables();
 
-    ModelUtils::continuous_variables(fHatModel, cv);
-    fHatModel.evaluate();
-    const RealVector& f_hat = fHatModel.current_response().function_values();
+    ModelUtils::continuous_variables(*fHatModel, cv);
+    fHatModel->evaluate();
+    const RealVector& f_hat = fHatModel->current_response().function_values();
     merit_fn = augmented_lagrangian(f_hat);
 
     if (merit_fn < meritFnStar)
@@ -732,7 +732,7 @@ void EffGlobalMinimizer::extract_best_sample()
   // pull the samples and responses from data used to build latest GP
   // to determine final cVarsStar and truthFnStar
 
-  const Pecos::SurrogateData& gp_data_0 = fHatModel.approximation_data(0);
+  const Pecos::SurrogateData& gp_data_0 = fHatModel->approximation_data(0);
   size_t i, index_star = 0, num_data_pts = gp_data_0.points();
   Real merit_fn, merit_fn_star = DBL_MAX;
   RealVector fn_sample(numFunctions);
@@ -767,7 +767,7 @@ extract_qoi_build_data(size_t data_index, RealVector& fn_vals)
   // loop over QoI approximations, extracting the QoI value for the passed index
   for (size_t i=0; i<numFunctions; ++i) {
     const Pecos::SDRArray& sdr_array
-      = fHatModel.approximation_data(i).response_data();
+      = fHatModel->approximation_data(i).response_data();
     fn_vals[i] = sdr_array[data_index].response_function();
   }
 }
@@ -880,7 +880,7 @@ void EffGlobalMinimizer::retrieve_final_results()
   extract_best_sample(); // pull optimal result from sample data
 
   // (conditionally) export final surrogates
-  export_final_surrogates(fHatModel);
+  export_final_surrogates(*fHatModel);
 
   debug_plots(); // only plotting final (moot with deprecated graphics)
 }
@@ -899,7 +899,7 @@ PIF_objective_eval(const Variables& sub_model_vars,
   // Means are passed in, but must retrieve variance from the GP
   const RealVector& means = sub_model_response.function_values();
   const RealVector& variances
-    = effGlobalInstance->fHatModel.approximation_variances(recast_vars);
+    = effGlobalInstance->fHatModel->approximation_variances(recast_vars);
   const ShortArray& recast_asv = recast_response.active_set_request_vector();
 
   if (recast_asv[0] & 1) { // return -EI since we are maximizing
@@ -922,7 +922,7 @@ EIF_objective_eval(const Variables& sub_model_vars,
   // Means are passed in, but must retrieve variance from the GP
   const RealVector& means = sub_model_response.function_values();
   const RealVector& variances
-    = effGlobalInstance->fHatModel.approximation_variances(recast_vars);
+    = effGlobalInstance->fHatModel->approximation_variances(recast_vars);
   const ShortArray& recast_asv = recast_response.active_set_request_vector();
 
   if (recast_asv[0] & 1) { // return -EI since we are maximizing
@@ -945,7 +945,7 @@ LCB_objective_eval(const Variables& sub_model_vars,
   // Means are passed in, but must retrieve variance from the GP
   const RealVector& means = sub_model_response.function_values();
   const RealVector& variances
-    = effGlobalInstance->fHatModel.approximation_variances(recast_vars);
+    = effGlobalInstance->fHatModel->approximation_variances(recast_vars);
   const ShortArray& recast_asv = recast_response.active_set_request_vector();
 
   if (recast_asv[0] & 1) { // return -LCB since we are maximizing
@@ -968,7 +968,7 @@ Variances_objective_eval(const Variables& sub_model_vars,
   // Means are passed in, but must retrieve variance from the GP
   // const RealVector& means = sub_model_response.function_values();
   const RealVector& variances
-    = effGlobalInstance->fHatModel.approximation_variances(recast_vars);
+    = effGlobalInstance->fHatModel->approximation_variances(recast_vars);
   const ShortArray& recast_asv = recast_response.active_set_request_vector();
 
   if (recast_asv[0] & 1) { // return -EI since we are maximizing
@@ -985,8 +985,8 @@ compute_probability_improvement(const RealVector& means,
 {
   // Objective calculation will incorporate any sense changes or
   // weights, such that this is an objective to minimize.
-  Real mean = objective(means, pIteratedModel->primary_response_fn_sense(),
-			pIteratedModel->primary_response_fn_weights()), stdv;
+  Real mean = objective(means, iteratedModel->primary_response_fn_sense(),
+			iteratedModel->primary_response_fn_weights()), stdv;
   if ( numNonlinearConstraints ) {
     // mean_M = mean_f + lambda*EV + r_p*EV*EV
     // stdv_M = stdv_f
@@ -1019,8 +1019,8 @@ compute_expected_improvement(const RealVector& means,
 {
   // Objective calculation will incorporate any sense changes or
   // weights, such that this is an objective to minimize.
-  Real mean = objective(means, pIteratedModel->primary_response_fn_sense(),
-			pIteratedModel->primary_response_fn_weights()), stdv;
+  Real mean = objective(means, iteratedModel->primary_response_fn_sense(),
+			iteratedModel->primary_response_fn_weights()), stdv;
   if ( numNonlinearConstraints ) {
     // mean_M = mean_f + lambda*EV + r_p*EV*EV
     // stdv_M = stdv_f
@@ -1059,8 +1059,8 @@ compute_lower_confidence_bound(const RealVector& means,
 {
   // Objective calculation will incorporate any sense changes or
   // weights, such that this is an objective to minimize.
-  Real mean = objective(means, pIteratedModel->primary_response_fn_sense(),
-			pIteratedModel->primary_response_fn_weights()), stdv;
+  Real mean = objective(means, iteratedModel->primary_response_fn_sense(),
+			iteratedModel->primary_response_fn_weights()), stdv;
   if ( numNonlinearConstraints ) {
     // mean_M = mean_f + lambda*EV + r_p*EV*EV
     // stdv_M = stdv_f
@@ -1186,7 +1186,7 @@ void EffGlobalMinimizer::debug_plots()
     samples_file = "ego_samples" + tag;
     std::ofstream s_out(samples_file.c_str(),std::ios::out);
     s_out << std::scientific;
-    const Pecos::SurrogateData& gp_data = fHatModel.approximation_data(i);
+    const Pecos::SurrogateData& gp_data = fHatModel->approximation_data(i);
     const Pecos::SDVArray& sdv_array = gp_data.variables_data();
     const Pecos::SDRArray& sdr_array = gp_data.response_data();
     size_t j, k, num_data_pts = gp_data.size(), num_vars = ModelUtils::cv(fHatModel);
@@ -1221,14 +1221,14 @@ void EffGlobalMinimizer::debug_plots()
 	  test_pt[1] = lbnd[1] + float(k) * interval1;
 
 	  ModelUtils::continuous_variables(fHatModel, test_pt);
-	  fHatModel.evaluate();
-	  const Response& gp_resp = fHatModel.current_response();
+	  fHatModel->evaluate();
+	  const Response& gp_resp = fHatModel->current_response();
 	  const RealVector& gp_fn = gp_resp.function_values();
 	  gp_out << '\n' << std::setw(13) << test_pt[0] << ' ' << std::setw(13)
 		 << test_pt[1] << ' ' << std::setw(13) << gp_fn[i];
 
 	  RealVector variances
-	    = fHatModel.approximation_variances(fHatModel.current_variables());
+	    = fHatModel->approximation_variances(fHatModel->current_variables());
 	  var_out << '\n' << std::setw(13) << test_pt[0] << ' ' << std::setw(13)
 		  << test_pt[1] << ' ' << std::setw(13) << variances[i];
 
@@ -1267,14 +1267,14 @@ void EffGlobalMinimizer::declare_sources()
 
 void EffGlobalMinimizer::derived_init_communicators(ParLevLIter pl_iter)
 {
-  //approxSubProbModel.init_communicators(pl_iter, maxEvalConcurrency);
+  //approxSubProbModel->init_communicators(pl_iter, maxEvalConcurrency);
     SurrBasedMinimizer::derived_init_communicators(pl_iter);
 }
 
 
 void EffGlobalMinimizer::derived_set_communicators(ParLevLIter pl_iter)
 {
-  //approxSubProbModel.set_communicators(pl_iter, maxEvalConcurrency);
+  //approxSubProbModel->set_communicators(pl_iter, maxEvalConcurrency);
     SurrBasedMinimizer::derived_set_communicators(pl_iter);
 }
 
@@ -1282,7 +1282,7 @@ void EffGlobalMinimizer::derived_set_communicators(ParLevLIter pl_iter)
 void EffGlobalMinimizer::derived_free_communicators(ParLevLIter pl_iter)
 {
     SurrBasedMinimizer::derived_free_communicators(pl_iter);
-  //approxSubProbModel.free_communicators(pl_iter, maxEvalConcurrency);
+  //approxSubProbModel->free_communicators(pl_iter, maxEvalConcurrency);
 }
 */
 

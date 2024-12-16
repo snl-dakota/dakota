@@ -28,11 +28,11 @@ namespace Dakota {
 
 // Main Class: OptDartsOptimizer
 
-OptDartsOptimizer::OptDartsOptimizer(ProblemDescDB& problem_db, Model& model):
+OptDartsOptimizer::OptDartsOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new OptDartsTraits()))
 {     
      // load_parameters
-     this->load_parameters(model);
+     this->load_parameters(*model);
 
      // Set Rnd Seed
      randomSeed = probDescDB.get_int("method.random_seed");
@@ -47,11 +47,11 @@ OptDartsOptimizer::OptDartsOptimizer(ProblemDescDB& problem_db, Model& model):
        use_DIRECT = true;
 }
 
-OptDartsOptimizer::OptDartsOptimizer(Model& model): 
+OptDartsOptimizer::OptDartsOptimizer(std::shared_ptr<Model> model): 
   Optimizer(GENIE_OPT_DARTS, model, std::shared_ptr<TraitsBase>(new OptDartsTraits()))
 {
      // load_parameters
-     this->load_parameters(model);
+     this->load_parameters(*model);
 }
 
 
@@ -67,8 +67,8 @@ void OptDartsOptimizer::core_run()
     double* xmin = new double[num_dim];
     double* xmax = new double[num_dim];
     
-    const RealVector&  lower_bounds = ModelUtils::continuous_lower_bounds(*pIteratedModel);
-    const RealVector&  upper_bounds = ModelUtils::continuous_upper_bounds(*pIteratedModel);
+    const RealVector&  lower_bounds = ModelUtils::continuous_lower_bounds(*iteratedModel);
+    const RealVector&  upper_bounds = ModelUtils::continuous_upper_bounds(*iteratedModel);
     
     // default domain is for the Herbie Function
     for (size_t idim = 0; idim < num_dim; idim++)
@@ -141,9 +141,9 @@ void OptDartsOptimizer::load_parameters(Model &model)
      const RealVector& lower_bound_real = ModelUtils::discrete_real_lower_bounds(model);
      const RealVector& upper_bound_real = ModelUtils::discrete_real_upper_bounds(model);
 
-     const BitArray& int_set_bits = ModelUtils::discrete_int_sets(*pIteratedModel);
-     const IntSetArray& initial_point_set_int = ModelUtils::discrete_set_int_values(*pIteratedModel);
-     const RealSetArray& initial_point_set_real = ModelUtils::discrete_set_real_values(*pIteratedModel);
+     const BitArray& int_set_bits = ModelUtils::discrete_int_sets(*iteratedModel);
+     const IntSetArray& initial_point_set_int = ModelUtils::discrete_set_int_values(*iteratedModel);
+     const RealSetArray& initial_point_set_real = ModelUtils::discrete_set_real_values(*iteratedModel);
 
      // Define Output Types
      // responses.
@@ -152,11 +152,11 @@ void OptDartsOptimizer::load_parameters(Model &model)
      //		nonlinear_equality_constraints
 
      const RealVector& nln_ineq_lwr_bnds
-       = ModelUtils::nonlinear_ineq_constraint_lower_bounds(*pIteratedModel);
+       = ModelUtils::nonlinear_ineq_constraint_lower_bounds(*iteratedModel);
      const RealVector& nln_ineq_upr_bnds
-       = ModelUtils::nonlinear_ineq_constraint_upper_bounds(*pIteratedModel);
+       = ModelUtils::nonlinear_ineq_constraint_upper_bounds(*iteratedModel);
      const RealVector& nln_eq_targets
-       = ModelUtils::nonlinear_eq_constraint_targets(*pIteratedModel);
+       = ModelUtils::nonlinear_eq_constraint_targets(*iteratedModel);
 
 }
     
@@ -166,14 +166,14 @@ void OptDartsOptimizer::load_parameters(Model &model)
         RealVector newX(_num_dim);
         for (size_t idim = 0; idim < _num_dim; idim++) newX[idim] = _dart[idim];
         
-        ModelUtils::continuous_variables(*pIteratedModel, newX);
-        pIteratedModel->evaluate();
+        ModelUtils::continuous_variables(*iteratedModel, newX);
+        iteratedModel->evaluate();
         
         
         double fval = 0.0;
         for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++)
         {
-            double f = pIteratedModel->current_response().function_value(resp_fn_count);
+            double f = iteratedModel->current_response().function_value(resp_fn_count);
             fval += f;
         }
         
@@ -704,7 +704,7 @@ void OptDartsOptimizer::load_parameters(Model &model)
         
         for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++)
         {
-            _f[_num_samples][resp_fn_count] = pIteratedModel->current_response().function_value(resp_fn_count);
+            _f[_num_samples][resp_fn_count] = iteratedModel->current_response().function_value(resp_fn_count);
         }
 
         _num_samples++;

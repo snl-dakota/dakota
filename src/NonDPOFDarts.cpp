@@ -44,7 +44,7 @@ static const char rcsId[] = "@(#) $Id: NonDPOFDart.cpp 6080 2009-09-08 19:03:20Z
 
 namespace Dakota {
 
-NonDPOFDarts::NonDPOFDarts(ProblemDescDB& problem_db, Model& model):
+NonDPOFDarts::NonDPOFDarts(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonD(problem_db, model), seed(probDescDB.get_int("method.random_seed")),
   emulatorSamples(probDescDB.get_int("method.nond.samples_on_emulator")),
   lipschitzType(probDescDB.get_string("method.lipschitz")),
@@ -74,7 +74,7 @@ NonDPOFDarts::NonDPOFDarts(ProblemDescDB& problem_db, Model& model):
         emulatorSamples = 1E6;         // number of samples to evaluate surrogate
 
 
-    if (pIteratedModel->model_type() != "surrogate") {
+    if (iteratedModel->model_type() != "surrogate") {
       Cerr << "Error: NonDPOFDarts::iteratedModel must be a "
 	   << "surrogate model." << std::endl;
       abort_handler(-1);
@@ -275,8 +275,8 @@ void NonDPOFDarts::core_run()
         _xmin = new double[_n_dim];
         _xmax = new double[_n_dim];
         
-        const RealVector&  lower_bounds = ModelUtils::continuous_lower_bounds(*pIteratedModel);
-        const RealVector&  upper_bounds = ModelUtils::continuous_upper_bounds(*pIteratedModel);
+        const RealVector&  lower_bounds = ModelUtils::continuous_lower_bounds(*iteratedModel);
+        const RealVector&  upper_bounds = ModelUtils::continuous_upper_bounds(*iteratedModel);
         
         for (size_t idim = 0; idim < _n_dim; idim++)
         {
@@ -705,19 +705,19 @@ void NonDPOFDarts::core_run()
         RealVector newX(_n_dim);
         for (size_t idim = 0; idim < _n_dim; idim++) newX[idim] = x[idim];
         
-        ModelUtils::continuous_variables(*pIteratedModel, newX);
+        ModelUtils::continuous_variables(*iteratedModel, newX);
 	// bypass the surrogate model to evaluate the underlying truth model
-	pIteratedModel->surrogate_response_mode(BYPASS_SURROGATE);
-        pIteratedModel->evaluate();
+	iteratedModel->surrogate_response_mode(BYPASS_SURROGATE);
+        iteratedModel->evaluate();
 
 	// TODO: later, generalize DataFitSurrModel to automatically
 	// cache the points when in bypass mode
-        add_surrogate_data(pIteratedModel->current_variables(),
-			   pIteratedModel->current_response());
+        add_surrogate_data(iteratedModel->current_variables(),
+			   iteratedModel->current_response());
         
         for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++)
         {
-            double fval = pIteratedModel->current_response().function_value(resp_fn_count);
+            double fval = iteratedModel->current_response().function_value(resp_fn_count);
             _fval[resp_fn_count][_num_inserted_points] = fval;
         }
     }
@@ -1135,27 +1135,27 @@ void NonDPOFDarts::core_run()
       // bypass mode
       IntResponsePair tmp_pair((int)0, resp);
       bool rebuild_flag = false;
-      pIteratedModel->append_approximation(vars, tmp_pair, rebuild_flag);
+      iteratedModel->append_approximation(vars, tmp_pair, rebuild_flag);
     }
     
     void NonDPOFDarts::build_surrogate()
     {
       // TODO: do we just send all points here? or append one at a time?
-      pIteratedModel->build_approximation();
+      iteratedModel->build_approximation();
       // change surrogate to evaluate the surrogate model
-      pIteratedModel->surrogate_response_mode(AUTO_CORRECTED_SURROGATE); 
+      iteratedModel->surrogate_response_mode(AUTO_CORRECTED_SURROGATE); 
     }
     
     Real NonDPOFDarts::eval_surrogate(size_t function_index, double* x)
     {
       // this copy could be moved outside the loop for memory efficiency
       for (size_t vi = 0; vi < numContinuousVars; ++vi)
-	ModelUtils::continuous_variable(*pIteratedModel, x[vi], vi);
+	ModelUtils::continuous_variable(*iteratedModel, x[vi], vi);
       // TODO: use active_set_vector for efficiency if you truly only
       // need 1 response function?
-      pIteratedModel->evaluate();
+      iteratedModel->evaluate();
       const RealVector& fn_vals = 
-	pIteratedModel->current_response().function_values();
+	iteratedModel->current_response().function_values();
       return fn_vals[function_index];
     }
    

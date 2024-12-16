@@ -61,9 +61,9 @@ public:
   //
 
   /// standard constructor
-  EffGlobalMinimizer(ProblemDescDB& problem_db, Model& model);
+  EffGlobalMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor for instantiations "on the fly"
-  EffGlobalMinimizer(Model& model, const String& approx_type, int samples,
+  EffGlobalMinimizer(std::shared_ptr<Model> model, const String& approx_type, int samples,
 		     int seed, bool use_derivs, size_t max_iter,
 		     size_t max_eval, Real conv_tol);
   /// destructor
@@ -81,7 +81,7 @@ public:
   void core_run() override;
   void post_run(std::ostream& s) override;
 
-  const Model& algorithm_space_model() const override;
+  std::shared_ptr<Model> algorithm_space_model() override;
 
   //void declare_sources();
 
@@ -259,12 +259,12 @@ private:
   //String setUpType;
 
   /// GP model of response, one approximation per response function
-  Model fHatModel;
+  std::shared_ptr<Model> fHatModel;
 
   /// recast model which assimilates either (a) mean and variance to solve
   /// the max(EIF) sub-problem (used by EIF_objective_eval()) or (b) variance
   /// alone for pure exploration (used by Variances_objective_eval())
-  Model approxSubProbModel;
+  std::shared_ptr<Model> approxSubProbModel;
   /* Note: don't need a separate model for EIF vs. exploration since the
      underlying simulation model is the one that evaluates the truth data
      and the recastings are only used for the approximate sub-problem solve.
@@ -329,7 +329,7 @@ inline EffGlobalMinimizer::~EffGlobalMinimizer()
 { }
 
 
-inline const Model& EffGlobalMinimizer::algorithm_space_model() const
+inline std::shared_ptr<Model> EffGlobalMinimizer::algorithm_space_model()
 { return fHatModel; }
 
 
@@ -358,8 +358,8 @@ inline void EffGlobalMinimizer::initialize_counters_limits()
 inline Real EffGlobalMinimizer::augmented_lagrangian(const RealVector& mean)
 {
   return augmented_lagrangian_merit(mean,
-    pIteratedModel->primary_response_fn_sense(),
-    pIteratedModel->primary_response_fn_weights(), origNonlinIneqLowerBnds,
+    iteratedModel->primary_response_fn_sense(),
+    iteratedModel->primary_response_fn_weights(), origNonlinIneqLowerBnds,
     origNonlinIneqUpperBnds, origNonlinEqTargets);
 }
 
@@ -411,9 +411,9 @@ inline void EffGlobalMinimizer::pop_liar_responses()
   for (size_t i=0; i<batchSize; i++) {
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "\nParallel EGO: deleting liar response...\n";
-    fHatModel.pop_approximation(false); // defer rebuild until truth append
+    fHatModel->pop_approximation(false); // defer rebuild until truth append
   }
-  //numDataPts = fHatModel.approximation_data(0).points();
+  //numDataPts = fHatModel->approximation_data(0).points();
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nParallel EGO: all liar responses deleted.\n";
 }
@@ -425,8 +425,8 @@ inline void EffGlobalMinimizer::pop_liar_response(int liar_id)
 {
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nParallel EGO: deleting liar response...\n";
-  //fHatModel.pop_approximation(liar_id, false); // *** TO DO ***
-  //numDataPts = fHatModel.approximation_data(0).points();
+  //fHatModel->pop_approximation(liar_id, false); // *** TO DO ***
+  //numDataPts = fHatModel->approximation_data(0).points();
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "\nParallel EGO: liar response deleted.\n";
 }
@@ -435,10 +435,10 @@ inline void EffGlobalMinimizer::pop_liar_response(int liar_id)
 
 inline void EffGlobalMinimizer::debug_print_values(const Variables& vars)
 {
-  ModelUtils::active_variables(fHatModel, vars);
-  fHatModel.evaluate();
-  const RealVector& mean = fHatModel.current_response().function_values();
-  RealVector variance = fHatModel.approximation_variances(vars),
+  ModelUtils::active_variables(*fHatModel, vars);
+  fHatModel->evaluate();
+  const RealVector& mean = fHatModel->current_response().function_values();
+  RealVector variance = fHatModel->approximation_variances(vars),
     ev = expected_violation(mean, variance), stdv(numFunctions);
   for (size_t i=0; i<numFunctions; i++)
     stdv[i] = std::sqrt(variance[i]);

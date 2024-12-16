@@ -39,7 +39,7 @@ public:
   //
 
   /// standard constructor
-  DataTransformModel(const Model& sub_model, ExperimentData& exp_data,
+  DataTransformModel(std::shared_ptr<Model> sub_model, ExperimentData& exp_data,
 		     const ShortShortPair& recast_vars_view,
 		     size_t num_hyper = 0,
                      unsigned short mult_mode = CALIBRATE_NONE, 

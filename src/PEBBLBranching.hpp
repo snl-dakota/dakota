@@ -21,7 +21,7 @@ class PebbldBranching : virtual public pebbl::branching
 
 protected:
   /// Original model, before branching
-  Model parentModel;
+  std::shared_ptr<Model> parentModel;
   /// Solver to be used at root node
   Iterator nlpSolver;
   /// Initial variable values for root node
@@ -39,7 +39,7 @@ public:
 
   /// Method that returns an empty Sub-Branch
   pebbl::branchSub* blankSub() override;
-  void setModel(Model& model) {parentModel = model;};
+  void setModel(std::shared_ptr<Model> model) {parentModel = model;};
   void setIterator(Iterator& iterator) {nlpSolver = iterator;};
 };
 
@@ -52,8 +52,8 @@ protected:
   /// Pointer referring to all info passed to subproblem
   PebbldBranching* globalPtr;
   /// Model used for sub-problem
-  Model subModel;
-  Model* pSubModel;
+  std::shared_ptr<Model> subModel;
+
   /// Solver used for sub-problems
   Iterator subNLPSolver;
   /// Candidate solution after solving sub-problem (also the bound)

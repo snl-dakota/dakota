@@ -49,7 +49,7 @@ public:
   /// standard constructor
   SeqHybridMetaIterator(ProblemDescDB& problem_db);
   /// alternate constructor
-  SeqHybridMetaIterator(ProblemDescDB& problem_db, Model& model);
+  SeqHybridMetaIterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
   ~SeqHybridMetaIterator() override;
 
@@ -124,7 +124,7 @@ private:
   /// the set of iterators, one for each entry in methodStrings
   IteratorArray selectedIterators;
   /// the set of models, one for each iterator (if not lightweight construction)
-  ModelArray selectedModels;
+  std::vector<std::shared_ptr<Model>> selectedModels;
 
   /// hybrid sequence counter: 0 to numIterators-1
   size_t seqCount;
@@ -146,7 +146,7 @@ inline IntIntPair SeqHybridMetaIterator::estimate_partition_bounds()
   int min_procs = INT_MAX, max_procs = 0;      IntIntPair min_max;
   size_t i, num_meth = selectedIterators.size(); String empty_str;
   for (i=0; i<num_meth; ++i)  {
-    Model& model = (singlePassedModel) ? *pIteratedModel : selectedModels[i];
+    auto model = (singlePassedModel) ? iteratedModel : selectedModels[i];
     if (lightwtMethodCtor)
       iterSched.construct_sub_iterator(probDescDB, selectedIterators[i], model,
 				       empty_str, methodStrings[i], // ptr, name
@@ -232,7 +232,7 @@ initialize_iterator(const VariablesArray& param_sets)
   // > all of parameterSets (numIteratorJobs == 1)
   size_t num_param_sets = param_sets.size();
   if (num_param_sets == 1)
-    selectedModels[seqCount].current_variables().active_variables(param_sets[0]);
+    selectedModels[seqCount]->current_variables().active_variables(param_sets[0]);
   else if (selectedIterators[seqCount].accepts_multiple_points())
     selectedIterators[seqCount].initial_points(param_sets);
   else {

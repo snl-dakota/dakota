@@ -85,12 +85,12 @@ public:
   //
 
   /// standard constructor
-  COLINOptimizer(ProblemDescDB& problem_db, Model& model);
+  COLINOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor for on-the-fly instantiations
-  COLINOptimizer(const String& method_name, Model& model, int seed,
+  COLINOptimizer(const String& method_name, std::shared_ptr<Model> model, int seed,
 		 size_t max_iter, size_t max_eval);
   /// alternate constructor for Iterator instantiations by name
-  COLINOptimizer(const String& method_name, Model& model);
+  COLINOptimizer(const String& method_name, std::shared_ptr<Model> model);
   /// destructor
   ~COLINOptimizer() override {
     if (rng) delete rng;

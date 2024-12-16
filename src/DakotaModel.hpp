@@ -60,14 +60,6 @@ extern ProblemDescDB   dummy_db;        // defined in dakota_global_defs.cpp
 
 class Model
 {
-  //
-  //- Heading: Friends
-  //
-
-  /// equality operator (detect same letter instance)
-  friend bool operator==(const Model& m1, const Model& m2);
-  /// inequality operator (detect different letter instances)
-  friend bool operator!=(const Model& m1, const Model& m2);
 
 public:
 
@@ -77,20 +69,19 @@ public:
 
   /// default constructor
   Model();
-  /// standard constructor for envelope
+  /// standard constructor
   Model(ProblemDescDB& problem_db);
   /// copy constructor
-  Model(const Model& model);
-
-  /// destructor
-  virtual ~Model();
+  Model(const Model& model) = delete;
 
   /// assignment operator
-  Model operator=(const Model& model);
+  Model& operator=(const Model& model) = delete;
 
   //
   //- Heading: Virtual functions
   //
+
+  virtual ~Model() = default;
 
   // *** BASE MODEL (BROADLY USED, OPERATES ON BASE DATA, SUPPORTS RECURSION)
 
@@ -99,7 +90,7 @@ public:
   /// return a single sub-model defined from subModel in nested and recast
   /// models and truth_model() in surrogate models; used for a directed
   /// dive through model recursions that may bypass some components.
-  virtual Model& subordinate_model();
+  virtual std::shared_ptr<Model> subordinate_model();
 
   /// portion of subordinate_models() specific to derived model classes
   virtual void derived_subordinate_models(ModelList& ml, bool recurse_flag);
@@ -293,13 +284,13 @@ public:
   virtual size_t qoi() const;
 
   /// return the i-th approximation sub-model in surrogate models
-  virtual Model& surrogate_model(size_t i = _NPOS);
+  virtual std::shared_ptr<Model> surrogate_model(size_t i = _NPOS);
   /// return the i-th approximation sub-model in surrogate models
-  virtual const Model& surrogate_model(size_t i = _NPOS) const;
+  virtual std::shared_ptr<const Model> surrogate_model(size_t i = _NPOS) const;
   /// return the truth sub-model in surrogate models
-  virtual Model& truth_model();
+  virtual std::shared_ptr<Model> truth_model();
   /// return the truth sub-model in surrogate models
-  virtual const Model& truth_model() const;
+  virtual std::shared_ptr<const Model> truth_model() const;
 
   /// return the model form of the i-th active surrogate model
   virtual unsigned short active_surrogate_model_form(size_t i) const;
@@ -307,13 +298,13 @@ public:
   virtual unsigned short active_truth_model_form() const;
 
   /// return the i-th active approximation sub-model in surrogate models
-  virtual Model& active_surrogate_model(size_t i = _NPOS);
+  virtual std::shared_ptr<Model> active_surrogate_model(size_t i = _NPOS);
   /// return the i-th active approximation sub-model in surrogate models
-  virtual const Model& active_surrogate_model(size_t i = _NPOS) const;
+  virtual std::shared_ptr<const Model> active_surrogate_model(size_t i = _NPOS) const;
   /// return the active truth sub-model in surrogate models
-  virtual Model& active_truth_model();
+  virtual std::shared_ptr<Model> active_truth_model();
   /// return the active truth sub-model in surrogate models
-  virtual const Model& active_truth_model() const;
+  virtual std::shared_ptr<const Model> active_truth_model() const;
 
   /// set the active model key within surrogate data, grid driver,
   /// and approximation classes that support the management of multiple
@@ -806,14 +797,6 @@ public:
   /// the model as opposed to graphics posting at the strategy level).
   bool auto_graphics() const;
 
-  /// replaces existing letter with a new one
-  void assign_rep(std::shared_ptr<Model> model_rep);
-  /// returns modelRep for access to derived class member functions
-  /// that are not mapped to the top Model level
-  std::shared_ptr<Model> model_rep() const;
-  /// function to check modelRep (does this envelope contain a letter)
-  bool is_null() const;
-
   /// set the specified configuration to the Model's inactive vars, converting
   /// from real to integer or through index to string value as needed
   static void active_variables(const RealVector& config_vars, Model& model);
@@ -852,19 +835,18 @@ protected:
   /// constructor initializing the base class part of letter classes
   /// (BaseConstructor overloading avoids infinite recursion in the
   /// derived class constructors - Coplien, p. 139)
-  Model(BaseConstructor, ProblemDescDB& problem_db);
+  // Model(ProblemDescDB& problem_db);
 
   /// constructor initializing base class for derived model class instances
   /// constructed on the fly
-  Model(LightWtBaseConstructor, const ShortShortPair& vars_view,
+  Model(const ShortShortPair& vars_view,
 	const SharedVariablesData& svd, bool share_svd,
 	const SharedResponseData& srd, bool share_srd, const ActiveSet& set,
 	short output_level, ProblemDescDB& problem_db = dummy_db,
 	ParallelLibrary& parallel_lib = dummy_lib);
 
   /// constructor initializing base class for recast model instances
-  Model(LightWtBaseConstructor, ProblemDescDB& problem_db = dummy_db,
-	ParallelLibrary& parallel_lib = dummy_lib);
+  Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
 
   //
   //- Heading: Virtual functions
@@ -1166,9 +1148,6 @@ private:
 
   // *** BASE MODEL (BROADLY USED, OPERATES ON BASE DATA)
 
-  /// Used by the envelope to instantiate the correct letter class
-  std::shared_ptr<Model> get_model(ProblemDescDB& problem_db);
-
   /// evaluate numerical gradients using finite differences.  This
   /// routine is selected with "method_source dakota" (the default
   /// method_source) in the numerical gradient specification.
@@ -1311,190 +1290,186 @@ private:
 
 
 inline int Model::evaluation_id() const
-{ return (modelRep) ? modelRep->modelEvalCntr : modelEvalCntr; }
+{ return modelEvalCntr; }
 
 
 inline bool Model::recastings() const
-{ return (modelRep) ? !modelRep->recastFlags.empty() : !recastFlags.empty(); }
+{ return !recastFlags.empty(); }
 
 
 inline Pecos::MultivariateDistribution& Model::multivariate_distribution()
-{ return (modelRep) ? modelRep->mvDist : mvDist; }
+{ return mvDist; }
 
 
 inline const Pecos::MultivariateDistribution& Model::
 multivariate_distribution() const
-{ return (modelRep) ? modelRep->mvDist : mvDist; }
+{ return mvDist; }
 
 
 inline const Variables& Model::current_variables() const
-{ return (modelRep) ? modelRep->currentVariables : currentVariables; }
+{ return currentVariables; }
 
 
 inline Variables& Model::current_variables()
-{ return (modelRep) ? modelRep->currentVariables : currentVariables; }
+{ return currentVariables; }
 
 
 inline const Constraints& Model::user_defined_constraints() const
 {
-  return (modelRep) ? modelRep->userDefinedConstraints
-                    : userDefinedConstraints;
+  return userDefinedConstraints;
 }
 
 
 inline Constraints& Model::user_defined_constraints()
 {
-  return (modelRep) ? modelRep->userDefinedConstraints
-                    : userDefinedConstraints;
+  return userDefinedConstraints;
 }
 
 
 inline const Response& Model::current_response() const
-{ return (modelRep) ? modelRep->currentResponse : currentResponse; }
+{ return currentResponse; }
 
 
 inline Response& Model::current_response()
-{ return (modelRep) ? modelRep->currentResponse : currentResponse; }
+{ return currentResponse; }
 
 
 inline ProblemDescDB& Model::problem_description_db() const
-{ return (modelRep) ? modelRep->probDescDB : probDescDB; }
+{ return probDescDB; }
 
 
 inline ParallelLibrary& Model::parallel_library() const
-{ return (modelRep) ? modelRep->parallelLib : parallelLib; }
+{ return parallelLib; }
 
 
 inline const String& Model::model_type() const
-{ return (modelRep) ? modelRep->modelType : modelType; }
+{ return modelType; }
 
 
 inline const String& Model::surrogate_type() const
-{ return (modelRep) ? modelRep->surrogateType : surrogateType; }
+{ return surrogateType; }
 
 
 inline const String& Model::model_id() const
-{ return (modelRep) ? modelRep->modelId : modelId; }
+{ return modelId; }
 
 
 inline size_t Model::num_secondary_fns() const
 {
-  return (modelRep) ? modelRep->num_secondary_fns() :
-    ModelUtils::num_nonlinear_ineq_constraints(*this) + ModelUtils::num_nonlinear_eq_constraints(*this);
+  return
+    ModelUtils::num_nonlinear_ineq_constraints(*this) + 
+    ModelUtils::num_nonlinear_eq_constraints(*this);
 }
 
 
 inline size_t Model::num_primary_fns() const
 {
-  return (modelRep) ? modelRep->num_primary_fns() :
+  return
     current_response().num_functions() - num_secondary_fns();
 }
 
 
 inline const String& Model::gradient_type() const
-{ return (modelRep) ? modelRep->gradientType : gradientType; }
+{ return gradientType; }
 
 
 inline const String& Model::method_source() const
-{ return (modelRep) ? modelRep->methodSource : methodSource; }
+{ return methodSource; }
 
 
 inline const String& Model::interval_type() const
-{ return (modelRep) ? modelRep->intervalType : intervalType; }
+{ return intervalType; }
 
 
 inline bool Model::ignore_bounds() const
-{ return (modelRep) ? modelRep->ignoreBounds : ignoreBounds; }
+{ return ignoreBounds; }
 
 
 inline bool Model::central_hess() const
-{ return (modelRep) ? modelRep->centralHess : centralHess; }
+{ return centralHess; }
 
 
 inline const RealVector& Model::fd_gradient_step_size() const
-{ return (modelRep) ? modelRep->fdGradStepSize : fdGradStepSize; }
+{ return fdGradStepSize; }
 
 
 inline const String& Model::fd_gradient_step_type() const
-{ return (modelRep) ? modelRep->fdGradStepType : fdGradStepType; }
+{ return fdGradStepType; }
 
 
 inline const IntSet& Model::gradient_id_analytic() const
-{ return (modelRep) ? modelRep->gradIdAnalytic : gradIdAnalytic; }
+{ return gradIdAnalytic; }
 
 
 inline const IntSet& Model::gradient_id_numerical() const
-{ return (modelRep) ? modelRep->gradIdNumerical : gradIdNumerical; }
+{ return gradIdNumerical; }
 
 
 inline const String& Model::hessian_type() const
-{ return (modelRep) ? modelRep->hessianType : hessianType; }
+{ return hessianType; }
 
 
 inline const String& Model::quasi_hessian_type() const
-{ return (modelRep) ? modelRep->quasiHessType : quasiHessType; }
+{ return quasiHessType; }
 
 
 inline const RealVector& Model::fd_hessian_by_grad_step_size() const
-{ return (modelRep) ? modelRep-> fdHessByGradStepSize : fdHessByGradStepSize; }
+{ return fdHessByGradStepSize; }
 
 
 inline const RealVector& Model::fd_hessian_by_fn_step_size() const
-{ return (modelRep) ? modelRep->fdHessByFnStepSize : fdHessByFnStepSize; }
+{ return fdHessByFnStepSize; }
 
 
 inline const String& Model::fd_hessian_step_type() const
-{ return (modelRep) ? modelRep->fdHessStepType : fdHessStepType; }
+{ return fdHessStepType; }
 
 
 inline const IntSet& Model::hessian_id_analytic() const
-{ return (modelRep) ? modelRep->hessIdAnalytic : hessIdAnalytic; }
+{ return hessIdAnalytic; }
 
 
 inline const IntSet& Model::hessian_id_numerical() const
-{ return (modelRep) ? modelRep->hessIdNumerical : hessIdNumerical; }
+{ return hessIdNumerical; }
 
 
 inline const IntSet& Model::hessian_id_quasi() const
-{ return (modelRep) ? modelRep->hessIdQuasi : hessIdQuasi; }
+{ return hessIdQuasi; }
 
 
 inline void Model::primary_response_fn_sense(const BoolDeque& sense)
 {
-  if (modelRep) modelRep->primaryRespFnSense = sense;
-  else          primaryRespFnSense = sense;
+  primaryRespFnSense = sense;
 }
 
 
 inline const BoolDeque& Model::primary_response_fn_sense() const
-{ return (modelRep) ? modelRep->primaryRespFnSense : primaryRespFnSense; }
+{ return primaryRespFnSense; }
 
 
 inline const RealVector& Model::primary_response_fn_weights() const
-{ return (modelRep) ? modelRep->primaryRespFnWts : primaryRespFnWts; }
+{ return primaryRespFnWts; }
 
 
 inline const ScalingOptions& Model::scaling_options() const
-{ return (modelRep) ? modelRep->scalingOpts : scalingOpts; }
+{ return scalingOpts; }
 
 
 inline short Model::primary_fn_type() const
 { 
-  return (modelRep) ? 
-    modelRep->currentResponse.shared_data().primary_fn_type() : 
+  return
     currentResponse.shared_data().primary_fn_type(); 
 }
 
 inline void Model::primary_fn_type(short type)
 {
-  if (modelRep) modelRep->currentResponse.shared_data().primary_fn_type(type);
-  else          currentResponse.shared_data().primary_fn_type(type);
+  currentResponse.shared_data().primary_fn_type(type);
 }
 
 
 inline bool Model::derivative_estimation()
 {
-  return (modelRep) ? modelRep->derivative_estimation() :
+  return
     ( (gradientType == "numerical" || gradientType == "mixed") ||
       (hessianType == "numerical" || hessianType == "mixed" ||
        hessianType == "quasi") );
@@ -1503,82 +1478,67 @@ inline bool Model::derivative_estimation()
 
 inline void Model::supports_derivative_estimation(bool sed_flag)
 {
-  if (modelRep) modelRep->supportsEstimDerivs = sed_flag;
-  else          supportsEstimDerivs = sed_flag;
+  supportsEstimDerivs = sed_flag;
 }
 
 
 inline void Model::init_comms_bcast_flag(bool icb_flag) 
 {
-  if (modelRep) modelRep->initCommsBcastFlag = icb_flag;
-  else          initCommsBcastFlag = icb_flag;
+  initCommsBcastFlag = icb_flag;
 }
 
 
 inline int Model::evaluation_capacity() const
-{ return (modelRep) ? modelRep->evaluationCapacity : evaluationCapacity; }
+{ return evaluationCapacity; }
 
 
 inline bool Model::asynch_flag() const
-{ return (modelRep) ? modelRep->asynchEvalFlag : asynchEvalFlag; }
+{ return asynchEvalFlag; }
 
 
 inline void Model::asynch_flag(const bool flag)
 {
-  if (modelRep) modelRep->asynchEvalFlag = flag;
-  else          asynchEvalFlag = flag;
+  asynchEvalFlag = flag;
 }
 
 
 inline short Model::output_level() const
-{ return (modelRep) ? modelRep->outputLevel : outputLevel; }
+{ return outputLevel; }
 
 
 inline void Model::output_level(const short level)
 {
-  if (modelRep) modelRep->outputLevel = level;
-  else          outputLevel = level;
+  outputLevel = level;
 }
 
 
 inline const IntArray& Model::message_lengths() const
-{ return (modelRep) ? modelRep->messageLengths : messageLengths; }
+{ return messageLengths; }
 
 
 inline bool Model::mapping_initialized() const
-{ return (modelRep) ? modelRep->mappingInitialized : mappingInitialized; }
+{ return mappingInitialized; }
 
 
 inline void Model::parallel_configuration_iterator(ParConfigLIter pc_iter)
 {
-  if (modelRep) modelRep->modelPCIter = pc_iter;
-  else          modelPCIter = pc_iter;
+  modelPCIter = pc_iter;
 }
 
 
 inline ParConfigLIter Model::parallel_configuration_iterator() const
-{ return (modelRep) ? modelRep->modelPCIter : modelPCIter; }
+{ return modelPCIter; }
 
 
 inline void Model::auto_graphics(const bool flag)
 {
-  if (modelRep) modelRep->modelAutoGraphicsFlag = flag;
-  else          modelAutoGraphicsFlag = flag;
+  modelAutoGraphicsFlag = flag;
 }
 
 inline bool Model::auto_graphics() const
 {
-  if (modelRep) return modelRep->modelAutoGraphicsFlag;
-  else          return modelAutoGraphicsFlag;
+  return modelAutoGraphicsFlag;
 }
-
-
-inline bool Model::is_null() const
-{ return (modelRep) ? false : true; }
-
-
-inline std::shared_ptr<Model> Model::model_rep() const
-{ return modelRep; }
 
 
 inline SSCIter Model::max_string(const StringSet& ss)
@@ -1602,7 +1562,7 @@ inline SRMCIter Model::max_string(const StringRealMap& srm)
 
 
 inline IntResponseMap& Model::response_map()
-{ return (modelRep) ? modelRep->responseMap : responseMap; }
+{ return responseMap; }
 
 
 /*
@@ -1748,15 +1708,6 @@ rekey_synch(MetaType& meta_object, bool block, IntIntMap& id_map,
 inline bool model_id_compare(const Model& model, const void* id)
 { return ( *(const String*)id == model.model_id() ); }
 
-
-/// equality operator for Envelope is true if same letter instance
-inline bool operator==(const Model& m1, const Model& m2)
-{ return (m1.modelRep == m2.modelRep); } // friend of Model
-
-
-/// inequality operator for Envelope is true if different letter instance
-inline bool operator!=(const Model& m1, const Model& m2)
-{ return (m1.modelRep != m2.modelRep); } // friend of Model
 
 } // namespace Dakota
 

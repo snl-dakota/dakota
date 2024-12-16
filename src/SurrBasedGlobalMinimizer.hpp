@@ -74,7 +74,7 @@ public:
   //
 
   /// constructor
-  SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, Model& model);
+  SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
   ~SurrBasedGlobalMinimizer() override;
 
@@ -112,7 +112,7 @@ private:
     default tabulation on the truth model instead of surrogate model. */
 inline void SurrBasedGlobalMinimizer::
 initialize_graphics(int iterator_server_id)
-{ initialize_model_graphics(pIteratedModel->truth_model(), iterator_server_id); }
+{ initialize_model_graphics(*iteratedModel->truth_model(), iterator_server_id); }
 
 
 inline bool SurrBasedGlobalMinimizer::returns_multiple_points() const

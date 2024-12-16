@@ -38,7 +38,7 @@ public:
   //- Heading: Constructors and destructor
   //
 
-  NonDGlobalEvidence(ProblemDescDB& problem_db, Model& model); ///< constructor
+  NonDGlobalEvidence(ProblemDescDB& problem_db, std::shared_ptr<Model> model); ///< constructor
   ~NonDGlobalEvidence() override;                                       ///< destructor
 
   //

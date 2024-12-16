@@ -53,23 +53,23 @@ namespace Dakota {
 
 
 SurrBasedMinimizer::
-SurrBasedMinimizer(ProblemDescDB& problem_db, Model& model,
+SurrBasedMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model,
 		   std::shared_ptr<TraitsBase> traits):
   Minimizer(problem_db, model, traits), globalIterCount(0),
   // See Conn, Gould, and Toint, pp. 598-599
   penaltyParameter(5.), eta(1.), alphaEta(0.1), betaEta(0.9),
   etaSequence(eta*std::pow(2.*penaltyParameter, -alphaEta))
-{ initialize_from_model(*pIteratedModel); }
+{ initialize_from_model(*iteratedModel); }
 
 
 SurrBasedMinimizer::
-SurrBasedMinimizer(Model& model, size_t max_iter, size_t max_eval,
+SurrBasedMinimizer(std::shared_ptr<Model> model, size_t max_iter, size_t max_eval,
 		   Real conv_tol, std::shared_ptr<TraitsBase> traits):
   Minimizer(model, max_iter, max_eval, conv_tol, traits), globalIterCount(0),
   // See Conn, Gould, and Toint, pp. 598-599
   penaltyParameter(5.), eta(1.), alphaEta(0.1), betaEta(0.9),
   etaSequence(eta*std::pow(2.*penaltyParameter, -alphaEta))
-{ initialize_from_model(*pIteratedModel); }
+{ initialize_from_model(*iteratedModel); }
 
 
 void SurrBasedMinimizer::initialize_from_model(Model& model)
@@ -116,7 +116,7 @@ SurrBasedMinimizer::~SurrBasedMinimizer()
 void SurrBasedMinimizer::derived_init_communicators(ParLevLIter pl_iter)
 {
   // iteratedModel is evaluated to add truth data (single evaluate())
-  pIteratedModel->init_communicators(pl_iter, maxEvalConcurrency);
+  iteratedModel->init_communicators(pl_iter, maxEvalConcurrency);
 
   // Allocate comms in approxSubProbModel/iteratedModel for parallel SBM.
   // For DataFitSurrModel, concurrency is from daceIterator evals (global) or
@@ -129,7 +129,7 @@ void SurrBasedMinimizer::derived_init_communicators(ParLevLIter pl_iter)
   // As in SurrBasedLocalMinimizer::initialize_sub_minimizer(), the SBLM
   // model_pointer is relevant and any sub-method model_pointer is ignored
   probDescDB.set_db_method_node(approxSubProbMinimizer.method_id());
-  probDescDB.set_db_model_nodes(pIteratedModel->model_id());
+  probDescDB.set_db_model_nodes(iteratedModel->model_id());
   approxSubProbMinimizer.init_communicators(pl_iter);
   probDescDB.set_db_method_node(method_index); // restore method only
   probDescDB.set_db_model_nodes(model_index);  // restore all model nodes
@@ -141,7 +141,7 @@ void SurrBasedMinimizer::derived_set_communicators(ParLevLIter pl_iter)
   miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
 
   // iteratedModel is evaluated to add truth data (single evaluate())
-  pIteratedModel->set_communicators(pl_iter, maxEvalConcurrency);
+  iteratedModel->set_communicators(pl_iter, maxEvalConcurrency);
 
   // set communicators for approxSubProbModel/iteratedModel
   approxSubProbMinimizer.set_communicators(pl_iter);
@@ -154,7 +154,7 @@ void SurrBasedMinimizer::derived_free_communicators(ParLevLIter pl_iter)
   approxSubProbMinimizer.free_communicators(pl_iter);
 
   // iteratedModel is evaluated to add truth data (single evaluate())
-  pIteratedModel->free_communicators(pl_iter, maxEvalConcurrency);
+  iteratedModel->free_communicators(pl_iter, maxEvalConcurrency);
 }
 
 
@@ -200,10 +200,10 @@ update_lagrange_multipliers(const RealVector& fn_vals,
   lagrangeMult = 0.;
   if (num_active_lag) {
     RealVector m_grad_f;
-    const BoolDeque& sense = pIteratedModel->primary_response_fn_sense();
-    const RealVector&  wts = pIteratedModel->primary_response_fn_weights();
-    const RealVector& lower_bnds = ModelUtils::continuous_lower_bounds(*pIteratedModel);
-    const RealVector& upper_bnds = ModelUtils::continuous_upper_bounds(*pIteratedModel);
+    const BoolDeque& sense = iteratedModel->primary_response_fn_sense();
+    const RealVector&  wts = iteratedModel->primary_response_fn_weights();
+    const RealVector& lower_bnds = ModelUtils::continuous_lower_bounds(*iteratedModel);
+    const RealVector& upper_bnds = ModelUtils::continuous_upper_bounds(*iteratedModel);
     objective_gradient(fn_vals, fn_grads, sense, wts, m_grad_f);
 
     RealVector A(num_active_lag*numContinuousVars);
@@ -343,8 +343,8 @@ update_augmented_lagrange_multipliers(const RealVector& fn_vals)
 void SurrBasedMinimizer::
 initialize_filter(SurrBasedLevelData& tr_data, const RealVector& fn_vals)
 {
-  Real new_f = objective(fn_vals, pIteratedModel->primary_response_fn_sense(),
-			 pIteratedModel->primary_response_fn_weights());
+  Real new_f = objective(fn_vals, iteratedModel->primary_response_fn_sense(),
+			 iteratedModel->primary_response_fn_weights());
   Real new_g = (numNonlinearConstraints)
              ? constraint_violation(fn_vals, 0.) : 0.;
   tr_data.initialize_filter(new_f, new_g);
@@ -355,8 +355,8 @@ initialize_filter(SurrBasedLevelData& tr_data, const RealVector& fn_vals)
 bool SurrBasedMinimizer::
 update_filter(SurrBasedLevelData& tr_data, const RealVector& fn_vals)
 {
-  Real new_f = objective(fn_vals, pIteratedModel->primary_response_fn_sense(),
-			 pIteratedModel->primary_response_fn_weights());
+  Real new_f = objective(fn_vals, iteratedModel->primary_response_fn_sense(),
+			 iteratedModel->primary_response_fn_weights());
   return (numNonlinearConstraints) ?
     tr_data.update_filter(new_f, constraint_violation(fn_vals, 0.)) :
     tr_data.update_filter(new_f);
@@ -825,7 +825,7 @@ void SurrBasedMinimizer::print_results(std::ostream& s, short results_state)
 
   const String& interface_id = (methodName == SURROGATE_BASED_LOCAL ||
 				methodName == SURROGATE_BASED_GLOBAL) ?
-    pIteratedModel->truth_model().interface_id() : pIteratedModel->interface_id();
+    iteratedModel->truth_model()->interface_id() : iteratedModel->interface_id();
   activeSet.request_values(1);
   // -------------------------------------
   // Single and Multipoint results summary

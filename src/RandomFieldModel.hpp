@@ -38,8 +38,6 @@ public:
 
   /// Problem database constructor
   RandomFieldModel(ProblemDescDB& problem_db);
-  /// destructor
-  ~RandomFieldModel() override;
 
   //
   //- Heading: Virtual function redefinitions
@@ -77,7 +75,7 @@ protected:
   // ---
 
   /// retrieve the sub-Model from the DB to pass up the constructor chain
-  Model get_sub_model(ProblemDescDB& problem_db);
+  std::shared_ptr<Model> get_sub_model(ProblemDescDB& problem_db);
 
   /// initialize the RF-generating sampler
   void init_dace_iterator(ProblemDescDB& problem_db);

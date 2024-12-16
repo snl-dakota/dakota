@@ -25,7 +25,7 @@ namespace Dakota {
 /** This constructor is called for a standard letter-envelope iterator
     instantiation using the ProblemDescDB. */
 NonDMultilevelPolynomialChaos::
-NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
+NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDPolynomialChaos(DEFAULT_METHOD, problem_db, model), // bypass PCE ctor
   expOrderSeqSpec(problem_db.get_usa("method.nond.expansion_order")),
   expSamplesSeqSpec(problem_db.get_sza("method.nond.expansion_samples")),
@@ -53,9 +53,8 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
-  Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    *pIteratedModel, uSpaceType)); // retain dist bounds
+  auto g_u_model = std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, uSpaceType); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -94,11 +93,11 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
   short corr_order = -1, corr_type = NO_CORRECTION;
-  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  const ActiveSet& recast_set = g_u_model->current_response().active_set();
   // DFSModel consumes QoI aggregations; supports surrogate grad evals at most
-  ShortArray pce_asv(g_u_model.qoi(), 3); // for stand alone mode
+  ShortArray pce_asv(g_u_model->qoi(), 3); // for stand alone mode
   ActiveSet  pce_set(pce_asv, recast_set.derivative_vector());
-  const ShortShortPair& pce_view = g_u_model.current_variables().view();
+  const ShortShortPair& pce_view = g_u_model->current_variables().view();
   uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, pce_set, pce_view, approx_type, exp_orders, corr_type,
     corr_order, data_order, outputLevel, pt_reuse, importBuildPointsFile,
@@ -128,7 +127,7 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model):
 /** This constructor is used for helper iterator instantiation on the fly
     that employ numerical integration (quadrature, sparse grid, cubature). */
 NonDMultilevelPolynomialChaos::
-NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ Model& model,
+NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ std::shared_ptr<Model> model,
 			      short exp_coeffs_approach,
 			      const UShortArray& num_int_seq,
 			      const RealVector& dim_pref, short u_space_type,
@@ -155,9 +154,8 @@ NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ Model& model,
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
-  Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    *pIteratedModel, uSpaceType)); // retain dist bounds
+  auto g_u_model = std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, uSpaceType); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -192,11 +190,11 @@ NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ Model& model,
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
   UShortArray exp_orders; String pt_reuse; // empty for integration approaches
   short corr_order = -1, corr_type = NO_CORRECTION;
-  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  const ActiveSet& recast_set = g_u_model->current_response().active_set();
   // DFSModel: consume any QoI aggregation. Helper mode: support approx Hessians
-  ShortArray asv(g_u_model.qoi(), 7); // TO DO: consider passing in data_mode
+  ShortArray asv(g_u_model->qoi(), 7); // TO DO: consider passing in data_mode
   ActiveSet pce_set(asv, recast_set.derivative_vector());
-  const ShortShortPair& pce_view = g_u_model.current_variables().view();
+  const ShortShortPair& pce_view = g_u_model->current_variables().view();
   uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, pce_set, pce_view, approx_type, exp_orders, corr_type,
     corr_order, data_order, outputLevel, pt_reuse);
@@ -209,7 +207,7 @@ NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ Model& model,
 /** This constructor is used for helper iterator instantiation on the fly
     that employ regression (least squares, CS, OLI). */
 NonDMultilevelPolynomialChaos::
-NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
+NonDMultilevelPolynomialChaos(unsigned short method_name, std::shared_ptr<Model> model,
 			      short exp_coeffs_approach,
 			      const UShortArray& exp_order_seq,
 			      const RealVector& dim_pref,
@@ -243,9 +241,8 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
-  Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    *pIteratedModel, uSpaceType)); // retain dist bounds
+  auto g_u_model = std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, uSpaceType); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -274,11 +271,11 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
   short corr_order = -1, corr_type = NO_CORRECTION;
   if (!import_build_pts_file.empty()) pt_reuse = "all";
-  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  const ActiveSet& recast_set = g_u_model->current_response().active_set();
   // DFSModel: consume any QoI aggregation. Helper mode: support approx Hessians
-  ShortArray asv(g_u_model.qoi(), 7); // TO DO: consider passing in data_mode
+  ShortArray asv(g_u_model->qoi(), 7); // TO DO: consider passing in data_mode
   ActiveSet pce_set(asv, recast_set.derivative_vector());
-  const ShortShortPair& pce_view = g_u_model.current_variables().view();
+  const ShortShortPair& pce_view = g_u_model->current_variables().view();
   uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, pce_set, pce_view, approx_type, exp_orders, corr_type,
     corr_order, data_order, outputLevel, pt_reuse, import_build_pts_file,

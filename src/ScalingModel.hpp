@@ -28,7 +28,7 @@ public:
   //
 
   /// standard constructor
-  ScalingModel(Model& sub_model);
+  ScalingModel(std::shared_ptr<Model> sub_model);
 
   /// destructor
   ~ScalingModel() override;

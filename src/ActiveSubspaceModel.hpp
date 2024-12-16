@@ -60,11 +60,8 @@ public:
   ActiveSubspaceModel(ProblemDescDB& problem_db);
 
   /// lightweight constructor
-  ActiveSubspaceModel(const Model& sub_model, unsigned int dimension,
+  ActiveSubspaceModel(std::shared_ptr<Model> sub_model, unsigned int dimension,
                       const RealMatrix &rotation_matrix, short output_level);
-
-  /// destructor
-  ~ActiveSubspaceModel() override;
 
   //
   //- Heading: Virtual function redefinitions
@@ -118,7 +115,7 @@ protected:
   // ---
 
   /// retrieve the sub-Model from the DB to pass up the constructor chain
-  Model get_sub_model(ProblemDescDB& problem_db);
+  std::shared_ptr<Model> get_sub_model(ProblemDescDB& problem_db);
 
   /// initialize the native problem space Monte Carlo sampler
   void init_fullspace_sampler(unsigned short sample_type);
@@ -286,8 +283,7 @@ protected:
   unsigned int cvMaxRank;
 
   /// model containing a surrogate built over the active subspace
-  Model surrogateModel;
-  Model* pSurrogateModel;
+  std::shared_ptr<Model> surrogateModel;
 
   /// flag specifying whether or not a surrogate is built over the subspace
   bool buildSurrogate;

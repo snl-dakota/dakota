@@ -20,6 +20,7 @@
 #include <deque>
 #include <list>
 #include <map>
+#include <memory>
 #include <set>
 
 namespace Dakota {
@@ -142,7 +143,7 @@ typedef std::list<Variables>           VariablesList;
 typedef std::list<Interface>           InterfaceList;
 typedef std::list<Response>            ResponseList;
 typedef std::list<ParamResponsePair>   PRPList;
-typedef std::list<Model>               ModelList;
+typedef std::list<std::shared_ptr<Model>> ModelList;
 typedef std::list<Iterator>            IteratorList;
 //typedef std::list<ParallelLevel>         ParLevList;
 //typedef std::list<ParallelConfiguration> ParConfigList;

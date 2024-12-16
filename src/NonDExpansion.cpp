@@ -36,7 +36,7 @@
 
 namespace Dakota {
 
-NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
+NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonD(problem_db, model), expansionCoeffsApproach(-1),
   expansionBasisType(problem_db.get_short("method.nond.expansion_basis_type")),
   statsMetricMode(
@@ -88,7 +88,7 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, Model& model):
 
 
 NonDExpansion::
-NonDExpansion(unsigned short method_name, Model& model,
+NonDExpansion(unsigned short method_name, std::shared_ptr<Model> model,
 	      const ShortShortPair& approx_view, short exp_coeffs_approach,
 	      const RealVector& dim_pref, int seed, short refine_type,
 	      short refine_control, short covar_control, Real colloc_ratio,
@@ -125,7 +125,7 @@ NonDExpansion::~NonDExpansion()
 
 void NonDExpansion::initialize_counts()
 {
-  const Variables&  vars      = pIteratedModel->current_variables();
+  const Variables&  vars      = iteratedModel->current_variables();
   const SizetArray& ac_totals = vars.shared_data().active_components_totals();
 
   // flag for combined var expansions which include non-probabilistic subset
@@ -241,8 +241,8 @@ void NonDExpansion::resolve_inputs(short& u_space_type, short& data_order)
     mf_greedy = (mf && multilevAllocControl == GREEDY_REFINEMENT);
 
   // define tie breaker for hierarchy of model forms versus resolution levels
-  if (pIteratedModel->surrogate_type() == "ensemble")
-    pIteratedModel->ensemble_precedence(mlmf_prec); // don't reassign default keys
+  if (iteratedModel->surrogate_type() == "ensemble")
+    iteratedModel->ensemble_precedence(mlmf_prec); // don't reassign default keys
 
   // Check for suitable distribution types.
   // Note: prefer warning in Analyzer (active discrete ignored), but
@@ -340,7 +340,7 @@ void NonDExpansion::resolve_inputs(short& u_space_type, short& data_order)
 
 
 void NonDExpansion::
-construct_cubature(Iterator& u_space_sampler, Model& g_u_model,
+construct_cubature(Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model,
 		   unsigned short cub_int_order)
 {
   // sanity checks: CUBATURE precluded since no grid anisotropy for adaptive
@@ -357,7 +357,7 @@ construct_cubature(Iterator& u_space_sampler, Model& g_u_model,
 
 
 void NonDExpansion::
-construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
+construct_quadrature(Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model,
 		     unsigned short quad_order, const RealVector& dim_pref)
 {
   // sanity checks: no GSG for TPQ
@@ -384,7 +384,7 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
 
 
 void NonDExpansion::
-construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
+construct_quadrature(Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model,
 		     unsigned short quad_order, const RealVector& dim_pref,
 		     int filtered_samples)
 {
@@ -418,7 +418,7 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
 
 
 void NonDExpansion::
-construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
+construct_quadrature(Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model,
 		     unsigned short quad_order, const RealVector& dim_pref,
 		     int sub_samples, int seed)
 {
@@ -452,7 +452,7 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
 
 
 void NonDExpansion::
-construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
+construct_sparse_grid(Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model,
 		      unsigned short ssg_level,  const RealVector& dim_pref)
 {
   // enforce minimum required VBD control
@@ -576,7 +576,7 @@ void NonDExpansion::configure_pecos_options()
     std::static_pointer_cast<SharedPecosApproxData>
     (uSpaceModel->shared_approximation().data_rep());
   Pecos::ExpansionConfigOptions ec_options(expansionCoeffsApproach,
-    expansionBasisType, pIteratedModel->correction_type(),
+    expansionBasisType, iteratedModel->correction_type(),
     multilevDiscrepEmulation, outputLevel, vbdFlag, vbdOrderLimit,
     refineControl, refineMetric, statsMetricMode, maxRefineIterations,
     maxSolverIterations, convergenceTol, softConvLimit);
@@ -590,7 +590,7 @@ void NonDExpansion::configure_pecos_options()
 void NonDExpansion::initialize_u_space_grid()
 {
   // if model resize is pending, defer initializing a potentially large grid
-  if (pIteratedModel->resize_pending())
+  if (iteratedModel->resize_pending())
     { /* callResize = true; */ }
   else {
     //
@@ -606,7 +606,7 @@ void NonDExpansion::initialize_u_space_grid()
     u_space_sampler_rep->initialize_grid(shared_data_rep->polynomial_basis());
 
     numSamplesOnModel = u_space_sampler_rep->maximum_evaluation_concurrency()
-      / uSpaceModel->subordinate_model().derivative_concurrency();
+      / uSpaceModel->subordinate_model()->derivative_concurrency();
     // maxEvalConcurrency already updated for expansion samples and regression
     if (numSamplesOnModel) // optional with default = 0
       maxEvalConcurrency *= numSamplesOnModel;
@@ -647,9 +647,7 @@ construct_expansion_sampler(unsigned short sample_type, const String& rng,
     numSamplesOnExpansion = x_samples.numCols();
     // transform to u space must follow runtime dist param updates,
     // so pass x_samples for now and transform at runtime
-    Model env;
-    env.assign_rep(uSpaceModel);
-    exp_sampler_rep = std::make_shared<NonDSampling>(env, x_samples);//u_samples);
+    exp_sampler_rep = std::make_shared<NonDSampling>(uSpaceModel, x_samples);//u_samples);
     exp_sampler_rep->requested_levels(requestedRespLevels, requestedProbLevels,
       requestedRelLevels, requestedGenRelLevels, respLevelTarget,
       respLevelTargetReduce, cdfFlag, true); // compute/print PDFs
@@ -665,10 +663,8 @@ construct_expansion_sampler(unsigned short sample_type, const String& rng,
     // sampling mode.  Don't vary sampling pattern since we want to reuse
     // same sampling stencil for different design/epistemic vars or for
     // (goal-oriented) adaptivity.
-    Model env;
-    env.assign_rep(uSpaceModel);
     exp_sampler_rep = std::make_shared<NonDLHSSampling>
-      (env, sample_type, numSamplesOnExpansion,
+      (uSpaceModel, sample_type, numSamplesOnExpansion,
        first_seed(), rng, false, ALEATORY_UNCERTAIN);//, ALL); *** HACK: ALEATORY_UNCERTAIN needed for aleatory stats but can we adopt the PCE view in cases of approx sample export (potentially resetting after numerical stats eval?)
     //expansionSampler.sampling_reset(numSamplesOnExpansion, true, false);
 
@@ -701,11 +697,9 @@ construct_expansion_sampler(unsigned short sample_type, const String& rng,
       }
       // extreme values needed for defining bounds of PDF bins
       bool vary_pattern = true, track_extreme = pdfOutput;
-      Model env;
-      env.assign_rep(uSpaceModel);
       auto imp_sampler_rep = std::make_shared<NonDAdaptImpSampling>
-	(env, sample_type, ais_samples, first_seed(), rng, vary_pattern,
-	 integration_refine, cdfFlag, false, false, track_extreme);
+	      (uSpaceModel, sample_type, ais_samples, first_seed(), rng, vary_pattern,
+	      integration_refine, cdfFlag, false, false, track_extreme);
       importanceSampler.assign_rep(imp_sampler_rep);
 
       imp_sampler_rep->output_level(outputLevel);
@@ -788,7 +782,7 @@ void NonDExpansion::initialize_expansion()
   // are invariant in std distribution cases despite updates from above).
   initialPtU.size(numContinuousVars);
   if (allVars)
-    uSpaceModel->trans_X_to_U(ModelUtils::continuous_variables(*pIteratedModel), initialPtU);
+    uSpaceModel->trans_X_to_U(ModelUtils::continuous_variables(*iteratedModel), initialPtU);
   RealVector u_means = uSpaceModel->multivariate_distribution().means();
   //const SharedVariablesData& svd
   //  = iteratedModel.current_variables().shared_data();
@@ -801,7 +795,7 @@ void NonDExpansion::initialize_expansion()
       numUncertainQuant == 0) {
     std::shared_ptr<NonDSampling> exp_sampler_rep =
       std::static_pointer_cast<NonDSampling>(expansionSampler.iterator_rep());
-    exp_sampler_rep->transform_samples(*pIteratedModel, *uSpaceModel);// src,target
+    exp_sampler_rep->transform_samples(*iteratedModel, *uSpaceModel);// src,target
   }
 }
 
@@ -811,7 +805,7 @@ void NonDExpansion::compute_expansion()
 #ifdef DERIV_DEBUG
   // numerical verification of analytic Jacobian/Hessian routines
   RealVector rdv_u;
-  uSpaceModel->trans_X_to_U(ModelUtils::continuous_variables(*pIteratedModel), rdv_u);
+  uSpaceModel->trans_X_to_U(ModelUtils::continuous_variables(*iteratedModel), rdv_u);
   Pecos::ProbabilityTransformation& nataf
     = uSpaceModel->probability_transformation();
   nataf.verify_trans_jacobian_hessian(rdv_u);//(rdv_x);
@@ -957,7 +951,7 @@ void NonDExpansion::compute_expansion()
       // finalStats using subIterator.response_results_active_set().
       if (useDerivs) {
 	SizetMultiArrayConstView cv_ids
-	  = ModelUtils::continuous_variable_ids(*pIteratedModel);
+	  = ModelUtils::continuous_variable_ids(*iteratedModel);
 	if (sampler_grad) { // merge cv_ids with final_dvv
 	  SizetSet merged_set; SizetArray merged_dvv;
 	  merged_set.insert(cv_ids.begin(), cv_ids.end());
@@ -980,7 +974,7 @@ void NonDExpansion::compute_expansion()
       else if (sampler_grad)
 	sampler_set.derivative_vector(final_dvv);
       else // derivs not needed, but correct DVV len needed for MPI buffers
-	sampler_set.derivative_vector(ModelUtils::continuous_variable_ids(*pIteratedModel));
+	sampler_set.derivative_vector(ModelUtils::continuous_variable_ids(*iteratedModel));
 
       // Build the orthogonal/interpolation polynomial approximations:
       u_space_sampler.active_set(sampler_set);
@@ -1278,7 +1272,7 @@ configure_indices(size_t group, size_t form, size_t lev, short seq_type)
   if ( (seq_type == Pecos::MODEL_FORM_1D_SEQUENCE       && form == 0) ||
        (seq_type == Pecos::RESOLUTION_LEVEL_1D_SEQUENCE && lev  == 0) ||
        !multilevDiscrepEmulation) {
-    pIteratedModel->surrogate_response_mode(BYPASS_SURROGATE); // truth only
+    iteratedModel->surrogate_response_mode(BYPASS_SURROGATE); // truth only
     uSpaceModel->active_model_key(hf_key); // one data set
     uSpaceModel->resize_from_subordinate_model();// recurs until hits aggregation
   }
@@ -1297,15 +1291,15 @@ configure_indices(size_t group, size_t form, size_t lev, short seq_type)
 
 void NonDExpansion::assign_modes()
 {
-  if (pIteratedModel->surrogate_type() != "ensemble") {
+  if (iteratedModel->surrogate_type() != "ensemble") {
     Cerr << "Error: multilevel/multifidelity expansions require an ensemble "
 	 << "model." << std::endl;
     abort_handler(METHOD_ERROR);
   }
 
   // assign method-specific defaults for correction and discrepancy emulation
-  if (pIteratedModel->correction_type() == NO_CORRECTION)
-    pIteratedModel->correction_type(ADDITIVE_CORRECTION);
+  if (iteratedModel->correction_type() == NO_CORRECTION)
+    iteratedModel->correction_type(ADDITIVE_CORRECTION);
   if (multilevDiscrepEmulation == DEFAULT_EMULATION)
     multilevDiscrepEmulation =
       //(expBasisType==Pecos::HIERARCHICAL_INTERPOLANT) ? RECURSIVE_EMULATION :
@@ -1329,11 +1323,11 @@ void NonDExpansion::assign_surrogate_response_mode()
   switch (multilevDiscrepEmulation) {
   case RECURSIVE_EMULATION:
     // consider disallowing for basis type Pecos::NODAL_INTERPOLANT
-    pIteratedModel->surrogate_response_mode(BYPASS_SURROGATE);       break;
+    iteratedModel->surrogate_response_mode(BYPASS_SURROGATE);       break;
   case DISTINCT_EMULATION: case DEFAULT_EMULATION:
     // consider disallowing for basis type Pecos::HIERARCHICAL_INTERPOLANT
     // (HIERARCHICAL_INTERPOLANT approaches are already recursive...)
-    pIteratedModel->surrogate_response_mode(AGGREGATED_MODEL_PAIR);  break;
+    iteratedModel->surrogate_response_mode(AGGREGATED_MODEL_PAIR);  break;
   }
 }
 
@@ -2750,9 +2744,9 @@ void NonDExpansion::compute_statistics(short results_state)
     update_final_statistics(); // augments updates embedded above
     if (resultsDB.active()) { // archive the active variables with the results
       resultsDB.insert(run_identifier(), resultsNames.cv_labels, 
-		       ModelUtils::continuous_variable_labels(*pIteratedModel));
+		       ModelUtils::continuous_variable_labels(*iteratedModel));
       resultsDB.insert(run_identifier(), resultsNames.fn_labels, 
-		       ModelUtils::response_labels(*pIteratedModel));
+		       ModelUtils::response_labels(*iteratedModel));
     }
     archive_moments();
     archive_coefficients();
@@ -3165,7 +3159,7 @@ void NonDExpansion::compute_analytic_statistics()
       // uncertain varables and provide a measure of local importance (but not
       // scaled by input covariance as in mean value importance factors).
       Pecos::MultivariateDistribution& x_dist
-	= pIteratedModel->multivariate_distribution();
+	= iteratedModel->multivariate_distribution();
       const RealVector& exp_grad_u
 	= approx_i.gradient(uSpaceModel->current_variables());
       RealVector
@@ -3590,7 +3584,7 @@ void NonDExpansion::archive_moments()
     md_moments["Row Labels"]
       = make_metadatavalue(moment_1, moment_2, moment_3, moment_4);
     md_moments["Column Labels"]
-      = make_metadatavalue(ModelUtils::response_labels(*pIteratedModel));  
+      = make_metadatavalue(ModelUtils::response_labels(*iteratedModel));  
 	  
     if (exp_active) {
       resultsDB.insert(run_identifier(), resultsNames.moments_central_exp, exp_matrix, md_moments);
@@ -3606,7 +3600,7 @@ void NonDExpansion::archive_moments()
           Pecos::PolynomialApproximation::standardize_moments(poly_approxs[i].expansion_moments(), moments);
         }
         resultsDB.insert(run_identifier(), {String("expansion_moments"),
-            ModelUtils::response_labels(*pIteratedModel)[i]},
+            ModelUtils::response_labels(*iteratedModel)[i]},
             moments,
             scales);
       }
@@ -3626,7 +3620,7 @@ void NonDExpansion::archive_moments()
           Pecos::PolynomialApproximation::standardize_moments(poly_approxs[i].numerical_integration_moments(), moments);
         }
         resultsDB.insert(run_identifier(), {String("integration_moments"),
-            ModelUtils::response_labels(*pIteratedModel)[i]},
+            ModelUtils::response_labels(*iteratedModel)[i]},
             moments,
 	    scales);
       }
@@ -3644,9 +3638,9 @@ void NonDExpansion::archive_sobol_indices() {
   // expansion_coefficient_flag and non-negligible variance
   if(!resultsDB.active()) return;
 
-  const StringArray& fn_labels = ModelUtils::response_labels(*pIteratedModel);
+  const StringArray& fn_labels = ModelUtils::response_labels(*iteratedModel);
   StringMultiArrayConstView cv_labels
-    = ModelUtils::continuous_variable_labels(*pIteratedModel);
+    = ModelUtils::continuous_variable_labels(*iteratedModel);
 
   std::vector<Approximation>& poly_approxs = uSpaceModel->approximations();
   // Map from index to variable labels
@@ -3818,12 +3812,12 @@ void NonDExpansion::update_final_statistics_gradients()
     // that the DVV only contains design/state vars, then we know they are
     // uncorrelated and the jacobian matrix is diagonal with terms 2./range.
     const SharedVariablesData& svd
-      = pIteratedModel->current_variables().shared_data();
-    SizetMultiArrayConstView cv_ids = ModelUtils::continuous_variable_ids(*pIteratedModel);
+      = iteratedModel->current_variables().shared_data();
+    SizetMultiArrayConstView cv_ids = ModelUtils::continuous_variable_ids(*iteratedModel);
     const SizetArray& final_dvv
       = finalStatistics.active_set_derivative_vector();
     const std::vector<Pecos::RandomVariable>& x_ran_vars
-      = pIteratedModel->multivariate_distribution().random_variables();
+      = iteratedModel->multivariate_distribution().random_variables();
     //Pecos::ProbabilityTransformation& nataf
     //  = uSpaceModel->probability_transformation();
 
@@ -3879,7 +3873,7 @@ void NonDExpansion::print_moments(std::ostream& s)
   s << std::scientific << std::setprecision(write_precision);
 
   std::vector<Approximation>& poly_approxs = uSpaceModel->approximations();
-  const StringArray& fn_labels = ModelUtils::response_labels(*pIteratedModel);
+  const StringArray& fn_labels = ModelUtils::response_labels(*iteratedModel);
   size_t i, j, width = write_precision+7;
 
   s << "\nMoment statistics for each response function:\n";
@@ -4010,9 +4004,9 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
  
   s << "\nGlobal sensitivity indices for each response function:\n";
 
-  const StringArray& fn_labels = ModelUtils::response_labels(*pIteratedModel);
+  const StringArray& fn_labels = ModelUtils::response_labels(*iteratedModel);
   StringMultiArrayConstView cv_labels
-    = ModelUtils::continuous_variable_labels(*pIteratedModel);
+    = ModelUtils::continuous_variable_labels(*iteratedModel);
 
   // construct labels corresponding to (aggregated) sobol index map
   std::vector<Approximation>& poly_approxs = uSpaceModel->approximations();
@@ -4123,7 +4117,7 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
 
 void NonDExpansion::print_local_sensitivity(std::ostream& s)
 {
-  const StringArray& fn_labels = ModelUtils::response_labels(*pIteratedModel);
+  const StringArray& fn_labels = ModelUtils::response_labels(*iteratedModel);
   s << "\nLocal sensitivities for each response function evaluated at "
     << "uncertain variable means:\n";
   std::vector<Approximation>& poly_approxs = uSpaceModel->approximations();

@@ -35,10 +35,10 @@ public:
   //
 
   /// standard constructor
-  NonDGPImpSampling(ProblemDescDB& problem_db, Model& model);
+  NonDGPImpSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
 
   // alternate constructor for sample generation and evaluation "on the fly"
-  //NonDGPImpSampling(Model& model, const String& sample_type,
+  //NonDGPImpSampling(std::shared_ptr<Model> model, const String& sample_type,
   //		      int samples, int seed, const String& rng,
   //		      short sampling_vars_mode = ACTIVE, 
   //                  const RealVector& lower_bnds,
@@ -82,7 +82,7 @@ private:
   /// LHS iterator for sampling on the GP
   Iterator gpEval;
   /// GP model of response, one approximation per response function
-  Model gpModel;
+  std::shared_ptr<Model> gpModel;
   /// LHS iterator for sampling from the rhoOneDistribution 
   Iterator sampleRhoOne;
   

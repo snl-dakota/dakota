@@ -37,9 +37,9 @@ public:
   //
     
   /// primary constructor for building a standard DACE iterator
-  DDACEDesignCompExp(ProblemDescDB& problem_db, Model& model);
+  DDACEDesignCompExp(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor used for building approximations
-  DDACEDesignCompExp(Model& model, int samples, int symbols, int seed, 
+  DDACEDesignCompExp(std::shared_ptr<Model> model, int samples, int symbols, int seed, 
 		     unsigned short sampling_method);
   /// destructor
   ~DDACEDesignCompExp() override;
@@ -64,8 +64,8 @@ protected:
   void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag) override;
   unsigned short sampling_scheme() const override;
   void vary_pattern(bool pattern_flag) override;
-  void get_parameter_sets(Model& model) override;
-  void get_parameter_sets(Model& model, const size_t num_samples, 
+  void get_parameter_sets(std::shared_ptr<Model> model) override;
+  void get_parameter_sets(std::shared_ptr<Model> model, const size_t num_samples, 
 			  RealMatrix& design_matrix) override;
 private:
 
