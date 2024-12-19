@@ -230,6 +230,61 @@ public:
   /// Declare a model's sources to the evaluationsDB
   virtual void declare_sources();
 
+  /// set primaryA{C,DI,DS,DR}VarMapIndices, secondaryA{C,DI,DS,DR}VarMapTargets
+  /// (coming from a higher-level NestedModel context to inform derivative est.)
+  virtual void nested_variable_mappings(const SizetArray& c_index1,
+					const SizetArray& di_index1,
+					const SizetArray& ds_index1,
+					const SizetArray& dr_index1,
+					const ShortArray& c_target2,
+					const ShortArray& di_target2,
+					const ShortArray& ds_target2,
+					const ShortArray& dr_target2);
+  /// return primaryACVarMapIndices
+  virtual const SizetArray& nested_acv1_indices() const;
+  /// return secondaryACVarMapTargets
+  virtual const ShortArray& nested_acv2_targets() const;
+
+  /// calculate and return derivative composition of final results
+  /// w.r.t. distribution parameters (none, all, or mixed)
+  virtual short query_distribution_parameter_derivatives() const;
+  /// activate derivative setting w.r.t. distribution parameters
+  virtual void activate_distribution_parameter_derivatives();
+  /// deactivate derivative setting w.r.t. distribution parameters
+  virtual void deactivate_distribution_parameter_derivatives();
+
+  // *** TO DO: these transformation fns are recursive but minimally so -- could
+  //     we retire direct uses of these, relying more on transform recursions?
+  //     (e.g., older use cases in NonDLocalReliability)
+
+  /// return probability transformation employed by the Model (forwarded along
+  /// to ProbabilityTransformModel recasting)
+  virtual Pecos::ProbabilityTransformation& probability_transformation();
+
+  /// transform u-space variable values to x-space
+  virtual void trans_U_to_X(const RealVector& u_c_vars, RealVector& x_c_vars);
+  /// transform x-space variable values to u-space
+  virtual void trans_X_to_U(const RealVector& x_c_vars, RealVector& u_c_vars);
+
+  /// transform x-space gradient vector to u-space
+  virtual void trans_grad_X_to_U(const RealVector& fn_grad_x,
+				 RealVector& fn_grad_u,
+				 const RealVector& x_vars);
+  /// transform u-space gradient vector to x-space
+  virtual void trans_grad_U_to_X(const RealVector& fn_grad_u,
+				 RealVector& fn_grad_x,
+				 const RealVector& x_vars);
+  /// transform x-space gradient vector to gradient with respect to inserted
+  /// distribution parameters
+  virtual void trans_grad_X_to_S(const RealVector& fn_grad_x,
+				 RealVector& fn_grad_s,
+				 const RealVector& x_vars);
+  /// transform x-space Hessian matrix to u-space
+  virtual void trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
+				 RealSymMatrix& fn_hess_u,
+				 const RealVector& x_vars,
+				 const RealVector& fn_grad_x);
+
 
   // *** SURROGATE MODELS (BOTH DATA FIT AND ENSEMBLE)
   // *** Note: RecastModels will implement forwards (TO DO: verify there is no interaction with recasting)
@@ -464,6 +519,17 @@ public:
   virtual void ensemble_precedence(short mlmf_prec,
 				   bool update_default = false);
 
+  /// apply a DiscrepancyCorrection to correct an approximation within
+  /// an EnsembleSurrModel
+  virtual void single_apply(const Variables& vars, Response& resp,
+			    const Pecos::ActiveKey& paired_key);
+  /// apply a sequence of DiscrepancyCorrections to recursively correct an 
+  /// approximation within an EnsembleSurrModel
+  virtual void recursive_apply(const Variables& vars, Response& resp);
+
+
+  // *** SIMULATION MODELS
+
   /// number of discrete levels within solution control (SimulationModel)
   virtual size_t solution_levels() const;
   /// activate a particular level within the solution level control
@@ -495,14 +561,6 @@ public:
   /// return index of online cost estimates within metadata
   virtual size_t cost_metadata_index() const;
 
-  /// apply a DiscrepancyCorrection to correct an approximation within
-  /// an EnsembleSurrModel
-  virtual void single_apply(const Variables& vars, Response& resp,
-			    const Pecos::ActiveKey& paired_key);
-  /// apply a sequence of DiscrepancyCorrections to recursively correct an 
-  /// approximation within an EnsembleSurrModel
-  virtual void recursive_apply(const Variables& vars, Response& resp);
-
 
   // *** RECAST MODELS
 
@@ -513,59 +571,13 @@ public:
 
   // *** PROBABILITY TRANSFORM MODELS
 
-  /// return probability transformation employed by the Model (forwarded along
-  /// to ProbabilityTransformModel recasting)
-  virtual Pecos::ProbabilityTransformation& probability_transformation();
-
-  /// calculate and return derivative composition of final results
-  /// w.r.t. distribution parameters (none, all, or mixed)
-  virtual short query_distribution_parameter_derivatives() const;
-  /// activate derivative setting w.r.t. distribution parameters
-  virtual void activate_distribution_parameter_derivatives();
-  /// deactivate derivative setting w.r.t. distribution parameters
-  virtual void deactivate_distribution_parameter_derivatives();
-
-  /// transform u-space variable values to x-space
-  virtual void trans_U_to_X(const RealVector& u_c_vars, RealVector& x_c_vars);
-  /// transform x-space variable values to u-space
-  virtual void trans_X_to_U(const RealVector& x_c_vars, RealVector& u_c_vars);
-
-  /// transform x-space gradient vector to u-space
-  virtual void trans_grad_X_to_U(const RealVector& fn_grad_x,
-				 RealVector& fn_grad_u,
-				 const RealVector& x_vars);
-  /// transform u-space gradient vector to x-space
-  virtual void trans_grad_U_to_X(const RealVector& fn_grad_u,
-				 RealVector& fn_grad_x,
-				 const RealVector& x_vars);
-  /// transform x-space gradient vector to gradient with respect to inserted
-  /// distribution parameters
-  virtual void trans_grad_X_to_S(const RealVector& fn_grad_x,
-				 RealVector& fn_grad_s,
-				 const RealVector& x_vars);
-  /// transform x-space Hessian matrix to u-space
-  virtual void trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
-				 RealSymMatrix& fn_hess_u,
-				 const RealVector& x_vars,
-				 const RealVector& fn_grad_x);
+  // see weakly recursive list for base Model above
 
 
   // *** NESTED MODELS
 
-  /// set primaryA{C,DI,DS,DR}VarMapIndices, secondaryA{C,DI,DS,DR}VarMapTargets
-  /// (coming from a higher-level NestedModel context to inform derivative est.)
-  virtual void nested_variable_mappings(const SizetArray& c_index1,
-					const SizetArray& di_index1,
-					const SizetArray& ds_index1,
-					const SizetArray& dr_index1,
-					const ShortArray& c_target2,
-					const ShortArray& di_target2,
-					const ShortArray& ds_target2,
-					const ShortArray& dr_target2);
-  /// return primaryACVarMapIndices
-  virtual const SizetArray& nested_acv1_indices() const;
-  /// return secondaryACVarMapTargets
-  virtual const ShortArray& nested_acv2_targets() const;
+  // see recursive list for base Model above
+
 
   //
   //- Heading: Member functions
