@@ -142,12 +142,7 @@ multilevel_control_variate_mc_online_pilot() //_Qcorr()
     num_hf_lev = iteratedModel.truth_model().solution_levels(),
     num_cv_lev = (num_mf > 1) ?
     std::min(num_hf_lev, iteratedModel.surrogate_model().solution_levels()) : 0;
-  bool budget_constrained = (maxFunctionEvals != SZ_MAX);
-
-  // retrieve cost estimates across solution levels for HF model
-  RealVector hf_targets(num_hf_lev), agg_var_hf(num_hf_lev);
-  Real eps_sq_div_2, sum_sqrt_var_cost, agg_estvar_iter0 = 0., budget, r_lq,
-    lf_lev_cost, hf_lev_cost, hf_ref_cost, hf_tgt_l;
+  RealVector hf_targets(num_hf_lev);  Real eps_sq_div_2;
   RealVectorArray eval_ratios(num_cv_lev), lf_targets(num_cv_lev);
 
   // CV requires cross-level covariance combinations in Qcorr approach
@@ -185,8 +180,8 @@ multilevel_control_variate_mc_online_pilot() //_Qcorr()
     evaluate_levels(sum_Ll, sum_Llm1, sum_Hl, sum_Hlm1, sum_Ll_Ll, sum_Ll_Llm1,
 		    sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1, sum_Hlm1_Ll,
 		    sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1, sum_Hlm1_Hlm1,
-		    eval_ratios, Lambda, var_YH, delta_N_hf, N_actual_hf,
-		    N_alloc_hf, hf_targets, true, true);
+		    eval_ratios, Lambda, var_YH, eps_sq_div_2, delta_N_hf,
+		    N_actual_hf, N_alloc_hf, hf_targets, true, true);
 
     advance_relaxation();
     Cout << "\nMLMF MC iteration " << mlmfIter << " HF sample increments:\n"
@@ -303,7 +298,7 @@ multilevel_control_variate_mc_offline_pilot()
   N_alloc_pilot.assign(num_hf_lev, 0);
   for (lev=0; lev<num_hf_lev; ++lev)
     N_actual_pilot[lev].assign(numFunctions, 0);
-  RealVector hf_targets_pilot;
+  RealVector hf_targets_pilot;  Real eps_sq_div_2_pilot;
   RealMatrix Lambda_pilot, var_YH_pilot;
   RealVectorArray eval_ratios_pilot, lf_targets(num_cv_lev);
 
@@ -316,8 +311,8 @@ multilevel_control_variate_mc_offline_pilot()
 		  sum_Hl_Ll_pilot, sum_Hl_Llm1_pilot, sum_Hlm1_Ll_pilot,
 		  sum_Hlm1_Llm1_pilot, sum_Hl_Hl_pilot, sum_Hl_Hlm1_pilot,
 		  sum_Hlm1_Hlm1_pilot, eval_ratios_pilot, Lambda_pilot,
-		  var_YH_pilot, delta_N_hf, N_actual_pilot, N_alloc_pilot,
-		  hf_targets_pilot, false, false);
+		  var_YH_pilot, eps_sq_div_2_pilot, delta_N_hf, N_actual_pilot,
+		  N_alloc_pilot, hf_targets_pilot, false, false);
 
   // ----------------------------------------------------------
   // Evaluate online sample profile computed from offline pilot
@@ -412,7 +407,7 @@ multilevel_control_variate_mc_pilot_projection()
 {
   // retrieve cost estimates across solution levels for HF model
   RealVector hf_targets;  RealMatrix Lambda, var_YH;
-  RealVectorArray eval_ratios;
+  RealVectorArray eval_ratios;  Real eps_sq_div_2;
   size_t lev, num_mf = NLevActual.size(),
     num_hf_lev = iteratedModel.truth_model().solution_levels(),
     num_cv_lev = (num_mf > 1) ?
@@ -432,12 +427,12 @@ multilevel_control_variate_mc_pilot_projection()
     N_alloc_pilot.assign(num_hf_lev, 0);
     for (lev=0; lev<num_hf_lev; ++lev)
       N_actual_pilot[lev].assign(numFunctions, 0);
-    evaluate_pilot(eval_ratios, Lambda, var_YH, N_actual_pilot, N_alloc_pilot,
-		   hf_targets, pilot_mom, false, false);
+    evaluate_pilot(eval_ratios, Lambda, var_YH, eps_sq_div_2, N_actual_pilot,
+		   N_alloc_pilot, hf_targets, pilot_mom, false, false);
   }
   else // ONLINE_PILOT_PROJECTION
-    evaluate_pilot(eval_ratios, Lambda, var_YH, N_actual_hf, N_alloc_hf,
-		   hf_targets, pilot_mom, true, true);
+    evaluate_pilot(eval_ratios, Lambda, var_YH, eps_sq_div_2, N_actual_hf,
+		   N_alloc_hf, hf_targets, pilot_mom, true, true);
 
   // ML-only moments (no CV without LF increments) are rolled up for using varH
   // in variance reduction metrics (momentStats not reported for projections)
@@ -465,31 +460,14 @@ evaluate_levels(IntRealMatrixMap& sum_Ll,        IntRealMatrixMap& sum_Llm1,
 		IntRealMatrixMap& sum_Hlm1_Llm1, IntRealMatrixMap& sum_Hl_Hl,
 		IntRealMatrixMap& sum_Hl_Hlm1, IntRealMatrixMap& sum_Hlm1_Hlm1,
 		RealVectorArray& eval_ratios,  RealMatrix& Lambda,
-		RealMatrix& var_YH,     SizetArray& delta_N_hf,
+		RealMatrix& var_YH, Real& eps_sq_div_2, SizetArray& delta_N_hf,
 		Sizet2DArray& N_actual, SizetArray& N_alloc,
 		RealVector& hf_targets, bool accumulate_cost, bool pilot_estvar)
 {
-  size_t qoi, lev, num_mf = NLevActual.size(),
-    num_hf_lev = iteratedModel.truth_model().solution_levels(),
-    num_cv_lev = (num_mf > 1) ?
-    std::min(num_hf_lev, iteratedModel.surrogate_model().solution_levels()) : 0;
-  unsigned short group, lf_form = 0, hf_form = num_mf - 1;// 2 models @ extremes
-  bool budget_constrained = (maxFunctionEvals != SZ_MAX);
-  Real budget, hf_ref_cost;
-
   // FIRST PASS: launch and synchonize sample batches
   mlmf_increments(delta_N_hf, "mlcv_");
-  if (mlmfIter == 0) {
-    if (costSource != USER_COST_SPEC)
-      recover_online_cost(batchResponsesMap); // define sequenceCost for LF,HF
-    hf_ref_cost = sequenceCost[numApprox];
-    if (budget_constrained) budget = (Real)maxFunctionEvals * hf_ref_cost;
-    // Note: could assign these back if needed elsewhere:
-    //if (online_hf_cost) truth_model.solution_level_costs(hf_cost);
-    //if (online_lf_cost)  surr_model.solution_level_costs(lf_cost);
-  }
-  if (hf_targets.empty())
-    hf_targets.size(num_hf_lev); // backfill one_sided_delta() for iter>0
+  if (mlmfIter == 0 && costSource != USER_COST_SPEC)
+    recover_online_cost(batchResponsesMap); // define sequenceCost for LF,HF
 
   // SECOND PASS: accumulations and cost estimates
   // > Note: costs are accumulated in THIRD PASS (not here in SECOND PASS)
@@ -500,20 +478,20 @@ evaluate_levels(IntRealMatrixMap& sum_Ll,        IntRealMatrixMap& sum_Llm1,
 			sum_Hlm1_Hlm1, false);
 
   // THIRD PASS: allocations
-  compute_allocations(eval_ratios, Lambda, var_YH, delta_N_hf, N_actual,
-		      N_alloc, hf_targets, accumulate_cost, pilot_estvar,
-		      sum_Ll, sum_Llm1, sum_Hl, sum_Hlm1, sum_Ll_Ll,
-		      sum_Ll_Llm1, sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1,
-		      sum_Hlm1_Ll, sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1,
-		      sum_Hlm1_Hlm1);
+  compute_allocations(eval_ratios, Lambda, var_YH, eps_sq_div_2, delta_N_hf,
+		      N_actual, N_alloc, hf_targets, accumulate_cost,
+		      pilot_estvar, sum_Ll, sum_Llm1, sum_Hl, sum_Hlm1,
+		      sum_Ll_Ll, sum_Ll_Llm1, sum_Llm1_Llm1, sum_Hl_Ll,
+		      sum_Hl_Llm1, sum_Hlm1_Ll, sum_Hlm1_Llm1, sum_Hl_Hl,
+		      sum_Hl_Hlm1, sum_Hlm1_Hlm1);
 }
 
 
 void NonDMultilevControlVarSampling::
 evaluate_pilot(RealVectorArray& eval_ratios, RealMatrix& Lambda,
-	       RealMatrix& var_YH, Sizet2DArray& N_actual, SizetArray& N_alloc,
-	       RealVector& hf_targets, RealMatrix& pilot_mom,
-	       bool accumulate_cost, bool pilot_estvar)
+	       RealMatrix& var_YH, Real& eps_sq_div_2, Sizet2DArray& N_actual,
+	       SizetArray& N_alloc, RealVector& hf_targets,
+	       RealMatrix& pilot_mom, bool accumulate_cost, bool pilot_estvar)
 {
   size_t qoi, lev, num_mf = NLevActual.size(),
     num_hf_lev = iteratedModel.truth_model().solution_levels(),
@@ -543,21 +521,11 @@ evaluate_pilot(RealVectorArray& eval_ratios, RealMatrix& Lambda,
   //SizetArray& delta_N_lf = delta_N_l[lf_form];
   SizetArray&   delta_N_hf = delta_N_l[hf_form];
 
-  // retrieve cost estimates across solution levels for HF model
-  bool budget_constrained = (maxFunctionEvals != SZ_MAX);
-  Real budget, hf_ref_cost;
-
   // FIRST PASS: launch and synchonize sample batches
   mlmf_increments(delta_N_hf, "mlcv_");
+  // retrieve cost estimates across solution levels for HF model
   if (costSource != USER_COST_SPEC)
     recover_online_cost(batchResponsesMap); // define sequenceCost for LF,HF
-  hf_ref_cost = sequenceCost[numApprox];
-  if (budget_constrained) budget = (Real)maxFunctionEvals * hf_ref_cost;
-  // Note: could assign these back if needed elsewhere:
-  //if (online_hf_cost) truth_model.solution_level_costs(hf_cost);
-  //if (online_lf_cost)  surr_model.solution_level_costs(lf_cost);
-  if (hf_targets.empty())
-    hf_targets.size(num_hf_lev); // backfill one_sided_delta() for iter>0
 
   // SECOND PASS: accumulations and cost estimates
   // > Note: costs are accumulated in FINAL PASS (not here in SECOND PASS)
@@ -568,12 +536,12 @@ evaluate_pilot(RealVectorArray& eval_ratios, RealMatrix& Lambda,
 			sum_Hlm1_Hlm1, false);
 
   // THIRD PASS: allocations
-  compute_allocations(eval_ratios, Lambda, var_YH, delta_N_hf, N_actual,
-		      N_alloc, hf_targets, accumulate_cost, pilot_estvar,
-		      sum_Ll, sum_Llm1, sum_Hl, sum_Hlm1, sum_Ll_Ll,
-		      sum_Ll_Llm1, sum_Llm1_Llm1, sum_Hl_Ll, sum_Hl_Llm1,
-		      sum_Hlm1_Ll, sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1,
-		      sum_Hlm1_Hlm1);
+  compute_allocations(eval_ratios, Lambda, var_YH, eps_sq_div_2, delta_N_hf,
+		      N_actual, N_alloc, hf_targets, accumulate_cost,
+		      pilot_estvar, sum_Ll, sum_Llm1, sum_Hl, sum_Hlm1,
+		      sum_Ll_Ll, sum_Ll_Llm1, sum_Llm1_Llm1, sum_Hl_Ll,
+		      sum_Hl_Llm1, sum_Hlm1_Ll, sum_Hlm1_Llm1, sum_Hl_Hl,
+		      sum_Hl_Hlm1, sum_Hlm1_Hlm1);
 
   // roll up ML moment contributions from pilot sample (used in projections
   // for variance metrics); note CV contribution is zero for homogeneous pilot
@@ -596,8 +564,8 @@ void NonDMultilevControlVarSampling::
 mlmf_increments(const SizetArray& delta_N_l, String prepend)
 {
   if (mlmfIter == 0) Cout << "\nPerforming pilot sample for model groups.\n";
-  else Cout << "\nSampling iteration " << mlmfIter << ": sample increment =\n"
-	    << delta_N_l << '\n';
+  //else Cout << "\nSampling iteration " << mlmfIter << ": sample increment =\n"
+  //	      << delta_N_l << '\n';
 
   // surr,truth Keys are fixed and ASV is 2 * num_cv_lev * numFunctions
   size_t lev, num_mf = NLevActual.size(), num_hf_lev = NLevActual.back().size(),
@@ -614,7 +582,7 @@ mlmf_increments(const SizetArray& delta_N_l, String prepend)
     if (numSamples) {
       assign_specification_sequence(lev); // indexed so can skip if no samples
       // AGGREGATED_MODELS using (hf_form, lf_form) each for (lev, lev-1)
-      ml_active_set(lev, hf_offset, true);          // reset request vector
+      ml_active_set(lev, hf_offset, true);       // reset request vector
       if (lev < num_cv_lev) ml_active_set(lev, 0, false); // don't reset RV
       ensemble_sample_batch(prepend, lev, true); // new samples
     }
@@ -657,8 +625,8 @@ void NonDMultilevControlVarSampling::
 lf_increments(const SizetArray& delta_N_lf, String prepend)
 {
   if (mlmfIter == 0) Cout << "\nPerforming pilot sample for model groups.\n";
-  else Cout << "\nSampling iteration " << mlmfIter << ": sample increment =\n"
-	    << delta_N_lf << '\n';
+  //else Cout << "\nSampling iteration " << mlmfIter << ": sample increment =\n"
+  //	      << delta_N_lf << '\n';
 
   size_t lev, num_cv_lev = delta_N_lf.size(), lf_form = 0;
   for (lev=0; lev<num_cv_lev; ++lev) {

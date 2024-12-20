@@ -89,16 +89,16 @@ private:
 		       IntRealMatrixMap& sum_Hl_Hlm1_pilot,
 		       IntRealMatrixMap& sum_Hlm1_Hlm1_pilot,
 		       RealVectorArray& eval_ratios, RealMatrix& Lambda,
-		       RealMatrix& var_YH,     SizetArray& delta_N_hf,
-		       Sizet2DArray& N_actual, SizetArray& N_alloc,
-		       RealVector& hf_targets, bool accumulate_cost,
-		       bool pilot_estvar);
+		       RealMatrix& var_YH,     Real& eps_sq_div_2,
+		       SizetArray& delta_N_hf, Sizet2DArray& N_actual,
+		       SizetArray& N_alloc,    RealVector& hf_targets,
+		       bool accumulate_cost,   bool pilot_estvar);
   /// helper for shared code among pilot-projection modes
   void evaluate_pilot(RealVectorArray& eval_ratios, RealMatrix& Lambda,
-		      RealMatrix& var_YH,    Sizet2DArray& N_actual,
-		      SizetArray& N_alloc,   RealVector& hf_targets,
-		      RealMatrix& pilot_mom, bool accumulate_cost,
-		      bool pilot_estvar);
+		      RealMatrix& var_YH,     Real& eps_sq_div_2,
+		      Sizet2DArray& N_actual, SizetArray& N_alloc,
+		      RealVector& hf_targets, RealMatrix& pilot_mom,
+		      bool accumulate_cost,   bool pilot_estvar);
 
   /// evaluate multiple sample batches concurrently, where each batch involves
   /// either a single level or level pair for both HF and LF models
@@ -124,16 +124,15 @@ private:
 			     SumContainer1& sum_Hlm1_Hlm1, bool incr_cost);
 
   /// helper to compute allocations based on sample accumulations
-  //);
   template <typename SumContainer1, typename SumContainer2> 
   void compute_allocations(RealVectorArray& eval_ratios, RealMatrix& Lambda,
-			   RealMatrix& var_YH, SizetArray& delta_N_hf,
-			   Sizet2DArray& N_actual, SizetArray& N_alloc,
-			   RealVector& hf_targets, bool accumulate_cost,
-			   bool pilot_estvar, SumContainer1& sum_Ll,
-			   SumContainer1& sum_Llm1, SumContainer2& sum_Hl,
-			   SumContainer2& sum_Hlm1, SumContainer1& sum_Ll_Ll,
-			   SumContainer1& sum_Ll_Llm1,
+			   RealMatrix& var_YH,       Real& eps_sq_div_2,
+			   SizetArray& delta_N_hf,   Sizet2DArray& N_actual,
+			   SizetArray& N_alloc,      RealVector& hf_targets,
+			   bool accumulate_cost,     bool pilot_estvar,
+			   SumContainer1& sum_Ll,    SumContainer1& sum_Llm1,
+			   SumContainer2& sum_Hl,    SumContainer2& sum_Hlm1,
+			   SumContainer1& sum_Ll_Ll, SumContainer1& sum_Ll_Llm1,
 			   SumContainer1& sum_Llm1_Llm1,
 			   SumContainer1& sum_Hl_Ll, SumContainer1& sum_Hl_Llm1,
 			   SumContainer1& sum_Hlm1_Ll,
@@ -626,15 +625,15 @@ accumulate_lf_increments(const SizetArray& delta_N_lf,
 
   for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) {
     numSamples = delta_N_lf[lev];
-    if (numSamples) {
-      accumulate_mlmf_Qsums(batchResponsesMap[lev], sum_Ll_refined,
-			    sum_Llm1_refined, lev, N_actual_lf[lev]);
-      //if (incr_cost) // cost of LF increments always incurred
-      increment_ml_equivalent_cost(numSamples, level_cost(sequenceCost, lev),
-				   hf_ref_cost, equivHFEvals);
-      N_alloc_lf[lev] += (backfillFailures) ?
-	one_sided_delta(N_alloc_lf[lev], average(lf_targets[lev])) : numSamples;
-    }
+    if (!numSamples) continue;
+
+    accumulate_mlmf_Qsums(batchResponsesMap[lev], sum_Ll_refined,
+			  sum_Llm1_refined, lev, N_actual_lf[lev]);
+    //if (incr_cost) // cost of LF increments always incurred
+    increment_ml_equivalent_cost(numSamples, level_cost(sequenceCost, lev),
+				 hf_ref_cost, equivHFEvals);
+    N_alloc_lf[lev] += (backfillFailures) ?
+      one_sided_delta(N_alloc_lf[lev], average(lf_targets[lev])) : numSamples;
   }
   clear_batches();
 }
@@ -643,17 +642,17 @@ accumulate_lf_increments(const SizetArray& delta_N_lf,
 template <typename SumContainer1, typename SumContainer2> 
 void NonDMultilevControlVarSampling::
 compute_allocations(RealVectorArray& eval_ratios, RealMatrix& Lambda,
-		    RealMatrix& var_YH,         SizetArray& delta_N_hf,
-		    Sizet2DArray& N_actual,     SizetArray& N_alloc,
-		    RealVector& hf_targets,     bool accumulate_cost,
-		    bool pilot_estvar,          SumContainer1& sum_Ll,
-		    SumContainer1& sum_Llm1,    SumContainer2& sum_Hl,
-		    SumContainer2& sum_Hlm1,    SumContainer1& sum_Ll_Ll,
-		    SumContainer1& sum_Ll_Llm1, SumContainer1& sum_Llm1_Llm1,
-		    SumContainer1& sum_Hl_Ll,   SumContainer1& sum_Hl_Llm1,
-		    SumContainer1& sum_Hlm1_Ll, SumContainer1& sum_Hlm1_Llm1,
-		    SumContainer1& sum_Hl_Hl,   SumContainer1& sum_Hl_Hlm1,
-		    SumContainer1& sum_Hlm1_Hlm1)
+		    RealMatrix& var_YH,           Real& eps_sq_div_2,
+		    SizetArray& delta_N_hf,       Sizet2DArray& N_actual,
+		    SizetArray& N_alloc,          RealVector& hf_targets,
+		    bool accumulate_cost,         bool pilot_estvar,
+		    SumContainer1& sum_Ll,        SumContainer1& sum_Llm1,
+		    SumContainer2& sum_Hl,        SumContainer2& sum_Hlm1,
+		    SumContainer1& sum_Ll_Ll,     SumContainer1& sum_Ll_Llm1,
+		    SumContainer1& sum_Llm1_Llm1, SumContainer1& sum_Hl_Ll,
+		    SumContainer1& sum_Hl_Llm1,   SumContainer1& sum_Hlm1_Ll,
+		    SumContainer1& sum_Hlm1_Llm1, SumContainer1& sum_Hl_Hl,
+		    SumContainer1& sum_Hl_Hlm1,   SumContainer1& sum_Hlm1_Hlm1)
 {
   size_t qoi, lev, num_mf = NLevActual.size(),
     num_hf_lev = iteratedModel.truth_model().solution_levels(),
@@ -662,13 +661,13 @@ compute_allocations(RealVectorArray& eval_ratios, RealMatrix& Lambda,
   RealMatrix rho_dot2_LH(numFunctions, num_cv_lev, false);
   RealVector agg_var_hf(num_hf_lev), avg_rho_dot2_LH(num_cv_lev, false),
     avg_lambda(num_cv_lev, false);
-  Real eps_sq_div_2, sum_sqrt_var_cost = 0., agg_estvar_iter0 = 0., r_lq,
+  Real sum_sqrt_var_cost = 0., agg_estvar_iter0 = 0., r_lq,
     budget, lf_lev_cost, hf_lev_cost, hf_ref_cost = sequenceCost[numApprox];
   bool budget_constrained = (maxFunctionEvals != SZ_MAX);
   if (budget_constrained) budget = (Real)maxFunctionEvals * hf_ref_cost;
   eval_ratios.resize(num_cv_lev);
-  Lambda.shapeUninitialized(numFunctions, num_cv_lev);
-  var_YH.shapeUninitialized(numFunctions, num_hf_lev);
+  if (Lambda.empty()) Lambda.shapeUninitialized(numFunctions, num_cv_lev);
+  if (var_YH.empty()) var_YH.shapeUninitialized(numFunctions, num_hf_lev);
 
   for (lev=0; lev<num_hf_lev; ++lev) {
 
@@ -743,6 +742,7 @@ compute_allocations(RealVectorArray& eval_ratios, RealMatrix& Lambda,
 
   // update sample targets based on variance estimates
   // Note: sum_sqrt_var_cost is defined differently for the two cases
+  if (hf_targets.empty()) hf_targets.sizeUninitialized(num_hf_lev);
   Real fact = (budget_constrained) ?
     budget / sum_sqrt_var_cost :      //        budget constraint
     sum_sqrt_var_cost / eps_sq_div_2; // error balance constraint

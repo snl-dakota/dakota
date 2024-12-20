@@ -80,11 +80,11 @@ Test Number 6 succeeded
 <<<<< Online number of equivalent high fidelity evaluations: 5.0365850446e+01
 <<<<< Variance for mean estimator:
      Online MLCVMC (sample profile):    3.3967028033e-02
- Equivalent     MC (   50 HF samples):  2.2873717636e+02
- Equivalent MLCVMC / MC ratio:          1.4849806478e-04
+ Equivalent     MC (   50 HF samples):  2.2880668842e+02
+ Equivalent MLCVMC / MC ratio:          1.4845295068e-04
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  4.1633396971e+01  1.0733378972e+02  2.1607668482e+00  6.8941365336e+00
+ response_fn_1  4.1635107704e+01  1.0735009758e+02  2.1601061349e+00  6.8772985760e+00
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 213058 total (213058 new, 0 duplicate)
 <<<<< Function evaluation summary: 213058 total (213058 new, 0 duplicate)

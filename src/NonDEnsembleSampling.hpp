@@ -590,6 +590,7 @@ compute_mf_controls(const Real* sum_L, const Real* sum_H, const Real* sum_LL,
 		    const Real* sum_LH, const SizetArray& N_shared,
 		    RealVector& beta)
 {
+  if (beta.length()!=numFunctions) beta.sizeUninitialized(numFunctions);
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     compute_mf_control(sum_L[qoi], sum_H[qoi], sum_LL[qoi], sum_LH[qoi],
 		       N_shared[qoi], beta[qoi]);
