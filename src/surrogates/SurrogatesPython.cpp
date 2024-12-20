@@ -116,34 +116,49 @@ void Python::build(const MatrixXd& samples,
   const std::string fn_name("construct");
   py::object py_surr_builder = pySurrogate.attr(fn_name.c_str());
   py_surr_builder(samples, response);
+
+  isField = (response.cols() > 1);
 }
 
+bool Python::diagnostics_available()
+{ return !isField; }
 
-VectorXd Python::value(const MatrixXd& eval_points,
-                       const int qoi) {
+
+VectorXd Python::value(const MatrixXd& eval_points) {
+
   assert( pyModuleActive );
   assert( Py_IsInitialized() );
-
-  /* Surrogate models don't yet support multiple responses */
-  silence_unused_args(qoi);
-  assert(qoi == 0);
 
   // Hard-coded method for now; could expose to user - RWH
   const std::string fn_name("predict");
   py::object py_surr_eval = pySurrogate.attr(fn_name.c_str());
 
-  return py_surr_eval(eval_points).cast<VectorXd>();
+  auto vals = py_surr_eval(eval_points).cast<VectorXd>();
+
+  return vals;//.col(0);
+  //return py_surr_eval(eval_points).cast<VectorXd>();
 }
 
 
-MatrixXd Python::gradient(const MatrixXd& eval_points,
-                          const int qoi) {
+VectorXd Python::values(const MatrixXd& eval_points) {
+
   assert( pyModuleActive );
   assert( Py_IsInitialized() );
 
-  /* Surrogate models don't yet support multiple responses */
-  silence_unused_args(qoi);
-  assert(qoi == 0);
+  // Hard-coded method for now; could expose to user - RWH
+  const std::string fn_name("predict");
+  py::object py_surr_eval = pySurrogate.attr(fn_name.c_str());
+
+  auto vals = py_surr_eval(eval_points).cast<MatrixXd>();
+
+  return vals.row(0);
+  //return py_surr_eval(eval_points).cast<VectorXd>();
+}
+
+
+MatrixXd Python::gradient(const MatrixXd& eval_points) {
+  assert( pyModuleActive );
+  assert( Py_IsInitialized() );
 
   // Hard-coded method for now; could expose to user - RWH
   // We could add a check for this method (attribute) above in the
@@ -166,15 +181,29 @@ MatrixXd Python::gradient(const MatrixXd& eval_points,
 }
 
 
-MatrixXd Python::hessian(const MatrixXd& eval_point,
-                         const int qoi) {
+MatrixXd Python::hessian(const MatrixXd& eval_point) {
+
   assert( pyModuleActive );
   assert( Py_IsInitialized() );
 
-  silence_unused_args(eval_point);
-  silence_unused_args(qoi);
-  assert(qoi == 0);
-  throw(std::runtime_error("hessian is not currently supported."));
+  // Hard-coded method for now; could expose to user - RWH
+  // We could add a check for this method (attribute) above in the
+  // req_attrs if we knew it was needed at the time of our construction.
+  const std::string fn_name("hessian");
+  py::object py_surr_hess;
+  try {
+    py_surr_hess = pySurrogate.attr(fn_name.c_str());
+  }
+  catch(py::error_already_set &e) {
+    if (e.matches(PyExc_AttributeError)) {
+      std::cerr << "Module '" << moduleAndClassName << "' does not "
+        << "contain required method '" << fn_name << "'"
+        << std::endl;
+      throw;
+    }
+  }
+
+  return py_surr_hess(eval_point).cast<MatrixXd>();
 }
 
 }  // namespace surrogates

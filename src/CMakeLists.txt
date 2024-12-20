@@ -316,7 +316,6 @@ if(DAKOTA_SCILAB)
 endif() #DAKOTA_SCILAB
 
 if(DAKOTA_PYTHON_DIRECT_INTERFACE)
-
   message(STATUS "Dakota Python direct interface using:\n"
     "     Include dirs: ${Python_INCLUDE_DIRS}\n"
     "     Libraries:    ${Python_LIBRARIES}"
@@ -326,10 +325,11 @@ if(DAKOTA_PYTHON_DIRECT_INTERFACE)
   # TODO: Use target_definitions
   # If not, use  Python_LIBRARY_DIRS
 
-  list(APPEND EXT_TPL_INCDIRS ${Python_INCLUDE_DIRS})
-  add_definitions("-DDAKOTA_PYTHON")
-  list(APPEND EXT_TPL_LIBS ${Python_LIBRARIES})
-
+  if(DAKOTA_PYTHON_DIRECT_INTERFACE_LEGACY) 
+    list(APPEND EXT_TPL_INCDIRS ${Python_INCLUDE_DIRS})
+    add_definitions("-DDAKOTA_PYTHON_LEGACY")
+    list(APPEND EXT_TPL_LIBS ${Python_LIBRARIES})
+  endif()
   # Pybind11 is also included alongside older Python interface
   list(APPEND EXT_TPL_INCDIRS ${pybind11_INCLUDE_DIR})
   add_definitions("-DDAKOTA_PYBIND11")
@@ -451,8 +451,9 @@ set(constraint_src DakotaConstraints.cpp MixedVarConstraints.cpp
     RelaxedVarConstraints.cpp)
 
 ## Interface sources.
-set(interface_src DakotaInterface.cpp ApproximationInterface.cpp
-    DakotaApproximation.cpp TaylorApproximation.cpp TANA3Approximation.cpp QMEApproximation.cpp
+set(interface_src DakotaInterface.cpp ApproximationInterface.cpp ApproximationFieldInterface.cpp
+  DakotaApproximation.cpp DakotaFieldApproximation.cpp
+    TaylorApproximation.cpp TANA3Approximation.cpp QMEApproximation.cpp
     GaussProcApproximation.cpp VPSApproximation.cpp 
     PecosApproximation.cpp SharedApproxData.cpp
     SharedPecosApproxData.cpp
@@ -499,7 +500,10 @@ if(DAKOTA_MATLAB)
 endif()
 
 if(DAKOTA_PYTHON_DIRECT_INTERFACE)
-  list(APPEND interface_src PythonInterface.cpp Pybind11Interface.cpp)
+  list(APPEND interface_src Pybind11Interface.cpp)
+  if(DAKOTA_PYTHON_DIRECT_INTERFACE_LEGACY)
+    list(APPEND interface_src PythonInterface.cpp)
+   endif()
 endif()
 
 if(DAKOTA_SCILAB)

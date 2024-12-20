@@ -494,7 +494,7 @@ void NonDGenACVSampling::update_model_groups()
     unroll_reverse_dag_from_root(numApprox, modelGroups[num_approx]);
     break;
   case SUBMETHOD_ACV_IS:  case SUBMETHOD_ACV_RD: {
-    // same model groupings, only differ in z1/z2 sample set definitions
+    // IS,RD = same model groupings, only differ in z1/z2 sample sets
     unsigned short root;
     for (g=0; g<num_approx; ++g) {
       root = approx_set[g];
@@ -641,7 +641,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
     compute_LH_statistics(sum_L_baselineH[1], sum_H[1], sum_LL[1], sum_LH[1],
 			  sum_HH, N_H_actual, var_L, varH, covLL, covLH);
 
-    if (mlmfIter == 0) precompute_ratios(); // metrics not dependent on DAG
+    if (mlmfIter == 0) precompute_allocations(); // metrics not dependent on DAG
     for (activeModelSetIter  = modelDAGs.begin();
 	 activeModelSetIter != modelDAGs.end(); ++activeModelSetIter) {
       const UShortArray& approx_set = activeModelSetIter->first;
@@ -664,7 +664,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
 	// ratio of MC and ACV mean sq errors (which incorporates anticipated
 	// variance reduction from application of avg_eval_ratios).
 	MFSolutionData& soln = dagSolns[soln_key];
-	compute_ratios(var_L, soln);
+	compute_allocations(var_L, soln);
 	update_best(soln);// store state for restoration
 	//reset_acv(); // reset state for next ACV execution
       }
@@ -692,8 +692,8 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
 		      N_L_actual_shared, sum_L_refined, N_L_actual_refined,
 		      N_L_alloc_refined, soln);
     genacv_raw_moments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
-		       sum_L_shared, N_L_actual_shared, sum_L_refined,
-		       N_L_actual_refined, soln);
+		       sum_H, N_H_actual, sum_L_shared, N_L_actual_shared,
+		       sum_L_refined, N_L_actual_refined, soln);
     finalize_counts(N_L_actual_refined, N_L_alloc_refined);
   }
   else
@@ -728,7 +728,7 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
-  precompute_ratios(); // compute metrics not dependent on active DAG
+  precompute_allocations(); // compute metrics not dependent on active DAG
   std::pair<UShortArray, UShortArray> soln_key;
   for (activeModelSetIter  = modelDAGs.begin();
        activeModelSetIter != modelDAGs.end(); ++activeModelSetIter) {
@@ -752,7 +752,7 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
       // ratio of MC and ACV mean sq errors (which incorporates anticipated
       // variance reduction from application of avg_eval_ratios).
       MFSolutionData& soln = dagSolns[soln_key];
-      compute_ratios(var_L, soln);
+      compute_allocations(var_L, soln);
       update_best(soln); // store state for restoration
       //reset_acv(); // reset state for next ACV execution
     }
@@ -793,7 +793,8 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
 		    N_L_actual_shared, sum_L_refined, N_L_actual_refined,
 		    N_L_alloc_refined, soln);
   genacv_raw_moments(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
-		     N_shared_pilot, sum_L_shared, N_L_actual_shared,
+		     N_shared_pilot, sum_H, N_H_actual,
+		     sum_L_shared, N_L_actual_shared,
 		     sum_L_refined, N_L_actual_refined, soln);
   finalize_counts(N_L_actual_refined, N_L_alloc_refined);
 }
@@ -831,7 +832,7 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
   // -----------------------------------
   // Compute "online" sample increments:
   // -----------------------------------
-  precompute_ratios(); // compute metrics not dependent on active DAG
+  precompute_allocations(); // compute metrics not dependent on active DAG
   for (activeModelSetIter  = modelDAGs.begin();
        activeModelSetIter != modelDAGs.end(); ++activeModelSetIter) {
     const UShortArray&  approx_set = activeModelSetIter->first;
@@ -854,7 +855,7 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
       // ratio of MC and ACV mean sq errors (which incorporates anticipated
       // variance reduction from application of avg_eval_ratios).
       MFSolutionData& soln = dagSolns[soln_key];
-      compute_ratios(var_L, soln);
+      compute_allocations(var_L, soln);
       update_best(soln); // store state for restoration
       //reset_acv(); // reset state for next ACV execution
     }
@@ -943,81 +944,59 @@ approx_increments(IntRealMatrixMap& sum_L_baseline,
   Sizet2DArray     N_G_actual;  initialize_group_counts(N_G_actual);
   accumulate_group_sums(sum_G, N_G_actual, batchResponsesMap);
   clear_batches();
-  // Map from "horizontal" group incr to "vertical" model incr (see JCP: ACV)
+  // Map from "horizontal" group incr to "vertical" model incr (see JCP: ACV).
+  // > Base class overlay_group_sums() can be used for arbitrary DAG
+  //   since modelGroups are defined with each group's root at the end
+  //   (see unroll_reverse_dag_from_root(root,group)).  This is necessary
+  //   to correctly define the "shared" accumulations.
   sum_L_shared = sum_L_baseline;
-  overlay_approx_group_sums(sum_G, N_G_actual, sum_L_shared, sum_L_refined,
-			    N_L_actual_shared, N_L_actual_refined);
+  overlay_group_sums(sum_G,         N_G_actual,
+		     sum_L_shared,  N_L_actual_shared,
+		     sum_L_refined, N_L_actual_refined);
 }
 
 
 void NonDGenACVSampling::
-genacv_raw_moments(IntRealMatrixMap& sum_L_baseline,
-		   IntRealVectorMap& sum_H_baseline,
-		   IntRealSymMatrixArrayMap& sum_LL_baseline,
-		   IntRealMatrixMap& sum_LH_baseline,
+genacv_raw_moments(const IntRealMatrixMap& sum_L_covar,
+		   const IntRealVectorMap& sum_H_covar,
+		   const IntRealSymMatrixArrayMap& sum_LL_covar,
+		   const IntRealMatrixMap& sum_LH_covar,
+		   const SizetArray& N_covar,
+		   const IntRealVectorMap& sum_H_baseline,
 		   const SizetArray& N_baseline,
-		   IntRealMatrixMap& sum_L_shared,
+		   const IntRealMatrixMap& sum_L_shared,
 		   const Sizet2DArray& N_L_shared, 
-		   IntRealMatrixMap& sum_L_refined,
-		   const Sizet2DArray& N_L_refined,
-		   const MFSolutionData& soln)
+		   const IntRealMatrixMap& sum_L_refined,
+		   const Sizet2DArray& N_L_refined, const MFSolutionData& soln)
 {
-  // ------------------------------------
-  // Compute/apply CV to estimate moments
-  // ------------------------------------
-  RealMatrix H_raw_mom(4, numFunctions);  RealVectorArray beta(4);
-  precompute_genacv_controls(soln.solution_ratios(), N_baseline);
-  compute_genacv_controls(sum_L_baseline, sum_H_baseline, sum_LL_baseline,
-			  sum_LH_baseline, N_baseline, beta);
-  apply_genacv_controls(sum_H_baseline, N_baseline, sum_L_shared, N_L_shared,
-			sum_L_refined, N_L_refined, beta, H_raw_mom);
-  convert_moments(H_raw_mom, momentStats); // uncentered to final (central|std)
-}
+  // no need to check optSubProblemForm since MFSolutionData stores as N_vec
+  precompute_genacv_controls(soln.solution_variables());
 
-
-void NonDGenACVSampling::
-compute_genacv_controls(IntRealMatrixMap& sum_L_baseline,
-			IntRealVectorMap& sum_H_baseline,
-			IntRealSymMatrixArrayMap& sum_LL_baseline,
-			IntRealMatrixMap& sum_LH_baseline,
-			const SizetArray& N_baseline, RealVectorArray& beta)
-{
   const UShortArray& approx_set = activeModelSetIter->first;
-  size_t qoi, num_approx = approx_set.size();
+  size_t qoi, approx, inflate_approx, num_approx = approx_set.size();
+  RealMatrix H_raw_mom(4, numFunctions);  RealVector beta(num_approx);
   for (int mom=1; mom<=4; ++mom) {
-    RealMatrix&          sum_L_m =  sum_L_baseline[mom];
-    RealVector&          sum_H_m =  sum_H_baseline[mom];
-    RealSymMatrixArray& sum_LL_m = sum_LL_baseline[mom];
-    RealMatrix&         sum_LH_m = sum_LH_baseline[mom];
-    RealVector&           beta_m =   beta[mom-1];
-    beta_m.sizeUninitialized(num_approx);
-    for (qoi=0; qoi<numFunctions; ++qoi)
-      compute_genacv_control(sum_L_m, sum_H_m[qoi], sum_LL_m[qoi], sum_LH_m,
-			     N_baseline[qoi], mom, qoi, approx_set, beta_m);
-      // *** TO DO: support shared_approx_increment() --> baselineL
-  }
-}
-
-
-void NonDGenACVSampling::
-apply_genacv_controls(IntRealVectorMap& sum_H_baseline,
-		      const SizetArray& N_baseline,
-		      IntRealMatrixMap& sum_L_shared,
-		      const Sizet2DArray& N_L_shared,
-		      IntRealMatrixMap& sum_L_refined,
-		      const Sizet2DArray& N_L_refined,
-		      const RealVectorArray& beta, RealMatrix& H_raw_mom)
-{
-  const UShortArray& approx_set = activeModelSetIter->first;
-  size_t approx, inflate_approx, num_approx = approx_set.size(), qoi;
-  for (int mom=1; mom<=4; ++mom) {
-    RealVector& sum_H_base_m = sum_H_baseline[mom];
-    RealMatrix&   sum_L_sh_m =   sum_L_shared[mom];
-    RealMatrix&  sum_L_ref_m =  sum_L_refined[mom];
-    const RealVector& beta_m =           beta[mom-1];
+    const RealMatrix&          sum_L_m =    sum_L_covar.at(mom);
+    const RealVector&          sum_H_m =    sum_H_covar.at(mom);
+    const RealSymMatrixArray& sum_LL_m =   sum_LL_covar.at(mom);
+    const RealMatrix&         sum_LH_m =   sum_LH_covar.at(mom);
+    const RealVector&     sum_H_base_m = sum_H_baseline.at(mom);
+    const RealMatrix&       sum_L_sh_m =   sum_L_shared.at(mom);
+    const RealMatrix&      sum_L_ref_m =  sum_L_refined.at(mom);
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Moment " << mom << " estimator:\n";
     for (qoi=0; qoi<numFunctions; ++qoi) {
+      // --------------------------------------
+      // Compute beta for control variate terms
+      // --------------------------------------
+      // > uses either online or offline samples for covariance
+      // > TO DO: support shared_approx_increment() --> baselineL
+      compute_genacv_control(sum_L_m, sum_H_m[qoi], sum_LL_m[qoi], sum_LH_m,
+			     N_covar[qoi], mom, qoi, approx_set, beta);
+      // ------------------------------------------------------
+      // Evaluate control variate terms to estimate raw moments
+      // ------------------------------------------------------
+      // > uses online samples for baseline, shared, refined
       Real& H_raw_mq = H_raw_mom(mom-1, qoi);
       H_raw_mq = sum_H_base_m[qoi] / N_baseline[qoi];// 1st term to be augmented
       for (approx=0; approx<num_approx; ++approx) {
@@ -1025,21 +1004,22 @@ apply_genacv_controls(IntRealVectorMap& sum_H_baseline,
 	if (outputLevel >= NORMAL_OUTPUT)
 	  Cout << "   QoI " << qoi+1 << " Approx " << inflate_approx+1
 	       << ": control variate beta = " << std::setw(9)
-	       << beta_m[approx] << '\n';
-	// For ACV, shared counts are fixed at N_H for all approx
+	       << beta[approx] << '\n';
 	apply_control(sum_L_sh_m(qoi,inflate_approx),
 		      N_L_shared[inflate_approx][qoi],
 		      sum_L_ref_m(qoi,inflate_approx),
 		      N_L_refined[inflate_approx][qoi],
-		      beta_m[approx], H_raw_mq);
+		      beta[approx], H_raw_mq);
       }
     }
   }
   if (outputLevel >= NORMAL_OUTPUT) Cout << std::endl;
+
+  convert_moments(H_raw_mom, momentStats); // uncentered to final (central|std)
 }
 
 
-void NonDGenACVSampling::precompute_ratios()
+void NonDGenACVSampling::precompute_allocations()
 {
   if (pilotMgmtMode == ONLINE_PILOT ||
       pilotMgmtMode == ONLINE_PILOT_PROJECTION)
@@ -1048,7 +1028,7 @@ void NonDGenACVSampling::precompute_ratios()
 
 
 void NonDGenACVSampling::
-compute_ratios(const RealMatrix& var_L, MFSolutionData& soln)
+compute_allocations(const RealMatrix& var_L, MFSolutionData& soln)
 {
   // --------------------------------------
   // Configure the optimization sub-problem
@@ -1309,7 +1289,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
   // For offline mode, online allocations must be lower bounded for numerics:
-  Real offline_N_lwr = 2.; //(finalStatsType == QOI_STATISTICS) ? 2. : 1.;
+  Real offline_N_lwr = 1.; //(finalStatsType == QOI_STATISTICS) ? 2. : 1.;
   bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
 		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
 

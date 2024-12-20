@@ -46,7 +46,7 @@ Pushing changes to the remote repository
 
 *Note: The following applies primarily to "source code" changes. The next section provides guidance for making changes to Dakota's build/test system, which can be impractical to rigorously test prior to making commits.*
 
-**Pre-push testing:** Before pushing to "devel," code must compile, and all RHEL7 Linux unit tests should pass and regression tests should PASS or DIFF according to the current gold standards (see dakota_assay.py).  (Other platforms need not be clean.) If this standard is too stringent, consider using a local or remote branch.  Typically you would want to pull from the origin repo (see below) and rebuild before running tests to prevent thrash integrating with others' changes.  Some helpful shortcuts (second option being fastest, but less complete):
+**Pre-push testing:** Before pushing to "devel," code must compile, and all RHEL8 Linux unit tests should pass and regression tests should PASS or DIFF according to the current gold standards (see dakota_assay.py).  (Other platforms need not be clean.) If this standard is too stringent, consider using a local or remote branch.  Typically you would want to pull from the origin repo (see below) and rebuild before running tests to prevent thrash integrating with others' changes.  Some helpful shortcuts (second option being fastest, but less complete):
 
 1. Run all tests, then verify against expected gold standards using the assay script
 
@@ -94,7 +94,7 @@ NOTE: You can do a trial run before actually doing the push by adding the --dry-
 
 **"There are test failures or DIFFs; what next?"**
 
-- **Minor DIFFs:** If the change induces DIFFS that the committer can easily review and bless through an RHEL7 build, typically resolve them, update commits as needed, and push to devel.  Even in this case, it may be helpful to create a local branch (git checkout -b bug_name_diffs) to separate that work in case resolution ends up being challenging or long-running.
+- **Minor DIFFs:** If the change induces DIFFS that the committer can easily review and bless through an RHEL8 build, typically resolve them, update commits as needed, and push to devel.  Even in this case, it may be helpful to create a local branch (git checkout -b bug_name_diffs) to separate that work in case resolution ends up being challenging or long-running.
 - **Major DIFFs and/or need help** from build system or team review/resolution: Push the named branch to origin, e.g, git push origin bug_name_diffs.  Then developers can collaborate to resolve DIFFs, and/or an automated build job can be conducted on that branch.  The software engineering infrastructure team can help with assigning developers to review and resolve differences.
 - **Once resolved:** Whether local or remote, when done resolving the issues and DIFFs, merge the branch into devel and push to origin.  Delete the remote (and local) branch when no longer needed.
 

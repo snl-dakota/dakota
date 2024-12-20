@@ -543,6 +543,13 @@ protected:
   void group_to_root_reverse_dag(const UShortArray& model_group,
 				 unsigned short& root, UShortSet& rev_dag);
 
+  void overlay_group_sums(const IntRealMatrixArrayMap& sum_G,
+			  const Sizet2DArray& N_G_actual,
+			  IntRealMatrixMap& sum_L_shared,
+			  Sizet2DArray& N_L_actual_shared,
+			  IntRealMatrixMap& sum_L_refined,
+			  Sizet2DArray& N_L_actual_refined);
+
   //bool mfmc_model_grouping(const UShortArray& model_group) const;
   //bool cvmc_model_grouping(const UShortArray& model_group) const;
   void mfmc_model_group(size_t last_index, UShortArray& model_group) const;
@@ -559,13 +566,6 @@ protected:
 			UShortArray& model_group) const;
 
   void update_model_group_costs();
-
-  void overlay_approx_group_sums(const IntRealMatrixArrayMap& sum_G,
-				 const Sizet2DArray& N_G_actual,
-				 IntRealMatrixMap& sum_L_shared,
-				 IntRealMatrixMap& sum_L_refined,
-				 Sizet2DArray& N_L_actual_shared,
-				 Sizet2DArray& N_L_actual_refined);
 
   void print_group(std::ostream& s, size_t g) const;
 
@@ -588,7 +588,7 @@ protected:
 
   void scale_to_target(Real avg_N_H, const RealVector& cost,
 		       RealVector& avg_eval_ratios, Real& avg_hf_target,
-		       Real budget, Real offline_N_lwr = 2);
+		       Real budget, Real offline_N_lwr = 1.);
   void scale_to_budget_with_pilot(RealVector& avg_eval_ratios,
 				  const RealVector& cost, Real avg_N_H,
 				  Real budget);
@@ -621,6 +621,14 @@ protected:
   /// all rows
   bool ordered_approx_sequence(const RealMatrix& metric,
 			       const UShortArray& approx_set);
+
+  void raw_moments(const IntRealVectorMap& sum_H_baseline,
+		   const SizetArray& N_baseline,
+		   const IntRealMatrixMap& sum_L_shared,
+		   const Sizet2DArray& N_L_shared,
+		   const IntRealMatrixMap& sum_L_refined,
+		   const Sizet2DArray& N_L_refined,
+		   const RealVector2DArray& beta);
 
   void apply_control(Real sum_L_shared, size_t num_shared, Real sum_L_refined,
 		     size_t num_refined, Real beta, Real& H_raw_mom);

@@ -13,6 +13,7 @@
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/tools/detail/per_element_manip.hpp>
 #include <nlohmann/json.hpp>
+#include <cmath>
 #include <memory>
 #include "dakota_data_types.hpp"
 #include <iostream>
@@ -115,9 +116,26 @@ BOOST_AUTO_TEST_CASE(test_metadata_non_numeric_throws)
       
   JRP test(j);
   BOOST_CHECK_EXCEPTION(test.metadata("time"), JRPE,
-		  msg_matches("In JSON results object, metadata value for 'time' is non-numeric"));
+		  msg_matches("In JSON results object, metadata value for 'time' could not be converted to a number"));
 }
 
+BOOST_AUTO_TEST_CASE(test_metadata_nonfinite)
+{
+  auto j = R"(
+  {
+    "metadata": {
+        "time": "nan",
+        "year": "inf",
+        "month": "-inf"
+    }
+  }
+  )"_json;
+      
+  JRP test(j);
+  BOOST_CHECK(std::isnan(test.metadata("time")));
+  BOOST_CHECK(std::isinf(test.metadata("year")));
+  BOOST_CHECK(std::isinf(test.metadata("month")));
+}
 
 
 // #####################################################################################
@@ -175,8 +193,45 @@ BOOST_AUTO_TEST_CASE(test_function_non_numeric_throws)
       
   JRP test(j);
   BOOST_CHECK_EXCEPTION(test.function("response_fn_1"), JRPE,
-		  msg_matches("In JSON results object, function value for 'response_fn_1' is non-numeric"));
+		  msg_matches("In JSON results object, function value for 'response_fn_1' could not be converted to a number"));
 }
+
+BOOST_AUTO_TEST_CASE(test_function_nonfinite)
+{
+  auto j = R"(
+  {
+    "functions": {
+        "response_fn_1": "nan",
+        "response_fn_2": "INF",
+        "response_fn_3": "-Inf"
+    }
+  }
+  )"_json;
+      
+  JRP test(j);
+  BOOST_CHECK(std::isnan(test.function("response_fn_1")));
+  BOOST_CHECK(std::isinf(test.function("response_fn_2")));
+  BOOST_CHECK(std::isinf(test.function("response_fn_3")));
+}
+
+BOOST_AUTO_TEST_CASE(test_function_string_encoded_numbers)
+{
+  auto j = R"(
+  {
+    "functions": {
+        "response_fn_1": "1",
+        "response_fn_2": "2.4",
+        "response_fn_3": "3.e9"
+    }
+  }
+  )"_json;
+      
+  JRP test(j);
+  BOOST_CHECK_EQUAL(test.function("response_fn_1"), 1);
+  BOOST_CHECK_EQUAL(test.function("response_fn_2"), 2.4);
+  BOOST_CHECK_EQUAL(test.function("response_fn_3"), 3.e9);
+}
+
 
 // #####################################################################################
 // ## gradents tests
@@ -248,7 +303,23 @@ BOOST_AUTO_TEST_CASE(test_gradient_non_numeric_throws)
       
   JRP test(j);
   BOOST_CHECK_EXCEPTION(test.gradient("response_fn_1"), JRPE,
-		  msg_matches("In JSON results object, gradient for 'response_fn_1' contains a non-numeric entry"));
+		  msg_matches("In JSON results object, gradient for 'response_fn_1' contains an element that could not be converted to a number"));
+}
+
+BOOST_AUTO_TEST_CASE(test_gradient_real_vector_nonfinite) {
+  RealVector expected(2);
+  auto j = R"(
+  {
+    "gradients": {
+        "response_fn_1": ["NaN", "Inf", "-Inf"]
+    }
+  }
+  )"_json;
+  JRP test(j);
+  RealVector actual = test.gradient("response_fn_1");
+  BOOST_CHECK(std::isnan(actual[0]));
+  BOOST_CHECK(std::isinf(actual[1]));
+  BOOST_CHECK(std::isinf(actual[2]));
 }
 
 // #####################################################################################
@@ -356,8 +427,28 @@ BOOST_AUTO_TEST_CASE(test_hessian_non_numeric_throws)
       
   JRP test(j);
   BOOST_CHECK_EXCEPTION(test.hessian("response_fn_1"), JRPE,
-		  msg_matches("In JSON results object, Hessian for 'response_fn_1' contains a non-numeric entry"));
+		  msg_matches("In JSON results object, Hessian for 'response_fn_1' contains an element that could not be converted to a number"));
 }
 
+BOOST_AUTO_TEST_CASE(test_hessian_real_sym_matrix_nonfinite)
+{
+  auto j = R"(
+  {
+    "hessians": {
+        "response_fn_1": [
+                           ["NAN", 2.0],
+                           [2.0, "inF"]
+                         ]
+    }
+  }
+  )"_json;
+      
+  JRP test(j);
+  RealSymMatrix actual = test.hessian("response_fn_1");
+  BOOST_CHECK(std::isnan(actual(0,0)));
+  BOOST_CHECK(std::isinf(actual(1,1)));
+  BOOST_CHECK_EQUAL(actual(1,0), 2.0);
+  BOOST_CHECK_EQUAL(actual(0,1), 2.0);
+}
 
 

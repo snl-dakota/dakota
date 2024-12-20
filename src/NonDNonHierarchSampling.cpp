@@ -711,6 +711,48 @@ cvmc_ensemble_solutions(const RealMatrix& rho2_LH, const RealVector& cost,
 }
 
 
+void NonDNonHierarchSampling::
+raw_moments(const IntRealVectorMap& sum_H_baseline,
+	    const SizetArray& N_baseline,
+	    const IntRealMatrixMap& sum_L_shared,
+	    const Sizet2DArray& N_L_shared,
+	    const IntRealMatrixMap& sum_L_refined,
+	    const Sizet2DArray& N_L_refined, const RealVector2DArray& beta)
+{
+  RealMatrix H_raw_mom(4, numFunctions);
+  // ----------------------------
+  // Apply CV to estimate moments
+  // ----------------------------
+  size_t approx, qoi;
+  for (int mom=1; mom<=4; ++mom) {
+    const RealVector& sum_H_base_m = sum_H_baseline.at(mom);
+    const RealMatrix&   sum_L_sh_m =   sum_L_shared.at(mom);
+    const RealMatrix&  sum_L_ref_m =  sum_L_refined.at(mom);
+    const RealVectorArray&  beta_m =              beta[mom-1];
+
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "Moment " << mom << " estimator:\n";
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+      const RealVector& beta_mq = beta_m[qoi];
+      Real& H_raw_mq = H_raw_mom(mom-1, qoi);
+      H_raw_mq = sum_H_base_m[qoi] / N_baseline[qoi];// 1st term to be augmented
+      for (approx=0; approx<numApprox; ++approx) {
+	if (outputLevel >= NORMAL_OUTPUT)
+	  Cout << "   QoI " << qoi+1 << " Approx " << approx+1 << ": control "
+	       << "variate beta = " << std::setw(9) << beta_m[approx] << '\n';
+	// For MFMC, shared accumulators and counts telescope pairwise
+	apply_control(sum_L_sh_m(qoi,approx),  N_L_shared[approx][qoi],
+		      sum_L_ref_m(qoi,approx), N_L_refined[approx][qoi],
+		      beta_mq[approx], H_raw_mq);
+      }
+    }
+  }
+  if (outputLevel >= NORMAL_OUTPUT) Cout << std::endl;
+
+  convert_moments(H_raw_mom, momentStats); // uncentered to final (central|std)
+}
+
+
 void NonDNonHierarchSampling::update_model_group_costs()
 {
   // modelGroupCost used in finite_solution_bounds() for
@@ -745,16 +787,24 @@ void NonDNonHierarchSampling::update_model_group_costs()
 
 
 void NonDNonHierarchSampling::
-overlay_approx_group_sums(const IntRealMatrixArrayMap& sum_G,
-			  const Sizet2DArray& N_G_actual,
-			  IntRealMatrixMap& sum_L_shared,
-			  IntRealMatrixMap& sum_L_refined,
-			  Sizet2DArray& N_L_actual_shared,
-			  Sizet2DArray& N_L_actual_refined)
+overlay_group_sums(const IntRealMatrixArrayMap& sum_G,
+		   const Sizet2DArray& N_G_actual,
+		   IntRealMatrixMap& sum_L_shared,
+		   Sizet2DArray& N_L_actual_shared,
+		   IntRealMatrixMap& sum_L_refined,
+		   Sizet2DArray& N_L_actual_refined)
 {
-  // omit the last group (all-models) since (i) there is no HF increment
-  // (delta_N_G[numApprox] is assigned 0 in approx_increments()) and
-  // (ii) any HF refinement would be out of range for L accumulations.  
+  // This base implementation requires that the last model in the group
+  // corresponds to the root of a reverse DAG, which then defines the "shared"
+  // model accumulation as well as the basis for "refined" accumulations.
+  // GenACV satisfies this requirement via unroll_reverse_dag_from_root(rt,grp)
+  // and MFMC satisfies using ordered pyramid groups.
+  // > ACV can use a more streamlined implementation since a peer DAG can
+  //   bypass sum_L_shared accumulations (first loop below).
+  // > We omit the last group (all-models) since (i) there is no HF increment
+  //   (delta_N_G[numApprox] is assigned 0 in approx_increments()) and
+  //   (ii) any HF refinement would be out of range for L accumulations.
+
   size_t m, g, num_L_groups = modelGroups.size() - 1, last_m_index;
   unsigned short model, last_model;
   IntRealMatrixArrayMap::const_iterator g_cit;
@@ -796,49 +846,6 @@ overlay_approx_group_sums(const IntRealMatrixArrayMap& sum_G,
 		     numFunctions);
   }
 }
-
-
-/* Case for ACV peer DAG (special case of more general implementation above)
-void NonDNonHierarchSampling::
-overlay_approx_group_sums(const IntRealMatrixArrayMap& sum_G,
-			  const Sizet2DArray& N_G_actual,
-			  IntRealMatrixMap& sum_L_refined,
-			  Sizet2DArray& N_L_actual_refined)
-{
-  // omit the last group (all-models) since (i) there is no HF increment
-  // (delta_N_G[numApprox] is assigned 0 in approx_increments()) and
-  // (ii) any HF refinement would be out of range for L accumulations.  
-
-  // avoid redundant accumulations by augmenting refined starting from shared
-  N_L_actual_refined = N_L_actual_shared; // not in overloads API -> do upstream
-  sum_L_refined      = sum_L_shared;      // not in overloads API -> do upstream
-
-  size_t m, g, num_L_groups = modelGroups.size() - 1, num_models;
-  unsigned short approx;
-  IntRealMatrixArrayMap::const_iterator g_cit;
-  IntRealMatrixMap::iterator s_it, r_it;
-  for (g=0; g<num_L_groups; ++g) {
-    const SizetArray&  num_G_g =  N_G_actual[g];
-    const UShortArray& group_g = modelGroups[g];
-    // all-models group has delta = 0; singleton model groups may bypass
-    if (zeros(num_G_g)) continue;
-    num_models = group_g.size();
-
-    // counters (span all moments):
-    for (m=0; m<num_models; ++m)
-      increment_samples(N_L_actual_refined[group_g[m]], num_G_g);
-
-    // accumulators for each moment:
-    for (s_it =sum_L_refined.begin(), g_cit =sum_G.begin();
-	 s_it!=sum_L_refined.end() && g_cit!=sum_G.end(); ++g_cit, ++s_it) {
-      const RealMatrix& sum_G_mg    = g_cit->second[g];
-      RealMatrix&       sum_L_ref_m =  s_it->second;
-      for (m=0; m<num_models; ++m)
-	increment_sums(sum_L_ref_m[group_g[m]], sum_G_mg[m], numFunctions);
-    }
-  }
-}
-*/
 
 
 void NonDNonHierarchSampling::
@@ -1043,7 +1050,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   // Nonzero lower bound ensures replacement of allSamples after offline pilot.
   bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
 		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
-  Real offline_N_lwr = 2.; //(finalStatsType == QOI_STATISTICS) ? 2. : 1.;
+  Real offline_N_lwr = 1.; //(finalStatsType == QOI_STATISTICS) ? 2. : 1.;
 
   // --------------------------------------
   // Formulate the optimization sub-problem: initial pt, bnds, constraints
@@ -1228,9 +1235,8 @@ finite_solution_bounds(const RealVector& x0, RealVector& x_lb, RealVector& x_ub)
 
     // "budget_exhausted" logic protects numerical solutions for budget-
     // constrained cases in:
-    // > NonD{ACV,GenACV}Sampling::compute_ratios()
+    // > NonD{ACV,GenACV,MultilevBLUE}Sampling::compute_allocations()
     // > NonDMultifidelitySampling::mfmc_numerical_solution()
-    // > NonDMultilevBLUESampling::compute_allocations()
     // but accuracy-constrained cases estimate hf_targets above, where it is
     // possible for the pilot to overshoot this target, such that we need to
     // protect against x_ub < x_lb.

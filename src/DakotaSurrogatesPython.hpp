@@ -28,10 +28,14 @@ public:
 
   /// default constructor
   SurrogatesPythonApprox() { }
-  /// standard constructor: 
+  /// standard constructor for scalar surfaces: 
   SurrogatesPythonApprox(const ProblemDescDB& problem_db,
 		         const SharedApproxData& shared_data,
 		         const String& approx_label);
+  /// standard constructor for field surfaces: 
+  SurrogatesPythonApprox(const ProblemDescDB& problem_db,
+		         const SharedApproxData& shared_data,
+		         const StringArray& approx_labels);
   /// alternate constructor
   SurrogatesPythonApprox(const SharedApproxData& shared_data);
   /// destructor
@@ -42,8 +46,11 @@ protected:
   // Minimum number of data points required to build
   int min_coefficients() const override;
 
-  ///  Do the build
+  ///  Do the build - scalar version
   void build() override;
+
+  ///  Do the build - field version
+  void build(int num_resp) override;
 
   /// Python module filename
   String moduleFile;

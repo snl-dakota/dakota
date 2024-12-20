@@ -1,0 +1,16 @@
+Blurb::
+Parameter for the DILI MCMC algorithm in MUQ
+
+Description::
+"Weight" or number of samples given to the to initial Hessian. The weight on the previous average Hessian estimate is given by :math:`(N+W)/(N+W+1)`,
+where N is the number of MCMC steps taken and W is this parameter. The default value is '100'.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

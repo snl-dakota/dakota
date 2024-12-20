@@ -138,11 +138,7 @@ void PolynomialRegression::build(const MatrixXd& samples,
       scaled_response.mean() - (scaled_basis_matrix * polynomialCoeffs).mean();
 }
 
-VectorXd PolynomialRegression::value(const MatrixXd& eval_points,
-                                     const int qoi) {
-  /* Surrogate models don't yet support multiple responses */
-  silence_unused_args(qoi);
-  assert(qoi == 0);
+VectorXd PolynomialRegression::value(const MatrixXd& eval_points) {
 
   VectorXd approx_values;
 
@@ -179,11 +175,7 @@ void PolynomialRegression::default_options() {
   defaultConfigOptions.set("verbosity", 1, "console output verbosity");
 }
 
-MatrixXd PolynomialRegression::gradient(const MatrixXd& eval_points,
-                                        const int qoi) {
-  /* Surrogate models don't yet support multiple responses */
-  silence_unused_args(qoi);
-  assert(qoi == 0);
+MatrixXd PolynomialRegression::gradient(const MatrixXd& eval_points) {
 
   MatrixXd basis_indices = basisIndices.cast<double>();
   basis_indices.transposeInPlace();
@@ -220,11 +212,7 @@ MatrixXd PolynomialRegression::gradient(const MatrixXd& eval_points,
   return scaled_eval_pts_basis_matrix * deriv_coeffs * responseScaleFactor;
 }
 
-MatrixXd PolynomialRegression::hessian(const MatrixXd& eval_point,
-                                       const int qoi) {
-  /* Surrogate models don't yet support multiple responses */
-  silence_unused_args(qoi);
-  assert(qoi == 0);
+MatrixXd PolynomialRegression::hessian(const MatrixXd& eval_point) {
 
   if (eval_point.rows() != 1) {
     throw(std::runtime_error(

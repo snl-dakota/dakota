@@ -10,6 +10,7 @@
 #include "DataFitSurrModel.hpp"
 #include "ProbabilityTransformModel.hpp"
 #include "ApproximationInterface.hpp"
+#include "ApproximationFieldInterface.hpp"
 #include "ParamResponsePair.hpp"
 #include "ProblemDescDB.hpp"
 #include "PRPMultiIndex.hpp"
@@ -174,9 +175,14 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   }
   // size approxInterface based on currentResponse, which is constructed from
   // DB response spec, since actualModel could contain response aggregations
-  approxInterface.assign_rep(std::make_shared<ApproximationInterface>(
-    problem_db, vars, cache, am_interface_id,
-    currentResponse.function_labels()));
+  if( 0 == currentResponse.field_lengths().length() )
+    approxInterface.assign_rep(std::make_shared<ApproximationInterface>(
+      problem_db, vars, cache, am_interface_id,
+      currentResponse.function_labels()));
+  else // field-based approximations
+    approxInterface.assign_rep(std::make_shared<ApproximationFieldInterface>(
+      problem_db, vars, cache, am_interface_id,
+      currentResponse));
 
   // initialize the basis, if needed
   if (basis_expansion)

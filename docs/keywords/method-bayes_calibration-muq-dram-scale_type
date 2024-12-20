@@ -1,0 +1,16 @@
+Blurb::
+Type of scaling to use
+
+Description::
+Set to either 'Linear' or 'Power'. Used for the DR or DRAM MCMC algorithms.
+
+Topics::
+bayesian_calibration
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

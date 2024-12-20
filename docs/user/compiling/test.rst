@@ -41,7 +41,7 @@ Regression Tests
 ================
 
 Most of Dakota regression tests should pass when run in the
-recommended RHEL 7 development environment. They commonly produce
+recommended RHEL 8 development environment. They commonly produce
 numerical differences (reported as DIFF) when run on other platforms.
 
 Recommended minimal test suite::
@@ -69,7 +69,7 @@ tests to run. Here are some examples, which overlap each other::
   # (can also do at top-level $DAK_BUILD to run all unit and regression tests)
   ctest -j 4
 
-  # run all tests excluding those known to DIFF on RHEL 7:
+  # run all tests excluding those known to DIFF on RHEL 8:
   ctest -j 4 -LE Diff
 
   # Show all available ctest labels

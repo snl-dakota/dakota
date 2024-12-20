@@ -1,21 +1,23 @@
 Blurb::
-Specify the module and class name of the python surrogate
+Specify the module and class names of the python surrogate
 
 Description::
-Specify the module and class name of the python surrogate.
-At minimum, the class must contain the methods 'construct' and 'predict'.
-Dakota passes to the former a matrix (num samples x num variables)
-of variable values and a num samples x 1 matrix of responses to use
-to train the surrogate.  The `predict` method receives a matrix of num
-samples x num variables and expects a matrix of num samples x 1 predicted
-values to be returned.  An optional 'gradient' method is supported as
-well and returns gradients for a matrix of variables passed from Dakota.
+Specify the module and class names of the python surrogate.  At minimum,
+the class must contain the methods 'construct' and 'predict'.  Dakota
+passes to the former a matrix (num samples x num variables) of variable
+values and a matrix (num samples x num components) of responses to use
+to train the surrogate, where num components is 1 for scalar surrogates.
+The `predict` method receives a matrix (num samples x num variables)
+and expects a matrix (num samples x num components) of predicted values
+to be returned.  Optional 'gradient' and 'hessian' methods are supported
+as well.
 
 Topics::
 
 Examples::
 
-Use of python-based surrogates in Dakota is enabled via:
+Use of python-based surrogates in Dakota is enabled with the model
+block via:
 
 .. code-block::
 
@@ -26,22 +28,35 @@ Use of python-based surrogates in Dakota is enabled via:
       experimental_python
           class_path_and_name = "surrogate_polynomial.Surrogate"
 
-An corresponding python class (incomplete) would contain at minimum:
+An example python class that implements a linear regression surrogate
+that works for both scalar and vector-valued responses and that includes
+gradient and (trivial) hessian values is the following:
 
-.. code-block::
+.. code-block:: python
 
   class Surrogate:
 
-    def construct(self, var, resp):
-        var2 = np.hstack((np.ones((var.shape[0], 1)), var))
-        self.coeffs = np.zeros(var.shape[1])
-        z = np.linalg.inv(np.dot(var2.T, var2))
-        self.coeffs = np.dot(z, np.dot(var2.T, resp))
-        return
+      def __init__(self):
+          self.coeffs = None
+  
+      def construct(self, var, resp):
+          var2 = np.hstack((np.ones((var.shape[0], 1)), var))
+          self.coeffs = np.zeros(var.shape[1])
+          z = np.linalg.inv(np.dot(var2.T, var2))
+          self.coeffs = np.dot(z, np.dot(var2.T, resp))
+          return
+  
+      def predict(self, pts):
+          return self.coeffs[0]+pts.dot(self.coeffs[1:])
 
-    def predict(self, pts):
-        return self.coeffs[0]+pts.dot(self.coeffs[1:])
-
+      def gradient(self, pts):
+          grad = self.coeffs[1:]
+          return grad.T
+  
+      def hessian(self, pts):
+          num_vals = pts.shape[1]
+          hess = np.zeros(shape=(num_vals, num_vals))
+          return hess
 
 Theory::
 

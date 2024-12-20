@@ -1,6 +1,7 @@
 #@ s*: Label=FastTest
 #@ s0: DakotaConfig=HAVE_ACRO
 #@ s2: DakotaConfig=HAVE_ACRO
+#@ s2: TimeoutDelay=300
 ## DAKOTA INPUT FILE - dakota_var_views_opt_discrete.in
 
 # This file contains tests of the variable views override capability

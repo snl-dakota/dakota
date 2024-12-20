@@ -18,6 +18,7 @@
 #include "MUQ/Modeling/LinearAlgebra/IdentityOperator.h"
 #include "MUQ/Modeling/Distributions/Density.h"
 #include "MUQ/Modeling/Distributions/DensityProduct.h"
+#include "MUQ/Modeling/Distributions/Gaussian.h"
 
 namespace Dakota {
 
@@ -100,7 +101,8 @@ protected:
   std::shared_ptr<muq::Modeling::IdentityOperator> parameterPtr;
   std::shared_ptr<muq::Modeling::DensityProduct>   posteriorPtr;
   std::shared_ptr<MUQLikelihood>                   MUQLikelihoodPtr;
-  std::shared_ptr<MUQPrior>                        MUQPriorPtr;
+  std::shared_ptr<MUQPrior>                        MUQPriorPtr; // Used by all MUQ MCMC methods except DILI
+  std::shared_ptr<muq::Modeling::Gaussian>         muqGaussianPrior; // Used by DILI only
 
   std::shared_ptr<muq::SamplingAlgorithms::SingleChainMCMC>  mcmc;
   std::shared_ptr<muq::SamplingAlgorithms::SampleCollection> samps;
