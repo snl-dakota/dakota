@@ -94,6 +94,11 @@ protected:
   /// update accumulators for multilevel telescoping running sums
   /// using set of model evaluations within allResponses
   void accumulate_ml_Ysums(const IntResponseMap& resp_map,
+			   IntRealMatrixMap& sum_Y, IntRealMatrixMap& sum_YY,
+			   size_t lev, size_t lev_offset, SizetArray& num_Y);
+  /// update accumulators for multilevel telescoping running sums
+  /// using set of model evaluations within allResponses
+  void accumulate_ml_Ysums(const IntResponseMap& resp_map,
 			   IntRealMatrixMap& sum_Y, RealMatrix& sum_YY,
 			   size_t lev, size_t lev_offset, SizetArray& num_Y);
   /// update accumulators for multilevel telescoping running sums
