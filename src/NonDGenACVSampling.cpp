@@ -1300,6 +1300,15 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   size_t i, num_cdv = x0.length(), approx, num_approx = approx_set.size();
   Real cost_H = sequenceCost[numApprox], budget = (Real)maxFunctionEvals;
 
+  // reduce available allocation budget by incurred cost of any inactive models
+  // (allocated samples are incurred cost regardless of success)
+  if (!offline && num_approx != numApprox) {
+    size_t cntr = 0;
+    for (approx=0; approx<numApprox; ++approx)
+      if  (approx == approx_set[cntr]) ++cntr;
+      else budget -= N_H_alloc * sequenceCost[approx];
+  }
+
   // minimizer-specific updates performed in finite_solution_bounds()
   x_ub = DBL_MAX; // no upper bounds needed for x
   lin_ineq_lb = -DBL_MAX; // no lower bounds on lin ineq
