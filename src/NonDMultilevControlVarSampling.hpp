@@ -153,10 +153,10 @@ private:
 				SumContainer& sum_Ll_refined,
 				SumContainer& sum_Llm1_refined);
 
-  /// perform LF sample increment as indicated by evaluation ratios
+  /// compute a LF sample increment as indicated by evaluation ratios
   size_t lf_increment(const RealVector& eval_ratios, const SizetArray& N_lf,
 		      Real hf_target, RealVector& lf_targets);
-  /// perform LF sample increment as indicated by evaluation ratios
+  /// compute a LF sample increment as indicated by evaluation ratios
   size_t lf_increment(const RealVector& eval_ratios, size_t N_lf,
 		      Real hf_target, RealVector& lf_targets);
 
