@@ -189,7 +189,8 @@ multilevel_control_variate_mc_online_pilot() //_Qcorr()
   }
 
   // can bypass dual LF/HF accumulation since fault tolerance is linked
-  N_actual_lf = N_actual_hf; N_alloc_lf = N_alloc_hf;
+  for (lev=0; lev<num_cv_lev; ++lev)
+    { N_actual_lf[lev] = N_actual_hf[lev]; N_alloc_lf[lev] = N_alloc_hf[lev]; }
   // Only QOI_STATISTICS requires application of oversample ratios and
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
   if (finalStatsType == QOI_STATISTICS) {
@@ -344,7 +345,8 @@ multilevel_control_variate_mc_offline_pilot()
 			sum_Hlm1_Ll, sum_Hlm1_Llm1, sum_Hl_Hl, sum_Hl_Hlm1,
 			sum_Hlm1_Hlm1, true);
   // can bypass dual LF/HF accumulation since fault tolerance is linked
-  N_actual_lf = N_actual_hf;  N_alloc_lf = N_alloc_hf;
+  for (lev=0; lev<num_cv_lev; ++lev)
+    { N_actual_lf[lev] = N_actual_hf[lev]; N_alloc_lf[lev] = N_alloc_hf[lev]; }
 
   // -------------
   // LF increments
