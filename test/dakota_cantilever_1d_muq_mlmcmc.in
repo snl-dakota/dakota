@@ -1,5 +1,5 @@
 #@ *: DakotaConfig=HAVE_MUQ
-#@ *: ReqFiles=dakota_cantilever_1d_displacement.dat,dakota_cantiliver_1d_muq_mlmcmc.py
+#@ *: ReqFiles=dakota_cantilever_1d_displacement.dat,dakota_cantilever_1d_muq_mlmcmc.py
 
 environment,
   tabular_data
