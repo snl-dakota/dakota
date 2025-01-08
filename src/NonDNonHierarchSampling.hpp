@@ -47,8 +47,8 @@ public:
   /// default constructor
   MFSolutionData();
   // full constructor
-  MFSolutionData(const RealVector& soln_vars, Real avg_est_var,
-		 Real avg_est_var_ratio, Real equiv_hf);
+  MFSolutionData(const RealVector& soln_vars, const RealVector& est_var,
+		 const RealVector& est_var_ratios, Real equiv_hf);
   /// copy constructor
   MFSolutionData(const MFSolutionData& sd);
   /// destructor
@@ -73,10 +73,14 @@ public:
   Real solution_reference() const;
   
   Real average_estimator_variance() const;
-  void average_estimator_variance(Real avg_estvar);
+  void estimator_variances(const RealVector& est_var);
+  void estimator_variances(size_t num_fns, Real val);
+  const RealVector& estimator_variances() const;
    
   Real average_estimator_variance_ratio() const;
-  void average_estimator_variance_ratio(Real avg_estvar_ratio);
+  void estimator_variance_ratios(const RealVector& est_var_ratios);
+  void estimator_variance_ratios(size_t num_fns, Real val);
+  const RealVector& estimator_variance_ratios() const;
    
   Real equivalent_hf_allocation() const;
   void equivalent_hf_allocation(Real equiv_hf_alloc);
@@ -110,12 +114,19 @@ protected:
   // Note: could/should be subclassed for analytic (vector estvar) vs.
   //       numerical solutions (averaged estvar)
 
-  /// average estimator variance for model graph
-  Real avgEstVar;
-  /// average estimator variance ratio (1 - R^2) for model graph: the
-  /// ratio of final estimator variance (optimizer result) and final
-  /// MC estimator variance using final N_H samples (not equivHF)
-  Real avgEstVarRatio;
+  // average estimator variance for model graph
+  //Real avgEstVar;
+  // average estimator variance ratio (1 - R^2) for model graph: the
+  // ratio of final estimator variance (optimizer result) and final
+  // MC estimator variance using final N_H samples (not equivHF)
+  //Real avgEstVarRatio;
+
+  /// estimator variances for each QoI for a given model graph
+  RealVector estVariances;
+  /// estimator variance ratios (1 - R^2) for each QoI for a given model
+  /// graph: the ratio of final estimator variances (optimization results)
+  /// and final MC estimator variance using final N_H samples (not equivHF)
+  RealVector estVarRatios;
 
   // for accuracy constrained: total allocation for estimator in
   // equivalent HF units (may differ from total actual = equivHFEvals)
@@ -123,24 +134,25 @@ protected:
 };
 
 
-inline MFSolutionData::MFSolutionData(): //avgHFTarget(0.),
-  avgEstVar(DBL_MAX), avgEstVarRatio(1.), equivHFAlloc(0.)
+inline MFSolutionData::MFSolutionData(): equivHFAlloc(0.)
+  //avgHFTarget(0.), avgEstVar(DBL_MAX), avgEstVarRatio(1.),
 { }
 
 
 inline MFSolutionData::
-MFSolutionData(const RealVector& soln_vars, Real avg_est_var,
-	       Real avg_est_var_ratio, Real equiv_hf)
+MFSolutionData(const RealVector& soln_vars, const RealVector& est_var,
+	       const RealVector& est_var_ratios, Real equiv_hf)
 {
-  copy_data(soln_vars, solutionVars);  avgEstVar    = avg_est_var;
-  avgEstVarRatio = avg_est_var_ratio;  equivHFAlloc = equiv_hf;
+  copy_data(soln_vars, solutionVars);       copy_data(est_var, estVariances);
+  copy_data(est_var_ratios, estVarRatios);  equivHFAlloc = equiv_hf;
 }
 
 
 inline MFSolutionData::MFSolutionData(const MFSolutionData& sd)
 {
-  copy_data(sd.solutionVars, solutionVars);  avgEstVar    = sd.avgEstVar;
-  avgEstVarRatio = sd.avgEstVarRatio;        equivHFAlloc = sd.equivHFAlloc;
+  copy_data(sd.solutionVars, solutionVars);
+  copy_data(sd.estVariances, estVariances);
+  copy_data(sd.estVarRatios, estVarRatios);  equivHFAlloc = sd.equivHFAlloc;
 }
 
 
@@ -150,8 +162,9 @@ inline MFSolutionData::~MFSolutionData()
 
 inline MFSolutionData& MFSolutionData::operator=(const MFSolutionData& sd)
 {
-  copy_data(sd.solutionVars, solutionVars);  avgEstVar    = sd.avgEstVar;
-  avgEstVarRatio = sd.avgEstVarRatio;        equivHFAlloc = sd.equivHFAlloc;
+  copy_data(sd.solutionVars, solutionVars);
+  copy_data(sd.estVariances, estVariances);
+  copy_data(sd.estVarRatios, estVarRatios);  equivHFAlloc = sd.equivHFAlloc;
   return *this;
 }
 
@@ -223,19 +236,36 @@ inline Real MFSolutionData::solution_reference() const
 
 
 inline Real MFSolutionData::average_estimator_variance() const
-{ return avgEstVar; }
+{ return average(estVariances); }
 
-inline void MFSolutionData::average_estimator_variance(Real avg_estvar)
-{ avgEstVar = avg_estvar; }
+
+inline void MFSolutionData::estimator_variances(const RealVector& est_var)
+{ copy_data(est_var, estVariances); }
+
+
+inline void MFSolutionData::estimator_variances(size_t num_fns, Real val)
+{ estVariances.sizeUninitialized(num_fns); estVariances.putScalar(val); }
+
+
+inline const RealVector& MFSolutionData::estimator_variances() const
+{ return estVariances; }
 
 
 inline Real MFSolutionData::average_estimator_variance_ratio() const
-{ return avgEstVarRatio; }
+{ return average(estVarRatios); }
 
 
 inline void MFSolutionData::
-average_estimator_variance_ratio(Real avg_estvar_ratio)
-{ avgEstVarRatio = avg_estvar_ratio; }
+estimator_variance_ratios(const RealVector& est_var_ratios)
+{ copy_data(est_var_ratios, estVarRatios); }
+
+
+inline void MFSolutionData::estimator_variance_ratios(size_t num_fns, Real val)
+{ estVarRatios.sizeUninitialized(num_fns); estVarRatios.putScalar(val); }
+
+
+inline const RealVector& MFSolutionData::estimator_variance_ratios() const
+{ return estVarRatios; }
 
 
 inline Real MFSolutionData::equivalent_hf_allocation() const
@@ -291,9 +321,10 @@ protected:
   //
 
   /// helper function that supports optimization APIs passing design variables
-  virtual Real average_estimator_variance(const RealVector& cd_vars);
+  virtual void estimator_variances(const RealVector& cd_vars,
+				   RealVector& est_var);
   /// compute estimator variance ratios from HF samples and oversample ratios
-  virtual void estimator_variance_ratios(const RealVector& r_and_N,
+  virtual void estimator_variance_ratios(const RealVector& cd_vars,
 					 RealVector& estvar_ratios);
 
   /// within ensemble_numerical_solution(), define the number of
@@ -328,9 +359,10 @@ protected:
     const RealMatrix& lin_ineq_coeffs, const RealVector& lin_ineq_lb,
     const RealVector& lin_ineq_ub);
 
-  /// post-process optimization final results to recover solution data
-  virtual void recover_results(const RealVector& cv_star,
-			       const RealVector& fn_star, MFSolutionData& soln);
+  /// post-process minimization results to update MFSolutionData
+  virtual void minimizer_results_to_solution_data(const RealVector& cv_star,
+						  const RealVector& fn_star,
+						  MFSolutionData& soln);
 
   /// constraint helper function shared by NPSOL/OPT++ static evaluators
   virtual Real linear_model_cost(const RealVector& N_vec);
@@ -384,6 +416,17 @@ protected:
   // 			      const Sizet2DArray& N_L_actual,
   // 			      SizetArray& N_L_alloc, unsigned short root,
   // 			      const UShortSet& reverse_dag_set);
+
+  /// helper function that supports optimization APIs passing design variables
+  Real average_estimator_variance(const RealVector& cd_vars);
+  /// compute estimator variances from ratios and MC reference variance
+  void estimator_variances_from_ratios(const RealVector& cd_vars,
+				       const RealVector& estvar_ratios,
+				       RealVector& est_var);
+  /// alternate API for updating both variance ratios and associated variances
+  void estimator_variances_and_ratios(const RealVector& cd_vars,
+				      RealVector& estvar_ratios,
+				      RealVector& est_var);
 
   /// export allSamples for all Models included in ensemble batch evaluation
   void export_sample_sets(const String& prepend, size_t step);
@@ -524,9 +567,6 @@ protected:
 			       MFSolutionData& soln);//, size_t& num_samp);
 
   void ensemble_numerical_solution(MFSolutionData& soln);
-  void process_model_solution(MFSolutionData& soln, size_t& num_samples);
-  //void process_group_solution(MFSolutionData& soln, SizetArray& delta_N);
-
   void configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 			    const RealVector& lin_ineq_lb,
 			    const RealVector& lin_ineq_ub,
@@ -537,6 +577,7 @@ protected:
 			    const RealMatrix& lin_ineq_coeffs,
 			    const RealMatrix& lin_eq_coeffs);
   void run_minimizers(MFSolutionData& soln);
+  void process_model_allocations(MFSolutionData& soln, size_t& num_samples);
 
   void root_reverse_dag_to_group(unsigned short root, const UShortSet& rev_dag,
 				 UShortArray& model_group);
@@ -891,6 +932,47 @@ initialize_group_counts(Sizet2DArray& num_G)
   num_G.resize(num_groups);
   for (g=0; g<num_groups; ++g)
     num_G[g].assign(numFunctions, 0);
+}
+
+
+inline void NonDNonHierarchSampling::
+estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
+{
+  Cerr << "Error: estimator_variance_ratios() not defined by derived class.\n"
+       << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
+
+inline void NonDNonHierarchSampling::
+estimator_variances(const RealVector& cd_vars, RealVector& est_var)
+{
+  RealVector estvar_ratios(numFunctions, false);
+  estimator_variance_ratios(cd_vars, estvar_ratios); // virtual: MFMC,ACV,GenACV
+  estimator_variances_from_ratios(cd_vars, estvar_ratios, est_var);
+}
+
+
+inline void NonDNonHierarchSampling::
+estimator_variances_and_ratios(const RealVector& cd_vars,
+			       RealVector& estvar_ratios, RealVector& est_var)
+{
+  estimator_variance_ratios(cd_vars, estvar_ratios); // virtual: MFMC,ACV,GenACV
+  estimator_variances_from_ratios(cd_vars, estvar_ratios, est_var);
+}
+
+
+inline Real NonDNonHierarchSampling::
+average_estimator_variance(const RealVector& cd_vars)
+{
+  RealVector est_var(numFunctions, false);
+  estimator_variances(cd_vars, est_var);
+
+  Real avg_estvar = average(est_var);
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "NonDNonHierarchSampling::average_estimator_variance(): "
+	 << "average EstVar = " << avg_estvar << '\n';
+  return avg_estvar;
 }
 
 

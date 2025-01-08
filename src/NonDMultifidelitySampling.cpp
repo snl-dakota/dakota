@@ -1248,6 +1248,15 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
     if (no_solve) { // only 1 feasible pt, no need for solve
       avg_eval_ratios = 1.;
       soln.anchored_solution_ratios(avg_eval_ratios, avg_N_H);
+      // For offline pilot, the online EstVar is undefined prior to any online
+      // samples, but should not happen (no budget used) unless bad convTol spec
+      if (pilotMgmtMode == ONLINE_PILOT ||
+	  pilotMgmtMode == ONLINE_PILOT_PROJECTION)
+	soln.estimator_variances(estVarIter0);
+      else // 0/0
+	soln.estimator_variances(numFunctions,
+				 std::numeric_limits<Real>::quiet_NaN());
+      soln.estimator_variance_ratios(numFunctions, 1.);
       numSamples = 0;  return;
     }
 
@@ -1299,9 +1308,9 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
 
   // Base class implementation of numerical solve (shared with ACV,GenACV):
   ensemble_numerical_solution(soln);
-  process_model_solution(soln, numSamples);
+  process_model_allocations(soln, numSamples);
   //if (outputLevel >= NORMAL_OUTPUT)
-  //  print_model_solution(Cout, soln, approxSet);
+  //  print_model_allocations(Cout, soln, approxSet);
 }
 
 
@@ -1387,8 +1396,9 @@ mfmc_estimator_variance(const RealMatrix& rho2_LH, const RealVector& var_H,
     //       (not necessary for things like one_sided_delta() to follow)
 
     // update avg_est_var for final variance report and finalStats
-    soln.average_estimator_variance(
-      estvar_ratios_to_avg_estvar(estvar_ratios, var_H, N_H));
+    RealVector estvar;
+    //estvar_ratios_to_estvar(estvar_ratios, var_H, N_H, estvar); // *** TO DO: removed avg
+    soln.estimator_variances(estvar);
 
     if (outputLevel >= NORMAL_OUTPUT) {
       bool ordered = corrApproxSequence.empty();  size_t i, qoi, approx;

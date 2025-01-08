@@ -40,7 +40,7 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
-  //bool resize();
+  //bool resize() override;
 
 protected:
 
@@ -48,16 +48,17 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  //void pre_run();
-  void core_run();
-  //void post_run(std::ostream& s);
-  //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
-  Real estimator_accuracy_metric();
-  //Real estimator_cost_metric();
-  void print_variance_reduction(std::ostream& s);
+  //void pre_run() override;
+  void core_run() override;
+  //void post_run(std::ostream& s) override;
+  //void print_results(std::ostream& s,
+  //                   short results_state = FINAL_RESULTS) override;
+  Real estimator_accuracy_metric() override;
+  //Real estimator_cost_metric() override;
+  void print_variance_reduction(std::ostream& s) override;
 
-  void estimator_variance_ratios(const RealVector& r_and_N,
-				 RealVector& estvar_ratios);
+  void estimator_variance_ratios(const RealVector& cd_vars,
+				 RealVector& estvar_ratios) override;
 
   //
   //- Heading: member functions

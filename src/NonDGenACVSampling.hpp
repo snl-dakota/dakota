@@ -42,45 +42,48 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void pre_run();
-  void core_run();
-  //void post_run(std::ostream& s);
-  //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void pre_run() override;
+  void core_run() override;
+  //void post_run(std::ostream& s) override;
+  //void print_results(std::ostream& s,
+  //                   short results_state = FINAL_RESULTS) override;
 
   void numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
-				 size_t& num_nln_con);
+				 size_t& num_nln_con) override;
   void numerical_solution_bounds_constraints(const MFSolutionData& soln,
     RealVector& x0, RealVector& x_lb, RealVector& x_ub,
     RealVector& lin_ineq_lb, RealVector& lin_ineq_ub, RealVector& lin_eq_tgt,
     RealVector& nln_ineq_lb, RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
-    RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs);
+    RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs) override;
 
-  void recover_results(const RealVector& cv_star, const RealVector& fn_star,
-		       MFSolutionData& soln);
+  void minimizer_results_to_solution_data(const RealVector& cv_star,
+					  const RealVector& fn_star,
+					  MFSolutionData& soln) override;
 
-  Real linear_model_cost(const RealVector& N_vec);
-  Real nonlinear_model_cost(const RealVector& r_and_N);
-  void linear_model_cost_gradient(const RealVector& N_vec,RealVector& grad_c);
+  Real linear_model_cost(const RealVector& N_vec) override;
+  Real nonlinear_model_cost(const RealVector& r_and_N) override;
+  void linear_model_cost_gradient(const RealVector& N_vec,
+				  RealVector& grad_c) override;
   void nonlinear_model_cost_gradient(const RealVector& r_and_N,
-				     RealVector& grad_c);
+				     RealVector& grad_c) override;
 
-  size_t num_approximations() const;
+  size_t num_approximations() const override;
 
-  Real estimator_accuracy_metric();
+  Real estimator_accuracy_metric() override;
   //Real estimator_cost_metric();
 
-  void print_variance_reduction(std::ostream& s);
+  void print_variance_reduction(std::ostream& s) override;
 
-  void estimator_variance_ratios(const RealVector& N_vec,
-				 RealVector& estvar_ratios);
+  void estimator_variance_ratios(const RealVector& cd_vars,
+				 RealVector& estvar_ratios) override;
 
   void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 				       RealVector& lin_ineq_lb,
-				       RealVector& lin_ineq_ub);
+				       RealVector& lin_ineq_ub) override;
   Real augmented_linear_ineq_violations(const RealVector& cd_vars,
 					const RealMatrix& lin_ineq_coeffs,
 					const RealVector& lin_ineq_lb,
-					const RealVector& lin_ineq_ub);
+					const RealVector& lin_ineq_ub) override;
 
   //
   //- Heading: member functions

@@ -44,41 +44,44 @@ protected:
   //
 
   //void pre_run();
-  void core_run();
+  void core_run() override;
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
-  Real estimator_accuracy_metric();
+
+  void estimator_variances(const RealVector& cd_vars,
+			   RealVector& est_var) override;
+  Real estimator_accuracy_metric() override;
   //Real estimator_cost_metric();
   void print_multigroup_summary(std::ostream& s, const String& summary_type,
-				bool projections);
-  void print_variance_reduction(std::ostream& s);
+				bool projections) override;
+  void print_variance_reduction(std::ostream& s) override;
 
-  //void estimator_variance_ratios(const RealVector& r_and_N,
-  //				   RealVector& estvar_ratios);
-  Real average_estimator_variance(const RealVector& cd_vars);
+  //void estimator_variance_ratios(const RealVector& cd_vars,
+  //				   RealVector& estvar_ratios) override;
 
   void numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
-				 size_t& num_nln_con);
+				 size_t& num_nln_con) override;
   void numerical_solution_bounds_constraints(const MFSolutionData& soln,
     RealVector& x0, RealVector& x_lb, RealVector& x_ub,
     RealVector& lin_ineq_lb, RealVector& lin_ineq_ub, RealVector& lin_eq_tgt,
     RealVector& nln_ineq_lb, RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
-    RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs);
+    RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs) override;
   void derived_finite_solution_bounds(const RealVector& x0, RealVector& x_lb,
-				      RealVector& x_ub, Real budget);
+				      RealVector& x_ub, Real budget) override;
 
-  Real linear_group_cost(const RealVector& cdv);
-  void linear_group_cost_gradient(const RealVector& cdv, RealVector& grad_c);
+  Real linear_group_cost(const RealVector& cdv) override;
+  void linear_group_cost_gradient(const RealVector& cdv,
+				  RealVector& grad_c) override;
 
-  void apply_mc_reference(RealVector& mc_targets);
+  void apply_mc_reference(RealVector& mc_targets) override;
 
   void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 				       RealVector& lin_ineq_lb,
-				       RealVector& lin_ineq_ub);
+				       RealVector& lin_ineq_ub) override;
   Real augmented_linear_ineq_violations(const RealVector& cd_vars,
 					const RealMatrix& lin_ineq_coeffs,
 					const RealVector& lin_ineq_lb,
-					const RealVector& lin_ineq_ub);
+					const RealVector& lin_ineq_ub) override;
 
   //
   //- Heading: member functions
@@ -108,12 +111,10 @@ protected:
 		      const RealMatrixArray& sum_G, const Sizet2DArray& N_G,
 		      RealVectorArray& mu_hat);
 
-  void estimator_variance(const RealVector& cd_vars, RealVector& estvar);
-
-  void process_group_solution(MFSolutionData& soln,
-			      const Sizet2DArray& N_G_actual,
-			      const SizetArray& N_G_alloc,
-			      SizetArray& delta_N_G);
+  void process_group_allocations(MFSolutionData& soln,
+				 const Sizet2DArray& N_G_actual,
+				 const SizetArray& N_G_alloc,
+				 SizetArray& delta_N_G);
 
   void blue_raw_moments(const IntRealMatrixArrayMap& sum_G_online,
 			const IntRealSymMatrix2DArrayMap& sum_GG_online,
@@ -128,7 +129,7 @@ protected:
   void finalize_counts(const Sizet2DArray& N_G_actual,
 		       const SizetArray& N_G_alloc);
 
-  void print_group_solution(std::ostream& s, const MFSolutionData& soln);
+  void print_group_allocations(std::ostream& s, const MFSolutionData& soln);
   void print_group_solution_variables(std::ostream& s,
 				      const MFSolutionData& soln);
 
@@ -876,18 +877,6 @@ compute_y(const RealSymMatrix2DArray& cov_GG_inv, const RealMatrixArray& sum_G,
 	add_sub_matvec(cov_GG_inv_gq, sum_G_g, q, models_g, y[q]);
     }
   }
-}
-
-
-inline Real NonDMultilevBLUESampling::
-average_estimator_variance(const RealVector& cd_vars)
-{
-  // redefinition of virtual fn used by NonDNonHierarch::log_average_estvar(),
-  // which is used by optimizer objective/constraint callbacks
-
-  RealVector estvar;
-  estimator_variance(cd_vars, estvar);
-  return average(estvar);
 }
 
 

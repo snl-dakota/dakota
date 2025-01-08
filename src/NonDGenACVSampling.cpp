@@ -1064,10 +1064,11 @@ compute_allocations(const RealMatrix& var_L, MFSolutionData& soln)
       // samples, but should not happen (no budget used) unless bad convTol spec
       if (pilotMgmtMode == ONLINE_PILOT ||
 	  pilotMgmtMode == ONLINE_PILOT_PROJECTION)
-	soln.average_estimator_variance(average(estVarIter0));
-      else
-	soln.average_estimator_variance(std::numeric_limits<Real>::infinity());
-      soln.average_estimator_variance_ratio(1.);
+	soln.estimator_variances(estVarIter0);
+      else // 0/0
+	soln.estimator_variances(numFunctions,
+				 std::numeric_limits<Real>::quiet_NaN());
+      soln.estimator_variance_ratios(numFunctions, 1.);
       numSamples = 0;  return;
     }
 
@@ -1107,9 +1108,9 @@ compute_allocations(const RealMatrix& var_L, MFSolutionData& soln)
     ensemble_numerical_solution(soln);
   }
 
-  process_model_solution(soln, numSamples);
+  process_model_allocations(soln, numSamples);
   if (outputLevel >= NORMAL_OUTPUT)
-    print_model_solution(Cout, soln, approx_set);
+    print_model_allocations(Cout, soln, approx_set);
 }
 
 
@@ -1650,16 +1651,17 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
 
 
 void NonDGenACVSampling::
-recover_results(const RealVector& cv_star, const RealVector& fn_star,
-		MFSolutionData& soln)
+minimizer_results_to_solution_data(const RealVector& cv_star,
+				   const RealVector& fn_star,
+				   MFSolutionData& soln)
 {
   // Estvar recovery from optimizer provides std::log(average(nh_estvar)) =
   // var_H / N_H (1 - R^2).  Notes:
   // > a QoI-vector prior to averaging would require recomputation from r*,N*)
   // > this value corresponds to N* (_after_ num_samples applied)
-  Real avg_estvar = (optSubProblemForm == N_MODEL_LINEAR_OBJECTIVE) ?
-    std::exp(fn_star[1]) : std::exp(fn_star(0));
-  soln.average_estimator_variance(avg_estvar);
+  //Real avg_estvar = (optSubProblemForm == N_MODEL_LINEAR_OBJECTIVE) ?
+  //  std::exp(fn_star[1]) : std::exp(fn_star(0));
+  //soln.average_estimator_variance(avg_estvar);
 
   // Recover optimizer results for average {eval_ratios,estvar}.  Also compute
   // shared increment from N* or from targeting specified budget || accuracy.

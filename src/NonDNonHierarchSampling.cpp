@@ -941,7 +941,7 @@ void NonDNonHierarchSampling::ensemble_numerical_solution(MFSolutionData& soln)
 
 
 void NonDNonHierarchSampling::
-process_model_solution(MFSolutionData& soln, size_t& num_samples)
+process_model_allocations(MFSolutionData& soln, size_t& num_samples)
 {
   // compute sample increment for HF from current to target:
   size_t hf_form_index, hf_lev_index;
@@ -958,16 +958,16 @@ process_model_solution(MFSolutionData& soln, size_t& num_samples)
       one_sided_delta(avg_N_H, soln.solution_reference(), relaxFactor);
   }
 
-  // **************************************************************************
   // Introduction of relaxFactor makes the optimal estVar solution inconsistent
   // with any relaxation of the sample increment that follows
   // > inconsistency in final reporting (if final relax factor != 1) as well as
   //   intermediate performance metrics, e.g. estVar ratio below
-  // All NonHierarch: this fn, virtual recover_results() after numerical solve,
-  // print_variance_reduction()/print_estimator_performance(), no_solve defaults
+  // All NonHierarch estimators to review: minimizer_results_to_solution_data()
+  // after numerical solve, print_variance_reduction()/print_estimator_perf(),
+  // no_solve defaults
   // > MFMC analytic: estvar_ratios to estvar using N_H_actual{,_proj}
-  // > ACV/GenACV: print_model_solution()
-  // > ML BLUE:    {process,print}_group_solution()
+  // > ACV/GenACV: {process,print}_model_allocation()
+  // > ML BLUE:    {process,print}_group_allocation()
   //
   // Approach:
   // > Strictly interpret MFSolutionData as optimal soln, preceding any
@@ -975,25 +975,34 @@ process_model_solution(MFSolutionData& soln, size_t& num_samples)
   // > For final post-processing and reporting, re-evaluate estvar/estvar_ratio
   //   when final relaxFactor is not 1 (for whatever reason) since
   //   soln.solution_variables() will not be consistent.
-  // **************************************************************************
 
-  //bool converged = (num_samples == 0 || mlmfIter > maxIterations ||
-  //                  pilotMgmtMode != ONLINE_PILOT);
-  //if (converged) { // metrics not needed prior to print_variance_reduction()
+  bool converged = (pilotMgmtMode != ONLINE_PILOT || !num_samples ||
+		    mlmfIter > maxIterations);
+  if (converged) { // estvar recalc not needed until print_variance_reduction()
+    /*
+    // All cases employ projected MC estvar to match projected nonhier estvar
+    // from N* (where N* includes any soln increment not yet performed). Since
+    // soln.average_estimator_variance() precedes (and ignores subsequent)
+    // sample increment relaxation, don't use relaxed increments here.
+    RealVector proj_mc_estvar;
+    project_mc_estimator_variance(varH, N_H_actual, soln_incr, proj_mc_estvar);
 
-  // All cases employ projected MC estvar to match the projected nonhier estvar
-  // from N* (where N* includes any soln increment not yet performed)
-  // > Since soln.average_estimator_variance() precedes (and ignores subsequent)
-  //   sample increment relaxation, don't use relaxed increments here.
-  RealVector proj_mc_estvar;
-  project_mc_estimator_variance(varH, N_H_actual, soln_incr, proj_mc_estvar);
+    // Report ratio of averages rather that average of ratios (see notes in
+    // print_variance_reduction())
+    soln.average_estimator_variance_ratio(soln.average_estimator_variance() /
+                                          average(proj_mc_estvar)); // (1 - R^2)
+    */
 
-  // Report ratio of averages rather that average of ratios (see notes in
-  // print_variance_reduction())
-  soln.average_estimator_variance_ratio(soln.average_estimator_variance() /
-					average(proj_mc_estvar)); // (1 - R^2)
-
-  //}
+    // Recompute full estvar vectors for final solution since minimizers
+    // target average over QoI (don't store on every eval since last eval
+    // may differ from final optimal soln)
+    RealVector estvar_ratios, estvar, cd_vars = soln.solution_variables();
+    //solution_vars_to_design_vars(soln.solution_variables(), cd_vars);//*** TO DO
+    estimator_variances_and_ratios(cd_vars, estvar_ratios, estvar);
+    soln.estimator_variances(estvar);
+    soln.estimator_variance_ratios(estvar_ratios); 
+    // *** TO DO: resolve order of downstream averaging (see comment above)
+  }
 }
 
 
@@ -1706,14 +1715,16 @@ void NonDNonHierarchSampling::run_minimizers(MFSolutionData& soln)
   // that don't support linear/nonlinear constraints can be avoided by always
   // ending with capable (local gradient-based) minimizers at sequence end.
   Iterator& min_last_best = varianceMinimizers[last_seq_index][best_min];
-  recover_results(min_last_best.variables_results().continuous_variables(),
-		  min_last_best.response_results().function_values(), soln);
+  minimizer_results_to_solution_data(
+    min_last_best.variables_results().continuous_variables(),
+    min_last_best.response_results().function_values(), soln);
 }
 
 
 void NonDNonHierarchSampling::
-recover_results(const RealVector& cv_star, const RealVector& fn_star,
-		MFSolutionData& soln)
+minimizer_results_to_solution_data(const RealVector& cv_star,
+				   const RealVector& fn_star,
+				   MFSolutionData& soln)
 {
   // Estvar recovery from optimizer provides std::log(average(nh_estvar)) =
   // var_H / N_H (1 - R^2).  Notes:
@@ -1722,7 +1733,7 @@ recover_results(const RealVector& cv_star, const RealVector& fn_star,
   Real avg_estvar = (optSubProblemForm == N_MODEL_LINEAR_OBJECTIVE ||
 		     optSubProblemForm == N_GROUP_LINEAR_OBJECTIVE) ?
     std::exp(fn_star[1]) : std::exp(fn_star(0));
-  soln.average_estimator_variance(avg_estvar);
+  //soln.average_estimator_variance(avg_estvar);
 
   // Recover optimizer results for average {eval_ratios,estvar}.  Also compute
   // shared increment from N* or from targeting specified budget || accuracy.
@@ -1751,8 +1762,8 @@ recover_results(const RealVector& cv_star, const RealVector& fn_star,
       // Note: estvar_iter0 is fixed based on pilot
       size_t hf_form, hf_lev;  hf_indices(hf_form, hf_lev);
       avg_hf_target = (backfillFailures) ?
-	update_hf_target(avg_estvar, NLevActual[hf_form][hf_lev], estVarIter0) :
-	update_hf_target(avg_estvar,  NLevAlloc[hf_form][hf_lev], estVarIter0);
+	update_hf_target(avg_estvar, NLevActual[hf_form][hf_lev], estVarIter0) : // *** TO DO: review use of avg_estvar here
+	update_hf_target(avg_estvar,  NLevAlloc[hf_form][hf_lev], estVarIter0); // *** TO DO: review use of avg_estvar here
       Cout << "Scaling profile for convergenceTol = " << convergenceTol
 	   << ": average HF target = " << avg_hf_target << std::endl;
     }
@@ -1899,8 +1910,9 @@ nh_penalty_merit(const RealVector& cd_vars, const RealVector& fn_vals)
     return nh_penalty_merit(fn_vals[0], fn_vals[1], budget);
     break;
   default: {
-    // Note: all cases could use this except for additional exp/log overhead
-    MFSolutionData soln;  recover_results(cd_vars, fn_vals, soln);
+    // Note: all cases could use this except for additional overhead
+    MFSolutionData soln;
+    minimizer_results_to_solution_data(cd_vars, fn_vals, soln);
     return nh_penalty_merit(soln);
     break;
   }
@@ -1948,22 +1960,12 @@ nh_penalty_merit(Real obj, Real nln_con, Real nln_u_bnd)
 
 
 void NonDNonHierarchSampling::
-estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
+estimator_variances_from_ratios(const RealVector& cd_vars,
+				const RealVector& estvar_ratios,
+				RealVector& est_var)
 {
-  Cerr << "Error: estimator_variance_ratios() not redefined by derived class.\n"
-       << std::endl;
-  abort_handler(METHOD_ERROR);
-}
-
-
-Real NonDNonHierarchSampling::
-average_estimator_variance(const RealVector& cd_vars)
-{
-  RealVector estvar_ratios(numFunctions, false);
-  estimator_variance_ratios(cd_vars, estvar_ratios); // virtual: MFMC,ACV,GenACV
-
   // form estimator variances to pick up dependence on N
-  RealVector est_var(numFunctions, false);
+  if (est_var.length() != numFunctions) est_var.sizeUninitialized(numFunctions);
   size_t qoi, num_approx = num_approximations();
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT: // N is a vector constant for opt sub-problem
@@ -1990,12 +1992,10 @@ average_estimator_variance(const RealVector& cd_vars)
   }
   }
 
-  Real avg_estvar = average(est_var);
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "NonDNonHierarchSampling::average_estimator_variance(): "
-	 << "design vars:\n" << cd_vars << "EstVar ratios:\n" << estvar_ratios
-	 << "EstVar:\n" << est_var << "average EstVar = " << avg_estvar << '\n';
-  return avg_estvar;
+    Cout << "NonDNonHierarchSampling::estimator_variances(): design vars:\n"
+	 << cd_vars << "EstVar ratios:\n" << estvar_ratios << "EstVar:\n"
+	 << est_var << '\n';
 }
 
 

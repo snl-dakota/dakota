@@ -569,10 +569,11 @@ compute_allocations(const RealMatrix& var_L, MFSolutionData& soln)
       // For offline pilot, the online EstVar is undefined prior to any online
       // samples, but should not happen (no budget used) unless bad convTol spec
       if (online)
-	soln.average_estimator_variance(average(estVarIter0));
-      else
-	soln.average_estimator_variance(std::numeric_limits<Real>::infinity());
-      soln.average_estimator_variance_ratio(1.);
+	soln.estimator_variances(estVarIter0);
+      else // 0/0
+	soln.estimator_variances(numFunctions,
+				 std::numeric_limits<Real>::quiet_NaN());
+      soln.estimator_variance_ratios(numFunctions, 1.);
       numSamples = 0;  return;
     }
 
@@ -637,9 +638,9 @@ compute_allocations(const RealMatrix& var_L, MFSolutionData& soln)
     ensemble_numerical_solution(soln);
   }
 
-  process_model_solution(soln, numSamples);
+  process_model_allocations(soln, numSamples);
   if (outputLevel >= NORMAL_OUTPUT)
-    print_model_solution(Cout, soln, approxSet);
+    print_model_allocations(Cout, soln, approxSet);
 }
 
 
@@ -698,8 +699,8 @@ analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
 
 
 void NonDACVSampling::
-print_model_solution(std::ostream& s, const MFSolutionData& soln,
-		     const UShortArray& approx_set)
+print_model_allocations(std::ostream& s, const MFSolutionData& soln,
+			const UShortArray& approx_set)
 {
   const RealVector& soln_vars = soln.solution_variables();
   size_t i, num_approx = approx_set.size();

@@ -42,16 +42,17 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  //void pre_run();
-  void core_run();
-  //void post_run(std::ostream& s);
-  //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
-  Real estimator_accuracy_metric();
-  //Real estimator_cost_metric();
-  void print_variance_reduction(std::ostream& s);
+  //void pre_run() override;
+  void core_run() override;
+  //void post_run(std::ostream& s) override;
+  //void print_results(std::ostream& s,
+  //                   short results_state = FINAL_RESULTS) override;
+  Real estimator_accuracy_metric() override;
+  //Real estimator_cost_metric() override;
+  void print_variance_reduction(std::ostream& s) override;
 
-  void estimator_variance_ratios(const RealVector& r_and_N,
-				 RealVector& estvar_ratios);
+  void estimator_variance_ratios(const RealVector& cd_vars,
+				 RealVector& estvar_ratios) override;
 
   //
   //- Heading: member functions
@@ -120,8 +121,8 @@ protected:
   Real update_hf_target(const RealVector& avg_eval_ratios, Real avg_N_H,
 			const RealVector& var_H, const RealVector& estvar0);
 
-  void print_model_solution(std::ostream& s, const MFSolutionData& soln,
-			    const UShortArray& approx_set);
+  void print_model_allocations(std::ostream& s, const MFSolutionData& soln,
+			       const UShortArray& approx_set);
 
   //
   //- Heading: Data
@@ -648,7 +649,8 @@ compute_R_sq(const RealSymMatrix& C, const RealSymMatrix& F,
 inline void NonDACVSampling::
 acv_estvar_ratios(const RealSymMatrix& F, RealVector& estvar_ratios)
 {
-  if (estvar_ratios.empty()) estvar_ratios.sizeUninitialized(numFunctions);
+  if (estvar_ratios.length() != numFunctions)
+    estvar_ratios.sizeUninitialized(numFunctions);
 
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     estvar_ratios[qoi]

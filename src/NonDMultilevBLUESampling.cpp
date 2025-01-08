@@ -897,16 +897,17 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
     bool online = (pilotMgmtMode == ONLINE_PILOT ||
 		   pilotMgmtMode == ONLINE_PILOT_PROJECTION);
     if (online) // cache reference estVarIter0
-      estimator_variance(soln.solution_variables(), estVarIter0);
+      estimator_variances(soln.solution_variables(), estVarIter0);
 
     if (no_solve) {
       // For offline pilot, the online EstVar is undefined (0/0) prior to online
       // samples, but should not happen (no budget used) unless bad convTol spec
       if (online)
-	soln.average_estimator_variance(average(estVarIter0));
-      else
-	soln.average_estimator_variance(std::numeric_limits<Real>::quiet_NaN());
-      soln.average_estimator_variance_ratio(1.);
+	soln.estimator_variances(estVarIter0);
+      else // 0/0
+	soln.estimator_variances(numFunctions,
+				 std::numeric_limits<Real>::quiet_NaN());
+      soln.estimator_variance_ratios(numFunctions, 1.);
       delta_N_G.assign(numGroups, 0);
       return;
     }
@@ -946,9 +947,9 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
     ensemble_numerical_solution(soln);
   }
 
-  process_group_solution(soln, N_G_actual, N_G_alloc, delta_N_G);
+  process_group_allocations(soln, N_G_actual, N_G_alloc, delta_N_G);
   if (outputLevel >= NORMAL_OUTPUT)
-    print_group_solution(Cout, soln);
+    print_group_allocations(Cout, soln);
 }
 
 
@@ -1061,7 +1062,7 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
     ratios_target_to_solution_variables(avg_eval_ratios, (Real)pilot_samp,
 					ratios_to_groups, soln_vars);
     enforce_bounds_linear_constraints(soln_vars); // for valid estvar
-    estimator_variance(soln_vars, mlblue_estvar); // compute ML BLUE estvar
+    estimator_variances(soln_vars, mlblue_estvar); // compute ML BLUE estvar
     // the assumed scaling with N_sh is not generally valid for ML BLUE,
     // but is reasonable for emulation of MFMC
     N_shared.assign(numFunctions, pilot_samp); // online
@@ -1155,8 +1156,8 @@ ratios_target_to_solution_variables(const RealVector& avg_eval_ratios,
 
 
 void NonDMultilevBLUESampling::
-process_group_solution(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
-		       const SizetArray& N_G_alloc, SizetArray& delta_N_G)
+process_group_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
+			  const SizetArray& N_G_alloc, SizetArray& delta_N_G)
 {
   // compute sample increment for HF from current to target:
 
@@ -1185,27 +1186,38 @@ process_group_solution(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
     find_hf_sample_reference(N_G_actual, ref_group, ref_model_index);  break;
   }
 
+  // Recompute full estvar vectors for final solution since minimizers
+  // target average over QoI (don't store on every eval since last eval
+  // may differ from final optimal soln)
+  RealVector estvar;
+  estimator_variances(soln.solution_variables(), estvar);// *** TO DO: consistent w/ projNActualHF
+  soln.estimator_variances(estvar);
+
   if (ref_group == _NPOS) { // no online HF samples
-    projEstVarHF = std::numeric_limits<Real>::quiet_NaN(); // all QoI
+    Real q_nan = std::numeric_limits<Real>::quiet_NaN();
+    projEstVarHF = q_nan; // all QoI
     projNActualHF.size(numFunctions); // set to 0
-    soln.average_estimator_variance_ratio(
-      std::numeric_limits<Real>::quiet_NaN());
+    soln.estimator_variance_ratios(numFunctions, q_nan); 
   }
   else {
     // Note: estvar is nan for 1 HF sample since bessel corr divides by 0
     project_mc_estimator_variance(covGG[ref_group], ref_model_index,
 				  N_G_actual[ref_group], delta_N_G[ref_group],
 				  projEstVarHF, projNActualHF);
-    // Report ratio of averages rather that average of ratios (see notes in
-    // print_variance_reduction())
-    soln.average_estimator_variance_ratio(
-      soln.average_estimator_variance() / average(projEstVarHF));
+    // Recompute full estvar vectors for final solution since minimizers
+    // target average over QoI (don't store on every eval since last eval
+    // may differ from final optimal soln)
+    RealVector estvar_ratios(numFunctions, false);
+    for (size_t qoi=0; qoi<numFunctions; ++qoi)
+      estvar_ratios[qoi] = estvar[qoi] / projEstVarHF[qoi];
+    soln.estimator_variance_ratios(estvar_ratios); 
+    // *** TO DO: resolve order of downstream averaging (see note thread in process_model_solution())
   }
 }
 
 
 void NonDMultilevBLUESampling::
-print_group_solution(std::ostream& s, const MFSolutionData& soln)
+print_group_allocations(std::ostream& s, const MFSolutionData& soln)
 {
   print_group_solution_variables(s, soln);
 
@@ -1420,7 +1432,7 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s)
   Real avg_proj_equiv_estvar = average(proj_equiv_estvar),
        avg_estvar = blueSolnData.average_estimator_variance();
   bool mc_only_ref = !zeros(projNActualHF);
-  // As described in process_group_solution(), we have two MC references:
+  // As described in process_group_allocations(), we have two MC references:
   // projected HF-only samples and projected equivalent HF samples.
   size_t wpp7 = write_precision + 7;
   s << "<<<<< Variance for mean estimator:\n";
@@ -1957,9 +1969,9 @@ compute_mu_hat(const RealSymMatrix2DArray& cov_GG_inv,
 
 
 void NonDMultilevBLUESampling::
-estimator_variance(const RealVector& cd_vars, RealVector& estvar)
+estimator_variances(const RealVector& cd_vars, RealVector& est_var)
 {
-  if (estvar.empty()) estvar.sizeUninitialized(numFunctions);
+  if (est_var.empty()) est_var.sizeUninitialized(numFunctions);
 
   // This approach leverages both the solution refinement in solve() and
   // equilibration during factorization (inverting Psi in place can only
@@ -1985,7 +1997,7 @@ estimator_variance(const RealVector& cd_vars, RealVector& estvar)
     int code = spd_solver.solve();
     if (code) {
       Cerr << "Error: serial dense solver failure (LAPACK error code " << code
-	   << ") in ML BLUE estimator_variance()." << std::endl;
+	   << ") in ML BLUE estimator_variances()." << std::endl;
       abort_handler(METHOD_ERROR);
     }
     estvar[q] = estvar_q[numApprox];
@@ -2001,22 +2013,22 @@ estimator_variance(const RealVector& cd_vars, RealVector& estvar)
   for (q=0; q<numFunctions; ++q) {
     copy_data(Psi[q], A); // RealSymMatrix to RealMatrix
     pseudo_inverse(A, A_inv, rcond);
-    estvar[q] = A_inv(numApprox,numApprox);
+    est_var[q] = A_inv(numApprox,numApprox);
     if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Pseudo-inverse solve for estvar for QoI " << q << " = "
-	   << estvar[q] << std::endl;
+      Cout << "Pseudo-inverse solve for est_var for QoI " << q << " = "
+	   << est_var[q] << std::endl;
   }
 
   // Revisit this flow:
   // should be able to equilibrate and factor each Psi once within a SpdSolver
-  // that persists, then solve to refined solution for each estvar and mu-hat.
+  // that persists, then solve to refined solution for each est_var and mu-hat.
 
   /* This approach suffers from poor performance, either from conditioning
      issues or misunderstood Teuchos solver behavior.
   RealSymMatrixArray Psi_inv;
   compute_Psi_inverse(covGGinv, cd_vars, Psi_inv);
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    estvar[qoi] = Psi_inv[qoi](numApprox,numApprox); // e_l^T Psi-inverse e_l
+    est_var[qoi] = Psi_inv[qoi](numApprox,numApprox); // e_l^T Psi-inverse e_l
   */
 }
 
