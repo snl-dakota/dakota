@@ -566,15 +566,7 @@ compute_allocations(const RealMatrix& var_L, MFSolutionData& soln)
       RealVector avg_eval_ratios(numApprox, false);
       avg_eval_ratios = 1. + RATIO_NUDGE;
       soln.anchored_solution_ratios(avg_eval_ratios, avg_N_H);
-      // For offline pilot, the online EstVar is undefined prior to any online
-      // samples, but should not happen (no budget used) unless bad convTol spec
-      if (online)
-	soln.estimator_variances(estVarIter0);
-      else // 0/0
-	soln.estimator_variances(numFunctions,
-				 std::numeric_limits<Real>::quiet_NaN());
-      soln.estimator_variance_ratios(numFunctions, 1.);
-      numSamples = 0;  return;
+      no_solve_variances(soln);  numSamples = 0;  return;
     }
 
     switch (optSubProblemSolver) {
@@ -593,35 +585,7 @@ compute_allocations(const RealMatrix& var_L, MFSolutionData& soln)
       MFSolutionData mf_soln, cv_soln;
       analytic_initialization_from_mfmc(rho2_LH, avg_N_H, mf_soln);
       analytic_initialization_from_ensemble_cvmc(rho2_LH, avg_N_H, cv_soln);
-
-      //if (multiStartACV) { // Run numerical solns from both starting points
-      ensemble_numerical_solution(mf_soln);
-      ensemble_numerical_solution(cv_soln);
-      pick_mfmc_cvmc_solution(mf_soln, cv_soln, soln);
-      //}
-      /*
-      else { // Run one numerical soln from best of two starting points
-        bool mfmc_init;
-        if (budget_constrained) { // same cost, compare accuracy
-	  RealVector cdv;
-	  r_and_N_to_design_vars(mf_soln.avgEvalRatios,mf_soln.avgHFTarget,cdv);
-	  mf_soln.avgEstVar = average_estimator_variance(cdv); // ACV or GenACV
-	  r_and_N_to_design_vars(cv_soln.avgEvalRatios,cv_soln.avgHFTarget,cdv);
-	  cv_soln.avgEstVar = average_estimator_variance(cdv); // ACV or GenACV
-	  mfmc_init = (mf_soln.avgEstVar < cv_soln.avgEstVar);
-        }
-        else { // same accuracy (convergenceTol * estVarIter0), compare cost 
-	  mf_soln.equivHFAlloc = compute_equivalent_cost(mf_soln.avgHFTarget,
-	    mf_soln.avgEvalRatios, sequenceCost);
-	  cv_soln.equivHFAlloc = compute_equivalent_cost(cv_soln.avgHFTarget,
-	    cv_soln.avgEvalRatios, sequenceCost);
-	  mfmc_init = (mf_soln.equivHFAlloc < cv_soln.equivHFAlloc);
-        }
-        soln = (mfmc_init) ? mf_soln : cv_soln;
-        // Single solve initiated from lowest estvar
-        ensemble_numerical_solution(soln);
-      }
-      */
+      competed_initial_guesses(mf_soln, cv_soln, soln);
       break;
     }
     }
@@ -629,12 +593,10 @@ compute_allocations(const RealMatrix& var_L, MFSolutionData& soln)
   else { // subsequent iterations
     if (no_solve) // leave soln at previous values
       { numSamples = 0; return; }
-
-    // no scaling needed from prev soln (as in NonDLocalReliability) since
-    // updated avg_N_H now includes allocation from previous solution and
-    // should be active on constraint bound (excepting sample count rounding)
-
     // warm start from previous solution (for active or one-and-only DAG)
+    // > no scaling needed from prev soln (as in NonDLocalReliability) since
+    //   updated avg_N_H now includes allocation from previous solution and
+    //   should be active on constraint bound (excepting sample count rounding)
     ensemble_numerical_solution(soln);
   }
 

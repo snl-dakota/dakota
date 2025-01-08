@@ -1060,16 +1060,7 @@ compute_allocations(const RealMatrix& var_L, MFSolutionData& soln)
       enforce_linear_ineq_constraints(avg_eval_ratios, approx_set,
 				      orderedRootList);
       soln.anchored_solution_ratios(avg_eval_ratios, avg_N_H);
-      // For offline pilot, the online EstVar is undefined prior to any online
-      // samples, but should not happen (no budget used) unless bad convTol spec
-      if (pilotMgmtMode == ONLINE_PILOT ||
-	  pilotMgmtMode == ONLINE_PILOT_PROJECTION)
-	soln.estimator_variances(estVarIter0);
-      else // 0/0
-	soln.estimator_variances(numFunctions,
-				 std::numeric_limits<Real>::quiet_NaN());
-      soln.estimator_variance_ratios(numFunctions, 1.);
-      numSamples = 0;  return;
+      no_solve_variances(soln);  numSamples = 0;  return;
     }
 
     // Run a competition among related analytic approaches (MFMC or pairwise
@@ -1088,9 +1079,7 @@ compute_allocations(const RealMatrix& var_L, MFSolutionData& soln)
       analytic_initialization_from_mfmc(approx_set, rho2_LH, avg_N_H, mf_soln);
       analytic_initialization_from_ensemble_cvmc(approx_set, *activeDAGIter,
 	orderedRootList, rho2_LH, avg_N_H, cv_soln);
-      ensemble_numerical_solution(mf_soln);
-      ensemble_numerical_solution(cv_soln);
-      pick_mfmc_cvmc_solution(mf_soln, cv_soln, soln);
+      competed_initial_guesses(mf_soln, cv_soln, soln);
       break;
     }
     }

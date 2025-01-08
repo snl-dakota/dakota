@@ -1248,16 +1248,7 @@ mfmc_numerical_solution(const RealMatrix& var_L, const RealMatrix& rho2_LH,
     if (no_solve) { // only 1 feasible pt, no need for solve
       avg_eval_ratios = 1.;
       soln.anchored_solution_ratios(avg_eval_ratios, avg_N_H);
-      // For offline pilot, the online EstVar is undefined prior to any online
-      // samples, but should not happen (no budget used) unless bad convTol spec
-      if (pilotMgmtMode == ONLINE_PILOT ||
-	  pilotMgmtMode == ONLINE_PILOT_PROJECTION)
-	soln.estimator_variances(estVarIter0);
-      else // 0/0
-	soln.estimator_variances(numFunctions,
-				 std::numeric_limits<Real>::quiet_NaN());
-      soln.estimator_variance_ratios(numFunctions, 1.);
-      numSamples = 0;  return;
+      no_solve_variances(soln);  numSamples = 0;  return;
     }
 
     // Compute r* initial guess from analytic MFMC

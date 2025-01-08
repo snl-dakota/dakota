@@ -894,23 +894,12 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
       RealVector x0; deflate(pilotSamples, retainedModelGroups, x0);
       soln.solution_variables(x0);
     }
-    bool online = (pilotMgmtMode == ONLINE_PILOT ||
-		   pilotMgmtMode == ONLINE_PILOT_PROJECTION);
-    if (online) // cache reference estVarIter0
+    if (pilotMgmtMode == ONLINE_PILOT ||
+	pilotMgmtMode == ONLINE_PILOT_PROJECTION) // cache reference estVarIter0
       estimator_variances(soln.solution_variables(), estVarIter0);
 
-    if (no_solve) {
-      // For offline pilot, the online EstVar is undefined (0/0) prior to online
-      // samples, but should not happen (no budget used) unless bad convTol spec
-      if (online)
-	soln.estimator_variances(estVarIter0);
-      else // 0/0
-	soln.estimator_variances(numFunctions,
-				 std::numeric_limits<Real>::quiet_NaN());
-      soln.estimator_variance_ratios(numFunctions, 1.);
-      delta_N_G.assign(numGroups, 0);
-      return;
-    }
+    if (no_solve)
+      { no_solve_variances(soln); delta_N_G.assign(numGroups, 0); return; }
 
     // Run a competition among related analytic approaches (MFMC or pairwise
     // CVMC) for best initial guess, where each initial gues may additionally
@@ -930,11 +919,7 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
       MFSolutionData mf_soln, cv_soln;
       analytic_initialization_from_mfmc(rho2_LH, mf_soln);
       analytic_initialization_from_ensemble_cvmc(rho2_LH, cv_soln);
-
-      //if (multiStartACV) { // Run numerical solns from both starting points
-      ensemble_numerical_solution(mf_soln);
-      ensemble_numerical_solution(cv_soln);
-      pick_mfmc_cvmc_solution(mf_soln, cv_soln, soln);
+      competed_initial_guesses(mf_soln, cv_soln, soln);
       break;
     }
     }
@@ -1186,9 +1171,9 @@ process_group_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
     find_hf_sample_reference(N_G_actual, ref_group, ref_model_index);  break;
   }
 
-  // Recompute full estvar vectors for final solution since minimizers
-  // target average over QoI (don't store on every eval since last eval
-  // may differ from final optimal soln)
+  // Recompute full estvar vectors for final solution since numerical solves
+  // target average over QoI (don't update vectors on every eval since last
+  // eval may differ from final optimal soln)
   RealVector estvar;
   estimator_variances(soln.solution_variables(), estvar);// *** TO DO: consistent w/ projNActualHF
   soln.estimator_variances(estvar);
@@ -1197,7 +1182,7 @@ process_group_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
     Real q_nan = std::numeric_limits<Real>::quiet_NaN();
     projEstVarHF = q_nan; // all QoI
     projNActualHF.size(numFunctions); // set to 0
-    soln.estimator_variance_ratios(numFunctions, q_nan); 
+    soln.initialize_estimator_variance_ratios(numFunctions, q_nan); 
   }
   else {
     // Note: estvar is nan for 1 HF sample since bessel corr divides by 0
@@ -1207,10 +1192,9 @@ process_group_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
     // Recompute full estvar vectors for final solution since minimizers
     // target average over QoI (don't store on every eval since last eval
     // may differ from final optimal soln)
-    RealVector estvar_ratios(numFunctions, false);
+    soln.initialize_estimator_variance_ratios(numFunctions);
     for (size_t qoi=0; qoi<numFunctions; ++qoi)
-      estvar_ratios[qoi] = estvar[qoi] / projEstVarHF[qoi];
-    soln.estimator_variance_ratios(estvar_ratios); 
+      soln.estimator_variance_ratio(estvar[qoi] / projEstVarHF[qoi], qoi); 
     // *** TO DO: resolve order of downstream averaging (see note thread in process_model_solution())
   }
 }
