@@ -65,7 +65,7 @@ void NonDReliability::post_run(std::ostream& s)
 {
   ++numRelAnalyses;
 
-  if (!mppModel && mppModel->mapping_initialized()) {
+  if (mppModel && mppModel->mapping_initialized()) {
     /*bool var_size_changed =*/ mppModel->finalize_mapping();
     //if (var_size_changed) resize();
   }

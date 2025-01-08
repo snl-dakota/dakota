@@ -245,7 +245,8 @@ NonDLocalReliability(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   // Enable warm starting of Model data (i.e., retain quasi-Hessian
   // accumulations for each QoI).  Test impacts are mixed: helps in some
   // (cantilever), hinders in some (logratio), a wash in some (short_column).
-  uSpaceModel->warm_start_flag(true);//iteratedModel.warm_start_flag(true);
+  if(uSpaceModel)
+      uSpaceModel->warm_start_flag(true);//iteratedModel.warm_start_flag(true);
 
   // configure a RecastModel with one objective and one equality constraint
   // using the alternate minimalist constructor
