@@ -135,7 +135,7 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> mode
 
   // TODO: Do we want to allow a single field group to allow the full
   // multi-variate case?
-  const SharedResponseData& srd = model.current_response().shared_data();
+  const SharedResponseData& srd = model->current_response().shared_data();
   if (srd.num_field_response_groups() > 0 && outputLevel >= NORMAL_OUTPUT)
     Cout << "\nWarning: GPMSA does not yet treat field_responses; they will be "
 	 << "treated as a\n         single multivariate response set."

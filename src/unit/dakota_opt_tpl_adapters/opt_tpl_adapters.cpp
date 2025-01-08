@@ -411,7 +411,7 @@ BOOST_AUTO_TEST_CASE(test_nln_ineq_traits)
 
   // ONE_SIDED_LOWER
   std::shared_ptr<TPLDataTransfer> data_xfer(new TPLDataTransfer()); 
-  data_xfer->configure_data_adapters( test_traits1, demo_optimizer->iterated_model() );
+  data_xfer->configure_data_adapters( test_traits1, *demo_optimizer->iterated_model() );
 
   TRAITS_TYPE1::VecT nln_ineqs(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model()->current_response(), nln_ineqs);
@@ -444,7 +444,7 @@ BOOST_AUTO_TEST_CASE(test_nln_ineq_traits)
 
   // ONE_SIDED_LOWER
   data_xfer.reset(new TPLDataTransfer()); 
-  data_xfer->configure_data_adapters( test_traits1, demo_optimizer->iterated_model() );
+  data_xfer->configure_data_adapters( test_traits1, *demo_optimizer->iterated_model() );
 
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model()->current_response(), nln_ineqs);
@@ -454,7 +454,7 @@ BOOST_AUTO_TEST_CASE(test_nln_ineq_traits)
 
   // TWO_SIDED
   data_xfer.reset(new TPLDataTransfer()); 
-  data_xfer->configure_data_adapters( test_traits2, demo_optimizer->iterated_model() );
+  data_xfer->configure_data_adapters( test_traits2, *demo_optimizer->iterated_model() );
 
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model()->current_response(), nln_ineqs);
