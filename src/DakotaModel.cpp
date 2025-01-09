@@ -3053,6 +3053,7 @@ bool Model::manage_data_recastings()
   // (3) Additional surrogates in this recursion hierarchy are ignored.
   ModelList& sub_models = subordinate_models(); // populates/returns modelList
   bool manage_recasting = false;
+  recastFlags.assign(sub_models.size(), false);
   // detect recasting needs top down
   size_t i{};
   for(auto& sm : sub_models) {
@@ -3076,9 +3077,9 @@ void Model::user_space_to_iterator_space(Variables& vars)
   // modelList assigned in manage_data_recastings() -> subordinate_models()
   // (don't want to incur this overhead for every import/export)
   Variables prev_vars = vars; // shallow copy / shared rep
-  size_t i{};
+  size_t i{modelList.size()-1};
   for (auto ml_rit = modelList.rbegin();
-      ml_rit!=modelList.rend(); ++ml_rit) {
+      ml_rit!=modelList.rend(); ++ml_rit, --i) {
     if (recastFlags[i]) {
       Variables recast_vars = (*ml_rit)->current_variables(); // shallow copy
       // to propagate vars bottom up, inverse of std transform is reqd
