@@ -1176,32 +1176,36 @@ void Iterator::finalize_run()
 
 void Iterator::resize_communicators(ParLevLIter pl_iter, bool reinit_comms)
 {
-  bool multiproc = (pl_iter->server_communicator_size() > 1);
-  if (reinit_comms) {
-    // Free communicators before we rebuild:
-    short mapping_code;
-    if (multiproc) {
-      mapping_code = FREE_COMMS;
-      parallelLib.bcast(mapping_code, *pl_iter);
-      parallelLib.bcast(maxEvalConcurrency, *pl_iter);
-    }
-    free_communicators(pl_iter);
+  if (iteratorRep) {
+    iteratorRep->resize_communicators(pl_iter, reinit_comms);
+  } else {
+    bool multiproc = (pl_iter->server_communicator_size() > 1);
+    if (reinit_comms) {
+      // Free communicators before we rebuild:
+      short mapping_code;
+      if (multiproc) {
+        mapping_code = FREE_COMMS;
+        parallelLib.bcast(mapping_code, *pl_iter);
+        parallelLib.bcast(maxEvalConcurrency, *pl_iter);
+      }
+      free_communicators(pl_iter);
 
-    // Re-initialize communicators:
+      // Re-initialize communicators:
+      if (multiproc) {
+        mapping_code = INIT_COMMS;
+        parallelLib.bcast(mapping_code, *pl_iter);
+      }
+      init_communicators(pl_iter);
+      if (multiproc) iteratedModel->stop_init_communicators(pl_iter);
+    }
+
+    // update message lengths for send/receive of parallel jobs (normally
+    // performed once in Model::init_communicators() just after construct time)
+    iteratedModel->estimate_message_lengths();
     if (multiproc) {
-      mapping_code = INIT_COMMS;
+      short mapping_code = ESTIMATE_MESSAGE_LENGTHS;
       parallelLib.bcast(mapping_code, *pl_iter);
     }
-    init_communicators(pl_iter);
-    if (multiproc) iteratedModel->stop_init_communicators(pl_iter);
-  }
-
-  // update message lengths for send/receive of parallel jobs (normally
-  // performed once in Model::init_communicators() just after construct time)
-  iteratedModel->estimate_message_lengths();
-  if (multiproc) {
-    short mapping_code = ESTIMATE_MESSAGE_LENGTHS;
-    parallelLib.bcast(mapping_code, *pl_iter);
   }
 }
 
