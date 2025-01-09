@@ -163,11 +163,13 @@ endif (HAVE_ROL)
 if (DAKOTA_MODULE_SURROGATES)
   add_subdirectory(dakota_surr_reduced_basis)
 
+if (HAVE_ROL)
   add_subdirectory(dakota_surr_gauss_proc)
-
   dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/dakota_surr_gauss_proc/gauss_proc_test_files"
     "${CMAKE_CURRENT_BINARY_DIR}/dakota_surr_gauss_proc/gauss_proc_test_files"
     dakota_unit_test_copied_files)
+endif (HAVE_ROL)
+
 endif()
 
 

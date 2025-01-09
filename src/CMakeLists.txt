@@ -480,8 +480,10 @@ endif(HAVE_SURFPACK)
 
 if(DAKOTA_MODULE_SURROGATES)
   add_definitions("-DHAVE_DAKOTA_SURROGATES")
-  list(APPEND interface_src DakotaSurrogates.cpp DakotaSurrogatesGP.cpp
-    DakotaSurrogatesPoly.cpp) # SharedGPApproxData.cpp)
+  list(APPEND interface_src DakotaSurrogates.cpp DakotaSurrogatesPoly.cpp)
+  if(HAVE_ROL)
+    list(APPEND interface_src DakotaSurrogatesGP.cpp)
+  endif(HAVE_ROL)
   if(DAKOTA_PYTHON_SURROGATES)
     add_definitions("-DHAVE_DAKOTA_PYTHON_SURROGATES")
     list(APPEND interface_src DakotaSurrogatesPython.cpp)
@@ -796,7 +798,6 @@ endif()
 
 if(HAVE_ROL)
   list(APPEND DAKOTA_INCDIRS ${ROL_INCLUDE_DIRS})
-  add_definitions("-DHAVE_ROL")
   set(iterator_src ${iterator_src} ROLOptimizer.cpp)
 endif(HAVE_ROL)
 

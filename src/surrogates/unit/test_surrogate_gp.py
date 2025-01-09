@@ -35,46 +35,6 @@ for i, x in enumerate(eval_samples):
 # single evaluation point
 eval_point = np.atleast_2d(np.array([0.1, 0.4]))
 
-# PolynomialRegression:
-# instantiate a polynomial regression surrogate using a
-# Python dictionary for configOptions
-pr = daksurr.PolynomialRegression(build_samples,
-     build_response, {"max degree" : 2, "scaler type" : "none", "reduced basis" : False})
-
-# Set variable labels, leaving responses unlabeled
-pr.variable_labels(["x0", "x1"])
-
-# evaluate the surrogate's value, gradient, and hessian
-eval_surr = pr.value(eval_samples)
-print("Truth:\n{0}".format(eval_truth))
-print("Surrogate value:\n{0}\n".format(eval_surr))
-
-eval_grad = pr.gradient(eval_point)
-print("Surrogate gradient:\n{0}\n".format(eval_grad))
-
-eval_hessian = pr.hessian(eval_point)
-print("Surrogate Hessian:\n{0}\n".format(eval_hessian))
-
-
-# save polynomial surrogate to text
-print("Saving Polynomial")
-# Free function for generic save (serialize via shared pointer to base)
-daksurr.save(pr, "poly.txt", False)
-
-# load using derived class constructor
-print("Loading Polynomial (derived class constructor)")
-dctor_prload = daksurr.PolynomialRegression(filename = "poly.txt", binary = False)
-print("Loaded Poly is a: {0}".format(dctor_prload.__class__.__name__))
-assert(np.allclose(pr.value(eval_point), dctor_prload.value(eval_point)))
-
-# free function load
-print("Loading Polynomial (free function)")
-gen_prload = daksurr.load("poly.txt", False)
-print("Loaded Poly is a: {0}".format(gen_prload.__class__.__name__))
-assert(np.allclose(pr.value(eval_point), gen_prload.value(eval_point)))
-assert(gen_prload.variable_labels() == ["x0", "x1"])
-assert(len(gen_prload.response_labels()) == 0)
-
 # GaussianProcess:
 # instantiate a Gaussian process surrogate using a
 # Python dictionary for configOptions

@@ -196,7 +196,7 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
     g_hat_x_model.surrogate_function_indices(surr_fn_indices);
 
     if (approx_type == "global_exp_gauss_proc") {
-#ifdef HAVE_DAKOTA_SURROGATES
+#if defined(HAVE_DAKOTA_SURROGATES) && defined(HAVE_ROL)
       String advanced_options_file
           = problem_db.get_string("method.advanced_options_file");
       if (!advanced_options_file.empty())
@@ -259,7 +259,7 @@ NonDGlobalReliability(ProblemDescDB& problem_db, Model& model):
     uSpaceModel.surrogate_function_indices(surr_fn_indices);
 
     if (approx_type == "global_exp_gauss_proc") {
-#ifdef HAVE_DAKOTA_SURROGATES
+#if defined(HAVE_DAKOTA_SURROGATES) && defined(HAVE_ROL)
       String advanced_options_file
           = problem_db.get_string("method.advanced_options_file");
       if (!advanced_options_file.empty())

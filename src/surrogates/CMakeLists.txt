@@ -11,21 +11,29 @@ include(ExternalProject)
 
 set(surrogates_sources
   SurrogatesBase.cpp
-  SurrogatesGaussianProcess.cpp 
-  SurrogatesGPKernels.cpp
-  SurrogatesGPObjective.cpp
   SurrogatesPolynomialRegression.cpp
   surrogates_tools.cpp
 )
 
 set(surrogates_headers
   SurrogatesBase.hpp
-  SurrogatesGaussianProcess.hpp
-  SurrogatesGPKernels.hpp
-  SurrogatesGPObjective.hpp
   SurrogatesPolynomialRegression.hpp
   surrogates_tools.hpp
 )
+
+# GPs require ROL
+if(HAVE_ROL)
+  list(APPEND surrogates_sources
+    SurrogatesGaussianProcess.cpp 
+    SurrogatesGPKernels.cpp
+    SurrogatesGPObjective.cpp
+  )
+  list(APPEND surrogates_headers
+    SurrogatesGaussianProcess.hpp
+    SurrogatesGPKernels.hpp
+    SurrogatesGPObjective.hpp
+  )
+endif(HAVE_ROL)
 
 if(DAKOTA_PYTHON_SURROGATES)
   list(APPEND surrogates_sources SurrogatesPython.cpp)
@@ -54,9 +62,11 @@ target_link_libraries(dakota_surrogates PUBLIC ${Teuchos_LIBRARIES})
 
 # BMA: Unless there's a better way, specify that ROL is a system
 # library to suppress warnings
-target_include_directories(dakota_surrogates SYSTEM PRIVATE
-  "${ROL_INCLUDE_DIRS}"
-)
+if(HAVE_ROL)
+  target_include_directories(dakota_surrogates SYSTEM PRIVATE
+    "${ROL_INCLUDE_DIRS}"
+  )
+endif(HAVE_ROL)
 
 # Rationale: Boost serialization is referenced in API headers
 target_link_libraries(dakota_surrogates PUBLIC Boost::serialization)
