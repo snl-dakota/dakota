@@ -118,11 +118,6 @@ protected:
 				     const SizetArray& N_l, size_t new_samp,
 				     RealVector& mc_est_var);
 
-  /// convert estimator variance ratios to average estimator variance
-  Real estvar_ratios_to_avg_estvar(const RealVector& estvar_ratios,
-				   const RealVector& var_H,
-				   const SizetArray& N_H);
-
   /// initialize relaxFactor prior to iteration
   void reset_relaxation();
   /// update relaxFactor based on iteration number
@@ -421,17 +416,6 @@ compute_mc_estimator_variance(const RealVector& var_l, const SizetArray& N_l,
     N_l_q = N_l[qoi]; // can be zero in offline pilot cases
     mc_est_var[qoi] = (N_l_q) ? var_l[qoi] / N_l_q : DBL_MAX;
   }
-}
-
-
-inline Real NonDEnsembleSampling::
-estvar_ratios_to_avg_estvar(const RealVector& estvar_ratios,
-			    const RealVector& var_H, const SizetArray& N_H)
-{
-  RealVector est_var(numFunctions, false);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    est_var[qoi] = estvar_ratios[qoi] * var_H[qoi] / N_H[qoi];
-  return average(est_var);
 }
 
 

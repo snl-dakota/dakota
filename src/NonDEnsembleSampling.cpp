@@ -361,7 +361,7 @@ void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
     s << "\nStatistics based on multilevel sample set:\n";
     //print_statistics(s);
     print_moments(s, "response function",
-		  iteratedModel.truth_model().response_labels());
+		  iteratedModel.truth_model().response_labels()); // *** TO DO: confidence intervals
     archive_moments();
   }
 }

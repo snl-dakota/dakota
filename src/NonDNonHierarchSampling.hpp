@@ -243,12 +243,15 @@ inline Real MFSolutionData::solution_reference() const
 
 inline void MFSolutionData::
 initialize_estimator_variances(size_t num_fns)
-{ estVariances.sizeUninitialized(num_fns); }
+{ if (estVariances.length()!=num_fns) estVariances.sizeUninitialized(num_fns); }
 
 
 inline void MFSolutionData::
 initialize_estimator_variances(size_t num_fns, Real val)
-{ estVariances.sizeUninitialized(num_fns); estVariances.putScalar(val); }
+{
+  if (estVariances.length()!=num_fns) estVariances.sizeUninitialized(num_fns);
+  estVariances.putScalar(val);
+}
 
 
 inline Real MFSolutionData::average_estimator_variance() const
@@ -273,12 +276,15 @@ inline Real MFSolutionData::estimator_variance(size_t i) const
 
 inline void MFSolutionData::
 initialize_estimator_variance_ratios(size_t num_fns)
-{ estVarRatios.sizeUninitialized(num_fns); }
+{ if (estVarRatios.length()!=num_fns) estVarRatios.sizeUninitialized(num_fns); }
 
 
 inline void MFSolutionData::
 initialize_estimator_variance_ratios(size_t num_fns, Real val)
-{ estVarRatios.sizeUninitialized(num_fns); estVarRatios.putScalar(val); }
+{
+  if (estVarRatios.length()!=num_fns) estVarRatios.sizeUninitialized(num_fns);
+  estVarRatios.putScalar(val);
+}
 
 
 inline Real MFSolutionData::average_estimator_variance_ratio() const
@@ -463,6 +469,9 @@ protected:
   void estimator_variances_and_ratios(const RealVector& cd_vars,
 				      RealVector& estvar_ratios,
 				      RealVector& est_var);
+  /// compute estimator variance from estimator variance ratios
+  void estvar_ratios_to_estvar(const RealVector& var_H, const SizetArray& N_H,
+			       MFSolutionData& soln);
 
   /// helper function for assigning dummy estimator variances when no
   /// numerical solve is performed
@@ -596,10 +605,6 @@ protected:
 					RealVector& avg_eval_ratios,
 					bool lower_bounded_r = true,
 					bool     monotonic_r = false);
-  void mfmc_estvar_ratios(const RealMatrix& rho2_LH,
-			  const RealVector& avg_eval_ratios,
-			  SizetArray& approx_sequence,
-			  RealVector& estvar_ratios);
 
   void cvmc_ensemble_solutions(const RealMatrix& rho2_LH,
 			       const RealVector& cost,
@@ -1065,6 +1070,17 @@ average_estimator_variance(const RealVector& cd_vars)
     Cout << "NonDNonHierarchSampling::average_estimator_variance(): "
 	 << "average EstVar = " << avg_estvar << '\n';
   return avg_estvar;
+}
+
+
+inline void NonDNonHierarchSampling::
+estvar_ratios_to_estvar(const RealVector& var_H, const SizetArray& N_H,
+			MFSolutionData& soln)
+{
+  const RealVector& estvar_ratios = soln.estimator_variance_ratios();
+  soln.initialize_estimator_variances(numFunctions);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    soln.estimator_variance(estvar_ratios[qoi] * var_H[qoi] / N_H[qoi], qoi);
 }
 
 

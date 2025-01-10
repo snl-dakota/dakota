@@ -68,23 +68,27 @@ protected:
   void multifidelity_mc_offline_pilot();
   void multifidelity_mc_pilot_projection();
 
-  void mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
-			const RealVector& cost,  MFSolutionData& soln);
-                      //bool for_warm_start = false);
-  void mfmc_numerical_solution(const RealMatrix& var_L,
-			       const RealMatrix& rho2_LH,
+  void compute_allocations(const RealMatrix& rho2_LH, const RealVector& var_H,
+			   const SizetArray& N_H, const RealVector& cost,
+			   MFSolutionData& soln);
+  void process_analytic_allocations(const RealMatrix& rho2_LH,
+				    const RealVector& var_H,
+				    const SizetArray& N_H,
+				    const RealVector& cost,
+				    RealVector& avg_eval_ratios,
+				    MFSolutionData& soln);
+  void mfmc_numerical_solution(const RealMatrix& rho2_LH,
 			       const RealVector& cost, MFSolutionData& soln);
 
-  void emerge_from_pilot(Real avg_N_H, const RealVector& cost,
-			 RealVector& avg_eval_ratios, Real& avg_hf_target,
-			 Real budget, Real offline_N_lwr);
+  void emerge_from_pilot(const SizetArray& N_H, RealVector& avg_eval_ratios,
+			 Real& avg_hf_target, Real offline_N_lwr = 1.);
 
   void update_model_groups();
   void update_model_groups(const SizetArray& approx_sequence);
 
   void mfmc_estimator_variance(const RealMatrix& rho2_LH,
 			       const RealVector& var_H, const SizetArray& N_H,
-			       RealVector& estvar_ratios, MFSolutionData& soln);
+			       MFSolutionData& soln);
 
 private:
 
@@ -96,6 +100,14 @@ private:
 			  IntRealVectorMap& sum_H,
 			  IntRealMatrixMap& sum_LL,
 			  IntRealMatrixMap& sum_LH, RealVector& sum_HH);
+
+  void mfmc_estvar_ratios(const RealMatrix& rho2_LH,
+			  const RealVector& avg_eval_ratios,
+			  SizetArray& approx_sequence,
+			  RealVector& estvar_ratios);
+  void mfmc_estvar_ratios(const RealMatrix& rho2_LH,
+			  const RealVector& avg_eval_ratios,
+			  SizetArray& approx_sequence, MFSolutionData& soln);
 
   void approx_increments(IntRealMatrixMap& sum_L_baseline,
 			 const SizetArray& N_H_actual, size_t N_H_alloc,
@@ -171,6 +183,10 @@ private:
 				size_t& N_H_alloc, size_t& delta_N_H_actual,
 				//SizetArray& delta_N_L_actual,
 				Real& delta_equiv_hf);
+
+  void print_analytic_solution(const RealMatrix& rho2_LH,
+			       const RealVector& avg_eval_ratios) const;
+
   //
   //- Heading: Data
   //
@@ -196,9 +212,6 @@ private:
 
   /// final solution data for MFMC (default DAG = 1,2,...,numApprox)
   MFSolutionData mfmcSolnData;
-  /// ratio of MFMC to MC estimator variance for the same HF samples,
-  /// also known as (1 - R^2)
-  RealVector estVarRatios;
 };
 
 
@@ -221,6 +234,16 @@ initialize_mf_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
     mat_pr.first = i; // moment number
     sum_LL.insert(mat_pr).first->second.shape(numFunctions, numApprox);
   }
+}
+
+
+inline void NonDMultifidelitySampling::
+mfmc_estvar_ratios(const RealMatrix& rho2_LH, const RealVector& avg_eval_ratios,
+		   SizetArray& approx_sequence, MFSolutionData& soln)
+{
+  RealVector estvar_ratios;
+  mfmc_estvar_ratios(rho2_LH, avg_eval_ratios, approx_sequence, estvar_ratios);
+  soln.estimator_variance_ratios(estvar_ratios);
 }
 
 
@@ -257,6 +280,30 @@ matrix_to_diagonal_array(const RealMatrix& var_L, RealSymMatrixArray& cov_LL)
       cov_LL_q(approx,approx) = var_L(qoi,approx);
   }
 }
+
+
+inline void NonDMultifidelitySampling::
+print_analytic_solution(const RealMatrix& rho2_LH,
+			const RealVector& avg_eval_ratios) const
+{
+  if (outputLevel < NORMAL_OUTPUT) return;
+
+  Cout << "MFMC analytic solution:\n";
+  bool ordered = corrApproxSequence.empty();  size_t i, qoi, approx;
+  for (qoi=0; qoi<numFunctions; ++qoi)
+    for (i=0; i<numApprox; ++i) {
+      approx = (ordered) ? i : corrApproxSequence[i];
+      Cout << "  QoI " << qoi+1 << " Approx " << approx+1
+	//<< ": cost_ratio = " << cost_H / cost_L
+	   << ": rho2_LH = "    <<     rho2_LH(qoi,approx)
+	   << " eval_ratio = "  << avg_eval_ratios[approx] << '\n';
+    }
+  Cout << '\n';
+}
+
+
+inline void NonDMultifidelitySampling::print_variance_reduction(std::ostream& s)
+{ print_estimator_performance(s, mfmcSolnData); }
 
 } // namespace Dakota
 
