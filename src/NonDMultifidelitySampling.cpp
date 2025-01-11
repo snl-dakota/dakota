@@ -308,7 +308,7 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
   // > Note: this could be redundant for tol-based targets with m1* > pilot
   SizetArray N_H_actual_proj = N_H_actual;
   increment_samples(N_H_actual_proj, deltaNActualHF);
-  mfmc_estimator_variance(rho2LH, varH, N_H_actual_proj, mfmcSolnData); // *** TO DO: numerical estvar?
+  mfmc_estimator_variance(rho2LH, varH, N_H_actual_proj, mfmcSolnData);
 }
 
 
@@ -1369,10 +1369,9 @@ mfmc_estimator_variance(const RealMatrix& rho2_LH, const RealVector& var_H,
   }
 
   // Numerical MFMC: mfmc_numerical_solution() uses process_model_allocations()
-  // to store estvar/estvar_ratios in soln.  There is no emerge_from_pilot()
-  // modification in this case so estvar remains consistent.
-
-  // *** TO DO: BUT, PROJECTIONS USE SYNCHRONIZED SAMPLE COUNTS ***
+  // to store optimized estvar/estvar_ratios in soln.  In this case, there is
+  // no emerge_from_pilot() modification so estvar remains consistent,
+  // including pilot projections that target this optimized state.
   }
 }
 

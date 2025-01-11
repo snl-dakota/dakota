@@ -1391,18 +1391,20 @@ print_multigroup_summary(std::ostream& s, const String& summary_type,
 
 void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s)
 {
-  //print_estimator_performance(s, blueSolnData);
-
+  const RealVector&  mlblue_est_var = blueSolnData.estimator_variances();
+  const RealVector&  mlblue_ratios  = blueSolnData.estimator_variance_ratios();
+  const StringArray& labels = iteratedModel.truth_model().response_labels();
+  Real mlblue_est_var_q, mlblue_ratio_q, proj_equiv_estvar_q;
+  size_t qoi, wpp7 = write_precision+7,
+    proj_equiv_hf = (size_t)std::floor(equivHFEvals + deltaEquivHF + .5);
   String method = " ML BLUE",
            type = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
 		   pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
                 ? "Projected" : "   Online";
-  // Ordering of averages:
-  // > recomputing final MC estvar, rather than dividing the two averages, gives
-  //   a result that is consistent with average(estVarIter0) when N* = pilot.
-  // > The ACV ratio then differs from final ACV / final MC (due to recovering
-  //   avgEstVar from the optimizer obj fn), but difference is usually small.
-  RealVector proj_equiv_estvar;
+  bool online = (pilotMgmtMode == ONLINE_PILOT ||
+		 pilotMgmtMode == ONLINE_PILOT_PROJECTION),
+    mc_only_ref = !zeros(projNActualHF);
+
   // search for the most refined covGG[g][qoi](H,H)
   size_t ref_group, ref_model_index;
   switch (pilotMgmtMode) {
@@ -1411,33 +1413,44 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s)
   default: // define online ref from group with max HF samples (best varH)
     find_hf_sample_reference(NGroupActual, ref_group, ref_model_index);  break;
   }
-  project_mc_estimator_variance(covGG[ref_group], ref_model_index, equivHFEvals,
-                                deltaEquivHF, proj_equiv_estvar);
-  Real avg_proj_equiv_estvar = average(proj_equiv_estvar),
-       avg_estvar = blueSolnData.average_estimator_variance();
-  bool mc_only_ref = !zeros(projNActualHF);
   // As described in process_group_allocations(), we have two MC references:
   // projected HF-only samples and projected equivalent HF samples.
-  size_t wpp7 = write_precision + 7;
+  RealVector proj_equiv_estvar;
+  project_mc_estimator_variance(covGG[ref_group], ref_model_index, equivHFEvals,
+                                deltaEquivHF, proj_equiv_estvar);
+
   s << "<<<<< Variance for mean estimator:\n";
-  if (pilotMgmtMode == ONLINE_PILOT || pilotMgmtMode == ONLINE_PILOT_PROJECTION)
-    s << "    Initial pilot (" << std::setw(5)
-      << (size_t)std::floor(average(pilotSamples) + .5) << " ML samples):  "
-      << std::setw(wpp7) << average(estVarIter0) << '\n';
-  if (mc_only_ref)
-    s << "  " << type << " MC    (" << std::setw(5)
-      << (size_t)std::floor(average(projNActualHF) + .5) << " HF samples):  "
-      << std::setw(wpp7) << average(projEstVarHF) << '\n';
-  s << "  " << type << method << " (sample profile):  "
-    << std::setw(wpp7) << avg_estvar << '\n';
-  if (mc_only_ref)
-    s << "  " << type << method << " ratio  (1 - R^2):  " << std::setw(wpp7)
-      << blueSolnData.average_estimator_variance_ratio() << '\n';
-  s << " Equivalent MC    (" << std::setw(5)
-    << (size_t)std::floor(equivHFEvals + deltaEquivHF + .5) << " HF samples):  "
-    << std::setw(wpp7) << avg_proj_equiv_estvar
-    << "\n Equivalent" << method << " ratio:             "
-    << std::setw(wpp7) << avg_estvar / avg_proj_equiv_estvar << '\n';
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    s << std::setw(14) << labels[qoi] << ":\n"; // mirror print_moments()
+
+    mlblue_est_var_q    = mlblue_est_var[qoi];
+    mlblue_ratio_q      = mlblue_ratios[qoi];
+    proj_equiv_estvar_q = proj_equiv_estvar[qoi];
+
+    if (online)
+      s << "    Initial pilot (" << std::setw(5) << pilotSamples[qoi]
+	<< " ML samples):  " << std::setw(wpp7) << estVarIter0[qoi] << '\n'; // ***
+    if (mc_only_ref)
+      s << "  " << type << " MC    (" << std::setw(5) << projNActualHF[qoi]
+	<< " HF samples):  " << std::setw(wpp7) << projEstVarHF[qoi] << '\n';
+    s << "  " << type << method << " (sample profile):  "
+      << std::setw(wpp7) << mlblue_est_var_q << '\n';
+    if (mc_only_ref)
+      s << "  " << type << method << " ratio  (1 - R^2):  "
+	<< std::setw(wpp7) << mlblue_ratio_q << '\n';
+    s << " Equivalent MC    (" << std::setw(5) << proj_equiv_hf
+      << " HF samples):  " << std::setw(wpp7) << proj_equiv_estvar_q
+      << "\n Equivalent" << method << " ratio:             "
+      << std::setw(wpp7) << mlblue_est_var_q / proj_equiv_estvar_q << '\n';
+  }
+
+  /*
+  // Ordering of averages:
+  // > recomputing final MC estvar, rather than dividing the two averages, gives
+  //   a result that is consistent with average(estVarIter0) when N* = pilot.
+  // > The ACV ratio then differs from final ACV / final MC (due to recovering
+  //   avgEstVar from the optimizer obj fn), but difference is usually small.
+  */
 }
 
 
