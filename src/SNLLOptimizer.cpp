@@ -1206,10 +1206,14 @@ void SNLLOptimizer::post_run(std::ostream& s)
   RealVector best_fns(bestResponseArray.front().num_functions());
   if (!localObjectiveRecast) { // else local_objective_recast_retrieve()
                                // is used in Optimizer::post_run()
-    const BoolDeque& max_sense = iteratedModel->primary_response_fn_sense();
-    // see opt++/libopt/nlp.h
-    best_fns[0] = (!max_sense.empty() && max_sense[0]) ?
-      -nlfObjective->getF() : nlfObjective->getF();
+    if(iteratedModel) {
+      const BoolDeque& max_sense = iteratedModel->primary_response_fn_sense();
+      // see opt++/libopt/nlp.h
+      best_fns[0] = (!max_sense.empty() && max_sense[0]) ?
+        -nlfObjective->getF() : nlfObjective->getF();
+    } else {
+      best_fns[0] = nlfObjective->getF();
+    }
   }
   // OPT++ expects nonlinear equations followed by nonlinear inequalities.
   // Therefore, reorder the constraint values.

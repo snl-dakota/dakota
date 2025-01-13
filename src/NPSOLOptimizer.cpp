@@ -486,9 +486,13 @@ void NPSOLOptimizer::find_optimum_on_model()
     // local_objective_recast_retrieve() is used in Optimizer::post_run()
   }
   else {
-    const BoolDeque& max_sense = iteratedModel->primary_response_fn_sense();
-    best_fns[0] = (!max_sense.empty() && max_sense[0]) ?
-      -local_f_val : local_f_val;
+    if(iteratedModel) {
+      const BoolDeque& max_sense = iteratedModel->primary_response_fn_sense();
+      best_fns[0] = (!max_sense.empty() && max_sense[0]) ?
+        -local_f_val : local_f_val;
+    } else {
+      best_fns[0] = local_f_val;
+    }
   }
   if (numNonlinearConstraints) // numUserPrimaryFns is 1 if no recast
     copy_data_partial(local_c_vals, best_fns, numUserPrimaryFns);

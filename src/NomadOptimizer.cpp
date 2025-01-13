@@ -321,10 +321,14 @@ void NomadOptimizer::core_run()
   const NOMAD::Point & bestFs = bestX->get_bb_outputs();
   if (!localObjectiveRecast) {
     // else local_objective_recast_retrieve() is used in Optimizer::post_run()
-    const BoolDeque& max_sense = iteratedModel->primary_response_fn_sense();
-    // Map objective appropriately based on minimizing or maximizing.
-    best_fns[0] = (!max_sense.empty() && max_sense[0]) ?
-      -bestFs[0].value() : bestFs[0].value();
+    if(iteratedModel) {
+      const BoolDeque& max_sense = iteratedModel->primary_response_fn_sense();
+      // Map objective appropriately based on minimizing or maximizing.
+      best_fns[0] = (!max_sense.empty() && max_sense[0]) ?
+        -bestFs[0].value() : bestFs[0].value();
+    } else {
+      best_fns[0] = bestFs[0].value();
+    }
   }
 
   // Map linear and nonlinear constraints according to constraint map.

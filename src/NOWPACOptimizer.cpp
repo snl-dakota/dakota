@@ -210,8 +210,12 @@ void NOWPACOptimizer::core_run()
   RealVector best_fns(bestResponseArray.front().num_functions());
   if (!localObjectiveRecast) {
     // else local_objective_recast_retrieve() used in Optimizer::post_run()
-    const BoolDeque& max_sense = iteratedModel->primary_response_fn_sense();
-    best_fns[0] = (!max_sense.empty() && max_sense[0]) ? -obj_star[0] : obj_star[0];
+    if(iteratedModel) {
+      const BoolDeque& max_sense = iteratedModel->primary_response_fn_sense();
+      best_fns[0] = (!max_sense.empty() && max_sense[0]) ? -obj_star[0] : obj_star[0];
+    } else {
+      best_fns[0] = obj_star[0];
+    }
   }
   // objective and mapped nonlinear inequalities returned from optimize()
   const SizetList& nln_ineq_map_indices
