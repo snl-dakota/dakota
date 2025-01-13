@@ -15,9 +15,6 @@ static const char rcsId[]=
 
 namespace Dakota {
 
-extern std::shared_ptr<Model> dummy_model; // defined in DakotaModel.cpp
-
-
 EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db):
   SurrogateModel(problem_db), sameModelInstance(false),
   sameInterfaceInstance(false), ensemblePrecedence(DEFAULT_PRECEDENCE),
@@ -573,8 +570,8 @@ void EnsembleSurrModel::derived_evaluate(const ActiveSet& set)
       mixed_eval = (lo_fi_eval && hi_fi_eval);            break;
     }
     // Extract models corresponding to truthModelKey and surrModelKeys[0]
-    auto   lf_model = (lo_fi_eval) ? active_surrogate_model(0) : dummy_model;
-    auto   hf_model = (hi_fi_eval) ? active_truth_model()      : dummy_model;
+    auto   lf_model = (lo_fi_eval) ? active_surrogate_model(0) : nullptr;
+    auto   hf_model = (hi_fi_eval) ? active_truth_model()      : nullptr;
     auto same_model = (hi_fi_eval) ? hf_model : lf_model;
     if (hierarchicalTagging) {
       String eval_tag = evalTagPrefix + '.' + std::to_string(surrModelEvalCntr+1);
@@ -789,8 +786,8 @@ void EnsembleSurrModel::derived_evaluate_nowait(const ActiveSet& set)
         lo_fi_eval = !lo_fi_asv.empty();  hi_fi_eval = !hi_fi_asv.empty();  break;
       }
       // Extract models corresponding to truthModelKey and surrModelKeys[0]
-      auto   lf_model = (lo_fi_eval) ? active_surrogate_model(0) : dummy_model;
-      auto   hf_model = (hi_fi_eval) ? active_truth_model()      : dummy_model;
+      auto   lf_model = (lo_fi_eval) ? active_surrogate_model(0) : nullptr;
+      auto   hf_model = (hi_fi_eval) ? active_truth_model()      : nullptr;
       auto same_model = (hi_fi_eval) ? hf_model : lf_model;
       bool asynch_lo_fi = (lo_fi_eval) ? lf_model->asynch_flag() : false,
           asynch_hi_fi = (hi_fi_eval) ? hf_model->asynch_flag() : false;
@@ -1300,7 +1297,7 @@ std::shared_ptr<Model> EnsembleSurrModel::model_from_index(unsigned short m_inde
     Cerr << "Error: model index (" << m_index << ") out of range in "
 	 << "EnsembleSurrModel::model_from_index()" << std::endl;
     abort_handler(MODEL_ERROR);
-    return dummy_model;
+    return nullptr;
   }
 }
 
@@ -1315,7 +1312,7 @@ model_from_index(unsigned short m_index) const
     Cerr << "Error: model index (" << m_index << ") out of range in "
 	 << "EnsembleSurrModel::model_from_index()" << std::endl;
     abort_handler(MODEL_ERROR);
-    return dummy_model;
+    return nullptr;
   }
 }
 
@@ -1328,7 +1325,7 @@ std::shared_ptr<Model> EnsembleSurrModel::approx_model_from_index(unsigned short
     Cerr << "Error: model index (" << m_index << ") out of range in "
 	 << "EnsembleSurrModel::approx_model_from_index()" << std::endl;
     abort_handler(MODEL_ERROR);
-    return dummy_model;
+    return nullptr;
   }
 }
 
@@ -1342,7 +1339,7 @@ approx_model_from_index(unsigned short m_index) const
     Cerr << "Error: model index (" << m_index << ") out of range in "
 	 << "EnsembleSurrModel::approx_model_from_index()" << std::endl;
     abort_handler(MODEL_ERROR);
-    return dummy_model;
+    return nullptr;
   }
 }
 
@@ -1495,10 +1492,11 @@ std::shared_ptr<Model> EnsembleSurrModel::active_surrogate_model(size_t i)
       Cerr << "Error: model form undefined in EnsembleSurrModel::"
 	   << "active_surrogate_model()" << std::endl;
       abort_handler(MODEL_ERROR);
+      return nullptr;
     }
     return model_from_index(lf_form);  break;
   case BYPASS_SURROGATE: case NO_SURROGATE:
-    return dummy_model;                break;
+    return nullptr;                break;
   case AGGREGATED_MODEL_PAIR: case MODEL_DISCREPANCY: // paired cases
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
     // One surrModelKey: allow client to quietly rely on default (_NPOS)
@@ -1521,10 +1519,11 @@ std::shared_ptr<const Model> EnsembleSurrModel::active_surrogate_model(size_t i)
       Cerr << "Error: model form undefined in EnsembleSurrModel::"
 	   << "active_surrogate_model()" << std::endl;
       abort_handler(MODEL_ERROR);
+      return nullptr;
     }
     return model_from_index(lf_form);  break;
   case BYPASS_SURROGATE: case NO_SURROGATE: // surrModelKeys are empty
-    return dummy_model;                break;
+    return nullptr;                break;
   case AGGREGATED_MODEL_PAIR: case MODEL_DISCREPANCY:        // 1 surrModelKey
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: // (paired cases)
     // One surrModelKey: allow client to quietly rely on default (_NPOS)

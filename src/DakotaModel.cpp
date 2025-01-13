@@ -39,10 +39,6 @@ Interface dummy_interface; ///< dummy Interface object used for mandatory
                            ///< reference initialization or default virtual
                            ///< function return by reference when a real
                            ///< Interface instance is unavailable
-std::shared_ptr<Model> dummy_model = std::make_shared<Model>();     ///< dummy Model object used for mandatory reference
-                           ///< initialization or default virtual function
-                           ///< return by reference when a real Model instance
-                           ///< is unavailable
 Iterator  dummy_iterator;  ///< dummy Iterator object used for mandatory
                            ///< reference initialization or default virtual
                            ///< function return by reference when a real
@@ -3286,7 +3282,7 @@ Iterator& Model::subordinate_iterator()
     be performed on the original envelope object. */
 std::shared_ptr<Model> Model::subordinate_model()
 {
-  return dummy_model; // return null/empty envelope
+  return nullptr; // return null/empty envelope
 }
 
 
@@ -3323,13 +3319,13 @@ size_t Model::qoi() const
     be performed on the original envelope object. */
 std::shared_ptr<Model> Model::surrogate_model(size_t i)
 {
-  return dummy_model; // default is no surrogate -> return empty envelope
+  return nullptr; // default is no surrogate -> return empty envelope
 }
 
 
 std::shared_ptr<const Model> Model::surrogate_model(size_t i) const
 {
-  return dummy_model;
+  return nullptr;
 }
 
 
