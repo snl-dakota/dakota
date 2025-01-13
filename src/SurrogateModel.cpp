@@ -708,7 +708,8 @@ check_rebuild(const RealVector& ref_icv,        const IntVector&  ref_idiv,
 
   // for global surrogates, force rebuild for change in active bounds
 
-  auto actual_model = active_truth_model();
+  Model* actual_model = (active_truth_model().get()) ? 
+    active_truth_model().get() : this;
 
   // Don't force rebuild for active subspace model:
   // JAM TODO: there's probably a more elegant way to accomodate subspace models
