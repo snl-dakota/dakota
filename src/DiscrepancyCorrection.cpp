@@ -103,7 +103,8 @@ void DiscrepancyCorrection::initialize_corrections()
     for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
       multCorrections[*it] = Approximation(sharedData);
   }
-  correctionPrevCenterPt = surrModel->current_variables().copy();
+  if(surrModel)
+    correctionPrevCenterPt = surrModel->current_variables().copy();
 }
 
 

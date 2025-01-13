@@ -221,7 +221,7 @@ private:
   /// shallow copy of the surrogate model instance as returned by
   /// Model::surrogate_model() (the DataFitSurrModel or or one of
   /// EnsembleSurrModel::approxModels) 
-  Model* surrModel;
+  Model* surrModel{nullptr};
 
   /// factors for combining additive and multiplicative corrections.
   /// Each factor is the weighting applied to the additive correction and
