@@ -246,9 +246,12 @@ objective_eval(int *n, double c[], double l[], double u[], int point[],
 
   // Any MOO/NLS recasting is responsible for setting the scalar min/max
   // sense within the recast.
-  const BoolDeque& max_sense
-    = ncsudirectInstance->iteratedModel->primary_response_fn_sense();
-  bool max_flag = (!max_sense.empty() && max_sense[0]);
+  bool max_flag = false;
+  if(ncsudirectInstance->iteratedModel) {
+    const BoolDeque& max_sense
+      = ncsudirectInstance->iteratedModel->primary_response_fn_sense();
+    max_flag = (!max_sense.empty() && max_sense[0]);
+  }
 
 //PDH: double * to RealVector
 //     Note that there's some re-scaling going on here because the
@@ -442,8 +445,12 @@ void NCSUOptimizer::core_run()
   if (!localObjectiveRecast) { // else local_objective_recast_retrieve()
                                // is used in Optimizer::post_run()
     RealVector best_fns(numFunctions);
-    const BoolDeque& max_sense = iteratedModel->primary_response_fn_sense();
-    best_fns[0] = (!max_sense.empty() && max_sense[0]) ? -fmin : fmin;
+    if(iteratedModel) {
+      const BoolDeque& max_sense = iteratedModel->primary_response_fn_sense();
+      best_fns[0] = (!max_sense.empty() && max_sense[0]) ? -fmin : fmin;
+    } else {
+      best_fns[0] = fmin;
+    }
     bestResponseArray.front().function_values(best_fns);
   }
 
