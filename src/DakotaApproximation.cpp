@@ -130,9 +130,11 @@ get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
 	(problem_db, shared_data, approx_label);
 #endif // HAVE_SURFPACK
 #ifdef HAVE_DAKOTA_SURROGATES
+#ifdef HAVE_ROL
     else if (approx_type == "global_exp_gauss_proc")
       return std::make_shared<SurrogatesGPApprox>
 	(problem_db, shared_data, approx_label);
+#endif
     else if (approx_type == "global_exp_poly")
       return std::make_shared<SurrogatesPolyApprox>
 	(problem_db, shared_data, approx_label);
@@ -196,8 +198,10 @@ Approximation::get_approx(const SharedApproxData& shared_data)
     return std::make_shared<SurfpackApproximation>(shared_data);
 #endif // HAVE_SURFPACK
 #ifdef HAVE_DAKOTA_SURROGATES
+#ifdef HAVE_ROL
   else if (approx_type == "global_exp_gauss_proc")
     return std::make_shared<SurrogatesGPApprox>(shared_data);
+#endif
   else if (approx_type == "global_exp_poly")
     return std::make_shared<SurrogatesPolyApprox>(shared_data);
 #ifdef HAVE_DAKOTA_PYTHON_SURROGATES

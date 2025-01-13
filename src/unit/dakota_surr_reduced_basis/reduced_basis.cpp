@@ -371,7 +371,7 @@ BOOST_AUTO_TEST_CASE(test_reduced_basis_truncations)
 
 //----------------------------------------------------------------
 
-#ifdef HAVE_DAKOTA_SURROGATES
+#if defined(HAVE_DAKOTA_SURROGATES) && defined(HAVE_ROL)
 
 #include "DakotaSurrogatesGP.hpp"
 #include "SurrogatesGaussianProcess.hpp"

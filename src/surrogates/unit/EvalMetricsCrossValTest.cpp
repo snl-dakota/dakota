@@ -7,7 +7,9 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
+#ifdef HAVE_ROL
 #include "SurrogatesGaussianProcess.hpp"
+#endif
 #include "SurrogatesPolynomialRegression.hpp"
 
 #define BOOST_TEST_MODULE surrogates_EvalMetricsCrossValTest
@@ -39,14 +41,6 @@ BOOST_AUTO_TEST_CASE(test_surrogates_eval_metrics_and_cross_validation) {
   truth_pred << 0.0, -0.28178127, -0.03336742, 0.0192193, -0.11554629,
       0.30685282;
 
-  ParameterList gp_param_list("GP Test Parameters");
-  gp_param_list.set("scaler name", "standardization");
-  gp_param_list.set("standardize response", false);
-  gp_param_list.set("num restarts", 10);
-  gp_param_list.sublist("Nugget").set("fixed nugget", 1.0e-12);
-  gp_param_list.set("gp seed", 42);
-  GaussianProcess gp(xs_u, response, gp_param_list);
-
   ParameterList poly_param_list("Polynomial Test Parameters");
   poly_param_list.set("max degree", 3);
   PolynomialRegression poly(xs_u, response, poly_param_list);
@@ -63,31 +57,42 @@ BOOST_AUTO_TEST_CASE(test_surrogates_eval_metrics_and_cross_validation) {
   const double metrics_difftol = 1.0e-4;
   double metrics_diff;
 
-  VectorXd gp_gold_mvals(metrics_names.size());
-  gp_gold_mvals << 0.129966, 0.021661, 0.147177, 0.410457, 0.0684095, 0.357531;
-
   VectorXd poly_gold_mvals(metrics_names.size());
   poly_gold_mvals << 2.41469, 0.402449, 0.634389, 1.77595, 0.295992, 1.54981;
-
-  VectorXd gp_mvals = gp.evaluate_metrics(metrics_names, eval_pts, truth_pred);
-  metrics_diff = (gp_mvals - gp_gold_mvals).norm();
-  BOOST_CHECK(metrics_diff < metrics_difftol);
 
   VectorXd poly_mvals =
       poly.evaluate_metrics(metrics_names, eval_pts, truth_pred);
   metrics_diff = (poly_mvals - poly_gold_mvals).norm();
   BOOST_CHECK(metrics_diff < metrics_difftol);
 
-  std::cout << "\n\nGP metrics:\n";
-  for (int m = 0; m < metrics_names.size(); m++) {
-    std::cout << "  " << metrics_names[m] << " = " << gp_mvals(m) << "\n";
-  }
-
   std::cout << "\n\nCubic polynomial metrics:\n";
   for (int m = 0; m < metrics_names.size(); m++) {
     std::cout << "  " << metrics_names[m] << " = " << poly_mvals(m) << "\n";
   }
   std::cout << "\n";
+
+#ifdef HAVE_ROL
+  ParameterList gp_param_list("GP Test Parameters");
+  gp_param_list.set("scaler name", "standardization");
+  gp_param_list.set("standardize response", false);
+  gp_param_list.set("num restarts", 10);
+  gp_param_list.sublist("Nugget").set("fixed nugget", 1.0e-12);
+  gp_param_list.set("gp seed", 42);
+  GaussianProcess gp(xs_u, response, gp_param_list);
+
+  VectorXd gp_gold_mvals(metrics_names.size());
+  gp_gold_mvals << 0.129966, 0.021661, 0.147177, 0.410457, 0.0684095, 0.357531;
+
+  VectorXd gp_mvals = gp.evaluate_metrics(metrics_names, eval_pts, truth_pred);
+  metrics_diff = (gp_mvals - gp_gold_mvals).norm();
+  BOOST_CHECK(metrics_diff < metrics_difftol);
+
+  std::cout << "\n\nGP metrics:\n";
+  for (int m = 0; m < metrics_names.size(); m++) {
+    std::cout << "  " << metrics_names[m] << " = " << gp_mvals(m) << "\n";
+  }
+  std::cout << "\n";
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(test_surrogates_cross_validate) {
@@ -127,6 +132,7 @@ BOOST_AUTO_TEST_CASE(test_surrogates_cross_validate) {
   cv_diff = (cross_val_metrics - gold_poly_cv_metrics).norm();
   BOOST_CHECK(cv_diff < cv_norm_difftol);
 
+#ifdef HAVE_ROL
   /* Cross-validation with the GP */
   VectorXd gold_gp_cv_metrics(2);
   gold_gp_cv_metrics << 0.0169657, 0.113947;
@@ -155,4 +161,5 @@ BOOST_AUTO_TEST_CASE(test_surrogates_cross_validate) {
 
   cv_diff = (cross_val_metrics - gold_gp_cv_metrics).norm();
   BOOST_CHECK(cv_diff < cv_norm_difftol);
+#endif
 }
