@@ -2076,7 +2076,7 @@ void NonDGenACVSampling::update_best(MFSolutionData& soln)
   // Update tracking of best result
 
   bool update = false;  Real merit_fn;
-  if (!valid_variance(soln.average_estimator_variance())) // *** TO DO: problems could be hidden due to averaging --> consider a finer-grained badNumericsFlag triggered per QoI
+  if (!valid_estimator_variances(soln.estimator_variances()))
     update = false;
   else {
     merit_fn = nh_penalty_merit(soln);

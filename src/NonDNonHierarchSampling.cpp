@@ -925,11 +925,9 @@ process_model_allocations(MFSolutionData& soln, size_t& num_samples)
     // Recompute full estvar vectors for final solution since minimizers
     // target average over QoI (don't store on every eval since last eval
     // may differ from final optimal soln)
-    RealVector estvar_ratios, estvar, cd_vars = soln.solution_variables();
-    //solution_vars_to_design_vars(soln.solution_variables(), cd_vars);//*** TO DO
-    estimator_variances_and_ratios(cd_vars, estvar_ratios, estvar);
-    soln.estimator_variances(estvar);
-    soln.estimator_variance_ratios(estvar_ratios); 
+    RealVector cd_vars;
+    solution_to_design_vars(soln, cd_vars);
+    estimator_variances_and_ratios(cd_vars, soln);
   }
 }
 
@@ -1161,7 +1159,7 @@ finite_solution_bounds(const RealVector& x0, RealVector& x_lb, RealVector& x_ub)
     switch (optSubProblemForm) {
     case N_MODEL_LINEAR_OBJECTIVE: case N_GROUP_LINEAR_OBJECTIVE: {
       // accuracy constrained: infer upper bounds from budget reqd to obtain
-      // target accuracy via MC: varH / N = tol * avg_estvar0; for minimizer
+      // target accuracy via MC: varH[q] / tgt = tol * estvar0[q]; for minimizer
       // sequencing, a downstream refinement can omit this approximated bound
       RealVector hf_targets;  apply_mc_reference(hf_targets);
       budget = average(hf_targets);     break;
@@ -1658,9 +1656,9 @@ minimizer_results_to_solution_data(const RealVector& cv_star,
   // var_H / N_H (1 - R^2).  Notes:
   // > a QoI-vector prior to averaging would require recomputation from r*,N*)
   // > this value corresponds to N* (_after_ num_samples applied)
-  Real avg_estvar = (optSubProblemForm == N_MODEL_LINEAR_OBJECTIVE ||
-		     optSubProblemForm == N_GROUP_LINEAR_OBJECTIVE) ?
-    std::exp(fn_star[1]) : std::exp(fn_star(0));
+  //Real avg_estvar = (optSubProblemForm == N_MODEL_LINEAR_OBJECTIVE ||
+  //		       optSubProblemForm == N_GROUP_LINEAR_OBJECTIVE) ?
+  //  std::exp(fn_star[1]) : std::exp(fn_star(0));
   //soln.average_estimator_variance(avg_estvar);
 
   // Recover optimizer results for average {eval_ratios,estvar}.  Also compute
@@ -1688,10 +1686,11 @@ minimizer_results_to_solution_data(const RealVector& cv_star,
       //               = curr_estvar * N_curr / N_target
       //  --> N_target = curr_estvar * N_curr / (convTol * estvar_iter0)
       // Note: estvar_iter0 is fixed based on pilot
+      RealVector est_var;  estimator_variances(cv_star, est_var);
       size_t hf_form, hf_lev;  hf_indices(hf_form, hf_lev);
       avg_hf_target = (backfillFailures) ?
-	update_hf_target(avg_estvar, NLevActual[hf_form][hf_lev], estVarIter0) : // *** TO DO: review use of avg_estvar here
-	update_hf_target(avg_estvar,  NLevAlloc[hf_form][hf_lev], estVarIter0); // *** TO DO: review use of avg_estvar here
+	update_hf_target(est_var, NLevActual[hf_form][hf_lev], estVarIter0) :
+	update_hf_target(est_var,  NLevAlloc[hf_form][hf_lev], estVarIter0);
       Cout << "Scaling profile for convergenceTol = " << convergenceTol
 	   << ": average HF target = " << avg_hf_target << std::endl;
     }
@@ -2471,41 +2470,6 @@ print_estimator_performance(std::ostream& s, const MFSolutionData& soln)
       << "\n   Equivalent"  << method << " ratio:              "
       << std::setw(wpp7)  << nh_est_var_q / budget_mc_est_var_q << '\n';
   }
-
-  /*
-  if (online) {
-    s << "    Initial   MC (" << std::setw(5)
-      << (size_t)std::floor(average(numHIter0) + .5) << " HF samples): "
-      << std::setw(wpp7) << average(estVarIter0) << '\n';
-    //<< std::setw(wpp7) << average(initial_mc_estvar) << '\n';
-  }
-
-  // Ordering of averages:
-  // > recomputing final MC estvar, rather than dividing the two averages, gives
-  //   a result that is consistent with average(estVarIter0) when N* = pilot.
-  // > The ACV ratio then differs from final ACV / final MC (due to recovering
-  //   avgEstVar from the optimizer obj fn), but difference is usually small.
-
-  // est_var is projected for cases that are not fully iterated/incremented
-  RealVector proj_mc_estvar(numFunctions, false);
-  //compute_mc_estimator_variance(varH, N_H_actual, proj_mc_estvar);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    proj_mc_estvar[qoi] = varH[qoi] / (N_H_actual[qoi] + deltaNActualHF);
-  Real avg_budget_mc_estvar = average(varH) / proj_equiv_hf,
-       avg_estvar = soln.average_estimator_variance();
-  s << "  " << type << "   MC (" << std::setw(5)
-    << (size_t)std::floor(average(N_H_actual) + deltaNActualHF + .5)
-    << " HF samples): " << std::setw(wpp7) << average(proj_mc_estvar)
-    << "\n  " << type << method << " (sample profile):   "
-    << std::setw(wpp7) << avg_estvar
-    << "\n  " << type << method << " ratio (1 - R^2):    "
-    << std::setw(wpp7) << soln.average_estimator_variance_ratio()
-    << "\n Equivalent   MC (" << std::setw(5)
-    << (size_t)std::floor(proj_equiv_hf + .5) << " HF samples): "
-    << std::setw(wpp7) << avg_budget_mc_estvar
-    << "\n Equivalent" << method << " ratio:              "
-    << std::setw(wpp7) << avg_estvar / avg_budget_mc_estvar << '\n';
-  */
 }
 
 } // namespace Dakota

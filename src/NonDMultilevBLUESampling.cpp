@@ -1175,7 +1175,7 @@ process_group_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
   // target average over QoI (don't update vectors on every eval since last
   // eval may differ from final optimal soln)
   RealVector estvar;
-  estimator_variances(soln.solution_variables(), estvar);// *** TO DO: consistent w/ projNActualHF
+  estimator_variances(soln.solution_variables(), estvar);
   soln.estimator_variances(estvar);
 
   if (ref_group == _NPOS) { // no online HF samples
@@ -1195,7 +1195,6 @@ process_group_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
     soln.initialize_estimator_variance_ratios(numFunctions);
     for (size_t qoi=0; qoi<numFunctions; ++qoi)
       soln.estimator_variance_ratio(estvar[qoi] / projEstVarHF[qoi], qoi); 
-    // *** TO DO: resolve order of downstream averaging (see note thread in process_model_solution())
   }
 }
 
@@ -1207,14 +1206,11 @@ print_group_allocations(std::ostream& s, const MFSolutionData& soln)
 
   if (maxFunctionEvals == SZ_MAX)
     s << "Estimator cost allocation = " << soln.equivalent_hf_allocation()
-      << "\nequivHFEvals = " << equivHFEvals
-      << " deltaEquivHF = " << deltaEquivHF << std::endl;
+      << "\nequivHFEvals = " << equivHFEvals << " deltaEquivHF = "
+      << deltaEquivHF << std::endl;
   else {
-    s << "Average estimator variance = " << soln.average_estimator_variance();
-    if (!zeros(projNActualHF))
-      s << "\nAverage ACV variance / average MC variance = "
-	<< soln.average_estimator_variance_ratio();
-    s << std::endl;
+    s << "Average estimator variance = " << soln.average_estimator_variance()
+      << std::endl;
   }
 }
 
@@ -1398,6 +1394,7 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s)
   size_t qoi, wpp7 = write_precision+7,
     proj_equiv_hf = (size_t)std::floor(equivHFEvals + deltaEquivHF + .5);
   String method = " ML BLUE",
+     pilot_type = (pilotGroupSampling == SHARED_PILOT) ? "share" : "indep",
            type = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
 		   pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
                 ? "Projected" : "   Online";
@@ -1406,7 +1403,7 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s)
     mc_only_ref = !zeros(projNActualHF);
 
   // search for the most refined covGG[g][qoi](H,H)
-  size_t ref_group, ref_model_index;
+  size_t ref_group, ref_model_index, all_group = numGroups - 1;
   switch (pilotMgmtMode) {
   case OFFLINE_PILOT:  case OFFLINE_PILOT_PROJECTION:
     ref_group = numGroups - 1;  ref_model_index = numApprox;             break;
@@ -1428,24 +1425,25 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s)
     proj_equiv_estvar_q = proj_equiv_estvar[qoi];
 
     if (online)
-      s << "    Initial pilot (" << std::setw(5) << pilotSamples[qoi]
-	<< " ML samples):  " << std::setw(wpp7) << estVarIter0[qoi] << '\n'; // ***
+      s << "    Initial pilot (" << std::setw(3) << pilotSamples[all_group]
+	<< " " << pilot_type << " samples):  " << std::setw(wpp7)
+	<< estVarIter0[qoi] << '\n';
     if (mc_only_ref)
-      s << "  " << type << " MC    (" << std::setw(5) << projNActualHF[qoi]
+      s << "  " << type << " MC    (" << std::setw(6) << projNActualHF[qoi]
 	<< " HF samples):  " << std::setw(wpp7) << projEstVarHF[qoi] << '\n';
-    s << "  " << type << method << " (sample profile):  "
+    s << "  " << type << method << "  (sample profile):  "
       << std::setw(wpp7) << mlblue_est_var_q << '\n';
     if (mc_only_ref)
-      s << "  " << type << method << " ratio  (1 - R^2):  "
+      s << "  " << type << method << " ratio   (1 - R^2):  "
 	<< std::setw(wpp7) << mlblue_ratio_q << '\n';
-    s << " Equivalent MC    (" << std::setw(5) << proj_equiv_hf
+    s << " Equivalent MC    (" << std::setw(6) << proj_equiv_hf
       << " HF samples):  " << std::setw(wpp7) << proj_equiv_estvar_q
-      << "\n Equivalent" << method << " ratio:             "
+      << "\n Equivalent" << method << " ratio:              "
       << std::setw(wpp7) << mlblue_est_var_q / proj_equiv_estvar_q << '\n';
   }
 
   /*
-  // Ordering of averages:
+  // Previous ordering of averages (before per-QoI reporting):
   // > recomputing final MC estvar, rather than dividing the two averages, gives
   //   a result that is consistent with average(estVarIter0) when N* = pilot.
   // > The ACV ratio then differs from final ACV / final MC (due to recovering

@@ -667,16 +667,15 @@ print_model_allocations(std::ostream& s, const MFSolutionData& soln,
   const RealVector& soln_vars = soln.solution_variables();
   size_t i, num_approx = approx_set.size();
   for (i=0; i<num_approx; ++i)
-    Cout << "Approx " << approx_set[i] + 1 << ": sample allocation = "
-	 << soln_vars[i] << '\n';
-  Cout << "Truth:   sample allocation = " << soln_vars[num_approx] << '\n';
+    s << "Approx " << approx_set[i] + 1 << ": sample allocation = "
+      << soln_vars[i] << '\n';
+  s << "Truth:   sample allocation = " << soln_vars[num_approx] << '\n';
   if (maxFunctionEvals == SZ_MAX)
-    Cout << "Estimator cost allocation = " << soln.equivalent_hf_allocation()
-	 << std::endl;
+    s << "Estimator cost allocation = " << soln.equivalent_hf_allocation()
+      << std::endl;
   else
-    Cout << "Average estimator variance = " << soln.average_estimator_variance()
-	 << "\nAverage ACV variance / average MC variance = "
-	 << soln.average_estimator_variance_ratio() << std::endl;
+    s << "Average estimator variance = " << soln.average_estimator_variance()
+      << std::endl;
 }
 
 

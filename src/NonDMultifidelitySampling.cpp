@@ -1478,8 +1478,9 @@ mfmc_estvar_ratios(const RealMatrix& rho2_LH, const RealVector& avg_eval_ratios,
   }
 
   // Call stack for MFMC numerical solution:
-  // > NonDNonHierarchSampling::log_average_estvar()
-  // > NonDNonHierarchSampling::average_estimator_variance()
+  // > NonDNonHierarchSampling::log_average_estvar(RealVector&)
+  // > NonDNonHierarchSampling::average_estimator_variance(RealVector&)
+  // > NonDNonHierarchSampling::estimator_variances(RealVector&)
   // > NonDMultifidelitySampling::estimator_variance_ratios() [virtual]
   // > This function (vector of avg_eval_ratios from opt design variables)
   // Note: ANALYTIC_SOLUTION covered by ordered case below

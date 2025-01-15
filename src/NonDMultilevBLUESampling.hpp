@@ -896,10 +896,16 @@ inline void NonDMultilevBLUESampling::apply_mc_reference(RealVector& mc_targets)
   default:
     find_hf_sample_reference(NGroupActual, ref_group, ref_model_index);  break;
   }
+  if (ref_group == SZ_MAX || ref_model_index == SZ_MAX) {
+    //mc_targets.putScalar(std::numeric_limits<Real>::quiet_NaN()); return;
+    Cerr << "Error: HF sample reference group unavailable in ML BLUE for "
+	 << "estimating accuracy target." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
 
-  const RealSymMatrixArray& cov_GG_g = covGG[ref_group];
   if (mc_targets.length() != numFunctions)
     mc_targets.sizeUninitialized(numFunctions);
+  const RealSymMatrixArray& cov_GG_g = covGG[ref_group];
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     mc_targets[qoi] = cov_GG_g[qoi](ref_model_index,ref_model_index)
                     / ( convergenceTol * estVarIter0[qoi] );
