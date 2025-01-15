@@ -128,7 +128,7 @@ public:
 		     const StringArray& moment_labels) const;
   /// core print moments that can be called without object
   static void print_moments(std::ostream& s, const RealMatrix& moment_stats,
-			    const RealMatrix moment_cis, String qoi_type,
+			    const RealMatrix& moment_cis, String qoi_type,
 			    short moments_type,
 			    const StringArray& moment_labels, bool print_cis);
 

@@ -118,11 +118,11 @@ private:
 			 SizetArray& N_L_alloc_refined,
 			 const MFSolutionData& soln);
 
-  void mf_raw_moments(const IntRealMatrixMap& sum_L_covar,
-		      const IntRealVectorMap& sum_H_covar,
-		      const IntRealMatrixMap& sum_LL_covar,
-		      const IntRealMatrixMap& sum_LH_covar,
-		      const SizetArray& N_covar, RealVector2DArray& beta);
+  void compute_mf_controls(const IntRealMatrixMap& sum_L_covar,
+			   const IntRealVectorMap& sum_H_covar,
+			   const IntRealMatrixMap& sum_LL_covar,
+			   const IntRealMatrixMap& sum_LH_covar,
+			   const SizetArray& N_covar, RealVector2DArray& beta);
 
   // shared_increment() cases:
   void accumulate_mf_sums(IntRealMatrixMap& sum_L_baseline,
@@ -164,14 +164,14 @@ private:
   void matrix_to_diagonal_array(const RealMatrix& var_L,
 				RealSymMatrixArray& cov_LL);
 
-  void mf_raw_moments(IntRealMatrixMap& sum_L_baseline,
-		      IntRealMatrixMap& sum_L_shared,
-		      IntRealMatrixMap& sum_L_refined,
-		      IntRealVectorMap& sum_H,  IntRealMatrixMap& sum_LL,
-		      IntRealMatrixMap& sum_LH, //const RealMatrix& rho2_LH,
-		      const Sizet2DArray& num_L_shared,
-		      const Sizet2DArray& num_L_refined,
-		      const SizetArray& num_H, RealMatrix& H_raw_mom);
+  void compute_mf_controls(IntRealMatrixMap& sum_L_baseline,
+			   IntRealMatrixMap& sum_L_shared,
+			   IntRealMatrixMap& sum_L_refined,
+			   IntRealVectorMap& sum_H, IntRealMatrixMap& sum_LL,
+			   IntRealMatrixMap& sum_LH,//const RealMatrix& rho2_LH,
+			   const Sizet2DArray& num_L_shared,
+			   const Sizet2DArray& num_L_refined,
+			   const SizetArray& num_H, RealMatrix& H_raw_mom);
 
   void update_projected_lf_samples(const MFSolutionData& soln,
 				   const SizetArray& N_H_actual,

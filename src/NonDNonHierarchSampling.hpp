@@ -712,13 +712,13 @@ protected:
   bool ordered_approx_sequence(const RealMatrix& metric,
 			       const UShortArray& approx_set);
 
-  void raw_moments(const IntRealVectorMap& sum_H_baseline,
-		   const SizetArray& N_baseline,
-		   const IntRealMatrixMap& sum_L_shared,
-		   const Sizet2DArray& N_L_shared,
-		   const IntRealMatrixMap& sum_L_refined,
-		   const Sizet2DArray& N_L_refined,
-		   const RealVector2DArray& beta);
+  void apply_controls(const IntRealVectorMap& sum_H_baseline,
+		      const SizetArray& N_baseline,
+		      const IntRealMatrixMap& sum_L_shared,
+		      const Sizet2DArray& N_L_shared,
+		      const IntRealMatrixMap& sum_L_refined,
+		      const Sizet2DArray& N_L_refined,
+		      const RealVector2DArray& beta);
 
   void apply_control(Real sum_L_shared, size_t num_shared, Real sum_L_refined,
 		     size_t num_refined, Real beta, Real& H_raw_mom);

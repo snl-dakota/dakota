@@ -641,12 +641,12 @@ cvmc_ensemble_solutions(const RealMatrix& rho2_LH, const RealVector& cost,
 
 
 void NonDNonHierarchSampling::
-raw_moments(const IntRealVectorMap& sum_H_baseline,
-	    const SizetArray& N_baseline,
-	    const IntRealMatrixMap& sum_L_shared,
-	    const Sizet2DArray& N_L_shared,
-	    const IntRealMatrixMap& sum_L_refined,
-	    const Sizet2DArray& N_L_refined, const RealVector2DArray& beta)
+apply_controls(const IntRealVectorMap& sum_H_baseline,
+	       const SizetArray& N_baseline,
+	       const IntRealMatrixMap& sum_L_shared,
+	       const Sizet2DArray& N_L_shared,
+	       const IntRealMatrixMap& sum_L_refined,
+	       const Sizet2DArray& N_L_refined, const RealVector2DArray& beta)
 {
   RealMatrix H_raw_mom(4, numFunctions);
   // ----------------------------

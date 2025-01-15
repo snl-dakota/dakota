@@ -172,6 +172,11 @@ protected:
   /// detect, warn, and repair a negative central moment (for even orders)
   static void check_negative(Real& cm);
 
+  /// compute 95% confidence intervals for mean estimator
+  void compute_mean_confidence_intervals(const RealMatrix& moment_stats,
+					 const RealVector& mean_estvar,
+					 RealMatrix& mean_conf_ints);
+
   //
   //- Heading: Data
   //
@@ -278,6 +283,10 @@ private:
 
   /// cache state of seed sequence for use in seed_updated()
   size_t seedIndex;
+
+  /// Matrix of confidence internals on moments, with rows for mean_lower,
+  /// mean_upper (calculated in compute_moments())
+  RealMatrix meanCIs;
 };
 
 

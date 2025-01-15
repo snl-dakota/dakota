@@ -163,10 +163,10 @@ void NonDACVSampling::approximate_control_variate_online_pilot()
     inflate(N_H_actual, N_L_actual_baseline);
     approx_increments(sum_L_baselineH, N_H_actual, N_H_alloc, sum_L_refined,
 		      N_L_actual_refined, N_L_alloc_refined, acvSolnData);
-    acv_raw_moments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
-		    acvSolnData, beta);
-    raw_moments(sum_H, N_H_actual, sum_L_baselineH, N_L_actual_baseline,
-		sum_L_refined, N_L_actual_refined, beta);
+    compute_acv_controls(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
+			 acvSolnData, beta);
+    apply_controls(sum_H, N_H_actual, sum_L_baselineH, N_L_actual_baseline,
+		   sum_L_refined, N_L_actual_refined, beta);
     finalize_counts(N_L_actual_refined, N_L_alloc_refined);
   }
   else // N_H is final --> do not compute any deltaNActualHF (from maxIter exit)
@@ -232,10 +232,10 @@ void NonDACVSampling::approximate_control_variate_offline_pilot()
   inflate(N_H_actual, N_L_actual_baseline);
   approx_increments(sum_L_baselineH, N_H_actual, N_H_alloc, sum_L_refined,
 		    N_L_actual_refined, N_L_alloc_refined, acvSolnData);
-  acv_raw_moments(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
-		  N_pilot, acvSolnData, beta);
-  raw_moments(sum_H, N_H_actual, sum_L_baselineH, N_L_actual_baseline,
-	      sum_L_refined, N_L_actual_refined, beta);
+  compute_acv_controls(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
+		       N_pilot, acvSolnData, beta);
+  apply_controls(sum_H, N_H_actual, sum_L_baselineH, N_L_actual_baseline,
+		 sum_L_refined, N_L_actual_refined, beta);
   finalize_counts(N_L_actual_refined, N_L_alloc_refined);
 }
 
@@ -463,11 +463,12 @@ overlay_peer_group_sums(const IntRealMatrixArrayMap& sum_G,
 
 
 void NonDACVSampling::
-acv_raw_moments(const IntRealMatrixMap& sum_L_covar,
-		const IntRealVectorMap& sum_H_covar,
-		const IntRealSymMatrixArrayMap& sum_LL_covar,
-		const IntRealMatrixMap& sum_LH_covar, const SizetArray& N_covar,
-		const MFSolutionData& soln, RealVector2DArray& beta)
+compute_acv_controls(const IntRealMatrixMap& sum_L_covar,
+		     const IntRealVectorMap& sum_H_covar,
+		     const IntRealSymMatrixArrayMap& sum_LL_covar,
+		     const IntRealMatrixMap& sum_LH_covar,
+		     const SizetArray& N_covar, const MFSolutionData& soln,
+		     RealVector2DArray& beta)
 {
   // ------------------------------
   // Compute CV to estimate moments

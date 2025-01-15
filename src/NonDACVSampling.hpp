@@ -164,15 +164,14 @@ private:
   void update_model_groups();
   void update_model_groups(const SizetArray& approx_sequence);
 
-  void acv_raw_moments(const IntRealMatrixMap& sum_L_covar,
-		       const IntRealVectorMap& sum_H_covar,
-		       const IntRealSymMatrixArrayMap& sum_LL_covar,
-		       const IntRealMatrixMap& sum_LH_covar,
-		       const SizetArray& N_covar,
-		       const MFSolutionData& soln, RealVector2DArray& beta);
-
   void precompute_acv_controls(const RealVector& avg_eval_ratios);
-
+  void compute_acv_controls(const IntRealMatrixMap& sum_L_covar,
+			    const IntRealVectorMap& sum_H_covar,
+			    const IntRealSymMatrixArrayMap& sum_LL_covar,
+			    const IntRealMatrixMap& sum_LH_covar,
+			    const SizetArray& N_covar,
+			    const MFSolutionData& soln,
+			    RealVector2DArray& beta);
   void compute_acv_control(const RealMatrix& sum_L_m, Real sum_H_mq,
 			   const RealSymMatrix& sum_LL_mq,
 			   const RealMatrix& sum_LH_m, size_t N_shared_q,
