@@ -13,8 +13,7 @@
 
 #include <string>
 
-#define BOOST_TEST_MODULE dakota_file_reader
-#include <boost/test/included/unit_test.hpp>
+#include <gtest/gtest.h>
 
 using namespace Dakota;
 
@@ -86,7 +85,7 @@ Cleanup_Helper cleanup_helper;
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_basic_write)
+TEST(file_reader_tests, test_basic_write)
 {
   const int DATA_PTS = 5;
   const int DATA_DIM = 3;
@@ -94,12 +93,12 @@ BOOST_AUTO_TEST_CASE(test_basic_write)
   create_field_data_file("test_table_out", field_data);
 
   // Test that we made it to this point
-  BOOST_TEST( true );
+  SUCCEED();
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_read_sized_data)
+TEST(file_reader_tests, test_read_sized_data)
 {
   const int DATA_PTS = 10;
   const int DATA_DIM = 3;
@@ -122,12 +121,12 @@ BOOST_AUTO_TEST_CASE(test_read_sized_data)
   // Verify contents of what we wrote and what we read
   for( size_t i=0; i<test_vec_array.size(); ++i )
     for( int j=0; j<test_vec_array[i].length(); ++j )
-    BOOST_CHECK_CLOSE( field_data[i][j], test_vec_array[i][j], 1.e-12 );
+    EXPECT_LT(std::fabs(1. - field_data[i][j] / test_vec_array[i][j]), 1.e-12/100. );
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_read_fixed_rowsize_data)
+TEST(file_reader_tests, test_read_fixed_rowsize_data)
 {
   const int NUM_RESP = 7;
   const int RESP_DIM = 2;
@@ -148,17 +147,17 @@ BOOST_AUTO_TEST_CASE(test_read_fixed_rowsize_data)
   /////////////////  What we want to test
 
   // Verify we obtained the correct number of rows (responses)
-  BOOST_CHECK( NUM_RESP == test_vec_array.size() );
+  EXPECT_TRUE(( NUM_RESP == test_vec_array.size() ));
 
   // Verify contents of what we wrote and what we read
   for( size_t i=0; i<test_vec_array.size(); ++i )
     for( int j=0; j<test_vec_array[i].length(); ++j )
-    BOOST_CHECK_CLOSE( field_data[i][j], test_vec_array[i][j], 1.e-12 );
+    EXPECT_LT(std::fabs(1. - field_data[i][j] / test_vec_array[i][j]), 1.e-12/100. );
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_read_unsized_data)
+TEST(file_reader_tests, test_read_unsized_data)
 {
   const int NUM_RESP = 9;
   const int RESP_DIM = 4;
@@ -179,17 +178,17 @@ BOOST_AUTO_TEST_CASE(test_read_unsized_data)
   /////////////////  What we want to test
 
   // Verify we obtained the correct number of rows (responses)
-  BOOST_CHECK( NUM_RESP == test_vec_array.size() );
+  EXPECT_TRUE(( NUM_RESP == test_vec_array.size() ));
 
   // Verify contents of what we wrote and what we read
   for( size_t i=0; i<test_vec_array.size(); ++i )
     for( int j=0; j<test_vec_array[i].length(); ++j )
-    BOOST_CHECK_CLOSE( field_data[i][j], test_vec_array[i][j], 1.e-12 );
+    EXPECT_LT(std::fabs(1. - field_data[i][j] / test_vec_array[i][j]), 1.e-12/100. );
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_read_sigma_scalar)
+TEST(file_reader_tests, test_read_sigma_scalar)
 {
   const int NUM_RESP = 1;
   const int RESP_DIM = 1;
@@ -206,16 +205,16 @@ BOOST_AUTO_TEST_CASE(test_read_sigma_scalar)
   /////////////////  What we want to test
 
   // Verify we obtained the correct number of rows and cols (responses)
-  BOOST_CHECK( NUM_RESP == test_vec_array.size() );
-  BOOST_CHECK( RESP_DIM == test_vec_array[0].length() );
+  EXPECT_TRUE(( NUM_RESP == test_vec_array.size() ));
+  EXPECT_TRUE(( RESP_DIM == test_vec_array[0].length() ));
 
   // Verify contents of what we wrote and what we read
-  BOOST_CHECK_CLOSE( field_data[0][0], test_vec_array[0][0], 1.e-12 );
+  EXPECT_LT(std::fabs(1. - field_data[0][0] / test_vec_array[0][0]), 1.e-12/100. );
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_read_sigma_vector_row)
+TEST(file_reader_tests, test_read_sigma_vector_row)
 {
   const int NUM_ROW = 1;
   const int NUM_COL = 7;
@@ -232,18 +231,18 @@ BOOST_AUTO_TEST_CASE(test_read_sigma_vector_row)
   /////////////////  What we want to test
 
   // Verify we obtained the correct number of rows and cols (responses)
-  BOOST_CHECK( NUM_ROW == test_vec_array.size() );
-  BOOST_CHECK( NUM_COL == test_vec_array[0].length() );
+  EXPECT_TRUE(( NUM_ROW == test_vec_array.size() ));
+  EXPECT_TRUE(( NUM_COL == test_vec_array[0].length() ));
 
   // Verify contents of what we wrote and what we read
   for( size_t i=0; i<test_vec_array.size(); ++i )
     for( int j=0; j<test_vec_array[i].length(); ++j )
-      BOOST_CHECK_CLOSE( field_data[i][j], test_vec_array[i][j], 1.e-12 );
+      EXPECT_LT(std::fabs(1. - field_data[i][j] / test_vec_array[i][j]), 1.e-12/100. );
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_read_sigma_vector_col)
+TEST(file_reader_tests, test_read_sigma_vector_col)
 {
   const int NUM_ROW = 7;
   const int NUM_COL = 1;
@@ -260,17 +259,17 @@ BOOST_AUTO_TEST_CASE(test_read_sigma_vector_col)
   /////////////////  What we want to test
 
   // Verify we obtained the correct number of rows (responses)
-  BOOST_CHECK( NUM_ROW == test_vec_array.size() );
+  EXPECT_TRUE(( NUM_ROW == test_vec_array.size() ));
 
   // Verify contents of what we wrote and what we read
   for( size_t i=0; i<test_vec_array.size(); ++i )
     for( int j=0; j<test_vec_array[i].length(); ++j )
-      BOOST_CHECK_CLOSE( field_data[i][j], test_vec_array[i][j], 1.e-12 );
+      EXPECT_LT(std::fabs(1. - field_data[i][j] / test_vec_array[i][j]), 1.e-12/100. );
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_read_sigma_matrix)
+TEST(file_reader_tests, test_read_sigma_matrix)
 {
   const int NUM_ROW = 5;
   const int NUM_COL = 5;
@@ -287,18 +286,18 @@ BOOST_AUTO_TEST_CASE(test_read_sigma_matrix)
   /////////////////  What we want to test
 
   // Verify we obtained the correct number of rows (responses)
-  BOOST_CHECK( NUM_ROW == test_vec_array.size() );
-  BOOST_CHECK( NUM_COL == test_vec_array[0].length() );
+  EXPECT_TRUE(( NUM_ROW == test_vec_array.size() ));
+  EXPECT_TRUE(( NUM_COL == test_vec_array[0].length() ));
 
   // Verify contents of what we wrote and what we read
   for( int i=0; i<NUM_ROW; ++i )
     for( int j=0; j<NUM_COL; ++j )
-      BOOST_CHECK_CLOSE( field_data[i][j], test_vec_array[i][j], 1.e-12 );
+      EXPECT_LT(std::fabs(1. - field_data[i][j] / test_vec_array[i][j]), 1.e-12/100. );
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_read_bad_data1)
+TEST(file_reader_tests, test_read_bad_data1)
 {
   const int NUM_ROW = 5;
   const int NUM_COL = 3;
@@ -317,8 +316,13 @@ BOOST_AUTO_TEST_CASE(test_read_bad_data1)
 
   RealVectorArray test_vec_array;
   /////////////////  What we want to test
-  BOOST_CHECK_THROW(read_unsized_data(in_file, test_vec_array), std::runtime_error);
+  EXPECT_THROW(read_unsized_data(in_file, test_vec_array), std::runtime_error);
   /////////////////  What we want to test
 }
 
 //----------------------------------------------------------------
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

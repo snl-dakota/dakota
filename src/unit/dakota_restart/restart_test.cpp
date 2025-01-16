@@ -16,8 +16,7 @@
 #include "util_windows.hpp"
 #endif
 
-#define BOOST_TEST_MODULE dakota_restart_test
-#include <boost/test/included/unit_test.hpp>
+#include <gtest/gtest.h>
 #include <boost/filesystem/operations.hpp>
 #include <cmath>
 
@@ -150,7 +149,7 @@ PRPArray read_prps(const int num_evals, boost::archive::binary_iarchive& restart
 }
 
 /** In-core test with 1 variable/response */
-BOOST_AUTO_TEST_CASE(test_io_restart_1var)
+TEST(restart_test_tests, test_io_restart_1var)
 {
   // NOTE: A possible problem with a stringstream is it isn't
   // explicitly a binary stream (std::ios::binary)
@@ -172,14 +171,14 @@ BOOST_AUTO_TEST_CASE(test_io_restart_1var)
     prps_in.push_back(prp_in);
   }
 
-  BOOST_CHECK(prps_in == prps_out);
+  EXPECT_TRUE((prps_in == prps_out));
 
   // std::cout << std::setprecision(20) << std::setw(30) << prp_in << '\n'
   // 	    << std::setprecision(20)  << prp_out << '\n';
 }
 
 /** File-based test with multiple variables/responses */
-BOOST_AUTO_TEST_CASE(test_io_restart_allvar)
+TEST(restart_test_tests, test_io_restart_allvar)
 {
   std::string rst_filename("restart_allvar.rst");
   boost::filesystem::remove(rst_filename);
@@ -201,7 +200,7 @@ BOOST_AUTO_TEST_CASE(test_io_restart_allvar)
     restart_input_archive & rst_ver;
 
     prps_in = read_prps(num_evals, restart_input_archive);
-    BOOST_CHECK(prps_in == prps_out);
+    EXPECT_TRUE((prps_in == prps_out));
   }
 
   // std::cout << std::setprecision(20) << std::setw(30) << prp_in << '\n'
@@ -212,7 +211,7 @@ BOOST_AUTO_TEST_CASE(test_io_restart_allvar)
 
 
 // Verify can detect reading an old (pre-versioning) restart file
-BOOST_AUTO_TEST_CASE(test_io_restart_read_oldfile)
+TEST(restart_test_tests, test_io_restart_read_oldfile)
 {
   std::string rst_filename("old.rst");
   boost::filesystem::remove(rst_filename);
@@ -241,14 +240,14 @@ BOOST_AUTO_TEST_CASE(test_io_restart_read_oldfile)
 	      << ", " << rst_ver.dakotaSHA1 << std::endl;
 
     // make sure we're reading an old file
-    BOOST_CHECK(rst_ver.restartVersion < RestartVersion::restartFirstVersionNumber);
-    BOOST_CHECK(rst_ver.dakotaRelease == "<unknown>");
-    BOOST_CHECK(rst_ver.dakotaSHA1 == "<unknown>");
+    EXPECT_TRUE((rst_ver.restartVersion < RestartVersion::restartFirstVersionNumber));
+    EXPECT_TRUE((rst_ver.dakotaRelease == "<unknown>"));
+    EXPECT_TRUE((rst_ver.dakotaSHA1 == "<unknown>"));
 
     ifs.seekg(0);
     boost::archive::binary_iarchive inarch2(ifs);
     prps_in = read_prps(num_evals, inarch2);
-    BOOST_CHECK(prps_in == prps_out);
+    EXPECT_TRUE((prps_in == prps_out));
   }
 
   boost::filesystem::remove(rst_filename);
@@ -257,7 +256,7 @@ BOOST_AUTO_TEST_CASE(test_io_restart_read_oldfile)
 
 // Verify can detect reading an old (pre-versioning) restart file
 // when the contained PRP is minimal
-BOOST_AUTO_TEST_CASE(test_io_restart_read_minimal_oldfile)
+TEST(restart_test_tests, test_io_restart_read_minimal_oldfile)
 {
   std::string rst_filename("minimal_old.rst");
   boost::filesystem::remove(rst_filename);
@@ -285,20 +284,20 @@ BOOST_AUTO_TEST_CASE(test_io_restart_read_minimal_oldfile)
 	      << ", " << rst_ver.dakotaSHA1  << std::endl;
 
     // make sure we're reading an old file, which didn't contain versioning info
-    BOOST_CHECK(rst_ver.restartVersion < RestartVersion::restartFirstVersionNumber);
-    BOOST_CHECK(rst_ver.dakotaRelease == "<unknown>");
-    BOOST_CHECK(rst_ver.dakotaSHA1 == "<unknown>");
+    EXPECT_TRUE((rst_ver.restartVersion < RestartVersion::restartFirstVersionNumber));
+    EXPECT_TRUE((rst_ver.dakotaRelease == "<unknown>"));
+    EXPECT_TRUE((rst_ver.dakotaSHA1 == "<unknown>"));
 
     ifs.seekg(0);
     boost::archive::binary_iarchive inarch2(ifs);
     prps_in = read_prps(num_evals, inarch2);
-    BOOST_CHECK(prps_in == prps_out);
+    EXPECT_TRUE((prps_in == prps_out));
   }
 
   boost::filesystem::remove(rst_filename);
 }
 
-BOOST_AUTO_TEST_CASE(test_io_restart_read_newfile)
+TEST(restart_test_tests, test_io_restart_read_newfile)
 {
   std::string rst_filename("new.rst");
   boost::filesystem::remove(rst_filename);
@@ -326,13 +325,18 @@ BOOST_AUTO_TEST_CASE(test_io_restart_read_newfile)
 	      << std::endl;
 
     // make sure we're reading a new file
-    BOOST_CHECK(rst_ver.restartVersion >= RestartVersion::restartFirstVersionNumber);
-    BOOST_CHECK(rst_ver.dakotaRelease == "6.16.0+");
-    BOOST_CHECK(rst_ver.dakotaSHA1 == "a1b2c3d4e5f6");
+    EXPECT_TRUE((rst_ver.restartVersion >= RestartVersion::restartFirstVersionNumber));
+    EXPECT_TRUE((rst_ver.dakotaRelease == "6.16.0+"));
+    EXPECT_TRUE((rst_ver.dakotaSHA1 == "a1b2c3d4e5f6"));
 
     prps_in = read_prps(num_evals, inarch);
-    BOOST_CHECK(prps_in == prps_out);
+    EXPECT_TRUE((prps_in == prps_out));
   }
 
   boost::filesystem::remove(rst_filename);
+}
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

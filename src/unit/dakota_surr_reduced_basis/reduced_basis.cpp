@@ -18,8 +18,7 @@
 
 #include <string>
 
-#define BOOST_TEST_MODULE dakota_reduced_basis
-#include <boost/test/included/unit_test.hpp>
+#include <gtest/gtest.h>
 
 #include <Teuchos_SerialDenseHelpers.hpp>
 
@@ -62,7 +61,7 @@ namespace {
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_reduced_basis_compute_col_means)
+TEST(reduced_bases_tests, test_reduced_basis_compute_col_means)
 {
   RealMatrix matrix = get_parameter_and_response_submatrices().first;
 
@@ -72,14 +71,14 @@ BOOST_AUTO_TEST_CASE(test_reduced_basis_compute_col_means)
   // --------------- What we are testing
 
   // Test against Column Means obtained from matlab for the same matrix
-  BOOST_CHECK( column_means.length() == 2 );
-  BOOST_CHECK_CLOSE( column_means[0], 0.299958060862, 1.e-10 );
-  BOOST_CHECK_CLOSE( column_means[1], 0.299814773583, 1.e-10 );
+  EXPECT_TRUE(( column_means.length() == 2 ));
+  EXPECT_LT(std::fabs(1. -   column_means[0] / 0.299958060862), 1.e-10/100. );
+  EXPECT_LT(std::fabs(1. -   column_means[1] / 0.299814773583), 1.e-10/100. );
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_reduced_basis_sort_vectors)
+TEST(reduced_bases_tests, test_reduced_basis_sort_vectors)
 {
   RealMatrix matrix = get_parameter_and_response_submatrices().first;
 
@@ -91,7 +90,7 @@ BOOST_AUTO_TEST_CASE(test_reduced_basis_sort_vectors)
     const RealVector & unsrt_vec = Teuchos::getCol(Teuchos::View, matrix, i);
 
     // starting vector should be unsorted
-    BOOST_CHECK( !std::is_sorted(unsrt_vec.values(), unsrt_vec.values()+unsrt_vec.length()) );
+    EXPECT_TRUE(( !std::is_sorted(unsrt_vec.values(), unsrt_vec.values()+unsrt_vec.length()) ));
 
     // --------------- What we are testing
     sort_vector(Teuchos::getCol(Teuchos::View, matrix, i), sorted_vector, sorted_indices);
@@ -100,15 +99,15 @@ BOOST_AUTO_TEST_CASE(test_reduced_basis_sort_vectors)
     // --------------- What we are testing
 
     // sorted vector should be ... well, sorted
-    BOOST_CHECK( std::is_sorted(sorted_vector.values(), sorted_vector.values()+sorted_vector.length()) );
+    EXPECT_TRUE(( std::is_sorted(sorted_vector.values(), sorted_vector.values()+sorted_vector.length()) ));
     // but indices reflecting the sorting order should not be sorted
-    BOOST_CHECK( !std::is_sorted(sorted_indices.values(), sorted_indices.values()+sorted_indices.length()) );
+    EXPECT_TRUE(( !std::is_sorted(sorted_indices.values(), sorted_indices.values()+sorted_indices.length()) ));
   }
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_reduced_basis_sort_matrix_cols)
+TEST(reduced_bases_tests, test_reduced_basis_sort_matrix_cols)
 {
   RealMatrix matrix = get_parameter_and_response_submatrices().first;
 
@@ -127,17 +126,17 @@ BOOST_AUTO_TEST_CASE(test_reduced_basis_sort_matrix_cols)
     const IntVector  & sort_indices = Teuchos::getCol(Teuchos::View, sorted_indices, i);
 
     // starting column vector should be unsorted
-    BOOST_CHECK( !std::is_sorted(unsrt_vec.values(), unsrt_vec.values()+unsrt_vec.length()) );
+    EXPECT_TRUE(( !std::is_sorted(unsrt_vec.values(), unsrt_vec.values()+unsrt_vec.length()) ));
     // sorted matrix column should be ... well, sorted
-    BOOST_CHECK( std::is_sorted(sorted_vec.values(), sorted_vec.values()+sorted_vec.length()) );
+    EXPECT_TRUE(( std::is_sorted(sorted_vec.values(), sorted_vec.values()+sorted_vec.length()) ));
     // but indices reflecting the sorting order should not be sorted
-    BOOST_CHECK( !std::is_sorted(sort_indices.values(), sort_indices.values()+sort_indices.length()) );
+    EXPECT_TRUE(( !std::is_sorted(sort_indices.values(), sort_indices.values()+sort_indices.length()) ));
   }
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_reduced_basis_compute_svd)
+TEST(reduced_bases_tests, test_reduced_basis_compute_svd)
 {
   RealMatrix matrix = get_parameter_and_response_submatrices().first;
 
@@ -151,14 +150,14 @@ BOOST_AUTO_TEST_CASE(test_reduced_basis_compute_svd)
   //singular_values.print(std::cout);
 
   // Test against Singlular Values obtained from matlab for the same matrix
-  BOOST_CHECK( singular_values.length() == 2 );
-  BOOST_CHECK_CLOSE( singular_values[0], 4.39718, 1.e-3 );
-  BOOST_CHECK_CLOSE( singular_values[1], 1.14583, 1.e-3 );
+  EXPECT_TRUE(( singular_values.length() == 2 ));
+  EXPECT_LT(std::fabs(1. -   singular_values[0] / 4.39718), 1.e-3/100. );
+  EXPECT_LT(std::fabs(1. -   singular_values[1] / 1.14583), 1.e-3/100. );
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_reduced_basis_simple_api)
+TEST(reduced_bases_tests, test_reduced_basis_simple_api)
 {
   RealMatrix matrix = get_parameter_and_response_submatrices().first;
 
@@ -170,9 +169,9 @@ BOOST_AUTO_TEST_CASE(test_reduced_basis_simple_api)
   // --------------- What we are testing
 
   // Test against Singlular Values obtained from matlab for the same matrix
-  BOOST_CHECK( singular_values.length() == 2 );
-  BOOST_CHECK_CLOSE( singular_values[0], 4.39718, 1.e-3 );
-  BOOST_CHECK_CLOSE( singular_values[1], 1.14583, 1.e-3 );
+  EXPECT_TRUE(( singular_values.length() == 2 ));
+  EXPECT_LT(std::fabs(1. -   singular_values[0] / 4.39718), 1.e-3/100. );
+  EXPECT_LT(std::fabs(1. -   singular_values[1] / 1.14583), 1.e-3/100. );
 
   const RealMatrix & U_mat = reduced_basis.get_left_singular_vector();
   const RealMatrix & VT_mat = reduced_basis.get_right_singular_vector_transpose();
@@ -186,16 +185,16 @@ BOOST_AUTO_TEST_CASE(test_reduced_basis_simple_api)
   int ierr = reconstructed_mat.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, U_mat, S, 0.0);
   RealMatrix temp_matrix(reconstructed_mat);
   ierr += reconstructed_mat.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, temp_matrix, VT_mat, 0.0);
-  BOOST_CHECK( ierr == 0 );
+  EXPECT_TRUE(( ierr == 0 ));
 
   reconstructed_mat -= matrix;
   Real diff = 1.0 + reconstructed_mat.normFrobenius();
-  BOOST_CHECK_CLOSE( diff, 1.0, 1.e-12 );
+  EXPECT_LT(std::fabs(1. -   diff / 1.0), 1.e-12/100. );
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_reduced_basis_simple_api2)
+TEST(reduced_bases_tests, test_reduced_basis_simple_api2)
 {
   RealMatrix matrix1 = get_parameter_and_response_submatrices().first;
   RealMatrix matrix2 = get_parameter_and_response_submatrices().first;
@@ -230,12 +229,12 @@ BOOST_AUTO_TEST_CASE(test_reduced_basis_simple_api2)
   //          << singular_values(0) << ", "
   //          << singular_values(1) << "]" << std::endl;
   // Need to test something ...
-  BOOST_CHECK( singular_values1.length() == 2 );
-  BOOST_CHECK_CLOSE( singular_values1[0], 1.161389978, 1.e-4 );
-  BOOST_CHECK_CLOSE( singular_values1[1], 1.145814014, 1.e-4 );
-  BOOST_CHECK( singular_values1.length() == singular_values2.length() );
+  EXPECT_TRUE(( singular_values1.length() == 2 ));
+  EXPECT_LT(std::fabs(1. -   singular_values1[0] / 1.161389978), 1.e-4/100. );
+  EXPECT_LT(std::fabs(1. -   singular_values1[1] / 1.145814014), 1.e-4/100. );
+  EXPECT_TRUE(( singular_values1.length() == singular_values2.length() ));
   for( int i=0; i<singular_values1.length(); ++i )
-    BOOST_CHECK_CLOSE( singular_values1[i], singular_values2[i], 1.e-4 );
+    EXPECT_LT(std::fabs(1. -   singular_values1[i] / singular_values2[i]), 1.e-4/100. );
 }
 
 //----------------------------------------------------------------
@@ -245,7 +244,7 @@ BOOST_AUTO_TEST_CASE(test_reduced_basis_simple_api2)
 
 // test construction and evaluation of a GP surrogate from data
 // matrices; one approximation per response
-BOOST_AUTO_TEST_CASE(test_reduced_basis_gp_surr0)
+TEST(reduced_bases_tests, test_reduced_basis_gp_surr0)
 {
   size_t num_vars = 2, num_samples = 5;
   
@@ -284,12 +283,12 @@ BOOST_AUTO_TEST_CASE(test_reduced_basis_gp_surr0)
   RealVector eval_vars(2);
   eval_vars(0) = -1.0;
   eval_vars(1) =  1.0;
-  BOOST_CHECK_CLOSE(gp_approx.value(eval_vars), 7.0, 1.e-6);
+  EXPECT_LT(std::fabs(1. -  gp_approx.value(eval_vars) / 7.0), 1.e-6/100.);
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_reduced_basis_spectral_sums)
+TEST(reduced_bases_tests, test_reduced_basis_spectral_sums)
 {
   // Use the response submatrix
   RealMatrix matrix = get_parameter_and_response_submatrices().second;
@@ -310,14 +309,14 @@ BOOST_AUTO_TEST_CASE(test_reduced_basis_spectral_sums)
   Real eigen_sum = reduced_basis.get_eigen_values_sum();
   Real sval_sum  = reduced_basis.get_singular_values_sum();
   
-  BOOST_CHECK_CLOSE(eigen_sum, 86.00739691478532, 1.e-12); // from Matlab eig
-  BOOST_CHECK_CLOSE(computed_eigen_sum, eigen_sum, 1.e-6);
-  BOOST_CHECK_CLOSE(computed_sval_sum, sval_sum, 1.e-6);
+  EXPECT_LT(std::fabs(1. -  eigen_sum / 86.00739691478532), 1.e-12/100.); // from Matlab eig
+  EXPECT_LT(std::fabs(1. -  computed_eigen_sum / eigen_sum), 1.e-6/100.);
+  EXPECT_LT(std::fabs(1. -  computed_sval_sum / sval_sum), 1.e-6/100.);
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_reduced_basis_truncations)
+TEST(reduced_bases_tests, test_reduced_basis_truncations)
 {
   // Use the response submatrix
   RealMatrix matrix = get_parameter_and_response_submatrices().second;
@@ -348,24 +347,24 @@ BOOST_AUTO_TEST_CASE(test_reduced_basis_truncations)
   int num_values4 = trunc4.get_num_components(reduced_basis);
 
   // Test lengths
-  BOOST_CHECK( num_values  == 50 );
-  BOOST_CHECK( num_values1 == 50 );
-  BOOST_CHECK( num_values2 == 5  );
-  BOOST_CHECK( num_values3 == 4  );
-  BOOST_CHECK( num_values4 == 5  );
+  EXPECT_TRUE(( num_values  == 50 ));
+  EXPECT_TRUE(( num_values1 == 50 ));
+  EXPECT_TRUE(( num_values2 == 5  ));
+  EXPECT_TRUE(( num_values3 == 4  ));
+  EXPECT_TRUE(( num_values4 == 5  ));
 
   Real ratio3 = 0.0;
   for( int i=0; i<num_values3; ++i )
     ratio3 += singular_values3(i)*singular_values3(i);
   ratio3 /= reduced_basis.get_eigen_values_sum();
-  BOOST_CHECK_CLOSE(ratio3, 0.9994559642736607, 1.e-10);
+  EXPECT_LT(std::fabs(1. -  ratio3 / 0.9994559642736607), 1.e-10/100.);
 
   Real ratio4 = singular_values(num_values4-1)*singular_values(num_values4-1)/(singular_values(0)*singular_values(0));
 
   // Create order 1.0 values for comparison
   Real test_val =                 1.0 + ratio4;
   const Real matlab_based_value = 1.0 + 4.602723195500141e-04;
-  BOOST_CHECK_CLOSE(test_val, matlab_based_value, 1.e-10);
+  EXPECT_LT(std::fabs(1. -  test_val / matlab_based_value), 1.e-10/100.);
 
 }
 
@@ -379,7 +378,7 @@ BOOST_AUTO_TEST_CASE(test_reduced_basis_truncations)
 
 // test construction and evaluation of a GP surrogate from data
 // matrices; one approximation per response
-BOOST_AUTO_TEST_CASE(test_reduced_basis_gp_surr_module0)
+TEST(reduced_bases_tests, test_reduced_basis_gp_surr_module0)
 {
   // Set things up to correspond to the unit test in
   // src/surrogates/unit/gp_approximation_ts.cpp
@@ -432,9 +431,9 @@ BOOST_AUTO_TEST_CASE(test_reduced_basis_gp_surr_module0)
   // unit test mentioned above.
   RealVector eval_vars(num_vars);  // Dakota::Approximation only supports single eval pt
   eval_vars(0) = 0.4;
-  BOOST_CHECK_CLOSE(gp_approx.value(eval_vars), -0.0333528, 1.e-4);
+  EXPECT_LT(std::fabs(1. -  gp_approx.value(eval_vars) / -0.0333528), 1.e-4/100.);
   eval_vars(0) = 1.0;
-  BOOST_CHECK_CLOSE(gp_approx.value(eval_vars), -0.0506785, 1.e-4);
+  EXPECT_LT(std::fabs(1. -  gp_approx.value(eval_vars) / -0.0506785), 1.e-4/100.);
 }
 
 //----------------------------------------------------------------
@@ -442,7 +441,7 @@ BOOST_AUTO_TEST_CASE(test_reduced_basis_gp_surr_module0)
 
 // test construction and evaluation of a multi-var GP surrogate from data
 // matrices
-BOOST_AUTO_TEST_CASE(test_reduced_basis_gp_surr_module1)
+TEST(reduced_bases_tests, test_reduced_basis_gp_surr_module1)
 {
   // Set things up to correspond to the unit test in
   // src/surrogates/unit/gp_approximation_ts.cpp
@@ -548,17 +547,21 @@ BOOST_AUTO_TEST_CASE(test_reduced_basis_gp_surr_module1)
   const double tol = 1.e-5;
 
   eval_vars(0) = 0.20;  eval_vars(1) = 0.45;
-  BOOST_CHECK_CLOSE(gp_approx.value(eval_vars), 0.782031, 100.0*tol);
+  EXPECT_LT(std::fabs(1. -  gp_approx.value(eval_vars) / 0.782031), 100.0*tol/100.);
 
   eval_vars(0) = -0.30;  eval_vars(1) = -0.70;
-  BOOST_CHECK_CLOSE(gp_approx.value(eval_vars), 0.847901, 100.0*tol);
+  EXPECT_LT(std::fabs(1. -  gp_approx.value(eval_vars) / 0.847901), 100.0*tol/100.);
 
   eval_vars(0) = 0.40;  eval_vars(1) = -0.10;
-  BOOST_CHECK_CLOSE(gp_approx.value(eval_vars), 0.744622, 100.0*tol);
+  EXPECT_LT(std::fabs(1. -  gp_approx.value(eval_vars) / 0.744622), 100.0*tol/100.);
 
   eval_vars(0) = -0.25;  eval_vars(1) = 0.33;
-  BOOST_CHECK_CLOSE(gp_approx.value(eval_vars), 0.745461, 100.0*tol);
+  EXPECT_LT(std::fabs(1. -  gp_approx.value(eval_vars) / 0.745461), 100.0*tol/100.);
 }
 
 #endif
 
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

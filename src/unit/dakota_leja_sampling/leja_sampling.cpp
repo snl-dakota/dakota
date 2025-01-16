@@ -14,8 +14,7 @@
 //#include "SharedPolyApproxData.hpp"
 #include "nested_sampling.hpp"
 #include "SharedOrthogPolyApproxData.hpp"
-// Boost.Test
-#include <boost/test/minimal.hpp>
+#include <gtest/gtest.h>
 
 #include <cassert>
 #include <iostream>
@@ -209,8 +208,8 @@ void test_leja_sequence_helper(short utype, int num_vars,
   RealMatrix enriched_samples_subset( Teuchos::Copy, enriched_samples, num_vars,
 				      num_initial_samples );
   enriched_samples_subset -= initial_samples;
-  BOOST_CHECK( enriched_samples_subset.normInf() < 
-	       10.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE(( enriched_samples_subset.normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() ));
 
   // Run sampler and generate all points in one go
   RealMatrix combined_samples;
@@ -226,8 +225,8 @@ void test_leja_sequence_helper(short utype, int num_vars,
   //std::cout << "difference:\n" << std::endl;
   //write_data(std::cout, combined_samples);
   //std::cout << "normInf difference:" << combined_samples.normInf()<<std::endl;
-  BOOST_CHECK( combined_samples.normInf() < 
-	       10.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE(( combined_samples.normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() ));
 }
 
 void test_uniform_leja_sequence(){
@@ -253,18 +252,20 @@ void test_uniform_leja_sequence(){
 } // end namespace TestFieldCovariance
 } // end namespace Dakota
 
-// NOTE: Boost.Test framework provides the main progran driver
-
 //____________________________________________________________________________//
 
-int test_main( int argc, char* argv[] )      // note the name!
+TEST( leja_sampling_tests, all_tests )
 {
   using namespace Dakota::TestLejaSampling;
 
   test_uniform_leja_sequence();
 
-  int run_result = 0;
-  BOOST_CHECK( run_result == 0 || run_result == boost::exit_success );
+  SUCCEED();
+}
 
-  return boost::exit_success;
+//____________________________________________________________________________//
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

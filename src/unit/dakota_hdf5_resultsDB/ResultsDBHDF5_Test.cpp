@@ -12,8 +12,7 @@
 
 #include "util_windows.hpp"
 
-#define BOOST_TEST_MODULE dakota_ResultsDBHDF5_Test
-#include <boost/test/included/unit_test.hpp>
+#include <gtest/gtest.h>
 
 #include "hdf5.h"    // C API
 #include "hdf5_hl.h" // C API (HDF5 "high-level")
@@ -36,7 +35,7 @@ using namespace Dakota;
 /**
  *  Test creating and destroying a Dakota HDF5 database.
  */
-BOOST_AUTO_TEST_CASE(test_tpl_hdf5_test_results_manager_init) {
+TEST(ResultsDBHDF5_tests, test_tpl_hdf5_test_results_manager_init) {
   std::string database_name = "database_1.h5";
  
   Dakota::ResultsManager results_manager;
@@ -44,10 +43,10 @@ BOOST_AUTO_TEST_CASE(test_tpl_hdf5_test_results_manager_init) {
   std::unique_ptr<ResultsDBHDF5> db_ptr(new ResultsDBHDF5(false /* in_core */, hdf5_helper_ptr));
   results_manager.add_database(std::move(db_ptr));
 
-  BOOST_CHECK( results_manager.active() );
+  EXPECT_TRUE( results_manager.active() );
 }
 
-BOOST_AUTO_TEST_CASE(test_tpl_hdf5_test_create_groups) {
+TEST(ResultsDBHDF5_tests, test_tpl_hdf5_test_create_groups) {
   std::string database_name = "database_2.h5";
 
   Dakota::ResultsManager results_manager;
@@ -58,23 +57,23 @@ BOOST_AUTO_TEST_CASE(test_tpl_hdf5_test_create_groups) {
   Dakota::HDF5IOHelper helper(database_name, false);
   // methods treated like a dataset name
   helper.create_groups("/methods");
-  BOOST_CHECK(!helper.exists("/methods"));
+  EXPECT_TRUE((!helper.exists("/methods")));
 
   // methods treated like a group
   helper.create_groups( "/methods",false );
-  BOOST_CHECK( helper.exists("/methods") );
+  EXPECT_TRUE( helper.exists("/methods") );
 
   // sampling treated like a dataset
   helper.create_groups( "/methods/sampling");
-  BOOST_CHECK(!helper.exists("/methods/sampling") );
+  EXPECT_TRUE((!helper.exists("/methods/sampling")) );
 
   // sampling treated like a group
   helper.create_groups( "/methods/sampling", false);
-  BOOST_CHECK( helper.exists("/methods") );
-  BOOST_CHECK( helper.exists("/methods/sampling") );
+  EXPECT_TRUE( helper.exists("/methods") );
+  EXPECT_TRUE( helper.exists("/methods/sampling") );
 }
 
-BOOST_AUTO_TEST_CASE(test_tpl_hdf5_test_insert_into) {
+TEST(ResultsDBHDF5_tests, test_tpl_hdf5_test_insert_into) {
   // TODO: This is not a very good test, yet. It passes if no exceptions are throw, but it doesn't read
   // the matrices back in to confirm that they were written correctly.
   std::string database_name = "database_3.h5";
@@ -117,6 +116,11 @@ BOOST_AUTO_TEST_CASE(test_tpl_hdf5_test_insert_into) {
       Dakota::ResultsOutputType::REAL, 3, v_scale);
   for(int i = 0; i < 3; ++i)
     results_manager.insert_into(iterator_id, {std::string("vector_result")}, double(i+5), i);
+}
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }
 #endif
 // #endif // comment to make this file active

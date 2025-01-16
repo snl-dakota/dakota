@@ -17,8 +17,7 @@
 #include "ROL_StdConstraint.hpp"
 #include "ROL_Bounds.hpp"
 
-#define BOOST_TEST_MODULE dakota_rol_integration
-#include <boost/test/included/unit_test.hpp>
+#include <gtest/gtest.h>
 
 #include <memory>
 
@@ -96,7 +95,7 @@ public:
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_rol_basic1)
+TEST(rol_integration_tests, test_rol_basic1)
 {
   using Teuchos::RCP; using Teuchos::rcp;
 
@@ -186,7 +185,7 @@ BOOST_AUTO_TEST_CASE(test_rol_basic1)
 ///        and use the differences to assess correctness and 
 ///        pass/fail criteria.
 
-BOOST_AUTO_TEST_CASE(test_rol_text_book_nln_ineq_const)
+TEST(rol_integration_tests, test_rol_text_book_nln_ineq_const)
 {
   /// Dakota input string:
   static const char text_book_input[] =
@@ -223,7 +222,7 @@ BOOST_AUTO_TEST_CASE(test_rol_text_book_nln_ineq_const)
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    BOOST_CHECK( false ); // This test only works for serial builds
+    FAIL(); // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -255,3 +254,7 @@ BOOST_AUTO_TEST_CASE(test_rol_text_book_nln_ineq_const)
   rol_diags.close();
 }
 
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

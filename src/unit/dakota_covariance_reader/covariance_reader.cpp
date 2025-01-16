@@ -13,14 +13,13 @@
 
 #include <string>
 
-#define BOOST_TEST_MODULE dakota_covariance_reader
-#include <boost/test/included/unit_test.hpp>
+#include <gtest/gtest.h>
 
 using namespace Dakota;
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_covariance_reader_read_constant_covariance)
+TEST(covariance_reader_tests, test_covariance_reader_read_constant_covariance)
 {
   const std::string base_name = "../expt_data_test_files/voltage";
 
@@ -28,14 +27,14 @@ BOOST_AUTO_TEST_CASE(test_covariance_reader_read_constant_covariance)
   read_covariance(base_name, 1 /* expt number */, cov_values); // implies CONSTANT
 
   // Verify equality of config data
-  BOOST_CHECK( cov_values.numRows() == 1 );
-  BOOST_CHECK( cov_values.numCols() == 1 );
-  BOOST_CHECK_CLOSE( cov_values[0][0], 3.67, 1.e-12 );
+  EXPECT_TRUE(( cov_values.numRows() == 1 ));
+  EXPECT_TRUE(( cov_values.numCols() == 1 ));
+  EXPECT_LT(std::fabs(1. - cov_values[0][0] / 3.67), 1.e-12/100. );
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_covariance_reader_read_vector_covariance)
+TEST(covariance_reader_tests, test_covariance_reader_read_vector_covariance)
 {
   const std::string base_name = "../expt_data_test_files/voltage";
 
@@ -47,15 +46,15 @@ BOOST_AUTO_TEST_CASE(test_covariance_reader_read_vector_covariance)
 
   double gold_values[] = { 2.34, 8.552, -3.654, 7.332, 0.01, -0.1509, -5.98, 4.74, 9.99 };
   // Verify equality of config data
-  BOOST_CHECK( cov_values.numRows() == 1 );
-  BOOST_CHECK( cov_values.numCols() == 9 );
+  EXPECT_TRUE(( cov_values.numRows() == 1 ));
+  EXPECT_TRUE(( cov_values.numCols() == 9 ));
   for( int i=0; i<9; ++i )
-    BOOST_CHECK_CLOSE( cov_values[i][0], gold_values[i], 1.e-12 );
+    EXPECT_LT(std::fabs(1. - cov_values[i][0] / gold_values[i]), 1.e-12/100. );
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_covariance_reader_read_matrix_covariance)
+TEST(covariance_reader_tests, test_covariance_reader_read_matrix_covariance)
 {
   const std::string base_name = "../expt_data_test_files/voltage";
 
@@ -66,11 +65,22 @@ BOOST_AUTO_TEST_CASE(test_covariance_reader_read_matrix_covariance)
                   cov_values);
 
   // Verify equality of config data
-  BOOST_CHECK( cov_values.numRows() == 9 );
-  BOOST_CHECK( cov_values.numCols() == 9 );
+  EXPECT_TRUE(( cov_values.numRows() == 9 ));
+  EXPECT_TRUE(( cov_values.numCols() == 9 ));
   for( int i=0; i<9; ++i )
-    for( int j=0; j<9; ++j )
-      BOOST_CHECK_CLOSE( cov_values[i][j], (double)(i+j)/2.0, 1.e-12 );
+    for( int j=0; j<9; ++j ) {
+      if ((i+j) == 0) {
+        EXPECT_LT(std::fabs(cov_values[i][j]), 1.e-12/100. );
+      }
+      else {
+        EXPECT_LT(std::fabs(1. - cov_values[i][j] / ((double)(i+j)/2.0)), 1.e-12/100. );
+      }
+    }
 }
 
 //----------------------------------------------------------------
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

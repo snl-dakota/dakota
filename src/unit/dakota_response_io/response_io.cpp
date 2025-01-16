@@ -13,10 +13,7 @@
 #include "DakotaActiveSet.hpp"
 #include "DakotaResponse.hpp"
 
-#define BOOST_TEST_MODULE dakota_response_io
-#include <boost/test/included/unit_test.hpp>
-
-namespace btt = boost::test_tools;
+#include <gtest/gtest.h>
 
 std::vector<double> functions = {54.93, 93855432.34E+02, 3};
 
@@ -77,7 +74,7 @@ template<class VectorT>
 void check_vector(const std::vector<double>& truth_vec, const VectorT& trial_vec)
 {
   for (size_t i=0; i<truth_vec.size(); ++i)
-    BOOST_TEST(truth_vec[i] == trial_vec[i], btt::tolerance(1.0e-15));
+    EXPECT_NEAR(truth_vec[i], trial_vec[i], 1.0e-15); // It was BOOST_TEST with tolerance
 }
 
 
@@ -89,7 +86,7 @@ void check_matrix(const std::vector<std::vector<double>>& truth_matrix,
   const auto num_cols = truth_matrix[0].size();
   for (size_t i=0; i<num_rows; ++i)
     for (size_t j=0; j<num_cols; ++j)
-      BOOST_TEST(truth_matrix[i][j] == trial_matrix(i,j), btt::tolerance(1.0e-15));
+      EXPECT_NEAR(truth_matrix[i][j], trial_matrix(i,j), 1.0e-15); // It was BOOST_TEST with tolerance
 }
 
 
@@ -105,8 +102,8 @@ void malformed_file_throws(const std::string& results_string,
 			   const unsigned short format, Dakota::Response& resp)
 {
   resp.reset();
-  BOOST_CHECK_THROW(read_response(results_string, format, resp),
-		    Dakota::ResultsFileError);
+  EXPECT_THROW(read_response(results_string, format, resp),
+	       Dakota::ResultsFileError);
 }
 
 
@@ -120,7 +117,7 @@ void malformed_file_throws(const std::string& results_string,
 
 
 // check functions only with default ASV = 1's
-BOOST_AUTO_TEST_CASE(test_response_read_functions_only)
+TEST(response_io_tests, test_response_read_functions_only)
 {
   Dakota::Response resp = get_fn_only_response();
 
@@ -131,7 +128,7 @@ BOOST_AUTO_TEST_CASE(test_response_read_functions_only)
   read_response(bad_functions_file, Dakota::FLEXIBLE_RESULTS, resp);
   const auto& bad_vals = resp.function_values();
   for (size_t i=0; i<functions.size(); ++i)
-    BOOST_TEST(functions[i] != bad_vals[i], btt::tolerance(1.0e-15));
+    EXPECT_NE(functions[i], bad_vals[i]); // It was BOOST_TEST with tolerance
 
   malformed_file_throws(extra_functions_file, Dakota::FLEXIBLE_RESULTS, resp);
   malformed_file_throws(bad_floats_file, Dakota::FLEXIBLE_RESULTS, resp);
@@ -278,7 +275,7 @@ Dakota::Response get_derivs_response()
 }
 
 
-BOOST_AUTO_TEST_CASE(test_response_read_mixed_derivs)
+TEST(response_io_tests, test_response_read_mixed_derivs)
 {
   Dakota::Response resp = get_derivs_response();
 
@@ -301,7 +298,7 @@ BOOST_AUTO_TEST_CASE(test_response_read_mixed_derivs)
   // verify all invalid files throw, even though labels match
   for (const auto& invalid_file : invalid_mixed_files_named) {
     // to see checkpoints, run test with --log_level=all
-    BOOST_TEST_CHECKPOINT(invalid_file.first);
+    SCOPED_TRACE(invalid_file.first);
     malformed_file_throws(invalid_file.second, resp);
   }
 }
@@ -330,7 +327,7 @@ std::vector<double> metadata = {3.1415, 4000};
 
 
 // check functions + metadata with default ASV = 1's
-BOOST_AUTO_TEST_CASE(test_response_read_functions_metadata)
+TEST(response_io_tests, test_response_read_functions_metadata)
 {
   Dakota::Response resp = get_fn_only_response();
   resp.reshape_metadata(metadata.size());
@@ -415,7 +412,7 @@ std::string missing_hessian_metadata_file = R"(  54.93  f1
 )";
 
 
-BOOST_AUTO_TEST_CASE(test_response_read_derivs_metadata)
+TEST(response_io_tests, test_response_read_derivs_metadata)
 {
   Dakota::Response resp = get_derivs_response();
   resp.reshape_metadata(metadata.size());
@@ -459,7 +456,7 @@ std::string valid_gradient_metadata_file = R"(  54.93  f1
 
 // test for gradient immediately followed by metadata (validate that
 // reader puts back the data from forward seek)
-BOOST_AUTO_TEST_CASE(test_response_read_grads_metadata)
+TEST(response_io_tests, test_response_read_grads_metadata)
 {
   Dakota::Response resp = get_derivs_response();
   resp.active_set_request_vector({3, 1, 1});
@@ -481,4 +478,9 @@ BOOST_AUTO_TEST_CASE(test_response_read_grads_metadata)
   check_vector(functions, resp.function_values());
   check_matrix(gradients, resp.function_gradients());
   check_vector(metadata, resp.metadata());
+}
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

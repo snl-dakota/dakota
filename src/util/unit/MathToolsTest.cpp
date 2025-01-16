@@ -10,40 +10,39 @@
 #include "util_common.hpp"
 #include "util_math_tools.hpp"
 
-#define BOOST_TEST_MODULE dakota_MathToolsTest
-#include <boost/test/included/unit_test.hpp>
+#include <gtest/gtest.h>
 
 using namespace dakota;
 using namespace dakota::util;
 
 // ------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(util_N_choose_K) {
+TEST(MathToolsTest_tests, util_N_choose_K) {
   std::vector<int> kvals = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
   std::vector<int> gold = {10, 45, 120, 210, 252, 210, 120, 45, 10, 1};
   std::vector<int> fvals;
 
   for (auto const& k : kvals) fvals.push_back(n_choose_k(10, k));
 
-  BOOST_CHECK(fvals == gold);
+  EXPECT_TRUE((fvals == gold));
 }
 
 // ------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(util_num_nonzeros) {
+TEST(MathToolsTest_tests, util_num_nonzeros) {
   Eigen::MatrixXi test_indices(6, 3);
   test_indices << 2, 0, 0, 1, 1, 0, 0, 2, 0, 1, 0, 1, 0, 1, 1, 0, 0, 2;
 
   Eigen::Map<Eigen::VectorXi> column(test_indices.col(1).data(),
                                      test_indices.rows());
 
-  BOOST_CHECK(9 == num_nonzeros(test_indices));
-  BOOST_CHECK(3 == num_nonzeros(column));
+  EXPECT_TRUE((9 == num_nonzeros(test_indices)));
+  EXPECT_TRUE((3 == num_nonzeros(column)));
 }
 
 // ------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(util_nonzeros) {
+TEST(MathToolsTest_tests, util_nonzeros) {
   Eigen::VectorXi working_vec(10);
   working_vec << 1, 2, 0, 0, 5, 0, 7, 0, 9, 10;
 
@@ -53,12 +52,12 @@ BOOST_AUTO_TEST_CASE(util_nonzeros) {
   Eigen::VectorXi test_vec;
   nonzero(working_vec, test_vec);
 
-  BOOST_CHECK(matrix_equals(test_vec, gold_vec));
+  EXPECT_TRUE(matrix_equals(test_vec, gold_vec));
 }
 
 // ------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(util_append_cols) {
+TEST(MathToolsTest_tests, util_append_cols) {
   Eigen::MatrixXi working_mat(3, 2);
   working_mat << 1, 4, 2, 5, 3, 6;
 
@@ -70,19 +69,19 @@ BOOST_AUTO_TEST_CASE(util_append_cols) {
 
   append_columns(new_mat, working_mat);
 
-  BOOST_CHECK(matrix_equals(working_mat, gold_mat));
+  EXPECT_TRUE(matrix_equals(working_mat, gold_mat));
 }
 
 // ------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(util_p_norm) {
+TEST(MathToolsTest_tests, util_p_norm) {
   Eigen::VectorXd vals(10);
   vals << 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0;
 
-  BOOST_CHECK_CLOSE(140.50736087767584, p_norm(vals, 0.7), 1.e-8);
+  EXPECT_LT(std::fabs(1. - 140.50736087767584 / p_norm(vals, 0.7)), 1.e-8/100.);
 }
 
-BOOST_AUTO_TEST_CASE(util_random_permutation) {
+TEST(MathToolsTest_tests, util_random_permutation) {
   const int num_pts = 9;
   const int seed = 2;
   const int num_features = 3;
@@ -103,10 +102,10 @@ BOOST_AUTO_TEST_CASE(util_random_permutation) {
   std::cout << "permuted vector: ";
   std::cout << permutation_indices.transpose() << "\n";
 
-  BOOST_CHECK(permutation_indices == gold_permutation_indices);
+  EXPECT_TRUE((permutation_indices == gold_permutation_indices));
 }
 
-BOOST_AUTO_TEST_CASE(util_create_cross_validation_folds) {
+TEST(MathToolsTest_tests, util_create_cross_validation_folds) {
   const int num_pts = 9;
   const int seed = 2;
   const int num_folds = 4;
@@ -128,11 +127,11 @@ BOOST_AUTO_TEST_CASE(util_create_cross_validation_folds) {
   for (int i = 0; i < num_folds; i++) {
     std::cout << "fold indices " << i << ": ";
     std::cout << cv_folds[i].transpose() << "\n";
-    BOOST_CHECK(cv_folds[i] == gold_cv_folds[i]);
+    EXPECT_TRUE((cv_folds[i] == gold_cv_folds[i]));
   }
 }
 
-BOOST_AUTO_TEST_CASE(util_create_random_real_matrices) {
+TEST(MathToolsTest_tests, util_create_random_real_matrices) {
   double tight_tol = 1.0e-15;
   // std::cout << std::fixed << std::showpoint;
   // std::cout << std::setprecision(15);
@@ -143,7 +142,7 @@ BOOST_AUTO_TEST_CASE(util_create_random_real_matrices) {
 
   MatrixXd random_matrix = create_uniform_random_double_matrix(3, 2);
   // std::cout << "\n\n(0, 1) Random matrix:\n\n" << random_matrix << "\n";
-  BOOST_CHECK(matrix_equals(random_matrix, gold_random_matrix, tight_tol));
+  EXPECT_TRUE(matrix_equals(random_matrix, gold_random_matrix, tight_tol));
 
   MatrixXd gold_scaled_random_matrix(2, 3);
   gold_scaled_random_matrix << 1.395270773068832, 1.254321804096532,
@@ -154,6 +153,11 @@ BOOST_AUTO_TEST_CASE(util_create_random_real_matrices) {
       create_uniform_random_double_matrix(2, 3, 15, true, -2.0, 2.0);
   // std::cout << "\n(-2, 2) Random matrix:\n\n" << scaled_random_matrix <<
   // "\n\n";
-  BOOST_CHECK(matrix_equals(scaled_random_matrix, gold_scaled_random_matrix,
+  EXPECT_TRUE(matrix_equals(scaled_random_matrix, gold_scaled_random_matrix,
                             tight_tol));
+}
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

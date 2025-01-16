@@ -25,7 +25,7 @@
 #include <boost/random.hpp>
 #include <boost/random/uniform_real.hpp>
 #endif
-#include <boost/test/minimal.hpp>
+#include <gtest/gtest.h>
 
 using namespace dakota;
 using namespace dakota::util;
@@ -160,10 +160,10 @@ void PolynomialRegressionSurrogate_straight_line_fit(std::string scaler_type) {
   double actual_constant_term = polynomial_coeffs(0, 0);
   double actual_first_term = polynomial_coeffs(1, 0);
 
-  BOOST_CHECK(std::abs(expected_constant_term - actual_constant_term) < 1.0e-4);
-  BOOST_CHECK(std::abs(expected_first_term - actual_first_term) < 1.0e-4);
-  BOOST_CHECK(std::abs(expected_polynomial_intercept - polynomial_intercept) <
-              1.0e-4);
+  EXPECT_TRUE((std::abs(expected_constant_term - actual_constant_term) < 1.0e-4));
+  EXPECT_TRUE((std::abs(expected_first_term - actual_first_term) < 1.0e-4));
+  EXPECT_TRUE((std::abs(expected_polynomial_intercept - polynomial_intercept) <
+              1.0e-4));
 
   VectorXd unscaled_eval_pts = VectorXd::LinSpaced(100, 0, 1);
   VectorXd expected_approx_values(100);
@@ -184,7 +184,7 @@ void PolynomialRegressionSurrogate_straight_line_fit(std::string scaler_type) {
   VectorXd actual_approx_values;
   actual_approx_values = pr.value(unscaled_eval_pts);
 
-  BOOST_CHECK(
+  EXPECT_TRUE(
       matrix_equals(actual_approx_values, expected_approx_values, 1.0e-5));
 }
 
@@ -224,9 +224,9 @@ void PolynomialRegressionSurrogate_multivariate_regression_builder() {
   double polynomial_intercept3 = pr3.get_polynomial_intercept();
   test_responses3 = pr3.value(eval_points);
 
-  BOOST_CHECK(std::abs(polynomial_intercept3) < 1.0e-10);
-  BOOST_CHECK(matrix_equals(gold_coeffs, polynomial_coeffs3, 1.0e-10));
-  BOOST_CHECK(matrix_equals(gold_responses, test_responses3, 1.0e-10));
+  EXPECT_TRUE((std::abs(polynomial_intercept3) < 1.0e-10));
+  EXPECT_TRUE(matrix_equals(gold_coeffs, polynomial_coeffs3, 1.0e-10));
+  EXPECT_TRUE(matrix_equals(gold_responses, test_responses3, 1.0e-10));
 
   /* Use the Surrogates API with user-defined and updated configOptions
      and separate constructor and build steps */
@@ -248,9 +248,9 @@ void PolynomialRegressionSurrogate_multivariate_regression_builder() {
   double polynomial_intercept4 = pr4.get_polynomial_intercept();
   test_responses4 = pr4.value(eval_points);
 
-  BOOST_CHECK(std::abs(polynomial_intercept4) < 1.0e-10);
-  BOOST_CHECK(matrix_equals(gold_coeffs, polynomial_coeffs4, 1.0e-10));
-  BOOST_CHECK(matrix_equals(gold_responses, test_responses4, 1.0e-10));
+  EXPECT_TRUE((std::abs(polynomial_intercept4) < 1.0e-10));
+  EXPECT_TRUE(matrix_equals(gold_coeffs, polynomial_coeffs4, 1.0e-10));
+  EXPECT_TRUE(matrix_equals(gold_responses, test_responses4, 1.0e-10));
 
   /* Use the Surrogates API with default parameters, get and
      update those params. Separate constructor and build steps */
@@ -268,9 +268,9 @@ void PolynomialRegressionSurrogate_multivariate_regression_builder() {
   double polynomial_intercept5 = pr5.get_polynomial_intercept();
   test_responses5 = pr5.value(eval_points);
 
-  BOOST_CHECK(std::abs(polynomial_intercept5) < 1.0e-10);
-  BOOST_CHECK(matrix_equals(gold_coeffs, polynomial_coeffs5, 1.0e-10));
-  BOOST_CHECK(matrix_equals(gold_responses, test_responses5, 1.0e-10));
+  EXPECT_TRUE((std::abs(polynomial_intercept5) < 1.0e-10));
+  EXPECT_TRUE(matrix_equals(gold_coeffs, polynomial_coeffs5, 1.0e-10));
+  EXPECT_TRUE(matrix_equals(gold_responses, test_responses5, 1.0e-10));
 
   /* Test 6 -- Use the Surrogates API with reduced basis, get and
      update those params. Separate constructor and build steps */
@@ -299,9 +299,9 @@ void PolynomialRegressionSurrogate_multivariate_regression_builder() {
   double polynomial_intercept6 = pr6.get_polynomial_intercept();
   test_responses6 = pr6.value(eval_points);
 
-  BOOST_CHECK(std::abs(polynomial_intercept6) < 1.0e-10);
-  BOOST_CHECK(matrix_equals(gold_coeffs6, polynomial_coeffs6, 1.0e-10));
-  BOOST_CHECK(matrix_equals(gold_responses6, test_responses6, 1.0e-10));
+  EXPECT_TRUE((std::abs(polynomial_intercept6) < 1.0e-10));
+  EXPECT_TRUE(matrix_equals(gold_coeffs6, polynomial_coeffs6, 1.0e-10));
+  EXPECT_TRUE(matrix_equals(gold_responses6, test_responses6, 1.0e-10));
 }
 
 void PolynomialRegressionSurrogate_gradient_and_hessian() {
@@ -324,8 +324,8 @@ void PolynomialRegressionSurrogate_gradient_and_hessian() {
   MatrixXd gold_gradient = cubic_bivariate_withcross_gradient(samples.topRows(2));
   MatrixXd gold_hessian = cubic_bivariate_withcross_hessian(samples.topRows(1));
 
-  BOOST_CHECK(matrix_equals(gold_gradient, gradient, 1.0e-10));
-  BOOST_CHECK(matrix_equals(gold_hessian, hessian, 1.0e-10));
+  EXPECT_TRUE(matrix_equals(gold_gradient, gradient, 1.0e-10));
+  EXPECT_TRUE(matrix_equals(gold_hessian, hessian, 1.0e-10));
 }
 
 void PolynomialRegressionSurrogate_parameter_list_import() {
@@ -346,8 +346,8 @@ void PolynomialRegressionSurrogate_parameter_list_import() {
   MatrixXd gold_gradient = cubic_bivariate_withcross_gradient(samples.topRows(2));
   MatrixXd gold_hessian = cubic_bivariate_withcross_hessian(samples.topRows(1));
 
-  BOOST_CHECK(matrix_equals(gold_gradient, gradient, 1.0e-9));
-  BOOST_CHECK(matrix_equals(gold_hessian, hessian, 1.0e-9));
+  EXPECT_TRUE(matrix_equals(gold_gradient, gradient, 1.0e-9));
+  EXPECT_TRUE(matrix_equals(gold_hessian, hessian, 1.0e-9));
 }
 
 /// Create, evaluate, and save a basic polynomial; load and verify
@@ -397,10 +397,10 @@ void PolynomialRegression_SaveLoad() {
 
     auto pr4 = std::dynamic_pointer_cast<PolynomialRegression>(surr_in);
 
-    BOOST_CHECK(pr3->get_num_terms() == pr4->get_num_terms());
-    BOOST_CHECK(pr3->get_polynomial_intercept() ==
-                pr4->get_polynomial_intercept());
-    BOOST_CHECK(pr3->get_polynomial_coeffs() == pr4->get_polynomial_coeffs());
+    EXPECT_TRUE((pr3->get_num_terms() == pr4->get_num_terms()));
+    EXPECT_TRUE((pr3->get_polynomial_intercept() ==
+                pr4->get_polynomial_intercept()));
+    EXPECT_TRUE((pr3->get_polynomial_coeffs() == pr4->get_polynomial_coeffs()));
 
     // tests on the loaded surrogate based on original unit test
     const MatrixXd& loaded_coeffs = pr4->get_polynomial_coeffs();
@@ -408,9 +408,9 @@ void PolynomialRegression_SaveLoad() {
     VectorXd test_responses;
     test_responses = pr4->value(eval_points);
 
-    BOOST_CHECK(std::abs(loaded_intercept) < 1.0e-10);
-    BOOST_CHECK(matrix_equals(gold_coeffs, loaded_coeffs, 1.0e-10));
-    BOOST_CHECK(matrix_equals(gold_responses, test_responses, 1.0e-10));
+    EXPECT_TRUE((std::abs(loaded_intercept) < 1.0e-10));
+    EXPECT_TRUE(matrix_equals(gold_coeffs, loaded_coeffs, 1.0e-10));
+    EXPECT_TRUE(matrix_equals(gold_responses, test_responses, 1.0e-10));
   }
 }
 
@@ -418,7 +418,7 @@ void PolynomialRegression_SaveLoad() {
 
 // --------------------------------------------------------------------------------
 
-int test_main(int argc, char* argv[])  // note the name!
+TEST(PolynomialRegressionTest_tests, all_tests)
 {
   // Univariate tests
   PolynomialRegressionSurrogate_straight_line_fit("none");
@@ -435,9 +435,12 @@ int test_main(int argc, char* argv[])  // note the name!
   // Serialization tests
   PolynomialRegression_SaveLoad();
 
-  BOOST_CHECK(boost::exit_success == 0);
+  SUCCEED();
+}
 
-  return boost::exit_success;
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }
 
 // --------------------------------------------------------------------------------

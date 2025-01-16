@@ -11,14 +11,12 @@
 #include "CommandShell.hpp"
 #include "dakota_global_defs.hpp"
 
-// Boost.Test
-#include <boost/test/minimal.hpp>
-
 #include <boost/foreach.hpp>
 
 #include <cassert>
 #include <iostream>
 
+#include <gtest/gtest.h>
 
 namespace Dakota {
 namespace TestWorkdir {
@@ -38,30 +36,30 @@ void test_save_current_path(const std::string& pwd_str,
     // Change directory into newly created dir (verify current path is as expected)
     WorkdirHelper::change_directory(wd);
     std::string new_pwd_str = boost::filesystem::current_path().string();
-    BOOST_CHECK( pwd_str != new_pwd_str );
+    EXPECT_TRUE(( pwd_str != new_pwd_str ));
 
     WorkdirHelper::set_preferred_path();
 
     // verify that PATH has been updated; i.e. '.' is prepended
     std::string new_env_path_str( std::getenv("PATH") );
-    BOOST_CHECK( env_path_str != new_env_path_str );
-    BOOST_CHECK( new_env_path_str[0] == '.' );
+    EXPECT_TRUE(( env_path_str != new_env_path_str ));
+    EXPECT_TRUE(( new_env_path_str[0] == '.' ));
 
     // Change to startup PWD (aka rundir) (verify current path is as expected)
     // change back to original rundir
     bfs::path rundir(pwd_str);
     WorkdirHelper::change_directory(rundir);
     new_pwd_str = boost::filesystem::current_path().string();
-    BOOST_CHECK( pwd_str == new_pwd_str );
+    EXPECT_TRUE(( pwd_str == new_pwd_str ));
 
     // verify that PATH no longer has '.' prepended
     WorkdirHelper::prepend_preferred_env_path( pwd_str );
 
     std::string newest_env_path_str( std::getenv("PATH") );
-    BOOST_CHECK( newest_env_path_str[0] != '.' );
+    EXPECT_TRUE(( newest_env_path_str[0] != '.' ));
   }
   else
-    BOOST_ERROR( "Issue with newly created workdir in test_save_current_path()" );
+    FAIL() << "Issue with newly created workdir in test_save_current_path()";
 }
 
 
@@ -85,11 +83,11 @@ void count_driver_scripts(const std::string& glob_string)
 #if defined(DEBUG)
       std::cout << "ls: " << fit->path() << std::endl;
 #endif
-      BOOST_CHECK( is_regular_file( fit->path() ) );
+      EXPECT_TRUE(( is_regular_file( fit->path() ) ));
       ++file_count;
     }
 
-    BOOST_CHECK( file_count >= 7 );
+    EXPECT_TRUE(( file_count >= 7 ));
   }
   catch (const std::runtime_error&) {
     // WJB - ToDo: improve try/catch blocks
@@ -100,8 +98,8 @@ void count_driver_scripts(const std::string& glob_string)
 
 void test_which_driver(bfs::path& wd, const std::string& driver_name)
 {
-  BOOST_CHECK( bfs::exists(wd) );
-  BOOST_CHECK( wd.is_absolute() );
+  EXPECT_TRUE(( bfs::exists(wd) ));
+  EXPECT_TRUE(( wd.is_absolute() ));
 
   // BFS issue?  mkdir/change_dir seems problematic if wd is relative dir
   WorkdirHelper::change_directory(wd);
@@ -110,9 +108,9 @@ void test_which_driver(bfs::path& wd, const std::string& driver_name)
   // verify that a driver can be found in newly populated wdir
   bfs::path driver = WorkdirHelper::which(driver_name);
 
-  BOOST_CHECK( !driver.is_absolute() );
-  BOOST_CHECK( bfs::is_regular_file(driver) );
-  BOOST_CHECK( bfs::equivalent(driver, bfs::path(driver_name)) );
+  EXPECT_TRUE(( !driver.is_absolute() ));
+  EXPECT_TRUE(( bfs::is_regular_file(driver) ));
+  EXPECT_TRUE(( bfs::equivalent(driver, bfs::path(driver_name)) ));
 }
 
 
@@ -155,8 +153,8 @@ void test_cp_template_files_into_wd(bfs::path& wd)
     } 
   }
 
-  BOOST_CHECK( !wd.empty() );
-  BOOST_CHECK( file_count+link_count+dir_count >= 2 );
+  EXPECT_TRUE(( !wd.empty() ));
+  EXPECT_TRUE(( file_count+link_count+dir_count >= 2 ));
   //std::cout << "DONE iterating dir:  " << wd << std::endl;
 
   // now determine if PATH environment is suitable for script in workdir
@@ -205,8 +203,8 @@ void test_ln_template_files_into_wd(bfs::path& wd)
     } 
   }
 
-  BOOST_CHECK( !wd.empty() );
-  BOOST_CHECK( file_count+link_count+dir_count >= 2 );
+  EXPECT_TRUE(( !wd.empty() ));
+  EXPECT_TRUE(( file_count+link_count+dir_count >= 2 ));
   //std::cout << "DONE iterating dir:  " << wd << std::endl;
 
   // now determine if PATH environment is suitable for script in workdir
@@ -214,7 +212,7 @@ void test_ln_template_files_into_wd(bfs::path& wd)
 
   test_which_driver(wd, "templatedir_rosenbrock.py"); // consider argv[1] here?
 
-  //BOOST_CHECK( bfs::exists(wd += "/dakota_workdir.templatedir.dat") );
+  //EXPECT_TRUE(( bfs::exists(wd += "/dakota_workdir.templatedir.dat") ));
 }
 
 
@@ -222,7 +220,7 @@ void test_rmdir(bfs::path& wd)
 {
   // 7.	Remove the directory (verify its gone)
   WorkdirHelper::recursive_remove(wd, 0); // 0 indicates silent (appropriate for unit test)
-  BOOST_CHECK( !bfs::exists(wd) );
+  EXPECT_TRUE(( !bfs::exists(wd) ));
 }
 
 
@@ -247,7 +245,7 @@ void test_create_and_remove_tmpdir(bool copy=false)
     test_rmdir(wd); // WJB: comment-out for manual inspection after a testrun
   }
   else
-    BOOST_ERROR( "Ouch..." );
+    FAIL() << "Ouch...";
 }
 
 
@@ -271,7 +269,7 @@ void test_create_and_remove_wd_in_rundir(const std::string& dir_name,
 #endif
   }
   else
-    BOOST_ERROR( "Ouch..." );
+    FAIL() << "Ouch...";
 }
 
 
@@ -280,9 +278,9 @@ void test_driver_relative_path(const bfs::path& rel_driver_path)
   std::string rundir_str = Dakota::WorkdirHelper::startup_pwd();
   Dakota::WorkdirHelper::change_directory(rundir_str);
 
-  BOOST_CHECK( !rel_driver_path.is_absolute() );
+  EXPECT_TRUE(( !rel_driver_path.is_absolute() ));
 #if !defined(_WIN32)
-  BOOST_CHECK( bfs::is_regular_file(rel_driver_path) );
+  EXPECT_TRUE(( bfs::is_regular_file(rel_driver_path) ));
 #endif
 
   //try {
@@ -294,13 +292,9 @@ void test_driver_relative_path(const bfs::path& rel_driver_path)
 } // end namespace TestWorkdir
 } // end namespace Dakota
 
-
-
-// NOTE: Boost.Test framework provides the main progran driver
-
 //____________________________________________________________________________//
 
-int test_main( int argc, char* argv[] )      // note the name!
+TEST( workdir_utils_tests, all_tests )
 {
   using namespace Dakota::TestWorkdir;
 
@@ -327,7 +321,7 @@ int test_main( int argc, char* argv[] )      // note the name!
   int run_result = 0;
 
   count_driver_scripts(fq_search);
-  BOOST_CHECK( run_result == 0 || run_result == boost::exit_success ); */
+  EXPECT_TRUE(( run_result == 0 || run_result == boost::exit_success )); */
 
 #if defined(_WIN32)
   #define PATH_SEP_SLASH '\\'
@@ -340,6 +334,9 @@ int test_main( int argc, char* argv[] )      // note the name!
   relative_driver_path += PATH_SEP_SLASH;
   relative_driver_path += "uthelper";
   test_driver_relative_path(relative_driver_path);
+}
 
-  return boost::exit_success;
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

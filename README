@@ -101,6 +101,7 @@ dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
                         different license restrictions.
   fftw	    	    GNU General Public License (GPL; disabled by default)
   FSUDace	    GNU Lesser General Public License (LGPL)
+  GoogleTest        BSD 3-Clause
   hopspack	    GNU Lesser General Public License (LGPL) [SNL]
     CDDLIB	    GNU General Public License (GPL; disabled by default)
   JEGA		    GNU Lesser General Public License (LGPL) [SNL]

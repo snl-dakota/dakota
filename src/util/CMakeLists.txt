@@ -55,8 +55,7 @@ target_link_libraries(dakota_util PUBLIC Eigen3::Eigen)
 
 # Rationale: Boost headers are implementation details only, while
 # serialization is referenced in API headers
-target_link_libraries(dakota_util PRIVATE Boost::boost
-  PUBLIC Boost::serialization)
+target_link_libraries(dakota_util PUBLIC Boost::serialization)
 
 dakota_strict_warnings(dakota_util)
 

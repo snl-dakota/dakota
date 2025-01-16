@@ -13,9 +13,7 @@
 #include "DataMethod.hpp"
 #include "DakotaResponse.hpp"
 #include "NonDBayesCalibration.hpp"
-// Boost.Test
-#define BOOST_TEST_MODULE dakota_field_covariance_utils
-#include <boost/test/included/unit_test.hpp>
+#include <gtest/gtest.h>
 
 #include <cassert>
 #include <iostream>
@@ -48,8 +46,8 @@ void test_multiple_scalar_covariance_matrix()
 				     scalar_map_indices );
 
   // Test determinant and log_determinant
-  BOOST_CHECK_CLOSE(exper_cov.determinant(), 8.0, 1.0e-12);
-  BOOST_CHECK_CLOSE(exper_cov.log_determinant(), std::log(8.0), 1.0e-12);
+  EXPECT_LT(std::fabs(1. - exper_cov.determinant() / 8.0), 1.0e-12/100. );
+  EXPECT_LT(std::fabs(1. - exper_cov.log_determinant() / std::log(8.0)), 1.0e-12/100. );
 
   int num_residuals = 3;
   Real residual_array[] = {1.,2.,4.};
@@ -57,15 +55,15 @@ void test_multiple_scalar_covariance_matrix()
 
   // Test application of the covariance inverse to residual vector
   Real prod = exper_cov.apply_experiment_covariance( residual );
-  BOOST_CHECK(  std::abs( prod - 7. ) < 
-		10.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE((  std::abs( prod - 7. ) < 
+                10.*std::numeric_limits<double>::epsilon() ));
 
   // Test application of the sqrt of the covariance inverse to residual vector
   RealVector result;
   exper_cov.apply_experiment_covariance_inverse_sqrt( residual, result );
   prod = result.dot( result );
-  BOOST_CHECK(  std::abs( prod - 7. ) < 
-		10.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE((  std::abs( prod - 7. ) < 
+		10.*std::numeric_limits<double>::epsilon() ));
 
   // Test application of the sqrt of the covariance inverse to matrix of 
   // gradient vectors
@@ -78,10 +76,10 @@ void test_multiple_scalar_covariance_matrix()
   RealMatrix grammian( grads.numRows(), grads.numRows(), false );
   grammian.multiply( Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, scaled_grads, 
 		     scaled_grads, 0. );
-  BOOST_CHECK(  std::abs( grammian(0,0) - 7. ) < 
-		10.*std::numeric_limits<double>::epsilon() );
-  BOOST_CHECK(  std::abs( grammian(1,1) - 28. ) < 
-		10.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE((  std::abs( grammian(0,0) - 7. ) < 
+		10.*std::numeric_limits<double>::epsilon() ));
+  EXPECT_TRUE((  std::abs( grammian(1,1) - 28. ) < 
+		10.*std::numeric_limits<double>::epsilon() ));
 
   // Test application of the sqrt of the covariance inverse to matrix of 
   // Hessian matrices
@@ -115,12 +113,12 @@ void test_multiple_scalar_covariance_matrix()
   scaled_hessians[1] -= exact_scaled_hessian_1;
   scaled_hessians[2] -= exact_scaled_hessian_2;
 
-  BOOST_CHECK( scaled_hessians[0].normInf() < 
-	       10.*std::numeric_limits<double>::epsilon() );
-  BOOST_CHECK( scaled_hessians[1].normInf() < 
-	       10.*std::numeric_limits<double>::epsilon() );
-  BOOST_CHECK( scaled_hessians[2].normInf() < 
-	       10.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE(( scaled_hessians[0].normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() ));
+  EXPECT_TRUE(( scaled_hessians[1].normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() ));
+  EXPECT_TRUE(( scaled_hessians[2].normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() ));
 
   // Test extraction of main diagonal
   RealVector diagonal;
@@ -130,8 +128,8 @@ void test_multiple_scalar_covariance_matrix()
   RealVector exact_diagonal(Teuchos::View, exact_diagonal_array, 3 );
   
   exact_diagonal -= diagonal;
-  BOOST_CHECK( exact_diagonal.normInf() < 
-	       10.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE(( exact_diagonal.normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() ));
 
 }
 
@@ -161,8 +159,8 @@ void test_single_diagonal_block_covariance_matrix()
 
 
   // Test determinant and log_determinant
-  BOOST_CHECK_CLOSE(exper_cov.determinant(), 8.0, 1.0e-12);
-  BOOST_CHECK_CLOSE(exper_cov.log_determinant(), std::log(8.0), 1.0e-12);
+  EXPECT_LT(std::fabs(1. - exper_cov.determinant() / 8.0), 1.0e-12/100. );
+  EXPECT_LT(std::fabs(1. - exper_cov.log_determinant() / std::log(8.0)), 1.0e-12/100. );
 
   int num_residuals = 3;
   Real residual_array[] = {1.,2.,4.};
@@ -170,15 +168,15 @@ void test_single_diagonal_block_covariance_matrix()
 
   // Test application of the covariance inverse to residual vector
   Real prod = exper_cov.apply_experiment_covariance( residual );
-  BOOST_CHECK(  std::abs( prod - 7. ) < 
-		10.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE((  std::abs( prod - 7. ) < 
+		10.*std::numeric_limits<double>::epsilon() ));
   
   // Test application of the sqrt of the covariance inverse to residual vector
   RealVector result;
   exper_cov.apply_experiment_covariance_inverse_sqrt( residual, result );
   prod = result.dot( result );
-  BOOST_CHECK(  std::abs( prod - 7. ) < 
-		10.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE((  std::abs( prod - 7. ) < 
+		10.*std::numeric_limits<double>::epsilon() ));
 
   // Test application of the sqrt of the covariance inverse to matrix of 
   // gradient vectors
@@ -191,10 +189,10 @@ void test_single_diagonal_block_covariance_matrix()
   RealMatrix grammian( grads.numRows(), grads.numRows(), false );
   grammian.multiply( Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, scaled_grads, 
 		     scaled_grads, 0. );
-  BOOST_CHECK(  std::abs( grammian(0,0) - 7. ) < 
-		10.*std::numeric_limits<double>::epsilon() );
-  BOOST_CHECK(  std::abs( grammian(1,1) - 28. ) < 
-		10.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE((  std::abs( grammian(0,0) - 7. ) < 
+		10.*std::numeric_limits<double>::epsilon() ));
+  EXPECT_TRUE((  std::abs( grammian(1,1) - 28. ) < 
+		10.*std::numeric_limits<double>::epsilon() ));
 
   // Test application of the sqrt of the covariance inverse to matrix of 
   // Hessian matrices
@@ -228,12 +226,12 @@ void test_single_diagonal_block_covariance_matrix()
   scaled_hessians[1] -= exact_scaled_hessian_1;
   scaled_hessians[2] -= exact_scaled_hessian_2;
 
-  BOOST_CHECK( scaled_hessians[0].normInf() < 
-	       10.*std::numeric_limits<double>::epsilon() );
-  BOOST_CHECK( scaled_hessians[1].normInf() < 
-	       10.*std::numeric_limits<double>::epsilon() );
-  BOOST_CHECK( scaled_hessians[2].normInf() < 
-	       10.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE(( scaled_hessians[0].normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() ));
+  EXPECT_TRUE(( scaled_hessians[1].normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() ));
+  EXPECT_TRUE(( scaled_hessians[2].normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() ));
 }
 
 void test_single_full_block_covariance_matrix()
@@ -262,8 +260,8 @@ void test_single_full_block_covariance_matrix()
 				     scalar_map_indices );
 
   // Test determinant and log_determinant
-  BOOST_CHECK_CLOSE(exper_cov.determinant(), 6.75, 1.0e-12);
-  BOOST_CHECK_CLOSE(exper_cov.log_determinant(), std::log(6.75), 1.0e-12);
+  EXPECT_LT(std::fabs(1. - exper_cov.determinant() / 6.75), 1.0e-12/100. );
+  EXPECT_LT(std::fabs(1. - exper_cov.log_determinant() / std::log(6.75)), 1.0e-12/100. );
 
   int num_residuals = 3;
   Real residual_array[] = {1.,2.,4.};
@@ -271,15 +269,15 @@ void test_single_full_block_covariance_matrix()
 
   // Test application of the covariance inverse to residual vector
   Real prod = exper_cov.apply_experiment_covariance( residual );
-  BOOST_CHECK(  std::abs( prod - 16./3. ) < 
-		10.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE((  std::abs( prod - 16./3. ) < 
+		10.*std::numeric_limits<double>::epsilon() ));
 
   // Test application of the sqrt of the covariance inverse to residual vector
   RealVector result;
   exper_cov.apply_experiment_covariance_inverse_sqrt( residual, result );
   prod = result.dot( result );
-  BOOST_CHECK( std::abs( prod - 16./3. ) < 
-	       10.*std::numeric_limits<double>::epsilon() ); 
+  EXPECT_TRUE(( std::abs( prod - 16./3. ) < 
+	       10.*std::numeric_limits<double>::epsilon() )); 
   
   // Test application of the sqrt of the covariance inverse to matrix of 
   // gradient vectors
@@ -292,10 +290,10 @@ void test_single_full_block_covariance_matrix()
   RealMatrix grammian( grads.numRows(), grads.numRows(), false );
   grammian.multiply( Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, scaled_grads, 
 		     scaled_grads, 0. );
-  BOOST_CHECK(  std::abs( grammian(0,0) - 16./3. ) < 
-		10.*std::numeric_limits<double>::epsilon() );
-  BOOST_CHECK(  std::abs( grammian(1,1) - 64./3. ) < 
-		20.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE((  std::abs( grammian(0,0) - 16./3. ) < 
+		10.*std::numeric_limits<double>::epsilon() ));
+  EXPECT_TRUE((  std::abs( grammian(1,1) - 64./3. ) < 
+		20.*std::numeric_limits<double>::epsilon() ));
 
   // Test application of the sqrt of the covariance inverse to matrix of 
   // Hessian matrices
@@ -330,12 +328,12 @@ void test_single_full_block_covariance_matrix()
   scaled_hessians[1] -= exact_scaled_hessian_1;
   scaled_hessians[2] -= exact_scaled_hessian_2;
   
-  BOOST_CHECK( scaled_hessians[0].normInf() < 
-	       100.*std::numeric_limits<double>::epsilon() );
-  BOOST_CHECK( scaled_hessians[1].normInf() < 
-	       100.*std::numeric_limits<double>::epsilon() );
-  BOOST_CHECK( scaled_hessians[2].normInf() < 
-	       100.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE(( scaled_hessians[0].normInf() < 
+	       100.*std::numeric_limits<double>::epsilon() ));
+  EXPECT_TRUE(( scaled_hessians[1].normInf() < 
+	       100.*std::numeric_limits<double>::epsilon() ));
+  EXPECT_TRUE(( scaled_hessians[2].normInf() < 
+	       100.*std::numeric_limits<double>::epsilon() ));
 
   // Test extraction of main diagonal
   RealVector diagonal;
@@ -345,8 +343,8 @@ void test_single_full_block_covariance_matrix()
   RealVector exact_diagonal(Teuchos::View, exact_diagonal_array, 3 );
   
   exact_diagonal -= diagonal;
-  BOOST_CHECK( exact_diagonal.normInf() < 
-	       10.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE(( exact_diagonal.normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() ));
   
 }
 
@@ -409,8 +407,8 @@ void test_mixed_scalar_diagonal_full_block_covariance_matrix()
 				     scalar_map_indices );
 
   // Test determinant and log_determinant
-  BOOST_CHECK_CLOSE(exper_cov.determinant(), 432.0, 1.0e-12);
-  BOOST_CHECK_CLOSE(exper_cov.log_determinant(), std::log(432.0), 1.0e-12);
+  EXPECT_LT(std::fabs(1. - exper_cov.determinant() / 432.0), 1.0e-12/100. );
+  EXPECT_LT(std::fabs(1. - exper_cov.log_determinant() / std::log(432.0)), 1.0e-12/100. );
 
   int num_residuals = 9;
   Real residual_array[] = {1., 1., 2., 4., 1., 2., 4., 2., 4.};
@@ -418,15 +416,15 @@ void test_mixed_scalar_diagonal_full_block_covariance_matrix()
 
   // Test application of the covariance inverse to residual vector
   Real prod = exper_cov.apply_experiment_covariance( residual );
-  BOOST_CHECK( std::abs( prod - 58./3. ) < 
-	       20.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE(( std::abs( prod - 58./3. ) < 
+	       20.*std::numeric_limits<double>::epsilon() ));
 
   // Test application of the sqrt of the covariance inverse to residual vector
   RealVector result;
   exper_cov.apply_experiment_covariance_inverse_sqrt( residual, result );
   prod = result.dot( result );
-  BOOST_CHECK( std::abs( prod - 58./3. ) < 
-	       10.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE(( std::abs( prod - 58./3. ) < 
+	       10.*std::numeric_limits<double>::epsilon() ));
 
   // Test application of the sqrt of the covariance inverse to matrix of 
   // gradient vectors
@@ -440,10 +438,10 @@ void test_mixed_scalar_diagonal_full_block_covariance_matrix()
   RealMatrix grammian( grads.numRows(), grads.numRows(), false );
   grammian.multiply( Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, scaled_grads, 
 		     scaled_grads, 0. );
-  BOOST_CHECK(  std::abs( grammian(0,0) - 58./3. ) < 
-		20.*std::numeric_limits<double>::epsilon() );
-  BOOST_CHECK(  std::abs( grammian(1,1) - 232./3. ) < 
-		20.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE((  std::abs( grammian(0,0) - 58./3. ) < 
+		20.*std::numeric_limits<double>::epsilon() ));
+  EXPECT_TRUE((  std::abs( grammian(1,1) - 232./3. ) < 
+		20.*std::numeric_limits<double>::epsilon() ));
 
   // Test application of the sqrt of the covariance inverse to matrix of 
   // Hessian matrices
@@ -510,24 +508,24 @@ void test_mixed_scalar_diagonal_full_block_covariance_matrix()
   scaled_hessians[7] -= exact_scaled_hessian_7;
   scaled_hessians[8] -= exact_scaled_hessian_8;
   
-  BOOST_CHECK( scaled_hessians[0].normInf() < 
-	       100.*std::numeric_limits<double>::epsilon() );
-  BOOST_CHECK( scaled_hessians[1].normInf() < 
-	       100.*std::numeric_limits<double>::epsilon() );
-  BOOST_CHECK( scaled_hessians[2].normInf() < 
-	       100.*std::numeric_limits<double>::epsilon() );
-  BOOST_CHECK( scaled_hessians[3].normInf() < 
-	       100.*std::numeric_limits<double>::epsilon() );
-  BOOST_CHECK( scaled_hessians[4].normInf() < 
-	       100.*std::numeric_limits<double>::epsilon() );
-  BOOST_CHECK( scaled_hessians[5].normInf() < 
-	       100.*std::numeric_limits<double>::epsilon() );
-  BOOST_CHECK( scaled_hessians[6].normInf() < 
-	       100.*std::numeric_limits<double>::epsilon() );
-  BOOST_CHECK( scaled_hessians[7].normInf() < 
-	       100.*std::numeric_limits<double>::epsilon() );
-  BOOST_CHECK( scaled_hessians[8].normInf() < 
-	       100.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE(( scaled_hessians[0].normInf() < 
+	       100.*std::numeric_limits<double>::epsilon() ));
+  EXPECT_TRUE(( scaled_hessians[1].normInf() < 
+	       100.*std::numeric_limits<double>::epsilon() ));
+  EXPECT_TRUE(( scaled_hessians[2].normInf() < 
+	       100.*std::numeric_limits<double>::epsilon() ));
+  EXPECT_TRUE(( scaled_hessians[3].normInf() < 
+	       100.*std::numeric_limits<double>::epsilon() ));
+  EXPECT_TRUE(( scaled_hessians[4].normInf() < 
+	       100.*std::numeric_limits<double>::epsilon() ));
+  EXPECT_TRUE(( scaled_hessians[5].normInf() < 
+	       100.*std::numeric_limits<double>::epsilon() ));
+  EXPECT_TRUE(( scaled_hessians[6].normInf() < 
+	       100.*std::numeric_limits<double>::epsilon() ));
+  EXPECT_TRUE(( scaled_hessians[7].normInf() < 
+	       100.*std::numeric_limits<double>::epsilon() ));
+  EXPECT_TRUE(( scaled_hessians[8].normInf() < 
+	       100.*std::numeric_limits<double>::epsilon() ));
 
 
   // Test extraction of main diagonal
@@ -538,8 +536,8 @@ void test_mixed_scalar_diagonal_full_block_covariance_matrix()
   RealVector exact_diagonal(Teuchos::View, exact_diagonal_array, 9 );
   
   exact_diagonal -= diagonal;
-  BOOST_CHECK( exact_diagonal.normInf() < 
-	       10.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE(( exact_diagonal.normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() ));
 
   // Test conversion to correlation matrix
   // Matlab for correlation matrix
@@ -557,8 +555,8 @@ void test_mixed_scalar_diagonal_full_block_covariance_matrix()
   exper_cov.as_correlation(calc_correl);
 
   calc_correl -= exact_correl;
-  BOOST_CHECK( calc_correl.normInf() < 
-               10.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE(( calc_correl.normInf() < 
+               10.*std::numeric_limits<double>::epsilon() ));
 }
 
 void test_linear_interpolate_1d_no_extrapolation()
@@ -615,7 +613,7 @@ void test_linear_interpolate_1d_no_extrapolation()
 		       4.29259259259259e-1,3.17084548104956e-1,0.0};
   RealVector diff( Teuchos::View, diff_array, num_field_pts );
   diff -= interp_vals;
-  BOOST_CHECK( diff.normInf() < 10.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE(( diff.normInf() < 10.*std::numeric_limits<double>::epsilon() ));
 
   RealMatrix true_grads(num_vars,num_field_pts,false);
   for ( int i=0; i<num_field_pts; i++){
@@ -623,7 +621,7 @@ void test_linear_interpolate_1d_no_extrapolation()
     true_grads(1,i) = 4.*field_pts(i,0);
   }
   true_grads -= interp_grads;
-  BOOST_CHECK( true_grads.normInf()<10.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE(( true_grads.normInf()<10.*std::numeric_limits<double>::epsilon() ));
 
   RealSymMatrixArray true_hessians( num_sim_pts );
   for ( int i=0; i<num_field_pts; i++){
@@ -633,8 +631,8 @@ void test_linear_interpolate_1d_no_extrapolation()
     true_hessians[i](0,1)=3.*field_pts(i,0)+0.05;
     true_hessians[i](1,1)=3.*field_pts(i,0)+0.1;
     true_hessians[i] -= interp_hessians[i];
-    BOOST_CHECK( true_hessians[i].normInf()<
-		 10.*std::numeric_limits<double>::epsilon() );
+    EXPECT_TRUE(( true_hessians[i].normInf()<
+		 10.*std::numeric_limits<double>::epsilon() ));
   }
 }
 
@@ -675,7 +673,7 @@ void test_linear_interpolate_1d_with_extrapolation()
 		       4.29259259259259e-1,3.17084548104956e-1,-6.775e-1};
   RealVector diff( Teuchos::View, diff_array, num_field_pts );
   diff -= interp_vals;
-  BOOST_CHECK( diff.normInf() < 10.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE(( diff.normInf() < 10.*std::numeric_limits<double>::epsilon() ));
 }
 
 /*void test_build_hessian_of_sum_square_residuals_from_function_hessians()
@@ -735,8 +733,8 @@ void test_linear_interpolate_1d_with_extrapolation()
   truth_ssr_hessian *=2;
   
   truth_ssr_hessian -= ssr_hessian;
-  BOOST_CHECK( truth_ssr_hessian.normInf() < 
-	       10.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE(( truth_ssr_hessian.normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() ));
 
   // -------------------------------------- //
   // Build hessian with noise covariance
@@ -813,8 +811,8 @@ void test_linear_interpolate_1d_with_extrapolation()
   truth_noise_scaled_ssr_hessian *=2;
   
   truth_noise_scaled_ssr_hessian -= ssr_hessian;
-  BOOST_CHECK( truth_noise_scaled_ssr_hessian.normInf() < 
-	       100.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE(( truth_noise_scaled_ssr_hessian.normInf() < 
+	       100.*std::numeric_limits<double>::epsilon() ));
 
   // -------------------------------------- //
   // Build Gauss-Newton hessian with noise covariance
@@ -843,8 +841,8 @@ void test_linear_interpolate_1d_with_extrapolation()
   truth_noise_scaled_gn_ssr_hessian *=2;
   
   truth_noise_scaled_gn_ssr_hessian -= ssr_hessian;
-  BOOST_CHECK( truth_noise_scaled_gn_ssr_hessian.normInf() < 
-	       100.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE(( truth_noise_scaled_gn_ssr_hessian.normInf() < 
+	       100.*std::numeric_limits<double>::epsilon() ));
 }*/
 
 void test_symmetric_eigenvalue_decomposition()
@@ -860,16 +858,16 @@ void test_symmetric_eigenvalue_decomposition()
   RealVector truth_eigenvalues( Teuchos::View, truth_eigenvalues_array, 2 );
  
   truth_eigenvalues -=  eigenvalues;
-  BOOST_CHECK( truth_eigenvalues.normInf() < 
-	       10.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE(( truth_eigenvalues.normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() ));
 
 
   Real truth_eigenvectors_array[] ={ 0.6, -0.8, -0.8, -0.6 };
   RealMatrix truth_eigenvectors( Teuchos::View, truth_eigenvectors_array, 2,2,2);
 
   truth_eigenvectors -= eigenvectors;
-  BOOST_CHECK( truth_eigenvectors.normInf() < 
-	       10.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE(( truth_eigenvectors.normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() ));
 }
 
 void test_get_positive_definite_covariance_from_hessian()
@@ -896,8 +894,8 @@ void test_get_positive_definite_covariance_from_hessian()
   RealSymMatrix truth_covariance1(Teuchos::View, false, truth_cov1_array, 2, 2);
 
   truth_covariance1 -= covariance1;
-  BOOST_CHECK( truth_covariance1.normInf() < 
-	       10.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE(( truth_covariance1.normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() ));
 
   //////////////////////////////////////////////////////////////////////////////
 
@@ -920,8 +918,8 @@ void test_get_positive_definite_covariance_from_hessian()
   RealSymMatrix truth_covariance2(Teuchos::View, false, truth_cov2_array, 2, 2);
 
   truth_covariance2 -= covariance2;
-  BOOST_CHECK( truth_covariance2.normInf() < 
-	       10.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE(( truth_covariance2.normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() ));
 
   //////////////////////////////////////////////////////////////////////////////
   /*
@@ -939,8 +937,8 @@ void test_get_positive_definite_covariance_from_hessian()
   RealSymMatrix truth_covariance3(Teuchos::View, false, truth_cov3_array, 2, 2);
 
   truth_covariance3 -= covariance3;
-  BOOST_CHECK( truth_covariance3.normInf() < 
-	       10.*std::numeric_limits<double>::epsilon() );
+  EXPECT_TRUE(( truth_covariance3.normInf() < 
+	       10.*std::numeric_limits<double>::epsilon() ));
   */
 }
 
@@ -949,7 +947,7 @@ void test_matrix_symmetry()
   // Test non-square matrix
   RealMatrix test_rect_matrix(4,3, true);
   bool is_symm = is_matrix_symmetric(test_rect_matrix);
-  BOOST_CHECK( !is_symm );
+  EXPECT_TRUE(( !is_symm ));
 
   Real matrix_array[] = { 1.0, 0.7, 0.7, 0.7, 
                           0.7, 1.0, 0.7, 0.7, 
@@ -959,24 +957,21 @@ void test_matrix_symmetry()
   // Test symmetric matrix
   RealMatrix test_symm_mat(Teuchos::Copy, matrix_array, 4, 4, 4);
   is_symm = is_matrix_symmetric(test_symm_mat);
-  BOOST_CHECK( is_symm );
+  EXPECT_TRUE(( is_symm ));
 
   // Test non-symmetric square matrix
   RealMatrix test_nonsymm_mat(test_symm_mat);
   test_nonsymm_mat(1,0) = 0.5;
   is_symm = is_matrix_symmetric(test_nonsymm_mat);
-  BOOST_CHECK( !is_symm );
+  EXPECT_TRUE(( !is_symm ));
 }
 
 } // end namespace TestFieldCovariance
 } // end namespace Dakota
 
-// NOTE: Boost.Test framework provides the main progran driver
-
 //____________________________________________________________________________//
 
-BOOST_AUTO_TEST_CASE( test_main )
-//int test_main( int argc, char* argv[] )      // note the name!
+TEST( test_field_covariance_utils_tests, all_tests )
 {
   using namespace Dakota::TestFieldCovariance;
 
@@ -999,8 +994,10 @@ BOOST_AUTO_TEST_CASE( test_main )
   test_symmetric_eigenvalue_decomposition();
   test_matrix_symmetry();
 
-  int run_result = 0;
-  BOOST_CHECK( run_result == 0 || run_result == boost::exit_success );
+  SUCCEED();
+}
 
-  //  return boost::exit_success;
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

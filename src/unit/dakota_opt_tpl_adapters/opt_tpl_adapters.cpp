@@ -9,8 +9,7 @@
 
 #ifdef HAVE_DEMO_TPL
 
-#define BOOST_TEST_MODULE dakota_opt_tpl_adapters
-#include <boost/test/included/unit_test.hpp>
+#include <gtest/gtest.h>
 
 #include <string>
 #include <map>
@@ -70,7 +69,7 @@ namespace {
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_nln_ineq_demo)
+TEST(opt_tpl_adapters_tests, test_nln_ineq_demo)
 {
   /// Dakota input string:
   string text_book_input = baseline_text_book_input;
@@ -83,7 +82,7 @@ BOOST_AUTO_TEST_CASE(test_nln_ineq_demo)
   // boilerplate to create Dakota objects, etc...
   {
     if (p_env->parallel_library().mpirun_flag())
-      BOOST_CHECK( false ); // This test only works for serial builds
+      FAIL(); // This test only works for serial builds
     // Execute the environment
     p_env->execute();
   }
@@ -94,8 +93,8 @@ BOOST_AUTO_TEST_CASE(test_nln_ineq_demo)
   DemoOptTraits::VecT nln_ineqs(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  BOOST_CHECK(1 == nln_ineqs.size());
-  BOOST_CHECK_CLOSE(-0.5, nln_ineqs[0], 1.e-12);
+  EXPECT_TRUE((1 == nln_ineqs.size()));
+  EXPECT_LT(std::fabs(1. - -0.5 / nln_ineqs[0]), 1.e-12/100. );
 
 
   //*********************************
@@ -112,8 +111,8 @@ BOOST_AUTO_TEST_CASE(test_nln_ineq_demo)
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  BOOST_CHECK(1 == nln_ineqs.size());
-  BOOST_CHECK_CLOSE(-5.5, nln_ineqs[0], 1.e-12);
+  EXPECT_TRUE((1 == nln_ineqs.size()));
+  EXPECT_LT(std::fabs(1. - -5.5 / nln_ineqs[0]), 1.e-12/100. );
 
   // *********************************
 
@@ -132,9 +131,9 @@ BOOST_AUTO_TEST_CASE(test_nln_ineq_demo)
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  BOOST_CHECK(2 == nln_ineqs.size());
-  BOOST_CHECK_CLOSE(-0.5, nln_ineqs[0], 1.e-12);
-  BOOST_CHECK_CLOSE(-1.5, nln_ineqs[1], 1.e-12);
+  EXPECT_TRUE((2 == nln_ineqs.size()));
+  EXPECT_LT(std::fabs(1. - -0.5 / nln_ineqs[0]), 1.e-12/100. );
+  EXPECT_LT(std::fabs(1. - -1.5 / nln_ineqs[1]), 1.e-12/100. );
   
   // *********************************
 
@@ -154,14 +153,14 @@ BOOST_AUTO_TEST_CASE(test_nln_ineq_demo)
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  BOOST_CHECK(2 == nln_ineqs.size());
-  BOOST_CHECK_CLOSE(-5.5, nln_ineqs[0], 1.e-12);
-  BOOST_CHECK_CLOSE(-1.5, nln_ineqs[1], 1.e-12);
+  EXPECT_TRUE((2 == nln_ineqs.size()));
+  EXPECT_LT(std::fabs(1. - -5.5 / nln_ineqs[0]), 1.e-12/100. );
+  EXPECT_LT(std::fabs(1. - -1.5 / nln_ineqs[1]), 1.e-12/100. );
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_nln_eq_demo)
+TEST(opt_tpl_adapters_tests, test_nln_eq_demo)
 {
   /// Dakota input string:
   string text_book_input = baseline_text_book_input;
@@ -174,7 +173,7 @@ BOOST_AUTO_TEST_CASE(test_nln_eq_demo)
   // boilerplate to create Dakota objects, etc...
   {
     if (p_env->parallel_library().mpirun_flag())
-      BOOST_CHECK( false ); // This test only works for serial builds
+      FAIL(); // This test only works for serial builds
     // Execute the environment
     p_env->execute();
   }
@@ -185,8 +184,8 @@ BOOST_AUTO_TEST_CASE(test_nln_eq_demo)
   DemoOptTraits::VecT nln_eqs(data_xfer->num_tpl_nonlin_eq_constraints());
   data_xfer->get_nonlinear_eq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_eqs);
 
-  BOOST_CHECK(1 == nln_eqs.size());
-  BOOST_CHECK_CLOSE(-0.5, nln_eqs[0], 1.e-12);
+  EXPECT_TRUE((1 == nln_eqs.size()));
+  EXPECT_LT(std::fabs(1. - -0.5 / nln_eqs[0]), 1.e-12/100. );
 
 
   // Now test adapters when using nonzero nonlinear equality targets
@@ -203,13 +202,13 @@ BOOST_AUTO_TEST_CASE(test_nln_eq_demo)
   nln_eqs.resize(data_xfer->num_tpl_nonlin_eq_constraints());
   data_xfer->get_nonlinear_eq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_eqs);
 
-  BOOST_CHECK(1 == nln_eqs.size());
-  BOOST_CHECK_CLOSE(0.0, nln_eqs[0], 1.e-12);
+  EXPECT_TRUE((1 == nln_eqs.size()));
+  EXPECT_LT(std::fabs(/*1. - 0.0 / */ nln_eqs[0]), 1.e-12/100. );
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_nln_mixed_demo)
+TEST(opt_tpl_adapters_tests, test_nln_mixed_demo)
 {
   /// Dakota input string:
   string text_book_input = baseline_text_book_input;
@@ -223,7 +222,7 @@ BOOST_AUTO_TEST_CASE(test_nln_mixed_demo)
   // boilerplate to create Dakota objects, etc...
   {
     if (p_env->parallel_library().mpirun_flag())
-      BOOST_CHECK( false ); // This test only works for serial builds
+      FAIL(); // This test only works for serial builds
     // Execute the environment
     p_env->execute();
   }
@@ -236,10 +235,10 @@ BOOST_AUTO_TEST_CASE(test_nln_mixed_demo)
   data_xfer->get_nonlinear_eq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_eqs);
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  BOOST_CHECK(1 == nln_eqs.size());
-  BOOST_CHECK_CLOSE(-0.5, nln_eqs[0], 1.e-12);
-  BOOST_CHECK(1 == nln_ineqs.size());
-  BOOST_CHECK_CLOSE(80.0, nln_ineqs[0], 1.e-12);
+  EXPECT_TRUE((1 == nln_eqs.size()));
+  EXPECT_LT(std::fabs(1. - -0.5 / nln_eqs[0]), 1.e-12/100. );
+  EXPECT_TRUE((1 == nln_ineqs.size()));
+  EXPECT_LT(std::fabs(1. - 80.0 / nln_ineqs[0]), 1.e-12/100. );
 
 
   //*********************************
@@ -259,10 +258,10 @@ BOOST_AUTO_TEST_CASE(test_nln_mixed_demo)
   data_xfer->get_nonlinear_eq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_eqs);
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  BOOST_CHECK(1 == nln_eqs.size());
-  BOOST_CHECK_CLOSE(0.0, nln_eqs[0], 1.e-12);
-  BOOST_CHECK(1 == nln_ineqs.size());
-  BOOST_CHECK_CLOSE(75.0, nln_ineqs[0], 1.e-12);
+  EXPECT_TRUE((1 == nln_eqs.size()));
+  EXPECT_LT(std::fabs(/*1. - 0.0 / */ nln_eqs[0]), 1.e-12/100. );
+  EXPECT_TRUE((1 == nln_ineqs.size()));
+  EXPECT_LT(std::fabs(1. - 75.0 / nln_ineqs[0]), 1.e-12/100. );
 
   // *********************************
 
@@ -283,11 +282,11 @@ BOOST_AUTO_TEST_CASE(test_nln_mixed_demo)
   data_xfer->get_nonlinear_eq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_eqs);
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  BOOST_CHECK(1 == nln_eqs.size());
-  BOOST_CHECK_CLOSE(-0.5, nln_eqs[0], 1.e-12);
-  BOOST_CHECK(2 == nln_ineqs.size());
-  BOOST_CHECK_CLOSE( 80.0, nln_ineqs[0], 1.e-12);
-  BOOST_CHECK_CLOSE(-82.0, nln_ineqs[1], 1.e-12);
+  EXPECT_TRUE((1 == nln_eqs.size()));
+  EXPECT_LT(std::fabs(1. - -0.5 / nln_eqs[0]), 1.e-12/100. );
+  EXPECT_TRUE((2 == nln_ineqs.size()));
+  EXPECT_LT(std::fabs(1. -  80.0 / nln_ineqs[0]), 1.e-12/100. );
+  EXPECT_LT(std::fabs(1. - -82.0 / nln_ineqs[1]), 1.e-12/100. );
   
   // *********************************
 
@@ -311,11 +310,11 @@ BOOST_AUTO_TEST_CASE(test_nln_mixed_demo)
   data_xfer->get_nonlinear_eq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_eqs);
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  BOOST_CHECK(1 == nln_eqs.size());
-  BOOST_CHECK_CLOSE(0.0, nln_eqs[0], 1.e-12);
-  BOOST_CHECK(2 == nln_ineqs.size());
-  BOOST_CHECK_CLOSE( 75.0, nln_ineqs[0], 1.e-12);
-  BOOST_CHECK_CLOSE(-82.0, nln_ineqs[1], 1.e-12);
+  EXPECT_TRUE((1 == nln_eqs.size()));
+  EXPECT_LT(std::fabs(/*1. - 0.0 / */ nln_eqs[0]), 1.e-12/100. );
+  EXPECT_TRUE((2 == nln_ineqs.size()));
+  EXPECT_LT(std::fabs(1. -  75.0 / nln_ineqs[0]), 1.e-12/100. );
+  EXPECT_LT(std::fabs(1. - -82.0 / nln_ineqs[1]), 1.e-12/100. );
 }
 
 
@@ -378,7 +377,7 @@ namespace
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_nln_ineq_traits)
+TEST(opt_tpl_adapters_tests, test_nln_ineq_traits)
 {
   /// Dakota input string:
   string text_book_input = baseline_text_book_input;
@@ -391,7 +390,7 @@ BOOST_AUTO_TEST_CASE(test_nln_ineq_traits)
   // boilerplate to create Dakota objects, etc...
   {
     if (p_env->parallel_library().mpirun_flag())
-      BOOST_CHECK( false ); // This test only works for serial builds
+      FAIL(); // This test only works for serial builds
     // Execute the environment
     p_env->execute();
   }
@@ -416,8 +415,8 @@ BOOST_AUTO_TEST_CASE(test_nln_ineq_traits)
   TRAITS_TYPE1::VecT nln_ineqs(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  BOOST_CHECK(1 == nln_ineqs.size());
-  BOOST_CHECK_CLOSE(0.5, nln_ineqs[0], 1.e-12);
+  EXPECT_TRUE((1 == nln_ineqs.size()));
+  EXPECT_LT(std::fabs(1. - 0.5 / nln_ineqs[0]), 1.e-12/100. );
 
   // TWO_SIDED
   data_xfer.reset(new TPLDataTransfer()); 
@@ -426,8 +425,8 @@ BOOST_AUTO_TEST_CASE(test_nln_ineq_traits)
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  BOOST_CHECK(1 == nln_ineqs.size());
-  BOOST_CHECK_CLOSE(-0.5, nln_ineqs[0], 1.e-12);
+  EXPECT_TRUE((1 == nln_ineqs.size()));
+  EXPECT_LT(std::fabs(1. - -0.5 / nln_ineqs[0]), 1.e-12/100. );
 
 
   //*********************************
@@ -449,8 +448,8 @@ BOOST_AUTO_TEST_CASE(test_nln_ineq_traits)
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  BOOST_CHECK(1 == nln_ineqs.size());
-  BOOST_CHECK_CLOSE(5.5, nln_ineqs[0], 1.e-12);
+  EXPECT_TRUE((1 == nln_ineqs.size()));
+  EXPECT_LT(std::fabs(1. - 5.5 / nln_ineqs[0]), 1.e-12/100. );
 
   // TWO_SIDED
   data_xfer.reset(new TPLDataTransfer()); 
@@ -459,8 +458,8 @@ BOOST_AUTO_TEST_CASE(test_nln_ineq_traits)
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  BOOST_CHECK(1 == nln_ineqs.size());
-  BOOST_CHECK_CLOSE(-0.5, nln_ineqs[0], 1.e-12);
+  EXPECT_TRUE((1 == nln_ineqs.size()));
+  EXPECT_LT(std::fabs(1. - -0.5 / nln_ineqs[0]), 1.e-12/100. );
 
 
   // *********************************
@@ -485,9 +484,9 @@ BOOST_AUTO_TEST_CASE(test_nln_ineq_traits)
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  BOOST_CHECK(2 == nln_ineqs.size());
-  BOOST_CHECK_CLOSE(0.5, nln_ineqs[0], 1.e-12);
-  BOOST_CHECK_CLOSE(1.5, nln_ineqs[1], 1.e-12);
+  EXPECT_TRUE((2 == nln_ineqs.size()));
+  EXPECT_LT(std::fabs(1. - 0.5 / nln_ineqs[0]), 1.e-12/100. );
+  EXPECT_LT(std::fabs(1. - 1.5 / nln_ineqs[1]), 1.e-12/100. );
   
   // TWO_SIDED
   data_xfer.reset(new TPLDataTransfer()); 
@@ -496,8 +495,8 @@ BOOST_AUTO_TEST_CASE(test_nln_ineq_traits)
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  BOOST_CHECK(1 == nln_ineqs.size());
-  BOOST_CHECK_CLOSE(-0.5, nln_ineqs[0], 1.e-12);
+  EXPECT_TRUE((1 == nln_ineqs.size()));
+  EXPECT_LT(std::fabs(1. - -0.5 / nln_ineqs[0]), 1.e-12/100. );
 
 
   // *********************************
@@ -523,9 +522,9 @@ BOOST_AUTO_TEST_CASE(test_nln_ineq_traits)
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  BOOST_CHECK(2 == nln_ineqs.size());
-  BOOST_CHECK_CLOSE(5.5, nln_ineqs[0], 1.e-12);
-  BOOST_CHECK_CLOSE(1.5, nln_ineqs[1], 1.e-12);
+  EXPECT_TRUE((2 == nln_ineqs.size()));
+  EXPECT_LT(std::fabs(1. - 5.5 / nln_ineqs[0]), 1.e-12/100. );
+  EXPECT_LT(std::fabs(1. - 1.5 / nln_ineqs[1]), 1.e-12/100. );
 
   // TWO_SIDED
   data_xfer.reset(new TPLDataTransfer()); 
@@ -534,13 +533,13 @@ BOOST_AUTO_TEST_CASE(test_nln_ineq_traits)
   nln_ineqs.resize(data_xfer->num_tpl_nonlin_ineq_constraints());
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  BOOST_CHECK(1 == nln_ineqs.size());
-  BOOST_CHECK_CLOSE(-0.5, nln_ineqs[0], 1.e-12);
+  EXPECT_TRUE((1 == nln_ineqs.size()));
+  EXPECT_LT(std::fabs(1. - -0.5 / nln_ineqs[0]), 1.e-12/100. );
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_nln_mixed_traits)
+TEST(opt_tpl_adapters_tests, test_nln_mixed_traits)
 {
   /// Dakota input string:
   string text_book_input = baseline_text_book_input;
@@ -554,7 +553,7 @@ BOOST_AUTO_TEST_CASE(test_nln_mixed_traits)
   // boilerplate to create Dakota objects, etc...
   {
     if (p_env->parallel_library().mpirun_flag())
-      BOOST_CHECK( false ); // This test only works for serial builds
+      FAIL(); // This test only works for serial builds
     // Execute the environment
     p_env->execute();
   }
@@ -581,10 +580,10 @@ BOOST_AUTO_TEST_CASE(test_nln_mixed_traits)
   data_xfer->get_nonlinear_eq_constraints_from_dakota  (demo_optimizer->iterated_model().current_response(), nln_eqs  );
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  BOOST_CHECK(1 == nln_eqs.size());
-  BOOST_CHECK_CLOSE(-0.5, nln_eqs[0], 1.e-12);
-  BOOST_CHECK(1 == nln_ineqs.size());
-  BOOST_CHECK_CLOSE(-80.0, nln_ineqs[0], 1.e-12);
+  EXPECT_TRUE((1 == nln_eqs.size()));
+  EXPECT_LT(std::fabs(1. - -0.5 / nln_eqs[0]), 1.e-12/100. );
+  EXPECT_TRUE((1 == nln_ineqs.size()));
+  EXPECT_LT(std::fabs(1. - -80.0 / nln_ineqs[0]), 1.e-12/100. );
 
   // TWO_SIDED
   data_xfer.reset(new TPLDataTransfer()); 
@@ -595,10 +594,10 @@ BOOST_AUTO_TEST_CASE(test_nln_mixed_traits)
   data_xfer->get_nonlinear_eq_constraints_from_dakota  (demo_optimizer->iterated_model().current_response(), nln_eqs  );
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  BOOST_CHECK(1 == nln_eqs.size());
-  BOOST_CHECK_CLOSE(-0.5, nln_eqs[0], 1.e-12);
-  BOOST_CHECK(1 == nln_ineqs.size());
-  BOOST_CHECK_CLOSE(80.0, nln_ineqs[0], 1.e-12);
+  EXPECT_TRUE((1 == nln_eqs.size()));
+  EXPECT_LT(std::fabs(1. - -0.5 / nln_eqs[0]), 1.e-12/100. );
+  EXPECT_TRUE((1 == nln_ineqs.size()));
+  EXPECT_LT(std::fabs(1. - 80.0 / nln_ineqs[0]), 1.e-12/100. );
 
 
   //*********************************
@@ -623,10 +622,10 @@ BOOST_AUTO_TEST_CASE(test_nln_mixed_traits)
   data_xfer->get_nonlinear_eq_constraints_from_dakota  (demo_optimizer->iterated_model().current_response(), nln_eqs);
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  BOOST_CHECK(1 == nln_eqs.size());
-  BOOST_CHECK_CLOSE(0.0, nln_eqs[0], 1.e-12);
-  BOOST_CHECK(1 == nln_ineqs.size());
-  BOOST_CHECK_CLOSE(-75.0, nln_ineqs[0], 1.e-12);
+  EXPECT_TRUE((1 == nln_eqs.size()));
+  EXPECT_LT(std::fabs(/*1. - 0.0 / */ nln_eqs[0]), 1.e-12/100. );
+  EXPECT_TRUE((1 == nln_ineqs.size()));
+  EXPECT_LT(std::fabs(1. - -75.0 / nln_ineqs[0]), 1.e-12/100. );
 
   // TWO_SIDED
   data_xfer.reset(new TPLDataTransfer()); 
@@ -637,10 +636,10 @@ BOOST_AUTO_TEST_CASE(test_nln_mixed_traits)
   data_xfer->get_nonlinear_eq_constraints_from_dakota  (demo_optimizer->iterated_model().current_response(), nln_eqs);
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  BOOST_CHECK(1 == nln_eqs.size());
-  BOOST_CHECK_CLOSE(0.0, nln_eqs[0], 1.e-12);
-  BOOST_CHECK(1 == nln_ineqs.size());
-  BOOST_CHECK_CLOSE(80.0, nln_ineqs[0], 1.e-12);
+  EXPECT_TRUE((1 == nln_eqs.size()));
+  EXPECT_LT(std::fabs(/*1. - 0.0 / */ nln_eqs[0]), 1.e-12/100. );
+  EXPECT_TRUE((1 == nln_ineqs.size()));
+  EXPECT_LT(std::fabs(1. - 80.0 / nln_ineqs[0]), 1.e-12/100. );
 
 
   // *********************************
@@ -668,11 +667,11 @@ BOOST_AUTO_TEST_CASE(test_nln_mixed_traits)
   data_xfer->get_nonlinear_eq_constraints_from_dakota  (demo_optimizer->iterated_model().current_response(), nln_eqs);
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  BOOST_CHECK(1 == nln_eqs.size());
-  BOOST_CHECK_CLOSE(-0.5, nln_eqs[0], 1.e-12);
-  BOOST_CHECK(2 == nln_ineqs.size());
-  BOOST_CHECK_CLOSE(-80.0, nln_ineqs[0], 1.e-12);
-  BOOST_CHECK_CLOSE( 82.0, nln_ineqs[1], 1.e-12);
+  EXPECT_TRUE((1 == nln_eqs.size()));
+  EXPECT_LT(std::fabs(1. - -0.5 / nln_eqs[0]), 1.e-12/100. );
+  EXPECT_TRUE((2 == nln_ineqs.size()));
+  EXPECT_LT(std::fabs(1. - -80.0 / nln_ineqs[0]), 1.e-12/100. );
+  EXPECT_LT(std::fabs(1. -  82.0 / nln_ineqs[1]), 1.e-12/100. );
   
   // TWO_SIDED
   data_xfer.reset(new TPLDataTransfer()); 
@@ -683,10 +682,10 @@ BOOST_AUTO_TEST_CASE(test_nln_mixed_traits)
   data_xfer->get_nonlinear_eq_constraints_from_dakota  (demo_optimizer->iterated_model().current_response(), nln_eqs);
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  BOOST_CHECK(1 == nln_eqs.size());
-  BOOST_CHECK_CLOSE(-0.5, nln_eqs[0], 1.e-12);
-  BOOST_CHECK(1 == nln_ineqs.size());
-  BOOST_CHECK_CLOSE(80.0, nln_ineqs[0], 1.e-12);
+  EXPECT_TRUE((1 == nln_eqs.size()));
+  EXPECT_LT(std::fabs(1. - -0.5 / nln_eqs[0]), 1.e-12/100. );
+  EXPECT_TRUE((1 == nln_ineqs.size()));
+  EXPECT_LT(std::fabs(1. - 80.0 / nln_ineqs[0]), 1.e-12/100. );
 
 
   // *********************************
@@ -715,11 +714,11 @@ BOOST_AUTO_TEST_CASE(test_nln_mixed_traits)
   data_xfer->get_nonlinear_eq_constraints_from_dakota  (demo_optimizer->iterated_model().current_response(), nln_eqs);
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  BOOST_CHECK(1 == nln_eqs.size());
-  BOOST_CHECK_CLOSE(0.0, nln_eqs[0], 1.e-12);
-  BOOST_CHECK(2 == nln_ineqs.size());
-  BOOST_CHECK_CLOSE(-75.0, nln_ineqs[0], 1.e-12);
-  BOOST_CHECK_CLOSE( 82.0, nln_ineqs[1], 1.e-12);
+  EXPECT_TRUE((1 == nln_eqs.size()));
+  EXPECT_LT(std::fabs(/*1. - 0.0 / */ nln_eqs[0]), 1.e-12/100. );
+  EXPECT_TRUE((2 == nln_ineqs.size()));
+  EXPECT_LT(std::fabs(1. - -75.0 / nln_ineqs[0]), 1.e-12/100. );
+  EXPECT_LT(std::fabs(1. -  82.0 / nln_ineqs[1]), 1.e-12/100. );
 
   // TWO_SIDED
   data_xfer.reset(new TPLDataTransfer()); 
@@ -730,16 +729,16 @@ BOOST_AUTO_TEST_CASE(test_nln_mixed_traits)
   data_xfer->get_nonlinear_eq_constraints_from_dakota  (demo_optimizer->iterated_model().current_response(), nln_eqs);
   data_xfer->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs);
 
-  BOOST_CHECK(1 == nln_eqs.size());
-  BOOST_CHECK_CLOSE(0.0, nln_eqs[0], 1.e-12);
-  BOOST_CHECK(1 == nln_ineqs.size());
-  BOOST_CHECK_CLOSE(80.0, nln_ineqs[0], 1.e-12);
+  EXPECT_TRUE((1 == nln_eqs.size()));
+  EXPECT_LT(std::fabs(/*1. - 0.0 / */ nln_eqs[0]), 1.e-12/100. );
+  EXPECT_TRUE((1 == nln_ineqs.size()));
+  EXPECT_LT(std::fabs(1. - 80.0 / nln_ineqs[0]), 1.e-12/100. );
 }
 
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_nln_eq_traits)
+TEST(opt_tpl_adapters_tests, test_nln_eq_traits)
 {
   /// Dakota input string:
   string text_book_input = baseline_text_book_input;
@@ -752,7 +751,7 @@ BOOST_AUTO_TEST_CASE(test_nln_eq_traits)
   // boilerplate to create Dakota objects, etc...
   {
     if (p_env->parallel_library().mpirun_flag())
-      BOOST_CHECK( false ); // This test only works for serial builds
+      FAIL(); // This test only works for serial builds
     // Execute the environment
     p_env->execute();
   }
@@ -783,9 +782,9 @@ BOOST_AUTO_TEST_CASE(test_nln_eq_traits)
   data_xfer3->get_nonlinear_eq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_eqs3);
 
   // There should be no equality values because they are treated as two-sided inequalities
-  BOOST_CHECK(0 == nln_eqs1.size());
-  BOOST_CHECK(0 == nln_eqs2.size());
-  BOOST_CHECK(0 == nln_eqs3.size());
+  EXPECT_TRUE((0 == nln_eqs1.size()));
+  EXPECT_TRUE((0 == nln_eqs2.size()));
+  EXPECT_TRUE((0 == nln_eqs3.size()));
 
   DemoOptTraits::VecT nln_ineqs1(data_xfer1->num_tpl_nonlin_ineq_constraints());
   DemoOptTraits::VecT nln_ineqs2(data_xfer2->num_tpl_nonlin_ineq_constraints());
@@ -795,14 +794,14 @@ BOOST_AUTO_TEST_CASE(test_nln_eq_traits)
   data_xfer3->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs3);
 
   // BUT there should be two inequality constraints for each model equality constraint
-  BOOST_CHECK(2 == nln_ineqs1.size());
-  BOOST_CHECK(2 == nln_ineqs2.size());
-  BOOST_CHECK(2 == nln_ineqs3.size());
+  EXPECT_TRUE((2 == nln_ineqs1.size()));
+  EXPECT_TRUE((2 == nln_ineqs2.size()));
+  EXPECT_TRUE((2 == nln_ineqs3.size()));
   // ... and they are all treated the same because they are transformed in a manner that works with any of the
   //     three inequality constraint formats
-  BOOST_CHECK_CLOSE(-0.5, nln_ineqs1[0], 1.e-12);   BOOST_CHECK_CLOSE( 0.5, nln_ineqs1[1], 1.e-12);
-  BOOST_CHECK_CLOSE(-0.5, nln_ineqs2[0], 1.e-12);   BOOST_CHECK_CLOSE( 0.5, nln_ineqs2[1], 1.e-12);
-  BOOST_CHECK_CLOSE(-0.5, nln_ineqs3[0], 1.e-12);   BOOST_CHECK_CLOSE( 0.5, nln_ineqs3[1], 1.e-12);
+  EXPECT_LT(std::fabs(1. - -0.5 / nln_ineqs1[0]), 1.e-12/100. );   EXPECT_LT(std::fabs(1. -  0.5 / nln_ineqs1[1]), 1.e-12/100. );
+  EXPECT_LT(std::fabs(1. - -0.5 / nln_ineqs2[0]), 1.e-12/100. );   EXPECT_LT(std::fabs(1. -  0.5 / nln_ineqs2[1]), 1.e-12/100. );
+  EXPECT_LT(std::fabs(1. - -0.5 / nln_ineqs3[0]), 1.e-12/100. );   EXPECT_LT(std::fabs(1. -  0.5 / nln_ineqs3[1]), 1.e-12/100. );
 
 
   // Now test adapters when using nonzero nonlinear equality targets
@@ -832,9 +831,9 @@ BOOST_AUTO_TEST_CASE(test_nln_eq_traits)
   data_xfer2->get_nonlinear_eq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_eqs2);
   data_xfer3->get_nonlinear_eq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_eqs3);
 
-  BOOST_CHECK(0 == nln_eqs1.size());
-  BOOST_CHECK(0 == nln_eqs2.size());
-  BOOST_CHECK(0 == nln_eqs3.size());
+  EXPECT_TRUE((0 == nln_eqs1.size()));
+  EXPECT_TRUE((0 == nln_eqs2.size()));
+  EXPECT_TRUE((0 == nln_eqs3.size()));
 
   // Check correctness of inequality constraints
   nln_ineqs1.resize(data_xfer1->num_tpl_nonlin_ineq_constraints());
@@ -845,14 +844,19 @@ BOOST_AUTO_TEST_CASE(test_nln_eq_traits)
   data_xfer2->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs2);
   data_xfer3->get_nonlinear_ineq_constraints_from_dakota(demo_optimizer->iterated_model().current_response(), nln_ineqs3);
 
-  BOOST_CHECK(2 == nln_ineqs1.size());
-  BOOST_CHECK(2 == nln_ineqs2.size());
-  BOOST_CHECK(2 == nln_ineqs3.size());
-  BOOST_CHECK_CLOSE(0.0, nln_ineqs1[0], 1.e-12);   BOOST_CHECK_CLOSE( 0.0, nln_ineqs1[1], 1.e-12);
-  BOOST_CHECK_CLOSE(0.0, nln_ineqs2[0], 1.e-12);   BOOST_CHECK_CLOSE( 0.0, nln_ineqs2[1], 1.e-12);
-  BOOST_CHECK_CLOSE(0.0, nln_ineqs3[0], 1.e-12);   BOOST_CHECK_CLOSE( 0.0, nln_ineqs3[1], 1.e-12);
+  EXPECT_TRUE((2 == nln_ineqs1.size()));
+  EXPECT_TRUE((2 == nln_ineqs2.size()));
+  EXPECT_TRUE((2 == nln_ineqs3.size()));
+  EXPECT_LT(std::fabs(/*1. - 0.0 / */ nln_ineqs1[0]), 1.e-12/100. );   EXPECT_LT(std::fabs(/*1. - 0.0 / */ nln_ineqs1[1]), 1.e-12/100. );
+  EXPECT_LT(std::fabs(/*1. - 0.0 / */ nln_ineqs2[0]), 1.e-12/100. );   EXPECT_LT(std::fabs(/*1. - 0.0 / */ nln_ineqs2[1]), 1.e-12/100. );
+  EXPECT_LT(std::fabs(/*1. - 0.0 / */ nln_ineqs3[0]), 1.e-12/100. );   EXPECT_LT(std::fabs(/*1. - 0.0 / */ nln_ineqs3[1]), 1.e-12/100. );
 }
 
 //----------------------------------------------------------------
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}
 
 #endif // HAVE_DEMO_TPL
