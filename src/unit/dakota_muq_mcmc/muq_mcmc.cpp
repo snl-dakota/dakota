@@ -127,8 +127,7 @@ chain, kernel, and proposal themselves.
 
 #include <boost/property_tree/ptree.hpp>
 
-#define BOOST_TEST_MODULE dakota_muq_mcmc
-#include <boost/test/included/unit_test.hpp>
+#include <gtest/gtest.h>
 
 namespace pt = boost::property_tree;
 using namespace muq::Modeling;
@@ -136,7 +135,7 @@ using namespace muq::SamplingAlgorithms;
 using namespace muq::Utilities;
 
 
-BOOST_AUTO_TEST_CASE(test_muq_basic1)
+TEST(muq_mcmc_tests, test_muq_basic1)
 {
   /***
   ### 1. Define the target density and set up sampling problem
@@ -248,7 +247,11 @@ At the base level, we specify the number of steps in the chain with the entry "N
   Eigen::VectorXd sampMom3 = samps->CentralMoment(3);
   std::cout << "\nSample Third Moment = \n" << sampMom3 << std::endl << std::endl;
 
-  // Test that we make it here - RWH
-  BOOST_CHECK( true );
+  SUCCEED();
+}
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }
 

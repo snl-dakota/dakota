@@ -36,8 +36,7 @@
 #include <string>
 #include <map>
 
-#define BOOST_TEST_MODULE dakota_opt_api_traits
-#include <boost/test/included/unit_test.hpp>
+#include <gtest/gtest.h>
 
 
 using namespace Dakota;
@@ -110,7 +109,7 @@ namespace {
 
     // Test Traits
     method_iter.reset( new Iterator(traits) );
-    BOOST_CHECK( method_iter->traits()->is_derived() );
+    EXPECT_TRUE( method_iter->traits()->is_derived() );
 
     for( int i=0; i<2; ++i )
       for( int j=0; j<2; ++j )
@@ -119,14 +118,14 @@ namespace {
           {
             is_consistent_enums  = check_variables(methodName,            i, j, k, l, continuous_only_enum);
             is_consistent_traits = check_variables(method_iter->traits(), i, j, k, l, continuous_only_traits);
-            BOOST_CHECK( is_consistent_enums  == is_consistent_traits );
-            BOOST_CHECK( continuous_only_enum == continuous_only_traits );
+            EXPECT_TRUE( (is_consistent_enums  == is_consistent_traits) );
+            EXPECT_TRUE( (continuous_only_enum == continuous_only_traits) );
           }
   }
 }
 
 
-BOOST_AUTO_TEST_CASE(test_opt_api_traits_var_consistency)
+TEST(opt_api_traits_tests, test_opt_api_traits_var_consistency)
 {
   // Test various TPL Traits as they become available
 #ifdef DAKOTA_HOPS
@@ -146,3 +145,8 @@ BOOST_AUTO_TEST_CASE(test_opt_api_traits_var_consistency)
 }
 
 //----------------------------------------------------------------
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

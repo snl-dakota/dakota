@@ -10,8 +10,7 @@
 #include "util_windows.hpp"
 
 #include "Teuchos_SerialDenseHelpers.hpp"
-#define BOOST_TEST_MODULE dakota_teuchos_eigen_conversion
-#include <boost/test/included/unit_test.hpp>
+#include <gtest/gtest.h>
 #include "util_common.hpp"
 #include "util_data_types.hpp"
 
@@ -49,7 +48,7 @@ RealVector create_test_vector_teuchos() {
   return test_vector_teuchos;
 }
 
-BOOST_AUTO_TEST_CASE(util_matrix_eigen_to_teuchos) {
+TEST(TeuchosEigenConversion_tests, util_matrix_eigen_to_teuchos) {
   MatrixXd eigen_mat = create_test_matrix_eigen();
   RealMatrix teuchos_mat_gold = create_test_matrix_teuchos();
 
@@ -64,10 +63,10 @@ BOOST_AUTO_TEST_CASE(util_matrix_eigen_to_teuchos) {
   teuchos_mat.print(std::cout);
   */
 
-  BOOST_CHECK(matrix_equals(teuchos_mat, teuchos_mat_gold, 1.0e-10));
+  EXPECT_TRUE(matrix_equals(teuchos_mat, teuchos_mat_gold, 1.0e-10));
 }
 
-BOOST_AUTO_TEST_CASE(util_matrix_teuchos_to_eigen) {
+TEST(TeuchosEigenConversion_tests, util_matrix_teuchos_to_eigen) {
   RealMatrix teuchos_mat = create_test_matrix_teuchos();
   MatrixXd eigen_mat_gold = create_test_matrix_eigen();
 
@@ -81,10 +80,10 @@ BOOST_AUTO_TEST_CASE(util_matrix_teuchos_to_eigen) {
   std::cout << eigen_mat << std::endl;
   */
 
-  BOOST_CHECK(matrix_equals(eigen_mat, eigen_mat_gold, 1.0e-10));
+  EXPECT_TRUE(matrix_equals(eigen_mat, eigen_mat_gold, 1.0e-10));
 }
 
-BOOST_AUTO_TEST_CASE(util_vector_eigen_to_teuchos) {
+TEST(TeuchosEigenConversion_tests, util_vector_eigen_to_teuchos) {
   VectorXd eigen_vec = create_test_vector_eigen();
   RealMatrix teuchos_vec_gold = create_test_vector_teuchos();
 
@@ -97,10 +96,10 @@ BOOST_AUTO_TEST_CASE(util_vector_eigen_to_teuchos) {
   teuchos_vec.print(std::cout);
   */
 
-  BOOST_CHECK(matrix_equals(teuchos_vec, teuchos_vec_gold, 1.0e-10));
+  EXPECT_TRUE(matrix_equals(teuchos_vec, teuchos_vec_gold, 1.0e-10));
 }
 
-BOOST_AUTO_TEST_CASE(util_vector_teuchos_to_eigen) {
+TEST(TeuchosEigenConversion_tests, util_vector_teuchos_to_eigen) {
   RealVector teuchos_vec = create_test_vector_teuchos();
   VectorXd eigen_vec_gold = create_test_vector_eigen();
 
@@ -113,7 +112,12 @@ BOOST_AUTO_TEST_CASE(util_vector_teuchos_to_eigen) {
   std::cout << eigen_vec << std::endl;
   */
 
-  BOOST_CHECK(matrix_equals(eigen_vec, eigen_vec_gold, 1.0e-10));
+  EXPECT_TRUE(matrix_equals(eigen_vec, eigen_vec_gold, 1.0e-10));
 }
 
 }  // namespace
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

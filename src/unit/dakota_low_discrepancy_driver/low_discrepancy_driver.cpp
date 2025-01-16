@@ -17,8 +17,7 @@
 
 #include "opt_tpl_test.hpp"
 
-#define BOOST_TEST_MODULE dakota_low_discrepancy_driver
-#include <boost/test/included/unit_test.hpp>
+#include <gtest/gtest.h>
 
 namespace DakotaUnitTest {
 
@@ -33,7 +32,7 @@ namespace TestLowDiscrepancyDriver {
 // +-------------------------------------------------------------------------+
 // |                         Check valid input file                          |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(LowDiscrepancyDriver_check_valid_input_file)
+TEST(low_discrepancy_driver_tests, LowDiscrepancyDriver_check_valid_input_file)
 {
   // Example dakota input specification
   char dakota_input[] =
@@ -91,7 +90,7 @@ BOOST_AUTO_TEST_CASE(LowDiscrepancyDriver_check_valid_input_file)
   {
     for( size_t col = 0; col < 3; col++)
     {
-      BOOST_CHECK_CLOSE(samples[col][row], exact[row][col], 1e-4);
+      EXPECT_NEAR(samples[col][row], exact[row][col], 1e-4);
     }
   }
 }
@@ -99,7 +98,7 @@ BOOST_AUTO_TEST_CASE(LowDiscrepancyDriver_check_valid_input_file)
 // +-------------------------------------------------------------------------+
 // |                           Refinement samples                            |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(LowDiscrepancyDriver_check_refinement_samples)
+TEST(low_discrepancy_driver_tests, LowDiscrepancyDriver_check_refinement_samples)
 {
   // Example dakota input specification
   char dakota_input[] =
@@ -163,7 +162,7 @@ BOOST_AUTO_TEST_CASE(LowDiscrepancyDriver_check_refinement_samples)
   {
     for( size_t col = 0; col < 3; col++)
     {
-      BOOST_CHECK_CLOSE(samples[col][row], exact[row][col], 1e-4);
+      EXPECT_NEAR(samples[col][row], exact[row][col], 1e-4);
     }
   }
 }
@@ -171,7 +170,7 @@ BOOST_AUTO_TEST_CASE(LowDiscrepancyDriver_check_refinement_samples)
 // +-------------------------------------------------------------------------+
 // |                      Check normal random samples                        |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(LowDiscrepancyDriver_check_normal_random_samples)
+TEST(low_discrepancy_driver_tests, LowDiscrepancyDriver_check_normal_random_samples)
 {
   // Example dakota input specification
   char dakota_input[] =
@@ -238,16 +237,16 @@ BOOST_AUTO_TEST_CASE(LowDiscrepancyDriver_check_normal_random_samples)
 
   // Check values
   double TOL = 1e-3;
-  BOOST_CHECK_SMALL(std::abs(m1 - 0), TOL);
-  BOOST_CHECK_SMALL(std::abs(m2 - 1), TOL);
-  BOOST_CHECK_SMALL(std::abs(s1 - 1), TOL);
-  BOOST_CHECK_SMALL(std::abs(s2 - 0.5), TOL);
+  EXPECT_LT(std::abs(m1 - 0), TOL);
+  EXPECT_LT(std::abs(m2 - 1), TOL);
+  EXPECT_LT(std::abs(s1 - 1), TOL);
+  EXPECT_LT(std::abs(s2 - 0.5), TOL);
 }
 
 // +-------------------------------------------------------------------------+
 // |                   Check transformed uniform samples                     |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(LowDiscrepancyDriver_check_transformed_uniform_samples)
+TEST(low_discrepancy_driver_tests, LowDiscrepancyDriver_check_transformed_uniform_samples)
 {
   // Example dakota input specification
   char dakota_input[] =
@@ -305,7 +304,7 @@ BOOST_AUTO_TEST_CASE(LowDiscrepancyDriver_check_transformed_uniform_samples)
   {
     for( size_t col = 0; col < 2; col++ )
     {
-      BOOST_CHECK_CLOSE(samples[col][row], exact[row][col], 1e-4);
+      EXPECT_NEAR(samples[col][row], exact[row][col], 1e-4);
     }
   }
 }
@@ -313,7 +312,7 @@ BOOST_AUTO_TEST_CASE(LowDiscrepancyDriver_check_transformed_uniform_samples)
 // +-------------------------------------------------------------------------+
 // |                    Check active variables sampling                      |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(LowDiscrepancyDriver_check_active_variables_sampling)
+TEST(low_discrepancy_driver_tests, LowDiscrepancyDriver_check_active_variables_sampling)
 {
   // Example dakota input specification
   char dakota_input[] =
@@ -364,15 +363,15 @@ BOOST_AUTO_TEST_CASE(LowDiscrepancyDriver_check_active_variables_sampling)
   // Check values of the lattice points
   for ( size_t row = 0; row < 5; row++ )
   {
-    BOOST_CHECK_CLOSE(samples[0][row], 0.6, 1e-8);
-    BOOST_CHECK_CLOSE(samples[1][row], 0.7, 1e-8);
+    EXPECT_NEAR(samples[0][row], 0.6, 1e-8);
+    EXPECT_NEAR(samples[1][row], 0.7, 1e-8);
   }
 }
 
 // +-------------------------------------------------------------------------+
 // |                Sample from correlated random variables                  |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(LowDiscrepancyDriver_sample_correlated_distributions)
+TEST(low_discrepancy_driver_tests, LowDiscrepancyDriver_sample_correlated_distributions)
 {
   // Example dakota input specification
   char dakota_input[] =
@@ -452,17 +451,17 @@ BOOST_AUTO_TEST_CASE(LowDiscrepancyDriver_sample_correlated_distributions)
 
   // Check values
   double TOL = 1e-3;
-  BOOST_CHECK_SMALL(std::abs(m1 - 0), TOL);
-  BOOST_CHECK_SMALL(std::abs(m2 - 0), TOL);
-  BOOST_CHECK_SMALL(std::abs(s1 - 1), TOL);
-  BOOST_CHECK_SMALL(std::abs(s2 - 1), TOL);
-  BOOST_CHECK_SMALL(std::abs(c - 0.9), TOL);
+  EXPECT_LT(std::abs(m1 - 0), TOL);
+  EXPECT_LT(std::abs(m2 - 0), TOL);
+  EXPECT_LT(std::abs(s1 - 1), TOL);
+  EXPECT_LT(std::abs(s2 - 1), TOL);
+  EXPECT_LT(std::abs(c - 0.9), TOL);
 }
 
 // +-------------------------------------------------------------------------+
 // |                  Cannot sample discrete distributions                   |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(LowDiscrepancyDriver_check_discrete_distributions)
+TEST(low_discrepancy_driver_tests, LowDiscrepancyDriver_check_discrete_distributions)
 {
   // Make sure an exception is thrown instead of an exit code
   Dakota::abort_mode = Dakota::ABORT_THROWS;
@@ -506,7 +505,7 @@ BOOST_AUTO_TEST_CASE(LowDiscrepancyDriver_check_discrete_distributions)
 
   // Check that correlated random variables throws an exception
   Dakota::RealMatrix points(2, 1);
-  BOOST_CHECK_THROW(
+  EXPECT_THROW(
     env.execute(),
     std::system_error
   );
@@ -517,3 +516,8 @@ BOOST_AUTO_TEST_CASE(LowDiscrepancyDriver_check_discrete_distributions)
 } // end namespace TestLowDiscrepancy
 
 } // end namespace Dakota
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

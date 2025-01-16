@@ -14,8 +14,7 @@
 
 #include <string>
 
-#define BOOST_TEST_MODULE dakota_expt_data
-#include <boost/test/included/unit_test.hpp>
+#include <gtest/gtest.h>
 
 
 using namespace Dakota;
@@ -46,7 +45,7 @@ namespace {
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_expt_data_basic)
+TEST(exp_data_tests, test_expt_data_basic)
 {
   // create an SRD with 0 scalars and 1 field of length NUM_FIELD_VALUES
   IntVector field_lengths(NUM_FIELDS);
@@ -70,46 +69,58 @@ BOOST_AUTO_TEST_CASE(test_expt_data_basic)
   expt_data.load_data("expt_data unit test call", gen_mock_vars());
 
   // Test general correctness
-  BOOST_CHECK( expt_data.num_experiments() == NUM_EXPTS );
-  BOOST_CHECK( expt_data.num_scalar_primary() == 0 );
-  BOOST_CHECK( expt_data.num_fields() == NUM_FIELDS );
+  EXPECT_TRUE(( expt_data.num_experiments() == NUM_EXPTS ));
+  EXPECT_TRUE(( expt_data.num_scalar_primary() == 0 ));
+  EXPECT_TRUE(( expt_data.num_fields() == NUM_FIELDS ));
 
   // Test data correctness
   RealVector field_vals_view = expt_data.field_data_view(0, 0);
   std::string filename = working_dir + "/" + base_name;
   RealVector gold_dat;
   read_field_values(filename, 1, gold_dat);
-  BOOST_CHECK( gold_dat.length() == field_vals_view.length() );
-  for( int i=0; i<field_vals_view.length(); ++i )
-    BOOST_CHECK_CLOSE( gold_dat[i], field_vals_view[i], 1.e-12 );
+  EXPECT_TRUE(( gold_dat.length() == field_vals_view.length() ));
+  for( int i=0; i<field_vals_view.length(); ++i ) {
+    if (field_vals_view[i] == 0.) {
+      EXPECT_LT(std::fabs(gold_dat[i]), 1.e-12/100. );
+    }
+    else {
+      EXPECT_LT(std::fabs(1. - gold_dat[i] / field_vals_view[i]), 1.e-12/100. );
+    }
+  }
 
   // Test coords correctness
   const RealMatrix field_coords_view = expt_data.field_coords_view(0, 0);
   RealMatrix gold_coords;
   read_coord_values(filename, 1, gold_coords);
-  BOOST_CHECK( gold_coords.numRows() == field_coords_view.numRows() );
-  BOOST_CHECK( gold_coords.numCols() == field_coords_view.numCols() );
+  EXPECT_TRUE(( gold_coords.numRows() == field_coords_view.numRows() ));
+  EXPECT_TRUE(( gold_coords.numCols() == field_coords_view.numCols() ));
   for( int i=0; i<field_coords_view.numRows(); ++i )
-    for( int j=0; j<field_coords_view.numCols(); ++j )
-      BOOST_CHECK_CLOSE( gold_coords(i,j), field_coords_view(i,j), 1.e-12 );
+    for( int j=0; j<field_coords_view.numCols(); ++j ) {
+      if (field_coords_view(i,j) == 0.) {
+        EXPECT_LT(std::fabs(gold_coords(i,j)), 1.e-12/100. );
+      }
+      else {
+        EXPECT_LT(std::fabs(1. - gold_coords(i,j) / field_coords_view(i,j)), 1.e-12/100. );
+      }
+    }
 
   // Test config vars correctness
   // BMA TODO: Need a stronger test here across variable types
   const RealVector& config_vars =
     expt_data.configuration_variables()[0].inactive_continuous_variables();
-  BOOST_CHECK( config_vars.length() == NUM_CONFIG_VARS );
+  EXPECT_TRUE(( config_vars.length() == NUM_CONFIG_VARS ));
 
   // Test covariance correctness
   RealVector resid_vals(field_vals_view.length());
   resid_vals = 1.0;
   Real triple_prod = expt_data.apply_covariance(resid_vals, 0);
   //std::cout << "triple_prod = " << triple_prod << std::endl;
-  BOOST_CHECK_CLOSE( triple_prod, 3.06251e+14, 2.e-4 );
+  EXPECT_LT(std::fabs(1. - triple_prod / 3.06251e+14), 2.e-4/100. );
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_expt_data_twofield)
+TEST(exp_data_tests, test_expt_data_twofield)
 {
   const size_t  SECOND_NUM_FIELD_VALUES = 9;
 
@@ -138,9 +149,9 @@ BOOST_AUTO_TEST_CASE(test_expt_data_twofield)
   expt_data.load_data("expt_data unit test call", gen_mock_vars());
 
   // Test general correctness
-  BOOST_CHECK( expt_data.num_experiments() == NUM_EXPTS );
-  BOOST_CHECK( expt_data.num_scalar_primary() == 0 );
-  BOOST_CHECK( expt_data.num_fields() == NUM_FIELDS+1 );
+  EXPECT_TRUE(( expt_data.num_experiments() == NUM_EXPTS ));
+  EXPECT_TRUE(( expt_data.num_scalar_primary() == 0 ));
+  EXPECT_TRUE(( expt_data.num_fields() == NUM_FIELDS+1 ));
 
   // Test data correctness
   RealVector voltage_vals_view = expt_data.field_data_view(0 /* response */, 0 /* experiment */);
@@ -151,12 +162,18 @@ BOOST_AUTO_TEST_CASE(test_expt_data_twofield)
   RealVector gold_dat2;
   read_field_values(filename1, 1, gold_dat1);
   read_field_values(filename2, 1, gold_dat2);
-  BOOST_CHECK( gold_dat1.length() == voltage_vals_view.length() );
-  BOOST_CHECK( gold_dat2.length() == pressure_vals_view.length() );
-  for( int i=0; i<voltage_vals_view.length(); ++i )
-    BOOST_CHECK_CLOSE( gold_dat1[i], voltage_vals_view[i], 1.e-12 );
+  EXPECT_TRUE(( gold_dat1.length() == voltage_vals_view.length() ));
+  EXPECT_TRUE(( gold_dat2.length() == pressure_vals_view.length() ));
+  for( int i=0; i<voltage_vals_view.length(); ++i ) {
+    if (voltage_vals_view[i] == 0.) {
+      EXPECT_LT(std::fabs(gold_dat1[i]), 1.e-12/100. );
+    }
+    else {
+      EXPECT_LT(std::fabs(1. - gold_dat1[i] / voltage_vals_view[i]), 1.e-12/100. );
+    }
+  }
   for( int i=0; i<pressure_vals_view.length(); ++i )
-    BOOST_CHECK_CLOSE( gold_dat2[i], pressure_vals_view[i], 1.e-12 );
+    EXPECT_LT(std::fabs(1. - gold_dat2[i] / pressure_vals_view[i]), 1.e-12/100. );
 
   // Test coords correctness
   RealMatrix field_coords_view1 = expt_data.field_coords_view(0, 0);
@@ -165,34 +182,40 @@ BOOST_AUTO_TEST_CASE(test_expt_data_twofield)
   RealMatrix gold_coords2;
   read_coord_values(filename1, 1, gold_coords1);
   read_coord_values(filename2, 1, gold_coords2);
-  BOOST_CHECK( gold_coords1.numRows() == field_coords_view1.numRows() );
-  BOOST_CHECK( gold_coords1.numCols() == field_coords_view1.numCols() );
-  BOOST_CHECK( gold_coords2.numRows() == field_coords_view2.numRows() );
-  BOOST_CHECK( gold_coords2.numCols() == field_coords_view2.numCols() );
+  EXPECT_TRUE(( gold_coords1.numRows() == field_coords_view1.numRows() ));
+  EXPECT_TRUE(( gold_coords1.numCols() == field_coords_view1.numCols() ));
+  EXPECT_TRUE(( gold_coords2.numRows() == field_coords_view2.numRows() ));
+  EXPECT_TRUE(( gold_coords2.numCols() == field_coords_view2.numCols() ));
   for( int i=0; i<field_coords_view1.numRows(); ++i )
-    for( int j=0; j<field_coords_view1.numCols(); ++j )
-      BOOST_CHECK_CLOSE( gold_coords1(i,j), field_coords_view1(i,j), 1.e-12 );
+    for( int j=0; j<field_coords_view1.numCols(); ++j ) {
+      if (field_coords_view1(i,j) == 0.) {
+        EXPECT_LT(std::fabs(gold_coords1(i,j)), 1.e-12/100. );
+      }
+      else {
+        EXPECT_LT(std::fabs(1. - gold_coords1(i,j) / field_coords_view1(i,j)), 1.e-12/100. );
+      }
+    }
   for( int i=0; i<field_coords_view2.numRows(); ++i )
     for( int j=0; j<field_coords_view2.numCols(); ++j )
-      BOOST_CHECK_CLOSE( gold_coords2(i,j), field_coords_view2(i,j), 1.e-12 );
+      EXPECT_LT(std::fabs(1. - gold_coords2(i,j) / field_coords_view2(i,j)), 1.e-12/100. );
 
   // Test config vars correctness
   // BMA TODO: Need a stronger test here across variable types
   const RealVector& config_vars =
     expt_data.configuration_variables()[0].inactive_continuous_variables();
-  BOOST_CHECK( config_vars.length() == NUM_CONFIG_VARS );
+  EXPECT_TRUE(( config_vars.length() == NUM_CONFIG_VARS ));
 
   // Test covariance correctness
   RealVector resid_vals(voltage_vals_view.length() + pressure_vals_view.length());
   resid_vals = 1.0;
   Real triple_prod = expt_data.apply_covariance(resid_vals, 0);
   //std::cout << "triple_prod = " << triple_prod << std::endl;
-  BOOST_CHECK_CLOSE( triple_prod, 3.06251e+14, 2.e-4 );
+  EXPECT_LT(std::fabs(1. - triple_prod / 3.06251e+14), 2.e-4/100. );
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_expt_data_allowNoConfigFile)
+TEST(exp_data_tests, test_expt_data_allowNoConfigFile)
 {
   // Create an ExperimentData object that expects NUM_CONFIG_VARS > 0 but
   // that does not have a corresponding experiment.1.config file.
@@ -201,8 +224,13 @@ BOOST_AUTO_TEST_CASE(test_expt_data_allowNoConfigFile)
   ExperimentData expt_data(NUM_EXPTS, NUM_CONFIG_VARS, working_dir, 
 			   mock_srd, variance_types, 0 /* SILENT_OUTPUT */);
   Dakota::abort_mode = ABORT_THROWS;
-  BOOST_CHECK_THROW(
+  EXPECT_THROW(
       expt_data.load_data("expt_data unit test call", gen_mock_vars()),
       std::runtime_error );
   Dakota::abort_mode = ABORT_EXITS;
+}
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

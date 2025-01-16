@@ -18,14 +18,13 @@
 
 #include <string>
 
-#define BOOST_TEST_MODULE dakota_stat_utils
-#include <boost/test/included/unit_test.hpp>
+#include <gtest/gtest.h>
 
 using namespace Dakota;
 
 //------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_stat_utils_system_seed)
+TEST(stat_utils_tests, test_stat_utils_system_seed)
 {
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -39,12 +38,12 @@ BOOST_AUTO_TEST_CASE(test_stat_utils_system_seed)
       ++num_out_of_bounds_seeds;
     std::this_thread::sleep_for(std::chrono::microseconds(dis(gen)));
   }
-  BOOST_CHECK(num_out_of_bounds_seeds == 0);
+  EXPECT_TRUE((num_out_of_bounds_seeds == 0));
 }
 
 //------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_stat_utils_kl_divergence)
+TEST(stat_utils_tests, test_stat_utils_kl_divergence)
 {
   // Read in matrices 
   std::ifstream infile1("stat_util_test_files/Matrix1.txt");
@@ -60,12 +59,12 @@ BOOST_AUTO_TEST_CASE(test_stat_utils_kl_divergence)
   Real kl_est = NonDBayesCalibration::knn_kl_div(dist1, dist2, 1);
 
   Real gold_kl = 0.02459600677;
-  BOOST_CHECK_CLOSE(kl_est, gold_kl, 1.e-3);
+  EXPECT_LT(std::fabs(1. - kl_est / gold_kl), 1.e-3/100. );
 }
 
 //------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_stat_utils_mutual_info_ksg1)
+TEST(stat_utils_tests, test_stat_utils_mutual_info_ksg1)
 {
   // Read in matrices 
   std::ifstream infile1("stat_util_test_files/Matrix1.txt");
@@ -81,12 +80,12 @@ BOOST_AUTO_TEST_CASE(test_stat_utils_mutual_info_ksg1)
   Real mutualinfo_est = NonDBayesCalibration::knn_mutual_info(Xmatrix, 1, 1, 0);
 
   Real gold_mi = -0.02189544513;
-  BOOST_CHECK_CLOSE(mutualinfo_est, gold_mi, 1.e-3);
+  EXPECT_LT(std::fabs(1. - mutualinfo_est / gold_mi), 1.e-3/100. );
 }
 
 //------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_stat_utils_mutual_info_ksg2)
+TEST(stat_utils_tests, test_stat_utils_mutual_info_ksg2)
 {
   // Read in matrices 
   std::ifstream infile1("stat_util_test_files/Matrix1.txt");
@@ -102,12 +101,12 @@ BOOST_AUTO_TEST_CASE(test_stat_utils_mutual_info_ksg2)
   Real mutualinfo_est = NonDBayesCalibration::knn_mutual_info(Xmatrix, 1, 1, 1);
 
   Real gold_mi = -0.0561375052;
-  BOOST_CHECK_CLOSE(mutualinfo_est, gold_mi, 5.e-1);
+  EXPECT_LT(std::fabs(1. - mutualinfo_est / gold_mi), 5.e-1/100. );
 }
 
 //------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_stat_utils_batch_means_mean)
+TEST(stat_utils_tests, test_stat_utils_batch_means_mean)
 {
   // Read in matrices 
   std::ifstream infile1("stat_util_test_files/Matrix1.txt");
@@ -123,13 +122,13 @@ BOOST_AUTO_TEST_CASE(test_stat_utils_batch_means_mean)
 
   Real gold_lower_int = -6.3120595090e-02;
   Real gold_upper_int = 8.1516649910e-02;
-  BOOST_CHECK_CLOSE(interval_matrix[0][0], gold_lower_int, 1.e-3);
-  BOOST_CHECK_CLOSE(interval_matrix[0][1], gold_upper_int, 1.e-3);
+  EXPECT_LT(std::fabs(1. - interval_matrix[0][0] / gold_lower_int), 1.e-3/100. );
+  EXPECT_LT(std::fabs(1. - interval_matrix[0][1] / gold_upper_int), 1.e-3/100. );
 }
 
 //------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_stat_utils_batch_means_variance)
+TEST(stat_utils_tests, test_stat_utils_batch_means_variance)
 {
   // Read in matrices 
   std::ifstream infile1("stat_util_test_files/Matrix1.txt");
@@ -145,13 +144,13 @@ BOOST_AUTO_TEST_CASE(test_stat_utils_batch_means_variance)
 
   Real gold_lower_int = 9.1432956019e-01;
   Real gold_upper_int = 1.0688302101e+00;
-  BOOST_CHECK_CLOSE(interval_matrix[0][0], gold_lower_int, 1.e-3);
-  BOOST_CHECK_CLOSE(interval_matrix[0][1], gold_upper_int, 1.e-3);
+  EXPECT_LT(std::fabs(1. - interval_matrix[0][0] / gold_lower_int), 1.e-3/100. );
+  EXPECT_LT(std::fabs(1. - interval_matrix[0][1] / gold_upper_int), 1.e-3/100. );
 }
 
 //------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_stat_utils_batch_means_percentile)
+TEST(stat_utils_tests, test_stat_utils_batch_means_percentile)
 {
   // Read in matrices 
   std::ifstream infile1("stat_util_test_files/Matrix1.txt");
@@ -168,8 +167,13 @@ BOOST_AUTO_TEST_CASE(test_stat_utils_batch_means_percentile)
 
   Real gold_lower_int = 1.5047654078e+00;
   Real gold_upper_int = 1.7926345922e+00;
-  BOOST_CHECK_CLOSE(interval_matrix[0][0], gold_lower_int, 1.e-3);
-  BOOST_CHECK_CLOSE(interval_matrix[0][1], gold_upper_int, 1.e-3);
+  EXPECT_LT(std::fabs(1. - interval_matrix[0][0] / gold_lower_int), 1.e-3/100. );
+  EXPECT_LT(std::fabs(1. - interval_matrix[0][1] / gold_upper_int), 1.e-3/100. );
 }
 
 //------------------------------------
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

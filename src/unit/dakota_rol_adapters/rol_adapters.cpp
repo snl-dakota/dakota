@@ -18,8 +18,7 @@
 // #include "ROL_Teuchos_Constraint.hpp"
 #include "ROL_Bounds.hpp"
 
-#define BOOST_TEST_MODULE dakota_rol_adapters
-#include <boost/test/included/unit_test.hpp>
+#include <gtest/gtest.h>
 
 #include "opt_tpl_test_fixture.hpp"
 
@@ -97,7 +96,7 @@ void rol_quad_solv()
   LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    BOOST_CHECK( false ); // This test only works for serial builds
+    FAIL(); // This test only works for serial builds
 
   Dakota::Model & model = *(env.problem_description_db().model_list().begin());
 
@@ -140,25 +139,31 @@ void rol_quad_solv()
   }
   catch (std::logic_error err) {
     *outStream << err.what() << "\n";
-    BOOST_CHECK( false );
+    FAIL();
   }; // end try
 
   // Assess correctness
-  BOOST_CHECK_CLOSE( (*x_rcp)[0], -1.50, 1.e-4 );
-  BOOST_CHECK_CLOSE( (*x_rcp)[1],  0.75, 1.e-3 );
+  EXPECT_LT(std::fabs(1. - (*x_rcp)[0] / -1.50), 1.e-4/100. );
+  EXPECT_LT(std::fabs(1. - (*x_rcp)[1] /  0.75), 1.e-3/100. );
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(a_rol_std_quad)
+TEST(rol_adapters_test, a_rol_std_quad)
 {
   rol_quad_solv<StdFactory>();
 }
 
 //----------------------------------------------------------------
 
- // BOOST_AUTO_TEST_CASE(a_rol_teuchos_quad)
+ // TEST(rol_adapters_test, a_rol_teuchos_quad)
  // {
  //   rol_quad_solv<TeuchosSerialDenseFactory>();
  // }
 
+//----------------------------------------------------------------
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

@@ -11,10 +11,9 @@
 #include "opt_tpl_test.hpp"
 #include "opt_tpl_test_fixture.hpp"  // for plugin interface
 
-#define BOOST_TEST_MODULE dakota_opt_tpl_rol_pbs
-#include <boost/test/included/unit_test.hpp>
+#include <gtest/gtest.h>
 
-BOOST_AUTO_TEST_CASE(test_simple_eq_cons)
+TEST(opt_tpl_rol_test_rol_pbs_tests, test_simple_eq_cons)
 {
   /// Dakota input string:
   static const char text_book_input[] =
@@ -50,7 +49,7 @@ BOOST_AUTO_TEST_CASE(test_simple_eq_cons)
   serial_interface_plugin(env, "rol_testers", rol_iface);
 
   if (env.parallel_library().mpirun_flag())
-    BOOST_CHECK( false ); // This test only works for serial builds
+    FAIL(); // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -70,18 +69,18 @@ BOOST_AUTO_TEST_CASE(test_simple_eq_cons)
 
   sol_x -= x_best;
   double max_error_x = sol_x.normInf();
-  BOOST_CHECK_LT(max_error_x, max_tol);
+  EXPECT_LT(max_error_x, max_tol);
 
   sol_f -= f_best;
   double max_error_f = sol_f.normInf();
   // This fails but previously passed with TEST_INEQUALITY
   //   (which I don't think was the intended check) - RWH
   // ------ TODO revisit -------
-  //BOOST_CHECK_LT(max_error_f, max_tol);
-  BOOST_CHECK(max_error_f != max_tol);
+  //EXPECT_LT(max_error_f, max_tol);
+  EXPECT_TRUE((max_error_f != max_tol));
 }
 
-BOOST_AUTO_TEST_CASE(test_paraboloid_circle)
+TEST(opt_tpl_rol_test_rol_pbs_tests, test_paraboloid_circle)
 {
   /// Dakota input string:
   static const char text_book_input[] =
@@ -117,7 +116,7 @@ BOOST_AUTO_TEST_CASE(test_paraboloid_circle)
   serial_interface_plugin(env, "rol_testers", rol_iface);
 
   if (env.parallel_library().mpirun_flag())
-    BOOST_CHECK( false ); // This test only works for serial builds
+    FAIL(); // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -137,13 +136,18 @@ BOOST_AUTO_TEST_CASE(test_paraboloid_circle)
 
   sol_x -= x_best;
   double max_error_x = sol_x.normInf();
-  BOOST_CHECK_LT(max_error_x, max_tol);
+  EXPECT_LT(max_error_x, max_tol);
 
   sol_f -= f_best;
   double max_error_f = sol_f.normInf();
   // This fails but previously passed with TEST_INEQUALITY
   //   (which I don't think was the intended check) - RWH
   // ------ TODO revisit -------
-  //BOOST_CHECK_LT(max_error_f, max_tol);
-  BOOST_CHECK(max_error_f != max_tol);
+  //EXPECT_LT(max_error_f, max_tol);
+  EXPECT_TRUE((max_error_f != max_tol));
+}
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

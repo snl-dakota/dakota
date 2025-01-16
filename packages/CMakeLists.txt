@@ -16,6 +16,8 @@ include(ManageRelocatablePackage)
 ManageRelocatablePackage(CONMIN external/CONMIN)
 ManageRelocatablePackage(NCSUOPT external/NCSUOpt)
 
+add_subdirectory(external/googletest)
+
 add_subdirectory(external/nidr)
 
 if(HAVE_AMPL)

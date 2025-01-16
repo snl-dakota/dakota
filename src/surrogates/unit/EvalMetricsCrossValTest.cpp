@@ -12,14 +12,13 @@
 #endif
 #include "SurrogatesPolynomialRegression.hpp"
 
-#define BOOST_TEST_MODULE surrogates_EvalMetricsCrossValTest
-#include <boost/test/included/unit_test.hpp>
+#include <gtest/gtest.h>
 
 using namespace dakota;
 using namespace dakota::util;
 using namespace dakota::surrogates;
 
-BOOST_AUTO_TEST_CASE(test_surrogates_eval_metrics_and_cross_validation) {
+TEST(EvalMetricsCrossValTest_tests, test_surrogates_eval_metrics_and_cross_validation) {
   /* num_samples x num_features */
   MatrixXd xs_u(7, 1);
   /* num_samples x num_qoi */
@@ -63,7 +62,7 @@ BOOST_AUTO_TEST_CASE(test_surrogates_eval_metrics_and_cross_validation) {
   VectorXd poly_mvals =
       poly.evaluate_metrics(metrics_names, eval_pts, truth_pred);
   metrics_diff = (poly_mvals - poly_gold_mvals).norm();
-  BOOST_CHECK(metrics_diff < metrics_difftol);
+  EXPECT_TRUE((metrics_diff < metrics_difftol));
 
   std::cout << "\n\nCubic polynomial metrics:\n";
   for (int m = 0; m < metrics_names.size(); m++) {
@@ -85,7 +84,7 @@ BOOST_AUTO_TEST_CASE(test_surrogates_eval_metrics_and_cross_validation) {
 
   VectorXd gp_mvals = gp.evaluate_metrics(metrics_names, eval_pts, truth_pred);
   metrics_diff = (gp_mvals - gp_gold_mvals).norm();
-  BOOST_CHECK(metrics_diff < metrics_difftol);
+  EXPECT_TRUE((metrics_diff < metrics_difftol));
 
   std::cout << "\n\nGP metrics:\n";
   for (int m = 0; m < metrics_names.size(); m++) {
@@ -95,7 +94,7 @@ BOOST_AUTO_TEST_CASE(test_surrogates_eval_metrics_and_cross_validation) {
 #endif
 }
 
-BOOST_AUTO_TEST_CASE(test_surrogates_cross_validate) {
+TEST(EvalMetricsCrossValTest_tests, test_surrogates_cross_validate) {
   /* Cross-validation with the polynomial */
   const double cv_norm_difftol = 1.0e-5;
   double cv_diff;
@@ -130,7 +129,7 @@ BOOST_AUTO_TEST_CASE(test_surrogates_cross_validate) {
             << cross_val_metrics.transpose() << "\n";
 
   cv_diff = (cross_val_metrics - gold_poly_cv_metrics).norm();
-  BOOST_CHECK(cv_diff < cv_norm_difftol);
+  EXPECT_TRUE((cv_diff < cv_norm_difftol));
 
 #ifdef HAVE_ROL
   /* Cross-validation with the GP */
@@ -160,6 +159,11 @@ BOOST_AUTO_TEST_CASE(test_surrogates_cross_validate) {
             << cross_val_metrics.transpose() << "\n\n";
 
   cv_diff = (cross_val_metrics - gold_gp_cv_metrics).norm();
-  BOOST_CHECK(cv_diff < cv_norm_difftol);
+  EXPECT_TRUE((cv_diff < cv_norm_difftol));
 #endif
+}
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

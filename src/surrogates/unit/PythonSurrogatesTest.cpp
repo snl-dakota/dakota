@@ -9,7 +9,7 @@
 
 #include "SurrogatesPython.hpp"
 #include "util_common.hpp"
-#include <boost/test/minimal.hpp>
+#include <gtest/gtest.h>
 
 using namespace dakota;
 using namespace dakota::util;
@@ -41,7 +41,7 @@ void PythonRegressionSurrogate_straight_line_fit() {
   //std::cout << "approx_values: " << approx_values << std::endl;
   //std::cout << "expected_vals: " << expected_vals << std::endl;
 
-  BOOST_CHECK(
+  EXPECT_TRUE(
       matrix_equals(approx_values, expected_vals, 1.0e-5));
 }
 
@@ -49,13 +49,16 @@ void PythonRegressionSurrogate_straight_line_fit() {
 
 // --------------------------------------------------------------------------------
 
-int test_main(int argc, char* argv[])  // note the name!
+TEST(PythonSurrogateTest_tests, all_tests)
 {
   PythonRegressionSurrogate_straight_line_fit();
 
-  BOOST_CHECK(boost::exit_success == 0);
-
-  return boost::exit_success;
+  SUCCEED();
 }
 
 // --------------------------------------------------------------------------------
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

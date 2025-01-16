@@ -12,8 +12,7 @@
 #include "util_common.hpp"
 #include "util_data_types.hpp"
 
-#define BOOST_TEST_MODULE surrogates_GaussianProcessTest
-#include <boost/test/included/unit_test.hpp>
+#include <gtest/gtest.h>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -231,7 +230,7 @@ void get_2D_gp_golds_matern(VectorXd& gold_mean, VectorXd& gold_std_dev,
   }
 }
 
-BOOST_AUTO_TEST_CASE(test_surrogates_1D_gp_constructor_types) {
+TEST(GaussianProcessTest_tests, test_surrogates_1D_gp_constructor_types) {
   bool print_output = false;
 
   MatrixXd samples, cov, gold_cov, length_scale_bounds;
@@ -292,13 +291,13 @@ BOOST_AUTO_TEST_CASE(test_surrogates_1D_gp_constructor_types) {
       std::cout << cov << "\n";
     }
 
-    BOOST_CHECK(relative_allclose(mean, gold_mean, rel_float_tol));
-    BOOST_CHECK(relative_allclose(std_dev, gold_std_dev, 100 * rel_float_tol));
-    BOOST_CHECK(relative_allclose(cov, gold_cov, 100 * rel_float_tol));
+    EXPECT_TRUE(relative_allclose(mean, gold_mean, rel_float_tol));
+    EXPECT_TRUE(relative_allclose(std_dev, gold_std_dev, 100 * rel_float_tol));
+    EXPECT_TRUE(relative_allclose(cov, gold_cov, 100 * rel_float_tol));
   }
 }
 
-BOOST_AUTO_TEST_CASE(test_surrogates_1D_gp_with_trend_values_and_derivs) {
+TEST(GaussianProcessTest_tests, test_surrogates_1D_gp_with_trend_values_and_derivs) {
   bool print_output = false;
 
   MatrixXd samples, cov, gold_cov, length_scale_bounds;
@@ -350,7 +349,7 @@ BOOST_AUTO_TEST_CASE(test_surrogates_1D_gp_with_trend_values_and_derivs) {
     std::cout << cov << "\n";
   }
 
-  BOOST_CHECK(relative_allclose(mean, gold_mean, rel_float_tol));
+  EXPECT_TRUE(relative_allclose(mean, gold_mean, rel_float_tol));
 
   /* compute derivatives of GP with trend and check */
   const int eval_point_index = 0;
@@ -382,11 +381,11 @@ BOOST_AUTO_TEST_CASE(test_surrogates_1D_gp_with_trend_values_and_derivs) {
   grad_drop = log10(grad_fd_error(0, 0) / grad_fd_error.minCoeff());
   hessian_drop = log10(hessian_fd_error(0, 0) / hessian_fd_error.minCoeff());
 
-  BOOST_CHECK(grad_drop > 6.0);
-  BOOST_CHECK(hessian_drop > 3.0);
+  EXPECT_TRUE((grad_drop > 6.0));
+  EXPECT_TRUE((hessian_drop > 3.0));
 }
 
-BOOST_AUTO_TEST_CASE(test_surrogates_2D_gp_no_trend) {
+TEST(GaussianProcessTest_tests, test_surrogates_2D_gp_no_trend) {
   bool print_output = false;
 
   MatrixXd samples, cov, gold_cov, length_scale_bounds, eval_pts;
@@ -426,12 +425,12 @@ BOOST_AUTO_TEST_CASE(test_surrogates_2D_gp_no_trend) {
     std::cout << cov << "\n";
   }
 
-  BOOST_CHECK(relative_allclose(mean, gold_mean, rel_float_tol));
-  BOOST_CHECK(relative_allclose(std_dev, gold_std_dev, 100 * rel_float_tol));
-  BOOST_CHECK(relative_allclose(cov, gold_cov, 100 * rel_float_tol));
+  EXPECT_TRUE(relative_allclose(mean, gold_mean, rel_float_tol));
+  EXPECT_TRUE(relative_allclose(std_dev, gold_std_dev, 100 * rel_float_tol));
+  EXPECT_TRUE(relative_allclose(cov, gold_cov, 100 * rel_float_tol));
 }
 
-BOOST_AUTO_TEST_CASE(test_surrogates_2D_gp_with_trend_values_derivs_and_save_load) {
+TEST(GaussianProcessTest_tests, test_surrogates_2D_gp_with_trend_values_derivs_and_save_load) {
   bool print_output = false;
 
   MatrixXd samples, cov, gold_cov, length_scale_bounds, eval_pts;
@@ -495,9 +494,9 @@ BOOST_AUTO_TEST_CASE(test_surrogates_2D_gp_with_trend_values_derivs_and_save_loa
     std::cout << cov << "\n";
   }
 
-  BOOST_CHECK(relative_allclose(mean, gold_mean, rel_float_tol));
-  BOOST_CHECK(relative_allclose(std_dev, gold_std_dev, 100 * rel_float_tol));
-  BOOST_CHECK(relative_allclose(cov, gold_cov, 100 * rel_float_tol));
+  EXPECT_TRUE(relative_allclose(mean, gold_mean, rel_float_tol));
+  EXPECT_TRUE(relative_allclose(std_dev, gold_std_dev, 100 * rel_float_tol));
+  EXPECT_TRUE(relative_allclose(cov, gold_cov, 100 * rel_float_tol));
 
   /* compute derivatives of GP with trend and check */
   const int eval_point_index = 1;
@@ -514,8 +513,8 @@ BOOST_AUTO_TEST_CASE(test_surrogates_2D_gp_with_trend_values_derivs_and_save_loa
     std::cout << hessian << "\n\n";
   }
 
-  BOOST_CHECK(relative_allclose(grad, gold_grad, rel_float_tol));
-  BOOST_CHECK(relative_allclose(hessian, gold_hessian, rel_float_tol));
+  EXPECT_TRUE(relative_allclose(grad, gold_grad, rel_float_tol));
+  EXPECT_TRUE(relative_allclose(hessian, gold_hessian, rel_float_tol));
 
   MatrixXd grad_fd_error, hessian_fd_error;
   fd_check_gradient(gp, eval_point, grad_fd_error);
@@ -539,14 +538,14 @@ BOOST_AUTO_TEST_CASE(test_surrogates_2D_gp_with_trend_values_derivs_and_save_loa
     hessian_drop(i) =
         log10(hessian_fd_error.col(i)(0) / hessian_fd_error.col(i).minCoeff());
 
-    BOOST_CHECK(grad_drop(i) > 6.0);
-    BOOST_CHECK(hessian_drop(i) > 3.0);
+    EXPECT_TRUE((grad_drop(i) > 6.0));
+    EXPECT_TRUE((hessian_drop(i) > 3.0));
 
     if (i == 1) {
       i += 1;
       hessian_drop(i) = log10(hessian_fd_error.col(i)(0) /
                               hessian_fd_error.col(i).minCoeff());
-      BOOST_CHECK(hessian_drop(i) > 3.0);
+      EXPECT_TRUE((hessian_drop(i) > 3.0));
     }
   }
 
@@ -573,20 +572,20 @@ BOOST_AUTO_TEST_CASE(test_surrogates_2D_gp_with_trend_values_derivs_and_save_loa
 
     // Verify saved vs. loaded to tight tolerance
     const double tight_tol = 1.0e-16;
-    BOOST_CHECK(matrix_equals(mean_save, mean_load, tight_tol));
-    BOOST_CHECK(matrix_equals(grad_save, grad_load, tight_tol));
-    BOOST_CHECK(matrix_equals(hess_save, hess_load, tight_tol));
+    EXPECT_TRUE(matrix_equals(mean_save, mean_load, tight_tol));
+    EXPECT_TRUE(matrix_equals(grad_save, grad_load, tight_tol));
+    EXPECT_TRUE(matrix_equals(hess_save, hess_load, tight_tol));
 
     // Verify vs. original unit test
     get_gp_test_arrays(gp, eval_pts, mean_load, std_dev_load, cov_load);
-    BOOST_CHECK(relative_allclose(mean_load, gold_mean, rel_float_tol));
-    BOOST_CHECK(
+    EXPECT_TRUE(relative_allclose(mean_load, gold_mean, rel_float_tol));
+    EXPECT_TRUE(
         relative_allclose(std_dev_load, gold_std_dev, 100 * rel_float_tol));
-    BOOST_CHECK(relative_allclose(cov_load, gold_cov, 100 * rel_float_tol));
+    EXPECT_TRUE(relative_allclose(cov_load, gold_cov, 100 * rel_float_tol));
   }
 }
 
-BOOST_AUTO_TEST_CASE(test_surrogates_matern_32_gp) {
+TEST(GaussianProcessTest_tests, test_surrogates_matern_32_gp) {
   bool print_output = false;
 
   const std::string kernel_type = "Matern 3/2";
@@ -633,8 +632,8 @@ BOOST_AUTO_TEST_CASE(test_surrogates_matern_32_gp) {
     std::cout << std_dev << "\n";
   }
 
-  BOOST_CHECK(relative_allclose(mean, gold_mean, rel_float_tol));
-  BOOST_CHECK(relative_allclose(std_dev, gold_std_dev, rel_float_tol));
+  EXPECT_TRUE(relative_allclose(mean, gold_mean, rel_float_tol));
+  EXPECT_TRUE(relative_allclose(std_dev, gold_std_dev, rel_float_tol));
 
   /* compute gradient of GP and check */
   /* The Matern 3/2 GP produces C^1-smooth functions and therefore
@@ -658,7 +657,7 @@ BOOST_AUTO_TEST_CASE(test_surrogates_matern_32_gp) {
 
   double grad_drop;
   grad_drop = log10(grad_fd_error(0, 0) / grad_fd_error.minCoeff());
-  BOOST_CHECK(grad_drop > 6.0);
+  EXPECT_TRUE((grad_drop > 6.0));
 
   /* 2D GP tests */
 
@@ -694,8 +693,8 @@ BOOST_AUTO_TEST_CASE(test_surrogates_matern_32_gp) {
     std::cout << std_dev << "\n";
   }
 
-  BOOST_CHECK(relative_allclose(mean, gold_mean, rel_float_tol));
-  BOOST_CHECK(relative_allclose(std_dev, gold_std_dev, 100 * rel_float_tol));
+  EXPECT_TRUE(relative_allclose(mean, gold_mean, rel_float_tol));
+  EXPECT_TRUE(relative_allclose(std_dev, gold_std_dev, 100 * rel_float_tol));
 
   /* compute derivatives of GP and check */
   const int eval_point_index_2D = 1;
@@ -713,11 +712,11 @@ BOOST_AUTO_TEST_CASE(test_surrogates_matern_32_gp) {
   for (int i = 0; i < 2; i++) {
     grad_drop_2D(i) =
         log10(grad_fd_error.col(i)(0) / grad_fd_error.col(i).minCoeff());
-    BOOST_CHECK(grad_drop_2D(i) > 6.0);
+    EXPECT_TRUE((grad_drop_2D(i) > 6.0));
   }
 }
 
-BOOST_AUTO_TEST_CASE(test_surrogates_matern_52_gp) {
+TEST(GaussianProcessTest_tests, test_surrogates_matern_52_gp) {
   bool print_output = false;
 
   const std::string kernel_type = "Matern 5/2";
@@ -764,8 +763,8 @@ BOOST_AUTO_TEST_CASE(test_surrogates_matern_52_gp) {
     std::cout << std_dev << "\n";
   }
 
-  BOOST_CHECK(relative_allclose(mean, gold_mean, rel_float_tol));
-  BOOST_CHECK(relative_allclose(std_dev, gold_std_dev, rel_float_tol));
+  EXPECT_TRUE(relative_allclose(mean, gold_mean, rel_float_tol));
+  EXPECT_TRUE(relative_allclose(std_dev, gold_std_dev, rel_float_tol));
 
   /* compute derivatives of GP with trend and check */
   const int eval_point_index = 0;
@@ -797,8 +796,8 @@ BOOST_AUTO_TEST_CASE(test_surrogates_matern_52_gp) {
   grad_drop = log10(grad_fd_error(0, 0) / grad_fd_error.minCoeff());
   hessian_drop = log10(hessian_fd_error(0, 0) / hessian_fd_error.minCoeff());
 
-  BOOST_CHECK(grad_drop > 6.0);
-  BOOST_CHECK(hessian_drop > 3.0);
+  EXPECT_TRUE((grad_drop > 6.0));
+  EXPECT_TRUE((hessian_drop > 3.0));
 
   /* 2D GP tests */
 
@@ -834,8 +833,8 @@ BOOST_AUTO_TEST_CASE(test_surrogates_matern_52_gp) {
     std::cout << std_dev << "\n";
   }
 
-  BOOST_CHECK(relative_allclose(mean, gold_mean, rel_float_tol));
-  BOOST_CHECK(relative_allclose(std_dev, gold_std_dev, 100 * rel_float_tol));
+  EXPECT_TRUE(relative_allclose(mean, gold_mean, rel_float_tol));
+  EXPECT_TRUE(relative_allclose(std_dev, gold_std_dev, 100 * rel_float_tol));
 
   /* compute derivatives of GP and check */
   const int eval_point_index_2D = 1;
@@ -861,19 +860,19 @@ BOOST_AUTO_TEST_CASE(test_surrogates_matern_52_gp) {
     hessian_drop_2D(i) =
         log10(hessian_fd_error.col(i)(0) / hessian_fd_error.col(i).minCoeff());
 
-    BOOST_CHECK(grad_drop_2D(i) > 6.0);
-    BOOST_CHECK(hessian_drop_2D(i) > 3.0);
+    EXPECT_TRUE((grad_drop_2D(i) > 6.0));
+    EXPECT_TRUE((hessian_drop_2D(i) > 3.0));
 
     if (i == 1) {
       i += 1;
       hessian_drop_2D(i) = log10(hessian_fd_error.col(i)(0) /
                                  hessian_fd_error.col(i).minCoeff());
-      BOOST_CHECK(hessian_drop_2D(i) > 3.0);
+      EXPECT_TRUE((hessian_drop_2D(i) > 3.0));
     }
   }
 }
 
-BOOST_AUTO_TEST_CASE(test_surrogates_gp_read_from_parameterlist) {
+TEST(GaussianProcessTest_tests, test_surrogates_gp_read_from_parameterlist) {
   std::string test_parameterlist_file =
       "gp_test_data/GP_test_parameterlist.yaml";
   //"gp_test_data/GP_test_parameterlist.xml";
@@ -884,25 +883,30 @@ BOOST_AUTO_TEST_CASE(test_surrogates_gp_read_from_parameterlist) {
 
   const double rel_float_tol = 1.0e-12;
 
-  BOOST_CHECK(plist.get<std::string>("scaler name") == "standardization");
-  BOOST_CHECK(plist.get<int>("num restarts") == 10);
-  BOOST_CHECK(plist.get<int>("gp seed") == 42);
+  EXPECT_TRUE((plist.get<std::string>("scaler name") == "standardization"));
+  EXPECT_TRUE((plist.get<int>("num restarts") == 10));
+  EXPECT_TRUE((plist.get<int>("gp seed") == 42));
 
   const ParameterList plist_nugget = plist.get<ParameterList>("Nugget");
-  BOOST_CHECK_CLOSE(plist_nugget.get<double>("fixed nugget"), 1.0e-14,
-                         100.0*rel_float_tol);
-  BOOST_CHECK(plist_nugget.get<bool>("estimate nugget") == false);
+  EXPECT_LT(std::fabs(1. - plist_nugget.get<double>("fixed nugget") / 1.0e-14),
+                         100.0*rel_float_tol/100. );
+  EXPECT_TRUE((plist_nugget.get<bool>("estimate nugget") == false));
 
   const ParameterList plist_trend = plist.get<ParameterList>("Trend");
-  BOOST_CHECK(plist_trend.get<bool>("estimate trend") == false);
+  EXPECT_TRUE((plist_trend.get<bool>("estimate trend") == false));
 
   const ParameterList plist_options = plist_trend.get<ParameterList>("Options");
-  BOOST_CHECK(plist_options.get<int>("max degree") == 2);
-  BOOST_CHECK_CLOSE(plist_options.get<double>("p-norm"), 1.0,
-                         100.0*rel_float_tol);
-  BOOST_CHECK(plist_options.get<std::string>("scaler type") == "none");
-  BOOST_CHECK(plist_options.get<std::string>("regression solver type") ==
-                "SVD");
+  EXPECT_TRUE((plist_options.get<int>("max degree") == 2));
+  EXPECT_LT(std::fabs(1. - plist_options.get<double>("p-norm") / 1.0),
+                         100.0*rel_float_tol/100. );
+  EXPECT_TRUE((plist_options.get<std::string>("scaler type") == "none"));
+  EXPECT_TRUE((plist_options.get<std::string>("regression solver type") ==
+                "SVD"));
+}
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }
 
 }  // namespace
