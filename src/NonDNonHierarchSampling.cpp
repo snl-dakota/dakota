@@ -908,7 +908,7 @@ process_model_allocations(MFSolutionData& soln, size_t& num_samples)
   //   soln.solution_variables() will not be consistent.
 
   bool converged = (pilotMgmtMode != ONLINE_PILOT || !num_samples ||
-		    mlmfIter > maxIterations);
+		    mlmfIter >= maxIterations);
   if (converged) { // estvar recalc not needed until print_variance_reduction()
     /*
     // All cases employ projected MC estvar to match projected nonhier estvar

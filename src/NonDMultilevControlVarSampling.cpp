@@ -1570,12 +1570,13 @@ print_variance_reduction(std::ostream& s) const
   for (qoi=0; qoi<numFunctions; ++qoi) {
     s << std::setw(14) << labels[qoi] << ":\n"; // mirror print_moments()
     estvar_q           = estVar[qoi];
-    estvar_iter0_q     = estVarIter0[qoi];
     budget_mc_estvar_q = varH[qoi] / proj_equiv_hf;
 
-    if (online)
+    if (online) {
+      estvar_iter0_q   = estVarIter0[qoi];
       s << "        Initial MLMC (pilot samples):    " << std::setw(wpp7)
 	<< estvar_iter0_q << '\n';
+    }
     s << "    " << type << " MLCVMC (sample profile):   " << std::setw(wpp7)
       << estvar_q << '\n';
     if (online)
