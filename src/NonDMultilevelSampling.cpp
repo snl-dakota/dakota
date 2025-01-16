@@ -330,7 +330,6 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
   }
 
   compute_ml_estimator_variance(var_Y, N_l, estVar);
-  avgEstVar = average(estVar);
   // post final N_l back to NLevActual (needed for final eval summary)
   inflate_sequence_samples(N_l, multilev, secondaryIndex, NLevActual);
 }
@@ -368,10 +367,11 @@ void NonDMultilevelSampling::multilevel_mc_online_pilot() //_Qsum()
   // Alternate approach could emulate MFMC/ACV by only using Q_L and N_L:
   //compute_variance(sum_Ql.at(1)[L], sum_Ql.at(2)[L], N_l_actual[L]);
 
-  if (finalStatsType == QOI_STATISTICS) // populate finalStatErrors
-    compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l_actual);
   compute_ml_estimator_variance(var_Y, N_l_actual, estVar);
-  avgEstVar = average(estVar);
+  if (finalStatsType == QOI_STATISTICS) { // populate finalStatErrors,meanCIs
+    compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_l_actual);
+    compute_mean_confidence_intervals(momentStats, estVar, meanCIs);
+  }
 
   // post final N_l back to NLevActual (needed for final eval summary)
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_1D_SEQUENCE);
@@ -434,11 +434,10 @@ void NonDMultilevelSampling::multilevel_mc_offline_pilot()
   // see notes above for online_pilot case
   compute_moments(sum_Ql, sum_Qlm1, sum_QlQlm1, N_actual_online); // roll up
   recover_variance(momentStats, varH); // extract raw moment 2 after roll up
-  // populate finalStatErrors
-  compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_actual_online);
-  // update estVar
+  // update estVar, finalStatErrors, meanCIs
   compute_ml_estimator_variance(var_Y, N_actual_online, estVar);
-  avgEstVar = average(estVar);
+  compute_error_estimates(sum_Ql, sum_Qlm1, sum_QlQlm1, N_actual_online);
+  compute_mean_confidence_intervals(momentStats, estVar, meanCIs);
   // post final N_online back to NLevActual (needed for final eval summary)
   inflate_sequence_samples(N_actual_online,multilev, secondaryIndex,NLevActual);
   inflate_sequence_samples(N_alloc_online, multilev, secondaryIndex, NLevAlloc);
@@ -487,7 +486,6 @@ void NonDMultilevelSampling::multilevel_mc_pilot_projection()
   Sizet2DArray N_actual_proj = N_actual;
   increment_samples(N_actual_proj, delta_N_l);
   compute_ml_estimator_variance(var_Y, N_actual_proj, estVar);
-  avgEstVar = average(estVar);
 
   // post final N_l back to NLevActual (needed for final eval summary)
   bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_1D_SEQUENCE);
@@ -2260,39 +2258,42 @@ compute_error_estimates(const IntRealMatrixMap& sum_Ql, const IntRealMatrixMap& 
 }
 
 
-void NonDMultilevelSampling::print_variance_reduction(std::ostream& s)
+void NonDMultilevelSampling::print_variance_reduction(std::ostream& s) const
 {
-  String type = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
-		 pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
-              ? "Projected" : "   Online";
-  size_t wpp7 = write_precision + 7;
-  s << "<<<<< Variance for mean estimator:\n";
-  switch (pilotMgmtMode) {
-  case OFFLINE_PILOT:  case OFFLINE_PILOT_PROJECTION:
-    s << "  " << type << " MLMC (sample profile):   "
-      << std::setw(wpp7) << avgEstVar;
-    break;
-  default: {
-    Real avg_mlmc_estvar0 = average(estVarIter0);
-    s << "    Initial MLMC (pilot samples):    "
-      << std::setw(wpp7) << avg_mlmc_estvar0
-      << "\n  " << type << " MLMC (sample profile):   "
-      << std::setw(wpp7) << avgEstVar
-      << "\n  " << type << " MLMC / pilot ratio:      "
-      // report ratio of averages rather than average of ratios:
-      << std::setw(wpp7) << avgEstVar / avg_mlmc_estvar0;
-    break;
-  }
-  }
+  bool  online = (pilotMgmtMode ==  ONLINE_PILOT ||
+		  pilotMgmtMode ==  ONLINE_PILOT_PROJECTION),
+    projection = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
+		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
+  String type = (projection) ? "Projected" : "   Online";
+  Real estvar_q, estvar_iter0_q, proj_equiv_hf = equivHFEvals + deltaEquivHF,
+    budget_mc_estvar_q;
+  size_t qoi, wpp7 = write_precision+7,
+    proj_equiv_hf_rnd = (size_t)std::floor(proj_equiv_hf + .5);
+  const StringArray& labels = iteratedModel.truth_model().response_labels();
 
-  // MC estvar uses varH from recover_variance()
-  Real     proj_equiv_hf = equivHFEvals + deltaEquivHF,
-    avg_budget_mc_estvar = average(varH) / proj_equiv_hf;
-  s << "\n Equivalent   MC (" << std::setw(5)
-    << (size_t)std::floor(proj_equiv_hf + .5) << " HF samples): "
-    << std::setw(wpp7) << avg_budget_mc_estvar
-    << "\n Equivalent MLMC / MC ratio:         " << std::setw(wpp7)
-    << avgEstVar / avg_budget_mc_estvar << '\n';
+  s << "<<<<< Variance for mean estimator:\n";
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    s << std::setw(14) << labels[qoi] << ":\n"; // mirror print_moments()
+    estvar_q           = estVar[qoi];
+    estvar_iter0_q     = estVarIter0[qoi];
+    budget_mc_estvar_q = varH[qoi] / proj_equiv_hf;
+
+    if (online)
+      s << "      Initial MLMC (pilot samples):    " << std::setw(wpp7)
+	<< estvar_iter0_q << '\n';
+    s << "    " << type << " MLMC (sample profile):   " << std::setw(wpp7)
+      << estvar_q << '\n';
+    if (online)
+      s << "    " << type << " MLMC / pilot ratio:      " << std::setw(wpp7)
+	<< estvar_q / estvar_iter0_q << '\n';
+
+    // est_var is projected for cases that are not fully iterated/incremented
+    // > uses varH from recover_variance()
+    s << "   Equivalent   MC (" << std::setw(5) << proj_equiv_hf_rnd
+      << " HF samples): " << std::setw(wpp7) << budget_mc_estvar_q
+      << "\n   Equivalent MLMC / MC ratio:         " << std::setw(wpp7)
+      << estvar_q / budget_mc_estvar_q << '\n';
+  }
 }
 
 

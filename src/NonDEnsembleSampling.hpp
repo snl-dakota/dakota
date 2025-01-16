@@ -48,12 +48,12 @@ protected:
   //- Heading: New virtual functions
   //
 
-  virtual Real estimator_accuracy_metric() = 0;
+  virtual Real estimator_accuracy_metric() const = 0;
   virtual void print_multimodel_summary(std::ostream& s,
     const String& summary_type, bool projections);
   virtual void print_multigroup_summary(std::ostream& s,
-    const String& summary_type, bool projections);
-  virtual void print_variance_reduction(std::ostream& s);
+    const String& summary_type, bool projections) const;
+  virtual void print_variance_reduction(std::ostream& s) const;
 
   //
   //- Heading: Virtual function redefinitions
@@ -88,7 +88,7 @@ protected:
 			  short seq_type);
 
   /// return cost metric for entry into finalStatistics
-  Real estimator_cost_metric();
+  Real estimator_cost_metric() const;
 
   /// advance any sequence specifications
   void assign_specification_sequence(size_t index);
@@ -126,21 +126,6 @@ protected:
   /// compute scalar control variate parameters
   void compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
 			  size_t N_shared, Real& beta);
-  /// compute control variate parameters for pointer
-  void compute_mf_controls(const Real* sum_L, const Real* sum_H,
-			   const Real* sum_LL, const Real* sum_LH,
-			   const SizetArray& N_shared, RealVector& beta);
-  /*
-  /// compute control variate parameters for vector
-  void compute_mf_controls(const RealVector& sum_L, const RealVector& sum_H,
-			   const RealVector& sum_LL, const RealVector& sum_LH,
-			   const SizetArray& N_shared, RealVector& beta);
-  /// compute control variate parameters for matrix
-  void compute_mf_controls(const RealMatrix& sum_L,  const RealMatrix& sum_H,
-			   const RealMatrix& sum_LL, const RealMatrix& sum_LH,
-			   const SizetArray& N_shared, size_t lev,
-			   RealVector& beta);
-  */
 
   /// export allSamples to tagged tabular file
   void export_all_samples(const Model& model, const String& tabular_filename);
@@ -236,6 +221,10 @@ protected:
   /// (for model tuning of estVar,equivHFEvals by an outer loop)
   short finalStatsType;
 
+  /// Matrix of confidence internals on moments, with rows for mean_lower,
+  /// mean_upper (calculated in compute_mean_confidence_intervals())
+  RealMatrix meanCIs;
+
   /// if defined, export each of the sample increments in ML, CV, MLCV
   /// using tagged tabular files
   bool exportSampleSets;
@@ -283,24 +272,21 @@ private:
 
   /// cache state of seed sequence for use in seed_updated()
   size_t seedIndex;
-
-  /// Matrix of confidence internals on moments, with rows for mean_lower,
-  /// mean_upper (calculated in compute_moments())
-  RealMatrix meanCIs;
 };
 
 
 inline void NonDEnsembleSampling::
 print_multigroup_summary(std::ostream& s, const String& summary_type,
-			 bool projections)
+			 bool projections) const
 { } // default is no-op
 
 
-inline void NonDEnsembleSampling::print_variance_reduction(std::ostream& s)
+inline void NonDEnsembleSampling::
+print_variance_reduction(std::ostream& s) const
 { } // default is no-op
 
 
-inline Real NonDEnsembleSampling::estimator_cost_metric()
+inline Real NonDEnsembleSampling::estimator_cost_metric() const
 { return equivHFEvals + deltaEquivHF; }
 
 
@@ -576,42 +562,6 @@ compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
   // Cancel shared terms within cov_LH / var_L:
   beta = (sum_LH - mu_L * sum_H) / (sum_LL - mu_L * sum_L);
 }
-
-
-inline void NonDEnsembleSampling::
-compute_mf_controls(const Real* sum_L, const Real* sum_H, const Real* sum_LL,
-		    const Real* sum_LH, const SizetArray& N_shared,
-		    RealVector& beta)
-{
-  if (beta.length()!=numFunctions) beta.sizeUninitialized(numFunctions);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    compute_mf_control(sum_L[qoi], sum_H[qoi], sum_LL[qoi], sum_LH[qoi],
-		       N_shared[qoi], beta[qoi]);
-}
-
-
-/*
-inline void NonDEnsembleSampling::
-compute_mf_controls(const RealVector& sum_L, const RealVector& sum_H,
-		    const RealVector& sum_LL, const RealVector& sum_LH,
-		    const SizetArray& N_shared, RealVector& beta)
-{
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    compute_mf_control(sum_L[qoi], sum_H[qoi], sum_LL[qoi], sum_LH[qoi],
-		       N_shared[qoi], beta[qoi]);
-}
-
-
-inline void NonDEnsembleSampling::
-compute_mf_controls(const RealMatrix& sum_L,  const RealMatrix& sum_H,
-		    const RealMatrix& sum_LL, const RealMatrix& sum_LH,
-		    const SizetArray& N_shared, size_t lev, RealVector& beta)
-{
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    compute_mf_control(sum_L(qoi,lev), sum_H(qoi,lev), sum_LL(qoi,lev),
-		       sum_LH(qoi,lev), N_shared[qoi], beta[qoi]);
-}
-*/
 
 
 inline void NonDEnsembleSampling::

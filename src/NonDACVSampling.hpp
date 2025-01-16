@@ -47,9 +47,12 @@ protected:
   //void post_run(std::ostream& s) override;
   //void print_results(std::ostream& s,
   //                   short results_state = FINAL_RESULTS) override;
-  Real estimator_accuracy_metric() override;
-  //Real estimator_cost_metric() override;
-  void print_variance_reduction(std::ostream& s) override;
+
+  const MFSolutionData& final_solution_data() const override;
+  Real estimator_accuracy_metric() const override;
+  //Real estimator_cost_metric() const override;
+
+  void print_variance_reduction(std::ostream& s) const override;
 
   void estimator_variance_ratios(const RealVector& cd_vars,
 				 RealVector& estvar_ratios) override;
@@ -261,11 +264,15 @@ private:
 };
 
 
-inline Real NonDACVSampling::estimator_accuracy_metric()
+inline const MFSolutionData& NonDACVSampling::final_solution_data() const
+{ return acvSolnData; }
+
+
+inline Real NonDACVSampling::estimator_accuracy_metric() const
 { return acvSolnData.average_estimator_variance(); }
 
 
-//inline Real NonDACVSampling::estimator_cost_metric()
+//inline Real NonDACVSampling::estimator_cost_metric() const
 //{ return mfmcSolnData.equivalent_hf_allocation(); }
 
 
@@ -746,7 +753,7 @@ compute_acv_control(const RealMatrix& sum_L_m, Real sum_H_mq,
 }
 
 
-inline void NonDACVSampling::print_variance_reduction(std::ostream& s)
+inline void NonDACVSampling::print_variance_reduction(std::ostream& s) const
 { print_estimator_performance(s, acvSolnData); }
 
 } // namespace Dakota

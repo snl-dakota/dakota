@@ -50,11 +50,14 @@ protected:
 
   void estimator_variances(const RealVector& cd_vars,
 			   RealVector& est_var) override;
-  Real estimator_accuracy_metric() override;
-  //Real estimator_cost_metric();
+
+  const MFSolutionData& final_solution_data() const override;
+  Real estimator_accuracy_metric() const override;
+  //Real estimator_cost_metric() const override;
+
   void print_multigroup_summary(std::ostream& s, const String& summary_type,
-				bool projections) override;
-  void print_variance_reduction(std::ostream& s) override;
+				bool projections) const override;
+  void print_variance_reduction(std::ostream& s) const override;
 
   //void estimator_variance_ratios(const RealVector& cd_vars,
   //				   RealVector& estvar_ratios) override;
@@ -118,13 +121,13 @@ protected:
 
   void blue_raw_moments(const IntRealMatrixArrayMap& sum_G_online,
 			const IntRealSymMatrix2DArrayMap& sum_GG_online,
-			const Sizet2DArray& N_G_online, RealMatrix& H_raw_mom);
+			const Sizet2DArray& N_G_online);
   void blue_raw_moments(const IntRealMatrixArrayMap& sum_G_offline,
 			const IntRealSymMatrix2DArrayMap& sum_GG_offline,
 			const Sizet2DArray& N_G_offline,
 			const IntRealMatrixArrayMap& sum_G_online,
 			const IntRealSymMatrix2DArrayMap& sum_GG_online,
-			const Sizet2DArray& N_G_online, RealMatrix& H_raw_mom);
+			const Sizet2DArray& N_G_online);
 
   void finalize_counts(const Sizet2DArray& N_G_actual,
 		       const SizetArray& N_G_alloc);
@@ -169,10 +172,10 @@ private:
 
   /// find group and model indices for HF reference variance
   void find_hf_sample_reference(const Sizet2DArray& N_G,  size_t& ref_group,
-				size_t& ref_model_index);
+				size_t& ref_model_index) const;
   /// find group and model indices for HF reference variance
   void find_hf_sample_reference(const SizetArray& N_G,  size_t& ref_group,
-				size_t& ref_model_index);
+				size_t& ref_model_index) const;
   /// find the best-conditioned group that contains the HF model
   size_t best_conditioned_hf_group();
 
@@ -195,10 +198,11 @@ private:
 				     size_t H_index,
 				     const SizetArray& N_H_actual,
 				     size_t delta_N_H, RealVector& proj_est_var,
-				     SizetVector& proj_N_H);
+				     SizetVector& proj_N_H) const;
   void project_mc_estimator_variance(const RealSymMatrixArray& cov_GG_g,
 				     size_t H_index, Real N_H_actual,
-				     Real delta_N_H, RealVector& proj_est_var);
+				     Real delta_N_H,
+				     RealVector& proj_est_var) const;
 
   void accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
 			    IntRealSymMatrix2DArrayMap& sum_GG,
@@ -371,11 +375,16 @@ all_to_active_group(size_t all_index) const
 }
 
 
-inline Real NonDMultilevBLUESampling::estimator_accuracy_metric()
+inline const MFSolutionData& NonDMultilevBLUESampling::
+final_solution_data() const
+{ return blueSolnData; }
+
+
+inline Real NonDMultilevBLUESampling::estimator_accuracy_metric() const
 { return blueSolnData.average_estimator_variance(); }
 
 
-//inline Real NonDMultilevBLUESampling::estimator_cost_metric()
+//inline Real NonDMultilevBLUESampling::estimator_cost_metric() const
 //{ return blueSolnData.equivalent_hf_allocation(); }
 
 
@@ -466,13 +475,13 @@ increment_allocations(const MFSolutionData& soln, SizetArray& N_G_alloc,
 /** Overload for 2D array: NGroupActual */
 inline void NonDMultilevBLUESampling::
 find_hf_sample_reference(const Sizet2DArray& N_G, size_t& ref_group,
-			 size_t& ref_model_index)
+			 size_t& ref_model_index) const
 {
   ref_group = ref_model_index = SZ_MAX;
   Real ref_samples = 0., group_samples;
   size_t g, num_groups = modelGroups.size();
   for (g=0; g<num_groups; ++g) {
-    UShortArray& group_g = modelGroups[g];
+    const UShortArray& group_g = modelGroups[g];
     // find_index() is unnecessary assuming groups have ordered models
     if (group_g.back() == numApprox) { // HF model is present
       group_samples = average(N_G[g]);
@@ -492,13 +501,13 @@ find_hf_sample_reference(const Sizet2DArray& N_G, size_t& ref_group,
 /** Overload for 1D array: NGroupAlloc */
 inline void NonDMultilevBLUESampling::
 find_hf_sample_reference(const SizetArray& N_G, size_t& ref_group,
-			 size_t& ref_model_index)
+			 size_t& ref_model_index) const
 {
   ref_group = ref_model_index = SZ_MAX;
   Real ref_samples = 0., group_samples;
   size_t g, num_groups = modelGroups.size();
   for (g=0; g<num_groups; ++g) {
-    UShortArray& group_g = modelGroups[g];
+    const UShortArray& group_g = modelGroups[g];
     // find_index() is unnecessary assuming groups have ordered models
     if (group_g.back() == numApprox) { // HF model is present
       group_samples = N_G[g];

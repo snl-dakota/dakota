@@ -283,11 +283,8 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
 
   // Only QOI_STATISTICS requires application of oversample ratios and
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
-  if (finalStatsType == QOI_STATISTICS) {
-    RealMatrix H_raw_mom(4, numFunctions);
-    blue_raw_moments(sum_G, sum_GG, NGroupActual, H_raw_mom); // online version
-    convert_moments(H_raw_mom, momentStats);
-  }
+  if (finalStatsType == QOI_STATISTICS)
+    blue_raw_moments(sum_G, sum_GG, NGroupActual); // online version
 
   if (!zeros(delta_N_G)) // exceeded maxIterations
     increment_equivalent_cost(delta_N_G, modelGroupCost,
@@ -333,10 +330,8 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
 			    sequenceCost[numApprox], equivHFEvals);
   clear_batches();
   // extract moments
-  RealMatrix H_raw_mom(4, numFunctions);
-  blue_raw_moments(sum_G_pilot, sum_GG_pilot, N_pilot,      // offline for covar
-		   sum_G, sum_GG, NGroupActual, H_raw_mom); // online for mu-hat
-  convert_moments(H_raw_mom, momentStats);
+  blue_raw_moments(sum_G_pilot, sum_GG_pilot, N_pilot, // offline for covar
+		   sum_G, sum_GG, NGroupActual);       // online for mu-hat
   // finalize
   finalize_counts(NGroupActual, NGroupAlloc);
 }
@@ -1262,11 +1257,11 @@ finalize_counts(const Sizet2DArray& N_G_actual, const SizetArray& N_G_alloc)
 void NonDMultilevBLUESampling::
 blue_raw_moments(const IntRealMatrixArrayMap& sum_G_online,
 		 const IntRealSymMatrix2DArrayMap& sum_GG_online,
-		 const Sizet2DArray& N_G_online, RealMatrix& H_raw_mom)
+		 const Sizet2DArray& N_G_online)
 {
   // For ONLINE_PILOT where covar and sums use latest accumulations
 
-  RealVectorArray mu_hat;
+  RealMatrix H_raw_mom(4, numFunctions);  RealVectorArray mu_hat;
   for (int mom=1; mom<=4; ++mom) {
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Moment " << mom << " estimator:\n";
@@ -1286,6 +1281,10 @@ blue_raw_moments(const IntRealMatrixArrayMap& sum_G_online,
     for (size_t qoi=0; qoi<numFunctions; ++qoi)
       H_raw_mom(mom-1, qoi) = mu_hat[qoi][numApprox]; // last model
   }
+
+  convert_moments(H_raw_mom, momentStats);
+  compute_mean_confidence_intervals(momentStats,
+    final_solution_data().estimator_variances(), meanCIs);
 }
 
 
@@ -1295,20 +1294,21 @@ blue_raw_moments(const IntRealMatrixArrayMap& sum_G_offline,
 		 const Sizet2DArray& N_G_offline,
 		 const IntRealMatrixArrayMap& sum_G_online,
 		 const IntRealSymMatrix2DArrayMap& sum_GG_online,
-		 const Sizet2DArray& N_G_online, RealMatrix& H_raw_mom)
+		 const Sizet2DArray& N_G_online)
 {
   // For OFFLINE_PILOT where covar is offline and sums are online
 
   // Ambiguity arises when ML BLUE reuses covGG for moment solves (also occurs
   // with control variate beta in MFMC/ACV/GenACV).
-  // > approach above with offline pilot + online-only moment roll-up incurs issues
-  //   with sample reqmts for online covar (offline_N_lwr = 2).
+  // > approach above with offline pilot + online-only moment roll-up incurs
+  //   issues with sample reqmts for online covar (offline_N_lwr = 2).
   // > This can be avoided in approach below by mixing offline var/covar +
   //   online sample accumulations: var/covar are consistently offline/Oracle,
   //   but mu-hat solves are inconsistent in online/offline data.
   // Prefer to avoid additional padding in linear constraints for online opt.
 
-  RealVectorArray mu_hat;  size_t all_group = numGroups - 1;
+  RealMatrix H_raw_mom(4, numFunctions);  RealVectorArray mu_hat;
+  size_t all_group = numGroups - 1;
   for (int mom=1; mom<=4; ++mom) {
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Moment " << mom << " estimator:\n";
@@ -1349,12 +1349,16 @@ blue_raw_moments(const IntRealMatrixArrayMap& sum_G_offline,
     for (size_t qoi=0; qoi<numFunctions; ++qoi)
       H_raw_mom(mom-1, qoi) = mu_hat[qoi][numApprox]; // last model
   }
+
+  convert_moments(H_raw_mom, momentStats);
+  compute_mean_confidence_intervals(momentStats,
+    final_solution_data().estimator_variances(), meanCIs);
 }
 
 
 void NonDMultilevBLUESampling::
 print_multigroup_summary(std::ostream& s, const String& summary_type,
-			 bool projections)
+			 bool projections) const
 {
   size_t wpp7 = write_precision + 7, g, num_groups = NGroupAlloc.size(),
     m, num_models;
@@ -1385,7 +1389,7 @@ print_multigroup_summary(std::ostream& s, const String& summary_type,
 }
 
 
-void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s)
+void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s) const
 {
   const RealVector&  mlblue_est_var = blueSolnData.estimator_variances();
   const RealVector&  mlblue_ratios  = blueSolnData.estimator_variance_ratios();
@@ -1456,7 +1460,7 @@ void NonDMultilevBLUESampling::
 project_mc_estimator_variance(const RealSymMatrixArray& cov_GG_g,
 			      size_t H_index, const SizetArray& N_H_actual,
 			      size_t delta_N_H, RealVector& proj_est_var,
-			      SizetVector& proj_N_H)
+			      SizetVector& proj_N_H) const
 {
   // Defines projected estvar for use as a consistent reference
   proj_est_var.sizeUninitialized(numFunctions);
@@ -1473,7 +1477,7 @@ project_mc_estimator_variance(const RealSymMatrixArray& cov_GG_g,
 void NonDMultilevBLUESampling::
 project_mc_estimator_variance(const RealSymMatrixArray& cov_GG_g,
 			      size_t H_index, Real N_H_actual, Real delta_N_H,
-			      RealVector& proj_est_var)
+			      RealVector& proj_est_var) const
 {
   // Defines projected estvar for use as a consistent reference
   proj_est_var.sizeUninitialized(numFunctions);

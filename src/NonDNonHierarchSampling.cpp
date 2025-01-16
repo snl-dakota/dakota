@@ -141,7 +141,7 @@ void NonDNonHierarchSampling::assign_active_key()
 
 
 void NonDNonHierarchSampling::
-hf_indices(size_t& hf_form_index, size_t& hf_lev_index)
+hf_indices(size_t& hf_form_index, size_t& hf_lev_index) const
 {
   // case Pecos::FORM_RESOLUTION_ENUMERATION
   hf_form_index = NLevActual.size() - 1;
@@ -679,6 +679,8 @@ apply_controls(const IntRealVectorMap& sum_H_baseline,
   if (outputLevel >= NORMAL_OUTPUT) Cout << std::endl;
 
   convert_moments(H_raw_mom, momentStats); // uncentered to final (central|std)
+  compute_mean_confidence_intervals(momentStats,
+    final_solution_data().estimator_variances(), meanCIs);
 }
 
 
@@ -2421,7 +2423,7 @@ accumulate_group_sums(IntRealMatrixArrayMap& sum_G, Sizet2DArray& num_G,
 
 
 void NonDNonHierarchSampling::
-print_estimator_performance(std::ostream& s, const MFSolutionData& soln)
+print_estimator_performance(std::ostream& s, const MFSolutionData& soln) const
 {
   const RealVector&  nh_est_var = soln.estimator_variances();
   const RealVector&  nh_ratios  = soln.estimator_variance_ratios();
@@ -2431,7 +2433,7 @@ print_estimator_performance(std::ostream& s, const MFSolutionData& soln)
   size_t qoi, proj_N_H_q, hf_form_index, hf_lev_index, wpp7 = write_precision+7,
     proj_equiv_hf_rnd = (size_t)std::floor(proj_equiv_hf + .5);
   hf_indices(hf_form_index, hf_lev_index);
-  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
+  const SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
   String type = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
 		 pilotMgmtMode == OFFLINE_PILOT_PROJECTION) ?
     "Projected" : "   Online";

@@ -53,9 +53,12 @@ protected:
   //void post_run(std::ostream& s) override;
   //void print_results(std::ostream& s,
   //                   short results_state = FINAL_RESULTS) override;
-  Real estimator_accuracy_metric() override;
-  //Real estimator_cost_metric() override;
-  void print_variance_reduction(std::ostream& s) override;
+
+  const MFSolutionData& final_solution_data() const override;
+  Real estimator_accuracy_metric() const override;
+  //Real estimator_cost_metric() const override;
+
+  void print_variance_reduction(std::ostream& s) const override;
 
   void estimator_variance_ratios(const RealVector& cd_vars,
 				 RealVector& estvar_ratios) override;
@@ -164,15 +167,6 @@ private:
   void matrix_to_diagonal_array(const RealMatrix& var_L,
 				RealSymMatrixArray& cov_LL);
 
-  void compute_mf_controls(IntRealMatrixMap& sum_L_baseline,
-			   IntRealMatrixMap& sum_L_shared,
-			   IntRealMatrixMap& sum_L_refined,
-			   IntRealVectorMap& sum_H, IntRealMatrixMap& sum_LL,
-			   IntRealMatrixMap& sum_LH,//const RealMatrix& rho2_LH,
-			   const Sizet2DArray& num_L_shared,
-			   const Sizet2DArray& num_L_refined,
-			   const SizetArray& num_H, RealMatrix& H_raw_mom);
-
   void update_projected_lf_samples(const MFSolutionData& soln,
 				   const SizetArray& N_H_actual,
 				   size_t& N_H_alloc,
@@ -215,11 +209,16 @@ private:
 };
 
 
-inline Real NonDMultifidelitySampling::estimator_accuracy_metric()
+inline const MFSolutionData& NonDMultifidelitySampling::
+final_solution_data() const
+{ return mfmcSolnData; }
+
+
+inline Real NonDMultifidelitySampling::estimator_accuracy_metric() const
 { return mfmcSolnData.average_estimator_variance(); }
 
 
-//inline Real NonDMultifidelitySampling::estimator_cost_metric()
+//inline Real NonDMultifidelitySampling::estimator_cost_metric() const
 //{ return mfmcSolnData.equivalent_hf_allocation(); }
 
 
@@ -302,7 +301,8 @@ print_analytic_solution(const RealMatrix& rho2_LH,
 }
 
 
-inline void NonDMultifidelitySampling::print_variance_reduction(std::ostream& s)
+inline void NonDMultifidelitySampling::
+print_variance_reduction(std::ostream& s) const
 { print_estimator_performance(s, mfmcSolnData); }
 
 } // namespace Dakota

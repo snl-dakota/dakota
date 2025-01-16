@@ -1016,6 +1016,8 @@ genacv_raw_moments(const IntRealMatrixMap& sum_L_covar,
   if (outputLevel >= NORMAL_OUTPUT) Cout << std::endl;
 
   convert_moments(H_raw_mom, momentStats); // uncentered to final (central|std)
+  compute_mean_confidence_intervals(momentStats,
+    final_solution_data().estimator_variances(), meanCIs);
 }
 
 

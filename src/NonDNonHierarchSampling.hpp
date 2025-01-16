@@ -351,7 +351,7 @@ protected:
   //void post_run(std::ostream& s) override;
   //void print_results(std::ostream& s,
   //                   short results_state = FINAL_RESULTS) override;
-  //void print_variance_reduction(std::ostream& s) override;
+  //void print_variance_reduction(std::ostream& s) const override;
 
   /// return name of active optimizer method
   unsigned short uses_method() const override;
@@ -361,6 +361,9 @@ protected:
   //
   //- Heading: New virtual functions
   //
+
+  /// return the MFSolutionData instance containing the final results
+  virtual const MFSolutionData& final_solution_data() const = 0;
 
   /// helper function that supports optimization APIs passing design variables
   virtual void estimator_variances(const RealVector& cd_vars,
@@ -575,7 +578,7 @@ protected:
   void ensemble_active_set(const UShortArray& model_set);
 
   /// define model form and resolution level indices
-  void hf_indices(size_t& hf_form_index, size_t& hf_lev_index);
+  void hf_indices(size_t& hf_form_index, size_t& hf_lev_index) const;
 
   void compute_variance(Real sum_Q, Real sum_QQ, size_t num_Q, Real& var_Q);
   void compute_variance(const RealVector& sum_Q, const RealVector& sum_QQ,
@@ -689,7 +692,7 @@ protected:
 
   /// helper function that supports virtual print_variance_reduction(s)
   void print_estimator_performance(std::ostream& s,
-				   const MFSolutionData& soln);
+				   const MFSolutionData& soln) const;
 
   void r_and_N_to_N_vec(const RealVector& avg_eval_ratios, Real N_H,
 			RealVector& N_vec);

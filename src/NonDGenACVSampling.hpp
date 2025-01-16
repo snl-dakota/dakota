@@ -69,10 +69,11 @@ protected:
 
   size_t num_approximations() const override;
 
-  Real estimator_accuracy_metric() override;
-  //Real estimator_cost_metric();
+  const MFSolutionData& final_solution_data() const override;
+  Real estimator_accuracy_metric() const override;
+  //Real estimator_cost_metric() const override;
 
-  void print_variance_reduction(std::ostream& s) override;
+  void print_variance_reduction(std::ostream& s) const override;
 
   void estimator_variance_ratios(const RealVector& cd_vars,
 				 RealVector& estvar_ratios) override;
@@ -309,28 +310,24 @@ inline size_t NonDGenACVSampling::num_approximations() const
 { return activeModelSetIter->first.size(); }
 
 
-inline Real NonDGenACVSampling::estimator_accuracy_metric()
+inline const MFSolutionData& NonDGenACVSampling::final_solution_data() const
 {
   std::pair<UShortArray, UShortArray>
     key(activeModelSetIter->first, *activeDAGIter);
-  return dagSolns[key].average_estimator_variance();
+  return dagSolns.at(key);
 }
 
 
-//inline Real NonDGenACVSampling::estimator_cost_metric()
-//{
-//  std::pair<UShortArray, UShortArray>
-//    key(activeModelSetIter->first, *activeDAGIter);
-//  return dagSolns[key].equivalent_hf_allocation();
-//}
+inline Real NonDGenACVSampling::estimator_accuracy_metric() const
+{ return final_solution_data().average_estimator_variance(); }
 
 
-inline void NonDGenACVSampling::print_variance_reduction(std::ostream& s)
-{
-  std::pair<UShortArray, UShortArray>
-    key(activeModelSetIter->first, *activeDAGIter);
-  print_estimator_performance(s, dagSolns[key]);
-}
+//inline Real NonDGenACVSampling::estimator_cost_metric() const
+//{ return final_solution_data().equivalent_hf_allocation(); }
+
+
+inline void NonDGenACVSampling::print_variance_reduction(std::ostream& s) const
+{ print_estimator_performance(s, final_solution_data()); }
 
 
 /*
