@@ -251,14 +251,24 @@ endif(HAVE_ROL)
 # Configuration of Dakota components
 # -----
 
-# --- New surrogates module
-# BMA TODO: Finer granularity in packages to build Trilinos, Eigen
-# first, then optionally Pecos, Surfpack, surrogates.
+# Set up googletest. It must be done early so that
+# the targets can be used to add unit tests.
+if(WIN32)
+  # from teh googletest docs
+  set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+endif()
+set(INSTALL_GTEST OFF CACHE BOOL "No need to install googletest")
+add_subdirectory(packages/external/googletest)
+
 if(DAKOTA_MODULE_UTIL)
   add_subdirectory(src/util)
 endif()
 
-if(DAKOTA_MODULE_SURROGATES)
+# --- New surrogates module
+# BMA TODO: Finer granularity in packages to build Trilinos, Eigen
+# first, then optionally Pecos, Surfpack, surrogates.
+
+if(DAKOTA_MODULE_SURROGATES) 
   add_subdirectory(src/surrogates)
   add_definitions("-DHAVE_DAKOTA_SURROGATES")
 endif()
