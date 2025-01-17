@@ -907,9 +907,10 @@ process_model_allocations(MFSolutionData& soln, size_t& num_samples)
   //   when final relaxFactor is not 1 (for whatever reason) since
   //   soln.solution_variables() will not be consistent.
 
-  bool converged = (pilotMgmtMode != ONLINE_PILOT || !num_samples ||
-		    mlmfIter >= maxIterations);
-  if (converged) { // estvar recalc not needed until print_variance_reduction()
+  bool iterating = (pilotMgmtMode == ONLINE_PILOT && num_samples &&
+		    mlmfIter < maxIterations),
+    graph_enumerate = (methodName == GEN_APPROX_CONTROL_VARIATE);
+  if (!iterating || graph_enumerate) { // estvar needed for this soln
     /*
     // All cases employ projected MC estvar to match projected nonhier estvar
     // from N* (where N* includes any soln increment not yet performed). Since
@@ -2438,7 +2439,12 @@ print_estimator_performance(std::ostream& s, const MFSolutionData& soln) const
 		 pilotMgmtMode == OFFLINE_PILOT_PROJECTION) ?
     "Projected" : "   Online";
   //String method = method_enum_to_string(methodName); // too verbose
-  String method = (methodName == MULTIFIDELITY_SAMPLING) ? " MFMC" : "  ACV";
+  String method;
+  switch (methodName) {
+  case MULTIFIDELITY_SAMPLING:      method = "   MFMC";  break;
+  case APPROX_CONTROL_VARIATE:      method = "    ACV";  break;
+  case GEN_APPROX_CONTROL_VARIATE:  method = " GenACV";  break;
+  }
   bool online = (pilotMgmtMode == ONLINE_PILOT ||
 		 pilotMgmtMode == ONLINE_PILOT_PROJECTION);
 
@@ -2451,7 +2457,7 @@ print_estimator_performance(std::ostream& s, const MFSolutionData& soln) const
     //RealVector initial_mc_estvar;
     //compute_mc_estimator_variance(varH, numHIter0, initial_mc_estvar);
     if (online)
-      s << "      Initial   MC (" << std::setw(5)	<< numHIter0[qoi]
+      s << "      Initial     MC (" << std::setw(5) << numHIter0[qoi]
 	<< " HF samples): " << std::setw(wpp7) << estVarIter0[qoi] << '\n';
 
     nh_est_var_q        = nh_est_var[qoi];
@@ -2461,13 +2467,13 @@ print_estimator_performance(std::ostream& s, const MFSolutionData& soln) const
     proj_mc_est_var_q   = varH[qoi] / proj_N_H_q;
     budget_mc_est_var_q = varH[qoi] / proj_equiv_hf;
 
-    s << "    " << type     << "   MC (" << std::setw(5) << proj_N_H_q
+    s << "    " << type     << "     MC (" << std::setw(5) << proj_N_H_q
       << " HF samples): " << std::setw(wpp7) << proj_mc_est_var_q << "\n    "
       << type << method   << " (sample profile):   " << std::setw(wpp7)
       << nh_est_var[qoi]  << "\n    " << type << method
       << " ratio (1 - R^2):    " << std::setw(wpp7)  << nh_ratio_q
     //<< std::setw(wpp7)  << nh_est_var_q / proj_mc_est_var_q // same
-      << "\n   Equivalent   MC (" << std::setw(5) << proj_equiv_hf_rnd
+      << "\n   Equivalent     MC (" << std::setw(5) << proj_equiv_hf_rnd
       << " HF samples): " << std::setw(wpp7) << budget_mc_est_var_q
       << "\n   Equivalent"  << method << " ratio:              "
       << std::setw(wpp7)  << nh_est_var_q / budget_mc_est_var_q << '\n';

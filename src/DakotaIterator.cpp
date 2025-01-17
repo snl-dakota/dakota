@@ -532,7 +532,7 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
   case MULTILEVEL_MULTIFIDELITY_SAMPLING:
     return std::make_shared<NonDMultilevControlVarSampling>(problem_db, model);
     break;
-  case APPROXIMATE_CONTROL_VARIATE:
+  case APPROX_CONTROL_VARIATE:
     if (probDescDB.get_short("method.nond.search_model_graphs.recursion") ||
 	probDescDB.get_short("method.nond.search_model_graphs.selection") ||
 	problem_db.get_ushort("method.sub_method") == SUBMETHOD_ACV_RD)
@@ -540,6 +540,9 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
       return std::make_shared<NonDGenACVSampling>(problem_db, model);
     else
       return std::make_shared<NonDACVSampling>(problem_db, model);
+    break;
+  case GEN_APPROX_CONTROL_VARIATE: // not currently reachable
+    return std::make_shared<NonDGenACVSampling>(problem_db, model);
     break;
   case MULTILEVEL_BLUE:
     return std::make_shared<NonDMultilevBLUESampling>(problem_db, model);
@@ -882,7 +885,8 @@ static UShortStrBimap method_map =
   (MULTILEVEL_SAMPLING,             "multilevel_sampling")
   (MULTIFIDELITY_SAMPLING,          "multifidelity_sampling")
   (MULTILEVEL_MULTIFIDELITY_SAMPLING, "multilevel_multifidelity_sampling")
-  (APPROXIMATE_CONTROL_VARIATE,     "approximate_control_variate")
+  (APPROX_CONTROL_VARIATE,          "approx_control_variate")
+  (GEN_APPROX_CONTROL_VARIATE,      "gen_approx_control_variate")
   (MULTILEVEL_BLUE,                 "multilevel_blue")
   (LIST_SAMPLING,                   "list_sampling")
   (SURROGATE_BASED_LOCAL,           "surrogate_based_local")

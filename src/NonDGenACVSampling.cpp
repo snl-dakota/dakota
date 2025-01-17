@@ -69,6 +69,9 @@ NonDGenACVSampling(ProblemDescDB& problem_db, Model& model):
     }
     break;
   }
+
+  // enable downstream logic to account for graph searches and promotions
+  methodName = GEN_APPROX_CONTROL_VARIATE;
 }
 
 
@@ -576,7 +579,6 @@ void NonDGenACVSampling::pre_run()
   if (modelDAGs.empty())
     generate_ensembles_dags();
 
-  meritFnStar = DBL_MAX;
   bestModelSetIter = modelDAGs.end();
   dagSolns.clear();
 }
@@ -641,7 +643,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
     compute_LH_statistics(sum_L_baselineH[1], sum_H[1], sum_LL[1], sum_LH[1],
 			  sum_HH, N_H_actual, var_L, varH, covLL, covLH);
 
-    if (mlmfIter == 0) precompute_allocations(); // metrics not dependent on DAG
+    precompute_allocations(); // metrics not dependent on DAG
     for (activeModelSetIter  = modelDAGs.begin();
 	 activeModelSetIter != modelDAGs.end(); ++activeModelSetIter) {
       const UShortArray& approx_set = activeModelSetIter->first;
@@ -1023,9 +1025,13 @@ genacv_raw_moments(const IntRealMatrixMap& sum_L_covar,
 
 void NonDGenACVSampling::precompute_allocations()
 {
-  if (pilotMgmtMode == ONLINE_PILOT ||
-      pilotMgmtMode == ONLINE_PILOT_PROJECTION)
+  if (mlmfIter == 0 && ( pilotMgmtMode == ONLINE_PILOT ||
+			 pilotMgmtMode == ONLINE_PILOT_PROJECTION) )
     cache_mc_reference();// {estVar,numH}Iter0
+
+  // reset for each search over model sets and DAGs; otherwise previous
+  // best could hide new best from more resolved covariances
+  meritFnStar = DBL_MAX;
 }
 
 

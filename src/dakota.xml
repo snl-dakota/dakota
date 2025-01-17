@@ -3298,7 +3298,7 @@
 	  &method_optional_model_pointer;
 	</keyword>
 
-	<keyword  id="approximate_control_variate" name="approximate_control_variate" code="{N_mdm(utype,methodName_APPROXIMATE_CONTROL_VARIATE)}" label="approximate_control_variate"  group="Uncertainty Quantification" >
+	<keyword  id="approximate_control_variate" name="approximate_control_variate" code="{N_mdm(utype,methodName_APPROX_CONTROL_VARIATE)}" label="approximate_control_variate"  group="Uncertainty Quantification" >
 	  <alias name="acv_sampling"/>
 	  <oneOf label="Solution Approach">
 	    <keyword  id="acv_independent_sampling" name="acv_independent_sampling" code="{N_mdm(utype,subMethod_SUBMETHOD_ACV_IS)}" label="acv_independent_sampling" >

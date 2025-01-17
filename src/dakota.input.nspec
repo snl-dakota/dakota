@@ -3148,7 +3148,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
-  ( approximate_control_variate ALIAS acv_sampling {N_mdm(utype,methodName_APPROXIMATE_CONTROL_VARIATE)}
+  ( approximate_control_variate ALIAS acv_sampling {N_mdm(utype,methodName_APPROX_CONTROL_VARIATE)}
     acv_independent_sampling ALIAS acv_is {N_mdm(utype,subMethod_SUBMETHOD_ACV_IS)}
     |
     acv_multifidelity ALIAS acv_mf {N_mdm(utype,subMethod_SUBMETHOD_ACV_MF)}
