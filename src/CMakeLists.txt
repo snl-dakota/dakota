@@ -43,6 +43,9 @@ list(APPEND DAKOTA_INCDIRS
 add_definitions("-DHAVE_CONFIG_H")
 add_definitions("-DDISABLE_DAKOTA_CONFIG_H")
 
+list(APPEND DAKOTA_INCDIRS ${Dakota_SOURCE_DIR}/packages/external/googletest/googletest/include)
+#list(APPEND DAKOTA_PKG_LIBS xyz)
+
 # Input specification maintenance options
 if (ENABLE_SPEC_MAINT OR ENABLE_DAKOTA_DOCS)
   # Build Java utilities needed for XML (dakota.xml) to NIDR 
@@ -480,8 +483,10 @@ endif(HAVE_SURFPACK)
 
 if(DAKOTA_MODULE_SURROGATES)
   add_definitions("-DHAVE_DAKOTA_SURROGATES")
-  list(APPEND interface_src DakotaSurrogates.cpp DakotaSurrogatesGP.cpp
-    DakotaSurrogatesPoly.cpp) # SharedGPApproxData.cpp)
+  list(APPEND interface_src DakotaSurrogates.cpp DakotaSurrogatesPoly.cpp)
+  if(HAVE_ROL)
+    list(APPEND interface_src DakotaSurrogatesGP.cpp)
+  endif(HAVE_ROL)
   if(DAKOTA_PYTHON_SURROGATES)
     add_definitions("-DHAVE_DAKOTA_PYTHON_SURROGATES")
     list(APPEND interface_src DakotaSurrogatesPython.cpp)
@@ -796,7 +801,6 @@ endif()
 
 if(HAVE_ROL)
   list(APPEND DAKOTA_INCDIRS ${ROL_INCLUDE_DIRS})
-  add_definitions("-DHAVE_ROL")
   set(iterator_src ${iterator_src} ROLOptimizer.cpp)
 endif(HAVE_ROL)
 

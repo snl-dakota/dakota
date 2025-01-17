@@ -243,6 +243,10 @@ if(DAKOTA_F90)
   install(FILES ${Dakota_BINARY_DIR}/dak_f90_config.h DESTINATION include)
 endif(DAKOTA_F90)
 
+if(HAVE_ROL)
+  add_definitions("-DHAVE_ROL")
+endif(HAVE_ROL)
+
 # -----
 # Configuration of Dakota components
 # -----

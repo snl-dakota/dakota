@@ -13,10 +13,7 @@
 #include "opt_tpl_test.hpp"
 #include "LibraryEnvironment.hpp"
 
-#define BOOST_TEST_MODULE dakota_lhs_constants
-#include <boost/test/included/unit_test.hpp>
-
-namespace btt = boost::test_tools;
+#include <gtest/gtest.h>
 
 std::string lhs_constants_input = R"(
 # Verify LHS operation with some variables that degenerate to
@@ -120,7 +117,7 @@ void check_constant_col(const Dakota::RealMatrix samples, int col_ind,
 			double constant_value)
 {
   for (size_t i=0; i<samples.numRows(); ++i)
-    BOOST_TEST(samples(i, col_ind) == constant_value, btt::tolerance(1.0e-15));
+    EXPECT_LT(std::fabs(1. - samples(i, col_ind) / constant_value), 1.0e-15 ); // It was BOOST_TEST with tolerance
 }
 
 double column_mean(const Dakota::RealMatrix samples, int col_ind)
@@ -131,8 +128,7 @@ double column_mean(const Dakota::RealMatrix samples, int col_ind)
   return mean;
 }
 
-
-BOOST_AUTO_TEST_CASE(test_lhs_constants)
+TEST(lhs_constants_tests, test_lhs_constants)
 {
 
   std::shared_ptr<Dakota::LibraryEnvironment> p_env(Dakota::Opt_TPL_Test::create_env(lhs_constants_input));
@@ -157,7 +153,12 @@ BOOST_AUTO_TEST_CASE(test_lhs_constants)
   check_constant_col(samples, 14, 0.5);
 
   // And that means don't regress...
-  BOOST_TEST(column_mean(samples, 15) == 1.1403053861e+05, btt::tolerance(1.0e-6));
-  BOOST_TEST(column_mean(samples, 16) == -2.2595567629e-05, btt::tolerance(1.0e-6));
-  BOOST_TEST(column_mean(samples, 17) == 3.5035244300e+00 , btt::tolerance(1.0e-6));
+  EXPECT_LT(std::fabs(1. - column_mean(samples, 15) / 1.1403053861e+05), 1.0e-6 ); // It was BOOST_TEST with tolerance
+  EXPECT_LT(std::fabs(1. - column_mean(samples, 16) / -2.2595567629e-05), 1.0e-6 ); // It was BOOST_TEST with tolerance
+  EXPECT_LT(std::fabs(1. - column_mean(samples, 17) / 3.5035244300e+00) , 1.0e-6 ); // It was BOOST_TEST with tolerance
+}
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

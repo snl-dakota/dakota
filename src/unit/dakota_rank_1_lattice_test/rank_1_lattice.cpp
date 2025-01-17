@@ -19,8 +19,7 @@
 
 #include "opt_tpl_test.hpp"
 
-#define BOOST_TEST_MODULE dakota_rank_1_lattice_test
-#include <boost/test/included/unit_test.hpp>
+#include <gtest/gtest.h>
 
 namespace DakotaUnitTest {
 
@@ -34,7 +33,7 @@ namespace TestRank1Lattice {
 // +-------------------------------------------------------------------------+
 // |                   Check values of the lattice points                    |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(lattice_check_points)
+TEST(rank_1_lattice_tests, lattice_check_points)
 {
   
   // Get rank-1 lattice rule
@@ -63,7 +62,12 @@ BOOST_AUTO_TEST_CASE(lattice_check_points)
   {
     for( size_t col = 0; col < 2; col++)
     {
-      BOOST_CHECK_CLOSE(points[row][col], exact[row][col], 1e-4);
+      if (exact[row][col] == 0.) {
+        EXPECT_LT(std::fabs(points[row][col]), 1e-4/100. );
+      }
+      else {
+        EXPECT_LT(std::fabs(1. - points[row][col] / exact[row][col]), 1e-4/100. );
+      }
     }
   }
 }
@@ -71,7 +75,7 @@ BOOST_AUTO_TEST_CASE(lattice_check_points)
 // +-------------------------------------------------------------------------+
 // |                   mMax < 0 throws an exception                          |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(lattice_check_throws_mMax)
+TEST(rank_1_lattice_tests, lattice_check_throws_mMax)
 {
   // Make sure an exception is thrown instead of an exit code
   Dakota::abort_mode = Dakota::ABORT_THROWS;
@@ -84,7 +88,7 @@ BOOST_AUTO_TEST_CASE(lattice_check_throws_mMax)
   );
 
   // Check that mMax < 1 throws an exception
-  BOOST_CHECK_THROW(
+  EXPECT_THROW(
     Dakota::Rank1Lattice(generatingVector, -1),
     std::system_error
   );
@@ -93,7 +97,7 @@ BOOST_AUTO_TEST_CASE(lattice_check_throws_mMax)
 // +-------------------------------------------------------------------------+
 // |                   dMax < 1 throws an exception                          |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(lattice_check_throws_dMax)
+TEST(rank_1_lattice_tests, lattice_check_throws_dMax)
 {
   // Make sure an exception is thrown instead of an exit code
   Dakota::abort_mode = Dakota::ABORT_THROWS;
@@ -106,7 +110,7 @@ BOOST_AUTO_TEST_CASE(lattice_check_throws_dMax)
   );
 
   // Check that dMax < 1 throws an exception
-  BOOST_CHECK_THROW(
+  EXPECT_THROW(
     Dakota::Rank1Lattice(generatingVector, 20),
     std::system_error
   );
@@ -115,13 +119,13 @@ BOOST_AUTO_TEST_CASE(lattice_check_throws_dMax)
 // +-------------------------------------------------------------------------+
 // |                 seedValue < 0 throws an exception                       |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(lattice_check_throws_seedValue)
+TEST(rank_1_lattice_tests, lattice_check_throws_seedValue)
 {
   // Make sure an exception is thrown instead of an exit code
   Dakota::abort_mode = Dakota::ABORT_THROWS;
 
   // Check that dMax < 1 throws an exception
-  BOOST_CHECK_THROW(
+  EXPECT_THROW(
     Dakota::Rank1Lattice(-1),
     std::system_error
   );
@@ -130,7 +134,7 @@ BOOST_AUTO_TEST_CASE(lattice_check_throws_seedValue)
 // +-------------------------------------------------------------------------+
 // |                           Tests for check_sizes                         |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(lattice_test_check_sizes)
+TEST(rank_1_lattice_tests, lattice_test_check_sizes)
 {
   // Make sure an exception is thrown instead of an exit code
   Dakota::abort_mode = Dakota::ABORT_THROWS;
@@ -154,7 +158,7 @@ BOOST_AUTO_TEST_CASE(lattice_test_check_sizes)
 
   /// Requesting points with dimension > dMax throws an exception
   Dakota::RealMatrix points(11, 2); /// 2 points in 11 dimensions
-  BOOST_CHECK_THROW(
+  EXPECT_THROW(
     lattice.get_points(points),
     std::system_error
   );
@@ -165,7 +169,7 @@ BOOST_AUTO_TEST_CASE(lattice_test_check_sizes)
 
   /// Requesting more than 2^mMax points throws an exception
   points.shape(2, 5); /// 5 points in 2 dimensions
-  BOOST_CHECK_THROW(
+  EXPECT_THROW(
     lattice.get_points(points),
     std::system_error
   );
@@ -176,7 +180,7 @@ BOOST_AUTO_TEST_CASE(lattice_test_check_sizes)
 
   /// Throws an error when number of columns of 'points' is not nMin - nMax
   points.shape(4, 2); /// 2 points in 4 dimensions
-  BOOST_CHECK_THROW(
+  EXPECT_THROW(
     lattice.get_points(0, 3, points),
     std::system_error
   );
@@ -188,7 +192,7 @@ BOOST_AUTO_TEST_CASE(lattice_test_check_sizes)
 // +-------------------------------------------------------------------------+
 // |    Cannot provide `m_max` when specifying a default generating vector   |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(lattice_check_throws_mMax_in_input_file)
+TEST(rank_1_lattice_tests, lattice_check_throws_mMax_in_input_file)
 {
   // Make sure an exception is thrown instead of an exit code
   Dakota::abort_mode = Dakota::ABORT_THROWS;
@@ -219,7 +223,7 @@ BOOST_AUTO_TEST_CASE(lattice_check_throws_mMax_in_input_file)
     "  no_hessians \n";
 
   // Check that this input file throws an exception
-  BOOST_CHECK_THROW(
+  EXPECT_THROW(
     Dakota::Opt_TPL_Test::create_env(dakota_input),
     std::system_error
   );
@@ -228,7 +232,7 @@ BOOST_AUTO_TEST_CASE(lattice_check_throws_mMax_in_input_file)
 // +-------------------------------------------------------------------------+
 // | Requesting more than the maximum number of samples throws an exception  |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(lattice_check_throws_max_num_samples_exceeded)
+TEST(rank_1_lattice_tests, lattice_check_throws_max_num_samples_exceeded)
 {
   // Make sure an exception is thrown instead of an exit code
   Dakota::abort_mode = Dakota::ABORT_THROWS;
@@ -245,7 +249,7 @@ BOOST_AUTO_TEST_CASE(lattice_check_throws_max_num_samples_exceeded)
 
   // Check that requesting 5 points throws an exception
   Dakota::RealMatrix points(8, 5);
-  BOOST_CHECK_THROW(
+  EXPECT_THROW(
     lattice.get_points(points),
     std::system_error
   );
@@ -254,7 +258,7 @@ BOOST_AUTO_TEST_CASE(lattice_check_throws_max_num_samples_exceeded)
 // +-------------------------------------------------------------------------+
 // |            Requesting more dimensions throws an exception               |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(lattice_check_throws_max_dimension_exceeded)
+TEST(rank_1_lattice_tests, lattice_check_throws_max_dimension_exceeded)
 {
   // Make sure an exception is thrown instead of an exit code
   Dakota::abort_mode = Dakota::ABORT_THROWS;
@@ -271,7 +275,7 @@ BOOST_AUTO_TEST_CASE(lattice_check_throws_max_dimension_exceeded)
 
   // Check that requesting a point in 7 dimensions throws an exception
   Dakota::RealMatrix points(7, 1);
-  BOOST_CHECK_THROW(
+  EXPECT_THROW(
     lattice.get_points(points),
     std::system_error
   );
@@ -280,7 +284,7 @@ BOOST_AUTO_TEST_CASE(lattice_check_throws_max_dimension_exceeded)
 // +-------------------------------------------------------------------------+
 // |              Mismatched samples matrix throws an exception              |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(lattice_check_throws_mismatched_samples_matrix)
+TEST(rank_1_lattice_tests, lattice_check_throws_mismatched_samples_matrix)
 {
   // Make sure an exception is thrown instead of an exit code
   Dakota::abort_mode = Dakota::ABORT_THROWS;
@@ -290,7 +294,7 @@ BOOST_AUTO_TEST_CASE(lattice_check_throws_mismatched_samples_matrix)
 
   // Check that a mismatched sample matrix throws an exception
   Dakota::RealMatrix points(32, 10);
-  BOOST_CHECK_THROW(
+  EXPECT_THROW(
     lattice.get_points(10, 21, points),
     std::system_error
   );
@@ -299,7 +303,7 @@ BOOST_AUTO_TEST_CASE(lattice_check_throws_mismatched_samples_matrix)
 // +-------------------------------------------------------------------------+
 // |                        Inline generating vector                         |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(lattice_check_inline_generating_vector)
+TEST(rank_1_lattice_tests, lattice_check_inline_generating_vector)
 {
   // Example dakota input specification
   char dakota_input[] =
@@ -338,7 +342,7 @@ BOOST_AUTO_TEST_CASE(lattice_check_inline_generating_vector)
 // +-------------------------------------------------------------------------+
 // |                      Generating vector from file                        |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(lattice_check_generating_vector_from_file)
+TEST(rank_1_lattice_tests, lattice_check_generating_vector_from_file)
 {
   // Write a generating vector to file
   std::ofstream file;
@@ -383,7 +387,7 @@ BOOST_AUTO_TEST_CASE(lattice_check_generating_vector_from_file)
 // +-------------------------------------------------------------------------+
 // |                            Integration test                             |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(lattice_check_lattice_rule_integration)
+TEST(rank_1_lattice_tests, lattice_check_lattice_rule_integration)
 {
   // Get randomly-shifted rank-1 lattice rule with a fixed seed
   Dakota::Rank1Lattice lattice(17);
@@ -407,13 +411,13 @@ BOOST_AUTO_TEST_CASE(lattice_check_lattice_rule_integration)
   }
   integrand /= std::pow(0.2*std::sqrt(std::atan(1)*4), dimension);
   integrand /= numPoints;
-  BOOST_CHECK_CLOSE(integrand, 0.998373, 1e-1);
+  EXPECT_LT(std::fabs(1. - integrand / 0.998373), 1e-1/100. );
 }
 
 // +-------------------------------------------------------------------------+
 // |                              Annulus test                               |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(lattice_check_annulus_lattice_rules)
+TEST(rank_1_lattice_tests, lattice_check_annulus_lattice_rules)
 {
   
   // Get randomly-shifted rank-1 lattice rule with a fixed seed
@@ -433,13 +437,13 @@ BOOST_AUTO_TEST_CASE(lattice_check_annulus_lattice_rules)
     double x_n = ( d > 0.2 and d < 0.45 ) ? 1 : 0;
     integrand = (integrand*n + x_n)/(n + 1);
   }
-  BOOST_CHECK_CLOSE(4*integrand, 0.65*std::atan(1), 1e-1);
+  EXPECT_LT(std::fabs(1. - 4*integrand / (0.65*std::atan(1))), 1e-1/100. );
 }
 
 // +-------------------------------------------------------------------------+
 // |                            Test random seed                             |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(lattice_check_random_seed_lattice)
+TEST(rank_1_lattice_tests, lattice_check_random_seed_lattice)
 {
   
   // Get randomly-shifted rank-1 lattice rule with seed 17
@@ -473,11 +477,11 @@ BOOST_AUTO_TEST_CASE(lattice_check_random_seed_lattice)
     for( size_t col = 0; col < 2; col++ )
     {
       // Lattice rules with same random seed should give the same points
-      BOOST_CHECK_CLOSE(points_17a[row][col], points_17b[row][col], 1e-4);
+      EXPECT_LT(std::fabs(1. - points_17a[row][col] / points_17b[row][col]), 1e-4/100. );
       // "Random" seed should give different points
-      BOOST_CHECK_NE(points_17a[row][col], points_ra[row][col]);
+      EXPECT_NE(points_17a[row][col], points_ra[row][col]);
       // Another "random" seed should give different points again
-      BOOST_CHECK_NE(points_ra[row][col], points_rb[row][col]);
+      EXPECT_NE(points_ra[row][col], points_rb[row][col]);
     }
   }
 }
@@ -485,7 +489,7 @@ BOOST_AUTO_TEST_CASE(lattice_check_random_seed_lattice)
 // +-------------------------------------------------------------------------+
 // |                       Test disable randomization                        |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(lattice_check_disabled_randomization)
+TEST(rank_1_lattice_tests, lattice_check_disabled_randomization)
 {
   // Get rank-1 lattice rule
   Dakota::Rank1Lattice lattice;
@@ -509,7 +513,12 @@ BOOST_AUTO_TEST_CASE(lattice_check_disabled_randomization)
   {
     for( size_t col = 0; col < dimension; col++)
     {
-      BOOST_CHECK_CLOSE(points[row][col], exact[row][col], 1e-4);
+      if (exact[row][col] == 0.) {
+        EXPECT_LT(std::fabs(points[row][col]), 1e-4/100. );
+      }
+      else {
+        EXPECT_LT(std::fabs(1. - points[row][col] / exact[row][col]), 1e-4/100. );
+      }
     }
   }
   
@@ -518,7 +527,7 @@ BOOST_AUTO_TEST_CASE(lattice_check_disabled_randomization)
 // +-------------------------------------------------------------------------+
 // |                              Test seed 0                                |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(lattice_check_lattice_seed_0)
+TEST(rank_1_lattice_tests, lattice_check_lattice_seed_0)
 {
   
   // Get randomly-shifted rank-1 lattice rule with seed 0
@@ -547,9 +556,9 @@ BOOST_AUTO_TEST_CASE(lattice_check_lattice_seed_0)
     for( size_t col = 0; col < dimension; col++ )
     {
       /// Check that seed 0 (a & b) generate the same points
-      BOOST_CHECK_CLOSE(points_0a[row][col], points_0b[row][col], 1e-4);
+      EXPECT_LT(std::fabs(1. - points_0a[row][col] / points_0b[row][col]), 1e-4/100. );
       /// Check that is is different from a lattice with no random shift
-      BOOST_CHECK_NE(points_0a[row][col], points[row][col]);
+      EXPECT_NE(points_0a[row][col], points[row][col]);
     }
   }
 }
@@ -557,12 +566,12 @@ BOOST_AUTO_TEST_CASE(lattice_check_lattice_seed_0)
 // +-------------------------------------------------------------------------+
 // |                            Test negative seed                           |
 // +-------------------------------------------------------------------------+
-BOOST_AUTO_TEST_CASE(lattice_check_lattice_negative_seed)
+TEST(rank_1_lattice_tests, lattice_check_lattice_negative_seed)
 {
   // Make sure an exception is thrown instead of an exit code
   Dakota::abort_mode = Dakota::ABORT_THROWS;
 
-  BOOST_CHECK_THROW(
+  EXPECT_THROW(
     Dakota::Rank1Lattice lattice(-1),
     std::system_error
   );
@@ -573,3 +582,8 @@ BOOST_AUTO_TEST_CASE(lattice_check_lattice_negative_seed)
 } // end namespace TestLowDiscrepancy
 
 } // end namespace Dakota
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

@@ -13,13 +13,12 @@
 #include "opt_tpl_test_fixture.hpp"  // for plugin interface
 #include <string>
 
-#define BOOST_TEST_MODULE dakota_gauss_proc_test
-#include <boost/test/included/unit_test.hpp>
+#include <gtest/gtest.h>
 
 namespace Dakota {
   extern PRPCache data_pairs;
 
-BOOST_AUTO_TEST_CASE(test_surrogates_gp_base_test)
+TEST(gauss_proc_test_tests, test_surrogates_gp_base_test)
 {
   // Dakota input string:
   static const char dakota_input[] =
@@ -87,7 +86,7 @@ BOOST_AUTO_TEST_CASE(test_surrogates_gp_base_test)
 
   for(int i = 0; i < NUM_COLS; i++) {
     for(int j = 0; j < NUM_ROWS; j++) {
-      BOOST_CHECK_CLOSE( tabular_data[i][j], gold_values[i][j], 1.e-4 );
+      EXPECT_LT(std::fabs(1. - tabular_data[i][j] / gold_values[i][j]), 1.e-4/100. );
     }
   }
 
@@ -95,7 +94,7 @@ BOOST_AUTO_TEST_CASE(test_surrogates_gp_base_test)
   data_pairs.clear();
 }
 
-BOOST_AUTO_TEST_CASE(test_surrogates_gp_yaml_read)
+TEST(gauss_proc_test_tests, test_surrogates_gp_yaml_read)
 {
   // Dakota input string:
   static const char dakota_input[] =
@@ -161,7 +160,7 @@ BOOST_AUTO_TEST_CASE(test_surrogates_gp_yaml_read)
 
   for(int i = 0; i < NUM_COLS; i++) {
     for(int j = 0; j < NUM_ROWS; j++) {
-      BOOST_CHECK_CLOSE( tabular_data[i][j], gold_values[i][j], 1.e-3 );
+      EXPECT_LT(std::fabs(1. - tabular_data[i][j] / gold_values[i][j]), 1.e-3/100. );
     }
   }
 
@@ -169,7 +168,7 @@ BOOST_AUTO_TEST_CASE(test_surrogates_gp_yaml_read)
   data_pairs.clear();
 }
 
-BOOST_AUTO_TEST_CASE(test_surrogates_gp_yaml_read_alternate_parameters)
+TEST(gauss_proc_test_tests, test_surrogates_gp_yaml_read_alternate_parameters)
 {
   // This test uses the gold values from the surrogates_gp test above.
   // It is expected to get the same output result, despite using an Yaml
@@ -239,7 +238,7 @@ BOOST_AUTO_TEST_CASE(test_surrogates_gp_yaml_read_alternate_parameters)
 
   for(int i = 0; i < NUM_COLS; i++) {
     for(int j = 0; j < NUM_ROWS; j++) {
-      BOOST_CHECK_CLOSE( tabular_data[i][j], gold_values[i][j], 1.e-5 );
+      EXPECT_LT(std::fabs(1. - tabular_data[i][j] / gold_values[i][j]), 1.e-5/100. );
     }
   }
 
@@ -248,7 +247,7 @@ BOOST_AUTO_TEST_CASE(test_surrogates_gp_yaml_read_alternate_parameters)
 }
 
 
-BOOST_AUTO_TEST_CASE(test_surrogates_gp_reduced_quadratic)
+TEST(gauss_proc_test_tests, test_surrogates_gp_reduced_quadratic)
 {
   // Dakota input string:
   static const char dakota_input[] =
@@ -316,8 +315,13 @@ BOOST_AUTO_TEST_CASE(test_surrogates_gp_reduced_quadratic)
 
   for(int i = 0; i < NUM_COLS; i++) {
     for(int j = 0; j < NUM_ROWS; j++) {
-      BOOST_CHECK_CLOSE( tabular_data[i][j], gold_values[i][j], 1.e-4 );
+      EXPECT_LT(std::fabs(1. - tabular_data[i][j] / gold_values[i][j]), 1.e-4/100. );
     }
   }
 }
+}
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

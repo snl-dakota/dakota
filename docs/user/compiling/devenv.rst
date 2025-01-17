@@ -207,7 +207,7 @@ OpenMPI 4.1.1::
 
 EPEL Packages add Boost 1.69 and HDF 1.10.5::
 
-   epel-release
+   dnf install epel-release
     
    # EPEL, PowerTools for Boost to /usr/include/boost169
    boost169 boost169-devel

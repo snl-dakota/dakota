@@ -19,8 +19,7 @@
 #include <string>
 #include "Eigen/Dense"
 
-#define BOOST_TEST_MODULE dakota_global_sa_metrics
-#include <boost/test/included/unit_test.hpp>
+#include <gtest/gtest.h>
 
 using VectorMap = Eigen::Map<Eigen::VectorXd>;
 using MatrixMap = Eigen::Map<Eigen::MatrixXd>;
@@ -63,7 +62,7 @@ namespace {
 //----------------------------------------------------------------
 #ifdef HAVE_DAKOTA_SURROGATES
 
-BOOST_AUTO_TEST_CASE(test_standard_reg_coeffs)
+TEST(global_sa_matrices_tests, test_standard_reg_coeffs)
 {
   MatrixXd samplesXd = create_samples();
   const int NVARS = samplesXd.cols();
@@ -87,10 +86,10 @@ BOOST_AUTO_TEST_CASE(test_standard_reg_coeffs)
   RealVector cods;
   compute_regression_coeffs(samples, responses, rcoeffs, cods);
   MatrixMap test_rcs(rcoeffs.values(), NVARS, 1);
-  BOOST_CHECK(dakota::util::matrix_equals(fn_coeffs, test_rcs, 1.0e-10));
+  EXPECT_TRUE(dakota::util::matrix_equals(fn_coeffs, test_rcs, 1.0e-10));
   // Coefficient of determination, R^2
   // ... should be 1.0 because we fit the surrogate using exact polynomial objective values
-  BOOST_CHECK_CLOSE(cods(0), 1.0, 1.e-13 /* NB this is a percent-based tol */);
+  EXPECT_LT(std::fabs(1. - cods(0) / 1.0), 1.e-13/100. );
   //double polynomial_intercept = pr.get_polynomial_intercept(); // not used or needed? - RWH
   ///////////////////////////  What we want to test ///////////////////////////
 
@@ -120,15 +119,15 @@ BOOST_AUTO_TEST_CASE(test_standard_reg_coeffs)
   RealMatrix std_rcoeffs;
   compute_std_regression_coeffs(samples, responses, std_rcoeffs, cods);
   MatrixMap test_srcs(std_rcoeffs.values(), NVARS, 1);
-  BOOST_CHECK(dakota::util::matrix_equals(gold_srcs, test_srcs, 1.0e-6));
+  EXPECT_TRUE(dakota::util::matrix_equals(gold_srcs, test_srcs, 1.0e-6));
   // Coefficient of determination, R^2 is the same value as the one above
-  BOOST_CHECK_CLOSE(cods(0), 1.0, 1.e-13 /* NB this is a percent-based tol */);
+  EXPECT_LT(std::fabs(1. - cods(0) / 1.0), 1.e-13/100. );
   ///////////////////////////  What we want to test ///////////////////////////
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_reg_coeffs_edge_cases)
+TEST(global_sa_matrices_tests, test_reg_coeffs_edge_cases)
 {
   // Test for no samples
   RealMatrix samples;
@@ -138,9 +137,9 @@ BOOST_AUTO_TEST_CASE(test_reg_coeffs_edge_cases)
   RealMatrix rcoeffs;
   RealVector cods;
   compute_regression_coeffs(samples, responses, rcoeffs, cods);
-  BOOST_CHECK(0 == cods.length());
+  EXPECT_TRUE((0 == cods.length()));
   compute_std_regression_coeffs(samples, responses, rcoeffs, cods);
-  BOOST_CHECK(0 == cods.length());
+  EXPECT_TRUE((0 == cods.length()));
   ///////////////////////////  What we want to test ///////////////////////////
 
 
@@ -158,16 +157,16 @@ BOOST_AUTO_TEST_CASE(test_reg_coeffs_edge_cases)
 
   /////////////////////  What we want to test --> Response stddev = 0
   compute_regression_coeffs(samples, responses, rcoeffs, cods);
-  BOOST_CHECK(std::numeric_limits<Real>::infinity() == cods(0));
+  EXPECT_TRUE((std::numeric_limits<Real>::infinity() == cods(0)));
   compute_std_regression_coeffs(samples, responses, rcoeffs, cods);
-  BOOST_CHECK(std::numeric_limits<Real>::infinity() == cods(0));
+  EXPECT_TRUE((std::numeric_limits<Real>::infinity() == cods(0)));
   ///////////////////////////  What we want to test ///////////////////////////
 
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_standard_reg_coeffs_multi_resp)
+TEST(global_sa_matrices_tests, test_standard_reg_coeffs_multi_resp)
 {
   MatrixXd samplesXd = create_samples();
   const int NVARS = samplesXd.cols();
@@ -203,10 +202,10 @@ BOOST_AUTO_TEST_CASE(test_standard_reg_coeffs_multi_resp)
   compute_std_regression_coeffs(samples, responses, std_rcoeffs, cods);
   MatrixMap test_srcs(std_rcoeffs.values(), NVARS, 3);
   test_srcs = test_srcs.array().abs();
-  BOOST_CHECK(dakota::util::matrix_equals(gold_srcs, test_srcs, 1.0e-5));
-  BOOST_CHECK(std::numeric_limits<Real>::infinity() == cods(0));
-  BOOST_CHECK_CLOSE(cods(1), 1.0, 1.e-13 /* NB this is a percent-based tol */);
-  BOOST_CHECK_CLOSE(cods(2), 1.0, 1.e-13 /* NB this is a percent-based tol */);
+  EXPECT_TRUE(dakota::util::matrix_equals(gold_srcs, test_srcs, 1.0e-5));
+  EXPECT_TRUE((std::numeric_limits<Real>::infinity() == cods(0)));
+  EXPECT_LT(std::fabs(1. - cods(1) / 1.0), 1.e-13/100. );
+  EXPECT_LT(std::fabs(1. - cods(2) / 1.0), 1.e-13/100. );
   ///////////////////////////  What we want to test ///////////////////////////
 }
 
@@ -296,7 +295,7 @@ class SobolG{
     Eigen::ArrayXd analyticalMainEffects;
 };
 
-BOOST_AUTO_TEST_CASE(test_binned_sobol_computation)
+TEST(global_sa_matrices_tests, test_binned_sobol_computation)
 {
 
 
@@ -338,5 +337,10 @@ BOOST_AUTO_TEST_CASE(test_binned_sobol_computation)
   true_sobols -= test_sobols;
   auto frob_err = true_sobols.normFrobenius();
 
-  BOOST_CHECK(frob_err < 1e-3);
+  EXPECT_TRUE((frob_err < 1e-3));
+}
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

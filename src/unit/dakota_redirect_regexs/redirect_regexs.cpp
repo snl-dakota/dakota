@@ -13,8 +13,7 @@
 
 #include "OutputManager.hpp"
 
-#define BOOST_TEST_MODULE dakota_redirect_regexs
-#include <boost/test/included/unit_test.hpp>
+#include <gtest/gtest.h>
 
 // These examples should cause redirects
 std::string valid_redirs = R"(
@@ -89,7 +88,7 @@ error_file
 )";
 // for syntax highlighting: '
 
-BOOST_AUTO_TEST_CASE(test_valid_redirs)
+TEST(redirect_regexs_tests, test_valid_redirs)
 {
   // TODO: Parameterized test
   std::vector<std::string> valid_inputs =
@@ -100,8 +99,8 @@ BOOST_AUTO_TEST_CASE(test_valid_redirs)
     std::istringstream infile(input_text);
     Dakota::OutputManager::check_input_redirs_impl(infile, outfile, errfile);
 
-    BOOST_TEST(outfile == "dakota.log");
-    BOOST_TEST(errfile == "dakota.err");
+    EXPECT_TRUE((outfile == "dakota.log"));
+    EXPECT_TRUE((errfile == "dakota.err"));
   }
 
   std::vector<std::string> invalid_inputs =
@@ -111,11 +110,13 @@ BOOST_AUTO_TEST_CASE(test_valid_redirs)
     std::istringstream infile(input_text);
     Dakota::OutputManager::check_input_redirs_impl(infile, outfile, errfile);
 
-    BOOST_TEST(outfile == "");
-    BOOST_TEST(errfile == "");
+    EXPECT_TRUE((outfile == ""));
+    EXPECT_TRUE((errfile == ""));
   }
-
-
 }
 
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}
 

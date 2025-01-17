@@ -46,7 +46,6 @@ endif(MSVC)
 dakota_copy_test_file(${CMAKE_CURRENT_SOURCE_DIR}/${ut_helper_script}
   ${script_dest_path}/${ut_helper_script} dakota_unit_test_copied_files)
 
-# Demo: BOOST_AUTO_TEST_CASE
 add_subdirectory(dakota_auto_unit)
 
 remove_definitions("-DHAVE_CONFIG_H")
@@ -120,7 +119,6 @@ FILE( COPY
   DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/dakota_surr_reduced_basis"
   )
 
-
 if (NOT DAKOTA_HAVE_MPI)
   add_subdirectory(dakota_opt_tpl_api)
 endif (NOT DAKOTA_HAVE_MPI)
@@ -163,11 +161,13 @@ endif (HAVE_ROL)
 if (DAKOTA_MODULE_SURROGATES)
   add_subdirectory(dakota_surr_reduced_basis)
 
+if (HAVE_ROL)
   add_subdirectory(dakota_surr_gauss_proc)
-
   dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/dakota_surr_gauss_proc/gauss_proc_test_files"
     "${CMAKE_CURRENT_BINARY_DIR}/dakota_surr_gauss_proc/gauss_proc_test_files"
     dakota_unit_test_copied_files)
+endif (HAVE_ROL)
+
 endif()
 
 
@@ -186,7 +186,6 @@ endif()
 if (HAVE_MUQ)
   add_subdirectory(dakota_muq_mcmc)
 endif()
-
 
 if(DAKOTA_TEST_PREPROC)
   add_subdirectory(dakota_preproc_tests)

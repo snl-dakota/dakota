@@ -29,8 +29,7 @@
 
 #ifdef DAKOTA_HAVE_HDF5
 
-#define BOOST_TEST_MODULE dakota_hdf5_test_serial
-#include <boost/test/included/unit_test.hpp>
+#include <gtest/gtest.h>
 
 #include <iostream>
 #include <string>
@@ -54,8 +53,7 @@ const int     DIM1_SUB = 4;
 const int     DIM0 = 8;		// size of dataset
 const int     DIM1 = 10;
 
-//int main (void)
-BOOST_AUTO_TEST_CASE(test_tpl_hdf5_test_serial)
+TEST(hdf5_test_serial_tests, test_tpl_hdf5_test_serial)
 {
     int     i,j;
     int     data[DIM0][DIM1], sdata[DIM0_SUB][DIM1_SUB], rdata[DIM0][DIM1];
@@ -176,24 +174,29 @@ BOOST_AUTO_TEST_CASE(test_tpl_hdf5_test_serial)
     catch(FileIException error)
     {
 	//error.printErrorStack();
-	BOOST_CHECK( false );
+	FAIL();
     }
 
     // catch failure caused by the DataSet operations
     catch(DataSetIException error)
     {
 	//error.printErrorStack();
-	BOOST_CHECK( false );
+	FAIL();
     }
 
     // catch failure caused by the DataSpace operations
     catch(DataSpaceIException error)
     {
 	//error.printErrorStack();
-	BOOST_CHECK( false );
+	FAIL();
     }
 
-    BOOST_CHECK( true );  // successfully terminated
+    SUCCEED();  // successfully terminated
+}
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }
 
 #endif

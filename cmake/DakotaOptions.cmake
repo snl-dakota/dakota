@@ -9,7 +9,6 @@
 
 option(BUILD_SHARED_LIBS "Build shared libraries?" ON)
 
-
 # -----
 # Dakota core
 # -----
@@ -236,7 +235,6 @@ option(HAVE_ROL "Build the Trilinos/ROL package." ON)
 option(HAVE_SPARSE_GRID "Build the VPISparseGrid package." ON)
 
 option(HAVE_SURFPACK "Build the Surfpack package." ON)
-
 
 # -----
 # Dakota Installation

@@ -13,21 +13,19 @@
 #include <string>
 #include <map>
 
-#define BOOST_TEST_MODULE dakota_opt_tpl_api
-#include <boost/test/included/unit_test.hpp>
-
+#include <gtest/gtest.h>
 
 using namespace Dakota;
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_hopspack)
+TEST(opt_tpl_api_tests, test_hopspack)
 {
   Dakota::LibraryEnvironment * p_env = Opt_TPL_Test_Fixture::create_default_env(Dakota::ASYNCH_PATTERN_SEARCH);
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    BOOST_CHECK( false ); // This test only works for serial builds
+    FAIL(); // This test only works for serial builds
 
   // Try to get the concrte Optimizer
   //Dakota::ProblemDescDB& problem_db = env.problem_description_db();
@@ -44,25 +42,25 @@ BOOST_AUTO_TEST_CASE(test_hopspack)
 
   // retrieve the final parameter values
   const Variables& vars = env.variables_results();
-  BOOST_CHECK_CLOSE( vars.continuous_variable(0), -1.50, max_tol );
-  BOOST_CHECK_CLOSE( vars.continuous_variable(1),  0.75, max_tol );
+  EXPECT_LT(std::fabs(1. - vars.continuous_variable(0) / -1.50), max_tol/100. );
+  EXPECT_LT(std::fabs(1. - vars.continuous_variable(1) /  0.75), max_tol/100. );
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
   //resp.function_values().print(Cout);
   //resp.write(Cout);
-  BOOST_CHECK_CLOSE( resp.function_value(0)+1.0, 1.0, max_tol );
+  EXPECT_LT(std::fabs(1. - (resp.function_value(0)+1.0) / 1.0), max_tol/100. );
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_optpp)
+TEST(opt_tpl_api_tests, test_optpp)
 {
   Dakota::LibraryEnvironment * p_env = Opt_TPL_Test_Fixture::create_default_env(Dakota::OPTPP_PDS);
   Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    BOOST_CHECK( false ); // This test only works for serial builds
+    FAIL(); // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -70,14 +68,14 @@ BOOST_AUTO_TEST_CASE(test_optpp)
   // retrieve the final parameter values
   const Variables& vars = env.variables_results();
   //vars.continuous_variables().print(Cout);
-  BOOST_CHECK_CLOSE( vars.continuous_variable(0), -1.50, 0.6 /* not so good tol */ );
-  BOOST_CHECK_CLOSE( vars.continuous_variable(1),  0.75, 2.0 /* ditto */ );
+  EXPECT_LT(std::fabs(1. - vars.continuous_variable(0) / -1.50), 0.6/100. /* not so good tol */ );
+  EXPECT_LT(std::fabs(1. - vars.continuous_variable(1) /  0.75), 2.0/100. /* ditto */ );
 
   // retrieve the final response values
   const Response& resp  = env.response_results();
   //resp.function_values().print(Cout);
   //resp.write(Cout);
-  BOOST_CHECK_CLOSE( resp.function_value(0)+1.0, 1.0, 0.02 /* not so good tol */ );
+  EXPECT_LT(std::fabs(1. - (resp.function_value(0)+1.0) / 1.0), 0.02/100. /* not so good tol */ );
 
   // Make sure to cleanup the object we own
   delete p_env;
@@ -87,13 +85,13 @@ BOOST_AUTO_TEST_CASE(test_optpp)
 // "Invalid iterator: nlpql_sqp not available."
 // //----------------------------------------------------------------
 
-// BOOST_AUTO_TEST_CASE(test_nlpqlp)
+// TEST(opt_tpl_api_tests, test_nlpqlp)
 // {
 //   Dakota::LibraryEnvironment * p_env = Opt_TPL_Test_Fixture::create_default_env(Dakota::NLPQL_SQP);
 //   Dakota::LibraryEnvironment & env = *p_env;
 
 //   if (env.parallel_library().mpirun_flag())
-//     BOOST_CHECK( false ); // This test only works for serial builds
+//     FAIL(); // This test only works for serial builds
 
 //   // Execute the environment
 //   env.execute();
@@ -103,15 +101,20 @@ BOOST_AUTO_TEST_CASE(test_optpp)
 //   // retrieve the final parameter values
 //   const Variables& vars = env.variables_results();
 //   //vars.continuous_variables().print(Cout);
-//   BOOST_CHECK_CLOSE( vars.continuous_variable(0), -1.50, max_tol );
-//   BOOST_CHECK_CLOSE( vars.continuous_variable(1),  0.75, max_tol );
+//   EXPECT_LT(std::fabs(1. - vars.continuous_variable(0) / -1.50), max_tol/100. );
+//   EXPECT_LT(std::fabs(1. - vars.continuous_variable(1) /  0.75), max_tol/100. );
 
 //   // retrieve the final response values
 //   const Response& resp  = env.response_results();
 //   //resp.function_values().print(Cout);
 //   //resp.write(Cout);
-//   BOOST_CHECK_CLOSE( resp.function_value(0)+1.0, 1.0, max_tol );
+//   EXPECT_LT(std::fabs(1. - (resp.function_value(0)+1.0) / 1.0), max_tol/100. );
 
 //   // Make sure to cleanup the object we own
 //   delete p_env;
 // }
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

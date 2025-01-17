@@ -13,16 +13,14 @@
 #include <string>
 #include <map>
 
-#define BOOST_TEST_MODULE dakota_wilks_sampling
-#include <boost/test/included/unit_test.hpp>
-
+#include <gtest/gtest.h>
 
 using namespace Dakota;
 
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_wilks_firstorder)
+TEST(wilks_sampling_tests, test_wilks_firstorder)
 {
   /*
 
@@ -48,7 +46,7 @@ BOOST_AUTO_TEST_CASE(test_wilks_firstorder)
   for( ; mend != miter; ++miter ) {
     Real beta = (Real)miter->first/100.0;
     int num_samples = NonDSampling::compute_wilks_sample_size(1, alpha, beta, twosided);
-    BOOST_CHECK( miter->second == num_samples );
+    EXPECT_TRUE(( miter->second == num_samples ));
   }
 
 
@@ -65,7 +63,7 @@ BOOST_AUTO_TEST_CASE(test_wilks_firstorder)
   for( ; mend != miter; ++miter ) {
     Real beta = (Real)miter->first/100.0;
     int num_samples = NonDSampling::compute_wilks_sample_size(1, alpha, beta, twosided);
-    BOOST_CHECK( miter->second == num_samples );
+    EXPECT_TRUE(( miter->second == num_samples ));
   }
 }
 
@@ -107,7 +105,7 @@ namespace {
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_wilks_onesided_firstorder)
+TEST(wilks_sampling_tests, test_wilks_onesided_firstorder)
 {
   /* 
    *
@@ -146,7 +144,7 @@ BOOST_AUTO_TEST_CASE(test_wilks_onesided_firstorder)
                                          mend = iter->second.end();
     for( ; mend != miter; ++miter ) {
       nalpha = miter->first;
-      BOOST_CHECK( gold_firstorder[nbeta][nalpha] == computed_table_data[nbeta][nalpha] );
+      EXPECT_TRUE(( gold_firstorder[nbeta][nalpha] == computed_table_data[nbeta][nalpha] ));
     }
   }
 }
@@ -154,7 +152,7 @@ BOOST_AUTO_TEST_CASE(test_wilks_onesided_firstorder)
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_wilks_onesided_secondorder)
+TEST(wilks_sampling_tests, test_wilks_onesided_secondorder)
 {
   /* 
    *
@@ -193,14 +191,14 @@ BOOST_AUTO_TEST_CASE(test_wilks_onesided_secondorder)
                                          mend = iter->second.end();
     for( ; mend != miter; ++miter ) {
       nalpha = miter->first;
-      BOOST_CHECK( gold_secondorder[nbeta][nalpha] == computed_table_data[nbeta][nalpha] );
+      EXPECT_TRUE(( gold_secondorder[nbeta][nalpha] == computed_table_data[nbeta][nalpha] ));
     }
   }
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_wilks_onesided_thirdorder)
+TEST(wilks_sampling_tests, test_wilks_onesided_thirdorder)
 {
   /* 
    *
@@ -239,7 +237,7 @@ BOOST_AUTO_TEST_CASE(test_wilks_onesided_thirdorder)
                                          mend = iter->second.end();
     for( ; mend != miter; ++miter ) {
       nalpha = miter->first;
-      BOOST_CHECK( gold_thirdorder[nbeta][nalpha] == computed_table_data[nbeta][nalpha] );
+      EXPECT_TRUE(( gold_thirdorder[nbeta][nalpha] == computed_table_data[nbeta][nalpha] ));
     }
   }
 }
@@ -277,7 +275,7 @@ BOOST_AUTO_TEST_CASE(test_wilks_onesided_thirdorder)
        
 */
 
-BOOST_AUTO_TEST_CASE(test_wilks_twosided_secondorder)
+TEST(wilks_sampling_tests, test_wilks_twosided_secondorder)
 {
   std::map<int,int> gold_95_95,                    gold_99_999;
                     gold_95_95[1]  = 93  ;         gold_99_999[1]  = 920 ;
@@ -310,7 +308,7 @@ BOOST_AUTO_TEST_CASE(test_wilks_twosided_secondorder)
   for( ; mend != miter; ++miter ) {
     int order = miter->first;
     int num_samples = NonDSampling::compute_wilks_sample_size(order, alpha, beta, twosided);
-    BOOST_CHECK( miter->second == num_samples );
+    EXPECT_TRUE(( miter->second == num_samples ));
   }
 
 
@@ -322,7 +320,7 @@ BOOST_AUTO_TEST_CASE(test_wilks_twosided_secondorder)
   for( ; mend != miter; ++miter ) {
     int order = miter->first;
     int num_samples = NonDSampling::compute_wilks_sample_size(order, alpha, beta, twosided);
-    BOOST_CHECK( miter->second == num_samples );
+    EXPECT_TRUE(( miter->second == num_samples ));
   }
 }
 
@@ -351,7 +349,7 @@ namespace {
 }
 
 
-BOOST_AUTO_TEST_CASE(test_wilks_compute_residual)
+TEST(wilks_sampling_tests, test_wilks_compute_residual)
 {
   Real alpha = 0.95, beta = 0.95;
   bool twosided = false;
@@ -360,24 +358,24 @@ BOOST_AUTO_TEST_CASE(test_wilks_compute_residual)
 
   // Check agreement to within an integer
   Real res = 1.0 + NonDSampling::compute_wilks_residual(order, num_samples, alpha, beta, twosided);
-  BOOST_CHECK_CLOSE( 1.0, res, 150.0 );
+  EXPECT_LT(std::fabs(1. -  1.0/res), 150.0/100. );
 
   // Check agreement to within an integer
   order = 3;
   num_samples = NonDSampling::compute_wilks_sample_size(order, alpha, beta, twosided);
   res = 1.0 + NonDSampling::compute_wilks_residual(order, num_samples, alpha, beta, twosided);
-  BOOST_CHECK_CLOSE( 1.0, res, 1.0 );
+  EXPECT_LT(std::fabs(1. -  1.0/res), 1.0/100. );
 
   // Check agreement to within an integer
   twosided = true;
   num_samples = NonDSampling::compute_wilks_sample_size(order, alpha, beta, twosided);
   res = 1.0 + NonDSampling::compute_wilks_residual(order, num_samples, alpha, beta, twosided);
-  BOOST_CHECK_CLOSE( 1.0, res, 1.0 );
+  EXPECT_LT(std::fabs(1. -  1.0/res), 1.0/100. );
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_wilks_compute_alpha)
+TEST(wilks_sampling_tests, test_wilks_compute_alpha)
 {
   const Real alpha = 0.97, beta = 0.99, max_tol = 4.e-4;
 
@@ -387,8 +385,8 @@ BOOST_AUTO_TEST_CASE(test_wilks_compute_alpha)
   Real test_alpha = NonDSampling::compute_wilks_alpha(order, num_samples, beta, twosided);
   Real test_alpha_m1 = NonDSampling::compute_wilks_alpha(order, num_samples-1, beta, twosided);
   Real tol = std::fabs(test_alpha - test_alpha_m1);
-  BOOST_CHECK( tol < max_tol );
-  BOOST_CHECK_CLOSE( alpha, test_alpha, 100.0*tol );
+  EXPECT_TRUE(( tol < max_tol ));
+  EXPECT_LT(std::fabs(1. -  alpha/test_alpha), 100.0*tol/100. );
 
   twosided = false;
   order = 3;
@@ -396,8 +394,8 @@ BOOST_AUTO_TEST_CASE(test_wilks_compute_alpha)
   test_alpha = NonDSampling::compute_wilks_alpha(order, num_samples, beta, twosided);
   test_alpha_m1 = NonDSampling::compute_wilks_alpha(order, num_samples-1, beta, twosided);
   tol = std::fabs(test_alpha - test_alpha_m1);
-  BOOST_CHECK( tol < max_tol );
-  BOOST_CHECK_CLOSE( alpha, test_alpha, 100.0*tol );
+  EXPECT_TRUE(( tol < max_tol ));
+  EXPECT_LT(std::fabs(1. -  alpha/test_alpha), 100.0*tol/100. );
 
   twosided = true;
   order = 2;
@@ -405,14 +403,14 @@ BOOST_AUTO_TEST_CASE(test_wilks_compute_alpha)
   test_alpha = NonDSampling::compute_wilks_alpha(order, num_samples, beta, twosided);
   test_alpha_m1 = NonDSampling::compute_wilks_alpha(order, num_samples-1, beta, twosided);
   tol = std::fabs(test_alpha - test_alpha_m1);
-  BOOST_CHECK( tol < max_tol );
-  BOOST_CHECK_CLOSE( alpha, test_alpha, 100.0*tol );
+  EXPECT_TRUE(( tol < max_tol ));
+  EXPECT_LT(std::fabs(1. -  alpha/test_alpha), 100.0*tol/100. );
 
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_wilks_compute_beta)
+TEST(wilks_sampling_tests, test_wilks_compute_beta)
 {
   const Real alpha = 0.97, beta = 0.99, max_tol = 4.e-4;
 
@@ -422,8 +420,8 @@ BOOST_AUTO_TEST_CASE(test_wilks_compute_beta)
   Real test_beta = NonDSampling::compute_wilks_beta(order, num_samples, alpha, twosided);
   Real test_beta_m1 = NonDSampling::compute_wilks_beta(order, num_samples-1, alpha, twosided);
   Real tol = std::fabs(test_beta - test_beta_m1);
-  BOOST_CHECK( tol < max_tol );
-  BOOST_CHECK_CLOSE( beta, test_beta, 100.0*tol );
+  EXPECT_TRUE(( tol < max_tol ));
+  EXPECT_LT(std::fabs(1. -  beta/test_beta), 100.0*tol/100. );
 
   twosided = false;
   order = 3;
@@ -431,8 +429,8 @@ BOOST_AUTO_TEST_CASE(test_wilks_compute_beta)
   test_beta = NonDSampling::compute_wilks_beta(order, num_samples, alpha, twosided);
   test_beta_m1 = NonDSampling::compute_wilks_beta(order, num_samples-1, alpha, twosided);
   tol = std::fabs(test_beta - test_beta_m1);
-  BOOST_CHECK( tol < max_tol );
-  BOOST_CHECK_CLOSE( beta, test_beta, 100.0*tol );
+  EXPECT_TRUE(( tol < max_tol ));
+  EXPECT_LT(std::fabs(1. -  beta/test_beta), 100.0*tol/100. );
 
   twosided = true;
   order = 2;
@@ -440,6 +438,13 @@ BOOST_AUTO_TEST_CASE(test_wilks_compute_beta)
   test_beta = NonDSampling::compute_wilks_beta(order, num_samples, alpha, twosided);
   test_beta_m1 = NonDSampling::compute_wilks_beta(order, num_samples-1, alpha, twosided);
   tol = std::fabs(test_beta - test_beta_m1);
-  BOOST_CHECK( tol < max_tol );
-  BOOST_CHECK_CLOSE( beta, test_beta, 100.0*tol );
+  EXPECT_TRUE(( tol < max_tol ));
+  EXPECT_LT(std::fabs(1. -  beta/test_beta), 100.0*tol/100. );
+}
+
+//----------------------------------------------------------------
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

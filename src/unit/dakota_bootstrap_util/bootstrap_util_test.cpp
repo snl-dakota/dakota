@@ -9,9 +9,7 @@
 
 // To avoid min/max issues in Teuchos; consider leveraging a portable.hpp?
 #include "util_windows.hpp"
-#define BOOST_TEST_MODULE dakota_bootstrap_utils
-#include <boost/test/included/unit_test.hpp>
-#include <boost/test/unit_test.hpp>
+#include <gtest/gtest.h>
 #include <boost/assign.hpp>
 #include <vector>
 
@@ -20,7 +18,7 @@
 
 //____________________________________________________________________________//
 
-BOOST_AUTO_TEST_CASE( test_bootstrap_real_matrix )
+TEST( bootstrap_util_test_tests, test_bootstrap_real_matrix )
 {
   using namespace Dakota;
 
@@ -36,11 +34,12 @@ BOOST_AUTO_TEST_CASE( test_bootstrap_real_matrix )
 
   bootstrapS(result);
 
-  BOOST_CHECK_EQUAL_COLLECTIONS(result[0], result[5],
-                                test_output_vals, test_output_vals+5);
+  for (size_t i(0); i < result.numCols(); ++i) {
+    EXPECT_EQ(result(0,i), test_output_vals[i]);
+  }
 }
 
-BOOST_AUTO_TEST_CASE( test_bootstrap_seq_container )
+TEST( bootstrap_util_test_tests, test_bootstrap_seq_container )
 {
   using namespace Dakota;
   using namespace boost::assign;
@@ -54,7 +53,10 @@ BOOST_AUTO_TEST_CASE( test_bootstrap_seq_container )
 
   bootstrapS(result);
 
-  BOOST_CHECK_EQUAL_COLLECTIONS(result.begin(), result.end(),
-                                test_output_vals.begin(),
-                                test_output_vals.end());
+  EXPECT_EQ(result, test_output_vals);
+}
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

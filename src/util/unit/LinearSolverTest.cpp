@@ -11,8 +11,7 @@
 #include "util_common.hpp"
 #include "util_math_tools.hpp"
 
-#define BOOST_TEST_MODULE dakota_LinearSolverTest
-#include <boost/test/included/unit_test.hpp>
+#include <gtest/gtest.h>
 
 using namespace dakota;
 using namespace dakota::util;
@@ -54,7 +53,7 @@ void test_solver(LinearSolverBase& solver)
 
   solver.solve(A, b, x);
 
-  BOOST_CHECK(matrix_equals(A * x, b, 1.0e-12));
+  EXPECT_TRUE(matrix_equals(A * x, b, 1.0e-12));
 }
 
 // -------------------------------------
@@ -74,7 +73,7 @@ void test_solver_symmetric(LinearSolverBase& solver)
 
   solver.solve(A, b, x);
 
-  BOOST_CHECK(matrix_equals(A * x, b, 1.0e-12));
+  EXPECT_TRUE(matrix_equals(A * x, b, 1.0e-12));
 }
 
 // -------------------------------------
@@ -93,18 +92,18 @@ void test_solver_symmetric(SOLVER_TYPE type)
 
 // --------------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(util_solver_base) {
+TEST(LinearSolverTest_tests, util_solver_base) {
   MatrixXd A = create_simple_invertible_matrix();
   MatrixXd b = create_uniform_random_double_matrix(A.cols(), 1, 25);
   MatrixXd x(A.cols(), 1);
 
   LinearSolverBase base;
-  BOOST_CHECK_THROW(base.solve(A, b, x), std::runtime_error);
+  EXPECT_THROW(base.solve(A, b, x), std::runtime_error);
 }
 
 // --------------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(util_solver_lu) {
+TEST(LinearSolverTest_tests, util_solver_lu) {
   LUSolver lu_solver;
   test_solver(lu_solver);
   test_solver(SOLVER_TYPE::LU);
@@ -112,7 +111,7 @@ BOOST_AUTO_TEST_CASE(util_solver_lu) {
 
 // --------------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(util_solver_svd) {
+TEST(LinearSolverTest_tests, util_solver_svd) {
   SVDSolver svd_solver;
   test_solver(svd_solver);
   test_solver(SOLVER_TYPE::SVD_LEAST_SQ_REGRESSION);
@@ -120,7 +119,7 @@ BOOST_AUTO_TEST_CASE(util_solver_svd) {
 
 // --------------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(util_solver_qr) {
+TEST(LinearSolverTest_tests, util_solver_qr) {
   QRSolver qr_solver;
   test_solver(qr_solver);
   test_solver(SOLVER_TYPE::QR_LEAST_SQ_REGRESSION);
@@ -128,10 +127,15 @@ BOOST_AUTO_TEST_CASE(util_solver_qr) {
 
 // --------------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(util_solver_cholesky) {
+TEST(LinearSolverTest_tests, util_solver_cholesky) {
   CholeskySolver cholesky_solver;
   test_solver_symmetric(cholesky_solver);
   test_solver_symmetric(SOLVER_TYPE::CHOLESKY);
 }
 
 // --------------------------------------------------------------------------------
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

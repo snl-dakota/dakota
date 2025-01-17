@@ -7,8 +7,7 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#define BOOST_TEST_ALTERNATIVE_INIT_API
-#include <boost/test/included/unit_test.hpp> // header-only, Boost.Test framework
+#include <gtest/gtest.h>
 
 #include "DakotaBuildInfo.hpp"
 
@@ -20,8 +19,8 @@ namespace MinTest {
 
 void my_test0()
 {
-  BOOST_CHECK(0 == 0);
-  BOOST_CHECK(1+1 == 2);
+  EXPECT_TRUE((0 == 0));
+  EXPECT_TRUE((1+1 == 2));
 }
 
 
@@ -38,7 +37,7 @@ void rev_test()
     // meaningless, but the short SHA1 should always satisfy this test
     // if converted as hexadecimal
     auto rev = std::stoll(rev_str, 0, 16);
-    BOOST_CHECK(rev > 2452);
+    EXPECT_TRUE((rev > 2452));
   }
   catch (const std::logic_error& e) {
     std::cerr << '\n' << e.what() << std::endl;
@@ -48,17 +47,17 @@ void rev_test()
 } // end of MinTest namespace
 } // end of DakotaUnitTest namespace
 
-
-// NOTE: Boost.Test framework provides the main program driver
 //____________________________________________________________________________//
 
-bool init_unit_test()
+TEST(min_unit_test_tests, all_tests)
 {
-  boost::unit_test::framework::master_test_suite().add(
-    BOOST_TEST_CASE( &DakotaUnitTest::MinTest::my_test0 ) );
-  boost::unit_test::framework::master_test_suite().add(
-    BOOST_TEST_CASE( &DakotaUnitTest::MinTest::rev_test ) );
-
-  return true;
+  DakotaUnitTest::MinTest::my_test0();
+  DakotaUnitTest::MinTest::rev_test();
 }
 
+//____________________________________________________________________________//
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

@@ -13,8 +13,7 @@
 
 #include <string>
 
-#define BOOST_TEST_MODULE dakota_data_conversions
-#include <boost/test/included/unit_test.hpp>
+#include <gtest/gtest.h>
 
 using namespace Dakota;
 using dakota::MatrixXd;
@@ -41,7 +40,7 @@ namespace {
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_data_conversion_rva2rm)
+TEST(data_conversions_tests, test_data_conversion_rva2rm)
 {
   const int NROWS = 5;
   const int NCOLS = 3;
@@ -53,18 +52,18 @@ BOOST_AUTO_TEST_CASE(test_data_conversion_rva2rm)
   /////////////////  What we want to test
 
   // Verify correct dimensions
-  BOOST_CHECK( NROWS == test_rm.numRows() );
-  BOOST_CHECK( NCOLS == test_rm.numCols() );
+  EXPECT_TRUE(( NROWS == test_rm.numRows() ));
+  EXPECT_TRUE(( NCOLS == test_rm.numCols() ));
 
   // Verify contents of what we wrote and what we read
   for( size_t i=0; i<NROWS; ++i )
     for( int j=0; j<NCOLS; ++j )
-    BOOST_CHECK_CLOSE( test_rva[i][j], test_rm(i,j), 1.e-12 );
+    EXPECT_LT(std::fabs(1. - test_rva[i][j] / test_rm(i,j)), 1.e-12/100. );
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_data_conversion_mat2mat)
+TEST(data_conversions_tests, test_data_conversion_mat2mat)
 {
   const int NROWS = 5;
   const int NCOLS = 3;
@@ -77,23 +76,23 @@ BOOST_AUTO_TEST_CASE(test_data_conversion_mat2mat)
   /////////////////  What we want to test
 
   // Verify correct dimensions
-  BOOST_CHECK( NROWS == dest_mat.numRows() );
-  BOOST_CHECK( NCOLS == dest_mat.numCols() );
+  EXPECT_TRUE(( NROWS == dest_mat.numRows() ));
+  EXPECT_TRUE(( NCOLS == dest_mat.numCols() ));
 
   // Verify contents of what we wrote and what we read
   for( size_t i=0; i<NROWS; ++i )
     for( int j=0; j<NCOLS; ++j )
-    BOOST_CHECK_CLOSE( test_mat(i,j), dest_mat(i,j), 1.e-12 );
+    EXPECT_LT(std::fabs(1. - test_mat(i,j) / dest_mat(i,j)), 1.e-12/100. );
 
   // Verifiy that the copy is a deep copy
   dest_mat(1,1) *= 1.5;
   double diff = dest_mat(1,1) - test_mat(1,1);
-  BOOST_CHECK_CLOSE( diff, 0.5*test_mat(1,1), 1.e-12 );
+  EXPECT_LT(std::fabs(1. - diff / (0.5*test_mat(1,1))), 1.e-12/100. );
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_data_conversion_mat2mat_sub)
+TEST(data_conversions_tests, test_data_conversion_mat2mat_sub)
 {
   const int NROWS = 5;
   const int NCOLS = 3;
@@ -112,23 +111,23 @@ BOOST_AUTO_TEST_CASE(test_data_conversion_mat2mat_sub)
   /////////////////  What we want to test
 
   // Verify correct dimensions
-  BOOST_CHECK( 3 == dest_mat.numRows() );
-  BOOST_CHECK( 2 == dest_mat.numCols() );
+  EXPECT_TRUE(( 3 == dest_mat.numRows() ));
+  EXPECT_TRUE(( 2 == dest_mat.numCols() ));
 
   // Verify contents of what we wrote and what we read
   for( int i=0; i<dest_mat.numRows(); ++i )
     for( int j=0; j<dest_mat.numCols(); ++j )
-    BOOST_CHECK_CLOSE( test_mat(i+roffset,j+coffset), dest_mat(i,j), 1.e-12 );
+    EXPECT_LT(std::fabs(1. - test_mat(i+roffset,j+coffset) / dest_mat(i,j)), 1.e-12/100. );
 
   // Verifiy that the copy is a deep copy
   dest_mat(1,1) *= 1.5;
   double diff = dest_mat(1,1) - test_mat(1+roffset,1+coffset);
-  BOOST_CHECK_CLOSE( diff, 0.5*test_mat(1+roffset,1+coffset), 1.e-12 );
+  EXPECT_LT(std::fabs(1. - diff / (0.5*test_mat(1+roffset,1+coffset))), 1.e-12/100. );
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_data_conversion_mat2mat_sym)
+TEST(data_conversions_tests, test_data_conversion_mat2mat_sym)
 {
   const int NROWS = 3;
   const int NCOLS = NROWS;
@@ -141,23 +140,23 @@ BOOST_AUTO_TEST_CASE(test_data_conversion_mat2mat_sym)
   /////////////////  What we want to test
 
   // Verify correct dimensions
-  BOOST_CHECK( NROWS == dest_mat.numRows() );
-  BOOST_CHECK( NCOLS == dest_mat.numCols() );
+  EXPECT_TRUE(( NROWS == dest_mat.numRows() ));
+  EXPECT_TRUE(( NCOLS == dest_mat.numCols() ));
 
   // Verify contents of what we wrote and what we read
   for( size_t i=0; i<NROWS; ++i )
     for( int j=0; j<NCOLS; ++j )
-    BOOST_CHECK_CLOSE( test_mat(i,j), dest_mat(i,j), 1.e-12 );
+    EXPECT_LT(std::fabs(1. - test_mat(i,j) / dest_mat(i,j)), 1.e-12/100. );
 
   // Verifiy that the copy is a deep copy
   dest_mat(1,1) *= 1.5;
   double diff = dest_mat(1,1) - test_mat(1,1);
-  BOOST_CHECK_CLOSE( diff, 0.5*test_mat(1,1), 1.e-12 );
+  EXPECT_LT(std::fabs(1. - diff / (0.5*test_mat(1,1))), 1.e-12/100. );
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_data_conversion_mat_swap)
+TEST(data_conversions_tests, test_data_conversion_mat_swap)
 {
   RealMatrix mat( 5, 5 );
   mat.random();
@@ -172,12 +171,12 @@ BOOST_AUTO_TEST_CASE(test_data_conversion_mat_swap)
   bool op_result = ( (mat_swap == copy_mat) && (mat == copy_mat_swap) );
   //Cout << "shallow swap results -- "<< (op_result ? "successful" : "failed" )<<std::endl;
   if( !op_result )
-    BOOST_CHECK( false );
+    FAIL();
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_data_conversion_sym_mat_swap)
+TEST(data_conversions_tests, test_data_conversion_sym_mat_swap)
 {
   RealSymMatrix mat( 5 );
   mat.random();
@@ -190,12 +189,12 @@ BOOST_AUTO_TEST_CASE(test_data_conversion_sym_mat_swap)
   mat_swap.swap(mat);
   bool op_result = ( (mat_swap == copy_mat) && (mat == copy_mat_swap) );
   if( !op_result )
-    BOOST_CHECK( false );
+    FAIL();
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_data_conversion_apply_matrix)
+TEST(data_conversions_tests, test_data_conversion_apply_matrix)
 {
   const int NROWS = 5;
   const int NCOLS = 3;
@@ -210,7 +209,7 @@ BOOST_AUTO_TEST_CASE(test_data_conversion_apply_matrix)
   /////////////////  What we want to test
 
   // Verify correct dimensions
-  BOOST_CHECK( NROWS == v2.size() );
+  EXPECT_TRUE(( NROWS == v2.size() ));
 
   // Verify correct values
   Real sum = 0.0;
@@ -219,7 +218,7 @@ BOOST_AUTO_TEST_CASE(test_data_conversion_apply_matrix)
     sum = 0.0;
     for( int j=0; j<NCOLS; ++j )
       sum += mat(i,j);
-    BOOST_CHECK_CLOSE( sum, v2[i], 1.e-12 );
+    EXPECT_LT(std::fabs(1. - sum / v2[i]), 1.e-12/100. );
   }
 
   // Now test partial behavior
@@ -235,7 +234,7 @@ BOOST_AUTO_TEST_CASE(test_data_conversion_apply_matrix)
   /////////////////  What we want to test
 
   // Verify correct dimensions
-  BOOST_CHECK( 2*NROWS == v4.size() );
+  EXPECT_TRUE(( 2*NROWS == v4.size() ));
 
   // Verify correct values
   for( size_t i=0; i<v4.size(); ++i )
@@ -245,16 +244,16 @@ BOOST_AUTO_TEST_CASE(test_data_conversion_apply_matrix)
       sum = 0.0;
       for( int j=0; j<NCOLS; ++j )
         sum += mat(i,j);
-      BOOST_CHECK_CLOSE( 2.0*sum, v4[i], 1.e-12 );
+      EXPECT_LT(std::fabs(1. - 2.0*sum / v4[i]), 1.e-12/100. );
     }
     else
-      BOOST_CHECK_CLOSE( (Real)i, v4[i], 1.e-12 );
+      EXPECT_LT(std::fabs(1. - (Real)i / v4[i]), 1.e-12/100. );
   }
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_data_conversion_apply_matrix_transpose)
+TEST(data_conversions_tests, test_data_conversion_apply_matrix_transpose)
 {
   const int NROWS = 5;
   const int NCOLS = 3;
@@ -269,7 +268,7 @@ BOOST_AUTO_TEST_CASE(test_data_conversion_apply_matrix_transpose)
   /////////////////  What we want to test
 
   // Verify correct dimensions
-  BOOST_CHECK( NCOLS == v2.size() );
+  EXPECT_TRUE(( NCOLS == v2.size() ));
 
   // Verify correct values
   Real sum = 0.0;
@@ -278,7 +277,7 @@ BOOST_AUTO_TEST_CASE(test_data_conversion_apply_matrix_transpose)
     sum = 0.0;
     for( int j=0; j<NROWS; ++j )
       sum += mat(j,i);
-    BOOST_CHECK_CLOSE( sum, v2[i], 1.e-12 );
+    EXPECT_LT(std::fabs(1. - sum / v2[i]), 1.e-12/100. );
   }
 
   // Now test partial behavior
@@ -294,7 +293,7 @@ BOOST_AUTO_TEST_CASE(test_data_conversion_apply_matrix_transpose)
   /////////////////  What we want to test
 
   // Verify correct dimensions
-  BOOST_CHECK( 2*NCOLS == v4.size() );
+  EXPECT_TRUE(( 2*NCOLS == v4.size() ));
 
   // Verify correct values
   for( size_t i=0; i<v4.size(); ++i )
@@ -304,16 +303,16 @@ BOOST_AUTO_TEST_CASE(test_data_conversion_apply_matrix_transpose)
       sum = 0.0;
       for( int j=0; j<NROWS; ++j )
         sum += mat(j,i);
-      BOOST_CHECK_CLOSE( 2.0*sum, v4[i], 1.e-12 );
+      EXPECT_LT(std::fabs(1. - 2.0*sum / v4[i]), 1.e-12/100. );
     }
     else
-      BOOST_CHECK_CLOSE( (Real)i, v4[i], 1.e-12 );
+      EXPECT_LT(std::fabs(1. - (Real)i / v4[i]), 1.e-12/100. );
   }
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_data_conversion_rm2eigM)
+TEST(data_conversions_tests, test_data_conversion_rm2eigM)
 {
   const int NROWS = 5;
   const int NCOLS = 3;
@@ -327,13 +326,13 @@ BOOST_AUTO_TEST_CASE(test_data_conversion_rm2eigM)
   /////////////////  What we want to test
 
   // Verify correct dimensions
-  BOOST_CHECK( NROWS == test_mat.rows() );
-  BOOST_CHECK( NCOLS == test_mat.cols() );
+  EXPECT_TRUE(( NROWS == test_mat.rows() ));
+  EXPECT_TRUE(( NCOLS == test_mat.cols() ));
 
   // Verify contents
   for( size_t i=0; i<NROWS; ++i )
     for( int j=0; j<NCOLS; ++j )
-    BOOST_CHECK_CLOSE( test_mat(i,j), rm(i,j), 1.e-12 );
+    EXPECT_LT(std::fabs(1. - test_mat(i,j) / rm(i,j)), 1.e-12/100. );
 
 
   // Store the original norm to see if we change it via a view
@@ -348,12 +347,12 @@ BOOST_AUTO_TEST_CASE(test_data_conversion_rm2eigM)
 
   // Verify correct behavior of view
   const Real new_norm = rm.normOne();
-  BOOST_CHECK_CLOSE( 3.14*orig_norm, new_norm, 1.e-10 );
+  EXPECT_LT(std::fabs(1. - 3.14*orig_norm / new_norm), 1.e-10/100. );
 }
 
 //----------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(test_data_conversion_eigM2rm)
+TEST(data_conversions_tests, test_data_conversion_eigM2rm)
 {
   const int NROWS = 5;
   const int NCOLS = 3;
@@ -366,13 +365,18 @@ BOOST_AUTO_TEST_CASE(test_data_conversion_eigM2rm)
   /////////////////  What we want to test
 
   // Verify correct dimensions
-  BOOST_CHECK( NROWS == test_mat.numRows() );
-  BOOST_CHECK( NCOLS == test_mat.numCols() );
+  EXPECT_TRUE(( NROWS == test_mat.numRows() ));
+  EXPECT_TRUE(( NCOLS == test_mat.numCols() ));
 
   // Verify contents
   for( size_t i=0; i<NROWS; ++i )
     for( int j=0; j<NCOLS; ++j )
-    BOOST_CHECK_CLOSE( test_mat(i,j), em(i,j), 1.e-12 );
+    EXPECT_LT(std::fabs(1. - test_mat(i,j) / em(i,j)), 1.e-12/100. );
 }
 
 //----------------------------------------------------------------
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

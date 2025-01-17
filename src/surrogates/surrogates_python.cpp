@@ -15,7 +15,9 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+#ifdef HAVE_ROL
 #include "SurrogatesGaussianProcess.hpp"
+#endif
 #include "SurrogatesPolynomialRegression.hpp"
 
 namespace py = pybind11;
@@ -193,6 +195,7 @@ PYBIND11_MODULE(surrogates, m) {
 
       ;  // PolynomialRegression
 
+#ifdef HAVE_ROL
   py::class_<dakota::surrogates::GaussianProcess,
              std::shared_ptr<dakota::surrogates::GaussianProcess>,
              dakota::surrogates::Surrogate>(m, "GaussianProcess")
@@ -235,4 +238,5 @@ PYBIND11_MODULE(surrogates, m) {
            (&dakota::surrogates::GaussianProcess::get_theta_history))
 
       ;  // GaussianProcess
+#endif
 }
