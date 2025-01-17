@@ -60,11 +60,9 @@ target_include_directories(dakota_surrogates PUBLIC
 target_link_libraries(dakota_surrogates PUBLIC ${Teuchos_LIBRARIES})
 
 
-# BMA: Unless there's a better way, specify that ROL is a system
-# library to suppress warnings
 if(HAVE_ROL)
-  target_include_directories(dakota_surrogates SYSTEM PRIVATE
-    "${ROL_INCLUDE_DIRS}"
+  target_include_directories(dakota_surrogates PUBLIC
+    "$<BUILD_INTERFACE:${ROL_INCLUDE_DIRS}>"
   )
 endif(HAVE_ROL)
 

@@ -1092,7 +1092,6 @@ if(DAKOTA_PYTHON_WRAPPER)
 #  target_include_directories(surrogates PRIVATE ${Teuchos_INCLUDE_DIRS})
   target_link_libraries(environment PRIVATE dakota_src
     ${Dakota_LIBRARIES} ${Dakota_TPL_LIBRARIES}
-    Teuchos::all_libs
     )
 
   # The generated link.txt has too long a single argument to RPATH

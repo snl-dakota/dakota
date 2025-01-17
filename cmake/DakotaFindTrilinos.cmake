@@ -98,6 +98,10 @@ macro(dakota_find_trilinos)
 
 	add_subdirectory(packages/external/trilinos)
 
+	if(HAVE_ROL)
+          get_target_property(ROL_INCLUDE_DIRS rol INCLUDE_DIRECTORIES)
+	endif()
+
       endif() # Teuchos_DIR
 
       # Additional setting to prevent multiple targets with the same name
