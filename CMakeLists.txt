@@ -247,18 +247,13 @@ if(HAVE_ROL)
   add_definitions("-DHAVE_ROL")
 endif(HAVE_ROL)
 
+# Set up googletest. It must be done early so that
+# the targets can be used to add unit tests
+dakota_find_googletest()
+
 # -----
 # Configuration of Dakota components
 # -----
-
-# Set up googletest. It must be done early so that
-# the targets can be used to add unit tests.
-if(WIN32)
-  # from teh googletest docs
-  set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-endif()
-set(INSTALL_GTEST OFF CACHE BOOL "No need to install googletest")
-add_subdirectory(packages/external/googletest)
 
 if(DAKOTA_MODULE_UTIL)
   add_subdirectory(src/util)

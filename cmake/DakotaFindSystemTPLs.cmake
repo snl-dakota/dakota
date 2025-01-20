@@ -45,6 +45,16 @@ macro(dakota_find_boost)
   endif()
 endmacro()
 
+macro(dakota_find_googletest)
+  # For now, always build googletest in packages/external
+  if(WIN32)
+  # from the googletest docs
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+  endif()
+  set(INSTALL_GTEST OFF CACHE BOOL "No need to install googletest")
+  add_subdirectory(packages/external/googletest)
+endmacro()
+
 # Dakota custom find BLAS/LAPACK or equivalent Fortran linear algebra
 # BMA TODO: Update to use CMake BLAS/LAPACK probes and properly use their output
 macro(dakota_find_linalg)
