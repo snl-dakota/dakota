@@ -247,18 +247,23 @@ if(HAVE_ROL)
   add_definitions("-DHAVE_ROL")
 endif(HAVE_ROL)
 
+# Set up googletest. It must be done early so that
+# the targets can be used to add unit tests
+dakota_find_googletest()
+
 # -----
 # Configuration of Dakota components
 # -----
 
-# --- New surrogates module
-# BMA TODO: Finer granularity in packages to build Trilinos, Eigen
-# first, then optionally Pecos, Surfpack, surrogates.
 if(DAKOTA_MODULE_UTIL)
   add_subdirectory(src/util)
 endif()
 
-if(DAKOTA_MODULE_SURROGATES)
+# --- New surrogates module
+# BMA TODO: Finer granularity in packages to build Trilinos, Eigen
+# first, then optionally Pecos, Surfpack, surrogates.
+
+if(DAKOTA_MODULE_SURROGATES) 
   add_subdirectory(src/surrogates)
   add_definitions("-DHAVE_DAKOTA_SURROGATES")
 endif()

@@ -28,11 +28,13 @@ function(dakota_add_unit_test)
   if (DAUT_LINK_LIBS)
     target_link_libraries(${exe_target} ${DAUT_LINK_LIBS})
   endif()
+  # Link to googletest
+  target_link_libraries(${exe_target} GTest::gtest_main)
+  target_include_directories(${exe_target} PRIVATE ${Dakota_SOURCE_DIR}/packages/external/googletest/googletest/include)
   # TODO: support dependencies directly in this call with DEPENDS
   #add_dependencies(${exe_target} ${DAUT_DEPENDS})
   add_test(${DAUT_NAME} ${exe_target})
   set_property(TEST ${DAUT_NAME} PROPERTY LABELS Unit ${DAUT_LABELS})
-
 endfunction()
 
   
