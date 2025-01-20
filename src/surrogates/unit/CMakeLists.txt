@@ -14,7 +14,7 @@ include(DakotaUnitTest)
 # List of test files to copy into this directory
 set(surrogates_unit_test_copied_files)
 
-if(HAVE_ROL)
+if(HAVE_ROL AND NOT WIN32)
   dakota_add_unit_test(NAME surrogates_gaussian_process
     SOURCES GaussianProcessTest.cpp
     # To force linking against fortran runtime needed to teuchosnumerics
