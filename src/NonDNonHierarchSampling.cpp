@@ -2435,6 +2435,8 @@ print_estimator_performance(std::ostream& s, const MFSolutionData& soln) const
     proj_equiv_hf_rnd = (size_t)std::floor(proj_equiv_hf + .5);
   hf_indices(hf_form_index, hf_lev_index);
   const SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
+  bool online = (pilotMgmtMode ==  ONLINE_PILOT ||
+		 pilotMgmtMode ==  ONLINE_PILOT_PROJECTION);
   String type = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
 		 pilotMgmtMode == OFFLINE_PILOT_PROJECTION) ?
     "Projected" : "   Online";
@@ -2445,8 +2447,6 @@ print_estimator_performance(std::ostream& s, const MFSolutionData& soln) const
   case APPROX_CONTROL_VARIATE:      method = "    ACV";  break;
   case GEN_APPROX_CONTROL_VARIATE:  method = " GenACV";  break;
   }
-  bool online = (pilotMgmtMode == ONLINE_PILOT ||
-		 pilotMgmtMode == ONLINE_PILOT_PROJECTION);
 
   s << "<<<<< Variance for mean estimator:\n";
   for (qoi=0; qoi<numFunctions; ++qoi) {
@@ -2470,13 +2470,16 @@ print_estimator_performance(std::ostream& s, const MFSolutionData& soln) const
     s << "    " << type     << "     MC (" << std::setw(5) << proj_N_H_q
       << " HF samples): " << std::setw(wpp7) << proj_mc_est_var_q << "\n    "
       << type << method   << " (sample profile):   " << std::setw(wpp7)
-      << nh_est_var[qoi]  << "\n    " << type << method
-      << " ratio (1 - R^2):    " << std::setw(wpp7)  << nh_ratio_q
-    //<< std::setw(wpp7)  << nh_est_var_q / proj_mc_est_var_q // same
-      << "\n   Equivalent     MC (" << std::setw(5) << proj_equiv_hf_rnd
-      << " HF samples): " << std::setw(wpp7) << budget_mc_est_var_q
-      << "\n   Equivalent"  << method << " ratio:              "
-      << std::setw(wpp7)  << nh_est_var_q / budget_mc_est_var_q << '\n';
+      << nh_est_var[qoi]  << '\n';
+    if (valid_variance(nh_ratio_q))
+      s << "    " << type << method << " ratio (1 - R^2):    "
+	<< std::setw(wpp7)  << nh_ratio_q << '\n';
+      //<< std::setw(wpp7)  << nh_est_var_q / proj_mc_est_var_q // same
+    s << "   Equivalent     MC (" << std::setw(5) << proj_equiv_hf_rnd
+      << " HF samples): " << std::setw(wpp7) << budget_mc_est_var_q  << '\n';
+    if (valid_variance(nh_est_var_q) && valid_variance(budget_mc_est_var_q))
+      s << "   Equivalent"  << method << " ratio:              "
+	<< std::setw(wpp7)  << nh_est_var_q / budget_mc_est_var_q << '\n';
   }
 }
 

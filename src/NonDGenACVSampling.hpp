@@ -249,8 +249,6 @@ private:
   void restore_best();
   //void reset_acv();
 
-  bool valid_estimator_variances(const RealVector& estvar) const;
-
   void inflate_approx_set(const UShortArray& approx_set, SizetArray& index_map);
   void inflate_variables(const RealVector& cd_vars, RealVector& N_vec,
 			 const UShortArray& approx_set);
@@ -606,17 +604,6 @@ inline void NonDGenACVSampling::reset_acv()
   // Note: other sample counters are reset at top of each acv_*_pilot() call
 }
 */
-
-
-inline bool NonDGenACVSampling::
-valid_estimator_variances(const RealVector& estvar) const
-{
-  size_t q, num_q = estvar.length();
-  for (q=0; q<num_q; ++q)
-    if (!std::isfinite(estvar[q]) || estvar[q] <= 0.)
-      return false;
-  return true;
-}
 
 
 inline void NonDGenACVSampling::

@@ -1570,25 +1570,25 @@ print_variance_reduction(std::ostream& s) const
   for (qoi=0; qoi<numFunctions; ++qoi) {
     s << std::setw(14) << labels[qoi] << ":\n"; // mirror print_moments()
     estvar_q           = estVar[qoi];
+    estvar_iter0_q     = estVarIter0[qoi];
     budget_mc_estvar_q = varH[qoi] / proj_equiv_hf;
 
-    if (online) {
-      estvar_iter0_q   = estVarIter0[qoi];
+    if (online)
       s << "        Initial MLMC (pilot samples):    " << std::setw(wpp7)
 	<< estvar_iter0_q << '\n';
-    }
     s << "    " << type << " MLCVMC (sample profile):   " << std::setw(wpp7)
       << estvar_q << '\n';
-    if (online)
+    if (online && valid_variance(estvar_q) && valid_variance(estvar_iter0_q))
       s << "    " << type << " MLCVMC / pilot ratio:      " << std::setw(wpp7)
 	<< estvar_q / estvar_iter0_q << '\n';;
 
     // est_var is projected for cases that are not fully iterated/incremented
     // > uses varH from recover_variance()
     s << "   Equivalent     MC (" << std::setw(5) << proj_equiv_hf_rnd
-      << " HF samples): " << std::setw(wpp7) << budget_mc_estvar_q
-      << "\n   Equivalent MLCVMC / MC ratio:         " << std::setw(wpp7)
-      << estvar_q / budget_mc_estvar_q << '\n';
+      << " HF samples): " << std::setw(wpp7) << budget_mc_estvar_q << '\n';
+    if (valid_variance(estvar_q) && valid_variance(budget_mc_estvar_q))
+      s << "   Equivalent MLCVMC / MC ratio:         " << std::setw(wpp7)
+	<< estvar_q / budget_mc_estvar_q << '\n';
   }
 }
 

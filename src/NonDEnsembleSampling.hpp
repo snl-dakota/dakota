@@ -157,6 +157,12 @@ protected:
   /// detect, warn, and repair a negative central moment (for even orders)
   static void check_negative(Real& cm);
 
+  /// check for valid values for (estimator) variance
+  bool valid_variance(Real estvar) const;
+  /// check for valid values for vectir of (estimator) variances
+  bool valid_variances(const RealVector& estvar) const;
+
+
   /// compute 95% confidence intervals for mean estimator
   void compute_mean_confidence_intervals(const RealMatrix& moment_stats,
 					 const RealVector& mean_estvar,
@@ -742,6 +748,21 @@ inline void NonDEnsembleSampling::check_negative(Real& cm)
     cm = 0.;
     // TO DO:  consider hard error if COV < -tol (pass in mean and cm order)
   }
+}
+
+
+inline bool NonDEnsembleSampling::valid_variance(Real estvar) const
+{ return (std::isfinite(estvar) && estvar > Pecos::SMALL_NUMBER_SQ); }
+
+
+inline bool NonDEnsembleSampling::
+valid_variances(const RealVector& estvar) const
+{
+  size_t q, num_q = estvar.length();
+  for (q=0; q<num_q; ++q)
+    if (!valid_variance(estvar[q]))
+      return false;
+  return true;
 }
 
 } // namespace Dakota

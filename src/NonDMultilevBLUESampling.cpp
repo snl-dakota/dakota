@@ -1437,13 +1437,14 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s) const
 	<< " HF samples):  " << std::setw(wpp7) << projEstVarHF[qoi] << '\n';
     s << "  " << type << method << "  (sample profile):  "
       << std::setw(wpp7) << mlblue_est_var_q << '\n';
-    if (mc_only_ref)
+    if (mc_only_ref && valid_variance(mlblue_ratio_q))
       s << "  " << type << method << " ratio   (1 - R^2):  "
 	<< std::setw(wpp7) << mlblue_ratio_q << '\n';
     s << " Equivalent MC    (" << std::setw(6) << proj_equiv_hf
-      << " HF samples):  " << std::setw(wpp7) << proj_equiv_estvar_q
-      << "\n Equivalent" << method << " ratio:              "
-      << std::setw(wpp7) << mlblue_est_var_q / proj_equiv_estvar_q << '\n';
+      << " HF samples):  " << std::setw(wpp7) << proj_equiv_estvar_q << '\n';
+    if (valid_variance(mlblue_est_var_q) && valid_variance(proj_equiv_estvar_q))
+      s << " Equivalent" << method << " ratio:              " << std::setw(wpp7)
+	<< mlblue_est_var_q / proj_equiv_estvar_q << '\n';
   }
 
   /*
