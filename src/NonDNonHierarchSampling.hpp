@@ -75,6 +75,7 @@ public:
   void initialize_estimator_variances(size_t num_fns);
   void initialize_estimator_variances(size_t num_fns, Real val);
   Real average_estimator_variance() const;
+  void average_estimator_variance(Real avg_estvar);
   void estimator_variances(const RealVector& est_var);
   const RealVector& estimator_variances() const;
   void estimator_variance(Real est_var, size_t i);
@@ -82,7 +83,6 @@ public:
    
   void initialize_estimator_variance_ratios(size_t num_fns);
   void initialize_estimator_variance_ratios(size_t num_fns, Real val);
-  //Real average_estimator_variance_ratio() const;
   void estimator_variance_ratios(const RealVector& est_var_ratios);
   const RealVector& estimator_variance_ratios() const;
   void estimator_variance_ratio(Real est_var_ratio, size_t i);
@@ -117,8 +117,8 @@ protected:
   // *********************
   // optimization results:
   // *********************
-  // Note: could/should be subclassed for analytic (vector estvar) vs.
-  //       numerical solutions (averaged estvar)
+  // Note: could be subclassed for analytic (vector estvar) vs. numerical
+  // solutions (averaged estvar)
 
   // average estimator variance for model graph
   //Real avgEstVar;
@@ -258,12 +258,23 @@ inline Real MFSolutionData::average_estimator_variance() const
 { return average(estVariances); }
 
 
+/** This function is only used during solution comparison in numerical
+    solves, where we need to store the final objective/constraint value.
+    Once a solution is selected, the QoI vector of estimator variances
+    is re-computed downstream. */
+inline void MFSolutionData::average_estimator_variance(Real avg_estvar)
+{
+  estVariances.sizeUninitialized(1); // collapsed temporarily
+  estVariances[0] = avg_estvar;
+}
+
+
 inline void MFSolutionData::estimator_variances(const RealVector& est_var)
 { copy_data(est_var, estVariances); }
 
 
 inline const RealVector& MFSolutionData::estimator_variances() const
-{ return estVariances; }
+{ return estVariances; } // enforce length == numFunctions?
 
 
 inline void MFSolutionData::estimator_variance(Real est_var, size_t i)
@@ -285,10 +296,6 @@ initialize_estimator_variance_ratios(size_t num_fns, Real val)
   if (estVarRatios.length()!=num_fns) estVarRatios.sizeUninitialized(num_fns);
   estVarRatios.putScalar(val);
 }
-
-
-//inline Real MFSolutionData::average_estimator_variance_ratio() const
-//{ return average(estVarRatios); }
 
 
 inline void MFSolutionData::

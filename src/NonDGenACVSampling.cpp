@@ -1654,11 +1654,12 @@ minimizer_results_to_solution_data(const RealVector& cv_star,
 {
   // Estvar recovery from optimizer provides std::log(average(nh_estvar)) =
   // var_H / N_H (1 - R^2).  Notes:
-  // > a QoI-vector prior to averaging would require recomputation from r*,N*)
-  // > this value corresponds to N* (_after_ num_samples applied)
-  //Real avg_estvar = (optSubProblemForm == N_MODEL_LINEAR_OBJECTIVE) ?
-  //  std::exp(fn_star[1]) : std::exp(fn_star(0));
-  //soln.average_estimator_variance(avg_estvar);
+  // > ultimately need a QoI-vector PRIOR to averaging, but defer recomputation
+  //   until after solution selection
+  // > optimal estvar value corresponds to N* (_after_ num_samples applied)
+  Real avg_estvar = (optSubProblemForm == N_MODEL_LINEAR_OBJECTIVE) ?
+    std::exp(fn_star[1]) : std::exp(fn_star(0));
+  soln.average_estimator_variance(avg_estvar); // replaced downstream
 
   // Recover optimizer results for average {eval_ratios,estvar}.  Also compute
   // shared increment from N* or from targeting specified budget || accuracy.
