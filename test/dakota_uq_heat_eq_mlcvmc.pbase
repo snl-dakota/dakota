@@ -3,24 +3,32 @@ Test Number 0 succeeded
 <<<<< Function evaluation summary: 14676 total (14676 new, 0 duplicate)
 <<<<< Online number of equivalent high fidelity evaluations: 2.6642866071e+01
 <<<<< Variance for mean estimator:
-      Initial MLMC (pilot samples):     4.5412772423e+02
-     Online MLCVMC (sample profile):    2.6606914018e+00
-     Online MLCVMC / pilot ratio:       5.8589054572e-03
- Equivalent     MC (   27 HF samples):  4.3058201106e+02
- Equivalent MLCVMC / MC ratio:          6.1792906657e-03
+ response_fn_1:
+        Initial MLMC (pilot samples):     4.5412772423e+02
+       Online MLCVMC (sample profile):    2.6606914018e+00
+       Online MLCVMC / pilot ratio:       5.8589054572e-03
+   Equivalent     MC (   27 HF samples):  4.3058201106e+02
+   Equivalent MLCVMC / MC ratio:          6.1792906657e-03
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.1810353570e+01  1.0710713727e+02  2.0275219090e+00  6.4446648695e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean
+ response_fn_1  3.8613333637e+01  4.5007373504e+01
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 14676 total (14676 new, 0 duplicate)
 <<<<< Function evaluation summary: 14676 total (14676 new, 0 duplicate)
 <<<<< Online number of equivalent high fidelity evaluations: 2.6642866071e+01
 <<<<< Variance for mean estimator:
-      Initial MLMC (pilot samples):     4.5412772423e+02
-     Online MLCVMC (sample profile):    2.6606914018e+00
-     Online MLCVMC / pilot ratio:       5.8589054572e-03
- Equivalent     MC (   27 HF samples):  4.3058201106e+02
- Equivalent MLCVMC / MC ratio:          6.1792906657e-03
+ response_fn_1:
+        Initial MLMC (pilot samples):     4.5412772423e+02
+       Online MLCVMC (sample profile):    2.6606914018e+00
+       Online MLCVMC / pilot ratio:       5.8589054572e-03
+   Equivalent     MC (   27 HF samples):  4.3058201106e+02
+   Equivalent MLCVMC / MC ratio:          6.1792906657e-03
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.1810353570e+01  1.0710713727e+02  2.0275219090e+00  6.4446648695e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean
+ response_fn_1  3.8613333637e+01  4.5007373504e+01

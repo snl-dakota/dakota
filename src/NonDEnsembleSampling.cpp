@@ -16,6 +16,7 @@
 #include "ProblemDescDB.hpp"
 #include "ActiveKey.hpp"
 #include "DakotaIterator.hpp"
+#include "NormalRandomVariable.hpp"
 
 static const char rcsId[]="@(#) $Id: NonDEnsembleSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
@@ -339,6 +340,30 @@ void NonDEnsembleSampling::active_set_mapping()
 }
 
 
+void NonDEnsembleSampling::
+compute_mean_confidence_intervals(const RealMatrix& moment_stats,
+				  const RealVector& mean_estvar,
+				  RealMatrix& mean_conf_ints)
+{
+  size_t q, num_qoi = moment_stats.numCols();
+  if (mean_conf_ints.empty())
+    mean_conf_ints.shapeUninitialized(2, num_qoi);
+
+  // 95% confidence interval for mean estimator given estimator variance
+  // Normal: p(mu - 2sigma <= X <= mu + 2sigma) ~ .9545
+  // Std normal: Phi(2) ~ .9772, Phi(z) = .975
+  Real mean, sqrt_estvar, z
+    = Pecos::NormalRandomVariable::inverse_std_cdf(.975);// ~ 2 stdev on 1 side
+  for (q=0; q<num_qoi; ++q) {
+    mean = moment_stats(0,q);
+    sqrt_estvar = std::sqrt(mean_estvar[q]);
+    Real* mean_ci_q = mean_conf_ints[q];
+    mean_ci_q[0] = mean - z * sqrt_estvar; // interval lower bound
+    mean_ci_q[1] = mean + z * sqrt_estvar; // interval upper bound
+  }
+}
+
+
 void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
 {
   if (!statsFlag)
@@ -360,8 +385,8 @@ void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
   if (!projections) {
     s << "\nStatistics based on multilevel sample set:\n";
     //print_statistics(s);
-    print_moments(s, "response function",
-		  iteratedModel.truth_model().response_labels());
+    print_moments(s, momentStats, meanCIs, "response function",finalMomentsType,
+		  iteratedModel.truth_model().response_labels(), true);
     archive_moments();
   }
 }

@@ -141,7 +141,7 @@ void NonDNonHierarchSampling::assign_active_key()
 
 
 void NonDNonHierarchSampling::
-hf_indices(size_t& hf_form_index, size_t& hf_lev_index)
+hf_indices(size_t& hf_form_index, size_t& hf_lev_index) const
 {
   // case Pecos::FORM_RESOLUTION_ENUMERATION
   hf_form_index = NLevActual.size() - 1;
@@ -605,77 +605,6 @@ mfmc_reordered_analytic_solution(const UShortArray& approx_set,
 
 
 void NonDNonHierarchSampling::
-mfmc_estvar_ratios(const RealMatrix& rho2_LH, const RealVector& avg_eval_ratios,
-		   SizetArray& approx_sequence, RealVector& estvar_ratios)
-{
-  if (estvar_ratios.empty()) estvar_ratios.sizeUninitialized(numFunctions);
-  Real R_sq, r_i, r_ip1;  size_t qoi, approx, approx_ip1, ip1;
-
-  // Analytic cases: sequence fixed upstream based on rho2LH; r_i monotonicity
-  //   enforced after analytic r_i computations for rho2LH sequence.
-  // Numerical cases: update sequence on every call in NonDMultifidelitySampling
-  //   ::estimator_variance_ratios().  Previously, was defined once and retained
-  //   via linear constraints on opt solve, but is now reordered on the fly
-  //   based on current optimizer design vars to retain validity of estvar.
-  bool ordered = approx_sequence.empty();
-
-  // Appendix B of JCP paper on ACV:
-  // > R^2 = \Sum_i [ (r_i -r_{i-1})/(r_i r_{i-1}) rho2_LH_i ]
-  // > Reorder differences since eval ratios/correlations ordered from LF to HF
-  //   (opposite of JCP); after this change, reproduces Peherstorfer eq.
-  // > Note that R^2 can blow up (resulting in negative estvar_ratios) when
-  //   r_i < 1 so we now prevent this in ordered/reordered analytic cases
-  //   (as for numerical cases), even though it might only be an initial
-  //   guess for something else.
-
-  switch (optSubProblemForm) {
-
-  // eval_ratios based on avg_rho2_LH: remain consistent here
-  case REORDERED_ANALYTIC_SOLUTION: {
-    RealVector avg_rho2_LH;  average(rho2_LH, 0, avg_rho2_LH); // avg over QoI
-    approx = (ordered) ? 0 : approx_sequence[0];
-    r_i = avg_eval_ratios[approx];  R_sq = 0.;
-    for (ip1=1; ip1<numApprox; ++ip1) {
-      approx_ip1 = (ordered) ? ip1 : approx_sequence[ip1];
-      r_ip1 = avg_eval_ratios[approx_ip1];
-      R_sq += (r_i - r_ip1) / (r_i * r_ip1) * avg_rho2_LH[approx]; // see below
-      r_i = r_ip1;  approx = approx_ip1;
-    }
-    R_sq += (r_i - 1.) / r_i * avg_rho2_LH[approx];
-    estvar_ratios = (1. - R_sq); // assign scalar to vector components
-    break;
-  }
-
-  // Call stack for MFMC numerical solution:
-  // > NonDNonHierarchSampling::log_average_estvar()
-  // > NonDNonHierarchSampling::average_estimator_variance()
-  // > NonDMultifidelitySampling::estimator_variance_ratios() [virtual]
-  // > This function (vector of avg_eval_ratios from opt design variables)
-  // Note: ANALYTIC_SOLUTION covered by ordered case below
-  default: {
-    for (qoi=0; qoi<numFunctions; ++qoi) {
-      approx = (ordered) ? 0 : approx_sequence[0];
-      R_sq = 0.;  r_i = avg_eval_ratios[approx];
-      for (ip1=1; ip1<numApprox; ++ip1) {
-	approx_ip1 = (ordered) ? ip1 : approx_sequence[ip1];
-	r_ip1 = avg_eval_ratios[approx_ip1];
-	// While eval ratio misordering won't induce numerical exceptions,
-	// the derivation of this equation assumes ordered r_i:
-	// > either retain a fixed ordering through linear constraints, or
-	// > re-order on the fly when the optimization omits these guard rails
-	R_sq += (r_i - r_ip1) / (r_i * r_ip1) * rho2_LH(qoi, approx);
-	r_i = r_ip1;  approx = approx_ip1;
-      }
-      R_sq += (r_i - 1.) / r_i * rho2_LH(qoi, approx);
-      estvar_ratios[qoi] = (1. - R_sq);
-    }
-    break;
-  }
-  }
-}
-
-
-void NonDNonHierarchSampling::
 cvmc_ensemble_solutions(const RealMatrix& rho2_LH, const RealVector& cost,
 			RealVector& avg_eval_ratios, bool lower_bounded_r)
 {
@@ -712,12 +641,12 @@ cvmc_ensemble_solutions(const RealMatrix& rho2_LH, const RealVector& cost,
 
 
 void NonDNonHierarchSampling::
-raw_moments(const IntRealVectorMap& sum_H_baseline,
-	    const SizetArray& N_baseline,
-	    const IntRealMatrixMap& sum_L_shared,
-	    const Sizet2DArray& N_L_shared,
-	    const IntRealMatrixMap& sum_L_refined,
-	    const Sizet2DArray& N_L_refined, const RealVector2DArray& beta)
+apply_controls(const IntRealVectorMap& sum_H_baseline,
+	       const SizetArray& N_baseline,
+	       const IntRealMatrixMap& sum_L_shared,
+	       const Sizet2DArray& N_L_shared,
+	       const IntRealMatrixMap& sum_L_refined,
+	       const Sizet2DArray& N_L_refined, const RealVector2DArray& beta)
 {
   RealMatrix H_raw_mom(4, numFunctions);
   // ----------------------------
@@ -750,6 +679,8 @@ raw_moments(const IntRealVectorMap& sum_H_baseline,
   if (outputLevel >= NORMAL_OUTPUT) Cout << std::endl;
 
   convert_moments(H_raw_mom, momentStats); // uncentered to final (central|std)
+  compute_mean_confidence_intervals(momentStats,
+    final_solution_data().estimator_variances(), meanCIs);
 }
 
 
@@ -941,7 +872,7 @@ void NonDNonHierarchSampling::ensemble_numerical_solution(MFSolutionData& soln)
 
 
 void NonDNonHierarchSampling::
-process_model_solution(MFSolutionData& soln, size_t& num_samples)
+process_model_allocations(MFSolutionData& soln, size_t& num_samples)
 {
   // compute sample increment for HF from current to target:
   size_t hf_form_index, hf_lev_index;
@@ -958,16 +889,16 @@ process_model_solution(MFSolutionData& soln, size_t& num_samples)
       one_sided_delta(avg_N_H, soln.solution_reference(), relaxFactor);
   }
 
-  // **************************************************************************
   // Introduction of relaxFactor makes the optimal estVar solution inconsistent
   // with any relaxation of the sample increment that follows
   // > inconsistency in final reporting (if final relax factor != 1) as well as
   //   intermediate performance metrics, e.g. estVar ratio below
-  // All NonHierarch: this fn, virtual recover_results() after numerical solve,
-  // print_variance_reduction()/print_estimator_performance(), no_solve defaults
+  // All NonHierarch estimators to review: minimizer_results_to_solution_data()
+  // after numerical solve, print_variance_reduction()/print_estimator_perf(),
+  // no_solve defaults
   // > MFMC analytic: estvar_ratios to estvar using N_H_actual{,_proj}
-  // > ACV/GenACV: print_model_solution()
-  // > ML BLUE:    {process,print}_group_solution()
+  // > ACV/GenACV: {process,print}_model_allocation()
+  // > ML BLUE:    {process,print}_group_allocation()
   //
   // Approach:
   // > Strictly interpret MFSolutionData as optimal soln, preceding any
@@ -975,25 +906,32 @@ process_model_solution(MFSolutionData& soln, size_t& num_samples)
   // > For final post-processing and reporting, re-evaluate estvar/estvar_ratio
   //   when final relaxFactor is not 1 (for whatever reason) since
   //   soln.solution_variables() will not be consistent.
-  // **************************************************************************
 
-  //bool converged = (num_samples == 0 || mlmfIter > maxIterations ||
-  //                  pilotMgmtMode != ONLINE_PILOT);
-  //if (converged) { // metrics not needed prior to print_variance_reduction()
+  bool iterating = (pilotMgmtMode == ONLINE_PILOT && num_samples &&
+		    mlmfIter < maxIterations),
+    graph_enumerate = (methodName == GEN_APPROX_CONTROL_VARIATE);
+  if (!iterating || graph_enumerate) { // estvar needed for this soln
+    /*
+    // All cases employ projected MC estvar to match projected nonhier estvar
+    // from N* (where N* includes any soln increment not yet performed). Since
+    // soln.average_estimator_variance() precedes (and ignores subsequent)
+    // sample increment relaxation, don't use relaxed increments here.
+    RealVector proj_mc_estvar;
+    project_mc_estimator_variance(varH, N_H_actual, soln_incr, proj_mc_estvar);
 
-  // All cases employ projected MC estvar to match the projected nonhier estvar
-  // from N* (where N* includes any soln increment not yet performed)
-  // > Since soln.average_estimator_variance() precedes (and ignores subsequent)
-  //   sample increment relaxation, don't use relaxed increments here.
-  RealVector proj_mc_estvar;
-  project_mc_estimator_variance(varH, N_H_actual, soln_incr, proj_mc_estvar);
+    // Report ratio of averages rather that average of ratios (see notes in
+    // print_variance_reduction())
+    soln.average_estimator_variance_ratio(soln.average_estimator_variance() /
+                                          average(proj_mc_estvar)); // (1 - R^2)
+    */
 
-  // Report ratio of averages rather that average of ratios (see notes in
-  // print_variance_reduction())
-  soln.average_estimator_variance_ratio(soln.average_estimator_variance() /
-					average(proj_mc_estvar)); // (1 - R^2)
-
-  //}
+    // Recompute full estvar vectors for final solution since minimizers
+    // target average over QoI (don't store on every eval since last eval
+    // may differ from final optimal soln)
+    RealVector cd_vars;
+    solution_to_design_vars(soln, cd_vars);
+    estimator_variances_and_ratios(cd_vars, soln);
+  }
 }
 
 
@@ -1224,7 +1162,7 @@ finite_solution_bounds(const RealVector& x0, RealVector& x_lb, RealVector& x_ub)
     switch (optSubProblemForm) {
     case N_MODEL_LINEAR_OBJECTIVE: case N_GROUP_LINEAR_OBJECTIVE: {
       // accuracy constrained: infer upper bounds from budget reqd to obtain
-      // target accuracy via MC: varH / N = tol * avg_estvar0; for minimizer
+      // target accuracy via MC: varH[q] / tgt = tol * estvar0[q]; for minimizer
       // sequencing, a downstream refinement can omit this approximated bound
       RealVector hf_targets;  apply_mc_reference(hf_targets);
       budget = average(hf_targets);     break;
@@ -1706,23 +1644,26 @@ void NonDNonHierarchSampling::run_minimizers(MFSolutionData& soln)
   // that don't support linear/nonlinear constraints can be avoided by always
   // ending with capable (local gradient-based) minimizers at sequence end.
   Iterator& min_last_best = varianceMinimizers[last_seq_index][best_min];
-  recover_results(min_last_best.variables_results().continuous_variables(),
-		  min_last_best.response_results().function_values(), soln);
+  minimizer_results_to_solution_data(
+    min_last_best.variables_results().continuous_variables(),
+    min_last_best.response_results().function_values(), soln);
 }
 
 
 void NonDNonHierarchSampling::
-recover_results(const RealVector& cv_star, const RealVector& fn_star,
-		MFSolutionData& soln)
+minimizer_results_to_solution_data(const RealVector& cv_star,
+				   const RealVector& fn_star,
+				   MFSolutionData& soln)
 {
   // Estvar recovery from optimizer provides std::log(average(nh_estvar)) =
   // var_H / N_H (1 - R^2).  Notes:
-  // > a QoI-vector prior to averaging would require recomputation from r*,N*)
-  // > this value corresponds to N* (_after_ num_samples applied)
+  // > ultimately need a QoI-vector PRIOR to averaging, but defer recomputation
+  //   until after solution selection
+  // > optimal estvar value corresponds to N* (_after_ num_samples applied)
   Real avg_estvar = (optSubProblemForm == N_MODEL_LINEAR_OBJECTIVE ||
 		     optSubProblemForm == N_GROUP_LINEAR_OBJECTIVE) ?
     std::exp(fn_star[1]) : std::exp(fn_star(0));
-  soln.average_estimator_variance(avg_estvar);
+  soln.average_estimator_variance(avg_estvar); // replaced downstream
 
   // Recover optimizer results for average {eval_ratios,estvar}.  Also compute
   // shared increment from N* or from targeting specified budget || accuracy.
@@ -1749,10 +1690,11 @@ recover_results(const RealVector& cv_star, const RealVector& fn_star,
       //               = curr_estvar * N_curr / N_target
       //  --> N_target = curr_estvar * N_curr / (convTol * estvar_iter0)
       // Note: estvar_iter0 is fixed based on pilot
+      RealVector est_var;  estimator_variances(cv_star, est_var);
       size_t hf_form, hf_lev;  hf_indices(hf_form, hf_lev);
       avg_hf_target = (backfillFailures) ?
-	update_hf_target(avg_estvar, NLevActual[hf_form][hf_lev], estVarIter0) :
-	update_hf_target(avg_estvar,  NLevAlloc[hf_form][hf_lev], estVarIter0);
+	update_hf_target(est_var, NLevActual[hf_form][hf_lev], estVarIter0) :
+	update_hf_target(est_var,  NLevAlloc[hf_form][hf_lev], estVarIter0);
       Cout << "Scaling profile for convergenceTol = " << convergenceTol
 	   << ": average HF target = " << avg_hf_target << std::endl;
     }
@@ -1899,8 +1841,9 @@ nh_penalty_merit(const RealVector& cd_vars, const RealVector& fn_vals)
     return nh_penalty_merit(fn_vals[0], fn_vals[1], budget);
     break;
   default: {
-    // Note: all cases could use this except for additional exp/log overhead
-    MFSolutionData soln;  recover_results(cd_vars, fn_vals, soln);
+    // Note: all cases could use this except for additional overhead
+    MFSolutionData soln;
+    minimizer_results_to_solution_data(cd_vars, fn_vals, soln);
     return nh_penalty_merit(soln);
     break;
   }
@@ -1948,22 +1891,12 @@ nh_penalty_merit(Real obj, Real nln_con, Real nln_u_bnd)
 
 
 void NonDNonHierarchSampling::
-estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
+estimator_variances_from_ratios(const RealVector& cd_vars,
+				const RealVector& estvar_ratios,
+				RealVector& est_var)
 {
-  Cerr << "Error: estimator_variance_ratios() not redefined by derived class.\n"
-       << std::endl;
-  abort_handler(METHOD_ERROR);
-}
-
-
-Real NonDNonHierarchSampling::
-average_estimator_variance(const RealVector& cd_vars)
-{
-  RealVector estvar_ratios(numFunctions, false);
-  estimator_variance_ratios(cd_vars, estvar_ratios); // virtual: MFMC,ACV,GenACV
-
   // form estimator variances to pick up dependence on N
-  RealVector est_var(numFunctions, false);
+  if (est_var.length() != numFunctions) est_var.sizeUninitialized(numFunctions);
   size_t qoi, num_approx = num_approximations();
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT: // N is a vector constant for opt sub-problem
@@ -1990,12 +1923,10 @@ average_estimator_variance(const RealVector& cd_vars)
   }
   }
 
-  Real avg_estvar = average(est_var);
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "NonDNonHierarchSampling::average_estimator_variance(): "
-	 << "design vars:\n" << cd_vars << "EstVar ratios:\n" << estvar_ratios
-	 << "EstVar:\n" << est_var << "average EstVar = " << avg_estvar << '\n';
-  return avg_estvar;
+    Cout << "NonDNonHierarchSampling::estimator_variances(): design vars:\n"
+	 << cd_vars << "EstVar ratios:\n" << estvar_ratios << "EstVar:\n"
+	 << est_var << '\n';
 }
 
 
@@ -2494,55 +2425,63 @@ accumulate_group_sums(IntRealMatrixArrayMap& sum_G, Sizet2DArray& num_G,
 
 
 void NonDNonHierarchSampling::
-print_estimator_performance(std::ostream& s, const MFSolutionData& soln)
+print_estimator_performance(std::ostream& s, const MFSolutionData& soln) const
 {
-  size_t wpp7 = write_precision + 7;
-  s << "<<<<< Variance for mean estimator:\n";
+  const RealVector&  nh_est_var = soln.estimator_variances();
+  const RealVector&  nh_ratios  = soln.estimator_variance_ratios();
+  const StringArray& labels     = iteratedModel.truth_model().response_labels();
+  Real proj_equiv_hf = equivHFEvals + deltaEquivHF, nh_est_var_q, nh_ratio_q,
+    proj_mc_est_var_q, budget_mc_est_var_q;
+  size_t qoi, proj_N_H_q, hf_form_index, hf_lev_index, wpp7 = write_precision+7,
+    proj_equiv_hf_rnd = (size_t)std::floor(proj_equiv_hf + .5);
+  hf_indices(hf_form_index, hf_lev_index);
+  const SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
+  bool online = (pilotMgmtMode ==  ONLINE_PILOT ||
+		 pilotMgmtMode ==  ONLINE_PILOT_PROJECTION);
+  String type = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
+		 pilotMgmtMode == OFFLINE_PILOT_PROJECTION) ?
+    "Projected" : "   Online";
+  //String method = method_enum_to_string(methodName); // too verbose
+  String method;
+  switch (methodName) {
+  case MULTIFIDELITY_SAMPLING:      method = "   MFMC";  break;
+  case APPROX_CONTROL_VARIATE:      method = "    ACV";  break;
+  case GEN_APPROX_CONTROL_VARIATE:  method = " GenACV";  break;
+  }
 
-  if (pilotMgmtMode == ONLINE_PILOT ||
-      pilotMgmtMode == ONLINE_PILOT_PROJECTION) {
+  s << "<<<<< Variance for mean estimator:\n";
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    s << std::setw(14) << labels[qoi] << ":\n"; // mirror print_moments()
+
     // > reporting estVarIter0 best shows the reference for convTol
     // > recomputing with latest varH is more consistent with metrics to follow 
     //RealVector initial_mc_estvar;
     //compute_mc_estimator_variance(varH, numHIter0, initial_mc_estvar);
-    s << "    Initial   MC (" << std::setw(5)
-      << (size_t)std::floor(average(numHIter0) + .5) << " HF samples): "
-      << std::setw(wpp7) << average(estVarIter0) << '\n';
-    //<< std::setw(wpp7) << average(initial_mc_estvar) << '\n';
-  }
+    if (online)
+      s << "      Initial     MC (" << std::setw(5) << numHIter0[qoi]
+	<< " HF samples): " << std::setw(wpp7) << estVarIter0[qoi] << '\n';
 
-  String type = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
-		 pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
-              ? "Projected" : "   Online";
-  //String method = method_enum_to_string(methodName); // string too verbose
-  String method = (methodName == MULTIFIDELITY_SAMPLING) ? " MFMC" : "  ACV";
-  // Ordering of averages:
-  // > recomputing final MC estvar, rather than dividing the two averages, gives
-  //   a result that is consistent with average(estVarIter0) when N* = pilot.
-  // > The ACV ratio then differs from final ACV / final MC (due to recovering
-  //   avgEstVar from the optimizer obj fn), but difference is usually small.
-  size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
-  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
-  // est_var is projected for cases that are not fully iterated/incremented
-  RealVector final_mc_estvar(numFunctions, false);
-  //compute_mc_estimator_variance(varH, N_H_actual, final_mc_estvar);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    final_mc_estvar[qoi] = varH[qoi] / (N_H_actual[qoi] + deltaNActualHF);
-  Real proj_equiv_hf = equivHFEvals + deltaEquivHF,
-    avg_budget_mc_estvar = average(varH) / proj_equiv_hf,
-    avg_estvar = soln.average_estimator_variance();
-  s << "  " << type << "   MC (" << std::setw(5)
-    << (size_t)std::floor(average(N_H_actual) + deltaNActualHF + .5)
-    << " HF samples): " << std::setw(wpp7) << average(final_mc_estvar)
-    << "\n  " << type << method << " (sample profile):   "
-    << std::setw(wpp7) << avg_estvar
-    << "\n  " << type << method << " ratio (1 - R^2):    "
-    << std::setw(wpp7) << soln.average_estimator_variance_ratio()
-    << "\n Equivalent   MC (" << std::setw(5)
-    << (size_t)std::floor(proj_equiv_hf + .5) << " HF samples): "
-    << std::setw(wpp7) << avg_budget_mc_estvar
-    << "\n Equivalent" << method << " ratio:              "
-    << std::setw(wpp7) << avg_estvar / avg_budget_mc_estvar << '\n';
+    nh_est_var_q        = nh_est_var[qoi];
+    nh_ratio_q          = nh_ratios[qoi];
+    // est_var is projected for cases that are not fully iterated/incremented
+    proj_N_H_q          = N_H_actual[qoi] + deltaNActualHF;
+    proj_mc_est_var_q   = varH[qoi] / proj_N_H_q;
+    budget_mc_est_var_q = varH[qoi] / proj_equiv_hf;
+
+    s << "    " << type     << "     MC (" << std::setw(5) << proj_N_H_q
+      << " HF samples): " << std::setw(wpp7) << proj_mc_est_var_q << "\n    "
+      << type << method   << " (sample profile):   " << std::setw(wpp7)
+      << nh_est_var[qoi]  << '\n';
+    if (valid_variance(nh_ratio_q))
+      s << "    " << type << method << " ratio (1 - R^2):    "
+	<< std::setw(wpp7)  << nh_ratio_q << '\n';
+      //<< std::setw(wpp7)  << nh_est_var_q / proj_mc_est_var_q // same
+    s << "   Equivalent     MC (" << std::setw(5) << proj_equiv_hf_rnd
+      << " HF samples): " << std::setw(wpp7) << budget_mc_est_var_q  << '\n';
+    if (valid_variance(nh_est_var_q) && valid_variance(budget_mc_est_var_q))
+      s << "   Equivalent"  << method << " ratio:              "
+	<< std::setw(wpp7)  << nh_est_var_q / budget_mc_est_var_q << '\n';
+  }
 }
 
 } // namespace Dakota

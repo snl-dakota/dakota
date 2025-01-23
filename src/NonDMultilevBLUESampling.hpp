@@ -44,41 +44,47 @@ protected:
   //
 
   //void pre_run();
-  void core_run();
+  void core_run() override;
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
-  Real estimator_accuracy_metric();
-  //Real estimator_cost_metric();
-  void print_multigroup_summary(std::ostream& s, const String& summary_type,
-				bool projections);
-  void print_variance_reduction(std::ostream& s);
 
-  //void estimator_variance_ratios(const RealVector& r_and_N,
-  //				   RealVector& estvar_ratios);
-  Real average_estimator_variance(const RealVector& cd_vars);
+  void estimator_variances(const RealVector& cd_vars,
+			   RealVector& est_var) override;
+
+  const MFSolutionData& final_solution_data() const override;
+  Real estimator_accuracy_metric() const override;
+  //Real estimator_cost_metric() const override;
+
+  void print_multigroup_summary(std::ostream& s, const String& summary_type,
+				bool projections) const override;
+  void print_variance_reduction(std::ostream& s) const override;
+
+  //void estimator_variance_ratios(const RealVector& cd_vars,
+  //				   RealVector& estvar_ratios) override;
 
   void numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
-				 size_t& num_nln_con);
+				 size_t& num_nln_con) override;
   void numerical_solution_bounds_constraints(const MFSolutionData& soln,
     RealVector& x0, RealVector& x_lb, RealVector& x_ub,
     RealVector& lin_ineq_lb, RealVector& lin_ineq_ub, RealVector& lin_eq_tgt,
     RealVector& nln_ineq_lb, RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
-    RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs);
+    RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs) override;
   void derived_finite_solution_bounds(const RealVector& x0, RealVector& x_lb,
-				      RealVector& x_ub, Real budget);
+				      RealVector& x_ub, Real budget) override;
 
-  Real linear_group_cost(const RealVector& cdv);
-  void linear_group_cost_gradient(const RealVector& cdv, RealVector& grad_c);
+  Real linear_group_cost(const RealVector& cdv) override;
+  void linear_group_cost_gradient(const RealVector& cdv,
+				  RealVector& grad_c) override;
 
-  void apply_mc_reference(RealVector& mc_targets);
+  void apply_mc_reference(RealVector& mc_targets) override;
 
   void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 				       RealVector& lin_ineq_lb,
-				       RealVector& lin_ineq_ub);
+				       RealVector& lin_ineq_ub) override;
   Real augmented_linear_ineq_violations(const RealVector& cd_vars,
 					const RealMatrix& lin_ineq_coeffs,
 					const RealVector& lin_ineq_lb,
-					const RealVector& lin_ineq_ub);
+					const RealVector& lin_ineq_ub) override;
 
   //
   //- Heading: member functions
@@ -108,27 +114,25 @@ protected:
 		      const RealMatrixArray& sum_G, const Sizet2DArray& N_G,
 		      RealVectorArray& mu_hat);
 
-  void estimator_variance(const RealVector& cd_vars, RealVector& estvar);
-
-  void process_group_solution(MFSolutionData& soln,
-			      const Sizet2DArray& N_G_actual,
-			      const SizetArray& N_G_alloc,
-			      SizetArray& delta_N_G);
+  void process_group_allocations(MFSolutionData& soln,
+				 const Sizet2DArray& N_G_actual,
+				 const SizetArray& N_G_alloc,
+				 SizetArray& delta_N_G);
 
   void blue_raw_moments(const IntRealMatrixArrayMap& sum_G_online,
 			const IntRealSymMatrix2DArrayMap& sum_GG_online,
-			const Sizet2DArray& N_G_online, RealMatrix& H_raw_mom);
+			const Sizet2DArray& N_G_online);
   void blue_raw_moments(const IntRealMatrixArrayMap& sum_G_offline,
 			const IntRealSymMatrix2DArrayMap& sum_GG_offline,
 			const Sizet2DArray& N_G_offline,
 			const IntRealMatrixArrayMap& sum_G_online,
 			const IntRealSymMatrix2DArrayMap& sum_GG_online,
-			const Sizet2DArray& N_G_online, RealMatrix& H_raw_mom);
+			const Sizet2DArray& N_G_online);
 
   void finalize_counts(const Sizet2DArray& N_G_actual,
 		       const SizetArray& N_G_alloc);
 
-  void print_group_solution(std::ostream& s, const MFSolutionData& soln);
+  void print_group_allocations(std::ostream& s, const MFSolutionData& soln);
   void print_group_solution_variables(std::ostream& s,
 				      const MFSolutionData& soln);
 
@@ -168,10 +172,10 @@ private:
 
   /// find group and model indices for HF reference variance
   void find_hf_sample_reference(const Sizet2DArray& N_G,  size_t& ref_group,
-				size_t& ref_model_index);
+				size_t& ref_model_index) const;
   /// find group and model indices for HF reference variance
   void find_hf_sample_reference(const SizetArray& N_G,  size_t& ref_group,
-				size_t& ref_model_index);
+				size_t& ref_model_index) const;
   /// find the best-conditioned group that contains the HF model
   size_t best_conditioned_hf_group();
 
@@ -194,10 +198,11 @@ private:
 				     size_t H_index,
 				     const SizetArray& N_H_actual,
 				     size_t delta_N_H, RealVector& proj_est_var,
-				     SizetVector& proj_N_H);
+				     SizetVector& proj_N_H) const;
   void project_mc_estimator_variance(const RealSymMatrixArray& cov_GG_g,
 				     size_t H_index, Real N_H_actual,
-				     Real delta_N_H, RealVector& proj_est_var);
+				     Real delta_N_H,
+				     RealVector& proj_est_var) const;
 
   void accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
 			    IntRealSymMatrix2DArrayMap& sum_GG,
@@ -370,11 +375,16 @@ all_to_active_group(size_t all_index) const
 }
 
 
-inline Real NonDMultilevBLUESampling::estimator_accuracy_metric()
+inline const MFSolutionData& NonDMultilevBLUESampling::
+final_solution_data() const
+{ return blueSolnData; }
+
+
+inline Real NonDMultilevBLUESampling::estimator_accuracy_metric() const
 { return blueSolnData.average_estimator_variance(); }
 
 
-//inline Real NonDMultilevBLUESampling::estimator_cost_metric()
+//inline Real NonDMultilevBLUESampling::estimator_cost_metric() const
 //{ return blueSolnData.equivalent_hf_allocation(); }
 
 
@@ -465,13 +475,13 @@ increment_allocations(const MFSolutionData& soln, SizetArray& N_G_alloc,
 /** Overload for 2D array: NGroupActual */
 inline void NonDMultilevBLUESampling::
 find_hf_sample_reference(const Sizet2DArray& N_G, size_t& ref_group,
-			 size_t& ref_model_index)
+			 size_t& ref_model_index) const
 {
   ref_group = ref_model_index = SZ_MAX;
   Real ref_samples = 0., group_samples;
   size_t g, num_groups = modelGroups.size();
   for (g=0; g<num_groups; ++g) {
-    UShortArray& group_g = modelGroups[g];
+    const UShortArray& group_g = modelGroups[g];
     // find_index() is unnecessary assuming groups have ordered models
     if (group_g.back() == numApprox) { // HF model is present
       group_samples = average(N_G[g]);
@@ -491,13 +501,13 @@ find_hf_sample_reference(const Sizet2DArray& N_G, size_t& ref_group,
 /** Overload for 1D array: NGroupAlloc */
 inline void NonDMultilevBLUESampling::
 find_hf_sample_reference(const SizetArray& N_G, size_t& ref_group,
-			 size_t& ref_model_index)
+			 size_t& ref_model_index) const
 {
   ref_group = ref_model_index = SZ_MAX;
   Real ref_samples = 0., group_samples;
   size_t g, num_groups = modelGroups.size();
   for (g=0; g<num_groups; ++g) {
-    UShortArray& group_g = modelGroups[g];
+    const UShortArray& group_g = modelGroups[g];
     // find_index() is unnecessary assuming groups have ordered models
     if (group_g.back() == numApprox) { // HF model is present
       group_samples = N_G[g];
@@ -879,18 +889,6 @@ compute_y(const RealSymMatrix2DArray& cov_GG_inv, const RealMatrixArray& sum_G,
 }
 
 
-inline Real NonDMultilevBLUESampling::
-average_estimator_variance(const RealVector& cd_vars)
-{
-  // redefinition of virtual fn used by NonDNonHierarch::log_average_estvar(),
-  // which is used by optimizer objective/constraint callbacks
-
-  RealVector estvar;
-  estimator_variance(cd_vars, estvar);
-  return average(estvar);
-}
-
-
 inline void NonDMultilevBLUESampling::apply_mc_reference(RealVector& mc_targets)
 {
   // derived implementation (varH is not used by ML BLUE)
@@ -907,10 +905,16 @@ inline void NonDMultilevBLUESampling::apply_mc_reference(RealVector& mc_targets)
   default:
     find_hf_sample_reference(NGroupActual, ref_group, ref_model_index);  break;
   }
+  if (ref_group == SZ_MAX || ref_model_index == SZ_MAX) {
+    //mc_targets.putScalar(std::numeric_limits<Real>::quiet_NaN()); return;
+    Cerr << "Error: HF sample reference group unavailable in ML BLUE for "
+	 << "estimating accuracy target." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
 
-  const RealSymMatrixArray& cov_GG_g = covGG[ref_group];
   if (mc_targets.length() != numFunctions)
     mc_targets.sizeUninitialized(numFunctions);
+  const RealSymMatrixArray& cov_GG_g = covGG[ref_group];
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     mc_targets[qoi] = cov_GG_g[qoi](ref_model_index,ref_model_index)
                     / ( convergenceTol * estVarIter0[qoi] );

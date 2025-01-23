@@ -47,7 +47,7 @@ protected:
   void core_run();
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
-  void print_variance_reduction(std::ostream& s);
+  void print_variance_reduction(std::ostream& s) const;
 
   bool discrepancy_sample_counts() const;
 
@@ -255,6 +255,20 @@ private:
 		      const SizetArray& N_refined,
 		      //const RealMatrix& rho_dot2_LH,
 		      size_t lev, RealMatrix& H_raw_mom);
+
+  /// compute control variate parameters for pointer
+  void compute_mf_controls(const Real* sum_L, const Real* sum_H,
+			   const Real* sum_LL, const Real* sum_LH,
+			   const SizetArray& N_shared, RealVector& beta);
+  // compute control variate parameters for vector
+  //void compute_mf_controls(const RealVector& sum_L, const RealVector& sum_H,
+  // 			   const RealVector& sum_LL, const RealVector& sum_LH,
+  // 			   const SizetArray& N_shared, RealVector& beta);
+  // compute control variate parameters for matrix
+  //void compute_mf_controls(const RealMatrix& sum_L,  const RealMatrix& sum_H,
+  // 			   const RealMatrix& sum_LL, const RealMatrix& sum_LH,
+  // 			   const SizetArray& N_shared, size_t lev,
+  // 			   RealVector& beta);
 
   /// compute control variate parameters for all moments, levels, qoi
   void compute_mlmf_controls(IntRealMatrixMap& sum_Ll,
@@ -839,6 +853,42 @@ compute_mf_correlation(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
   rho2_LH = cov_LH / var_L * cov_LH / var_H; // bessel corrs would cancel
   var_H  /= (Real)(N_shared - 1); // now apply denom portion of bessel
 }
+
+
+inline void NonDMultilevControlVarSampling::
+compute_mf_controls(const Real* sum_L, const Real* sum_H, const Real* sum_LL,
+		    const Real* sum_LH, const SizetArray& N_shared,
+		    RealVector& beta)
+{
+  if (beta.length()!=numFunctions) beta.sizeUninitialized(numFunctions);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    compute_mf_control(sum_L[qoi], sum_H[qoi], sum_LL[qoi], sum_LH[qoi],
+		       N_shared[qoi], beta[qoi]);
+}
+
+
+/*
+inline void NonDMultilevControlVarSampling::
+compute_mf_controls(const RealVector& sum_L, const RealVector& sum_H,
+		    const RealVector& sum_LL, const RealVector& sum_LH,
+		    const SizetArray& N_shared, RealVector& beta)
+{
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    compute_mf_control(sum_L[qoi], sum_H[qoi], sum_LL[qoi], sum_LH[qoi],
+		       N_shared[qoi], beta[qoi]);
+}
+
+
+inline void NonDMultilevControlVarSampling::
+compute_mf_controls(const RealMatrix& sum_L,  const RealMatrix& sum_H,
+		    const RealMatrix& sum_LL, const RealMatrix& sum_LH,
+		    const SizetArray& N_shared, size_t lev, RealVector& beta)
+{
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    compute_mf_control(sum_L(qoi,lev), sum_H(qoi,lev), sum_LL(qoi,lev),
+		       sum_LH(qoi,lev), N_shared[qoi], beta[qoi]);
+}
+*/
 
 
 inline void NonDMultilevControlVarSampling::

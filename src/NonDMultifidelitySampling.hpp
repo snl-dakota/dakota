@@ -40,7 +40,7 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
-  //bool resize();
+  //bool resize() override;
 
 protected:
 
@@ -48,16 +48,20 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  //void pre_run();
-  void core_run();
-  //void post_run(std::ostream& s);
-  //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
-  Real estimator_accuracy_metric();
-  //Real estimator_cost_metric();
-  void print_variance_reduction(std::ostream& s);
+  //void pre_run() override;
+  void core_run() override;
+  //void post_run(std::ostream& s) override;
+  //void print_results(std::ostream& s,
+  //                   short results_state = FINAL_RESULTS) override;
 
-  void estimator_variance_ratios(const RealVector& r_and_N,
-				 RealVector& estvar_ratios);
+  const MFSolutionData& final_solution_data() const override;
+  Real estimator_accuracy_metric() const override;
+  //Real estimator_cost_metric() const override;
+
+  void print_variance_reduction(std::ostream& s) const override;
+
+  void estimator_variance_ratios(const RealVector& cd_vars,
+				 RealVector& estvar_ratios) override;
 
   //
   //- Heading: member functions
@@ -67,23 +71,27 @@ protected:
   void multifidelity_mc_offline_pilot();
   void multifidelity_mc_pilot_projection();
 
-  void mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
-			const RealVector& cost,  MFSolutionData& soln);
-                      //bool for_warm_start = false);
-  void mfmc_numerical_solution(const RealMatrix& var_L,
-			       const RealMatrix& rho2_LH,
+  void compute_allocations(const RealMatrix& rho2_LH, const RealVector& var_H,
+			   const SizetArray& N_H, const RealVector& cost,
+			   MFSolutionData& soln);
+  void process_analytic_allocations(const RealMatrix& rho2_LH,
+				    const RealVector& var_H,
+				    const SizetArray& N_H,
+				    const RealVector& cost,
+				    RealVector& avg_eval_ratios,
+				    MFSolutionData& soln);
+  void mfmc_numerical_solution(const RealMatrix& rho2_LH,
 			       const RealVector& cost, MFSolutionData& soln);
 
-  void emerge_from_pilot(Real avg_N_H, const RealVector& cost,
-			 RealVector& avg_eval_ratios, Real& avg_hf_target,
-			 Real budget, Real offline_N_lwr);
+  void emerge_from_pilot(const SizetArray& N_H, RealVector& avg_eval_ratios,
+			 Real& avg_hf_target, Real offline_N_lwr = 1.);
 
   void update_model_groups();
   void update_model_groups(const SizetArray& approx_sequence);
 
   void mfmc_estimator_variance(const RealMatrix& rho2_LH,
 			       const RealVector& var_H, const SizetArray& N_H,
-			       RealVector& estvar_ratios, MFSolutionData& soln);
+			       MFSolutionData& soln);
 
 private:
 
@@ -96,6 +104,14 @@ private:
 			  IntRealMatrixMap& sum_LL,
 			  IntRealMatrixMap& sum_LH, RealVector& sum_HH);
 
+  void mfmc_estvar_ratios(const RealMatrix& rho2_LH,
+			  const RealVector& avg_eval_ratios,
+			  SizetArray& approx_sequence,
+			  RealVector& estvar_ratios);
+  void mfmc_estvar_ratios(const RealMatrix& rho2_LH,
+			  const RealVector& avg_eval_ratios,
+			  SizetArray& approx_sequence, MFSolutionData& soln);
+
   void approx_increments(IntRealMatrixMap& sum_L_baseline,
 			 const SizetArray& N_H_actual, size_t N_H_alloc,
 			 IntRealMatrixMap& sum_L_shared,
@@ -105,11 +121,11 @@ private:
 			 SizetArray& N_L_alloc_refined,
 			 const MFSolutionData& soln);
 
-  void mf_raw_moments(const IntRealMatrixMap& sum_L_covar,
-		      const IntRealVectorMap& sum_H_covar,
-		      const IntRealMatrixMap& sum_LL_covar,
-		      const IntRealMatrixMap& sum_LH_covar,
-		      const SizetArray& N_covar, RealVector2DArray& beta);
+  void compute_mf_controls(const IntRealMatrixMap& sum_L_covar,
+			   const IntRealVectorMap& sum_H_covar,
+			   const IntRealMatrixMap& sum_LL_covar,
+			   const IntRealMatrixMap& sum_LH_covar,
+			   const SizetArray& N_covar, RealVector2DArray& beta);
 
   // shared_increment() cases:
   void accumulate_mf_sums(IntRealMatrixMap& sum_L_baseline,
@@ -151,15 +167,6 @@ private:
   void matrix_to_diagonal_array(const RealMatrix& var_L,
 				RealSymMatrixArray& cov_LL);
 
-  void mf_raw_moments(IntRealMatrixMap& sum_L_baseline,
-		      IntRealMatrixMap& sum_L_shared,
-		      IntRealMatrixMap& sum_L_refined,
-		      IntRealVectorMap& sum_H,  IntRealMatrixMap& sum_LL,
-		      IntRealMatrixMap& sum_LH, //const RealMatrix& rho2_LH,
-		      const Sizet2DArray& num_L_shared,
-		      const Sizet2DArray& num_L_refined,
-		      const SizetArray& num_H, RealMatrix& H_raw_mom);
-
   void update_projected_lf_samples(const MFSolutionData& soln,
 				   const SizetArray& N_H_actual,
 				   size_t& N_H_alloc,
@@ -170,6 +177,10 @@ private:
 				size_t& N_H_alloc, size_t& delta_N_H_actual,
 				//SizetArray& delta_N_L_actual,
 				Real& delta_equiv_hf);
+
+  void print_analytic_solution(const RealMatrix& rho2_LH,
+			       const RealVector& avg_eval_ratios) const;
+
   //
   //- Heading: Data
   //
@@ -195,17 +206,19 @@ private:
 
   /// final solution data for MFMC (default DAG = 1,2,...,numApprox)
   MFSolutionData mfmcSolnData;
-  /// ratio of MFMC to MC estimator variance for the same HF samples,
-  /// also known as (1 - R^2)
-  RealVector estVarRatios;
 };
 
 
-inline Real NonDMultifidelitySampling::estimator_accuracy_metric()
+inline const MFSolutionData& NonDMultifidelitySampling::
+final_solution_data() const
+{ return mfmcSolnData; }
+
+
+inline Real NonDMultifidelitySampling::estimator_accuracy_metric() const
 { return mfmcSolnData.average_estimator_variance(); }
 
 
-//inline Real NonDMultifidelitySampling::estimator_cost_metric()
+//inline Real NonDMultifidelitySampling::estimator_cost_metric() const
 //{ return mfmcSolnData.equivalent_hf_allocation(); }
 
 
@@ -220,6 +233,16 @@ initialize_mf_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
     mat_pr.first = i; // moment number
     sum_LL.insert(mat_pr).first->second.shape(numFunctions, numApprox);
   }
+}
+
+
+inline void NonDMultifidelitySampling::
+mfmc_estvar_ratios(const RealMatrix& rho2_LH, const RealVector& avg_eval_ratios,
+		   SizetArray& approx_sequence, MFSolutionData& soln)
+{
+  RealVector estvar_ratios;
+  mfmc_estvar_ratios(rho2_LH, avg_eval_ratios, approx_sequence, estvar_ratios);
+  soln.estimator_variance_ratios(estvar_ratios);
 }
 
 
@@ -256,6 +279,31 @@ matrix_to_diagonal_array(const RealMatrix& var_L, RealSymMatrixArray& cov_LL)
       cov_LL_q(approx,approx) = var_L(qoi,approx);
   }
 }
+
+
+inline void NonDMultifidelitySampling::
+print_analytic_solution(const RealMatrix& rho2_LH,
+			const RealVector& avg_eval_ratios) const
+{
+  if (outputLevel < NORMAL_OUTPUT) return;
+
+  Cout << "MFMC analytic solution:\n";
+  bool ordered = corrApproxSequence.empty();  size_t i, qoi, approx;
+  for (qoi=0; qoi<numFunctions; ++qoi)
+    for (i=0; i<numApprox; ++i) {
+      approx = (ordered) ? i : corrApproxSequence[i];
+      Cout << "  QoI " << qoi+1 << " Approx " << approx+1
+	//<< ": cost_ratio = " << cost_H / cost_L
+	   << ": rho2_LH = "    <<     rho2_LH(qoi,approx)
+	   << " eval_ratio = "  << avg_eval_ratios[approx] << '\n';
+    }
+  Cout << '\n';
+}
+
+
+inline void NonDMultifidelitySampling::
+print_variance_reduction(std::ostream& s) const
+{ print_estimator_performance(s, mfmcSolnData); }
 
 } // namespace Dakota
 

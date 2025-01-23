@@ -224,7 +224,6 @@ multilevel_control_variate_mc_online_pilot() //_Qcorr()
       ml_Y_raw_moments(sum_Hl[1], sum_Hl[2], sum_Hl[3], sum_Hl[4], N_actual_hf,
 		       num_cv_lev, num_hf_lev, Y_mom);
     convert_moments(Y_mom, momentStats); // raw to final (central or std)
-
     // This approach leverages the best available varH for est var reporting,
     // similar to offline pilot mode:
     recover_variance(momentStats, varH);
@@ -265,7 +264,8 @@ multilevel_control_variate_mc_online_pilot() //_Qcorr()
   }
 
   compute_mlmf_estimator_variance(var_YH, N_actual_hf, Lambda, estVar);
-  avgEstVar = average(estVar);
+  if (finalStatsType == QOI_STATISTICS)
+    compute_mean_confidence_intervals(momentStats, estVar, meanCIs);
 }
 
 
@@ -400,7 +400,7 @@ multilevel_control_variate_mc_offline_pilot()
   // variances.  This results in mixing offline var_YH,Lambda with online
   // varH,N_hf, but is consistent with offline modes for MFMC and ACV.
   compute_mlmf_estimator_variance(var_YH_pilot,N_actual_hf,Lambda_pilot,estVar);
-  avgEstVar = average(estVar);
+  compute_mean_confidence_intervals(momentStats, estVar, meanCIs);
 }
 
 
@@ -449,7 +449,6 @@ multilevel_control_variate_mc_pilot_projection()
   Sizet2DArray N_proj_hf = N_actual_hf;
   increment_samples(N_proj_hf, delta_N_hf);
   compute_mlmf_estimator_variance(var_YH, N_proj_hf, Lambda, estVar);
-  avgEstVar = average(estVar);
 }
 
 
@@ -1546,44 +1545,51 @@ accumulate_mlmf_Qsums(const IntResponseMap& resp_map, RealMatrix& sum_Ll,
     }
   }
 }
-void NonDMultilevControlVarSampling::print_variance_reduction(std::ostream& s)
+
+
+void NonDMultilevControlVarSampling::
+print_variance_reduction(std::ostream& s) const
 {
   if (delegateMethod == MULTILEVEL_SAMPLING) // not currently overridden by MLMC
     { NonDMultilevelSampling::print_variance_reduction(s);  return; }
   //else if (delegateMethod == MULTIFIDELITY_SAMPLING) //  MFMC not inherited
   //  { NonDMultifidelitySampling::print_variance_reduction(s);  return; }
 
-  bool projection = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
-		     pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
+  bool  online = (pilotMgmtMode ==  ONLINE_PILOT ||
+		  pilotMgmtMode ==  ONLINE_PILOT_PROJECTION),
+    projection = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
+		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
   String type = (projection) ? "Projected" : "   Online";
-  size_t wpp7 = write_precision + 7;
-  s << "<<<<< Variance for mean estimator:\n";
-  switch (pilotMgmtMode) {
-  case OFFLINE_PILOT:  case OFFLINE_PILOT_PROJECTION:
-    s << "  " << type << " MLCVMC (sample profile):   "
-      << std::setw(wpp7) << avgEstVar << '\n';
-    break;
-  default: {
-    Real avg_mlmc_estvar0 = average(estVarIter0);
-    s << "      Initial MLMC (pilot samples):    " << std::setw(wpp7)
-      << avg_mlmc_estvar0 << "\n  "
-      << type << " MLCVMC (sample profile):   "
-      << std::setw(wpp7) << avgEstVar	<< "\n  "
-      << type << " MLCVMC / pilot ratio:      "
-      // report ratio of averages rather than average of ratios:
-      << std::setw(wpp7) << avgEstVar / avg_mlmc_estvar0 << '\n';
-    break;
-  }
-  }
+  Real estvar_q, estvar_iter0_q, proj_equiv_hf = equivHFEvals + deltaEquivHF,
+    budget_mc_estvar_q;
+  size_t qoi, wpp7 = write_precision+7,
+    proj_equiv_hf_rnd = (size_t)std::floor(proj_equiv_hf + .5);
+  const StringArray& labels = iteratedModel.truth_model().response_labels();
 
-  // MC estvar uses varH from recover_variance()
-  Real     proj_equiv_hf = equivHFEvals + deltaEquivHF,
-    avg_budget_mc_estvar = average(varH) / proj_equiv_hf;
-  s << " Equivalent     MC (" << std::setw(5)
-    << (size_t)std::floor(proj_equiv_hf + .5) << " HF samples): "
-    << std::setw(wpp7) << avg_budget_mc_estvar
-    << "\n Equivalent MLCVMC / MC ratio:         " << std::setw(wpp7)
-    << avgEstVar / avg_budget_mc_estvar << '\n';
+  s << "<<<<< Variance for mean estimator:\n";
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    s << std::setw(14) << labels[qoi] << ":\n"; // mirror print_moments()
+    estvar_q           = estVar[qoi];
+    estvar_iter0_q     = estVarIter0[qoi];
+    budget_mc_estvar_q = varH[qoi] / proj_equiv_hf;
+
+    if (online)
+      s << "        Initial MLMC (pilot samples):    " << std::setw(wpp7)
+	<< estvar_iter0_q << '\n';
+    s << "    " << type << " MLCVMC (sample profile):   " << std::setw(wpp7)
+      << estvar_q << '\n';
+    if (online && valid_variance(estvar_q) && valid_variance(estvar_iter0_q))
+      s << "    " << type << " MLCVMC / pilot ratio:      " << std::setw(wpp7)
+	<< estvar_q / estvar_iter0_q << '\n';;
+
+    // est_var is projected for cases that are not fully iterated/incremented
+    // > uses varH from recover_variance()
+    s << "   Equivalent     MC (" << std::setw(5) << proj_equiv_hf_rnd
+      << " HF samples): " << std::setw(wpp7) << budget_mc_estvar_q << '\n';
+    if (valid_variance(estvar_q) && valid_variance(budget_mc_estvar_q))
+      s << "   Equivalent MLCVMC / MC ratio:         " << std::setw(wpp7)
+	<< estvar_q / budget_mc_estvar_q << '\n';
+  }
 }
 
 
@@ -1798,7 +1804,6 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
   recover_variance(mlmc_stats, varH);
 
   compute_mlmf_estimator_variance(var_YH, N_hf, Lambda, estVar);
-  avgEstVar = average(estVar);
 }
 
 

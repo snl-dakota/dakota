@@ -7244,7 +7244,7 @@ static Method_mp_utype
 	MP2s(integrationRefine,AIS),
 	MP2s(integrationRefine,IS),
 	MP2s(integrationRefine,MMAIS),
-	MP2s(methodName,APPROXIMATE_CONTROL_VARIATE),
+	MP2s(methodName,APPROX_CONTROL_VARIATE),
 	MP2s(methodName,ASYNCH_PATTERN_SEARCH),
 	MP2s(methodName,BRANCH_AND_BOUND),
 	MP2s(methodName,C3_FUNCTION_TRAIN),

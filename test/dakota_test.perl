@@ -1327,10 +1327,15 @@ sub parse_test_output {
       print;
       print TEST_OUT;
       $_ = <OUTPUT>; # grab next line (table data)
-      while (/\s+$e/) {
+      while (/^\s+\w+:$/) {
         print;
         print TEST_OUT;
-        $_ = <OUTPUT>; # grab next line
+        $_ = <OUTPUT>; # grab next line (table data)
+        while (/\s+$e/) {
+          print;
+          print TEST_OUT;
+          $_ = <OUTPUT>; # grab next line
+        }
       }
     }
 

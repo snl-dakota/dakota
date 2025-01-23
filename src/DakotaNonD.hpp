@@ -53,7 +53,8 @@ public:
 			    const StringArray& qoi_labels) const;
   /// print level mapping statistics using optional pre-pend
   void print_level_mappings(std::ostream& s, const RealVector& level_maps,
-			    bool moment_offset, const String& prepend = "");
+			    bool moment_offset,
+			    const String& prepend = "") const;
 
   //
   //- Heading: Virtual member function redefinitions
@@ -218,30 +219,30 @@ protected:
 
   /// print evaluation summary for multilevel sampling across 1D level profile
   void print_multilevel_evaluation_summary(std::ostream& s,
-					   const SizetArray& N_m);
+					   const SizetArray& N_m) const;
   /// print evaluation summary for multilevel sampling across 2D
   /// level+QoI profile
   void print_multilevel_evaluation_summary(std::ostream& s,
-					   const Sizet2DArray& N_m);
+					   const Sizet2DArray& N_m) const;
 
   /// print evaluation summary for multilevel sampling across 1D level
   /// profile for discrepancy across levels
   void print_multilevel_discrepancy_summary(std::ostream& s,
-					    const SizetArray& N_m);
+					    const SizetArray& N_m) const;
   /// print evaluation summary for multilevel sampling across 1D level
   /// profile for discrepancy across model forms
   void print_multilevel_discrepancy_summary(std::ostream& s,
 					    const SizetArray& N_m,
-					    const SizetArray& N_mp1);
+					    const SizetArray& N_mp1) const;
   /// print evaluation summary for multilevel sampling across 2D
   /// level+QoI profile for discrepancy across levels
   void print_multilevel_discrepancy_summary(std::ostream& s,
-					    const Sizet2DArray& N_m);
+					    const Sizet2DArray& N_m) const;
   /// print evaluation summary for multilevel sampling across 2D
   /// level+QoI profile for discrepancy across model forms
   void print_multilevel_discrepancy_summary(std::ostream& s,
 					    const Sizet2DArray& N_m,
-					    const Sizet2DArray& N_mp1);
+					    const Sizet2DArray& N_mp1) const;
 
   /// print evaluation summary for multilevel sampling across 2D model+level
   /// profile (allocations) or 3D model+level+QoI profile (actual)
@@ -423,10 +424,10 @@ private:
 		       const String& qoi_label) const;
 
   /// print an set of aggregated QoI sample counts for a level
-  void print_multilevel_row(std::ostream& s, const SizetArray& N_j);
+  void print_multilevel_row(std::ostream& s, const SizetArray& N_j) const;
   /// print an unrolled set of aggregated QoI sample counts for a level
   void print_multilevel_row(std::ostream& s, const SizetArray& N_j,
-			    const SizetArray& N_jp1);
+			    const SizetArray& N_jp1) const;
 
   //
   //- Heading: Data members

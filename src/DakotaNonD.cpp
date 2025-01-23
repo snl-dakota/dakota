@@ -1119,7 +1119,7 @@ print_level_mappings(std::ostream& s, String qoi_type,
     mappings, rathen than computed{Resp,Prob,Real,GenRel}Levels. */
 void NonD::
 print_level_mappings(std::ostream& s, const RealVector& level_maps,
-		     bool moment_offset, const String& prepend)
+		     bool moment_offset, const String& prepend) const
 {
   if (level_maps.empty()) return;
 
@@ -1289,7 +1289,8 @@ void NonD::print_system_mappings(std::ostream& s) const
 
 
 void NonD::
-print_multilevel_evaluation_summary(std::ostream& s, const SizetArray& N_m)
+print_multilevel_evaluation_summary(std::ostream& s,
+				    const SizetArray& N_m) const
 {
   size_t j, width = write_precision+7, num_lev = N_m.size();
   for (j=0; j<num_lev; ++j)
@@ -1299,7 +1300,8 @@ print_multilevel_evaluation_summary(std::ostream& s, const SizetArray& N_m)
 
 
 void NonD::
-print_multilevel_evaluation_summary(std::ostream& s, const Sizet2DArray& N_m)
+print_multilevel_evaluation_summary(std::ostream& s,
+				    const Sizet2DArray& N_m) const
 {
   size_t j, width = write_precision+7, num_lev = N_m.size();
   for (j=0; j<num_lev; ++j) {
@@ -1318,7 +1320,8 @@ print_multilevel_evaluation_summary(std::ostream& s, const Sizet2DArray& N_m)
 
 
 void NonD::
-print_multilevel_discrepancy_summary(std::ostream& s, const SizetArray& N_m)
+print_multilevel_discrepancy_summary(std::ostream& s,
+				     const SizetArray& N_m) const
 {
   size_t j, N_unroll, width = write_precision+7, num_lev = N_m.size(),
     num_discrep = num_lev - 1;
@@ -1332,7 +1335,7 @@ print_multilevel_discrepancy_summary(std::ostream& s, const SizetArray& N_m)
 
 void NonD::
 print_multilevel_discrepancy_summary(std::ostream& s, const SizetArray& N_m,
-				     const SizetArray& N_mp1)
+				     const SizetArray& N_mp1) const
 {
   size_t j, width = write_precision+7,
     num_lev = std::min(N_m.size(), N_mp1.size());
@@ -1344,7 +1347,8 @@ print_multilevel_discrepancy_summary(std::ostream& s, const SizetArray& N_m,
 
 
 void NonD::
-print_multilevel_discrepancy_summary(std::ostream& s, const Sizet2DArray& N_m)
+print_multilevel_discrepancy_summary(std::ostream& s,
+				     const Sizet2DArray& N_m) const
 {
   size_t j, N_unroll, width = write_precision+7, num_lev = N_m.size(),
     num_discrep = num_lev - 1;
@@ -1362,7 +1366,7 @@ print_multilevel_discrepancy_summary(std::ostream& s, const Sizet2DArray& N_m)
 
 void NonD::
 print_multilevel_discrepancy_summary(std::ostream& s, const Sizet2DArray& N_m,
-				     const Sizet2DArray& N_mp1)
+				     const Sizet2DArray& N_mp1) const
 {
   size_t j, N_unroll, width = write_precision+7,
     num_lev = std::min(N_m.size(), N_mp1.size());
@@ -1377,7 +1381,7 @@ print_multilevel_discrepancy_summary(std::ostream& s, const Sizet2DArray& N_m,
 
 
 void NonD::
-print_multilevel_row(std::ostream& s, const SizetArray& N_j)
+print_multilevel_row(std::ostream& s, const SizetArray& N_j) const
 {
   s << std::setw(write_precision+7) << N_j[0];
   if (!homogeneous(N_j)) { // print all QoI counts in this 1D array
@@ -1390,7 +1394,7 @@ print_multilevel_row(std::ostream& s, const SizetArray& N_j)
 
 void NonD::
 print_multilevel_row(std::ostream& s, const SizetArray& N_j,
-		     const SizetArray& N_jp1)
+		     const SizetArray& N_jp1) const
 {
   s << std::setw(write_precision+7) << N_j[0] + N_jp1[0];
   if (!homogeneous(N_j) || !homogeneous(N_jp1)) {

@@ -52,9 +52,8 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
   wilksFlag(probDescDB.get_bool("method.wilks")), numLHSRuns(0),
   samplerDriver(
     ( problem_db.get_ushort("method.sample_type") == SUBMETHOD_LOW_DISCREPANCY_SAMPLING ) ?
-      std::unique_ptr<SamplerDriver>(std::make_unique<LDDriverAdapter>(problem_db)) :
-        std::unique_ptr<SamplerDriver>(std::make_unique<LHSDriverAdapter>())
-  )
+    std::unique_ptr<SamplerDriver>(std::make_unique<LDDriverAdapter>(problem_db)) :
+    std::unique_ptr<SamplerDriver>(std::make_unique<LHSDriverAdapter>()) )
 {
   // pushed down as some derived classes (MLMC) use a MC default
   //if (!sampleType)
@@ -1892,11 +1891,11 @@ print_intervals(std::ostream& s, String qoi_type,
 
 void NonDSampling::
 print_moments(std::ostream& s, const RealMatrix& moment_stats,
-	      const RealMatrix moment_cis, String qoi_type, short moments_type,
+	      const RealMatrix& moment_cis, String qoi_type, short moments_type,
 	      const StringArray& moment_labels, bool print_cis)
 {
-  size_t i, j, width = write_precision+7, num_moments = moment_stats.numRows(),
-    num_qoi = moment_stats.numCols();
+  size_t i, j, width = write_precision+7, num_qoi = moment_stats.numCols(),
+    num_moments = moment_stats.numRows(), num_ci  = moment_cis.numRows();
 
   s << "\nSample moment statistics for each " << qoi_type << ":\n"
     << std::scientific << std::setprecision(write_precision)
@@ -1915,21 +1914,27 @@ print_moments(std::ostream& s, const RealMatrix& moment_stats,
       s << ' ' << std::setw(width) << moments_i[j];
     s << '\n';
   }
-  if (print_cis && !moment_cis.empty()) {
+  if (print_cis && num_ci) {
     // output 95% confidence intervals as (,) interval
     s << "\n95% confidence intervals for each " << qoi_type << ":\n"
-      << std::setw(width+15) << "LowerCI_Mean" << std::setw(width+1)
-      << "UpperCI_Mean" << std::setw(width+1);
-    if (moments_type == Pecos::CENTRAL_MOMENTS)
-      s << "LowerCI_Variance" << std::setw(width+2) << "UpperCI_Variance\n";
-    else
-      s << "LowerCI_StdDev"   << std::setw(width+2) << "UpperCI_StdDev\n";
-    for (i=0; i<num_qoi; ++i)
-      s << std::setw(14) << moment_labels[i]
-	<< ' ' << std::setw(width) << moment_cis(0, i)
-	<< ' ' << std::setw(width) << moment_cis(1, i)
-	<< ' ' << std::setw(width) << moment_cis(2, i)
-	<< ' ' << std::setw(width) << moment_cis(3, i) << '\n';
+      << std::setw(width+15) << "LowerCI_Mean"
+      << std::setw(width+1)  << "UpperCI_Mean";
+    if (num_ci > 2) {
+      if (moments_type == Pecos::CENTRAL_MOMENTS)
+	s << std::setw(width+1) << "LowerCI_Variance"
+	  << std::setw(width+2) << "UpperCI_Variance";
+      else
+	s << std::setw(width+1) << "LowerCI_StdDev"
+	  << std::setw(width+2) << "UpperCI_StdDev";
+    }
+    s << '\n';
+    for (i=0; i<num_qoi; ++i) {
+      const Real* moment_ci_i = moment_cis[i];
+      s << std::setw(14) << moment_labels[i];
+      for (j=0; j<num_ci; ++j)
+	s << ' ' << std::setw(width) << moment_ci_i[j];
+      s << '\n';
+    }
   }
 }
 

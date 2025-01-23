@@ -69,6 +69,9 @@ NonDGenACVSampling(ProblemDescDB& problem_db, Model& model):
     }
     break;
   }
+
+  // enable downstream logic to account for graph searches and promotions
+  methodName = GEN_APPROX_CONTROL_VARIATE;
 }
 
 
@@ -576,7 +579,6 @@ void NonDGenACVSampling::pre_run()
   if (modelDAGs.empty())
     generate_ensembles_dags();
 
-  meritFnStar = DBL_MAX;
   bestModelSetIter = modelDAGs.end();
   dagSolns.clear();
 }
@@ -641,7 +643,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
     compute_LH_statistics(sum_L_baselineH[1], sum_H[1], sum_LL[1], sum_LH[1],
 			  sum_HH, N_H_actual, var_L, varH, covLL, covLH);
 
-    if (mlmfIter == 0) precompute_allocations(); // metrics not dependent on DAG
+    precompute_allocations(); // metrics not dependent on DAG
     for (activeModelSetIter  = modelDAGs.begin();
 	 activeModelSetIter != modelDAGs.end(); ++activeModelSetIter) {
       const UShortArray& approx_set = activeModelSetIter->first;
@@ -1016,14 +1018,20 @@ genacv_raw_moments(const IntRealMatrixMap& sum_L_covar,
   if (outputLevel >= NORMAL_OUTPUT) Cout << std::endl;
 
   convert_moments(H_raw_mom, momentStats); // uncentered to final (central|std)
+  compute_mean_confidence_intervals(momentStats,
+    final_solution_data().estimator_variances(), meanCIs);
 }
 
 
 void NonDGenACVSampling::precompute_allocations()
 {
-  if (pilotMgmtMode == ONLINE_PILOT ||
-      pilotMgmtMode == ONLINE_PILOT_PROJECTION)
+  if (mlmfIter == 0 && ( pilotMgmtMode == ONLINE_PILOT ||
+			 pilotMgmtMode == ONLINE_PILOT_PROJECTION) )
     cache_mc_reference();// {estVar,numH}Iter0
+
+  // reset for each search over model sets and DAGs; otherwise previous
+  // best could hide new best from more resolved covariances
+  meritFnStar = DBL_MAX;
 }
 
 
@@ -1060,15 +1068,7 @@ compute_allocations(const RealMatrix& var_L, MFSolutionData& soln)
       enforce_linear_ineq_constraints(avg_eval_ratios, approx_set,
 				      orderedRootList);
       soln.anchored_solution_ratios(avg_eval_ratios, avg_N_H);
-      // For offline pilot, the online EstVar is undefined prior to any online
-      // samples, but should not happen (no budget used) unless bad convTol spec
-      if (pilotMgmtMode == ONLINE_PILOT ||
-	  pilotMgmtMode == ONLINE_PILOT_PROJECTION)
-	soln.average_estimator_variance(average(estVarIter0));
-      else
-	soln.average_estimator_variance(std::numeric_limits<Real>::infinity());
-      soln.average_estimator_variance_ratio(1.);
-      numSamples = 0;  return;
+      no_solve_variances(soln);  numSamples = 0;  return;
     }
 
     // Run a competition among related analytic approaches (MFMC or pairwise
@@ -1087,9 +1087,7 @@ compute_allocations(const RealMatrix& var_L, MFSolutionData& soln)
       analytic_initialization_from_mfmc(approx_set, rho2_LH, avg_N_H, mf_soln);
       analytic_initialization_from_ensemble_cvmc(approx_set, *activeDAGIter,
 	orderedRootList, rho2_LH, avg_N_H, cv_soln);
-      ensemble_numerical_solution(mf_soln);
-      ensemble_numerical_solution(cv_soln);
-      pick_mfmc_cvmc_solution(mf_soln, cv_soln, soln);
+      competed_initial_guesses(mf_soln, cv_soln, soln);
       break;
     }
     }
@@ -1107,9 +1105,9 @@ compute_allocations(const RealMatrix& var_L, MFSolutionData& soln)
     ensemble_numerical_solution(soln);
   }
 
-  process_model_solution(soln, numSamples);
+  process_model_allocations(soln, numSamples);
   if (outputLevel >= NORMAL_OUTPUT)
-    print_model_solution(Cout, soln, approx_set);
+    print_model_allocations(Cout, soln, approx_set);
 }
 
 
@@ -1650,16 +1648,18 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
 
 
 void NonDGenACVSampling::
-recover_results(const RealVector& cv_star, const RealVector& fn_star,
-		MFSolutionData& soln)
+minimizer_results_to_solution_data(const RealVector& cv_star,
+				   const RealVector& fn_star,
+				   MFSolutionData& soln)
 {
   // Estvar recovery from optimizer provides std::log(average(nh_estvar)) =
   // var_H / N_H (1 - R^2).  Notes:
-  // > a QoI-vector prior to averaging would require recomputation from r*,N*)
-  // > this value corresponds to N* (_after_ num_samples applied)
+  // > ultimately need a QoI-vector PRIOR to averaging, but defer recomputation
+  //   until after solution selection
+  // > optimal estvar value corresponds to N* (_after_ num_samples applied)
   Real avg_estvar = (optSubProblemForm == N_MODEL_LINEAR_OBJECTIVE) ?
     std::exp(fn_star[1]) : std::exp(fn_star(0));
-  soln.average_estimator_variance(avg_estvar);
+  soln.average_estimator_variance(avg_estvar); // replaced downstream
 
   // Recover optimizer results for average {eval_ratios,estvar}.  Also compute
   // shared increment from N* or from targeting specified budget || accuracy.
@@ -2085,7 +2085,7 @@ void NonDGenACVSampling::update_best(MFSolutionData& soln)
   // Update tracking of best result
 
   bool update = false;  Real merit_fn;
-  if (!valid_variance(soln.average_estimator_variance())) // *** TO DO: problems could be hidden due to averaging --> consider a finer-grained badNumericsFlag triggered per QoI
+  if (!valid_variances(soln.estimator_variances()))
     update = false;
   else {
     merit_fn = nh_penalty_merit(soln);

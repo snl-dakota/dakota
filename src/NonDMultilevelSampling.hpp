@@ -50,7 +50,9 @@ protected:
   void core_run();
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
-  void print_variance_reduction(std::ostream& s);
+
+  Real estimator_accuracy_metric() const;
+  void print_variance_reduction(std::ostream& s) const;
 
   void nested_response_mappings(const RealMatrix& primary_coeffs,
 				const RealMatrix& secondary_coeffs);
@@ -603,6 +605,10 @@ level_cost(const RealVector& cost, size_t step, size_t offset)
     cost[offset_step] + cost[offset_step-1] : // aggregated {HF,LF} mode
     cost[offset_step];                        //     uncorrected LF mode
 }
+
+
+inline Real NonDMultilevelSampling::estimator_accuracy_metric() const
+{ return average(estVar); }
 
 
 inline bool NonDMultilevelSampling::discrepancy_sample_counts() const
