@@ -52,8 +52,6 @@ protected:
 			   RealVector& est_var) override;
 
   const MFSolutionData& final_solution_data() const override;
-  Real estimator_accuracy_metric() const override;
-  //Real estimator_cost_metric() const override;
 
   void print_multigroup_summary(std::ostream& s, const String& summary_type,
 				bool projections) const override;
@@ -378,14 +376,6 @@ all_to_active_group(size_t all_index) const
 inline const MFSolutionData& NonDMultilevBLUESampling::
 final_solution_data() const
 { return blueSolnData; }
-
-
-inline Real NonDMultilevBLUESampling::estimator_accuracy_metric() const
-{ return blueSolnData.average_estimator_variance(); }
-
-
-//inline Real NonDMultilevBLUESampling::estimator_cost_metric() const
-//{ return blueSolnData.equivalent_hf_allocation(); }
 
 
 inline void NonDMultilevBLUESampling::update_model_group_costs()

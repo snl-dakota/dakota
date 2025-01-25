@@ -286,7 +286,7 @@ void NonDACVSampling::approximate_control_variate_pilot_projection()
 			   deltaNActualHF, deltaEquivHF);
   // No need for updating estimator variance given deltaNActualHF since
   // NonDNonHierarchSampling::ensemble_numerical_solution() recovers N*
-  // from the numerical solve and computes projected avgEstVar{,Ratio}
+  // from the numerical solve and computes projected estVariance{s,Ratios}
 }
 
 
@@ -627,13 +627,7 @@ analytic_initialization_from_mfmc(const RealMatrix& rho2_LH, Real avg_N_H,
     Cout << "Initial guess from analytic MFMC (unscaled eval ratios):\n"
 	 << avg_eval_ratios << std::endl;
 
-  Real avg_hf_target;
-  if (maxFunctionEvals == SZ_MAX) // HF target from ACV estvar using MFMC soln
-    avg_hf_target = update_hf_target(avg_eval_ratios,avg_N_H,varH,estVarIter0);
-  else // allocate_budget(), then manage lower bounds and pilot over-estimation
-    scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, avg_hf_target,
-		    (Real)maxFunctionEvals);
-  soln.anchored_solution_ratios(avg_eval_ratios, avg_hf_target);
+  analytic_ratios_to_solution_variables(avg_eval_ratios, avg_N_H, soln);
 }
 
 
@@ -651,13 +645,22 @@ analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
     Cout << "Initial guess from ensemble CVMC (unscaled eval ratios):\n"
 	 << avg_eval_ratios << std::endl;
 
-  Real avg_hf_target;
-  if (maxFunctionEvals == SZ_MAX) // HF target from ACV estvar using CVMC solns
-    avg_hf_target = update_hf_target(avg_eval_ratios, avg_N_H,varH,estVarIter0);
+  analytic_ratios_to_solution_variables(avg_eval_ratios, avg_N_H, soln);
+}
+
+
+void NonDACVSampling::
+analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
+				      Real avg_N_H, MFSolutionData& soln)
+{
+  Real hf_target;
+  if (maxFunctionEvals == SZ_MAX) // HF tgt from ACV estvar using analytic soln
+    hf_target = update_hf_target(avg_eval_ratios, avg_N_H, varH, estVarIter0);
   else // allocate_budget(), then manage lower bounds and pilot over-estimation
-    scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, avg_hf_target,
+    scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, hf_target,
 		    (Real)maxFunctionEvals);
-  soln.anchored_solution_ratios(avg_eval_ratios, avg_hf_target);
+
+  soln.anchored_solution_ratios(avg_eval_ratios, hf_target);
 }
 
 
@@ -675,7 +678,7 @@ print_model_allocations(std::ostream& s, const MFSolutionData& soln,
     s << "Estimator cost allocation = " << soln.equivalent_hf_allocation()
       << std::endl;
   else
-    s << "Average estimator variance = " << soln.average_estimator_variance()
+    s << "Estimator variance metric = " << soln.estimator_variance_metric()
       << std::endl;
 }
 
@@ -684,14 +687,17 @@ Real NonDACVSampling::
 update_hf_target(const RealVector& avg_eval_ratios, Real avg_N_H,
 		 const RealVector& var_H, const RealVector& estvar0)
 {
-  // Note: there is a circular dependency between estvar_ratios and hf_targets
-
-  RealVector cd_vars, estvar_ratios;
+  RealVector cd_vars, estvar_ratios, estvar;
   r_and_N_to_design_vars(avg_eval_ratios, avg_N_H, cd_vars);
-  estimator_variance_ratios(cd_vars, estvar_ratios); // virtual for ACV,GenACV
+  estimator_variances_and_ratios(cd_vars, estvar_ratios, estvar);
+
+  Real metric;  size_t metric_index;
+  MFSolutionData::
+    update_estimator_variance_metric(estVarMetricType, estvar_ratios,
+				     estvar, metric, metric_index);
 
   return NonDNonHierarchSampling::
-    update_hf_target(estvar_ratios, var_H, estvar0);
+    update_hf_target(estvar_ratios, metric_index, var_H, estvar0);
 }
 
 

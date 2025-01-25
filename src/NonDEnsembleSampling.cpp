@@ -37,6 +37,7 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
   mlmfIter(0), equivHFEvals(0.), // also reset in pre_run()
   //allocationTarget(problem_db.get_short("method.nond.allocation_target")),
   //qoiAggregation(problem_db.get_short("method.nond.qoi_aggregation")),
+  estVarMetricType(DEFAULT_ESTVAR_METRIC), // prior to input spec
   finalStatsType(problem_db.get_short("method.nond.final_statistics")),
   exportSampleSets(problem_db.get_bool("method.nond.export_sample_sequence")),
   exportSamplesFormat(
@@ -282,9 +283,9 @@ void NonDEnsembleSampling::initialize_final_statistics()
 
     StringArray stats_labels(num_final);
     if (maxFunctionEvals == SZ_MAX) // accuracy spec: equiv cost is objective
-      { stats_labels[0] = "equiv_HF_cost"; stats_labels[1] = "avg_est_var"; }
+      { stats_labels[0] = "equiv_HF_cost"; stats_labels[1] = "est_var_metric"; }
     else                            // budget spec: equiv cost is constraint
-      { stats_labels[0] = "avg_est_var";   stats_labels[1] = "equiv_HF_cost"; }
+      { stats_labels[0] = "est_var_metric"; stats_labels[1] = "equiv_HF_cost"; }
 
     finalStatistics.function_labels(stats_labels);
     break;

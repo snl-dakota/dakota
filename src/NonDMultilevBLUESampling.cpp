@@ -380,7 +380,7 @@ void NonDMultilevBLUESampling::ml_blue_pilot_projection()
   finalize_counts(NGroupActual, NGroupAlloc);
   // No need for updating estimator variance given deltaNActualHF since
   // NonDNonHierarchSampling::ensemble_numerical_solution() recovers N*
-  // from the numerical solve and computes projected avgEstVar{,Ratio}
+  // from the numerical solve and computes projected estVariance{s,Ratios}
 }
 
 
@@ -767,7 +767,8 @@ specify_parameter_bounds(RealVector& x_lb, RealVector& x_ub)
     size_t g, v, num_v = x_lb.length();
     for (v=0; v<num_v; ++v) {
       g = active_to_all_group(v);
-      x_lb[v] = (backfillFailures) ? average(NGroupActual[g]) : (Real)NGroupAlloc[g];
+      x_lb[v] = (backfillFailures) ?
+	average(NGroupActual[g]) : (Real)NGroupAlloc[g];
     }
   }
   //enforce_nudge(x_lb); // nudge away from 0 if needed
@@ -782,7 +783,7 @@ specify_initial_parameters(const MFSolutionData& soln, RealVector& x0,
   if (soln_vars.empty()) x0 = x_lb;
   else {
     size_t num_v = num_active_groups();
-    if (soln_vars.length() != num_v) deflate(soln_vars, retainedModelGroups, x0);
+    if (soln_vars.length() != num_v) deflate(soln_vars, retainedModelGroups,x0);
     else                             x0 = soln_vars;
   }
 }
@@ -820,7 +821,7 @@ specify_nonlinear_constraints(RealVector& nln_ineq_lb, RealVector& nln_ineq_ub,
   switch (optSubProblemForm) {
   case N_GROUP_LINEAR_OBJECTIVE: // nonlinear accuracy constraint: ub on estvar
     nln_ineq_lb = -DBL_MAX;   // no lower bnd
-    nln_ineq_ub = std::log(convergenceTol * average(estVarIter0));
+    nln_ineq_ub = std::log(convergenceTol * estVarMetric0);
     break;
   }
 }
@@ -951,19 +952,6 @@ analytic_initialization_from_mfmc(const RealMatrix& rho2_LH,
     mfmc_reordered_analytic_solution(approx_set, rho2_LH, sequenceCost,
 				     approx_sequence, avg_eval_ratios,
 				     lower_bounded_r, monotonic_r);
-  /* Desirable to start from avg_hf_target for MFMC rather than N_shared
-  if (maxFunctionEvals == SZ_MAX) // accuracy-constrained
-    // Compute avg_hf_target only based on MFMC estvar, bypassing ML BLUE estvar
-    // Note: dissimilar to ACV,GenACV logic
-    RealVector estvar_ratios;
-    mfmc_estvar_ratios(rho2_LH, avg_eval_ratios, approx_sequence,estvar_ratios);
-    avg_hf_target = update_hf_target(estvar_ratios, NGroupActual[all_group],
-				     estVarIter0); // valid within MFMC context
-  }
-  else
-    avg_hf_target = allocate_budget(avg_eval_ratios, cost, budget);
-               // = scale_to_target(...);
-  */
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Initial guess from analytic MFMC (unscaled eval ratios):\n"
 	 << avg_eval_ratios << std::endl;
@@ -994,13 +982,6 @@ analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
   RealVector avg_eval_ratios;  bool lower_bounded_r = false;
   cvmc_ensemble_solutions(rho2_LH, sequenceCost, avg_eval_ratios,
 			  lower_bounded_r);
-  /*
-  if (maxFunctionEvals == SZ_MAX) // accuracy-constrained
-    avg_hf_target = update_hf_target(cvmc_estvar, N_sh, estVarIter0);
-  else
-    avg_hf_target = allocate_budget(avg_eval_ratios, cost, budget);
-               // = scale_to_target(...);
-  */
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Initial guess from ensemble CVMC (unscaled eval ratios):\n"
 	 << avg_eval_ratios << std::endl;
@@ -1030,23 +1011,28 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
 
   bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
 		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
-  Real avg_hf_target;
+  Real hf_target;
   if (maxFunctionEvals == SZ_MAX) { // accuracy-constrained -> online only
     // As for {ACV,GenACV}, employ ML BLUE's native estvar for accuracy scaling
-    RealVector soln_vars, mlblue_estvar;  SizetArray N_shared;
-    // Rather than estimating avg_hf_target for MFMC/CVMC (based on estvar and
+    RealVector soln_vars, mlblue_ev, mlblue_ev_ratios;//ratios remain empty
+    SizetArray N_shared;  Real ev_metric;  size_t ev_metric_index;
+    // Rather than estimating hf_target for MFMC/CVMC (based on estvar and
     // estVarIter0 from MFMC/CVMC), we instead employ pilot_samp to provide a
-    // baseline estvar for ML BLUE, and then scale toward an avg_hf_target for
+    // baseline estvar for ML BLUE, and then scale toward an hf_target for
     // ML BLUE based on this estvar relative to estVarIter0.
     size_t pilot_samp = pilotSamples[all_group];
     ratios_target_to_solution_variables(avg_eval_ratios, (Real)pilot_samp,
 					ratios_to_groups, soln_vars);
     enforce_bounds_linear_constraints(soln_vars); // for valid estvar
-    estimator_variances(soln_vars, mlblue_estvar); // compute ML BLUE estvar
+    estimator_variances(soln_vars, mlblue_ev); // compute ML BLUE estvar
+    MFSolutionData::
+      update_estimator_variance_metric(estVarMetricType, mlblue_ev_ratios,
+				       mlblue_ev, ev_metric, ev_metric_index);
     // the assumed scaling with N_sh is not generally valid for ML BLUE,
     // but is reasonable for emulation of MFMC
     N_shared.assign(numFunctions, pilot_samp); // online
-    avg_hf_target = update_hf_target(mlblue_estvar, N_shared, estVarIter0);
+    hf_target
+      = update_hf_target(mlblue_ev, ev_metric_index, N_shared, estVarIter0);
   }
   else { // budget-constrained -> online or offline
     Real remaining = (Real)maxFunctionEvals,
@@ -1066,14 +1052,14 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
     }
     if (remaining > 0.)
       // scale_to_target() employs allocate_budget() and rescales for lower bnds
-      scale_to_target(N_shared, sequenceCost, avg_eval_ratios, avg_hf_target,
+      scale_to_target(N_shared, sequenceCost, avg_eval_ratios, hf_target,
 		      remaining, offline_N_lwr);
     else // budget exhausted
-      { avg_hf_target = N_shared; avg_eval_ratios = 1.; }
+      { hf_target = N_shared; avg_eval_ratios = 1.; }
   }
 
   RealVector mlblue_vars;
-  ratios_target_to_solution_variables(avg_eval_ratios, avg_hf_target,
+  ratios_target_to_solution_variables(avg_eval_ratios, hf_target,
 				      ratios_to_groups, mlblue_vars);
   enforce_bounds_linear_constraints(mlblue_vars); // enforce again
   soln.solution_variables(mlblue_vars);
@@ -1087,7 +1073,7 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
 
 void NonDMultilevBLUESampling::
 ratios_target_to_solution_variables(const RealVector& avg_eval_ratios,
-				    Real avg_hf_target,
+				    Real hf_target,
 				    const SizetArray& ratios_to_groups,
 				    RealVector& soln_vars)
 {
@@ -1127,7 +1113,7 @@ ratios_target_to_solution_variables(const RealVector& avg_eval_ratios,
     g = ratios_to_groups[r];      // eval ratio r -> group g
     if (g != _NPOS) {
       v = all_to_active_group(g); // group g -> active v
-      N_samp = avg_hf_target;
+      N_samp = hf_target;
       if (r < num_r)             N_samp *= avg_eval_ratios[r];
       if (N_samp > soln_vars[v]) soln_vars[v] = N_samp; // emerge from pilot
     }
@@ -1204,7 +1190,7 @@ print_group_allocations(std::ostream& s, const MFSolutionData& soln)
       << "\nequivHFEvals = " << equivHFEvals << " deltaEquivHF = "
       << deltaEquivHF << std::endl;
   else {
-    s << "Average estimator variance = " << soln.average_estimator_variance()
+    s << "Estimator variance metric = " << soln.estimator_variance_metric()
       << std::endl;
   }
 }
@@ -1446,14 +1432,6 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s) const
       s << " Equivalent" << method << " ratio:              " << std::setw(wpp7)
 	<< mlblue_est_var_q / proj_equiv_estvar_q << '\n';
   }
-
-  /*
-  // Previous ordering of averages (before per-QoI reporting):
-  // > recomputing final MC estvar, rather than dividing the two averages, gives
-  //   a result that is consistent with average(estVarIter0) when N* = pilot.
-  // > The ACV ratio then differs from final ACV / final MC (due to recovering
-  //   avgEstVar from the optimizer obj fn), but difference is usually small.
-  */
 }
 
 

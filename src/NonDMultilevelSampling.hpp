@@ -608,7 +608,20 @@ level_cost(const RealVector& cost, size_t step, size_t offset)
 
 
 inline Real NonDMultilevelSampling::estimator_accuracy_metric() const
-{ return average(estVar); }
+{
+  // MLMC for mean stats uses an analytic soln which minimizes estimator
+  // variance; thus, we only manage QoI reductions here
+  switch (estVarMetricType) {
+  case DEFAULT_ESTVAR_METRIC: case AVG_ESTVAR_METRIC:
+    return average(estVar);  break;
+  case MAX_ESTVAR_METRIC:
+    return maximum(estVar);  break;
+  default:
+    Cerr << "Error: metric type unsupported by multilevel_sampling."<<std::endl;
+    abort_handler(METHOD_ERROR);
+    return DBL_MAX;
+  }
+}
 
 
 inline bool NonDMultilevelSampling::discrepancy_sample_counts() const

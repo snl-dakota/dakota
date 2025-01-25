@@ -55,8 +55,6 @@ protected:
   //                   short results_state = FINAL_RESULTS) override;
 
   const MFSolutionData& final_solution_data() const override;
-  Real estimator_accuracy_metric() const override;
-  //Real estimator_cost_metric() const override;
 
   void print_variance_reduction(std::ostream& s) const override;
 
@@ -212,14 +210,6 @@ private:
 inline const MFSolutionData& NonDMultifidelitySampling::
 final_solution_data() const
 { return mfmcSolnData; }
-
-
-inline Real NonDMultifidelitySampling::estimator_accuracy_metric() const
-{ return mfmcSolnData.average_estimator_variance(); }
-
-
-//inline Real NonDMultifidelitySampling::estimator_cost_metric() const
-//{ return mfmcSolnData.equivalent_hf_allocation(); }
 
 
 inline void NonDMultifidelitySampling::

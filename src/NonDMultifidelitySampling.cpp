@@ -355,8 +355,8 @@ update_projected_samples(const MFSolutionData& soln,
   Real hf_target = soln.solution_reference();
   // No relaxation for projections
   size_t alloc_incr = one_sided_delta(N_H_alloc, hf_target),
-    actual_incr = (backfillFailures) ?
-      one_sided_delta(N_H_actual, hf_target) : alloc_incr;
+    actual_incr = (backfillFailures) ? one_sided_delta(N_H_actual, hf_target)
+                                     : alloc_incr;
   // For analytic solns, mirror CDV lower bnd for numerical solns; see rationale
   // in NonDNonHierarchSampling::numerical_solution_bounds_constraints()
   if ( ( pilotMgmtMode == OFFLINE_PILOT ||
@@ -1192,7 +1192,7 @@ compute_allocations(const RealMatrix& rho2_LH, const RealVector& var_H,
   // analytic r_i computation --> preserve rho ordering and enforce monotonic
   // r_i for downstream eval of estvar, moment roll-up, et al.
   bool lower_bounded_r = true, monotonic_r = true;
-  RealVector avg_eval_ratios;  Real avg_hf_target;
+  RealVector avg_eval_ratios;
   switch (optSubProblemForm) {
   case ANALYTIC_SOLUTION:
     corrApproxSequence.clear();  ratioApproxSequence.clear();
@@ -1261,20 +1261,25 @@ mfmc_numerical_solution(const RealMatrix& rho2_LH, const RealVector& cost,
       Cout << "Initial guess from analytic MFMC (average eval ratios):\n"
 	   << avg_eval_ratios << std::endl;
 
-    Real avg_hf_target;
+    Real hf_target;
     if (budget_constrained) // for numerical, re-scale for over-estimated pilot
-      scale_to_target(avg_N_H, cost, avg_eval_ratios, avg_hf_target,
+      scale_to_target(avg_N_H, cost, avg_eval_ratios, hf_target,
 		      (Real)maxFunctionEvals);
     else { // accuracy-constrained
       // Computes estvar_ratios* from r*,rho2.  Next, m1* from estvar_ratios*;
       // then these estvar_ratios get replaced for actual profile
-      RealVector estvar_ratios;
+      RealVector estvar_ratios, estvar;  Real metric;  size_t metric_index;
       mfmc_estvar_ratios(rho2_LH, avg_eval_ratios, corrApproxSequence,
 			 estvar_ratios);
-      avg_hf_target = update_hf_target(estvar_ratios, varH, estVarIter0);
+      estvar_ratios_to_estvar(estvar_ratios, varH, N_H_actual, estvar);
+      MFSolutionData::
+	update_estimator_variance_metric(estVarMetricType, estvar_ratios,
+					 estvar, metric, metric_index);
+      hf_target = update_hf_target(estvar_ratios, metric_index, varH,
+				   estVarIter0);
     }
     // push updates to MFSolutionData
-    soln.anchored_solution_ratios(avg_eval_ratios, avg_hf_target);
+    soln.anchored_solution_ratios(avg_eval_ratios, hf_target);
   }
   else if (no_solve) // subsequent iterations
     { numSamples = 0;  return; } // leave soln at previous values
@@ -1312,15 +1317,20 @@ process_analytic_allocations(const RealMatrix& rho2_LH, const RealVector& var_H,
 
   // Form an initial estimate of N^* from r_i^* based on budget/accuracy
   // > for accuracy-constrained, estvar_ratios is also an initial estimate
-  Real avg_hf_target, budget = (Real)maxFunctionEvals;
+  Real hf_target, budget = (Real)maxFunctionEvals;
   if (maxFunctionEvals == SZ_MAX) {
-    RealVector estvar_ratios;
+    RealVector estvar_ratios, estvar;  Real metric;  size_t metric_index;
     mfmc_estvar_ratios(rho2_LH, avg_eval_ratios, corrApproxSequence,
 		       estvar_ratios);
-    avg_hf_target = update_hf_target(estvar_ratios, var_H, estVarIter0);
+    estvar_ratios_to_estvar(estvar_ratios, var_H, N_H, estvar);
+    MFSolutionData::
+      update_estimator_variance_metric(estVarMetricType, estvar_ratios,
+				       estvar, metric, metric_index);
+    hf_target = update_hf_target(estvar_ratios, metric_index, varH,
+				 estVarIter0);
   }
   else
-    avg_hf_target = allocate_budget(avg_eval_ratios, cost, budget);
+    hf_target = allocate_budget(avg_eval_ratios, cost, budget);
 
   // Now we update these initial estimates in view of the pilot: analytic cases
   // use the intersection of the analytic profile with the pilot sample,
@@ -1329,11 +1339,11 @@ process_analytic_allocations(const RealMatrix& rho2_LH, const RealVector& var_H,
   //   analytic sample profile for N_i allocations that exceed the pilot.
   // > To be accurate in estvar, we must take credit for the pilot and any
   //   other modifications to analytic soln
-  emerge_from_pilot(N_H, avg_eval_ratios, avg_hf_target);
+  emerge_from_pilot(N_H, avg_eval_ratios, hf_target);
 
   // Now we lock in the modified analytic solution
   // > estvar/estvar_ratios are updated downstream once iteration is complete
-  soln.anchored_solution_ratios(avg_eval_ratios, avg_hf_target);
+  soln.anchored_solution_ratios(avg_eval_ratios, hf_target);
 }
 
 
@@ -1342,7 +1352,7 @@ mfmc_estimator_variance(const RealMatrix& rho2_LH, const RealVector& var_H,
 			const SizetArray& N_H, MFSolutionData& soln)
 {
   // These operations are deferred until convergence of any solution iteration
-  // > Accuracy-constrained needs estvar_ratios for computing avg_hf_target in
+  // > Accuracy-constrained needs estvar_ratios for computing hf_target in
   //   process_allocations()
 
   switch (optSubProblemForm) {
@@ -1478,8 +1488,8 @@ mfmc_estvar_ratios(const RealMatrix& rho2_LH, const RealVector& avg_eval_ratios,
   }
 
   // Call stack for MFMC numerical solution:
-  // > NonDNonHierarchSampling::log_average_estvar(RealVector&)
-  // > NonDNonHierarchSampling::average_estimator_variance(RealVector&)
+  // > NonDNonHierarchSampling::log_estvar_metric(RealVector&)
+  // > NonDNonHierarchSampling::estimator_variance_metric(RealVector&)
   // > NonDNonHierarchSampling::estimator_variances(RealVector&)
   // > NonDMultifidelitySampling::estimator_variance_ratios() [virtual]
   // > This function (vector of avg_eval_ratios from opt design variables)

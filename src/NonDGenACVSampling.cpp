@@ -622,7 +622,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
   N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
   std::pair<UShortArray, UShortArray> soln_key;
 
-  Real avg_hf_target = 0., avg_N_H;
+  Real hf_target = 0., avg_N_H;
   while (numSamples && mlmfIter <= maxIterations) {
 
     // --------------------------------------------------------------------
@@ -632,7 +632,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
     accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
 			sum_LH, sum_HH, N_H_actual);
     N_H_alloc += (backfillFailures && mlmfIter) ?
-      one_sided_delta(N_H_alloc, avg_hf_target, relaxFactor) : numSamples;
+      one_sided_delta(N_H_alloc, hf_target, relaxFactor) : numSamples;
     // While online cost recovery could be continuously updated, we restrict
     // to the pilot and do not not update after iter 0.  We could potentially
     // update cost for shared samples, mirroring the covariance updates.
@@ -676,9 +676,9 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
     soln_key.second = *activeDAGIter;
     if (truthFixedByPilot) numSamples = 0;
     else {
-      avg_hf_target = dagSolns[soln_key].solution_reference();
+      hf_target = dagSolns[soln_key].solution_reference();
       avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
-      numSamples = one_sided_delta(avg_N_H, avg_hf_target, relaxFactor);
+      numSamples = one_sided_delta(avg_N_H, hf_target, relaxFactor);
     }
     ++mlmfIter;  advance_relaxation();
   }
@@ -873,7 +873,7 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
 			   deltaNActualHF, deltaEquivHF);
   // No need for updating estimator variance given deltaNActualHF since
   // NonDNonHierarchSampling::ensemble_numerical_solution() recovers N*
-  // from the numerical solve and computes projected avgEstVar{,Ratio}
+  // from the numerical solve and computes projected estVariance{s,Ratios}
 }
 
 
@@ -1132,13 +1132,13 @@ analytic_initialization_from_mfmc(const UShortArray& approx_set,
     Cout << "Initial guess from analytic MFMC (unscaled eval ratios):\n"
 	 << avg_eval_ratios << std::endl;
 
-  Real avg_hf_target;
+  Real hf_target;
   if (maxFunctionEvals == SZ_MAX)// HF target from GenACV estvar using MFMC soln
-    avg_hf_target = update_hf_target(avg_eval_ratios,avg_N_H,varH,estVarIter0);
+    hf_target = update_hf_target(avg_eval_ratios, avg_N_H, varH, estVarIter0);
   else // allocate_budget(), then manage lower bounds and pilot over-estimation
-    scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, avg_hf_target,
+    scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, hf_target,
 		    approx_set, orderedRootList, (Real)maxFunctionEvals);
-  soln.anchored_solution_ratios(avg_eval_ratios, avg_hf_target);
+  soln.anchored_solution_ratios(avg_eval_ratios, hf_target);
 }
 
 
@@ -1156,26 +1156,26 @@ analytic_initialization_from_ensemble_cvmc(const UShortArray& approx_set,
   cvmc_ensemble_solutions(covLL, covLH, varH, sequenceCost, approx_set, dag,
 			  root_list, avg_eval_ratios);
 
-  Real avg_hf_target;
+  Real hf_target;
   if (maxFunctionEvals == SZ_MAX) {
     // scale according to accuracy (convergenceTol * estVarIter0)
     enforce_linear_ineq_constraints(avg_eval_ratios, approx_set, root_list);
-    avg_hf_target = update_hf_target(avg_eval_ratios,avg_N_H,varH,estVarIter0);
+    hf_target = update_hf_target(avg_eval_ratios, avg_N_H, varH, estVarIter0);
   }
   else { // scale according to cost
     // incorporates lin ineq enforcement:
-    scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, avg_hf_target,
+    scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, hf_target,
 		    approx_set, root_list, (Real)maxFunctionEvals);
     //RealVector cd_vars;
-    //r_and_N_to_design_vars(avg_eval_ratios, avg_hf_target, cd_vars);
-    //soln.average_estimator_variance(average_estimator_variance(cd_vars));
+    //r_and_N_to_design_vars(avg_eval_ratios, hf_target, cd_vars);
+    //soln.estimator_variances(estimator_variances(cd_vars));
   }
-  soln.anchored_solution_ratios(avg_eval_ratios, avg_hf_target);
+  soln.anchored_solution_ratios(avg_eval_ratios, hf_target);
 
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "GenACV scaled initial guess from ensemble CVMC:\n"
-	 << "  average eval ratios:\n" << avg_eval_ratios
-	 << "  average HF target = "   << avg_hf_target << std::endl;
+	 << "  average eval ratios:\n" << avg_eval_ratios << "  HF target = "
+	 << hf_target << std::endl;
 }
 
 
@@ -1363,7 +1363,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     else if (optSubProblemForm == N_MODEL_LINEAR_OBJECTIVE) {
       // nonlinear constraint on estvar
       nln_ineq_lb = -DBL_MAX;  // no lower bnd
-      nln_ineq_ub = std::log(convergenceTol * average(estVarIter0));
+      nln_ineq_ub = std::log(convergenceTol * estVarMetric0);
     }
     break;
   }
@@ -1652,14 +1652,13 @@ minimizer_results_to_solution_data(const RealVector& cv_star,
 				   const RealVector& fn_star,
 				   MFSolutionData& soln)
 {
-  // Estvar recovery from optimizer provides std::log(average(nh_estvar)) =
-  // var_H / N_H (1 - R^2).  Notes:
-  // > ultimately need a QoI-vector PRIOR to averaging, but defer recomputation
-  //   until after solution selection
+  // Estvar recovery from optimizer provides std::log(estvar_metric).  Notes:
+  // > ultimately need a QoI-vector PRIOR to scalar metric reduction, but defer
+  //   recomputation until after solution selection
   // > optimal estvar value corresponds to N* (_after_ num_samples applied)
-  Real avg_estvar = (optSubProblemForm == N_MODEL_LINEAR_OBJECTIVE) ?
+  Real estvar_metric = (optSubProblemForm == N_MODEL_LINEAR_OBJECTIVE) ?
     std::exp(fn_star[1]) : std::exp(fn_star(0));
-  soln.average_estimator_variance(avg_estvar); // replaced downstream
+  soln.estimator_variance_metric(estvar_metric); // QoI-vec evaluated downstream
 
   // Recover optimizer results for average {eval_ratios,estvar}.  Also compute
   // shared increment from N* or from targeting specified budget || accuracy.
@@ -1668,7 +1667,7 @@ minimizer_results_to_solution_data(const RealVector& cv_star,
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT: {
     const RealVector& avg_eval_ratios = cv_star; // r*
-    Real              avg_hf_target;             // N*
+    Real              hf_target;             // N*
     // N* was not part of the optimization (solver computes r* for fixed N)
     // and has not been updated by the optimizer.  We update it here:
 
@@ -1679,9 +1678,9 @@ minimizer_results_to_solution_data(const RealVector& cv_star,
       // Full budget allocation: pilot sample + addtnl N_H; then optimal N_L
       // > can also under-relax the budget allocation to enable additional N_H
       //   increments + associated shared sample sets to refine shared stats.
-      avg_hf_target = allocate_budget(approx_set, avg_eval_ratios,sequenceCost);
+      hf_target = allocate_budget(approx_set, avg_eval_ratios,sequenceCost);
       Cout << "Scaling profile for maxFunctionEvals = " << maxFunctionEvals
-	   << ": average HF target = " << avg_hf_target << std::endl;
+	   << ": HF target = " << hf_target << std::endl;
     }
     else { //if (convergenceTol != -DBL_MAX) { // *** TO DO: detect user spec
       // EstVar target = convTol * estvar_iter0 = estvar_ratio * varH / N_target
@@ -1692,16 +1691,14 @@ minimizer_results_to_solution_data(const RealVector& cv_star,
       SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
       size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
       Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
-      avg_hf_target
-	= update_hf_target(avg_eval_ratios, avg_N_H, varH, estVarIter0);
+      hf_target = update_hf_target(avg_eval_ratios, avg_N_H, varH, estVarIter0);
       Cout << "Scaling profile for convergenceTol = " << convergenceTol
-	   << ": average HF target = " << avg_hf_target << std::endl;
+	   << ": HF target = " << hf_target << std::endl;
     }
-    //avg_hf_target = std::min(budget_target, ctol_target); // enforce both
-    soln.anchored_solution_ratios(avg_eval_ratios, avg_hf_target);
-    soln.equivalent_hf_allocation(
-      compute_equivalent_cost(avg_hf_target, avg_eval_ratios,
-			      sequenceCost, approx_set));
+    //hf_target = std::min(budget_target, ctol_target); // enforce both
+    soln.anchored_solution_ratios(avg_eval_ratios, hf_target);
+    soln.equivalent_hf_allocation(compute_equivalent_cost(hf_target,
+				  avg_eval_ratios, sequenceCost, approx_set));
     break;
   }
   case R_AND_N_NONLINEAR_CONSTRAINT: {
