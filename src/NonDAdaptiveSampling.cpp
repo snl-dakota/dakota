@@ -298,14 +298,30 @@ namespace Dakota
 			// add new_X to the build points and append approximation
 			VariablesArray points_to_add;
 			IntResponseMap responses_to_add;
-			for(int i = 0; i < new_Xs.size(); i++) 
-			{
-				iteratedModel.continuous_variables(new_Xs[i]);
-				iteratedModel.evaluate();
-				responses_to_add.insert(IntResponsePair(iteratedModel.evaluation_id(),
-										iteratedModel.current_response()));
-				points_to_add.push_back(iteratedModel.current_variables());
-			}
+            if (iteratedModel.asynch_flag())
+            {
+                fout << "\nUsing async evaluation" << std::endl;
+            
+                for(int i = 0; i < new_Xs.size(); i++) 
+                {
+                    iteratedModel.continuous_variables(new_Xs[i]);
+                    iteratedModel.evaluate_nowait();
+                    points_to_add.push_back(iteratedModel.current_variables());
+                }
+
+                // Wait for the responses.
+                responses_to_add = iteratedModel.synchronize(); 
+            }
+            else {
+                for(int i = 0; i < new_Xs.size(); i++) 
+                {
+                    iteratedModel.continuous_variables(new_Xs[i]);
+                    iteratedModel.evaluate();
+                    responses_to_add.insert(IntResponsePair(iteratedModel.evaluation_id(),
+                                            iteratedModel.current_response()));
+                    points_to_add.push_back(iteratedModel.current_variables());
+                }
+            }
 
 			gpModel.append_approximation(points_to_add,responses_to_add, true);
 			
