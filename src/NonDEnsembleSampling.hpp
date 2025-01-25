@@ -223,6 +223,9 @@ protected:
   /// initial estimator variance from shared pilot (no CV reduction)
   RealVector estVarIter0;
 
+  /// approach for defining scalar optimization metric from vectors of
+  /// estimator variances/ratios
+  short estVarMetricType;
   /// QOI_STATISTICS (moments, level mappings) or ESTIMATOR_PERFORMANCE
   /// (for model tuning of estVar,equivHFEvals by an outer loop)
   short finalStatsType;
@@ -522,7 +525,7 @@ finalize_relaxation(MFSolutionData& soln)
   // from numerical solve not fully realized and soln data needs adjustment
   // prior to final post-processing.
 
-  //Real curr_estvar = soln.average_estimator_variance(); // back out ratio?
+  //Real curr_estvar = soln.estimator_variance_metric(); // back out ratio?
   const RealVector& soln_vars = soln.solution_variables();
   RealVector delta_N(numGroups);  size_t i;
   for (i=0; i<numGroups; ++i) {
@@ -540,14 +543,14 @@ finalize_relaxation(MFSolutionData& soln)
   Real multiplier = 1. - relaxFactor;
   for (i=0; i<numGroups; ++i)
     relaxed_vars[i] = soln_vars[i] - multiplier * delta_N[i];
-  Real relaxed_estvar = average_estimator_variance(relaxed_vars);
+  Real relaxed_estvar = estimator_variance_metric(relaxed_vars);
 
   // override last numerical solve with final (real-valued) state
   soln.solution_variables(relaxed_vars);
-  soln.average_estimator_variance(relaxed_estvar);
+  soln.estimator_variance_metric(relaxed_estvar);
   // ratio of averages rather that average of ratios
   if (pilotMgmtMode == ONLINE_PILOT || pilotMgmtMode == ONLINE_PILOT_PROJECTION)
-    soln.average_estimator_variance_ratio(relaxed_estvar/average(estVarIter0));
+    soln.estimator_variance_ratios(relaxed_estvar, estVarIter0);
 }
 */
 

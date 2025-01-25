@@ -74,13 +74,24 @@ public:
   
   void initialize_estimator_variances(size_t num_fns);
   void initialize_estimator_variances(size_t num_fns, Real val);
-  Real average_estimator_variance() const;
-  void average_estimator_variance(Real avg_estvar);
   void estimator_variances(const RealVector& est_var);
   const RealVector& estimator_variances() const;
   void estimator_variance(Real est_var, size_t i);
   Real estimator_variance(size_t i) const;
-   
+
+  static void update_estimator_variance_metric(short metric_type,
+					       const RealVector& est_var_ratios,
+					       const RealVector& est_var,
+					       Real& est_var_metric,
+					       size_t& metric_index);
+  static void update_estimator_variance_metric(short metric_type,
+					       const RealVector& est_var,
+					       Real& est_var_metric);
+  void update_estimator_variance_metric(short metric_type);
+  Real estimator_variance_metric() const;
+  void estimator_variance_metric(Real estvar_metric);
+  size_t estimator_variance_metric_index() const;
+
   void initialize_estimator_variance_ratios(size_t num_fns);
   void initialize_estimator_variance_ratios(size_t num_fns, Real val);
   void estimator_variance_ratios(const RealVector& est_var_ratios);
@@ -120,13 +131,6 @@ protected:
   // Note: could be subclassed for analytic (vector estvar) vs. numerical
   // solutions (averaged estvar)
 
-  // average estimator variance for model graph
-  //Real avgEstVar;
-  // average estimator variance ratio (1 - R^2) for model graph: the
-  // ratio of final estimator variance (optimizer result) and final
-  // MC estimator variance using final N_H samples (not equivHF)
-  //Real avgEstVarRatio;
-
   /// estimator variances for each QoI for a given model graph
   RealVector estVariances;
   /// estimator variance ratios (1 - R^2) for each QoI for a given model
@@ -134,20 +138,27 @@ protected:
   /// and final MC estimator variance using final N_H samples (not equivHF)
   RealVector estVarRatios;
 
+  /// scalar metric computed from estVariances according to incoming metric type
+  Real estVarMetric;
+  /// index when estVarMetric involves a selection (e.g. max over QoI)
+  /// rather than reduction (e.g. average over QoI)
+  size_t estVarMetricIndex;
+
   // for accuracy constrained: total allocation for estimator in
   // equivalent HF units (may differ from total actual = equivHFEvals)
   Real equivHFAlloc;
 };
 
 
-inline MFSolutionData::MFSolutionData(): equivHFAlloc(0.)
-  //avgHFTarget(0.), avgEstVar(DBL_MAX), avgEstVarRatio(1.),
+inline MFSolutionData::MFSolutionData(): //, avgHFTarget(0.)
+  estVarMetric(DBL_MAX), equivHFAlloc(0.)
 { }
 
 
 inline MFSolutionData::
 MFSolutionData(const RealVector& soln_vars, const RealVector& est_var,
-	       const RealVector& est_var_ratios, Real equiv_hf)
+	       const RealVector& est_var_ratios, Real equiv_hf):
+  estVarMetric(DBL_MAX)
 {
   copy_data(soln_vars, solutionVars);       copy_data(est_var, estVariances);
   copy_data(est_var_ratios, estVarRatios);  equivHFAlloc = equiv_hf;
@@ -158,7 +169,10 @@ inline MFSolutionData::MFSolutionData(const MFSolutionData& sd)
 {
   copy_data(sd.solutionVars, solutionVars);
   copy_data(sd.estVariances, estVariances);
-  copy_data(sd.estVarRatios, estVarRatios);  equivHFAlloc = sd.equivHFAlloc;
+  copy_data(sd.estVarRatios, estVarRatios);
+  //estVarMetricType = sd.estVarMetricType;
+  estVarMetric = sd.estVarMetric;
+  equivHFAlloc = sd.equivHFAlloc;
 }
 
 
@@ -170,7 +184,10 @@ inline MFSolutionData& MFSolutionData::operator=(const MFSolutionData& sd)
 {
   copy_data(sd.solutionVars, solutionVars);
   copy_data(sd.estVariances, estVariances);
-  copy_data(sd.estVarRatios, estVarRatios);  equivHFAlloc = sd.equivHFAlloc;
+  copy_data(sd.estVarRatios, estVarRatios);
+  //estVarMetricType = sd.estVarMetricType;
+  estVarMetric = sd.estVarMetric;
+  equivHFAlloc = sd.equivHFAlloc;
   return *this;
 }
 
@@ -254,21 +271,6 @@ initialize_estimator_variances(size_t num_fns, Real val)
 }
 
 
-inline Real MFSolutionData::average_estimator_variance() const
-{ return average(estVariances); }
-
-
-/** This function is only used during solution comparison in numerical
-    solves, where we need to store the final objective/constraint value.
-    Once a solution is selected, the QoI vector of estimator variances
-    is re-computed downstream. */
-inline void MFSolutionData::average_estimator_variance(Real avg_estvar)
-{
-  estVariances.sizeUninitialized(1); // collapsed temporarily
-  estVariances[0] = avg_estvar;
-}
-
-
 inline void MFSolutionData::estimator_variances(const RealVector& est_var)
 { copy_data(est_var, estVariances); }
 
@@ -283,6 +285,70 @@ inline void MFSolutionData::estimator_variance(Real est_var, size_t i)
 
 inline Real MFSolutionData::estimator_variance(size_t i) const
 { return estVariances[i]; }
+
+
+inline void MFSolutionData::
+update_estimator_variance_metric(short metric_type,
+				 const RealVector& est_var_ratios,
+				 const RealVector& est_var,
+				 Real& est_var_metric, size_t& metric_index)
+{
+  switch (metric_type) {
+  // absolute metrics:
+  case DEFAULT_ESTVAR_METRIC: case AVG_ESTVAR_METRIC:
+    metric_index = _NPOS;
+    est_var_metric = average(est_var);          break;
+  case MAX_ESTVAR_METRIC:
+    metric_index = find_max_index(est_var);
+    est_var_metric = est_var[metric_index];        break;
+  // metrics relative to MC estvar:
+  case AVG_ESTVAR_RATIO_METRIC:
+    metric_index = _NPOS;
+    est_var_metric = average(est_var_ratios);   break;
+  case MAX_ESTVAR_RATIO_METRIC:
+    metric_index = find_max_index(est_var_ratios);
+    est_var_metric = est_var_ratios[metric_index]; break;
+  }
+}
+
+
+inline void MFSolutionData::
+update_estimator_variance_metric(short metric_type, const RealVector& est_var,
+				 Real& est_var_metric)
+{
+  switch (metric_type) {
+  case DEFAULT_ESTVAR_METRIC: case AVG_ESTVAR_METRIC:
+  case AVG_ESTVAR_RATIO_METRIC:
+    est_var_metric = average(est_var);  break;
+  case MAX_ESTVAR_METRIC:     case MAX_ESTVAR_RATIO_METRIC:
+    est_var_metric = maximum(est_var);  break;
+  }
+}
+
+
+inline void MFSolutionData::update_estimator_variance_metric(short metric_type)
+{
+  update_estimator_variance_metric(metric_type,  estVarRatios, estVariances,
+				   estVarMetric, estVarMetricIndex);
+}
+
+
+inline Real MFSolutionData::estimator_variance_metric() const
+{ return estVarMetric; }
+
+
+/** This function must be used with care as it can desynchronize the
+    scalar estVarMetric from its corresponding estVariances vector. At
+    this time, it is only used during solution comparison in numerical
+    solves, where we need to store the final scalar value coming from
+    the optimizer.  For the solution that is selected, the estVariances
+    vector is then synchronized downstream. */
+inline void MFSolutionData::estimator_variance_metric(Real estvar_metric)
+{ estVarMetric = estvar_metric; }
+
+
+inline size_t MFSolutionData::estimator_variance_metric_index() const
+{ return estVarMetricIndex; }
 
 
 inline void MFSolutionData::
@@ -364,6 +430,9 @@ protected:
   unsigned short uses_method() const override;
   /// perform a numerical solver method switch due to a detected conflict
   void method_recourse(unsigned short method_name) override;
+
+  Real estimator_accuracy_metric() const override;
+  //Real estimator_cost_metric() const override;
 
   //
   //- Heading: New virtual functions
@@ -470,14 +539,26 @@ protected:
   // 			      const UShortSet& reverse_dag_set);
 
   /// helper function that supports optimization APIs passing design variables
-  Real average_estimator_variance(const RealVector& cd_vars);
+  Real estimator_variance_metric(const RealVector& cd_vars);
   /// compute estimator variances from ratios and MC reference variance
   void estimator_variances_from_ratios(const RealVector& cd_vars,
 				       const RealVector& estvar_ratios,
 				       RealVector& est_var);
   /// alternate API for updating both variance ratios and associated variances
   void estimator_variances_and_ratios(const RealVector& cd_vars,
+				      RealVector& estvar_ratios,
+				      RealVector& est_var);
+  /// alternate API for updating both variance ratios and associated variances
+  void estimator_variances_and_ratios(const RealVector& cd_vars,
 				      MFSolutionData& soln);
+  /// compute estimator variance from estimator variance ratios
+  void estvar_ratios_to_estvar(const RealVector& estvar_ratios,
+			       const RealVector& var_H, const SizetArray& N_H,
+			       RealVector& estvar);
+  /// compute estimator variance from estimator variance ratios
+  void estvar_ratios_to_estvar(const RealVector& estvar_ratios,
+			       const RealVector& var_H, Real N_H,
+			       RealVector& estvar);
   /// compute estimator variance from estimator variance ratios
   void estvar_ratios_to_estvar(const RealVector& var_H, const SizetArray& N_H,
 			       MFSolutionData& soln);
@@ -528,10 +609,10 @@ protected:
   void finalize_counts(const Sizet2DArray& N_L_actual,
 		       const SizetArray&   N_L_alloc);
 
-  Real compute_equivalent_cost(Real avg_hf_target,
+  Real compute_equivalent_cost(Real hf_target,
 			       const RealVector& avg_eval_ratios,
 			       const RealVector& cost);
-  Real compute_equivalent_cost(Real avg_hf_target,
+  Real compute_equivalent_cost(Real hf_target,
 			       const RealVector& avg_eval_ratios,
 			       const RealVector& cost,
 			       const UShortArray& approx_set);
@@ -679,14 +760,13 @@ protected:
 		       const RealVector& avg_eval_ratios,
 		       const RealVector& cost);
 
-  Real update_hf_target(const RealVector& estvar, const SizetArray& N_H,
-			const RealVector& estvar_iter0);
-  Real update_hf_target(const RealVector& estvar_ratios,
-			const RealVector& var_H,
-			const RealVector& estvar_iter0);
+  Real update_hf_target(const RealVector& estvar, size_t metric_index,
+			const SizetArray& N_H,   const RealVector& estvar_0);
+  Real update_hf_target(const RealVector& estvar_ratios, size_t metric_index,
+			const RealVector& var_H, const RealVector& estvar_0);
 
   void scale_to_target(Real avg_N_H, const RealVector& cost,
-		       RealVector& avg_eval_ratios, Real& avg_hf_target,
+		       RealVector& avg_eval_ratios, Real& hf_target,
 		       Real budget, Real offline_N_lwr = 1.);
   void scale_to_budget_with_pilot(RealVector& avg_eval_ratios,
 				  const RealVector& cost, Real avg_N_H,
@@ -805,6 +885,9 @@ protected:
 
   /// number of successful pilot evaluations of HF truth model (exclude faults)
   SizetArray numHIter0;
+  /// scalar accuracy metric derived from estVarIter0 according to
+  /// estVarMetricType
+  Real estVarMetric0;
 
 private:
 
@@ -812,8 +895,8 @@ private:
   //- Heading: helper functions
   //
 
-  /// flattens contours of average_estimator_variance() using std::log
-  Real log_average_estvar(const RealVector& cd_vars);
+  /// flattens contours of estimator_variance_metric() using std::log
+  Real log_estvar_metric(const RealVector& cd_vars);
 
   /// compute a penalty merit function from objective, constraint, and
   /// constaint bound
@@ -868,6 +951,14 @@ inline size_t NonDNonHierarchSampling::num_approximations() const
 
 inline unsigned short NonDNonHierarchSampling::uses_method() const
 { return optSubProblemSolver; }
+
+
+inline Real NonDNonHierarchSampling::estimator_accuracy_metric() const
+{ return final_solution_data().estimator_variance_metric(); }
+
+
+//inline Real NonDNonHierarchSampling::estimator_cost_metric() const
+//{ return final_solution_data().equivalent_hf_allocation(); }
 
 
 /*
@@ -1013,10 +1104,10 @@ competed_initial_guesses(MFSolutionData& mf_soln, MFSolutionData& cv_soln,
     if (budget_constrained) { // same cost, compare accuracy
       RealVector cdv;
       r_and_N_to_design_vars(mf_soln.avgEvalRatios,mf_soln.avgHFTarget,cdv);
-      mf_soln.avgEstVar = average_estimator_variance(cdv); // ACV or GenACV
+      mf_soln.estVarMetric = estimator_variance_metric(cdv); // ACV or GenACV
       r_and_N_to_design_vars(cv_soln.avgEvalRatios,cv_soln.avgHFTarget,cdv);
-      cv_soln.avgEstVar = average_estimator_variance(cdv); // ACV or GenACV
-      mfmc_init = (mf_soln.avgEstVar < cv_soln.avgEstVar);
+      cv_soln.estVarMetric = estimator_variance_metric(cdv); // ACV or GenACV
+      mfmc_init = (mf_soln.estVarMetric < cv_soln.estVarMetric);
     }
     else { // same accuracy (convergenceTol * estVarIter0), compare cost 
       mf_soln.equivHFAlloc = compute_equivalent_cost(mf_soln.avgHFTarget,
@@ -1052,22 +1143,57 @@ estimator_variances(const RealVector& cd_vars, RealVector& est_var)
 
 
 inline void NonDNonHierarchSampling::
+estimator_variances_and_ratios(const RealVector& cd_vars,
+			       RealVector& estvar_ratios, RealVector& estvar)
+{
+  estimator_variance_ratios(cd_vars, estvar_ratios); // virtual: MFMC,ACV,GenACV
+  estimator_variances_from_ratios(cd_vars, estvar_ratios, estvar);
+}
+
+
+inline void NonDNonHierarchSampling::
 estimator_variances_and_ratios(const RealVector& cd_vars, MFSolutionData& soln)
 {
   RealVector estvar_ratios, estvar;
   estimator_variance_ratios(cd_vars, estvar_ratios); // virtual: MFMC,ACV,GenACV
   estimator_variances_from_ratios(cd_vars, estvar_ratios, estvar);
   soln.estimator_variances(estvar);
-  soln.estimator_variance_ratios(estvar_ratios); 
+  soln.estimator_variance_ratios(estvar_ratios);
+  soln.update_estimator_variance_metric(estVarMetricType);
 }
 
 
 inline Real NonDNonHierarchSampling::
-average_estimator_variance(const RealVector& cd_vars)
+estimator_variance_metric(const RealVector& cd_vars)
 {
-  RealVector est_var(numFunctions, false);
-  estimator_variances(cd_vars, est_var);
-  return average(est_var);
+  RealVector estvar_ratios, estvar;  Real metric;  size_t metric_index;
+  estimator_variance_ratios(cd_vars, estvar_ratios); // virtual: MFMC,ACV,GenACV
+  estimator_variances_from_ratios(cd_vars, estvar_ratios, estvar);
+  MFSolutionData::
+    update_estimator_variance_metric(estVarMetricType, estvar_ratios, estvar,
+				     metric, metric_index);
+  return metric;
+}
+
+
+inline void NonDNonHierarchSampling::
+estvar_ratios_to_estvar(const RealVector& estvar_ratios,
+			const RealVector& var_H, const SizetArray& N_H,
+			RealVector& estvar)
+{
+  if (estvar.length() != numFunctions) estvar.sizeUninitialized(numFunctions);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    estvar[qoi] = estvar_ratios[qoi] * var_H[qoi] / N_H[qoi];
+}
+
+
+inline void NonDNonHierarchSampling::
+estvar_ratios_to_estvar(const RealVector& estvar_ratios,
+			const RealVector& var_H, Real N_H, RealVector& estvar)
+{
+  if (estvar.length() != numFunctions) estvar.sizeUninitialized(numFunctions);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    estvar[qoi] = estvar_ratios[qoi] * var_H[qoi] / N_H;
 }
 
 
@@ -1108,26 +1234,26 @@ finalize_counts(const Sizet2DArray& N_L_actual, const SizetArray& N_L_alloc)
 
 
 inline Real NonDNonHierarchSampling::
-compute_equivalent_cost(Real avg_hf_target, const RealVector& avg_eval_ratios,
+compute_equivalent_cost(Real hf_target, const RealVector& avg_eval_ratios,
 			const RealVector& cost)
 {
   size_t a, hf_index = cost.length() - 1;
   Real cost_ref = cost[hf_index], rc_sum = 0.;
   for (a=0; a<numApprox; ++a)
     rc_sum += avg_eval_ratios[a] * cost[a];
-  return avg_hf_target * (rc_sum / cost_ref + 1.);
+  return hf_target * (rc_sum / cost_ref + 1.);
 }
 
 
 inline Real NonDNonHierarchSampling::
-compute_equivalent_cost(Real avg_hf_target, const RealVector& avg_eval_ratios,
+compute_equivalent_cost(Real hf_target, const RealVector& avg_eval_ratios,
 			const RealVector& cost, const UShortArray& approx_set)
 {
   size_t a, num_approx = approx_set.size(), hf_index = cost.length() - 1;
   Real cost_ref = cost[hf_index], rc_sum = 0.;
   for (a=0; a<num_approx; ++a)
     rc_sum += avg_eval_ratios[a] * cost[approx_set[a]];
-  return avg_hf_target * (rc_sum / cost_ref + 1.);
+  return hf_target * (rc_sum / cost_ref + 1.);
 }
 
 
@@ -1481,8 +1607,8 @@ allocate_budget(const RealVector& avg_eval_ratios, const RealVector& cost,
   Real cost_H = cost[numApprox], inner_prod = cost_H;// raw cost (un-normalized)
   for (size_t approx=0; approx<numApprox; ++approx)
     inner_prod += cost[approx] * avg_eval_ratios[approx];
-  Real avg_hf_target = budget / inner_prod * cost_H; // normalized to equivHF
-  return avg_hf_target;
+  Real hf_target = budget / inner_prod * cost_H; // normalized to equivHF
+  return hf_target;
 }
 
 
@@ -1502,8 +1628,8 @@ allocate_budget(const UShortArray& approx_set,const RealVector& avg_eval_ratios,
   size_t a, num_approx = approx_set.size();
   for (a=0; a<num_approx; ++a)
     inner_prod += cost[approx_set[a]] * avg_eval_ratios[a];
-  Real avg_hf_target = budget / inner_prod * cost_H; // normalized to equivHF
-  return avg_hf_target;
+  Real hf_target = budget / inner_prod * cost_H; // normalized to equivHF
+  return hf_target;
 }
 
 
@@ -1544,6 +1670,12 @@ inline void NonDNonHierarchSampling::cache_mc_reference()
   // Note: could revisit this for case of lf_shared_pilot > hf_shared_pilot.
   compute_mc_estimator_variance(varH, N_H_actual, estVarIter0);
   numHIter0 = N_H_actual;
+  // This simply manages average vs. max of estVarIter0 (cached as
+  // estVarMetric0) used in accuracy constraint bounds.  It does not
+  // update the bound for a runtime change in the max metric_index, which
+  // would require moving the variable bound value inside the constraint.
+  MFSolutionData::update_estimator_variance_metric(estVarMetricType,
+						   estVarIter0, estVarMetric0);
 }
 
 
@@ -1619,43 +1751,70 @@ solution_to_design_vars(const MFSolutionData& soln, RealVector& cd_vars)
 
 
 inline Real NonDNonHierarchSampling::
-update_hf_target(const RealVector& estvar_ratios, const RealVector& var_H,
-		 const RealVector& estvar_iter0)
+update_hf_target(const RealVector& estvar_ratios, size_t metric_index,
+		 const RealVector& var_H, const RealVector& estvar_0)
 {
-  //RealVector hf_targets(numFunctions, false);
-  //for (size_t qoi=0; qoi<numFunctions; ++qoi)
-  //  hf_targets[qoi] = var_H[qoi] * estvar_ratios[qoi]
-  //                  / (convergenceTol * estvar_iter0[qoi]);
-  //Real avg_hf_target = average(hf_targets);
+  // Definitions: (estvar_0 <- estVarIter0, N_0 <- numHIter0, reuse var_H)
+  //   estvar     = estvar_ratio  var_H / N_H    (current)
+  //   estvar_tgt = estvar_ratio  var_H / N_tgt  (future)
+  //   estvar_0   = estvar_ratio0 var_H / N_0    (pilot)
+  //     where estvar_ratio0 = 1 when a MC reference is used for estVarIter0
 
-  Real avg_hf_target = 0.;
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    avg_hf_target += estvar_ratios[qoi] * var_H[qoi] / estvar_iter0[qoi];
-  avg_hf_target /= convergenceTol * numFunctions;
+  // Accuracy target:
+  //   estvar_tgt = convTol estvar_0
+  // Expand estvar_ratios and solve for N_tgt:
+  //   estvar_ratio var_H / N_tgt = convTol estvar_ratio0 var_H / N_0
+  //   estvar_ratio   N_0 / N_tgt = convTol estvar_ratio0
+  //   N_tgt  = estvar_ratio N_0 / (convTol estvar_ratio0)   [not used]
+  // Convert estvar_ratio0 back to incoming estvar_0:
+  //   N_tgt = estvar_ratio N_0 / (convTol estvar_0 N_0 / var_H)
+  //   N_tgt = estvar_ratio var_H / (convTol estvar_0)       [this case]
+
+  Real hf_target;
+  switch (estVarMetricType) {
+  case   DEFAULT_ESTVAR_METRIC:  case AVG_ESTVAR_METRIC:
+  case AVG_ESTVAR_RATIO_METRIC:
+    hf_target = 0.;
+    for (size_t qoi=0; qoi<numFunctions; ++qoi)
+      hf_target += estvar_ratios[qoi] * var_H[qoi] / estvar_0[qoi];
+    hf_target /= convergenceTol * numFunctions;
+    break;
+  case MAX_ESTVAR_METRIC:  case MAX_ESTVAR_RATIO_METRIC:
+    hf_target = estvar_ratios[metric_index] * var_H[metric_index]
+              /     (estvar_0[metric_index] * convergenceTol);
+    break;
+  }
   Cout << "Scaling profile for convergenceTol = " << convergenceTol
-       << ": average HF target = " << avg_hf_target << std::endl;
-  return avg_hf_target;
+       << ": HF target = " << hf_target << std::endl;
+  return hf_target;
 }
 
 
 inline Real NonDNonHierarchSampling::
-update_hf_target(const RealVector& estvar, const SizetArray& N_H,
-		 const RealVector& estvar_iter0)
+update_hf_target(const RealVector& estvar, size_t metric_index,
+		 const SizetArray& N_H, const RealVector& estvar_0)
 {
-  // Note: there is a circular dependency between estvar_ratios and hf_targets
-  //RealVector hf_targets(numFunctions, false);
-  //for (size_t qoi=0; qoi<numFunctions; ++qoi)
-  //  hf_targets[qoi] = estvar[qoi] * N_H[qoi]
-  //                  / (convergenceTol * estvar_iter0[qoi]);
-  //Real avg_hf_target = average(hf_targets);
+  // Starting from last expression above: convert estvar_ratio back to
+  // incoming estvar using estvar_ratio var_H = estvar N_H
+  //   N_tgt = estvar N_H / (convTol estvar_0)               [this case]
 
-  Real avg_hf_target = 0.;
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    avg_hf_target += estvar[qoi] * N_H[qoi] / estvar_iter0[qoi];
-  avg_hf_target /= convergenceTol * numFunctions;
+  Real hf_target;
+  switch (estVarMetricType) {
+  case   DEFAULT_ESTVAR_METRIC:  case AVG_ESTVAR_METRIC:
+  case AVG_ESTVAR_RATIO_METRIC:
+    hf_target = 0.;
+    for (size_t qoi=0; qoi<numFunctions; ++qoi)
+      hf_target += estvar[qoi] * N_H[qoi] / estvar_0[qoi];
+    hf_target /= convergenceTol * numFunctions;
+    break;
+  case MAX_ESTVAR_METRIC:  case MAX_ESTVAR_RATIO_METRIC:
+    hf_target =    estvar[metric_index] * N_H[metric_index]
+              / (estvar_0[metric_index] * convergenceTol);
+    break;
+  }
   Cout << "Scaling profile for convergenceTol = " << convergenceTol
-       << ": average HF target = " << avg_hf_target << std::endl;
-  return avg_hf_target;
+       << ": HF target = " << hf_target << std::endl;
+  return hf_target;
 }
 
 
@@ -1835,11 +1994,11 @@ covariance_to_correlation_sq(const RealMatrix& cov_LH, const RealMatrix& var_L,
 
 
 inline Real NonDNonHierarchSampling::
-log_average_estvar(const RealVector& cd_vars)
+log_estvar_metric(const RealVector& cd_vars)
 {
-  Real avg_est_var = average_estimator_variance(cd_vars);
-  if (avg_est_var > 0.)
-    return std::log(avg_est_var); // use log to flatten contours
+  Real estvar_metric = estimator_variance_metric(cd_vars);
+  if (estvar_metric > 0.)
+    return std::log(estvar_metric); // use log to flatten contours
   else
     return std::numeric_limits<Real>::quiet_NaN();//Pecos::LARGE_NUMBER;
 }

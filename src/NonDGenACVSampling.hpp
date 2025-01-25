@@ -70,8 +70,6 @@ protected:
   size_t num_approximations() const override;
 
   const MFSolutionData& final_solution_data() const override;
-  Real estimator_accuracy_metric() const override;
-  //Real estimator_cost_metric() const override;
 
   void print_variance_reduction(std::ostream& s) const override;
 
@@ -316,14 +314,6 @@ inline const MFSolutionData& NonDGenACVSampling::final_solution_data() const
 }
 
 
-inline Real NonDGenACVSampling::estimator_accuracy_metric() const
-{ return final_solution_data().average_estimator_variance(); }
-
-
-//inline Real NonDGenACVSampling::estimator_cost_metric() const
-//{ return final_solution_data().equivalent_hf_allocation(); }
-
-
 inline void NonDGenACVSampling::print_variance_reduction(std::ostream& s) const
 { print_estimator_performance(s, final_solution_data()); }
 
@@ -449,7 +439,7 @@ inflate_variables(const RealVector& cd_vars, RealVector& N_vec,
     // N_H not provided so pull from latest counter values
     size_t hf_form_index, hf_lev_index;
     hf_indices(hf_form_index, hf_lev_index);
-    // average_estimator_variance() uses actual (not alloc) to sync with varH
+    // estimator_variance_metric() uses actual (not alloc) to sync with varH
     // so use same prior to defining G,g in precompute_genacv_controls() and
     // estimator_variance_ratios()
     N_vec[numApprox] = //(backfillFailures) ?

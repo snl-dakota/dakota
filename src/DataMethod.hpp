@@ -254,6 +254,9 @@ enum { REORDERED_FALLBACK, NUMERICAL_FALLBACK, NUMERICAL_OVERRIDE };
 // options for obtaining cost data for model fidelities/resolutions
 enum { NO_COST_SOURCE=0, USER_COST_SPEC, ONLINE_COST_RECOVERY,
        MIXED_COST_SPEC_RECOVERY };
+// options for metrics derived from QoI estimator variances
+enum { DEFAULT_ESTVAR_METRIC = 0, AVG_ESTVAR_METRIC, MAX_ESTVAR_METRIC,
+       AVG_ESTVAR_RATIO_METRIC, MAX_ESTVAR_RATIO_METRIC };
 
 // ---------------
 // NonDReliability

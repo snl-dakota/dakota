@@ -911,19 +911,13 @@ process_model_allocations(MFSolutionData& soln, size_t& num_samples)
 		    mlmfIter < maxIterations),
     graph_enumerate = (methodName == GEN_APPROX_CONTROL_VARIATE);
   if (!iterating || graph_enumerate) { // estvar needed for this soln
-    /*
     // All cases employ projected MC estvar to match projected nonhier estvar
     // from N* (where N* includes any soln increment not yet performed). Since
-    // soln.average_estimator_variance() precedes (and ignores subsequent)
-    // sample increment relaxation, don't use relaxed increments here.
-    RealVector proj_mc_estvar;
-    project_mc_estimator_variance(varH, N_H_actual, soln_incr, proj_mc_estvar);
-
-    // Report ratio of averages rather that average of ratios (see notes in
-    // print_variance_reduction())
-    soln.average_estimator_variance_ratio(soln.average_estimator_variance() /
-                                          average(proj_mc_estvar)); // (1 - R^2)
-    */
+    // soln.estimator_variances() precedes (and ignores subsequent) sample
+    // increment relaxation, don't use relaxed increments here.
+    //RealVector proj_mc_estvar;
+    //project_mc_estimator_variance(varH, N_H_actual, soln_incr,proj_mc_estvar);
+    //soln.estimator_variance_ratios(soln.estimator_variances(),proj_mc_estvar);
 
     // Recompute full estvar vectors for final solution since minimizers
     // target average over QoI (don't store on every eval since last eval
@@ -1070,7 +1064,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     else if (optSubProblemForm == N_MODEL_LINEAR_OBJECTIVE) {
       // nonlinear inequality constraint on estvar
       nln_ineq_lb = -DBL_MAX;  // no lower bnd
-      nln_ineq_ub = std::log(convergenceTol * average(estVarIter0));
+      nln_ineq_ub = std::log(convergenceTol * estVarMetric0);
     }
     break;
   }
@@ -1655,22 +1649,21 @@ minimizer_results_to_solution_data(const RealVector& cv_star,
 				   const RealVector& fn_star,
 				   MFSolutionData& soln)
 {
-  // Estvar recovery from optimizer provides std::log(average(nh_estvar)) =
-  // var_H / N_H (1 - R^2).  Notes:
-  // > ultimately need a QoI-vector PRIOR to averaging, but defer recomputation
-  //   until after solution selection
+  // Estvar recovery from optimizer provides std::log(estvar_metric).  Notes:
+  // > ultimately need a QoI-vector PRIOR to scalar metric reduction, but defer
+  //   recomputation until after solution selection
   // > optimal estvar value corresponds to N* (_after_ num_samples applied)
-  Real avg_estvar = (optSubProblemForm == N_MODEL_LINEAR_OBJECTIVE ||
-		     optSubProblemForm == N_GROUP_LINEAR_OBJECTIVE) ?
+  Real estvar_metric = (optSubProblemForm == N_MODEL_LINEAR_OBJECTIVE ||
+			optSubProblemForm == N_GROUP_LINEAR_OBJECTIVE) ?
     std::exp(fn_star[1]) : std::exp(fn_star(0));
-  soln.average_estimator_variance(avg_estvar); // replaced downstream
+  soln.estimator_variance_metric(estvar_metric); // re-evaluated downstream
 
   // Recover optimizer results for average {eval_ratios,estvar}.  Also compute
   // shared increment from N* or from targeting specified budget || accuracy.
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT: {
     const RealVector& avg_eval_ratios = cv_star; // r*
-    Real              avg_hf_target;             // N*
+    Real              hf_target;                 // N*
     // N* was not part of the optimization (solver computes r* for fixed N)
     // and has not been updated by the optimizer.  We update it here:
 
@@ -1681,27 +1674,33 @@ minimizer_results_to_solution_data(const RealVector& cv_star,
       // Full budget allocation: pilot sample + addtnl N_H; then optimal N_L
       // > can also under-relax the budget allocation to enable additional N_H
       //   increments + associated shared sample sets to refine shared stats.
-      avg_hf_target = allocate_budget(avg_eval_ratios, sequenceCost);
+      hf_target = allocate_budget(avg_eval_ratios, sequenceCost);
       Cout << "Scaling profile for maxFunctionEvals = " << maxFunctionEvals
-	   << ": average HF target = " << avg_hf_target << std::endl;
+	   << ": HF target = " << hf_target << std::endl;
     }
     else { //if (convergenceTol != -DBL_MAX) { // *** TO DO: detect user spec
       // EstVar target = convTol * estvar_iter0 = estvar_ratio * varH / N_target
       //               = curr_estvar * N_curr / N_target
       //  --> N_target = curr_estvar * N_curr / (convTol * estvar_iter0)
       // Note: estvar_iter0 is fixed based on pilot
-      RealVector est_var;  estimator_variances(cv_star, est_var);
+      RealVector estvar_ratios, estvar;  Real metric;  size_t metric_index;
+      estimator_variances_and_ratios(cv_star, estvar_ratios, estvar);
+      MFSolutionData::
+	update_estimator_variance_metric(estVarMetricType, estvar_ratios,
+					 estvar, metric, metric_index);
       size_t hf_form, hf_lev;  hf_indices(hf_form, hf_lev);
-      avg_hf_target = (backfillFailures) ?
-	update_hf_target(est_var, NLevActual[hf_form][hf_lev], estVarIter0) :
-	update_hf_target(est_var,  NLevAlloc[hf_form][hf_lev], estVarIter0);
+      hf_target = (backfillFailures) ?
+	update_hf_target(estvar, metric_index, NLevActual[hf_form][hf_lev],
+			 estVarIter0) :
+	update_hf_target(estvar, metric_index,  NLevAlloc[hf_form][hf_lev],
+			 estVarIter0);
       Cout << "Scaling profile for convergenceTol = " << convergenceTol
-	   << ": average HF target = " << avg_hf_target << std::endl;
+	   << ": HF target = " << hf_target << std::endl;
     }
-    //avg_hf_target = std::min(budget_target, ctol_target); // enforce both
-    soln.anchored_solution_ratios(avg_eval_ratios, avg_hf_target);
+    //hf_target = std::min(budget_target, ctol_target); // enforce both
+    soln.anchored_solution_ratios(avg_eval_ratios, hf_target);
     soln.equivalent_hf_allocation(
-      compute_equivalent_cost(avg_hf_target, avg_eval_ratios, sequenceCost));
+      compute_equivalent_cost(hf_target, avg_eval_ratios, sequenceCost));
     break;
   }
   case R_AND_N_NONLINEAR_CONSTRAINT: {
@@ -1829,7 +1828,7 @@ nh_penalty_merit(const RealVector& cd_vars, const RealVector& fn_vals)
   switch (optSubProblemForm) {
   case N_MODEL_LINEAR_OBJECTIVE:  case N_GROUP_LINEAR_OBJECTIVE:
     return nh_penalty_merit(fn_vals[0], fn_vals[1],
-			    std::log(convergenceTol*average(estVarIter0)));
+			    std::log(convergenceTol * estVarMetric0));
     break;
   case N_MODEL_LINEAR_CONSTRAINT:
     return nh_penalty_merit(fn_vals[0], linear_model_cost(cd_vars), budget);
@@ -1858,15 +1857,15 @@ Real NonDNonHierarchSampling::nh_penalty_merit(const MFSolutionData& soln)
   // Assume linear constraints are satisfied (for now)
   // Keep accuracy in log space and normalize both cost and log-accuracy
 
-  Real  avg_estvar = soln.average_estimator_variance(),
-    equiv_hf_alloc = soln.equivalent_hf_allocation();
+  Real estvar_metric  = soln.estimator_variance_metric(),
+       equiv_hf_alloc = soln.equivalent_hf_allocation();
   switch (optSubProblemForm) {
   case N_MODEL_LINEAR_OBJECTIVE:  case N_GROUP_LINEAR_OBJECTIVE:
-    return nh_penalty_merit(equiv_hf_alloc, std::log(avg_estvar),
-			    std::log(convergenceTol*average(estVarIter0)));
+    return nh_penalty_merit(equiv_hf_alloc, std::log(estvar_metric),
+			    std::log(convergenceTol * estVarMetric0));
     break;
   default:
-    return nh_penalty_merit(std::log(avg_estvar), equiv_hf_alloc,
+    return nh_penalty_merit(std::log(estvar_metric), equiv_hf_alloc,
 			    (Real)maxFunctionEvals);
     break;
   }
@@ -1893,10 +1892,10 @@ nh_penalty_merit(Real obj, Real nln_con, Real nln_u_bnd)
 void NonDNonHierarchSampling::
 estimator_variances_from_ratios(const RealVector& cd_vars,
 				const RealVector& estvar_ratios,
-				RealVector& est_var)
+				RealVector& estvar)
 {
   // form estimator variances to pick up dependence on N
-  if (est_var.length() != numFunctions) est_var.sizeUninitialized(numFunctions);
+  if (estvar.length() != numFunctions) estvar.sizeUninitialized(numFunctions);
   size_t qoi, num_approx = num_approximations();
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT: // N is a vector constant for opt sub-problem
@@ -1904,29 +1903,22 @@ estimator_variances_from_ratios(const RealVector& cd_vars,
       // N_H not provided so pull from latest counter values
       size_t hf_form_index, hf_lev_index;
       hf_indices(hf_form_index, hf_lev_index);
-      SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
-      for (qoi=0; qoi<numFunctions; ++qoi)
-	est_var[qoi] = varH[qoi] / N_H_actual[qoi] * estvar_ratios[qoi];
+      estvar_ratios_to_estvar(estvar_ratios, varH,
+			      NLevActual[hf_form_index][hf_lev_index], estvar);
     }
-    else { // r_and_N_to_design_vars(): N_H appended for convenience
-      Real N_H = cd_vars[num_approx];
-      for (qoi=0; qoi<numFunctions; ++qoi)
-	est_var[qoi] = varH[qoi] / N_H * estvar_ratios[qoi];
-    }
+    else // r_and_N_to_design_vars(): N_H appended for convenience
+      estvar_ratios_to_estvar(estvar_ratios, varH, cd_vars[num_approx], estvar);
     break;
   case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT:
-  case R_AND_N_NONLINEAR_CONSTRAINT: {  // N is a scalar optimization variable
-    Real N_H = cd_vars[num_approx];
-    for (qoi=0; qoi<numFunctions; ++qoi)
-      est_var[qoi] = varH[qoi] / N_H * estvar_ratios[qoi];
+  case R_AND_N_NONLINEAR_CONSTRAINT: // N is a scalar optimization variable
+    estvar_ratios_to_estvar(estvar_ratios, varH, cd_vars[num_approx], estvar);
     break;
-  }
   }
 
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "NonDNonHierarchSampling::estimator_variances(): design vars:\n"
 	 << cd_vars << "EstVar ratios:\n" << estvar_ratios << "EstVar:\n"
-	 << est_var << '\n';
+	 << estvar << '\n';
 }
 
 
@@ -2056,12 +2048,12 @@ npsol_objective(int& mode, int& n, double* x, double& f, double* grad_f,
     break;
   default:
     if (asv_request & 1)
-      f = nonHierSampInstance->log_average_estvar(x_rv);
+      f = nonHierSampInstance->log_estvar_metric(x_rv);
     // NPSOL estimates unspecified components of the obj grad, so ASV grad
     // request is not an error -- just don't specify anything
     //if (asv_request & 2) {
     //  RealVector grad_f_rv(Teuchos::View, grad_f, n);
-    //  nonHierSampInstance->log_average_estvar_gradient(x_rv, grad_f_rv);
+    //  nonHierSampInstance->log_estvar_metric_gradient(x_rv, grad_f_rv);
     //}
     break;
   }
@@ -2079,12 +2071,12 @@ npsol_constraint(int& mode, int& ncnln, int& n, int& nrowj, int* needc,
   switch (nonHierSampInstance->optSubProblemForm) {
   case N_MODEL_LINEAR_OBJECTIVE:  case N_GROUP_LINEAR_OBJECTIVE:
     if (asv_request & 1)
-      c[0] = nonHierSampInstance->log_average_estvar(x_rv);
+      c[0] = nonHierSampInstance->log_estvar_metric(x_rv);
     // NPSOL estimates unspecified components of the constr grad, so ASV grad
     // request is not an error -- just don't specify anything
     //if (asv_request & 2) {
     //  RealVector grad_c_rv(Teuchos::View, cjac, n);
-    //  nonHierSampInstance->log_average_estvar_gradient(x_rv, grad_c_rv);
+    //  nonHierSampInstance->log_estvar_metric_gradient(x_rv, grad_c_rv);
     //}
     break;
   case R_AND_N_NONLINEAR_CONSTRAINT:
@@ -2128,14 +2120,14 @@ optpp_nlf1_objective(int mode, int n, const RealVector& x, double& f,
     break;
   default:
     if (mode & OPTPP::NLPFunction) { // 1st bit is present, mode = 1 or 3
-      f = nonHierSampInstance->log_average_estvar(x);
+      f = nonHierSampInstance->log_estvar_metric(x);
       result_mode |= OPTPP::NLPFunction; // adds 1 bit
     }
     if (mode & OPTPP::NLPGradient) { // 2nd bit is present, mode = 2 or 3
       Cerr << "Error: estimator variance gradient not supported in NonHierarch "
 	   << "numerical solution." << std::endl;
       abort_handler(METHOD_ERROR);
-      //nonHierSampInstance->log_average_estvar_gradient(x, grad_f);
+      //nonHierSampInstance->log_estvar_metric_gradient(x, grad_f);
       //result_mode |= OPTPP::NLPGradient; // adds 2 bit
     }
     break;
@@ -2152,14 +2144,14 @@ optpp_nlf1_constraint(int mode, int n, const RealVector& x, RealVector& c,
   switch (nonHierSampInstance->optSubProblemForm) {
   case N_MODEL_LINEAR_OBJECTIVE:  case N_GROUP_LINEAR_OBJECTIVE:
     if (mode & OPTPP::NLPFunction) { // 1st bit is present, mode = 1 or 3
-      c[0] = nonHierSampInstance->log_average_estvar(x);
+      c[0] = nonHierSampInstance->log_estvar_metric(x);
       result_mode |= OPTPP::NLPFunction; // adds 1 bit
     }
     if (mode & OPTPP::NLPGradient) { // 2nd bit is present, mode = 2 or 3
       Cerr << "Error: estimator variance gradient not supported in NonHierarch "
 	   << "numerical solution." << std::endl;
       abort_handler(METHOD_ERROR);
-      //nonHierSampInstance->log_average_estvar_gradient(x, grad_f);
+      //nonHierSampInstance->log_estvar_metric_gradient(x, grad_f);
       //result_mode |= OPTPP::NLPGradient;
     }
     break;
@@ -2182,7 +2174,7 @@ optpp_nlf1_constraint(int mode, int n, const RealVector& x, RealVector& c,
 void NonDNonHierarchSampling::
 optpp_fdnlf1_objective(int n, const RealVector& x, double& f, int& result_mode)
 {
-  f = nonHierSampInstance->log_average_estvar(x);
+  f = nonHierSampInstance->log_estvar_metric(x);
   result_mode = OPTPP::NLPFunction; // 1 bit
 }
 
@@ -2192,7 +2184,7 @@ void NonDNonHierarchSampling::
 optpp_fdnlf1_constraint(int n, const RealVector& x, RealVector& c,
 			int& result_mode)
 {
-  c[0] = nonHierSampInstance->log_average_estvar(x);
+  c[0] = nonHierSampInstance->log_estvar_metric(x);
   result_mode = OPTPP::NLPFunction; // 1 bit
 }
 
@@ -2220,17 +2212,17 @@ Real NonDNonHierarchSampling::direct_penalty_merit(const RealVector& cd_vars)
         direct_min.callback_linear_ineq_upper_bounds());
   bool protect_numerics = (lin_ineq_viol > 0.); // RATIO_NUDGE reflected in viol
   Real obj, constr, constr_u_bnd,
-    budget = (Real)nonHierSampInstance->maxFunctionEvals, log_avg_estvar;
+    budget = (Real)nonHierSampInstance->maxFunctionEvals, log_metric;
   if (protect_numerics) {
     //const RealVector& estvar0 = nonHierSampInstance->estVarIter0;
-    log_avg_estvar = //(estvar0.empty()) ? // offline modes
-      std::log(Pecos::LARGE_NUMBER);// : std::log(average(estvar0));
+    log_metric = //(estvar0.empty()) ? // offline modes
+      std::log(Pecos::LARGE_NUMBER);// : std::log(estVarMetric0);
     if (nonHierSampInstance->outputLevel >= DEBUG_OUTPUT)
       Cout << "Protect numerics: bypass EstVar computation due to linear ineq "
 	   << "constraint violation." << std::endl;
   }
   else
-    log_avg_estvar = nonHierSampInstance->log_average_estvar(cd_vars);
+    log_metric = nonHierSampInstance->log_estvar_metric(cd_vars);
 
   switch (nonHierSampInstance->optSubProblemForm) {
   case N_MODEL_LINEAR_OBJECTIVE:
@@ -2238,7 +2230,7 @@ Real NonDNonHierarchSampling::direct_penalty_merit(const RealVector& cd_vars)
   case N_GROUP_LINEAR_OBJECTIVE:
     obj = nonHierSampInstance->linear_group_cost(cd_vars);  break;
   default:
-    obj = log_avg_estvar;                                   break;
+    obj = log_metric;                                       break;
   }
 
   switch (nonHierSampInstance->optSubProblemForm) {
@@ -2268,9 +2260,9 @@ Real NonDNonHierarchSampling::direct_penalty_merit(const RealVector& cd_vars)
     constr_u_bnd = budget;
     break;
   case N_MODEL_LINEAR_OBJECTIVE:  case N_GROUP_LINEAR_OBJECTIVE:
-    constr       = log_avg_estvar;
-    constr_u_bnd = std::log(nonHierSampInstance->convergenceTol*
-			    average(nonHierSampInstance->estVarIter0));
+    constr       = log_metric;
+    constr_u_bnd = std::log(nonHierSampInstance->convergenceTol *
+			    nonHierSampInstance->estVarMetric0);
     break;
   }
 
@@ -2317,8 +2309,7 @@ response_evaluator(const Variables& vars, const ActiveSet& set,
     break;
   default:
     if (asv[0] & 1)
-      response.function_value(nonHierSampInstance->
-			      log_average_estvar(c_vars), 0);
+      response.function_value(nonHierSampInstance->log_estvar_metric(c_vars),0);
     if (asv[0] & 2) {
       Cerr << "Error: estimator variance gradient not supported in NonHierarch "
 	   << "numerical solution." << std::endl;
@@ -2329,8 +2320,7 @@ response_evaluator(const Variables& vars, const ActiveSet& set,
   switch (nonHierSampInstance->optSubProblemForm) {
   case N_MODEL_LINEAR_OBJECTIVE:  case N_GROUP_LINEAR_OBJECTIVE:
     if (nln_con && (asv[1] & 1))
-      response.function_value(nonHierSampInstance->
-			      log_average_estvar(c_vars), 1);
+      response.function_value(nonHierSampInstance->log_estvar_metric(c_vars),1);
     if (nln_con && (asv[1] & 2)) {
       Cerr << "Error: estimator variance gradient not supported in NonHierarch "
 	   << "numerical solution." << std::endl;

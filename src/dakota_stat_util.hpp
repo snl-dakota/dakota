@@ -150,6 +150,17 @@ inline void average(const Sizet2DArray& N_2D, RealVector& N_1D)
     N_1D[i] = average(N_2D[i]);
 }
 
+
+/// compute maximum of a vector of values
+inline Real maximum(const RealVector& vec)
+{
+  Real max = -DBL_MAX;  size_t i, len = vec.length();
+  for (i=0; i<len; ++i)
+    if (vec[i] > max)
+      max = vec[i];
+  return max;
+}
+
 } // namespace Dakota
 
 #endif // DAKOTA_STAT_UTIL_H

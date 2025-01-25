@@ -49,8 +49,6 @@ protected:
   //                   short results_state = FINAL_RESULTS) override;
 
   const MFSolutionData& final_solution_data() const override;
-  Real estimator_accuracy_metric() const override;
-  //Real estimator_cost_metric() const override;
 
   void print_variance_reduction(std::ostream& s) const override;
 
@@ -185,8 +183,10 @@ private:
   void analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
 						  Real avg_N_H,
 						  MFSolutionData& soln);
-  void initialize_acv_counts(SizetArray& num_H, SizetSymMatrixArray& num_LL);
+  void analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
+					     Real avg_N_H,MFSolutionData& soln);
 
+  void initialize_acv_counts(SizetArray& num_H, SizetSymMatrixArray& num_LL);
   //void initialize_acv_covariances(IntRealSymMatrixArrayMap covLL,
   //				  IntRealMatrixMap& cov_LH,
   //				  IntRealVectorMap& var_H);
@@ -266,14 +266,6 @@ private:
 
 inline const MFSolutionData& NonDACVSampling::final_solution_data() const
 { return acvSolnData; }
-
-
-inline Real NonDACVSampling::estimator_accuracy_metric() const
-{ return acvSolnData.average_estimator_variance(); }
-
-
-//inline Real NonDACVSampling::estimator_cost_metric() const
-//{ return mfmcSolnData.equivalent_hf_allocation(); }
 
 
 inline void NonDACVSampling::
