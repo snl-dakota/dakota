@@ -293,6 +293,29 @@ update_estimator_variance_metric(short metric_type,
 				 const RealVector& est_var,
 				 Real& est_var_metric, size_t& metric_index)
 {
+  // Error checks
+  switch (metric_type) {
+  case DEFAULT_ESTVAR_METRIC: case AVG_ESTVAR_METRIC: case MAX_ESTVAR_METRIC:
+    if (est_var.empty()) {
+      Cerr << "Error: estimator variance undefined in MFSolutionData::"
+	   << "update_estimator_variance_metric()" << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    break;
+  case AVG_ESTVAR_RATIO_METRIC:  case MAX_ESTVAR_RATIO_METRIC:
+    if (est_var_ratios.empty()) {
+      Cerr << "Error: estimator variance ratios undefined in MFSolutionData::"
+	   << "update_estimator_variance_metric()" << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    break;
+  default:
+    Cerr << "Error: unsupported metric type in MFSolutionData::"
+	   << "update_estimator_variance_metric()" << std::endl;
+    abort_handler(METHOD_ERROR);
+    break;
+  }
+
   switch (metric_type) {
   // absolute metrics:
   case DEFAULT_ESTVAR_METRIC: case AVG_ESTVAR_METRIC:
@@ -447,6 +470,8 @@ protected:
   /// compute estimator variance ratios from HF samples and oversample ratios
   virtual void estimator_variance_ratios(const RealVector& cd_vars,
 					 RealVector& estvar_ratios);
+  /// helper function that supports optimization APIs passing design variables
+  virtual Real estimator_variance_metric(const RealVector& cd_vars);
 
   /// within ensemble_numerical_solution(), define the number of
   /// solution variables and constraints
@@ -538,8 +563,6 @@ protected:
   // 			      SizetArray& N_L_alloc, unsigned short root,
   // 			      const UShortSet& reverse_dag_set);
 
-  /// helper function that supports optimization APIs passing design variables
-  Real estimator_variance_metric(const RealVector& cd_vars);
   /// compute estimator variances from ratios and MC reference variance
   void estimator_variances_from_ratios(const RealVector& cd_vars,
 				       const RealVector& estvar_ratios,
