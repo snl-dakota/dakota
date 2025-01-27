@@ -50,6 +50,7 @@ protected:
 
   void estimator_variances(const RealVector& cd_vars,
 			   RealVector& est_var) override;
+  Real estimator_variance_metric(const RealVector& cd_vars);
 
   const MFSolutionData& final_solution_data() const override;
 
@@ -370,6 +371,20 @@ all_to_active_group(size_t all_index) const
 	++cntr;
     return cntr;
   }
+}
+
+
+inline Real NonDMultilevBLUESampling::
+estimator_variance_metric(const RealVector& cd_vars)
+{
+  RealVector estvar_ratios, estvar;  Real metric;  size_t metric_index;
+  estimator_variances(cd_vars, estvar);
+  // estvar_ratios remains empty (ML BLUE does not support metric types
+  // {AVG,MAX}_ESTVAR_RATIO_METRIC)
+  MFSolutionData::
+    update_estimator_variance_metric(estVarMetricType, estvar_ratios,
+				     estvar, metric, metric_index);
+  return metric;
 }
 
 
