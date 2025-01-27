@@ -891,8 +891,12 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
       soln.solution_variables(x0);
     }
     if (pilotMgmtMode == ONLINE_PILOT ||
-	pilotMgmtMode == ONLINE_PILOT_PROJECTION) // cache reference estVarIter0
+	pilotMgmtMode == ONLINE_PILOT_PROJECTION) { // cache ref estVarIter0
       estimator_variances(soln.solution_variables(), estVarIter0);
+      MFSolutionData::
+	update_estimator_variance_metric(estVarMetricType, estVarIter0,
+					 estVarMetric0);
+    }
 
     if (no_solve)
       { no_solve_variances(soln); delta_N_G.assign(numGroups, 0); return; }
