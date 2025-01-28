@@ -1159,8 +1159,8 @@ process_group_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
   // Recompute full estvar vectors for final solution since numerical solves
   // target average over QoI (don't update vectors on every eval since last
   // eval may differ from final optimal soln)
-  RealVector estvar;
-  estimator_variances(soln.solution_variables(), estvar);
+  RealVector estvar;//, cd_vars; solution_to_design_vars(soln, cd_vars);
+  estimator_variances(/*cd_vars*/soln.solution_variables(), estvar);
   soln.estimator_variances(estvar);
 
   if (ref_group == _NPOS) { // no online HF samples
@@ -1181,6 +1181,8 @@ process_group_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
     for (size_t qoi=0; qoi<numFunctions; ++qoi)
       soln.estimator_variance_ratio(estvar[qoi] / projEstVarHF[qoi], qoi); 
   }
+
+  soln.update_estimator_variance_metric(estVarMetricType);
 }
 
 

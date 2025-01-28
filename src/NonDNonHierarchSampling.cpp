@@ -925,6 +925,7 @@ process_model_allocations(MFSolutionData& soln, size_t& num_samples)
     RealVector cd_vars;
     solution_to_design_vars(soln, cd_vars);
     estimator_variances_and_ratios(cd_vars, soln);
+    soln.update_estimator_variance_metric(estVarMetricType);
   }
 }
 
