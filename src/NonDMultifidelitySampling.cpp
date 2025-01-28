@@ -1383,6 +1383,9 @@ mfmc_estimator_variance(const RealMatrix& rho2_LH, const RealVector& var_H,
   // no emerge_from_pilot() modification so estvar remains consistent,
   // including pilot projections that target this optimized state.
   }
+
+  // update metric for solution comparisons (e.g. model tuning)
+  soln.update_estimator_variance_metric(estVarMetricType);
 }
 
 

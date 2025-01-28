@@ -312,22 +312,21 @@ update_estimator_variance_metric(short metric_type,
   default:
     Cerr << "Error: unsupported metric type in MFSolutionData::"
 	   << "update_estimator_variance_metric()" << std::endl;
-    abort_handler(METHOD_ERROR);
-    break;
+    abort_handler(METHOD_ERROR);  break;
   }
 
   switch (metric_type) {
   // absolute metrics:
   case DEFAULT_ESTVAR_METRIC: case AVG_ESTVAR_METRIC:
     metric_index = _NPOS;
-    est_var_metric = average(est_var);          break;
+    est_var_metric = average(est_var);             break;
   case MAX_ESTVAR_METRIC:
     metric_index = find_max_index(est_var);
     est_var_metric = est_var[metric_index];        break;
   // metrics relative to MC estvar:
   case AVG_ESTVAR_RATIO_METRIC:
     metric_index = _NPOS;
-    est_var_metric = average(est_var_ratios);   break;
+    est_var_metric = average(est_var_ratios);      break;
   case MAX_ESTVAR_RATIO_METRIC:
     metric_index = find_max_index(est_var_ratios);
     est_var_metric = est_var_ratios[metric_index]; break;
@@ -345,6 +344,10 @@ update_estimator_variance_metric(short metric_type, const RealVector& est_var,
     est_var_metric = average(est_var);  break;
   case MAX_ESTVAR_METRIC:     case MAX_ESTVAR_RATIO_METRIC:
     est_var_metric = maximum(est_var);  break;
+  default:
+    Cerr << "Error: unsupported metric type in MFSolutionData::"
+	 << "update_estimator_variance_metric()" << std::endl;
+    abort_handler(METHOD_ERROR);        break;
   }
 }
 
@@ -1182,7 +1185,7 @@ estimator_variances_and_ratios(const RealVector& cd_vars, MFSolutionData& soln)
   estimator_variances_from_ratios(cd_vars, estvar_ratios, estvar);
   soln.estimator_variances(estvar);
   soln.estimator_variance_ratios(estvar_ratios);
-  soln.update_estimator_variance_metric(estVarMetricType);
+  //soln.update_estimator_variance_metric(estVarMetricType);
 }
 
 
