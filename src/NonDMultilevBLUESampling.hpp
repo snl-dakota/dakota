@@ -381,9 +381,8 @@ estimator_variance_metric(const RealVector& cd_vars)
   estimator_variances(cd_vars, estvar);
   // estvar_ratios remains empty (ML BLUE does not support metric types
   // {AVG,MAX}_ESTVAR_RATIO_METRIC)
-  MFSolutionData::
-    update_estimator_variance_metric(estVarMetricType, estvar_ratios,
-				     estvar, metric, metric_index);
+  MFSolutionData::update_estimator_variance_metric(estVarMetricType,
+    estVarMetricNormOrder, estvar_ratios, estvar, metric, metric_index);
   return metric;
 }
 

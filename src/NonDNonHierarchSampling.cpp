@@ -925,7 +925,8 @@ process_model_allocations(MFSolutionData& soln, size_t& num_samples)
     RealVector cd_vars;
     solution_to_design_vars(soln, cd_vars);
     estimator_variances_and_ratios(cd_vars, soln);
-    soln.update_estimator_variance_metric(estVarMetricType);
+    soln.update_estimator_variance_metric(estVarMetricType,
+					  estVarMetricNormOrder);
   }
 }
 
@@ -1686,9 +1687,8 @@ minimizer_results_to_solution_data(const RealVector& cv_star,
       // Note: estvar_iter0 is fixed based on pilot
       RealVector estvar_ratios, estvar;  Real metric;  size_t metric_index;
       estimator_variances_and_ratios(cv_star, estvar_ratios, estvar);
-      MFSolutionData::
-	update_estimator_variance_metric(estVarMetricType, estvar_ratios,
-					 estvar, metric, metric_index);
+      MFSolutionData::update_estimator_variance_metric(estVarMetricType,
+	estVarMetricNormOrder, estvar_ratios, estvar, metric, metric_index);
       size_t hf_form, hf_lev;  hf_indices(hf_form, hf_lev);
       hf_target = (backfillFailures) ?
 	update_hf_target(estvar, metric_index, NLevActual[hf_form][hf_lev],

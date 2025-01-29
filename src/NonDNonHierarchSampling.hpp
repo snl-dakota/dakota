@@ -80,14 +80,17 @@ public:
   Real estimator_variance(size_t i) const;
 
   static void update_estimator_variance_metric(short metric_type,
+					       Real norm_order,
 					       const RealVector& est_var_ratios,
 					       const RealVector& est_var,
 					       Real& est_var_metric,
 					       size_t& metric_index);
   static void update_estimator_variance_metric(short metric_type,
+					       Real norm_order,
 					       const RealVector& est_var,
 					       Real& est_var_metric);
-  void update_estimator_variance_metric(short metric_type);
+  void update_estimator_variance_metric(short metric_type,
+					Real norm_order = 2.);
   Real estimator_variance_metric() const;
   void estimator_variance_metric(Real estvar_metric);
   size_t estimator_variance_metric_index() const;
@@ -138,7 +141,8 @@ protected:
   /// and final MC estimator variance using final N_H samples (not equivHF)
   RealVector estVarRatios;
 
-  /// scalar metric computed from estVariances according to incoming metric type
+  /// scalar metric computed from estVariances or estVarRatios according
+  /// to incoming metric type
   Real estVarMetric;
   /// index when estVarMetric involves a selection (e.g. max over QoI)
   /// rather than reduction (e.g. average over QoI)
@@ -288,62 +292,90 @@ inline Real MFSolutionData::estimator_variance(size_t i) const
 
 
 inline void MFSolutionData::
-update_estimator_variance_metric(short metric_type,
+update_estimator_variance_metric(short metric_type, Real norm_order,
 				 const RealVector& est_var_ratios,
 				 const RealVector& est_var,
-				 Real& est_var_metric, size_t& metric_index)
+				 Real& metric, size_t& metric_index)
 {
   // Error checks
+  bool err_flag = false;
   switch (metric_type) {
-  case DEFAULT_ESTVAR_METRIC: case AVG_ESTVAR_METRIC: case MAX_ESTVAR_METRIC:
+  case DEFAULT_ESTVAR_METRIC: case AVG_ESTVAR_METRIC:
+  case NORM_ESTVAR_METRIC:    case MAX_ESTVAR_METRIC:
     if (est_var.empty()) {
       Cerr << "Error: estimator variance undefined in MFSolutionData::"
 	   << "update_estimator_variance_metric()" << std::endl;
-      abort_handler(METHOD_ERROR);
+      err_flag = true;
     }
     break;
   case AVG_ESTVAR_RATIO_METRIC:  case MAX_ESTVAR_RATIO_METRIC:
+    // Can only omit N* from variance minimization in case where it is fixed
+    // (R_ONLY_LINEAR_CONSTRAINT from truth_fixed_by_pilot specification).
+    // In this case, minimizing an estvar ratios metric is equivalent to
+    // minimizing estvar, albeit more well scaled across QoI.
+
+    // This error check would need to be performed at a higher level scope
+    //if (optSubProblemForm != R_ONLY_LINEAR_CONSTRAINT) { // not in scope
+    //  Cerr << "Error: minimization metrics defined from estimator variance "
+    //       << "ratios require a R_ONLY_LINEAR_CONSTRAINT formulation."
+    // 	     << std::endl;
+    //  err_flag = true;
+    //}
+ 
     if (est_var_ratios.empty()) {
       Cerr << "Error: estimator variance ratios undefined in MFSolutionData::"
 	   << "update_estimator_variance_metric()" << std::endl;
-      abort_handler(METHOD_ERROR);
+      err_flag = true;
     }
     break;
   default:
     Cerr << "Error: unsupported metric type in MFSolutionData::"
-	   << "update_estimator_variance_metric()" << std::endl;
-    abort_handler(METHOD_ERROR);  break;
+	 << "update_estimator_variance_metric()" << std::endl;
+    err_flag = true;  break;
   }
+  if (err_flag)
+    abort_handler(METHOD_ERROR);
 
   switch (metric_type) {
   // absolute metrics:
   case DEFAULT_ESTVAR_METRIC: case AVG_ESTVAR_METRIC:
     metric_index = _NPOS;
-    est_var_metric = average(est_var);             break;
+    metric = average(est_var);                    break;
+  case NORM_ESTVAR_METRIC:
+    metric_index = _NPOS;
+    metric = p_norm(est_var, norm_order);         break;
   case MAX_ESTVAR_METRIC:
     metric_index = find_max_index(est_var);
-    est_var_metric = est_var[metric_index];        break;
-  // metrics relative to MC estvar:
+    metric = est_var[metric_index];               break;
+  // metrics relative to MC estvar (see validity note above):
   case AVG_ESTVAR_RATIO_METRIC:
     metric_index = _NPOS;
-    est_var_metric = average(est_var_ratios);      break;
+    metric = average(est_var_ratios);             break;
+  case NORM_ESTVAR_RATIO_METRIC:
+    metric_index = _NPOS;
+    metric = p_norm(est_var_ratios, norm_order);  break;
   case MAX_ESTVAR_RATIO_METRIC:
     metric_index = find_max_index(est_var_ratios);
-    est_var_metric = est_var_ratios[metric_index]; break;
+    metric = est_var_ratios[metric_index];        break;
   }
 }
 
 
 inline void MFSolutionData::
-update_estimator_variance_metric(short metric_type, const RealVector& est_var,
-				 Real& est_var_metric)
+update_estimator_variance_metric(short metric_type, Real norm_order,
+				 const RealVector& est_var, Real& metric)
 {
+  // In current uses, we restrict to estvar metrics even for a metric type
+  // based on estvar ratios
+
   switch (metric_type) {
   case DEFAULT_ESTVAR_METRIC: case AVG_ESTVAR_METRIC:
   case AVG_ESTVAR_RATIO_METRIC:
-    est_var_metric = average(est_var);  break;
+    metric = average(est_var);             break;
+  case NORM_ESTVAR_METRIC:    case NORM_ESTVAR_RATIO_METRIC:
+    metric = p_norm(est_var, norm_order);  break;
   case MAX_ESTVAR_METRIC:     case MAX_ESTVAR_RATIO_METRIC:
-    est_var_metric = maximum(est_var);  break;
+    metric = maximum(est_var);             break;
   default:
     Cerr << "Error: unsupported metric type in MFSolutionData::"
 	 << "update_estimator_variance_metric()" << std::endl;
@@ -352,10 +384,12 @@ update_estimator_variance_metric(short metric_type, const RealVector& est_var,
 }
 
 
-inline void MFSolutionData::update_estimator_variance_metric(short metric_type)
+inline void MFSolutionData::
+update_estimator_variance_metric(short metric_type, Real norm_order)
 {
-  update_estimator_variance_metric(metric_type,  estVarRatios, estVariances,
-				   estVarMetric, estVarMetricIndex);
+  update_estimator_variance_metric(metric_type, norm_order, estVarRatios,
+				   estVariances, estVarMetric,
+				   estVarMetricIndex);
 }
 
 
@@ -1185,7 +1219,8 @@ estimator_variances_and_ratios(const RealVector& cd_vars, MFSolutionData& soln)
   estimator_variances_from_ratios(cd_vars, estvar_ratios, estvar);
   soln.estimator_variances(estvar);
   soln.estimator_variance_ratios(estvar_ratios);
-  //soln.update_estimator_variance_metric(estVarMetricType);
+  //soln.update_estimator_variance_metric(estVarMetricType,
+  //                                      estVarMetricNormOrder);
 }
 
 
@@ -1195,9 +1230,8 @@ estimator_variance_metric(const RealVector& cd_vars)
   RealVector estvar_ratios, estvar;  Real metric;  size_t metric_index;
   estimator_variance_ratios(cd_vars, estvar_ratios); // virtual: MFMC,ACV,GenACV
   estimator_variances_from_ratios(cd_vars, estvar_ratios, estvar);
-  MFSolutionData::
-    update_estimator_variance_metric(estVarMetricType, estvar_ratios, estvar,
-				     metric, metric_index);
+  MFSolutionData::update_estimator_variance_metric(estVarMetricType,
+    estVarMetricNormOrder, estvar_ratios, estvar, metric, metric_index);
   return metric;
 }
 
@@ -1701,7 +1735,7 @@ inline void NonDNonHierarchSampling::cache_mc_reference()
   // update the bound for a runtime change in the max metric_index, which
   // would require moving the variable bound value inside the constraint.
   MFSolutionData::update_estimator_variance_metric(estVarMetricType,
-						   estVarIter0, estVarMetric0);
+    estVarMetricNormOrder, estVarIter0, estVarMetric0);
 }
 
 

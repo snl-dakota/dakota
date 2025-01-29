@@ -1260,9 +1260,8 @@ mfmc_numerical_solution(const RealMatrix& rho2_LH, const RealVector& cost,
       mfmc_estvar_ratios(rho2_LH, avg_eval_ratios, corrApproxSequence,
 			 estvar_ratios);
       estvar_ratios_to_estvar(estvar_ratios, varH, N_H_actual, estvar);
-      MFSolutionData::
-	update_estimator_variance_metric(estVarMetricType, estvar_ratios,
-					 estvar, metric, metric_index);
+      MFSolutionData::update_estimator_variance_metric(estVarMetricType,
+	estVarMetricNormOrder, estvar_ratios, estvar, metric, metric_index);
       hf_target = update_hf_target(estvar_ratios, metric_index, varH,
 				   estVarIter0);
     }
@@ -1311,9 +1310,8 @@ process_analytic_allocations(const RealMatrix& rho2_LH, const RealVector& var_H,
     mfmc_estvar_ratios(rho2_LH, avg_eval_ratios, corrApproxSequence,
 		       estvar_ratios);
     estvar_ratios_to_estvar(estvar_ratios, var_H, N_H, estvar);
-    MFSolutionData::
-      update_estimator_variance_metric(estVarMetricType, estvar_ratios,
-				       estvar, metric, metric_index);
+    MFSolutionData::update_estimator_variance_metric(estVarMetricType,
+      estVarMetricNormOrder, estvar_ratios, estvar, metric, metric_index);
     hf_target = update_hf_target(estvar_ratios, metric_index, varH,
 				 estVarIter0);
   }
@@ -1373,7 +1371,7 @@ mfmc_estimator_variance(const RealMatrix& rho2_LH, const RealVector& var_H,
   }
 
   // update metric for solution comparisons (e.g. model tuning)
-  soln.update_estimator_variance_metric(estVarMetricType);
+  soln.update_estimator_variance_metric(estVarMetricType,estVarMetricNormOrder);
 }
 
 

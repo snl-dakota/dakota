@@ -226,6 +226,10 @@ protected:
   /// approach for defining scalar optimization metric from vectors of
   /// estimator variances/ratios
   short estVarMetricType;
+  /// order of p-norm applied to estVariances or estVarRatios according
+  /// to incoming metric type
+  Real estVarMetricNormOrder;
+
   /// QOI_STATISTICS (moments, level mappings) or ESTIMATOR_PERFORMANCE
   /// (for model tuning of estVar,equivHFEvals by an outer loop)
   short finalStatsType;

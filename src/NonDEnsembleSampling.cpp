@@ -38,6 +38,7 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
   //allocationTarget(problem_db.get_short("method.nond.allocation_target")),
   //qoiAggregation(problem_db.get_short("method.nond.qoi_aggregation")),
   estVarMetricType(DEFAULT_ESTVAR_METRIC), // prior to input spec
+  estVarMetricNormOrder(2),                // prior to input spec
   finalStatsType(problem_db.get_short("method.nond.final_statistics")),
   exportSampleSets(problem_db.get_bool("method.nond.export_sample_sequence")),
   exportSamplesFormat(

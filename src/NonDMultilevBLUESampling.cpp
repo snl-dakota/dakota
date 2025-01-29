@@ -893,9 +893,8 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
     if (pilotMgmtMode == ONLINE_PILOT ||
 	pilotMgmtMode == ONLINE_PILOT_PROJECTION) { // cache ref estVarIter0
       estimator_variances(soln.solution_variables(), estVarIter0);
-      MFSolutionData::
-	update_estimator_variance_metric(estVarMetricType, estVarIter0,
-					 estVarMetric0);
+      MFSolutionData::update_estimator_variance_metric(estVarMetricType,
+	estVarMetricNormOrder, estVarIter0, estVarMetric0);
     }
 
     if (no_solve)
@@ -1019,7 +1018,7 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
   if (maxFunctionEvals == SZ_MAX) { // accuracy-constrained -> online only
     // As for {ACV,GenACV}, employ ML BLUE's native estvar for accuracy scaling
     RealVector soln_vars, mlblue_ev, mlblue_ev_ratios;//ratios remain empty
-    SizetArray N_shared;  Real ev_metric;  size_t ev_metric_index;
+    SizetArray N_shared;  Real metric;  size_t metric_index;
     // Rather than estimating hf_target for MFMC/CVMC (based on estvar and
     // estVarIter0 from MFMC/CVMC), we instead employ pilot_samp to provide a
     // baseline estvar for ML BLUE, and then scale toward an hf_target for
@@ -1029,14 +1028,12 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
 					ratios_to_groups, soln_vars);
     enforce_bounds_linear_constraints(soln_vars); // for valid estvar
     estimator_variances(soln_vars, mlblue_ev); // compute ML BLUE estvar
-    MFSolutionData::
-      update_estimator_variance_metric(estVarMetricType, mlblue_ev_ratios,
-				       mlblue_ev, ev_metric, ev_metric_index);
+    MFSolutionData::update_estimator_variance_metric(estVarMetricType,
+      estVarMetricNormOrder, mlblue_ev_ratios, mlblue_ev, metric, metric_index);
     // the assumed scaling with N_sh is not generally valid for ML BLUE,
     // but is reasonable for emulation of MFMC
     N_shared.assign(numFunctions, pilot_samp); // online
-    hf_target
-      = update_hf_target(mlblue_ev, ev_metric_index, N_shared, estVarIter0);
+    hf_target = update_hf_target(mlblue_ev, metric_index, N_shared,estVarIter0);
   }
   else { // budget-constrained -> online or offline
     Real remaining = (Real)maxFunctionEvals,
@@ -1182,7 +1179,7 @@ process_group_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
       soln.estimator_variance_ratio(estvar[qoi] / projEstVarHF[qoi], qoi); 
   }
 
-  soln.update_estimator_variance_metric(estVarMetricType);
+  soln.update_estimator_variance_metric(estVarMetricType,estVarMetricNormOrder);
 }
 
 

@@ -151,6 +151,19 @@ inline void average(const Sizet2DArray& N_2D, RealVector& N_1D)
 }
 
 
+/// eliminate inner dimension of 2D array by averaging over each inner vector
+inline Real p_norm(const RealVector& vec, Real p)
+{
+  // Note that p >= 1 is required to satisfy the formal definition of a norm
+  // (0 < p < 1 is computable but not a norm: violates triangle inequality)
+
+  Real sum = 0.;  size_t i, len = vec.length();
+  for (i=0; i<len; ++i)
+    sum += std::pow(std::abs(vec[i]), p);
+  return std::pow(sum, 1./p);
+}
+
+
 /// compute maximum of a vector of values
 inline Real maximum(const RealVector& vec)
 {

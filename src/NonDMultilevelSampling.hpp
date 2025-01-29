@@ -613,13 +613,15 @@ inline Real NonDMultilevelSampling::estimator_accuracy_metric() const
   // variance; thus, we only manage QoI reductions here
   switch (estVarMetricType) {
   case DEFAULT_ESTVAR_METRIC: case AVG_ESTVAR_METRIC:
-    return average(estVar);  break;
+    return average(estVar);                        break;
+  case NORM_ESTVAR_METRIC:
+    return p_norm(estVar, estVarMetricNormOrder);  break;
   case MAX_ESTVAR_METRIC:
-    return maximum(estVar);  break;
+    return maximum(estVar);                        break;
   default:
-    Cerr << "Error: metric type unsupported by multilevel_sampling."<<std::endl;
-    abort_handler(METHOD_ERROR);
-    return DBL_MAX;
+    Cerr << "Error: estimator accuracy metric type unsupported by "
+	 << "multilevel_sampling." << std::endl;
+    abort_handler(METHOD_ERROR);  return DBL_MAX;
   }
 }
 

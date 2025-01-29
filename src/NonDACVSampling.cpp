@@ -692,9 +692,8 @@ update_hf_target(const RealVector& avg_eval_ratios, Real avg_N_H,
   estimator_variances_and_ratios(cd_vars, estvar_ratios, estvar);
 
   Real metric;  size_t metric_index;
-  MFSolutionData::
-    update_estimator_variance_metric(estVarMetricType, estvar_ratios,
-				     estvar, metric, metric_index);
+  MFSolutionData::update_estimator_variance_metric(estVarMetricType,
+    estVarMetricNormOrder, estvar_ratios, estvar, metric, metric_index);
 
   return NonDNonHierarchSampling::
     update_hf_target(estvar_ratios, metric_index, var_H, estvar0);
