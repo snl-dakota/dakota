@@ -2444,11 +2444,7 @@ print_estimator_performance(std::ostream& s, const MFSolutionData& soln) const
   for (qoi=0; qoi<numFunctions; ++qoi) {
     s << std::setw(14) << labels[qoi] << ":\n"; // mirror print_moments()
 
-    // > reporting estVarIter0 best shows the reference for convTol
-    // > recomputing with latest varH is more consistent with metrics to follow 
-    //RealVector initial_mc_estvar;
-    //compute_mc_estimator_variance(varH, numHIter0, initial_mc_estvar);
-    if (online)
+    if (online) // reporting estVarIter0 best shows the reference for convTol
       s << "      Initial     MC (" << std::setw(5) << numHIter0[qoi]
 	<< " HF samples): " << std::setw(wpp7) << estVarIter0[qoi] << '\n';
 

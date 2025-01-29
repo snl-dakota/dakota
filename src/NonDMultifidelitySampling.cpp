@@ -124,11 +124,7 @@ void NonDMultifidelitySampling::multifidelity_mc_online_pilot()
 			   sum_HH, N_H_actual, var_L, varH, rho2LH);
     // estVarIter0 only uses HF pilot since CV terms (sum_L_shared / N_shared
     // - sum_L_refined / N_refined) cancel out prior to sample refinement.
-    // (This differs from MLMC EstVar^0 which uses pilot for all levels.)
-    if (mlmfIter == 0) {
-      compute_mc_estimator_variance(varH, N_H_actual, estVarIter0);
-      numHIter0 = N_H_actual;
-    }
+    if (mlmfIter == 0) cache_mc_reference();
 
     // ----------------------
     // Solve for allocations:
@@ -207,13 +203,8 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   compute_allocations(rho2LH, varH, N_H_actual, sequenceCost, mfmcSolnData);
   ++mlmfIter;
 
-  // Don't replace pilot-based varH (retain "oracle" rho2LH, varH) since this
-  // introduces noise in the final MC/MFMC estimator variances.  It does
-  // however result in mixing offline varH with online N_H for estVarIter0.
-  //compute_variance(sum_H[1], sum_HH, N_H_actual, varH); // online varH
-  // With changes to print_results(), estVarIter0 no longer used for this mode.
-  //compute_mc_estimator_variance(varH, N_H_actual, estVarIter0);
-  //numHIter0 = N_H_actual;
+  // estVarIter0 no longer used for offline mode
+  //cache_mc_reference();
 
   // -----------------------------------
   // Perform "online" sample increments:
@@ -289,10 +280,7 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
   // --------------------------
   // estVarIter0 only uses HF pilot since CV terms (sum_L_shared / N_shared
   // - sum_L_refined / N_refined) cancel out prior to sample refinement.
-  // (This differs from MLMC EstVar^0 which uses pilot for all levels.)
-  // > Note: numHIter0 may differ from pilotSamples[numApprox] for sim faults
-  compute_mc_estimator_variance(varH, N_H_actual, estVarIter0);
-  numHIter0 = N_H_actual;
+  cache_mc_reference();
   // compute r* from rho2 and cost
   compute_allocations(rho2LH, varH, N_H_actual, sequenceCost, mfmcSolnData);
   ++mlmfIter;

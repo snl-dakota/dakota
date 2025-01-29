@@ -32,6 +32,9 @@ $expo = "-?\\d\\.\\d+e(?:\\+|-)\\d+";
 $nanre = "-?(?:[Nn][Aa][Nn]|1\\.#IND|1\\.#QNAN(?:0+e\\+000))";
 $infre = "-?(?:1\\.#)?[Ii][Nn][Ff]";
 $naninf = "(?:$nanre|$infre)";
+#$zero_e = "0\\.0+e\\+0+"; # zero field: exponential
+#$zero_f = "0+\\.?0*";     # zero field: floating point
+#$zero = "(?:zero_e|zero_f)";
 
 # numerical field printed as exponential (may contain NaN/Inf)
 # (?: --> group without capture)
@@ -45,6 +48,8 @@ $s = "[a-zA-Z0-9_-]+";
 # Tolerance below which absolute numerical diff will be used
 # Also used as PCE coefficient and Sobol index absolute ignore tolerance
 $SMALL       = 1.e-8;
+# trap division by zero for cases where small values are allowed
+$ZERO        = 0.;
 # Allow up to a quarter of the total abs() interval in abs diff
 $ABS_EPSILON = 5.e-9; 
 # Relative tolerance for other values
@@ -613,7 +618,7 @@ sub compare_output {
 	push @test_diffs, $test;
       }
     }
-    elsif ( ( ($t_tev, $t_nev, $t_dev) = $test =~
+    elsif ( ( ($T_tev, $t_nev, $t_dev) = $test =~
 
 	   /^Wilks Statistics for One-Sided ($e)% Confidence Level, Order = (\d+) for response_fn_(\d+).+$/ ) &&
 	 ( ($b_tev, $b_nev, $b_dev) = $base =~
@@ -719,7 +724,7 @@ sub compare_output {
 	      /^\s+(?:Initial|Final|Projected|Online|Equivalent)\s+(?:MC|MLMC|MLCVMC|MFMC|ACV|ML BLUE).*?\(.*?\):\s+($e)$/ ) &&
 	    ( ($b_ev) = $base =~
 	      /^\s+(?:Initial|Final|Projected|Online|Equivalent)\s+(?:MC|MLMC|MLCVMC|MFMC|ACV|ML BLUE).*?\(.*?\):\s+($e)$/ ) ) {
-      if ( diff_relative($t_ev, $b_ev) ) { # tends to be small: override to only use relative check
+      if ( diff_nonzero($t_ev, $b_ev) ) { # tends to be small: replace diff with diff_nonzero
 	$test_diff = 1;
 	push @base_diffs, $base;
 	push @test_diffs, $test;
@@ -858,6 +863,7 @@ sub diff_relative {
     return diff_naninf($_[0],$_[1]);
   }
 
+  # Note: division by zero avoided in diff and diff_nonzero below
   $differ = abs($_[0]/$_[1] - 1.0); # relative difference
   if ($differ > $REL_EPSILON) {
     return 1;
@@ -912,6 +918,40 @@ sub diff {
   }
   else {
     return diff_relative($_[0],$_[1]);
+  }
+
+  return 0;
+}
+
+
+# subroutine diff assesses whether two numbers differ by more than an epsilon
+# returns 1 if diff, 0 otherwise
+sub diff_nonzero {
+  # $_[0] = test value
+  # $_[1] = baseline value
+
+  #print "Diffing $_[0] and $_[1]\n";
+  
+  # nan or inf, which is represented differently on posix and windows
+  # systems
+  if ($_[0] =~ /$naninf/ || $_[1] =~ /$naninf/) { # nan or inf
+    return diff_naninf($_[0],$_[1]);
+  }
+  # strings   
+  if ( $_[0] =~ /^$s$/ || $_[1] =~ /^$s$/ ) {
+    if ( $_[0] ne $_[1] ) {
+      return 1;
+    }
+    else {
+      return 0;
+    }
+  }
+
+  if ( abs($_[1]) > $ZERO ) {
+    return diff_relative($_[0],$_[1]);
+  }
+  else {
+    return diff_absolute($_[0],$_[1]);
   }
 
   return 0;

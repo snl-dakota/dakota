@@ -1027,7 +1027,7 @@ void NonDGenACVSampling::precompute_allocations()
 {
   if (mlmfIter == 0 && ( pilotMgmtMode == ONLINE_PILOT ||
 			 pilotMgmtMode == ONLINE_PILOT_PROJECTION) )
-    cache_mc_reference();// {estVar,numH}Iter0
+    cache_mc_reference();// {estVar,numH}Iter0, estVarMetric0
 
   // reset for each search over model sets and DAGs; otherwise previous
   // best could hide new best from more resolved covariances

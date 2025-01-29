@@ -554,8 +554,8 @@ compute_allocations(const RealMatrix& var_L, MFSolutionData& soln)
   if (mlmfIter == 0) {
     bool online = (pilotMgmtMode == ONLINE_PILOT ||
 		   pilotMgmtMode == ONLINE_PILOT_PROJECTION);
-    if (online) // cache reference estVarIter0
-      cache_mc_reference();
+    if (online)
+      cache_mc_reference(); // {estVar,numH}Iter0, estVarMetric0
 
     size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
     SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
