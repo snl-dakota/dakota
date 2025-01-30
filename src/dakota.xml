@@ -250,7 +250,7 @@
 	       <oneOf label="Optimization Solver Metric">
                  <keyword  id="average_estimator_variance" name="average_estimator_variance" code="{N_mdm(type,estVarMetricType_AVG_ESTVAR_METRIC)}" label="average_estimator_variance" />
                  <keyword  id="norm_estimator_variance" name="norm_estimator_variance" code="{N_mdm(type,estVarMetricType_NORM_ESTVAR_METRIC)}" label="norm_estimator_variance"  >
-                   <keyword  id="norm_order" name="norm_order" code="{N_mdm(sizet,estVarMetricNormOrder)}" label="norm order"  minOccurs="0" default="2" >
+                   <keyword  id="norm_order" name="norm_order" code="{N_mdm(Real,estVarMetricNormOrder)}" label="norm order"  minOccurs="0" default="2" >
                      <param type="REAL" constraint=">= 1." />
 	           </keyword>
 	         </keyword>

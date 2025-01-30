@@ -3029,7 +3029,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
         average_estimator_variance {N_mdm(type,estVarMetricType_AVG_ESTVAR_METRIC)}
         |
         ( norm_estimator_variance {N_mdm(type,estVarMetricType_NORM_ESTVAR_METRIC)}
-          [ norm_order REAL >= 1. {N_mdm(sizet,estVarMetricNormOrder)} ]
+          [ norm_order REAL >= 1. {N_mdm(Real,estVarMetricNormOrder)} ]
          )
         |
         max_estimator_variance {N_mdm(type,estVarMetricType_MAX_ESTVAR_METRIC)}
@@ -3244,7 +3244,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       average_estimator_variance {N_mdm(type,estVarMetricType_AVG_ESTVAR_METRIC)}
       |
       ( norm_estimator_variance {N_mdm(type,estVarMetricType_NORM_ESTVAR_METRIC)}
-        [ norm_order REAL >= 1. {N_mdm(sizet,estVarMetricNormOrder)} ]
+        [ norm_order REAL >= 1. {N_mdm(Real,estVarMetricNormOrder)} ]
        )
       |
       max_estimator_variance {N_mdm(type,estVarMetricType_MAX_ESTVAR_METRIC)}
@@ -3362,7 +3362,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       average_estimator_variance {N_mdm(type,estVarMetricType_AVG_ESTVAR_METRIC)}
       |
       ( norm_estimator_variance {N_mdm(type,estVarMetricType_NORM_ESTVAR_METRIC)}
-        [ norm_order REAL >= 1. {N_mdm(sizet,estVarMetricNormOrder)} ]
+        [ norm_order REAL >= 1. {N_mdm(Real,estVarMetricNormOrder)} ]
        )
       |
       max_estimator_variance {N_mdm(type,estVarMetricType_MAX_ESTVAR_METRIC)}
