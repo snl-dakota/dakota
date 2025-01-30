@@ -37,8 +37,10 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
   mlmfIter(0), equivHFEvals(0.), // also reset in pre_run()
   //allocationTarget(problem_db.get_short("method.nond.allocation_target")),
   //qoiAggregation(problem_db.get_short("method.nond.qoi_aggregation")),
-  estVarMetricType(DEFAULT_ESTVAR_METRIC), // prior to input spec
-  estVarMetricNormOrder(2),                // prior to input spec
+  estVarMetricType(
+    problem_db.get_short("method.nond.estimator_variance_metric")),
+  estVarMetricNormOrder(
+    problem_db.get_real("method.nond.estimator_variance_metric_norm_order")),
   finalStatsType(problem_db.get_short("method.nond.final_statistics")),
   exportSampleSets(problem_db.get_bool("method.nond.export_sample_sequence")),
   exportSamplesFormat(

@@ -3025,6 +3025,15 @@ KEYWORD method {N_mdm3(start,0,stop)}
         |
         competed_local {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL_OPTPP)}
        ]
+      [ solver_metric {0}
+        average_estimator_variance {N_mdm(type,estVarMetricType_AVG_ESTVAR_METRIC)}
+        |
+        ( norm_estimator_variance {N_mdm(type,estVarMetricType_NORM_ESTVAR_METRIC)}
+          [ norm_order REAL >= 1. {N_mdm(sizet,estVarMetricNormOrder)} ]
+         )
+        |
+        max_estimator_variance {N_mdm(type,estVarMetricType_MAX_ESTVAR_METRIC)}
+       ]
      ]
     [ search_model_graphs {0}
       [ model_selection {N_mdm(type,modelSelectType_ALL_MODEL_COMBINATIONS)} ]
@@ -3231,6 +3240,15 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       competed_local {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL_OPTPP)}
      ]
+    [ solver_metric {0}
+      average_estimator_variance {N_mdm(type,estVarMetricType_AVG_ESTVAR_METRIC)}
+      |
+      ( norm_estimator_variance {N_mdm(type,estVarMetricType_NORM_ESTVAR_METRIC)}
+        [ norm_order REAL >= 1. {N_mdm(sizet,estVarMetricNormOrder)} ]
+       )
+      |
+      max_estimator_variance {N_mdm(type,estVarMetricType_MAX_ESTVAR_METRIC)}
+     ]
     [ seed_sequence INTEGERLIST {N_mdm(szarray,randomSeedSeq)} ]
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ sample_type {0}
@@ -3339,6 +3357,15 @@ KEYWORD method {N_mdm3(start,0,stop)}
       global_local {N_mdm(utype,optSubProbSolver_SUBMETHOD_DIRECT_NPSOL_OPTPP)}
       |
       competed_local {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL_OPTPP)}
+     ]
+    [ solver_metric {0}
+      average_estimator_variance {N_mdm(type,estVarMetricType_AVG_ESTVAR_METRIC)}
+      |
+      ( norm_estimator_variance {N_mdm(type,estVarMetricType_NORM_ESTVAR_METRIC)}
+        [ norm_order REAL >= 1. {N_mdm(sizet,estVarMetricNormOrder)} ]
+       )
+      |
+      max_estimator_variance {N_mdm(type,estVarMetricType_MAX_ESTVAR_METRIC)}
      ]
     [ seed_sequence INTEGERLIST {N_mdm(szarray,randomSeedSeq)} ]
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
