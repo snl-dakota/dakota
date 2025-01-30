@@ -27,13 +27,13 @@ class NCSUTraits: public TraitsBase
   NCSUTraits() { }
 
   /// destructor
-  virtual ~NCSUTraits() { }
+  ~NCSUTraits() override { }
 
   /// A temporary query used in the refactor
-  virtual bool is_derived() { return true; }
+  bool is_derived() override { return true; }
 
   /// Return the flag indicating whether method supports continuous variables
-  bool supports_continuous_variables() { return true; }
+  bool supports_continuous_variables() override { return true; }
 };
 
 
@@ -55,15 +55,15 @@ public:
   //
 
   /// standard constructor
-  NCSUOptimizer(ProblemDescDB& problem_db, Model& model);
+  NCSUOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
 
   /// alternate constructor for instantiations "on the fly"
-  NCSUOptimizer(Model& model, size_t max_iter, size_t max_eval,
+  NCSUOptimizer(std::shared_ptr<Model> model, size_t max_iter, size_t max_eval,
 		double min_box_size = -1., double vol_box_size = -1.,
 		double solution_target = -DBL_MAX);
 
   /// alternate constructor for Iterator instantiations by name
-  NCSUOptimizer(Model& model);
+  NCSUOptimizer(std::shared_ptr<Model> model);
 
   /// alternate constructor for instantiations "on the fly"
   NCSUOptimizer(//const RealVector& initial_pt,
@@ -79,18 +79,18 @@ public:
 		double min_box_size = -1., double vol_box_size = -1.,
 		double solution_target = -DBL_MAX);
 
-  ~NCSUOptimizer(); ///< destructor
+  ~NCSUOptimizer() override; ///< destructor
     
   //
   //- Heading: Virtual function redefinitions
   //
 
   //void initialize_run();
-  void core_run();
+  void core_run() override;
 
-  void declare_sources();
+  void declare_sources() override;
 
-  void check_sub_iterator_conflict();
+  void check_sub_iterator_conflict() override;
 
   //void initial_point(const RealVector& pt);
   void update_callback_data(const RealVector& cv_initial,
@@ -103,10 +103,10 @@ public:
 			    const RealVector& lin_eq_targets,
 			    const RealVector& nln_ineq_l_bnds,
 			    const RealVector& nln_ineq_u_bnds,
-			    const RealVector& nln_eq_targets);
-  const RealMatrix& callback_linear_ineq_coefficients() const;
-  const RealVector& callback_linear_ineq_lower_bounds() const;
-  const RealVector& callback_linear_ineq_upper_bounds() const;
+			    const RealVector& nln_eq_targets) override;
+  const RealMatrix& callback_linear_ineq_coefficients() const override;
+  const RealVector& callback_linear_ineq_lower_bounds() const override;
+  const RealVector& callback_linear_ineq_upper_bounds() const override;
 
 private:
 

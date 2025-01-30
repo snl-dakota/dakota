@@ -31,10 +31,10 @@ public:
   //
 
   /// standard constructor
-  NonDHierarchSampling(ProblemDescDB& problem_db, Model& model);
+  NonDHierarchSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor (virtual declaration should be redundant with ~Iterator,
   /// but this is top of MLMF diamond so doesn't hurt to be explicit)
-  virtual ~NonDHierarchSampling();
+  ~NonDHierarchSampling() override;
 
   //
   //- Heading: Virtual function redefinitions
@@ -52,8 +52,6 @@ protected:
   //void core_run();
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
-
-  Real estimator_accuracy_metric();
 
   //
   //- Heading: Member functions
@@ -78,10 +76,6 @@ protected:
   /// setting for inactive model dimension not traversed by loop over numSteps
   size_t secondaryIndex;
 
-  /// final estimator variance for targeted moment (usually mean), averaged
-  /// across QoI
-  Real avgEstVar;
-
 private:
 
   //
@@ -89,10 +83,6 @@ private:
   //
 
 };
-
-
-inline Real NonDHierarchSampling::estimator_accuracy_metric()
-{ return avgEstVar; }
 
 
 inline void NonDHierarchSampling::

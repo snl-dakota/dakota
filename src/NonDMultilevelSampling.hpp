@@ -36,9 +36,9 @@ public:
   //
 
   /// standard constructor
-  NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model);
+  NonDMultilevelSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
-  ~NonDMultilevelSampling();
+  ~NonDMultilevelSampling() override;
 
 protected:
 
@@ -47,15 +47,17 @@ protected:
   //
 
   //void pre_run();
-  void core_run();
+  void core_run() override;
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
-  void print_variance_reduction(std::ostream& s);
+
+  Real estimator_accuracy_metric() const;
+  void print_variance_reduction(std::ostream& s) const;
 
   void nested_response_mappings(const RealMatrix& primary_coeffs,
-				const RealMatrix& secondary_coeffs);
+				const RealMatrix& secondary_coeffs) override;
 
-  bool discrepancy_sample_counts() const;
+  bool discrepancy_sample_counts() const override;
 
   //
   //- Heading: Member functions
@@ -602,6 +604,25 @@ level_cost(const RealVector& cost, size_t step, size_t offset)
   return (step) ?
     cost[offset_step] + cost[offset_step-1] : // aggregated {HF,LF} mode
     cost[offset_step];                        //     uncorrected LF mode
+}
+
+
+inline Real NonDMultilevelSampling::estimator_accuracy_metric() const
+{
+  // MLMC for mean stats uses an analytic soln which minimizes estimator
+  // variance; thus, we only manage QoI reductions here
+  switch (estVarMetricType) {
+  case DEFAULT_ESTVAR_METRIC: case AVG_ESTVAR_METRIC:
+    return average(estVar);                        break;
+  case NORM_ESTVAR_METRIC:
+    return p_norm(estVar, estVarMetricNormOrder);  break;
+  case MAX_ESTVAR_METRIC:
+    return maximum(estVar);                        break;
+  default:
+    Cerr << "Error: estimator accuracy metric type unsupported by "
+	 << "multilevel_sampling." << std::endl;
+    abort_handler(METHOD_ERROR);  return DBL_MAX;
+  }
 }
 
 

@@ -46,9 +46,9 @@ public:
   /// standard constructor
   ConcurrentMetaIterator(ProblemDescDB& problem_db);
   /// alternate constructor
-  ConcurrentMetaIterator(ProblemDescDB& problem_db, Model& model);
+  ConcurrentMetaIterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
-  ~ConcurrentMetaIterator();
+  ~ConcurrentMetaIterator() override;
 
 protected:
 
@@ -56,29 +56,29 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void pre_run();
+  void pre_run() override;
   /// Performs the concurrent iteration by executing selectedIterator on
   /// iteratedModel multiple times in parallel for different parameter sets
-  void core_run();
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void core_run() override;
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
-  void derived_init_communicators(ParLevLIter pl_iter);
-  void derived_set_communicators(ParLevLIter pl_iter);
-  void derived_free_communicators(ParLevLIter pl_iter);
+  void derived_init_communicators(ParLevLIter pl_iter) override;
+  void derived_set_communicators(ParLevLIter pl_iter) override;
+  void derived_free_communicators(ParLevLIter pl_iter) override;
 
-  IntIntPair estimate_partition_bounds();
+  IntIntPair estimate_partition_bounds() override;
 
-  void initialize_iterator(int job_index);
-  void pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index);
+  void initialize_iterator(int job_index) override;
+  void pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index) override;
   void unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer,
-				    int job_index);
-  void pack_results_buffer(MPIPackBuffer& send_buffer, int job_index);
-  void unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index);
-  void update_local_results(int job_index);
+				    int job_index) override;
+  void pack_results_buffer(MPIPackBuffer& send_buffer, int job_index) override;
+  void unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index) override;
+  void update_local_results(int job_index) override;
 
-  const Model& algorithm_space_model() const;
+  std::shared_ptr<Model> algorithm_space_model() override;
 
-  virtual void declare_sources();
+  void declare_sources() override;
 
 private:
 
@@ -121,7 +121,7 @@ private:
 };
 
 
-inline const Model& ConcurrentMetaIterator::algorithm_space_model() const
+inline std::shared_ptr<Model> ConcurrentMetaIterator::algorithm_space_model()
 { return iteratedModel; }
 
 
@@ -158,14 +158,14 @@ inline void ConcurrentMetaIterator::initialize_model()
     paramSetLen = probDescDB.get_sizet("responses.num_objective_functions");
     // define dummy weights to trigger model recasting in iterator construction
     // (replaced at run-time with weight sets from specification)
-    if (iteratedModel.primary_response_fn_weights().empty()) {
+    if (iteratedModel->primary_response_fn_weights().empty()) {
       RealVector initial_wts(paramSetLen, false);
       initial_wts = 1./(Real)paramSetLen;
-      iteratedModel.primary_response_fn_weights(initial_wts); // trigger recast
+      iteratedModel->primary_response_fn_weights(initial_wts); // trigger recast
     }
   }
   else
-    paramSetLen = iteratedModel.cv();
+    paramSetLen = ModelUtils::cv(*iteratedModel);
 }
 
 
@@ -173,10 +173,10 @@ inline void ConcurrentMetaIterator::
 initialize_iterator(const RealVector& param_set)
 {
   if (methodName == MULTI_START)
-    iteratedModel.continuous_variables(param_set);
+    ModelUtils::continuous_variables(*iteratedModel, param_set);
   else {
-    iteratedModel.continuous_variables(initialPt); // reset
-    iteratedModel.primary_response_fn_weights(param_set);
+    ModelUtils::continuous_variables(*iteratedModel, initialPt); // reset
+    iteratedModel->primary_response_fn_weights(param_set);
   }
 }
 
@@ -213,7 +213,7 @@ inline void ConcurrentMetaIterator::update_local_results(int job_index)
 {
   prpResults[job_index]
     = ParamResponsePair(selectedIterator.variables_results(),
-			iteratedModel.interface_id(),
+			iteratedModel->interface_id(),
 			selectedIterator.response_results(),
 			job_index+1); // deep copy
 }

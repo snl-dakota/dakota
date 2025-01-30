@@ -28,7 +28,7 @@ namespace Dakota {
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDMultilevBLUESampling::
-NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model):
+NonDMultilevBLUESampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDNonHierarchSampling(problem_db, model),
   pilotGroupSampling(problem_db.get_short("method.nond.pilot_samples.mode")),
   groupThrottleType(problem_db.get_short("method.nond.group_throttle_type")),
@@ -283,11 +283,8 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
 
   // Only QOI_STATISTICS requires application of oversample ratios and
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
-  if (finalStatsType == QOI_STATISTICS) {
-    RealMatrix H_raw_mom(4, numFunctions);
-    blue_raw_moments(sum_G, sum_GG, NGroupActual, H_raw_mom); // online version
-    convert_moments(H_raw_mom, momentStats);
-  }
+  if (finalStatsType == QOI_STATISTICS)
+    blue_raw_moments(sum_G, sum_GG, NGroupActual); // online version
 
   if (!zeros(delta_N_G)) // exceeded maxIterations
     increment_equivalent_cost(delta_N_G, modelGroupCost,
@@ -333,10 +330,8 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
 			    sequenceCost[numApprox], equivHFEvals);
   clear_batches();
   // extract moments
-  RealMatrix H_raw_mom(4, numFunctions);
-  blue_raw_moments(sum_G_pilot, sum_GG_pilot, N_pilot,      // offline for covar
-		   sum_G, sum_GG, NGroupActual, H_raw_mom); // online for mu-hat
-  convert_moments(H_raw_mom, momentStats);
+  blue_raw_moments(sum_G_pilot, sum_GG_pilot, N_pilot, // offline for covar
+		   sum_G, sum_GG, NGroupActual);       // online for mu-hat
   // finalize
   finalize_counts(NGroupActual, NGroupAlloc);
 }
@@ -385,7 +380,7 @@ void NonDMultilevBLUESampling::ml_blue_pilot_projection()
   finalize_counts(NGroupActual, NGroupAlloc);
   // No need for updating estimator variance given deltaNActualHF since
   // NonDNonHierarchSampling::ensemble_numerical_solution() recovers N*
-  // from the numerical solve and computes projected avgEstVar{,Ratio}
+  // from the numerical solve and computes projected estVariance{s,Ratios}
 }
 
 
@@ -772,7 +767,8 @@ specify_parameter_bounds(RealVector& x_lb, RealVector& x_ub)
     size_t g, v, num_v = x_lb.length();
     for (v=0; v<num_v; ++v) {
       g = active_to_all_group(v);
-      x_lb[v] = (backfillFailures) ? average(NGroupActual[g]) : (Real)NGroupAlloc[g];
+      x_lb[v] = (backfillFailures) ?
+	average(NGroupActual[g]) : (Real)NGroupAlloc[g];
     }
   }
   //enforce_nudge(x_lb); // nudge away from 0 if needed
@@ -787,7 +783,7 @@ specify_initial_parameters(const MFSolutionData& soln, RealVector& x0,
   if (soln_vars.empty()) x0 = x_lb;
   else {
     size_t num_v = num_active_groups();
-    if (soln_vars.length() != num_v) deflate(soln_vars, retainedModelGroups, x0);
+    if (soln_vars.length() != num_v) deflate(soln_vars, retainedModelGroups,x0);
     else                             x0 = soln_vars;
   }
 }
@@ -825,7 +821,7 @@ specify_nonlinear_constraints(RealVector& nln_ineq_lb, RealVector& nln_ineq_ub,
   switch (optSubProblemForm) {
   case N_GROUP_LINEAR_OBJECTIVE: // nonlinear accuracy constraint: ub on estvar
     nln_ineq_lb = -DBL_MAX;   // no lower bnd
-    nln_ineq_ub = std::log(convergenceTol * average(estVarIter0));
+    nln_ineq_ub = std::log(convergenceTol * estVarMetric0);
     break;
   }
 }
@@ -894,22 +890,15 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
       RealVector x0; deflate(pilotSamples, retainedModelGroups, x0);
       soln.solution_variables(x0);
     }
-    bool online = (pilotMgmtMode == ONLINE_PILOT ||
-		   pilotMgmtMode == ONLINE_PILOT_PROJECTION);
-    if (online) // cache reference estVarIter0
-      estimator_variance(soln.solution_variables(), estVarIter0);
-
-    if (no_solve) {
-      // For offline pilot, the online EstVar is undefined (0/0) prior to online
-      // samples, but should not happen (no budget used) unless bad convTol spec
-      if (online)
-	soln.average_estimator_variance(average(estVarIter0));
-      else
-	soln.average_estimator_variance(std::numeric_limits<Real>::quiet_NaN());
-      soln.average_estimator_variance_ratio(1.);
-      delta_N_G.assign(numGroups, 0);
-      return;
+    if (pilotMgmtMode == ONLINE_PILOT ||
+	pilotMgmtMode == ONLINE_PILOT_PROJECTION) { // cache ref estVarIter0
+      estimator_variances(soln.solution_variables(), estVarIter0);
+      MFSolutionData::update_estimator_variance_metric(estVarMetricType,
+	estVarMetricNormOrder, estVarIter0, estVarMetric0);
     }
+
+    if (no_solve)
+      { no_solve_variances(soln); delta_N_G.assign(numGroups, 0); return; }
 
     // Run a competition among related analytic approaches (MFMC or pairwise
     // CVMC) for best initial guess, where each initial gues may additionally
@@ -929,11 +918,7 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
       MFSolutionData mf_soln, cv_soln;
       analytic_initialization_from_mfmc(rho2_LH, mf_soln);
       analytic_initialization_from_ensemble_cvmc(rho2_LH, cv_soln);
-
-      //if (multiStartACV) { // Run numerical solns from both starting points
-      ensemble_numerical_solution(mf_soln);
-      ensemble_numerical_solution(cv_soln);
-      pick_mfmc_cvmc_solution(mf_soln, cv_soln, soln);
+      competed_initial_guesses(mf_soln, cv_soln, soln);
       break;
     }
     }
@@ -946,9 +931,9 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
     ensemble_numerical_solution(soln);
   }
 
-  process_group_solution(soln, N_G_actual, N_G_alloc, delta_N_G);
+  process_group_allocations(soln, N_G_actual, N_G_alloc, delta_N_G);
   if (outputLevel >= NORMAL_OUTPUT)
-    print_group_solution(Cout, soln);
+    print_group_allocations(Cout, soln);
 }
 
 
@@ -970,19 +955,6 @@ analytic_initialization_from_mfmc(const RealMatrix& rho2_LH,
     mfmc_reordered_analytic_solution(approx_set, rho2_LH, sequenceCost,
 				     approx_sequence, avg_eval_ratios,
 				     lower_bounded_r, monotonic_r);
-  /* Desirable to start from avg_hf_target for MFMC rather than N_shared
-  if (maxFunctionEvals == SZ_MAX) // accuracy-constrained
-    // Compute avg_hf_target only based on MFMC estvar, bypassing ML BLUE estvar
-    // Note: dissimilar to ACV,GenACV logic
-    RealVector estvar_ratios;
-    mfmc_estvar_ratios(rho2_LH, avg_eval_ratios, approx_sequence,estvar_ratios);
-    avg_hf_target = update_hf_target(estvar_ratios, NGroupActual[all_group],
-				     estVarIter0); // valid within MFMC context
-  }
-  else
-    avg_hf_target = allocate_budget(avg_eval_ratios, cost, budget);
-               // = scale_to_target(...);
-  */
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Initial guess from analytic MFMC (unscaled eval ratios):\n"
 	 << avg_eval_ratios << std::endl;
@@ -1013,13 +985,6 @@ analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
   RealVector avg_eval_ratios;  bool lower_bounded_r = false;
   cvmc_ensemble_solutions(rho2_LH, sequenceCost, avg_eval_ratios,
 			  lower_bounded_r);
-  /*
-  if (maxFunctionEvals == SZ_MAX) // accuracy-constrained
-    avg_hf_target = update_hf_target(cvmc_estvar, N_sh, estVarIter0);
-  else
-    avg_hf_target = allocate_budget(avg_eval_ratios, cost, budget);
-               // = scale_to_target(...);
-  */
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Initial guess from ensemble CVMC (unscaled eval ratios):\n"
 	 << avg_eval_ratios << std::endl;
@@ -1049,23 +1014,26 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
 
   bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
 		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
-  Real avg_hf_target;
+  Real hf_target;
   if (maxFunctionEvals == SZ_MAX) { // accuracy-constrained -> online only
     // As for {ACV,GenACV}, employ ML BLUE's native estvar for accuracy scaling
-    RealVector soln_vars, mlblue_estvar;  SizetArray N_shared;
-    // Rather than estimating avg_hf_target for MFMC/CVMC (based on estvar and
+    RealVector soln_vars, mlblue_ev, mlblue_ev_ratios;//ratios remain empty
+    SizetArray N_shared;  Real metric;  size_t metric_index;
+    // Rather than estimating hf_target for MFMC/CVMC (based on estvar and
     // estVarIter0 from MFMC/CVMC), we instead employ pilot_samp to provide a
-    // baseline estvar for ML BLUE, and then scale toward an avg_hf_target for
+    // baseline estvar for ML BLUE, and then scale toward an hf_target for
     // ML BLUE based on this estvar relative to estVarIter0.
     size_t pilot_samp = pilotSamples[all_group];
     ratios_target_to_solution_variables(avg_eval_ratios, (Real)pilot_samp,
 					ratios_to_groups, soln_vars);
     enforce_bounds_linear_constraints(soln_vars); // for valid estvar
-    estimator_variance(soln_vars, mlblue_estvar); // compute ML BLUE estvar
+    estimator_variances(soln_vars, mlblue_ev); // compute ML BLUE estvar
+    MFSolutionData::update_estimator_variance_metric(estVarMetricType,
+      estVarMetricNormOrder, mlblue_ev_ratios, mlblue_ev, metric, metric_index);
     // the assumed scaling with N_sh is not generally valid for ML BLUE,
     // but is reasonable for emulation of MFMC
     N_shared.assign(numFunctions, pilot_samp); // online
-    avg_hf_target = update_hf_target(mlblue_estvar, N_shared, estVarIter0);
+    hf_target = update_hf_target(mlblue_ev, metric_index, N_shared,estVarIter0);
   }
   else { // budget-constrained -> online or offline
     Real remaining = (Real)maxFunctionEvals,
@@ -1085,14 +1053,14 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
     }
     if (remaining > 0.)
       // scale_to_target() employs allocate_budget() and rescales for lower bnds
-      scale_to_target(N_shared, sequenceCost, avg_eval_ratios, avg_hf_target,
+      scale_to_target(N_shared, sequenceCost, avg_eval_ratios, hf_target,
 		      remaining, offline_N_lwr);
     else // budget exhausted
-      { avg_hf_target = N_shared; avg_eval_ratios = 1.; }
+      { hf_target = N_shared; avg_eval_ratios = 1.; }
   }
 
   RealVector mlblue_vars;
-  ratios_target_to_solution_variables(avg_eval_ratios, avg_hf_target,
+  ratios_target_to_solution_variables(avg_eval_ratios, hf_target,
 				      ratios_to_groups, mlblue_vars);
   enforce_bounds_linear_constraints(mlblue_vars); // enforce again
   soln.solution_variables(mlblue_vars);
@@ -1106,7 +1074,7 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
 
 void NonDMultilevBLUESampling::
 ratios_target_to_solution_variables(const RealVector& avg_eval_ratios,
-				    Real avg_hf_target,
+				    Real hf_target,
 				    const SizetArray& ratios_to_groups,
 				    RealVector& soln_vars)
 {
@@ -1146,7 +1114,7 @@ ratios_target_to_solution_variables(const RealVector& avg_eval_ratios,
     g = ratios_to_groups[r];      // eval ratio r -> group g
     if (g != _NPOS) {
       v = all_to_active_group(g); // group g -> active v
-      N_samp = avg_hf_target;
+      N_samp = hf_target;
       if (r < num_r)             N_samp *= avg_eval_ratios[r];
       if (N_samp > soln_vars[v]) soln_vars[v] = N_samp; // emerge from pilot
     }
@@ -1155,8 +1123,8 @@ ratios_target_to_solution_variables(const RealVector& avg_eval_ratios,
 
 
 void NonDMultilevBLUESampling::
-process_group_solution(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
-		       const SizetArray& N_G_alloc, SizetArray& delta_N_G)
+process_group_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
+			  const SizetArray& N_G_alloc, SizetArray& delta_N_G)
 {
   // compute sample increment for HF from current to target:
 
@@ -1185,40 +1153,48 @@ process_group_solution(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
     find_hf_sample_reference(N_G_actual, ref_group, ref_model_index);  break;
   }
 
+  // Recompute full estvar vectors for final solution since numerical solves
+  // target average over QoI (don't update vectors on every eval since last
+  // eval may differ from final optimal soln)
+  RealVector estvar;//, cd_vars; solution_to_design_vars(soln, cd_vars);
+  estimator_variances(/*cd_vars*/soln.solution_variables(), estvar);
+  soln.estimator_variances(estvar);
+
   if (ref_group == _NPOS) { // no online HF samples
-    projEstVarHF = std::numeric_limits<Real>::quiet_NaN(); // all QoI
+    Real q_nan = std::numeric_limits<Real>::quiet_NaN();
+    projEstVarHF = q_nan; // all QoI
     projNActualHF.size(numFunctions); // set to 0
-    soln.average_estimator_variance_ratio(
-      std::numeric_limits<Real>::quiet_NaN());
+    soln.initialize_estimator_variance_ratios(numFunctions, q_nan); 
   }
   else {
     // Note: estvar is nan for 1 HF sample since bessel corr divides by 0
     project_mc_estimator_variance(covGG[ref_group], ref_model_index,
 				  N_G_actual[ref_group], delta_N_G[ref_group],
 				  projEstVarHF, projNActualHF);
-    // Report ratio of averages rather that average of ratios (see notes in
-    // print_variance_reduction())
-    soln.average_estimator_variance_ratio(
-      soln.average_estimator_variance() / average(projEstVarHF));
+    // Recompute full estvar vectors for final solution since minimizers
+    // target average over QoI (don't store on every eval since last eval
+    // may differ from final optimal soln)
+    soln.initialize_estimator_variance_ratios(numFunctions);
+    for (size_t qoi=0; qoi<numFunctions; ++qoi)
+      soln.estimator_variance_ratio(estvar[qoi] / projEstVarHF[qoi], qoi); 
   }
+
+  soln.update_estimator_variance_metric(estVarMetricType,estVarMetricNormOrder);
 }
 
 
 void NonDMultilevBLUESampling::
-print_group_solution(std::ostream& s, const MFSolutionData& soln)
+print_group_allocations(std::ostream& s, const MFSolutionData& soln)
 {
   print_group_solution_variables(s, soln);
 
   if (maxFunctionEvals == SZ_MAX)
     s << "Estimator cost allocation = " << soln.equivalent_hf_allocation()
-      << "\nequivHFEvals = " << equivHFEvals
-      << " deltaEquivHF = " << deltaEquivHF << std::endl;
+      << "\nequivHFEvals = " << equivHFEvals << " deltaEquivHF = "
+      << deltaEquivHF << std::endl;
   else {
-    s << "Average estimator variance = " << soln.average_estimator_variance();
-    if (!zeros(projNActualHF))
-      s << "\nAverage ACV variance / average MC variance = "
-	<< soln.average_estimator_variance_ratio();
-    s << std::endl;
+    s << "Estimator variance metric = " << soln.estimator_variance_metric()
+      << std::endl;
   }
 }
 
@@ -1246,7 +1222,7 @@ finalize_counts(const Sizet2DArray& N_G_actual, const SizetArray& N_G_alloc)
 
   // For now, overlay group samples into model-resolution instance samples
   size_t g, m, num_models, q, mf, rl, m_index;
-  const Pecos::ActiveKey& active_key = iteratedModel.active_model_key();
+  const Pecos::ActiveKey& active_key = iteratedModel->active_model_key();
   for (g=0; g<numGroups; ++g) {
     const UShortArray& group_g = modelGroups[g];
     num_models = group_g.size();
@@ -1270,11 +1246,11 @@ finalize_counts(const Sizet2DArray& N_G_actual, const SizetArray& N_G_alloc)
 void NonDMultilevBLUESampling::
 blue_raw_moments(const IntRealMatrixArrayMap& sum_G_online,
 		 const IntRealSymMatrix2DArrayMap& sum_GG_online,
-		 const Sizet2DArray& N_G_online, RealMatrix& H_raw_mom)
+		 const Sizet2DArray& N_G_online)
 {
   // For ONLINE_PILOT where covar and sums use latest accumulations
 
-  RealVectorArray mu_hat;
+  RealMatrix H_raw_mom(4, numFunctions);  RealVectorArray mu_hat;
   for (int mom=1; mom<=4; ++mom) {
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Moment " << mom << " estimator:\n";
@@ -1294,6 +1270,10 @@ blue_raw_moments(const IntRealMatrixArrayMap& sum_G_online,
     for (size_t qoi=0; qoi<numFunctions; ++qoi)
       H_raw_mom(mom-1, qoi) = mu_hat[qoi][numApprox]; // last model
   }
+
+  convert_moments(H_raw_mom, momentStats);
+  compute_mean_confidence_intervals(momentStats,
+    final_solution_data().estimator_variances(), meanCIs);
 }
 
 
@@ -1303,20 +1283,21 @@ blue_raw_moments(const IntRealMatrixArrayMap& sum_G_offline,
 		 const Sizet2DArray& N_G_offline,
 		 const IntRealMatrixArrayMap& sum_G_online,
 		 const IntRealSymMatrix2DArrayMap& sum_GG_online,
-		 const Sizet2DArray& N_G_online, RealMatrix& H_raw_mom)
+		 const Sizet2DArray& N_G_online)
 {
   // For OFFLINE_PILOT where covar is offline and sums are online
 
   // Ambiguity arises when ML BLUE reuses covGG for moment solves (also occurs
   // with control variate beta in MFMC/ACV/GenACV).
-  // > approach above with offline pilot + online-only moment roll-up incurs issues
-  //   with sample reqmts for online covar (offline_N_lwr = 2).
+  // > approach above with offline pilot + online-only moment roll-up incurs
+  //   issues with sample reqmts for online covar (offline_N_lwr = 2).
   // > This can be avoided in approach below by mixing offline var/covar +
   //   online sample accumulations: var/covar are consistently offline/Oracle,
   //   but mu-hat solves are inconsistent in online/offline data.
   // Prefer to avoid additional padding in linear constraints for online opt.
 
-  RealVectorArray mu_hat;  size_t all_group = numGroups - 1;
+  RealMatrix H_raw_mom(4, numFunctions);  RealVectorArray mu_hat;
+  size_t all_group = numGroups - 1;
   for (int mom=1; mom<=4; ++mom) {
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Moment " << mom << " estimator:\n";
@@ -1357,12 +1338,16 @@ blue_raw_moments(const IntRealMatrixArrayMap& sum_G_offline,
     for (size_t qoi=0; qoi<numFunctions; ++qoi)
       H_raw_mom(mom-1, qoi) = mu_hat[qoi][numApprox]; // last model
   }
+
+  convert_moments(H_raw_mom, momentStats);
+  compute_mean_confidence_intervals(momentStats,
+    final_solution_data().estimator_variances(), meanCIs);
 }
 
 
 void NonDMultilevBLUESampling::
 print_multigroup_summary(std::ostream& s, const String& summary_type,
-			 bool projections)
+			 bool projections) const
 {
   size_t wpp7 = write_precision + 7, g, num_groups = NGroupAlloc.size(),
     m, num_models;
@@ -1393,55 +1378,63 @@ print_multigroup_summary(std::ostream& s, const String& summary_type,
 }
 
 
-void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s)
+void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s) const
 {
-  //print_estimator_performance(s, blueSolnData);
-
+  const RealVector&  mlblue_est_var = blueSolnData.estimator_variances();
+  const RealVector&  mlblue_ratios  = blueSolnData.estimator_variance_ratios();
+  const StringArray& labels = ModelUtils::response_labels(*iteratedModel->truth_model());
+  Real mlblue_est_var_q, mlblue_ratio_q, proj_equiv_estvar_q;
+  size_t qoi, wpp7 = write_precision+7,
+    proj_equiv_hf = (size_t)std::floor(equivHFEvals + deltaEquivHF + .5);
   String method = " ML BLUE",
+     pilot_type = (pilotGroupSampling == SHARED_PILOT) ? "share" : "indep",
            type = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
 		   pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
                 ? "Projected" : "   Online";
-  // Ordering of averages:
-  // > recomputing final MC estvar, rather than dividing the two averages, gives
-  //   a result that is consistent with average(estVarIter0) when N* = pilot.
-  // > The ACV ratio then differs from final ACV / final MC (due to recovering
-  //   avgEstVar from the optimizer obj fn), but difference is usually small.
-  RealVector proj_equiv_estvar;
+  bool online = (pilotMgmtMode == ONLINE_PILOT ||
+		 pilotMgmtMode == ONLINE_PILOT_PROJECTION),
+    mc_only_ref = !zeros(projNActualHF);
+
   // search for the most refined covGG[g][qoi](H,H)
-  size_t ref_group, ref_model_index;
+  size_t ref_group, ref_model_index, all_group = numGroups - 1;
   switch (pilotMgmtMode) {
   case OFFLINE_PILOT:  case OFFLINE_PILOT_PROJECTION:
     ref_group = numGroups - 1;  ref_model_index = numApprox;             break;
   default: // define online ref from group with max HF samples (best varH)
     find_hf_sample_reference(NGroupActual, ref_group, ref_model_index);  break;
   }
+  // As described in process_group_allocations(), we have two MC references:
+  // projected HF-only samples and projected equivalent HF samples.
+  RealVector proj_equiv_estvar;
   project_mc_estimator_variance(covGG[ref_group], ref_model_index, equivHFEvals,
                                 deltaEquivHF, proj_equiv_estvar);
-  Real avg_proj_equiv_estvar = average(proj_equiv_estvar),
-       avg_estvar = blueSolnData.average_estimator_variance();
-  bool mc_only_ref = !zeros(projNActualHF);
-  // As described in process_group_solution(), we have two MC references:
-  // projected HF-only samples and projected equivalent HF samples.
-  size_t wpp7 = write_precision + 7;
+
   s << "<<<<< Variance for mean estimator:\n";
-  if (pilotMgmtMode == ONLINE_PILOT || pilotMgmtMode == ONLINE_PILOT_PROJECTION)
-    s << "    Initial pilot (" << std::setw(5)
-      << (size_t)std::floor(average(pilotSamples) + .5) << " ML samples):  "
-      << std::setw(wpp7) << average(estVarIter0) << '\n';
-  if (mc_only_ref)
-    s << "  " << type << " MC    (" << std::setw(5)
-      << (size_t)std::floor(average(projNActualHF) + .5) << " HF samples):  "
-      << std::setw(wpp7) << average(projEstVarHF) << '\n';
-  s << "  " << type << method << " (sample profile):  "
-    << std::setw(wpp7) << avg_estvar << '\n';
-  if (mc_only_ref)
-    s << "  " << type << method << " ratio  (1 - R^2):  " << std::setw(wpp7)
-      << blueSolnData.average_estimator_variance_ratio() << '\n';
-  s << " Equivalent MC    (" << std::setw(5)
-    << (size_t)std::floor(equivHFEvals + deltaEquivHF + .5) << " HF samples):  "
-    << std::setw(wpp7) << avg_proj_equiv_estvar
-    << "\n Equivalent" << method << " ratio:             "
-    << std::setw(wpp7) << avg_estvar / avg_proj_equiv_estvar << '\n';
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    s << std::setw(14) << labels[qoi] << ":\n"; // mirror print_moments()
+
+    mlblue_est_var_q    = mlblue_est_var[qoi];
+    mlblue_ratio_q      = mlblue_ratios[qoi];
+    proj_equiv_estvar_q = proj_equiv_estvar[qoi];
+
+    if (online)
+      s << "    Initial pilot (" << std::setw(3) << pilotSamples[all_group]
+	<< " " << pilot_type << " samples):  " << std::setw(wpp7)
+	<< estVarIter0[qoi] << '\n';
+    if (mc_only_ref)
+      s << "  " << type << " MC    (" << std::setw(6) << projNActualHF[qoi]
+	<< " HF samples):  " << std::setw(wpp7) << projEstVarHF[qoi] << '\n';
+    s << "  " << type << method << "  (sample profile):  "
+      << std::setw(wpp7) << mlblue_est_var_q << '\n';
+    if (mc_only_ref && valid_variance(mlblue_ratio_q))
+      s << "  " << type << method << " ratio   (1 - R^2):  "
+	<< std::setw(wpp7) << mlblue_ratio_q << '\n';
+    s << " Equivalent MC    (" << std::setw(6) << proj_equiv_hf
+      << " HF samples):  " << std::setw(wpp7) << proj_equiv_estvar_q << '\n';
+    if (valid_variance(mlblue_est_var_q) && valid_variance(proj_equiv_estvar_q))
+      s << " Equivalent" << method << " ratio:              " << std::setw(wpp7)
+	<< mlblue_est_var_q / proj_equiv_estvar_q << '\n';
+  }
 }
 
 
@@ -1449,7 +1442,7 @@ void NonDMultilevBLUESampling::
 project_mc_estimator_variance(const RealSymMatrixArray& cov_GG_g,
 			      size_t H_index, const SizetArray& N_H_actual,
 			      size_t delta_N_H, RealVector& proj_est_var,
-			      SizetVector& proj_N_H)
+			      SizetVector& proj_N_H) const
 {
   // Defines projected estvar for use as a consistent reference
   proj_est_var.sizeUninitialized(numFunctions);
@@ -1466,7 +1459,7 @@ project_mc_estimator_variance(const RealSymMatrixArray& cov_GG_g,
 void NonDMultilevBLUESampling::
 project_mc_estimator_variance(const RealSymMatrixArray& cov_GG_g,
 			      size_t H_index, Real N_H_actual, Real delta_N_H,
-			      RealVector& proj_est_var)
+			      RealVector& proj_est_var) const
 {
   // Defines projected estvar for use as a consistent reference
   proj_est_var.sizeUninitialized(numFunctions);
@@ -1957,9 +1950,9 @@ compute_mu_hat(const RealSymMatrix2DArray& cov_GG_inv,
 
 
 void NonDMultilevBLUESampling::
-estimator_variance(const RealVector& cd_vars, RealVector& estvar)
+estimator_variances(const RealVector& cd_vars, RealVector& est_var)
 {
-  if (estvar.empty()) estvar.sizeUninitialized(numFunctions);
+  if (est_var.empty()) est_var.sizeUninitialized(numFunctions);
 
   // This approach leverages both the solution refinement in solve() and
   // equilibration during factorization (inverting Psi in place can only
@@ -1985,7 +1978,7 @@ estimator_variance(const RealVector& cd_vars, RealVector& estvar)
     int code = spd_solver.solve();
     if (code) {
       Cerr << "Error: serial dense solver failure (LAPACK error code " << code
-	   << ") in ML BLUE estimator_variance()." << std::endl;
+	   << ") in ML BLUE estimator_variances()." << std::endl;
       abort_handler(METHOD_ERROR);
     }
     estvar[q] = estvar_q[numApprox];
@@ -2001,22 +1994,22 @@ estimator_variance(const RealVector& cd_vars, RealVector& estvar)
   for (q=0; q<numFunctions; ++q) {
     copy_data(Psi[q], A); // RealSymMatrix to RealMatrix
     pseudo_inverse(A, A_inv, rcond);
-    estvar[q] = A_inv(numApprox,numApprox);
+    est_var[q] = A_inv(numApprox,numApprox);
     if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Pseudo-inverse solve for estvar for QoI " << q << " = "
-	   << estvar[q] << std::endl;
+      Cout << "Pseudo-inverse solve for est_var for QoI " << q << " = "
+	   << est_var[q] << std::endl;
   }
 
   // Revisit this flow:
   // should be able to equilibrate and factor each Psi once within a SpdSolver
-  // that persists, then solve to refined solution for each estvar and mu-hat.
+  // that persists, then solve to refined solution for each est_var and mu-hat.
 
   /* This approach suffers from poor performance, either from conditioning
      issues or misunderstood Teuchos solver behavior.
   RealSymMatrixArray Psi_inv;
   compute_Psi_inverse(covGGinv, cd_vars, Psi_inv);
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    estvar[qoi] = Psi_inv[qoi](numApprox,numApprox); // e_l^T Psi-inverse e_l
+    est_var[qoi] = Psi_inv[qoi](numApprox,numApprox); // e_l^T Psi-inverse e_l
   */
 }
 

@@ -32,7 +32,7 @@ MetaIterator::MetaIterator(ProblemDescDB& problem_db):
 }
 
 
-MetaIterator::MetaIterator(ProblemDescDB& problem_db, Model& model):
+MetaIterator::MetaIterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   Iterator(BaseConstructor(), problem_db),
   iterSched(problem_db.parallel_library(),
 	    false, // peers can manage local jobs (initial extracted from DB)
@@ -75,11 +75,11 @@ check_model(const String& method_ptr, const String& model_ptr)
     size_t restore_index = probDescDB.get_db_method_node(); // for restoration
     probDescDB.set_db_method_node(method_ptr);
     if (probDescDB.get_string("method.model_pointer") !=
-	iteratedModel.model_id())
+	iteratedModel->model_id())
       warn_flag = true;
     probDescDB.set_db_method_node(restore_index);           // restore
   }
-  else if (!model_ptr.empty() && model_ptr != iteratedModel.model_id())
+  else if (!model_ptr.empty() && model_ptr != iteratedModel->model_id())
     warn_flag = true;
 
   if (warn_flag)
@@ -91,7 +91,7 @@ check_model(const String& method_ptr, const String& model_ptr)
 
 void MetaIterator::
 allocate_by_pointer(const String& method_ptr, Iterator& the_iterator,
-		    Model& the_model)
+		    std::shared_ptr<Model>& the_model)
 {
   // store/restore the method/model indices separately (the current
   // state of the iterator/model DB nodes may not be synched due to
@@ -100,7 +100,7 @@ allocate_by_pointer(const String& method_ptr, Iterator& the_iterator,
          model_index  = probDescDB.get_db_model_node(); // for restoration
   probDescDB.set_db_list_nodes(method_ptr);
 
-  if (the_model.is_null())
+  if (!the_model)
     the_model = probDescDB.get_model();
   iterSched.init_iterator(probDescDB, the_iterator, the_model);
 
@@ -111,7 +111,7 @@ allocate_by_pointer(const String& method_ptr, Iterator& the_iterator,
 
 void MetaIterator::
 allocate_by_name(const String& method_string, const String& model_ptr,
-		 Iterator& the_iterator, Model& the_model)
+		 Iterator& the_iterator, std::shared_ptr<Model>& the_model)
 {
   // model instantiation is DB-based, iterator instantiation is not
 
@@ -124,7 +124,7 @@ allocate_by_name(const String& method_string, const String& model_ptr,
     probDescDB.set_db_model_nodes(model_ptr);
   //}
 
-  if (the_model.is_null())
+  if (!the_model)
     the_model = probDescDB.get_model();
   iterSched.init_iterator(probDescDB, method_string, the_iterator, the_model);
 
@@ -135,7 +135,7 @@ allocate_by_name(const String& method_string, const String& model_ptr,
 
 IntIntPair MetaIterator::
 estimate_by_pointer(const String& method_ptr, Iterator& the_iterator,
-		    Model& the_model)
+		    std::shared_ptr<Model>& the_model)
 {
   // store/restore the method/model indices separately (the current
   // state of the iterator/model DB nodes may not be synched due to
@@ -144,7 +144,7 @@ estimate_by_pointer(const String& method_ptr, Iterator& the_iterator,
          model_index  = probDescDB.get_db_model_node(); // for restoration
   probDescDB.set_db_list_nodes(method_ptr);
 
-  if (the_model.is_null())
+  if (!the_model)
     the_model = probDescDB.get_model();
   IntIntPair ppi_pr = iterSched.configure(probDescDB, the_iterator, the_model);
 
@@ -156,7 +156,7 @@ estimate_by_pointer(const String& method_ptr, Iterator& the_iterator,
 
 IntIntPair MetaIterator::
 estimate_by_name(const String& method_string, const String& model_ptr,
-		 Iterator& the_iterator, Model& the_model)
+		 Iterator& the_iterator, std::shared_ptr<Model>& the_model)
 {
   // model instantiation is DB-based, iterator instantiation is not
 
@@ -169,7 +169,7 @@ estimate_by_name(const String& method_string, const String& model_ptr,
     probDescDB.set_db_model_nodes(model_ptr);
   //}
 
-  if (the_model.is_null())
+  if (!the_model)
     the_model = probDescDB.get_model();
 
   IntIntPair ppi_pr

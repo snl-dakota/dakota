@@ -32,13 +32,13 @@ namespace Dakota {
       OptDartsTraits() { }
 
       /// destructor
-      virtual ~OptDartsTraits() { }
+      ~OptDartsTraits() override { }
 
       /// A temporary query used in the refactor
-      virtual bool is_derived() { return true; }
+      bool is_derived() override { return true; }
 
       /// Return the flag indicating whether method supports continuous variables
-      bool supports_continuous_variables() { return true; }
+      bool supports_continuous_variables() override { return true; }
   };
 
 
@@ -50,13 +50,13 @@ namespace Dakota {
 	  
      public:
        /// Constructor
-       OptDartsOptimizer(ProblemDescDB& problem_db, Model& model);
+       OptDartsOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model>);
 
        /// alternate constructor for Iterator instantiations by name
-       OptDartsOptimizer(Model& model);
+       OptDartsOptimizer(std::shared_ptr<Model>);
 	       
        /// Destructor
-       ~OptDartsOptimizer();
+       ~OptDartsOptimizer() override;
 	       
 	       
          //
@@ -64,7 +64,7 @@ namespace Dakota {
          //
 	       
          /// Calls the OptDarts algorithm
-         void core_run();
+         void core_run() override;
          
 	  
      private:

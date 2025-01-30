@@ -48,7 +48,7 @@ public:
   /// alternate constructor
   SurrogatesBaseApprox(const SharedApproxData& shared_data);
   /// destructor
-  ~SurrogatesBaseApprox() { }
+  ~SurrogatesBaseApprox() override { }
 
   // diagnostics: all documented at base class
 
@@ -96,7 +96,7 @@ protected:
   void import_model(const ProblemDescDB& problem_db);
 
   /// validate imported labels and initialize map if needed
-  void map_variable_labels(const Variables& vars);
+  void map_variable_labels(const Variables& vars) override;
 
   /// extract active or all view as vector, mapping if needed for import
   RealVector map_eval_vars(const Variables& vars);

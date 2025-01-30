@@ -29,7 +29,7 @@ namespace Dakota {
     and probDescDB can be queried for settings from the method
     specification.  It is not currently used, as there is not a
     separate sparse_grid method specification. */
-NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
+NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDIntegration(problem_db, model),  
   ssgLevelSpec(probDescDB.get_ushort("method.nond.sparse_grid_level"))
 {
@@ -53,7 +53,7 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
   //check_variables(x_dist.random_variables());
   // TO DO: create a ProbabilityTransformModel, if needed
   const Pecos::MultivariateDistribution& u_dist
-    = model.multivariate_distribution();
+    = model->multivariate_distribution();
 
   // define ExpansionConfigOptions
   short refine_metric = (refine_control) ? Pecos::COVARIANCE_METRIC :
@@ -61,7 +61,7 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
   short refine_stats  = (refine_control) ? Pecos::ACTIVE_EXPANSION_STATS :
     Pecos::NO_EXPANSION_STATS;
   Pecos::ExpansionConfigOptions ec_options(ssgDriverType, exp_basis_type,
-    model.correction_type(),
+    model->correction_type(),
     probDescDB.get_short("method.nond.multilevel_discrepancy_emulation"),
     outputLevel, probDescDB.get_bool("method.variance_based_decomp"),
     probDescDB.get_ushort("method.nond.vbd_interaction_order"), //refine_type,
@@ -137,7 +137,7 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, Model& model):
 /** This alternate constructor is used for on-the-fly generation and
     evaluation of sparse grids within PCE and SC. */
 NonDSparseGrid::
-NonDSparseGrid(Model& model, unsigned short ssg_level,
+NonDSparseGrid(std::shared_ptr<Model> model, unsigned short ssg_level,
 	       const RealVector& dim_pref, short exp_coeffs_soln_approach,
 	       short driver_mode, short growth_rate, short refine_control,
 	       bool track_uniq_prod_wts): 
@@ -191,7 +191,7 @@ initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
   // but it is still needed for certain construct time initializations
   // (e.g., max concurrency below):
   numIntDriver.initialize_grid_parameters(
-    iteratedModel.multivariate_distribution()); // 1D pts/wts use level
+    iteratedModel->multivariate_distribution()); // 1D pts/wts use level
 
   maxEvalConcurrency *= ssgDriver->grid_size(); // requires grid parameters
 }
@@ -201,13 +201,13 @@ NonDSparseGrid::~NonDSparseGrid()
 { }
 
 
-void NonDSparseGrid::get_parameter_sets(Model& model)
+void NonDSparseGrid::get_parameter_sets(std::shared_ptr<Model> model)
 {
   // capture any run-time updates to distribution parameters
   // > Note: top-level Iterator + NestedModel may change params between
   //   initialize_grid() and 1st execution, so always perform this step
   if (subIteratorFlag) //&& numIntegrations)
-    ssgDriver->initialize_grid_parameters(model.multivariate_distribution());
+    ssgDriver->initialize_grid_parameters(model->multivariate_distribution());
 
   // Precompute quadrature rules (e.g., by defining maximal order for
   // NumGenOrthogPolynomial::solve_eigenproblem()):

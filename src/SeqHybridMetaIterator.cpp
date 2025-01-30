@@ -61,7 +61,7 @@ SeqHybridMetaIterator::SeqHybridMetaIterator(ProblemDescDB& problem_db):
 
 
 SeqHybridMetaIterator::
-SeqHybridMetaIterator(ProblemDescDB& problem_db, Model& model):
+SeqHybridMetaIterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   MetaIterator(problem_db, model), singlePassedModel(true)
   //seqHybridType(problem_db.get_string("method.hybrid.type")),
   //progressThreshold(problem_db.get_real("method.hybrid.progress_threshold"))
@@ -88,7 +88,7 @@ SeqHybridMetaIterator(ProblemDescDB& problem_db, Model& model):
     num_iterators = method_names.size();
     // define an array of strings to use for set_db_model_nodes()
     if (model_ptrs.empty()) // assign array using id from iteratedModel
-      modelStrings.assign(num_iterators, iteratedModel.model_id());
+      modelStrings.assign(num_iterators, iteratedModel->model_id());
     else {
       size_t num_models = model_ptrs.size();
       for (i=0; i<num_models; ++i)
@@ -126,7 +126,7 @@ void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   for (i=0; i<num_iterators; ++i) {
     // compute min/max processors per iterator for each method
     Iterator& the_iterator = selectedIterators[i];
-    Model& the_model = (singlePassedModel) ? iteratedModel : selectedModels[i];
+    auto& the_model = (singlePassedModel) ? iteratedModel : selectedModels[i];
     ppi_pr_i = (lightwtMethodCtor) ?
       estimate_by_name(methodStrings[i], modelStrings[i], the_iterator,
 		       the_model) :
@@ -207,7 +207,7 @@ void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 
   // Instantiate all Models and Iterators
   for (i=0; i<num_iterators; ++i) {
-    Model& the_model = (singlePassedModel) ? iteratedModel : selectedModels[i];
+    auto& the_model = (singlePassedModel) ? iteratedModel : selectedModels[i];
     if (lightwtMethodCtor)
       allocate_by_name(methodStrings[i], modelStrings[i],
 		       selectedIterators[i], the_model);
@@ -285,7 +285,7 @@ void SeqHybridMetaIterator::run_sequential()
 
     // each of these is safe for all processors
     Iterator& curr_iterator = selectedIterators[seqCount];
-    Model&    curr_model
+    auto    curr_model
       = (singlePassedModel) ? iteratedModel : selectedModels[seqCount];
  
     if (summaryOutputFlag)
@@ -352,33 +352,33 @@ void SeqHybridMetaIterator::run_sequential()
       // Define buffer lengths for message passing
       // -----------------------------------------
       if (iterSched.messagePass && rank0) {
-	int params_msg_len, results_msg_len;
-	// define params_msg_len
-	if (iterSched.iteratorScheduling == MASTER_SCHEDULING) {
-	  MPIPackBuffer params_buffer;
-	  pack_parameters_buffer(params_buffer, 0);
-	  params_msg_len = params_buffer.size();
-	}
-	// define results_msg_len
-	MPIPackBuffer results_buffer;
-	// pack_results_buffer() is not reliable for several reasons:
-	// > for seqCount == 0, prpResults contains empty envelopes
-	// > for seqCount >= 1, the previous state of prpResults may not
-	//   accurately reflect the future state due to the presence of some
-	//   multi-point iterators which do not define the results array.
-	//pack_results_buffer(results_buffer, 0);
-	// The following may be conservative in some cases (e.g., if the results
-	// arrays will be empty), but should be reliable.
-	ParamResponsePair prp_star(curr_iterator.variables_results(),
-          curr_model.interface_id(), curr_iterator.response_results());//shallow
-	// Note: max size_t removed from Iterator::numFinalSolutions in ctor
-	size_t prp_return_size = curr_iterator.num_final_solutions();
-	results_buffer << prp_return_size;
-	for (size_t i=0; i<prp_return_size; ++i)
-	  results_buffer << prp_star;
-	results_msg_len = results_buffer.size();
-	// publish lengths to IteratorScheduler
-	iterSched.iterator_message_lengths(params_msg_len, results_msg_len);
+        int params_msg_len, results_msg_len;
+        // define params_msg_len
+        if (iterSched.iteratorScheduling == MASTER_SCHEDULING) {
+          MPIPackBuffer params_buffer;
+          pack_parameters_buffer(params_buffer, 0);
+          params_msg_len = params_buffer.size();
+        }
+        // define results_msg_len
+        MPIPackBuffer results_buffer;
+        // pack_results_buffer() is not reliable for several reasons:
+        // > for seqCount == 0, prpResults contains empty envelopes
+        // > for seqCount >= 1, the previous state of prpResults may not
+        //   accurately reflect the future state due to the presence of some
+        //   multi-point iterators which do not define the results array.
+        //pack_results_buffer(results_buffer, 0);
+        // The following may be conservative in some cases (e.g., if the results
+        // arrays will be empty), but should be reliable.
+        ParamResponsePair prp_star(curr_iterator.variables_results(),
+                curr_model->interface_id(), curr_iterator.response_results());//shallow
+        // Note: max size_t removed from Iterator::numFinalSolutions in ctor
+        size_t prp_return_size = curr_iterator.num_final_solutions();
+        results_buffer << prp_return_size;
+        for (size_t i=0; i<prp_return_size; ++i)
+          results_buffer << prp_star;
+        results_msg_len = results_buffer.size();
+        // publish lengths to IteratorScheduler
+        iterSched.iterator_message_lengths(params_msg_len, results_msg_len);
       }
     }
 
@@ -484,11 +484,11 @@ void SeqHybridMetaIterator::run_sequential_adaptive()
       // Get best pt. from completed iteration.
       Variables vars_star = curr_iterator.variables_results();
       // Set best pt. as starting point for subsequent iterator
-      selectedModels[seqCount+1].active_variables(vars_star);
+      selectedModels[seqCount+1]->current_variables().active_variables(vars_star);
     }
 
     // Send the termination message to the servers for this iterator/model
-    selectedModels[seqCount].stop_servers();
+    selectedModels[seqCount]->stop_servers();
   }
 }
 
@@ -497,7 +497,7 @@ void SeqHybridMetaIterator::
 update_local_results(PRPArray& prp_results, int job_id)
 {
   Iterator& curr_iterator = selectedIterators[seqCount];
-  Model&    curr_model    = (selectedModels.empty()) ?
+  auto    curr_model    = (selectedModels.empty()) ?
     iteratedModel : selectedModels[seqCount];
   // Analyzers do not currently support returns_multiple_points() since the
   // distinction between Hybrid sampling and Multistart sampling is that
@@ -518,7 +518,7 @@ update_local_results(PRPArray& prp_results, int job_id)
       const Response&  resp = (num_resp_results) ? resp_results[i] : dummy_resp;
       // need a deep copy for case where multiple instances of
       // best{Variables,Response}Array will be assimilated
-      prp_results[i] = ParamResponsePair(vars, curr_model.interface_id(),
+      prp_results[i] = ParamResponsePair(vars, curr_model->interface_id(),
 					 resp, job_id);
     }
   }
@@ -527,7 +527,7 @@ update_local_results(PRPArray& prp_results, int job_id)
     // best{Variables,Response}Array.front() will be assimilated
     prp_results.resize(1);
     prp_results[0] = ParamResponsePair(curr_iterator.variables_results(),
-				       curr_model.interface_id(),
+				       curr_model->interface_id(),
 				       curr_iterator.response_results(),job_id);
   }
 }

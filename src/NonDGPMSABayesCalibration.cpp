@@ -112,7 +112,7 @@ NonDGPMSABayesCalibration* NonDGPMSABayesCalibration::nonDGPMSAInstance(NULL);
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDGPMSABayesCalibration::
-NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
+NonDGPMSABayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDQUESOBayesCalibration(problem_db, model),
   buildSamples(probDescDB.get_int("method.build_samples")),
   approxImportFile(probDescDB.get_string("method.import_build_points_file")),
@@ -135,7 +135,7 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
 
   // TODO: Do we want to allow a single field group to allow the full
   // multi-variate case?
-  const SharedResponseData& srd = model.current_response().shared_data();
+  const SharedResponseData& srd = model->current_response().shared_data();
   if (srd.num_field_response_groups() > 0 && outputLevel >= NORMAL_OUTPUT)
     Cout << "\nWarning: GPMSA does not yet treat field_responses; they will be "
 	 << "treated as a\n         single multivariate response set."
@@ -622,7 +622,7 @@ void NonDGPMSABayesCalibration::cache_acceptance_chain()
       copy_gsl_partial(qv, 0, u_rv);
       Real* acc_chain_i = acceptanceChain[i];
       RealVector x_rv(Teuchos::View, acc_chain_i, numContinuousVars);
-      mcmcModel.trans_U_to_X(u_rv, x_rv);
+      mcmcModel->trans_U_to_X(u_rv, x_rv);
       for (int j=numContinuousVars; j<num_params; ++j)
 	acc_chain_i[j] = qv[j]; // trailing hyperparams are not transformed
     }

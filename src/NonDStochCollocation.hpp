@@ -34,22 +34,22 @@ public:
   //
 
   /// standard constructor
-  NonDStochCollocation(ProblemDescDB& problem_db, Model& model);
+  NonDStochCollocation(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor
-  NonDStochCollocation(Model& model, short exp_coeffs_approach,
+  NonDStochCollocation(std::shared_ptr<Model> model, short exp_coeffs_approach,
 		       unsigned short num_int, const RealVector& dim_pref,
 		       short u_space_type, short refine_type,
 		       short refine_control, short covar_control,
 		       short rule_nest, short rule_growth,
 		       bool piecewise_basis, bool use_derivs);
   /// destructor
-  ~NonDStochCollocation();
+  ~NonDStochCollocation() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
 
 protected:
 
@@ -61,9 +61,9 @@ protected:
   /// (method_name is not necessary, rather it is just a convenient overload
   /// allowing the derived ML SC class to bypass the standard SC ctor)
   NonDStochCollocation(unsigned short method_name, ProblemDescDB& problem_db,
-		       Model& model);
+		       std::shared_ptr<Model> model);
   /// short-cut ctor allowing derived class to replace logic in base class ctor
-  NonDStochCollocation(unsigned short method_name, Model& model,
+  NonDStochCollocation(unsigned short method_name, std::shared_ptr<Model> model,
 		       short exp_coeffs_approach, const RealVector& dim_pref,
 		       short refine_type, short refine_control,
 		       short covar_control, short ml_alloc_control,
@@ -74,14 +74,14 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void resolve_inputs(short& u_space_type, short& data_order);
-  void initialize_u_space_model();
+  void resolve_inputs(short& u_space_type, short& data_order) override;
+  void initialize_u_space_model() override;
 
   //void initialize_expansion();
   //void compute_expansion();
 
-  Real compute_covariance_metric(bool revert, bool print_metric);
-  Real compute_level_mappings_metric(bool revert, bool print_metric);
+  Real compute_covariance_metric(bool revert, bool print_metric) override;
+  Real compute_level_mappings_metric(bool revert, bool print_metric) override;
   //Real compute_final_statistics_metric(bool revert, bool print_metric);
 
   //void compute_statistics(short results_state = FINAL_RESULTS);
@@ -110,11 +110,11 @@ protected:
   /// configure u_space_sampler based on numerical integration specification
   void config_integration(unsigned short quad_order, unsigned short ssg_level,
 			  const RealVector& dim_pref, short u_space_type, 
-			  Iterator& u_space_sampler, Model& g_u_model);
+			  Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model);
   /// configure u_space_sampler based on expansion coefficients approach
   void config_integration(short exp_coeffs_approach, unsigned short num_int,
 			  const RealVector& dim_pref, Iterator& u_space_sampler,
-			  Model& g_u_model);
+			  std::shared_ptr<Model> g_u_model);
   /// define approx_type based on expansion settings
   void config_approximation_type(String& approx_type);
 

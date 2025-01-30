@@ -96,7 +96,7 @@ class GaussianProcess : public Surrogate {
                   const std::string& param_list_yaml_filename);
 
   /// Default destructor
-  ~GaussianProcess();
+  ~GaussianProcess() override;
 
   /* Public utility functions */
 

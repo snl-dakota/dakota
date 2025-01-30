@@ -53,7 +53,7 @@ public:
   //
 
   /// constructor
-  NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model);
+  NonDGPMSABayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
   ~NonDGPMSABayesCalibration();
 

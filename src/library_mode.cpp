@@ -15,6 +15,7 @@
 #include "ProblemDescDB.hpp"
 #include "LibraryEnvironment.hpp"
 #include "DakotaModel.hpp"
+#include "model_utils.hpp"
 #include "DakotaInterface.hpp"
 #include "PluginSerialDirectApplicInterface.hpp"
 #include "PluginParallelDirectApplicInterface.hpp"
@@ -361,16 +362,16 @@ void run_dakota_mixed(const char* dakota_input_file, bool mpirun_flag)
   Dakota::ModelList models
     = env.filtered_model_list("simulation", "direct", "plugin_text_book");
   Dakota::ModelLIter ml_iter;
-  for (ml_iter = models.begin(); ml_iter != models.end(); ml_iter++) {
+  for (auto& m : models) {
     const Dakota::StringArray& drivers
-      = ml_iter->derived_interface().analysis_drivers();
+      = m->derived_interface().analysis_drivers();
     if (drivers.size() == 1 && drivers[0] == "plugin_text_book") {
       // Change initial guess:
       //ml_iter->continuous_variables(T);
       // Change a lower bound:
-      Dakota::RealVector lb(ml_iter->continuous_lower_bounds()); // copy
+      Dakota::RealVector lb(Dakota::ModelUtils::continuous_lower_bounds(*m)); // copy
       lb[0] += 0.1;
-      ml_iter->continuous_lower_bounds(lb);
+      Dakota::ModelUtils::continuous_lower_bounds(*m, lb);
     }
   }
 
@@ -425,11 +426,11 @@ void parallel_interface_plugin(Dakota::LibraryEnvironment& env)
   Dakota::ProblemDescDB& problem_db = env.problem_description_db();
   Dakota::ModelLIter ml_iter;
   size_t model_index = problem_db.get_db_model_node(); // for restoration
-  for (ml_iter = filt_models.begin(); ml_iter != filt_models.end(); ++ml_iter) {
+  for (auto& fm : filt_models) {
     // set DB nodes to input specification for this Model
-    problem_db.set_db_model_nodes(ml_iter->model_id());
+    problem_db.set_db_model_nodes(fm->model_id());
 
-    Dakota::Interface& model_interface = ml_iter->derived_interface();
+    Dakota::Interface& model_interface = fm->derived_interface();
 
     // Parallel case: plug in derived Interface object with an analysisComm.
     // Note: retrieval and passing of analysisComm is necessary only if
@@ -437,7 +438,7 @@ void parallel_interface_plugin(Dakota::LibraryEnvironment& env)
 
     // retrieve the currently active analysisComm from the Model.  In the most
     // general case, need an array of Comms to cover all Model configurations.
-    const MPI_Comm& analysis_comm = ml_iter->analysis_comm();
+    const MPI_Comm& analysis_comm = fm->analysis_comm();
 
     // don't increment ref count since no other envelope shares this letter
     model_interface.assign_rep(std::make_shared<SIM::ParallelDirectApplicInterface>

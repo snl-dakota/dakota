@@ -21,7 +21,7 @@
 
 #include <nomad.hpp>
 #include "NomadOptimizer.hpp"
-
+#include "model_utils.hpp"
 
 using namespace std;
 
@@ -29,7 +29,7 @@ namespace Dakota {
 
 // Main Class: NomadOptimizer
 
-NomadOptimizer::NomadOptimizer(ProblemDescDB& problem_db, Model& model):
+NomadOptimizer::NomadOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new NomadTraits()))
 {     
   // Set initial mesh size
@@ -97,7 +97,7 @@ NomadOptimizer::NomadOptimizer(ProblemDescDB& problem_db, Model& model):
   useSurrogate = probDescDB.get_string("method.mesh_adaptive_search.use_surrogate");
 }
 
-NomadOptimizer::NomadOptimizer(Model& model):
+NomadOptimizer::NomadOptimizer(std::shared_ptr<Model> model):
   Optimizer(MESH_ADAPTIVE_SEARCH, model, std::shared_ptr<TraitsBase>(new NomadTraits()))
 {
 }
@@ -119,7 +119,7 @@ void NomadOptimizer::core_run()
 
   // Verify that user has requested surrogate model construction
   // when use_surrogate is defined.
-  if ((iteratedModel.model_type() != "surrogate") && 
+  if ((iteratedModel->model_type() != "surrogate") && 
     ((useSurrogate.compare("inform_search") == 0) || (useSurrogate.compare("optimize") == 0))) {
   Cerr << "Error: Specified use_surrogate without requesting surrogate model "
     << "construction." << std::endl;
@@ -133,8 +133,8 @@ void NomadOptimizer::core_run()
      
   // If model is a surrogate, build it. Subsequently, tell NOMAD to make
   // use of it if use_surrogate is set to inform_search
-  if (iteratedModel.model_type() == "surrogate") {
-    iteratedModel.build_approximation();
+  if (iteratedModel->model_type() == "surrogate") {
+    iteratedModel->build_approximation();
 
     if (useSurrogate.compare("inform_search") == 0){
     p.set_HAS_SGTE(true);
@@ -158,7 +158,7 @@ void NomadOptimizer::core_run()
   numTotalVars = numContinuousVars + numDiscreteIntVars 
                + numDiscreteRealVars + numDiscreteStringVars;
   p.set_DIMENSION(this->numTotalVars);
-  this->load_parameters(iteratedModel, p);
+  this->load_parameters(*iteratedModel, p);
      
   // Set up response types
   vector<NOMAD::bb_output_type> 
@@ -223,14 +223,14 @@ void NomadOptimizer::core_run()
   p.set_HISTORY_FILE( historyFile );
 
   // Allow as many simultaneous evaluations as NOMAD wishes and let Dakota schedule
-  if (iteratedModel.asynch_flag())
+  if (iteratedModel->asynch_flag())
     p.set_BB_MAX_BLOCK_SIZE(INT_MAX);
 
   // Check the parameters -- Required by NOMAD for execution
   p.check();
      
   // Create Evaluator object and communicate constraint mapping and surrogate usage.
-  NomadOptimizer::Evaluator ev (p, iteratedModel);
+  NomadOptimizer::Evaluator ev (p, *iteratedModel);
 
 //PDH: May be able to get rid of setting the constraint map once we
 //have something in place that everyone can access.
@@ -275,10 +275,10 @@ void NomadOptimizer::core_run()
   IntVector  discIntVars(numDiscreteIntVars);
   RealVector discRealVars(numDiscreteRealVars);
 
-  const BitArray& int_set_bits = iteratedModel.discrete_int_sets();
-  const IntSetArray& set_int_vars = iteratedModel.discrete_set_int_values();
-  const RealSetArray& set_real_vars = iteratedModel.discrete_set_real_values();
-  const StringSetArray& set_string_vars = iteratedModel.discrete_set_string_values();
+  const BitArray& int_set_bits = ModelUtils::discrete_int_sets(*iteratedModel);
+  const IntSetArray& set_int_vars = ModelUtils::discrete_set_int_values(*iteratedModel);
+  const RealSetArray& set_real_vars = ModelUtils::discrete_set_real_values(*iteratedModel);
+  const StringSetArray& set_string_vars = ModelUtils::discrete_set_string_values(*iteratedModel);
 
   size_t j, dsi_cntr;
 
@@ -321,10 +321,14 @@ void NomadOptimizer::core_run()
   const NOMAD::Point & bestFs = bestX->get_bb_outputs();
   if (!localObjectiveRecast) {
     // else local_objective_recast_retrieve() is used in Optimizer::post_run()
-    const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
-    // Map objective appropriately based on minimizing or maximizing.
-    best_fns[0] = (!max_sense.empty() && max_sense[0]) ?
-      -bestFs[0].value() : bestFs[0].value();
+    if(iteratedModel) {
+      const BoolDeque& max_sense = iteratedModel->primary_response_fn_sense();
+      // Map objective appropriately based on minimizing or maximizing.
+      best_fns[0] = (!max_sense.empty() && max_sense[0]) ?
+        -bestFs[0].value() : bestFs[0].value();
+    } else {
+      best_fns[0] = bestFs[0].value();
+    }
   }
 
   // Map linear and nonlinear constraints according to constraint map.
@@ -448,20 +452,20 @@ void NomadOptimizer::Evaluator::set_variables(const NOMAD::Eval_Point &x) const
   //     something like
   //     setEvalVariables(...)
 
-  int n_cont_vars = _model.cv();
-  int n_disc_int_vars = _model.div();
-  int n_disc_real_vars = _model.drv();
-  int n_disc_string_vars = _model.dsv();
+  int n_cont_vars = ModelUtils::cv(_model);
+  int n_disc_int_vars = ModelUtils::div(_model);
+  int n_disc_real_vars = ModelUtils::drv(_model);
+  int n_disc_string_vars = ModelUtils::dsv(_model);
 	  
   // Prepare Vectors for Dakota model.
   RealVector contVars(n_cont_vars);
   IntVector  discIntVars(n_disc_int_vars);
   RealVector discRealVars(n_disc_real_vars);
 
-  const BitArray& int_set_bits = _model.discrete_int_sets();
-  const IntSetArray&  set_int_vars = _model.discrete_set_int_values();
-  const RealSetArray& set_real_vars = _model.discrete_set_real_values();
-  const StringSetArray& set_string_vars = _model.discrete_set_string_values();
+  const BitArray& int_set_bits = ModelUtils::discrete_int_sets(_model);
+  const IntSetArray&  set_int_vars = ModelUtils::discrete_set_int_values(_model);
+  const RealSetArray& set_real_vars = ModelUtils::discrete_set_real_values(_model);
+  const StringSetArray& set_string_vars = ModelUtils::discrete_set_string_values(_model);
 
   size_t i, dsi_cntr;
 
@@ -479,7 +483,7 @@ void NomadOptimizer::Evaluator::set_variables(const NOMAD::Eval_Point &x) const
   // x.get_m() = # of BB Outputs
   for(i=0; i<n_cont_vars; i++)
   {
-    _model.continuous_variable(x[i].value(), i);
+    ModelUtils::continuous_variable(_model, x[i].value(), i);
   }
 
   for(i=0, dsi_cntr=0; i<n_disc_int_vars; i++)
@@ -489,23 +493,23 @@ void NomadOptimizer::Evaluator::set_variables(const NOMAD::Eval_Point &x) const
     if (int_set_bits[i]) {
       int dakota_value = set_index_to_value(x[i+n_cont_vars].value(), 
 					    set_int_vars[dsi_cntr]);
-      _model.discrete_int_variable(dakota_value, i);
+      ModelUtils::discrete_int_variable(_model, dakota_value, i);
       ++dsi_cntr;
     }
     // This active discrete int var is a range type
     else  {
-      _model.discrete_int_variable(x[i+n_cont_vars].value(), i);
+      ModelUtils::discrete_int_variable(_model, x[i+n_cont_vars].value(), i);
     }
   }
 
   // For real set and strings, map from index to value.
   for (i=0; i<n_disc_real_vars; i++) {
     Real dakota_value = set_index_to_value(x[i+n_cont_vars+n_disc_int_vars].value(), set_real_vars[i]);
-    _model.discrete_real_variable(dakota_value, i);
+    ModelUtils::discrete_real_variable(_model, dakota_value, i);
   }
 
   for (i=0; i<n_disc_string_vars; i++) {
-    _model.discrete_string_variable(set_index_to_value(x[i+n_cont_vars+n_disc_int_vars+n_disc_real_vars].value(), set_string_vars[i]), i);
+    ModelUtils::discrete_string_variable(_model, set_index_to_value(x[i+n_cont_vars+n_disc_int_vars+n_disc_real_vars].value(), set_string_vars[i]), i);
   }
 
 }
@@ -625,28 +629,28 @@ void NomadOptimizer::load_parameters(Model &model, NOMAD::Parameters &p)
   NOMAD::Point _upper_bound (numTotalVars);
   NOMAD::Point _lower_bound (numTotalVars);
      
-  const RealVector& initial_point_cont = model.continuous_variables();
-  const RealVector& lower_bound_cont = model.continuous_lower_bounds();
-  const RealVector& upper_bound_cont = model.continuous_upper_bounds();
+  const RealVector& initial_point_cont = ModelUtils::continuous_variables(model);
+  const RealVector& lower_bound_cont = ModelUtils::continuous_lower_bounds(model);
+  const RealVector& upper_bound_cont = ModelUtils::continuous_upper_bounds(model);
 
-  const IntVector& initial_point_int = model.discrete_int_variables();
-  const IntVector& lower_bound_int = model.discrete_int_lower_bounds();
-  const IntVector& upper_bound_int = model.discrete_int_upper_bounds();
+  const IntVector& initial_point_int = ModelUtils::discrete_int_variables(model);
+  const IntVector& lower_bound_int = ModelUtils::discrete_int_lower_bounds(model);
+  const IntVector& upper_bound_int = ModelUtils::discrete_int_upper_bounds(model);
 
-  const RealVector& initial_point_real = model.discrete_real_variables();
-  const RealVector& lower_bound_real = model.discrete_real_lower_bounds();
-  const RealVector& upper_bound_real = model.discrete_real_upper_bounds();
+  const RealVector& initial_point_real = ModelUtils::discrete_real_variables(model);
+  const RealVector& lower_bound_real = ModelUtils::discrete_real_lower_bounds(model);
+  const RealVector& upper_bound_real = ModelUtils::discrete_real_upper_bounds(model);
 
   const StringMultiArrayConstView initial_point_string = 
-    model.discrete_string_variables();
+    ModelUtils::discrete_string_variables(model);
 
-  const BitArray& int_set_bits = iteratedModel.discrete_int_sets();
+  const BitArray& int_set_bits = ModelUtils::discrete_int_sets(*iteratedModel);
   const IntSetArray& initial_point_set_int = 
-    iteratedModel.discrete_set_int_values();
+    ModelUtils::discrete_set_int_values(*iteratedModel);
   const RealSetArray& initial_point_set_real = 
-    iteratedModel.discrete_set_real_values();
+    ModelUtils::discrete_set_real_values(*iteratedModel);
   const StringSetArray& initial_point_set_string = 
-    iteratedModel.discrete_set_string_values();
+    ModelUtils::discrete_set_string_values(*iteratedModel);
 
   RealMatrix tmp_categorical_adjacency;
 
@@ -829,7 +833,7 @@ void NomadOptimizer::load_parameters(Model &model, NOMAD::Parameters &p)
   //		nonlinear_equality_constraints
 
   const RealVector& nln_eq_targets
-    = iteratedModel.nonlinear_eq_constraint_targets();
+    = ModelUtils::nonlinear_eq_constraint_targets(*iteratedModel);
 
   numNomadNonlinearIneqConstraints = numNonlinearIneqConstraintsFound;
 

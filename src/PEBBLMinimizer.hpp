@@ -27,22 +27,22 @@ class PebbldTraits: public TraitsBase
   PebbldTraits() { }
 
   /// destructor
-  virtual ~PebbldTraits() { }
+  ~PebbldTraits() override { }
 
   /// A temporary query used in the refactor
-  virtual bool is_derived() { return true; }
+  bool is_derived() override { return true; }
 
   /// Return the flag indicating whether method supports continuous variables
-  bool supports_continuous_variables() { return true; }
+  bool supports_continuous_variables() override { return true; }
 
   /// Return the flag indicating whether method supports discrete variables
-  bool supports_discrete_variables() { return true; }
+  bool supports_discrete_variables() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear equalities
-  bool supports_nonlinear_equality() { return true; }
+  bool supports_nonlinear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear inequalities
-  bool supports_nonlinear_inequality() { return true; }
+  bool supports_nonlinear_inequality() override { return true; }
 };
 
 
@@ -50,12 +50,12 @@ class PebbldMinimizer : public Minimizer
 {
 public:
         /// standard constructor
-        PebbldMinimizer(ProblemDescDB& problem_db, Model& model);
+        PebbldMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
 	/// Constructor
 	/** PebbldMinimizer Constructor
 	    @param model DAKOTA Model object
 	    */
-	PebbldMinimizer(Model &model);
+	PebbldMinimizer(std::shared_ptr<Model> model);
 	/// Constructor
 	/** PebbldMinimizer Constructor
 	    @param model DAKOTA Model object
@@ -63,19 +63,19 @@ public:
 	    @param max_iter Maximum number of iterations
 	    @param max_eval Maximum number of Black Box Evaluations
 	    */
-	 PebbldMinimizer(Model &model, int random_seed,
+	 PebbldMinimizer(std::shared_ptr<Model> model, int random_seed,
 			 size_t max_iter, size_t max_eval);
 	 /// Destructor
-         ~PebbldMinimizer()
+         ~PebbldMinimizer() override
          { if (branchAndBound) delete branchAndBound; }
 
 protected:
 
         /// Calls the Pebbl Branch and Bound solver
-        void core_run();
+        void core_run() override;
 
         /// Redefinition of default results printing.
-        void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+        void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
 private:
         /// Object that implements the branching and bounding logic.

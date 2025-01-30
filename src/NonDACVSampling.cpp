@@ -26,7 +26,7 @@ namespace Dakota {
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDACVSampling::
-NonDACVSampling(ProblemDescDB& problem_db, Model& model):
+NonDACVSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDNonHierarchSampling(problem_db, model)//, multiStartACV(true)
 {
   mlmfSubMethod = problem_db.get_ushort("method.sub_method");
@@ -163,10 +163,10 @@ void NonDACVSampling::approximate_control_variate_online_pilot()
     inflate(N_H_actual, N_L_actual_baseline);
     approx_increments(sum_L_baselineH, N_H_actual, N_H_alloc, sum_L_refined,
 		      N_L_actual_refined, N_L_alloc_refined, acvSolnData);
-    acv_raw_moments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
-		    acvSolnData, beta);
-    raw_moments(sum_H, N_H_actual, sum_L_baselineH, N_L_actual_baseline,
-		sum_L_refined, N_L_actual_refined, beta);
+    compute_acv_controls(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
+			 acvSolnData, beta);
+    apply_controls(sum_H, N_H_actual, sum_L_baselineH, N_L_actual_baseline,
+		   sum_L_refined, N_L_actual_refined, beta);
     finalize_counts(N_L_actual_refined, N_L_alloc_refined);
   }
   else // N_H is final --> do not compute any deltaNActualHF (from maxIter exit)
@@ -232,10 +232,10 @@ void NonDACVSampling::approximate_control_variate_offline_pilot()
   inflate(N_H_actual, N_L_actual_baseline);
   approx_increments(sum_L_baselineH, N_H_actual, N_H_alloc, sum_L_refined,
 		    N_L_actual_refined, N_L_alloc_refined, acvSolnData);
-  acv_raw_moments(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
-		  N_pilot, acvSolnData, beta);
-  raw_moments(sum_H, N_H_actual, sum_L_baselineH, N_L_actual_baseline,
-	      sum_L_refined, N_L_actual_refined, beta);
+  compute_acv_controls(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
+		       N_pilot, acvSolnData, beta);
+  apply_controls(sum_H, N_H_actual, sum_L_baselineH, N_L_actual_baseline,
+		 sum_L_refined, N_L_actual_refined, beta);
   finalize_counts(N_L_actual_refined, N_L_alloc_refined);
 }
 
@@ -286,7 +286,7 @@ void NonDACVSampling::approximate_control_variate_pilot_projection()
 			   deltaNActualHF, deltaEquivHF);
   // No need for updating estimator variance given deltaNActualHF since
   // NonDNonHierarchSampling::ensemble_numerical_solution() recovers N*
-  // from the numerical solve and computes projected avgEstVar{,Ratio}
+  // from the numerical solve and computes projected estVariance{s,Ratios}
 }
 
 
@@ -463,11 +463,12 @@ overlay_peer_group_sums(const IntRealMatrixArrayMap& sum_G,
 
 
 void NonDACVSampling::
-acv_raw_moments(const IntRealMatrixMap& sum_L_covar,
-		const IntRealVectorMap& sum_H_covar,
-		const IntRealSymMatrixArrayMap& sum_LL_covar,
-		const IntRealMatrixMap& sum_LH_covar, const SizetArray& N_covar,
-		const MFSolutionData& soln, RealVector2DArray& beta)
+compute_acv_controls(const IntRealMatrixMap& sum_L_covar,
+		     const IntRealVectorMap& sum_H_covar,
+		     const IntRealSymMatrixArrayMap& sum_LL_covar,
+		     const IntRealMatrixMap& sum_LH_covar,
+		     const SizetArray& N_covar, const MFSolutionData& soln,
+		     RealVector2DArray& beta)
 {
   // ------------------------------
   // Compute CV to estimate moments
@@ -553,8 +554,8 @@ compute_allocations(const RealMatrix& var_L, MFSolutionData& soln)
   if (mlmfIter == 0) {
     bool online = (pilotMgmtMode == ONLINE_PILOT ||
 		   pilotMgmtMode == ONLINE_PILOT_PROJECTION);
-    if (online) // cache reference estVarIter0
-      cache_mc_reference();
+    if (online)
+      cache_mc_reference(); // {estVar,numH}Iter0, estVarMetric0
 
     size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
     SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
@@ -566,14 +567,7 @@ compute_allocations(const RealMatrix& var_L, MFSolutionData& soln)
       RealVector avg_eval_ratios(numApprox, false);
       avg_eval_ratios = 1. + RATIO_NUDGE;
       soln.anchored_solution_ratios(avg_eval_ratios, avg_N_H);
-      // For offline pilot, the online EstVar is undefined prior to any online
-      // samples, but should not happen (no budget used) unless bad convTol spec
-      if (online)
-	soln.average_estimator_variance(average(estVarIter0));
-      else
-	soln.average_estimator_variance(std::numeric_limits<Real>::infinity());
-      soln.average_estimator_variance_ratio(1.);
-      numSamples = 0;  return;
+      no_solve_variances(soln);  numSamples = 0;  return;
     }
 
     switch (optSubProblemSolver) {
@@ -592,35 +586,7 @@ compute_allocations(const RealMatrix& var_L, MFSolutionData& soln)
       MFSolutionData mf_soln, cv_soln;
       analytic_initialization_from_mfmc(rho2_LH, avg_N_H, mf_soln);
       analytic_initialization_from_ensemble_cvmc(rho2_LH, avg_N_H, cv_soln);
-
-      //if (multiStartACV) { // Run numerical solns from both starting points
-      ensemble_numerical_solution(mf_soln);
-      ensemble_numerical_solution(cv_soln);
-      pick_mfmc_cvmc_solution(mf_soln, cv_soln, soln);
-      //}
-      /*
-      else { // Run one numerical soln from best of two starting points
-        bool mfmc_init;
-        if (budget_constrained) { // same cost, compare accuracy
-	  RealVector cdv;
-	  r_and_N_to_design_vars(mf_soln.avgEvalRatios,mf_soln.avgHFTarget,cdv);
-	  mf_soln.avgEstVar = average_estimator_variance(cdv); // ACV or GenACV
-	  r_and_N_to_design_vars(cv_soln.avgEvalRatios,cv_soln.avgHFTarget,cdv);
-	  cv_soln.avgEstVar = average_estimator_variance(cdv); // ACV or GenACV
-	  mfmc_init = (mf_soln.avgEstVar < cv_soln.avgEstVar);
-        }
-        else { // same accuracy (convergenceTol * estVarIter0), compare cost 
-	  mf_soln.equivHFAlloc = compute_equivalent_cost(mf_soln.avgHFTarget,
-	    mf_soln.avgEvalRatios, sequenceCost);
-	  cv_soln.equivHFAlloc = compute_equivalent_cost(cv_soln.avgHFTarget,
-	    cv_soln.avgEvalRatios, sequenceCost);
-	  mfmc_init = (mf_soln.equivHFAlloc < cv_soln.equivHFAlloc);
-        }
-        soln = (mfmc_init) ? mf_soln : cv_soln;
-        // Single solve initiated from lowest estvar
-        ensemble_numerical_solution(soln);
-      }
-      */
+      competed_initial_guesses(mf_soln, cv_soln, soln);
       break;
     }
     }
@@ -628,18 +594,16 @@ compute_allocations(const RealMatrix& var_L, MFSolutionData& soln)
   else { // subsequent iterations
     if (no_solve) // leave soln at previous values
       { numSamples = 0; return; }
-
-    // no scaling needed from prev soln (as in NonDLocalReliability) since
-    // updated avg_N_H now includes allocation from previous solution and
-    // should be active on constraint bound (excepting sample count rounding)
-
     // warm start from previous solution (for active or one-and-only DAG)
+    // > no scaling needed from prev soln (as in NonDLocalReliability) since
+    //   updated avg_N_H now includes allocation from previous solution and
+    //   should be active on constraint bound (excepting sample count rounding)
     ensemble_numerical_solution(soln);
   }
 
-  process_model_solution(soln, numSamples);
+  process_model_allocations(soln, numSamples);
   if (outputLevel >= NORMAL_OUTPUT)
-    print_model_solution(Cout, soln, approxSet);
+    print_model_allocations(Cout, soln, approxSet);
 }
 
 
@@ -663,13 +627,7 @@ analytic_initialization_from_mfmc(const RealMatrix& rho2_LH, Real avg_N_H,
     Cout << "Initial guess from analytic MFMC (unscaled eval ratios):\n"
 	 << avg_eval_ratios << std::endl;
 
-  Real avg_hf_target;
-  if (maxFunctionEvals == SZ_MAX) // HF target from ACV estvar using MFMC soln
-    avg_hf_target = update_hf_target(avg_eval_ratios,avg_N_H,varH,estVarIter0);
-  else // allocate_budget(), then manage lower bounds and pilot over-estimation
-    scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, avg_hf_target,
-		    (Real)maxFunctionEvals);
-  soln.anchored_solution_ratios(avg_eval_ratios, avg_hf_target);
+  analytic_ratios_to_solution_variables(avg_eval_ratios, avg_N_H, soln);
 }
 
 
@@ -687,33 +645,41 @@ analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
     Cout << "Initial guess from ensemble CVMC (unscaled eval ratios):\n"
 	 << avg_eval_ratios << std::endl;
 
-  Real avg_hf_target;
-  if (maxFunctionEvals == SZ_MAX) // HF target from ACV estvar using CVMC solns
-    avg_hf_target = update_hf_target(avg_eval_ratios, avg_N_H,varH,estVarIter0);
-  else // allocate_budget(), then manage lower bounds and pilot over-estimation
-    scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, avg_hf_target,
-		    (Real)maxFunctionEvals);
-  soln.anchored_solution_ratios(avg_eval_ratios, avg_hf_target);
+  analytic_ratios_to_solution_variables(avg_eval_ratios, avg_N_H, soln);
 }
 
 
 void NonDACVSampling::
-print_model_solution(std::ostream& s, const MFSolutionData& soln,
-		     const UShortArray& approx_set)
+analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
+				      Real avg_N_H, MFSolutionData& soln)
+{
+  Real hf_target;
+  if (maxFunctionEvals == SZ_MAX) // HF tgt from ACV estvar using analytic soln
+    hf_target = update_hf_target(avg_eval_ratios, avg_N_H, varH, estVarIter0);
+  else // allocate_budget(), then manage lower bounds and pilot over-estimation
+    scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, hf_target,
+		    (Real)maxFunctionEvals);
+
+  soln.anchored_solution_ratios(avg_eval_ratios, hf_target);
+}
+
+
+void NonDACVSampling::
+print_model_allocations(std::ostream& s, const MFSolutionData& soln,
+			const UShortArray& approx_set)
 {
   const RealVector& soln_vars = soln.solution_variables();
   size_t i, num_approx = approx_set.size();
   for (i=0; i<num_approx; ++i)
-    Cout << "Approx " << approx_set[i] + 1 << ": sample allocation = "
-	 << soln_vars[i] << '\n';
-  Cout << "Truth:   sample allocation = " << soln_vars[num_approx] << '\n';
+    s << "Approx " << approx_set[i] + 1 << ": sample allocation = "
+      << soln_vars[i] << '\n';
+  s << "Truth:   sample allocation = " << soln_vars[num_approx] << '\n';
   if (maxFunctionEvals == SZ_MAX)
-    Cout << "Estimator cost allocation = " << soln.equivalent_hf_allocation()
-	 << std::endl;
+    s << "Estimator cost allocation = " << soln.equivalent_hf_allocation()
+      << std::endl;
   else
-    Cout << "Average estimator variance = " << soln.average_estimator_variance()
-	 << "\nAverage ACV variance / average MC variance = "
-	 << soln.average_estimator_variance_ratio() << std::endl;
+    s << "Estimator variance metric = " << soln.estimator_variance_metric()
+      << std::endl;
 }
 
 
@@ -721,14 +687,16 @@ Real NonDACVSampling::
 update_hf_target(const RealVector& avg_eval_ratios, Real avg_N_H,
 		 const RealVector& var_H, const RealVector& estvar0)
 {
-  // Note: there is a circular dependency between estvar_ratios and hf_targets
-
-  RealVector cd_vars, estvar_ratios;
+  RealVector cd_vars, estvar_ratios, estvar;
   r_and_N_to_design_vars(avg_eval_ratios, avg_N_H, cd_vars);
-  estimator_variance_ratios(cd_vars, estvar_ratios); // virtual for ACV,GenACV
+  estimator_variances_and_ratios(cd_vars, estvar_ratios, estvar);
+
+  Real metric;  size_t metric_index;
+  MFSolutionData::update_estimator_variance_metric(estVarMetricType,
+    estVarMetricNormOrder, estvar_ratios, estvar, metric, metric_index);
 
   return NonDNonHierarchSampling::
-    update_hf_target(estvar_ratios, var_H, estvar0);
+    update_hf_target(estvar_ratios, metric_index, var_H, estvar0);
 }
 
 

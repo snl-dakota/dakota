@@ -18,9 +18,9 @@ namespace Dakota {
 SubspaceModel* SubspaceModel::smInstance(NULL);
 
 
-SubspaceModel::SubspaceModel(ProblemDescDB& problem_db, const Model& sub_model):
+SubspaceModel::SubspaceModel(ProblemDescDB& problem_db, std::shared_ptr<Model> sub_model):
   RecastModel(problem_db, sub_model), randomSeed(24620),
-  numFullspaceVars(subModel.cv()),
+  numFullspaceVars(ModelUtils::cv(*subModel)),
   // default is 0 for no user override, but only used for AdaptedBasis at
   // this time (ActiveSubspace overwrites with basis truncation procedure):
   reducedRank(problem_db.get_int("model.subspace.dimension")),
@@ -31,9 +31,9 @@ SubspaceModel::SubspaceModel(ProblemDescDB& problem_db, const Model& sub_model):
 
 
 SubspaceModel::
-SubspaceModel(const Model& sub_model, unsigned int dimension,
+SubspaceModel(std::shared_ptr<Model> sub_model, unsigned int dimension,
 	      short output_level) :
-  RecastModel(sub_model), numFullspaceVars(sub_model.cv()),
+  RecastModel(sub_model), numFullspaceVars(ModelUtils::cv(*sub_model)),
   reducedRank(dimension), offlineEvalConcurrency(1), onlineEvalConcurrency(1)
 {
   outputLevel = output_level;
@@ -43,18 +43,13 @@ SubspaceModel(const Model& sub_model, unsigned int dimension,
   initialize_data_from_submodel(); // Note: currentVariables not defined
 }
 
-
-SubspaceModel::~SubspaceModel()
-{ }
-
-
 void SubspaceModel::validate_inputs()
 {
   bool error_flag = false;
 
   // validate variables specification
   // BMA TODO: allow other variable types
-  if (subModel.div() > 0 || subModel.dsv() > 0 || subModel.drv() > 0) {
+  if (ModelUtils::div(*subModel) > 0 || ModelUtils::dsv(*subModel) > 0 || ModelUtils::drv(*subModel) > 0) {
     error_flag = true;
     Cerr << "\nError (subspace model): only normal uncertain variables are "
          << "supported;\n                        remove other variable "
@@ -131,8 +126,8 @@ initialize_base_recast(
 
   // We assume the mapping is for all active variables, but only
   // continuous for the active subspace
-  size_t submodel_cv = subModel.cv();
-  size_t submodel_dv = subModel.div() + subModel.dsv() + subModel.drv();
+  size_t submodel_cv = ModelUtils::cv(*subModel);
+  size_t submodel_dv = ModelUtils::div(*subModel) + ModelUtils::dsv(*subModel) + ModelUtils::drv(*subModel);
   size_t submodel_vars = submodel_cv + submodel_dv;
   size_t recast_cv   = reducedRank;
   size_t recast_vars = recast_cv + submodel_dv;
@@ -159,9 +154,9 @@ initialize_base_recast(
 
   // Primary and secondary mapping are one-to-one (NULL callbacks)
   // TODO: can RecastModel tolerate empty indices when no map is present?
-  size_t num_primary   = subModel.num_primary_fns(),
-         num_secondary = subModel.num_secondary_fns(),
-         recast_secondary_offset = subModel.num_nonlinear_ineq_constraints();
+  size_t num_primary   = subModel->num_primary_fns(),
+         num_secondary = subModel->num_secondary_fns(),
+         recast_secondary_offset = ModelUtils::num_nonlinear_ineq_constraints(*subModel);
   BoolDequeArray nonlinear_resp_mapping(numFns, BoolDeque(numFns, false));
   Sizet2DArray primary_resp_map_indices(num_primary),
              secondary_resp_map_indices(num_secondary);
@@ -176,7 +171,7 @@ initialize_base_recast(
 
   // Initial response order for the newly built subspace model same as
   // the subModel (does not augment with gradient request)
-  const Response& curr_resp = subModel.current_response();
+  const Response& curr_resp = subModel->current_response();
   short recast_resp_order = 1; // recast resp order to be same as original resp
   if (!curr_resp.function_gradients().empty()) recast_resp_order |= 2;
   if (!curr_resp.function_hessians().empty())  recast_resp_order |= 4;
@@ -186,7 +181,7 @@ initialize_base_recast(
   // -----------------------------------
 
   bool copy_values;
-  RecastModel::init_sizes(subModel.current_variables().view(), vars_comps_total,
+  RecastModel::init_sizes(subModel->current_variables().view(), vars_comps_total,
 			  all_relax_di, all_relax_dr, num_primary,
 			  num_secondary, recast_secondary_offset,
 			  recast_resp_order, copy_values);
@@ -205,10 +200,10 @@ initialize_base_recast(
 /// size for continuous variables
 SizetArray SubspaceModel::resize_variable_totals()
 {
-  const SharedVariablesData& svd = subModel.current_variables().shared_data();
+  const SharedVariablesData& svd = subModel->current_variables().shared_data();
   SizetArray vc_totals = svd.components_totals(); // copy to be updated
-  if (reducedRank != subModel.cv()) {
-    short active_view = subModel.current_variables().view().first;
+  if (reducedRank != ModelUtils::cv(*subModel)) {
+    short active_view = subModel->current_variables().view().first;
     switch (active_view) {
     case MIXED_DESIGN:               case RELAXED_DESIGN:
       // resize continuous design
@@ -260,7 +255,7 @@ void SubspaceModel::uncertain_vars_to_subspace()
 {
   std::shared_ptr<Pecos::MarginalsCorrDistribution> native_dist_rep =
     std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
-    (subModel.multivariate_distribution().multivar_dist_rep());
+    (subModel->multivariate_distribution().multivar_dist_rep());
   std::shared_ptr<Pecos::MarginalsCorrDistribution> reduced_dist_rep =
     std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
     (mvDist.multivar_dist_rep());
@@ -280,7 +275,7 @@ void SubspaceModel::uncertain_vars_to_subspace()
   //       general.  Keep specifics in derived class for now.
   // assumption: replace contiguous set of active continuous variables
   // (see also resize_variable_totals())
-  const SharedVariablesData& svd = subModel.current_variables().shared_data();
+  const SharedVariablesData& svd = subModel->current_variables().shared_data();
   size_t cv_diff    = numFullspaceVars - reducedRank, // active cv
     num_reduced_rv  = num_rv - cv_diff,               // all vars
     start_reduction = svd.cv_index_to_all_index(0),
@@ -320,7 +315,7 @@ void SubspaceModel::update_var_labels()
     subspace_var_labels[i] = "ssv_" + std::to_string(i+1);
   }
 
-  continuous_variable_labels(
+  current_variables().continuous_variable_labels(
     subspace_var_labels[boost::indices[idx_range(0, reducedRank)]]);
 }
 
@@ -387,11 +382,11 @@ void SubspaceModel::component_parallel_mode(short mode)
   // they are inactive
   if (componentParallelMode != mode &&
       componentParallelMode != CONFIG_PHASE) {
-    ParConfigLIter pc_it = subModel.parallel_configuration_iterator();
-    size_t index = subModel.mi_parallel_level_index();
+    ParConfigLIter pc_it = subModel->parallel_configuration_iterator();
+    size_t index = subModel->mi_parallel_level_index();
     if (pc_it->mi_parallel_level_defined(index) &&
         pc_it->mi_parallel_level(index).server_communicator_size() > 1) {
-      subModel.stop_servers();
+      subModel->stop_servers();
     }
   }
 
@@ -413,7 +408,7 @@ void SubspaceModel::component_parallel_mode(short mode)
       parallelLib.bcast(mode, mi_pl);
 
       if (mode == OFFLINE_PHASE)
-        subModel.set_communicators(pl_iter, offlineEvalConcurrency);
+        subModel->set_communicators(pl_iter, offlineEvalConcurrency);
       else if (mode == ONLINE_PHASE)
         set_communicators(pl_iter, onlineEvalConcurrency);
     }
@@ -429,10 +424,10 @@ void SubspaceModel::serve_run(ParLevLIter pl_iter,
   do {
     parallelLib.bcast(componentParallelMode, *pl_iter);
     if (componentParallelMode == OFFLINE_PHASE) {
-      subModel.serve_run(pl_iter, offlineEvalConcurrency);
+      subModel->serve_run(pl_iter, offlineEvalConcurrency);
     } else if (componentParallelMode == ONLINE_PHASE) {
       set_communicators(pl_iter, onlineEvalConcurrency, false);
-      subModel.serve_run(pl_iter, onlineEvalConcurrency);
+      subModel->serve_run(pl_iter, onlineEvalConcurrency);
     }
   } while (componentParallelMode != CONFIG_PHASE);
 }

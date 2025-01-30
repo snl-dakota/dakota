@@ -41,7 +41,7 @@ public:
   /// alternate constructor
   TaylorApproximation(const SharedApproxData& shared_data);
   /// destructor
-  ~TaylorApproximation();
+  ~TaylorApproximation() override;
 
 protected:
 
@@ -49,17 +49,17 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  int min_coefficients() const;
+  int min_coefficients() const override;
 
   //int num_constraints() const; // use default implementation
 
-  void build();
+  void build() override;
 
-  Real value(const Variables& vars);
+  Real value(const Variables& vars) override;
 
-  const RealVector& gradient(const Variables& vars);
+  const RealVector& gradient(const Variables& vars) override;
 
-  const RealSymMatrix& hessian(const Variables& vars);
+  const RealSymMatrix& hessian(const Variables& vars) override;
 
 private:
 

@@ -25,7 +25,7 @@ namespace Dakota {
 /** This constructor is called for a standard iterator built with data from
     probDescDB. */
 PSUADEDesignCompExp::
-PSUADEDesignCompExp(ProblemDescDB& problem_db, Model& model):
+PSUADEDesignCompExp(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   PStudyDACE(problem_db, model),
   samplesSpec(probDescDB.get_int("method.samples")), numSamples(samplesSpec),
   varPartitionsSpec(probDescDB.get_usa("method.partitions")),
@@ -91,7 +91,7 @@ void PSUADEDesignCompExp::core_run()
   //evaluate_parameter_sets(iteratedModel, allDataFlag, true);
   bool log_resp_flag = true, // allResponses required below
        log_best_flag = (numObjFns || numLSqTerms); // opt or NLS data set
-  evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
+  evaluate_parameter_sets(*iteratedModel, log_resp_flag, log_best_flag);
 }
 
 
@@ -109,8 +109,8 @@ void PSUADEDesignCompExp::post_run(std::ostream& s)
   psuade_adata.nSamples_ = numSamples;
 
   // since MOAT uses pointers, make copies of the data
-  const RealVector& lb = iteratedModel.continuous_lower_bounds();
-  const RealVector& ub = iteratedModel.continuous_upper_bounds();
+  const RealVector& lb = ModelUtils::continuous_lower_bounds(*iteratedModel);
+  const RealVector& ub = ModelUtils::continuous_upper_bounds(*iteratedModel);
   psuade_adata.iLowerB_ = new double [numContinuousVars];
   psuade_adata.iUpperB_ = new double [numContinuousVars];
   for (int i=0; i<numContinuousVars; i++) {
@@ -159,7 +159,7 @@ void PSUADEDesignCompExp::post_run(std::ostream& s)
 }
 
 
-void PSUADEDesignCompExp::get_parameter_sets(Model& model)
+void PSUADEDesignCompExp::get_parameter_sets(std::shared_ptr<Model> model)
 {
   // keep track of number of DACE executions for this object
   numDACERuns++;
@@ -173,8 +173,8 @@ void PSUADEDesignCompExp::get_parameter_sets(Model& model)
   // variables (from numContinuousVars & local_vars).
 
   // make copies since we'll pass pointers to MOAT
-  const RealVector& c_l_bnds = model.continuous_lower_bounds();
-  const RealVector& c_u_bnds = model.continuous_upper_bounds();
+  const RealVector& c_l_bnds = ModelUtils::continuous_lower_bounds(*model);
+  const RealVector& c_u_bnds = ModelUtils::continuous_upper_bounds(*model);
   if (c_l_bnds.length() != numContinuousVars || 
       c_u_bnds.length() != numContinuousVars) {
     Cerr << "\nError: Mismatch in number of active variables and length of"

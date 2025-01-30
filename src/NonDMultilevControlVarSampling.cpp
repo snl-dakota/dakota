@@ -25,14 +25,14 @@ namespace Dakota {
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDMultilevControlVarSampling::
-NonDMultilevControlVarSampling(ProblemDescDB& problem_db, Model& model):
+NonDMultilevControlVarSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDMultilevelSampling(problem_db, model),
   //NonDMultifidelitySampling(problem_db, model),
   NonDHierarchSampling(problem_db, model), // top of virtual inheritance
   delegateMethod(MULTILEVEL_MULTIFIDELITY_SAMPLING)
 {
   // override MULTILEVEL_PRECEDENCE from NonDMultilevel ctor
-  iteratedModel.ensemble_precedence(MULTILEVEL_MULTIFIDELITY_PRECEDENCE);
+  iteratedModel->ensemble_precedence(MULTILEVEL_MULTIFIDELITY_PRECEDENCE);
   // Note: only sequenceType is currently used by MLCV
   configure_2d_sequence(numSteps, secondaryIndex, sequenceType);
   numApprox  = numSteps - 1; // numSteps is total = num_cv_lev + num_hf_lev
@@ -125,7 +125,7 @@ void NonDMultilevControlVarSampling::assign_active_key()
 
   Pecos::ActiveKey active_key;
   active_key.aggregate_keys(form_res_keys, Pecos::RAW_DATA);
-  iteratedModel.active_model_key(active_key); // data group 0
+  iteratedModel->active_model_key(active_key); // data group 0
   resize_active_set();
 }
 
@@ -139,9 +139,9 @@ void NonDMultilevControlVarSampling::
 multilevel_control_variate_mc_online_pilot() //_Qcorr()
 {
   size_t qoi, lev, num_mf = NLevActual.size(), N_alloc_l,
-    num_hf_lev = iteratedModel.truth_model().solution_levels(),
+    num_hf_lev = iteratedModel->truth_model()->solution_levels(),
     num_cv_lev = (num_mf > 1) ?
-    std::min(num_hf_lev, iteratedModel.surrogate_model().solution_levels()) : 0;
+    std::min(num_hf_lev, iteratedModel->surrogate_model()->solution_levels()) : 0;
   RealVector hf_targets(num_hf_lev);  Real eps_sq_div_2;
   RealVectorArray eval_ratios(num_cv_lev), lf_targets(num_cv_lev);
 
@@ -224,7 +224,6 @@ multilevel_control_variate_mc_online_pilot() //_Qcorr()
       ml_Y_raw_moments(sum_Hl[1], sum_Hl[2], sum_Hl[3], sum_Hl[4], N_actual_hf,
 		       num_cv_lev, num_hf_lev, Y_mom);
     convert_moments(Y_mom, momentStats); // raw to final (central or std)
-
     // This approach leverages the best available varH for est var reporting,
     // similar to offline pilot mode:
     recover_variance(momentStats, varH);
@@ -265,7 +264,8 @@ multilevel_control_variate_mc_online_pilot() //_Qcorr()
   }
 
   compute_mlmf_estimator_variance(var_YH, N_actual_hf, Lambda, estVar);
-  avgEstVar = average(estVar);
+  if (finalStatsType == QOI_STATISTICS)
+    compute_mean_confidence_intervals(momentStats, estVar, meanCIs);
 }
 
 
@@ -273,9 +273,9 @@ void NonDMultilevControlVarSampling::
 multilevel_control_variate_mc_offline_pilot()
 {
   size_t lev, num_mf = NLevActual.size(),
-    num_hf_lev = iteratedModel.truth_model().solution_levels(),
+    num_hf_lev = iteratedModel->truth_model()->solution_levels(),
     num_cv_lev = (num_mf > 1) ?
-    std::min(num_hf_lev, iteratedModel.surrogate_model().solution_levels()) : 0;
+    std::min(num_hf_lev, iteratedModel->surrogate_model()->solution_levels()) : 0;
   unsigned short group, lf_form = 0, hf_form = num_mf - 1;// extremes
 
   // Initialize accumulators and related arrays/maps, allowing for different
@@ -400,7 +400,7 @@ multilevel_control_variate_mc_offline_pilot()
   // variances.  This results in mixing offline var_YH,Lambda with online
   // varH,N_hf, but is consistent with offline modes for MFMC and ACV.
   compute_mlmf_estimator_variance(var_YH_pilot,N_actual_hf,Lambda_pilot,estVar);
-  avgEstVar = average(estVar);
+  compute_mean_confidence_intervals(momentStats, estVar, meanCIs);
 }
 
 
@@ -411,9 +411,9 @@ multilevel_control_variate_mc_pilot_projection()
   RealVector hf_targets;  RealMatrix Lambda, var_YH;
   RealVectorArray eval_ratios;  Real eps_sq_div_2;
   size_t lev, num_mf = NLevActual.size(),
-    num_hf_lev = iteratedModel.truth_model().solution_levels(),
+    num_hf_lev = iteratedModel->truth_model()->solution_levels(),
     num_cv_lev = (num_mf > 1) ?
-    std::min(num_hf_lev, iteratedModel.surrogate_model().solution_levels()) : 0;
+    std::min(num_hf_lev, iteratedModel->surrogate_model()->solution_levels()) : 0;
 
   // Initialize for pilot sample
   unsigned short lf_form = 0, hf_form = NLevActual.size() - 1; // 2 @ extremes
@@ -449,7 +449,6 @@ multilevel_control_variate_mc_pilot_projection()
   Sizet2DArray N_proj_hf = N_actual_hf;
   increment_samples(N_proj_hf, delta_N_hf);
   compute_mlmf_estimator_variance(var_YH, N_proj_hf, Lambda, estVar);
-  avgEstVar = average(estVar);
 }
 
 
@@ -496,9 +495,9 @@ evaluate_pilot(RealVectorArray& eval_ratios, RealMatrix& Lambda,
 	       RealMatrix& pilot_mom, bool accumulate_cost, bool pilot_estvar)
 {
   size_t qoi, lev, num_mf = NLevActual.size(),
-    num_hf_lev = iteratedModel.truth_model().solution_levels(),
+    num_hf_lev = iteratedModel->truth_model()->solution_levels(),
     num_cv_lev = (num_mf > 1) ?
-    std::min(num_hf_lev, iteratedModel.surrogate_model().solution_levels()) : 0;
+    std::min(num_hf_lev, iteratedModel->surrogate_model()->solution_levels()) : 0;
 
   RealMatrix sum_Ll(numFunctions, num_cv_lev),
     sum_Llm1(numFunctions, num_cv_lev), sum_Ll_Ll(numFunctions, num_cv_lev),
@@ -590,8 +589,8 @@ mlmf_increments(const SizetArray& delta_N_l, String prepend)
     }
   }
 
-  if (iteratedModel.asynch_flag())
-    synchronize_batches(iteratedModel); // schedule all groups (return ignored)
+  if (iteratedModel->asynch_flag())
+    synchronize_batches(*iteratedModel); // schedule all groups (return ignored)
 
   /*
   UShortArray batch_key(2); // form,resolution
@@ -642,8 +641,8 @@ lf_increments(const SizetArray& delta_N_lf, String prepend)
     }
   }
 
-  if (iteratedModel.asynch_flag())
-    synchronize_batches(iteratedModel); // schedule all groups (return ignored)
+  if (iteratedModel->asynch_flag())
+    synchronize_batches(*iteratedModel); // schedule all groups (return ignored)
 }
 
 
@@ -1002,9 +1001,9 @@ update_projected_samples(const RealVector& hf_targets,
 			 Real& delta_equiv_hf)
 {
   size_t hf_actual_incr, hf_alloc_incr, lf_actual_incr, lf_alloc_incr, lev,
-    num_hf_lev = iteratedModel.truth_model().solution_levels(),
+    num_hf_lev = iteratedModel->truth_model()->solution_levels(),
     num_cv_lev = std::min(num_hf_lev,
-			  iteratedModel.surrogate_model().solution_levels());
+			  iteratedModel->surrogate_model()->solution_levels());
   Real hf_target_l, hf_ref_cost = sequenceCost[numApprox];
   RealVector lf_targets(numFunctions, false);
   for (lev=0; lev<num_hf_lev; ++lev) {
@@ -1053,8 +1052,8 @@ update_projected_lf_samples(const RealVector& hf_targets,
 			    Real& delta_equiv_hf)
 {
   size_t lf_actual_incr, lf_alloc_incr, lev, num_cv_lev
-    = std::min(iteratedModel.truth_model().solution_levels(),
-	       iteratedModel.surrogate_model().solution_levels());
+    = std::min(iteratedModel->truth_model()->solution_levels(),
+	       iteratedModel->surrogate_model()->solution_levels());
   Real hf_target_l, hf_ref_cost = sequenceCost[numApprox];
   RealVector lf_targets(numFunctions, false);
   for (lev=0; lev<num_cv_lev; ++lev) {
@@ -1546,44 +1545,52 @@ accumulate_mlmf_Qsums(const IntResponseMap& resp_map, RealMatrix& sum_Ll,
     }
   }
 }
-void NonDMultilevControlVarSampling::print_variance_reduction(std::ostream& s)
+
+
+void NonDMultilevControlVarSampling::
+print_variance_reduction(std::ostream& s) const
 {
   if (delegateMethod == MULTILEVEL_SAMPLING) // not currently overridden by MLMC
     { NonDMultilevelSampling::print_variance_reduction(s);  return; }
   //else if (delegateMethod == MULTIFIDELITY_SAMPLING) //  MFMC not inherited
   //  { NonDMultifidelitySampling::print_variance_reduction(s);  return; }
 
-  bool projection = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
-		     pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
+  bool  online = (pilotMgmtMode ==  ONLINE_PILOT ||
+		  pilotMgmtMode ==  ONLINE_PILOT_PROJECTION),
+    projection = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
+		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
   String type = (projection) ? "Projected" : "   Online";
-  size_t wpp7 = write_precision + 7;
-  s << "<<<<< Variance for mean estimator:\n";
-  switch (pilotMgmtMode) {
-  case OFFLINE_PILOT:  case OFFLINE_PILOT_PROJECTION:
-    s << "  " << type << " MLCVMC (sample profile):   "
-      << std::setw(wpp7) << avgEstVar << '\n';
-    break;
-  default: {
-    Real avg_mlmc_estvar0 = average(estVarIter0);
-    s << "      Initial MLMC (pilot samples):    " << std::setw(wpp7)
-      << avg_mlmc_estvar0 << "\n  "
-      << type << " MLCVMC (sample profile):   "
-      << std::setw(wpp7) << avgEstVar	<< "\n  "
-      << type << " MLCVMC / pilot ratio:      "
-      // report ratio of averages rather than average of ratios:
-      << std::setw(wpp7) << avgEstVar / avg_mlmc_estvar0 << '\n';
-    break;
-  }
-  }
+  Real estvar_q, estvar_iter0_q, proj_equiv_hf = equivHFEvals + deltaEquivHF,
+    budget_mc_estvar_q;
+  size_t qoi, wpp7 = write_precision+7,
+    proj_equiv_hf_rnd = (size_t)std::floor(proj_equiv_hf + .5);
+  const StringArray& labels = ModelUtils::response_labels(*iteratedModel->truth_model());
 
-  // MC estvar uses varH from recover_variance()
-  Real     proj_equiv_hf = equivHFEvals + deltaEquivHF,
-    avg_budget_mc_estvar = average(varH) / proj_equiv_hf;
-  s << " Equivalent     MC (" << std::setw(5)
-    << (size_t)std::floor(proj_equiv_hf + .5) << " HF samples): "
-    << std::setw(wpp7) << avg_budget_mc_estvar
-    << "\n Equivalent MLCVMC / MC ratio:         " << std::setw(wpp7)
-    << avgEstVar / avg_budget_mc_estvar << '\n';
+  s << "<<<<< Variance for mean estimator:\n";
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    s << std::setw(14) << labels[qoi] << ":\n"; // mirror print_moments()
+    estvar_q           = estVar[qoi];
+    budget_mc_estvar_q = varH[qoi] / proj_equiv_hf;
+
+    if (online) {
+      estvar_iter0_q   = estVarIter0[qoi];
+      s << "        Initial MLMC (pilot samples):    " << std::setw(wpp7)
+	<< estvar_iter0_q << '\n';
+    }
+    s << "    " << type << " MLCVMC (sample profile):   " << std::setw(wpp7)
+      << estvar_q << '\n';
+    if (online && valid_variance(estvar_q) && valid_variance(estvar_iter0_q))
+      s << "    " << type << " MLCVMC / pilot ratio:      " << std::setw(wpp7)
+	<< estvar_q / estvar_iter0_q << '\n';;
+
+    // est_var is projected for cases that are not fully iterated/incremented
+    // > uses varH from recover_variance()
+    s << "   Equivalent     MC (" << std::setw(5) << proj_equiv_hf_rnd
+      << " HF samples): " << std::setw(wpp7) << budget_mc_estvar_q << '\n';
+    if (valid_variance(estvar_q) && valid_variance(budget_mc_estvar_q))
+      s << "   Equivalent MLCVMC / MC ratio:         " << std::setw(wpp7)
+	<< estvar_q / budget_mc_estvar_q << '\n';
+  }
 }
 
 
@@ -1798,7 +1805,6 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
   recover_variance(mlmc_stats, varH);
 
   compute_mlmf_estimator_variance(var_YH, N_hf, Lambda, estVar);
-  avgEstVar = average(estVar);
 }
 
 

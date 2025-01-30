@@ -43,9 +43,6 @@ list(APPEND DAKOTA_INCDIRS
 add_definitions("-DHAVE_CONFIG_H")
 add_definitions("-DDISABLE_DAKOTA_CONFIG_H")
 
-list(APPEND DAKOTA_INCDIRS ${Dakota_SOURCE_DIR}/packages/external/googletest/googletest/include)
-#list(APPEND DAKOTA_PKG_LIBS xyz)
-
 # Input specification maintenance options
 if (ENABLE_SPEC_MAINT OR ENABLE_DAKOTA_DOCS)
   # Build Java utilities needed for XML (dakota.xml) to NIDR 
@@ -415,7 +412,7 @@ set(util_src ParallelLibrary.cpp IteratorScheduler.cpp MPIPackBuffer.cpp
     DakotaTPLDataTransfer.cpp RestartVersion.cpp tolerance_intervals.cpp
     ParametersFileWriter.cpp ApreproParametersFileWriter.cpp StandardParametersFileWriter.cpp
     JSONParametersFileWriter.cpp ResultsFileReader.cpp StandardResultsFileReader.cpp
-    JSONResultsFileReader.cpp JSONResultsParser.cpp
+    JSONResultsFileReader.cpp JSONResultsParser.cpp model_utils.cpp
     )
 
 if(DAKOTA_HAVE_HDF5)

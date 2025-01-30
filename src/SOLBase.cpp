@@ -23,7 +23,7 @@ Minimizer* SOLBase::optLSqInstance(NULL);
 
 size_t SOLBase::numInstances = 0;
 
-SOLBase::SOLBase(Model& model):
+SOLBase::SOLBase(std::shared_ptr<Model> model):
   boundsArraySize(0), linConstraintMatrixF77(NULL),
   upperFactorHessianF77(NULL), constraintJacMatrixF77(NULL)
 {
@@ -58,9 +58,8 @@ check_sub_iterator_conflict(Model& model, unsigned short method_name)
 	sub_iterator.uses_method() == SUBMETHOD_DIRECT_NPSOL_OPTPP ) )
     sub_iterator.method_recourse(method_name);
   ModelList& sub_models = model.subordinate_models();
-  for (ModelLIter ml_iter = sub_models.begin();
-       ml_iter != sub_models.end(); ml_iter++) {
-    sub_iterator = ml_iter->subordinate_iterator();
+  for (auto& sm : sub_models) {
+    sub_iterator = sm->subordinate_iterator();
     if (!sub_iterator.is_null() && 
 	 ( sub_iterator.method_name() ==     NPSOL_SQP   ||
 	   sub_iterator.method_name() ==    NLSSOL_SQP   ||
@@ -571,10 +570,10 @@ constraint_eval(int& mode, int& ncnln, int& n, int& nrowj, int* needc,
 
     // Update model variables from x for use in evaluate()
     RealVector local_des_vars(Teuchos::Copy, x, n);
-    optLSqInstance->iteratedModel.continuous_variables(local_des_vars);
+    ModelUtils::continuous_variables(*optLSqInstance->iteratedModel, local_des_vars);
 
     optLSqInstance->activeSet.request_vector(local_asv);
-    optLSqInstance->iteratedModel.evaluate(optLSqInstance->activeSet);
+    optLSqInstance->iteratedModel->evaluate(optLSqInstance->activeSet);
     solInstance->fnEvalCntr++;
   }
   
@@ -582,7 +581,7 @@ constraint_eval(int& mode, int& ncnln, int& n, int& nrowj, int* needc,
   // Could follow local_asv entry-by-entry, but the design below is 
   // easier since the Response structure matches that needed by SOL.
   const Response& local_response
-    = optLSqInstance->iteratedModel.current_response();
+    = optLSqInstance->iteratedModel->current_response();
   if (asv_request & 1) {
     // Direct use of the array class assignment operator works
     // fine in DOTOptimizer, but causes major memory problems in npsol!

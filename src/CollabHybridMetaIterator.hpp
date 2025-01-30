@@ -34,9 +34,9 @@ public:
   /// standard constructor
   CollabHybridMetaIterator(ProblemDescDB& problem_db);
   /// alternate constructor
-  CollabHybridMetaIterator(ProblemDescDB& problem_db, Model& model);
+  CollabHybridMetaIterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
-  ~CollabHybridMetaIterator();
+  ~CollabHybridMetaIterator() override;
     
 protected:
   
@@ -45,18 +45,18 @@ protected:
   //
 
   /// Performs the collaborative hybrid iteration
-  void core_run();
+  void core_run() override;
 
-  void derived_init_communicators(ParLevLIter pl_iter);
-  void derived_set_communicators(ParLevLIter pl_iter);
-  void derived_free_communicators(ParLevLIter pl_iter);
+  void derived_init_communicators(ParLevLIter pl_iter) override;
+  void derived_set_communicators(ParLevLIter pl_iter) override;
+  void derived_free_communicators(ParLevLIter pl_iter) override;
 
-  IntIntPair estimate_partition_bounds();
+  IntIntPair estimate_partition_bounds() override;
 
   /// return the final solution from the collaborative iteration (variables)
-  const Variables& variables_results() const;
+  const Variables& variables_results() const override;
   /// return the final solution from the collaborative iteration (response)
-  const Response&  response_results() const;
+  const Response&  response_results() const override;
 
 private:
 
@@ -79,7 +79,7 @@ private:
   /// the set of iterators, one for each entry in methodStrings
   IteratorArray selectedIterators;
   /// the set of models, one for each iterator
-  ModelArray selectedModels;
+  std::vector<std::shared_ptr<Model>> selectedModels;
 
   // In this hybrid, the best results are not just the final results of the
   // final iterator (they must be captured independently of the iterators)
@@ -94,7 +94,7 @@ inline IntIntPair CollabHybridMetaIterator::estimate_partition_bounds()
   int min_procs = INT_MAX, max_procs = 0;       IntIntPair min_max;
   size_t i, num_meth = selectedIterators.size();  String empty_str;
   for (i=0; i<num_meth; ++i)  {
-    Model& model = (singlePassedModel) ? iteratedModel : selectedModels[i];
+    auto model = (singlePassedModel) ? iteratedModel : selectedModels[i];
     if (lightwtMethodCtor)
       iterSched.construct_sub_iterator(probDescDB, selectedIterators[i], model,
 				       empty_str, methodStrings[i], // ptr, name

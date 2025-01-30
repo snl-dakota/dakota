@@ -32,9 +32,9 @@ public:
   //
 
   /// standard constructor
-  NonDGenACVSampling(ProblemDescDB& problem_db, Model& model);
+  NonDGenACVSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
-  ~NonDGenACVSampling();
+  ~NonDGenACVSampling() override;
 
 protected:
 
@@ -42,45 +42,51 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void pre_run();
-  void core_run();
-  //void post_run(std::ostream& s);
-  //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void pre_run() override;
+  void core_run() override;
+  //void post_run(std::ostream& s) override;
+  //void print_results(std::ostream& s,
+  //                   short results_state = FINAL_RESULTS) override;
 
   void numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
-				 size_t& num_nln_con);
+				 size_t& num_nln_con) override;
   void numerical_solution_bounds_constraints(const MFSolutionData& soln,
     RealVector& x0, RealVector& x_lb, RealVector& x_ub,
     RealVector& lin_ineq_lb, RealVector& lin_ineq_ub, RealVector& lin_eq_tgt,
     RealVector& nln_ineq_lb, RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
-    RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs);
+    RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs) override;
 
-  void recover_results(const RealVector& cv_star, const RealVector& fn_star,
-		       MFSolutionData& soln);
+  void minimizer_results_to_solution_data(const RealVector& cv_star,
+					  const RealVector& fn_star,
+					  MFSolutionData& soln) override;
 
-  Real linear_model_cost(const RealVector& N_vec);
-  Real nonlinear_model_cost(const RealVector& r_and_N);
-  void linear_model_cost_gradient(const RealVector& N_vec,RealVector& grad_c);
+  Real linear_model_cost(const RealVector& N_vec) override;
+  Real nonlinear_model_cost(const RealVector& r_and_N) override;
+  void linear_model_cost_gradient(const RealVector& N_vec,
+				  RealVector& grad_c) override;
   void nonlinear_model_cost_gradient(const RealVector& r_and_N,
-				     RealVector& grad_c);
+				     RealVector& grad_c) override;
+				     
 
-  size_t num_approximations() const;
+  size_t num_approximations() const override;
+  
 
-  Real estimator_accuracy_metric();
-  //Real estimator_cost_metric();
+  const MFSolutionData& final_solution_data() const override;
 
-  void print_variance_reduction(std::ostream& s);
+  void print_variance_reduction(std::ostream& s) const override;
 
-  void estimator_variance_ratios(const RealVector& N_vec,
-				 RealVector& estvar_ratios);
+  void estimator_variance_ratios(const RealVector& cd_vars,
+				 RealVector& estvar_ratios) override;
 
   void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 				       RealVector& lin_ineq_lb,
-				       RealVector& lin_ineq_ub);
+				       RealVector& lin_ineq_ub) override;
+				       
   Real augmented_linear_ineq_violations(const RealVector& cd_vars,
 					const RealMatrix& lin_ineq_coeffs,
 					const RealVector& lin_ineq_lb,
-					const RealVector& lin_ineq_ub);
+					const RealVector& lin_ineq_ub) override;
+					
 
   //
   //- Heading: member functions
@@ -245,8 +251,6 @@ private:
   void restore_best();
   //void reset_acv();
 
-  bool valid_variance(Real var) const;
-
   void inflate_approx_set(const UShortArray& approx_set, SizetArray& index_map);
   void inflate_variables(const RealVector& cd_vars, RealVector& N_vec,
 			 const UShortArray& approx_set);
@@ -306,28 +310,16 @@ inline size_t NonDGenACVSampling::num_approximations() const
 { return activeModelSetIter->first.size(); }
 
 
-inline Real NonDGenACVSampling::estimator_accuracy_metric()
+inline const MFSolutionData& NonDGenACVSampling::final_solution_data() const
 {
   std::pair<UShortArray, UShortArray>
     key(activeModelSetIter->first, *activeDAGIter);
-  return dagSolns[key].average_estimator_variance();
+  return dagSolns.at(key);
 }
 
 
-//inline Real NonDGenACVSampling::estimator_cost_metric()
-//{
-//  std::pair<UShortArray, UShortArray>
-//    key(activeModelSetIter->first, *activeDAGIter);
-//  return dagSolns[key].equivalent_hf_allocation();
-//}
-
-
-inline void NonDGenACVSampling::print_variance_reduction(std::ostream& s)
-{
-  std::pair<UShortArray, UShortArray>
-    key(activeModelSetIter->first, *activeDAGIter);
-  print_estimator_performance(s, dagSolns[key]);
-}
+inline void NonDGenACVSampling::print_variance_reduction(std::ostream& s) const
+{ print_estimator_performance(s, final_solution_data()); }
 
 
 /*
@@ -451,7 +443,7 @@ inflate_variables(const RealVector& cd_vars, RealVector& N_vec,
     // N_H not provided so pull from latest counter values
     size_t hf_form_index, hf_lev_index;
     hf_indices(hf_form_index, hf_lev_index);
-    // average_estimator_variance() uses actual (not alloc) to sync with varH
+    // estimator_variance_metric() uses actual (not alloc) to sync with varH
     // so use same prior to defining G,g in precompute_genacv_controls() and
     // estimator_variance_ratios()
     N_vec[numApprox] = //(backfillFailures) ?
@@ -606,10 +598,6 @@ inline void NonDGenACVSampling::reset_acv()
   // Note: other sample counters are reset at top of each acv_*_pilot() call
 }
 */
-
-
-inline bool NonDGenACVSampling::valid_variance(Real var) const
-{ return (std::isfinite(var) && var > 0.); }
 
 
 inline void NonDGenACVSampling::

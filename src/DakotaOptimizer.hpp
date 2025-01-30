@@ -10,6 +10,7 @@
 #define DAKOTA_OPTIMIZER_H
 
 #include "DakotaMinimizer.hpp"
+#include "model_utils.hpp"
 
 namespace Dakota {
 
@@ -20,9 +21,9 @@ template <typename VecT>
 void get_initial_values( const Model & model,
                                VecT  & values)
 {
-  const RealVector& initial_points = model.continuous_variables();
+  const RealVector& initial_points = ModelUtils::continuous_variables(model);
 
-  for(int i=0; i<model.cv(); ++i)
+  for(int i=0; i<ModelUtils::cv(model); ++i)
     values[i] = initial_points[i];
 }
 
@@ -71,8 +72,8 @@ void get_bounds( const Model & model,
                        VecT  & lower_target,
                        VecT  & upper_target)
 {
-  const RealVector& c_l_bnds = model.continuous_lower_bounds();
-  const RealVector& c_u_bnds = model.continuous_upper_bounds();
+  const RealVector& c_l_bnds = ModelUtils::continuous_lower_bounds(model);
+  const RealVector& c_u_bnds = ModelUtils::continuous_upper_bounds(model);
 
   for( int i=0; i<c_l_bnds.length(); ++i )
   {
@@ -162,19 +163,19 @@ bool get_variable_bounds( Model &                   model, // would like to make
                           typename AdapterT::VecT & lower,
                           typename AdapterT::VecT & upper)
 {
-  const RealVector& lower_bnds_cont = model.continuous_lower_bounds();
-  const RealVector& upper_bnds_cont = model.continuous_upper_bounds();
+  const RealVector& lower_bnds_cont = ModelUtils::continuous_lower_bounds(model);
+  const RealVector& upper_bnds_cont = ModelUtils::continuous_upper_bounds(model);
 
-  const IntVector& lower_bnds_int = model.discrete_int_lower_bounds();
-  const IntVector& upper_bnds_int = model.discrete_int_upper_bounds();
+  const IntVector& lower_bnds_int = ModelUtils::discrete_int_lower_bounds(model);
+  const IntVector& upper_bnds_int = ModelUtils::discrete_int_upper_bounds(model);
 
-  const RealVector& lower_bnds_real = model.discrete_real_lower_bounds();
-  const RealVector& upper_bnds_real = model.discrete_real_upper_bounds();
+  const RealVector& lower_bnds_real = ModelUtils::discrete_real_lower_bounds(model);
+  const RealVector& upper_bnds_real = ModelUtils::discrete_real_upper_bounds(model);
 
-  const BitArray& int_set_bits = model.discrete_int_sets(); // appears to be able to modify the model object ...
-  const IntSetArray& init_pt_set_int = model.discrete_set_int_values();
-  const RealSetArray& init_pt_set_real = model.discrete_set_real_values();
-  const StringSetArray& init_pt_set_string = model.discrete_set_string_values();
+  const BitArray& int_set_bits = ModelUtils::discrete_int_sets(model); // appears to be able to modify the model object ...
+  const IntSetArray& init_pt_set_int = ModelUtils::discrete_set_int_values(model);
+  const RealSetArray& init_pt_set_real = ModelUtils::discrete_set_real_values(model);
+  const StringSetArray& init_pt_set_string = ModelUtils::discrete_set_string_values(model);
 
   // Sanity checks ?
 
@@ -185,7 +186,7 @@ bool get_variable_bounds( Model &                   model, // would like to make
                            big_real_bound_size,
                            AdapterT::noValue());
 
-  int offset = model.cv();
+  int offset = ModelUtils::cv(model);
   allSet = allSet && 
            get_mixed_bounds( 
                    int_set_bits,
@@ -198,10 +199,10 @@ bool get_variable_bounds( Model &                   model, // would like to make
                    (int)AdapterT::noValue(),
                    offset);
 
-  offset += model.div();
+  offset += ModelUtils::div(model);
   get_bounds(init_pt_set_real, lower, upper, offset);
 
-  offset += model.drv();
+  offset += ModelUtils::drv(model);
   get_bounds(init_pt_set_string, lower, upper, offset);
 
   return allSet;
@@ -223,14 +224,14 @@ int configure_inequality_constraint_maps(
                                Real scaling = 1.0 /* should this be tied to a trait ? RWH */)
 {
   const RealVector& ineq_lwr_bnds = ( ctype == CONSTRAINT_TYPE::NONLINEAR ) ?
-                                        model.nonlinear_ineq_constraint_lower_bounds() :
-                                        model.linear_ineq_constraint_lower_bounds();
+                                        ModelUtils::nonlinear_ineq_constraint_lower_bounds(model) :
+                                        ModelUtils::linear_ineq_constraint_lower_bounds(model);
   const RealVector& ineq_upr_bnds = ( ctype == CONSTRAINT_TYPE::NONLINEAR ) ?
-                                        model.nonlinear_ineq_constraint_upper_bounds() :
-                                        model.linear_ineq_constraint_upper_bounds();
+                                        ModelUtils::nonlinear_ineq_constraint_upper_bounds(model) :
+                                        ModelUtils::linear_ineq_constraint_upper_bounds(model);
   int num_ineq_constr             = ( ctype == CONSTRAINT_TYPE::NONLINEAR ) ?
-                                        model.num_nonlinear_ineq_constraints() :
-                                        model.num_linear_ineq_constraints();
+                                        ModelUtils::num_nonlinear_ineq_constraints(model) :
+                                        ModelUtils::num_linear_ineq_constraints(model);
 
   int num_added = 0;
 
@@ -269,11 +270,11 @@ void configure_equality_constraint_maps(
                                bool make_one_sided)
 {
   const RealVector& eq_targets = ( ctype == CONSTRAINT_TYPE::NONLINEAR ) ?
-                                     model.nonlinear_eq_constraint_targets() :
-                                     model.linear_eq_constraint_targets();
+                                     ModelUtils::nonlinear_eq_constraint_targets(model) :
+                                     ModelUtils::linear_eq_constraint_targets(model);
   int num_eq                   = ( ctype == CONSTRAINT_TYPE::NONLINEAR ) ?
-                                     model.num_nonlinear_eq_constraints() :
-                                     model.num_linear_eq_constraints();
+                                     ModelUtils::num_nonlinear_eq_constraints(model) :
+                                     ModelUtils::num_linear_eq_constraints(model);
 
   if( make_one_sided )
   {
@@ -310,11 +311,11 @@ void get_linear_constraints( Model & model,
                              typename AdapterT::MatT & lin_ineq_coeffs,
                              typename AdapterT::MatT & lin_eq_coeffs)
 {
-  const RealMatrix& linear_ineq_coeffs     = model.linear_ineq_constraint_coeffs();
-  const RealVector& linear_ineq_lower_bnds = model.linear_ineq_constraint_lower_bounds();
-  const RealVector& linear_ineq_upper_bnds = model.linear_ineq_constraint_upper_bounds();
-  const RealMatrix& linear_eq_coeffs       = model.linear_eq_constraint_coeffs();
-  const RealVector& linear_eq_targets      = model.linear_eq_constraint_targets();
+  const RealMatrix& linear_ineq_coeffs     = ModelUtils::linear_ineq_constraint_coeffs(model);
+  const RealVector& linear_ineq_lower_bnds = ModelUtils::linear_ineq_constraint_lower_bounds(model);
+  const RealVector& linear_ineq_upper_bnds = ModelUtils::linear_ineq_constraint_upper_bounds(model);
+  const RealMatrix& linear_eq_coeffs       = ModelUtils::linear_eq_constraint_coeffs(model);
+  const RealVector& linear_eq_targets      = ModelUtils::linear_eq_constraint_targets(model);
 
   // These are special cases involving matrices which get delegated to the adapter for now
   AdapterT::copy_matrix_data(linear_ineq_coeffs, lin_ineq_coeffs);
@@ -344,17 +345,17 @@ void apply_linear_constraints( const Model & model,
 			       bool adjoint = false)
 {
   size_t num_linear_consts      = ( etype == CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
-                                              model.num_linear_eq_constraints() :
-                                              model.num_linear_ineq_constraints();
+                                              ModelUtils::num_linear_eq_constraints(model) :
+                                              ModelUtils::num_linear_ineq_constraints(model);
   const RealMatrix & lin_coeffs = ( etype == CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
-                                              model.linear_eq_constraint_coeffs() :
-                                              model.linear_ineq_constraint_coeffs();
+                                              ModelUtils::linear_eq_constraint_coeffs(model) :
+                                              ModelUtils::linear_ineq_constraint_coeffs(model);
 
   apply_matrix_partial(lin_coeffs, in_vals, values);
 
   if( etype == CONSTRAINT_EQUALITY_TYPE::EQUALITY )
   {
-    const RealVector & lin_eq_targets = model.linear_eq_constraint_targets();
+    const RealVector & lin_eq_targets = ModelUtils::linear_eq_constraint_targets(model);
     for(size_t i=0;i<num_linear_consts;++i)
       values[i] -= lin_eq_targets(i);
   }
@@ -384,19 +385,19 @@ void apply_nonlinear_constraints( const Model & model,
 {
   size_t num_resp = 1; // does this need to be generalized to more than one response value? - RWH
 
-  size_t num_continuous_vars         = model.cv();
+  size_t num_continuous_vars         = ModelUtils::cv(model);
 
   size_t num_linear_consts           = ( etype == CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
-                                                   model.num_linear_eq_constraints() :
-                                                   model.num_linear_ineq_constraints();
+                                                   ModelUtils::num_linear_eq_constraints(model) :
+                                                   ModelUtils::num_linear_ineq_constraints(model);
   size_t num_nonlinear_consts        = ( etype == CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
-                                                   model.num_nonlinear_eq_constraints() :
-                                                   model.num_nonlinear_ineq_constraints();
+                                                   ModelUtils::num_nonlinear_eq_constraints(model) :
+                                                   ModelUtils::num_nonlinear_ineq_constraints(model);
 
   const RealMatrix & gradient_matrix = model.current_response().function_gradients();
 
   int grad_offset = ( etype == CONSTRAINT_EQUALITY_TYPE::EQUALITY ) ?
-                                                   num_resp + model.num_nonlinear_ineq_constraints() :
+                                                   num_resp + ModelUtils::num_nonlinear_ineq_constraints(model) :
                                                    num_resp;
 
   if (adjoint)
@@ -458,7 +459,7 @@ public:
         typename AdapterT::VecT & upper)
     {
       return get_variable_bounds<AdapterT>(
-                            iteratedModel,
+                            *iteratedModel,
                             bigRealBoundSize,
                             bigIntBoundSize,
                             lower,
@@ -473,7 +474,7 @@ public:
         VecT & cEqs, 
         VecT & cIneqs)
     {
-      return get_responses( iteratedModel,
+      return get_responses( *iteratedModel,
                             dak_fn_vals, 
                             constraintMapIndices,
                             constraintMapMultipliers,
@@ -493,26 +494,26 @@ protected:
   /// default constructor
   Optimizer(std::shared_ptr<TraitsBase> traits);
   /// alternate constructor; accepts a model
-  Optimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits);
+  Optimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model, std::shared_ptr<TraitsBase> traits);
 
   /// alternate constructor for "on the fly" instantiations
-  Optimizer(unsigned short method_name, Model& model, std::shared_ptr<TraitsBase> traits);
+  Optimizer(unsigned short method_name, std::shared_ptr<Model> model, std::shared_ptr<TraitsBase> traits);
   /// alternate constructor for "on the fly" instantiations
   Optimizer(unsigned short method_name, size_t num_cv, size_t num_div,
 	    size_t num_dsv, size_t num_drv, size_t num_lin_ineq,
 	    size_t num_lin_eq, size_t num_nln_ineq, size_t num_nln_eq, std::shared_ptr<TraitsBase> traits);
 
   /// destructor
-  ~Optimizer();
+  ~Optimizer() override;
 
   //
   //- Heading: Virtual member function redefinitions
   //
 
-  void initialize_run();
-  void post_run(std::ostream& s);
-  void finalize_run();
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void initialize_run() override;
+  void post_run(std::ostream& s) override;
+  void finalize_run() override;
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
   // Configure data transfer helper/adapters
   void configure_constraint_maps();
@@ -562,7 +563,7 @@ protected:
     }
 
     return configure_inequality_constraint_maps(
-        iteratedModel,
+        *iteratedModel,
         bigRealBoundSize,
         ctype,
         constraintMapIndices,
@@ -581,7 +582,7 @@ protected:
       split_into_one_sided = false;
 
     return configure_equality_constraint_maps(
-        iteratedModel,
+        *iteratedModel,
         ctype,
         constraintMapIndices,
         index_offset,
@@ -601,7 +602,7 @@ protected:
           typename AdapterT::MatT & lin_eq_coeffs)
   {
     return get_linear_constraints<AdapterT>(
-        iteratedModel,
+        *iteratedModel,
         bigRealBoundSize,
         lin_ineq_lower_bnds,
         lin_ineq_upper_bnds,
@@ -760,8 +761,8 @@ void set_best_responses( typename AdapterT::OptT & optimizer,
                          const std::vector<double> constraint_map_offsets,
                                ResponseArray & response_array)
 {
-  size_t num_nl_eq_constr = model.num_nonlinear_eq_constraints();
-  size_t num_nl_ineq_constr = model.num_nonlinear_ineq_constraints();
+  size_t num_nl_eq_constr = ModelUtils::num_nonlinear_eq_constraints(model);
+  size_t num_nl_ineq_constr = ModelUtils::num_nonlinear_ineq_constraints(model);
 
   RealVector best_fns(num_user_primary_fns + num_nl_eq_constr +
 		      num_nl_ineq_constr);
@@ -807,10 +808,10 @@ void set_variables( const VectorType & source,
   int num_disc_real_vars = vars.drv();
   int num_disc_string_vars = vars.dsv();
 
-  const BitArray& int_set_bits = model.discrete_int_sets();
-  const IntSetArray& set_int_vars = model.discrete_set_int_values();
-  const RealSetArray& set_real_vars = model.discrete_set_real_values();
-  const StringSetArray& set_string_vars = model.discrete_set_string_values();
+  const BitArray& int_set_bits = ModelUtils::discrete_int_sets(model);
+  const IntSetArray& set_int_vars = ModelUtils::discrete_set_int_values(model);
+  const RealSetArray& set_real_vars = ModelUtils::discrete_set_real_values(model);
+  const StringSetArray& set_string_vars = ModelUtils::discrete_set_string_values(model);
 
   RealVector contVars(num_cont_vars);
   IntVector  discIntVars(num_disc_int_vars);
@@ -840,25 +841,25 @@ template <typename VectorType>
 void get_variables( Model & model,
                     VectorType & vec)
 {
-  const RealVector& cvars = model.continuous_variables();
-  const IntVector& divars = model.discrete_int_variables();
-  const RealVector& drvars = model.discrete_real_variables();
-  const StringMultiArrayConstView dsvars = model.discrete_string_variables();
+  const RealVector& cvars = ModelUtils::continuous_variables(model);
+  const IntVector& divars = ModelUtils::discrete_int_variables(model);
+  const RealVector& drvars = ModelUtils::discrete_real_variables(model);
+  const StringMultiArrayConstView dsvars = ModelUtils::discrete_string_variables(model);
 
   // Could do a sanity check ?
-  if( (model.cv()  !=  cvars.length()) ||
-      (model.div() != divars.length()) ||
-      (model.drv() != drvars.length()) ||
-      (model.dsv() != dsvars.size())   )
+  if( (ModelUtils::cv(model)  !=  cvars.length()) ||
+      (ModelUtils::div(model) != divars.length()) ||
+      (ModelUtils::drv(model) != drvars.length()) ||
+      (ModelUtils::dsv(model) != dsvars.size())   )
   {
     Cerr << "\nget_variables Error: model variables have inconsistent lengths." << std::endl;
     abort_handler(-1);
   }
 
-  const BitArray& int_set_bits = model.discrete_int_sets();
-  const IntSetArray& pt_set_int = model.discrete_set_int_values();
-  const RealSetArray& pt_set_real = model.discrete_set_real_values();
-  const StringSetArray& pt_set_string = model.discrete_set_string_values();
+  const BitArray& int_set_bits = ModelUtils::discrete_int_sets(model);
+  const IntSetArray& pt_set_int = ModelUtils::discrete_set_int_values(model);
+  const RealSetArray& pt_set_real = ModelUtils::discrete_set_real_values(model);
+  const StringSetArray& pt_set_string = ModelUtils::discrete_set_string_values(model);
 
   int offset = 0;
   copy_data_partial(cvars, 0, vec, offset, cvars.length());
@@ -886,7 +887,7 @@ void get_responses( const Model & model,
                     vectorType & cEqs_vec, 
                     vectorType & cIneqs_vec)
 {
-  size_t num_nl_eq_constr = model.num_nonlinear_eq_constraints();
+  size_t num_nl_eq_constr = ModelUtils::num_nonlinear_eq_constraints(model);
 
   // Copy Objective - assumes single objective only for now
   f_vec.resize(1);
@@ -917,10 +918,10 @@ void get_nonlinear_eq_constraints( const Model & model,
                                          int offset = -1 )
 {
   if( -1 == offset )
-    offset = model.num_linear_eq_constraints();
-  size_t num_nonlinear_ineq        = model.num_nonlinear_ineq_constraints();
-  size_t num_nonlinear_eq          = model.num_nonlinear_eq_constraints();
-  const RealVector& nln_eq_targets = model.nonlinear_eq_constraint_targets();
+    offset = ModelUtils::num_linear_eq_constraints(model);
+  size_t num_nonlinear_ineq        = ModelUtils::num_nonlinear_ineq_constraints(model);
+  size_t num_nonlinear_eq          = ModelUtils::num_nonlinear_eq_constraints(model);
+  const RealVector& nln_eq_targets = ModelUtils::nonlinear_eq_constraint_targets(model);
   const RealVector& curr_resp_vals = model.current_response().function_values();
 
   for (int i=0; i<num_nonlinear_eq; i++)
@@ -937,8 +938,8 @@ void get_nonlinear_eq_constraints( Model & model,
                                          Real scale,
                                          int offset = 0 )
 {
-  const RealVector& nln_eq_targets = model.nonlinear_eq_constraint_targets();
-  int num_nl_eq_constr             = model.num_nonlinear_eq_constraints();
+  const RealVector& nln_eq_targets = ModelUtils::nonlinear_eq_constraint_targets(model);
+  int num_nl_eq_constr             = ModelUtils::num_nonlinear_eq_constraints(model);
 
   for (int i=0; i<num_nl_eq_constr; i++)
     values[i+offset] = curr_resp_vals[i] + scale*nln_eq_targets[i];
@@ -951,8 +952,8 @@ template <typename VecT>
 void get_nonlinear_ineq_constraints( const Model & model,
                                            VecT & values)
 {
-  size_t num_nonlinear_ineq        = model.num_nonlinear_ineq_constraints();
-  size_t num_linear_ineq           = model.num_linear_ineq_constraints();
+  size_t num_nonlinear_ineq        = ModelUtils::num_nonlinear_ineq_constraints(model);
+  size_t num_linear_ineq           = ModelUtils::num_linear_ineq_constraints(model);
   const RealVector& curr_resp_vals = model.current_response().function_values();
 
   copy_data_partial(curr_resp_vals, 1, values, num_linear_ineq, num_nonlinear_ineq);
@@ -970,9 +971,9 @@ void get_nonlinear_bounds( Model & model,
                            VecT & nonlin_ineq_upper,
                            VecT & nonlin_eq_targets)
 {
-  const RealVector& nln_ineq_lwr_bnds = model.nonlinear_ineq_constraint_lower_bounds();
-  const RealVector& nln_ineq_upr_bnds = model.nonlinear_ineq_constraint_upper_bounds();
-  const RealVector& nln_eq_targets    = model.nonlinear_eq_constraint_targets();
+  const RealVector& nln_ineq_lwr_bnds = ModelUtils::nonlinear_ineq_constraint_lower_bounds(model);
+  const RealVector& nln_ineq_upr_bnds = ModelUtils::nonlinear_ineq_constraint_upper_bounds(model);
+  const RealVector& nln_eq_targets    = ModelUtils::nonlinear_eq_constraint_targets(model);
 
   copy_data(nln_ineq_lwr_bnds, nonlin_ineq_lower);
   copy_data(nln_ineq_upr_bnds, nonlin_ineq_upper);

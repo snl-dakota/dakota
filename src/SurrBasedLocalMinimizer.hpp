@@ -33,16 +33,16 @@ public:
   //
 
   /// constructor
-  SurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model,
+  SurrBasedLocalMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model,
 			  std::shared_ptr<TraitsBase> traits);
   /// alternate constructor for instantiations "on the fly"
-  SurrBasedLocalMinimizer(Model& model, short merit_fn, short accept_logic,
+  SurrBasedLocalMinimizer(std::shared_ptr<Model> model, short merit_fn, short accept_logic,
 			  short constr_relax, const RealVector& tr_factors,
 			  size_t max_iter, size_t max_eval, Real conv_tol,
 			  unsigned short soft_conv_limit,
 			  std::shared_ptr<TraitsBase> traits);
   /// destructor
-  ~SurrBasedLocalMinimizer();
+  ~SurrBasedLocalMinimizer() override;
 
 protected:
 
@@ -51,17 +51,17 @@ protected:
   //
 
   /// initialize graphics customized for surrogate-based iteration
-  void initialize_graphics(int iterator_server_id = 1);
+  void initialize_graphics(int iterator_server_id = 1) override;
 
-  void pre_run();
+  void pre_run() override;
 
   /// Performs local surrogate-based minimization by minimizing local,
   /// global, or hierarchical surrogates over a series of trust regions.
-  void core_run();
+  void core_run() override;
 
-  void post_run(std::ostream& s);
+  void post_run(std::ostream& s) override;
 
-  void reset();
+  void reset() override;
 
   //
   //- Heading: New Virtual functions
@@ -169,7 +169,7 @@ protected:
   /// the approximate sub-problem formulation solved on each approximate
   /// minimization cycle: may be a shallow copy of iteratedModel, or may
   /// involve a RecastModel recursion applied to iteratedModel
-  Model approxSubProbModel;
+  std::shared_ptr<Model> approxSubProbModel;
 
   /// type of approximate subproblem objective: ORIGINAL_OBJ, LAGRANGIAN_OBJ,
   /// or AUGMENTED_LAGRANGIAN_OBJ
@@ -247,7 +247,7 @@ inline bool SurrBasedLocalMinimizer::
 find_approx_response(const Variables& search_vars, Response& search_resp)
 {
   return find_response(search_vars, search_resp,
-		       iteratedModel.surrogate_model().interface_id(),
+		       iteratedModel->surrogate_model()->interface_id(),
 		       approxSetRequest);
 }
 
@@ -256,7 +256,7 @@ inline bool SurrBasedLocalMinimizer::
 find_truth_response(const Variables& search_vars, Response& search_resp)
 {
   return find_response(search_vars, search_resp,
-		       iteratedModel.truth_model().interface_id(),
+		       iteratedModel->truth_model()->interface_id(),
 		       truthSetRequest);
 }
 

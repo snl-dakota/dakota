@@ -16,6 +16,7 @@
 #include "ProblemDescDB.hpp"
 #include "ActiveKey.hpp"
 #include "DakotaIterator.hpp"
+#include "NormalRandomVariable.hpp"
 
 static const char rcsId[]="@(#) $Id: NonDEnsembleSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
@@ -26,7 +27,7 @@ namespace Dakota {
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDEnsembleSampling::
-NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
+NonDEnsembleSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDSampling(problem_db, model),
   //pilotSamples(problem_db.get_sza("method.nond.pilot_samples")),
   pilotMgmtMode(
@@ -36,6 +37,8 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
   mlmfIter(0), equivHFEvals(0.), // also reset in pre_run()
   //allocationTarget(problem_db.get_short("method.nond.allocation_target")),
   //qoiAggregation(problem_db.get_short("method.nond.qoi_aggregation")),
+  estVarMetricType(DEFAULT_ESTVAR_METRIC), // prior to input spec
+  estVarMetricNormOrder(2),                // prior to input spec
   finalStatsType(problem_db.get_short("method.nond.final_statistics")),
   exportSampleSets(problem_db.get_bool("method.nond.export_sample_sequence")),
   exportSamplesFormat(
@@ -49,15 +52,15 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
 {
   // check iteratedModel for model form hierarchy and/or discretization levels;
   // set initial response mode for set_communicators() (precedes core_run()).
-  if (iteratedModel.surrogate_type() == "ensemble")
-    iteratedModel.surrogate_response_mode(AGGREGATED_MODELS);
+  if (iteratedModel->surrogate_type() == "ensemble")
+    iteratedModel->surrogate_response_mode(AGGREGATED_MODELS);
   else {
     Cerr << "Error: ensemble sampling for multifidelity analysis requires an "
 	 << "ensemble surrogate model specification." << std::endl;
     abort_handler(METHOD_ERROR);
   }
 
-  ModelList& model_ensemble = iteratedModel.subordinate_models(false);
+  ModelList& model_ensemble = iteratedModel->subordinate_models(false);
   size_t num_mf = model_ensemble.size(), num_lev, prev_lev = SZ_MAX,
     md_index, num_md;
   int m;  ModelLRevIter ml_rit; // reverse iteration for prev_lev tracking
@@ -74,13 +77,13 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model):
     // that solution costs are not specified (and have to be recovered from
     // response metadata), SimulationModel::initialize_solution_control() still
     // sizes solnCntlCostMap such that the correct number of levels is returned.
-    num_lev  = ml_rit->solution_levels(); // lower bound is 1 soln level
-    md_index = ml_rit->cost_metadata_index();
-    num_md   = ml_rit->current_response().metadata().size();
+    num_lev  = (*ml_rit)->solution_levels(); // lower bound is 1 soln level
+    md_index = (*ml_rit)->cost_metadata_index();
+    num_md   = (*ml_rit)->current_response().metadata().size();
 
     if (mlmf && num_lev > prev_lev) {
       Cerr << "\nWarning: unused solution levels in multilevel-multifidelity "
-	   << "sampling for model " << ml_rit->model_id() << ".\n         "
+	   << "sampling for model " << (*ml_rit)->model_id() << ".\n         "
 	   << "Ignoring " << num_lev - prev_lev << " of " << num_lev
 	   << " levels." << std::endl;
       num_lev = prev_lev;
@@ -202,7 +205,7 @@ void NonDEnsembleSampling::pre_run()
 
   // remove default key (empty activeKey) since this interferes with approx
   // combination in MF surrogates.  Also useful for ML/MF re-entrancy.
-  iteratedModel.clear_model_keys();
+  iteratedModel->clear_model_keys();
 
   // reset shared accumulators
   // Note: numLHSRuns is interpreted differently here (accumulation of LHS runs
@@ -241,7 +244,7 @@ accumulate_online_cost(const IntResponseMap& resp_map, RealVector& accum_cost,
   using std::isfinite;
   size_t m, cntr, start, end, md_index, md_index_m;
   unsigned short mf;  Real cost;  IntRespMCIter r_it;
-  const Pecos::ActiveKey& active_key = iteratedModel.active_model_key();
+  const Pecos::ActiveKey& active_key = iteratedModel->active_model_key();
 
   for (m=0, cntr=0, start=0; m<=numApprox; ++m) {
     end = start + numFunctions;
@@ -276,14 +279,14 @@ void NonDEnsembleSampling::initialize_final_statistics()
   case ESTIMATOR_PERFORMANCE: { // MSE in stat goal(s) used for method selection
     size_t num_final = 2;
     ActiveSet set(num_final);//, num_active_vars); // default RV = 1
-    set.derivative_vector(iteratedModel.inactive_continuous_variable_ids());
+    set.derivative_vector(ModelUtils::inactive_continuous_variable_ids(*iteratedModel));
     finalStatistics = Response(SIMULATION_RESPONSE, set);
 
     StringArray stats_labels(num_final);
     if (maxFunctionEvals == SZ_MAX) // accuracy spec: equiv cost is objective
-      { stats_labels[0] = "equiv_HF_cost"; stats_labels[1] = "avg_est_var"; }
+      { stats_labels[0] = "equiv_HF_cost"; stats_labels[1] = "est_var_metric"; }
     else                            // budget spec: equiv cost is constraint
-      { stats_labels[0] = "avg_est_var";   stats_labels[1] = "equiv_HF_cost"; }
+      { stats_labels[0] = "est_var_metric"; stats_labels[1] = "equiv_HF_cost"; }
 
     finalStatistics.function_labels(stats_labels);
     break;
@@ -339,6 +342,30 @@ void NonDEnsembleSampling::active_set_mapping()
 }
 
 
+void NonDEnsembleSampling::
+compute_mean_confidence_intervals(const RealMatrix& moment_stats,
+				  const RealVector& mean_estvar,
+				  RealMatrix& mean_conf_ints)
+{
+  size_t q, num_qoi = moment_stats.numCols();
+  if (mean_conf_ints.empty())
+    mean_conf_ints.shapeUninitialized(2, num_qoi);
+
+  // 95% confidence interval for mean estimator given estimator variance
+  // Normal: p(mu - 2sigma <= X <= mu + 2sigma) ~ .9545
+  // Std normal: Phi(2) ~ .9772, Phi(z) = .975
+  Real mean, sqrt_estvar, z
+    = Pecos::NormalRandomVariable::inverse_std_cdf(.975);// ~ 2 stdev on 1 side
+  for (q=0; q<num_qoi; ++q) {
+    mean = moment_stats(0,q);
+    sqrt_estvar = std::sqrt(mean_estvar[q]);
+    Real* mean_ci_q = mean_conf_ints[q];
+    mean_ci_q[0] = mean - z * sqrt_estvar; // interval lower bound
+    mean_ci_q[1] = mean + z * sqrt_estvar; // interval upper bound
+  }
+}
+
+
 void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
 {
   if (!statsFlag)
@@ -360,8 +387,8 @@ void NonDEnsembleSampling::print_results(std::ostream& s, short results_state)
   if (!projections) {
     s << "\nStatistics based on multilevel sample set:\n";
     //print_statistics(s);
-    print_moments(s, "response function",
-		  iteratedModel.truth_model().response_labels());
+    print_moments(s, momentStats, meanCIs, "response function",finalMomentsType,
+		  ModelUtils::response_labels(*iteratedModel->truth_model()), true);
     archive_moments();
   }
 }

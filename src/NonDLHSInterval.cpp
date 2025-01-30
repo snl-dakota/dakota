@@ -20,7 +20,7 @@
 namespace Dakota {
 
 
-NonDLHSInterval::NonDLHSInterval(ProblemDescDB& problem_db, Model& model):
+NonDLHSInterval::NonDLHSInterval(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDInterval(problem_db, model),
   seedSpec(probDescDB.get_int("method.random_seed")),
   numSamples(probDescDB.get_int("method.samples")),

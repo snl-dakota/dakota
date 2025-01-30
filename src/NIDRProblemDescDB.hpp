@@ -50,13 +50,13 @@ public:
   /// database using NIDR.
   void derived_parse_inputs(const std::string& dakota_input_file,
 			    const std::string& dakota_input_string,
-			    const std::string& parser_options);
+			    const std::string& parser_options) override;
   /// perform any data processing that must be coordinated with DB buffer
   /// broadcasting (performed prior to broadcasting the DB buffer on rank 0
   /// and after receiving the DB buffer on other processor ranks)
-  void derived_broadcast();
+  void derived_broadcast() override;
   /// perform any additional data post-processing
-  void derived_post_process();
+  void derived_post_process() override;
 
   //
   //- Heading: Data

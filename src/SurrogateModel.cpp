@@ -24,7 +24,7 @@ static const char rcsId[]="@(#) $Id: SurrogateModel.cpp 7024 2010-10-16 01:24:42
 namespace Dakota {
 
 SurrogateModel::SurrogateModel(ProblemDescDB& problem_db):
-  Model(BaseConstructor(), problem_db),
+  Model(problem_db),
   surrogateFnIndices(problem_db.get_szs("model.surrogate.function_indices")),
   responseMode(DEFAULT_SURROGATE_RESP_MODE),
   corrType(problem_db.get_short("model.surrogate.correction_type")),
@@ -53,7 +53,7 @@ SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 	       const SharedResponseData&  srd, bool share_srd,
 	       const ActiveSet& surr_set, short corr_type, short output_level):
   // Allow DFSModel to employ sizing differences (e.g., consuming aggregations)
-  Model(LightWtBaseConstructor(), surr_view, svd, share_svd, srd, share_srd,
+  Model(surr_view, svd, share_svd, srd, share_srd,
 	surr_set, output_level, problem_db, parallel_lib),
   responseMode(DEFAULT_SURROGATE_RESP_MODE), corrType(corr_type), corrOrder(0),
   surrModelEvalCntr(0), approxBuilds(0)
@@ -82,8 +82,8 @@ bool SurrogateModel::check_active_variables(const Model& sub_model)
   if ( active_view == sm_active_view ) {
     // common cases: Distinct on Distinct (e.g., opt/UQ on local/multipt/hier)
     //               All on All           (e.g., DACE/PStudy on global)
-    size_t sm_cv = sub_model.cv(),  sm_div = sub_model.div(),
-      sm_dsv = sub_model.dsv(),     sm_drv = sub_model.drv(),
+    size_t sm_cv = ModelUtils::cv(sub_model),  sm_div = ModelUtils::div(sub_model),
+      sm_dsv = ModelUtils::dsv(sub_model),     sm_drv = ModelUtils::drv(sub_model),
       cv  = currentVariables.cv(),  div = currentVariables.div(),
       dsv = currentVariables.dsv(), drv = currentVariables.drv();
     if (sm_cv != cv || sm_div != div || sm_dsv != dsv || sm_drv != drv) {
@@ -101,8 +101,8 @@ bool SurrogateModel::check_active_variables(const Model& sub_model)
   else if ( ( sm_active_view == RELAXED_ALL || sm_active_view == MIXED_ALL ) &&
 	    active_view >= RELAXED_DESIGN ) {
     // common case: Distinct on All (e.g., opt/UQ on global surrogate)
-    size_t sm_cv  = sub_model.cv(),   sm_div = sub_model.div(),
-      sm_dsv  = sub_model.dsv(),      sm_drv = sub_model.drv(),
+    size_t sm_cv  = ModelUtils::cv(sub_model),   sm_div = ModelUtils::div(sub_model),
+      sm_dsv  = ModelUtils::dsv(sub_model),      sm_drv = ModelUtils::drv(sub_model),
       acv  = currentVariables.acv(),  adiv = currentVariables.adiv(),
       adsv = currentVariables.adsv(), adrv = currentVariables.adrv();
     if (sm_cv != acv || sm_div != adiv || sm_dsv != adsv || sm_drv != adrv) {
@@ -122,8 +122,8 @@ bool SurrogateModel::check_active_variables(const Model& sub_model)
     // common case: All on Distinct (e.g., DACE/PStudy on local/multipt/hier)
     // Note: force_rebuild() is critical for this case (prevents interrogation
     // of a surrogate for inconsistent values for vars not included in build)
-    size_t sm_acv = sub_model.acv(), sm_adiv = sub_model.adiv(),
-      sm_adsv = sub_model.adsv(),    sm_adrv = sub_model.adrv(),
+    size_t sm_acv = ModelUtils::acv(sub_model), sm_adiv = ModelUtils::adiv(sub_model),
+      sm_adsv = ModelUtils::adsv(sub_model),    sm_adrv = ModelUtils::adrv(sub_model),
       cv  = currentVariables.cv(),   div = currentVariables.div(),
       dsv = currentVariables.dsv(),  drv = currentVariables.drv();
     if (sm_acv != cv || sm_adiv != div || sm_adsv != dsv || sm_adrv != drv) {
@@ -154,8 +154,8 @@ bool SurrogateModel::check_inactive_variables(const Model& sub_model)
   //   inactive state (config vars) and allow active parameterization to vary.
   // > For hi2lo, this implies that the active variable subset could be null
   //   for HF, as the active calibration variables only exist for LF.
-  size_t sm_icv = sub_model.icv(),  sm_idiv = sub_model.idiv(),
-    sm_idsv = sub_model.idsv(),     sm_idrv = sub_model.idrv(),
+  size_t sm_icv = ModelUtils::icv(sub_model),  sm_idiv = ModelUtils::idiv(sub_model),
+    sm_idsv = ModelUtils::idsv(sub_model),     sm_idrv = ModelUtils::idrv(sub_model),
     icv  = currentVariables.icv(),  idiv = currentVariables.idiv(),
     idsv = currentVariables.idsv(), idrv = currentVariables.idrv();
   if (sm_icv != icv || sm_idiv != idiv || sm_idsv != idsv || sm_idrv != idrv) {
@@ -211,21 +211,18 @@ void SurrogateModel::init_model(Model& model)
     constraints from userDefinedConstraints. */
 void SurrogateModel::init_model_constraints(Model& sub_model)
 {
-  if (sub_model.is_null()) // possible for DataFitSurrModel
-    return;
-
   size_t num_cv  = currentVariables.cv(),  num_div = currentVariables.div(),
          num_drv = currentVariables.drv(), num_dsv = currentVariables.dsv(),
-      num_sm_cv  = sub_model.cv(),         num_sm_div = sub_model.div(),
-      num_sm_dsv = sub_model.dsv(),        num_sm_drv = sub_model.drv();
+      num_sm_cv  = ModelUtils::cv(sub_model),         num_sm_div = ModelUtils::div(sub_model),
+      num_sm_dsv = ModelUtils::dsv(sub_model),        num_sm_drv = ModelUtils::drv(sub_model);
 
   // linear constraints (apply to active cv,div,drv)
 
   bool lin_ineq = (userDefinedConstraints.num_linear_ineq_constraints() > 0),
        lin_eq   = (userDefinedConstraints.num_linear_eq_constraints()   > 0);
-  if ( (lin_ineq || lin_eq) && (sub_model.cv()  != currentVariables.cv()  ||
-				sub_model.div() != currentVariables.div() ||
-				sub_model.drv() != currentVariables.drv()) ) {
+  if ( (lin_ineq || lin_eq) && (ModelUtils::cv(sub_model)  != currentVariables.cv()  ||
+				ModelUtils::div(sub_model) != currentVariables.div() ||
+				ModelUtils::drv(sub_model) != currentVariables.drv()) ) {
     // the views don't necessarily have to be the same, but number of active
     // continuous and active discrete int,real variables have to be consistent
     Cerr << "Error: cannot update linear constraints in SurrogateModel::"
@@ -233,30 +230,30 @@ void SurrogateModel::init_model_constraints(Model& sub_model)
     abort_handler(MODEL_ERROR);
   }
   if (lin_ineq) {
-    sub_model.linear_ineq_constraint_coeffs(
+    ModelUtils::linear_ineq_constraint_coeffs(sub_model, 
       userDefinedConstraints.linear_ineq_constraint_coeffs());
-    sub_model.linear_ineq_constraint_lower_bounds(
+    ModelUtils::linear_ineq_constraint_lower_bounds(sub_model, 
       userDefinedConstraints.linear_ineq_constraint_lower_bounds());
-    sub_model.linear_ineq_constraint_upper_bounds(
+    ModelUtils::linear_ineq_constraint_upper_bounds(sub_model, 
       userDefinedConstraints.linear_ineq_constraint_upper_bounds());
   }
   if (lin_eq) {
-    sub_model.linear_eq_constraint_coeffs(
+    ModelUtils::linear_eq_constraint_coeffs(sub_model, 
       userDefinedConstraints.linear_eq_constraint_coeffs());
-    sub_model.linear_eq_constraint_targets(
+    ModelUtils::linear_eq_constraint_targets(sub_model, 
       userDefinedConstraints.linear_eq_constraint_targets());
   }
 
   // nonlinear constraints
 
   if (userDefinedConstraints.num_nonlinear_ineq_constraints()) {
-    sub_model.nonlinear_ineq_constraint_lower_bounds(
+    ModelUtils::nonlinear_ineq_constraint_lower_bounds(sub_model, 
       userDefinedConstraints.nonlinear_ineq_constraint_lower_bounds());
-    sub_model.nonlinear_ineq_constraint_upper_bounds(
+    ModelUtils::nonlinear_ineq_constraint_upper_bounds(sub_model, 
       userDefinedConstraints.nonlinear_ineq_constraint_upper_bounds());
   }
   if (userDefinedConstraints.num_nonlinear_eq_constraints())
-    sub_model.nonlinear_eq_constraint_targets(
+    ModelUtils::nonlinear_eq_constraint_targets(sub_model, 
       userDefinedConstraints.nonlinear_eq_constraint_targets());
 }
 
@@ -268,17 +265,17 @@ void SurrogateModel::init_model_labels(Model& sub_model)
   // labels: update model with current{Variables,Response} descriptors
   // inactive vars / bounds: propagate inactive vars when necessary
 
-  if (sub_model.response_labels().empty()) // should not happen
+  if (ModelUtils::response_labels(sub_model).empty()) // should not happen
     switch (responseMode) {
     case AGGREGATED_MODELS: case AGGREGATED_MODEL_PAIR: {
       StringArray qoi_labels;
       copy_data_partial(currentResponse.function_labels(),
 			0, sub_model.qoi(), qoi_labels);
-      sub_model.response_labels(qoi_labels);
+      ModelUtils::response_labels(sub_model, qoi_labels);
       break;
     }
     default:
-      sub_model.response_labels(currentResponse.function_labels()); break;
+      ModelUtils::response_labels(sub_model, currentResponse.function_labels()); break;
     }
 
   // ***************************************************************************
@@ -383,11 +380,11 @@ void SurrogateModel::init_model_inactive_labels(Model& sub_model)
 }
 
 
-void SurrogateModel::update_model(Model& sub_model)
+void SurrogateModel::update_model(std::shared_ptr<Model> sub_model)
 {
-  if (sub_model.is_null()) return; // possible for DataFitSurrModel
-  update_model_active_variables(sub_model); // default operation
-  update_model_active_constraints(sub_model); // default operation
+  if (!sub_model) return; // possible for DataFitSurrModel
+  update_model_active_variables(*sub_model); // default operation
+  update_model_active_constraints(*sub_model); // default operation
   //update_model_distributions(sub_model);
 }
 
@@ -456,12 +453,12 @@ void SurrogateModel::update_model_distributions(Model& sub_model)
 /** Update values and labels in currentVariables and
     bound/linear/nonlinear constraints in userDefinedConstraints from
     variables and constraints data within sub_model. */
-void SurrogateModel::update_from_model(const Model& sub_model)
+void SurrogateModel::update_from_model(std::shared_ptr<Model> sub_model)
 {
-  if (sub_model.is_null()) return; // possible for DataFitSurrModel
-  update_variables_from_model(sub_model);
+  if (!sub_model) return; // possible for DataFitSurrModel
+  update_variables_from_model(*sub_model);
   //update_distributions_from_model(sub_model);
-  update_response_from_model(sub_model);
+  update_response_from_model(*sub_model);
 }
 
 
@@ -503,7 +500,7 @@ void SurrogateModel::update_response_from_model(const Model& sub_model)
       currentResponse.function_labels().empty()) // should not happen
     switch (responseMode) {
     case AGGREGATED_MODELS: case AGGREGATED_MODEL_PAIR: {
-      const StringArray& model_labels = sub_model.response_labels();
+      const StringArray& model_labels = ModelUtils::response_labels(sub_model);
       size_t i, start = 0, num_fns = currentResponse.num_functions(),
 	qoi = sub_model.qoi(), num_repl = num_fns / qoi;
       StringArray repl_labels(num_fns);
@@ -513,7 +510,7 @@ void SurrogateModel::update_response_from_model(const Model& sub_model)
       break;
     }
     default:
-      currentResponse.function_labels(sub_model.response_labels()); break;
+      currentResponse.function_labels(ModelUtils::response_labels(sub_model)); break;
     }
 
   // weights and sense for primary response functions
@@ -523,11 +520,11 @@ void SurrogateModel::update_response_from_model(const Model& sub_model)
 
   // linear constraints
 
-  bool lin_ineq = (sub_model.num_linear_ineq_constraints() > 0),
-       lin_eq   = (sub_model.num_linear_eq_constraints()   > 0);
-  if ( (lin_ineq || lin_eq) && (sub_model.cv()  != currentVariables.cv()  ||
-				sub_model.div() != currentVariables.div() ||
-				sub_model.drv() != currentVariables.drv()) ) {
+  bool lin_ineq = (ModelUtils::num_linear_ineq_constraints(sub_model) > 0),
+       lin_eq   = (ModelUtils::num_linear_eq_constraints(sub_model)   > 0);
+  if ( (lin_ineq || lin_eq) && (ModelUtils::cv(sub_model)  != currentVariables.cv()  ||
+				ModelUtils::div(sub_model) != currentVariables.div() ||
+				ModelUtils::drv(sub_model) != currentVariables.drv()) ) {
     // the views don't necessarily have to be the same, but the number of
     // active continuous and active discrete variables have to be consistent
     Cerr << "Error: cannot update linear constraints in SurrogateModel::update"
@@ -536,30 +533,30 @@ void SurrogateModel::update_response_from_model(const Model& sub_model)
   }
   if (lin_ineq) {
     userDefinedConstraints.linear_ineq_constraint_coeffs(
-      sub_model.linear_ineq_constraint_coeffs());
+      ModelUtils::linear_ineq_constraint_coeffs(sub_model));
     userDefinedConstraints.linear_ineq_constraint_lower_bounds(
-      sub_model.linear_ineq_constraint_lower_bounds());
+      ModelUtils::linear_ineq_constraint_lower_bounds(sub_model));
     userDefinedConstraints.linear_ineq_constraint_upper_bounds(
-      sub_model.linear_ineq_constraint_upper_bounds());
+      ModelUtils::linear_ineq_constraint_upper_bounds(sub_model));
   }
   if (lin_eq) {
     userDefinedConstraints.linear_eq_constraint_coeffs(
-      sub_model.linear_eq_constraint_coeffs());
+      ModelUtils::linear_eq_constraint_coeffs(sub_model));
     userDefinedConstraints.linear_eq_constraint_targets(
-      sub_model.linear_eq_constraint_targets());
+      ModelUtils::linear_eq_constraint_targets(sub_model));
   }
 
   // nonlinear constraints
 
-  if (sub_model.num_nonlinear_ineq_constraints()) {
+  if (ModelUtils::num_nonlinear_ineq_constraints(sub_model)) {
     userDefinedConstraints.nonlinear_ineq_constraint_lower_bounds(
-      sub_model.nonlinear_ineq_constraint_lower_bounds());
+      ModelUtils::nonlinear_ineq_constraint_lower_bounds(sub_model));
     userDefinedConstraints.nonlinear_ineq_constraint_upper_bounds(
-      sub_model.nonlinear_ineq_constraint_upper_bounds());
+      ModelUtils::nonlinear_ineq_constraint_upper_bounds(sub_model));
   }
-  if (sub_model.num_nonlinear_eq_constraints())
+  if (ModelUtils::num_nonlinear_eq_constraints(sub_model))
     userDefinedConstraints.nonlinear_eq_constraint_targets(
-      sub_model.nonlinear_eq_constraint_targets());
+      ModelUtils::nonlinear_eq_constraint_targets(sub_model));
 }
 
 
@@ -711,15 +708,16 @@ check_rebuild(const RealVector& ref_icv,        const IntVector&  ref_idiv,
 
   // for global surrogates, force rebuild for change in active bounds
 
-  Model& actual_model = active_truth_model();
+  Model* actual_model = (active_truth_model().get()) ? 
+    active_truth_model().get() : this;
 
   // Don't force rebuild for active subspace model:
   // JAM TODO: there's probably a more elegant way to accomodate subspace models
-  if (actual_model.model_type() == "active_subspace")
+  if (actual_model->model_type() == "active_subspace")
     return false;
 
   short approx_active_view = currentVariables.view().first;
-  if (actual_model.is_null()) {
+  if (!actual_model) {
     // compare reference vars against current inactive top-level data
     if ( ref_icv  != currentVariables.inactive_continuous_variables() ||
 	 ref_idiv !=
@@ -746,7 +744,7 @@ check_rebuild(const RealVector& ref_icv,        const IntVector&  ref_idiv,
 	return true;
   }
   else { // actual_model is defined
-    const Variables& actual_vars = actual_model.current_variables();
+    const Variables& actual_vars = actual_model->current_variables();
     short sub_model_active_view  = actual_vars.view().first;
 
     // compare reference vars against current inactive top-level data
@@ -778,17 +776,17 @@ check_rebuild(const RealVector& ref_icv,        const IntVector&  ref_idiv,
     Model sub_model = actual_model.subordinate_model();
     while (sub_model.model_type() == "recast")
       sub_model = sub_model.subordinate_model();
-    if ( ref_icv  != sub_model.inactive_continuous_variables()      ||
-         ref_idiv != sub_model.inactive_discrete_int_variables()    ||
-         ref_idsv != sub_model.inactive_discrete_string_variables() ||
-         ref_idrv != sub_model.inactive_discrete_real_variables() )
+    if ( ref_icv  != ModelUtils::inactive_continuous_variables(sub_model)      ||
+         ref_idiv != ModelUtils::inactive_discrete_int_variables(sub_model)    ||
+         ref_idsv != ModelUtils::inactive_discrete_string_variables(sub_model) ||
+         ref_idrv != ModelUtils::inactive_discrete_real_variables(sub_model) )
       return true;
     */
 
     // compare reference bounds against current active top-level data
     if ( strbegins(surrogateType, "global_") ) {
 
-      if (actual_model.model_type() == "recast") {
+      if (actual_model->model_type() == "recast") {
 	// check for internal changes within subModel definition since the
 	// SurrogateModel may be in a standard variable space (such that the
 	// outer level values/bounds do not reflect inner level updates).
@@ -805,17 +803,17 @@ check_rebuild(const RealVector& ref_icv,        const IntVector&  ref_idiv,
 	// Dive through Model recursion to bypass recasting. This is not readily
 	// handled within new Model virtual fns since the type of approximation
 	// (known here, but not w/i virtual fns) could dictate different checks.
-	Model sub_model = actual_model.subordinate_model();
-	while (sub_model.model_type() == "recast")
-	  sub_model = sub_model.subordinate_model();
+	auto sub_model = actual_model->subordinate_model();
+	while (sub_model->model_type() == "recast")
+	  sub_model = sub_model->subordinate_model();
 
-	if (ref_c_l_bnds  != sub_model.continuous_lower_bounds()    ||
-	    ref_c_u_bnds  != sub_model.continuous_upper_bounds()    ||
-	    ref_di_l_bnds != sub_model.discrete_int_lower_bounds()  ||
-	    ref_di_u_bnds != sub_model.discrete_int_upper_bounds()  ||
+	if (ref_c_l_bnds  != ModelUtils::continuous_lower_bounds(*sub_model)    ||
+	    ref_c_u_bnds  != ModelUtils::continuous_upper_bounds(*sub_model)    ||
+	    ref_di_l_bnds != ModelUtils::discrete_int_lower_bounds(*sub_model)  ||
+	    ref_di_u_bnds != ModelUtils::discrete_int_upper_bounds(*sub_model)  ||
 	    // no discrete string bounds
-	    ref_dr_l_bnds != sub_model.discrete_real_lower_bounds() ||
-	    ref_dr_u_bnds != sub_model.discrete_real_upper_bounds())
+	    ref_dr_l_bnds != ModelUtils::discrete_real_lower_bounds(*sub_model) ||
+	    ref_dr_u_bnds != ModelUtils::discrete_real_upper_bounds(*sub_model))
 	  return true;
       }
       else if ( approx_active_view == sub_model_active_view && 
@@ -1144,7 +1142,7 @@ size_t SurrogateModel::insert_response_start(size_t position)
 {
   // default to be overridden, given knowledge of ensemble response sizes
   size_t num_fns
-    = truth_model().current_response().active_set_request_vector().size();
+    = truth_model()->current_response().active_set_request_vector().size();
   return position * num_fns;
 }
 

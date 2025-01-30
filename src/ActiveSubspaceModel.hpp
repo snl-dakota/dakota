@@ -60,11 +60,8 @@ public:
   ActiveSubspaceModel(ProblemDescDB& problem_db);
 
   /// lightweight constructor
-  ActiveSubspaceModel(const Model& sub_model, unsigned int dimension,
+  ActiveSubspaceModel(std::shared_ptr<Model> sub_model, unsigned int dimension,
                       const RealMatrix &rotation_matrix, short output_level);
-
-  /// destructor
-  ~ActiveSubspaceModel();
 
   //
   //- Heading: Virtual function redefinitions
@@ -84,16 +81,16 @@ protected:
   //
 
   void derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-                                  bool recurse_flag);
+                                  bool recurse_flag) override;
   void derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-                                 bool recurse_flag);
+                                 bool recurse_flag) override;
   void derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-                                  bool recurse_flag);
+                                  bool recurse_flag) override;
 
-  void derived_evaluate(const ActiveSet& set);
-  void derived_evaluate_nowait(const ActiveSet& set);
-  const IntResponseMap& derived_synchronize();
-  const IntResponseMap& derived_synchronize_nowait();
+  void derived_evaluate(const ActiveSet& set) override;
+  void derived_evaluate_nowait(const ActiveSet& set) override;
+  const IntResponseMap& derived_synchronize() override;
+  const IntResponseMap& derived_synchronize_nowait() override;
 
   /*
   /// update component parallel mode for supporting parallelism in
@@ -109,16 +106,16 @@ protected:
   void stop_servers();
   */
 
-  void validate_inputs();
+  void validate_inputs() override;
 
-  void assign_instance();
+  void assign_instance() override;
 
   // ---
   // Construct time convenience functions
   // ---
 
   /// retrieve the sub-Model from the DB to pass up the constructor chain
-  Model get_sub_model(ProblemDescDB& problem_db);
+  std::shared_ptr<Model> get_sub_model(ProblemDescDB& problem_db);
 
   /// initialize the native problem space Monte Carlo sampler
   void init_fullspace_sampler(unsigned short sample_type);
@@ -130,10 +127,10 @@ protected:
 
   /// sample the model's gradient, computed the SVD, and form the active
   /// subspace rotation matrix.
-  void compute_subspace();
+  void compute_subspace() override;
 
   /// helper for shared code between lightweight ctor and initialize_mapping()
-  void initialize_subspace();
+  void initialize_subspace() override;
 
   /// sample the derivative at diff_samples points and leave temporary
   /// in dace_iterator
@@ -195,7 +192,7 @@ protected:
 
   /// translate the characterization of uncertain variables in the
   /// native_model to the reduced space of the transformed model
-  void uncertain_vars_to_subspace();
+  void uncertain_vars_to_subspace() override;
 
   // ---
   // Callback functions that perform data transform during the Recast operations
@@ -286,7 +283,7 @@ protected:
   unsigned int cvMaxRank;
 
   /// model containing a surrogate built over the active subspace
-  Model surrogateModel;
+  std::shared_ptr<Model> surrogateModel;
 
   /// flag specifying whether or not a surrogate is built over the subspace
   bool buildSurrogate;

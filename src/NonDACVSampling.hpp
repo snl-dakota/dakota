@@ -32,9 +32,9 @@ public:
   //
 
   /// standard constructor
-  NonDACVSampling(ProblemDescDB& problem_db, Model& model);
+  NonDACVSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
-  ~NonDACVSampling();
+  ~NonDACVSampling() override;
 
 protected:
 
@@ -42,16 +42,18 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  //void pre_run();
-  void core_run();
-  //void post_run(std::ostream& s);
-  //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
-  Real estimator_accuracy_metric();
-  //Real estimator_cost_metric();
-  void print_variance_reduction(std::ostream& s);
+  //void pre_run() override;
+  void core_run() override;
+  //void post_run(std::ostream& s) override;
+  //void print_results(std::ostream& s,
+  //                   short results_state = FINAL_RESULTS) override;
 
-  void estimator_variance_ratios(const RealVector& r_and_N,
-				 RealVector& estvar_ratios);
+  const MFSolutionData& final_solution_data() const override;
+
+  void print_variance_reduction(std::ostream& s) const override;
+
+  void estimator_variance_ratios(const RealVector& cd_vars,
+				 RealVector& estvar_ratios) override;
 
   //
   //- Heading: member functions
@@ -120,8 +122,8 @@ protected:
   Real update_hf_target(const RealVector& avg_eval_ratios, Real avg_N_H,
 			const RealVector& var_H, const RealVector& estvar0);
 
-  void print_model_solution(std::ostream& s, const MFSolutionData& soln,
-			    const UShortArray& approx_set);
+  void print_model_allocations(std::ostream& s, const MFSolutionData& soln,
+			       const UShortArray& approx_set);
 
   //
   //- Heading: Data
@@ -163,15 +165,14 @@ private:
   void update_model_groups();
   void update_model_groups(const SizetArray& approx_sequence);
 
-  void acv_raw_moments(const IntRealMatrixMap& sum_L_covar,
-		       const IntRealVectorMap& sum_H_covar,
-		       const IntRealSymMatrixArrayMap& sum_LL_covar,
-		       const IntRealMatrixMap& sum_LH_covar,
-		       const SizetArray& N_covar,
-		       const MFSolutionData& soln, RealVector2DArray& beta);
-
   void precompute_acv_controls(const RealVector& avg_eval_ratios);
-
+  void compute_acv_controls(const IntRealMatrixMap& sum_L_covar,
+			    const IntRealVectorMap& sum_H_covar,
+			    const IntRealSymMatrixArrayMap& sum_LL_covar,
+			    const IntRealMatrixMap& sum_LH_covar,
+			    const SizetArray& N_covar,
+			    const MFSolutionData& soln,
+			    RealVector2DArray& beta);
   void compute_acv_control(const RealMatrix& sum_L_m, Real sum_H_mq,
 			   const RealSymMatrix& sum_LL_mq,
 			   const RealMatrix& sum_LH_m, size_t N_shared_q,
@@ -182,8 +183,10 @@ private:
   void analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
 						  Real avg_N_H,
 						  MFSolutionData& soln);
-  void initialize_acv_counts(SizetArray& num_H, SizetSymMatrixArray& num_LL);
+  void analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
+					     Real avg_N_H,MFSolutionData& soln);
 
+  void initialize_acv_counts(SizetArray& num_H, SizetSymMatrixArray& num_LL);
   //void initialize_acv_covariances(IntRealSymMatrixArrayMap covLL,
   //				  IntRealMatrixMap& cov_LH,
   //				  IntRealVectorMap& var_H);
@@ -261,12 +264,8 @@ private:
 };
 
 
-inline Real NonDACVSampling::estimator_accuracy_metric()
-{ return acvSolnData.average_estimator_variance(); }
-
-
-//inline Real NonDACVSampling::estimator_cost_metric()
-//{ return mfmcSolnData.equivalent_hf_allocation(); }
+inline const MFSolutionData& NonDACVSampling::final_solution_data() const
+{ return acvSolnData; }
 
 
 inline void NonDACVSampling::
@@ -648,7 +647,8 @@ compute_R_sq(const RealSymMatrix& C, const RealSymMatrix& F,
 inline void NonDACVSampling::
 acv_estvar_ratios(const RealSymMatrix& F, RealVector& estvar_ratios)
 {
-  if (estvar_ratios.empty()) estvar_ratios.sizeUninitialized(numFunctions);
+  if (estvar_ratios.length() != numFunctions)
+    estvar_ratios.sizeUninitialized(numFunctions);
 
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     estvar_ratios[qoi]
@@ -745,7 +745,7 @@ compute_acv_control(const RealMatrix& sum_L_m, Real sum_H_mq,
 }
 
 
-inline void NonDACVSampling::print_variance_reduction(std::ostream& s)
+inline void NonDACVSampling::print_variance_reduction(std::ostream& s) const
 { print_estimator_performance(s, acvSolnData); }
 
 } // namespace Dakota

@@ -45,7 +45,7 @@ public:
 				 Response& response));
 
   /// destructor
-  ~AdapterModel();
+  ~AdapterModel() override;
 
   //
   //- Heading: Member functions
@@ -78,16 +78,16 @@ protected:
   //
 
   /// portion of evaluate() specific to AdapterModel
-  void derived_evaluate(const ActiveSet& set);
+  void derived_evaluate(const ActiveSet& set) override;
   /// portion of evaluate_nowait() specific to AdapterModel
-  void derived_evaluate_nowait(const ActiveSet& set);
+  void derived_evaluate_nowait(const ActiveSet& set) override;
   /// portion of synchronize() specific to AdapterModel
-  const IntResponseMap& derived_synchronize();
+  const IntResponseMap& derived_synchronize() override;
   /// portion of synchronize_nowait() specific to AdapterModel
-  const IntResponseMap& derived_synchronize_nowait();
+  const IntResponseMap& derived_synchronize_nowait() override;
 
   /// return the current evaluation id for the AdapterModel
-  int derived_evaluation_id() const;
+  int derived_evaluation_id() const override;
 
   /*
   bool initialize_mapping(ParLevLIter pl_iter);

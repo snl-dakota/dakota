@@ -36,7 +36,7 @@ public:
   /// lightweight constructor
   MixedVariables(const SharedVariablesData& svd);
   /// destructor
-  ~MixedVariables();
+  ~MixedVariables() override;
 
 protected:
 
@@ -44,21 +44,21 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void read(std::istream& s);
-  void read_tabular(std::istream& s, unsigned short vars_part = ALL_VARS);
+  void read(std::istream& s) override;
+  void read_tabular(std::istream& s, unsigned short vars_part = ALL_VARS) override;
 
-  void write(std::ostream& s, unsigned short vars_part = ALL_VARS) const;
-  void write_aprepro(std::ostream& s) const;
-  void write_json(json& s) const;
+  void write(std::ostream& s, unsigned short vars_part = ALL_VARS) const override;
+  void write_aprepro(std::ostream& s) const override;
+  void write_json(json& s) const override;
   void write_tabular(std::ostream& s,
-		     unsigned short vars_part = ALL_VARS) const;
+		     unsigned short vars_part = ALL_VARS) const override;
   void write_tabular_partial(std::ostream& s, size_t start_index,
-			     size_t num_items) const;
+			     size_t num_items) const override;
 
   void write_tabular_labels(std::ostream& s,
-                            unsigned short vars_part = ALL_VARS) const;
+                            unsigned short vars_part = ALL_VARS) const override;
   void write_tabular_partial_labels(std::ostream& s, size_t start_index,
-				    size_t num_items) const;
+				    size_t num_items) const override;
 
   /// Implementation of reading various formats using the specified read handler
   template<typename Reader>

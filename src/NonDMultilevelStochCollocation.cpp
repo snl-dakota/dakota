@@ -27,7 +27,7 @@ namespace Dakota {
 /** This constructor is called for a standard letter-envelope iterator
     instantiation using the ProblemDescDB. */
 NonDMultilevelStochCollocation::
-NonDMultilevelStochCollocation(ProblemDescDB& problem_db, Model& model):
+NonDMultilevelStochCollocation(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDStochCollocation(DEFAULT_METHOD, problem_db, model), // bypass SC ctor
   quadOrderSeqSpec(problem_db.get_usa("method.nond.quadrature_order")),
   ssgLevelSeqSpec(problem_db.get_usa("method.nond.sparse_grid_level")),
@@ -45,9 +45,8 @@ NonDMultilevelStochCollocation(ProblemDescDB& problem_db, Model& model):
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
-  Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    iteratedModel, u_space_type)); // retain dist bounds
+  auto g_u_model = std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, u_space_type); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -77,17 +76,17 @@ NonDMultilevelStochCollocation(ProblemDescDB& problem_db, Model& model):
   // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
   short corr_order = -1, corr_type = NO_CORRECTION;
   UShortArray approx_order; // empty
-  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  const ActiveSet& recast_set = g_u_model->current_response().active_set();
   // DFSModel: consume any QoI aggregation; support surrogate gradient evals
-  ShortArray sc_asv(g_u_model.qoi(), 3); // for stand alone mode
+  ShortArray sc_asv(g_u_model->qoi(), 3); // for stand alone mode
   ActiveSet  sc_set(sc_asv, recast_set.derivative_vector());
-  const ShortShortPair& sc_view = g_u_model.current_variables().view();
+  const ShortShortPair& sc_view = g_u_model->current_variables().view();
   String empty_str; // build data import not supported for structured grids
-  uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>(u_space_sampler,
+  uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, sc_set, sc_view, approx_type, approx_order, corr_type,
     corr_order, data_order, outputLevel, pt_reuse, empty_str, TABULAR_ANNOTATED,
     false, probDescDB.get_string("method.export_approx_points_file"),
-    probDescDB.get_ushort("method.export_approx_format")));
+    probDescDB.get_ushort("method.export_approx_format"));
   initialize_u_space_model();
 
   // -------------------------------
@@ -110,7 +109,7 @@ NonDMultilevelStochCollocation(ProblemDescDB& problem_db, Model& model):
 
 /** This constructor is used for helper iterator instantiation on the fly. */
 NonDMultilevelStochCollocation::
-NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
+NonDMultilevelStochCollocation(std::shared_ptr<Model> model, short exp_coeffs_approach,
 			       const UShortArray& num_int_seq,
 			       const RealVector& dim_pref, short u_space_type,
 			       short refine_type, short refine_control,
@@ -140,9 +139,8 @@ NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
-  Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    iteratedModel, u_space_type)); // retain dist bounds
+  auto g_u_model = std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, u_space_type); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -164,15 +162,15 @@ NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
   // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
   short corr_order = -1, corr_type = NO_CORRECTION;
   UShortArray approx_order; // empty
-  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  const ActiveSet& recast_set = g_u_model->current_response().active_set();
   // DFSModel: consume any QoI aggregation.
   // TO DO: support surrogate Hessians in helper mode.
-  ShortArray sc_asv(g_u_model.qoi(), 3); // TO DO: consider passing in data_mode
+  ShortArray sc_asv(g_u_model->qoi(), 3); // TO DO: consider passing in data_mode
   ActiveSet  sc_set(sc_asv, recast_set.derivative_vector());
-  const ShortShortPair& sc_view = g_u_model.current_variables().view();
-  uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>(u_space_sampler,
+  const ShortShortPair& sc_view = g_u_model->current_variables().view();
+  uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, sc_set, sc_view, approx_type, approx_order, corr_type,
-    corr_order, data_order, outputLevel, pt_reuse));
+    corr_order, data_order, outputLevel, pt_reuse);
   initialize_u_space_model();
 
   // no expansionSampler, no numSamplesOnExpansion
@@ -194,11 +192,11 @@ void NonDMultilevelStochCollocation::initialize_u_space_model()
   NonDStochCollocation::initialize_u_space_model();
 
   // emulation mode needed for ApproximationInterface::qoi_set_to_key_index()
-  uSpaceModel.discrepancy_emulation_mode(multilevDiscrepEmulation);
+  uSpaceModel->discrepancy_emulation_mode(multilevDiscrepEmulation);
 
   // Bind more than one SurrogateData instance via DataFitSurrModel ->
   // PecosApproximation
-  //uSpaceModel.link_multilevel_approximation_data();
+  //uSpaceModel->link_multilevel_approximation_data();
 }
 
 
@@ -244,7 +242,7 @@ void NonDMultilevelStochCollocation::core_run()
   if (!summaryOutputFlag) print_results(Cout, FINAL_RESULTS);
 
   // clean up for re-entrancy of ML SC
-  uSpaceModel.clear_inactive();
+  uSpaceModel->clear_inactive();
 
   finalize_expansion();
 }
@@ -256,7 +254,7 @@ void NonDMultilevelStochCollocation::assign_specification_sequence()
   case Pecos::QUADRATURE: {
     std::shared_ptr<NonDQuadrature> nond_quad =
       std::static_pointer_cast<NonDQuadrature>
-      (uSpaceModel.subordinate_iterator().iterator_rep());
+      (uSpaceModel->subordinate_iterator().iterator_rep());
     if (sequenceIndex < quadOrderSeqSpec.size())
       nond_quad->quadrature_order(quadOrderSeqSpec[sequenceIndex]);
     else //if (refineControl)
@@ -267,7 +265,7 @@ void NonDMultilevelStochCollocation::assign_specification_sequence()
   case Pecos::HIERARCHICAL_SPARSE_GRID: {
     std::shared_ptr<NonDSparseGrid> nond_sparse =
       std::static_pointer_cast<NonDSparseGrid>
-      (uSpaceModel.subordinate_iterator().iterator_rep());
+      (uSpaceModel->subordinate_iterator().iterator_rep());
     if (sequenceIndex < ssgLevelSeqSpec.size())
       nond_sparse->sparse_grid_level(ssgLevelSeqSpec[sequenceIndex]);
     else //if (refineControl)
@@ -289,7 +287,7 @@ void NonDMultilevelStochCollocation::increment_specification_sequence()
   case Pecos::QUADRATURE: {
     std::shared_ptr<NonDQuadrature> nond_quad =
       std::static_pointer_cast<NonDQuadrature>
-      (uSpaceModel.subordinate_iterator().iterator_rep());
+      (uSpaceModel->subordinate_iterator().iterator_rep());
     if (sequenceIndex+1 < quadOrderSeqSpec.size()) {
       ++sequenceIndex;      // advance order sequence if sufficient entries
       nond_quad->quadrature_order(quadOrderSeqSpec[sequenceIndex]);
@@ -302,7 +300,7 @@ void NonDMultilevelStochCollocation::increment_specification_sequence()
   case Pecos::HIERARCHICAL_SPARSE_GRID: {
     std::shared_ptr<NonDSparseGrid> nond_sparse =
       std::static_pointer_cast<NonDSparseGrid>
-      (uSpaceModel.subordinate_iterator().iterator_rep());
+      (uSpaceModel->subordinate_iterator().iterator_rep());
     if (sequenceIndex+1 < ssgLevelSeqSpec.size()) {
       ++sequenceIndex;      // advance level sequence if sufficient entries
       nond_sparse->sparse_grid_level(ssgLevelSeqSpec[sequenceIndex]);
@@ -328,11 +326,11 @@ void NonDMultilevelStochCollocation::combined_to_active()
   case Pecos::NODAL_INTERPOLANT:
     NonDExpansion::combined_to_active(); break;
   case Pecos::HIERARCHICAL_INTERPOLANT:
-    uSpaceModel.combine_approximation();
+    uSpaceModel->combine_approximation();
     // copy combined to active, but retain combined for use in hybrid stats.
     // *** This is a short term solution; best solution may be to
     //     support complete set of stats using the combined data.
-    uSpaceModel.combined_to_active(false);
+    uSpaceModel->combined_to_active(false);
     // don't force update to active statistics; allow hybrid approach where
     // combined can still be used when needed (integrate_response_moments())
     //statistics_type(Pecos::ACTIVE_EXPANSION_STATS, false); // don't restore

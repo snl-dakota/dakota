@@ -46,7 +46,7 @@ namespace Dakota
         VPSApproximation(const SharedApproxData& shared_data);
   
         /// destructor
-        ~VPSApproximation();
+        ~VPSApproximation() override;
 
 
     
@@ -142,23 +142,23 @@ namespace Dakota
 
         /// return the minimum number of samples (unknowns) required to
         /// build the derived class approximation type in numVars dimensions
-        int min_coefficients() const;
+        int min_coefficients() const override;
 
         // return the number of constraints to be enforced via an anchor point
         //int num_constraints()  const;
 
         /// builds the approximation from scratch
-        void build();
+        void build() override;
 
         /// retrieve the predicted function value for a given parameter set
-        Real value(const Variables& vars);
+        Real value(const Variables& vars) override;
 
         /// retrieve the function gradient at the predicted value
         /// for a given parameter set
-        const RealVector& gradient(const Variables& vars);
+        const RealVector& gradient(const Variables& vars) override;
 
         /// retrieve the variance of the predicted value for a given parameter set
-        Real prediction_variance(const Variables& vars);
+        Real prediction_variance(const Variables& vars) override;
 
 private: 
 

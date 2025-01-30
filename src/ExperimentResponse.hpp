@@ -58,7 +58,7 @@ public:
   /// alternate constructor using limited data
   ExperimentResponse(const ActiveSet& set);
   /// destructor
-  ~ExperimentResponse();
+  ~ExperimentResponse() override;
 
   void set_scalar_covariance(RealVector& scalars) override;
 

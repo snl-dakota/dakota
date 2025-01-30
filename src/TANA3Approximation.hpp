@@ -40,7 +40,7 @@ public:
   /// alternate constructor
   TANA3Approximation(const SharedApproxData& shared_data);
   /// destructor
-  ~TANA3Approximation();
+  ~TANA3Approximation() override;
 
 protected:
 
@@ -48,19 +48,19 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  int min_coefficients() const;
+  int min_coefficients() const override;
 
   //int num_constraints() const;
 
-  void build();
+  void build() override;
 
-  Real value(const Variables& vars);
+  Real value(const Variables& vars) override;
 
-  const RealVector& gradient(const Variables& vars);
+  const RealVector& gradient(const Variables& vars) override;
 
   //const RealMatrix& hessian(const Variables& vars);
 
-  void clear_current_active_data();
+  void clear_current_active_data() override;
 
 private:
 

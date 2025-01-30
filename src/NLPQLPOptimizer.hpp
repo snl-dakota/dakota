@@ -71,28 +71,28 @@ class NLPQLPTraits: public TraitsBase
   NLPQLPTraits() { }
 
   /// destructor
-  virtual ~NLPQLPTraits() { }
+  ~NLPQLPTraits() override { }
 
   /// A temporary query used in the refactor
-  virtual bool is_derived() { return true; }
+  bool is_derived() override { return true; }
 
   /// Return the flag indicating whether method supports continuous variables
-  bool supports_continuous_variables() { return true; }
+  bool supports_continuous_variables() override { return true; }
 
   /// Return the flag indicating whether method supports linear equalities
-  bool supports_linear_equality() { return true; }
+  bool supports_linear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports linear inequalities
-  bool supports_linear_inequality() { return true; }
+  bool supports_linear_inequality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear equalities
-  bool supports_nonlinear_equality() { return true; }
+  bool supports_nonlinear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear inequalities
-  bool supports_nonlinear_inequality() { return true; }
+  bool supports_nonlinear_inequality() override { return true; }
 
   /// Return the format used for nonlinear inequality constraints
-  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override
     { return NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER; }
 
 };
@@ -107,17 +107,17 @@ public:
   //
 
   /// standard constructor
-  NLPQLPOptimizer(ProblemDescDB& problem_db, Model& model);
+  NLPQLPOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor
-  NLPQLPOptimizer(Model& model);
+  NLPQLPOptimizer(std::shared_ptr<Model> model);
   /// destructor
-  ~NLPQLPOptimizer();
+  ~NLPQLPOptimizer() override;
 
   //
   //- Heading: Virtual member function redefinitions
   //
 
-  void core_run();
+  void core_run() override;
 
 protected:
 
@@ -126,7 +126,7 @@ protected:
   //
 
   /// performs run-time set up
-  void initialize_run();
+  void initialize_run() override;
 
 private:
 
@@ -142,7 +142,7 @@ private:
 
   void allocate_constraints(); ///< Allocates constraint mappings
 
-  void check_sub_iterator_conflict(); ///< prevent Fortran solver nesting
+  void check_sub_iterator_conflict() override; ///< prevent Fortran solver nesting
 
   /// L :       Number of parallel systems, i.e. function calls during
   ///           line search at predetermined iterates.

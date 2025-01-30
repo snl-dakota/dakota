@@ -36,7 +36,7 @@ public:
   /// default constructor
   DiscrepancyCorrection();
   /// standard constructor
-  DiscrepancyCorrection(Model& surr_model, const SizetSet& surr_fn_indices,
+  DiscrepancyCorrection(Model* surr_model, const SizetSet& surr_fn_indices,
 			short    corr_type, short corr_order,
 			String approx_type  = "local_taylor",
 			short  approx_order = SHRT_MAX);
@@ -53,7 +53,7 @@ public:
   //
 
   /// initialize the DiscrepancyCorrection data
-  void initialize(Model& surr_model, const SizetSet& surr_fn_indices,
+  void initialize(Model* surr_model, const SizetSet& surr_fn_indices,
 		  short    corr_type, short corr_order,
 		  String approx_type  = "local_taylor",
 		  short  approx_order = SHRT_MAX);
@@ -221,7 +221,7 @@ private:
   /// shallow copy of the surrogate model instance as returned by
   /// Model::surrogate_model() (the DataFitSurrModel or or one of
   /// EnsembleSurrModel::approxModels) 
-  Model surrModel;
+  Model* surrModel{nullptr};
 
   /// factors for combining additive and multiplicative corrections.
   /// Each factor is the weighting applied to the additive correction and
@@ -258,7 +258,7 @@ inline DiscrepancyCorrection::DiscrepancyCorrection():
 
 
 inline DiscrepancyCorrection::
-DiscrepancyCorrection(Model& surr_model, const SizetSet& surr_fn_indices,
+DiscrepancyCorrection(Model* surr_model, const SizetSet& surr_fn_indices,
 		      short    corr_type, short   corr_order,
 		      String approx_type, short approx_order)
 {

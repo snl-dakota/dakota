@@ -60,7 +60,7 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
 
   validate_inputs();
   
-  offlineEvalConcurrency = initialSamples * subModel.derivative_concurrency();
+  offlineEvalConcurrency = initialSamples * subModel->derivative_concurrency();
 
   // initialize the fullspace derivative sampler; this
   // will configure it to perform initialSamples
@@ -85,7 +85,7 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
     subspace for continuous variables only, but carries other active
     variables along for the ride. */
 ActiveSubspaceModel::
-ActiveSubspaceModel(const Model& sub_model, unsigned int dimension,
+ActiveSubspaceModel(std::shared_ptr<Model> sub_model, unsigned int dimension,
                     const RealMatrix &rotation_matrix, short output_level) :
   SubspaceModel(sub_model, dimension, output_level),
   gradientScaleFactors(RealArray(numFns, 1.)), buildSurrogate(false),
@@ -111,11 +111,7 @@ ActiveSubspaceModel(const Model& sub_model, unsigned int dimension,
 }
 
 
-ActiveSubspaceModel::~ActiveSubspaceModel()
-{ }
-
-
-Model ActiveSubspaceModel::get_sub_model(ProblemDescDB& problem_db)
+std::shared_ptr<Model> ActiveSubspaceModel::get_sub_model(ProblemDescDB& problem_db)
 {
   const String& actual_model_pointer
     = problem_db.get_string("model.surrogate.truth_model_pointer");
@@ -124,11 +120,11 @@ Model ActiveSubspaceModel::get_sub_model(ProblemDescDB& problem_db)
 
   transformVars = true; // hardwired for now
 
-  Model sub_model;
+  std::shared_ptr<Model> sub_model;
   if (transformVars) {
-    const Model& db_model = problem_db.get_model();
-    sub_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-      db_model, STD_NORMAL_U)); // retain dist bounds
+    auto db_model = problem_db.get_model();
+    sub_model = std::make_shared<ProbabilityTransformModel>(
+      db_model, STD_NORMAL_U); // retain dist bounds
   }
   else
     sub_model = problem_db.get_model();
@@ -155,7 +151,7 @@ void ActiveSubspaceModel::validate_inputs()
   }
 
   // validate response data
-  if (subModel.gradient_type() == "none") {
+  if (subModel->gradient_type() == "none") {
     error_flag = true;
     Cerr << "\nError (subspace model): gradients are required;"
          << "\n                        Please select numerical, analytic "
@@ -253,7 +249,7 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
   // -----------------------
   std::shared_ptr<Pecos::MarginalsCorrDistribution> native_dist_rep =
     std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
-    (subModel.multivariate_distribution().multivar_dist_rep());
+    (subModel->multivariate_distribution().multivar_dist_rep());
   std::shared_ptr<Pecos::MarginalsCorrDistribution> reduced_dist_rep =
     std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
     (mvDist.multivar_dist_rep());
@@ -385,7 +381,7 @@ void ActiveSubspaceModel::uncertain_vars_to_subspace()
     cv_types[boost::indices[idx_range(0, reducedRank)]]);
 
   // Set currentVariables to means of active variables:
-  continuous_variables(mu_y);
+  current_variables().continuous_variables(mu_y);
 }
 
 
@@ -921,9 +917,8 @@ unsigned int ActiveSubspaceModel::compute_cross_validation_metric()
     cv_error.push_back(0.0);
 
     // Create a local active subspace model using the light-weight constructor:
-    Model asm_model_tmp;
-    asm_model_tmp.assign_rep(std::make_shared<ActiveSubspaceModel>
-			     (subModel, ii, leftSingularVectors, QUIET_OUTPUT));
+    auto asm_model_tmp = std::make_shared<ActiveSubspaceModel>
+			     (subModel, ii, leftSingularVectors, QUIET_OUTPUT);
 
     String sample_reuse, approx_type = "global_moving_least_squares";
     ActiveSet surr_set = currentResponse.active_set(); // copy
@@ -933,10 +928,9 @@ unsigned int ActiveSubspaceModel::compute_cross_validation_metric()
     short corr_order = -1, corr_type = NO_CORRECTION, data_order = 1;
     Iterator dace_iterator;
 
-    Model cv_surr_model;
-    cv_surr_model.assign_rep(std::make_shared<DataFitSurrModel>(dace_iterator,
+    auto cv_surr_model = std::make_shared<DataFitSurrModel>(dace_iterator,
       asm_model_tmp, surr_set, surr_view, approx_type, approx_order, corr_type,
-      corr_order, data_order, QUIET_OUTPUT,sample_reuse));
+      corr_order, data_order, QUIET_OUTPUT,sample_reuse);
 
     Teuchos::BLAS<int, Real> teuchos_blas;
 
@@ -1003,7 +997,7 @@ unsigned int ActiveSubspaceModel::compute_cross_validation_metric()
         resp_it++;
       }
 
-      cv_error[ii-1] += build_cv_surrogate(cv_surr_model, training_x,
+      cv_error[ii-1] += build_cv_surrogate(*cv_surr_model, training_x,
                                            training_y,test_x, test_y)/num_folds;
     }
 
@@ -1113,9 +1107,8 @@ void ActiveSubspaceModel::build_surrogate()
   //   information stemming from the difference in ctor initializations,
   //   but this seems unimportant following final subspace creation (and
   //   additional data could be added to the lightweight ctor if/when needed).
-  Model asm_model;
-  asm_model.assign_rep(std::make_shared<ActiveSubspaceModel>(subModel,
-    reducedRank, leftSingularVectors, QUIET_OUTPUT)); // partitioned to W1,W2
+  auto asm_model = std::make_shared<ActiveSubspaceModel>(subModel,
+    reducedRank, leftSingularVectors, QUIET_OUTPUT); // partitioned to W1,W2
 
   String sample_reuse = "", approx_type = "global_moving_least_squares";
   ActiveSet surr_set = currentResponse.active_set(); // copy
@@ -1125,9 +1118,9 @@ void ActiveSubspaceModel::build_surrogate()
   short corr_order = -1, corr_type = NO_CORRECTION, data_order = 1;
   Iterator dace_iterator;
 
-  surrogateModel.assign_rep(std::make_shared<DataFitSurrModel>(dace_iterator,
+  surrogateModel = std::make_shared<DataFitSurrModel>(dace_iterator,
     asm_model, surr_set, surr_view, approx_type, approx_order, corr_type,
-    corr_order, data_order, outputLevel, sample_reuse));
+    corr_order, data_order, outputLevel, sample_reuse);
 
   const RealMatrix& all_vars_x = fullspaceSampler.all_samples();
   const IntResponseMap& all_responses = fullspaceSampler.all_responses();
@@ -1173,7 +1166,7 @@ void ActiveSubspaceModel::build_surrogate()
     }
   }
 
-  surrogateModel.append_approximation(all_vars_y, all_responses,
+  surrogateModel->append_approximation(all_vars_y, all_responses,
                                       (refinementSamples == 0));
 
   // If user requested refinement_samples for building the surrogate evaluate
@@ -1204,7 +1197,7 @@ void ActiveSubspaceModel::build_surrogate()
                       W1.values(), k, all_vars_x_ref.values(), k, beta,
                       all_vars_y_ref.values(), m);
 
-    surrogateModel.append_approximation(all_vars_y_ref, all_responses_ref,true);
+    surrogateModel->append_approximation(all_vars_y_ref, all_responses_ref,true);
   }
 }
 
@@ -1223,9 +1216,9 @@ build_cv_surrogate(Model &cv_surr_model, RealMatrix training_x,
   // evaluate surrogate at test points:
   IntResponseMap test_y_surr;
   ActiveSet surr_set = current_response().active_set(); // copy
-  surr_set.derivative_vector(cv_surr_model.continuous_variable_ids());
+  surr_set.derivative_vector(ModelUtils::continuous_variable_ids(cv_surr_model));
   for (int ii = 0; ii < num_test_points; ii++) {
-    cv_surr_model.continuous_variables(
+    ModelUtils::continuous_variables(cv_surr_model, 
       Teuchos::getCol(Teuchos::Copy, test_x, ii));
 
     cv_surr_model.evaluate(surr_set);
@@ -1282,11 +1275,11 @@ void ActiveSubspaceModel::derived_evaluate(const ActiveSet& set)
   if (buildSurrogate) {
     ++recastModelEvalCntr;
 
-    update_model_active_variables(surrogateModel);
-    surrogateModel.evaluate(set);
+    update_model_active_variables(*surrogateModel);
+    surrogateModel->evaluate(set);
 
     currentResponse.active_set(set);
-    currentResponse.update(surrogateModel.current_response());
+    currentResponse.update(surrogateModel->current_response());
   }
   else
     RecastModel::derived_evaluate(set);
@@ -1306,11 +1299,11 @@ void ActiveSubspaceModel::derived_evaluate_nowait(const ActiveSet& set)
   if (buildSurrogate) {
     ++recastModelEvalCntr;
 
-    update_model_active_variables(surrogateModel);
-    surrogateModel.evaluate_nowait(set);
+    update_model_active_variables(*surrogateModel);
+    surrogateModel->evaluate_nowait(set);
 
     // store map from surrogateModel eval id to ActiveSubspaceModel id
-    surrIdMap[surrogateModel.evaluation_id()] = recastModelEvalCntr;
+    surrIdMap[surrogateModel->evaluation_id()] = recastModelEvalCntr;
   }
   else
     RecastModel::derived_evaluate_nowait(set);
@@ -1329,7 +1322,7 @@ const IntResponseMap& ActiveSubspaceModel::derived_synchronize()
 
   if (buildSurrogate) {
     surrResponseMap.clear();
-    rekey_synch(surrogateModel, true, surrIdMap, surrResponseMap);
+    rekey_synch(*surrogateModel, true, surrIdMap, surrResponseMap);
     return surrResponseMap;
   }
   else
@@ -1349,7 +1342,7 @@ const IntResponseMap& ActiveSubspaceModel::derived_synchronize_nowait()
 
   if (buildSurrogate) {
     surrResponseMap.clear();
-    rekey_synch(surrogateModel, false, surrIdMap, surrResponseMap);
+    rekey_synch(*surrogateModel, false, surrIdMap, surrResponseMap);
     return surrResponseMap;
   }
   else
@@ -1373,7 +1366,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     if (!mappingInitialized)
       fullspaceSampler.init_communicators(pl_iter);
 
-    subModel.init_communicators(pl_iter, max_eval_concurrency);
+    subModel->init_communicators(pl_iter, max_eval_concurrency);
   }
 }
 
@@ -1388,12 +1381,12 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     if (!mappingInitialized)
       fullspaceSampler.set_communicators(pl_iter);
 
-    subModel.set_communicators(pl_iter, max_eval_concurrency);
+    subModel->set_communicators(pl_iter, max_eval_concurrency);
 
     // RecastModels do not utilize default set_ie_asynchronous_mode() as
     // they do not define the ie_parallel_level
-    asynchEvalFlag = subModel.asynch_flag();
-    evaluationCapacity = subModel.evaluation_capacity();
+    asynchEvalFlag = subModel->asynch_flag();
+    evaluationCapacity = subModel->evaluation_capacity();
   }
 }
 
@@ -1405,7 +1398,7 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   if (recurse_flag) {
     fullspaceSampler.free_communicators(pl_iter);
 
-    subModel.free_communicators(pl_iter, max_eval_concurrency);
+    subModel->free_communicators(pl_iter, max_eval_concurrency);
   }
 }
 

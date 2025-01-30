@@ -78,25 +78,25 @@ public:
   //
 
   DirectApplicInterface(const ProblemDescDB& problem_db); ///< constructor
-  ~DirectApplicInterface();                               ///< destructor
+  ~DirectApplicInterface() override;                               ///< destructor
 
   //
   //- Heading: Virtual function redefinitions
   //
 
   void derived_map(const Variables& vars, const ActiveSet& set,
-		   Response& response, int fn_eval_id);
-  void derived_map_asynch(const ParamResponsePair& pair);
+		   Response& response, int fn_eval_id) override;
+  void derived_map_asynch(const ParamResponsePair& pair) override;
 
-  void wait_local_evaluations(PRPQueue& prp_queue);
-  void test_local_evaluations(PRPQueue& prp_queue);
+  void wait_local_evaluations(PRPQueue& prp_queue) override;
+  void test_local_evaluations(PRPQueue& prp_queue) override;
 
-  int  synchronous_local_analysis(int analysis_id);
+  int  synchronous_local_analysis(int analysis_id) override;
 
-  const StringArray& analysis_drivers() const;
+  const StringArray& analysis_drivers() const override;
 
-  void init_communicators_checks(int max_eval_concurrency);
-  void  set_communicators_checks(int max_eval_concurrency);
+  void init_communicators_checks(int max_eval_concurrency) override;
+  void  set_communicators_checks(int max_eval_concurrency) override;
 
   //void clear_bookkeeping(); // clears threadIdMap
 

@@ -52,7 +52,7 @@ public:
   /// constructor
   ProcessApplicInterface(const ProblemDescDB& problem_db);
   /// destructor
-  ~ProcessApplicInterface();
+  ~ProcessApplicInterface() override;
 
 protected:
 
@@ -61,15 +61,15 @@ protected:
   //
 
   void derived_map(const Variables& vars, const ActiveSet& set,
-		   Response& response, int fn_eval_id);
-  void derived_map_asynch(const ParamResponsePair& pair);
+		   Response& response, int fn_eval_id) override;
+  void derived_map_asynch(const ParamResponsePair& pair) override;
 
-  void wait_local_evaluations(PRPQueue& prp_queue);
-  void test_local_evaluations(PRPQueue& prp_queue);
+  void wait_local_evaluations(PRPQueue& prp_queue) override;
+  void test_local_evaluations(PRPQueue& prp_queue) override;
 
-  const StringArray& analysis_drivers() const;
+  const StringArray& analysis_drivers() const override;
 
-  void file_cleanup() const;
+  void file_cleanup() const override;
 
   void file_and_workdir_cleanup(const bfs::path &params_path,
       const bfs::path &results_path,

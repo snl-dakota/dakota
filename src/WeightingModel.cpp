@@ -15,7 +15,7 @@ namespace Dakota {
 WeightingModel* WeightingModel::weightModelInstance(NULL);
 
 
-WeightingModel::WeightingModel(Model& sub_model
+WeightingModel::WeightingModel(std::shared_ptr<Model> sub_model
 			       // TODO: weight_transformer = sqrt
 			       ):
   // BMA TODO: should the BitArrays be empty or same as submodel?
@@ -23,10 +23,10 @@ WeightingModel::WeightingModel(Model& sub_model
 	      SizetArray(), // no change in vars size
 	      BitArray(),   // default discrete int relaxation
 	      BitArray(),   // default discrete real relaxation
-	      sub_model.current_variables().view(),
-	      sub_model.num_primary_fns(), sub_model.num_secondary_fns(),
-	      sub_model.num_nonlinear_ineq_constraints(),
-	      response_order(sub_model) )
+	      sub_model->current_variables().view(),
+	      sub_model->num_primary_fns(), sub_model->num_secondary_fns(),
+	      ModelUtils::num_nonlinear_ineq_constraints(*sub_model),
+	      response_order(*sub_model) )
 {
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Info: Constructing WeightingModel" << std::endl;
@@ -36,18 +36,18 @@ WeightingModel::WeightingModel(Model& sub_model
 
   // TODO: this could generalize to arbitrary variable types...
   // TODO: is this sufficiently general for Bayesian hyperparameters?
-  size_t num_cv = sub_model.cv();
+  size_t num_cv = ModelUtils::cv(*sub_model);
   Sizet2DArray vars_map_indices(num_cv, SizetArray(1));
   for (size_t i=0; i<num_cv; ++i)
     vars_map_indices[i][0] = i;
   bool nonlinear_vars_mapping = false;
 
-  size_t num_pri_fns = sub_model.num_primary_fns();
+  size_t num_pri_fns = sub_model->num_primary_fns();
   Sizet2DArray primary_resp_map_indices(num_pri_fns, SizetArray(1));
   for (size_t i=0; i<num_pri_fns; ++i)
     primary_resp_map_indices[i][0] = i;
 
-  size_t num_sec_fns = sub_model.num_secondary_fns();
+  size_t num_sec_fns = sub_model->num_secondary_fns();
   Sizet2DArray secondary_resp_map_indices(num_sec_fns, SizetArray(1));
   for (size_t i=0; i<num_sec_fns; ++i)
     secondary_resp_map_indices[i][0] = num_pri_fns + i;
@@ -71,7 +71,7 @@ WeightingModel::WeightingModel(Model& sub_model
   primary_response_fn_weights(RealVector(), recurse_flag);
 
   // Preserve optimization min/max sense through the weighting transformation
-  const BoolDeque& submodel_sense = sub_model.primary_response_fn_sense();
+  const BoolDeque& submodel_sense = sub_model->primary_response_fn_sense();
   primary_response_fn_sense(submodel_sense);
 
   // TODO: handle relax DI, DR?
@@ -98,7 +98,7 @@ primary_resp_weighter(const Variables& sub_model_vars,
 
   // weights are available in the sub-model, but not in *this
   const RealVector& lsq_weights = weightModelInstance->
-    subModel.primary_response_fn_weights();
+    subModel->primary_response_fn_weights();
   RealVector wt_fn_vals = weighted_response.function_values_view();
   const ShortArray& asv = weighted_response.active_set_request_vector();
   const RealVector& sm_fn_vals = sub_model_response.function_values();

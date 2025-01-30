@@ -20,6 +20,7 @@
 
 #include "dakota_system_defs.hpp"
 #include "DakotaModel.hpp"
+#include "model_utils.hpp"
 // Needed for adapter utils
 #include "DakotaOptimizer.hpp"
 
@@ -49,7 +50,7 @@ using std::make_pair;
 
 namespace Dakota {
 
-COLINApplication::COLINApplication(Model& model) :
+COLINApplication::COLINApplication(std::shared_ptr<Model> model) :
   blockingSynch(true) // updated from COLINOptimizer
 { set_problem(model);}
 
@@ -57,10 +58,10 @@ COLINApplication::COLINApplication(Model& model) :
       avoids using probDescDB, so it is called by both the standard
       and the on-the-fly COLINOptimizer constructors.*/
 
-void COLINApplication::set_problem(Model& model) {
+void COLINApplication::set_problem(std::shared_ptr<Model> model) {
 
   iteratedModel = model;
-  activeSet = model.current_response().active_set();
+  activeSet = model->current_response().active_set();
 
   // BMA NOTE: For COLIN to relax integer variables, must hand COLIN a
   // relaxed problem with continuous vars; see
@@ -68,11 +69,11 @@ void COLINApplication::set_problem(Model& model) {
 
   // Get the upper and lower bounds on the continuous variables.
 
-  _num_real_vars = model.cv();
+  _num_real_vars = ModelUtils::cv(*model);
   if (num_real_vars > 0)
   {
-    _real_lower_bounds = model.continuous_lower_bounds();
-    _real_upper_bounds = model.continuous_upper_bounds();
+    _real_lower_bounds = ModelUtils::continuous_lower_bounds(*model);
+    _real_upper_bounds = ModelUtils::continuous_upper_bounds(*model);
   }
 
   // One specification type for discrete variables is a set of values.
@@ -82,16 +83,16 @@ void COLINApplication::set_problem(Model& model) {
 
   // Get the upper and lower bounds on the discrete variables.
 
-  size_t i, j, num_div = model.div(), num_drv = model.drv(),
-    num_dsv = model.dsv(), num_dv = num_div + num_drv + num_dsv;
+  size_t i, j, num_div = ModelUtils::div(*model), num_drv = ModelUtils::drv(*model),
+    num_dsv = ModelUtils::dsv(*model), num_dv = num_div + num_drv + num_dsv;
   _num_int_vars = num_dv;
   if (num_dv) {
-    const BitArray&       di_set_bits = model.discrete_int_sets();
-    const IntVector&      lower_bnds  = model.discrete_int_lower_bounds();
-    const IntVector&      upper_bnds  = model.discrete_int_upper_bounds();
-    const IntSetArray&    dsiv_values = model.discrete_set_int_values();
-    const RealSetArray&   dsrv_values = model.discrete_set_real_values();
-    const StringSetArray& dssv_values = model.discrete_set_string_values();
+    const BitArray&       di_set_bits = ModelUtils::discrete_int_sets(*model);
+    const IntVector&      lower_bnds  = ModelUtils::discrete_int_lower_bounds(*model);
+    const IntVector&      upper_bnds  = ModelUtils::discrete_int_upper_bounds(*model);
+    const IntSetArray&    dsiv_values = ModelUtils::discrete_set_int_values(*model);
+    const RealSetArray&   dsrv_values = ModelUtils::discrete_set_real_values(*model);
+    const StringSetArray& dssv_values = ModelUtils::discrete_set_string_values(*model);
     // Need temporary storage in which to consolidate all types of
     // discrete variables;
 
@@ -133,17 +134,17 @@ void COLINApplication::set_problem(Model& model) {
     _int_upper_bounds = upper;
   }
 
-  _num_nonlinear_constraints = model.num_secondary_fns();
+  _num_nonlinear_constraints = model->num_secondary_fns();
 
   // For multiobjective, this will be taken from the RecastModel and
   // will be consistent with the COLIN iterator's view
 
   //_num_objectives = 
   //  model.num_functions() - num_nonlinear_constraints.as<size_t>();
-  size_t numObj = model.num_primary_fns();
+  size_t numObj = model->num_primary_fns();
   _num_objectives = numObj;
  
-  const BoolDeque& max_sense = model.primary_response_fn_sense();
+  const BoolDeque& max_sense = model->primary_response_fn_sense();
   if (!max_sense.empty()) {
     // COLINApplication derived from a (general) multi-objective problem type of
     // Application<MO_MINLP2_problem>, so don't need to manage a scalar sense.
@@ -170,7 +171,7 @@ void COLINApplication::set_problem(Model& model) {
     RealVector ineq_upper; // will be sized in adapter call
     RealVector eq_targets; // will be sized in adapter call
 
-    get_nonlinear_bounds( model, ineq_lower, ineq_upper, eq_targets);
+    get_nonlinear_bounds( *model, ineq_lower, ineq_upper, eq_targets);
     copy_data_partial(ineq_lower, bounds, 0 );
     copy_data_partial(eq_targets, bounds, ineq_lower.length() );
     _nonlinear_constraint_lower_bounds = bounds;
@@ -185,28 +186,28 @@ void COLINApplication::set_problem(Model& model) {
   // User beware.  Need to confirm which algorithms do and don't
   // handle linear constraints and how.
 
-  _num_linear_constraints = model.num_linear_ineq_constraints() +
-    model.num_linear_eq_constraints();
+  _num_linear_constraints = ModelUtils::num_linear_ineq_constraints(*model) +
+    ModelUtils::num_linear_eq_constraints(*model);
 
   if (num_linear_constraints > 0) {
 
     RealMatrix linear_coeffs( num_linear_constraints.as<size_t>(), 
                               domain_size.as<size_t>() );
 
-    const RealMatrix& linear_ineq_coeffs = model.linear_ineq_constraint_coeffs();
-    const RealMatrix& linear_eq_coeffs = model.linear_eq_constraint_coeffs();
+    const RealMatrix& linear_ineq_coeffs = ModelUtils::linear_ineq_constraint_coeffs(*model);
+    const RealMatrix& linear_eq_coeffs = ModelUtils::linear_eq_constraint_coeffs(*model);
 
     // Populate the coefficient matrix, first with inequality
     // coefficients, then with equality coefficients.
 
     size_t ndx = 0, ndy = 0;
-    for (i=0; i<model.num_linear_ineq_constraints(); i++) {
+    for (i=0; i<ModelUtils::num_linear_ineq_constraints(*model); i++) {
       for (j=0; domain_size>j; j++)
 	linear_coeffs(ndx,ndy++) = linear_ineq_coeffs(i,j);
       ndx++;
     }
 
-    for (i=0; i<model.num_linear_eq_constraints(); i++) {
+    for (i=0; i<ModelUtils::num_linear_eq_constraints(*model); i++) {
       for (j=0; domain_size>j; j++)
 	linear_coeffs(ndx,ndy++) = linear_eq_coeffs(i,j);
       ndx++;
@@ -217,20 +218,20 @@ void COLINApplication::set_problem(Model& model) {
    RealVector bounds(num_linear_constraints.as<size_t>());
 
    const RealVector& lin_ineq_lower
-     = model.linear_ineq_constraint_lower_bounds();
+     = ModelUtils::linear_ineq_constraint_lower_bounds(*model);
    const RealVector& lin_ineq_upper
-     = model.linear_ineq_constraint_upper_bounds();
+     = ModelUtils::linear_ineq_constraint_upper_bounds(*model);
    const RealVector& lin_eq_targets
-     = model.linear_eq_constraint_targets();
+     = ModelUtils::linear_eq_constraint_targets(*model);
 
    // Lower bounds and equality targets go together in COLIN lower
    // bounds.
 
-   for (i=0; i<model.num_linear_ineq_constraints(); i++) 
+   for (i=0; i<ModelUtils::num_linear_ineq_constraints(*model); i++) 
      bounds[i] = lin_ineq_lower[i];
 
-   ndx = model.num_linear_ineq_constraints();
-   for (i=0; i<model.num_linear_eq_constraints(); i++, ndx++)
+   ndx = ModelUtils::num_linear_ineq_constraints(*model);
+   for (i=0; i<ModelUtils::num_linear_eq_constraints(*model); i++, ndx++)
      bounds[ndx] = lin_eq_targets[i];
 
    _linear_constraint_lower_bounds = bounds;
@@ -238,11 +239,11 @@ void COLINApplication::set_problem(Model& model) {
    // Upper bounds and equality targets go together in COLIN upper
    // bounds.
 
-   for (i=0; i<model.num_linear_ineq_constraints(); i++) 
+   for (i=0; i<ModelUtils::num_linear_ineq_constraints(*model); i++) 
      bounds[i] = lin_ineq_upper[i];
 
-   ndx = model.num_linear_ineq_constraints();
-   for (i=0; i<model.num_linear_eq_constraints(); i++, ndx++)
+   ndx = ModelUtils::num_linear_ineq_constraints(*model);
+   for (i=0; i<ModelUtils::num_linear_eq_constraints(*model); i++, ndx++)
      bounds[ndx] = lin_eq_targets[i];
 
    _linear_constraint_upper_bounds = bounds;
@@ -265,9 +266,9 @@ spawn_evaluation_impl(const utilib::Any &domain,
 
   colin_request_to_dakota_request(domain, requests, seed);
 
-  iteratedModel.evaluate_nowait();
+  iteratedModel->evaluate_nowait();
 
-  return(iteratedModel.evaluation_id());
+  return(iteratedModel->evaluation_id());
 }
 
 /** Perform an evaluation at a specified domain point.  Wait for and
@@ -288,9 +289,9 @@ perform_evaluation_impl(const utilib::Any &domain,
 
   colin_request_to_dakota_request(domain, requests, seed);
 
-  iteratedModel.evaluate();
+  iteratedModel->evaluate();
 
-  dakota_response_to_colin_response(iteratedModel.current_response(), colin_responses);
+  dakota_response_to_colin_response(iteratedModel->current_response(), colin_responses);
 }
 
 /** Check to see if any asynchronous evaluations have finished.  This
@@ -307,7 +308,7 @@ evaluation_available()
   if (dakota_responses.empty()) {
 
     dakota_responses = (blockingSynch) ?
-      iteratedModel.synchronize() : iteratedModel.synchronize_nowait();
+      iteratedModel->synchronize() : iteratedModel->synchronize_nowait();
 
     if (dakota_responses.empty())
       return false;
@@ -352,7 +353,7 @@ colin_request_to_dakota_request(const utilib::Any &domain,
 
   RealVector cdv;
   TypeManager()->lexical_cast(miv.Real(), cdv);
-  iteratedModel.continuous_variables(cdv);
+  ModelUtils::continuous_variables(*iteratedModel, cdv);
 
   // Cast the discrete variables from COLIN to a temporary vector.
 
@@ -362,39 +363,39 @@ colin_request_to_dakota_request(const utilib::Any &domain,
   // One specification type for discrete variables is a set of values.
   // Get that list of values if the user provided one.
 
-  const     BitArray&   di_set_bits = iteratedModel.discrete_int_sets();
-  const IntSetArray&    dsiv_values = iteratedModel.discrete_set_int_values();
-  const RealSetArray&   dsrv_values = iteratedModel.discrete_set_real_values();
-  const StringSetArray& dssv_values = iteratedModel.discrete_set_string_values();
+  const     BitArray&   di_set_bits = ModelUtils::discrete_int_sets(*iteratedModel);
+  const IntSetArray&    dsiv_values = ModelUtils::discrete_set_int_values(*iteratedModel);
+  const RealSetArray&   dsrv_values = ModelUtils::discrete_set_real_values(*iteratedModel);
+  const StringSetArray& dssv_values = ModelUtils::discrete_set_string_values(*iteratedModel);
 
   // Assign COLIN integer variables to DAKOTA discrete integer variables.
   // Remember, COLIN is operating on the index for the set discrete
   // variables.  Get the integer values associated with each index and
   // assign them to DAKOTA integer variables.
 
-  size_t j, dsi_cntr, num_div = iteratedModel.div(),
-    num_drv = iteratedModel.drv(), num_dsv = iteratedModel.dsv();
+  size_t j, dsi_cntr, num_div = ModelUtils::div(*iteratedModel),
+    num_drv = ModelUtils::drv(*iteratedModel), num_dsv = ModelUtils::dsv(*iteratedModel);
   for (j=0, dsi_cntr=0; j<num_div; ++j) {
     if (di_set_bits[j]) { // this active discrete int var is a set type
       int dakota_value = set_index_to_value(ddv[j], dsiv_values[dsi_cntr]);
-      iteratedModel.discrete_int_variable(dakota_value, j);
+      ModelUtils::discrete_int_variable(*iteratedModel, dakota_value, j);
       ++dsi_cntr;
     }
     else                  // this active discrete int var is a range type
-      iteratedModel.discrete_int_variable(ddv[j], j);
+      ModelUtils::discrete_int_variable(*iteratedModel, ddv[j], j);
   }
 
   // Likewise for the real set discrete variables.
 
   for (size_t j=0; j<num_drv; ++j) {
     Real dakota_value = set_index_to_value(ddv[j+num_div], dsrv_values[j]);
-    iteratedModel.discrete_real_variable(dakota_value, j);
+    ModelUtils::discrete_real_variable(*iteratedModel, dakota_value, j);
   }
 
   // Likelikewise for the string set discrete variables
   for (size_t j=0; j<num_dsv; ++j) {
     String dakota_value = set_index_to_value(ddv[j+num_div+num_drv], dssv_values[j]);
-    iteratedModel.discrete_string_variable(dakota_value, j);
+    ModelUtils::discrete_string_variable(*iteratedModel, dakota_value, j);
   }
 
   // Map COLIN info requests (pair<ResponseInfo, *>) to DAKOTA
@@ -403,7 +404,7 @@ colin_request_to_dakota_request(const utilib::Any &domain,
 
   // TODO: gradient support
 
-  ShortArray asv(iteratedModel.response_size());
+  ShortArray asv(ModelUtils::response_size(*iteratedModel));
 
   AppRequest::request_map_t::const_iterator req_it  = requests.begin();
   AppRequest::request_map_t::const_iterator req_end = requests.end();

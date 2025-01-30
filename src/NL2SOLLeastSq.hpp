@@ -30,13 +30,13 @@ class NL2SOLLeastSqTraits: public TraitsBase
   NL2SOLLeastSqTraits() { }
 
   /// destructor
-  virtual ~NL2SOLLeastSqTraits() { }
+  ~NL2SOLLeastSqTraits() override { }
 
   /// A temporary query used in the refactor
-  virtual bool is_derived() { return true; }
+  bool is_derived() override { return true; }
 
   /// Return the flag indicating whether method supports continuous variables
-  bool supports_continuous_variables() { return true; }
+  bool supports_continuous_variables() override { return true; }
 };
 
 
@@ -57,17 +57,17 @@ public:
   //
 
   /// standard constructor
-  NL2SOLLeastSq(ProblemDescDB& problem_db, Model& model);
+  NL2SOLLeastSq(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor
-  NL2SOLLeastSq(Model& model);
+  NL2SOLLeastSq(std::shared_ptr<Model> model);
   /// destructor
-  ~NL2SOLLeastSq();
+  ~NL2SOLLeastSq() override;
 
   //
   //- Heading: Member functions
   //
 
-  void core_run();
+  void core_run() override;
 
 private:
 

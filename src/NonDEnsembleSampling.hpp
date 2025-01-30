@@ -31,16 +31,16 @@ public:
   //
 
   /// standard constructor
-  NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model);
+  NonDEnsembleSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor (virtual declaration should be redundant with ~Iterator,
   /// but this is top of MLMF diamond so doesn't hurt to be explicit)
-  ~NonDEnsembleSampling();
+  ~NonDEnsembleSampling() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
 
 protected:
 
@@ -48,27 +48,27 @@ protected:
   //- Heading: New virtual functions
   //
 
-  virtual Real estimator_accuracy_metric() = 0;
+  virtual Real estimator_accuracy_metric() const = 0;
   virtual void print_multimodel_summary(std::ostream& s,
     const String& summary_type, bool projections);
   virtual void print_multigroup_summary(std::ostream& s,
-    const String& summary_type, bool projections);
-  virtual void print_variance_reduction(std::ostream& s);
+    const String& summary_type, bool projections) const;
+  virtual void print_variance_reduction(std::ostream& s) const;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  void pre_run();
+  void pre_run() override;
   //void core_run();
-  void post_run(std::ostream& s);
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void post_run(std::ostream& s) override;
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
-  void initialize_final_statistics();
-  void update_final_statistics();
+  void initialize_final_statistics() override;
+  void update_final_statistics() override;
 
-  bool seed_updated();
-  void active_set_mapping();
+  bool seed_updated() override;
+  void active_set_mapping() override;
 
   //
   //- Heading: Member functions
@@ -88,7 +88,7 @@ protected:
 			  short seq_type);
 
   /// return cost metric for entry into finalStatistics
-  Real estimator_cost_metric();
+  Real estimator_cost_metric() const;
 
   /// advance any sequence specifications
   void assign_specification_sequence(size_t index);
@@ -118,11 +118,6 @@ protected:
 				     const SizetArray& N_l, size_t new_samp,
 				     RealVector& mc_est_var);
 
-  /// convert estimator variance ratios to average estimator variance
-  Real estvar_ratios_to_avg_estvar(const RealVector& estvar_ratios,
-				   const RealVector& var_H,
-				   const SizetArray& N_H);
-
   /// initialize relaxFactor prior to iteration
   void reset_relaxation();
   /// update relaxFactor based on iteration number
@@ -131,21 +126,6 @@ protected:
   /// compute scalar control variate parameters
   void compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
 			  size_t N_shared, Real& beta);
-  /// compute control variate parameters for pointer
-  void compute_mf_controls(const Real* sum_L, const Real* sum_H,
-			   const Real* sum_LL, const Real* sum_LH,
-			   const SizetArray& N_shared, RealVector& beta);
-  /*
-  /// compute control variate parameters for vector
-  void compute_mf_controls(const RealVector& sum_L, const RealVector& sum_H,
-			   const RealVector& sum_LL, const RealVector& sum_LH,
-			   const SizetArray& N_shared, RealVector& beta);
-  /// compute control variate parameters for matrix
-  void compute_mf_controls(const RealMatrix& sum_L,  const RealMatrix& sum_H,
-			   const RealMatrix& sum_LL, const RealMatrix& sum_LH,
-			   const SizetArray& N_shared, size_t lev,
-			   RealVector& beta);
-  */
 
   /// export allSamples to tagged tabular file
   void export_all_samples(const Model& model, const String& tabular_filename);
@@ -176,6 +156,17 @@ protected:
 
   /// detect, warn, and repair a negative central moment (for even orders)
   static void check_negative(Real& cm);
+
+  /// check for valid values for (estimator) variance
+  bool valid_variance(Real estvar) const;
+  /// check for valid values for vectir of (estimator) variances
+  bool valid_variances(const RealVector& estvar) const;
+
+
+  /// compute 95% confidence intervals for mean estimator
+  void compute_mean_confidence_intervals(const RealMatrix& moment_stats,
+					 const RealVector& mean_estvar,
+					 RealMatrix& mean_conf_ints);
 
   //
   //- Heading: Data
@@ -232,9 +223,20 @@ protected:
   /// initial estimator variance from shared pilot (no CV reduction)
   RealVector estVarIter0;
 
+  /// approach for defining scalar optimization metric from vectors of
+  /// estimator variances/ratios
+  short estVarMetricType;
+  /// order of p-norm applied to estVariances or estVarRatios according
+  /// to incoming metric type
+  Real estVarMetricNormOrder;
+
   /// QOI_STATISTICS (moments, level mappings) or ESTIMATOR_PERFORMANCE
   /// (for model tuning of estVar,equivHFEvals by an outer loop)
   short finalStatsType;
+
+  /// Matrix of confidence internals on moments, with rows for mean_lower,
+  /// mean_upper (calculated in compute_mean_confidence_intervals())
+  RealMatrix meanCIs;
 
   /// if defined, export each of the sample increments in ML, CV, MLCV
   /// using tagged tabular files
@@ -288,24 +290,25 @@ private:
 
 inline void NonDEnsembleSampling::
 print_multigroup_summary(std::ostream& s, const String& summary_type,
-			 bool projections)
+			 bool projections) const
 { } // default is no-op
 
 
-inline void NonDEnsembleSampling::print_variance_reduction(std::ostream& s)
+inline void NonDEnsembleSampling::
+print_variance_reduction(std::ostream& s) const
 { } // default is no-op
 
 
-inline Real NonDEnsembleSampling::estimator_cost_metric()
+inline Real NonDEnsembleSampling::estimator_cost_metric() const
 { return equivHFEvals + deltaEquivHF; }
 
 
 inline void NonDEnsembleSampling::resize_active_set()
 {
-  size_t m_resp_len = iteratedModel.response_size();
+  size_t m_resp_len = ModelUtils::response_size(*iteratedModel);
   if (activeSet.request_vector().size() != m_resp_len) {
-    // synch activeSet with iteratedModel.response_size()
-    activeSet.reshape(iteratedModel.response_size());
+    // synch activeSet with ModelUtils::response_size(iteratedModel)
+    activeSet.reshape(ModelUtils::response_size(*iteratedModel));
     activeSet.request_values(1);
   }
 }
@@ -319,7 +322,7 @@ average_online_cost(const RealVector& accum_cost, const SizetArray& num_cost,
   size_t step, num_steps = accum_cost.length();  unsigned short mf;
   //if (num_cost.size() != num_steps) { } // not possible in recover_online_cost
   if (seq_cost.length() != num_steps) seq_cost.sizeUninitialized(num_steps);
-  const Pecos::ActiveKey& active_key = iteratedModel.active_model_key();
+  const Pecos::ActiveKey& active_key = iteratedModel->active_model_key();
 
   for (step=0; step<num_steps; ++step) {
     mf = active_key.retrieve_model_form(step);
@@ -421,17 +424,6 @@ compute_mc_estimator_variance(const RealVector& var_l, const SizetArray& N_l,
     N_l_q = N_l[qoi]; // can be zero in offline pilot cases
     mc_est_var[qoi] = (N_l_q) ? var_l[qoi] / N_l_q : DBL_MAX;
   }
-}
-
-
-inline Real NonDEnsembleSampling::
-estvar_ratios_to_avg_estvar(const RealVector& estvar_ratios,
-			    const RealVector& var_H, const SizetArray& N_H)
-{
-  RealVector est_var(numFunctions, false);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    est_var[qoi] = estvar_ratios[qoi] * var_H[qoi] / N_H[qoi];
-  return average(est_var);
 }
 
 
@@ -537,7 +529,7 @@ finalize_relaxation(MFSolutionData& soln)
   // from numerical solve not fully realized and soln data needs adjustment
   // prior to final post-processing.
 
-  //Real curr_estvar = soln.average_estimator_variance(); // back out ratio?
+  //Real curr_estvar = soln.estimator_variance_metric(); // back out ratio?
   const RealVector& soln_vars = soln.solution_variables();
   RealVector delta_N(numGroups);  size_t i;
   for (i=0; i<numGroups; ++i) {
@@ -555,14 +547,14 @@ finalize_relaxation(MFSolutionData& soln)
   Real multiplier = 1. - relaxFactor;
   for (i=0; i<numGroups; ++i)
     relaxed_vars[i] = soln_vars[i] - multiplier * delta_N[i];
-  Real relaxed_estvar = average_estimator_variance(relaxed_vars);
+  Real relaxed_estvar = estimator_variance_metric(relaxed_vars);
 
   // override last numerical solve with final (real-valued) state
   soln.solution_variables(relaxed_vars);
-  soln.average_estimator_variance(relaxed_estvar);
+  soln.estimator_variance_metric(relaxed_estvar);
   // ratio of averages rather that average of ratios
   if (pilotMgmtMode == ONLINE_PILOT || pilotMgmtMode == ONLINE_PILOT_PROJECTION)
-    soln.average_estimator_variance_ratio(relaxed_estvar/average(estVarIter0));
+    soln.estimator_variance_ratios(relaxed_estvar, estVarIter0);
 }
 */
 
@@ -583,42 +575,6 @@ compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
   // Cancel shared terms within cov_LH / var_L:
   beta = (sum_LH - mu_L * sum_H) / (sum_LL - mu_L * sum_L);
 }
-
-
-inline void NonDEnsembleSampling::
-compute_mf_controls(const Real* sum_L, const Real* sum_H, const Real* sum_LL,
-		    const Real* sum_LH, const SizetArray& N_shared,
-		    RealVector& beta)
-{
-  if (beta.length()!=numFunctions) beta.sizeUninitialized(numFunctions);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    compute_mf_control(sum_L[qoi], sum_H[qoi], sum_LL[qoi], sum_LH[qoi],
-		       N_shared[qoi], beta[qoi]);
-}
-
-
-/*
-inline void NonDEnsembleSampling::
-compute_mf_controls(const RealVector& sum_L, const RealVector& sum_H,
-		    const RealVector& sum_LL, const RealVector& sum_LH,
-		    const SizetArray& N_shared, RealVector& beta)
-{
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    compute_mf_control(sum_L[qoi], sum_H[qoi], sum_LL[qoi], sum_LH[qoi],
-		       N_shared[qoi], beta[qoi]);
-}
-
-
-inline void NonDEnsembleSampling::
-compute_mf_controls(const RealMatrix& sum_L,  const RealMatrix& sum_H,
-		    const RealMatrix& sum_LL, const RealMatrix& sum_LH,
-		    const SizetArray& N_shared, size_t lev, RealVector& beta)
-{
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    compute_mf_control(sum_L(qoi,lev), sum_H(qoi,lev), sum_LL(qoi,lev),
-		       sum_LH(qoi,lev), N_shared[qoi], beta[qoi]);
-}
-*/
 
 
 inline void NonDEnsembleSampling::
@@ -799,6 +755,21 @@ inline void NonDEnsembleSampling::check_negative(Real& cm)
     cm = 0.;
     // TO DO:  consider hard error if COV < -tol (pass in mean and cm order)
   }
+}
+
+
+inline bool NonDEnsembleSampling::valid_variance(Real estvar) const
+{ return (std::isfinite(estvar) && estvar > Pecos::SMALL_NUMBER_SQ); }
+
+
+inline bool NonDEnsembleSampling::
+valid_variances(const RealVector& estvar) const
+{
+  size_t q, num_q = estvar.length();
+  for (q=0; q<num_q; ++q)
+    if (!valid_variance(estvar[q]))
+      return false;
+  return true;
 }
 
 } // namespace Dakota

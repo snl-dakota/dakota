@@ -39,14 +39,14 @@ public:
   //
 
   /// standard constructor
-  DataTransformModel(const Model& sub_model, ExperimentData& exp_data,
+  DataTransformModel(std::shared_ptr<Model> sub_model, ExperimentData& exp_data,
 		     const ShortShortPair& recast_vars_view,
 		     size_t num_hyper = 0,
                      unsigned short mult_mode = CALIBRATE_NONE, 
                      short recast_resp_deriv_order = 1);
 
   /// destructor
-  ~DataTransformModel();
+  ~DataTransformModel() override;
 
   /// Convenience function to help recover a residual response from the submodel
   void data_transform_response(const Variables& sub_model_vars, 
@@ -75,11 +75,11 @@ public:
 
 protected:
 
-  void assign_instance();
+  void assign_instance() override;
 
   void init_metadata() override;
 
-  void update_from_subordinate_model(size_t depth = SZ_MAX);
+  void update_from_subordinate_model(size_t depth = SZ_MAX) override;
 
   /// update all continuous variables from sub-model, skipping hyper-parameters
   void update_cv_skip_hyperparams(const Model& model);
@@ -117,17 +117,17 @@ protected:
 			    BoolDequeArray& nonlinear_resp_map) const;
   
   /// specialization of evaluate that iterates over configuration variables
-  void derived_evaluate(const ActiveSet& set);
+  void derived_evaluate(const ActiveSet& set) override;
   /// specialization of evaluate that iterates over configuration variables
-  void derived_evaluate_nowait(const ActiveSet& set);
+  void derived_evaluate_nowait(const ActiveSet& set) override;
 
   /// synchronize all evaluations (all residuals for all experiment
   /// configurations)
-  const IntResponseMap& derived_synchronize();
+  const IntResponseMap& derived_synchronize() override;
 
   /// return any evaluations for which all experiment configurations
   /// have completed
-  const IntResponseMap& derived_synchronize_nowait();
+  const IntResponseMap& derived_synchronize_nowait() override;
 
   // Synchronize the subModel and filter the IntResponseMap in-place,
   // caching any that we didn't schedule.

@@ -29,15 +29,15 @@ public:
   //
 
   /// standard constructor
-  NonDCalibration(ProblemDescDB& problem_db, Model& model);
+  NonDCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
-  ~NonDCalibration();
+  ~NonDCalibration() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
   
-  bool resize();
+  bool resize() override;
 
 protected:
 

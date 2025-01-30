@@ -37,9 +37,9 @@ public:
   //
 
   /// constructor
-  NonDGlobalSingleInterval(ProblemDescDB& problem_db, Model& model);
+  NonDGlobalSingleInterval(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
-  ~NonDGlobalSingleInterval();
+  ~NonDGlobalSingleInterval() override;
 
 protected:
 
@@ -47,9 +47,9 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void initialize();
-  void post_process_cell_results(bool maximize);
-  void get_best_sample(bool maximize, bool eval_approx);
+  void initialize() override;
+  void post_process_cell_results(bool maximize) override;
+  void get_best_sample(bool maximize, bool eval_approx) override;
 
 private:
 

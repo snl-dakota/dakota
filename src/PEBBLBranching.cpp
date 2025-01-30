@@ -68,15 +68,15 @@ void PebbldBranchSub::setRootComputation()
   // is code shared with the sub-problems that requires it to be here
   // for consistency, i.e., so there are not seg faults due to these
   // not existing.
-  cont_vars.resize(subModel.continuous_variables().length());
-  lower_bounds.resize(subModel.continuous_lower_bounds().length());
-  upper_bounds.resize(subModel.continuous_upper_bounds().length());
-  for (int i=0; i<subModel.continuous_variables().length(); i++)
-    cont_vars[i] = subModel.continuous_variables()[i];
-  for (int i=0; i<subModel.continuous_lower_bounds().length(); i++)
-    lower_bounds[i] = subModel.continuous_lower_bounds()[i];
-  for (int i=0; i<subModel.continuous_upper_bounds().length(); i++)
-    upper_bounds[i] = subModel.continuous_upper_bounds()[i];
+  cont_vars.resize(ModelUtils::continuous_variables(*subModel).length());
+  lower_bounds.resize(ModelUtils::continuous_lower_bounds(*subModel).length());
+  upper_bounds.resize(ModelUtils::continuous_upper_bounds(*subModel).length());
+  for (int i=0; i<ModelUtils::continuous_variables(*subModel).length(); i++)
+    cont_vars[i] = ModelUtils::continuous_variables(*subModel)[i];
+  for (int i=0; i<ModelUtils::continuous_lower_bounds(*subModel).length(); i++)
+    lower_bounds[i] = ModelUtils::continuous_lower_bounds(*subModel)[i];
+  for (int i=0; i<ModelUtils::continuous_upper_bounds(*subModel).length(); i++)
+    upper_bounds[i] = ModelUtils::continuous_upper_bounds(*subModel)[i];
 }
 
 void PebbldBranchSub::boundComputation(double* controlParam)
@@ -85,9 +85,9 @@ void PebbldBranchSub::boundComputation(double* controlParam)
   // The Discrete Domain is relaxed into a Continuous Domain.
 
   // Reset the model variable values and bounds for the sub-problem.
-  subModel.continuous_variables(cont_vars);
-  subModel.continuous_lower_bounds(lower_bounds);
-  subModel.continuous_upper_bounds(upper_bounds);
+  ModelUtils::continuous_variables(*subModel, cont_vars);
+  ModelUtils::continuous_lower_bounds(*subModel, lower_bounds);
+  ModelUtils::continuous_upper_bounds(*subModel, upper_bounds);
 
   // Run the solver.
   subNLPSolver.run();
@@ -117,10 +117,10 @@ void PebbldBranchSub::boundComputation(double* controlParam)
 // variables are actually Discrete after Relaxation
 bool PebbldBranchSub::candidateSolution()
 {
-  const SharedVariablesData& svd = subModel.current_variables().shared_data();
+  const SharedVariablesData& svd = subModel->current_variables().shared_data();
   const BitArray int_relaxed = svd.all_relaxed_discrete_int();
   int num_int_vars = int_relaxed.size();
-  int num_cont_vars = subModel.cv() - num_int_vars;
+  int num_cont_vars = ModelUtils::cv(*subModel) - num_int_vars;
 
   for(int i=num_cont_vars;i<num_cont_vars+num_int_vars;i++)
   {
@@ -139,10 +139,10 @@ pebbl::solution* PebbldBranchSub::extractSolution()
 // Simple binary splitting, that's why the method returns always 2.
 int PebbldBranchSub::splitComputation()
 {
-  const SharedVariablesData& svd = subModel.current_variables().shared_data();
+  const SharedVariablesData& svd = subModel->current_variables().shared_data();
   const BitArray int_relaxed = svd.all_relaxed_discrete_int();
   int num_int_vars = int_relaxed.size();
-  int num_cont_vars = subModel.cv() - num_int_vars;
+  int num_cont_vars = ModelUtils::cv(*subModel) - num_int_vars;
 
   // Assuming that in the relaxed problem, the Binary/Integer
   // elements of the domain are first.
@@ -196,14 +196,14 @@ void PebbldBranchSub::pebbldSubAsChildOf(PebbldBranchSub* parent, int _splitVar,
   // The only model-related data that differs across sub-problems are
   // the initial variable values and the bounds.  This needs to be a
   // deep copy.
-  cont_vars.resize(subModel.continuous_variables().length());
-  lower_bounds.resize(subModel.continuous_lower_bounds().length());
-  upper_bounds.resize(subModel.continuous_upper_bounds().length());
-  for (int i=0; i<subModel.continuous_variables().length(); i++)
+  cont_vars.resize(ModelUtils::continuous_variables(*subModel).length());
+  lower_bounds.resize(ModelUtils::continuous_lower_bounds(*subModel).length());
+  upper_bounds.resize(ModelUtils::continuous_upper_bounds(*subModel).length());
+  for (int i=0; i<ModelUtils::continuous_variables(*subModel).length(); i++)
     cont_vars[i] = _candidate_x[i];
-  for (int i=0; i<subModel.continuous_lower_bounds().length(); i++)
+  for (int i=0; i<ModelUtils::continuous_lower_bounds(*subModel).length(); i++)
     lower_bounds[i] = _lower_bounds[i];
-  for (int i=0; i<subModel.continuous_upper_bounds().length(); i++)
+  for (int i=0; i<ModelUtils::continuous_upper_bounds(*subModel).length(); i++)
     upper_bounds[i] = _upper_bounds[i];
 
   // Reset the bounds for this sub-problem.  Also move the initial

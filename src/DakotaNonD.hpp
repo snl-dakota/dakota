@@ -53,13 +53,14 @@ public:
 			    const StringArray& qoi_labels) const;
   /// print level mapping statistics using optional pre-pend
   void print_level_mappings(std::ostream& s, const RealVector& level_maps,
-			    bool moment_offset, const String& prepend = "");
+			    bool moment_offset,
+			    const String& prepend = "") const;
 
   //
   //- Heading: Virtual member function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
 
   //
   //- Heading: Set/get routines
@@ -82,33 +83,33 @@ protected:
   //
 
   /// constructor
-  NonD(ProblemDescDB& problem_db, Model& model);
+  NonD(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor for sample generation and evaluation "on the fly"
-  NonD(unsigned short method_name, Model& model);
+  NonD(unsigned short method_name, std::shared_ptr<Model>);
   /// alternate constructor for sample generation and evaluation "on the fly"
-  NonD(unsigned short method_name, Model& model,
+  NonD(unsigned short method_name, std::shared_ptr<Model>,
        const ShortShortPair& approx_view);
   /// alternate constructor for sample generation "on the fly"
   NonD(unsigned short method_name, const RealVector& lower_bnds,
        const RealVector& upper_bnds);
 
-  ~NonD(); ///< destructor
+  ~NonD() override; ///< destructor
 
   //
   //- Heading: Virtual member function redefinitions
   //
 
-  void derived_set_communicators(ParLevLIter pl_iter);
+  void derived_set_communicators(ParLevLIter pl_iter) override;
 
-  void initialize_run();
-  void finalize_run();
+  void initialize_run() override;
+  void finalize_run() override;
 
   // return the final uncertain variables from the nondeterministic iteration
   //const Variables& variables_results() const;
   /// return the final statistics from the nondeterministic iteration
-  const Response& response_results() const;
+  const Response& response_results() const override;
   /// set the active set within finalStatistics
-  void response_results_active_set(const ActiveSet& set);
+  void response_results_active_set(const ActiveSet& set) override;
 
   //
   //- Heading: New virtual member functions
@@ -218,30 +219,30 @@ protected:
 
   /// print evaluation summary for multilevel sampling across 1D level profile
   void print_multilevel_evaluation_summary(std::ostream& s,
-					   const SizetArray& N_m);
+					   const SizetArray& N_m) const;
   /// print evaluation summary for multilevel sampling across 2D
   /// level+QoI profile
   void print_multilevel_evaluation_summary(std::ostream& s,
-					   const Sizet2DArray& N_m);
+					   const Sizet2DArray& N_m) const;
 
   /// print evaluation summary for multilevel sampling across 1D level
   /// profile for discrepancy across levels
   void print_multilevel_discrepancy_summary(std::ostream& s,
-					    const SizetArray& N_m);
+					    const SizetArray& N_m) const;
   /// print evaluation summary for multilevel sampling across 1D level
   /// profile for discrepancy across model forms
   void print_multilevel_discrepancy_summary(std::ostream& s,
 					    const SizetArray& N_m,
-					    const SizetArray& N_mp1);
+					    const SizetArray& N_mp1) const;
   /// print evaluation summary for multilevel sampling across 2D
   /// level+QoI profile for discrepancy across levels
   void print_multilevel_discrepancy_summary(std::ostream& s,
-					    const Sizet2DArray& N_m);
+					    const Sizet2DArray& N_m) const;
   /// print evaluation summary for multilevel sampling across 2D
   /// level+QoI profile for discrepancy across model forms
   void print_multilevel_discrepancy_summary(std::ostream& s,
 					    const Sizet2DArray& N_m,
-					    const Sizet2DArray& N_mp1);
+					    const Sizet2DArray& N_mp1) const;
 
   /// print evaluation summary for multilevel sampling across 2D model+level
   /// profile (allocations) or 3D model+level+QoI profile (actual)
@@ -252,7 +253,7 @@ protected:
 				      short seq_type, bool discrep_flag);
 
   /// assign a NonDLHSSampling instance within u_space_sampler
-  void construct_lhs(Iterator& u_space_sampler, Model& u_model,
+  void construct_lhs(Iterator& u_space_sampler, std::shared_ptr<Model> u_model,
 		     unsigned short sample_type, int num_samples, int seed,
 		     const String& rng, bool vary_pattern,
 		     short sampling_vars_mode = ACTIVE);
@@ -423,10 +424,10 @@ private:
 		       const String& qoi_label) const;
 
   /// print an set of aggregated QoI sample counts for a level
-  void print_multilevel_row(std::ostream& s, const SizetArray& N_j);
+  void print_multilevel_row(std::ostream& s, const SizetArray& N_j) const;
   /// print an unrolled set of aggregated QoI sample counts for a level
   void print_multilevel_row(std::ostream& s, const SizetArray& N_j,
-			    const SizetArray& N_jp1);
+			    const SizetArray& N_jp1) const;
 
   //
   //- Heading: Data members
@@ -443,7 +444,7 @@ inline short NonD::
 configure_cost(size_t num_steps, short seq_type, RealVector& cost)
 {
   // NonDExpansion uses this fn for enforcing cost from spec (no metadata)
-  size_t m, num_mf = iteratedModel.subordinate_models(false).size();
+  size_t m, num_mf = iteratedModel->subordinate_models(false).size();
   BitArray model_cost_spec;  SizetSizetPairArray cost_md_indices(num_mf);
   for (m=0; m<num_mf; ++m)
     cost_md_indices[m] = SizetSizetPair(SZ_MAX, 0); // no metadata for any model
@@ -471,7 +472,7 @@ inline short NonD::
 query_cost(size_t num_steps, short seq_type, RealVector& cost)
 {
   // NonDExpansion uses this function for optional cost
-  size_t m, num_mf = iteratedModel.subordinate_models(false).size();
+  size_t m, num_mf = iteratedModel->subordinate_models(false).size();
   BitArray model_cost_spec;  SizetSizetPairArray cost_md_indices(num_mf);
   for (m=0; m<num_mf; ++m)
     cost_md_indices[m] = SizetSizetPair(SZ_MAX, 0); // no metadata for any model
@@ -551,12 +552,12 @@ inline void NonD::response_results_active_set(const ActiveSet& set)
 
 inline void NonD::print_level_mappings(std::ostream& s) const
 {
-  print_level_mappings(s, "response function", iteratedModel.response_labels());
+  print_level_mappings(s, "response function", ModelUtils::response_labels(*iteratedModel));
 }
 
 
 inline void NonD::print_densities(std::ostream& s) const
-{ print_densities(s, "response function", iteratedModel.response_labels()); }
+{ print_densities(s, "response function", ModelUtils::response_labels(*iteratedModel)); }
 
 
 inline bool NonD::discrepancy_sample_counts() const
@@ -835,13 +836,13 @@ inflate_approx_samples(const ArrayType& N_l, bool multilev,
   else { // MF case
     num_approx = num_mf - 1;
     if (secondary_index == SZ_MAX) {
-      ModelList& sub_models = iteratedModel.subordinate_models(false);
+      ModelList& sub_models = iteratedModel->subordinate_models(false);
       ModelLIter m_iter = sub_models.begin();
       size_t m_soln_lev, active_lev;
       for (i=0; i<num_approx && m_iter != sub_models.end(); ++i, ++m_iter) {
-	m_soln_lev = m_iter->solution_level_cost_index();
-	active_lev = (m_soln_lev == _NPOS) ? 0 : m_soln_lev;
-	N_l_vec[i][active_lev] = N_l[i];  // assign vector of qoi samples
+        m_soln_lev = (*m_iter)->solution_level_cost_index();
+        active_lev = (m_soln_lev == _NPOS) ? 0 : m_soln_lev;
+        N_l_vec[i][active_lev] = N_l[i];  // assign vector of qoi samples
       }
     }
     else // valid secondary_index
@@ -873,13 +874,13 @@ inflate_sequence_samples(const ArrayType& N_l, bool multilev,
   }
   else { // MF case
     if (secondary_index == SZ_MAX) {
-      ModelList& sub_models = iteratedModel.subordinate_models(false);
+      ModelList& sub_models = iteratedModel->subordinate_models(false);
       ModelLIter m_iter = sub_models.begin();
       size_t m_soln_lev, active_lev;
       for (i=0; i<num_mf && m_iter != sub_models.end(); ++i, ++m_iter) {
-	m_soln_lev = m_iter->solution_level_cost_index();
-	active_lev = (m_soln_lev == _NPOS) ? 0 : m_soln_lev;
-	N_l_vec[i][active_lev] = N_l[i];  // assign vector of qoi samples
+        m_soln_lev = (*m_iter)->solution_level_cost_index();
+        active_lev = (m_soln_lev == _NPOS) ? 0 : m_soln_lev;
+        N_l_vec[i][active_lev] = N_l[i];  // assign vector of qoi samples
       }
     }
     else // valid secondary_index
@@ -907,20 +908,20 @@ print_multilevel_model_summary(std::ostream& s,
   }
   else {
     bool mf_seq = (seq_type == Pecos::MODEL_FORM_1D_SEQUENCE);
-    ModelList& sub_models = iteratedModel.subordinate_models(false);
+    ModelList& sub_models = iteratedModel->subordinate_models(false);
     ModelLIter     m_iter = sub_models.begin();
     s << "<<<<< " << type << " samples per model form:\n";
     for (i=0; i<num_mf; ++i, ++m_iter) {
       const ArrayType& N_i = N_samp[i];
       if (N_i.empty() || zeros(N_i)) continue;
 
-      s << "      Model Form " << m_iter->model_id() << ":\n";
+      s << "      Model Form " << (*m_iter)->model_id() << ":\n";
       if (!discrep_flag) // no discrepancies
-	print_multilevel_evaluation_summary(s,  N_i);
+	      print_multilevel_evaluation_summary(s,  N_i);
       else if (mf_seq && i+1 < num_mf) // discrepancy across model forms
-	print_multilevel_discrepancy_summary(s, N_i, N_samp[i+1]);
+	      print_multilevel_discrepancy_summary(s, N_i, N_samp[i+1]);
       else // discrepancy across levels or for last model form
-	print_multilevel_discrepancy_summary(s, N_i);
+	      print_multilevel_discrepancy_summary(s, N_i);
 
       /*
       if (discrep_flag} {

@@ -106,7 +106,7 @@ public:
 				    const RealMatrix &initial_samples,
 				    int num_new_samples,
 				    const RealMatrix & candidate_samples,
-				    IntVector &result );
+				    IntVector &result ) override;
 
   /** \brief Draw samples from the equilibrium measure. For all bounded variables
    * the equilibrium measure is the arcsine measure, i.e. "Chebyshev" density
@@ -117,7 +117,7 @@ public:
   /// Enrinch a set of M samples with N new samples
   void enrich_samples( int num_dims, const RealMatrix &initial_samples,
 		       int num_new_samples,
-		       RealMatrix &result );
+		       RealMatrix &result ) override;
 
   /// Set the seed of the random number generator
   void set_seed( int seed );

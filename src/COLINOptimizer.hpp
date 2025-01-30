@@ -32,24 +32,24 @@ class COLINTraits: public TraitsBase
   COLINTraits() { }
 
   /// destructor
-  virtual ~COLINTraits() { }
+  ~COLINTraits() override { }
 
   /// A temporary query used in the refactor
-  virtual bool is_derived() { return true; }
+  bool is_derived() override { return true; }
 
   // Traits are chosen to be the most common ones across a majority of methods within this TPL.
 
   /// Return the flag indicating whether method supports continuous variables
-  bool supports_continuous_variables() { return true; }
+  bool supports_continuous_variables() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear equalities
-  bool supports_nonlinear_equality() { return true; }
+  bool supports_nonlinear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear inequalities
-  bool supports_nonlinear_inequality() { return true; }
+  bool supports_nonlinear_inequality() override { return true; }
 
   /// Return the format used for nonlinear inequality constraints
-  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override
     { return NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED; }
 
 };
@@ -85,14 +85,14 @@ public:
   //
 
   /// standard constructor
-  COLINOptimizer(ProblemDescDB& problem_db, Model& model);
+  COLINOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor for on-the-fly instantiations
-  COLINOptimizer(const String& method_name, Model& model, int seed,
+  COLINOptimizer(const String& method_name, std::shared_ptr<Model> model, int seed,
 		 size_t max_iter, size_t max_eval);
   /// alternate constructor for Iterator instantiations by name
-  COLINOptimizer(const String& method_name, Model& model);
+  COLINOptimizer(const String& method_name, std::shared_ptr<Model> model);
   /// destructor
-  ~COLINOptimizer() {
+  ~COLINOptimizer() override {
     if (rng) delete rng;
     //colin::CacheFactory().unregister_cache("useThisCache");
     //String unique_cache_name(method_id());
@@ -105,16 +105,16 @@ public:
   //
 
   /// clears internal optimizer state
-  void reset();
+  void reset() override;
 
   /// iterates the COLIN solver to determine the optimal solution
-  void core_run();
+  void core_run() override;
 
   // COLIN methods cannot yet accept multiple initial points
   //bool accepts_multiple_points() const;
 
   /// some COLIN methods can return multiple points
-  bool returns_multiple_points() const;
+  bool returns_multiple_points() const override;
 
 protected:
 
@@ -141,7 +141,7 @@ protected:
   /// Look up responses and sort, first according
   /// to constraint violation, then according to
   /// function value
-  void post_run(std::ostream& s);
+  void post_run(std::ostream& s) override;
 
   /// Retrieve response from Colin AppResponse, return pair indicating
   /// success for <objective, constraints>

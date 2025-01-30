@@ -33,20 +33,20 @@ protected:
   /// default constructor
   LeastSq(std::shared_ptr<TraitsBase> traits);
   /// standard constructor
-  LeastSq(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits);
+  LeastSq(ProblemDescDB& problem_db, std::shared_ptr<Model> model, std::shared_ptr<TraitsBase> traits);
   /// alternate "on the fly" constructor
-  LeastSq(unsigned short method_name, Model& model, std::shared_ptr<TraitsBase> traits);
+  LeastSq(unsigned short method_name, std::shared_ptr<Model> model, std::shared_ptr<TraitsBase> traits);
   /// destructor
-  ~LeastSq();
+  ~LeastSq() override;
 
   //
   //- Heading: Virtual member function redefinitions
   //
 
-  void initialize_run();
-  void post_run(std::ostream& s);
-  void finalize_run();
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void initialize_run() override;
+  void post_run(std::ostream& s) override;
+  void finalize_run() override;
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
   //
   //- Heading: New virtual member functions
@@ -90,7 +90,7 @@ private:
   /// Wrap iteratedModel in a RecastModel that weights the residuals
   void weight_model();
 
-  void archive_best_results();
+  void archive_best_results() override;
   /// Write the confidence intervals to the results output
 //  void archive_confidence_intervals();
 

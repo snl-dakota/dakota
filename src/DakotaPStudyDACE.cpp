@@ -23,7 +23,7 @@ static const char rcsId[]="@(#) $Id: DakotaPStudyDACE.cpp 6492 2009-12-19 00:04:
 
 namespace Dakota {
 
-PStudyDACE::PStudyDACE(ProblemDescDB& problem_db, Model& model):
+PStudyDACE::PStudyDACE(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   Analyzer(problem_db, model),
   volQualityFlag(probDescDB.get_bool("method.quality_metrics")),
   vbdViaSamplingMethod(probDescDB.get_ushort("method.vbd_via_sampling_method")),
@@ -36,8 +36,8 @@ PStudyDACE::PStudyDACE(ProblemDescDB& problem_db, Model& model):
 	 << method_enum_to_string(methodName) << std::endl;
 
   // Check for vendor numerical gradients (manage_asv will not work properly)
-  if (iteratedModel.gradient_type() == "numerical" &&
-      iteratedModel.method_source() == "vendor") {
+  if (iteratedModel->gradient_type() == "numerical" &&
+      iteratedModel->method_source() == "vendor") {
     Cerr << "\nError: ParamStudy/DACE do not contain a vendor algorithm for "
          << "numerical derivatives;\n       please select dakota as the finite "
 	 << "difference method_source." << std::endl;
@@ -46,12 +46,12 @@ PStudyDACE::PStudyDACE(ProblemDescDB& problem_db, Model& model):
 }
 
 
-PStudyDACE::PStudyDACE(unsigned short method_name, Model& model):
+PStudyDACE::PStudyDACE(unsigned short method_name, std::shared_ptr<Model> model):
   Analyzer(method_name, model), volQualityFlag(false)
 {
   // Check for vendor numerical gradients (manage_asv will not work properly)
-  if (iteratedModel.gradient_type() == "numerical" &&
-      iteratedModel.method_source() == "vendor") {
+  if (iteratedModel->gradient_type() == "numerical" &&
+      iteratedModel->method_source() == "vendor") {
     Cerr << "\nError: ParamStudy/DACE do not contain a vendor algorithm for "
          << "numerical derivatives;\n       please select dakota as the finite "
 	 << "difference method_source." << std::endl;
@@ -107,20 +107,20 @@ void PStudyDACE::print_results(std::ostream& s, short results_state)
 
   if (vbdFlag)
     pStudyDACESensGlobal.print_sobol_indices(s,
-                                             iteratedModel.ordered_labels(),
-                                             iteratedModel.response_labels(),
+                                             iteratedModel->current_variables().ordered_labels(ACTIVE_VARS),
+                                             ModelUtils::response_labels(*iteratedModel),
                                              vbdDropTol); // set in DakotaAnalyzer constructor
 
   if (pStudyDACESensGlobal.correlations_computed()) {
     if (compactMode) { // FSU, DDACE, PSUADE ignore active discrete vars
       StringArray cv_labels;
-      copy_data(iteratedModel.continuous_variable_labels(), cv_labels);
-      pStudyDACESensGlobal.print_correlations(s, cv_labels, iteratedModel.response_labels());
+      copy_data(ModelUtils::continuous_variable_labels(*iteratedModel), cv_labels);
+      pStudyDACESensGlobal.print_correlations(s, cv_labels, ModelUtils::response_labels(*iteratedModel));
     }
     else // ParamStudy includes active discrete vars
       pStudyDACESensGlobal.print_correlations(s,
-        iteratedModel.ordered_labels(),
-        iteratedModel.response_labels());
+        iteratedModel->current_variables().ordered_labels(ACTIVE_VARS),
+        ModelUtils::response_labels(*iteratedModel));
   }
 }
 

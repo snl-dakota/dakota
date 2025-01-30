@@ -17,12 +17,12 @@ static const char rcsId[]="@(#) $Id: DakotaVerification.cpp 6886 2010-08-02 19:1
 
 namespace Dakota {
 
-Verification::Verification(ProblemDescDB& problem_db, Model& model):
+Verification::Verification(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   Analyzer(problem_db, model)
 {
   // Check for vendor numerical gradients (manage_asv will not work properly)
-  if (iteratedModel.gradient_type() == "numerical" &&
-      iteratedModel.method_source() == "vendor") {
+  if (iteratedModel->gradient_type() == "numerical" &&
+      iteratedModel->method_source() == "vendor") {
     Cerr << "\nError: Verification does not contain a vendor algorithm for "
          << "numerical derivatives;\n       please select dakota as the finite "
 	 << "difference method_source." << std::endl;
@@ -31,12 +31,12 @@ Verification::Verification(ProblemDescDB& problem_db, Model& model):
 }
 
 
-Verification::Verification(unsigned short method_name, Model& model):
+Verification::Verification(unsigned short method_name, std::shared_ptr<Model> model):
   Analyzer(method_name, model)
 {
   // Check for vendor numerical gradients (manage_asv will not work properly)
-  if (iteratedModel.gradient_type() == "numerical" &&
-      iteratedModel.method_source() == "vendor") {
+  if (iteratedModel->gradient_type() == "numerical" &&
+      iteratedModel->method_source() == "vendor") {
     Cerr << "\nError: Verification does not contain a vendor algorithm for "
          << "numerical derivatives;\n       please select dakota as the finite "
 	 << "difference method_source." << std::endl;

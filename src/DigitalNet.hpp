@@ -76,7 +76,7 @@ public:
   ~DigitalNet();
 
   /// Reseed this digital net
-  void reseed() { digital_shift(seedValue); scramble(seedValue); }
+  void reseed() override { digital_shift(seedValue); scramble(seedValue); }
 
   /// Digitally shift this digital net
   void digital_shift() { digital_shift(generate_system_seed()); }
@@ -167,7 +167,7 @@ private:
     const size_t nMin,
     const size_t nMax,
     RealMatrix& points
-  );
+  ) override;
 
   /// Get the next point of the sequence represented as an unsigned integer
   /// vector

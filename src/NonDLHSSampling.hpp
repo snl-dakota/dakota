@@ -48,9 +48,9 @@ public:
   //
 
   /// standard constructor
-  NonDLHSSampling(ProblemDescDB& problem_db, Model& model);
+  NonDLHSSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor for sample generation and evaluation "on the fly"
-  NonDLHSSampling(Model& model, unsigned short sample_type,
+  NonDLHSSampling(std::shared_ptr<Model> model, unsigned short sample_type,
 		  int samples, int seed, const String& rng,
 		  bool vary_pattern = true, short sampling_vars_mode = ACTIVE);
   /// alternate constructor for uniform sample generation "on the fly"
@@ -64,7 +64,7 @@ public:
                   const RealVector& std_devs, const RealVector& lower_bnds,
 		  const RealVector& upper_bnds, RealSymMatrix& correl);
   /// destructor
-  ~NonDLHSSampling();
+  ~NonDLHSSampling() override;
 
 protected:
 
@@ -73,7 +73,7 @@ protected:
   //
 
   /// increment to next in sequence of refinement samples
-  void sampling_increment();
+  void sampling_increment() override;
 
   // together the three run components perform a forward uncertainty
   // propagation by using LHS to generate a set of parameter samples,
@@ -81,22 +81,22 @@ protected:
   // computing statistics on the ensemble of results.
 
   /// generate LHS samples in non-VBD cases
-  void pre_run();
+  void pre_run() override;
   /// perform the evaluate parameter sets portion of run
-  void core_run();
+  void core_run() override;
   /// generate statistics for LHS runs in non-VBD cases
-  void post_run(std::ostream& s);
+  void post_run(std::ostream& s) override;
 
-  void post_input();
+  void post_input() override;
 
   /// update finalStatistics and (if MC sampling) finalStatErrors
-  void update_final_statistics();
+  void update_final_statistics() override;
 
   /// compute a principal components analysis on the sample set
   void compute_pca(std::ostream& s);
 
   /// print the final statistics
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
   //
   //- Heading: Member functions

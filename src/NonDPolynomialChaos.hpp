@@ -35,9 +35,9 @@ public:
   //
 
   /// standard constructor
-  NonDPolynomialChaos(ProblemDescDB& problem_db, Model& model);
+  NonDPolynomialChaos(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor for numerical integration (tensor, sparse, cubature)
-  NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
+  NonDPolynomialChaos(std::shared_ptr<Model> model, short exp_coeffs_approach,
 		      unsigned short num_int, const RealVector& dim_pref,
 		      short u_space_type, short refine_type,
 		      short refine_control, short covar_control,
@@ -45,7 +45,7 @@ public:
 		      bool piecewise_basis, bool use_derivs,
                       String exp_expansion_file = "");
   /// alternate constructor for regression (least squares, CS, OLI)
-  NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
+  NonDPolynomialChaos(std::shared_ptr<Model> model, short exp_coeffs_approach,
 		      unsigned short exp_order, const RealVector& dim_pref,
 		      size_t colloc_pts, Real colloc_ratio, int seed,
 		      short u_space_type, short refine_type,
@@ -57,17 +57,17 @@ public:
 		      bool import_build_active_only,
                       String exp_expansion_file = "");
   /// alternate constructor for coefficient import
-  NonDPolynomialChaos(Model& model, const String& exp_import_file,
+  NonDPolynomialChaos(std::shared_ptr<Model> model, const String& exp_import_file,
 		      short u_space_type, const ShortShortPair& approx_view);
 
   /// destructor
-  ~NonDPolynomialChaos();
+  ~NonDPolynomialChaos() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
 
 protected:
 
@@ -79,10 +79,10 @@ protected:
   /// (method_name is not necessary, rather it is just a convenient overload
   /// allowing the derived ML PCE class to bypass the standard PCE ctor)
   NonDPolynomialChaos(unsigned short method_name, ProblemDescDB& problem_db,
-		      Model& model);
+		      std::shared_ptr<Model> model);
   /// base constructor for lightweight construction of multifidelity PCE
   /// using numerical integration
-  NonDPolynomialChaos(unsigned short method_name, Model& model,
+  NonDPolynomialChaos(unsigned short method_name, std::shared_ptr<Model> model,
 		      short exp_coeffs_approach, const RealVector& dim_pref,
 		      short u_space_type, short refine_type,
 		      short refine_control, short covar_control,
@@ -90,7 +90,7 @@ protected:
 		      short rule_growth, bool piecewise_basis, bool use_derivs);
   /// base constructor for lightweight construction of multilevel PCE
   /// using regression
-  NonDPolynomialChaos(unsigned short method_name, Model& model,
+  NonDPolynomialChaos(unsigned short method_name, std::shared_ptr<Model> model,
 		      short exp_coeffs_approach, const RealVector& dim_pref,
 		      short u_space_type, short refine_type,
 		      short refine_control, short covar_control,
@@ -103,44 +103,44 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void derived_init_communicators(ParLevLIter pl_iter);
-  void derived_set_communicators(ParLevLIter pl_iter);
-  void derived_free_communicators(ParLevLIter pl_iter);
+  void derived_init_communicators(ParLevLIter pl_iter) override;
+  void derived_set_communicators(ParLevLIter pl_iter) override;
+  void derived_free_communicators(ParLevLIter pl_iter) override;
 
-  void resolve_inputs(short& u_space_type, short& data_order);
+  void resolve_inputs(short& u_space_type, short& data_order) override;
 
-  void initialize_u_space_model();
+  void initialize_u_space_model() override;
 
-  size_t collocation_points() const;
+  size_t collocation_points() const override;
 
   //void initialize_expansion();
-  void compute_expansion();
+  void compute_expansion() override;
 
   void select_refinement_points(const RealVectorArray& candidate_samples,
 				unsigned short batch_size,
-				RealMatrix& best_samples);
+				RealMatrix& best_samples) override;
 
   void select_refinement_points_deprecated(
     const RealVectorArray& candidate_samples, unsigned short batch_size,
     RealMatrix& best_samples);
 
   void append_expansion(const RealMatrix& samples,
-			const IntResponseMap& resp_map);
+			const IntResponseMap& resp_map) override;
 
-  void update_samples_from_order_increment();
-  void sample_allocation_metric(Real& sparsity_metric, Real power);
+  void update_samples_from_order_increment() override;
+  void sample_allocation_metric(Real& sparsity_metric, Real power) override;
 
   /// Inherit to allow on-the-fly instances to customize behavior
-  virtual void post_run(std::ostream& s) override;
+  void post_run(std::ostream& s) override;
   /// print the final coefficients and final statistics
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
   /// print the PCE coefficient array for the orthogonal basis
   void print_coefficients(std::ostream& s);
   /// export the PCE coefficient array to expansionExportFile
   void export_coefficients();
 
   /// archive the PCE coefficient array for the orthogonal basis
-  void archive_coefficients();
+  void archive_coefficients() override;
 
   //
   //- Heading: Member functions
@@ -150,12 +150,12 @@ protected:
   /// integration specification
   bool config_integration(unsigned short quad_order, unsigned short ssg_level,
 			  unsigned short cub_int, Iterator& u_space_sampler,
-			  Model& g_u_model, String& approx_type);
+			  std::shared_ptr<Model> g_u_model, String& approx_type);
   /// configure u_space_sampler and approx_type based on expansion_samples
   /// specification
   bool config_expectation(size_t exp_samples, unsigned short sample_type,
 			  int seed, const String& rng,
-			  Iterator& u_space_sampler, Model& g_u_model,
+			  Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model,
 			  String& approx_type);
   /// configure u_space_sampler and approx_type based on regression
   /// specification
@@ -165,7 +165,7 @@ protected:
 			 const UShortArray& tensor_grid_order,
 			 unsigned short sample_type, int seed,
 			 const String& rng, const String& pt_reuse,
-			 Iterator& u_space_sampler, Model& g_u_model,
+			 Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model,
 			 String& approx_type);
 
   /// define an expansion order that is consistent with an advancement in
@@ -266,7 +266,7 @@ append_expansion(const RealMatrix& samples, const IntResponseMap& resp_map)
     numSamplesOnModel += resp_map.size();
     increment_order_from_grid();
     // utilize rebuild following expansion updates
-    uSpaceModel.append_approximation(samples, resp_map, true);
+    uSpaceModel->append_approximation(samples, resp_map, true);
     break;
   }
 }

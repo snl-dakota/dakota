@@ -16,6 +16,7 @@
 #include <gtest/gtest.h>
 
 #include "ROLOptimizer.hpp"
+#include "model_utils.hpp"
 
 using namespace Dakota;
 
@@ -375,7 +376,7 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_bound_const_reset)
   const Variables& vars = env.variables_results();
 
   // We will reset various entities by modifying model contents
-  Dakota::Model & model = dak_iter.iterated_model();
+  std::shared_ptr<Dakota::Model> model = dak_iter.iterated_model();
 
   // Let's see if we can reset the initial and bounds values using the registered solution with ROL 
   // and owned by ROLOptimizer and then re-solve ... RWH
@@ -383,19 +384,19 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_bound_const_reset)
   new_initial_vals[0] = 0.0; // These values require more ROL iterations and allow testing of new options below.
   new_initial_vals[1] = 0.0;
   new_initial_vals[2] = 0.0;
-  model.continuous_variables(new_initial_vals);
+  ModelUtils::continuous_variables(*model, new_initial_vals);
 
   RealVector new_lower_bnds(vars.cv());
   new_lower_bnds[0] = 0.0;
   new_lower_bnds[1] = 0.0;
   new_lower_bnds[2] = 0.0;
-  model.continuous_lower_bounds(new_lower_bnds);
+  ModelUtils::continuous_lower_bounds(*model, new_lower_bnds);
 
   RealVector new_upper_bnds(vars.cv());
   new_upper_bnds[0] = 2.0;
   new_upper_bnds[1] = 0.3;
   new_upper_bnds[2] = 0.6;
-  model.continuous_upper_bounds(new_upper_bnds);
+  ModelUtils::continuous_upper_bounds(*model, new_upper_bnds);
 
   // Now also test resetting some ROL solver options, eg max iters and tolerance
   Teuchos::ParameterList new_options;

@@ -37,25 +37,25 @@ class HierarchSurrBasedLocalTraits: public TraitsBase
   HierarchSurrBasedLocalTraits() { }
 
   /// destructor
-  virtual ~HierarchSurrBasedLocalTraits() { }
+  ~HierarchSurrBasedLocalTraits() override { }
 
   /// A temporary query used in the refactor
-  virtual bool is_derived() { return true; }
+  bool is_derived() override { return true; }
 
   /// Return the flag indicating whether method supports continuous variables
-  bool supports_continuous_variables() { return true; }
+  bool supports_continuous_variables() override { return true; }
 
   /// Return the flag indicating whether method supports linear equalities
-  bool supports_linear_equality() { return true; }
+  bool supports_linear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports linear inequalities
-  bool supports_linear_inequality() { return true; }
+  bool supports_linear_inequality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear equalities
-  bool supports_nonlinear_equality() { return true; }
+  bool supports_nonlinear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear inequalities
-  bool supports_nonlinear_inequality() { return true; }
+  bool supports_nonlinear_inequality() override { return true; }
 };
 
 
@@ -68,9 +68,9 @@ public:
   //
 
   /// constructor
-  HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model);
+  HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
-  ~HierarchSurrBasedLocalMinimizer();
+  ~HierarchSurrBasedLocalMinimizer() override;
 
 protected:
 
@@ -78,18 +78,18 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void pre_run();
-  void post_run(std::ostream& s);
+  void pre_run() override;
+  void post_run(std::ostream& s) override;
 
-  SurrBasedLevelData& trust_region();
+  SurrBasedLevelData& trust_region() override;
 
-  void update_trust_region();
+  void update_trust_region() override;
 
-  void build();
-  void minimize();
-  void verify();
+  void build() override;
+  void minimize() override;
+  void verify() override;
 
-  unsigned short converged();
+  unsigned short converged() override;
 
 private:
 
@@ -176,7 +176,7 @@ inline SurrBasedLevelData& HierarchSurrBasedLocalMinimizer::trust_region()
 
 
 inline void HierarchSurrBasedLocalMinimizer::set_active_model(size_t tr_index)
-{ iteratedModel.active_model_key(trustRegions[tr_index].paired_key()); }
+{ iteratedModel->active_model_key(trustRegions[tr_index].paired_key()); }
 
 
 inline void HierarchSurrBasedLocalMinimizer::update_trust_region()

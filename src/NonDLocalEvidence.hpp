@@ -36,8 +36,8 @@ public:
   //- Heading: Constructors and destructor
   //
 
-  NonDLocalEvidence(ProblemDescDB& problem_db, Model& model); ///< constructor
-  ~NonDLocalEvidence();                                       ///< destructor
+  NonDLocalEvidence(ProblemDescDB& problem_db, std::shared_ptr<Model> model); ///< constructor
+  ~NonDLocalEvidence() override;                                       ///< destructor
 
   //
   //- Heading: Member functions
@@ -49,12 +49,12 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void initialize();
-  void set_cell_bounds();
-  void truncate_to_cell_bounds(RealVector& initial_pt);
-  void post_process_cell_results(bool maximize);
-  void post_process_response_fn_results();
-  void post_process_final_results();
+  void initialize() override;
+  void set_cell_bounds() override;
+  void truncate_to_cell_bounds(RealVector& initial_pt) override;
+  void post_process_cell_results(bool maximize) override;
+  void post_process_response_fn_results() override;
+  void post_process_final_results() override;
 
 private:
 

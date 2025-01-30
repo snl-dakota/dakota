@@ -55,12 +55,12 @@ public:
   /// alternate envelope constructor which uses the ProblemDescDB but
   /// accepts a model from a higher level (meta-iterator) context,
   /// instead of constructing its own
-  Iterator(ProblemDescDB& problem_db, Model& model,
+  Iterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model,
 	   std::shared_ptr<TraitsBase> traits =
 	   std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// alternate envelope constructor for instantiations by name
   /// without the ProblemDescDB
-  Iterator(const String& method_string, Model& model,
+  Iterator(const String& method_string, std::shared_ptr<Model> model,
 	   std::shared_ptr<TraitsBase> traits =
 	   std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// copy constructor
@@ -214,7 +214,7 @@ public:
 
   /// return the result of any recasting or surrogate model recursion
   /// layered on top of iteratedModel by the derived Iterator ctor chain
-  virtual const Model& algorithm_space_model() const;
+  virtual std::shared_ptr<Model> algorithm_space_model();
 
   /// detect any conflicts due to recursive use of the same Fortran solver
   virtual void check_sub_iterator_conflict();
@@ -294,10 +294,10 @@ public:
 
   /// set the iteratedModel (iterators and meta-iterators using a single
   /// model instance)
-  void iterated_model(const Model& model);
+  void iterated_model(std::shared_ptr<Model> model);
   /// return the iteratedModel (iterators & meta-iterators using a single
   /// model instance)
-  Model& iterated_model();
+  std::shared_ptr<Model>iterated_model();
 
   /// return the problem description database (probDescDB)
   ProblemDescDB& problem_description_db() const;
@@ -413,7 +413,7 @@ protected:
 	   std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// alternate constructor for base iterator classes constructed on the fly
-  Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model,
+  Iterator(NoDBBaseConstructor, unsigned short method_name, std::shared_ptr<Model> model,
 	   std::shared_ptr<TraitsBase> traits =
 	   std::shared_ptr<TraitsBase>(new TraitsBase()));
 
@@ -423,7 +423,7 @@ protected:
 	   std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// alternate envelope constructor for instantiations without ProblemDescDB
-  Iterator(NoDBBaseConstructor, Model& model, size_t max_iter, size_t max_eval,
+  Iterator(NoDBBaseConstructor, std::shared_ptr<Model> model, size_t max_iter, size_t max_eval,
 	   Real conv_tol, std::shared_ptr<TraitsBase> traits =
 	   std::shared_ptr<TraitsBase>(new TraitsBase()));
 
@@ -464,6 +464,10 @@ protected:
   //- Heading: Data
   //
 
+  /// the model to be iterated (for iterators and meta-iterators
+  /// employing a single model instance)
+  std::shared_ptr<Model> iteratedModel;
+
   /// class member reference to the problem description database
   /** Iterator and Model cannot use a shallow copy of ProblemDescDB
       due to circular destruction dependency (reference counts can't
@@ -477,10 +481,6 @@ protected:
   ParConfigLIter methodPCIter;
   // index for the active ParallelLevel within ParallelConfiguration::miPLIters
   //size_t miPLIndex;
-
-  /// the model to be iterated (for iterators and meta-iterators
-  /// employing a single model instance)
-  Model iteratedModel;
 
   /// number of Models locally (in Iterator or derived classes)
   /// wrapped around the initially passed in Model
@@ -561,10 +561,10 @@ private:
   get_iterator(ProblemDescDB& problem_db);
   /// Used by the envelope to instantiate the correct letter class
   std::shared_ptr<Iterator>
-  get_iterator(ProblemDescDB& problem_db, Model& model);
+  get_iterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// Used by the envelope to instantiate the correct letter class
   std::shared_ptr<Iterator>
-  get_iterator(const String& method_string, Model& model);
+  get_iterator(const String& method_string, std::shared_ptr<Model> model);
 
   /// return the next available method ID for no-ID user methods
   static String user_auto_id();
@@ -575,6 +575,7 @@ private:
   //
   //- Heading: Data
   //
+  
 
   /// method identifier string from the input file, or an
   /// auto-generated ID, such that each instance of an Iterator has a
@@ -633,14 +634,17 @@ parallel_configuration_iterator_map() const
 { return (iteratorRep) ? iteratorRep->methodPCIterMap : methodPCIterMap; }
 
 
-inline void Iterator::iterated_model(const Model& model)
+inline void Iterator::iterated_model(std::shared_ptr<Model> model)
 {
-  if (iteratorRep) iteratorRep->iteratedModel = model;
-  else             iteratedModel = model; 
+  if (iteratorRep) {
+    iteratorRep->iteratedModel = model;  }
+  else {
+    iteratedModel = model; 
+  }
 }
 
 
-inline Model& Iterator::iterated_model()
+inline std::shared_ptr<Model> Iterator::iterated_model()
 { return (iteratorRep) ? iteratorRep->iteratedModel : iteratedModel; }
 
 

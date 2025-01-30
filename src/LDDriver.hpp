@@ -33,7 +33,7 @@ public:
 
     // Generate samples of the wrapped low-discrepancy sequence
     void generate_samples(
-        const Model& model,      // The model to get the multivariate distribution from
+        std::shared_ptr<Model> model,      // The model to get the multivariate distribution from
         const size_t numSamples, // Number of samples to generate
         RealMatrix& sampleMatrix // Matrix to store the generated samples (needs to be resized to numVariables x numSamples)
     );
@@ -70,7 +70,7 @@ private:
     // Function to transform a given sample matrix from a uniform distribution over [0, 1)
     // to the multivariate distribution defined by the given model
     void transform(
-        const Model& model,      // The model to get the target multivariate distribution from
+        std::shared_ptr<Model> model,      // The model to get the target multivariate distribution from
         RealMatrix& sampleMatrix // The matrix of samples to transform (shape numVariables x numSamples)
     );
 };

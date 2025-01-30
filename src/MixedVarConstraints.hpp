@@ -40,14 +40,14 @@ public:
   MixedVarConstraints(const ProblemDescDB& problem_db,
 		      const SharedVariablesData& svd);
   /// destructor
-  ~MixedVarConstraints();
+  ~MixedVarConstraints() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  void write(std::ostream& s) const;
-  void read(std::istream& s);
+  void write(std::ostream& s) const override;
+  void read(std::istream& s) override;
 
 protected:
 
