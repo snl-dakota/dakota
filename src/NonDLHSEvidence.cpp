@@ -16,7 +16,7 @@
 namespace Dakota {
 
 
-NonDLHSEvidence::NonDLHSEvidence(ProblemDescDB& problem_db, Model& model):
+NonDLHSEvidence::NonDLHSEvidence(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDLHSInterval(problem_db, model)
 { }
 
@@ -56,7 +56,7 @@ void NonDLHSEvidence::post_process_samples()
     for (i=0, it=all_responses.begin(); i<numSamples; i++, ++it) {
 
       const Real& fn_val = it->second.function_value(respFnCntr);
-      Variables vars = iteratedModel.current_variables().copy();
+      Variables vars = iteratedModel->current_variables().copy();
       sample_to_variables(all_samples[i], vars);
 
       const RealVector&  c_vars = vars.continuous_variables();

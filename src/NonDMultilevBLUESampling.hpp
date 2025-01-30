@@ -33,9 +33,9 @@ public:
   //
 
   /// standard constructor
-  NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model);
+  NonDMultilevBLUESampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
-  ~NonDMultilevBLUESampling();
+  ~NonDMultilevBLUESampling() override;
 
 protected:
 
@@ -63,13 +63,16 @@ protected:
 
   void numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
 				 size_t& num_nln_con) override;
+
   void numerical_solution_bounds_constraints(const MFSolutionData& soln,
     RealVector& x0, RealVector& x_lb, RealVector& x_ub,
     RealVector& lin_ineq_lb, RealVector& lin_ineq_ub, RealVector& lin_eq_tgt,
     RealVector& nln_ineq_lb, RealVector& nln_ineq_ub, RealVector& nln_eq_tgt,
     RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs) override;
+
   void derived_finite_solution_bounds(const RealVector& x0, RealVector& x_lb,
 				      RealVector& x_ub, Real budget) override;
+
 
   Real linear_group_cost(const RealVector& cdv) override;
   void linear_group_cost_gradient(const RealVector& cdv,
@@ -77,9 +80,11 @@ protected:
 
   void apply_mc_reference(RealVector& mc_targets) override;
 
+
   void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 				       RealVector& lin_ineq_lb,
 				       RealVector& lin_ineq_ub) override;
+
   Real augmented_linear_ineq_violations(const RealVector& cd_vars,
 					const RealMatrix& lin_ineq_coeffs,
 					const RealVector& lin_ineq_lb,

@@ -63,7 +63,7 @@ public:
   /// standard constructor: Surfpack surface of appropriate type will be created
   SharedSurfpackApproxData(ProblemDescDB& problem_db, size_t num_vars);
   /// destructor
-  ~SharedSurfpackApproxData();
+  ~SharedSurfpackApproxData() override;
 
 protected:
 

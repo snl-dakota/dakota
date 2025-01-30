@@ -50,7 +50,7 @@ public:
 		     void* callback_data = NULL);
 
   /// destructor
-  ~LibraryEnvironment();
+  ~LibraryEnvironment() override;
 
 
   //

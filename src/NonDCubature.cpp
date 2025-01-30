@@ -24,7 +24,7 @@ namespace Dakota {
     and probDescDB can be queried for settings from the method
     specification.  It is not currently used, as there is not yet a
     separate nond_cubature method specification. */
-NonDCubature::NonDCubature(ProblemDescDB& problem_db, Model& model):
+NonDCubature::NonDCubature(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDIntegration(problem_db, model),
   cubIntOrderRef(probDescDB.get_ushort("method.nond.cubature_integrand"))
 {
@@ -34,7 +34,7 @@ NonDCubature::NonDCubature(ProblemDescDB& problem_db, Model& model):
     (numIntDriver.driver_rep());
 
   // additional initializations in NonDIntegration ctor
-  Pecos::MultivariateDistribution& mv_dist = model.multivariate_distribution();
+  Pecos::MultivariateDistribution& mv_dist = model->multivariate_distribution();
   assign_rule(mv_dist); // assign cubIntRule
 
   // update CubatureDriver::{numVars,cubIntOrder,integrationRule}
@@ -46,7 +46,7 @@ NonDCubature::NonDCubature(ProblemDescDB& problem_db, Model& model):
 /** This alternate constructor is used for on-the-fly generation and
     evaluation of numerical cubature points. */
 NonDCubature::
-NonDCubature(Model& model, unsigned short cub_int_order): 
+NonDCubature(std::shared_ptr<Model> model, unsigned short cub_int_order): 
   NonDIntegration(CUBATURE_INTEGRATION, model), cubIntOrderRef(cub_int_order)
 {
   // initialize the numerical integration driver
@@ -55,7 +55,7 @@ NonDCubature(Model& model, unsigned short cub_int_order):
     (numIntDriver.driver_rep());
   cubDriver->integrand_order(cubIntOrderRef);
 
-  assign_rule(model.multivariate_distribution());
+  assign_rule(model->multivariate_distribution());
 }
 
 
@@ -103,10 +103,10 @@ assign_rule(const Pecos::MultivariateDistribution& mvd)
 }
 
 
-void NonDCubature::get_parameter_sets(Model& model)
+void NonDCubature::get_parameter_sets(std::shared_ptr<Model> model)
 {
   // capture any distribution parameter insertions
-  Pecos::MultivariateDistribution& mv_dist = model.multivariate_distribution();
+  Pecos::MultivariateDistribution& mv_dist = model->multivariate_distribution();
   if (!numIntegrations || subIteratorFlag)
     cubDriver->initialize_grid_parameters(mv_dist);
 

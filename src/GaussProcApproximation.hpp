@@ -54,7 +54,7 @@ public:
 			 const SharedApproxData& shared_data,
                          const String& approx_label);
   /// destructor
-  ~GaussProcApproximation();
+  ~GaussProcApproximation() override;
 
 protected:
 
@@ -62,22 +62,22 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  int min_coefficients() const;
+  int min_coefficients() const override;
 
   //int num_constraints() const;
 
   /// find the covariance parameters governing the Gaussian process response
-  void build();
+  void build() override;
 
   /// retrieve the function value for a given parameter set
-  Real value(const Variables& vars);
+  Real value(const Variables& vars) override;
 
   /// retrieve the function gradient at the predicted value 
   /// for a given parameter set
-  const RealVector& gradient(const Variables& vars);
+  const RealVector& gradient(const Variables& vars) override;
 
   /// retrieve the variance of the predicted value for a given parameter set
-  Real prediction_variance(const Variables& vars);
+  Real prediction_variance(const Variables& vars) override;
 
 private: 
 

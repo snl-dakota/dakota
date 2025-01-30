@@ -28,7 +28,7 @@ namespace Dakota {
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDMultilevBLUESampling::
-NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model):
+NonDMultilevBLUESampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDNonHierarchSampling(problem_db, model),
   pilotGroupSampling(problem_db.get_short("method.nond.pilot_samples.mode")),
   groupThrottleType(problem_db.get_short("method.nond.group_throttle_type")),
@@ -1222,7 +1222,7 @@ finalize_counts(const Sizet2DArray& N_G_actual, const SizetArray& N_G_alloc)
 
   // For now, overlay group samples into model-resolution instance samples
   size_t g, m, num_models, q, mf, rl, m_index;
-  const Pecos::ActiveKey& active_key = iteratedModel.active_model_key();
+  const Pecos::ActiveKey& active_key = iteratedModel->active_model_key();
   for (g=0; g<numGroups; ++g) {
     const UShortArray& group_g = modelGroups[g];
     num_models = group_g.size();
@@ -1382,7 +1382,7 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s) const
 {
   const RealVector&  mlblue_est_var = blueSolnData.estimator_variances();
   const RealVector&  mlblue_ratios  = blueSolnData.estimator_variance_ratios();
-  const StringArray& labels = iteratedModel.truth_model().response_labels();
+  const StringArray& labels = ModelUtils::response_labels(*iteratedModel->truth_model());
   Real mlblue_est_var_q, mlblue_ratio_q, proj_equiv_estvar_q;
   size_t qoi, wpp7 = write_precision+7,
     proj_equiv_hf = (size_t)std::floor(equivHFEvals + deltaEquivHF + .5);

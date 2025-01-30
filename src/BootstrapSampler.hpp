@@ -149,7 +149,7 @@ public:
   }
 
   /// Destructor
-  virtual ~BootstrapSampler()
+  ~BootstrapSampler() override
   {
     /* empty destructor */
   }
@@ -158,7 +158,7 @@ public:
   //- Heading: Public members functions that perform for bootstrap sampling
   //
 
-  virtual void operator()(size_t num_samp, Data& bootstrapped_sample)
+  void operator()(size_t num_samp, Data& bootstrapped_sample) override
   {
     if(num_samp > bootstrapped_sample.size()/blockSize)
       throw
@@ -217,7 +217,7 @@ public:
   }
 
   /// Destructor
-  virtual ~BootstrapSampler()
+  ~BootstrapSampler() override
   {
     /* empty destructor */
   }
@@ -226,7 +226,7 @@ public:
   //- Heading: Public members functions that perform bootstrap sampling
   //
 
-  virtual void operator()(size_t num_samp, MatType& bootstrapped_sample)
+  void operator()(size_t num_samp, MatType& bootstrapped_sample) override
   {
     OrdinalType stride = this->origData.stride();
     if(stride != bootstrapped_sample.stride())

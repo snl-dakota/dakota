@@ -40,7 +40,7 @@ public:
   // NOTE: removed accessors to add metadata only or record w/o metadata
 
   /// Write data to file
-  void flush() const;
+  void flush() const override;
 
 
   // ##############################################################
@@ -67,7 +67,7 @@ public:
               ResultsOutputType stored_type, 
               const int &len,
               const DimScaleMap &scales = DimScaleMap(),
-              const AttributeArray &attrs = AttributeArray()) {
+              const AttributeArray &attrs = AttributeArray()) override {
       return;
    }
 
@@ -78,7 +78,7 @@ public:
               ResultsOutputType stored_type, 
               const int &num_rows, const int &num_cols,
               const DimScaleMap &scales = DimScaleMap(),
-              const AttributeArray &attrs = AttributeArray()) {
+              const AttributeArray &attrs = AttributeArray()) override {
       return;
    }
 
@@ -86,7 +86,7 @@ public:
   void insert_into(const StrStrSizet& iterator_id,
                    const StringArray &location,
                    const boost::any& data,
-                   const int &index, const bool &row) {
+                   const int &index, const bool &row) override {
       return;
   }
 

@@ -28,7 +28,7 @@ namespace Dakota {
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDWASABIBayesCalibration::
-NonDWASABIBayesCalibration(ProblemDescDB& problem_db, Model& model):
+NonDWASABIBayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDBayesCalibration(problem_db, model),
   numPushforwardSamples(probDescDB.get_int("method.nond.pushforward_samples")),
   dataDistMeans(probDescDB.get_rv("method.nond.data_dist_means")),
@@ -91,10 +91,10 @@ void NonDWASABIBayesCalibration::calibrate()
   paramMins.size(numContinuousVars);
   paramMaxs.size(numContinuousVars);
   RealRealPairArray bnds
-    = mcmcModel.multivariate_distribution().distribution_bounds(); // all RV
+    = mcmcModel->multivariate_distribution().distribution_bounds(); // all RV
   // Use SVD to convert active CV index (calibration params) to all index (RVs)
   const SharedVariablesData& svd
-    = iteratedModel.current_variables().shared_data();
+    = iteratedModel->current_variables().shared_data();
   for (size_t i=0; i<numContinuousVars; ++i) {
     const RealRealPair& bnds_i = bnds[svd.cv_index_to_all_index(i)];
     paramMins[i] = bnds_i.first;  paramMaxs[i] = bnds_i.second;
@@ -394,7 +394,7 @@ print_results(std::ostream& s, short results_state)
   //NonDBayesCalibration::print_results(s, results_state);
 
   // WASABI-specific output
-  StringArray resp_labels = mcmcModel.current_response().function_labels();
+  StringArray resp_labels = ModelUtils::response_labels(*mcmcModel);
   NonDSampling::print_moments(s, momentStatistics, RealMatrix(),
       "response function", Pecos::STANDARD_MOMENTS, resp_labels, false);
 }
@@ -410,10 +410,10 @@ compute_responses(RealMatrix & samples, RealMatrix & responses)
   for (int j=0; j<num_samples; j++) {
     RealVector sample(Teuchos::View, samples[j], numContinuousVars);
     
-    mcmcModel.continuous_variables(sample); 
+    ModelUtils::continuous_variables(*mcmcModel, sample); 
 
-    mcmcModel.evaluate();
-    const Response& curr_resp = mcmcModel.current_response();
+    mcmcModel->evaluate();
+    const Response& curr_resp = mcmcModel->current_response();
     const RealVector& fn_vals = curr_resp.function_values();
 
     RealVector response_col(Teuchos::View, responses[j], numFunctions); 

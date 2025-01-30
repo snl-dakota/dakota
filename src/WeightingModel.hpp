@@ -30,10 +30,10 @@ public:
   //
 
   /// standard constructor
-  WeightingModel(Model& sub_model);
+  WeightingModel(std::shared_ptr<Model> sub_model);
 
   /// destructor
-  ~WeightingModel();
+  ~WeightingModel() override;
 
 
 protected:
@@ -42,7 +42,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void assign_instance();
+  void assign_instance() override;
 
   void init_metadata() override { /* no-op to leave metadata intact */}
 

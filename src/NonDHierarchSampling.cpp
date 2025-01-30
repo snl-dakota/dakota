@@ -26,7 +26,7 @@ namespace Dakota {
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDHierarchSampling::
-NonDHierarchSampling(ProblemDescDB& problem_db, Model& model):
+NonDHierarchSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDEnsembleSampling(problem_db, model)
 {
   bool err_flag = false;
@@ -80,19 +80,19 @@ ensemble_sample_batch(const String& prepend, int batch_id, bool new_samples)
     // export separate output files for each data set:
     // for hierarchical, can rely on active truth,surr keys
     if (exportSampleSets) {
-      if (iteratedModel.active_truth_key())
-	export_all_samples(prepend, iteratedModel.active_truth_model(),
+      if (iteratedModel->active_truth_key())
+	export_all_samples(prepend, *iteratedModel->active_truth_model(),
 			   mlmfIter, batch_id);
-      size_t i, num_active_surr = iteratedModel.active_surrogate_keys();
+      size_t i, num_active_surr = iteratedModel->active_surrogate_keys();
       for (i=0; i<num_active_surr; ++i)
-	export_all_samples(prepend, iteratedModel.active_surrogate_model(i),
+	export_all_samples(prepend, *iteratedModel->active_surrogate_model(i),
 			   mlmfIter, batch_id);
     }
   }
 
   // evaluate all{Samples,Variables} using model ensemble and migrate
   // all{Samples,Variables} to batch{Samples,Variables}Map
-  evaluate_batch(iteratedModel, batch_id); // excludes synchronize
+  evaluate_batch(*iteratedModel, batch_id); // excludes synchronize
 }
 
 

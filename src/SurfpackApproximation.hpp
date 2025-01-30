@@ -53,7 +53,7 @@ public:
   /// alternate constructor
   SurfpackApproximation(const SharedApproxData& shared_data);
   /// destructor
-  ~SurfpackApproximation() { }
+  ~SurfpackApproximation() override { }
 
 protected:
 
@@ -71,7 +71,7 @@ protected:
 
 
   /// validate imported labels and initialize map if needed
-  void map_variable_labels(const Variables& vars);
+  void map_variable_labels(const Variables& vars) override;
 
   /// export the Surpack model to disk or console
   void export_model(const StringArray& var_labels, const String& fn_label,

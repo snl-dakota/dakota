@@ -33,9 +33,9 @@ public:
   //
 
   /// standard constructor
-  NonDMultilevControlVarSampling(ProblemDescDB& problem_db, Model& model);
+  NonDMultilevControlVarSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
-  ~NonDMultilevControlVarSampling();
+  ~NonDMultilevControlVarSampling() override;
 
 protected:
 
@@ -43,13 +43,13 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void pre_run();
-  void core_run();
+  void pre_run() override;
+  void core_run() override;
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
   void print_variance_reduction(std::ostream& s) const;
 
-  bool discrepancy_sample_counts() const;
+  bool discrepancy_sample_counts() const override;
 
 private:
 
@@ -570,9 +570,9 @@ accumulate_increments(const SizetArray& delta_N_hf, Sizet2DArray& N_actual_hf,
 {
   unsigned short group;
   size_t lev, N_alloc_l, num_mf = NLevActual.size(),
-    num_hf_lev = iteratedModel.truth_model().solution_levels(),
+    num_hf_lev = iteratedModel->truth_model()->solution_levels(),
     num_cv_lev = (num_mf > 1) ?
-    std::min(num_hf_lev, iteratedModel.surrogate_model().solution_levels()) : 0;
+    std::min(num_hf_lev, iteratedModel->surrogate_model()->solution_levels()) : 0;
   Real hf_lev_cost, lf_lev_cost, hf_ref_cost = sequenceCost[numApprox];
 
   for (lev=0, group=0; lev<num_hf_lev; ++lev, ++group) {
@@ -632,9 +632,9 @@ accumulate_lf_increments(const SizetArray& delta_N_lf,
 
   unsigned short group;
   size_t lev, num_mf = NLevActual.size(),
-    num_hf_lev = iteratedModel.truth_model().solution_levels(),
+    num_hf_lev = iteratedModel->truth_model()->solution_levels(),
     num_cv_lev = (num_mf > 1) ?
-    std::min(num_hf_lev, iteratedModel.surrogate_model().solution_levels()) : 0;
+    std::min(num_hf_lev, iteratedModel->surrogate_model()->solution_levels()) : 0;
   Real hf_ref_cost = sequenceCost[numApprox];
 
   for (lev=0, group=0; lev<num_cv_lev; ++lev, ++group) {
@@ -669,9 +669,9 @@ compute_allocations(RealVectorArray& eval_ratios, RealMatrix& Lambda,
 		    SumContainer1& sum_Hl_Hlm1,   SumContainer1& sum_Hlm1_Hlm1)
 {
   size_t qoi, lev, num_mf = NLevActual.size(),
-    num_hf_lev = iteratedModel.truth_model().solution_levels(),
+    num_hf_lev = iteratedModel->truth_model()->solution_levels(),
     num_cv_lev = (num_mf > 1) ?
-    std::min(num_hf_lev, iteratedModel.surrogate_model().solution_levels()) : 0;
+    std::min(num_hf_lev, iteratedModel->surrogate_model()->solution_levels()) : 0;
   RealMatrix rho_dot2_LH(numFunctions, num_cv_lev, false);
   RealVector agg_var_hf(num_hf_lev), avg_rho_dot2_LH(num_cv_lev, false),
     avg_lambda(num_cv_lev, false);

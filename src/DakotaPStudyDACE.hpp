@@ -30,7 +30,7 @@ public:
   //- Heading: Virtual member function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
 
 protected:
 
@@ -39,17 +39,17 @@ protected:
   //
 
   /// constructor
-  PStudyDACE(ProblemDescDB& problem_db, Model& model);
+  PStudyDACE(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor for instantiations "on the fly"
-  PStudyDACE(unsigned short method_name, Model& model);
+  PStudyDACE(unsigned short method_name, std::shared_ptr<Model> model);
   /// destructor
-  ~PStudyDACE();
+  ~PStudyDACE() override;
     
   //
   //- Heading: Virtual member function redefinitions
   //
 
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
   //
   //- Heading: Member functions

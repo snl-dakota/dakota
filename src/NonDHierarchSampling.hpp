@@ -31,10 +31,10 @@ public:
   //
 
   /// standard constructor
-  NonDHierarchSampling(ProblemDescDB& problem_db, Model& model);
+  NonDHierarchSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor (virtual declaration should be redundant with ~Iterator,
   /// but this is top of MLMF diamond so doesn't hurt to be explicit)
-  virtual ~NonDHierarchSampling();
+  ~NonDHierarchSampling() override;
 
   //
   //- Heading: Virtual function redefinitions

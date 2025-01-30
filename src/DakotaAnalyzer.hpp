@@ -33,12 +33,12 @@ public:
   //- Heading: Virtual member function redefinitions
   //
 
-  const VariablesArray& all_variables();
-  const RealMatrix&     all_samples();
-  const IntResponseMap& all_responses() const;
-  bool resize();
+  const VariablesArray& all_variables() override;
+  const RealMatrix&     all_samples() override;
+  const IntResponseMap& all_responses() const override;
+  bool resize() override;
 
-  size_t num_samples() const;
+  size_t num_samples() const override;
 
   //
   //- Heading: Virtual functions
@@ -57,16 +57,16 @@ protected:
   /// default constructor
   Analyzer();
   /// standard constructor
-  Analyzer(ProblemDescDB& problem_db, Model& model);
+  Analyzer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor for instantiations "on the fly" with a Model
-  Analyzer(unsigned short method_name, Model& model);
+  Analyzer(unsigned short method_name, std::shared_ptr<Model> model);
   /// alternate constructor for instantiations "on the fly" with a Model
-  Analyzer(unsigned short method_name, Model& model,
+  Analyzer(unsigned short method_name, std::shared_ptr<Model> model,
 	   const ShortShortPair& view_override);
   /// alternate constructor for instantiations "on the fly" without a Model
   Analyzer(unsigned short method_name);
   /// destructor
-  ~Analyzer();
+  ~Analyzer() override;
 
   //
   //- Heading: Virtual functions
@@ -75,13 +75,13 @@ protected:
   /// Generate one block of numSamples samples (ndim * num_samples),
   /// populating allSamples; ParamStudy is the only class that
   /// specializes to use allVariables
-  virtual void get_parameter_sets(Model& model);
+  virtual void get_parameter_sets(std::shared_ptr<Model> model);
 
   // Can we alleviate the need to pass the number of samples?
 
   /// Generate one block of numSamples samples (ndim * num_samples),
   /// populating design_matrix
-  virtual void get_parameter_sets(Model& model, const size_t num_samples, 
+  virtual void get_parameter_sets(std::shared_ptr<Model> model, const size_t num_samples, 
 				  RealMatrix& design_matrix);
 
   /// update model's current variables with data from sample
@@ -97,28 +97,28 @@ protected:
   //- Heading: Virtual member function redefinitions
   //
 
-  void update_from_model(const Model& model);
+  void update_from_model(const Model& model) override;
 
-  void initialize_run();
-  void pre_run();
-  void post_run(std::ostream& s);
-  void finalize_run();
+  void initialize_run() override;
+  void pre_run() override;
+  void post_run(std::ostream& s) override;
+  void finalize_run() override;
 
-  void pre_output();
+  void pre_output() override;
 
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
-  const Model& algorithm_space_model() const;
+  std::shared_ptr<Model> algorithm_space_model() override;
 
-  const Variables&      variables_results() const;
-  const Response&       response_results()  const;
-  const VariablesArray& variables_array_results();
-  const ResponseArray&  response_array_results();
+  const Variables&      variables_results() const override;
+  const Response&       response_results()  const override;
+  const VariablesArray& variables_array_results() override;
+  const ResponseArray&  response_array_results() override;
 
-  void response_results_active_set(const ActiveSet& set);
+  void response_results_active_set(const ActiveSet& set) override;
 
-  bool compact_mode() const;
-  bool returns_multiple_points() const;
+  bool compact_mode() const override;
+  bool returns_multiple_points() const override;
 
   //
   //- Heading: Member functions
@@ -130,12 +130,12 @@ protected:
 			       bool log_best_flag = false);
 
   /// perform function evaluations to map a keyed batch of parameter sets
-  /// (allVariablesMap[key]) into a corresponding batch of response sets
-  /// (allResponsesMap[key])
+  /// (batchVariablesMap[key]) into a corresponding batch of response sets
+  /// (batchResponsesMap[key])
   void evaluate_batch(Model& model, int batch_id, bool log_best_flag = false);
   /// perform function evaluations to map a keyed batch of parameter sets
-  /// (allVariablesMap[key]) into a corresponding batch of response sets
-  /// (allResponsesMap[key])
+  /// (batchVariablesMap[key]) into a corresponding batch of response sets
+  /// (batchResponsesMap[key])
   const IntIntResponse2DMap& synchronize_batches(Model& model,
 						 bool log_best_flag = false);
   /// since synchronize returns the aggregation of all evaluated batches,
@@ -144,7 +144,7 @@ protected:
   void clear_batches();
 
   /// generate replicate parameter sets for use in variance-based decomposition
-  void get_vbd_parameter_sets(Model& model, size_t num_samples);
+  void get_vbd_parameter_sets(std::shared_ptr<Model> model, size_t num_samples);
 
   /// archive model evaluation points
   virtual void archive_model_variables(const Model&, size_t idx) const
@@ -264,7 +264,7 @@ private:
 };
 
 
-inline Analyzer::Analyzer()
+inline Analyzer::Analyzer() 
 { }
 
 
@@ -275,7 +275,7 @@ inline Analyzer::~Analyzer() { }
     of samples, collocation points, etc. might be costly, provide a default
     implementation here that backs out from the maxEvalConcurrency. */
 inline size_t Analyzer::num_samples() const
-{ return maxEvalConcurrency / iteratedModel.derivative_concurrency(); }
+{ return maxEvalConcurrency / iteratedModel->derivative_concurrency(); }
 
 
 inline const VariablesArray& Analyzer::all_variables()
@@ -305,7 +305,7 @@ inline void Analyzer::clear_batches()
 
 
 /** default definition that gets redefined in selected derived Minimizers */
-inline const Model& Analyzer::algorithm_space_model() const
+inline std::shared_ptr<Model> Analyzer::algorithm_space_model()
 { return iteratedModel; }
 
 

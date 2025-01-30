@@ -120,7 +120,7 @@ void PluginInterface::load_plugin()
 {
   if (pluginInterface) return;
   try {
-#if BOOST_VERSION <= 107600
+#if BOOST_VERSION < 107600
     pluginInterface = boost::dll::import<DakotaPlugins::DakotaInterfaceAPI>
 #else
     pluginInterface = boost::dll::import_symbol<DakotaPlugins::DakotaInterfaceAPI>

@@ -33,10 +33,10 @@ public:
   //
  
   /// standard constructor
-  NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model);
+  NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /*
   /// alternate constructor for helper iterator
-  NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
+  NonDMultilevelFunctionTrain(unsigned short method_name, std::shared_ptr<Model> model,
 			      const SizetArray& colloc_pts_seq,
 			      const RealVector& dim_pref,
 			      Real colloc_ratio, const SizetArray& pilot,
@@ -184,7 +184,7 @@ push_c3_active(const UShortArray& orders)
   push_c3_max_order(maxOrderSpec); // restore if adapted (no sequence)
   std::shared_ptr<SharedC3ApproxData> shared_data_rep =
     std::static_pointer_cast<SharedC3ApproxData>(
-    uSpaceModel.shared_approximation().data_rep());
+    uSpaceModel->shared_approximation().data_rep());
   shared_data_rep->update_basis(); // propagate order updates to oneApproxOpts
 }
 

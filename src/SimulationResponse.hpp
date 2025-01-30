@@ -56,7 +56,7 @@ public:
   /// alternate constructor using limited data
   SimulationResponse(const ActiveSet& set);
   /// destructor
-  ~SimulationResponse();
+  ~SimulationResponse() override;
 
 protected:
 

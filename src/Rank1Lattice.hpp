@@ -68,7 +68,7 @@ public:
   ~Rank1Lattice();
 
   /// Reseed this rank-1 lattice rule
-  void reseed() { random_shift(seedValue); }
+  void reseed() override { random_shift(seedValue); }
 
   /// Randomly shift this rank-1 lattice rule
   void random_shift() { random_shift(generate_system_seed()); }
@@ -126,7 +126,7 @@ private:
     const size_t nMin,
     const size_t nMax,
     RealMatrix& points
-  );
+  ) override;
 
   /// Position of the `k`th lattice point in RANK_1_LATTICE_NATURAL_ORDERING
   inline UInt32 reorder_natural(

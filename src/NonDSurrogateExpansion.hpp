@@ -30,9 +30,9 @@ public:
   //
 
   /// standard constructor
-  NonDSurrogateExpansion(ProblemDescDB& problem_db, Model& model);
+  NonDSurrogateExpansion(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
-  ~NonDSurrogateExpansion();
+  ~NonDSurrogateExpansion() override;
 
   //
   //- Heading: Virtual function redefinitions

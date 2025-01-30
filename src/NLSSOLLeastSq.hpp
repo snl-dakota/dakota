@@ -28,25 +28,25 @@ class NLSSOLLeastSqTraits: public TraitsBase
   NLSSOLLeastSqTraits() { }
 
   /// destructor
-  virtual ~NLSSOLLeastSqTraits() { }
+  ~NLSSOLLeastSqTraits() override { }
 
   /// A temporary query used in the refactor
-  virtual bool is_derived() { return true; }
+  bool is_derived() override { return true; }
 
   /// Return the flag indicating whether method supports continuous variables
-  bool supports_continuous_variables() { return true; }
+  bool supports_continuous_variables() override { return true; }
 
   /// Return the flag indicating whether method supports linear equalities
-  bool supports_linear_equality() { return true; }
+  bool supports_linear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports linear inequalities
-  bool supports_linear_inequality() { return true; }
+  bool supports_linear_inequality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear equalities
-  bool supports_nonlinear_equality() { return true; }
+  bool supports_nonlinear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear inequalities
-  bool supports_nonlinear_inequality() { return true; }
+  bool supports_nonlinear_inequality() override { return true; }
 };
 
 
@@ -83,20 +83,20 @@ public:
   //
  
   /// standard constructor
-  NLSSOLLeastSq(ProblemDescDB& problem_db, Model& model);
+  NLSSOLLeastSq(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor
-  NLSSOLLeastSq(Model& model);
+  NLSSOLLeastSq(std::shared_ptr<Model> model);
   /// destructor
-  ~NLSSOLLeastSq();
+  ~NLSSOLLeastSq() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
   //void pre_run();
-  void core_run();
+  void core_run() override;
 
-  void check_sub_iterator_conflict();
+  void check_sub_iterator_conflict() override;
 
 protected:
 

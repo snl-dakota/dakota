@@ -31,16 +31,16 @@ public:
   //
 
   /// standard constructor
-  NonDEnsembleSampling(ProblemDescDB& problem_db, Model& model);
+  NonDEnsembleSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor (virtual declaration should be redundant with ~Iterator,
   /// but this is top of MLMF diamond so doesn't hurt to be explicit)
-  ~NonDEnsembleSampling();
+  ~NonDEnsembleSampling() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
 
 protected:
 
@@ -59,16 +59,16 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void pre_run();
+  void pre_run() override;
   //void core_run();
-  void post_run(std::ostream& s);
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void post_run(std::ostream& s) override;
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
-  void initialize_final_statistics();
-  void update_final_statistics();
+  void initialize_final_statistics() override;
+  void update_final_statistics() override;
 
-  bool seed_updated();
-  void active_set_mapping();
+  bool seed_updated() override;
+  void active_set_mapping() override;
 
   //
   //- Heading: Member functions
@@ -305,10 +305,10 @@ inline Real NonDEnsembleSampling::estimator_cost_metric() const
 
 inline void NonDEnsembleSampling::resize_active_set()
 {
-  size_t m_resp_len = iteratedModel.response_size();
+  size_t m_resp_len = ModelUtils::response_size(*iteratedModel);
   if (activeSet.request_vector().size() != m_resp_len) {
-    // synch activeSet with iteratedModel.response_size()
-    activeSet.reshape(iteratedModel.response_size());
+    // synch activeSet with ModelUtils::response_size(iteratedModel)
+    activeSet.reshape(ModelUtils::response_size(*iteratedModel));
     activeSet.request_values(1);
   }
 }
@@ -322,7 +322,7 @@ average_online_cost(const RealVector& accum_cost, const SizetArray& num_cost,
   size_t step, num_steps = accum_cost.length();  unsigned short mf;
   //if (num_cost.size() != num_steps) { } // not possible in recover_online_cost
   if (seq_cost.length() != num_steps) seq_cost.sizeUninitialized(num_steps);
-  const Pecos::ActiveKey& active_key = iteratedModel.active_model_key();
+  const Pecos::ActiveKey& active_key = iteratedModel->active_model_key();
 
   for (step=0; step<num_steps; ++step) {
     mf = active_key.retrieve_model_form(step);

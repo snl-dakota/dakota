@@ -32,23 +32,23 @@ protected:
   //
 
   /// constructor
-  SurrBasedMinimizer(ProblemDescDB& problem_db, Model& model,
+  SurrBasedMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model,
 		     std::shared_ptr<TraitsBase> traits);
   /// alternate constructor for instantiations "on the fly"
-  SurrBasedMinimizer(Model& model, size_t max_iter, size_t max_eval,
+  SurrBasedMinimizer(std::shared_ptr<Model> model, size_t max_iter, size_t max_eval,
 		     Real conv_tol, std::shared_ptr<TraitsBase> traits);
   /// destructor
-  ~SurrBasedMinimizer();
+  ~SurrBasedMinimizer() override;
     
   //
   //- Heading: Virtual function redefinitions
   //
 
-  void derived_init_communicators(ParLevLIter pl_iter);
-  void derived_set_communicators(ParLevLIter pl_iter);
-  void derived_free_communicators(ParLevLIter pl_iter);
+  void derived_init_communicators(ParLevLIter pl_iter) override;
+  void derived_set_communicators(ParLevLIter pl_iter) override;
+  void derived_free_communicators(ParLevLIter pl_iter) override;
 
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
   //
   //- Heading: Utility member functions

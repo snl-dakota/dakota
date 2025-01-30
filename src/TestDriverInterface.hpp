@@ -28,7 +28,7 @@ public:
   //
 
   TestDriverInterface(const ProblemDescDB& problem_db); ///< constructor
-  ~TestDriverInterface();                               ///< destructor
+  ~TestDriverInterface() override;                               ///< destructor
 
 protected:
 
@@ -37,7 +37,7 @@ protected:
   //
 
   /// execute an analysis code portion of a direct evaluation invocation
-  virtual int derived_map_ac(const Dakota::String& ac_name);
+  int derived_map_ac(const Dakota::String& ac_name) override;
 
 private:
 

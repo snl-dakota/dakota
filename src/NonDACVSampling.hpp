@@ -32,9 +32,9 @@ public:
   //
 
   /// standard constructor
-  NonDACVSampling(ProblemDescDB& problem_db, Model& model);
+  NonDACVSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
-  ~NonDACVSampling();
+  ~NonDACVSampling() override;
 
 protected:
 

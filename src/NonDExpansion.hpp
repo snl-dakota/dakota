@@ -11,6 +11,7 @@
 #define NOND_EXPANSION_H
 
 #include "DakotaNonD.hpp"
+#include "DataFitSurrModel.hpp"
 
 
 namespace Dakota {
@@ -31,25 +32,25 @@ public:
   //
 
   /// standard constructor
-  NonDExpansion(ProblemDescDB& problem_db, Model& model);
+  NonDExpansion(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor
-  NonDExpansion(unsigned short method_name, Model& model,
+  NonDExpansion(unsigned short method_name, std::shared_ptr<Model> model,
 		const ShortShortPair& approx_view, short exp_coeffs_approach,
 		const RealVector& dim_pref, int seed, short refine_type,
 		short refine_control, short covar_control, Real colloc_ratio,
 		short rule_nest, short rule_growth, bool piecewise_basis,
 		bool use_derivs);
   /// destructor
-  ~NonDExpansion();
+  ~NonDExpansion() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  bool resize();
-  void derived_init_communicators(ParLevLIter pl_iter);
-  void derived_set_communicators(ParLevLIter pl_iter);
-  void derived_free_communicators(ParLevLIter pl_iter);
+  bool resize() override;
+  void derived_init_communicators(ParLevLIter pl_iter) override;
+  void derived_set_communicators(ParLevLIter pl_iter) override;
+  void derived_free_communicators(ParLevLIter pl_iter) override;
 
   void nested_variable_mappings(const SizetArray& c_index1,
 				const SizetArray& di_index1,
@@ -58,14 +59,14 @@ public:
 				const ShortArray& c_target2,
 				const ShortArray& di_target2,
 				const ShortArray& ds_target2,
-				const ShortArray& dr_target2);
+				const ShortArray& dr_target2) override;
 
   /// perform a forward uncertainty propagation using PCE/SC methods
-  void core_run();
+  void core_run() override;
   /// print the final statistics
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
-  const Model& algorithm_space_model() const;
+  std::shared_ptr<Model> algorithm_space_model() override;
 
   //
   //- Heading: Virtual functions
@@ -118,7 +119,7 @@ protected:
   virtual void initialize_u_space_model();
   /// initialize random variable definitions and final stats arrays
   virtual void initialize_expansion();
-  /// form the expansion by calling uSpaceModel.build_approximation()
+  /// form the expansion by calling uSpaceModel->build_approximation()
   virtual void compute_expansion();
   /// finalize mappings for the uSpaceModel
   virtual void finalize_expansion();
@@ -180,9 +181,9 @@ protected:
   //
 
   /// set covarianceControl defaults and shape respCovariance
-  void initialize_response_covariance();
+  void initialize_response_covariance() override;
   /// update function values within finalStatistics
-  void update_final_statistics();
+  void update_final_statistics() override;
   /// update function gradients within finalStatistics
   void update_final_statistics_gradients();
 
@@ -203,26 +204,26 @@ protected:
   void check_dimension_preference(const RealVector& dim_pref) const;
 
   /// assign a NonDCubature instance within u_space_sampler
-  void construct_cubature(Iterator& u_space_sampler, Model& g_u_model,
+  void construct_cubature(Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model,
 			  unsigned short cub_int_order);
   /// assign a NonDQuadrature instance within u_space_sampler based on
   /// a quad_order specification
-  void construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
+  void construct_quadrature(Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model,
 			    unsigned short quad_order,
 			    const RealVector& dim_pref);
   /// assign a NonDQuadrature instance within u_space_sampler that
   /// generates a filtered tensor product sample set
-  void construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
+  void construct_quadrature(Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model,
 			    unsigned short quad_order,
 			    const RealVector& dim_pref, int filtered_samples);
   /// assign a NonDQuadrature instance within u_space_sampler that
   /// samples randomly from a tensor product multi-index
-  void construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
+  void construct_quadrature(Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model,
 			    unsigned short quad_order,
 			    const RealVector& dim_pref,
 			    int random_samples, int seed);
   /// assign a NonDSparseGrid instance within u_space_sampler
-  void construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
+  void construct_sparse_grid(Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model,
 			     unsigned short ssg_level,
 			     const RealVector& dim_pref);
   // assign a NonDIncremLHSSampling instance within u_space_sampler
@@ -391,7 +392,7 @@ protected:
 
   /// Model representing the approximate response function in u-space,
   /// after u-space recasting and polynomial data fit recursions
-  Model uSpaceModel;
+  std::shared_ptr<DataFitSurrModel> uSpaceModel;
 
   /// Iterator used for sampling on the uSpaceModel to generate approximate
   /// probability/reliability/response level statistics.  Currently this is
@@ -633,7 +634,7 @@ nested_variable_mappings(const SizetArray& c_index1,
 			 const ShortArray& ds_target2,
 			 const ShortArray& dr_target2)
 {
-  uSpaceModel.nested_variable_mappings(c_index1, di_index1, ds_index1,
+  uSpaceModel->nested_variable_mappings(c_index1, di_index1, ds_index1,
 				       dr_index1, c_target2, di_target2,
 				       ds_target2, dr_target2);
 }
@@ -680,7 +681,7 @@ inline void NonDExpansion::maximum_refinement_iterations(size_t max_refine_iter)
 { maxRefineIterations = max_refine_iter; }
 
 
-inline const Model& NonDExpansion::algorithm_space_model() const
+inline std::shared_ptr<Model> NonDExpansion::algorithm_space_model()
 { return uSpaceModel; }
 
 
@@ -713,10 +714,10 @@ inline void NonDExpansion::metric_roll_up(short results_state)
       // combined stat metrics, but Hierarchical SC can efficiently compute
       // deltas based only on active expansions (no combination required)
       if (expansionBasisType != Pecos::HIERARCHICAL_INTERPOLANT)
-	uSpaceModel.combine_approximation();
+	uSpaceModel->combine_approximation();
       break;
     case INTERMEDIATE_RESULTS:
-      uSpaceModel.combine_approximation(); break;
+      uSpaceModel->combine_approximation(); break;
     // FINAL_RESULTS should not occur: no roll up after combined_to_active()
     }
 

@@ -37,18 +37,18 @@ public:
   //
 
   /// standard constructor
-  NonDAdaptiveSampling(ProblemDescDB& problem_db, Model& model);
+  NonDAdaptiveSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
 
   /// alternate constructor for sample generation and evaluation "on the fly"
   /// has not been implemented
 
-  ~NonDAdaptiveSampling(); ///< destructor
+  ~NonDAdaptiveSampling() override; ///< destructor
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
 
 protected:
 
@@ -56,13 +56,13 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void derived_init_communicators(ParLevLIter pl_iter);
-  void derived_set_communicators(ParLevLIter pl_iter);
-  void derived_free_communicators(ParLevLIter pl_iter);
+  void derived_init_communicators(ParLevLIter pl_iter) override;
+  void derived_set_communicators(ParLevLIter pl_iter) override;
+  void derived_free_communicators(ParLevLIter pl_iter) override;
 
-  void core_run();
+  void core_run() override;
   Real final_probability();
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
 private:
 
@@ -77,7 +77,7 @@ private:
   /// LHS iterator for sampling on the final GP
   Iterator gpFinalEval;
   /// GP model of response, one approximation per response function
-  Model gpModel;
+  std::shared_ptr<Model> gpModel;
   
   /// the number of rounds of additions of size batchSize to add  to the 
   /// original set of LHS samples
@@ -232,7 +232,7 @@ private:
   /// designs.  This can break the fsu_cvt, so it is not used at the moment,
   /// and these designs only affect the initial sample build not the candidate
   /// sets constructed at each round
-  void construct_fsu_sampler(Iterator& u_space_sampler, Model& u_model, 
+  void construct_fsu_sampler(Iterator& u_space_sampler, std::shared_ptr<Model> u_model, 
     int num_samples, int seed, unsigned short sample_type);
 
   /// This function will write an input deck for a multi-start global 

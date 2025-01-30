@@ -36,22 +36,22 @@ public:
   //- Heading: Constructors and destructor
   //
 
-  NonDGlobalInterval(ProblemDescDB& problem_db, Model& model); ///< constructor
-  ~NonDGlobalInterval();                                       ///< destructor
+  NonDGlobalInterval(ProblemDescDB& problem_db, std::shared_ptr<Model> model); ///< constructor
+  ~NonDGlobalInterval() override;                                       ///< destructor
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  void derived_init_communicators(ParLevLIter pl_iter);
-  void derived_set_communicators(ParLevLIter pl_iter);
-  void derived_free_communicators(ParLevLIter pl_iter);
+  void derived_init_communicators(ParLevLIter pl_iter) override;
+  void derived_set_communicators(ParLevLIter pl_iter) override;
+  void derived_free_communicators(ParLevLIter pl_iter) override;
 
   /// Performs an optimization to determine interval bounds for an entire
   /// function or interval bounds on a particular statistical estimator
-  void core_run();
+  void core_run() override;
 
-  const Model& algorithm_space_model() const;
+  std::shared_ptr<Model> algorithm_space_model() override;
 
 protected:
 
@@ -90,7 +90,7 @@ protected:
   /// LHS iterator for constructing initial GP for all response functions
   Iterator daceIterator;
   /// GP model of response, one approximation per response function
-  Model fHatModel;
+  std::shared_ptr<Model> fHatModel;
 
   /// optimizer for solving surrogate-based subproblem: NCSU DIRECT optimizer
   /// for maximizing expected improvement or mixed EA if discrete variables.
@@ -98,7 +98,7 @@ protected:
   /// recast model which formulates the surrogate-based optimization 
   /// subproblem (recasts as design problem; may assimilate mean and
   /// variance to enable max(expected improvement))
-  Model intervalOptModel;
+  std::shared_ptr<Model> intervalOptModel;
 
   /// approximate response corresponding to minimum/maximum truth response
   Real approxFnStar;
@@ -188,7 +188,7 @@ private:
 };
 
 
-inline const Model& NonDGlobalInterval::algorithm_space_model() const
+inline std::shared_ptr<Model> NonDGlobalInterval::algorithm_space_model()
 { return fHatModel; }
 
 } // namespace Dakota

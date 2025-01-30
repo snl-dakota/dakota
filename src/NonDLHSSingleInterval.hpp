@@ -32,9 +32,9 @@ public:
   //
 
   /// constructor
-  NonDLHSSingleInterval(ProblemDescDB& problem_db, Model& model);
+  NonDLHSSingleInterval(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
-  ~NonDLHSSingleInterval();
+  ~NonDLHSSingleInterval() override;
 
 protected:
 
@@ -42,8 +42,8 @@ protected:
   //- Heading: virtual function redefinitions
   //
 
-  void initialize();
-  void post_process_samples();
+  void initialize() override;
+  void post_process_samples() override;
 
 private:
 

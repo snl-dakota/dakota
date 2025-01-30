@@ -151,7 +151,7 @@ class NormalizationScaler : public DataScaler {
  public:
   NormalizationScaler();
 
-  ~NormalizationScaler();
+  ~NormalizationScaler() override;
 
   /**
    * \brief Main constructor for NormalizationScaler
@@ -177,7 +177,7 @@ class StandardizationScaler : public DataScaler {
  public:
   StandardizationScaler();
 
-  ~StandardizationScaler();
+  ~StandardizationScaler() override;
 
   /**
    * \brief Main constructor for StandardizationScaler
@@ -210,7 +210,7 @@ class NoScaler : public DataScaler {
    */
   NoScaler(const MatrixXd& features);
 
-  ~NoScaler();
+  ~NoScaler() override;
 };
 
 // BMA TODO: Discuss whether we benefit from shared_ptr here, since

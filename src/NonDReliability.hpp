@@ -33,8 +33,8 @@ protected:
   //- Heading: Constructors and destructor
   //
 
-  NonDReliability(ProblemDescDB& problem_db, Model& model); ///< constructor
-  ~NonDReliability();                                       ///< destructor
+  NonDReliability(ProblemDescDB& problem_db, std::shared_ptr<Model> model); ///< constructor
+  ~NonDReliability() override;                                       ///< destructor
 
   //
   //- Heading: Virtual function redefinitions
@@ -47,13 +47,13 @@ protected:
 				const ShortArray& c_target2,
 				const ShortArray& di_target2,
 				const ShortArray& ds_target2,
-				const ShortArray& dr_target2);
+				const ShortArray& dr_target2) override;
 
-  bool resize();
+  bool resize() override;
   //void pre_run();
-  void post_run(std::ostream& s);
+  void post_run(std::ostream& s) override;
 
-  const Model& algorithm_space_model() const;
+  std::shared_ptr<Model> algorithm_space_model() override;
 
   //
   //- Heading: Data members
@@ -61,9 +61,9 @@ protected:
 
   /// Model representing the limit state in u-space, after any
   /// recastings and data fits
-  Model uSpaceModel;
+  std::shared_ptr<Model> uSpaceModel;
   /// RecastModel which formulates the optimization subproblem: RIA, PMA, EGO
-  Model mppModel;
+  std::shared_ptr<Model> mppModel;
   /// Iterator which optimizes the mppModel
   Iterator mppOptimizer;
 
@@ -106,7 +106,7 @@ protected:
 };
 
 
-inline const Model& NonDReliability::algorithm_space_model() const
+inline std::shared_ptr<Model> NonDReliability::algorithm_space_model()
 { return uSpaceModel; }
 
 
@@ -120,7 +120,8 @@ nested_variable_mappings(const SizetArray& c_index1,
 			 const ShortArray& ds_target2,
 			 const ShortArray& dr_target2)
 {
-  uSpaceModel.nested_variable_mappings(c_index1, di_index1, ds_index1,
+  if(uSpaceModel)
+    uSpaceModel->nested_variable_mappings(c_index1, di_index1, ds_index1,
 				       dr_index1, c_target2, di_target2,
 				       ds_target2, dr_target2);
 }

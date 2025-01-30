@@ -28,7 +28,7 @@ namespace Dakota {
 NonDLocalInterval* NonDLocalInterval::nondLIInstance(NULL);
 
 
-NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, Model& model):
+NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDInterval(problem_db, model), npsolFlag(false)
 {
   bool err_flag = false;
@@ -51,11 +51,11 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, Model& model):
   SizetArray recast_vars_comps_total;  // default: empty; no change in size
   BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
   short recast_resp_order = 3; // gradient-based quasi-Newton optimizers
-  const ShortShortPair& recast_view = iteratedModel.current_variables().view();
-  minMaxModel.assign_rep(std::make_shared<RecastModel>
+  const ShortShortPair& recast_view = iteratedModel->current_variables().view();
+  minMaxModel = std::make_shared<RecastModel>
 			 (iteratedModel, recast_vars_comps_total,
 			  all_relax_di, all_relax_dr, recast_view, 1, 0, 0,
-			  recast_resp_order));
+			  recast_resp_order);
 
   // instantiate the optimizer used to compute the output interval bounds
   switch (sub_optimizer_select(
@@ -96,23 +96,22 @@ void NonDLocalInterval::check_sub_iterator_conflict()
   // Note 2: forces lower-level to accommodate, even though this level may be
   //         the more flexible one in its ability to switch away from NPSOL.
   if (npsolFlag) {
-    Iterator sub_iterator = iteratedModel.subordinate_iterator();
+    Iterator sub_iterator = iteratedModel->subordinate_iterator();
     if (!sub_iterator.is_null() && 
 	 ( sub_iterator.method_name() ==  NPSOL_SQP ||
 	   sub_iterator.method_name() == NLSSOL_SQP ||
 	   sub_iterator.uses_method() == SUBMETHOD_NPSOL ||
 	   sub_iterator.uses_method() == SUBMETHOD_NPSOL_OPTPP ) )
       sub_iterator.method_recourse(methodName);
-    ModelList& sub_models = iteratedModel.subordinate_models();
-    for (ModelLIter ml_iter = sub_models.begin();
-	 ml_iter != sub_models.end(); ml_iter++) {
-      sub_iterator = ml_iter->subordinate_iterator();
-      if (!sub_iterator.is_null() && 
-	   ( sub_iterator.method_name() ==  NPSOL_SQP ||
-	     sub_iterator.method_name() == NLSSOL_SQP ||
-	     sub_iterator.uses_method() == SUBMETHOD_NPSOL ||
-	     sub_iterator.uses_method() == SUBMETHOD_NPSOL_OPTPP ) )
-	sub_iterator.method_recourse(methodName);
+    ModelList& sub_models = iteratedModel->subordinate_models();
+    for (auto& sm : sub_models) {
+        sub_iterator = sm->subordinate_iterator();
+        if (!sub_iterator.is_null() && 
+          ( sub_iterator.method_name() ==  NPSOL_SQP ||
+            sub_iterator.method_name() == NLSSOL_SQP ||
+            sub_iterator.uses_method() == SUBMETHOD_NPSOL ||
+            sub_iterator.uses_method() == SUBMETHOD_NPSOL_OPTPP ) )
+    sub_iterator.method_recourse(methodName);
     }
   }
 }
@@ -124,7 +123,7 @@ NonDLocalInterval::~NonDLocalInterval()
 
 void NonDLocalInterval::derived_init_communicators(ParLevLIter pl_iter)
 {
-  iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);
+  iteratedModel->init_communicators(pl_iter, maxEvalConcurrency);
 
   // miPLIndex needed in method_recourse() prior to assignment in
   // NonD::derived_set_communicators().  While derived_init_communicators()
@@ -151,7 +150,7 @@ void NonDLocalInterval::derived_free_communicators(ParLevLIter pl_iter)
 {
   minMaxOptimizer.free_communicators(pl_iter);
 
-  iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);
+  iteratedModel->free_communicators(pl_iter, maxEvalConcurrency);
 }
 
 
@@ -168,10 +167,10 @@ void NonDLocalInterval::core_run()
   // so that they are correct when they propagate back down.  There is no
   // need to recur below iteratedModel.
   size_t layers = 1;
-  minMaxModel.update_from_subordinate_model(layers-1);
+  minMaxModel->update_from_subordinate_model(layers-1);
 
   RealVector min_initial_pt, max_initial_pt;
-  copy_data(minMaxModel.continuous_variables(), min_initial_pt); // view->copy
+  copy_data(ModelUtils::continuous_variables(*minMaxModel), min_initial_pt); // view->copy
   max_initial_pt = min_initial_pt; // copy->copy
 
   Sizet2DArray vars_map, primary_resp_map(1), secondary_resp_map;
@@ -180,7 +179,7 @@ void NonDLocalInterval::core_run()
   nonlinear_resp_map[0] = BoolDeque(numFunctions, false);
   BoolDeque max_sense(1);
   std::shared_ptr<RecastModel> model_rep =
-    std::static_pointer_cast<RecastModel>(minMaxModel.model_rep());
+    std::static_pointer_cast<RecastModel>(minMaxModel);
 
   initialize(); // virtual fn for initializing loop controls
 
@@ -203,7 +202,7 @@ void NonDLocalInterval::core_run()
       // Execute local search and retrieve results
       Cout << "\n>>>>> Initiating local minimization\n";
       truncate_to_cell_bounds(min_initial_pt);
-      minMaxModel.continuous_variables(min_initial_pt); // set starting pt
+      ModelUtils::continuous_variables(*minMaxModel, min_initial_pt); // set starting pt
       minMaxOptimizer.run(pl_iter);
       if (numCells>1 && cellCntr<numCells-1)            // warm start next min
 	copy_data(minMaxOptimizer.variables_results().continuous_variables(),
@@ -216,7 +215,7 @@ void NonDLocalInterval::core_run()
       // Execute local search and retrieve results
       Cout << "\n>>>>> Initiating local maximization\n";
       truncate_to_cell_bounds(max_initial_pt);
-      minMaxModel.continuous_variables(max_initial_pt); // set starting point
+      ModelUtils::continuous_variables(*minMaxModel, max_initial_pt); // set starting point
       minMaxOptimizer.run(pl_iter); 
       if (numCells>1 && cellCntr<numCells-1)            // warm start next max
 	copy_data(minMaxOptimizer.variables_results().continuous_variables(),

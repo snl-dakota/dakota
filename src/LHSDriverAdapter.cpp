@@ -40,26 +40,26 @@ void LHSDriverAdapter::generate_normal_samples(
 }
 
 void LHSDriverAdapter::generate_unique_samples(
-    const Model& model,
+    std::shared_ptr<Model> model,
     size_t numSamples,
     RealMatrix& samplesArray,
     RealMatrix& sampleRanks,
     const BitArray& activeVariables,
     const BitArray& activeCorrelations
 ) {
-    const Pecos::MultivariateDistribution& multivariateDistribution = model.multivariate_distribution();
+    const Pecos::MultivariateDistribution& multivariateDistribution = model->multivariate_distribution();
     lhsDriver.generate_unique_samples(multivariateDistribution.random_variables(), multivariateDistribution.correlation_matrix(), numSamples, samplesArray, sampleRanks, activeVariables, activeCorrelations);
 }
 
 void LHSDriverAdapter::generate_samples(
-    const Model& model,
+    std::shared_ptr<Model> model,
     size_t numSamples,
     RealMatrix& samplesArray,
     RealMatrix& sampleRanks,
     const BitArray& activeVariables,
     const BitArray& activeCorrelations
 ) {
-    const Pecos::MultivariateDistribution& multivariateDistribution = model.multivariate_distribution();
+    const Pecos::MultivariateDistribution& multivariateDistribution = model->multivariate_distribution();
     lhsDriver.generate_samples(multivariateDistribution.random_variables(), multivariateDistribution.correlation_matrix(), numSamples, samplesArray, sampleRanks, activeVariables, activeCorrelations);
 }
 

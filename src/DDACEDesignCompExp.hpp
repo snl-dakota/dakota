@@ -37,18 +37,18 @@ public:
   //
     
   /// primary constructor for building a standard DACE iterator
-  DDACEDesignCompExp(ProblemDescDB& problem_db, Model& model);
+  DDACEDesignCompExp(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor used for building approximations
-  DDACEDesignCompExp(Model& model, int samples, int symbols, int seed, 
+  DDACEDesignCompExp(std::shared_ptr<Model> model, int samples, int symbols, int seed, 
 		     unsigned short sampling_method);
   /// destructor
-  ~DDACEDesignCompExp();
+  ~DDACEDesignCompExp() override;
   
   //
   //- Heading: Virtual member function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
     
 protected:
 
@@ -56,17 +56,17 @@ protected:
   //- Heading: Virtual member function redefinitions
   //
 
-  void pre_run();
-  void core_run();
-  void post_input();
-  void post_run(std::ostream& s);
-  size_t num_samples() const;
-  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag);
-  unsigned short sampling_scheme() const;
-  void vary_pattern(bool pattern_flag);
-  void get_parameter_sets(Model& model);
-  void get_parameter_sets(Model& model, const size_t num_samples, 
-			  RealMatrix& design_matrix);
+  void pre_run() override;
+  void core_run() override;
+  void post_input() override;
+  void post_run(std::ostream& s) override;
+  size_t num_samples() const override;
+  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag) override;
+  unsigned short sampling_scheme() const override;
+  void vary_pattern(bool pattern_flag) override;
+  void get_parameter_sets(std::shared_ptr<Model> model) override;
+  void get_parameter_sets(std::shared_ptr<Model> model, const size_t num_samples, 
+			  RealMatrix& design_matrix) override;
 private:
 
   //

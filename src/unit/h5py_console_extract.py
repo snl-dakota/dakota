@@ -591,7 +591,7 @@ def extract_pareto_set_results():
     weight_labels = []
     num_best = 0
     best_labels = []
-    weight_re = re.compile("w\d+$")
+    weight_re = re.compile(r"w\d+$")
     for label in all_labels:
         if weight_re.match(label) is None:
             break

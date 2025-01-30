@@ -14,13 +14,13 @@
 namespace Dakota 
 {
 
-PebbldMinimizer::PebbldMinimizer(ProblemDescDB& problem_db, Model& model):
+PebbldMinimizer::PebbldMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   Minimizer(problem_db, model, std::shared_ptr<TraitsBase>(new PebbldTraits()))
 {
   // While this copy will be replaced in best update, initialize here
   // since relied on in Minimizer::initialize_run when a sub-iterator
   bestVariablesArray.push_back(
-    iteratedModel.current_variables().copy());
+    iteratedModel->current_variables().copy());
 
   // Instantiate the approximate sub-problem minimizer
   const String& subprob_method_ptr
@@ -56,12 +56,12 @@ PebbldMinimizer::PebbldMinimizer(ProblemDescDB& problem_db, Model& model):
   branchAndBound->setIterator(subProbMinimizer);
 }
 
-PebbldMinimizer::PebbldMinimizer(Model &model)
+PebbldMinimizer::PebbldMinimizer(std::shared_ptr<Model> model)
 	: Minimizer(BRANCH_AND_BOUND, model, std::shared_ptr<TraitsBase>(new PebbldTraits())) 
 {//branchAndBound(model)
 };
 
-PebbldMinimizer::PebbldMinimizer(Model &model, int random_seed, size_t max_iter, size_t max_eval) 
+PebbldMinimizer::PebbldMinimizer(std::shared_ptr<Model> model, int random_seed, size_t max_iter, size_t max_eval) 
        : Minimizer(BRANCH_AND_BOUND, model, std::shared_ptr<TraitsBase>(new PebbldTraits()))
 {//branchAndBound(model,random_seed, max_iter, max_eval)
 };
@@ -95,7 +95,7 @@ void PebbldMinimizer::print_results(std::ostream& s, short results_state)
     abort_handler(-1); 
   } 
 
-  const String& interface_id = iteratedModel.interface_id();
+  const String& interface_id = iteratedModel->interface_id();
   activeSet.request_values(1);
 
   // -------------------------------------

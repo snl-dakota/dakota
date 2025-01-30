@@ -35,25 +35,25 @@ public:
   //- Heading: Constructors and destructor
   //
 
-  NonDLocalInterval(ProblemDescDB& problem_db, Model& model); ///< constructor
-  ~NonDLocalInterval();                                       ///< destructor
+  NonDLocalInterval(ProblemDescDB& problem_db, std::shared_ptr<Model> model); ///< constructor
+  ~NonDLocalInterval() override;                                       ///< destructor
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  void derived_init_communicators(ParLevLIter pl_iter);
-  void derived_set_communicators(ParLevLIter pl_iter);
-  void derived_free_communicators(ParLevLIter pl_iter);
+  void derived_init_communicators(ParLevLIter pl_iter) override;
+  void derived_set_communicators(ParLevLIter pl_iter) override;
+  void derived_free_communicators(ParLevLIter pl_iter) override;
 
   /// Performs a gradient-based optimization to determine interval
   /// bounds for an entire function or interval bounds on a particular
   /// statistical estimator
-  void core_run();
+  void core_run() override;
 
-  void check_sub_iterator_conflict();
-  unsigned short uses_method() const;
-  void method_recourse(unsigned short method_name);
+  void check_sub_iterator_conflict() override;
+  unsigned short uses_method() const override;
+  void method_recourse(unsigned short method_name) override;
 
 protected:
 
@@ -81,7 +81,7 @@ protected:
   /// local gradient-based optimizer
   Iterator minMaxOptimizer;
   /// recast model which extracts the active objective function
-  Model minMaxModel;
+  std::shared_ptr<Model> minMaxModel;
 
 private:
 

@@ -32,9 +32,9 @@ public:
   //
 
   /// standard constructor
-  NonDDREAMBayesCalibration(ProblemDescDB& problem_db, Model& model);
+  NonDDREAMBayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
-  ~NonDDREAMBayesCalibration();
+  ~NonDDREAMBayesCalibration() override;
 
   //
   //- Heading: Static callback functions required by DREAM
@@ -72,7 +72,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void calibrate();
+  void calibrate() override;
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   // Member functions

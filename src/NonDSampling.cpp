@@ -10,6 +10,7 @@
 #include "dakota_data_types.hpp"
 #include "dakota_system_defs.hpp"
 #include "DakotaModel.hpp"
+#include "model_utils.hpp"
 #include "DakotaResponse.hpp"
 #include "DigitalNet.hpp"
 #include "LDDriverAdapter.hpp"
@@ -37,7 +38,7 @@ namespace Dakota {
 /** This constructor is called for a standard letter-envelope iterator
     instantiation.  In this case, set_db_list_nodes has been called and
     probDescDB can be queried for settings from the method specification. */
-NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
+NonDSampling::NonDSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonD(problem_db, model), seedSpec(probDescDB.get_int("method.random_seed")),
   randomSeed(seedSpec), samplesSpec(probDescDB.get_int("method.samples")),
   samplesRef(samplesSpec), numSamples(samplesSpec),
@@ -133,7 +134,7 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, Model& model):
 /** This alternate constructor is used for generation and evaluation
     of on-the-fly sample sets. */
 NonDSampling::
-NonDSampling(unsigned short method_name, Model& model,
+NonDSampling(unsigned short method_name, std::shared_ptr<Model> model,
 	     unsigned short sample_type, size_t samples, int seed,
 	     const String& rng, bool vary_pattern, short sampling_vars_mode):
   NonD(method_name, model), seedSpec(seed), randomSeed(seed),
@@ -148,7 +149,7 @@ NonDSampling(unsigned short method_name, Model& model,
   subIteratorFlag = true; // suppress some output
 
   // override default epistemicStats setting from NonD ctor
-  const Variables& vars = iteratedModel.current_variables();
+  const Variables& vars = iteratedModel->current_variables();
   const SizetArray& ac_totals = vars.shared_data().active_components_totals();
   bool euv = (ac_totals[TOTAL_CEUV]  || ac_totals[TOTAL_DEUIV] ||
 	      ac_totals[TOTAL_DEUSV] || ac_totals[TOTAL_DEURV]);
@@ -226,7 +227,7 @@ NonDSampling(unsigned short sample_type, size_t samples, int seed,
 /** This alternate constructor defines allSamples from an incoming
     sample matrix. */
 NonDSampling::
-NonDSampling(Model& model, const RealMatrix& sample_matrix):
+NonDSampling(std::shared_ptr<Model> model, const RealMatrix& sample_matrix):
   NonD(LIST_SAMPLING, model), seedSpec(0), randomSeed(0),
   samplesSpec(sample_matrix.numCols()), sampleType(SUBMETHOD_DEFAULT),
   wilksFlag(false), samplesIncrement(0), stdRegressionCoeffs(false),
@@ -280,7 +281,7 @@ transform_samples(Pecos::ProbabilityTransformation& nataf,
 
 
 void NonDSampling::
-get_parameter_sets(Model& model, const size_t num_samples,
+get_parameter_sets(std::shared_ptr<Model> model, const size_t num_samples,
 		   RealMatrix& design_matrix, bool write_msg)
 {
   initialize_sample_driver(write_msg, num_samples);
@@ -290,7 +291,7 @@ get_parameter_sets(Model& model, const size_t num_samples,
   switch (samplingVarsMode) {
   case ACTIVE_UNIFORM:  case ALL_UNIFORM:  case UNCERTAIN_UNIFORM:
   case ALEATORY_UNCERTAIN_UNIFORM:  case EPISTEMIC_UNCERTAIN_UNIFORM: {
-    short model_view = model.current_variables().view().first;
+    short model_view = model->current_variables().view().first;
     // Use LHSDriver::generate_uniform_samples() between lower/upper bounds
     RealSymMatrix corr; // uncorrelated samples
     if ( samplingVarsMode == ACTIVE_UNIFORM ||
@@ -310,16 +311,16 @@ get_parameter_sets(Model& model, const size_t num_samples,
       // or from ALL lower/upper bounds (with model in ALL view).
       // loss of sampleRanks control is OK since NonDIncremLHS uses ACTIVE mode.
       // TO DO: add support for uniform discrete
-      samplerDriver->generate_uniform_samples(model.continuous_lower_bounds(),
-					 model.continuous_upper_bounds(),
+      samplerDriver->generate_uniform_samples(ModelUtils::continuous_lower_bounds(*model),
+					 ModelUtils::continuous_upper_bounds(*model),
 					 corr, num_samples, design_matrix); 
     }
     else if (samplingVarsMode == ALL_UNIFORM) {
       // sample uniformly from ALL lower/upper bnds with model in distinct view.
       // loss of sampleRanks control is OK since NonDIncremLHS uses ACTIVE mode.
       // TO DO: add support for uniform discrete
-      samplerDriver->generate_uniform_samples(model.all_continuous_lower_bounds(),
-					 model.all_continuous_upper_bounds(),
+      samplerDriver->generate_uniform_samples(ModelUtils::all_continuous_lower_bounds(*model),
+					 ModelUtils::all_continuous_upper_bounds(*model),
 					 corr, num_samples, design_matrix); 
     }
     else { // A, E, A+E UNCERTAIN_UNIFORM
@@ -327,15 +328,15 @@ get_parameter_sets(Model& model, const size_t num_samples,
       // with model using a non-corresponding view (corresponding views
       // handled in first case above)
       size_t start_acv, num_acv, dummy;
-      mode_counts(model.current_variables(), start_acv, num_acv,
+      mode_counts(model->current_variables(), start_acv, num_acv,
 		  dummy, dummy, dummy, dummy, dummy, dummy);
       if (!num_acv) {
 	Cerr << "Error: no active continuous variables for sampling in "
 	     << "uniform mode" << std::endl;
 	abort_handler(METHOD_ERROR);
       }
-      const RealVector& all_c_l_bnds = model.all_continuous_lower_bounds();
-      const RealVector& all_c_u_bnds = model.all_continuous_upper_bounds();
+      const RealVector& all_c_l_bnds = ModelUtils::all_continuous_lower_bounds(*model);
+      const RealVector& all_c_u_bnds = ModelUtils::all_continuous_upper_bounds(*model);
       RealVector uncertain_c_l_bnds(Teuchos::View,
 	const_cast<Real*>(&all_c_l_bnds[start_acv]), num_acv);
       RealVector uncertain_c_u_bnds(Teuchos::View,
@@ -350,7 +351,7 @@ get_parameter_sets(Model& model, const size_t num_samples,
 
   case ACTIVE: { // utilize model view to sample active variables
     Pecos::MultivariateDistribution& mv_dist
-      = model.multivariate_distribution();
+      = model->multivariate_distribution();
     if (backfillDuplicates)
       samplerDriver->generate_unique_samples(model, num_samples, design_matrix,
         sampleRanks, mv_dist.active_variables(), mv_dist.active_correlations());
@@ -365,9 +366,9 @@ get_parameter_sets(Model& model, const size_t num_samples,
   case UNCERTAIN: case STATE: case ALL: {
     // override active model view to sample alternate subset/superset
     BitArray active_vars, active_corr;
-    mode_bits(model.current_variables(), active_vars, active_corr);
+    mode_bits(model->current_variables(), active_vars, active_corr);
     Pecos::MultivariateDistribution& mv_dist
-      = model.multivariate_distribution();
+      = model->multivariate_distribution();
     if (backfillDuplicates)
       samplerDriver->generate_unique_samples(model, num_samples, design_matrix,
         sampleRanks, active_vars, active_corr);
@@ -653,7 +654,7 @@ variables_to_sample(const Variables& vars, Real* sample_vars)
       ( active_view >= RELAXED_DESIGN && active_view <= RELAXED_STATE ) );
     short all_view = (relax) ? RELAXED_ALL : MIXED_ALL;
     const StringSetArray& dss_values
-      = iteratedModel.discrete_set_string_values(all_view);
+      = ModelUtils::discrete_set_string_values(*iteratedModel, all_view);
     end = adsv_start + num_adsv;
     for (i=adsv_start; i<end; ++i)
       sample_vars[svd.adsv_index_to_all_index(i)] = (Real)set_value_to_index(
@@ -973,7 +974,7 @@ void NonDSampling::core_run()
 {
   Cout << "Hello from NonDSampling::core_run" << std::endl;
   bool log_resp_flag = (allDataFlag || statsFlag), log_best_flag = false;
-  evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
+  evaluate_parameter_sets(*iteratedModel, log_resp_flag, log_best_flag);
 }
 
 
@@ -982,13 +983,13 @@ compute_statistics(const RealMatrix&     vars_samples,
 		   const IntResponseMap& resp_samples)
 {
   StringMultiArrayConstView
-    acv_labels  = iteratedModel.all_continuous_variable_labels(),
-    adiv_labels = iteratedModel.all_discrete_int_variable_labels(),
-    adsv_labels = iteratedModel.all_discrete_string_variable_labels(),
-    adrv_labels = iteratedModel.all_discrete_real_variable_labels();
+    acv_labels  = ModelUtils::all_continuous_variable_labels(*iteratedModel),
+    adiv_labels = ModelUtils::all_discrete_int_variable_labels(*iteratedModel),
+    adsv_labels = ModelUtils::all_discrete_string_variable_labels(*iteratedModel),
+    adrv_labels = ModelUtils::all_discrete_real_variable_labels(*iteratedModel);
   size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
     drv_start, num_drv;
-  mode_counts(iteratedModel.current_variables(), cv_start, num_cv,
+  mode_counts(iteratedModel->current_variables(), cv_start, num_cv,
 	      div_start, num_div, dsv_start, num_dsv, drv_start, num_drv);
   StringMultiArrayConstView
     cv_labels  =
@@ -1011,7 +1012,7 @@ compute_statistics(const RealMatrix&     vars_samples,
     if (num_drv)
       resultsDB.insert(run_identifier(), resultsNames.drv_labels, drv_labels);
     resultsDB.insert(run_identifier(), resultsNames.fn_labels, 
-		     iteratedModel.response_labels());
+		     ModelUtils::response_labels(*iteratedModel));
   }
 
   if (epistemicStats) { // Epistemic/mixed
@@ -1056,7 +1057,7 @@ compute_intervals(RealRealPairArray& extreme_fns, const IntResponseMap& samples)
   // For the samples array, calculate min/max response intervals
 
   size_t i, j, num_obs = samples.size(), num_samp;
-  const StringArray& resp_labels = iteratedModel.response_labels();
+  const StringArray& resp_labels = ModelUtils::response_labels(*iteratedModel);
 
   extreme_fns.resize(numFunctions);
   IntRespMCIter it;
@@ -1364,7 +1365,7 @@ archive_moments(size_t inc_id)
 {
   if(!resultsDB.active()) return;
  
-  const StringArray &labels = iteratedModel.response_labels();
+  const StringArray &labels = ModelUtils::response_labels(*iteratedModel);
 
   // archive the moments to results DB
   MetaDataType md_moments;
@@ -1406,7 +1407,7 @@ archive_moment_confidence_intervals(size_t inc_id)
   if(!resultsDB.active())
     return;
 
-  const StringArray &labels = iteratedModel.response_labels();
+  const StringArray &labels = ModelUtils::response_labels(*iteratedModel);
   // archive the confidence intervals to results DB
   MetaDataType md;
   md["Row Labels"] = (finalMomentsType == Pecos::CENTRAL_MOMENTS) ?
@@ -1443,7 +1444,7 @@ archive_moment_confidence_intervals(size_t inc_id)
 
 void NonDSampling::
 archive_extreme_responses(size_t inc_id) {
-  const StringArray &labels = iteratedModel.response_labels();
+  const StringArray &labels = ModelUtils::response_labels(*iteratedModel);
   StringArray location;
   if(inc_id) location.push_back(String("increment:") + std::to_string(inc_id));
   location.push_back("extreme_responses");
@@ -1593,7 +1594,7 @@ void NonDSampling::compute_level_mappings(const IntResponseMap& samples)
   // > CDF/CCDF mappings of response levels to probability/reliability levels
   // > CDF/CCDF mappings of probability/reliability levels to response levels
   size_t i, j, k, num_obs = samples.size(), num_samp, bin_accumulator;
-  const StringArray& resp_labels = iteratedModel.response_labels();
+  const StringArray& resp_labels = ModelUtils::response_labels(*iteratedModel);
   std::multiset<Real> sorted_samples; // STL-based array for sorting
   SizetArray bins; Real min, max, sample;
 
@@ -1847,7 +1848,7 @@ void NonDSampling::print_statistics(std::ostream& s) const
   }
 
   if (!subIteratorFlag) {
-    nonDSampCorr.print_correlations(s, iteratedModel.ordered_labels(), iteratedModel.response_labels());
+    nonDSampCorr.print_correlations(s, iteratedModel->current_variables().ordered_labels(ACTIVE_VARS), ModelUtils::response_labels(*iteratedModel));
   }
 
   if (wilksFlag) {
@@ -1863,7 +1864,7 @@ void NonDSampling::print_statistics(std::ostream& s) const
       Cerr << "Warning: std regression coefficients printing requested in conjunction with epstemic variables" << std::endl;
     }
 
-    nonDSampCorr.print_std_regress_coeffs(s, iteratedModel.ordered_labels(), iteratedModel.response_labels());
+    nonDSampCorr.print_std_regress_coeffs(s, iteratedModel->current_variables().ordered_labels(ACTIVE_VARS), ModelUtils::response_labels(*iteratedModel));
   }
 
   if (toleranceIntervalsFlag) {
@@ -1972,7 +1973,7 @@ print_wilks_stastics(std::ostream& s) const
     s << "\n\n" << "Wilks Statistics for "
       << (wilks_twosided ? "Two-" : "One-") << "Sided "
       << 100.0*wilksBeta << "% Confidence Level, Order = " << wilksOrder 
-      << " for "  << iteratedModel.response_labels()[fn_index] << ":\n\n";
+      << " for "  << ModelUtils::response_labels(*iteratedModel)[fn_index] << ":\n\n";
 
     if(wilks_twosided) {
       s << "    Coverage Level     Lower Bound        Upper Bound     Number of Samples\n"
@@ -2047,7 +2048,7 @@ print_tolerance_intervals_statistics(std::ostream& s) const
     << std::scientific << std::setprecision(write_precision);
   for (size_t i = 0; i < numFunctions; ++i) {
     s << std::setw(response_label_width)
-      << iteratedModel.response_labels()[i]
+      << ModelUtils::response_labels(*iteratedModel)[i]
       << ' ' << std::setw(width) << tiDstienMus[i]
       << ' ' << std::setw(width) << tiSampleSigmas[i]
       << ' ' << std::setw(width) << tiDeltaMultiplicativeFactor
@@ -2070,7 +2071,7 @@ archive_tolerance_intervals(size_t inc_id)
 
   Teuchos::SerialDenseVector<int,double> tmpValues(6);
   for(size_t i = 0; i < numFunctions; ++i) {
-    location.back() = iteratedModel.response_labels()[i];
+    location.back() = ModelUtils::response_labels(*iteratedModel)[i];
     DimScaleMap scales;
     scales.emplace( 0
                   , StringScale( "tolerance_intervals"

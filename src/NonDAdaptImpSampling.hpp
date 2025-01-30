@@ -33,24 +33,24 @@ public:
   //
 
   /// standard constructor
-  NonDAdaptImpSampling(ProblemDescDB& problem_db, Model& model);
+  NonDAdaptImpSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor for on-the-fly instantiations
-  NonDAdaptImpSampling(Model& model, unsigned short sample_type, int samples,
+  NonDAdaptImpSampling(std::shared_ptr<Model> model, unsigned short sample_type, int samples,
 		       int seed, const String& rng, bool vary_pattern,
 		       unsigned short is_type, bool cdf_flag,
 		       bool x_space_model, bool use_model_bounds,
 		       bool track_extreme);
   /// destructor
-  ~NonDAdaptImpSampling();
+  ~NonDAdaptImpSampling() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  bool resize();
-  void derived_init_communicators(ParLevLIter pl_iter);
-  void derived_set_communicators(ParLevLIter pl_iter);
-  void derived_free_communicators(ParLevLIter pl_iter);
+  bool resize() override;
+  void derived_init_communicators(ParLevLIter pl_iter) override;
+  void derived_set_communicators(ParLevLIter pl_iter) override;
+  void derived_free_communicators(ParLevLIter pl_iter) override;
 
   void nested_variable_mappings(const SizetArray& c_index1,
 				const SizetArray& di_index1,
@@ -59,16 +59,16 @@ public:
 				const ShortArray& c_target2,
 				const ShortArray& di_target2,
 				const ShortArray& ds_target2,
-				const ShortArray& dr_target2);
+				const ShortArray& dr_target2) override;
 
   /// performs adaptive importance sampling and computes probability of failure
-  void core_run();
+  void core_run() override;
 
   /// print the final statistics
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
   /// return importanceSamplingType
-  unsigned short sampling_scheme() const;
+  unsigned short sampling_scheme() const override;
   /// return refineSamples
   int refinement_samples() const;
 
@@ -150,7 +150,7 @@ private:
   /// This u-space model is either passed in (alternate constructor for
   /// helper AIS) or constructed using ProbabilityTransformModel (standard
   /// constructor for stand-alone AIS)
-  Model uSpaceModel;
+  std::shared_ptr<Model> uSpaceModel;
 
   /// integration type (is, ais, mmais) provided by input specification
   unsigned short importanceSamplingType;
@@ -200,7 +200,7 @@ nested_variable_mappings(const SizetArray& c_index1,
 			 const ShortArray& ds_target2,
 			 const ShortArray& dr_target2)
 {
-  uSpaceModel.nested_variable_mappings(c_index1, di_index1, ds_index1,
+  uSpaceModel->nested_variable_mappings(c_index1, di_index1, ds_index1,
 				       dr_index1, c_target2, di_target2,
 				       ds_target2, dr_target2);
 }

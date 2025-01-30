@@ -39,7 +39,7 @@ NonDMUQBayesCalibration* NonDMUQBayesCalibration::nonDMUQInstance(NULL);
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDMUQBayesCalibration::
-NonDMUQBayesCalibration(ProblemDescDB& problem_db, Model& model):
+NonDMUQBayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDBayesCalibration(problem_db, model),
   numBestSamples(1),
   mcmcType(probDescDB.get_string("method.nond.mcmc_type")),
@@ -75,8 +75,8 @@ NonDMUQBayesCalibration(ProblemDescDB& problem_db, Model& model):
     proposalCovarType = "prior";
 
   if (mcmcType == "mala") {
-    const String & grad_type  = residualModel.gradient_type();
-    const String & method_src = residualModel.method_source();
+    const String & grad_type  = residualModel->gradient_type();
+    const String & method_src = residualModel->method_source();
     if (( grad_type == "analytic" ) ||
         ( grad_type == "mixed"    ) || 
         ( grad_type == "numerical" && method_src == "dakota" )) {
@@ -95,7 +95,7 @@ NonDMUQBayesCalibration(ProblemDescDB& problem_db, Model& model):
   }
 
   if (mcmcType == "dili") {
-    std::vector<Pecos::RandomVariable>& variables = residualModel.multivariate_distribution().random_variables();
+    std::vector<Pecos::RandomVariable>& variables = residualModel->multivariate_distribution().random_variables();
 
     bool all_rvs_are_Gaussian(true);
     std::uint64_t numGaussianRVs(0);
@@ -146,15 +146,15 @@ double MUQLikelihood::LogDensityImpl(muq::Modeling::ref_vector<Eigen::VectorXd> 
   // Set the calibration variables and hyperparams in the outer
   // residualModel: note that this won't update the Variables object
   // in any inner models.
-  RealVector& all_params = nonDMUQInstancePtr->residualModel.current_variables().continuous_variables_view();
+  RealVector& all_params = nonDMUQInstancePtr->residualModel->current_variables().continuous_variables_view();
   // Set parameter values in Dakota model object
   for (size_t i(0); i < num_cv; ++i) {
     all_params[i] = c_vars[i];
   }
 
-  nonDMUQInstancePtr->residualModel.evaluate();
+  nonDMUQInstancePtr->residualModel->evaluate();
   
-  const RealVector& residuals = nonDMUQInstancePtr->residualModel.current_response().function_values();
+  const RealVector& residuals = nonDMUQInstancePtr->residualModel->current_response().function_values();
   double log_like = nonDMUQInstancePtr->log_likelihood(residuals, all_params);
   
   if (nonDMUQInstancePtr->outputLevel >= DEBUG_OUTPUT) {
@@ -184,31 +184,31 @@ Eigen::VectorXd MUQLikelihood::GradLogDensityImpl(unsigned int wrt,
   Eigen::VectorXd output_vec(input_vec_size);
 
   {
-    RealVector & model_params(nonDMUQInstancePtr->mcmcModel.current_variables().continuous_variables_view());
+    RealVector & model_params(nonDMUQInstancePtr->mcmcModel->current_variables().continuous_variables_view());
     for (size_t i(0); i < input_vec_size; ++i) {
       model_params[i] = input_vec[i];
     }
 
-    nonDMUQInstancePtr->mcmcModel.evaluate();
+    nonDMUQInstancePtr->mcmcModel->evaluate();
   }
 
   {
-    RealVector & model_params(nonDMUQInstancePtr->residualModel.current_variables().continuous_variables_view());
+    RealVector & model_params(nonDMUQInstancePtr->residualModel->current_variables().continuous_variables_view());
     for (size_t i(0); i < input_vec_size; ++i) {
       model_params[i] = input_vec[i];
     }
 
-    ActiveSet active_set = nonDMUQInstancePtr->residualModel.current_response().active_set();
+    ActiveSet active_set = nonDMUQInstancePtr->residualModel->current_response().active_set();
     active_set.request_values(3); // gradient, value
-    nonDMUQInstancePtr->residualModel.evaluate(active_set);
+    nonDMUQInstancePtr->residualModel->evaluate(active_set);
   }
 
-  const RealVector & residuals(nonDMUQInstancePtr->residualModel.current_response().function_values());
+  const RealVector & residuals(nonDMUQInstancePtr->residualModel->current_response().function_values());
   size_t num_residuals = residuals.numRows();
   RealVector tmp_vec(input_vec_size,true);
   RealVector dakota_result_vec(input_vec_size,true);
   for (size_t r(0); r < num_residuals; ++r) {
-    tmp_vec = nonDMUQInstancePtr->residualModel.current_response().function_gradient_view(r);
+    tmp_vec = nonDMUQInstancePtr->residualModel->current_response().function_gradient_view(r);
     tmp_vec *= residuals[r];
     dakota_result_vec -= tmp_vec;
   }
@@ -229,7 +229,7 @@ double MUQPrior::LogDensityImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const
   // Set the calibration variables and hyperparams in the outer
   // residualModel: note that this won't update the Variables object
   // in any inner models.
-  RealVector& all_params = nonDMUQInstancePtr->residualModel.current_variables().continuous_variables_view();
+  RealVector& all_params = nonDMUQInstancePtr->residualModel->current_variables().continuous_variables_view();
   // Set parameter values in Dakota model object
   for (size_t i(0); i < num_cv; ++i)
     all_params[i] = c_vars[i];
@@ -246,7 +246,7 @@ Eigen::VectorXd MUQPrior::GradLogDensityImpl( unsigned int wrt
   size_t input_vec_size(input_vec.size());
   Eigen::VectorXd output_vec(input_vec_size);
 
-  RealVector & model_params(nonDMUQInstancePtr->residualModel.current_variables().continuous_variables_view());
+  RealVector & model_params(nonDMUQInstancePtr->residualModel->current_variables().continuous_variables_view());
   for (size_t i(0); i < input_vec_size; ++i) {
     model_params[i] = input_vec[i];
   }
@@ -289,7 +289,7 @@ void NonDMUQBayesCalibration::init_bayesian_solver()
     Eigen::VectorXd muqGaussianPriorMu = Eigen::VectorXd::Zero(numContinuousVars);
     Eigen::MatrixXd muqGaussianPriorCovMatrix = Eigen::MatrixXd::Zero(numContinuousVars,numContinuousVars);
 
-    std::vector<Pecos::RandomVariable>& variables = residualModel.multivariate_distribution().random_variables();
+    std::vector<Pecos::RandomVariable>& variables = residualModel->multivariate_distribution().random_variables();
     size_t i(0);
     for ( Pecos::RandomVariable variable : variables ) {
       if (variable.type() == Pecos::NORMAL) {
@@ -485,7 +485,7 @@ void NonDMUQBayesCalibration::calibrate()
   const size_t &num_cv = numContinuousVars;
   Eigen::VectorXd init_pt(num_cv);
   if(mapOptimizer.is_null()) {
-    const RealVector& init_point = nonDMUQInstance->mcmcModel.continuous_variables();
+    const RealVector& init_point = ModelUtils::continuous_variables(*nonDMUQInstance->mcmcModel);
     for (size_t i(0); i < num_cv; ++i)
       init_pt[i] = init_point[i];
   } else {
@@ -600,7 +600,7 @@ print_results(std::ostream& s, short results_state)
   // print corresponding response data; here we recover the misfit
   // instead of re-computing it
   Real log_prior = log_prior_density(best_sample), log_post = it->first;
-  size_t num_total_calib_terms = residualModel.num_primary_fns();
+  size_t num_total_calib_terms = residualModel->num_primary_fns();
   Real half_nr_log2pi = num_total_calib_terms * HALF_LOG_2PI;
   RealVector hyper_params(numHyperparams);
   Real half_log_det = 
@@ -622,10 +622,10 @@ void NonDMUQBayesCalibration::
 print_variables(std::ostream& s, const RealVector& c_vars)
 {
   StringMultiArrayConstView cv_labels =
-    iteratedModel.continuous_variable_labels();
+    ModelUtils::continuous_variable_labels(*iteratedModel);
   // the residualModel includes any hyper-parameters
   StringArray combined_labels;
-  copy_data(residualModel.continuous_variable_labels(), combined_labels);
+  copy_data(ModelUtils::continuous_variable_labels(*residualModel), combined_labels);
 
   size_t wpp7 = write_precision+7;
 
@@ -633,7 +633,7 @@ print_variables(std::ostream& s, const RealVector& c_vars)
   if (standardizedSpace) {
     RealVector u_rv(Teuchos::View, c_vars.values(), numContinuousVars);
     RealVector x_rv;
-    mcmcModel.trans_U_to_X(u_rv, x_rv);
+    mcmcModel->trans_U_to_X(u_rv, x_rv);
     write_data(Cout, x_rv, cv_labels);
   }
   else
@@ -658,9 +658,9 @@ void NonDMUQBayesCalibration::cache_chain()
 
   // temporaries for evals/lookups
   // the MCMC model omits the hyper params and residual transformations...
-  Variables lookup_vars = nonDMUQInstance->mcmcModel.current_variables().copy();
-  String   interface_id = nonDMUQInstance->mcmcModel.interface_id();
-  Response  lookup_resp = nonDMUQInstance->mcmcModel.current_response().copy();
+  Variables lookup_vars = nonDMUQInstance->mcmcModel->current_variables().copy();
+  String   interface_id = nonDMUQInstance->mcmcModel->interface_id();
+  Response  lookup_resp = nonDMUQInstance->mcmcModel->current_response().copy();
   ActiveSet   lookup_as = lookup_resp.active_set();
   lookup_as.request_values(1);
   lookup_resp.active_set(lookup_as);
@@ -690,14 +690,14 @@ void NonDMUQBayesCalibration::cache_chain()
 
       Real* acc_chain_i = acceptanceChain[i];
       RealVector x_rv(Teuchos::View, acc_chain_i, numContinuousVars);
-      mcmcModel.trans_U_to_X(u_rv, x_rv);
+      mcmcModel->trans_U_to_X(u_rv, x_rv);
       for (int j(numContinuousVars); j < num_params; ++j) {
 
         acc_chain_i[j] = chain(j,i); // trailing hyperparams are not transformed
         
       }
       // surrogate needs u-space variables for eval
-      if (mcmcModel.model_type() == "surrogate")
+      if (mcmcModel->model_type() == "surrogate")
         lookup_vars.continuous_variables(u_rv);
       else
         lookup_vars.continuous_variables(x_rv);
@@ -721,9 +721,9 @@ void NonDMUQBayesCalibration::cache_chain()
     // now retreive function values
 
     if (mcmcModelHasSurrogate) {
-      nonDMUQInstance->mcmcModel.active_variables(lookup_vars);
-      nonDMUQInstance->mcmcModel.evaluate(lookup_resp.active_set());
-      const RealVector& fn_vals = nonDMUQInstance->mcmcModel.current_response().function_values();
+      ModelUtils::active_variables(*nonDMUQInstance->mcmcModel, lookup_vars);
+      nonDMUQInstance->mcmcModel->evaluate(lookup_resp.active_set());
+      const RealVector& fn_vals = nonDMUQInstance->mcmcModel->current_response().function_values();
       Teuchos::setCol(fn_vals, i, acceptedFnVals);
     }
     else {
@@ -732,7 +732,7 @@ void NonDMUQBayesCalibration::cache_chain()
       if (cache_it == data_pairs.get<hashed>().end()) {
         ++lookup_failures;
         // Set NaN in the chain points to avoid misleading the user
-        RealVector nan_fn_vals(mcmcModel.current_response().function_values().length());
+        RealVector nan_fn_vals(mcmcModel->current_response().function_values().length());
         nan_fn_vals = std::numeric_limits<double>::quiet_NaN();
         Teuchos::setCol(nan_fn_vals, i, acceptedFnVals);
       }
@@ -787,9 +787,9 @@ void NonDMUQBayesCalibration::init_proposal_covariance()
 void NonDMUQBayesCalibration::prior_proposal_covariance()
 {
   // diagonal covariance from variance of prior marginals
-  RealVector dist_var = mcmcModel.multivariate_distribution().variances();
+  RealVector dist_var = mcmcModel->multivariate_distribution().variances();
   // SVD index conversion is more general, but not required for current uses
-  //const SharedVariablesData& svd= mcmcModel.current_variables().shared_data();
+  //const SharedVariablesData& svd= mcmcModel->current_variables().shared_data();
   for (int i(0); i < numContinuousVars; ++i)
     proposalCovMatrix(i,i) = priorPropCovMult * dist_var[i];
 

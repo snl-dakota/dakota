@@ -46,18 +46,18 @@ public:
   /// standard ProblemDescDB-driven constructor
   SharedPecosApproxData(ProblemDescDB& problem_db, size_t num_vars);
   /// destructor
-  ~SharedPecosApproxData();
+  ~SharedPecosApproxData() override;
 
   //
   //- Heading: Member functions
   //
 
   /// set pecosBasisApprox.randomVarsKey
-  void random_variables_key(const Pecos::BitArray& random_vars_key);
+  void random_variables_key(const Pecos::BitArray& random_vars_key) override;
 
   /// invoke Pecos::SharedPolyApproxData::update_basis_distribution_parameters()
   void update_basis_distribution_parameters(
-    const Pecos::MultivariateDistribution& u_dist);
+    const Pecos::MultivariateDistribution& u_dist) override;
 
   // set Pecos::SharedOrthogPolyApproxData::basisTypes
   //void basis_types(const Pecos::ShortArray& basis_types);
@@ -81,7 +81,7 @@ public:
   const std::map<Pecos::ActiveKey, UShort2DArray>& multi_index_map() const;
 
   /// return Pecos::SharedPolyApproxData::sobolIndexMap
-  const Pecos::BitArrayULongMap& sobol_index_map() const;
+  const Pecos::BitArrayULongMap& sobol_index_map() const override;
 
   /// invoke Pecos::SharedOrthogPolyApproxData::coefficients_norms_flag()
   void coefficients_norms_flag(bool flag);
@@ -94,15 +94,15 @@ public:
   void expansion_order(const UShortArray& order);
 
   /// set the expansion configuration options within Pecos::SharedPolyApproxData
-  void configuration_options(const Pecos::ExpansionConfigOptions& ec_options);
+  void configuration_options(const Pecos::ExpansionConfigOptions& ec_options) override;
   /// set the basis configuration options within Pecos::SharedPolyApproxData
-  void configuration_options(const Pecos::BasisConfigOptions& bc_options);
+  void configuration_options(const Pecos::BasisConfigOptions& bc_options) override;
   /// set the regression configuration options within 
   /// Pecos::SharedRegressOrthogPolyApproxData
-  void configuration_options(const Pecos::RegressionConfigOptions& rc_options);
+  void configuration_options(const Pecos::RegressionConfigOptions& rc_options) override;
 
   /// update ExpansionConfigOptions::refineStatsType
-  void refinement_statistics_mode(short stats_mode);
+  void refinement_statistics_mode(short stats_mode) override;
 
 protected:
 
@@ -110,39 +110,39 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void active_model_key(const Pecos::ActiveKey& key);
-  void clear_model_keys();
+  void active_model_key(const Pecos::ActiveKey& key) override;
+  void clear_model_keys() override;
 
-  void construct_basis(const Pecos::MultivariateDistribution& mv_dist);
+  void construct_basis(const Pecos::MultivariateDistribution& mv_dist) override;
 
-  void integration_iterator(const Iterator& iterator);
+  void integration_iterator(const Iterator& iterator) override;
 
-  short discrepancy_reduction() const;
+  short discrepancy_reduction() const override;
 
-  void build();
-  void rebuild();
+  void build() override;
+  void rebuild() override;
 
-  void pop(bool save_surr_data);
+  void pop(bool save_surr_data) override;
 
-  bool push_available();
-  size_t push_index(const Pecos::ActiveKey& key);
-  void pre_push();
-  void post_push();
+  bool push_available() override;
+  size_t push_index(const Pecos::ActiveKey& key) override;
+  void pre_push() override;
+  void post_push() override;
 
-  size_t finalize_index(size_t i, const Pecos::ActiveKey& key);
-  void pre_finalize();
-  void post_finalize();
+  size_t finalize_index(size_t i, const Pecos::ActiveKey& key) override;
+  void pre_finalize() override;
+  void post_finalize() override;
 
-  void pre_combine();
-  void post_combine();
-  void combined_to_active(bool clear_combined = true);
+  void pre_combine() override;
+  void post_combine() override;
+  void combined_to_active(bool clear_combined = true) override;
 
-  bool advancement_available();
+  bool advancement_available() override;
 
-  void clear_inactive();
+  void clear_inactive() override;
 
-  void increment_order();
-  void decrement_order();
+  void increment_order() override;
+  void decrement_order() override;
 
 private:
 

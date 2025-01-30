@@ -66,11 +66,11 @@ class DakotaModelObjective : public FactoryT::RObjT
     { 
     }
 
-    Real value(const typename FactoryT::VT &x, Real &tol)
+    Real value(const typename FactoryT::VT &x, Real &tol) override
     {
       Real result = 0;
-      dakModel->continuous_variable(x[0], 0);
-      dakModel->continuous_variable(x[1], 1);
+      dakModel->current_variables().continuous_variable(x[0], 0);
+      dakModel->current_variables().continuous_variable(x[1], 1);
       dakModel->evaluate();
       const Response& test_resp  = dakModel->current_response();
       result = test_resp.function_value(0);
@@ -98,7 +98,7 @@ void rol_quad_solv()
   if (env.parallel_library().mpirun_flag())
     FAIL(); // This test only works for serial builds
 
-  Dakota::Model & model = *(env.problem_description_db().model_list().begin());
+  Dakota::Model & model = **(env.problem_description_db().model_list().begin());
 
   // ROL stuff from here down ...
 

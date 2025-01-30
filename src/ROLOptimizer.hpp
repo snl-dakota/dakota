@@ -53,13 +53,13 @@ public:
   //
 
   /// Standard constructor
-  ROLOptimizer(ProblemDescDB& problem_db, Model& model);
+  ROLOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
 
   /// Alternate constructor for Iterator instantiations by name
-  ROLOptimizer(const String& method_name, Model& model);
+  ROLOptimizer(const String& method_name, std::shared_ptr<Model> model);
   
   /// Destructor
-  ~ROLOptimizer() {}
+  ~ROLOptimizer() override {}
 
   //
   //- Heading: Virtual member function redefinitions
@@ -136,7 +136,7 @@ public:
   ROLTraits() { }
 
   /// Destructor
-  virtual ~ROLTraits() { }
+  ~ROLTraits() override { }
 
   /// ROL default data type to be used by Dakota data adapters
   typedef std::vector<Real> VecT;
@@ -146,26 +146,26 @@ public:
   //
 
   /// Return flag indicating ROL supports continuous variables
-  bool supports_continuous_variables() { return true; }
+  bool supports_continuous_variables() override { return true; }
 
   /// Return flag indicating ROL supports linear equalities
-  bool supports_linear_equality() { return true; }
+  bool supports_linear_equality() override { return true; }
 
   /// Return flag indicating ROL supports linear inequalities
-  bool supports_linear_inequality() { return true; }
+  bool supports_linear_inequality() override { return true; }
 
   /// Return flag indicating ROL supports nonlinear equalities
-  bool supports_nonlinear_equality() { return true; }
+  bool supports_nonlinear_equality() override { return true; }
 
   /// Return ROL format for nonlinear equality constraints
-  NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format()
+  NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format() override
    { return NONLINEAR_EQUALITY_FORMAT::TRUE_EQUALITY; }
 
   /// Return flag indicating ROL supports nonlinear inequalities
-  bool supports_nonlinear_inequality() { return true; }
+  bool supports_nonlinear_inequality() override { return true; }
 
   /// Return ROL format for nonlinear inequality constraints
-  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override
    { return NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED; }
 
 }; // class ROLTraits
@@ -226,7 +226,7 @@ public:
   DakotaROLObjectiveGrad(Model & model);
 
   /// Destructor
-  virtual ~DakotaROLObjectiveGrad() { }
+  ~DakotaROLObjectiveGrad() override { }
 
   //
   //- Heading: Virtual member function redefinitions
@@ -263,7 +263,7 @@ public:
   DakotaROLObjectiveHess(Model & model);
 
   /// Destructor
-  virtual ~DakotaROLObjectiveHess() { }
+  ~DakotaROLObjectiveHess() override { }
 
   //
   //- Heading: Virtual member function redefinitions
@@ -349,7 +349,7 @@ public:
   DakotaROLIneqConstraintsGrad(Model & model);
 
   /// Destructor
-  virtual ~DakotaROLIneqConstraintsGrad() { }
+  ~DakotaROLIneqConstraintsGrad() override { }
 
   //
   //- Heading: Virtual member function redefinitions
@@ -396,7 +396,7 @@ public:
   DakotaROLIneqConstraintsHess(Model & model);
 
   /// Destructor
-  virtual ~DakotaROLIneqConstraintsHess() { }
+  ~DakotaROLIneqConstraintsHess() override { }
 
   //
   //- Heading: Virtual member function redefinitions
@@ -476,7 +476,7 @@ public:
   DakotaROLEqConstraintsGrad(Model & model);
 
   /// Destructor
-  virtual ~DakotaROLEqConstraintsGrad() { }
+  ~DakotaROLEqConstraintsGrad() override { }
 
   //
   //- Heading: Virtual member function redefinitions
@@ -527,7 +527,7 @@ public:
   DakotaROLEqConstraintsHess(Model & model);
 
   /// Destructor
-  virtual ~DakotaROLEqConstraintsHess() { }
+  ~DakotaROLEqConstraintsHess() override { }
 
   //
   //- Heading: Virtual member function redefinitions
@@ -575,7 +575,7 @@ private:
   //
 
   /// "Filter" the line by adding the prefix
-  std::string do_filter(const std::string& line)
+  std::string do_filter(const std::string& line) override
   { return linePrefix + line; }
 
   //

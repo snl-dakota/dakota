@@ -45,35 +45,35 @@ class AppsTraits: public TraitsBase
   static void copy_matrix_data(const RealMatrix& source, HOPSPACK::Matrix& target);
 
   /// destructor
-  virtual ~AppsTraits();
+  ~AppsTraits() override;
 
   /// A temporary query used in the refactor
-  virtual bool is_derived() { return true; }
+  bool is_derived() override { return true; }
 
   /// Return the flag indicating whether method supports continuous variables
-  bool supports_continuous_variables() { return true; }
+  bool supports_continuous_variables() override { return true; }
 
   /// Return the flag indicating whether method supports discrete variables
-  bool supports_discrete_variables() { return true; }
+  bool supports_discrete_variables() override { return true; }
 
   /// Return the flag indicating whether method supports linear equalities
-  bool supports_linear_equality() { return true; }
+  bool supports_linear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports linear inequalities
-  bool supports_linear_inequality() { return true; }
+  bool supports_linear_inequality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear equalities
-  bool supports_nonlinear_equality() { return true; }
+  bool supports_nonlinear_equality() override { return true; }
 
   /// Return the format used for nonlinear equality constraints
-  NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format()
+  NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format() override
     { return NONLINEAR_EQUALITY_FORMAT::TRUE_EQUALITY; }
 
   /// Return the flag indicating whether method supports nonlinear inequalities
-  bool supports_nonlinear_inequality() { return true; }
+  bool supports_nonlinear_inequality() override { return true; }
 
   /// Return the format used for nonlinear inequality constraints
-  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override
     { return NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER; }
 
 };
@@ -132,16 +132,16 @@ public:
   //
 
   /// constructor
-  APPSOptimizer(ProblemDescDB& problem_db, Model& model);
+  APPSOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
 
   /// alternate constructor for on-the-fly instantiation without ProblemDescDB
-  APPSOptimizer(Model& model);
+  APPSOptimizer(std::shared_ptr<Model> model);
 
   /// alternate constructor for even more rudimentary on-the-fly instantiation
   APPSOptimizer():Optimizer(std::shared_ptr<TraitsBase>(new AppsTraits())) { }
 
   /// destructor
-  ~APPSOptimizer() {
+  ~APPSOptimizer() override {
     if (evalMgr) delete evalMgr;
   }
 
@@ -151,10 +151,10 @@ public:
 
   // Allows us to initialize constraints in a different order than the default behavior
   //    Could be replaced with better use of traits - RWH
-  void initialize_run();
+  void initialize_run() override;
 
   /// compute the optimal solution
-  void core_run();
+  void core_run() override;
 
 protected:
 

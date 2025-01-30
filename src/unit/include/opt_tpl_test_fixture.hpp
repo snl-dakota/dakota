@@ -48,12 +48,12 @@ namespace {
         Dakota::DirectApplicInterface(problem_db) { numAnalysisServers = 1;}
 
       /// destructor
-      ~OptTestDirectApplicInterface() { }
+      ~OptTestDirectApplicInterface() override { }
 
     protected:
 
       /// execute an analysis code portion of a direct evaluation invocation
-      int derived_map_ac(const Dakota::String& ac_name)
+      int derived_map_ac(const Dakota::String& ac_name) override
       {
         if (multiProcAnalysisFlag) {
           Cerr << "Error: plugin serial direct fn does not support multiprocessor "
@@ -90,7 +90,7 @@ namespace {
 
 
       /// evaluate the batch of jobs contained in prp_queue
-      void wait_local_evaluations(Dakota::PRPQueue& prp_queue)
+      void wait_local_evaluations(Dakota::PRPQueue& prp_queue) override
       {
         if (multiProcAnalysisFlag) {
           Cerr << "Error: plugin serial direct fn does not support multiprocessor "
@@ -121,11 +121,11 @@ namespace {
       }
 
       /// invokes wait_local_evaluations() (no special nowait support)
-      void test_local_evaluations(Dakota::PRPQueue& prp_queue)
+      void test_local_evaluations(Dakota::PRPQueue& prp_queue) override
         { wait_local_evaluations(prp_queue); }
 
       /// no-op hides default run-time error checks at DirectApplicInterface level
-      void set_communicators_checks(int max_eval_concurrency) { }
+      void set_communicators_checks(int max_eval_concurrency) override { }
 
     private:
 

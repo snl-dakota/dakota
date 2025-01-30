@@ -39,8 +39,8 @@ public:
   //- Heading: Constructors and destructor
   //
 
-  NonDInterval(ProblemDescDB& problem_db, Model& model); ///< constructor
-  ~NonDInterval();                                       ///< destructor
+  NonDInterval(ProblemDescDB& problem_db, std::shared_ptr<Model> model); ///< constructor
+  ~NonDInterval() override;                                       ///< destructor
 
   //
   //- Heading: Virtual member function redefinitions
@@ -50,13 +50,13 @@ public:
   //void core_run();
 
   /// print the cumulative distribution functions for belief and plausibility
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
   //
   //- Heading: Virtual member function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
 
 protected:
 
@@ -65,7 +65,7 @@ protected:
   //
 
   /// initialize finalStatistics for belief/plausibility results sets
-  void initialize_final_statistics();
+  void initialize_final_statistics() override;
 
   /// method for computing belief and plausibility values for response levels 
   /// or vice-versa

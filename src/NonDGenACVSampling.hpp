@@ -32,9 +32,9 @@ public:
   //
 
   /// standard constructor
-  NonDGenACVSampling(ProblemDescDB& problem_db, Model& model);
+  NonDGenACVSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
-  ~NonDGenACVSampling();
+  ~NonDGenACVSampling() override;
 
 protected:
 
@@ -66,8 +66,10 @@ protected:
 				  RealVector& grad_c) override;
   void nonlinear_model_cost_gradient(const RealVector& r_and_N,
 				     RealVector& grad_c) override;
+				     
 
   size_t num_approximations() const override;
+  
 
   const MFSolutionData& final_solution_data() const override;
 
@@ -79,10 +81,12 @@ protected:
   void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 				       RealVector& lin_ineq_lb,
 				       RealVector& lin_ineq_ub) override;
+				       
   Real augmented_linear_ineq_violations(const RealVector& cd_vars,
 					const RealMatrix& lin_ineq_coeffs,
 					const RealVector& lin_ineq_lb,
 					const RealVector& lin_ineq_ub) override;
+					
 
   //
   //- Heading: member functions

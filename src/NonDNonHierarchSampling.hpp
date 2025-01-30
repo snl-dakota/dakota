@@ -463,9 +463,9 @@ public:
   //
 
   /// standard constructor
-  NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model);
+  NonDNonHierarchSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
-  ~NonDNonHierarchSampling();
+  ~NonDNonHierarchSampling() override;
 
   //
   //- Heading: Virtual function redefinitions
@@ -1274,7 +1274,7 @@ finalize_counts(const Sizet2DArray& N_L_actual, const SizetArray& N_L_alloc)
   // post final sample counts back to NLev{Actual,Alloc} (for final summaries)
 
   // Note: key data is fixed for all non-hierarchical cases
-  const Pecos::ActiveKey& active_key = iteratedModel.active_model_key();
+  const Pecos::ActiveKey& active_key = iteratedModel->active_model_key();
   if (active_key.data_size() != numApprox + 1) {
     Cerr << "Error: inconsistent active key size in NonDNonHierarchSampling::"
 	 << "finalize_counts()." << std::endl;

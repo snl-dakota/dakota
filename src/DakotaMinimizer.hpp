@@ -78,7 +78,11 @@ public:
   //- Heading: Virtual member function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
+
+  // Check if the iteratedModel pointer is consistent with iteratedModel
+  // ... used for refactoring
+  // bool check_model_consistency() const;
 
 protected:
 
@@ -90,12 +94,12 @@ protected:
   Minimizer(std::shared_ptr<TraitsBase> traits = 
       std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// standard constructor
-  Minimizer(ProblemDescDB& problem_db, Model& model, 
+  Minimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model, 
       std::shared_ptr<TraitsBase> traits =
       std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// alternate constructor for "on the fly" instantiations
-  Minimizer(unsigned short method_name, Model& model, 
+  Minimizer(unsigned short method_name, std::shared_ptr<Model> model, 
       std::shared_ptr<TraitsBase> traits = 
       std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// alternate constructor for "on the fly" instantiations
@@ -104,24 +108,24 @@ protected:
             std::shared_ptr<TraitsBase> traits = 
             std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// alternate constructor for "on the fly" instantiations
-  Minimizer(Model& model, size_t max_iter, size_t max_eval, Real conv_tol,
+  Minimizer(std::shared_ptr<Model> model, size_t max_iter, size_t max_eval, Real conv_tol,
 	    std::shared_ptr<TraitsBase> traits = 
 	    std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// destructor
-  ~Minimizer();
+  ~Minimizer() override;
 
   //
   //- Heading: Virtual member function redefinitions
   //
 
-  void update_from_model(const Model& model);
+  void update_from_model(const Model& model) override;
 
-  void initialize_run();
-  void post_run(std::ostream& s);
-  void finalize_run();
+  void initialize_run() override;
+  void post_run(std::ostream& s) override;
+  void finalize_run() override;
 
-  const Model& algorithm_space_model() const;
+  std::shared_ptr<Model> algorithm_space_model() override;
 
   //
   //- Heading: New virtual functions
@@ -149,7 +153,7 @@ protected:
 
   /// Return a shallow copy of the original model this Iterator was
   /// originally passed, optionally leaving recasts_left on top of it
-  Model original_model(unsigned short recasts_left = 0) const; 
+  std::shared_ptr<Model> original_model(unsigned short recasts_left = 0) const; 
 
   /// Wrap iteratedModel in a RecastModel that subtracts provided
   /// observed data from the primary response functions (variables and
@@ -294,13 +298,13 @@ protected:
   size_t numTotalCalibTerms;
   /// Shallow copy of the data transformation model, when present
   /// (cached in case further wrapped by other transformations)
-  Model dataTransformModel; 
+  std::shared_ptr<Model> dataTransformModel; 
 
   /// whether Iterator-level scaling is active
   bool scaleFlag;
   /// Shallow copy of the scaling transformation model, when present
   /// (cached in case further wrapped by other transformations)
-  Model scalingModel;
+  std::shared_ptr<Model> scalingModel;
 
   /// pointer to Minimizer used in static member functions
   static Minimizer* minimizerInstance;
@@ -343,14 +347,14 @@ inline Real Minimizer::constraint_tolerance() const
 
 
 /** default definition that gets redefined in selected derived Minimizers */
-inline const Model& Minimizer::algorithm_space_model() const
+inline std::shared_ptr<Model> Minimizer::algorithm_space_model()
 { return iteratedModel; }
 
 
 inline void Minimizer::enforce_null_model()
 {
   // This function is only for updates in "user functions" mode (NPSOL & OPT++)
-  if (!iteratedModel.is_null()) {
+  if (iteratedModel) {
     Cerr << "Error: callback updaters should not be used when Model data "
 	 << "available." << std::endl;
     abort_handler(METHOD_ERROR);
@@ -383,6 +387,11 @@ inline void Minimizer::reshape_best(size_t num_cv, size_t num_fns)
   }
 }
 
+
+// inline bool Minimizer::check_model_consistency() const
+// {
+//   return (iteratedModel != NULL) && (iteratedModel == &iteratedModel);
+// }
 
 //inline void Minimizer::initialize_iterator(int job_index)
 //{ } // default = no-op

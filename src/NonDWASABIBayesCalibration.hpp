@@ -31,9 +31,9 @@ public:
   //
 
   /// standard constructor
-  NonDWASABIBayesCalibration(ProblemDescDB& problem_db, Model& model);
+  NonDWASABIBayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
-  ~NonDWASABIBayesCalibration();
+  ~NonDWASABIBayesCalibration() override;
 
   //
   //- Heading: Static callback functions required by WASABI

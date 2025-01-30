@@ -64,7 +64,7 @@ public:
 					  Response& response));
 
   /// destructor
-  ~MinimizerAdapterModel();
+  ~MinimizerAdapterModel() override;
 
   //
   //- Heading: Member functions

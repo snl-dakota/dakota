@@ -35,7 +35,7 @@ public:
   /// alternate constructor
   SurrogatesPolyApprox(const SharedApproxData& shared_data);
   /// destructor
-  ~SurrogatesPolyApprox() { }
+  ~SurrogatesPolyApprox() override { }
 
 protected:
 

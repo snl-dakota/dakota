@@ -25,14 +25,14 @@ namespace Dakota {
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDMultilevControlVarSampling::
-NonDMultilevControlVarSampling(ProblemDescDB& problem_db, Model& model):
+NonDMultilevControlVarSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDMultilevelSampling(problem_db, model),
   //NonDMultifidelitySampling(problem_db, model),
   NonDHierarchSampling(problem_db, model), // top of virtual inheritance
   delegateMethod(MULTILEVEL_MULTIFIDELITY_SAMPLING)
 {
   // override MULTILEVEL_PRECEDENCE from NonDMultilevel ctor
-  iteratedModel.ensemble_precedence(MULTILEVEL_MULTIFIDELITY_PRECEDENCE);
+  iteratedModel->ensemble_precedence(MULTILEVEL_MULTIFIDELITY_PRECEDENCE);
   // Note: only sequenceType is currently used by MLCV
   configure_2d_sequence(numSteps, secondaryIndex, sequenceType);
   numApprox  = numSteps - 1; // numSteps is total = num_cv_lev + num_hf_lev
@@ -125,7 +125,7 @@ void NonDMultilevControlVarSampling::assign_active_key()
 
   Pecos::ActiveKey active_key;
   active_key.aggregate_keys(form_res_keys, Pecos::RAW_DATA);
-  iteratedModel.active_model_key(active_key); // data group 0
+  iteratedModel->active_model_key(active_key); // data group 0
   resize_active_set();
 }
 
@@ -139,9 +139,9 @@ void NonDMultilevControlVarSampling::
 multilevel_control_variate_mc_online_pilot() //_Qcorr()
 {
   size_t qoi, lev, num_mf = NLevActual.size(), N_alloc_l,
-    num_hf_lev = iteratedModel.truth_model().solution_levels(),
+    num_hf_lev = iteratedModel->truth_model()->solution_levels(),
     num_cv_lev = (num_mf > 1) ?
-    std::min(num_hf_lev, iteratedModel.surrogate_model().solution_levels()) : 0;
+    std::min(num_hf_lev, iteratedModel->surrogate_model()->solution_levels()) : 0;
   RealVector hf_targets(num_hf_lev);  Real eps_sq_div_2;
   RealVectorArray eval_ratios(num_cv_lev), lf_targets(num_cv_lev);
 
@@ -273,9 +273,9 @@ void NonDMultilevControlVarSampling::
 multilevel_control_variate_mc_offline_pilot()
 {
   size_t lev, num_mf = NLevActual.size(),
-    num_hf_lev = iteratedModel.truth_model().solution_levels(),
+    num_hf_lev = iteratedModel->truth_model()->solution_levels(),
     num_cv_lev = (num_mf > 1) ?
-    std::min(num_hf_lev, iteratedModel.surrogate_model().solution_levels()) : 0;
+    std::min(num_hf_lev, iteratedModel->surrogate_model()->solution_levels()) : 0;
   unsigned short group, lf_form = 0, hf_form = num_mf - 1;// extremes
 
   // Initialize accumulators and related arrays/maps, allowing for different
@@ -411,9 +411,9 @@ multilevel_control_variate_mc_pilot_projection()
   RealVector hf_targets;  RealMatrix Lambda, var_YH;
   RealVectorArray eval_ratios;  Real eps_sq_div_2;
   size_t lev, num_mf = NLevActual.size(),
-    num_hf_lev = iteratedModel.truth_model().solution_levels(),
+    num_hf_lev = iteratedModel->truth_model()->solution_levels(),
     num_cv_lev = (num_mf > 1) ?
-    std::min(num_hf_lev, iteratedModel.surrogate_model().solution_levels()) : 0;
+    std::min(num_hf_lev, iteratedModel->surrogate_model()->solution_levels()) : 0;
 
   // Initialize for pilot sample
   unsigned short lf_form = 0, hf_form = NLevActual.size() - 1; // 2 @ extremes
@@ -495,9 +495,9 @@ evaluate_pilot(RealVectorArray& eval_ratios, RealMatrix& Lambda,
 	       RealMatrix& pilot_mom, bool accumulate_cost, bool pilot_estvar)
 {
   size_t qoi, lev, num_mf = NLevActual.size(),
-    num_hf_lev = iteratedModel.truth_model().solution_levels(),
+    num_hf_lev = iteratedModel->truth_model()->solution_levels(),
     num_cv_lev = (num_mf > 1) ?
-    std::min(num_hf_lev, iteratedModel.surrogate_model().solution_levels()) : 0;
+    std::min(num_hf_lev, iteratedModel->surrogate_model()->solution_levels()) : 0;
 
   RealMatrix sum_Ll(numFunctions, num_cv_lev),
     sum_Llm1(numFunctions, num_cv_lev), sum_Ll_Ll(numFunctions, num_cv_lev),
@@ -589,8 +589,8 @@ mlmf_increments(const SizetArray& delta_N_l, String prepend)
     }
   }
 
-  if (iteratedModel.asynch_flag())
-    synchronize_batches(iteratedModel); // schedule all groups (return ignored)
+  if (iteratedModel->asynch_flag())
+    synchronize_batches(*iteratedModel); // schedule all groups (return ignored)
 
   /*
   UShortArray batch_key(2); // form,resolution
@@ -641,8 +641,8 @@ lf_increments(const SizetArray& delta_N_lf, String prepend)
     }
   }
 
-  if (iteratedModel.asynch_flag())
-    synchronize_batches(iteratedModel); // schedule all groups (return ignored)
+  if (iteratedModel->asynch_flag())
+    synchronize_batches(*iteratedModel); // schedule all groups (return ignored)
 }
 
 
@@ -1001,9 +1001,9 @@ update_projected_samples(const RealVector& hf_targets,
 			 Real& delta_equiv_hf)
 {
   size_t hf_actual_incr, hf_alloc_incr, lf_actual_incr, lf_alloc_incr, lev,
-    num_hf_lev = iteratedModel.truth_model().solution_levels(),
+    num_hf_lev = iteratedModel->truth_model()->solution_levels(),
     num_cv_lev = std::min(num_hf_lev,
-			  iteratedModel.surrogate_model().solution_levels());
+			  iteratedModel->surrogate_model()->solution_levels());
   Real hf_target_l, hf_ref_cost = sequenceCost[numApprox];
   RealVector lf_targets(numFunctions, false);
   for (lev=0; lev<num_hf_lev; ++lev) {
@@ -1052,8 +1052,8 @@ update_projected_lf_samples(const RealVector& hf_targets,
 			    Real& delta_equiv_hf)
 {
   size_t lf_actual_incr, lf_alloc_incr, lev, num_cv_lev
-    = std::min(iteratedModel.truth_model().solution_levels(),
-	       iteratedModel.surrogate_model().solution_levels());
+    = std::min(iteratedModel->truth_model()->solution_levels(),
+	       iteratedModel->surrogate_model()->solution_levels());
   Real hf_target_l, hf_ref_cost = sequenceCost[numApprox];
   RealVector lf_targets(numFunctions, false);
   for (lev=0; lev<num_cv_lev; ++lev) {
@@ -1564,7 +1564,7 @@ print_variance_reduction(std::ostream& s) const
     budget_mc_estvar_q;
   size_t qoi, wpp7 = write_precision+7,
     proj_equiv_hf_rnd = (size_t)std::floor(proj_equiv_hf + .5);
-  const StringArray& labels = iteratedModel.truth_model().response_labels();
+  const StringArray& labels = ModelUtils::response_labels(*iteratedModel->truth_model());
 
   s << "<<<<< Variance for mean estimator:\n";
   for (qoi=0; qoi<numFunctions; ++qoi) {

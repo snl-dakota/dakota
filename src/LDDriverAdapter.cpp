@@ -17,7 +17,7 @@ LDDriverAdapter::LDDriverAdapter(ProblemDescDB& problem_db) : ldDriver(problem_d
 
 // Override methods from SamplerAdapter
 void LDDriverAdapter::generate_samples(
-    const Model& model,
+    std::shared_ptr<Model> model,
     size_t numSamples,
     RealMatrix& samplesArray,
     RealMatrix& sampleRanks,

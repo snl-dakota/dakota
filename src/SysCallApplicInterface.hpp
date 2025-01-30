@@ -31,7 +31,7 @@ public:
   //
 
   SysCallApplicInterface(const ProblemDescDB& problem_db); ///< constructor
-  ~SysCallApplicInterface();                               ///< destructor
+  ~SysCallApplicInterface() override;                               ///< destructor
 
 protected:
 
@@ -39,17 +39,17 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void wait_local_evaluation_sequence(PRPQueue& prp_queue);
-  void test_local_evaluation_sequence(PRPQueue& prp_queue);
+  void wait_local_evaluation_sequence(PRPQueue& prp_queue) override;
+  void test_local_evaluation_sequence(PRPQueue& prp_queue) override;
 
-  int synchronous_local_analysis(int analysis_id);
+  int synchronous_local_analysis(int analysis_id) override;
 
-  void init_communicators_checks(int max_eval_concurrency);
-  void set_communicators_checks(int max_eval_concurrency);
+  void init_communicators_checks(int max_eval_concurrency) override;
+  void set_communicators_checks(int max_eval_concurrency) override;
 
-  void map_bookkeeping(pid_t pid, int fn_eval_id);
+  void map_bookkeeping(pid_t pid, int fn_eval_id) override;
 
-  pid_t create_evaluation_process(bool block_flag);
+  pid_t create_evaluation_process(bool block_flag) override;
 
   //
   //- Heading: Data

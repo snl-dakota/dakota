@@ -32,7 +32,7 @@ public:
   /// constructor
   ForkApplicInterface(const ProblemDescDB& problem_db);
   /// destructor
-  ~ForkApplicInterface();
+  ~ForkApplicInterface() override;
 
 protected:
 
@@ -40,24 +40,24 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void wait_local_evaluation_sequence(PRPQueue& prp_queue);
-  void test_local_evaluation_sequence(PRPQueue& prp_queue);
+  void wait_local_evaluation_sequence(PRPQueue& prp_queue) override;
+  void test_local_evaluation_sequence(PRPQueue& prp_queue) override;
 
   /// spawn a child process for an analysis component within an
   /// evaluation using fork()/execvp() and wait for completion
   /// using waitpid() if block_flag is true
-  pid_t create_analysis_process(bool block_flag, bool new_group);
+  pid_t create_analysis_process(bool block_flag, bool new_group) override;
 
-  size_t wait_local_analyses();
-  size_t test_local_analyses_send(int analysis_id);
+  size_t wait_local_analyses() override;
+  size_t test_local_analyses_send(int analysis_id) override;
 
-  void join_evaluation_process_group(bool new_group);
-  void join_analysis_process_group(bool new_group);
+  void join_evaluation_process_group(bool new_group) override;
+  void join_analysis_process_group(bool new_group) override;
 
-  void  evaluation_process_group_id(pid_t pgid);
-  pid_t evaluation_process_group_id() const;
-  void  analysis_process_group_id(pid_t pgid);
-  pid_t analysis_process_group_id() const;
+  void  evaluation_process_group_id(pid_t pgid) override;
+  pid_t evaluation_process_group_id() const override;
+  void  analysis_process_group_id(pid_t pgid) override;
+  pid_t analysis_process_group_id() const override;
 
   //
   //- Heading: Member functions

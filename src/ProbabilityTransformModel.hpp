@@ -29,12 +29,12 @@ public:
   //
 
   /// standard constructor
-  ProbabilityTransformModel(const Model& sub_model, short u_space_type,
+  ProbabilityTransformModel(std::shared_ptr<Model> sub_model, short u_space_type,
 			  //const ShortShortPair& recast_vars_view,
 			    bool truncate_bnds = false, Real bnd = 10.);
 
   /// destructor
-  ~ProbabilityTransformModel();
+  ~ProbabilityTransformModel() override;
 
   //
   //- Heading: Member functions
@@ -46,18 +46,16 @@ public:
     const Pecos::MultivariateDistribution& x_dist,
     Pecos::MultivariateDistribution& u_dist);
 
-protected:
-
   //
   //- Heading: Virtual function redefinitions
   //
 
-  Pecos::ProbabilityTransformation& probability_transformation();
+  Pecos::ProbabilityTransformation& probability_transformation() override;
 
   //bool initialize_mapping(ParLevLIter pl_iter);
   //bool finalize_mapping();
-  bool resize_pending() const;
-  void update_from_subordinate_model(size_t depth = SZ_MAX);
+  bool resize_pending() const override;
+  void update_from_subordinate_model(size_t depth = SZ_MAX) override;
 
   /// set primaryACVarMapIndices and secondaryACVarMapTargets (only, for now)
   void nested_variable_mappings(const SizetArray& c_index1,
@@ -67,38 +65,38 @@ protected:
 				const ShortArray& c_target2,
 				const ShortArray& di_target2,
 				const ShortArray& ds_target2,
-				const ShortArray& dr_target2);
+				const ShortArray& dr_target2) override;
   /// return primaryACVarMapIndices
-  const SizetArray& nested_acv1_indices() const;
+  const SizetArray& nested_acv1_indices() const override;
   /// return secondaryACVarMapTargets
-  const ShortArray& nested_acv2_targets() const;
+  const ShortArray& nested_acv2_targets() const override;
   
   /// calculate and return potential state of distribution parameter
   /// derivatives, but do not cache value in distParamDerivs
-  short query_distribution_parameter_derivatives() const;
+  short query_distribution_parameter_derivatives() const override;
   /// activate distParamDerivs to {NO,MIXED,ALL}_DERIVS
-  void activate_distribution_parameter_derivatives();
+  void activate_distribution_parameter_derivatives() override;
   /// reset distParamDerivs to NO_DERIVS
-  void deactivate_distribution_parameter_derivatives();
+  void deactivate_distribution_parameter_derivatives() override;
 
-  void assign_instance();
+  void assign_instance() override;
 
   void init_metadata() override { /* no-op to leave metadata intact */}
 
-  void trans_U_to_X(const RealVector& u_c_vars, RealVector& x_c_vars);
+  void trans_U_to_X(const RealVector& u_c_vars, RealVector& x_c_vars) override;
   void trans_U_to_X(const Variables&  u_vars,   Variables&  x_vars);
-  void trans_X_to_U(const RealVector& x_c_vars, RealVector& u_c_vars);
+  void trans_X_to_U(const RealVector& x_c_vars, RealVector& u_c_vars) override;
   void trans_X_to_U(const Variables&  x_vars,   Variables&  u_vars);
 
   void trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
-			 const RealVector& x_vars);
+			 const RealVector& x_vars) override;
   void trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
-			 const RealVector& x_vars);
+			 const RealVector& x_vars) override;
   void trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
-			 const RealVector& x_vars);
+			 const RealVector& x_vars) override;
   void trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
 			 RealSymMatrix& fn_hess_u, const RealVector& x_vars,
-			 const RealVector& fn_grad_x);
+			 const RealVector& fn_grad_x) override;
 
   //
   //- Heading: Member functions
@@ -265,7 +263,7 @@ inline const ShortArray& ProbabilityTransformModel::nested_acv2_targets() const
 
 
 inline bool ProbabilityTransformModel::resize_pending() const
-{ return subModel.resize_pending(); }
+{ return subModel->resize_pending(); }
 
 
 inline void ProbabilityTransformModel::initialize_nataf()
@@ -273,7 +271,7 @@ inline void ProbabilityTransformModel::initialize_nataf()
   if (natafTransform.is_null()) {
     natafTransform = Pecos::ProbabilityTransformation("nataf"); // for now
     // shallow copies
-    natafTransform.x_distribution(subModel.multivariate_distribution());
+    natafTransform.x_distribution(subModel->multivariate_distribution());
     natafTransform.u_distribution(mvDist);
   }
 }
@@ -281,7 +279,7 @@ inline void ProbabilityTransformModel::initialize_nataf()
 
 inline void ProbabilityTransformModel::update_transformation()
 {
-  mvDist.pull_distribution_parameters(subModel.multivariate_distribution());
+  mvDist.pull_distribution_parameters(subModel->multivariate_distribution());
   // x-space correlations assigned in Model and u-space is uncorrelated
   //update_distribution_correlations();
 
@@ -306,7 +304,7 @@ initialize_transformation(short u_space_type)
   // now initialized based on Model view, can use u-space active subset
   // (which may differ from x-space) for transformation
   initialize_distribution_types(u_space_type, mvDist.active_variables(),
-				subModel.multivariate_distribution(), mvDist);
+				subModel->multivariate_distribution(), mvDist);
   initialize_nataf();
   initialize_dakota_variable_types();
   verify_correlation_support(u_space_type);
@@ -326,9 +324,9 @@ update_from_subordinate_model(size_t depth)
 
   // data flows from the bottom-up, so recurse first
   if (depth == SZ_MAX)
-    subModel.update_from_subordinate_model(depth); // retain special value (inf)
+    subModel->update_from_subordinate_model(depth); // retain special value (inf)
   else if (depth)
-    subModel.update_from_subordinate_model(depth - 1); // decrement
+    subModel->update_from_subordinate_model(depth - 1); // decrement
   //else depth exhausted --> update this level only
 
   // propagate any subModel parameter updates to mvDist
@@ -340,11 +338,11 @@ update_from_subordinate_model(size_t depth)
   // (which suppresses updates if {primary,secondary}RespMapping) since we want
   // to include primary/secondary response updates for ProbabilityTransforms
   // (the response transform is 1-to-1 and only involves derivative mappings)
-  bool update_active_complement = update_variables_from_model(subModel);
+  bool update_active_complement = update_variables_from_model(*subModel);
   if (update_active_complement)
-    update_variables_active_complement_from_model(subModel);
-  update_primary_response(subModel);
-  update_secondary_response(subModel);
+    update_variables_active_complement_from_model(*subModel);
+  update_primary_response(*subModel);
+  update_secondary_response(*subModel);
 }
 
 
@@ -397,7 +395,7 @@ inline void ProbabilityTransformModel::assign_instance()
 inline void ProbabilityTransformModel::
 trans_U_to_X(const RealVector& u_c_vars, RealVector& x_c_vars)
 {
-  const Variables& x_vars = subModel.current_variables();
+  const Variables& x_vars = subModel->current_variables();
   short u_active_view = currentVariables.shared_data().view().first,
         x_active_view = x_vars.shared_data().view().first;
 
@@ -469,7 +467,7 @@ trans_U_to_X(const Variables& u_vars, Variables& x_vars)
 inline void ProbabilityTransformModel::
 trans_X_to_U(const RealVector& x_c_vars, RealVector& u_c_vars)
 {
-  const Variables& x_vars = subModel.current_variables();
+  const Variables& x_vars = subModel->current_variables();
   short u_active_view = currentVariables.shared_data().view().first,
         x_active_view = x_vars.shared_data().view().first;
 
@@ -546,7 +544,7 @@ inline void ProbabilityTransformModel::
 trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
 		  const RealVector& x_vars)
 {
-  SizetMultiArrayConstView x_cv_ids = subModel.continuous_variable_ids(),
+  SizetMultiArrayConstView x_cv_ids = ModelUtils::continuous_variable_ids(*subModel),
     u_cv_ids = currentVariables.continuous_variable_ids();
   SizetArray x_dvv; copy_data(x_cv_ids, x_dvv);
   natafTransform.trans_grad_X_to_U(fn_grad_x, x_cv_ids, fn_grad_u, u_cv_ids,
@@ -558,7 +556,7 @@ inline void ProbabilityTransformModel::
 trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
 		  const RealVector& x_vars)
 {
-  SizetMultiArrayConstView x_cv_ids = subModel.continuous_variable_ids(),
+  SizetMultiArrayConstView x_cv_ids = ModelUtils::continuous_variable_ids(*subModel),
     u_cv_ids = currentVariables.continuous_variable_ids();
   SizetArray x_dvv; copy_data(x_cv_ids, x_dvv);
   natafTransform.trans_grad_U_to_X(fn_grad_u, u_cv_ids, fn_grad_x, x_cv_ids,
@@ -570,11 +568,11 @@ inline void ProbabilityTransformModel::
 trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
 		  const RealVector& x_vars)
 {
-  SizetMultiArrayConstView x_cv_ids = subModel.continuous_variable_ids();
+  SizetMultiArrayConstView x_cv_ids = ModelUtils::continuous_variable_ids(*subModel);
   SizetArray x_dvv; copy_data(x_cv_ids, x_dvv);
   natafTransform.trans_grad_X_to_S(fn_grad_x, fn_grad_s, x_vars, x_dvv,
     x_cv_ids, currentVariables.continuous_variable_ids(), // u_cv_ids
-    subModel.all_continuous_variable_ids(),              // x_acv_ids
+    ModelUtils::all_continuous_variable_ids(*subModel),              // x_acv_ids
     primaryACVarMapIndices, secondaryACVarMapTargets);
 }
 
@@ -583,7 +581,7 @@ inline void ProbabilityTransformModel::
 trans_hess_X_to_U(const RealSymMatrix& fn_hess_x, RealSymMatrix& fn_hess_u,
 		  const RealVector& x_vars, const RealVector& fn_grad_x)
 {
-  SizetMultiArrayConstView x_cv_ids = subModel.continuous_variable_ids(),
+  SizetMultiArrayConstView x_cv_ids = ModelUtils::continuous_variable_ids(*subModel),
     u_cv_ids = currentVariables.continuous_variable_ids();
   SizetArray x_dvv; copy_data(x_cv_ids, x_dvv);
   natafTransform.trans_hess_X_to_U(fn_hess_x, x_cv_ids, fn_hess_u, u_cv_ids,
@@ -595,7 +593,7 @@ inline size_t ProbabilityTransformModel::
 rv_index_to_corr_index(size_t rv_index)
 {
   const Pecos::BitArray& active_corr
-    = subModel.multivariate_distribution().active_correlations();
+    = subModel->multivariate_distribution().active_correlations();
   if (active_corr.empty())
     return rv_index; // no mask
   else if (active_corr[rv_index]) { // offset RV index to account for mask
@@ -613,7 +611,7 @@ rv_index_to_corr_index(size_t rv_index)
 inline size_t ProbabilityTransformModel::
 acv_index_to_corr_index(size_t acv_index)
 {
-  const SharedVariablesData& svd = subModel.current_variables().shared_data();
+  const SharedVariablesData& svd = subModel->current_variables().shared_data();
   return rv_index_to_corr_index(svd.acv_index_to_all_index(acv_index));
 }
 
