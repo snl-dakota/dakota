@@ -12,4 +12,4 @@ else()
 endif()
 
 # Force bounds checking in Teuchos
-set(Teuchos_ENABLE_ABC FALSE CACHE BOOL "Enable bounds checking?")
+set(Teuchos_ENABLE_ABC TRUE CACHE BOOL "Enable bounds checking?")
