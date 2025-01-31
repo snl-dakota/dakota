@@ -245,6 +245,20 @@
 	     </keyword>
 	     ' >
 
+    <!ENTITY method_mlmf_solver_metric '
+             <keyword  id="solver_metric" name="solver_metric" code="{0}" label="solver_metric"  minOccurs="0" default="average_estimator_variance" >
+	       <oneOf label="Optimization Solver Metric">
+                 <keyword  id="average_estimator_variance" name="average_estimator_variance" code="{N_mdm(type,estVarMetricType_AVG_ESTVAR_METRIC)}" label="average_estimator_variance" />
+                 <keyword  id="norm_estimator_variance" name="norm_estimator_variance" code="{N_mdm(type,estVarMetricType_NORM_ESTVAR_METRIC)}" label="norm_estimator_variance"  >
+                   <keyword  id="norm_order" name="norm_order" code="{N_mdm(Real,estVarMetricNormOrder)}" label="norm order"  minOccurs="0" default="2" >
+                     <param type="REAL" constraint=">= 1." />
+	           </keyword>
+	         </keyword>
+                 <keyword  id="max_estimator_variance" name="max_estimator_variance" code="{N_mdm(type,estVarMetricType_MAX_ESTVAR_METRIC)}" label="max_estimator_variance" />
+	       </oneOf>
+             </keyword>
+	     ' >
+
     <!ENTITY sbgo_sub_problem_solver '
 	    <keyword  id="sbgo" name="sbgo" code="{N_mdm(utype,optSubProbSolver_SUBMETHOD_SBGO)}" label="sbgo" >
 	       <!-- &method_gaussian_process; -->
@@ -336,6 +350,7 @@
                  </oneOf>
                </optional>
                &method_mlmf_sub_problem_solver;
+               &method_mlmf_solver_metric;
 	     </keyword>
 	     ' >
 
@@ -3338,6 +3353,7 @@
 	  </keyword>
 	  -->
 	  &method_mlmf_sub_problem_solver;
+          &method_mlmf_solver_metric;
 	  &method_seed_sequence;
 	  &method_sample_type_lhs_mc;
 	  <keyword  id="export_sample_sequence" name="export_sample_sequence" code="{N_mdm(true,exportSampleSeqFlag)}" label="export_sample_sequence"  minOccurs="0" >
@@ -3355,6 +3371,7 @@
 	  &mlmf_group_pilot_samples;
 	  &mlmf_solution_mode;
 	  &method_mlmf_sub_problem_solver;
+          &method_mlmf_solver_metric;
 	  &method_seed_sequence;
 	  &method_sample_type_lhs_mc;
 	  <keyword  id="export_sample_sequence" name="export_sample_sequence" code="{N_mdm(true,exportSampleSeqFlag)}" label="export_sample_sequence"  minOccurs="0" >

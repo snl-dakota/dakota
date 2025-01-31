@@ -680,3 +680,55 @@ Test Number 21 succeeded
     Projected GenACV ratio (1 - R^2):     3.8699462388258610e-04
    Equivalent     MC (  500 HF samples):  9.9708227437644373e-08
    Equivalent GenACV ratio:               7.7404971567515387e-03
+Test Number 22 succeeded
+<<<<< Function evaluation summary (HF_INT): 125 total (125 new, 0 duplicate)
+<<<<< Projected number of equivalent high fidelity evaluations: 5.0006250000000000e+02
+<<<<< Incurred cost in equivalent high fidelity evaluations: 3.3300781250000000e+01
+<<<<< Variance for mean estimator:
+ response_fn_1:
+      Initial     MC (   25 HF samples):  1.9943203425819925e-06
+    Projected     MC (   25 HF samples):  1.9943203425819925e-06
+    Projected   MFMC (sample profile):    8.5337205018638566e-10
+    Projected   MFMC ratio (1 - R^2):     4.2790119118052417e-04
+   Equivalent     MC (  500 HF samples):  9.9703554184826534e-08
+   Equivalent   MFMC ratio:               8.5590935765884335e-03
+ response_fn_2:
+      Initial     MC (   25 HF samples):  8.3134285398364647e-06
+    Projected     MC (   25 HF samples):  8.3134285398364647e-06
+    Projected   MFMC (sample profile):    6.3731069158386289e-09
+    Projected   MFMC ratio (1 - R^2):     7.6660392102967378e-04
+   Equivalent     MC (  500 HF samples):  4.1561947455750354e-07
+   Equivalent   MFMC ratio:               1.5333994930396048e-02
+ response_fn_3:
+      Initial     MC (   25 HF samples):  1.9943203428582587e-06
+    Projected     MC (   25 HF samples):  1.9943203428582587e-06
+    Projected   MFMC (sample profile):    8.5337205033116998e-10
+    Projected   MFMC ratio (1 - R^2):     4.2790119119384684e-04
+   Equivalent     MC (  500 HF samples):  9.9703554198638107e-08
+   Equivalent   MFMC ratio:               8.5590935768549217e-03
+Test Number 23 succeeded
+<<<<< Function evaluation summary (HF_INT): 125 total (125 new, 0 duplicate)
+<<<<< Projected number of equivalent high fidelity evaluations: 3.8919531250000000e+02
+<<<<< Incurred cost in equivalent high fidelity evaluations: 3.3300781250000000e+01
+<<<<< Variance for mean estimator:
+ response_fn_1:
+      Initial     MC (   25 HF samples):  1.9943203425819925e-06
+    Projected     MC (   25 HF samples):  1.9943203425819925e-06
+    Projected   MFMC (sample profile):    1.1136367883410769e-09
+    Projected   MFMC ratio (1 - R^2):     5.5840416639774126e-04
+   Equivalent     MC (  389 HF samples):  1.2810536757055576e-07
+   Equivalent   MFMC ratio:               8.6931313610081676e-03
+ response_fn_2:
+      Initial     MC (   25 HF samples):  8.3134285398364647e-06
+    Projected     MC (   25 HF samples):  8.3134285398364647e-06
+    Projected   MFMC (sample profile):    8.3135024266777107e-09
+    Projected   MFMC ratio (1 - R^2):     1.0000088877292201e-03
+   Equivalent     MC (  389 HF samples):  5.3401391748753816e-07
+   Equivalent   MFMC ratio:               1.5567950861265176e-02
+ response_fn_3:
+      Initial     MC (   25 HF samples):  1.9943203428582587e-06
+    Projected     MC (   25 HF samples):  1.9943203428582587e-06
+    Projected   MFMC (sample profile):    1.1136367885276713e-09
+    Projected   MFMC ratio (1 - R^2):     5.5840416641395052e-04
+   Equivalent     MC (  389 HF samples):  1.2810536758830173e-07
+   Equivalent   MFMC ratio:               8.6931313612605091e-03

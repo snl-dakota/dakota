@@ -297,6 +297,12 @@ update_estimator_variance_metric(short metric_type, Real norm_order,
 				 const RealVector& est_var,
 				 Real& metric, size_t& metric_index)
 {
+  // Another metric to consider would be to move away from a relative accuracy
+  // constraint (convTol * estVarIter0) and allow specification of a mean
+  // accuracy based on the confidence interval, e.g. user wants the mean value
+  // within +/- 1% --> 95% confidence interval half-width / mean estimate < .01,
+  // which would shift from relative to absolute when mean estimate ~ 0.
+
   // Error checks
   bool err_flag = false;
   switch (metric_type) {
@@ -308,7 +314,8 @@ update_estimator_variance_metric(short metric_type, Real norm_order,
       err_flag = true;
     }
     break;
-  case AVG_ESTVAR_RATIO_METRIC:  case MAX_ESTVAR_RATIO_METRIC:
+  case AVG_ESTVAR_RATIO_METRIC:  case NORM_ESTVAR_RATIO_METRIC:
+  case MAX_ESTVAR_RATIO_METRIC:
     // Can only omit N* from variance minimization in case where it is fixed
     // (R_ONLY_LINEAR_CONSTRAINT from truth_fixed_by_pilot specification).
     // In this case, minimizing an estvar ratios metric is equivalent to
@@ -365,7 +372,7 @@ inline void MFSolutionData::
 update_estimator_variance_metric(short metric_type, Real norm_order,
 				 const RealVector& est_var, Real& metric)
 {
-  // In current uses, we restrict to estvar metrics even for a metric type
+  // In current uses, we restrict to estvar metrics even for a metric_type
   // based on estvar ratios
 
   switch (metric_type) {

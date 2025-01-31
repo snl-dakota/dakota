@@ -165,8 +165,9 @@ DataMethodRep::DataMethodRep():
   //reliabilitySearchType(MV),
   integrationRefine(NO_INT_REFINE), optSubProbSolver(SUBMETHOD_DEFAULT),
   numericalSolveMode(NUMERICAL_FALLBACK),
-  multilevAllocControl(DEFAULT_MLMF_CONTROL),
-  multilevEstimatorRate(2.), multilevDiscrepEmulation(DEFAULT_EMULATION),
+  estVarMetricType(DEFAULT_ESTVAR_METRIC), estVarMetricNormOrder(2.),
+  multilevAllocControl(DEFAULT_MLMF_CONTROL), multilevEstimatorRate(2.),
+  multilevDiscrepEmulation(DEFAULT_EMULATION),
   finalStatsType(DEFAULT_FINAL_STATS),
   finalMomentsType(Pecos::STANDARD_MOMENTS),
   distributionType(CUMULATIVE), responseLevelTarget(PROBABILITIES),
@@ -355,9 +356,10 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << scrambleSize << joe_kuo << sobol_order_2 << grayCodeOrdering
     << dOptimal << numCandidateDesigns //<< reliabilitySearchType
     << reliabilityIntegration << integrationRefine << refineSamples
-    << optSubProbSolver << numericalSolveMode << pilotSamples
-    << ensemblePilotSolnMode << pilotGroupSampling << groupThrottleType
-    << groupSizeThrottle << rCondBestThrottle << rCondTolThrottle
+    << optSubProbSolver << numericalSolveMode << estVarMetricType
+    << estVarMetricNormOrder << pilotSamples << ensemblePilotSolnMode
+    << pilotGroupSampling << groupThrottleType << groupSizeThrottle
+    << rCondBestThrottle << rCondTolThrottle
     << truthPilotConstraint << dagRecursionType << dagDepthLimit
     << modelSelectType << relaxFactorSequence << relaxFixedFactor
     << relaxRecursiveFactor << allocationTarget
@@ -556,9 +558,10 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> scrambleSize >> joe_kuo >> sobol_order_2 >> grayCodeOrdering
     >> dOptimal >> numCandidateDesigns //>> reliabilitySearchType
     >> reliabilityIntegration >> integrationRefine >> refineSamples
-    >> optSubProbSolver >> numericalSolveMode >> pilotSamples
-    >> ensemblePilotSolnMode >> pilotGroupSampling >> groupThrottleType
-    >> groupSizeThrottle >> rCondBestThrottle >> rCondTolThrottle
+    >> optSubProbSolver >> numericalSolveMode >> estVarMetricType
+    >> estVarMetricNormOrder >> pilotSamples >> ensemblePilotSolnMode
+    >> pilotGroupSampling >> groupThrottleType >> groupSizeThrottle
+    >> rCondBestThrottle >> rCondTolThrottle
     >> truthPilotConstraint >> dagRecursionType >> dagDepthLimit
     >> modelSelectType >> relaxFactorSequence >> relaxFixedFactor
     >> relaxRecursiveFactor >> allocationTarget
@@ -757,9 +760,10 @@ void DataMethodRep::write(std::ostream& s) const
     << scrambleSize << joe_kuo << sobol_order_2 << grayCodeOrdering
     << dOptimal << numCandidateDesigns //<< reliabilitySearchType
     << reliabilityIntegration << integrationRefine << refineSamples
-    << optSubProbSolver << numericalSolveMode << pilotSamples
-    << ensemblePilotSolnMode << pilotGroupSampling << groupThrottleType
-    << groupSizeThrottle << rCondBestThrottle << rCondTolThrottle
+    << optSubProbSolver << numericalSolveMode << estVarMetricType
+    << estVarMetricNormOrder << pilotSamples << ensemblePilotSolnMode
+    << pilotGroupSampling << groupThrottleType << groupSizeThrottle
+    << rCondBestThrottle << rCondTolThrottle
     << truthPilotConstraint << dagRecursionType << dagDepthLimit
     << modelSelectType << relaxFactorSequence << relaxFixedFactor
     << relaxRecursiveFactor << allocationTarget
