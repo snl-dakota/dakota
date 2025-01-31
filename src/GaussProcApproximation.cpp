@@ -7,6 +7,7 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
+#include <limits>
 #include "GaussProcApproximation.hpp"
 #include "dakota_data_types.hpp"
 #include "DakotaIterator.hpp"
@@ -72,7 +73,7 @@ Real mindist(const RealVector& x, const RealMatrix& xset, int except)
   d = x.length();
   if (d!= xset.numCols()) Cout << "Dimension mismatch in mindist";
   n = xset.numRows();
-  Real dist, result;
+  Real dist, result = std::numeric_limits<Real>::max();
   RealVector xp(d);
   for (i=0; i<n; i++) {
     for (j=0; j<d; j++) xp[j]=xset(i,j);
@@ -94,7 +95,7 @@ Real mindistindx(const RealVector& x, const RealMatrix& xset,
   nindx = indx.size();
   if (nindx > n) 
     Cerr << "Size error in mindistinx in GaussProcApproximation\n";
-  Real dist,result;
+  Real dist, result = std::numeric_limits<Real>::max();
   RealVector xp(d);
   for (i=0; i<nindx; i++) {
     for (j=0; j<d; j++) xp[j]=xset(indx[i],j);
@@ -115,7 +116,7 @@ Real getRmax(const RealMatrix& xset)
   if (n==0 || d==0) 
     Cerr << "Zero size in getRmax in GaussProcApproximation.  n:" 
 	 << n << "  d:" << d << std::endl;
-  Real mini,result;
+  Real mini, result = -std::numeric_limits<Real>::max();
   RealVector xp(d);
   for (i=0; i<n; i++) {
     for (j=0; j<d; j++) xp[j] = xset(i,j);
@@ -967,7 +968,7 @@ void GaussProcApproximation::run_point_selection()
   int counter = 0, Chol_return=0, delta_increase_count = 0, nadded;
   const Real TOLDELTA = 1e-2;
   RealArray delta(numObsAll);
-  Real dmaxprev, maxdelta;
+  Real dmaxprev, maxdelta = -std::numeric_limits<Real>::max();
   size_t i, num_v = sharedDataRep->numVars;
 
   Cout << "\nUsing point selection routine..." << std::endl;
