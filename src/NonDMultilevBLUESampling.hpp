@@ -50,7 +50,7 @@ protected:
 
   void estimator_variances(const RealVector& cd_vars,
 			   RealVector& est_var) override;
-  Real estimator_variance_metric(const RealVector& cd_vars);
+  Real estimator_variance_metric(const RealVector& cd_vars) override;
 
   const MFSolutionData& final_solution_data() const override;
 
@@ -319,6 +319,8 @@ private:
   std::multimap<Real, size_t> groupCovCondMap;
   /// runtime group throttling due to covariance conditioning
   BitArray retainedModelGroups;
+  /// active model retention based on runtime group throttling
+  BitArray retainedModels;
 
   /// counter for successful sample accumulations, per group and per QoI
   Sizet2DArray NGroupActual;

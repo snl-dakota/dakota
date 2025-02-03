@@ -798,12 +798,44 @@ specify_linear_constraints(RealVector& lin_ineq_lb, RealVector& lin_ineq_ub,
   case N_GROUP_LINEAR_CONSTRAINT: { // linear inequality constraint on budget:
     // \Sum_grp_i w_grp_i        N_grp_i <= equiv_HF * w_HF
     // \Sum_grp_i w_grp_i / w_HF N_grp_i <= equivHF
-    Real cost_H = sequenceCost[numApprox];
-    size_t g, v, num_v = num_active_groups(),
-      lin_offset = (pilotMgmtMode == OFFLINE_PILOT ||
-		    pilotMgmtMode == OFFLINE_PILOT_PROJECTION) ? 1 : 0;
+    Real cost_H = sequenceCost[numApprox], budget = (Real)maxFunctionEvals;
+    size_t g, v, num_v = num_active_groups();
+    bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
+		    pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
+    // deduct accumulated cost for inactive models (shared pilot sampling) or
+    // inactive groups (independent pilot sampling)
+
+    // *** TO DO: review shared to independent workflow ***
+
+    switch (pilotGroupSampling) {
+    case INDEPENDENT_PILOT: // budget deductions are group-based
+      if (!offline && !retainedModelGroups.empty())
+	for (g=0; g<numGroups; ++g)
+	  if (!retainedModelGroups[g])
+	    budget -= NGroupAlloc[g] * modelGroupCost[g] / cost_H;
+      break;
+    case SHARED_PILOT:
+      // budget deductions are model-based (deduct shared pilot cost for an
+      // approx model iff all groups containing this model are discarded)
+      // > prune_model_groups() currently enforces retention of all_group for
+      //   the case of SHARED_PILOT (logic: disproportionate investment), so
+      //   all models are retained in this case.
+      // > Note: it would be possible to reassign the shared pilot investment
+      //   to a different retained group if models would otherwise be discarded.
+      if (!offline && !retainedModels.empty()) {
+	size_t m, all_group = numGroups - 1,
+	     shared_samp = NGroupAlloc[all_group];
+	for (m=0; m<=numApprox; ++m)
+	  if (!retainedModels[m])
+	    budget -= shared_samp * sequenceCost[m] / cost_H;
+      }
+      break;
+    }
+
+    size_t lin_offset = (pilotMgmtMode == OFFLINE_PILOT ||
+			 pilotMgmtMode == OFFLINE_PILOT_PROJECTION) ? 1 : 0;
     lin_ineq_lb[lin_offset] = -DBL_MAX; // no lb
-    lin_ineq_ub[lin_offset] = (Real)maxFunctionEvals;//budget;
+    lin_ineq_ub[lin_offset] = budget;
     for (v=0; v<num_v; ++v) {
       g = active_to_all_group(v);
       lin_ineq_coeffs(lin_offset, v) = modelGroupCost[g] / cost_H;
@@ -2018,7 +2050,7 @@ void NonDMultilevBLUESampling::prune_model_groups()
 {
   if (groupThrottleType != RCOND_BEST_COUNT_THROTTLE &&
       groupThrottleType != RCOND_TOLERANCE_THROTTLE )
-    { retainedModelGroups.clear(); return; }
+    { retainedModelGroups.clear(); retainedModels.clear(); return; }
 
   if (retainedModelGroups.size() != numGroups)
     retainedModelGroups.resize(numGroups);
@@ -2101,11 +2133,41 @@ void NonDMultilevBLUESampling::prune_model_groups()
     }
   }
 
+  // Define retainedModels from retainedModelGroups
+  size_t g, m, model_m, num_models, retained = 0, num_ap1 = numApprox + 1;
+  if (retainedModels.size() != num_ap1)
+    retainedModels.resize(num_ap1);
+  retainedModels.reset();
+  for (g=0; g<numGroups; ++g) {
+    if (retainedModelGroups[g]) {
+      const UShortArray& group_g = modelGroups[g];
+      num_models = group_g.size();
+      for (m=0; m<num_models; ++m) {
+	model_m = group_g[m];
+	if (!retainedModels[model_m])
+	  { retainedModels.set(model_m); ++retained; }
+      }
+    }
+    if (retained == num_ap1) { retainedModels.clear(); break; }
+  }
+
   if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "Retained group count = " << retainedModelGroups.count() << '\n';
-    for (size_t g=0; g<numGroups; ++g)
-      if (retainedModelGroups[g])
-	Cout << "Remaining group " << g << ":\n" << modelGroups[g];
+    if (retainedModelGroups.empty() || retainedModelGroups.count() == numGroups)
+      Cout << "All groups retained\n";
+    else {
+      Cout << "Retained group count = " << retainedModelGroups.count() << '\n';
+      for (g=0; g<numGroups; ++g)
+	if (retainedModelGroups[g])
+	  Cout << "Retained group " << g << ":\n" << modelGroups[g];
+    }
+    if (retainedModels.empty() || retainedModels.count() == num_ap1)
+      Cout << "All models retained\n";
+    else {
+      Cout << "Retained model count = " << retainedModels.count() << '\n';
+      for (m=0; m<num_ap1; ++m)
+	if (retainedModels[m])
+	  Cout << "Retained model " << m << '\n';
+    }
   }
 
   // leave numGroups synchronized with modelGroups and retrieve active count
