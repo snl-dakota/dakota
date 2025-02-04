@@ -10,126 +10,12 @@
 #include "dakota_data_io.hpp"
 #include "DakotaIterator.hpp"
 #include "DakotaTraitsBase.hpp"
-#include "MetaIterator.hpp"
-#include "ConcurrentMetaIterator.hpp"
-#include "CollabHybridMetaIterator.hpp"
-#include "EmbedHybridMetaIterator.hpp"
-#include "SeqHybridMetaIterator.hpp"
-#include "ParamStudy.hpp"
-#include "RichExtrapVerification.hpp"
-#include "NonDPolynomialChaos.hpp"
-#include "NonDMultilevelPolynomialChaos.hpp"
-#include "NonDStochCollocation.hpp"
-#include "NonDMultilevelStochCollocation.hpp"
-#include "NonDSurrogateExpansion.hpp"
-#include "NonDLocalReliability.hpp"
-#include "NonDGlobalReliability.hpp"
-#include "NonDLHSSampling.hpp"
-#include "NonDAdaptImpSampling.hpp"
-#include "NonDGPImpSampling.hpp"
-#include "NonDMultilevControlVarSampling.hpp"
-#include "NonDMultifidelitySampling.hpp"
-#include "NonDGenACVSampling.hpp"
-#include "NonDMultilevBLUESampling.hpp"
-#include "NonDGlobalEvidence.hpp"
-#include "NonDLocalEvidence.hpp"
-#include "NonDLHSEvidence.hpp"
-#include "NonDGlobalSingleInterval.hpp"
-#include "NonDLocalSingleInterval.hpp"
-#include "NonDLHSSingleInterval.hpp"
-#include "NonDPOFDarts.hpp"
-#include "NonDRKDDarts.hpp"
-#include "DataFitSurrBasedLocalMinimizer.hpp"
-#include "HierarchSurrBasedLocalMinimizer.hpp"
-#include "SurrBasedGlobalMinimizer.hpp"
-#include "EffGlobalMinimizer.hpp"
-#include "NonlinearCGOptimizer.hpp"
-#ifdef HAVE_DDACE
-#include "DDACEDesignCompExp.hpp"
-#endif
-#ifdef HAVE_FSUDACE
-#include "FSUDesignCompExp.hpp"
-#endif
-#ifdef HAVE_PSUADE
-#include "PSUADEDesignCompExp.hpp"
-#endif
-#ifdef HAVE_DOT
-#include "DOTOptimizer.hpp"
-#endif
-#ifdef HAVE_CONMIN
-#include "CONMINOptimizer.hpp"
-#endif
-#ifdef DAKOTA_DL_SOLVER
-#include "DLSolver.hpp"
-#endif
-#ifdef HAVE_NOMAD
-#include "NomadOptimizer.hpp"
-#endif
-#ifdef HAVE_NOWPAC
-#include "NOWPACOptimizer.hpp"
-#endif
-#ifdef HAVE_NPSOL
-#include "NPSOLOptimizer.hpp"
-#include "NLSSOLLeastSq.hpp"
-#endif
-#ifdef HAVE_NLPQL
-#include "NLPQLPOptimizer.hpp"
-#endif
-#ifdef HAVE_NL2SOL
-#include "NL2SOLLeastSq.hpp"
-#endif
-//#ifdef DAKOTA_RSQP
-//#include "rSQPOptimizer.H"
-//#endif
-#ifdef HAVE_OPTPP
-#include "SNLLOptimizer.hpp"
-#include "SNLLLeastSq.hpp"
-#endif
-#ifdef HAVE_ACRO
-#include "COLINOptimizer.hpp"
-#include "PEBBLMinimizer.hpp"
-#endif
-#ifdef DAKOTA_HOPS
-#include "APPSOptimizer.hpp"
-#endif
-#ifdef HAVE_NCSU
-#include "NCSUOptimizer.hpp"
-#endif
-#ifdef HAVE_ROL
-#include "ROLOptimizer.hpp"
-#endif
-#ifdef HAVE_DEMO_TPL
-#include "DemoOptimizer.hpp"
-#endif
-#ifdef HAVE_JEGA
-#include "JEGAOptimizer.hpp"
-#endif
-#ifdef HAVE_C3
-#include "NonDC3FunctionTrain.hpp"
-#include "NonDMultilevelFunctionTrain.hpp"
-#endif
-#ifdef HAVE_QUESO_GPMSA
-#include "NonDGPMSABayesCalibration.hpp"
-#endif
-#ifdef HAVE_QUESO
-#include "NonDQUESOBayesCalibration.hpp"
-#endif
-#ifdef HAVE_DREAM
-#include "NonDDREAMBayesCalibration.hpp"
-#endif
-#ifdef HAVE_ADAPTIVE_SAMPLING 
-#include "NonDAdaptiveSampling.hpp"
-#endif
-#ifdef HAVE_MUQ 
-#include "NonDMUQBayesCalibration.hpp"
-#endif
-#include "OptDartsOptimizer.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "DakotaGraphics.hpp"
 #include "ResultsManager.hpp"
 #include "EvaluationStore.hpp"
-#include "NonDWASABIBayesCalibration.hpp"
+
 
 #include <boost/bimap.hpp>
 #include <boost/assign.hpp>

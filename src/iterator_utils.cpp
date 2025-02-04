@@ -113,6 +113,7 @@
 #include "NonDMUQBayesCalibration.hpp"
 #endif
 #include "OptDartsOptimizer.hpp"
+#include "NonDWASABIBayesCalibration.hpp"
 
 
 namespace Dakota {
