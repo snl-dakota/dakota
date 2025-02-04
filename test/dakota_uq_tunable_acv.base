@@ -264,3 +264,17 @@ Sample moment statistics for each response function:
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean
  response_fn_1 -2.1351637856669905e-02  9.6952336420486132e-03
+Test Number 14 succeeded
+<<<<< Function evaluation summary (LF_INT): 100 total (100 new, 0 duplicate)
+<<<<< Function evaluation summary (MF_INT): 100 total (100 new, 0 duplicate)
+<<<<< Function evaluation summary (HF_INT): 100 total (100 new, 0 duplicate)
+<<<<< Projected number of equivalent high fidelity evaluations: 5.0016121399999997e+02
+<<<<< Incurred cost in equivalent high fidelity evaluations: 1.8818121399999998e+02
+<<<<< Variance for mean estimator:
+ response_fn_1:
+      Initial     MC (  100 HF samples):  1.1448865853298427e-02
+    Projected     MC (  396 HF samples):  2.8911277407319257e-03
+    Projected GenACV (sample profile):    2.5475648427786732e-03
+    Projected GenACV ratio (1 - R^2):     8.8080592440633976e-01
+   Equivalent     MC (  500 HF samples):  2.2890351216434844e-03
+   Equivalent GenACV ratio:               1.1129426624741212e+00
