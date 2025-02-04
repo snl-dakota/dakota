@@ -1137,7 +1137,7 @@ analytic_initialization_from_mfmc(const UShortArray& approx_set,
     hf_target = update_hf_target(avg_eval_ratios, avg_N_H, varH, estVarIter0);
   else // allocate_budget(), then manage lower bounds and pilot over-estimation
     scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, hf_target,
-		    approx_set, orderedRootList, (Real)maxFunctionEvals);
+		    approx_set, orderedRootList, activeBudget);
   soln.anchored_solution_ratios(avg_eval_ratios, hf_target);
 }
 
@@ -1165,7 +1165,7 @@ analytic_initialization_from_ensemble_cvmc(const UShortArray& approx_set,
   else { // scale according to cost
     // incorporates lin ineq enforcement:
     scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, hf_target,
-		    approx_set, root_list, (Real)maxFunctionEvals);
+		    approx_set, root_list, activeBudget);
     //RealVector cd_vars;
     //r_and_N_to_design_vars(avg_eval_ratios, hf_target, cd_vars);
     //soln.estimator_variances(estimator_variances(cd_vars));
@@ -1296,16 +1296,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   // --------------------------------------
   const UShortArray& approx_set = activeModelSetIter->first;
   size_t i, num_cdv = x0.length(), approx, num_approx = approx_set.size();
-  Real cost_H = sequenceCost[numApprox], budget = (Real)maxFunctionEvals;
-
-  // reduce available allocation budget by incurred cost of any inactive models
-  // (allocated samples are incurred cost regardless of success)
-  if (!offline && num_approx != numApprox) {
-    size_t cntr = 0;
-    for (approx=0; approx<numApprox; ++approx)
-      if  (approx == approx_set[cntr]) ++cntr;
-      else budget -= N_H_alloc * sequenceCost[approx];
-  }
+  Real cost_H = sequenceCost[numApprox];
 
   // minimizer-specific updates performed in finite_solution_bounds()
   x_ub = DBL_MAX; // no upper bounds needed for x
@@ -1323,8 +1314,8 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     //   \Sum_i w_i   r_i <= equivHF * w / N - w
     //   \Sum_i w_i/w r_i <= equivHF / N - 1
     lin_ineq_ub[0] = (avg_N_H > 1.) ? // protect N_H==0 for offline pilot
-      budget / avg_N_H - 1. : // normal case
-      budget - 1.;            // bound N_H at 1 (TO DO: need to perform sample)
+      activeBudget / avg_N_H - 1. : // normal case
+      activeBudget - 1.; // bound N_H at 1 (TO DO: need to perform sample)
     for (approx=0; approx<num_approx; ++approx)
       lin_ineq_coeffs(0,approx) = sequenceCost[approx_set[approx]] / cost_H;
     break;
@@ -1343,7 +1334,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     x0[num_approx] = (mlmfIter) ? avg_N_H : soln.solution_reference(); // N
 
     nln_ineq_lb[0] = -DBL_MAX; // no low bnd
-    nln_ineq_ub[0] = budget;
+    nln_ineq_ub[0] = activeBudget;
     break;
   }
   case N_MODEL_LINEAR_CONSTRAINT:  case N_MODEL_LINEAR_OBJECTIVE: {
@@ -1355,7 +1346,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
       //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
       //   N w + \Sum_i w_i N_i <= equivHF * w
       //   N + \Sum_i w_i/w N_i <= equivHF
-      lin_ineq_ub[0] = budget; // remaining ub initialized to 0
+      lin_ineq_ub[0] = activeBudget; // remaining ub
       for (approx=0; approx<num_approx; ++approx)
 	lin_ineq_coeffs(0, approx) = sequenceCost[approx_set[approx]] / cost_H;
       lin_ineq_coeffs(0, num_approx) = 1.;
@@ -1674,15 +1665,8 @@ minimizer_results_to_solution_data(const RealVector& cv_star,
     // Allow for constraint to be inactive at optimum, but generally the
     // opt sub-problem will allocate full budget to increase R^2.
     // Note: this formulation is active for option "truth_fixed_by_pilot"
-    if (maxFunctionEvals != SZ_MAX) {
-      // Full budget allocation: pilot sample + addtnl N_H; then optimal N_L
-      // > can also under-relax the budget allocation to enable additional N_H
-      //   increments + associated shared sample sets to refine shared stats.
-      hf_target = allocate_budget(approx_set, avg_eval_ratios,sequenceCost);
-      Cout << "Scaling profile for maxFunctionEvals = " << maxFunctionEvals
-	   << ": HF target = " << hf_target << std::endl;
-    }
-    else { //if (convergenceTol != -DBL_MAX) { // *** TO DO: detect user spec
+    if (maxFunctionEvals == SZ_MAX) {
+    //if (convergenceTol != -DBL_MAX) { // *** TO DO: detect user spec
       // EstVar target = convTol * estvar_iter0 = estvar_ratio * varH / N_target
       //               = curr_estvar * N_curr / N_target
       //  --> N_target = curr_estvar * N_curr / (convTol * estvar_iter0)
@@ -1693,6 +1677,14 @@ minimizer_results_to_solution_data(const RealVector& cv_star,
       Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
       hf_target = update_hf_target(avg_eval_ratios, avg_N_H, varH, estVarIter0);
       Cout << "Scaling profile for convergenceTol = " << convergenceTol
+	   << ": HF target = " << hf_target << std::endl;
+    }
+    else {
+      // Full budget allocation: pilot sample + addtnl N_H; then optimal N_L
+      // > can also under-relax the budget allocation to enable additional N_H
+      //   increments + associated shared sample sets to refine shared stats.
+      hf_target = allocate_budget(approx_set, avg_eval_ratios, sequenceCost);
+      Cout << "Scaling profile for active budget = " << activeBudget
 	   << ": HF target = " << hf_target << std::endl;
     }
     //hf_target = std::min(budget_target, ctol_target); // enforce both

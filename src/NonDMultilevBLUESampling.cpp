@@ -798,12 +798,12 @@ specify_linear_constraints(RealVector& lin_ineq_lb, RealVector& lin_ineq_ub,
   case N_GROUP_LINEAR_CONSTRAINT: { // linear inequality constraint on budget:
     // \Sum_grp_i w_grp_i        N_grp_i <= equiv_HF * w_HF
     // \Sum_grp_i w_grp_i / w_HF N_grp_i <= equivHF
-    Real cost_H = sequenceCost[numApprox];
-    size_t g, v, num_v = num_active_groups(),
-      lin_offset = (pilotMgmtMode == OFFLINE_PILOT ||
-		    pilotMgmtMode == OFFLINE_PILOT_PROJECTION) ? 1 : 0;
+    size_t g, v, num_v = num_active_groups(), lin_offset
+      = (pilotMgmtMode == OFFLINE_PILOT ||
+	 pilotMgmtMode == OFFLINE_PILOT_PROJECTION) ? 1 : 0;
     lin_ineq_lb[lin_offset] = -DBL_MAX; // no lb
-    lin_ineq_ub[lin_offset] = (Real)maxFunctionEvals;//budget;
+    lin_ineq_ub[lin_offset] = activeBudget;
+    Real cost_H = sequenceCost[numApprox];
     for (v=0; v<num_v; ++v) {
       g = active_to_all_group(v);
       lin_ineq_coeffs(lin_offset, v) = modelGroupCost[g] / cost_H;
@@ -2018,7 +2018,7 @@ void NonDMultilevBLUESampling::prune_model_groups()
 {
   if (groupThrottleType != RCOND_BEST_COUNT_THROTTLE &&
       groupThrottleType != RCOND_TOLERANCE_THROTTLE )
-    { retainedModelGroups.clear(); return; }
+    { retainedModelGroups.clear(); retainedModels.clear(); return; }
 
   if (retainedModelGroups.size() != numGroups)
     retainedModelGroups.resize(numGroups);
@@ -2101,11 +2101,41 @@ void NonDMultilevBLUESampling::prune_model_groups()
     }
   }
 
+  // Define retainedModels from retainedModelGroups
+  size_t g, m, model_m, num_models, retained = 0, num_ap1 = numApprox + 1;
+  if (retainedModels.size() != num_ap1)
+    retainedModels.resize(num_ap1);
+  retainedModels.reset();
+  for (g=0; g<numGroups; ++g) {
+    if (retainedModelGroups[g]) {
+      const UShortArray& group_g = modelGroups[g];
+      num_models = group_g.size();
+      for (m=0; m<num_models; ++m) {
+	model_m = group_g[m];
+	if (!retainedModels[model_m])
+	  { retainedModels.set(model_m); ++retained; }
+      }
+    }
+    if (retained == num_ap1) { retainedModels.clear(); break; }
+  }
+
   if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "Retained group count = " << retainedModelGroups.count() << '\n';
-    for (size_t g=0; g<numGroups; ++g)
-      if (retainedModelGroups[g])
-	Cout << "Remaining group " << g << ":\n" << modelGroups[g];
+    if (retainedModelGroups.empty() || retainedModelGroups.count() == numGroups)
+      Cout << "All groups retained\n";
+    else {
+      Cout << "Retained group count = " << retainedModelGroups.count() << '\n';
+      for (g=0; g<numGroups; ++g)
+	if (retainedModelGroups[g])
+	  Cout << "Retained group " << g << ":\n" << modelGroups[g];
+    }
+    if (retainedModels.empty() || retainedModels.count() == num_ap1)
+      Cout << "All models retained\n";
+    else {
+      Cout << "Retained model count = " << retainedModels.count() << '\n';
+      for (m=0; m<num_ap1; ++m)
+	if (retainedModels[m])
+	  Cout << "Retained model " << m << '\n';
+    }
   }
 
   // leave numGroups synchronized with modelGroups and retrieve active count
