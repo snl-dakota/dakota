@@ -188,43 +188,8 @@ void Iterator::declare_sources() {
                                iterated_model()->model_type());
 }
 
-/** Copy constructor manages sharing of iteratorRep. */
-Iterator::Iterator(const Iterator& iterator):
-  probDescDB(iterator.problem_description_db()),
-  parallelLib(iterator.parallel_library()), resultsDB(iterator_results_db), 
-  evaluationsDB(evaluation_store_db), methodTraits(iterator.traits()),
-  iteratorRep(iterator.iteratorRep)
-{ Cout << "Iterator copy constructor called\n"; }
-
-
-Iterator Iterator::operator=(const Iterator& iterator)
-{
-  iteratorRep = iterator.iteratorRep;
-  return *this; // calls copy constructor since returned by value
-}
-
-
 Iterator::~Iterator()
 { /* empty dtor */ }
-
-
-/** The assign_rep() function is used for publishing derived class
-    letters to existing envelopes, as opposed to sharing
-    representations among multiple envelopes (in particular,
-    assign_rep is passed a letter object and operator= is passed an
-    envelope object).
-
-    Use case assumes the incoming letter is instantiated on the fly
-    and has no envelope.  This case is modeled after get_iterator(): a
-    letter is dynamically allocated and passed into assign_rep (its
-    memory management is passed over to the envelope).
-
-    If the letter happens to be managed by another envelope, it will
-    persist as long as the last envelope referencing it. */
-void Iterator::assign_rep(std::shared_ptr<Iterator> iterator_rep)
-{
-  iteratorRep = iterator_rep;
-}
 
 
 /// bimaps to convert from enums <--> strings

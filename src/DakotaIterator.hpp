@@ -47,13 +47,13 @@ public:
   Iterator(std::shared_ptr<TraitsBase> traits =
 	   std::shared_ptr<TraitsBase>(new TraitsBase()) );
   /// copy constructor
-  Iterator(const Iterator& iterator);
+  Iterator(const Iterator& iterator) = delete;
 
   /// destructor
   virtual ~Iterator();
 
   /// assignment operator
-  Iterator operator=(const Iterator& iterator);
+  Iterator& operator=(const Iterator& iterator) = delete;
 
   //
   //- Heading: Virtual functions
