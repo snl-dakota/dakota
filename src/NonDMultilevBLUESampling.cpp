@@ -802,7 +802,7 @@ specify_linear_constraints(RealVector& lin_ineq_lb, RealVector& lin_ineq_ub,
       = (pilotMgmtMode == OFFLINE_PILOT ||
 	 pilotMgmtMode == OFFLINE_PILOT_PROJECTION) ? 1 : 0;
     lin_ineq_lb[lin_offset] = -DBL_MAX; // no lb
-    lin_ineq_ub[lin_offset] = available_budget();
+    lin_ineq_ub[lin_offset] = activeBudget;
     Real cost_H = sequenceCost[numApprox];
     for (v=0; v<num_v; ++v) {
       g = active_to_all_group(v);

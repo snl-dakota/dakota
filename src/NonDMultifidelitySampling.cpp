@@ -1251,8 +1251,7 @@ mfmc_numerical_solution(const RealMatrix& rho2_LH, const RealVector& cost,
 
     Real hf_target;
     if (budget_constrained) // for numerical, re-scale for over-estimated pilot
-      scale_to_target(avg_N_H, cost, avg_eval_ratios, hf_target,
-		      available_budget());
+      scale_to_target(avg_N_H, cost, avg_eval_ratios, hf_target, activeBudget);
     else { // accuracy-constrained
       // Computes estvar_ratios* from r*,rho2.  Next, m1* from estvar_ratios*;
       // then these estvar_ratios get replaced for actual profile

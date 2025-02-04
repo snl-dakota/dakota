@@ -937,6 +937,10 @@ protected:
   /// (i.e. modelGroups)
   RealVector modelGroupCost;
 
+  /// remaining budget for solution over active models/groups, following
+  /// deduction of sunk (pilot) cost for inactive models/groups
+  Real activeBudget;
+
   /// formulation for optimization sub-problem that minimizes R^2 subject
   /// to different variable sets and different linear/nonlinear constraints
   short optSubProblemForm;
@@ -1681,10 +1685,7 @@ allocate_budget(const RealVector& avg_eval_ratios, const RealVector& cost,
 
 inline Real NonDNonHierarchSampling::
 allocate_budget(const RealVector& avg_eval_ratios, const RealVector& cost)
-{
-  Real budget = available_budget();
-  return allocate_budget(avg_eval_ratios, cost, budget);
-}
+{ return allocate_budget(avg_eval_ratios, cost, activeBudget); }
 
 
 inline Real NonDNonHierarchSampling::
@@ -1706,10 +1707,7 @@ allocate_budget(const UShortArray& approx_set,const RealVector& avg_eval_ratios,
 inline Real NonDNonHierarchSampling::
 allocate_budget(const UShortArray& approx_set,
 		const RealVector& avg_eval_ratios, const RealVector& cost)
-{
-  Real budget = available_budget();
-  return allocate_budget(approx_set, avg_eval_ratios, cost, budget);
-}
+{ return allocate_budget(approx_set, avg_eval_ratios, cost, activeBudget); }
 
 
 inline void NonDNonHierarchSampling::
