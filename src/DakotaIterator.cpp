@@ -306,14 +306,10 @@ Iterator::Iterator(ProblemDescDB& problem_db,
 
 bool Iterator::resize()
 {
-  if (iteratorRep)
-    return iteratorRep->resize(); // envelope fwd to letter
-  else {
-    // Update activeSet:
-    activeSet = iteratedModel->current_response().active_set();
-    return false; // No need to re-initialize communicators base on what
-                  // was done here.
-  }
+  // Update activeSet:
+  activeSet = iteratedModel->current_response().active_set();
+  return false; // No need to re-initialize communicators base on what
+                // was done here.
 }
 
 
@@ -611,47 +607,43 @@ void Iterator::run(ParLevLIter pl_iter)
     sequences these run phases. */
 void Iterator::run()
 {
-  if (iteratorRep)
-    iteratorRep->run(); // envelope fwd to letter
-  else {
+  ++execNum;
 
-    ++execNum;
-
-    if(evaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
-      evaluationsDBState
-	= evaluationsDB.iterator_allocate(method_id(), top_level());
-      if(evaluationsDBState == EvaluationsDBState::ACTIVE)
-        declare_sources();
-    }
-
-    String method_string = method_enum_to_string(methodName);
-    initialize_run();
-    if (summaryOutputFlag)
-      Cout << "\n>>>>> Running "  << method_string <<" iterator.\n";
-    if (parallelLib.command_line_pre_run()) {
-      if (summaryOutputFlag && outputLevel > NORMAL_OUTPUT)
-	Cout << "\n>>>>> " << method_string <<": pre-run phase.\n";
-      pre_run();
-      pre_output(); // for now, the helper manages whether output is needed
-    }
-    if (parallelLib.command_line_run()) {
-      //core_input();
-      if (summaryOutputFlag && outputLevel > NORMAL_OUTPUT)
-	Cout << "\n>>>>> " << method_string <<": core run phase.\n";
-      core_run();
-      //core_output();
-    }
-    if (parallelLib.command_line_post_run()) {
-      post_input();
-      if (summaryOutputFlag && outputLevel > NORMAL_OUTPUT)
-	Cout << "\n>>>>> " << method_string <<": post-run phase.\n";
-      post_run(Cout); // stream could be passed through run() API if needed
-    }
-    if (summaryOutputFlag)
-      Cout << "\n<<<<< Iterator " << method_string <<" completed.\n";
-    finalize_run();
-    resultsDB.flush();
+  if(evaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
+    evaluationsDBState
+= evaluationsDB.iterator_allocate(method_id(), top_level());
+    if(evaluationsDBState == EvaluationsDBState::ACTIVE)
+      declare_sources();
   }
+
+  String method_string = method_enum_to_string(methodName);
+  initialize_run();
+  if (summaryOutputFlag)
+    Cout << "\n>>>>> Running "  << method_string <<" iterator.\n";
+  if (parallelLib.command_line_pre_run()) {
+    if (summaryOutputFlag && outputLevel > NORMAL_OUTPUT)
+Cout << "\n>>>>> " << method_string <<": pre-run phase.\n";
+    pre_run();
+    pre_output(); // for now, the helper manages whether output is needed
+  }
+  if (parallelLib.command_line_run()) {
+    //core_input();
+    if (summaryOutputFlag && outputLevel > NORMAL_OUTPUT)
+Cout << "\n>>>>> " << method_string <<": core run phase.\n";
+    core_run();
+    //core_output();
+  }
+  if (parallelLib.command_line_post_run()) {
+    post_input();
+    if (summaryOutputFlag && outputLevel > NORMAL_OUTPUT)
+Cout << "\n>>>>> " << method_string <<": post-run phase.\n";
+    post_run(Cout); // stream could be passed through run() API if needed
+  }
+  if (summaryOutputFlag)
+    Cout << "\n<<<<< Iterator " << method_string <<" completed.\n";
+  finalize_run();
+  resultsDB.flush();
+  
 }
 
 
@@ -663,9 +655,7 @@ void Iterator::run()
     implementation steps. */
 void Iterator::initialize_run()
 {
-  if (iteratorRep)
-    iteratorRep->initialize_run(); // envelope fwd to letter
-  // else base class default behavior is no-op
+   // no op
 }
 
 
@@ -677,9 +667,7 @@ void Iterator::initialize_run()
     implementation steps. */
 void Iterator::pre_run()
 {
-  if (iteratorRep)
-    iteratorRep->pre_run(); // envelope fwd to letter
-  // else base class default behavior is no-op
+  // no op
 }
 
 
@@ -687,13 +675,9 @@ void Iterator::pre_run()
     derived classes need to redefine it. */
 void Iterator::core_run()
 {
-  if (iteratorRep)
-    iteratorRep->core_run(); // envelope fwd to letter
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: Letter lacking redefinition of virtual core_run() function."
-	 << "\nNo default iteration defined at base class." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
+  Cerr << "Error: Letter lacking redefinition of virtual core_run() function."
+  << "\nNo default iteration defined at base class." << std::endl;
+  abort_handler(METHOD_ERROR);
 }
 
 
@@ -704,9 +688,7 @@ void Iterator::core_run()
     performing its own implementation steps. */
 void Iterator::post_run(std::ostream& s)
 {
-  if (iteratorRep)
-    iteratorRep->post_run(s); // envelope fwd to letter
-  // else base class default behavior is no-op
+  // no op
 }
 
 
@@ -718,377 +700,293 @@ void Iterator::post_run(std::ostream& s)
     implementation steps. */
 void Iterator::finalize_run()
 {
-  if (iteratorRep)
-    iteratorRep->finalize_run(); // envelope fwd to letter
-  // else base class default behavior is no-op
+  // no op
 }
 
 
 void Iterator::resize_communicators(ParLevLIter pl_iter, bool reinit_comms)
 {
-  if (iteratorRep) {
-    iteratorRep->resize_communicators(pl_iter, reinit_comms);
-  } else {
-    bool multiproc = (pl_iter->server_communicator_size() > 1);
-    if (reinit_comms) {
-      // Free communicators before we rebuild:
-      short mapping_code;
-      if (multiproc) {
-        mapping_code = FREE_COMMS;
-        parallelLib.bcast(mapping_code, *pl_iter);
-        parallelLib.bcast(maxEvalConcurrency, *pl_iter);
-      }
-      free_communicators(pl_iter);
-
-      // Re-initialize communicators:
-      if (multiproc) {
-        mapping_code = INIT_COMMS;
-        parallelLib.bcast(mapping_code, *pl_iter);
-      }
-      init_communicators(pl_iter);
-      if (multiproc) iteratedModel->stop_init_communicators(pl_iter);
-    }
-
-    // update message lengths for send/receive of parallel jobs (normally
-    // performed once in Model::init_communicators() just after construct time)
-    iteratedModel->estimate_message_lengths();
+  bool multiproc = (pl_iter->server_communicator_size() > 1);
+  if (reinit_comms) {
+    // Free communicators before we rebuild:
+    short mapping_code;
     if (multiproc) {
-      short mapping_code = ESTIMATE_MESSAGE_LENGTHS;
+      mapping_code = FREE_COMMS;
+      parallelLib.bcast(mapping_code, *pl_iter);
+      parallelLib.bcast(maxEvalConcurrency, *pl_iter);
+    }
+    free_communicators(pl_iter);
+
+    // Re-initialize communicators:
+    if (multiproc) {
+      mapping_code = INIT_COMMS;
       parallelLib.bcast(mapping_code, *pl_iter);
     }
+    init_communicators(pl_iter);
+    if (multiproc) iteratedModel->stop_init_communicators(pl_iter);
+  }
+
+  // update message lengths for send/receive of parallel jobs (normally
+  // performed once in Model::init_communicators() just after construct time)
+  iteratedModel->estimate_message_lengths();
+  if (multiproc) {
+    short mapping_code = ESTIMATE_MESSAGE_LENGTHS;
+    parallelLib.bcast(mapping_code, *pl_iter);
   }
 }
 
 
 void Iterator::init_communicators(ParLevLIter pl_iter)
 {
-  if (iteratorRep) // envelope fwd to letter
-    iteratorRep->init_communicators(pl_iter);
-  else {
-    // Don't need to include maxEvalConcurrency since this is constant for
-    // a particular Iterator/Model pair: Models can be reused in different
-    // contexts, but non-meta-iterators should only have a single Model,
-    // providing derivative concurrency, and a single derived max-concurrency.
-    //SizetIntPair key(pl_index, maxEvalConcurrency);
-    size_t pl_index = parallelLib.parallel_level_index(pl_iter);
-    std::map<size_t, ParConfigLIter>::iterator map_iter
-      = methodPCIterMap.find(pl_index);
-    if (map_iter == methodPCIterMap.end()) { // this config does not exist
-      parallelLib.increment_parallel_configuration(pl_iter);
-      methodPCIterMap[pl_index] = methodPCIter
-	= parallelLib.parallel_configuration_iterator();
-      derived_init_communicators(pl_iter);
-    }
-    else {
-      methodPCIter = map_iter->second;
-      // don't need to invoke derived_init_communicators() since each unique
-      // init only needs to be recursed once (see also Model::init_comms)
-    }
-
-    // Ordering: must perform method recourse after construction, and would
-    // prefer to perform recourse before initialization of comms (so that
-    // previous initialization does not need to be freed and then replaced).
-    // But for NestedModel's subIterator, it would be complicated to insert
-    // recourse after ctor and before init_comms (see management of circular
-    // dependency in NestedModel::drived_init_communicators()), so we instead
-    // perform recourse after derived_init_comms above has completed its
-    // recursion (requiring free and re-init for method recourse).  But we do
-    // keep this all within the scope of the init_comms recursion so that we
-    // wrap up all initialization here, prior to set_comms downstream.
-    check_sub_iterator_conflict(); // Note: can pull pl_iter from methodPCIter
-
-    // After partitioning is complete, output tags for concurrent
-    // iterators are established.  Initialize the eval id prefix for
-    // this Iterator and its underlying Model.  This may get appended
-    // to by any runtime updates as eval ids change.
-    eval_tag_prefix(parallelLib.output_manager().build_output_tag());
+  // Don't need to include maxEvalConcurrency since this is constant for
+  // a particular Iterator/Model pair: Models can be reused in different
+  // contexts, but non-meta-iterators should only have a single Model,
+  // providing derivative concurrency, and a single derived max-concurrency.
+  //SizetIntPair key(pl_index, maxEvalConcurrency);
+  size_t pl_index = parallelLib.parallel_level_index(pl_iter);
+  std::map<size_t, ParConfigLIter>::iterator map_iter
+    = methodPCIterMap.find(pl_index);
+  if (map_iter == methodPCIterMap.end()) { // this config does not exist
+    parallelLib.increment_parallel_configuration(pl_iter);
+    methodPCIterMap[pl_index] = methodPCIter
+= parallelLib.parallel_configuration_iterator();
+    derived_init_communicators(pl_iter);
   }
+  else {
+    methodPCIter = map_iter->second;
+    // don't need to invoke derived_init_communicators() since each unique
+    // init only needs to be recursed once (see also Model::init_comms)
+  }
+
+  // Ordering: must perform method recourse after construction, and would
+  // prefer to perform recourse before initialization of comms (so that
+  // previous initialization does not need to be freed and then replaced).
+  // But for NestedModel's subIterator, it would be complicated to insert
+  // recourse after ctor and before init_comms (see management of circular
+  // dependency in NestedModel::drived_init_communicators()), so we instead
+  // perform recourse after derived_init_comms above has completed its
+  // recursion (requiring free and re-init for method recourse).  But we do
+  // keep this all within the scope of the init_comms recursion so that we
+  // wrap up all initialization here, prior to set_comms downstream.
+  check_sub_iterator_conflict(); // Note: can pull pl_iter from methodPCIter
+
+  // After partitioning is complete, output tags for concurrent
+  // iterators are established.  Initialize the eval id prefix for
+  // this Iterator and its underlying Model.  This may get appended
+  // to by any runtime updates as eval ids change.
+  eval_tag_prefix(parallelLib.output_manager().build_output_tag());
 }
 
 
 bool Iterator::top_level()
 {
-  if (iteratorRep) return iteratorRep->top_level();
-  else return topLevel;
+  return topLevel;
 }
 
 
 void Iterator::top_level(bool flag)
 {
-  if (iteratorRep) iteratorRep->top_level(flag);
-  else topLevel = flag;
+  topLevel = flag;
 }
 
 
 void Iterator::derived_init_communicators(ParLevLIter pl_iter)
 {
-  if (iteratorRep) // envelope fwd to letter
-    iteratorRep->derived_init_communicators(pl_iter);
-  else if (iteratedModel) // default: init comms for iteratedModel
+  if (iteratedModel) // default: init comms for iteratedModel
     iteratedModel->init_communicators(pl_iter, maxEvalConcurrency); // recurse
 }
 
 
 void Iterator::set_communicators(ParLevLIter pl_iter)
 {
-  if (iteratorRep) // envelope fwd to letter
-    iteratorRep->set_communicators(pl_iter);
-  else {
-    // set the comms within Iterator: methodPCIter, miPLIndex, & derived.
-    // > miPLIndex is the index within ParallelConfiguration::miPLIters
-    // > pl_index (key within methodPCIterMap) is the index within
-    //   ParallelLibrary::parallelLevels (is configuration independent)
-    size_t pl_index = parallelLib.parallel_level_index(pl_iter);
-    std::map<size_t, ParConfigLIter>::iterator map_iter
-      = methodPCIterMap.find(pl_index);
-    if (map_iter == methodPCIterMap.end()) { // this config does not exist
-      Cerr << "Error: failure in parallel configuration lookup in Iterator::"
-           << "set_communicators() for pl_index = " << pl_index << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
-    else
-      methodPCIter = map_iter->second;
 
-    // This corresponds to pl_iter, prior to sub-iterator partitioning, and
-    // is therefore not that useful (misleading in MetaIterators).
-    //miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
-
-    // Unlike init_comms, set_comms DOES need to be recursed each time to 
-    // activate the correct comms at each level of the recursion.
-    derived_set_communicators(pl_iter);
+  // set the comms within Iterator: methodPCIter, miPLIndex, & derived.
+  // > miPLIndex is the index within ParallelConfiguration::miPLIters
+  // > pl_index (key within methodPCIterMap) is the index within
+  //   ParallelLibrary::parallelLevels (is configuration independent)
+  size_t pl_index = parallelLib.parallel_level_index(pl_iter);
+  std::map<size_t, ParConfigLIter>::iterator map_iter
+    = methodPCIterMap.find(pl_index);
+  if (map_iter == methodPCIterMap.end()) { // this config does not exist
+    Cerr << "Error: failure in parallel configuration lookup in Iterator::"
+          << "set_communicators() for pl_index = " << pl_index << std::endl;
+    abort_handler(METHOD_ERROR);
   }
+  else
+    methodPCIter = map_iter->second;
+
+  // This corresponds to pl_iter, prior to sub-iterator partitioning, and
+  // is therefore not that useful (misleading in MetaIterators).
+  //miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
+
+  // Unlike init_comms, set_comms DOES need to be recursed each time to 
+  // activate the correct comms at each level of the recursion.
+  derived_set_communicators(pl_iter);
 }
 
 
 void Iterator::derived_set_communicators(ParLevLIter pl_iter)
 {
-  if (iteratorRep) // envelope fwd to letter
-    iteratorRep->derived_set_communicators(pl_iter);
-  else if (iteratedModel) // default: set comms within iteratedModel
+  if (iteratedModel) // default: set comms within iteratedModel
     iteratedModel->set_communicators(pl_iter, maxEvalConcurrency);  // recurse
 }
 
 
 void Iterator::free_communicators(ParLevLIter pl_iter)
 {
-  if (iteratorRep) // envelope fwd to letter
-    iteratorRep->free_communicators(pl_iter);
-  else {
-    // Note: deallocations do not utilize reference counting -> the _first_
-    // call to free a particular configuration deallocates it and all
-    // subsequent calls are ignored (to prevent multiple deallocations).
-    size_t pl_index = parallelLib.parallel_level_index(pl_iter);
-    std::map<size_t, ParConfigLIter>::iterator map_iter
-      = methodPCIterMap.find(pl_index);
-    if (map_iter != methodPCIterMap.end()) { // this config still exists
-      methodPCIter = map_iter->second;
-      // Like derived_init, derived_free can be protected inside found block
-      derived_free_communicators(pl_iter);
-      methodPCIterMap.erase(pl_index);
-    }
+  // Note: deallocations do not utilize reference counting -> the _first_
+  // call to free a particular configuration deallocates it and all
+  // subsequent calls are ignored (to prevent multiple deallocations).
+  size_t pl_index = parallelLib.parallel_level_index(pl_iter);
+  std::map<size_t, ParConfigLIter>::iterator map_iter
+    = methodPCIterMap.find(pl_index);
+  if (map_iter != methodPCIterMap.end()) { // this config still exists
+    methodPCIter = map_iter->second;
+    // Like derived_init, derived_free can be protected inside found block
+    derived_free_communicators(pl_iter);
+    methodPCIterMap.erase(pl_index);
   }
 }
 
 
 void Iterator::derived_free_communicators(ParLevLIter pl_iter)
 {
-  if (iteratorRep) // envelope fwd to letter
-    iteratorRep->derived_free_communicators(pl_iter);
-  else if (iteratedModel) // default: free comms on iteratedModel
+  if (iteratedModel) // default: free comms on iteratedModel
     iteratedModel->free_communicators(pl_iter, maxEvalConcurrency); // recurse
 }
 
 
 void Iterator::reset()
 {
-  if (iteratorRep)
-    iteratorRep->reset(); // envelope fwd to letter
-  // else base class default behavior is no-op
+  // no op
 }
 
 
 void Iterator::initialize_iterator(int job_index)
 {
-  if (iteratorRep) // envelope fwd to letter
-    iteratorRep->initialize_iterator(job_index);
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine initialize_iterator virtual "
-	 << "fn.\nNo default defined at base class." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
+  Cerr << "Error: letter class does not redefine initialize_iterator virtual "
+  << "fn.\nNo default defined at base class." << std::endl;
+  abort_handler(METHOD_ERROR);
 }
 
 
 void Iterator::pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index)
 {
-  if (iteratorRep) // envelope fwd to letter
-    iteratorRep->pack_parameters_buffer(send_buffer, job_index);
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine pack_parameters_buffer "
-	 << "virtual fn.\nNo default defined at base class." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
+  Cerr << "Error: letter class does not redefine pack_parameters_buffer "
+  << "virtual fn.\nNo default defined at base class." << std::endl;
+  abort_handler(METHOD_ERROR);
 }
 
 
 void Iterator::
 unpack_parameters_buffer(MPIUnpackBuffer& recv_buffer, int job_index)
 {
-  if (iteratorRep) // envelope fwd to letter
-    iteratorRep->unpack_parameters_buffer(recv_buffer, job_index);
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine unpack_parameters_buffer "
-	 << "virtual fn.\nNo default defined at base class." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
+  Cerr << "Error: letter class does not redefine unpack_parameters_buffer "
+  << "virtual fn.\nNo default defined at base class." << std::endl;
+  abort_handler(METHOD_ERROR);
 }
 
 
 void Iterator::
 unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer, int job_index)
 {
-  if (iteratorRep) // envelope fwd to letter
-    iteratorRep->unpack_parameters_initialize(recv_buffer, job_index);
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine unpack_parameters_initialize"
-	 << " virtual fn.\nNo default defined at base class." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
+  Cerr << "Error: letter class does not redefine unpack_parameters_initialize"
+  << " virtual fn.\nNo default defined at base class." << std::endl;
+  abort_handler(METHOD_ERROR);
 }
 
 
 void Iterator::pack_results_buffer(MPIPackBuffer& send_buffer, int job_index)
 {
-  if (iteratorRep) // envelope fwd to letter
-    iteratorRep->pack_results_buffer(send_buffer, job_index);
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine pack_results_buffer virtual "
-	 << "fn.\nNo default defined at base class." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
+  Cerr << "Error: letter class does not redefine pack_results_buffer virtual "
+  << "fn.\nNo default defined at base class." << std::endl;
+  abort_handler(METHOD_ERROR);
 }
 
 
 void Iterator::
 unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index)
 {
-  if (iteratorRep) // envelope fwd to letter
-    iteratorRep->unpack_results_buffer(recv_buffer, job_index);
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine unpack_results_buffer "
-	 << "virtual fn.\nNo default defined at base class." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
+  Cerr << "Error: letter class does not redefine unpack_results_buffer "
+  << "virtual fn.\nNo default defined at base class." << std::endl;
+  abort_handler(METHOD_ERROR);
 }
 
 
 void Iterator::update_local_results(int job_index)
 {
-  if (iteratorRep) // envelope fwd to letter
-    iteratorRep->update_local_results(job_index);
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine update_local_results "
-	 << "virtual  fn.\nNo default defined at base class." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
+  Cerr << "Error: letter class does not redefine update_local_results "
+  << "virtual  fn.\nNo default defined at base class." << std::endl;
+  abort_handler(METHOD_ERROR);
 }
 
 
 const Variables& Iterator::variables_results() const
 {
-  return (iteratorRep) ?
-    iteratorRep->variables_results() : // envelope fwd to letter
-    bestVariablesArray.front(); // default implementation if no override
+  return bestVariablesArray.front(); // default implementation if no override
 }
 
 const VariablesArray& Iterator::variables_array_results()
 {
-  return (iteratorRep) ?
-    iteratorRep->variables_array_results() : // envelope fwd to letter
-    bestVariablesArray; // default implementation if no override
+  return bestVariablesArray; // default implementation if no override
 }
 
 
 const Response& Iterator::response_results() const
 {
-  return (iteratorRep) ?
-    iteratorRep->response_results() : // envelope fwd to letter
-    bestResponseArray.front(); // default implementation if no override
+  return bestResponseArray.front(); // default implementation if no override
 }
 
 
 const ResponseArray& Iterator::response_array_results()
 {
-  return (iteratorRep) ?
-    iteratorRep->response_array_results() : // envelope fwd to letter
-    bestResponseArray; // default implementation if no override
+  return bestResponseArray; // default implementation if no override
 }
 
 
 void Iterator::response_results_active_set(const ActiveSet& set)
 {
-  if (iteratorRep)
-    iteratorRep->response_results_active_set(set); // envelope fwd to letter
-  else // default implementation if no override
-    bestResponseArray.front().active_set(set);
+  bestResponseArray.front().active_set(set);
 }
 
 
 const RealSymMatrix& Iterator::response_error_estimates() const
 {
-  // no default implementation if no override
-  if (!iteratorRep) {
-    Cerr << "Error: letter class does not redefine response_error_estimates "
+
+  Cerr << "Error: letter class does not redefine response_error_estimates "
 	 << "virtual fn.\nNo default defined at base class." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-  
-  return iteratorRep->response_error_estimates(); // envelope fwd to letter
+  abort_handler(METHOD_ERROR);
 }
 
 
 void Iterator::initial_point(const Variables& pt)
 {
-  if (iteratorRep) // envelope fwd to letter
-    iteratorRep->initial_point(pt);
-  else // default falls back to cv-only update
-    initial_point(pt.continuous_variables());
+  initial_point(pt.continuous_variables());
 }
 
 
 void Iterator::initial_point(const RealVector& pt)
 {
-  if (iteratorRep) // envelope fwd to letter
-    iteratorRep->initial_point(pt);
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine initial_point() virtual fn."
+
+  Cerr << "Error: letter class does not redefine initial_point() virtual fn."
 	 << "\n       No default defined at base class." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
+  abort_handler(METHOD_ERROR);
 }
 
 
 void Iterator::initial_points(const VariablesArray& pts)
 {
-  if (iteratorRep) // envelope fwd to letter
-    iteratorRep->initial_points(pts);
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine initial_points() virtual fn."
+  Cerr << "Error: letter class does not redefine initial_points() virtual fn."
 	 << "\n       No default defined at base class." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
+  abort_handler(METHOD_ERROR);
 }
 
 
 const VariablesArray& Iterator::initial_points() const
 {
-  if (!iteratorRep) { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine initial_points "
+  Cerr << "Error: letter class does not redefine initial_points "
             "virtual fn.\nNo default defined at base class." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  return iteratorRep->initial_points(); // envelope fwd to letter
+  abort_handler(METHOD_ERROR);
 }
 
 
@@ -1105,74 +1003,49 @@ update_callback_data(const RealVector& cv_initial,
 		     const RealVector& nln_ineq_ub,
 		     const RealVector& nln_eq_tgt)
 {
-  if (iteratorRep) // envelope fwd to letter
-    iteratorRep->
-      update_callback_data(cv_initial, cv_lower_bnds, cv_upper_bnds,
-			   lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub,
-			   lin_eq_coeffs, lin_eq_tgt, nln_ineq_lb,
-			   nln_ineq_ub, nln_eq_tgt);
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine update_callback_data() "
+  Cerr << "Error: letter class does not redefine update_callback_data() "
 	 << "virtual fn.\n       No default defined at base class."<< std::endl;
-    abort_handler(METHOD_ERROR);
-  }
+  abort_handler(METHOD_ERROR);
 }
 
 
 const RealMatrix& Iterator::callback_linear_ineq_coefficients() const
 {
-  if (!iteratorRep) { // envelope fwd to letter
-    Cerr << "Error: letter class does not redefine callback_linear_ineq_"
+  Cerr << "Error: letter class does not redefine callback_linear_ineq_"
 	 << "coefficients() virtual fn.\n       No default defined at base "
 	 << "class." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  return iteratorRep->callback_linear_ineq_coefficients();
+  abort_handler(METHOD_ERROR);
 }
 
 
 const RealVector& Iterator::callback_linear_ineq_lower_bounds() const
 {
-  if (!iteratorRep) { // envelope fwd to letter
-    Cerr << "Error: letter class does not redefine callback_linear_ineq_"
+  Cerr << "Error: letter class does not redefine callback_linear_ineq_"
 	 << "lower_bounds() virtual fn.\n       No default defined at base "
 	 << "class." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  return iteratorRep->callback_linear_ineq_lower_bounds();
+  abort_handler(METHOD_ERROR);
 }
 
 
 const RealVector& Iterator::callback_linear_ineq_upper_bounds() const
 {
-  if (!iteratorRep) { // envelope fwd to letter
-    Cerr << "Error: letter class does not redefine callback_linear_ineq_"
+
+  Cerr << "Error: letter class does not redefine callback_linear_ineq_"
 	 << "upper_bounds() virtual fn.\n       No default defined at base "
 	 << "class." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  return iteratorRep->callback_linear_ineq_upper_bounds();
+  abort_handler(METHOD_ERROR);
 }
 
 
 bool Iterator::accepts_multiple_points() const
 {
-  if (iteratorRep) // envelope fwd to letter
-    return iteratorRep->accepts_multiple_points();
-  else // default for letter lacking virtual fn redefinition
-    return false;
+  return false;
 }
 
 
 bool Iterator::returns_multiple_points() const
 {
-  if (iteratorRep) // envelope fwd to letter
-    return iteratorRep->returns_multiple_points();
-  else // default for letter lacking virtual fn redefinition
-    return false;
+  return false;
 }
 
 
@@ -1228,86 +1101,60 @@ void Iterator::initialize_graphics(int iterator_server_id)
     outputs beyond the function evaluation summary printed in finalize_run(). */
 void Iterator::print_results(std::ostream& s, short results_state)
 {
-  if (iteratorRep)
-    iteratorRep->print_results(s, results_state); // envelope fwd to letter
-  // else default base class output is nothing additional beyond the fn
-  // evaluation summary printed in finalize_run()
+  // no op
 }
 
 
 size_t Iterator::num_samples() const
 {
-  if (iteratorRep) // envelope fwd to letter
-    return iteratorRep->num_samples();
-  else  // default for Minimizers / MetaIterators
-    return 0;
+  return 0;
 }
 
 
 void Iterator::
 sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag)
 {
-  if (iteratorRep) // envelope fwd to letter
-    iteratorRep->sampling_reset(min_samples, all_data_flag, stats_flag);
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine sampling_reset() virtual "
+  Cerr << "Error: letter class does not redefine sampling_reset() virtual "
          << "fn.\nThis iterator does not support sampling." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
+  abort_handler(METHOD_ERROR);
 }
 
 
 void Iterator::sampling_reference(size_t samples_ref)
 {
-  if (iteratorRep) // envelope fwd to letter
-    iteratorRep->sampling_reference(samples_ref);
-  // else no-op: iterator does not employ a sampling reference (lower bound)
+  // no op
 }
 
 
 void Iterator::sampling_increment()
 {
-  if (iteratorRep) // envelope fwd to letter
-    iteratorRep->sampling_increment();
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine sampling_increment() "
+  Cerr << "Error: letter class does not redefine sampling_increment() "
 	 << "virtual fn.\nThis iterator does not support incremental sampling."
 	 << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
+  abort_handler(METHOD_ERROR);
 }
 
 
 void Iterator::random_seed(int seed)
 {
-  if (iteratorRep) // envelope fwd to letter
-    iteratorRep->random_seed(seed);
-  // else no-op (don't require support from all Iterators that could be called)
+  // no op
 }
 
 
 unsigned short Iterator::sampling_scheme() const
 {
-  if (!iteratorRep) { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine sampling_scheme() virtual "
+  Cerr << "Error: letter class does not redefine sampling_scheme() virtual "
          << "fn.\nThis iterator does not support sampling." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  return iteratorRep->sampling_scheme(); // envelope fwd to letter
+  abort_handler(METHOD_ERROR);
 }
 
 
 std::shared_ptr<Model> Iterator::algorithm_space_model()
 {
-  if (!iteratorRep) { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine algorithm_space_model() "
+  Cerr << "Error: letter class does not redefine algorithm_space_model() "
          << "virtual fn.\nThis iterator does not support a single model "
 	 << "instance." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  return iteratorRep->algorithm_space_model();
+  abort_handler(METHOD_ERROR);
 }
 
 
@@ -1321,81 +1168,58 @@ std::shared_ptr<Model> Iterator::algorithm_space_model()
     iteration) is performed. */
 void Iterator::check_sub_iterator_conflict()
 {
-  if (iteratorRep) // envelope fwd to letter
-    iteratorRep->check_sub_iterator_conflict();
-  // else default is no-op
+  // no op
 }
 
 
 unsigned short Iterator::uses_method() const
 {
-  if (iteratorRep) // envelope fwd to letter
-    return iteratorRep->uses_method();
-  else // default definition (letter lacking redefinition of virtual fn.)
-    return SUBMETHOD_NONE; // no enabling iterator for this iterator
+  return SUBMETHOD_NONE; // no enabling iterator for this iterator
 }
 
 
 void Iterator::method_recourse(unsigned short method_name)
 {
-  if (iteratorRep) // envelope fwd to letter
-    iteratorRep->method_recourse(method_name);
-  else { // default definition (letter lacking redefinition of virtual fn.)
-    Cerr << "Error: no method recourse defined for detected method conflict.\n"
+  Cerr << "Error: no method recourse defined for detected method conflict.\n"
 	 << "       Please revise method selections." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
+  abort_handler(METHOD_ERROR);
 }
 
 
 const VariablesArray& Iterator::all_variables()
 {
-  if (!iteratorRep) { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: letter class does not redefine all_variables() virtual fn."
+  Cerr << "Error: letter class does not redefine all_variables() virtual fn."
          << "\n       This iterator does not support variables histories."
 	 << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  return iteratorRep->all_variables(); // envelope fwd to letter
+  abort_handler(METHOD_ERROR);
 }
 
 
 const RealMatrix& Iterator::all_samples()
 {
-  if (!iteratorRep) { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: letter class does not redefine all_samples() virtual fn."
+  Cerr << "Error: letter class does not redefine all_samples() virtual fn."
          << "\n       This iterator does not support sample histories."
 	 << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  return iteratorRep->all_samples(); // envelope fwd to letter
+  abort_handler(METHOD_ERROR);
 }
 
 
 const IntResponseMap& Iterator::all_responses() const
 {
-  if (!iteratorRep) { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: letter class does not redefine all_responses() virtual fn."
+  Cerr << "Error: letter class does not redefine all_responses() virtual fn."
          << "\n       This iterator does not support response histories."
 	 << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  return iteratorRep->all_responses(); // envelope fwd to letter
+  abort_handler(METHOD_ERROR);
 }
 
 
 bool Iterator::compact_mode() const
-{ return (iteratorRep) ? iteratorRep->compact_mode() : false; }
+{ return false; }
 
 
 IntIntPair Iterator::estimate_partition_bounds()
 {
-  return (iteratorRep) ?
-    iteratorRep->estimate_partition_bounds() : // MetaIterators
-    iteratedModel->estimate_partition_bounds(maxEvalConcurrency); // default defn
+  return iteratedModel->estimate_partition_bounds(maxEvalConcurrency); // default defn
 }
 
 
@@ -1404,13 +1228,9 @@ void Iterator::sub_iterator_flag(bool si_flag)
   // Implementation in .cpp due to need for DataMethod.hpp
   // If outputLevel were to change after call to this function, would
   // need to recheck/set status of summaryOyutputFlag
-  if (iteratorRep)
-    iteratorRep->sub_iterator_flag(si_flag);
-  else {
-    subIteratorFlag = si_flag;
-    // enable summary output for verbose sub-iterators
-    summaryOutputFlag = (subIteratorFlag && outputLevel > NORMAL_OUTPUT);
-  }
+  subIteratorFlag = si_flag;
+  // enable summary output for verbose sub-iterators
+  summaryOutputFlag = (subIteratorFlag && outputLevel > NORMAL_OUTPUT);
 }
 
 
@@ -1424,12 +1244,7 @@ nested_variable_mappings(const SizetArray& c_index1,
 			 const ShortArray& ds_target2,
 			 const ShortArray& dr_target2)
 {
-  if (iteratorRep)
-    iteratorRep->
-      nested_variable_mappings(c_index1,  di_index1,  ds_index1,  dr_index1,
-			       c_target2, di_target2, ds_target2, dr_target2);
-  else // default implementation: pass along to Model hierarchy
-    iteratedModel->nested_variable_mappings(c_index1,  di_index1,  ds_index1,
+  iteratedModel->nested_variable_mappings(c_index1,  di_index1,  ds_index1,
 					   dr_index1, c_target2, di_target2,
 					   ds_target2, dr_target2);
 }
@@ -1438,10 +1253,7 @@ void Iterator::
 nested_response_mappings(const RealMatrix& primary_coeffs,
 			 const RealMatrix& secondary_coeffs)
 {
-  if (iteratorRep)
-    iteratorRep->nested_response_mappings(primary_coeffs, secondary_coeffs);
-  //else (not implemented currently within Model hierarchy)
-  //  iteratedModel.nested_response_mappings(primary_coeffs, secondary_coeffs)
+  // no op
 }
 
 StrStrSizet Iterator::run_identifier() const
@@ -1454,32 +1266,25 @@ StrStrSizet Iterator::run_identifier() const
 //void Iterator::pre_output(const String& filename)
 void Iterator::pre_output()
 {
-  if (iteratorRep)
-    iteratorRep->pre_output();
-  else {
-    // distinguish between defaulted pre-run and user-specified
-    if (!parallelLib.command_line_user_modes())
-      return;
+  // distinguish between defaulted pre-run and user-specified
+  if (!parallelLib.command_line_user_modes())
+    return;
 
-    const String& filename = parallelLib.command_line_pre_run_output();
-    if (filename.empty()) {
-      if (outputLevel > QUIET_OUTPUT)
-	Cout << "\nPre-run phase complete: no output requested.\n" << std::endl;
-      return;
-    }
-
-    Cerr << "Error: letter class does not redefine pre_output() virtual fn."
-	 << "\n        This iterator does not support pre-run output."
-	 << std::endl;
+  const String& filename = parallelLib.command_line_pre_run_output();
+  if (filename.empty()) {
+    if (outputLevel > QUIET_OUTPUT)
+      Cout << "\nPre-run phase complete: no output requested.\n" << std::endl;
+    return;
   }
+
+  Cerr << "Error: letter class does not redefine pre_output() virtual fn."
+    << "\n        This iterator does not support pre-run output."
+    << std::endl;
 }
 
 
 void Iterator::post_input()
 {
-  if (iteratorRep)
-    iteratorRep->post_input(); // envelope fwd to letter
-  else {
     // distinguish between defaulted post-run and user-specified
     if (!parallelLib.command_line_user_modes())
       return;
@@ -1487,16 +1292,15 @@ void Iterator::post_input()
     const String& filename = parallelLib.command_line_post_run_input();
     if (outputLevel > QUIET_OUTPUT) {
       if (filename.empty())
-	Cout << "\nPost-run phase initialized: no input requested.\n"
-	     << std::endl;
+	      Cout << "\nPost-run phase initialized: no input requested.\n"
+	        << std::endl;
       else {
-	// this should be unreachable due to command-line parsing
-	Cerr << "\nError: method " << method_enum_to_string(methodName)
-	     << " does not support post-run file input." << std::endl;
-	abort_handler(METHOD_ERROR);
+	      // this should be unreachable due to command-line parsing
+	      Cerr << "\nError: method " << method_enum_to_string(methodName)
+	      << " does not support post-run file input." << std::endl;
+	      abort_handler(METHOD_ERROR);
       }
     }
-  }
 }
 
 /** This prepend may need to become a virtual function if the tagging
@@ -1504,10 +1308,7 @@ void Iterator::post_input()
     Iterator may contain. */
 void Iterator::eval_tag_prefix(const String& eval_id_str)
 {
-  if (iteratorRep)
-    iteratorRep->eval_tag_prefix(eval_id_str);
-  else
-    iteratedModel->eval_tag_prefix(eval_id_str);
+  iteratedModel->eval_tag_prefix(eval_id_str);
 }
 
 /** Rationale: The parser allows multiple user-specified methods with
