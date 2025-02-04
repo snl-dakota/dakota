@@ -48,7 +48,14 @@ protected:
   //- Heading: New virtual functions
   //
 
+  /// return the amount of budget available for optimal allocation, generally
+  /// maxFunctionEvals minus any sunk cost for inactive groups/models
+  virtual Real available_budget() const;
+
+  /// return the scalar optimization metric (objective or constraint)
+  /// defined from the QoI-vector of estimator variances
   virtual Real estimator_accuracy_metric() const = 0;
+
   virtual void print_multimodel_summary(std::ostream& s,
     const String& summary_type, bool projections);
   virtual void print_multigroup_summary(std::ostream& s,
@@ -286,6 +293,14 @@ private:
   /// cache state of seed sequence for use in seed_updated()
   size_t seedIndex;
 };
+
+
+/** If a model or group is rendered inactive for an online approach
+    (pilot included within total budget), then any online pilot cost
+    for inactive models/groups needs to be deducted from the total
+    budget available for the optimization over active models/groups. */
+inline Real NonDEnsembleSampling::available_budget() const
+{ return (Real)maxFunctionEvals; } // default (no runtime model/group selection)
 
 
 inline void NonDEnsembleSampling::

@@ -48,6 +48,7 @@ protected:
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
+  Real available_budget() const override;
   void estimator_variances(const RealVector& cd_vars,
 			   RealVector& est_var) override;
   Real estimator_variance_metric(const RealVector& cd_vars) override;
@@ -373,6 +374,48 @@ all_to_active_group(size_t all_index) const
 	++cntr;
     return cntr;
   }
+}
+
+
+inline Real NonDMultilevBLUESampling::available_budget() const
+{
+  bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
+		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
+  Real budget = (Real)maxFunctionEvals;
+  if (offline) return budget;
+
+  // deduct accumulated cost for inactive models (shared pilot sampling) or
+  // inactive groups (independent pilot sampling)
+
+  // *** TO DO: review shared to independent workflow ***
+  // *** TO DO: review SHARED_PILOT case below        ***
+
+  Real cost_H = sequenceCost[numApprox];
+  switch (pilotGroupSampling) {
+  case INDEPENDENT_PILOT: // budget deductions are group-based
+    if (!retainedModelGroups.empty())
+      for (size_t g=0; g<numGroups; ++g)
+	if (!retainedModelGroups[g])
+	  budget -= NGroupAlloc[g] * modelGroupCost[g] / cost_H;
+    break;
+  case SHARED_PILOT:
+    // budget deductions are model-based (deduct shared pilot cost for an
+    // approx model iff all groups containing this model are discarded)
+    // > prune_model_groups() currently enforces retention of all_group for
+    //   the case of SHARED_PILOT (logic: disproportionate investment), so
+    //   all models are retained in this case.
+    // > Note: it would be possible to reassign the shared pilot investment
+    //   to a different retained group if models would otherwise be discarded.
+    if (!retainedModels.empty()) {
+      size_t m, all_group = numGroups - 1, shared_samp = NGroupAlloc[all_group];
+      for (m=0; m<=numApprox; ++m)
+	if (!retainedModels[m])
+	  budget -= shared_samp * sequenceCost[m] / cost_H;
+    }
+    break;
+  }
+
+  return budget;
 }
 
 

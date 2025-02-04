@@ -1611,9 +1611,9 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
   RealVector hf_targets(num_hf_lev), agg_var_hf(num_hf_lev),
     hf_cost = truth_model.solution_level_costs(),
     lf_cost =  surr_model.solution_level_costs();
-  Real eps_sq_div_2, sum_sqrt_var_cost, agg_estvar_iter0 = 0., budget, r_lq,
-    lf_lev_cost, hf_lev_cost, hf_ref_cost = hf_cost.back();
-  if (budget_constrained) budget = (Real)maxFunctionEvals * hf_ref_cost;
+  Real eps_sq_div_2, sum_sqrt_var_cost, agg_estvar_iter0 = 0., budget_cost,
+    r_lq, lf_lev_cost, hf_lev_cost, hf_ref_cost = hf_cost.back();
+  if (budget_constrained) budget_cost = available_budget() * hf_ref_cost;
   RealVectorArray eval_ratios(num_cv_lev);
   // For moment estimation, we accumulate telescoping sums for Q^i using
   // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).
@@ -1753,7 +1753,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
     // update sample targets based on variance estimates
     // Note: sum_sqrt_var_cost is defined differently for the two cases
     Real fact = (budget_constrained) ?
-      budget / sum_sqrt_var_cost :      // budget constraint
+      budget_cost / sum_sqrt_var_cost : // budget constraint
       sum_sqrt_var_cost / eps_sq_div_2; // error balance constraint
     for (lev=0; lev<num_hf_lev; ++lev) {
       hf_lev_cost = level_cost(hf_cost, lev);

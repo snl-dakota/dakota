@@ -1004,7 +1004,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   // > ACV-IS is unconstrained in model order --> retain N_i > N
 
   size_t i, num_cdv = x0.length(), approx;
-  Real cost_H = sequenceCost[numApprox], budget = (Real)maxFunctionEvals;
+  Real cost_H = sequenceCost[numApprox], budget = available_budget();
 
   // minimizer-specific updates (x bounds) performed in finite_solution_bounds()
   x_ub = DBL_MAX; // no upper bounds needed for x
@@ -1161,10 +1161,10 @@ finite_solution_bounds(const RealVector& x0, RealVector& x_lb, RealVector& x_ub)
       // target accuracy via MC: varH[q] / tgt = tol * estvar0[q]; for minimizer
       // sequencing, a downstream refinement can omit this approximated bound
       RealVector hf_targets;  apply_mc_reference(hf_targets);
-      budget = average(hf_targets);     break;
+      budget = average(hf_targets); break;
     }
     default:
-      budget = (Real)maxFunctionEvals;  break;
+      budget = available_budget();  break;
     }
 
     // "budget_exhausted" logic protects numerical solutions for budget-
@@ -1677,7 +1677,7 @@ minimizer_results_to_solution_data(const RealVector& cv_star,
       // > can also under-relax the budget allocation to enable additional N_H
       //   increments + associated shared sample sets to refine shared stats.
       hf_target = allocate_budget(avg_eval_ratios, sequenceCost);
-      Cout << "Scaling profile for maxFunctionEvals = " << maxFunctionEvals
+      Cout << "Scaling profile for budget = " << available_budget()
 	   << ": HF target = " << hf_target << std::endl;
     }
     else { //if (convergenceTol != -DBL_MAX) { // *** TO DO: detect user spec
@@ -1825,7 +1825,7 @@ nh_penalty_merit(const RealVector& cd_vars, const RealVector& fn_vals)
   // Assume linear constraints are satisfied (for now)
   // Keep accuracy in log space and normalize both cost and log-accuracy
 
-  Real budget = (Real)maxFunctionEvals;
+  Real budget = available_budget();
   switch (optSubProblemForm) {
   case N_MODEL_LINEAR_OBJECTIVE:  case N_GROUP_LINEAR_OBJECTIVE:
     return nh_penalty_merit(fn_vals[0], fn_vals[1],
@@ -1867,7 +1867,7 @@ Real NonDNonHierarchSampling::nh_penalty_merit(const MFSolutionData& soln)
     break;
   default:
     return nh_penalty_merit(std::log(estvar_metric), equiv_hf_alloc,
-			    (Real)maxFunctionEvals);
+			    available_budget());
     break;
   }
 }
@@ -2213,7 +2213,7 @@ Real NonDNonHierarchSampling::direct_penalty_merit(const RealVector& cd_vars)
         direct_min.callback_linear_ineq_upper_bounds());
   bool protect_numerics = (lin_ineq_viol > 0.); // RATIO_NUDGE reflected in viol
   Real obj, constr, constr_u_bnd,
-    budget = (Real)nonHierSampInstance->maxFunctionEvals, log_metric;
+    budget = nonHierSampInstance->available_budget(), log_metric;
   if (protect_numerics) {
     //const RealVector& estvar0 = nonHierSampInstance->estVarIter0;
     log_metric = //(estvar0.empty()) ? // offline modes

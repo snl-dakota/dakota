@@ -798,44 +798,12 @@ specify_linear_constraints(RealVector& lin_ineq_lb, RealVector& lin_ineq_ub,
   case N_GROUP_LINEAR_CONSTRAINT: { // linear inequality constraint on budget:
     // \Sum_grp_i w_grp_i        N_grp_i <= equiv_HF * w_HF
     // \Sum_grp_i w_grp_i / w_HF N_grp_i <= equivHF
-    Real cost_H = sequenceCost[numApprox], budget = (Real)maxFunctionEvals;
-    size_t g, v, num_v = num_active_groups();
-    bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
-		    pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
-    // deduct accumulated cost for inactive models (shared pilot sampling) or
-    // inactive groups (independent pilot sampling)
-
-    // *** TO DO: review shared to independent workflow ***
-
-    switch (pilotGroupSampling) {
-    case INDEPENDENT_PILOT: // budget deductions are group-based
-      if (!offline && !retainedModelGroups.empty())
-	for (g=0; g<numGroups; ++g)
-	  if (!retainedModelGroups[g])
-	    budget -= NGroupAlloc[g] * modelGroupCost[g] / cost_H;
-      break;
-    case SHARED_PILOT:
-      // budget deductions are model-based (deduct shared pilot cost for an
-      // approx model iff all groups containing this model are discarded)
-      // > prune_model_groups() currently enforces retention of all_group for
-      //   the case of SHARED_PILOT (logic: disproportionate investment), so
-      //   all models are retained in this case.
-      // > Note: it would be possible to reassign the shared pilot investment
-      //   to a different retained group if models would otherwise be discarded.
-      if (!offline && !retainedModels.empty()) {
-	size_t m, all_group = numGroups - 1,
-	     shared_samp = NGroupAlloc[all_group];
-	for (m=0; m<=numApprox; ++m)
-	  if (!retainedModels[m])
-	    budget -= shared_samp * sequenceCost[m] / cost_H;
-      }
-      break;
-    }
-
-    size_t lin_offset = (pilotMgmtMode == OFFLINE_PILOT ||
-			 pilotMgmtMode == OFFLINE_PILOT_PROJECTION) ? 1 : 0;
+    size_t g, v, num_v = num_active_groups(), lin_offset
+      = (pilotMgmtMode == OFFLINE_PILOT ||
+	 pilotMgmtMode == OFFLINE_PILOT_PROJECTION) ? 1 : 0;
     lin_ineq_lb[lin_offset] = -DBL_MAX; // no lb
-    lin_ineq_ub[lin_offset] = budget;
+    lin_ineq_ub[lin_offset] = available_budget();
+    Real cost_H = sequenceCost[numApprox];
     for (v=0; v<num_v; ++v) {
       g = active_to_all_group(v);
       lin_ineq_coeffs(lin_offset, v) = modelGroupCost[g] / cost_H;

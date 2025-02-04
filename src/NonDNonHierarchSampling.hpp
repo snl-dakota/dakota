@@ -1681,7 +1681,10 @@ allocate_budget(const RealVector& avg_eval_ratios, const RealVector& cost,
 
 inline Real NonDNonHierarchSampling::
 allocate_budget(const RealVector& avg_eval_ratios, const RealVector& cost)
-{ return allocate_budget(avg_eval_ratios, cost, (Real)maxFunctionEvals); }
+{
+  Real budget = available_budget();
+  return allocate_budget(avg_eval_ratios, cost, budget);
+}
 
 
 inline Real NonDNonHierarchSampling::
@@ -1704,8 +1707,8 @@ inline Real NonDNonHierarchSampling::
 allocate_budget(const UShortArray& approx_set,
 		const RealVector& avg_eval_ratios, const RealVector& cost)
 {
-  return allocate_budget(approx_set, avg_eval_ratios, cost,
-			 (Real)maxFunctionEvals);
+  Real budget = available_budget();
+  return allocate_budget(approx_set, avg_eval_ratios, cost, budget);
 }
 
 

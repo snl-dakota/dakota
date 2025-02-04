@@ -48,6 +48,8 @@ protected:
   //void print_results(std::ostream& s,
   //                   short results_state = FINAL_RESULTS) override;
 
+  Real available_budget() const override;
+
   void numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
 				 size_t& num_nln_con) override;
   void numerical_solution_bounds_constraints(const MFSolutionData& soln,
@@ -300,6 +302,27 @@ private:
   /// used for warm starting
   std::map<std::pair<UShortArray, UShortArray>, MFSolutionData> dagSolns;
 };
+
+
+inline Real NonDGenACVSampling::available_budget() const
+{
+  bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
+		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
+  const UShortArray& approx_set = activeModelSetIter->first;
+  size_t num_approx = approx_set.size();
+  Real budget = (Real)maxFunctionEvals;
+  if (!offline && num_approx != numApprox) {
+    size_t hf_form_index, hf_lev_index, cntr = 0;
+    hf_indices(hf_form_index, hf_lev_index);
+    size_t N_H_alloc = NLevAlloc[hf_form_index][hf_lev_index];
+    Real cost_H = sequenceCost[numApprox];
+    for (size_t approx=0; approx<numApprox; ++approx)
+      if  (approx == approx_set[cntr]) ++cntr; // ordered sequence
+      else budget -= N_H_alloc * sequenceCost[approx] / cost_H;
+  }
+
+  return budget;
+}
 
 
 inline size_t NonDGenACVSampling::num_approximations() const
