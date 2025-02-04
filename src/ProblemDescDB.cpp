@@ -16,6 +16,7 @@
 //- Checked by:
 
 #include "dakota_system_defs.hpp"
+#include "iterator_utils.hpp"
 #include "model_utils.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
@@ -966,8 +967,7 @@ std::shared_ptr<Iterator> ProblemDescDB::get_iterator()
     = std::find_if(dbRep->iteratorList.begin(), dbRep->iteratorList.end(),
                   [&id_method](std::shared_ptr<Iterator> iter) {return iter->method_id() == id_method;});
   if (i_it == dbRep->iteratorList.end()) {
-    std::shared_ptr<Iterator> new_iterator = std::make_shared(*this);
-    dbRep->iteratorList.push_back(new_iterator);
+    dbRep->iteratorList.push_back(IteratorUtils::get_iterator(*this));
     i_it = --dbRep->iteratorList.end();
   }
   return *i_it;
@@ -993,15 +993,13 @@ std::shared_ptr<Iterator> ProblemDescDB::get_iterator(std::shared_ptr<Model> mod
 
   // if Iterator does not already exist, then create it
   if (i_it == dbRep->iteratorList.end()) {
-    auto new_iterator = std::make_shared(*this, model);
-    dbRep->iteratorList.push_back(new_iterator);
+    dbRep->iteratorList.push_back(IteratorUtils::get_iterator(*this, model));
     i_it = --dbRep->iteratorList.end();
   }
   // idMethod already exists, but check for same model.  If !same, instantiate
   // new rather than update (i_it->iterated_model(model)) all shared instances.
   else if (model != i_it->iterated_model()) {
-    auto new_iterator = std::make_shared(*this, model);
-    dbRep->iteratorList.push_back(new_iterator);
+    dbRep->iteratorList.push_back(IteratorUtils::get_iterator(*this, model));
     i_it = --dbRep->iteratorList.end();
   }
   return *i_it;
@@ -1025,15 +1023,13 @@ get_iterator(const String& method_name, std::shared_ptr<Model> model)
                   [&method_name](std::shared_ptr<Iterator> iter) {return iter->method_string() == method_name;});
   // if Iterator does not already exist, then create it
   if (i_it == dbRep->iteratorByNameList.end()) {
-    auto new_iterator = std::make_shared(method_name, model);
-    dbRep->iteratorByNameList.push_back(new_iterator);
+    dbRep->iteratorByNameList.push_back(IteratorUtils::get_iterator(method_name, model));
     i_it = --dbRep->iteratorByNameList.end();
   }
   // method_name already exists, but check for same model. If !same, instantiate
   // new rather than update (i_it->iterated_model(model)) all shared instances.
   else if (model != i_it->iterated_model()) {
-    auto new_iterator = std::make_shared(method_name, model);
-    dbRep->iteratorByNameList.push_back(new_iterator);
+    dbRep->iteratorByNameList.push_back(IteratorUtils::get_iterator(method_name, model));
     i_it = --dbRep->iteratorByNameList.end();
   }
   return *i_it;
