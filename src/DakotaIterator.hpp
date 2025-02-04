@@ -355,10 +355,6 @@ public:
   /// function to check iteratorRep (does this envelope contain a letter?)
   bool is_null() const;
 
-  /// returns iteratorRep for access to derived class member functions
-  /// that are not mapped to the top Iterator level
-  std::shared_ptr<Iterator> iterator_rep() const;
-
   /// set the hierarchical eval ID tag prefix
   virtual void eval_tag_prefix(const String& eval_id_str);
 
@@ -571,193 +567,167 @@ private:
   /// time (set_communicators)
   std::map<size_t, ParConfigLIter> methodPCIterMap;
 
-  /// pointer to the letter (initialized only for the envelope)
-  std::shared_ptr<Iterator> iteratorRep;
-
 };
 
 
 inline std::shared_ptr<TraitsBase> Iterator::traits() const
 {
-    return (iteratorRep) ? iteratorRep->traits() : methodTraits;
+    return methodTraits;
 }
 
 
 inline void Iterator::parallel_configuration_iterator(ParConfigLIter pc_iter)
 {
-  if (iteratorRep) iteratorRep->methodPCIter = pc_iter;
-  else             methodPCIter = pc_iter;
+  methodPCIter = pc_iter;
 }
 
 
 inline ParConfigLIter Iterator::parallel_configuration_iterator() const
-{ return (iteratorRep) ? iteratorRep->methodPCIter : methodPCIter; }
+{ return methodPCIter; }
 
 
 inline void Iterator::
 parallel_configuration_iterator_map(std::map<size_t, ParConfigLIter> pci_map)
 {
-  if (iteratorRep) iteratorRep->methodPCIterMap = pci_map;
-  else             methodPCIterMap = pci_map;
+  methodPCIterMap = pci_map;
 }
 
 
 inline std::map<size_t, ParConfigLIter> Iterator::
 parallel_configuration_iterator_map() const
-{ return (iteratorRep) ? iteratorRep->methodPCIterMap : methodPCIterMap; }
+{ return methodPCIterMap; }
 
 
 inline void Iterator::iterated_model(std::shared_ptr<Model> model)
 {
-  if (iteratorRep) {
-    iteratorRep->iteratedModel = model;  }
-  else {
-    iteratedModel = model; 
-  }
+  iteratedModel = model; 
 }
 
 
 inline std::shared_ptr<Model> Iterator::iterated_model()
-{ return (iteratorRep) ? iteratorRep->iteratedModel : iteratedModel; }
+{ return iteratedModel; }
 
 
 inline ProblemDescDB& Iterator::problem_description_db() const
-{ return (iteratorRep) ? iteratorRep->probDescDB : probDescDB; }
+{ return probDescDB; }
 
 
 inline ParallelLibrary& Iterator::parallel_library() const
-{ return (iteratorRep) ? iteratorRep->parallelLib : parallelLib; }
+{ return parallelLib; }
 
 
 inline void Iterator::method_name(unsigned short m_name)
 {
-  if (iteratorRep) iteratorRep->methodName = m_name;
-  else             methodName = m_name;
+  methodName = m_name;
 }
 
 
 inline unsigned short Iterator::method_name() const
-{ return (iteratorRep) ? iteratorRep->methodName : methodName; }
+{ return methodName; }
 
 
 inline void Iterator::method_string(const String& m_str)
 {
-  if (iteratorRep) iteratorRep->methodName = method_string_to_enum(m_str);
-  else             methodName = method_string_to_enum(m_str);
+  methodName = method_string_to_enum(m_str);
 }
 
 
 inline String Iterator::method_string() const
 {
-  return (iteratorRep) ? iteratorRep->method_string() :
-    method_enum_to_string(methodName);
+  return method_enum_to_string(methodName);
 }
 
 
 inline const String& Iterator::method_id() const
-{ return (iteratorRep) ? iteratorRep->methodId : methodId; }
+{ return methodId; }
 
 
 inline int Iterator::maximum_evaluation_concurrency() const
-{ return (iteratorRep) ? iteratorRep->maxEvalConcurrency : maxEvalConcurrency; }
+{ return maxEvalConcurrency; }
 
 
 inline void Iterator::maximum_evaluation_concurrency(int max_conc)
 {
-  if (iteratorRep) iteratorRep->maxEvalConcurrency = max_conc;
-  else             maxEvalConcurrency = max_conc;
+  maxEvalConcurrency = max_conc;
 }
 
 
 inline size_t Iterator::maximum_iterations() const
-{ return (iteratorRep) ? iteratorRep->maxIterations : maxIterations; }
+{ return maxIterations; }
 
 
 inline void Iterator::maximum_iterations(size_t max_iter)
 {
-  if (iteratorRep) iteratorRep->maxIterations = max_iter;
-  else             maxIterations = max_iter;
+  maxIterations = max_iter;
 }
 
 
 inline void Iterator::convergence_tolerance(Real conv_tol)
 {
-  if (iteratorRep) iteratorRep->convergenceTol = conv_tol;
-  else             convergenceTol = conv_tol; 
+  convergenceTol = conv_tol; 
 }
 
 
 inline Real Iterator::convergence_tolerance() const
-{ return (iteratorRep) ? iteratorRep->convergenceTol : convergenceTol; }
+{ return convergenceTol; }
 
 
 inline void Iterator::output_level(short out_lev)
 {
-  if (iteratorRep) iteratorRep->outputLevel = out_lev;
-  else             outputLevel = out_lev; 
+  outputLevel = out_lev; 
 }
 
 
 inline short Iterator::output_level() const
-{ return (iteratorRep) ? iteratorRep->outputLevel : outputLevel; }
+{ return outputLevel; }
 
 
 inline void Iterator::summary_output(bool summary_output_flag)
 { 
-  if (iteratorRep) iteratorRep->summaryOutputFlag = summary_output_flag;
-  else             summaryOutputFlag = summary_output_flag; 
+  summaryOutputFlag = summary_output_flag; 
 }
 
 
 inline size_t Iterator::num_final_solutions() const
-{ return (iteratorRep) ? iteratorRep->numFinalSolutions : numFinalSolutions; }
+{ return numFinalSolutions; }
 
 
 inline void Iterator::num_final_solutions(size_t num_final)
 { 
-  if (iteratorRep) iteratorRep->numFinalSolutions = num_final;
-  else             numFinalSolutions = num_final;
+  numFinalSolutions = num_final;
 }
 
 
 inline void Iterator::active_set(const ActiveSet& set)
 {
-  if (iteratorRep) iteratorRep->activeSet = set;
-  else             activeSet = set;
+  activeSet = set;
 }
 
 
 inline const ActiveSet& Iterator::active_set() const
-{ return (iteratorRep) ? iteratorRep->activeSet : activeSet; }
+{ return activeSet; }
 
 
 inline void Iterator::active_set_request_vector(const ShortArray& asv)
 {
-  if (iteratorRep) iteratorRep->activeSet.request_vector(asv);
-  else             activeSet.request_vector(asv);
+  activeSet.request_vector(asv);
 }
 
 
 inline const ShortArray& Iterator::active_set_request_vector() const
 {
-  return (iteratorRep) ? iteratorRep->activeSet.request_vector()
-                       : activeSet.request_vector();
+  return activeSet.request_vector();
 }
 
 
 inline void Iterator::active_set_request_values(short asv_val)
 {
-  if (iteratorRep) iteratorRep->activeSet.request_values(asv_val);
-  else             activeSet.request_values(asv_val);
+  activeSet.request_values(asv_val);
 }
 
 
 inline bool Iterator::is_null() const
-{ return (iteratorRep) ? false : true; }
-
-
-inline std::shared_ptr<Iterator> Iterator::iterator_rep() const
-{ return iteratorRep; }
+{ return true; }
 
 
 /// global comparison function for Iterator
