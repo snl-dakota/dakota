@@ -144,7 +144,7 @@ typedef std::list<Interface>           InterfaceList;
 typedef std::list<Response>            ResponseList;
 typedef std::list<ParamResponsePair>   PRPList;
 typedef std::list<std::shared_ptr<Model>> ModelList;
-typedef std::list<Iterator>            IteratorList;
+typedef std::list<std::shared_ptr<Iterator>> IteratorList;
 //typedef std::list<ParallelLevel>         ParLevList;
 //typedef std::list<ParallelConfiguration> ParConfigList;
 

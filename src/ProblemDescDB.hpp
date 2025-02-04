@@ -426,13 +426,13 @@ private:
 
   /// retrieve an existing Iterator, if it exists in iteratorList, or
   /// instantiate a new one
-  const Iterator& get_iterator();
+  std::shared_ptr<Iterator> get_iterator();
   /// retrieve an existing Iterator, if it exists in iteratorList, or
   /// instantiate a new one
-  const Iterator& get_iterator(std::shared_ptr<Model> model);
+  std::shared_ptr<Iterator> get_iterator(std::shared_ptr<Model> model);
   /// retrieve an existing Iterator, if it exists in iteratorByNameList,
   /// or instantiate a new one
-  const Iterator& get_iterator(const String& method_name, std::shared_ptr<Model> model);
+  std::shared_ptr<Iterator> get_iterator(const String& method_name, std::shared_ptr<Model> model);
   /// retrieve an existing Model, if it exists, or instantiate a new one
   std::shared_ptr<Model> get_model();
   /// retrieve an existing Variables, if it exists, or instantiate a new one
