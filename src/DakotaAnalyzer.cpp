@@ -29,7 +29,7 @@ extern PRPCache data_pairs;
 
 Analyzer::
 Analyzer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  Iterator(BaseConstructor(), problem_db), compactMode(true),
+  Iterator(problem_db), compactMode(true),
   numObjFns(0), numLSqTerms(0), // default: no best data tracking
   vbdFlag(problem_db.get_bool("method.variance_based_decomp")),
   writePrecision(problem_db.get_int("environment.output_precision"))
@@ -62,7 +62,7 @@ Analyzer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
 
 Analyzer::
 Analyzer(unsigned short method_name, std::shared_ptr<Model> model):
-  Iterator(NoDBBaseConstructor(), method_name, model), compactMode(true),
+  Iterator(method_name, model), compactMode(true),
   numObjFns(0), numLSqTerms(0), // default: no best data tracking
   vbdFlag(false), vbdDropTol(-1.),
   writePrecision(0)
@@ -74,7 +74,7 @@ Analyzer(unsigned short method_name, std::shared_ptr<Model> model):
 Analyzer::
 Analyzer(unsigned short method_name, std::shared_ptr<Model> model,
 	 const ShortShortPair& view_override):
-  Iterator(NoDBBaseConstructor(), method_name, model), compactMode(true),
+  Iterator(method_name, model), compactMode(true),
   numObjFns(0), numLSqTerms(0), // default: no best data tracking
   writePrecision(0)
 {
@@ -85,7 +85,7 @@ Analyzer(unsigned short method_name, std::shared_ptr<Model> model,
 
 
 Analyzer::Analyzer(unsigned short method_name):
-  Iterator(NoDBBaseConstructor(), method_name), compactMode(true),
+  Iterator(method_name), compactMode(true),
   numObjFns(0), numLSqTerms(0), // default: no best data tracking
   writePrecision(0)
 {}

@@ -46,23 +46,6 @@ public:
   /// default constructor
   Iterator(std::shared_ptr<TraitsBase> traits =
 	   std::shared_ptr<TraitsBase>(new TraitsBase()) );
-  // BMA: Disabled unused ctor when deploying shared_ptr for iteratorRep
-  // alternate envelope constructor that assigns a representation pointer
-  //Iterator(std::shared_ptr<Iterator> iterator_rep, std::shared_ptr<TraitsBase> traits = std::shared_ptr<TraitsBase>(new TraitsBase()));
-  /// standard envelope constructor, which constructs its own model(s)
-  Iterator(ProblemDescDB& problem_db, std::shared_ptr<TraitsBase> traits =
-	   std::shared_ptr<TraitsBase>(new TraitsBase()));
-  /// alternate envelope constructor which uses the ProblemDescDB but
-  /// accepts a model from a higher level (meta-iterator) context,
-  /// instead of constructing its own
-  Iterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model,
-	   std::shared_ptr<TraitsBase> traits =
-	   std::shared_ptr<TraitsBase>(new TraitsBase()));
-  /// alternate envelope constructor for instantiations by name
-  /// without the ProblemDescDB
-  Iterator(const String& method_string, std::shared_ptr<Model> model,
-	   std::shared_ptr<TraitsBase> traits =
-	   std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// copy constructor
   Iterator(const Iterator& iterator);
 
@@ -408,22 +391,22 @@ protected:
   /// constructor initializes the base class part of letter classes
   /// (BaseConstructor overloading avoids infinite recursion in the
   /// derived class constructors - Coplien, p. 139)
-  Iterator(BaseConstructor, ProblemDescDB& problem_db,
+  Iterator(ProblemDescDB& problem_db,
 	   std::shared_ptr<TraitsBase> traits =
 	   std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// alternate constructor for base iterator classes constructed on the fly
-  Iterator(NoDBBaseConstructor, unsigned short method_name, std::shared_ptr<Model> model,
+  Iterator(unsigned short method_name, std::shared_ptr<Model> model,
 	   std::shared_ptr<TraitsBase> traits =
 	   std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// alternate constructor for base iterator classes constructed on the fly
-  Iterator(NoDBBaseConstructor, unsigned short method_name,
+  Iterator(unsigned short method_name,
 	   std::shared_ptr<TraitsBase> traits =
 	   std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// alternate envelope constructor for instantiations without ProblemDescDB
-  Iterator(NoDBBaseConstructor, std::shared_ptr<Model> model, size_t max_iter, size_t max_eval,
+  Iterator(std::shared_ptr<Model> model, size_t max_iter, size_t max_eval,
 	   Real conv_tol, std::shared_ptr<TraitsBase> traits =
 	   std::shared_ptr<TraitsBase>(new TraitsBase()));
 
@@ -555,16 +538,6 @@ private:
   //
   //- Heading: Member functions
   //
-
-  /// Used by the envelope to instantiate the correct letter class
-  std::shared_ptr<Iterator>
-  get_iterator(ProblemDescDB& problem_db);
-  /// Used by the envelope to instantiate the correct letter class
-  std::shared_ptr<Iterator>
-  get_iterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
-  /// Used by the envelope to instantiate the correct letter class
-  std::shared_ptr<Iterator>
-  get_iterator(const String& method_string, std::shared_ptr<Model> model);
 
   /// return the next available method ID for no-ID user methods
   static String user_auto_id();

@@ -155,7 +155,7 @@ size_t Iterator::noSpecIdNum = 0;
     the base class constructor calling get_iterator() again).  Since
     the letter IS the representation, its representation pointer is
     set to NULL */
-Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db,
+Iterator::Iterator(ProblemDescDB& problem_db,
 		   std::shared_ptr<TraitsBase> traits):
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
@@ -196,7 +196,6 @@ Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db,
 
   if (outputLevel >= VERBOSE_OUTPUT)
     Cout << "methodName = " << method_enum_to_string(methodName) << '\n';
-    // iteratorRep = get_iterator(problem_db);
 }
 
 
@@ -204,7 +203,7 @@ Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db,
     It is used for on-the-fly instantiations for which DB queries cannot be
     used, and is not used for construction of meta-iterators. */
 Iterator::
-Iterator(NoDBBaseConstructor, unsigned short method_name, std::shared_ptr<Model> model,
+Iterator(unsigned short method_name, std::shared_ptr<Model> model,
 	 std::shared_ptr<TraitsBase> traits):
   probDescDB(dummy_db), parallelLib(model->parallel_library()),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
@@ -226,7 +225,7 @@ Iterator(NoDBBaseConstructor, unsigned short method_name, std::shared_ptr<Model>
     meta-iterators.  It has no incoming model, so only sets up a
     minimal set of defaults. However, its use is preferable to the
     default constructor, which should remain as minimal as possible. */
-Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name,
+Iterator::Iterator(unsigned short method_name,
 		   std::shared_ptr<TraitsBase> traits):
   probDescDB(dummy_db), parallelLib(dummy_lib), 
   myModelLayers(0), methodName(method_name),
@@ -244,7 +243,7 @@ Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name,
     It is used for on-the-fly instantiations for which DB queries cannot be
     used, and is not used for construction of meta-iterators. */
 Iterator::
-Iterator(NoDBBaseConstructor, std::shared_ptr<Model> model, size_t max_iter, size_t max_eval,
+Iterator(std::shared_ptr<Model> model, size_t max_iter, size_t max_eval,
 	 Real conv_tol, std::shared_ptr<TraitsBase> traits):
   probDescDB(dummy_db), parallelLib(model->parallel_library()),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
@@ -287,23 +286,6 @@ Iterator::Iterator(std::shared_ptr<TraitsBase> traits):
 //{ /* empty ctor */ }
 
 
-/** Envelope constructor only needs to extract enough data to properly
-    execute get_iterator(), since letter holds the actual base class
-    data.  This version is used for top-level ProblemDescDB-driven
-    construction of all Iterators and MetaIterators, which construct
-    their own Model instances. */
-Iterator::Iterator(ProblemDescDB& problem_db,
-		   std::shared_ptr<TraitsBase> traits):
-  probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
-  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db),
-  methodTraits(traits),
-  iteratorRep(get_iterator(problem_db))
-{
-  if ( !iteratorRep ) // bad name or insufficient memory
-    abort_handler(METHOD_ERROR);
-}
-
-
 bool Iterator::resize()
 {
   // Update activeSet:
@@ -318,40 +300,6 @@ void Iterator::declare_sources() {
                                "iterator",
                                iterated_model()->model_id(),
                                iterated_model()->model_type());
-}
-
-/** Envelope constructor only needs to extract enough data to properly
-    execute get_iterator(), since letter holds the actual base class
-    data.  This version is used for ProblemDescDB-driven construction
-    of Iterators that are passed a Model from a higher-level context
-    (e.g., a MetaIterator instantiates its sub-iterator(s) by name
-    instead of pointer and passes in its iteratedModel, since these
-    sub-iterators lack their own model pointers). */
-Iterator::Iterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model, std::shared_ptr<TraitsBase> traits):
-  probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
-  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), methodTraits(traits),
-  // Set the rep pointer to the appropriate iterator type
-  iteratorRep(get_iterator(problem_db, model))
-{
-  if ( !iteratorRep ) // bad name or insufficient memory
-    abort_handler(METHOD_ERROR);
-}
-
-
-/** Used in sub-iterator instantiations within iterator constructors.
-    Envelope constructor only needs to extract enough data to properly
-    execute get_iterator(), since letter holds the actual base class
-    data.  This version is used for lightweight constructions without
-    the ProblemDescDB. */
-Iterator::Iterator(const String& method_string, std::shared_ptr<Model> model, std::shared_ptr<TraitsBase> traits):
-  probDescDB(model->problem_description_db()),
-  parallelLib(model->parallel_library()), resultsDB(iterator_results_db),
-  evaluationsDB(evaluation_store_db),  methodTraits(traits), 
-  // Set the rep pointer to the appropriate iterator type
-  iteratorRep(get_iterator(method_string, model))
-{
-  if ( !iteratorRep ) // bad name or insufficient memory
-    abort_handler(METHOD_ERROR);
 }
 
 /** Copy constructor manages sharing of iteratorRep. */
