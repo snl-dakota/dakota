@@ -547,7 +547,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 
 void NestedModel::declare_sources()
 {
-  evaluationsDB.declare_source(modelId, modelType, subIterator.method_id(),
+  evaluationsDB.declare_source(modelId, modelType, subIterator->method_id(),
     "iterator");
   if(!optionalInterface.is_null())
     evaluationsDB.declare_source(modelId, modelType,
@@ -580,7 +580,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 
   // initializations for subIteratorSched:
   // > incoming max_eval_concurrency is for concurrent execs of NestedModel,
-  //   which must be distinguished from eval concurrency within subIterator.
+  //   which must be distinguished from eval concurrency within subIterator->
   // > circular dependency between concurrent iterator partitioning and
   //   subIterator instantiation is managed as described in
   //   ConcurrentMetaIterator::init_communicators().
@@ -609,12 +609,12 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   probDescDB.set_db_model_nodes(model_index);
 
   // > now that subIterator is constructed, perform downstream updates
-  if (!subIterator.is_null()) {
+  if (subIterator) {
     init_sub_iterator(); // follow DB restore: extracts data from nested spec
     if (subIteratorSched.messagePass) {
       // msg lengths: vars from this model, set & final results from subIterator
       MPIPackBuffer buff; int eval_id = 0;
-      const Response& si_resp = subIterator.response_results();
+      const Response& si_resp = subIterator->response_results();
       buff << currentVariables << si_resp.active_set() << eval_id;
       int params_buff_len = buff.size(); buff.reset();
       buff << si_resp;
@@ -649,7 +649,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 	subIteratorSched.numIteratorServers) {
       ParLevLIter si_pl_iter
 	= modelPCIter->mi_parallel_level_iterator(mi_pl_index);
-      subIteratorSched.set_iterator(subIterator, si_pl_iter);
+      subIteratorSched.set_iterator(*subIterator, si_pl_iter);
     }
 
     // update asynchEvalFlag & evaluationCapacity based on subIteratorSched
@@ -682,7 +682,7 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 	subIteratorSched.numIteratorServers) {
       ParLevLIter si_pl_iter
 	= modelPCIter->mi_parallel_level_iterator(mi_pl_index);
-      subIteratorSched.free_iterator(subIterator, si_pl_iter);
+      subIteratorSched.free_iterator(*subIterator, si_pl_iter);
     }
     subIteratorSched.free_iterator_parallelism();
   }
@@ -692,12 +692,12 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 void NestedModel::init_sub_iterator()
 {
   // activates additional data processing options and manages output
-  subIterator.sub_iterator_flag(true);
+  subIterator->sub_iterator_flag(true);
   // passes data through to subModel via recursions layered by subIterator;
   // VarMaps are used by ProbabilityTransformModel, which generally appears
   // within these Model recursions (so can't call subModel here without
   // requiring inclusion in the update_from_sub_model() chain)
-  subIterator.nested_variable_mappings(active1ACVarMapIndices,
+  subIterator->nested_variable_mappings(active1ACVarMapIndices,
     active1ADIVarMapIndices, active1ADSVarMapIndices, active1ADRVarMapIndices,
     active2ACVarMapTargets,  active2ADIVarMapTargets, active2ADSVarMapTargets,
     active2ADRVarMapTargets);
@@ -725,7 +725,7 @@ void NestedModel::init_sub_iterator()
   size_t num_mapped_total = currentResponse.num_functions(),
     num_mapped_sec = num_mapped_ineq_con + num_mapped_eq_con,
     num_mapped_pri = num_mapped_total - num_mapped_sec;
-  numSubIterFns = subIterator.response_results().num_functions();
+  numSubIterFns = subIterator->response_results().num_functions();
 
   identityRespMap = probDescDB.get_bool("model.nested.identity_resp_map");
   const RealVector& primary_resp_coeffs
@@ -755,7 +755,7 @@ void NestedModel::init_sub_iterator()
         << " sub-method results.\n";
       if (outputLevel >= VERBOSE_OUTPUT)
 	Cerr << "Info: Sub-method returns these results:\n"
-	     << subIterator.response_results().function_labels() << "\n";
+	     << subIterator->response_results().function_labels() << "\n";
       else
 	Cerr << "Info: Re-run with 'output verbose' to list the sub-method "
 	     << "results.\n";
@@ -798,7 +798,7 @@ void NestedModel::init_sub_iterator()
            << " columns corresponding to the sub-method final results.\n";
       if (outputLevel >= VERBOSE_OUTPUT)
 	Cerr << "Info: Sub-method returns these results:\n"
-	     << subIterator.response_results().function_labels() << "\n";
+	     << subIterator->response_results().function_labels() << "\n";
       else
 	Cerr << "Info: Re-run with 'output verbose' to list the sub-method "
 	     << "results.\n";
@@ -823,7 +823,7 @@ void NestedModel::init_sub_iterator()
            << " columns corresponding to the sub-method final results.\n";
       if (outputLevel >= VERBOSE_OUTPUT)
 	Cerr << "Info: Sub-method returns these results:\n"
-	     << subIterator.response_results().function_labels() << "\n";
+	     << subIterator->response_results().function_labels() << "\n";
       else
 	Cerr << "Info: Re-run with 'output verbose' to list the sub-method "
 	     << "results.\n";
@@ -832,7 +832,7 @@ void NestedModel::init_sub_iterator()
     copy_data(secondary_resp_coeffs, secondaryRespCoeffs, 0,(int)numSubIterFns);
     subIterMappedSec = secondaryRespCoeffs.numRows();
   }
-  subIterator.nested_response_mappings(primaryRespCoeffs, secondaryRespCoeffs);
+  subIterator->nested_response_mappings(primaryRespCoeffs, secondaryRespCoeffs);
 }
 
 
@@ -1369,11 +1369,11 @@ void NestedModel::derived_evaluate(const ActiveSet& set)
 	 << "sub_iterator\n-------------------------------------------------\n";
     component_parallel_mode(SUB_MODEL_MODE);
     update_sub_model(currentVariables, userDefinedConstraints);
-    subIterator.response_results_active_set(sub_iterator_set);
+    subIterator->response_results_active_set(sub_iterator_set);
     if (hierarchicalTagging) {
       String eval_tag = evalTagPrefix + '.' +
 	std::to_string(nestedModelEvalCntr);
-      subIterator.eval_tag_prefix(eval_tag);
+      subIterator->eval_tag_prefix(eval_tag);
     }
 
     ParLevLIter pl_iter
@@ -1394,7 +1394,7 @@ void NestedModel::derived_evaluate(const ActiveSet& set)
       }
       // run_iterator() is used since we stop subModel servers for consistency
       // with fall through behavior of schedule_iterators()
-      subIteratorSched.run_iterator(subIterator, pl_iter);
+      subIteratorSched.run_iterator(*subIterator, pl_iter);
       if (subIteratorSched.iteratorScheduling == MASTER_SCHEDULING)
 	subIteratorSched.stop_iterator_servers();
 
@@ -1403,18 +1403,18 @@ void NestedModel::derived_evaluate(const ActiveSet& set)
 	 (2) peer static init/update bookkeeping is redundant of above/below.
       subIteratorSched.numIteratorJobs = 1;
       // can use shallow copy for queue of 1 job (avoids need to copy updated
-      // entry in subIteratorPRPQueue back to subIterator.response_results())
-      ParamResponsePair current_pair(currentVariables, subIterator.method_id(),
-				     subIterator.response_results(), 1, false);
+      // entry in subIteratorPRPQueue back to subIterator->response_results())
+      ParamResponsePair current_pair(currentVariables, subIterator->method_id(),
+				     subIterator->response_results(), 1, false);
       subIteratorPRPQueue.insert(current_pair);
       subIteratorSched.schedule_iterators(*this, subIterator);
       */
     }
     else // run_iterator() is not used since we don't stop subModel servers
          // until change in component_parallel_mode
-      subIterator.run(pl_iter);
+      subIterator->run(pl_iter);
 
-    const Response& sub_iter_resp = subIterator.response_results();
+    const Response& sub_iter_resp = subIterator->response_results();
     Cout << "\nActive response data from sub_iterator:\n"<< sub_iter_resp<<'\n';
     // map subIterator results into their contribution to currentResponse
     iterator_response_overlay(sub_iter_resp, currentResponse);
@@ -1484,9 +1484,9 @@ void NestedModel::derived_evaluate_nowait(const ActiveSet& set)
     // > simplest approach of tagging with nestedModelEvalCntr is sufficient,
     //   since we do not need to map from a set of eval ids returned from
     //   lower level bookkeeping
-    subIterator.response_results_active_set(sub_iterator_set);
-    ParamResponsePair current_pair(currentVariables, subIterator.method_id(),
-				   subIterator.response_results(),
+    subIterator->response_results_active_set(sub_iterator_set);
+    ParamResponsePair current_pair(currentVariables, subIterator->method_id(),
+				   subIterator->response_results(),
 				   nestedModelEvalCntr);
     subIteratorPRPQueue.insert(current_pair);
 
@@ -1536,7 +1536,7 @@ const IntResponseMap& NestedModel::derived_synchronize()
     // schedule subIteratorPRPQueue jobs
     component_parallel_mode(SUB_MODEL_MODE);
     subIteratorSched.numIteratorJobs = subIteratorPRPQueue.size();
-    subIteratorSched.schedule_iterators(*this, subIterator);
+    subIteratorSched.schedule_iterators(*this, *subIterator);
     // overlay response sets (no rekey or cache necessary)
     for (PRPQueueIter q_it=subIteratorPRPQueue.begin();
 	 q_it!=subIteratorPRPQueue.end(); ++q_it)
@@ -2082,12 +2082,12 @@ void NestedModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
     }
     else if (componentParallelMode == SUB_MODEL_MODE) {
       if (subIteratorSched.messagePass) // serve concurrent subIterator execs
-	subIteratorSched.schedule_iterators(*this, subIterator);
+	subIteratorSched.schedule_iterators(*this, *subIterator);
       else { // service the subModel for a single subIterator execution
 	ParLevLIter si_pl_iter // inner context
 	  = modelPCIter->mi_parallel_level_iterator(subIteratorSched.miPLIndex);
 	subModel->serve_run(si_pl_iter,
-			   subIterator.maximum_evaluation_concurrency());
+			   subIterator->maximum_evaluation_concurrency());
       }
     }
   }
