@@ -166,9 +166,9 @@ initialize_sub_problem(const String& approx_type, int samples, int seed,
   String rng; // empty string: use default
   bool vary_pattern = false;// for consistency across any outer loop invocations
 
-  Iterator dace_iterator;
-  dace_iterator.assign_rep(std::make_shared<NonDLHSSampling>(iteratedModel,
-    sample_type, samples, seed, rng, vary_pattern, ACTIVE_UNIFORM));
+  std::shared_ptr<Iterator> dace_iterator;
+  dace_iterator = std::make_shared<NonDLHSSampling>(iteratedModel,
+    sample_type, samples, seed, rng, vary_pattern, ACTIVE_UNIFORM);
   dace_iterator.active_set_request_values(dataOrder);
 
   // Construct f-hat (fHatModel) using a GP approximation for each response
@@ -198,8 +198,8 @@ initialize_sub_problem(const String& approx_type, int samples, int seed,
   size_t max_iter = 10000, max_eval = 50000;
   double min_box_size = 1.e-15, vol_box_size = 1.e-15;
 #ifdef HAVE_NCSU
-  approxSubProbMinimizer.assign_rep(std::make_shared<NCSUOptimizer>(
-    approxSubProbModel, max_iter, max_eval, min_box_size, vol_box_size));
+  approxSubProbMinimizer = std::make_shared<NCSUOptimizer>(
+    approxSubProbModel, max_iter, max_eval, min_box_size, vol_box_size);
 #else
   Cerr << "NCSU DIRECT is not available to optimize the GP subproblems. "
        << "Aborting process." << std::endl;
@@ -218,7 +218,7 @@ initialize_sub_problem(const String& approx_type, int samples, int seed,
   // IteratorScheduler::init_iterator().  A max of the local derivative
   // concurrency and the DACE concurrency is used for this purpose.
   maxEvalConcurrency = std::max(maxEvalConcurrency,
-				dace_iterator.maximum_evaluation_concurrency());
+				dace_iterator->maximum_evaluation_concurrency());
 }
 
 
@@ -404,10 +404,10 @@ construct_batch_acquisition(size_t new_acq, size_t new_batch)
 
     // execute GLOBAL search and retrieve results
     ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-    approxSubProbMinimizer.reset();
-    approxSubProbMinimizer.run(pl_iter); // maximize the EI acquisition fn
-    const Variables&   vars_star = approxSubProbMinimizer.variables_results();
-    const Response& ei_resp_star = approxSubProbMinimizer.response_results();
+    approxSubProbMinimizer->reset();
+    approxSubProbMinimizer->run(pl_iter); // maximize the EI acquisition fn
+    const Variables&   vars_star = approxSubProbMinimizer->variables_results();
+    const Response& ei_resp_star = approxSubProbMinimizer->response_results();
 
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "\nResults of EGO iteration:\nFinal point =\n" << vars_star
@@ -460,12 +460,12 @@ construct_batch_exploration(size_t new_expl, size_t new_batch)
     
     // execute GLOBAL search and retrieve results
     ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-    approxSubProbMinimizer.reset();
-    approxSubProbMinimizer.run(pl_iter); // maximize the posterior variance fn
-    const Variables& vars_star = approxSubProbMinimizer.variables_results();
+    approxSubProbMinimizer->reset();
+    approxSubProbMinimizer->run(pl_iter); // maximize the posterior variance fn
+    const Variables& vars_star = approxSubProbMinimizer->variables_results();
 
     if (outputLevel >= NORMAL_OUTPUT) {
-      const Response& pv_resp_star = approxSubProbMinimizer.response_results();
+      const Response& pv_resp_star = approxSubProbMinimizer->response_results();
       Real pv_star = -pv_resp_star.function_value(0);
       Cout << "\nResults of EGO iteration:\nFinal point =\n" << vars_star
 	   << "Prediction Variance     =\n                     "

@@ -102,7 +102,7 @@ approx_type_to_basis_type(const String& approx_type, short& basis_type)
 void SharedPecosApproxData::integration_iterator(const Iterator& iterator)
 {
   std::shared_ptr<NonDIntegration> integration_rep =
-    std::static_pointer_cast<NonDIntegration>(iterator.iterator_rep());
+    std::static_pointer_cast<NonDIntegration>(iterator);
   pecosSharedDataRep->integration_driver_rep(
     integration_rep->driver().driver_rep());
 }

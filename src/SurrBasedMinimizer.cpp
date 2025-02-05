@@ -128,9 +128,9 @@ void SurrBasedMinimizer::derived_init_communicators(ParLevLIter pl_iter)
          model_index  = probDescDB.get_db_model_node(); // for restoration
   // As in SurrBasedLocalMinimizer::initialize_sub_minimizer(), the SBLM
   // model_pointer is relevant and any sub-method model_pointer is ignored
-  probDescDB.set_db_method_node(approxSubProbMinimizer.method_id());
+  probDescDB.set_db_method_node(approxSubProbMinimizer->method_id());
   probDescDB.set_db_model_nodes(iteratedModel->model_id());
-  approxSubProbMinimizer.init_communicators(pl_iter);
+  approxSubProbMinimizer->init_communicators(pl_iter);
   probDescDB.set_db_method_node(method_index); // restore method only
   probDescDB.set_db_model_nodes(model_index);  // restore all model nodes
 }
@@ -144,14 +144,14 @@ void SurrBasedMinimizer::derived_set_communicators(ParLevLIter pl_iter)
   iteratedModel->set_communicators(pl_iter, maxEvalConcurrency);
 
   // set communicators for approxSubProbModel/iteratedModel
-  approxSubProbMinimizer.set_communicators(pl_iter);
+  approxSubProbMinimizer->set_communicators(pl_iter);
 }
 
 
 void SurrBasedMinimizer::derived_free_communicators(ParLevLIter pl_iter)
 {
   // free communicators for approxSubProbModel/iteratedModel
-  approxSubProbMinimizer.free_communicators(pl_iter);
+  approxSubProbMinimizer->free_communicators(pl_iter);
 
   // iteratedModel is evaluated to add truth data (single evaluate())
   iteratedModel->free_communicators(pl_iter, maxEvalConcurrency);

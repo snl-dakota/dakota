@@ -291,7 +291,7 @@ DataFitSurrModel(Iterator& dace_iterator, std::shared_ptr<Model> actual_model,
     /*dfs_view,*/ approx_type, approx_order, actualModel->current_variables(), // ***
     cache, actualModel->interface_id(), numFns, data_order, outputLevel));
 
-  if (!daceIterator->is_null()) // global DACE approximations
+  if (daceIterator) // global DACE approximations
     daceIterator->sub_iterator_flag(true);
   //else { // local/multipoint approximation
   //}
@@ -487,7 +487,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     // as for constructors, we recursively set and restore DB list nodes
     // (initiated from the restored starting point following construction)
     size_t model_index = probDescDB.get_db_model_node(); // for restoration
-    if (daceIterator->is_null()) {
+    if (!daceIterator) {
       // store within empty envelope for later use in derived_{set,free}_comms
       daceIterator->maximum_evaluation_concurrency(min_conc);
       daceIterator->iterated_model(actualModel);
@@ -1217,7 +1217,7 @@ void DataFitSurrModel::build_global()
   // Evaluate new data points using daceIterator
   // *******************************************
   int new_points = 0;
-  if (daceIterator->is_null()) { // reused/imported data only (no new data)
+  if (!daceIterator) { // reused/imported data only (no new data)
     // check for sufficient data
     int min_points = approxInterface.minimum_points(true);
     if (reuse_points < min_points) {
@@ -1289,7 +1289,7 @@ void DataFitSurrModel::rebuild_global()
     if (pts_i < curr_points) curr_points = pts_i;
   }
   int new_points = 0;
-  if (daceIterator->is_null()) { // reused/imported data only (no new data)
+  if (!daceIterator) { // reused/imported data only (no new data)
     // check for sufficient data
     int min_points = approxInterface.minimum_points(true);
     if (curr_points < min_points) {

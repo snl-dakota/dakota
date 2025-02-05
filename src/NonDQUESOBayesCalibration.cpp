@@ -625,7 +625,7 @@ void NonDQUESOBayesCalibration::filter_chain_by_conditioning()
 	 << batchSize << " from aggregate MCMC chain containing "
 	 << unique_samples.size() << " samples.\n";
   std::shared_ptr<NonDExpansion> nond_exp =
-    std::static_pointer_cast<NonDExpansion>(stochExpIterator.iterator_rep());
+    std::static_pointer_cast<NonDExpansion>(stochExpIterator);
   nond_exp->select_refinement_points(unique_samples, batchSize, allSamples);
 }
 

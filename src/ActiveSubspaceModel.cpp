@@ -390,23 +390,23 @@ void ActiveSubspaceModel::generate_fullspace_samples(unsigned int diff_samples)
   // Rank-revealing phase requires derivatives (for now)
   // TODO: always gradients only; no functions
   //       analysis_driver needs to parse active_set
-  fullspaceSampler.active_set_request_values(3);
+  fullspaceSampler->active_set_request_values(3);
 
   // Generate the samples.  Have to adjust the base number of samples
   // with sampling_reference() since the number of samples may go down
   // from intialSamples to batchSamples
-  fullspaceSampler.sampling_reference(diff_samples);
-  fullspaceSampler.sampling_reset(diff_samples, true, false); // all_data, stats
+  fullspaceSampler->sampling_reference(diff_samples);
+  fullspaceSampler->sampling_reset(diff_samples, true, false); // all_data, stats
 
   // and generate the additional samples
   ParLevLIter pl_iter = modelPCIter->mi_parallel_level_iterator(miPLIndex);
-  fullspaceSampler.run(pl_iter);
+  fullspaceSampler->run(pl_iter);
 
   //if (outputLevel >= DEBUG_OUTPUT) {
   //  std::shared_ptr<NonDLHSSampling> lhs_sampler_rep =
   //    std::static_pointer_cast<NonDLHSSampling>(
-  //    fullspaceSampler.iterator_rep());
-  //  lhs_sampler_rep->compute_moments(fullspaceSampler.all_responses());
+  //    fullspaceSampler->iterator_rep());
+  //  lhs_sampler_rep->compute_moments(fullspaceSampler->all_responses());
   //  lhs_sampler_rep->print_moments(Cout);
   //}
 }
@@ -416,8 +416,8 @@ void ActiveSubspaceModel::populate_matrices(unsigned int diff_samples)
 {
   // extract into a matrix
   // all_samples vs. all_variables
-  const RealMatrix& all_vars = fullspaceSampler.all_samples();
-  const IntResponseMap& all_responses = fullspaceSampler.all_responses();
+  const RealMatrix& all_vars = fullspaceSampler->all_samples();
+  const IntResponseMap& all_responses = fullspaceSampler->all_responses();
 
   // TODO: could easily filter NaN/Inf responses and omit
   if (outputLevel >= DEBUG_OUTPUT) {
@@ -881,8 +881,8 @@ unsigned int ActiveSubspaceModel::compute_cross_validation_metric()
 
   int num_folds = 10, poly_degree = 2; // quadratic bases
 
-  const RealMatrix&     all_x = fullspaceSampler.all_samples();
-  const IntResponseMap& all_y = fullspaceSampler.all_responses();
+  const RealMatrix&     all_x = fullspaceSampler->all_samples();
+  const IntResponseMap& all_y = fullspaceSampler->all_responses();
   int n_samps = all_x.numCols();
 
   int num_samples_req = 1, max_rank = 1;
@@ -1122,8 +1122,8 @@ void ActiveSubspaceModel::build_surrogate()
     asm_model, surr_set, surr_view, approx_type, approx_order, corr_type,
     corr_order, data_order, outputLevel, sample_reuse);
 
-  const RealMatrix& all_vars_x = fullspaceSampler.all_samples();
-  const IntResponseMap& all_responses = fullspaceSampler.all_responses();
+  const RealMatrix& all_vars_x = fullspaceSampler->all_samples();
+  const IntResponseMap& all_responses = fullspaceSampler->all_responses();
 
   Teuchos::BLAS<int, Real> teuchos_blas;
 
@@ -1178,16 +1178,16 @@ void ActiveSubspaceModel::build_surrogate()
            << " refinement_samples for building surrogate." << std::endl;
     }
 
-    fullspaceSampler.active_set_request_values(1);
-    fullspaceSampler.sampling_reference(refinementSamples);
-    fullspaceSampler.sampling_reset(refinementSamples, true, false);
+    fullspaceSampler->active_set_request_values(1);
+    fullspaceSampler->sampling_reference(refinementSamples);
+    fullspaceSampler->sampling_reset(refinementSamples, true, false);
 
     // and generate the additional samples
     ParLevLIter pl_iter = modelPCIter->mi_parallel_level_iterator(miPLIndex);
-    fullspaceSampler.run(pl_iter);
+    fullspaceSampler->run(pl_iter);
 
-    const RealMatrix& all_vars_x_ref = fullspaceSampler.all_samples();
-    const IntResponseMap& all_responses_ref = fullspaceSampler.all_responses();
+    const RealMatrix& all_vars_x_ref = fullspaceSampler->all_samples();
+    const IntResponseMap& all_responses_ref = fullspaceSampler->all_responses();
 
     RealMatrix all_vars_y_ref(reducedRank, all_vars_x_ref.numCols());
 
@@ -1364,7 +1364,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 
   if (recurse_flag) {
     if (!mappingInitialized)
-      fullspaceSampler.init_communicators(pl_iter);
+      fullspaceSampler->init_communicators(pl_iter);
 
     subModel->init_communicators(pl_iter, max_eval_concurrency);
   }
@@ -1379,7 +1379,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 
   if (recurse_flag) {
     if (!mappingInitialized)
-      fullspaceSampler.set_communicators(pl_iter);
+      fullspaceSampler->set_communicators(pl_iter);
 
     subModel->set_communicators(pl_iter, max_eval_concurrency);
 
@@ -1396,7 +1396,7 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
                            bool recurse_flag)
 {
   if (recurse_flag) {
-    fullspaceSampler.free_communicators(pl_iter);
+    fullspaceSampler->free_communicators(pl_iter);
 
     subModel->free_communicators(pl_iter, max_eval_concurrency);
   }
@@ -1411,13 +1411,12 @@ void ActiveSubspaceModel::init_fullspace_sampler(unsigned short sample_type)
     sample_type = SUBMETHOD_RANDOM; // default to Monte Carlo sampling
 
   // configure this sampler initially to work with initialSamples
-  auto ndlhss =
-    std::make_shared<NonDLHSSampling>(subModel, sample_type, initialSamples,
+  fullspaceSampler =
+    std::make_unique<NonDLHSSampling>(subModel, sample_type, initialSamples,
 				      randomSeed, rng, true);
-  fullspaceSampler.assign_rep(ndlhss);
 
   // TODO: review whether this is needed
-  fullspaceSampler.sub_iterator_flag(true);
+  fullspaceSampler->sub_iterator_flag(true);
 }
 
 

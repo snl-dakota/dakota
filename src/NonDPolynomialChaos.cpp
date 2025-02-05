@@ -82,7 +82,7 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
-  Iterator u_space_sampler;
+  std::shared_ptr<Iterator> u_space_sampler;
   String approx_type;
   unsigned short sample_type = problem_db.get_ushort("method.sample_type");
   const String& rng = problem_db.get_string("method.random_number_generator");
@@ -451,7 +451,7 @@ NonDPolynomialChaos::~NonDPolynomialChaos()
 
 bool NonDPolynomialChaos::
 config_integration(unsigned short quad_order, unsigned short ssg_level,
-		   unsigned short cub_int, Iterator& u_space_sampler,
+		   unsigned short cub_int, std::shared_ptr<Iterator>& u_space_sampler,
 		   std::shared_ptr<Model> g_u_model, String& approx_type)
 {
   bool num_int = true;
@@ -480,7 +480,7 @@ config_integration(unsigned short quad_order, unsigned short ssg_level,
 
 bool NonDPolynomialChaos::
 config_expectation(size_t exp_samples, unsigned short sample_type,
-		   int seed, const String& rng, Iterator& u_space_sampler,
+		   int seed, const String& rng, std::shared_ptr<Iterator>& u_space_sampler,
 		   std::shared_ptr<Model> g_u_model, String& approx_type)
 {
   if (exp_samples == SZ_MAX)
@@ -529,7 +529,7 @@ config_regression(const UShortArray& exp_orders, size_t colloc_pts,
 		  Real colloc_ratio_terms_order, short regress_type,
 		  short ls_regress_type, const UShortArray& tensor_grid_order,
 		  unsigned short sample_type, int seed, const String& rng,
-		  const String& pt_reuse, Iterator& u_space_sampler,
+		  const String& pt_reuse, std::shared_ptr<Iterator>& u_space_sampler,
 		  std::shared_ptr<Model> g_u_model, String& approx_type)
 {
   if (refineType && refineControl > Pecos::UNIFORM_CONTROL) {
@@ -699,7 +699,7 @@ bool NonDPolynomialChaos::resize()
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
-  Iterator u_space_sampler;
+  std::shared_ptr<Iterator> u_space_sampler;
   UShortArray exp_orders; // empty for numerical integration approaches
   switch (expansionCoeffsApproach) {
   case Pecos::QUADRATURE:
@@ -808,7 +808,7 @@ bool NonDPolynomialChaos::resize()
   // Rather than caching these settings in the class, just preserve them
   // from the previously constructed expansionSampler:
   std::shared_ptr<NonDSampling> exp_sampler_rep =
-    std::static_pointer_cast<NonDSampling>(expansionSampler.iterator_rep());
+    std::static_pointer_cast<NonDSampling>(expansionSampler);
   unsigned short sample_type(SUBMETHOD_DEFAULT); String rng;
   if (exp_sampler_rep) {
     sample_type = exp_sampler_rep->sampling_scheme();
@@ -816,7 +816,7 @@ bool NonDPolynomialChaos::resize()
   }
   std::shared_ptr<NonDAdaptImpSampling> imp_sampler_rep =
     std::static_pointer_cast<NonDAdaptImpSampling>
-    (importanceSampler.iterator_rep());
+    (importanceSampler);
   unsigned short int_refine(NO_INT_REFINE); IntVector refine_samples;
   if (imp_sampler_rep) {
     int_refine = imp_sampler_rep->sampling_scheme();

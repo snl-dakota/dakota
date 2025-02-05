@@ -272,9 +272,6 @@ public:
   /// orchestrate initialize/pre/core/post/finalize phases
   void run();
 
-  /// replaces existing letter with a new one
-  void assign_rep(std::shared_ptr<Iterator> iterator_rep);
-
   /// set the iteratedModel (iterators and meta-iterators using a single
   /// model instance)
   void iterated_model(std::shared_ptr<Model> model);

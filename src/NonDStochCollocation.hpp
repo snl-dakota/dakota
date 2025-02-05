@@ -110,10 +110,10 @@ protected:
   /// configure u_space_sampler based on numerical integration specification
   void config_integration(unsigned short quad_order, unsigned short ssg_level,
 			  const RealVector& dim_pref, short u_space_type, 
-			  Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model);
+			  std::shared_ptr<Iterator>& u_space_sampler, std::shared_ptr<Model> g_u_model);
   /// configure u_space_sampler based on expansion coefficients approach
   void config_integration(short exp_coeffs_approach, unsigned short num_int,
-			  const RealVector& dim_pref, Iterator& u_space_sampler,
+			  const RealVector& dim_pref, std::shared_ptr<Iterator>& u_space_sampler,
 			  std::shared_ptr<Model> g_u_model);
   /// define approx_type based on expansion settings
   void config_approximation_type(String& approx_type);

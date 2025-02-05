@@ -167,7 +167,7 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> mode
   int samples = approxImportFile.empty() ? buildSamples : 0;
   const String& rng = probDescDB.get_string("method.random_number_generator");
   unsigned short sample_type = SUBMETHOD_DEFAULT;
-  lhsIter.assign_rep(std::make_shared<NonDLHSSampling>
+  lhsIter = std::make_unique<NonDLHSSampling>
 		     (mcmcModel, sample_type, samples, randomSeed, rng));
 }
 
@@ -180,7 +180,7 @@ void NonDGPMSABayesCalibration::derived_init_communicators(ParLevLIter pl_iter)
 {
   // lhsIter uses NoDBBaseConstructor, so no need to manage DB list nodes
   // at this level
-  lhsIter.init_communicators(pl_iter);
+  lhsIter->init_communicators(pl_iter);
   NonDBayesCalibration::derived_init_communicators(pl_iter);
 }
 
@@ -189,7 +189,7 @@ void NonDGPMSABayesCalibration::derived_set_communicators(ParLevLIter pl_iter)
 {
   // lhsIter uses NoDBBaseConstructor, so no need to manage DB list nodes
   // at this level
-  lhsIter.set_communicators(pl_iter);
+  lhsIter->set_communicators(pl_iter);
   NonDBayesCalibration::derived_set_communicators(pl_iter);
 }
 
@@ -197,7 +197,7 @@ void NonDGPMSABayesCalibration::derived_set_communicators(ParLevLIter pl_iter)
 void NonDGPMSABayesCalibration::derived_free_communicators(ParLevLIter pl_iter)
 {
   NonDBayesCalibration::derived_free_communicators(pl_iter);
-  lhsIter.free_communicators(pl_iter);
+  lhsIter->free_communicators(pl_iter);
 }
 
 
@@ -439,9 +439,9 @@ void NonDGPMSABayesCalibration::acquire_simulation_data(RealMatrix& sim_data)
 
     // NOTE: Assumes the design is performed over the config vars
     // TODO: make this modular on the dimensions of config vars...
-    lhsIter.run(methodPCIter->mi_parallel_level_iterator(miPLIndex));
-    const RealMatrix&  all_samples = lhsIter.all_samples();
-    const IntResponseMap& all_resp = lhsIter.all_responses();
+    lhsIter->run(methodPCIter->mi_parallel_level_iterator(miPLIndex));
+    const RealMatrix&  all_samples = lhsIter->all_samples();
+    const IntResponseMap& all_resp = lhsIter->all_responses();
 
     if (all_samples.numCols() != buildSamples ||
         all_resp.size() != buildSamples) {

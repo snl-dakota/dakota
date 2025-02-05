@@ -196,7 +196,7 @@ NonDStochCollocation::~NonDStochCollocation()
 void NonDStochCollocation::
 config_integration(unsigned short quad_order, unsigned short ssg_level,
 		   const RealVector& dim_pref, short u_space_type, 
-		   Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model)
+		   std::shared_ptr<Iterator>& u_space_sampler, std::shared_ptr<Model> g_u_model)
 {
   // -------------------------
   // Construct u_space_sampler
@@ -260,7 +260,7 @@ config_integration(unsigned short quad_order, unsigned short ssg_level,
 
 void NonDStochCollocation::
 config_integration(short exp_coeffs_approach, unsigned short num_int,
-		   const RealVector& dim_pref, Iterator& u_space_sampler,
+		   const RealVector& dim_pref, std::shared_ptr<Iterator>& u_space_sampler,
 		   std::shared_ptr<Model> g_u_model)
 {
   // -------------------------

@@ -58,8 +58,8 @@ NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, std::shared_ptr<
   if (!import_pts_file.empty())
     { samples = 0; sample_reuse = "all"; }
 
-  gpBuild.assign_rep(std::make_shared<NonDLHSSampling>(iteratedModel,
-    sample_type, samples, randomSeed, rngName, varyPattern, ACTIVE_UNIFORM));
+  gpBuild = std::make_shared<NonDLHSSampling>(iteratedModel,
+    sample_type, samples, randomSeed, rngName, varyPattern, ACTIVE_UNIFORM);
   //distribution 1 which is the distribution that the initial set of samples
   //used to build the initial GP are drawn from this should "ALWAYS" be 
   //uniform in the input of the GP (even if the nominal distribution is not
@@ -118,7 +118,7 @@ void NonDGPImpSampling::derived_init_communicators(ParLevLIter pl_iter)
   // gpBuild and gpEval use NoDBBaseConstructor, so no need to
   // manage DB list nodes at this level
   //gpBuild.init_communicators(pl_iter);
-  gpEval.init_communicators(pl_iter);
+  gpEval->init_communicators(pl_iter);
 } 
 
 
@@ -129,13 +129,13 @@ void NonDGPImpSampling::derived_set_communicators(ParLevLIter pl_iter)
   // gpBuild and gpEval use NoDBBaseConstructor, so no need to
   // manage DB list nodes at this level
   //gpBuild.set_communicators(pl_iter);
-  gpEval.set_communicators(pl_iter);
+  gpEval->set_communicators(pl_iter);
 } 
 
 
 void NonDGPImpSampling::derived_free_communicators(ParLevLIter pl_iter)
 {
-  gpEval.free_communicators(pl_iter);
+  gpEval->free_communicators(pl_iter);
   //gpBuild.free_communicators(pl_iter);
 
   iteratedModel->free_communicators(pl_iter, maxEvalConcurrency);
@@ -222,10 +222,10 @@ void NonDGPImpSampling::core_run()
       for (k = 0; k < numPtsAdd; k++) { 
 	// generate new set of emulator samples.
 	// Note this will have a different seed each time.
-        gpEval.run(pl_iter);
+        gpEval->run(pl_iter);
          // obtain results 
-        const RealMatrix&  all_samples = gpEval.all_samples();
-        const IntResponseMap& all_resp = gpEval.all_responses();
+        const RealMatrix&  all_samples = gpEval->all_samples();
+        const IntResponseMap& all_resp = gpEval->all_responses();
         for (i = 0; i< numEmulEval; i++) {
           temp_cvars = Teuchos::getCol(Teuchos::View,
 	    const_cast<RealMatrix&>(all_samples), i);
@@ -278,10 +278,10 @@ void NonDGPImpSampling::core_run()
         iter = 1;
         while ((iter<20) && (temp_norm_const*numEmulEval<25)) {
 	  iter = iter+1;
-          gpEval.run(pl_iter);
+          gpEval->run(pl_iter);
            // obtain results 
-          const RealMatrix&  this_samples = gpEval.all_samples();
-          const IntResponseMap& this_resp = gpEval.all_responses();
+          const RealMatrix&  this_samples = gpEval->all_samples();
+          const IntResponseMap& this_resp = gpEval->all_responses();
           for (i = 0; i< numEmulEval; i++) {
 	    temp_cvars = Teuchos::getCol(Teuchos::View,
 	       const_cast<RealMatrix&>(this_samples), i);

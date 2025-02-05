@@ -919,7 +919,7 @@ protected:
   /// of truth model samples and approximation eval_ratios.  Minimizers are
   /// arranged in a sequence (first dimension) where each step in the sequence
   /// may have multiple competitors (second dimension)
-  Iterator2DArray varianceMinimizers;
+  Iterator2DPtrArray varianceMinimizers;
   /// active indices for numerical solutions: varianceMinimizers[first][second]
   SizetSizetPair varMinIndices;
 

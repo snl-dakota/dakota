@@ -65,7 +65,7 @@ protected:
   /// RecastModel which formulates the optimization subproblem: RIA, PMA, EGO
   std::shared_ptr<Model> mppModel;
   /// Iterator which optimizes the mppModel
-  Iterator mppOptimizer;
+  std::shared_ptr<Iterator> mppOptimizer;
 
   /// the MPP search type selection:
   /// Local: MV, x/u-space {AMV,AMV+,TANA,QMEA} or NO_APPROX
@@ -73,7 +73,7 @@ protected:
   unsigned short mppSearchType;
 
   /// importance sampling instance used to compute/refine probabilities
-  Iterator importanceSampler;
+  std::shared_ptr<Iterator> importanceSampler;
   /// integration refinement type (NO_INT_REFINE, IS, AIS, or MMAIS)
   /// provided by \c refinement specification
   unsigned short integrationRefinement;

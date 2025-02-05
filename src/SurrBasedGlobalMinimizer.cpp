@@ -68,7 +68,7 @@ SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model
     // (from problem_db.get_model())
     approxSubProbMinimizer = probDescDB.get_iterator();//(iteratedModel);
     // suppress DB ctor default and don't output summary info
-    approxSubProbMinimizer.summary_output(false);
+    approxSubProbMinimizer->summary_output(false);
     // verify approx method's modelPointer is empty or consistent
     const String& am_model_ptr = probDescDB.get_string("method.model_pointer");
     if (!am_model_ptr.empty() && am_model_ptr != model_ptr)
@@ -116,8 +116,8 @@ void SurrBasedGlobalMinimizer::core_run()
   // will the arrays that store them.  We will keep them here for use in
   // rebuilding the surrogate if using "replace" for example.
 
-  bool returns_multipoint = approxSubProbMinimizer.returns_multiple_points(),
-       accepts_multipoint = approxSubProbMinimizer.accepts_multiple_points(),
+  bool returns_multipoint = approxSubProbMinimizer->returns_multiple_points(),
+       accepts_multipoint = approxSubProbMinimizer->accepts_multiple_points(),
        truth_asynch_flag  = truth_model.asynch_flag();
 
   // This flag will be used to indicate when we are finished iterating.  An
@@ -162,14 +162,14 @@ void SurrBasedGlobalMinimizer::core_run()
     // samples.  At each subsequent iteration, the surrogate includes
     // additional truth samples from validation of subproblem solutions.
     ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-    approxSubProbMinimizer.run(pl_iter);
+    approxSubProbMinimizer->run(pl_iter);
 
     // Get the results from the iterator execution.
     VariablesArray vars_results;
     if (returns_multipoint)
-      vars_results = approxSubProbMinimizer.variables_array_results();
+      vars_results = approxSubProbMinimizer->variables_array_results();
     else
-      vars_results.push_back(approxSubProbMinimizer.variables_results());
+      vars_results.push_back(approxSubProbMinimizer->variables_results());
     size_t i, num_results = vars_results.size();
 
     // Variable/response results were generated using the current approximate
@@ -236,7 +236,7 @@ void SurrBasedGlobalMinimizer::core_run()
       else {
 	bestVariablesArray.front().active_variables(vars_results.front());
 	bestResponseArray.front().function_values(
-	  approxSubProbMinimizer.response_results().function_values());
+	  approxSubProbMinimizer->response_results().function_values());
       }
     }
     else {
@@ -248,7 +248,7 @@ void SurrBasedGlobalMinimizer::core_run()
 
       // pass iterator's final vars for use as next set of initial points
       if (accepts_multipoint)
-	approxSubProbMinimizer.initial_points(vars_results);
+	approxSubProbMinimizer->initial_points(vars_results);
       else
 	ModelUtils::active_variables(approx_model, vars_results.front());
     }

@@ -400,7 +400,7 @@ void DataFitSurrBasedLocalMinimizer::minimize()
   // ****************************************
   // Retrieve varsStar and responseStarApprox
   // ****************************************
-  trustRegionData.vars_star(approxSubProbMinimizer.variables_results());
+  trustRegionData.vars_star(approxSubProbMinimizer->variables_results());
   if (recastSubProb) { // Can't back out eval from recast data, can't assume
     // last iteratedModel eval was the final solution, and can't use a DB
     // search for data fits.  Therefore, reevaluate corrected approximation.
@@ -413,7 +413,7 @@ void DataFitSurrBasedLocalMinimizer::minimize()
 				  CORR_APPROX_RESPONSE);
   }
   else // Note: fn values only
-    trustRegionData.response_star(approxSubProbMinimizer.response_results(),
+    trustRegionData.response_star(approxSubProbMinimizer->response_results(),
 				  CORR_APPROX_RESPONSE);
 }
 

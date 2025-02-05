@@ -445,7 +445,7 @@ bool NonDMultilevelPolynomialChaos::resize()
   // Rather than caching these settings in the class, just preserve them
   // from the previously constructed expansionSampler:
   std::shared_ptr<NonDSampling> exp_sampler_rep =
-    std::static_pointer_cast<NonDSampling>(expansionSampler.iterator_rep());
+    std::static_pointer_cast<NonDSampling>(expansionSampler);
   unsigned short sample_type(SUBMETHOD_DEFAULT); String rng;
   if (exp_sampler_rep) {
     sample_type = exp_sampler_rep->sampling_scheme();
@@ -453,7 +453,7 @@ bool NonDMultilevelPolynomialChaos::resize()
   }
   std::shared_ptr<NonDAdaptImpSampling> imp_sampler_rep =
     std::static_pointer_cast<NonDAdaptImpSampling>
-    (importanceSampler.iterator_rep());
+    (importanceSampler);
   unsigned short int_refine(NO_INT_REFINE); IntVector refine_samples;
   if (imp_sampler_rep) {
     int_refine = imp_sampler_rep->sampling_scheme();
@@ -573,7 +573,7 @@ void NonDMultilevelPolynomialChaos::assign_specification_sequence()
   case Pecos::QUADRATURE: {
     std::shared_ptr<NonDQuadrature> nond_quad =
       std::static_pointer_cast<NonDQuadrature>
-      (uSpaceModel->subordinate_iterator().iterator_rep());
+      (uSpaceModel->subordinate_iterator());
     if (sequenceIndex < quadOrderSeqSpec.size())
       nond_quad->quadrature_order(quadOrderSeqSpec[sequenceIndex]);
     else //if (refineControl)
@@ -584,7 +584,7 @@ void NonDMultilevelPolynomialChaos::assign_specification_sequence()
   case Pecos::HIERARCHICAL_SPARSE_GRID: {
     std::shared_ptr<NonDSparseGrid> nond_sparse =
       std::static_pointer_cast<NonDSparseGrid>
-      (uSpaceModel->subordinate_iterator().iterator_rep());
+      (uSpaceModel->subordinate_iterator());
     if (sequenceIndex < ssgLevelSeqSpec.size())
       nond_sparse->sparse_grid_level(ssgLevelSeqSpec[sequenceIndex]);
     else //if (refineControl)
@@ -642,7 +642,7 @@ void NonDMultilevelPolynomialChaos::increment_specification_sequence()
   case Pecos::QUADRATURE: {
     std::shared_ptr<NonDQuadrature> nond_quad =
       std::static_pointer_cast<NonDQuadrature>
-      (uSpaceModel->subordinate_iterator().iterator_rep());
+      (uSpaceModel->subordinate_iterator());
     if (sequenceIndex+1 < quadOrderSeqSpec.size()) {
       ++sequenceIndex;      // advance order sequence if sufficient entries
       nond_quad->quadrature_order(quadOrderSeqSpec[sequenceIndex]);
@@ -655,7 +655,7 @@ void NonDMultilevelPolynomialChaos::increment_specification_sequence()
   case Pecos::HIERARCHICAL_SPARSE_GRID: {
     std::shared_ptr<NonDSparseGrid> nond_sparse =
       std::static_pointer_cast<NonDSparseGrid>
-      (uSpaceModel->subordinate_iterator().iterator_rep());
+      (uSpaceModel->subordinate_iterator());
     if (sequenceIndex+1 < ssgLevelSeqSpec.size()) {
       ++sequenceIndex;      // advance level sequence if sufficient entries
       nond_sparse->sparse_grid_level(ssgLevelSeqSpec[sequenceIndex]);

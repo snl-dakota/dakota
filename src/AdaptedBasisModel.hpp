@@ -116,7 +116,7 @@ protected:
   /// matrices A_i for each of the QoI; this is low-order and potentially
   /// high-dimension whereas a client PCE could be high-order in the
   /// reduced dimension
-  Iterator pcePilotExpansion;
+  std::shared_ptr<Iterator> pcePilotExpansion;
 };
 
 } // namespace Dakota

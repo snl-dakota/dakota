@@ -290,16 +290,16 @@ NonDLocalReliability(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
 
 #ifdef HAVE_NPSOL
       {
-        mppOptimizer.assign_rep(std::make_shared<NPSOLOptimizer>
-			        (mppModel, npsol_deriv_level, conv_tol));
+        mppOptimizer = std::make_shared<NPSOLOptimizer>
+			        (mppModel, npsol_deriv_level, conv_tol);
       }
 #endif
     }
 #ifdef HAVE_OPTPP
     else
       {
-        mppOptimizer.assign_rep(std::make_shared<SNLLOptimizer>
-			        ("optpp_q_newton", mppModel));
+        mppOptimizer = std::make_shared<SNLLOptimizer>
+			        ("optpp_q_newton", mppModel);
       }
 #endif
   }
@@ -372,7 +372,7 @@ NonDLocalReliability(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
       track_extreme);
       break;
     }
-    importanceSampler.assign_rep(import_sampler_rep);
+    importanceSampler = import_sampler_rep;
   }
 
   // Size the output arrays, augmenting sizing in NonDReliability.  Relative to
@@ -436,10 +436,10 @@ void NonDLocalReliability::derived_init_communicators(ParLevLIter pl_iter)
     // may be invoked multiple times, this captures a consistent state to that
     // present during the invocation of check_sub_iterator_conflict().
     if (npsolFlag) miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
-    mppOptimizer.init_communicators(pl_iter);
+    mppOptimizer->init_communicators(pl_iter);
 
     if (integrationRefinement)
-      importanceSampler.init_communicators(pl_iter);
+      importanceSampler->init_communicators(pl_iter);
   }
 }
 
@@ -450,9 +450,9 @@ void NonDLocalReliability::derived_set_communicators(ParLevLIter pl_iter)
 
   if (mppSearchType) {
     uSpaceModel->set_communicators(pl_iter, maxEvalConcurrency);
-    mppOptimizer.set_communicators(pl_iter);
+    mppOptimizer->set_communicators(pl_iter);
     if (integrationRefinement)
-      importanceSampler.set_communicators(pl_iter);
+      importanceSampler->set_communicators(pl_iter);
   }
 }
 
@@ -461,8 +461,8 @@ void NonDLocalReliability::derived_free_communicators(ParLevLIter pl_iter)
 {
   if (mppSearchType) {
     if (integrationRefinement)
-      importanceSampler.free_communicators(pl_iter);
-    mppOptimizer.free_communicators(pl_iter);
+      importanceSampler->free_communicators(pl_iter);
+    mppOptimizer->free_communicators(pl_iter);
     uSpaceModel->free_communicators(pl_iter, maxEvalConcurrency);
   }
   iteratedModel->free_communicators(pl_iter, maxEvalConcurrency);
@@ -577,7 +577,7 @@ void NonDLocalReliability::core_run()
   if (pdfOutput && integrationRefinement) {
     std::shared_ptr<NonDAdaptImpSampling> import_sampler_rep =
       std::static_pointer_cast<NonDAdaptImpSampling>
-      (importanceSampler.iterator_rep());
+      (importanceSampler);
     compute_densities(import_sampler_rep->extreme_values(), true, true);
   } // else no extreme values to define outer PDF bins
 }
@@ -991,9 +991,9 @@ void NonDLocalReliability::mpp_search()
         Cout << "\n>>>>> Initiating search for most probable point (MPP)\n";
 	ParLevLIter pl_iter
 	  = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-	mppOptimizer.run(pl_iter);
-        const Variables& vars_star = mppOptimizer.variables_results();
-        const Response&  resp_star = mppOptimizer.response_results();
+	mppOptimizer->run(pl_iter);
+        const Variables& vars_star = mppOptimizer->variables_results();
+        const Response&  resp_star = mppOptimizer->response_results();
 	const RealVector& fns_star = resp_star.function_values();
         Cout << "\nResults of MPP optimization:\nInitial point (u-space) =\n"
              << initialPtU << "Final point (u-space)   =\n"
@@ -2368,12 +2368,12 @@ probability(Real beta, bool cdf_flag, const RealVector& mpp_u,
     // rep needed for access to functions not mapped to Iterator level
     std::shared_ptr<NonDAdaptImpSampling> import_sampler_rep =
       std::static_pointer_cast<NonDAdaptImpSampling>
-      (importanceSampler.iterator_rep());
+      (importanceSampler);
     bool x_data_flag = false;
     import_sampler_rep->
       initialize(mpp_u, x_data_flag, respFnCount, p, requestedTargetLevel);
     ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-    importanceSampler.run(pl_iter);
+    importanceSampler->run(pl_iter);
     p = import_sampler_rep->final_probability();
     if (outputLevel > NORMAL_OUTPUT)
       Cout << " refined = " << std::setw(wpp7) << p;
@@ -2872,13 +2872,13 @@ void NonDLocalReliability::method_recourse(unsigned short method_name)
 #ifdef HAVE_OPTPP
     ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
     std::map<size_t, ParConfigLIter> pc_iter_map
-      = mppOptimizer.parallel_configuration_iterator_map();
+      = mppOptimizer->parallel_configuration_iterator_map();
     {
-      mppOptimizer.assign_rep(std::make_shared<SNLLOptimizer>
-			      ("optpp_q_newton", mppModel));
+      mppOptimizer = std::make_shared<SNLLOptimizer>
+			      ("optpp_q_newton", mppModel);
     }
-    mppOptimizer.parallel_configuration_iterator_map(pc_iter_map);
-    mppOptimizer.init_communicators(pl_iter); // restore methodPCIter et al.
+    mppOptimizer->parallel_configuration_iterator_map(pc_iter_map);
+    mppOptimizer->init_communicators(pl_iter); // restore methodPCIter et al.
 #else
     Cerr << "\nError: method recourse not possible in NonDLocalReliability "
 	 << "(OPT++ NIP unavailable).\n";
