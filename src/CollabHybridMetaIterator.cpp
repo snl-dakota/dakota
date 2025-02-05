@@ -121,7 +121,7 @@ void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   String empty_str;
   for (i=0; i<num_iterators; ++i) {
     // compute min/max processors per iterator for each method
-    Iterator& the_iterator = selectedIterators[i];
+    auto the_iterator = selectedIterators[i];
     auto the_model = (singlePassedModel) ? iteratedModel : selectedModels[i];
     ppi_pr_i = (lightwtMethodCtor) ?
       estimate_by_name(methodStrings[i], modelStrings[i], the_iterator,
@@ -180,7 +180,7 @@ void CollabHybridMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
     size_t i, num_iterators = methodStrings.size();
     for (i=0; i<num_iterators; ++i)
-      iterSched.free_iterator(selectedIterators[i], si_pl_iter);
+      iterSched.free_iterator(*selectedIterators[i], si_pl_iter);
   }
 
   // deallocate the mi_pl parallelism level
@@ -202,7 +202,7 @@ void CollabHybridMetaIterator::core_run()
       Cout << "\n>>>>> Running Collaborative Hybrid with iterator "
 	   << methodStrings[i] << ".\n";
 
-    Iterator& curr_iterator = selectedIterators[i];
+    Iterator& curr_iterator = *selectedIterators[i];
 
     // For graphics data, limit to iterator server comm leaders; this is
     // further segregated within initialize_graphics(): all iterator masters

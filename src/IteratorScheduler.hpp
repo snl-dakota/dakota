@@ -56,16 +56,16 @@ public:
 
   /// convenience function for allocation of an iterator and (parallel)
   /// initialization of its comms
-  static void init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
+  static void init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator,
 			    ParLevLIter pl_iter);
   /// convenience function for allocation of an iterator and (parallel)
   /// initialization of its comms
-  static void init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
+  static void init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator,
 			    std::shared_ptr<Model> sub_model, ParLevLIter pl_iter);
   /// convenience function for lightweight allocation of an iterator
   /// and (parallel) initialization of its comms
   static void init_iterator(ProblemDescDB& problem_db,
-			    const String& method_string, Iterator& sub_iterator,
+			    const String& method_string, std::shared_ptr<Iterator>& sub_iterator,
 			    std::shared_ptr<Model>, ParLevLIter pl_iter);
 
   /// convenience function for setting comms prior to running an iterator
@@ -84,22 +84,22 @@ public:
   //
 
   /// instantiate sub_iterator on the current rank if not already constructed
-  void construct_sub_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
+  void construct_sub_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator,
 			      std::shared_ptr<Model> sub_model, const String& method_ptr,
 			      const String& method_name,
 			      const String& model_ptr);
 
   /// performs sufficient initialization to define partitioning controls
   /// (min and max processors per iterator server)
-  IntIntPair configure(ProblemDescDB& problem_db, Iterator& sub_iterator,
+  IntIntPair configure(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator,
 		       std::shared_ptr<Model> sub_model);
   /// performs sufficient initialization to define partitioning controls
   /// (min and max processors per iterator server)
   IntIntPair configure(ProblemDescDB& problem_db, const String& method_string,
-		       Iterator& sub_iterator, std::shared_ptr<Model> sub_model);
+		       std::shared_ptr<Iterator>& sub_iterator, std::shared_ptr<Model> sub_model);
   /// performs sufficient initialization to define partitioning controls
   /// (min and max processors per iterator server)
-  IntIntPair configure(ProblemDescDB& problem_db, Iterator& sub_iterator);
+  IntIntPair configure(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator);
 
   /// convenience function for initializing iterator communicators, setting
   /// parallel configuration attributes, and managing outputs and restart.
@@ -476,20 +476,20 @@ peer_static_schedule_iterators(MetaType& meta_object, Iterator& sub_iterator)
   if (rank0) {
     if (iteratorServerId > 1) { // peers 2-n: send results to peer 1
       for (i=iteratorServerId-1; i<numIteratorJobs; i+=numIteratorServers) {
-	MPIPackBuffer send_buffer;//(resultsMsgLen);
-	meta_object.pack_results_buffer(send_buffer, i);
-	parallelLib.send_mi(send_buffer, 0, i+1, miPLIndex);
+        MPIPackBuffer send_buffer;//(resultsMsgLen);
+        meta_object.pack_results_buffer(send_buffer, i);
+        parallelLib.send_mi(send_buffer, 0, i+1, miPLIndex);
       }
     }
     else if (numIteratorServers > 1) { // peer 1: receive results from peers 2-n
       for (i=1; i<numIteratorJobs; ++i) { // skip 0 since this is peer 1
-	int source = i%numIteratorServers;
-	if (source) { // parameter set evaluated on peers 2-n
-	  MPI_Status status;
-	  MPIUnpackBuffer recv_buffer(resultsMsgLen);
-	  parallelLib.recv_mi(recv_buffer, source, i+1, status, miPLIndex);
-	  meta_object.unpack_results_buffer(recv_buffer, i);
-	}
+        int source = i%numIteratorServers;
+        if (source) { // parameter set evaluated on peers 2-n
+          MPI_Status status;
+          MPIUnpackBuffer recv_buffer(resultsMsgLen);
+          parallelLib.recv_mi(recv_buffer, source, i+1, status, miPLIndex);
+          meta_object.unpack_results_buffer(recv_buffer, i);
+        }
       }
     }
   }
@@ -512,7 +512,7 @@ serve_iterators(MetaType& meta_object, Iterator& sub_iterator)
       parallelLib.recv_mi(recv_buffer, 0, MPI_ANY_TAG, status, miPLIndex);
       job_id = status.MPI_TAG;
       if (job_id)
-	meta_object.unpack_parameters_initialize(recv_buffer, job_id-1);
+	      meta_object.unpack_parameters_initialize(recv_buffer, job_id-1);
     }
     if (iteratorCommSize > 1) // must Bcast job_id over iteratorComm
       parallelLib.bcast_i(job_id, miPLIndex);
@@ -522,21 +522,21 @@ serve_iterators(MetaType& meta_object, Iterator& sub_iterator)
       // Set starting point or obj fn weighting set
       Real iterator_start_time;
       if (iteratorCommRank == 0)
-	iterator_start_time = parallelLib.parallel_time();
+	      iterator_start_time = parallelLib.parallel_time();
 
       // Run the iterator on the model for the received job
       run_iterator(sub_iterator);
 
       if (iteratorCommRank == 0) {
-	Real iterator_end_time = parallelLib.parallel_time();
-	Cout << "\nParameter set " << job_id << " elapsed time = "
-	     << iterator_end_time - iterator_start_time << " (start: "
-	     << iterator_start_time << ", end: " << iterator_end_time <<")\n";
-	int job_index = job_id - 1;
-	meta_object.update_local_results(job_index);
-        MPIPackBuffer send_buffer(resultsMsgLen);
-	meta_object.pack_results_buffer(send_buffer, job_index);
-        parallelLib.send_mi(send_buffer, 0, job_id, miPLIndex);
+        Real iterator_end_time = parallelLib.parallel_time();
+        Cout << "\nParameter set " << job_id << " elapsed time = "
+            << iterator_end_time - iterator_start_time << " (start: "
+            << iterator_start_time << ", end: " << iterator_end_time <<")\n";
+        int job_index = job_id - 1;
+        meta_object.update_local_results(job_index);
+              MPIPackBuffer send_buffer(resultsMsgLen);
+        meta_object.pack_results_buffer(send_buffer, job_index);
+              parallelLib.send_mi(send_buffer, 0, job_id, miPLIndex);
       }
     }
   }

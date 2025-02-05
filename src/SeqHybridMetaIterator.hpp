@@ -122,7 +122,7 @@ private:
   bool singlePassedModel;
 
   /// the set of iterators, one for each entry in methodStrings
-  IteratorArray selectedIterators;
+  std::vector<std::shared_ptr<Iterator>> selectedIterators;
   /// the set of models, one for each iterator (if not lightweight construction)
   std::vector<std::shared_ptr<Model>> selectedModels;
 
@@ -171,11 +171,11 @@ inline IntIntPair SeqHybridMetaIterator::estimate_partition_bounds()
 
 
 inline const Variables& SeqHybridMetaIterator::variables_results() const
-{ return selectedIterators[methodStrings.size()-1].variables_results(); }
+{ return selectedIterators[methodStrings.size()-1]->variables_results(); }
 
 
 inline const Response& SeqHybridMetaIterator::response_results() const
-{ return selectedIterators[methodStrings.size()-1].response_results(); }
+{ return selectedIterators[methodStrings.size()-1]->response_results(); }
 
 
 inline void SeqHybridMetaIterator::
@@ -233,8 +233,8 @@ initialize_iterator(const VariablesArray& param_sets)
   size_t num_param_sets = param_sets.size();
   if (num_param_sets == 1)
     selectedModels[seqCount]->current_variables().active_variables(param_sets[0]);
-  else if (selectedIterators[seqCount].accepts_multiple_points())
-    selectedIterators[seqCount].initial_points(param_sets);
+  else if (selectedIterators[seqCount]->accepts_multiple_points())
+    selectedIterators[seqCount]->initial_points(param_sets);
   else {
     std::cerr << "Error: bad parameter sets array in SeqHybridMetaIterator::"
 	      << "initialize_iterator()" << std::endl;
