@@ -179,6 +179,18 @@ private:
   /// find the best-conditioned group that contains the HF model
   size_t best_conditioned_hf_group();
 
+  /// deduct sunk (pilot) costs from samples on discarded groups
+  void deduct_inactive_group_costs(const BitArray& retained,
+				   const SizetArray& N_G_alloc,
+				   Real& budget) const;
+  /// deduct sunk (pilot) costs from samples on discarded models
+  void deduct_inactive_model_costs(const BitArray& retained,
+				   size_t N_alloc, Real& budget) const;
+
+  /// define active models from overlay of components of active groups
+  void retained_groups_to_models(const BitArray& active_g,
+				 BitArray& active_m) const;
+
   void enforce_bounds_linear_constraints(RealVector& soln_vars);
   void specify_parameter_bounds(RealVector& x_lb, RealVector& x_ub);
   void specify_initial_parameters(const MFSolutionData& soln, RealVector& x0,
@@ -377,6 +389,38 @@ all_to_active_group(size_t all_index) const
 }
 
 
+inline void NonDMultilevBLUESampling::
+deduct_inactive_group_costs(const BitArray& retained,
+			    const SizetArray& N_G_alloc, Real& budget) const
+{
+  // deduct accumulated cost for inactive groups (independent pilot sampling)
+
+  if (retained.empty()) return;
+
+  //budget = (Real)maxFunctionEvals;
+  Real cost_H = sequenceCost[numApprox];
+  for (size_t g=0; g<numGroups; ++g)
+    if (!retained[g])
+      budget -= N_G_alloc[g] * modelGroupCost[g] / cost_H;
+}
+
+
+inline void NonDMultilevBLUESampling::
+deduct_inactive_model_costs(const BitArray& retained, size_t N_alloc,
+			    Real& budget) const
+{
+  // deduct accumulated cost for inactive models (shared pilot sampling)
+
+  if (retained.empty()) return;
+
+  //budget = (Real)maxFunctionEvals;
+  Real cost_H = sequenceCost[numApprox], N_over_cost = (Real)N_alloc / cost_H;
+  for (size_t m=0; m<=numApprox; ++m)
+    if (!retained[m])
+      budget -= sequenceCost[m] * N_over_cost;
+}
+
+
 inline Real NonDMultilevBLUESampling::available_budget() const
 {
   bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
@@ -387,35 +431,48 @@ inline Real NonDMultilevBLUESampling::available_budget() const
   // deduct accumulated cost for inactive models (shared pilot sampling) or
   // inactive groups (independent pilot sampling)
 
-  // *** TO DO: review shared to independent workflow ***
-  // *** TO DO: review SHARED_PILOT case below        ***
-
-  Real cost_H = sequenceCost[numApprox];
   switch (pilotGroupSampling) {
   case INDEPENDENT_PILOT: // budget deductions are group-based
-    if (!retainedModelGroups.empty())
-      for (size_t g=0; g<numGroups; ++g)
-	if (!retainedModelGroups[g])
-	  budget -= NGroupAlloc[g] * modelGroupCost[g] / cost_H;
+    deduct_inactive_group_costs(retainedModelGroups, NGroupAlloc, budget);
     break;
-  case SHARED_PILOT:
-    // budget deductions are model-based (deduct shared pilot cost for an
-    // approx model iff all groups containing this model are discarded)
+  case SHARED_PILOT: // budget deductions are model-based
+    // > deduct shared pilot cost for an approx model iff all groups containing
+    //   this model are discarded
     // > prune_model_groups() currently enforces retention of all_group for
     //   the case of SHARED_PILOT (logic: disproportionate investment), so
     //   all models are retained in this case.
     // > Note: it would be possible to reassign the shared pilot investment
     //   to a different retained group if models would otherwise be discarded.
-    if (!retainedModels.empty()) {
-      size_t m, all_group = numGroups - 1, shared_samp = NGroupAlloc[all_group];
-      for (m=0; m<=numApprox; ++m)
-	if (!retainedModels[m])
-	  budget -= shared_samp * sequenceCost[m] / cost_H;
-    }
+    // *** TO DO: revise all_group,shared_samp as needed to sync with changes
+    //            to prune_model_groups()
+    size_t all_group = numGroups - 1;
+    deduct_inactive_model_costs(retainedModels, NGroupAlloc[all_group], budget);
     break;
   }
 
   return budget;
+}
+
+
+inline void NonDMultilevBLUESampling::
+retained_groups_to_models(const BitArray& active_g, BitArray& active_m) const
+{
+  size_t g, m, model_m, num_models, retained = 0, num_ap1 = numApprox + 1;
+  if (active_m.size() != num_ap1)
+    active_m.resize(num_ap1);
+  active_m.reset();
+  for (g=0; g<numGroups; ++g) {
+    if (active_g[g]) {
+      const UShortArray& group_g = modelGroups[g];
+      num_models = group_g.size();
+      for (m=0; m<num_models; ++m) {
+	model_m = group_g[m];
+	if (!active_m[model_m])
+	  { active_m.set(model_m); ++retained; }
+      }
+    }
+    if (retained == num_ap1) { active_m.clear(); break; }
+  }
 }
 
 

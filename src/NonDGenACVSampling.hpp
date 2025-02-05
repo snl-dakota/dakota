@@ -311,15 +311,15 @@ inline Real NonDGenACVSampling::available_budget() const
   const UShortArray& approx_set = activeModelSetIter->first;
   size_t num_approx = approx_set.size();
   Real budget = (Real)maxFunctionEvals;
-  if (!offline && num_approx != numApprox) {
-    size_t hf_form_index, hf_lev_index, cntr = 0;
-    hf_indices(hf_form_index, hf_lev_index);
-    size_t N_H_alloc = NLevAlloc[hf_form_index][hf_lev_index];
-    Real cost_H = sequenceCost[numApprox];
-    for (size_t approx=0; approx<numApprox; ++approx)
-      if  (approx == approx_set[cntr]) ++cntr; // ordered sequence
-      else budget -= N_H_alloc * sequenceCost[approx] / cost_H;
-  }
+  if (offline || num_approx == numApprox) return budget;
+
+  size_t hf_form_index, hf_lev_index, cntr = 0;
+  hf_indices(hf_form_index, hf_lev_index);
+  size_t N_H_alloc = NLevAlloc[hf_form_index][hf_lev_index];
+  Real cost_H = sequenceCost[numApprox], N_over_cost = (Real)N_H_alloc / cost_H;
+  for (size_t approx=0; approx<numApprox; ++approx)
+    if  (approx == approx_set[cntr]) ++cntr; // ordered sequence
+    else budget -= sequenceCost[approx] * N_over_cost;
 
   return budget;
 }

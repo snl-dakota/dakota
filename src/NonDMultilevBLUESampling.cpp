@@ -406,7 +406,6 @@ shared_covariance_iteration(IntRealMatrixArrayMap& sum_G,
     // update covariances, recomputing model group pruning if active
     compute_GG_covariance(sum_G[1][all_group], sum_GG[1][all_group],
 			  NGroupActual[all_group], covGG, covGGinv);
-    prune_model_groups(); // redefined from scatch each iteration
 
     if (mlmfIter == 0 && costSource != USER_COST_SPEC)
       { recover_online_cost(allResponses); update_model_group_costs(); }
@@ -416,11 +415,9 @@ shared_covariance_iteration(IntRealMatrixArrayMap& sum_G,
     // --------------------
     // Solve for allocation
     // --------------------
-    // compute the LF/HF evaluation ratios from shared samples and compute
-    // ratio of MC and BLUE mean sq errors (which incorporates anticipated
-    // variance reduction from application of avg_eval_ratios).
-    // > numerical soln is subject to latest group pruning (rcond throttles),
-    //   but all_group is retained in prune_model_groups() for this case
+    prune_model_groups(); // redefined from scatch each iteration
+    // Numerical soln is subject to latest group pruning (rcond throttles), but
+    // all_group retention is enforced in prune_model_groups() for this case
     compute_allocations(blueSolnData, NGroupActual, NGroupAlloc, delta_N_G);
     // only increment NGroupAlloc[all_group]
     increment_allocations(blueSolnData, NGroupAlloc, delta_N_G, all_group);
@@ -439,7 +436,7 @@ independent_covariance_iteration(IntRealMatrixArrayMap& sum_G,
   // but also resets the numerical solve initial guess process (expensive)
   //mlmfIter = 0;
 
-  // either leftover delta from shared_covar_iter() or initial pilot
+  // either leftover delta from shared_covariance_iteration() or initial pilot
   increment_allocations(blueSolnData, NGroupAlloc, delta_N_G);
 
   // if SHARED_PILOT, delta_N_G[all_group] should now be zero (unless maxIter),
@@ -461,7 +458,6 @@ independent_covariance_iteration(IntRealMatrixArrayMap& sum_G,
     accumulate_blue_sums(sum_G, sum_GG, NGroupActual, batchResponsesMap);
     compute_GG_covariance(sum_G[1], sum_GG[1], NGroupActual,
 			  covGG, covGGinv, N_G_ref);
-    prune_model_groups(); // redefined from scatch each iteration
     // While online cost recovery could be continuously updated, we restrict
     // to the pilot and do not not update on subsequent iterations.  We could
     // potentially mirror the covariance updates with cost updates, but seems
@@ -476,9 +472,7 @@ independent_covariance_iteration(IntRealMatrixArrayMap& sum_G,
     // --------------------
     // Solve for allocation
     // --------------------
-    // compute the LF/HF evaluation ratios from shared samples and compute
-    // ratio of MC and BLUE mean sq errors (which incorporates anticipated
-    // variance reduction from application of avg_eval_ratios).
+    prune_model_groups(); // redefined from scatch each iteration
     compute_allocations(blueSolnData, NGroupActual, NGroupAlloc, delta_N_G);
     increment_allocations(blueSolnData, NGroupAlloc, delta_N_G);
     ++mlmfIter;  advance_relaxation();
@@ -1012,8 +1006,6 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
   // is all_group, which is enforced to be present for all throttle cases.
   size_t all_group = numGroups - 1; // for all throttles
 
-  bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
-		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
   Real hf_target;
   if (maxFunctionEvals == SZ_MAX) { // accuracy-constrained -> online only
     // As for {ACV,GenACV}, employ ML BLUE's native estvar for accuracy scaling
@@ -1036,25 +1028,33 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
     hf_target = update_hf_target(mlblue_ev, metric_index, N_shared,estVarIter0);
   }
   else { // budget-constrained -> online or offline
-    Real remaining = (Real)maxFunctionEvals,
-      cost_H = sequenceCost[numApprox], offline_N_lwr = 1.,
-      N_shared = (offline) ? offline_N_lwr : (Real)pilotSamples[all_group];
-    if (!offline && pilotGroupSampling != SHARED_PILOT) {
-      BitArray inactive(numGroups);  inactive.set();
+    bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
+		    pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
+    size_t pilot_all = pilotSamples[all_group];
+    Real budget = (Real)maxFunctionEvals, offline_N_lwr = 1.,
+      N_shared = (offline) ? offline_N_lwr : (Real)pilot_all;
+    if (!offline) {
+      BitArray active_g(numGroups); // init to false
       size_t g, r, num_r = ratios_to_groups.size(); // numApprox+1
       for (r=0; r<num_r; ++r) {
 	g = ratios_to_groups[r];
-	if (g != _NPOS)
-	  inactive.reset(g);
+	if (g != _NPOS) active_g.set(g); // flip bit to on
       }
-      for (g=0; g<numGroups; ++g)
-	if (inactive[g])
-	  remaining -= pilotSamples[g] * modelGroupCost[g] / cost_H;
+      // For analytic initial guesses, mirror the budget deductions used in
+      // available_budget() for ensemble_numerical_solution()
+      switch (pilotGroupSampling) {
+      case SHARED_PILOT: {
+	BitArray active_m;  retained_groups_to_models(active_g, active_m);
+	deduct_inactive_model_costs(active_m, pilot_all,    budget);  break;
+      }
+      case INDEPENDENT_PILOT: // budget deductions are group-based
+	deduct_inactive_group_costs(active_g, pilotSamples, budget);  break;
+      }
     }
-    if (remaining > 0.)
+    if (budget > 0.)
       // scale_to_target() employs allocate_budget() and rescales for lower bnds
       scale_to_target(N_shared, sequenceCost, avg_eval_ratios, hf_target,
-		      remaining, offline_N_lwr);
+		      budget, offline_N_lwr);
     else // budget exhausted
       { hf_target = N_shared; avg_eval_ratios = 1.; }
   }
@@ -2076,7 +2076,7 @@ void NonDMultilevBLUESampling::prune_model_groups()
   bool online = (pilotMgmtMode == ONLINE_PILOT ||
 		 pilotMgmtMode == ONLINE_PILOT_PROJECTION);
   if (online && pilotGroupSampling == SHARED_PILOT) { // most common cases
-    // logic for both online modes is to make use of disproportionate investment
+    // logic for both online modes is to leverage disproportionate investment
     // in all_group, irregardless of its conditioning.  Further, ONLINE_PILOT
     // mode iterates based on increments to the shared all_group in
     // shared_covariance_iteration().
@@ -2086,6 +2086,10 @@ void NonDMultilevBLUESampling::prune_model_groups()
 	Cout << "Augment: add HF group = " << all_group << '\n';
       retainedModelGroups.set(all_group);
     }
+    // *** TO DO: could adopt APPROACH 2 below and reassign the shared sample
+    //            investment to the most expensive retained group
+    // *** this enhances group conditioning but discards shared samples for
+    //     models omitted from the reassigned group (also increases complexity)
   }
   // APPROACH 2: iff no HF group, add the best-conditioned discard with HF
   // > unlike online all_group, this group may have zero samples
@@ -2102,37 +2106,22 @@ void NonDMultilevBLUESampling::prune_model_groups()
   }
 
   // Define retainedModels from retainedModelGroups
-  size_t g, m, model_m, num_models, retained = 0, num_ap1 = numApprox + 1;
-  if (retainedModels.size() != num_ap1)
-    retainedModels.resize(num_ap1);
-  retainedModels.reset();
-  for (g=0; g<numGroups; ++g) {
-    if (retainedModelGroups[g]) {
-      const UShortArray& group_g = modelGroups[g];
-      num_models = group_g.size();
-      for (m=0; m<num_models; ++m) {
-	model_m = group_g[m];
-	if (!retainedModels[model_m])
-	  { retainedModels.set(model_m); ++retained; }
-      }
-    }
-    if (retained == num_ap1) { retainedModels.clear(); break; }
-  }
+  retained_groups_to_models(retainedModelGroups, retainedModels);
 
   if (outputLevel >= DEBUG_OUTPUT) {
     if (retainedModelGroups.empty() || retainedModelGroups.count() == numGroups)
       Cout << "All groups retained\n";
     else {
       Cout << "Retained group count = " << retainedModelGroups.count() << '\n';
-      for (g=0; g<numGroups; ++g)
+      for (size_t g=0; g<numGroups; ++g)
 	if (retainedModelGroups[g])
 	  Cout << "Retained group " << g << ":\n" << modelGroups[g];
     }
-    if (retainedModels.empty() || retainedModels.count() == num_ap1)
+    if (retainedModels.empty() || retainedModels.count() == numApprox+1)
       Cout << "All models retained\n";
     else {
       Cout << "Retained model count = " << retainedModels.count() << '\n';
-      for (m=0; m<num_ap1; ++m)
+      for (size_t m=0; m<=numApprox; ++m)
 	if (retainedModels[m])
 	  Cout << "Retained model " << m << '\n';
     }
