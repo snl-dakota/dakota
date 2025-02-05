@@ -86,7 +86,7 @@ public:
   // *** BASE MODEL (BROADLY USED, OPERATES ON BASE DATA, SUPPORTS RECURSION)
 
   /// return the sub-iterator in nested and surrogate models
-  virtual Iterator& subordinate_iterator();
+  virtual std::shared_ptr<Iterator> subordinate_iterator();
   /// return a single sub-model defined from subModel in nested and recast
   /// models and truth_model() in surrogate models; used for a directed
   /// dive through model recursions that may bypass some components.

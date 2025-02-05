@@ -3273,9 +3273,9 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
 /** return by reference requires use of dummy objects, but is
     important to allow use of assign_rep() since this operation must
     be performed on the original envelope object. */
-Iterator& Model::subordinate_iterator()
+std::shared_ptr<Iterator> Model::subordinate_iterator()
 {
-  return dummy_iterator; // return null/empty envelope
+  return nullptr; // return null/empty envelope
 }
 
 

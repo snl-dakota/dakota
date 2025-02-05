@@ -430,7 +430,7 @@ private:
   /// selects parameter sets on which to evaluate actualModel in order
   /// to generate the necessary data for building global approximations
   /// (optional for global since restart data may also be used)
-  Iterator daceIterator;
+  std::shared_pointer<Iterator> daceIterator;
 
   /// manages construction and application of correction functions that
   /// are applied to a surrogate model (DataFitSurr or EnsembleSurr) in
@@ -627,7 +627,7 @@ active_vars_compare(const Variables& vars,
 }
 
 
-inline Iterator& DataFitSurrModel::subordinate_iterator()
+inline std::shared_ptr<Iterator> DataFitSurrModel::subordinate_iterator()
 { return daceIterator; }
 
 
@@ -708,15 +708,15 @@ inline void DataFitSurrModel::resize_from_subordinate_model(size_t depth)
     // It must therefore manage inflation of incoming ActiveSet instances
 
     // daceIterator::activeSet muse be resized for consistency with actualModel
-    if (!daceIterator.is_null()) {
-      const ActiveSet&  dace_set = daceIterator.active_set();
+    if (daceIterator) {
+      const ActiveSet&  dace_set = daceIterator->active_set();
       const ShortArray& dace_asv = dace_set.request_vector();
       size_t num_am_resp = ModelUtils::response_size(*actualModel),
 	   num_dace_resp = dace_asv.size();
       if (num_am_resp != num_dace_resp) {
 	ActiveSet new_set(dace_set); // deep copy
 	new_set.reshape(num_am_resp);
-	daceIterator.active_set(new_set);
+	daceIterator->active_set(new_set);
       }
     }
   }
@@ -897,9 +897,9 @@ inline IntIntPair DataFitSurrModel::
 estimate_partition_bounds(int max_eval_concurrency)
 {
   // support DB-based and on-the-fly instantiations for DataFitSurrModel
-  if (!daceIterator.is_null()) {
-    probDescDB.set_db_list_nodes(daceIterator.method_id());
-    return daceIterator.estimate_partition_bounds();
+  if (daceIterator) {
+    probDescDB.set_db_list_nodes(daceIterator->method_id());
+    return daceIterator->estimate_partition_bounds();
   }
   else if (actualModel) {
     int am_max_conc = approxInterface.minimum_points(false)
@@ -935,11 +935,11 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   miPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);// run time setting
 
   if (recurse_flag) {
-    if (!daceIterator.is_null())
-      daceIterator.set_communicators(pl_iter);
+    if (daceIterator)
+      daceIterator->set_communicators(pl_iter);
     else if (actualModel)
       actualModel->init_communicators(pl_iter,
-	daceIterator.maximum_evaluation_concurrency()); // set in init_comms
+	daceIterator->maximum_evaluation_concurrency()); // set in init_comms
   }
 }
 
@@ -953,11 +953,11 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   //approxInterface.free_communicators();
 
   if (recurse_flag) {
-    if (!daceIterator.is_null())
-      daceIterator.free_communicators(pl_iter);
+    if (daceIterator)
+      daceIterator->free_communicators(pl_iter);
     else if (actualModel)
       actualModel->free_communicators(pl_iter,
-	daceIterator.maximum_evaluation_concurrency()); // set in init_comms
+	daceIterator->maximum_evaluation_concurrency()); // set in init_comms
   }
 }
 
@@ -970,7 +970,7 @@ serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
 
   if (actualModel)
     actualModel->serve_run(pl_iter,
-			  daceIterator.maximum_evaluation_concurrency());
+			  daceIterator->maximum_evaluation_concurrency());
 }
 
 
@@ -1042,7 +1042,7 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
 {
   approxInterface.print_evaluation_summary(s, minimal_header, relative_count);
   if (actualModel) {
-    if (daceIterator.is_null())
+    if (!daceIterator)
       actualModel->print_evaluation_summary(s, minimal_header, relative_count);
     else // daceIterator resets the eval reference -> don't use a relative count
       actualModel->print_evaluation_summary(s, minimal_header, false);
