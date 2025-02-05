@@ -234,7 +234,7 @@ public:
   const IntResponseMap& derived_synchronize_nowait() override;
 
   /// return sub-iterator, if present, within subModel
-  Iterator& subordinate_iterator() override;
+  std::shared_ptr<Iterator> subordinate_iterator() override;
   /// return subModel
   std::shared_ptr<Model> subordinate_model() override;
 
@@ -747,7 +747,7 @@ inline size_t RecastModel::qoi() const
 { return subModel->qoi(); } // TO DO: check for response mapping
 
 
-inline Iterator& RecastModel::subordinate_iterator()
+inline std::shared_ptr<Iterator> RecastModel::subordinate_iterator()
 { return subModel->subordinate_iterator(); }
 
 
