@@ -115,7 +115,7 @@ configure(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator)
     size_t method_index = problem_db.get_db_method_node(); // for restoration
     size_t model_index  = problem_db.get_db_model_node();  // for restoration
 
-    min_max_procs = sub_iterator.estimate_partition_bounds();
+    min_max_procs = sub_iterator->estimate_partition_bounds();
 
     problem_db.set_db_method_node(method_index); // restore method only
     problem_db.set_db_model_nodes(model_index);  // restore all model nodes

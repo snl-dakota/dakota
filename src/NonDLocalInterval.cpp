@@ -95,23 +95,24 @@ void NonDLocalInterval::check_sub_iterator_conflict()
   // Note 1: NPSOL/NLSSOL share code modules, so we check for both.
   // Note 2: forces lower-level to accommodate, even though this level may be
   //         the more flexible one in its ability to switch away from NPSOL.
+  std::shared_ptr<Iterator> sub_iterator;
   if (npsolFlag) {
-    Iterator sub_iterator = iteratedModel->subordinate_iterator();
-    if (!sub_iterator.is_null() && 
-	 ( sub_iterator.method_name() ==  NPSOL_SQP ||
-	   sub_iterator.method_name() == NLSSOL_SQP ||
-	   sub_iterator.uses_method() == SUBMETHOD_NPSOL ||
-	   sub_iterator.uses_method() == SUBMETHOD_NPSOL_OPTPP ) )
-      sub_iterator.method_recourse(methodName);
+    sub_iterator = iteratedModel->subordinate_iterator();
+    if (sub_iterator && 
+	 ( sub_iterator->method_name() ==  NPSOL_SQP ||
+	   sub_iterator->method_name() == NLSSOL_SQP ||
+	   sub_iterator->uses_method() == SUBMETHOD_NPSOL ||
+	   sub_iterator->uses_method() == SUBMETHOD_NPSOL_OPTPP ) )
+      sub_iterator->method_recourse(methodName);
     ModelList& sub_models = iteratedModel->subordinate_models();
     for (auto& sm : sub_models) {
         sub_iterator = sm->subordinate_iterator();
-        if (!sub_iterator.is_null() && 
-          ( sub_iterator.method_name() ==  NPSOL_SQP ||
-            sub_iterator.method_name() == NLSSOL_SQP ||
-            sub_iterator.uses_method() == SUBMETHOD_NPSOL ||
-            sub_iterator.uses_method() == SUBMETHOD_NPSOL_OPTPP ) )
-    sub_iterator.method_recourse(methodName);
+        if (sub_iterator && 
+          ( sub_iterator->method_name() ==  NPSOL_SQP ||
+            sub_iterator->method_name() == NLSSOL_SQP ||
+            sub_iterator->uses_method() == SUBMETHOD_NPSOL ||
+            sub_iterator->uses_method() == SUBMETHOD_NPSOL_OPTPP ) )
+    sub_iterator->method_recourse(methodName);
     }
   }
 }

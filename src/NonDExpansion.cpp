@@ -697,16 +697,15 @@ construct_expansion_sampler(unsigned short sample_type, const String& rng,
       }
       // extreme values needed for defining bounds of PDF bins
       bool vary_pattern = true, track_extreme = pdfOutput;
+
       importanceSampler = std::make_shared<NonDAdaptImpSampling>
 	      (uSpaceModel, sample_type, ais_samples, first_seed(), rng, vary_pattern,
 	      integration_refine, cdfFlag, false, false, track_extreme);
-
-
       importanceSampler->output_level(outputLevel);
-      importanceSampler->requested_levels(req_resp_levs, empty_rv_array,
-	empty_rv_array, empty_rv_array, respLevelTarget, respLevelTargetReduce,
-	cdfFlag, false); // suppress PDFs (managed locally)
-      //imp_sampler_rep->final_moments_type(Pecos::NO_MOMENTS); // already off
+      std::static_pointer_cast<NonDAdaptImpSampling>(importanceSampler)->
+        requested_levels(req_resp_levs, empty_rv_array,
+	      empty_rv_array, empty_rv_array, respLevelTarget, respLevelTargetReduce,
+	      cdfFlag, false); // suppress PDFs (managed locally)
     }
   }
   // publish output verbosity
@@ -769,9 +768,9 @@ void NonDExpansion::initialize_expansion()
 
   // if a sub-iterator, reset previous history (e.g. grid refinements) as needed
   if (subIteratorFlag) { //&& numUncertainQuant && refineType) {
-    Iterator& u_space_sampler = uSpaceModel->subordinate_iterator();
-    if (!u_space_sampler.is_null())
-      u_space_sampler.reset();// clear previous prior to next grid generate/eval
+    auto u_space_sampler = uSpaceModel->subordinate_iterator();
+    if (u_space_sampler)
+      u_space_sampler->reset();// clear previous prior to next grid generate/eval
   }
 
   // set initialPtU which is used in this class for all-variables mode and local
@@ -812,7 +811,7 @@ void NonDExpansion::compute_expansion()
   nataf.verify_design_jacobian(rdv_u);
 #endif // DERIV_DEBUG
 
-  Iterator& u_space_sampler = uSpaceModel->subordinate_iterator();
+  auto u_space_sampler = uSpaceModel->subordinate_iterator();
   std::shared_ptr<NonD> u_space_sampler_rep =
     std::static_pointer_cast<NonD>(u_space_sampler);
 
@@ -916,7 +915,7 @@ void NonDExpansion::compute_expansion()
   if (allVars && numUncertainQuant && !dist_param_derivs) {
     all_approx = true;
     // does sampler_asv contain content not evaluated previously
-    const ShortArray& prev_asv = u_space_sampler.active_set_request_vector();
+    const ShortArray& prev_asv = u_space_sampler->active_set_request_vector();
     for (i=0; i<numFunctions; ++i)
       // bit-wise AND checks if each sampler_asv bit is present in prev_asv
       if ( (prev_asv[i] & sampler_asv[i]) != sampler_asv[i] )
@@ -977,7 +976,7 @@ void NonDExpansion::compute_expansion()
 	sampler_set.derivative_vector(ModelUtils::continuous_variable_ids(*iteratedModel));
 
       // Build the orthogonal/interpolation polynomial approximations:
-      u_space_sampler.active_set(sampler_set);
+      u_space_sampler->active_set(sampler_set);
     }
 
     uSpaceModel->build_approximation();
@@ -1838,7 +1837,7 @@ void NonDExpansion::append_expansion()
   //         if necessary (PCE), increment_order_from_grid() has been called
 
   // Run uSpaceModel::daceIterator to generate numSamplesOnModel
-  uSpaceModel->subordinate_iterator().sampling_reset(numSamplesOnModel,
+  uSpaceModel->subordinate_iterator()->sampling_reset(numSamplesOnModel,
 						    true, false);
   uSpaceModel->run_dace();
   // append new DACE pts and rebuild expansion
@@ -1922,7 +1921,7 @@ void NonDExpansion::update_model_from_samples()
   // > now built in as part of of DataFitSurrModel::rebuild_global(), but
   //   multifidelity_reference_expansion() -> compute_expansion() also needs
   //   for sample updates (step > 0)  and resets (step = 0).
-  uSpaceModel->subordinate_iterator().sampling_reference(0);
+  uSpaceModel->subordinate_iterator()->sampling_reference(0);
 
   // enforce total pts (increment managed in DataFitSurrModel::rebuild_global())
   uSpaceModel->total_points(numSamplesOnModel);
@@ -2869,7 +2868,7 @@ void NonDExpansion::compute_numerical_level_mappings()
 
   // flags for limiting unneeded computation (matched in print_results())
   bool z_to_beta = (respLevelTarget == RELIABILITIES),
-       imp_sampling = importanceSampler;
+       imp_sampling = bool(importanceSampler);
 
   // loop over response fns and compute/store analytic stats/stat grads
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
@@ -3201,7 +3200,7 @@ void NonDExpansion::compute_numerical_statistics()
 
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
   bool list_sampling = (expansionSampler->method_name() == LIST_SAMPLING),
-        imp_sampling = importanceSampler;
+        imp_sampling = bool(importanceSampler);
   std::shared_ptr<NonDSampling> exp_sampler_rep =
     std::static_pointer_cast<NonDSampling>(expansionSampler);
   size_t i, j, cntr = 0, sampler_cntr = 0,

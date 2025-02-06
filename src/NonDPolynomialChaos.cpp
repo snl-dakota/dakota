@@ -183,7 +183,8 @@ NonDPolynomialChaos(std::shared_ptr<Model> model, short exp_coeffs_approach,
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
-  Iterator u_space_sampler; String approx_type;
+  std::shared_ptr<Iterator> u_space_sampler;
+  String approx_type;
   switch (exp_coeffs_approach) {
   case Pecos::QUADRATURE:
     config_integration(num_int, USHRT_MAX, USHRT_MAX, u_space_sampler,
@@ -269,7 +270,7 @@ NonDPolynomialChaos(std::shared_ptr<Model> model, short exp_coeffs_approach,
   UShortArray exp_orders; // defined for expansion_samples/regression
   configure_expansion_orders(expOrderSpec, dimPrefSpec, exp_orders);
 
-  Iterator u_space_sampler;
+  std::shared_ptr<Iterator> u_space_sampler;
   UShortArray tensor_grid_order; // for OLI + tensorRegression (not supported)
   String approx_type, rng("mt19937"), pt_reuse;
   config_regression(exp_orders, collocPtsSpec, 1, exp_coeffs_approach,
@@ -343,7 +344,7 @@ NonDPolynomialChaos(std::shared_ptr<Model> model, const String& exp_import_file,
   // --------------------------------
   UShortArray exp_orders; // not necessary to pre-define this
   //configure_expansion_orders(expOrderSpec, dimPrefSpec, exp_orders);
-  Iterator u_space_sampler;
+  std::shared_ptr<Iterator> u_space_sampler;
   String pt_reuse, approx_type("global_orthogonal_polynomial"), rng("mt19937");
   short corr_order = -1, corr_type = NO_CORRECTION;
   // DFSModel consumes QoI aggregations; supports up to Hessian eval for full
@@ -932,7 +933,7 @@ void NonDPolynomialChaos::initialize_u_space_model()
 		  expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
 		  expansionCoeffsApproach == Pecos::INCREMENTAL_SPARSE_GRID);
   if ( num_int || ( tensorRegression && numSamplesOnModel ) ) {
-    shared_data.integration_iterator(uSpaceModel->subordinate_iterator());
+    shared_data.integration_iterator(*uSpaceModel->subordinate_iterator());
     initialize_u_space_grid(); // propagates dist param updates
   }
   else // propagate dist param updates in case without IntegrationDriver

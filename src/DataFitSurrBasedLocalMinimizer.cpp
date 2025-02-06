@@ -184,13 +184,13 @@ void DataFitSurrBasedLocalMinimizer::pre_run()
   trustRegionData.trust_region_factor(origTrustRegionFactor[0]);
 
   // Extract subIterator/subModel(s) from the SurrogateModel
-  Iterator& dace_iterator = iteratedModel->subordinate_iterator();
+  std::shared_ptr<Iterator> dace_iterator = iteratedModel->subordinate_iterator();
 
   // Update DACE settings for global approximations.  Check that dace_iterator
   // is defined (a dace_iterator specification is not required when the data
   // samples are read in from a file rather than obtained from sampling).
   //daceCenterEvalFlag = false;
-  if (globalApproxFlag && !dace_iterator.is_null()) {
+  if (globalApproxFlag && dace_iterator) {
     // With correction approaches, the responses specification must provide
     // support for evaluating derivative info.  However, this data is usually
     // not needed for every DACE evaluation in the global surrogate build
@@ -198,7 +198,7 @@ void DataFitSurrBasedLocalMinimizer::pre_run()
     // data).  Therefore, SBLM overrides the normal DACE behavior of evaluating
     // the full data set at every point in the experimental design.
     short asv_val = (useDerivsFlag) ? 3 : 1;
-    dace_iterator.active_set_request_values(asv_val);
+    dace_iterator->active_set_request_values(asv_val);
 
     // Extract info on the sampling method type
     //unsigned short sampling_type = dace_iterator.sampling_scheme();

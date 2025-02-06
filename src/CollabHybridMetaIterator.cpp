@@ -166,7 +166,7 @@ void CollabHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
     size_t i, num_iterators = methodStrings.size();
     for (i=0; i<num_iterators; ++i)
-      iterSched.set_iterator(selectedIterators[i], si_pl_iter);
+      iterSched.set_iterator(*selectedIterators[i], si_pl_iter);
   }
 }
 

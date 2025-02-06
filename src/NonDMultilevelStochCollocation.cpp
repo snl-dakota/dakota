@@ -53,7 +53,7 @@ NonDMultilevelStochCollocation(ProblemDescDB& problem_db, std::shared_ptr<Model>
   // -------------------------
   // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
   // generated using active sampling view:
-  Iterator u_space_sampler;
+  std::shared_ptr<Iterator> u_space_sampler;
   unsigned short quad_order = USHRT_MAX, ssg_level = USHRT_MAX;
   if (!quadOrderSeqSpec.empty())
     quad_order = (sequenceIndex < quadOrderSeqSpec.size()) ?
@@ -147,7 +147,7 @@ NonDMultilevelStochCollocation(std::shared_ptr<Model> model, short exp_coeffs_ap
   // -------------------------
   unsigned short num_int = (sequenceIndex < num_int_seq.size()) ?
     num_int_seq[sequenceIndex] : num_int_seq.back();
-  Iterator u_space_sampler;
+  std::shared_ptr<Iterator> u_space_sampler;
   config_integration(expansionCoeffsApproach, num_int, dim_pref,
 		     u_space_sampler, g_u_model);
   String pt_reuse, approx_type;

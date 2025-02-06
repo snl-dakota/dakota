@@ -78,7 +78,7 @@ void NonDLocalEvidence::post_process_cell_results(bool maximize)
 
   // Write the optimization results to cell data structures
   const RealVector& fns_star_approx
-    = minMaxOptimizer.response_results().function_values();
+    = minMaxOptimizer->response_results().function_values();
   if (maximize)
     cellFnUpperBounds[respFnCntr][cellCntr] = fns_star_approx[0];
   else

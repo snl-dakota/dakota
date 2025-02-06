@@ -48,26 +48,27 @@ check_sub_iterator_conflict(Model& model, unsigned short method_name)
   // Note: This check is performed for DOT, CONMIN, and SOLBase, but not
   //       for LHS (since it is only active in pre-processing) or SOL
   //       user-functions mode (since there is no model in this case).
-  Iterator sub_iterator = model.subordinate_iterator();
-  if (!sub_iterator.is_null() && 
-      ( sub_iterator.method_name() ==     NPSOL_SQP   ||
-	sub_iterator.method_name() ==    NLSSOL_SQP   ||
-	sub_iterator.uses_method() == SUBMETHOD_NPSOL ||
-	sub_iterator.uses_method() == SUBMETHOD_NPSOL_OPTPP  ||
-	sub_iterator.uses_method() == SUBMETHOD_DIRECT_NPSOL ||
-	sub_iterator.uses_method() == SUBMETHOD_DIRECT_NPSOL_OPTPP ) )
-    sub_iterator.method_recourse(method_name);
+  std::shared_ptr<Iterator> sub_iterator;
+  sub_iterator = model.subordinate_iterator();
+  if (sub_iterator && 
+      ( sub_iterator->method_name() ==     NPSOL_SQP   ||
+	sub_iterator->method_name() ==    NLSSOL_SQP   ||
+	sub_iterator->uses_method() == SUBMETHOD_NPSOL ||
+	sub_iterator->uses_method() == SUBMETHOD_NPSOL_OPTPP  ||
+	sub_iterator->uses_method() == SUBMETHOD_DIRECT_NPSOL ||
+	sub_iterator->uses_method() == SUBMETHOD_DIRECT_NPSOL_OPTPP ) )
+    sub_iterator->method_recourse(method_name);
   ModelList& sub_models = model.subordinate_models();
   for (auto& sm : sub_models) {
     sub_iterator = sm->subordinate_iterator();
-    if (!sub_iterator.is_null() && 
-	 ( sub_iterator.method_name() ==     NPSOL_SQP   ||
-	   sub_iterator.method_name() ==    NLSSOL_SQP   ||
-	   sub_iterator.uses_method() == SUBMETHOD_NPSOL ||
-	   sub_iterator.uses_method() == SUBMETHOD_NPSOL_OPTPP  ||
-	   sub_iterator.uses_method() == SUBMETHOD_DIRECT_NPSOL ||
-	   sub_iterator.uses_method() == SUBMETHOD_DIRECT_NPSOL_OPTPP ) )
-      sub_iterator.method_recourse(method_name);
+    if (sub_iterator && 
+	 ( sub_iterator->method_name() ==     NPSOL_SQP   ||
+	   sub_iterator->method_name() ==    NLSSOL_SQP   ||
+	   sub_iterator->uses_method() == SUBMETHOD_NPSOL ||
+	   sub_iterator->uses_method() == SUBMETHOD_NPSOL_OPTPP  ||
+	   sub_iterator->uses_method() == SUBMETHOD_DIRECT_NPSOL ||
+	   sub_iterator->uses_method() == SUBMETHOD_DIRECT_NPSOL_OPTPP ) )
+      sub_iterator->method_recourse(method_name);
   }
 }
 

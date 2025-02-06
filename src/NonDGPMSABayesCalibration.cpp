@@ -168,7 +168,7 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> mode
   const String& rng = probDescDB.get_string("method.random_number_generator");
   unsigned short sample_type = SUBMETHOD_DEFAULT;
   lhsIter = std::make_unique<NonDLHSSampling>
-		     (mcmcModel, sample_type, samples, randomSeed, rng));
+		     (mcmcModel, sample_type, samples, randomSeed, rng);
 }
 
 

@@ -332,7 +332,7 @@ void Environment::construct()
   // (invoke ProblemDescDB ctor chain on all processors)
   IteratorScheduler::init_iterator(probDescDB, topLevelIterator, w_pl_iter);
   // Notfiy the iterator that it is the top level
-  topLevelIterator.top_level(true);
+  topLevelIterator->top_level(true);
 }
 
 
@@ -359,11 +359,11 @@ void Environment::execute()
     // set up plotting and data tabulation
     // > MetaIterators delegate graphics initialization
     // > topLevelIterator's methodName must be defined on all ranks
-    if ( (topLevelIterator.method_name() & PARALLEL_BIT) == 0 && output_rank )
-      topLevelIterator.initialize_graphics(); // default to server_id = 1
+    if ( (topLevelIterator->method_name() & PARALLEL_BIT) == 0 && output_rank )
+      topLevelIterator->initialize_graphics(); // default to server_id = 1
 
     ParLevLIter w_pl_iter = parallelLib.w_parallel_level_iterator();
-    IteratorScheduler::run_iterator(topLevelIterator, w_pl_iter);
+    IteratorScheduler::run_iterator(*topLevelIterator, w_pl_iter);
 
     if (output_rank)
       Cout << "<<<<< Environment execution completed.\n";
@@ -395,11 +395,11 @@ void Environment::destruct()
 {
   // Called only by letter instances, no Rep forward required
 
-  if (topLevelIterator.is_null()) // help and version invocations
+  if (topLevelIterator->is_null()) // help and version invocations
     return;
 
   ParLevLIter w_pl_iter = parallelLib.w_parallel_level_iterator();
-  IteratorScheduler::free_iterator(topLevelIterator, w_pl_iter);
+  IteratorScheduler::free_iterator(*topLevelIterator, w_pl_iter);
 
   // decrement hierarchical output/restart streams (w_pl does not induce a tag)
   parallelLib.pop_output_tag(*w_pl_iter);

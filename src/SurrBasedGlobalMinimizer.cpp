@@ -93,7 +93,7 @@ void SurrBasedGlobalMinimizer::core_run()
   // Extract subIterator/subModel(s) from the SurrogateModel
   Model&    truth_model   = *iteratedModel->truth_model();
   Model&    approx_model  = *iteratedModel->surrogate_model();
-  Iterator& dace_iterator = iteratedModel->subordinate_iterator();
+  Iterator& dace_iterator = *iteratedModel->subordinate_iterator();
   
   // This flag controls the method by which we introduce new results data
   // into the surrogate for updating.  Right now, there are two methods

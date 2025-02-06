@@ -236,20 +236,21 @@ void CONMINOptimizer::check_sub_iterator_conflict()
   // sub-models and test each sub-iterator for CONMIN presence.
   // Note: This check is performed for DOT, CONMIN, and SOLBase, but not
   //       for LHS since it is only active in pre-processing.
-  Iterator sub_iterator = iteratedModel->subordinate_iterator();
-  if (!sub_iterator.is_null() && 
-       ( sub_iterator.method_name() == CONMIN_FRCG ||
-	 sub_iterator.method_name() == CONMIN_MFD  ||
-	 sub_iterator.uses_method() == SUBMETHOD_CONMIN ) ) //_MFD,_FRCG,...
-    sub_iterator.method_recourse(methodName);
+  std::shared_ptr<Iterator> sub_iterator;
+  sub_iterator = iteratedModel->subordinate_iterator();
+  if (sub_iterator && 
+       ( sub_iterator->method_name() == CONMIN_FRCG ||
+	 sub_iterator->method_name() == CONMIN_MFD  ||
+	 sub_iterator->uses_method() == SUBMETHOD_CONMIN ) ) //_MFD,_FRCG,...
+    sub_iterator->method_recourse(methodName);
   ModelList& sub_models = iteratedModel->subordinate_models();
   for (auto& sm: sub_models) {
     sub_iterator = sm->subordinate_iterator();
-    if (!sub_iterator.is_null() && 
-	 ( sub_iterator.method_name() == CONMIN_FRCG ||
-	   sub_iterator.method_name() == CONMIN_MFD  ||
-	   sub_iterator.uses_method() == SUBMETHOD_CONMIN ) ) //_MFD,_FRCG,...
-      sub_iterator.method_recourse(methodName);
+    if (sub_iterator && 
+	 ( sub_iterator->method_name() == CONMIN_FRCG ||
+	   sub_iterator->method_name() == CONMIN_MFD  ||
+	   sub_iterator->uses_method() == SUBMETHOD_CONMIN ) ) //_MFD,_FRCG,...
+      sub_iterator->method_recourse(methodName);
   }
 }
 

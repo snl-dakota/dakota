@@ -230,11 +230,11 @@ TEST(rol_integration_tests, test_rol_text_book_nln_ineq_const)
   // Now get the ROL Optimizer and test various reset functionality
   Dakota::ProblemDescDB& problem_db = env.problem_description_db();
   IteratorList& iter_list = problem_db.iterator_list();
-  Dakota::Iterator & dak_iter = *iter_list.begin();
+  std::shared_ptr<Dakota::Iterator> dak_iter = *iter_list.begin();
   //Cout << "The iterator is a : " << dak_iter.method_string() << endl;
-  dak_iter.print_results(Cout);
+  dak_iter->print_results(Cout);
   Dakota::ROLOptimizer& rol_optimizer =
-    *dynamic_pointer_cast<Dakota::ROLOptimizer>(dak_iter.iterator_rep());
+    *dynamic_pointer_cast<Dakota::ROLOptimizer>(dak_iter);
 
   ROL::OptimizationProblem<Real> & rol_problem = rol_optimizer.get_rol_problem();
 

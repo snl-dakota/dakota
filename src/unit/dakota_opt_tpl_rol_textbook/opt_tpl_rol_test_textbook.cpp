@@ -365,18 +365,18 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_bound_const_reset)
   // Now get the ROL Optimizer and test various reset functionality
   Dakota::ProblemDescDB& problem_db = env.problem_description_db();
   IteratorList& iter_list = problem_db.iterator_list();
-  Dakota::Iterator & dak_iter = *iter_list.begin();
-  //Cout << "The iterator is a : " << dak_iter.method_string() << endl;
-  dak_iter.print_results(Cout);
+  std::shared_ptr<Dakota::Iterator> dak_iter = *iter_list.begin();
+  //Cout << "The iterator is a : " << dak_iter->method_string() << endl;
+  dak_iter->print_results(Cout);
   Dakota::ROLOptimizer& rol_optimizer =
-    *std::dynamic_pointer_cast<Dakota::ROLOptimizer>(dak_iter.iterator_rep());
+    *std::dynamic_pointer_cast<Dakota::ROLOptimizer>(dak_iter);
   //Cout << "The iterator is also a ROLOptimizer --> " << ((NULL != rol_optimizer) ? true : false) << endl;
 
   // retrieve the final parameter values
   const Variables& vars = env.variables_results();
 
   // We will reset various entities by modifying model contents
-  std::shared_ptr<Dakota::Model> model = dak_iter.iterated_model();
+  std::shared_ptr<Dakota::Model> model = dak_iter->iterated_model();
 
   // Let's see if we can reset the initial and bounds values using the registered solution with ROL 
   // and owned by ROLOptimizer and then re-solve ... RWH

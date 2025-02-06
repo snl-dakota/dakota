@@ -325,9 +325,9 @@ void NonDGPImpSampling::core_run()
  
         if (num_eval_kept==0) {
 	  normConst(k)=0.0;
-          sampleRhoOne.run(pl_iter);
+          sampleRhoOne->run(pl_iter);
          // obtain results 
-          const RealMatrix&  rho1_samples = sampleRhoOne.all_samples();
+          const RealMatrix&  rho1_samples = sampleRhoOne->all_samples();
           // For now, we always only draw one sample
             new_X = Teuchos::getCol(Teuchos::View,
 	      const_cast<RealMatrix&>(rho1_samples), 0);

@@ -39,6 +39,13 @@ class Iterator
 {
 public:
 
+  /// convert a method name enumeration value to a string
+  static String method_enum_to_string(unsigned short method_enum);
+  /// convert a method name string to an enumeration value
+  static unsigned short method_string_to_enum(const String& method_str);
+  /// convert a sub-method name enumeration value to a string
+  static String submethod_enum_to_string(unsigned short submethod_enum);
+
   //
   //- Heading: Constructors, destructor, assignment operator
   //
@@ -292,13 +299,6 @@ public:
   void method_string(const String& m_str);
   /// return the method name by string
   String method_string() const;
-
-  /// convert a method name enumeration value to a string
-  String method_enum_to_string(unsigned short method_enum) const;
-  /// convert a method name string to an enumeration value
-  unsigned short method_string_to_enum(const String& method_str) const;
-  /// convert a sub-method name enumeration value to a string
-  String submethod_enum_to_string(unsigned short submethod_enum) const;
 
   /// return the method identifier (methodId)
   const String& method_id() const;

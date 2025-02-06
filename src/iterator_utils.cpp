@@ -196,7 +196,7 @@ namespace Dakota {
         case GLOBAL_RELIABILITY:
             return std::make_shared<NonDGlobalReliability>(problem_db, model); break;
         case GLOBAL_INTERVAL_EST:
-            switch (probDescDB.get_ushort("method.nond.opt_subproblem_solver")) {
+            switch (problem_db.get_ushort("method.nond.opt_subproblem_solver")) {
             case SUBMETHOD_LHS:
             return std::make_shared<NonDLHSSingleInterval>(problem_db, model); break;
             default:
@@ -205,7 +205,7 @@ namespace Dakota {
             }
             break;
         case GLOBAL_EVIDENCE:
-            switch (probDescDB.get_ushort("method.nond.opt_subproblem_solver")) {
+            switch (problem_db.get_ushort("method.nond.opt_subproblem_solver")) {
             case SUBMETHOD_LHS:
             return std::make_shared<NonDLHSEvidence>(problem_db, model); break;
             default:
@@ -233,7 +233,7 @@ namespace Dakota {
             return std::make_shared<NonDSurrogateExpansion>(problem_db, model); break;
         case BAYES_CALIBRATION:
             // TO DO: add sub_method to bayes_calibration specification
-            switch (probDescDB.get_ushort("method.sub_method")) {
+            switch (problem_db.get_ushort("method.sub_method")) {
             case SUBMETHOD_GPMSA:
         #ifdef HAVE_QUESO_GPMSA
             return std::make_shared<NonDGPMSABayesCalibration>(problem_db, model);
@@ -270,8 +270,8 @@ namespace Dakota {
             break;
             default:
             Cerr << "\nError: Bayesian calibration method '"
-            << submethod_enum_to_string(
-                probDescDB.get_ushort("method.sub_method")) << "' unavailable.\n";
+            << Iterator::submethod_enum_to_string(
+                problem_db.get_ushort("method.sub_method")) << "' unavailable.\n";
             return std::shared_ptr<Iterator>(); break;
             }
             break;
@@ -300,14 +300,14 @@ namespace Dakota {
             // Similar to MFMC below, spec options could trigger promotion to GenACV
             // (which is then restricted to hierarchical DAGs for MLMC consistency)
             // Note that recursion/selection is not available w/o weighting.
-            if (probDescDB.get_ushort("method.sub_method") == SUBMETHOD_WEIGHTED_MLMC)
+            if (problem_db.get_ushort("method.sub_method") == SUBMETHOD_WEIGHTED_MLMC)
             return std::make_shared<NonDGenACVSampling>(problem_db, model);
             else
             return std::make_shared<NonDMultilevelSampling>(problem_db, model);
             break;
         case MULTIFIDELITY_SAMPLING:
-            if (probDescDB.get_short("method.nond.search_model_graphs.recursion") ||
-            probDescDB.get_short("method.nond.search_model_graphs.selection"))
+            if (problem_db.get_short("method.nond.search_model_graphs.recursion") ||
+            problem_db.get_short("method.nond.search_model_graphs.selection"))
             return std::make_shared<NonDGenACVSampling>(problem_db, model);
             else // Note that numerical MFMC reorders models on the fly, similar to
                 // enumeration of hierarchical DAGs (more efficient, less smooth?)
@@ -317,8 +317,8 @@ namespace Dakota {
             return std::make_shared<NonDMultilevControlVarSampling>(problem_db, model);
             break;
         case APPROX_CONTROL_VARIATE:
-            if (probDescDB.get_short("method.nond.search_model_graphs.recursion") ||
-            probDescDB.get_short("method.nond.search_model_graphs.selection") ||
+            if (problem_db.get_short("method.nond.search_model_graphs.recursion") ||
+            problem_db.get_short("method.nond.search_model_graphs.selection") ||
             problem_db.get_ushort("method.sub_method") == SUBMETHOD_ACV_RD)
             // RD is promoted since we want MLMC hierarch rather than ACV peer DAG
             return std::make_shared<NonDGenACVSampling>(problem_db, model);
@@ -441,17 +441,17 @@ namespace Dakota {
             switch (method_name) {
             case NPSOL_SQP: case NLPQL_SQP:
             case DOT_BFGS: case DOT_FRCG: case DOT_MMFD: case DOT_SLP: case DOT_SQP:
-            Cerr << "Method " << method_enum_to_string(method_name)
+            Cerr << "Method " << Iterator::method_enum_to_string(method_name)
             << " not available; requires a separate software license."
             << "\nCONMIN or OPT++ methods may be suitable alternatives.\n";
             break;
             case NLSSOL_SQP:
-            Cerr << "Method " << method_enum_to_string(method_name)
+            Cerr << "Method " << Iterator::method_enum_to_string(method_name)
             << " not available; requires a separate software license."
             << "\nnl2sol or optpp_g_newton may be suitable alternatives.\n";
             break;
             default:
-            Cerr << "Method " << method_enum_to_string(method_name)
+            Cerr << "Method " << Iterator::method_enum_to_string(method_name)
             << " not available.\n";
             break;
             }

@@ -9,6 +9,7 @@
 
 #include "dakota_data_io.hpp"
 #include "DakotaIterator.hpp"
+#include "DakotaApproximation.hpp"
 #include "DakotaTraitsBase.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
@@ -328,7 +329,7 @@ static UShortStrBimap submethod_map =
   ;
 
 
-String Iterator::method_enum_to_string(unsigned short method_enum) const
+String Iterator::method_enum_to_string(unsigned short method_enum)
 {
   UShortStrBimap::left_const_iterator lc_iter
     = method_map.left.find(method_enum);
@@ -341,7 +342,7 @@ String Iterator::method_enum_to_string(unsigned short method_enum) const
 }
 
 
-unsigned short Iterator::method_string_to_enum(const String& method_str) const
+unsigned short Iterator::method_string_to_enum(const String& method_str)
 {
   UShortStrBimap::right_const_iterator rc_iter
     = method_map.right.find(method_str);
@@ -354,7 +355,7 @@ unsigned short Iterator::method_string_to_enum(const String& method_str) const
 }
 
 
-String Iterator::submethod_enum_to_string(unsigned short submethod_enum) const
+String Iterator::submethod_enum_to_string(unsigned short submethod_enum)
 {
   UShortStrBimap::left_const_iterator lc_iter
     = submethod_map.left.find(submethod_enum);
@@ -392,12 +393,8 @@ void Iterator::update_from_model(const Model& model)
 
 void Iterator::run(ParLevLIter pl_iter)
 {
-  if (iteratorRep)
-    iteratorRep->run(pl_iter); // envelope fwd to letter
-  else {
-    set_communicators(pl_iter);
-    run(); // invoke overloaded version
-  }
+  set_communicators(pl_iter);
+  run(); // invoke overloaded version
 }
 
 
@@ -814,6 +811,7 @@ const RealMatrix& Iterator::callback_linear_ineq_coefficients() const
 	 << "coefficients() virtual fn.\n       No default defined at base "
 	 << "class." << std::endl;
   abort_handler(METHOD_ERROR);
+  throw METHOD_ERROR; // never reached; silences warnings/errors on some compilers about lack of return
 }
 
 
@@ -823,6 +821,7 @@ const RealVector& Iterator::callback_linear_ineq_lower_bounds() const
 	 << "lower_bounds() virtual fn.\n       No default defined at base "
 	 << "class." << std::endl;
   abort_handler(METHOD_ERROR);
+  throw METHOD_ERROR; // never reached; silences warnings/errors on some compilers about lack of return
 }
 
 
@@ -833,6 +832,7 @@ const RealVector& Iterator::callback_linear_ineq_upper_bounds() const
 	 << "upper_bounds() virtual fn.\n       No default defined at base "
 	 << "class." << std::endl;
   abort_handler(METHOD_ERROR);
+  throw METHOD_ERROR;
 }
 
 
@@ -889,10 +889,7 @@ void Iterator::initialize_model_graphics(Model& model, int iterator_server_id)
     that specialize the graphics display. */
 void Iterator::initialize_graphics(int iterator_server_id)
 {
-  if (iteratorRep)
-    iteratorRep->initialize_graphics(iterator_server_id);
-  else
-    initialize_model_graphics(*iteratedModel, iterator_server_id);
+  initialize_model_graphics(*iteratedModel, iterator_server_id);
 }
 
 

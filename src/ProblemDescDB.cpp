@@ -998,7 +998,7 @@ std::shared_ptr<Iterator> ProblemDescDB::get_iterator(std::shared_ptr<Model> mod
   }
   // idMethod already exists, but check for same model.  If !same, instantiate
   // new rather than update (i_it->iterated_model(model)) all shared instances.
-  else if (model != i_it->iterated_model()) {
+  else if (model != (*i_it)->iterated_model()) {
     dbRep->iteratorList.push_back(IteratorUtils::get_iterator(*this, model));
     i_it = --dbRep->iteratorList.end();
   }
@@ -1028,7 +1028,7 @@ get_iterator(const String& method_name, std::shared_ptr<Model> model)
   }
   // method_name already exists, but check for same model. If !same, instantiate
   // new rather than update (i_it->iterated_model(model)) all shared instances.
-  else if (model != i_it->iterated_model()) {
+  else if (model != (*i_it)->iterated_model()) {
     dbRep->iteratorByNameList.push_back(IteratorUtils::get_iterator(method_name, model));
     i_it = --dbRep->iteratorByNameList.end();
   }

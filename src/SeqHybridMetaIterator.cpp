@@ -125,7 +125,7 @@ void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   bool sizet_max_replace = false;
   for (i=0; i<num_iterators; ++i) {
     // compute min/max processors per iterator for each method
-    Iterator& the_iterator = selectedIterators[i];
+    auto the_iterator = selectedIterators[i];
     auto& the_model = (singlePassedModel) ? iteratedModel : selectedModels[i];
     ppi_pr_i = (lightwtMethodCtor) ?
       estimate_by_name(methodStrings[i], modelStrings[i], the_iterator,
@@ -139,18 +139,18 @@ void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
     // number of final solutions by one step in the sequence
     if (pl_rank == 0) {
       // manage number of points accepted per iterator instance
-      if (the_iterator.accepts_multiple_points())
+      if (the_iterator->accepts_multiple_points())
         running_product = 1; // reset
       // max concurrency tracking
       else if (running_product > maxIteratorConcurrency)
 	maxIteratorConcurrency = running_product;
       // manage number of points generated per iterator instance
-      if (the_iterator.returns_multiple_points()) {
-	size_t num_final = the_iterator.num_final_solutions();
+      if (the_iterator->returns_multiple_points()) {
+	size_t num_final = the_iterator->num_final_solutions();
 	// if unlimited final solns (e.g. MOGA), use a stand-in (e.g. pop_size)
 	if (num_final == SZ_MAX) {
 	  sizet_max_replace = true;
-	  running_product *= the_iterator.maximum_evaluation_concurrency();
+	  running_product *= the_iterator->maximum_evaluation_concurrency();
 	}
 	else
 	  running_product *= num_final;

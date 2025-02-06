@@ -82,7 +82,7 @@ private:
         PebbldBranching* branchAndBound;
 
         /// Minimizer used to solve the subproblem on each branch.
-        Iterator subProbMinimizer;
+        std::shared_ptr<Iterator> subProbMinimizer;
 };
 
 }     // namespace

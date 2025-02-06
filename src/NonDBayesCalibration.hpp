@@ -20,6 +20,7 @@
 
 namespace Dakota {
 
+class NonDExpansion;
 
 /// Base class for Bayesian inference: generates posterior
 /// distribution on model parameters given experimental data

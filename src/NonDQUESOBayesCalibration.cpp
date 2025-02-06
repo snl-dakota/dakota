@@ -117,7 +117,7 @@ void NonDQUESOBayesCalibration::map_pre_solve()
 {
   // doing a double check here to avoid a double copy if not optimizing 
   // for MAP (this check happens again in base class map_pre_solve()). 
-  if (mapOptimizer.is_null()) return;
+  if (!mapOptimizer) return;
   NonDBayesCalibration::map_pre_solve();
 
   // propagate MAP to paramInitials for starting point of MCMC chain.  

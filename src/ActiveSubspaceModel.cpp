@@ -926,7 +926,7 @@ unsigned int ActiveSubspaceModel::compute_cross_validation_metric()
 
     UShortArray approx_order(reducedRank, poly_degree);
     short corr_order = -1, corr_type = NO_CORRECTION, data_order = 1;
-    Iterator dace_iterator;
+    std::shared_ptr<Iterator> dace_iterator;
 
     auto cv_surr_model = std::make_shared<DataFitSurrModel>(dace_iterator,
       asm_model_tmp, surr_set, surr_view, approx_type, approx_order, corr_type,
@@ -1116,7 +1116,7 @@ void ActiveSubspaceModel::build_surrogate()
   int poly_degree = 2; // quadratic bases
   UShortArray approx_order(reducedRank, poly_degree);
   short corr_order = -1, corr_type = NO_CORRECTION, data_order = 1;
-  Iterator dace_iterator;
+  std::shared_ptr<Iterator> dace_iterator;
 
   surrogateModel = std::make_shared<DataFitSurrModel>(dace_iterator,
     asm_model, surr_set, surr_view, approx_type, approx_order, corr_type,

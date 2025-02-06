@@ -140,7 +140,7 @@ ConcurrentMetaIterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
 void ConcurrentMetaIterator::declare_sources() {
   evaluationsDB.declare_source(method_id(), 
                                "iterator",
-                               selectedIterator.method_id(),
+                               selectedIterator->method_id(),
                                "iterator");
 }
 

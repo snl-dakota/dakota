@@ -484,7 +484,7 @@ void NonDMUQBayesCalibration::calibrate()
   const int N =  (chainSamples > 0) ? chainSamples : 1000;
   const size_t &num_cv = numContinuousVars;
   Eigen::VectorXd init_pt(num_cv);
-  if(mapOptimizer.is_null()) {
+  if(!mapOptimizer) {
     const RealVector& init_point = ModelUtils::continuous_variables(*nonDMUQInstance->mcmcModel);
     for (size_t i(0); i < num_cv; ++i)
       init_pt[i] = init_point[i];
@@ -529,7 +529,7 @@ void NonDMUQBayesCalibration::map_pre_solve()
 {
   // doing a double check here to avoid a double copy if not optimizing 
   // for MAP (this check happens again in base class map_pre_solve()). 
-  if (mapOptimizer.is_null()) return;
+  if (!mapOptimizer) return;
   NonDBayesCalibration::map_pre_solve();
 }
 

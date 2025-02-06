@@ -49,7 +49,7 @@ public:
   /// constructor
   DataFitSurrModel(ProblemDescDB& problem_db);
   /// alternate constructor for instantiations on the fly
-  DataFitSurrModel(std::shared_ptr<Iteratr> dace_iterator, std::shared_ptr<Model> actual_model,
+  DataFitSurrModel(std::shared_ptr<Iterator> dace_iterator, std::shared_ptr<Model> actual_model,
 		   const ActiveSet& dfs_set, const ShortShortPair& dfs_view,
 		   const String& approx_type, const UShortArray& approx_order,
 		   short corr_type, short corr_order, short data_order,
@@ -158,7 +158,7 @@ public:
 		 ShortArray& approx_asv);
 
   /// return daceIterator
-  Iterator& subordinate_iterator() override;
+  std::shared_ptr<Iterator> subordinate_iterator() override;
 
   /// set active model key within approxInterface
   void active_model_key(const Pecos::ActiveKey& key) override;
@@ -430,7 +430,7 @@ private:
   /// selects parameter sets on which to evaluate actualModel in order
   /// to generate the necessary data for building global approximations
   /// (optional for global since restart data may also be used)
-  std::shared_pointer<Iterator> daceIterator;
+  std::shared_ptr<Iterator> daceIterator;
 
   /// manages construction and application of correction functions that
   /// are applied to a surrogate model (DataFitSurr or EnsembleSurr) in

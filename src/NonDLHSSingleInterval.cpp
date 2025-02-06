@@ -32,7 +32,7 @@ void NonDLHSSingleInterval::initialize()
 
 void NonDLHSSingleInterval::post_process_samples()
 {
-  const IntResponseMap& all_responses = lhsSampler.all_responses();
+  const IntResponseMap& all_responses = lhsSampler->all_responses();
   Real lwr, upr; IntRespMCIter r_it;
   for (respFnCntr=0; respFnCntr<numFunctions; ++respFnCntr) {
     Cout << ">>>>> Identifying minimum and maximum samples for response "

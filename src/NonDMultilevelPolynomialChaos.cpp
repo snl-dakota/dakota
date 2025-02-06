@@ -59,7 +59,7 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, std::shared_ptr<Model> 
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
-  Iterator u_space_sampler;
+  std::shared_ptr<Iterator> u_space_sampler;
   String approx_type;
   unsigned short sample_type = probDescDB.get_ushort("method.sample_type");
   const String& rng = probDescDB.get_string("method.random_number_generator");
@@ -174,7 +174,8 @@ NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ std::shared_ptr<Mo
     Cerr << "Error: Unsupported expansion coefficients approach." << std::endl;
     abort_handler(METHOD_ERROR); break;
   }
-  Iterator u_space_sampler; String approx_type;
+  std::shared_ptr<Iterator> u_space_sampler;
+  String approx_type;
   config_integration(quad_order, ssg_level, cubIntSpec, u_space_sampler,
 		     g_u_model, approx_type);
 
@@ -251,7 +252,7 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, std::shared_ptr<Model>
   UShortArray exp_orders; // defined for expansion_samples/regression
   configure_expansion_orders(expansion_order(), dimPrefSpec, exp_orders);
 
-  Iterator u_space_sampler;
+  std::shared_ptr<Iterator> u_space_sampler;
   UShortArray tensor_grid_order; // for OLI + tensorRegression (not supported)
   String approx_type, rng("mt19937"), pt_reuse;
   config_regression(exp_orders, colloc_pts, 1, exp_coeffs_approach,

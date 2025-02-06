@@ -283,7 +283,7 @@ NonDGlobalReliability(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   // A max of the local derivative concurrency and the DACE concurrency is used
   // for this purpose.
   maxEvalConcurrency = std::max(maxEvalConcurrency,
-				dace_iterator.maximum_evaluation_concurrency());
+				dace_iterator->maximum_evaluation_concurrency());
 
   // Configure a RecastModel with one objective and no constraints using the
   // alternate minimalist constructor.  The RIA/PMA expected improvement/
@@ -1022,7 +1022,7 @@ void NonDGlobalReliability::get_best_sample()
   // This is only done for PMA - there is no "best solution" for
   //   the expected feasibility function used in RIA
 
-  Iterator&             dace_iterator  = uSpaceModel->subordinate_iterator();
+  Iterator&             dace_iterator  = *uSpaceModel->subordinate_iterator();
   const RealMatrix&     true_vars_x    = dace_iterator.all_samples();
   const IntResponseMap& true_responses = dace_iterator.all_responses();
   size_t i, j, num_samples = true_vars_x.numCols(),

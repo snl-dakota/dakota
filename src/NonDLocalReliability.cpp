@@ -185,7 +185,8 @@ NonDLocalReliability(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
       ai_data_order = (taylorOrder == 2)                          ? 7 : 3,
       dfs_set_order = (taylorOrder == 2 || integrationOrder == 2) ? 7 : 3;
     int samples = 0, seed = 0;
-    std::shared_ptr<Model> g_hat_x_model;  Iterator dace_iterator;
+    std::shared_ptr<Model> g_hat_x_model;
+    std::shared_ptr<Iterator> dace_iterator;
     ActiveSet dfs_set = iteratedModel->current_response().active_set(); // copy
     dfs_set.request_values(dfs_set_order);
     g_hat_x_model = std::make_shared<DataFitSurrModel>(dace_iterator,
@@ -217,7 +218,7 @@ NonDLocalReliability(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
       ai_data_order = (taylorOrder == 2)                          ? 7 : 3,
       dfs_set_order = (taylorOrder == 2 || integrationOrder == 2) ? 7 : 3;
     int samples = 0, seed = 0;
-    Iterator dace_iterator;
+    std::shared_ptr<Iterator> dace_iterator;
     ActiveSet dfs_set = g_u_model->current_response().active_set(); // copy
     dfs_set.request_values(dfs_set_order);
     uSpaceModel = std::make_shared<DataFitSurrModel>(dace_iterator,
@@ -484,24 +485,25 @@ void NonDLocalReliability::check_sub_iterator_conflict()
   //         iteratedModel is not invoked w/i an approx-based MPP search).
   // Note 3: forces lower-level to accommodate, even though this level may be
   //         the more flexible one in its ability to switch away from NPSOL.
+  std::shared_ptr<Iterator> sub_iterator;
   if (mppSearchType == SUBMETHOD_NO_APPROX && npsolFlag) {
-    Iterator sub_iterator = iteratedModel->subordinate_iterator();
-    if (!sub_iterator.is_null() && 
-	( sub_iterator.method_name() ==  NPSOL_SQP ||
-	  sub_iterator.method_name() == NLSSOL_SQP ||
-	  sub_iterator.uses_method() == SUBMETHOD_NPSOL ||
-	  sub_iterator.uses_method() == SUBMETHOD_NPSOL_OPTPP ) )
-      sub_iterator.method_recourse(methodName);
-    ModelList& sub_models = iteratedModel->subordinate_models();
-    for(auto& sm : sub_models) {
-      sub_iterator = sm->subordinate_iterator();
-      if (!sub_iterator.is_null() && 
-	      ( sub_iterator.method_name() ==  NPSOL_SQP ||
-          sub_iterator.method_name() == NLSSOL_SQP ||
-          sub_iterator.uses_method() == SUBMETHOD_NPSOL ||
-          sub_iterator.uses_method() == SUBMETHOD_NPSOL_OPTPP ) )
-	      sub_iterator.method_recourse(methodName);
-    }
+    sub_iterator = iteratedModel->subordinate_iterator();
+    if (sub_iterator && 
+    ( sub_iterator->method_name() ==  NPSOL_SQP ||
+      sub_iterator->method_name() == NLSSOL_SQP ||
+      sub_iterator->uses_method() == SUBMETHOD_NPSOL ||
+      sub_iterator->uses_method() == SUBMETHOD_NPSOL_OPTPP ) )
+      sub_iterator->method_recourse(methodName);
+      ModelList& sub_models = iteratedModel->subordinate_models();
+      for(auto& sm : sub_models) {
+        sub_iterator = sm->subordinate_iterator();
+        if (sub_iterator && 
+          ( sub_iterator->method_name() ==  NPSOL_SQP ||
+            sub_iterator->method_name() == NLSSOL_SQP ||
+            sub_iterator->uses_method() == SUBMETHOD_NPSOL ||
+            sub_iterator->uses_method() == SUBMETHOD_NPSOL_OPTPP ) )
+          sub_iterator->method_recourse(methodName);
+      }
   }
 }
 

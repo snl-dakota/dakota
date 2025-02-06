@@ -100,8 +100,8 @@ void EmbedHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
-    iterSched.set_iterator(globalIterator, si_pl_iter);
-    iterSched.set_iterator(localIterator,  si_pl_iter);
+    iterSched.set_iterator(*globalIterator, si_pl_iter);
+    iterSched.set_iterator(*localIterator,  si_pl_iter);
   }
 }
 
@@ -113,8 +113,8 @@ void EmbedHybridMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
-    iterSched.free_iterator(globalIterator, si_pl_iter);
-    iterSched.free_iterator(localIterator,  si_pl_iter);
+    iterSched.free_iterator(*globalIterator, si_pl_iter);
+    iterSched.free_iterator(*localIterator,  si_pl_iter);
   }
 
   // deallocate the mi_pl parallelism level
@@ -126,10 +126,10 @@ void EmbedHybridMetaIterator::core_run()
 {
   if (iterSched.lead_rank()) {
     Cout << "\n>>>>> Running Embedded Hybrid Minimizer with global method = "
-         << globalIterator.method_string() << " and local method = "
-	 <<  localIterator.method_string() << std::endl;
-    //globalIterator.set_local_search(localIterator);
-    //globalIterator.set_local_search_probability(localSearchProb);
+         << globalIterator->method_string() << " and local method = "
+	 <<  localIterator->method_string() << std::endl;
+    //globalIterator->set_local_search(localIterator);
+    //globalIterator->set_local_search_probability(localSearchProb);
   }
 
   // For graphics data, limit to iterator server comm leaders; this is
@@ -138,9 +138,9 @@ void EmbedHybridMetaIterator::core_run()
   int server_id = iterSched.iteratorServerId;
   if (iterSched.iteratorCommRank == 0 && server_id > 0 &&
       server_id <= iterSched.numIteratorServers)
-    globalIterator.initialize_graphics(server_id);
+    globalIterator->initialize_graphics(server_id);
 
-  iterSched.schedule_iterators(*this, globalIterator);
+  iterSched.schedule_iterators(*this, *globalIterator);
 }
 
 } // namespace Dakota

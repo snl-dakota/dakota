@@ -123,7 +123,7 @@ namespace Dakota
 		//{
 		std::shared_ptr<Iterator> gp_build = std::make_shared<NonDLHSSampling>(iteratedModel, SUBMETHOD_DEFAULT,
 								     samples, randomSeed, rngName,
-								     varyPattern, ACTIVE_UNIFORM));
+								     varyPattern, ACTIVE_UNIFORM);
 		//}
 		//else
 		//{

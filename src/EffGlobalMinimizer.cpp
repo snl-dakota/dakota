@@ -166,10 +166,9 @@ initialize_sub_problem(const String& approx_type, int samples, int seed,
   String rng; // empty string: use default
   bool vary_pattern = false;// for consistency across any outer loop invocations
 
-  std::shared_ptr<Iterator> dace_iterator;
-  dace_iterator = std::make_shared<NonDLHSSampling>(iteratedModel,
+  auto dace_iterator = std::make_shared<NonDLHSSampling>(iteratedModel,
     sample_type, samples, seed, rng, vary_pattern, ACTIVE_UNIFORM);
-  dace_iterator.active_set_request_values(dataOrder);
+  dace_iterator->active_set_request_values(dataOrder);
 
   // Construct f-hat (fHatModel) using a GP approximation for each response
   // function over the active/design vars (same view as iteratedModel:

@@ -106,11 +106,11 @@ public:
   void partition(int max_iterator_concurrency, IntIntPair& ppi_pr);
 
   /// invokes static version of this function with appropriate parallelism level
-  void init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
+  void init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator,
 		     std::shared_ptr<Model> sub_model);
   /// invokes static version of this function with appropriate parallelism level
   void init_iterator(ProblemDescDB& problem_db, const String& method_string,
-		     Iterator& sub_iterator, std::shared_ptr<Model> sub_model);
+		     std::shared_ptr<Iterator>& sub_iterator, std::shared_ptr<Model> sub_model);
   /// invokes static version of this function with appropriate parallelism level
   void set_iterator(Iterator& sub_iterator);
   /// invokes static version of this function with appropriate parallelism level
@@ -207,7 +207,7 @@ inline IteratorScheduler::~IteratorScheduler()
 
 
 inline void IteratorScheduler::
-init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
+init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator,
 	      std::shared_ptr<Model> sub_model)
 {
   ParLevLIter pl_iter = schedPCIter->mi_parallel_level_iterator(miPLIndex);
@@ -225,7 +225,7 @@ init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
 
 inline void IteratorScheduler::
 init_iterator(ProblemDescDB& problem_db, const String& method_string,
-	      Iterator& sub_iterator, std::shared_ptr<Model> sub_model)
+	      std::shared_ptr<Iterator>& sub_iterator, std::shared_ptr<Model> sub_model)
 {
   ParLevLIter pl_iter = schedPCIter->mi_parallel_level_iterator(miPLIndex);
   // if dedicated master overload, no iterator jobs can run on master, so no
