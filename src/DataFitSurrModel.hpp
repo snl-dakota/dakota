@@ -49,7 +49,7 @@ public:
   /// constructor
   DataFitSurrModel(ProblemDescDB& problem_db);
   /// alternate constructor for instantiations on the fly
-  DataFitSurrModel(Iterator& dace_iterator, std::shared_ptr<Model> actual_model,
+  DataFitSurrModel(std::shared_ptr<Iteratr> dace_iterator, std::shared_ptr<Model> actual_model,
 		   const ActiveSet& dfs_set, const ShortShortPair& dfs_view,
 		   const String& approx_type, const UShortArray& approx_order,
 		   short corr_type, short corr_order, short data_order,

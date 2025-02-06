@@ -219,7 +219,7 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
 
 
 DataFitSurrModel::
-DataFitSurrModel(Iterator& dace_iterator, std::shared_ptr<Model> actual_model,
+DataFitSurrModel(std::shared_ptr<Iterator> dace_iterator, std::shared_ptr<Model> actual_model,
 		 //const SharedVariablesData& svd,const SharedResponseData& srd,
 		 const ActiveSet& dfs_set, const ShortShortPair& dfs_view,
 		 const String& approx_type, const UShortArray& approx_order,
