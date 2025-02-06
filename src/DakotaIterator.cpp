@@ -95,9 +95,15 @@
 #ifdef HAVE_NCSU
 #include "NCSUOptimizer.hpp"
 #endif
+
 #ifdef HAVE_ROL
+#if HAVE_DAKOTA_ROL_INTERFACE
+#include "DakotaROLInterface.hpp"
+#else
 #include "ROLOptimizer.hpp"
 #endif
+#endif
+
 #ifdef HAVE_DEMO_TPL
 #include "DemoOptimizer.hpp"
 #endif
@@ -654,10 +660,16 @@ Iterator::get_iterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model)
   case NCSU_DIRECT:
     return std::make_shared<NCSUOptimizer>(problem_db, model);       break;
 #endif
+
 #ifdef HAVE_ROL
   case ROL:
+#if DAKOTA_ROL_INTERFACE
+    return ROLOptimizer::create(problem_db, model); break;
+#else
     return std::make_shared<ROLOptimizer>(problem_db, model); break;
 #endif
+#endif 
+
 #ifdef HAVE_DEMO_TPL
   case DEMO_TPL:
     return std::make_shared<DemoTPLOptimizer>(problem_db, model); break;
