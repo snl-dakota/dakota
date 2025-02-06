@@ -1,16 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        ResultsDBAny
-//- Description:  Any-based in-core results database
-//- Owner:        Brian Adams
-//- Version: $Id:$
 
 #ifndef RESULTS_DB_ANY_H
 #define RESULTS_DB_ANY_H
@@ -45,7 +40,7 @@ public:
   // NOTE: removed accessors to add metadata only or record w/o metadata
 
   /// Write data to file
-  void flush() const;
+  void flush() const override;
 
 
   // ##############################################################
@@ -72,7 +67,7 @@ public:
               ResultsOutputType stored_type, 
               const int &len,
               const DimScaleMap &scales = DimScaleMap(),
-              const AttributeArray &attrs = AttributeArray()) {
+              const AttributeArray &attrs = AttributeArray()) override {
       return;
    }
 
@@ -83,7 +78,7 @@ public:
               ResultsOutputType stored_type, 
               const int &num_rows, const int &num_cols,
               const DimScaleMap &scales = DimScaleMap(),
-              const AttributeArray &attrs = AttributeArray()) {
+              const AttributeArray &attrs = AttributeArray()) override {
       return;
    }
 
@@ -91,7 +86,7 @@ public:
   void insert_into(const StrStrSizet& iterator_id,
                    const StringArray &location,
                    const boost::any& data,
-                   const int &index, const bool &row) {
+                   const int &index, const bool &row) override {
       return;
   }
 

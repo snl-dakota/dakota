@@ -23,7 +23,7 @@ Table of Contents
 
 Distribution Contents
 Binary Quick Start
- I.   Install Unix-Like Binary (Linux RHEL6/7, or binary compatible, Mac OS X)
+ I.   Install Unix-Like Binary (Linux RHEL7/8, or binary compatible, macOS)
  II.  Install Windows Executable
  III. Test Binary Distribution installation.
 Source Quick Start
@@ -95,9 +95,9 @@ zip).
  * See Section II below to install zip archive on Windows platform.
  * See Section III below to test binary installion.
 
---------------------------------------------------------------------
-I. Install Unix-Like Binary (Linux RHEL6/7 or binary compatible, Mac OS X)
---------------------------------------------------------------------
+-----------------------------------------------------------------------
+I. Install Unix-Like Binary (Linux RHEL8 or binary compatible, macOS)
+-----------------------------------------------------------------------
 
 1. Extract archive file into suitable install location, e.g. /home/username.
    If you have root access, you may extract archive file in a shared directory,
@@ -106,7 +106,7 @@ I. Install Unix-Like Binary (Linux RHEL6/7 or binary compatible, Mac OS X)
        $ cd /path/to/Dakota/install/directory
        $ tar xzvf /path/to/dakota-<release>.tar.gz
    
-   Rename the extracted Dakota binary executable directory:
+   Optionally, rename the extracted Dakota binary executable directory:
 
        $ ls
        dakota-<release>.<platform>
@@ -116,7 +116,12 @@ I. Install Unix-Like Binary (Linux RHEL6/7 or binary compatible, Mac OS X)
    directory,
 	/path/to/Dakota/install/directory/dakota
 
-2. Make sure Dakota executables (and optionally test files and current
+2. Because Dakota exexecutables are not signed, they will not run on
+   macOS until clearing their attributes. Use the command:
+
+        xattr -cr $INSTALL_DIR
+
+3. Make sure Dakota executables (and optionally test files and current
    directory) are available on the PATH by typing 'which dakota' at command
    line prompt. 
 
@@ -133,12 +138,12 @@ I. Install Unix-Like Binary (Linux RHEL6/7 or binary compatible, Mac OS X)
         /usr/bin/which: no dakota in (/usr/local/bin:/usr/local/sbin)
    Continue with step #3 to set your PATH variable.
 
-3. If your PATH is not set correctly, make the following change to your
+4. If your PATH is not set correctly, make the following change to your
    appropriate shell login script:
 
    Bash shell
    ----------
-   a. Edit the startup file ~/.bashrc (~/.bash_profile on OS X) in your 
+   a. Edit the startup file ~/.bashrc (~/.bash_profile on macOS) in your 
       favorite text editor.
    b. Modify and export PATH variable. Type the following line, replacing
       $INSTALL_DIR with the absolute path to your installation directory,
@@ -165,7 +170,7 @@ I. Install Unix-Like Binary (Linux RHEL6/7 or binary compatible, Mac OS X)
       
       $ source ~/.cshrc
 
-4. To use the dakota Python package (and to enjoy the full features of
+5. To use the dakota Python package (and to enjoy the full features of
    dprepro), add the path $INSTALL_DIR/share/dakota/Python/ to the environment 
    variable PYTHONPATH. Adapt the instructions in step 3 by substituting 
    PYTHONPATH where you see PATH to make this change persistent. After 
@@ -203,7 +208,7 @@ II.  Install Windows Executable
    b. At the command prompt, type the following command, replacing %install_dir%
       with the path to your Dakota installation:
 
-      C:\Users\name> path=%path%;%install_dir%\bin;%install_dir%\share\dakota\test;%install_dir%\lib
+      C:\Users\name> set path=%path%;%install_dir%\bin;%install_dir%\share\dakota\test;%install_dir%\lib
       
       Note that the path will be set only for as long as the cmd window
       remains open. To permanently add Dakota to your path, consult the 
@@ -236,7 +241,7 @@ III. Test Binary Distribution installation.
 
        Windows Command Terminal: dakota.bat -v
        Linux:                    dakota.sh -v
-       Mac OS X:                 dakota.sh -v
+       macOS:                    dakota.sh -v
 
 2. Refer to the "Tutorial" section of the User's Manual for instructions
    on using the dakota executables or see the Quick Start page on the Dakota
@@ -245,9 +250,9 @@ III. Test Binary Distribution installation.
 3. For distributions with Graphical User Interface (GUI) support, the
    GUI can be launched using the following command:
 
-       Windows Command Terminal: $INSTALL_DIR/gui/DakotaUI.exe
+       Windows Command Terminal: %install_dir%/gui/DakotaUI.exe
        Linux:                    dakota-ui.sh
-       Mac OS X:                 dakota-ui.sh
+       macOS:                    dakota-ui.sh
 
 
 ==================
@@ -332,10 +337,10 @@ Other Resources
 ===============
 
 For additional help with installing Dakota from source, please
-visit https://dakota.sandia.gov/content/build-compile-source-code
+see the Compiling Dakota section of the user's guide.
 
 Topics include:
-* accessing Dakota via repository checkout
+* Obtaining Dakota source code
 * source installation dependencies
 * source installation options
 * Dakota CMake hints

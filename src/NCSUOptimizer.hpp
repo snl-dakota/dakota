@@ -1,15 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       NCSUOptimizer
-//- Description: Wrapper class for NCSU DIRECT
-//- Owner:       Barron J Bichon, Vanderbilt University
 
 #ifndef NCSU_OPTIMIZER_H
 #define NCSU_OPTIMIZER_H
@@ -31,13 +27,13 @@ class NCSUTraits: public TraitsBase
   NCSUTraits() { }
 
   /// destructor
-  virtual ~NCSUTraits() { }
+  ~NCSUTraits() override { }
 
   /// A temporary query used in the refactor
-  virtual bool is_derived() { return true; }
+  bool is_derived() override { return true; }
 
   /// Return the flag indicating whether method supports continuous variables
-  bool supports_continuous_variables() { return true; }
+  bool supports_continuous_variables() override { return true; }
 };
 
 
@@ -48,9 +44,8 @@ class NCSUTraits: public TraitsBase
     State University. It uses a function pointer approach for which passed 
     functions must be either global functions or static member functions.  
     Any attribute used within static member functions must be either local 
-    to that function or accessed through a static pointer.
+    to that function or accessed through a static pointer. */
 
-    The user input mappings are as follows: */
 class NCSUOptimizer: public Optimizer
 {
 public:
@@ -60,35 +55,58 @@ public:
   //
 
   /// standard constructor
-  NCSUOptimizer(ProblemDescDB& problem_db, Model& model);
+  NCSUOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
 
   /// alternate constructor for instantiations "on the fly"
-  NCSUOptimizer(Model& model, size_t max_iter, size_t max_eval,
+  NCSUOptimizer(std::shared_ptr<Model> model, size_t max_iter, size_t max_eval,
 		double min_box_size = -1., double vol_box_size = -1.,
 		double solution_target = -DBL_MAX);
 
   /// alternate constructor for Iterator instantiations by name
-  NCSUOptimizer(Model& model);
+  NCSUOptimizer(std::shared_ptr<Model> model);
 
   /// alternate constructor for instantiations "on the fly"
-  NCSUOptimizer(const RealVector& var_l_bnds, const RealVector& var_u_bnds,
-		size_t max_iter, size_t max_eval,
+  NCSUOptimizer(//const RealVector& initial_pt,
+		const RealVector& var_l_bnds, const RealVector& var_u_bnds,
+		const RealMatrix& lin_ineq_coeffs,
+		const RealVector& lin_ineq_l_bnds,
+		const RealVector& lin_ineq_u_bnds,
+		const RealMatrix& lin_eq_coeffs, const RealVector& lin_eq_tgts,
+		const RealVector& nln_ineq_l_bnds,
+		const RealVector& nln_ineq_u_bnds,
+		const RealVector& nln_eq_tgts, size_t max_iter, size_t max_eval,
   	        double (*user_obj_eval) (const RealVector &x),
 		double min_box_size = -1., double vol_box_size = -1.,
 		double solution_target = -DBL_MAX);
 
-  ~NCSUOptimizer(); ///< destructor
+  ~NCSUOptimizer() override; ///< destructor
     
   //
   //- Heading: Virtual function redefinitions
   //
 
   //void initialize_run();
-  void core_run();
+  void core_run() override;
 
-  void declare_sources();
+  void declare_sources() override;
 
-  void check_sub_iterator_conflict();
+  void check_sub_iterator_conflict() override;
+
+  //void initial_point(const RealVector& pt);
+  void update_callback_data(const RealVector& cv_initial,
+			    const RealVector& cv_lower_bnds,
+			    const RealVector& cv_upper_bnds,
+			    const RealMatrix& lin_ineq_coeffs,
+			    const RealVector& lin_ineq_l_bnds,
+			    const RealVector& lin_ineq_u_bnds,
+			    const RealMatrix& lin_eq_coeffs,
+			    const RealVector& lin_eq_targets,
+			    const RealVector& nln_ineq_l_bnds,
+			    const RealVector& nln_ineq_u_bnds,
+			    const RealVector& nln_eq_targets) override;
+  const RealMatrix& callback_linear_ineq_coefficients() const override;
+  const RealVector& callback_linear_ineq_lower_bounds() const override;
+  const RealVector& callback_linear_ineq_upper_bounds() const override;
 
 private:
 
@@ -133,15 +151,49 @@ private:
   Real volBoxSize;
   /// holds the solution target minimum to drive towards
   Real solutionTarget; 
-  /// holds variable lower bounds passed in for "user_functions" mode.
-  RealVector lowerBounds;
-  /// holds variable upper bounds passed in for "user_functions" mode.
-  RealVector upperBounds;
   /// holds function pointer for objective function evaluator passed in for
   /// "user_functions" mode.
   double (*userObjectiveEval) (const RealVector &x);
+
+  // initial point used in "user_functions" mode (no starting point for DIRECT)
+  //RealVector initialPoint;
+  /// variable lower bounds used in "user_functions" mode
+  RealVector lowerBounds;
+  /// variable upper bounds used in "user_functions" mode
+  RealVector upperBounds;
+  /// linear inequality constraint coefficients used in "user_functions" mode
+  RealMatrix linIneqCoeffs;
+  /// linear inequality constraint lower bounds used in "user_functions" mode
+  RealVector linIneqLowerBnds;
+  /// linear inequality constraint upper bounds used in "user_functions" mode
+  RealVector linIneqUpperBnds;
+  /// linear equality constraint coefficients used in "user_functions" mode
+  RealMatrix linEqCoeffs;
+  /// linear equality constraint targets used in "user_functions" mode
+  RealVector linEqTargets;
+  /// nonlinear inequality constraint lower bounds used in "user_functions" mode
+  RealVector nlnIneqLowerBnds;
+  /// nonlinear inequality constraint upper bounds used in "user_functions" mode
+  RealVector nlnIneqUpperBnds;
+  /// nonlinear equality constraint targets used in "user_functions" mode
+  RealVector nlnEqTargets;
 };
-		      
+
+
+inline const RealMatrix& NCSUOptimizer::
+callback_linear_ineq_coefficients() const
+{ return linIneqCoeffs; }
+
+
+inline const RealVector& NCSUOptimizer::
+callback_linear_ineq_lower_bounds() const
+{ return linIneqLowerBnds; }
+
+
+inline const RealVector& NCSUOptimizer::
+callback_linear_ineq_upper_bounds() const
+{ return linIneqUpperBnds; }
+
 } // namespace Dakota
 
 #endif

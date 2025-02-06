@@ -12,17 +12,17 @@ that takes the variables and computes the responses. This can be
 comprised of one or many codes, scripts, and glue, which are
 generically referred to as "analysis drivers" (and optional
 input/output filters).  The mapping actions of
-:ref:`interface-analysis_drivers<interface-analysis_drivers>` may be combined with explicit
-:ref:`interface-algebraic_mappings<interface-algebraic_mappings>`
+:dakkw:`interface-analysis_drivers` may be combined with explicit
+:dakkw:`interface-algebraic_mappings`
 
 *Parallelism Options*
 
 
-- The :ref:`interface-asynchronous<interface-asynchronous>` keyword enables concurrent local     function evaluations or analyses via operating system process     management.  Its child keywords allow tailoring the evaluation and     analysis concurency.
+- The :dakkw:`interface-asynchronous` keyword enables concurrent local     function evaluations or analyses via operating system process     management.  Its child keywords allow tailoring the evaluation and     analysis concurency.
 - The evaluation servers, scheduling mode (master, peer static or     dynamic), and processor keywords allow a user to override Dakota's     default evaluation configuration when running in parallel (MPI)     mode.
 - The analysis servers and scheduling mode (master, peer static or     dynamic) keywords allow a user to override Dakota's default     analysis configuration when running in parallel (MPI) mode.
 
-Note: see :ref:`interface-analysis_drivers-direct<interface-analysis_drivers-direct>` for the specific
+Note: see :dakkw:`interface-analysis_drivers-direct` for the specific
 ``processors_per_analysis`` specification supported for direct
 interfaces.
 

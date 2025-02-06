@@ -1,0 +1,24 @@
+Blurb::
+Perform a recursion of admissible DAGs for a given model ensemble
+
+Description::
+Within the context of generalized ACV (:cite:p:`Bomarito2022`),
+search over a set of admissible directed acyclic graphs (DAGs) for a
+given model ensemble.  The DAG with the best performance (lowest
+estimator variance for a prescribed budget or lowest cost for a
+prescribed accuracy) is selected for final post-processing.
+
+In order of increasing numbers of DAGs to enumate, options include
+``kl_recursion``, ``partial_recursion`` with a ``depth_limit``, and
+``full_recursion``.
+
+Topics::
+
+Examples::
+
+Theory::
+Refer to :cite:p:`Bomarito2022` for additional details on generalized ACV recursion.
+
+Faq::
+
+See_Also::

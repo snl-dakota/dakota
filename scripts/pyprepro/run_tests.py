@@ -11,7 +11,9 @@ import sys
 import shlex
 import shutil
 import random
+import json
 from textwrap import dedent
+from itertools import product
 
 # Find the best implementation available on this platform
 try:
@@ -253,17 +255,17 @@ class Immutables(unittest.TestCase):
         env['outI'] = Immutable('i')
         env['outM'] = 'm'
         
-        env['assert_'] = self.assertTrue         
+        env['assertTrue'] = self.assertTrue         
         exec_test = """\
             
-            assert_(outI == 'i')
-            assert_(outM == 'm')
+            assertTrue(outI == 'i')
+            assertTrue(outM == 'm')
         
             outI == 'III'
             outM = 'MMM'
         
-            assert_(outI == 'i')
-            assert_(outM == 'MMM')
+            assertTrue(outI == 'i')
+            assertTrue(outM == 'MMM')
         
             inI = Immutable('I')
             inM = 'M'
@@ -271,8 +273,8 @@ class Immutables(unittest.TestCase):
             inI = 'ii'
             inM = 'mm'
         
-            assert_(inI == 'I')  # not 'ii'
-            assert_(inM == 'mm')
+            assertTrue(inI == 'I')  # not 'ii'
+            assertTrue(inM == 'mm')
         
             im2 = Immutable('a')
             del im2
@@ -635,7 +637,7 @@ class preparser_edge_cases(unittest.TestCase):
         Test the different escape methods
         """
     
-        input = """\
+        input = r"""
         %inline_escape = 'Uh Oh'
         \{inline_escape\} <--- No variable definition
         \{inline_escape = 100\} <--- with variable definition (gets processed differently)
@@ -647,7 +649,7 @@ class preparser_edge_cases(unittest.TestCase):
         {inline_escape} # should read 'Uh Oh'
         """
     
-        gold = """\
+        gold = """
         {inline_escape} <--- No variable definition
         {inline_escape = 100} <--- with variable definition (gets processed differently)
 
@@ -679,19 +681,19 @@ class preparser_edge_cases(unittest.TestCase):
         c( p(r'[b=2$',inline='[ $'),'2')
         c( p(r'\[b=2$',inline='[ $'),'[b=2$')
         c( p(r'\[b=2\$',inline='[ $'),'[b=2$')
-        c( p(r'\\[b=2$',inline='[ $'),'\[b=2$')
-        c( p(r'\\[b=2\$',inline='[ $'),'\[b=2$')
-        c( p(r'\\[b=2\\$',inline='[ $'),'\[b=2\$')
+        c( p(r'\\[b=2$',inline='[ $'), r'\[b=2$')
+        c( p(r'\\[b=2\$',inline='[ $'), r'\[b=2$')
+        c( p(r'\\[b=2\\$',inline='[ $'), r'\[b=2\$')
         
         # Test with nested
-        IN = """\
+        IN = r"""
 # Several on a line, some escaped
 { alpha = 0.1 } then \{ beta = alpha \} then { beta = 2.0*alpha }
  
 # Nested with escapes
 { alpha = 0.1 } then \{ beta = alpha \} then \{ { beta = 2.0*alpha } \} {beta}"""
         
-        GOLD = """\
+        GOLD = """
 # Several on a line, some escaped
 0.1 then { beta = alpha } then 0.2
 
@@ -792,7 +794,8 @@ class preparser_edge_cases(unittest.TestCase):
 {% A= 1 %}
 { A }
 {% A += 4 %}"""
-        self.assertTrue(compare_lines(pyprepro._preparser(IN),GOLD))
+        syntax = {'code':'%','inline':'{ }','code_block': '{% %}'}
+        self.assertTrue(compare_lines(pyprepro._preparser(IN,syntax),GOLD))
 
 
         # This tests the regression
@@ -809,8 +812,7 @@ class preparser_edge_cases(unittest.TestCase):
 { A }
 {% A += 4
 %}"""
-        self.assertTrue(compare_lines(pyprepro._preparser(IN),GOLD))
-
+        self.assertTrue(compare_lines(pyprepro._preparser(IN,syntax),GOLD))
         
     def test_pathological_quotes(self):
         """
@@ -1107,6 +1109,72 @@ class misc(unittest.TestCase):
     
         self.assertTrue(pyprepro.pyprepro('test nothing').strip() == 'test nothing')
     
+    def test_data_exfiltration(self):
+    
+        tpl = dedent("""\
+            param1 = {param1}
+            param2 = {param2 = 20}
+            param3 = {param3 = 30}
+            
+            % with open('test_output/exfilt.json','wt') as fp:
+            %   fp.write(json_dumps(indent=1))
+            % end
+            """
+            )
+        with open('test_output/exfilt.inp','wt') as fp:
+            fp.write(tpl)
+        
+        # Test on the CLI
+        cmd = 'test_output/exfilt.inp test_output/exfilt.out --var "param1 = 1" --var "param2 = 2"'
+        pyprepro._pyprepro_cli(shsplit(cmd))
+        
+        self.assertTrue(read('test_output/exfilt.out').strip() == \
+                        'param1 = 1\nparam2 = 2\nparam3 = 30')
+        
+        with open('test_output/exfilt.json') as fp:
+            exfilt = json.load(fp)            
+        
+        # These should be there but we don't care about the value
+        self.assertTrue(exfilt.pop('fp',None))
+        
+        # Make sure it got written
+        self.assertTrue(exfilt == {'param1': 1, 'param2': 2, 'param3': 30})
+        
+        ## Test the module and render
+        exfilt2 = pyprepro.render(
+            tpl,
+            immutable_env=dict(param1=1,param2=2),
+        )
+        self.assertTrue(exfilt2.pop('fp',None))
+        self.assertTrue(exfilt2 == {'param1': 1, 'param2': 2, 'param3': 30})
+        assert not isinstance(exfilt2,ImmutableValDict)
+        
+        exfilt3 = pyprepro.render(
+            tpl,
+            immutable_env=dict(param1=1,param2=2),
+            keep_immutable=True,
+        )
+        assert isinstance(exfilt3,ImmutableValDict)
+    
+        # Related to #13. Special terms should render them
+        exfilt4 = pyprepro.render("{gamma = 2}\n{cos = 4}")
+        self.assertTrue(exfilt4 == {'cos': 4, 'gamma': 2})
+
+        exfilt4 = pyprepro.render("empty template", immutable_env={"gamma": 2, "cos": 4})
+        self.assertTrue(exfilt4 == {'cos': 4, 'gamma': 2})
+
+        #exfilt4 = pyprepro.render("{lambda = 123}\n")
+        #self.assertTrue(exfilt4 == {'lambda': 123})
+
+        empty = pyprepro.render("nothing")
+        # assert len(empty) == 0, "Should render nothing" # Removed for now
+        if not len(empty) == 0:
+            sys.stderr.write("\n\nWARNING: render without templates should return nothing but failed\n\n")
+            sys.stderr.flush()
+
+
+        
+    
 class error_capture(unittest.TestCase):
     def test_name(self):
         """
@@ -1193,6 +1261,107 @@ Error occurred
         # Via module
         self.assertRaises(SyntaxError,pyprepro.pyprepro,input) # Should fail
 
+class inline_spec(unittest.TestCase):
+    def test_inline_spec(self):
+        
+        input0 = dedent("""\
+        HEADER
+        Specify < num = 3 >
+        * numsq = num**2
+        <T for i in range(4): T>
+        i: <i>, <numsq>
+        * end
+        This should do {nothing} {{at all}}
+        % and this should show
+        """)
+        
+        gold = dedent("""
+        Specify 3
+        i: 0, 9
+        i: 1, 9
+        i: 2, 9
+        i: 3, 9
+        This should do {nothing} {{at all}}
+        % and this should show
+        """)
+        
+        # This is actually 75 tests of every possible combination
+        comments =  '// ', '# ','% ', '$ ',''
+        leadings = '','D','PY'
+        spaceeqs = ' ',' = ','=','= ',' ='
+        
+        for comment,leading,spaceeq in product(comments,leadings,spaceeqs):
+            fmt = dict(comment=comment,leading=leading,spaceeq=spaceeq)
+            HEADER = dedent("""\
+                {comment}{leading}PREPRO_CODE{spaceeq}*
+                {comment}{leading}PREPRO_INLINE{spaceeq}< >
+                {comment}{leading}PREPRO_CODE_BLOCK{spaceeq}<T T>""".format(**fmt))
+            
+            input = input0.replace('HEADER',HEADER)
+            # Nothing specified
+            self.assertTrue(compare_lines(pyprepro.pyprepro(input),gold))
+            
+            # Commands specified
+            self.assertTrue(compare_lines(pyprepro.pyprepro(input, # Doesn't matter the settings
+                                       inline='hasfd asfd',code='ran dom',code_block='bl ock'),gold))
+            
+            # Same thing set    
+            self.assertTrue(compare_lines(pyprepro.pyprepro(input, # Doesn't matter the settings
+                                       inline='< >',code='*',code_block='<T T>'),gold))
+        
+        # Test from a test file
+        gold2 = dedent("""
+        New val: 2 # 2
+        New val: 3 # 3
+        New Val 9 # 9""")
+
+        pyprepro._pyprepro_cli(shsplit('test_files/spec_regular.inp test_output/spec_reg.inp'))
+        self.assertTrue(compare_lines(gold2,read('test_output/spec_reg.inp')))
+
+        pyprepro._pyprepro_cli(shsplit('test_files/spec_regular.inp test_output/spec_reg.inp --code "!" --inline "<< >>" --code-block "{{% %}}"'))
+        self.assertTrue(compare_lines(gold2,read('test_output/spec_reg.inp')))      
+    
+    def test_inline_spec_nestedinclude(self):
+        """
+        This tests an include with its own inline spec going multiple levels
+        """
+        
+        gold = dedent("""\
+            @ 0, set val0 = 0 and val1 = 1
+            Levels: {0: 100}
+            ---
+            @ 1, set val0 = 1 and val1 = 1
+            Levels: {0: 100, 1: 101}
+            ---
+            @ 2, set val0 = 2 and val1 = 1
+            Change immutable: val1 = 4
+            Levels: {0: 100, 1: 101, 2: 102}
+            +++
+            @1 {0: 100, 1: 101, 2: 102}
+            +++
+            @0 {0: 100, 1: 101, 2: 102}""")
+        
+        pyprepro._pyprepro_cli(shsplit('test_files/spec_include0.inp test_output/spec_include.inp'))
+        self.assertTrue(compare_lines(gold,read('test_output/spec_include.inp')))    
+
+        # With a specified one. Make sure the syntax is changed
+        gold2 = dedent("""\
+            @ 0, set val0 = fixed 1 and val1 = 1
+            Levels: {0: 100}
+            ---
+            @ 1, set val0 = fixed 1 and val1 = 1
+            Levels: {0: 100, 1: 101}
+            ---
+            @ 2, set val0 = fixed 1 and val1 = 1
+            Change immutable: val1 = 4
+            Levels: {0: 100, 1: 101, 2: 102}
+            +++
+            @1 {0: 100, 1: 101, 2: 102}
+            +++
+            @0 {0: 100, 1: 101, 2: 102}""")
+        pyprepro._pyprepro_cli(shsplit('--include test_files/spec_includeII.inp test_files/spec_include0.inp test_output/spec_include2.inp'))
+        self.assertTrue(compare_lines(gold2,read('test_output/spec_include2.inp')))
+
 class Regressions(unittest.TestCase):
     def test_same_inline_open_close(self):
         """
@@ -1206,31 +1375,17 @@ class Regressions(unittest.TestCase):
         self.assertTrue(pyprepro.pyprepro("$ a $", inline="$ $", env={"a": 1}) == "1")
         self.assertTrue(pyprepro.pyprepro("$@$ a $@$", inline="$@$ $@$", env={"a": 1}) == "1")
         self.assertTrue(pyprepro.pyprepro("% a = 1\n@ a @", inline="@ @",) == "1")
-        
+
+        ## Inline
+        self.assertTrue(pyprepro.pyprepro(dedent(
+                    """
+                    # PYPREPRO_INLINE @ @
+                    % a = 1
+                    @ a @""")).strip() == '1')
+
         
         
 if __name__ == '__main__':
     unittest.main()
-    #breakpoint()
-# 
-#     # Run all tests
-#     failed = []
-#     for name,test in [(n,l) for n,l in locals().copy().items() if callable(l) and n.startswith('test_')]:
-#         try:
-#             test()        
-#             print('Passed: ' + name)
-#         except Exception as E:
-#             print('FAILED: ' + name)
-#             print(' Exception',E)
-#             failed.append(name)
-#     
-#     print('-'*40)
-#     if len(failed) == 0:
-#         print('SUCCESS')
-#     else:
-#         for name in failed:
-#             print('FAILED: ' + name)
-# #     sys.exit()
-
 
 

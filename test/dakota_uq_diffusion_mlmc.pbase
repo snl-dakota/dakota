@@ -1,28 +1,64 @@
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 661 total (661 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 2.5879882812e+01
+<<<<< Online number of equivalent high fidelity evaluations: 2.5879882812e+01
 <<<<< Variance for mean estimator:
-    Initial MLMC (pilot samples):     1.0681995540e-05
-      Final MLMC (sample profile):    7.8989110870e-07
-      Final MLMC / pilot ratio:       7.3946024949e-02
- Equivalent   MC (   26 HF samples):  3.3384832570e-06
- Equivalent MLMC / MC ratio:          2.3660178827e-01
+ response_fn_1:
+      Initial MLMC (pilot samples):     2.9884932323e-06
+       Online MLMC (sample profile):    8.9796908401e-08
+       Online MLMC / pilot ratio:       3.0047552871e-02
+   Equivalent   MC (   26 HF samples):  1.5801932870e-06
+   Equivalent MLMC / MC ratio:          5.6826534540e-02
+ response_fn_2:
+      Initial MLMC (pilot samples):     2.6069000155e-05
+       Online MLMC (sample profile):    2.1900795093e-06
+       Online MLMC / pilot ratio:       8.4010874843e-02
+   Equivalent   MC (   26 HF samples):  6.8550631969e-06
+   Equivalent MLMC / MC ratio:          3.1948348927e-01
+ response_fn_3:
+      Initial MLMC (pilot samples):     2.9884932323e-06
+       Online MLMC (sample profile):    8.9796908401e-08
+       Online MLMC / pilot ratio:       3.0047552871e-02
+   Equivalent   MC (   26 HF samples):  1.5801932871e-06
+   Equivalent MLMC / MC ratio:          5.6826534536e-02
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5347265313e-02  6.3949368322e-03  7.1896519209e-01 -3.4059785010e-01
+ response_fn_1  2.5347265313e-02  6.3949368322e-03  7.1896519209e-01 -3.4059785009e-01
  response_fn_2  1.2789480489e-01  1.3319468165e-02  5.5261688836e-01 -7.7015986016e-01
  response_fn_3  2.5347265314e-02  6.3949368324e-03  7.1896519207e-01 -3.4059785005e-01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean
+ response_fn_1  2.4759939913e-02  2.5934590714e-02
+ response_fn_2  1.2499427041e-01  1.3079533937e-01
+ response_fn_3  2.4759939914e-02  2.5934590714e-02
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 661 total (661 new, 0 duplicate)
-<<<<< Equivalent number of high fidelity evaluations: 2.5879882812e+01
+<<<<< Online number of equivalent high fidelity evaluations: 2.5879882812e+01
 <<<<< Variance for mean estimator:
-    Initial MLMC (pilot samples):     1.0681995540e-05
-      Final MLMC (sample profile):    7.8989110870e-07
-      Final MLMC / pilot ratio:       7.3946024949e-02
- Equivalent   MC (   26 HF samples):  3.3384832570e-06
- Equivalent MLMC / MC ratio:          2.3660178827e-01
+ response_fn_1:
+      Initial MLMC (pilot samples):     2.9884932323e-06
+       Online MLMC (sample profile):    8.9796908401e-08
+       Online MLMC / pilot ratio:       3.0047552871e-02
+   Equivalent   MC (   26 HF samples):  1.5801932870e-06
+   Equivalent MLMC / MC ratio:          5.6826534540e-02
+ response_fn_2:
+      Initial MLMC (pilot samples):     2.6069000155e-05
+       Online MLMC (sample profile):    2.1900795093e-06
+       Online MLMC / pilot ratio:       8.4010874843e-02
+   Equivalent   MC (   26 HF samples):  6.8550631969e-06
+   Equivalent MLMC / MC ratio:          3.1948348927e-01
+ response_fn_3:
+      Initial MLMC (pilot samples):     2.9884932323e-06
+       Online MLMC (sample profile):    8.9796908401e-08
+       Online MLMC / pilot ratio:       3.0047552871e-02
+   Equivalent   MC (   26 HF samples):  1.5801932871e-06
+   Equivalent MLMC / MC ratio:          5.6826534536e-02
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5347265313e-02  6.3949368322e-03  7.1896519209e-01 -3.4059785010e-01
+ response_fn_1  2.5347265313e-02  6.3949368322e-03  7.1896519209e-01 -3.4059785009e-01
  response_fn_2  1.2789480489e-01  1.3319468165e-02  5.5261688836e-01 -7.7015986016e-01
  response_fn_3  2.5347265314e-02  6.3949368324e-03  7.1896519207e-01 -3.4059785005e-01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean
+ response_fn_1  2.4759939913e-02  2.5934590714e-02
+ response_fn_2  1.2499427041e-01  1.3079533937e-01
+ response_fn_3  2.4759939914e-02  2.5934590714e-02

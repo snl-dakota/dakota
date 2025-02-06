@@ -21,7 +21,7 @@ cubature methods for numerical integration) or a regression approach
 formed over tensor-product or sparse grids and may be local or global,
 value-based or gradient-enhanced, and nodal or hierarchical. In global
 value-based cases (Lagrange polynomials), the barycentric formulation
-is used :cite:p:`BerTref04`, :cite:p:`Klimke05`, :cite:p:`Higham04` to improve numerical
+is used :cite:p:`BerTref04,Klimke05,Higham04` to improve numerical
 efficiency and stability.  Both sets of methods provide analytic
 response moments and variance-based metrics; however, CDF/CCDF
 probabilities are evaluated numerically by sampling on the expansion.

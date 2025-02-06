@@ -3,7 +3,7 @@ Calibrate hyper-parameter multipliers on the observation error covariance
 Description::
 Calibrate one or more multipliers on the user-provided
 observation error covariance (
-:ref:`responses-calibration_terms-calibration_data-experiment_variance_type<responses-calibration_terms-calibration_data-experiment_variance_type>`).  Options
+:dakkw:`responses-calibration_terms-calibration_data-experiment_variance_type`).  Options
 include ``one`` multiplier on the whole block-diagonal covariance
 structure, one multiplier ``per_experiment`` covariance block, one
 multiplier ``per_response`` covariance block, or separate multipliers
@@ -30,9 +30,9 @@ Perform Bayesian calibration with 2 calibration variables
 and two hyper-parameter multipliers, one per each of two responses.
 The multipliers are assumed the same across the 10 experiments.  The
 priors on the multipliers are specified using the
-:ref:`method-bayes_calibration-calibrate_error_multipliers-hyperprior_alphas<method-bayes_calibration-calibrate_error_multipliers-hyperprior_alphas>`
+:dakkw:`method-bayes_calibration-calibrate_error_multipliers-hyperprior_alphas`
 and
-:ref:`method-bayes_calibration-calibrate_error_multipliers-hyperprior_alphas-hyperprior_betas<method-bayes_calibration-calibrate_error_multipliers-hyperprior_alphas-hyperprior_betas>`
+:dakkw:`method-bayes_calibration-calibrate_error_multipliers-hyperprior_alphas-hyperprior_betas`
 keywords.
 
 

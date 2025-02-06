@@ -46,7 +46,7 @@ specifications.
 Dakota contains capabilities for performing nondeterministic analysis
 with both types of input uncertainty. These UQ methods have been
 developed by Sandia Labs, in conjunction with collaborators in
-academia :cite:p:`Gha99`, :cite:p:`Gha91`, :cite:p:`Eld05`, :cite:p:`Tang10a`.
+academia :cite:p:`Gha99,Gha91,Eld05,Tang10a`.
 
 The aleatory UQ methods in Dakota include various sampling-based
 approaches (e.g., Monte Carlo and Latin Hypercube sampling), local and

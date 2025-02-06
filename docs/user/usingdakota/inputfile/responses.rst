@@ -168,27 +168,34 @@ handle field data, including dimension reduction.
 
 .. _`responses:results`:
 
-Dakota Results File Data Format
--------------------------------
+Dakota Results File Data Formats
+--------------------------------
 
-Simulation interfaces using system calls and forks to create separate
-simulation processes must communicate with the simulation through the
-file system. Dakota accomplishes this by writing parameters files with
-variable values and reading results files with response values. For
-the results file, only one text file format is supported (versus the
-two parameter file formats described in
-:ref:`variables:parameters`). Ordering of response functions is as
-listed in :ref:`responses:overview:types`, i.e., objective functions
-or calibration terms are first, followed by nonlinear inequality
-constraints, followed by nonlinear equality constraints).
+Simulation interfaces use system or fork calls to create separate
+simulation processes and communicate with them through the
+file system. As explained in the :ref:`interface <interfaces:overview>`
+section of the manual, to perform an evaluation, Dakota writes
+a parameters file, which contains variable values, expected responses,
+and other information, and launches a driver responsible for running
+the simulation. The driver is required to write a results file that
+contains response information, which Dakota will read.
 
-After a simulation, Dakota expects to read a file containing responses
-reflecting the current parameters and corresponding to the function
-requests in the active set vector. The response data must be in the
-format shown in :numref:`fig:responses:results_format`.
+As with the :ref:`parameters file <variables:parameters>`, Dakota has a
+few formatting options for results files. Results files can be
+in either `standard` format or JSON. In addition, standard-format files
+can be `labeled` or not.
+
+.. _`responses:results:standard`:
+
+Results File Format (standard)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The standard results file format is the default. It is also the simpler
+and more permissive of the two. It is summarized in :numref:`fig:responses:results_format:standard`.
+
 
 .. code-block::
-   :name: fig:responses:results_format
+   :name: fig:responses:results_format:standard
    :caption: Results file data format.
 
    <double> <fn_label_1>
@@ -208,6 +215,8 @@ format shown in :numref:`fig:responses:results_format`.
    ...
    <double> <md_label_r)>
 
+
+
 The first block of data conveys the requested function values
 :math:`1, \ldots, m` and is followed by a block of requested gradients
 delimited by single brackets, followed by a block of requested
@@ -222,11 +231,19 @@ characters) and they must not contain any white space themselves
 (e.g., use ``response1`` or ``response_1``, but not ``response 1``).
 Labels also must not resemble numerical values.
 
+Ordering of response functions, gradients, and Hessians is as listed 
+in :ref:`responses:overview:types`, i.e., objective functions or 
+calibration terms are first, followed by nonlinear inequality
+constraints, followed by nonlinear equality constraints). The expected
+order is also communicated in the functions or responses section of
+the parameters file for the evaluation.
+
 By default, function value labels are optional and are ignored by
 Dakota; they are permitted only as a convenience to the user. However,
-if strict checking is activated by including the ``labeled`` keyword in
-the interface section of the Dakota input file, then labels are required
-for every function value. Further, labels must exactly match the
+if strict checking is activated by including the
+:dakkw:`interface-analysis_drivers-fork-results_format-standard-labeled` 
+keyword in the interface section of the Dakota input file, then labels
+are required for every function value. Further, labels must exactly match the
 response descriptors of their corresponding function values. These
 stricter labeling requirements enable Dakota to detect and report when
 function values are returned out-of-order, or when specific function
@@ -249,16 +266,80 @@ double brackets.
 Any requested metadata values must appear at the end of the file
 (after any requested values, gradients, or Hessians). Their format
 requirements are the same as function values discussed above, and are
-similarly validated by the ``labeled`` keyword when specified.
+similarly validated by the
+:dakkw:`interface-analysis_drivers-fork-results_format-standard-labeled` 
+keyword when specified.
 
 The format of the numeric fields may be floating point or scientific
 notation. In the latter case, acceptable exponent characters are ``E``
-or ``e.`` A common problem when dealing with Fortran programs is that
+or ``e``. A common problem when dealing with Fortran programs is that
 a C++ read of a numeric field using ``D`` or ``d`` as the exponent
 (i.e., a double precision value from Fortran) may fail or be truncated.
 In this case, the ``D`` exponent characters must be replaced either
 through modifications to the Fortran source or compiler flags or through
 a separate post-processing step (e.g., using the UNIX ``sed`` utility).
+
+.. _`responses:results:json`:
+
+Results File Format (JSON)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Dakota also supports JSON format results files. The
+:dakkw:`interface-analysis_drivers-fork-results_format-json` interface
+keyword is used to select it. Although the JSON format is more complex
+than standard format, it offers a few benefits in exchange. First,
+because JSON is a widely used format for data interchange, it is natively
+supported by many programming langauges, which eases driver development. 
+Second, because it requires all response information to be labeled, it is
+safer than the standard format, even when using the ``labeled`` keyword.
+Finally, requiring response labels also means that the requirement in 
+the standard format to return response functions, gradients, and
+Hessians in a specific order can be relaxed.
+
+JSON is briefly explained in the description of Dakota's
+:ref:`JSON parameters file format <variables:parameters:json>`.
+
+The top-level schema of a JSON format results file is shown in
+:numref:`fig:responses:results_format:json`.
+
+.. code-block:: JSON
+   :caption: Top-level organization of evaluation results in JSON format
+   :name: fig:responses:results_format:json
+
+   {
+     "functions": {},
+     "gradients": {},
+     "hessians": {},
+     "metadata": {}
+   }
+
+
+Like the parameters file, the top-level data structure for the results
+of a single evaluation in JSON format is an object. The objects 
+associated with the names `functions`, `gradients`, `hessians`,
+and `metadata` contain the results of the evaluation. For the functions,
+these results have the form ``"<resp_label_i>": <value>``. For the gradients,
+it's ``"<resp_label_i>": [ value ] * num_dvv``, where ``num_dvv`` is the number
+of derivative variables. Similarly, requested Hessians have the form
+``"<resp_label_i>": [[ value ] * num_dvv ] * num_dvv ]``. Finally, the
+metadata responses must be stored as ``"<md_label_i>": <value>``.
+
+Storing information for the functions, gradients, etc. in objects instead of
+arrays was a design choice motivated by user requests that Dakota permit 
+unordered response information in the standard format results file. The
+response labels can be obtained from the parameters file for the evaluation.
+
+In :dakkw:`interface-batch` mode, results must be returned to Dakota for
+multiple evaluations in one file. In a batch results file, the top-level
+data structure is an array. The elements of the array are results for each
+evaluation, which obey the schema laid out in
+:numref:`fig:responses:results_format:json`. The order of the elements must
+match the order of the parameter sets in the incoming batch parameters
+file.
+
+To communicate evaluation :ref:`failure <failure>`, the name:value pair
+``"fail": "true"`` must appear in the results object.
+
 
 .. _`responses:active`:
 

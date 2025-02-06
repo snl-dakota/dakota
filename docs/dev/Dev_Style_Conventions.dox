@@ -107,6 +107,7 @@ const RealVector& continuous_variables() const {      // get
 }
 \endcode
 
+
 Note that it is not necessary to always accept the returned data as a
 const reference.  If it is desired to be able change this data, then
 accepting the result as a new variable will generate a copy, e.g.:
@@ -117,6 +118,10 @@ const RealVector& c_vars = model.continuous_variables();
 RealVector c_vars = model.continuous_variables();
 \endcode
 
+Finally, many classes provide move constructors (including all standard
+library objects such as std::vectors), which reduce unnecessary copying.
+If a function creates such an object, it's generally fine for the return
+type to just be the class of the object, not a const reference.
 
 \subsection StyleConventionsMisc Miscellaneous
 

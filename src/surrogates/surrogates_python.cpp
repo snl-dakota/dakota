@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -15,7 +15,9 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+#ifdef HAVE_ROL
 #include "SurrogatesGaussianProcess.hpp"
+#endif
 #include "SurrogatesPolynomialRegression.hpp"
 
 namespace py = pybind11;
@@ -122,28 +124,31 @@ PYBIND11_MODULE(surrogates, m) {
       //	  py::arg("filename"), py::arg("binary")
       //	)
 
-      // qoi index 0
+      // scalar
       .def("value", py::detail::overload_cast_impl<const Eigen::MatrixXd&>()(
                         &dakota::surrogates::Surrogate::value))
 
-      .def("value", py::detail::overload_cast_impl<const Eigen::MatrixXd&>()(
-                        &dakota::surrogates::Surrogate::value))
+      // field
+      .def("values", py::detail::overload_cast_impl<const Eigen::MatrixXd&>()(
+                        &dakota::surrogates::Surrogate::values))
 
-      // qoi index 0
+      // scalar
       .def("gradient", py::detail::overload_cast_impl<const Eigen::MatrixXd&>()(
                            &dakota::surrogates::Surrogate::gradient))
 
-      .def("gradient",
-           py::detail::overload_cast_impl<const Eigen::MatrixXd&, int>()(
-               &dakota::surrogates::Surrogate::gradient))
+      // field
+      .def("gradients",
+           py::detail::overload_cast_impl<const Eigen::MatrixXd&>()(
+               &dakota::surrogates::Surrogate::gradients))
 
-      // qoi index 0
+      // scalar
       .def("hessian", py::detail::overload_cast_impl<const Eigen::MatrixXd&>()(
                           &dakota::surrogates::Surrogate::hessian))
 
-      .def("hessian",
-           py::detail::overload_cast_impl<const Eigen::MatrixXd&, int>()(
-               &dakota::surrogates::Surrogate::hessian))
+      // field
+      .def("hessians",
+           py::detail::overload_cast_impl<const Eigen::MatrixXd&>()(
+               &dakota::surrogates::Surrogate::hessians))
 
       .def("variable_labels",
            py::detail::overload_cast_impl<>()(
@@ -190,6 +195,7 @@ PYBIND11_MODULE(surrogates, m) {
 
       ;  // PolynomialRegression
 
+#ifdef HAVE_ROL
   py::class_<dakota::surrogates::GaussianProcess,
              std::shared_ptr<dakota::surrogates::GaussianProcess>,
              dakota::surrogates::Surrogate>(m, "GaussianProcess")
@@ -232,4 +238,5 @@ PYBIND11_MODULE(surrogates, m) {
            (&dakota::surrogates::GaussianProcess::get_theta_history))
 
       ;  // GaussianProcess
+#endif
 }

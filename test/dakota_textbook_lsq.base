@@ -102,23 +102,23 @@ Test Number 5 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
 <<<<< Best parameters          =
                       4.0011629191e+00 x1
-                      1.9766149370e+00 x2
+                      1.9766149369e+00 x2
 <<<<< Best model responses =
-                      8.2035014712e+01
+                      8.2035014711e+01
                       1.5020997237e+01
-                      1.9064251496e+00
+                      1.9064251491e+00
 <<<<< Best residual terms =
-                      3.5014712030e-02
-                     -4.7900276339e-01
-                     -9.3574850428e-02
+                      3.5014711341e-02
+                     -4.7900276346e-01
+                     -9.3574850918e-02
 <<<<< Best residual terms =
-                      3.5014712030e-02
-                     -4.7900276339e-01
-                     -9.3574850428e-02
+                      3.5014711341e-02
+                     -4.7900276346e-01
+                     -9.3574850918e-02
 <<<<< Best evaluation ID not available
 Confidence Intervals on Calibrated Parameters:
-            x1: [ 3.9238384580e+00, 4.0784873802e+00 ]
-            x2: [ 4.3950626736e-01, 3.5137236066e+00 ]
+            x1: [ 3.9238384579e+00, 4.0784873802e+00 ]
+            x2: [ 4.3950626739e-01, 3.5137236063e+00 ]
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
 <<<<< Best parameters          =

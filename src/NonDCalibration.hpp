@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDCalibration
-//- Description: Base class for generic ian inference
-//- Owner:       Laura Swiler
-//- Checked by:
-//- Version:
 
 #ifndef NOND_CALIBRATION_H
 #define NOND_CALIBRATION_H
@@ -35,15 +29,15 @@ public:
   //
 
   /// standard constructor
-  NonDCalibration(ProblemDescDB& problem_db, Model& model);
+  NonDCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
-  ~NonDCalibration();
+  ~NonDCalibration() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
   
-  bool resize();
+  bool resize() override;
 
 protected:
 
@@ -70,6 +64,10 @@ private:
   //
 
 };
+
+
+inline NonDCalibration::~NonDCalibration()
+{ }
 
 } // namespace Dakota
 

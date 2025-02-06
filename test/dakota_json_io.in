@@ -1,0 +1,47 @@
+# This suite of tests ensure that parameters and results file format keywords 
+# are behaving as expected, and that JSON format files are being written
+# and read by Dakota as intended.
+
+method
+  list_parameter_study
+    list_of_points  0.0 0.0
+                    0.5 0.75
+                    2.0 1.0
+                    3.0 2.0
+
+variables
+  uniform_uncertain 2
+    lower_bounds 0.0 0.0
+    upper_bounds 3.0 3.0
+   descriptors 'x1' 'x2'
+
+responses
+  response_functions 1
+    descriptors 'f' 
+  no_gradients        #s0,#s2,#s3,#s4,#s5,#s7
+  no_hessians         #s0,#s2,#s3,#s4,#s6,#s7
+# analytic_gradients  #s1,#s6
+# analytic_hessians   #s1,#s5
+# metadata 'time'     #s4
+
+interface
+  fork
+     analysis_drivers '@Python_EXECUTABLE@ dakota_json_io.py not_batch no_metadata no_an_comp json json'      #s0,#s1
+#    analysis_drivers '@Python_EXECUTABLE@ dakota_json_io.py no_metadata no_an_comp not_batch standard standard ' #s2
+#    analysis_drivers '@Python_EXECUTABLE@ dakota_json_io.py no_metadata no_an_comp not_batch aprepro standard' #s3
+#    analysis_drivers '@Python_EXECUTABLE@ dakota_json_io.py not_batch metadata an_comp json json'      #s4
+#    analysis_drivers '@Python_EXECUTABLE@ dakota_json_io.py batch no_metadata no_an_comp json json'          #s5,#s6
+#    analysis_drivers '@Python_EXECUTABLE@ dakota_json_io.py batch no_metadata no_an_comp standard json'        #s7
+    parameters_file 'params.in'
+    results_file    'results.out'
+    file_tag file_save
+    parameters_format                #s0,#s1,#s2,#s3,#s4,#s5,#s6
+       json                          #s0,#s1,#s4,#s5,#s6
+#      standard                        #s2
+#      aprepro                       #s3
+
+    results_format                   #s0,#s1,#s2,#s4,#s5,#s6,#s7
+       json                          #s0,#s1,#s4,#s5,#s6,#s7
+#      standard labeled                #s2
+#    batch                           #s5,#s6,#s7
+#    analysis_components 'present'   #s4

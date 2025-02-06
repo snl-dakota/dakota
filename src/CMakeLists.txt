@@ -1,7 +1,7 @@
 #  _______________________________________________________________________
 #
-#  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2022
+#  Dakota: Explore and predict with confidence.
+#  Copyright 2014-2024
 #  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
@@ -129,7 +129,18 @@ if(NOT DAKOTA_VERSION_FOUND)
 endif()
 
 # -----------------
+# Set path for nlohmann::json header
 
+set(JSON_SINGLE_INCDIR "${PROJECT_SOURCE_DIR}/packages/external/json/single_include")
+if(EXISTS "${JSON_SINGLE_INCDIR}/nlohmann/json.hpp")
+  message( "Found JSON header file" )
+  list( APPEND EXT_TPL_INCDIRS ${JSON_SINGLE_INCDIR} )
+else()
+  message( FATAL_ERROR "JSON header file not found in ${JSON_SINGLE_INCDIR}.
+                        You may need run `git submodule update --init --recursive`" )
+endif()
+
+# -----------------
 
 # -----------------
 # Boost Adjustments
@@ -307,7 +318,6 @@ if(DAKOTA_SCILAB)
 endif() #DAKOTA_SCILAB
 
 if(DAKOTA_PYTHON_DIRECT_INTERFACE)
-
   message(STATUS "Dakota Python direct interface using:\n"
     "     Include dirs: ${Python_INCLUDE_DIRS}\n"
     "     Libraries:    ${Python_LIBRARIES}"
@@ -317,10 +327,11 @@ if(DAKOTA_PYTHON_DIRECT_INTERFACE)
   # TODO: Use target_definitions
   # If not, use  Python_LIBRARY_DIRS
 
-  list(APPEND EXT_TPL_INCDIRS ${Python_INCLUDE_DIRS})
-  add_definitions("-DDAKOTA_PYTHON")
-  list(APPEND EXT_TPL_LIBS ${Python_LIBRARIES})
-
+  if(DAKOTA_PYTHON_DIRECT_INTERFACE_LEGACY) 
+    list(APPEND EXT_TPL_INCDIRS ${Python_INCLUDE_DIRS})
+    add_definitions("-DDAKOTA_PYTHON_LEGACY")
+    list(APPEND EXT_TPL_LIBS ${Python_LIBRARIES})
+  endif()
   # Pybind11 is also included alongside older Python interface
   list(APPEND EXT_TPL_INCDIRS ${pybind11_INCLUDE_DIR})
   add_definitions("-DDAKOTA_PYBIND11")
@@ -400,7 +411,10 @@ set(util_src ParallelLibrary.cpp IteratorScheduler.cpp MPIPackBuffer.cpp
     ExperimentData.cpp UsageTracker.cpp ExperimentDataUtils.cpp
     ReducedBasis.cpp spectral_diffusion.cpp nested_sampling.cpp
     predator_prey.cpp bayes_calibration_utils.cpp EvaluationStore.cpp
-    DakotaTPLDataTransfer.cpp RestartVersion.cpp
+    DakotaTPLDataTransfer.cpp RestartVersion.cpp tolerance_intervals.cpp
+    ParametersFileWriter.cpp ApreproParametersFileWriter.cpp StandardParametersFileWriter.cpp
+    JSONParametersFileWriter.cpp ResultsFileReader.cpp StandardResultsFileReader.cpp
+    JSONResultsFileReader.cpp JSONResultsParser.cpp model_utils.cpp
     )
 
 if(DAKOTA_HAVE_HDF5)
@@ -439,8 +453,9 @@ set(constraint_src DakotaConstraints.cpp MixedVarConstraints.cpp
     RelaxedVarConstraints.cpp)
 
 ## Interface sources.
-set(interface_src DakotaInterface.cpp ApproximationInterface.cpp
-    DakotaApproximation.cpp TaylorApproximation.cpp TANA3Approximation.cpp QMEApproximation.cpp
+set(interface_src DakotaInterface.cpp ApproximationInterface.cpp ApproximationFieldInterface.cpp
+  DakotaApproximation.cpp DakotaFieldApproximation.cpp
+    TaylorApproximation.cpp TANA3Approximation.cpp QMEApproximation.cpp
     GaussProcApproximation.cpp VPSApproximation.cpp 
     PecosApproximation.cpp SharedApproxData.cpp
     SharedPecosApproxData.cpp
@@ -467,8 +482,14 @@ endif(HAVE_SURFPACK)
 
 if(DAKOTA_MODULE_SURROGATES)
   add_definitions("-DHAVE_DAKOTA_SURROGATES")
-  list(APPEND interface_src DakotaSurrogates.cpp DakotaSurrogatesGP.cpp
-    DakotaSurrogatesPoly.cpp) # SharedGPApproxData.cpp)
+  list(APPEND interface_src DakotaSurrogates.cpp DakotaSurrogatesPoly.cpp)
+  if(HAVE_ROL)
+    list(APPEND interface_src DakotaSurrogatesGP.cpp)
+  endif(HAVE_ROL)
+  if(DAKOTA_PYTHON_SURROGATES)
+    add_definitions("-DHAVE_DAKOTA_PYTHON_SURROGATES")
+    list(APPEND interface_src DakotaSurrogatesPython.cpp)
+  endif()
   # TODO: Change so libraries in this dir depend on Eigen3::Eigen target
   list(APPEND DAKOTA_INCDIRS 
     ${Dakota_SOURCE_DIR}/src/util
@@ -483,7 +504,10 @@ if(DAKOTA_MATLAB)
 endif()
 
 if(DAKOTA_PYTHON_DIRECT_INTERFACE)
-  list(APPEND interface_src PythonInterface.cpp Pybind11Interface.cpp)
+  list(APPEND interface_src Pybind11Interface.cpp)
+  if(DAKOTA_PYTHON_DIRECT_INTERFACE_LEGACY)
+    list(APPEND interface_src PythonInterface.cpp)
+   endif()
 endif()
 
 if(DAKOTA_SCILAB)
@@ -508,17 +532,21 @@ set(iterator_src DakotaIterator.cpp DakotaAnalyzer.cpp DakotaPStudyDACE.cpp
     NonDMultilevelPolynomialChaos.cpp NonDMultilevelStochCollocation.cpp
     NonDSurrogateExpansion.cpp NonDCalibration.cpp NonDBayesCalibration.cpp
     NonDWASABIBayesCalibration.cpp NonDSampling.cpp NonDLHSSampling.cpp
-    NonDEnsembleSampling.cpp NonDHierarchSampling.cpp NonDMultilevelSampling.cpp
+    NonDEnsembleSampling.cpp
+    NonDHierarchSampling.cpp NonDMultilevelSampling.cpp
     NonDMultilevControlVarSampling.cpp NonDNonHierarchSampling.cpp
-    NonDACVSampling.cpp NonDMultifidelitySampling.cpp NonDAdaptImpSampling.cpp
-    NonDGPImpSampling.cpp NonDPOFDarts.cpp NonDRKDDarts.cpp
-    DakotaMinimizer.cpp DakotaOptimizer.cpp DakotaTraitsBase.cpp
-    DakotaLeastSq.cpp NonlinearCGOptimizer.cpp 
+    NonDMultifidelitySampling.cpp NonDACVSampling.cpp
+    NonDGenACVSampling.cpp NonDMultilevBLUESampling.cpp
+    NonDAdaptImpSampling.cpp NonDGPImpSampling.cpp
+    NonDPOFDarts.cpp NonDRKDDarts.cpp
+    DakotaMinimizer.cpp DakotaOptimizer.cpp
+    DakotaTraitsBase.cpp DakotaLeastSq.cpp NonlinearCGOptimizer.cpp 
     SurrBasedMinimizer.cpp SurrBasedLocalMinimizer.cpp SurrBasedLevelData.cpp
     HierarchSurrBasedLocalMinimizer.cpp DataFitSurrBasedLocalMinimizer.cpp
     SurrBasedGlobalMinimizer.cpp EffGlobalMinimizer.cpp OptDartsOptimizer.cpp
     MetaIterator.cpp ConcurrentMetaIterator.cpp SeqHybridMetaIterator.cpp
-    EmbedHybridMetaIterator.cpp CollabHybridMetaIterator.cpp
+    EmbedHybridMetaIterator.cpp CollabHybridMetaIterator.cpp Rank1Lattice.cpp
+    DigitalNet.cpp low_discrepancy_data.cpp LHSDriverAdapter.cpp LDDriver.cpp LDDriverAdapter.cpp
 )
 set(Dakota_src_fortran lawson_hanson1.f)
 if(DAKOTA_F90)
@@ -766,8 +794,7 @@ if(HAVE_MUQ)
   # BMA TODO: Make sure the exports and install rules work properly
   add_definitions("-DHAVE_MUQ")
   set(iterator_src ${iterator_src} NonDMUQBayesCalibration.cpp)
-  list(APPEND DAKOTA_INCDIRS ${Dakota_BINARY_DIR}/packages/external/muq2/include)
-  list(APPEND DAKOTA_LIBDIRS ${Dakota_BINARY_DIR}/packages/external/muq2/lib)
+  list(APPEND DAKOTA_INCDIRS ${Dakota_SOURCE_DIR}/packages/external/muq2)
   list(APPEND DAKOTA_PKG_LIBS muqUtilities muqModeling muqSamplingAlgorithms)
 endif()
 
@@ -894,11 +921,15 @@ add_library(dakota_src ${Dakota_src})
 # When using Boost imported targets, we only link libraries using them,
 # then rely on transitive library linking from CMake
 target_link_libraries(dakota_src dakota_src_fortran ${DAKOTA_BOOST_TARGETS})
+# Dakota should always depend on util (consider removing option in DakotaOptions.cmamke
+target_link_libraries(dakota_src dakota_util)
+list(APPEND EXPORT_TARGETS dakota_util)
+list(APPEND DAKOTA_LIBS dakota_util)
 if(DAKOTA_MODULE_SURROGATES)
   target_link_libraries(dakota_src dakota_surrogates)
   #list(APPEND DAKOTA_PKG_LIBS dakota_surrogates)
-  list(APPEND EXPORT_TARGETS dakota_surrogates dakota_util)
-  list(APPEND DAKOTA_LIBS dakota_surrogates dakota_util)
+  list(APPEND EXPORT_TARGETS dakota_surrogates)
+  list(APPEND DAKOTA_LIBS dakota_surrogates)
 endif()
 
 DakotaApplyMPISettings(dakota_src)
@@ -949,7 +980,7 @@ endif()
 
 # Force MUQ to build before Dakota source needing it:
 if(HAVE_MUQ)
-  add_dependencies(dakota_src MUQ)
+  add_dependencies(dakota_src muqModeling)
 endif()
 
 #--- Add Dakota executables, with custom commands and properties

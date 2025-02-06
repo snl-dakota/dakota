@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -38,17 +38,15 @@ public:
 
   /// Problem database constructor
   RandomFieldModel(ProblemDescDB& problem_db);
-  /// destructor
-  ~RandomFieldModel();
 
   //
   //- Heading: Virtual function redefinitions
   //
 
   /// for KL models, the model is augmented with the random coeffs of the KL
-  bool initialize_mapping(ParLevLIter pl_iter);
+  bool initialize_mapping(ParLevLIter pl_iter) override;
   //bool finalize_mapping();
-  bool resize_pending() const;
+  bool resize_pending() const override;
 
 protected:
 
@@ -70,14 +68,14 @@ protected:
 				  bool recurse_flag);
   */
 
-  void assign_instance();
+  void assign_instance() override;
 
   // ---
   // Construct time convenience functions
   // ---
 
   /// retrieve the sub-Model from the DB to pass up the constructor chain
-  Model get_sub_model(ProblemDescDB& problem_db);
+  std::shared_ptr<Model> get_sub_model(ProblemDescDB& problem_db);
 
   /// initialize the RF-generating sampler
   void init_dace_iterator(ProblemDescDB& problem_db);
@@ -132,9 +130,9 @@ protected:
 			  ActiveSet& sub_model_set);
 
   /// generate a random field realization, then evaluate the submodel
-  void derived_evaluate(const ActiveSet& set);
+  void derived_evaluate(const ActiveSet& set) override;
   /// generate a random field realization, then evaluate the submodel (asynch)
-  void derived_evaluate_nowait(const ActiveSet& set);
+  void derived_evaluate_nowait(const ActiveSet& set) override;
 
   /// generate a KL realization and write to file
   void generate_kl_realization();

@@ -1,15 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       PSUADEDesignCompExp
-//- Description: This class wraps the PSUADE DACE library.
-//- Owner:       Brian M. Adams, Sandia National Laboratories
 
 
 #ifndef PSUADE_DESIGN_COMP_EXP_H
@@ -38,15 +34,15 @@ public:
   //
     
   /// primary constructor for building a standard DACE iterator
-  PSUADEDesignCompExp(ProblemDescDB& problem_db, Model& model);
+  PSUADEDesignCompExp(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
-  ~PSUADEDesignCompExp();
+  ~PSUADEDesignCompExp() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
     
 protected:
 
@@ -54,16 +50,16 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void pre_run();
-  void post_input();
-  void core_run();
-  void post_run(std::ostream& s);
+  void pre_run() override;
+  void post_input() override;
+  void core_run() override;
+  void post_run(std::ostream& s) override;
 
-  size_t num_samples() const;
-  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag);
-  unsigned short sampling_scheme() const;
-  void vary_pattern(bool pattern_flag);
-  void get_parameter_sets(Model& model);
+  size_t num_samples() const override;
+  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag) override;
+  unsigned short sampling_scheme() const override;
+  void vary_pattern(bool pattern_flag) override;
+  void get_parameter_sets(std::shared_ptr<Model> model) override;
 
 private:
 

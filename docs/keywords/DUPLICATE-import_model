@@ -19,7 +19,7 @@ or a design of experiments method specified through
 *Usage Tips*
 
 When importing a surrogate model, *it is crucial* that the
-:ref:`model-surrogate-global<model-surrogate-global>` surrogate model part of the Dakota input file
+:dakkw:`model-surrogate-global` surrogate model part of the Dakota input file
 be identical for export and import, except for changing
 ``export_model`` and its child keywords to those needed for
 ``import_model``. Any other keywords such as specifying a dace_iterator or

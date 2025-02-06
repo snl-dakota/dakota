@@ -9,7 +9,6 @@
 
 option(BUILD_SHARED_LIBS "Build shared libraries?" ON)
 
-
 # -----
 # Dakota core
 # -----
@@ -89,6 +88,12 @@ option(DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY
   "Dakota Python direct interface uses NumPy (only has effect when DAKOTA_PYTHON_DIRECT_INTERFACE is ON)" 
   ON
   )
+
+# Default off the legacy direct Python interface. It doesn't work with Numpy 2,
+# and we don't intend to update it. Option is ignored if DAKOTA_PYTHON_DIRECT_INTERFACE
+# is not ON.
+option(DAKOTA_PYTHON_DIRECT_INTERFACE_LEGACY "Dakota legacy Python direct interface; default OFF" OFF)
+
 # Top-level dakota.environment Python wrapper defaults off to avoid
 # Python library deps
 option(DAKOTA_PYTHON_WRAPPER
@@ -111,7 +116,7 @@ if(DAKOTA_PYTHON_SURROGATES)
     message(STATUS "Disabling DAKOTA_PYTHON_SURROGATES as "
       "DAKOTA_MODULE_SURROGATES=${DAKOTA_MODULE_SURROGATES}")
     set(DAKOTA_PYTHON_SURROGATES OFF CACHE BOOL
-      "Python surrogate wrappers disabled as surrogate module is off.")
+      "Python surrogate wrappers disabled as surrogate module is off." FORCE)
   endif()
 endif()
 
@@ -210,6 +215,7 @@ option(HAVE_NCSUOPT "Build the NCSUOPT package." ON)
 option(HAVE_NL2SOL "Build the NL2SOL package." ON)
 option(HAVE_NLPQL "Build the NLPQL package." ON)
 option(HAVE_NOMAD "Build the NOMAD package." ON)
+option(HAVE_MUQ "Build the MIT MUQ package (experimental)." OFF)
 option(HAVE_NOWPAC "Build the SNOWPAC package (experimental)." OFF)
 option(HAVE_NPSOL "Build the NPSOL package." ON)
 option(HAVE_OPTPP "Build the OPTPP package." ON)
@@ -229,7 +235,6 @@ option(HAVE_ROL "Build the Trilinos/ROL package." ON)
 option(HAVE_SPARSE_GRID "Build the VPISparseGrid package." ON)
 
 option(HAVE_SURFPACK "Build the Surfpack package." ON)
-
 
 # -----
 # Dakota Installation

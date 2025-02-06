@@ -1,7 +1,7 @@
 Test Number 0 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE_1): 25 total (25 new, 0 duplicate)
-         obj_fn: 25 val (25 n, 0 d), 25 grad (25 n, 0 d), 0 Hess (0 n, 0 d)
- nln_ineq_con_1: 25 val (25 n, 0 d), 25 grad (25 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 23 total (23 new, 0 duplicate)
+         obj_fn: 23 val (23 n, 0 d), 23 grad (23 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 23 val (23 n, 0 d), 23 grad (23 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (OPTIONAL_I): 10 total (9 new, 1 duplicate)
  nln_ineq_con_1: 10 val (9 n, 1 d), 5 grad (5 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (UQ_I): 1100 total (991 new, 109 duplicate)

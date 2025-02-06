@@ -1,25 +1,21 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:	 NonDSampling
-//- Description: Wrapper class for Fortran 90 LHS library
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version:
-
 #ifndef NOND_SAMPLING_H
 #define NOND_SAMPLING_H
 
 #include "dakota_data_types.hpp"
+#include "model_utils.hpp"
 #include "DakotaNonD.hpp"
-#include "LHSDriver.hpp"
+#include "SamplerDriver.hpp"
 #include "SensAnalysisGlobal.hpp"
+#include "DataFitSurrModel.hpp"
 
 namespace Dakota {
 
@@ -44,10 +40,10 @@ public:
 
   /// alternate constructor for evaluating and computing statistics
   /// for the provided set of samples
-  NonDSampling(Model& model, const RealMatrix& sample_matrix);
+  NonDSampling(std::shared_ptr<Model> model, const RealMatrix& sample_matrix);
 
   /// destructor
-  ~NonDSampling();
+  ~NonDSampling() override;
 
   //
   //- Heading: Public member functions
@@ -106,6 +102,8 @@ public:
   void archive_moments(size_t inc_id = 0);
   /// archive moment confidence intervals in results DB
   void archive_moment_confidence_intervals(size_t inc_id = 0);
+  /// archive standardized regression coefficients in results DB
+  void archive_std_regress_coeffs();
 
   /// archive extreme values (epistemic result) in results DB
   void archive_extreme_responses(size_t inc_id = 0);
@@ -132,16 +130,22 @@ public:
 		     const StringArray& moment_labels) const;
   /// core print moments that can be called without object
   static void print_moments(std::ostream& s, const RealMatrix& moment_stats,
-			    const RealMatrix moment_cis, String qoi_type,
+			    const RealMatrix& moment_cis, String qoi_type,
 			    short moments_type,
 			    const StringArray& moment_labels, bool print_cis);
 
   /// prints the Wilks stastics
   void print_wilks_stastics(std::ostream& s) const;
 
+  /// prints the tolerance intervals stastics
+  void print_tolerance_intervals_statistics(std::ostream& s) const;
+
+  /// archive the tolerance intervals statistics in results DB
+  void archive_tolerance_intervals(size_t inc_id = 0);
+
   /// update finalStatistics from minValues/maxValues, momentStats,
   /// and computedProbLevels/computedRelLevels/computedRespLevels
-  void update_final_statistics();
+  void update_final_statistics() override;
 
   /// calculates the number of samples using the Wilks formula
   /// Static so I can test without instantiating a NonDSampling object - RWH
@@ -154,7 +158,7 @@ public:
   /// Static so I can test without instantiating a NonDSampling object - RWH
   static Real compute_wilks_alpha(unsigned short order, int nsamples, Real beta, bool twosided = false);
 
-  /// calculates the beta paramter given number of samples using the Wilks formula
+  /// calculates the beta parameter given number of samples using the Wilks formula
   /// Static so I can test without instantiating a NonDSampling object - RWH
   static Real compute_wilks_beta(unsigned short order, int nsamples, Real alpha, bool twosided = false);
 
@@ -164,19 +168,28 @@ public:
   static Real get_wilks_beta_min() { return 1.e-6; }
   static Real get_wilks_beta_max() { return 0.999999; }
 
-  /// transform allSamples imported by alternate constructor.  This is needed
-  /// since random variable distribution parameters are not updated until
-  /// run time and an imported sample_matrix is typically in x-space.
+  /// transform allSamples using configuration data from the source
+  /// and target models
+  void transform_samples(Model& src_model, Model& tgt_model);
+			 
+  /// alternate version to transform allSamples.  This is needed since
+  /// random variable distribution parameters are not updated until run
+  /// time and an imported sample_matrix is typically in x-space.
   void transform_samples(Pecos::ProbabilityTransformation& nataf,
   			 bool x_to_u = true);
-
+  /// transform the specified samples matrix from x to u or u to x,
+  /// assuming identical view and ids
+  void transform_samples(Pecos::ProbabilityTransformation& nataf,
+			 RealMatrix& sample_matrix, bool x_to_u = true);
   /// transform the specified samples matrix from x to u or u to x
   void transform_samples(Pecos::ProbabilityTransformation& nataf,
-			 RealMatrix& sample_matrix, size_t num_samples = 0,
+			 RealMatrix& sample_matrix,
+			 SizetMultiArrayConstView src_cv_ids,
+			 SizetMultiArrayConstView tgt_cv_ids,
 			 bool x_to_u = true);
 
   /// return sampleType
-  unsigned short sampling_scheme() const;
+  unsigned short sampling_scheme() const override;
   /// return rngName
   const String& random_number_generator() const;
 
@@ -187,9 +200,9 @@ protected:
   //
 
   /// constructor
-  NonDSampling(ProblemDescDB& problem_db, Model& model);
+  NonDSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor for sample generation and evaluation "on the fly"
-  NonDSampling(unsigned short method_name, Model& model,
+  NonDSampling(unsigned short method_name, std::shared_ptr<Model> model,
 	       unsigned short sample_type, size_t samples, int seed,
 	       const String& rng, bool vary_pattern, short sampling_vars_mode);
   /// alternate constructor for sample generation "on the fly"
@@ -207,39 +220,39 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void pre_run();
-  void core_run();
+  void pre_run() override;
+  void core_run() override;
 
-  size_t num_samples() const;
+  size_t num_samples() const override;
 
   /// resets number of samples and sampling flags
-  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag);
+  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag) override;
 
   /// set reference number of samples, which is a lower bound during reset 
-  void sampling_reference(size_t samples_ref);
+  void sampling_reference(size_t samples_ref) override;
 
   /// assign randomSeed
-  void random_seed(int seed);
+  void random_seed(int seed) override;
 
   /// set varyPattern
-  void vary_pattern(bool pattern_flag);
+  void vary_pattern(bool pattern_flag) override;
 
-  /// Uses lhsDriver to generate a set of samples from the
+  /// Uses samplerDriver to generate a set of samples from the
   /// distributions/bounds defined in the incoming model.
-  void get_parameter_sets(Model& model);
-  /// Uses lhsDriver to generate a set of samples from the
+  void get_parameter_sets(std::shared_ptr<Model> model) override;
+  /// Uses samplerDriver to generate a set of samples from the
   /// distributions/bounds defined in the incoming model and populates
   /// the specified design matrix.
-  void get_parameter_sets(Model& model, const size_t num_samples, 
-                          RealMatrix& design_matrix);
+  void get_parameter_sets(std::shared_ptr<Model> model, const size_t num_samples, 
+                          RealMatrix& design_matrix) override;
   /// core of get_parameter_sets that accepts message print control
-  void get_parameter_sets(Model& model, const size_t num_samples,
+  void get_parameter_sets(std::shared_ptr<Model> model, const size_t num_samples,
                           RealMatrix& design_matrix, bool write_msg);
-  /// Uses lhsDriver to generate a set of uniform samples over
+  /// Uses samplerDriver to generate a set of uniform samples over
   /// lower_bnds/upper_bnds.
   void get_parameter_sets(const RealVector& lower_bnds,
                           const RealVector& upper_bnds);
-  /// Uses lhsDriver to generate a set of normal samples 
+  /// Uses samplerDriver to generate a set of normal samples 
   void get_parameter_sets(const RealVector& means,
                           const RealVector& std_devs,
                           const RealVector& lower_bnds,
@@ -247,14 +260,14 @@ protected:
                           RealSymMatrix& correl);
 
   /// Override default update of continuous vars only
-  void update_model_from_sample(Model& model, const Real* sample_vars);
+  void update_model_from_sample(Model& model, const Real* sample_vars) override;
   /// override default mapping of continuous variables only
-  void sample_to_variables(const Real* sample_vars, Variables& vars);
+  void sample_to_variables(const Real* sample_vars, Variables& vars) override;
   /// override default mapping of continuous variables only
-  void variables_to_sample(const Variables& vars, Real* sample_vars);
+  void variables_to_sample(const Variables& vars, Real* sample_vars) override;
 
   /// return error estimates associated with each of the finalStatistics
-  const RealSymMatrix& response_error_estimates() const;
+  const RealSymMatrix& response_error_estimates() const override;
 
   //
   //- Heading: New virtual functions
@@ -272,7 +285,7 @@ protected:
   //- Heading: Convenience member functions for derived classes
   //
 
-  /// increments numLHSRuns, sets random seed, and initializes lhsDriver
+  /// increments numLHSRuns, sets random seed, and initializes samplerDriver
   void initialize_sample_driver(bool write_message, size_t num_samples);
 
   /// compute sampled subsets (all, active, uncertain) within all
@@ -313,8 +326,27 @@ protected:
   /// current increment in a sequence of samples
   int samplesIncrement;
 
-  Pecos::LHSDriver lhsDriver; ///< the C++ wrapper for the F90 LHS library
+  // Pointer to a SamplerDriver that wraps Pecos::LHSDriver to provide uniform
+  // access to generate_*_samples for other sampling methods, in particular for
+  // low-discrepancy sampling
+  std::unique_ptr<SamplerDriver> samplerDriver; 
   size_t numLHSRuns; ///< counter for number of sample set generations
+
+  bool stdRegressionCoeffs; ///< flags computation/output of standardized
+                            ///< regression coefficients
+
+  bool toleranceIntervalsFlag; ///< flags of double sided tolerance interval
+                               ///<  equivalent normal
+  Real tiCoverage; ///< coverage to be used in the calculation of the double
+                   ///< sided tolerance interval equivaluent normal
+  Real tiConfidenceLevel; ///< confidence interval to be used in the
+                          ///< calculation of the double sided tolerance
+                          ///< interval equivalent normal
+  size_t     tiNumValidSamples;
+  RealVector tiDstienMus;
+  Real       tiDeltaMultiplicativeFactor;
+  RealVector tiSampleSigmas;
+  RealVector tiDstienSigmas;
 
   bool statsFlag;   ///< flags computation/output of statistics
   bool allDataFlag; ///< flags update of allResponses
@@ -417,14 +449,14 @@ inline void NonDSampling::compute_moments(const RealVectorArray& fn_samples)
 {
   SizetArray sample_counts;
   compute_moments(fn_samples, sample_counts, momentStats,
-		  finalMomentsType, iteratedModel.response_labels());
+		  finalMomentsType, ModelUtils::response_labels(*iteratedModel));
 }
 
 
 inline void NonDSampling::compute_moments(const IntResponseMap& samples)
 {
   compute_moments(samples, momentStats, momentGrads, momentCIs,
-		  finalMomentsType, iteratedModel.response_labels());
+		  finalMomentsType, ModelUtils::response_labels(*iteratedModel));
 }
 
 
@@ -437,7 +469,7 @@ inline void NonDSampling::compute_intervals(const IntResponseMap& samples)
 
 
 inline void NonDSampling::print_intervals(std::ostream& s) const
-{ print_intervals(s, "response function", iteratedModel.response_labels()); }
+{ print_intervals(s, "response function", ModelUtils::response_labels(*iteratedModel)); }
 
 
 inline void NonDSampling::
@@ -451,7 +483,7 @@ print_moments(std::ostream& s, String qoi_type,
 
 
 inline void NonDSampling::print_moments(std::ostream& s) const
-{ print_moments(s, "response function", iteratedModel.response_labels()); }
+{ print_moments(s, "response function", ModelUtils::response_labels(*iteratedModel)); }
 
 
 inline void NonDSampling::sampling_reference(size_t samples_ref)
@@ -491,7 +523,7 @@ sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag)
 
 inline void NonDSampling::random_seed(int seed)
 { /*seedSpec = */randomSeed = seed; }
-// lhsDriver initialized in initialize_sample_driver()
+// samplerDriver initialized in initialize_sample_driver()
 
 
 inline bool NonDSampling::seed_updated()
@@ -510,17 +542,42 @@ inline void NonDSampling::vary_pattern(bool pattern_flag)
 { varyPattern = pattern_flag; }
 
 
+
+inline void NonDSampling::
+transform_samples(Model& src_model, Model& tgt_model)
+{
+  Pecos::ProbabilityTransformation& nataf = tgt_model.probability_transformation();
+
+  transform_samples(nataf, allSamples, ModelUtils::continuous_variable_ids(src_model),
+		    ModelUtils::continuous_variable_ids(tgt_model), true);
+}
+
+
 /** transform x_samples to u_samples for use by expansionSampler */
 inline void NonDSampling::
 transform_samples(Pecos::ProbabilityTransformation& nataf, bool x_to_u)
-{ transform_samples(nataf, allSamples, numSamples, x_to_u); }
+{
+  // No model recursion available, assume same x/u ids for mapping:
+  SizetMultiArrayConstView cv_ids = ModelUtils::continuous_variable_ids(*iteratedModel);
+  transform_samples(nataf, allSamples, cv_ids, cv_ids, x_to_u);
+}
+
+
+inline void NonDSampling::
+transform_samples(Pecos::ProbabilityTransformation& nataf,
+		  RealMatrix& sample_matrix, bool x_to_u)
+{
+  // No model recursion available, assume same x/u ids for mapping:
+  SizetMultiArrayConstView cv_ids = ModelUtils::continuous_variable_ids(*iteratedModel);
+  transform_samples(nataf, sample_matrix, cv_ids, cv_ids, x_to_u);
+}
 
 
 /** This version of get_parameter_sets() extracts data from the
     user-defined model in any of the four sampling modes and populates
     the specified design matrix. */
 inline void NonDSampling::
-get_parameter_sets(Model& model, const size_t num_samples,
+get_parameter_sets(std::shared_ptr<Model> model, const size_t num_samples,
 		   RealMatrix& design_matrix)
 { get_parameter_sets(model, num_samples, design_matrix, true); }
 
@@ -528,7 +585,7 @@ get_parameter_sets(Model& model, const size_t num_samples,
 /** This version of get_parameter_sets() extracts data from the
     user-defined model in any of the four sampling modes and populates
     class member allSamples. */
-inline void NonDSampling::get_parameter_sets(Model& model)
+inline void NonDSampling::get_parameter_sets(std::shared_ptr<Model> model)
 { get_parameter_sets(model, numSamples, allSamples); }
 
 
@@ -592,7 +649,7 @@ sample_to_type(const Real* sample_vars, Variables& vars, size_t& cv_index,
     // Note: Model::activeDiscSetStringValues is cached, so no penalty for
     //       repeated query with same view
     sample_to_dsv(sample_vars, vars, dsv_index, num_dsv, samp_index,
-		  model.discrete_set_string_values(all_view));
+		  ModelUtils::discrete_set_string_values(model, all_view));
   }
   sample_to_drv(sample_vars, vars, drv_index, num_drv, samp_index);
 }
@@ -611,7 +668,7 @@ sample_to_cv_type(const Real* sample_vars, Variables& vars, size_t& cv_index,
   //if (num_dsv) {
     //short active_view = vars.view().first, all_view = () ? : ;
     //sample_to_dsv(sample_vars, vars, dsv_index,num_dsv,samp_index,
-    //              model.discrete_set_string_values(all_view));
+    //              ModelUtils::discrete_set_string_values(model, all_view));
   //}
   //sample_to_drv(sample_vars, vars, drv_index, num_drv, samp_index);
 }
@@ -624,7 +681,7 @@ update_model_from_sample(Model& model, const Real* sample_vars)
 
 inline void NonDSampling::
 sample_to_variables(const Real* sample_vars, Variables& vars)
-{ sample_to_variables(sample_vars, vars, iteratedModel); }
+{ sample_to_variables(sample_vars, vars, *iteratedModel); }
 // default to iteratedModel for dss values
 
 

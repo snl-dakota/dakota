@@ -3,7 +3,7 @@ Number of trial RBF subsets
 Description::
 Number of passes to take to identify the best subset of basis
 functions to use.  Defaults to the smaller of 3 * (
-:ref:`model-surrogate-global-radial_basis-bases<model-surrogate-global-radial_basis-bases>`) and 100.
+:dakkw:`model-surrogate-global-radial_basis-bases`) and 100.
 Topics::
 surrogate_models
 Examples::

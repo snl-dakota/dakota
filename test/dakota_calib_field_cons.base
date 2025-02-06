@@ -40,7 +40,7 @@ Test Number 0 succeeded
                      -3.4144453873e-01
                      -2.7141907752e-01
                      -1.5677455767e-01
-                      9.6739204236e-04
+                      9.6739204240e-04
                      -2.5986130552e-04
                      -1.3739325013e-01
                      -2.4390280597e-01
@@ -95,7 +95,7 @@ Test Number 0 succeeded
                      -3.4144453873e-01
                      -2.7141907752e-01
                      -1.5677455767e-01
-                      9.6739204236e-04
+                      9.6739204240e-04
                      -2.5986130552e-04
                      -1.3739325013e-01
                      -2.4390280597e-01
@@ -134,7 +134,7 @@ Test Number 0 succeeded
                       1.6824320424e-03
 <<<<< Best constraint values   =
                       1.7248578281e-02
-                     -3.0878092916e-08
+                     -3.0878092611e-08
 <<<<< Best evaluation ID (full match) not available
 <<<<< Best evaluation ID (partial match): 67
 Confidence Intervals on Calibrated Parameters:

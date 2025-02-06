@@ -23,8 +23,8 @@ Group 1 keywords are used to select the type of basis,
 :math:`\Psi_i` , of the expansion. Three approaches may be employed:
 
 
-- Wiener: employs standard normal random variables in a transformed   probability space, corresponding to Hermite orthogonal basis   polynomials (see :ref:`method-polynomial_chaos-wiener<method-polynomial_chaos-wiener>`).
-- Askey: employs standard normal, standard uniform, standard   exponential, standard beta, and standard gamma random variables in a   transformed probability space, corresponding to Hermite, Legendre,   Laguerre, Jacobi, and generalized Laguerre orthogonal basis   polynomials, respectively (see :ref:`method-polynomial_chaos-askey<method-polynomial_chaos-askey>`).
+- Wiener: employs standard normal random variables in a transformed   probability space, corresponding to Hermite orthogonal basis   polynomials (see :dakkw:`method-polynomial_chaos-wiener`).
+- Askey: employs standard normal, standard uniform, standard   exponential, standard beta, and standard gamma random variables in a   transformed probability space, corresponding to Hermite, Legendre,   Laguerre, Jacobi, and generalized Laguerre orthogonal basis   polynomials, respectively (see :dakkw:`method-polynomial_chaos-askey`).
 - Extended (default if no option is selected): The Extended option   avoids the use of any nonlinear variable transformations by   augmenting the Askey approach with numerically-generated orthogonal   polynomials for non-Askey probability density functions.  Extended   polynomial selections with numerically-generated polynomials that are
   orthogonal to the prescribed probability density functions replace each of the sub-optimal Askey basis   selections    for bounded normal, lognormal, bounded lognormal, loguniform,   triangular, gumbel, frechet, weibull, and bin-based histogram.
 
@@ -39,7 +39,7 @@ These defaults can be overridden by the user by supplying the keyword
 supplying the keyword ``wiener`` to request restriction to the use of
 exclusively Hermite bases.
 
-Refer to :ref:`topic-variable_support<topic-variable_support>` for additional information on
+Refer to :ref:`topic-variable_support` for additional information on
 supported variable types, with and without correlation.
 
 *Coefficient estimation approach (Group 2)*
@@ -147,8 +147,8 @@ rate.
    budget is more flexible than that required by the other approaches.
 
 For incremental studies, approaches 4 and 5 support reuse of previous
-samples through the :ref:`method-sampling-sample_type-incremental_lhs<method-sampling-sample_type-incremental_lhs>`
-and :ref:`model-surrogate-global-reuse_points<model-surrogate-global-reuse_points>`
+samples through the :dakkw:`method-sampling-sample_type-incremental_lhs`
+and :dakkw:`model-surrogate-global-reuse_points`
 specifications, respectively.
 
 In the quadrature and sparse grid cases, growth rates for nested and
@@ -182,7 +182,7 @@ on the PCE algorithm.
 *Expected HDF5 Output*
 
 If Dakota was built with HDF5 support and run with the
-:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+:dakkw:`environment-results_output-hdf5` keyword, this method
 writes the following results to HDF5:
 
 

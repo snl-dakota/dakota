@@ -1,18 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        ExperimentData
-//- Description:
-//-
-//-
-//- Owner:        Laura Swiler
-//- Version: $Id$
 
 #ifndef EXPERIMENT_DATA_H 
 #define EXPERIMENT_DATA_H 
@@ -38,20 +31,20 @@ enum sigtype { NO_SIGMA, SCALAR_SIGMA, DIAGONAL_SIGMA, MATRIX_SIGMA };
 enum edtype { SCALAR_DATA, FUNCTIONAL_DATA } ;
 
 
-  /// Interpolation method for interpolating between experimental and model data. 
-  /// I need to work on inputs/outputs to this method.  For now, this assumes
-  /// interpolation of functional data. 
-  /* void interpolate(RealVector2DArray& functionalCoordinates, RealVectorArray& 
-     experimentFunctionalData, RealVector2DArray& modelCoordinates, RealVectorArray&
-     modelFunctionalData, RealVectorArray& interpolatedResults);
-  */ 
-  /// As Brian suggested, thsi class has the experimental data (coordinates and 
-  // functional data) and can store the interpolated results.  So, we may want a
-  // simpler interpolate definition given in the line below: 
-  /*void interpolate(RealVector2DArray& modelCoordinates, RealVectorArray&
-    modelFunctionalData); 
-  */
-  /// RealVectorArray interpolatedResults; 
+// Interpolation method for interpolating between experimental and model data. 
+// I need to work on inputs/outputs to this method.  For now, this assumes
+// interpolation of functional data. 
+/* void interpolate(RealVector2DArray& functionalCoordinates,
+                    RealVectorArray& experimentFunctionalData,
+		    RealVector2DArray& modelCoordinates,
+		    RealVectorArray& modelFunctionalData,
+		    RealVectorArray& interpolatedResults); */ 
+// As Brian suggested, this class has the experimental data (coordinates and 
+// functional data) and can store the interpolated results.  So, we may want a
+// simpler interpolate definition given in the line below: 
+/* void interpolate(RealVector2DArray& modelCoordinates,
+                    RealVectorArray& modelFunctionalData); */
+// RealVectorArray interpolatedResults; 
   
 
 /** The ExperimentData class is used to read and populate data 
@@ -137,6 +130,7 @@ public:
   std::vector<RealVector> config_vars_as_real() const;
 
   const std::vector<Variables>& configuration_variables() const;
+  std::vector<Variables>& configuration_variables();
 
   /// return contiguous vector of all data (scalar, followed by field)
   /// for the specified experiment
@@ -489,6 +483,123 @@ private:
   /// function index offsets for individual experiment data sets
   IntVector expOffsets;
 };
+
+
+inline size_t ExperimentData::num_config_vars() const
+{ return numConfigVars; }
+
+
+inline const std::vector<Variables>& ExperimentData::
+configuration_variables() const
+{ return allConfigVars; }
+
+
+inline std::vector<Variables>& ExperimentData::configuration_variables()
+{ return allConfigVars; }
+
+
+inline size_t ExperimentData::num_scalar_primary() const
+{
+  if( simulationSRD.is_null() )
+    throw std::runtime_error("ExperimentData is incorrectly (or not) initialized.");
+
+  return simulationSRD.num_scalar_primary();
+}
+
+
+inline size_t ExperimentData::num_fields() const
+{
+  if( simulationSRD.is_null() )
+    throw std::runtime_error("ExperimentData is incorrectly (or not) initialized.");
+
+  return  simulationSRD.num_field_response_groups();
+}
+
+
+inline const IntVector& ExperimentData::field_lengths(size_t experiment) const
+{ return allExperiments[experiment].field_lengths(); }
+
+
+inline const RealVector& ExperimentData::all_data(size_t experiment)
+{
+  if (experiment >= allExperiments.size()) {
+    Cerr << "\nError: invalid experiment index " << experiment << std::endl;
+    abort_handler(-1);
+  }
+  return allExperiments[experiment].function_values();
+}
+
+
+inline const Response& ExperimentData::response(size_t experiment)
+{
+  if (experiment >= allExperiments.size()) {
+    Cerr << "\nError: invalid experiment index " << experiment << std::endl;
+    abort_handler(-1);
+  }
+  return allExperiments[experiment];
+}
+
+
+inline void ExperimentData::per_exp_length(IntVector& per_length) const
+{
+  per_length.resize(allExperiments.size());
+  //Cout << "num experiments " << num_experiments();
+
+  for (size_t i=0; i<num_experiments(); i++)
+    per_length(i) = allExperiments[i].shared_data().num_primary_functions();
+  //Cout << "per length " << per_length;
+}
+
+
+inline size_t ExperimentData::num_total_exppoints() const
+{
+  size_t res_size = 0;
+  for (size_t i=0; i<num_experiments(); i++) {
+    // this omits constraints:
+    res_size += allExperiments[i].shared_data().num_primary_functions();
+  }
+  return res_size;
+}
+
+
+inline Real ExperimentData::
+scalar_data(size_t response, size_t experiment)
+{
+  //if (allExperiments[response].experimentType != SCALAR_DATA) {
+  //  Cerr << "Error (ExperimentData): invalid query of scalar data." << std::endl;
+  //  abort_handler(-1);
+  //}
+  return allExperiments[experiment].function_value(response);
+}
+
+
+inline RealVector ExperimentData::
+field_data_view(size_t response, size_t experiment) const
+{ return allExperiments[experiment].field_values_view(response); }
+
+
+inline RealMatrix ExperimentData::
+field_coords_view(size_t response, size_t experiment) const
+{ return allExperiments[experiment].field_coords_view(response); }
+
+
+inline bool ExperimentData::variance_type_active(short variance_type) const
+{
+  return std::find(varianceTypes.begin(), varianceTypes.end(), variance_type)
+    != varianceTypes.end();
+}
+
+
+inline bool ExperimentData::variance_active() const
+{
+  return (variance_type_active(SCALAR_SIGMA)   ||
+	  variance_type_active(DIAGONAL_SIGMA) ||
+	  variance_type_active(MATRIX_SIGMA));
+}
+
+
+inline bool ExperimentData::interpolate_flag() const
+{ return interpolateFlag; }
 
 
 inline void ExperimentData::

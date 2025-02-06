@@ -1,18 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        DataInterface
-//- Description:
-//-
-//-
-//- Owner:        Mike Eldred
-//- Version: $Id: DataInterface.hpp 6959 2010-09-09 19:10:51Z briadam $
 
 #ifndef DATA_INTERFACE_H
 #define DATA_INTERFACE_H
@@ -134,12 +127,12 @@ public:
   /// analysis_drivers/input_filter/output_filter syntax (from the \c
   /// verbatim specification in \ref InterfApplicSC and \ref InterfApplicF)
   bool verbatimFlag;
-  /// flag for aprepro format usage in the parameters file for
-  /// system call and fork interfaces (from the \c aprepro
-  /// specification in \ref InterfApplicSC and \ref InterfApplicF)
-  bool apreproFlag;
   /// Expected format of results file
   unsigned short resultsFileFormat;
+  /// Parameters file format
+  unsigned short parametersFileFormat;
+  /// Require responses to be labeled
+  bool dakotaResultsFileLabeled;
   /// flag for file tagging of parameters and results files for
   /// system call and fork interfaces (from the \c file_tag
   /// specification in \ref InterfApplicSC and \ref InterfApplicF)

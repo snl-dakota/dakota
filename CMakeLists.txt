@@ -1,7 +1,7 @@
 #  _______________________________________________________________________
 #
 #  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2022
+#  Copyright 2014-2023
 #  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
@@ -39,6 +39,10 @@ endif()
 # Dakota requires C++11
 include(DakotaCxxOptions)
 dakota_cxx_standard()
+
+# Init code coverage if requested 
+include(DakotaGcov)
+dakota_gcov_init()
 
 # Developer convenience options first so take precedence over default options
 if(DevDebugShared OR DevDebugStatic OR DevDebug)  # DevDebug is deprecated
@@ -136,11 +140,22 @@ elseif(UNIX)
      CACHE STRING "Set the RPATH in Dakota executables and libraries")
 endif()
 
+# Copy library installation script for Darwin so that it can be found by CPack
+if(APPLE)
+   file(COPY cmake/install_macos_libs.py DESTINATION ${CMAKE_BINARY_DIR})
+endif() 
 
 # Now check languages after compiler flags and options are set
 enable_language(C)
 enable_language(CXX)
 enable_language(Fortran)
+
+# Ensure that GCC is being used if DAKOTA_GCOV was requested. 
+if(DAKOTA_GCOV AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+   message(FATAL_ERROR "DAKOTA_GCOV requires building with GCC")
+endif()
+
+
 if(MSVC_VERSION EQUAL 1400 OR MSVC_VERSION GREATER 1400 OR MSVC10)
   add_definitions(-D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE 
     -D_CRT_SECURE_NO_WARNINGS)
@@ -186,6 +201,13 @@ if(CMAKE_SYSTEM_NAME MATCHES Darwin)
       "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -undefined dynamic_lookup")
 endif()
 
+# set compiler flag to prevent issues in boost::serialization for c++17.
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  if(CMAKE_CXX_STANDARD GREATER 11)
+    set(CMAKE_CXX_FLAGS "-fno-new-ttp-matching ${CMAKE_CXX_FLAGS}"
+        CACHE STRING "fix boost::serialization" FORCE)
+  endif()
+endif()
 
 include(DakotaFindSystemTPLs)
 # Unconditionally find BLAS/LAPACK or equivalent
@@ -221,22 +243,27 @@ if(DAKOTA_F90)
   install(FILES ${Dakota_BINARY_DIR}/dak_f90_config.h DESTINATION include)
 endif(DAKOTA_F90)
 
-# Initialize GCov before adding targets to cover
-include(DakotaGcov)
-dakota_gcov_init()
+if(HAVE_ROL)
+  add_definitions("-DHAVE_ROL")
+endif(HAVE_ROL)
+
+# Set up googletest. It must be done early so that
+# the targets can be used to add unit tests
+dakota_find_googletest()
 
 # -----
 # Configuration of Dakota components
 # -----
 
-# --- New surrogates module
-# BMA TODO: Finer granularity in packages to build Trilinos, Eigen
-# first, then optionally Pecos, Surfpack, surrogates.
 if(DAKOTA_MODULE_UTIL)
   add_subdirectory(src/util)
 endif()
 
-if(DAKOTA_MODULE_SURROGATES)
+# --- New surrogates module
+# BMA TODO: Finer granularity in packages to build Trilinos, Eigen
+# first, then optionally Pecos, Surfpack, surrogates.
+
+if(DAKOTA_MODULE_SURROGATES) 
   add_subdirectory(src/surrogates)
   add_definitions("-DHAVE_DAKOTA_SURROGATES")
 endif()

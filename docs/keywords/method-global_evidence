@@ -28,10 +28,10 @@ expensive.
 
 *Additional Resources*
 
-See the topic page :ref:`topic-evidence_theory<topic-evidence_theory>` for important
+See the topic page :ref:`topic-evidence_theory` for important
 background information and usage notes.
 
-Refer to :ref:`topic-variable_support<topic-variable_support>` for information on supported
+Refer to :ref:`topic-variable_support` for information on supported
 variable types.
 Topics::
 epistemic_uncertainty_quantification_methods, evidence_theory

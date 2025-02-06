@@ -1,23 +1,16 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:        ReducedBasis
-//- Description:
-//-
-//-
-//- Owner:        Russell Hooper
-//- Created:      Jun 10, 2015
-//- Version: $Id$
-
 #ifndef REDUCED_BASIS_H 
 #define REDUCED_BASIS_H 
 
+#include "dakota_data_util.hpp"
 #include "ExperimentDataUtils.hpp"
 
 namespace Dakota {
@@ -68,7 +61,7 @@ class ReducedBasis
 
     const RealVector & get_column_means()
       { if (!col_means_computed) {
-          compute_column_means(matrix, column_means);
+          compute_col_means(matrix, column_means);
           col_means_computed = true;
         }
         return column_means; 
@@ -129,13 +122,13 @@ class ReducedBasis
     class Untruncated : public TruncationCondition {
       public:
         Untruncated();
-        int get_num_components(const ReducedBasis &) const;
+        int get_num_components(const ReducedBasis &) const override;
     };
 
     class VarianceExplained : public TruncationCondition {
       public:
         VarianceExplained(Real var_exp);
-        int get_num_components(const ReducedBasis &) const;
+        int get_num_components(const ReducedBasis &) const override;
 
       private:
         Real variance_explained;
@@ -144,7 +137,7 @@ class ReducedBasis
     class HeuristicVarianceExplained : public TruncationCondition {
       public:
         HeuristicVarianceExplained(Real var_exp);
-        int get_num_components(const ReducedBasis &) const;
+        int get_num_components(const ReducedBasis &) const override;
 
       private:
         Real variance_explained;
@@ -154,7 +147,7 @@ class ReducedBasis
       public:
         NumComponents(int num_comp);
 
-        int get_num_components(const ReducedBasis &) const;
+        int get_num_components(const ReducedBasis &) const override;
 
       private:
         int num_components;

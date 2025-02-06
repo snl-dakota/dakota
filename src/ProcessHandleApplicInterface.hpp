@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        ProcessHandleApplicInterface
-//- Description:  Derived class for the case when analysis code simulators use
-//-               fork\exec\wait to provide the function evaluations
-//- Owner:        Mike Eldred
-//- Version: $Id: ProcessHandleApplicInterface.hpp 6492 2009-12-19 00:04:28Z briadam $
 
 #ifndef PROCESS_HANDLE_APPLIC_INTERFACE_H
 #define PROCESS_HANDLE_APPLIC_INTERFACE_H
@@ -40,7 +34,7 @@ public:
   /// constructor
   ProcessHandleApplicInterface(const ProblemDescDB& problem_db);
   /// destructor
-  ~ProcessHandleApplicInterface();
+  ~ProcessHandleApplicInterface() override;
 
 protected:
 
@@ -48,14 +42,14 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  int synchronous_local_analysis(int analysis_id);
+  int synchronous_local_analysis(int analysis_id) override;
 
-  void init_communicators_checks(int max_eval_concurrency);
-  void set_communicators_checks(int max_eval_concurrency);
+  void init_communicators_checks(int max_eval_concurrency) override;
+  void set_communicators_checks(int max_eval_concurrency) override;
 
-  void map_bookkeeping(pid_t pid, int fn_eval_id);
+  void map_bookkeeping(pid_t pid, int fn_eval_id) override;
 
-  pid_t create_evaluation_process(bool block_flag);
+  pid_t create_evaluation_process(bool block_flag) override;
 
   //
   //- Heading: New virtual functions
@@ -172,7 +166,7 @@ synchronous_local_analysis(int analysis_id)
 
 /** No derived interface plug-ins, so perform construct-time checks.
     However, process init issues as warnings since some contexts (e.g.,
-    HierarchSurrModel) initialize more configurations than will be used. */
+    EnsembleSurrModel) initialize more configurations than will be used. */
 inline void ProcessHandleApplicInterface::
 init_communicators_checks(int max_eval_concurrency)
 {

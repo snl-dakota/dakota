@@ -1,16 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       EmbedHybridMetaIterator
-//- Description: Implementation code for the EmbedHybridMetaIterator class
-//- Owner:       Mike Eldred
-//- Checked by:
 
 #include "EmbedHybridMetaIterator.hpp"
 #include "ProblemDescDB.hpp"
@@ -28,7 +23,7 @@ EmbedHybridMetaIterator::EmbedHybridMetaIterator(ProblemDescDB& problem_db):
 
 
 EmbedHybridMetaIterator::
-EmbedHybridMetaIterator(ProblemDescDB& problem_db, Model& model):
+EmbedHybridMetaIterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   MetaIterator(problem_db, model), singlePassedModel(true),
   localSearchProb(problem_db.get_real("method.hybrid.local_search_probability"))
 {
@@ -64,8 +59,8 @@ void EmbedHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   const String& local_model_ptr
     = probDescDB.get_string("method.hybrid.local_model_pointer");
 
-  Model& global_model = (singlePassedModel) ? iteratedModel : globalModel;
-  Model& local_model  = (singlePassedModel) ? iteratedModel :  localModel;
+  auto& global_model = (singlePassedModel) ? iteratedModel : globalModel;
+  auto& local_model  = (singlePassedModel) ? iteratedModel :  localModel;
 
   iterSched.update(methodPCIter);
 

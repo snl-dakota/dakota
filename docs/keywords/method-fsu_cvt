@@ -20,9 +20,9 @@ control is desired, however, there are a few variables with which the user
 can influence the iteration.
 The user may specify:
 
-- :ref:`method-fsu_cvt-max_iterations<method-fsu_cvt-max_iterations>`, the number of iterations carried out
-- :ref:`method-fsu_cvt-num_trials<method-fsu_cvt-num_trials>`, the number of secondary sample points generated to adjust the location of the primary sample points
-- :ref:`method-fsu_cvt-trial_type<method-fsu_cvt-trial_type>`, which controls how these secondary sample points are generated
+- :dakkw:`method-fsu_cvt-max_iterations`, the number of iterations carried out
+- :dakkw:`method-fsu_cvt-num_trials`, the number of secondary sample points generated to adjust the location of the primary sample points
+- :dakkw:`method-fsu_cvt-trial_type`, which controls how these secondary sample points are generated
 
 This method generates sets of uniform random variables on the
 interval [0,1]. If the user specifies lower and upper bounds for a

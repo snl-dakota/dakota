@@ -1,16 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       DOTOptimizer
-//- Description: Implementation code for the DOTOptimizer class
-//- Owner:       Mike Eldred
-//- Checked by:
 
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
@@ -37,7 +32,7 @@ void DOT510_F77( int& ndv, int& ncon, int& ncola, int& method, int& nrwk,
 namespace Dakota {
 
 
-DOTOptimizer::DOTOptimizer(ProblemDescDB& problem_db, Model& model):
+DOTOptimizer::DOTOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new DOTTraits())),
   realCntlParmArray(20, 0.0),
   intCntlParmArray(20, 0)
@@ -62,7 +57,7 @@ DOTOptimizer::DOTOptimizer(ProblemDescDB& problem_db, Model& model):
 }
 
 
-DOTOptimizer::DOTOptimizer(const String& method_string, Model& model):
+DOTOptimizer::DOTOptimizer(const String& method_string, std::shared_ptr<Model> model):
   Optimizer(method_string_to_enum(method_string), model, std::shared_ptr<TraitsBase>(new DOTTraits())),
   realCntlParmArray(20, 0.0), intCntlParmArray(20, 0)
 {
@@ -120,9 +115,9 @@ void DOTOptimizer::initialize()
   realCntlParmArray[12]= convergenceTol; // RPRM(13)=DELSTR
 
   // Default DOT gradients [ IPRM(1)=0 ] = numerical;forward;vendor setting.
-  const String& grad_type     = iteratedModel.gradient_type();
-  const String& method_src    = iteratedModel.method_source();
-  const String& interval_type = iteratedModel.interval_type();
+  const String& grad_type     = iteratedModel->gradient_type();
+  const String& method_src    = iteratedModel->method_source();
+  const String& interval_type = iteratedModel->interval_type();
   if ( grad_type == "analytic" || grad_type == "mixed" || 
        ( grad_type == "numerical" && method_src == "dakota" ) )
     // p. 3-12 DOT V4.20: Set IPRM(1)=1 before calling DOT. This invokes
@@ -135,7 +130,7 @@ void DOTOptimizer::initialize()
     abort_handler(-1);
   }
   else { // Vendor numerical gradients
-    Real fd_grad_ss = iteratedModel.fd_gradient_step_size()[0];
+    Real fd_grad_ss = iteratedModel->fd_gradient_step_size()[0];
     if (interval_type == "central") {
       // p. 3-8 DOT V4.20: Set IPRM(1) = -1 before calling DOT
       intCntlParmArray[0] = -1; // central finite difference by DOT
@@ -166,10 +161,10 @@ void DOTOptimizer::allocate_constraints()
   // mappings (indices, multipliers, offsets) between the DAKOTA constraints
   // and the DOT constraints.  TO DO: support for automatic constraint scaling.
   size_t 
-    num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints(),
-    num_nln_eq   = iteratedModel.num_nonlinear_eq_constraints(),
-    num_lin_ineq = iteratedModel.num_linear_ineq_constraints(),
-    num_lin_eq   = iteratedModel.num_linear_eq_constraints();
+    num_nln_ineq = ModelUtils::num_nonlinear_ineq_constraints(*iteratedModel),
+    num_nln_eq   = ModelUtils::num_nonlinear_eq_constraints(*iteratedModel),
+    num_lin_ineq = ModelUtils::num_linear_ineq_constraints(*iteratedModel),
+    num_lin_eq   = ModelUtils::num_linear_eq_constraints(*iteratedModel);
   numDotNlnConstr = 2*num_nln_eq;
   numDotNlnConstr += numNonlinearIneqConstraintsFound;
 
@@ -243,8 +238,8 @@ void DOTOptimizer::allocate_workspace()
 {
   // Use the dot510 routine to compute work array sizes.
   int nrb, ngmax, ncola = 0, num_cv = numContinuousVars;
-  const RealVector& lower_bnds = iteratedModel.continuous_lower_bounds();
-  const RealVector& upper_bnds = iteratedModel.continuous_upper_bounds();
+  const RealVector& lower_bnds = ModelUtils::continuous_lower_bounds(*iteratedModel);
+  const RealVector& upper_bnds = ModelUtils::continuous_upper_bounds(*iteratedModel);
   DOT510_F77(num_cv, numDotConstr, ncola, dotMethod, realWorkSpaceSize,
 	     intWorkSpaceSize, nrb, ngmax, lower_bnds.values(),
 	     upper_bnds.values());
@@ -268,21 +263,20 @@ void DOTOptimizer::check_sub_iterator_conflict()
   // Note: This check is performed for DOT, CONMIN, and SOLBase, but not
   //       for LHS since it is only active in pre-processing.
   // Run-time check since NestedModel::subIterator is constructed in init_comms
-  Iterator sub_iterator = iteratedModel.subordinate_iterator();
+  Iterator sub_iterator = iteratedModel->subordinate_iterator();
   if (!sub_iterator.is_null() && 
       ( ( sub_iterator.method_name() >= DOT_BFGS &&
 	  sub_iterator.method_name() <= DOT_SQP ) ||
 	sub_iterator.uses_method() == SUBMETHOD_DOT ) ) //_BFGS,_SQP, ...
-    sub_iterator.method_recourse();
-  ModelList& sub_models = iteratedModel.subordinate_models();
-  for (ModelLIter ml_iter = sub_models.begin();
-       ml_iter != sub_models.end(); ml_iter++) {
-    sub_iterator = ml_iter->subordinate_iterator();
+    sub_iterator.method_recourse(methodName);
+  ModelList& sub_models = iteratedModel->subordinate_models();
+  for (auto& sm : sub_models) {
+    sub_iterator = sm->subordinate_iterator();
     if (!sub_iterator.is_null() && 
 	( ( sub_iterator.method_name() >= DOT_BFGS &&
 	    sub_iterator.method_name() <= DOT_SQP ) ||
 	  sub_iterator.uses_method() == SUBMETHOD_DOT ) ) //_BFGS,_SQP, ...
-      sub_iterator.method_recourse();
+      sub_iterator.method_recourse(methodName);
   }
 }
 
@@ -298,7 +292,7 @@ void DOTOptimizer::initialize_run()
   dotInfo = 0; // Initialize to 0 before calling DOT
 
   // initialize the optimization starting point
-  copy_data(iteratedModel.continuous_variables(), designVars);
+  copy_data(ModelUtils::continuous_variables(*iteratedModel), designVars);
 }
 
 
@@ -310,18 +304,18 @@ void DOTOptimizer::core_run()
   // MINMAX from DOT manual.  Values of 0 or -1 (minimize) or 1 (maximize).
   // Any MOO/NLS recasting is responsible for setting the scalar min/max
   // sense within the recast.
-  const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
+  const BoolDeque& max_sense = iteratedModel->primary_response_fn_sense();
   int min_max = (!max_sense.empty() && max_sense[0]) ? 1 : 0;
 
   // Initialize local bounds and linear constraints
-  const RealVector& lower_bnds = iteratedModel.continuous_lower_bounds();
-  const RealVector& upper_bnds = iteratedModel.continuous_upper_bounds();
-  size_t num_lin_ineq = iteratedModel.num_linear_ineq_constraints(),
-         num_lin_eq   = iteratedModel.num_linear_eq_constraints();
+  const RealVector& lower_bnds = ModelUtils::continuous_lower_bounds(*iteratedModel);
+  const RealVector& upper_bnds = ModelUtils::continuous_upper_bounds(*iteratedModel);
+  size_t num_lin_ineq = ModelUtils::num_linear_ineq_constraints(*iteratedModel),
+         num_lin_eq   = ModelUtils::num_linear_eq_constraints(*iteratedModel);
   const RealMatrix& lin_ineq_coeffs
-    = iteratedModel.linear_ineq_constraint_coeffs();
+    = ModelUtils::linear_ineq_constraint_coeffs(*iteratedModel);
   const RealMatrix& lin_eq_coeffs
-    = iteratedModel.linear_eq_constraint_coeffs();
+    = ModelUtils::linear_eq_constraint_coeffs(*iteratedModel);
 
   for (fn_eval_cntr=1; fn_eval_cntr<=maxFunctionEvals; fn_eval_cntr++) {
 
@@ -351,7 +345,7 @@ void DOTOptimizer::core_run()
         if (dotInfo==1)
           Cout << "\nDOT requests function values:";
         else {
-          if (iteratedModel.gradient_type() == "numerical")
+          if (iteratedModel->gradient_type() == "numerical")
             Cout << "\nDOT requests dakota-numerical gradients:";
           else
             Cout << "\nDOT requests analytic gradients:";
@@ -398,9 +392,9 @@ void DOTOptimizer::core_run()
       }
     }
 
-    iteratedModel.continuous_variables(designVars);
-    iteratedModel.evaluate(activeSet);
-    const Response& local_response = iteratedModel.current_response();
+    ModelUtils::continuous_variables(*iteratedModel, designVars);
+    iteratedModel->evaluate(activeSet);
+    const Response& local_response = iteratedModel->current_response();
 
     // Populate proper data for input back to DOT through parameter list
     if (dotInfo==2) {

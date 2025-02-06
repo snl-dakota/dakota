@@ -1,7 +1,7 @@
 #  _______________________________________________________________________
 #
-#  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2022
+#  Dakota: Explore and predict with confidence.
+#  Copyright 2014-2024
 #  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
@@ -27,6 +27,7 @@ set(util_headers
   util_data_types.hpp
   util_eigen_plugins.hpp
   util_math_tools.hpp
+  util_windows.hpp
   )
 
 add_library(dakota_util ${util_sources} ${util_headers})
@@ -54,11 +55,9 @@ target_link_libraries(dakota_util PUBLIC Eigen3::Eigen)
 
 # Rationale: Boost headers are implementation details only, while
 # serialization is referenced in API headers
-target_link_libraries(dakota_util PRIVATE Boost::boost
-  PUBLIC Boost::serialization)
+target_link_libraries(dakota_util PUBLIC Boost::serialization)
 
 dakota_strict_warnings(dakota_util)
-dakota_gcov_target(dakota_util)
 
 install(FILES ${util_headers} DESTINATION "include")
 # Need to make sure DLLs end up in bin and prefer lib over lib64 (for now)

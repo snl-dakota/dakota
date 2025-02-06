@@ -1,7 +1,8 @@
 #  _______________________________________________________________________
 #
-#  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2022 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+#  Dakota: Explore and predict with confidence.
+#  Copyright 2014-2024
+#  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
@@ -152,7 +153,7 @@ def check_expected_params(params):
     expected_params = {}
     expected_params["variables"] = 9
     expected_params["functions"] = 3
-    expected_params["eval_id"]   = 1
+    expected_params["eval_id"]   = "1"
 
     expected_params["cv_labels"] = ["x1", "x2", "x3"]
     expected_params["div_labels"] = ["z1", "z2", "z3"]
@@ -172,6 +173,7 @@ def check_expected_params(params):
     expected_params["drv"] = [1.2, 3.2]
     expected_params["asv"] = [7, 7, 7]
     expected_params["dvv"] = [1, 2, 3]
+    expected_params["analysis_components"] = ["a", "b"]
 
     single_value_type_keys = ["variables", "functions", "eval_id"]
     array_type_keys = ["variable_labels", "cv", "cv_labels", "div", "div_labels",
@@ -187,9 +189,6 @@ def check_expected_params(params):
         expected_values = expected_params[key]
         for idx, expected_value in enumerate(expected_values):
             assert(expected_value == dakota_values[idx])
-
-    assert(len(params["analysis_components"]) == 0)
-
 
 def text_book(params):
     check_expected_params(params)

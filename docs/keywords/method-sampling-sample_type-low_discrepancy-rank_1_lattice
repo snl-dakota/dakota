@@ -1,0 +1,92 @@
+Blurb::
+Uses rank-1 lattice points to sample variables
+
+Description::
+The ``rank_1_lattice`` keyword invokes rank-1 lattice sampling as the means of 
+drawing samples of uncertain variables according to their probability
+distributions :cite:p:`Nuyens06`.
+
+Rank-1 lattices were introduced by
+Korobov :cite:p:`Korobov59` and Hlawka :cite:p:`Hlawka62`, as the *method of good lattice points*. 
+An :math:`N`-point rank-1 lattice rule in 
+:math:`d` dimensions generates points according to
+
+.. math:: \boldsymbol{t}^{(i)} = \left\{ \frac{i \boldsymbol{z}}{N} \right\} = \frac{i \boldsymbol{z} \;\text{mod}\; N}{N}
+
+where :math:`\{\;\cdot\;\}` denotes the fractional part, i.e., 
+:math:`\{x\} = x - \lceil x \rceil`, and where 
+:math:`\boldsymbol{z} = (z_1, z_2, \ldots, z_d)` is a :math:`d`-dimensional 
+vector with integers, called the *generating vector*.
+
+The performance of the rank-1 lattice points depends on the choice of 
+generating vector. Dakota provides two predefined generating vectors:
+
+- :dakkw:`method-sampling-sample_type-low_discrepancy-rank_1_lattice-generating_vector-predefined-cools_kuo_nuyens` (default): generates up to 2\ :sup:`20` points in up to 250 dimensions :cite:p:`Cools06`
+- :dakkw:`method-sampling-sample_type-low_discrepancy-rank_1_lattice-generating_vector-predefined-kuo`: generates up to 2\ :sup:`20` points in up to 3600 dimensions :cite:p:`Kuo06`
+
+If this is not sufficient, you can provide a custom generating vector 
+either as an :dakkw:`method-sampling-sample_type-low_discrepancy-rank_1_lattice-generating_vector-inline` argument, or using an external :dakkw:`method-sampling-sample_type-low_discrepancy-rank_1_lattice-generating_vector-file`. 
+Custom generating vectors can be found online :cite:p:`Kuo06`, or they can be generated using the
+fast *component-by-component* construction from :cite:p:`Nuyens17`.
+When a custom generating vector is provided, the user must specify the :math:`\log_2` of the maximum number of points in the lattice using the keyword :dakkw:`method-sampling-sample_type-low_discrepancy-rank_1_lattice-m_max`.
+
+By default, the lattice points will be shifted using a random shift vector.
+This means that the points will be generated as
+
+.. math:: \boldsymbol{t}^{(i)} = \left\{ \frac{i \boldsymbol{z}}{N} + \Delta \right\}
+
+where :math:`\Delta` is a vector with standard uniform random points. 
+If this is not the desired behavior, specify the keyword :dakkw:`method-sampling-sample_type-low_discrepancy-rank_1_lattice-no_random_shift`
+(**warning**: this means that the first untransformed point in the sequence will be 
+:math:`\boldsymbol{t}^{(0)} = (0, 0, \ldots, 0)` -- this may or may not be the desired behavior :cite:p:`Owen20`.)
+
+The default behavior is to return points using radical inverse ordering, i.e., 
+the points will be generated according to
+
+.. math:: \boldsymbol{t}^{(i)} = \left\{ \phi_b(i) \boldsymbol{z} \right\}
+
+where :math:`\phi_b(i)` denotes the so-called *radical inverse* function in base :math:`b` (usually, and also in Dakota, :math:`b = 2`). 
+This function transforms a number :math:`i = (\ldots i_2i_1)_b` in its base-:math:`b` representation 
+to :math:`\phi_b(i) = (0.i_1i_2\ldots)_b`. Note that the radical inverse function agrees with the original 
+formulation when :math:`N = b^m` for any :math:`m \geq 0`. The advantage of the radical inverse ordering is that one can 
+generate a good point set with an arbitrary number of points :math:`N`. Using the *natural* order, a good point set requires a number of points that is a power of 2. Semantically, the radical inverse ordering turns the lattice *rule* into a lattice *sequence*. Use the keyword :dakkw:`method-sampling-sample_type-low_discrepancy-rank_1_lattice-ordering` to choose the ordering of the point set.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    environment
+      tabular_data
+        tabular_data_file = 'samples.dat'
+        freeform
+
+    method
+      sampling
+        samples 32
+        sample_type
+          low_discrepancy
+            rank_1_lattice
+
+    variables
+      uniform_uncertain = 2
+        lower_bounds 0.0 0.0
+        upper_bounds 1.0 1.0
+
+    interface
+      analysis_drivers = 'genz'
+      analysis_components = 'cp1'
+      direct
+
+    responses
+      response_functions = 1
+      no_gradients
+      no_hessians
+
+
+Theory::
+
+Faq::
+
+See_Also::

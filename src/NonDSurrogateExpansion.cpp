@@ -1,15 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       NonDSurrogateExpansion
-//- Description: Implementation code for NonDSurrogateExpansion class
-//- Owner:       Michael Eldred
 
 #include "dakota_system_defs.hpp"
 #include "NonDSurrogateExpansion.hpp"
@@ -27,7 +23,7 @@ namespace Dakota {
 /** This constructor is called for a standard letter-envelope iterator
     instantiation using the ProblemDescDB. */
 NonDSurrogateExpansion::
-NonDSurrogateExpansion(ProblemDescDB& problem_db, Model& model):
+NonDSurrogateExpansion(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDExpansion(problem_db, model)
   // base classes extract generic UQ spec for stochastic expansions
 {
@@ -38,22 +34,24 @@ NonDSurrogateExpansion(ProblemDescDB& problem_db, Model& model):
   //  u_space_type = probDescDB.get_short("method.nond.expansion_type");
   //resolve_inputs(u_space_type, data_order);
 
-  if (iteratedModel.model_type() != "surrogate") {
+  if (iteratedModel->model_type() != "surrogate") {
     Cerr << "Error: NonDSurrogateExpansion requires a surrogate model "
 	 << "specification." << std::endl;
     abort_handler(METHOD_ERROR);
   }
 
-  const String& surr_type = iteratedModel.surrogate_type();
+  const String& surr_type = iteratedModel->surrogate_type();
   if (surr_type == "global_function_train") {// || surr_type == "global_"
     // transformation, DataFit, and DACE configuration performed by Model spec
     // All expansion config settings are pulled in that ctor chain
-    uSpaceModel = iteratedModel; // shared rep
+
+    
+    uSpaceModel = std::static_pointer_cast<DataFitSurrModel>(iteratedModel);
 
     // Notes on managing the u-space transformation:
     // > wrapping iteratedModel here applies the transformation on top of the
     //   incoming DataFitSurrModel --> insufficient for internal build.
-    //     uSpaceModel.assign_rep(new ProbabilityTransformModel(iteratedModel,
+    //     uSpaceModel->assign_rep(new ProbabilityTransformModel(iteratedModel,
     //       u_space_type), false); // only affects exp_sampler
     // > modifying the DataFitSurrModel ctor requires care because the
     //   daceIterator spec points to the actualModel spec (when DACE is active)
@@ -128,7 +126,7 @@ void NonDSurrogateExpansion::core_run()
 void NonDSurrogateExpansion::print_results(std::ostream& s)
 {
   if (//iteratedModel.subordinate_models(false).size() == 1 &&
-      iteratedModel.truth_model().solution_levels() > 1) {
+      iteratedModel->truth_model()->solution_levels() > 1) {
     s << "<<<<< Samples per solution level:\n";
     print_multilevel_evaluation_summary(s, NLev);
     s << "<<<<< Equivalent number of high fidelity evaluations: "

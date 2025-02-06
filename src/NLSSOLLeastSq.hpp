@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       NLSSOLLeastSq
-//- Description: Wrapper class for NLSSOL
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version: $Id: NLSSOLLeastSq.hpp 6492 2009-12-19 00:04:28Z briadam $
 
 #ifndef NLSSOL_LEAST_SQ_H
 #define NLSSOL_LEAST_SQ_H
@@ -34,25 +28,25 @@ class NLSSOLLeastSqTraits: public TraitsBase
   NLSSOLLeastSqTraits() { }
 
   /// destructor
-  virtual ~NLSSOLLeastSqTraits() { }
+  ~NLSSOLLeastSqTraits() override { }
 
   /// A temporary query used in the refactor
-  virtual bool is_derived() { return true; }
+  bool is_derived() override { return true; }
 
   /// Return the flag indicating whether method supports continuous variables
-  bool supports_continuous_variables() { return true; }
+  bool supports_continuous_variables() override { return true; }
 
   /// Return the flag indicating whether method supports linear equalities
-  bool supports_linear_equality() { return true; }
+  bool supports_linear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports linear inequalities
-  bool supports_linear_inequality() { return true; }
+  bool supports_linear_inequality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear equalities
-  bool supports_nonlinear_equality() { return true; }
+  bool supports_nonlinear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear inequalities
-  bool supports_nonlinear_inequality() { return true; }
+  bool supports_nonlinear_inequality() override { return true; }
 };
 
 
@@ -89,20 +83,20 @@ public:
   //
  
   /// standard constructor
-  NLSSOLLeastSq(ProblemDescDB& problem_db, Model& model);
+  NLSSOLLeastSq(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor
-  NLSSOLLeastSq(Model& model);
+  NLSSOLLeastSq(std::shared_ptr<Model> model);
   /// destructor
-  ~NLSSOLLeastSq();
+  ~NLSSOLLeastSq() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
   //void pre_run();
-  void core_run();
+  void core_run() override;
 
-  void check_sub_iterator_conflict();
+  void check_sub_iterator_conflict() override;
 
 protected:
 

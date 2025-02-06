@@ -7,7 +7,7 @@ specification identifies this interface by cross-referencing with the
 ``id_interface`` string input from a particular interface keyword
 specification.
 
-See :ref:`topic-block_pointer<topic-block_pointer>` for details about pointers.
+See :ref:`topic-block_pointer` for details about pointers.
 
 When an interface pointer is not specified, the model will use the last
 interface block parsed from the input file.

@@ -2,7 +2,7 @@ import re
 import os
 
 __author__ = 'J. Adam Stephens'
-__copyright__ = 'Copyright 2014-2022 National Technology & Engineering Solutions of Sandia, LLC (NTESS)'
+__copyright__ = 'Copyright 2014-2023 National Technology & Engineering Solutions of Sandia, LLC (NTESS)'
 __license__ = 'GNU Lesser General Public License'
 
 def is_me():
@@ -19,7 +19,7 @@ def get_job_info():
     # Two cases
     # Case 1: Nodes are uniformly sized
     if len(tasks_per_node.split(",")) == 1:
-        m = re.match("(\d+)(?:\(x(\d+)\))?", tasks_per_node)
+        m = re.match(r"(\d+)(?:\(x(\d+)\))?", tasks_per_node)
         r = m.groups()
         tasks_per_node = int(r[0])
         num_nodes = 1

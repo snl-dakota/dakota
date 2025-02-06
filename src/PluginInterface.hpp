@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -25,16 +25,16 @@ public:
 
   PluginInterface(const ProblemDescDB& problem_db);
 
-  ~PluginInterface();
+  ~PluginInterface() override;
   
   void derived_map(const Variables& vars, const ActiveSet& set,
-		   Response& response, int fn_eval_id);
+		   Response& response, int fn_eval_id) override;
 
-  void derived_map_asynch(const ParamResponsePair& pair);
+  void derived_map_asynch(const ParamResponsePair& pair) override;
 
   /// For plugins, implements blocking bulk-synchronous evaluation of
   /// batch (PRPQueue)
-  void wait_local_evaluations(PRPQueue& prp_queue);
+  void wait_local_evaluations(PRPQueue& prp_queue) override;
 
 
 protected:

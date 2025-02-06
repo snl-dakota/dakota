@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       SNLLOptimizer
-//- Description: Implementation code for the SNLLOptimizer class
-//- Owner:       Pam Williams
-//- Checked by:
-//- Change Log:  
 
 #include "DakotaModel.hpp"
 #include "SNLLOptimizer.hpp"
@@ -49,11 +43,12 @@ const int LARGE_SCALE = 100;
 
 /** This constructor is used for normal instantiations using data from
     the ProblemDescDB. */
-SNLLOptimizer::SNLLOptimizer(ProblemDescDB& problem_db, Model& model):
+SNLLOptimizer::SNLLOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new SNLLTraits())),
-  SNLLBase(problem_db), nlfObjective(NULL),
-  nlfConstraint(NULL), nlpConstraint(NULL), theOptimizer(NULL),
-  setUpType("model")
+  SNLLBase(problem_db), nlfObjective(NULL), nlfConstraint(NULL),
+  nlpConstraint(NULL), fdnlf1(NULL), fdnlf1Con(NULL), theOptimizer(NULL),
+  setUpType("model"), userObjective0(NULL), userObjective1(NULL),
+  userConstraint0(NULL), userConstraint1(NULL)
 {
   // convenience function from SNLLBase
   snll_pre_instantiate(boundConstraintFlag, numConstraints); // from SNLLBase
@@ -252,25 +247,27 @@ SNLLOptimizer::SNLLOptimizer(ProblemDescDB& problem_db, Model& model):
 
   // convenience function from SNLLBase
   snll_post_instantiate(numContinuousVars, vendorNumericalGradFlag,
-			iteratedModel.interval_type(),
-			iteratedModel.fd_gradient_step_size(),
-			maxIterations,maxFunctionEvals, convergenceTol, 
-			probDescDB.get_real("method.gradient_tolerance"),
-			maxStep, boundConstraintFlag, numConstraints,
-			outputLevel, theOptimizer, nlfObjective, fdnlf1,
-			fdnlf1Con);
+			iteratedModel->interval_type(),
+			iteratedModel->fd_gradient_step_size(),
+			maxIterations, maxFunctionEvals, convergenceTol,
+			gradientTol, maxStep, boundConstraintFlag,
+			numConstraints,	outputLevel, theOptimizer,
+			nlfObjective, fdnlf1, fdnlf1Con);
 }
 
 
 /** This is an alternate constructor for instantiations on the fly
     using a Model but no ProblemDescDB. */
-SNLLOptimizer::SNLLOptimizer(const String& method_string, Model& model):
+SNLLOptimizer::SNLLOptimizer(const String& method_string, std::shared_ptr<Model> model):
   Optimizer(method_string_to_enum(method_string), model,
 	    std::shared_ptr<TraitsBase>(new SNLLTraits())),
   // use default SNLLBase ctor
-  nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL),
-  theOptimizer(NULL), setUpType("model")
+  nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL), fdnlf1(NULL),
+  fdnlf1Con(NULL), theOptimizer(NULL), setUpType("model"), userObjective0(NULL),
+  userObjective1(NULL), userConstraint0(NULL), userConstraint1(NULL)
 {
+  gradientTol = 1.e-4;  maxStep = 1000.;
+
   // convenience function from SNLLBase: use defaults since no specification
   snll_pre_instantiate(boundConstraintFlag, numConstraints);
 
@@ -292,11 +289,12 @@ SNLLOptimizer::SNLLOptimizer(const String& method_string, Model& model):
 
   // convenience function from SNLLBase: use defaults since no specification
   snll_post_instantiate(numContinuousVars, vendorNumericalGradFlag,
-			iteratedModel.interval_type(),
-			iteratedModel.fd_gradient_step_size(),
-			maxIterations, maxFunctionEvals, convergenceTol, 1.e-4,
-			1000., boundConstraintFlag, numConstraints, outputLevel,
-			theOptimizer, nlfObjective, NULL, NULL);
+			iteratedModel->interval_type(),
+			iteratedModel->fd_gradient_step_size(),
+			maxIterations, maxFunctionEvals, convergenceTol,
+			gradientTol, maxStep, boundConstraintFlag,
+			numConstraints, outputLevel, theOptimizer,
+			nlfObjective, fdnlf1, fdnlf1Con);
 }
 
 
@@ -316,6 +314,7 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
 	      void (*nlf1_con_eval) (int mode, int n, const RealVector& x,
 				     RealVector& g, RealMatrix& grad_g,
 				     int& result_mode),
+              //const RealVector& fdss, const String& interval_type,
 	      size_t max_iter, size_t max_eval, Real conv_tol,
 	      Real grad_tol, Real max_step):
   // use default SNLLBase ctor
@@ -323,14 +322,20 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
 	    lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
 	    nln_ineq_l_bnds.length(),  nln_eq_tgts.length(),
             std::shared_ptr<TraitsBase>(new SNLLTraits()) ),
-  nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL),
-  theOptimizer(NULL), setUpType("user_functions"),
+  nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL), fdnlf1(NULL),
+  fdnlf1Con(NULL), theOptimizer(NULL), setUpType("user_functions"),
   linIneqCoeffs(lin_ineq_coeffs), linIneqLowerBnds(lin_ineq_l_bnds),
   linIneqUpperBnds(lin_ineq_u_bnds), linEqCoeffs(lin_eq_coeffs),
   linEqTargets(lin_eq_tgts), nlnIneqLowerBnds(nln_ineq_l_bnds),
-  nlnIneqUpperBnds(nln_ineq_u_bnds), nlnEqTargets(nln_eq_tgts)
+  nlnIneqUpperBnds(nln_ineq_u_bnds), nlnEqTargets(nln_eq_tgts),
+  userObjective0(NULL), userObjective1(nlf1_obj_eval),
+  userConstraint0(NULL), userConstraint1(nlf1_con_eval)//,
+  //fdStepSize(fdss), fdIntervalType(interval_type)
 {
-  copy_data(initial_pt, initialPoint); // protect from incoming view
+  maxIterations  = max_iter;  maxFunctionEvals = max_eval;
+  convergenceTol = conv_tol;  gradientTol = grad_tol;  maxStep = max_step;
+
+  initial_point(initial_pt); // protect from incoming view
   copy_data(var_l_bnds, lowerBounds);  // protect from incoming view
   copy_data(var_u_bnds, upperBounds);  // protect from incoming view
 
@@ -347,10 +352,12 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
     default_instantiate_constraint(nlf1_con_eval);
 
   // convenience function from SNLLBase: use defaults since no specification
-  snll_post_instantiate(numContinuousVars, false, "", 0., max_iter, max_eval,
+  vendorNumericalGradFlag = false;
+  snll_post_instantiate(numContinuousVars, vendorNumericalGradFlag,
+			fdIntervalType, fdStepSize, max_iter, max_eval,
 			conv_tol, grad_tol, max_step, boundConstraintFlag,
 			numConstraints, outputLevel, theOptimizer,
-			nlfObjective, NULL, NULL);
+			nlfObjective, fdnlf1, fdnlf1Con);
 }
 
 
@@ -369,6 +376,7 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
 	      void (*nlf1_con_eval) (int mode, int n, const RealVector& x,
 				     RealVector& g, RealMatrix& grad_g,
 				     int& result_mode),
+	      const RealVector& fdss, const String& interval_type,
 	      size_t max_iter, size_t max_eval, Real conv_tol,
 	      Real grad_tol, Real max_step):
   // use default SNLLBase ctor
@@ -376,14 +384,20 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
 	    lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
 	    nln_ineq_l_bnds.length(),  nln_eq_tgts.length(),
             std::shared_ptr<TraitsBase>(new SNLLTraits()) ),
-  nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL),
-  theOptimizer(NULL), setUpType("user_functions"),
+  nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL), fdnlf1(NULL),
+  fdnlf1Con(NULL), theOptimizer(NULL), setUpType("user_functions"),
   linIneqCoeffs(lin_ineq_coeffs), linIneqLowerBnds(lin_ineq_l_bnds),
   linIneqUpperBnds(lin_ineq_u_bnds), linEqCoeffs(lin_eq_coeffs),
   linEqTargets(lin_eq_tgts), nlnIneqLowerBnds(nln_ineq_l_bnds),
-  nlnIneqUpperBnds(nln_ineq_u_bnds), nlnEqTargets(nln_eq_tgts)
+  nlnIneqUpperBnds(nln_ineq_u_bnds), nlnEqTargets(nln_eq_tgts),
+  userObjective0(nlf0_obj_eval), userObjective1(NULL),
+  userConstraint0(NULL), userConstraint1(nlf1_con_eval),
+  fdStepSize(fdss), fdIntervalType(interval_type)
 {
-  copy_data(initial_pt, initialPoint); // protect from incoming view
+  maxIterations  = max_iter;  maxFunctionEvals = max_eval;
+  convergenceTol = conv_tol;  gradientTol = grad_tol;  maxStep = max_step;
+
+  initial_point(initial_pt); // protect from incoming view
   copy_data(var_l_bnds, lowerBounds);  // protect from incoming view
   copy_data(var_u_bnds, upperBounds);  // protect from incoming view
 
@@ -400,10 +414,12 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
     default_instantiate_constraint(nlf1_con_eval);
 
   // convenience function from SNLLBase: use defaults since no specification
-  snll_post_instantiate(numContinuousVars, false, "", 0., max_iter, max_eval,
+  vendorNumericalGradFlag = true; // no FD support from Model
+  snll_post_instantiate(numContinuousVars, vendorNumericalGradFlag,
+			fdIntervalType, fdStepSize, max_iter, max_eval,
 			conv_tol, grad_tol, max_step, boundConstraintFlag,
 			numConstraints, outputLevel, theOptimizer,
-			nlfObjective, NULL, NULL);
+			nlfObjective, fdnlf1, fdnlf1Con);
 }
 
 
@@ -422,6 +438,7 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
 				     int& result_mode),
 	      void (*nlf0_con_eval) (int n, const RealVector& x, RealVector& g,
 				     int& result_mode),
+	      const RealVector& fdss, const String& interval_type,
 	      size_t max_iter, size_t max_eval, Real conv_tol,
 	      Real grad_tol, Real max_step):
   // use default SNLLBase ctor
@@ -429,14 +446,20 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
 	    lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
 	    nln_ineq_l_bnds.length(),  nln_eq_tgts.length(),
             std::shared_ptr<TraitsBase>(new SNLLTraits()) ),
-  nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL),
-  theOptimizer(NULL), setUpType("user_functions"),
+  nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL), fdnlf1(NULL),
+  fdnlf1Con(NULL), theOptimizer(NULL), setUpType("user_functions"),
   linIneqCoeffs(lin_ineq_coeffs), linIneqLowerBnds(lin_ineq_l_bnds),
   linIneqUpperBnds(lin_ineq_u_bnds), linEqCoeffs(lin_eq_coeffs),
   linEqTargets(lin_eq_tgts), nlnIneqLowerBnds(nln_ineq_l_bnds),
-  nlnIneqUpperBnds(nln_ineq_u_bnds), nlnEqTargets(nln_eq_tgts)
+  nlnIneqUpperBnds(nln_ineq_u_bnds), nlnEqTargets(nln_eq_tgts),
+  userObjective0(NULL), userObjective1(nlf1_obj_eval),
+  userConstraint0(nlf0_con_eval), userConstraint1(NULL),
+  fdStepSize(fdss), fdIntervalType(interval_type)
 {
-  copy_data(initial_pt, initialPoint); // protect from incoming view
+  maxIterations  = max_iter;  maxFunctionEvals = max_eval;
+  convergenceTol = conv_tol;  gradientTol = grad_tol;  maxStep = max_step;
+
+  initial_point(initial_pt); // protect from incoming view
   copy_data(var_l_bnds, lowerBounds);  // protect from incoming view
   copy_data(var_u_bnds, upperBounds);  // protect from incoming view
 
@@ -453,10 +476,12 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
     default_instantiate_constraint(nlf0_con_eval);
 
   // convenience function from SNLLBase: use defaults since no specification
-  snll_post_instantiate(numContinuousVars, false, "", 0., max_iter, max_eval,
+  vendorNumericalGradFlag = true; // no FD support from Model
+  snll_post_instantiate(numContinuousVars, vendorNumericalGradFlag,
+			fdIntervalType, fdStepSize, max_iter, max_eval,
 			conv_tol, grad_tol, max_step, boundConstraintFlag,
 			numConstraints, outputLevel, theOptimizer,
-			nlfObjective, NULL, NULL);
+			nlfObjective, fdnlf1, fdnlf1Con);
 }
 
 
@@ -473,7 +498,8 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
 	      void (*nlf0_obj_eval) (int n, const RealVector& x, double& f,
 				     int& result_mode),
 	      void (*nlf0_con_eval) (int n, const RealVector& x, RealVector& g,
-			   int& result_mode),
+				     int& result_mode),
+	      const RealVector& fdss, const String& interval_type,
 	      size_t max_iter, size_t max_eval, Real conv_tol,
 	      Real grad_tol, Real max_step):
   // use default SNLLBase ctor
@@ -481,14 +507,20 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
 	    lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
 	    nln_ineq_l_bnds.length(),  nln_eq_tgts.length(),
             std::shared_ptr<TraitsBase>(new SNLLTraits()) ),
-  nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL),
-  theOptimizer(NULL), setUpType("user_functions"),
+  nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL), fdnlf1(NULL),
+  fdnlf1Con(NULL), theOptimizer(NULL), setUpType("user_functions"),
   linIneqCoeffs(lin_ineq_coeffs), linIneqLowerBnds(lin_ineq_l_bnds),
   linIneqUpperBnds(lin_ineq_u_bnds), linEqCoeffs(lin_eq_coeffs),
   linEqTargets(lin_eq_tgts), nlnIneqLowerBnds(nln_ineq_l_bnds),
-  nlnIneqUpperBnds(nln_ineq_u_bnds), nlnEqTargets(nln_eq_tgts)
+  nlnIneqUpperBnds(nln_ineq_u_bnds), nlnEqTargets(nln_eq_tgts),
+  userObjective0(nlf0_obj_eval), userObjective1(NULL),
+  userConstraint0(nlf0_con_eval), userConstraint1(NULL),
+  fdStepSize(fdss), fdIntervalType(interval_type)
 {
-  copy_data(initial_pt, initialPoint); // protect from incoming view
+  maxIterations  = max_iter;  maxFunctionEvals = max_eval;
+  convergenceTol = conv_tol;  gradientTol = grad_tol;  maxStep = max_step;
+
+  initial_point(initial_pt); // protect from incoming view
   copy_data(var_l_bnds, lowerBounds);  // protect from incoming view
   copy_data(var_u_bnds, upperBounds);  // protect from incoming view
 
@@ -505,17 +537,24 @@ SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
     default_instantiate_constraint(nlf0_con_eval);
 
   // convenience function from SNLLBase: use defaults since no specification
-  snll_post_instantiate(numContinuousVars, false, "", 0., max_iter, max_eval,
+  vendorNumericalGradFlag = true; // no FD support from Model
+  snll_post_instantiate(numContinuousVars, vendorNumericalGradFlag,
+			fdIntervalType, fdStepSize, max_iter, max_eval,
 			conv_tol, grad_tol, max_step, boundConstraintFlag,
 			numConstraints, outputLevel, theOptimizer,
-			nlfObjective, NULL, NULL);
+			nlfObjective, fdnlf1, fdnlf1Con);
 }
 
 
 SNLLOptimizer::~SNLLOptimizer()
 {
   // free allocated memory
+  deallocate();
+}
 
+
+void SNLLOptimizer::deallocate()
+{
   // OPT++ uses virtual destructors, so the delete can be performed at the
   // base class level. 
   theOptimizer->cleanup(); 
@@ -526,6 +565,89 @@ SNLLOptimizer::~SNLLOptimizer()
   //if (nlpConstraint)
   //  delete nlpConstraint;
   delete theOptimizer;
+}
+
+
+void SNLLOptimizer::
+update_callback_data(const RealVector& cv_initial,
+		     const RealVector& cv_lower_bnds,
+		     const RealVector& cv_upper_bnds,
+		     const RealMatrix& lin_ineq_coeffs,
+		     const RealVector& lin_ineq_l_bnds,
+		     const RealVector& lin_ineq_u_bnds,
+		     const RealMatrix& lin_eq_coeffs,
+		     const RealVector& lin_eq_targets,
+		     const RealVector& nln_ineq_l_bnds,
+		     const RealVector& nln_ineq_u_bnds,
+		     const RealVector& nln_eq_targets)
+{
+  enforce_null_model();
+
+  //Cout << "SNLLOptimizer::update_callback_data():\n"
+  //     << "  cv_initial:\n" << cv_initial
+  //     << "  cv_lower_bnds:\n" << cv_lower_bnds
+  //     << "  cv_upper_bnds:\n" << cv_upper_bnds
+  //     << "  lin_ineq_l_bnds:\n" << lin_ineq_l_bnds
+  //     << "  lin_ineq_u_bnds:\n" << lin_ineq_u_bnds
+  //     << "  nln_ineq_l_bnds:\n" << nln_ineq_l_bnds
+  //     << "  nln_ineq_u_bnds:\n" << nln_ineq_u_bnds << std::endl;
+
+  bool reshape = false;
+  size_t num_cv  = cv_initial.length(),
+    num_lin_ineq = lin_ineq_coeffs.numRows(),
+    num_lin_eq   = lin_eq_coeffs.numRows(),
+    num_nln_ineq = nln_ineq_l_bnds.length(),
+    num_nln_eq   = nln_eq_targets.length();
+  if (numContinuousVars != num_cv)
+    { numContinuousVars  = num_cv; reshape = true; }
+  if (numLinearIneqConstraints != num_lin_ineq ||
+      numLinearEqConstraints   != num_lin_eq)
+    { numLinearIneqConstraints  = num_lin_ineq;
+      numLinearEqConstraints    = num_lin_eq; reshape = true; }
+  if (numNonlinearIneqConstraints != num_nln_ineq ||
+      numNonlinearEqConstraints   != num_nln_eq)
+    { numNonlinearIneqConstraints  = num_nln_ineq;
+      numNonlinearEqConstraints    = num_nln_eq; reshape = true; }
+  numLinearConstraints = numLinearIneqConstraints + numLinearEqConstraints;
+  numNonlinearConstraints
+    = numNonlinearIneqConstraints + numNonlinearEqConstraints;
+  numConstraints = numNonlinearConstraints + numLinearConstraints;
+  numFunctions = numObjectiveFns + numNonlinearConstraints;
+
+  initial_point(cv_initial);             // protect from incoming view
+  copy_data(cv_lower_bnds, lowerBounds); // protect from incoming view
+  copy_data(cv_upper_bnds, upperBounds); // protect from incoming view
+
+  linIneqCoeffs    = lin_ineq_coeffs;  linEqCoeffs      = lin_eq_coeffs;
+  linIneqLowerBnds = lin_ineq_l_bnds;  linIneqUpperBnds = lin_ineq_u_bnds;
+  linEqTargets     = lin_eq_targets;
+
+  nlnIneqLowerBnds = nln_ineq_l_bnds;  nlnIneqUpperBnds = nln_ineq_u_bnds;
+  nlnEqTargets     = nln_eq_targets;
+
+  if (reshape) {
+    reshape_best(numContinuousVars, numFunctions);
+
+    deallocate();
+    snll_pre_instantiate(boundConstraintFlag, numConstraints);
+    //if (userObjective2 && userConstraint2)
+    //  default_instantiate_newton(userObjective2, userConstraint2);
+    //else {
+      if      (userObjective0)  default_instantiate_q_newton(userObjective0);
+      else if (userObjective1)  default_instantiate_q_newton(userObjective1);
+      if (numConstraints) {
+	if (userConstraint0) default_instantiate_constraint(userConstraint0);
+	else if (userConstraint1)
+	  default_instantiate_constraint(userConstraint1);
+      }
+    //}
+    snll_post_instantiate(numContinuousVars, vendorNumericalGradFlag,
+			  fdIntervalType, fdStepSize, maxIterations,
+			  maxFunctionEvals, convergenceTol, gradientTol,
+			  maxStep, boundConstraintFlag, numConstraints,
+			  outputLevel, theOptimizer, nlfObjective,
+			  fdnlf1, fdnlf1Con);
+  }
 }
 
 
@@ -691,8 +813,8 @@ nlf0_evaluator(int n, const RealVector& x, double& f, int& result_mode)
        lastFnEvalLocn != CON_EVALUATOR || x != lastEvalVars) {
     // data not available from constraint0_evaluator() so perform
     // a new function evaluation.
-    snllOptInstance->iteratedModel.continuous_variables(x);
-    snllOptInstance->iteratedModel.evaluate();// default active set
+    ModelUtils::continuous_variables(*snllOptInstance->iteratedModel, x);
+    snllOptInstance->iteratedModel->evaluate();// default active set
     // Should constraints be evaluated (if present)?  Depends on what OPT++ is
     // doing.  Since we know this eval is not aligned with a preceding
     // constraint eval, assume for now that a matching constraint eval might
@@ -706,10 +828,10 @@ nlf0_evaluator(int n, const RealVector& x, double& f, int& result_mode)
   }
 
   const BoolDeque& max_sense
-    = snllOptInstance->iteratedModel.primary_response_fn_sense();
+    = snllOptInstance->iteratedModel->primary_response_fn_sense();
   f = (!max_sense.empty() && max_sense[0]) ?
-    -snllOptInstance->iteratedModel.current_response().function_value(0) :
-     snllOptInstance->iteratedModel.current_response().function_value(0);
+    -snllOptInstance->iteratedModel->current_response().function_value(0) :
+     snllOptInstance->iteratedModel->current_response().function_value(0);
   result_mode = OPTPP::NLPFunction;
 }
 
@@ -763,7 +885,7 @@ nlf1_evaluator(int mode, int n, const RealVector& x, double& f,
       x != lastEvalVars) {
     // data not available from constraint0_evaluator() so perform
     // a new function evaluation.
-    snllOptInstance->iteratedModel.continuous_variables(x);
+    ModelUtils::continuous_variables(*snllOptInstance->iteratedModel, x);
 
     // Should constraints be evaluated (if present)?  Depends on what OPT++ is
     // doing.  Since we know this eval is not aligned with a preceding
@@ -775,14 +897,14 @@ nlf1_evaluator(int mode, int n, const RealVector& x, double& f,
     //  for (i=0; i<snllOptInstance->numNonlinearConstraints; i++)
     //    local_asv[i + snllOptInstance->numObjectiveFns] = 0;
     snllOptInstance->activeSet.request_values(mode);
-    snllOptInstance->iteratedModel.evaluate(snllOptInstance->activeSet);
+    snllOptInstance->iteratedModel->evaluate(snllOptInstance->activeSet);
     lastFnEvalLocn = NLF_EVALUATOR;
   }
 
   const Response& local_response
-    = snllOptInstance->iteratedModel.current_response();
+    = snllOptInstance->iteratedModel->current_response();
   const BoolDeque& max_sense
-    = snllOptInstance->iteratedModel.primary_response_fn_sense();
+    = snllOptInstance->iteratedModel->primary_response_fn_sense();
   bool max_flag = (!max_sense.empty() && max_sense[0]);
 
   if (mode & 1) { // 1st bit is present, mode = 1 or 3
@@ -852,7 +974,7 @@ nlf2_evaluator(int mode, int n, const RealVector& x, double& f,
       x != lastEvalVars) {
     // data not available from constraint0_evaluator() so perform
     // a new function evaluation.
-    snllOptInstance->iteratedModel.continuous_variables(x);
+    ModelUtils::continuous_variables(*snllOptInstance->iteratedModel, x);
     // Should constraints be evaluated (if present)?  Depends on what OPT++ is
     // doing.  Since we know this eval is not aligned with a preceding
     // constraint eval, assume for now that a matching constraint eval might
@@ -863,14 +985,14 @@ nlf2_evaluator(int mode, int n, const RealVector& x, double& f,
     //  for (i=0; i<snllOptInstance->numNonlinearConstraints; i++)
     //    local_asv[i + snllOptInstance->numObjectiveFns] = 0;
     snllOptInstance->activeSet.request_values(mode);
-    snllOptInstance->iteratedModel.evaluate(snllOptInstance->activeSet);
+    snllOptInstance->iteratedModel->evaluate(snllOptInstance->activeSet);
     lastFnEvalLocn = NLF_EVALUATOR;
   }
 
   const Response& local_response
-    = snllOptInstance->iteratedModel.current_response();
+    = snllOptInstance->iteratedModel->current_response();
   const BoolDeque& max_sense
-    = snllOptInstance->iteratedModel.primary_response_fn_sense();
+    = snllOptInstance->iteratedModel->primary_response_fn_sense();
   bool max_flag = (!max_sense.empty() && max_sense[0]);
 
   if (mode & 1) { // 1st bit is present, mode = 1, 3, 5, or 7
@@ -905,14 +1027,14 @@ constraint0_evaluator(int n, const RealVector& x, RealVector& g,
   // set model variables prior to evaluate()
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLOptimizer::constraint0_evaluator vars = \n" << x;
-  snllOptInstance->iteratedModel.continuous_variables(x);
+  ModelUtils::continuous_variables(*snllOptInstance->iteratedModel, x);
 
-  snllOptInstance->iteratedModel.evaluate(); // default active set
+  snllOptInstance->iteratedModel->evaluate(); // default active set
   lastFnEvalLocn = CON_EVALUATOR;
   lastEvalVars   = x;
 
   snllOptInstance->copy_con_vals_dak_to_optpp(
-    snllOptInstance->iteratedModel.current_response().function_values(), g,
+    snllOptInstance->iteratedModel->current_response().function_values(), g,
     snllOptInstance->numObjectiveFns);
   result_mode = OPTPP::NLPFunction;
 }
@@ -931,16 +1053,16 @@ constraint1_evaluator(int mode, int n, const RealVector& x, RealVector& g,
   // set model variables and active set prior to evaluate()
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLOptimizer::constraint1_evaluator vars = \n" << x;
-  snllOptInstance->iteratedModel.continuous_variables(x);
+  ModelUtils::continuous_variables(*snllOptInstance->iteratedModel, x);
 
   snllOptInstance->activeSet.request_values(mode);
-  snllOptInstance->iteratedModel.evaluate(snllOptInstance->activeSet);
+  snllOptInstance->iteratedModel->evaluate(snllOptInstance->activeSet);
   lastFnEvalLocn = CON_EVALUATOR;
   lastEvalMode   = mode;
   lastEvalVars   = x;
 
   const Response& local_response
-    = snllOptInstance->iteratedModel.current_response();
+    = snllOptInstance->iteratedModel->current_response();
   if (mode & 1) { // 1st bit is present, mode = 1 or 3
     snllOptInstance->
       copy_con_vals_dak_to_optpp(local_response.function_values(), g,
@@ -969,16 +1091,16 @@ constraint2_evaluator(int mode, int n, const RealVector& x, RealVector& g,
   // set model variables and active set prior to evaluate().
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLOptimizer::constraint2_evaluator vars = \n" << x;
-  snllOptInstance->iteratedModel.continuous_variables(x);
+  ModelUtils::continuous_variables(*snllOptInstance->iteratedModel, x);
 
   snllOptInstance->activeSet.request_values(mode);
-  snllOptInstance->iteratedModel.evaluate(snllOptInstance->activeSet);
+  snllOptInstance->iteratedModel->evaluate(snllOptInstance->activeSet);
   lastFnEvalLocn = CON_EVALUATOR;
   lastEvalMode   = mode;
   lastEvalVars   = x;
 
   const Response& local_response
-    = snllOptInstance->iteratedModel.current_response();
+    = snllOptInstance->iteratedModel->current_response();
   if (mode & 1) { // 1st bit is present, mode = 1, 3, 5, or 7
     snllOptInstance->
       copy_con_vals_dak_to_optpp(local_response.function_values(), g,
@@ -1010,18 +1132,18 @@ void SNLLOptimizer::initialize_run()
 
     // convenience function from SNLLBase
     snll_initialize_run(nlfObjective, nlpConstraint,
-			iteratedModel.continuous_variables(),
+			ModelUtils::continuous_variables(*iteratedModel),
 			boundConstraintFlag,
-			iteratedModel.continuous_lower_bounds(),
-			iteratedModel.continuous_upper_bounds(),
-			iteratedModel.linear_ineq_constraint_coeffs(),
-			iteratedModel.linear_ineq_constraint_lower_bounds(),
-			iteratedModel.linear_ineq_constraint_upper_bounds(),
-			iteratedModel.linear_eq_constraint_coeffs(),
-			iteratedModel.linear_eq_constraint_targets(),
-			iteratedModel.nonlinear_ineq_constraint_lower_bounds(),
-			iteratedModel.nonlinear_ineq_constraint_upper_bounds(),
-			iteratedModel.nonlinear_eq_constraint_targets());
+			ModelUtils::continuous_lower_bounds(*iteratedModel),
+			ModelUtils::continuous_upper_bounds(*iteratedModel),
+			ModelUtils::linear_ineq_constraint_coeffs(*iteratedModel),
+			ModelUtils::linear_ineq_constraint_lower_bounds(*iteratedModel),
+			ModelUtils::linear_ineq_constraint_upper_bounds(*iteratedModel),
+			ModelUtils::linear_eq_constraint_coeffs(*iteratedModel),
+			ModelUtils::linear_eq_constraint_targets(*iteratedModel),
+			ModelUtils::nonlinear_ineq_constraint_lower_bounds(*iteratedModel),
+			ModelUtils::nonlinear_ineq_constraint_upper_bounds(*iteratedModel),
+			ModelUtils::nonlinear_eq_constraint_targets(*iteratedModel));
 
     // set modeOverrideFlag based on method/search strategy, speculative 
     // gradient, or constant asv selections.  Notes:
@@ -1037,7 +1159,7 @@ void SNLLOptimizer::initialize_run()
     if ( ( speculativeFlag || constantASVFlag || numNonlinearConstraints ||
 	   methodName == OPTPP_CG || ( methodName == OPTPP_Q_NEWTON &&
 	   searchMethod == "gradient_based_line_search" && !numConstraints)) &&
-	 iteratedModel.method_source() != "vendor" )
+	 iteratedModel->method_source() != "vendor" )
       nlfObjective->setModeOverride(true);
   }
   else {
@@ -1084,10 +1206,14 @@ void SNLLOptimizer::post_run(std::ostream& s)
   RealVector best_fns(bestResponseArray.front().num_functions());
   if (!localObjectiveRecast) { // else local_objective_recast_retrieve()
                                // is used in Optimizer::post_run()
-    const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
-    // see opt++/libopt/nlp.h
-    best_fns[0] = (!max_sense.empty() && max_sense[0]) ?
-      -nlfObjective->getF() : nlfObjective->getF();
+    if(iteratedModel) {
+      const BoolDeque& max_sense = iteratedModel->primary_response_fn_sense();
+      // see opt++/libopt/nlp.h
+      best_fns[0] = (!max_sense.empty() && max_sense[0]) ?
+        -nlfObjective->getF() : nlfObjective->getF();
+    } else {
+      best_fns[0] = nlfObjective->getF();
+    }
   }
   // OPT++ expects nonlinear equations followed by nonlinear inequalities.
   // Therefore, reorder the constraint values.

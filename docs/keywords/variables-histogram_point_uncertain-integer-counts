@@ -2,8 +2,8 @@ Blurb::
 Counts for integer-valued point histogram
 Description::
 Count or frequency for each of
-:ref:`variables-histogram_point_uncertain-integer-abscissas<variables-histogram_point_uncertain-integer-abscissas>`.  See
-:ref:`variables-histogram_point_uncertain<variables-histogram_point_uncertain>` for details and examples.
+:dakkw:`variables-histogram_point_uncertain-integer-abscissas`.  See
+:dakkw:`variables-histogram_point_uncertain` for details and examples.
 Topics::
 
 Examples::

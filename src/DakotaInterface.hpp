@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        Interface
-//- Description:  Abstract base class for the interfaces used to map variables
-//-               into responses.
-//- Owner:        Michael Eldred
-//- Version: $Id: DakotaInterface.hpp 7034 2010-10-22 20:16:32Z mseldre $
 
 #ifndef DAKOTA_INTERFACE_H
 #define DAKOTA_INTERFACE_H

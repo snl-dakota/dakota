@@ -1,0 +1,61 @@
+#@ s*: Label=FastTest
+#@ s*: ReqFiles=surrogate_polynomial.py,dakota_surrogate_import_rosen.ff.dat
+#@ s*: DakotaConfig=DAKOTA_PYTHON_SURROGATES
+
+environment
+        tabular_data
+          tabular_data_file = "linear_surr_tabular.dat"        #s0
+#          tabular_data_file = "exp_surr_py_tabular.dat"       #s1
+        method_pointer = 'UQ'
+
+method,
+        id_method = 'UQ'
+        model_pointer = 'SURR'
+        sampling,
+        sample_type lhs
+          samples = 10000
+          seed = 98765
+        response_levels = 0.1 1.0 10.0 100.0
+        distribution cumulative
+
+model,
+        id_model = 'SURR'
+        surrogate global,
+          dace_method_pointer = 'DACE'                           #s0,#s1
+          reuse_samples all
+          polynomial linear                                      #s0,#s2
+#          experimental_python                                   #s1,#s3
+#            class_path_and_name = "surrogate_polynomial.Surrogate"                     #s1,#s3
+#          import_build_points_file = 'dakota_surrogate_import_rosen.ff.dat' freeform   #s2,#s3
+#          challenge_points_file = 'dakota_surrogate_import_rosen.ff.dat' freeform      #s2,#s3
+#          metrics = "sum_squared" "root_mean_squared" "mean_abs" "max_abs" "rsquared"  #s2,#s3
+
+method,
+        id_method = 'DACE'
+        model_pointer = 'DACE_M'
+        sampling
+          sample_type lhs
+          samples = 100
+          seed = 5034
+model,
+        id_model = 'DACE_M'
+        single
+          interface_pointer = 'I1'
+
+variables,
+        uniform_uncertain = 2
+          lower_bounds = -2.0   -2.0
+          upper_bounds =  2.0    2.0
+          descriptors  = 'x1' 'x2'
+
+interface,
+        direct
+        id_interface = 'I1'
+          analysis_driver = 'rosenbrock'
+
+responses,
+        response_functions = 1
+        analytic_gradients
+        no_hessians             #s0,#s2
+#        analytic_hessians       #s1,#s3
+

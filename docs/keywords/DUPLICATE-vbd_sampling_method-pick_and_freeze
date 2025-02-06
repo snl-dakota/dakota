@@ -1,0 +1,53 @@
+Blurb::
+Use the pick-and-freeze variance-based decomposition method 
+Description::
+Uses structured samples to compute main and total
+effect sensitivity indices.
+
+**Default Behavior**
+
+If the user specified a number of samples, :math:`N`, and a number of
+nondeterministic variables, :math:`M`, pick-and-freeze variance-based 
+decomposition requires the evaluation of :math:`N*(M+2)` samples.
+
+.. warning::
+    Specifying this keyword will increase the number of function 
+    evaluations above the number requested with the ``samples`` keyword 
+    since replicated sets of sample values are evaluated.
+
+**Expected Output**
+
+When ``pick_and_freeze`` is specified as the ``vbd_sampling_method``,
+sensitivity indices for main effects and total effects will be 
+reported.  Main effects (roughly) represent the percent 
+contribution of each individual variable to the variance 
+in the model response.  Total effects represent the percent 
+contribution of each individual variable in combination with 
+all other variables to the variance in the model response.
+
+Examples::
+
+.. code-block::
+
+    method,
+      sampling
+        sample_type lhs
+        samples = 100
+        variance_based_decomp
+          vbd_sampling_method pick_and_freeze
+
+Theory::
+Pick-and-freeze methods 
+are currently the most popular approach for varianced-based sensitivity
+index computation, but they incur significant computational cost. These
+approaches rely on structured sampling wherein two independent random
+sample sets of the input variables are generated, then the random samples
+of the variable whose sensitivity index is being computed are substituted
+from one sample set into the other. Specifically, if the user specified a 
+number of samples, :math:`N`, and a number of nondeterministic variables, :math:`M`, 
+pick-and-freeze variance-based decomposition requires the evaluation of 
+:math:`N*(M+2)` samples.
+
+Faq::
+
+See_Also::

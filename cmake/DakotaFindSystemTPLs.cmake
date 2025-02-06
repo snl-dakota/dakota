@@ -25,9 +25,22 @@ macro(dakota_find_boost)
     set(BOOST_LIBRARYDIR "${CMAKE_CURRENT_BINARY_DIR}/boost_libs")
   endif()
 
+  # std::unary_function and std::binary_function were removed from the C++17 standard library
+  # but are used by default in Boost until version 1.80.0
+  if(CMAKE_CXX_STANDARD GREATER_EQUAL 17)
+    # Removes use of std::unary_function in boost/container_hash/hash.hpp      
+    add_compile_definitions(BOOST_NO_CXX98_FUNCTION_BASE)
+
+    # Removes use of std::unary_function and std::binary_function in boost/functional.hpp
+    add_compile_definitions(_HAS_AUTO_PTR_ETC=0)
+  endif()
+
+
   find_package(Boost 1.69 REQUIRED COMPONENTS ${dakota_boost_libs})
   set(DAKOTA_BOOST_TARGETS Boost::boost Boost::filesystem Boost::program_options
     Boost::regex Boost::serialization Boost::system)
+  set(dakota_boost_libs "${dakota_boost_libs}" CACHE STRING "")
+  set(dakota_boost_version "${Boost_VERSION_MAJOR}.${Boost_VERSION_MINOR}.${Boost_VERSION_PATCH}" CACHE STRING "")
 
   # BMA TODO: relax this and verify Modern CMake behavior
   # This cache variable is used to package the Boost liraries on Darwin (see
@@ -41,6 +54,16 @@ macro(dakota_find_boost)
     endif()
     set(DAKOTA_Boost_LIB_DIR "${Boost_LIBRARY_DIRS}" CACHE PATH "Dakota-added Boost lib path")
   endif()
+endmacro()
+
+macro(dakota_find_googletest)
+  # For now, always build googletest in packages/external
+  if(WIN32)
+  # from the googletest docs
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+  endif()
+  set(INSTALL_GTEST OFF CACHE BOOL "No need to install googletest")
+  add_subdirectory(packages/external/googletest)
 endmacro()
 
 # Dakota custom find BLAS/LAPACK or equivalent Fortran linear algebra

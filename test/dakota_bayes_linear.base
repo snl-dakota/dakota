@@ -77,7 +77,7 @@ Sample moment statistics for each posterior variable:
          uuv_3  3.2282290067e-01  1.1096860187e-01  2.6130090547e-01 -7.2479418074e-01
          uuv_4  4.1530807902e-01  1.1656440118e-01 -4.9938873605e-01 -5.5192973947e-01
          uuv_5  4.6278295641e-01  1.1226231224e-01 -8.8016599624e-01 -1.6661280874e-01
-       CovMult  1.0111693631e-03  2.7271773086e-05 -6.8644051161e-02  1.3992391118e-01
+       CovMult  1.0111693631e-03  2.7271773086e-05 -6.8644051162e-02  1.3992391118e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
 least_sq_term_1  2.0011247816e+00  8.5449314196e-03 -2.5470466416e+01  7.4828269572e+02

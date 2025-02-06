@@ -1,18 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       SimulationModel
-//- Description: A simulation-based model that maps variables into responses
-//-              using an application interface.
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version: $Id: SimulationModel.hpp 6492 2009-12-19 00:04:28Z briadam $
 
 #ifndef SIMULATION_MODEL_H
 #define SIMULATION_MODEL_H
@@ -36,17 +29,16 @@ namespace Dakota {
 class SimulationModel: public Model
 {
 public:
-  
+
   //
   //- Heading: Constructor and destructor
   //
 
   SimulationModel(ProblemDescDB& problem_db); ///< constructor
-  ~SimulationModel();                         ///< destructor
   
   /// Return the "default" or maximal ActiveSet for the model
   //ActiveSet default_active_set();
- 
+
 protected:
 
   //
@@ -54,37 +46,37 @@ protected:
   //
 
   /// return userDefinedInterface
-  Interface& derived_interface();
+  Interface& derived_interface() override;
 
   /// return size of solnCntlCostMap, optionally enforcing lower bound
   /// of 1 solution level
-  size_t solution_levels(bool lwr_bnd = true) const;
+  size_t solution_levels() const override;
 
   /// return all cost estimates from solnCntlCostMap
-  RealVector solution_level_costs() const;
+  RealVector solution_level_costs() const override;
   /// return active cost estimate from solnCntlCostMap
-  Real solution_level_cost() const;
+  Real solution_level_cost() const override;
   /// activate entry in solnCntlCostMap
-  void solution_level_cost_index(size_t cost_index);
+  void solution_level_cost_index(size_t cost_index) override;
   /// return active entry in solnCntlCostMap
-  size_t solution_level_cost_index() const;
+  size_t solution_level_cost_index() const override;
 
   /// return solnCntlVarType
-  short solution_control_variable_type() const;
+  short solution_control_variable_type() const override;
   /// return solnCntlAVIndex
-  size_t solution_control_variable_index() const;
+  size_t solution_control_variable_index() const override;
   /// return solnCntlADVIndex
-  size_t solution_control_discrete_variable_index() const;
+  size_t solution_control_discrete_variable_index() const override;
 
   /// return a discrete int variable value corresponding to solnCntlADVIndex
-  int    solution_level_int_value() const;
+  int    solution_level_int_value() const override;
   /// return a discrete string variable value corresponding to solnCntlADVIndex
-  String solution_level_string_value() const;
+  String solution_level_string_value() const override;
   /// return a discrete real variable value corresponding to solnCntlADVIndex
-  Real   solution_level_real_value() const;
+  Real   solution_level_real_value() const override;
 
   /// return costMetadataIndex
-  size_t cost_metadata_index() const;
+  size_t cost_metadata_index() const override;
 
   // Perform the response computation portions specific to this derived 
   // class.  In this case, it simply employs userDefinedInterface.map()/
@@ -92,42 +84,42 @@ protected:
   //
   /// portion of evaluate() specific to SimulationModel
   /// (invokes a synchronous map() on userDefinedInterface)
-  void derived_evaluate(const ActiveSet& set);
+  void derived_evaluate(const ActiveSet& set) override;
   /// portion of evaluate_nowait() specific to SimulationModel
   /// (invokes an asynchronous map() on userDefinedInterface)
-  void derived_evaluate_nowait(const ActiveSet& set);
+  void derived_evaluate_nowait(const ActiveSet& set) override;
   /// portion of synchronize() specific to SimulationModel
   /// (invokes synch() on userDefinedInterface)
-  const IntResponseMap& derived_synchronize();
+  const IntResponseMap& derived_synchronize() override;
   /// portion of synchronize_nowait() specific to SimulationModel
   /// (invokes synch_nowait() on userDefinedInterface)
-  const IntResponseMap& derived_synchronize_nowait();
+  const IntResponseMap& derived_synchronize_nowait() override;
 
   // SimulationModel only supports parallelism in userDefinedInterface,
   // so this virtual function redefinition is simply a sanity check.
   //void component_parallel_mode(short mode);
 
   /// return userDefinedInterface synchronization setting
-  short local_eval_synchronization();
+  short local_eval_synchronization() override;
   /// return userDefinedInterface asynchronous evaluation concurrency
-  int local_eval_concurrency();
+  int local_eval_concurrency() override;
   /// flag which prevents overloading the master with a multiprocessor
   /// evaluation (request forwarded to userDefinedInterface)
-  bool derived_master_overload() const;
+  bool derived_master_overload() const override;
 
-  IntIntPair estimate_partition_bounds(int max_eval_concurrency);
+  IntIntPair estimate_partition_bounds(int max_eval_concurrency) override;
 
   /// set up SimulationModel for parallel operations (request forwarded to
   /// userDefinedInterface)
   void derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-				  bool recurse_flag = true);
+				  bool recurse_flag = true) override;
   /// set up SimulationModel for serial operations (request forwarded to
   /// userDefinedInterface).
-  void derived_init_serial();
+  void derived_init_serial() override;
   /// set active parallel configuration for the SimulationModel
   /// (request forwarded to userDefinedInterface)
   void derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-				 bool recurse_flag = true);
+				 bool recurse_flag = true) override;
   // deallocate communicator partitions for the SimulationModel
   // (request forwarded to userDefinedInterface)
   //void derived_free_communicators(ParLevLIter pl_iter,
@@ -136,41 +128,41 @@ protected:
 
   /// Service userDefinedInterface job requests received from the master.
   /// Completes when a termination message is received from stop_servers().
-  void serve_run(ParLevLIter pl_iter, int max_eval_concurrency);
+  void serve_run(ParLevLIter pl_iter, int max_eval_concurrency) override;
   /// executed by the master to terminate userDefinedInterface server
   /// operations when SimulationModel iteration is complete.
-  void stop_servers();
+  void stop_servers() override;
 
   /// return the userDefinedInterface identifier
-  const String& interface_id() const;
+  const String& interface_id() const override;
   /// return the current evaluation id (simModelEvalCntr)
-  int derived_evaluation_id() const;
+  int derived_evaluation_id() const override;
   /// return flag indicated usage of an evaluation cache by the SimulationModel
   /// (request forwarded to userDefinedInterface)
-  bool evaluation_cache(bool recurse_flag = true) const;
+  bool evaluation_cache(bool recurse_flag = true) const override;
   /// return flag indicated usage of a restart file by the SimulationModel
   /// (request forwarded to userDefinedInterface)
-  bool restart_file(bool recurse_flag = true) const;
+  bool restart_file(bool recurse_flag = true) const override;
 
   /// set the evaluation counter reference points for the SimulationModel
   /// (request forwarded to userDefinedInterface)
-  void set_evaluation_reference();
+  void set_evaluation_reference() override;
   /// request fine-grained evaluation reporting within the userDefinedInterface
-  void fine_grained_evaluation_counters();
+  void fine_grained_evaluation_counters() override;
   /// print the evaluation summary for the SimulationModel
   /// (request forwarded to userDefinedInterface)
   void print_evaluation_summary(std::ostream& s, bool minimal_header = false,
-				bool relative_count = true) const;
+				bool relative_count = true) const override;
 
   /// set the hierarchical eval ID tag prefix
-  void eval_tag_prefix(const String& eval_id_str);
+  void eval_tag_prefix(const String& eval_id_str) override;
 
   
   /// Return the "default" or maximal ActiveSet for the userDefinedInterface
   ActiveSet default_interface_active_set();
 
   /// Declare this model's sources
-  void declare_sources();
+  void declare_sources() override;
 
 private:
 
@@ -220,21 +212,14 @@ private:
 };
 
 
-inline SimulationModel::~SimulationModel()
-{ }
-
-
 inline Interface& SimulationModel::derived_interface()
 { return userDefinedInterface; }
 
 
 /* There is a default solution level (nominal settings) even if no
    solution control is provided */ 
-inline size_t SimulationModel::solution_levels(bool lwr_bnd) const
-{
-  size_t map_len = solnCntlCostMap.size(), lwr = 1;
-  return (lwr_bnd) ? std::max(lwr, map_len) : map_len;
-}
+inline size_t SimulationModel::solution_levels() const
+{ return solnCntlCostMap.size(); }
 
 
 inline short SimulationModel::solution_control_variable_type() const

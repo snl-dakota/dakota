@@ -9,7 +9,7 @@ by iteratively adding more data to the training set until the cross-validation
 
 The amount of new training data that is incorporated each iteration is specified
 in the DACE method that is referred to by the model's ``dace_method_pointer``.
-See :ref:`method-sampling-refinement_samples<method-sampling-refinement_samples>` for more information.
+See :dakkw:`method-sampling-refinement_samples` for more information.
 Topics::
 surrogate_models
 Examples::

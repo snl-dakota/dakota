@@ -1,18 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDIntegration
-//- Description: Base class for multidimensional integration using
-//-              tensor-product quadrature or Smolyak sparse grids.
-//- Owner:       Mike Eldred
-//- Revised by:  
-//- Version:
 
 #ifndef NOND_INTEGRATION_H
 #define NOND_INTEGRATION_H
@@ -89,7 +82,7 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
 
 protected:
 
@@ -98,20 +91,20 @@ protected:
   //
 
   /// constructor
-  NonDIntegration(ProblemDescDB& problem_db, Model& model);
+  NonDIntegration(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor for instantiations "on the fly"
-  NonDIntegration(unsigned short method_name, Model& model);
+  NonDIntegration(unsigned short method_name, std::shared_ptr<Model> model);
   /// alternate constructor for instantiations "on the fly"
-  NonDIntegration(unsigned short method_name, Model& model,
+  NonDIntegration(unsigned short method_name, std::shared_ptr<Model> model,
 		  const RealVector& dim_pref);
   /// destructor
-  ~NonDIntegration();
+  ~NonDIntegration() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  void core_run();
+  void core_run() override;
 
   //
   //- Heading: Member functions

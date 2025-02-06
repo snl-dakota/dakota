@@ -1,16 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        Approximation
-//- Description:  Abstract base class for approximations
-//-               
-//- Owner:        Mike Eldred
 
 #ifndef DAKOTA_APPROXIMATION_H
 #define DAKOTA_APPROXIMATION_H
@@ -74,6 +69,10 @@ public:
 
   /// builds the approximation from scratch
   virtual void build();
+
+  /// overloaded build to support field-based approximations; builds from scratch
+  virtual void build(int num_resp);
+
   /// exports the approximation; if export_format > NO_MODEL_FORMAT,
   /// uses all 3 parameters, otherwise extracts these from the
   /// Approximation's sharedDataRep to build a filename
@@ -116,6 +115,8 @@ public:
 
   /// retrieve the approximate function value for a given parameter vector
   virtual Real value(const Variables& vars);
+  /// retrieve the approximate function values for a given parameter vector
+  virtual RealVector values(const Variables& vars);
   /// retrieve the approximate function gradient for a given parameter vector
   virtual const RealVector& gradient(const Variables& vars);
   /// retrieve the approximate function Hessian for a given parameter vector
@@ -125,6 +126,8 @@ public:
     
   /// retrieve the approximate function value for a given parameter vector
   virtual Real value(const RealVector& c_vars);
+  /// retrieve the approximate function value for a given parameter vector
+  virtual RealVector values(const RealVector& c_vars);
   /// retrieve the approximate function gradient for a given parameter vector
   virtual const RealVector& gradient(const RealVector& c_vars);
   /// retrieve the approximate function Hessian for a given parameter vector
@@ -247,6 +250,9 @@ public:
   /// return the number of constraints to be enforced via an anchor point
   virtual int num_constraints() const;
 
+  /// return the number of approximation components (1 for scalars)
+  virtual size_t num_components() const;
+
   /* *** Additions for C3 ***
   /// clear current build data in preparation for next build
   virtual void clear_current();
@@ -366,6 +372,17 @@ protected:
   //- Heading: Member functions
   //
 
+  /// Used only by the standard envelope constructor to initialize
+  /// approxRep to the appropriate derived type.
+  std::shared_ptr<Approximation>
+  get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
+	     const String& approx_label);
+
+  /// Used only by the alternate envelope constructor to initialize
+  /// approxRep to the appropriate derived type.
+  std::shared_ptr<Approximation>
+  get_approx(const SharedApproxData& shared_data);
+
   /// create a SurrogateDataVars instance from a Real*
   Pecos::SurrogateDataVars variables_to_sdv(const Real* sample_c_vars);
   /// create a SurrogateDataVars instance by extracting data from a
@@ -414,29 +431,18 @@ protected:
   /// contains the approximation data that is shared among the response set
   std::shared_ptr<SharedApproxData> sharedDataRep;
 
+  /// pointer to the letter (initialized only for the envelope)
+  std::shared_ptr<Approximation> approxRep;
+
 private:
 
   //
   //- Heading: Member functions
   //
 
-  /// Used only by the standard envelope constructor to initialize
-  /// approxRep to the appropriate derived type.
-  std::shared_ptr<Approximation>
-  get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
-	     const String& approx_label);
-
-  /// Used only by the alternate envelope constructor to initialize
-  /// approxRep to the appropriate derived type.
-  std::shared_ptr<Approximation>
-  get_approx(const SharedApproxData& shared_data);
-
   //
   //- Heading: Data
   //
-
-  /// pointer to the letter (initialized only for the envelope)
-  std::shared_ptr<Approximation> approxRep;
 };
 
 
@@ -644,6 +650,13 @@ inline void Approximation::check_points(size_t num_build_pts)
 	 << num_build_pts << " samples were provided." << std::endl;
     abort_handler(APPROX_ERROR);
   }
+}
+
+
+inline size_t Approximation::num_components() const
+{ 
+  if (approxRep) return approxRep->num_components();
+  else return 1;
 }
 
 

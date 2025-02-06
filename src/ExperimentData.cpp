@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -80,7 +80,7 @@ ExperimentData(size_t num_experiments,
   size_and_fill(svd_copy, numExperiments, allConfigVars);
 
   for (size_t i=0; i<numExperiments; ++i) {
-    allConfigVars[i].inactive_from_active(config_vars[i]);
+    allConfigVars[i].active_to_inactive_variables(config_vars[i]);
     if (outputLevel >= DEBUG_OUTPUT) {
       Cout << "allConfigVars[" << i << "] = \n";
       allConfigVars[i].write(Cout, INACTIVE_VARS);
@@ -288,7 +288,7 @@ add_data(const SharedVariablesData& svd, const Variables& one_configvars,
   svd_copy.inactive_view(MIXED_STATE);
 
   allConfigVars.push_back(Variables(svd_copy));
-  allConfigVars.back().inactive_from_active(one_configvars);
+  allConfigVars.back().active_to_inactive_variables(one_configvars);
 
   SharedResponseData exp_srd = one_response.shared_data().copy();
   exp_srd.response_type(EXPERIMENT_RESPONSE);
@@ -334,7 +334,10 @@ void ExperimentData::load_data(const std::string& context_message,
     svd.inactive_view(MIXED_STATE);
     // make a distinct Variables letter for each config, don't copy
     // the envelope; okay to share the SVD
-    size_and_fill(svd, numExperiments, allConfigVars);
+    size_and_fill(svd, numExperiments, allConfigVars); // only shaped
+    // initialize variable values that won't be imported
+    for (size_t i=0; i<numExperiments; ++i)
+      allConfigVars[i].active_variables(vars_with_state_as_config);
   }
 
   size_t num_scalars = simulationSRD.num_scalar_primary();
@@ -724,7 +727,6 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
 }
 
 
-
 void ExperimentData::read_scalar_sigma(std::ifstream& scalar_data_stream,
 				       RealVector& sigma_scalars,
 				       IntVector& scalar_map_indices)
@@ -737,30 +739,6 @@ void ExperimentData::read_scalar_sigma(std::ifstream& scalar_data_stream,
     sigma_scalars[i] = sigma_row[i];
     scalar_map_indices[i] = i;
   }
-}
-
-size_t ExperimentData::
-num_scalar_primary() const
-{
-  if( simulationSRD.is_null() )
-    throw std::runtime_error("ExperimentData is incorrectly (or not) initialized.");
-
-  return simulationSRD.num_scalar_primary();
-}
-
-size_t ExperimentData::
-num_fields() const
-{
-  if( simulationSRD.is_null() )
-    throw std::runtime_error("ExperimentData is incorrectly (or not) initialized.");
-
-  return  simulationSRD.num_field_response_groups();
-}
-
-
-size_t ExperimentData::num_config_vars() const
-{
-  return numConfigVars; 
 }
 
 
@@ -784,79 +762,6 @@ std::vector<RealVector> ExperimentData::config_vars_as_real() const
     all_config_vars_real.push_back(real_config_vars);
   }
   return all_config_vars_real;
-}
-
-
-const std::vector<Variables>& ExperimentData::configuration_variables() const
-{
-  return allConfigVars;
-}
-
-
-void ExperimentData::per_exp_length(IntVector& per_length) const
-{
-  per_length.resize(allExperiments.size());
-  //Cout << "num experiments " << num_experiments();
-
-  for (size_t i=0; i<num_experiments(); i++) 
-    per_length(i) = allExperiments[i].shared_data().num_primary_functions();
-  //Cout << "per length " << per_length;
-}
-
-
-const IntVector& ExperimentData::field_lengths(size_t experiment) const
-{
-  return allExperiments[experiment].field_lengths();
-}
-
-const RealVector& ExperimentData::all_data(size_t experiment)
-{
-  if (experiment >= allExperiments.size()) {
-    Cerr << "\nError: invalid experiment index " << experiment << std::endl;
-    abort_handler(-1);
-  }
-  return allExperiments[experiment].function_values();
-}
-
-const Response& ExperimentData::response(size_t experiment) 
-{
-  if (experiment >= allExperiments.size()) {
-    Cerr << "\nError: invalid experiment index " << experiment << std::endl;
-    abort_handler(-1);
-  }
-  return allExperiments[experiment];
-}
-
-size_t ExperimentData::num_total_exppoints() const
-{
-  size_t res_size = 0;
-  for (size_t i=0; i<num_experiments(); i++) {
-    // this omits constraints:
-    res_size += allExperiments[i].shared_data().num_primary_functions();
-  }
-  return res_size;
-}
-
-Real ExperimentData::
-scalar_data(size_t response, size_t experiment)
-{
-  //if (allExperiments[response].experimentType != SCALAR_DATA) {
-  //  Cerr << "Error (ExperimentData): invalid query of scalar data." << std::endl;
-  //  abort_handler(-1);
-  //}
-  return(allExperiments[experiment].function_value(response));
-}
-
-RealVector ExperimentData::
-field_data_view(size_t response, size_t experiment) const
-{
-  return(allExperiments[experiment].field_values_view(response));
-}
-
-RealMatrix ExperimentData::
-field_coords_view(size_t response, size_t experiment) const
-{
-  return(allExperiments[experiment].field_coords_view(response));
 }
 
 
@@ -894,25 +799,6 @@ fill_primary_function_labels(StringArray& expanded_labels) const
   }
 }
 
-
-bool ExperimentData::variance_type_active(short variance_type) const
-{
-  UShortArray::const_iterator vt_it = 
-    std::find(varianceTypes.begin(), varianceTypes.end(), variance_type);
-  return vt_it != varianceTypes.end();
-}
-
-bool ExperimentData::variance_active() const
-{
-  return (variance_type_active(SCALAR_SIGMA) || 
-	  variance_type_active(DIAGONAL_SIGMA) || 
-	  variance_type_active(MATRIX_SIGMA));
-}
-
-bool ExperimentData::interpolate_flag() const
-{
-  return interpolateFlag;
-}
 
 RealVector ExperimentData::
 residuals_view(const RealVector& residuals, size_t experiment) const 

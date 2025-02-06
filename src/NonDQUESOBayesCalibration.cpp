@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDQUESOBayesCalibration
-//- Description: Derived class for Bayesian inference using QUESO
-//- Owner:       Laura Swiler, Brian Adams
-//- Checked by:
-//- Version:
 
 // place Dakota headers first to minimize influence of QUESO defines
 #include "NonDQUESOBayesCalibration.hpp"
@@ -46,7 +40,7 @@ NonDQUESOBayesCalibration* NonDQUESOBayesCalibration::nonDQUESOInstance(NULL);
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDQUESOBayesCalibration::
-NonDQUESOBayesCalibration(ProblemDescDB& problem_db, Model& model):
+NonDQUESOBayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDBayesCalibration(problem_db, model),
   mcmcType(probDescDB.get_string("method.nond.mcmc_type")),
   propCovUpdatePeriod(probDescDB.get_int("method.nond.prop_cov_update_period")),
@@ -113,16 +107,14 @@ NonDQUESOBayesCalibration::~NonDQUESOBayesCalibration()
 /** Perform the uncertainty quantification */
 void NonDQUESOBayesCalibration::calibrate()
 {
- 
   // generate the sample chain that defines the joint posterior distribution
   map_pre_solve();
   run_chain();
-
 }
 
+  
 void NonDQUESOBayesCalibration::map_pre_solve()
 {
-
   // doing a double check here to avoid a double copy if not optimizing 
   // for MAP (this check happens again in base class map_pre_solve()). 
   if (mapOptimizer.is_null()) return;
@@ -238,22 +230,26 @@ void NonDQUESOBayesCalibration::init_precond_request_value()
   case  NO_EMULATOR:
     // Note: mixed gradients/Hessians are still globally "on", regardless of
     // mixed computation approach
-    if (mcmcModel.gradient_type() != "none")
+    if (mcmcModel->gradient_type() != "none")
       precondRequestValue |= 2; // gradients
-    if (mcmcModel.hessian_type()  != "none")
+    if (mcmcModel->hessian_type()  != "none")
       precondRequestValue |= 5; // values & Hessians
     break;
   }
 }
 
-void NonDQUESOBayesCalibration::specify_likelihood(){
+
+void NonDQUESOBayesCalibration::specify_likelihood()
+{
   // Instantiate the likelihood function object that computes [ln(function)]
   likelihoodFunctionObj = std::make_shared
     <QUESO::GenericScalarFunction<QUESO::GslVector,QUESO::GslMatrix>>
     ("like_", *paramDomain, &dakotaLogLikelihood, (void *)nullptr, true);
 }
 
-void NonDQUESOBayesCalibration::init_bayesian_solver(){
+
+void NonDQUESOBayesCalibration::init_bayesian_solver()
+{
   // TNP TODO: Would we ever need to update the proposal covariance stuff? May
   // want to move that into the posterior call....
 
@@ -285,7 +281,6 @@ void NonDQUESOBayesCalibration::init_bayesian_solver(){
   set_ip_options();
   // Set options specific to MH algorithm
   set_mh_options();
-
 }
 
 void NonDQUESOBayesCalibration::specify_posterior(){
@@ -336,20 +331,20 @@ void NonDQUESOBayesCalibration::precondition_proposal(unsigned int chain_index)
   // chain position)
   copy_gsl_partial
     (curr_params, 0,
-     residualModel.current_variables().continuous_variables_view());
+     residualModel->current_variables().continuous_variables_view());
   // update request vector values
-  const Response& residual_resp = residualModel.current_response();
+  const Response& residual_resp = residualModel->current_response();
   ActiveSet set = residual_resp.active_set(); // copy
   set.request_values(precondRequestValue);
   // compute response (emulator case echoed to Cout if outputLevel > NORMAL)
-  residualModel.evaluate(set);
+  residualModel->evaluate(set);
 
   // compute Hessian of log-likelihood misfit r^T Gamma^{-1} r
   RealSymMatrix log_hess;//(numContinuousVars); // init to 0
   RealSymMatrix prop_covar;
 
   expData.build_hessian_of_sum_square_residuals
-    (residualModel.current_response(), log_hess);
+    (residualModel->current_response(), log_hess);
   //bool fallback =
     get_positive_definite_covariance_from_hessian(log_hess, prop_covar);
 
@@ -441,9 +436,9 @@ void NonDQUESOBayesCalibration::cache_chain()
 
   // temporaries for evals/lookups
   // the MCMC model omits the hyper params and residual transformations...
-  Variables lookup_vars = mcmcModel.current_variables().copy();
-  String   interface_id = mcmcModel.interface_id();
-  Response  lookup_resp = mcmcModel.current_response().copy();
+  Variables lookup_vars = mcmcModel->current_variables().copy();
+  String   interface_id = mcmcModel->interface_id();
+  Response  lookup_resp = mcmcModel->current_response().copy();
   ActiveSet   lookup_as = lookup_resp.active_set();
   lookup_as.request_values(1);
   lookup_resp.active_set(lookup_as);
@@ -475,12 +470,12 @@ void NonDQUESOBayesCalibration::cache_chain()
       copy_gsl_partial(qv, 0, u_rv);
       Real* acc_chain_i = acceptanceChain[i];
       RealVector x_rv(Teuchos::View, acc_chain_i, numContinuousVars);
-      mcmcModel.probability_transformation().trans_U_to_X(u_rv, x_rv);
+      mcmcModel->trans_U_to_X(u_rv, x_rv);
       for (int j=numContinuousVars; j<num_params; ++j)
 	acc_chain_i[j] = qv[j]; // trailing hyperparams are not transformed
 
       // surrogate needs u-space variables for eval
-      if (mcmcModel.model_type() == "surrogate")
+      if (mcmcModel->model_type() == "surrogate")
 	lookup_vars.continuous_variables(u_rv);
       else
 	lookup_vars.continuous_variables(x_rv);
@@ -504,15 +499,15 @@ void NonDQUESOBayesCalibration::cache_chain()
     // model, but it's type may be a ProbabilityTransform wrapper if
     // standardizedSpace is active.  mcmcModelHasSurrogate controls
     // model re-evals.  This is not sufficiently general, e.g., if the
-    // mcmcModel is a HierarchSurrModel, could perform costly re-eval.
+    // mcmcModel is an EnsembleSurrModel, could perform costly re-eval.
 
     // TODO: Consider doing lookup first, then surrogate re-eval, or
     // querying a more complete eval database when available...
 
     if (mcmcModelHasSurrogate) {
-      mcmcModel.active_variables(lookup_vars);
-      mcmcModel.evaluate(lookup_resp.active_set());
-      const RealVector& fn_vals = mcmcModel.current_response().function_values();
+      ModelUtils::active_variables(*mcmcModel, lookup_vars);
+      mcmcModel->evaluate(lookup_resp.active_set());
+      const RealVector& fn_vals = mcmcModel->current_response().function_values();
       Teuchos::setCol(fn_vals, i, acceptedFnVals);
     }
     else {
@@ -521,7 +516,7 @@ void NonDQUESOBayesCalibration::cache_chain()
       if (cache_it == data_pairs.get<hashed>().end()) {
 	++lookup_failures;
 	// Set NaN in the chain points to avoid misleading the user
-	RealVector nan_fn_vals(mcmcModel.current_response().function_values().length());
+	RealVector nan_fn_vals(mcmcModel->current_response().function_values().length());
 	nan_fn_vals = std::numeric_limits<double>::quiet_NaN();
 	Teuchos::setCol(nan_fn_vals, i, acceptedFnVals);
       }
@@ -639,7 +634,6 @@ void NonDQUESOBayesCalibration::filter_chain_by_conditioning()
     paramMins/paramMaxs, paramDomain, paramInitials, priorRV) */
 void NonDQUESOBayesCalibration::specify_prior()
 {
- 
   nonDQUESOInstance = this;
 
   // If calibrating error multipliers, the parameter domain is expanded to
@@ -650,13 +644,16 @@ void NonDQUESOBayesCalibration::specify_prior()
 
   QUESO::GslVector paramMins(paramSpace->zeroVector()),
                    paramMaxs(paramSpace->zeroVector());
+  // mcmcModel may use a different view, so map from all view in mcmcModel to
+  // active in iteratedModel
   RealRealPairArray bnds
-    = mcmcModel.multivariate_distribution().distribution_bounds();
-  // SVD index conversion is more general, but not required for current uses
-  //const SharedVariablesData& svd= mcmcModel.current_variables().shared_data();
+    = mcmcModel->multivariate_distribution().distribution_bounds(); // all RV
+  // Use SVD to convert active CV index (calibration params) to all index (RVs)
+  const SharedVariablesData& svd
+    = iteratedModel->current_variables().shared_data();
   for (size_t i=0; i<numContinuousVars; ++i) {
-    //const RealRealPair& bnds_i = bnds[svd.cv_index_to_active_index(i)];
-    paramMins[i] = bnds[i].first;  paramMaxs[i] = bnds[i].second;
+    const RealRealPair& bnds_i = bnds[svd.cv_index_to_all_index(i)];
+    paramMins[i] = bnds_i.first;  paramMaxs[i] = bnds_i.second;
   }
   for (size_t i=0; i<numHyperparams; ++i) {
     // inverse gamma is defined on [0,inf), but we may have to divide
@@ -684,8 +681,8 @@ void NonDQUESOBayesCalibration::specify_prior()
   // new approach supports arbitrary priors:
   priorRv = std::make_shared<QuesoVectorRV<QUESO::GslVector,QUESO::GslMatrix>> 
   ("prior_", *paramDomain, nonDQUESOInstance);
-
 }
+
 
 void NonDQUESOBayesCalibration::init_proposal_covariance()
 {
@@ -724,9 +721,9 @@ void NonDQUESOBayesCalibration::prior_proposal_covariance()
   //QUESO::GslVector covDiag(paramSpace->zeroVector());
 
   // diagonal covariance from variance of prior marginals
-  RealVector dist_var = mcmcModel.multivariate_distribution().variances();
+  RealVector dist_var = mcmcModel->multivariate_distribution().variances();
   // SVD index conversion is more general, but not required for current uses
-  //const SharedVariablesData& svd= mcmcModel.current_variables().shared_data();
+  //const SharedVariablesData& svd= mcmcModel->current_variables().shared_data();
   for (int i=0; i<numContinuousVars; ++i)
     (*proposalCovMatrix)(i,i) = priorPropCovMult * dist_var[i];
       //* dist_var[svd.cv_index_to_active_index(i)];
@@ -1021,7 +1018,7 @@ print_results(std::ostream& s, short results_state)
   QUESO::GslVector qv(paramSpace->zeroVector());
   copy_gsl(best_sample, qv);
   Real log_prior = log_prior_density(qv), log_post = it->first;
-  size_t num_total_calib_terms = residualModel.num_primary_fns();
+  size_t num_total_calib_terms = residualModel->num_primary_fns();
   Real half_nr_log2pi = num_total_calib_terms * HALF_LOG_2PI;
   RealVector hyper_params(numHyperparams);
   copy_gsl_partial(qv, numContinuousVars, hyper_params);
@@ -1060,10 +1057,12 @@ print_results(std::ostream& s, short results_state)
   NonDBayesCalibration::print_results(s, results_state);
 }
 
-double NonDQUESOBayesCalibration::dakotaLogLikelihood(
-  const QUESO::GslVector& paramValues, const QUESO::GslVector* paramDirection,
-  const void*         functionDataPtr, QUESO::GslVector*       gradVector,
-  QUESO::GslMatrix*     hessianMatrix, QUESO::GslVector*       hessianEffect)
+double NonDQUESOBayesCalibration::
+dakotaLogLikelihood(const QUESO::GslVector& paramValues,
+		    const QUESO::GslVector* paramDirection,
+		    const void* functionDataPtr, QUESO::GslVector* gradVector,
+		    QUESO::GslMatrix* hessianMatrix,
+		    QUESO::GslVector* hessianEffect)
 {
   // The GP/KRIGING/NO EMULATOR may use an unstandardized space (original)
   // and the PCE or SC cases always use standardized space.
@@ -1078,13 +1077,13 @@ double NonDQUESOBayesCalibration::dakotaLogLikelihood(
   // residualModel: note that this won't update the Variables object
   // in any inner models.
   RealVector& all_params = nonDQUESOInstance->
-    residualModel.current_variables().continuous_variables_view();
+    residualModel->current_variables().continuous_variables_view();
   nonDQUESOInstance->copy_gsl(paramValues, all_params);
 
-  nonDQUESOInstance->residualModel.evaluate();
+  nonDQUESOInstance->residualModel->evaluate();
   
   const RealVector& residuals = 
-    nonDQUESOInstance->residualModel.current_response().function_values();
+    nonDQUESOInstance->residualModel->current_response().function_values();
   double log_like = nonDQUESOInstance->log_likelihood(residuals, all_params);
   
   if (nonDQUESOInstance->outputLevel >= DEBUG_OUTPUT) {

@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       RichExtrapVerification
-//- Description: Class for Richardson extrapolation for code and solution
-//-              verification.   
-//- Owner:       Mike Eldred/Ben Pax
-//- Version: $Id: RichExtrapVerification.hpp 6972 2010-09-17 22:18:50Z briadam $
 
 #ifndef RICH_EXTRAP_VERIFICATION_H
 #define RICH_EXTRAP_VERIFICATION_H
@@ -36,9 +30,9 @@ public:
   //
 
   /// constructor
-  RichExtrapVerification(ProblemDescDB& problem_db, Model& model);
+  RichExtrapVerification(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
-  ~RichExtrapVerification();
+  ~RichExtrapVerification() override;
     
   //
   //- Heading: Virtual member function redefinitions
@@ -46,10 +40,10 @@ public:
 
   //void initialize_run();
   //void pre_run();
-  void core_run();
+  void core_run() override;
   //void post_run(std::ostream& s);
   //void finalize_run();
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
 private:
 

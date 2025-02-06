@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -54,12 +54,15 @@ namespace Dakota {
    destroying A if compute_vectors = false); optionally returns right
    singular vectors in v_trans.
  */
-void svd(RealMatrix& matrix, RealVector& singular_vals, RealMatrix& v_trans,
-	 bool compute_vectors = true);
+void singular_value_decomp(RealMatrix& matrix, RealVector& singular_vals,
+			   RealMatrix& v_trans, bool compute_vectors = true);
 
 /// compute the singular values without storing any singular vectors
 /// (A will be destroyed)
 void singular_values(RealMatrix& matrix, RealVector& singular_values);
+
+/// compute the pseudo-inverse by SVD (A is overwritten by U)
+void pseudo_inverse(RealMatrix& A, RealMatrix& A_inv, Real& rcond);
 
 /**
  * \brief Compute an in-place QR factorization A = QR
@@ -79,6 +82,16 @@ int qr_rsolve(const RealMatrix& q_r, bool transpose, RealMatrix& rhs);
 
 /// Use SVD to compute det(A'*A), destroying A with the SVD
 double det_AtransA(RealMatrix& A);
+
+/**
+ * \brief Computes the eigenvalues and, optionally, eigenvectors of a
+ *  real symmetric matrix A. 
+ * 
+ * Eigenvalues are returned in ascending order.
+ */
+void symmetric_eigenvalue_decomposition( const RealSymMatrix &matrix, 
+					 RealVector &eigenvalues, 
+					 RealMatrix &eigenvectors );
 
 }  // namespace Dakota
 

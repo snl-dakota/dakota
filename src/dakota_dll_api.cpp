@@ -1,21 +1,16 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Description: An API for launching DAKOTA from a DLL.
-//- Owner:       Bill Hart
-//- Checked by:
-//- Version: $Id$
-
 /** \file dakota_dll_api.cpp
     \brief This file contains a DakotaRunner class, which launches DAKOTA. */
 
-#include "dakota_windows.h"
+#include "util_windows.hpp"
 #include "dakota_system_defs.hpp"
 #include "ProgramOptions.hpp"
 #include "LibraryEnvironment.hpp"
@@ -208,12 +203,12 @@ void DakotaRunner::start()
   ProblemDescDB& problem_db = dakotaEnv->problem_description_db();
   ModelList& models = problem_db.model_list();
   size_t model_index = problem_db.get_db_model_node(); // for restoration
-  for (ModelLIter ml_iter = models.begin(); ml_iter != models.end(); ml_iter++){
-    Interface& model_interface = ml_iter->derived_interface();
+  for (auto& m : models) {
+    Interface& model_interface = m->derived_interface();
     if ( (model_interface.interface_type() & DIRECT_INTERFACE_BIT) &&
 	 contains(model_interface.analysis_drivers(), "plugin_rosenbrock") ) {
       // set the DB nodes to that of the existing Model specification
-      problem_db.set_db_model_nodes(ml_iter->model_id());
+      problem_db.set_db_model_nodes(m->model_id());
       // plug in the new derived Interface object
       model_interface.assign_rep(std::make_shared<SIM::SerialDirectApplicInterface>
 				 (problem_db));

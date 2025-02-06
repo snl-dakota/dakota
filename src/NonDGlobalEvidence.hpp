@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDGlobalEvidence
-//- Description: Class for the Evidence theory methods within DAKOTA/UQ
-//- Owner:	 Laura Swiler
-//- Checked by:
-//- Version:
 
 #ifndef NOND_GLOBAL_EVIDENCE_H
 #define NOND_GLOBAL_EVIDENCE_H
@@ -44,19 +38,19 @@ public:
   //- Heading: Constructors and destructor
   //
 
-  NonDGlobalEvidence(ProblemDescDB& problem_db, Model& model); ///< constructor
-  ~NonDGlobalEvidence();                                       ///< destructor
+  NonDGlobalEvidence(ProblemDescDB& problem_db, std::shared_ptr<Model> model); ///< constructor
+  ~NonDGlobalEvidence() override;                                       ///< destructor
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  void initialize();
-  void set_cell_bounds();
-  void get_best_sample(bool maximize, bool eval_approx);
-  void post_process_cell_results(bool maximize);
-  void post_process_response_fn_results();
-  void post_process_final_results();
+  void initialize() override;
+  void set_cell_bounds() override;
+  void get_best_sample(bool maximize, bool eval_approx) override;
+  void post_process_cell_results(bool maximize) override;
+  void post_process_response_fn_results() override;
+  void post_process_final_results() override;
 
 private:
 

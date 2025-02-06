@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDInterval
-//- Description: Class for the Interval theory methods within DAKOTA/UQ
-//- Owner:	 Laura Swiler
-//- Checked by:
-//- Version:
 
 #ifndef NOND_INTERVAL_H
 #define NOND_INTERVAL_H
@@ -45,8 +39,8 @@ public:
   //- Heading: Constructors and destructor
   //
 
-  NonDInterval(ProblemDescDB& problem_db, Model& model); ///< constructor
-  ~NonDInterval();                                       ///< destructor
+  NonDInterval(ProblemDescDB& problem_db, std::shared_ptr<Model> model); ///< constructor
+  ~NonDInterval() override;                                       ///< destructor
 
   //
   //- Heading: Virtual member function redefinitions
@@ -56,13 +50,13 @@ public:
   //void core_run();
 
   /// print the cumulative distribution functions for belief and plausibility
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
   //
   //- Heading: Virtual member function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
 
 protected:
 
@@ -71,7 +65,7 @@ protected:
   //
 
   /// initialize finalStatistics for belief/plausibility results sets
-  void initialize_final_statistics();
+  void initialize_final_statistics() override;
 
   /// method for computing belief and plausibility values for response levels 
   /// or vice-versa

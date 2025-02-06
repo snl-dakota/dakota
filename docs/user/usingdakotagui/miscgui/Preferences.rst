@@ -16,6 +16,52 @@ The Dakota GUI's main area for basic, global configurations can be found under W
 .. image:: img/GettingStarted_Preferences_1.png
    :alt: How you get to the Preferences dialog
 
+.. _gui-preferences-blackbox:
+
+========
+BlackBox
+========
+
+.. image:: img/GettingStarted_Preferences_9.png
+   :alt: Blackbox preferences
+
+The Preferences page for BlackBox enables you to control which pre-processing template files are recognized by Dakota GUI. Recognizing pre-processing templates (done via
+the file's extension) is crucial for taking advantage of pre-processing template files throughout the GUI (for example, in the New Dakota Study wizard).
+Typically, you would want to have every box checked, but there may be situations where you want to uncheck boxes (i.e. force the GUI to *not* recognize a particular
+format) if you are experiencing clashes between file extensions and recognized pre-processing strategies.
+
+.. _gui-preferences-chartreuse:
+
+==========
+Chartreuse
+==========
+
+.. image:: img/GettingStarted_Preferences_3.png
+   :alt: Chartreuse preferences
+
+- **Default Plot Data Provider** If a file containing plottable content (for instance, Dakota tabular data files) is selected for graphical plotting,
+  but Dakota GUI cannot make a determination about how to interpret it, this field determines the default plot data provider to use.
+- **Plotting Library** This setting allows you to control which underlying plotting library is used to render graphical plots.
+- **Allow plotting library to access online resources** If this box is checked, Chartreuse will attempt to download the latest version of the plotting library
+  before rendering a plot. If unchecked, it will use a slightly older version of the plotting library shipped with the GUI.
+  
+  .. warning::
+
+     This option should *always* remain unchecked if you are using Dakota GUI in an environment without Internet access! Otherwise, your plots will not render
+     and you will only see a white screen in the Chartreuse plot editor area.
+  
+- **Default Color Scale** This setting allows you to decide which color scale is used by default for plots requiring a color scale (for instance, heatmaps).
+
+  - See `"Color Map Advice for Scientific Visualization" by Kenneth Moreland. <https://www.kennethmoreland.com/color-advice/>`__
+  
+- **Default Font** Using this option, you can control the font and font size shown on your plot titles.
+- **Default Axis Font Size** Using this option, you can control the size of the font written along each axis.
+- **Default Tick Font Size** Using this option, you can control the size of the font written along tick lines.
+- **Fast Plot Data Retrieval Option** For :ref:`fast plotting in the Chartreuse Sandbox <chartreuse-sandbox-main>`, the option selected in this dropdown
+  will govern which data retrieval method is used by default.
+- **Show dialog before sending plot data to Sandbox View** If checked, a dialog allowing you to change data retrieval methods
+  will be displayed prior to creating a plot. See the :ref:`Chartreuse Sandbox <chartreuse-sandbox-main>` documentation for more information.
+
 .. _gui-preferences-dakota:
 
 ======
@@ -124,22 +170,6 @@ Dakota > Workflow Support
     a Next-Gen Workflow analysis driver. Refer to the section on the :ref:`relationship between DREPRO and Next-Gen Workflow <ngw-analysisdrivers-dprepro>` for more information.
   - *SAW_DRIVER= (magic string)* - a legacy option for interacting with Next-Gen Workflow that is nevertheless
     still useful in some contexts. Refer to the section on the :ref:`usage of "SAW_DRIVER=" string <ngw-analysisdrivers-sawdriverstring>` here.
-
-.. _gui-preferences-chartreuse:
-
-==========
-Chartreuse
-==========
-
-.. image:: img/GettingStarted_Preferences_3.png
-   :alt: Chartreuse preferences
-
-- **Default Plot Data Provider** If a file containing plottable content (for instance, Dakota tabular data files) is selected for graphical plotting,
-  but Dakota GUI cannot make a determination about how to interpret it, this field determines the default plot data provider to use.
-- **Plotting Library** This setting allows you to control which underlying plotting library is used to render graphical plots.
-- **Default Color Scale** This setting allows you to decide which color scale is used by default for plots requiring a color scale (for instance, heatmaps).
-
-  - See `"Color Map Advice for Scientific Visualization" by Kenneth Moreland. <https://www.kennethmoreland.com/color-advice/>`__
 
 .. _gui-preferences-highlighter:
 

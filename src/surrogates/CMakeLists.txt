@@ -1,7 +1,7 @@
 #  _______________________________________________________________________
 #
-#  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2022
+#  Dakota: Explore and predict with confidence.
+#  Copyright 2014-2024
 #  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
@@ -11,21 +11,34 @@ include(ExternalProject)
 
 set(surrogates_sources
   SurrogatesBase.cpp
-  SurrogatesGaussianProcess.cpp 
-  SurrogatesGPKernels.cpp
-  SurrogatesGPObjective.cpp
   SurrogatesPolynomialRegression.cpp
   surrogates_tools.cpp
 )
 
 set(surrogates_headers
   SurrogatesBase.hpp
-  SurrogatesGaussianProcess.hpp
-  SurrogatesGPKernels.hpp
-  SurrogatesGPObjective.hpp
   SurrogatesPolynomialRegression.hpp
   surrogates_tools.hpp
 )
+
+# GPs require ROL
+if(HAVE_ROL)
+  list(APPEND surrogates_sources
+    SurrogatesGaussianProcess.cpp 
+    SurrogatesGPKernels.cpp
+    SurrogatesGPObjective.cpp
+  )
+  list(APPEND surrogates_headers
+    SurrogatesGaussianProcess.hpp
+    SurrogatesGPKernels.hpp
+    SurrogatesGPObjective.hpp
+  )
+endif(HAVE_ROL)
+
+if(DAKOTA_PYTHON_SURROGATES)
+  list(APPEND surrogates_sources SurrogatesPython.cpp)
+  list(APPEND surrogates_headers SurrogatesPython.hpp)
+endif()
 
 add_library(dakota_surrogates ${surrogates_sources} ${surrogates_headers})
 
@@ -34,6 +47,9 @@ target_include_directories(dakota_surrogates PUBLIC
   $<INSTALL_INTERFACE:include>
 )
 target_link_libraries(dakota_surrogates PUBLIC dakota_util)
+if(DAKOTA_PYTHON_SURROGATES)
+  target_link_libraries(dakota_surrogates PUBLIC pybind11::embed)
+endif()
 
 # Rationale: Teuchos is included in API headers, and ParameterList
 # library component is needed
@@ -46,16 +62,17 @@ target_link_libraries(dakota_surrogates PUBLIC ${Teuchos_LIBRARIES})
 
 # BMA: Unless there's a better way, specify that ROL is a system
 # library to suppress warnings
-target_include_directories(dakota_surrogates SYSTEM PRIVATE
-  "${ROL_INCLUDE_DIRS}"
-)
+if(HAVE_ROL)
+  target_include_directories(dakota_surrogates SYSTEM PRIVATE
+    "${ROL_INCLUDE_DIRS}"
+  )
+endif(HAVE_ROL)
 
 # Rationale: Boost serialization is referenced in API headers
 target_link_libraries(dakota_surrogates PUBLIC Boost::serialization)
 
 # BMA TODO: Consider using a utility to add Dakota targets and do this
 dakota_strict_warnings(dakota_surrogates)
-dakota_gcov_target(dakota_surrogates)
 
 install(FILES ${surrogates_headers} DESTINATION "include")
 # Need to make sure DLLs end up in bin and prefer lib over lib64 (for now)

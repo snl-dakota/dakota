@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       NPSOLOptimizer
-//- Description: Wrapper class for NPSOL
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version: $Id: NPSOLOptimizer.hpp 6786 2010-05-19 21:39:57Z dmgay $
 
 #ifndef NPSOL_OPTIMIZER_H
 #define NPSOL_OPTIMIZER_H
@@ -60,28 +54,28 @@ class NPSOLTraits: public TraitsBase
   NPSOLTraits() { }
 
   /// destructor
-  virtual ~NPSOLTraits() { }
+  ~NPSOLTraits() override { }
 
   /// A temporary query used in the refactor
-  virtual bool is_derived() { return true; }
+  bool is_derived() override { return true; }
 
   /// Return the flag indicating whether method supports continuous variables
-  bool supports_continuous_variables() { return true; }
+  bool supports_continuous_variables() override { return true; }
 
   /// Return the flag indicating whether method supports linear equalities
-  bool supports_linear_equality() { return true; }
+  bool supports_linear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports linear inequalities
-  bool supports_linear_inequality() { return true; }
+  bool supports_linear_inequality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear equalities
-  bool supports_nonlinear_equality() { return true; }
+  bool supports_nonlinear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear inequalities
-  bool supports_nonlinear_inequality() { return true; }
+  bool supports_nonlinear_inequality() override { return true; }
 
   /// Return the format used for nonlinear inequality constraints
-  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override
     { return NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED; }
 
 };
@@ -96,18 +90,18 @@ public:
   //
 
   /// standard constructor
-  NPSOLOptimizer(ProblemDescDB& problem_db, Model& model);
+  NPSOLOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
 
   /// alternate constructor for Iterator instantiations by name
-  NPSOLOptimizer(Model& model);
+  NPSOLOptimizer(std::shared_ptr<Model> model);
 
   /// alternate constructor for instantiations "on the fly"
-  NPSOLOptimizer(Model& model, int derivative_level, Real conv_tol);
+  NPSOLOptimizer(std::shared_ptr<Model> model, int derivative_level, Real conv_tol);
 
   /// alternate constructor for instantiations "on the fly"
-  NPSOLOptimizer(const RealVector& initial_point,
-		 const RealVector& var_lower_bnds,
-		 const RealVector& var_upper_bnds,
+  NPSOLOptimizer(const RealVector& cv_initial,
+		 const RealVector& cv_lower_bnds,
+		 const RealVector& cv_upper_bnds,
 		 const RealMatrix& lin_ineq_coeffs,
 		 const RealVector& lin_ineq_lower_bnds,
 		 const RealVector& lin_ineq_upper_bnds,
@@ -124,32 +118,36 @@ public:
 		 Real fdss = 0., Real fn_precision = 0., Real feas_tol = 0.,
 		 Real lin_feas_tol = 0., Real nonlin_feas_tol = 0.);
 
-  ~NPSOLOptimizer(); ///< destructor
+  ~NPSOLOptimizer() override; ///< destructor
     
   //
   //- Heading: Virtual function redefinitions
   //
 
   //void pre_run();
-  void core_run();
+  void core_run() override;
 
-  void declare_sources();
+  void declare_sources() override;
 
-  void check_sub_iterator_conflict();
+  void check_sub_iterator_conflict() override;
 
   // updaters for user-functions mode:
 
-  void initial_point(const RealVector& pt);
-  void variable_bounds(const RealVector& cv_lower_bnds,
-		       const RealVector& cv_upper_bnds);
-  void linear_constraints(const RealMatrix& lin_ineq_coeffs,
-			  const RealVector& lin_ineq_lb,
-			  const RealVector& lin_ineq_ub,
-			  const RealMatrix& lin_eq_coeffs,
-			  const RealVector& lin_eq_tgt);
-  void nonlinear_constraints(const RealVector& nln_ineq_lb,
-			     const RealVector& nln_ineq_ub,
-			     const RealVector& nln_eq_tgt);
+  void initial_point(const RealVector& pt) override;
+  void update_callback_data(const RealVector& cv_initial,
+			    const RealVector& cv_lower_bnds,
+			    const RealVector& cv_upper_bnds,
+			    const RealMatrix& lin_ineq_coeffs,
+			    const RealVector& lin_ineq_l_bnds,
+			    const RealVector& lin_ineq_u_bnds,
+			    const RealMatrix& lin_eq_coeffs,
+			    const RealVector& lin_eq_targets,
+			    const RealVector& nln_ineq_l_bnds,
+			    const RealVector& nln_ineq_u_bnds,
+			    const RealVector& nln_eq_targets) override;
+  const RealMatrix& callback_linear_ineq_coefficients() const override;
+  //const RealVector& callback_linear_ineq_lower_bounds() const;
+  //const RealVector& callback_linear_ineq_upper_bounds() const;
 
 protected:
 
@@ -197,6 +195,12 @@ private:
   RealVector lowerBounds;
   /// holds variable upper bounds passed in for "user_functions" mode.
   RealVector upperBounds;
+  /// cache the linear inequality constraint coefficients in
+  /// update_callback_data() for use in find_optimum_on_user_functions()
+  RealMatrix linIneqCoeffs;
+  /// cache the linear equality constraint coefficients in
+  /// update_callback_data() for use in find_optimum_on_user_functions()
+  RealMatrix linEqCoeffs;
   /// holds function pointer for objective function evaluator passed in for
   /// "user_functions" mode.
   void (*userObjectiveEval)  (int&, int&, double*, double&, double*, int&);
@@ -211,39 +215,27 @@ inline void NPSOLOptimizer::initial_point(const RealVector& pt)
 { copy_data(pt, initialPoint); } // protect from incoming view
 
 
-inline void NPSOLOptimizer::
-variable_bounds(const RealVector& cv_lower_bnds,
-		const RealVector& cv_upper_bnds)
+inline const RealMatrix& NPSOLOptimizer::
+callback_linear_ineq_coefficients() const
+{ return linIneqCoeffs; }
+
+
+/*
+inline const RealVector& NPSOLOptimizer::
+callback_linear_ineq_lower_bounds() const
 {
-  replace_variable_bounds(numLinearConstraints, numNonlinearConstraints,
-			  lowerBounds, upperBounds, cv_lower_bnds,
-			  cv_upper_bnds);
+  return RealVector(Teuchos::View, &lowerBounds[numContinuousVars],
+		    numLinearIneqConstraints);
 }
 
 
-inline void NPSOLOptimizer::
-linear_constraints(const RealMatrix& lin_ineq_coeffs,
-		   const RealVector& lin_ineq_lb, const RealVector& lin_ineq_ub,
-		   const RealMatrix& lin_eq_coeffs,
-		   const RealVector& lin_eq_tgt)
+inline const RealVector& NPSOLOptimizer::
+callback_linear_ineq_upper_bounds() const
 {
-  replace_linear_arrays(numContinuousVars, numNonlinearConstraints,
-			lin_ineq_coeffs, lin_eq_coeffs);
-  replace_linear_bounds(numContinuousVars, numNonlinearConstraints, lowerBounds,
-			upperBounds, lin_ineq_lb, lin_ineq_ub, lin_eq_tgt);
+  return RealVector(Teuchos::View, &upperBounds[numContinuousVars],
+		    numLinearIneqConstraints);
 }
-
-
-inline void NPSOLOptimizer::
-nonlinear_constraints(const RealVector& nln_ineq_lb,
-		      const RealVector& nln_ineq_ub,
-		      const RealVector& nln_eq_tgt)
-{
-  replace_nonlinear_arrays(numContinuousVars, numLinearConstraints,
-			   nln_ineq_lb.length() + nln_eq_tgt.length());
-  replace_nonlinear_bounds(numContinuousVars, numLinearConstraints, lowerBounds,
-			   upperBounds, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt);
-}
+*/
 
 
 #ifdef HAVE_DYNLIB_FACTORIES
@@ -254,9 +246,9 @@ nonlinear_constraints(const RealVector& nln_ineq_lb,
 NPSOLOptimizer* new_NPSOLOptimizer(ProblemDescDB& problem_db, Model& model);
 NPSOLOptimizer* new_NPSOLOptimizer(Model& model);
 NPSOLOptimizer* new_NPSOLOptimizer(Model& model, int, Real);
-NPSOLOptimizer* new_NPSOLOptimizer(const RealVector& initial_point,
-    const RealVector& var_lower_bnds,
-    const RealVector& var_upper_bnds,
+NPSOLOptimizer* new_NPSOLOptimizer(const RealVector& cv_initial,
+    const RealVector& cv_lower_bnds,
+    const RealVector& cv_upper_bnds,
     const RealMatrix& lin_ineq_coeffs,
     const RealVector& lin_ineq_lower_bnds,
     const RealVector& lin_ineq_upper_bnds,

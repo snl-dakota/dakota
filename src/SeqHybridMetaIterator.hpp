@@ -1,18 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       SeqHybridMetaIterator
-//- Description: A hybrid meta-iterator that sequentially invokes several
-//-              methods, initializing subsequent iterators with prior results
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version: $Id: SeqHybridMetaIterator.hpp 7029 2010-10-22 00:17:02Z mseldre $
 
 #ifndef SEQ_HYBRID_META_ITERATOR_H
 #define SEQ_HYBRID_META_ITERATOR_H
@@ -56,9 +49,9 @@ public:
   /// standard constructor
   SeqHybridMetaIterator(ProblemDescDB& problem_db);
   /// alternate constructor
-  SeqHybridMetaIterator(ProblemDescDB& problem_db, Model& model);
+  SeqHybridMetaIterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
-  ~SeqHybridMetaIterator();
+  ~SeqHybridMetaIterator() override;
 
 protected:
 
@@ -68,29 +61,29 @@ protected:
 
   /// Performs the hybrid iteration by executing a sequence of iterators,
   /// using a similar sequence of models that may vary in fidelity
-  void core_run();
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void core_run() override;
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
-  void derived_init_communicators(ParLevLIter pl_iter);
-  void derived_set_communicators(ParLevLIter pl_iter);
-  void derived_free_communicators(ParLevLIter pl_iter);
+  void derived_init_communicators(ParLevLIter pl_iter) override;
+  void derived_set_communicators(ParLevLIter pl_iter) override;
+  void derived_free_communicators(ParLevLIter pl_iter) override;
 
-  IntIntPair estimate_partition_bounds();
+  IntIntPair estimate_partition_bounds() override;
 
   /// return the final solution from selectedIterators (variables)
-  const Variables& variables_results() const;
+  const Variables& variables_results() const override;
   /// return the final solution from selectedIterators (response)
-  const Response&  response_results() const;
+  const Response&  response_results() const override;
 
-  void initialize_iterator(int job_index);
-  void pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index);
+  void initialize_iterator(int job_index) override;
+  void pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index) override;
   void unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer,
-				    int job_index);
-  void pack_results_buffer(MPIPackBuffer& send_buffer, int job_index);
-  void unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index);
-  void update_local_results(int job_index);
+				    int job_index) override;
+  void pack_results_buffer(MPIPackBuffer& send_buffer, int job_index) override;
+  void unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index) override;
+  void update_local_results(int job_index) override;
 
-  void declare_sources();
+  void declare_sources() override;
 private:
 
   //
@@ -131,7 +124,7 @@ private:
   /// the set of iterators, one for each entry in methodStrings
   IteratorArray selectedIterators;
   /// the set of models, one for each iterator (if not lightweight construction)
-  ModelArray selectedModels;
+  std::vector<std::shared_ptr<Model>> selectedModels;
 
   /// hybrid sequence counter: 0 to numIterators-1
   size_t seqCount;
@@ -153,7 +146,7 @@ inline IntIntPair SeqHybridMetaIterator::estimate_partition_bounds()
   int min_procs = INT_MAX, max_procs = 0;      IntIntPair min_max;
   size_t i, num_meth = selectedIterators.size(); String empty_str;
   for (i=0; i<num_meth; ++i)  {
-    Model& model = (singlePassedModel) ? iteratedModel : selectedModels[i];
+    auto model = (singlePassedModel) ? iteratedModel : selectedModels[i];
     if (lightwtMethodCtor)
       iterSched.construct_sub_iterator(probDescDB, selectedIterators[i], model,
 				       empty_str, methodStrings[i], // ptr, name
@@ -239,7 +232,7 @@ initialize_iterator(const VariablesArray& param_sets)
   // > all of parameterSets (numIteratorJobs == 1)
   size_t num_param_sets = param_sets.size();
   if (num_param_sets == 1)
-    selectedModels[seqCount].active_variables(param_sets[0]);
+    selectedModels[seqCount]->current_variables().active_variables(param_sets[0]);
   else if (selectedIterators[seqCount].accepts_multiple_points())
     selectedIterators[seqCount].initial_points(param_sets);
   else {

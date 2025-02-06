@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -220,9 +220,9 @@ void run_dakota(const MPI_Comm& my_comm, const std::string& input,
     env.filtered_model_list("simulation", "direct", "plugin_text_book");
   Dakota::ModelLIter ml_iter = models.begin(), ml_end = models.end();
   for ( ; ml_iter != ml_end; ++ml_iter) {
-    Dakota::Interface& model_iface = ml_iter->derived_interface();
+    Dakota::Interface& model_iface = (*ml_iter)->derived_interface();
     const Dakota::ParallelLevel& ea_level
-      = ml_iter->parallel_configuration_iterator()->ea_parallel_level();
+      = (*ml_iter)->parallel_configuration_iterator()->ea_parallel_level();
     const MPI_Comm& analysis_comm = ea_level.server_intra_communicator();
     model_iface.assign_rep(std::make_shared<SIM::ParallelDirectApplicInterface>
 			   (problem_db, analysis_comm));

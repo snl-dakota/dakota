@@ -1,15 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        Iterator
-//- Description:  Dynamic library load manager for third-party solver packages.
-//- Version: $Id$
 
 // NOTE:  THIS IS NOT ACTIVE CODE
 //
@@ -48,7 +44,7 @@ typedef void (*p_vf)(void);
 
 // WJB - ToDo: prefer function over macro
 #ifdef _WIN32
-#include "dakota_windows.h"
+#include "util_windows.hpp"
 #define find_dlsym(a,b,c) (a = (p_vf)GetProcAddress((HINSTANCE)(b),c))
 #define NO_DLERROR
 #else

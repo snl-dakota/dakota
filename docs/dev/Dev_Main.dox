@@ -6,10 +6,11 @@ namespace Dakota { // for some reason, this doesn't work with mainpage
 Wesley P. Coomber, Keith R. Dalbey, Mohamed S. Ebeida, John P. Eddy,
 Michael S. Eldred, Gianluca Geraci, Russell W. Hooper, Patricia
 D. Hough, Kenneth T. Hu, John D. Jakeman, Carson Kent, Mohammad Khalil,
-Kathryn A. Maupin, Jason A. Monschke, Teresa Portone, Elliott M. Ridgway,
-Ahmad A. Rushdi, D. Thomas Seidl, J. Adam Stephens, Laura P. Swiler,
-Anh Tran, Dena M. Vigil, Timothy M. Wildey, and Justin G. Winokur;
-with Friedrich Menhorn and Xiaoshu Zeng
+Kathryn A. Maupin, Jason A. Monschke, Teresa Portone, Ernesto E. Prudencio,
+Elliott M. Ridgway, Ahmad A. Rushdi, D. Thomas Seidl, J. Adam Stephens,
+Laura P. Swiler, Anh Tran, Dena M. Vigil, Gregory J. von Winckel,
+Timothy M. Wildey, and Justin G. Winokur; with Friedrich Menhorn and
+Xiaoshu Zeng
 
 \htmlonly
 <b>Main Page Table of Contents</b>
@@ -54,9 +55,9 @@ computational models on high performance computers.
 
 The Developers Manual focuses on documentation of %Dakota design
 principles and class structures; it derives principally from annotated
-source code.  For information on input command syntax, refer to the
-Reference Manual \cite RefMan, and for more details on %Dakota
-features and capabilities, refer to the Users Manual.
+source code.  For information on %Dakota input command syntax or 
+features and capabilities, refer to the Users Manual at
+https://snl-github.io.
 
 \section DevOverview Overview of Dakota
 

@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       NomadOptimizer
-//- Description: Declaration of wrapper class for NOMAD solver
-//- Owner:       Patty Hough
-//- Checked by:
-//- Version: $Id$
 
 
 #include <DakotaOptimizer.hpp>
@@ -67,29 +61,29 @@ class NomadTraits: public TraitsBase
   NomadTraits() { }
 
   /// destructor
-  virtual ~NomadTraits() { }
+  ~NomadTraits() override { }
 
   /// A temporary query used in the refactor
-  virtual bool is_derived() { return true; }
+  bool is_derived() override { return true; }
 
   /// Return the flag indicating whether method supports continuous variables
-  bool supports_continuous_variables() { return true; }
+  bool supports_continuous_variables() override { return true; }
 
   /// Return the flag indicating whether method supports discrete variables
-  bool supports_discrete_variables() { return true; }
+  bool supports_discrete_variables() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear equalities
-  bool supports_nonlinear_equality() { return true; }
+  bool supports_nonlinear_equality() override { return true; }
 
   /// Return the format used for nonlinear equality constraints
-  NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format()
+  NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format() override
     { return NONLINEAR_EQUALITY_FORMAT::TRUE_EQUALITY; }
 
   /// Return the flag indicating whether method supports nonlinear inequalities
-  bool supports_nonlinear_inequality() { return true; }
+  bool supports_nonlinear_inequality() override { return true; }
 
   /// Return the format used for nonlinear inequality constraints
-  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override
     { return NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_UPPER; }
 };
 
@@ -102,22 +96,22 @@ public:
   /** NOMAD Optimizer Constructor
       @param model DAKOTA Model object
   */
-  NomadOptimizer(ProblemDescDB& problem_db, Model &model);
+  NomadOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
 
   /// alternate constructor for Iterator instantiations without DB
-  NomadOptimizer(Model& model);
+  NomadOptimizer(std::shared_ptr<Model> model);
 	       
   /// Destructor
-  ~NomadOptimizer();
+  ~NomadOptimizer() override;
 	       
   //
   //- Heading: Virtual member function redefinitions
   //
 	       
   /// Calls the NOMAD solver
-  void core_run();
+  void core_run() override;
 
-  void initial_point(const RealVector& pt);
+  void initial_point(const RealVector& pt) override;
 
 private:
   
@@ -236,7 +230,7 @@ public:
   Evaluator(const NOMAD::Parameters &p, Model& model);
 	       
   /// Destructor
-  ~Evaluator(void);
+  ~Evaluator(void) override;
 	       
   /// Main Evaluation Method
   /** Method that handles the communication between 
@@ -263,12 +257,12 @@ public:
   */
   bool eval_x (NOMAD::Eval_Point &x,
 	       const NOMAD::Double &h_max,
-	       bool &count_eval) const;
+	       bool &count_eval) const override;
 
   /// multi-point variant of evaluator
   bool eval_x ( std::list<NOMAD::Eval_Point *>& x,
 		const NOMAD::Double& h_max,
-		std::list<bool>& count_eval ) const;
+		std::list<bool>& count_eval ) const override;
 
   /// publishes constraint transformation
   void set_constraint_map (int numNomadNonlinearIneqConstraints,
@@ -303,10 +297,10 @@ public:
 			       nHops(numHops) {};
 
   /// Destructor
-  ~Extended_Poll(void){};
+  ~Extended_Poll(void) override{};
 
   /// Construct the extended poll points.  Called by NOMAD.
-  void construct_extended_points(const NOMAD::Eval_Point &nomad_point);
+  void construct_extended_points(const NOMAD::Eval_Point &nomad_point) override;
 
   /// Recursive helper function to construct the multi-hop neighbors
   /// derived from adjacency matrices and returned to

@@ -4,7 +4,7 @@ Description::
 An optional ``top_method_pointer`` specification may be used to point
 to a particular method specification that will lead the Dakota
 analysis. The associated string must be a method identifier specified
-via :ref:`method-id_method<method-id_method>`. If ``top_method_pointer`` is not used, then
+via :dakkw:`method-id_method`. If ``top_method_pointer`` is not used, then
 it will be inferred as decribed below (no ``top_method_pointer`` within
 an environment specification is treated the same as no environment
 specification).
@@ -12,20 +12,20 @@ specification).
 *Default Behavior*
 
 The ``top_method_pointer`` keyword is typically used in Dakota studies
-consisting of more than one :ref:`method<method>` block to clearly indicate
+consisting of more than one :dakkw:`method` block to clearly indicate
 which is the leading method.  This method provides the starting point
 for the iteration. The corresponding method specification may recurse
 with additional sub-method pointers in the case of "meta-iteration"
-(see :ref:`method<method>`) or may specify a single method without
+(see :dakkw:`method`) or may specify a single method without
 recursion. Either case will ultimately result in identification of one
 or more model specifications using ``model_pointer``, which again may
-or may not involve further recursion (see :ref:`model-nested<model-nested>` and
-:ref:`model-surrogate<model-surrogate>` for recursion cases). Each of the model specifications
+or may not involve further recursion (see :dakkw:`model-nested` and
+:dakkw:`model-surrogate` for recursion cases). Each of the model specifications
 identify the variables and responses specifications (using
-:ref:`model-variables_pointer<model-variables_pointer>` and :ref:`model-responses_pointer<model-responses_pointer>`) that are
+:dakkw:`model-variables_pointer` and :dakkw:`model-responses_pointer`) that are
 used to build the model, and depending on the type of model, may also
 identify an interface specification (for example, using
-:ref:`model-single-interface_pointer<model-single-interface_pointer>`). If one of these specifications does
+:dakkw:`model-single-interface_pointer`). If one of these specifications does
 not provide an optional pointer, then that component will be
 constructed using the last specification parsed.
 

@@ -1,18 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        DirectApplicInterface
-//- Description:  Derived interface class managing cases where analysis code
-//-               simulators are linked into the code and may be invoked
-//-               directly. This manages parts common to all direct simulators.
-//- Owner:        Mike Eldred, Brian Adams
-//- Version: $Id: DirectApplicInterface.hpp 7024 2010-10-16 01:24:42Z mseldre $
 
 #ifndef DIRECT_APPLIC_INTERFACE_H
 #define DIRECT_APPLIC_INTERFACE_H
@@ -85,25 +78,25 @@ public:
   //
 
   DirectApplicInterface(const ProblemDescDB& problem_db); ///< constructor
-  ~DirectApplicInterface();                               ///< destructor
+  ~DirectApplicInterface() override;                               ///< destructor
 
   //
   //- Heading: Virtual function redefinitions
   //
 
   void derived_map(const Variables& vars, const ActiveSet& set,
-		   Response& response, int fn_eval_id);
-  void derived_map_asynch(const ParamResponsePair& pair);
+		   Response& response, int fn_eval_id) override;
+  void derived_map_asynch(const ParamResponsePair& pair) override;
 
-  void wait_local_evaluations(PRPQueue& prp_queue);
-  void test_local_evaluations(PRPQueue& prp_queue);
+  void wait_local_evaluations(PRPQueue& prp_queue) override;
+  void test_local_evaluations(PRPQueue& prp_queue) override;
 
-  int  synchronous_local_analysis(int analysis_id);
+  int  synchronous_local_analysis(int analysis_id) override;
 
-  const StringArray& analysis_drivers() const;
+  const StringArray& analysis_drivers() const override;
 
-  void init_communicators_checks(int max_eval_concurrency);
-  void  set_communicators_checks(int max_eval_concurrency);
+  void init_communicators_checks(int max_eval_concurrency) override;
+  void  set_communicators_checks(int max_eval_concurrency) override;
 
   //void clear_bookkeeping(); // clears threadIdMap
 

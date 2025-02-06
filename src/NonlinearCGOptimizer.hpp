@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       NonlinearCGOptimizer
-//- Description: Simple nonlinear conjugate gradient solver w/ line search
-//- Owner:       Brian Adams
-//- Checked by:  
-//- Version: $Id$
 
 #ifndef NONLINEARCGOPTIMIZER_H
 #define NONLINEARCGOPTIMIZER_H
@@ -34,13 +28,13 @@ class NonlinearCGTraits: public TraitsBase
   NonlinearCGTraits() { }
 
   /// destructor
-  virtual ~NonlinearCGTraits() { }
+  ~NonlinearCGTraits() override { }
 
   /// A temporary query used in the refactor
-  virtual bool is_derived() { return true; }
+  bool is_derived() override { return true; }
 
   /// Return the flag indicating whether method supports continuous variables
-  bool supports_continuous_variables() { return true; }
+  bool supports_continuous_variables() override { return true; }
 };
 
 
@@ -64,9 +58,9 @@ public:
   //
 
   /// standard constructor
-  NonlinearCGOptimizer(ProblemDescDB& problem_db, Model& model);
+  NonlinearCGOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor      
-  ~NonlinearCGOptimizer();
+  ~NonlinearCGOptimizer() override;
 
   /// evaluate the objective function given a particular step size
   /// (public for use in boost_ls_eval functor; could use friend)
@@ -78,7 +72,7 @@ protected:
   //- Heading: Virtual member function redefinitions
   //
 
-  void core_run();
+  void core_run() override;
 
 private:
 

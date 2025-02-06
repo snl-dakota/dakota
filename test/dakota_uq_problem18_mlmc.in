@@ -38,9 +38,10 @@ method,
 #	  convergence_tolerance = 5.163541168975952e-06 #s6
 #	  convergence_tolerance = 5.391910901958546e-05 #s7
 #	  convergence_tolerance_type = absolute 	#s4,#s5,#s6,#s7
-	  final_statistics qoi_statistics
-	  final_moments standard			#s0,#s1,#s2,#s4,#s6,#s7
-#	  final_moments central				#s3,#s5
+	  solution_mode online_pilot
+	    final_statistics qoi_statistics
+	    final_moments standard			#s0,#s1,#s2,#s4,#s6,#s7
+#	    final_moments central			#s3,#s5
 	  output debug
 
 model,

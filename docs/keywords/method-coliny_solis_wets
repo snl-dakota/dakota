@@ -6,13 +6,14 @@ continuous parameter spaces. Solis-Wets generates trial points using a
 multivariate normal distribution, and unsuccessful trial points are
 reflected about the current point to find a descent direction.
 
-*See the page :ref:`topic-package_scolib<topic-package_scolib>` for important information
-regarding all SCOLIB methods*
+.. note::
+    See the page :ref:`topic-package_scolib` for important information
+    regarding all SCOLIB methods.
 
 ``coliny_solis_wets`` is inherently serial, no concurrency is used.
 
 These specifications have the same meaning as corresponding
-specifications for :ref:`method-coliny_pattern_search<method-coliny_pattern_search>`. Please see that
+specifications for :dakkw:`method-coliny_pattern_search`. Please see that
 page for specification details.
 
 In particular, ``coliny_solis_wets`` supports dynamic rescaling of the
@@ -24,14 +25,14 @@ prior to contraction of the delta.
 *Expected HDF5 Output*
 
 If Dakota was built with HDF5 support and run with the
-:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+:dakkw:`environment-results_output-hdf5` keyword, this method
 writes the following results to HDF5:
 
 
 - :ref:`hdf5_results-best_params`
-- :ref:`hdf5_results-best_obj_fncs` (when :ref:`responses-objective_functions<responses-objective_functions>`) are specified)
+- :ref:`hdf5_results-best_obj_fncs` (when :dakkw:`responses-objective_functions`) are specified)
 - :ref:`hdf5_results-best_constraints`
-- :ref:`hdf5_results-calibration` (when :ref:`responses-calibration_terms<responses-calibration_terms>` are specified)
+- :ref:`hdf5_results-calibration` (when :dakkw:`responses-calibration_terms` are specified)
 Topics::
 package_scolib, package_coliny
 Examples::

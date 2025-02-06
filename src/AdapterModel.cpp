@@ -1,16 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       AdapterModel
-//- Description: Implementation code for the AdapterModel class
-//- Owner:       Mike Eldred
-//- Checked by:
 
 //#include "dakota_system_defs.hpp"
 #include "AdapterModel.hpp"
@@ -28,7 +23,7 @@ namespace Dakota {
 AdapterModel::
 AdapterModel(void (*resp_map) (const Variables& vars, const ActiveSet& set,
 			       Response& response)):
-  Model(LightWtBaseConstructor()), adapterModelEvalCntr(0),
+  Model(), adapterModelEvalCntr(0),
   respMapping(resp_map)
 {
   modelType = "adapter"; 
@@ -47,8 +42,9 @@ AdapterModel(const Variables& initial_vars, const Constraints& cons,
 	     const Response& resp,
 	     void (*resp_map) (const Variables& vars, const ActiveSet& set,
 			       Response& response)):
-  Model(LightWtBaseConstructor(), initial_vars.shared_data(), true,
-	resp.shared_data(), true, resp.active_set(), SILENT_OUTPUT),
+  Model(initial_vars.view(),
+	initial_vars.shared_data(), true, resp.shared_data(), true,
+	resp.active_set(), SILENT_OUTPUT),
   adapterModelEvalCntr(0), respMapping(resp_map)
 {
   modelType   = "adapter";
@@ -62,7 +58,8 @@ AdapterModel(const Variables& initial_vars, const Constraints& cons,
 
 /*
 bool AdapterModel::
-init_variables(const SizetArray& vars_comps_totals,
+init_variables(const ShortShortPair& recast_vars_view,
+	       const SizetArray& vars_comps_totals,
 	       const BitArray& all_relax_di, const BitArray& all_relax_dr)
 {
   const Variables& sub_model_vars = subModel.current_variables();
@@ -81,15 +78,22 @@ init_variables(const SizetArray& vars_comps_totals,
     ( all_relax_dr.empty() || 
       svd.all_relaxed_discrete_real() == all_relax_dr );
 
+  bool new_vars_view = (recast_vars_view != sm_vars.view());
+
   // check change in character first as mapping may not yet be present...
   if (vars_char_same) {
     // variables are mapped but not resized: deep copy of vars and
     // same svd, since types may change in transformed space
-    currentVariables = sub_model_vars.copy(true); // independent svd
+    if (new_vars_view) { // avoid building + then updating views
+      SharedVariablesData recast_svd(sm_svd.copy(recast_vars_view));
+      currentVariables = sm_vars.copy(recast_svd);
+    }
+    else
+      currentVariables = sub_model_vars.copy(true); // independent svd
   }
   else {
     // variables are resized; need new SVD regardless
-    SharedVariablesData recast_svd(sub_model_vars.view(), vars_comps_totals,
+    SharedVariablesData recast_svd(recast_vars_view, vars_comps_totals,
 				   all_relax_di, all_relax_dr);
     currentVariables = Variables(recast_svd);
   }
@@ -257,228 +261,6 @@ void AdapterModel::initialize_data_from_submodel()
 }
 
 
-void AdapterModel::update_variable_values(const Model& model)
-{
-  currentVariables.all_continuous_variables
-    (model.all_continuous_variables());
-  update_discrete_variable_values(model);
-}
-
-
-void AdapterModel::update_discrete_variable_values(const Model& model)
-{
-  currentVariables.all_discrete_int_variables
-    (model.all_discrete_int_variables());
-  currentVariables.all_discrete_string_variables
-    (model.all_discrete_string_variables());
-  currentVariables.all_discrete_real_variables
-    (model.all_discrete_real_variables());
-}
-
-
-void AdapterModel::update_variable_bounds(const Model& model)
-{
-  userDefinedConstraints.all_continuous_lower_bounds
-    (model.all_continuous_lower_bounds());
-  userDefinedConstraints.all_continuous_upper_bounds
-    (model.all_continuous_upper_bounds());
-  update_discrete_variable_bounds(model);
-}
-
-
-void AdapterModel::update_discrete_variable_bounds(const Model& model)
-{
-  userDefinedConstraints.all_discrete_int_lower_bounds
-    (model.all_discrete_int_lower_bounds());
-  userDefinedConstraints.all_discrete_int_upper_bounds
-    (model.all_discrete_int_upper_bounds());
-  userDefinedConstraints.all_discrete_real_lower_bounds
-    (model.all_discrete_real_lower_bounds());
-  userDefinedConstraints.all_discrete_real_upper_bounds
-    (model.all_discrete_real_upper_bounds());
-}
-
-
-void AdapterModel::update_variable_labels(const Model& model)
-{
-  currentVariables.all_continuous_variable_labels
-    ( model.all_continuous_variable_labels());
-  update_discrete_variable_labels(model);
-}
-
-
-void AdapterModel::update_discrete_variable_labels(const Model& model)
-{
-  currentVariables.all_discrete_int_variable_labels
-    (model.all_discrete_int_variable_labels());
-  currentVariables.all_discrete_string_variable_labels
-    (model.all_discrete_string_variable_labels());
-  currentVariables.all_discrete_real_variable_labels
-    (model.all_discrete_real_variable_labels());
-}
-
-
-void AdapterModel::update_linear_constraints(const Model& model)
-{
-  if (model.num_linear_ineq_constraints()) {
-    userDefinedConstraints.linear_ineq_constraint_coeffs
-      (model.linear_ineq_constraint_coeffs());
-    userDefinedConstraints.linear_ineq_constraint_lower_bounds
-      (model.linear_ineq_constraint_lower_bounds());
-    userDefinedConstraints.linear_ineq_constraint_upper_bounds
-      (model.linear_ineq_constraint_upper_bounds());
-  }
-  if (model.num_linear_eq_constraints()) {
-    userDefinedConstraints.linear_eq_constraint_coeffs
-      (model.linear_eq_constraint_coeffs());
-    userDefinedConstraints.linear_eq_constraint_targets
-      (model.linear_eq_constraint_targets());
-  }
-}
-
-
-void AdapterModel::
-update_variables_active_complement_from_model(Model& model)
-{
-  size_t i, cv_begin = currentVariables.cv_start(),
-    num_cv  = currentVariables.cv(), cv_end = cv_begin + num_cv,
-    num_acv = currentVariables.acv();
-  const RealVector& acv = model.all_continuous_variables();
-  const RealVector& acv_l_bnds = model.all_continuous_lower_bounds();
-  const RealVector& acv_u_bnds = model.all_continuous_upper_bounds();
-  StringMultiArrayConstView acv_labels
-    = model.all_continuous_variable_labels();
-  for (i=0; i<cv_begin; ++i) {
-    currentVariables.all_continuous_variable(acv[i], i);
-    userDefinedConstraints.all_continuous_lower_bound(acv_l_bnds[i], i);
-    userDefinedConstraints.all_continuous_upper_bound(acv_u_bnds[i], i);
-    currentVariables.all_continuous_variable_label(acv_labels[i], i);
-  }
-  for (i=cv_end; i<num_acv; ++i) {
-    currentVariables.all_continuous_variable(acv[i], i);
-    userDefinedConstraints.all_continuous_lower_bound(acv_l_bnds[i], i);
-    userDefinedConstraints.all_continuous_upper_bound(acv_u_bnds[i], i);
-    currentVariables.all_continuous_variable_label(acv_labels[i], i);
-  }
-
-  size_t div_begin = currentVariables.div_start(),
-    num_div  = currentVariables.div(), div_end = div_begin + num_div,
-    num_adiv = currentVariables.adiv();
-  const IntVector& adiv = model.all_discrete_int_variables();
-  const IntVector& adiv_l_bnds = model.all_discrete_int_lower_bounds();
-  const IntVector& adiv_u_bnds = model.all_discrete_int_upper_bounds();
-  StringMultiArrayConstView adiv_labels
-    = model.all_discrete_int_variable_labels();
-  for (i=0; i<div_begin; ++i) {
-    currentVariables.all_discrete_int_variable(adiv[i], i);
-    userDefinedConstraints.all_discrete_int_lower_bound(adiv_l_bnds[i], i);
-    userDefinedConstraints.all_discrete_int_upper_bound(adiv_u_bnds[i], i);
-    currentVariables.all_discrete_int_variable_label(adiv_labels[i], i);
-  }
-  for (i=div_end; i<num_adiv; ++i) {
-    currentVariables.all_discrete_int_variable(adiv[i], i);
-    userDefinedConstraints.all_discrete_int_lower_bound(adiv_l_bnds[i], i);
-    userDefinedConstraints.all_discrete_int_upper_bound(adiv_u_bnds[i], i);
-    currentVariables.all_discrete_int_variable_label(adiv_labels[i], i);
-  }
-
-  size_t dsv_begin = currentVariables.dsv_start(),
-    num_dsv  = currentVariables.dsv(), dsv_end = dsv_begin + num_dsv,
-    num_adsv = currentVariables.adsv();
-  StringMultiArrayConstView adsv = model.all_discrete_string_variables();
-  StringMultiArrayConstView adsv_labels
-    = model.all_discrete_string_variable_labels();
-  for (i=0; i<dsv_begin; ++i) {
-    currentVariables.all_discrete_string_variable(adsv[i], i);
-    currentVariables.all_discrete_string_variable_label(adsv_labels[i], i);
-  }
-  for (i=dsv_end; i<num_adsv; ++i) {
-    currentVariables.all_discrete_string_variable(adsv[i], i);
-    currentVariables.all_discrete_string_variable_label(adsv_labels[i], i);
-  }
-
-  size_t drv_begin = currentVariables.drv_start(),
-    num_drv  = currentVariables.drv(), drv_end = drv_begin + num_drv,
-    num_adrv = currentVariables.adrv();
-  const RealVector& adrv = model.all_discrete_real_variables();
-  const RealVector& adrv_l_bnds = model.all_discrete_real_lower_bounds();
-  const RealVector& adrv_u_bnds = model.all_discrete_real_upper_bounds();
-  StringMultiArrayConstView adrv_labels
-    = model.all_discrete_real_variable_labels();
-  for (i=0; i<drv_begin; ++i) {
-    currentVariables.all_discrete_real_variable(adrv[i], i);
-    userDefinedConstraints.all_discrete_real_lower_bound(adrv_l_bnds[i], i);
-    userDefinedConstraints.all_discrete_real_upper_bound(adrv_u_bnds[i], i);
-    currentVariables.all_discrete_real_variable_label(adrv_labels[i], i);
-  }
-  for (i=drv_end; i<num_adrv; ++i) {
-    currentVariables.all_discrete_real_variable(adrv[i], i);
-    userDefinedConstraints.all_discrete_real_lower_bound(adrv_l_bnds[i], i);
-    userDefinedConstraints.all_discrete_real_upper_bound(adrv_u_bnds[i], i);
-    currentVariables.all_discrete_real_variable_label(adrv_labels[i], i);
-  }
-}
-
-
-void AdapterModel::update_response_from_model(Model& model)
-{
-  if (primaryRespMapping) {
-    // response mappings are in opposite direction from variables
-    // mappings, so primaryRespMapping could potentially be used to
-    // update currentResponse from model primary fns
-  }
-  else {
-    // primary response function weights
-    primaryRespFnWts = model.primary_response_fn_weights();
-    // primary response function sense (min or max)
-    primaryRespFnSense = model.primary_response_fn_sense();
-
-    // primary response function labels
-    const StringArray& sm_resp_labels = model.response_labels();
-    size_t i, num_primary = numFns 
-      - userDefinedConstraints.num_nonlinear_eq_constraints()
-      - userDefinedConstraints.num_nonlinear_ineq_constraints();
-    for (i=0; i<num_primary; i++)
-      currentResponse.shared_data().function_label(sm_resp_labels[i], i);
-  }
-
-  if (secondaryRespMapping) {
-    // response mappings are in opposite direction from variables
-    // mappings, so secondaryRespMapping could potentially be used to
-    // update currentResponse from model secondary fns
-  }
-  else {
-    update_secondary_response(model);
-  }
-}
-
-
-void AdapterModel::update_secondary_response(const Model& model)
-{
-  // secondary response function labels
-  const StringArray& sm_resp_labels = model.response_labels();
-  size_t i,
-    num_nln_con = userDefinedConstraints.num_nonlinear_eq_constraints() +
-    userDefinedConstraints.num_nonlinear_ineq_constraints(),
-    num_primary    = numFns - num_nln_con,
-    num_sm_primary = model.response_size() - num_nln_con;
-  for (i=0; i<num_nln_con; i++)
-    currentResponse.shared_data().function_label
-      (sm_resp_labels[num_sm_primary+i], num_primary+i);
-
-  // nonlinear constraint bounds/targets
-  if (model.num_nonlinear_ineq_constraints()) {
-    userDefinedConstraints.nonlinear_ineq_constraint_lower_bounds
-      (model.nonlinear_ineq_constraint_lower_bounds());
-    userDefinedConstraints.nonlinear_ineq_constraint_upper_bounds
-      (model.nonlinear_ineq_constraint_upper_bounds());
-  }
-  if (model.num_nonlinear_eq_constraints())
-    userDefinedConstraints.nonlinear_eq_constraint_targets
-      (model.nonlinear_eq_constraint_targets());
-}
-
-
 void AdapterModel::assign_instance()
 { } // no static instance pointer to assign at base (default is no-op)
 
@@ -493,11 +275,13 @@ ActiveSet AdapterModel::default_active_set()
   bool has_deriv_vars = set.derivative_vector().size() != 0;
   ShortArray asv(numFns, 1);
   if(has_deriv_vars) {
-    if(gradientType != "none")// && (gradientType == "analytic" || supportsEstimDerivs))
+    if (gradientType != "none")
+        // && (gradientType == "analytic" || supportsEstimDerivs))
         for(auto &a : asv)
           a |=  2;
 
-    if(hessianType != "none") // && (hessianType == "analytic" || supportsEstimDerivs))
+    if (hessianType != "none")
+        // && (hessianType == "analytic" || supportsEstimDerivs))
         for(auto &a : asv)
           a |=  4;
   }

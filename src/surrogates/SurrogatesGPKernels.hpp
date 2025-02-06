@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -102,7 +102,7 @@ class SquaredExponentialKernel : public Kernel {
  public:
   SquaredExponentialKernel();
 
-  ~SquaredExponentialKernel();
+  ~SquaredExponentialKernel() override;
 
   void compute_gram(const std::vector<MatrixXd>& dists2,
                     const VectorXd& theta_values, MatrixXd& gram) override;
@@ -127,7 +127,7 @@ class Matern32Kernel : public Kernel {
  public:
   Matern32Kernel();
 
-  ~Matern32Kernel();
+  ~Matern32Kernel() override;
 
   void compute_gram(const std::vector<MatrixXd>& dists2,
                     const VectorXd& theta_values, MatrixXd& gram) override;
@@ -155,7 +155,7 @@ class Matern52Kernel : public Kernel {
  public:
   Matern52Kernel();
 
-  ~Matern52Kernel();
+  ~Matern52Kernel() override;
 
   void compute_gram(const std::vector<MatrixXd>& dists2,
                     const VectorXd& theta_values, MatrixXd& gram) override;

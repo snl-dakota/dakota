@@ -6,11 +6,11 @@ Histogram uncertain variables are typically used to model a set of
 empirical data.  When the variables take on only discrete values or
 categories, a discrete, or point histogram is used to describe their
 probability mass function (one could think of this as a
-:ref:`variables-histogram_bin_uncertain<variables-histogram_bin_uncertain>` variable with "bins" of zero width).
+:dakkw:`variables-histogram_bin_uncertain` variable with "bins" of zero width).
 Dakota supports integer-, string-, and real-valued point histograms.
 
-Point histograms are similar to :ref:`variables-discrete_design_set<variables-discrete_design_set>` and
-:ref:`variables-discrete_state_set<variables-discrete_state_set>`, but as they are uncertain
+Point histograms are similar to :dakkw:`variables-discrete_design_set` and
+:dakkw:`variables-discrete_state_set`, but as they are uncertain
 variables, include the relative probabilities of observing the
 different values within the set.
 

@@ -1,0 +1,16 @@
+Blurb::
+Number of stages
+
+Description::
+Used by both the DR and DRAM MCMC algorithms.
+
+Topics::
+bayesian_calibration
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        global_defs
-//- Description:  Encapsulates global objects and functions.
-//-
-//- Owner:        Mike Eldred
-//- Version: $Id: global_defs.h 6492 2009-12-19 00:04:28Z briadam $
 
 #ifndef DAKOTA_GLOBAL_DEFS_H
 #define DAKOTA_GLOBAL_DEFS_H
@@ -55,7 +49,8 @@ extern double HALF_LOG_2PI;
 /// These need to be in range [-63, -1], so exit code (256+enum) is in
 /// [193, 255].  See RATIONALE in dakota_global_defs.cpp.
 enum {
-  VARS_ERROR      = -10, // error with Variables
+  VARS_ERROR      = -11, // error with Variables
+  CONS_ERROR      = -10, // error with Constraints
   RESP_ERROR      = -9,  // error with Response
   APPROX_ERROR    = -8,  // error with Approximation
   METHOD_ERROR    = -7,  // error with Iterator/MetaIterator
@@ -148,6 +143,12 @@ enum { RESULTS_OUTPUT_TEXT = 1, RESULTS_OUTPUT_HDF5 = 2};
 
 /// options for results file format
 enum {FLEXIBLE_RESULTS, LABELED_RESULTS};
+
+/// Parameters file format
+enum { PARAMETERS_FILE_STANDARD = 0, PARAMETERS_FILE_APREPRO, PARAMETERS_FILE_JSON };
+
+/// Results file format
+enum { RESULTS_FILE_STANDARD = 0, RESULTS_FILE_JSON };
 
 /// define special values for surrogateExportFormats
 enum { NO_MODEL_FORMAT=0, TEXT_ARCHIVE=1, BINARY_ARCHIVE=2, ALGEBRAIC_FILE=4,

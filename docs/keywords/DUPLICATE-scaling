@@ -14,9 +14,9 @@ using scaling does not require rewriting the interface to the
 simulation code.
 
 Scaling also requires the specification of additional keywords
-``*scale_types`` and/or ``*scales`` in the :ref:`variables<variables>` and
-:ref:`responses<responses>` blocks.  When the ``scaling`` keyword is omitted from
-:ref:`method<method>`, these scaling type and value specifications are ignored in the
+``*scale_types`` and/or ``*scales`` in the :dakkw:`variables` and
+:dakkw:`responses` blocks.  When the ``scaling`` keyword is omitted from
+:dakkw:`method`, these scaling type and value specifications are ignored in the
 variables and responses sections.
 
 This page describes the usage of all scaling related keywords.  The
@@ -28,7 +28,7 @@ additional keywords come in pairs, one pair for each set of quantities
 
 The pair of keywords both take argument(s), and the length of the
 arguments can be either be one or equal to the number of quantities to
-be scaled (see details in :ref:`responses<responses>` for lengths when field
+be scaled (see details in :dakkw:`responses` for lengths when field
 responses are active).  If one argument is given, it will apply to all
 quantities in the set. See the examples below.
 

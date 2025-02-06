@@ -1,18 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       SurrBasedMinimizer
-//- Description: Base class for local and global surrogate-based optimization
-//-              and nonlinear least squares.
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version: $Id: SurrBasedMinimizer.hpp 4461 2007-08-28 17:40:08Z mseldre $
 
 #ifndef SURR_BASED_MINIMIZER_H
 #define SURR_BASED_MINIMIZER_H
@@ -39,23 +32,23 @@ protected:
   //
 
   /// constructor
-  SurrBasedMinimizer(ProblemDescDB& problem_db, Model& model,
+  SurrBasedMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model,
 		     std::shared_ptr<TraitsBase> traits);
   /// alternate constructor for instantiations "on the fly"
-  SurrBasedMinimizer(Model& model, size_t max_iter, size_t max_eval,
+  SurrBasedMinimizer(std::shared_ptr<Model> model, size_t max_iter, size_t max_eval,
 		     Real conv_tol, std::shared_ptr<TraitsBase> traits);
   /// destructor
-  ~SurrBasedMinimizer();
+  ~SurrBasedMinimizer() override;
     
   //
   //- Heading: Virtual function redefinitions
   //
 
-  void derived_init_communicators(ParLevLIter pl_iter);
-  void derived_set_communicators(ParLevLIter pl_iter);
-  void derived_free_communicators(ParLevLIter pl_iter);
+  void derived_init_communicators(ParLevLIter pl_iter) override;
+  void derived_set_communicators(ParLevLIter pl_iter) override;
+  void derived_free_communicators(ParLevLIter pl_iter) override;
 
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
   //
   //- Heading: Utility member functions

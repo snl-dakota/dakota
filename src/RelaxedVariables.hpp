@@ -1,24 +1,17 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       RelaxedVariables
-//- Description: Container class of variables employing relaxation of
-//-              discrete variables.
-//- Owner:       Mike Eldred
-//- Version: $Id: RelaxedVariables.hpp 7024 2010-10-16 01:24:42Z mseldre $
 
 #ifndef RELAXED_VARIABLES_H
 #define RELAXED_VARIABLES_H
 
 #include "DakotaVariables.hpp"
 #include "DataVariables.hpp"
-
 
 namespace Dakota {
 
@@ -42,12 +35,11 @@ public:
   //
 
   /// standard constructor
-  RelaxedVariables(const ProblemDescDB& problem_db,
-		   const std::pair<short,short>& view);
+  RelaxedVariables(const ProblemDescDB& problem_db, const ShortShortPair& view);
   /// lightweight constructor
   RelaxedVariables(const SharedVariablesData& svd);
   /// destructor
-  ~RelaxedVariables();
+  ~RelaxedVariables() override;
 
 protected:
 
@@ -55,20 +47,21 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void read(std::istream& s);
-  void read_tabular(std::istream& s, unsigned short vars_part = ALL_VARS);
+  void read(std::istream& s) override;
+  void read_tabular(std::istream& s, unsigned short vars_part = ALL_VARS) override;
 
-  void write(std::ostream& s, unsigned short vars_part = ALL_VARS) const;
-  void write_aprepro(std::ostream& s) const;
+  void write(std::ostream& s, unsigned short vars_part = ALL_VARS) const override;
+  void write_aprepro(std::ostream& s) const override;
+  void write_json(json& s) const override;
   void write_tabular(std::ostream& s,
-		     unsigned short vars_part = ALL_VARS) const;
+		     unsigned short vars_part = ALL_VARS) const override;
   void write_tabular_partial(std::ostream& s, size_t start_index,
-			     size_t num_items) const;
+			     size_t num_items) const override;
 
   void write_tabular_labels(std::ostream& s,
-                            unsigned short vars_part = ALL_VARS) const;
+                            unsigned short vars_part = ALL_VARS) const override;
   void write_tabular_partial_labels(std::ostream& s, size_t start_index,
-				    size_t num_items) const;
+				    size_t num_items) const override;
 
   /// Implementation of reading various formats using the specified
   /// read handler, accounting for reordering due to relaxation
@@ -77,13 +70,13 @@ protected:
 		 unsigned short vars_part);
   /// Implementation of writing various formats using the specified
   /// write handler, accounting for reordering due to relaxation
-  template<typename Writer>
-  void write_core(std::ostream& s, Writer write_handler,
+  template<typename Writer, typename Stream>
+  void write_core(Stream& s, Writer write_handler,
                   unsigned short vars_part) const;
   /// Implementation for partial writing in various formats using the
   /// specified write handler
-  template<typename Writer>
-  bool write_partial_core(std::ostream& s, Writer write_handler,
+  template<typename Writer, typename Stream>
+  bool write_partial_core(Stream& s, Writer write_handler,
 			  size_t start_index, size_t end_index,
 			  size_t& acv_offset, size_t& adiv_offset,
 			  size_t& adsv_offset, size_t& adrv_offset,

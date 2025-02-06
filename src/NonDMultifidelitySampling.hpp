@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDACVSampling
-//- Description: Class for approximate control variate sampling
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version:
 
 #ifndef NOND_MULTIFIDELITY_SAMPLING_H
 #define NOND_MULTIFIDELITY_SAMPLING_H
@@ -38,15 +32,15 @@ public:
   //
 
   /// standard constructor
-  NonDMultifidelitySampling(ProblemDescDB& problem_db, Model& model);
+  NonDMultifidelitySampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
-  ~NonDMultifidelitySampling();
+  ~NonDMultifidelitySampling() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  //bool resize();
+  //bool resize() override;
 
 protected:
 
@@ -54,58 +48,48 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  //void pre_run();
-  void core_run();
-  //void post_run(std::ostream& s);
-  //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
-  void print_variance_reduction(std::ostream& s);
+  //void pre_run() override;
+  void core_run() override;
+  //void post_run(std::ostream& s) override;
+  //void print_results(std::ostream& s,
+  //                   short results_state = FINAL_RESULTS) override;
+
+  const MFSolutionData& final_solution_data() const override;
+
+  void print_variance_reduction(std::ostream& s) const override;
+
+  void estimator_variance_ratios(const RealVector& cd_vars,
+				 RealVector& estvar_ratios) override;
 
   //
   //- Heading: member functions
   //
 
-  void multifidelity_mc();
+  void multifidelity_mc_online_pilot();
   void multifidelity_mc_offline_pilot();
   void multifidelity_mc_pilot_projection();
 
-  void mfmc_eval_ratios(const RealMatrix& var_L, const RealMatrix& rho2_LH,
-			const RealVector& cost,  SizetArray& approx_sequence,
-			RealMatrix& eval_ratios, RealVector& hf_targets);
-                      //bool for_warm_start = false);
-  void mfmc_numerical_solution(const RealMatrix& var_L,
-			       const RealMatrix& rho2_LH,
-			       const RealVector& cost,
-			       SizetArray& approx_sequence,
-			       RealMatrix& eval_ratios, Real& avg_hf_target);
+  void compute_allocations(const RealMatrix& rho2_LH, const RealVector& var_H,
+			   const SizetArray& N_H, const RealVector& cost,
+			   MFSolutionData& soln);
+  void process_analytic_allocations(const RealMatrix& rho2_LH,
+				    const RealVector& var_H,
+				    const SizetArray& N_H,
+				    const RealVector& cost,
+				    RealVector& avg_eval_ratios,
+				    MFSolutionData& soln);
+  void mfmc_numerical_solution(const RealMatrix& rho2_LH,
+			       const RealVector& cost, MFSolutionData& soln);
 
-  void approx_increments(IntRealMatrixMap& sum_L_baseline,
-			 IntRealVectorMap& sum_H,  IntRealMatrixMap& sum_LL,
-			 IntRealMatrixMap& sum_LH, const SizetArray& N_H_actual,
-			 size_t N_H_alloc, const SizetArray& approx_sequence,
-			 const RealMatrix& eval_ratios,
-			 const RealVector& hf_targets);
-  bool mfmc_approx_increment(const RealMatrix& eval_ratios,
-			     const Sizet2DArray& N_L_actual_refined,
-			     SizetArray& N_L_alloc_refined,
-			     const RealVector& hf_targets, size_t iter,
-			     const SizetArray& approx_sequence,
-			     size_t start, size_t end);
+  void emerge_from_pilot(const SizetArray& N_H, RealVector& avg_eval_ratios,
+			 Real& avg_hf_target, Real offline_N_lwr = 1.);
 
-  void update_hf_targets(const RealMatrix& eval_ratios, const RealVector& cost,
-			 RealVector& hf_targets);
-  void update_hf_targets(const RealMatrix& rho2_LH,
-			 const SizetArray& approx_sequence,
-			 const RealMatrix& eval_ratios, const RealVector& var_H,
-			 const RealVector& estvar_iter0,
-			 RealVector& estvar_ratios, RealVector& hf_targets);
-  //void update_hf_targets(const SizetArray& N_H, RealVector& hf_targets);
+  void update_model_groups();
+  void update_model_groups(const SizetArray& approx_sequence);
 
   void mfmc_estimator_variance(const RealMatrix& rho2_LH,
 			       const RealVector& var_H, const SizetArray& N_H,
-			       const RealVector& hf_targets,
-			       const SizetArray& approx_sequence,
-			       const RealMatrix& eval_ratios,
-			       RealVector& estvar_ratios, Real& avg_est_var);
+			       MFSolutionData& soln);
 
 private:
 
@@ -117,6 +101,29 @@ private:
 			  IntRealVectorMap& sum_H,
 			  IntRealMatrixMap& sum_LL,
 			  IntRealMatrixMap& sum_LH, RealVector& sum_HH);
+
+  void mfmc_estvar_ratios(const RealMatrix& rho2_LH,
+			  const RealVector& avg_eval_ratios,
+			  SizetArray& approx_sequence,
+			  RealVector& estvar_ratios);
+  void mfmc_estvar_ratios(const RealMatrix& rho2_LH,
+			  const RealVector& avg_eval_ratios,
+			  SizetArray& approx_sequence, MFSolutionData& soln);
+
+  void approx_increments(IntRealMatrixMap& sum_L_baseline,
+			 const SizetArray& N_H_actual, size_t N_H_alloc,
+			 IntRealMatrixMap& sum_L_shared,
+			 Sizet2DArray& N_L_actual_shared,
+			 IntRealMatrixMap& sum_L_refined,
+			 Sizet2DArray& N_L_actual_refined,
+			 SizetArray& N_L_alloc_refined,
+			 const MFSolutionData& soln);
+
+  void compute_mf_controls(const IntRealMatrixMap& sum_L_covar,
+			   const IntRealVectorMap& sum_H_covar,
+			   const IntRealMatrixMap& sum_LL_covar,
+			   const IntRealMatrixMap& sum_LH_covar,
+			   const SizetArray& N_covar, RealVector2DArray& beta);
 
   // shared_increment() cases:
   void accumulate_mf_sums(IntRealMatrixMap& sum_L_baseline,
@@ -142,6 +149,7 @@ private:
 			  IntRealMatrixMap& sum_L_refined,
 			  Sizet2DArray& num_L_shared,
 			  Sizet2DArray& num_L_refined,
+			  const IntResponseMap& resp_map,
 			  const SizetArray& approx_sequence,
 			  size_t sequence_start, size_t sequence_end);
 
@@ -157,43 +165,51 @@ private:
   void matrix_to_diagonal_array(const RealMatrix& var_L,
 				RealSymMatrixArray& cov_LL);
 
-  void mf_raw_moments(IntRealMatrixMap& sum_L_baseline,
-		      IntRealMatrixMap& sum_L_shared,
-		      IntRealMatrixMap& sum_L_refined,
-		      IntRealVectorMap& sum_H,  IntRealMatrixMap& sum_LL,
-		      IntRealMatrixMap& sum_LH, //const RealMatrix& rho2_LH,
-		      const Sizet2DArray& num_L_shared,
-		      const Sizet2DArray& num_L_refined,
-		      const SizetArray& num_H, RealMatrix& H_raw_mom);
-
-  //void compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
-  //			  size_t num_L, size_t num_H, size_t num_LH,Real& beta);
-
-  void update_projected_lf_samples(const RealVector& hf_targets,
-				   const RealMatrix& eval_ratios,
+  void update_projected_lf_samples(const MFSolutionData& soln,
 				   const SizetArray& N_H_actual,
 				   size_t& N_H_alloc,
 				   //SizetArray& delta_N_L_actual,
 				   Real& delta_equiv_hf);
-  void update_projected_samples(const RealVector& hf_targets,
-				const RealMatrix& eval_ratios,
+  void update_projected_samples(const MFSolutionData& soln,
 				const SizetArray& N_H_actual,
 				size_t& N_H_alloc, size_t& delta_N_H_actual,
 				//SizetArray& delta_N_L_actual,
 				Real& delta_equiv_hf);
+
+  void print_analytic_solution(const RealMatrix& rho2_LH,
+			       const RealVector& avg_eval_ratios) const;
+
   //
   //- Heading: Data
   //
 
-  /// ratio of MFMC to MC estimator variance for the same HF samples,
-  /// also known as (1 - R^2)
-  RealVector estVarRatios;
+  /// MFMC uses all approximations within numApprox; this array supports this
+  /// case for functions that are generalized to support approx subsets
+  UShortArray approxSet;
+
+  /// tracks approximation ordering based on ascending rho2_LH;
+  /// used to determine which analytic MFMC option is used.
+  SizetArray corrApproxSequence;
+  /// tracks approximation ordering based on descending evaluation ratios,
+  /// as required for estimator variance calculations and nested sampling.
+  SizetArray ratioApproxSequence;
+
+  /// squared Pearson correlations among approximations and truth
+  RealMatrix rho2LH;
 
   /// controls use of numerical solve option: either a fallback in case of
   /// model misordering (default = NUMERICAL_FALLBACK) or override for
   /// robustness, e.g., to pilot over-estimation (NUMERICAL_OVERRIDE)
   unsigned short numericalSolveMode;
+
+  /// final solution data for MFMC (default DAG = 1,2,...,numApprox)
+  MFSolutionData mfmcSolnData;
 };
+
+
+inline const MFSolutionData& NonDMultifidelitySampling::
+final_solution_data() const
+{ return mfmcSolnData; }
 
 
 inline void NonDMultifidelitySampling::
@@ -207,6 +223,16 @@ initialize_mf_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
     mat_pr.first = i; // moment number
     sum_LL.insert(mat_pr).first->second.shape(numFunctions, numApprox);
   }
+}
+
+
+inline void NonDMultifidelitySampling::
+mfmc_estvar_ratios(const RealMatrix& rho2_LH, const RealVector& avg_eval_ratios,
+		   SizetArray& approx_sequence, MFSolutionData& soln)
+{
+  RealVector estvar_ratios;
+  mfmc_estvar_ratios(rho2_LH, avg_eval_ratios, approx_sequence, estvar_ratios);
+  soln.estimator_variance_ratios(estvar_ratios);
 }
 
 
@@ -245,42 +271,29 @@ matrix_to_diagonal_array(const RealMatrix& var_L, RealSymMatrixArray& cov_LL)
 }
 
 
-//inline void NonDMultifidelitySampling::
-//update_hf_targets(const SizetArray& N_H, RealVector& hf_targets)
-//{
-//  size_t i, len = N_H.size();
-//  if (hf_targets.length() != len) hf_targets.sizeUninitialized(len);
-//  for (i=0; i<len; ++i)
-//    hf_targets[i] = (Real)N_H[i];
-//}
-
-
-/* Not active.  See notes in NonDNonHierarchSampling::compute_correlation()
 inline void NonDMultifidelitySampling::
-compute_mf_control(Real sum_L, Real sum_H, Real sum_LL, Real sum_LH,
-		   size_t num_L, size_t num_H, size_t num_LH, Real& beta)
+print_analytic_solution(const RealMatrix& rho2_LH,
+			const RealVector& avg_eval_ratios) const
 {
-  // unbiased mean estimator X-bar = 1/N * sum
-  // unbiased sample variance estimator = 1/(N-1) sum[(X_i - X-bar)^2]
+  if (outputLevel < NORMAL_OUTPUT) return;
 
-  // beta^* = rho_LH sigma_H / sigma_L (same expression as two model case)
-  //        = cov_LH / var_L  (since rho_LH = cov_LH / sigma_H / sigma_L)
-
-  Real mu_L = sum_L / num_L;
-  if (num_L != num_LH || num_H != num_LH) {
-    Real mu_H = sum_H / num_H,
-      var_L  = (sum_LL - mu_L * sum_L) / (Real)(num_L - 1), // bessel corr for L
-    //var_H  = (sum_HH - mu_H * sum_H) / (Real)(num_H - 1), // bessel corr for H
-      cov_LH = (sum_LH - mu_L * mu_H * num_LH) / (Real)(num_LH - 1);// bessel LH
-    beta = cov_LH / var_L;
-  }
-  else // simplify: cancel shared terms
-    beta = (sum_LH - mu_L * sum_H) / (sum_LL - mu_L * sum_L);
-
-  //Cout << "compute_mf_control: num_L = " << num_L << " num_H = " << num_H
-  //     << " num_LH = " << num_LH << " beta = " << beta;
+  Cout << "MFMC analytic solution:\n";
+  bool ordered = corrApproxSequence.empty();  size_t i, qoi, approx;
+  for (qoi=0; qoi<numFunctions; ++qoi)
+    for (i=0; i<numApprox; ++i) {
+      approx = (ordered) ? i : corrApproxSequence[i];
+      Cout << "  QoI " << qoi+1 << " Approx " << approx+1
+	//<< ": cost_ratio = " << cost_H / cost_L
+	   << ": rho2_LH = "    <<     rho2_LH(qoi,approx)
+	   << " eval_ratio = "  << avg_eval_ratios[approx] << '\n';
+    }
+  Cout << '\n';
 }
-*/
+
+
+inline void NonDMultifidelitySampling::
+print_variance_reduction(std::ostream& s) const
+{ print_estimator_performance(s, mfmcSolnData); }
 
 } // namespace Dakota
 

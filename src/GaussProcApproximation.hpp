@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 GaussProcApproximation
-//- Description: Class implementation of a Gaussian Process Approximation
-//- Owner:       Laura Swiler
-//- Checked by:
-//- Version:
 
 #ifndef GAUSS_PROC_APPROXIMATION_H
 #define GAUSS_PROC_APPROXIMATION_H
@@ -60,7 +54,7 @@ public:
 			 const SharedApproxData& shared_data,
                          const String& approx_label);
   /// destructor
-  ~GaussProcApproximation();
+  ~GaussProcApproximation() override;
 
 protected:
 
@@ -68,22 +62,22 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  int min_coefficients() const;
+  int min_coefficients() const override;
 
   //int num_constraints() const;
 
   /// find the covariance parameters governing the Gaussian process response
-  void build();
+  void build() override;
 
   /// retrieve the function value for a given parameter set
-  Real value(const Variables& vars);
+  Real value(const Variables& vars) override;
 
   /// retrieve the function gradient at the predicted value 
   /// for a given parameter set
-  const RealVector& gradient(const Variables& vars);
+  const RealVector& gradient(const Variables& vars) override;
 
   /// retrieve the variance of the predicted value for a given parameter set
-  Real prediction_variance(const Variables& vars);
+  Real prediction_variance(const Variables& vars) override;
 
 private: 
 

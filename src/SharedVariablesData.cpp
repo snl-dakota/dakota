@@ -1,15 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        SharedVariablesData
-//- Description:  Class implementation
-//- Owner:        Mike Eldred
 
 #include "SharedVariablesData.hpp"
 #include "ProblemDescDB.hpp"
@@ -39,7 +35,7 @@ namespace Dakota {
     problems in ~Variables). */
 SharedVariablesDataRep::
 SharedVariablesDataRep(const ProblemDescDB& problem_db,
-		       const std::pair<short,short>& view):
+		       const ShortShortPair& view):
   variablesId(problem_db.get_string("variables.id")),
   variablesCompsTotals(NUM_VC_TOTALS, 0), variablesView(view), cvStart(0), 
   divStart(0), dsvStart(0), drvStart(0), icvStart(0), idivStart(0),
@@ -56,7 +52,7 @@ SharedVariablesDataRep(const ProblemDescDB& problem_db,
 
 
 SharedVariablesDataRep::
-SharedVariablesDataRep(const std::pair<short,short>& view,
+SharedVariablesDataRep(const ShortShortPair& view,
 		       const SizetArray& vars_comps_totals,
 		       const BitArray& all_relax_di,
 		       const BitArray& all_relax_dr):
@@ -73,7 +69,7 @@ SharedVariablesDataRep(const std::pair<short,short>& view,
 
 
 SharedVariablesDataRep::
-SharedVariablesDataRep(const std::pair<short,short>& view,
+SharedVariablesDataRep(const ShortShortPair& view,
 		       const std::map<unsigned short, size_t>& vars_comps,
 		       const BitArray& all_relax_di,
 		       const BitArray& all_relax_dr):
@@ -883,7 +879,7 @@ void SharedVariablesDataRep::initialize_all_ids()
   if (relax) {
     // include relaxed discrete int/real design/uncertain/state in continuous
     num_acv += allRelaxedDiscreteInt.count() + allRelaxedDiscreteReal.count();
-    // omit relaxed discrete int/real design/uncertain/state from discrete counts
+    // omit relaxed discrete int/real design/uncertain/state from discrete
     num_adiv -= allRelaxedDiscreteInt.count();
     num_adrv -= allRelaxedDiscreteReal.count();
   }
@@ -1360,23 +1356,11 @@ void SharedVariablesDataRep::initialize_inactive_components()
 
 /** Deep copies are used when recasting changes the nature of a
     Variables set. */
-void SharedVariablesDataRep::copy_rep(SharedVariablesDataRep* svd_rep)
+void SharedVariablesDataRep::copy_rep_data(SharedVariablesDataRep* svd_rep)
 {
   variablesId             = svd_rep->variablesId;
   variablesComponents     = svd_rep->variablesComponents;
   variablesCompsTotals    = svd_rep->variablesCompsTotals;
-  activeVarsCompsTotals   = svd_rep->activeVarsCompsTotals;
-  inactiveVarsCompsTotals = svd_rep->inactiveVarsCompsTotals;
-  variablesView           = svd_rep->variablesView;
-
-  cvStart   = svd_rep->cvStart;   numCV   = svd_rep->numCV;
-  divStart  = svd_rep->divStart;  numDIV  = svd_rep->numDIV;
-  dsvStart  = svd_rep->dsvStart;  numDSV  = svd_rep->numDSV;
-  drvStart  = svd_rep->drvStart;  numDRV  = svd_rep->numDRV;
-  icvStart  = svd_rep->icvStart;  numICV  = svd_rep->numICV;
-  idivStart = svd_rep->idivStart; numIDIV = svd_rep->numIDIV;
-  idsvStart = svd_rep->idsvStart; numIDSV = svd_rep->numIDSV;
-  idrvStart = svd_rep->idrvStart; numIDRV = svd_rep->numIDRV;
 
   // Boost MultiArrays must be resized prior to operator= assignment
   size_t num_acv  = svd_rep->allContinuousLabels.size(),
@@ -1413,6 +1397,25 @@ void SharedVariablesDataRep::copy_rep(SharedVariablesDataRep* svd_rep)
 
   allRelaxedDiscreteInt  = svd_rep->allRelaxedDiscreteInt;
   allRelaxedDiscreteReal = svd_rep->allRelaxedDiscreteReal;
+}
+
+
+/** Deep copies are used when recasting changes the nature of a
+    Variables set. */
+void SharedVariablesDataRep::copy_rep_view(SharedVariablesDataRep* svd_rep)
+{
+  variablesView           = svd_rep->variablesView;
+  activeVarsCompsTotals   = svd_rep->activeVarsCompsTotals;
+  inactiveVarsCompsTotals = svd_rep->inactiveVarsCompsTotals;
+
+  cvStart   = svd_rep->cvStart;   numCV   = svd_rep->numCV;
+  divStart  = svd_rep->divStart;  numDIV  = svd_rep->numDIV;
+  dsvStart  = svd_rep->dsvStart;  numDSV  = svd_rep->numDSV;
+  drvStart  = svd_rep->drvStart;  numDRV  = svd_rep->numDRV;
+  icvStart  = svd_rep->icvStart;  numICV  = svd_rep->numICV;
+  idivStart = svd_rep->idivStart; numIDIV = svd_rep->numIDIV;
+  idsvStart = svd_rep->idsvStart; numIDSV = svd_rep->numIDSV;
+  idrvStart = svd_rep->idrvStart; numIDRV = svd_rep->numIDRV;
 }
 
 
@@ -1641,6 +1644,70 @@ drv_index_to_all_index(size_t drv_index,
        << "drv_index_to_all_index()" << std::endl;
   abort_handler(VARS_ERROR);
   return _NPOS;
+}
+
+
+BitArray SharedVariablesDataRep::
+active_to_all_mask(bool cdv,  bool ddv, bool cauv, bool dauv, bool ceuv,
+		   bool deuv, bool csv, bool dsv) const
+{
+  size_t num_cv, num_div, num_dsv, num_drv;
+  all_counts(num_cv, num_div, num_dsv, num_drv);
+  BitArray all_mask(num_cv + num_div + num_dsv + num_drv); // init bits to false
+
+  design_counts(num_cv, num_div, num_dsv, num_drv); // w/ relaxed
+  size_t i, all_index = 0, num_dv = num_div + num_dsv + num_drv;
+  if (cdv)
+    for (i=0; i<num_cv; ++i, ++all_index)
+      all_mask.set(all_index);
+  else
+    all_index += num_cv;
+  if (ddv)
+    for (i=0; i<num_dv; ++i, ++all_index)
+      all_mask.set(all_index);
+  else
+    all_index += num_dv;
+
+  aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  num_dv = num_div + num_dsv + num_drv;
+  if (cauv)
+    for (i=0; i<num_cv; ++i, ++all_index)
+      all_mask.set(all_index);
+  else
+    all_index += num_cv;
+  if (dauv)
+    for (i=0; i<num_dv; ++i, ++all_index)
+      all_mask.set(all_index);
+  else
+    all_index += num_dv;
+
+  epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
+  num_dv = num_div + num_dsv + num_drv;
+  if (ceuv)
+    for (i=0; i<num_cv; ++i, ++all_index)
+      all_mask.set(all_index);
+  else
+    all_index += num_cv;
+  if (deuv)
+    for (i=0; i<num_dv; ++i, ++all_index)
+      all_mask.set(all_index);
+  else
+    all_index += num_dv;
+
+  state_counts(num_cv, num_div, num_dsv, num_drv);
+  num_dv = num_div + num_dsv + num_drv;
+  if (csv)
+    for (i=0; i<num_cv; ++i, ++all_index)
+      all_mask.set(all_index);
+  else
+    all_index += num_cv;
+  if (dsv)
+    for (i=0; i<num_dv; ++i, ++all_index)
+      all_mask.set(all_index);
+  //else
+  //  all_index += num_dv;
+
+  return all_mask;
 }
 
 
@@ -2305,7 +2372,26 @@ SharedVariablesData SharedVariablesData::copy() const
 
   if (svdRep) {
     svd.svdRep.reset(new SharedVariablesDataRep());
-    svd.svdRep->copy_rep(svdRep.get());
+    svd.svdRep->copy_rep_data(svdRep.get());
+    svd.svdRep->copy_rep_view(svdRep.get());
+  }
+
+  return svd;
+}
+
+
+/** Deep copies are used when recasting changes the nature of a
+    Variables set. */
+SharedVariablesData SharedVariablesData::copy(const ShortShortPair& view) const
+{
+  // the handle class instantiates a new handle and a new body and copies
+  // current attributes into the new body
+  SharedVariablesData svd; // new handle: svdRep=NULL
+
+  if (svdRep) {
+    svd.svdRep.reset(new SharedVariablesDataRep());
+    svd.svdRep->copy_rep_data(svdRep.get());
+    svd.view(view);
   }
 
   return svd;

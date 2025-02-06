@@ -2,8 +2,8 @@ Blurb::
 Counts for real-valued point histogram
 Description::
 Count or frequency for each of
-:ref:`variables-histogram_point_uncertain-real-abscissas<variables-histogram_point_uncertain-real-abscissas>`.  See
-:ref:`variables-histogram_point_uncertain<variables-histogram_point_uncertain>` for details and examples.
+:dakkw:`variables-histogram_point_uncertain-real-abscissas`.  See
+:dakkw:`variables-histogram_point_uncertain` for details and examples.
 Topics::
 
 Examples::

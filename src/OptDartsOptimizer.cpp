@@ -1,19 +1,14 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:       OptDartsOptimizer
-//- Description: Implementation of the OptDarts class
-//- Owner:       Mohamed Ebeida 
-//- Checked by:
-//- Version: $Id$
-
 #include "ProblemDescDB.hpp"
+#include "model_utils.hpp"
 
 #include <algorithm>
 #include <sstream>
@@ -33,11 +28,11 @@ namespace Dakota {
 
 // Main Class: OptDartsOptimizer
 
-OptDartsOptimizer::OptDartsOptimizer(ProblemDescDB& problem_db, Model& model):
+OptDartsOptimizer::OptDartsOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new OptDartsTraits()))
 {     
      // load_parameters
-     this->load_parameters(model);
+     this->load_parameters(*model);
 
      // Set Rnd Seed
      randomSeed = probDescDB.get_int("method.random_seed");
@@ -52,11 +47,11 @@ OptDartsOptimizer::OptDartsOptimizer(ProblemDescDB& problem_db, Model& model):
        use_DIRECT = true;
 }
 
-OptDartsOptimizer::OptDartsOptimizer(Model& model): 
+OptDartsOptimizer::OptDartsOptimizer(std::shared_ptr<Model> model): 
   Optimizer(GENIE_OPT_DARTS, model, std::shared_ptr<TraitsBase>(new OptDartsTraits()))
 {
      // load_parameters
-     this->load_parameters(model);
+     this->load_parameters(*model);
 }
 
 
@@ -72,8 +67,8 @@ void OptDartsOptimizer::core_run()
     double* xmin = new double[num_dim];
     double* xmax = new double[num_dim];
     
-    const RealVector&  lower_bounds = iteratedModel.continuous_lower_bounds();
-    const RealVector&  upper_bounds = iteratedModel.continuous_upper_bounds();
+    const RealVector&  lower_bounds = ModelUtils::continuous_lower_bounds(*iteratedModel);
+    const RealVector&  upper_bounds = ModelUtils::continuous_upper_bounds(*iteratedModel);
     
     // default domain is for the Herbie Function
     for (size_t idim = 0; idim < num_dim; idim++)
@@ -134,21 +129,21 @@ void OptDartsOptimizer::load_parameters(Model &model)
      //NOMAD::Point _upper_bound (numTotalVars);
      //NOMAD::Point _lower_bound (numTotalVars);
      
-     const RealVector& initial_point_cont = model.continuous_variables();
-     const RealVector& lower_bound_cont = model.continuous_lower_bounds();
-     const RealVector& upper_bound_cont = model.continuous_upper_bounds();
+     const RealVector& initial_point_cont = ModelUtils::continuous_variables(model);
+     const RealVector& lower_bound_cont = ModelUtils::continuous_lower_bounds(model);
+     const RealVector& upper_bound_cont = ModelUtils::continuous_upper_bounds(model);
 
-     const IntVector& initial_point_int = model.discrete_int_variables();
-     const IntVector& lower_bound_int = model.discrete_int_lower_bounds();
-     const IntVector& upper_bound_int = model.discrete_int_upper_bounds();
+     const IntVector& initial_point_int = ModelUtils::discrete_int_variables(model);
+     const IntVector& lower_bound_int = ModelUtils::discrete_int_lower_bounds(model);
+     const IntVector& upper_bound_int = ModelUtils::discrete_int_upper_bounds(model);
 
-     const RealVector& initial_point_real = model.discrete_real_variables();
-     const RealVector& lower_bound_real = model.discrete_real_lower_bounds();
-     const RealVector& upper_bound_real = model.discrete_real_upper_bounds();
+     const RealVector& initial_point_real = ModelUtils::discrete_real_variables(model);
+     const RealVector& lower_bound_real = ModelUtils::discrete_real_lower_bounds(model);
+     const RealVector& upper_bound_real = ModelUtils::discrete_real_upper_bounds(model);
 
-     const BitArray& int_set_bits = iteratedModel.discrete_int_sets();
-     const IntSetArray& initial_point_set_int = iteratedModel.discrete_set_int_values();
-     const RealSetArray& initial_point_set_real = iteratedModel.discrete_set_real_values();
+     const BitArray& int_set_bits = ModelUtils::discrete_int_sets(*iteratedModel);
+     const IntSetArray& initial_point_set_int = ModelUtils::discrete_set_int_values(*iteratedModel);
+     const RealSetArray& initial_point_set_real = ModelUtils::discrete_set_real_values(*iteratedModel);
 
      // Define Output Types
      // responses.
@@ -157,11 +152,11 @@ void OptDartsOptimizer::load_parameters(Model &model)
      //		nonlinear_equality_constraints
 
      const RealVector& nln_ineq_lwr_bnds
-       = iteratedModel.nonlinear_ineq_constraint_lower_bounds();
+       = ModelUtils::nonlinear_ineq_constraint_lower_bounds(*iteratedModel);
      const RealVector& nln_ineq_upr_bnds
-       = iteratedModel.nonlinear_ineq_constraint_upper_bounds();
+       = ModelUtils::nonlinear_ineq_constraint_upper_bounds(*iteratedModel);
      const RealVector& nln_eq_targets
-       = iteratedModel.nonlinear_eq_constraint_targets();
+       = ModelUtils::nonlinear_eq_constraint_targets(*iteratedModel);
 
 }
     
@@ -171,14 +166,14 @@ void OptDartsOptimizer::load_parameters(Model &model)
         RealVector newX(_num_dim);
         for (size_t idim = 0; idim < _num_dim; idim++) newX[idim] = _dart[idim];
         
-        iteratedModel.continuous_variables(newX);
-        iteratedModel.evaluate();
+        ModelUtils::continuous_variables(*iteratedModel, newX);
+        iteratedModel->evaluate();
         
         
         double fval = 0.0;
         for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++)
         {
-            double f = iteratedModel.current_response().function_value(resp_fn_count);
+            double f = iteratedModel->current_response().function_value(resp_fn_count);
             fval += f;
         }
         
@@ -709,7 +704,7 @@ void OptDartsOptimizer::load_parameters(Model &model)
         
         for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++)
         {
-            _f[_num_samples][resp_fn_count] = iteratedModel.current_response().function_value(resp_fn_count);
+            _f[_num_samples][resp_fn_count] = iteratedModel->current_response().function_value(resp_fn_count);
         }
 
         _num_samples++;

@@ -1,21 +1,25 @@
 Blurb::
-Multifidelity sampling methods for UQ
+Multifidelity Monte Carlo sampling method for UQ
+
 Description::
 An adaptive sampling method that utilizes multifidelity
 relationships in order to improve efficiency through variance reduction.
 
-Two variants are currently supported, with the former now deprecated
-and to be replaced by the latter:
-
-- In the case of a hierarchical surrogate model, the two-model approach of Ng and Willcox (2014) is supported and the two most extreme model fidelities or resolutions are employed as the truth model and approximation model.
-
-- In the case of a non-hierarchical surrogate model, the multi-model approach of Peherstorfer et al. (2016) is supported for which all model instances can be integrated into the scheme. Both methods can be used with either a model form sequence or a resolution level sequence.
+Multifidelity sampling is a recursive sampling scheme for which model
+ordering is important.  In the case of an ensemble surrogate model
+with more than two model instances (either in terms of model forms or
+resolutions or both), the multi-model approach of :cite:p:`peherstorfer2016optimal`
+is supported for which all model instances can be integrated into the
+scheme.  In the special case of two model instances, this collapses to
+the approach of :cite:p:`Ng2014`.  The approach can be used with
+a model form sequence, a resolution level sequence, or a combination of
+both (all specified form/resolution combinations will be enumerated).
 
 *Control Variate Monte Carlo*
 
-In the case of two model fidelities (low fidelity denoted as LF and
+In the case of two model instances (low fidelity denoted as LF and
 high fidelity denoted as HF), we employ a control variate approach as
-described in Ng and Willcox (2014):
+described in :cite:p:`Ng2014`:
 
 
 .. math::  \hat{Q}_{HF}^{CV} = \hat{Q}_{HF}^{MC}
@@ -24,33 +28,54 @@ described in Ng and Willcox (2014):
 As opposed to the traditional control variate approach, we do not know
 :math:`\mathbb{E}[Q_{LF}]`  precisely, but rather we estimate it more
 accurately than :math:`\hat{Q}_{LF}^{MC}`  based on a sampling increment
-applied to the LF model.  This sampling increment is based again on
+applied to the LF model.  This sampling increment is based on
 a total cost minimization procedure that incorporates the relative LF
 and HF costs and the observed Pearson correlation coefficient
 :math:`\rho_{LH}`  between :math:`Q_{LF}`  and :math:`Q_{HF}` .  The
-coefficient :math:`\beta`  is then determined from the observed LF-HF
+coefficient :math:`\beta` is then determined from the observed LF-HF
 covariance and LF variance.
 
 *Multifidelity Monte Carlo*
 
 This approach can be extended to a sequence of low-fidelity
-approximations using a recusive sampling approach as in Peherstorfer
-et al. (2016).
+approximations using a recusive sampling approach as in
+:cite:p:`peherstorfer2016optimal`.
 
 
 .. math::  \hat{Q}_{HF}^{CV} = \hat{Q}_{HF}^{MC}
    - \sum_{i=1}^M \beta_i (\hat{Q}_{LF_i}^{MC} - \mathbb{E}[Q_{LF_i}]) 
 
-In this case, the variance in the estimate of the :math:`i^{th}`  control
-mean is reduced by the :math:`(i+1)^{th}`  control variate, such that the
+In this case, the variance in the estimate of the :math:`i^{th}` control
+mean is reduced by the :math:`(i+1)^{th}` control variate, such that the
 variance reduction is limited by the case of an exact estimate of the
-first control mean (referred to as OCV-1 in Gorodetsky et al., 2020).
+first control mean (referred to as OCV-1 in :cite:p:`GORODETSKY2020109257`).
+
+*Model Selection*
+
+Similar to weighted MLMC (see
+:dakkw:`method-multilevel_sampling-weighted`), MFMC is a special case
+of generalized ACV (:cite:p:`Bomarito2022`) using the ACV-MF sampling
+scheme in combination with a hierarchical DAG (each approximation node
+points to the next approximation of higher fidelity, ending with the
+truth model at the root node). As such, the MFMC approach can be
+promoted to the generalized ACV solver in order to gain access to its
+model selection capabilities.  Activating the ``model_selection``
+option results in a set of numerical solutions that will enumerate
+model combinations for a fixed hierarchical DAG.
+
 
 *Default Behavior*
 
-The ``multifidelity_sampling`` method employs Monte Carlo sample sets by
-default, but this default can be overridden to use Latin hypercube
-sample sets using ``sample_type`` ``lhs``.
+The ``multifidelity_sampling`` method employs a number of important default settings:
+
+* The DAG defining control variate pairings is a "hierarchical" DAG where each approximation node points to the next approximation of higher fidelity, ending with the truth model at the root node.  For other DAG options, refer to the approximate control variate method (peer DAG by default) and it's option to ``search_model_graphs`` (enumerates all or some subset of the admissible DAGs).
+
+* If the model QoI are well-ordered, then the analytic solution from :cite:p:`peherstorfer2016optimal` will be used.  If a numerical solution is instead used, whether due to an override specification or due to detection of model misordering, the numerical solver will be ``global_local`` by default, starting with the DIRECT global solver and proceeding to available local solvers (SQP and NIP) in competition.  The numerical solution reorders models on the fly in order to enforce the required ordering constraints for computing the MFMC estimator variance.
+
+* Solution mode will be ``online_pilot``, an approach which iterates toward a set of shared samples whose size is consistent with the optimal allocation
+
+* Monte Carlo sample sets are used by default and are most consistent with the underlying theory, but this default can be overridden to use Latin hypercube sample sets using ``sample_type`` ``lhs``.  Allocations remain governed by Monte Carlo variance for all cases.
+
 
 *Expected Output*
 
@@ -63,7 +88,7 @@ reliability) at this time.
 *Expected HDF5 Output*
 
 If Dakota was built with HDF5 support and run with the
-:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+:dakkw:`environment-results_output-hdf5` keyword, this method
 writes the following results to HDF5:
 
 
@@ -74,24 +99,22 @@ records the equivalent number of high-fidelity evaluations.
 
 *Usage Tips*
 
-The ``multifidelity_sampling`` method can be used in combination with
-either a hierarchical or non-hierarchical model specification for
-either a model form sequence or a discretization level sequence.  For
-a model form sequence, each model must provide a scalar
-``solution_level_cost``.  For a discretization level sequence, it is
-necessary to identify the variable string descriptor that controls the
-resolution levels using ``solution_level_control`` as well as the
-associated array of relative costs using ``solution_level_cost``.
+The ``multifidelity_sampling`` method is used in combination with an
+ensemble model specification for a model form sequence, a
+discretization level sequence, or both.  For a model form sequence,
+each model must provide a scalar ``solution_level_cost``.  For a
+discretization level sequence, it is necessary to identify the
+variable string descriptor that controls the resolution levels using
+``solution_level_control`` as well as the associated array of relative
+costs using ``solution_level_cost``.  An alternative to prescribing
+the cost profile is estimating it on the fly using cost metadata that
+is returned from the different simulation instances.
 
-The hierarchical two-model approach is a special case of the
-non-hierarchical multi-model approach.  The latter gives identical
-results to the former when restricted to one approximation model; as
-such, the hierarchical two-model approach is deprecated.
 Topics::
 
 Examples::
-We provide an example of a multifidelity Monte Carlo study using a
-non-hierarchical model specification employing multiple approximations.
+We provide an example of a multifidelity Monte Carlo study using an
+ensemble model specification employing multiple approximations.
 
 The following method block:
 
@@ -107,15 +130,15 @@ The following method block:
 specifies MFMC in combination with the model identified by the
 NONHIER pointer.
 
-This NONHIER model specification provides a one-dimensional sequence,
-here defined by a single truth model and a set of unordered approximation
-models, each with a single (or default) discretization level:
+This NONHIER model specification provides a truth model and a set of
+unordered approximation models, each with a single (or default)
+discretization level:
 
 .. code-block::
 
     model,
      id_model = 'NONHIER'
-     surrogate non_hierarchical
+     surrogate ensemble
        truth_model = 'HF'
        unordered_model_fidelities = 'LF1' 'LF2'
     

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -30,7 +30,7 @@ bool matrix_equals(const MatrixXd& A, const MatrixXd& B, double tol) {
   if ((A.rows() != B.rows()) || (A.cols() != B.cols())) {
     std::cout << A.rows() << "," << A.cols() << std::endl;
     std::cout << B.rows() << "," << B.cols() << std::endl;
-    error("matrix_equals() matrices sizes are inconsistent");
+    error("matrix_equals() matrix sizes are inconsistent");
   }
   for (int j = 0; j < A.cols(); j++) {
     for (int i = 0; i < A.rows(); i++) {

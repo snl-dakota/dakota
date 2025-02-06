@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        ExperimentResponse
-//- Description:  Container class for response functions and their derivatives.
-//-
-//- Owner:        Laura Swiler
-//- Version: $Id: ExperimentResponse.hpp 7024 2010-10-16 01:24:42Z mseldre $
 
 #ifndef EXPERIMENT_RESPONSE_H
 #define EXPERIMENT_RESPONSE_H
@@ -64,7 +58,7 @@ public:
   /// alternate constructor using limited data
   ExperimentResponse(const ActiveSet& set);
   /// destructor
-  ~ExperimentResponse();
+  ~ExperimentResponse() override;
 
   void set_scalar_covariance(RealVector& scalars) override;
 

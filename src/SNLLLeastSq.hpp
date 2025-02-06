@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       SNLLLeastSq
-//- Description: Wrapper class for opt++
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version: $Id
 
 #ifndef SNLL_LEAST_SQ_H
 #define SNLL_LEAST_SQ_H
@@ -43,25 +37,25 @@ class SNLLLeastSqTraits: public TraitsBase
   SNLLLeastSqTraits() { }
 
   /// destructor
-  virtual ~SNLLLeastSqTraits() { }
+  ~SNLLLeastSqTraits() override { }
 
   /// A temporary query used in the refactor
-  virtual bool is_derived() { return true; }
+  bool is_derived() override { return true; }
 
   /// Return the flag indicating whether method supports continuous variables
-  bool supports_continuous_variables() { return true; }
+  bool supports_continuous_variables() override { return true; }
 
   /// Return the flag indicating whether method supports linear equalities
-  bool supports_linear_equality() { return true; }
+  bool supports_linear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports linear inequalities
-  bool supports_linear_inequality() { return true; }
+  bool supports_linear_inequality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear equalities
-  bool supports_nonlinear_equality() { return true; }
+  bool supports_nonlinear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear inequalities
-  bool supports_nonlinear_inequality() { return true; }
+  bool supports_nonlinear_inequality() override { return true; }
 };
 
 
@@ -103,20 +97,20 @@ public:
   //
 
   /// standard constructor
-  SNLLLeastSq(ProblemDescDB& problem_db, Model& model);
+  SNLLLeastSq(ProblemDescDB& problem_db, std::shared_ptr<Model>);
   /// alternate constructor for instantiations without ProblemDescDB support
-  SNLLLeastSq(const String& method_name, Model& model);
+  SNLLLeastSq(const String& method_name, std::shared_ptr<Model>);
   /// destructor
-  ~SNLLLeastSq();
+  ~SNLLLeastSq() override;
     
   //
   //- Heading: Virtual member function redefinitions
   //
 
   /// compute the least squares solution
-  void core_run();
+  void core_run() override;
 
-  void reset();
+  void reset() override;
 
 protected:
 
@@ -126,9 +120,9 @@ protected:
 
   /// invokes LeastSq::initialize_run(),
   /// SNLLBase::snll_initialize_run(), and performs other set-up
-  void initialize_run();
+  void initialize_run() override;
   /// restores instances 
-  void finalize_run();
+  void finalize_run() override;
 
 private:
 

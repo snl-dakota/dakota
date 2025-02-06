@@ -5,8 +5,8 @@ Specify the number of collocation points used to estimate expansion coefficients
 using regression approaches.
 
 A corresponding sequence specification is documented at, e.g.,
-:ref:`method-multifidelity_polynomial_chaos-expansion_order_sequence-collocation_ratio-collocation_points_sequence<method-multifidelity_polynomial_chaos-expansion_order_sequence-collocation_ratio-collocation_points_sequence>` and
-:ref:`method-multilevel_polynomial_chaos-expansion_order_sequence-collocation_ratio-collocation_points_sequence<method-multilevel_polynomial_chaos-expansion_order_sequence-collocation_ratio-collocation_points_sequence>`
+:dakkw:`method-multifidelity_polynomial_chaos-expansion_order_sequence-collocation_ratio-collocation_points_sequence` and
+:dakkw:`method-multilevel_polynomial_chaos-expansion_order_sequence-collocation_ratio-collocation_points_sequence`
 Topics::
 
 Examples::

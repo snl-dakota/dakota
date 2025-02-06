@@ -275,17 +275,17 @@ Test Number 20 succeeded
                      -1.8378311539e-08
 <<<<< Best evaluation ID: 522
 Test Number 21 succeeded
-<<<<< Function evaluation summary: 16830 total (3390 new, 13440 duplicate)
+<<<<< Function evaluation summary: 2469 total (531 new, 1938 duplicate)
 <<<<< Best parameters          =
-                      2.1224188345e+00 intake_dia
-                      1.7685564042e+00 flatness
+                      2.1224187550e+00 intake_dia
+                      1.7685578554e+00 flatness
 <<<<< Best objective function  =
-                     -2.4610313608e+00
+                     -2.4610311084e+00
 <<<<< Best constraint values   =
-                      2.0956898661e-08
-                     -3.3471653937e-01
-                      7.2071406620e-08
-<<<<< Best evaluation ID: 16804
+                     -6.8155665511e-07
+                     -3.3471632168e-01
+                     -1.7181439049e-07
+<<<<< Best evaluation ID: 2443
 Test Number 22 succeeded
 <<<<< Function evaluation summary: 62589 total (12636 new, 49953 duplicate)
 <<<<< Best parameters          =

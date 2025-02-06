@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDDREAMBayesCalibration
-//- Description: Derived class for Bayesian inference using DREAM
-//- Owner:       Brian Adams
-//- Checked by:
-//- Version:
 
 #include "NonDDREAMBayesCalibration.hpp"
 #include "ProblemDescDB.hpp"
@@ -92,7 +86,7 @@ NonDDREAMBayesCalibration* NonDDREAMBayesCalibration::nonDDREAMInstance(NULL);
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDDREAMBayesCalibration::
-NonDDREAMBayesCalibration(ProblemDescDB& problem_db, Model& model):
+NonDDREAMBayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDBayesCalibration(problem_db, model),
   numChains(probDescDB.get_int("method.dream.num_chains")),
   numCR(probDescDB.get_int("method.dream.num_cr")),
@@ -196,19 +190,20 @@ void NonDDREAMBayesCalibration::calibrate()
   ////////////////////////////////////////////////////////
   int total_num_params = numContinuousVars + numHyperparams;
   
-  const RealVector& init_point = mcmcModel.continuous_variables();
+  const RealVector& init_point = ModelUtils::continuous_variables(*mcmcModel);
   Cout << "Initial Points " << init_point << '\n';
 
   // resize, initializing to zero
   paramMins.size(total_num_params);
   paramMaxs.size(total_num_params);
   RealRealPairArray bnds
-    = mcmcModel.multivariate_distribution().distribution_bounds();
-  // SVD index conversion is more general, but not required for current uses
-  //const SharedVariablesData& svd= mcmcModel.current_variables().shared_data();
+    = mcmcModel->multivariate_distribution().distribution_bounds(); // all RV
+  // Use SVD to convert active CV index (calibration params) to all index (RVs)
+  const SharedVariablesData& svd
+    = iteratedModel->current_variables().shared_data();
   for (size_t i=0; i<numContinuousVars; ++i) {
-    //const RealRealPair& bnds_i = bnds[svd.cv_index_to_active_index(i)];
-    paramMins[i] = bnds[i].first;  paramMaxs[i] = bnds[i].second;
+    const RealRealPair& bnds_i = bnds[svd.cv_index_to_all_index(i)];
+    paramMins[i] = bnds_i.first;  paramMaxs[i] = bnds_i.second;
   }
   // If calibrating error multipliers, the parameter domain is expanded to
   // estimate hyperparameters sigma^2 that multiply any user-provided covariance
@@ -305,12 +300,12 @@ double NonDDREAMBayesCalibration::sample_likelihood(int par_num, double zp[])
 
   // DREAM searches in either the original space (default for GPs and no
   // emulator) or standardized space (PCE/SC, optional for GP/no emulator).  
-  nonDDREAMInstance->residualModel.continuous_variables(all_params); 
+  ModelUtils::continuous_variables(*nonDDREAMInstance->residualModel, all_params); 
 
   // Compute simulation response to use in likelihood 
-  nonDDREAMInstance->residualModel.evaluate();
+  nonDDREAMInstance->residualModel->evaluate();
   const RealVector& residuals = 
-    nonDDREAMInstance->residualModel.current_response().function_values();
+    nonDDREAMInstance->residualModel->current_response().function_values();
   double log_like = nonDDREAMInstance->log_likelihood(residuals, all_params);
 
   if (nonDDREAMInstance->outputLevel >= DEBUG_OUTPUT) {
@@ -465,9 +460,9 @@ void NonDDREAMBayesCalibration::archive_acceptance_chain()
 {
   // temporaries for evals/lookups
   // the MCMC model omits the hyper params and residual transformations...
-  Variables lookup_vars = mcmcModel.current_variables().copy();
-  String interface_id = mcmcModel.interface_id();
-  Response lookup_resp = mcmcModel.current_response().copy();
+  Variables lookup_vars = mcmcModel->current_variables().copy();
+  String interface_id = mcmcModel->interface_id();
+  Response lookup_resp = mcmcModel->current_response().copy();
   ActiveSet lookup_as = lookup_resp.active_set();
   lookup_as.request_values(1);
   lookup_resp.active_set(lookup_as);
@@ -483,11 +478,11 @@ void NonDDREAMBayesCalibration::archive_acceptance_chain()
 		      numContinuousVars);
       RealVector x_rv(Teuchos::View, acceptanceChain[sample_index], 
 		      numContinuousVars);
-      mcmcModel.probability_transformation().trans_U_to_X(u_rv, x_rv);
+      mcmcModel->trans_U_to_X(u_rv, x_rv);
       // trailing hyperparams are not transformed
 
       // surrogate needs u-space variables for eval
-      if (mcmcModel.model_type() == "surrogate")
+      if (mcmcModel->model_type() == "surrogate")
 	lookup_vars.continuous_variables(u_rv);
       else
 	lookup_vars.continuous_variables(x_rv);
@@ -500,9 +495,9 @@ void NonDDREAMBayesCalibration::archive_acceptance_chain()
 
     // now retreive function values
     if (mcmcModelHasSurrogate) {
-      mcmcModel.active_variables(lookup_vars);
-      mcmcModel.evaluate(lookup_resp.active_set());
-      const RealVector& fn_vals = mcmcModel.current_response().function_values();
+      ModelUtils::active_variables(*mcmcModel, lookup_vars);
+      mcmcModel->evaluate(lookup_resp.active_set());
+      const RealVector& fn_vals = mcmcModel->current_response().function_values();
       Teuchos::setCol(fn_vals, sample_index, acceptedFnVals);	
     }
     else {
@@ -511,7 +506,7 @@ void NonDDREAMBayesCalibration::archive_acceptance_chain()
       if (cache_it == data_pairs.get<hashed>().end()) {
 	++lookup_failures;
 	// Set NaN in the chain points to avoid misleading the user
-	RealVector nan_fn_vals(mcmcModel.current_response().function_values().length());
+	RealVector nan_fn_vals(mcmcModel->current_response().function_values().length());
 	nan_fn_vals = std::numeric_limits<double>::quiet_NaN();
 	Teuchos::setCol(nan_fn_vals, sample_index, acceptedFnVals);
       }

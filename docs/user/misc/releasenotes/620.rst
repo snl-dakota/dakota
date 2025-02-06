@@ -1,0 +1,98 @@
+.. _releasenotes-620:
+
+"""""""""""""""""""""""""
+Version 6.20 (2024/05/15)
+"""""""""""""""""""""""""
+
+
+**Highlight: Multilevel Best Linear Unbiased Estimator (ML BLUE)**
+
+ML BLUE (:cite:p:`Schaden2020`) is a new multifidelity sampling-based
+approach for UQ, distinguished from other estimators through its use
+of sample allocations based on model groupings.  It has motivated a
+number of other general extensions to Dakota's MF sampling methods,
+including multi-batch concurrency and under-relaxation of predicted
+sample increments (see MLMF Sampling below), and it is full featured
+in its support for group size throttling, shared versus independent
+pilot sampling, online versus offline solution modes, and
+hyper-parameter model tuning.
+
+*Enabling / Accessing:* new method specification option for multifidelity sampling: :dakkw:`method-multilevel_blue`.
+
+*Documentation:* Refer to the reference documentation starting from :dakkw:`method-multilevel_blue` for additional information.  A number of numerical examples using standard Dakota benchmarks are available under dakota/test in the release distribution.
+
+**Highlight: New options for using MCMC algorithms from the MUQ library**
+
+When selecting :dakkw:`bayes_calibration muq <method-bayes_calibration-muq>` under
+the :dakkw:`method` section of a Dakota input file, the user can now select the 'mala' 
+MCMC algorithm (in addition to the already supported four algorithms). The user can now
+also select values for parameters in each of these algorithms.
+
+*Enabling / Accessing:* 
+
+Dakota currently interfaces with five MCMC algorithms from MUQ:
+metropolis_hastings, adaptive_metropolis, delayed_rejection, dram, and mala.
+Dakota also allows the user to select values for seven parameters related
+to these five methods (the prefix in each parameter indicates which MCMC
+algorithm the parameter relates itself to): dr_num_stages, dr_scale_type,
+dr_scale, am_period_num_steps, am_starting_step, am_scale, and mala_step_size.
+
+`MUQ <https://mituq.bitbucket.io>`_ is an optional feature of Dakota and can be
+enabled when building from source by setting the ``HAVE_MUQ`` CMake variable to 
+``ON``. In release 6.20, pre-built Linux binaries include MUQ.
+
+*Documentation:* 
+
+See the eight keywords :dakkw:`method-bayes_calibration-muq-mala`,
+:dakkw:`method-bayes_calibration-muq-am_period_num_steps`,
+:dakkw:`method-bayes_calibration-muq-am_scale`,
+:dakkw:`method-bayes_calibration-muq-am_starting_step`,
+:dakkw:`method-bayes_calibration-muq-dr_num_stages`,
+:dakkw:`method-bayes_calibration-muq-dr_scale`,
+:dakkw:`method-bayes_calibration-muq-dr_scale_type`, and
+:dakkw:`method-bayes_calibration-muq-mala_step_size`.
+
+
+**Improvements by Category**
+
+*Interfaces, Input/Output*
+
+- A new class, :class:`BatchSplitter` was added to the 
+  :ref:`dakota.interfacing module <interfaces:dakota.interfacing>` to ease 
+  splitting batch parameters files into parameters files for individual evaluations.
+
+*Models*
+
+- Experimental support for user-provided data fit surrogate models implemented in Python. See the :dakkw:`model-surrogate-global-experimental_python` model keyword.
+
+*MLMF Sampling*
+
+- Expansion in the set of solution modes for all MF sampling methods.  Projection mode now supports online (pilot is integrated) and offline (pilot is separated) options, bringing the total number of mode specifications to four: online_pilot, offline_pilot, online_projection, offline_projection.
+
+- Expansion in parallelism for multifidelity sampling by eliminating convenience synchronization points.  MFMC, ACV, generalized ACV, and ML BLUE now support concurrency across multiple batches, each containing multiple samples and each spanning multiple model instances.  Previously, only a single batch (multiple samples across multiple models) could be evaluated concurrently, in support of convenience of algorithm bookeeping.  (Note: MLMC and MLCV MC will follow shortly in stable releases, as can other batch sampling-based methods under `Analyzer`.)
+
+- Support for under-relaxation of predicted sample increments for all MF sampling methods.  Options for relaxation factors include, fixed, recursive, and sequenced.  This is especially useful for group-based allocations in ML BLUE, which would otherwise exhaust its full budget in its first online iteration.
+
+- ACV-RD sampling scheme now supported in generalized ACV (augmenting previous ACV-MF and ACV-IS).  Similar to endowing hierarchical MFMC and peer ACV-MF/ACV-IS with model selection in the last release, weighted MLMC including model selection is now supported within the `multilevel_sampling` method, via reuse of the generalized ACV solver for ACV-RD with a fixed hierarchical DAG.
+
+- Numerical MFMC has been improved through the use of dynamic reordering of models (previously static and fragile) during the solution process, ensuring the estimator variance calculations remain valid.
+
+*Examples*
+
+- `Use Dakota on HPCs <https://github.com/snl-dakota/dakota-examples/tree/master/official/parallelization>`_ with the
+  resource management framework `Flux <https://flux-framework.readthedocs.io/en/latest/>`_. 
+ 
+**Miscellaneous Enhancements and Bugfixes**
+
+- Bug fix: Numerous small security enhancements to TPLs (`PeopleTec, Inc <https://www.peopletec.com/>`_)
+- Bug fix: Numerous formatting fixes to the documentation, pyprepro, and Python testing scripts (`rzehumat <https://github.com/rzehumat>`_)
+- Bug fix: Fix to unit test (`furstj <https://github.com/furstj>`_)
+
+**Deprecated and Changed**
+
+- Intel (x86_64) builds for macOS are no longer available, only arm64 (Apple Silicon)
+- Builds for RHEL7 are no longer available
+
+**Other Notes and Known Issues**
+
+- The surrogate workflow node in the Dakota GUI is nonfunctional on macOS.

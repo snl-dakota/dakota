@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -19,6 +19,9 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/serialization/split_free.hpp>
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
 
 namespace boost {
 namespace serialization {
@@ -263,6 +266,11 @@ void read_covariance(const std::string& basename,
                      int num_vals,
                      RealMatrix& cov_vals);
 
+/// Count number of rows in given file (for LowDiscrepancySequence)
+int count_rows(String file_name);
+
+/// Count number of columns in given file (for LowDiscrepancySequence)
+int count_columns(String file_name);
 
 // --------------------------------
 // templated istream read functions (some called from operator>>)
@@ -951,6 +959,64 @@ void write_data_partial_aprepro(std::ostream& s, OrdinalType start_index,
       << std::setiosflags(std::ios::left)
       << label_array[i].data() << std::resetiosflags(std::ios::adjustfield)
       << " = " << std::setw(write_precision+7) << '"' << v[i] << '"' << " }\n";
+}
+
+
+template <typename OrdinalType>
+void write_data_partial_json(json& s, OrdinalType start_index,
+  OrdinalType num_items, const StringMultiArray& v,
+  StringMultiArrayConstView label_array)
+{
+  OrdinalType i, end = start_index + num_items, len = v.size();
+  if (end > len) {
+    Cerr << "Error: indexing in write_data_partial_json() "
+	 << "exceed`s length of StringMultiArray." << std::endl;
+    abort_handler(-1);
+  }
+  if (label_array.size() != len) {
+    Cerr << "Error: size of label_array in write_data_partial_json() "
+	 << "does not equal length of StringMultiArray." << std::endl;
+    abort_handler(-1);
+  }
+  //assuming v containes all the ordered variables
+  for (i=start_index; i<end; ++i) {
+      json tempVarObject = {
+        {"label" , label_array[i]},
+        {"value" , v[i]}
+      };
+
+      s.push_back(tempVarObject);
+  }
+
+}	
+
+template <typename OrdinalType1, typename OrdinalType2, typename ScalarType>
+void write_data_partial_json(json& s, OrdinalType2 start_index,
+  OrdinalType2 num_items,
+  const Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& v, 
+  const StringMultiArray& label_array)
+{
+  OrdinalType2 i, end = start_index + num_items;
+  OrdinalType1 len = v.length();
+  if (end > len) {
+    Cerr << "Error: indexing in write_data_partial_json() "
+	 << "exceeds length of SerialDenseVector." << std::endl;
+    abort_handler(-1);
+  }
+  if (label_array.size() != len) {
+    Cerr << "Error: size of label_array in write_data_partial_json() "
+	 << "does not equal length of Vector." << std::endl;
+    abort_handler(-1);
+  }
+  //assuming v containes all the ordered variables
+  for (i=start_index; i<end; ++i) {
+      json tempVarObject = {
+        {"label" , label_array[i]},
+        {"value" , v[i]}
+      };
+
+      s.push_back(tempVarObject);
+  }
 }
 
 

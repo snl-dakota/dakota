@@ -4,7 +4,7 @@ Description::
 If ``interpolate`` is specified, Dakota will interpolate between the simulation data and the experiment data to
 calculate the residuals for calibration methods.  Specifically, the simulation data is interpolated onto the experimental data points.
 So, if the simulation data is a field of length 100 with one independent coordinate, and the experiment data is of length 5 with one independent coordinate, the interpolation is done between the 100 (t,f) simulation points (where t is the independent coordinate and f is the simulation field value) onto the five (t_e, f_e) points to obtain the residual differences between the simulation and experiment.
-See :ref:`responses-calibration_terms-calibration_data<responses-calibration_terms-calibration_data>`.
+See :dakkw:`responses-calibration_terms-calibration_data`.
 Topics::
 
 Examples::

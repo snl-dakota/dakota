@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       ROLOptimizer
-//- Description: Wrapper class for ROL
-//- Owner:       Moe Khalil
-//- Checked by:  Patty Hough, Russell Hooper, Brian Adams
-//- Version: $Id$
 
 // Dakota headers
 #include "ROLOptimizer.hpp"
@@ -50,7 +44,7 @@ namespace Dakota {
 
 // Standard constructor for ROLOptimizer.  Sets up ROL solver based on
 // information from the problem database.
-ROLOptimizer::ROLOptimizer(ProblemDescDB& problem_db, Model& model):
+ROLOptimizer::ROLOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new ROLTraits())),
   optSolverParams("Dakota::ROL"), problemType(TYPE_B)
 {
@@ -67,7 +61,7 @@ ROLOptimizer::ROLOptimizer(ProblemDescDB& problem_db, Model& model):
 
 // Alternate constructor for Iterator instantiations by name.  Sets up
 // ROL solver based on information passed as arguments.
-ROLOptimizer::ROLOptimizer(const String& method_string, Model& model):
+ROLOptimizer::ROLOptimizer(const String& method_string, std::shared_ptr<Model> model):
   Optimizer(method_string_to_enum(method_string), model,
 	    std::shared_ptr<TraitsBase>(new ROLTraits())),
   optSolverParams("Dakota::ROL"), problemType(TYPE_B)
@@ -115,7 +109,7 @@ void ROLOptimizer::core_run()
     ActiveSet search_set(best_resp.active_set());
     search_set.request_values(AS_FUNC);
     best_resp.active_set(search_set);
-    bool db_found = iteratedModel.db_lookup(best_vars, search_set, best_resp);
+    bool db_found = iteratedModel->db_lookup(best_vars, search_set, best_resp);
 
     // Fall back on re-evaluation if not found.
     if (db_found)
@@ -126,10 +120,10 @@ void ROLOptimizer::core_run()
 
       // Evaluate model for responses at best parameters and set Dakota
       // bestResponseArray.
-      iteratedModel.continuous_variables(cont_vars);
-      iteratedModel.evaluate();
+      ModelUtils::continuous_variables(*iteratedModel, cont_vars);
+      iteratedModel->evaluate();
       const RealVector& best_fns =
-        iteratedModel.current_response().function_values();
+        iteratedModel->current_response().function_values();
       best_resp.function_values(best_fns);
     }
   }
@@ -175,7 +169,7 @@ void ROLOptimizer::set_problem()
 
   // Dimension ROL variable vector and set initial values.
   rolX.reset(new std::vector<Real>(numContinuousVars, 0.0));
-  get_initial_values(iteratedModel, *rolX);
+  get_initial_values(*iteratedModel, *rolX);
   x.reset( new ROL::StdVector<Real>(rolX) );
 
   // For TYPE_B and TYPE_EB problems, dimension bounds variable
@@ -187,7 +181,7 @@ void ROLOptimizer::set_problem()
       l_rcp(new std::vector<Real>(numContinuousVars, 0.0));
     Teuchos::RCP<std::vector<Real> >
       u_rcp(new std::vector<Real>(numContinuousVars, 0.0));
-    get_bounds(iteratedModel, *l_rcp, *u_rcp);
+    get_bounds(*iteratedModel, *l_rcp, *u_rcp);
 
     // Set bounds greater (less) than ROL_INF (ROL_NINF) to ROL_INF
     // (ROL_NINF)
@@ -205,9 +199,9 @@ void ROLOptimizer::set_problem()
   }
 
   // Extract gradient type and method for finite-differencing
-  const String& grad_type     = iteratedModel.gradient_type();
-  const String& method_src    = iteratedModel.method_source();
-  const String& interval_type = iteratedModel.interval_type();
+  const String& grad_type     = iteratedModel->gradient_type();
+  const String& method_src    = iteratedModel->method_source();
+  const String& interval_type = iteratedModel->interval_type();
 
   if (grad_type == "none") {
     Cerr << "\nError: gradient type = none is invalid with ROL.\n"
@@ -234,14 +228,14 @@ void ROLOptimizer::set_problem()
   // parent version
   if ( grad_type == "analytic" || grad_type == "mixed" || 
        ( grad_type == "numerical" && method_src == "dakota" ) ){
-      if (iteratedModel.hessian_type() == "none")
-        obj.reset(new DakotaROLObjectiveGrad(iteratedModel));
+      if (iteratedModel->hessian_type() == "none")
+        obj.reset(new DakotaROLObjectiveGrad(*iteratedModel));
       else
-        obj.reset(new DakotaROLObjectiveHess(iteratedModel));
+        obj.reset(new DakotaROLObjectiveHess(*iteratedModel));
   }
   else {
     // Vendor numerical gradients
-    obj.reset(new DakotaROLObjective(iteratedModel));
+    obj.reset(new DakotaROLObjective(*iteratedModel));
   }
 
   // If there are equality constraints, create the object and provide
@@ -254,14 +248,14 @@ void ROLOptimizer::set_problem()
     // access to Dakota model
     if ( grad_type == "analytic" || grad_type == "mixed" || 
          ( grad_type == "numerical" && method_src == "dakota" ) ){
-        if (iteratedModel.hessian_type() == "none")
-          eq_const.reset(new DakotaROLEqConstraintsGrad(iteratedModel));
+        if (iteratedModel->hessian_type() == "none")
+          eq_const.reset(new DakotaROLEqConstraintsGrad(*iteratedModel));
         else
-          eq_const.reset(new DakotaROLEqConstraintsHess(iteratedModel));
+          eq_const.reset(new DakotaROLEqConstraintsHess(*iteratedModel));
     }
     else {
       // Vendor numerical gradients
-      eq_const.reset(new DakotaROLEqConstraints(iteratedModel));
+      eq_const.reset(new DakotaROLEqConstraints(*iteratedModel));
     }
 
     // Initialize Lagrange multipliers for equality constraints.
@@ -280,14 +274,14 @@ void ROLOptimizer::set_problem()
     // access to Dakota model
     if ( grad_type == "analytic" || grad_type == "mixed" || 
          ( grad_type == "numerical" && method_src == "dakota" ) ){
-        if (iteratedModel.hessian_type() == "none")
-          ineq_const.reset(new DakotaROLIneqConstraintsGrad(iteratedModel));
+        if (iteratedModel->hessian_type() == "none")
+          ineq_const.reset(new DakotaROLIneqConstraintsGrad(*iteratedModel));
         else
-          ineq_const.reset(new DakotaROLIneqConstraintsHess(iteratedModel));
+          ineq_const.reset(new DakotaROLIneqConstraintsHess(*iteratedModel));
     }
     else {
       // Vendor numerical gradients
-      ineq_const.reset(new DakotaROLIneqConstraints(iteratedModel));
+      ineq_const.reset(new DakotaROLIneqConstraints(*iteratedModel));
     }
 
     // Initial Lagrange multipliers for inequality constraints.
@@ -303,13 +297,13 @@ void ROLOptimizer::set_problem()
 
     // Get the inequality bounds from Dakota and transfer them into
     // the ROL vectors. 
-    copy_data_partial(iteratedModel.linear_ineq_constraint_lower_bounds(),
+    copy_data_partial(ModelUtils::linear_ineq_constraint_lower_bounds(*iteratedModel),
 		      *ineq_l_rcp, 0);
-    copy_data_partial(iteratedModel.linear_ineq_constraint_upper_bounds(),
+    copy_data_partial(ModelUtils::linear_ineq_constraint_upper_bounds(*iteratedModel),
 		      *ineq_u_rcp, 0);
-    copy_data_partial(iteratedModel.nonlinear_ineq_constraint_lower_bounds(),
+    copy_data_partial(ModelUtils::nonlinear_ineq_constraint_lower_bounds(*iteratedModel),
 		      *ineq_l_rcp, numLinearIneqConstraints);
-    copy_data_partial(iteratedModel.nonlinear_ineq_constraint_upper_bounds(),
+    copy_data_partial(ModelUtils::nonlinear_ineq_constraint_upper_bounds(*iteratedModel),
 		      *ineq_u_rcp, numLinearIneqConstraints);
 
     // Set bounds greater (less) than ROL_INF (ROL_NINF) to ROL_INF
@@ -343,7 +337,7 @@ void ROLOptimizer::initialize_run()
   // NOTE: This cannot be set in the consructor (or helper functions associated
   //       with the contructor) because some variables get assigned by base 
   //       class constructors and are not available until all have completed.
-  orig_auto_graphics_flag = iteratedModel.auto_graphics();
+  orig_auto_graphics_flag = iteratedModel->auto_graphics();
 }
 
 // Helper function to reset ROL data and solver parameters.  This can
@@ -365,7 +359,7 @@ void ROLOptimizer::set_rol_parameters()
 
   // If the user has specified "no_hessians", tell ROL to use its own
   // Hessian approximation.
-  if (iteratedModel.hessian_type() == "none") {
+  if (iteratedModel->hessian_type() == "none") {
     optSolverParams.sublist("General").sublist("Secant").
       set("Type", "Limited-Memory BFGS");
     optSolverParams.sublist("General").sublist("Secant").
@@ -492,9 +486,9 @@ namespace {
       prev_x = x;
 
     // Set the model variables to the current values.
-    size_t num_cv = model.cv();
+    size_t num_cv = ModelUtils::cv(model);
     for(size_t i=0; i<num_cv; ++i)
-      model.continuous_variable(x[i], i);
+      ModelUtils::continuous_variable(model, x[i], i);
 
     // Evaluate response, gradient, and Hessian, depending on 
     // what is provided by Dakota/user.
@@ -608,7 +602,7 @@ DakotaROLObjectiveHess::invHessVec(std::vector<Real> &h,
 DakotaROLIneqConstraints::DakotaROLIneqConstraints(Model & model) :
   dakotaModel(model)
 {
-  haveNlnConst = model.num_nonlinear_ineq_constraints() > 0;
+  haveNlnConst = ModelUtils::num_nonlinear_ineq_constraints(model) > 0;
 
 } // ineqConstraints constructor
 
@@ -645,7 +639,7 @@ DakotaROLIneqConstraintsGrad::applyJacobian(std::vector<Real> &jv,
     const std::vector<Real> &v, const std::vector<Real> &x, Real &tol)
 {
   // Matrix-vector multiply to apply linear constraint Jacobian.
-  const RealMatrix & lin_ineq_coeffs = dakotaModel.linear_ineq_constraint_coeffs();
+  const RealMatrix & lin_ineq_coeffs = ModelUtils::linear_ineq_constraint_coeffs(dakotaModel);
   apply_matrix_partial(lin_ineq_coeffs, v, jv);
 
   // Apply nonlinear constraint Jacobian.
@@ -669,7 +663,7 @@ DakotaROLIneqConstraintsGrad::applyAdjointJacobian(std::vector<Real> &ajv,
 
   // Matrix-vector multiply to apply transpose of linear constraint
   // Jacobian.
-  const RealMatrix & lin_ineq_coeffs = dakotaModel.linear_ineq_constraint_coeffs();
+  const RealMatrix & lin_ineq_coeffs = ModelUtils::linear_ineq_constraint_coeffs(dakotaModel);
   apply_matrix_transpose_partial(lin_ineq_coeffs, v, ajv);
 
   // Apply transpose of nonlinear constraint Jacobian.
@@ -712,7 +706,7 @@ DakotaROLIneqConstraintsHess::applyAdjointHessian( std::vector<Real> & ahuv,
     RealSymMatrix hu(dakotaModel.current_response().function_hessian(1));
     hu *= u[0];
 
-    for( size_t i=1; i<dakotaModel.num_nonlinear_ineq_constraints(); ++i )
+    for( size_t i=1; i<ModelUtils::num_nonlinear_ineq_constraints(dakotaModel); ++i )
     {
       RealSymMatrix temp_hu(dakotaModel.current_response().function_hessian(1+i));
       temp_hu *= u[i];
@@ -733,7 +727,7 @@ DakotaROLIneqConstraintsHess::applyAdjointHessian( std::vector<Real> & ahuv,
 DakotaROLEqConstraints::DakotaROLEqConstraints(Model & model) :
   dakotaModel(model)
 {
-  haveNlnConst = model.num_nonlinear_eq_constraints() > 0;
+  haveNlnConst = ModelUtils::num_nonlinear_eq_constraints(model) > 0;
 
 } // eqContraints constructor
 
@@ -772,7 +766,7 @@ DakotaROLEqConstraintsGrad::applyJacobian(std::vector<Real> &jv,
     const std::vector<Real> &v, const std::vector<Real> &x, Real &tol)
 {
   // Matrix-vector multiply to apply linear constraint Jacobian.
-  const RealMatrix & lin_eq_coeffs = dakotaModel.linear_eq_constraint_coeffs();
+  const RealMatrix & lin_eq_coeffs = ModelUtils::linear_eq_constraint_coeffs(dakotaModel);
   apply_matrix_partial(lin_eq_coeffs, v, jv);
 
   // Apply nonlinear constraint Jacobian.
@@ -796,7 +790,7 @@ DakotaROLEqConstraintsGrad::applyAdjointJacobian(std::vector<Real> &ajv,
 
   // Matrix-vector multiply to apply transpose of linear constraint
   // Jacobian.
-  const RealMatrix & lin_eq_coeffs = dakotaModel.linear_eq_constraint_coeffs();
+  const RealMatrix & lin_eq_coeffs = ModelUtils::linear_eq_constraint_coeffs(dakotaModel);
   apply_matrix_transpose_partial(lin_eq_coeffs, v, ajv);
 
   // Apply transpose of nonlinear constraint Jacobian.
@@ -835,14 +829,14 @@ DakotaROLEqConstraintsHess::applyAdjointHessian( std::vector<Real> & ahuv,
   // apply nonlinear constraint Hessian (might be empty)
   if (haveNlnConst) {
 
-    size_t num_nln_ineq_constraints = dakotaModel.num_nonlinear_ineq_constraints();
+    size_t num_nln_ineq_constraints = ModelUtils::num_nonlinear_ineq_constraints(dakotaModel);
     // make sure that model is current
     update_model(dakotaModel, x);
 
     RealSymMatrix hu(dakotaModel.current_response().function_hessian(1+num_nln_ineq_constraints));
     hu *= u[0];
 
-    for( size_t i=1; i<dakotaModel.num_nonlinear_eq_constraints(); ++i )
+    for( size_t i=1; i<ModelUtils::num_nonlinear_eq_constraints(dakotaModel); ++i )
     {
       RealSymMatrix temp_hu(dakotaModel.current_response().function_hessian(1+num_nln_ineq_constraints+i));
       temp_hu *= u[i];

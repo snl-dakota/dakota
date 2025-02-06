@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       OptDartsOptimizer
-//- Description: Implementation of OptDarts optimizer 
-//- Owner:       Mohamed Ebeida and Laura Swiler
-//- Checked by:
-//- Version: $Id$
 
 
 #include "DakotaOptimizer.hpp"
@@ -38,13 +32,13 @@ namespace Dakota {
       OptDartsTraits() { }
 
       /// destructor
-      virtual ~OptDartsTraits() { }
+      ~OptDartsTraits() override { }
 
       /// A temporary query used in the refactor
-      virtual bool is_derived() { return true; }
+      bool is_derived() override { return true; }
 
       /// Return the flag indicating whether method supports continuous variables
-      bool supports_continuous_variables() { return true; }
+      bool supports_continuous_variables() override { return true; }
   };
 
 
@@ -56,13 +50,13 @@ namespace Dakota {
 	  
      public:
        /// Constructor
-       OptDartsOptimizer(ProblemDescDB& problem_db, Model& model);
+       OptDartsOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model>);
 
        /// alternate constructor for Iterator instantiations by name
-       OptDartsOptimizer(Model& model);
+       OptDartsOptimizer(std::shared_ptr<Model>);
 	       
        /// Destructor
-       ~OptDartsOptimizer();
+       ~OptDartsOptimizer() override;
 	       
 	       
          //
@@ -70,7 +64,7 @@ namespace Dakota {
          //
 	       
          /// Calls the OptDarts algorithm
-         void core_run();
+         void core_run() override;
          
 	  
      private:

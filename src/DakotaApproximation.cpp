@@ -1,16 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        Approximation
-//- Description:  Class implementation of base class for approximations
-//-               
-//- Owner:        Mike Eldred, Sandia National Laboratories
 
 #include "DakotaApproximation.hpp"
 #include "ProblemDescDB.hpp"
@@ -31,6 +26,9 @@
 #ifdef HAVE_DAKOTA_SURROGATES
 #include "DakotaSurrogatesGP.hpp"
 #include "DakotaSurrogatesPoly.hpp"
+#ifdef HAVE_DAKOTA_PYTHON_SURROGATES
+#include "DakotaSurrogatesPython.hpp"
+#endif // HAVE_DAKOTA_PYTHON_SURROGATES
 #endif // HAVE_DAKOTA_SURROGATES
 #include "DakotaGraphics.hpp"
 
@@ -132,12 +130,19 @@ get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
 	(problem_db, shared_data, approx_label);
 #endif // HAVE_SURFPACK
 #ifdef HAVE_DAKOTA_SURROGATES
+#ifdef HAVE_ROL
     else if (approx_type == "global_exp_gauss_proc")
       return std::make_shared<SurrogatesGPApprox>
 	(problem_db, shared_data, approx_label);
+#endif
     else if (approx_type == "global_exp_poly")
       return std::make_shared<SurrogatesPolyApprox>
 	(problem_db, shared_data, approx_label);
+#ifdef HAVE_DAKOTA_PYTHON_SURROGATES
+    else if (approx_type == "global_exp_python")
+      return std::make_shared<SurrogatesPythonApprox>
+	(problem_db, shared_data, approx_label);
+#endif // HAVE_DAKOTA_PYTHON_SURROGATES
 #endif // HAVE_DAKOTA_SURROGATES
     else {
       Cerr << "Error: Approximation type " << approx_type << " not available."
@@ -193,10 +198,16 @@ Approximation::get_approx(const SharedApproxData& shared_data)
     return std::make_shared<SurfpackApproximation>(shared_data);
 #endif // HAVE_SURFPACK
 #ifdef HAVE_DAKOTA_SURROGATES
+#ifdef HAVE_ROL
   else if (approx_type == "global_exp_gauss_proc")
     return std::make_shared<SurrogatesGPApprox>(shared_data);
+#endif
   else if (approx_type == "global_exp_poly")
     return std::make_shared<SurrogatesPolyApprox>(shared_data);
+#ifdef HAVE_DAKOTA_PYTHON_SURROGATES
+  else if (approx_type == "global_exp_python")
+    return std::make_shared<SurrogatesPythonApprox>(shared_data);
+#endif // HAVE_DAKOTA_PYTHON_SURROGATES
 #endif // HAVE_DAKOTA_SURROGATES
   else
     Cerr << "Error: Approximation type " << approx_type << " not available."
@@ -239,6 +250,18 @@ void Approximation::build()
     //size_t i, num_checks = embedded_keys.size();
     //for (i=0; i<num_checks; ++i)
     //  check_points(approxData.points(embedded_keys[i]));
+  }
+}
+
+/** This is the field-based common base class portion of the virtual fn and is
+    insufficient on its own; derived implementations should explicitly
+    invoke (or reimplement) this base class contribution. */
+void Approximation::build(int num_resp)
+{
+  if (approxRep)
+    approxRep->build(num_resp);
+  else { // default is only a data check; augmented/replaced by derived class
+    check_points(approxData.points());
   }
 }
 
@@ -409,6 +432,31 @@ Real Approximation::value(const Variables& vars)
   }
 
   return approxRep->value(vars);
+}
+
+
+
+RealVector Approximation::values(const RealVector& c_vars)
+{
+  if (!approxRep) {
+    Cerr << "Error: values() not available for this approximation type."
+	 << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->values(c_vars);
+}
+
+
+RealVector Approximation::values(const Variables& vars)
+{
+  if (!approxRep) {
+    Cerr << "Error: values() not available for this approximation type."
+	 << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  return approxRep->values(vars);
 }
 
 

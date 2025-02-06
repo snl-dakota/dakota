@@ -7,7 +7,7 @@ the optional ``id_surrogates`` specification. This identifies the
 subset of the response functions by number that are to be approximated
 (the default is all functions). The valid response function
 identifiers range from 1 through the total number of response
-functions (see :ref:`responses-response_functions<responses-response_functions>`).
+functions (see :dakkw:`responses-response_functions`).
 Topics::
 
 Examples::

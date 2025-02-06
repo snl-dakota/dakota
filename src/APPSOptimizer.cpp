@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       HOPSOptimizer
-//- Description: Wrapper class for HOPSPACK
-//- Owner:       Patty Hough
-//- Checked by:
-//- Version: $Id
 
 #include "ProblemDescDB.hpp"
 #include "APPSOptimizer.hpp"
@@ -19,7 +13,7 @@
 namespace Dakota {
 
 
-APPSOptimizer::APPSOptimizer(ProblemDescDB& problem_db, Model& model):
+APPSOptimizer::APPSOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new AppsTraits()))
 {
   // (iteratedModel initialized in Optimizer(Model&))
@@ -28,7 +22,7 @@ APPSOptimizer::APPSOptimizer(ProblemDescDB& problem_db, Model& model):
   set_apps_parameters(); // set specification values using DB
 }
 
-APPSOptimizer::APPSOptimizer(Model& model):
+APPSOptimizer::APPSOptimizer(std::shared_ptr<Model> model):
   Optimizer(ASYNCH_PATTERN_SEARCH, model, std::shared_ptr<TraitsBase>(new AppsTraits()))
 {
   // (iteratedModel initialized in Optimizer(Model&))
@@ -57,8 +51,8 @@ void APPSOptimizer::core_run()
   // Tell the evalMgr whether or not to do asynchronous evaluations
   // and maximum available concurrency.
 
-  evalMgr->set_asynch_flag(iteratedModel.asynch_flag());
-  evalMgr->set_total_workers(iteratedModel.evaluation_capacity());
+  evalMgr->set_asynch_flag(iteratedModel->asynch_flag());
+  evalMgr->set_total_workers(iteratedModel->evaluation_capacity());
 
   // Initialize variable values and define constraints.
 
@@ -85,7 +79,7 @@ void APPSOptimizer::core_run()
 //     setBestVariables(...)
 //     setBestResponses(...)
 
-  set_variables<>(bestX, iteratedModel, bestVariablesArray.front());
+  set_variables<>(bestX, *iteratedModel, bestVariablesArray.front());
 
   // Retrieve the best responses and convert from HOPS vector to
   // DAKOTA vector.
@@ -97,7 +91,7 @@ void APPSOptimizer::core_run()
 
   // else local_objective_recast_retrieve() is used in Optimizer::post_run()
   bool set_objectives = !localObjectiveRecast;
-  set_best_responses<AppsTraits>( optimizer, iteratedModel,
+  set_best_responses<AppsTraits>( optimizer, *iteratedModel,
 				  set_objectives, numUserPrimaryFns,
 				  constraintMapIndices,
 				  constraintMapMultipliers,
@@ -333,7 +327,7 @@ void APPSOptimizer::initialize_variables_and_constraints()
   vector<char> variable_types(numTotalVars, 'C');
 
   // For now this requires that the target vector, eg init_point, be allocated properly.
-  get_variables<HOPSPACK::Vector>(iteratedModel, init_point);
+  get_variables<HOPSPACK::Vector>(*iteratedModel, init_point);
 
   bool setScales = !get_variable_bounds_from_dakota<AppsTraits>( lower, upper );
 

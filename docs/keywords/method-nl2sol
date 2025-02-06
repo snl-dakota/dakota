@@ -34,23 +34,23 @@ The internal defaults are often functions of machine epsilon
 *Expected HDF5 Output*
 
 If Dakota was built with HDF5 support and run with the
-:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+:dakkw:`environment-results_output-hdf5` keyword, this method
 writes the following results to HDF5:
 
 
 - :ref:`hdf5_results-best_params`
 - :ref:`hdf5_results-best_constraints`
-- :ref:`hdf5_results-calibration` (when :ref:`responses-calibration_terms<responses-calibration_terms>` are specified)
-- :ref:`hdf5_results-lsq_confidence_intervals` (when :ref:`responses-calibration_terms-calibration_data-num_experiments<responses-calibration_terms-calibration_data-num_experiments>` equals 1)
+- :ref:`hdf5_results-calibration` (when :dakkw:`responses-calibration_terms` are specified)
+- :ref:`hdf5_results-lsq_confidence_intervals` (when :dakkw:`responses-calibration_terms-calibration_data-num_experiments` equals 1)
 Topics::
 nonlinear_least_squares
 Examples::
 An example of ``nl2sol`` is given below, and is discussed in the User's Manual.
 
-Note that in this usage of :ref:`responses-calibration_terms<responses-calibration_terms>`, the driver script
+Note that in this usage of :dakkw:`responses-calibration_terms`, the driver script
 ``rosenbrock``, is returning "residuals", which the ``nl2sol`` method is attempting
 to minimze. Another use case is to provide a data file, which Dakota will
-attempt to match the model responses to. See :ref:`responses-calibration_terms-calibration_data_file<responses-calibration_terms-calibration_data_file>`.
+attempt to match the model responses to. See :dakkw:`responses-calibration_terms-calibration_data_file`.
 Finally, as of Dakota 6.2, the field data capability may be used with ``nl2sol``.
 That is, the user can specify field simulation data and field experiment data,
 and Dakota will interpolate and provide the proper residuals for the calibration.

@@ -17,7 +17,8 @@ multifidelity sampling, and in :ref:`uq:sampling:multilevel`, we
 describe the multilevel Monte Carlo algorithm that we align with
 multilevel sampling. In :ref:`uq:sampling:mlmf`, we show that
 these two approaches can be combined to create multilevel-multifidelity
-sampling approaches.
+sampling approaches. Finally, this chapter discusses :ref:`uq:sampling:quasimontecarlo` 
+or low-discrepancy sampling.
 
 .. _uq:sampling:montecarlo:
 
@@ -35,7 +36,10 @@ value :math:`\mathbb{E}\left[Q\right]`. The MC estimator
 :math:`\hat{Q}_N^{MC}` for :math:`\mathbb{E}\left[Q\right]` is defined
 as follows
 
-.. math:: \hat{Q}_N^{MC} = \dfrac{1}{N} \sum_{i=1}^N Q^{(i)},
+.. math::
+   :label: MC
+   
+   \hat{Q}_N^{MC} = \dfrac{1}{N} \sum_{i=1}^N Q^{(i)},
 
 where :math:`Q^{(i)} = Q(\boldsymbol{\xi}^{(i)})` and :math:`N` is used
 to indicate the number of realizations of the model.
@@ -838,3 +842,269 @@ forms is given by
           \left( \dfrac{ \mathbb{V}ar\left(Y_k^{ \mathrm{HF} } \right) \mathcal{C}_{k}^{\mathrm{HF}}}{1-\rho_\ell^2 \dfrac{\theta_\ell^2}{\tau_\ell}} \right)^{1/2} \Lambda_{k}(r_k^{\star})\right] 
                   \sqrt{ \left( 1 - \rho_\ell^2 \dfrac{\theta_\ell^2}{\tau_\ell} \right) \frac{ \mathbb{V}ar\left( Y^{\mathrm{HF}}_{\ell} \right) }{\mathcal{C}_{\ell}^{\mathrm{HF}}}}
     \end{split}
+
+
+.. _uq:sampling:quasimontecarlo:
+
+Quasi-Monte Carlo (QMC)
+-----------------------
+
+Quasi-Monte Carlo methods are equal-weight quadrature rules to approximate
+:math:`\mathbb{E}\left[Q\right]` with deterministically well-chosen sample
+points to beat the notoriously slow convergence of a method that uses random MC
+samples. They are of the form
+
+.. math::
+   :label: QMC
+   
+   \hat{Q}_N^{QMC} = \dfrac{1}{N} \sum_{i=1}^N Q(\boldsymbol{t}^{(i)}),
+
+which is seemingly identical to the form of the classic MC method from Eq.
+:math:numref:`MC`, however, the :math:`N` :math:`s`\ -dimensional points
+:math:`\boldsymbol{t}^{(i)}` are now carefully chosen inside the domain
+:math:`\Xi \subset \mathbb{R}^d`. With *carefully chosen* we mean that the
+points have a low discrepancy :math:`D(\boldsymbol{t}^{(0)},
+\boldsymbol{t}^{(1)}, \ldots, \boldsymbol{t}^{(N-1)})`. This discrepancy is
+important, because it directly appears in the error bound of a QMC method, i.e.,
+we have the Koksma-Hlawka inequality :cite:p:`Niederreiter92`
+
+.. math::
+   :label: KoksmaHlawka
+
+   |\mathbb{E}\left[Q\right] - \hat{Q}_N^{QMC}| \leq D(\boldsymbol{t}^{(0)},
+   \boldsymbol{t}^{(1)}, \ldots, \boldsymbol{t}^{(N-1)}) V(f).
+
+
+The QMC error thus consists of two parts: a factor that only depends on the
+point set (in particular, on the discrepancy of the point set) and a factor
+depending only on the function :math:`f` we are trying to integrate (the
+so-called variation of the function :math:`f``).
+
+Some famous examples of low-discrepancy point sets are Sobol points
+:cite:p:`sobol67`, Halton points :cite:p:`Halton1964` and Hammersley points
+:cite:p:`hammersley13`. The advantage of using such a low-discrepancy point set
+is faster convergence: classic theory states that a QMC method may converge like
+:math:`(\log N)^d/N`, for sufficiently smooth functions :math:`f`, see
+:cite:p:`Dick10`. Compare this to the classic MC method, that converges like
+:math:`1/\sqrt{N}`, and it is easy to see why QMC methods are so appealing.
+
+Unfortunately, the classic QMC theory is not adequate in high dimensions (large
+:math:`d`): for :math:`(\log N)^d/N` to be smaller than :math:`1/\sqrt{N}`, we
+require, for example, :math:`N > \exp(d)`, an unrealistically large number in
+high dimensions. Furthermore, in many problems, the variation :math:`V(f)` is
+infinite, making the error bound in :math:numref:`KoksmaHlawka` practically
+useless.
+
+Then, in 1995, a 360-dimensional integral originating from financial mathematics
+was computed very efficiently by Paskov and Traub, see :cite:p:`Paskov96`. This
+led to many new theoretical developments, including the notion of *weighted*
+function spaces and *low effective dimension*: although the problem is
+high-dimensional, not all dimensions are equally important. In the work by Sloan
+and Woźniakowski :cite:p:`Sloan98`, this decreasing importance is quantified in
+terms of weights :math:`\gamma_j` associated to each dimension :math:`j`, and
+where one assumes :math:`\gamma_1 \geq \gamma_2 \geq \ldots \geq \gamma_d \geq
+0`. Contemporary QMC analysis is then performed by analyzing the problem in a
+function space that incorporates these weights. A reinterpretation of
+:math:numref:`KoksmaHlawka` in the weighted space setting with weights
+:math:`\boldsymbol{\gamma}` is then
+
+.. math::
+
+   |\mathbb{E}\left[Q\right] - \hat{Q}_N^{QMC}| \leq e_{\boldsymbol{\gamma}}(\boldsymbol{t}^{(0)},
+   \boldsymbol{t}^{(1)}, \ldots, \boldsymbol{t}^{(N-1)}) \|f\|_{\boldsymbol{\gamma}},
+
+where :math:`e_{\boldsymbol{\gamma}}` is the so-called *worst-case error*, and
+:math:`\|f\|_{\boldsymbol{\gamma}}` is the norm of the function in the weighted
+function space. The question then becomes one of (strong) *tractability*: under
+which conditions on the weights is the worst-case error bounded independent of
+the dimension :math:`d`? The philosophy of modern QMC is therefore to choose the
+weights according to the problem at hand, and then construct a QMC method that
+yields good performance for all functions that belong to this weighted function
+space, see :cite:`Dick10`.
+
+QMC methods come in two major flavors: *lattice rules* and *digital nets*. We
+will now briefly discuss these two construction methods.
+
+Rank-1 lattice rules and sequences
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+An :math:`N`-point rank-1 lattice rule in :math:`d` dimensions generates points
+according to
+
+.. math::
+   :label: Rank1Lattice
+   
+   \boldsymbol{t}^{(i)} = \left\{ \frac{i \boldsymbol{z}}{N} \right\} = \frac{i \boldsymbol{z} \;\text{mod}\; N}{N}
+
+where :math:`\{\;\cdot\;\}` denotes the fractional part, i.e., :math:`\{x\} = x
+- \lceil x \rceil`, and where :math:`\boldsymbol{z} = (z_1, z_2, \ldots, z_d)`
+is an :math:`d`-dimensional vector with integers, called the *generating
+vector*. Rank-1 lattices were introduced by Korobov :cite:p:`Korobov59` and
+Hlawka :cite:p:`Hlawka62`, as the *method of good lattice points*.
+
+The performance of the lattice rule depends critically on the choice of the
+generating vector :math:`\boldsymbol{z}`. We assume that :math:`z \in
+\mathbb{U}_N^d`, where :math:`\mathbb{U}_N = \{ z \in \mathbb{Z} : 1 \leq z \leq
+N - 1 \;\text{and}\; \mathrm{gcd}(z, N) = 1\}`, to ensure that every
+one-dimensional projection of the :math:`N` points on one of the coordinate axes
+has :math:`N` distinct values. It can be shown that the number of elements
+inside the set :math:`\mathbb{U}_N` is given by the Euler totient function
+:math:`\varphi(N)`. For number theoretical reasons, :math:`N` is usually
+restricted to be a prime number, such that the number of elements is
+:math:`\varphi(N) = N-1`. In that case, there are an astounding :math:`(N -
+1)^d` possible choices for the generating vector :math:`\boldsymbol{z}`. Since
+it is impossible to perform an exhaustive search over all possible choices for
+large :math:`N` and :math:`s` to find the best possible generating vector
+:math:`\boldsymbol{z}`, we resort to construction schemes that deliver good
+choices for :math:`\boldsymbol{z}`. An example of such a scheme is the
+component-by-component (CBC) construction :cite:p:`Korobov63,Sloan94`. The
+algorithm works as follows:
+
+1. Set :math:`z_1=1`.
+2. With :math:`z_1` fixed, pick :math:`z_2 \in \mathbb{U}_N` such that
+   :math:`e_{\boldsymbol{\gamma}}(z_1, z_2)` is minimized.
+3. With :math:`z_1` and :math:`z_2` fixed, pick :math:`z_3 \in \mathbb{U}_N`
+   such that :math:`e_{\boldsymbol{\gamma}}(z_1, z_2, z_3)` is minimized.
+4. ...
+
+Hence, this algorithm constructs the components of the generating vector for the
+lattice rule one at a time: the :math:`(j + 1)`\ th component is obtained by
+successive one-dimensional searches, with the previous :math:`j` components kept
+fixed. It can be proven that the CBC algorithm constructs generating vectors
+that, when used in a lattice rule, achieve the desired convergence close to
+:math:`1/N`, in some weighted function space, see :cite:p:`Kuo03`.
+
+For some particular choices of the weights :math:`\boldsymbol{\gamma}` (called
+product weights), the cost of the CBC algorithm is :math:`O(d N \log N )`
+operations, i.e., linear in the dimension :math:`d` and almost linear in the
+number of points :math:`N`, due to a fast CBC construction by Nuyens and Cools,
+see :cite:p:`Nuyens06,Cools06`. The idea for the fast construction is that the
+CBC construction requires the evaluation of a matrix-vector multiplication with
+a circulant matrix, hence reducing the cost of the matrix-vector product from
+:math:`O(N^2)` to :math:`O(N \log N)` by using FFT.
+
+.. figure:: img/random_shift.png
+   :alt: 
+   :name: sampling:randomshift
+   :align: center
+
+   Applying a :math:`(1/10, 1/3)`-shift to a 21-point Fibonacci lattice in two
+   dimensions. Take the original lattice (*left*), apply a random shift
+   (*middle*) and wrap the points back onto the unit square (*right*).
+
+The lattice points given in :math:numref:`Rank1Lattice` can be randomized by
+adding a *random shift* vector. If :math:`\Delta` is a :math:`d`\ -dimensional
+vector of standard normal random variables, we construct the shifted lattice
+points as
+
+.. math::
+
+   \boldsymbol{t}_n = \left\{ \frac{n \boldsymbol{z}}{N} + \Delta \right\}.
+
+This procedure is illustrated in  :numref:`sampling:randomshift`. Note that the
+first untransformed point in the sequence will be
+:math:`\boldsymbol{t}^{(0)} = (0, 0, \ldots, 0)`.
+
+For the lattice points to be practically useful, we would like to transform the
+lattice rule into a *lattice sequence*, that allows us to generate
+well-distributed points for an arbitrary number of points :math:`N`. To this
+end, Eq. :math:numref:`Rank1Lattice` is adapted to
+
+.. math:: \boldsymbol{t}^{(i)} = \left\{ \phi_b(i) \boldsymbol{z} \right\},
+
+where :math:`\phi_b(i)` denotes the so-called *radical inverse* function in base
+:math:`b` (usually, :math:`b = 2`). This function transforms a number :math:`i =
+(\ldots i_2i_1)_b` in its base-:math:`b` representation to :math:`\phi_b(i) =
+(0.i_1i_2\ldots)_b`. Note that the radical inverse function agrees with the
+original formulation when :math:`N = b^m` for any :math:`m \geq 0`.
+
+Digital nets and sequences
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Digital nets and sequences were introduced by Niederreiter, building upon
+earlier work by Sobol and Faure :cite:p:`Niederreiter87`. In the digital
+construction scheme, a sequence in :math:`d` dimensions generates points
+:math:`\boldsymbol{t}^{(i)} = (t_{i, 0}, t_{i, 1}, \ldots, t_{i, d})`, where the 
+:math:`j`\ th component :math:`t_{i, j}` is constructed as follows:
+
+1. Write :math:`i` in its base-:math:`b` representation, i.e., 
+
+.. math:: i = (\ldots i_3 i_2 i_1)_b = i_1 + i_2 b + i_3 b^2 + \ldots
+
+2. Compute the matrix-vector product
+
+.. math:: \begin{pmatrix} y_1 \\ y_2 \\ y_3 \\ \vdots \end{pmatrix} = C_j \begin{pmatrix} i_1 \\ i_2 \\ i_3 \\ \vdots \end{pmatrix}
+
+where all additions and multiplications are performed in base :math:`b`.
+
+3. Set the :math:`j`\ th component of the :math:`i`\ th points to
+
+.. math:: t^{(i)}_j = \frac{y_1}{b} + \frac{y_2}{b^2} + \frac{y_3}{b^3} + \ldots = (0.y_1y_2y_3\ldots)_b
+
+The matrices :math:`C_j`, :math:`j=1, 2, \ldots, d` are known as *generating
+matrices*, see :cite:p:`Dick10`.
+
+We can encode the generating matrices as an integer matrix as follows. The
+number of rows in the matrix determines the maximum dimension of the lattice
+rule. The number of columns in the matrix determines the ``log2`` of the maximum
+number of points. An integer on the :math:`j`\ th row and :math:`m`\ th column
+encodes the :math:`m`\ th column of the :math:`j`\ th generating matrix
+:math:`C_j`. Since the :math:`m`\ th column of :math:`C_j` is a collection of
+0's and 1's, it can be represented as an integer with :math:`t` bits, where
+:math:`t` is the number of rows in the :math:`j`\ th generating matrix
+:math:`C_j`. By default, the encoding assumes the integers are stored with
+*least significant bit first* (LSB), so that the first integer on the :math:`j`\
+th row is 1. This LSB representation has two advantages.
+
+- The integers can be reused if the number of bits :math:`t` in the
+  representation changes.
+- It generally leads to smaller, human-readable numbers in the first few
+  entries.
+
+The Sobol sequence is a particularly famous example of a digital net
+:cite:p:`sobol67`. A computer implementation of a Sobol sequence generator in
+Fortran 77 was given by Bratley and Fox :cite:p:`Bratley98` as Algorithm 659.
+This implementation allowed points of up to 40 dimensions. It was extended by
+Joe and Kuo to allow up to 1111 dimensions in :cite:p:`Joe03` and up to 21201
+dimensions in :cite:p:`Joe08`. In the Dakota implementation of the algorithm
+outlined above, we use the iterative construction from Antonov and Saleev
+:cite:p:`Antonov79`, that generates the points in Gray code ordering. Knowing
+the current point with (Gray code) index :math:`n`, the next point with index
+:math:`n + 1` is obtained by XOR'ing the current point with the :math:`k`\ th
+column of the :math:`j`\ th generating matrix, i.e.,
+
+.. math:: t^{(n+1)}_j = t^{(n)}_j \oplus C_{j, k}
+
+where :math:`k` is the rightmost zero-bit of :math:`n` (the position of the bit that 
+will change from index :math:`n` to :math:`n+1` in Gray code).
+
+The digital net points can be randomized by adding a *digital shift* vector. If
+:math:`\Delta` is a :math:`d`\ -dimensional vector of standard normal random
+variables, we construct the shifted lattice points as
+:math:`\boldsymbol{t}^{(i)} \otimes \Delta`, where :math:`\otimes` is the
+element-wise :math:`b`-ary addition (or ``XOR``) operator, see :cite:p:`Dick10`.
+Note that the first untransformed point in the sequence will be
+:math:`\boldsymbol{t}^{(0)} = (0, 0, \ldots, 0)`.
+
+Ideally, the digital net should preserve the structure of the points after
+randomization. This can be achieved by *scrambling* the digital net. Scrambling
+can also improve the rate of convergence of a method that uses these scrambled
+points to compute the mean of the model response. Owen's scrambling
+:cite:p:`Owen98` is the most well-known scrambling technique. A particular
+variant is linear matrix scrambling, see :cite:p:`Matouvsek98`, which is
+implemented in Dakota. In linear matrix scrambling, we left-multiply each
+generating matrix with a lower-triangular random scramble matrix with 1s on the
+diagonal, i.e.,
+
+.. code-block::
+
+    1 0 0 0 0
+    x 1 0 0 0
+    x x 1 0 0
+    x x x 1 0
+    x x x x 1
+
+Finally, for the digital net points to be practically useful, we would like to
+transform the digital net into a *digital sequence*, that allows us to generate
+well-distributed points for an arbitrary number of points :math:`N`. One way to
+do this is to generate the points in Gray code ordering, as discussed above.

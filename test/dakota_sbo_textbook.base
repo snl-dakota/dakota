@@ -59,29 +59,29 @@ Test Number 4 succeeded
                      -8.2100992671e-14
 <<<<< Best evaluation ID: 49
 Test Number 5 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE_1): 324 total (324 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 89 total (87 new, 2 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 176 total (176 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 56 total (55 new, 1 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
                       5.0000000000e-01 x2
 <<<<< Best objective function  =
                       1.2500000000e-01
 <<<<< Best constraint values   =
-                      6.6613381478e-16
-                     -1.3322676296e-15
-<<<<< Best evaluation ID: 78
+                      1.2206902156e-13
+                     -2.4413804312e-13
+<<<<< Best evaluation ID: 45
 Test Number 6 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 176 total (176 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 229 total (226 new, 3 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 229 total (225 new, 4 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
                       5.0000004797e-01 x2
 <<<<< Best objective function  =
                       1.2499997601e-01
 <<<<< Best constraint values   =
-                     -2.3985324615e-08
-                      4.7970651507e-08
-<<<<< Best evaluation ID: 225
+                     -2.3985324338e-08
+                      4.7970650952e-08
+<<<<< Best evaluation ID: 224
 Test Number 7 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 176 total (176 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 49 total (49 new, 0 duplicate)
@@ -91,8 +91,8 @@ Test Number 7 succeeded
 <<<<< Best objective function  =
                       1.2500000000e-01
 <<<<< Best constraint values   =
-                     -5.5511151231e-17
-                      1.1102230246e-16
+                     -1.1102230246e-16
+                      2.2204460493e-16
 <<<<< Best evaluation ID: 49
 Test Number 8 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 327 total (327 new, 0 duplicate)

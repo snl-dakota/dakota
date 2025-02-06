@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -250,7 +250,7 @@ void fd_check_hessian(Surrogate& surr, const MatrixXd& sample,
 
   /* unperturbed value and hessian */
   ref_value = surr.value(sample);
-  ref_hessian = surr.hessian(sample, 0);
+  ref_hessian = surr.hessian(sample);
 
   /* create h and reference value arrays */
   VectorXd h(num_steps);

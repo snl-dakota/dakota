@@ -13,14 +13,16 @@ defined as 1, 2, and 4)
 
 Other epistemic types include:
 
-- :ref:`variables-continuous_interval_uncertain<variables-continuous_interval_uncertain>`
-- :ref:`variables-discrete_interval_uncertain<variables-discrete_interval_uncertain>`
-- discrete_uncertain_set :ref:`variables-discrete_uncertain_set-string<variables-discrete_uncertain_set-string>`
-- discrete_uncertain_set :ref:`variables-discrete_uncertain_set-real<variables-discrete_uncertain_set-real>`
+- :dakkw:`variables-continuous_interval_uncertain`
+- :dakkw:`variables-discrete_interval_uncertain`
+- discrete_uncertain_set :dakkw:`variables-discrete_uncertain_set-string`
+- discrete_uncertain_set :dakkw:`variables-discrete_uncertain_set-real`
+
 Topics::
 discrete_variables, epistemic_uncertain_variables
 Examples::
-Let d1 be 2 or 13 and d2 be 4, 5 or 26.
+
+Let `di1` be 2 or 13 and `di2` be 4, 5 or 26.
 The following specification is for an interval analysis:
 
 .. code-block::
@@ -36,7 +38,7 @@ Theory::
 The ``discrete_uncertain_set-integer``
 variable is NOT a discrete random variable.
 It can be contrasted to a the histogram-defined random variables:
-:ref:`variables-histogram_bin_uncertain<variables-histogram_bin_uncertain>` and :ref:`variables-histogram_point_uncertain<variables-histogram_point_uncertain>`.
+:dakkw:`variables-histogram_bin_uncertain` and :dakkw:`variables-histogram_point_uncertain`.
 It is used in epistemic uncertainty analysis, where one is trying to model
 uncertainty due to lack of knowledge.
 
@@ -44,19 +46,20 @@ The discrete uncertain set integer variable is used in both interval analysis
 and in Dempster-Shafer theory of evidence.
 
 
-- interval analysis
+*interval analysis*
 
--the values are integers, equally weighted
--the true value of the random variable is one of the integers in this set
--output is the minimum and maximum function value conditionalon the specified inputs
+- the values are integers, equally weighted
+- the true value of the random variable is one of the integers in this set
+- output is the minimum and maximum function value conditionalon the specified inputs
 
 
-- Dempster-Shafer theory of evidence
+*Dempster-Shafer theory of evidence*
 
--the values are integers, but they can be assigned different weights
--outputs are called "belief" and "plausibility."Belief represents the smallest possible probability that is consistent with the evidence,
-while plausibility represents the largest possible probability that is consistent with the evidence.
-Evidence is the values together with their weights.
+- the values are integers, but they can be assigned different weights
+- outputs are called "belief" and "plausibility."Belief represents the smallest possible probability that is consistent with the evidence,
+  while plausibility represents the largest possible probability that is consistent with the evidence.
+  Evidence is the values together with their weights.
+
 Faq::
 
 See_Also::

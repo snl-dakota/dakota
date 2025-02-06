@@ -1,0 +1,25 @@
+Blurb::
+Reduce the number of groups in multilevel BLUE using a throttle
+
+Description::
+The number of groups in ML BLUE is, by default, determined by all
+combinations of the model indices, spanning the truth model and all
+approximations.  This combinatorial growth quickly results in very
+large group counts as the number of model approximations grows.  This
+number of combinations may be optionally throttled using one of the
+following schemes: ``mfmc_groups``, ``common_groups``, ``group_size``,
+``best_conditioned``, or ``rcond_tolerance``.
+
+*Default Behavior*
+
+The default is no throttle: all model combinations are included.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

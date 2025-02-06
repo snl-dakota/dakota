@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        TestDriverInterface
-//- Description:  Direct interfaces to test drivers and "simple" linked
-//-               applications that don't require separate setup and tear-down
-//- Owner:        Mike Eldred, Brian Adams
-//- Version: $Id$
 
 #ifndef TEST_DRIVER_INTERFACE_H
 #define TEST_DRIVER_INTERFACE_H
@@ -34,7 +28,7 @@ public:
   //
 
   TestDriverInterface(const ProblemDescDB& problem_db); ///< constructor
-  ~TestDriverInterface();                               ///< destructor
+  ~TestDriverInterface() override;                               ///< destructor
 
 protected:
 
@@ -43,7 +37,7 @@ protected:
   //
 
   /// execute an analysis code portion of a direct evaluation invocation
-  virtual int derived_map_ac(const Dakota::String& ac_name);
+  int derived_map_ac(const Dakota::String& ac_name) override;
 
 private:
 

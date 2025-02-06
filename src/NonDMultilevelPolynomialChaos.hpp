@@ -1,15 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       NonDMultilevelPolynomialChaos
-//- Description: Iterator to compute/employ Polynomial Chaos expansions
-//- Owner:       Mike Eldred, Sandia National Laboratories
 
 #ifndef NOND_MULTILEVEL_POLYNOMIAL_CHAOS_H
 #define NOND_MULTILEVEL_POLYNOMIAL_CHAOS_H
@@ -38,9 +34,9 @@ public:
   //
  
   /// standard constructor
-  NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, Model& model);
+  NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, std::shared_ptr<Model>  model);
   /// alternate constructor for numerical integration (tensor, sparse, cubature)
-  NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ Model& model,
+  NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ std::shared_ptr<Model> model,
 				short exp_coeffs_approach,
 				const UShortArray& num_int_seq,
 				const RealVector& dim_pref, short u_space_type,
@@ -50,7 +46,7 @@ public:
 				short rule_growth, bool piecewise_basis,
 				bool use_derivs);
   /// alternate constructor for regression (least squares, CS, OLI)
-  NonDMultilevelPolynomialChaos(unsigned short method_name, Model& model,
+  NonDMultilevelPolynomialChaos(unsigned short method_name, std::shared_ptr<Model> model,
 				short exp_coeffs_approach,
 				const UShortArray& exp_order_seq,
 				const RealVector& dim_pref,
@@ -66,7 +62,7 @@ public:
 				unsigned short import_build_format,
 				bool import_build_active_only);
   /// destructor
-  ~NonDMultilevelPolynomialChaos();
+  ~NonDMultilevelPolynomialChaos() override;
 
   //
   //- Heading: Virtual function redefinitions
@@ -80,25 +76,25 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void initialize_u_space_model();
-  void core_run();
+  void initialize_u_space_model() override;
+  void core_run() override;
 
-  void assign_specification_sequence();
-  void increment_specification_sequence();
+  void assign_specification_sequence() override;
+  void increment_specification_sequence() override;
 
-  size_t collocation_points() const;
-  int random_seed() const;
-  int first_seed() const;
+  size_t collocation_points() const override;
+  int random_seed() const override;
+  int first_seed() const override;
 
-  void initialize_ml_regression(size_t num_lev, bool& import_pilot);
+  void initialize_ml_regression(size_t num_lev, bool& import_pilot) override;
   void infer_pilot_sample(/*Real ratio, */size_t num_steps,
-			  SizetArray& delta_N_l);
+			  SizetArray& delta_N_l) override;
   void increment_sample_sequence(size_t new_samp, size_t total_samp,
-				 size_t step);
+				 size_t step) override;
   void compute_sample_increment(const RealVector& sparsity,
-				const SizetArray& N_l, SizetArray& delta_N_l);
+				const SizetArray& N_l, SizetArray& delta_N_l) override;
 
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
   //
   //- Heading: Member functions

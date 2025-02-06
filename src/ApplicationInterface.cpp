@@ -1,23 +1,22 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        ApplicationInterface
-//- Description:  Implementation of base class for application interfaces
-//- Owner:        Mike Eldred
 
 #include "dakota_system_defs.hpp"
 #include "ApplicationInterface.hpp"
 #include "ParamResponsePair.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
+#include <thread>
 
 //#define DEBUG
+#define MICRO_PAUSE 25
+
 
 namespace Dakota {
 
@@ -724,17 +723,18 @@ const IntResponseMap& ApplicationInterface::synchronize()
 
   if (coreMappings) {
     size_t core_prp_jobs = beforeSynchCorePRPQueue.size();
-    Cout << "\nBlocking synchronize of " << core_prp_jobs << " asynchronous ";
-    if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
-    Cout << "evaluations";
-    if (cached_eval || hist_duplicates || queue_duplicates)
-      Cout << ", " << cached_eval << " cached evaluations, and "
-	   << hist_duplicates + queue_duplicates << " duplicates";
-    Cout << std::endl;
-
     // Process nonduplicate evaluations for either the message passing or local 
     // asynchronous case.
     if (core_prp_jobs) {
+      Cout << "\nBlocking synchronize of " << core_prp_jobs << " asynchronous ";
+      if (!(interfaceId.empty() || interfaceId == "NO_ID"))
+	Cout << interfaceId << ' ';
+      Cout << "evaluations";
+      if (cached_eval || hist_duplicates || queue_duplicates)
+	Cout << ", " << cached_eval << " cached evaluations, and "
+	     << hist_duplicates + queue_duplicates << " duplicates";
+      Cout << std::endl;
+
       if (ieMessagePass) { // single or multi-processor servers
 	if (ieDedMasterFlag) master_dynamic_schedule_evaluations();
 	else {
@@ -756,7 +756,8 @@ const IntResponseMap& ApplicationInterface::synchronize()
   }
   else if (!beforeSynchAlgPRPQueue.empty()) {
     Cout << "\nBlocking synchronize of " << beforeSynchAlgPRPQueue.size();
-    if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << ' ' << interfaceId;
+    if (!(interfaceId.empty() || interfaceId == "NO_ID"))
+      Cout << ' ' << interfaceId;
     Cout << " algebraic mappings" << std::endl;
   }
 
@@ -808,9 +809,9 @@ const IntResponseMap& ApplicationInterface::synchronize()
     for (IntRespMCIter rr_iter = rawResponseMap.begin();
 	 rr_iter != rawResponseMap.end(); ++rr_iter) {
       Cout << "\nActive response data for ";
-      if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
-      Cout << "evaluation " << rr_iter->first
-	   << ":\n" << rr_iter->second;
+      if (!(interfaceId.empty() || interfaceId == "NO_ID"))
+	Cout << interfaceId << ' ';
+      Cout << "evaluation " << rr_iter->first << ":\n" << rr_iter->second;
     }
 
   return rawResponseMap;
@@ -835,7 +836,8 @@ const IntResponseMap& ApplicationInterface::synchronize_nowait()
     if ( headerFlag && (core_prp_jobs || hist_duplicates) ) {
       Cout << "\nNonblocking synchronize of " << core_prp_jobs
 	   << " asynchronous ";
-      if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
+      if (!(interfaceId.empty() || interfaceId == "NO_ID"))
+	Cout << interfaceId << ' ';
       Cout << "evaluations";
       if (cached_eval || hist_duplicates || queue_duplicates)
 	Cout << ", " << cached_eval << " cached evaluations, and "
@@ -868,7 +870,8 @@ const IntResponseMap& ApplicationInterface::synchronize_nowait()
   }
   else if (!beforeSynchAlgPRPQueue.empty()) {
     Cout << "\nNonblocking synchronize of " << beforeSynchAlgPRPQueue.size();
-    if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << ' ' << interfaceId;
+    if (!(interfaceId.empty() || interfaceId == "NO_ID"))
+      Cout << ' ' << interfaceId;
     Cout << " algebraic mappings" << std::endl;
   }
 
@@ -947,7 +950,8 @@ const IntResponseMap& ApplicationInterface::synchronize_nowait()
     // output completed responses
     if (outputLevel > QUIET_OUTPUT) {
       Cout << "\nActive response data for ";
-      if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
+      if (!(interfaceId.empty() || interfaceId == "NO_ID"))
+	Cout << interfaceId << ' ';
       Cout << "evaluation " << fn_eval_id << ":\n" << rr_iter->second;
     }
     // clean up bookkeeping
@@ -1624,7 +1628,14 @@ void ApplicationInterface::master_dynamic_schedule_evaluations_nowait()
     if (num_running == num_jobs) Cout << '\n';
     else Cout << " and backfilling (" << num_jobs-num_running <<" remaining)\n";
   }
-  test_receives_backfill(assign_iter, false); // !peer
+  // continue to process and backfill completions as available;
+  // reduces bookkeeping overhead for fast running jobs
+  size_t num_recv = num_running;
+  while (num_recv) {
+    num_recv = test_receives_backfill(assign_iter, false); // !peer
+    if (num_recv && assign_iter != beforeSynchCorePRPQueue.end())
+      std::this_thread::sleep_for(std::chrono::microseconds(MICRO_PAUSE));
+  }
 
   if (msgPassRunningMap.empty()) {
     // deallocate MPI & buffer arrays
@@ -1807,10 +1818,18 @@ void ApplicationInterface::peer_static_schedule_evaluations_nowait()
     if (num_running == num_jobs) Cout << '\n';
     else Cout << " and backfilling (" << num_jobs-num_running <<" remaining)\n";
   }
-  if (num_remote_running)
-    test_receives_backfill(assign_iter, true); // peer
-  if (!synch_local && num_local_running)
-    test_local_backfill(beforeSynchCorePRPQueue, assign_iter);
+  // continue to process and backfill as completions are available;
+  // reduces bookkeeping overhead for fast running jobs
+  size_t num_recv = num_running;
+  while	(num_recv) {
+    num_recv = 0;
+    if (num_remote_running)
+      num_recv += test_receives_backfill(assign_iter, true); // peer
+    if (!synch_local && num_local_running)
+      num_recv += test_local_backfill(beforeSynchCorePRPQueue, assign_iter);
+    if (num_recv && assign_iter != beforeSynchCorePRPQueue.end())
+      std::this_thread::sleep_for(std::chrono::microseconds(MICRO_PAUSE));
+  }
 
   if (msgPassRunningMap.empty()) {
     // deallocate MPI & buffer arrays
@@ -1982,10 +2001,18 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations_nowait()
     if (num_running == num_jobs) Cout << '\n';
     else Cout << " and backfilling (" << num_jobs-num_running <<" remaining)\n";
   }
-  if (num_remote_running)
-    test_receives_backfill(assign_iter, true); // peer
-  if (num_local_running)
-    test_local_backfill(beforeSynchCorePRPQueue, assign_iter);
+  // continue to process and backfill as completions are available;
+  // reduces bookkeeping overhead for fast running jobs
+  size_t num_recv = num_running;
+  while (num_recv) {
+    num_recv = 0;
+    if (num_remote_running)
+      num_recv += test_receives_backfill(assign_iter, true); // peer
+    if (num_local_running)
+      num_recv += test_local_backfill(beforeSynchCorePRPQueue, assign_iter);
+    if (num_recv && assign_iter != beforeSynchCorePRPQueue.end())
+      std::this_thread::sleep_for(std::chrono::microseconds(MICRO_PAUSE));
+  }
 
   if (msgPassRunningMap.empty()) {
     // deallocate MPI & buffer arrays
@@ -2044,7 +2071,14 @@ asynchronous_local_evaluations_nowait(PRPQueue& local_prp_queue)
     if (num_active == num_jobs) Cout << '\n';
     else Cout << " and backfilling (" << num_jobs-num_active << " remaining)\n";
   }
-  test_local_backfill(local_prp_queue, local_prp_iter);
+  // continue to process and backfill completions as available;
+  // reduces bookkeeping overhead for fast running jobs
+  size_t num_recv = num_active;
+  while (num_recv) {
+    num_recv = test_local_backfill(local_prp_queue, local_prp_iter);
+    if (num_recv && local_prp_iter != local_prp_queue.end())
+      std::this_thread::sleep_for(std::chrono::microseconds(MICRO_PAUSE));
+  }
 }
 
 

@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        Environment
-//- Description:  Abstract base class to logically represent a variety
-//-               of Dakota environment objects in a very generic fashion.
-//- Owner:        Mike Eldred
-//- Version: $Id: DakotaEnvironment.hpp 6492 2009-12-19 00:04:28Z briadam $
 
 #ifndef DAKOTA_ENVIRONMENT_H
 #define DAKOTA_ENVIRONMENT_H

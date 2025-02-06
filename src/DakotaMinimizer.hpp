@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        Minimizer
-//- Description:  Base class for the optimizer and least squares branches
-//-               of the iterator hierarchy.
-//- Owner:        Mike Eldred
-//- Version: $Id: DakotaMinimizer.hpp 7018 2010-10-12 02:25:22Z mseldre $
 
 #ifndef DAKOTA_MINIMIZER_H
 #define DAKOTA_MINIMIZER_H
@@ -84,7 +78,11 @@ public:
   //- Heading: Virtual member function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
+
+  // Check if the iteratedModel pointer is consistent with iteratedModel
+  // ... used for refactoring
+  // bool check_model_consistency() const;
 
 protected:
 
@@ -96,12 +94,12 @@ protected:
   Minimizer(std::shared_ptr<TraitsBase> traits = 
       std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// standard constructor
-  Minimizer(ProblemDescDB& problem_db, Model& model, 
+  Minimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model, 
       std::shared_ptr<TraitsBase> traits =
       std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// alternate constructor for "on the fly" instantiations
-  Minimizer(unsigned short method_name, Model& model, 
+  Minimizer(unsigned short method_name, std::shared_ptr<Model> model, 
       std::shared_ptr<TraitsBase> traits = 
       std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// alternate constructor for "on the fly" instantiations
@@ -110,24 +108,24 @@ protected:
             std::shared_ptr<TraitsBase> traits = 
             std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// alternate constructor for "on the fly" instantiations
-  Minimizer(Model& model, size_t max_iter, size_t max_eval, Real conv_tol,
+  Minimizer(std::shared_ptr<Model> model, size_t max_iter, size_t max_eval, Real conv_tol,
 	    std::shared_ptr<TraitsBase> traits = 
 	    std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// destructor
-  ~Minimizer();
+  ~Minimizer() override;
 
   //
   //- Heading: Virtual member function redefinitions
   //
 
-  void update_from_model(const Model& model);
+  void update_from_model(const Model& model) override;
 
-  void initialize_run();
-  void post_run(std::ostream& s);
-  void finalize_run();
+  void initialize_run() override;
+  void post_run(std::ostream& s) override;
+  void finalize_run() override;
 
-  const Model& algorithm_space_model() const;
+  std::shared_ptr<Model> algorithm_space_model() override;
 
   //
   //- Heading: New virtual functions
@@ -155,7 +153,7 @@ protected:
 
   /// Return a shallow copy of the original model this Iterator was
   /// originally passed, optionally leaving recasts_left on top of it
-  Model original_model(unsigned short recasts_left = 0) const; 
+  std::shared_ptr<Model> original_model(unsigned short recasts_left = 0) const; 
 
   /// Wrap iteratedModel in a RecastModel that subtracts provided
   /// observed data from the primary response functions (variables and
@@ -166,7 +164,10 @@ protected:
   /// and/or response scaling
   void scale_model();
 
-   /// compute a composite objective value from one or more primary functions
+  /// ensure iteratedModel is null when using function callbacks for evaluation
+  void enforce_null_model();
+
+  /// compute a composite objective value from one or more primary functions
   Real objective(const RealVector& fn_vals, const BoolDeque& max_sense,
 		 const RealVector& primary_wts) const;
 
@@ -229,6 +230,8 @@ protected:
   /// optimizer and returns true if lookup succeeds
   bool local_recast_retrieve(const Variables& vars, Response& response) const;
 
+  /// reshape input/output sizes within best{Variables,Response}Array
+  void reshape_best(size_t num_cv, size_t num_fns);
 
   //
   //- Heading: Data
@@ -295,13 +298,13 @@ protected:
   size_t numTotalCalibTerms;
   /// Shallow copy of the data transformation model, when present
   /// (cached in case further wrapped by other transformations)
-  Model dataTransformModel; 
+  std::shared_ptr<Model> dataTransformModel; 
 
   /// whether Iterator-level scaling is active
   bool scaleFlag;
   /// Shallow copy of the scaling transformation model, when present
   /// (cached in case further wrapped by other transformations)
-  Model scalingModel;
+  std::shared_ptr<Model> scalingModel;
 
   /// pointer to Minimizer used in static member functions
   static Minimizer* minimizerInstance;
@@ -344,9 +347,51 @@ inline Real Minimizer::constraint_tolerance() const
 
 
 /** default definition that gets redefined in selected derived Minimizers */
-inline const Model& Minimizer::algorithm_space_model() const
+inline std::shared_ptr<Model> Minimizer::algorithm_space_model()
 { return iteratedModel; }
 
+
+inline void Minimizer::enforce_null_model()
+{
+  // This function is only for updates in "user functions" mode (NPSOL & OPT++)
+  if (iteratedModel) {
+    Cerr << "Error: callback updaters should not be used when Model data "
+	 << "available." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+}
+
+
+inline void Minimizer::reshape_best(size_t num_cv, size_t num_fns)
+{
+  // This function is only for updates in "user functions" mode (NPSOL & OPT++)
+  size_t i, num_best = bestVariablesArray.size();
+  if (bestResponseArray.size() != num_best) {
+    Cerr << "Error: inconsistent best array sizing in Minimizer::"
+	 << "reshape_best()." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  // assume single SVD shared among all enries in bestVariablesArray
+  const SharedVariablesData& old_svd
+    = bestVariablesArray.front().shared_data();
+  SizetArray vc_totals = old_svd.components_totals(); // copy
+  vc_totals[TOTAL_CDV] = num_cv; // update
+  // SVD has a limited API, so rather than copy+reshape, build a new one
+  SharedVariablesData new_svd(old_svd.view(), vc_totals,
+			      old_svd.all_relaxed_discrete_int(),
+			      old_svd.all_relaxed_discrete_real());
+  for (i=0; i<num_best; ++i) {
+    bestVariablesArray[i].reshape(new_svd); // pulls sizing from new svd
+    bestResponseArray[i].reshape(num_fns, num_cv, false, false);
+  }
+}
+
+
+// inline bool Minimizer::check_model_consistency() const
+// {
+//   return (iteratedModel != NULL) && (iteratedModel == &iteratedModel);
+// }
 
 //inline void Minimizer::initialize_iterator(int job_index)
 //{ } // default = no-op

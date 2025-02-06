@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDRKDDarts
-//- Description: Class for the Recursive k-d DARTS approach
-//- Owner:       Mohamed Ebeida and Ahmad Rushdi
-//- Checked by:
-//- Version:
 
 #ifndef NOND_RKDDARTS_H
 #define NOND_RKDDARTS_H
@@ -38,16 +32,16 @@ public:
   // - Heading: Constructors and destructor
   // ----------------------
     
-    NonDRKDDarts(ProblemDescDB& problem_db, Model& model); ///< constructor
+    NonDRKDDarts(ProblemDescDB& problem_db, std::shared_ptr<Model> model); ///< constructor
 
-    ~NonDRKDDarts();                                       ///< destructor
+    ~NonDRKDDarts() override;                                       ///< destructor
 
     //
     //- Heading: Virtual function redefinitions
     //
 
-    bool resize();
-    void core_run();
+    bool resize() override;
+    void core_run() override;
 
 protected:
     
@@ -61,7 +55,7 @@ protected:
     // computing statistics on the ensemble of results.
     
     /// generate samples
-    void pre_run();
+    void pre_run() override;
     
     void initiate_random_number_generator(unsigned long x);
     
@@ -119,7 +113,7 @@ protected:
     
     /// generate statistics
     
-    void post_run(std::ostream& s);
+    void post_run(std::ostream& s) override;
     
     void print_integration_results(std::ostream& s);
     

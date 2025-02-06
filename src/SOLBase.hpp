@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       SOLBase
-//- Description: Wrapper class for NPSOL
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version: $Id: SOLBase.hpp 7004 2010-10-04 17:55:00Z wjbohnh $
 
 #ifndef SOL_BASE_H
 #define SOL_BASE_H
@@ -19,6 +13,13 @@
 #include "dakota_system_defs.hpp"
 #include "dakota_data_types.hpp"
 #include "DakotaModel.hpp"
+
+
+#define CLOSE_IO_UNITS_F77 F77_FUNC(close_io_units,CLOSE_IO_UNITS)
+
+extern "C" {
+  void CLOSE_IO_UNITS_F77();
+}
 
 namespace Dakota {
 
@@ -36,46 +37,46 @@ class Model;
 class SOLBase
 {
 public:
-  
+    
   //
   //- Heading: Constructors and destructor
   //
 
   SOLBase();             ///< default constructor
-  SOLBase(Model& model); ///< standard constructor
+  SOLBase(std::shared_ptr<Model> model); ///< standard constructor
   ~SOLBase();            ///< destructor
 
 protected:
+
+  //
+  //- Heading: New virtual functions
+  //
+
+  /// Resize and send option to NPSOL (npoptn) or NLSSOL (nloptn) via
+  /// derived implementation.
+  virtual void send_sol_option(std::string sol_option) = 0;
 
   //
   //- Heading: Convenience member functions
   //
 
   /// check for clash with nested use of Fortran code
-  void check_sub_iterator_conflict(Model& model);
+  void check_sub_iterator_conflict(Model& model, unsigned short method_name);
 
   /// Allocates F77 linear constraint arrays for the SOL algorithms
   void allocate_linear_arrays(int num_cv, const RealMatrix& lin_ineq_coeffs,
 			      const RealMatrix& lin_eq_coeffs);
   /// Allocates F77 nonlinear constraint arrays for the SOL algorithms.
   void allocate_nonlinear_arrays(int num_cv, size_t num_nln_con);
-  /// Updates arrays dependent on combined bounds size
-  void size_bounds_array(size_t new_bnds_size);
   /// Allocates F77 arrays for the SOL algorithms.
   void allocate_arrays(int num_cv, size_t num_nln_con,
 		       const RealMatrix& lin_ineq_coeffs,
 		       const RealMatrix& lin_eq_coeffs);
-
-  /// update linear constraint arrays
-  void replace_linear_arrays(size_t num_cv, size_t num_nln_con,
-			     const RealMatrix& lin_ineq_coeffs,
-			     const RealMatrix& lin_eq_coeffs);
-  /// update nonlinear constraint arrays
-  void replace_nonlinear_arrays(int num_cv, size_t num_lin_con,
-				size_t num_nln_con);
-
   /// Deallocates memory previously allocated by allocate_arrays().
   void deallocate_arrays();
+
+  /// Updates arrays dependent on combined bounds size
+  void size_bounds_array(size_t new_bnds_size);
 
   /// Allocates real and integer workspaces for the SOL algorithms.
   void allocate_workspace(int num_cv, int num_nln_con, int num_lin_con,
@@ -88,10 +89,19 @@ protected:
 		   Real conv_tol, const std::string& grad_type,
 		   const RealVector& fdss);
 
-  /// Resize and send option to NPSOL (npoptn) or NLSSOL (nloptn) via
-  /// derived implementation.
-  virtual void send_sol_option(std::string sol_option) = 0;
+  /// aggregate variable bounds with linear and nonlinear constraint bounds
+  void aggregate_bounds(const RealVector& cv_lower_bnds,
+			const RealVector& cv_upper_bnds,
+			const RealVector& lin_ineq_l_bnds,
+			const RealVector& lin_ineq_u_bnds,
+			const RealVector& lin_eq_targets,
+			const RealVector& nln_ineq_l_bnds,
+			const RealVector& nln_ineq_u_bnds,
+			const RealVector& nln_eq_targets,
+			RealVector& aggregate_l_bnds,
+			RealVector& aggregate_u_bnds);
 
+  /*
   /// augments variable bounds with linear and nonlinear constraint bounds.
   void augment_bounds(RealVector& aggregate_l_bnds,
 		      RealVector& aggregate_u_bnds,
@@ -105,6 +115,14 @@ protected:
 		      const RealVector& nln_ineq_l_bnds,
 		      const RealVector& nln_ineq_u_bnds,
 		      const RealVector& nln_eq_targets);
+
+  /// update linear constraint arrays
+  void replace_linear_arrays(size_t num_cv, size_t num_nln_con,
+			     const RealMatrix& lin_ineq_coeffs,
+			     const RealMatrix& lin_eq_coeffs);
+  /// update nonlinear constraint arrays
+  void replace_nonlinear_arrays(int num_cv, size_t num_lin_con,
+				size_t num_nln_con);
 
   /// replace variable bounds within aggregate arrays
   void replace_variable_bounds(size_t num_lin_con, size_t num_nln_con,
@@ -126,6 +144,7 @@ protected:
 				const RealVector& nln_ineq_l_bnds,
 				const RealVector& nln_ineq_u_bnds,
 				const RealVector& nln_eq_targets);
+  */
 
   //
   //- Heading: Static member functions passed by pointer to NPSOL/NLSSOL
@@ -186,16 +205,31 @@ protected:
   /// used in constraint_eval() to bridge NLSSOLLeastSq::numLeastSqTerms
   /// and NPSOLOptimizer::numObjectiveFns
   size_t constrOffset;
+
+  // The NPSOL package does not close output files explicitly, relying on
+  // process termination to close them. This can cause problems when Dakota
+  // is used in "library mode", such as with the environment Python binding.
+  // The numInstances variable counts instances of NPSOL and NLSSOL wrappers,
+  // and a subroutine is called to close the files when it reaches 0 (see
+  // the SOLBase constructors and destructor).
+  
+  /// Track the number of instances of SOLBase and its derived classes. 
+  static size_t numInstances;
+
 };
 
 
 inline SOLBase::SOLBase():
   boundsArraySize(0), linConstraintMatrixF77(NULL),
   upperFactorHessianF77(NULL), constraintJacMatrixF77(NULL)
-{ }
+{ numInstances++;}
 
 
-inline SOLBase::~SOLBase() { }
+inline SOLBase::~SOLBase() { 
+  numInstances--;
+  if(numInstances == 0)
+    CLOSE_IO_UNITS_F77();
+}
 
 
 inline void SOLBase::size_bounds_array(size_t new_bnds_size)
@@ -208,6 +242,7 @@ inline void SOLBase::size_bounds_array(size_t new_bnds_size)
 }
 
 
+/*
 inline void SOLBase::
 replace_linear_arrays(size_t num_cv, size_t num_nln_con,
 		      const RealMatrix& lin_ineq_coeffs,
@@ -232,13 +267,14 @@ augment_bounds(RealVector& aggregate_l_bnds, RealVector& aggregate_u_bnds,
 	       const Model& model)
 {
   augment_bounds(aggregate_l_bnds, aggregate_u_bnds,
-		 model.linear_ineq_constraint_lower_bounds(),
-		 model.linear_ineq_constraint_upper_bounds(),
-		 model.linear_eq_constraint_targets(),
-		 model.nonlinear_ineq_constraint_lower_bounds(),
-		 model.nonlinear_ineq_constraint_upper_bounds(),
-		 model.nonlinear_eq_constraint_targets());
+		 ModelUtils::linear_ineq_constraint_lower_bounds(model),
+		 ModelUtils::linear_ineq_constraint_upper_bounds(model),
+		 ModelUtils::linear_eq_constraint_targets(model),
+		 ModelUtils::nonlinear_ineq_constraint_lower_bounds(model),
+		 ModelUtils::nonlinear_ineq_constraint_upper_bounds(model),
+		 ModelUtils::nonlinear_eq_constraint_targets(model));
 }
+*/
 
 } // namespace Dakota
 

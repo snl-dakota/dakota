@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       SNLLLeastSq
-//- Description: Implementation code for the SNLLLeastSq class
-//- Owner:       Pam Williams
-//- Checked by:
-//- Change Log:  
 
 #include "SNLLLeastSq.hpp"
 #include "DakotaModel.hpp"
@@ -38,7 +32,7 @@ extern PRPCache data_pairs; // global container
 SNLLLeastSq* SNLLLeastSq::snllLSqInstance(NULL);
 
 
-SNLLLeastSq::SNLLLeastSq(ProblemDescDB& problem_db, Model& model):
+SNLLLeastSq::SNLLLeastSq(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   LeastSq(problem_db, model, std::shared_ptr<TraitsBase>(new SNLLLeastSqTraits())),
   SNLLBase(problem_db), nlfObjective(NULL),
   nlfConstraint(NULL), nlpConstraint(NULL), theOptimizer(NULL)
@@ -120,16 +114,15 @@ SNLLLeastSq::SNLLLeastSq(ProblemDescDB& problem_db, Model& model):
 
   // convenience function from SNLLBase
   snll_post_instantiate(numContinuousVars, vendorNumericalGradFlag,
-			iteratedModel.interval_type(),
-			iteratedModel.fd_gradient_step_size(),
-			maxIterations, maxFunctionEvals, convergenceTol,
-			probDescDB.get_real("method.gradient_tolerance"),
-			maxStep, boundConstraintFlag, numConstraints,
-			outputLevel, theOptimizer, nlfObjective, NULL, NULL);
+			iteratedModel->interval_type(),
+			iteratedModel->fd_gradient_step_size(), maxIterations,
+			maxFunctionEvals, convergenceTol, gradientTol, maxStep,
+			boundConstraintFlag, numConstraints, outputLevel,
+			theOptimizer, nlfObjective, NULL, NULL);
 }
 
 
-SNLLLeastSq::SNLLLeastSq(const String& method_name, Model& model):
+SNLLLeastSq::SNLLLeastSq(const String& method_name, std::shared_ptr<Model> model):
   LeastSq(OPTPP_G_NEWTON, model, std::shared_ptr<TraitsBase>(new SNLLLeastSqTraits())), // use default SNLLBase ctor
   nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL),
   theOptimizer(NULL)
@@ -209,8 +202,8 @@ SNLLLeastSq::SNLLLeastSq(const String& method_name, Model& model):
 
   // convenience function from SNLLBase
   snll_post_instantiate(numContinuousVars, vendorNumericalGradFlag,
-			iteratedModel.interval_type(),
-			iteratedModel.fd_gradient_step_size(),
+			iteratedModel->interval_type(),
+			iteratedModel->fd_gradient_step_size(),
 			maxIterations, maxFunctionEvals, convergenceTol, 1.e-4,
 			1000., boundConstraintFlag, numConstraints, outputLevel,
 			theOptimizer, nlfObjective, NULL, NULL);
@@ -284,7 +277,7 @@ nlf2_evaluator_gn(int mode, int n, const RealVector& x, double& f,
       x != lastEvalVars) {
     // data not available from constraint evaluator, so perform
     // a new function evaluation.
-    snllLSqInstance->iteratedModel.continuous_variables(x);
+    ModelUtils::continuous_variables(*snllLSqInstance->iteratedModel, x);
     ShortArray local_asv(snllLSqInstance->numFunctions, lsq_mode);
     // Should constraints be evaluated (if present)?  Depends on what OPT++
     // is doing.  Since we know this eval is not aligned with a preceding
@@ -299,11 +292,11 @@ nlf2_evaluator_gn(int mode, int n, const RealVector& x, double& f,
       local_asv[i] = 0; //mode & 3; // nonlinear constraints (if present)
 
     snllLSqInstance->activeSet.request_vector(local_asv);
-    snllLSqInstance->iteratedModel.evaluate(snllLSqInstance->activeSet);
+    snllLSqInstance->iteratedModel->evaluate(snllLSqInstance->activeSet);
     lastFnEvalLocn = NLF_EVALUATOR;
   }
   const Response& local_response
-    = snllLSqInstance->iteratedModel.current_response();
+    = snllLSqInstance->iteratedModel->current_response();
 
   // Go ahead and always retrieve the references even though this data may not
   // have been requested in the local_asv (in which case it contains 0's).
@@ -384,20 +377,20 @@ constraint1_evaluator_gn(int mode, int n, const RealVector& x, RealVector& g,
   if (snllLSqInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLLeastSq::constraint1_evaluator_gn vars = \n"
          << x;
-  snllLSqInstance->iteratedModel.continuous_variables(x);
+  ModelUtils::continuous_variables(*snllLSqInstance->iteratedModel, x);
 
   size_t i;
   ShortArray local_asv(snllLSqInstance->numFunctions, lsq_mode);
   for (i=snllLSqInstance->numLeastSqTerms; i<snllLSqInstance->numFunctions; i++)
     local_asv[i] = mode; // nonlinear constraints
   snllLSqInstance->activeSet.request_vector(local_asv);
-  snllLSqInstance->iteratedModel.evaluate(snllLSqInstance->activeSet);
+  snllLSqInstance->iteratedModel->evaluate(snllLSqInstance->activeSet);
   lastFnEvalLocn = CON_EVALUATOR;
   lastEvalMode   = lsq_mode;
   lastEvalVars   = x;
 
   const Response& local_response
-    = snllLSqInstance->iteratedModel.current_response();
+    = snllLSqInstance->iteratedModel->current_response();
   if (mode & 1) { // 1st bit is present, mode = 1, 3, 5, or 7
     snllLSqInstance->copy_con_vals_dak_to_optpp(
       local_response.function_values(), g, snllLSqInstance->numLeastSqTerms);
@@ -449,20 +442,20 @@ constraint2_evaluator_gn(int mode, int n, const RealVector& x, RealVector& g,
   if (snllLSqInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLLeastSq::constraint2_evaluator_gn vars = \n"
          << x;
-  snllLSqInstance->iteratedModel.continuous_variables(x);
+  ModelUtils::continuous_variables(*snllLSqInstance->iteratedModel, x);
 
   size_t i;
   ShortArray local_asv(snllLSqInstance->numFunctions, lsq_mode);
   for (i=snllLSqInstance->numLeastSqTerms; i<snllLSqInstance->numFunctions; i++)
     local_asv[i] = mode; // nonlinear constraints
   snllLSqInstance->activeSet.request_vector(local_asv);
-  snllLSqInstance->iteratedModel.evaluate(snllLSqInstance->activeSet);
+  snllLSqInstance->iteratedModel->evaluate(snllLSqInstance->activeSet);
   lastFnEvalLocn = CON_EVALUATOR;
   lastEvalMode   = lsq_mode;
   lastEvalVars   = x;
 
   const Response& local_response
-    = snllLSqInstance->iteratedModel.current_response();
+    = snllLSqInstance->iteratedModel->current_response();
   if (mode & 1) { // 1st bit is present, mode = 1, 3, 5, or 7
     snllLSqInstance->
       copy_con_vals_dak_to_optpp(local_response.function_values(), g,
@@ -492,18 +485,18 @@ void SNLLLeastSq::initialize_run()
 
   // convenience function from SNLLBase
   snll_initialize_run(nlfObjective, nlpConstraint,
-		      iteratedModel.continuous_variables(), 
+		      ModelUtils::continuous_variables(*iteratedModel), 
 		      boundConstraintFlag, 
-		      iteratedModel.continuous_lower_bounds(),
-		      iteratedModel.continuous_upper_bounds(),
-		      iteratedModel.linear_ineq_constraint_coeffs(),
-		      iteratedModel.linear_ineq_constraint_lower_bounds(),
-		      iteratedModel.linear_ineq_constraint_upper_bounds(),
-		      iteratedModel.linear_eq_constraint_coeffs(),
-		      iteratedModel.linear_eq_constraint_targets(),
-		      iteratedModel.nonlinear_ineq_constraint_lower_bounds(),
-		      iteratedModel.nonlinear_ineq_constraint_upper_bounds(),
-		      iteratedModel.nonlinear_eq_constraint_targets());
+		      ModelUtils::continuous_lower_bounds(*iteratedModel),
+		      ModelUtils::continuous_upper_bounds(*iteratedModel),
+		      ModelUtils::linear_ineq_constraint_coeffs(*iteratedModel),
+		      ModelUtils::linear_ineq_constraint_lower_bounds(*iteratedModel),
+		      ModelUtils::linear_ineq_constraint_upper_bounds(*iteratedModel),
+		      ModelUtils::linear_eq_constraint_coeffs(*iteratedModel),
+		      ModelUtils::linear_eq_constraint_targets(*iteratedModel),
+		      ModelUtils::nonlinear_ineq_constraint_lower_bounds(*iteratedModel),
+		      ModelUtils::nonlinear_ineq_constraint_upper_bounds(*iteratedModel),
+		      ModelUtils::nonlinear_eq_constraint_targets(*iteratedModel));
 
   // set modeOverrideFlag based on method/search strategy, speculative 
   // gradient, or constant asv selections.  Notes:

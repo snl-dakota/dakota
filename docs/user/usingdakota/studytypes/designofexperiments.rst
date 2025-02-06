@@ -145,7 +145,7 @@ mentioned above, we also may want to do *uncertainty quantification* on
 a computer model. Uncertainty quantification (UQ) refers to taking a
 particular set of distributions on the inputs, and propagating them
 through the model to obtain a distribution on the outputs. For example,
-if input parameter A follows a normal with mean 5 and variance 1, the
+if input parameter A follows a normal distribution with mean 5 and variance 1, the
 computer produces a random draw from that distribution. If input
 parameter B follows a weibull distribution with alpha = 0.5 and beta =
 1, the computer produces a random draw from that distribution. When all
@@ -481,7 +481,7 @@ deterministic sequences determined by a set of prime bases. A Halton
 design is specified in Dakota with the method command
 :dakkw:`method-fsu_quasi_mc` :dakkw:`method-fsu_quasi_mc-halton`, and the Hammersley design is specified with the
 command :dakkw:`method-fsu_quasi_mc` :dakkw:`method-fsu_quasi_mc-hammersley`. For more details about the input
-specification, see the Reference Manual. CVT points tend to arrange
+specification, see :ref:`the Reference Manual <method-fsu_quasi_mc>`. CVT points tend to arrange
 themselves in a pattern of cells that are roughly the same shape. To
 produce CVT points, an almost arbitrary set of initial points is chosen,
 and then an internal set of iterations is carried out. These iterations

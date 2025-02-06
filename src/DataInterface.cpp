@@ -1,15 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        DataInterface
-//- Description:  Class implementation
-//- Owner:        Mike Eldred
 
 #include "DataInterface.hpp"
 #include "DataMethod.hpp" // shared scheduling enums
@@ -20,8 +16,10 @@ namespace Dakota {
 
 DataInterfaceRep::DataInterfaceRep():
   interfaceType(DEFAULT_INTERFACE),
-  allowExistingResultsFlag(false), verbatimFlag(false), apreproFlag(false),
-  resultsFileFormat(FLEXIBLE_RESULTS), fileTagFlag(false), fileSaveFlag(false),
+  allowExistingResultsFlag(false), verbatimFlag(false),
+  parametersFileFormat(PARAMETERS_FILE_STANDARD), 
+  resultsFileFormat(RESULTS_FILE_STANDARD), dakotaResultsFileLabeled(false),
+  fileTagFlag(false), fileSaveFlag(false),
   batchEvalFlag(false), asynchFlag(false),
   asynchLocalEvalConcurrency(0), asynchLocalEvalScheduling(DEFAULT_SCHEDULING),
   asynchLocalAnalysisConcurrency(0), evalServers(0),
@@ -42,8 +40,9 @@ void DataInterfaceRep::write(MPIPackBuffer& s) const
 {
   s << idInterface << interfaceType << algebraicMappings << analysisDrivers
     << analysisComponents << inputFilter << outputFilter << parametersFile
-    << resultsFile << allowExistingResultsFlag  << verbatimFlag << apreproFlag 
-    << resultsFileFormat << fileTagFlag << fileSaveFlag //<< gridHostNames << gridProcsPerHost
+    << resultsFile << allowExistingResultsFlag  << verbatimFlag  
+    << parametersFileFormat << resultsFileFormat 
+    << dakotaResultsFileLabeled << fileTagFlag << fileSaveFlag //<< gridHostNames << gridProcsPerHost
     << batchEvalFlag << asynchFlag << asynchLocalEvalConcurrency
     << asynchLocalEvalScheduling << asynchLocalAnalysisConcurrency
     << evalServers << evalScheduling << procsPerEval << analysisServers
@@ -59,8 +58,9 @@ void DataInterfaceRep::read(MPIUnpackBuffer& s)
 {
   s >> idInterface >> interfaceType >> algebraicMappings >> analysisDrivers
     >> analysisComponents >> inputFilter >> outputFilter >> parametersFile
-    >> resultsFile >> allowExistingResultsFlag  >> verbatimFlag >> apreproFlag 
-    >> resultsFileFormat >> fileTagFlag >> fileSaveFlag //>> gridHostNames >> gridProcsPerHost
+    >> resultsFile >> allowExistingResultsFlag  >> verbatimFlag  
+    >> parametersFileFormat >> resultsFileFormat 
+    >> dakotaResultsFileLabeled >> fileTagFlag >> fileSaveFlag //>> gridHostNames >> gridProcsPerHost
     >> batchEvalFlag >> asynchFlag >> asynchLocalEvalConcurrency
     >> asynchLocalEvalScheduling >> asynchLocalAnalysisConcurrency
     >> evalServers >> evalScheduling >> procsPerEval >> analysisServers
@@ -76,8 +76,9 @@ void DataInterfaceRep::write(std::ostream& s) const
 {
   s << idInterface << interfaceType << algebraicMappings << analysisDrivers
     << analysisComponents << inputFilter << outputFilter << parametersFile
-    << resultsFile << allowExistingResultsFlag  << verbatimFlag << apreproFlag 
-    << resultsFileFormat << fileTagFlag << fileSaveFlag //<< gridHostNames << gridProcsPerHost
+    << resultsFile << allowExistingResultsFlag  << verbatimFlag  
+    << parametersFileFormat << resultsFileFormat 
+    << dakotaResultsFileLabeled << fileTagFlag << fileSaveFlag //<< gridHostNames << gridProcsPerHost
     << batchEvalFlag << asynchFlag << asynchLocalEvalConcurrency
     << asynchLocalEvalScheduling << asynchLocalAnalysisConcurrency
     << evalServers << evalScheduling << procsPerEval << analysisServers

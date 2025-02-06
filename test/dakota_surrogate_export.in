@@ -1,3 +1,4 @@
+#@ s*: DakotaConfig=HAVE_ROL
 # Demonstrate list parameter study on global GP, exporting values and
 # variance, and model.
 # TODO: Diff tabular data against exported surrogate evals

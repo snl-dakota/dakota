@@ -1,15 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       NonDMultilevelStochCollocation
-//- Description: Iterator for the stochastic collocation approach to UQ
-//- Owner:       Mike Eldred, Sandia National Laboratories
 
 #ifndef NOND_MULTILEVEL_STOCH_COLLOCATION_H
 #define NOND_MULTILEVEL_STOCH_COLLOCATION_H
@@ -38,21 +34,21 @@ public:
   //
 
   /// standard constructor
-  NonDMultilevelStochCollocation(ProblemDescDB& problem_db, Model& model);
+  NonDMultilevelStochCollocation(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor
-  NonDMultilevelStochCollocation(Model& model, short exp_coeffs_approach,
+  NonDMultilevelStochCollocation(std::shared_ptr<Model> model, short exp_coeffs_approach,
     const UShortArray& num_int_seq, const RealVector& dim_pref,
     short u_space_type, short refine_type, short refine_control,
     short covar_control, short ml_alloc_cntl, short ml_discrep,
     short rule_nest, short rule_growth, bool piecewise_basis, bool use_derivs);
   /// destructor
-  ~NonDMultilevelStochCollocation();
+  ~NonDMultilevelStochCollocation() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
 
 protected:
 
@@ -60,19 +56,19 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void initialize_u_space_model();
+  void initialize_u_space_model() override;
 
-  void core_run();
+  void core_run() override;
 
-  int random_seed() const;
-  int first_seed() const;
+  int random_seed() const override;
+  int first_seed() const override;
 
-  void assign_specification_sequence();
-  void increment_specification_sequence();
+  void assign_specification_sequence() override;
+  void increment_specification_sequence() override;
 
   //void combined_to_active();
 
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
 private:
 

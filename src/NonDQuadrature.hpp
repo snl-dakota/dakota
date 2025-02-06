@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDQuadrature
-//- Description: Projects 1-D Gaussian quadratures in a tensor-product approach
-//- Owner:       Mike Eldred
-//- Revised by:  
-//- Version:
 
 #ifndef NOND_QUADRATURE_H
 #define NOND_QUADRATURE_H
@@ -51,28 +45,28 @@ public:
 
   /// alternate constructor for instantiations "on the fly" based on a
   /// quadrature order specification
-  NonDQuadrature(Model& model, unsigned short quad_order,
+  NonDQuadrature(std::shared_ptr<Model> model, unsigned short quad_order,
 		 const RealVector& dim_pref, short driver_mode);
   /// alternate constructor for instantiations "on the fly" that filter a
   /// tensor product sample set to include points with highest sample weights
-  NonDQuadrature(Model& model, unsigned short quad_order,
+  NonDQuadrature(std::shared_ptr<Model> model, unsigned short quad_order,
 		 const RealVector& dim_pref, short driver_mode,
 		 int num_filt_samples);
   /// alternate constructor for instantiations "on the fly" that sub-sample
   /// quadrature rules by sampling randomly from a tensor product multi-index
-  NonDQuadrature(Model& model, unsigned short quad_order,
+  NonDQuadrature(std::shared_ptr<Model> model, unsigned short quad_order,
 		 const RealVector& dim_pref, short driver_mode,
 		 int num_sub_samples, int seed);
 
-  ~NonDQuadrature();                                       ///< destructor
+  ~NonDQuadrature() override;                                       ///< destructor
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  void increment_grid();
-  void decrement_grid();
-  void evaluate_grid_increment();
+  void increment_grid() override;
+  void decrement_grid() override;
+  void evaluate_grid_increment() override;
 
   //
   //- Heading: Member functions
@@ -83,7 +77,7 @@ public:
 
   /// set Pecos::TensorProductDriver::quadOrder to dimension orders indicated by
   /// quadOrderSpec & dimPrefSpec, following refinement or sequence advancement
-  void reset();
+  void reset() override;
 
   /// return Pecos::TensorProductDriver::quadOrder
   const Pecos::UShortArray& quadrature_order() const;
@@ -104,25 +98,25 @@ protected:
   //- Heading: Constructors and destructor
   //
 
-  NonDQuadrature(ProblemDescDB& problem_db, Model& model); ///< constructor
+  NonDQuadrature(ProblemDescDB& problem_db, std::shared_ptr<Model> model); ///< constructor
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  void initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis);
+  void initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis) override;
 
-  void get_parameter_sets(Model& model);
+  void get_parameter_sets(std::shared_ptr<Model> model) override;
 
-  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag);
-  void sampling_reference(size_t samples_ref);
+  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag) override;
+  void sampling_reference(size_t samples_ref) override;
 
-  void increment_grid_preference(const RealVector& dim_pref);
-  void increment_grid_preference();
+  void increment_grid_preference(const RealVector& dim_pref) override;
+  void increment_grid_preference() override;
 
-  size_t num_samples() const;
+  size_t num_samples() const override;
 
-  void random_seed(int seed);
+  void random_seed(int seed) override;
 
 private:
 
@@ -309,7 +303,7 @@ inline void NonDQuadrature::evaluate_grid_increment()
   // detection for now.
 
   tpqDriver->compute_grid(allSamples);//Driver->compute_increment(allSamples);
-  evaluate_parameter_sets(iteratedModel, true, false);
+  evaluate_parameter_sets(*iteratedModel);
   ++numIntegrations;
 }
 

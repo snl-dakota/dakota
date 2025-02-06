@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       rSQPOptimizer
-//- Description: Wrapper class for rSQP++
-//- Owner:       Roscoe Bartlett
-//- Checked by:
-//- Version: $Id: rSQPOptimizer.H 6492 2009-12-19 00:04:28Z briadam $
 
 #ifndef RSQP_OPTIMIZER_H
 #define RSQP_OPTIMIZER_H
@@ -279,28 +273,28 @@ public:
     { return numObjectiveFns; }
     ///
     const RealVector& lin_ineq_lb() const
-    { return iteratedModel.linear_ineq_constraint_lower_bounds(); }
+    { return iteratedModel->linear_ineq_constraint_lower_bounds(); }
     ///
     const RealVector& lin_ineq_ub() const
-    { return iteratedModel.linear_ineq_constraint_upper_bounds(); }
+    { return iteratedModel->linear_ineq_constraint_upper_bounds(); }
     ///
     const RealVector& nonlin_ineq_lb() const
-    { return iteratedModel.nonlinear_ineq_constraint_lower_bounds(); }
+    { return iteratedModel->nonlinear_ineq_constraint_lower_bounds(); }
     ///
     const RealVector& nonlin_ineq_ub() const
-    { return iteratedModel.nonlinear_ineq_constraint_upper_bounds(); }
+    { return iteratedModel->nonlinear_ineq_constraint_upper_bounds(); }
     ///
     const RealVector& lin_eq_targ() const
-    { return iteratedModel.linear_eq_constraint_targets(); }
+    { return iteratedModel->linear_eq_constraint_targets(); }
     ///
     const RealVector& nonlin_eq_targ() const
-    { return iteratedModel.nonlinear_eq_constraint_targets(); }
+    { return iteratedModel->nonlinear_eq_constraint_targets(); }
     ///
     const RealMatrix& lin_eq_jac() const
-    { return iteratedModel.linear_eq_constraint_coeffs(); }
+    { return iteratedModel->linear_eq_constraint_coeffs(); }
     ///
     const RealMatrix& lin_ineq_jac() const
-    { return iteratedModel.linear_ineq_constraint_coeffs(); }
+    { return iteratedModel->linear_ineq_constraint_coeffs(); }
     
     /** @name Overridden from Optimizer */
     //@{

@@ -14,7 +14,7 @@ Expressions can be of three different forms (with defaults)
 
 * Inline single-line expressions (rendered) [ `{expression}` ]
 * Python code single-line  (silent) [ `% expression` ]
-* Python code multi-line blocks (silent) [ `{% expression (that can be over many line) %}` ]
+* Python code multi-line blocks (silent) [ `{% expression (that can be over many lines) %}` ]
 
 The delineation of these expressions are user settable
 
@@ -86,6 +86,23 @@ returns:
 As noted in the `--help` for pyprepro, the actual delimiters can be changed. This is useful when the defaults would require extensive escaping. 
 
 For code blocks (default `{% %}`), the innermost characters cannot be any of "`{}[]()`".
+
+Furthermore every template can individually reset the command delimiter by specifying them at the top of the file. From the help:
+
+    Specify delineators as the the first non-whitespace line. Start with a
+    comment '//', '#','%', '$' or '' (nothing), then a command, then '=' or
+    space, followed by the new setting. See examples.
+
+    [D/PY]PREPRO_CODE specifies --code
+    [D/PY]PREPRO_CODE_BLOCK specifies --code-block
+    [D/PY]PREPRO_INLINE specified --inline
+                    
+
+Where, for example `D/PY]PREPRO_CODE` can be:
+
+- `DPREPRO_CODE`
+- `PYPREPRO_CODE`
+- `PREPRO_CODE`
 
 ## Escaping delimiters
 
@@ -585,6 +602,31 @@ returns:
     1
     45
     45
+
+## JSON Dumps
+
+There is the function `json_dumps()` which will return a JSON string of all variables. Note that this does include modules and function but they will have a string result like `**Object of type module is not JSON serializable**` or `**Object of type function is not JSON serializable**` and can be ignored. It can also take most `json.dumps` keyword arguments except 'default'
+
+Example:
+
+```
+param1 = {param1 = 10}
+
+% with open('myparams.json','wt') as fp:
+%   fp.write(json_dumps(indent=1))
+% end
+```
+
+will output
+
+`myparams.json`:
+
+    {
+     "param1": 10,
+     "fp": "**Object of type TextIOWrapper is not JSON serializable**"
+    }
+    
+Note that you can also get a dictionary of all paramater when using the Python function by setting `return_env=True`
 
 ## Other Functions
 

@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDSparseGrid
-//- Description: Wrapper class for C++ code from Pecos/packages/VPISparseGrid
-//- Owner:       Mike Eldred
-//- Revised by:  
-//- Version:
 
 #ifndef NOND_SPARSE_GRID_H
 #define NOND_SPARSE_GRID_H
@@ -42,7 +36,7 @@ public:
   //
 
   // alternate constructor for instantiations "on the fly"
-  NonDSparseGrid(Model& model, unsigned short ssg_level,
+  NonDSparseGrid(std::shared_ptr<Model> model, unsigned short ssg_level,
 		 const RealVector& dim_pref,
 		 short exp_coeffs_soln_approach, short driver_mode,
 		 short growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH,
@@ -50,7 +44,7 @@ public:
 		 short refine_control = Pecos::NO_CONTROL,
 		 bool track_uniq_prod_wts = true);
 
-  ~NonDSparseGrid();                                       ///< destructor
+  ~NonDSparseGrid() override;                                       ///< destructor
 
   //
   //- Heading: Virtual function redefinitions
@@ -60,24 +54,24 @@ public:
   void sparse_grid_level(unsigned short ssg_level);
 
   /// increment ssgDriver::ssgLevel
-  void increment_grid();
+  void increment_grid() override;
   /// update ssgDriver::ssgAnisoLevelWts and increment ssgDriver::ssgLevel
   /// based on specified anisotropic weighting
-  void increment_grid_weights(const RealVector& aniso_wts);
+  void increment_grid_weights(const RealVector& aniso_wts) override;
   /// increment ssgDriver::ssgLevel based on existing anisotropic weighting
-  void increment_grid_weights();
+  void increment_grid_weights() override;
   /// decrement ssgDriver::ssgLevel
-  void decrement_grid();
+  void decrement_grid() override;
 
-  void evaluate_grid_increment();
-  void push_grid_increment();
-  void pop_grid_increment();
-  void merge_grid_increment();
+  void evaluate_grid_increment() override;
+  void push_grid_increment() override;
+  void pop_grid_increment() override;
+  void merge_grid_increment() override;
 
   /// reset ssgDriver level and dimension preference back to
   /// {ssgLevel,dimPref}Spec for the active key, following refinement
   /// or sequence advancement
-  void reset();
+  void reset() override;
   /// blow away all data for all keys
   void reset_all();
 
@@ -90,7 +84,7 @@ public:
   /// invokes SparseGridDriver::initialize_sets()
   void initialize_sets();
   /// invokes SparseGridDriver::update_reference()
-  void update_reference();
+  void update_reference() override;
   /// invokes SparseGridDriver::increment_smolyak_multi_index()
   void increment_set(const UShortArray& set);
   /// invokes SparseGridDriver::unique_trial_points()
@@ -106,7 +100,7 @@ public:
   /// invokes SparseGridDriver::finalize_sets()
   void finalize_sets(bool output_sets, bool converged_within_tol,bool reverted);
 
-  size_t num_samples() const;
+  size_t num_samples() const override;
 
 protected:
 
@@ -114,19 +108,19 @@ protected:
   //- Heading: Constructors and destructor
   //
 
-  NonDSparseGrid(ProblemDescDB& problem_db, Model& model); ///< constructor
+  NonDSparseGrid(ProblemDescDB& problem_db, std::shared_ptr<Model> model); ///< constructor
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  void initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis);
+  void initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis) override;
 
-  void get_parameter_sets(Model& model);
+  void get_parameter_sets(std::shared_ptr<Model> model) override;
 
   //void check_variables(const Pecos::ShortArray& x_types);
 
-  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag);
+  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag) override;
 
   //
   //- Heading: Member functions
@@ -224,7 +218,7 @@ inline void NonDSparseGrid::push_set()
 inline void NonDSparseGrid::evaluate_set()
 {
   ssgDriver->compute_trial_grid(allSamples);
-  evaluate_parameter_sets(iteratedModel, true, false);
+  evaluate_parameter_sets(*iteratedModel);
   ++numIntegrations;
 }
 
@@ -245,7 +239,7 @@ finalize_sets(bool output_sets, bool converged_within_tol, bool reverted)
 inline void NonDSparseGrid::evaluate_grid_increment()
 {
   ssgDriver->compute_increment(allSamples);
-  evaluate_parameter_sets(iteratedModel, true, false);
+  evaluate_parameter_sets(*iteratedModel);
   ++numIntegrations;
 }
 

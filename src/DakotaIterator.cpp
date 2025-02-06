@@ -1,16 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       Iterator
-//- Description: Implementation code for the Iterator class
-//- Owner:       Mike Eldred
-//- Checked by:
 
 #include "dakota_data_io.hpp"
 #include "DakotaIterator.hpp"
@@ -32,10 +27,10 @@
 #include "NonDLHSSampling.hpp"
 #include "NonDAdaptImpSampling.hpp"
 #include "NonDGPImpSampling.hpp"
-#include "NonDMultilevelSampling.hpp"
 #include "NonDMultilevControlVarSampling.hpp"
-#include "NonDACVSampling.hpp"
 #include "NonDMultifidelitySampling.hpp"
+#include "NonDGenACVSampling.hpp"
+#include "NonDMultilevBLUESampling.hpp"
 #include "NonDGlobalEvidence.hpp"
 #include "NonDLocalEvidence.hpp"
 #include "NonDLHSEvidence.hpp"
@@ -196,7 +191,11 @@ Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db,
   methodId(problem_db.get_string("method.id")), execNum(0),
   methodTraits(traits), exportSurrogate(problem_db.get_bool("method.export_surrogate")),
   surrExportPrefix(problem_db.get_string("method.model_export_prefix")),
-  surrExportFormat(problem_db.get_ushort("method.model_export_format"))
+  surrExportFormat(problem_db.get_ushort("method.model_export_format")),
+  // default construct a Model so instantiation of MetaIterators won't fail when
+  // eval_prefix_id, which requires a model instance, is called from
+  // Iterator::init_communicators.
+  iteratedModel(std::make_shared<Model>())
 {
   if (methodId.empty())
     methodId = user_auto_id();
@@ -211,14 +210,14 @@ Iterator::Iterator(BaseConstructor, ProblemDescDB& problem_db,
     It is used for on-the-fly instantiations for which DB queries cannot be
     used, and is not used for construction of meta-iterators. */
 Iterator::
-Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model,
+Iterator(NoDBBaseConstructor, unsigned short method_name, std::shared_ptr<Model> model,
 	 std::shared_ptr<TraitsBase> traits):
-  probDescDB(dummy_db), parallelLib(model.parallel_library()),
+  probDescDB(dummy_db), parallelLib(model->parallel_library()),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
   myModelLayers(0), iteratedModel(model), methodName(method_name),
   convergenceTol(0.0001), maxIterations(100), maxFunctionEvals(1000),
   maxEvalConcurrency(1), subIteratorFlag(false), numFinalSolutions(1),
-  outputLevel(model.output_level()), summaryOutputFlag(false), topLevel(false),
+  outputLevel(model->output_level()), summaryOutputFlag(false), topLevel(false),
   resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db),
   evaluationsDBState(EvaluationsDBState::UNINITIALIZED), methodId(no_spec_id()),
   execNum(0), methodTraits(traits)
@@ -243,21 +242,22 @@ Iterator::Iterator(NoDBBaseConstructor, unsigned short method_name,
   resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), 
   evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   methodId(no_spec_id()), execNum(0), methodTraits(traits)
-{ /* empty ctor */ }
+{ 
+}
 
 
 /** This alternate constructor builds base class data for inherited iterators.
     It is used for on-the-fly instantiations for which DB queries cannot be
     used, and is not used for construction of meta-iterators. */
 Iterator::
-Iterator(NoDBBaseConstructor, Model& model, size_t max_iter, size_t max_eval,
+Iterator(NoDBBaseConstructor, std::shared_ptr<Model> model, size_t max_iter, size_t max_eval,
 	 Real conv_tol, std::shared_ptr<TraitsBase> traits):
-  probDescDB(dummy_db), parallelLib(model.parallel_library()),
+  probDescDB(dummy_db), parallelLib(model->parallel_library()),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
   myModelLayers(0), iteratedModel(model), //methodName(method_name),
   convergenceTol(conv_tol), maxIterations(max_iter), maxFunctionEvals(max_eval),
   maxEvalConcurrency(1), subIteratorFlag(false), numFinalSolutions(1),
-  outputLevel(model.output_level()), summaryOutputFlag(false), topLevel(false),
+  outputLevel(model->output_level()), summaryOutputFlag(false), topLevel(false),
   resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db),
   evaluationsDBState(EvaluationsDBState::UNINITIALIZED), methodId(no_spec_id()),
   execNum(0), methodTraits(traits)
@@ -276,7 +276,7 @@ Iterator::Iterator(std::shared_ptr<TraitsBase> traits):
   evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   myModelLayers(0), methodName(DEFAULT_METHOD),
   execNum(0), methodTraits(traits)
-{ /* empty ctor */ }
+{ /*NO OP*/}
 
 
 // BMA: Disabled unused ctor when deploying shared_ptr for iteratorRep
@@ -316,7 +316,7 @@ bool Iterator::resize()
     return iteratorRep->resize(); // envelope fwd to letter
   else {
     // Update activeSet:
-    activeSet = iteratedModel.current_response().active_set();
+    activeSet = iteratedModel->current_response().active_set();
     return false; // No need to re-initialize communicators base on what
                   // was done here.
   }
@@ -326,8 +326,8 @@ bool Iterator::resize()
 void Iterator::declare_sources() {
   evaluationsDB.declare_source(method_id(), 
                                "iterator",
-                               iterated_model().model_id(),
-                               iterated_model().model_type());
+                               iterated_model()->model_id(),
+                               iterated_model()->model_type());
 }
 
 
@@ -364,8 +364,7 @@ std::shared_ptr<Iterator> Iterator::get_iterator(ProblemDescDB& problem_db)
     // rather than create additional derived constructors for non-meta-iterators
     // that differ only in creation of their own Model instance, perform the
     // Model instantiation here and leverage the existing constructors.
-    Model the_model = problem_db.get_model();
-    return get_iterator(problem_db, the_model); break;
+    return get_iterator(problem_db, problem_db.get_model()); break;
   }
 }
 
@@ -377,7 +376,7 @@ std::shared_ptr<Iterator> Iterator::get_iterator(ProblemDescDB& problem_db)
     (e.g., a MetaIterator instantiates its sub-iterator(s) by name
     instead of pointer and passes in its iteratedModel, since these
     sub-iterators lack their own model pointers). */
-Iterator::Iterator(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits):
+Iterator::Iterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model, std::shared_ptr<TraitsBase> traits):
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
   resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), methodTraits(traits),
   // Set the rep pointer to the appropriate iterator type
@@ -394,7 +393,7 @@ Iterator::Iterator(ProblemDescDB& problem_db, Model& model, std::shared_ptr<Trai
     instantiations will NOT recurse on the Iterator(problem_db, model)
     constructor due to the use of BaseConstructor. */
 std::shared_ptr<Iterator>
-Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
+Iterator::get_iterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model)
 {
   unsigned short method_name = problem_db.get_ushort("method.algorithm");
 
@@ -487,9 +486,11 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
       return std::shared_ptr<Iterator>(); break;
 #endif
 #ifdef HAVE_DREAM
-    case SUBMETHOD_DREAM:
-      return std::make_shared<NonDDREAMBayesCalibration>(problem_db, model);
+    case SUBMETHOD_DREAM: {
+       std::shared_ptr<Iterator> sp = std::make_shared<NonDDREAMBayesCalibration>(problem_db, model);
+      return sp;
       break;
+    }
 #endif
 #ifdef HAVE_MUQ
     case SUBMETHOD_MUQ:
@@ -521,29 +522,45 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
 //  case MUQ_SAMPLING:
 //    return std::make_shared<NonDMUQBayesCalibration>(problem_db, model);break;
 //#endif
-  case RANDOM_SAMPLING:
-    return std::make_shared<NonDLHSSampling>(problem_db, model); break;
+  case RANDOM_SAMPLING: { 
+    std::shared_ptr<Iterator> sp = std::make_shared<NonDLHSSampling>(problem_db, model);
+    return sp;
+    break;
+  }
   case MULTILEVEL_SAMPLING:
-    return std::make_shared<NonDMultilevelSampling>(problem_db, model);   break;
+    // Similar to MFMC below, spec options could trigger promotion to GenACV
+    // (which is then restricted to hierarchical DAGs for MLMC consistency)
+    // Note that recursion/selection is not available w/o weighting.
+    if (probDescDB.get_ushort("method.sub_method") == SUBMETHOD_WEIGHTED_MLMC)
+      return std::make_shared<NonDGenACVSampling>(problem_db, model);
+    else
+      return std::make_shared<NonDMultilevelSampling>(problem_db, model);
+    break;
   case MULTIFIDELITY_SAMPLING:
-    // Hierarch and NonHierarch SurrModels can both have an open-ended number
-    // of model forms.  Former treats them pairwise and latter as a full group.
-    // > Would be nice to separate ordered/unordered from pairwise/full since
-    //   the former is not a hard constraint (unordered still uses a list) while
-    //   the latter is more critical (implementation uses active model key with
-    //   full batch + ASV blocks versus active key that changes pairs).
-    // > But the Model needs to be instantiated from its spec without knowledge
-    //   of Iterator context --> Iterators like MFMC must adapt to limitations
-    //   of HierarchSurrModel even though it *is* hierarchical/recursive.
-    //   --> collapse the two SurrModel classes to avoid the need for method
-    //       adaptations due to Model specification.
-    return std::make_shared<NonDMultifidelitySampling>(problem_db, model);
+    if (probDescDB.get_short("method.nond.search_model_graphs.recursion") ||
+	probDescDB.get_short("method.nond.search_model_graphs.selection"))
+      return std::make_shared<NonDGenACVSampling>(problem_db, model);
+    else // Note that numerical MFMC reorders models on the fly, similar to
+         // enumeration of hierarchical DAGs (more efficient, less smooth?)
+      return std::make_shared<NonDMultifidelitySampling>(problem_db,model);
     break;
   case MULTILEVEL_MULTIFIDELITY_SAMPLING:
     return std::make_shared<NonDMultilevControlVarSampling>(problem_db, model);
     break;
-  case APPROXIMATE_CONTROL_VARIATE:
-    return std::make_shared<NonDACVSampling>(problem_db, model);
+  case APPROX_CONTROL_VARIATE:
+    if (probDescDB.get_short("method.nond.search_model_graphs.recursion") ||
+	probDescDB.get_short("method.nond.search_model_graphs.selection") ||
+	problem_db.get_ushort("method.sub_method") == SUBMETHOD_ACV_RD)
+      // RD is promoted since we want MLMC hierarch rather than ACV peer DAG
+      return std::make_shared<NonDGenACVSampling>(problem_db, model);
+    else
+      return std::make_shared<NonDACVSampling>(problem_db, model);
+    break;
+  case GEN_APPROX_CONTROL_VARIATE: // not currently reachable
+    return std::make_shared<NonDGenACVSampling>(problem_db, model);
+    break;
+  case MULTILEVEL_BLUE:
+    return std::make_shared<NonDMultilevBLUESampling>(problem_db, model);
     break;
   case DATA_FIT_SURROGATE_BASED_LOCAL:
     return std::make_shared<DataFitSurrBasedLocalMinimizer>(problem_db, model);
@@ -552,7 +569,7 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     return std::make_shared<HierarchSurrBasedLocalMinimizer>(problem_db, model);
     break;
   case SURROGATE_BASED_LOCAL:
-    if (model.surrogate_type() == "ensemble")
+    if (model->surrogate_type() == "ensemble")
       return
 	std::make_shared<HierarchSurrBasedLocalMinimizer>(problem_db, model);
     else
@@ -685,9 +702,9 @@ Iterator::get_iterator(ProblemDescDB& problem_db, Model& model)
     execute get_iterator(), since letter holds the actual base class
     data.  This version is used for lightweight constructions without
     the ProblemDescDB. */
-Iterator::Iterator(const String& method_string, Model& model, std::shared_ptr<TraitsBase> traits):
-  probDescDB(model.problem_description_db()),
-  parallelLib(model.parallel_library()), resultsDB(iterator_results_db),
+Iterator::Iterator(const String& method_string, std::shared_ptr<Model> model, std::shared_ptr<TraitsBase> traits):
+  probDescDB(model->problem_description_db()),
+  parallelLib(model->parallel_library()), resultsDB(iterator_results_db),
   evaluationsDB(evaluation_store_db),  methodTraits(traits), 
   // Set the rep pointer to the appropriate iterator type
   iteratorRep(get_iterator(method_string, model))
@@ -702,7 +719,7 @@ Iterator::Iterator(const String& method_string, Model& model, std::shared_ptr<Tr
     Lightweight instantiations by name are supported by a subset of
     Iterators (primarily Minimizers). */
 std::shared_ptr<Iterator>
-Iterator::get_iterator(const String& method_string, Model& model)
+Iterator::get_iterator(const String& method_string, std::shared_ptr<Model> model)
 {
   // These instantiations will NOT recurse on the Iterator(model)
   // constructor due to the use of BaseConstructor.
@@ -813,7 +830,7 @@ Iterator::Iterator(const Iterator& iterator):
   parallelLib(iterator.parallel_library()), resultsDB(iterator_results_db), 
   evaluationsDB(evaluation_store_db), methodTraits(iterator.traits()),
   iteratorRep(iterator.iteratorRep)
-{ /* empty ctor */ }
+{ Cout << "Iterator copy constructor called\n"; }
 
 
 Iterator Iterator::operator=(const Iterator& iterator)
@@ -889,7 +906,9 @@ static UShortStrBimap method_map =
   (MULTILEVEL_SAMPLING,             "multilevel_sampling")
   (MULTIFIDELITY_SAMPLING,          "multifidelity_sampling")
   (MULTILEVEL_MULTIFIDELITY_SAMPLING, "multilevel_multifidelity_sampling")
-  (APPROXIMATE_CONTROL_VARIATE,     "approximate_control_variate")
+  (APPROX_CONTROL_VARIATE,          "approx_control_variate")
+  (GEN_APPROX_CONTROL_VARIATE,      "gen_approx_control_variate")
+  (MULTILEVEL_BLUE,                 "multilevel_blue")
   (LIST_SAMPLING,                   "list_sampling")
   (SURROGATE_BASED_LOCAL,           "surrogate_based_local")
   (DATA_FIT_SURROGATE_BASED_LOCAL,  "data_fit_surrogate_based_local")
@@ -947,33 +966,36 @@ static UShortStrBimap method_map =
 /// addition, only uni-directional mapping is supported)
 static UShortStrBimap submethod_map =
   boost::assign::list_of<UShortStrBimap::relation>
-  (HYBRID,                      "hybrid")
-  (SUBMETHOD_COLLABORATIVE,     "collaborative")
-  (SUBMETHOD_EMBEDDED,          "embedded")
-  (SUBMETHOD_SEQUENTIAL,        "sequential")
-  (SUBMETHOD_LHS,               "lhs")
-  (SUBMETHOD_RANDOM,            "random")
-  (SUBMETHOD_BOX_BEHNKEN,       "box_behnken")
-  (SUBMETHOD_CENTRAL_COMPOSITE, "central_composite")
-  (SUBMETHOD_GRID,              "grid")
-  (SUBMETHOD_OA_LHS,            "oa_lhs")
-  (SUBMETHOD_OAS,               "oas")
-  (SUBMETHOD_ACV_IS,            "acv_is")
-  (SUBMETHOD_ACV_MF,            "acv_mf")
-  (SUBMETHOD_ACV_KL,            "acv_kl")
-  (SUBMETHOD_DREAM,             "dream")
-  (SUBMETHOD_WASABI,            "wasabi")
-  (SUBMETHOD_GPMSA,             "gpmsa")
-  (SUBMETHOD_MUQ,               "muq")
-  (SUBMETHOD_QUESO,             "queso")
-  (SUBMETHOD_OPTPP,             "nip")
-  (SUBMETHOD_NPSOL,             "sqp")
-  (SUBMETHOD_EA,                "ea")
-  (SUBMETHOD_EGO,               "ego")
-  (SUBMETHOD_SBGO,              "sbgo")
-  (SUBMETHOD_CONVERGE_ORDER,    "converge_order")
-  (SUBMETHOD_CONVERGE_QOI,      "converge_qoi")
-  (SUBMETHOD_ESTIMATE_ORDER,    "estimate_order")
+  (HYBRID,                             "hybrid")
+  (SUBMETHOD_COLLABORATIVE,            "collaborative")
+  (SUBMETHOD_EMBEDDED,                 "embedded")
+  (SUBMETHOD_SEQUENTIAL,               "sequential")
+  (SUBMETHOD_LHS,                      "lhs")
+  (SUBMETHOD_LOW_DISCREPANCY_SAMPLING, "low_discrepancy")
+  (SUBMETHOD_RANDOM,                   "random")
+  (SUBMETHOD_BOX_BEHNKEN,              "box_behnken")
+  (SUBMETHOD_CENTRAL_COMPOSITE,        "central_composite")
+  (SUBMETHOD_GRID,                     "grid")
+  (SUBMETHOD_OA_LHS,                   "oa_lhs")
+  (SUBMETHOD_OAS,                      "oas")
+  (SUBMETHOD_ACV_IS,                   "acv_is")
+  (SUBMETHOD_ACV_MF,                   "acv_mf")
+  (SUBMETHOD_ACV_RD,                   "acv_rd")
+  (SUBMETHOD_DREAM,                    "dream")
+  (SUBMETHOD_WASABI,                   "wasabi")
+  (SUBMETHOD_GPMSA,                    "gpmsa")
+  (SUBMETHOD_MUQ,                      "muq")
+  (SUBMETHOD_QUESO,                    "queso")
+  (SUBMETHOD_OPTPP,                    "nip")
+  (SUBMETHOD_NPSOL,                    "sqp")
+  (SUBMETHOD_NPSOL_OPTPP,              "sqp_nip")
+  (SUBMETHOD_DIRECT,                   "direct")
+  (SUBMETHOD_EA,                       "ea")
+  (SUBMETHOD_EGO,                      "ego")
+  (SUBMETHOD_SBGO,                     "sbgo")
+  (SUBMETHOD_CONVERGE_ORDER,           "converge_order")
+  (SUBMETHOD_CONVERGE_QOI,             "converge_qoi")
+  (SUBMETHOD_ESTIMATE_ORDER,           "estimate_order")
   ;
 
 
@@ -1170,32 +1192,36 @@ void Iterator::finalize_run()
 
 void Iterator::resize_communicators(ParLevLIter pl_iter, bool reinit_comms)
 {
-  bool multiproc = (pl_iter->server_communicator_size() > 1);
-  if (reinit_comms) {
-    // Free communicators before we rebuild:
-    short mapping_code;
-    if (multiproc) {
-      mapping_code = FREE_COMMS;
-      parallelLib.bcast(mapping_code, *pl_iter);
-      parallelLib.bcast(maxEvalConcurrency, *pl_iter);
-    }
-    free_communicators(pl_iter);
+  if (iteratorRep) {
+    iteratorRep->resize_communicators(pl_iter, reinit_comms);
+  } else {
+    bool multiproc = (pl_iter->server_communicator_size() > 1);
+    if (reinit_comms) {
+      // Free communicators before we rebuild:
+      short mapping_code;
+      if (multiproc) {
+        mapping_code = FREE_COMMS;
+        parallelLib.bcast(mapping_code, *pl_iter);
+        parallelLib.bcast(maxEvalConcurrency, *pl_iter);
+      }
+      free_communicators(pl_iter);
 
-    // Re-initialize communicators:
+      // Re-initialize communicators:
+      if (multiproc) {
+        mapping_code = INIT_COMMS;
+        parallelLib.bcast(mapping_code, *pl_iter);
+      }
+      init_communicators(pl_iter);
+      if (multiproc) iteratedModel->stop_init_communicators(pl_iter);
+    }
+
+    // update message lengths for send/receive of parallel jobs (normally
+    // performed once in Model::init_communicators() just after construct time)
+    iteratedModel->estimate_message_lengths();
     if (multiproc) {
-      mapping_code = INIT_COMMS;
+      short mapping_code = ESTIMATE_MESSAGE_LENGTHS;
       parallelLib.bcast(mapping_code, *pl_iter);
     }
-    init_communicators(pl_iter);
-    if (multiproc) iteratedModel.stop_init_communicators(pl_iter);
-  }
-
-  // update message lengths for send/receive of parallel jobs (normally
-  // performed once in Model::init_communicators() just after construct time)
-  iteratedModel.estimate_message_lengths();
-  if (multiproc) {
-    short mapping_code = ESTIMATE_MESSAGE_LENGTHS;
-    parallelLib.bcast(mapping_code, *pl_iter);
   }
 }
 
@@ -1264,8 +1290,8 @@ void Iterator::derived_init_communicators(ParLevLIter pl_iter)
 {
   if (iteratorRep) // envelope fwd to letter
     iteratorRep->derived_init_communicators(pl_iter);
-  else if (!iteratedModel.is_null()) // default: init comms for iteratedModel
-    iteratedModel.init_communicators(pl_iter, maxEvalConcurrency); // recurse
+  else if (iteratedModel) // default: init comms for iteratedModel
+    iteratedModel->init_communicators(pl_iter, maxEvalConcurrency); // recurse
 }
 
 
@@ -1304,8 +1330,8 @@ void Iterator::derived_set_communicators(ParLevLIter pl_iter)
 {
   if (iteratorRep) // envelope fwd to letter
     iteratorRep->derived_set_communicators(pl_iter);
-  else if (!iteratedModel.is_null()) // default: set comms within iteratedModel
-    iteratedModel.set_communicators(pl_iter, maxEvalConcurrency);  // recurse
+  else if (iteratedModel) // default: set comms within iteratedModel
+    iteratedModel->set_communicators(pl_iter, maxEvalConcurrency);  // recurse
 }
 
 
@@ -1334,8 +1360,8 @@ void Iterator::derived_free_communicators(ParLevLIter pl_iter)
 {
   if (iteratorRep) // envelope fwd to letter
     iteratorRep->derived_free_communicators(pl_iter);
-  else if (!iteratedModel.is_null()) // default: free comms on iteratedModel
-    iteratedModel.free_communicators(pl_iter, maxEvalConcurrency); // recurse
+  else if (iteratedModel) // default: free comms on iteratedModel
+    iteratedModel->free_communicators(pl_iter, maxEvalConcurrency); // recurse
 }
 
 
@@ -1491,11 +1517,8 @@ void Iterator::initial_point(const Variables& pt)
 {
   if (iteratorRep) // envelope fwd to letter
     iteratorRep->initial_point(pt);
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine initial_point() virtual fn."
-	 << "\n       No default defined at base class." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
+  else // default falls back to cv-only update
+    initial_point(pt.continuous_variables());
 }
 
 
@@ -1536,48 +1559,68 @@ const VariablesArray& Iterator::initial_points() const
 
 
 void Iterator::
-variable_bounds(const RealVector& cv_lower_bnds,
-		const RealVector& cv_upper_bnds)
+update_callback_data(const RealVector& cv_initial,
+		     const RealVector& cv_lower_bnds,
+		     const RealVector& cv_upper_bnds,
+		     const RealMatrix& lin_ineq_coeffs,
+		     const RealVector& lin_ineq_lb,
+		     const RealVector& lin_ineq_ub,
+		     const RealMatrix& lin_eq_coeffs,
+		     const RealVector& lin_eq_tgt,
+		     const RealVector& nln_ineq_lb,
+		     const RealVector& nln_ineq_ub,
+		     const RealVector& nln_eq_tgt)
 {
   if (iteratorRep) // envelope fwd to letter
-    iteratorRep->variable_bounds(cv_lower_bnds, cv_upper_bnds);
+    iteratorRep->
+      update_callback_data(cv_initial, cv_lower_bnds, cv_upper_bnds,
+			   lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub,
+			   lin_eq_coeffs, lin_eq_tgt, nln_ineq_lb,
+			   nln_ineq_ub, nln_eq_tgt);
   else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine variable_bounds() virtual "
-	 << "fn.\n       No default defined at base class." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-}
-
-
-void Iterator::
-linear_constraints(const RealMatrix& lin_ineq_coeffs,
-		   const RealVector& lin_ineq_lb, const RealVector& lin_ineq_ub,
-		   const RealMatrix& lin_eq_coeffs,
-		   const RealVector& lin_eq_tgt)
-{
-  if (iteratorRep) // envelope fwd to letter
-    iteratorRep->linear_constraints(lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub,
-				    lin_eq_coeffs, lin_eq_tgt);
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine linear_constraints() virtual"
-	 << " fn.\n       No default defined at base class." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-}
-
-
-void Iterator::
-nonlinear_constraints(const RealVector& nln_ineq_lb,
-		      const RealVector& nln_ineq_ub,
-		      const RealVector& nln_eq_tgt)
-{
-  if (iteratorRep) // envelope fwd to letter
-    iteratorRep->nonlinear_constraints(nln_ineq_lb, nln_ineq_ub, nln_eq_tgt);
-  else { // letter lacking redefinition of virtual fn.!
-    Cerr << "Error: letter class does not redefine nonlinear_constraints() "
+    Cerr << "Error: letter class does not redefine update_callback_data() "
 	 << "virtual fn.\n       No default defined at base class."<< std::endl;
     abort_handler(METHOD_ERROR);
   }
+}
+
+
+const RealMatrix& Iterator::callback_linear_ineq_coefficients() const
+{
+  if (!iteratorRep) { // envelope fwd to letter
+    Cerr << "Error: letter class does not redefine callback_linear_ineq_"
+	 << "coefficients() virtual fn.\n       No default defined at base "
+	 << "class." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  return iteratorRep->callback_linear_ineq_coefficients();
+}
+
+
+const RealVector& Iterator::callback_linear_ineq_lower_bounds() const
+{
+  if (!iteratorRep) { // envelope fwd to letter
+    Cerr << "Error: letter class does not redefine callback_linear_ineq_"
+	 << "lower_bounds() virtual fn.\n       No default defined at base "
+	 << "class." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  return iteratorRep->callback_linear_ineq_lower_bounds();
+}
+
+
+const RealVector& Iterator::callback_linear_ineq_upper_bounds() const
+{
+  if (!iteratorRep) { // envelope fwd to letter
+    Cerr << "Error: letter class does not redefine callback_linear_ineq_"
+	 << "upper_bounds() virtual fn.\n       No default defined at base "
+	 << "class." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  return iteratorRep->callback_linear_ineq_upper_bounds();
 }
 
 
@@ -1643,7 +1686,7 @@ void Iterator::initialize_graphics(int iterator_server_id)
   if (iteratorRep)
     iteratorRep->initialize_graphics(iterator_server_id);
   else
-    initialize_model_graphics(iteratedModel, iterator_server_id);
+    initialize_model_graphics(*iteratedModel, iterator_server_id);
 }
 
 
@@ -1721,7 +1764,7 @@ unsigned short Iterator::sampling_scheme() const
 }
 
 
-const Model& Iterator::algorithm_space_model() const
+std::shared_ptr<Model> Iterator::algorithm_space_model()
 {
   if (!iteratorRep) { // letter lacking redefinition of virtual fn.!
     Cerr << "Error: letter class does not redefine algorithm_space_model() "
@@ -1729,8 +1772,8 @@ const Model& Iterator::algorithm_space_model() const
 	 << "instance." << std::endl;
     abort_handler(METHOD_ERROR);
   }
-  else // envelope fwd to letter
-    return iteratorRep->algorithm_space_model();
+
+  return iteratorRep->algorithm_space_model();
 }
 
 
@@ -1759,10 +1802,10 @@ unsigned short Iterator::uses_method() const
 }
 
 
-void Iterator::method_recourse()
+void Iterator::method_recourse(unsigned short method_name)
 {
   if (iteratorRep) // envelope fwd to letter
-    iteratorRep->method_recourse();
+    iteratorRep->method_recourse(method_name);
   else { // default definition (letter lacking redefinition of virtual fn.)
     Cerr << "Error: no method recourse defined for detected method conflict.\n"
 	 << "       Please revise method selections." << std::endl;
@@ -1818,7 +1861,7 @@ IntIntPair Iterator::estimate_partition_bounds()
 {
   return (iteratorRep) ?
     iteratorRep->estimate_partition_bounds() : // MetaIterators
-    iteratedModel.estimate_partition_bounds(maxEvalConcurrency); // default defn
+    iteratedModel->estimate_partition_bounds(maxEvalConcurrency); // default defn
 }
 
 
@@ -1852,7 +1895,7 @@ nested_variable_mappings(const SizetArray& c_index1,
       nested_variable_mappings(c_index1,  di_index1,  ds_index1,  dr_index1,
 			       c_target2, di_target2, ds_target2, dr_target2);
   else // default implementation: pass along to Model hierarchy
-    iteratedModel.nested_variable_mappings(c_index1,  di_index1,  ds_index1,
+    iteratedModel->nested_variable_mappings(c_index1,  di_index1,  ds_index1,
 					   dr_index1, c_target2, di_target2,
 					   ds_target2, dr_target2);
 }
@@ -1930,7 +1973,7 @@ void Iterator::eval_tag_prefix(const String& eval_id_str)
   if (iteratorRep)
     iteratorRep->eval_tag_prefix(eval_id_str);
   else
-    iteratedModel.eval_tag_prefix(eval_id_str);
+    iteratedModel->eval_tag_prefix(eval_id_str);
 }
 
 /** Rationale: The parser allows multiple user-specified methods with
@@ -1967,7 +2010,7 @@ void Iterator::export_final_surrogates(Model& data_fit_surr_model)
   // BMA: Seems might be better encapsulated in a DataFitSurrModel
   // Also, dynamic cast the contained model and bail if wrong?
 
-  const auto& resp_labels = data_fit_surr_model.response_labels();
+  const auto& resp_labels = ModelUtils::response_labels(data_fit_surr_model);
   auto& approxs = data_fit_surr_model.approximations();
   if (resp_labels.size() != approxs.size()) {
     Cerr << "\nError: Method cannot export_model(s) due to improperly sized "

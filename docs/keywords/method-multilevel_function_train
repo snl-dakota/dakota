@@ -1,8 +1,8 @@
 Blurb::
 Multilevel uncertainty quantification using function train expansions
 Description::
-As described in the :ref:`method-function_train<method-function_train>` method and the
-:ref:`model-surrogate-global-function_train<model-surrogate-global-function_train>` model,
+As described in the :dakkw:`method-function_train` method and the
+:dakkw:`model-surrogate-global-function_train` model,
 the function train (FT) approximation is a polynomial expansion that exploits low rank
 structure within the mapping from input random variables to output quantities of interest
 (QoI).  For multilevel and multifidelity function train approximations, we decompose this
@@ -21,12 +21,12 @@ where :math:`\Delta^{ij}`  represents a discrepancy expansion computed from
 be targeted ( :math:`r_{HM} < r_{ML} < r_L` ).
 
 In multilevel approaches, sample allocation for the constituent expansions is
-performed as described in :ref:`method-multilevel_function_train-allocation_control<method-multilevel_function_train-allocation_control>`.
+performed as described in :dakkw:`method-multilevel_function_train-allocation_control`.
 
 *Expected HDF5 Output*
 
 If Dakota was built with HDF5 support and run with the
-:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+:dakkw:`environment-results_output-hdf5` keyword, this method
 writes the following results to HDF5:
 
 

@@ -1,17 +1,12 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:        SurfpackApproximation 
-//- Description:  Class for polynomial response surface approximation
-//-               
-//- Owner:        Brian Adams, Sandia National Laboratories
- 
 
 #ifndef SHARED_SURFPACK_APPROX_DATA_H 
 #define SHARED_SURFPACK_APPROX_DATA_H 
@@ -51,6 +46,7 @@ class SharedSurfpackApproxData: public SharedApproxData
   friend class SurrogatesBaseApprox;
   friend class SurrogatesGPApprox;
   friend class SurrogatesPolyApprox;
+  friend class SurrogatesPythonApprox;
 
 public:
 
@@ -67,7 +63,7 @@ public:
   /// standard constructor: Surfpack surface of appropriate type will be created
   SharedSurfpackApproxData(ProblemDescDB& problem_db, size_t num_vars);
   /// destructor
-  ~SharedSurfpackApproxData();
+  ~SharedSurfpackApproxData() override;
 
 protected:
 

@@ -87,7 +87,7 @@ Sample moment statistics for each posterior variable:
             x2  2.4603082494e-01  2.8315582355e-02  8.4306487437e-02 -3.2141938112e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- oscillatorB_1  5.2106416974e-01  1.0493909586e-03 -9.6245562304e-02 -3.4878817335e-01
+ oscillatorB_1  5.2106416974e-01  1.0493909586e-03 -9.6245562306e-02 -3.4878817335e-01
  oscillatorB_2  6.9072480019e-01  3.9302921797e-03 -1.6957822306e-01 -4.5976614018e-01
  oscillatorB_3  1.1198846963e+00  9.6903460364e-03 -1.5587261668e-01 -7.5030785438e-01
  oscillatorB_4  1.8428065812e+00  2.1776548567e-02  1.2787308506e-01 -7.2079355810e-01

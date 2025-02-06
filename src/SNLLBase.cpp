@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       SNLLBase
-//- Description: Implementation code for the SNLLBase class
-//- Owner:       Pam Williams
-//- Checked by:
-//- Change Log:  
 
 #include "SNLLBase.hpp"
 #include "DakotaModel.hpp"
@@ -41,7 +35,12 @@ int        SNLLBase::lastEvalMode(0);
 RealVector SNLLBase::lastEvalVars;
 
 
-SNLLBase::SNLLBase(ProblemDescDB& problem_db)
+SNLLBase::SNLLBase(ProblemDescDB& problem_db):
+  searchMethod(problem_db.get_string("method.optpp.search_method")),
+  gradientTol(problem_db.get_real("method.gradient_tolerance")),
+  maxStep(problem_db.get_real("method.optpp.max_step")),
+  stepLenToBndry(problem_db.get_real("method.optpp.steplength_to_boundary")),
+  centeringParam(problem_db.get_real("method.optpp.centering_parameter"))
 {
   // Use constructor only to populate problem_db attributes inherited by 
   // SNLLOptimizer/SNLLLeastSq from SNLLBase.  For attributes inherited by
@@ -49,13 +48,10 @@ SNLLBase::SNLLBase(ProblemDescDB& problem_db)
   // needed in SNLLBase, it's a bit cleaner/more flexible to have them passed
   // through member function parameter lists rather than re-extracted from
   // problem_db.
-  searchMethod    =  problem_db.get_string("method.optpp.search_method");
+
   // active Model specification may not contain an interface spec
   constantASVFlag = (problem_db.interface_locked()) ? false :
     !problem_db.get_bool("interface.active_set_vector");
-  maxStep         =  problem_db.get_real("method.optpp.max_step");
-  stepLenToBndry  =  problem_db.get_real("method.optpp.steplength_to_boundary");
-  centeringParam  =  problem_db.get_real("method.optpp.centering_parameter");
   //meritFn       =  problem_db.get_short("method.optpp.merit_function");//error
   // an indirection is required to convert short to OPTPP::MeritFcn:
   switch (problem_db.get_short("method.optpp.merit_function")) {
@@ -133,22 +129,25 @@ snll_post_instantiate(int num_cv, bool vendor_num_grad_flag,
     // OPT++'s internal finite differencing in use.
     Real fcn_acc, mcheps = DBL_EPSILON, fd_step_size = fdss[0]; // first entry
     if (finite_diff_type == "central") {
-      fd_nlf1->setDerivOption(OPTPP::CentralDiff); // See libopt/globals.h
-      if (num_constr)
+      if (fd_nlf1)
+	fd_nlf1->setDerivOption(OPTPP::CentralDiff); // See libopt/globals.h
+      if (fd_nlf1_con && num_constr)
         fd_nlf1_con->setDerivOption(OPTPP::CentralDiff);
       fcn_acc = std::pow(fd_step_size, 3);
     }
     else {
-      fd_nlf1->setDerivOption(OPTPP::ForwardDiff); // See libopt/globals.h
-      if (num_constr)
+      if (fd_nlf1)
+	fd_nlf1->setDerivOption(OPTPP::ForwardDiff); // See libopt/globals.h
+      if (fd_nlf1_con && num_constr)
         fd_nlf1_con->setDerivOption(OPTPP::ForwardDiff);
       fcn_acc = std::pow(fd_step_size, 2);
     }
-    fcn_acc = std::max(mcheps,fcn_acc);
+    // enforces a lower bound on FDSS: ~6e-6 for central, ~1.5e-8 for forward
     RealVector fcn_accrcy(num_cv);
-    fcn_accrcy = fcn_acc;
-    fd_nlf1->setFcnAccrcy(fcn_accrcy);
-    if (num_constr)
+    fcn_accrcy = std::max(mcheps, fcn_acc);
+    if (fd_nlf1)
+      fd_nlf1->setFcnAccrcy(fcn_accrcy);
+    if (fd_nlf1_con && num_constr)
       fd_nlf1_con->setFcnAccrcy(fcn_accrcy);
   }
 

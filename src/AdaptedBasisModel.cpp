@@ -1,14 +1,13 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
 #include "AdaptedBasisModel.hpp"
-#include "ProbabilityTransformModel.hpp"
 #include "dakota_linear_algebra.hpp"
 #include "ParallelLibrary.hpp"
 #include "MarginalsCorrDistribution.hpp"
@@ -46,12 +45,7 @@ AdaptedBasisModel(ProblemDescDB& problem_db):
   
 }
 
-
-AdaptedBasisModel::~AdaptedBasisModel()
-{ }
-
-
-Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
+std::shared_ptr<Model> AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
 {
   const String& actual_model_pointer
     = problem_db.get_string("model.surrogate.truth_model_pointer");
@@ -74,7 +68,7 @@ Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
   size_t model_index = problem_db.get_db_model_node(); // for restoration
   problem_db.set_db_model_nodes(actual_model_pointer);
 
-  Model actual_model(problem_db.get_model());
+  auto actual_model(problem_db.get_model());
 
     // configure pilot PCE object (instantiate now; build expansion at run time)
   RealVector dim_pref;
@@ -115,13 +109,13 @@ Model AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
     
   problem_db.set_db_model_nodes(model_index); // restore
 
-  Model u_space_model(pcePilotExpRepPtr->algorithm_space_model());
+  auto u_space_model = pcePilotExpRepPtr->algorithm_space_model();
   // Consider option of using PCE surrogate for all subsequent computations:
   //return u_space_model;
 
 
   // Return transformed model subordinate to the DataFitSurrModel:
-  return u_space_model.subordinate_model();
+  return u_space_model->subordinate_model();
 }
 
 
@@ -138,7 +132,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   if (recurse_flag) {
     //if (!mappingInitialized)
       pcePilotExpansion.init_communicators(pl_iter);
-    subModel.init_communicators(pl_iter, max_eval_concurrency);
+    subModel->init_communicators(pl_iter, max_eval_concurrency);
   }
 }
 
@@ -153,12 +147,12 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     //if (!mappingInitialized)
       pcePilotExpansion.set_communicators(pl_iter);
 
-    subModel.set_communicators(pl_iter, max_eval_concurrency);
+    subModel->set_communicators(pl_iter, max_eval_concurrency);
 
     // RecastModels do not utilize default set_ie_asynchronous_mode() as
     // they do not define the ie_parallel_level
-    asynchEvalFlag = subModel.asynch_flag();
-    evaluationCapacity = subModel.evaluation_capacity();
+    asynchEvalFlag = subModel->asynch_flag();
+    evaluationCapacity = subModel->evaluation_capacity();
   }
 }
 
@@ -169,7 +163,7 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 {
   if (recurse_flag) {
     pcePilotExpansion.free_communicators(pl_iter);
-    subModel.free_communicators(pl_iter, max_eval_concurrency);
+    subModel->free_communicators(pl_iter, max_eval_concurrency);
   }
 }
 
@@ -218,16 +212,16 @@ void AdaptedBasisModel::compute_subspace()
 
   ParLevLIter pl_iter = modelPCIter->mi_parallel_level_iterator(miPLIndex);
   pcePilotExpansion.run(pl_iter);
-  Model pce_model(pcePilotExpansion.algorithm_space_model());
-  const RealVectorArray& pce_coeffs = pce_model.approximation_coefficients();
+  auto pce_model = pcePilotExpansion.algorithm_space_model();
+  const RealVectorArray& pce_coeffs = pce_model->approximation_coefficients();
 
   // retrieve the underlying PCE approximation model
-  Model u_space_model(pcePilotExpRepPtr->algorithm_space_model());
+  auto u_space_model = pcePilotExpRepPtr->algorithm_space_model();
 
   // dive through the class layers to grab ptr to shared approx data:
   std::shared_ptr<SharedPecosApproxData> data_rep =
       std::static_pointer_cast<SharedPecosApproxData>
-      (u_space_model.shared_approximation().data_rep());
+      (u_space_model->shared_approximation().data_rep());
 
   // retrieve the multi-index as a 2D array of unsigned short integers
   // first index is term, second index is variable
@@ -386,15 +380,15 @@ void AdaptedBasisModel::compute_subspace()
   //     = J' J
   //   (Eigenvectors of A A' are left singular vectors of A)
 
-  //      *** TO DO: adapt code from  ActiveSubspaceModel::compute_svd() which
-  //          uses svd() helper from dakota_linear_algebra.hpp.
-  //          Apply truncation criterion
+  //   *** TO DO: adapt code from  ActiveSubspaceModel::compute_svd() which
+  //       uses singular_value_decomp() helper from dakota_linear_algebra.hpp.
+  //       Apply truncation criterion.
 
   //// RealVector singular_values;
   //// RealMatrix V_transpose; // right eigenvectors, not used
   // we want left singular vectors but don't overwrite A, so make a deep copy
   //// RealMatrix left_singular_vectors = A_q;
-  //// svd(left_singular_vectors, singular_values, V_transpose);
+  //// singular_value_decomp(left_singular_vectors,singular_values,V_transpose);
 
   //   Truncate eigenvalues of covariance at some pre-selected level
   //     --> dimension \nu reduced from dimension d
@@ -607,14 +601,14 @@ void AdaptedBasisModel::uncertain_vars_to_subspace()
     cv_types[boost::indices[idx_range(0, reducedRank)]]);
 
   // Set currentVariables to means of active variables:
-  continuous_variables(mu_y);
+  current_variables().continuous_variables(mu_y);
 
   // update variable labels for adapted basis
   StringMultiArray adapted_basis_var_labels(boost::extents[reducedRank]);
   for (int i = 0; i < reducedRank; i++)
     adapted_basis_var_labels[i]
       = "abv_" + std::to_string(i+1);
-  continuous_variable_labels(
+  current_variables().continuous_variable_labels(
     adapted_basis_var_labels[boost::indices[idx_range(0, reducedRank)]]);
 }
 

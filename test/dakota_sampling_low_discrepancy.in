@@ -1,0 +1,65 @@
+#@ s*: Label=FastTest
+
+# Tests for low-discrepancy sampling
+# ----------------------------------
+# +------+-----------------+---------------------+-----------------+-------------------+
+# | test | analysis_driver | analysis_components | sampling method | variables         |
+# +------+-----------------+---------------------+-----------------+-------------------+
+# | s1   | genz            | cp1                 | rank_1_lattice  | standard uniform  |
+# | s2   | genz            | cp1                 | digital_net     | standard normal   |
+# | s3   | rosenbrock      |                     | sobol, no shift | uniform           |
+# | s4   | genz            | os3                 | digital_net     | correlated normal |
+# +------+-----------------+---------------------+-----------------+-------------------+
+method
+  sampling
+    samples 100
+    seed 1234
+    sample_type low_discrepancy
+    # rank_1_lattice                                   #s1
+    #   generating_vector inline 1 433461              #s1
+    #   m_max 20                                       #s1
+    # digital_net                                      #s2,#s4
+    # sobol                                            #s3
+    #   no_digital_shift                               #s3
+
+variables
+
+  uniform_uncertain = 2                              #s0
+    lower_bounds 0.0 0.0                             #s0
+    upper_bounds 1.0 1.0                             #s0
+
+  # standard uniform uncertain
+  # uniform_uncertain = 2                              #s1
+  #   lower_bounds 0.0 0.0                             #s1
+  #   upper_bounds 1.0 1.0                             #s1
+
+  # uniform uncertain
+  # uniform_uncertain = 2                              #s3
+  #   lower_bounds -2.0 -2.0                           #s3
+  #   upper_bounds  2.0  2.0                           #s3
+  #   descriptors  'x1' 'x2'                           #s3
+
+  # standard normal uncertain
+  # normal_uncertain = 2                               #s2, #s4
+  #   means          0.0 0.0                           #s2, #s4
+  #   std_deviations 1.0 1.0                           #s2, #s4
+
+  # with correlations
+  # uncertain_correlation_matrix                       #s4
+  #   1.0 0.9                                          #s4
+  #   0.9 1.0                                          #s4
+
+interface
+  analysis_drivers = 'genz'                            #s0
+  analysis_components = 'cp1'                          #s0
+
+  # analysis_drivers = 'genz'                          #s1, #s2, #s4
+  # analysis_drivers = 'rosenbrock'                    #s3
+  # analysis_components = 'cp1'                        #s1, #s2
+  # analysis_components = 'os3'                        #s4
+  direct
+
+responses
+  response_functions = 1
+  no_gradients
+  no_hessians

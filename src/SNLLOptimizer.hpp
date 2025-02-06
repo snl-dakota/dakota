@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       SNLLOptimizer
-//- Description: Wrapper class for opt++
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version: $Id
 
 #ifndef SNLL_OPTIMIZER_H
 #define SNLL_OPTIMIZER_H
@@ -52,30 +46,30 @@ class SNLLTraits: public TraitsBase
   SNLLTraits() { }
 
   /// destructor
-  virtual ~SNLLTraits() { }
+  ~SNLLTraits() override { }
 
   /// A temporary query used in the refactor
-  virtual bool is_derived() { return true; }
+  bool is_derived() override { return true; }
 
   // Traits are chosen to be the most common ones across a majority of methods within this TPL.
 
   /// Return the value of supportsContinuousVariables
-  bool supports_continuous_variables() { return true; }
+  bool supports_continuous_variables() override { return true; }
 
   /// Return the flag indicating whether method supports linear equalities
-  bool supports_linear_equality() { return true; }
+  bool supports_linear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports linear inequalities
-  bool supports_linear_inequality() { return true; }
+  bool supports_linear_inequality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear equalities
-  bool supports_nonlinear_equality() { return true; }
+  bool supports_nonlinear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear inequalities
-  bool supports_nonlinear_inequality() { return true; }
+  bool supports_nonlinear_inequality() override { return true; }
 
   /// Return the format used for nonlinear inequality constraints
-  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override
     { return NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED; }
 
 };
@@ -119,10 +113,10 @@ public:
   //
 
   /// standard constructor
-  SNLLOptimizer(ProblemDescDB& problem_db, Model& model);
+  SNLLOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model>);
 
   /// alternate constructor for instantiations "on the fly"
-  SNLLOptimizer(const String& method_string, Model& model);
+  SNLLOptimizer(const String& method_string, std::shared_ptr<Model>);
 
   /// alternate constructor for objective/constraint call-backs;
   /// analytic gradient case
@@ -150,6 +144,7 @@ public:
 			   int& result_mode),
     void (*nlf1_con_eval) (int mode, int n, const RealVector& x, RealVector& g,
 			   RealMatrix& grad_g, int& result_mode),
+    const RealVector& fdss, const String& interval_type,
     size_t max_iter = 100, size_t max_eval = 1000, Real conv_tol = 1.e-4,
     Real grad_tol = 1.e-4, Real   max_step = 1000.);
   /// alternate constructor for objective/constraint call-backs;
@@ -164,6 +159,7 @@ public:
 			   RealVector& grad_f, int& result_mode),
     void (*nlf0_con_eval) (int n, const RealVector& x, RealVector& g,
 			   int& result_mode),
+    const RealVector& fdss, const String& interval_type,
     size_t max_iter = 100, size_t max_eval = 1000, Real conv_tol = 1.e-4,
     Real grad_tol = 1.e-4, Real   max_step = 1000.);
   /// alternate constructor for objective/constraint call-backs;
@@ -178,33 +174,38 @@ public:
 			   int& result_mode),
     void (*nlf0_con_eval) (int n, const RealVector& x, RealVector& g,
 			   int& result_mode),
+    const RealVector& fdss, const String& interval_type,
     size_t max_iter = 100, size_t max_eval = 1000, Real conv_tol = 1.e-4,
     Real grad_tol = 1.e-4, Real   max_step = 1000.);
 
-  ~SNLLOptimizer(); ///< destructor
+  ~SNLLOptimizer() override; ///< destructor
     
   //
   //- Heading: Virtual member function redefinitions
   //
 
   /// Performs the iterations to determine the optimal solution.
-  void core_run();
+  void core_run() override;
 
-  void reset();
+  void reset() override;
 
-  void declare_sources();
+  void declare_sources() override;
 
-  void initial_point(const RealVector& pt);
-  void variable_bounds(const RealVector& cv_lower_bnds,
-		       const RealVector& cv_upper_bnds);
-  void linear_constraints(const RealMatrix& lin_ineq_coeffs,
-			  const RealVector& lin_ineq_l_bnds,
-			  const RealVector& lin_ineq_u_bnds,
-			  const RealMatrix& lin_eq_coeffs,
-			  const RealVector& lin_eq_targets);
-  void nonlinear_constraints(const RealVector& nln_ineq_l_bnds,
-			     const RealVector& nln_ineq_u_bnds,
-			     const RealVector& nln_eq_targets);
+  void initial_point(const RealVector& pt) override;
+  void update_callback_data(const RealVector& cv_initial,
+			    const RealVector& cv_lower_bnds,
+			    const RealVector& cv_upper_bnds,
+			    const RealMatrix& lin_ineq_coeffs,
+			    const RealVector& lin_ineq_l_bnds,
+			    const RealVector& lin_ineq_u_bnds,
+			    const RealMatrix& lin_eq_coeffs,
+			    const RealVector& lin_eq_targets,
+			    const RealVector& nln_ineq_l_bnds,
+			    const RealVector& nln_ineq_u_bnds,
+			    const RealVector& nln_eq_targets) override;
+  const RealMatrix& callback_linear_ineq_coefficients() const override;
+  const RealVector& callback_linear_ineq_lower_bounds() const override;
+  const RealVector& callback_linear_ineq_upper_bounds() const override;
 
 protected:
 
@@ -214,19 +215,22 @@ protected:
 
   /// invokes Optimizer::initialize_run(),
   /// SNLLBase::snll_initialize_run(), and performs other set-up
-  void initialize_run();
+  void initialize_run() override;
 
   /// performs data recovery and calls Optimizer::post_run()
-  void post_run(std::ostream& s);
+  void post_run(std::ostream& s) override;
 
   /// performs cleanup, restores instances and calls parent finalize
-  void finalize_run();
+  void finalize_run() override;
 
 private:
 
   //
   //- Heading: Helper functions
   //
+
+  /// deallocate any pointer allocations
+  void deallocate();
 
   /// instantiate an OPTPP_Q_NEWTON solver using standard settings
   void default_instantiate_q_newton(
@@ -347,6 +351,10 @@ private:
   /// (user-supplied functions mode for "on the fly" instantiations).
   /// NonDReliability currently uses the user_functions mode.
   String setUpType;
+
+  // cache inputs for user-functions mode for use when reallocating due to
+  // size change
+
   /// initial point used in "user_functions" mode
   RealVector initialPoint;
   /// variable lower bounds used in "user_functions" mode
@@ -369,6 +377,30 @@ private:
   RealVector nlnIneqUpperBnds;
   /// nonlinear equality constraint targets used in "user_functions" mode
   RealVector nlnEqTargets;
+  /// finite difference step sizes, either scalar or one per variable
+  RealVector fdStepSize;
+  /// type of finite difference interval: forward or central
+  String fdIntervalType;
+
+  /// cache zeroth-order objective call-back function
+  void (*userObjective0) (int n, const RealVector& x, double& f,
+			  int& result_mode);
+  /// cache first-order objective call-back function
+  void (*userObjective1) (int mode, int n, const RealVector& x, double& f,
+			  RealVector& grad_f, int& result_mode);
+  //void (*userObjective2) (int mode, int n, const RealVector& x, double& f,
+  //                        RealVector& grad_f, RealSymMatrix& hess_f,
+  //                        int& result_mode);
+  /// cache zeroth-order constraint call-back function
+  void (*userConstraint0) (int n, const RealVector& x, RealVector& g,
+			   int& result_mode);
+  /// cache first-order constraint call-back function
+  void (*userConstraint1) (int mode, int n, const RealVector& x, RealVector& g,
+			   RealMatrix& grad_g, int& result_mode);
+  //void (*userConstraint2) (int mode, int n, const RealVector& x,RealVector& g,
+  //                         RealMatrix& grad_g,
+  //                         OPTPP::OptppArray<RealSymMatrix >& hess_g,
+  //                         int& result_mode);
 };
 
 
@@ -376,37 +408,19 @@ inline void SNLLOptimizer::initial_point(const RealVector& pt)
 { copy_data(pt, initialPoint); } // protect from incoming view
 
 
-inline void SNLLOptimizer::
-variable_bounds(const RealVector& cv_lower_bnds,
-		const RealVector& cv_upper_bnds)
-{
-  copy_data(cv_lower_bnds, lowerBounds); // protect from incoming view
-  copy_data(cv_upper_bnds, upperBounds); // protect from incoming view
-}
+inline const RealMatrix& SNLLOptimizer::
+callback_linear_ineq_coefficients() const
+{ return linIneqCoeffs; }
 
 
-inline void SNLLOptimizer::
-linear_constraints(const RealMatrix& lin_ineq_coeffs,
-		   const RealVector& lin_ineq_l_bnds,
-		   const RealVector& lin_ineq_u_bnds,
-		   const RealMatrix& lin_eq_coeffs,
-		   const RealVector& lin_eq_targets)
-{
-  linIneqCoeffs    = lin_ineq_coeffs;  linEqCoeffs      = lin_eq_coeffs;
-  linIneqLowerBnds = lin_ineq_l_bnds;  linIneqUpperBnds = lin_ineq_u_bnds;
-  linEqTargets     = lin_eq_targets;
-}
+inline const RealVector& SNLLOptimizer::
+callback_linear_ineq_lower_bounds() const
+{ return linIneqLowerBnds; }
 
 
-inline void SNLLOptimizer::
-nonlinear_constraints(const RealVector& nln_ineq_l_bnds,
-		      const RealVector& nln_ineq_u_bnds,
-		      const RealVector& nln_eq_targets)
-{
-  nlnIneqLowerBnds = nln_ineq_l_bnds;
-  nlnIneqUpperBnds = nln_ineq_u_bnds;
-  nlnEqTargets     = nln_eq_targets;
-}
+inline const RealVector& SNLLOptimizer::
+callback_linear_ineq_upper_bounds() const
+{ return linIneqUpperBnds; }
 
 } // namespace Dakota
 

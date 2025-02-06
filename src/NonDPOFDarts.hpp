@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDPOFDarts
-//- Description: Class for the Probability of Failure DARTS approach
-//- Owner:	 Mohamed Ebeida and Laura Swiler
-//- Checked by:
-//- Version:
 
 #ifndef NOND_POFDARTS_H
 #define NOND_POFDARTS_H
@@ -49,17 +43,17 @@ public:
   //- Heading: Constructors and destructor
   //
 
-  NonDPOFDarts(ProblemDescDB& problem_db, Model& model); ///< constructor
-  ~NonDPOFDarts();                                       ///< destructor
+  NonDPOFDarts(ProblemDescDB& problem_db, std::shared_ptr<Model> model); ///< constructor
+  ~NonDPOFDarts() override;                                       ///< destructor
 
   //
   //- Heading: Virtual member function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
 
   /// perform POFDart analysis and return probability of failure 
-  void core_run();
+  void core_run() override;
 
 protected:
 
@@ -78,7 +72,7 @@ protected:
     void execute(size_t kd);
     
     /// print the final statistics
-    void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+    void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
     
     
     //////////////////////////////////////////////////////////////

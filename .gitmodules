@@ -1,12 +1,12 @@
 [submodule "packages/external"]
 	path = packages/external
-	url = ../dakota-packages
+	url = ../dakota-packages.git
 [submodule "packages/pecos"]
 	path = packages/pecos
-	url = ../pecos
+	url = ../pecos.git
 [submodule "packages/surfpack"]
 	path = packages/surfpack
-	url = ../surfpack
+	url = ../surfpack.git
 [submodule "packages/local/DOT"]
 	path = packages/local/DOT
 	url = git@gitlab-ex.sandia.gov:dakota/SNL/DOT
@@ -22,4 +22,4 @@
 	branch = devel
 [submodule "dakota-examples"]
 	path = dakota-examples
-	url = ../dakota-examples
+	url = ../dakota-examples.git

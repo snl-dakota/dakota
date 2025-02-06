@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDAdaptiveSampling
-//- Description: Implementation code for NonDAdaptiveSampling class
-//- Owner:       Dan Maljovec
-//- Checked by:  Brian Adams
-//- Version:
 
 //- Edited by: Mohamed S. Ebeida on 11/26/2012
 
@@ -46,7 +40,7 @@ namespace Dakota
 	/** This constructor is called for a standard letter-envelope iterator 
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
-	NonDAdaptiveSampling::NonDAdaptiveSampling(ProblemDescDB& problem_db, Model& model): NonDSampling(problem_db, model)
+	NonDAdaptiveSampling::NonDAdaptiveSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model): NonDSampling(problem_db, model)
 	{	
 		#pragma region Class Constructor:
 		
@@ -112,8 +106,8 @@ namespace Dakota
 		short corr_order = -1, data_order = 1, corr_type = NO_CORRECTION;
 		if (probDescDB.get_bool("method.derivative_usage"))
 		{
-		  if (iteratedModel.gradient_type() != "none") data_order |= 2;
-		  if (iteratedModel.hessian_type()  != "none") data_order |= 4;
+		  if (iteratedModel->gradient_type() != "none") data_order |= 2;
+		  if (iteratedModel->hessian_type()  != "none") data_order |= 4;
 		}
 
 		bool vary_pattern = false;
@@ -137,16 +131,17 @@ namespace Dakota
 		//					   sampleDesign));
 		//}
                 approx_type = "global_kriging";
-		ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
+		ActiveSet gp_set = iteratedModel->current_response().active_set(); // copy
 		gp_set.request_values(1); // no surr deriv evals, but GP may be grad-enhanced
-		gpModel.assign_rep(std::make_shared<DataFitSurrModel>
+		const ShortShortPair& gp_view = iteratedModel->current_variables().view();
+		gpModel = std::make_shared<DataFitSurrModel>
 				   (gpBuild, iteratedModel,
-				    gp_set, approx_type, approx_order, corr_type, corr_order, data_order,
+				    gp_set, gp_view, approx_type, approx_order, corr_type, corr_order, data_order,
 				    outputLevel, sample_reuse, import_pts_file,
 				    probDescDB.get_ushort("method.import_build_format"),
 				    probDescDB.get_bool("method.import_build_active_only"),
 				    probDescDB.get_string("method.export_approx_points_file"),
-				    probDescDB.get_ushort("method.export_approx_format")));
+				    probDescDB.get_ushort("method.export_approx_format"));
 
 		vary_pattern = true; // allow seed to run among multiple approx sample sets
 							 // need to add to input spec
@@ -191,7 +186,7 @@ namespace Dakota
 
   void NonDAdaptiveSampling::derived_init_communicators(ParLevLIter pl_iter)
   {
-    iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);
+    iteratedModel->init_communicators(pl_iter, maxEvalConcurrency);
 
     // gpEval and gpFinalEval use NoDBBaseConstructor, so no need to
     // manage DB list nodes at this level
@@ -214,7 +209,7 @@ namespace Dakota
     gpFinalEval.free_communicators(pl_iter);
     gpEval.free_communicators(pl_iter);
 
-    iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);
+    iteratedModel->free_communicators(pl_iter, maxEvalConcurrency);
   }
 
 
@@ -227,7 +222,7 @@ namespace Dakota
  
 		// Build initial GP model.  This will be built over the initial LHS sample set
 		// defined in the constructor.
-		gpModel.build_approximation();
+		gpModel->build_approximation();
 
 		gpCvars.resize(numEmulEval);
 		gpVar.resize(numEmulEval);
@@ -251,7 +246,7 @@ namespace Dakota
 		// BMA: you should just be able to use numContinuousVars for now, or this:
 		//  size_t dim = numContinuousVars + numDiscreteIntVars + numDiscreteStringVars + numDiscreteRealVars;
 		int dim = 0;
-		const Pecos::SurrogateData& gp_data = gpModel.approximation_data(0);
+		const Pecos::SurrogateData& gp_data = gpModel->approximation_data(0);
 		const Pecos::SDVArray& sdv_array = gp_data.variables_data();
 
 		if(!sdv_array.empty()) dim = sdv_array[0].continuous_variables().length();
@@ -305,14 +300,14 @@ namespace Dakota
 			IntResponseMap responses_to_add;
 			for(int i = 0; i < new_Xs.size(); i++) 
 			{
-				iteratedModel.continuous_variables(new_Xs[i]);
-				iteratedModel.evaluate();
-				responses_to_add.insert(IntResponsePair(iteratedModel.evaluation_id(),
-										iteratedModel.current_response()));
-				points_to_add.push_back(iteratedModel.current_variables());
+				ModelUtils::continuous_variables(*iteratedModel, new_Xs[i]);
+				iteratedModel->evaluate();
+				responses_to_add.insert(IntResponsePair(iteratedModel->evaluation_id(),
+										iteratedModel->current_response()));
+				points_to_add.push_back(iteratedModel->current_variables());
 			}
 
-			gpModel.append_approximation(points_to_add,responses_to_add, true);
+			gpModel->append_approximation(points_to_add,responses_to_add, true);
 			
 			#ifdef HAVE_MORSE_SMALE
 			for (int ifunc = 0; ifunc < numFunctions; ifunc++)
@@ -395,10 +390,10 @@ namespace Dakota
 		{
 			temp_cvars = Teuchos::getCol(Teuchos::View,	const_cast<RealMatrix&>(all_samples), i);
 			gpCvars[i] = temp_cvars;
-      		gpModel.continuous_variables(temp_cvars);
+      		ModelUtils::continuous_variables(*gpModel, temp_cvars);
 			if(approx_type == "global_kriging")
 			{
-				gpVar[i] = gpModel.approximation_variances(gpModel.current_variables());
+				gpVar[i] = gpModel->approximation_variances(gpModel->current_variables());
 			}
 			else
 			{
@@ -449,8 +444,8 @@ namespace Dakota
 			Real max_score;
 			for (int respFnCount = 0; respFnCount < numFunctions; respFnCount++) 
 			{			
-				gpModel.continuous_variables(gpCvars[i]);
-				Real score = gpModel.approximation_variances(gpModel.current_variables())[respFnCount];
+				ModelUtils::continuous_variables(*gpModel, gpCvars[i]);
+				Real score = gpModel->approximation_variances(gpModel->current_variables())[respFnCount];
 				if (respFnCount == 0 || score > max_score) max_score = score;
 			}
 			emulEvalScores(i) = max_score;
@@ -467,7 +462,7 @@ namespace Dakota
 			Real max_score;
 			for (int respFnCount = 0; respFnCount < numFunctions; respFnCount++) 
 			{			
-				const Pecos::SurrogateData& gp_data = gpModel.approximation_data(respFnCount);
+				const Pecos::SurrogateData& gp_data = gpModel->approximation_data(respFnCount);
 				const Pecos::SDVArray& sdv_array = gp_data.variables_data();
 				double min_sq_dist;
 				int min_index;
@@ -504,7 +499,7 @@ namespace Dakota
 			Real max_score;
 			for (int respFnCount = 0; respFnCount < numFunctions; respFnCount++) 
 			{	
-				const Pecos::SurrogateData& gp_data = gpModel.approximation_data(respFnCount);
+				const Pecos::SurrogateData& gp_data = gpModel->approximation_data(respFnCount);
 				const Pecos::SDVArray& sdv_array = gp_data.variables_data();
 				const Pecos::SDRArray& sdr_array = gp_data.response_data();
 				double min_sq_dist;
@@ -588,7 +583,7 @@ namespace Dakota
 		delete AMSC;
 		AMSC = NULL;
  
-		const Pecos::SurrogateData& gp_data = gpModel.approximation_data(respFnCount);
+		const Pecos::SurrogateData& gp_data = gpModel->approximation_data(respFnCount);
 		const Pecos::SDVArray& sdv_array = gp_data.variables_data();
 		const Pecos::SDRArray& sdr_array = gp_data.response_data();
 		if(sdv_array.empty()) return;
@@ -624,7 +619,7 @@ namespace Dakota
 void NonDAdaptiveSampling::output_round_data(int round, int respFnCount) 
 {
 
-  Model& surrogate_model = gpModel.surrogate_model();
+  Model& surrogate_model = *gpModel->surrogate_model();
 
   RealVector alm_set;
   RealVector delta_x_set;
@@ -643,7 +638,7 @@ void NonDAdaptiveSampling::output_round_data(int round, int respFnCount)
   }
 
   for(int i = 0; i < validationSetSize; i++) {
-    surrogate_model.continuous_variables(validationSet[i]);
+    ModelUtils::continuous_variables(surrogate_model, validationSet[i]);
     surrogate_model.evaluate();
     yModel[i] = surrogate_model.current_response().function_value(respFnCount);
 
@@ -720,13 +715,13 @@ void NonDAdaptiveSampling::output_round_data(int round, int respFnCount)
     RealVectorArray new_Xs = drawNewX(round);
 
     for(int i = 0; i < new_Xs.size(); i++) {
-      iteratedModel.continuous_variables(new_Xs[i]);
-      iteratedModel.evaluate();
+      ModelUtils::continuous_variables(*iteratedModel, new_Xs[i]);
+      iteratedModel->evaluate();
 
       for(int j = 0; j < new_Xs[i].length(); j++)
         candidate_out << new_Xs[i][j] << " ";
       candidate_out 
-        << iteratedModel.current_response().function_value(respFnCount)
+        << iteratedModel->current_response().function_value(respFnCount)
         << std::endl;
     }
 
@@ -864,7 +859,7 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
     //Constant Liar strategy
 
     //Find the mean response value
-    const Pecos::SurrogateData& gp_data = gpModel.approximation_data(respFnCount);
+    const Pecos::SurrogateData& gp_data = gpModel->approximation_data(respFnCount);
     const Pecos::SDRArray& sdr_array = gp_data.response_data();
     Real mean_value = 0;
     for (i = 0; i < sdr_array.size(); i++) {
@@ -901,13 +896,13 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
       selected_indices.insert(max_index);
       
       Cout << "Updaing surrogate" << std::endl;
-      gpModel.continuous_variables(gpCvars[max_index]);
-      gpModel.evaluate();
-      Response current_response = gpModel.current_response();
+      ModelUtils::continuous_variables(*gpModel, gpCvars[max_index]);
+      gpModel->evaluate();
+      Response current_response = gpModel->current_response();
       current_response.function_value_view(respFnCount) = mean_value;
-      IntResponsePair response_to_add(gpModel.evaluation_id(),current_response);
-      Variables point_to_add(gpModel.current_variables());
-      gpModel.append_approximation(point_to_add,response_to_add, true);
+      IntResponsePair response_to_add(gpModel->evaluation_id(),current_response);
+      Variables point_to_add(gpModel->current_variables());
+      gpModel->append_approximation(point_to_add,response_to_add, true);
 		#ifdef HAVE_MORSE_SMALE
 		for (int ifunc = 0; ifunc < numFunctions; ifunc++)
 		{
@@ -915,7 +910,7 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
 		}
 		#endif
     }
-    gpModel.pop_approximation(false, true/*, batchSize*/);
+    gpModel->pop_approximation(false, true/*, batchSize*/);
   }
   else {
 #ifdef HAVE_MORSE_SMALE
@@ -927,7 +922,7 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
 ////***END ATTENTION***
     // BMA: See note above
     int dim = 
-      gpModel.approximation_data(respFnCount).continuous_variables(0).length();
+      gpModel->approximation_data(respFnCount).continuous_variables(0).length();
 
     double *raw_points = new double[temp_length*(dim+1)];
     for(i = 0; i < temp_length; i++) {
@@ -1116,12 +1111,12 @@ void NonDAdaptiveSampling::calc_score_topo_alm_hybrid(int respFnCount)
 
     Real score_val = ScoreTOPOP((*AMSC), temp_x);
 
-	  gpModel.continuous_variables(gpCvars[i]);
+	  ModelUtils::continuous_variables(*gpModel, gpCvars[i]);
     temp_x[gpCvars[i].length()] = gpMeans[i][respFnCount] 
-      + sqrt(gpModel.approximation_variances(gpModel.current_variables())[respFnCount]);
+      + sqrt(gpModel->approximation_variances(gpModel->current_variables())[respFnCount]);
     Real score_val_plus_std = ScoreTOPOP((*AMSC), temp_x);
     temp_x[gpCvars[i].length()] = gpMeans[i][respFnCount] 
-      - sqrt(gpModel.approximation_variances(gpModel.current_variables())[respFnCount]);
+      - sqrt(gpModel->approximation_variances(gpModel->current_variables())[respFnCount]);
     Real score_val_minus_std = ScoreTOPOP((*AMSC), temp_x);
     emulEvalScores(i) = (score_val + score_val_plus_std + score_val_minus_std) / 3.;
   }    
@@ -1144,7 +1139,7 @@ void NonDAdaptiveSampling::calc_score_topo_highest_persistence(int respFnCount)
   // The scorer will randomly select a point if all scores are equal
   emulEvalScores = 0.0;
 
-  const Pecos::SurrogateData& gp_data = gpModel.approximation_data(respFnCount);
+  const Pecos::SurrogateData& gp_data = gpModel->approximation_data(respFnCount);
   const Pecos::SDVArray& sdv_array = gp_data.variables_data();
   const Pecos::SDRArray& sdr_array = gp_data.response_data();
 
@@ -1204,16 +1199,16 @@ void NonDAdaptiveSampling::calc_score_topo_highest_persistence(int respFnCount)
 
 Real NonDAdaptiveSampling::calc_score_alm(int respFnCount,
   RealVector &test_point) { 
-  gpModel.continuous_variables(test_point);
-  return gpModel.approximation_variances(
-          gpModel.current_variables())[respFnCount];
+  ModelUtils::continuous_variables(*gpModel, test_point);
+  return gpModel->approximation_variances(
+          gpModel->current_variables())[respFnCount];
 }
 
 Real NonDAdaptiveSampling::calc_score_delta_y(int respFnCount,
   RealVector &test_point) 
 { 
 
-  const Pecos::SurrogateData& gp_data = gpModel.approximation_data(respFnCount);
+  const Pecos::SurrogateData& gp_data = gpModel->approximation_data(respFnCount);
   const Pecos::SDVArray& sdv_array = gp_data.variables_data();
   double min_sq_dist;
   int min_index;
@@ -1233,8 +1228,8 @@ Real NonDAdaptiveSampling::calc_score_delta_y(int respFnCount,
   const Pecos::SDRArray& sdr_array = gp_data.response_data();
   Real true_value = sdr_array[min_index].response_function();
 
-  Model& surrogate_model = gpModel.surrogate_model();
-  surrogate_model.continuous_variables(test_point);
+  Model& surrogate_model = *gpModel->surrogate_model();
+  ModelUtils::continuous_variables(surrogate_model, test_point);
   surrogate_model.evaluate();
   Real guessed_value = 
     surrogate_model.current_response().function_value(respFnCount);
@@ -1245,7 +1240,7 @@ Real NonDAdaptiveSampling::calc_score_delta_y(int respFnCount,
 Real NonDAdaptiveSampling::calc_score_delta_x(int respFnCount,
   RealVector &test_point) 
 { 
-  const Pecos::SurrogateData& gp_data = gpModel.approximation_data(respFnCount);
+  const Pecos::SurrogateData& gp_data = gpModel->approximation_data(respFnCount);
   const Pecos::SDVArray& sdv_array = gp_data.variables_data();
   double min_sq_dist;
   int min_index;
@@ -1273,8 +1268,8 @@ Real NonDAdaptiveSampling::calc_score_topo_bottleneck(int respFnCount,
   for(int d = 0; d < test_point.length(); d++)
       temp_x[d] = test_point[d];
 
-  Model& surrogate_model = gpModel.surrogate_model();
-  surrogate_model.continuous_variables(test_point);
+  Model& surrogate_model = *gpModel->surrogate_model();
+  ModelUtils::continuous_variables(surrogate_model, test_point);
   surrogate_model.evaluate();
   temp_x[test_point.length()] = 
     surrogate_model.current_response().function_value(respFnCount);
@@ -1305,8 +1300,8 @@ Real NonDAdaptiveSampling::calc_score_topo_avg_persistence(int respFnCount,
   for(int d = 0; d < test_point.length(); d++)
       temp_x[d] = test_point[d];
 
-  Model& surrogate_model = gpModel.surrogate_model();
-  surrogate_model.continuous_variables(test_point);
+  Model& surrogate_model = *gpModel->surrogate_model();
+  ModelUtils::continuous_variables(surrogate_model, test_point);
   surrogate_model.evaluate();
   temp_x[test_point.length()] = 
     surrogate_model.current_response().function_value(respFnCount);
@@ -1333,19 +1328,19 @@ Real NonDAdaptiveSampling::calc_score_topo_alm_hybrid(int respFnCount,
   for(int d = 0; d < test_point.length(); d++)
       temp_x[d] = test_point[d];
 
-  Model& surrogate_model = gpModel.surrogate_model();
-  surrogate_model.continuous_variables(test_point);
+  Model& surrogate_model = *gpModel->surrogate_model();
+  ModelUtils::continuous_variables(surrogate_model, test_point);
   surrogate_model.evaluate();
   temp_x[test_point.length()] 
     = surrogate_model.current_response().function_value(respFnCount);
   Real ret_value = ScoreTOPOP((*AMSC), temp_x);
   temp_x[test_point.length()] 
     = surrogate_model.current_response().function_value(respFnCount) 
-    + gpModel.approximation_variances(gpModel.current_variables())[respFnCount];
+    + gpModel->approximation_variances(gpModel->current_variables())[respFnCount];
   ret_value += ScoreTOPOP((*AMSC), temp_x);
   temp_x[test_point.length()] 
     = surrogate_model.current_response().function_value(respFnCount) 
-    - gpModel.approximation_variances(gpModel.current_variables())[respFnCount];
+    - gpModel->approximation_variances(gpModel->current_variables())[respFnCount];
   ret_value += ScoreTOPOP((*AMSC), temp_x);
   delete [] temp_x;
   return ret_value/3.;
@@ -1776,7 +1771,7 @@ void NonDAdaptiveSampling::output_for_optimization(int dim)
 
 
 void NonDAdaptiveSampling::
-construct_fsu_sampler(Iterator& u_space_sampler, Model& u_model, 
+construct_fsu_sampler(Iterator& u_space_sampler, std::shared_ptr<Model> u_model, 
     int num_samples, int seed, unsigned short sample_type) {
   // sanity checks
   if (num_samples <= 0) {

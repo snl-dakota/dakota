@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDLocalEvidence
-//- Description: Implementation code for NonDEvidence class
-//- Owner:       Laura Swiler
-//- Checked by:
-//- Version:
 
 #include "dakota_system_defs.hpp"
 #include "dakota_data_io.hpp"           
@@ -24,7 +18,7 @@
 
 namespace Dakota {
 
-NonDLocalEvidence::NonDLocalEvidence(ProblemDescDB& problem_db, Model& model):
+NonDLocalEvidence::NonDLocalEvidence(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDLocalInterval(problem_db, model)
 { }
 
@@ -41,21 +35,21 @@ void NonDLocalEvidence::set_cell_bounds()
 {
   size_t j ;
   for (j=0; j<numContIntervalVars; j++) {
-    minMaxModel.continuous_lower_bound(cellContLowerBounds[cellCntr][j],j);
-    minMaxModel.continuous_upper_bound(cellContUpperBounds[cellCntr][j],j);
+    ModelUtils::continuous_lower_bound(*minMaxModel, cellContLowerBounds[cellCntr][j],j);
+    ModelUtils::continuous_upper_bound(*minMaxModel, cellContUpperBounds[cellCntr][j],j);
   }
 
-  for (j=0; j<(numDiscIntervalVars); j++) {
-    minMaxModel.discrete_int_lower_bound(cellIntRangeLowerBounds[cellCntr][j],j);
-    minMaxModel.discrete_int_upper_bound(cellIntRangeUpperBounds[cellCntr][j],j);
+  for (j=0; j<numDiscIntervalVars; j++) {
+    ModelUtils::discrete_int_lower_bound(*minMaxModel, cellIntRangeLowerBounds[cellCntr][j],j);
+    ModelUtils::discrete_int_upper_bound(*minMaxModel, cellIntRangeUpperBounds[cellCntr][j],j);
   }
 
   for (j=0; j<numDiscSetIntUncVars; j++) {
-    minMaxModel.discrete_int_variable(cellIntSetBounds[cellCntr][j],j+numDiscIntervalVars);
+    ModelUtils::discrete_int_variable(*minMaxModel, cellIntSetBounds[cellCntr][j],j+numDiscIntervalVars);
   }
 
   for (j=0; j<numDiscSetRealUncVars; j++) {
-    minMaxModel.discrete_real_variable(cellRealSetBounds[cellCntr][j],j);
+    ModelUtils::discrete_real_variable(*minMaxModel, cellRealSetBounds[cellCntr][j],j);
   }
 
 }

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -266,36 +266,6 @@ public:
   }
 
 };
-
-/**
- * \brief Computes the eigenvalues and, optionally, eigenvectors of a
- *  real symmetric matrix A. 
- * 
- * Eigenvalues are returned in ascending order.
- */
-void symmetric_eigenvalue_decomposition( const RealSymMatrix &matrix, 
-					 RealVector &eigenvalues, 
-					 RealMatrix &eigenvectors );
-
-/**
- * \brief Compute the means of each column of an arbitrary matrix
- */
-void compute_column_means( RealMatrix & matrix, RealVector & avg_vals );
-
-/**
- * \brief Sort incoming vector with result and corresponding indices returned in passed arguments
- */
-void sort_vector( const RealVector & vec, RealVector & sort_vec, IntVector & indices );
-
-/**
- * \brief Sort incoming matrix columns with result and corresponding indices returned in passed arguments
- */
-void sort_matrix_columns( const RealMatrix & mat, RealMatrix & sort_mat, IntMatrix & indices );
-
-/**
- * \brief Test if incoming matrix is symmetric
- */
-bool is_matrix_symmetric( const RealMatrix & matrix );
 
 } // namespace dakota
 

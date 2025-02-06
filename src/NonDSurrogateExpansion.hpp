@@ -1,15 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       NonDSurrogateExpansion
-//- Description: Generic UQ iterator leveraging surrogate model specification
-//- Owner:       Michael Eldred, Sandia National Laboratories
 
 #ifndef NOND_SURROGATE_EXPANSION_H
 #define NOND_SURROGATE_EXPANSION_H
@@ -34,9 +30,9 @@ public:
   //
 
   /// standard constructor
-  NonDSurrogateExpansion(ProblemDescDB& problem_db, Model& model);
+  NonDSurrogateExpansion(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
-  ~NonDSurrogateExpansion();
+  ~NonDSurrogateExpansion() override;
 
   //
   //- Heading: Virtual function redefinitions

@@ -1,17 +1,12 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:        SurfpackApproximation 
-//- Description:  Class for polynomial response surface approximation
-//-               
-//- Owner:        Brian Adams, Sandia National Laboratories
- 
 
 #ifndef SURFPACK_APPROXIMATION_H 
 #define SURFPACK_APPROXIMATION_H 
@@ -58,7 +53,7 @@ public:
   /// alternate constructor
   SurfpackApproximation(const SharedApproxData& shared_data);
   /// destructor
-  ~SurfpackApproximation() { }
+  ~SurfpackApproximation() override { }
 
 protected:
 
@@ -76,7 +71,7 @@ protected:
 
 
   /// validate imported labels and initialize map if needed
-  void map_variable_labels(const Variables& vars);
+  void map_variable_labels(const Variables& vars) override;
 
   /// export the Surpack model to disk or console
   void export_model(const StringArray& var_labels, const String& fn_label,

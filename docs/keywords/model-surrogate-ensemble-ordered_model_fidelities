@@ -1,0 +1,60 @@
+Blurb::
+Specification of an hierarchy of model fidelities, ordered from
+low to high.
+Description::
+An ensemble surrogate model can manage an ordered set of model fidelities,
+each of which may in turn involve multiple discretization levels (in the
+case of a simulation model) or additional model recursions.
+
+The ordering is assumed to be from lowest fidelity to highest
+fidelity, as dictated by an accuracy versus cost trade-off.
+Corresponding sequence specifications within methods (e.g.,
+``quadrature_order_sequence``, ``sparse_grid_level_sequence``,
+``expansion_order_sequence``, etc. within stochastic expansion methods)
+should be synchronized with this model order.
+
+
+
+*Additional Discussion*
+
+Internal to the hierarchical usage of an ensemble surrogate model,
+only one low fidelity model instance and one high fidelity model
+instance are active at any given time, although various optimization
+and UQ algorithms can be used to traverse deep multilevel and
+multifidelity hierarchies by activating different model combinations
+and different response modes within the hierarchical model
+infrastructure.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    model,
+     id_model = 'HIERARCH'
+     surrogate ensemble
+       ordered_model_fidelities = 'LF' 'MF 'HF'
+       correction additive zeroth_order
+    
+    model,
+     id_model = 'LF'
+     simulation
+       interface_pointer = 'LF_DRIVER'
+    
+    model,
+     id_model = 'MF'
+     simulation
+       interface_pointer = 'MF_DRIVER'
+    
+    model,
+     id_model = 'HF'
+     simulation
+       interface_pointer = 'HF_DRIVER'
+
+
+Theory::
+
+Faq::
+
+See_Also::

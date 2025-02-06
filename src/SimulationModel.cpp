@@ -1,16 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       SimulationModel
-//- Description: Implementation code for the SimulationModel class
-//- Owner:       Mike Eldred
-//- Checked by:
 
 #include "dakota_system_defs.hpp"
 #include "SimulationModel.hpp"
@@ -26,7 +21,7 @@ namespace Dakota {
 
 
 SimulationModel::SimulationModel(ProblemDescDB& problem_db):
-  Model(BaseConstructor(), problem_db),
+  Model(problem_db),
   userDefinedInterface(problem_db.get_interface()), solnCntlVarType(EMPTY_TYPE),
   solnCntlADVIndex(_NPOS), solnCntlAVIndex(_NPOS), costMetadataIndex(_NPOS),
   simModelEvalCntr(0)
@@ -34,7 +29,7 @@ SimulationModel::SimulationModel(ProblemDescDB& problem_db):
   componentParallelMode = INTERFACE_MODE;
   ignoreBounds = problem_db.get_bool("responses.ignore_bounds");
   centralHess  = problem_db.get_bool("responses.central_hess");
-  
+
   initialize_solution_control(
     problem_db.get_string("model.simulation.solution_level_control"),
     problem_db.get_rv("model.simulation.solution_level_cost"));
@@ -62,17 +57,20 @@ initialize_solution_control(const String& control, const RealVector& cost)
 {
   solnCntlCostMap.clear();
 
-  size_t i, cost_len = cost.length(), num_lev;
+  size_t cost_len = cost.length(), num_lev;
   if (control.empty()) {
-    // cost_len of 0: empty map for no solution control
-    // cost_len of 1: nominal cost for model w/o any soln levels
-    // cost_len  > 1: error
-    if (cost_len == 1)   // nominal cost with no solution control
-      solnCntlCostMap.insert(std::pair<Real, size_t>(cost[0], _NPOS));
-    else if (cost_len) { // more than 1 cost requires associated control
+    // no solution control/no cost spec:  set placeholder cost for model
+    // no solution control/cost_len of 1: nominal cost specified for model
+    // no solution control/cost_len  > 1: error
+    switch (cost_len) {
+    case 0: // invalid cost of 0 must be replaced by online recovery
+      solnCntlCostMap.insert(std::pair<Real, size_t>(0.,      _NPOS));  break;
+    case 1: // nominal cost specified for model (no levels)
+      solnCntlCostMap.insert(std::pair<Real, size_t>(cost[0], _NPOS));  break;
+    default: // more than 1 cost requires associated solution control
       Cerr << "Error: vector-valued solution cost requires an associated "
 	   << "solution control." << std::endl;
-      abort_handler(MODEL_ERROR);
+      abort_handler(MODEL_ERROR);                                       break;
     }
     return;
   }
@@ -188,11 +186,11 @@ initialize_solution_control(const String& control, const RealVector& cost)
   //       solution_level_cost = 10. # scalar multiplier
   // results in solnCntlCostMap = { {1., 0}, {10., 1}, {100., 2} }
   if (cost_len == num_lev)
-    for (i=0; i<num_lev; ++i)
+    for (size_t i=0; i<num_lev; ++i)
       solnCntlCostMap.insert(std::pair<Real, size_t>(cost[i], i));
   else if (cost_len == 1) {
     Real multiplier = cost[0], prod = 1.;
-    for (i=0; i<num_lev; ++i) { // assume increasing cost
+    for (size_t i=0; i<num_lev; ++i) { // assume increasing cost
       solnCntlCostMap.insert(std::pair<Real, size_t>(prod, i));
       prod *= multiplier;
     }
@@ -202,7 +200,7 @@ initialize_solution_control(const String& control, const RealVector& cost)
 	 << "         Relying on online metadata recovery where required."
 	 << std::endl;
     // populate solnCntlCostMap with the correct length but with dummy costs
-    for (i=0; i<num_lev; ++i)
+    for (size_t i=0; i<num_lev; ++i)
       solnCntlCostMap.insert(std::pair<Real, size_t>(0., i));
   }
   else {

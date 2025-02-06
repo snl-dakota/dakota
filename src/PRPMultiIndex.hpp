@@ -1,16 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Non-class:   PRPMultiIndex
-//- Description: Global funcs, types, etc. for lookup of PRPairs in eval cache
-//- Checked by:
-//- Version: $Id$
 
 #ifndef PRP_MULTI_INDEX_H
 #define PRP_MULTI_INDEX_H

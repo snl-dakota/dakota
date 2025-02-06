@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDGPMSABayesCalibration
-//- Description: Derived class for Bayesian inference using QUESO/GPMSA
-//- Owner:       Laura Swiler, Brian Adams
-//- Checked by:
-//- Version:
 
 // place Dakota headers first to minimize influence of QUESO defines
 #include "NonDGPMSABayesCalibration.hpp"
@@ -118,7 +112,7 @@ NonDGPMSABayesCalibration* NonDGPMSABayesCalibration::nonDGPMSAInstance(NULL);
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDGPMSABayesCalibration::
-NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
+NonDGPMSABayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDQUESOBayesCalibration(problem_db, model),
   buildSamples(probDescDB.get_int("method.build_samples")),
   approxImportFile(probDescDB.get_string("method.import_build_points_file")),
@@ -141,7 +135,7 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model):
 
   // TODO: Do we want to allow a single field group to allow the full
   // multi-variate case?
-  const SharedResponseData& srd = model.current_response().shared_data();
+  const SharedResponseData& srd = model->current_response().shared_data();
   if (srd.num_field_response_groups() > 0 && outputLevel >= NORMAL_OUTPUT)
     Cout << "\nWarning: GPMSA does not yet treat field_responses; they will be "
 	 << "treated as a\n         single multivariate response set."
@@ -628,7 +622,7 @@ void NonDGPMSABayesCalibration::cache_acceptance_chain()
       copy_gsl_partial(qv, 0, u_rv);
       Real* acc_chain_i = acceptanceChain[i];
       RealVector x_rv(Teuchos::View, acc_chain_i, numContinuousVars);
-      mcmcModel.probability_transformation().trans_U_to_X(u_rv, x_rv);
+      mcmcModel->trans_U_to_X(u_rv, x_rv);
       for (int j=numContinuousVars; j<num_params; ++j)
 	acc_chain_i[j] = qv[j]; // trailing hyperparams are not transformed
     }

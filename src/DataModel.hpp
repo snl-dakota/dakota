@@ -1,18 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        DataModel
-//- Description:
-//-
-//-
-//- Owner:        Mike Eldred
-//- Version: $Id: DataModel.hpp 6879 2010-07-30 01:05:11Z mseldre $
 
 #ifndef DATA_MODEL_H
 #define DATA_MODEL_H
@@ -27,9 +20,9 @@ namespace Dakota {
 enum { DEFAULT_POINTS, MINIMUM_POINTS, RECOMMENDED_POINTS, TOTAL_POINTS };
 
 /// define special values for SurrogateModel::responseMode
-enum { NO_SURROGATE=0,  UNCORRECTED_SURROGATE, AUTO_CORRECTED_SURROGATE,
-       BYPASS_SURROGATE, MODEL_DISCREPANCY, AGGREGATED_MODEL_PAIR,
-       AGGREGATED_MODELS };
+enum { DEFAULT_SURROGATE_RESP_MODE=0, NO_SURROGATE, UNCORRECTED_SURROGATE,
+       AUTO_CORRECTED_SURROGATE, BYPASS_SURROGATE, MODEL_DISCREPANCY,
+       AGGREGATED_MODEL_PAIR, AGGREGATED_MODELS };
 
 /// define special values for approxCorrectionType
 enum { NO_CORRECTION=0,  ADDITIVE_CORRECTION, MULTIPLICATIVE_CORRECTION,
@@ -45,12 +38,6 @@ enum { NOCOVAR=0, EXP_L2, EXP_L1 };
 enum { SUBSPACE_NORM_DEFAULT=0, SUBSPACE_NORM_MEAN_VALUE,
        SUBSPACE_NORM_MEAN_GRAD, SUBSPACE_NORM_LOCAL_GRAD }; 
 
-// -----------------------
-// AdaptedBasis
-// -----------------------
-// define special values for generating the basis adaptation rotation matrix
-enum {ROTATION_METHOD_UNRANKED, ROTATION_METHOD_RANKED};    
-
 /// define special values for componentParallelMode
 /// (active model for parallel scheduling)
 enum { NO_PARALLEL_MODE=0, SURROGATE_MODEL_MODE, TRUTH_MODEL_MODE,
@@ -59,6 +46,10 @@ enum { NO_PARALLEL_MODE=0, SURROGATE_MODEL_MODE, TRUTH_MODEL_MODE,
 /// define special values for distParamDerivs
 enum { NO_DERIVS=0, ALL_DERIVS, MIXED_DERIVS }; 
 
+/// define special values for mlmfPrecedence
+enum { DEFAULT_PRECEDENCE=0, MULTILEVEL_PRECEDENCE, MULTIFIDELITY_PRECEDENCE,
+       MULTILEVEL_MULTIFIDELITY_PRECEDENCE, ENUMERATION_PRECEDENCE };
+
 // define special values for regressionType in C3 FT (outside of Pecos).
 // Note that C3 and Pecos are mutually exclusive: use of values from multiple
 // enums should not conflict
@@ -66,6 +57,12 @@ enum { FT_LS, FT_RLS2 };//, FT_RLSD2, FT_RLSRKHS, FT_RLS1 };
 // define special values for c3AdvanceType
 enum { NO_C3_ADVANCEMENT=0, START_RANK_ADVANCEMENT, START_ORDER_ADVANCEMENT,
        MAX_RANK_ADVANCEMENT, MAX_ORDER_ADVANCEMENT, MAX_RANK_ORDER_ADVANCEMENT};
+
+// -----------------------
+// AdaptedBasis
+// -----------------------
+// define special values for generating the basis adaptation rotation matrix
+enum { ROTATION_METHOD_UNRANKED, ROTATION_METHOD_RANKED };    
 
 
 /// Body class for model specification data.
@@ -315,6 +312,9 @@ public:
   /// file containing advanced surrogate option overrides
   String advancedOptionsFilename;
 
+  /// file containing python module methods used by python surrogates
+  String moduleAndClassName;
+
   // nested models
 
   /// string pointer to the responses specification used by the optional
@@ -557,9 +557,9 @@ public:
   //- Heading: Constructors, destructor, operators
   //
 
-  DataModel();                                ///< constructor
+  DataModel();                               ///< constructor
   DataModel(const DataModel&);               ///< copy constructor
-  ~DataModel();                               ///< destructor
+  ~DataModel();                              ///< destructor
 
   DataModel& operator=(const DataModel&); ///< assignment operator
 

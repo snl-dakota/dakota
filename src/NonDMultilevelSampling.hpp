@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDMultilevelSampling
-//- Description: class for multilevel Monte Carlo sampling
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version:
 
 #ifndef NOND_MULTILEVEL_SAMPLING_H
 #define NOND_MULTILEVEL_SAMPLING_H
@@ -42,9 +36,9 @@ public:
   //
 
   /// standard constructor
-  NonDMultilevelSampling(ProblemDescDB& problem_db, Model& model);
+  NonDMultilevelSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
-  ~NonDMultilevelSampling();
+  ~NonDMultilevelSampling() override;
 
 protected:
 
@@ -53,23 +47,29 @@ protected:
   //
 
   //void pre_run();
-  void core_run();
+  void core_run() override;
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
-  void print_variance_reduction(std::ostream& s);
+
+  Real estimator_accuracy_metric() const;
+  void print_variance_reduction(std::ostream& s) const;
 
   void nested_response_mappings(const RealMatrix& primary_coeffs,
-				const RealMatrix& secondary_coeffs);
+				const RealMatrix& secondary_coeffs) override;
 
-  bool discrepancy_sample_counts() const;
+  bool discrepancy_sample_counts() const override;
 
   //
   //- Heading: Member functions
   //
 
-  /// helper that consolidates sequence advancement, sample generation,
-  /// sample export, and sample evaluation
-  void evaluate_ml_sample_increment(unsigned short step);
+  /// evaluate multiple sample batches concurrently, where each batch involves
+  /// either a single model or model pair
+  void ml_increments(SizetArray& delta_N_l, String prepend);
+
+  // helper that consolidates sequence advancement, sample generation,
+  // sample export, and sample evaluation
+  //void evaluate_ml_sample_increment(String prepend, unsigned short step);
 
   /// increment the equivalent number of HF evaluations based on new
   /// model evaluations
@@ -84,17 +84,34 @@ protected:
   /// recover variance from raw moments
   void recover_variance(const RealMatrix& moment_stats, RealVector& var_H);
 
+  /// initialize the ML accumulators for computing means, variances, and
+  /// covariances across resolution levels
+  void initialize_ml_Ysums(IntRealMatrixMap& sum_Y, size_t num_lev,
+			   size_t num_mom = 4);
+  /// initialize the ML accumulators for computing means, variances, and
+  /// covariances across resolution levels
+  void initialize_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
+			   IntIntPairRealMatrixMap& sum_QlQlm1, size_t num_lev);
+
   /// update accumulators for multilevel telescoping running sums
   /// using set of model evaluations within allResponses
-  void accumulate_ml_Ysums(IntRealMatrixMap& sum_Y, RealMatrix& sum_YY,
-			   size_t lev, SizetArray& num_Y);
+  void accumulate_ml_Ysums(const IntResponseMap& resp_map,
+			   IntRealMatrixMap& sum_Y, IntRealMatrixMap& sum_YY,
+			   size_t lev, size_t lev_offset, SizetArray& num_Y);
   /// update accumulators for multilevel telescoping running sums
   /// using set of model evaluations within allResponses
-  void accumulate_ml_Ysums(RealMatrix& sum_Y, RealMatrix& sum_YY,
-			   size_t lev, SizetArray& num_Y);
+  void accumulate_ml_Ysums(const IntResponseMap& resp_map,
+			   IntRealMatrixMap& sum_Y, RealMatrix& sum_YY,
+			   size_t lev, size_t lev_offset, SizetArray& num_Y);
+  /// update accumulators for multilevel telescoping running sums
+  /// using set of model evaluations within allResponses
+  void accumulate_ml_Ysums(const IntResponseMap& resp_map, RealMatrix& sum_Y,
+			   RealMatrix& sum_YY, size_t lev, size_t lev_offset,
+			   SizetArray& num_Y);
   /// update running QoI sums for one model (sum_Q) using set of model
   /// evaluations within allResponses; used for level 0 from other accumulators
-  void accumulate_ml_Qsums(IntRealMatrixMap& sum_Q, size_t lev,
+  void accumulate_ml_Qsums(const IntResponseMap& resp_map,
+			   IntRealMatrixMap& sum_Q, size_t lev,
 			   SizetArray& num_Q);
 
   /// compute variance scalar from sum accumulators
@@ -118,11 +135,20 @@ protected:
   Real aggregate_mse_Ysum(const Real* sum_Y, const Real* sum_YY,
 			  const SizetArray& N_l);
 
-  /// accumulate ML-only contributions (levels with no CV) to raw moments
-  void ml_raw_moments(const RealMatrix& sum_H1, const RealMatrix& sum_H2,
-		      const RealMatrix& sum_H3, const RealMatrix& sum_H4,
-		      const Sizet2DArray& N_hf, size_t start, size_t end,
-		      RealMatrix& ml_raw_mom);
+  /// accumulate ML-only contributions (levels with no CV) to 2 raw moments
+  void ml_Q_raw_moments(const RealMatrix& sum_Hl_1,const RealMatrix& sum_Hlm1_1,
+			const RealMatrix& sum_Hl_2,const RealMatrix& sum_Hlm1_2,
+			const Sizet2DArray& N_actual, size_t start, size_t end,
+			RealMatrix& ml_raw_mom);
+  /// accumulate ML-only contributions (levels with no CV) to 2 raw moments
+  void ml_Y_raw_moments(const RealMatrix& sum_H1, const RealMatrix& sum_H2,
+			const Sizet2DArray& N_l, size_t start, size_t end,
+			RealMatrix& ml_raw_mom);
+  /// accumulate ML-only contributions (levels with no CV) to 4 raw moments
+  void ml_Y_raw_moments(const RealMatrix& sum_H1, const RealMatrix& sum_H2,
+			const RealMatrix& sum_H3, const RealMatrix& sum_H4,
+			const Sizet2DArray& N_l, size_t start, size_t end,
+			RealMatrix& ml_raw_mom);
 
   /// manage response mode and active model key from {group,form,lev} triplet.
   /// seq_type defines the active dimension for a 1D model sequence.
@@ -132,7 +158,7 @@ protected:
   void configure_indices(size_t group, size_t form, size_t lev, short seq_type);
 
   /// return (aggregate) level cost
-  Real level_cost(const RealVector& cost, size_t step);
+  Real level_cost(const RealVector& cost, size_t step, size_t offset = 0);
 
   //
   //- Heading: Data
@@ -150,17 +176,20 @@ private:
   // Perform multilevel Monte Carlo across the discretization levels for a
   // particular model form using discrepancy accumulators (sum_Y)
   //void multilevel_mc_Ysum();
-  /// Perform multilevel Monte Carlo across the discretization levels for a
-  /// particular model form using QoI accumulators (sum_Q)
-  void multilevel_mc_Qsum();
-  /// Qsum approach using a pilot sample treated as separate offline cost
+
+  /// Online iteration
+  void multilevel_mc_online_pilot(); //_Qsum();
+  /// Online allocations for all levels based on offline pilot
   void multilevel_mc_offline_pilot();
-  /// Qsum approach projecting estimator performance from a pilot sample
+  /// Project estimator performance from an online or offline pilot sample
   void multilevel_mc_pilot_projection();
+
+  /// define the truth and surrogate keys
+  void assign_active_key();
 
   /// helper for shared code among offline-pilot and pilot-projection modes
   void evaluate_levels(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
-		       IntIntPairRealMatrixMap& sum_QlQlm1, RealVector& cost,
+		       IntIntPairRealMatrixMap& sum_QlQlm1,
 		       Sizet2DArray& N_actual_pilot,
 		       Sizet2DArray& N_actual_online, SizetArray& N_alloc_pilot,
 		       SizetArray& N_alloc_online, SizetArray& delta_N_l,
@@ -168,13 +197,6 @@ private:
 		       RealVector& eps_sq_div_2, bool increment_cost,
 		       bool pilot_estvar);
 
-  // initialize the ML accumulators for computing means, variances, and
-  // covariances across fidelity levels
-  //void initialize_ml_Ysums(IntRealMatrixMap& sum_Y, size_t num_lev);
-  /// initialize the ML accumulators for computing means, variances, and
-  /// covariances across fidelity levels
-  void initialize_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
-			   IntIntPairRealMatrixMap& sum_QlQlm1, size_t num_lev);
   /// reset existing ML accumulators to zero for all keys
   void reset_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 		      IntIntPairRealMatrixMap& sum_QlQlm1);
@@ -189,12 +211,13 @@ private:
 
   /// update running QoI sums for two models (sum_Ql, sum_Qlm1) using set of
   /// model evaluations within allResponses
-  void accumulate_ml_Qsums(IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
+  void accumulate_ml_Qsums(const IntResponseMap& resp_map,
+			   IntRealMatrixMap& sum_Ql, IntRealMatrixMap& sum_Qlm1,
 			   IntIntPairRealMatrixMap& sum_QlQlm1, size_t lev,
 			   SizetArray& num_Q);
 
   /// increment the allocated samples counter
-  void increment_alloc_samples(size_t& N_l_alloc, const Real* N_l_target);
+  size_t allocation_increment(size_t N_l_alloc, const Real* N_l_target);
 
   // compute the equivalent number of HF evaluations (includes any sim faults)
   Real compute_ml_equivalent_cost(const SizetArray& raw_N_l,
@@ -574,12 +597,32 @@ configure_indices(size_t group, size_t form, size_t lev, short seq_type)
 
 
 inline Real NonDMultilevelSampling::
-level_cost(const RealVector& cost, size_t step)
+level_cost(const RealVector& cost, size_t step, size_t offset)
 {
   // discrepancies incur two level costs
+  size_t offset_step = offset + step;
   return (step) ?
-    cost[step] + cost[step-1] : // aggregated {HF,LF} mode
-    cost[step];                 //     uncorrected LF mode
+    cost[offset_step] + cost[offset_step-1] : // aggregated {HF,LF} mode
+    cost[offset_step];                        //     uncorrected LF mode
+}
+
+
+inline Real NonDMultilevelSampling::estimator_accuracy_metric() const
+{
+  // MLMC for mean stats uses an analytic soln which minimizes estimator
+  // variance; thus, we only manage QoI reductions here
+  switch (estVarMetricType) {
+  case DEFAULT_ESTVAR_METRIC: case AVG_ESTVAR_METRIC:
+    return average(estVar);                        break;
+  case NORM_ESTVAR_METRIC:
+    return p_norm(estVar, estVarMetricNormOrder);  break;
+  case MAX_ESTVAR_METRIC:
+    return maximum(estVar);                        break;
+  default:
+    Cerr << "Error: estimator accuracy metric type unsupported by "
+	 << "multilevel_sampling." << std::endl;
+    abort_handler(METHOD_ERROR);  return DBL_MAX;
+  }
 }
 
 
@@ -899,40 +942,70 @@ set_convergence_tol(const RealVector& estimator_var0_qoi, const RealVector& cost
 }
 
 
-/*
 inline void NonDMultilevelSampling::
-ml_raw_moments(const RealMatrix& sum_H1, const RealMatrix& sum_H2,
+ml_Q_raw_moments(const RealMatrix& sum_Hl_1, const RealMatrix& sum_Hlm1_1,
+		 const RealMatrix& sum_Hl_2, const RealMatrix& sum_Hlm1_2,
+		 const Sizet2DArray& N_actual, size_t start, size_t end,
+		 RealMatrix& ml_raw_mom)
+{
+  // MLMC without CV: sum_H = HF Q sums for levels l and l - 1
+
+  size_t qoi, lev;
+  for (lev=start; lev<end; ++lev) {
+    const SizetArray& N_l = N_actual[lev];
+    const Real *sum_Hl_1l = sum_Hl_1[lev], *sum_Hl_2l = sum_Hl_2[lev];
+    if (lev) {
+      const Real *sum_Hlm1_1l = sum_Hlm1_1[lev], *sum_Hlm1_2l = sum_Hlm1_2[lev];
+      for (qoi=0; qoi<numFunctions; ++qoi) {
+	size_t N_lq = N_l[qoi];
+	ml_raw_mom(0, qoi) += ( sum_Hl_1l[qoi] - sum_Hlm1_1l[qoi] ) / N_lq;
+	ml_raw_mom(1, qoi) += ( sum_Hl_2l[qoi] - sum_Hlm1_2l[qoi] ) / N_lq;
+      }
+    }
+    else
+      for (qoi=0; qoi<numFunctions; ++qoi) {
+	size_t N_lq = N_l[qoi];
+	ml_raw_mom(0, qoi) += sum_Hl_1l[qoi] / N_lq;
+	ml_raw_mom(1, qoi) += sum_Hl_2l[qoi] / N_lq;
+      }
+  }
+}
+
+
+inline void NonDMultilevelSampling::
+ml_Y_raw_moments(const RealMatrix& sum_H1, const RealMatrix& sum_H2,
 	       const Sizet2DArray& N_l, size_t start, size_t end,
 	       RealMatrix& ml_raw_mom)
 {
   // MLMC without CV: sum_H = HF Q sums for lev 0 and HF Y sums for lev > 0
+
   size_t qoi, lev;
   for (qoi=0; qoi<numFunctions; ++qoi) {
     for (lev=start; lev<end; ++lev) {
       size_t Nlq = N_l[lev][qoi];
-      ml_raw_mom(qoi,0) += sum_H1(qoi,lev) / Nlq;
-      ml_raw_mom(qoi,1) += sum_H2(qoi,lev) / Nlq;
+      ml_raw_mom(0, qoi) += sum_H1(qoi,lev) / Nlq;
+      ml_raw_mom(1, qoi) += sum_H2(qoi,lev) / Nlq;
     }
   }
 }
-*/
 
 
 inline void NonDMultilevelSampling::
-ml_raw_moments(const RealMatrix& sum_H1, const RealMatrix& sum_H2,
+ml_Y_raw_moments(const RealMatrix& sum_H1, const RealMatrix& sum_H2,
 	       const RealMatrix& sum_H3, const RealMatrix& sum_H4,
 	       const Sizet2DArray& N_l, size_t start, size_t end,
 	       RealMatrix& ml_raw_mom)
 {
   // MLMC without CV: sum_H = HF Q sums for lev 0 and HF Y sums for lev > 0
+
   size_t qoi, lev;
   for (qoi=0; qoi<numFunctions; ++qoi) {
     for (lev=start; lev<end; ++lev) {
       size_t Nlq = N_l[lev][qoi];
-      ml_raw_mom(qoi,0) += sum_H1(qoi,lev) / Nlq;
-      ml_raw_mom(qoi,1) += sum_H2(qoi,lev) / Nlq;
-      ml_raw_mom(qoi,2) += sum_H3(qoi,lev) / Nlq;
-      ml_raw_mom(qoi,3) += sum_H4(qoi,lev) / Nlq;
+      ml_raw_mom(0, qoi) += sum_H1(qoi,lev) / Nlq;
+      ml_raw_mom(1, qoi) += sum_H2(qoi,lev) / Nlq;
+      ml_raw_mom(2, qoi) += sum_H3(qoi,lev) / Nlq;
+      ml_raw_mom(3, qoi) += sum_H4(qoi,lev) / Nlq;
     }
   }
 }
@@ -958,17 +1031,24 @@ update_projected_samples(const SizetArray& delta_N_l, //Sizet2DArray& N_actual,
 			 SizetArray& N_alloc, const RealVector& cost,
 			 Real& delta_equiv_hf)
 {
-  size_t incr, lev, num_lev = cost.length();
+  size_t actual_incr, alloc_incr, offline_N_lwr = 0,
+    lev, num_lev = cost.length();
+  if (pilotMgmtMode == OFFLINE_PILOT ||
+      pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
+    offline_N_lwr = (finalStatsType == QOI_STATISTICS) ? 2 : 1;
   Real ref_cost = cost[num_lev-1];
+
   for (lev=0; lev<num_lev; ++lev) {
-    incr = delta_N_l[lev];
-    //increment_samples(N_actual[lev], incr);
-    increment_ml_equivalent_cost(incr, level_cost(cost, lev), ref_cost,
+    actual_incr = std::max(delta_N_l[lev], offline_N_lwr);
+    //increment_samples(N_actual[lev], actual_incr);
+    increment_ml_equivalent_cost(actual_incr, level_cost(cost, lev), ref_cost,
 				 delta_equiv_hf);
-    if (backfillFailures)
-      increment_alloc_samples(N_alloc[lev], NTargetQoI[lev]);
+    if (backfillFailures) {
+      alloc_incr = allocation_increment(N_alloc[lev], NTargetQoI[lev]);
+      N_alloc[lev] += std::max(alloc_incr, offline_N_lwr);
+    }
     else
-      N_alloc[lev] += incr;
+      N_alloc[lev] += actual_incr;
   }
 }
 

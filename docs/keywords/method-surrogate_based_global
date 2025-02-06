@@ -10,7 +10,7 @@ on a global surrogate using the same bounds during each iteration.
 
 In this way, the optimization operates on a more accurate surrogate
 during each iteration, presumably driving to optimality quickly. In
-contrast to :ref:`method-surrogate_based_local<method-surrogate_based_local>`, this approach has no
+contrast to :dakkw:`method-surrogate_based_local`, this approach has no
 guarantee of convergence.
 
 *Usage Tips*
@@ -25,8 +25,8 @@ with the optimizer's ``model_pointer`` keyword.
 Configuring the method:
 
 
-- The sub-method, specified with either :ref:`method-surrogate_based_global-method_pointer<method-surrogate_based_global-method_pointer>` or :ref:`method-surrogate_based_global-method_name<method-surrogate_based_global-method_name>` should typically be an optimizer that returns multiple final solutions, such as :ref:`method-moga<method-moga>` or :ref:`method-soga<method-soga>`.
-- The :ref:`method-surrogate_based_global-model_pointer<method-surrogate_based_global-model_pointer>` keyword must identify a surrogate model which includes an underlying truth model, typically via :ref:`model-surrogate-global-truth_model_pointer<model-surrogate-global-truth_model_pointer>` or :ref:`model-surrogate-global-dace_method_pointer<model-surrogate-global-dace_method_pointer>`
+- The sub-method, specified with either :dakkw:`method-surrogate_based_global-method_pointer` or :dakkw:`method-surrogate_based_global-method_name` should typically be an optimizer that returns multiple final solutions, such as :dakkw:`method-moga` or :dakkw:`method-soga`.
+- The :dakkw:`method-surrogate_based_global-model_pointer` keyword must identify a surrogate model which includes an underlying truth model, typically via :dakkw:`model-surrogate-global-truth_model_pointer` or :dakkw:`model-surrogate-global-dace_method_pointer`
 
 Workflow:
 
@@ -47,14 +47,14 @@ when using surrogates with discrete variables.*
 *Expected HDF5 Output*
 
 If Dakota was built with HDF5 support and run with the
-:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+:dakkw:`environment-results_output-hdf5` keyword, this method
 writes the following results to HDF5:
 
 
 - :ref:`hdf5_results-best_params`
-- :ref:`hdf5_results-best_obj_fncs` (when :ref:`responses-objective_functions<responses-objective_functions>`) are specified)
+- :ref:`hdf5_results-best_obj_fncs` (when :dakkw:`responses-objective_functions`) are specified)
 - :ref:`hdf5_results-best_constraints`
-- :ref:`hdf5_results-calibration` (when :ref:`responses-calibration_terms<responses-calibration_terms>` are specified)
+- :ref:`hdf5_results-calibration` (when :dakkw:`responses-calibration_terms` are specified)
 Topics::
 surrogate_based_optimization_methods
 Examples::

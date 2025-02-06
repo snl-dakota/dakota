@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonLHSDEvidence
-//- Description: Implementation code for NonDEvidence class
-//- Owner:       Laura Swiler
-//- Checked by:
-//- Version:
 
 #include "NonDLHSEvidence.hpp"
 #include "dakota_data_types.hpp"
@@ -22,7 +16,7 @@
 namespace Dakota {
 
 
-NonDLHSEvidence::NonDLHSEvidence(ProblemDescDB& problem_db, Model& model):
+NonDLHSEvidence::NonDLHSEvidence(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDLHSInterval(problem_db, model)
 { }
 
@@ -62,7 +56,7 @@ void NonDLHSEvidence::post_process_samples()
     for (i=0, it=all_responses.begin(); i<numSamples; i++, ++it) {
 
       const Real& fn_val = it->second.function_value(respFnCntr);
-      Variables vars = iteratedModel.current_variables().copy();
+      Variables vars = iteratedModel->current_variables().copy();
       sample_to_variables(all_samples[i], vars);
 
       const RealVector&  c_vars = vars.continuous_variables();

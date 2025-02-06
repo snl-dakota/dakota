@@ -1,0 +1,49 @@
+#@ *: Label=Experimental
+#@ *: DakotaConfig=HAVE_QUESO
+#@ s*: TimeoutAbsolute=3600
+#@ s*: TimeoutDelay=3600
+#@ s*: ReqFiles=bayes_diffusion_pce_coeffs.dat,bayes_diffusion_pce_obs_configs.dat
+
+# This example tests emulator-based Bayesian inference where an imported PCE
+# spans both calibration and configuration variables.  The two configuration
+# variables define a set of 10 views for 1 experiment.
+
+environment,
+	output_precision = 16
+
+method,
+	bayes_calibration queso
+	  chain_samples = 10000 seed = 123478
+	  delayed_rejection
+	  emulator pce
+# Import PCE for 5 QoI
+	    import_expansion_file = 'bayes_diffusion_pce_coeffs.dat'
+	    proposal_covariance derivatives update_period = 100
+
+variables,
+	uniform_uncertain = 4
+	  lower_bounds    = 4*-1.
+	  upper_bounds    = 4* 1.
+	  descriptors 'pos1' 'pos2' 'pos3' 'size'
+	continuous_state  = 2
+	  lower_bounds    = 2*-1.	#s0
+	  upper_bounds    = 2* 1.	#s0
+# Exercise the user-space to iterator-space transform for exp config vars:
+#	  lower_bounds    = 2*-2.	#s1
+#	  upper_bounds    = 2* 2.	#s1
+	  descriptors 'view1' 'view2'
+
+interface,
+        fork
+          analysis_driver = 'dummy.sh'
+
+responses,
+	calibration_terms = 5
+      	calibration_weights = 5. 25. 50. 10. 2. # break 1D symmetry
+# 10 views of 1 experiment:
+        calibration_data_file = 'bayes_diffusion_pce_obs_configs.dat' freeform
+	  num_config_variables = 2
+	  num_experiments      = 10
+	  variance_type        = 'none' # assume unit variance
+ 	no_gradients
+	no_hessians

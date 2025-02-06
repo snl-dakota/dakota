@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -34,8 +34,6 @@ public:
 
   /// Problem database constructor
   AdaptedBasisModel(ProblemDescDB& problem_db);
-  /// destructor
-  ~AdaptedBasisModel();
 
 protected:
 
@@ -44,20 +42,20 @@ protected:
   //
 
   void derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-                                  bool recurse_flag);
+                                  bool recurse_flag) override;
 
   void derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-                                 bool recurse_flag);
+                                 bool recurse_flag) override;
 
   void derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-                                  bool recurse_flag);
+                                  bool recurse_flag) override;
 
   // ---
   // Construct time convenience functions
   // ---
 
   /// retrieve the sub-Model from the DB to pass up the constructor chain
-  Model get_sub_model(ProblemDescDB& problem_db);
+  std::shared_ptr<Model> get_sub_model(ProblemDescDB& problem_db);
 
   // ---
   // Subspace identification functions: rank-revealing build phase
@@ -65,7 +63,7 @@ protected:
 
   // Iteratively sample the fullspace model until subspace identified
   // that meets user-specified criteria
-  void compute_subspace();
+  void compute_subspace() override;
 
   /// use the truncation methods to identify the size of a reduced subspace
   void truncate_rotation();
@@ -76,9 +74,9 @@ protected:
 
   /// translate the characterization of uncertain variables in the
   /// native_model to the reduced space of the transformed model
-  void uncertain_vars_to_subspace();
+  void uncertain_vars_to_subspace() override;
   
-  void validate_inputs();
+  void validate_inputs() override;
 
   // ---
   // Callback functions that perform data transform during the Recast operations

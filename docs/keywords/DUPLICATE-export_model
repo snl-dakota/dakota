@@ -39,16 +39,22 @@ moving least squares (keyword ``moving_least_squares``) models, only
 Currently, no other surrogate models can be exported.
 
 *Default Behavior*
-<p>No export.
+
+No export.
 
 *Expected Output*
-<p>Output depends on selected format; see the ``formats`` specification.
+
+Output depends on selected format; see the ``formats`` specification.
 
 *Additional Discussion*
-<p>The Dakota examples include a demonstration of using the surfpack
+
+The Dakota examples include a demonstration of using the surfpack
 executable with an exported model file.
+
 Topics::
+
 surrogate_models
+
 Examples::
 
 Theory::

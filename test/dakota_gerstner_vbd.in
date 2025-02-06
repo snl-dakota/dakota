@@ -1,0 +1,42 @@
+#@ s*: Label=FastTest
+# This input file tests the string variable capability by using a
+# string variable to specify the analysis component for anisotropy
+# level to Gerstner.
+
+environment,
+        tabular_data
+#	output_precision = 16
+
+method,
+       sampling			
+         sample_type lhs 		
+         samples = 100		
+         seed = 5837			
+         variance_based_decomp
+
+variables,
+        active uncertain						
+	uniform_uncertain = 2						
+	  lower_bounds      0.  0.					
+	  upper_bounds      2.  2.				
+	  descriptors =    'x' 'y'					
+        discrete_uncertain_set integer = 1  #s0
+#        discrete_uncertain_set string = 1  #s1				
+          elements_per_variable = 6					
+          elements = 1 2 3 4 5 6 	#s0		       	
+#          elements = 'aniso1' 'aniso2' 'aniso3' 'iso1' 'iso2' 'iso3' #s1		
+          set_probabilities = 1. 1. 1. 1. 1. 1.    	    			
+          descriptors = 'ancomp'    					
+
+interface,
+        fork asynchronous evaluation_concurrency = 4
+          analysis_driver = 'gerstner_int'  #s0
+#          analysis_driver = 'gerstner_string'  #s1
+          parameters_file = 'params.in'
+          results_file = 'results.out'
+          file_tag
+
+responses,
+        response_functions = 1
+        no_gradients
+        no_hessians

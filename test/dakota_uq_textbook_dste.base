@@ -107,15 +107,15 @@ Test Number 4 succeeded
   response_fn_1: 6 val (6 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_2: 6 val (6 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Surrogate quality metrics at build (training) points for function 1:
-   root_mean_squared  1.0595625101e-15
-            mean_abs  8.5810987945e-16
+   root_mean_squared  9.2071391563e-16
+            mean_abs  6.8001160258e-16
             rsquared  1.0000000000e+00
 Surrogate quality metrics at build (training) points for function 2:
-   root_mean_squared  1.3352932139e-14
-            mean_abs  1.0584126168e-14
+   root_mean_squared  1.8234571762e-14
+            mean_abs  1.5677274294e-14
             rsquared  1.0000000000e+00
-<<<<< Function evaluation summary: 65 total (53 new, 12 duplicate)
-  response_fn_1: 40 val (35 n, 5 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 63 total (52 new, 11 duplicate)
+  response_fn_1: 38 val (34 n, 4 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_2: 31 val (24 n, 7 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
      Response Level  Belief Prob Level   Plaus Prob Level
      --------------  -----------------   ----------------

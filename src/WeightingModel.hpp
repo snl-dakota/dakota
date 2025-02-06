@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -30,10 +30,10 @@ public:
   //
 
   /// standard constructor
-  WeightingModel(Model& sub_model);
+  WeightingModel(std::shared_ptr<Model> sub_model);
 
   /// destructor
-  ~WeightingModel();
+  ~WeightingModel() override;
 
 
 protected:
@@ -42,7 +42,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void assign_instance();
+  void assign_instance() override;
 
   void init_metadata() override { /* no-op to leave metadata intact */}
 

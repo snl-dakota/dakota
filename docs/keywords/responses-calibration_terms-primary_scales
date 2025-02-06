@@ -9,7 +9,7 @@ Length: When specified, ``primary_scales`` must have length one of:
 
 
 - One (the single value will be applied to each primary response); or
-- Number of response groups ( :ref:`responses-calibration_terms<responses-calibration_terms>`), so the number of scalars plus the number of fields when fields are present; or
+- Number of response groups ( :dakkw:`responses-calibration_terms`), so the number of scalars plus the number of fields when fields are present; or
 - Total number of response elements, so the number of scalar responses plus the sum of the lengths of the fields.
 
 *Usage Tips:*
@@ -23,7 +23,7 @@ divisors.
 When scaling is active, it is applied to calibration terms after any
 residual formation (accounting for experimental data and optionally
 measurement error covariance), and before any weights. See the
-equations in :ref:`responses-calibration_terms<responses-calibration_terms>`.
+equations in :dakkw:`responses-calibration_terms`.
 
 See the scaling information under specific methods, e.g.,
 ``method-*-scaling`` for details on how to use this keyword.

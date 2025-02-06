@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDGlobalSingleInterval
-//- Description: Class for interval bound estimation for epistemic UQ
-//- Owner:       Laura Swiler
-//- Checked by:
-//- Version:
 
 #include "NonDGlobalSingleInterval.hpp"
 #include "dakota_system_defs.hpp"
@@ -24,7 +18,7 @@
 namespace Dakota {
 
 NonDGlobalSingleInterval::
-NonDGlobalSingleInterval(ProblemDescDB& problem_db, Model& model):
+NonDGlobalSingleInterval(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDGlobalInterval(problem_db, model)
 { }
 
@@ -42,7 +36,7 @@ void NonDGlobalSingleInterval::get_best_sample(bool maximize, bool eval_approx)
   // Pull the samples and responses from data used to build latest GP
   // to determine truthFnStar for use in the expected improvement function
   const Pecos::SurrogateData& gp_data
-    = fHatModel.approximation_data(respFnCntr);
+    = fHatModel->approximation_data(respFnCntr);
   const Pecos::SDVArray& sdv_array = gp_data.variables_data();
   const Pecos::SDRArray& sdr_array = gp_data.response_data();
 
@@ -64,15 +58,15 @@ void NonDGlobalSingleInterval::get_best_sample(bool maximize, bool eval_approx)
   if (eval_approx) {
     const Pecos::SurrogateDataVars& sdv = sdv_array[index_star];
     if (numContIntervalVars)
-      fHatModel.continuous_variables(sdv.continuous_variables());
+      ModelUtils::continuous_variables(*fHatModel, sdv.continuous_variables());
     if (numDiscIntervalVars || numDiscSetIntUncVars)
-      fHatModel.discrete_int_variables(sdv.discrete_int_variables());
+      ModelUtils::discrete_int_variables(*fHatModel, sdv.discrete_int_variables());
     if (numDiscSetRealUncVars)
-      fHatModel.discrete_real_variables(sdv.discrete_real_variables());
-    ActiveSet set = fHatModel.current_response().active_set();
+      ModelUtils::discrete_real_variables(*fHatModel, sdv.discrete_real_variables());
+    ActiveSet set = fHatModel->current_response().active_set();
     set.request_values(0); set.request_value(1, respFnCntr);
-    fHatModel.evaluate(set);
-    approxFnStar = fHatModel.current_response().function_value(respFnCntr);
+    fHatModel->evaluate(set);
+    approxFnStar = fHatModel->current_response().function_value(respFnCntr);
   }
 }
 

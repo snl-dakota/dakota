@@ -1,7 +1,7 @@
 #  _______________________________________________________________________
 #
-#  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2022
+#  Dakota: Explore and predict with confidence.
+#  Copyright 2014-2024
 #  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
@@ -309,6 +309,15 @@ function(dakota_regression_test test_name serpar_string test_props
 	 "${CMAKE_CURRENT_BINARY_DIR}/${_par_mark}${test_name}/${file}")
        list(APPEND copied_files_abs "${copied_file}")
      endforeach()
+
+    if(WIN32)
+       set_tests_properties(${_par_mark}${test_name} PROPERTIES
+         ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH};$ENV{PYTHONPATH}")
+    else()
+      set_tests_properties(${_par_mark}${test_name} PROPERTIES
+        ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH}:$ENV{PYTHONPATH}")
+    endif()
+
 
    endif()
 

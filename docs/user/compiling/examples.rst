@@ -5,6 +5,81 @@ End-to-end Compilation Examples
 """""""""""""""""""""""""""""""
 
 =====
+RHEL9
+=====
+
+On RHEL9, Dakota can be built using tools and libraries available from the repos.
+
+1. Determine whether the required repositories are enabled on your system. You
+   must have baseos, appstream, and codeready-builder.
+
+   :: 
+
+       dnf repolist
+
+
+   Enable any that are missing, e.g.:
+   
+   ::
+      
+       sudo subscription-manager repos --enable codeready-builder-for-rhel-9-$(arch)-rpms
+
+2. Install required packages:
+
+   ::
+
+       sudo dnf install git make cmake gcc gcc-c++ gcc-gfortran perl python3 blas-devel lapack-devel boost-devel openmpi-devel atlas-devel
+
+3. Obtain Dakota source and unpack it. Alongside the source folder, create a build folder.
+
+4. Change to the build folder and configure. In the command below, ``$DAK_INSTALL`` is the desired installation location and ``$DAK_SOURCE``
+   is the path to the unpacked source.
+
+   ::
+
+       cmake -DCMAKE_INSTALL_PREFIX=$DAK_INSTALL
+             -DDAKOTA_HAVE_MPI=ON \
+             -DMPI_CXX_COMPILER=/usr/lib64/openmpi/bin/mpicxx \
+             -DBLAS_LIBS=/usr/lib64/atlas/libsatlas.so \
+             -DLAPACK_LIBS=/usr/lib64/atlas/libsatlas.so \
+             -DDAKOTA_HAVE_HDF5=ON \
+             -DHAVE_MUQ=ON \
+             -DDAKOTA_JAVA_SURROGATES=ON \
+             -DDAKOTA_PYTHON=ON \
+             -DDAKOTA_PYTHON_DIRECT_INTERFACE=ON \
+             -DDAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY=ON \
+             -DDAKOTA_PYTHON_SURROGATES=ON \
+             -DDAKOTA_PYTHON_WRAPPER=ON \
+             -DDAKOTA_HAVE_GSL=ON \
+             -DHAVE_QUESO=ON \
+             ../$DAK_SOURCE
+       
+5. Build and install:
+
+   ::
+
+       make install
+
+6. Set the paths. In the instructions below, ``$DAK_INSTALL``
+   refers to the Dakota installation path you specified for the variable
+   ``CMAKE_INSTALL_PREFIX`` during the configure step.
+
+   ::
+
+      export PATH=$DAK_INSTALL/bin:$DAK_INSTALL/share/dakota/test:$PATH
+      export PYTHONPATH=$DAK_INSTALL/share/dakota/Python:$PYTHONPATH
+
+7. Test that Dakota is working, eg
+
+   ::
+
+      which dakota
+      dakota -v
+
+These should return the path to the dakota executable and a couple of
+lines of text indicating the version of dakota built, respectively.
+
+=====
 RHEL7
 =====
 
@@ -22,14 +97,14 @@ in a Bash shell.
 
 You will see a new directory,
 /home/username/dakota-<release>.<platform>. In the instructions below,
-$DAK_SRC refers to this directory.
+``$DAK_SOURCE`` refers to this directory.
 
    ::
 
       export DAK_SRC=$HOME/dakota-<release>.<platform>
 
 3. Create separate build directory, e.g. $HOME/dakota-build. In the
-   instructions below, $DAK_BUILD refers to the directory that you create
+   instructions below, ``$DAK_BUILD`` refers to the directory that you create
    for CMake to configure and build Dakota.
 
    ::
@@ -39,13 +114,13 @@ $DAK_SRC refers to this directory.
 
 4. Make a copy of the template BuildDakotaTemplate.cmake to customize a
    CMake Dakota build for your platform. Keep the file in the
-   $DAK_SRC/cmake directory to use for subsequent Dakota CMake builds.
+   ``$DAK_SOURCE/cmake`` directory to use for subsequent Dakota CMake builds.
 
    ::
 
-      cp $DAK_SRC/cmake/examples/BuildDakotaTemplate.cmake $DAK_SRC/cmake/BuildDakotaCustom.cmake
+      cp $DAK_SOURCE/cmake/examples/BuildDakotaTemplate.cmake $DAK_SOURCE/cmake/BuildDakotaCustom.cmake
 
-5. Update $DAK_SRC/cmake/BuildDakotaCustom.cmake file to reflect your
+5. Update ``$DAK_SOURCE/cmake/BuildDakotaCustom.cmake`` file to reflect your
    platform configuration. Instructions are provided in that file.
 
 As an example, consider the need to specify a custom location for the
@@ -70,18 +145,18 @@ artifacts, eg::
    ::
 
       cd $DAK_BUILD
-      cmake -C $DAK_SRC/cmake/BuildDakotaCustom.cmake $DAK_SRC
+      cmake -C $DAK_SOURCE/cmake/BuildDakotaCustom.cmake $DAK_SOURCE
       make [-j#]
       make install
 
-7. Set paths and library paths. In the instructions below, $DAK_INSTALL
+7. Set the paths. In the instructions below, ``$DAK_INSTALL``
    refers to the Dakota installation path you specified for the variable
-   CMAKE_INSTALL_PREFIX in your BuildCustom.cmake file.
+   ``CMAKE_INSTALL_PREFIX`` in your BuildCustom.cmake file.
 
    ::
 
-      export PATH=$DAK_INSTALL/bin:$DAK_INSTALL/test:$PATH
-      export LD_LIBRARY_PATH=$DAK_INSTALL/lib:$DAK_INSTALL/bin:$LD_LIBRARY_PATH
+      export PATH=$DAK_INSTALL/bin:$DAK_INSTALL/share/dakota/test:$PATH
+      export PYTHONPATH=$DAK_INSTALL/share/dakota/Python:$PYTHONPATH
 
 8. Test that Dakota is working, eg
 

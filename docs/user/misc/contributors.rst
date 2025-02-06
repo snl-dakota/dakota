@@ -4,12 +4,15 @@
 Contributors
 """"""""""""
 
-Potential contributors to Dakota should review the information on Feature Additions regarding means and terms of contribution.
+Potential contributors to Dakota should review the :ref:`contributing` page. 
 
 Historical Dakota Authors
 =========================
 
-Individuals who have contributed directly to Dakota's core since its inception in 1993, including source, examples, and infrastructure. Other current developers are listed at About - Team. Format: author (organization when contributing, current affiliation): specific contribution.
+Individuals who have contributed directly to Dakota's core since its inception in 1993, including source, examples, and infrastructure.
+Other current developers are listed on the :ref:`aboutteam-main` page.
+
+Format: author (organization when contributing, current affiliation): specific contribution.
 
 Core and Algorithms
 -------------------
@@ -85,12 +88,24 @@ Contributors to third-party libraries used by Dakota who also advised on their i
 - Surfpack: Keith Dalbey (SNL), Shane Brown (SNL, now KAPL), Eric Cyr (SNL), Mike Eldred (SNL), Tony Giunta (SNL), Mark Richards (SNL, now UIUC)
 - pyprepro: Justin Winokur (SNL)
 
-Other Contributors
+Other Team Members
 ------------------
+
+Current and former Sandians who made substantial non-code contributions to Dakota include:
 
 - Lara Bauman: product manager, GUI advisor
 - Ken Hu (SNL): product manager, documentation
+- Sophia Lefantzi (SNL): Business management
+- Dan Turner (SNL): Business management
 - Jim Stewart (SNL): Business management
 - V. Greg Weirs (SNL): Application deployment and consulting
-- George Orient (SNL): product manager, GUI advisor
+- George Orient: product manager, GUI advisor
+
+External Contributors
+---------------------
+
+Dakota acknowledges the following organizations and individuals who have made substantial improvements
+to the codebase and documentation.
+
+- PeopleTec, Inc: Christopher Austin, Dr. Daniel Hyams, Bill Carter, Jacob Rice, Joshua Hendrix, Sam Songy, Arthur Ward
 

@@ -19,11 +19,11 @@ evaluation, regardless of the number of analysis drivers, which makes
 them convenient locations for data processing operations that are
 shared among the analysis drivers.
 
-The :ref:`interface-analysis_drivers-fork-verbatim<interface-analysis_drivers-fork-verbatim>` keyword applies
+The :dakkw:`interface-analysis_drivers-fork-verbatim` keyword applies
 to input and output filters as well as analysis drivers, and Dakota
 also will substitute the names of the parameters and results files for the
 tokens `{PARAMETERS}` and `{RESULTS}` in input and output filer strings,
-as explained in the documentation for :ref:`interface-analysis_drivers<interface-analysis_drivers>`.
+as explained in the documentation for :dakkw:`interface-analysis_drivers`.
 Topics::
 
 Examples::

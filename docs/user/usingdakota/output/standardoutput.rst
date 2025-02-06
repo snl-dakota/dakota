@@ -69,16 +69,20 @@ Excluding the copy of the input file at the beginning and timing information at 
 parts:
 
 1. Information on the problem
-For this example, we see that a new restart file is being created and Dakota has carried out a multi-
-dim parameter study with 8 partitions for each of two variables.
+
+   For this example, we see that a new restart file is being created and Dakota has carried out a multi-dim parameter study with 8 partitions for each of two variables.
+
 2. Information on each function evaluation
-Each function evaluation is numbered. Details for function evaluation 1 show that at input variable values
-x1 = −2.0 and x2 = −2.0, the direct rosenbrock function is being evaluated. There is one response with
-a value of 3.609e+03.
+
+   Each function evaluation is numbered. Details for function evaluation 1 show that at input variable values
+   ``x1 = −2.0`` and ``x2 = −2.0``, the direct rosenbrock function is being evaluated. There is one response with
+   a value of ``3.609e+03``.
+
 3. Summary statistics
-The function evaluation summary is preceded by `<<<<<`. For this example 81 total evaluations were
-assessed; all were new, none were read in from the restart file. Correlation matrices complete the statistics
-and output for this problem. Successful runs will finish with `<<<<< Iterator study type completed.`
+
+   The function evaluation summary is preceded by ``<<<<<``. For this example 81 total evaluations were
+   assessed; all were new, none were read in from the restart file. Correlation matrices complete the statistics
+   and output for this problem. Successful runs will finish with ``<<<<< Iterator study type completed.``
 
 ---------------   
 Detailed Output

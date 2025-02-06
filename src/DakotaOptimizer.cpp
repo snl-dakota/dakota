@@ -1,16 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       Optimizer
-//- Description: Implementation code for the Optimizer class
-//- Owner:       Mike Eldred
-//- Checked by:
 
 #include "dakota_system_defs.hpp"
 #include "dakota_data_io.hpp"
@@ -32,7 +27,9 @@ namespace Dakota {
 Optimizer* Optimizer::optimizerInstance(NULL);
 
 
-Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<TraitsBase> traits):
+Optimizer::
+Optimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model,
+	  std::shared_ptr<TraitsBase> traits):
   Minimizer(problem_db, model, traits),
   // initial value from Minimizer as accounts for fields and transformations
   numObjectiveFns(numUserPrimaryFns), localObjectiveRecast(false)
@@ -58,8 +55,8 @@ Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<Tr
   }
   // RWH: Check for finite bound constraints for Coliny global optimizers
   if ( (methodName == COLINY_DIRECT) || (methodName == COLINY_EA) ) {
-    const RealVector& c_l_bnds = model.continuous_lower_bounds();
-    const RealVector& c_u_bnds = model.continuous_upper_bounds();
+    const RealVector& c_l_bnds = ModelUtils::continuous_lower_bounds(*model);
+    const RealVector& c_u_bnds = ModelUtils::continuous_upper_bounds(*model);
     for (size_t i=0; i<numContinuousVars; ++i)
       if (c_l_bnds[i] <= -bigRealBoundSize || c_u_bnds[i] >= bigRealBoundSize) {
         Cerr << "\nError: finite bound constraints are required for global optimizer "
@@ -79,23 +76,23 @@ Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<Tr
 
   // Check for full Newton method w/o Hessian support (direct or via recast)
   bool require_hessians = false;
-  bool have_lsq = (model.primary_fn_type() == CALIB_TERMS);
+  bool have_lsq = (model->primary_fn_type() == CALIB_TERMS);
   if (methodName == OPTPP_NEWTON) { // || ...) {
     require_hessians = true;
     if (have_lsq) {
-      if (iteratedModel.gradient_type() == "none" ) {
+      if (iteratedModel->gradient_type() == "none" ) {
         Cerr << "\nError: full Newton optimization of least-squares problem requires calibration term gradients."
              << std::endl;
         err_flag = true;
       }
-      if (numNonlinearConstraints && ( iteratedModel.hessian_type()  == "none" )) {
+      if (numNonlinearConstraints && ( iteratedModel->hessian_type()  == "none" )) {
         Cerr << "\nError: full Newton optimization of least-squares problem with nonlinear constraints "
              << "requires constraint Hessians.  Alternatively, consider using optpp_g_newton."
              << std::endl;
         err_flag = true;
       }
     }
-    else if (iteratedModel.hessian_type()  == "none") {
+    else if (iteratedModel->hessian_type()  == "none") {
       Cerr << "\nError: full Newton optimization requires objective Hessians. "
            << "Alternatively, consider using optpp_q_newton."
 	   << std::endl;
@@ -105,7 +102,7 @@ Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<Tr
 
   // Initialize a best variables instance; bestVariablesArray should
   // be in calling context; so initialized before any recasts
-  bestVariablesArray.push_back(iteratedModel.current_variables().copy());
+  bestVariablesArray.push_back(iteratedModel->current_variables().copy());
 
   // Check for proper response function definition (optimization or
   // calibration) and manage local recasting (necessary if inbound
@@ -117,7 +114,7 @@ Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<Tr
     optimizationFlag = false; // used to distinguish NLS from MOO
     localObjectiveRecast = true;
   }
-  else if (model.primary_fn_type() == OBJECTIVE_FNS) {
+  else if (model->primary_fn_type() == OBJECTIVE_FNS) {
     // we allow SOGA to manage weighted multiple objectives where
     // possible, so we can better retrieve final results
     if (numUserPrimaryFns > 1 && 
@@ -147,7 +144,9 @@ Optimizer::Optimizer(ProblemDescDB& problem_db, Model& model, std::shared_ptr<Tr
 }
 
 
-Optimizer::Optimizer(unsigned short method_name, Model& model, std::shared_ptr<TraitsBase> traits):
+Optimizer::
+Optimizer(unsigned short method_name, std::shared_ptr<Model> model,
+	  std::shared_ptr<TraitsBase> traits):
   Minimizer(method_name, model, traits), numObjectiveFns(numUserPrimaryFns),
   localObjectiveRecast(false)
 {
@@ -160,14 +159,15 @@ Optimizer::Optimizer(unsigned short method_name, Model& model, std::shared_ptr<T
   optimizationFlag = true;
 
   // Initialize a best variables instance
-  bestVariablesArray.push_back(model.current_variables().copy());
+  bestVariablesArray.push_back(model->current_variables().copy());
 }
 
 
 Optimizer::
 Optimizer(unsigned short method_name, size_t num_cv, size_t num_div,
 	  size_t num_dsv, size_t num_drv, size_t num_lin_ineq,
-	  size_t num_lin_eq, size_t num_nln_ineq, size_t num_nln_eq, std::shared_ptr<TraitsBase> traits):
+	  size_t num_lin_eq, size_t num_nln_ineq, size_t num_nln_eq,
+	  std::shared_ptr<TraitsBase> traits):
   Minimizer(method_name, num_lin_ineq, num_lin_eq, num_nln_ineq, num_nln_eq, traits),
   numObjectiveFns(1), localObjectiveRecast(false)
 {
@@ -180,9 +180,9 @@ Optimizer(unsigned short method_name, size_t num_cv, size_t num_div,
 
   // The following "best" initializations are done here instead of in
   // Minimizer for this lightweight case
-  std::pair<short,short> view(MIXED_DESIGN, EMPTY_VIEW);
+  ShortShortPair view(MIXED_DESIGN, EMPTY_VIEW);
   SizetArray vc_totals(NUM_VC_TOTALS, 0);
-  vc_totals[TOTAL_CDV] = num_cv;  vc_totals[TOTAL_DDIV] = num_div;
+  vc_totals[TOTAL_CDV]  = num_cv;  vc_totals[TOTAL_DDIV] = num_div;
   vc_totals[TOTAL_DDSV] = num_dsv; vc_totals[TOTAL_DDRV] = num_drv;
   BitArray all_relax_di, all_relax_dr; // empty: no relaxation of discrete
   SharedVariablesData svd(view, vc_totals, all_relax_di, all_relax_dr);
@@ -217,10 +217,10 @@ void Optimizer::print_results(std::ostream& s, short results_state)
   // must search in the inbound Model's space (and even that may not
   // suffice if there are additional recastings underlying this
   // Optimizer's Model) to find the function evaluation ID number
-  Model orig_model = original_model();
-  const String& interface_id = orig_model.interface_id(); 
+  auto orig_model = original_model();
+  const String& interface_id = orig_model->interface_id(); 
   // use asv = 1's
-  ActiveSet search_set(orig_model.response_size(), numContinuousVars);
+  ActiveSet search_set(ModelUtils::response_size(*orig_model), numContinuousVars);
   // -------------------------------------
   // Single and Multipoint results summary
   // -------------------------------------
@@ -256,15 +256,14 @@ void Optimizer::print_results(std::ostream& s, short results_state)
         // TODO: approximate models with interpolation of field data may
         // not have recovered the correct best residuals
 	std::shared_ptr<DataTransformModel> dt_model_rep =
-	  std::static_pointer_cast<DataTransformModel>
-	  (dataTransformModel.model_rep());
+	  std::static_pointer_cast<DataTransformModel>(dataTransformModel);
         dt_model_rep->print_best_responses(s, best_vars, bestResponseArray[i],
                                            num_best, i);
       }
       else {
         // the original model had least squares terms
         const RealVector& lsq_weights 
-          = orig_model.primary_response_fn_weights();
+          = orig_model->primary_response_fn_weights();
         StrStrSizet iterator_id = run_identifier();
         print_residuals(numUserPrimaryFns, best_fns, lsq_weights,  
                         num_best, i, s); // the weights are only used to compute the norm
@@ -357,7 +356,7 @@ void Optimizer::reduce_model(bool local_nls_recast, bool require_hessians)
   // recast active set if needed for Gauss-Newton LSQ
   void (*set_recast) (const Variables&, const ActiveSet&, ActiveSet&)
     = (local_nls_recast && require_hessians &&
-       iteratedModel.hessian_type() == "none") ? gnewton_set_recast : NULL;
+       iteratedModel->hessian_type() == "none") ? gnewton_set_recast : NULL;
   void (*pri_resp_recast) (const Variables&, const Variables&,
                            const Response&, Response&) = primary_resp_reducer;
   void (*sec_resp_recast) (const Variables&, const Variables&,
@@ -366,18 +365,17 @@ void Optimizer::reduce_model(bool local_nls_recast, bool require_hessians)
   size_t recast_secondary_offset = numNonlinearIneqConstraints;
   SizetArray recast_vars_comps_total; // default: empty; no change in size
   BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
-  const Response& orig_resp = iteratedModel.current_response();
+  const Response& orig_resp = iteratedModel->current_response();
   short recast_resp_order = 1; // may differ from orig response
   if (!orig_resp.function_gradients().empty()) recast_resp_order |= 2;
   if (require_hessians)                        recast_resp_order |= 4;
 
-  iteratedModel.assign_rep(std::make_shared<RecastModel>
-    (iteratedModel, var_map_indices, recast_vars_comps_total,
-     all_relax_di, all_relax_dr, nonlinear_vars_map, vars_recast,
-     set_recast, primary_resp_map_indices,
-     secondary_resp_map_indices, recast_secondary_offset,
-     recast_resp_order, nonlinear_resp_map, pri_resp_recast,
-     sec_resp_recast));
+  iteratedModel = std::make_shared<RecastModel>
+    (iteratedModel, var_map_indices, recast_vars_comps_total, all_relax_di,
+     all_relax_dr, nonlinear_vars_map, iteratedModel->current_variables().view(),
+     vars_recast, set_recast, primary_resp_map_indices,
+     secondary_resp_map_indices, recast_secondary_offset, recast_resp_order,
+     nonlinear_resp_map, pri_resp_recast, sec_resp_recast);
   ++myModelLayers;
 
 
@@ -385,24 +383,24 @@ void Optimizer::reduce_model(bool local_nls_recast, bool require_hessians)
   // allocate space for a Hessian (default copy of sub-model response
   // is insufficient).
   if (set_recast) {
-    Response recast_resp = iteratedModel.current_response(); // shared rep
+    Response recast_resp = iteratedModel->current_response(); // shared rep
     recast_resp.reshape(num_recast_fns, numContinuousVars, true, true);
   }
 
   // this recast results in a single primary response of type objective
-  iteratedModel.primary_fn_type(OBJECTIVE_FNS);
+  iteratedModel->primary_fn_type(OBJECTIVE_FNS);
 
   // This transformation consumes weights, so the resulting wrapped
   // model doesn't need them any longer, however don't want to recurse
   // and wipe out in sub-models.  Be explicit in case later
   // update_from_model() is used instead.
   bool recurse_flag = false;
-  iteratedModel.primary_response_fn_weights(RealVector(), recurse_flag);
+  iteratedModel->primary_response_fn_weights(RealVector(), recurse_flag);
 
   // an empty RecastModel::primaryRespFnSense would be sufficient
   // (reflects the minimize default), but might as well be explicit.
   BoolDeque max_sense(1, false);
-  iteratedModel.primary_response_fn_sense(max_sense);
+  iteratedModel->primary_response_fn_sense(max_sense);
 }
 
 
@@ -422,10 +420,10 @@ primary_resp_reducer(const Variables& full_vars, const Variables& reduced_vars,
 	 << std::endl;
   }
 
-  Model& sub_model = optimizerInstance->iteratedModel.subordinate_model();
+  auto sub_model = optimizerInstance->iteratedModel->subordinate_model();
   optimizerInstance->
-    objective_reduction(full_response, sub_model.primary_response_fn_sense(),
-			sub_model.primary_response_fn_weights(), 
+    objective_reduction(full_response, sub_model->primary_response_fn_sense(),
+			sub_model->primary_response_fn_weights(), 
 			reduced_response);
   // This is a hack to re-inflate until we specialize this RecastModel
   reduced_response.shared_data().metadata_labels
@@ -511,7 +509,7 @@ void Optimizer::configure_constraint_maps()
 
     numNonlinearIneqConstraintsFound = 
       configure_inequality_constraint_maps(
-                                  iteratedModel,
+                                  *iteratedModel,
                                   bigRealBoundSize,
                                   CONSTRAINT_TYPE::NONLINEAR,
                                   constraintMapIndices,
@@ -539,7 +537,7 @@ void Optimizer::initialize_run()
   // from the underlying user model in case of hybrid methods, so
   // should recurse through any local transformations
   if (myModelLayers > 0)
-    iteratedModel.update_from_subordinate_model(myModelLayers-1);
+    iteratedModel->update_from_subordinate_model(myModelLayers-1);
 
   // Track any previous object instance in case of recursion.  Note that
   // optimizerInstance and minimizerInstance must be tracked separately since
@@ -549,7 +547,7 @@ void Optimizer::initialize_run()
   prevOptInstance   = optimizerInstance;
   optimizerInstance = this;
 
-  if (!iteratedModel.is_null())
+  if (iteratedModel)
     configure_constraint_maps();
 }
 
@@ -586,7 +584,7 @@ void Optimizer::post_run(std::ostream& s)
     // must do before lookup in retrieve, which is in user space
     if (scaleFlag) {
       std::shared_ptr<ScalingModel> scale_model_rep =
-        std::static_pointer_cast<ScalingModel>(scalingModel.model_rep());
+        std::static_pointer_cast<ScalingModel>(scalingModel);
       best_vars.continuous_variables
         (scale_model_rep->cv_scaled2native(best_vars.continuous_variables()));
     }
@@ -604,7 +602,7 @@ void Optimizer::post_run(std::ostream& s)
 	// if the response is not found via lookup, the constraints
 	// still need to be scaled back to native space.
 	std::shared_ptr<ScalingModel> scale_model_rep =
-	  std::static_pointer_cast<ScalingModel>(scalingModel.model_rep());
+	  std::static_pointer_cast<ScalingModel>(scalingModel);
 	RealVector best_fns = best_resp.function_values_view();
 	// only requesting scaling of constraints, so no need for variable Jacobian
 	activeSet.request_values(1);
@@ -620,7 +618,7 @@ void Optimizer::post_run(std::ostream& s)
     else if (scaleFlag) {
       // ScalingModel manages which transformations are needed
       std::shared_ptr<ScalingModel> scale_model_rep =
-        std::static_pointer_cast<ScalingModel>(scalingModel.model_rep());
+        std::static_pointer_cast<ScalingModel>(scalingModel);
       scale_model_rep->resp_scaled2native(best_vars, best_resp);
     }
   }

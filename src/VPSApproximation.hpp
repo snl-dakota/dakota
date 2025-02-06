@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 VPSApproximation
-//- Description: Class implementation of Voronoi Piecewise Surrogate Approximation
-//- Owner:       Mohamed Ebeida and Ahmad Rushdi
-//- Checked by:
-//- Version:
 
 #ifndef VPS_APPROXIMATION_H
 #define VPS_APPROXIMATION_H
@@ -52,7 +46,7 @@ namespace Dakota
         VPSApproximation(const SharedApproxData& shared_data);
   
         /// destructor
-        ~VPSApproximation();
+        ~VPSApproximation() override;
 
 
     
@@ -148,23 +142,23 @@ namespace Dakota
 
         /// return the minimum number of samples (unknowns) required to
         /// build the derived class approximation type in numVars dimensions
-        int min_coefficients() const;
+        int min_coefficients() const override;
 
         // return the number of constraints to be enforced via an anchor point
         //int num_constraints()  const;
 
         /// builds the approximation from scratch
-        void build();
+        void build() override;
 
         /// retrieve the predicted function value for a given parameter set
-        Real value(const Variables& vars);
+        Real value(const Variables& vars) override;
 
         /// retrieve the function gradient at the predicted value
         /// for a given parameter set
-        const RealVector& gradient(const Variables& vars);
+        const RealVector& gradient(const Variables& vars) override;
 
         /// retrieve the variance of the predicted value for a given parameter set
-        Real prediction_variance(const Variables& vars);
+        Real prediction_variance(const Variables& vars) override;
 
 private: 
 

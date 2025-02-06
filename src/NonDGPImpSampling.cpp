@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDGPImpSampling
-//- Description: Implementation code for NonDGPImpSampling class
-//- Owner:       Laura Swiler and Keith Dalbey
-//- Checked by:
-//- Version:
 
 #include "NonDGPImpSampling.hpp"
 #include "dakota_system_defs.hpp"
@@ -36,7 +30,7 @@ namespace Dakota {
 /** This constructor is called for a standard letter-envelope iterator 
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
-NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, Model& model):
+NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDSampling(problem_db, model)
 {
   // sampleType default in DataMethod.cpp is SUBMETHOD_DEFAULT (0).
@@ -49,8 +43,8 @@ NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, Model& model):
   UShortArray approx_order; // not used by GP/kriging
   short corr_order = -1, data_order = 1, corr_type = NO_CORRECTION;
   if (probDescDB.get_bool("method.derivative_usage")) {
-    if (iteratedModel.gradient_type() != "none") data_order |= 2;
-    if (iteratedModel.hessian_type()  != "none") data_order |= 4;
+    if (iteratedModel->gradient_type() != "none") data_order |= 2;
+    if (iteratedModel->hessian_type()  != "none") data_order |= 4;
   }
   unsigned short sample_type = SUBMETHOD_DEFAULT;
   statsFlag = true; //print computed probability levels at end
@@ -64,23 +58,24 @@ NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, Model& model):
   if (!import_pts_file.empty())
     { samples = 0; sample_reuse = "all"; }
 
-  gpBuild.assign_rep(std::make_shared<NonDLHSSampling>(iteratedModel, sample_type,
-     samples, randomSeed, rngName, varyPattern, ACTIVE_UNIFORM));
+  gpBuild.assign_rep(std::make_shared<NonDLHSSampling>(iteratedModel,
+    sample_type, samples, randomSeed, rngName, varyPattern, ACTIVE_UNIFORM));
   //distribution 1 which is the distribution that the initial set of samples
   //used to build the initial GP are drawn from this should "ALWAYS" be 
   //uniform in the input of the GP (even if the nominal distribution is not
   //uniform) because it is a set of samples to build a good GP and nothing
   //else.  Rho 0 is the nonminal distribution of the input variable
 
-  ActiveSet gp_set = iteratedModel.current_response().active_set(); // copy
+  ActiveSet gp_set = iteratedModel->current_response().active_set(); // copy
   gp_set.request_values(1); // no surr deriv evals, but GP may be grad-enhanced
-  gpModel.assign_rep(std::make_shared<DataFitSurrModel>(gpBuild, iteratedModel,
-    gp_set, approx_type, approx_order, corr_type, corr_order, data_order,
-    outputLevel, sample_reuse, import_pts_file,
+  const ShortShortPair& gp_view = iteratedModel->current_variables().view();
+  gpModel = std::make_shared<DataFitSurrModel>(gpBuild, iteratedModel,
+    gp_set, gp_view, approx_type, approx_order, corr_type, corr_order,
+    data_order, outputLevel, sample_reuse, import_pts_file,
     probDescDB.get_ushort("method.import_build_format"),
     probDescDB.get_bool("method.import_build_active_only"),
     probDescDB.get_string("method.export_approx_points_file"),
-							probDescDB.get_ushort("method.export_approx_format")));
+    probDescDB.get_ushort("method.export_approx_format"));
   vary_pattern = true; // allow seed to run among multiple approx sample sets
   // need to add to input spec
   numEmulEval = probDescDB.get_int("method.nond.samples_on_emulator");
@@ -118,7 +113,7 @@ bool NonDGPImpSampling::resize()
 
 void NonDGPImpSampling::derived_init_communicators(ParLevLIter pl_iter)
 {
-  iteratedModel.init_communicators(pl_iter, maxEvalConcurrency);
+  iteratedModel->init_communicators(pl_iter, maxEvalConcurrency);
 
   // gpBuild and gpEval use NoDBBaseConstructor, so no need to
   // manage DB list nodes at this level
@@ -143,7 +138,7 @@ void NonDGPImpSampling::derived_free_communicators(ParLevLIter pl_iter)
   gpEval.free_communicators(pl_iter);
   //gpBuild.free_communicators(pl_iter);
 
-  iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);
+  iteratedModel->free_communicators(pl_iter, maxEvalConcurrency);
 }
 
 
@@ -155,7 +150,7 @@ void NonDGPImpSampling::core_run()
  
   // Build initial GP model.  This will be built over the initial LHS sample set
   // defined in the constructor.
-  gpModel.build_approximation();
+  gpModel->build_approximation();
   
   gpCvars.resize(numEmulEval);
   RealVector temp_cvars;
@@ -168,14 +163,14 @@ void NonDGPImpSampling::core_run()
   rhoMix.resize(numPtsTotal);
   //RealVector rhoEmul0(numEmulEval);
   //RealVector rhoEmul2(numEmulEval);
-  int num_problem_vars=iteratedModel.acv();
-  RealVector c_upper = iteratedModel.continuous_upper_bounds(), 
-             c_lower = iteratedModel.continuous_lower_bounds();
+  int num_problem_vars=ModelUtils::acv(*iteratedModel);
+  RealVector c_upper = ModelUtils::continuous_upper_bounds(*iteratedModel), 
+             c_lower = ModelUtils::continuous_lower_bounds(*iteratedModel);
 
   int i,j,k;
  
 // This piece of code prints out the build points, not the approximation points.
-// const Pecos::SurrogateData& gp_data = gpModel.approximation_data(0);
+// const Pecos::SurrogateData& gp_data = gpModel->approximation_data(0);
 //  for (j = 0; j < numSamples; j++) {
 //    Cout << " Surrogate Vars " << gp_data.continuous_variables(j) << '\n';
 //    Cout << " Surrogate Response " << gp_data.response_function(j); 
@@ -193,7 +188,7 @@ void NonDGPImpSampling::core_run()
 
   for (resp_fn_count=0; resp_fn_count<numFunctions; resp_fn_count++) {
     size_t num_levels = requestedRespLevels[resp_fn_count].length();
-    const Pecos::SurrogateData& gp_data = gpModel.approximation_data(resp_fn_count);
+    const Pecos::SurrogateData& gp_data = gpModel->approximation_data(resp_fn_count);
     const Pecos::SDVArray& sdv_array = gp_data.variables_data();
     const Pecos::SDRArray& sdr_array = gp_data.response_data();
     for (level_count=0; level_count<num_levels; level_count++) {
@@ -237,9 +232,9 @@ void NonDGPImpSampling::core_run()
           gpCvars[i] = temp_cvars;
           //Cout << "input is " << gpCvars[i] << '\n';
 	  // update gpModel currentVariables for use in approx_variances()
-	  gpModel.continuous_variables(temp_cvars);
+	  ModelUtils::continuous_variables(*gpModel, temp_cvars);
           gpVar[i]
-	    = gpModel.approximation_variances(gpModel.current_variables());
+	    = gpModel->approximation_variances(gpModel->current_variables());
           //Cout << "variance is " << gpVar[i];
         }
 
@@ -293,9 +288,9 @@ void NonDGPImpSampling::core_run()
             gpCvars[i] = temp_cvars;
             //Cout << "input is " << gpCvars[i] << '\n';
 	    // update gpModel currentVariables for use in approx_variances()
-	    gpModel.continuous_variables(temp_cvars);
+	    ModelUtils::continuous_variables(*gpModel, temp_cvars);
             gpVar[i]
-	      = gpModel.approximation_variances(gpModel.current_variables());
+	      = gpModel->approximation_variances(gpModel->current_variables());
             //Cout << "variance is " << gpVar[i];
            }
 
@@ -342,11 +337,11 @@ void NonDGPImpSampling::core_run()
           new_X = drawNewX(k);
          
          // add new_X to the build points and append approximation
-        iteratedModel.continuous_variables(new_X);
-        iteratedModel.evaluate();
-        IntResponsePair resp_truth(iteratedModel.evaluation_id(),
-                                   iteratedModel.current_response());
-        gpModel.append_approximation(iteratedModel.current_variables(), resp_truth, true);
+        ModelUtils::continuous_variables(*iteratedModel, new_X);
+        iteratedModel->evaluate();
+        IntResponsePair resp_truth(iteratedModel->evaluation_id(),
+                                   iteratedModel->current_response());
+        gpModel->append_approximation(iteratedModel->current_variables(), resp_truth, true);
 	indicator(numSamples+k)
 	  = static_cast<double>((z - sdr_array[numSamples+k].response_function())*cdfMult>0.0); 
         //if (gp_data.response_function(numSamples+k-1)<z) 
@@ -392,11 +387,11 @@ void NonDGPImpSampling::core_run()
           RealVector this_var;
           RealVector exp_ind_this(numPtsTotal);
           for (k = 0; k < numPtsTotal; k++){ 
-            gpModel.continuous_variables(gp_final_data[k]);
-            gpModel.evaluate();
-            this_mean = gpModel.current_response().function_values();
+            ModelUtils::continuous_variables(*gpModel, gp_final_data[k]);
+            gpModel->evaluate();
+            this_mean = gpModel->current_response().function_values();
             this_var
-	      = gpModel.approximation_variances(gpModel.current_variables());
+	      = gpModel->approximation_variances(gpModel->current_variables());
             exp_ind_this(k) = calcExpIndPoint(resp_fn_count,z,this_mean,this_var);
             if (outputLevel > NORMAL_OUTPUT) 
               Cout << "exp_ind_final " << k << " " <<  exp_ind_this(k) << '\n';
@@ -404,15 +399,15 @@ void NonDGPImpSampling::core_run()
           for (k = 0; k < numPtsTotal; k++) 
             rhoMix(k)=rhoMix(k)+exp_ind_this(k)*rho0const/normConst(j);
 	  //the 1.0 here is reall rhoZero/rhoZero (ok for rho0=rho1=rho2)
-          gpModel.pop_approximation(false, true);
-          //gpModel.update_approximation(true);
+          gpModel->pop_approximation(false, true);
+          //gpModel->update_approximation(true);
           Cout << "Size of build data set " << gp_data.points() << '\n';
         } 
 //Since we need to evaluate the SUCCESSIVE SEQUENCES of GPs built using numSamples-->numPtsTotal
 //it might be most efficient to "pop" the data and go backward: 
 //listStudy.run(pl_iter);
 //obtain results and expected indicator functions
-//gpModel.pop_approximation();
+//gpModel->pop_approximation();
 //
       }            
       if (outputLevel > NORMAL_OUTPUT) {

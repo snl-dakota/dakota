@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        SysCallApplicInterface
-//- Description:  Derived class for the case when analysis code simulators use
-//-               system calls to provide the function evaluations
-//- Owner:        Mike Eldred
-//- Version: $Id: SysCallApplicInterface.hpp 7004 2010-10-04 17:55:00Z wjbohnh $
 
 #ifndef SYS_CALL_APPLIC_INTERFACE_H
 #define SYS_CALL_APPLIC_INTERFACE_H
@@ -37,7 +31,7 @@ public:
   //
 
   SysCallApplicInterface(const ProblemDescDB& problem_db); ///< constructor
-  ~SysCallApplicInterface();                               ///< destructor
+  ~SysCallApplicInterface() override;                               ///< destructor
 
 protected:
 
@@ -45,17 +39,17 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void wait_local_evaluation_sequence(PRPQueue& prp_queue);
-  void test_local_evaluation_sequence(PRPQueue& prp_queue);
+  void wait_local_evaluation_sequence(PRPQueue& prp_queue) override;
+  void test_local_evaluation_sequence(PRPQueue& prp_queue) override;
 
-  int synchronous_local_analysis(int analysis_id);
+  int synchronous_local_analysis(int analysis_id) override;
 
-  void init_communicators_checks(int max_eval_concurrency);
-  void set_communicators_checks(int max_eval_concurrency);
+  void init_communicators_checks(int max_eval_concurrency) override;
+  void set_communicators_checks(int max_eval_concurrency) override;
 
-  void map_bookkeeping(pid_t pid, int fn_eval_id);
+  void map_bookkeeping(pid_t pid, int fn_eval_id) override;
 
-  pid_t create_evaluation_process(bool block_flag);
+  pid_t create_evaluation_process(bool block_flag) override;
 
   //
   //- Heading: Data
@@ -122,7 +116,7 @@ inline int SysCallApplicInterface::synchronous_local_analysis(int analysis_id)
 
 /** No derived interface plug-ins, so perform construct-time checks.
     However, process init issues as warnings since some contexts (e.g.,
-    HierarchSurrModel) initialize more configurations than will be used. */
+    EnsembleSurrModel) initialize more configurations than will be used. */
 inline void SysCallApplicInterface::
 init_communicators_checks(int max_eval_concurrency)
 {

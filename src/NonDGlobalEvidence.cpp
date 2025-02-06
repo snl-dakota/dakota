@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDGlobalEvidence
-//- Description: Implementation code for NonDEvidence class
-//- Owner:       Laura Swiler
-//- Checked by:
-//- Version:
 
 #include "NonDGlobalEvidence.hpp"
 #include "dakota_data_types.hpp"
@@ -21,7 +15,7 @@
 
 namespace Dakota {
 
-NonDGlobalEvidence::NonDGlobalEvidence(ProblemDescDB& problem_db, Model& model):
+NonDGlobalEvidence::NonDGlobalEvidence(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDGlobalInterval(problem_db, model)
 {
   // if the user does not specify the number of samples, 
@@ -43,23 +37,23 @@ void NonDGlobalEvidence::set_cell_bounds()
 {
   size_t j; 
   for (j=0; j<numContIntervalVars; ++j) {
-    intervalOptModel.continuous_lower_bound(cellContLowerBounds[cellCntr][j],j);
-    intervalOptModel.continuous_upper_bound(cellContUpperBounds[cellCntr][j],j);
+    ModelUtils::continuous_lower_bound(*intervalOptModel, cellContLowerBounds[cellCntr][j],j);
+    ModelUtils::continuous_upper_bound(*intervalOptModel, cellContUpperBounds[cellCntr][j],j);
   }
    
   for (j=0; j<numDiscIntervalVars; ++j) {
-    intervalOptModel.discrete_int_lower_bound(
+    ModelUtils::discrete_int_lower_bound(*intervalOptModel, 
       cellIntRangeLowerBounds[cellCntr][j], j);
-    intervalOptModel.discrete_int_upper_bound(
+    ModelUtils::discrete_int_upper_bound(*intervalOptModel, 
       cellIntRangeUpperBounds[cellCntr][j], j);
   } 
 
   for (j=0; j<numDiscSetIntUncVars; ++j)
-    intervalOptModel.discrete_int_variable(cellIntSetBounds[cellCntr][j],
+    ModelUtils::discrete_int_variable(*intervalOptModel, cellIntSetBounds[cellCntr][j],
 					   j+numDiscIntervalVars);
 
   for (j=0; j<numDiscSetRealUncVars; ++j)
-    intervalOptModel.discrete_real_variable(cellRealSetBounds[cellCntr][j],j);
+    ModelUtils::discrete_real_variable(*intervalOptModel, cellRealSetBounds[cellCntr][j],j);
 }
 
 
@@ -113,7 +107,7 @@ void NonDGlobalEvidence::get_best_sample(bool maximize, bool eval_approx)
   // to determine fnStar for use in the expected improvement function
 
   const Pecos::SurrogateData& gp_data
-    = fHatModel.approximation_data(respFnCntr);
+    = fHatModel->approximation_data(respFnCntr);
   const Pecos::SDVArray& sdv_array = gp_data.variables_data();
   const Pecos::SDRArray& sdr_array = gp_data.response_data();
 
@@ -159,34 +153,34 @@ void NonDGlobalEvidence::get_best_sample(bool maximize, bool eval_approx)
       Cout << "No function evaluations were found in cell. Truth function is "
 	   << "set to DBL_MAX and approxFnStar is evaluated at midpoint.\n";
       for (i=0; i<numContIntervalVars; ++i)
-	fHatModel.continuous_variable(
+	ModelUtils::continuous_variable(*fHatModel, 
 	  ( cellContLowerBounds[cellCntr][i] + 
 	    cellContUpperBounds[cellCntr][i] ) / 2., i);
       for (i=0; i<numDiscIntervalVars; ++i)
-	fHatModel.discrete_int_variable(
+	ModelUtils::discrete_int_variable(*fHatModel, 
 	  ( cellIntRangeLowerBounds[cellCntr][i] + 
 	    cellIntRangeUpperBounds[cellCntr][i] ) / 2, i);
       for (i=0; i<numDiscSetIntUncVars; ++i)
-	fHatModel.discrete_int_variable(
+	ModelUtils::discrete_int_variable(*fHatModel, 
 	  cellIntSetBounds[cellCntr][i], i+numDiscIntervalVars);
       for (i=0; i<numDiscSetRealUncVars; ++i)
-	fHatModel.discrete_real_variable(
+	ModelUtils::discrete_real_variable(*fHatModel, 
 	  cellRealSetBounds[cellCntr][i], i);
     }
     else {
       const Pecos::SurrogateDataVars& sdv = sdv_array[index_star];
       if (numContIntervalVars)
-	fHatModel.continuous_variables(sdv.continuous_variables());
+	ModelUtils::continuous_variables(*fHatModel, sdv.continuous_variables());
       if (numDiscIntervalVars || numDiscSetIntUncVars)
-	fHatModel.discrete_int_variables(sdv.discrete_int_variables());
+	ModelUtils::discrete_int_variables(*fHatModel, sdv.discrete_int_variables());
       if (numDiscSetRealUncVars)
-	fHatModel.discrete_real_variables(sdv.discrete_real_variables());
+	ModelUtils::discrete_real_variables(*fHatModel, sdv.discrete_real_variables());
     }
 		
-    ActiveSet set = fHatModel.current_response().active_set();
+    ActiveSet set = fHatModel->current_response().active_set();
     set.request_values(0); set.request_value(1, respFnCntr);
-    fHatModel.evaluate(set);
-    approxFnStar = fHatModel.current_response().function_value(respFnCntr);
+    fHatModel->evaluate(set);
+    approxFnStar = fHatModel->current_response().function_value(respFnCntr);
   }
 #ifdef DEBUG
   Cout << "truthFnStar: " << truthFnStar << "\napproxFnStar: " << approxFnStar

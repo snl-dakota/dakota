@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -10,9 +10,7 @@
 #include "dakota_data_io.hpp"
 #include "dakota_global_defs.hpp"
 
-// Boost.Test
-#include <boost/test/minimal.hpp>
-
+#include <gtest/gtest.h>
 
 namespace Dakota {
 namespace TestBinStream {
@@ -31,7 +29,6 @@ struct DataBundle
   static unsigned short ush;
 };
 
-
 // DataBundle initialization (pre-main)
 char DataBundle::ch = 'c';
 double DataBundle::dbl = 1234567.89;
@@ -43,7 +40,6 @@ unsigned char DataBundle::uch = 'u';
 unsigned int DataBundle::uin = 32;
 unsigned long DataBundle::uln = 654321;
 unsigned short DataBundle::ush = 4321;
-
 
 #ifdef DAKOTA_HAVE_MPI
 void test_mpi_send_receive()
@@ -69,39 +65,39 @@ void test_mpi_send_receive()
               >> uin2 >> uln2 >> ush2;
 
   // check for data matches using assert
-  BOOST_CHECK( dat_bundle.ch == ch2 );
-  BOOST_CHECK( dat_bundle.dbl == dbl2 );
-  BOOST_CHECK( dat_bundle.flt == flt2 );
-  BOOST_CHECK( dat_bundle.nt == nt2 );
-  BOOST_CHECK( dat_bundle.lng == lng2 );
-  BOOST_CHECK( dat_bundle.shrt == shrt2 );
-  BOOST_CHECK( dat_bundle.uch == uch2 );
-  BOOST_CHECK( dat_bundle.uin == uin2 );
-  BOOST_CHECK( dat_bundle.uln == uln2 );
-  BOOST_CHECK( dat_bundle.ush == ush2 );
+  EXPECT_TRUE(( dat_bundle.ch == ch2 ));
+  EXPECT_TRUE(( dat_bundle.dbl == dbl2 ));
+  EXPECT_TRUE(( dat_bundle.flt == flt2 ));
+  EXPECT_TRUE(( dat_bundle.nt == nt2 ));
+  EXPECT_TRUE(( dat_bundle.lng == lng2 ));
+  EXPECT_TRUE(( dat_bundle.shrt == shrt2 ));
+  EXPECT_TRUE(( dat_bundle.uch == uch2 ));
+  EXPECT_TRUE(( dat_bundle.uin == uin2 ));
+  EXPECT_TRUE(( dat_bundle.uln == uln2 ));
+  EXPECT_TRUE(( dat_bundle.ush == ush2 ));
 }
 #endif
 
 } // end namespace TestBinStream
 } // end namespace Dakota
 
-
 #ifdef DAKOTA_HAVE_MPI
 #include "mpi.h"
 #endif
 
-// NOTE: Boost.Test framework provides the main program driver
-
 //____________________________________________________________________________//
 
-int test_main( int argc, char* argv[] )      // note the name!
+TEST(mpi_pack_unpack_unit_test_tests, all_tests)
 {
 #ifdef DAKOTA_HAVE_MPI
   MPI_Init(&argc, &argv);
   Dakota::TestBinStream::test_mpi_send_receive();
   MPI_Finalize();
 #endif
+}
 
-  return boost::exit_success;
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }
 

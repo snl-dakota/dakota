@@ -22,7 +22,7 @@ each parameter set that is generated.
 *Expected HDF5 Output*
 
 If Dakota was built with HDF5 support and run with the
-:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+:dakkw:`environment-results_output-hdf5` keyword, this method
 writes the following results to HDF5:
 
 
@@ -34,20 +34,20 @@ writes the following results to HDF5:
 varied. Both cases also rely on the variables specification of an
 initial value, through:
 
-- the :ref:`variables-continuous_design-initial_point<variables-continuous_design-initial_point>` keyword
-- the :ref:`variables-continuous_state-initial_state<variables-continuous_state-initial_state>` keyword
+- the :dakkw:`variables-continuous_design-initial_point` keyword
+- the :dakkw:`variables-continuous_state-initial_state` keyword
 - relying on the default initial value, based on the rest of the     variables specification
 
 From the initial value, the vector can be defined using one of the
 two keyword choices.
 
 Once the vector is defined, the samples are then fully specifed
-by :ref:`method-vector_parameter_study-num_steps<method-vector_parameter_study-num_steps>`.
+by :dakkw:`method-vector_parameter_study-num_steps`.
 Topics::
 parameter_studies
 Examples::
 The following example is a good comparison to the examples on
-:ref:`method-multidim_parameter_study<method-multidim_parameter_study>` and :ref:`method-centered_parameter_study<method-centered_parameter_study>`.
+:dakkw:`method-multidim_parameter_study` and :dakkw:`method-centered_parameter_study`.
 
 .. code-block::
 

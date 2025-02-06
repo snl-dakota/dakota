@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDDREAMBayesCalibration
-//- Description: Derived class for DREAM-based Bayesian inference
-//- Owner:       Brian Adams
-//- Checked by:
-//- Version:
 
 #ifndef NOND_DREAM_BAYES_CALIBRATION_H
 #define NOND_DREAM_BAYES_CALIBRATION_H
@@ -38,9 +32,9 @@ public:
   //
 
   /// standard constructor
-  NonDDREAMBayesCalibration(ProblemDescDB& problem_db, Model& model);
+  NonDDREAMBayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
-  ~NonDDREAMBayesCalibration();
+  ~NonDDREAMBayesCalibration() override;
 
   //
   //- Heading: Static callback functions required by DREAM
@@ -78,7 +72,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void calibrate();
+  void calibrate() override;
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   // Member functions

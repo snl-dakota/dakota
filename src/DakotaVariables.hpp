@@ -1,16 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       Variables
-//- Description: Base class for variables
-//- Owner:       Mike Eldred
-//- Version: $Id: DakotaVariables.hpp 7037 2010-10-23 01:18:08Z mseldre $
 
 #ifndef DAKOTA_VARIABLES_H
 #define DAKOTA_VARIABLES_H
@@ -26,6 +21,7 @@ namespace Dakota {
 class ProblemDescDB;
 class MPIPackBuffer;
 class MPIUnpackBuffer;
+
 
 /// Utility used in derived read_core to read in generic format
 class GeneralReader {
@@ -70,6 +66,19 @@ public:
                                label_array);
   }
 };
+
+//TEMP EMILIANO #1
+class JSONWriter {
+public: 
+  template<typename ArrayType> 
+  void operator()(json& s, size_t start_index, size_t num_items, 
+                  const ArrayType& array_data, 
+                  StringMultiArrayConstView label_array) {
+    write_data_partial_json(s, start_index, num_items, array_data, 
+                               label_array);
+  }
+};
+
 
 /// Utility used in derived write_core to write values in tabular format
 class TabularWriter {
@@ -168,6 +177,9 @@ public:
   /// e.g., a parameters file
   virtual void write_aprepro(std::ostream& s) const;
 
+  /// write a variables object to a json object
+  virtual void write_json(json& s) const;
+
   // For neutral file I/O (restart translation to/from neutral):
   /// read a variables object in annotated format from an istream
   virtual void read_annotated(std::istream& s);
@@ -237,6 +249,27 @@ public:
   void shape();
   /// reshape an existing Variables object based on updated sharedVarsData
   void reshape();
+  /// reshape an existing Variables object based on incoming SVD
+  void reshape(const SharedVariablesData& svd);
+
+  /// copy the active cv/div/dsv/drv variables from vars
+  void active_variables(const Variables& vars);
+  /// copy all cv/div/dsv/drv variables from vars
+  void all_variables(const Variables& vars);
+  /// copy the active cv/div/dsv/drv variables from incoming vars to all
+  /// variables in this instance
+  void active_to_all_variables(const Variables& vars);
+  /// copy all cv/div/dsv/drv variables from incoming vars to active
+  /// variables in this instance
+  void all_to_active_variables(const Variables& vars);
+  /// copy the inactive cv/div/dsv/drv variables from vars
+  void inactive_variables(const Variables& vars);
+  /// copy the active cv/div/dsv/drv variables from vars to inactive on this
+  void active_to_inactive_variables(const Variables& vars);
+  /// insert the inactive cv/div/dsv/drv variables from vars into all arrays
+  void inactive_into_all_variables(const Variables& vars);
+  /// map from vars into the corresponding variables based on active views
+  void map_variables_by_view(const Variables& vars);
 
   // ACTIVE VARIABLES
 
@@ -288,15 +321,6 @@ public:
   /// set the active discrete real variables
   void discrete_real_variables(const RealVector& dr_vars);
 
-  /// copy the active cv/div/dsv/drv variables from vars
-  void active_variables(const Variables& vars);
-  /// copy the inactive cv/div/dsv/drv variables from vars
-  void inactive_variables(const Variables& vars);
-  /// copy all cv/div/dsv/drv variables from vars
-  void all_variables(const Variables& vars);
-  /// copy the active cv/div/dsv/drv variables from vars to inactive on this
-  void inactive_from_active(const Variables& vars);
-
   /// return a mutable view of the active continuous variables
   RealVector& continuous_variables_view();
   /// return a mutable view of the active discrete integer variables
@@ -333,6 +357,19 @@ public:
   void discrete_real_variable_labels(StringMultiArrayConstView drv_labels);
   /// set an active discrete real variable label
   void discrete_real_variable_label(const String& drv_label, size_t index);
+
+  /// copy all cv/div/dsv/drv variable labels from vars
+  void active_labels(const Variables& vars);
+  /// copy all cv/div/dsv/drv variable labels from vars
+  void all_labels(const Variables& vars);
+  /// copy the active cv/div/dsv/drv variable labels from incoming vars to all
+  /// variables in this instance
+  void active_to_all_labels(const Variables& vars);
+  /// copy all cv/div/dsv/drv variable labels from incoming vars to active
+  /// variables in this instance
+  void all_to_active_labels(const Variables& vars);
+  /// copy the inactive cv/div/dsv/drv variable labels from vars
+  void inactive_labels(const Variables& vars);
 
   /// return the active continuous variable types
   UShortMultiArrayConstView continuous_variable_types() const;
@@ -525,11 +562,18 @@ public:
   /// a deep variables copy for use in history mechanisms
   /// (SharedVariablesData uses a shallow copy by default)
   Variables copy(bool deep_svd = false) const;
+  /// a deep variables copy that shares an incoming SharedVariablesData
+  Variables copy(const SharedVariablesData& svd) const;
+  /// copy attributes from source to target representation (shared code
+  /// among copy() implementations)
+  void copy_rep(std::shared_ptr<Variables> source_vars_rep);
 
   /// returns variablesView
-  const std::pair<short,short>& view() const;
+  const ShortShortPair& view() const;
   /// defines variablesView from problem_db attributes
-  std::pair<short,short> get_view(const ProblemDescDB& problem_db) const;
+  ShortShortPair get_view(const ProblemDescDB& problem_db) const;
+  /// overrides the active view
+  void active_view(short view1);
   /// sets the inactive view based on higher level (nested) context
   void inactive_view(short view2);
 
@@ -552,7 +596,7 @@ protected:
   /// (BaseConstructor overloading avoids infinite recursion in the
   /// derived class constructors - Coplien, p. 139)
   Variables(BaseConstructor, const ProblemDescDB& problem_db,
-	    const std::pair<short,short>& view);
+	    const ShortShortPair& view);
   /// constructor initializes the base class part of letter classes
   /// (BaseConstructor overloading avoids infinite recursion in the
   /// derived class constructors - Coplien, p. 139)
@@ -897,28 +941,16 @@ inline void Variables::active_variables(const Variables& vars)
   if (variablesRep)
     variablesRep->active_variables(vars);
   else {
-    if (vars.cv())  continuous_variables(vars.continuous_variables());
-    if (vars.div()) discrete_int_variables(vars.discrete_int_variables());
-    if (vars.dsv()) discrete_string_variables(vars.discrete_string_variables());
-    if (vars.drv()) discrete_real_variables(vars.discrete_real_variables());
-  }
-}
-
-
-inline void Variables::inactive_variables(const Variables& vars)
-{
-  // Set inactive variables only, leaving remainder of data unchanged
-  if (variablesRep)
-    variablesRep->inactive_variables(vars);
-  else {
-    if (vars.icv())
-      inactive_continuous_variables(vars.inactive_continuous_variables());
-    if (vars.idiv())
-      inactive_discrete_int_variables(vars.inactive_discrete_int_variables());
-    if (vars.idsv())
-      inactive_discrete_string_variables(vars.inactive_discrete_string_variables());
-    if (vars.idrv())
-      inactive_discrete_real_variables(vars.inactive_discrete_real_variables());
+    if (vars.cv()  != cv()  || vars.div() != div() ||
+	vars.dsv() != dsv() || vars.drv() != drv() ) {
+      Cerr << "Error: inconsistent counts in Variables::active_variables()."
+	   << std::endl;
+      abort_handler(VARS_ERROR);
+    }
+    continuous_variables(vars.continuous_variables());
+    discrete_int_variables(vars.discrete_int_variables());
+    discrete_string_variables(vars.discrete_string_variables());
+    discrete_real_variables(vars.discrete_real_variables());
   }
 }
 
@@ -929,32 +961,123 @@ inline void Variables::all_variables(const Variables& vars)
   if (variablesRep)
     variablesRep->all_variables(vars);
   else {
-    if (vars.acv())
-      all_continuous_variables(vars.all_continuous_variables());
-    if (vars.adiv())
-      all_discrete_int_variables(vars.all_discrete_int_variables());
-    if (vars.adsv())
-      all_discrete_string_variables(vars.all_discrete_string_variables());
-    if (vars.adrv())
-      all_discrete_real_variables(vars.all_discrete_real_variables());
+    if (vars.acv()  != acv()  || vars.adiv() != adiv() ||
+	vars.adsv() != adsv() || vars.adrv() != adrv() ) {
+      Cerr << "Error: inconsistent counts in Variables::all_variables()."
+	   << std::endl;
+      abort_handler(VARS_ERROR);
+    }
+    all_continuous_variables(vars.all_continuous_variables());
+    all_discrete_int_variables(vars.all_discrete_int_variables());
+    all_discrete_string_variables(vars.all_discrete_string_variables());
+    all_discrete_real_variables(vars.all_discrete_real_variables());
   }
 }
 
 
-inline void Variables::inactive_from_active(const Variables& vars)
+inline void Variables::active_to_all_variables(const Variables& vars)
+{
+  // Set active variables only, leaving remainder of data unchanged (e.g.,
+  // so that inactive vars can vary between iterators/models w/i a strategy).
+  if (variablesRep)
+    variablesRep->active_to_all_variables(vars);
+  else {
+    if (vars.cv()  != acv()  || vars.div() != adiv() ||
+	vars.dsv() != adsv() || vars.drv() != adrv() ) {
+      Cerr << "Error: inconsistent counts in Variables::"
+	   << "active_to_all_variables()." << std::endl;
+      abort_handler(VARS_ERROR);
+    }
+    all_continuous_variables(vars.continuous_variables());
+    all_discrete_int_variables(vars.discrete_int_variables());
+    all_discrete_string_variables(vars.discrete_string_variables());
+    all_discrete_real_variables(vars.discrete_real_variables());
+  }
+}
+
+
+inline void Variables::all_to_active_variables(const Variables& vars)
+{
+  // Set active variables only, leaving remainder of data unchanged (e.g.,
+  // so that inactive vars can vary between iterators/models w/i a strategy).
+  if (variablesRep)
+    variablesRep->all_to_active_variables(vars);
+  else {
+    if (vars.acv()  != cv()  || vars.adiv() != div() ||
+	vars.adsv() != dsv() || vars.adrv() != drv() ) {
+      Cerr << "Error: inconsistent counts in Variables::"
+	   << "all_to_active_variables()." << std::endl;
+      abort_handler(VARS_ERROR);
+    }
+    continuous_variables(vars.all_continuous_variables());
+    discrete_int_variables(vars.all_discrete_int_variables());
+    discrete_string_variables(vars.all_discrete_string_variables());
+    discrete_real_variables(vars.all_discrete_real_variables());
+  }
+}
+
+
+inline void Variables::inactive_variables(const Variables& vars)
+{
+  // Set inactive variables only, leaving remainder of data unchanged
+  if (variablesRep)
+    variablesRep->inactive_variables(vars);
+  else {
+    if (vars.icv()  != icv()  || vars.idiv() != idiv() ||
+	vars.idsv() != idsv() || vars.idrv() != idrv() ) {
+      Cerr << "Error: inconsistent counts in Variables::inactive_variables()."
+	   << std::endl;
+      abort_handler(VARS_ERROR);
+    }
+    inactive_continuous_variables(vars.inactive_continuous_variables());
+    inactive_discrete_int_variables(vars.inactive_discrete_int_variables());
+    inactive_discrete_string_variables(
+      vars.inactive_discrete_string_variables());
+    inactive_discrete_real_variables(vars.inactive_discrete_real_variables());
+  }
+}
+
+
+inline void Variables::active_to_inactive_variables(const Variables& vars)
 {
   // Set inactive from inbound active variables
   if (variablesRep)
-    variablesRep->inactive_from_active(vars);
+    variablesRep->active_to_inactive_variables(vars);
   else {
-    if (vars.cv())
-      inactive_continuous_variables(vars.continuous_variables());
-    if (vars.div())
-      inactive_discrete_int_variables(vars.discrete_int_variables());
-    if (vars.dsv())
-      inactive_discrete_string_variables(vars.discrete_string_variables());
-    if (vars.drv())
-      inactive_discrete_real_variables(vars.discrete_real_variables());
+    if (vars.cv()  != icv()  || vars.div() != idiv() ||
+	vars.dsv() != idsv() || vars.drv() != idrv() ) {
+      Cerr << "Error: inconsistent counts in Variables::"
+	   << "active_to_inactive_variables()." << std::endl;
+      abort_handler(VARS_ERROR);
+    }
+    inactive_continuous_variables(vars.continuous_variables());
+    inactive_discrete_int_variables(vars.discrete_int_variables());
+    inactive_discrete_string_variables(vars.discrete_string_variables());
+    inactive_discrete_real_variables(vars.discrete_real_variables());
+  }
+}
+
+
+inline void Variables::map_variables_by_view(const Variables& vars)
+{
+  // Set inactive from inbound active variables
+  if (variablesRep)
+    variablesRep->map_variables_by_view(vars);
+  else {
+    short active_view = view().first, v_active_view = vars.view().first;
+    if (active_view == v_active_view)
+      active_variables(vars);
+    else if ( (v_active_view == RELAXED_ALL || v_active_view == MIXED_ALL) &&
+	      active_view >= RELAXED_DESIGN )
+      active_to_all_variables(vars);
+    else if ( (active_view == RELAXED_ALL || active_view == MIXED_ALL) &&
+	      v_active_view >= RELAXED_DESIGN )
+      all_to_active_variables(vars);
+    else {
+      Cerr << "Error: unsupported view mapping in Variables::"
+	   << "map_variables_by_view()." << std::endl;
+      abort_handler(VARS_ERROR);
+    }
   }
 }
 
@@ -1072,6 +1195,114 @@ discrete_real_variable_label(const String& drv_label, size_t index)
 {
   SharedVariablesData& svd = shared_data();
   svd.all_discrete_real_label(drv_label, svd.drv_start()+index);
+}
+
+
+inline void Variables::active_labels(const Variables& vars) 
+{
+  // Set active variables only, leaving remainder of data unchanged (e.g.,
+  // so that inactive vars can vary between iterators/models w/i a strategy).
+  if (variablesRep)
+    variablesRep->active_labels(vars);
+  else {
+    if (vars.cv()  != cv()  || vars.div() != div() ||
+	vars.dsv() != dsv() || vars.drv() != drv() ) {
+      Cerr << "Error: inconsistent counts in Variables::active_labels()."
+	   << std::endl;
+      abort_handler(VARS_ERROR);
+    }
+    continuous_variables(vars.continuous_variables());
+    discrete_int_variables(vars.discrete_int_variables());
+    discrete_string_variables(vars.discrete_string_variables());
+    discrete_real_variables(vars.discrete_real_variables());
+  }
+}
+
+
+inline void Variables::all_labels(const Variables& vars) 
+{
+  // Set all variables
+  if (variablesRep)
+    variablesRep->all_labels(vars);
+  else {
+    if (vars.acv()  != acv()  || vars.adiv() != adiv() ||
+	vars.adsv() != adsv() || vars.adrv() != adrv() ) {
+      Cerr << "Error: inconsistent counts in Variables::all_labels()."
+	   << std::endl;
+      abort_handler(VARS_ERROR);
+    }
+    all_continuous_variable_labels(vars.all_continuous_variable_labels());
+    all_discrete_int_variable_labels(vars.all_discrete_int_variable_labels());
+    all_discrete_string_variable_labels(
+      vars.all_discrete_string_variable_labels());
+    all_discrete_real_variable_labels(vars.all_discrete_real_variable_labels());
+  }
+}
+
+
+inline void Variables::active_to_all_labels(const Variables& vars)
+{
+  // Set active variables only, leaving remainder of data unchanged (e.g.,
+  // so that inactive vars can vary between iterators/models w/i a strategy).
+  if (variablesRep)
+    variablesRep->active_to_all_labels(vars);
+  else {
+    if (vars.cv()  != acv()  || vars.div() != adiv() ||
+	vars.dsv() != adsv() || vars.drv() != adrv() ) {
+      Cerr << "Error: inconsistent counts in Variables::active_to_all_labels()."
+	   << std::endl;
+      abort_handler(VARS_ERROR);
+    }
+    all_continuous_variable_labels(vars.continuous_variable_labels());
+    all_discrete_int_variable_labels(vars.discrete_int_variable_labels());
+    all_discrete_string_variable_labels(vars.discrete_string_variable_labels());
+    all_discrete_real_variable_labels(vars.discrete_real_variable_labels());
+  }
+}
+
+
+inline void Variables::all_to_active_labels(const Variables& vars)
+{
+  // Set active variables only, leaving remainder of data unchanged (e.g.,
+  // so that inactive vars can vary between iterators/models w/i a strategy).
+  if (variablesRep)
+    variablesRep->all_to_active_labels(vars);
+  else {
+    if (vars.acv()  != cv()  || vars.adiv() != div() ||
+	vars.adsv() != dsv() || vars.adrv() != drv() ) {
+      Cerr << "Error: inconsistent counts in Variables::all_to_active_labels()."
+	   << std::endl;
+      abort_handler(VARS_ERROR);
+    }
+    continuous_variable_labels(vars.all_continuous_variable_labels());
+    discrete_int_variable_labels(vars.all_discrete_int_variable_labels());
+    discrete_string_variable_labels(vars.all_discrete_string_variable_labels());
+    discrete_real_variable_labels(vars.all_discrete_real_variable_labels());
+  }
+}
+
+
+inline void Variables::inactive_labels(const Variables& vars)
+{
+  // Set inactive variables only, leaving remainder of data unchanged
+  if (variablesRep)
+    variablesRep->inactive_labels(vars);
+  else {
+    // for inactive labels, relax requirement on perfect alignment and only
+    // update where consistent
+    if (vars.icv() == icv())
+      inactive_continuous_variable_labels(
+	vars.inactive_continuous_variable_labels());
+    if (vars.idiv() == idiv())
+      inactive_discrete_int_variable_labels(
+        vars.inactive_discrete_int_variable_labels());
+    if (vars.idsv() == idsv())
+      inactive_discrete_string_variable_labels(
+        vars.inactive_discrete_string_variable_labels());
+    if (vars.idrv() == idrv())
+      inactive_discrete_real_variable_labels(
+        vars.inactive_discrete_real_variable_labels());
+  }
 }
 
 
@@ -1566,17 +1797,22 @@ all_discrete_real_variable_types() const
 inline SizetMultiArrayConstView Variables::all_continuous_variable_ids() const
 { return shared_data().all_continuous_ids(0, acv()); }
 
+
 inline SizetMultiArrayConstView Variables::all_discrete_int_variable_ids() const
 { return shared_data().all_discrete_int_ids(0, adiv()); }
 
-inline SizetMultiArrayConstView Variables::all_discrete_string_variable_ids() const
+
+inline SizetMultiArrayConstView Variables::
+all_discrete_string_variable_ids() const
 { return shared_data().all_discrete_string_ids(0, adsv()); }
 
-inline SizetMultiArrayConstView Variables::all_discrete_real_variable_ids() const
+
+inline SizetMultiArrayConstView Variables::
+all_discrete_real_variable_ids() const
 { return shared_data().all_discrete_real_ids(0, adrv()); }
 
 
-inline const std::pair<short,short>& Variables::view() const
+inline const ShortShortPair& Variables::view() const
 { return shared_data().view(); }
 
 
@@ -1593,14 +1829,7 @@ inline bool Variables::is_null() const
 
 
 inline void Variables::build_views()
-{
-  // called only from letters
-  const std::pair<short,short>& view = sharedVarsData.view();
-  if (view.first  != EMPTY_VIEW)
-    build_active_views();
-  if (view.second != EMPTY_VIEW)
-    build_inactive_views();
-}
+{ build_active_views(); build_inactive_views(); } // called only from letters
 
 
 /// global comparison function for Variables
@@ -1801,7 +2030,7 @@ inline void size_and_fill(const SharedVariablesData& svd, size_t array_size,
   vars_array.clear();
   vars_array.reserve(array_size);
   for(size_t i=0; i<array_size; ++i)
-    vars_array.push_back(Variables(svd));
+    vars_array.push_back(Variables(svd)); // shaped but uninitialized
 }
 
 

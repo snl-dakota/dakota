@@ -207,6 +207,44 @@ Conference Abstracts
 SAND Reports
 ============
 
+- Dakota 6.21 (November 2024) Manuals
+
+  - User's: B. M. Adams, W. J. Bohnhoff, K. R. Dalbey, M. S. Ebeida, J. P. Eddy, M. S. Eldred, R. W. Hooper, P. D. Hough, K. T. Hu, J. D. Jakeman, M. Khalil, K. A. Maupin, J. A. Monschke, E. E. Prudencio, E. M. Ridgway, P. Robbe, A. A. Rushdi, D. T. Seidl, J. A. Stephens, L. P. Swiler, and J. G. Winokur. Dakota 6.21.0 documentation. Technical Report SAND2024-15492O, Sandia National Laboratories, Albuquerque, NM, November 2024. Available online from http://snl-dakota.github.io.
+  - Developer: B. M. Adams, W. J. Bohnhoff, R. A. Canfield, K. R. Dalbey, M. S. Ebeida, J. P. Eddy, M. S. Eldred, G. Geraci, R. W. Hooper, P. D. Hough, K. T. Hu, J. D. Jakeman, K. Carson, M. Khalil, K. A. Maupin, J. A. Monschke, E. E. Prudencio, E. M. Ridgway, P. Robbe, A. A. Rushdi, D. T. Seidl, J. A. Stephens, L. P. Swiler, A. Tran, D. M. Vigil, G. J. von Winckel, T. M. Wildey, J. G. Winokur, and (with Menhorn, F. and Zeng, X.). Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.21 Developers Manual. Sandia National Laboratories, Albuquerque, NM, November 2024. Available online from http://snl-dakota.github.io.
+
+
+- Dakota 6.20 (May 2024) Manuals
+
+  - User's: B. M. Adams, W. J. Bohnhoff, K. R. Dalbey, M. S. Ebeida, J. P. Eddy, M. S. Eldred, R. W. Hooper, P. D. Hough, K. T. Hu, J. D. Jakeman, M. Khalil, K. A. Maupin, J. A. Monschke, E. E. Prudencio, E. M. Ridgway, P. Robbe, A. A. Rushdi, D. T. Seidl, J. A. Stephens, L. P. Swiler, and J. G. Winokur. Dakota 6.20.0 documentation. Technical Report SAND2024-05812O, Sandia National Laboratories, Albuquerque, NM, May 2024. Available online from http://snl-dakota.github.io.
+  - Developer: B. M. Adams, W. J. Bohnhoff, R. A. Canfield, K. R. Dalbey, M. S. Ebeida, J. P. Eddy, M. S. Eldred, G. Geraci, R. W. Hooper, P. D. Hough, K. T. Hu, J. D. Jakeman, K. Carson, M. Khalil, K. A. Maupin, J. A. Monschke, E. E. Prudencio, E. M. Ridgway, P. Robbe, A. A. Rushdi, D. T. Seidl, J. A. Stephens, L. P. Swiler, A. Tran, D. M. Vigil, G. J. von Winckel, T. M. Wildey, J. G. Winokur, and (with Menhorn, F. and Zeng, X.). Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.20 Developers Manual. Sandia National Laboratories, Albuquerque, NM, May 2024. Available online from http://snl-dakota.github.io.
+
+- Dakota 6.19 (November 2023) Manuals
+
+  - User's: B. M. Adams, W. J. Bohnhoff, K. R. Dalbey, M. S. Ebeida, J. P. Eddy, M. S. Eldred, R. W. Hooper, P. D. Hough, K. T. Hu, J. D. Jakeman, M. Khalil, K. A. Maupin, J. A. Monschke, E. E. Prudencio, E. M. Ridgway, P. Robbe, A. A. Rushdi, D. T. Seidl, J. A. Stephens, L. P. Swiler, and J. G. Winokur. Dakota 6.19.0 documentation. Technical Report SAND2023-13392O, Sandia National Laboratories, Albuquerque, NM, November 2023. Available online from http://snl-dakota.github.io.
+  - Developer: B. M. Adams, W. J. Bohnhoff, R. A. Canfield, K. R. Dalbey, M. S. Ebeida, J. P. Eddy, M. S. Eldred, G. Geraci, R. W. Hooper, P. D. Hough, K. T. Hu, J. D. Jakeman, K. Carson, M. Khalil, K. A. Maupin, J. A. Monschke, E. E. Prudencio, E. M. Ridgway, P. Robbe, A. A. Rushdi, D. T. Seidl, J. A. Stephens, L. P. Swiler, A. Tran, D. M. Vigil, G. J. von Winckel, T. M. Wildey, J. G. Winokur, and (with Menhorn, F. and Zeng, X.). Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.19 Developers Manual. Sandia National Laboratories, Albuquerque, NM, November 2023. Available online from http://snl-dakota.github.io.
+
+- Dakota 6.18 (May 2023) Manuals
+
+  - User's: B. M. Adams, W. J. Bohnhoff, K. R. Dalbey, M. S. Ebeida, J. P. Eddy, M. S. Eldred, R. W. Hooper, P. D. Hough, K. T. Hu, J. D. Jakeman, M. Khalil, K. A. Maupin, J. A. Monschke, E. E. Prudencio, E. M. Ridgway, A. A. Rushdi, D. T. Seidl, J. A. Stephens, L. P. Swiler, and J. G. Winokur. Dakota 6.18.0 documentation. Technical Report SAND2023-03367O, Sandia National Laboratories, Albuquerque, NM, May 2023. Available online from http://snl-dakota.github.io.
+  - Developer: B. M. Adams, W. J. Bohnhoff, R. A. Canfield, K. R. Dalbey, M. S. Ebeida, J. P. Eddy, M. S. Eldred, G. Geraci, R. W. Hooper, P. D. Hough, K. T. Hu, J. D. Jakeman, K. Carson, M. Khalil, K. A. Maupin, J. A. Monschke, E. E. Prudencio, E. M. Ridgway, A. A. Rushdi, D. T. Seidl, J. A. Stephens, L. P. Swiler, A. Tran, D. M. Vigil, G. J. von Winckel, T. M. Wildey, J. G. Winokur, and (with Menhorn, F. and Zeng, X.). Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.18 Developers Manual. Sandia National Laboratories, Albuquerque, NM, May 2023. Available online from http://snl-dakota.github.io.
+
+
+- Dakota 6.17 (November 2022) Manuals
+
+  - Beginning with Dakota 6.17, the Theory, Users, and Reference manuals were combined, and PDFs were not issued.
+  - User's: (Please cite Dakota software with this reference or other applicable manual/version) B. M. Adams, W. J. Bohnhoff, K. R. Dalbey, M. S. Ebeida, J. P. Eddy, M. S. Eldred, R. W. Hooper, P. D. Hough, K. T. Hu, J. D. Jakeman, M. Khalil, K. A. Maupin, J. A. Monschke, E. M. Ridgway, A. A. Rushdi, D. T. Seidl, J. A. Stephens, L. P. Swiler, and J. G. Winokur. Dakota 6.18.0 documentation. Technical Report SAND2022-15651O, Sandia National Laboratories, Albuquerque, NM, November 2022. Available online from http://snl-dakota.github.io.
+  - Developer: Adams, B.M., Bohnhoff, W.J., Canfield, R.A., Coomber, W.P., Dalbey, K.R., Ebeida, M.S., Eddy, J.P., Eldred, M.S., Geraci, G., Hooper, R.W., Hough, P.D., Hu, K.T., Jakeman, J.D., Kent, C., Khalil, M., Maupin, K.A., Monschke, J.A., Ridgway, E.M., Rushdi, A.A., Seidl, D.T., Stephens, J.A., Swiler, L.P., Tran, A., Vigil, D.M., Wildey, T.M., Winokur, J.G., Menhorn, F., and Zeng, X., "Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.17 Developers Manual," November 2022.
+
+
+- Dakota 6.16 (May 2022) Manuals
+
+  - For active use of the Reference and Developer's Manuals we strongly recommend using the HTML versions.
+  - User's: (Please cite Dakota software with this reference or other applicable manual/version) Adams, B.M., Bohnhoff, W.J., Dalbey, K.R., Ebeida, M.S., Eddy, J.P., Eldred, M.S., Hooper, R.W., Hough, P.D., Hu, K.T., Jakeman, J.D., Khalil, M., Maupin, K.A., Monschke, J.A., Ridgway, E.M., Rushdi, A.A., Seidl, D.T., Stephens, J.A., Swiler, L.P., and Winokur, J.G., "Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.16 User’s Manual," Sandia Technical Report SAND2022-6171, May 2022.
+  - Reference: Adams, B.M., Bohnhoff, W.J., Canfield, R.A., Coomber, W.P., Dalbey, K.R., Ebeida, M.S., Eddy, J.P., Eldred, M.S., Geraci, G., Hooper, R.W., Hough, P.D., Hu, K.T., Jakeman, J.D., Kent, C., Khalil, M., Maupin, K.A., Monschke, J.A., Ridgway, E.M., Rushdi, A.A., Seidl, D.T., Stephens, J.A., Swiler, L.P., Tran, A., Vigil, D.M., Wildey, T.M., Winokur, J.G., Menhorn, F., and Zeng, X., "Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.16.0 Reference Manual," May 2022.
+  - Theory: Dalbey, K.R., Eldred, M.S., Geraci, G., Jakeman, J.D., Maupin, K.A., Monschke, J.A., Seidl, D.T., Swiler, L.P., Tran, A., Menhorn, F., and Zeng, X., "Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.16 Theory Manual," Sandia Technical Report SAND2022-6172, May 2022.
+  - Developer: Adams, B.M., Bohnhoff, W.J., Canfield, R.A., Coomber, W.P., Dalbey, K.R., Ebeida, M.S., Eddy, J.P., Eldred, M.S., Geraci, G., Hooper, R.W., Hough, P.D., Hu, K.T., Jakeman, J.D., Kent, C., Khalil, M., Maupin, K.A., Monschke, J.A., Ridgway, E.M., Rushdi, A.A., Seidl, D.T., Stephens, J.A., Swiler, L.P., Tran, A., Vigil, D.M., Wildey, T.M., Winokur, J.G., Menhorn, F., and Zeng, X., "Dakota, A Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 6.16 Developers Manual," May 2022.
+
+
 - Dakota 6.15 (November 2021) Manuals
 
   - For active use of the Reference and Developer's Manuals we strongly recommend using the HTML versions.

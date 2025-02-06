@@ -1,0 +1,53 @@
+Blurb::
+Initial set of samples for groups in the multilevel BLUE sampling method
+
+Description::
+
+The pilot sample provides initial estimates of group covariances
+during the first iteration of the multilevel best linear unbiased
+estimator (ML BLUE) sampling approach.  These initial estimates then
+guide the algorithm toward group sample increments in order to achieve
+a prescribed error at minimum total cost or minimum error for a
+prescribed budget.
+
+The formulation of ML BLUE assumes independent samples per group, and
+the pilot sampling can either start in this same vein (see
+:dakkw:`method-multilevel_blue-pilot_samples-independent`) or start
+from group covariances inferred from a single set of shared samples.
+The benefit in the latter shared pilot approach is one can avoid
+investing any pilot samples for groups that not determined to be
+active in the resource allocation process.  Groups that are determined
+to be active, however, must start from new sets of independent
+samples, not reusing the shared samples (except for the group that
+contains all models, to which the shared pilot samples are assigned).
+
+
+*Default Behavior*
+
+The default number of pilot samples is 100. The default pilot sampling
+approach is shared, where a single set of pilot samples is evaluated
+across all models.  The group covariances are initially formed from
+this shared set of pilot samples for purposes of solving the initial
+resource allocation problem.  Group covariances are then updated using
+new independent sample sets for all groups with new allocations.
+
+
+*Usage Tips*
+
+The number of specified values can be none (default values used for
+all groups), one (all groups use the same specified value), or the
+number of sample groups.  The number of groups is determined by
+combinations of the model indices, including the truth model and all
+approximations.  Larger counts in the number of combinations may be
+throttled as described in :dakkw:`method-multilevel_blue-group_throttle`.
+
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

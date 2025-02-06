@@ -1,16 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        SharedApproxData
-//- Description:  Abstract base class for shared approxiamtion data
-//-               
-//- Owner:        Mike Eldred
 
 #ifndef SHARED_APPROX_DATA_H
 #define SHARED_APPROX_DATA_H
@@ -47,6 +42,7 @@ class SharedApproxData
   //
 
   friend class Approximation;
+  friend class FieldApproximation;
   friend class TaylorApproximation;
   friend class TANA3Approximation;
   friend class QMEApproximation;
@@ -60,9 +56,10 @@ class SharedApproxData
   friend class SurfpackApproximation;
 #endif // HAVE_SURFPACK
 #ifdef HAVE_DAKOTA_SURROGATES
-  friend class SurrogatesGPApprox;
+  friend class SurrogatesGPApprox; // consolidate these into the base only - RWH
   friend class SurrogatesBaseApprox;
   friend class SurrogatesPolyApprox;
+  friend class SurrogatesPythonApprox;
 #endif // HAVE_DAKOTA_SURROGATES
 
 public:

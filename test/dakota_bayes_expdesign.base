@@ -33,7 +33,7 @@ Mutual information = 4.5389288694e+00
                      -3.8633757113e+00 uuv_2
                       1.3049918448e+02 uuv_3
 <<<<< Best misfit              =
-                      9.3521289818e-02
+                      9.3521289852e-02
 <<<<< Best log prior           =
                      -4.8267124559e+00
 <<<<< Best log posterior       =
@@ -42,7 +42,7 @@ Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
          uuv_1  3.2599673519e-02  5.6044534486e-03 -9.3241342177e-01 -2.0836337786e-01
          uuv_2 -3.6230599342e+00  4.4257077490e-01  1.0475536174e+00 -2.8437694850e-02
-         uuv_3  1.2665293595e+02  6.9827964216e+00 -1.3529886131e+00  7.7133257926e-01
+         uuv_3  1.2665293595e+02  6.9827964216e+00 -1.3529886131e+00  7.7133257925e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
 least_sq_term_1_1  4.1139976014e+01  2.5656069615e+00  1.8540209890e+00  1.2454754914e+01

@@ -1,18 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        CommandShell
-//- Description:
-//-
-//-
-//- Owner:        Bill Bohnhoff
-//- Version: $Id: CommandShell.hpp 7021 2010-10-12 22:19:01Z wjbohnh $
 
 #ifndef COMMAND_SHELL_H
 #define COMMAND_SHELL_H

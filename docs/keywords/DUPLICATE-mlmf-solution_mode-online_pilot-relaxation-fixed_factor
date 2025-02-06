@@ -1,0 +1,47 @@
+Blurb::
+For under-relaxation of shared sample increments, apply a fixed factor that is invariant with iteration
+
+Description::
+When initial correlation / covariance approximations are inaccurate,
+iterated sample updates can be overly aggressive, such that it becomes
+advisable to only accept a portion of this suggested increment through
+use of an under-relaxation factor.
+
+In the ``fixed_factor`` option, a single relaxation factor is
+specified for use on all online iterations.
+
+**Usage Tips**
+
+Even through the under-relaxation factor does not decay to a value of
+1, the sample increments will generally decay toward an integer
+truncation of zero, terminating the online iteration.
+
+As for other relaxation specification options, the one case where the
+relaxation factor will be automatically advanced to 1 is the case
+where a ``max_iterations`` constraint will force early termination of
+the iteration.  This advancement avoids polluting the final results
+with an anticipated variance reduction that was not fully realized due
+to increment throttling.
+
+This option is equivalent to a ``factor_sequence`` specification with
+a single value.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method,
+	multilevel_blue
+	  solution_mode  online_pilot
+	    relaxation fixed_factor = .8
+	  pilot_samples = 25
+	  seed = 8674132
+	  max_function_evaluations = 500
+
+Theory::
+
+Faq::
+
+See_Also::

@@ -1,16 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Description: A utility for printing, repairing, and merging restart files.
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version: $Id: restart_util.cpp 6818 2010-06-05 00:46:38Z dmgay $
 
 /** \file restart_util.cpp
     \brief file containing the DAKOTA restart utility main program */

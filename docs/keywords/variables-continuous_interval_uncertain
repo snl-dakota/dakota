@@ -15,10 +15,10 @@ Dempster-Shafer theory of evidence.
 
 Other epistemic types include:
 
-- :ref:`variables-discrete_interval_uncertain<variables-discrete_interval_uncertain>`
-- :ref:`variables-discrete_uncertain_set-integer<variables-discrete_uncertain_set-integer>`
-- :ref:`variables-discrete_uncertain_set-string<variables-discrete_uncertain_set-string>`
-- :ref:`variables-discrete_uncertain_set-real<variables-discrete_uncertain_set-real>`
+- :dakkw:`variables-discrete_interval_uncertain`
+- :dakkw:`variables-discrete_uncertain_set-integer`
+- :dakkw:`variables-discrete_uncertain_set-string`
+- :dakkw:`variables-discrete_uncertain_set-real`
 
 Topics::
 continuous_variables, epistemic_uncertain_variables

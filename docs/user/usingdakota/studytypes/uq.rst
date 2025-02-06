@@ -193,7 +193,7 @@ probabilities using multimodal adaptive importance sampling.
 **Stochastic Expansion Methods**: Theoretical development of these
 techniques mirrors that of deterministic finite element analysis
 utilizing the notions of projection, orthogonality, and weak
-convergence :cite:p:`Gha99`, :cite:p:`Gha91`.
+convergence :cite:p:`Gha99,Gha91`.
 
 ..
    TODO:
@@ -369,30 +369,53 @@ reliabilities may be computed for :dakkw:`method-sampling-response_levels` speci
 and response levels may be computed for either :dakkw:`method-sampling-probability_levels` or
 :dakkw:`method-sampling-reliability_levels` specifications.
 
-Currently, traditional Monte Carlo (MC) and Latin hypercube sampling
-(LHS) are supported by Dakota and are chosen by specifying
-:dakkw:`method-sampling-sample_type` as :dakkw:`method-sampling-sample_type-random`
-or :dakkw:`method-sampling-sample_type-lhs`. In Monte Carlo sampling, the
-samples are selected randomly according to the user-specified
-probability distributions. Latin hypercube sampling is a stratified
-sampling technique for which the range of each uncertain variable is
-divided into :math:`N_{s}` segments of equal probability, where
-:math:`N_{s}` is the number of samples requested. The relative lengths
-of the segments are determined by the nature of the specified
-probability distribution (e.g., uniform has segments of equal width,
-normal has small segments near the mean and larger segments in the
-tails). For each of the uncertain variables, a sample is selected
-randomly from each of these equal probability segments. These
-:math:`N_{s}` values for each of the individual parameters are then
-combined in a shuffling operation to create a set of :math:`N_{s}`
-parameter vectors with a specified correlation structure. A feature of
-the resulting sample set is that *every row and column in the hypercube
-of partitions has exactly one sample*. Since the total number of samples
-is exactly equal to the number of partitions used for each uncertain
-variable, an arbitrary number of desired samples is easily accommodated
-(as compared to less flexible approaches in which the total number of
-samples is a product or exponential function of the number of intervals
-for each variable, i.e., many classical design of experiments methods).
+Currently, traditional Monte Carlo (MC), Latin hypercube sampling (LHS), and
+low-discrepancy sampling (LD)/quasi-Monte Carlo sampling (QMC) are supported by
+Dakota and are chosen by specifying :dakkw:`method-sampling-sample_type` as
+:dakkw:`method-sampling-sample_type-random`,
+:dakkw:`method-sampling-sample_type-lhs`, or
+:dakkw:`method-sampling-sample_type-low_discrepancy`. In Monte Carlo sampling,
+the samples are selected randomly according to the user-specified probability
+distributions. Latin hypercube sampling is a stratified sampling technique for
+which the range of each uncertain variable is divided into :math:`N_{s}`
+segments of equal probability, where :math:`N_{s}` is the number of samples
+requested. The relative lengths of the segments are determined by the nature of
+the specified probability distribution (e.g., uniform has segments of equal
+width, normal has small segments near the mean and larger segments in the
+tails). For each of the uncertain variables, a sample is selected randomly from
+each of these equal probability segments. These :math:`N_{s}` values for each of
+the individual parameters are then combined in a shuffling operation to create a
+set of :math:`N_{s}` parameter vectors with a specified correlation structure. A
+feature of the resulting sample set is that *every row and column in the
+hypercube of partitions has exactly one sample*. Since the total number of
+samples is exactly equal to the number of partitions used for each uncertain
+variable, an arbitrary number of desired samples is easily accommodated (as
+compared to less flexible approaches in which the total number of samples is a
+product or exponential function of the number of intervals for each variable,
+i.e., many classical design of experiments methods).
+
+Low-discrepancy or *quasi-Monte Carlo* sampling comes in two major flavors:
+lattice rules and digital nets. The well-known Sobol sequence :cite:p:`sobol67`
+is an example of a digital net. Just as Latin hypercube samples, the points are
+carefully chosen such that they cover the parameter space more uniformly, in the
+sense that the samples exhibit *low discrepancy*. This discrepancy is important,
+because it directly appears in the bound for the integration error. In
+particular, if one uses :math:`N` points :math:`\boldsymbol{t}_0,
+\boldsymbol{t}_1, \ldots, \boldsymbol{t}_{N-1}` to approximate an integral
+:math:`I(f)` as :math:`I_{N}(f)`, the Koksma-Hlawka inequality says that
+
+.. math:: |I(f) - I_N(f)| \leq D(\boldsymbol{t}_0, \boldsymbol{t}_1, \ldots, \boldsymbol{t}_{N-1}) V(f)
+
+where :math:`D` is the *discrepancy* of the point set, and where :math:`V(f)` is
+the *variation* of the function :math:`f`. For a given function, it is thus
+advantageous to use points for which the discrepancy is as small as possible.
+Currently, Dakota supports
+:dakkw:`method-sampling-sample_type-low_discrepancy-rank_1_lattice` rules and
+:dakkw:`method-sampling-sample_type-low_discrepancy-digital_net`\ s.
+Low-discrepancy points, and, in particular digital nets, can, under certain
+assumptions, outperform LHS, in the sense that they yield faster convergence
+when the points are used to approximate the mean of a model response. A good
+introduction to quasi-Monte Carlo can be found in :cite:p:`Dick13`.
 
 Advantages of sampling-based methods include their relatively simple
 implementation and their independence from the scientific disciplines
@@ -412,6 +435,10 @@ sampling provides a more accurate estimate of the mean value than does
 random sampling. That is, given an equal number of samples, the LHS
 estimate of the mean will have less variance than the mean value
 obtained through random sampling.
+Low-discrepancy samples, and, in particular digital nets, can provide 
+even more accurate estimates of the mean value, provided the function 
+one tries to integrate is sufficiently smooth. Some digital net point 
+sets may even exhibit higher-order convergence of the mean estimate. 
 
 :numref:`dace:figure01` demonstrates Latin hypercube sampling on
 a two-variable parameter space. Here, the range of both parameters,
@@ -448,17 +475,16 @@ parameter, however, all parameters must have the same number of bins.
    parameters :math:`x_1` and :math:`x_2`. The dots are the sample
    sites.
 
-The actual algorithm for generating Latin hypercube samples is more
-complex than indicated by the description given above. For example, the
-Latin hypercube sampling method implemented in the LHS
-code :cite:p:`Swi04` takes into account a user-specified
-correlation structure when selecting the sample sites. For more details
-on the implementation of the LHS algorithm, see
+The actual algorithm for generating Latin hypercube samples is more complex than
+indicated by the description given above. For example, the Latin hypercube
+sampling method implemented in the LHS code :cite:p:`Swi04` takes into account a
+user-specified correlation structure when selecting the sample sites. For more
+details on the implementation of the LHS algorithm, see
 Reference :cite:p:`Swi04`.
 
-In addition to Monte Carlo vs. LHS design choices, Dakota sampling
-methods support options for incrementally-refined designs, generation of
-approximately determinant-optimal (D-optimal) designs, and selection of
+In addition to Monte Carlo, LHS and quasi-Monte Carlo design choices, Dakota
+sampling methods support options for incrementally-refined designs, generation
+of approximately determinant-optimal (D-optimal) designs, and selection of
 sample sizes to satisfy Wilks’ criteria.
 
 .. _`uq:uncertainty1`:
@@ -809,7 +835,7 @@ Wilks-based Sample Sizes
 
 Most of the sampling methods require the user to specify the number of
 samples in advance. However, if one specifies ``random`` sampling, one
-can use an approach developed by Wilks:cite:p:`Wilks` to
+can use an approach developed by Wilks :cite:p:`Wilks` to
 determine the number of samples that ensures a particular confidence
 level in a percentile of interest. The Wilks method of computing the
 number of samples to execute for a random sampling study is based on
@@ -836,6 +862,25 @@ statistics, eg a statement applied to the N largest outputs
 (``one_sided_upper``) or the N smallest and N largest outputs
 (``two_sided``), can be specified using the ``order`` option along with
 value N.
+
+.. _`uq:tolerance_intervals`:
+
+Double Sided Tolerance Interval Equivalent Normal Distribution
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Tolerance Intervals (TIs) are a simple way to approximately account for
+the epistemic sampling uncertainty introduced from finite samples of a
+random variable. TIs are parameterized by two user-prescribed levels:
+one for the desired "coverage" proportion of a distribution and one for
+the desired degree of statistical "confidence" in covering or bounding
+at least that proportion.
+For instance, a :math:`95\%` coverage / :math:`90\%` confidence TI
+(:math:`95\%`/:math:`90\%` TI, :math:`95`/:math:`90` TI,
+or :math:`0.95`/:math:`0.90` TI)
+prescribes lower and upper values of a range said to have at least
+:math:`90\%` odds that it covers or spans :math:`95\%` of the "true"
+probability distribution from which the random samples were drawn,
+if they were drawn from a Normal distribution  :cite:p:`Jekel20`.
 
 .. _`uq:reliability`:
 
@@ -2779,13 +2824,17 @@ MUQ
 MUQ is the MIT Uncertainty Quantification library. See
 https://bitbucket.org/mituq/muq2/src/master/ and
 https://mituq.bitbucket.io/index.html for additional documentation.
-Dakota currently exposes four MCMC approaches from MUQ:
-Metropolis-Hastings, Adaptive Metropolis, Delayed Rejection, and
-Delayed-Rejection Adaptive Metropolis. Dakota’s MUQ integration is
-preliminary, anticipated to extend to use MUQ components for Hamiltonian
-Monte Carlo and Langevin-based sampling. MUQ is an experimental Dakota
-capability, and as such, it is not turned on by default, and must be
-explicitly enabled when compiling Dakota.
+Dakota currently exposes six MCMC approaches from MUQ:
+
+- Adaptive Metroplis (:dakkw:`method-bayes_calibration-muq-adaptive_metropolis`)
+- Delayed rejection (:dakkw:`method-bayes_calibration-muq-delayed_rejection`)
+- Dimension-independent, likelihood informed (:dakkw:`method-bayes_calibration-muq-dili`)
+- Delayed rejection, adaptive Metropolis (:dakkw:`method-bayes_calibration-muq-dram`)
+- Metropolis-adjusted Langevin algorithm (:dakkw:`method-bayes_calibration-muq-mala`)
+- Metropolis-Hastings (:dakkw:`method-bayes_calibration-muq-metropolis_hastings`)
+
+MUQ is an experimental Dakota capability, and as such, it is not turned on by default, 
+and must be explicitly enabled when compiling Dakota.
 
 WASABI
 ~~~~~~

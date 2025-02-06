@@ -1,18 +1,13 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:	 GaussProcApproximation
-//- Description: Class implementation for GaussianProcess Approximation
-//- Owner:       Laura Swiler
-//- Checked by:
-//- Version:
-
+#include <limits>
 #include "GaussProcApproximation.hpp"
 #include "dakota_data_types.hpp"
 #include "DakotaIterator.hpp"
@@ -78,7 +73,7 @@ Real mindist(const RealVector& x, const RealMatrix& xset, int except)
   d = x.length();
   if (d!= xset.numCols()) Cout << "Dimension mismatch in mindist";
   n = xset.numRows();
-  Real dist, result;
+  Real dist, result = std::numeric_limits<Real>::max();
   RealVector xp(d);
   for (i=0; i<n; i++) {
     for (j=0; j<d; j++) xp[j]=xset(i,j);
@@ -100,7 +95,7 @@ Real mindistindx(const RealVector& x, const RealMatrix& xset,
   nindx = indx.size();
   if (nindx > n) 
     Cerr << "Size error in mindistinx in GaussProcApproximation\n";
-  Real dist,result;
+  Real dist, result = std::numeric_limits<Real>::max();
   RealVector xp(d);
   for (i=0; i<nindx; i++) {
     for (j=0; j<d; j++) xp[j]=xset(indx[i],j);
@@ -121,7 +116,7 @@ Real getRmax(const RealMatrix& xset)
   if (n==0 || d==0) 
     Cerr << "Zero size in getRmax in GaussProcApproximation.  n:" 
 	 << n << "  d:" << d << std::endl;
-  Real mini,result;
+  Real mini, result = -std::numeric_limits<Real>::max();
   RealVector xp(d);
   for (i=0; i<n; i++) {
     for (j=0; j<d; j++) xp[j] = xset(i,j);
@@ -387,8 +382,13 @@ void GaussProcApproximation::optimize_theta_global()
   // NCSU DIRECT optimize of Negative Log Likelihood
   // Uses default convergence tolerance settings in NCSUOptimizer wrapper!
   size_t max_iter = 1000, max_eval = 10000;
+  RealVector lin_ineq_lb, lin_ineq_ub, lin_eq_tgt,
+             nln_ineq_lb, nln_ineq_ub, nln_eq_tgt;
+  RealMatrix lin_ineq_coeffs, lin_eq_coeffs;
   nll_optimizer.assign_rep(std::make_shared<NCSUOptimizer>
-    (theta_lbnds, theta_ubnds, max_iter, max_eval, negloglikNCSU));
+    (theta_lbnds, theta_ubnds, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub,
+     lin_eq_coeffs, lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
+     max_iter, max_eval, negloglikNCSU));
   nll_optimizer.run(); // no pl_iter needed for this optimization
   const Variables& vars_star = nll_optimizer.variables_results();
   const Response&  resp_star = nll_optimizer.response_results();
@@ -968,7 +968,7 @@ void GaussProcApproximation::run_point_selection()
   int counter = 0, Chol_return=0, delta_increase_count = 0, nadded;
   const Real TOLDELTA = 1e-2;
   RealArray delta(numObsAll);
-  Real dmaxprev, maxdelta;
+  Real dmaxprev, maxdelta = -std::numeric_limits<Real>::max();
   size_t i, num_v = sharedDataRep->numVars;
 
   Cout << "\nUsing point selection routine..." << std::endl;

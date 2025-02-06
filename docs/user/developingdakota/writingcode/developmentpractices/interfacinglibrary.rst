@@ -51,7 +51,7 @@ The function run_dakota_parse() in library_mode.cpp demonstrates the basic use o
 
 First, an object of type ProgramOptions which manages top-level Dakota settings is instantiated and configured to specify the name of the Dakota user input file. Additional options for output and error redirection, restart operation, and more may be set via ProgramOptions. See its class documentation for details.
 
-.. code-block::
+.. code-block:: cpp
 
 	string dakota_input_file = "dakota_optimization.in";
 	Dakota::ProgramOptions opts;
@@ -59,13 +59,13 @@ First, an object of type ProgramOptions which manages top-level Dakota settings 
 
 Next, a LibraryEnvironment is created, passing the desired settings from opts:
 
-.. code-block::
+.. code-block:: cpp
 
 	Dakota::LibraryEnvironment env(opts);
 
 This standard constructor will parse the specified input and create Dakota objects. It assumes many default settings, including that the parent application initialized MPI if running in parallel mode. (In this case, Dakota will detect whether MPI was initialized and not call MPI_Init or MPI_Finalize.) For more advanced use cases described below, alternate constructors allow constructing based on MPI communicators, with delayed finalization, and with Dakota database update function callbacks. Then the application's function evaluator implementing Dakota's DirectApplicInterface is plugged in with a convenience function serial_interface_plugin() or parallel_interface_plugin(). Finally, the Dakota analysis is run by calling
 
-.. code-block::
+.. code-block:: cpp
 
 	env.execute(); 
 
@@ -75,7 +75,7 @@ The next two sections offer additional details on (1) alternative and supplement
 
 After LibraryEnvironment construction, all MPI communicator partitioning has been performed and the ParallelLibrary instance may be interrogated for parallel configuration data. For example, the lowest level communicators in Dakota's multilevel parallel partitioning are the analysis communicators, which can be retrieved using:
 
-.. code-block::
+.. code-block:: cpp
 	
 	// retrieve the set of analysis communicators for simulation initialization:
     // one analysis comm per ParallelConfiguration (PC), one PC per Model.
@@ -96,14 +96,14 @@ The simplest way for an application to configure a Dakota analysis problem is to
 
 The two ways to configure Dakota via input parsing are shown near the beginning of run_dakota_mixed() in library_mode.cpp. Here the ProgramOptions are set to either parse from a named file:
 
-.. code-block::
+.. code-block:: cpp
 
 	Dakota::ProgramOptions opts;
 	opts.input_file(dakota_input_file);
 
 or from a string literal provided by the wrapping application:
 
-.. code-block::
+.. code-block:: cpp
 
 	string serial_input = "% Dakota input file ...";
 	opts.input_string(serial_input);
@@ -117,7 +117,7 @@ A second approach to configuring Dakota's operation is to bypass parsing phases 
 
 In the direct database population approach, Dakota DataMethod, DataModel, DataVariables, DataInterface, and DataResponses objects are instantiated and populated with the desired problem data. These objects are then published to the problem database using insert_nodes() . An example of this approach is available in run_dakota_data() in library_mode.cpp, where the OPT++ Quasi-Newton method is configured to work on a plugin version of text_book or rosenbrock. The data objects are populated with their default values upon instantiation and are often sufficient for basic Dakota studies. Only the non-default values need to be specified. Moreover the default Dakota Model is a SingleModel, so this object need not be configured unless tailoring its configuration or using a more advanced model type. Refer to the DataMethod, DataModel, DataVariables, DataInterface, and DataResponses class documentation and source code for lists of attributes and their defaults. Here is an excerpt of run_dakota_data() that specifies the OPT++ solver after default construction of DataMethod:
 
-.. code-block::
+.. code-block:: cpp
 
 	Dakota::DataMethod   dme;
 	Dakota::DataMethodRep* dmr = dme.data_rep();
@@ -125,7 +125,7 @@ In the direct database population approach, Dakota DataMethod, DataModel, DataVa
 
 When using direct database population, it is critical to leave the database in an open, accessible state after initial construction. In this run_dakota_data() example, a flag check_bcast_construct is passed into the LibraryEnvironment constructor, indicating that it should not finalize the database and construct Dakota objects. Moreover, it is only necessary to populate the database on rank 0 of the MPI Comm on which Dakota is running. After database objects are inserted or adjusted, the LibraryEnvironment::done_modifying_db() function must be called before proceeding to execute. This synchronizes problem data across all ranks and constructs Dakota objects needed to run the specified analysis.
 
-.. code-block::
+.. code-block:: cpp
 
 	bool check_bcast_construct = false;
 	Dakota::LibraryEnvironment env(MPI_COMM_WORLD, opts, check_bcast_construct);
@@ -155,7 +155,7 @@ First, a ProgramOptions class is instantiated and configured to parse either an 
 
 and not the lists of values are required in this case. To update or add data after this initial parse, we use the ProblemDescDB::set() family of overloaded functions, e.g.
 
-.. code-block::
+.. code-block:: cpp
 
 	Dakota::RealVector drv(1000, 1.); // vector of length 1000, values initialized to 1.
 	problem_db.set("variables.continuous_design.initial_point", drv);
@@ -164,13 +164,13 @@ where the string identifiers are the same identifiers used when pulling informat
 
 Second, the example demonstrates a user-provided callback function which Dakota will invoke after input parsing to update ProblemDescDB. In library_mode.cpp, callback_function() is a user-provided post-parse callback that implements the type Dakota::DbCallbackFunction.
 
-.. code-block::
+.. code-block:: cpp
 
 	static void callback_function(Dakota::ProblemDescDB* db, void *ptr);
 
 When Dakota calls this function it will pass back pointers to the ProblemDescDB instance and to user-provided data, so the application may convey its settings by calling methods on the ProblemDescDB, optionally using the provided data. An example of a user data structure is demonstrated in callback_data. In this case, when the LibraryEnvironment is constructed, it is constructed with the input data to initially parse, the callback function, and to leave it unlocked for further updates:
 
-.. code-block::
+.. code-block:: cpp
 
 	bool done_with_db = false;
 	Dakota::LibraryEnvironment env(opts, done_with_db, callback_function, &data);
@@ -186,7 +186,7 @@ After any of these three types updates, calling LibraryEnvironment::done_modifyi
 
 Fourth and finally, run_dakota_mixed() demonstrates modifying a Model's data after database operations and interface plugin are complete. This involves finding the right Model (or other class) instance to modify, and directly adjusting its data through the public API. Since the database is finalized, any updates must be performed through direct set operations on the constructed objects. For example, to update other data such as variable values/bounds/tags or response bounds/targets/tags, refer to the set functions documented in Iterator and Model. As an example, the following code updates the active continuous variable values, which will be employed as the initial guess for certain classes of Iterators:
 
-.. code-block::
+.. code-block:: cpp
 
 	ModelList& all_models  = problem_db.model_list();
 	Model&     first_model = *all_models.begin();
@@ -199,22 +199,21 @@ If performing such data updates within the constructor of a DirectApplicInterfac
 
 Therefore, it is preferred to perform these database set operations at a higher level (e.g., within your main program), prior to allowing Environment to broadcast, construct, and execute, such that instantiation order is not an issue. However, in this case, it is necessary to explicitly manage the list nodes of the ProblemDescDB using a specification instance identifier that corresponds to an identifier from the input file, e.g.:
 
-.. code-block::
+.. code-block:: cpp
 
 	problem_db.set_db_variables_node("MY_VARIABLES_ID");
-	Dakota::RealVector drv(1000, 1.); // vector of length 1000, values
-	initialized to 1.
+	Dakota::RealVector drv(1000, 1.); // vector of length 1000, values initialized to 1.
 	problem_db.set("variables.continuous_design.initial_point", drv);
 
 Alternatively, rather than setting just a single data node, all data nodes may be set using a method specification identifier:
 
-.. code-block::
+.. code-block:: cpp
 
 	problem_db.set_db_list_nodes("MY_METHOD_ID"); 
 
 since the method specification is responsible for identifying a model specification, which in turn identifies variables, interface, and responses specifications. If hard-wiring specification identifiers is undesirable, then
 
-.. code-block::
+.. code-block:: cpp
 
 	problem_db.resolve_top_method(); 
 
@@ -237,24 +236,25 @@ While this approach is the simplest, it has the disadvantage that the Dakota lib
 
 If the new direct evaluation function implementation will not be a member function of one of the Dakota classes, then the following prototype should be used in order to pass the required data:
 
-.. code-block::
+.. code-block:: cpp
 
     int sim(const Dakota::Variables& vars, const Dakota::ActiveSet& set,
     Dakota::Response& response); 
 	
 If the new function will be a member function, e.g., in TestDriverInterface, then this can be simplified to
 
-.. code-block::
+.. code-block:: cpp
 
     int sim();
-    since the data access can be performed through the DirectApplicInterface class attributes.}
+
+since the data access can be performed through the DirectApplicInterface class attributes.
 
 Derivation
 ----------
 
 The second approach is to derive a new interface from DirectApplicInterface and redefine several virtual functions. As demonstrated in SIM::SerialDirectApplicInterface and SIM::ParallelDirectApplicInterface, a typical derived class declaration might be
 
-.. code-block::
+.. code-block:: cpp
 
 	namespace SIM {
 	class SerialDirectApplicInterface: public Dakota::DirectApplicInterface
@@ -281,7 +281,7 @@ Once a derived application class is created, it must be plugged in, or registere
 
 The Dakota LibraryEnvironment provides a convenience function to plugin an Interface. This example will replace any interface found matching the given model, interface, and analysis driver with the passed plugin interface:
 
-.. code-block::
+.. code-block:: cpp
 
 	std::string model_type(""); // demo: empty string will match any model type
 	std::string interf_type("direct");
@@ -294,7 +294,7 @@ The Dakota LibraryEnvironment provides a convenience function to plugin an Inter
 
 The LibraryEnvironment also provides convenience functions that allow the client to iterate the lists of available interfaces or models for more advanced cases. For instance if the client knows there is only a single interface active, it could get the list of available interfaces of length 1 and plugin to the first one. In the more advanced case where the simulation interface instance should manage parallel simulations within the context of an MPI communicator, one should pass in the relevant analysis communicator(s) to the derived constructor. For the latter case of looping over a set of models, the simplest approach of passing a single analysis communicator would use code similar to
 
-.. code-block::
+.. code-block:: cpp
 
 	Dakota::ModelList filt_models = 
 	  env.filtered_model_list("single", "direct", "plugin_text_book");
@@ -325,7 +325,7 @@ Retrieving data after a run
 
 After executing the Dakota Environment, final results can be obtained through the use of Environment::variables_results() and Environment::response_results(), e.g.:
 
-.. code-block::
+.. code-block:: cpp
 
 	// retrieve the final parameter values
 	const Variables& vars = env.variables_results();
@@ -364,7 +364,7 @@ A second option is to check which libraries appear in CMAKE_INSTALL_PREFIX/bin/ 
    
       -lXpm -lXm -lXt -lXmu -lXp -lXext -lX11 -lSM -lICE
 
- - When configuring with AMPL (HAVE_AMPL:BOOL=ON), the AMPL solver library may require dl, funcadd0.o and fl libraries. We have experienced problems with the creation of libamplsolver.a on some platforms; use the dakota-users mailing list to get help with any problems related to this.
+ - When configuring with AMPL (HAVE_AMPL:BOOL=ON), the AMPL solver library may require dl, funcadd0.o and fl libraries. We have experienced problems with the creation of libamplsolver.a on some platforms; inquire on Dakota's :ref:`dicussions forum<help-discussions>` to get help with any problems related to this.
  - Optional library GSL (discouraged due to GPL license) and if linking with system-provided GSL, gslcblas may be needed if Dakota was configured with them.
  - Newmat: as of Dakota 5.2, -lnewmat is no longer required
 

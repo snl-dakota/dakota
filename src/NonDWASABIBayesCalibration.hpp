@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDWASABIBayesCalibration
-//- Description: Derived class for WASABI-based Bayesian inference
-//- Owner:       Tim Wildey
-//- Checked by:
-//- Version:
 
 #ifndef NOND_WASABI_BAYES_CALIBRATION_H
 #define NOND_WASABI_BAYES_CALIBRATION_H
@@ -37,9 +31,9 @@ public:
   //
 
   /// standard constructor
-  NonDWASABIBayesCalibration(ProblemDescDB& problem_db, Model& model);
+  NonDWASABIBayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
-  ~NonDWASABIBayesCalibration();
+  ~NonDWASABIBayesCalibration() override;
 
   //
   //- Heading: Static callback functions required by WASABI

@@ -1,7 +1,7 @@
 #  _______________________________________________________________________
 #
-#  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2022
+#  Dakota: Explore and predict with confidence.
+#  Copyright 2014-2024
 #  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
@@ -34,7 +34,8 @@ if (DAKOTA_INSTALL_DYNAMIC_DEPS)
     install(SCRIPT "${Dakota_SOURCE_DIR}/cmake/InstallDarwinDylibs.cmake")
   elseif (UNIX)
 #    include(InstallRequiredSystemLibraries)
-    install(SCRIPT "${Dakota_SOURCE_DIR}/cmake/InstallUnixSOs.cmake")
+configure_file("${Dakota_SOURCE_DIR}/cmake/InstallUnixSOs.cmake.in" "${CMAKE_BINARY_DIR}/InstallUnixSOs.cmake" @ONLY) 
+    install(SCRIPT "${CMAKE_BINARY_DIR}/InstallUnixSOs.cmake")
   elseif (WIN32)
     include(InstallWinDLLs)
   endif()

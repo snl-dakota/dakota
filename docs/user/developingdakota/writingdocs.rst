@@ -696,7 +696,7 @@ Four kinds of tests are supported:
 #. Regression. These work just like regression tests in Dakota's test
    folder. They have a baseline that Dakota's console output is
    compared to, and have a PASS/DIFF/FAIL result. (The baseline
-   platform is RHEL7 and all examples should reliably PASS on RHEL7).
+   platform is RHEL8 and all examples should reliably PASS on RHEL8).
 
 #. Dakota Check. Run 'dakota -check' on a Dakota input to see whether
    it passes basic parsing/construction. The result is PASS or FAIL.

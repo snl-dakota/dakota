@@ -64,16 +64,25 @@ public class BatchPluginVersionUpdater {
 	private static final boolean DRY_RUN = false;
 	private static final String START_DIR = "C:\\Users\\emridgw\\workspace\\svn\\dart";
 	private static final String[] PLUGIN_BLACKLIST = new String[]{
+		"com.strikewire.snl.apc.Common",
+		"com.strikewire.snl.apc.FileManager",
+		"com.strikewire.snl.apc.FileSystemDataModel",
+		"com.strikewire.utils",
 		"gov.sandia.aleph",
 		"gov.sandia.aleph.ui",
 		"gov.sandia.aleph.workflow.runtime",
 		"gov.sandia.aleph.workflow.ui",
 		"gov.sandia.apc.editor.calore",
 		"gov.sandia.apc.JobSubmission",
+		"gov.sandia.apc.JobSubmission.help",
+		"gov.sandia.apc.machines",
 		"gov.sandia.apc.terminal",
-		"gov.sandia.chartreuse.impl.plotly.mac",
-		"gov.sandia.chartreuse.impl.plotly.linux",
-		"gov.sandia.chartreuse.impl.plotly.windows",
+		"gov.sandia.bb.commons.ui.saw",
+		"gov.sandia.blackbox.bmf",
+		"gov.sandia.dakota.parser.ui.saw.bridge",
+		"gov.sandia.dart.accounts.jobs",
+		"gov.sandia.dart.accounts.jobs.localstorage",
+		"gov.sandia.dart.accounts.jobs.provider",
 		"gov.sandia.dart.apache.commons",
 		"gov.sandia.dart.application",
 		"gov.sandia.dart.aprepro",
@@ -81,26 +90,49 @@ public class BatchPluginVersionUpdater {
 		"gov.sandia.dart.chart.xyplot.ui",
 		"gov.sandia.dart.common.core",
 		"gov.sandia.dart.common.preferences",
+		"gov.sandia.dart.contrib.xml",
+		"gov.sandia.dart.cubit.jni",
+		"gov.sandia.dart.cubit.jni.win64",
 		"gov.sandia.dart.dakota.tests",
+		"gov.sandia.dart.hdf.exodus.bridge",
 		"gov.sandia.dart.jna",
+		"gov.sandia.dart.launch",
+		"gov.sandia.dart.login",
+		"gov.sandia.dart.login.core",
+		"gov.sandia.dart.login.history.view",
+		"gov.sandia.dart.login.krb",
+		"gov.sandia.dart.login.krb.status",
+		"gov.sandia.dart.login.sspi",
+		"gov.sandia.dart.login.sspi.status",
+		"gov.sandia.dart.machine.definitions",
 		"gov.sandia.dart.metrics",
+		"gov.sandia.dart.packaging.jre",
 		"gov.sandia.dart.workflow.editor",
 		"gov.sandia.dart.workflow.help",
 		"gov.sandia.dart.workflow.phase3",
 		"gov.sandia.dart.workflow.phase3.embedded",
+		"gov.sandia.ecmf.workflow.runtime",
+		"gov.sandia.ecmf.workflow.ui",
 		"gov.sandia.modules",
 		"gov.sandia.modules.runtime",
 		"gov.sandia.packaging.jre",
+		"org.eclipse.graphiti",
+		"org.eclipse.graphiti.mm",
+		"org.eclipse.graphiti.ui",
 		"org.eclipse.nebula.visualization.xygraph"
 	};
 	private static final String[] FEATURE_BLACKLIST = new String[]{
+		"gov.sandia.apc.JobSubmission.feature",
 		"gov.sandia.dakota.wizards.feature",
 		"gov.sandia.dart.aprepro.feature",
 		"gov.sandia.dart.dakota.feature",
+		"gov.sandia.dart.dfm.feature",
+		"gov.sandia.dart.machine.definitions.feature",
 		"gov.sandia.dart.metrics.feature",
 		"gov.sandia.dart.ngw.core.feature",
 		"gov.sandia.saw.dakota.bridge.feature",
 		"gov.sandia.snl.aleph.feature",
+		"gov.sandia.snl.hpc.feature",
 		"gov.sandia.snl.login.feature"
 	};
 	private static final String[] DEPRECATED_PLUGINS = new String[] {};
@@ -112,8 +144,8 @@ public class BatchPluginVersionUpdater {
 	private static final boolean UPDATE_FEATURE_XML = true;
 	private static final boolean UPDATE_FEATURE_RELEASENOTES = true;
 	private static final boolean UPDATE_DAKOTAGUI_PRODUCT = true;
-	private static final String GUI_VERSION = "6.17.0";
-	private static final String BUILD_DATE = "2022/10/11";
+	private static final String GUI_VERSION = "6.19.0";
+	private static final String BUILD_DATE = "2023/11/15";
 	
 	////////////
 	// FIELDS //
@@ -161,7 +193,12 @@ public class BatchPluginVersionUpdater {
 		System.out.println("***************");
 		
 		if(DRY_RUN) {
-			for(PluginDelta plugin : updatedPluginList) {
+			List<PluginDelta> sortedList = new ArrayList<>();
+			sortedList.addAll(updatedPluginList);
+			Collections.sort(sortedList, (PluginDelta o1, PluginDelta o2) -> {
+				return o1.name.compareTo(o2.name);
+			});
+			for(PluginDelta plugin : sortedList) {
 				System.out.println(plugin.name + " (" + plugin.oldVersion + " -> " + plugin.newVersion + ")");
 			}
 			System.out.println("***************");
@@ -204,7 +241,12 @@ public class BatchPluginVersionUpdater {
 		
 		System.out.println("***************");
 		if(DRY_RUN) {
-			for(FeatureDelta feature : updatedFeatureList) {
+			List<FeatureDelta> sortedList = new ArrayList<>();
+			sortedList.addAll(updatedFeatureList);
+			Collections.sort(sortedList, (FeatureDelta o1, FeatureDelta o2) -> {
+				return o1.id.compareTo(o2.id);
+			});
+			for(FeatureDelta feature : sortedList) {
 				System.out.println(feature.id + " (" + feature.oldVersion + " -> " + feature.newVersion + ")");
 			}
 			System.out.println("***************");
@@ -425,9 +467,10 @@ public class BatchPluginVersionUpdater {
 		boolean containsDeprecatedPlugins = feature.doesFeatureHaveDeprecatedPlugins(DEPRECATED_PLUGINS);
 		containsDeprecatedPlugins = containsDeprecatedPlugins || feature.doesFeatureHaveDeprecatedFeatures(DEPRECATED_FEATURES);
 		boolean containsUpdatedPlugins = feature.doesHaveUpdatedPlugins(updatedPluginList);
+		boolean containsUpdatedFragments = feature.doesHaveUpdatedFragments(updatedPluginList);
 		containsUpdatedPlugins = containsUpdatedPlugins || feature.doesHaveUpdatedFeatures(updatedFeatureList);
 		
-		boolean featureChanged = newStuff || containsDeprecatedPlugins || containsUpdatedPlugins;
+		boolean featureChanged = newStuff || containsDeprecatedPlugins || containsUpdatedPlugins || containsUpdatedFragments;
 		
 		if(featureChanged) {
 			feature.newVersion = determineNewFeatureVersionNumber(

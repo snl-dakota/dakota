@@ -1,15 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        SpawnApplicInterface
-//- Description:  Class implementation
-//- Owner:        Dave Gay / Bill Bohnhoff
 
 #include "SpawnApplicInterface.hpp"
 #include "WorkdirHelper.hpp"
@@ -17,7 +13,7 @@
 #include "ParamResponsePair.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
-#include "dakota_windows.h"
+#include "util_windows.hpp"
 #include <process.h>
 #include <algorithm>
 #include <thread>

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -14,6 +14,7 @@
 #include "dakota_global_defs.hpp"  // for Cerr
 #include "dakota_data_types.hpp"
 #include "pecos_data_types.hpp"
+#include "UtilDataScaler.hpp"
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/functional/hash/hash.hpp>
@@ -22,6 +23,8 @@
 #include <algorithm>
 #include "Teuchos_SerialDenseHelpers.hpp"
 
+using dakota::VectorXd;
+using dakota::MatrixXd;
 
 // --------------
 // hash functions
@@ -162,11 +165,30 @@ bool operator!=(typename boost::multi_array<T, 1>::template
 
 /// checks for any non-zero value in std::vector(); useful for determining
 /// whether an array of request codes (e.g., an ASV) has any actionable content
-template <typename OrdinalType>
-bool non_zero(const std::vector<OrdinalType>& vec)
+template <typename ScalarType>
+bool non_zero(const std::vector<ScalarType>& vec)
 {
   size_t i, len = vec.size();
   for (i=0; i<len; ++i)
+    if (vec[i] != 0)
+      return true;
+  return false; // includes case of empty vector (no actions)
+}
+
+/// checks for any non-zero value in range of a std::vector(); useful for
+/// determining whether an array of request codes (e.g., an ASV) has any
+/// actionable content
+template <typename OrdinalType, typename ScalarType>
+bool non_zero(const std::vector<ScalarType>& vec,
+	      OrdinalType start, OrdinalType end)
+{
+  OrdinalType i, len = vec.size();
+  if (start > end || end > len) {
+    Cerr << "Error: range out of bounds in non_zero(vec, start, end)."
+	 << std::endl;
+    abort_handler(-1);
+  }
+  for (i=start; i<end; ++i)
     if (vec[i] != 0)
       return true;
   return false; // includes case of empty vector (no actions)
@@ -238,11 +260,39 @@ inline bool is_equal_partial(const StringMultiArray& ma1,
 
 /// Computes means of columns of matrix
 void compute_col_means(RealMatrix& matrix, RealVector& avg_vals);
+
 /// Computes standard deviations of columns of matrix
 void compute_col_stdevs(RealMatrix& matrix, RealVector& avg_vals, 
-      			  RealVector& std_devs);
+                        RealVector& std_devs);
+
+/// Computes variances of columns of matrix
+void compute_col_variances(RealMatrix& matrix, RealVector& avg_vals, 
+                        RealVector& variances);
+
 /// Removes column from matrix
 void remove_column(RealMatrix& matrix, int index);
+
+/// Sort incoming vector with result and corresponding indices returned in passed arguments
+void sort_vector( const RealVector & vec, RealVector & sort_vec,
+                  IntVector & indices );
+
+/// Sort incoming matrix columns with result and corresponding indices returned in passed arguments
+void sort_matrix_columns( const RealMatrix & mat, RealMatrix & sort_mat,
+                          IntMatrix & indices );
+
+/// Reorders matrix columns according to the passed index vector. 
+void reorder_matrix_columns_from_index_vector( const RealMatrix& mat, 
+                                               RealMatrix& reordered_mat, 
+                                               const IntVector& indices );
+
+/// center the incoming matrix rows by their means, in-place
+void center_matrix_rows( RealMatrix & mat );
+
+/// center the incoming matrix columns by their means, in-place
+void center_matrix_cols( RealMatrix & mat );
+
+/// Test if incoming matrix is symmetric
+bool is_matrix_symmetric( const RealMatrix & matrix );
 
 /// Applies a RealMatrix to a vector (or subset of vector) v1
 /** Optionally works with a subset of the passed vectors; applies the
@@ -476,6 +526,14 @@ void assign_value(vecType& target, valueType val, size_t start, size_t len)
 //  }
 //}
 
+/// Copy data from Eigen::MatrixXd to RealMatrix
+void copy_data(const MatrixXd & src_mat, RealMatrix & dst_mat);
+
+/// Copy data from RealMatrix to Eigen::MatrixXd
+void copy_data(const RealMatrix & src_mat, MatrixXd & dst_mat);
+
+/// Create a view of data in RealMatrix as an Eigen::MatrixXd
+void view_data(const RealMatrix & src_mat, Eigen::Map<MatrixXd> & dst_mat);
 
 /// copy Array<Teuchos::SerialDenseVector<OT,ST> > to
 /// Teuchos::SerialDenseMatrix<OT,ST> - used by read_data_tabular - RWH
@@ -749,6 +807,41 @@ void copy_data(const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& ssd
   ssdm2.assign(ssdm1);
 }
 
+
+template <typename OrdinalType, typename ScalarType> 
+void copy_data(const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& ssdm,
+	       Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm)
+{
+  OrdinalType nr = ssdm.numRows(), i, j;
+  if (sdm.numRows() != nr || sdm.numCols() != nr)
+    sdm.shapeUninitialized(nr,nr);
+  for (i=0; i<nr; ++i) {
+    sdm(i,i) = ssdm(i,i);
+    for (j=0; j<i; ++j)
+      sdm(i,j) = sdm(j,i) = ssdm(i,j);
+  }
+}
+
+
+template <typename OrdinalType, typename ScalarType> 
+void copy_data(const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm,
+	       Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& ssdm)
+{
+  OrdinalType nr = sdm.numRows(), i, j;
+  if (sdm.numCols() != nr) {
+    Cerr << "Error: cannot copy rectangular SerialDenseMatrix to "
+	 << "SerialSymDenseMatrix" << std::endl;
+    abort_handler(-1);
+  }
+  if (ssdm.numRows() != nr)
+    ssdm.shapeUninitialized(nr);
+  for (i=0; i<nr; ++i) {
+    ssdm(i,i) = sdm(i,i);
+    for (j=0; j<i; ++j)
+      ssdm(i,j) = (sdm(i,j) == sdm(j,i)) ? sdm(i,j) : (sdm(i,j) + sdm(j,i))/2.;
+  }
+}
+
 /// Taken from pecos/src/MathTools.hpp, BUT
 /// not templated because the implementation is specific to RealMatrix
 inline void copy_data( const RealMatrix &source, RealMatrix &dest, 
@@ -788,15 +881,15 @@ void copy_data(const Teuchos::SerialDenseVector<OrdinalType, ScalarType1>& sdv,
 
 /// copy Array<ScalarType> to
 /// Teuchos::SerialDenseVector<OrdinalType, ScalarType> - used by NOWPACOptimizer - MSE
-template <typename OrdinalType, typename ScalarType> 
-void copy_data(const std::vector<ScalarType>& da,
-	       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& sdv)
+template <typename OrdinalType, typename ScalarType1, typename ScalarType2> 
+void copy_data(const std::vector<ScalarType1>& vec,
+	       Teuchos::SerialDenseVector<OrdinalType, ScalarType2>& sdv)
 {
- size_t size_da = da.size();
- if (sdv.length() != size_da)
-   sdv.sizeUninitialized(size_da);
- for (OrdinalType i=0; i<size_da; ++i)
-   sdv[i] = da[i];
+ size_t size_vec = vec.size();
+ if (size_vec != sdv.length())
+   sdv.sizeUninitialized(size_vec);
+ for (OrdinalType i=0; i<size_vec; ++i)
+   sdv[i] = (ScalarType2)vec[i];
 }
 
 /// copy ScalarType* to Teuchos::SerialDenseVector<OrdinalType, ScalarType> - used by ScalingModel::response_modify_n2s - RWH
@@ -826,6 +919,15 @@ void copy_data(const Teuchos::SerialDenseVector<OrdinalType1, ScalarType>& sdv,
   }
   for (OrdinalType2 i=0; i<ptr_len; ++i)
     ptr[i] = sdv[i];
+}
+
+/// copy ScalarType* to ScalarType*
+template <typename OrdinalType, typename ScalarType> 
+void copy_data(const ScalarType* ptr1, ScalarType* ptr2,
+	       const OrdinalType ptr_len)
+{
+  for (OrdinalType i=0; i<ptr_len; ++i)
+    ptr2[i] = ptr1[i];
 }
 
 
@@ -1344,6 +1446,17 @@ inline ScalarType find_min(const ScalarType* vec, OrdinalType len)
 }
 
 
+template <typename OrdinalType, typename ScalarType>
+inline ScalarType find_max(const ScalarType* vec, const OrdinalType len)
+{
+  ScalarType max = (len) ? vec[0] : std::numeric_limits<ScalarType>::min();
+  for (OrdinalType i=1; i<len; ++i)
+    if (vec[i] > max)
+      max = vec[i];
+  return max;
+}
+
+
 template <typename ScalarType>
 inline ScalarType find_max(const std::vector<ScalarType>& vec)
 {
@@ -1369,14 +1482,28 @@ inline ScalarType find_max(
 }
 
 
-template <typename OrdinalType, typename ScalarType>
-inline ScalarType find_max(const ScalarType* vec, const OrdinalType len)
+template <typename ScalarType>
+inline size_t find_max_index(const std::vector<ScalarType>& vec)
 {
+  size_t i, len = vec.size(), m_index = (len) ? 0 : _NPOS;
   ScalarType max = (len) ? vec[0] : std::numeric_limits<ScalarType>::min();
-  for (OrdinalType i=1; i<len; ++i)
+  for (i=1; i<len; ++i)
     if (vec[i] > max)
-      max = vec[i];
-  return max;
+      { max = vec[i]; m_index = i; }
+  return m_index;
+}
+
+
+template <typename OrdinalType, typename ScalarType>
+inline ScalarType find_max_index(
+  const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& vec)
+{
+  size_t i, len = vec.length(), m_index = (len) ? 0 : _NPOS;
+  ScalarType max = (len) ? vec[0] : std::numeric_limits<ScalarType>::min();
+  for (i=1; i<len; ++i)
+    if (vec[i] > max)
+      { max = vec[i]; m_index = i; }
+  return m_index;
 }
 
 

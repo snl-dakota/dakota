@@ -660,7 +660,7 @@ These functions, documented in :cite:p:`storlie_09`, are often used to
 test sensitivity analysis methods.  The Sobol rational function is
 given by the equation:
 
-.. math:: f({\bf x})=\frac{(x_2+0.5)^4}{(x_1+0.5)^4}
+.. math:: f({\bf x})=\frac{(x_2+0.5)^4}{(x_1+0.5)^2}
 
 This function is monotonic across each of the inputs. However, there
 is substantial interaction between :math:`x_1` and :math:`x_2` which

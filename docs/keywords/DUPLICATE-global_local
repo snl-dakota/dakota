@@ -1,0 +1,21 @@
+Blurb::
+Use a hybrid global-local scheme for solving an optimization sub-problem
+
+Description::
+This sub-problem solver option employs multiple methods, both
+sequenced and competed.  It is currently the most comprehensive (and
+expensive) option.  First, the sequence is from a global subproblem
+solve, followed by competed local solves that are initiated from the
+best global solution.  The global solver is DIRECT and the competed
+local solves are sequentual quadratic programming (``sqp``) and
+nonlinear interior point (``nip``), from NSPOL and OPT++ respectively.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

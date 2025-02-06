@@ -3,7 +3,7 @@ Name the method block; helpful when there are multiple
 Description::
 The method identifier string is supplied with ``id_method`` and is used
 to provide a unique identifier string for use with environment or
-meta-iterator specifications (refer to :ref:`environment<environment>`). It is
+meta-iterator specifications (refer to :dakkw:`environment`). It is
 appropriate to omit a method identifier string if only one method is
 included in the input file, since the single method to use is
 unambiguous in this case.

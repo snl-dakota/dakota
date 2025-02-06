@@ -22,8 +22,20 @@ method,
   bayes_calibration muq
   metropolis_hastings       #s0,#s1,#s2
 # adaptive_metropolis       #s3,#s4,#s5,#s6,#s7
+#   period_num_steps = 100  #s3,#s4,#s5,#s6,#s7
+#   starting_step = 100     #s3,#s4,#s5,#s6,#s7
+#   adapt_scale = 1.0       #s3,#s4,#s5,#s6,#s7
 # delayed_rejection         #s8
+#   num_stages = 3          #s8
+#   scale_type = 'Power'    #s8
+#   delay_scale = 2.0       #s8
 # dram                      #s9
+#   num_stages = 3          #s9
+#   scale_type = 'Power'    #s9
+#   delay_scale = 2.0       #s9
+#   period_num_steps = 100  #s9
+#   starting_step = 100     #s9
+#   adapt_scale = 1.0       #s9
   seed = 34784
   chain_samples = 1000      #s0,#s1
 # chain_samples = 3000      #s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9

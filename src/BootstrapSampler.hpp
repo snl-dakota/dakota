@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -149,7 +149,7 @@ public:
   }
 
   /// Destructor
-  virtual ~BootstrapSampler()
+  ~BootstrapSampler() override
   {
     /* empty destructor */
   }
@@ -158,7 +158,7 @@ public:
   //- Heading: Public members functions that perform for bootstrap sampling
   //
 
-  virtual void operator()(size_t num_samp, Data& bootstrapped_sample)
+  void operator()(size_t num_samp, Data& bootstrapped_sample) override
   {
     if(num_samp > bootstrapped_sample.size()/blockSize)
       throw
@@ -217,7 +217,7 @@ public:
   }
 
   /// Destructor
-  virtual ~BootstrapSampler()
+  ~BootstrapSampler() override
   {
     /* empty destructor */
   }
@@ -226,7 +226,7 @@ public:
   //- Heading: Public members functions that perform bootstrap sampling
   //
 
-  virtual void operator()(size_t num_samp, MatType& bootstrapped_sample)
+  void operator()(size_t num_samp, MatType& bootstrapped_sample) override
   {
     OrdinalType stride = this->origData.stride();
     if(stride != bootstrapped_sample.stride())

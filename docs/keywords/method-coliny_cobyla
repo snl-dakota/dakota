@@ -15,7 +15,7 @@ competitors is that it treats each constraint individually when
 calculating a change to the variables, instead of lumping the
 constraints together into a single penalty function.
 
-*See the page :ref:`topic-package_scolib<topic-package_scolib>` for important information
+*See the page :ref:`topic-package_scolib` for important information
 regarding all SCOLIB methods*
 
 ``coliny_cobyla`` is inherently serial.
@@ -23,8 +23,8 @@ regarding all SCOLIB methods*
 *Stopping Critieria*
 
 COBYLA currently only supports termination based on
- \li :ref:`method-coliny_cobyla-max_function_evaluations<method-coliny_cobyla-max_function_evaluations>`
- \li :ref:`method-coliny_cobyla-solution_target<method-coliny_cobyla-solution_target>`
+ \li :dakkw:`method-coliny_cobyla-max_function_evaluations`
+ \li :dakkw:`method-coliny_cobyla-solution_target`
 
 Other method-independent stopping criteria ( ``max_iterations`` and
 ``convergence_tolerance``) will be ignored if set.
@@ -47,14 +47,14 @@ Neither bug will be fixed, as maintaining third-party source code
 *Expected HDF5 Output*
 
 If Dakota was built with HDF5 support and run with the
-:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+:dakkw:`environment-results_output-hdf5` keyword, this method
 writes the following results to HDF5:
 
 
 - :ref:`hdf5_results-best_params`
-- :ref:`hdf5_results-best_obj_fncs` (when :ref:`responses-objective_functions<responses-objective_functions>`) are specified)
+- :ref:`hdf5_results-best_obj_fncs` (when :dakkw:`responses-objective_functions`) are specified)
 - :ref:`hdf5_results-best_constraints`
-- :ref:`hdf5_results-calibration` (when :ref:`responses-calibration_terms<responses-calibration_terms>` are specified)
+- :ref:`hdf5_results-calibration` (when :dakkw:`responses-calibration_terms` are specified)
 Topics::
 package_scolib, package_coliny, local_optimization_methods, constrained
 Examples::

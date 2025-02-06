@@ -1,0 +1,15 @@
+Blurb::
+Parameter for the DILI MCMC algorithm in MUQ
+
+Description::
+Lower bound on eigenvalues used to construct local and global likelihood informed subspaces. Must be larger than 'hess_tolerance'. The default values is '0.1'.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

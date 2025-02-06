@@ -1,13 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        Pybind11Interface
 
 //- Description:  Derived interface class for performing analysis via
 //-               pybind11 API
@@ -62,6 +60,7 @@ class Pybind11Interface: public DirectApplicInterface
     /// Python supports batch only, not true asynch, so this blocks
     virtual void test_local_evaluations(PRPQueue& prp_queue);
 
+  private: 
     /// direct interface to Pybind11 via API
     int pybind11_run(const String& ac_name);
 
@@ -100,6 +99,9 @@ class Pybind11Interface: public DirectApplicInterface
 
     /// return true if the passed asv value is requested for any function
     bool expect_derivative(const ShortArray& asv, const short deriv_type) const;
+
+    /// Compute the evaluation id
+    std::string eval_id_string() const;
 };
 
 

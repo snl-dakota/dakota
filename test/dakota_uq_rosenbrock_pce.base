@@ -4833,13 +4833,13 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
    3.1250000000e+01 Num0 Num1
   -5.6250000000e+02 Num1 Num1
   -2.0000000000e+02 Num2 Num1
-   1.3091985428e-12 Num3 Num1
-  -4.7702777733e-14 Num4 Num1
+   4.4825819672e-13 Num3 Num1
+   1.8551080230e-14 Num4 Num1
    1.0000000000e+02 Num0 Num2
-   1.0113581084e-12 Num1 Num2
-   2.3312038845e-12 Num2 Num2
-   9.0669904878e-13 Num3 Num2
-   1.0613809153e-13 Num4 Num2
+   1.1318156289e-14 Num1 Num2
+   3.2377831730e-13 Num2 Num2
+  -5.1811374216e-14 Num3 Num2
+   5.7893504473e-14 Num4 Num2
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
   expansion:    2.5671972656e+02  2.0484189184e+03
@@ -4851,7 +4851,7 @@ response_fn_1 Sobol' indices:
                       5.3674606667e-03 x1 x2 
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-   5.2969295486e-04   1.0000000000e-01   1.9503307647e-01
+   5.2969295528e-04   1.0000000000e-01   1.9503307647e-01
    1.0000000000e-01   1.0000000000e+00   7.9888888889e-02
    1.0000000000e+00   5.0000000000e+01   1.0046938776e-02
    5.0000000000e+01   1.0000000000e+02   2.7520000000e-03
@@ -4877,13 +4877,13 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
    7.7020430083e+00 Num0 Num1
   -4.6905599683e+02 Num1 Num1
   -2.0000000000e+02 Num2 Num1
-  -1.7638791109e-12 Num3 Num1
-   2.4909562494e-11 Num4 Num1
+   1.4698992591e-12 Num3 Num1
+  -4.8544046834e-11 Num4 Num1
    1.0000000000e+02 Num0 Num2
-   1.6189366929e-12 Num1 Num2
-   3.4235884358e-12 Num2 Num2
-   3.8715867877e-12 Num3 Num2
-  -1.7433788111e-11 Num4 Num2
+  -2.1971283689e-12 Num1 Num2
+  -5.7256565219e-12 Num2 Num2
+  -3.6915129836e-12 Num3 Num2
+   2.4895449422e-11 Num4 Num2
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
   expansion:    1.3103015876e+02  3.1329459406e+02
@@ -4895,7 +4895,7 @@ response_fn_1 Sobol' indices:
                       8.3787753331e-02 x1 x2 
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-   2.2979695490e-05   1.0000000000e-01   1.9504482071e-01
+   2.2979698809e-05   1.0000000000e-01   1.9504482071e-01
    1.0000000000e-01   1.0000000000e+00   8.2222222222e-02
    1.0000000000e+00   5.0000000000e+01   1.0334693878e-02
    5.0000000000e+01   1.0000000000e+02   2.8360000000e-03
@@ -5226,10 +5226,10 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
    1.0000000000e+02 Num4 Num0
   -5.6250000000e+02 Num1 Num1
   -2.0000000000e+02 Num2 Num1
-   1.2676335043e-12 Num1 Num2
-   2.4018464265e-12 Num2 Num2
-  -1.2095856102e-13 Num0 Num3
-   4.4058815545e-14 Num0 Num4
+   5.1740143034e-14 Num1 Num2
+   4.2385525174e-13 Num2 Num2
+  -8.0046106557e-14 Num0 Num3
+   2.7164081765e-14 Num0 Num4
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
   expansion:    2.5671972656e+02  2.0484189184e+03
@@ -5241,7 +5241,7 @@ response_fn_1 Sobol' indices:
                       5.3674606667e-03 x1 x2 
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-   5.2969295426e-04   1.0000000000e-01   1.9503307646e-01
+   5.2969295470e-04   1.0000000000e-01   1.9503307647e-01
    1.0000000000e-01   1.0000000000e+00   7.9888888889e-02
    1.0000000000e+00   5.0000000000e+01   1.0046938776e-02
    5.0000000000e+01   1.0000000000e+02   2.7520000000e-03
@@ -5268,10 +5268,10 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
    1.0000000000e+02 Num4 Num0
   -4.6905599683e+02 Num1 Num1
   -2.0000000000e+02 Num2 Num1
-   1.8694864192e-12 Num1 Num2
-   4.2794855447e-12 Num2 Num2
-   9.9399999628e-13 Num0 Num3
-  -5.6457158985e-12 Num0 Num4
+  -2.4091319835e-12 Num1 Num2
+  -6.0207934560e-12 Num2 Num2
+   6.6266666418e-14 Num0 Num3
+   9.5292841075e-12 Num0 Num4
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
   expansion:    1.3103015876e+02  3.1329459406e+02
@@ -5283,7 +5283,7 @@ response_fn_1 Sobol' indices:
                       8.3787753331e-02 x1 x2 
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-   2.2979695331e-05   1.0000000000e-01   1.9504482071e-01
+   2.2979699192e-05   1.0000000000e-01   1.9504482071e-01
    1.0000000000e-01   1.0000000000e+00   8.2222222222e-02
    1.0000000000e+00   5.0000000000e+01   1.0334693878e-02
    5.0000000000e+01   1.0000000000e+02   2.8360000000e-03
@@ -5814,14 +5814,14 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
    2.7824243317e+03 Num2 Num0
    1.1260986328e+03 Num3 Num0
    1.0000000000e+02 Num4 Num0
-  -1.6687172717e-13 Num5 Num0
-   7.2217749806e-14 Num6 Num0
+   5.3256934204e-14 Num5 Num0
+  -5.1482663333e-14 Num6 Num0
    3.1250000000e+01 Num0 Num1
   -5.6250000000e+02 Num1 Num1
   -2.0000000000e+02 Num2 Num1
    1.0000000000e+02 Num0 Num2
-   1.2676335043e-12 Num1 Num2
-   2.4018464265e-12 Num2 Num2
+   5.1740143034e-14 Num1 Num2
+   4.2385525174e-13 Num2 Num2
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
   expansion:    2.5671972656e+02  2.0484189184e+03
@@ -5833,7 +5833,7 @@ response_fn_1 Sobol' indices:
                       5.3674606667e-03 x1 x2 
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-   5.2969295474e-04   1.0000000000e-01   1.9503307647e-01
+   5.2969295877e-04   1.0000000000e-01   1.9503307647e-01
    1.0000000000e-01   1.0000000000e+00   7.9888888889e-02
    1.0000000000e+00   5.0000000000e+01   1.0046938776e-02
    5.0000000000e+01   1.0000000000e+02   2.7520000000e-03
@@ -5856,14 +5856,14 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
    8.4226533917e+02 Num2 Num0
    5.1555911835e+02 Num3 Num0
    1.0000000000e+02 Num4 Num0
-  -7.4563230394e-10 Num5 Num0
-   4.7927677969e-09 Num6 Num0
+   6.7002548649e-10 Num5 Num0
+   6.6297460888e-09 Num6 Num0
    7.7020430083e+00 Num0 Num1
   -4.6905599683e+02 Num1 Num1
   -2.0000000000e+02 Num2 Num1
    1.0000000000e+02 Num0 Num2
-   1.8694864192e-12 Num1 Num2
-   4.2794855447e-12 Num2 Num2
+  -2.4091319835e-12 Num1 Num2
+  -6.0207934560e-12 Num2 Num2
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
   expansion:    1.3103015876e+02  3.1329459406e+02
@@ -5875,7 +5875,7 @@ response_fn_1 Sobol' indices:
                       8.3787753331e-02 x1 x2 
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-   2.2979731813e-05   1.0000000000e-01   1.9504482078e-01
+   2.2979683505e-05   1.0000000000e-01   1.9504482068e-01
    1.0000000000e-01   1.0000000000e+00   8.2222222222e-02
    1.0000000000e+00   5.0000000000e+01   1.0334693878e-02
    5.0000000000e+01   1.0000000000e+02   2.8360000000e-03
@@ -5898,8 +5898,8 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
    1.3123303936e+04 Num2 Num0
    1.8114990419e+03 Num3 Num0
    1.0000000000e+02 Num4 Num0
-  -2.5512027145e-11 Num5 Num0
-   8.7358614187e-11 Num6 Num0
+  -8.9066546633e-11 Num5 Num0
+   1.3953270355e-10 Num6 Num0
   -1.3846408620e+03 Num0 Num1
   -1.5732288005e+03 Num1 Num1
   -2.0000000000e+02 Num2 Num1
@@ -5917,7 +5917,7 @@ response_fn_1 Sobol' indices:
                       4.8638045711e-03 x1 x2 
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-   6.8085622943e-04   1.0000000000e-01   1.9130249495e-02
+   6.8084245923e-04   1.0000000000e-01   1.9130246843e-02
    1.0000000000e-01   1.0000000000e+00   4.0333333333e-02
    1.0000000000e+00   5.0000000000e+01   4.7959183673e-03
    5.0000000000e+01   1.0000000000e+02   1.0520000000e-03

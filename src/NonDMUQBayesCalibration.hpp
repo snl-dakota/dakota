@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDMUQBayesCalibration
-//- Description: Derived class for MUQ-based Bayesian inference
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version:
 
 #ifndef NOND_MUQ_BAYES_CALIBRATION_H
 #define NOND_MUQ_BAYES_CALIBRATION_H
@@ -19,16 +13,12 @@
 #include "NonDBayesCalibration.hpp"
 
 #include "MUQ/Modeling/WorkGraph.h"
-#include "MUQ/SamplingAlgorithms/MarkovChain.h"
+#include "MUQ/SamplingAlgorithms/SingleChainMCMC.h"
 #include "MUQ/SamplingAlgorithms/SampleCollection.h"
-#include "MUQ/SamplingAlgorithms/MCMCFactory.h"
-#include "MUQ/SamplingAlgorithms/SamplingProblem.h"
-#include "MUQ/SamplingAlgorithms/SamplingState.h"
 #include "MUQ/Modeling/LinearAlgebra/IdentityOperator.h"
-#include "MUQ/Modeling/Distributions/Gaussian.h"
 #include "MUQ/Modeling/Distributions/Density.h"
 #include "MUQ/Modeling/Distributions/DensityProduct.h"
-
+#include "MUQ/Modeling/Distributions/Gaussian.h"
 
 namespace Dakota {
 
@@ -53,7 +43,7 @@ public:
   //
 
   /// standard constructor
-  NonDMUQBayesCalibration(ProblemDescDB& problem_db, Model& model);
+  NonDMUQBayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
   ~NonDMUQBayesCalibration();
 
@@ -64,6 +54,10 @@ protected:
   //
 
   void calibrate();
+
+  
+  void map_pre_solve() override;
+
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   /// convenience function to print calibration parameters, e.g., for
@@ -104,14 +98,14 @@ protected:
 
   std::shared_ptr<muq::Modeling::WorkGraph> workGraph;
 
-  std::shared_ptr<muq::Modeling::IdentityOperator>            parameterPtr;
-  std::shared_ptr<muq::Modeling::Distribution>                distPtr;
-  std::shared_ptr<muq::Modeling::DensityProduct>              posteriorPtr;
-  std::shared_ptr<MUQLikelihood>                              MUQLikelihoodPtr;
-  std::shared_ptr<MUQPrior>    MUQPriorPtr;
+  std::shared_ptr<muq::Modeling::IdentityOperator> parameterPtr;
+  std::shared_ptr<muq::Modeling::DensityProduct>   posteriorPtr;
+  std::shared_ptr<MUQLikelihood>                   MUQLikelihoodPtr;
+  std::shared_ptr<MUQPrior>                        MUQPriorPtr; // Used by all MUQ MCMC methods except DILI
+  std::shared_ptr<muq::Modeling::Gaussian>         muqGaussianPrior; // Used by DILI only
 
-  std::shared_ptr<muq::SamplingAlgorithms::SingleChainMCMC>   mcmc;
-  std::shared_ptr<muq::SamplingAlgorithms::SampleCollection>  samps;
+  std::shared_ptr<muq::SamplingAlgorithms::SingleChainMCMC>  mcmc;
+  std::shared_ptr<muq::SamplingAlgorithms::SampleCollection> samps;
 
   /// MCMC type ("dram" or "delayed_rejection" or "adaptive_metropolis" 
   /// or "metropolis_hastings" or "multilevel",  within QUESO) 
@@ -132,45 +126,121 @@ protected:
   /// initial guess (user-specified or default initial values)
   RealVector init_point;
 
+  /// DR num stages
+  int drNumStages;
+
+  /// DR scale type
+  String drScaleType;
+
+  /// DR scale
+  Real drScale;
+
+  /// AM period num steps
+  int amPeriodNumSteps;
+
+  /// AM staring step
+  int amStartingStep;
+
+  /// AM scale
+  Real amScale;
+
+  /// MALA step size
+  Real malaStepSize;
+
+  /// DILI Hessian type
+  String diliHessianType;
+
+  /// DILI adaptation interval
+  int diliAdaptInterval;
+
+  /// DILI adaptation start
+  int diliAdaptStart;
+
+  /// DILI adaptation end
+  int diliAdaptEnd;
+
+  /// DILI initial weight
+  int diliInitialWeight;
+
+  /// DILI Hessian tolerance
+  Real diliHessTolerance;
+
+  /// DILI LIS tolerance
+  Real diliLISTolerance;
+
+  /// DILI stochastic eigensolver maximum number of eigenvalues to compute
+  int diliSesNumEigs;
+
+  /// DILI stochastic eigensolver relative tolerance
+  Real diliSesRelTol;
+
+  /// DILI stochastic eigensolver absolute tolerance
+  Real diliSesAbsTol;
+
+  /// DILI stochastic eigensolver expected number of eigenvalues that are larger than the tolerances
+  int diliSesExpRank;
+
+  /// DILI stochastic eigensolver oversampling factor
+  int diliSesOversFactor;
+
+  /// DILI stochastic eigensolver block size
+  int diliSesBlockSize;
+
 private:
 
   //
   // - Heading: Data
   //
-  
 
 };
 
-class MUQLikelihood : public muq::Modeling::Density {
+class MUQLikelihood : public muq::Modeling::DensityBase {
 
 public:
 
-  inline MUQLikelihood(NonDMUQBayesCalibration* nond_muq_ptr,
-    std::shared_ptr<muq::Modeling::Distribution> distPtr) :
-    muq::Modeling::Density(distPtr), nonDMUQInstancePtr(nond_muq_ptr) {};
+  inline MUQLikelihood( NonDMUQBayesCalibration       * nond_muq_ptr
+                      , Eigen::VectorXi         const & input_sizes
+                      )
+    : muq::Modeling::DensityBase(input_sizes)
+    , nonDMUQInstancePtr        (nond_muq_ptr)
+  {
+    // Nothing extra to do
+  };
 
   double LogDensityImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs);
+
+  Eigen::VectorXd GradLogDensityImpl(unsigned int wrt,
+                                     muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs);
 
 protected:
 
 private:
 
-    NonDMUQBayesCalibration* nonDMUQInstancePtr;
+  NonDMUQBayesCalibration * nonDMUQInstancePtr;
 };
 
-class MUQPrior : public muq::Modeling::Density {
+class MUQPrior : public muq::Modeling::DensityBase {
 public:
 
-  inline MUQPrior(NonDMUQBayesCalibration* nond_muq_ptr, std::shared_ptr<muq::Modeling::Distribution> distPtr) :
-  muq::Modeling::Density(distPtr), nonDMUQInstancePtr(nond_muq_ptr) { };
+  inline MUQPrior( NonDMUQBayesCalibration       * nond_muq_ptr
+                 , Eigen::VectorXi         const & input_sizes
+                 )
+    : muq::Modeling::DensityBase(input_sizes)
+    , nonDMUQInstancePtr        (nond_muq_ptr)
+  {
+    // Nothing extra to do
+  };
 
   double LogDensityImpl(muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs);
+
+  Eigen::VectorXd GradLogDensityImpl(unsigned int wrt,
+                                     muq::Modeling::ref_vector<Eigen::VectorXd> const& inputs);
 
 protected:
 
 private:
 
-  NonDMUQBayesCalibration* nonDMUQInstancePtr;
+  NonDMUQBayesCalibration * nonDMUQInstancePtr;
 
 };
 

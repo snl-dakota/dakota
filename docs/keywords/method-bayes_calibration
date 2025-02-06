@@ -49,7 +49,7 @@ uncertain variables. Correlated priors are only supported for
 unbounded normal, untruncated lognormal, uniform, exponential, gumbel,
 frechet, and weibull distributions and require specification of
 ``standardized_space``, for example, for QUESO
-:ref:`method-bayes_calibration-queso-standardized_space<method-bayes_calibration-queso-standardized_space>`
+:dakkw:`method-bayes_calibration-queso-standardized_space`
 
 Note that as of Dakota 6.2, the field responses and associated field
 data may be used with QUESO and DREAM.  That is, the user can specify

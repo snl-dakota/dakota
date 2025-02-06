@@ -11,13 +11,13 @@ Test Number 0 succeeded
                      -2.5310251917e+00
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-            x1  7.7496170561e-01  3.7545319340e-01 -4.2746331081e-01 -7.7186365326e-01
-            x2  7.1915791865e-01  5.4806446851e-01  3.0224343853e-01 -9.8688294658e-01
+            x1  7.7496170540e-01  3.7545319343e-01 -4.2746330906e-01 -7.7186365544e-01
+            x2  7.1915791841e-01  5.4806446857e-01  3.0224343944e-01 -9.8688294680e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-          f1_1 -2.2302344395e-01  7.3243886033e-01 -7.8991184313e-02 -2.4912824383e-01
-          f2_1  2.2503829439e-01  3.7545319340e-01  4.2746331081e-01 -7.7186365326e-01
-Information gained from prior to posterior = 5.0049245705e+00
+          f1_1 -2.2302344329e-01  7.3243885999e-01 -7.8991184391e-02 -2.4912824399e-01
+          f2_1  2.2503829460e-01  3.7545319343e-01  4.2746330906e-01 -7.7186365544e-01
+Information gained from prior to posterior = 5.0049245757e+00
 Test Number 1 succeeded
 Model evidence (Monte Carlo) = 5.4439141944e-03
 Model evidence (Laplace) = 6.1903418610e-03
@@ -33,10 +33,10 @@ Model evidence (Laplace) = 6.1903418610e-03
                      -3.9173195529e+00
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-            x1  5.0659506143e-01  4.7344444221e-01 -4.4162546229e-01 -6.4463529586e-01
-            x2  4.7015699325e-01  4.5046332147e-01  7.7862506973e-01 -4.3751549380e-01
+            x1  5.0659507306e-01  4.7344444685e-01 -4.4162548463e-01 -6.4463530045e-01
+            x2  4.7015701126e-01  4.5046332830e-01  7.7862501682e-01 -4.3751559166e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-          f1_1 -1.0519128048e-01  6.3577660675e-01 -2.7072523893e-01 -2.2021726067e-02
-          f2_1  4.9340493857e-01  4.7344444221e-01  4.4162546229e-01 -6.4463529586e-01
-Information gained from prior to posterior = 2.2738476145e+00
+          f1_1 -1.0519126218e-01  6.3577661106e-01 -2.7072529139e-01 -2.2021643704e-02
+          f2_1  4.9340492694e-01  4.7344444685e-01  4.4162548463e-01 -6.4463530045e-01
+Information gained from prior to posterior = 2.2738474522e+00

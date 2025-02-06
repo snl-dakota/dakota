@@ -4,7 +4,7 @@ Description::
 This method keyword allows testing of experimental (beta) Coliny
 (Scolib) optimization solvers during software development.  It is
 intended primarily for developer use.  Additional information on
-Coliny solvers is available at :ref:`topic-package_scolib<topic-package_scolib>`.
+Coliny solvers is available at :ref:`topic-package_scolib`.
 Topics::
 package_scolib, package_coliny
 Examples::

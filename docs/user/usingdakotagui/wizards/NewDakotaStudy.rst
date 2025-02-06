@@ -12,9 +12,10 @@ with Dakota input file syntax, but would like to have a new Dakota study up and 
 That being said, this wizard is usually not the first step for a new Dakota study.  There are two prerequisites to using this wizard.  You will need:
 
 - A parameterized simulation model that can be recognized as having variables and responses.  We recommend either
-  using a :ref:`BMF file <bmf-main>` or a :ref:`Next-Gen Workflow file that wraps an external simulation model. <gui-nestedworkflowtutorial-main>`
+  using a :ref:`simple text file containing input parameter values <gui-simulation-models-ini-json-yaml>`
+  or a :ref:`Next-Gen Workflow file that wraps an external simulation model. <gui-nestedworkflowtutorial-main>`
 - An interface for Dakota to communicate with the simulation model.  We recommend either using
-  :ref:`a Python driver script <wizards-scriptdriver-main>` or a :ref:`Next-Gen Workflow file that wraps an external simulation model. <gui-nestedworkflowtutorial-main>`
+  a :ref:`Next-Gen Workflow file that wraps an external simulation model. <gui-nestedworkflowtutorial-main>`
   
 You can open this wizard via "File > New > Dakota Study".
 
@@ -145,22 +146,23 @@ Page 6 (Interface Settings)
 
 The final page of the wizard is concerned with configuring Dakota's interface block.
 
-- **Analysis Driver Selection** Use this file selector to select an analysis driver for Dakota.  If you used
-  the :ref:`Script-Based Dakota Driver wizard <wizards-scriptdriver-main>`, select the generated .im file.  If
-  you :ref:`created a nested workflow <gui-nestedworkflowtutorial-main>`, select the .iwf file.  After selecting, hit the
-  Preview button to see that the Dakota Study wizard has automatically figured out the correct settings for the interface block based on
-  our analysis driver type.
-- **Evaluation concurrency (number of threads)** Use this option to configure how multithreaded you want Dakota to be.
-- **Analysis Driver Parameter/Result File Options** Using the first two checkboxes, you can configure whether Dakota should keep the parameter/results files for
-  each evaluation, and whether each file should be tagged with a number indicating the evaluation.
-  
-  - Consult :ref:`this section <couplingtosimulations-paramformat>` for more information on the format Dakota uses for parameters and results when communicating with an external analysis driver. 
+.. note::
 
-- **Working Directory Options** Finally, you can also configure whether Dakota's analysis driver should run in a private working directory for each evaluation, and whether
-  those working directories should similarly be tagged and saved after each evaluation completes.
+   If you see a warning at the top of the page that says, "Analysis driver string appears to contain pre-processor markup. Make sure Dakota is invoked with an appropriate pre-processor,"
+   this is usually triggered by selecting a Next-Gen Workflow IWF file as your chosen driver, which means the markup used will be ``{DRIVER}``. You can smoothly launch Dakota with this
+   type of pre-processor markup using either the :ref:`New Dakota Wrapper Workflow wizard <ngw-analysisdrivers-sandwich>` or the :ref:`"Dakota (Workflow)" run configuration <gui-run-configurations-workflow>`.
+
+- **Analysis Driver:** This section allows you to select your driver. The primary use case is to use the "Spawn driver subprocess (fork/system)" option, which instructs Dakota
+  to launch a separate subprocess for the driver. If you :ref:`created a nested workflow <gui-nestedworkflowtutorial-main>`, the IWF file itself will be your target workflow, even though it is
+  not executable (see above note). You can also alternately use this section to select a built-in Dakota driver by selecting the "Direct driver" radio option.
+- **Working Directory:** Use the dropdown to select how you want Dakota to configure its working directory. There are several ways to configure tagging/saving working directories and files, but the
+  wizard provides the most common options. Additionally, this section provides you with a "Files to Link/Copy" area for adding files that Dakota must link/copy into working directories. This is critically
+  important to specify manually, as it's often not possible for the wizard to automatically determine which files need to be included as part of the core analysis driver file.
+- **Evaluation concurrency (number of threads):** Use this option to configure how multithreaded you want Dakota to be.  
+- **Failure capture option:** Use this option to configure the :ref:`failure capture option <interface-failure_capture>` you want Dakota to use.
   
 ==========
 Next Steps
 ==========
 
-If you used an .iwf file as your analysis driver, learn about :ref:`the final step <ngw-analysisdrivers-sandwich>` required to run your Dakota Study using Next-Gen Workflow.
+If you used an IWF file as your analysis driver, learn about :ref:`the final step <ngw-analysisdrivers-sandwich>` required to run your Dakota Study using Next-Gen Workflow.

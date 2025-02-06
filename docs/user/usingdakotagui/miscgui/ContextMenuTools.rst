@@ -65,8 +65,8 @@ If you have a text file that you'd like to apply pre-processing markup to, right
    :alt: Markup File dialog
 
 At this stage, you may wish to manually apply your favorite pre-processing markup style to the file contents by editing directly into the text window.
-If you have another file that has input parameters already defined (for instance, a [BMF file](BMF.html)), use the "Import variables" file importer to populate
-this dialog with information about what variable labels to use for pre-processing:
+If you have another file that has input parameters already defined, use the "Import variables" file importer to populate this dialog with information
+about what variable labels to use for pre-processing:
 
 .. image:: img/MarkupFile_3.png
    :alt: Markup File dialog with stamps
@@ -105,7 +105,7 @@ When you choose this option, the following dialog will appear:
    :alt: Recognize Analysis Driver dialog
 
 This dialog allows you to define an interface manifest for your analysis driver.  Use the “Add” and “Remove” buttons to create parameter and result labels.  Or,
-use the file selector labeled “Already have parameter and result labels defined?” to import parameter and response labels from another source (such as a :ref:`BMF file <bmf-main>`,
+use the file selector labeled “Already have parameter and result labels defined?” to import parameter and response labels from another source (such as
 an :ref:`IWF file <ngw-main>`, or even a pre-existing Dakota study).
 
 When you’re done, the dialog should look something like the following:

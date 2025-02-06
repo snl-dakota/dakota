@@ -1,0 +1,17 @@
+Blurb::
+Sample covariance scaling used to define proposal covariance
+
+
+Description::
+Scaling of the sample covariance used to define the proposal covariance. Used by the AM or DRAM MCMC algorithms.
+
+Topics::
+bayesian_calibration
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

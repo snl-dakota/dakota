@@ -5,7 +5,7 @@ This option transforms the inference process (MCMC sampling
 and any emulator model management) into a standardized probability space.
 
 The variable transformations performed are as described in
-:ref:`method-polynomial_chaos-askey<method-polynomial_chaos-askey>`.
+:dakkw:`method-polynomial_chaos-askey`.
 
 *Default Behavior*
 

@@ -7,7 +7,7 @@ likelihood), where this Hessian is defined from either a Gauss-Newton
 approximation (using only first derivatives of the calibration terms)
 or a full Hessian (using values, first derivatives, and second
 derivatives of the calibration terms).  If this Hessian is
-indeterminate, it will be corrected as described in  :cite:p:`TheoMan`
+indeterminate, it will be corrected as described in :ref:`uq:bayes`.
 
 *Default Behavior*
 The default is ``prior`` based proposal covariance.  This is a more

@@ -1,15 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        DataMethod
-//- Description:  Class implementation
-//- Owner:        Mike Eldred
 
 #include "DataMethod.hpp"
 #include "DataModel.hpp" // for C3 FT enumerations
@@ -126,11 +122,14 @@ DataMethodRep::DataMethodRep():
   // NonD & DACE
   numSamples(0), fixedSeedFlag(false),
   fixedSequenceFlag(false), //default is variable sampling patterns
-  vbdFlag(false),
-  vbdDropTolerance(-1.),backfillFlag(false), pcaFlag(false),
+  vbdFlag(false),vbdDropTolerance(-1.),
+  vbdViaSamplingMethod(VBD_PICK_AND_FREEZE),vbdViaSamplingNumBins(-1),
+  backfillFlag(false), pcaFlag(false),
   percentVarianceExplained(0.95), wilksFlag(false), wilksOrder(1),
   wilksConfidenceLevel(0.95), wilksSidedInterval(ONE_SIDED_UPPER),
   // NonD
+  toleranceIntervalsFlag(false), tiCoverage(0.95), tiConfidenceLevel(0.90),
+  stdRegressionCoeffs(false),
   respScalingFlag(false), vbdOrder(0), covarianceControl(DEFAULT_COVARIANCE),
   rngName("mt19937"), refinementType(Pecos::NO_REFINEMENT),
   refinementControl(Pecos::NO_CONTROL),
@@ -139,8 +138,13 @@ DataMethodRep::DataMethodRep():
   piecewiseBasis(false), expansionBasisType(Pecos::DEFAULT_BASIS),
   quadratureOrder(USHRT_MAX), sparseGridLevel(USHRT_MAX),
   expansionOrder(USHRT_MAX), collocationPoints(SZ_MAX),
-  expansionSamples(SZ_MAX), truthPilotConstraint(false),
-  ensembleSampSolnMode(ONLINE_PILOT), allocationTarget(TARGET_MEAN),
+  expansionSamples(SZ_MAX),  ensemblePilotSolnMode(ONLINE_PILOT),
+  pilotGroupSampling(SHARED_PILOT), groupThrottleType(NO_GROUP_THROTTLE),
+  groupSizeThrottle(USHRT_MAX), rCondBestThrottle(SZ_MAX),
+  rCondTolThrottle(DBL_MAX), truthPilotConstraint(false),
+  dagRecursionType(NO_GRAPH_RECURSION), dagDepthLimit(USHRT_MAX),
+  modelSelectType(NO_MODEL_SELECTION), relaxFixedFactor(0.),
+  relaxRecursiveFactor(0.), allocationTarget(TARGET_MEAN),
   useTargetVarianceOptimizationFlag(false), qoiAggregation(QOI_AGGREGATION_SUM),
   convergenceToleranceType(CONVERGENCE_TOLERANCE_TYPE_RELATIVE),
   convergenceToleranceTarget(CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT),
@@ -150,13 +154,22 @@ DataMethodRep::DataMethodRep():
   regressionL2Penalty(0.), crossValidation(false), crossValidNoiseOnly(false),
   //adaptedBasisInitLevel(0),
   adaptedBasisAdvancements(3), normalizedCoeffs(false), tensorGridFlag(false),
-  sampleType(SUBMETHOD_DEFAULT), dOptimal(false), numCandidateDesigns(0),
+  sampleType(SUBMETHOD_DEFAULT), rank1LatticeFlag(false),
+  noRandomShiftFlag(false), log2MaxPoints(0), kuo(false),
+  cools_kuo_nuyens(false), naturalOrdering(false),
+  radicalInverseOrdering(false), digitalNetFlag(false),
+  noDigitalShiftFlag(false), noScramblingFlag(false),
+  mostSignificantBitFirst(false), leastSignificantBitFirst(false),
+  numberOfBits(0), scrambleSize(64), joe_kuo(false), sobol_order_2(false), 
+  grayCodeOrdering(false), dOptimal(false), numCandidateDesigns(0),
   //reliabilitySearchType(MV),
   integrationRefine(NO_INT_REFINE), optSubProbSolver(SUBMETHOD_DEFAULT),
   numericalSolveMode(NUMERICAL_FALLBACK),
-  multilevAllocControl(DEFAULT_MLMF_CONTROL),
-  multilevEstimatorRate(2.), multilevDiscrepEmulation(DEFAULT_EMULATION),
-  finalStatsType(QOI_STATISTICS), finalMomentsType(Pecos::STANDARD_MOMENTS),
+  estVarMetricType(DEFAULT_ESTVAR_METRIC), estVarMetricNormOrder(2.),
+  multilevAllocControl(DEFAULT_MLMF_CONTROL), multilevEstimatorRate(2.),
+  multilevDiscrepEmulation(DEFAULT_EMULATION),
+  finalStatsType(DEFAULT_FINAL_STATS),
+  finalMomentsType(Pecos::STANDARD_MOMENTS),
   distributionType(CUMULATIVE), responseLevelTarget(PROBABILITIES),
   responseLevelTargetReduce(COMPONENT), chainSamples(0), buildSamples(0),
   samplesOnEmulator(0), emulatorOrder(0), emulatorType(NO_EMULATOR),
@@ -182,6 +195,27 @@ DataMethodRep::DataMethodRep():
   generatePosteriorSamples(false), evaluatePosteriorDensity(false),
   // Wasabi
   numPushforwardSamples(10000),
+  // MUQ
+  drNumStages(3),
+  drScaleType("Power"),
+  drScale(2.0),
+  amPeriodNumSteps(100),
+  amStartingStep(100),
+  amScale(1.0),
+  malaStepSize(1.0),
+  diliHessianType("GaussNewton"),
+  diliAdaptInterval(-1),
+  diliAdaptStart(1),
+  diliAdaptEnd(-1),
+  diliInitialWeight(100),
+  diliHessTolerance(1.0e-4),
+  diliLISTolerance(0.1),
+  diliSesNumEigs(2),
+  diliSesRelTol(0.001),
+  diliSesAbsTol(0.0),
+  diliSesExpRank(2),
+  diliSesOversFactor(2),
+  diliSesBlockSize(2),
   // Parameter Study
   numSteps(0), pstudyFileFormat(TABULAR_ANNOTATED), pstudyFileActive(false),
   // Verification
@@ -293,14 +327,17 @@ void DataMethodRep::write(MPIPackBuffer& s) const
 
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag
-    << vbdFlag << vbdDropTolerance << backfillFlag << pcaFlag
+    << vbdFlag << vbdDropTolerance
+    << vbdViaSamplingMethod << vbdViaSamplingNumBins
+    << backfillFlag << pcaFlag
     << percentVarianceExplained << wilksFlag << wilksOrder
     << wilksConfidenceLevel << wilksSidedInterval;
 
   // NonD
-  s << respScalingFlag << vbdOrder << covarianceControl << rngName
-    << refinementType << refinementControl << nestingOverride << growthOverride
-    << expansionType << piecewiseBasis << expansionBasisType
+  s << toleranceIntervalsFlag << tiCoverage << tiConfidenceLevel
+    << stdRegressionCoeffs << respScalingFlag << vbdOrder << covarianceControl
+    << rngName << refinementType << refinementControl << nestingOverride
+    << growthOverride << expansionType << piecewiseBasis << expansionBasisType
     << quadratureOrderSeq << sparseGridLevelSeq << expansionOrderSeq
     << collocationPointsSeq << expansionSamplesSeq << quadratureOrder
     << sparseGridLevel << expansionOrder << collocationPoints
@@ -311,20 +348,33 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << crossValidNoiseOnly //<< adaptedBasisInitLevel
     << adaptedBasisAdvancements << normalizedCoeffs << pointReuse
     << tensorGridFlag << tensorGridOrder
-    << importExpansionFile << exportExpansionFile << sampleType << dOptimal
-    << numCandidateDesigns //<< reliabilitySearchType
+    << importExpansionFile << exportExpansionFile << sampleType
+    << rank1LatticeFlag <<  noRandomShiftFlag << log2MaxPoints << kuo 
+    << cools_kuo_nuyens << naturalOrdering << radicalInverseOrdering 
+    << digitalNetFlag <<  noDigitalShiftFlag <<  noScramblingFlag
+    << mostSignificantBitFirst << leastSignificantBitFirst << numberOfBits
+    << scrambleSize << joe_kuo << sobol_order_2 << grayCodeOrdering
+    << dOptimal << numCandidateDesigns //<< reliabilitySearchType
     << reliabilityIntegration << integrationRefine << refineSamples
-    << optSubProbSolver << numericalSolveMode
-    << pilotSamples << ensembleSampSolnMode << truthPilotConstraint
+    << optSubProbSolver << numericalSolveMode << estVarMetricType
+    << estVarMetricNormOrder << pilotSamples << ensemblePilotSolnMode
+    << pilotGroupSampling << groupThrottleType << groupSizeThrottle
+    << rCondBestThrottle << rCondTolThrottle
+    << truthPilotConstraint << dagRecursionType << dagDepthLimit
+    << modelSelectType << relaxFactorSequence << relaxFixedFactor
+    << relaxRecursiveFactor << allocationTarget
+    << useTargetVarianceOptimizationFlag
+    << qoiAggregation << scalarizationRespCoeffs
+    << convergenceToleranceType << convergenceToleranceTarget
     << multilevAllocControl << multilevEstimatorRate
     << multilevDiscrepEmulation << finalStatsType << finalMomentsType
     << distributionType << responseLevelTarget << responseLevelTargetReduce
     << responseLevels << probabilityLevels << reliabilityLevels
-    << genReliabilityLevels << chainSamples << buildSamples << samplesOnEmulator
-    << emulatorOrder << emulatorType << mcmcType << standardizedSpace
-    << adaptPosteriorRefine << logitTransform << gpmsaNormalize
-    << posteriorStatsKL << posteriorStatsMutual << posteriorStatsKDE
-    << chainDiagnostics << chainDiagnosticsCI
+    << genReliabilityLevels << chainSamples << buildSamples
+    << samplesOnEmulator << emulatorOrder << emulatorType << mcmcType
+    << standardizedSpace << adaptPosteriorRefine << logitTransform
+    << gpmsaNormalize << posteriorStatsKL << posteriorStatsMutual
+    << posteriorStatsKDE << chainDiagnostics << chainDiagnosticsCI
     << modelEvidence << modelEvidLaplace << modelEvidMC
     << proposalCovType << priorPropCovMult << proposalCovUpdatePeriod
     << proposalCovInputType << proposalCovData << proposalCovFile
@@ -341,12 +391,30 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << batchSize << batchSizeExplore
     << mutualInfoKSG2 << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << numPushforwardSamples
+    << drNumStages
+    << drScaleType
+    << drScale
+    << amPeriodNumSteps
+    << amStartingStep
+    << amScale
+    << malaStepSize
+    << diliHessianType
+    << diliAdaptInterval
+    << diliAdaptStart
+    << diliAdaptEnd
+    << diliInitialWeight
+    << diliHessTolerance
+    << diliLISTolerance
+    << diliSesNumEigs
+    << diliSesRelTol
+    << diliSesAbsTol
+    << diliSesExpRank
+    << diliSesOversFactor
+    << diliSesBlockSize
     << dataDistType << dataDistCovInputType << dataDistMeans
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
-    << generatePosteriorSamples << evaluatePosteriorDensity << qoiAggregation 
-    << allocationTarget << convergenceToleranceType
-    << useTargetVarianceOptimizationFlag << scalarizationRespCoeffs;
+    << generatePosteriorSamples << evaluatePosteriorDensity;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
@@ -461,14 +529,17 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
 
   // NonD & DACE
   s >> numSamples >> fixedSeedFlag >> fixedSequenceFlag
-    >> vbdFlag >> vbdDropTolerance >> backfillFlag >> pcaFlag
+    >> vbdFlag >> vbdDropTolerance
+    >> vbdViaSamplingMethod >> vbdViaSamplingNumBins
+    >> backfillFlag >> pcaFlag
     >> percentVarianceExplained >> wilksFlag >> wilksOrder
     >> wilksConfidenceLevel >> wilksSidedInterval;
 
   // NonD
-  s >> respScalingFlag >> vbdOrder >> covarianceControl >> rngName
-    >> refinementType >> refinementControl >> nestingOverride >> growthOverride
-    >> expansionType >> piecewiseBasis >> expansionBasisType
+  s >> toleranceIntervalsFlag >> tiCoverage >> tiConfidenceLevel
+    >> stdRegressionCoeffs >> respScalingFlag >> vbdOrder >> covarianceControl
+    >> rngName >> refinementType >> refinementControl >> nestingOverride
+    >> growthOverride >> expansionType >> piecewiseBasis >> expansionBasisType
     >> quadratureOrderSeq >> sparseGridLevelSeq >> expansionOrderSeq
     >> collocationPointsSeq >> expansionSamplesSeq >> quadratureOrder
     >> sparseGridLevel >> expansionOrder >> collocationPoints
@@ -479,20 +550,33 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> crossValidNoiseOnly //>> adaptedBasisInitLevel
     >> adaptedBasisAdvancements >> normalizedCoeffs >> pointReuse
     >> tensorGridFlag >> tensorGridOrder
-    >> importExpansionFile >> exportExpansionFile >> sampleType >> dOptimal
-    >> numCandidateDesigns //>> reliabilitySearchType
+    >> importExpansionFile >> exportExpansionFile >> sampleType
+    >> rank1LatticeFlag >>  noRandomShiftFlag >> log2MaxPoints >> kuo 
+    >> cools_kuo_nuyens >> naturalOrdering >> radicalInverseOrdering 
+    >> digitalNetFlag >>  noDigitalShiftFlag >>  noScramblingFlag
+    >> mostSignificantBitFirst >> leastSignificantBitFirst >> numberOfBits
+    >> scrambleSize >> joe_kuo >> sobol_order_2 >> grayCodeOrdering
+    >> dOptimal >> numCandidateDesigns //>> reliabilitySearchType
     >> reliabilityIntegration >> integrationRefine >> refineSamples
-    >> optSubProbSolver >> numericalSolveMode
-    >> pilotSamples >> ensembleSampSolnMode >> truthPilotConstraint
+    >> optSubProbSolver >> numericalSolveMode >> estVarMetricType
+    >> estVarMetricNormOrder >> pilotSamples >> ensemblePilotSolnMode
+    >> pilotGroupSampling >> groupThrottleType >> groupSizeThrottle
+    >> rCondBestThrottle >> rCondTolThrottle
+    >> truthPilotConstraint >> dagRecursionType >> dagDepthLimit
+    >> modelSelectType >> relaxFactorSequence >> relaxFixedFactor
+    >> relaxRecursiveFactor >> allocationTarget
+    >> useTargetVarianceOptimizationFlag
+    >> qoiAggregation >> scalarizationRespCoeffs
+    >> convergenceToleranceType >> convergenceToleranceTarget
     >> multilevAllocControl >> multilevEstimatorRate
     >> multilevDiscrepEmulation >> finalStatsType >> finalMomentsType
     >> distributionType >> responseLevelTarget >> responseLevelTargetReduce
     >> responseLevels >> probabilityLevels >> reliabilityLevels
-    >> genReliabilityLevels >> chainSamples >> buildSamples >> samplesOnEmulator
-    >> emulatorOrder >> emulatorType >> mcmcType >> standardizedSpace
-    >> adaptPosteriorRefine >> logitTransform >> gpmsaNormalize
-    >> posteriorStatsKL >> posteriorStatsMutual >> posteriorStatsKDE
-    >> chainDiagnostics >> chainDiagnosticsCI
+    >> genReliabilityLevels >> chainSamples >> buildSamples
+    >> samplesOnEmulator >> emulatorOrder >> emulatorType >> mcmcType
+    >> standardizedSpace >> adaptPosteriorRefine >> logitTransform
+    >> gpmsaNormalize >> posteriorStatsKL >> posteriorStatsMutual
+    >> posteriorStatsKDE >> chainDiagnostics >> chainDiagnosticsCI
     >> modelEvidence >> modelEvidLaplace >> modelEvidMC
     >> proposalCovType >> priorPropCovMult >> proposalCovUpdatePeriod
     >> proposalCovInputType >> proposalCovData >> proposalCovFile
@@ -509,12 +593,30 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> batchSize >> batchSizeExplore
     >> mutualInfoKSG2 >> numChains >> numCR >> crossoverChainPairs
     >> grThreshold >> jumpStep >> numPushforwardSamples
+    >> drNumStages
+    >> drScaleType
+    >> drScale
+    >> amPeriodNumSteps
+    >> amStartingStep
+    >> amScale
+    >> malaStepSize
+    >> diliHessianType
+    >> diliAdaptInterval
+    >> diliAdaptStart
+    >> diliAdaptEnd
+    >> diliInitialWeight
+    >> diliHessTolerance
+    >> diliLISTolerance
+    >> diliSesNumEigs
+    >> diliSesRelTol
+    >> diliSesAbsTol
+    >> diliSesExpRank
+    >> diliSesOversFactor
+    >> diliSesBlockSize
     >> dataDistType >> dataDistCovInputType >> dataDistMeans
     >> dataDistCovariance >> dataDistFile >> posteriorDensityExportFilename
     >> posteriorSamplesExportFilename >> posteriorSamplesImportFilename
-    >> generatePosteriorSamples >> evaluatePosteriorDensity >> qoiAggregation 
-    >> allocationTarget >> convergenceToleranceType
-    >> useTargetVarianceOptimizationFlag >> scalarizationRespCoeffs;
+    >> generatePosteriorSamples >> evaluatePosteriorDensity;
 
   // Parameter Study
   s >> finalPoint >> stepVector >> numSteps >> stepsPerVariable >> listOfPoints
@@ -629,14 +731,17 @@ void DataMethodRep::write(std::ostream& s) const
 
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag
-    << vbdFlag << vbdDropTolerance << backfillFlag << pcaFlag
+    << vbdFlag << vbdDropTolerance
+    << vbdViaSamplingMethod << vbdViaSamplingNumBins
+    << backfillFlag << pcaFlag
     << percentVarianceExplained << wilksFlag << wilksOrder
     << wilksConfidenceLevel << wilksSidedInterval;
 
   // NonD
-  s << respScalingFlag << vbdOrder << covarianceControl << rngName
-    << refinementType << refinementControl << nestingOverride << growthOverride
-    << expansionType << piecewiseBasis << expansionBasisType
+  s << toleranceIntervalsFlag << tiCoverage << tiConfidenceLevel
+    << stdRegressionCoeffs << respScalingFlag << vbdOrder << covarianceControl
+    << rngName << refinementType << refinementControl << nestingOverride
+    << growthOverride << expansionType << piecewiseBasis << expansionBasisType
     << quadratureOrderSeq << sparseGridLevelSeq << expansionOrderSeq
     << collocationPointsSeq << expansionSamplesSeq << quadratureOrder
     << sparseGridLevel << expansionOrder << collocationPoints
@@ -647,20 +752,33 @@ void DataMethodRep::write(std::ostream& s) const
     << crossValidNoiseOnly //<< adaptedBasisInitLevel
     << adaptedBasisAdvancements << normalizedCoeffs << pointReuse
     << tensorGridFlag << tensorGridOrder
-    << importExpansionFile << exportExpansionFile << sampleType << dOptimal
-    << numCandidateDesigns //<< reliabilitySearchType
+    << importExpansionFile << exportExpansionFile << sampleType
+    << rank1LatticeFlag <<  noRandomShiftFlag << log2MaxPoints << kuo 
+    << cools_kuo_nuyens << naturalOrdering << radicalInverseOrdering 
+    << digitalNetFlag <<  noDigitalShiftFlag <<  noScramblingFlag
+    << mostSignificantBitFirst << leastSignificantBitFirst << numberOfBits
+    << scrambleSize << joe_kuo << sobol_order_2 << grayCodeOrdering
+    << dOptimal << numCandidateDesigns //<< reliabilitySearchType
     << reliabilityIntegration << integrationRefine << refineSamples
-    << optSubProbSolver << numericalSolveMode
-    << pilotSamples << ensembleSampSolnMode << truthPilotConstraint
+    << optSubProbSolver << numericalSolveMode << estVarMetricType
+    << estVarMetricNormOrder << pilotSamples << ensemblePilotSolnMode
+    << pilotGroupSampling << groupThrottleType << groupSizeThrottle
+    << rCondBestThrottle << rCondTolThrottle
+    << truthPilotConstraint << dagRecursionType << dagDepthLimit
+    << modelSelectType << relaxFactorSequence << relaxFixedFactor
+    << relaxRecursiveFactor << allocationTarget
+    << useTargetVarianceOptimizationFlag
+    << qoiAggregation << scalarizationRespCoeffs
+    << convergenceToleranceType << convergenceToleranceTarget
     << multilevAllocControl << multilevEstimatorRate
     << multilevDiscrepEmulation << finalStatsType << finalMomentsType
     << distributionType << responseLevelTarget << responseLevelTargetReduce
     << responseLevels << probabilityLevels << reliabilityLevels
-    << genReliabilityLevels << chainSamples << buildSamples << samplesOnEmulator
-    << emulatorOrder << emulatorType << mcmcType << standardizedSpace
-    << adaptPosteriorRefine << logitTransform << gpmsaNormalize
-    << posteriorStatsKL << posteriorStatsMutual << posteriorStatsKDE
-    << chainDiagnostics << chainDiagnosticsCI
+    << genReliabilityLevels << chainSamples << buildSamples
+    << samplesOnEmulator << emulatorOrder << emulatorType << mcmcType
+    << standardizedSpace << adaptPosteriorRefine << logitTransform
+    << gpmsaNormalize << posteriorStatsKL << posteriorStatsMutual
+    << posteriorStatsKDE << chainDiagnostics << chainDiagnosticsCI
     << modelEvidence << modelEvidLaplace << modelEvidMC
     << proposalCovType << priorPropCovMult << proposalCovUpdatePeriod
     << proposalCovInputType << proposalCovData << proposalCovFile
@@ -677,12 +795,30 @@ void DataMethodRep::write(std::ostream& s) const
     << batchSize << batchSizeExplore
     << mutualInfoKSG2 << numChains << numCR << crossoverChainPairs
     << grThreshold << jumpStep << numPushforwardSamples
+    << drNumStages
+    << drScaleType
+    << drScale
+    << amPeriodNumSteps
+    << amStartingStep
+    << amScale
+    << malaStepSize
+    << diliHessianType
+    << diliAdaptInterval
+    << diliAdaptStart
+    << diliAdaptEnd
+    << diliInitialWeight
+    << diliHessTolerance
+    << diliLISTolerance
+    << diliSesNumEigs
+    << diliSesRelTol
+    << diliSesAbsTol
+    << diliSesExpRank
+    << diliSesOversFactor
+    << diliSesBlockSize
     << dataDistType << dataDistCovInputType << dataDistMeans
     << dataDistCovariance << dataDistFile << posteriorDensityExportFilename
     << posteriorSamplesExportFilename << posteriorSamplesImportFilename
-    << generatePosteriorSamples << evaluatePosteriorDensity << qoiAggregation 
-    << allocationTarget << convergenceToleranceType
-    << useTargetVarianceOptimizationFlag << scalarizationRespCoeffs;
+    << generatePosteriorSamples << evaluatePosteriorDensity;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints

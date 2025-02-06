@@ -2,8 +2,8 @@
 
 #  _______________________________________________________________________
 #
-#  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2022
+#  Dakota: Explore and predict with confidence.
+#  Copyright 2014-2024
 #  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 #  This software is distributed under the GNU Lesser General Public License.
 #  For more information, see the README file in the top Dakota directory.
@@ -60,7 +60,7 @@ if [ `uname` = "Darwin" ]; then
   DYLD_LIBRARY_PATH="${libpaths}:${DYLD_LIBRARY_PATH}"
   export DYLD_LIBRARY_PATH
 
-  gui_path="${execpath}/../gui/Dakota_UI_*.app/Contents/MacOS"
+  gui_path="${execpath}/../gui/Dakota_*.app/Contents/MacOS"
   # The explicit cd is a workaround for DakotaUI to find the JNI
   # surrogates lib. The gui_path isn't quoted here so the wildcard
   # will get evaluated and work across versions:

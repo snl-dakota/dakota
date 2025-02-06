@@ -1,7 +1,7 @@
 .. _`uq:ego`:
 
-Effcient Global Optimization
-============================
+Efficient Global Optimization
+=============================
 
 Efficient Global Optimization (EGO) was developed to facilitate the
 unconstrained minimization of expensive implicit response functions. The

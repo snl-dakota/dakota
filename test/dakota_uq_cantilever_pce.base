@@ -1353,72 +1353,72 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
 Coefficients of Polynomial Chaos Expansion for response_fn_2:
    4.4362615981e-01  He0  He0  He0  He0
   -7.2543997580e-02  He1  He0  He0  He0
-  -1.2486960406e-06  He0  He1  He0  He0
+  -1.2486960405e-06  He0  He1  He0  He0
    9.6238552134e-02  He0  He0  He1  He0
    9.6237882669e-02  He0  He0  He0  He1
    3.6571127225e-03  He2  He0  He0  He0
-  -4.6883398506e-07  He1  He1  He0  He0
-  -9.5086696400e-07  He0  He2  He0  He0
+  -4.6883398504e-07  He1  He1  He0  He0
+  -9.5086696398e-07  He0  He2  He0  He0
   -4.8389224160e-03  He1  He0  He1  He0
-  -1.0355189339e-07  He0  He1  He1  He0
+  -1.0355189340e-07  He0  He1  He1  He0
   -1.6326796344e-06  He0  He0  He2  He0
   -4.8397457083e-03  He1  He0  He0  He1
    1.2031420221e-06  He0  He1  He0  He1
-   3.4694461715e-07  He0  He0  He1  He1
+   3.4694461713e-07  He0  He0  He1  He1
   -1.3837576672e-06  He0  He0  He0  He2
   -1.8185044649e-04  He3  He0  He0  He0
   -1.2477968074e-06  He2  He1  He0  He0
-   4.3030306098e-07  He1  He2  He0  He0
+   4.3030306097e-07  He1  He2  He0  He0
   -5.1403237548e-07  He0  He3  He0  He0
    2.4071939863e-04  He2  He0  He1  He0
-   3.1632516635e-08  He1  He1  He1  He0
-  -2.3338372716e-07  He0  He2  He1  He0
-   5.3048027052e-07  He1  He0  He2  He0
+   3.1632516642e-08  He1  He1  He1  He0
+  -2.3338372717e-07  He0  He2  He1  He0
+   5.3048027051e-07  He1  He0  He2  He0
   -3.5526722574e-07  He0  He1  He2  He0
-  -4.9515602868e-07  He0  He0  He3  He0
+  -4.9515602870e-07  He0  He0  He3  He0
    2.3967294855e-04  He2  He0  He0  He1
    1.6343952834e-06  He1  He1  He0  He1
   -1.2607827097e-06  He0  He2  He0  He1
-  -9.7471942684e-07  He1  He0  He1  He1
-  -7.3277126842e-07  He0  He1  He1  He1
+  -9.7471942685e-07  He1  He0  He1  He1
+  -7.3277126844e-07  He0  He1  He1  He1
   -1.4784762395e-06  He0  He0  He2  He1
-   7.7253637359e-08  He1  He0  He0  He2
+   7.7253637352e-08  He1  He0  He0  He2
    6.9961549690e-07  He0  He1  He0  He2
   -1.4299849854e-06  He0  He0  He1  He2
   -3.6329293916e-07  He0  He0  He0  He3
    1.0037589052e-05  He4  He0  He0  He0
-  -5.7098887340e-07  He3  He1  He0  He0
-   2.5427564275e-07  He2  He2  He0  He0
-  -1.0779543209e-07  He1  He3  He0  He0
-   9.5523331836e-08  He0  He4  He0  He0
+  -5.7098887339e-07  He3  He1  He0  He0
+   2.5427564278e-07  He2  He2  He0  He0
+  -1.0779543208e-07  He1  He3  He0  He0
+   9.5523331841e-08  He0  He4  He0  He0
   -1.3332844091e-05  He3  He0  He1  He0
-   9.5828804019e-07  He2  He1  He1  He0
+   9.5828804021e-07  He2  He1  He1  He0
    5.0280259856e-07  He1  He2  He1  He0
    1.1694124050e-07  He0  He3  He1  He0
-  -2.6491888899e-07  He2  He0  He2  He0
-  -4.8644078379e-07  He1  He1  He2  He0
+  -2.6491888898e-07  He2  He0  He2  He0
+  -4.8644078380e-07  He1  He1  He2  He0
   -6.9788010824e-07  He0  He2  He2  He0
    3.0174358335e-07  He1  He0  He3  He0
   -1.5344022048e-07  He0  He1  He3  He0
-  -1.5192820592e-07  He0  He0  He4  He0
+  -1.5192820591e-07  He0  He0  He4  He0
   -1.4146288081e-05  He3  He0  He0  He1
   -4.8226463445e-08  He2  He1  He0  He1
-   1.9627618049e-08  He1  He2  He0  He1
+   1.9627618043e-08  He1  He2  He0  He1
    1.9256836244e-07  He0  He3  He0  He1
-   8.1278324751e-07  He2  He0  He1  He1
+   8.1278324749e-07  He2  He0  He1  He1
   -7.3313186771e-07  He1  He1  He1  He1
-   4.5267477781e-08  He0  He2  He1  He1
+   4.5267477789e-08  He0  He2  He1  He1
   -2.7603005049e-07  He1  He0  He2  He1
-  -1.0636726398e-07  He0  He1  He2  He1
+  -1.0636726400e-07  He0  He1  He2  He1
    2.5284217523e-07  He0  He0  He3  He1
   -4.1511425640e-07  He2  He0  He0  He2
    1.8379512042e-06  He1  He1  He0  He2
-  -3.0471945087e-07  He0  He2  He0  He2
-  -9.8448329698e-07  He1  He0  He1  He2
+  -3.0471945088e-07  He0  He2  He0  He2
+  -9.8448329699e-07  He1  He0  He1  He2
   -1.8619875252e-06  He0  He1  He1  He2
   -3.2370366162e-07  He0  He0  He2  He2
-   2.7446393112e-08  He1  He0  He0  He3
-   5.8635948559e-07  He0  He1  He0  He3
+   2.7446393117e-08  He1  He0  He0  He3
+   5.8635948557e-07  He0  He1  He0  He3
    1.5008357702e-07  He0  He0  He1  He3
   -4.4063722788e-08  He0  He0  He0  He4
 Coefficients of Polynomial Chaos Expansion for response_fn_3:
@@ -1427,8 +1427,8 @@ Coefficients of Polynomial Chaos Expansion for response_fn_3:
   -8.8607189178e-02  He0  He1  He0  He0
    6.9970889392e-02  He0  He0  He1  He0
    1.3993878922e-01  He0  He0  He0  He1
-   1.4568478861e-07  He2  He0  He0  He0
-   8.0004082659e-07  He1  He1  He0  He0
+   1.4568478862e-07  He2  He0  He0  He0
+   8.0004082662e-07  He1  He1  He0  He0
    4.4636968711e-03  He0  He2  He0  He0
    3.7390275121e-06  He1  He0  He1  He0
   -3.5097604800e-03  He0  He1  He1  He0
@@ -1437,34 +1437,34 @@ Coefficients of Polynomial Chaos Expansion for response_fn_3:
   -7.0250406875e-03  He0  He1  He0  He1
   -5.5506585394e-03  He0  He0  He1  He1
    1.4425548908e-03  He0  He0  He0  He2
-  -8.7715181385e-07  He3  He0  He0  He0
+  -8.7715181384e-07  He3  He0  He0  He0
   -1.5189740970e-06  He2  He1  He0  He0
-  -2.6824848162e-07  He1  He2  He0  He0
+  -2.6824848163e-07  He1  He2  He0  He0
   -2.2128279869e-04  He0  He3  He0  He0
    1.1513542617e-06  He2  He0  He1  He0
    2.9763187308e-06  He1  He1  He1  He0
    1.7799694166e-04  He0  He2  He1  He0
-  -9.9734871274e-07  He1  He0  He2  He0
+  -9.9734871271e-07  He1  He0  He2  He0
   -2.8100995949e-04  He0  He1  He2  He0
   -2.2429875166e-04  He0  He0  He3  He0
-   3.0244449303e-07  He2  He0  He0  He1
+   3.0244449304e-07  He2  He0  He0  He1
   -1.5034387489e-06  He1  He1  He0  He1
    3.5347616607e-04  He0  He2  He0  He1
    1.3066587562e-06  He1  He0  He1  He1
    2.8446389946e-04  He0  He1  He1  He1
   -2.2071197841e-04  He0  He0  He2  He1
-  -1.5327286276e-07  He1  He0  He0  He2
+  -1.5327286271e-07  He1  He0  He0  He2
   -7.0176882671e-05  He0  He1  He0  He2
    3.9028052209e-04  He0  He0  He1  He2
   -1.1450009860e-04  He0  He0  He0  He3
    1.6594859691e-07  He4  He0  He0  He0
-   3.9628014244e-08  He3  He1  He0  He0
+   3.9628014248e-08  He3  He1  He0  He0
    6.8306246772e-07  He2  He2  He0  He0
-  -2.7707969691e-07  He1  He3  He0  He0
+  -2.7707969689e-07  He1  He3  He0  He0
    1.0914300889e-05  He0  He4  He0  He0
   -3.0411959901e-07  He3  He0  He1  He0
   -1.1235293091e-06  He2  He1  He1  He0
-   5.5284055622e-07  He1  He2  He1  He0
+   5.5284055620e-07  He1  He2  He1  He0
   -9.3120664073e-06  He0  He3  He1  He0
   -1.0332407546e-06  He2  He0  He2  He0
    1.3761609837e-06  He1  He1  He2  He0
@@ -1472,12 +1472,12 @@ Coefficients of Polynomial Chaos Expansion for response_fn_3:
    1.5390896347e-06  He1  He0  He3  He0
    1.5459960379e-05  He0  He1  He3  He0
    3.4778252455e-06  He0  He0  He4  He0
-  -5.2621084410e-07  He3  He0  He0  He1
-   2.0951087394e-07  He2  He1  He0  He1
-  -7.0261358822e-07  He1  He2  He0  He1
+  -5.2621084409e-07  He3  He0  He0  He1
+   2.0951087393e-07  He2  He1  He0  He1
+  -7.0261358821e-07  He1  He2  He0  He1
   -1.6689441011e-05  He0  He3  He0  He1
   -2.9329566233e-06  He2  He0  He1  He1
-  -4.6364841060e-07  He1  He1  He1  He1
+  -4.6364841059e-07  He1  He1  He1  He1
   -1.5279567775e-05  He0  He2  He1  He1
    3.6913338680e-06  He1  He0  He2  He1
    1.6620172666e-05  He0  He1  He2  He1
@@ -1488,8 +1488,8 @@ Coefficients of Polynomial Chaos Expansion for response_fn_3:
   -2.1886254682e-06  He1  He0  He1  He2
   -2.3059758030e-05  He0  He1  He1  He2
   -1.0113396837e-05  He0  He0  He2  He2
-   2.3192692670e-07  He1  He0  He0  He3
-   5.9826671500e-06  He0  He1  He0  He3
+   2.3192692671e-07  He1  He0  He0  He3
+   5.9826671499e-06  He0  He1  He0  He3
   -2.1416086704e-05  He0  He0  He1  He3
    7.8713627919e-06  He0  He0  He0  He4
 Moment statistics for each response function:
@@ -1517,7 +1517,7 @@ response_fn_1 Sobol' indices:
 response_fn_2 Sobol' indices:
                                   Main             Total
                       2.2169018313e-01  2.2366297870e-01 R
-                      2.1675834146e-10  1.7707694042e-09 E
+                      2.1675834145e-10  1.7707694041e-09 E
                       3.8817121025e-01  3.8915745998e-01 X
                       3.8816580967e-01  3.8915235734e-01 Y
                       2.5098797655e-10 R E 
@@ -1547,7 +1547,7 @@ response_fn_3 Sobol' indices:
                       3.4703304896e-10 R E Y 
                       1.7135352314e-09 R X Y 
                       2.5514529608e-06 E X Y 
-                      6.6080510676e-12 R E X Y 
+                      6.6080510675e-12 R E X Y 
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
   -1.9444883041e-01   0.0000000000e+00   4.6284670270e-03
@@ -1651,213 +1651,213 @@ Coefficients of Polynomial Chaos Expansion for response_fn_1:
    3.0250000000e+01   P0   P0  He0  He0  He0  He0
    2.4750000000e+01   P1   P0  He0  He0  He0  He0
    2.4750000000e+01   P0   P1  He0  He0  He0  He0
-  -2.9246710312e-15   P0   P0  He1  He0  He0  He0
-  -7.5400567982e-15   P0   P0  He0  He1  He0  He0
-  -4.2162670352e-15   P0   P0  He0  He0  He1  He0
-  -9.7612262819e-16   P0   P0  He0  He0  He0  He1
-  -2.0424181485e-15   P2   P0  He0  He0  He0  He0
+  -1.9497806875e-15   P0   P0  He1  He0  He0  He0
+  -2.2947998951e-15   P0   P0  He0  He1  He0  He0
+   6.4865646695e-16   P0   P0  He0  He0  He1  He0
+   6.5074841880e-15   P0   P0  He0  He0  He0  He1
+   2.2977204171e-15   P2   P0  He0  He0  He0  He0
    2.0250000000e+01   P1   P1  He0  He0  He0  He0
-   7.4404885831e-15   P0   P2  He0  He0  He0  He0
-  -1.6012896069e-14   P1   P0  He1  He0  He0  He0
-  -1.3890941528e-15   P0   P1  He1  He0  He0  He0
-   9.6162169898e-16   P0   P0  He2  He0  He0  He0
-   1.4397400079e-14   P1   P0  He0  He1  He0  He0
-   1.5904125833e-14   P0   P1  He0  He1  He0  He0
-  -2.4241330481e-15   P0   P0  He1  He1  He0  He0
-  -4.3904619579e-15   P0   P0  He0  He2  He0  He0
-  -5.4066230202e-16   P1   P0  He0  He0  He1  He0
-  -3.9929463924e-15   P0   P1  He0  He0  He1  He0
-  -7.4234276806e-16   P0   P0  He1  He0  He1  He0
-  -6.3949618842e-15   P0   P0  He0  He1  He1  He0
-   2.2444706874e-15   P0   P0  He0  He0  He2  He0
-   7.1444277297e-15   P1   P0  He0  He0  He0  He1
-   9.7384432780e-15   P0   P1  He0  He0  He0  He1
-  -1.3714900210e-15   P0   P0  He1  He0  He0  He1
-   4.7395105422e-15   P0   P0  He0  He1  He0  He1
-  -8.5300950195e-15   P0   P0  He0  He0  He1  He1
-   1.3319882763e-15   P0   P0  He0  He0  He0  He2
-   6.6750607385e-15   P3   P0  He0  He0  He0  He0
-   9.0803558609e-15   P2   P1  He0  He0  He0  He0
-   1.2517161154e-14   P1   P2  He0  He0  He0  He0
-   1.0236503369e-14   P0   P3  He0  He0  He0  He0
-   3.9616650498e-15   P2   P0  He1  He0  He0  He0
-   4.4340418512e-15   P1   P1  He1  He0  He0  He0
-  -2.3817978648e-15   P0   P2  He1  He0  He0  He0
-  -3.8072173381e-15   P1   P0  He2  He0  He0  He0
-  -5.4248588152e-15   P0   P1  He2  He0  He0  He0
-   1.9020905928e-15   P0   P0  He3  He0  He0  He0
-  -3.0121743308e-15   P2   P0  He0  He1  He0  He0
-  -9.2709127038e-15   P1   P1  He0  He1  He0  He0
-  -1.0585906923e-14   P0   P2  He0  He1  He0  He0
-   1.4476393060e-15   P1   P0  He1  He1  He0  He0
-  -9.0178256328e-15   P0   P1  He1  He1  He0  He0
-   4.8992664347e-15   P0   P0  He2  He1  He0  He0
-  -1.5131280366e-15   P1   P0  He0  He2  He0  He0
-   3.3182332105e-15   P0   P1  He0  He2  He0  He0
-  -4.0992958879e-15   P0   P0  He1  He2  He0  He0
-   1.6344900235e-15   P0   P0  He0  He3  He0  He0
-   7.3375821703e-16   P2   P0  He0  He0  He1  He0
+   7.1839200113e-15   P0   P2  He0  He0  He0  He0
+  -1.3522001125e-14   P1   P0  He1  He0  He0  He0
+   4.8618295347e-15   P0   P1  He1  He0  He0  He0
+   3.2695137765e-15   P0   P0  He2  He0  He0  He0
+  -8.6384400475e-15   P1   P0  He0  He1  He0  He0
+  -5.0604036740e-15   P0   P1  He0  He1  He0  He0
+  -7.0030510277e-15   P0   P0  He1  He1  He0  He0
+  -3.9913290526e-15   P0   P0  He0  He2  He0  He0
+   4.5055191835e-16   P1   P0  He0  He0  He1  He0
+  -1.9254874826e-14   P0   P1  He0  He0  He1  He0
+   7.4234276806e-16   P0   P0  He1  He0  He1  He0
+  -8.4144235319e-16   P0   P0  He0  He1  He1  He0
+   2.9926275832e-15   P0   P0  He0  He0  He2  He0
+   2.6791603986e-16   P1   P0  He0  He0  He0  He1
+   1.4607664917e-14   P0   P1  He0  He0  He0  He1
+   4.1144700629e-15   P0   P0  He1  He0  He0  He1
+   5.9884356175e-15   P0   P0  He0  He1  He0  He1
+  -8.2457585189e-15   P0   P0  He0  He0  He1  He1
+  -1.9028403947e-15   P0   P0  He0  He0  He0  He2
+  -2.7431756460e-16   P3   P0  He0  He0  He0  He0
+   1.0377549555e-14   P2   P1  He0  He0  He0  He0
+   7.3376461937e-15   P1   P2  He0  He0  He0  He0
+   1.1297042007e-14   P0   P3  He0  He0  He0  He0
+   8.5423402637e-15   P2   P0  He1  He0  He0  He0
+  -4.6674124749e-15   P1   P1  He1  He0  He0  He0
+   1.1348566297e-15   P0   P2  He1  He0  He0  He0
+  -1.4277065018e-15   P1   P0  He2  He0  He0  He0
+  -6.4420198431e-15   P0   P1  He2  He0  He0  He0
+   2.1134339920e-15   P0   P0  He3  He0  He0  He0
+   6.7773922442e-15   P2   P0  He0  He1  He0  He0
+  -8.5389985430e-15   P1   P1  He0  He1  He0  He0
+  -1.3882117462e-14   P0   P2  He0  He1  He0  He0
+  -1.9301857414e-15   P1   P0  He1  He1  He0  He0
+   2.9530901523e-15   P0   P1  He1  He1  He0  He0
+   7.8738210558e-15   P0   P0  He2  He1  He0  He0
+   2.0175040488e-15   P1   P0  He0  He2  He0  He0
+  -4.5944767530e-15   P0   P1  He0  He2  He0  He0
+   1.4258420480e-15   P0   P0  He1  He2  He0  He0
+   1.1674928739e-16   P0   P0  He0  He3  He0  He0
+   8.6716880195e-16   P2   P0  He0  He0  He1  He0
    1.2683642531e-14   P1   P1  He0  He0  He1  He0
-   6.7894829753e-15   P0   P2  He0  He0  He1  He0
-  -3.5011663427e-15   P1   P0  He1  He0  He1  He0
-   2.1481995542e-15   P0   P1  He1  He0  He1  He0
-  -2.3302532741e-15   P0   P0  He2  He0  He1  He0
-  -2.5739431096e-15   P1   P0  He0  He1  He1  He0
-  -7.9763621436e-16   P0   P1  He0  He1  He1  He0
-  -2.6656237938e-15   P0   P0  He1  He1  He1  He0
-  -1.3327972058e-15   P0   P0  He0  He2  He1  He0
-   7.2751406369e-16   P1   P0  He0  He0  He2  He0
-  -7.8838845553e-15   P0   P1  He0  He0  He2  He0
-  -4.4325660277e-15   P0   P0  He1  He0  He2  He0
-  -8.0915676689e-15   P0   P0  He0  He1  He2  He0
-  -1.0408630354e-15   P0   P0  He0  He0  He3  He0
-   9.4559110165e-16   P2   P0  He0  He0  He0  He1
-   3.3501112081e-14   P1   P1  He0  He0  He0  He1
-  -4.3293148432e-15   P0   P2  He0  He0  He0  He1
-  -6.4033945784e-15   P1   P0  He1  He0  He0  He1
-  -6.2995221475e-15   P0   P1  He1  He0  He0  He1
-   4.3103836705e-15   P0   P0  He2  He0  He0  He1
-  -3.8888510578e-15   P1   P0  He0  He1  He0  He1
-  -5.4435718558e-16   P0   P1  He0  He1  He0  He1
-  -3.3376220519e-15   P0   P0  He1  He1  He0  He1
-  -2.2939986585e-15   P0   P0  He0  He2  He0  He1
-   2.9462966902e-15   P1   P0  He0  He0  He1  He1
-   1.8801240074e-16   P0   P1  He0  He0  He1  He1
-   5.4749013644e-15   P0   P0  He1  He0  He1  He1
-  -9.7465976620e-16   P0   P0  He0  He1  He1  He1
-  -3.4420169252e-15   P0   P0  He0  He0  He2  He1
-   5.2005114787e-15   P1   P0  He0  He0  He0  He2
-   7.3294955831e-16   P0   P1  He0  He0  He0  He2
-  -7.1313102907e-16   P0   P0  He1  He0  He0  He2
-  -3.9470547909e-15   P0   P0  He0  He1  He0  He2
-  -2.8819054435e-15   P0   P0  He0  He0  He1  He2
-   3.0970212387e-15   P0   P0  He0  He0  He0  He3
-   2.4594592587e-16   P4   P0  He0  He0  He0  He0
-   1.6458491833e-14   P3   P1  He0  He0  He0  He0
-  -9.0187803798e-15   P2   P2  He0  He0  He0  He0
-  -1.0511531040e-14   P1   P3  He0  He0  He0  He0
-  -2.3421829876e-15   P0   P4  He0  He0  He0  He0
-   5.8449952458e-15   P3   P0  He1  He0  He0  He0
-   7.1548879290e-15   P2   P1  He1  He0  He0  He0
-  -1.1548603504e-14   P1   P2  He1  He0  He0  He0
-  -4.9141049289e-16   P0   P3  He1  He0  He0  He0
-   0.0000000000e+00   P2   P0  He2  He0  He0  He0
-   1.1735490068e-14   P1   P1  He2  He0  He0  He0
-  -3.4045470886e-15   P0   P2  He2  He0  He0  He0
-  -2.4967235161e-15   P1   P0  He3  He0  He0  He0
-  -1.1407766168e-15   P0   P1  He3  He0  He0  He0
-  -5.7774793216e-16   P0   P0  He4  He0  He0  He0
-  -8.0415615717e-15   P3   P0  He0  He1  He0  He0
-   9.3362583431e-15   P2   P1  He0  He1  He0  He0
-   2.4475245760e-14   P1   P2  He0  He1  He0  He0
-   2.2923562478e-15   P0   P3  He0  He1  He0  He0
-  -2.1587347609e-15   P2   P0  He1  He1  He0  He0
-  -8.6736653768e-15   P1   P1  He1  He1  He0  He0
-   5.2568680244e-15   P0   P2  He1  He1  He0  He0
-  -1.3134199316e-15   P1   P0  He2  He1  He0  He0
-   6.3237408035e-15   P0   P1  He2  He1  He0  He0
-  -4.6436333282e-15   P0   P0  He3  He1  He0  He0
-   8.6315703418e-16   P2   P0  He0  He2  He0  He0
-   5.4637922072e-15   P1   P1  He0  He2  He0  He0
-  -3.0162806054e-15   P0   P2  He0  He2  He0  He0
-  -1.9776060749e-14   P1   P0  He1  He2  He0  He0
-  -1.0196292834e-15   P0   P1  He1  He2  He0  He0
-  -9.2327178505e-16   P0   P0  He2  He2  He0  He0
-   6.5006547508e-16   P1   P0  He0  He3  He0  He0
-   1.3278340112e-15   P0   P1  He0  He3  He0  He0
-   2.5490513014e-15   P0   P0  He1  He3  He0  He0
-  -3.1829908193e-16   P0   P0  He0  He4  He0  He0
-   4.3866652471e-16   P3   P0  He0  He0  He1  He0
-   1.4071027065e-14   P2   P1  He0  He0  He1  He0
-  -2.0630433866e-15   P1   P2  He0  He0  He1  He0
-  -1.7775243079e-15   P0   P3  He0  He0  He1  He0
-  -1.6683826195e-14   P2   P0  He1  He0  He1  He0
-   8.2681305094e-15   P1   P1  He1  He0  He1  He0
-  -3.6808048288e-15   P0   P2  He1  He0  He1  He0
-   1.5783908381e-15   P1   P0  He2  He0  He1  He0
-   3.2792943338e-15   P0   P1  He2  He0  He1  He0
-   1.2642234839e-15   P0   P0  He3  He0  He1  He0
-  -1.6121778198e-14   P2   P0  He0  He1  He1  He0
-   2.2727925319e-14   P1   P1  He0  He1  He1  He0
-   9.2185996289e-15   P0   P2  He0  He1  He1  He0
-  -6.4917408209e-15   P1   P0  He1  He1  He1  He0
-  -4.2168716061e-15   P0   P1  He1  He1  He1  He0
-  -6.9552023627e-15   P0   P0  He2  He1  He1  He0
-  -4.6819181333e-15   P1   P0  He0  He2  He1  He0
-   7.8689248881e-15   P0   P1  He0  He2  He1  He0
-   0.0000000000e+00   P0   P0  He1  He2  He1  He0
-   8.2122946817e-16   P0   P0  He0  He3  He1  He0
-  -2.4515053176e-15   P2   P0  He0  He0  He2  He0
-   6.3532740583e-15   P1   P1  He0  He0  He2  He0
-   6.8142484257e-15   P0   P2  He0  He0  He2  He0
-  -4.9041447142e-16   P1   P0  He1  He0  He2  He0
-   5.6575193765e-16   P0   P1  He1  He0  He2  He0
-   3.1396740693e-15   P0   P0  He2  He0  He2  He0
-  -7.2939887092e-15   P1   P0  He0  He1  He2  He0
-   3.1998061579e-15   P0   P1  He0  He1  He2  He0
-  -1.3543341359e-15   P0   P0  He1  He1  He2  He0
-  -2.1212234438e-15   P0   P0  He0  He2  He2  He0
-  -3.4930629376e-15   P1   P0  He0  He0  He3  He0
-  -9.6030846385e-16   P0   P1  He0  He0  He3  He0
-   1.4879116964e-15   P0   P0  He1  He0  He3  He0
-  -3.3696593812e-15   P0   P0  He0  He1  He3  He0
-   2.9927382512e-16   P0   P0  He0  He0  He4  He0
-   2.1334620673e-15   P3   P0  He0  He0  He0  He1
-   1.4467957988e-14   P2   P1  He0  He0  He0  He1
-   9.4614759283e-15   P1   P2  He0  He0  He0  He1
-  -3.5990725865e-15   P0   P3  He0  He0  He0  He1
-  -4.7653539263e-15   P2   P0  He1  He0  He0  He1
-   1.9949675827e-15   P1   P1  He1  He0  He0  He1
-   4.1874574994e-15   P0   P2  He1  He0  He0  He1
-   1.3237323881e-16   P1   P0  He2  He0  He0  He1
-   2.5775304873e-15   P0   P1  He2  He0  He0  He1
-   3.2074738745e-17   P0   P0  He3  He0  He0  He1
-  -2.0879192100e-15   P2   P0  He0  He1  He0  He1
-  -2.1657150596e-14   P1   P1  He0  He1  He0  He1
-   4.2417697821e-15   P0   P2  He0  He1  He0  He1
-   2.7656650065e-15   P1   P0  He1  He1  He0  He1
-  -5.9718175382e-15   P0   P1  He1  He1  He0  He1
-   4.3457032068e-15   P0   P0  He2  He1  He0  He1
-  -1.0062022515e-14   P1   P0  He0  He2  He0  He1
-  -4.5440571134e-15   P0   P1  He0  He2  He0  He1
-  -2.6726388674e-15   P0   P0  He1  He2  He0  He1
-   2.9259069581e-15   P0   P0  He0  He3  He0  He1
-  -1.1047828998e-14   P2   P0  He0  He0  He1  He1
-   2.6454521551e-15   P1   P1  He0  He0  He1  He1
-  -9.1675746930e-16   P0   P2  He0  He0  He1  He1
-   1.5045354879e-14   P1   P0  He1  He0  He1  He1
-  -7.7782698340e-15   P0   P1  He1  He0  He1  He1
-  -6.6743422887e-15   P0   P0  He2  He0  He1  He1
-  -4.3253704330e-15   P1   P0  He0  He1  He1  He1
-  -6.4297414360e-15   P0   P1  He0  He1  He1  He1
-  -4.1058421201e-15   P0   P0  He1  He1  He1  He1
-   3.1490471993e-15   P0   P0  He0  He2  He1  He1
-  -5.2223917578e-15   P1   P0  He0  He0  He2  He1
-   9.5196025925e-15   P0   P1  He0  He0  He2  He1
-  -3.5561637971e-15   P0   P0  He1  He0  He2  He1
-   8.4541543467e-15   P0   P0  He0  He1  He2  He1
-  -9.9544576042e-16   P0   P0  He0  He0  He3  He1
-   1.8299149795e-15   P2   P0  He0  He0  He0  He2
-   1.4780992570e-14   P1   P1  He0  He0  He0  He2
-   6.3947918434e-15   P0   P2  He0  He0  He0  He2
-  -5.5507795609e-15   P1   P0  He1  He0  He0  He2
-  -6.1924311392e-15   P0   P1  He1  He0  He0  He2
-  -2.0000420906e-15   P0   P0  He2  He0  He0  He2
-  -1.5294819083e-15   P1   P0  He0  He1  He0  He2
-   1.3179737378e-15   P0   P1  He0  He1  He0  He2
-   2.2683777829e-15   P0   P0  He1  He1  He0  He2
-   4.6652789083e-15   P0   P0  He0  He2  He0  He2
-   3.6629350400e-15   P1   P0  He0  He0  He1  He2
-  -1.8341515168e-15   P0   P1  He0  He0  He1  He2
-   1.5013296967e-15   P0   P0  He1  He0  He1  He2
-  -2.9820581200e-15   P0   P0  He0  He1  He1  He2
-  -1.7847970229e-15   P0   P0  He0  He0  He2  He2
-   2.3687160209e-15   P1   P0  He0  He0  He0  He3
-   2.5933800316e-15   P0   P1  He0  He0  He0  He3
-  -3.9480050346e-16   P0   P0  He1  He0  He0  He3
-   1.6350857307e-15   P0   P0  He0  He1  He0  He3
-   1.0439268793e-15   P0   P0  He0  He0  He1  He3
-   8.2170112630e-16   P0   P0  He0  He0  He0  He4
+   8.4559924329e-15   P0   P2  He0  He0  He1  He0
+   2.3341108951e-15   P1   P0  He1  He0  He1  He0
+  -1.0995523784e-15   P0   P1  He1  He0  He1  He0
+  -4.7437298795e-15   P0   P0  He2  He0  He1  He0
+  -7.3066772142e-15   P1   P0  He0  He1  He1  He0
+   3.1905448574e-15   P0   P1  He0  He1  He1  He0
+  -5.7325242878e-17   P0   P0  He1  He1  He1  He0
+  -2.9765804263e-15   P0   P0  He0  He2  He1  He0
+  -7.2751406369e-16   P1   P0  He0  He0  He2  He0
+  -1.2480392894e-14   P0   P1  He0  He0  He2  He0
+  -5.1417765922e-15   P0   P0  He1  He0  He2  He0
+  -5.0572297931e-15   P0   P0  He0  He1  He2  He0
+   2.1172100378e-15   P0   P0  He0  He0  He3  He0
+   1.8911822033e-16   P2   P0  He0  He0  He0  He1
+   3.1954906908e-14   P1   P1  He0  He0  He0  He1
+   2.0990617421e-15   P0   P2  He0  He0  He0  He1
+  -1.4855875422e-14   P1   P0  He1  He0  He0  He1
+  -1.3287046714e-14   P0   P1  He1  He0  He0  He1
+   3.4483069364e-15   P0   P0  He2  He0  He0  He1
+  -2.6922815015e-15   P1   P0  He0  He1  He0  He1
+  -6.2212249781e-16   P0   P1  He0  He1  He0  He1
+   6.6752441038e-16   P0   P0  He1  He1  He0  He1
+   2.4086985914e-15   P0   P0  He0  He2  He0  He1
+  -7.2675318359e-15   P1   P0  He0  He0  He1  He1
+   1.8801240074e-15   P0   P1  He0  He0  He1  He1
+   5.8855189668e-15   P0   P0  He1  He0  He1  He1
+  -2.8021468278e-15   P0   P0  He0  He1  He1  He1
+  -5.1394499294e-15   P0   P0  He0  He0  He2  He1
+  -4.2549639371e-15   P1   P0  He0  He0  He0  He2
+   2.4431651944e-16   P0   P1  He0  He0  He0  He2
+  -5.3484827180e-16   P0   P0  He1  He0  He0  He2
+  -2.8193248506e-15   P0   P0  He0  He1  He0  He2
+  -3.3965314155e-15   P0   P0  He0  He0  He1  He2
+   4.2958681698e-15   P0   P0  He0  He0  He0  He3
+   1.6162160843e-15   P4   P0  He0  He0  He0  He0
+   1.0441408797e-14   P3   P1  He0  He0  He0  He0
+  -8.4138621836e-15   P2   P2  He0  He0  He0  He0
+  -6.4425512828e-15   P1   P3  He0  He0  He0  He0
+  -1.6324305671e-15   P0   P4  He0  He0  He0  He0
+   4.5028111523e-15   P3   P0  He1  He0  He0  He0
+   7.5416386279e-15   P2   P1  He1  He0  He0  He0
+  -7.8295616973e-16   P1   P2  He1  He0  He0  He0
+   1.5970841019e-15   P0   P3  He1  He0  He0  He0
+   4.2132541067e-15   P2   P0  He2  He0  He0  He0
+   5.6266048272e-15   P1   P1  He2  He0  He0  He0
+  -3.3215093548e-15   P0   P2  He2  He0  He0  He0
+  -5.2708607562e-15   P1   P0  He3  He0  He0  He0
+  -1.3136215587e-15   P0   P1  He3  He0  He0  He0
+  -4.0442355251e-16   P0   P0  He4  He0  He0  He0
+   1.4800420071e-16   P3   P0  He0  He1  He0  He0
+   6.9088311739e-15   P2   P1  He0  He1  He0  He0
+   3.2083655491e-15   P1   P2  He0  He1  He0  He0
+   3.9531449579e-15   P0   P3  He0  He1  He0  He0
+   6.8587648734e-15   P2   P0  He1  He1  He0  He0
+   9.7961397197e-15   P1   P1  He1  He1  He0  He0
+  -7.8293779086e-15   P0   P2  He1  He1  He0  He0
+  -1.3353102637e-14   P1   P0  He2  He1  He0  He0
+   6.4366647464e-15   P0   P1  He2  He1  He0  He0
+  -3.5354935567e-15   P0   P0  He3  He1  He0  He0
+   2.4935647654e-15   P2   P0  He0  He2  He0  He0
+   2.0489220777e-15   P1   P1  He0  He2  He0  He0
+   1.2648918668e-15   P0   P2  He0  He2  He0  He0
+  -1.5730957414e-14   P1   P0  He1  He2  He0  He0
+   5.4380228450e-15   P0   P1  He1  He2  He0  He0
+  -5.8693706335e-15   P0   P0  He2  He2  He0  He0
+  -3.2503273754e-15   P1   P0  He0  He3  He0  He0
+  -2.3237095196e-15   P0   P1  He0  He3  He0  He0
+   1.8286672379e-15   P0   P0  He1  He3  He0  He0
+   5.0257749779e-16   P0   P0  He0  He4  He0  He0
+  -1.2672588491e-15   P3   P0  He0  He0  He1  He0
+   1.2090660293e-14   P2   P1  He0  He0  He1  He0
+   3.5587498419e-15   P1   P2  He0  He0  He1  He0
+   1.4220194463e-15   P0   P3  He0  He0  He1  He0
+  -5.0418156082e-15   P2   P0  He1  He0  He1  He0
+   1.7206649979e-14   P1   P1  He1  He0  He1  He0
+   4.7850462775e-15   P0   P2  He1  He0  He1  He0
+   7.1745038095e-15   P1   P0  He2  He0  He1  He0
+   8.7106255742e-16   P0   P1  He2  He0  He1  He0
+   1.9338333801e-15   P0   P0  He3  He0  He1  He0
+  -1.3678181503e-14   P2   P0  He0  He1  He1  He0
+   1.3513901541e-14   P1   P1  He0  He1  He1  He0
+   7.6614479527e-15   P0   P2  He0  He1  He1  He0
+   6.0881092673e-15   P1   P0  He1  He1  He1  He0
+  -1.6064272785e-15   P0   P1  He1  He1  He1  He0
+  -1.1900536362e-15   P0   P0  He2  He1  He1  He0
+   6.9361750123e-16   P1   P0  He0  He2  He1  He0
+  -4.6351201396e-15   P0   P1  He0  He2  He1  He0
+   1.6280349051e-15   P0   P0  He1  He2  He1  He0
+   2.7374315606e-17   P0   P0  He0  He3  He1  He0
+  -6.1287632940e-15   P2   P0  He0  He0  He2  He0
+  -9.1561890840e-15   P1   P1  He0  He0  He2  He0
+   6.8609213601e-15   P0   P2  He0  He0  He2  He0
+  -1.1892550932e-14   P1   P0  He1  He0  He2  He0
+   5.4060740709e-15   P0   P1  He1  He0  He2  He0
+   2.6350835939e-15   P0   P0  He2  He0  He2  He0
+  -1.7482417382e-14   P1   P0  He0  He1  He2  He0
+  -5.1302677242e-15   P0   P1  He0  He1  He2  He0
+  -7.5240785328e-15   P0   P0  He1  He1  He2  He0
+  -6.2450004883e-15   P0   P0  He0  He2  He2  He0
+  -3.2565534679e-15   P1   P0  He0  He0  He3  He0
+  -4.6643553958e-15   P0   P1  He0  He0  He3  He0
+   1.7772278596e-15   P0   P0  He1  He0  He3  He0
+  -1.2941445449e-15   P0   P0  He0  He1  He3  He0
+   3.9135807901e-16   P0   P0  He0  He0  He4  He0
+  -4.0729730375e-15   P3   P0  He0  He0  He0  He1
+   2.0160269327e-14   P2   P1  He0  He0  He0  He1
+   1.1353771114e-14   P1   P2  He0  He0  He0  He1
+  -3.9989695406e-15   P0   P3  He0  He0  He0  He1
+  -3.0547140553e-15   P2   P0  He1  He0  He0  He1
+   8.7279831741e-15   P1   P1  He1  He0  He0  He1
+  -4.9551580409e-15   P0   P2  He1  He0  He0  He1
+   2.8129313246e-15   P1   P0  He2  He0  He0  He1
+   8.4988843094e-15   P0   P1  He2  He0  He0  He1
+   1.7641106310e-15   P0   P0  He3  He0  He0  He1
+  -1.5384667863e-15   P2   P0  He0  He1  He0  He1
+  -3.9072178911e-15   P1   P1  He0  He1  He0  He1
+   9.1262319553e-15   P0   P2  He0  He1  He0  He1
+  -5.7674233672e-15   P1   P0  He1  He1  He0  He1
+   4.1259830264e-15   P0   P1  He1  He1  He0  He1
+  -1.5934245091e-15   P0   P0  He2  He1  He0  He1
+  -7.5948919945e-15   P1   P0  He0  He2  He0  He1
+  -5.7593282019e-15   P0   P1  He0  He2  He0  He1
+   1.1307318285e-15   P0   P0  He1  He2  He0  He1
+   3.1426408068e-15   P0   P0  He0  He3  He0  He1
+  -4.8279882628e-15   P2   P0  He0  He0  He1  He1
+   5.8787825669e-16   P1   P1  He0  He0  He1  He1
+   2.3271535759e-15   P0   P2  He0  He0  He1  He1
+   1.2664760752e-14   P1   P0  He1  He0  He1  He1
+   2.1817098315e-15   P0   P1  He1  He0  He1  He1
+  -8.4859494814e-15   P0   P0  He2  He0  He1  He1
+   5.3431046525e-15   P1   P0  He0  He1  He1  He1
+  -1.9771454916e-14   P0   P1  He0  He1  He1  He1
+  -7.5633933791e-15   P0   P0  He1  He1  He1  He1
+   7.2096606931e-15   P0   P0  He0  He2  He1  He1
+  -9.3453326192e-15   P1   P0  He0  He0  He2  He1
+   6.9233473400e-15   P0   P1  He0  He0  He2  He1
+   2.9634698309e-15   P0   P0  He1  He0  He2  He1
+   1.1055432607e-14   P0   P0  He0  He1  He2  He1
+  -1.3936240646e-15   P0   P0  He0  He0  He3  He1
+   4.0258129550e-15   P2   P0  He0  He0  He0  He2
+   1.7054991427e-14   P1   P1  He0  He0  He0  He2
+   7.3939780689e-15   P0   P2  He0  He0  He0  He2
+  -1.0176429195e-14   P1   P0  He1  He0  He0  He2
+  -1.1258965708e-14   P0   P1  He1  He0  He0  He2
+   1.4286014933e-16   P0   P0  He2  He0  He0  He2
+   2.5491365138e-15   P1   P0  He0  He1  He0  He2
+  -1.1485199715e-14   P0   P1  He0  He1  He0  He2
+   2.8984827226e-15   P0   P0  He1  He1  He0  He2
+   5.5350766709e-16   P0   P0  He0  He2  He0  He2
+  -5.4537032818e-15   P1   P0  He0  He0  He1  He2
+   0.0000000000e+00   P0   P1  He0  He0  He1  He2
+  -4.4503701723e-15   P0   P0  He1  He0  He1  He2
+   1.9880387466e-15   P0   P0  He0  He1  He1  He2
+  -4.2121209740e-15   P0   P0  He0  He0  He2  He2
+  -3.3985925517e-15   P1   P0  He0  He0  He0  He3
+   4.3716977676e-15   P0   P1  He0  He0  He0  He3
+  -7.8960100692e-16   P0   P0  He1  He0  He0  He3
+   2.2891200230e-15   P0   P0  He0  He1  He0  He3
+  -1.5658903189e-15   P0   P0  He0  He0  He1  He3
+  -1.6434022526e-15   P0   P0  He0  He0  He0  He4
 Coefficients of Polynomial Chaos Expansion for response_fn_2:
   -5.2859167690e-01   P0   P0  He0  He0  He0  He0
   -6.2394543602e-01   P1   P0  He0  He0  He0  He0
@@ -2058,7 +2058,7 @@ Coefficients of Polynomial Chaos Expansion for response_fn_2:
    2.8008699068e-02   P0   P1  He0  He1  He0  He2
    8.9552672317e-02   P0   P0  He1  He1  He0  He2
   -6.9071427017e-02   P0   P0  He0  He2  He0  He2
-   2.5384370309e-02   P1   P0  He0  He0  He1  He2
+   2.5384370308e-02   P1   P0  He0  He0  He1  He2
   -6.7867130613e-02   P0   P1  He0  He0  He1  He2
   -5.8652856538e-03   P0   P0  He1  He0  He1  He2
    6.0143736782e-03   P0   P0  He0  He1  He1  He2
@@ -2282,67 +2282,67 @@ Coefficients of Polynomial Chaos Expansion for response_fn_3:
    1.7588347494e-02   P0   P0  He0  He0  He0  He4
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  6.2500000000e+00  6.7098079120e-14
+ response_fn_1  6.2500000000e+00  7.5778092873e-14
  response_fn_2  1.8261111569e-01  8.4957822960e-01
  response_fn_3 -5.2945224245e-01  5.6592985096e+00
 response_fn_1 Sobol' indices:
                                   Main             Total
                       4.4981412639e-01  5.5018587361e-01 w
                       4.4981412639e-01  5.5018587361e-01 t
-                      8.8386284717e-32  3.5999314177e-30 R
-                      2.5083994621e-31  4.9839363131e-30 E
-                      8.0412250437e-32  3.7761689300e-30 X
-                      1.7239172799e-31  3.7486133424e-30 Y
+                      1.2315815870e-31  5.1483062420e-30 R
+                      9.5324408180e-32  5.7235564188e-30 E
+                      1.0773230342e-31  5.9986840390e-30 X
+                      4.9595892985e-31  5.8043890988e-30 Y
                       1.0037174721e-01 w t 
-                      2.5470686552e-31 w R 
-                      6.3160233577e-32 t R 
-                      1.8244216634e-31 w E 
-                      2.6872121763e-31 t E 
-                      5.7114950645e-31 R E 
-                      6.0343964537e-32 w X 
-                      1.6927527310e-31 t X 
-                      2.4895405878e-31 R X 
-                      5.8503132626e-31 E X 
-                      1.0669889144e-31 w Y 
-                      1.4843061533e-31 t Y 
-                      1.2556566090e-31 R Y 
-                      4.8159104134e-31 E Y 
-                      3.0465518984e-31 X Y 
-                      9.9338633845e-32 w t R 
-                      1.3643040625e-31 w t E 
-                      5.8049624480e-31 w R E 
-                      1.3214789793e-31 t R E 
-                      8.8840654344e-32 w t X 
-                      1.3565145542e-31 w R X 
-                      2.5621331133e-32 t R X 
-                      2.2970671798e-31 w E X 
-                      1.4388416003e-31 t E X 
-                      2.3686889038e-31 R E X 
-                      4.2555657612e-31 w t Y 
-                      8.5390590679e-32 w R Y 
-                      1.0293971683e-31 t R Y 
-                      1.6515197983e-31 w E Y 
-                      4.1021000265e-32 t E Y 
-                      1.6188807104e-31 R E Y 
-                      1.1990954488e-31 w X Y 
-                      1.3842838557e-31 t X Y 
-                      3.2795003397e-31 R X Y 
-                      3.9986507147e-31 E X Y 
-                      1.8414789376e-32 w t R E 
-                      1.6733087245e-32 w t R X 
-                      1.2643898953e-31 w t E X 
-                      3.0946036173e-32 w R E X 
-                      1.3057602381e-32 t R E X 
-                      9.7416633000e-34 w t R Y 
-                      1.1480586154e-31 w t E Y 
-                      5.6167078274e-33 w R E Y 
-                      2.6187602705e-32 t R E Y 
-                      1.7130153392e-33 w t X Y 
-                      1.6622163728e-31 w R X Y 
-                      4.4427174527e-32 t R X Y 
-                      1.3738183034e-32 w E X Y 
-                      3.0357758454e-32 t E X Y 
-                      3.7137137855e-32 R E X Y 
+                      3.1383705257e-31 w R 
+                      9.6999426800e-32 t R 
+                      1.3304453700e-31 w E 
+                      1.6483118266e-31 t E 
+                      9.0312734396e-31 R E 
+                      8.1586805808e-32 w X 
+                      6.7047665660e-31 t X 
+                      3.6920703137e-31 R X 
+                      5.1908625041e-31 E X 
+                      9.7049692868e-32 w Y 
+                      2.9613184203e-31 t Y 
+                      1.4049864398e-31 R Y 
+                      3.4208510523e-31 E Y 
+                      5.3140868856e-31 X Y 
+                      2.9273658723e-32 w t R 
+                      2.8424371708e-32 w t E 
+                      6.4875888037e-31 w R E 
+                      1.3768835838e-31 t R E 
+                      1.0374792051e-31 w t X 
+                      2.9850846692e-31 w R X 
+                      5.5011824196e-32 t R X 
+                      5.7120577685e-31 w E X 
+                      1.0354304913e-31 t E X 
+                      2.6735013595e-31 R E X 
+                      4.7095770952e-31 w t Y 
+                      3.2988417196e-31 w R Y 
+                      4.3270894615e-31 t R Y 
+                      1.0062286142e-31 w E Y 
+                      2.7942117574e-31 t E Y 
+                      5.4816148243e-32 R E Y 
+                      2.2099881142e-31 w X Y 
+                      7.5377285290e-32 t X Y 
+                      5.1953827769e-31 R X Y 
+                      8.0222545580e-31 E X Y 
+                      2.3489370088e-32 w t R E 
+                      7.2469301881e-32 w t R X 
+                      4.4701585780e-32 w t E X 
+                      2.7217457947e-32 w R E X 
+                      1.8949808444e-33 t R E X 
+                      1.8646152410e-32 w t R Y 
+                      3.7367727809e-33 w t E Y 
+                      2.4425662341e-32 w R E Y 
+                      1.2500792829e-32 t R E Y 
+                      8.4593350085e-35 w t X Y 
+                      1.1778138687e-31 w R X Y 
+                      3.4952372583e-33 t R X Y 
+                      2.0963801792e-32 w E X Y 
+                      2.8705157978e-31 t E X Y 
+                      1.2601937361e-31 R E X Y 
 response_fn_2 Sobol' indices:
                                   Main             Total
                       1.3879094755e-01  3.6401075286e-01 w

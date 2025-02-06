@@ -1,0 +1,81 @@
+#@ p0: MPIProcs=3
+#@ p1: MPIProcs=3
+#@ p2: MPIProcs=3
+#@ *: TimeoutAbsolute=36000
+#@ *: TimeoutDelay=36000
+
+environment
+	output_precision = 16
+
+method,
+	model_pointer = 'HIERARCH'
+	approximate_control_variate
+	  acv_mf		#s0,#s1,#s2,#s6,#s7,#s10,#s11,#s14,#s15,#p0
+#	  acv_is		#s3,#s4,#s5,#s8,#s9,#s12,#s13,#p1
+#	  acv_rd		#s16,#p2
+	  solution_mode online_projection	#s0,#s3,#s6,#s8
+#	  solution_mode online_pilot		#s1,#s4,#s7,#s9,#s10,#s12,#s15,#s16,#p0,#p1,#p2
+#	    relaxation factor_sequence = .5 .75 1.	#s15,#p0,#p1,#p2
+#	  solution_mode offline_projection		#s14
+#	  solution_mode offline_pilot			#s2,#s5,#s11,#s13
+	  pilot_samples = 25		#s0,#s1,#s3,#s4,#s6,#s7,#s8,#s9,#s10,#s12,#s15,#s16,#p0,#p1,#p2
+#	  pilot_samples = 150			#s2,#s5,#s11,#s13,#s14
+	  seed = 8674132
+	  search_model_graphs
+	    kl_recursion	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+#	    partial_recursion depth_limit = 2	#s10,#s12,#s15,#s16,#p0,#p1,#p2
+#	    full_recursion		      	#s11,#s13,#s14
+#	  final_statistics estimator_performance
+	  max_function_evaluations = 500	#s0,#s1,#s2,#s3,#s4,#s5,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#p0,#p1,#p2
+#	  convergence_tolerance   = .001	#s6,#s7,#s8,#s9
+	output silent
+
+model,
+	id_model = 'HIERARCH'
+	variables_pointer = 'HF_VARS'
+	surrogate ensemble
+	  truth_model = 'HF'
+
+model,
+	id_model = 'HF'
+	variables_pointer = 'HF_VARS'
+	interface_pointer = 'HF_INT'
+	simulation
+	  solution_level_control = 'mesh_size'
+	  solution_level_cost = 1 4 16 64 256
+
+variables,
+	id_variables = 'HF_VARS'
+	uniform_uncertain = 9	 # number of cosine terms in soln expansion
+	  lower_bounds    = 9*-1.
+	  upper_bounds    = 9* 1.
+	discrete_state_set
+	  integer = 1 # even poly degree for odd mesh pts including boundary
+	    initial_state = 64
+	    set_values = 4 8 16 32 64
+      	    descriptors = 'mesh_size'
+    	  real = 4
+      	    elements_per_variable = 2 2 1 1
+      	    set_values = 0.1 1 # field mean
+                       	 0.5 4 # field std dev
+                   	 1     # kernel order
+                   	 0.2   # kernel length
+      	    descriptors = 'field_mean' 'field_std_dev' 'kernel_order' 'kernel_length'
+      	    initial_state = 1 4 1 0.2
+	  string = 2  # form of kernel (refer to Yang,Lei,Baker,Lin)
+      	    elements_per_variable = 2 2
+	    initial_state = 'cosine' 'off'
+      	    set_values = 'cosine' 'exponential'
+                       	 'off' 'on'
+      	    descriptors = 'kernel_type' 'positivity'
+
+interface,
+	id_interface = 'HF_INT'
+	direct
+	  analysis_driver = 'steady_state_diffusion_1d'
+#	  deactivate evaluation_cache restart_file
+
+responses,
+	response_functions = 3	 # number of soln pts excl. +/-5% (symmetric)
+	no_gradients
+	no_hessians

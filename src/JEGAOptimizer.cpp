@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -108,6 +108,7 @@ Includes
 #include <JEGAOptimizer.hpp>
 #include <ProblemDescDB.hpp>
 #include <MarginalsCorrDistribution.hpp>
+#include <model_utils.hpp>
 
 // Eddy utility includes.
 #include <utilities/include/EDDY_DebugScope.hpp>
@@ -142,7 +143,7 @@ Begin Namespace
 */
 namespace Dakota {
 
-
+size_t JEGAOptimizer::numInstances = 0;
 
 
 /*
@@ -310,8 +311,8 @@ class JEGAOptimizer::Evaluator :
             ) const
         {
             EDDY_FUNC_DEBUGSCOPE
-            return this->_model.num_nonlinear_eq_constraints() +
-                   this->_model.num_nonlinear_ineq_constraints();
+            return ModelUtils::num_nonlinear_eq_constraints(this->_model) +
+                   ModelUtils::num_nonlinear_ineq_constraints(this->_model);
         }
 
         /// Returns the number of linear constraints for the problem.
@@ -327,8 +328,8 @@ class JEGAOptimizer::Evaluator :
             ) const
         {
             EDDY_FUNC_DEBUGSCOPE
-            return this->_model.num_linear_eq_constraints() +
-                   this->_model.num_linear_ineq_constraints();
+            return ModelUtils::num_linear_eq_constraints(this->_model) +
+                   ModelUtils::num_linear_ineq_constraints(this->_model);
         }
 
     /*
@@ -358,11 +359,11 @@ class JEGAOptimizer::Evaluator :
          * \param group The group of Design class objects to be evaluated.
          * \return true if all evaluations completed and false otherwise.
          */
-        virtual
+        
         bool
         Evaluate(
             DesignGroup& group
-            );
+            ) override;
 
         /// This method cannot be used!!
         /**
@@ -377,11 +378,11 @@ class JEGAOptimizer::Evaluator :
          *         otherwise.  Never actually returns here.  Issues a fatal
          *         error.  Otherwise, it would always return false.
          */
-        virtual
+        
         bool
         Evaluate(
             Design& des
-            )
+            ) override
         {
             EDDY_FUNC_DEBUGSCOPE
 
@@ -398,10 +399,10 @@ class JEGAOptimizer::Evaluator :
         /**
          * \return See Name().
          */
-        virtual
+        
         std::string
         GetName(
-            ) const
+            ) const override
         {
             EDDY_FUNC_DEBUGSCOPE
             return Evaluator::Name();
@@ -411,10 +412,10 @@ class JEGAOptimizer::Evaluator :
         /**
          * \return See Description().
          */
-        virtual
+        
         std::string
         GetDescription(
-            ) const
+            ) const override
         {
             EDDY_FUNC_DEBUGSCOPE
             return Evaluator::Description();
@@ -427,11 +428,11 @@ class JEGAOptimizer::Evaluator :
          * \param algorithm The GA for which the clone is being created.
          * \return A clone of this operator.
          */
-        virtual
+        
         GeneticAlgorithmOperator*
         Clone(
             GeneticAlgorithm& algorithm
-            ) const
+            ) const override
         {
             EDDY_FUNC_DEBUGSCOPE
             return new Evaluator(*this, algorithm, _model);
@@ -553,11 +554,11 @@ class JEGAOptimizer::EvaluatorCreator :
          * \param alg The GA for which the evaluator is to be created.
          * \return A pointer to a newly created Evaluator.
          */
-        virtual
+        
         GeneticAlgorithmEvaluator*
         CreateEvaluator(
             GeneticAlgorithm& alg
-            )
+            ) override
         {
             EDDY_FUNC_DEBUGSCOPE
 	      return new Evaluator(alg, _theModel);
@@ -971,7 +972,7 @@ JEGAOptimizer::LoadDakotaResponses(
 //     String variables also need to be remapped.
 
     const Pecos::MultivariateDistribution& mv_dist
-      = iteratedModel.multivariate_distribution();
+      = iteratedModel->multivariate_distribution();
     std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_dist_rep =
       std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
       (mv_dist.multivar_dist_rep());
@@ -1313,7 +1314,7 @@ JEGAOptimizer::LoadTheParameterDatabase(
         );
  
     // when recasting is active, the weights may be transformed; get off Model
-    dak_rv = &iteratedModel.primary_response_fn_weights();
+    dak_rv = &iteratedModel->primary_response_fn_weights();
     JEGA::DoubleVector mow_vector(
         dak_rv->values(),
         dak_rv->values() + dak_rv->length()
@@ -1410,7 +1411,7 @@ JEGAOptimizer::LoadTheDesignVariables(
     // is contained in the data structures of the base classes.
     // In particular, the Model (iteratedModel) has most of the
     // info.  We will create a shorthand for it here to ease syntax.
-    Model& m = this->iteratedModel;
+    Model& m = *this->iteratedModel;
     size_t i, j, dsi_cntr;
 
     // Loop over all continuous variables and add an info object.  Don't worry
@@ -1424,20 +1425,20 @@ JEGAOptimizer::LoadTheDesignVariables(
 //far as I can tell, the JEGA vectors are all just std vectors of the
 //corresponding type.  Not sure what exactly pConfig is, though.
 
-    const RealVector& clbs = m.continuous_lower_bounds();
-    const RealVector& cubs = m.continuous_upper_bounds();
-    StringMultiArrayConstView clabels = m.continuous_variable_labels();
+    const RealVector& clbs = ModelUtils::continuous_lower_bounds(m);
+    const RealVector& cubs = ModelUtils::continuous_upper_bounds(m);
+    StringMultiArrayConstView clabels = m.current_variables().continuous_variable_labels();
     for(i=0; i<this->numContinuousVars; ++i)
       pConfig.AddContinuumRealVariable(clabels[i], clbs[i], cubs[i], 6);
 
     // now move on to the discrete variables.  The data for those is in the
     // Model as discrete_lower_bounds, discrete_upper_bounds, and
     // discrete_variable_labels.
-    const IntVector& dilbs = m.discrete_int_lower_bounds();
-    const IntVector& diubs = m.discrete_int_upper_bounds();
-    StringMultiArrayConstView dilabels = m.discrete_int_variable_labels();
-    const BitArray& di_set_bits = m.discrete_int_sets();
-    const IntSetArray& dsiv = m.discrete_set_int_values();
+    const IntVector& dilbs = ModelUtils::discrete_int_lower_bounds(m);
+    const IntVector& diubs = ModelUtils::discrete_int_upper_bounds(m);
+    StringMultiArrayConstView dilabels = m.current_variables().discrete_int_variable_labels();
+    const BitArray& di_set_bits = ModelUtils::discrete_int_sets(m);
+    const IntSetArray& dsiv = ModelUtils::discrete_set_int_values(m);
     for(i=0, dsi_cntr=0; i<this->numDiscreteIntVars; ++i)
     {
       if (di_set_bits[i]) { // discrete set variables
@@ -1451,8 +1452,8 @@ JEGAOptimizer::LoadTheDesignVariables(
     }
 
     // Next, load in the "discrete set of real" variables.
-    const RealSetArray& dsrv = m.discrete_set_real_values();
-    StringMultiArrayConstView drlabels = m.discrete_real_variable_labels();
+    const RealSetArray& dsrv = ModelUtils::discrete_set_real_values(m);
+    StringMultiArrayConstView drlabels = m.current_variables().discrete_real_variable_labels();
     for(i=0; i<this->numDiscreteRealVars; ++i)
     {
       const RealSet& dak_set = dsrv[i];
@@ -1464,8 +1465,8 @@ JEGAOptimizer::LoadTheDesignVariables(
 
     // Finally, load in the "discrete set of string" variables. These must
     // be mapped to discrete integer variables.
-    StringMultiArrayConstView dslabels = m.discrete_string_variable_labels();
-    const StringSetArray& dssv_values = m.discrete_set_string_values();
+    StringMultiArrayConstView dslabels = m.current_variables().discrete_string_variable_labels();
+    const StringSetArray& dssv_values = ModelUtils::discrete_set_string_values(m);
     for (i=0; i<this->numDiscreteStringVars; ++i) {
       const size_t &num_elements = dssv_values[i].size(); //assume > 0
       IntArray element_index(num_elements);
@@ -1493,8 +1494,8 @@ JEGAOptimizer::LoadTheObjectiveFunctions(
     // Dakota will soon support mixed extremization schemes.
     // Dakota does not support labeling objectives.  Until it does,
     // we will create a label that looks like "Nature Type Index".
-    const StringArray&  labels = iteratedModel.response_labels();
-    const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
+    const StringArray&  labels = ModelUtils::response_labels(*iteratedModel);
+    const BoolDeque& max_sense = iteratedModel->primary_response_fn_sense();
     bool use_sense = !max_sense.empty();
     for(size_t i=0; i<this->numObjectiveFns; ++i)
       if (use_sense && max_sense[i])
@@ -1521,7 +1522,7 @@ JEGAOptimizer::LoadTheConstraints(
     // is contained in the data structures of the base classes.
     // In particular, the Model (iteratedModel) has most of the
     // info.  We will create a shorthand for it here to ease syntax.
-    const Model& m = this->iteratedModel;
+    const Model& m = *this->iteratedModel;
 
     /**************************************************************************
 
@@ -1540,9 +1541,9 @@ JEGAOptimizer::LoadTheConstraints(
     // functions, Dakota does not allow labeling of constraints.
     // we will create a label that looks like "Nature Type Index".
     const RealVector& nln_ineq_lwr_bnds
-        = m.nonlinear_ineq_constraint_lower_bounds();
+        = ModelUtils::nonlinear_ineq_constraint_lower_bounds(m);
     const RealVector& nln_ineq_upr_bnds
-        = m.nonlinear_ineq_constraint_upper_bounds();
+        = ModelUtils::nonlinear_ineq_constraint_upper_bounds(m);
 
 //PDH: Dakota nonlinear constraints to JEGA nonlinear constraints.
 //     Don't know what the JEGA data structure is.  These are all
@@ -1560,7 +1561,7 @@ JEGAOptimizer::LoadTheConstraints(
 
     // now do non-linear equality constraints.  The information we need for
     // these is in nonlinear_eq_constraint_targets.
-    const RealVector& nln_eq_targets = m.nonlinear_eq_constraint_targets();
+    const RealVector& nln_eq_targets = ModelUtils::nonlinear_eq_constraint_targets(m);
     for(size_t i=0; i<this->numNonlinearEqConstraints; ++i)
         pConfig.AddNonlinearEqualityConstraint(
             "Non-Linear Equality " + asstring(i), nln_eq_targets[i]
@@ -1578,11 +1579,11 @@ JEGAOptimizer::LoadTheConstraints(
     // In addition to bounds, these accept coefficients for possible shortcut
     // evaluation.  That information is in linear_ineq_constraint_coeffs.
     const RealVector& lin_ineq_lwr_bnds
-        = m.linear_ineq_constraint_lower_bounds();
+        = ModelUtils::linear_ineq_constraint_lower_bounds(m);
     const RealVector& lin_ineq_upr_bnds
-        = m.linear_ineq_constraint_upper_bounds();
+        = ModelUtils::linear_ineq_constraint_upper_bounds(m);
     const RealMatrix& lin_ineq_coeffs
-        = m.linear_ineq_constraint_coeffs();
+        = ModelUtils::linear_ineq_constraint_coeffs(m);
 
     JEGA::DoubleVector lin_ineq_coeffs_row(lin_ineq_coeffs.numCols());
 
@@ -1604,8 +1605,8 @@ JEGAOptimizer::LoadTheConstraints(
     // is in lin_eq_targets. In addition to targets, these accept coefficients
     // for possible shortcut evaluation.  That information is in
     // linear_eq_constraint_coeffs.
-    const RealVector& lin_eq_targets = m.linear_eq_constraint_targets();
-    const RealMatrix& lin_eq_coeffs = m.linear_eq_constraint_coeffs();
+    const RealVector& lin_eq_targets = ModelUtils::linear_eq_constraint_targets(m);
+    const RealMatrix& lin_eq_coeffs = ModelUtils::linear_eq_constraint_coeffs(m);
 
     JEGA::DoubleVector lin_eq_coeffs_row(lin_eq_coeffs.numCols());
 
@@ -1872,7 +1873,7 @@ Structors
 ===============================================================================
 */
 JEGAOptimizer::JEGAOptimizer(
-    ProblemDescDB& problem_db, Model& model
+    ProblemDescDB& problem_db, std::shared_ptr<Model> model
     ) :
         //Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new JEGATraits())),
         Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new JEGATraits())),
@@ -1950,7 +1951,10 @@ JEGAOptimizer::JEGAOptimizer(
 	= std::numeric_limits<std::size_t>::max(); // moga returns all Pareto
 
     // We only ever need one EvaluatorCreator so we can create it now.
-    this->_theEvalCreator = new EvaluatorCreator(iteratedModel);
+    this->_theEvalCreator = new EvaluatorCreator(*iteratedModel);
+
+    // Increment object counter
+    this->numInstances++;
 }
 
 JEGAOptimizer::~JEGAOptimizer(
@@ -1960,6 +1964,10 @@ JEGAOptimizer::~JEGAOptimizer(
 
     delete this->_theEvalCreator;
     delete this->_theParamDB;
+    this->numInstances--;
+    if(this->numInstances == 0) // Force JEGA's global log file to close. See the comment on numInstances. 
+      JEGA::Logging::Logger::Global().Gate().get_log().get_first_log().close_stream();
+    
 }
 
 
@@ -1979,8 +1987,8 @@ JEGAOptimizer::Evaluator::SeparateVariables(
 {
     EDDY_FUNC_DEBUGSCOPE
 
-    size_t num_cv  = this->_model.cv(), num_div = this->_model.div(),
-           num_drv = this->_model.drv(), num_dsv = this->_model.dsv();
+    size_t num_cv  = ModelUtils::cv(this->_model), num_div = ModelUtils::div(this->_model),
+           num_drv = ModelUtils::drv(this->_model), num_dsv = ModelUtils::dsv(this->_model);
 
     // "into" containers may not yet be sized. If not, size them.  If they are,
     // don't size them b/c it will be a lot of wasted effort.
@@ -2018,7 +2026,7 @@ JEGAOptimizer::Evaluator::SeparateVariables(
     }
 
     // Move on to the DAKOTA discrete integer {range,set} variables.
-    const BitArray& di_set_bits = this->_model.discrete_int_sets();
+    const BitArray& di_set_bits = ModelUtils::discrete_int_sets(this->_model);
     for(i=0; i<num_div; ++i, ++dvi_cntr)
     {
       if (di_set_bits[i]) { // set variables are discrete nature in JEGA
@@ -2040,7 +2048,7 @@ JEGAOptimizer::Evaluator::SeparateVariables(
     // Finally, process the "discrete set of string" variables.
     // These will also be discrete in JEGA, and must be mapped
     // back to their associated string values.
-    const StringSetArray& dssv_values = _model.discrete_set_string_values();
+    const StringSetArray& dssv_values = ModelUtils::discrete_set_string_values(_model);
     for(i=0; i<num_dsv; ++i, ++dvi_cntr)
     {
       EDDY_ASSERT(dvis[dvi_cntr]->IsDiscrete());
@@ -2167,12 +2175,12 @@ JEGAOptimizer::Evaluator::Evaluate(
         // send this guy out for evaluation using the _model.
 
         // first, set the current values of the variables in the model
-        this->_model.continuous_variables(contVars);
-        this->_model.discrete_int_variables(discIntVars);
-        this->_model.discrete_real_variables(discRealVars);
+        ModelUtils::continuous_variables(this->_model, contVars);
+        ModelUtils::discrete_int_variables(this->_model, discIntVars);
+        ModelUtils::discrete_real_variables(this->_model, discRealVars);
 	// Strings set by calling single value setter for each
 	for (size_t i=0; i<discStringVars.num_elements(); ++i)
-	  this->_model.discrete_string_variable(discStringVars[i],i);
+	  ModelUtils::discrete_string_variable(this->_model, discStringVars[i],i);
 	// Could use discrete_string_varables to avoid overhead of repeated 
 	// function calls, but it takes a StringMultiArrayConstView, which
 	// must be created from discStringVars. Maybe there's a simpler way,
@@ -2180,7 +2188,7 @@ JEGAOptimizer::Evaluator::Evaluate(
 	// const size_t &dsv_len = discStringVars.num_elements();
 	// StringMultiArrayConstView dsv_view = discStringVars[ 
 	//   boost::indices[idx_range(0,dsv_len)]];
-        // this->_model.discrete_string_variables(dsv_view);
+        // ModelUtils::discrete_string_variables(this->_model, dsv_view);
 	
         // now request the evaluation in synchronous or asyncronous mode.
         if(this->_model.asynch_flag())

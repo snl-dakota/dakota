@@ -1,16 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       Verification
-//- Description: Base class for RichExtrapVerification, ...
-//- Owner:       Mike Eldred
-//- Version: $Id: DakotaVerification.hpp 6884 2010-07-31 02:47:28Z mseldre $
 
 #ifndef DAKOTA_VERIFICATION_H
 #define DAKOTA_VERIFICATION_H
@@ -33,7 +28,7 @@ public:
   //- Heading: Virtual member function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
 
 protected:
 
@@ -42,17 +37,17 @@ protected:
   //
 
   /// constructor
-  Verification(ProblemDescDB& problem_db, Model& model);
+  Verification(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor for instantiations "on the fly"
-  Verification(unsigned short method_name, Model& model);
+  Verification(unsigned short method_name, std::shared_ptr<Model> model);
   /// destructor
-  ~Verification();
+  ~Verification() override;
     
   //
   //- Heading: Virtual member function redefinitions
   //
 
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
   //
   //- Heading: Member functions

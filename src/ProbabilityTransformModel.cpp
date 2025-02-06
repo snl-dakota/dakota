@@ -1,16 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       ProbabilityTransformModel
-//- Description: Implementation code for the ProbabilityTransformModel class
-//- Owner:       Brian Adams
-//- Checked by:
 
 #include "ProbabilityTransformModel.hpp"
 #include "MarginalsCorrDistribution.hpp"
@@ -28,50 +23,56 @@ namespace Dakota
 ProbabilityTransformModel* ProbabilityTransformModel::ptmInstance(NULL);
 
 
+/** Until there is a need, restrict view changes to a separate RecastModel
+    recursion so that we maintain 1-to-1 active random variables here. */
 ProbabilityTransformModel::
-ProbabilityTransformModel(const Model& x_model, short u_space_type,
+ProbabilityTransformModel(std::shared_ptr<Model> x_model, short u_space_type,
+			//const ShortShortPair& recast_vars_view,
 			  bool truncate_bnds, Real bnd) :
-  RecastModel(x_model), distParamDerivs(NO_DERIVS),
-  truncatedBounds(truncate_bnds), boundVal(bnd)
+  RecastModel(x_model),                   // minimal initialization
+//RecastModel(x_model, recast_vars_view), // No: for recasts limited to view
+  distParamDerivs(NO_DERIVS), truncatedBounds(truncate_bnds), boundVal(bnd)
 {
   modelType = "probability_transform";
   modelId   = recast_model_id(root_model_id(), "PROBABILITY_TRANSFORM");
 
-  Sizet2DArray vars_map, primary_resp_map, secondary_resp_map;
-  SizetArray recast_vars_comps_total; // default: no change in cauv total
-  // we do not reorder the u-space variable types such that we preserve a
-  // 1-to-1 mapping with consistent ordering
-  Pecos::MultivariateDistribution& x_dist
-    = subModel.multivariate_distribution();
-  const BitArray& active_vars = x_dist.active_variables();
-  size_t i, num_active_rv = (active_vars.empty()) ?
-    x_dist.random_variables().size() : active_vars.count();
-  // *** TO DO: generalize vars_map across multiple active types
-  vars_map.resize(num_active_rv);
-  for (i=0; i<num_active_rv; ++i)
-    { vars_map[i].resize(1);         vars_map[i][0] = i; }
-  primary_resp_map.resize(numFns);
-  for (i=0; i<numFns; ++i)
-    { primary_resp_map[i].resize(1); primary_resp_map[i][0] = i; }
-
-  // There is no additional response mapping beyond that required by the
-  // nonlinear variables mapping.
-  BoolDequeArray nonlinear_resp_map(numFns, BoolDeque(1, false));
-  const Response& x_resp = subModel.current_response();
-  const SharedVariablesData& svd = subModel.current_variables().shared_data();
-  const BitArray& all_relax_di = svd.all_relaxed_discrete_int();
-  const BitArray& all_relax_dr = svd.all_relaxed_discrete_real();
+  // initialize current{Variables,Response}, userDefinedConstraints
+  const Response& x_resp = x_model->current_response();
+  SizetArray recast_vars_comps_total;  // default: no change
+  BitArray all_relax_di, all_relax_dr; // default: no change
   short recast_resp_order = 1; // recast resp order to be same as original resp
   if (!x_resp.function_gradients().empty()) recast_resp_order |= 2;
   if (!x_resp.function_hessians().empty())  recast_resp_order |= 4;
+  bool copy_values;
+  init_sizes(x_model->current_variables().view(),//recast_vars_view,
+	     recast_vars_comps_total, all_relax_di, all_relax_dr, numFns, 0, 0,
+	     recast_resp_order, copy_values);
 
-  // initialize current{Variables,Response}, userDefinedConstraints
-  init_sizes(recast_vars_comps_total, all_relax_di, all_relax_dr, numFns,
-	     0, 0, recast_resp_order);
+  // synchronize output level and grad/Hess settings with subModel
+  initialize_data_from_submodel();
+
   // initialize invariant portions of probability transform within mvDist
   // (requires currentVariables)
   initialize_transformation(u_space_type);
+
+  // we do not reorder the u-space variable types such that we preserve a
+  // 1-to-1 mapping with consistent ordering
+  const BitArray& active_vars = mvDist.active_variables();
+  size_t i, num_active_rv = (active_vars.empty()) ?
+    mvDist.random_variables().size() : active_vars.count();
+  Sizet2DArray vars_map(num_active_rv), primary_resp_map(numFns),
+    secondary_resp_map;
+  for (i=0; i<num_active_rv; ++i)
+    { vars_map[i].resize(1);         vars_map[i][0] = i; }
+  for (i=0; i<numFns; ++i)
+    { primary_resp_map[i].resize(1); primary_resp_map[i][0] = i; }
+  // There is no additional response mapping beyond that required by the
+  // nonlinear variables mapping.
+  BoolDequeArray nonlinear_resp_map(numFns, BoolDeque(1, false));
+
   // initialize Variables/Response/ActiveSet recastings (requires mvDist)
+  const Pecos::MultivariateDistribution& x_dist
+    = x_model->multivariate_distribution();
   init_maps(vars_map, nonlinear_variables_mapping(x_dist, mvDist),
 	    vars_u_to_x_mapping, set_u_to_x_mapping, primary_resp_map,
 	    secondary_resp_map, nonlinear_resp_map, resp_x_to_u_mapping, NULL);
@@ -80,7 +81,7 @@ ProbabilityTransformModel(const Model& x_model, short u_space_type,
   // transformation is sufficient for this purpose.
   inverse_mappings(vars_x_to_u_mapping, NULL, NULL, NULL);
   // initialize currentVariables based on subModel initial state
-  inverse_transform_variables(subModel.current_variables(), currentVariables);
+  inverse_transform_variables(subModel->current_variables(), currentVariables);
 }
 
 
@@ -90,97 +91,97 @@ ProbabilityTransformModel::~ProbabilityTransformModel()
 
 void ProbabilityTransformModel::initialize_dakota_variable_types()
 {
-  // Note: ctor has called initialize_distribution_
-  // {transformation,types,correlations}().  Defining the transformation is
-  // deferred until Model::initialize_mapping() to allow for problem resizing.
+  // Note: ctor has called initialize_distribution_{transformation,types,
+  // correlations}().  Defining the transformation is deferred until
+  // Model::initialize_mapping() to allow for problem resizing.
 
-  const SharedVariablesData& x_svd = subModel.current_variables().shared_data();
+  const SharedVariablesData& u_svd = currentVariables.shared_data();
   bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
-  x_svd.active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  u_svd.active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
   size_t i, num_cdv, num_ddiv, num_ddsv, num_ddrv, num_cauv, num_dauiv,
     num_dausv, num_daurv, num_ceuv, num_deuiv, num_deusv, num_deurv,
     num_csv, num_dsiv,  num_dssv,  num_dsrv, rv_cntr = 0, cv_cntr = 0,
     div_cntr = 0, dsv_cntr = 0, drv_cntr = 0;
-  x_svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
-  x_svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
-  x_svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv, num_deurv);
-  x_svd.state_counts(num_csv, num_dsiv, num_dssv, num_dsrv);
+  u_svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
+  u_svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
+  u_svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv, num_deurv);
+  u_svd.state_counts(num_csv, num_dsiv, num_dssv, num_dsrv);
   const Pecos::ShortArray& u_types = mvDist.random_variable_types();
 
   // Update active continuous/discrete variable types (needed for Model::
   // continuous_{probability_density,distribution_bounds,distribution_moment}())
   if (cdv)
     for (i=0; i<num_cdv; ++i, ++rv_cntr, ++cv_cntr)
-      continuous_variable_type(
+      current_variables().continuous_variable_type(
 	pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), cv_cntr);
   else
     rv_cntr += num_cdv;
   if (ddv) {
     for (i=0; i<num_ddiv; ++i, ++rv_cntr, ++div_cntr)
-      discrete_int_variable_type(
+      current_variables().discrete_int_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), div_cntr);
     for (i=0; i<num_ddsv; ++i, ++rv_cntr, ++dsv_cntr)
-      discrete_string_variable_type(
+      current_variables().discrete_string_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), dsv_cntr);
     for (i=0; i<num_ddrv; ++i, ++rv_cntr, ++drv_cntr)
-      discrete_real_variable_type(
+      current_variables().discrete_real_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), drv_cntr);
   }
   else
     rv_cntr += num_ddiv + num_ddsv + num_ddrv;
   if (cauv)
     for (i=0; i<num_cauv; ++i, ++rv_cntr, ++cv_cntr)
-      continuous_variable_type(
+      current_variables().continuous_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), cv_cntr);
   else
     rv_cntr += num_cauv;
   if (dauv) {
     for (i=0; i<num_dauiv; ++i, ++rv_cntr, ++div_cntr)
-      discrete_int_variable_type(
+      current_variables().discrete_int_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), div_cntr);
     for (i=0; i<num_dausv; ++i, ++rv_cntr, ++dsv_cntr)
-      discrete_string_variable_type(
+      current_variables().discrete_string_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), dsv_cntr);
     for (i=0; i<num_daurv; ++i, ++rv_cntr, ++drv_cntr)
-      discrete_real_variable_type(
+      current_variables().discrete_real_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), drv_cntr);
   }
   else
     rv_cntr += num_dauiv + num_dausv + num_daurv;
   if (ceuv)
     for (i=0; i<num_ceuv; ++i, ++rv_cntr, ++cv_cntr)
-      continuous_variable_type(
+      current_variables().continuous_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), cv_cntr);
   else
     rv_cntr += num_ceuv;
   if (deuv) {
     for (i=0; i<num_deuiv; ++i, ++rv_cntr, ++div_cntr)
-      discrete_int_variable_type(
+      current_variables().discrete_int_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), div_cntr);
     for (i=0; i<num_deusv; ++i, ++rv_cntr, ++dsv_cntr)
-      discrete_string_variable_type(
+      current_variables().discrete_string_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), dsv_cntr);
     for (i=0; i<num_deurv; ++i, ++rv_cntr, ++drv_cntr)
-      discrete_real_variable_type(
+      current_variables().discrete_real_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), drv_cntr);
   }
   else
     rv_cntr += num_deuiv + num_deusv + num_deurv;
   if (csv)
     for (i=0; i<num_csv; ++i, ++rv_cntr, ++cv_cntr)
-      continuous_variable_type(
+      current_variables().continuous_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), cv_cntr);
   else
     rv_cntr += num_csv;
   if (dsv) {
     for (i=0; i<num_dsiv; ++i, ++rv_cntr, ++div_cntr)
-      discrete_int_variable_type(
+      current_variables().discrete_int_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), div_cntr);
     for (i=0; i<num_dssv; ++i, ++rv_cntr, ++dsv_cntr)
-      discrete_string_variable_type(
+      current_variables().discrete_string_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), dsv_cntr);
     for (i=0; i<num_dsrv; ++i, ++rv_cntr, ++drv_cntr)
-      discrete_real_variable_type(
+      current_variables().discrete_real_variable_type(
         pecos_to_dakota_variable_type(u_types[rv_cntr], rv_cntr), drv_cntr);
   }
   //else
@@ -204,23 +205,23 @@ update_model_bounds(bool truncate_bnds, Real bnd)
 
   const Pecos::ShortArray& u_types = mvDist.random_variable_types();
   const std::vector<Pecos::RandomVariable>& x_rv
-    = subModel.multivariate_distribution().random_variables();
+    = subModel->multivariate_distribution().random_variables();
   size_t num_cv = currentVariables.cv(), num_rv = u_types.size();
   // [-1,1] are u-space bounds for design, state, epistemic, uniform, & beta
   RealVector c_l_bnds(num_cv, false);  c_l_bnds = -1.;
   RealVector c_u_bnds(num_cv, false);  c_u_bnds =  1.;
   Real dbl_inf = std::numeric_limits<Real>::infinity();
 
-  const SharedVariablesData& x_svd = subModel.current_variables().shared_data();
+  const SharedVariablesData& u_svd = currentVariables.shared_data();
   bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
-  x_svd.active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+  u_svd.active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
   size_t i, num_cdv, num_ddiv, num_ddsv, num_ddrv, num_cauv, num_dauiv,
     num_dausv, num_daurv, num_ceuv, num_deuiv, num_deusv, num_deurv,
     num_csv, num_dsiv,  num_dssv,  num_dsrv, cv_cntr = 0, rv_cntr = 0;
-  x_svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
-  x_svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
-  x_svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv, num_deurv);
-  x_svd.state_counts(num_csv, num_dsiv, num_dssv, num_dsrv);
+  u_svd.design_counts(num_cdv, num_ddiv, num_ddsv, num_ddrv);
+  u_svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
+  u_svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv, num_deurv);
+  u_svd.state_counts(num_csv, num_dsiv, num_dssv, num_dsrv);
 
   if (truncate_bnds) {
     // truncate unbounded distributions for approaches requiring bounds:
@@ -289,8 +290,8 @@ update_model_bounds(bool truncate_bnds, Real bnd)
 	case Pecos::LOGUNIFORM: case Pecos::TRIANGULAR:
 	case Pecos::HISTOGRAM_BIN:
 	  // bounded distributions: x-space has desired bounds
-	  c_l_bnds[cv_cntr] = subModel.continuous_lower_bound(cv_cntr);
-	  c_u_bnds[cv_cntr] = subModel.continuous_upper_bound(cv_cntr);
+	  c_l_bnds[cv_cntr] = ModelUtils::continuous_lower_bound(*subModel, cv_cntr);
+	  c_u_bnds[cv_cntr] = ModelUtils::continuous_upper_bound(*subModel, cv_cntr);
 	  break;
 	// Note: Could use subModel bounds for the following cases as well
 	// except NIDR uses +/-3 sigma, whereas here we're using +/-10 sigma
@@ -333,8 +334,8 @@ update_model_bounds(bool truncate_bnds, Real bnd)
 	switch (u_types[rv_cntr]) {
 	case Pecos::CONTINUOUS_INTERVAL_UNCERTAIN:
 	  // bounded distributions: x-space has desired bounds
-	  c_l_bnds[cv_cntr] = subModel.continuous_lower_bound(cv_cntr);
-	  c_u_bnds[cv_cntr] = subModel.continuous_upper_bound(cv_cntr);
+	  c_l_bnds[cv_cntr] = ModelUtils::continuous_lower_bound(*subModel, cv_cntr);
+	  c_u_bnds[cv_cntr] = ModelUtils::continuous_upper_bound(*subModel, cv_cntr);
 	  break;
 	}
       }
@@ -376,8 +377,8 @@ update_model_bounds(bool truncate_bnds, Real bnd)
 	case Pecos::LOGUNIFORM:  case Pecos::TRIANGULAR:
 	case Pecos::HISTOGRAM_BIN:                     // bounded distributions
 	  // 2-sided: can rely on subModel bounds
-	  c_l_bnds[cv_cntr] = subModel.continuous_lower_bound(cv_cntr);
-	  c_u_bnds[cv_cntr] = subModel.continuous_upper_bound(cv_cntr); break;
+	  c_l_bnds[cv_cntr] = ModelUtils::continuous_lower_bound(*subModel, cv_cntr);
+	  c_u_bnds[cv_cntr] = ModelUtils::continuous_upper_bound(*subModel, cv_cntr); break;
 	}
       }
     }
@@ -391,8 +392,8 @@ update_model_bounds(bool truncate_bnds, Real bnd)
 	switch (u_types[rv_cntr]) {
 	case Pecos::CONTINUOUS_INTERVAL_UNCERTAIN:
 	  // bounded distributions: x-space has desired bounds
-	  c_l_bnds[cv_cntr] = subModel.continuous_lower_bound(cv_cntr);
-	  c_u_bnds[cv_cntr] = subModel.continuous_upper_bound(cv_cntr);
+	  c_l_bnds[cv_cntr] = ModelUtils::continuous_lower_bound(*subModel, cv_cntr);
+	  c_u_bnds[cv_cntr] = ModelUtils::continuous_upper_bound(*subModel, cv_cntr);
 	  break;
 	}
       }
@@ -406,7 +407,8 @@ update_model_bounds(bool truncate_bnds, Real bnd)
     //rv_cntr += num_csv + num_dsiv + num_dssv + num_dsrv;
   }
 
-  continuous_lower_bounds(c_l_bnds);  continuous_upper_bounds(c_u_bnds);
+  ModelUtils::continuous_lower_bounds(*this, c_l_bnds);
+  ModelUtils::continuous_upper_bounds(*this, c_u_bnds);
 }
 
 
@@ -416,6 +418,7 @@ update_model_bounds(bool truncate_bnds, Real bnd)
     variables are in x-space. */
 void ProbabilityTransformModel::
 initialize_distribution_types(short u_space_type,
+			      const Pecos::BitArray& active_rv,
 			      const Pecos::MultivariateDistribution& x_dist,
 			      Pecos::MultivariateDistribution& u_dist)
 {
@@ -432,13 +435,13 @@ initialize_distribution_types(short u_space_type,
   //   then u-space involves at most linear scaling to std distributions.
 
   const Pecos::ShortArray& x_types = x_dist.random_variable_types();
-  const Pecos::BitArray& active_rv = x_dist.active_variables();
   size_t i, num_rv = x_types.size();
   Pecos::ShortArray u_types(num_rv, Pecos::NO_TYPE);
   bool err_flag = false;
 
+  bool no_mask = active_rv.empty();
   for (i=0; i<num_rv; ++i)
-    if (active_rv[i])
+    if (no_mask || active_rv[i])
       switch (u_space_type) {
       case STD_NORMAL_U:  case STD_UNIFORM_U:
 	switch (x_types[i]) {
@@ -529,7 +532,7 @@ initialize_distribution_types(short u_space_type,
 void ProbabilityTransformModel::verify_correlation_support(short u_space_type)
 {
   Pecos::MultivariateDistribution& x_dist
-    = subModel.multivariate_distribution();
+    = subModel->multivariate_distribution();
   if (x_dist.correlation()) {
     const Pecos::ShortArray&   x_types = x_dist.random_variable_types();
     const Pecos::ShortArray&   u_types = mvDist.random_variable_types();
@@ -623,7 +626,7 @@ unsigned short ProbabilityTransformModel::
 pecos_to_dakota_variable_type(unsigned short pecos_var_type, size_t rv_index)
 {
   const SizetArray& vc_totals
-    = subModel.current_variables().shared_data().components_totals();
+    = subModel->current_variables().shared_data().components_totals();
   switch (pecos_var_type) {
   case Pecos::CONTINUOUS_RANGE:    // non-unique mapping
     return (rv_index < vc_totals[TOTAL_CDV]) ? // not subject to active subsets
@@ -710,6 +713,7 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
 {
   const RealVector&         x_cv      = x_vars.continuous_variables();
   SizetMultiArrayConstView  x_cv_ids  = x_vars.continuous_variable_ids();
+  SizetMultiArrayConstView  u_cv_ids  = u_vars.continuous_variable_ids();
   SizetMultiArrayConstView  x_acv_ids = x_vars.all_continuous_variable_ids();
   const RealVector&         x_fns     = x_response.function_values();
 
@@ -721,7 +725,7 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
   const ShortArray& x_asv = x_response.active_set_request_vector();
   const SizetArray& x_dvv = x_response.active_set_derivative_vector();
   Pecos::MultivariateDistribution& x_dist
-    = ptmInstance->subModel.multivariate_distribution();
+    = ptmInstance->subModel->multivariate_distribution();
   size_t i, j, num_fns = x_asv.size(), num_deriv_vars = x_dvv.size();
   if (u_asv.size() != num_fns) {
     Cerr << "Error: inconsistent response function definition in Probability"
@@ -754,13 +758,15 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
     // and is computed outside of the num_fns loop
     if (ptmInstance->distParamDerivs > NO_DERIVS)
       ptmInstance->natafTransform.jacobian_dX_dS(x_cv, jacobian_xs,
-	x_cv_ids, x_acv_ids, ptmInstance->primaryACVarMapIndices,
+	x_cv_ids, u_cv_ids, x_acv_ids, ptmInstance->primaryACVarMapIndices,
 	ptmInstance->secondaryACVarMapTargets);
     else {
       if (u_grad_flag || u_hess_flag)
-        ptmInstance->natafTransform.jacobian_dX_dU(x_cv, jacobian_xu);
+        ptmInstance->natafTransform.jacobian_dX_dU(x_cv, x_cv_ids, u_cv_ids,
+						   jacobian_xu);
       if (u_hess_flag && ptmInstance->nonlinearVarsMapping)
-        ptmInstance->natafTransform.hessian_d2X_dU2(x_cv, hessian_xu);
+        ptmInstance->natafTransform.hessian_d2X_dU2(x_cv, x_cv_ids, u_cv_ids,
+						    hessian_xu);
     }
   }
 
@@ -796,12 +802,12 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
         fn_grad_us = u_response.function_gradient_view(i);
         if (ptmInstance->distParamDerivs > NO_DERIVS) // transform subset
           ptmInstance->natafTransform.trans_grad_X_to_S(fn_grad_x,
-            fn_grad_us, jacobian_xs, x_dvv, x_cv_ids, x_acv_ids,
+            fn_grad_us, jacobian_xs, x_dvv, x_cv_ids, u_cv_ids, x_acv_ids,
             ptmInstance->primaryACVarMapIndices,
             ptmInstance->secondaryACVarMapTargets);
         else // transform subset of components
-          ptmInstance->natafTransform.trans_grad_X_to_U(fn_grad_x,
-            fn_grad_us, jacobian_xu, x_dvv, x_cv_ids);
+          ptmInstance->natafTransform.trans_grad_X_to_U(fn_grad_x, x_cv_ids,
+            fn_grad_us, jacobian_xu, x_dvv);
       }
       else // no transformation: dg/dx = dG/du
         u_response.function_gradient(fn_grad_x, i);
@@ -829,8 +835,8 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
           //  ptmInstance->secondaryACVarMapTargets);
         }
 	else // transform subset of components
-          ptmInstance->natafTransform.trans_hess_X_to_U(fn_hess_x, fn_hess_us,
-              jacobian_xu, hessian_xu, fn_grad_x, x_dvv, x_cv_ids);
+          ptmInstance->natafTransform.trans_hess_X_to_U(fn_hess_x, x_cv_ids,
+	    fn_hess_us, jacobian_xu, hessian_xu, fn_grad_x, x_dvv);
       }
       else // no transformation: d^2g/dx^2 = d^2G/du^2
         u_response.function_hessian(fn_hess_x, i);
@@ -853,7 +859,7 @@ set_u_to_x_mapping(const Variables& u_vars, const ActiveSet& u_set,
 		   ActiveSet& x_set)
 {
   Pecos::MultivariateDistribution& x_dist
-    = ptmInstance->subModel.multivariate_distribution();
+    = ptmInstance->subModel->multivariate_distribution();
   //if (ptmInstance->distParamDerivs > NO_DERIVS) {
   //}
   //else

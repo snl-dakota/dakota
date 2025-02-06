@@ -747,4 +747,90 @@ public class RstTablePrinterTest {
 						+ "";
 		assertEquals(expected, actual);
 	}
+	
+	@Test
+	public void testPrintTableWithKeywordRunoffInDescription() {
+		RstTablePrinter printer = new RstTablePrinter();
+				
+		GenericTable outerTable = new GenericTable();
+		outerTable.setColumnWidth(0, 25);
+		outerTable.setColumnWidth(1, 20);
+		outerTable.setColumnWidth(2, 32);
+		outerTable.setColumnWidth(3, 68);
+		
+		GenericRow outerHeader = new GenericRow();
+		outerHeader.addCell("Required/Optional");
+		outerHeader.addCell("Description of Group");
+		outerHeader.addCell("Dakota Keyword");
+		outerHeader.addCell("Dakota Keyword Description");
+		
+		GenericRow row2 = new GenericRow();
+		row2.addCell("Optional", 2, 1);
+		row2.addCell("`dimension_preference`__");
+		row2.addCell("A set of weights specifying the realtive importance of each uncertain variable (dimension)");
+		
+		GenericRow row3 = new GenericRow();
+		row3.addCell("Optional", 2, 1);
+		row3.addCell("`basis_type`__");
+		row3.addCell("Specify the type of basis truncation to be used for a Polynomial Chaos Expansion.");
+		
+		GenericRow row4 = new GenericRow();
+		row4.addCell("Required (Choose One)", 1, 2);
+		row4.addCell("Required (Choose One)", 1, 2);
+		row4.addCell("`collocation_ratio`__");
+		row4.addCell("Set the number of points used to build a PCE via regression to be proportional to the number of terms in the expansion.");
+		
+		GenericRow row5 = new GenericRow();
+		row5.addSpanHoldCell();
+		row5.addSpanHoldCell();
+		row5.addCell("`expansion_samples_sequence`__");
+		row5.addCell("Sequence of expansion samples used in a multi-stage polynomial chaos expansion Each level entry of the "
+				+ "``expansion_samples_sequence`` applies to one expansion within a multi-stage expansion. Current multi-stage "
+				+ "expansions that support expansion samples sequences include multilevel and multifidelity polynomial chaos. "
+				+ "If adaptive refinement is active, then this sequence specifies the starting point for each level within either "
+				+ "an individual or integrated refinement approach. A corresponding scalar specification is documented at, e.g., "
+				+ ":dakkw:`method-polynomial_chaos-expansion_order-expansion_samples`");
+		
+		GenericRow row6 = new GenericRow();
+		row6.addCell("Optional", 2, 1);
+		row6.addCell("`import_build_points_file`__");
+		row6.addCell("File containing points you wish to use to build a surrogate.");
+		
+		outerTable.addRow(outerHeader);
+		outerTable.addRow(row2);
+		outerTable.addRow(row3);
+		outerTable.addRow(row4);
+		outerTable.addRow(row5);
+		outerTable.addRow(row6);
+		
+		String actual = printer.print(outerTable);
+		String expected =
+				    "+-------------------------+--------------------+--------------------------------+--------------------------------------------------------------------+\n"
+				  + "| Required/Optional       | Description of     | Dakota Keyword                 | Dakota Keyword Description                                         |\n"
+				  + "|                         | Group              |                                |                                                                    |\n"
+				  + "+=========================+====================+================================+====================================================================+\n"
+				  + "| Optional                                     | `dimension_preference`__       | A set of weights specifying the realtive importance of each        |\n"
+				  + "|                                              |                                | uncertain variable (dimension)                                     |\n"
+				  + "+----------------------------------------------+--------------------------------+--------------------------------------------------------------------+\n"
+				  + "| Optional                                     | `basis_type`__                 | Specify the type of basis truncation to be used for a Polynomial   |\n"
+				  + "|                                              |                                | Chaos Expansion.                                                   |\n"
+				  + "+-------------------------+--------------------+--------------------------------+--------------------------------------------------------------------+\n"
+				  + "| Required (Choose One)   | Required (Choose   | `collocation_ratio`__          | Set the number of points used to build a PCE via regression to be  |\n"
+				  + "|                         | One)               |                                | proportional to the number of terms in the expansion.              |\n"
+				  + "|                         |                    +--------------------------------+--------------------------------------------------------------------+\n"
+				  + "|                         |                    | `expansion_samples_sequence`__ | Sequence of expansion samples used in a multi-stage polynomial     |\n"
+				  + "|                         |                    |                                | chaos expansion Each level entry of the                            |\n"
+				  + "|                         |                    |                                | ``expansion_samples_sequence`` applies to one expansion within a   |\n"
+				  + "|                         |                    |                                | multi-stage expansion. Current multi-stage expansions that support |\n"
+				  + "|                         |                    |                                | expansion samples sequences include multilevel and multifidelity   |\n"
+				  + "|                         |                    |                                | polynomial chaos. If adaptive refinement is active, then this      |\n"
+				  + "|                         |                    |                                | sequence specifies the starting point for each level within either |\n"
+				  + "|                         |                    |                                | an individual or integrated refinement approach. A corresponding   |\n"
+				  + "|                         |                    |                                | scalar specification is documented at, e.g.,                       |\n"
+				  + "|                         |                    |                                | :dakkw:`method-polynomial_chaos-expansion_order-expansion_samples` |\n"
+				  + "+-------------------------+--------------------+--------------------------------+--------------------------------------------------------------------+\n"
+				  + "| Optional                                     | `import_build_points_file`__   | File containing points you wish to use to build a surrogate.       |\n"
+				  + "+----------------------------------------------+--------------------------------+--------------------------------------------------------------------+\n";
+		assertEquals(expected, actual);
+	}
 }

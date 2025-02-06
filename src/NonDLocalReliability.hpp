@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDLocalReliability
-//- Description: Class for local reliability methods within DAKOTA/UQ
-//- Owner:	 Mike Eldred
-//- Checked by:
-//- Version:
 
 #ifndef NOND_LOCAL_RELIABILITY_H
 #define NOND_LOCAL_RELIABILITY_H
@@ -54,28 +48,28 @@ public:
   //
 
   /// constructor
-  NonDLocalReliability(ProblemDescDB& problem_db, Model& model);
+  NonDLocalReliability(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
-  ~NonDLocalReliability();
+  ~NonDLocalReliability() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  void derived_init_communicators(ParLevLIter pl_iter);
-  void derived_set_communicators(ParLevLIter pl_iter);
-  void derived_free_communicators(ParLevLIter pl_iter);
+  void derived_init_communicators(ParLevLIter pl_iter) override;
+  void derived_set_communicators(ParLevLIter pl_iter) override;
+  void derived_free_communicators(ParLevLIter pl_iter) override;
 
   /// initialize graphics customized for local reliability methods
-  void initialize_graphics(int iterator_server_id = 1);
+  void initialize_graphics(int iterator_server_id = 1) override;
 
-  void pre_run();
-  void core_run();
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void pre_run() override;
+  void core_run() override;
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
-  void check_sub_iterator_conflict();
-  unsigned short uses_method() const;
-  void method_recourse();
+  void check_sub_iterator_conflict() override;
+  unsigned short uses_method() const override;
+  void method_recourse(unsigned short method_name) override;
 
 private:
 

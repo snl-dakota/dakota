@@ -1,18 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDGPMSABayesCalibration
-//- Description: Wrapper class for the Bayesian calibration capability 
-//-              from the LANL GPM/SA library
-//- Owner:       Laura Swiler
-//- Checked by:
-//- Version:
 
 #ifndef NOND_GPMSA_BAYES_CALIBRATION_H
 #define NOND_GPMSA_BAYES_CALIBRATION_H
@@ -60,7 +53,7 @@ public:
   //
 
   /// constructor
-  NonDGPMSABayesCalibration(ProblemDescDB& problem_db, Model& model);
+  NonDGPMSABayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
   ~NonDGPMSABayesCalibration();
 

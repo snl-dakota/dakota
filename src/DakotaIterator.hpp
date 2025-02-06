@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        Iterator
-//- Description:  Base class for iterator objects and envelope for 
-//-               letter/envelope idiom.
-//- Owner:        Mike Eldred
-//- Version: $Id: DakotaIterator.hpp 7029 2010-10-22 00:17:02Z mseldre $
 
 #ifndef DAKOTA_ITERATOR_H
 #define DAKOTA_ITERATOR_H
@@ -61,12 +55,12 @@ public:
   /// alternate envelope constructor which uses the ProblemDescDB but
   /// accepts a model from a higher level (meta-iterator) context,
   /// instead of constructing its own
-  Iterator(ProblemDescDB& problem_db, Model& model,
+  Iterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model,
 	   std::shared_ptr<TraitsBase> traits =
 	   std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// alternate envelope constructor for instantiations by name
   /// without the ProblemDescDB
-  Iterator(const String& method_string, Model& model,
+  Iterator(const String& method_string, std::shared_ptr<Model> model,
 	   std::shared_ptr<TraitsBase> traits =
 	   std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// copy constructor
@@ -129,11 +123,11 @@ public:
 					const ShortArray& di_target2,
 					const ShortArray& ds_target2,
 					const ShortArray& dr_target2);
-
   /// set primaryResponseCoefficients, secondaryResponseCoefficients
   /// within derived Iterators; Necessary for scalarization case in 
   /// MLMC NonDMultilevelSampling to map scalarization in nested context
-  virtual void nested_response_mappings(const RealMatrix& primary_coeffs, const RealMatrix& secondary_coeffs);
+  virtual void nested_response_mappings(const RealMatrix& primary_coeffs,
+					const RealMatrix& secondary_coeffs);
 
   /// used by IteratorScheduler to set the starting data for a run
   virtual void initialize_iterator(int job_index);
@@ -180,6 +174,9 @@ public:
   /// return is false.  Override to return true if appropriate.
   virtual bool returns_multiple_points() const;
 
+  /// set inherited data attributes based on extractions from incoming model
+  virtual void update_from_model(const Model& model);
+
   /// sets the initial point for this iterator (user-functions mode
   /// for which Model updating is not used)
   virtual void initial_point(const Variables& pt);
@@ -190,22 +187,23 @@ public:
   /// only be used if accepts_multiple_points() returns true.
   virtual void initial_points(const VariablesArray& pts);
 
-  /// assign nonlinear inequality and equality constraint allowables for this
-  /// iterator (user-functions mode for which Model updating is not used)
-  virtual void variable_bounds(const RealVector& cv_lower_bnds,
-			       const RealVector& cv_upper_bnds);
-  /// assign linear inequality and linear equality constraints for this
-  /// iterator (user-functions mode for which Model updating is not used)
-  virtual void linear_constraints(const RealMatrix& lin_ineq_coeffs,
-				  const RealVector& lin_ineq_lb,
-				  const RealVector& lin_ineq_ub,
-				  const RealMatrix& lin_eq_coeffs,
-				  const RealVector& lin_eq_tgt);
-  /// assign nonlinear inequality and equality constraint allowables for this
-  /// iterator (user-functions mode for which Model updating is not used)
-  virtual void nonlinear_constraints(const RealVector& nln_ineq_lb,
-				     const RealVector& nln_ineq_ub,
-				     const RealVector& nln_eq_tgt);
+  /// assign variable values and bounds and constraint coefficients and bounds
+  /// for this iterator (user-functions mode for which iteratedModel is null)
+  virtual void update_callback_data(const RealVector& cv_initial,
+    const RealVector& cv_lower_bnds,   const RealVector& cv_upper_bnds,
+    const RealMatrix& lin_ineq_coeffs, const RealVector& lin_ineq_lb,
+    const RealVector& lin_ineq_ub,     const RealMatrix& lin_eq_coeffs,
+    const RealVector& lin_eq_tgt,      const RealVector& nln_ineq_lb,
+    const RealVector& nln_ineq_ub,     const RealVector& nln_eq_tgt);
+  /// return linear constraint coefficients for this iterator (user-functions
+  /// mode for which iteratedModel is null)
+  virtual const RealMatrix& callback_linear_ineq_coefficients() const;
+  /// return linear constraint lower bounds for this iterator (user-functions
+  /// mode for which iteratedModel is null)
+  virtual const RealVector& callback_linear_ineq_lower_bounds() const;
+  /// return linear constraint upper bounds for this iterator (user-functions
+  /// mode for which iteratedModel is null)
+  virtual const RealVector& callback_linear_ineq_upper_bounds() const;
 
   /// initialize the 2D graphics window and the tabular graphics data
   virtual void initialize_graphics(int iterator_server_id = 1);
@@ -216,14 +214,15 @@ public:
 
   /// return the result of any recasting or surrogate model recursion
   /// layered on top of iteratedModel by the derived Iterator ctor chain
-  virtual const Model& algorithm_space_model() const;
+  virtual std::shared_ptr<Model> algorithm_space_model();
 
   /// detect any conflicts due to recursive use of the same Fortran solver
   virtual void check_sub_iterator_conflict();
   /// return name of any enabling iterator used by this iterator
   virtual unsigned short uses_method() const;
-  /// perform a method switch, if possible, due to a detected conflict
-  virtual void method_recourse();
+  /// perform a method switch, if possible, due to a detected conflict with
+  /// the simultaneous use of method_name at an higher-level
+  virtual void method_recourse(unsigned short method_name);
 
   /// return the complete set of evaluated variables
   virtual const VariablesArray& all_variables();
@@ -295,10 +294,10 @@ public:
 
   /// set the iteratedModel (iterators and meta-iterators using a single
   /// model instance)
-  void iterated_model(const Model& model);
+  void iterated_model(std::shared_ptr<Model> model);
   /// return the iteratedModel (iterators & meta-iterators using a single
   /// model instance)
-  Model& iterated_model();
+  std::shared_ptr<Model>iterated_model();
 
   /// return the problem description database (probDescDB)
   ProblemDescDB& problem_description_db() const;
@@ -414,7 +413,7 @@ protected:
 	   std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// alternate constructor for base iterator classes constructed on the fly
-  Iterator(NoDBBaseConstructor, unsigned short method_name, Model& model,
+  Iterator(NoDBBaseConstructor, unsigned short method_name, std::shared_ptr<Model> model,
 	   std::shared_ptr<TraitsBase> traits =
 	   std::shared_ptr<TraitsBase>(new TraitsBase()));
 
@@ -424,7 +423,7 @@ protected:
 	   std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// alternate envelope constructor for instantiations without ProblemDescDB
-  Iterator(NoDBBaseConstructor, Model& model, size_t max_iter, size_t max_eval,
+  Iterator(NoDBBaseConstructor, std::shared_ptr<Model> model, size_t max_iter, size_t max_eval,
 	   Real conv_tol, std::shared_ptr<TraitsBase> traits =
 	   std::shared_ptr<TraitsBase>(new TraitsBase()));
 
@@ -435,9 +434,6 @@ protected:
   /// derived class contributions to initializing the communicators
   /// associated with this Iterator instance
   virtual void derived_init_communicators(ParLevLIter pl_iter);
-
-  /// set inherited data attributes based on extractions from incoming model
-  virtual void update_from_model(const Model& model);
 
   /// gets the multiple initial points for this iterator.  This will only
   /// be meaningful after a call to initial_points mutator.
@@ -468,6 +464,10 @@ protected:
   //- Heading: Data
   //
 
+  /// the model to be iterated (for iterators and meta-iterators
+  /// employing a single model instance)
+  std::shared_ptr<Model> iteratedModel;
+
   /// class member reference to the problem description database
   /** Iterator and Model cannot use a shallow copy of ProblemDescDB
       due to circular destruction dependency (reference counts can't
@@ -481,10 +481,6 @@ protected:
   ParConfigLIter methodPCIter;
   // index for the active ParallelLevel within ParallelConfiguration::miPLIters
   //size_t miPLIndex;
-
-  /// the model to be iterated (for iterators and meta-iterators
-  /// employing a single model instance)
-  Model iteratedModel;
 
   /// number of Models locally (in Iterator or derived classes)
   /// wrapped around the initially passed in Model
@@ -528,6 +524,7 @@ protected:
 
   /// reference to the global iterator results database
   ResultsManager& resultsDB;
+
   /// reference to the global evaluation database
   EvaluationStore& evaluationsDB;
 
@@ -564,10 +561,10 @@ private:
   get_iterator(ProblemDescDB& problem_db);
   /// Used by the envelope to instantiate the correct letter class
   std::shared_ptr<Iterator>
-  get_iterator(ProblemDescDB& problem_db, Model& model);
+  get_iterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// Used by the envelope to instantiate the correct letter class
   std::shared_ptr<Iterator>
-  get_iterator(const String& method_string, Model& model);
+  get_iterator(const String& method_string, std::shared_ptr<Model> model);
 
   /// return the next available method ID for no-ID user methods
   static String user_auto_id();
@@ -578,6 +575,7 @@ private:
   //
   //- Heading: Data
   //
+  
 
   /// method identifier string from the input file, or an
   /// auto-generated ID, such that each instance of an Iterator has a
@@ -636,14 +634,17 @@ parallel_configuration_iterator_map() const
 { return (iteratorRep) ? iteratorRep->methodPCIterMap : methodPCIterMap; }
 
 
-inline void Iterator::iterated_model(const Model& model)
+inline void Iterator::iterated_model(std::shared_ptr<Model> model)
 {
-  if (iteratorRep) iteratorRep->iteratedModel = model;
-  else             iteratedModel = model; 
+  if (iteratorRep) {
+    iteratorRep->iteratedModel = model;  }
+  else {
+    iteratedModel = model; 
+  }
 }
 
 
-inline Model& Iterator::iterated_model()
+inline std::shared_ptr<Model> Iterator::iterated_model()
 { return (iteratorRep) ? iteratorRep->iteratedModel : iteratedModel; }
 
 

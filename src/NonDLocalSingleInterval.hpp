@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDLocalSingleInterval
-//- Description: Class for interval bound estimation for epistemic UQ
-//- Owner:	 Mike Eldred
-//- Checked by:
-//- Version:
 
 #ifndef NOND_LOCAL_SINGLE_INTERVAL_H
 #define NOND_LOCAL_SINGLE_INTERVAL_H
@@ -41,9 +35,9 @@ public:
   //
 
   /// constructor
-  NonDLocalSingleInterval(ProblemDescDB& problem_db, Model& model);
+  NonDLocalSingleInterval(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
-  ~NonDLocalSingleInterval();
+  ~NonDLocalSingleInterval() override;
 
 protected:
 
@@ -51,8 +45,8 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void initialize();
-  void post_process_cell_results(bool maximize);
+  void initialize() override;
+  void post_process_cell_results(bool maximize) override;
 
 private:
 

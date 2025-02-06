@@ -8,10 +8,10 @@ They can be used to explore the variations in response quantities over
 regions of the parameter space, or they can serve as inexpensive
 stand-ins for optimization or uncertainty quantification studies (see,
 for example, the surrogate-based optimization methods,
-:ref:`method-surrogate_based_global<method-surrogate_based_global>` and :ref:`method-surrogate_based_local<method-surrogate_based_local>`).
+:dakkw:`method-surrogate_based_global` and :dakkw:`method-surrogate_based_local`).
 
 Surrogate models supported in Dakota are
-categorized as Data Fitting or Hierarchical, as shown below.
+categorized as Data Fitting or Ensemble, as shown below.
 Each of these surrogate types provides an approximate representation
 of a "truth" model which is used to perform the parameter to response
 mappings. This approximation is built and updated using results from the
@@ -25,41 +25,41 @@ truth model, called the "training data".
   1. Local: built from response data from a single point in parameter space
 
 
-    - Taylor series expansion: :ref:`model-surrogate-local-taylor_series<model-surrogate-local-taylor_series>` Training data consists of a single point, plus gradient and Hessian information.
+    - Taylor series expansion: :dakkw:`model-surrogate-local-taylor_series` Training data consists of a single point, plus gradient and Hessian information.
 
 
   2. Multipoint:  built from two or more points in parameter space, often involving the current and previous iterates of a minimization algorithm.
 
 
-    - TANA-3: :ref:`model-surrogate-multipoint-tana<model-surrogate-multipoint-tana>` Training Data comes from a few previously evaluated points
+    - TANA-3: :dakkw:`model-surrogate-multipoint-tana` Training Data comes from a few previously evaluated points
 
 
   3. Global full space response surface methods:
 
 
-    - Polynomial regression: :ref:`model-surrogate-global-polynomial<model-surrogate-global-polynomial>`
+    - Polynomial regression: :dakkw:`model-surrogate-global-polynomial`
 
-    - Gaussian process (Kriging): :ref:`model-surrogate-global-gaussian_process<model-surrogate-global-gaussian_process>`
+    - Gaussian process (Kriging): :dakkw:`model-surrogate-global-gaussian_process`
 
-    - Artifical neutral network: :ref:`model-surrogate-global-neural_network<model-surrogate-global-neural_network>`
+    - Artifical neutral network: :dakkw:`model-surrogate-global-neural_network`
 
-    - MARS: :ref:`model-surrogate-global-mars<model-surrogate-global-mars>`
+    - MARS: :dakkw:`model-surrogate-global-mars`
 
-    - Radial Basis Functions: :ref:`model-surrogate-global-radial_basis<model-surrogate-global-radial_basis>`
+    - Radial Basis Functions: :dakkw:`model-surrogate-global-radial_basis`
 
-    - Orthogonal polynomials (only supported in PCE/SC for now): :ref:`method-polynomial_chaos<method-polynomial_chaos>` and :ref:`method-stoch_collocation<method-stoch_collocation>` Training data is generated using either a design of experiments method applied to the truth model ( specified by :ref:`model-surrogate-global-dace_method_pointer<model-surrogate-global-dace_method_pointer>`), or from saved data (specified by :ref:`model-surrogate-global-reuse_points<model-surrogate-global-reuse_points>` ) in a restart database, or an import file.
+    - Orthogonal polynomials (only supported in PCE/SC for now): :dakkw:`method-polynomial_chaos` and :dakkw:`method-stoch_collocation` Training data is generated using either a design of experiments method applied to the truth model ( specified by :dakkw:`model-surrogate-global-dace_method_pointer`), or from saved data (specified by :dakkw:`model-surrogate-global-reuse_points` ) in a restart database, or an import file.
 
 
-- Multifidelity/hierarchical: Multifidelity modeling involves the use of a low-fidelity physics-based model as a surrogate for the original high-fidelity model. The low-fidelity model typically involves a coarser mesh, looser convergence tolerances, reduced element order, or omitted physics. See :ref:`model-surrogate-hierarchical<model-surrogate-hierarchical>`.
+- Multifidelity/ensemble: Multifidelity modeling involves the use of a low-fidelity physics-based model as a surrogate for the original high-fidelity model. The low-fidelity model typically involves a coarser mesh, looser convergence tolerances, reduced element order, or omitted physics. See :dakkw:`model-surrogate-ensemble`.
 
-The global and hierarchal surrogates have a correction feature
+The global and ensemble surrogates have a correction feature
 in order to improve the local accuracy of the surrogate models.
 The correction factors force the surrogate models to match the true
 function values and possibly true function derivatives at the center
 point of each trust region.
 
-Details can be found on global :ref:`model-surrogate-global-correction<model-surrogate-global-correction>`
-or hierarchical :ref:`model-surrogate-hierarchical-correction<model-surrogate-hierarchical-correction>`.
+Details can be found on global :dakkw:`model-surrogate-global-correction`
+or ensemble :dakkw:`model-surrogate-ensemble-ordered_model_fidelities-correction`.
 Topics::
 
 Examples::
@@ -117,34 +117,34 @@ community.
 
 *Multifidelity Surrogate Models*
 
-A second type of surrogate is the {\em model hierarchy} type (also
+A second type of surrogate is the {\em model ensemble} type (also
 called multifidelity, variable fidelity, variable complexity, etc.).
-In this case, a model that is still physics-based but is of lower
-fidelity (e.g., coarser discretization, reduced element order, looser
-convergence tolerances, omitted physics) is used as the surrogate in
-place of the high-fidelity model. For example, an inviscid,
-incompressible Euler CFD model on a coarse discretization could be
-used as a low-fidelity surrogate for a high-fidelity Navier-Stokes
-model on a fine discretization.
+In this case, one or more models that are still physics-based but are
+of lower fidelity (e.g., coarser discretization, reduced element
+order, looser convergence tolerances, omitted physics) are used as
+surrogates in place of the high-fidelity model. For example, an
+inviscid, incompressible Euler CFD model on a coarse discretization
+could be used as a low-fidelity surrogate for a high-fidelity
+large-eddy simulation model on a fine discretization.
 
 *Surrogate Model Selection*
 
 This section offers some guidance on choosing from among the available
 surrogate model types.
 
- - For Surrogate Based Local Optimization, using the :ref:`method-surrogate_based_local<method-surrogate_based_local>` method with a trust region: using the keywords: :ref:`model-surrogate<model-surrogate>` :ref:`model-surrogate-local<model-surrogate-local>` :ref:`model-surrogate-local-taylor_series<model-surrogate-local-taylor_series>` or :ref:`model-surrogate<model-surrogate>` :ref:`model-surrogate-multipoint<model-surrogate-multipoint>` :ref:`model-surrogate-multipoint-tana<model-surrogate-multipoint-tana>` will probably work best. If for some reason you wish or need to use a global surrogate (not recommended) then the best of these options is likely to be either: :ref:`model-surrogate<model-surrogate>` :ref:`model-surrogate-global<model-surrogate-global>` :ref:`model-surrogate-global-gaussian_process<model-surrogate-global-gaussian_process>` :ref:`model-surrogate-global-gaussian_process-surfpack<model-surrogate-global-gaussian_process-surfpack>` or :ref:`model-surrogate<model-surrogate>` :ref:`model-surrogate-global<model-surrogate-global>` :ref:`model-surrogate-global-moving_least_squares<model-surrogate-global-moving_least_squares>`.
- - For Efficient Global Optimization (EGO), the :ref:`method-efficient_global<method-efficient_global>` method: the default surrogate is: :ref:`model-surrogate-global-gaussian_process<model-surrogate-global-gaussian_process>` :ref:`model-surrogate-global-gaussian_process-surfpack<model-surrogate-global-gaussian_process-surfpack>` which is likely to find a more optimal value and/or require fewer true function evaluations than the alternative, :ref:`model-surrogate-global-gaussian_process<model-surrogate-global-gaussian_process>` :ref:`model-surrogate-global-gaussian_process-dakota<model-surrogate-global-gaussian_process-dakota>`. However, the :ref:`model-surrogate-global-gaussian_process-surfpack<model-surrogate-global-gaussian_process-surfpack>` will likely take more time to build than the ``dakota`` version. Note that currently the :ref:`method-efficient_global-use_derivatives<method-efficient_global-use_derivatives>` keyword is not recommended for use with EGO based methods.
- - For EGO based global interval estimation, the :ref:`method-global_interval_est<method-global_interval_est>` :ref:`method-global_interval_est-ego<method-global_interval_est-ego>` method: the default :ref:`model-surrogate-global-gaussian_process<model-surrogate-global-gaussian_process>` :ref:`model-surrogate-global-gaussian_process-surfpack<model-surrogate-global-gaussian_process-surfpack>` will likely work better than the alternative :ref:`model-surrogate-global-gaussian_process<model-surrogate-global-gaussian_process>` :ref:`model-surrogate-global-gaussian_process-dakota<model-surrogate-global-gaussian_process-dakota>`.
- - For Efficient Global Reliability Analysis (EGRA), the :ref:`method-global_reliability<method-global_reliability>` method: the :ref:`model-surrogate-global-gaussian_process-surfpack<model-surrogate-global-gaussian_process-surfpack>` and ``dakota`` versions of the gaussian process tend to give similar answers with the ``dakota`` version tending to use fewer true function evaluations. Since this is based on EGO, it is likely that the default :ref:`model-surrogate-global-gaussian_process-surfpack<model-surrogate-global-gaussian_process-surfpack>` is more accurate, although this has not been rigorously demonstrated.
- - For EGO based Dempster-Shafer Theory of Evidence, i.e. the :ref:`method-global_evidence<method-global_evidence>` :ref:`method-global_evidence-ego<method-global_evidence-ego>` method, the default :ref:`model-surrogate-global-gaussian_process<model-surrogate-global-gaussian_process>` :ref:`model-surrogate-global-gaussian_process-surfpack<model-surrogate-global-gaussian_process-surfpack>` often use significantly fewer true function evaluations than the alternative :ref:`model-surrogate-global-gaussian_process<model-surrogate-global-gaussian_process>` :ref:`model-surrogate-global-gaussian_process-dakota<model-surrogate-global-gaussian_process-dakota>`.
+ - For Surrogate Based Local Optimization, using the :dakkw:`method-surrogate_based_local` method with a trust region: using the keywords: :dakkw:`model-surrogate` :dakkw:`model-surrogate-local` :dakkw:`model-surrogate-local-taylor_series` or :dakkw:`model-surrogate` :dakkw:`model-surrogate-multipoint` :dakkw:`model-surrogate-multipoint-tana` will probably work best. If for some reason you wish or need to use a global surrogate (not recommended) then the best of these options is likely to be either: :dakkw:`model-surrogate` :dakkw:`model-surrogate-global` :dakkw:`model-surrogate-global-gaussian_process` :dakkw:`model-surrogate-global-gaussian_process-surfpack` or :dakkw:`model-surrogate` :dakkw:`model-surrogate-global` :dakkw:`model-surrogate-global-moving_least_squares`.
+ - For Efficient Global Optimization (EGO), the :dakkw:`method-efficient_global` method: the default surrogate is: :dakkw:`model-surrogate-global-gaussian_process` :dakkw:`model-surrogate-global-gaussian_process-surfpack` which is likely to find a more optimal value and/or require fewer true function evaluations than the alternative, :dakkw:`model-surrogate-global-gaussian_process` :dakkw:`model-surrogate-global-gaussian_process-dakota`. However, the :dakkw:`model-surrogate-global-gaussian_process-surfpack` will likely take more time to build than the ``dakota`` version. Note that currently the :dakkw:`method-efficient_global-use_derivatives` keyword is not recommended for use with EGO based methods.
+ - For EGO based global interval estimation, the :dakkw:`method-global_interval_est` :dakkw:`method-global_interval_est-ego` method: the default :dakkw:`model-surrogate-global-gaussian_process` :dakkw:`model-surrogate-global-gaussian_process-surfpack` will likely work better than the alternative :dakkw:`model-surrogate-global-gaussian_process` :dakkw:`model-surrogate-global-gaussian_process-dakota`.
+ - For Efficient Global Reliability Analysis (EGRA), the :dakkw:`method-global_reliability` method: the :dakkw:`model-surrogate-global-gaussian_process-surfpack` and ``dakota`` versions of the gaussian process tend to give similar answers with the ``dakota`` version tending to use fewer true function evaluations. Since this is based on EGO, it is likely that the default :dakkw:`model-surrogate-global-gaussian_process-surfpack` is more accurate, although this has not been rigorously demonstrated.
+ - For EGO based Dempster-Shafer Theory of Evidence, i.e. the :dakkw:`method-global_evidence` :dakkw:`method-global_evidence-ego` method, the default :dakkw:`model-surrogate-global-gaussian_process` :dakkw:`model-surrogate-global-gaussian_process-surfpack` often use significantly fewer true function evaluations than the alternative :dakkw:`model-surrogate-global-gaussian_process` :dakkw:`model-surrogate-global-gaussian_process-dakota`.
  - When using a global surrogate to extrapolate, any of the surrogates:
 
-   - :ref:`model-surrogate-global-gaussian_process<model-surrogate-global-gaussian_process>` :ref:`model-surrogate-global-gaussian_process-surfpack<model-surrogate-global-gaussian_process-surfpack>`
-   - :ref:`model-surrogate-global-polynomial<model-surrogate-global-polynomial>` :ref:`model-surrogate-global-polynomial-quadratic<model-surrogate-global-polynomial-quadratic>`
-   - :ref:`model-surrogate-global-polynomial<model-surrogate-global-polynomial>` :ref:`model-surrogate-global-polynomial-cubic<model-surrogate-global-polynomial-cubic>` are recommended.
+   - :dakkw:`model-surrogate-global-gaussian_process` :dakkw:`model-surrogate-global-gaussian_process-surfpack`
+   - :dakkw:`model-surrogate-global-polynomial` :dakkw:`model-surrogate-global-polynomial-quadratic`
+   - :dakkw:`model-surrogate-global-polynomial` :dakkw:`model-surrogate-global-polynomial-cubic` are recommended.
 
- - When there is over roughly two or three thousand data points and you wish to interpolate (or approximately interpolate) then a Taylor series, Radial Basis Function Network, or Moving Least Squares fit is recommended. The only reason that the :ref:`model-surrogate-global-gaussian_process<model-surrogate-global-gaussian_process>` :ref:`model-surrogate-global-gaussian_process-surfpack<model-surrogate-global-gaussian_process-surfpack>` is not recommended is that it can take a considerable amount of time to construct when the number of data points is very large. Use of the third party MARS package included in Dakota is generally discouraged.
- - In other situations that call for a global surrogate, the :ref:`model-surrogate-global-gaussian_process<model-surrogate-global-gaussian_process>` :ref:`model-surrogate-global-gaussian_process-surfpack<model-surrogate-global-gaussian_process-surfpack>` is generally recommended. The ``use_derivatives`` keyword will only be useful if accurate and inexpensive derivatives are available. Finite difference derivatives are disqualified on both counts. However, derivatives generated by analytical, automatic differentiation, or continuous adjoint techniques can be appropriate. Currently, first order derivatives, i.e. gradients, are the highest order derivatives that can be used to construct the :ref:`model-surrogate-global-gaussian_process<model-surrogate-global-gaussian_process>` :ref:`model-surrogate-global-gaussian_process-surfpack<model-surrogate-global-gaussian_process-surfpack>` model; Hessians will not be used even if they are available.
+ - When there is over roughly two or three thousand data points and you wish to interpolate (or approximately interpolate) then a Taylor series, Radial Basis Function Network, or Moving Least Squares fit is recommended. The only reason that the :dakkw:`model-surrogate-global-gaussian_process` :dakkw:`model-surrogate-global-gaussian_process-surfpack` is not recommended is that it can take a considerable amount of time to construct when the number of data points is very large. Use of the third party MARS package included in Dakota is generally discouraged.
+ - In other situations that call for a global surrogate, the :dakkw:`model-surrogate-global-gaussian_process` :dakkw:`model-surrogate-global-gaussian_process-surfpack` is generally recommended. The ``use_derivatives`` keyword will only be useful if accurate and inexpensive derivatives are available. Finite difference derivatives are disqualified on both counts. However, derivatives generated by analytical, automatic differentiation, or continuous adjoint techniques can be appropriate. Currently, first order derivatives, i.e. gradients, are the highest order derivatives that can be used to construct the :dakkw:`model-surrogate-global-gaussian_process` :dakkw:`model-surrogate-global-gaussian_process-surfpack` model; Hessians will not be used even if they are available.
 
 Faq::
 

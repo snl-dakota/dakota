@@ -14,7 +14,7 @@ sub-method results. If receiving an error about this, set ``output``
 results responses.
 
 The identity map may not be used in conjunction with
-:ref:`model-nested-optional_interface_pointer<model-nested-optional_interface_pointer>`, nor with an explicit
+:dakkw:`model-nested-optional_interface_pointer`, nor with an explicit
 ``primary_response_mapping`` or ``secondary_response_mapping``.
 Topics::
 

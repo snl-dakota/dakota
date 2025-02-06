@@ -291,6 +291,96 @@ class Correlations(unittest.TestCase):
     def test_partial_rank_correlations(self):
         self.partial_correlation_helper("spearman")
 
+
+class SRCs(unittest.TestCase):
+    def setUp(self):
+        try:
+            self._console_srcs
+        except AttributeError:
+            self._console_srcs = hce.extract_std_regression_coeffs_results()
+    
+    def test_hdf5_structure(self):
+        with h5py.File(_TEST_NAME + ".h5", "r") as h:
+            for inc_name, inc_group in h["/methods/sampling/results/execution:1/"].items():
+                inc_id = int(inc_name.split(":")[1])
+                inc_idx = inc_id - 1
+                src_group = inc_group["std_regression_coeffs"]
+                # Check number of responses
+                self.assertEqual(len(self._console_srcs[inc_idx]), len(src_group.keys()))
+                # confirm presence of labels in hdf5
+                for resp_label in self._console_srcs[inc_idx]:
+                    self.assertTrue(resp_label in src_group.keys())
+                    # check number of variables and lengths of coeffs
+                    self.assertEqual(len(src_group[resp_label].dims[0][0][()]), len(self._console_srcs[inc_idx][resp_label]["variables"]))
+                    self.assertEqual(len(src_group[resp_label].dims[0][0][()]), src_group[resp_label].shape[0])
+                    # confirm variable labels
+                    for h_label, c_label in zip(src_group[resp_label].dims[0][0][()], self._console_srcs[inc_idx][resp_label]["variables"]):
+                        h_test_label = h_label.decode('utf-8') if isinstance(h_label, bytes) else h_label
+                        self.assertEqual(h_test_label, c_label)               
+                    # confirm presence of attribute
+                    src_group[resp_label].attrs["coefficient_of_determination"]
+
+    def test_coeffs(self):
+        with h5py.File(_TEST_NAME + ".h5", "r") as h:
+            for inc_name, inc_group in h["/methods/sampling/results/execution:1/"].items():
+                inc_id = int(inc_name.split(":")[1])
+                inc_idx = inc_id - 1
+                src_group = inc_group["std_regression_coeffs"]
+                for resp_label in self._console_srcs[inc_idx]:
+                    for h_coeff, c_coeff in zip(src_group[resp_label], self._console_srcs[inc_idx][resp_label]["coeffs"]):
+                        self.assertAlmostEqual(h_coeff, c_coeff, places=5)
+
+    def test_cod(self): 
+        with h5py.File(_TEST_NAME + ".h5", "r") as h:
+            for inc_name, inc_group in h["/methods/sampling/results/execution:1/"].items():
+                inc_id = int(inc_name.split(":")[1])
+                inc_idx = inc_id - 1
+                src_group = inc_group["std_regression_coeffs"]
+                for resp_label in self._console_srcs[inc_idx]:
+                    self.assertAlmostEqual(src_group[resp_label].attrs["coefficient_of_determination"],
+                                           self._console_srcs[inc_idx][resp_label]["cod"], places=5)
+
+
+class ToleranceIntervals(unittest.TestCase):
+    def setUp(self):
+        try:
+            self._console_ti
+        except AttributeError:
+            self._console_ti = hce.extract_tolerance_interval_results()
+
+
+    def test_structure(self):
+        result_labels = ["sample_mean",
+                         "sample_stdev",
+                         "multiplicative_factor_f",
+                         "TI_lower_end",
+                         "TI_upper_end",
+                         "TI_equiv_normal_stdev"]
+
+        with h5py.File(_TEST_NAME + ".h5", "r") as h:
+            for i, console_result in enumerate(self._console_ti):
+                inc_id = str(i+1)
+                inc_label = f"increment:{inc_id}"
+                ti_group = h[f"/methods/sampling/results/execution:1/{inc_label}/tolerance_intervals"]
+                self.assertEqual(len(console_result), len(ti_group))
+                for response in console_result:
+                    self.assertTrue(response in ti_group)
+                    for c_label, h_label in zip(result_labels, ti_group[response].dims[0][0]):
+                        h_test_label = h_label.decode('utf-8') if isinstance(h_label, bytes) else h_label
+                        self.assertEqual(c_label, h_test_label)
+                    self.assertTrue("valid_samples" in ti_group.attrs)  
+
+    def test_results(self):
+        with h5py.File(_TEST_NAME + ".h5", "r") as h:
+            for i, console_result in enumerate(self._console_ti):
+                inc_id = str(i+1)
+                inc_label = f"increment:{inc_id}"
+                ti_group = h[f"/methods/sampling/results/execution:1/{inc_label}/tolerance_intervals"]
+                for label, results in console_result.items():
+                    for c_result, h_result in zip(results, ti_group[label]):
+                        self.assertAlmostEqual(c_result, h_result, places=6)
+
+
 class EvaluationsStructure(unittest.TestCase):
 
     def test_interface_presence(self):

@@ -1,16 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       ConcurrentMetaIterator
-//- Description: Implementation code for the ConcurrentMetaIterator class
-//- Owner:       Mike Eldred
-//- Checked by:
 
 #include "ConcurrentMetaIterator.hpp"
 #include "ProblemDescDB.hpp"
@@ -106,7 +101,7 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
 
 
 ConcurrentMetaIterator::
-ConcurrentMetaIterator(ProblemDescDB& problem_db, Model& model):
+ConcurrentMetaIterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   MetaIterator(problem_db, model),
   numRandomJobs(probDescDB.get_int("method.concurrent.random_jobs")),
   randomSeed(probDescDB.get_int("method.random_seed"))
@@ -120,7 +115,7 @@ ConcurrentMetaIterator(ProblemDescDB& problem_db, Model& model):
   // For this ctor with an incoming model, we can simplify DB node assignment
   // and mirror logic in check_model()
   size_t model_index = problem_db.get_db_model_node();  // for restoration
-  problem_db.set_db_model_nodes(iteratedModel.model_id());
+  problem_db.set_db_model_nodes(iteratedModel->model_id());
 
   initialize_model(); // uses DB lookup for model data (number of obj fns)
 
@@ -170,7 +165,7 @@ void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   if (lightwt_ctor) {
     restore_model = true;
     model_index = probDescDB.get_db_model_node(); // for restoration
-    probDescDB.set_db_model_nodes(iteratedModel.model_id());
+    probDescDB.set_db_model_nodes(iteratedModel->model_id());
   }
   else {
     restore_method = restore_model = true;
@@ -261,7 +256,7 @@ void ConcurrentMetaIterator::pre_run()
 
   // initialize initialPt
   if (methodName != MULTI_START)
-    copy_data(iteratedModel.continuous_variables(), initialPt); // view->copy
+    copy_data(ModelUtils::continuous_variables(*iteratedModel), initialPt); // view->copy
 
   // estimate params_msg_len & results_msg_len and publish to IteratorScheduler
   int params_msg_len = 0, results_msg_len; // peer sched doesn't send params
@@ -273,9 +268,9 @@ void ConcurrentMetaIterator::pre_run()
     params_msg_len = send_buffer.size();
     // define results_msg_len
     if (iterSched.iteratorServerId == 0) // master proc: init_comms not called
-      iteratedModel.estimate_message_lengths();
+      iteratedModel->estimate_message_lengths();
   }
-  results_msg_len = iteratedModel.message_lengths()[3];
+  results_msg_len = iteratedModel->message_lengths()[3];
   iterSched.iterator_message_lengths(params_msg_len, results_msg_len);
 
   // -------------------------------------------------------------------------
@@ -292,8 +287,8 @@ void ConcurrentMetaIterator::pre_run()
 	// set up bounds for uniform sampling
 	RealVector lower_bnds, upper_bnds;
 	if (methodName == MULTI_START) {
-	  lower_bnds = iteratedModel.continuous_lower_bounds(); // view OK
-	  upper_bnds = iteratedModel.continuous_upper_bounds(); // view OK
+	  lower_bnds = ModelUtils::continuous_lower_bounds(*iteratedModel); // view OK
+	  upper_bnds = ModelUtils::continuous_upper_bounds(*iteratedModel); // view OK
 	}
 	else {
 	  lower_bnds.sizeUninitialized(paramSetLen); lower_bnds = 0.;

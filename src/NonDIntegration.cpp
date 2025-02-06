@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDIntegration
-//- Description: Implementation code for NonDIntegration class
-//- Owner:       Mike Eldred
-//- Revised by:  
-//- Version:
 
 #include "dakota_data_types.hpp"
 #include "dakota_system_defs.hpp"
@@ -30,7 +24,7 @@ namespace Dakota {
     and probDescDB can be queried for settings from the method
     specification.  It is not currently used, as there are not yet
     separate nond_quadrature/nond_sparse_grid method specifications. */
-NonDIntegration::NonDIntegration(ProblemDescDB& problem_db, Model& model):
+NonDIntegration::NonDIntegration(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonD(problem_db, model), numIntegrations(0),
   dimPrefSpec(probDescDB.get_rv("method.nond.dimension_preference"))
   //standAloneMode(true)
@@ -50,7 +44,7 @@ NonDIntegration::NonDIntegration(ProblemDescDB& problem_db, Model& model):
 
 /** This alternate constructor is used for on-the-fly generation and
     evaluation of numerical integration points. */
-NonDIntegration::NonDIntegration(unsigned short method_name, Model& model): 
+NonDIntegration::NonDIntegration(unsigned short method_name, std::shared_ptr<Model> model): 
   NonD(method_name, model), numIntegrations(0)//, standAloneMode(false)
 {
   // The passed model (stored in iteratedModel) is G(u): it is recast to
@@ -61,7 +55,7 @@ NonDIntegration::NonDIntegration(unsigned short method_name, Model& model):
 /** This alternate constructor is used for on-the-fly generation and
     evaluation of numerical integration points. */
 NonDIntegration::
-NonDIntegration(unsigned short method_name, Model& model,
+NonDIntegration(unsigned short method_name, std::shared_ptr<Model> model,
 		const RealVector& dim_pref): 
   NonD(method_name, model), numIntegrations(0), dimPrefSpec(dim_pref)
   //standAloneMode(false)
@@ -97,7 +91,7 @@ void NonDIntegration::core_run()
 
   // convenience function from Analyzer for evaluating parameter sets.  Data
   // flags are set to be compatible with DataFitSurrModel::build_global().
-  evaluate_parameter_sets(iteratedModel, true, false);
+  evaluate_parameter_sets(*iteratedModel);
 
   // Needed for general use outside of NonDPolynomialChaos
   //if (standAloneMode)
@@ -151,7 +145,7 @@ void NonDIntegration::print_points_weights(const String& tabular_name)
     if (weights)
       pts_wts_file << std::setw(write_precision+6) << "weight ";
     write_data_tabular(pts_wts_file,
-		       iteratedModel.continuous_variable_labels());
+		       ModelUtils::continuous_variable_labels(*iteratedModel));
     pts_wts_file << '\n';
     for (i=0; i<num_pts; ++i) {
       pts_wts_file << std::setw(6) << i+1 << ' ';

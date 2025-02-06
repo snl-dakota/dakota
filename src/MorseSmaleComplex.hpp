@@ -1,16 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        MorseSmaleComplex
-//- Description:  Class declaration for MorseSmaleComplex
-//- Owner:        Dan Maljovec, Mohamed Ebeida
-//- Version: $Id$
 
 #ifndef MS_COMPLEX_H
 #define MS_COMPLEX_H

@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       ExecutableEnvironment
-//- Description: 
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version: $Id: ExecutableEnvironment.hpp 6492 2009-12-19 00:04:28Z briadam $
 
 #ifndef EXECUTABLE_ENVIRONMENT_H
 #define EXECUTABLE_ENVIRONMENT_H
@@ -36,13 +30,13 @@ public:
 
   ExecutableEnvironment();                       ///< default constructor
   ExecutableEnvironment(int argc, char* argv[]); ///< constructor
-  ~ExecutableEnvironment();                      ///< destructor
+  ~ExecutableEnvironment() override;                      ///< destructor
     
   //
   //- Heading: Virtual function redefinitions
   //
 
-  void execute();
+  void execute() override;
 
   //
   //- Heading: Member functions

@@ -8,7 +8,7 @@ top-level global method.
 Global and local method strings supplied with the
 ``global_method_pointer`` and ``local_method_pointer`` specifications
 identify the two methods to be used. Alternatively, Dakota method names
-(e.g. ' :ref:`method-soga<method-soga>`') can be supplied using the ``global_method_name`` and
+(e.g. ' :dakkw:`method-soga`') can be supplied using the ``global_method_name`` and
 ``local_method_name`` keywords, which each have optional model pointer
 specifications. The ``local_search_probability`` setting is an optional
 specification for supplying the probability (between 0.0 and 1.0) of employing

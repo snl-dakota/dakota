@@ -6,7 +6,7 @@ fullspace truth model with a moving least squares surrogate model over
 the reduced variables.  The surrogate is constructed using the
 fullspace function value samples collected during subspace
 identification, possibly supplemented with additional
-:ref:`model-active_subspace-build_surrogate-refinement_samples<model-active_subspace-build_surrogate-refinement_samples>` in the
+:dakkw:`model-active_subspace-build_surrogate-refinement_samples` in the
 fullspace.
 
 *Default Behavior*

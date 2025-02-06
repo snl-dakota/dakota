@@ -1,15 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        NIDRProblemDescDB
-//- Description:  Problem description database populated by new IDR parser
-//- Owner:        David M. Gay
 
 #ifndef NIDR_PROBLEM_DESC_DB_H
 #define NIDR_PROBLEM_DESC_DB_H
@@ -54,13 +50,13 @@ public:
   /// database using NIDR.
   void derived_parse_inputs(const std::string& dakota_input_file,
 			    const std::string& dakota_input_string,
-			    const std::string& parser_options);
+			    const std::string& parser_options) override;
   /// perform any data processing that must be coordinated with DB buffer
   /// broadcasting (performed prior to broadcasting the DB buffer on rank 0
   /// and after receiving the DB buffer on other processor ranks)
-  void derived_broadcast();
+  void derived_broadcast() override;
   /// perform any additional data post-processing
-  void derived_post_process();
+  void derived_post_process() override;
 
   //
   //- Heading: Data

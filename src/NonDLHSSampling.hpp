@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDLHSSampling
-//- Description: Wrapper class for Fortran 90 LHS library
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version:
 
 #ifndef NOND_LHS_SAMPLING_H
 #define NOND_LHS_SAMPLING_H
@@ -54,9 +48,9 @@ public:
   //
 
   /// standard constructor
-  NonDLHSSampling(ProblemDescDB& problem_db, Model& model);
+  NonDLHSSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor for sample generation and evaluation "on the fly"
-  NonDLHSSampling(Model& model, unsigned short sample_type,
+  NonDLHSSampling(std::shared_ptr<Model> model, unsigned short sample_type,
 		  int samples, int seed, const String& rng,
 		  bool vary_pattern = true, short sampling_vars_mode = ACTIVE);
   /// alternate constructor for uniform sample generation "on the fly"
@@ -70,7 +64,7 @@ public:
                   const RealVector& std_devs, const RealVector& lower_bnds,
 		  const RealVector& upper_bnds, RealSymMatrix& correl);
   /// destructor
-  ~NonDLHSSampling();
+  ~NonDLHSSampling() override;
 
 protected:
 
@@ -79,7 +73,7 @@ protected:
   //
 
   /// increment to next in sequence of refinement samples
-  void sampling_increment();
+  void sampling_increment() override;
 
   // together the three run components perform a forward uncertainty
   // propagation by using LHS to generate a set of parameter samples,
@@ -87,22 +81,22 @@ protected:
   // computing statistics on the ensemble of results.
 
   /// generate LHS samples in non-VBD cases
-  void pre_run();
+  void pre_run() override;
   /// perform the evaluate parameter sets portion of run
-  void core_run();
+  void core_run() override;
   /// generate statistics for LHS runs in non-VBD cases
-  void post_run(std::ostream& s);
+  void post_run(std::ostream& s) override;
 
-  void post_input();
+  void post_input() override;
 
   /// update finalStatistics and (if MC sampling) finalStatErrors
-  void update_final_statistics();
+  void update_final_statistics() override;
 
   /// compute a principal components analysis on the sample set
   void compute_pca(std::ostream& s);
 
   /// print the final statistics
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
   //
   //- Heading: Member functions
@@ -173,8 +167,11 @@ private:
   /// static data used by static rank_sort() fn
   static RealArray rawData;
 
-  /// flags computation of variance-based decomposition indices
-  bool varBasedDecompFlag;
+  /// sampling method for computing variance-based decomposition indices
+  unsigned short vbdViaSamplingMethod;
+
+  /// number of bins for using with the Mahadevan sampling method for computing variance-based decomposition indices
+  int vbdViaSamplingNumBins;
 
   /// flag to specify the calculation of principal components
   bool pcaFlag;

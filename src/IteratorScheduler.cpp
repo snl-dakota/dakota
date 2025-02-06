@@ -1,16 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       IteratorScheduler
-//- Description: Implementation code for the IteratorScheduler class
-//- Owner:       Mike Eldred
-//- Checked by:
 
 #include "IteratorScheduler.hpp"
 #include "DakotaIterator.hpp"
@@ -55,7 +50,7 @@ IteratorScheduler(ParallelLibrary& parallel_lib, bool peer_assign_jobs,
 
 void IteratorScheduler::
 construct_sub_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
-		       Model& sub_model, const String& method_ptr,
+		       std::shared_ptr<Model> sub_model, const String& method_ptr,
 		       const String& method_name, const String& model_ptr)
 {
   if (sub_iterator.is_null()) { // if not already constructed on this rank
@@ -74,7 +69,7 @@ construct_sub_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
 /** This is a convenience function for computing the minimum and maximum
     partition size prior to concurrent iterator partitioning. */
 IntIntPair IteratorScheduler::
-configure(ProblemDescDB& problem_db, Iterator& sub_iterator, Model& sub_model)
+configure(ProblemDescDB& problem_db, Iterator& sub_iterator, std::shared_ptr<Model> sub_model)
 {
   // minimally instantiate the sub_iterator for concurrency estimation
   const ParallelLevel& mi_pl = schedPCIter->mi_parallel_level(); // last level
@@ -89,7 +84,7 @@ configure(ProblemDescDB& problem_db, Iterator& sub_iterator, Model& sub_model)
     partition size prior to concurrent iterator partitioning. */
 IntIntPair IteratorScheduler::
 configure(ProblemDescDB& problem_db, const String& method_string,
-	  Iterator& sub_iterator, Model& sub_model)
+	  Iterator& sub_iterator, std::shared_ptr<Model> sub_model)
 {
   // minimally instantiate the sub_iterator (reused downstream on some ranks)
   // for concurrency estimation
@@ -236,8 +231,8 @@ init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
   // This function cannot be used for the case where a model exists, but the
   // iterator does not --> they must be consistent (defined or undefined)
   // since sub_model is not passed separately.
-  Model sub_model = sub_iterator.iterated_model();
-  if (sub_model.is_null()) {
+  auto sub_model = sub_iterator.iterated_model();
+  if (!sub_model) {
     sub_model = problem_db.get_model();
     if (!sub_iterator.is_null()) // else constructed with sub_model below
       sub_iterator.iterated_model(sub_model);
@@ -248,19 +243,19 @@ init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
   // ieCommSplitFlag, but this is not available until after Model::init_comms.
   if (pl_iter->server_communicator_rank() == 0) {
     bool multiproc = (pl_iter->server_communicator_size() > 1);
-    if (multiproc) sub_model.init_comms_bcast_flag(true);
+    if (multiproc) sub_model->init_comms_bcast_flag(true);
     // only master processor needs an iterator object:
     if (sub_iterator.is_null())
       sub_iterator = problem_db.get_iterator(sub_model);
     sub_iterator.init_communicators(pl_iter);
-    if (multiproc) sub_model.stop_init_communicators(pl_iter);
+    if (multiproc) sub_model->stop_init_communicators(pl_iter);
   }
   // iterator ranks 1->n: match all init_communicators() calls that occur
   // on rank 0 (due both to implicit model recursions within the Iterator
   // constructors and the explicit call above).  Some data is stored in the
   // empty envelope for later use in execute/destruct or run/free_iterator.
   else {
-    int last_concurrency = sub_model.serve_init_communicators(pl_iter);
+    int last_concurrency = sub_model->serve_init_communicators(pl_iter);
     // store data for {run,free}_iterator() below:
     sub_iterator.maximum_evaluation_concurrency(last_concurrency);
     sub_iterator.iterated_model(sub_model);
@@ -275,7 +270,7 @@ init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
     communicators prior to running an iterator. */
 void IteratorScheduler::
 init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
-	      Model& sub_model, ParLevLIter pl_iter)
+	      std::shared_ptr<Model> sub_model, ParLevLIter pl_iter)
 {
   // pl_iter advanced by miPLIndex update() in partition()
 
@@ -290,18 +285,18 @@ init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
   // ieCommSplitFlag, but this is not available until after Model::init_comms.
   if (pl_iter->server_communicator_rank() == 0) {
     bool multiproc = (pl_iter->server_communicator_size() > 1);
-    if (multiproc) sub_model.init_comms_bcast_flag(true);
+    if (multiproc) sub_model->init_comms_bcast_flag(true);
     if (sub_iterator.is_null())// only master processor needs an iterator object
       sub_iterator = problem_db.get_iterator(sub_model);
     sub_iterator.init_communicators(pl_iter);
-    if (multiproc) sub_model.stop_init_communicators(pl_iter);
+    if (multiproc) sub_model->stop_init_communicators(pl_iter);
   }
   // iterator ranks 1->n: match all init_communicators() calls that occur
   // on rank 0 (due both to implicit model recursions within the Iterator
   // constructors and the explicit call above).  Some data is stored in the
   // empty envelope for later use in execute/destruct or run/free_iterator.
   else {
-    int last_concurrency = sub_model.serve_init_communicators(pl_iter);
+    int last_concurrency = sub_model->serve_init_communicators(pl_iter);
     // store data for {run,free}_iterator() below:
     sub_iterator.maximum_evaluation_concurrency(last_concurrency);
     sub_iterator.iterated_model(sub_model);
@@ -316,7 +311,7 @@ init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
     communicators prior to running an iterator. */
 void IteratorScheduler::
 init_iterator(ProblemDescDB& problem_db, const String& method_string,
-	      Iterator& sub_iterator, Model& sub_model, ParLevLIter pl_iter)
+	      Iterator& sub_iterator, std::shared_ptr<Model> sub_model, ParLevLIter pl_iter)
 {
   // pl_iter advanced by miPLIndex update() in partition()
 
@@ -331,18 +326,18 @@ init_iterator(ProblemDescDB& problem_db, const String& method_string,
   // ieCommSplitFlag, but this is not available until after Model::init_comms.
   if (pl_iter->server_communicator_rank() == 0) {
     bool multiproc = (pl_iter->server_communicator_size() > 1);
-    if (multiproc) sub_model.init_comms_bcast_flag(true);
+    if (multiproc) sub_model->init_comms_bcast_flag(true);
     if (sub_iterator.is_null())// only master processor needs an iterator object
       sub_iterator = problem_db.get_iterator(method_string, sub_model);
     sub_iterator.init_communicators(pl_iter);
-    if (multiproc) sub_model.stop_init_communicators(pl_iter);
+    if (multiproc) sub_model->stop_init_communicators(pl_iter);
   }
   // iterator ranks 1->n: match all init_communicators() calls that occur
   // on rank 0 (due both to implicit model recursions within the Iterator
   // constructors and the explicit call above).  Some data is stored in the
   // empty envelope for later use in execute/destruct or run/free_iterator.
   else {
-    int last_concurrency = sub_model.serve_init_communicators(pl_iter);
+    int last_concurrency = sub_model->serve_init_communicators(pl_iter);
     // store data for {run,free}_iterator() below:
     sub_iterator.maximum_evaluation_concurrency(last_concurrency);
     sub_iterator.iterated_model(sub_model);
@@ -385,8 +380,8 @@ run_iterator(Iterator& sub_iterator, ParLevLIter pl_iter)
   // Parallel iterators are executed on all processors
   if (sub_iterator.method_name() & PARALLEL_BIT) {
     // Initialize model:
-    Model& sub_model = sub_iterator.iterated_model();
-    bool var_size_changed = sub_model.initialize_mapping(pl_iter);
+    auto sub_model = sub_iterator.iterated_model();
+    bool var_size_changed = sub_model->initialize_mapping(pl_iter);
     if (var_size_changed) {
       bool reinit_comms = sub_iterator.resize();
       sub_iterator.resize_communicators(pl_iter, reinit_comms);
@@ -395,7 +390,7 @@ run_iterator(Iterator& sub_iterator, ParLevLIter pl_iter)
     sub_iterator.run(pl_iter); // set_communicators() occurs inside run()
 
     // finalize model:
-    var_size_changed = sub_model.finalize_mapping();
+    var_size_changed = sub_model->finalize_mapping();
     if (var_size_changed) {
       bool reinit_comms = sub_iterator.resize();
       sub_iterator.resize_communicators(pl_iter, reinit_comms);
@@ -413,41 +408,41 @@ run_iterator(Iterator& sub_iterator, ParLevLIter pl_iter)
 
   // for iterator ranks > 0, sub_model is stored in the empty iterator
   // envelope in IteratorScheduler::init_iterator()
-  Model& sub_model = sub_iterator.iterated_model();
+  auto sub_model = sub_iterator.iterated_model();
 
   // segregate processors into run/serve
   if (pl_iter->server_communicator_rank() == 0) { // iteratorCommRank
     // Initialize model:
-    bool var_size_changed = sub_model.initialize_mapping(pl_iter);
+    bool var_size_changed = sub_model->initialize_mapping(pl_iter);
     if (var_size_changed) {
       bool reinit_comms = sub_iterator.resize();
       sub_iterator.resize_communicators(pl_iter, reinit_comms);
     }
     bool multiproc = (pl_iter->server_communicator_size() > 1);
-    if (multiproc) sub_model.stop_init_mapping(pl_iter);
+    if (multiproc) sub_model->stop_init_mapping(pl_iter);
 
     sub_iterator.run(pl_iter); // set_communicators() occurs inside run()
-    sub_model.stop_servers();  // send termination message to all servers
+    sub_model->stop_servers();  // send termination message to all servers
 
     // finalize model:
-    var_size_changed = sub_model.finalize_mapping();
+    var_size_changed = sub_model->finalize_mapping();
     if (var_size_changed) {
       bool reinit_comms = sub_iterator.resize();
       sub_iterator.resize_communicators(pl_iter, reinit_comms);
     }
-    if (multiproc) sub_model.stop_finalize_mapping(pl_iter);
+    if (multiproc) sub_model->stop_finalize_mapping(pl_iter);
   }
   else { // serve until stopped
     // serve_init_mapping() phase:
-    int last_concurrency = sub_model.serve_init_mapping(pl_iter);
+    int last_concurrency = sub_model->serve_init_mapping(pl_iter);
     if(last_concurrency) // True if init_communicators was called during mapping
       sub_iterator.maximum_evaluation_concurrency(last_concurrency);
 
     // Nominal serve_run() phase:
-    sub_model.serve_run(pl_iter, sub_iterator.maximum_evaluation_concurrency());
+    sub_model->serve_run(pl_iter, sub_iterator.maximum_evaluation_concurrency());
 
     // serve_finalize_mapping() phase:
-    last_concurrency = sub_model.serve_finalize_mapping(pl_iter);
+    last_concurrency = sub_model->serve_finalize_mapping(pl_iter);
     if(last_concurrency) // True if init_communicators was called during mapping
       sub_iterator.maximum_evaluation_concurrency(last_concurrency);
   }

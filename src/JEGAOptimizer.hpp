@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -222,7 +222,15 @@ class JEGAOptimizer :
     ===========================================================================
     */
     private:
+	
+        // Track the number of instances so that the destructor can be called on
+	// JEGA's global logger when it reaches 0. The logger keeps JEGAGlobal.log open
+	// until process termination, which can cause problems when Dakota is used in
+	// library mode, such as with the environment Python binding, because it outlives
+	// the environment. See the destructor.
 
+        /// Number of instances of this class
+        static size_t numInstances;
         /**
          * \brief A pointer to an EvaluatorCreator used to create the evaluator
          *        used by JEGA in Dakota (a JEGAEvaluator).
@@ -490,10 +498,10 @@ class JEGAOptimizer :
          * this method.  That way, if it is called more than once and the
          * algorithm or problem has changed, it will be accounted for.
          */
-        virtual
+        
         void
         core_run(
-            );
+            ) override;
 
         /**
          * \brief Overridden to return true since JEGA algorithms can accept
@@ -501,10 +509,10 @@ class JEGAOptimizer :
          *
          * \return true, always.
          */
-        virtual
+        
         bool
         accepts_multiple_points(
-            ) const;
+            ) const override;
 
         /**
          * \brief Overridden to return true since JEGA algorithms can return
@@ -512,10 +520,10 @@ class JEGAOptimizer :
          *
          * \return true, always.
          */
-        virtual
+        
         bool
         returns_multiple_points(
-            ) const;
+            ) const override;
 
         /**
          * \brief Overridden to assign the _initPts member variable to the
@@ -524,11 +532,11 @@ class JEGAOptimizer :
          * \param pts The array of initial points for the JEGA algorithm created
          *            and run by this JEGAOptimizer.
          */
-        virtual
+        
         void
         initial_points(
             const VariablesArray& pts
-            );
+            ) override;
 
         /**
          * \brief Overridden to return the collection of initial points for the
@@ -537,10 +545,10 @@ class JEGAOptimizer :
          * \return The collection of initial points for the JEGA algorithm
          *         created and run by this JEGAOptimizer.
          */
-        virtual
+        
         const VariablesArray&
         initial_points(
-            ) const;
+            ) const override;
 
     protected:
 
@@ -578,12 +586,12 @@ class JEGAOptimizer :
          *              for problem information, etc.
          */
         JEGAOptimizer(
-            ProblemDescDB& problem_db, Model& model
+            ProblemDescDB& problem_db, std::shared_ptr<Model> model
             );
 
         /// Destructs a JEGAOptimizer
         ~JEGAOptimizer(
-            );
+            ) override;
 
 }; // class JEGAOptimizer
 
@@ -617,31 +625,31 @@ class JEGATraits: public TraitsBase
   JEGATraits() { }
 
   /// destructor
-  virtual ~JEGATraits() { }
+  ~JEGATraits() override { }
 
   /// A temporary query used in the refactor
-  virtual bool is_derived() { return true; }
+  bool is_derived() override { return true; }
 
   /// Return the flag indicating whether method supports continuous variables
-  bool supports_continuous_variables() { return true; }
+  bool supports_continuous_variables() override { return true; }
 
   /// Return the flag indicating whether method supports continuous variables
-  bool supports_discrete_variables() { return true; }
+  bool supports_discrete_variables() override { return true; }
 
   /// Return the flag indicating whether method supports linear equalities
-  bool supports_linear_equality() { return true; }
+  bool supports_linear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports linear inequalities
-  bool supports_linear_inequality() { return true; }
+  bool supports_linear_inequality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear equalities
-  bool supports_nonlinear_equality() { return true; }
+  bool supports_nonlinear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear inequalities
-  bool supports_nonlinear_inequality() { return true; }
+  bool supports_nonlinear_inequality() override { return true; }
 
   /// Return the format used for nonlinear inequality constraints
-  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override
     { return NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED; }
 
 };

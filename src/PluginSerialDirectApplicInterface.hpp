@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        SerialDirectApplicInterface
-//- Description:  Derived class for the case when analysis code simulators are
-//-               linked into the code and may be invoked directly
-//- Owner:        Mike Eldred
-//- Version: $Id: PluginSerialDirectApplicInterface.hpp 6492 2009-12-19 00:04:28Z briadam $
 
 #ifndef PLUGIN_SERIAL_DIRECT_APPLIC_INTERFACE_H
 #define PLUGIN_SERIAL_DIRECT_APPLIC_INTERFACE_H
@@ -47,7 +41,7 @@ public:
   /// constructor
   SerialDirectApplicInterface(const Dakota::ProblemDescDB& problem_db);
   /// destructor
-  ~SerialDirectApplicInterface();
+  ~SerialDirectApplicInterface() override;
 
 protected:
 
@@ -59,22 +53,22 @@ protected:
   //int derived_map_if(const Dakota::String& if_name);
 
   /// execute an analysis code portion of a direct evaluation invocation
-  int derived_map_ac(const Dakota::String& ac_name);
+  int derived_map_ac(const Dakota::String& ac_name) override;
 
   // execute the output filter portion of a direct evaluation invocation
   //int derived_map_of(const Dakota::String& of_name);
 
   /// no-op hides base error; job batching occurs within
   /// wait_local_evaluations()
-  void derived_map_asynch(const Dakota::ParamResponsePair& pair);
+  void derived_map_asynch(const Dakota::ParamResponsePair& pair) override;
 
   /// evaluate the batch of jobs contained in prp_queue
-  void wait_local_evaluations(Dakota::PRPQueue& prp_queue);
+  void wait_local_evaluations(Dakota::PRPQueue& prp_queue) override;
   /// invokes wait_local_evaluations() (no special nowait support)
-  void test_local_evaluations(Dakota::PRPQueue& prp_queue);
+  void test_local_evaluations(Dakota::PRPQueue& prp_queue) override;
 
   /// no-op hides default run-time error checks at DirectApplicInterface level
-  void set_communicators_checks(int max_eval_concurrency);
+  void set_communicators_checks(int max_eval_concurrency) override;
 
 private:
 

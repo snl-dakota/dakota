@@ -1,0 +1,34 @@
+Blurb::
+Throttle the depth for a partial recursion of admissible DAGs
+
+Description::
+A partial recursion includes admissible directed acyclic graphs (DAGs) up to
+a specified depth.  For example, an ACV graph has all approximation models
+paired with the truth model, so all graph edges point from each approximation
+node to the root node, resulting in a graph depth of 1.  In another example, an MFMC
+graph has each approximation node point to the next node in the mode sequence, ending
+at the root node; this results in a depth equal to the number of approximation models.
+
+By specifying a ``depth_limit``, one can obtain an intermediate number of
+DAGs to be explored within the search, which can be useful when the number of
+DAGs for a ``full_recursion`` grows large.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method,
+    	model_pointer = 'ENSEMBLE'
+    	approximate_control_variate acv_mf
+    	  pilot_samples = 25 seed = 8674132
+    	  search_model_graphs
+    	    partial_recursion depth_limit = 2
+    	  max_function_evaluations = 500
+
+Theory::
+
+Faq::
+
+See_Also::

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -30,14 +30,34 @@ Surrogate::Surrogate(const MatrixXd& samples, const MatrixXd& response,
 
 Surrogate::~Surrogate() {}
 
-MatrixXd Surrogate::gradient(const MatrixXd& eval_points, const int qoi) {
-  silence_unused_args(eval_points, qoi);
+VectorXd Surrogate::value(const MatrixXd& eval_points) {
+  silence_unused_args(eval_points);
+  throw(std::runtime_error("Surrogate does not implement value(...)"));
+}
+
+VectorXd Surrogate::values(const MatrixXd& eval_points) {
+  silence_unused_args(eval_points);
+  throw(std::runtime_error("Surrogate does not implement values(...)"));
+}
+
+MatrixXd Surrogate::gradient(const MatrixXd& eval_points) {
+  silence_unused_args(eval_points);
   throw(std::runtime_error("Surrogate does not implement gradient(...)"));
 }
 
-MatrixXd Surrogate::hessian(const MatrixXd& eval_point, const int qoi) {
-  silence_unused_args(eval_point, qoi);
+MatrixXd Surrogate::gradients(const MatrixXd& eval_points) {
+  silence_unused_args(eval_points);
+  throw(std::runtime_error("Surrogate does not implement gradients(...)"));
+}
+
+MatrixXd Surrogate::hessian(const MatrixXd& eval_point) {
+  silence_unused_args(eval_point);
   throw(std::runtime_error("Surrogate does not implement hessian(...)"));
+}
+
+MatrixXd Surrogate::hessians(const MatrixXd& eval_point) {
+  silence_unused_args(eval_point);
+  throw(std::runtime_error("Surrogate does not implement hessians(...)"));
 }
 
 void Surrogate::variable_labels(const std::vector<std::string>& var_labels) {

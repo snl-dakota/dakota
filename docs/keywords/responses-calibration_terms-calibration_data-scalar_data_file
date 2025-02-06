@@ -4,7 +4,7 @@ Description::
 When calibrating both scalar and field calibration terms, to
 associated experimental data, the scalar data may be provided in the
 file named by ``scalar_data_file``.  This file follows the same format
-as: :ref:`responses-calibration_terms-calibration_data_file<responses-calibration_terms-calibration_data_file>`.
+as: :dakkw:`responses-calibration_terms-calibration_data_file`.
 
 *Default Behavior*
 

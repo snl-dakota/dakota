@@ -25,8 +25,7 @@ This section provides a basic introduction to the mathematical
 formulation of optimization problems. The primary goal of this section
 is to introduce terms relating to these topics and is not intended to
 be a description of theory or numerical algorithms. For further details,
-consult :cite:p:`Aro89`, :cite:p:`Gil81`, :cite:p:`Haf92`, :cite:p:`Noc99`,
-and  :cite:p:`Van84`.
+consult :cite:p:`Aro89,Gil81,Haf92,Noc99,Van84`.
 
 A general optimization problem is formulated as follows:
 

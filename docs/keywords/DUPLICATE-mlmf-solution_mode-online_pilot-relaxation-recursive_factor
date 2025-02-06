@@ -1,0 +1,57 @@
+Blurb::
+For under-relaxation of shared sample increments, apply a recursive factor on each iteration that advances the relaxation factor toward 1
+
+Description::
+When initial correlation / covariance approximations are inaccurate,
+iterated sample updates can be overly aggressive, such that it becomes
+advisable to only accept a portion of this suggested increment through
+use of an under-relaxation factor.
+
+In the ``recursive_factor`` option, an updated relaxation factor is
+applied on each online iteration, where the value of the relaxation
+factor :math:`r` is determined from the recursive factor :math:`\gamma`
+by the following recursion:
+
+.. math::  r^{i+1} = r^i + \gamma (1. - r^i); 
+
+where :math:`r^0 = 0`, or equivalently, :math:`r^1 = \gamma`.
+In words, the relaxation factor is advanced by applying the recursive
+factor to the remainder separating the previous relaxation factor from
+unity.
+
+**Usage Tips**
+
+Even through the under-relaxation factor approaches but never reaches
+the value of 1, the sample increments will generally decay toward an
+integer truncation of zero, terminating the online iteration.
+
+As for other relaxation specification options, the one case where the
+relaxation factor will be automatically advanced to 1 is the case
+where a ``max_iterations`` constraint will force early termination of
+the iteration.  This advancement avoids polluting the final results
+with an anticipated variance reduction that was not fully realized due
+to increment throttling.
+
+The example below corresponds to a sequence of relaxation factors
+equal to .5, .75, .875, .9375, .96875, .984375, etc.  The larger the
+recursive factor specification, the faster the sequence decays toward 1.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method,
+	multilevel_blue
+	  solution_mode  online_pilot
+	    relaxation recursive_factor = .5
+	  pilot_samples = 25
+	  seed = 8674132
+	  max_function_evaluations = 500
+
+Theory::
+
+Faq::
+
+See_Also::

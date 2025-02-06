@@ -11,8 +11,8 @@ together with ``refinement_samples``.
 *Default Behavior*
 
 If the ``sample_type`` keyword is present, it must be accompanied by
-``lhs`` or ``random``.  In most contexts, ``lhs`` is the default (exception:
-multilevel_sampling uses Monte Carlo by default).
+``lhs`` or ``random``.  In most contexts, ``lhs`` is the 
+default (exception: multilevel_sampling uses Monte Carlo by default).
 Topics::
 
 Examples::

@@ -5,7 +5,7 @@ Normalize the matrix of sampled gradients before identifying subspace.
 
 *Default Behavior*
 
-The default is :ref:`model-active_subspace-normalization-local_gradient<model-active_subspace-normalization-local_gradient>`
+The default is :dakkw:`model-active_subspace-normalization-local_gradient`
 Topics::
 
 Examples::

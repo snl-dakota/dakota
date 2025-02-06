@@ -1,0 +1,16 @@
+Blurb::
+Number of steps between updates of the proposal covariance
+
+Description::
+Number of steps between updates of the proposal covariance. Used by the AM or DRAM MCMC algorithms.
+
+Topics::
+bayesian_calibration
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

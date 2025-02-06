@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        ForkApplicInterface
-//- Description:  Derived class for the case when analysis code simulators use
-//-               fork\exec\wait to provide the function evaluations
-//- Owner:        Mike Eldred
-//- Version: $Id: ForkApplicInterface.hpp 6492 2009-12-19 00:04:28Z briadam $
 
 #ifndef FORK_APPLIC_INTERFACE_H
 #define FORK_APPLIC_INTERFACE_H
@@ -38,7 +32,7 @@ public:
   /// constructor
   ForkApplicInterface(const ProblemDescDB& problem_db);
   /// destructor
-  ~ForkApplicInterface();
+  ~ForkApplicInterface() override;
 
 protected:
 
@@ -46,24 +40,24 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void wait_local_evaluation_sequence(PRPQueue& prp_queue);
-  void test_local_evaluation_sequence(PRPQueue& prp_queue);
+  void wait_local_evaluation_sequence(PRPQueue& prp_queue) override;
+  void test_local_evaluation_sequence(PRPQueue& prp_queue) override;
 
   /// spawn a child process for an analysis component within an
   /// evaluation using fork()/execvp() and wait for completion
   /// using waitpid() if block_flag is true
-  pid_t create_analysis_process(bool block_flag, bool new_group);
+  pid_t create_analysis_process(bool block_flag, bool new_group) override;
 
-  size_t wait_local_analyses();
-  size_t test_local_analyses_send(int analysis_id);
+  size_t wait_local_analyses() override;
+  size_t test_local_analyses_send(int analysis_id) override;
 
-  void join_evaluation_process_group(bool new_group);
-  void join_analysis_process_group(bool new_group);
+  void join_evaluation_process_group(bool new_group) override;
+  void join_analysis_process_group(bool new_group) override;
 
-  void  evaluation_process_group_id(pid_t pgid);
-  pid_t evaluation_process_group_id() const;
-  void  analysis_process_group_id(pid_t pgid);
-  pid_t analysis_process_group_id() const;
+  void  evaluation_process_group_id(pid_t pgid) override;
+  pid_t evaluation_process_group_id() const override;
+  void  analysis_process_group_id(pid_t pgid) override;
+  pid_t analysis_process_group_id() const override;
 
   //
   //- Heading: Member functions

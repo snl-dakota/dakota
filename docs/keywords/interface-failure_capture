@@ -14,10 +14,10 @@ after "fail" are ignored.
 
 Once Dakota detects analysis failure, the failure can be mitigated in four ways:
 
-- :ref:`interface-failure_capture-abort<interface-failure_capture-abort>` (the default)
-- :ref:`interface-failure_capture-retry<interface-failure_capture-retry>`
-- :ref:`interface-failure_capture-recover<interface-failure_capture-recover>`
-- :ref:`interface-failure_capture-continuation<interface-failure_capture-continuation>`
+- :dakkw:`interface-failure_capture-abort` (the default)
+- :dakkw:`interface-failure_capture-retry`
+- :dakkw:`interface-failure_capture-recover`
+- :dakkw:`interface-failure_capture-continuation`
 
 Refer to :ref:`failure` for additional information.
 Topics::

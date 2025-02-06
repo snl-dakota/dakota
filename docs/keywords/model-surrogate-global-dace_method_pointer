@@ -2,7 +2,7 @@ Blurb::
 Specify a method to gather training data
 Description::
 The number of training points and the sources are specified on
-:ref:`model-surrogate-global<model-surrogate-global>`, as well as the number of new training points
+:dakkw:`model-surrogate-global`, as well as the number of new training points
 required.
 
 New training points are gathered by running the "truth" model using
@@ -22,7 +22,7 @@ design sampling, and Box-Behnken sampling.
 
 Note that the number of samples specified in the method block
 may be overwritten, if the requested number of samples is less than
-:ref:`model-surrogate-global-minimum_points<model-surrogate-global-minimum_points>`.
+:dakkw:`model-surrogate-global-minimum_points`.
 Topics::
 block_pointer
 Examples::

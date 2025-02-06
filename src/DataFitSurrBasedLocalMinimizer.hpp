@@ -1,18 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       DataFitSurrBasedLocalMinimizer
-//- Description: A local surrogate-based algorithm which successively invokes
-//-              a minimizer on an approximate model within a trust region.
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version: $Id: DataFitSurrBasedLocalMinimizer.hpp 6879 2010-07-30 01:05:11Z mseldre $
 
 #ifndef DATA_FIT_SURR_BASED_LOCAL_MINIMIZER_H
 #define DATA_FIT_SURR_BASED_LOCAL_MINIMIZER_H
@@ -46,25 +39,25 @@ class DataFitSurrBasedLocalTraits: public TraitsBase
   DataFitSurrBasedLocalTraits() { }
 
   /// destructor
-  virtual ~DataFitSurrBasedLocalTraits() { }
+  ~DataFitSurrBasedLocalTraits() override { }
 
   /// A temporary query used in the refactor
-  virtual bool is_derived() { return true; }
+  bool is_derived() override { return true; }
 
   /// Return the flag indicating whether method supports continuous variables
-  bool supports_continuous_variables() { return true; }
+  bool supports_continuous_variables() override { return true; }
 
   /// Return the flag indicating whether method supports linear equalities
-  bool supports_linear_equality() { return true; }
+  bool supports_linear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports linear inequalities
-  bool supports_linear_inequality() { return true; }
+  bool supports_linear_inequality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear equalities
-  bool supports_nonlinear_equality() { return true; }
+  bool supports_nonlinear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear inequalities
-  bool supports_nonlinear_inequality() { return true; }
+  bool supports_nonlinear_inequality() override { return true; }
 };
 
 
@@ -77,16 +70,16 @@ public:
   //
 
   /// constructor
-  DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model);
+  DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor for instantiations "on the fly"
-  DataFitSurrBasedLocalMinimizer(Model& model, short merit_fn,
+  DataFitSurrBasedLocalMinimizer(std::shared_ptr<Model> model, short merit_fn,
 				 short accept_logic, short constr_relax,
 				 Real tr_factor, size_t max_iter,
 				 size_t max_eval, Real conv_tol,
 				 unsigned short soft_conv_limit,
 				 bool use_derivs);
   /// destructor
-  ~DataFitSurrBasedLocalMinimizer();
+  ~DataFitSurrBasedLocalMinimizer() override;
 
 protected:
 
@@ -94,27 +87,27 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void pre_run();
+  void pre_run() override;
 
-  void post_run(std::ostream& s);
+  void post_run(std::ostream& s) override;
 
   //
   //- Heading: Virtual functions
   //
 
-  SurrBasedLevelData& trust_region();
+  SurrBasedLevelData& trust_region() override;
 
-  void update_trust_region();
+  void update_trust_region() override;
 
-  void build();
-  void minimize();
-  void verify();
+  void build() override;
+  void minimize() override;
+  void verify() override;
 
   bool build_global();
   bool build_centered();
   void compute_center_correction(bool embed_correction);
 
-  unsigned short converged();
+  unsigned short converged() override;
 
   //
   //- Heading: Convenience member functions

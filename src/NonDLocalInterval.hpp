@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDLocalInterval
-//- Description: Class for interval bound estimation for epistemic UQ
-//- Owner:	 Mike Eldred
-//- Checked by:
-//- Version:
 
 #ifndef NOND_LOCAL_INTERVAL_H
 #define NOND_LOCAL_INTERVAL_H
@@ -41,25 +35,25 @@ public:
   //- Heading: Constructors and destructor
   //
 
-  NonDLocalInterval(ProblemDescDB& problem_db, Model& model); ///< constructor
-  ~NonDLocalInterval();                                       ///< destructor
+  NonDLocalInterval(ProblemDescDB& problem_db, std::shared_ptr<Model> model); ///< constructor
+  ~NonDLocalInterval() override;                                       ///< destructor
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  void derived_init_communicators(ParLevLIter pl_iter);
-  void derived_set_communicators(ParLevLIter pl_iter);
-  void derived_free_communicators(ParLevLIter pl_iter);
+  void derived_init_communicators(ParLevLIter pl_iter) override;
+  void derived_set_communicators(ParLevLIter pl_iter) override;
+  void derived_free_communicators(ParLevLIter pl_iter) override;
 
   /// Performs a gradient-based optimization to determine interval
   /// bounds for an entire function or interval bounds on a particular
   /// statistical estimator
-  void core_run();
+  void core_run() override;
 
-  void check_sub_iterator_conflict();
-  unsigned short uses_method() const;
-  void method_recourse();
+  void check_sub_iterator_conflict() override;
+  unsigned short uses_method() const override;
+  void method_recourse(unsigned short method_name) override;
 
 protected:
 
@@ -87,7 +81,7 @@ protected:
   /// local gradient-based optimizer
   Iterator minMaxOptimizer;
   /// recast model which extracts the active objective function
-  Model minMaxModel;
+  std::shared_ptr<Model> minMaxModel;
 
 private:
 

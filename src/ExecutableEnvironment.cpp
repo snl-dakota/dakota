@@ -1,16 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       ExecutableEnvironment
-//- Description: Implementation code for the ExecutableEnvironment class
-//- Owner:       Mike Eldred
-//- Checked by:
 
 #include "ExecutableEnvironment.hpp"
 #include "ProblemDescDB.hpp"
@@ -34,7 +29,7 @@ ExecutableEnvironment::ExecutableEnvironment(int argc, char* argv[]):
   // might get entangled with CL usage...
   if (programOptions.version())
     outputManager.output_version();
-      
+
   // After command line parsing and before input DB parsing: if just
   // getting version or help, don't instantiate anything.
   if (programOptions.proceed_to_instantiate()) {

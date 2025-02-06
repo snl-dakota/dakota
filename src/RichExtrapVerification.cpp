@@ -1,15 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       RichExtrapVerification
-//- Description: Implementation code for the RichExtrapVerification class
-//- Owner:       Mike Eldred/Ben Pax
 
 #include "dakota_system_defs.hpp"
 #include "RichExtrapVerification.hpp"
@@ -23,7 +19,7 @@ static const char rcsId[]="@(#) $Id: RichExtrapVerification.cpp 6972 2010-09-17 
 namespace Dakota {
 
 RichExtrapVerification::
-RichExtrapVerification(ProblemDescDB& problem_db, Model& model):
+RichExtrapVerification(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   Verification(problem_db, model),
   studyType(probDescDB.get_ushort("method.sub_method")),
   refinementRate(probDescDB.get_real("method.verification.refinement_rate"))
@@ -42,10 +38,10 @@ void RichExtrapVerification::pre_run()
   // Capture any changes resulting from the strategy layer's
   // passing of best variable info between iterators.
   if (studyType == ) {
-    copy_data(iteratedModel.continuous_variables(),     initialCVPoint); // copy
-    copy_data(iteratedModel.discrete_int_variables(),   initialDIVPoint);// copy
-    copy_data(iteratedModel.discrete_string_variables(),initialDSVPoint);// copy
-    copy_data(iteratedModel.discrete_real_variables(),  initialDRVPoint);// copy
+    copy_data(ModelUtils::continuous_variables(iteratedModel),     initialCVPoint); // copy
+    copy_data(ModelUtils::discrete_int_variables(iteratedModel),   initialDIVPoint);// copy
+    copy_data(ModelUtils::discrete_string_variables(iteratedModel),initialDSVPoint);// copy
+    copy_data(ModelUtils::discrete_real_variables(iteratedModel),  initialDRVPoint);// copy
   }
 
   size_t i, num_vars = numContinuousVars     + numDiscreteIntVars
@@ -69,7 +65,7 @@ void RichExtrapVerification::core_run()
   evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
   */
 
-  initialCVars = iteratedModel.continuous_variables();
+  initialCVars = ModelUtils::continuous_variables(*iteratedModel);
   numFactors   = initialCVars.length();
   if (refinementRefPt.empty())
     refinementRefPt.sizeUninitialized(numFunctions);
@@ -108,16 +104,16 @@ extrapolation(const RealVector& refine_triple, RealMatrix& qoi_triples)
 
   ShortArray asrv(numFunctions, 1); // all fns can be evaluated in this case
   activeSet.request_vector(asrv);
-  iteratedModel.continuous_variables(initialCVars);// reset prior to eval triple
+  ModelUtils::continuous_variables(*iteratedModel, initialCVars);// reset prior to eval triple
 
   for (size_t i=0; i<3; i++) {
-    iteratedModel.continuous_variable(refine_triple[i], factorIndex);
-    //iteratedModel.discrete_int_variables(di_vars);
-    //iteratedModel.discrete_string_variables(ds_vars);
-    //iteratedModel.discrete_real_variables(dr_vars);
-    iteratedModel.evaluate_nowait(activeSet);
+    ModelUtils::continuous_variable(*iteratedModel, refine_triple[i], factorIndex);
+    //ModelUtils::discrete_int_variables(iteratedModel, di_vars);
+    //ModelUtils::discrete_string_variables(iteratedModel, ds_vars);
+    //ModelUtils::discrete_real_variables(iteratedModel, dr_vars);
+    iteratedModel->evaluate_nowait(activeSet);
   }
-  const IntResponseMap& response_map = iteratedModel.synchronize();
+  const IntResponseMap& response_map = iteratedModel->synchronize();
   IntRespMCIter   r_cit = response_map.begin();
   const Response& resp0 = r_cit->second;
   ++r_cit; const Response& resp1 = r_cit->second;
@@ -297,8 +293,8 @@ void RichExtrapVerification::post_run(std::ostream& s)
 void RichExtrapVerification::print_results(std::ostream& s, short results_state)
 {
   StringArray cv_labels;
-  copy_data(iteratedModel.continuous_variable_labels(), cv_labels);
-  const StringArray& fn_labels = iteratedModel.response_labels();
+  copy_data(ModelUtils::continuous_variable_labels(*iteratedModel), cv_labels);
+  const StringArray& fn_labels = ModelUtils::response_labels(*iteratedModel);
 
   // Print resulting order and error estimates
   Cout << "\nRefinement Rate = " << refinementRate;

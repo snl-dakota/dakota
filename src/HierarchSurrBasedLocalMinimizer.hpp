@@ -1,19 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       HierarchSurrBasedLocalMinimizer
-//- Description: A local optimization algorithm that uses multiple model forms
-//-              and discretization levels to accelerate convergence of a high-
-//-              fidelity, finely-resolved model.
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version: $Id: HierarchSurrBasedLocalMinimizer.hpp 6879 2010-07-30 01:05:11Z mseldre $
 
 #ifndef HIERARCH_SURR_BASED_LOCAL_MINIMIZER_H
 #define HIERARCH_SURR_BASED_LOCAL_MINIMIZER_H
@@ -45,25 +37,25 @@ class HierarchSurrBasedLocalTraits: public TraitsBase
   HierarchSurrBasedLocalTraits() { }
 
   /// destructor
-  virtual ~HierarchSurrBasedLocalTraits() { }
+  ~HierarchSurrBasedLocalTraits() override { }
 
   /// A temporary query used in the refactor
-  virtual bool is_derived() { return true; }
+  bool is_derived() override { return true; }
 
   /// Return the flag indicating whether method supports continuous variables
-  bool supports_continuous_variables() { return true; }
+  bool supports_continuous_variables() override { return true; }
 
   /// Return the flag indicating whether method supports linear equalities
-  bool supports_linear_equality() { return true; }
+  bool supports_linear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports linear inequalities
-  bool supports_linear_inequality() { return true; }
+  bool supports_linear_inequality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear equalities
-  bool supports_nonlinear_equality() { return true; }
+  bool supports_nonlinear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear inequalities
-  bool supports_nonlinear_inequality() { return true; }
+  bool supports_nonlinear_inequality() override { return true; }
 };
 
 
@@ -76,9 +68,9 @@ public:
   //
 
   /// constructor
-  HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, Model& model);
+  HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// destructor
-  ~HierarchSurrBasedLocalMinimizer();
+  ~HierarchSurrBasedLocalMinimizer() override;
 
 protected:
 
@@ -86,18 +78,18 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void pre_run();
-  void post_run(std::ostream& s);
+  void pre_run() override;
+  void post_run(std::ostream& s) override;
 
-  SurrBasedLevelData& trust_region();
+  SurrBasedLevelData& trust_region() override;
 
-  void update_trust_region();
+  void update_trust_region() override;
 
-  void build();
-  void minimize();
-  void verify();
+  void build() override;
+  void minimize() override;
+  void verify() override;
 
-  unsigned short converged();
+  unsigned short converged() override;
 
 private:
 
@@ -106,7 +98,7 @@ private:
   //
 
   /// build the hierarchical approximation for a particular level by
-  /// computing center truth within the HierarchSurrModel
+  /// computing center truth within the EnsembleSurrModel
   void build_center_truth(size_t tr_index);
 
   /// Retrieve or evaluate SurrBasedLevelData::responseCenterTruthUncorrected
@@ -136,7 +128,7 @@ private:
   void correct_star_approx(size_t tr_index);
 
   /// activate model forms and, optionally, discretization levels within
-  /// the HierarchSurrModel associated with trustRegions[tr_index]
+  /// the EnsembleSurrModel associated with trustRegions[tr_index]
   void set_active_model(size_t tr_index);
 
   /// update trust region bounds, recurring top-down from tr_index_start
@@ -160,7 +152,7 @@ private:
   //
 
   /// number of ordered model fidelities within iteratedModel
-  /// (a HierarchSurrModel)
+  /// (an EnsembleSurrModel)
   size_t numFid;
 
   /// number of discretization levels per ordered model fidelity
@@ -184,7 +176,7 @@ inline SurrBasedLevelData& HierarchSurrBasedLocalMinimizer::trust_region()
 
 
 inline void HierarchSurrBasedLocalMinimizer::set_active_model(size_t tr_index)
-{ iteratedModel.active_model_key(trustRegions[tr_index].paired_key()); }
+{ iteratedModel->active_model_key(trustRegions[tr_index].paired_key()); }
 
 
 inline void HierarchSurrBasedLocalMinimizer::update_trust_region()

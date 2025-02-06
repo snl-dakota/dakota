@@ -1,16 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        PecosApproximation
-//- Description:  Base Class for Pecos polynomial approximations
-//-               
-//- Owner:        Mike Eldred
 
 #ifndef PECOS_APPROXIMATION_H
 #define PECOS_APPROXIMATION_H
@@ -48,40 +43,40 @@ public:
   /// alternate constructor
   PecosApproximation(const SharedApproxData& shared_data);
   /// destructor
-  ~PecosApproximation();
+  ~PecosApproximation() override;
 
   //
   //- Heading: Member functions
   //
 
   /// set pecosBasisApprox.configOptions.expansionCoeffFlag
-  void expansion_coefficient_flag(bool coeff_flag);
+  void expansion_coefficient_flag(bool coeff_flag) override;
   /// get pecosBasisApprox.configOptions.expansionCoeffFlag
-  bool expansion_coefficient_flag() const;
+  bool expansion_coefficient_flag() const override;
 
   /// set pecosBasisApprox.configOptions.expansionGradFlag
-  void expansion_gradient_flag(bool grad_flag);
+  void expansion_gradient_flag(bool grad_flag) override;
   /// get pecosBasisApprox.configOptions.expansionGradFlag
-  bool expansion_gradient_flag() const;
+  bool expansion_gradient_flag() const override;
 
   /// clear unused Sobol' indices
-  void clear_component_effects();
+  void clear_component_effects() override;
   /// Performs global sensitivity analysis using Sobol' indices by
   /// computing component (main and interaction) effects
-  void compute_component_effects();
+  void compute_component_effects() override;
   /// Performs global sensitivity analysis using Sobol' indices by
   /// computing total effects
-  void compute_total_effects();
+  void compute_total_effects() override;
 
   /// return polyApproxRep->sobolIndices
-  const Pecos::RealVector& sobol_indices() const;
+  const Pecos::RealVector& sobol_indices() const override;
   /// return polyApproxRep->totalSobolIndices
-  const Pecos::RealVector& total_sobol_indices() const;
+  const Pecos::RealVector& total_sobol_indices() const override;
 
   /// return the number of non-zero coefficients for this QoI
   size_t sparsity() const;
   /// return RegressOrthogPolyApproximation::sparseSobolIndexMap
-  Pecos::ULongULongMap sparse_sobol_index_map() const;
+  Pecos::ULongULongMap sparse_sobol_index_map() const override;
 
   /// return OrthogPolyApproximation::decayRates
   const Pecos::RealVector& dimension_decay_rates() const;
@@ -100,50 +95,50 @@ public:
   bool product_interpolants();
 
   /// return the mean of the expansion, where all active variables are random
-  Real mean();
+  Real mean() override;
   /// return the mean of the expansion for a given parameter vector,
   /// where a subset of the active variables are random
-  Real mean(const Pecos::RealVector& x);
+  Real mean(const Pecos::RealVector& x) override;
   /// return the mean of the combined expansion, treating all variables
   /// as random
-  Real combined_mean();
+  Real combined_mean() override;
   /// return the mean of the combined expansion for a given parameter vector,
   /// where a subset of the active variables are treated as random
-  Real combined_mean(const Pecos::RealVector& x);
+  Real combined_mean(const Pecos::RealVector& x) override;
   /// return the gradient of the expansion mean for a given parameter
   /// vector, where all active variables are random
-  const Pecos::RealVector& mean_gradient();
+  const Pecos::RealVector& mean_gradient() override;
   /// return the gradient of the expansion mean for a given parameter vector
   /// and given DVV, where a subset of the active variables are random
   const Pecos::RealVector& mean_gradient(const Pecos::RealVector& x,
-					 const Pecos::SizetArray& dvv);
+					 const Pecos::SizetArray& dvv) override;
 
   /// return the variance of the expansion, where all active vars are random
-  Real variance();
+  Real variance() override;
   /// return the variance of the expansion for a given parameter vector,
   /// where a subset of the active variables are random
-  Real variance(const Pecos::RealVector& x);
+  Real variance(const Pecos::RealVector& x) override;
   /// return the gradient of the expansion variance for a given parameter
   /// vector, where all active variables are random
-  const Pecos::RealVector& variance_gradient();
+  const Pecos::RealVector& variance_gradient() override;
   /// return the gradient of the expansion variance for a given parameter
   /// vector and given DVV, where a subset of the active variables are random
   const Pecos::RealVector& variance_gradient(const Pecos::RealVector& x,
-					     const Pecos::SizetArray& dvv);
+					     const Pecos::SizetArray& dvv) override;
 
   /// return the covariance between two response expansions, treating
   /// all variables as random
-  Real covariance(Approximation& approx_2);
+  Real covariance(Approximation& approx_2) override;
   /// return the covariance between two response expansions, treating
   /// a subset of the variables as random
-  Real covariance(const Pecos::RealVector& x, Approximation& approx_2);
+  Real covariance(const Pecos::RealVector& x, Approximation& approx_2) override;
   /// return the covariance between two combined response expansions,
   /// where all active variables are random
-  Real combined_covariance(Approximation& approx_2);
+  Real combined_covariance(Approximation& approx_2) override;
   /// return the covariance between two combined response expansions,
   /// where a subset of the active variables are random
   Real combined_covariance(const Pecos::RealVector& x,
-			   Approximation& approx_2);
+			   Approximation& approx_2) override;
 
   /// return the reliability index (mapped from z_bar), where all active
   /// variables are random
@@ -239,33 +234,33 @@ public:
 
   /// compute moments up to the order supported by the Pecos
   /// polynomial approximation
-  void compute_moments(bool full_stats = true, bool combined_stats = false);
+  void compute_moments(bool full_stats = true, bool combined_stats = false) override;
   /// compute moments in all-variables mode up to the order supported
   /// by the Pecos polynomial approximation
   void compute_moments(const Pecos::RealVector& x, bool full_stats = true,
-		       bool combined_stats = false);
+		       bool combined_stats = false) override;
 
   /// return primary moments using Pecos::PolynomialApproximation::moments()
-  const RealVector& moments() const;
+  const RealVector& moments() const override;
   /// return expansion moments from Pecos::PolynomialApproximation
-  const RealVector& expansion_moments() const;
+  const RealVector& expansion_moments() const override;
   /// return numerical moments from Pecos::PolynomialApproximation
-  const RealVector& numerical_integration_moments() const;
+  const RealVector& numerical_integration_moments() const override;
   /// return combined moments from multilevel-muktifidelity expansion roll-up
-  const RealVector& combined_moments() const;
+  const RealVector& combined_moments() const override;
 
   /// return primary moment using Pecos::PolynomialApproximation::moment(i)
-  Real moment(size_t i) const;
+  Real moment(size_t i) const override;
   /// set primary moment using Pecos::PolynomialApproximation::moment(i)
-  void moment(Real mom, size_t i);
+  void moment(Real mom, size_t i) override;
   /// return Pecos::PolynomialApproximation::combinedMoments[i]
-  Real combined_moment(size_t i) const;
+  Real combined_moment(size_t i) const override;
   /// set Pecos::PolynomialApproximation::combinedMoments[i]
-  void combined_moment(Real mom, size_t i);
+  void combined_moment(Real mom, size_t i) override;
 
   /// clear tracking of computed moments, due to a change that invalidates
   /// previous results
-  void clear_computed_bits();
+  void clear_computed_bits() override;
 
   /// construct the Vandermonde matrix "A" for PCE regression for Ax = b
   void build_linear_system(RealMatrix& A, const UShort2DArray& multi_index);
@@ -286,42 +281,42 @@ protected:
   // redocumenting these since they use Pecos:: qualification
 
   /// assign active key in approxData and update_active_iterators()
-  void active_model_key(const Pecos::ActiveKey& key);
+  void active_model_key(const Pecos::ActiveKey& key) override;
 
   /// retrieve the approximate function value for a given parameter vector
-  Real                        value(const Variables& vars);
+  Real                        value(const Variables& vars) override;
   /// retrieve the approximate function gradient for a given parameter vector
-  const Pecos::RealVector&    gradient(const Variables& vars);
+  const Pecos::RealVector&    gradient(const Variables& vars) override;
   /// retrieve the approximate function Hessian for a given parameter vector
-  const Pecos::RealSymMatrix& hessian(const Variables& vars);
+  const Pecos::RealSymMatrix& hessian(const Variables& vars) override;
 
-  int min_coefficients() const;
+  int min_coefficients() const override;
   //int num_constraints() const; // use default implementation
 
-  void build();
-  void rebuild();
-  void pop_coefficients(bool save_data);
-  void push_coefficients();
-  void finalize_coefficients();
-  void combine_coefficients();
-  void combined_to_active_coefficients(bool clear_combined = true);
-  void clear_inactive_coefficients();
+  void build() override;
+  void rebuild() override;
+  void pop_coefficients(bool save_data) override;
+  void push_coefficients() override;
+  void finalize_coefficients() override;
+  void combine_coefficients() override;
+  void combined_to_active_coefficients(bool clear_combined = true) override;
+  void clear_inactive_coefficients() override;
 
-  bool advancement_available();
+  bool advancement_available() override;
 
-  void print_coefficients(std::ostream& s, bool normalized);
+  void print_coefficients(std::ostream& s, bool normalized) override;
 
   /// return expansion coefficients in a form consistent with the
   /// shared multi-index
-  RealVector approximation_coefficients(bool normalized) const;
+  RealVector approximation_coefficients(bool normalized) const override;
   /// set expansion coefficients in a form consistent with the shared
   /// multi-index
   void approximation_coefficients(const RealVector& approx_coeffs,
-				  bool normalized);
+				  bool normalized) override;
 
   //void link_multilevel_surrogate_data();
 
-  void coefficient_labels(std::vector<std::string>& coeff_labels) const;
+  void coefficient_labels(std::vector<std::string>& coeff_labels) const override;
 
   //
   //- Heading: Data

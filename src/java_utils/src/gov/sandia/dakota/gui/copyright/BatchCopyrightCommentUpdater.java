@@ -26,7 +26,7 @@ public class BatchCopyrightCommentUpdater {
 	private static final String DAKOTA_HEADER =
 			  "/*******************************************************************************\n"
 			+ " * Dakota Graphical User Interface (Dakota GUI)\n"
-			+ " * Copyright 2022 National Technology & Engineering Solutions of Sandia, LLC (NTESS).\n"
+			+ " * Copyright 2023 National Technology & Engineering Solutions of Sandia, LLC (NTESS).\n"
 			+ " * Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains\n"
 			+ " * certain rights in this software.\n"
 			+ " * \n"
@@ -37,7 +37,7 @@ public class BatchCopyrightCommentUpdater {
 	private static final String SAW_IF_HEADER = 
 			  "/*******************************************************************************\n"
 			+ " * Sandia Analysis Workbench Integration Framework (SAW)\n"
-			+ " * Copyright 2022 National Technology & Engineering Solutions of Sandia, LLC (NTESS).\n"
+			+ " * Copyright 2023 National Technology & Engineering Solutions of Sandia, LLC (NTESS).\n"
 			+ " * Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains\n"
 			+ " * certain rights in this software.\n"
 			+ " * \n"
@@ -50,12 +50,15 @@ public class BatchCopyrightCommentUpdater {
 	private static final String STRING_2019 = "* Copyright 2019";
 	private static final String STRING_2020 = "* Copyright 2020";
 	private static final String STRING_2021 = "* Copyright 2021";
+	private static final String STRING_2022 = "* Copyright 2022";
 	
-	private static final String STRING_CURRENT = "* Copyright 2022";
+	private static final String STRING_CURRENT = "* Copyright 2023";
 	
 	public static final List<String> DAKOTA_GUI_PLUGINS = List.of(
 		"gov.sandia.bb.commons",
 		"gov.sandia.bb.commons.ui",
+		"gov.sandia.bb.commons.workflow.runtime",
+		"gov.sandia.bb.commons.workflow.ui",
 		"gov.sandia.blackbox",
 		"gov.sandia.blackbox.aprepro",
 		"gov.sandia.blackbox.bmf",
@@ -63,15 +66,16 @@ public class BatchCopyrightCommentUpdater {
 		"gov.sandia.blackbox.dakota.surrogate",
 		"gov.sandia.blackbox.im",
 		"gov.sandia.blackbox.iwf",
+		"gov.sandia.blackbox.struct",
 		"gov.sandia.blackbox.workflow.runtime",
 		"gov.sandia.blackbox.workflow.ui",
 		"gov.sandia.bmf",
-		"gov.sandia.bmf.chartreuse.bridge",
-		"gov.sandia.bmf.chartreuse.dakota.bridge",
 		"gov.sandia.bmf.ui",
 		"gov.sandia.bmf.units",
 		"gov.sandia.chartreuse",
 		"gov.sandia.chartreuse.csv.bridge",
+		"gov.sandia.chartreuse.distributions",
+		"gov.sandia.chartreuse.distributions.dakota.bridge",
 		"gov.sandia.chartreuse.impl.plotly",
 		"gov.sandia.chartreuse.impl.plotly.linux",
 		"gov.sandia.chartreuse.impl.plotly.mac",
@@ -85,11 +89,13 @@ public class BatchCopyrightCommentUpdater {
 		"gov.sandia.dakota.editor",
 		"gov.sandia.dakota.editor.method.ga",
 		"gov.sandia.dakota.editor.method.hybrid",
+		"gov.sandia.dakota.editor.method.misc",
 		"gov.sandia.dakota.editor.method.optpp",
 		"gov.sandia.dakota.editor.method.paramsweep",
 		"gov.sandia.dakota.editor.method.sampling",
 		"gov.sandia.dakota.editor.model.surrogates",
 		"gov.sandia.dakota.glimmer.bridge",
+		"gov.sandia.dakota.hdf.bridge",
 		"gov.sandia.dakota.help",
 		"gov.sandia.dakota.jni",
 		"gov.sandia.dakota.mlmf",
@@ -99,6 +105,7 @@ public class BatchCopyrightCommentUpdater {
 		"gov.sandia.dakota.taxonomy",
 		"gov.sandia.dakota.wizards",
 		"gov.sandia.dakota.workflow.bridge",
+		"gov.sandia.dart.dakota.jobsubmission",
 		"gov.sandia.dart.dakota.workflow.runtime",
 		"gov.sandia.dart.dakota.workflow.ui",
 		"gov.sandia.dart.dakotaui.app",
@@ -115,7 +122,17 @@ public class BatchCopyrightCommentUpdater {
 	
 	public static final List<String> SAW_IF_PLUGINS = List.of(
 		"com.strikewire.snl.apc.Common",
+		"com.strikewire.snl.apc.FileManager",
+		"com.strikewire.snl.apc.FileSystemDataModel",
 		"com.strikewire.utils",
+		"gov.sandia.apc.editor.calore",
+		"gov.sandia.apc.JobSubmission",
+		"gov.sandia.apc.JobSubmission.help",
+		"gov.sandia.apc.machines",
+		"gov.sandia.apc.terminal",
+		"gov.sandia.dart.accounts.jobs",
+		"gov.sandia.dart.accounts.jobs.localstorage",
+		"gov.sandia.dart.accounts.jobs.provider",
 		"gov.sandia.dart.apache.commons",
 		"gov.sandia.dart.application",
 		"gov.sandia.dart.aprepro",
@@ -123,27 +140,42 @@ public class BatchCopyrightCommentUpdater {
 		"gov.sandia.dart.chart.xyplot.ui",
 		"gov.sandia.dart.common.core",
 		"gov.sandia.dart.common.preferences",
+		"gov.sandia.dart.contrib.xml",
 		"gov.sandia.dart.jna",
+		"gov.sandia.dart.launch",
+		"gov.sandia.dart.login",
+		"gov.sandia.dart.login.core",
+		"gov.sandia.dart.login.history.view",
+		"gov.sandia.dart.login.krb",
+		"gov.sandia.dart.login.krb.status",
+		"gov.sandia.dart.login.sspi",
+		"gov.sandia.dart.login.sspi.status",
 		"gov.sandia.dart.metrics",
 		"gov.sandia.dart.workflow.editor",
 		"gov.sandia.dart.workflow.help",
 		"gov.sandia.dart.workflow.phase3",
-		"gov.sandia.dart.workflow.phase3.embedded"
+		"gov.sandia.dart.workflow.phase3.embedded",
+		"gov.sandia.dart.workflow.phase3.modules"
 	);
 	
 	public static final List<String> NON_DAKOTA_PLUGINS = List.of(
 		"gov.sandia.aleph",
 		"gov.sandia.aleph.ui",
 		"gov.sandia.aleph.workflow.runtime",
+		"gov.sandia.aleph.workflow.ui",
 		"gov.sandia.bb.commons.ui.saw",
 		"gov.sandia.blackbox.xyce",
 		"gov.sandia.dakota.method.soga",
 		"gov.sandia.dakota.parser.ui.saw.bridge",
+		"gov.sandia.ecmf.workflow.runtime",
+		"gov.sandia.ecmf.workflow.ui",
 		"gov.sandia.dart.dakota.tests",
 		"gov.sandia.hdf.hdfview",
 		"gov.sandia.hdf.hdfview.tests",
 		"gov.sandia.modules",
 		"gov.sandia.modules.runtime",
+		"gov.sandia.packaging.jre",
+		"gov.sandia.hdf.core",
 		"org.eclipse.graphiti",
 		"org.eclipse.graphiti.mm",
 		"org.eclipse.graphiti.ui"
@@ -182,7 +214,7 @@ public class BatchCopyrightCommentUpdater {
 	private static final List<String> FOLDER_WHITELIST = new ArrayList<>();
 	
 	static {
-		//FOLDER_WHITELIST.addAll(SAW_IF_PLUGINS);
+		// FOLDER_WHITELIST.addAll(SAW_IF_PLUGINS);
 		FOLDER_WHITELIST.addAll(DAKOTA_GUI_PLUGINS);
 	}
 	
@@ -222,6 +254,7 @@ public class BatchCopyrightCommentUpdater {
 			updateYearOfCommentHeader(javaFile, STRING_2019);
 			updateYearOfCommentHeader(javaFile, STRING_2020);
 			updateYearOfCommentHeader(javaFile, STRING_2021);
+			updateYearOfCommentHeader(javaFile, STRING_2022);
 		} else if(!hasHeader && INSERT_IF_MISSING) {
 			if(INSERT_DAKOTA_HEADER) insertHeader(javaFile, DAKOTA_HEADER);
 			else if(INSERT_SAW_HEADER) insertHeader(javaFile, SAW_IF_HEADER);

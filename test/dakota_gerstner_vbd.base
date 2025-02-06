@@ -1,0 +1,14 @@
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 500 total (479 new, 21 duplicate)
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      2.5328650315e-02  3.1276613767e-01 x
+                     -1.5022029622e-02  5.7157927949e-01 y
+                      3.5384768804e-01  5.7395380418e-01 ancomp
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 500 total (479 new, 21 duplicate)
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      2.5328650315e-02  3.1276613767e-01 x
+                     -1.5022029622e-02  5.7157927949e-01 y
+                      3.5384768804e-01  5.7395380418e-01 ancomp

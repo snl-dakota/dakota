@@ -5,7 +5,7 @@ if(DAKOTA_ENABLE_TESTS AND Python_Interpreter_FOUND AND
   add_test(NAME pyprepro_test 
 	  COMMAND ${Python_EXECUTABLE} -B run_tests.py
 	  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-  set_property(TEST pyprepro_test PROPERTY LABELS Unit)
+  set_property(TEST pyprepro_test PROPERTY LABELS Unit Python)
   set_property(TEST pyprepro_test 
 	  PROPERTY ENVIRONMENT PYTHONPATH "$ENV{PYTHONPATH}:${CMAKE_SOURCE_DIR}/interfaces/Python")
 endif()

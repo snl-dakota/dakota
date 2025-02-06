@@ -1,14 +1,14 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
 #ifdef _WIN32
-#include "dakota_windows.h"
+#include "util_windows.hpp"
 #define dlopen(x,y) LoadLibrary(x)
 #define find_dlsym(a,b,c) (a = (dl_constructor_t)GetProcAddress((HINSTANCE)(b),c))
 #define dlclose(x) FreeLibrary((HMODULE)x)
@@ -236,7 +236,7 @@ DLSolver::botch(const char *fmt, ...)
 	abort_handler(-1);
 	}
 
-DLSolver::DLSolver(Model& model):
+DLSolver::DLSolver(std::shared_ptr<Model> model):
 	Optimizer1(model, std::shared_ptr<TraitsBase>(new DLSolverTraits())),
 	dl_core_run(0), dl_destructor(0), dlLib(0)
 {

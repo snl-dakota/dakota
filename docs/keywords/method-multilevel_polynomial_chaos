@@ -1,7 +1,7 @@
 Blurb::
 Multilevel uncertainty quantification using polynomial chaos expansions
 Description::
-As described in :ref:`method-polynomial_chaos<method-polynomial_chaos>`, the polynomial chaos
+As described in :dakkw:`method-polynomial_chaos`, the polynomial chaos
 expansion (PCE) is a general framework for the approximate representation
 of random response functions in terms of series expansions in standardized
 random variables:
@@ -27,7 +27,7 @@ where :math:`\delta_i`  is a coefficient for the discrepancy expansion.
 For the case of regression-based PCE (least squares, compressed sensing,
 or orthogonal least interpolation), an optimal sample allocation procedure
 can be applied for the resolution of each level within a multilevel sampling
-procedure as in :ref:`method-multilevel_sampling<method-multilevel_sampling>`.  The core difference
+procedure as in :dakkw:`method-multilevel_sampling`.  The core difference
 is that a Monte Carlo estimator of the statistics is replaced with a
 PCE-based estimator of the statistics, requiring approximation of the
 variance of these estimators.
@@ -40,14 +40,15 @@ future releases.
 *Additional Resources*
 
 Dakota provides access to multilevel PCE methods through the
-NonDMultilevelPolynomialChaos class. Refer to the Stochastic Expansion
-Methods chapter of the Theory Manual :cite:p:`TheoMan` for additional
-information on the Multilevel PCE algorithm.
+NonDMultilevelPolynomialChaos class. Refer to the 
+:ref:`theory:uq:expansion` section within the theory portion of the Users Guide
+for additional information on the Multilevel PCE algorithm.
+
 
 *Expected HDF5 Output*
 
 If Dakota was built with HDF5 support and run with the
-:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+:dakkw:`environment-results_output-hdf5` keyword, this method
 writes the following results to HDF5:
 
 
@@ -76,7 +77,7 @@ Examples::
     
     model,
      id_model = 'HIERARCH'
-     surrogate hierarchical
+     surrogate ensemble
        ordered_model_fidelities = 'SIM1'
        correction additive zeroth_order
     

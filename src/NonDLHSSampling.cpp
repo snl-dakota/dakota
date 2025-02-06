@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDLHSSampling
-//- Description: Implementation code for NonDLHSSampling class
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version:
 
 #include "NonDLHSSampling.hpp"
 #include "DakotaResponse.hpp"
@@ -48,14 +42,15 @@ RealArray NonDLHSSampling::rawData;
 /** This constructor is called for a standard letter-envelope iterator 
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
-NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, Model& model):
+NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDSampling(problem_db, model), numResponseFunctions(0),
   refineSamples(probDescDB.get_iv("method.nond.refinement_samples")),
   dOptimal(probDescDB.get_bool("method.nond.d_optimal")),
   numCandidateDesigns(probDescDB.get_sizet("method.num_candidate_designs")),
   oversampleRatio(probDescDB.get_real("method.nond.collocation_ratio")),
   pcaFlag(probDescDB.get_bool("method.principal_components")),
-  varBasedDecompFlag(probDescDB.get_bool("method.variance_based_decomp")),
+  vbdViaSamplingMethod(probDescDB.get_ushort("method.vbd_via_sampling_method")),
+  vbdViaSamplingNumBins(probDescDB.get_int("method.vbd_via_sampling_num_bins")),
   percentVarianceExplained(
     probDescDB.get_real("method.percent_variance_explained"))
 {
@@ -64,11 +59,19 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, Model& model):
   if (sampleType == SUBMETHOD_DEFAULT)
     sampleType = SUBMETHOD_LHS;
 
-  if (model.primary_fn_type() == GENERIC_FNS)
-    numResponseFunctions = model.num_primary_fns();
+  if (model->primary_fn_type() == GENERIC_FNS)
+    numResponseFunctions = model->num_primary_fns();
+
+  if ((vbdFlag == true) && 
+      (vbdViaSamplingMethod==VBD_BINNED ) &&
+      (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars)){
+        Cerr << "\nError: discrete variables are not supported for "
+        << "binned variance based decomposition.\n";
+        abort_handler(METHOD_ERROR); 
+  }
 
   if (dOptimal) {
-    const SharedVariablesData& svd = model.current_variables().shared_data();
+    const SharedVariablesData& svd = model->current_variables().shared_data();
     const SizetArray& ac_totals = svd.active_components_totals();
     if (ac_totals[TOTAL_CDV]   || ac_totals[TOTAL_DDIV]  ||
 	ac_totals[TOTAL_DDSV]  || ac_totals[TOTAL_DDRV]  ||
@@ -99,7 +102,7 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, Model& model):
     }
     // NOTE: Classical D-optimal works with regular LHS by generating
     // candidate designs that are Latin and picking the best.
-    if (sampleType == SUBMETHOD_LHS && outputLevel > SILENT_OUTPUT) {
+    if ((sampleType == SUBMETHOD_LHS || sampleType == SUBMETHOD_LOW_DISCREPANCY_SAMPLING) && outputLevel > SILENT_OUTPUT) {
       if (refineSamples.length())
         Cout << "Warning: 'd_optimal' currently has no effect for incrementally"
              << " refined LHS \n         sampling" << std::endl;
@@ -121,13 +124,13 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, Model& model):
     It's purpose is to avoid the need for a separate LHS specification
     within methods that use LHS sampling. */
 NonDLHSSampling::
-NonDLHSSampling(Model& model, unsigned short sample_type, int samples,
+NonDLHSSampling(std::shared_ptr<Model> model, unsigned short sample_type, int samples,
 		int seed, const String& rng, bool vary_pattern,
 		short sampling_vars_mode): 
   NonDSampling(RANDOM_SAMPLING, model, sample_type, samples, seed, rng,
 	       vary_pattern, sampling_vars_mode),
   numResponseFunctions(numFunctions), dOptimal(false), oversampleRatio(0.0),
-  pcaFlag(false), varBasedDecompFlag(false)
+  pcaFlag(false)
 { }
 
 
@@ -146,7 +149,7 @@ NonDLHSSampling(unsigned short sample_type, int samples, int seed,
 		const RealVector& upper_bnds): 
   NonDSampling(sample_type, samples, seed, rng, lower_bnds, upper_bnds),
   numResponseFunctions(0), dOptimal(false), oversampleRatio(0.0), 
-  pcaFlag(false), varBasedDecompFlag(false)
+  pcaFlag(false)
 {
   // since there will be no late data updates to capture in this case
   // (no sampling_reset()), go ahead and get the parameter sets.
@@ -168,7 +171,7 @@ NonDLHSSampling(unsigned short sample_type, int samples, int seed,
   NonDSampling(sample_type, samples, seed, rng, means, std_devs,
 	       lower_bnds, upper_bnds, correl),
   numResponseFunctions(0), dOptimal(false), oversampleRatio(0.0),
-  pcaFlag(false), varBasedDecompFlag(false)
+  pcaFlag(false)
 {
   // since there will be no late data updates to capture in this case
   // (no sampling_reset()), go ahead and get the parameter sets.
@@ -197,7 +200,9 @@ void NonDLHSSampling::pre_run()
   NonDSampling::pre_run();
 
   bool increm_lhs_active
-    = (sampleType == SUBMETHOD_LHS && !refineSamples.empty());
+    = ( ( sampleType == SUBMETHOD_LHS || 
+            sampleType == SUBMETHOD_LOW_DISCREPANCY_SAMPLING ) &&
+              !refineSamples.empty() );
 
   resize_final_statistics_gradients(); // finalStats ASV available at run time
 
@@ -209,7 +214,9 @@ void NonDLHSSampling::pre_run()
   // detect duplicates); probably this means this pre_run code
   // migrates to another get_parameter_sets variant that VBD can call
 
-  if (varBasedDecompFlag) {
+  // Only need to create the pick-freeze samples for the 
+  // Saltelli method.
+  if (vbdFlag && vbdViaSamplingMethod==VBD_PICK_AND_FREEZE ) {
     get_vbd_parameter_sets(iteratedModel, numSamples);
     return;
   }
@@ -237,7 +244,7 @@ void NonDLHSSampling::pre_run()
   // variable counts suffice?
   size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
     drv_start, num_drv;
-  mode_counts(iteratedModel.current_variables(), cv_start, num_cv, div_start,
+  mode_counts(iteratedModel->current_variables(), cv_start, num_cv, div_start,
 	      num_div, dsv_start, num_dsv, drv_start, num_drv);
   size_t num_vars = num_cv + num_div + num_dsv + num_drv;
   int previous_samples = 0, total_samples = samples_vec.normOne();
@@ -297,9 +304,11 @@ initial_increm_lhs_set(int new_samples,
   get_parameter_sets(iteratedModel, new_samples, batch_samples);
 
   // sub-matrix of all_ranks to populate
-  IntMatrix batch_ranks(Teuchos::View, full_ranks,
+  if ( sampleType != SUBMETHOD_LOW_DISCREPANCY_SAMPLING ) {
+    IntMatrix batch_ranks(Teuchos::View, full_ranks,
                         num_vars, new_samples, 0, 0);
-  store_ranks(batch_samples, batch_ranks);
+    store_ranks(batch_samples, batch_ranks);
+  }
 }
 
 
@@ -329,6 +338,8 @@ increm_lhs_parameter_set(int previous_samples, int new_samples,
   RealMatrix increm_samples(Teuchos::View, full_samples, 
                             num_vars, new_samples, 0, previous_samples);
 
+  if ( sampleType != SUBMETHOD_LOW_DISCREPANCY_SAMPLING ) {
+
   // ranks of the previous_samples are already cached here
   const IntMatrix initial_ranks(Teuchos::View, full_ranks, 
 				num_vars, previous_samples, 0 ,0);
@@ -344,9 +355,9 @@ increm_lhs_parameter_set(int previous_samples, int new_samples,
   BoolDequeArray switch_ranks(numContinuousVars, 
                               BoolDeque(previous_samples, false));
   const SharedVariablesData& svd
-    = iteratedModel.current_variables().shared_data();
+    = iteratedModel->current_variables().shared_data();
   const std::vector<Pecos::RandomVariable>& x_ran_vars
-    = iteratedModel.multivariate_distribution().random_variables();
+    = iteratedModel->multivariate_distribution().random_variables();
   for (int v=0; v<numContinuousVars; ++v) {
     const Pecos::RandomVariable& rv = x_ran_vars[svd.cv_index_to_all_index(v)];
     for (int s=0; s<previous_samples; ++s) {
@@ -418,6 +429,9 @@ increm_lhs_parameter_set(int previous_samples, int new_samples,
   Cout << "rank_combined\n" << sampleRanks << '\n';// updated by SET_GET_RANKS
   Cout << "Full sample set allSamples\n" << allSamples; 
 #endif //DEBUG
+  } else {
+    get_parameter_sets(iteratedModel, new_samples, increm_samples);
+  }
 }
 
 
@@ -523,7 +537,7 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
   // counts for more cases, but may not cover all use cases
   size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
     drv_start, num_drv;
-  mode_counts(iteratedModel.current_variables(), cv_start, num_cv, div_start,
+  mode_counts(iteratedModel->current_variables(), cv_start, num_cv, div_start,
 	      num_div, dsv_start, num_dsv, drv_start, num_drv);
   size_t num_vars = num_cv + num_div + num_dsv + num_drv;
 
@@ -540,10 +554,11 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
 			      num_vars, total_samples, 0, 0);
 
   const Pecos::MultivariateDistribution& x_dist
-    = iteratedModel.multivariate_distribution();
+    = iteratedModel->multivariate_distribution();
   Pecos::MultivariateDistribution u_dist(Pecos::MARGINALS_CORRELATIONS);
   ProbabilityTransformModel::
-    initialize_distribution_types(EXTENDED_U, x_dist, u_dist);
+    initialize_distribution_types(EXTENDED_U, x_dist.active_variables(),
+				  x_dist, u_dist);
   u_dist.pull_distribution_parameters(x_dist);
   Pecos::ProbabilityTransformation nataf("nataf"); // for now
   nataf.x_distribution(x_dist);  nataf.u_distribution(u_dist);
@@ -559,7 +574,7 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
   Pecos::SharedOrthogPolyApproxData::coefficients_norms_flag(true, poly_basis);
 
   // transform from x to u space; should we make a copy?
-  transform_samples(nataf, initial_samples, 0, true); // x_to_u
+  transform_samples(nataf, initial_samples, true); // x_to_u
 
   bool leja = (oversampleRatio > 0.0);
   if (leja) {
@@ -577,7 +592,7 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
     RealMatrix candidate_samples(num_vars, num_candidates);
     get_parameter_sets(iteratedModel, num_candidates, candidate_samples);
     // transform from x to u space; should we make a copy?
-    transform_samples(nataf, candidate_samples, 0, true); // x_to_u
+    transform_samples(nataf, candidate_samples, true); // x_to_u
 
     // BMA TODO: construct and preserve the LejaSampler if possible
     // BMA TODO: discuss with John what's needed...
@@ -616,7 +631,7 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
     for (int cand_i = 0; cand_i < numCandidateDesigns; ++cand_i) {
 
       get_parameter_sets(iteratedModel, new_samples, curr_new_samples, false);
-      transform_samples(nataf, curr_new_samples, 0, true); // x_to_u
+      transform_samples(nataf, curr_new_samples, true); // x_to_u
 
       // build basis matrix from total sample set (selected_samples
       // includes intiial and new samples)
@@ -635,7 +650,7 @@ d_optimal_parameter_set(int previous_samples, int new_samples,
     curr_new_samples.assign(best_new_samples);
   }
   // transform whole samples matrix from u back to x space
-  transform_samples(nataf, selected_samples, 0, false); // u_to_x
+  transform_samples(nataf, selected_samples, false); // u_to_x
 }
 
 
@@ -643,7 +658,7 @@ void NonDLHSSampling::post_input()
 {
   size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
     drv_start, num_drv;
-  mode_counts(iteratedModel.current_variables(), cv_start, num_cv, div_start,
+  mode_counts(iteratedModel->current_variables(), cv_start, num_cv, div_start,
 	      num_div, dsv_start, num_dsv, drv_start, num_drv);
   size_t num_vars = num_cv + num_div + num_dsv + num_drv;
   // call convenience function from Analyzer
@@ -657,7 +672,7 @@ void NonDLHSSampling::core_run()
 {
   bool log_resp_flag = (allDataFlag || statsFlag);
   bool log_best_flag = !numResponseFunctions; // DACE mode w/ opt or NLS
-  evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
+  evaluate_parameter_sets(*iteratedModel, log_resp_flag, log_best_flag);
 
   //Needed if we want to do bootstrapping for covariance of 
   //scalarization term cov[mean,sigma]
@@ -724,9 +739,19 @@ void NonDLHSSampling::post_run(std::ostream& s)
   // Statistics are generated here and output in NonDLHSSampling's
   // redefinition of print_results().
   if (statsFlag) {
-    if(varBasedDecompFlag) {
-      compute_vbd_stats(numSamples, allResponses);
-      archive_sobol_indices();
+    if(vbdFlag) {
+      nonDSampCorr.compute_vbd_stats_via_sampling(vbdViaSamplingMethod,
+                                                  vbdViaSamplingNumBins,
+                                                  numFunctions,
+                                                  numContinuousVars + numDiscreteIntVars + numDiscreteRealVars + numDiscreteStringVars,
+                                                  numSamples,
+                                                  allSamples,
+                                                  allResponses);
+      nonDSampCorr.archive_sobol_indices(run_identifier(),
+                                         resultsDB,
+                                         iteratedModel->current_variables().ordered_labels(ACTIVE_VARS),
+                                         ModelUtils::response_labels(*iteratedModel),
+                                         vbdDropTol); // set in DakotaAnalyzer constructor
     }
     else if(!summaryOutputFlag) {
       // To support incremental reporting of statistics, compute_statistics is 
@@ -751,7 +776,7 @@ void NonDLHSSampling::update_final_statistics()
   NonDSampling::update_final_statistics();
 
   if (!statsFlag || !finalMomentsType || epistemicStats ||
-      sampleType != SUBMETHOD_RANDOM)
+      !(sampleType == SUBMETHOD_RANDOM || sampleType == SUBMETHOD_LOW_DISCREPANCY_SAMPLING))
     return;
 
   // if MC sampling, assign standard errors for moments within finalStatErrors
@@ -1014,8 +1039,11 @@ void NonDLHSSampling::print_results(std::ostream& s, short results_state)
 {
   if (!numResponseFunctions) // DACE mode w/ opt or NLS
     Analyzer::print_results(s, results_state);
-  if (varBasedDecompFlag)
-    print_sobol_indices(s);
+  if (vbdFlag)
+    nonDSampCorr.print_sobol_indices(s,
+                                     iteratedModel->current_variables().ordered_labels(ACTIVE_VARS),
+                                     ModelUtils::response_labels(*iteratedModel),
+                                     vbdDropTol); // set in DakotaAnalyzer constructor
   else if (statsFlag) {
     if(refineSamples.length() == 0) {
       compute_statistics(allSamples, allResponses);
@@ -1053,10 +1081,11 @@ void NonDLHSSampling::print_results(std::ostream& s, short results_state)
 
 
 void NonDLHSSampling::archive_results(int num_samples, size_t inc_id) {
-  if(epistemicStats) {
+  if (epistemicStats) {
     archive_extreme_responses(inc_id);
-  } else {
-  // Archive moments
+  }
+  else {
+    // Archive moments
     if(functionMomentsComputed) {
       archive_moments(inc_id);
       archive_moment_confidence_intervals(inc_id);
@@ -1074,32 +1103,24 @@ void NonDLHSSampling::archive_results(int num_samples, size_t inc_id) {
       }
     }
   }
-  // Archive correlations
-  if(!subIteratorFlag) {
-    // Regenerating the labels for every increment is not ideal.
-    StringMultiArrayConstView
-      acv_labels  = iteratedModel.all_continuous_variable_labels(),
-      adiv_labels = iteratedModel.all_discrete_int_variable_labels(),
-      adsv_labels = iteratedModel.all_discrete_string_variable_labels(),
-      adrv_labels = iteratedModel.all_discrete_real_variable_labels();
-    size_t cv_start, num_cv, div_start, num_div, dsv_start, num_dsv,
-      drv_start, num_drv;
-    mode_counts(iteratedModel.current_variables(), cv_start, num_cv, div_start,
-		num_div, dsv_start, num_dsv, drv_start, num_drv);
-    StringMultiArrayConstView
-      cv_labels  =
-        acv_labels[boost::indices[idx_range(cv_start, cv_start+num_cv)]],
-      div_labels =
-        adiv_labels[boost::indices[idx_range(div_start, div_start+num_div)]],
-      dsv_labels =
-        adsv_labels[boost::indices[idx_range(dsv_start, dsv_start+num_dsv)]],
-      drv_labels =
-        adrv_labels[boost::indices[idx_range(drv_start, drv_start+num_drv)]];
 
-    nonDSampCorr.archive_correlations(run_identifier(), resultsDB, cv_labels,
-                                      div_labels, dsv_labels, drv_labels,
-                                      iteratedModel.response_labels(),inc_id);   
+  // Archive correlations
+  if (!subIteratorFlag) {
+    nonDSampCorr.archive_correlations(run_identifier(), resultsDB, iteratedModel->current_variables().ordered_labels(ACTIVE_VARS),
+                                      ModelUtils::response_labels(*iteratedModel),inc_id);
   }
+
+  // Archive Standardized Regression Coefficients
+  if (stdRegressionCoeffs) {
+    nonDSampCorr.archive_std_regress_coeffs(run_identifier(), resultsDB,
+                                            iteratedModel->current_variables().ordered_labels(ACTIVE_VARS),
+                                            ModelUtils::response_labels(*iteratedModel), inc_id);
+  }
+
+  if (toleranceIntervalsFlag) {
+    archive_tolerance_intervals(inc_id);
+  }
+
   // Associate number of samples attribute with the increment for incremental samplee
   AttributeArray ns_attr({ResultAttribute<int>("samples", num_samples)}); 
   if(inc_id) {

@@ -1,16 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        ProblemDescDB
-//- Description:  Base class for Dakota problem description database
-//- Owner:        Mike Eldred
-//- Version: $Id: ProblemDescDB.hpp 6798 2010-05-24 20:29:12Z wjbohnh $
 
 #ifndef PROBLEM_DESC_DB_H
 #define PROBLEM_DESC_DB_H
@@ -434,12 +429,12 @@ private:
   const Iterator& get_iterator();
   /// retrieve an existing Iterator, if it exists in iteratorList, or
   /// instantiate a new one
-  const Iterator& get_iterator(Model& model);
+  const Iterator& get_iterator(std::shared_ptr<Model> model);
   /// retrieve an existing Iterator, if it exists in iteratorByNameList,
   /// or instantiate a new one
-  const Iterator& get_iterator(const String& method_name, Model& model);
+  const Iterator& get_iterator(const String& method_name, std::shared_ptr<Model> model);
   /// retrieve an existing Model, if it exists, or instantiate a new one
-  const Model& get_model();
+  std::shared_ptr<Model> get_model();
   /// retrieve an existing Variables, if it exists, or instantiate a new one
   const Variables& get_variables();
   /// retrieve an existing Interface, if it exists, or instantiate a new one

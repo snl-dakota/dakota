@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDCalibration
-//- Description: Base class for nondeterministic calibration
-//- Owner:       Laura Swiler
-//- Checked by:
-//- Version:
 
 #include "NonDCalibration.hpp"
 #include "DakotaModel.hpp"
@@ -25,11 +19,11 @@ namespace Dakota {
 /** This constructor is called for a standard letter-envelope iterator 
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
-NonDCalibration::NonDCalibration(ProblemDescDB& problem_db, Model& model):
+NonDCalibration::NonDCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonD(problem_db, model),
   calibrationData(probDescDB.get_bool("responses.calibration_data") ||
     !probDescDB.get_string("responses.scalar_data_filename").empty()),
-  expData(problem_db, iteratedModel.current_response().shared_data(), 
+  expData(problem_db, iteratedModel->current_response().shared_data(), 
 	  outputLevel)
 { 
   // Read in all of the experimental data, including any x configuration 
@@ -37,15 +31,12 @@ NonDCalibration::NonDCalibration(ProblemDescDB& problem_db, Model& model):
   //if (outputLevel > NORMAL_OUTPUT)
   //  Cout << "Read data from file " << calibrationData << '\n';
   if (calibrationData)
-    expData.load_data("NonDCalibration", iteratedModel.current_variables());
+    expData.load_data("NonDCalibration", iteratedModel->current_variables());
   else if (outputLevel > SILENT_OUTPUT)
     Cout << "No experiment data from files.\nCalibration is assuming the "
 	 << "simulation is returning the residuals" << std::endl;
 }
 
-
-NonDCalibration::~NonDCalibration()
-{ }
 
 bool NonDCalibration::resize()
 {

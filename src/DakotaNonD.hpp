@@ -1,22 +1,17 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:	 NonD
-//- Description: Base class for NonDeterministic branch
-//- Owner:	 Mike Eldred
-//- Checked by:
-//- Version:
-
 #ifndef DAKOTA_NOND_H
 #define DAKOTA_NOND_H
 
 #include "DakotaAnalyzer.hpp"
+#include "dakota_stat_util.hpp"
 
 //#define DERIV_DEBUG
 
@@ -58,13 +53,14 @@ public:
 			    const StringArray& qoi_labels) const;
   /// print level mapping statistics using optional pre-pend
   void print_level_mappings(std::ostream& s, const RealVector& level_maps,
-			    bool moment_offset, const String& prepend = "");
+			    bool moment_offset,
+			    const String& prepend = "") const;
 
   //
   //- Heading: Virtual member function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
 
   //
   //- Heading: Set/get routines
@@ -87,30 +83,33 @@ protected:
   //
 
   /// constructor
-  NonD(ProblemDescDB& problem_db, Model& model);
+  NonD(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor for sample generation and evaluation "on the fly"
-  NonD(unsigned short method_name, Model& model);
+  NonD(unsigned short method_name, std::shared_ptr<Model>);
+  /// alternate constructor for sample generation and evaluation "on the fly"
+  NonD(unsigned short method_name, std::shared_ptr<Model>,
+       const ShortShortPair& approx_view);
   /// alternate constructor for sample generation "on the fly"
   NonD(unsigned short method_name, const RealVector& lower_bnds,
        const RealVector& upper_bnds);
 
-  ~NonD(); ///< destructor
+  ~NonD() override; ///< destructor
 
   //
   //- Heading: Virtual member function redefinitions
   //
 
-  void derived_set_communicators(ParLevLIter pl_iter);
+  void derived_set_communicators(ParLevLIter pl_iter) override;
 
-  void initialize_run();
-  void finalize_run();
+  void initialize_run() override;
+  void finalize_run() override;
 
   // return the final uncertain variables from the nondeterministic iteration
   //const Variables& variables_results() const;
   /// return the final statistics from the nondeterministic iteration
-  const Response& response_results() const;
+  const Response& response_results() const override;
   /// set the active set within finalStatistics
-  void response_results_active_set(const ActiveSet& set);
+  void response_results_active_set(const ActiveSet& set) override;
 
   //
   //- Heading: New virtual member functions
@@ -135,18 +134,42 @@ protected:
   /// update computed{Resp,Prob,Rel,GenRel}Levels from level_maps
   void push_level_mappings(const RealVector& level_maps, size_t offset);
 
-  /// configure fidelity/level counts from model hierarchy
-  void configure_sequence(size_t& num_steps, size_t& secondary_index,
-			  short& seq_type);
-  /// extract cost estimates from model hierarchy (forms or resolutions)
-  void configure_cost(unsigned short num_steps, bool multilevel,
-		      RealVector& cost);
-  /// extract cost estimates from model hierarchy, if available
-  bool query_cost(unsigned short num_steps, bool multilevel, RealVector& cost);
-  /// extract cost estimates from model hierarchy, if available
-  bool query_cost(unsigned short num_steps, Model& model, RealVector& cost);
-  /// test cost for valid values > 0
-  bool valid_cost_values(const RealVector& cost);
+  /// configure a one-dimensional hierarchical sequence (ML or MF)
+  void configure_1d_sequence(size_t& num_steps, size_t& secondary_index,
+			     short& seq_type);
+  /// configure a two-dimensional hierarchical sequence (MLMF)
+  void configure_2d_sequence(size_t& num_steps, size_t& secondary_index,
+			     short& seq_type);
+  /// configure the total number of model form/resolution level options
+  void configure_enumeration(size_t& num_combinations, short& seq_type);
+
+  /// extract cost estimates from model ensemble, enforcing requirements
+  /// (case without metadata support)
+  short configure_cost(size_t num_steps, short seq_type, RealVector& cost);
+  /// extract cost estimates from model ensemble, enforcing requirements
+  /// (case with metadata support)
+  short configure_cost(size_t num_steps, short seq_type, RealVector& cost,
+		       SizetSizetPairArray& cost_md_indices);
+  // optionally extract cost estimates from model, if available
+  //short query_cost(Model& model, size_t num_costs, short seq_type);
+  /// optionally extract cost estimates from model ensemble, if available
+  /// (case without metadata support)
+  short query_cost(size_t num_steps, short seq_type, RealVector& cost);
+  /// optionally extract cost estimates from model ensemble, if available
+  /// (case with metadata support)
+  short query_cost(size_t num_steps, short seq_type, RealVector& cost,
+		   BitArray& model_cost_spec,
+		   const SizetSizetPairArray& cost_md_indices);
+  /// check cost specification and metadata indices for each active model
+  void test_cost(short seq_type, const BitArray& model_cost_spec,
+		 SizetSizetPairArray& cost_md_indices);
+  /// check cost specification and metadata indices for a given model
+  bool test_cost(bool cost_spec, SizetSizetPair& cost_md_indices,
+		 const String& model_id);
+  /// test cost for value > 0
+  bool valid_cost(Real cost) const;
+  /// test costs for valid values > 0
+  bool valid_costs(const RealVector& costs) const;
 
   /// distribute pilot sample specification across model forms or levels
   void load_pilot_sample(const SizetArray& pilot_spec, size_t num_steps,
@@ -196,30 +219,30 @@ protected:
 
   /// print evaluation summary for multilevel sampling across 1D level profile
   void print_multilevel_evaluation_summary(std::ostream& s,
-					   const SizetArray& N_m);
+					   const SizetArray& N_m) const;
   /// print evaluation summary for multilevel sampling across 2D
   /// level+QoI profile
   void print_multilevel_evaluation_summary(std::ostream& s,
-					   const Sizet2DArray& N_m);
+					   const Sizet2DArray& N_m) const;
 
   /// print evaluation summary for multilevel sampling across 1D level
   /// profile for discrepancy across levels
   void print_multilevel_discrepancy_summary(std::ostream& s,
-					    const SizetArray& N_m);
+					    const SizetArray& N_m) const;
   /// print evaluation summary for multilevel sampling across 1D level
   /// profile for discrepancy across model forms
   void print_multilevel_discrepancy_summary(std::ostream& s,
 					    const SizetArray& N_m,
-					    const SizetArray& N_mp1);
+					    const SizetArray& N_mp1) const;
   /// print evaluation summary for multilevel sampling across 2D
   /// level+QoI profile for discrepancy across levels
   void print_multilevel_discrepancy_summary(std::ostream& s,
-					    const Sizet2DArray& N_m);
+					    const Sizet2DArray& N_m) const;
   /// print evaluation summary for multilevel sampling across 2D
   /// level+QoI profile for discrepancy across model forms
   void print_multilevel_discrepancy_summary(std::ostream& s,
 					    const Sizet2DArray& N_m,
-					    const Sizet2DArray& N_mp1);
+					    const Sizet2DArray& N_mp1) const;
 
   /// print evaluation summary for multilevel sampling across 2D model+level
   /// profile (allocations) or 3D model+level+QoI profile (actual)
@@ -230,7 +253,7 @@ protected:
 				      short seq_type, bool discrep_flag);
 
   /// assign a NonDLHSSampling instance within u_space_sampler
-  void construct_lhs(Iterator& u_space_sampler, Model& u_model,
+  void construct_lhs(Iterator& u_space_sampler, std::shared_ptr<Model> u_model,
 		     unsigned short sample_type, int num_samples, int seed,
 		     const String& rng, bool vary_pattern,
 		     short sampling_vars_mode = ACTIVE);
@@ -242,16 +265,29 @@ protected:
 
   /// compute a one-sided sample increment for multilevel methods to
   /// move current sampling level to a new target
-  size_t one_sided_delta(Real current, Real target);
+  size_t one_sided_relax_round(Real diff, Real relax_factor = 1.);
+  /// compute a one-sided sample increment for multilevel methods to
+  /// move current sampling level to a new target
+  size_t one_sided_delta(Real current, Real target, Real relax_factor = 1.);
   /// compute a one-sided sample increment for multilevel methods to
   /// move current sampling level to a new target
   size_t one_sided_delta(const SizetArray& current, const RealVector& targets,
-			 size_t power);
+			 Real relax_factor = 1., size_t power = 1);
   /// compute a one-sided sample increment for multilevel methods to
   /// move current sampling level to a new target
-  size_t one_sided_delta(const SizetArray& current, Real target, size_t power);
+  size_t one_sided_delta(const SizetArray& current, Real target,
+			 Real relax_factor = 1., size_t power = 1);
   //size_t one_sided_delta(const Sizet2DArray& current,
-  //			   const RealMatrix& targets, size_t power);
+  //                       const RealMatrix& targets, Real relax_factor = 1.,
+  //                       size_t power = 1);
+  /// compute a one-sided sample increment vector to move current sampling
+  /// levels to new targets
+  void one_sided_delta(const SizetArray& current, const RealVector& targets,
+		       SizetArray& delta_N, Real relax_factor = 1.);
+  /// compute a one-sided sample increment vector to move current sampling
+  /// levels to new targets
+  void one_sided_delta(const Sizet2DArray& current, const RealVector& targets,
+		       SizetArray& delta_N, Real relax_factor = 1.);
 
   /// return true if fine-grained reporting differs from coarse-grained
   bool differ(size_t N_alloc_ij, const SizetArray& N_actual_ij) const;
@@ -274,6 +310,15 @@ protected:
   void archive_pdf(size_t fn_index, size_t inc_id = 0);
   /// archive the equivalent number of HF evals (used by ML/MF methods)
   void archive_equiv_hf_evals(const Real equiv_hf_evals);
+
+  /// return true if N_m is empty or only populated with zeros
+  bool zeros(const SizetArray& N_m) const;
+  /// return true if N_m is empty or only populated with zeros
+  bool zeros(const Sizet2DArray& N_m) const;
+  /// return true if N_m is empty or only populated with zeros
+  bool zeros(const SizetVector& N_m) const;
+  /// return true if N_l has consistent values
+  bool homogeneous(const SizetArray& N_l) const;
 
   //
   //- Heading: Data members
@@ -379,18 +424,10 @@ private:
 		       const String& qoi_label) const;
 
   /// print an set of aggregated QoI sample counts for a level
-  void print_multilevel_row(std::ostream& s, const SizetArray& N_j);
+  void print_multilevel_row(std::ostream& s, const SizetArray& N_j) const;
   /// print an unrolled set of aggregated QoI sample counts for a level
   void print_multilevel_row(std::ostream& s, const SizetArray& N_j,
-			    const SizetArray& N_jp1);
-
-  /// return true if N_l has consistent values
-  bool homogeneous(const SizetArray& N_l) const;
-
-  /// return true if N_m is empty or only populated with zeros
-  bool zeros(const SizetArray& N_m) const;
-  /// return true if N_m is empty or only populated with zeros
-  bool zeros(const Sizet2DArray& N_m) const;
+			    const SizetArray& N_jp1) const;
 
   //
   //- Heading: Data members
@@ -403,15 +440,74 @@ inline NonD::~NonD()
 { }
 
 
-inline void NonD::
-configure_cost(unsigned short num_steps, bool multilevel, RealVector& cost)
+inline short NonD::
+configure_cost(size_t num_steps, short seq_type, RealVector& cost)
 {
-  bool cost_defined = query_cost(num_steps, multilevel, cost);
-  if (!cost_defined) {
-    Cerr << "Error: missing required simulation cost data in NonD::"
-	 << "configure_cost()." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
+  // NonDExpansion uses this fn for enforcing cost from spec (no metadata)
+  size_t m, num_mf = iteratedModel->subordinate_models(false).size();
+  BitArray model_cost_spec;  SizetSizetPairArray cost_md_indices(num_mf);
+  for (m=0; m<num_mf; ++m)
+    cost_md_indices[m] = SizetSizetPair(SZ_MAX, 0); // no metadata for any model
+  short cost_source
+    = query_cost(num_steps, seq_type, cost, model_cost_spec, cost_md_indices);
+  test_cost(seq_type, model_cost_spec, cost_md_indices);
+  return cost_source;
+}
+
+
+inline short NonD::
+configure_cost(size_t num_steps, short seq_type, RealVector& cost,
+	       SizetSizetPairArray& cost_md_indices)
+{
+  // enforce required costs available from either spec or recovery:
+  BitArray model_cost_spec;
+  short cost_source
+    = query_cost(num_steps, seq_type, cost, model_cost_spec, cost_md_indices);
+  test_cost(seq_type, model_cost_spec, cost_md_indices);
+  return cost_source;
+}
+
+
+inline short NonD::
+query_cost(size_t num_steps, short seq_type, RealVector& cost)
+{
+  // NonDExpansion uses this function for optional cost
+  size_t m, num_mf = iteratedModel->subordinate_models(false).size();
+  BitArray model_cost_spec;  SizetSizetPairArray cost_md_indices(num_mf);
+  for (m=0; m<num_mf; ++m)
+    cost_md_indices[m] = SizetSizetPair(SZ_MAX, 0); // no metadata for any model
+  return query_cost(num_steps, seq_type, cost, model_cost_spec,cost_md_indices);
+}
+
+
+inline bool NonD::
+test_cost(bool cost_spec, SizetSizetPair& cost_md_indices,
+	  const String& model_id)
+{
+  // lower-level version for scalar inputs: return true if neither user spec
+  // nor metadata recovery are available
+  bool err = false;
+  if (cost_spec == true) // precedence: user spec, then online recovery
+    cost_md_indices.first = SZ_MAX; // deactivate cost recovery for this model
+  else if (cost_md_indices.first == SZ_MAX)
+    err = true; // neither spec nor recovery
+  if (err)
+    Cerr << "Error: insufficient cost data for model " << model_id << ".\n";
+  return err;
+}
+
+
+inline bool NonD::valid_cost(Real cost) const
+{ return (cost > 0.) ? true : false; }
+
+
+inline bool NonD::valid_costs(const RealVector& cost) const
+{
+  size_t i, len = cost.length();
+  for (i=0; i<len; ++i)
+    if (cost[i] <= 0.)
+      return false;
+  return true;
 }
 
 
@@ -456,12 +552,12 @@ inline void NonD::response_results_active_set(const ActiveSet& set)
 
 inline void NonD::print_level_mappings(std::ostream& s) const
 {
-  print_level_mappings(s, "response function", iteratedModel.response_labels());
+  print_level_mappings(s, "response function", ModelUtils::response_labels(*iteratedModel));
 }
 
 
 inline void NonD::print_densities(std::ostream& s) const
-{ print_densities(s, "response function", iteratedModel.response_labels()); }
+{ print_densities(s, "response function", ModelUtils::response_labels(*iteratedModel)); }
 
 
 inline bool NonD::discrepancy_sample_counts() const
@@ -515,13 +611,30 @@ differ(const Sizet2DArray& N_alloc, const Sizet3DArray& N_actual) const
 }
 
 
-inline size_t NonD::one_sided_delta(Real current, Real target)
-{ return (target > current) ? (size_t)std::floor(target - current + .5) : 0; }
+inline size_t NonD::
+one_sided_relax_round(Real diff, Real relax_factor)
+{
+  if (relax_factor == 1.)
+    return (diff > 0.) ? (size_t)std::floor(diff + .5) : 0;
+  else if (diff > 0.) {
+    size_t delta = (size_t)std::floor(relax_factor * diff + .5);
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "Relaxation: diff " << diff << " relaxed with factor "
+	   << relax_factor << " and rounded to " << delta << std::endl;
+    return delta;
+  }
+  else return 0;
+}
+
+
+inline size_t NonD::
+one_sided_delta(Real current, Real target, Real relax_factor)
+{ return one_sided_relax_round(target - current, relax_factor); }
 
 
 inline size_t NonD::
 one_sided_delta(const SizetArray& current, const RealVector& targets,
-		size_t power)
+		Real relax_factor, size_t power)
 {
   size_t i, len = current.size();
   Real diff, pow_mean = 0.;
@@ -563,12 +676,13 @@ one_sided_delta(const SizetArray& current, const RealVector& targets,
   }
   */
 
-  return (pow_mean > 0.) ? (size_t)std::floor(pow_mean + .5) : 0; // round
+  return one_sided_relax_round(pow_mean, relax_factor);
 }
 
 
 inline size_t NonD::
-one_sided_delta(const SizetArray& current, Real target,	size_t power)
+one_sided_delta(const SizetArray& current, Real target, Real relax_factor,
+		size_t power)
 {
   size_t i, len = current.size();
   Real diff, pow_mean = 0.;
@@ -591,14 +705,14 @@ one_sided_delta(const SizetArray& current, Real target,	size_t power)
     break;
   }
 
-  return (pow_mean > 0.) ? (size_t)std::floor(pow_mean + .5) : 0; // round
+  return one_sided_relax_round(pow_mean, relax_factor);
 }
 
 
 /*
 inline size_t NonD::
 one_sided_delta(const Sizet2DArray& current, const RealMatrix& targets,
-		size_t power)
+                Real relax_factor, size_t power)
 {
   size_t r, c, rows = targets.numRows(), cols = targets.numCols();
   Real diff, pow_mean = 0.;
@@ -628,9 +742,43 @@ one_sided_delta(const Sizet2DArray& current, const RealMatrix& targets,
   }
   // see notes on other finite norms above
 
-  return (pow_mean > 0.) ? (size_t)std::floor(pow_mean + .5) : 0; // round
+  return one_sided_delta(pow_mean, relax_factor);
 }
 */
+
+
+inline void NonD::
+one_sided_delta(const SizetArray& current, const RealVector& targets,
+		SizetArray& delta_N, Real relax_factor)
+{
+  size_t i, c_len = current.size(), t_len = targets.length(), diff_i;
+  if (c_len != t_len) {
+    Cerr << "Error: inconsistent array sizes in NonD::one_sided_delta()."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  if (delta_N.size() != c_len) delta_N.resize(c_len);
+  for (i=0; i<c_len; ++i)
+    delta_N[i]
+      = one_sided_relax_round(targets[i] - (Real)current[i], relax_factor);
+}
+
+
+inline void NonD::
+one_sided_delta(const Sizet2DArray& current, const RealVector& targets,
+		SizetArray& delta_N, Real relax_factor)
+{
+  size_t i, c_len = current.size(), t_len = targets.length();  Real diff_i;
+  if (c_len != t_len) {
+    Cerr << "Error: inconsistent array sizes in NonD::one_sided_delta()."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  if (delta_N.size() != c_len) delta_N.resize(c_len);
+  for (i=0; i<c_len; ++i) // avg over all qoi
+    delta_N[i]
+      = one_sided_relax_round(targets[i] - average(current[i]), relax_factor);
+}
 
 
 inline bool NonD::zeros(const SizetArray& N_m) const
@@ -648,6 +796,16 @@ inline bool NonD::zeros(const Sizet2DArray& N_m) const
   size_t j, len = N_m.size();
   for (j=0; j<len; ++j)
     if (!zeros(N_m[j]))
+      return false;
+  return true;
+}
+
+
+inline bool NonD::zeros(const SizetVector& N_m) const
+{
+  int j, len = N_m.length();
+  for (j=0; j<len; ++j)
+    if (N_m[j])
       return false;
   return true;
 }
@@ -678,13 +836,13 @@ inflate_approx_samples(const ArrayType& N_l, bool multilev,
   else { // MF case
     num_approx = num_mf - 1;
     if (secondary_index == SZ_MAX) {
-      ModelList& sub_models = iteratedModel.subordinate_models(false);
+      ModelList& sub_models = iteratedModel->subordinate_models(false);
       ModelLIter m_iter = sub_models.begin();
       size_t m_soln_lev, active_lev;
       for (i=0; i<num_approx && m_iter != sub_models.end(); ++i, ++m_iter) {
-	m_soln_lev = m_iter->solution_level_cost_index();
-	active_lev = (m_soln_lev == _NPOS) ? 0 : m_soln_lev;
-	N_l_vec[i][active_lev] = N_l[i];  // assign vector of qoi samples
+        m_soln_lev = (*m_iter)->solution_level_cost_index();
+        active_lev = (m_soln_lev == _NPOS) ? 0 : m_soln_lev;
+        N_l_vec[i][active_lev] = N_l[i];  // assign vector of qoi samples
       }
     }
     else // valid secondary_index
@@ -716,13 +874,13 @@ inflate_sequence_samples(const ArrayType& N_l, bool multilev,
   }
   else { // MF case
     if (secondary_index == SZ_MAX) {
-      ModelList& sub_models = iteratedModel.subordinate_models(false);
+      ModelList& sub_models = iteratedModel->subordinate_models(false);
       ModelLIter m_iter = sub_models.begin();
       size_t m_soln_lev, active_lev;
       for (i=0; i<num_mf && m_iter != sub_models.end(); ++i, ++m_iter) {
-	m_soln_lev = m_iter->solution_level_cost_index();
-	active_lev = (m_soln_lev == _NPOS) ? 0 : m_soln_lev;
-	N_l_vec[i][active_lev] = N_l[i];  // assign vector of qoi samples
+        m_soln_lev = (*m_iter)->solution_level_cost_index();
+        active_lev = (m_soln_lev == _NPOS) ? 0 : m_soln_lev;
+        N_l_vec[i][active_lev] = N_l[i];  // assign vector of qoi samples
       }
     }
     else // valid secondary_index
@@ -749,21 +907,21 @@ print_multilevel_model_summary(std::ostream& s,
     else              print_multilevel_evaluation_summary(s,  N_samp[0]);
   }
   else {
-    bool mf_seq = (seq_type == Pecos::MODEL_FORM_SEQUENCE);
-    ModelList& sub_models = iteratedModel.subordinate_models(false);
+    bool mf_seq = (seq_type == Pecos::MODEL_FORM_1D_SEQUENCE);
+    ModelList& sub_models = iteratedModel->subordinate_models(false);
     ModelLIter     m_iter = sub_models.begin();
     s << "<<<<< " << type << " samples per model form:\n";
     for (i=0; i<num_mf; ++i, ++m_iter) {
       const ArrayType& N_i = N_samp[i];
       if (N_i.empty() || zeros(N_i)) continue;
 
-      s << "      Model Form " << m_iter->model_id() << ":\n";
+      s << "      Model Form " << (*m_iter)->model_id() << ":\n";
       if (!discrep_flag) // no discrepancies
-	print_multilevel_evaluation_summary(s,  N_i);
+	      print_multilevel_evaluation_summary(s,  N_i);
       else if (mf_seq && i+1 < num_mf) // discrepancy across model forms
-	print_multilevel_discrepancy_summary(s, N_i, N_samp[i+1]);
+	      print_multilevel_discrepancy_summary(s, N_i, N_samp[i+1]);
       else // discrepancy across levels or for last model form
-	print_multilevel_discrepancy_summary(s, N_i);
+	      print_multilevel_discrepancy_summary(s, N_i);
 
       /*
       if (discrep_flag} {

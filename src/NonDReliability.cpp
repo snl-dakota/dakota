@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonDReliability
-//- Description: Implementation code for NonDReliability class
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version:
 
 #include "dakota_system_defs.hpp"
 #include "ProblemDescDB.hpp"
@@ -23,7 +17,7 @@ static const char rcsId[] = "@(#) $Id: NonDReliability.cpp 6793 2010-05-21 00:07
 namespace Dakota {
 
 
-NonDReliability::NonDReliability(ProblemDescDB& problem_db, Model& model):
+NonDReliability::NonDReliability(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonD(problem_db, model),
   mppSearchType(probDescDB.get_ushort("method.sub_method")),
   integrationRefinement(
@@ -71,8 +65,8 @@ void NonDReliability::post_run(std::ostream& s)
 {
   ++numRelAnalyses;
 
-  if (!mppModel.is_null() && mppModel.mapping_initialized()) {
-    /*bool var_size_changed =*/ mppModel.finalize_mapping();
+  if (mppModel && mppModel->mapping_initialized()) {
+    /*bool var_size_changed =*/ mppModel->finalize_mapping();
     //if (var_size_changed) resize();
   }
 

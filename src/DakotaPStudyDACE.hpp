@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       PStudyDACE
-//- Description: Base class for ParamStudy, DDACEDesignCompExp, and
-//-              FSUDesignCompExp
-//- Owner:       Mike Eldred
-//- Version: $Id: DakotaPStudyDACE.hpp 6492 2009-12-19 00:04:28Z briadam $
 
 #ifndef DAKOTA_PSTUDY_DACE_H
 #define DAKOTA_PSTUDY_DACE_H
@@ -36,7 +30,7 @@ public:
   //- Heading: Virtual member function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
 
 protected:
 
@@ -45,17 +39,17 @@ protected:
   //
 
   /// constructor
-  PStudyDACE(ProblemDescDB& problem_db, Model& model);
+  PStudyDACE(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor for instantiations "on the fly"
-  PStudyDACE(unsigned short method_name, Model& model);
+  PStudyDACE(unsigned short method_name, std::shared_ptr<Model> model);
   /// destructor
-  ~PStudyDACE();
+  ~PStudyDACE() override;
     
   //
   //- Heading: Virtual member function redefinitions
   //
 
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
   //
   //- Heading: Member functions
@@ -73,9 +67,12 @@ protected:
 
   /// flag which specifies evaluation of volumetric quality measures
   bool volQualityFlag;
-  /// flag which specifies calculating variance based decomposition 
-  /// sensitivity analysis metrics
-  bool varBasedDecompFlag;
+
+  /// sampling method for computing variance-based decomposition indices
+  unsigned short vbdViaSamplingMethod;
+
+  /// number of bins for using with the Mahadevan sampling method for computing variance-based decomposition indices
+  int vbdViaSamplingNumBins;
 
 private:
 

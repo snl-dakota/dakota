@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -106,7 +106,7 @@ public:
 				    const RealMatrix &initial_samples,
 				    int num_new_samples,
 				    const RealMatrix & candidate_samples,
-				    IntVector &result );
+				    IntVector &result ) override;
 
   /** \brief Draw samples from the equilibrium measure. For all bounded variables
    * the equilibrium measure is the arcsine measure, i.e. "Chebyshev" density
@@ -117,7 +117,7 @@ public:
   /// Enrinch a set of M samples with N new samples
   void enrich_samples( int num_dims, const RealMatrix &initial_samples,
 		       int num_new_samples,
-		       RealMatrix &result );
+		       RealMatrix &result ) override;
 
   /// Set the seed of the random number generator
   void set_seed( int seed );

@@ -1,0 +1,52 @@
+#@ s*: Label=FastTest
+#@ *: DakotaConfig=HAVE_MUQ
+#@ *: ReqFiles=dakota_cantilever_1d_displacement.dat,dakota_cantilever_1d_fork.py
+
+environment,
+  tabular_data
+
+method,
+  bayes_calibration muq
+  dram
+    num_stages = 1
+    scale_type = 'Power'
+    delay_scale = 1.2
+    period_num_steps = 20
+    starting_step = 20
+    adapt_scale = 0.1
+  seed = 34784
+  chain_samples = 500
+  proposal_covariance
+    diagonal
+      values 1.0e16
+# output debug
+  export_chain_points_file 'chain_samples.dat'
+# pre_solve sqp    #s1
+
+variables,
+  uniform_uncertain 1
+    descriptors 'E'
+    lower_bounds 1.e10
+    upper_bounds  5.1e11
+    initial_point 2.e11
+  continuous_state 5
+    descriptors 'L' 'wx' 'wy' 'Fx' 'Fy'
+    initial_state 1 0.01 0.02 3 3
+
+interface,
+  analysis_drivers 'dakota_cantilever_1d_fork.py'
+    fork
+    parameters_file 'params.in'
+    results_file 'results.out'
+
+responses,
+  calibration_terms = 1
+    calibration_data_file = 'dakota_cantilever_1d_displacement.dat'
+      freeform
+      num_experiments = 1
+      variance_type = 'scalar'
+    descriptors 'd'
+    no_gradients       #s0
+#   analytic_gradients #s1
+
+    no_hessians

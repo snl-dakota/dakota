@@ -1,7 +1,7 @@
 Blurb::
 Multifidelity uncertainty quantification using stochastic collocation
 Description::
-As described in :ref:`method-stoch_collocation<method-stoch_collocation>`, stochastic collocation
+As described in :dakkw:`method-stoch_collocation`, stochastic collocation
 is a general framework for approximate representation of random response
 functions in terms of finite-dimensional interpolation bases, using
 interpolation polynomials that may be either local or global
@@ -19,7 +19,7 @@ high-fidelity (HF) models and an additive discrepancy approach, we have:
 where :math:`\delta_i`  is a coefficient for the discrepancy expansion.
 
 The same specification options are available as described in
-:ref:`method-stoch_collocation<method-stoch_collocation>` with one key difference: the
+:dakkw:`method-stoch_collocation` with one key difference: the
 coefficient estimation inputs change from a scalar input for a single
 expansion to a <i>sequence</i> specification for a low-fidelity expansion
 followed by multiple discrepancy expansions.
@@ -42,15 +42,16 @@ in resolution across the random variable set, a ``dimension_preference``
 specification can be used to augment these scalar specifications.
 
 Multifidelity UQ using SC requires that the model selected for
-iteration by the method specification is a multifidelity surrogate
-model (see :ref:`model-surrogate-hierarchical<model-surrogate-hierarchical>`), which defines an
-``ordered_model_sequence`` (see :ref:`model-surrogate-hierarchical<model-surrogate-hierarchical>`).
-Two types of hierarchies are supported: (i) a hierarchy of model forms
-composed from more than one model within the ``ordered_model_sequence``,
-or (ii) a hierarchy of discretization levels comprised from a single
-model within the ``ordered_model_sequence`` which in turn specifies a
-``solution_level_control`` (see
-:ref:`model-single-solution_level_control<model-single-solution_level_control>`).
+iteration by the method specification is an ensemble surrogate model
+(see :dakkw:`model-surrogate-ensemble`), which defines an an ordered
+sequence of model fidelities or resolutions.  Two types of hierarchies
+are supported: (i) a hierarchy of model forms composed from more than
+one model within the ``ordered_model_fidelities`` specification, or
+(ii) a hierarchy of discretization levels comprised from a single
+model (either from a ``truth_model_pointer`` specification or a single
+entry within an ``ordered_model_fidelities`` specification) which in
+turn specifies a ``solution_level_control`` (see
+:dakkw:`model-single-solution_level_control`).
 
 In both cases, an expansion will first be formed for the low fidelity
 model or coarse discretization, using the first value within the
@@ -72,14 +73,14 @@ statistics are generated.
 *Additional Resources*
 
 Dakota provides access to multifidelity SC methods through the
-NonDMultilevelStochCollocation class. Refer to the Stochastic Expansion
-Methods chapter of the Theory Manual :cite:p:`TheoMan` for additional
-information on the Multifidelity SC algorithm.
+NonDMultilevelStochCollocation class. Refer to the 
+:ref:`theory:uq:expansion` section within the theory portion of the Users Guide
+for additional information on the Multifidelity SC algorithm.
 
 *Expected HDF5 Output*
 
 If Dakota was built with HDF5 support and run with the
-:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+:dakkw:`environment-results_output-hdf5` keyword, this method
 writes the following results to HDF5:
 
 
@@ -102,7 +103,7 @@ Examples::
     
     model,
      id_model = 'HIERARCH'
-     surrogate hierarchical
+     surrogate ensemble
        ordered_model_fidelities = 'LF' 'MF' 'HF'
        correction additive zeroth_order
 

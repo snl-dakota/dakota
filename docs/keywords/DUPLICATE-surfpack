@@ -7,15 +7,15 @@ incorporated in our surface fitting library called Surfpack.
 Several user options are available:
 
 
-1. Optimization methods: Maximum Likelihood Estimation (MLE) is used to find the optimal values of the hyper-parameters governing the trend and correlation functions. By default the global optimization method DIRECT is used for MLE, but other options for the optimization method are available. See :ref:`model-surrogate-global-gaussian_process-surfpack-optimization_method<model-surrogate-global-gaussian_process-surfpack-optimization_method>`. The total number of evaluations of the likelihood function can be controlled using the ``max_trials`` keyword followed by a positive integer. Note that the likelihood function does not require running the "truth" model, and is relatively inexpensive to compute.
+1. Optimization methods: Maximum Likelihood Estimation (MLE) is used to find the optimal values of the hyper-parameters governing the trend and correlation functions. By default the global optimization method DIRECT is used for MLE, but other options for the optimization method are available. See :dakkw:`model-surrogate-global-gaussian_process-surfpack-optimization_method`. The total number of evaluations of the likelihood function can be controlled using the ``max_trials`` keyword followed by a positive integer. Note that the likelihood function does not require running the "truth" model, and is relatively inexpensive to compute.
 
 
 
-2. Trend Function: The GP models incorporate a parametric trend function whose purpose is to capture large-scale variations. See :ref:`model-surrogate-global-gaussian_process-surfpack-trend<model-surrogate-global-gaussian_process-surfpack-trend>`.
+2. Trend Function: The GP models incorporate a parametric trend function whose purpose is to capture large-scale variations. See :dakkw:`model-surrogate-global-gaussian_process-surfpack-trend`.
 
 
 
-3. Correlation Lengths: Correlation lengths are usually optimized by Surfpack, however, the user can specify the lengths manually. See :ref:`model-surrogate-global-gaussian_process-surfpack-correlation_lengths<model-surrogate-global-gaussian_process-surfpack-correlation_lengths>`.
+3. Correlation Lengths: Correlation lengths are usually optimized by Surfpack, however, the user can specify the lengths manually. See :dakkw:`model-surrogate-global-gaussian_process-surfpack-correlation_lengths`.
 
 
 

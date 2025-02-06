@@ -1,16 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        NL2SOLLeastSq
-//- Description:  Wrapper class for NL2SOL
-//- Owner:        David Gay
-//- Version: $Id: NL2SOLLeastSq.hpp 6492 2009-12-19 00:04:28Z briadam $
 
 #ifndef NL2SOL_LEAST_SQ_H
 #define NL2SOL_LEAST_SQ_H
@@ -35,13 +30,13 @@ class NL2SOLLeastSqTraits: public TraitsBase
   NL2SOLLeastSqTraits() { }
 
   /// destructor
-  virtual ~NL2SOLLeastSqTraits() { }
+  ~NL2SOLLeastSqTraits() override { }
 
   /// A temporary query used in the refactor
-  virtual bool is_derived() { return true; }
+  bool is_derived() override { return true; }
 
   /// Return the flag indicating whether method supports continuous variables
-  bool supports_continuous_variables() { return true; }
+  bool supports_continuous_variables() override { return true; }
 };
 
 
@@ -62,17 +57,17 @@ public:
   //
 
   /// standard constructor
-  NL2SOLLeastSq(ProblemDescDB& problem_db, Model& model);
+  NL2SOLLeastSq(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor
-  NL2SOLLeastSq(Model& model);
+  NL2SOLLeastSq(std::shared_ptr<Model> model);
   /// destructor
-  ~NL2SOLLeastSq();
+  ~NL2SOLLeastSq() override;
 
   //
   //- Heading: Member functions
   //
 
-  void core_run();
+  void core_run() override;
 
 private:
 

@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -41,17 +41,7 @@ ReducedBasis::center_matrix()
   if ( is_centered )
     return;
 
-  compute_column_means(matrix, column_means);
-  col_means_computed = true;
-
-  // working vector
-  RealVector column_vec(matrix.numRows());
-
-  for( int i=0; i<matrix.numCols(); ++i ) {
-    column_vec.putScalar(column_means(i));
-    RealVector matrix_column = Teuchos::getCol(Teuchos::View, matrix, i);
-    matrix_column -= column_vec;
-  }
+  center_matrix_cols(matrix);
 
   is_centered = true;
   is_valid_svd = false;
@@ -72,7 +62,7 @@ ReducedBasis::update_svd(bool do_center)
     center_matrix();
 
   workingMatrix = matrix; // because the matrix gets overwritten by U_matrix values
-  svd(workingMatrix, S_values, VT_matrix);
+  singular_value_decomp(workingMatrix, S_values, VT_matrix);
   U_matrix = workingMatrix;
 
   RealVector ones(S_values.length());

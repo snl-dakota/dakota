@@ -1,15 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       DDACEDesignCompExp
-//- Description: Implementation code for the DDACEDesignCompExp class
-//- Owner:       Tony Giunta, Sandia National Laboratories
 
 #include "DDACEDesignCompExp.hpp"
 #include "dakota_system_defs.hpp"
@@ -35,7 +31,7 @@ namespace Dakota {
 
 /** This constructor is called for a standard iterator built with data from
     probDescDB. */
-DDACEDesignCompExp::DDACEDesignCompExp(ProblemDescDB& problem_db, Model& model):
+DDACEDesignCompExp::DDACEDesignCompExp(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   PStudyDACE(problem_db, model),
   daceMethod(probDescDB.get_ushort("method.sub_method")),
   samplesSpec(probDescDB.get_int("method.samples")), numSamples(samplesSpec),
@@ -74,7 +70,7 @@ DDACEDesignCompExp::DDACEDesignCompExp(ProblemDescDB& problem_db, Model& model):
     using only the incoming data.  No problem description database
     queries are used. */
 DDACEDesignCompExp::
-DDACEDesignCompExp(Model& model, int samples, int symbols, int seed,
+DDACEDesignCompExp(std::shared_ptr<Model> model, int samples, int symbols, int seed,
 		   unsigned short sampling_method):
   PStudyDACE(DACE, model), daceMethod(sampling_method), samplesSpec(samples),
   numSamples(samples), symbolsSpec(symbols), numSymbols(symbols),
@@ -118,7 +114,7 @@ void DDACEDesignCompExp::pre_run()
 
   // If VBD has been selected, generate a series of replicate parameter sets
   // (each of the size specified by the user) in order to compute VBD metrics.
-  if (varBasedDecompFlag)
+  if (vbdFlag && vbdViaSamplingMethod==VBD_PICK_AND_FREEZE)
     get_vbd_parameter_sets(iteratedModel, numSamples);
   else
     get_parameter_sets(iteratedModel);
@@ -130,7 +126,7 @@ void DDACEDesignCompExp::core_run()
   bool log_best_flag  = (numObjFns || numLSqTerms), // opt or NLS data set
     compute_corr_flag = (!subIteratorFlag),
     log_resp_flag     = (mainEffectsFlag || allDataFlag || compute_corr_flag);
-  evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
+  evaluate_parameter_sets(*iteratedModel, log_resp_flag, log_best_flag);
 }
 
 
@@ -158,14 +154,20 @@ void DDACEDesignCompExp::post_run(std::ostream& s)
       abort_handler(-1);
     }
     std::shared_ptr<DDaceSamplerBase> ddace_sampler = 
-      create_sampler(iteratedModel);
+      create_sampler(*iteratedModel);
     symbolMapping = ddace_sampler->getP();
   }
 
   // BMA TODO: always compute all stats, even in VBD mode (stats on
   // first two replicates)
-  if (varBasedDecompFlag) {
-    compute_vbd_stats(numSamples, allResponses);
+  if (vbdFlag) {
+    pStudyDACESensGlobal.compute_vbd_stats_via_sampling(vbdViaSamplingMethod,
+                                                        vbdViaSamplingNumBins,
+                                                        numFunctions,
+                                                        numContinuousVars + numDiscreteIntVars + numDiscreteRealVars,
+                                                        numSamples,
+                                                        allSamples,
+                                                        allResponses);
   }
   else {
     if (mainEffectsFlag) // need allResponses
@@ -182,14 +184,14 @@ void DDACEDesignCompExp::post_run(std::ostream& s)
 }
 
 
-void DDACEDesignCompExp::get_parameter_sets(Model& model)
+void DDACEDesignCompExp::get_parameter_sets(std::shared_ptr<Model> model)
 {
   get_parameter_sets(model, numSamples, allSamples);
 }
 
 
 void DDACEDesignCompExp::
-get_parameter_sets(Model& model, const size_t num_samples,
+get_parameter_sets(std::shared_ptr<Model> model, const size_t num_samples,
 		   RealMatrix& design_matrix)
 {
   // keep track of number of DACE executions for this object
@@ -226,7 +228,7 @@ get_parameter_sets(Model& model, const size_t num_samples,
 
   // in get_parameter_sets, generate the samples; could omit the symbolMapping
   std::shared_ptr<DDaceSamplerBase> ddace_sampler = 
-    create_sampler(iteratedModel);
+    create_sampler(*iteratedModel);
   ddace_sampler->getSamples(sample_points);
   if (mainEffectsFlag)
     symbolMapping = ddace_sampler->getP();
@@ -245,8 +247,8 @@ get_parameter_sets(Model& model, const size_t num_samples,
   if (volQualityFlag) {
     double* dace_points = new double [numContinuousVars*num_samples];
     copy_data(sample_points, dace_points, numContinuousVars*num_samples);
-    const RealVector& c_l_bnds = model.continuous_lower_bounds();
-    const RealVector& c_u_bnds = model.continuous_upper_bounds();
+    const RealVector& c_l_bnds = ModelUtils::continuous_lower_bounds(*model);
+    const RealVector& c_u_bnds = ModelUtils::continuous_upper_bounds(*model);
     for (int i=0; i<numContinuousVars; i++) {
       const double& offset = c_l_bnds[i];
       double norm = 1. / (c_u_bnds[i] - c_l_bnds[i]);
@@ -269,8 +271,8 @@ DDACEDesignCompExp::create_sampler(Model& model)
   // variables, since they do not currently have global bounds specifications.
   // It would be nice to detect this and automatically delete any uncertain
   // variables (from numContinuousVars & local_vars).
-  const RealVector& c_l_bnds = model.continuous_lower_bounds();
-  const RealVector& c_u_bnds = model.continuous_upper_bounds();
+  const RealVector& c_l_bnds = ModelUtils::continuous_lower_bounds(model);
+  const RealVector& c_u_bnds = ModelUtils::continuous_upper_bounds(model);
   if (c_l_bnds.length() != numContinuousVars || 
       c_u_bnds.length() != numContinuousVars) {
     Cerr << "\nError: Mismatch in number of active variables and length of"
@@ -506,7 +508,7 @@ void DDACEDesignCompExp::compute_main_effects()
     abort_handler(-1);
   }
 
-  const StringArray& fn_labels = iteratedModel.response_labels();
+  const StringArray& fn_labels = ModelUtils::response_labels(*iteratedModel);
   IntRespMCIter r_it; size_t f, s, v;
   std::vector<double> resp_fn_samples(numSamples);
   std::vector<int> symbols_map_factor(numSamples);

@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       MixedVarConstraints
-//- Description: Derived class for variable bounds employing "mixed"
-//-              continuous-discrete variables.
-//- Owner:       Mike Eldred
-//- Version: $Id: MixedVarConstraints.hpp 7024 2010-10-16 01:24:42Z mseldre $
 
 #ifndef MIXED_VAR_CONSTRAINTS_H
 #define MIXED_VAR_CONSTRAINTS_H
@@ -46,14 +40,14 @@ public:
   MixedVarConstraints(const ProblemDescDB& problem_db,
 		      const SharedVariablesData& svd);
   /// destructor
-  ~MixedVarConstraints();
+  ~MixedVarConstraints() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  void write(std::ostream& s) const;
-  void read(std::istream& s);
+  void write(std::ostream& s) const override;
+  void read(std::istream& s) override;
 
 protected:
 

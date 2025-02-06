@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       CONMINOptimizer
-//- Description: Wrapper class for CONMIN
-//- Owner:       Tony Giunta
-//- Checked by:
-//- Version: $Id: CONMINOptimizer.hpp 6972 2010-09-17 22:18:50Z briadam $
 
 #ifndef CONMIN_OPTIMIZER_H
 #define CONMIN_OPTIMIZER_H
@@ -33,32 +27,32 @@ class CONMINTraits: public TraitsBase
   CONMINTraits() { }
 
   /// destructor
-  virtual ~CONMINTraits() { }
+  ~CONMINTraits() override { }
 
   /// A temporary query used in the refactor
-  virtual bool is_derived() { return true; }
+  bool is_derived() override { return true; }
 
   /// Return the flag indicating whether method supports continuous variables
-  bool supports_continuous_variables() { return true; }
+  bool supports_continuous_variables() override { return true; }
 
   /// Return the flag indicating whether method supports linear equalities
-  bool supports_linear_equality() { return true; }
+  bool supports_linear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports linear inequalities
-  bool supports_linear_inequality() { return true; }
+  bool supports_linear_inequality() override { return true; }
 
   /// Return the format used for linear inequality constraints
-  LINEAR_INEQUALITY_FORMAT linear_inequality_format()
+  LINEAR_INEQUALITY_FORMAT linear_inequality_format() override
     { return LINEAR_INEQUALITY_FORMAT::ONE_SIDED_UPPER; }
 
   /// Return the flag indicating whether method supports nonlinear equalities
-  bool supports_nonlinear_equality() { return true; }
+  bool supports_nonlinear_equality() override { return true; }
 
   /// Return the flag indicating whether method supports nonlinear inequalities
-  bool supports_nonlinear_inequality() { return true; }
+  bool supports_nonlinear_inequality() override { return true; }
 
   /// Return the format used for nonlinear inequality constraints
-  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override
     { return NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_UPPER; }
 };
 
@@ -93,17 +87,17 @@ public:
   //
 
   /// standard constructor
-  CONMINOptimizer(ProblemDescDB& problem_db, Model& model);
+  CONMINOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor; construct without ProblemDescDB
-  CONMINOptimizer(const String& method_string, Model& model);
+  CONMINOptimizer(const String& method_string, std::shared_ptr<Model> model);
   /// destructor
-  ~CONMINOptimizer();
+  ~CONMINOptimizer() override;
 
   //
   //- Heading: Virtual member function redefinitions
   //
 
-  void core_run();
+  void core_run() override;
 
 protected:
 
@@ -111,9 +105,9 @@ protected:
   //- Heading: Virtual member function redefinitions
   //
 
-  void initialize_run();
+  void initialize_run() override;
 
-  void check_sub_iterator_conflict();
+  void check_sub_iterator_conflict() override;
 
 private:
 

@@ -1,18 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       DDACEDesignCompExp
-//- Description: This class uses Design and Analysis of Computer Experiments
-//-              (DACE) methods to sample the design space spanned by the
-//-              Model.  It returns all generated samples and their
-//-              corresponding responses as well as the best sample found.
-//- Owner:       Tony Giunta, Sandia National Laboratories
 
 
 #ifndef DDACE_DESIGN_COMP_EXP_H
@@ -44,18 +37,18 @@ public:
   //
     
   /// primary constructor for building a standard DACE iterator
-  DDACEDesignCompExp(ProblemDescDB& problem_db, Model& model);
+  DDACEDesignCompExp(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
   /// alternate constructor used for building approximations
-  DDACEDesignCompExp(Model& model, int samples, int symbols, int seed, 
+  DDACEDesignCompExp(std::shared_ptr<Model> model, int samples, int symbols, int seed, 
 		     unsigned short sampling_method);
   /// destructor
-  ~DDACEDesignCompExp();
+  ~DDACEDesignCompExp() override;
   
   //
   //- Heading: Virtual member function redefinitions
   //
 
-  bool resize();
+  bool resize() override;
     
 protected:
 
@@ -63,17 +56,17 @@ protected:
   //- Heading: Virtual member function redefinitions
   //
 
-  void pre_run();
-  void core_run();
-  void post_input();
-  void post_run(std::ostream& s);
-  size_t num_samples() const;
-  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag);
-  unsigned short sampling_scheme() const;
-  void vary_pattern(bool pattern_flag);
-  void get_parameter_sets(Model& model);
-  void get_parameter_sets(Model& model, const size_t num_samples, 
-			  RealMatrix& design_matrix);
+  void pre_run() override;
+  void core_run() override;
+  void post_input() override;
+  void post_run(std::ostream& s) override;
+  size_t num_samples() const override;
+  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag) override;
+  unsigned short sampling_scheme() const override;
+  void vary_pattern(bool pattern_flag) override;
+  void get_parameter_sets(std::shared_ptr<Model> model) override;
+  void get_parameter_sets(std::shared_ptr<Model> model, const size_t num_samples, 
+			  RealMatrix& design_matrix) override;
 private:
 
   //

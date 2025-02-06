@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Description:  This file contains code related to data utilities that should
-//-               be compiled, rather than inlined in data_util.hpp.
-//-
-//- Owner:        Mike Eldred
-//- Version: $Id: dakota_data_util.cpp 7024 2010-10-16 01:24:42Z mseldre $
 
 #include "dakota_data_util.hpp"
 #include <boost/math/special_functions/round.hpp>
@@ -195,6 +189,8 @@ Real rel_change_L2(const RealVector& curr_rv1, const RealVector& prev_rv1,
   }
 }
 
+//----------------------------------------------------------------
+
 void compute_col_means(RealMatrix& matrix, RealVector& avg_vals)
 {
   int num_cols = matrix.numCols();
@@ -210,6 +206,8 @@ void compute_col_means(RealMatrix& matrix, RealVector& avg_vals)
     avg_vals(i) = col_vec.dot(ones_vec)/((Real) num_rows);
   }
 }
+
+//----------------------------------------------------------------
 
 void compute_col_stdevs(RealMatrix& matrix, RealVector& avg_vals, 
                         RealVector& std_devs)
@@ -229,6 +227,145 @@ void compute_col_stdevs(RealMatrix& matrix, RealVector& avg_vals,
   }
 }
 
+//----------------------------------------------------------------
+
+void compute_col_variances(RealMatrix& matrix, RealVector& avg_vals, 
+                        RealVector& variances)
+{
+  int num_cols = matrix.numCols();
+  int num_rows = matrix.numRows();
+
+  variances.resize(num_cols);
+  RealVector res_vec(num_rows);
+
+  for(int i=0; i<num_cols; ++i){
+    const RealVector& col_vec = Teuchos::getCol(Teuchos::View, matrix, i);
+    for(int j = 0; j<num_rows; ++j){
+      res_vec(j) = col_vec(j) - avg_vals(i);
+    }
+    variances(i) = res_vec.dot(res_vec)/((Real) num_rows-1);
+  }
+}
+
+//----------------------------------------------------------------
+
+void sort_vector( const RealVector & vec, RealVector & sort_vec, IntVector & indices )
+{
+  if( indices.length() != vec.length() )
+    indices.resize(vec.length()); // avoid initialization to 0.0
+
+  // initialize indices from 0 to vec.length()-1
+  std::iota(indices.values(), indices.values()+vec.length(), 0);
+
+  // Sort indices using values from incoming vec
+  std::sort( indices.values(), indices.values()+vec.length(), [&](Real i,Real j){return vec[i]<vec[j];} );
+
+  if( sort_vec.length() != vec.length() )
+    sort_vec.resize(vec.length()); // avoid initialization to 0.0
+
+  // Copy into target vector in sorted order
+  for( int i=0; i<vec.length(); ++i )
+    sort_vec[i] = vec[indices[i]];
+}
+
+//----------------------------------------------------------------
+
+void sort_matrix_columns( const RealMatrix & mat, RealMatrix & sort_mat, IntMatrix & indices )
+{
+  if( (mat.numRows() != sort_mat.numRows()) ||
+      (mat.numCols() != sort_mat.numCols()) )
+    sort_mat.shapeUninitialized(mat.numRows(), mat.numCols()); // avoid initialization to 0.0
+
+  if( (mat.numRows() != indices.numRows()) ||
+      (mat.numCols() != indices.numCols()) )
+    indices.shapeUninitialized(mat.numRows(), mat.numCols()); // avoid initialization to 0.0
+
+  for( int i=0; i<mat.numCols(); ++i )
+  {
+    RealMatrix & nonconst_mat = const_cast<RealMatrix&>(mat);
+    const RealVector & unsrt_vec = Teuchos::getCol(Teuchos::View, nonconst_mat, i);
+    RealVector sorted_vec   = Teuchos::getCol(Teuchos::View, sort_mat, i);
+    IntVector  sort_indices = Teuchos::getCol(Teuchos::View, indices, i);
+    sort_vector( unsrt_vec, sorted_vec, sort_indices);
+  }
+}
+
+//----------------------------------------------------------------
+
+void reorder_matrix_columns_from_index_vector( const RealMatrix& mat, 
+                                               RealMatrix& reordered_mat, 
+                                               const IntVector& indices ){
+  size_t num_inds = indices.length();
+  RealMatrix & nonconst_mat = const_cast<RealMatrix&>(mat);
+
+  if( (mat.numRows() != reordered_mat.numRows()) ||
+      (mat.numCols() != reordered_mat.numCols()) )
+    reordered_mat.shapeUninitialized(mat.numRows(), mat.numCols()); 
+
+  for ( int i=0; i<num_inds; ++i ){
+    Teuchos::setCol( Teuchos::getCol( Teuchos::View, nonconst_mat, indices[i] ),
+                     i, 
+                     reordered_mat );
+  }
+}
+
+//----------------------------------------------------------------
+
+void center_matrix_rows( RealMatrix & mat )
+{
+  int num_row = mat.numRows(), num_col = mat.numCols();
+  for (int i=0; i<num_row; i++) {
+    // normalize each row (input/output factor) by its mean across observations
+    Real row_mean = 0.0;
+    for (int j=0; j<num_col; j++)
+      row_mean += mat(i,j);
+    row_mean /= (Real)num_col;
+    for (int j=0; j<num_col; j++)
+      mat(i,j) -= row_mean;
+  }
+}
+
+//----------------------------------------------------------------
+
+void center_matrix_cols( RealMatrix & mat )
+{
+  int num_row = mat.numRows(), num_col = mat.numCols();
+  for (int j=0; j<num_col; j++) {
+    // normalize each column (input/output factor) by its mean across observations
+    Real col_mean = 0.0;
+    for (int i=0; i<num_row; i++)
+      col_mean += mat(i,j);
+    col_mean /= (Real)num_row;
+    for (int i=0; i<num_row; i++)
+      mat(i,j) -= col_mean;
+  }
+}
+
+//----------------------------------------------------------------
+
+bool is_matrix_symmetric( const RealMatrix & matrix )
+{
+  int num_cols = matrix.numCols();
+  int num_rows = matrix.numRows();
+
+  if( num_cols != num_rows )
+    return false;
+
+  bool is_symmetric = true;
+
+  for( int i=0; i<num_cols; ++i )
+    for( int j=i+1; j<num_cols; ++j ) {
+      if( matrix(i,j) != matrix(j,i) ) {
+        is_symmetric = false;
+        break;
+      }
+    }
+
+  return is_symmetric;
+}
+
+//----------------------------------------------------------------
+
 void remove_column(RealMatrix& matrix, int index)
 {
   int num_cols = matrix.numCols();
@@ -246,6 +383,40 @@ void remove_column(RealMatrix& matrix, int index)
   matrix = matrix_new;
 }
 
+//----------------------------------------------------------------
+
+void copy_data( const MatrixXd & src_mat, RealMatrix & dst_mat )
+{
+  const int nrows = src_mat.rows();
+  const int ncols = src_mat.cols();
+  dst_mat.reshape(nrows, ncols);
+  for( int i=0; i<nrows; ++i )
+    for( int j=0; j<ncols; ++j )
+      dst_mat(i,j) = src_mat(i,j);
+}
+
+//----------------------------------------------------------------
+
+void copy_data( const RealMatrix & src_mat, MatrixXd & dst_mat )
+{
+  const int nrows = src_mat.numRows();
+  const int ncols = src_mat.numCols();
+  dst_mat.resize(nrows, ncols);
+  for( int i=0; i<nrows; ++i )
+    for( int j=0; j<ncols; ++j )
+      dst_mat(i,j) = src_mat(i,j);
+}
+
+//----------------------------------------------------------------
+
+void view_data( const RealMatrix & src_mat, Eigen::Map<MatrixXd> & mat_view )
+{
+  const int nrows = src_mat.numRows();
+  const int ncols = src_mat.numCols();
+  new (&mat_view) Eigen::Map<MatrixXd>(src_mat.values(), nrows, ncols);
+}
+
+//----------------------------------------------------------------
 
 std::vector<std::string> strsplit(const std::string& input)
 {

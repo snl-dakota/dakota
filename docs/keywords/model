@@ -75,7 +75,7 @@ This example demonstrates the use of identifiers and pointers. It
 provides the optional model independent specifications for model
 identifier, variables pointer, and responses pointer
 as well as model dependent specifications for
-global surrogates (see :ref:`model-surrogate-global<model-surrogate-global>`).
+global surrogates (see :dakkw:`model-surrogate-global`).
 
 Finally, an advanced nested model example would be
 

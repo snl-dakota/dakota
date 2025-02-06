@@ -3,10 +3,11 @@ Specify weights for each objective function
 Description::
 Specifies relative emphasis through weights (multipliers) w on
 residual elements: 
-.. math::  f = \sum_{i=1}^{n} w_i R_i^2 = \sum_{i=1}^{n}
-w_i (y^{Model}_i - y^{Data}_i)^2 
+
+.. math::  f = \sum_{i=1}^{n} w_i R_i^2 = \sum_{i=1}^{n} w_i (y^{Model}_i - y^{Data}_i)^2 
+
 Length: The ``weights`` must have length equal to
-:ref:`responses-calibration_terms<responses-calibration_terms>`. Thus, when scalar and/or field responses
+:dakkw:`responses-calibration_terms`. Thus, when scalar and/or field responses
 are specified, the number of ``weights`` must equal the number of
 scalars plus the number of fields, *not* the total elements in the
 fields.
@@ -22,7 +23,7 @@ divisors.
 When scaling is active, it is applied to calibration terms after any
 residual formation (accounting for experimental data and optionally
 measurement error covariance), and before any weights. See the
-equations in :ref:`responses-calibration_terms<responses-calibration_terms>`.
+equations in :dakkw:`responses-calibration_terms`.
 Topics::
 
 Examples::

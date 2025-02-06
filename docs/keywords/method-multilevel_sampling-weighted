@@ -1,0 +1,32 @@
+Blurb::
+Include control variate weights for each of the recursive differences using in multilevel Monte Carlo (MLMC)
+
+Description::
+Referring to generalized ACV (:dakkw:`method-approximate_control_variate-search_model_graphs` and :cite:p:`Bomarito2022`),
+weighted MLMC is a special case of generalized ACV-RD (:dakkw:`method-approximate_control_variate-acv_recursive_diff`) where a hierarchical DAG is
+employed across the model approximations.  As such, a weighted MLMC
+specification forwards to the generalized ACV solver, but with fixing
+the DAG to be hierarchical (each approximation node points to the next
+approximation of higher fidelity/resolution, ending with the truth model
+at the root node) and fixing the sampling scheme to be ACV-RD.
+
+While the use of a hierarchical DAG is required, the approximation
+selections and orderings within this DAG can be varied, so generalized
+ACV capabilities for model graph search (different hierarchical
+orderings) and model selection (different approximation subsets) are
+available for a specification of weighted MLMC -- see
+:dakkw:`method-multilevel_sampling-weighted-search_model_graphs`.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Refer to :cite:p:`Bomarito2022` for understanding ACV generalizations
+for the different control variate pairings that are possible when
+codified into a more comprehensive set of potential DAGs.
+
+Faq::
+
+See_Also::

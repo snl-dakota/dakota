@@ -1,15 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       NonDStochCollocation
-//- Description: Implementation code for NonDStochCollocation class
-//- Owner:       Mike Eldred
 
 #include "dakota_system_defs.hpp"
 #include "NonDStochCollocation.hpp"
@@ -31,7 +27,7 @@ namespace Dakota {
 /** This constructor is called for a standard letter-envelope iterator
     instantiation using the ProblemDescDB. */
 NonDStochCollocation::
-NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
+NonDStochCollocation(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDExpansion(problem_db, model)
 {
   // ----------------
@@ -44,9 +40,8 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
-  Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
-		       (iteratedModel, u_space_type)); // retain dist bounds
+  auto g_u_model = std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, u_space_type); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -68,19 +63,19 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
   // active/uncertain variables (using same view as iteratedModel/g_u_model:
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
-  short  corr_order = -1, corr_type = NO_CORRECTION;
+  short corr_order = -1, corr_type = NO_CORRECTION;
   UShortArray approx_order; // empty
-  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  const ActiveSet& recast_set = g_u_model->current_response().active_set();
   // DFSModel: consume any QoI aggregation; support surrogate grad evals at most
-  ShortArray asv(g_u_model.qoi(), 3); // for stand alone mode
-  ActiveSet sc_set(asv, recast_set.derivative_vector());
+  ShortArray sc_asv(g_u_model->qoi(), 3); // for stand alone mode
+  ActiveSet  sc_set(sc_asv, recast_set.derivative_vector());
+  const ShortShortPair& sc_view = g_u_model->current_variables().view();
   String empty_str; // build data import not supported for structured grids
-  uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>
-    (u_space_sampler, g_u_model,
-     sc_set, approx_type, approx_order, corr_type, corr_order, data_order,
-     outputLevel, pt_reuse, empty_str, TABULAR_ANNOTATED, false,
-     probDescDB.get_string("method.export_approx_points_file"),
-     probDescDB.get_ushort("method.export_approx_format")));
+  uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
+    g_u_model, sc_set, sc_view, approx_type, approx_order, corr_type,
+    corr_order, data_order, outputLevel, pt_reuse, empty_str, TABULAR_ANNOTATED,
+    false, probDescDB.get_string("method.export_approx_points_file"),
+    probDescDB.get_ushort("method.export_approx_format"));
   initialize_u_space_model();
 
   // -------------------------------
@@ -103,15 +98,16 @@ NonDStochCollocation(ProblemDescDB& problem_db, Model& model):
 
 /** This constructor is used for helper iterator instantiation on the fly. */
 NonDStochCollocation::
-NonDStochCollocation(Model& model, short exp_coeffs_approach,
+NonDStochCollocation(std::shared_ptr<Model> model, short exp_coeffs_approach,
 		     unsigned short num_int, const RealVector& dim_pref,
 		     short u_space_type, short refine_type,
 		     short refine_control, short covar_control,
 		     short rule_nest, short rule_growth,
 		     bool piecewise_basis, bool use_derivs):
-  NonDExpansion(STOCH_COLLOCATION, model, exp_coeffs_approach, dim_pref, 0,
-		refine_type, refine_control, covar_control, 0., rule_nest,
-		rule_growth, piecewise_basis, use_derivs)
+  NonDExpansion(STOCH_COLLOCATION, model, model->current_variables().view(),
+		exp_coeffs_approach, dim_pref, 0, refine_type, refine_control,
+		covar_control, 0., rule_nest, rule_growth, piecewise_basis,
+		use_derivs)
   // Note: non-zero seed would be needed for expansionSampler, if defined
 {
   // ----------------
@@ -123,9 +119,8 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
-  Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
-		       (iteratedModel, u_space_type)); // retain dist bounds
+  auto g_u_model =std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, u_space_type); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -145,17 +140,17 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   // active/uncertain variables (using same view as iteratedModel/g_u_model:
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
-  short  corr_order = -1, corr_type = NO_CORRECTION;
+  short corr_order = -1, corr_type = NO_CORRECTION;
   UShortArray approx_order; // empty
-  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  const ActiveSet& recast_set = g_u_model->current_response().active_set();
   // DFSModel: consume any QoI aggregation.
   // TO DO: support surrogate Hessians in helper mode.
-  ShortArray asv(g_u_model.qoi(), 3); // TO DO: consider passing in data_mode
-  ActiveSet sc_set(asv, recast_set.derivative_vector());
-  uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>
-    (u_space_sampler, g_u_model,
-     sc_set, approx_type, approx_order, corr_type, corr_order, data_order,
-     outputLevel, pt_reuse));
+  ShortArray sc_asv(g_u_model->qoi(), 3); // TO DO: consider passing in data_mode
+  ActiveSet  sc_set(sc_asv, recast_set.derivative_vector());
+  const ShortShortPair& sc_view = g_u_model->current_variables().view();
+  uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
+    g_u_model, sc_set, sc_view, approx_type, approx_order, corr_type,
+    corr_order, data_order, outputLevel, pt_reuse);
   initialize_u_space_model();
 
   // no expansionSampler, no numSamplesOnExpansion
@@ -166,7 +161,7 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
     customize the object construction. */
 NonDStochCollocation::
 NonDStochCollocation(unsigned short method_name, ProblemDescDB& problem_db,
-		     Model& model):
+		     std::shared_ptr<Model> model):
   NonDExpansion(problem_db, model)
 {
   // Logic delegated to derived class constructor...
@@ -176,15 +171,16 @@ NonDStochCollocation(unsigned short method_name, ProblemDescDB& problem_db,
 /** This constructor is called from derived class constructors that
     customize the object construction. */
 NonDStochCollocation::
-NonDStochCollocation(unsigned short method_name, Model& model,
+NonDStochCollocation(unsigned short method_name, std::shared_ptr<Model> model,
 		     short exp_coeffs_approach, const RealVector& dim_pref,
 		     short refine_type, short refine_control,
 		     short covar_control, short ml_alloc_control,
 		     short ml_discrep, short rule_nest, short rule_growth,
 		     bool piecewise_basis, bool use_derivs):
-  NonDExpansion(method_name, model, exp_coeffs_approach, dim_pref, 0,
-		refine_type, refine_control, covar_control, 0., rule_nest,
-		rule_growth, piecewise_basis, use_derivs)
+  NonDExpansion(method_name, model, model->current_variables().view(),
+		exp_coeffs_approach, dim_pref, 0, refine_type, refine_control,
+		covar_control, 0., rule_nest, rule_growth, piecewise_basis,
+		use_derivs)
 {
   multilevAllocControl     = ml_alloc_control;
   multilevDiscrepEmulation = ml_discrep;
@@ -200,7 +196,7 @@ NonDStochCollocation::~NonDStochCollocation()
 void NonDStochCollocation::
 config_integration(unsigned short quad_order, unsigned short ssg_level,
 		   const RealVector& dim_pref, short u_space_type, 
-		   Iterator& u_space_sampler, Model& g_u_model)
+		   Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model)
 {
   // -------------------------
   // Construct u_space_sampler
@@ -265,7 +261,7 @@ config_integration(unsigned short quad_order, unsigned short ssg_level,
 void NonDStochCollocation::
 config_integration(short exp_coeffs_approach, unsigned short num_int,
 		   const RealVector& dim_pref, Iterator& u_space_sampler,
-		   Model& g_u_model)
+		   std::shared_ptr<Model> g_u_model)
 {
   // -------------------------
   // Construct u_space_sampler
@@ -331,7 +327,7 @@ resolve_inputs(short& u_space_type, short& data_order)
   // within the NestedModel ctor prior to subIterator instantiation.
   data_order = 1;
   if (useDerivs) { // input specification
-    if (iteratedModel.gradient_type()  != "none") data_order |= 2;
+    if (iteratedModel->gradient_type()  != "none") data_order |= 2;
     //if (iteratedModel.hessian_type() != "none") data_order |= 4; // not yet
 #ifdef ALLOW_GLOBAL_HERMITE_INTERPOLATION
     if (data_order == 1)
@@ -391,12 +387,12 @@ void NonDStochCollocation::initialize_u_space_model()
     initialize_covariance();
 
   // Precedes construct_basis() since basis is stored in Pecos driver
-  SharedApproxData& shared_data = uSpaceModel.shared_approximation();
-  shared_data.integration_iterator(uSpaceModel.subordinate_iterator());
+  SharedApproxData& shared_data = uSpaceModel->shared_approximation();
+  shared_data.integration_iterator(uSpaceModel->subordinate_iterator());
 
   // DataFitSurrModel copies u-space mvDist from ProbabilityTransformModel
   const Pecos::MultivariateDistribution& u_mvd
-    = uSpaceModel.multivariate_distribution();
+    = uSpaceModel->multivariate_distribution();
   // construct the polynomial basis (shared by integration drivers)
   shared_data.construct_basis(u_mvd);
   // mainly a run-time requirement, but also needed at construct time
@@ -409,7 +405,7 @@ void NonDStochCollocation::initialize_u_space_model()
 
 void NonDStochCollocation::initialize_covariance()
 {
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  std::vector<Approximation>& poly_approxs = uSpaceModel->approximations();
   size_t i, j;
   for (i=0; i<numFunctions; ++i) {
     std::shared_ptr<PecosApproximation> pa_rep_i =
@@ -424,7 +420,7 @@ void NonDStochCollocation::initialize_covariance()
 
 void NonDStochCollocation::compute_delta_mean(bool update_ref)
 {
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  std::vector<Approximation>& poly_approxs = uSpaceModel->approximations();
   bool   warn_flag = false,
     combined_stats = (statsMetricMode == Pecos::COMBINED_EXPANSION_STATS);
 
@@ -472,7 +468,7 @@ void NonDStochCollocation::compute_delta_mean(bool update_ref)
 void NonDStochCollocation::
 compute_delta_variance(bool update_ref, bool print_metric)
 {
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  std::vector<Approximation>& poly_approxs = uSpaceModel->approximations();
   bool   warn_flag = false,
     combined_stats = (statsMetricMode == Pecos::COMBINED_EXPANSION_STATS);
 
@@ -513,7 +509,7 @@ compute_delta_variance(bool update_ref, bool print_metric)
 void NonDStochCollocation::
 compute_delta_covariance(bool update_ref, bool print_metric)
 {
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  std::vector<Approximation>& poly_approxs = uSpaceModel->approximations();
   bool   warn_flag = false,
     combined_stats = (statsMetricMode == Pecos::COMBINED_EXPANSION_STATS);
   size_t i, j;
@@ -665,7 +661,7 @@ compute_level_mappings_metric(bool revert, bool print_metric)
 
       bool warn_flag   = false,
 	combined_stats = (statsMetricMode == Pecos::COMBINED_EXPANSION_STATS);
-      std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+      std::vector<Approximation>& poly_approxs = uSpaceModel->approximations();
       Real delta, ref, sum_sq = 0., scale_sq = 0., z_bar, beta_bar;
       for (i=0, cntr=0; i<numFunctions; ++i) {
 	size_t rl_len = requestedRespLevels[i].length(),
@@ -816,7 +812,7 @@ compute_final_statistics_metric(bool revert, bool print_metric)
       }
 
       bool warn_flag = false;
-      std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+      std::vector<Approximation>& poly_approxs = uSpaceModel->approximations();
       Real delta, ref, sum_sq = 0., scale_sq = 0., z_bar, beta_bar;
       for (i=0, cntr=0; i<numFunctions; ++i) {
 	size_t rl_len = requestedRespLevels[i].length(),
@@ -968,7 +964,7 @@ void NonDStochCollocation::pull_candidate(RealVector& stats_star)
     // If pulling updated values as in NonDExpansion
     switch (refineMetric) {
     case Pecos::COVARIANCE_METRIC: {
-      std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+      std::vector<Approximation>& poly_approxs = uSpaceModel->approximations();
       std::shared_ptr<PecosApproximation> poly_approx_rep;
       bool full_covar = (covarianceControl == FULL_COVARIANCE),
         combined_stats = (statsMetricMode == Pecos::COMBINED_EXPANSION_STATS);
@@ -1020,7 +1016,7 @@ analytic_delta_level_mappings(const RealVector& level_maps_ref,
     level_maps_new.resize(totalLevelRequests);
 
   size_t i, j, cntr, rl_len, pl_len, bl_len, gl_len, pl_bl_gl_len;
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  std::vector<Approximation>& poly_approxs = uSpaceModel->approximations();
   Real delta, ref, sum_sq = 0., scale_sq = 0., z_bar, beta_bar;
   bool combined_stats = (statsMetricMode == Pecos::COMBINED_EXPANSION_STATS);
   for (i=0, cntr=0; i<numFunctions; ++i) {

@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        Response
-//- Description:  Container class for response functions and their derivatives.
-//-
-//- Owner:        Mike Eldred
-//- Version: $Id: DakotaResponse.hpp 7024 2010-10-16 01:24:42Z mseldre $
 
 #ifndef DAKOTA_RESPONSE_H
 #define DAKOTA_RESPONSE_H
@@ -20,6 +14,9 @@
 #include "DakotaActiveSet.hpp"
 #include "SharedResponseData.hpp"
 #include "Teuchos_SerialDenseHelpers.hpp"
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
 
 namespace Dakota {
 
@@ -118,6 +115,9 @@ public:
   /// set the active set derivative vector and reshape
   /// functionGradients/functionHessians if needed
   void active_set_derivative_vector(const SizetArray& asdv);
+  /// set the active set derivative vector and reshape
+  /// functionGradients/functionHessians if needed
+  void active_set_derivative_vector(SizetMultiArrayConstView asdv);
 
   // NOTE: Responses are stored:
   // [primary_scalar, primary_field, nonlinear_inequality, nonlinear_equality]
@@ -156,7 +156,14 @@ public:
   /// return all function gradients as a view for updating in place
   RealMatrix function_gradients_view() const;
   /// set a function gradient
-  void function_gradient(const RealVector& fn_grad, int i);
+  void function_gradient(const RealVector& assign_grad, int fn_index);
+  /// set a function gradient, managing dissimilar DVV
+  void function_gradient(const RealVector& assign_grad, int fn_index,
+			 const SizetArray& assign_indices,
+			 const SizetArray&   curr_indices);
+  /// set a function gradient, managing dissimilar DVV
+  void function_gradient(const RealVector& assign_grad, int fn_index,
+			 const SizetArray& assign_dvv);
   /// set all function gradients
   void function_gradients(const RealMatrix& fn_grads);
 
@@ -177,9 +184,21 @@ public:
   /// for updating in place
   RealSymMatrixArray function_hessians_view() const;
   /// set a function Hessian
-  void function_hessian(const RealSymMatrix& fn_hessian, size_t i);
+  void function_hessian(const RealSymMatrix& assign_hessian, size_t fn_index);
+  /// set a function Hessian, using DVV index mappings
+  void function_hessian(const RealSymMatrix& assign_hessian, size_t fn_index,
+			const SizetArray&    assign_indices,
+			const SizetArray&      curr_indices);
+  /// set a function Hessian, managing dissimilar DVV
+  void function_hessian(const RealSymMatrix& assign_hessian,
+			size_t fn_index, const SizetArray& assign_dvv);
   /// set all function Hessians
   void function_hessians(const RealSymMatrixArray& fn_hessians);
+
+  /// define source and target indices for updating derivatives by matching
+  /// assign_dvv against the current DVV
+  void map_dvv_indices(const SizetArray& assign_dvv, SizetArray& assign_indices,
+		       SizetArray& curr_indices);
 
   // NOTE: Responses are stored:
   // [primary_scalar, primary_field, nonlinear_inequality, nonlinear_equality]
@@ -223,15 +242,22 @@ public:
   /// get the (possibly empty) response metadata;
   /// (get labels through shared_data())
   const std::vector<RespMetadataT>& metadata() const;
+  /// get a single entry from the response metadata
+  RespMetadataT metadata(size_t index) const;
   /// set the response metadata
   /// (set labels through shared_data())
   void metadata(const std::vector<RespMetadataT>& md);
   /// set a portion of the response metadata starting from given position
   void metadata(const std::vector<RespMetadataT>& md, size_t start);
 
-  /// read a response object of specified format from a std::istream 
-  void read(std::istream& s, const unsigned short format = FLEXIBLE_RESULTS);
- 
+  /** ASCII version of read needs capabilities for capturing data omissions or
+    formatting errors (resulting from user error or asynch race condition) and
+    analysis failures (resulting from nonconvergence, instability, etc.). */
+
+  /// Read results into the Response from Input s.
+  template<class Input>
+  void read(Input& s, const bool labeled = false);
+
   /// write a response object to a std::ostream
   void write(std::ostream& s) const;
 
@@ -459,8 +485,18 @@ private:
   void reshape_rep(size_t num_fns, size_t num_params, bool grad_flag,
 		   bool hess_flag);
 
-  void read_core(std::istream& s, const unsigned short formats,
-		 std::ostringstream& errors);
+  /// reshape function{Gradients,Hessians} if needed to sync with DVV
+  void reshape_active_derivs(size_t num_deriv_vars);
+
+  /// Populate the Response with the contents of s
+  void read_core(std::istream& s,
+                  const bool labeled,
+                  std::ostringstream& errors);
+
+  /// Populate the Response with the contents of j
+  void read_core(const json& j,
+                  const bool labeled,
+                  std::ostringstream& errors);
 
   bool expect_derivatives(const ShortArray& asv);
 
@@ -493,6 +529,9 @@ private:
   /// Check for FAIL in stream
   bool failure_reported(std::istream &s);
 
+  /// Check for fail in JSON
+  bool failure_reported(const json &);
+
   //
   //- Heading: Private data members
   //
@@ -500,6 +539,29 @@ private:
   /// pointer to the body (handle-body idiom)
   std::shared_ptr<Response> responseRep;
 };
+
+template<class Input>
+void Response::read(Input& s, const bool labeled)
+{
+  // if envelope, forward to letter
+  if (responseRep)
+    { responseRep->read(s, labeled); return; }
+
+  // If a failure is detected, throw an error
+  if (failure_reported(s)) 
+    throw FunctionEvalFailure(String("failure captured"));
+  
+  // Destroy old values and set to zero (so that else assignments are not needed
+  // below). The arrays have been properly sized by the Response constructor.
+  reset();
+  
+  std::ostringstream errors; // all helper funcs can append messages to errors
+
+  read_core(s, labeled, errors);
+
+  if(!errors.str().empty())
+    throw ResultsFileError(errors.str());
+}
 
 
 inline const SharedResponseData& Response::shared_data() const
@@ -861,6 +923,15 @@ inline const std::vector<RespMetadataT>& Response::metadata() const
     return responseRep->metaData;
   else
     return metaData;
+}
+
+
+inline RespMetadataT Response::metadata(size_t index) const
+{
+  if (responseRep)
+    return responseRep->metaData[index];
+  else
+    return metaData[index];
 }
 
 

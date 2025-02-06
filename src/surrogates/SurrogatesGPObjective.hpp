@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -36,7 +36,7 @@ class GP_Objective : public ROL::Objective<double> {
    *
    */
   GP_Objective(GaussianProcess& gp_model);
-  ~GP_Objective();
+  ~GP_Objective() override;
 
   // ------------------------------------------------------------
   // Public utility functions
@@ -47,7 +47,7 @@ class GP_Objective : public ROL::Objective<double> {
    *  \param[in] tol Tolerance for inexact evaluation (not used here).
    *
    */
-  double value(const ROL::Vector<double>& p, double& tol);
+  double value(const ROL::Vector<double>& p, double& tol) override;
 
   /**
    *  \brief Get the gradient of the objective function at a point.
@@ -57,7 +57,7 @@ class GP_Objective : public ROL::Objective<double> {
    *
    */
   void gradient(ROL::Vector<double>& g, const ROL::Vector<double>& p,
-                double& tol);
+                double& tol) override;
 
  private:
   // ------------------------------------------------------------

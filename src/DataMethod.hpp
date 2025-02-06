@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        DataMethod
-//- Description:
-//-
-//- Owner:        Mike Eldred
-//- Version: $Id: DataMethod.hpp 6984 2010-09-27 02:11:09Z lpswile $
 
 #ifndef DATA_METHOD_H
 #define DATA_METHOD_H
@@ -58,9 +52,11 @@ enum { DEFAULT_METHOD=0,
        MULTILEVEL_FUNCTION_TRAIN, MULTIFIDELITY_FUNCTION_TRAIN,
        CUBATURE_INTEGRATION, SPARSE_GRID_INTEGRATION, QUADRATURE_INTEGRATION, 
        BAYES_CALIBRATION, GPAIS, POF_DARTS, RKD_DARTS,
-       IMPORTANCE_SAMPLING, ADAPTIVE_SAMPLING, MULTILEVEL_SAMPLING,
-       MULTIFIDELITY_SAMPLING, MULTILEVEL_MULTIFIDELITY_SAMPLING,
-       APPROXIMATE_CONTROL_VARIATE, LIST_SAMPLING, RANDOM_SAMPLING,
+       IMPORTANCE_SAMPLING, ADAPTIVE_SAMPLING,
+       MULTILEVEL_SAMPLING, MULTIFIDELITY_SAMPLING,
+       MULTILEVEL_MULTIFIDELITY_SAMPLING, APPROX_CONTROL_VARIATE,
+       GEN_APPROX_CONTROL_VARIATE, MULTILEVEL_BLUE,
+       LIST_SAMPLING, RANDOM_SAMPLING,
        // Variables::method_view(): epistemic if method_name > RANDOM_SAMPLING
        LOCAL_INTERVAL_EST, LOCAL_EVIDENCE, GLOBAL_INTERVAL_EST, GLOBAL_EVIDENCE,
        //BAYES_CALIBRATION=(ANALYZER_BIT | NOND_BIT | PARALLEL_BIT),
@@ -95,18 +91,22 @@ enum { SUBMETHOD_DEFAULT=0, // no specification
        /// Type of hybrid meta-iterator:
        SUBMETHOD_COLLABORATIVE,   SUBMETHOD_EMBEDDED,   SUBMETHOD_SEQUENTIAL,
        // Sampling and DOE types:
-       SUBMETHOD_LHS,             SUBMETHOD_RANDOM,
-       SUBMETHOD_BOX_BEHNKEN,     SUBMETHOD_CENTRAL_COMPOSITE,
-       SUBMETHOD_GRID,            SUBMETHOD_OA_LHS,     SUBMETHOD_OAS,
-       // MFMC and ACV numerical solutions:
-       SUBMETHOD_MFMC, SUBMETHOD_ACV_IS, SUBMETHOD_ACV_MF, SUBMETHOD_ACV_KL,
+       SUBMETHOD_LHS,                      SUBMETHOD_RANDOM,
+       SUBMETHOD_LOW_DISCREPANCY_SAMPLING, SUBMETHOD_BOX_BEHNKEN,
+       SUBMETHOD_CENTRAL_COMPOSITE,        SUBMETHOD_GRID,
+       SUBMETHOD_OA_LHS,                   SUBMETHOD_OAS,
+       // ACV modes and options for "promotions" for MFMC,MLMC:
+       SUBMETHOD_MFMC,   SUBMETHOD_WEIGHTED_MLMC,
+       SUBMETHOD_ACV_IS, SUBMETHOD_ACV_MF, SUBMETHOD_ACV_RD,
        // Bayesian inference algorithms:
        SUBMETHOD_DREAM, SUBMETHOD_GPMSA, SUBMETHOD_MUQ, SUBMETHOD_QUESO,
        SUBMETHOD_WASABI,
        // optimization sub-method selections (in addition to SUBMETHOD_LHS):
        SUBMETHOD_CONMIN, SUBMETHOD_DOT, SUBMETHOD_NLPQL, SUBMETHOD_NPSOL,
-       SUBMETHOD_OPTPP, SUBMETHOD_EA, SUBMETHOD_DIRECT, SUBMETHOD_EGO,
-       SUBMETHOD_SBLO, SUBMETHOD_SBGO,
+       SUBMETHOD_OPTPP, SUBMETHOD_NPSOL_OPTPP,
+       SUBMETHOD_DIRECT, SUBMETHOD_DIRECT_NPSOL_OPTPP,
+       SUBMETHOD_DIRECT_NPSOL, SUBMETHOD_DIRECT_OPTPP, 
+       SUBMETHOD_EA, SUBMETHOD_EGO, SUBMETHOD_SBLO, SUBMETHOD_SBGO,
        // Local reliability sub-method selections: (MV is 0)
        SUBMETHOD_AMV_X,       SUBMETHOD_AMV_U,
        SUBMETHOD_AMV_PLUS_X,  SUBMETHOD_AMV_PLUS_U,
@@ -118,6 +118,15 @@ enum { SUBMETHOD_DEFAULT=0, // no specification
        // verification approaches:
        SUBMETHOD_CONVERGE_ORDER,  SUBMETHOD_CONVERGE_QOI,
        SUBMETHOD_ESTIMATE_ORDER };
+
+/// Sampling method for variance based decomposition (VBD)
+enum { VBD_BINNED=0, VBD_PICK_AND_FREEZE };
+
+/// Graph recursion options for generalized ACV
+enum { NO_GRAPH_RECURSION=0, KL_GRAPH_RECURSION, PARTIAL_GRAPH_RECURSION,
+       FULL_GRAPH_RECURSION };
+/// Model selection options for generalized ACV
+enum { NO_MODEL_SELECTION=0, ALL_MODEL_COMBINATIONS };
 
 // define special values for outputLevel within
 // Iterator/Model/Interface/Approximation
@@ -212,7 +221,7 @@ enum { DESIGN,            //DESIGN_UNIFORM,
 enum { ONE_SIDED_LOWER, ONE_SIDED_UPPER, TWO_SIDED };
 
 // type of final statistics for NonD sampling methods
-enum { NO_FINAL_STATS=0, QOI_STATISTICS, ESTIMATOR_PERFORMANCE };
+enum { DEFAULT_FINAL_STATS=0, QOI_STATISTICS, ESTIMATOR_PERFORMANCE };
 
 // define special values for qoi aggregation norm for sample
 // allocation over levels and QoIs
@@ -232,9 +241,23 @@ enum { CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT,
        CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT };
 
 // ML/MF sampling modes
-enum { ONLINE_PILOT, OFFLINE_PILOT, PILOT_PROJECTION };
+enum { ONLINE_PILOT,            OFFLINE_PILOT,
+       ONLINE_PILOT_PROJECTION, OFFLINE_PILOT_PROJECTION };
+// ML/MF modes for group-based pilot sampling
+enum { SHARED_PILOT, INDEPENDENT_PILOT };
+// Throttles for group-based pilot sampling
+enum { NO_GROUP_THROTTLE=0,      MFMC_ESTIMATOR_GROUPS,
+       COMMON_ESTIMATOR_GROUPS,  GROUP_SIZE_THROTTLE,
+       RCOND_TOLERANCE_THROTTLE, RCOND_BEST_COUNT_THROTTLE };
 // Numerical solution modes
 enum { REORDERED_FALLBACK, NUMERICAL_FALLBACK, NUMERICAL_OVERRIDE };
+// options for obtaining cost data for model fidelities/resolutions
+enum { NO_COST_SOURCE=0, USER_COST_SPEC, ONLINE_COST_RECOVERY,
+       MIXED_COST_SPEC_RECOVERY };
+// options for metrics derived from QoI estimator variances
+enum { DEFAULT_ESTVAR_METRIC = 0, AVG_ESTVAR_METRIC, NORM_ESTVAR_METRIC,
+       MAX_ESTVAR_METRIC, AVG_ESTVAR_RATIO_METRIC, NORM_ESTVAR_RATIO_METRIC,
+       MAX_ESTVAR_RATIO_METRIC };
 
 // ---------------
 // NonDReliability
@@ -780,8 +803,6 @@ public:
   int randomSeed;
   /// the \c seed_sequence specification for multilevel UQ methods
   SizetArray randomSeedSeq;
-  /// the \c coefficient mapping for the scalarization term for multilevel UQ methods
-  RealVector scalarizationRespCoeffs;
 
   // MADS
   /// the \c initMeshSize choice for NOMAD in \ref MethodNOMADDC
@@ -852,10 +873,16 @@ public:
   /// sample sets.  This results in the use of the same sampling
   /// stencil/pattern throughout an execution with repeated sampling.
   bool fixedSequenceFlag;
-  /// the \c var_based_decomp specification for a variety of sampling methods
+  /// the \c var_based_decomp specification for computing Sobol' indices
+  /// via either PCE or sampling
   bool vbdFlag;
-  /// the \c var_based_decomp tolerance for omitting index output
+  /// the \c var_based_decomp tolerance for omitting Sobol' indices computed
+  /// via either PCE or sampling
   Real vbdDropTolerance;
+  /// Sampling method for computing Sobol indices: Mahadevan (default) or Saltelli
+  unsigned short vbdViaSamplingMethod;
+  /// Number of bins to use in case the Mahadevan method is selected (default is the square root of the number of samples)
+  int vbdViaSamplingNumBins;
   /// the \c backfill option allows one to augment in LHS sample
   /// by enforcing the addition of unique discrete variables to the sample
   bool backfillFlag;
@@ -873,6 +900,57 @@ public:
   Real wilksConfidenceLevel;
   /// Wilks sided interval type
   short wilksSidedInterval;
+
+  /// Flag to indicate rank-1 lattice sampling
+  bool rank1LatticeFlag;
+  /// Flag to indicate randomization of rank-1 lattice rule
+  bool noRandomShiftFlag;
+  /// (log2 of) maximum number of points of low-discrepancy generator
+  int log2MaxPoints;
+  /// Inline generating vector of the rank-1 lattice rule
+  IntVector generatingVector;
+  /// Name of file with generating vector
+  String generatingVectorFileName;
+  /// Predefined generating vectors
+  bool kuo;
+  bool cools_kuo_nuyens;
+  /// Ordering of the lattice points
+  bool naturalOrdering;
+  bool radicalInverseOrdering;
+
+  /// Flag to indicate digital net sampling
+  bool digitalNetFlag;
+  /// Flag to indicate randomization of digital net
+  bool noDigitalShiftFlag;
+  /// Flag to indicate scrambling of the digital net
+  bool noScramblingFlag;
+  /// Flag to indicate integers in generating matrices are stored with most significant bit first
+  bool mostSignificantBitFirst;
+  /// Flag to indicate integers in generating matrices are stored with least significant bit first
+  bool leastSignificantBitFirst;
+  /// Number of bits in each integer in the generating matrices
+  int numberOfBits;
+  /// Number of rows in the linear scramble matrix
+  int scrambleSize;
+  /// Inline generating matrices of the digital net
+  IntVector generatingMatrices;
+  /// Name of file with generating matrices
+  String generatingMatricesFileName;
+  /// Predefined generating matrices
+  bool joe_kuo;
+  bool sobol_order_2;
+  /// Ordering of the digital net points
+  bool grayCodeOrdering;
+
+  /// flag indicating the calculation/output of standardized regression coefficients
+  bool stdRegressionCoeffs;
+  
+  /// Flag to specify use of double sided tolerance interval equivalent normal
+  bool toleranceIntervalsFlag;
+  /// Coverage parameter for the calculation of double sided tolerance interval equivalent normal
+  Real tiCoverage;
+  /// Confidence level parameter for the calculation of double sided tolerance interval equivalent normal
+  Real tiConfidenceLevel;
 
   /// flag to indicate bounds-based scaling of current response data set
   /// prior to build in surrogate-based methods; important for ML/MF data fits
@@ -1022,29 +1100,79 @@ public:
   /// assumptions that might be violated, suggesting a fallback approach,
   /// or lacking robustness, suggesting an optional override replacement
   unsigned short numericalSolveMode;
+  /// type of solver metric used in variance minimization / accuracy
+  /// specification (average, max, or norm of estimator variance across QoI)
+  short estVarMetricType;
+  /// for a norm-based solver metric (see estVarMetricType), the order
+  /// of the norm employed across the QoI estimator variances
+  Real estVarMetricNormOrder;
 
-  /// the \c pilot_samples selection in \ref MethodMultilevelMC
+  /// the \c pilot_samples selection in ML/MF methods
   SizetArray pilotSamples;
   /// the \c solution_mode selection for ML/MF sampling methods
-  short ensembleSampSolnMode;
+  short ensemblePilotSolnMode;
+  /// the group sampling approach for pilot sampling in ML BLUE:
+  /// independent or shared
+  short pilotGroupSampling;
+  /// approach to restricting the total number of groups in group estimators
+  short groupThrottleType;
+  /// restricting the number of group combinations in group estimators by
+  /// enforcing a maximum size in terms of the number of models per group
+  unsigned short groupSizeThrottle;
+  /// restricting group combinations in group estimators by ranking and
+  /// selecting the best subset of specified count in terms of group
+  /// covariance conditioning
+  size_t rCondBestThrottle;
+  /// restricting group combinations in group estimators by enforcing a
+  /// lower bound on group covariance conditioning (rcond is inverse of
+  /// condition number)
+  Real rCondTolThrottle;
   /// the \c truth_fixed_by_pilot flag for ACV methods
   bool truthPilotConstraint;
+  /// option specified for extent of DAG enumeration within
+  /// \c search_model_graphs for generalized ACV methods
+  short dagRecursionType;
+  /// option specified for \c depth_limit in generalized ACV methods with
+  /// partial graph recursion
+  unsigned short dagDepthLimit;
+  /// option specified for \c model_selection within \c search_model_graphs
+  /// for generalized ACV methods
+  short modelSelectType;
+  /// sequence of (under-)relaxation factors that are applied to sample
+  /// increments computed in the latest ML/MF allocation solution:
+  ///   f_i = f_seq[i] for iter <= len, f_seq[last_i] for iter > len
+  RealVector relaxFactorSequence;
+  /// fixed (under-)relaxation factor applied to sample increments computed
+  /// in the latest ML/MF allocation solution:
+  ///   f_i = f_fixed for all iter
+  Real relaxFixedFactor;
+  /// (under-)relaxation factor that is applied to sample increments computed
+  /// in the latest ML/MF allocation solution.  The relaxation factor for
+  /// each iteration (f_i) is defined from recursive application of the user
+  /// specification (f_recur) to the remaining partition of unity:
+  ///   f_{i+1} = f_i + f_recur (1 - f_i), where f_0 = 0 gives f_1 = f_recur.
+  /// E.g., f_recur = 0.5 gives f_i = 0.5, .75, .875, .9375, ...
+  Real relaxRecursiveFactor;
   /// the \c allocationTarget selection in \ref MethodMultilevelMC
   short allocationTarget;
-  /// the \c useTargetVarianceOptimizationFlag selection in \ref MethodMultilevelMC
+  /// the \c allocation_target selection in \ref MethodMultilevelMC
   bool useTargetVarianceOptimizationFlag;
-  /// the |c qoi_aggregation_norm selection in \ref MethodMultilevelMC
+  /// the \c qoi_aggregation_norm selection in \ref MethodMultilevelMC
   short qoiAggregation;
-  /// the |c convergence_tolerance_type selection in \ref MethodMultilevelMC
+  /// the \c scalarization_response_mapping for defining the statistical
+  /// goal in multilevel UQ methods
+  RealVector scalarizationRespCoeffs;
+  /// the \c convergence_tolerance_type selection in \ref MethodMultilevelMC
   short convergenceToleranceType;
-  /// the |c convergence_tolerance_type selection in \ref MethodMultilevelMC
+  /// the \c convergence_tolerance_target selection in \ref MethodMultilevelMC
   short convergenceToleranceTarget;
   /// the \c allocation_control selection in \ref MethodMultilevelPCE
   short multilevAllocControl;
   /// the \c estimator_rate selection in \ref MethodMultilevelPCE
   Real multilevEstimatorRate;
   /// type of discrepancy emulation in multilevel methods: distinct or recursive
-  short multilevDiscrepEmulation;  
+  short multilevDiscrepEmulation;
+
   /// specification of the type of final statistics in \ref MethodNonD
   short finalStatsType;
   /// the \c final_moments specification in \ref MethodNonD, subordinate to
@@ -1066,6 +1194,7 @@ public:
   RealVectorArray reliabilityLevels;
   /// the \c gen_reliability_levels specification in \ref MethodNonD
   RealVectorArray genReliabilityLevels;
+
   /// the number of MCMC chain samples
   int chainSamples;
   /// the number of samples to construct an emulator, e.g., for
@@ -1240,6 +1369,68 @@ public:
   /// Flag specifying whether to evaluate the posterior density at a
   /// set of samples
   bool evaluatePosteriorDensity;
+
+  // MUQ sub-specification
+
+  /// DR num stages
+  int drNumStages;
+
+  /// DR scale type
+  String drScaleType;
+
+  /// DR scale
+  Real drScale;
+
+  /// AM period num steps
+  int amPeriodNumSteps;
+
+  /// AM staring step
+  int amStartingStep;
+
+  /// AM scale
+  Real amScale;
+
+  /// MALA step size
+  Real malaStepSize;
+
+  /// DILI Hessian type
+  String diliHessianType;
+
+  /// DILI adaptation interval
+  int diliAdaptInterval;
+
+  /// DILI adaptation start
+  int diliAdaptStart;
+
+  /// DILI adaptation end
+  int diliAdaptEnd;
+
+  /// DILI initial weight
+  int diliInitialWeight;
+
+  /// DILI Hessian tolerance
+  Real diliHessTolerance;
+
+  /// DILI LIS tolerance
+  Real diliLISTolerance;
+
+  /// DILI stochastic eigensolver maximum number of eigenvalues to compute
+  int diliSesNumEigs;
+
+  /// DILI stochastic eigensolver relative tolerance
+  Real diliSesRelTol;
+
+  /// DILI stochastic eigensolver absolute tolerance
+  Real diliSesAbsTol;
+
+  /// DILI stochastic eigensolver expected number of eigenvalues that are larger than the tolerances
+  int diliSesExpRank;
+
+  /// DILI stochastic eigensolver oversampling factor
+  int diliSesOversFactor;
+
+  /// DILI stochastic eigensolver block size
+  int diliSesBlockSize;
 
   // Parameter Study
 

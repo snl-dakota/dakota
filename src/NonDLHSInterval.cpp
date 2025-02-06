@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:	 NonLHSInterval
-//- Description: Implementation code for NonDLHSInterval class
-//- Owner:       Laura Swiler
-//- Checked by:
-//- Version:
 
 #include "NonDLHSInterval.hpp"
 #include "dakota_data_types.hpp"
@@ -26,7 +20,7 @@
 namespace Dakota {
 
 
-NonDLHSInterval::NonDLHSInterval(ProblemDescDB& problem_db, Model& model):
+NonDLHSInterval::NonDLHSInterval(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDInterval(problem_db, model),
   seedSpec(probDescDB.get_int("method.random_seed")),
   numSamples(probDescDB.get_int("method.samples")),

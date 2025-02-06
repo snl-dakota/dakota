@@ -1,20 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       APPSEvalMgr
-//- Description: Specialized evaluation manager class derived from
-//-              APPSPACK's Executor class which redefines virtual
-//-              evaluation functions with DAKOTA's response
-//-              computation procedures
-//- Owner:       Patty Hough
-//- Checked by:
-//- Version: $Id$
 
 #ifndef APPSEvalMgr_H
 #define APPSEvalMgr_H
@@ -45,34 +36,34 @@ public:
   //
 
   /// constructor
-  APPSEvalMgr(Optimizer&, Model& model);
+  APPSEvalMgr(Optimizer&, std::shared_ptr<Model> model);
 
   /// destructor
-  ~APPSEvalMgr() {};
+  ~APPSEvalMgr() override {};
     
   //
   //- Heading: Virtual function redefinitions
   //
 
   /// tells APPS whether or not there is a processor available to perform a function evaluation
-  bool isReadyForWork() const;
+  bool isReadyForWork() const override;
 
   /// performs a function evaluation at APPS-provided x_in
   bool submit(const int apps_tag, const HOPSPACK::Vector& apps_xtrial,
-	      const HOPSPACK::EvalRequestType apps_request);
+	      const HOPSPACK::EvalRequestType apps_request) override;
 
   /// returns a function value to APPS
   int recv(int& apps_tag, HOPSPACK::Vector& apps_f,
 	   HOPSPACK::Vector& apps_cEqs, HOPSPACK::Vector& apps_cIneqs,
-	   string& apps_msg);
+	   string& apps_msg) override;
 
   /// return the type of the Dakota linked evaluator
-  std::string getEvaluatorType(void) const;
+  std::string getEvaluatorType(void) const override;
 
   /// empty implementation of debug info needed to complete the interface
-  void printDebugInfo(void) const {};
+  void printDebugInfo(void) const override {};
   /// empty implementation of timing info needed to complete the interface
-  void printTimingInfo(void) const {};
+  void printTimingInfo(void) const override {};
 
   //
   //- Heading: Convenience functions
@@ -101,7 +92,7 @@ private:
   Optimizer& dakOpt;
 
   /// reference to the APPSOptimizer's model passed in the constructor
-  Model& iteratedModel;
+  std::shared_ptr<Model> iteratedModel;
 
   /// flag for asynchronous function evaluations
   bool modelAsynchFlag;

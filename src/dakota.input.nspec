@@ -2692,6 +2692,61 @@ KEYWORD method {N_mdm3(start,0,stop)}
       incremental_lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
       |
       incremental_random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
+      |
+      ( low_discrepancy ALIAS qmc {N_mdm(utype,sampleType_SUBMETHOD_LOW_DISCREPANCY_SAMPLING)}
+        [ 
+          ( rank_1_lattice {N_mdm(true,rank1LatticeFlag)}
+            [ no_random_shift {N_mdm(true,noRandomShiftFlag)} ]
+            [ m_max INTEGER >= 0 {N_mdm(int,log2MaxPoints)} ]
+            [ generating_vector {0}
+              inline INTEGERLIST {N_mdm(ivec,generatingVector)}
+              |
+              file STRING {N_mdm(str,generatingVectorFileName)}
+              |
+              ( predefined {0}
+                kuo {N_mdm(true,kuo)}
+                |
+                cools_kuo_nuyens {N_mdm(true,cools_kuo_nuyens)}
+               )
+             ]
+            [ ordering {0}
+              natural {N_mdm(true,naturalOrdering)}
+              |
+              radical_inverse {N_mdm(true,radicalInverseOrdering)}
+             ]
+           )
+         ]
+        [ 
+          ( digital_net ALIAS sobol_sequence {N_mdm(true,digitalNetFlag)}
+            [ no_digital_shift {N_mdm(true,noDigitalShiftFlag)} ]
+            [ no_scrambling {N_mdm(true,noScramblingFlag)} ]
+            [ integer_format {0}
+              most_significant_bit_first {N_mdm(true,mostSignificantBitFirst)}
+              |
+              least_significant_bit_first {N_mdm(true,leastSignificantBitFirst)}
+             ]
+            [ m_max INTEGER >= 0 {N_mdm(int,log2MaxPoints)} ]
+            [ t_max INTEGER >= 0 {N_mdm(int,numberOfBits)} ]
+            [ t_scramble INTEGER >= 0 {N_mdm(int,scrambleSize)} ]
+            [ generating_matrices {0}
+              inline INTEGERLIST {N_mdm(ivec,generatingMatrices)}
+              |
+              file STRING {N_mdm(str,generatingMatricesFileName)}
+              |
+              ( predefined {0}
+                joe_kuo {N_mdm(true,joe_kuo)}
+                |
+                sobol_order_2 {N_mdm(true,sobol_order_2)}
+               )
+             ]
+            [ ordering {0}
+              natural {N_mdm(true,naturalOrdering)}
+              |
+              gray_code {N_mdm(true,grayCodeOrdering)}
+             ]
+           )
+         ]
+       )
      ]
     [ refinement_samples INTEGERLIST {N_mdm(ivec,refineSamples)} ]
     [ d_optimal {N_mdm(true,dOptimal)}
@@ -2703,6 +2758,13 @@ KEYWORD method {N_mdm3(start,0,stop)}
      ]
     [ variance_based_decomp {N_mdm(true,vbdFlag)}
       [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
+      [ vbd_sampling_method {N_mdm(utype,vbdViaSamplingMethod)}
+        ( binned {N_mdm(utype,vbdViaSamplingMethod_VBD_BINNED)}
+          [ num_bins INTEGER {N_mdm(int,vbdViaSamplingNumBins)} ]
+         )
+        |
+        pick_and_freeze {N_mdm(utype,vbdViaSamplingMethod_VBD_PICK_AND_FREEZE)}
+       ]
      ]
     [ backfill {N_mdm(true,backfillFlag)} ]
     [ principal_components {N_mdm(true,pcaFlag)}
@@ -2714,6 +2776,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
       [ one_sided_lower {N_mdm(type,wilksSidedInterval_ONE_SIDED_LOWER)} ]
       [ one_sided_upper {N_mdm(type,wilksSidedInterval_ONE_SIDED_UPPER)} ]
       [ two_sided {N_mdm(type,wilksSidedInterval_TWO_SIDED)} ]
+     ]
+    [ std_regression_coeffs {N_mdm(true,stdRegressionCoeffs)} ]
+    [ tolerance_intervals {N_mdm(true,toleranceIntervalsFlag)}
+      [ coverage REAL {N_mdm(Real01,tiCoverage)} ]
+      [ confidence_level REAL {N_mdm(Real01,tiConfidenceLevel)} ]
      ]
     [ final_moments {0}
       none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
@@ -2764,16 +2831,71 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
     [ solution_mode {0}
-      online_pilot {N_mdm(type,ensembleSampSolnMode_ONLINE_PILOT)}
+      ( online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
+        [ relaxation {0}
+          factor_sequence REALLIST {N_mdm(RealDL,relaxFactorSequence)}
+          |
+          fixed_factor REAL {N_mdm(Real,relaxFixedFactor)}
+          |
+          recursive_factor REAL {N_mdm(Real,relaxRecursiveFactor)}
+         ]
+        [ final_statistics {0}
+          estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
+          |
+          ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
+            [ final_moments {0}
+              none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+              |
+              standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+              |
+              central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+             ]
+            [ distribution {0}
+              cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+              |
+              complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+             ]
+           )
+         ]
+       )
       |
-      offline_pilot {N_mdm(type,ensembleSampSolnMode_OFFLINE_PILOT)}
+      ( offline_pilot {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}
+        [ final_statistics {0}
+          estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
+          |
+          ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
+            [ final_moments {0}
+              none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+              |
+              standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+              |
+              central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+             ]
+            [ distribution {0}
+              cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+              |
+              complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+             ]
+           )
+         ]
+       )
       |
-      pilot_projection {N_mdm(type,ensembleSampSolnMode_PILOT_PROJECTION)}
+      online_projection {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT_PROJECTION)}
+      |
+      offline_projection {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT_PROJECTION)}
      ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
       |
       random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
+     ]
+    [ weighted {N_mdm(utype,subMethod_SUBMETHOD_WEIGHTED_MLMC)}
+      [ search_model_graphs {0}
+        [ model_selection {N_mdm(type,modelSelectType_ALL_MODEL_COMBINATIONS)} ]
+        no_recursion {N_mdm(type,dagRecursionType_NO_GRAPH_RECURSION)}
+        |
+        full_recursion {N_mdm(type,dagRecursionType_FULL_GRAPH_RECURSION)}
+       ]
      ]
     [ export_sample_sequence {N_mdm(true,exportSampleSeqFlag)}
       [ 
@@ -2822,24 +2944,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
      ]
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
-    [ final_statistics {0}
-      estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
-      |
-      ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
-        [ final_moments {0}
-          none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
-          |
-          standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
-          |
-          central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
-         ]
-        [ distribution {0}
-          cumulative {N_mdm(type,distributionType_CUMULATIVE)}
-          |
-          complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
-         ]
-       )
-     ]
     [ rng {0}
       mt19937 {N_mdm(lit,rngName_mt19937)}
       |
@@ -2853,11 +2957,58 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
     [ solution_mode {0}
-      online_pilot {N_mdm(type,ensembleSampSolnMode_ONLINE_PILOT)}
+      ( online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
+        [ relaxation {0}
+          factor_sequence REALLIST {N_mdm(RealDL,relaxFactorSequence)}
+          |
+          fixed_factor REAL {N_mdm(Real,relaxFixedFactor)}
+          |
+          recursive_factor REAL {N_mdm(Real,relaxRecursiveFactor)}
+         ]
+        [ final_statistics {0}
+          estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
+          |
+          ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
+            [ final_moments {0}
+              none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+              |
+              standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+              |
+              central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+             ]
+            [ distribution {0}
+              cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+              |
+              complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+             ]
+           )
+         ]
+       )
       |
-      offline_pilot {N_mdm(type,ensembleSampSolnMode_OFFLINE_PILOT)}
+      ( offline_pilot {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}
+        [ final_statistics {0}
+          estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
+          |
+          ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
+            [ final_moments {0}
+              none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+              |
+              standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+              |
+              central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+             ]
+            [ distribution {0}
+              cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+              |
+              complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+             ]
+           )
+         ]
+       )
       |
-      pilot_projection {N_mdm(type,ensembleSampSolnMode_PILOT_PROJECTION)}
+      online_projection {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT_PROJECTION)}
+      |
+      offline_projection {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT_PROJECTION)}
      ]
     [ numerical_solve {0}
       [ 
@@ -2869,7 +3020,26 @@ KEYWORD method {N_mdm3(start,0,stop)}
         sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}
         |
         nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}
+        |
+        global_local {N_mdm(utype,optSubProbSolver_SUBMETHOD_DIRECT_NPSOL_OPTPP)}
+        |
+        competed_local {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL_OPTPP)}
        ]
+      [ solver_metric {0}
+        average_estimator_variance {N_mdm(type,estVarMetricType_AVG_ESTVAR_METRIC)}
+        |
+        ( norm_estimator_variance {N_mdm(type,estVarMetricType_NORM_ESTVAR_METRIC)}
+          [ norm_order REAL >= 1. {N_mdm(Real,estVarMetricNormOrder)} ]
+         )
+        |
+        max_estimator_variance {N_mdm(type,estVarMetricType_MAX_ESTVAR_METRIC)}
+       ]
+     ]
+    [ search_model_graphs {0}
+      [ model_selection {N_mdm(type,modelSelectType_ALL_MODEL_COMBINATIONS)} ]
+      no_recursion {N_mdm(type,dagRecursionType_NO_GRAPH_RECURSION)}
+      |
+      full_recursion {N_mdm(type,dagRecursionType_FULL_GRAPH_RECURSION)}
      ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
@@ -2892,24 +3062,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
-    [ final_statistics {0}
-      estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
-      |
-      ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
-        [ final_moments {0}
-          none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
-          |
-          standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
-          |
-          central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
-         ]
-        [ distribution {0}
-          cumulative {N_mdm(type,distributionType_CUMULATIVE)}
-          |
-          complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
-         ]
-       )
-     ]
     [ rng {0}
       mt19937 {N_mdm(lit,rngName_mt19937)}
       |
@@ -2923,11 +3075,58 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
     [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
     [ solution_mode {0}
-      online_pilot {N_mdm(type,ensembleSampSolnMode_ONLINE_PILOT)}
+      ( online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
+        [ relaxation {0}
+          factor_sequence REALLIST {N_mdm(RealDL,relaxFactorSequence)}
+          |
+          fixed_factor REAL {N_mdm(Real,relaxFixedFactor)}
+          |
+          recursive_factor REAL {N_mdm(Real,relaxRecursiveFactor)}
+         ]
+        [ final_statistics {0}
+          estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
+          |
+          ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
+            [ final_moments {0}
+              none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+              |
+              standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+              |
+              central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+             ]
+            [ distribution {0}
+              cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+              |
+              complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+             ]
+           )
+         ]
+       )
       |
-      offline_pilot {N_mdm(type,ensembleSampSolnMode_OFFLINE_PILOT)}
+      ( offline_pilot {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}
+        [ final_statistics {0}
+          estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
+          |
+          ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
+            [ final_moments {0}
+              none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+              |
+              standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+              |
+              central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+             ]
+            [ distribution {0}
+              cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+              |
+              complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+             ]
+           )
+         ]
+       )
       |
-      pilot_projection {N_mdm(type,ensembleSampSolnMode_PILOT_PROJECTION)}
+      online_projection {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT_PROJECTION)}
+      |
+      offline_projection {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT_PROJECTION)}
      ]
     [ sample_type {0}
       lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
@@ -2950,24 +3149,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
-    [ final_statistics {0}
-      estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
-      |
-      ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
-        [ final_moments {0}
-          none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
-          |
-          standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
-          |
-          central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
-         ]
-        [ distribution {0}
-          cumulative {N_mdm(type,distributionType_CUMULATIVE)}
-          |
-          complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
-         ]
-       )
-     ]
     [ rng {0}
       mt19937 {N_mdm(lit,rngName_mt19937)}
       |
@@ -2976,25 +3157,97 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
-  ( approximate_control_variate ALIAS acv_sampling {N_mdm(utype,methodName_APPROXIMATE_CONTROL_VARIATE)}
+  ( approximate_control_variate ALIAS acv_sampling {N_mdm(utype,methodName_APPROX_CONTROL_VARIATE)}
     acv_independent_sampling ALIAS acv_is {N_mdm(utype,subMethod_SUBMETHOD_ACV_IS)}
     |
     acv_multifidelity ALIAS acv_mf {N_mdm(utype,subMethod_SUBMETHOD_ACV_MF)}
     |
-    acv_kl ALIAS acv_adaptive {N_mdm(utype,subMethod_SUBMETHOD_ACV_KL)}
+    acv_recursive_diff ALIAS acv_rd {N_mdm(utype,subMethod_SUBMETHOD_ACV_RD)}
+    [ search_model_graphs {0}
+      [ model_selection {N_mdm(type,modelSelectType_ALL_MODEL_COMBINATIONS)} ]
+      no_recursion {N_mdm(type,dagRecursionType_NO_GRAPH_RECURSION)}
+      |
+      kl_recursion {N_mdm(type,dagRecursionType_KL_GRAPH_RECURSION)}
+      |
+      ( partial_recursion {N_mdm(type,dagRecursionType_PARTIAL_GRAPH_RECURSION)}
+        depth_limit INTEGER {N_mdm(ushint,dagDepthLimit)}
+       )
+      |
+      full_recursion {N_mdm(type,dagRecursionType_FULL_GRAPH_RECURSION)}
+     ]
     [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)} ]
     [ solution_mode {0}
-      online_pilot {N_mdm(type,ensembleSampSolnMode_ONLINE_PILOT)}
+      ( online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
+        [ relaxation {0}
+          factor_sequence REALLIST {N_mdm(RealDL,relaxFactorSequence)}
+          |
+          fixed_factor REAL {N_mdm(Real,relaxFixedFactor)}
+          |
+          recursive_factor REAL {N_mdm(Real,relaxRecursiveFactor)}
+         ]
+        [ final_statistics {0}
+          estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
+          |
+          ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
+            [ final_moments {0}
+              none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+              |
+              standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+              |
+              central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+             ]
+            [ distribution {0}
+              cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+              |
+              complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+             ]
+           )
+         ]
+       )
       |
-      offline_pilot {N_mdm(type,ensembleSampSolnMode_OFFLINE_PILOT)}
+      ( offline_pilot {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}
+        [ final_statistics {0}
+          estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
+          |
+          ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
+            [ final_moments {0}
+              none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+              |
+              standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+              |
+              central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+             ]
+            [ distribution {0}
+              cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+              |
+              complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+             ]
+           )
+         ]
+       )
       |
-      pilot_projection {N_mdm(type,ensembleSampSolnMode_PILOT_PROJECTION)}
+      online_projection {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT_PROJECTION)}
+      |
+      offline_projection {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT_PROJECTION)}
      ]
     [ truth_fixed_by_pilot {N_mdm(true,truthPilotConstraint)} ]
     [ 
       sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}
       |
       nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}
+      |
+      global_local {N_mdm(utype,optSubProbSolver_SUBMETHOD_DIRECT_NPSOL_OPTPP)}
+      |
+      competed_local {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL_OPTPP)}
+     ]
+    [ solver_metric {0}
+      average_estimator_variance {N_mdm(type,estVarMetricType_AVG_ESTVAR_METRIC)}
+      |
+      ( norm_estimator_variance {N_mdm(type,estVarMetricType_NORM_ESTVAR_METRIC)}
+        [ norm_order REAL >= 1. {N_mdm(Real,estVarMetricNormOrder)} ]
+       )
+      |
+      max_estimator_variance {N_mdm(type,estVarMetricType_MAX_ESTVAR_METRIC)}
      ]
     [ seed_sequence INTEGERLIST {N_mdm(szarray,randomSeedSeq)} ]
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
@@ -3019,24 +3272,124 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
-    [ final_statistics {0}
-      estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
+    [ rng {0}
+      mt19937 {N_mdm(lit,rngName_mt19937)}
       |
-      ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
-        [ final_moments {0}
-          none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+      rnum2 {N_mdm(lit,rngName_rnum2)}
+     ]
+    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
+   )
+  |
+  ( multilevel_blue {N_mdm(utype,methodName_MULTILEVEL_BLUE)}
+    [ group_throttle {0}
+      mfmc_groups {N_mdm(type,groupThrottleType_MFMC_ESTIMATOR_GROUPS)}
+      |
+      common_groups {N_mdm(type,groupThrottleType_COMMON_ESTIMATOR_GROUPS)}
+      |
+      group_size INTEGER > 0 {N_mdm(ushint,groupSizeThrottle)}
+      |
+      best_conditioned INTEGER > 0 {N_mdm(sizet,rCondBestThrottle)}
+      |
+      rcond_tolerance REAL >= 0 {N_mdm(Real,rCondTolThrottle)}
+     ]
+    [ pilot_samples ALIAS initial_samples INTEGERLIST {N_mdm(szarray,pilotSamples)}
+      [ independent {N_mdm(type,pilotGroupSampling_INDEPENDENT_PILOT)} ]
+     ]
+    [ solution_mode {0}
+      ( online_pilot {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT)}
+        [ relaxation {0}
+          factor_sequence REALLIST {N_mdm(RealDL,relaxFactorSequence)}
           |
-          standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+          fixed_factor REAL {N_mdm(Real,relaxFixedFactor)}
           |
-          central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+          recursive_factor REAL {N_mdm(Real,relaxRecursiveFactor)}
          ]
-        [ distribution {0}
-          cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+        [ final_statistics {0}
+          estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
           |
-          complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+          ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
+            [ final_moments {0}
+              none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+              |
+              standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+              |
+              central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+             ]
+            [ distribution {0}
+              cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+              |
+              complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+             ]
+           )
          ]
        )
+      |
+      ( offline_pilot {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT)}
+        [ final_statistics {0}
+          estimator_performance {N_mdm(utype,finalStatsType_ESTIMATOR_PERFORMANCE)}
+          |
+          ( qoi_statistics {N_mdm(utype,finalStatsType_QOI_STATISTICS)}
+            [ final_moments {0}
+              none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+              |
+              standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+              |
+              central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+             ]
+            [ distribution {0}
+              cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+              |
+              complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+             ]
+           )
+         ]
+       )
+      |
+      online_projection {N_mdm(type,ensemblePilotSolnMode_ONLINE_PILOT_PROJECTION)}
+      |
+      offline_projection {N_mdm(type,ensemblePilotSolnMode_OFFLINE_PILOT_PROJECTION)}
      ]
+    [ 
+      sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}
+      |
+      nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}
+      |
+      global_local {N_mdm(utype,optSubProbSolver_SUBMETHOD_DIRECT_NPSOL_OPTPP)}
+      |
+      competed_local {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL_OPTPP)}
+     ]
+    [ solver_metric {0}
+      average_estimator_variance {N_mdm(type,estVarMetricType_AVG_ESTVAR_METRIC)}
+      |
+      ( norm_estimator_variance {N_mdm(type,estVarMetricType_NORM_ESTVAR_METRIC)}
+        [ norm_order REAL >= 1. {N_mdm(Real,estVarMetricNormOrder)} ]
+       )
+      |
+      max_estimator_variance {N_mdm(type,estVarMetricType_MAX_ESTVAR_METRIC)}
+     ]
+    [ seed_sequence INTEGERLIST {N_mdm(szarray,randomSeedSeq)} ]
+    [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
+    [ sample_type {0}
+      lhs {N_mdm(utype,sampleType_SUBMETHOD_LHS)}
+      |
+      random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
+     ]
+    [ export_sample_sequence {N_mdm(true,exportSampleSeqFlag)}
+      [ 
+        ( custom_annotated {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+          [ header {N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)} ]
+          [ eval_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)} ]
+          [ interface_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)} ]
+         )
+        |
+        annotated {N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}
+        |
+        freeform {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+       ]
+     ]
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
+    [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
     [ rng {0}
       mt19937 {N_mdm(lit,rngName_mt19937)}
       |
@@ -3769,6 +4122,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
              ]
             [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
            )
+          |
+          import_expansion_file STRING {N_mdm(str,importExpansionFile)}
           [ 
             askey {N_mdm(type,expansionType_ASKEY_U)}
             |
@@ -4520,6 +4875,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
              ]
             [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
            )
+          |
+          import_expansion_file STRING {N_mdm(str,importExpansionFile)}
           [ 
             askey {N_mdm(type,expansionType_ASKEY_U)}
             |
@@ -5170,6 +5527,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
              ]
             [ posterior_adaptive {N_mdm(true,adaptPosteriorRefine)} ]
            )
+          |
+          import_expansion_file STRING {N_mdm(str,importExpansionFile)}
           [ 
             askey {N_mdm(type,expansionType_ASKEY_U)}
             |
@@ -5619,14 +5978,69 @@ KEYWORD method {N_mdm3(start,0,stop)}
         |
         rnum2 {N_mdm(lit,rngName_rnum2)}
        ]
+      [ export_chain_points_file STRING {N_mdm(str,exportMCMCPtsFile)}
+        [ 
+          ( custom_annotated {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+            [ header {N_mdm(augment_utype,exportSamplesFormat_TABULAR_HEADER)} ]
+            [ eval_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_EVAL_ID)} ]
+            [ interface_id {N_mdm(augment_utype,exportSamplesFormat_TABULAR_IFACE_ID)} ]
+           )
+          |
+          annotated {N_mdm(utype,exportSamplesFormat_TABULAR_ANNOTATED)}
+          |
+          freeform {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
+         ]
+       ]
       [ 
-        dram {N_mdm(lit,mcmcType_dram)}
+        ( adaptive_metropolis {N_mdm(lit,mcmcType_adaptive_metropolis)}
+          [ period_num_steps INTEGER {N_mdm(int,amPeriodNumSteps)} ]
+          [ starting_step INTEGER {N_mdm(int,amStartingStep)} ]
+          [ adapt_scale REAL {N_mdm(Real,amScale)} ]
+         )
         |
-        delayed_rejection {N_mdm(lit,mcmcType_delayed_rejection)}
+        ( delayed_rejection {N_mdm(lit,mcmcType_delayed_rejection)}
+          [ num_stages INTEGER {N_mdm(int,drNumStages)} ]
+          [ scale_type STRING {N_mdm(str,drScaleType)} ]
+          [ delay_scale REAL {N_mdm(Real,drScale)} ]
+         )
         |
-        adaptive_metropolis {N_mdm(lit,mcmcType_adaptive_metropolis)}
+        ( dili {N_mdm(lit,mcmcType_dili)}
+          [ hessian_type STRING {N_mdm(str,diliHessianType)} ]
+          [ adapt_interval INTEGER {N_mdm(int,diliAdaptInterval)} ]
+          [ adapt_start INTEGER {N_mdm(int,diliAdaptStart)} ]
+          [ adapt_end INTEGER {N_mdm(int,diliAdaptEnd)} ]
+          [ initial_weight INTEGER {N_mdm(int,diliInitialWeight)} ]
+          [ hess_tolerance REAL {N_mdm(Real,diliHessTolerance)} ]
+          [ lis_tolerance REAL {N_mdm(Real,diliLISTolerance)} ]
+          [ ses_num_eigs INTEGER {N_mdm(int,diliSesNumEigs)} ]
+          [ ses_rel_tol REAL {N_mdm(Real,diliSesRelTol)} ]
+          [ ses_abs_tol REAL {N_mdm(Real,diliSesAbsTol)} ]
+          [ ses_exp_rank INTEGER {N_mdm(int,diliSesExpRank)} ]
+          [ ses_overs_factor INTEGER {N_mdm(int,diliSesOversFactor)} ]
+          [ ses_block_size INTEGER {N_mdm(int,diliSesBlockSize)} ]
+         )
+        |
+        ( dram {N_mdm(lit,mcmcType_dram)}
+          [ num_stages INTEGER {N_mdm(int,drNumStages)} ]
+          [ scale_type STRING {N_mdm(str,drScaleType)} ]
+          [ delay_scale REAL {N_mdm(Real,drScale)} ]
+          [ period_num_steps INTEGER {N_mdm(int,amPeriodNumSteps)} ]
+          [ starting_step INTEGER {N_mdm(int,amStartingStep)} ]
+          [ adapt_scale REAL {N_mdm(Real,amScale)} ]
+         )
+        |
+        ( mala {N_mdm(lit,mcmcType_mala)}
+          [ step_size REAL {N_mdm(Real,malaStepSize)} ]
+         )
         |
         metropolis_hastings {N_mdm(lit,mcmcType_metropolis_hastings)}
+       ]
+      [ pre_solve {0}
+        sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}
+        |
+        nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}
+        |
+        none {N_mdm(utype,optSubProbSolver_SUBMETHOD_NONE)}
        ]
       [ proposal_covariance {N_mdm(lit,proposalCovType_user)}
         ( prior {N_mdm(lit,proposalCovType_prior)}
@@ -5795,6 +6209,13 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ quality_metrics {N_mdm(true,volQualityFlag)} ]
     [ variance_based_decomp {N_mdm(true,vbdFlag)}
       [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
+      [ vbd_sampling_method {N_mdm(utype,vbdViaSamplingMethod)}
+        ( binned {N_mdm(utype,vbdViaSamplingMethod_VBD_BINNED)}
+          [ num_bins INTEGER {N_mdm(int,vbdViaSamplingNumBins)} ]
+         )
+        |
+        pick_and_freeze {N_mdm(utype,vbdViaSamplingMethod_VBD_PICK_AND_FREEZE)}
+       ]
      ]
     [ symbols INTEGER {N_mdm(int,numSymbols)} ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
@@ -5808,6 +6229,13 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ quality_metrics {N_mdm(true,volQualityFlag)} ]
     [ variance_based_decomp {N_mdm(true,vbdFlag)}
       [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
+      [ vbd_sampling_method {N_mdm(utype,vbdViaSamplingMethod)}
+        ( binned {N_mdm(utype,vbdViaSamplingMethod_VBD_BINNED)}
+          [ num_bins INTEGER {N_mdm(int,vbdViaSamplingNumBins)} ]
+         )
+        |
+        pick_and_freeze {N_mdm(utype,vbdViaSamplingMethod_VBD_PICK_AND_FREEZE)}
+       ]
      ]
     [ trial_type {0}
       grid {N_mdm(lit,trialType_grid)}
@@ -6051,6 +6479,13 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ quality_metrics {N_mdm(true,volQualityFlag)} ]
     [ variance_based_decomp {N_mdm(true,vbdFlag)}
       [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
+      [ vbd_sampling_method {N_mdm(utype,vbdViaSamplingMethod)}
+        ( binned {N_mdm(utype,vbdViaSamplingMethod_VBD_BINNED)}
+          [ num_bins INTEGER {N_mdm(int,vbdViaSamplingNumBins)} ]
+         )
+        |
+        pick_and_freeze {N_mdm(utype,vbdViaSamplingMethod_VBD_PICK_AND_FREEZE)}
+       ]
      ]
     [ samples INTEGER {N_mdm(int,numSamples)} ]
     [ fixed_sequence {N_mdm(true,fixedSequenceFlag)} ]
@@ -6388,6 +6823,10 @@ KEYWORD model {N_mom3(start,0,stop)}
           |
           binary_archive {N_mom(augment_utype,modelImportFormat_BINARY_ARCHIVE)}
          ]
+       )
+      |
+      ( experimental_python {N_mom(lit,surrogateType_global_exp_python)}
+        class_path_and_name STRING {N_mom(str,moduleAndClassName)}
        )
       [ domain_decomposition {N_mom(true,domainDecomp)}
         [ cell_type STRING {N_mom(str,decompCellType)} ]
@@ -6934,10 +7373,22 @@ KEYWORD interface {N_ifm3(start,0,stop)}
     ( system {N_ifm(type,interfaceType_SYSTEM_INTERFACE)}
       [ parameters_file STRING {N_ifm(str,parametersFile)} ]
       [ results_file STRING {N_ifm(str,resultsFile)} ]
+      [ parameters_format {N_ifm(type,parametersFileFormat_PARAMETERS_FILE_STANDARD)}
+        standard {N_ifm(type,parametersFileFormat_PARAMETERS_FILE_STANDARD)}
+        |
+        aprepro {N_ifm(type,parametersFileFormat_PARAMETERS_FILE_APREPRO)}
+        |
+        json {N_ifm(type,parametersFileFormat_PARAMETERS_FILE_JSON)}
+       ]
+      [ results_format {N_ifm(type,resultsFileFormat_RESULTS_FILE_STANDARD)}
+        ( standard {N_ifm(type,resultsFileFormat_RESULTS_FILE_STANDARD)}
+          [ labeled {N_ifm(true,dakotaResultsFileLabeled)} ]
+         )
+        |
+        json {N_ifm(type,resultsFileFormat_RESULTS_FILE_JSON)}
+       ]
       [ file_tag {N_ifm(true,fileTagFlag)} ]
       [ file_save {N_ifm(true,fileSaveFlag)} ]
-      [ labeled {N_ifm(type,resultsFileFormat_LABELED_RESULTS)} ]
-      [ aprepro ALIAS dprepro {N_ifm(true,apreproFlag)} ]
       [ work_directory {N_ifm(true,useWorkdir)}
         [ named STRING {N_ifm(str,workDir)} ]
         [ directory_tag ALIAS dir_tag {N_ifm(true,dirTag)} ]
@@ -6953,10 +7404,22 @@ KEYWORD interface {N_ifm3(start,0,stop)}
     ( fork {N_ifm(type,interfaceType_FORK_INTERFACE)}
       [ parameters_file STRING {N_ifm(str,parametersFile)} ]
       [ results_file STRING {N_ifm(str,resultsFile)} ]
+      [ parameters_format {N_ifm(type,parametersFileFormat_PARAMETERS_FILE_STANDARD)}
+        standard {N_ifm(type,parametersFileFormat_PARAMETERS_FILE_STANDARD)}
+        |
+        aprepro {N_ifm(type,parametersFileFormat_PARAMETERS_FILE_APREPRO)}
+        |
+        json {N_ifm(type,parametersFileFormat_PARAMETERS_FILE_JSON)}
+       ]
+      [ results_format {N_ifm(type,resultsFileFormat_RESULTS_FILE_STANDARD)}
+        ( standard {N_ifm(type,resultsFileFormat_RESULTS_FILE_STANDARD)}
+          [ labeled {N_ifm(true,dakotaResultsFileLabeled)} ]
+         )
+        |
+        json {N_ifm(type,resultsFileFormat_RESULTS_FILE_JSON)}
+       ]
       [ file_tag {N_ifm(true,fileTagFlag)} ]
       [ file_save {N_ifm(true,fileSaveFlag)} ]
-      [ labeled {N_ifm(type,resultsFileFormat_LABELED_RESULTS)} ]
-      [ aprepro ALIAS dprepro {N_ifm(true,apreproFlag)} ]
       [ work_directory {N_ifm(true,useWorkdir)}
         [ named STRING {N_ifm(str,workDir)} ]
         [ directory_tag ALIAS dir_tag {N_ifm(true,dirTag)} ]

@@ -1,0 +1,20 @@
+Blurb::
+Throttle multilevel BLUE to only search over groups of a maximum size
+
+Description::
+The number of groups in ML BLUE includes all group combinations with a
+number of members that do not exceed the size specification.  The
+throttle results in slower growth in the number of groups as the total
+number of models increases, but the growth is still combinatorial.  As
+such, this throttle is generally less restrictive than the other two
+options which grow linearly.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

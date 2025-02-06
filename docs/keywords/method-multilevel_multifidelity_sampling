@@ -2,7 +2,7 @@ Blurb::
 Multilevel-Multifidelity sampling methods for UQ
 Description::
 An adaptive sampling method that utilizes both multilevel and
-multifidelity relationships within a hierarchical surrogate model in
+multifidelity relationships within an ensemble surrogate model in
 order to improve efficiency through variance reduction.
 
 In the case of a multilevel relationship, multilevel Monte Carlo
@@ -14,8 +14,8 @@ multilevel-multifidelity sampling approach below.
 
 *Multilevel Control Variate Monte Carlo*
 
-If both multilevel and multifidelity structure are included within a
-hierarchical model specification, then an inner control variate can be
+If both multilevel and multifidelity structure are included within an
+ensemble model specification, then an inner control variate can be
 applied across two model fidelities for each level within an outer
 multilevel approach.
 
@@ -47,7 +47,7 @@ generalized reliability) at this time.
 *Expected HDF5 Output*
 
 If Dakota was built with HDF5 support and run with the
-:ref:`environment-results_output-hdf5<environment-results_output-hdf5>` keyword, this method
+:dakkw:`environment-results_output-hdf5` keyword, this method
 writes the following results to HDF5:
 
 
@@ -59,7 +59,7 @@ records the equivalent number of high-fidelity evaluations.
 *Usage Tips*
 
 The ``multilevel_multifidelity_sampling`` method must be used in
-combination with a hierarchical model specification.  The highest and
+combination with an ensemble model specification.  The highest and
 lowest fidelity model must provide multiple discretization levels, for
 which it is necessary to identify the variable string descriptor that
 controls the resolution levels using ``solution_level_control`` as well
@@ -89,7 +89,7 @@ model forms each with four discretization levels:
 
     model,
      id_model = 'HIERARCH'
-     surrogate hierarchical
+     surrogate ensemble
        ordered_model_fidelities = 'LF' 'HF'
     
     model,

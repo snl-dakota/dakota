@@ -1,0 +1,84 @@
+#@ s*: TimeoutAbsolute=3600
+#@ s*: TimeoutDelay=3600
+
+method,
+	model_pointer = 'HIERARCH'
+        multilevel_blue
+	  solution_mode offline_projection	#s0,#s1,#s2,#s3,#s4,#s5
+	  pilot_samples = 500			#s0,#s1,#s2,#s3,#s4,#s5
+#	  solution_mode online_projection	#s6,#s7,#s8,#s9,#s10,#s11
+#	  pilot_samples = 50			#s6,#s7,#s8,#s9,#s10,#s11
+# can't use DIRECT on full set of 2^8 groups
+	  competed_local # can also auto demote from global for #group > 64
+#	  group_throttle     	#s1,#s2,#s3,#s4,#s5,#s7,#s8,#s9,#s10,#s11
+#	    mfmc_groups			#s1,#s7
+#	    common_groups		#s2,#s8
+#	    group_size = 2		#s3,#s9
+#	    best_conditioned = 100	#s4,#s10
+#	    rcond_tolerance = 1.e-12	#s5,#s11
+	  seed = 8674132
+	  max_function_evaluations = 1000
+#	  final_statistics estimator_performance
+	  output silent
+
+model,
+	id_model = 'HIERARCH'
+	variables_pointer = 'HF_VARS'
+	surrogate ensemble
+# TO DO: allow either model listing approach to be augmented by resolutions
+	  ordered_model_fidelities = 'LF' 'HF'
+#	  truth_model = 'HF' # includes 4 resolutions: separate truth resolution or infer it?
+#	  approximation_models = 'LF' # includes 4 resolutions
+
+model,
+	id_model = 'LF'
+	variables_pointer = 'LF_VARS'
+	simulation
+	  solution_level_control = 'N_x'
+	  solution_level_cost = 375. 10125. 81000. 648000.
+#	  cost_recovery_metadata = 'cost_model'
+
+model,
+	id_model = 'HF'
+	variables_pointer = 'HF_VARS'
+	simulation
+	  solution_level_control = 'N_x'
+	  solution_level_cost = 5.67e+5 4.536e+6 2.1e+7 1.68e+8
+#	  cost_recovery_metadata = 'cost_model'
+
+variables,
+	id_variables = 'LF_VARS'
+	uniform_uncertain = 7
+	  lower_bounds    = 7*-1.
+	  upper_bounds    = 7* 1.
+	discrete_state_set
+	  integer = 2
+	    num_set_values = 4 1
+	    set_values = 5 15 30 60 # number of spatial coords
+	    	       	 3 	    # number of Fourier solution modes
+	    initial_state = 5 3
+	    descriptors 'N_x' 'N_mod'
+
+variables,
+	id_variables = 'HF_VARS'
+	uniform_uncertain = 7
+	  lower_bounds    = 7*-1.
+	  upper_bounds    = 7* 1.
+	discrete_state_set
+	  integer = 2
+	    num_set_values = 4 1
+	    set_values = 30 60 100 200 # number of spatial coords
+	    	       	 21 	       # number of Fourier solution modes
+	    initial_state = 30 21
+	    descriptors 'N_x' 'N_mod'
+
+interface,
+	direct
+	  analysis_driver = 'transient_diffusion_1d'
+	  deactivate evaluation_cache restart_file
+
+responses,
+	response_functions = 1
+	no_gradients
+	no_hessians
+#	metadata 'cost_model'

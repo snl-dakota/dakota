@@ -1,20 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       APPSEvalMgr
-//- Description: Specialized evaluation manager class derived from
-//-              APPSPACK's Executor class which redefines virtual
-//-              evaluation functions with DAKOTA's response
-//-              computation procedures
-//- Owner:       Patty Hough
-//- Checked by:
-//- Version: $Id$
 
 #include "APPSEvalMgr.hpp"
 #include "DakotaOptimizer.hpp"
@@ -29,9 +20,9 @@ namespace Dakota {
     Iterate and response values are passed between Dakota and APPSPACK
     via this interface. */
 
-APPSEvalMgr::APPSEvalMgr(Optimizer& opt, Model& model) :
+APPSEvalMgr::APPSEvalMgr(Optimizer& opt, std::shared_ptr<Model> model) :
   dakOpt(opt), iteratedModel(model), modelAsynchFlag(1), blockingSynch(0),
-  numWorkersUsed(0), numWorkersTotal(1), xTrial(model.continuous_variables())
+  numWorkersUsed(0), numWorkersTotal(1), xTrial(ModelUtils::continuous_variables(*model))
 {
   // don't use the probDescDB so that this ctor may be used with both
   // the standard and on-the-fly APPSOptimizer ctors
@@ -64,7 +55,7 @@ bool APPSEvalMgr::submit(const int apps_tag, const HOPSPACK::Vector& apps_xtrial
 
   if (numWorkersUsed < numWorkersTotal) {
 
-    set_variables<>(apps_xtrial, iteratedModel, iteratedModel.current_variables());
+    set_variables<>(apps_xtrial, *iteratedModel, iteratedModel->current_variables());
 
     numWorkersUsed++;
   }
@@ -79,15 +70,15 @@ bool APPSEvalMgr::submit(const int apps_tag, const HOPSPACK::Vector& apps_xtrial
     // Need to map between DAKOTA and APPS tags for asynchronous
     // evaluations.
 
-    iteratedModel.evaluate_nowait();
-    tagList[iteratedModel.evaluation_id()] = apps_tag;
+    iteratedModel->evaluate_nowait();
+    tagList[iteratedModel->evaluation_id()] = apps_tag;
   }
   else {
     // Need to associate responses with APPS tags for synchronous
     // evaluations.
 
-    iteratedModel.evaluate();
-    functionList[apps_tag] = iteratedModel.current_response().function_values();
+    iteratedModel->evaluate();
+    functionList[apps_tag] = iteratedModel->current_response().function_values();
   }
 
   return true;
@@ -111,7 +102,7 @@ int APPSEvalMgr::recv(int& apps_tag, HOPSPACK::Vector& apps_f,
 
     if (dakotaResponseMap.empty())
       dakotaResponseMap = (blockingSynch) ?
-	iteratedModel.synchronize() : iteratedModel.synchronize_nowait();
+	iteratedModel->synchronize() : iteratedModel->synchronize_nowait();
 
     // Grab the first response (asynchronous) and map from DAKOTA to
     // APPS.  Note that this includes mapping the constraints using

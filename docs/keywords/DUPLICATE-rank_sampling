@@ -5,7 +5,7 @@ Multilevel function train based on regression may allocate the number
 of samples per level based on the collocation ratio times the
 regression size.  The regression size is determined by the rank per
 core and the basis order per dimension as described at
-:ref:`model-surrogate-global-function_train<model-surrogate-global-function_train>`, where these ranks and orders
+:dakkw:`model-surrogate-global-function_train`, where these ranks and orders
 may be either user-specified values (for initial sample allocation),
 incremented values (for external adaptation by Dakota), or recovered
 values (in the case of internal C3 adaptation using ``adapt_rank``).

@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       IteratorScheduler
-//- Description: 
-//- Owner:       Mike Eldred
-//- Checked by:
-//- Version: $Id: IteratorScheduler.hpp 6492 2009-12-19 00:04:28Z briadam $
 
 #ifndef ITERATOR_SCHEDULER_H
 #define ITERATOR_SCHEDULER_H
@@ -67,12 +61,12 @@ public:
   /// convenience function for allocation of an iterator and (parallel)
   /// initialization of its comms
   static void init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
-			    Model& sub_model, ParLevLIter pl_iter);
+			    std::shared_ptr<Model> sub_model, ParLevLIter pl_iter);
   /// convenience function for lightweight allocation of an iterator
   /// and (parallel) initialization of its comms
   static void init_iterator(ProblemDescDB& problem_db,
 			    const String& method_string, Iterator& sub_iterator,
-			    Model& sub_model, ParLevLIter pl_iter);
+			    std::shared_ptr<Model>, ParLevLIter pl_iter);
 
   /// convenience function for setting comms prior to running an iterator
   static void set_iterator(Iterator& sub_iterator, ParLevLIter pl_iter);
@@ -91,18 +85,18 @@ public:
 
   /// instantiate sub_iterator on the current rank if not already constructed
   void construct_sub_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
-			      Model& sub_model, const String& method_ptr,
+			      std::shared_ptr<Model> sub_model, const String& method_ptr,
 			      const String& method_name,
 			      const String& model_ptr);
 
   /// performs sufficient initialization to define partitioning controls
   /// (min and max processors per iterator server)
   IntIntPair configure(ProblemDescDB& problem_db, Iterator& sub_iterator,
-		       Model& sub_model);
+		       std::shared_ptr<Model> sub_model);
   /// performs sufficient initialization to define partitioning controls
   /// (min and max processors per iterator server)
   IntIntPair configure(ProblemDescDB& problem_db, const String& method_string,
-		       Iterator& sub_iterator, Model& sub_model);
+		       Iterator& sub_iterator, std::shared_ptr<Model> sub_model);
   /// performs sufficient initialization to define partitioning controls
   /// (min and max processors per iterator server)
   IntIntPair configure(ProblemDescDB& problem_db, Iterator& sub_iterator);
@@ -113,10 +107,10 @@ public:
 
   /// invokes static version of this function with appropriate parallelism level
   void init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
-		     Model& sub_model);
+		     std::shared_ptr<Model> sub_model);
   /// invokes static version of this function with appropriate parallelism level
   void init_iterator(ProblemDescDB& problem_db, const String& method_string,
-		     Iterator& sub_iterator, Model& sub_model);
+		     Iterator& sub_iterator, std::shared_ptr<Model> sub_model);
   /// invokes static version of this function with appropriate parallelism level
   void set_iterator(Iterator& sub_iterator);
   /// invokes static version of this function with appropriate parallelism level
@@ -214,7 +208,7 @@ inline IteratorScheduler::~IteratorScheduler()
 
 inline void IteratorScheduler::
 init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
-	      Model& sub_model)
+	      std::shared_ptr<Model> sub_model)
 {
   ParLevLIter pl_iter = schedPCIter->mi_parallel_level_iterator(miPLIndex);
   // if dedicated master overload, no iterator jobs can run on master, so no
@@ -231,7 +225,7 @@ init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
 
 inline void IteratorScheduler::
 init_iterator(ProblemDescDB& problem_db, const String& method_string,
-	      Iterator& sub_iterator, Model& sub_model)
+	      Iterator& sub_iterator, std::shared_ptr<Model> sub_model)
 {
   ParLevLIter pl_iter = schedPCIter->mi_parallel_level_iterator(miPLIndex);
   // if dedicated master overload, no iterator jobs can run on master, so no

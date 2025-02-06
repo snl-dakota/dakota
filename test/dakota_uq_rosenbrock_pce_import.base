@@ -327,10 +327,10 @@ response_fn_1 Sobol' indices:
                       2.0616659942e-01 x1 x2 
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  6.8136309501e-01  7.5236297015e-01  1.7927836769e+00  3.7524411100e+00
+            f1  6.8136309501e-01  7.5236297015e-01  1.7927836769e+00  3.7524411100e+00
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
- response_fn_1  6.4836996327e-01  7.1435622676e-01  7.2974919579e-01  7.7643361594e-01
+            f1  6.4836996327e-01  7.1435622676e-01  7.2974919579e-01  7.7643361594e-01
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
    1.0006807728e-06   1.0000000000e-01   1.9150191632e+00
@@ -375,10 +375,10 @@ response_fn_1 Sobol' indices:
                       2.0616659942e-01 x1 x2 
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  6.8136309501e-01  7.5236297015e-01  1.7927836769e+00  3.7524411100e+00
+            f1  6.8136309501e-01  7.5236297015e-01  1.7927836769e+00  3.7524411100e+00
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
- response_fn_1  6.4836996327e-01  7.1435622676e-01  7.2974919579e-01  7.7643361594e-01
+            f1  6.4836996327e-01  7.1435622676e-01  7.2974919579e-01  7.7643361594e-01
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
    1.0006807728e-06   1.0000000000e-01   1.9150191632e+00

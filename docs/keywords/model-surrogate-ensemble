@@ -1,0 +1,91 @@
+Blurb::
+Ensemble surrogates employ a collection of lower-fidelity
+models to approximate a truth reference model at reduced cost.
+
+Description::
+Multifidelity modeling involves the use of lower-fidelity
+physics-based models as surrogates for a high-fidelity "truth"
+model. These low-fidelity models can involve variations in model form,
+resolution, or both.  Model form variations for reduced fidelity may
+involve omitted physics or solution of approximated or averaged
+physics.  Resolution variations typically involve coarsened space-time
+discretizations (e.g., h- derefinement), reduced element order (e.g.,
+p- derefinement), or loosened convergence tolerances.  Unlike local,
+global, and multipoint surrogates, these approximations are not
+data-driven (no high-fidelity data required for construction) and are
+stand-alone simulation models in their own right.  As an example from
+computational fluid dynamics (CFD), both model form and resolution are
+varied when an inviscid, incompressible Euler model on a coarse
+discretization is used as a low-fidelity surrogate for a high-fidelity
+large eddy simulation (LES) model on a fine discretization.
+
+There are two specification options for identifying the ensemble of
+models.  First, the ``ordered_model_fidelities`` specification points
+to a sequence of model specifications of varying fidelity, ordered
+from lowest to highest fidelity.  The highest fidelity model in this
+list provides the "truth" model, and each of the lower fidelity
+alternatives provides different levels of approximation at different
+levels of cost.  This specification defines the sequence of all model
+forms, where each model specification identified in this ordered
+listing can additionally identify a set of resolution controls.
+Either or both of these sequences may be specified, and this is
+referred to as a "multilevel hierarchy" in the case of a hierarchy of
+resolutions (one entry in ``ordered_model_fidelities`` that includes
+active resolution control), a "multifidelity hierarchy" in the case of
+a hierarchy of model forms (multiple entries in
+``ordered_model_fidelities`` without active resolution control), or a
+"multilevel-multifidelity hierarchy" in the case of two-dimensional
+hierarchy including both model forms and resolutions (multiple entries
+in ``ordered_model_fidelities`` with one or more including active
+resolution control).  Note that the multilevel-multifidelity case can
+be "ragged" in the sense that not all models need to provide the same
+number of (or any) resolution controls.
+
+Second, an unordered or "non-hierarchical" ensemble of models may be
+specified using ``truth_model_pointer`` in combination with
+``approximation_models``, where the latter defines the set of
+unordered approximations to the high-fidelity reference model.  Note
+that the distinction between ordered and unordered approximations is
+of little consequence within the ensemble surrogate model
+implementation; rather it becomes important when aligning with the
+requirements of multifidelity algorithms that either assume ordered
+hierarchies or provide the flexibility to leverage general
+approximation ensembles.
+
+The ``correction`` specification identifies what type ( ``additive``,
+``multiplicative``, ``combined``) and order ( ``zeroth_order``,
+``first_order``, ``second_order``) of correction technique will be applied
+to the low fidelity results in order to match high fidelity results
+(value and potentially gradient and Hessian) at one or more points. As
+described below, this is essential in the optimization context.
+
+*Use cases*
+
+In multifidelity surrogate-based optimization (SBO), the search
+algorithm relies primarily on the lower fidelity models, which are
+corrected for consistency with higher fidelity models.  The higher
+fidelity models are used primarily for verifying candidate steps based
+on solution of low fidelity approximate subproblems and for updating
+low fidelity corrections.  In the hierarchical SBO case (as compared
+to SBO with data fits), the ``correction`` specification is required,
+since the omission of a correction technique would effectively
+eliminate the purpose of the high fidelity model (to use a low
+fidelity model without corrections, then a ``single`` model can be used
+rather than a ``hierarchical`` model). Refer to
+:dakkw:`model-surrogate-global` for additional information on available
+correction approaches.
+
+In multifidelity uncertainty quantification (UQ), response differences
+are tracked for purposes of decomposing variance across
+model/resolution levels or for constructing separate discrepancy
+emulators.  In this context, correction specifications are still valid
+for defining discrepancy emulation details but they are optional with
+the most common cases used as defaults.
+Topics::
+
+Examples::
+Theory:
+Theory::
+Faq::
+
+See_Also::

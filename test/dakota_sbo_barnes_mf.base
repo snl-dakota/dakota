@@ -12,18 +12,18 @@ Test Number 0 succeeded
                       3.8950353572e-01
 <<<<< Best evaluation ID: 36
 Test Number 1 succeeded
-<<<<< Function evaluation summary (LOFI_FN): 66 total (41 new, 25 duplicate)
-<<<<< Function evaluation summary (HIFI_FN): 50 total (50 new, 0 duplicate)
+<<<<< Function evaluation summary (LOFI_FN): 31 total (17 new, 14 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 16 total (14 new, 2 duplicate)
 <<<<< Best parameters          =
-                      4.9103522081e+01 x1
-                      1.9289238925e+01 x2
+                      4.6241941671e+01 x1
+                      1.7336773331e+01 x2
 <<<<< Best objective function  =
-                     -3.1626705724e+01
+                     -3.0967247543e+01
 <<<<< Best constraint values   =
-                      3.5309938494e-01
-                     -1.6242832270e-06
-                      3.8905329417e-01
-<<<<< Best evaluation ID: 50
+                      1.4526580163e-01
+                      4.6047195109e-02
+                      4.4427066722e-01
+<<<<< Best evaluation ID: 11
 Test Number 2 succeeded
 <<<<< Function evaluation summary (LOFI_FN): 77 total (48 new, 29 duplicate)
 <<<<< Function evaluation summary (HIFI_FN): 31 total (27 new, 4 duplicate)

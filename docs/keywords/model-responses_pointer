@@ -2,10 +2,10 @@ Blurb::
 Specify which reponses block will be used by this model block
 Description::
 The ``responses_pointer`` is used to specify which responses block will be used
-by the model, by cross-referencing with :ref:`responses-id_responses<responses-id_responses>` keyword in
-the :ref:`responses<responses>` block.
+by the model, by cross-referencing with :dakkw:`responses-id_responses` keyword in
+the :dakkw:`responses` block.
 
-See :ref:`topic-block_pointer<topic-block_pointer>` for details about pointers.
+See :ref:`topic-block_pointer` for details about pointers.
 
 *Default Behavior*
 

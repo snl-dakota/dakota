@@ -1,18 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       ScalingModel
-//- Description: Specialization of a RecastModel that manages scaling
-//-              Variables (continuous only) and/or Responses
-//- Owner:       Brian Adams
-//- Checked by:
-//- Version: $Id$
 
 #ifndef DAKOTA_SCALING_MODEL_H
 #define DAKOTA_SCALING_MODEL_H
@@ -35,10 +28,10 @@ public:
   //
 
   /// standard constructor
-  ScalingModel(Model& sub_model);
+  ScalingModel(std::shared_ptr<Model> sub_model);
 
   /// destructor
-  ~ScalingModel();
+  ~ScalingModel() override;
 
   /// ---
   /// Public members for help in final results recovery
@@ -68,7 +61,7 @@ public:
 			   int start_offset, int num_responses,
 			   bool response_unscale = true) const;
   
-  ActiveSet default_active_set();
+  ActiveSet default_active_set() override;
 
 protected:
 
@@ -76,7 +69,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void assign_instance();
+  void assign_instance() override;
 
   void init_metadata() override { /* no-op to leave metadata intact */}
 

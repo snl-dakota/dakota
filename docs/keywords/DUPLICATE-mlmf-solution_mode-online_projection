@@ -1,0 +1,30 @@
+Blurb::
+Specify a solution mode that estimates performance based on projecting
+initial correlation / covariance estimates from an online pilot sample
+
+Description::
+Multilevel / multifidelity sampling methods are adaptive UQ methods
+that utilize a pilot sample to estimate an initial set of correlations
+or covariances, which is then used to initiate the process of
+performance estimation and resource allocation.  In online and offline
+projection modes, evaluations are limited to the pilot sample and
+these initial correlation / covariance estimates are used to project
+the potential estimator performance, without any further sampling and
+without any computation of statistics.  For the online projection case,
+the estimator performance is computed with an online pilot sample as
+a lower bound on the total sampling allocation.
+
+**Usage Tips**
+
+This mode is useful for comparing the projected performance of different
+estimators, which can inform method selection.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

@@ -1,0 +1,18 @@
+Blurb::
+Dimension-independent likelihood-informed MCMC
+
+Description::
+When the user selects 'bayesian_calibration muq' in the Dakota input file,
+the occurrence of the 'dili' keyword will cause Dakota to use the DILI
+algorithm (:cite:p:`Cui2016109`) from the MUQ library.
+
+Topics::
+bayesian_calibration
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

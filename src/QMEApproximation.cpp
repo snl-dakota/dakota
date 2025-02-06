@@ -1,17 +1,12 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:        QMEApproximation
-//- Description:  Implementation of QMEA Quadratic Multipoint Exponential Approximation
-//-               
-//- Owner:        Robert A. Canfield, Virginia Tech
- 
 #include "QMEApproximation.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaVariables.hpp"
@@ -305,7 +300,7 @@ void QMEApproximation::find_scaled_coefficients()
   RealVector singularValues, delta(numUsed), approx_delta(numUsed);
   RealMatrix V_transpose, D(numUsed,numUsed), D2T(numUsed,numUsed);
   G_reduced_xfm = dy;
-  svd(G_reduced_xfm, singularValues, V_transpose);
+  singular_value_decomp(G_reduced_xfm, singularValues, V_transpose);
 
 #ifdef DEBUG
   Cout << "QMEA: numUsed=" << numUsed << '\n';

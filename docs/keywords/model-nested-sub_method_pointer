@@ -3,7 +3,7 @@ The ``sub_method_pointer`` specifies the method block for the sub-iterator
 Description::
 The ``sub_method_pointer`` specifies the method block for the sub-iterator.
 
-See :ref:`topic-block_pointer<topic-block_pointer>` for details about pointers.
+See :ref:`topic-block_pointer` for details about pointers.
 
 A nested model performs an evaluation (variables-to-responses mapping) by running a complete sub-iterator (i.e. method) to completion. The sub-iterator, which is specified using the ``sub_method_pointer``, has its own model. This model, referred to here as the sub-model, possesses its own variables and responses. Prior to every execution of the sub-iterator, information about the nested model's variables is injected into the sub-model's variables. After the sub-iterator has completed, its results are passed back up to the nested model as responses.
 
@@ -36,7 +36,7 @@ variable mapping specifications must equal the total number of active
 top-level variables, including both continuous and discrete
 types). The ordering of the active variables is the same as shown in
 ``dakota``.input.summary on \subpage input_spec_summary and as
-presented in the :ref:`variables<variables>` section of this manual.
+presented in the :dakkw:`variables` section of this manual.
 
 Inactive nested model variables are treated differently from those in the active view. If inactive variables are present at the outer level, then the default type 3 mapping is used for these variables; that is, outer loop inactive variables are inserted into inner loop variables (active or inactive) based on matching of variable types, top-level bounds and labels are also propagated, the inner loop must allocate sufficient space to receive the outer loop values, and the leading subset within this inner loop allocation is updated. This capability is important for allowing nesting beyond two levels, since an active variable at the outer-most loop may become inactive at the next lower level, but still needs to be further propagated down to lower levels in the recursion.
 
@@ -56,7 +56,7 @@ epistemic and mixed aleatory/epistemic UQ using interval estimation methods: low
 epistemic and mixed aleatory/epistemic UQ using evidence methods: for each response function, lower and upper interval bounds (belief and plausibility) for all probability/reliability/generalized reliability/response level results computed from any user-specified ``response_levels``, ``probability_levels``, ``reliability_levels``, and/or ``gen_reliability_levels``, in that order.
 parameter studies and design of experiments: for optimization and least squares response data sets, the best solution found (lowest constraint violation if infeasible, lowest composite objective function if feasible). For generic response data sets, a best solution metric is not defined, so the sub-iterator response vector is empty in this case.
 
-The ``primary_response_mapping`` matrix maps sub-iterator results into top-level objective functions, least squares terms, or generic response functions, depending on the declared top-level response set. The ``secondary_response_mapping`` matrix maps sub-iterator results into top-level nonlinear inequality and equality constraints. Alternately, if all the responses of the sub-iterator are to be mapped one-to-one to the top-level nested model responses :ref:`model-nested-sub_method_pointer-identity_response_mapping<model-nested-sub_method_pointer-identity_response_mapping>` may be specified instead.
+The ``primary_response_mapping`` matrix maps sub-iterator results into top-level objective functions, least squares terms, or generic response functions, depending on the declared top-level response set. The ``secondary_response_mapping`` matrix maps sub-iterator results into top-level nonlinear inequality and equality constraints. Alternately, if all the responses of the sub-iterator are to be mapped one-to-one to the top-level nested model responses :dakkw:`model-nested-sub_method_pointer-identity_response_mapping` may be specified instead.
 
 *Summary*
 
@@ -144,7 +144,7 @@ are normally distributed. The means of the uncertain variables are the design va
 in the optimization.
 
 In Dakota, this is accomplished by nesting an uncertainty quantification method
-( :ref:`method-sampling<method-sampling>`), which computes the 90th percentiles, within an optimizer
+( :dakkw:`method-sampling`), which computes the 90th percentiles, within an optimizer
 ( ``method-asynch_pattern_search``), which iteratively adjusts the variable means to minimize
 the objective. For every evaluation requested by the optimizer, the design variables ( ``x1_mean``
 and ``x2_mean`` in the example) are inserted into the means of the uncertain variables ( ``x1`` and
@@ -222,7 +222,7 @@ to a unique outer loop response (for example, in the nested UQ case
 where one wants to determine an interval on each inner loop
 statistic). In these simple cases, the response mapping would define
 an identity matrix and
-:ref:`model-nested-sub_method_pointer-identity_response_mapping<model-nested-sub_method_pointer-identity_response_mapping>` may instead
+:dakkw:`model-nested-sub_method_pointer-identity_response_mapping` may instead
 be specified.
 Theory::
 

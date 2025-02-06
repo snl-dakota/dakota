@@ -1,15 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        WorkdirHelper
-//- Description:  Class implementation
-//- Owner:        Bill Bohnhoff
 
 #include "WorkdirHelper.hpp"
 #include "dakota_data_util.hpp"  // for strcontains
@@ -22,7 +18,7 @@
 
   #define NOMINMAX
   #include <io.h>
-  #include "dakota_windows.h"
+  #include "util_windows.hpp"
   #define DAK_PATH_ENV_NAME "Path"
   #define DAK_PATH_SEP ';'
   #define DAK_SLASH '\\'

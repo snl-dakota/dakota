@@ -1,22 +1,18 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:        ProcessApplicInterface
-//- Description:  Derived class for the case when analysis code simulators use
-//-               fork\exec\wait to provide the function evaluations
-//- Owner:        Mike Eldred
-//- Version: $Id: ProcessApplicInterface.hpp 6492 2009-12-19 00:04:28Z briadam $
-
 #ifndef PROCESS_APPLIC_INTERFACE_H
 #define PROCESS_APPLIC_INTERFACE_H
 
 #include "ApplicationInterface.hpp"
+#include <memory>
+
 #ifdef _WIN32
 typedef intptr_t pid_t;
 #endif
@@ -27,6 +23,9 @@ namespace bfs = boost::filesystem;
 
 namespace Dakota {
 
+
+class ParametersFileWriter;
+class ResultsFileReader;
 
 /// Substitute parameters and results file names into driver strings
 String substitute_params_and_results(const String &driver, const String &params, const String &results);
@@ -53,7 +52,7 @@ public:
   /// constructor
   ProcessApplicInterface(const ProblemDescDB& problem_db);
   /// destructor
-  ~ProcessApplicInterface();
+  ~ProcessApplicInterface() override;
 
 protected:
 
@@ -62,15 +61,15 @@ protected:
   //
 
   void derived_map(const Variables& vars, const ActiveSet& set,
-		   Response& response, int fn_eval_id);
-  void derived_map_asynch(const ParamResponsePair& pair);
+		   Response& response, int fn_eval_id) override;
+  void derived_map_asynch(const ParamResponsePair& pair) override;
 
-  void wait_local_evaluations(PRPQueue& prp_queue);
-  void test_local_evaluations(PRPQueue& prp_queue);
+  void wait_local_evaluations(PRPQueue& prp_queue) override;
+  void test_local_evaluations(PRPQueue& prp_queue) override;
 
-  const StringArray& analysis_drivers() const;
+  const StringArray& analysis_drivers() const override;
 
-  void file_cleanup() const;
+  void file_cleanup() const override;
 
   void file_and_workdir_cleanup(const bfs::path &params_path,
       const bfs::path &results_path,
@@ -130,8 +129,7 @@ protected:
   void define_filenames(const String& eval_id_tag);
 
   /// write the parameters data and response request data to one or
-  /// more parameters files (using one or more invocations of
-  /// write_parameters_file()) in either standard or aprepro format
+  /// more parameters files
   void write_parameters_files(const Variables& vars,     const ActiveSet& set,
 			      const Response&  response, const int id);
 
@@ -161,11 +159,10 @@ protected:
   /// flag indicating use of passing of filenames as command line arguments to
   /// the analysis drivers and input/output filters
   bool commandLineArgs;
-  /// flag indicating use of the APREPRO (the Sandia "A PRE PROcessor" utility)
-  /// format for parameter files
-  bool apreproFlag;
-  /// results file format
-  unsigned short resultsFileFormat;
+  /// parameters file writer
+  std::unique_ptr<ParametersFileWriter> paramsFileWriter;
+  /// results file reader
+  std::unique_ptr<ResultsFileReader> resultsFileReader;
   /// flag indicating the need for separate parameters files for multiple
   /// analysis drivers
   bool multipleParamsFiles;
@@ -243,18 +240,6 @@ private:
   //- Heading: Convenience functions
   //
 
-  /// write the variables, active set vector, derivative variables vector,
-  /// and analysis components to the specified parameters file in either
-  /// standard or aprepro format
-  void write_parameters_file(const Variables& vars, const ActiveSet& set,
-			     const Response& response, const std::string& prog,
-			     const std::vector<String>& an_comps,
-			     const std::string& params_fname,
-                             const bool file_mode_out = true);
-
-  /// Open and read the results file at path, properly handling errors
-  void read_results_file(Response &response, const bfs::path &path, 
-      const int id);
   //
   //- Heading: Data
   //

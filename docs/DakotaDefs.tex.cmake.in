@@ -9,124 +9,24 @@
 \newcommand{\DakotaVersion}{@Dakota_VERSION_SRC@}
 
 
-% Most recent SAND report numbers and report date based on
-% Data should be SAND report date and not reflect updates
-\newcommand{\DakotaSANDDate}{May 2022}
-%%\newcommand{\DakotaSANDUpdated}{@Dakota_RELEASE_DATE@} % TODO if/else \today
-\newcommand{\DakotaSANDDev}{SAND2020-xxxx}
-\newcommand{\DakotaSANDRef}{SAND2020-xxxx}
-\newcommand{\DakotaSANDUsers}{SAND2022-6171}
-\newcommand{\DakotaSANDTheory}{SAND2022-6172}
-
-
-% Need to manually break line or Eldred gets incorrectly split
-% This is not yet updated for Dakota 6.12
-%% \newcommand{\DakotaAuthorSAND}{
-%% Brian~M.~Adams, William~J.~Bohnhoff, Keith~R.~Dalbey, Mohamed~S.~Ebeida,\\
-%% John~P.~Eddy, Michael~S.~Eldred, Gianluca~Geraci, Russell~W.~Hooper,\\
-%% Patricia~D.~Hough, Kenneth~T.~Hu, John~D.~Jakeman, Mohammad~Khalil,\\
-%% Kathryn~A.~Maupin, Jason~A.~Monschke, Elliott~M.~Ridgway, Ahmad~A.~Rushdi,\\
-%% J.~Adam~Stephens, Laura~P.~Swiler, Dena~M.~Vigil,Timothy~M.~Wildey,\\
-%% Justin~G.~Winokur
-%% }
-
-
 \newcommand{\DakotaAuthorCode}{ 
   Brian M. Adams, William J. Bohnhoff, Robert A. Canfield, Wesley P. Coomber,
   Keith R. Dalbey, Mohamed S. Ebeida, John P. Eddy, Michael S. Eldred,
   Gianluca Geraci, Russell W. Hooper, Patricia D. Hough, Kenneth
   T. Hu, John D. Jakeman, Carson Kent, Mohammad Khalil, Kathryn
-  A. Maupin, Jason A. Monschke, Teresa Portone, Elliott M. Ridgway,
-  Ahmad A. Rushdi, D. Thomas Seidl, J. Adam Stephens, Laura P. Swiler, Anh Tran,
-  Dena M. Vigil, Timothy M. Wildey, and Justin G. Winokur; with
-  Friedrich~Menhorn (Technical University of Munich) and Xiaoshu~Zeng
-  (University of Southern California)
+  A. Maupin, Jason A. Monschke, Teresa Portone, Ernesto E. Prudencio,
+  Elliott M. Ridgway, Pieterjan Robbe, Ahmad A. Rushdi, D. Thomas Seidl, J. Adam Stephens,
+  Laura P. Swiler, Anh Tran, Dena M. Vigil, Gregory J. von Winckel Timothy 
+  M. Wildey, and Justin G. Winokur; with Friedrich~Menhorn (Technical
+  University of Munich) and Xiaoshu~Zeng (University of Southern California)
 }
 
-
-% Updated for Dakota 6.16; manual line breaks as needed to keep names together
-\newcommand{\DakotaAuthorUsersSAND}{
-Brian~M.~Adams, William~J.~Bohnhoff, Keith~R.~Dalbey,
-Mohamed~S.~Ebeida, John~P.~Eddy, Michael~S.~Eldred, Russell~W.~Hooper,
-Patricia~D.~Hough, Kenneth~T.~Hu,\\
-John~D.~Jakeman, Mohammad~Khalil, Kathryn~A.~Maupin,
-Jason~A.~Monschke,\\
-Elliott~M.~Ridgway, Ahmad~A.~Rushdi, D.~Thomas~Seidl,
-J.~Adam~Stephens, Laura~P.~Swiler, Anh~Tran, and Justin~G.~Winokur
-}
-
-% Updated for Dakota 6.16
-\newcommand{\DakotaAuthorTheorySAND}{
-Keith~R.~Dalbey, Michael~S.~Eldred, Gianluca~Geraci, John~D.~Jakeman,
-Kathryn~A.~Maupin, Jason~A.~Monschke, D.~Thomas~Seidl,
-Laura~P.~Swiler, and Anh~Tran; with Friedrich~Menhorn (Technische
-Universitat Munchen) and Xiaoshu~Zeng (University of Southern
-California)
-}
 
 \newcommand{\DakotaSNLAddress}{
 Sandia National Laboratories\\
 P.O. Box 5800\\
 Albuquerque, NM 87185
 }
-
-\newcommand{\authvskip}{0.3cm}
-
-% This is not yet updated for Dakota 6.12
-%% \newcommand{\DakotaAuthorLong}{
-%% {Brian~M.~Adams, Michael~S.~Eldred, Gianluca~Geraci, Russell~W.~Hooper,}\\
-%% {John~D.~Jakeman, Kathryn~A.~Maupin, Jason~A.~Monschke, Ahmad~A.~Rushdi,}\\
-%% {J.~Adam~Stephens, Laura~P.~Swiler, Timothy~M.~Wildey,}\\
-%% {\sl Optimization and Uncertainty Quantification Department} \vspace*{\authvskip} \\ 
-%% {William~J.~Bohnhoff,} {\sl Radiation Effects Theory Department} \vspace*{\authvskip} \\
-%% {Keith~R.~Dalbey,} {\sl Software Simulation and Analysis Department} \vspace*{\authvskip} \\
-%% {Mohamed~S.~Ebeida,} {\sl Discrete Math and Optimization Department} \vspace*{\authvskip} \\
-%% {John~P.~Eddy,} {\sl Mathematical Analysis and Decision Sciences Department} \vspace*{\authvskip} \\
-%% {Patricia~D.~Hough, Mohammad~Khalil,} \\
-%% {\sl Quantitative Modeling and Analysis Department} \vspace*{\authvskip} \\
-%% {Kenneth~T.~Hu,} {\sl W76-1 System Life Extension Department} \vspace*{\authvskip} \\
-%% {Elliott~M.~Ridgway, Dena~M.~Vigil,} {\sl Software Engineering and Research Department} \vspace*{\authvskip} \\
-%% {Justin~G.~Winokur,} {\sl V\&V, UQ, Credibility Processes Department} \vspace*{\authvskip} \\
-%% Sandia National Laboratories\\
-%% P.O. Box 5800\\
-%% Albuquerque, NM 87185
-%% }
-
-% This is not yet updated for Dakota 6.12
-%% \newcommand{\DakotaAuthorFormatted}{
-%% {\large \bf Brian~M.~Adams, Michael~S.~Eldred, Gianluca~Geraci, Russell~W.~Hooper,
-%% John~D.~Jakeman, Kathryn~A.~Maupin, Jason~A.~Monschke, Ahmad~A.~Rushdi,
-%% J.~Adam~Stephens, Laura~P.~Swiler, Timothy~M.~Wildey}\\
-%% {\large Optimization and Uncertainty Quantification Department}\\
-%% \vspace*{\authvskip}
-%% {\large \bf William J. Bohnhoff}\\
-%% {\large Radiation Effects Theory Department}\\
-%% \vspace*{\authvskip}
-%% {\large \bf Keith R. Dalbey}\\
-%% {\large Software Simulation and Analysis Department}\\
-%% \vspace*{\authvskip}
-%% {\large \bf Mohamed S. Ebeida}\\
-%% {\large Discrete Math and Optimization Department}\\
-%% \vspace*{\authvskip}
-%% {\large \bf John P. Eddy}\\
-%% {\large Mathematical Analysis and Decision Sciences Department}\\
-%% \vspace*{\authvskip}
-%% {\large \bf Patricia D. Hough, Mohammad Khalil}\\
-%% {\large Quantitative Modeling and Analysis Department}\\
-%% \vspace*{\authvskip}
-%% {\large \bf Kenneth T. Hu}\\
-%% {\large W76-1 System Life Extension Department}\\
-%% \vspace*{\authvskip}
-%% {\large \bf Elliott M. Ridgway, Dena M. Vigil}\\
-%% {\large Software Engineering and Research Department}\\
-%% \vspace*{\authvskip}
-%% {\large \bf Justin G. Winokur}\\
-%% {\large V\&V, UQ, Credibility Processes Department}\\
-%% \vspace*{\authvskip}
-%% {\normalsize Sandia National Laboratories}\\
-%% {\normalsize P.O. Box 5800}\\
-%% {\normalsize Albuquerque, New Mexico 87185}\\
-%% }
 
 % Fragments which together comprise abstracts
 

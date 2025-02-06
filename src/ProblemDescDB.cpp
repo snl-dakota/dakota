@@ -1,7 +1,7 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
@@ -16,6 +16,7 @@
 //- Checked by:
 
 #include "dakota_system_defs.hpp"
+#include "model_utils.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "NIDRProblemDescDB.hpp"
@@ -26,6 +27,7 @@
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <string>
+
 
 //#define DEBUG
 //#define MPI_DEBUG
@@ -972,7 +974,7 @@ const Iterator& ProblemDescDB::get_iterator()
 }
 
 
-const Iterator& ProblemDescDB::get_iterator(Model& model)
+const Iterator& ProblemDescDB::get_iterator(std::shared_ptr<Model> model)
 {
   // ProblemDescDB::get_<object> functions operate at the envelope level
   // so that any passing of *this provides the envelope object.
@@ -1006,7 +1008,7 @@ const Iterator& ProblemDescDB::get_iterator(Model& model)
 
 
 const Iterator& ProblemDescDB::
-get_iterator(const String& method_name, Model& model)
+get_iterator(const String& method_name, std::shared_ptr<Model> model)
 {
   // ProblemDescDB::get_<object> functions operate at the envelope level
   // so that any passing of *this provides the envelope object.
@@ -1037,7 +1039,7 @@ get_iterator(const String& method_name, Model& model)
 }
 
 
-const Model& ProblemDescDB::get_model()
+std::shared_ptr<Model> ProblemDescDB::get_model()
 {
   // ProblemDescDB::get_<object> functions operate at the envelope level
   // so that any passing of *this provides the envelope object.
@@ -1062,10 +1064,9 @@ const Model& ProblemDescDB::get_model()
     id_model = "NO_MODEL_ID";
   ModelLIter m_it
     = std::find_if(dbRep->modelList.begin(), dbRep->modelList.end(),
-                   boost::bind(&Model::model_id, _1) == id_model);
+                   [&id_model](std::shared_ptr<Model> m) {return m->model_id() == id_model;});
   if (m_it == dbRep->modelList.end()) {
-    Model new_model(*this);
-    dbRep->modelList.push_back(new_model);
+    dbRep->modelList.push_back(ModelUtils::get_model(*this));
     m_it = --dbRep->modelList.end();
   }
   return *m_it;
@@ -1429,6 +1430,7 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
       {"nond.prediction_configs", P_MET predictionConfigList},
       {"nond.proposal_covariance_data", P_MET proposalCovData},
       {"nond.regression_noise_tolerance", P_MET regressionNoiseTol},
+      {"nond.relaxation.factor_sequence", P_MET relaxFactorSequence},
       {"nond.scalarization_response_mapping", P_MET scalarizationRespCoeffs},
       {"parameter_study.final_point", P_MET finalPoint},
       {"parameter_study.list_of_points", P_MET listOfPoints},
@@ -1561,7 +1563,9 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
       {"fsu_quasi_mc.sequenceLeap", P_MET sequenceLeap},
       {"fsu_quasi_mc.sequenceStart", P_MET sequenceStart},
       {"nond.refinement_samples", P_MET refineSamples},
-      {"parameter_study.steps_per_variable", P_MET stepsPerVariable}
+      {"parameter_study.steps_per_variable", P_MET stepsPerVariable},
+      {"generating_vector.inline", P_MET generatingVector},
+      {"generating_matrices.inline", P_MET generatingMatrices}
     },
     { /* model */
       {"refinement_samples", P_MOD refineSamples}
@@ -2070,8 +2074,10 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
       {"nond.data_dist_cov_type", P_MET dataDistCovInputType},
       {"nond.data_dist_filename", P_MET dataDistFile},
       {"nond.data_dist_type", P_MET dataDistType},
+      {"nond.dili_hessian_type", P_MET diliHessianType},
       {"nond.discrepancy_type", P_MET modelDiscrepancyType},
-    	//{"nond.expansion_sample_type", P_MET expansionSampleType},
+    //{"nond.expansion_sample_type", P_MET expansionSampleType},
+      {"nond.dr_scale_type", P_MET drScaleType},
       {"nond.export_corrected_model_file", P_MET exportCorrModelFile},
       {"nond.export_corrected_variance_file", P_MET exportCorrVarFile},
       {"nond.export_discrepancy_file", P_MET exportDiscrepFile},
@@ -2094,7 +2100,9 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
       {"sub_method_name", P_MET subMethodName},
       {"sub_method_pointer", P_MET subMethodPointer},
       {"sub_model_pointer", P_MET subModelPointer},
-      {"trial_type", P_MET trialType}
+      {"trial_type", P_MET trialType},
+      {"generating_vector.file", P_MET generatingVectorFileName},
+      {"generating_matrices.file", P_MET generatingMatricesFileName}
     },
     { /* model */
       {"advanced_options_file", P_MOD advancedOptionsFilename},
@@ -2117,6 +2125,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
       {"surrogate.mars_interpolation", P_MOD marsInterpolation},
       {"surrogate.model_export_prefix", P_MOD modelExportPrefix},
       {"surrogate.model_import_prefix", P_MOD modelImportPrefix},
+      {"surrogate.class_path_and_name", P_MOD moduleAndClassName},
       {"surrogate.point_reuse", P_MOD approxPointReuse},
       {"surrogate.refine_cv_metric", P_MOD refineCVMetric},
       {"surrogate.trend_order", P_MOD trendOrder},
@@ -2193,13 +2202,27 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
       {"nl2sol.initial_trust_radius", P_MET initTRRadius},
       {"nl2sol.singular_conv_tol", P_MET singConvTol},
       {"nl2sol.singular_radius", P_MET singRadius},
-      {"nond.c3function_train.solver_rounding_tolerance", P_MET solverRoundingTol},
+      {"nond.am_scale", P_MET amScale},
+      {"nond.c3function_train.solver_rounding_tolerance",
+       P_MET solverRoundingTol},
       {"nond.c3function_train.solver_tolerance", P_MET solverTol},
-      {"nond.c3function_train.stats_rounding_tolerance", P_MET statsRoundingTol},
+      {"nond.c3function_train.stats_rounding_tolerance",
+       P_MET statsRoundingTol},
       {"nond.collocation_ratio", P_MET collocationRatio},
       {"nond.collocation_ratio_terms_order", P_MET collocRatioTermsOrder},
+      {"nond.dili_hess_tolerance", P_MET diliHessTolerance},
+      {"nond.dili_lis_tolerance", P_MET diliLISTolerance},
+      {"nond.dili_ses_abs_tol", P_MET diliSesAbsTol},
+      {"nond.dili_ses_rel_tol", P_MET diliSesRelTol},
+      {"nond.dr_scale", P_MET drScale},
+      {"nond.estimator_variance_metric_norm_order",
+       P_MET estVarMetricNormOrder},
+      {"nond.mala_step_size", P_MET malaStepSize},
       {"nond.multilevel_estimator_rate", P_MET multilevEstimatorRate},
+      {"nond.rcond_tol_throttle", P_MET rCondTolThrottle},
       {"nond.regression_penalty", P_MET regressionL2Penalty},
+      {"nond.relaxation.fixed_factor", P_MET relaxFixedFactor},
+      {"nond.relaxation.recursive_factor", P_MET relaxRecursiveFactor},
       {"npsol.linesearch_tolerance", P_MET lineSearchTolerance},
       {"optpp.centering_parameter", P_MET centeringParam},
       {"optpp.max_step", P_MET maxStep},
@@ -2207,6 +2230,8 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
       {"percent_variance_explained", P_MET percentVarianceExplained},
       {"prior_prop_cov_mult", P_MET priorPropCovMult},
       {"solution_target", P_MET solnTarget},
+      {"ti_coverage", P_MET tiCoverage},
+      {"ti_confidence_level", P_MET tiConfidenceLevel},
       {"trust_region.contract_threshold", P_MET trustRegionContractTrigger},
       {"trust_region.contraction_factor", P_MET trustRegionContract},
       {"trust_region.expand_threshold", P_MET trustRegionExpandTrigger},
@@ -2224,6 +2249,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
       {"active_subspace.truncation_method.energy.truncation_tolerance",
     	  P_MOD truncationTolerance},
       {"adapted_basis.collocation_ratio", P_MOD adaptedBasisCollocRatio},
+      {"adapted_basis.truncation_tolerance", P_MOD adaptedBasisTruncationTolerance},
       {"c3function_train.collocation_ratio", P_MOD collocationRatio},
       {"c3function_train.solver_rounding_tolerance", P_MOD solverRoundingTol},
       {"c3function_train.solver_tolerance", P_MOD solverTol},
@@ -2235,8 +2261,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
       {"surrogate.nugget", P_MOD krigingNugget},
       {"surrogate.percent", P_MOD percentFold},
       {"surrogate.regression_penalty", P_MOD regressionL2Penalty},
-      {"truncation_tolerance", P_MOD truncationTolerance},
-      {"adapted_basis.truncation_tolerance", P_MOD adaptedBasisTruncationTolerance}
+      {"truncation_tolerance", P_MOD truncationTolerance}
     },
     { /* variables */ },
     { /* interface */
@@ -2277,8 +2302,19 @@ int ProblemDescDB::get_int(const String& entry_name) const
       {"max_hifi_evaluations", P_MET maxHifiEvals},
       {"mesh_adaptive_search.neighbor_order", P_MET neighborOrder},
       {"nl2sol.covariance", P_MET covarianceType},
+      {"nond.am_period_num_steps", P_MET amPeriodNumSteps},
+      {"nond.am_starting_step", P_MET amStartingStep},
       {"nond.c3function_train.max_cross_iterations", P_MET maxCrossIterations},
       {"nond.chain_samples", P_MET chainSamples},
+      {"nond.dili_adapt_end", P_MET diliAdaptEnd},
+      {"nond.dili_adapt_interval", P_MET diliAdaptInterval},
+      {"nond.dili_adapt_start", P_MET diliAdaptStart},
+      {"nond.dili_initial_weight", P_MET diliInitialWeight},
+      {"nond.dili_ses_block_size", P_MET diliSesBlockSize},
+      {"nond.dili_ses_exp_rank", P_MET diliSesExpRank},
+      {"nond.dili_ses_num_eigs", P_MET diliSesNumEigs},
+      {"nond.dili_ses_overs_factor", P_MET diliSesOversFactor},
+      {"nond.dr_num_stages", P_MET drNumStages},
       {"nond.prop_cov_update_period", P_MET proposalCovUpdatePeriod},
       {"nond.pushforward_samples", P_MET numPushforwardSamples},
       {"nond.samples_on_emulator", P_MET samplesOnEmulator},
@@ -2291,7 +2327,11 @@ int ProblemDescDB::get_int(const String& entry_name) const
       {"random_seed", P_MET randomSeed},
       {"samples", P_MET numSamples},
       {"sub_sampling_period", P_MET subSamplingPeriod},
-      {"symbols", P_MET numSymbols}
+      {"symbols", P_MET numSymbols},
+      {"vbd_via_sampling_num_bins", P_MET vbdViaSamplingNumBins},
+      {"m_max", P_MET log2MaxPoints},
+      {"t_max", P_MET numberOfBits},
+      {"t_scramble", P_MET scrambleSize}
     },
     { /* model */
       {"active_subspace.bootstrap_samples", P_MOD numReplicates},
@@ -2335,27 +2375,32 @@ short ProblemDescDB::get_short(const String& entry_name) const
       {"nond.c3function_train.advancement_type", P_MET c3AdvanceType},
       {"nond.convergence_tolerance_target", P_MET convergenceToleranceTarget},
       {"nond.convergence_tolerance_type", P_MET convergenceToleranceType},
-      {"nond.model_discrepancy.polynomial_order", P_MET polynomialOrder},
       {"nond.covariance_control", P_MET covarianceControl},
       {"nond.distribution", P_MET distributionType},
       {"nond.emulator", P_MET emulatorType},
-      {"nond.ensemble_sampling_solution_mode", P_MET ensembleSampSolnMode},
+      {"nond.ensemble_pilot_solution_mode", P_MET ensemblePilotSolnMode},
+      {"nond.estimator_variance_metric", P_MET estVarMetricType},
       {"nond.expansion_basis_type", P_MET expansionBasisType},
       {"nond.expansion_refinement_control", P_MET refinementControl},
       {"nond.expansion_refinement_type", P_MET refinementType},
       {"nond.expansion_type", P_MET expansionType},
       {"nond.final_moments", P_MET finalMomentsType},
       {"nond.final_statistics", P_MET finalStatsType},
+      {"nond.group_throttle_type", P_MET groupThrottleType},
       {"nond.growth_override", P_MET growthOverride},
       {"nond.least_squares_regression_type", P_MET lsRegressionType},
+      {"nond.model_discrepancy.polynomial_order", P_MET polynomialOrder},
       {"nond.multilevel_allocation_control", P_MET multilevAllocControl},
       {"nond.multilevel_discrepancy_emulation", P_MET multilevDiscrepEmulation},
       {"nond.nesting_override", P_MET nestingOverride},
+      {"nond.pilot_samples.mode", P_MET pilotGroupSampling},
       {"nond.qoi_aggregation", P_MET qoiAggregation},
       {"nond.refinement_statistics_mode", P_MET statsMetricMode},
       {"nond.regression_type", P_MET regressionType},
       {"nond.response_level_target", P_MET responseLevelTarget},
       {"nond.response_level_target_reduce", P_MET responseLevelTargetReduce},
+      {"nond.search_model_graphs.recursion", P_MET dagRecursionType},
+      {"nond.search_model_graphs.selection", P_MET modelSelectType},
       {"optpp.merit_function", P_MET meritFn},
       {"output", P_MET methodOutput},
       {"sbl.acceptance_logic", P_MET surrBasedLocalAcceptLogic},
@@ -2436,18 +2481,21 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
       {"nond.export_corrected_variance_format", P_MET exportCorrVarFormat},
       {"nond.export_discrep_format", P_MET exportDiscrepFormat},
       {"nond.export_samples_format", P_MET exportSamplesFormat},
+      {"nond.graph_depth_limit", P_MET dagDepthLimit},
+      {"nond.group_size_throttle", P_MET groupSizeThrottle},
       {"nond.integration_refinement", P_MET integrationRefine},
       {"nond.numerical_solve_mode", P_MET numericalSolveMode},
       {"nond.opt_subproblem_solver", P_MET optSubProbSolver},
       {"nond.quadrature_order", P_MET quadratureOrder},
-      //{"nond.reliability_search_type", P_MET reliabilitySearchType},
+    //{"nond.reliability_search_type", P_MET reliabilitySearchType},
       {"nond.sparse_grid_level", P_MET sparseGridLevel},
       {"nond.vbd_interaction_order", P_MET vbdOrder},
       {"order", P_MET wilksOrder},
       {"pstudy.import_format", P_MET pstudyFileFormat},
       {"sample_type", P_MET sampleType},
       {"soft_convergence_limit", P_MET softConvLimit},
-      {"sub_method", P_MET subMethod}
+      {"sub_method", P_MET subMethod},
+      {"vbd_via_sampling_method", P_MET vbdViaSamplingMethod}
     },
     { /* model */
       {"active_subspace.cv.id_method", P_MOD subspaceIdCVMethod},
@@ -2471,6 +2519,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
     },
     { /* variables */ },
     { /* interface */
+      {"application.parameters_file_format", P_INT parametersFileFormat},
       {"application.results_file_format", P_INT resultsFileFormat},
       {"type", P_INT interfaceType}
     },
@@ -2535,6 +2584,7 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
       {"nond.expansion_samples", P_MET expansionSamples},
       {"nond.max_refinement_iterations", P_MET maxRefineIterations},
       {"nond.max_solver_iterations", P_MET maxSolverIterations},
+      {"nond.rcond_best_throttle", P_MET rCondBestThrottle},
       {"num_candidate_designs", P_MET numCandidateDesigns},
       {"num_candidates", P_MET numCandidates},
       {"num_prediction_configs", P_MET numPredConfigs}
@@ -2684,8 +2734,24 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
       {"sbl.truth_surrogate_bypass", P_MET surrBasedLocalLayerBypass},
       {"scaling", P_MET methodScaling},
       {"speculative", P_MET speculativeFlag},
+      {"std_regression_coeffs", P_MET stdRegressionCoeffs},
+      {"tolerance_intervals", P_MET toleranceIntervalsFlag},
       {"variance_based_decomp", P_MET vbdFlag},
-      {"wilks", P_MET wilksFlag}
+      {"wilks", P_MET wilksFlag},
+      {"rank_1_lattice", P_MET rank1LatticeFlag},
+      {"no_random_shift", P_MET noRandomShiftFlag},
+      {"kuo", P_MET kuo},
+      {"cools_kuo_nuyens", P_MET cools_kuo_nuyens},
+      {"ordering.natural", P_MET naturalOrdering},
+      {"ordering.radical_inverse", P_MET radicalInverseOrdering},
+      {"digital_net", P_MET digitalNetFlag},
+      {"no_digital_shift", P_MET noDigitalShiftFlag},
+      {"no_scrambling", P_MET noScramblingFlag},
+      {"most_significant_bit_first", P_MET mostSignificantBitFirst},
+      {"least_significant_bit_first", P_MET leastSignificantBitFirst},
+      {"joe_kuo", P_MET joe_kuo},
+      {"sobol_order_2", P_MET sobol_order_2},
+      {"gray_code_ordering", P_MET grayCodeOrdering}
     },
     { /* model */
       {"active_subspace.build_surrogate", P_MOD subspaceBuildSurrogate},
@@ -2720,7 +2786,6 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
     { /* interface */
       {"active_set_vector", P_INT activeSetVectorFlag},
       {"allow_existing_results", P_INT allowExistingResultsFlag},
-      {"application.aprepro", P_INT apreproFlag},
       {"application.file_save", P_INT fileSaveFlag},
       {"application.file_tag", P_INT fileTagFlag},
       {"application.verbatim", P_INT verbatimFlag},
@@ -2729,6 +2794,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
       {"dirSave", P_INT dirSave},
       {"dirTag", P_INT dirTag},
       {"evaluation_cache", P_INT evalCacheFlag},
+      {"labeled_results", P_INT dakotaResultsFileLabeled},
       {"nearby_evaluation_cache", P_INT nearbyEvalCacheFlag},
       {"python.numpy", P_INT numpyFlag},
       {"restart_file", P_INT restartFileFlag},
@@ -2873,7 +2939,10 @@ void ProblemDescDB::set(const String& entry_name, const IntVector& iv)
   IntVector& rep_iv = get<IntVector>
   ( "set(IntVector&)",
     { /* environment */ },
-    { /* method */ },
+    { /* method */
+      {"generating_vector.inline", P_MET generatingVector},
+      {"generating_matrices.inline", P_MET generatingMatrices}
+    },
     { /* model */ },
     { /* variables */
       {"binomial_uncertain.num_trials", P_VAR binomialUncNumTrials},

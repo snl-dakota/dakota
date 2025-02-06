@@ -1,0 +1,56 @@
+Blurb::
+Assume integers are stored with most significant bit first
+
+Description::
+Use this keyword to specify a most significant bit first format to store the integers in the generating matrices.
+
+Examples::
+
+.. code-block::
+
+    environment
+      tabular_data
+        tabular_data_file = 'samples.dat'
+        freeform
+
+    method
+      sampling
+        samples 32
+        sample_type
+          low_discrepancy
+            digital_net
+              generating_matrices inline 
+                16 8 4 2 1
+                # this encodes the generating matrix
+                # 1 0 0 0 0
+                # 0 1 0 0 0
+                # 0 0 1 0 0 
+                # 0 0 0 1 0
+                # 0 0 0 0 1
+                16 24 20 30 17
+                # this encodes the generating matrix
+                # 1 1 1 1 1
+                # 0 1 0 1 0
+                # 0 0 1 1 0
+                # 0 0 0 1 0
+                # 0 0 0 0 1
+              m_max 5
+              t_max 5
+              no_scrambling
+              no_digital_shift
+              integer_format most_significant_bit_first
+
+    variables
+      uniform_uncertain = 2
+        lower_bounds 0.0 0.0
+        upper_bounds 1.0 1.0
+
+    interface
+      analysis_drivers = 'genz'
+      analysis_components = 'cp1'
+      direct
+
+    responses
+      response_functions = 1
+      no_gradients
+      no_hessians

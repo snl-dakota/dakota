@@ -1,15 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       NonDMultilevelFunctionTrain
-//- Description: Implementation code for NonDMultilevelFunctionTrain class
-//- Owner:       Mike Eldred, Sandia National Laboratories
 
 #include "NonDMultilevelFunctionTrain.hpp"
 #include "DakotaResponse.hpp"
@@ -28,7 +24,7 @@ namespace Dakota {
 /** This constructor is called for a standard letter-envelope iterator
     instantiation using the ProblemDescDB. */
 NonDMultilevelFunctionTrain::
-NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
+NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonDC3FunctionTrain(DEFAULT_METHOD, problem_db, model),
   startRankSeqSpec(
     problem_db.get_sza("method.nond.c3function_train.start_rank_sequence")),
@@ -53,8 +49,8 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
-		       (iteratedModel, u_space_type)); // retain dist bounds
+  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
+    *iteratedModel, u_space_type)); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -85,13 +81,14 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
   // DFSModel consumes QoI aggregations; supports surrogate grad evals at most
   ShortArray asv(g_u_model.qoi(), 3); // for stand alone mode
   ActiveSet mlft_set(asv, recast_set.derivative_vector());
-  uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>(u_space_sampler,
-    g_u_model, mlft_set, approx_type, start_orders, corr_type, corr_order,
-    data_order, outputLevel, pt_reuse, importBuildPointsFile,
+  const ShortShortPair& mlft_view = g_u_model.current_variables().view();
+  uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
+    g_u_model, mlft_set, mlft_view, approx_type, start_orders, corr_type,
+    corr_order, data_order, outputLevel, pt_reuse, importBuildPointsFile,
     probDescDB.get_ushort("method.import_build_format"),
     probDescDB.get_bool("method.import_build_active_only"),
     probDescDB.get_string("method.export_approx_points_file"),
-    probDescDB.get_ushort("method.export_approx_format")));
+    probDescDB.get_ushort("method.export_approx_format"));
   initialize_u_space_model();
 
   // Configure settings for ML allocation (requires uSpaceModel)
@@ -117,7 +114,7 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, Model& model):
 /** This constructor is used for helper iterator instantiation on the fly
     that employ regression.
 NonDMultilevelFunctionTrain::
-NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
+NonDMultilevelFunctionTrain(unsigned short method_name, std::shared_ptr<Model> model,
 			    const SizetArray& colloc_pts_seq,
 			    const RealVector& dim_pref,
 			    Real colloc_ratio, const SizetArray& seed_seq,
@@ -150,8 +147,8 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>
-		       (iteratedModel, uSpaceType)); // retain dist bounds
+  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, uSpaceType)); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
@@ -178,10 +175,11 @@ NonDMultilevelFunctionTrain(unsigned short method_name, Model& model,
   const ActiveSet& recast_set = g_u_model.current_response().active_set();
   // DFSModel: consume any QoI aggregation. Helper mode: support approx Hessians
   ShortArray asv(g_u_model.qoi(), 7); // TO DO: consider passing in data_mode
-  ActiveSet pce_set(asv, recast_set.derivative_vector());
-  uSpaceModel.assign_rep(std::make_shared<DataFitSurrModel>(u_space_sampler,
-    g_u_model, pce_set, approx_type, start_orders, corr_type, corr_order,
-    data_order, outputLevel, pt_reuse, import_build_pts_file,
+  ActiveSet mlft_set(asv, recast_set.derivative_vector());
+  const ShortShortPair& mlft_view = g_u_model.current_variables().view();
+  uSpaceModel->assign_rep(std::make_shared<DataFitSurrModel>(u_space_sampler,
+    g_u_model, mlft_set, mlft_view, approx_type, start_orders, corr_type,
+    corr_order, data_order, outputLevel, pt_reuse, import_build_pts_file,
     import_build_format, import_build_active_only));
   initialize_u_space_model();
 
@@ -204,7 +202,7 @@ NonDMultilevelFunctionTrain::~NonDMultilevelFunctionTrain()
 size_t NonDMultilevelFunctionTrain::regression_size(size_t index)
 {
   // compute initial regression size using a static helper
-  // (uSpaceModel.shared_approximation() is not yet available)
+  // (uSpaceModel->shared_approximation() is not yet available)
 
   bool max_r, max_o;
   switch (c3AdvancementType) {
@@ -250,11 +248,11 @@ void NonDMultilevelFunctionTrain::initialize_u_space_model()
   // SharedC3ApproxData invokes ope_opts_alloc() to construct basis and
   // requires {start,max} order
   const Pecos::MultivariateDistribution& u_dist
-    = uSpaceModel.truth_model().multivariate_distribution();
-  uSpaceModel.shared_approximation().construct_basis(u_dist);
+    = uSpaceModel->truth_model()->multivariate_distribution();
+  uSpaceModel->shared_approximation().construct_basis(u_dist);
 
   // emulation mode needed for ApproximationInterface::qoi_set_to_key_index()
-  uSpaceModel.discrepancy_emulation_mode(multilevDiscrepEmulation);
+  uSpaceModel->discrepancy_emulation_mode(multilevDiscrepEmulation);
 }
 
 
@@ -288,7 +286,7 @@ void NonDMultilevelFunctionTrain::core_run()
   if (!summaryOutputFlag) print_results(Cout, FINAL_RESULTS);
 
   // clean up for re-entrancy of ML FT
-  uSpaceModel.clear_inactive();
+  uSpaceModel->clear_inactive();
 
   finalize_expansion();
 }
@@ -308,7 +306,7 @@ void NonDMultilevelFunctionTrain::assign_allocation_control()
       // the underlying low-rank structure of the QoI
       std::shared_ptr<SharedC3ApproxData> shared_data_rep =
 	std::static_pointer_cast<SharedC3ApproxData>(
-	uSpaceModel.shared_approximation().data_rep());
+	uSpaceModel->shared_approximation().data_rep());
       shared_data_rep->set_parameter("adapt_rank", true);
       // Note: C3Approximation::build() defines an appropriate range in the
       //       case of unspecified max rank: [start_r, start_r+max_cv*kick_r]

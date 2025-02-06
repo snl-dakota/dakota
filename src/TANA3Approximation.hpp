@@ -1,17 +1,12 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:        TANA3Approximation
-//- Description:  Class for TANA-3 two-point exponential approximation.
-//-               
-//- Owner:        Mike Eldred, Sandia National Laboratories
- 
 #ifndef TANA3_APPROXIMATION_H
 #define TANA3_APPROXIMATION_H
 
@@ -45,7 +40,7 @@ public:
   /// alternate constructor
   TANA3Approximation(const SharedApproxData& shared_data);
   /// destructor
-  ~TANA3Approximation();
+  ~TANA3Approximation() override;
 
 protected:
 
@@ -53,19 +48,19 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  int min_coefficients() const;
+  int min_coefficients() const override;
 
   //int num_constraints() const;
 
-  void build();
+  void build() override;
 
-  Real value(const Variables& vars);
+  Real value(const Variables& vars) override;
 
-  const RealVector& gradient(const Variables& vars);
+  const RealVector& gradient(const Variables& vars) override;
 
   //const RealMatrix& hessian(const Variables& vars);
 
-  void clear_current_active_data();
+  void clear_current_active_data() override;
 
 private:
 

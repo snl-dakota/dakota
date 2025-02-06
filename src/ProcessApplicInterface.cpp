@@ -1,15 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:        ProcessApplicInterface
-//- Description:  Class implementation
-//- Owner:        Mike Eldred
 
 #include "DakotaResponse.hpp"
 #include "ParamResponsePair.hpp"
@@ -17,9 +13,13 @@
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "WorkdirHelper.hpp"
+#include "ParametersFileWriter.hpp"
+#include "ResultsFileReader.hpp"
 #include <algorithm>
 #include <boost/filesystem/fstream.hpp>
+#include <nlohmann/json.hpp>
 
+using json = nlohmann::json;
 /* 
     Work directory TODO
     
@@ -110,8 +110,11 @@ ProcessApplicInterface(const ProblemDescDB& problem_db):
   fileTagFlag(problem_db.get_bool("interface.application.file_tag")),
   fileSaveFlag(problem_db.get_bool("interface.application.file_save")),
   commandLineArgs(!problem_db.get_bool("interface.application.verbatim")),
-  apreproFlag(problem_db.get_bool("interface.application.aprepro")),
-  resultsFileFormat(problem_db.get_ushort("interface.application.results_file_format")),
+  paramsFileWriter(ParametersFileWriter::get_writer(problem_db.get_ushort("interface.application.parameters_file_format"))),
+  resultsFileReader(ResultsFileReader::get_reader(
+    problem_db.get_ushort("interface.application.results_file_format"),
+    problem_db.get_bool("interface.labeled_results")
+  )),
   multipleParamsFiles(false),
   iFilterName(problem_db.get_string("interface.application.input_filter")),
   oFilterName(problem_db.get_string("interface.application.output_filter")),
@@ -305,15 +308,8 @@ void ProcessApplicInterface::wait_local_evaluation_batch(PRPQueue& prp_queue)
   std::vector<String> an_comps;
   if(!analysisComponents.empty())
     copy_data(analysisComponents, an_comps);
-  std::remove(paramsFileWritten.c_str()); // 
-  for(const auto & pair : prp_queue) {
-    int fn_eval_id = pair.eval_id();
-    fullEvalId = final_eval_id_tag(fn_eval_id); // must be set for eval ID to 
-                                                // appear in params file
-    write_parameters_file(pair.variables(), pair.active_set(), 
-        pair.response(), programNames[0], an_comps, 
-        paramsFileWritten, false /*append to file*/);
-  }
+  std::remove(paramsFileWritten.c_str());
+  paramsFileWriter->write_parameters_file(prp_queue, programNames[0], an_comps, evalTagPrefix, batchIdCntr, paramsFileWritten);
 
   // In this case, individual jobs have not been launched and we launch the
   // user's analysis driver once for the complete batch:
@@ -328,46 +324,12 @@ void ProcessApplicInterface::wait_local_evaluation_batch(PRPQueue& prp_queue)
   // be dropped), and the evaluations are presumed to be in the same order as 
   // prp_queue. Probably not a very robust way of doing things, but for purposes
   // of prototyping, it'll do.
-  
-  bfs::ifstream results_file(resultsFileWritten);
-  if (!results_file) {
-    Cerr << "\nError: cannot open results file " << resultsFileWritten
-	 << " for batch " << std::to_string(batchIdCntr) << std::endl;
-    abort_handler(INTERFACE_ERROR); // will clean up files unless file_save was specified
+  try {
+    resultsFileReader->read_results_file(prp_queue, resultsFileWritten, batchIdCntr, completionSet);
+  } catch(const FunctionBatchEvalFailure& e) {
+    manage_failure(e.prp.variables(), e.response.active_set(), e.response, e.prp.eval_id());
   }
-  Response response;
-  for(auto & pair : prp_queue) {
-    std::stringstream eval_ss;
-    while(true) {
-      String eval_buffer;
-      std::getline(results_file, eval_buffer);
-      if(results_file.eof())
-        break;
-      if(eval_buffer[0] == '#') {
-        if(eval_ss.str().empty())
-          continue;
-        else
-          break;
-      } else {
-        eval_ss << eval_buffer << std::endl;
-      }
-    }
-    response = pair.response();
-    // the read operation errors out for improperly formatted data
-    try {
-      response.read(eval_ss, resultsFileFormat);
-    }
-    catch(const FunctionEvalFailure & fneval_except) {
-      manage_failure(pair.variables(), response.active_set(), response, pair.eval_id());
-    }
-    catch(const FileReadException& fr_except) {
-      throw FileReadException("Error(s) encountered reading batch results file " +
-          resultsFileWritten + " for Evaluation " + std::to_string(pair.eval_id())
-          + ":\n" + fr_except.what()); 
-    }
-    completionSet.insert(pair.eval_id());
-  }
-  results_file.close();
+ 
   file_and_workdir_cleanup(paramsFileWritten, resultsFileWritten, createdDir, batch_id_tag);
 
 }
@@ -589,7 +551,7 @@ write_parameters_files(const Variables& vars,    const ActiveSet& set,
       copy_data(analysisComponents, all_an_comps);
     if (!allowExistingResults)
       std::remove(resultsFileWritten.c_str());
-    write_parameters_file(vars, set, response, prog, all_an_comps,
+      paramsFileWriter->write_parameters_file(vars, set, response, prog, all_an_comps, fullEvalId,
 			  paramsFileWritten);
   }
   // If analysis components are used for multiple analysis drivers, then the
@@ -602,112 +564,10 @@ write_parameters_files(const Variables& vars,    const ActiveSet& set,
       std::string tag_params_fname  = paramsFileWritten  + prog_num;
       if (!allowExistingResults)
 	std::remove(tag_results_fname.c_str());
-      write_parameters_file(vars, set, response, programNames[i],
-			    analysisComponents[i], tag_params_fname);
+      paramsFileWriter->write_parameters_file(vars, set, response, programNames[i],
+			    analysisComponents[i], fullEvalId, tag_params_fname);
     }
   }
-}
-
-
-void ProcessApplicInterface::
-write_parameters_file(const Variables& vars, const ActiveSet& set,
-		      const Response& response, const std::string& prog,
-		      const std::vector<String>& an_comps,
-                      const std::string& params_fname,
-                      const bool file_mode_out)
-{
-  // Write the parameters file
-  std::ofstream parameter_stream;
-  if(file_mode_out) // params for one evaluation per file
-    parameter_stream.open(params_fname.c_str());
-  else // params for multiple evaluations per file (batch mode)
-    parameter_stream.open(params_fname.c_str(), std::ios_base::app);
-
-  using std::setw;
-  if (!parameter_stream) {
-    Cerr << "\nError: cannot create parameters file " << params_fname
-         << std::endl;
-    abort_handler(IO_ERROR);
-  }
-  StringMultiArrayConstView acv_labels  = vars.all_continuous_variable_labels();
-  SizetMultiArrayConstView  acv_ids     = vars.all_continuous_variable_ids();
-  const ShortArray&         asv         = set.request_vector();
-  const SizetArray&         dvv         = set.derivative_vector();
-  const StringArray&        resp_labels = response.function_labels();
-  const StringArray& md_labels = response.shared_data().metadata_labels();
-  size_t i, asv_len = asv.size(), dvv_len = dvv.size(),
-    ac_len = an_comps.size(), md_len = md_labels.size();
-  StringArray asv_labels(asv_len), dvv_labels(dvv_len), ac_labels(ac_len),
-    md_tags(md_len);
-  build_labels(asv_labels, "ASV_");
-  build_labels(dvv_labels, "DVV_");
-  build_labels(ac_labels,  "AC_");
-  build_labels(md_tags,  "MD_");
-  for (i=0; i<asv_len; ++i)
-    asv_labels[i] += ":" + resp_labels[i];
-  for (i=0; i<dvv_len; ++i) {
-    size_t acv_index = find_index(acv_ids, dvv[i]);
-    if (acv_index != _NPOS)
-      dvv_labels[i] += ":" + acv_labels[acv_index];
-  }
-  if (!prog.empty()) // empty string passed if multiple attributions possible
-    for (i=0; i<ac_len; ++i)
-      ac_labels[i] += ":" + prog; // attribution to particular program
-  int prec = write_precision; // for restoration
-  //write_precision = 16; // 17 total digits: full double precision
-  write_precision = 15;   // 16 total digits: preserves desirable roundoff in
-                          //                  last digit
-  int w = write_precision+7;
-  if (apreproFlag) {
-    std::string sp20("                    ");
-    parameter_stream << sp20 << "{ DAKOTA_VARS     = " << setw(w) << vars.tv()
-		     << " }\n";
-    vars.write_aprepro(parameter_stream);
-    parameter_stream << sp20 << "{ DAKOTA_FNS      = " << setw(w) << asv_len
-		     << " }\n"; //<< setiosflags(ios::left);
-    array_write_aprepro(parameter_stream, asv, asv_labels);
-    parameter_stream << sp20 << "{ DAKOTA_DER_VARS = " << setw(w) << dvv_len
-		     << " }\n";
-    array_write_aprepro(parameter_stream, dvv, dvv_labels);
-    parameter_stream << sp20 << "{ DAKOTA_AN_COMPS = " << setw(w) << ac_len
-		     << " }\n";
-    array_write_aprepro(parameter_stream, an_comps, ac_labels);
-    // write full eval ID tag, without leading period, converting . to :
-    String full_eval_id(fullEvalId);
-    full_eval_id.erase(0,1); 
-    boost::algorithm::replace_all(full_eval_id, String("."), String(":"));
-    parameter_stream << sp20 << "{ DAKOTA_EVAL_ID  = " << setw(w) 
-		     << full_eval_id << " }\n";
-    parameter_stream << sp20 << "{ DAKOTA_METADATA = " << setw(w) << md_len
-		     << " }\n";
-    array_write_aprepro(parameter_stream, md_labels, md_tags);
-    //parameter_stream << resetiosflags(ios::adjustfield);
-  }
-  else {
-    std::string sp21("                     ");
-    parameter_stream << sp21 << setw(w) << vars.tv() << " variables\n" << vars
-		     << sp21 << setw(w) << asv_len   << " functions\n";
-		   //<< setiosflags(ios::left);
-    array_write(parameter_stream, asv, asv_labels);
-    parameter_stream << sp21 << setw(w) << dvv_len << " derivative_variables\n";
-    array_write(parameter_stream, dvv, dvv_labels);
-    parameter_stream << sp21 << setw(w) << ac_len  << " analysis_components\n";
-    array_write(parameter_stream, an_comps, ac_labels);
-    // write full eval ID tag, without leading period
-    String full_eval_id(fullEvalId);
-    full_eval_id.erase(0,1); 
-    boost::algorithm::replace_all(full_eval_id, String("."), String(":"));
-    parameter_stream << sp21 << setw(w) << full_eval_id << " eval_id\n";
-    parameter_stream << sp21 << setw(w) << md_len  << " metadata\n";
-    array_write(parameter_stream, md_labels, md_tags);
-    //parameter_stream << resetiosflags(ios::adjustfield);
-  }
-  write_precision = prec; // restore
-
-  // Explicit flush and close added 3/96 to prevent Solaris problem of input
-  // filter reading file before the write was completed.
-  parameter_stream.flush();
-  parameter_stream.close();
 }
 
 
@@ -742,38 +602,16 @@ read_results_files(Response& response, const int id, const String& eval_id_tag)
       const std::string prog_num("." + std::to_string(i+1));
       bfs::path prog_tagged_results
 	= WorkdirHelper::concat_path(results_path, prog_num);
-      read_results_file(partial_response, prog_tagged_results, id);
+      resultsFileReader->read_results_file(partial_response, prog_tagged_results, id);
       response.overlay(partial_response);
     }
   }
   else 
-    read_results_file(response,results_path,id);
+    resultsFileReader->read_results_file(response,results_path,id);
 
   file_and_workdir_cleanup(params_path, results_path, workdir_path, eval_id_tag);
   // Remove the evaluation which has been processed from the bookkeeping
   fileNameMap.erase(map_iter);
-}
-
-
-void ProcessApplicInterface::read_results_file(Response &response, 
-    const bfs::path &results_path,
-    const int id) {
-  /// Helper for read_results_files that opens the results file at 
-  /// results_path and reads it, handling various errors/exceptions.
-  bfs::ifstream recovery_stream(results_path);
-  if (!recovery_stream) {
-    Cerr << "\nError: cannot open results file " << results_path
-	 << " for evaluation " << std::to_string(id) << std::endl;
-    abort_handler(INTERFACE_ERROR); // will clean up files unless file_save was specified
-  }
-  try {
-    response.read(recovery_stream,resultsFileFormat);
-  }
-  catch(const FileReadException& fr_except) {
-    throw FileReadException("Error(s) encountered reading results file " +
-        results_path.string() + " for Evaluation " + 
-        std::to_string(id) + ":\n" + fr_except.what()); 
-  }
 }
 
 

@@ -11,7 +11,7 @@ tensor product of the admissible 1-dimensional perturbations.
 
 By default, the categorical neighbors will be defined by perturbing
 only one categorical variable at a time (according to the corresponding
-adjacency_matrix; see :ref:`variables-discrete_design_set-string-adjacency_matrix<variables-discrete_design_set-string-adjacency_matrix>`)
+adjacency_matrix; see :dakkw:`variables-discrete_design_set-string-adjacency_matrix`)
 while leaving the others fixed at their current values.
 
 *Usage Tips*

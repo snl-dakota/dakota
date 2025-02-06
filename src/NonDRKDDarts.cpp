@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       NonDRKDDarts
-//- Description: Class for the Recursive k-d DARTS approach
-//- Owner:       Mohamed Ebeida and Ahmad Rushdi
-//- Checked by:
-//- Version:
 
 
 #include "NonDRKDDarts.hpp"
@@ -51,7 +45,7 @@ static const char rcsId[] = "@(#) $Id: NonDRKDDart.cpp 6080 2009-09-08 19:03:20Z
 
 namespace Dakota {
 
-NonDRKDDarts::NonDRKDDarts(ProblemDescDB& problem_db, Model& model):
+NonDRKDDarts::NonDRKDDarts(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonD(problem_db, model), seed(probDescDB.get_int("method.random_seed")),
   emulatorSamples(probDescDB.get_int("method.nond.samples_on_emulator")),
   samples(probDescDB.get_int("method.build_samples"))
@@ -123,7 +117,7 @@ bool NonDRKDDarts::resize()
     {
         // generate outputs
         
-        iteratedModel.print_evaluation_summary(s);
+        iteratedModel->print_evaluation_summary(s);
         
         s << "-----------------------------------------------------------------\n";
         Cout << "*** Printing integration results *** " << '\n';
@@ -238,8 +232,8 @@ bool NonDRKDDarts::resize()
         _xmin = new double[_num_dim];
         _xmax = new double[_num_dim];
         
-        const RealVector&  lower_bounds = iteratedModel.continuous_lower_bounds();
-        const RealVector&  upper_bounds = iteratedModel.continuous_upper_bounds();
+        const RealVector&  lower_bounds = ModelUtils::continuous_lower_bounds(*iteratedModel);
+        const RealVector&  upper_bounds = ModelUtils::continuous_upper_bounds(*iteratedModel);
         
         for (size_t idim = 0; idim < _num_dim; idim++)
         {
@@ -441,7 +435,7 @@ bool NonDRKDDarts::resize()
             
             for (size_t resp_fn_count = 0; resp_fn_count < numFunctions; resp_fn_count++)
             {
-                double fval = iteratedModel.current_response().function_value(resp_fn_count);
+                double fval = iteratedModel->current_response().function_value(resp_fn_count);
                 _fval[resp_fn_count][_num_evaluations] = fval;
             }
             _sample_value[sample] = _fval[0][_num_evaluations];
@@ -905,15 +899,15 @@ bool NonDRKDDarts::resize()
         RealVector newX(_num_dim);
         for (size_t idim = 0; idim < _num_dim; idim++) newX[idim] = x[idim];
         
-        iteratedModel.continuous_variables(newX);
+        ModelUtils::continuous_variables(*iteratedModel, newX);
         // bypass the surrogate model to evaluate the underlying truth model
-        iteratedModel.surrogate_response_mode(BYPASS_SURROGATE);
-        iteratedModel.evaluate();
+        iteratedModel->surrogate_response_mode(BYPASS_SURROGATE);
+        iteratedModel->evaluate();
         
         // TODO: later, generalize DataFitSurrModel to automatically
         // cache the points when in bypass mode
-        add_surrogate_data(iteratedModel.current_variables(),
-                           iteratedModel.current_response());
+        add_surrogate_data(iteratedModel->current_variables(),
+                           iteratedModel->current_response());
     }
     // ----------------------------------------------------------------
     void NonDRKDDarts::add_surrogate_data(const Variables& vars, const Response& resp)
@@ -922,28 +916,28 @@ bool NonDRKDDarts::resize()
         // bypass mode
         IntResponsePair tmp_pair((int)0, resp);
         bool rebuild_flag = false;
-        iteratedModel.append_approximation(vars, tmp_pair, rebuild_flag);
+        iteratedModel->append_approximation(vars, tmp_pair, rebuild_flag);
     }
     // ----------------------------------------------------------------
     void NonDRKDDarts::build_surrogate()
     {
         // TODO: do we just send all points here? or append one at a time?
-        iteratedModel.build_approximation();
+        iteratedModel->build_approximation();
         // change surrogate to evaluate the surrogate model
-        iteratedModel.surrogate_response_mode(AUTO_CORRECTED_SURROGATE);
+        iteratedModel->surrogate_response_mode(AUTO_CORRECTED_SURROGATE);
     }
     // ----------------------------------------------------------------
     Real NonDRKDDarts::eval_surrogate(size_t function_index, double* x)
     {
         // this copy could be moved outside the loop for memory efficiency
         for (size_t vi = 0; vi < numContinuousVars; ++vi)
-            iteratedModel.continuous_variable(x[vi], vi);
+            ModelUtils::continuous_variable(*iteratedModel, x[vi], vi);
         // TODO: use active_set_vector for efficiency if you truly only
         // need 1 response function?
         
-        iteratedModel.evaluate();
+        iteratedModel->evaluate();
         
-        const RealVector& fn_vals = iteratedModel.current_response().function_values();
+        const RealVector& fn_vals = iteratedModel->current_response().function_values();
         
         return fn_vals[function_index];
     }
@@ -1084,8 +1078,8 @@ bool NonDRKDDarts::resize()
         size_t width = write_precision+7, w2p2 = 2*width+2, w3p4 = 3*width+4;
         
         StringMultiArrayConstView uv_labels
-        = iteratedModel.continuous_variable_labels();
-        const StringArray& fn_labels = iteratedModel.response_labels();
+        = ModelUtils::continuous_variable_labels(*iteratedModel);
+        const StringArray& fn_labels = ModelUtils::response_labels(*iteratedModel);
         
         std::cout << std::endl;
         

@@ -1,17 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       RelaxedVarConstraints
-//- Description: Derived class for variable bounds employing relaxation of
-//-              discrete variables.
-//- Owner:       Mike Eldred
-//- Version: $Id: RelaxedVarConstraints.hpp 7024 2010-10-16 01:24:42Z mseldre $
 
 #ifndef RELAXED_VAR_CONSTRAINTS_H
 #define RELAXED_VAR_CONSTRAINTS_H
@@ -47,14 +41,14 @@ public:
   RelaxedVarConstraints(const ProblemDescDB& problem_db,
 			const SharedVariablesData& svd);
   /// destructor
-  ~RelaxedVarConstraints();
+  ~RelaxedVarConstraints() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  void write(std::ostream& s) const;
-  void read(std::istream& s);
+  void write(std::ostream& s) const override;
+  void read(std::istream& s) override;
 
 protected:
 

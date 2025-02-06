@@ -1,18 +1,11 @@
 /*  _______________________________________________________________________
 
-    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-    Copyright 2014-2022
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2024
     National Technology & Engineering Solutions of Sandia, LLC (NTESS).
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-
-//- Class:       ParamStudy
-//- Description: Parameter study driver program.  This class iterates a
-//-              Model object using simple rules, i.e. evaluating
-//-              a variety of specified points in the design space.   
-//- Owner:       Mike Eldred
-//- Version: $Id: ParamStudy.hpp 7024 2010-10-16 01:24:42Z mseldre $
 
 #ifndef PARAM_STUDY_H
 #define PARAM_STUDY_H
@@ -46,18 +39,18 @@ public:
   //- Heading: Constructors and destructors
   //
 
-  ParamStudy(ProblemDescDB& problem_db, Model& model); ///< constructor
-  ~ParamStudy();                                       ///< destructor
+  ParamStudy(ProblemDescDB& problem_db, std::shared_ptr<Model> model); ///< constructor
+  ~ParamStudy() override;                                       ///< destructor
     
   //
   //- Heading: Virtual member function redefinitions
   //
   
-  bool resize();
-  void pre_run();
-  void core_run();
-  void post_input();
-  void post_run(std::ostream& s);
+  bool resize() override;
+  void pre_run() override;
+  void core_run() override;
+  void post_input() override;
+  void post_run(std::ostream& s) override;
 
   /// Archive variables for parameter set idx
   void archive_model_variables(const Model&, size_t idx) const override;
@@ -294,7 +287,7 @@ distribute(const Teuchos::SerialDenseVector<OrdinalType, ScalarTypeA>& all_data,
   // Extract in order:
   //   cdv/ddiv/ddrv, cauv/dauiv/daurv, ceuv/deuiv/deurv, csv/dsiv/dsrv
   const SharedVariablesData& svd
-    = iteratedModel.current_variables().shared_data();
+    = iteratedModel->current_variables().shared_data();
   const SizetArray& active_totals = svd.active_components_totals();
   size_t i,
     num_cdv   = active_totals[TOTAL_CDV],  num_ddiv = active_totals[TOTAL_DDIV],
@@ -378,7 +371,7 @@ distribute(const std::vector<ScalarType>& all_data,
   // Extract in order:
   //   cdv/ddiv/ddrv, cauv/dauiv/daurv, ceuv/deuiv/deurv, csv/dsiv/dsrv
   const SharedVariablesData& svd
-    = iteratedModel.current_variables().shared_data();
+    = iteratedModel->current_variables().shared_data();
   const SizetArray& active_totals = svd.active_components_totals();
   size_t i,
     num_cdv   = active_totals[TOTAL_CDV],  num_ddiv = active_totals[TOTAL_DDIV],
@@ -579,22 +572,22 @@ inline bool ParamStudy::check_finite_bounds()
   size_t i;
   Real dbl_inf = std::numeric_limits<Real>::infinity();
   if (numContinuousVars) {
-    const RealVector& c_l_bnds = iteratedModel.continuous_lower_bounds();
-    const RealVector& c_u_bnds = iteratedModel.continuous_upper_bounds();
+    const RealVector& c_l_bnds = ModelUtils::continuous_lower_bounds(*iteratedModel);
+    const RealVector& c_u_bnds = ModelUtils::continuous_upper_bounds(*iteratedModel);
     for (i=0; i<numContinuousVars; ++i)
       if (c_l_bnds[i] == -dbl_inf || c_u_bnds[i] == dbl_inf)
 	{ bnds_err = true; break; }
   }
   if (numDiscreteIntVars) {
-    const IntVector& di_l_bnds = iteratedModel.discrete_int_lower_bounds();
-    const IntVector& di_u_bnds = iteratedModel.discrete_int_upper_bounds();
+    const IntVector& di_l_bnds = ModelUtils::discrete_int_lower_bounds(*iteratedModel);
+    const IntVector& di_u_bnds = ModelUtils::discrete_int_upper_bounds(*iteratedModel);
     for (i=0; i<numDiscreteIntVars; ++i)
       if (di_l_bnds[i] <= INT_MIN || di_u_bnds[i] >= INT_MAX)
 	{ bnds_err = true; break; }
   }
   if (numDiscreteRealVars) {
-    const RealVector& dr_l_bnds = iteratedModel.discrete_real_lower_bounds();
-    const RealVector& dr_u_bnds = iteratedModel.discrete_real_upper_bounds();
+    const RealVector& dr_l_bnds = ModelUtils::discrete_real_lower_bounds(*iteratedModel);
+    const RealVector& dr_u_bnds = ModelUtils::discrete_real_upper_bounds(*iteratedModel);
     for (i=0; i<numDiscreteRealVars; ++i)
       if (dr_l_bnds[i] == -dbl_inf || dr_u_bnds[i] == dbl_inf)
 	{ bnds_err = true; break; }
@@ -763,7 +756,7 @@ centered_header(const String& type, size_t var_index, int step,
 {
   String& h_string = allHeaders[hdr_index];
   h_string.clear();
-  if (iteratedModel.asynch_flag())
+  if (iteratedModel->asynch_flag())
     h_string += "\n\n";
   // This code expanded due to MSVC issue with Dakota::String operator +/+=
   // Can be combined once using std::string everywhere
