@@ -1100,6 +1100,12 @@ public:
   /// assumptions that might be violated, suggesting a fallback approach,
   /// or lacking robustness, suggesting an optional override replacement
   unsigned short numericalSolveMode;
+  /// type of solver metric used in variance minimization / accuracy
+  /// specification (average, max, or norm of estimator variance across QoI)
+  short estVarMetricType;
+  /// for a norm-based solver metric (see estVarMetricType), the order
+  /// of the norm employed across the QoI estimator variances
+  Real estVarMetricNormOrder;
 
   /// the \c pilot_samples selection in ML/MF methods
   SizetArray pilotSamples;

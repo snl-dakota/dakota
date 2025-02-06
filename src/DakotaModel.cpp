@@ -3228,6 +3228,7 @@ const IntResponseMap& Model::derived_synchronize()
         << "() function.\n       derived_synchronize is not available for this"
         << " Model." << std::endl;
   abort_handler(MODEL_ERROR);
+  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -3237,6 +3238,7 @@ const IntResponseMap& Model::derived_synchronize_nowait()
       << "_nowait() function.\n       derived_synchronize_nowait is not "
       << "available for this Model." << std::endl;
     abort_handler(MODEL_ERROR);
+  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -3301,6 +3303,7 @@ const Pecos::ActiveKey& Model::active_model_key() const
       << "function.\n       model keys are not available from this Model "
       << "class." << std::endl;
   abort_handler(MODEL_ERROR);
+  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -3511,6 +3514,7 @@ RealVector Model::solution_level_costs() const
       << "() function.\n       solution_level_costs is not supported by "
 	    << "this Model class." << std::endl;
   abort_handler(MODEL_ERROR);
+  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -3520,6 +3524,7 @@ Real Model::solution_level_cost() const
       << "() function.\n       solution_level_cost is not supported by this "
       << "Model class." << std::endl;
   abort_handler(MODEL_ERROR);
+  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -3530,7 +3535,7 @@ short Model::solution_control_variable_type() const
       << "variable_type() function.\n       solution_control_variable_"
       << "type() is not supported by this Model class." << std::endl;
   abort_handler(MODEL_ERROR);
-
+  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -3541,6 +3546,7 @@ size_t Model::solution_control_variable_index() const
 	    << "variable_index() function.\n       solution_control_variable_"
 	    << "index() is not supported by this Model class." << std::endl;
     abort_handler(MODEL_ERROR);
+  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -3551,6 +3557,7 @@ size_t Model::solution_control_discrete_variable_index() const
 	    << "discrete_variable_index() is not supported by this Model class."
 	    << std::endl;
     abort_handler(MODEL_ERROR);
+  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -3560,6 +3567,7 @@ int Model::solution_level_int_value() const
       << "int_value() function.\n       solution_level_int_value is not "
 	    << "supported by this Model class." << std::endl;
   abort_handler(MODEL_ERROR);
+  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -3569,6 +3577,7 @@ String Model::solution_level_string_value() const
       << "string_value() function.\n       solution_level_string_value is "
       << "not supported by this Model class." << std::endl;
   abort_handler(MODEL_ERROR);
+  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -3578,6 +3587,7 @@ Real Model::solution_level_real_value() const
 	    << "real_value() function.\n       solution_level_real_value is not "
 	    << "supported by this Model class." << std::endl;
   abort_handler(MODEL_ERROR);
+  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -3587,6 +3597,7 @@ size_t Model::cost_metadata_index() const
 	    << "() function.\n       cost_metadata_index() is not supported by "
 	    << "this Model class." << std::endl;
   abort_handler(MODEL_ERROR);
+  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -3656,6 +3667,7 @@ Pecos::ProbabilityTransformation& Model::probability_transformation()
       << "transformation() function.\n       Probability transformations "
       << "are not supported by this Model class." << std::endl;
   abort_handler(MODEL_ERROR);
+  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -3709,6 +3721,7 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr)
        << "(Variables, IntResponsePair) function.\nThis model does not "
     	 << "support constrained approximation construction." << std::endl;
     abort_handler(MODEL_ERROR);
+  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -3982,6 +3995,7 @@ SharedApproxData& Model::shared_approximation()
       << "() function.\nThis model does not support approximations."
       << std::endl;
   abort_handler(MODEL_ERROR);
+  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -3991,6 +4005,7 @@ std::vector<Approximation>& Model::approximations()
       << "function.\nThis model does not support approximations."
       << std::endl;
   abort_handler(MODEL_ERROR);
+  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -4000,6 +4015,7 @@ const RealVectorArray& Model::approximation_coefficients(bool normalized)
       << "coefficients() function.\nThis model does not support "
       << "approximations." << std::endl;
   abort_handler(MODEL_ERROR);
+  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -4020,6 +4036,7 @@ const RealVector& Model::approximation_variances(const Variables& vars)
       << "variances() function.\nThis model does not support "
       << "approximations." << std::endl;
   abort_handler(MODEL_ERROR);
+  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -4029,6 +4046,7 @@ const RealVector& Model::error_estimates()
       << "function.\n       This model does not support error estimation."
       << std::endl;
   abort_handler(MODEL_ERROR);
+  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -4038,6 +4056,7 @@ const Pecos::SurrogateData& Model::approximation_data(size_t fn_index)
       << " function.\nThis model does not support approximations."
       << std::endl;
   abort_handler(MODEL_ERROR);
+  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -4089,6 +4108,7 @@ DiscrepancyCorrection& Model::discrepancy_correction()
       << "correction() function.\nThis model does not support corrections."
       << std::endl;
   abort_handler(MODEL_ERROR);
+  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -4150,6 +4170,7 @@ IntIntPair Model::estimate_partition_bounds(int max_eval_concurrency)
   Cerr << "Error: Letter lacking redefinition of virtual "
       << "estimate_partition_bounds() function.\n." << std::endl;
   abort_handler(MODEL_ERROR);
+  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -4601,6 +4622,7 @@ const SizetArray& Model::nested_acv1_indices() const
   Cerr << "Error: Letter lacking redefinition of virtual nested_acv1_indices"
       << "() function.\nNo default defined at base class." << std::endl;
   abort_handler(MODEL_ERROR);
+  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -4609,6 +4631,7 @@ const ShortArray& Model::nested_acv2_targets() const
   Cerr << "Error: Letter lacking redefinition of virtual nested_acv2_targets"
       << "() function.\nNo default defined at base class." << std::endl;
   abort_handler(MODEL_ERROR);
+  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -4767,6 +4790,7 @@ int Model::derived_evaluation_id() const
   Cerr << "Error: Letter lacking redefinition of virtual "
   	  << "derived_evaluation_id() function.\n" << std::endl;
   abort_handler(MODEL_ERROR);
+  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
