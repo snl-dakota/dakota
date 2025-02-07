@@ -519,7 +519,7 @@ inline bool NestedModel::derived_master_overload() const
   bool oi_overload = ( !optInterfacePointer.empty() &&
 		       optionalInterface.iterator_eval_dedicated_master() && 
 		       optionalInterface.multi_proc_eval() ),
-    si_overload = ( !subIterator->is_null() &&
+    si_overload = ( subIterator &&
 		    subIteratorSched.iteratorScheduling == MASTER_SCHEDULING && 
 		    subIteratorSched.procsPerIterator > 1 );
   return (oi_overload || si_overload);

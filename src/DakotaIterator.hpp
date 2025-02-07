@@ -349,9 +349,6 @@ public:
   /// set subIteratorFlag (and update summaryOutputFlag if needed)
   void sub_iterator_flag(bool si_flag);
 
-  /// function to check iteratorRep (does this envelope contain a letter?)
-  bool is_null() const;
-
   /// set the hierarchical eval ID tag prefix
   virtual void eval_tag_prefix(const String& eval_id_str);
 
@@ -721,11 +718,6 @@ inline void Iterator::active_set_request_values(short asv_val)
 {
   activeSet.request_values(asv_val);
 }
-
-
-inline bool Iterator::is_null() const
-{ return true; }
-
 
 /// global comparison function for Iterator
 inline bool method_id_compare(const Iterator& iterator, const void* id)

@@ -395,7 +395,7 @@ void Environment::destruct()
 {
   // Called only by letter instances, no Rep forward required
 
-  if (topLevelIterator->is_null()) // help and version invocations
+  if (!topLevelIterator) // help and version invocations
     return;
 
   ParLevLIter w_pl_iter = parallelLib.w_parallel_level_iterator();

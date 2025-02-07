@@ -93,7 +93,7 @@ void SurrBasedGlobalMinimizer::core_run()
   // Extract subIterator/subModel(s) from the SurrogateModel
   Model&    truth_model   = *iteratedModel->truth_model();
   Model&    approx_model  = *iteratedModel->surrogate_model();
-  Iterator& dace_iterator = *iteratedModel->subordinate_iterator();
+  auto dace_iterator = iteratedModel->subordinate_iterator();
   
   // This flag controls the method by which we introduce new results data
   // into the surrogate for updating.  Right now, there are two methods
@@ -106,8 +106,8 @@ void SurrBasedGlobalMinimizer::core_run()
   // Update DACE settings for global approximations.  Check that dace_iterator
   // is defined (a dace_iterator specification is not required when the data
   // samples are read in from a file rather than obtained from sampling).
-  if (!dace_iterator.is_null())
-    dace_iterator.active_set_request_values(1);
+  if (dace_iterator)
+    dace_iterator->active_set_request_values(1);
 
   // get data points using sampling, file read, or whatever.
   iteratedModel->build_approximation();
