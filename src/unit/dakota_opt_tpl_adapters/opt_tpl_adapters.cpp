@@ -55,13 +55,13 @@ namespace {
     {
       Dakota::ProblemDescDB & problem_db = p_env->problem_description_db();
       Dakota::IteratorList & iter_list = problem_db.iterator_list();
-      Dakota::Iterator & dak_iter = *iter_list.begin();
+      std::shared_ptr<Iterator> dak_iter = *iter_list.begin();
       if( verbose )
       {
-        Cout << "The iterator is a : " << dak_iter.method_string() << endl;
-        dak_iter.print_results(Cout);
+        Cout << "The iterator is a : " << dak_iter->method_string() << endl;
+        dak_iter->print_results(Cout);
       }
-      std::shared_ptr<Dakota::Optimizer> optimizer = std::static_pointer_cast<Dakota::Optimizer>(dak_iter.iterator_rep());
+      std::shared_ptr<Dakota::Optimizer> optimizer = std::static_pointer_cast<Dakota::Optimizer>(dak_iter);
 
       return optimizer;
     }
