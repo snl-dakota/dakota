@@ -231,7 +231,9 @@ init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator
   // This function cannot be used for the case where a model exists, but the
   // iterator does not --> they must be consistent (defined or undefined)
   // since sub_model is not passed separately.
-  auto sub_model = sub_iterator->iterated_model();
+  std::shared_ptr<Model> sub_model;
+  if(sub_iterator)
+    sub_model = sub_iterator->iterated_model();
   if (!sub_model) {
     sub_model = problem_db.get_model();
     if (sub_iterator) // else constructed with sub_model below
