@@ -206,23 +206,40 @@ protected:
   /// DILI stochastic eigensolver block size
   int diliSesBlockSize;
 
-  // mlmcmc
+  // MLMCMC initial number of samples 
   int mlmcmcInitialNumSamples;
+
+  // MLMCMC target variance to achieve
   Real mlmcmcTargetVariance;
+
+  // MLMCMC subsampling steps for each level
   IntVector mlmcmcSubsamplingSteps;
+
+  // MLMCMC number of levels
   int mlmcmcNumLevels;
+
+  // MLMCMC resampling factor needed by the MUQ greedy algorithm
   Real mlmcmcGreedyResamplingFactor;
+
+  // MLMCMC MUQ component factory for setting up mlmcmc
   std::shared_ptr<MLMCMCComponentFactory> mlmcmcCompFactory;
+
+  // MLMCMC instance of MUQ greedy sample
   std::shared_ptr<muq::SamplingAlgorithms::GreedyMLMCMC> mlmcmcGreedy;
 
 private:
+  // method for initializing the bayesian solver for single chains,
+  // this is called for all methods *except* mlmcmc
   void init_bayesian_solver_single_chain();
+
+  // method for initializing the bayesian solver for mlmcmc 
   void init_bayesian_solver_mlmcmc();
 
+  // calibration implementation called for all methods *except* mlmcmc
   void calibrate_single_chain();
-  void calibrate_mlmcmc_works();
+  
+  // calibration implementation called for mlmcmc  
   void calibrate_mlmcmc();
-  void mlmcmcSingle(int numCalls, std::shared_ptr<muq::Modeling::ModPiece> density);
 };
 
 class MUQLikelihood : public muq::Modeling::DensityBase {
@@ -321,19 +338,19 @@ public:
       Cout << "Log likelihood is " << log_like << " Likelihood is "
           << std::exp(log_like) << '\n';
 
-      std::ofstream LogLikeOutput;
-      LogLikeOutput.open("NonDMUQLogLike.txt", std::ios::out | std::ios::app);
+      std::ofstream log_like_output;
+      log_like_output.open("NonDMUQLogLike.txt", std::ios::out | std::ios::app);
       // Note: parameter values are in scaled space, if scaling is
       // active; residuals may be scaled by covariance
       size_t num_total_params = m_nonDMUQInstance->numContinuousVars + m_nonDMUQInstance->numHyperparams;
       for (size_t i(0); i < num_total_params; ++i){
-        LogLikeOutput << c_vars[i] << ' ' ;
+        log_like_output << c_vars[i] << ' ' ;
       }
       for (size_t i(0); i < residuals.length(); ++i){
-        LogLikeOutput << residuals[i] << ' ' ;
+        log_like_output << residuals[i] << ' ' ;
       }
-      LogLikeOutput << log_like << '\n';
-      LogLikeOutput.close();
+      log_like_output << log_like << '\n';
+      log_like_output.close();
     }
 
     return log_like;
@@ -398,28 +415,28 @@ public:
     // for now, we have the same problem for every level because the same uncertain param dim
     // we use the same proposal using the covariance matrix setup during initialization
 
-    boost::property_tree::ptree localPt;
-    localPt.put("BlockIndex", 0 /*leave = 0 */);
+    boost::property_tree::ptree local_pt;
+    local_pt.put("BlockIndex", 0 /*leave = 0 */);
 
     // Nov. 2024, FRIZZI: for now, use MH proposal by default
     // later on we can add another option to the input file to switch
 #if 1
-    Eigen::VectorXd propMu = Eigen::VectorXd::Zero(m_num_cv);
-    auto propDist = std::make_shared<muq::Modeling::Gaussian>(propMu, m_nonDMUQInstancePtr->proposalCovMatrix);
+    Eigen::VectorXd prop_mu = Eigen::VectorXd::Zero(m_num_cv);
+    auto propDist = std::make_shared<muq::Modeling::Gaussian>(prop_mu, m_nonDMUQInstancePtr->proposalCovMatrix);
     return std::make_shared<muq::SamplingAlgorithms::MHProposal>(pt, samplingProblem, propDist);
 #else
     // crank-nic does not work here, something is wrong
-    // Eigen::VectorXd propMu = Eigen::VectorXd::Zero(m_nonDMUQInstancePtr->numContinuousVars);
-    // auto prior = std::make_shared<muq::Modeling::Gaussian>(propMu, m_nonDMUQInstancePtr->proposalCovMatrix);
+    // Eigen::VectorXd prop_mu = Eigen::VectorXd::Zero(m_nonDMUQInstancePtr->numContinuousVars);
+    // auto prior = std::make_shared<muq::Modeling::Gaussian>(prop_mu, m_nonDMUQInstancePtr->proposalCovMatrix);
     // return std::make_shared<muq::SamplingAlgorithms::CrankNicolsonProposal>(pt, samplingProblem, prior);
 
-    localPt.put("Proposal", "MyProposal");
-    localPt.put("MyProposal.Method","AMProposal");
-    localPt.put("MyProposal.AdaptSteps", 10);
-    localPt.put("MyProposal.AdaptStart", 10);
-    localPt.put("MyProposal.AdaptScale", m_nonDMUQInstancePtr->amScale);
+    local_pt.put("Proposal", "MyProposal");
+    local_pt.put("MyProposal.Method","AMProposal");
+    local_pt.put("MyProposal.AdaptSteps", 10);
+    local_pt.put("MyProposal.AdaptStart", 10);
+    local_pt.put("MyProposal.AdaptScale", m_nonDMUQInstancePtr->amScale);
     return std::make_shared<muq::SamplingAlgorithms::AMProposal>(
-            localPt.get_child("MyProposal"), samplingProblem, m_nonDMUQInstancePtr->proposalCovMatrix
+            local_pt.get_child("MyProposal"), samplingProblem, m_nonDMUQInstancePtr->proposalCovMatrix
             );
 #endif
   }
@@ -442,9 +459,9 @@ public:
     // this proposal drives the coarse chain by a bit and then take the final result
     // Nov. 2024: FRIZZI interacted with Linus Seelinger (author of MLMCM in MUQ) who suggested
     // to leave it as it is for the basecase
-    pt::ptree ptProposal = pt;
-    ptProposal.put("BlockIndex", 0 /*leave = 0 */);
-    return std::make_shared<muq::SamplingAlgorithms::SubsamplingMIProposal>(ptProposal, coarseProblem, coarseIndex, coarseChain);
+    pt::ptree pt_proposal = pt;
+    pt_proposal.put("BlockIndex", 0 /*leave = 0 */);
+    return std::make_shared<muq::SamplingAlgorithms::SubsamplingMIProposal>(pt_proposal, coarseProblem, coarseIndex, coarseChain);
   }
 
   virtual std::shared_ptr<muq::SamplingAlgorithms::AbstractSamplingProblem>
@@ -456,21 +473,21 @@ public:
     }
 
     // use the workgraph to create the likelihood for this level and posterior
-    auto myWorkGraph = std::make_shared<muq::Modeling::WorkGraph>();
-    myWorkGraph->AddNode(m_nonDMUQInstancePtr->parameterPtr, "Parameters");
+    auto my_work_graph = std::make_shared<muq::Modeling::WorkGraph>();
+    my_work_graph->AddNode(m_nonDMUQInstancePtr->parameterPtr, "Parameters");
 
     auto vxi = Eigen::VectorXi::Constant(1, m_nonDMUQInstancePtr->numContinuousVars);
-    auto thisLevelLikl = std::make_shared<MLMCMCLikelihood>(vxi, level, m_nonDMUQInstancePtr);
-    myWorkGraph->AddNode(thisLevelLikl, "Likelihood");
-    myWorkGraph->AddNode(m_nonDMUQInstancePtr->MUQPriorPtr, "Prior");
-    myWorkGraph->AddNode(m_nonDMUQInstancePtr->posteriorPtr, "Posterior");
+    auto this_level_lkl = std::make_shared<MLMCMCLikelihood>(vxi, level, m_nonDMUQInstancePtr);
+    my_work_graph->AddNode(this_level_lkl, "Likelihood");
+    my_work_graph->AddNode(m_nonDMUQInstancePtr->MUQPriorPtr, "Prior");
+    my_work_graph->AddNode(m_nonDMUQInstancePtr->posteriorPtr, "Posterior");
 
-    myWorkGraph->AddEdge("Parameters", 0, "Prior",      0); // 0 = index of input,output
-    myWorkGraph->AddEdge("Parameters", 0, "Likelihood", 0); // 0 = index of input,output
-    myWorkGraph->AddEdge("Prior",      0, "Posterior",  0);
-    myWorkGraph->AddEdge("Likelihood", 0, "Posterior",  1);
+    my_work_graph->AddEdge("Parameters", 0, "Prior",      0); // 0 = index of input,output
+    my_work_graph->AddEdge("Parameters", 0, "Likelihood", 0); // 0 = index of input,output
+    my_work_graph->AddEdge("Prior",      0, "Posterior",  0);
+    my_work_graph->AddEdge("Likelihood", 0, "Posterior",  1);
 
-    auto dens = myWorkGraph->CreateModPiece("Posterior");
+    auto dens = my_work_graph->CreateModPiece("Posterior");
     return std::make_shared<muq::SamplingAlgorithms::SamplingProblem>(dens);
   }
 
