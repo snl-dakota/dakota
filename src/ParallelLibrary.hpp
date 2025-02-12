@@ -10,6 +10,7 @@
 #ifndef PARALLEL_LIBRARY_H
 #define PARALLEL_LIBRARY_H
 
+#include <vector>
 #include "ProgramOptions.hpp"
 #include "MPIManager.hpp"
 #include "OutputManager.hpp"
@@ -858,11 +859,16 @@ public:
   /// wait for a nonblocking send/receive request to complete
   void wait(MPI_Request& request, MPI_Status& status);
   /// wait for all messages from a series of nonblocking receives
-  void waitall(int num_recvs, MPI_Request*& recv_reqs);
+
+  void waitall(int num_recvs, std::vector<MPI_Request>& recv_reqs);
   /// wait for at least one message from a series of nonblocking receives
   /// but complete all that are available
-  void waitsome(int num_sends, MPI_Request*& recv_requests,
-		int& num_recvs, int*& index_array, MPI_Status*& status_array);
+
+  void waitsome( int                       num_sends,
+                 std::vector<MPI_Request>& recv_requests,
+		 int&                      num_recvs,
+                 std::vector<int>&         index_array,
+                 std::vector<MPI_Status>&  status_array);
 
   /// free an MPI_Request
   void free(MPI_Request& request);
@@ -1984,24 +1990,35 @@ inline void ParallelLibrary::wait(MPI_Request& request, MPI_Status& status)
 
 
 inline void ParallelLibrary::
-waitall(int num_recvs, MPI_Request*& recv_reqs)
+waitall(int num_recvs, std::vector<MPI_Request>& recv_reqs)
 {
 #ifdef DAKOTA_HAVE_MPI
-  MPI_Status* status_array = new MPI_Status [num_recvs];
-  int err_code = MPI_Waitall(num_recvs, recv_reqs, status_array);
-  delete [] status_array;
+  auto status_array{std::vector<MPI_Status>(num_recvs)};
+  int err_code = MPI_Waitall(num_recvs, recv_reqs.data(), status_array.data());
   check_error("MPI_Waitall", err_code);
 #endif // DAKOTA_HAVE_MPI
 }
 
 
-inline void ParallelLibrary::
-waitsome(int num_sends, MPI_Request*& recv_requests, int& num_recvs,
-	 int*& index_array, MPI_Status*& status_array)
-{
+//inline void ParallelLibrary::
+//waitsome(int num_sends, MPI_Request*& recv_requests, int& num_recvs,
+//	 int*& index_array, MPI_Status*& status_array)
+//{
+//#ifdef DAKOTA_HAVE_MPI
+//  int err_code = MPI_Waitsome(num_sends, recv_requests, &num_recvs, index_array,
+//			      status_array);
+//  check_error("MPI_Waitsome", err_code);
+//#endif // DAKOTA_HAVE_MPI
+//}
+
+inline void ParallelLibrary::waitsome( int                       num_sends,
+                                       std::vector<MPI_Request>& recv_requests,
+                                       int&                      num_recvs,
+                                       std::vector<int>&         index_array,
+                                       std::vector<MPI_Status>&  status_array ) {
 #ifdef DAKOTA_HAVE_MPI
-  int err_code = MPI_Waitsome(num_sends, recv_requests, &num_recvs, index_array,
-			      status_array);
+  int err_code = MPI_Waitsome(num_sends, recv_requests.data(), &num_recvs, index_array.data(),
+			      status_array.data());
   check_error("MPI_Waitsome", err_code);
 #endif // DAKOTA_HAVE_MPI
 }

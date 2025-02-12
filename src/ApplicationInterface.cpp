@@ -989,9 +989,9 @@ void ApplicationInterface::master_dynamic_schedule_evaluations()
        << " jobs among " << numEvalServers << " servers\n";
 
   // only need num_sends entries (not num_jobs) due to reuse
-  sendBuffers  = new MPIPackBuffer   [num_sends];
-  recvBuffers  = new MPIUnpackBuffer [num_sends];
-  recvRequests = new MPI_Request     [num_sends];
+  sendBuffers.resize(num_sends);
+  recvBuffers.resize(num_sends);
+  recvRequests.resize(num_sends);
 
   // send data & post receives for 1st set of jobs
   int i, server_id, fn_eval_id;
@@ -1007,8 +1007,8 @@ void ApplicationInterface::master_dynamic_schedule_evaluations()
     Cout << "Master dynamic schedule: second pass scheduling "
 	 << num_jobs-num_sends << " remaining jobs\n";
     int send_cntr = num_sends, recv_cntr = 0, out_count;
-    MPI_Status* status_array = new MPI_Status [num_sends];
-    int* index_array = new int [num_sends];
+    auto status_array{std::vector<MPI_Status>(num_sends)};
+    auto index_array{std::vector<int>(num_sends)};
     PRPQueueIter return_iter;
     while (recv_cntr < num_jobs) {
       if (outputLevel > SILENT_OUTPUT)
@@ -1017,9 +1017,9 @@ void ApplicationInterface::master_dynamic_schedule_evaluations()
 			   status_array);
       recv_cntr += out_count;
       for (i=0; i<out_count; ++i) {
-        int index   = index_array[i]; // index of recv_request that completed
+        int index   = index_array.at(i); // index of recv_request that completed
         server_id   = index%numEvalServers + 1; // from 1 to numEvalServers
-        fn_eval_id  = status_array[i].MPI_TAG;
+        fn_eval_id  = status_array.at(i).MPI_TAG;
 	return_iter = lookup_by_eval_id(beforeSynchCorePRPQueue, fn_eval_id);
 	receive_evaluation(return_iter, index, server_id, false);  //!peer
         if (send_cntr < num_jobs) {                              
@@ -1028,8 +1028,6 @@ void ApplicationInterface::master_dynamic_schedule_evaluations()
         }
       }
     }
-    delete [] status_array;
-    delete [] index_array;
   }
   else { // all jobs assigned in first pass
     if (outputLevel > SILENT_OUTPUT)
@@ -1043,9 +1041,9 @@ void ApplicationInterface::master_dynamic_schedule_evaluations()
     }
   }
   // deallocate MPI & buffer arrays
-  delete [] sendBuffers;   sendBuffers = NULL;
-  delete [] recvBuffers;   recvBuffers = NULL;
-  delete [] recvRequests; recvRequests = NULL;
+  sendBuffers.clear();
+  recvBuffers.clear();
+  recvRequests.clear();
 }
 
 
@@ -1075,9 +1073,9 @@ void ApplicationInterface::peer_static_schedule_evaluations()
       num_sends      = num_jobs - num_peer1_jobs;
   Cout << "Peer static schedule: assigning " << num_jobs << " jobs among " 
        << numEvalServers << " peers\n";
-  sendBuffers  = new MPIPackBuffer   [num_sends];
-  recvBuffers  = new MPIUnpackBuffer [num_sends];
-  recvRequests = new MPI_Request     [num_sends];
+  sendBuffers.resize(num_sends);
+  recvBuffers.resize(num_sends);
+  recvRequests.resize(num_sends);
   int i, server_id, fn_eval_id;
 
   // Assign jobs locally + remotely using a round-robin assignment.  Since
@@ -1153,9 +1151,9 @@ void ApplicationInterface::peer_static_schedule_evaluations()
   }
 
   // deallocate MPI & buffer arrays
-  delete [] sendBuffers;   sendBuffers = NULL;
-  delete [] recvBuffers;   recvBuffers = NULL;
-  delete [] recvRequests; recvRequests = NULL;
+  sendBuffers.clear();
+  recvBuffers.clear();
+  recvRequests.clear();
 }
 
 
@@ -1191,9 +1189,9 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations()
     num_remote_assign = num_assign - num_local_assign;
   Cout << "Peer dynamic schedule: first pass assigning " << num_remote_assign
        << " jobs among " << numEvalServers-1 << " remote peers\n";
-  sendBuffers  = new MPIPackBuffer   [num_remote_assign];
-  recvBuffers  = new MPIUnpackBuffer [num_remote_assign];
-  recvRequests = new MPI_Request     [num_remote_assign];
+  sendBuffers.resize(num_remote_assign);
+  recvBuffers.resize(num_remote_assign);
+  recvRequests.resize(num_remote_assign);
   int i, server_id, fn_eval_id;
   PRPQueueIter assign_iter = beforeSynchCorePRPQueue.begin();
   PRPQueue local_prp_queue; size_t buff_index = 0;
@@ -1229,9 +1227,9 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations()
   }
 
   // deallocate MPI & buffer arrays
-  delete [] sendBuffers;   sendBuffers = NULL;
-  delete [] recvBuffers;   recvBuffers = NULL;
-  delete [] recvRequests; recvRequests = NULL;
+  sendBuffers.clear();
+  recvBuffers.clear();
+  recvRequests.clear();
 }
 
 
@@ -1639,9 +1637,9 @@ void ApplicationInterface::master_dynamic_schedule_evaluations_nowait()
 
   if (msgPassRunningMap.empty()) {
     // deallocate MPI & buffer arrays
-    delete [] sendBuffers;   sendBuffers = NULL;
-    delete [] recvBuffers;   recvBuffers = NULL;
-    delete [] recvRequests; recvRequests = NULL;
+    sendBuffers.clear();
+    recvBuffers.clear();
+    recvRequests.clear();
   }
 }
 
@@ -2617,8 +2615,9 @@ void ApplicationInterface::master_dynamic_schedule_analyses()
          << " remaining analyses\n";
 #endif // MPI_DEBUG
     int send_cntr = num_sends, recv_cntr = 0, out_count;
-    MPI_Status* status_array = new MPI_Status [num_sends];
-    int*        index_array  = new int [num_sends];
+    auto status_array{std::vector<MPI_Status>(num_sends)};
+    auto index_array{std::vector<int>(num_sends)};
+
     while (recv_cntr < numAnalysisDrivers) {
 #ifdef MPI_DEBUG
       Cout << "Waiting on completed analyses" << std::endl;
@@ -2630,8 +2629,8 @@ void ApplicationInterface::master_dynamic_schedule_analyses()
         int index = index_array[i]; // index of recv_request that completed
         server_id = index%numAnalysisServers + 1;// from 1 to numAnalysisServers
 #ifdef MPI_DEBUG
-        Cout << "analysis " << status_array[i].MPI_TAG 
-             <<" has returned from slave server " << server_id << '\n';
+        Cout << "analysis " << status_array.at(i).MPI_TAG
+             << " has returned from slave server " << server_id << '\n';
 #endif // MPI_DEBUG
         if (send_cntr < numAnalysisDrivers) {
           analysis_id = send_cntr+1;
@@ -2649,8 +2648,6 @@ void ApplicationInterface::master_dynamic_schedule_analyses()
         }
       }
     }
-    delete [] status_array;
-    delete [] index_array;
   }
   else { // all analyses assigned in first pass
 #ifdef MPI_DEBUG
