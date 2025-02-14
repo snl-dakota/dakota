@@ -77,8 +77,7 @@ ApplicationInterface(const ProblemDescDB& problem_db):
   failAction(problem_db.get_string("interface.failure_capture.action")),
   failRetryLimit(problem_db.get_int("interface.failure_capture.retry_limit")),
   failRecoveryFnVals(
-    problem_db.get_rv("interface.failure_capture.recovery_fn_vals")),
-  sendBuffers(NULL), recvBuffers(NULL), recvRequests(NULL)
+    problem_db.get_rv("interface.failure_capture.recovery_fn_vals"))
 {
   // set coreMappings flag based on presence of analysis_drivers specification
   coreMappings = (numAnalysisDrivers > 0);
@@ -1538,12 +1537,9 @@ void ApplicationInterface::master_dynamic_schedule_evaluations_nowait()
   if (asynchLocalEvalConcurrency > 1) capacity *= asynchLocalEvalConcurrency;
   int fn_eval_id, server_id;
 
-  // allocate capacity entries since this avoids need for dynamic resizing
-  if (!sendBuffers) {
-    sendBuffers  = new MPIPackBuffer   [capacity];
-    recvBuffers  = new MPIUnpackBuffer [capacity];
-    recvRequests = new MPI_Request     [capacity];
-  }
+  sendBuffers.resize(capacity);
+  recvBuffers.resize(capacity);
+  recvRequests.resize(capacity);
 
   // Step 1: launch any new jobs up to capacity limit
   PRPQueueIter assign_iter = beforeSynchCorePRPQueue.begin();
@@ -1688,12 +1684,9 @@ void ApplicationInterface::peer_static_schedule_evaluations_nowait()
   //bool static_limited
   //  = ( asynchLocalEvalStatic || evalScheduling == PEER_STATIC_SCHEDULING );
 
-  // allocate remote_capacity entries as this avoids need for dynamic resizing
-  if (!sendBuffers) {
-    sendBuffers  = new MPIPackBuffer   [remote_capacity];
-    recvBuffers  = new MPIUnpackBuffer [remote_capacity];
-    recvRequests = new MPI_Request     [remote_capacity];
-  }
+  sendBuffers.resize(remote_capacity);
+  recvBuffers.resize(remote_capacity);
+  recvRequests.resize(remote_capacity);
 
   PRPQueueIter assign_iter = beforeSynchCorePRPQueue.begin(), local_prp_iter;
   if (!num_running) { // simplest case
@@ -1830,10 +1823,9 @@ void ApplicationInterface::peer_static_schedule_evaluations_nowait()
   }
 
   if (msgPassRunningMap.empty()) {
-    // deallocate MPI & buffer arrays
-    delete [] sendBuffers;   sendBuffers = NULL;
-    delete [] recvBuffers;   recvBuffers = NULL;
-    delete [] recvRequests; recvRequests = NULL;
+    sendBuffers.clear(); 
+    recvBuffers.clear(); 
+    recvRequests.clear(); 
   }
 }
 
@@ -1873,11 +1865,9 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations_nowait()
   size_t remote_capacity = capacity - local_capacity;
 
   // allocate remote_capacity entries as this avoids need for dynamic resizing
-  if (!sendBuffers) {
-    sendBuffers  = new MPIPackBuffer   [remote_capacity];
-    recvBuffers  = new MPIUnpackBuffer [remote_capacity];
-    recvRequests = new MPI_Request     [remote_capacity];
-  }
+    sendBuffers.resize(remote_capacity);
+    recvBuffers.resize(remote_capacity);
+    recvRequests.resize(remote_capacity);
 
   PRPQueueIter assign_iter = beforeSynchCorePRPQueue.begin(), local_prp_iter;
   if (!num_running) { // simplest case
@@ -2014,9 +2004,9 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations_nowait()
 
   if (msgPassRunningMap.empty()) {
     // deallocate MPI & buffer arrays
-    delete [] sendBuffers;   sendBuffers = NULL;
-    delete [] recvBuffers;   recvBuffers = NULL;
-    delete [] recvRequests; recvRequests = NULL;
+    sendBuffers.clear();
+    recvBuffers.clear();
+    recvRequests.clear();
   }
 }
 
@@ -2593,8 +2583,10 @@ void ApplicationInterface::master_dynamic_schedule_analyses()
        << numAnalysisServers << " servers\n";
 #endif // MPI_DEBUG
   MPI_Request  send_request; // only 1 needed since no test/wait on sends
-  int*         rtn_codes     = new int [num_sends];
-  MPI_Request* recv_requests = new MPI_Request [num_sends];
+                             
+  auto rtn_codes{std::vector<int>(num_sends)};
+  auto recv_requests{std::vector<MPI_Request>(num_sends)};
+
   int i, server_id, analysis_id;
   for (i=0; i<num_sends; ++i) { // send data & post recvs for 1st pass
     server_id = i%numAnalysisServers + 1; // from 1 to numAnalysisServers
@@ -2604,8 +2596,8 @@ void ApplicationInterface::master_dynamic_schedule_analyses()
          << server_id << '\n';
 #endif // MPI_DEBUG
     // pre-post receives.  
-    parallelLib.irecv_ea(rtn_codes[i], server_id, analysis_id,
-                         recv_requests[i]);
+    parallelLib.irecv_ea(rtn_codes.at(i), server_id, analysis_id,
+                         recv_requests.at(i));
     parallelLib.isend_ea(analysis_id, server_id, analysis_id, send_request);
     parallelLib.free(send_request); // no test/wait on send_request
   }
@@ -2626,7 +2618,7 @@ void ApplicationInterface::master_dynamic_schedule_analyses()
 			   status_array);
       recv_cntr += out_count;
       for (i=0; i<out_count; ++i) {
-        int index = index_array[i]; // index of recv_request that completed
+        int index = index_array.at(i); // index of recv_request that completed
         server_id = index%numAnalysisServers + 1;// from 1 to numAnalysisServers
 #ifdef MPI_DEBUG
         Cout << "analysis " << status_array.at(i).MPI_TAG
@@ -2639,8 +2631,8 @@ void ApplicationInterface::master_dynamic_schedule_analyses()
                << server_id << '\n';
 #endif // MPI_DEBUG
 	  // pre-post receives
-          parallelLib.irecv_ea(rtn_codes[index], server_id, analysis_id, 
-                               recv_requests[index]);
+          parallelLib.irecv_ea(rtn_codes.at(index), server_id, analysis_id, 
+                               recv_requests.at(index));
           parallelLib.isend_ea(analysis_id, server_id, analysis_id, 
                                send_request);
           parallelLib.free(send_request); // no test/wait on send_request
@@ -2655,8 +2647,6 @@ void ApplicationInterface::master_dynamic_schedule_analyses()
 #endif // MPI_DEBUG
     parallelLib.waitall(numAnalysisDrivers, recv_requests);
   }
-  delete [] rtn_codes;
-  delete [] recv_requests;
 
   // Unlike ApplicationInterface::master_dynamic_schedule_evaluations() (which
   // terminates servers only when the iterator/model is complete), terminate
