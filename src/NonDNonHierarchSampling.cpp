@@ -1737,6 +1737,78 @@ minimizer_results_to_solution_data(const RealVector& cv_star,
 }
 
 
+void NonDNonHierarchSampling::
+estimator_variances_from_ratios(const RealVector& cd_vars,
+				const RealVector& estvar_ratios,
+				RealVector& estvar)
+{
+  // form estimator variances to pick up dependence on N
+  if (estvar.length() != numFunctions) estvar.sizeUninitialized(numFunctions);
+  size_t qoi, num_approx = num_approximations();
+  switch (optSubProblemForm) {
+  case R_ONLY_LINEAR_CONSTRAINT: // N is a vector constant for opt sub-problem
+    if (cd_vars.length() == num_approx) {
+      // N_H not provided so pull from latest counter values
+      size_t hf_form_index, hf_lev_index;
+      hf_indices(hf_form_index, hf_lev_index);
+      estvar_ratios_to_estvar(estvar_ratios, varH,
+			      NLevActual[hf_form_index][hf_lev_index], estvar);
+    }
+    else // r_and_N_to_design_vars(): N_H appended for convenience
+      estvar_ratios_to_estvar(estvar_ratios, varH, cd_vars[num_approx], estvar);
+    break;
+  case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT:
+  case R_AND_N_NONLINEAR_CONSTRAINT: // N is a scalar optimization variable
+    estvar_ratios_to_estvar(estvar_ratios, varH, cd_vars[num_approx], estvar);
+    break;
+  }
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "NonDNonHierarchSampling::estimator_variances(): design vars:\n"
+	 << cd_vars << "EstVar ratios:\n" << estvar_ratios << "EstVar:\n"
+	 << estvar << '\n';
+}
+
+
+void NonDNonHierarchSampling::
+estvar_gradients_to_metric_gradient(const RealVector& ev_vec,
+				    const RealMatrix& ev_grad,
+				    RealVector& evm_grad)
+{
+  size_t num_v = ev_grad.numRows();
+  if (evm_grad.length() != num_v) evm_grad.sizeUninitialized(num_v);
+  if (!num_v) return;
+
+  switch (estVarMetricType) {
+  case DEFAULT_ESTVAR_METRIC:
+  case AVG_ESTVAR_METRIC:  case AVG_ESTVAR_RATIO_METRIC:
+    average(ev_grad, 1, evm_grad); // average over QoI for each var
+    break;
+  case NORM_ESTVAR_METRIC: case NORM_ESTVAR_RATIO_METRIC: {
+    // metric = [ Sum(ev^p) ]^(1/p)  -->  metric^p = Sum_q(ev^p)
+    // p m^{p-1} dm/dv = Sum_q[p ev_q^{p-1} ev_grad(v,q)]
+    // dm/dv = m^{1-p} Sum_q[ev_q^{p-1} ev_grad(v,q)]
+    //   where metric^{1-p} = power_sum^{(1.-p)/p}
+    size_t q, v;
+    Real sum_q, p = estVarMetricNormOrder, pm1 = p-1.,
+      factor = std::pow(power_sum(ev_vec, p), -pm1/p); // = metric^{1-p}
+    for (v=0; v<num_v; ++v) {
+      sum_q = 0.;
+      for (q=0; q<numFunctions; ++q)
+	sum_q += ev_grad(v,q) * std::pow(ev_vec[q], pm1);
+      evm_grad[v] = sum_q * factor;
+    }
+    break;
+  }
+  case MAX_ESTVAR_METRIC:  case MAX_ESTVAR_RATIO_METRIC:
+    size_t v, metric_index = find_max_index(ev_vec);
+    for (v=0; v<num_v; ++v)
+      evm_grad[v] = ev_grad(v, metric_index);
+    break;
+  }
+}
+
+
 void NonDNonHierarchSampling::method_recourse(unsigned short outer_method)
 {
   // NonDNonHierarchSampling numerical solves must protect use of Fortran
@@ -1895,39 +1967,6 @@ nh_penalty_merit(Real obj, Real nln_con, Real nln_u_bnd)
 }
 
 
-void NonDNonHierarchSampling::
-estimator_variances_from_ratios(const RealVector& cd_vars,
-				const RealVector& estvar_ratios,
-				RealVector& estvar)
-{
-  // form estimator variances to pick up dependence on N
-  if (estvar.length() != numFunctions) estvar.sizeUninitialized(numFunctions);
-  size_t qoi, num_approx = num_approximations();
-  switch (optSubProblemForm) {
-  case R_ONLY_LINEAR_CONSTRAINT: // N is a vector constant for opt sub-problem
-    if (cd_vars.length() == num_approx) {
-      // N_H not provided so pull from latest counter values
-      size_t hf_form_index, hf_lev_index;
-      hf_indices(hf_form_index, hf_lev_index);
-      estvar_ratios_to_estvar(estvar_ratios, varH,
-			      NLevActual[hf_form_index][hf_lev_index], estvar);
-    }
-    else // r_and_N_to_design_vars(): N_H appended for convenience
-      estvar_ratios_to_estvar(estvar_ratios, varH, cd_vars[num_approx], estvar);
-    break;
-  case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT:
-  case R_AND_N_NONLINEAR_CONSTRAINT: // N is a scalar optimization variable
-    estvar_ratios_to_estvar(estvar_ratios, varH, cd_vars[num_approx], estvar);
-    break;
-  }
-
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "NonDNonHierarchSampling::estimator_variances(): design vars:\n"
-	 << cd_vars << "EstVar ratios:\n" << estvar_ratios << "EstVar:\n"
-	 << estvar << '\n';
-}
-
-
 Real NonDNonHierarchSampling::linear_model_cost(const RealVector& N_m)
 {
   // linear objective: N + Sum(w_i N_i) / w
@@ -2053,14 +2092,29 @@ npsol_objective(int& mode, int& n, double* x, double& f, double* grad_f,
     }
     break;
   default:
-    if (asv_request & 1)
-      f = nonHierSampInstance->log_estvar_metric(x_rv);
-    // NPSOL estimates unspecified components of the obj grad, so ASV grad
-    // request is not an error -- just don't specify anything
-    //if (asv_request & 2) {
-    //  RealVector grad_f_rv(Teuchos::View, grad_f, n);
-    //  nonHierSampInstance->log_estvar_metric_gradient(x_rv, grad_f_rv);
-    //}
+    if (asv_request & 3 == 3) { // compute metric + grads, avoiding redundancy
+      RealVector grad_f_rv;
+      nonHierSampInstance->log_estvar_metric_and_gradient(x_rv, f, grad_f_rv);
+      if (grad_f_rv.length() == n) // grads supported by derived class
+	copy_data(grad_f_rv, grad_f, n);
+      // else leave unspecified
+    }
+    else {
+      if (asv_request & 1)
+	f = nonHierSampInstance->log_estvar_metric(x_rv);
+      // NPSOL estimates unspecified components of the obj grad, so ASV grad
+      // request is not an error
+      if (asv_request & 2) {
+	//RealVector grad_f_rv(Teuchos::View, grad_f, n);
+	//nonHierSampInstance->log_estvar_metric_gradient(x_rv, grad_f_rv);
+	// manage ML BLUE (defined) vs. other estimators (empty)
+	RealVector grad_f_rv;
+	nonHierSampInstance->log_estvar_metric_gradient(x_rv, grad_f_rv);
+	if (grad_f_rv.length() == n) // grads supported by derived class
+	  copy_data(grad_f_rv, grad_f, n);
+	// else leave unspecified
+      }
+    }
     break;
   }
 }
@@ -2076,14 +2130,29 @@ npsol_constraint(int& mode, int& ncnln, int& n, int& nrowj, int* needc,
   RealVector x_rv(Teuchos::View, x, n);
   switch (nonHierSampInstance->optSubProblemForm) {
   case N_MODEL_LINEAR_OBJECTIVE:  case N_GROUP_LINEAR_OBJECTIVE:
-    if (asv_request & 1)
-      c[0] = nonHierSampInstance->log_estvar_metric(x_rv);
-    // NPSOL estimates unspecified components of the constr grad, so ASV grad
-    // request is not an error -- just don't specify anything
-    //if (asv_request & 2) {
-    //  RealVector grad_c_rv(Teuchos::View, cjac, n);
-    //  nonHierSampInstance->log_estvar_metric_gradient(x_rv, grad_c_rv);
-    //}
+    if (asv_request & 3 == 3) { // compute metric + grads, avoiding redundancy
+      RealVector grad_c_rv;
+      nonHierSampInstance->log_estvar_metric_and_gradient(x_rv, c[0],grad_c_rv);
+      if (grad_c_rv.length() == n) // grads supported by derived class
+	copy_data(grad_c_rv, cjac, n);
+      // else leave unspecified
+    }
+    else {
+      if (asv_request & 1)
+	c[0] = nonHierSampInstance->log_estvar_metric(x_rv);
+      // NPSOL estimates unspecified components of the constr grad, so ASV grad
+      // request is not an error
+      if (asv_request & 2) {
+	//RealVector grad_c_rv(Teuchos::View, cjac, n);
+	//nonHierSampInstance->log_estvar_metric_gradient(x_rv, grad_c_rv);
+	// manage ML BLUE (defined) vs. other estimators (empty)
+	RealVector grad_c_rv;
+	nonHierSampInstance->log_estvar_metric_gradient(x_rv, grad_c_rv);
+	if (grad_c_rv.length() == n) // grads supported by derived class
+	  copy_data(grad_c_rv, cjac, n);
+	// else leave unspecified
+      }
+    }
     break;
   case R_AND_N_NONLINEAR_CONSTRAINT:
     if (asv_request & 1)
@@ -2125,16 +2194,20 @@ optpp_nlf1_objective(int mode, int n, const RealVector& x, double& f,
     }
     break;
   default:
-    if (mode & OPTPP::NLPFunction) { // 1st bit is present, mode = 1 or 3
-      f = nonHierSampInstance->log_estvar_metric(x);
+    if ( (mode & OPTPP::NLPFunction) && (mode & OPTPP::NLPGradient) ) {
+      nonHierSampInstance->log_estvar_metric_and_gradient(x, f, grad_f);
       result_mode |= OPTPP::NLPFunction; // adds 1 bit
+      result_mode |= OPTPP::NLPGradient; // adds 2 bit
     }
-    if (mode & OPTPP::NLPGradient) { // 2nd bit is present, mode = 2 or 3
-      Cerr << "Error: estimator variance gradient not supported in NonHierarch "
-	   << "numerical solution." << std::endl;
-      abort_handler(METHOD_ERROR);
-      //nonHierSampInstance->log_estvar_metric_gradient(x, grad_f);
-      //result_mode |= OPTPP::NLPGradient; // adds 2 bit
+    else {
+      if (mode & OPTPP::NLPFunction) { // 1st bit is present, mode = 1 or 3
+	f = nonHierSampInstance->log_estvar_metric(x);
+	result_mode |= OPTPP::NLPFunction; // adds 1 bit
+      }
+      if (mode & OPTPP::NLPGradient) { // 2nd bit is present, mode = 2 or 3
+	nonHierSampInstance->log_estvar_metric_gradient(x, grad_f);
+	result_mode |= OPTPP::NLPGradient; // adds 2 bit
+      }
     }
     break;
   }
@@ -2149,16 +2222,22 @@ optpp_nlf1_constraint(int mode, int n, const RealVector& x, RealVector& c,
   result_mode = OPTPP::NLPNoOp; // 0
   switch (nonHierSampInstance->optSubProblemForm) {
   case N_MODEL_LINEAR_OBJECTIVE:  case N_GROUP_LINEAR_OBJECTIVE:
-    if (mode & OPTPP::NLPFunction) { // 1st bit is present, mode = 1 or 3
-      c[0] = nonHierSampInstance->log_estvar_metric(x);
+    if ( (mode & OPTPP::NLPFunction) && (mode & OPTPP::NLPGradient) ) {
+      RealVector grad_c_rv(Teuchos::View, grad_c[0], n); // 0-th col vec
+      nonHierSampInstance->log_estvar_metric_and_gradient(x, c[0], grad_c_rv);
       result_mode |= OPTPP::NLPFunction; // adds 1 bit
+      result_mode |= OPTPP::NLPGradient; // adds 2 bit
     }
-    if (mode & OPTPP::NLPGradient) { // 2nd bit is present, mode = 2 or 3
-      Cerr << "Error: estimator variance gradient not supported in NonHierarch "
-	   << "numerical solution." << std::endl;
-      abort_handler(METHOD_ERROR);
-      //nonHierSampInstance->log_estvar_metric_gradient(x, grad_f);
-      //result_mode |= OPTPP::NLPGradient;
+    else {
+      if (mode & OPTPP::NLPFunction) { // 1st bit is present, mode = 1 or 3
+	c[0] = nonHierSampInstance->log_estvar_metric(x);
+	result_mode |= OPTPP::NLPFunction; // adds 1 bit
+      }
+      if (mode & OPTPP::NLPGradient) { // 2nd bit is present, mode = 2 or 3
+	RealVector grad_c_rv(Teuchos::View, grad_c[0], n); // 0-th col vec
+	nonHierSampInstance->log_estvar_metric_gradient(x, grad_c_rv);
+	result_mode |= OPTPP::NLPGradient; // adds 2 bit
+      }
     }
     break;
   case R_AND_N_NONLINEAR_CONSTRAINT:
@@ -2313,23 +2392,37 @@ response_evaluator(const Variables& vars, const ActiveSet& set,
     }
     break;
   default:
-    if (asv[0] & 1)
-      response.function_value(nonHierSampInstance->log_estvar_metric(c_vars),0);
-    if (asv[0] & 2) {
-      Cerr << "Error: estimator variance gradient not supported in NonHierarch "
-	   << "numerical solution." << std::endl;
-      abort_handler(METHOD_ERROR);
+    if (asv[0] & 3 == 3) {
+      Real&           f = response.function_value_view(0);
+      RealVector grad_f = response.function_gradient_view(0);
+      nonHierSampInstance->log_estvar_metric_and_gradient(c_vars, f, grad_f);
+    }
+    else {
+      if (asv[0] & 1)
+	response.function_value(nonHierSampInstance->
+				log_estvar_metric(c_vars), 0);
+      if (asv[0] & 2) {
+	RealVector grad_f = response.function_gradient_view(0);
+	nonHierSampInstance->log_estvar_metric_gradient(c_vars, grad_f);
+      }
     }
   }
 
   switch (nonHierSampInstance->optSubProblemForm) {
   case N_MODEL_LINEAR_OBJECTIVE:  case N_GROUP_LINEAR_OBJECTIVE:
-    if (nln_con && (asv[1] & 1))
-      response.function_value(nonHierSampInstance->log_estvar_metric(c_vars),1);
-    if (nln_con && (asv[1] & 2)) {
-      Cerr << "Error: estimator variance gradient not supported in NonHierarch "
-	   << "numerical solution." << std::endl;
-      abort_handler(METHOD_ERROR);
+    if (nln_con && (asv[1] & 3 == 3)) {
+      Real&           c = response.function_value_view(1);
+      RealVector grad_c = response.function_gradient_view(1);
+      nonHierSampInstance->log_estvar_metric_and_gradient(c_vars, c, grad_c);
+    }
+    else {
+      if (nln_con && (asv[1] & 1))
+	response.function_value(nonHierSampInstance->
+				log_estvar_metric(c_vars), 1);
+      if (nln_con && (asv[1] & 2)) {
+	RealVector grad_c = response.function_gradient_view(1);
+	nonHierSampInstance->log_estvar_metric_gradient(c_vars, grad_c);
+      }
     }
     break;
   default:

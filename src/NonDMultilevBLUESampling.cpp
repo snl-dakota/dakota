@@ -1954,17 +1954,27 @@ estimator_variances(const RealVector& cd_vars, RealVector& est_var)
 {
   if (est_var.empty()) est_var.sizeUninitialized(numFunctions);
 
-  // This approach leverages both the solution refinement in solve() and
-  // equilibration during factorization (inverting Psi in place can only
-  // leverage the latter).  It seems to work much more reliably.
   RealSymMatrixArray Psi;
   compute_Psi(covGGinv, cd_vars, Psi);
 
-  size_t q, all_models = numApprox + 1;
+  RealMatrix A, A_inv;  Real rcond;
+  for (size_t q=0; q<numFunctions; ++q) {
+    copy_data(Psi[q], A); // RealSymMatrix to RealMatrix
+    pseudo_inverse(A, A_inv, rcond);
+    est_var[q] = A_inv(numApprox,numApprox);
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Pseudo-inverse solve for est_var for QoI " << q << " = "
+	   << est_var[q] << std::endl;
+  }
 
   /*
+  // This approach leverages both the solution refinement in solve() and
+  // equilibration during factorization (inverting Psi in place can only
+  // leverage the latter).  It seems to work much more reliably.
+  // > Psi and e_last need to be reset if Cholesky also active above
   RealSpdSolver spd_solver;
   RealVector e_last(all_models, false), estvar_q(all_models, false);
+  size_t q, all_models = numApprox + 1;
   for (q=0; q<numFunctions; ++q) {
     // e_last is equilbrated in place, so must be reset
     e_last.putScalar(0.); e_last[numApprox] = 1.;
@@ -1986,23 +1996,10 @@ estimator_variances(const RealVector& cd_vars, RealVector& est_var)
       Cout << "Cholesky       solve for estvar for QoI " << q << " = "
 	   << estvar[q] << std::endl;
   }
-  */
-
-  // Psi and e_last need to be reset if Cholesky also active above
-  //compute_Psi(covGGinv, cd_vars, Psi);
-  RealMatrix A, A_inv;  Real rcond;
-  for (q=0; q<numFunctions; ++q) {
-    copy_data(Psi[q], A); // RealSymMatrix to RealMatrix
-    pseudo_inverse(A, A_inv, rcond);
-    est_var[q] = A_inv(numApprox,numApprox);
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Pseudo-inverse solve for est_var for QoI " << q << " = "
-	   << est_var[q] << std::endl;
-  }
-
   // Revisit this flow:
   // should be able to equilibrate and factor each Psi once within a SpdSolver
   // that persists, then solve to refined solution for each est_var and mu-hat.
+  */
 
   /* This approach suffers from poor performance, either from conditioning
      issues or misunderstood Teuchos solver behavior.
@@ -2011,6 +2008,76 @@ estimator_variances(const RealVector& cd_vars, RealVector& est_var)
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     est_var[qoi] = Psi_inv[qoi](numApprox,numApprox); // e_l^T Psi-inverse e_l
   */
+}
+
+
+void NonDMultilevBLUESampling::
+estimator_variance_gradients(const RealVector& cd_vars, RealMatrix& ev_grads)
+{
+  size_t g, q, v, num_v = num_active_groups();
+  if (ev_grads.numRows() != num_v || ev_grads.numCols() != numFunctions)
+    ev_grads.shapeUninitialized(num_v, numFunctions);
+
+  RealSymMatrixArray Psi;
+  compute_Psi(covGGinv, cd_vars, Psi); // *** cache this and reuse?
+
+  Real rcond;  RealSymMatrix dPsi_dN(num_v, false), trip_prod(num_v, false);
+  RealMatrix Psi_rm, Psi_inv_rm;
+  for (q=0; q<numFunctions; ++q) {
+    copy_data(Psi[q], Psi_rm); // RealSymMatrix to RealMatrix
+    pseudo_inverse(Psi_rm, Psi_inv_rm, rcond); // *** cache this and reuse?
+
+    // form triple product dPsi_inv/dN_k = - Psi_inv dPsi/dN_k Psi_inv,
+    // where dPsi/dN_k = C_k_inv (inflated to Psi)
+    for (v=0; v<num_v; ++v) {
+      g = active_to_all_group(v); // active v to index of all groups
+      //inflate(covGGinv[g][q], mask, dPsi_dN); // mask not convenient here
+      assign_sub_matrix(covGGinv[g][q], modelGroups[g], dPsi_dN);
+      Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., dPsi_dN,
+				   Psi_inv_rm, trip_prod);
+      ev_grads(v, q) = trip_prod(numApprox,numApprox);
+    }
+
+    // For Hessian, d^2Psi/dN^2 = 0, so the Hessian will be determined from  term, similar to Gauss-Newton
+  }
+}
+
+
+void NonDMultilevBLUESampling::
+estimator_variances_and_gradients(const RealVector& cd_vars,
+				  RealVector& est_var, RealMatrix& ev_grads)
+{
+  size_t g, q, v, num_v = num_active_groups();
+  if (est_var.empty()) est_var.sizeUninitialized(numFunctions);
+  if (ev_grads.numRows() != num_v || ev_grads.numCols() != numFunctions)
+    ev_grads.shapeUninitialized(num_v, numFunctions);
+
+  RealSymMatrixArray Psi;
+  compute_Psi(covGGinv, cd_vars, Psi);
+
+  Real rcond;  RealSymMatrix dPsi_dN(num_v, false), trip_prod(num_v, false);
+  RealMatrix Psi_rm, Psi_inv_rm;
+  for (q=0; q<numFunctions; ++q) {
+    copy_data(Psi[q], Psi_rm); // RealSymMatrix to RealMatrix
+    pseudo_inverse(Psi_rm, Psi_inv_rm, rcond);
+
+    est_var[q] = Psi_inv_rm(numApprox,numApprox);
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Pseudo-inverse solve for est_var for QoI " << q << " = "
+	   << est_var[q] << std::endl;
+
+    // form triple product dPsi_inv/dN_k = - Psi_inv dPsi/dN_k Psi_inv,
+    // where dPsi/dN_k = C_k_inv (inflated to Psi)
+    for (v=0; v<num_v; ++v) {
+      g = active_to_all_group(v); // active v to index of all groups
+      assign_sub_matrix(covGGinv[g][q], modelGroups[g], dPsi_dN);
+      Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., dPsi_dN,
+				   Psi_inv_rm, trip_prod);
+      ev_grads(v, q) = trip_prod(numApprox,numApprox);
+    }
+
+    // For Hessian, d^2Psi/dN^2 = 0, so the Hessian will be determined from  term, similar to Gauss-Newton
+  }
 }
 
 

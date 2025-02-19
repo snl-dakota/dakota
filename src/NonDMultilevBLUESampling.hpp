@@ -49,9 +49,14 @@ protected:
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   Real available_budget() const override;
+
   void estimator_variances(const RealVector& cd_vars,
 			   RealVector& est_var) override;
-  Real estimator_variance_metric(const RealVector& cd_vars) override;
+  void estimator_variance_gradients(const RealVector& cd_vars,
+				    RealMatrix& ev_grads) override;
+  void estimator_variances_and_gradients(const RealVector& cd_vars,
+					 RealVector& est_var,
+					 RealMatrix& ev_grads) override;
 
   const MFSolutionData& final_solution_data() const override;
 
@@ -270,6 +275,8 @@ private:
   /// prune modelGroups down to subset with best conditioned group covariances
   void prune_model_groups();
 
+  void assign_sub_matrix(const RealSymMatrix& sub_mat,
+			 const UShortArray& subset, RealSymMatrix& mat);
   void add_sub_matrix(Real coeff, const RealSymMatrix& sub_mat,
 		      const UShortArray& subset, RealSymMatrix& mat);
   void add_sub_matvec(const RealSymMatrix& sub_mat, const RealMatrix& sub_mat2,
@@ -473,19 +480,6 @@ retained_groups_to_models(const BitArray& active_g, BitArray& active_m) const
     }
     if (retained == num_ap1) { active_m.clear(); break; }
   }
-}
-
-
-inline Real NonDMultilevBLUESampling::
-estimator_variance_metric(const RealVector& cd_vars)
-{
-  RealVector estvar_ratios, estvar;  Real metric;  size_t metric_index;
-  estimator_variances(cd_vars, estvar);
-  // estvar_ratios remains empty (ML BLUE does not support metric types
-  // {AVG,MAX}_ESTVAR_RATIO_METRIC)
-  MFSolutionData::update_estimator_variance_metric(estVarMetricType,
-    estVarMetricNormOrder, estvar_ratios, estvar, metric, metric_index);
-  return metric;
 }
 
 
@@ -727,10 +721,26 @@ inline void NonDMultilevBLUESampling::form_R(size_t k, RealMatrix& R_k)
 
 
 inline void NonDMultilevBLUESampling::
+assign_sub_matrix(const RealSymMatrix& sub_mat, const UShortArray& subset,
+		  RealSymMatrix& mat)
+{
+  size_t r, c, num_sub = subset.size(), num_models = numApprox+1;
+  if (mat.numRows() != num_models) mat.shape(num_models); // init to 0
+  else                             mat = 0.;
+  for (r=0; r<num_sub; ++r)
+    for (c=0; c<=r; ++c)
+      mat(subset[r], subset[c]) = sub_mat(r,c);
+
+  //if (outputLevel >= DEBUG_OUTPUT)
+  //  Cout << "assign_sub_matrix() =\n" << mat << std::endl;
+}
+
+
+inline void NonDMultilevBLUESampling::
 add_sub_matrix(Real coeff, const RealSymMatrix& sub_mat,
 	       const UShortArray& subset, RealSymMatrix& mat)
 {
-  size_t r, c, model, num_sub = subset.size();
+  size_t r, c, num_sub = subset.size();
   for (r=0; r<num_sub; ++r)
     for (c=0; c<=r; ++c)
       mat(subset[r], subset[c]) += coeff * sub_mat(r,c);
@@ -744,7 +754,7 @@ inline void NonDMultilevBLUESampling::
 add_sub_matvec(const RealSymMatrix& sub_mat, const RealMatrix& sub_mat2,
 	       size_t sub_mat2_row, const UShortArray& subset, RealVector& vec)
 {
-  size_t r, c, model, num_sub = subset.size();  Real sub_matvec;
+  size_t r, c, num_sub = subset.size();  Real sub_matvec;
   for (r=0; r<num_sub; ++r) {
     sub_matvec = 0.;
     for (c=0; c<num_sub; ++c)
