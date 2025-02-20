@@ -95,17 +95,17 @@ Test Number 7 succeeded
                       2.2204460493e-16
 <<<<< Best evaluation ID: 49
 Test Number 8 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE_1): 327 total (327 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 254 total (236 new, 18 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 176 total (176 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 56 total (55 new, 1 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
-                      4.9952481283e-01 x2
+                      5.0000000000e-01 x2
 <<<<< Best objective function  =
-                      1.2523793250e-01
+                      1.2500000000e-01
 <<<<< Best constraint values   =
-                      2.3759358299e-04
-                     -4.7496136313e-04
-<<<<< Best evaluation ID: 56
+                     -8.3266726847e-14
+                      1.6653345369e-13
+<<<<< Best evaluation ID: 45
 Test Number 9 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 183 total (183 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 56 total (55 new, 1 duplicate)
