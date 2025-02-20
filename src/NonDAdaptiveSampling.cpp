@@ -54,6 +54,7 @@ namespace Dakota
 		AMSC = NULL;
 
 		//Defaults are set before parsing input parameters
+    validationSetSize = 0;
 		outputValidationData = false;
 		numKneighbors = 5;
                 numRounds = maxIterations;

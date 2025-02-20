@@ -437,6 +437,10 @@ private:
   /// order to reproduce high fidelity data.
   DiscrepancyCorrection deltaCorr;
 
+  /// Cache eval concurrency computed in init_comm for use in {set_,free_}comm
+  /// when daceIterator is nullptr
+  int approxMinConcurrency;
+
   // Note: the following Maps are a simpler case of the more general
   // {modelId,cachedResp}Maps in EnsembleSurrModel (consolidating would
   // add overhead for DFSModel).
@@ -938,8 +942,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     if (daceIterator)
       daceIterator->set_communicators(pl_iter);
     else if (actualModel)
-      actualModel->init_communicators(pl_iter,
-	daceIterator->maximum_evaluation_concurrency()); // set in init_comms
+      actualModel->set_communicators(pl_iter, approxMinConcurrency); // set in init_comms
   }
 }
 
@@ -956,8 +959,7 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     if (daceIterator)
       daceIterator->free_communicators(pl_iter);
     else if (actualModel)
-      actualModel->free_communicators(pl_iter,
-	daceIterator->maximum_evaluation_concurrency()); // set in init_comms
+      actualModel->free_communicators(pl_iter, approxMinConcurrency); // set in init_comms
   }
 }
 
@@ -966,11 +968,15 @@ inline void DataFitSurrModel::
 serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
 {
   // don't recurse, as actualModel->serve() will set actualModel comms
-  set_communicators(pl_iter, max_eval_concurrency, false);
+  set_communicators(pl_iter, max_eval_concurrency, false);       
 
-  if (actualModel)
-    actualModel->serve_run(pl_iter,
+  if (actualModel) {
+    if(daceIterator)
+      actualModel->serve_run(pl_iter,
 			  daceIterator->maximum_evaluation_concurrency());
+    else
+      actualModel->serve_run(pl_iter, approxMinConcurrency);
+  }
 }
 
 

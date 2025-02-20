@@ -482,18 +482,17 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     // derivatives multiplier.  Obtain the deriv multiplier from actualModel.
     // min_points does not account for reuse_points or anchor, since these
     // will vary, and min_points must remain constant among ctor/run/dtor.
-    int min_conc = approxInterface.minimum_points(false)
+    approxMinConcurrency = approxInterface.minimum_points(false)
                  * actualModel->derivative_concurrency();
     // as for constructors, we recursively set and restore DB list nodes
     // (initiated from the restored starting point following construction)
     size_t model_index = probDescDB.get_db_model_node(); // for restoration
     if (!daceIterator) {
       // store within empty envelope for later use in derived_{set,free}_comms
-      daceIterator->maximum_evaluation_concurrency(min_conc);
-      daceIterator->iterated_model(actualModel);
+      // daceIterator->iterated_model(actualModel);
       // init comms for actualModel
       probDescDB.set_db_model_nodes(actualModel->model_id());
-      actualModel->init_communicators(pl_iter, min_conc);
+      actualModel->init_communicators(pl_iter, approxMinConcurrency);
     }
     else {
       // daceIterator->maximum_evaluation_concurrency() includes user-specified
@@ -503,8 +502,8 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
       // The concurrency for global/local surrogate construction is defined by
       // the greater of the dace samples user-specification and the min_points
       // approximation requirement.
-      if (min_conc > daceIterator->maximum_evaluation_concurrency())
-	daceIterator->maximum_evaluation_concurrency(min_conc); // update
+      if (approxMinConcurrency > daceIterator->maximum_evaluation_concurrency())
+	      daceIterator->maximum_evaluation_concurrency(approxMinConcurrency); // update
 
       // init comms for daceIterator
       size_t method_index = probDescDB.get_db_method_node(); // for restoration

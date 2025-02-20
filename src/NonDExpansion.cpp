@@ -790,7 +790,8 @@ void NonDExpansion::initialize_expansion()
 
   // transform any points imported into expansionSampler from user space
   // into standardized space (must follow any dist param updates)
-  if (expansionSampler->method_name() == LIST_SAMPLING &&
+  if (expansionSampler &&
+      expansionSampler->method_name() == LIST_SAMPLING &&
       numUncertainQuant == 0) {
     std::shared_ptr<NonDSampling> exp_sampler_rep =
       std::static_pointer_cast<NonDSampling>(expansionSampler);
@@ -3465,7 +3466,8 @@ void NonDExpansion::push_reference(const RealVector& stats_ref)
 
 void NonDExpansion::define_sampler_asv(ShortArray& sampler_asv)
 {
-  if (expansionSampler->method_name() == LIST_SAMPLING)
+  if (expansionSampler &&
+      expansionSampler->method_name() == LIST_SAMPLING)
     sampler_asv.assign(numFunctions, 1);
   else {
     sampler_asv.assign(numFunctions, 0);
