@@ -2015,14 +2015,14 @@ estimator_variances(const RealVector& cd_vars, RealVector& est_var)
 void NonDMultilevBLUESampling::
 estimator_variance_gradients(const RealVector& cd_vars, RealMatrix& ev_grads)
 {
-  size_t g, q, v, num_v = num_active_groups();
+  size_t g, q, v, num_v = num_active_groups(), num_m = numApprox+1;
   if (ev_grads.numRows() != num_v || ev_grads.numCols() != numFunctions)
     ev_grads.shapeUninitialized(num_v, numFunctions);
 
   RealSymMatrixArray Psi;
   compute_Psi(covGGinv, cd_vars, Psi); // *** cache this and reuse?
 
-  Real rcond;  RealSymMatrix dPsi_dN(num_v, false), trip_prod(num_v, false);
+  Real rcond;  RealSymMatrix dPsi_dN(num_m, false), trip_prod(num_m, false);
   RealMatrix Psi_rm, Psi_inv_rm;
   for (q=0; q<numFunctions; ++q) {
     copy_data(Psi[q], Psi_rm); // RealSymMatrix to RealMatrix
