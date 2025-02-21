@@ -552,6 +552,9 @@ protected:
   /// user specification to suppress any increments in the number of HF
   /// evaluations (e.g., because too expensive and no more can be performed)
   bool truthFixedByPilot;
+  /// a subset of the non-hierarchcvial samplers provide analytic derivatives
+  /// of estimator variance
+  bool analyticEstVarDerivs;
 
   /// for sample projections, the calculated increment in HF samples that
   /// would be evaluated if full iteration/statistics were pursued

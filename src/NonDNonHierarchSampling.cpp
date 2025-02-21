@@ -45,7 +45,8 @@ NonDNonHierarchSampling::
 NonDNonHierarchSampling(ProblemDescDB& problem_db, Model& model):
   NonDEnsembleSampling(problem_db, model),
   activeBudget((Real)maxFunctionEvals), optSubProblemForm(0),
-  truthFixedByPilot(problem_db.get_bool("method.nond.truth_fixed_by_pilot"))
+  truthFixedByPilot(problem_db.get_bool("method.nond.truth_fixed_by_pilot")),
+  analyticEstVarDerivs(false)
 {
   // solver(s) that perform the numerical solution for resource allocations
   optSubProblemSolver = sub_optimizer_select(
@@ -1420,14 +1421,17 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 	  // Keep FDSS smaller than RATIO_NUDGE to avoid FPE
 	  // > seems that this can be tight using refined Teuchos solns
 	  //   (default is fine for ss_diffusion; leave some gap just in case)
-	  Real fdss = 1.e-7; //-1.; (no override of default)
-	  int deriv_level;// 0 none, 1 obj, 2 constr, 3 both
-	  switch (optSubProblemForm) {
-	  case R_AND_N_NONLINEAR_CONSTRAINT: deriv_level = 2;  break;
-	  case N_MODEL_LINEAR_OBJECTIVE:
-	  case N_GROUP_LINEAR_OBJECTIVE:     deriv_level = 1;  break;
-	  default:                           deriv_level = 0;  break;
-	  }
+	  Real fdss = 1.e-7; // -1.; (no override of default)
+	  int deriv_level;   //  0 none, 1 obj, 2 constr, 3 both
+	  if (analyticEstVarDerivs)
+	    deriv_level = 3;
+	  else
+	    switch (optSubProblemForm) {
+	    case R_AND_N_NONLINEAR_CONSTRAINT: deriv_level = 2;  break;
+	    case N_MODEL_LINEAR_OBJECTIVE:
+	    case N_GROUP_LINEAR_OBJECTIVE:     deriv_level = 1;  break;
+	    default:                           deriv_level = 0;  break;
+	    }
 #ifdef HAVE_NPSOL
 	  min_i[j].assign_rep(std::make_shared<NPSOLOptimizer>(x0, x_lb, x_ub,
 	    lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
@@ -1446,22 +1450,29 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 	  Real max_step = 100000.;    String fd_type = "forward";
 	  RealVector fdss(1, false);  fdss[0] = 1.e-7; // ~7x > default
 #ifdef HAVE_OPTPP
-	  switch (optSubProblemForm) {
-	  case N_MODEL_LINEAR_OBJECTIVE: case N_GROUP_LINEAR_OBJECTIVE:
-	    min_i[j].assign_rep(std::make_shared<SNLLOptimizer>(x0, x_lb, x_ub,
-	      lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
+	  if (analyticEstVarDerivs)
+	    min_i[j].assign_rep(std::make_shared<SNLLOptimizer>(x0, x_lb,
+	      x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
 	      lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
-	      optpp_nlf1_objective, optpp_fdnlf1_constraint, fdss, fd_type,
+	      optpp_nlf1_objective, optpp_nlf1_constraint, //fdss, fd_type,
 	      max_iter, max_eval, conv_tol, conv_tol, max_step));
-	    break;
-	  default:
-	    min_i[j].assign_rep(std::make_shared<SNLLOptimizer>(x0, x_lb, x_ub,
-	      lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
-	      lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
-	      optpp_fdnlf1_objective, optpp_nlf1_constraint, fdss, fd_type,
-	      max_iter, max_eval, conv_tol, conv_tol, max_step));
-	    break;
-	  }
+	  else
+	    switch (optSubProblemForm) {
+	    case N_MODEL_LINEAR_OBJECTIVE: case N_GROUP_LINEAR_OBJECTIVE:
+	      min_i[j].assign_rep(std::make_shared<SNLLOptimizer>(x0, x_lb,
+	        x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
+	        lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
+	        optpp_nlf1_objective, optpp_fdnlf1_constraint, fdss, fd_type,
+	        max_iter, max_eval, conv_tol, conv_tol, max_step));
+	      break;
+	    default:
+	      min_i[j].assign_rep(std::make_shared<SNLLOptimizer>(x0, x_lb,
+	        x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
+	        lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
+	        optpp_fdnlf1_objective, optpp_nlf1_constraint, fdss, fd_type,
+	        max_iter, max_eval, conv_tol, conv_tol, max_step));
+	      break;
+	    }
 #endif
 	  break;
 	}
@@ -2092,7 +2103,7 @@ npsol_objective(int& mode, int& n, double* x, double& f, double* grad_f,
     }
     break;
   default:
-    if (asv_request & 3 == 3) { // compute metric + grads, avoiding redundancy
+    if ((asv_request & 3) == 3) { // compute metric + grads, avoiding redundancy
       RealVector grad_f_rv;
       nonHierSampInstance->log_estvar_metric_and_gradient(x_rv, f, grad_f_rv);
       if (grad_f_rv.length() == n) // grads supported by derived class
@@ -2130,7 +2141,7 @@ npsol_constraint(int& mode, int& ncnln, int& n, int& nrowj, int* needc,
   RealVector x_rv(Teuchos::View, x, n);
   switch (nonHierSampInstance->optSubProblemForm) {
   case N_MODEL_LINEAR_OBJECTIVE:  case N_GROUP_LINEAR_OBJECTIVE:
-    if (asv_request & 3 == 3) { // compute metric + grads, avoiding redundancy
+    if ((asv_request & 3) == 3) { // compute metric + grads, avoiding redundancy
       RealVector grad_c_rv;
       nonHierSampInstance->log_estvar_metric_and_gradient(x_rv, c[0],grad_c_rv);
       if (grad_c_rv.length() == n) // grads supported by derived class
@@ -2392,7 +2403,7 @@ response_evaluator(const Variables& vars, const ActiveSet& set,
     }
     break;
   default:
-    if (asv[0] & 3 == 3) {
+    if ((asv[0] & 3) == 3) {
       Real&           f = response.function_value_view(0);
       RealVector grad_f = response.function_gradient_view(0);
       nonHierSampInstance->log_estvar_metric_and_gradient(c_vars, f, grad_f);
@@ -2410,7 +2421,7 @@ response_evaluator(const Variables& vars, const ActiveSet& set,
 
   switch (nonHierSampInstance->optSubProblemForm) {
   case N_MODEL_LINEAR_OBJECTIVE:  case N_GROUP_LINEAR_OBJECTIVE:
-    if (nln_con && (asv[1] & 3 == 3)) {
+    if (nln_con && ((asv[1] & 3) == 3)) {
       Real&           c = response.function_value_view(1);
       RealVector grad_c = response.function_gradient_view(1);
       nonHierSampInstance->log_estvar_metric_and_gradient(c_vars, c, grad_c);

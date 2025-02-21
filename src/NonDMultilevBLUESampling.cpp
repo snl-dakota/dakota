@@ -36,6 +36,7 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db, Model& model):
   rCondBestThrottle(problem_db.get_sizet("method.nond.rcond_best_throttle")),
   rCondTolThrottle(problem_db.get_real("method.nond.rcond_tol_throttle"))
 {
+  analyticEstVarDerivs = true; // estvar solve can be differentiated
   mlmfSubMethod = problem_db.get_ushort("method.sub_method");
 
   // SDP versus conventional NLP handled by optSubProblemSolver
