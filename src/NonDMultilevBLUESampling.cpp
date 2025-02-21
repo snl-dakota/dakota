@@ -1963,10 +1963,11 @@ estimator_variances(const RealVector& cd_vars, RealVector& est_var)
     copy_data(Psi[q], A); // RealSymMatrix to RealMatrix
     pseudo_inverse(A, A_inv, rcond);
     est_var[q] = A_inv(numApprox,numApprox);
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Pseudo-inverse solve for est_var for QoI " << q << " = "
-	   << est_var[q] << std::endl;
   }
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Solve at sample allocations:\n" << cd_vars
+	 << "for QoI estimator variances:\n" << est_var << std::endl;
 
   /*
   // This approach leverages both the solution refinement in solve() and
@@ -2038,9 +2039,13 @@ estimator_variance_gradients(const RealVector& cd_vars, RealMatrix& ev_grads)
 				   Psi_inv_rm, trip_prod);
       ev_grads(v, q) = trip_prod(numApprox,numApprox);
     }
-
-    // For Hessian, d^2Psi/dN^2 = 0, so the Hessian will be determined from  term, similar to Gauss-Newton
   }
+  // For estvar Hessian, d^2Psi/dN^2 = 0, so the Hessian will be determined
+  // from first-order terms, similar to Gauss-Newton
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Solve at sample allocations:\n" << cd_vars
+	 << "for QoI estimator variance gradients:\n" << ev_grads << std::endl;
 }
 
 
@@ -2063,9 +2068,6 @@ estimator_variances_and_gradients(const RealVector& cd_vars,
     pseudo_inverse(Psi_rm, Psi_inv_rm, rcond);
 
     est_var[q] = Psi_inv_rm(numApprox,numApprox);
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Pseudo-inverse solve for est_var for QoI " << q << " = "
-	   << est_var[q] << std::endl;
 
     // form triple product dPsi_inv/dN_k = - Psi_inv dPsi/dN_k Psi_inv,
     // where dPsi/dN_k = C_k_inv (inflated to Psi)
@@ -2076,9 +2078,14 @@ estimator_variances_and_gradients(const RealVector& cd_vars,
 				   Psi_inv_rm, trip_prod);
       ev_grads(v, q) = trip_prod(numApprox,numApprox);
     }
-
-    // For Hessian, d^2Psi/dN^2 = 0, so the Hessian will be determined from  term, similar to Gauss-Newton
   }
+  // For estvar Hessian, d^2Psi/dN^2 = 0, so the Hessian will be determined
+  // from first-order terms, similar to Gauss-Newton
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Solve at sample allocations:\n" << cd_vars
+	 << "for QoI estimator variances:\n" << est_var
+	 << "and estimator variance gradients:\n"  << ev_grads << std::endl;
 }
 
 
