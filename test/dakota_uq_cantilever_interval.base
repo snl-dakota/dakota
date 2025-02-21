@@ -19,7 +19,7 @@ weight:  Min = 1.0000000000e+00  Max = 1.0000000000e+02
 stress:  Min = -9.7750000000e-01  Max = 2.1500000000e+01
 displ:  Min = -9.9315679678e-01  Max = 6.7432032241e+01
 Test Number 4 succeeded
-<<<<< Function evaluation summary: 104 total (104 new, 0 duplicate)
+<<<<< Function evaluation summary: 99 total (97 new, 2 duplicate)
 weight:  Min = 1.0000508059e+00  Max = 9.9999830649e+01
 stress:  Min = -9.7749994284e-01  Max = 2.1499428450e+01
 displ:  Min = -9.9315677360e-01  Max = 6.7429714485e+01

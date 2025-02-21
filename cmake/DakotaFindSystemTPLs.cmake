@@ -37,8 +37,10 @@ macro(dakota_find_boost)
 
 
   find_package(Boost 1.69 REQUIRED COMPONENTS ${dakota_boost_libs})
+
   set(DAKOTA_BOOST_TARGETS Boost::boost Boost::filesystem Boost::program_options
     Boost::regex Boost::serialization Boost::system)
+
   set(dakota_boost_libs "${dakota_boost_libs}" CACHE STRING "")
   set(dakota_boost_version "${Boost_VERSION_MAJOR}.${Boost_VERSION_MINOR}.${Boost_VERSION_PATCH}" CACHE STRING "")
 

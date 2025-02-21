@@ -543,11 +543,11 @@ private:
   int nowaitEvalIdRef;
 
   /// array of pack buffers for evaluation jobs queued to a server
-  MPIPackBuffer*   sendBuffers;
+  std::vector<MPIPackBuffer> sendBuffers;
   /// array of unpack buffers for evaluation jobs returned by a server
-  MPIUnpackBuffer* recvBuffers;
+  std::vector<MPIUnpackBuffer> recvBuffers;
   /// array of requests for nonblocking evaluation receives
-  MPI_Request*     recvRequests;
+  std::vector<MPI_Request> recvRequests;
 };
 
 

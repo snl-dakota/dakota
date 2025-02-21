@@ -1,8 +1,8 @@
 Test Number 0 succeeded
 Surrogate quality metrics at build (training) points for obj_fn:
-   root_mean_squared  9.0997449392e-17
+   root_mean_squared  9.6503027134e-17
 Surrogate quality metrics (5-fold CV) for obj_fn:
-   root_mean_squared  1.3735116143e-01
+   root_mean_squared  1.4152049556e-01
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 10 total (10 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 200 total (200 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -11,7 +11,7 @@ Surrogate quality metrics (5-fold CV) for obj_fn:
                      -5.1641151000e-01 x3
                       9.8315669000e-01 x4
 <<<<< Best objective function  =
-                     -8.0462977196e-01
+                     -7.2327423892e-01
 <<<<< Best evaluation ID: 1
 Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 10 total (10 new, 0 duplicate)
@@ -22,5 +22,5 @@ Test Number 1 succeeded
                       9.8315669000e-01 x4
                       9.5008775000e-01 x2
 <<<<< Best objective function  =
-                     -8.0462977196e-01
+                     -7.2327423892e-01
 <<<<< Best evaluation ID: 1
