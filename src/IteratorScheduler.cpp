@@ -257,6 +257,7 @@ init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator
   // constructors and the explicit call above).  Some data is stored in the
   // empty envelope for later use in execute/destruct or run/free_iterator.
   else {
+    sub_iterator = std::make_shared<Iterator>();
     int last_concurrency = sub_model->serve_init_communicators(pl_iter);
     // store data for {run,free}_iterator() below:
     sub_iterator->maximum_evaluation_concurrency(last_concurrency);
@@ -300,6 +301,7 @@ init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator
   else {
     int last_concurrency = sub_model->serve_init_communicators(pl_iter);
     // store data for {run,free}_iterator() below:
+    sub_iterator = std::make_shared<Iterator>();
     sub_iterator->maximum_evaluation_concurrency(last_concurrency);
     sub_iterator->iterated_model(sub_model);
     // store for meta-iterator bit logic applied to all ranks
@@ -341,6 +343,7 @@ init_iterator(ProblemDescDB& problem_db, const String& method_string,
   else {
     int last_concurrency = sub_model->serve_init_communicators(pl_iter);
     // store data for {run,free}_iterator() below:
+    sub_iterator = std::make_shared<Iterator>();
     sub_iterator->maximum_evaluation_concurrency(last_concurrency);
     sub_iterator->iterated_model(sub_model);
     // store for meta-iterator bit logic applied to all ranks
