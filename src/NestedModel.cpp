@@ -609,7 +609,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   probDescDB.set_db_model_nodes(model_index);
 
   // > now that subIterator is constructed, perform downstream updates
-  if (subIterator) {
+  if (!subIterator->method_id().empty()) { // only do if subIterator was properly constructed
     init_sub_iterator(); // follow DB restore: extracts data from nested spec
     if (subIteratorSched.messagePass) {
       // msg lengths: vars from this model, set & final results from subIterator
