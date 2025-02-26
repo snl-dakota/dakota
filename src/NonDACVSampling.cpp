@@ -657,8 +657,8 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
   if (maxFunctionEvals == SZ_MAX) // HF tgt from ACV estvar using analytic soln
     hf_target = update_hf_target(avg_eval_ratios, avg_N_H, varH, estVarIter0);
   else // allocate_budget(), then manage lower bounds and pilot over-estimation
-    scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios,
-		    hf_target, activeBudget);
+    scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, hf_target,
+		    activeBudget);
 
   soln.anchored_solution_ratios(avg_eval_ratios, hf_target);
 }
