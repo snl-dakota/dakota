@@ -891,14 +891,14 @@ compute_Psi(const RealSymMatrix2DArray& cov_GG_inv, const RealVector& cdv,
     // In the context of numerical optimization, we should not need to protect
     // cov_GG_inv against n_g = 0.
     if (no_retain_throttle || retainedModelGroups[g]) {
-      Real v_i = cdv[v_index++];
-      if (v_i > 0.) {
+      Real v_g = cdv[v_index];  ++v_index;
+      if (v_g > 0.) {
 	const UShortArray&            models_g = modelGroups[g];
 	const RealSymMatrixArray& cov_GG_inv_g =  cov_GG_inv[g];
 	for (qoi=0; qoi<numFunctions; ++qoi) {
 	  const RealSymMatrix& cov_GG_inv_gq = cov_GG_inv_g[qoi];
 	  if (!cov_GG_inv_gq.empty())
-	    add_sub_matrix(v_i, cov_GG_inv_gq, models_g, Psi[qoi]); // *** can become indefinite here when N_g --> 0, which depends on online/offline pilot integration strategy
+	    add_sub_matrix(v_g, cov_GG_inv_gq, models_g, Psi[qoi]); // *** can become indefinite here when N_g --> 0, which depends on online/offline pilot integration strategy
 	}
       }
     }

@@ -869,8 +869,8 @@ estimator_variances_and_ratios(const RealVector& cd_vars, MFSolutionData& soln)
 inline void NonDNonHierarchSampling::
 estimator_variance_gradients(const RealVector& cd_vars, RealMatrix& ev_grads)
 {
-  Cerr << "Warning: testing omission of estimator_variance_gradients() by "
-       << "derived class.\n" << std::endl;
+  //Cerr << "Warning: testing omission of estimator_variance_gradients() by "
+  //     << "derived class.\n" << std::endl;
   ev_grads.shape(0,0);
 }
 
@@ -972,13 +972,11 @@ estimator_variance_metric_and_gradient(const RealVector& cd_vars,
   switch (estVarMetricType) {
   case AVG_ESTVAR_RATIO_METRIC: case NORM_ESTVAR_RATIO_METRIC:
   case MAX_ESTVAR_RATIO_METRIC:
-    estimator_variance_ratios(cd_vars, estvar_ratios);
-    estimator_variance_ratio_gradients(cd_vars, ev_grads); // unsupported
+    estimator_variance_ratios_and_gradients(cd_vars, estvar_ratios, ev_grads);
     estvar_gradients_to_metric_gradient(estvar_ratios, ev_grads, evm_grad);
     break;
   default:
-    estimator_variances(cd_vars, estvar);
-    estimator_variance_gradients(cd_vars, ev_grads);
+    estimator_variances_and_gradients(cd_vars, estvar, ev_grads);
     estvar_gradients_to_metric_gradient(estvar, ev_grads, evm_grad);
     break;
   }

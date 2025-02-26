@@ -133,8 +133,8 @@ inline void average(const RealMatrix& mat, size_t avg_index,
 	avg_i = 0.;
 	for (j=0; j<nc; ++j) avg_i += mat(i,j);
 	avg_i /= nc;
-	break;
       }
+      break;
     }
     break;
   default:

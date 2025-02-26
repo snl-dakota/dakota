@@ -2053,7 +2053,7 @@ void NonDMultilevBLUESampling::
 estimator_variances_and_gradients(const RealVector& cd_vars,
 				  RealVector& est_var, RealMatrix& ev_grads)
 {
-  size_t g, q, v, num_v = num_active_groups();
+  size_t g, q, v, num_v = num_active_groups(), num_m = numApprox+1;
   if (est_var.empty()) est_var.sizeUninitialized(numFunctions);
   if (ev_grads.numRows() != num_v || ev_grads.numCols() != numFunctions)
     ev_grads.shapeUninitialized(num_v, numFunctions);
@@ -2061,7 +2061,7 @@ estimator_variances_and_gradients(const RealVector& cd_vars,
   RealSymMatrixArray Psi;
   compute_Psi(covGGinv, cd_vars, Psi);
 
-  Real rcond;  RealSymMatrix dPsi_dN(num_v, false), trip_prod(num_v, false);
+  Real rcond;  RealSymMatrix dPsi_dN(num_m, false), trip_prod(num_m, false);
   RealMatrix Psi_rm, Psi_inv_rm;
   for (q=0; q<numFunctions; ++q) {
     copy_data(Psi[q], Psi_rm); // RealSymMatrix to RealMatrix
