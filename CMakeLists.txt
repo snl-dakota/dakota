@@ -21,12 +21,6 @@ set(CMAKE_MODULE_PATH
 # even though we no longer force the compiler to the MPI wrapper
 project("Dakota" NONE)
 
-if(WIN32)
-  if(MSVC AND MSVC_VERSION GREATER_EQUAL 1914)  # VS 2017 15.7+
-    add_compile_options("/Zc:__cplusplus")
-  endif()
-endif()
-
 message(STATUS "Configuring Dakota with CMake ${CMAKE_VERSION}")
 
 # Avoid downstream errors from packages that DNE; likely missing submodules

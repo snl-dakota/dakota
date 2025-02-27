@@ -17,6 +17,13 @@ macro(dakota_cxx_standard)
   set(CMAKE_CXX_STANDARD_REQUIRED TRUE CACHE BOOL
     "Dakota strictly requires C++14 or better")
 
+  if(WIN32)
+    if(MSVC AND MSVC_VERSION GREATER_EQUAL 1914)  # VS 2017 15.7+
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:__cplusplus" CACHE STRING 
+        "MSVC does not define __cplusplus by default" FORCE)
+    endif()
+  endif()
+
 endmacro()
 
 
@@ -28,3 +35,5 @@ macro(dakota_strict_warnings target_name)
     target_compile_options(${target_name} PRIVATE "-Wall" "-Wextra" "-Wpedantic")
   endif()
 endmacro()
+
+
