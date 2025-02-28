@@ -752,6 +752,7 @@ const RealSymMatrix& Iterator::response_error_estimates() const
   Cerr << "Error: letter class does not redefine response_error_estimates "
 	 << "virtual fn.\nNo default defined at base class." << std::endl;
   abort_handler(METHOD_ERROR);
+  throw METHOD_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -783,6 +784,7 @@ const VariablesArray& Iterator::initial_points() const
   Cerr << "Error: letter class does not redefine initial_points "
             "virtual fn.\nNo default defined at base class." << std::endl;
   abort_handler(METHOD_ERROR);
+  throw METHOD_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -942,6 +944,7 @@ unsigned short Iterator::sampling_scheme() const
   Cerr << "Error: letter class does not redefine sampling_scheme() virtual "
          << "fn.\nThis iterator does not support sampling." << std::endl;
   abort_handler(METHOD_ERROR);
+  throw METHOD_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -951,6 +954,7 @@ std::shared_ptr<Model> Iterator::algorithm_space_model()
          << "virtual fn.\nThis iterator does not support a single model "
 	 << "instance." << std::endl;
   abort_handler(METHOD_ERROR);
+  throw METHOD_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -988,6 +992,7 @@ const VariablesArray& Iterator::all_variables()
          << "\n       This iterator does not support variables histories."
 	 << std::endl;
   abort_handler(METHOD_ERROR);
+  throw METHOD_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -997,6 +1002,7 @@ const RealMatrix& Iterator::all_samples()
          << "\n       This iterator does not support sample histories."
 	 << std::endl;
   abort_handler(METHOD_ERROR);
+  throw METHOD_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
@@ -1006,6 +1012,7 @@ const IntResponseMap& Iterator::all_responses() const
          << "\n       This iterator does not support response histories."
 	 << std::endl;
   abort_handler(METHOD_ERROR);
+  throw METHOD_ERROR; // never reached; prevents MSVS from squawking about lack of function return
 }
 
 
