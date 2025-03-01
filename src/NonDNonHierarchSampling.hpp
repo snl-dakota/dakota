@@ -41,7 +41,8 @@ public:
   //
 
   /// standard constructor
-  NonDNonHierarchSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  NonDNonHierarchSampling(ProblemDescDB& problem_db,
+			  std::shared_ptr<Model> model);
   /// destructor
   ~NonDNonHierarchSampling() override;
 
@@ -555,6 +556,8 @@ protected:
   /// a subset of the non-hierarchcvial samplers provide analytic derivatives
   /// of estimator variance
   bool analyticEstVarDerivs;
+  /// employ truncated SVD rather than Cholesky factorization for matrix solve
+  bool hardenNumericSoln;
 
   /// for sample projections, the calculated increment in HF samples that
   /// would be evaluated if full iteration/statistics were pursued

@@ -32,7 +32,8 @@ public:
   //
 
   /// standard constructor
-  NonDMultifidelitySampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  NonDMultifidelitySampling(ProblemDescDB& problem_db,
+			    std::shared_ptr<Model> model);
   /// destructor
   ~NonDMultifidelitySampling() override;
 

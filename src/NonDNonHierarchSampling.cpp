@@ -42,11 +42,12 @@ NonDNonHierarchSampling* NonDNonHierarchSampling::nonHierSampInstance(NULL);
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDNonHierarchSampling::
-NonDNonHierarchSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
+NonDNonHierarchSampling(ProblemDescDB& problem_db,
+			std::shared_ptr<Model> model):
   NonDEnsembleSampling(problem_db, model),
   activeBudget((Real)maxFunctionEvals), optSubProblemForm(0),
   truthFixedByPilot(problem_db.get_bool("method.nond.truth_fixed_by_pilot")),
-  analyticEstVarDerivs(false)
+  analyticEstVarDerivs(false), hardenNumericSoln(false)
 {
   // solver(s) that perform the numerical solution for resource allocations
   optSubProblemSolver = sub_optimizer_select(

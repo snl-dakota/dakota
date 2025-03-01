@@ -493,45 +493,6 @@ compute_C_G_c_g(const RealSymMatrix& C, const RealSymMatrix& G,
 }
 
 
-inline void NonDGenACVSampling::
-solve_for_C_G_c_g(RealSymMatrix& C_G, RealVector& c_g, RealVector& lhs,
-		  bool copy_C_G, bool copy_c_g)
-{
-  // The idea behind this approach is to leverage both the solution refinement
-  // in solve() and equilibration during factorization (inverting C_G in place
-  // can only leverage the latter).
-
-  size_t n = c_g.length();
-  if (lhs.length() != n) lhs.size(n); // not sure if initialization matters
-
-  RealSpdSolver spd_solver;  RealSymMatrix C_G_copy;  RealVector c_g_copy;
-  // Matrix & RHS get altered by equilibration --> make copies if needed later
-  if (copy_C_G) {
-    C_G_copy = C_G; // Teuchos::Copy by default
-    spd_solver.setMatrix(Teuchos::rcp(&C_G_copy, false));
-  }
-  else // Ok to modify C_G in place
-    spd_solver.setMatrix(Teuchos::rcp(&C_G, false));
-  if (copy_c_g) {
-    c_g_copy = c_g; // Teuchos::Copy by default
-    spd_solver.setVectors(Teuchos::rcp(&lhs, false),
-			  Teuchos::rcp(&c_g_copy, false));
-  }
-  else // Ok to modify c_g in place
-    spd_solver.setVectors(Teuchos::rcp(&lhs, false), Teuchos::rcp(&c_g, false));
-
-  if (spd_solver.shouldEquilibrate())
-    spd_solver.factorWithEquilibration(true);
-  spd_solver.solveToRefinedSolution(true);
-  int code = spd_solver.solve();
-  if (code) {
-    Cerr << "Error: serial dense solver failure (LAPACK error code " << code
-	 << ") in GenACV::solve_for_C_G_c_g()." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-}
-
-
 inline Real NonDGenACVSampling::
 solve_for_triple_product(const RealSymMatrix& C, const RealSymMatrix& G,
 			 const RealMatrix&    c, const RealVector& g,

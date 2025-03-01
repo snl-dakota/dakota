@@ -753,7 +753,7 @@ specify_parameter_bounds(RealVector& x_lb, RealVector& x_ub)
   x_ub = DBL_MAX; // no upper bounds for groups
   if (pilotMgmtMode == OFFLINE_PILOT ||
       pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
-    x_lb = 0.; // no group lower bounds for OFFLINE case (NUDGE enforced below)
+    x_lb = 0.; // no group lower bounds for OFFLINE (NUDGE applied downstream)
   else {
     // Assign sunk cost to full group and optimize w/ this as a constraint.
     // > One could argue for only lower-bounding with actual incurred samples,
@@ -766,7 +766,6 @@ specify_parameter_bounds(RealVector& x_lb, RealVector& x_ub)
 	average(NGroupActual[g]) : (Real)NGroupAlloc[g];
     }
   }
-  //enforce_nudge(x_lb); // nudge away from 0 if needed
 }
 
 
@@ -1961,7 +1960,7 @@ estimator_variances(const RealVector& cd_vars, RealVector& est_var)
   RealMatrix A, A_inv;  Real rcond;
   for (size_t q=0; q<numFunctions; ++q) {
     copy_data(Psi[q], A); // RealSymMatrix to RealMatrix
-    pseudo_inverse(A, A_inv, rcond);
+    pseudo_inverse(A, A_inv, rcond); // *** TO DO: cache this for OPT++?
     est_var[q] = A_inv(numApprox,numApprox);
   }
 
@@ -2021,13 +2020,13 @@ estimator_variance_gradients(const RealVector& cd_vars, RealMatrix& ev_grads)
     ev_grads.shapeUninitialized(num_v, numFunctions);
 
   RealSymMatrixArray Psi;
-  compute_Psi(covGGinv, cd_vars, Psi); // *** cache this and reuse?
+  compute_Psi(covGGinv, cd_vars, Psi);
 
   Real rcond;  RealSymMatrix dPsi_dN(num_m, false), trip_prod(num_m, false);
   RealMatrix Psi_rm, Psi_inv_rm;
   for (q=0; q<numFunctions; ++q) {
     copy_data(Psi[q], Psi_rm); // RealSymMatrix to RealMatrix
-    pseudo_inverse(Psi_rm, Psi_inv_rm, rcond); // *** cache this and reuse?
+    pseudo_inverse(Psi_rm, Psi_inv_rm, rcond); // *** TO DO: retrieve from cache for OPT++?
 
     // form triple product dPsi_inv/dN_k = - Psi_inv dPsi/dN_k Psi_inv,
     // where dPsi/dN_k = C_k_inv (inflated to Psi)
