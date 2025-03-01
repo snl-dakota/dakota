@@ -1796,7 +1796,8 @@ estvar_gradients_to_metric_gradient(const RealVector& ev_vec,
     average(ev_grad, 1, evm_grad); // average over QoI for each var
     break;
   case NORM_ESTVAR_METRIC: case NORM_ESTVAR_RATIO_METRIC: {
-    // metric = [ Sum(ev^p) ]^(1/p)  -->  metric^p = Sum_q(ev^p)
+    // metric = [ Sum(abs(ev)^p) ]^(1/p) where we can drop abs() for ev_q >= 0
+    // metric^p = Sum_q(ev^p)
     // p m^{p-1} dm/dv = Sum_q[p ev_q^{p-1} ev_grad(v,q)]
     // dm/dv = m^{1-p} Sum_q[ev_q^{p-1} ev_grad(v,q)]
     //   where metric^{1-p} = power_sum^{(1.-p)/p}
