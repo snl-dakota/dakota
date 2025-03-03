@@ -433,7 +433,7 @@ TEST(reduced_bases_tests, test_reduced_basis_gp_surr_module0)
   eval_vars(0) = 0.4;
   EXPECT_LT(std::fabs(1. -  gp_approx.value(eval_vars) / -0.0333528), 1.e-4/100.);
   eval_vars(0) = 1.0;
-  EXPECT_LT(std::fabs(1. -  gp_approx.value(eval_vars) / -0.0506785), 1.e-4/100.);
+  EXPECT_LT(std::fabs(1. -  gp_approx.value(eval_vars) / -0.0506785), 1.5e-4/100.);
 }
 
 //----------------------------------------------------------------

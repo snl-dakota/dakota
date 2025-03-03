@@ -1251,8 +1251,7 @@ mfmc_numerical_solution(const RealMatrix& rho2_LH, const RealVector& cost,
 
     Real hf_target;
     if (budget_constrained) // for numerical, re-scale for over-estimated pilot
-      scale_to_target(avg_N_H, cost, avg_eval_ratios, hf_target,
-		      (Real)maxFunctionEvals);
+      scale_to_target(avg_N_H, cost, avg_eval_ratios, hf_target, activeBudget);
     else { // accuracy-constrained
       // Computes estvar_ratios* from r*,rho2.  Next, m1* from estvar_ratios*;
       // then these estvar_ratios get replaced for actual profile
@@ -1304,7 +1303,7 @@ process_analytic_allocations(const RealMatrix& rho2_LH, const RealVector& var_H,
 
   // Form an initial estimate of N^* from r_i^* based on budget/accuracy
   // > for accuracy-constrained, estvar_ratios is also an initial estimate
-  Real hf_target, budget = (Real)maxFunctionEvals;
+  Real hf_target;
   if (maxFunctionEvals == SZ_MAX) {
     RealVector estvar_ratios, estvar;  Real metric;  size_t metric_index;
     mfmc_estvar_ratios(rho2_LH, avg_eval_ratios, corrApproxSequence,
@@ -1316,7 +1315,7 @@ process_analytic_allocations(const RealMatrix& rho2_LH, const RealVector& var_H,
 				 estVarIter0);
   }
   else
-    hf_target = allocate_budget(avg_eval_ratios, cost, budget);
+    hf_target = allocate_budget(avg_eval_ratios, cost);
 
   // Now we update these initial estimates in view of the pilot: analytic cases
   // use the intersection of the analytic profile with the pilot sample,

@@ -14,7 +14,6 @@
 #include "DataMethod.hpp"
 #include "ParallelLibrary.hpp"
 
-
 namespace Dakota {
 
 class Iterator;
@@ -335,21 +334,21 @@ master_dynamic_schedule_iterators(MetaType& meta_object)
   Cout << "Master dynamic schedule: first pass assigning " << num_sends
        << " iterator jobs among " << numIteratorServers << " servers\n";
 
-  MPIPackBuffer*   send_buffers  = new MPIPackBuffer   [num_sends];
-  MPIUnpackBuffer* recv_buffers  = new MPIUnpackBuffer [numIteratorJobs];
-  MPI_Request      send_request; // only 1 needed since no test/wait on sends
-  MPI_Request*     recv_requests = new MPI_Request     [num_sends];
+  auto send_buffers{std::vector<MPIPackBuffer>(num_sends)};
+  auto recv_buffers{std::vector<MPIUnpackBuffer>(numIteratorJobs)};
+  auto recv_requests{std::vector<MPI_Request>(num_sends)};
+  MPI_Request                  send_request; // only 1 needed since no test/wait on sends
 
   // assign 1st num_sends jobs
   for (i=0, j=1; i<num_sends; ++i, ++j) {
     // pack the ith parameter set
-    //send_buffers[i].resize(paramsMsgLen);
-    meta_object.pack_parameters_buffer(send_buffers[i], i);
+    meta_object.pack_parameters_buffer(send_buffers.at(i), i);
+
     // pre-post receives
-    recv_buffers[i].resize(resultsMsgLen);
-    parallelLib.irecv_mi(recv_buffers[i], j, j, recv_requests[i], miPLIndex);
+    recv_buffers.at(i).resize(resultsMsgLen);
+    parallelLib.irecv_mi(recv_buffers.at(i), j, j, recv_requests.at(i), miPLIndex);
     // nonblocking sends: master quickly assigns first num_sends jobs
-    parallelLib.isend_mi(send_buffers[i], j, j, send_request, miPLIndex);
+    parallelLib.isend_mi(send_buffers.at(i), j, j, send_request, miPLIndex);
     parallelLib.free(send_request); // no test/wait on send_request
   }
 
@@ -358,16 +357,17 @@ master_dynamic_schedule_iterators(MetaType& meta_object)
     Cout << "Master dynamic schedule: second pass scheduling "
 	 << numIteratorJobs-num_sends << " remaining iterator jobs\n";
     int send_cntr = num_sends, recv_cntr = 0, out_count;
-    MPI_Status* status_array = new MPI_Status [num_sends];
-    int*        index_array  = new int        [num_sends];
+
+    auto status_array{std::vector<MPI_Status>(num_sends)};
+    auto index_array{std::vector<int>(num_sends)};
+
     while (recv_cntr < numIteratorJobs) {
-      parallelLib.waitsome(num_sends, recv_requests, out_count, index_array, 
-			   status_array);
+      parallelLib.waitsome(num_sends, recv_requests, out_count, index_array, status_array);
       recv_cntr += out_count;
       for (i=0; i<out_count; ++i) {
-        int server_index = index_array[i]; // index of completed recv_request
+        int server_index = index_array.at(i); // index of completed recv_request
         int server_id    = server_index + 1;        // 1 to numIteratorServers
-        int job_id       = status_array[i].MPI_TAG; // 1 to numIteratorJobs
+        int job_id       = status_array.at(i).MPI_TAG; // 1 to numIteratorJobs
         int job_index    = job_id - 1;              // 0 to numIteratorJobs-1
 	meta_object.unpack_results_buffer(recv_buffers[job_index], job_index);
         if (send_cntr < numIteratorJobs) {
@@ -386,8 +386,6 @@ master_dynamic_schedule_iterators(MetaType& meta_object)
         }
       }
     }
-    delete [] status_array;
-    delete [] index_array;
   }
   else { // all jobs assigned in first pass
     Cout << "Master dynamic schedule: waiting on all iterator jobs."
@@ -395,12 +393,8 @@ master_dynamic_schedule_iterators(MetaType& meta_object)
     parallelLib.waitall(numIteratorJobs, recv_requests);
     // All buffers received, now generate rawResponseArray
     for (i=0; i<numIteratorJobs; ++i)
-      meta_object.unpack_results_buffer(recv_buffers[i], i);
+      meta_object.unpack_results_buffer(recv_buffers.at(i), i);
   }
-  // deallocate MPI & buffer arrays
-  delete [] send_buffers;
-  delete [] recv_buffers;
-  delete [] recv_requests;
 }
 
 

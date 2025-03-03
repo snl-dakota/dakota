@@ -25,9 +25,22 @@ macro(dakota_find_boost)
     set(BOOST_LIBRARYDIR "${CMAKE_CURRENT_BINARY_DIR}/boost_libs")
   endif()
 
+  # std::unary_function and std::binary_function were removed from the C++17 standard library
+  # but are used by default in Boost until version 1.80.0
+  if(CMAKE_CXX_STANDARD GREATER_EQUAL 17)
+    # Removes use of std::unary_function in boost/container_hash/hash.hpp      
+    add_compile_definitions(BOOST_NO_CXX98_FUNCTION_BASE)
+
+    # Removes use of std::unary_function and std::binary_function in boost/functional.hpp
+    add_compile_definitions(_HAS_AUTO_PTR_ETC=0)
+  endif()
+
+
   find_package(Boost 1.69 REQUIRED COMPONENTS ${dakota_boost_libs})
+
   set(DAKOTA_BOOST_TARGETS Boost::boost Boost::filesystem Boost::program_options
     Boost::regex Boost::serialization Boost::system)
+
   set(dakota_boost_libs "${dakota_boost_libs}" CACHE STRING "")
   set(dakota_boost_version "${Boost_VERSION_MAJOR}.${Boost_VERSION_MINOR}.${Boost_VERSION_PATCH}" CACHE STRING "")
 

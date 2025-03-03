@@ -150,6 +150,10 @@ enable_language(C)
 enable_language(CXX)
 enable_language(Fortran)
 
+# wait to call this until after enabling compilers because the compiler vendor and
+# version must be known
+dakota_platform_specific_compile_options()
+
 # Ensure that GCC is being used if DAKOTA_GCOV was requested. 
 if(DAKOTA_GCOV AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
    message(FATAL_ERROR "DAKOTA_GCOV requires building with GCC")

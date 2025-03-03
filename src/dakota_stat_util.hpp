@@ -115,22 +115,26 @@ inline void average(const RealMatrix& mat, size_t avg_index,
   switch (avg_index) {
   case 0: // average over index 0, retaining index 1
     avg_vec.sizeUninitialized(nc);
-    for (i=0; i<nc; ++i)   // average over rows for each col vec
+    for (i=0; i<nc; ++i)
       avg_vec[i] = average(mat[i], nr);
     break;
-  case 1:
+  case 1: // average over index 1 (cols), retaining index 0 (rows)
     avg_vec.sizeUninitialized(nr);
-    for (i=0; i<nr; ++i) { // average over cols for each row vec
-      Real& avg_i = avg_vec[i];
-      switch (nc) {
-      case 0: avg_i = std::numeric_limits<Real>::quiet_NaN(); break;
-      case 1: avg_i = mat(i,0); break;
-      default:
+    switch (nc) {
+    case 0:
+      for (i=0; i<nr; ++i) avg_vec[i] = std::numeric_limits<Real>::quiet_NaN();
+      break;
+    case 1:
+      for (i=0; i<nr; ++i) avg_vec[i] = mat(i,0);
+      break;
+    default:
+      for (i=0; i<nr; ++i) {
+	Real& avg_i = avg_vec[i];
 	avg_i = 0.;
 	for (j=0; j<nc; ++j) avg_i += mat(i,j);
 	avg_i /= nc;
-	break;
       }
+      break;
     }
     break;
   default:
@@ -151,16 +155,21 @@ inline void average(const Sizet2DArray& N_2D, RealVector& N_1D)
 }
 
 
-/// eliminate inner dimension of 2D array by averaging over each inner vector
+inline Real power_sum(const RealVector& vec, Real p)
+{
+  Real sum = 0.;  size_t i, len = vec.length();
+  for (i=0; i<len; ++i)
+    sum += std::pow(std::abs(vec[i]), p);
+  return sum;
+}
+
+
 inline Real p_norm(const RealVector& vec, Real p)
 {
   // Note that p >= 1 is required to satisfy the formal definition of a norm
   // (0 < p < 1 is computable but not a norm: violates triangle inequality)
 
-  Real sum = 0.;  size_t i, len = vec.length();
-  for (i=0; i<len; ++i)
-    sum += std::pow(std::abs(vec[i]), p);
-  return std::pow(sum, 1./p);
+  return std::pow(power_sum(vec, p), 1./p);
 }
 
 

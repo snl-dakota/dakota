@@ -33,7 +33,7 @@ NonDACVSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
 
   if (maxFunctionEvals == SZ_MAX) // accuracy constraint (convTol)
     optSubProblemForm = N_MODEL_LINEAR_OBJECTIVE;
-  else {                   // budget constraint (maxFunctionEvals)
+  else {                          //   budget constraint (maxFunctionEvals)
     // truthFixedByPilot is a user-specified option for fixing the number of
     // HF samples (to those in the pilot).  In this case, equivHF budget is
     // allocated by optimizing r* for fixed N.
@@ -658,7 +658,7 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
     hf_target = update_hf_target(avg_eval_ratios, avg_N_H, varH, estVarIter0);
   else // allocate_budget(), then manage lower bounds and pilot over-estimation
     scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, hf_target,
-		    (Real)maxFunctionEvals);
+		    activeBudget);
 
   soln.anchored_solution_ratios(avg_eval_ratios, hf_target);
 }

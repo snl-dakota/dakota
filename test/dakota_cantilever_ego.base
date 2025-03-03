@@ -73,17 +73,17 @@ Test Number 4 succeeded
                      -9.6858740411e-04
 <<<<< Best evaluation ID: 31
 Test Number 5 succeeded
-<<<<< Function evaluation summary: 35 total (29 new, 6 duplicate)
+<<<<< Function evaluation summary: 16 total (14 new, 2 duplicate)
 <<<<< Best parameters          =
-                      2.3845478614e+00 w
-                      3.2823615415e+00 t
+                      2.0095767922e+00 w
+                      4.2345707237e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
                       1.0000000000e+03 Y
 <<<<< Best objective function  =
-                      7.8269481942e+00
+                      8.5096950512e+00
 <<<<< Best constraint values   =
-                     -1.4286199469e-02
-                     -1.4637020529e-04
-<<<<< Best evaluation ID: 14
+                     -1.4516316562e-01
+                     -2.3297018376e-02
+<<<<< Best evaluation ID: 13

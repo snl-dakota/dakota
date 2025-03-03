@@ -48,9 +48,15 @@ protected:
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
+  Real available_budget() const override;
+
   void estimator_variances(const RealVector& cd_vars,
 			   RealVector& est_var) override;
-  Real estimator_variance_metric(const RealVector& cd_vars);
+  void estimator_variance_gradients(const RealVector& cd_vars,
+				    RealMatrix& ev_grads) override;
+  void estimator_variances_and_gradients(const RealVector& cd_vars,
+					 RealVector& est_var,
+					 RealMatrix& ev_grads) override;
 
   const MFSolutionData& final_solution_data() const override;
 
@@ -183,6 +189,18 @@ private:
   /// find the best-conditioned group that contains the HF model
   size_t best_conditioned_hf_group();
 
+  /// deduct sunk (pilot) costs from samples on discarded groups
+  void deduct_inactive_group_costs(const BitArray& retained,
+				   const SizetArray& N_G_alloc,
+				   Real& budget) const;
+  /// deduct sunk (pilot) costs from samples on discarded models
+  void deduct_inactive_model_costs(const BitArray& retained,
+				   size_t N_alloc, Real& budget) const;
+
+  /// define active models from overlay of components of active groups
+  void retained_groups_to_models(const BitArray& active_g,
+				 BitArray& active_m) const;
+
   void enforce_bounds_linear_constraints(RealVector& soln_vars);
   void specify_parameter_bounds(RealVector& x_lb, RealVector& x_ub);
   void specify_initial_parameters(const MFSolutionData& soln, RealVector& x0,
@@ -262,6 +280,8 @@ private:
   /// prune modelGroups down to subset with best conditioned group covariances
   void prune_model_groups();
 
+  void assign_sub_matrix(const RealSymMatrix& sub_mat,
+			 const UShortArray& subset, RealSymMatrix& mat);
   void add_sub_matrix(Real coeff, const RealSymMatrix& sub_mat,
 		      const UShortArray& subset, RealSymMatrix& mat);
   void add_sub_matvec(const RealSymMatrix& sub_mat, const RealMatrix& sub_mat2,
@@ -324,6 +344,8 @@ private:
   std::multimap<Real, size_t> groupCovCondMap;
   /// runtime group throttling due to covariance conditioning
   BitArray retainedModelGroups;
+  /// active model retention based on runtime group throttling
+  BitArray retainedModels;
 
   /// counter for successful sample accumulations, per group and per QoI
   Sizet2DArray NGroupActual;
@@ -379,16 +401,90 @@ all_to_active_group(size_t all_index) const
 }
 
 
-inline Real NonDMultilevBLUESampling::
-estimator_variance_metric(const RealVector& cd_vars)
+inline void NonDMultilevBLUESampling::
+deduct_inactive_group_costs(const BitArray& retained,
+			    const SizetArray& N_G_alloc, Real& budget) const
 {
-  RealVector estvar_ratios, estvar;  Real metric;  size_t metric_index;
-  estimator_variances(cd_vars, estvar);
-  // estvar_ratios remains empty (ML BLUE does not support metric types
-  // {AVG,MAX}_ESTVAR_RATIO_METRIC)
-  MFSolutionData::update_estimator_variance_metric(estVarMetricType,
-    estVarMetricNormOrder, estvar_ratios, estvar, metric, metric_index);
-  return metric;
+  // deduct accumulated cost for inactive groups (independent pilot sampling)
+
+  if (retained.empty()) return;
+
+  //budget = (Real)maxFunctionEvals;
+  Real cost_H = sequenceCost[numApprox];
+  for (size_t g=0; g<numGroups; ++g)
+    if (!retained[g])
+      budget -= N_G_alloc[g] * modelGroupCost[g] / cost_H;
+}
+
+
+inline void NonDMultilevBLUESampling::
+deduct_inactive_model_costs(const BitArray& retained, size_t N_alloc,
+			    Real& budget) const
+{
+  // deduct accumulated cost for inactive models (shared pilot sampling)
+
+  if (retained.empty()) return;
+
+  //budget = (Real)maxFunctionEvals;
+  Real cost_H = sequenceCost[numApprox], N_over_cost = (Real)N_alloc / cost_H;
+  for (size_t m=0; m<=numApprox; ++m)
+    if (!retained[m])
+      budget -= sequenceCost[m] * N_over_cost;
+}
+
+
+inline Real NonDMultilevBLUESampling::available_budget() const
+{
+  bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
+		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
+  Real budget = (Real)maxFunctionEvals;
+  if (offline) return budget;
+
+  // deduct accumulated cost for inactive models (shared pilot sampling) or
+  // inactive groups (independent pilot sampling)
+
+  switch (pilotGroupSampling) {
+  case INDEPENDENT_PILOT: // budget deductions are group-based
+    deduct_inactive_group_costs(retainedModelGroups, NGroupAlloc, budget);
+    break;
+  case SHARED_PILOT: // budget deductions are model-based
+    // > deduct shared pilot cost for an approx model iff all groups containing
+    //   this model are discarded
+    // > prune_model_groups() currently enforces retention of all_group for
+    //   the case of SHARED_PILOT (logic: disproportionate investment), so
+    //   all models are retained in this case.
+    // > Note: it would be possible to reassign the shared pilot investment
+    //   to a different retained group if models would otherwise be discarded.
+    // *** TO DO: revise all_group,shared_samp as needed to sync with changes
+    //            to prune_model_groups()
+    size_t all_group = numGroups - 1;
+    deduct_inactive_model_costs(retainedModels, NGroupAlloc[all_group], budget);
+    break;
+  }
+
+  return budget;
+}
+
+
+inline void NonDMultilevBLUESampling::
+retained_groups_to_models(const BitArray& active_g, BitArray& active_m) const
+{
+  size_t g, m, model_m, num_models, retained = 0, num_ap1 = numApprox + 1;
+  if (active_m.size() != num_ap1)
+    active_m.resize(num_ap1);
+  active_m.reset();
+  for (g=0; g<numGroups; ++g) {
+    if (active_g[g]) {
+      const UShortArray& group_g = modelGroups[g];
+      num_models = group_g.size();
+      for (m=0; m<num_models; ++m) {
+	model_m = group_g[m];
+	if (!active_m[model_m])
+	  { active_m.set(model_m); ++retained; }
+      }
+    }
+    if (retained == num_ap1) { active_m.clear(); break; }
+  }
 }
 
 
@@ -630,10 +726,26 @@ inline void NonDMultilevBLUESampling::form_R(size_t k, RealMatrix& R_k)
 
 
 inline void NonDMultilevBLUESampling::
+assign_sub_matrix(const RealSymMatrix& sub_mat, const UShortArray& subset,
+		  RealSymMatrix& mat)
+{
+  size_t r, c, num_sub = subset.size(), num_models = numApprox+1;
+  if (mat.numRows() != num_models) mat.shape(num_models); // init to 0
+  else                             mat = 0.;
+  for (r=0; r<num_sub; ++r)
+    for (c=0; c<=r; ++c)
+      mat(subset[r], subset[c]) = sub_mat(r,c);
+
+  //if (outputLevel >= DEBUG_OUTPUT)
+  //  Cout << "assign_sub_matrix() =\n" << mat << std::endl;
+}
+
+
+inline void NonDMultilevBLUESampling::
 add_sub_matrix(Real coeff, const RealSymMatrix& sub_mat,
 	       const UShortArray& subset, RealSymMatrix& mat)
 {
-  size_t r, c, model, num_sub = subset.size();
+  size_t r, c, num_sub = subset.size();
   for (r=0; r<num_sub; ++r)
     for (c=0; c<=r; ++c)
       mat(subset[r], subset[c]) += coeff * sub_mat(r,c);
@@ -647,7 +759,7 @@ inline void NonDMultilevBLUESampling::
 add_sub_matvec(const RealSymMatrix& sub_mat, const RealMatrix& sub_mat2,
 	       size_t sub_mat2_row, const UShortArray& subset, RealVector& vec)
 {
-  size_t r, c, model, num_sub = subset.size();  Real sub_matvec;
+  size_t r, c, num_sub = subset.size();  Real sub_matvec;
   for (r=0; r<num_sub; ++r) {
     sub_matvec = 0.;
     for (c=0; c<num_sub; ++c)
@@ -784,14 +896,14 @@ compute_Psi(const RealSymMatrix2DArray& cov_GG_inv, const RealVector& cdv,
     // In the context of numerical optimization, we should not need to protect
     // cov_GG_inv against n_g = 0.
     if (no_retain_throttle || retainedModelGroups[g]) {
-      Real v_i = cdv[v_index++];
-      if (v_i > 0.) {
+      Real v_g = cdv[v_index];  ++v_index;
+      if (v_g > 0.) {
 	const UShortArray&            models_g = modelGroups[g];
 	const RealSymMatrixArray& cov_GG_inv_g =  cov_GG_inv[g];
 	for (qoi=0; qoi<numFunctions; ++qoi) {
 	  const RealSymMatrix& cov_GG_inv_gq = cov_GG_inv_g[qoi];
 	  if (!cov_GG_inv_gq.empty())
-	    add_sub_matrix(v_i, cov_GG_inv_gq, models_g, Psi[qoi]); // *** can become indefinite here when N_g --> 0, which depends on online/offline pilot integration strategy
+	    add_sub_matrix(v_g, cov_GG_inv_gq, models_g, Psi[qoi]); // *** can become indefinite here when N_g --> 0, which depends on online/offline pilot integration strategy
 	}
       }
     }
