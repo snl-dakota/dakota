@@ -8,7 +8,7 @@
     _______________________________________________________________________ */
 
 #include "dakota_global_defs.hpp"
-//#include "dakota_data_io.hpp"
+#include "dakota_data_util.hpp"
 #include "dakota_linear_algebra.hpp"
 #include "Teuchos_LAPACK.hpp"
 
@@ -106,6 +106,22 @@ void pseudo_inverse(RealMatrix& A, RealMatrix& A_inv, Real& rcond)
   // (pseudo-)inverse = V scaled_UT
   A_inv.shape(n,n);
   A_inv.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1., V_T, Sinv_U_T, 0.);
+}
+
+
+void pseudo_inverse(const RealSymMatrix& A, RealMatrix& A_inv, Real& rcond)
+{
+  RealMatrix A_rm; copy_data(A, A_rm); // RealSymMatrix to RealMatrix
+  pseudo_inverse(A_rm, A_inv, rcond);
+}
+
+
+void pseudo_inverse(const RealSymMatrix& A, RealSymMatrix& A_inv, Real& rcond)
+{
+  RealMatrix A_rm, A_rm_inv;
+  copy_data(A, A_rm);         // RealSymMatrix to RealMatrix
+  pseudo_inverse(A_rm, A_rm_inv, rcond);
+  copy_data(A_rm_inv, A_inv); // RealMatrix to RealSymMatrix
 }
 
 

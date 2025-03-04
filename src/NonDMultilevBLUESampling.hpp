@@ -109,8 +109,9 @@ protected:
 		   const RealVector& N_G, RealSymMatrixArray& Psi);
   void compute_Psi(const RealSymMatrix2DArray& cov_GG_inv,
 		   const Sizet2DArray& N_G, RealSymMatrixArray& Psi);
+  void invert_Psi(const RealSymMatrix& Psi, RealSymMatrix& Psi_inv);
+  void invert_Psi(const RealSymMatrix& Psi, RealMatrix& Psi_inv);
   /*
-  void invert_Psi(RealSymMatrixArray& Psi);
   void compute_Psi_inverse(const RealSymMatrix2DArray& cov_GG_inv,
 			   const RealVector& N_G_1D,
 			   RealSymMatrixArray& Psi_inv);
@@ -663,11 +664,14 @@ inline void NonDMultilevBLUESampling::enforce_nudge(RealVector& x)
   // a degree of hardening for extreme drop-out cases.
 
   size_t i, len = x.length();
-  Real lb = (maxFunctionEvals == SZ_MAX) ? RATIO_NUDGE :
-    RATIO_NUDGE * std::sqrt(maxFunctionEvals); // hand-tuned heuristic
+  // The budget-scaling heuristic, trading improved conditioning for reduced
+  // optimality, is less important now with the introduction of analytic estvar
+  // gradients, so retire this bandaid.
+  //Real lb = (maxFunctionEvals == SZ_MAX) ? RATIO_NUDGE :
+  //  RATIO_NUDGE * std::sqrt(maxFunctionEvals); // hand-tuned heuristic
   for (i=0; i<len; ++i)
-    if (x[i] < lb)
-      x[i] = lb;
+    if (x[i] < RATIO_NUDGE)// < lb)
+      x[i] = RATIO_NUDGE;  // = lb;
 }
 
 
@@ -937,6 +941,38 @@ compute_Psi(const RealSymMatrix2DArray& cov_GG_inv, const Sizet2DArray& N_G,
   }
   // Add \delta I (Schaden & Ullmann, 2020)
   //enforce_diagonal_delta(Psi);
+}
+
+
+inline void NonDMultilevBLUESampling::
+invert_Psi(const RealSymMatrix& Psi, RealSymMatrix& Psi_inv)
+{
+  // Psi-inverse is used for computing both estimator variance (during numerical
+  // solve) and y-hat / mu-hat (after solve), so invert now without a RHS so
+  // Psi-inverse can be used in multiple places without additional tracking
+  RealSpdSolver spd_solver; // reuse since setMatrix resets internal state
+  copy_data(Psi, Psi_inv);
+  spd_solver.setMatrix(Teuchos::rcp(&Psi_inv, false));
+  // Note: equilibration should not be used outside of the solve() context,
+  // as the resulting inverse would be for the equilibrated matrix.  See
+  // discussion above in compute_C_inverse().
+  int code = spd_solver.invert(); // in place
+  if (code) {
+    Cerr << "Error: serial dense solver failure (LAPACK error code " << code
+	 << ") in NonDMultilevBLUE::invert_Psi()." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  //if (outputLevel >= DEBUG_OUTPUT)
+  //  Cout << "In invert_Psi(), Psi_inv:\n" << Psi << std::endl;
+}
+
+
+inline void NonDMultilevBLUESampling::
+invert_Psi(const RealSymMatrix& Psi, RealMatrix& Psi_inv)
+{
+  RealSymMatrix Psi_inv_rsm;
+  invert_Psi(Psi, Psi_inv_rsm);
+  copy_data(Psi_inv_rsm, Psi_inv);
 }
 
 

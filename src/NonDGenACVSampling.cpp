@@ -1593,10 +1593,9 @@ solve_for_C_G_c_g(RealSymMatrix& C_G, RealVector& c_g, RealVector& lhs,
   if (lhs.length() != n) lhs.size(n); // not sure if initialization matters
 
   if (hardenNumericSoln) {
-    RealMatrix A, A_inv;  Real rcond;
-    copy_data(C_G, A); // RealSymMatrix to RealMatrix
-    pseudo_inverse(A, A_inv, rcond);
-    lhs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., A_inv, c_g, 0.);
+    RealMatrix C_G_inv;  Real rcond;
+    pseudo_inverse(C_G, C_G_inv, rcond);
+    lhs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., C_G_inv, c_g, 0.);
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "GenACV pseudo-inverse solve for LHS:\n" << lhs << "has rcond = "
 	   << rcond << std::endl;

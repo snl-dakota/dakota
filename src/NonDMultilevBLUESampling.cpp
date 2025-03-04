@@ -28,7 +28,8 @@ namespace Dakota {
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDMultilevBLUESampling::
-NonDMultilevBLUESampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
+NonDMultilevBLUESampling(ProblemDescDB& problem_db,
+			 std::shared_ptr<Model> model):
   NonDNonHierarchSampling(problem_db, model),
   pilotGroupSampling(problem_db.get_short("method.nond.pilot_samples.mode")),
   groupThrottleType(problem_db.get_short("method.nond.group_throttle_type")),
@@ -37,7 +38,8 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model
   rCondTolThrottle(problem_db.get_real("method.nond.rcond_tol_throttle"))
 {
   analyticEstVarDerivs = true; // estvar solve can be differentiated
-  mlmfSubMethod = problem_db.get_ushort("method.sub_method");
+  //hardenNumericSoln    = true; // more important for ML BLUE than ACV family
+  mlmfSubMethod        = problem_db.get_ushort("method.sub_method");
 
   // SDP versus conventional NLP handled by optSubProblemSolver
   //optSubProblemSolver = sub_optimizer_select(
@@ -1781,111 +1783,6 @@ compute_C_inverse(const RealSymMatrix& cov_GG_gq, RealSymMatrix& cov_GG_inv_gq,
   if (cov_GG_gq.empty()) // insufficient samples to define cov_GG
     { cov_GG_inv_gq.shape(0); rcond = 0.; return; }
 
-  /* This approach has not been effective for ill-conditioned cov_GG:
-  int r, nr = cov_GG_gq.numRows();
-  cov_GG_inv_gq.shape(nr);
-  RealSymMatrix A(cov_GG_gq);  RealMatrix X(nr, nr), B(nr, nr);
-  for (r=0; r<nr; ++r) B(r,r) = 1.; // identity
-  // Leverage both the soln refinement in solve() and equilibration during
-  // factorization (inverting C in place can only leverage the latter).
-  RealSpdSolver spd_solver;
-  spd_solver.setMatrix( Teuchos::rcp(&A,false));
-  spd_solver.setVectors(Teuchos::rcp(&X, false), Teuchos::rcp(&B, false));
-  if (spd_solver.shouldEquilibrate())
-    spd_solver.factorWithEquilibration(true);
-  spd_solver.solveToRefinedSolution(true);
-  int code = spd_solver.solve();
-  copy_data(X, cov_GG_inv_gq); // Dense to SymDense
-  */
-
-  /* Detection of ill-conditioning in Cholesky factorization has been
-     observed to be insufficient to prevent blow-up within invert() -->
-     use SVD at all times rather than as a fallback.
-  cov_GG_inv_gq = cov_GG_gq; // copy for inversion in place
-  RealSpdSolver spd_solver;
-  spd_solver.setMatrix(Teuchos::rcp(&cov_GG_inv_gq, false));
-  // Equilibration scales the system to improve solution conditioning; it
-  // involves equilibrateMatrix() and equilibrateRHS() prior to solve,
-  // followed by unequilibrateLHS() after solve.  Here, we factor/invert C
-  // without equilibration as we assemble C-inverse into Psi without any
-  // solve(); otherwise C-inverse would be the inverse of the equilibrated
-  // matrix and there is no corresponding unequilibrate to use at that point.
-  // Downstream, solves using the assembled Psi are equilibrated as needed.
-
-  // factor() is embedded within both reciprocalConditionEstimate() and
-  // invert(), so this return code is the furthest upstream
-  int fact_code = spd_solver.factor(); // Real rcond;
-  //int rcond_code = spd_solver.reciprocalConditionEstimate(rcond);
-  //int   inv_code = spd_solver.invert(); // in place
-  if (fact_code) { // only traps extreme cases
-    Cerr << "Warning: failure in group covariance factorization in ML BLUE::"
-         << "compute_C_inverse()\n         for group " << group << " QoI "
-	 << qoi //<< " with C:\n" << cov_GG_gq
-	 << " (LAPACK error: leading minor of order " << fact_code
-	 << " is not positive definite,\n       and the factorization could "
-	 << "not be completed).  Resorting to pseudo-inverse via SVD."
-	 << std::endl;
-
-    // This drops the group contribution to Psi but probably also need
-    // to drop the group design var from the numerical soln to prevent
-    // unconstrained behavior there.
-    cov_GG_inv_gq.shape(0);
-  }
-  else { // bad inverses can still occur
-    spd_solver.invert();
-    //if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "LL^T inverse for group " << group << " QoI " << qoi << ":\n"
-           << cov_GG_inv_gq << std::endl;
-  }
-  */
-
-  /*
-  // SYEV not consistent with Cholesky-based inverse for well conditioned
-  // Need to review Petra2014
-  RealVector eigen_vals;  RealMatrix eigen_vecs;
-  symmetric_eigenvalue_decomposition( cov_GG_gq, eigen_vals, eigen_vecs );
-  //if (outputLevel >= DEBUG_OUTPUT)
-  //  Cout << "SYEV eigenvalues for " << group << " QoI " << qoi << ":\n"
-  // 	     << eigen_vals << std::endl;
-  // Form V and D
-  Real ev_tol = std::sqrt(DBL_EPSILON); // Petra2014 suggests tol=1 in Fig 5.2
-  int n, r, num_rows = eigen_vals.length(), num_neglect = 0;
-  for (n=0; n<num_rows; ++n) // returned in increasing order
-    if ( eigen_vals[n] <= ev_tol ) ++num_neglect;
-    else                           break;
-  int num_low_rank = num_rows - num_neglect, offset_r;
-  RealSymMatrix D(num_low_rank); // init to 0;    r x r diagonal matrix
-  RealMatrix V(num_rows, num_low_rank, false); // n x r matrix for r retained
-  for (r=0; r<num_low_rank; ++r) {
-    offset_r = r + num_neglect;
-    Real lambda = eigen_vals[offset_r];
-    D(r,r) = lambda / (lambda + 1.); // Sherman-Morrison-Woodbury
-    for (n=0; n<num_rows; ++n)
-      V(n,r) = eigen_vecs(n,offset_r); // copy column
-  }
-  // Form inverse = I - V D V^T
-  // inv(hessian) of posterior = L (I - V D V^T) L^T for prior Cholesky L
-  cov_GG_inv_gq.shapeUninitialized(num_rows);
-  Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., D, V, cov_GG_inv_gq);
-  for (n=0; n<num_rows; ++n)
-    cov_GG_inv_gq(n,n) += 1.;
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "Pseudo-inverse by SYEV for group " << group << " QoI " << qoi
-	 << ":\n" << cov_GG_inv_gq << std::endl;
-  */
-
-  // Rely on SVD (full or pseudo-inverse as dictated by singular vals)
-  RealMatrix A, A_inv;
-  copy_data(cov_GG_gq, A);         // RealSymMatrix to RealMatrix
-  pseudo_inverse(A, A_inv, rcond);
-  copy_data(A_inv, cov_GG_inv_gq); // RealMatrix to RealSymMatrix
-
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "In compute_C_inverse() for group " << group << " QoI " << qoi
-	 << ", covariance =\n" << cov_GG_gq << "Pseudo-inverse by truncated "
-	 << "SVD: rcond = " << rcond << ", inverse covariance =\n"
-	 << cov_GG_inv_gq << "\n--------------\n" << std::endl;
- 
   // Alternatives:
   // > Pseudo-inverse for covariances: is symmetric_eigenvalue_decomp()
   //   preferred to SVD for case of symmetric matrices?
@@ -1896,6 +1793,110 @@ compute_C_inverse(const RealSymMatrix& cov_GG_gq, RealSymMatrix& cov_GG_inv_gq,
   //   seems best combined with a detection scheme
   // > SDP solvers (helps only with Psi solve --> issues with C-inverse must
   //   be addressed separately)
+
+  if (hardenNumericSoln) { // SVD is more robust, yielding full or pseudo-
+                           // inverse based on singular value truncation
+    pseudo_inverse(cov_GG_gq, cov_GG_inv_gq, rcond);
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "In compute_C_inverse() for group " << group << " QoI " << qoi
+	   << ", covariance =\n" << cov_GG_gq << "Pseudo-inverse by truncated "
+	   << "SVD: rcond = " << rcond << ", inverse covariance =\n"
+	   << cov_GG_inv_gq << "\n--------------\n" << std::endl;
+  }
+  else { // currently inactive:
+         // cheaper + more exact (no truncation tol) for well-behaved
+ 
+    // Detection of ill-conditioning in Cholesky factorization has been
+    // observed to be insufficient to prevent blow-up within invert()
+    cov_GG_inv_gq = cov_GG_gq; // copy for inversion in place
+    RealSpdSolver spd_solver;
+    spd_solver.setMatrix(Teuchos::rcp(&cov_GG_inv_gq, false));
+    // Equilibration scales the system to improve solution conditioning; it
+    // involves equilibrateMatrix() and equilibrateRHS() prior to solve,
+    // followed by unequilibrateLHS() after solve.  Here, we factor/invert C
+    // without equilibration as we assemble C-inverse into Psi without any
+    // solve(); otherwise C-inverse would be the inverse of the equilibrated
+    // matrix and there is no corresponding unequilibrate to use at that point.
+    // Downstream, solves using the assembled Psi are equilibrated as needed.
+
+    // factor() is embedded within both reciprocalConditionEstimate() and
+    // invert(), so this return code is the furthest upstream
+    int fact_code = spd_solver.factor(); // Real rcond;
+    //int rcond_code = spd_solver.reciprocalConditionEstimate(rcond);
+    //int   inv_code = spd_solver.invert(); // in place
+    if (fact_code) { // only traps extreme cases
+      Cerr << "Warning: failure in group covariance factorization in ML BLUE::"
+	   << "compute_C_inverse()\n         for group " << group << " QoI "
+	   << qoi //<< " with C:\n" << cov_GG_gq
+	   << " (LAPACK error: leading minor of order " << fact_code
+	   << " is not positive definite,\n       and the factorization could "
+	   << "not be completed).  Resorting to pseudo-inverse via SVD."
+	   << std::endl;
+
+      // This drops the group contribution to Psi but probably also need
+      // to drop the group design var from the numerical soln to prevent
+      // unconstrained behavior there.
+      cov_GG_inv_gq.shape(0);
+    }
+    else { // bad inverses can still occur
+      spd_solver.invert();
+      //if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "LL^T inverse for group " << group << " QoI " << qoi << ":\n"
+           << cov_GG_inv_gq << std::endl;
+    }
+
+    /* This approach has not been effective for ill-conditioned cov_GG:
+    int r, nr = cov_GG_gq.numRows();
+    cov_GG_inv_gq.shape(nr);
+    RealSymMatrix A(cov_GG_gq);  RealMatrix X(nr, nr), B(nr, nr);
+    for (r=0; r<nr; ++r) B(r,r) = 1.; // identity
+    // Leverage both the soln refinement in solve() and equilibration during
+    // factorization (inverting C in place can only leverage the latter).
+    RealSpdSolver spd_solver;
+    spd_solver.setMatrix( Teuchos::rcp(&A,false));
+    spd_solver.setVectors(Teuchos::rcp(&X, false), Teuchos::rcp(&B, false));
+    if (spd_solver.shouldEquilibrate())
+      spd_solver.factorWithEquilibration(true);
+    spd_solver.solveToRefinedSolution(true);
+    int code = spd_solver.solve();
+    copy_data(X, cov_GG_inv_gq); // Dense to SymDense
+    */
+
+    /*
+    // SYEV not consistent with Cholesky-based inverse for well conditioned
+    // Need to review Petra2014
+    RealVector eigen_vals;  RealMatrix eigen_vecs;
+    symmetric_eigenvalue_decomposition( cov_GG_gq, eigen_vals, eigen_vecs );
+    //if (outputLevel >= DEBUG_OUTPUT)
+    //  Cout << "SYEV eigenvalues for " << group << " QoI " << qoi << ":\n"
+    // 	     << eigen_vals << std::endl;
+    // Form V and D
+    Real ev_tol = std::sqrt(DBL_EPSILON); // Petra2014 suggests tol=1 in Fig 5.2
+    int n, r, num_rows = eigen_vals.length(), num_neglect = 0;
+    for (n=0; n<num_rows; ++n) // returned in increasing order
+      if ( eigen_vals[n] <= ev_tol ) ++num_neglect;
+      else                           break;
+    int num_low_rank = num_rows - num_neglect, offset_r;
+    RealSymMatrix D(num_low_rank); // init to 0;    r x r diagonal matrix
+    RealMatrix V(num_rows, num_low_rank, false); // n x r matrix for r retained
+    for (r=0; r<num_low_rank; ++r) {
+      offset_r = r + num_neglect;
+      Real lambda = eigen_vals[offset_r];
+      D(r,r) = lambda / (lambda + 1.); // Sherman-Morrison-Woodbury
+      for (n=0; n<num_rows; ++n)
+        V(n,r) = eigen_vecs(n,offset_r); // copy column
+    }
+    // Form inverse = I - V D V^T
+    // inv(hessian) of posterior = L (I - V D V^T) L^T for prior Cholesky L
+    cov_GG_inv_gq.shapeUninitialized(num_rows);
+    Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., D, V, cov_GG_inv_gq);
+    for (n=0; n<num_rows; ++n)
+      cov_GG_inv_gq(n,n) += 1.;
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Pseudo-inverse by SYEV for group " << group << " QoI " << qoi
+	   << ":\n" << cov_GG_inv_gq << std::endl;
+    */
+  }
 }
 
 
@@ -1914,37 +1915,38 @@ compute_mu_hat(const RealSymMatrix2DArray& cov_GG_inv,
 
   initialize_rva(mu_hat, false);
   size_t q, r, c, g, num_groups = modelGroups.size();
-  /*
-  RealSpdSolver spd_solver;
-  for (q=0; q<numFunctions; ++q) {
-    // Leverage both the soln refinement in solve() and equilibration during
-    // factorization (inverting Psi in place can only leverage the latter).
-    spd_solver.setMatrix(Teuchos::rcp(&Psi[q], false)); // resets solver state
-    spd_solver.setVectors(Teuchos::rcp(&mu_hat[q], false),
-			  Teuchos::rcp(&y[q], false));
-    if (spd_solver.shouldEquilibrate())
-      spd_solver.factorWithEquilibration(true);
-    spd_solver.solveToRefinedSolution(true);
-    int code = spd_solver.solve();
-    if (code) {
-      Cerr << "Error: serial dense solver failure (LAPACK error code " << code
-	   << ") in ML BLUE compute_mu_hat()." << std::endl;
-      abort_handler(METHOD_ERROR);
+  if (hardenNumericSoln) { // SVD
+    RealMatrix Psi_inv;  Real rcond;
+    for (q=0; q<numFunctions; ++q) {
+      pseudo_inverse(Psi[q], Psi_inv, rcond);
+      mu_hat[q].multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., Psi_inv,
+			 y[q], 0.);
+      if (outputLevel >= DEBUG_OUTPUT)
+	Cout << "Pseudo-inverse solve for mu_hat for QoI " << q << ":\n"
+	     << mu_hat[q] << std::endl;
     }
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Cholesky solve for mu_hat for QoI " << q << ":\n" << mu_hat[q]
-	   << std::endl;
   }
-  */
-
-  RealMatrix A, A_inv;  Real rcond;
-  for (q=0; q<numFunctions; ++q) {
-    copy_data(Psi[q], A); // RealSymMatrix to RealMatrix
-    pseudo_inverse(A, A_inv, rcond);
-    mu_hat[q].multiply(Teuchos::NO_TRANS,Teuchos::NO_TRANS,1., A_inv, y[q], 0.);
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Pseudo-inverse solve for mu_hat for QoI " << q << ":\n"
-	   << mu_hat[q] << std::endl;
+  else { // Cholesky
+    RealSpdSolver spd_solver;
+    for (q=0; q<numFunctions; ++q) {
+      // Leverage both the soln refinement in solve() and equilibration during
+      // factorization (inverting Psi in place can only leverage the latter).
+      spd_solver.setMatrix(Teuchos::rcp(&Psi[q], false)); // resets solver state
+      spd_solver.setVectors(Teuchos::rcp(&mu_hat[q], false),
+			    Teuchos::rcp(&y[q], false));
+      if (spd_solver.shouldEquilibrate())
+	spd_solver.factorWithEquilibration(true);
+      spd_solver.solveToRefinedSolution(true);
+      int code = spd_solver.solve();
+      if (code) {
+	Cerr << "Error: serial dense solver failure (LAPACK error code " << code
+	     << ") in ML BLUE compute_mu_hat()." << std::endl;
+	abort_handler(METHOD_ERROR);
+      }
+      if (outputLevel >= DEBUG_OUTPUT)
+	Cout << "Cholesky solve for mu_hat for QoI " << q << ":\n"
+	     << mu_hat[q] << std::endl;
+    }
   }
 }
 
@@ -1957,58 +1959,52 @@ estimator_variances(const RealVector& cd_vars, RealVector& est_var)
   RealSymMatrixArray Psi;
   compute_Psi(covGGinv, cd_vars, Psi);
 
-  RealMatrix A, A_inv;  Real rcond;
-  for (size_t q=0; q<numFunctions; ++q) {
-    copy_data(Psi[q], A); // RealSymMatrix to RealMatrix
-    pseudo_inverse(A, A_inv, rcond); // *** TO DO: cache this for OPT++?
-    est_var[q] = A_inv(numApprox,numApprox);
+  if (hardenNumericSoln) { // SVD
+    RealMatrix Psi_inv;  Real rcond;
+    for (size_t q=0; q<numFunctions; ++q) {
+      pseudo_inverse(Psi[q], Psi_inv, rcond);// *** TO DO: cache this for OPT++?
+      est_var[q] = Psi_inv(numApprox,numApprox);
+    }
   }
+  else { // Cholesky
+    // This approach leverages both the solution refinement in solve() and
+    // equilibration during factorization (inverting Psi in place can only
+    // leverage the latter).  It seems to work more reliably than inversion.
+    RealSpdSolver spd_solver;  size_t q, num_m = numApprox + 1;
+    RealVector e_last(num_m, false), lhs_q(num_m, false);
+    for (q=0; q<numFunctions; ++q) {
+      // e_last is equilibrated in place, so must be reset
+      e_last.putScalar(0.); e_last[numApprox] = 1.;
 
+      spd_solver.setMatrix( Teuchos::rcp(&Psi[q], false));// resets solver state
+      spd_solver.setVectors(Teuchos::rcp(&lhs_q, false),
+                            Teuchos::rcp(&e_last, false));
+      if (spd_solver.shouldEquilibrate())
+        spd_solver.factorWithEquilibration(true);
+      spd_solver.solveToRefinedSolution(true);
+      int code = spd_solver.solve();
+      if (code) {
+        Cerr << "Error: serial dense solver failure (LAPACK error code "
+	     << code << ") in ML BLUE estimator_variances()." << std::endl;
+	abort_handler(METHOD_ERROR);
+      }
+      est_var[q] = lhs_q[numApprox];
+    }
+    // Revisit this flow:
+    // should be able to equilibrate and factor each Psi once within a SpdSolver
+    // that persists, then solve to refined soln for each est_var and mu-hat.
+
+    /* This approach suffers from poor performance, either from conditioning
+       issues or misunderstood Teuchos solver behavior.
+    RealSymMatrixArray Psi_inv;
+    compute_Psi_inverse(covGGinv, cd_vars, Psi_inv);
+    for (size_t qoi=0; qoi<numFunctions; ++qoi)
+      est_var[qoi] = Psi_inv[qoi](numApprox,numApprox); // e_l^T Psi-inverse e_l
+    */
+  }
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Solve at sample allocations:\n" << cd_vars
 	 << "for QoI estimator variances:\n" << est_var << std::endl;
-
-  /*
-  // This approach leverages both the solution refinement in solve() and
-  // equilibration during factorization (inverting Psi in place can only
-  // leverage the latter).  It seems to work much more reliably.
-  // > Psi and e_last need to be reset if Cholesky also active above
-  RealSpdSolver spd_solver;
-  RealVector e_last(all_models, false), estvar_q(all_models, false);
-  size_t q, all_models = numApprox + 1;
-  for (q=0; q<numFunctions; ++q) {
-    // e_last is equilbrated in place, so must be reset
-    e_last.putScalar(0.); e_last[numApprox] = 1.;
-
-    spd_solver.setMatrix( Teuchos::rcp(&Psi[q],   false));// resets solver state
-    spd_solver.setVectors(Teuchos::rcp(&estvar_q, false),
-			  Teuchos::rcp(&e_last,   false));
-    if (spd_solver.shouldEquilibrate())
-      spd_solver.factorWithEquilibration(true);
-    spd_solver.solveToRefinedSolution(true);
-    int code = spd_solver.solve();
-    if (code) {
-      Cerr << "Error: serial dense solver failure (LAPACK error code " << code
-	   << ") in ML BLUE estimator_variances()." << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
-    estvar[q] = estvar_q[numApprox];
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Cholesky       solve for estvar for QoI " << q << " = "
-	   << estvar[q] << std::endl;
-  }
-  // Revisit this flow:
-  // should be able to equilibrate and factor each Psi once within a SpdSolver
-  // that persists, then solve to refined solution for each est_var and mu-hat.
-  */
-
-  /* This approach suffers from poor performance, either from conditioning
-     issues or misunderstood Teuchos solver behavior.
-  RealSymMatrixArray Psi_inv;
-  compute_Psi_inverse(covGGinv, cd_vars, Psi_inv);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    est_var[qoi] = Psi_inv[qoi](numApprox,numApprox); // e_l^T Psi-inverse e_l
-  */
 }
 
 
@@ -2022,11 +2018,55 @@ estimator_variance_gradients(const RealVector& cd_vars, RealMatrix& ev_grads)
   RealSymMatrixArray Psi;
   compute_Psi(covGGinv, cd_vars, Psi);
 
-  Real rcond;  RealSymMatrix dPsi_dN(num_m, false), trip_prod(num_m, false);
-  RealMatrix Psi_rm, Psi_inv_rm;
+  RealSymMatrix dPsi_dN(num_m, false);
+  if (hardenNumericSoln) { // SVD
+    Real rcond;  RealMatrix Psi_inv;  RealSymMatrix trip_prod(num_m, false);
+    for (q=0; q<numFunctions; ++q) {
+      pseudo_inverse(Psi[q], Psi_inv, rcond); // *** TO DO: retrieve from cache for OPT++?
+
+      // form triple product dPsi_inv/dN_k = - Psi_inv dPsi/dN_k Psi_inv,
+      // where dPsi/dN_k = Ck_inv (inflated to Psi)
+      for (v=0; v<num_v; ++v) {
+	g = active_to_all_group(v); // active v to index of all groups
+	//inflate(covGGinv[g][q], mask, dPsi_dN); // mask not convenient here
+	assign_sub_matrix(covGGinv[g][q], modelGroups[g], dPsi_dN);
+	Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., dPsi_dN, Psi_inv,
+				     trip_prod);
+	ev_grads(v, q) = trip_prod(numApprox,numApprox);
+      }
+    }
+  }
+  else {
+    RealSpdSolver spd_solver;  RealSymMatrix A_q;
+    RealMatrix lhs_q(num_m,num_m,false), rhs_q, trip_prod(num_m,num_m,false);
+    for (q=0; q<numFunctions; ++q) {
+      for (v=0; v<num_v; ++v) {
+	g = active_to_all_group(v); // active v to index of all groups
+	assign_sub_matrix(covGGinv[g][q], modelGroups[g], dPsi_dN);
+	copy_data(Psi[q], A_q);
+	spd_solver.setMatrix(Teuchos::rcp(&A_q, false));// resets solver state
+	copy_data(dPsi_dN, rhs_q);
+	spd_solver.setVectors(Teuchos::rcp(&lhs_q, false),
+			      Teuchos::rcp(&rhs_q, false));
+	if (spd_solver.shouldEquilibrate())
+	  spd_solver.factorWithEquilibration(true);
+	spd_solver.solveToRefinedSolution(true);
+	int code = spd_solver.solve();
+	if (code) {
+	  Cerr << "Error: serial dense solver failure (LAPACK error code "
+	       << code << ") in ML BLUE estimator_variances()." << std::endl;
+	  abort_handler(METHOD_ERROR);
+	}
+	trip_prod.multiply(Teuchos::LEFT_SIDE, 1., dPsi_dN, lhs_q, 0.);
+	ev_grads(v, q) = trip_prod(numApprox,numApprox);
+      }
+    }
+  }
+
+  /*
   for (q=0; q<numFunctions; ++q) {
-    copy_data(Psi[q], Psi_rm); // RealSymMatrix to RealMatrix
-    pseudo_inverse(Psi_rm, Psi_inv_rm, rcond); // *** TO DO: retrieve from cache for OPT++?
+    if (hardenNumericSoln) pseudo_inverse(Psi[q], Psi_inv, rcond);
+    else                   invert_Psi(Psi[q], Psi_inv);
 
     // form triple product dPsi_inv/dN_k = - Psi_inv dPsi/dN_k Psi_inv,
     // where dPsi/dN_k = C_k_inv (inflated to Psi)
@@ -2034,11 +2074,13 @@ estimator_variance_gradients(const RealVector& cd_vars, RealMatrix& ev_grads)
       g = active_to_all_group(v); // active v to index of all groups
       //inflate(covGGinv[g][q], mask, dPsi_dN); // mask not convenient here
       assign_sub_matrix(covGGinv[g][q], modelGroups[g], dPsi_dN);
-      Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., dPsi_dN,
-				   Psi_inv_rm, trip_prod);
+      Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., dPsi_dN, Psi_inv,
+				   trip_prod);
       ev_grads(v, q) = trip_prod(numApprox,numApprox);
     }
   }
+  */
+
   // For estvar Hessian, d^2Psi/dN^2 = 0, so the Hessian will be determined
   // from first-order terms, similar to Gauss-Newton
 
@@ -2060,26 +2102,69 @@ estimator_variances_and_gradients(const RealVector& cd_vars,
   RealSymMatrixArray Psi;
   compute_Psi(covGGinv, cd_vars, Psi);
 
-  Real rcond;  RealSymMatrix dPsi_dN(num_m, false), trip_prod(num_m, false);
-  RealMatrix Psi_rm, Psi_inv_rm;
-  for (q=0; q<numFunctions; ++q) {
-    copy_data(Psi[q], Psi_rm); // RealSymMatrix to RealMatrix
-    pseudo_inverse(Psi_rm, Psi_inv_rm, rcond);
-
-    est_var[q] = Psi_inv_rm(numApprox,numApprox);
-
-    // form triple product dPsi_inv/dN_k = - Psi_inv dPsi/dN_k Psi_inv,
-    // where dPsi/dN_k = C_k_inv (inflated to Psi)
-    for (v=0; v<num_v; ++v) {
-      g = active_to_all_group(v); // active v to index of all groups
-      assign_sub_matrix(covGGinv[g][q], modelGroups[g], dPsi_dN);
-      Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., dPsi_dN,
-				   Psi_inv_rm, trip_prod);
-      ev_grads(v, q) = trip_prod(numApprox,numApprox);
+  RealSymMatrix dPsi_dN(num_m, false);
+  if (hardenNumericSoln) { // SVD
+    Real rcond;  RealMatrix Psi_inv;  RealSymMatrix trip_prod(num_m, false);
+    for (q=0; q<numFunctions; ++q) {
+      pseudo_inverse(Psi[q], Psi_inv, rcond);
+      est_var[q] = Psi_inv(numApprox,numApprox);
+      // form triple product dPsi_inv/dN_k = - Psi_inv dPsi/dN_k Psi_inv,
+      // where dPsi/dN_k = Ck_inv (inflated to Psi)
+      for (v=0; v<num_v; ++v) {
+	g = active_to_all_group(v); // active v to index of all groups
+	assign_sub_matrix(covGGinv[g][q], modelGroups[g], dPsi_dN);
+	Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., dPsi_dN,
+				     Psi_inv, trip_prod);
+	ev_grads(v, q) = trip_prod(numApprox,numApprox);
+      }
     }
   }
-  // For estvar Hessian, d^2Psi/dN^2 = 0, so the Hessian will be determined
-  // from first-order terms, similar to Gauss-Newton
+  else { // Cholesky
+    RealSpdSolver spd_solver;  RealSymMatrix A_q;
+    RealVector e_last(num_m, false), lhs_ev(num_m, false);
+    RealMatrix lhs_evg(num_m, num_m, false), rhs_evg,
+      trip_prod(num_m, num_m, false);
+    for (q=0; q<numFunctions; ++q) {
+      // e_last is equilibrated in place, so must be reset
+      e_last.putScalar(0.); e_last[numApprox] = 1.;
+
+      copy_data(Psi[q], A_q);
+      spd_solver.setMatrix( Teuchos::rcp(&A_q,    false));// resets solver state
+      spd_solver.setVectors(Teuchos::rcp(&lhs_ev, false),
+                            Teuchos::rcp(&e_last, false));
+      if (spd_solver.shouldEquilibrate())
+	spd_solver.factorWithEquilibration(true);
+      spd_solver.solveToRefinedSolution(true);
+      int code = spd_solver.solve();
+      if (code) {
+        Cerr << "Error: serial dense solver failure (LAPACK error code "
+	     << code << ") in ML BLUE estimator_variances()." << std::endl;
+	abort_handler(METHOD_ERROR);
+      }
+      est_var[q] = lhs_ev[numApprox];
+
+      for (v=0; v<num_v; ++v) {
+	g = active_to_all_group(v); // active v to index of all groups
+	assign_sub_matrix(covGGinv[g][q], modelGroups[g], dPsi_dN);
+	copy_data(Psi[q], A_q);
+	spd_solver.setMatrix(Teuchos::rcp(&A_q, false));// resets solver state
+	copy_data(dPsi_dN, rhs_evg);
+	spd_solver.setVectors(Teuchos::rcp(&lhs_evg, false),
+			      Teuchos::rcp(&rhs_evg, false));
+	if (spd_solver.shouldEquilibrate())
+	  spd_solver.factorWithEquilibration(true);
+	spd_solver.solveToRefinedSolution(true);
+	int code = spd_solver.solve();
+	if (code) {
+	  Cerr << "Error: serial dense solver failure (LAPACK error code "
+	       << code << ") in ML BLUE estimator_variances()." << std::endl;
+	  abort_handler(METHOD_ERROR);
+	}
+	trip_prod.multiply(Teuchos::LEFT_SIDE, 1., dPsi_dN, lhs_evg, 0.);
+	ev_grads(v, q) = trip_prod(numApprox,numApprox);
+      }
+    }
+  }
 
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Solve at sample allocations:\n" << cd_vars

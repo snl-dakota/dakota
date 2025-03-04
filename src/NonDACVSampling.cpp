@@ -504,10 +504,9 @@ solve_for_C_F_c_f(RealSymMatrix& C_F, RealVector& c_f, RealVector& lhs,
   lhs.size(n); // not sure if initialization matters here...
 
   if (hardenNumericSoln) {
-    RealMatrix A, A_inv;  Real rcond;
-    copy_data(C_F, A); // RealSymMatrix to RealMatrix
-    pseudo_inverse(A, A_inv, rcond);
-    lhs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., A_inv, c_f, 0.);
+    RealMatrix C_F_inv;  Real rcond;
+    pseudo_inverse(C_F, C_F_inv, rcond);
+    lhs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., C_F_inv, c_f, 0.);
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "ACV pseudo-inverse solve for LHS:\n" << lhs << "has rcond = "
 	   << rcond << std::endl;
