@@ -21,7 +21,7 @@ if(HAVE_ROL AND NOT WIN32)
     # dependence on BLAS/LAPACK (TODO: root cause the link chain)
     empty.f90
     LINK_LIBS dakota_surrogates Boost::boost Boost::filesystem )
-endif(HAVE_ROL)
+endif()
 
 dakota_add_unit_test(NAME surrogates_polynomial_regression
   SOURCES PolynomialRegressionTest.cpp
