@@ -41,7 +41,8 @@ public:
   //
 
   /// standard constructor
-  NonDNonHierarchSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  NonDNonHierarchSampling(ProblemDescDB& problem_db,
+			  std::shared_ptr<Model> model);
   /// destructor
   ~NonDNonHierarchSampling() override;
 
@@ -480,6 +481,11 @@ protected:
   /// identify if there are activeSet requests for model i
   bool active_set_for_model(size_t i);
 
+  /// Perform a Cholesky factorization and solve
+  int cholesky_solve(RealSymMatrix& A, RealMatrix& X, RealMatrix& B,
+		     bool copy_A = false, bool copy_B = false,
+		     bool hard_error = true);
+
   /// promote scalar to 1D array
   void inflate(size_t N_0D, SizetArray& N_1D);
   /// promote scalar to portion of 1D array
@@ -555,6 +561,8 @@ protected:
   /// a subset of the non-hierarchcvial samplers provide analytic derivatives
   /// of estimator variance
   bool analyticEstVarDerivs;
+  /// employ truncated SVD rather than Cholesky factorization for matrix solve
+  bool hardenNumericSoln;
 
   /// for sample projections, the calculated increment in HF samples that
   /// would be evaluated if full iteration/statistics were pursued

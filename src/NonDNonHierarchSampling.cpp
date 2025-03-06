@@ -42,11 +42,12 @@ NonDNonHierarchSampling* NonDNonHierarchSampling::nonHierSampInstance(NULL);
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDNonHierarchSampling::
-NonDNonHierarchSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
+NonDNonHierarchSampling(ProblemDescDB& problem_db,
+			std::shared_ptr<Model> model):
   NonDEnsembleSampling(problem_db, model),
   activeBudget((Real)maxFunctionEvals), optSubProblemForm(0),
   truthFixedByPilot(problem_db.get_bool("method.nond.truth_fixed_by_pilot")),
-  analyticEstVarDerivs(false)
+  analyticEstVarDerivs(false), hardenNumericSoln(false)
 {
   // solver(s) that perform the numerical solution for resource allocations
   optSubProblemSolver = sub_optimizer_select(
@@ -1817,6 +1818,68 @@ estvar_gradients_to_metric_gradient(const RealVector& ev_vec,
       evm_grad[v] = ev_grad(v, metric_index);
     break;
   }
+}
+
+
+int NonDNonHierarchSampling::
+cholesky_solve(RealSymMatrix& A, RealMatrix& X, RealMatrix& B,
+	       bool copy_A, bool copy_B, bool hard_error)
+{
+  // Leverage both the soln refinement in solve() and equilibration during
+  // factorization (inverting Psi in place can only leverage the latter).
+  RealSpdSolver spd_solver;
+  spd_solver.solveToRefinedSolution(true);
+
+  int num_Ac = A.numCols(), num_Bc = B.numCols();
+  if (X.numRows() != num_Ac || X.numCols() != num_Bc)
+    X.shapeUninitialized(num_Ac, num_Bc);
+
+  // Matrix & RHS altered by equilibration --> make copies if orig still needed
+  RealSymMatrix A_copy;  RealMatrix B_copy;
+  if (copy_A) {
+    copy_data(A, A_copy);
+    spd_solver.setMatrix(Teuchos::rcp(&A_copy,false));
+  }
+  else // Ok to modify A in place
+    spd_solver.setMatrix(Teuchos::rcp(&A,false));
+
+  if (copy_B) {
+    copy_data(B, B_copy);
+    spd_solver.setVectors(Teuchos::rcp(&X,false), Teuchos::rcp(&B_copy,false));
+  }
+  else // Ok to modify B in place
+    spd_solver.setVectors(Teuchos::rcp(&X,false), Teuchos::rcp(&B,false));
+
+  spd_solver.factorWithEquilibration(spd_solver.shouldEquilibrate());
+  // Teuchos bug: solve() discards lower level factor() error code, so unroll
+  int fact_code = spd_solver.factor();
+  if (fact_code) {
+    if (hard_error) {
+      Cerr << "Error: Cholesky factorization failure (LAPACK POTRF error code "
+	   << fact_code << ") during cholesky_solve().\n       Consider "
+	   << "hardened SVD-based approach." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    else
+      Cerr << "Warning: Cholesky factorization failure (LAPACK POTRF "
+	   << "error code " << fact_code << ") during cholesky_solve().\n"
+	   << "         Mitigation to be performed." << std::endl;
+    return fact_code;
+  }
+  int solve_code = spd_solver.solve();
+  if (solve_code) {
+    if (hard_error) {
+      Cerr << "Error: solver failure (LAPACK POTRS error code " << solve_code
+	   << ") in cholesky_solve().\n       Consider hardened SVD-based "
+	   << "approach." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    else
+      Cerr << "Warning: solver failure (LAPACK POTRS error code " << solve_code
+	   << ") in cholesky_solve().\n         Mitigation to be performed."
+	   << std::endl;
+  }
+  return solve_code;
 }
 
 

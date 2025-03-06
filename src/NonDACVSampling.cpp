@@ -10,6 +10,7 @@
 #include "dakota_system_defs.hpp"
 #include "dakota_data_io.hpp"
 //#include "dakota_tabular_io.hpp"
+#include "dakota_linear_algebra.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "NonDACVSampling.hpp"
@@ -488,6 +489,30 @@ compute_acv_controls(const IntRealMatrixMap& sum_L_covar,
 			  N_covar[qoi], mom, qoi, beta_m[qoi]);
       // *** TO DO: support shared_approx_increment() --> baselineL
   }
+}
+
+
+void NonDACVSampling::
+solve_for_C_F_c_f(RealSymMatrix& C_F, RealVector& c_f, RealVector& lhs,
+		  bool copy_C_F, bool copy_c_f)
+{
+  // The idea behind this approach is to leverage both the solution refinement
+  // in solve() and equilibration during factorization (inverting C_F in place
+  // can only leverage the latter).
+
+  size_t n = c_f.length();
+  lhs.size(n); // not sure if initialization matters here...
+
+  if (hardenNumericSoln) {
+    RealMatrix C_F_inv;  Real rcond;
+    pseudo_inverse(C_F, C_F_inv, rcond);
+    lhs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., C_F_inv, c_f, 0.);
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "ACV pseudo-inverse solve for LHS:\n" << lhs << "has rcond = "
+	   << rcond << std::endl;
+  }
+  else
+    cholesky_solve(C_F, lhs, c_f, copy_C_F, copy_c_f);
 }
 
 

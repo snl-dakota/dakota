@@ -10,6 +10,7 @@
 #include "dakota_system_defs.hpp"
 #include "dakota_data_io.hpp"
 //#include "dakota_tabular_io.hpp"
+#include "dakota_linear_algebra.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "NonDGenACVSampling.hpp"
@@ -1577,6 +1578,30 @@ scale_to_target(Real avg_N_H, const RealVector& cost,
   }
   else
     enforce_linear_ineq_constraints(avg_eval_ratios, approx_set, root_list);
+}
+
+
+void NonDGenACVSampling::
+solve_for_C_G_c_g(RealSymMatrix& C_G, RealVector& c_g, RealVector& lhs,
+		  bool copy_C_G, bool copy_c_g)
+{
+  // The idea behind this approach is to leverage both the solution refinement
+  // in solve() and equilibration during factorization (inverting C_G in place
+  // can only leverage the latter).
+
+  size_t n = c_g.length();
+  if (lhs.length() != n) lhs.size(n); // not sure if initialization matters
+
+  if (hardenNumericSoln) {
+    RealMatrix C_G_inv;  Real rcond;
+    pseudo_inverse(C_G, C_G_inv, rcond);
+    lhs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., C_G_inv, c_g, 0.);
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "GenACV pseudo-inverse solve for LHS:\n" << lhs << "has rcond = "
+	   << rcond << std::endl;
+  }
+  else
+    cholesky_solve(C_G, lhs, c_g, copy_C_G, copy_c_g);
 }
 
 
