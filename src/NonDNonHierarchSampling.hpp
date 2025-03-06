@@ -481,6 +481,11 @@ protected:
   /// identify if there are activeSet requests for model i
   bool active_set_for_model(size_t i);
 
+  /// Perform a Cholesky factorization and solve
+  int cholesky_solve(RealSymMatrix& A, RealMatrix& X, RealMatrix& B,
+		     bool copy_A = false, bool copy_B = false,
+		     bool hard_error = true);
+
   /// promote scalar to 1D array
   void inflate(size_t N_0D, SizetArray& N_1D);
   /// promote scalar to portion of 1D array
@@ -1925,6 +1930,52 @@ inline bool NonDNonHierarchSampling::active_set_for_model(size_t i)
     if (asv[qoi])
       return true;
   return false;
+}
+
+
+inline int NonDNonHierarchSampling::
+cholesky_solve(RealSymMatrix& A, RealMatrix& X, RealMatrix& B,
+	       bool copy_A, bool copy_B, bool hard_error)
+{
+  // Leverage both the soln refinement in solve() and equilibration during
+  // factorization (inverting Psi in place can only leverage the latter).
+  RealSpdSolver spd_solver;
+  spd_solver.solveToRefinedSolution(true);
+
+  int num_Ac = A.numCols(), num_Bc = B.numCols();
+  if (X.numRows() != num_Ac || X.numCols() != num_Bc)
+    X.shapeUninitialized(num_Ac, num_Bc);
+
+  // Matrix & RHS altered by equilibration --> make copies if orig still needed
+  RealSymMatrix A_copy;  RealMatrix B_copy;
+  if (copy_A) {
+    copy_data(A, A_copy);
+    spd_solver.setMatrix(Teuchos::rcp(&A_copy,false));
+  }
+  else // Ok to modify A in place
+    spd_solver.setMatrix(Teuchos::rcp(&A,false));
+
+  if (copy_B) {
+    copy_data(B, B_copy);
+    spd_solver.setVectors(Teuchos::rcp(&X,false), Teuchos::rcp(&B_copy,false));
+  }
+  else // Ok to modify B in place
+    spd_solver.setVectors(Teuchos::rcp(&X,false), Teuchos::rcp(&B,false));
+
+  spd_solver.factorWithEquilibration(spd_solver.shouldEquilibrate());
+  int code = spd_solver.solve();
+  if (code) {
+    if (hard_error) {
+      Cerr << "Error: Cholesky solve failure (LAPACK error code " << code
+	   << ") in cholesky_solve().  Consider hardened SVD-based approach."
+	   << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    else
+      Cerr << "Warning: serial dense solver failure (LAPACK error code " << code
+	   << ") in cholesky_solve().  Mitigation employed." << std::endl;
+  }
+  return code;
 }
 
 

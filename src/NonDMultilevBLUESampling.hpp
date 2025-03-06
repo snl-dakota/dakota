@@ -33,7 +33,8 @@ public:
   //
 
   /// standard constructor
-  NonDMultilevBLUESampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  NonDMultilevBLUESampling(ProblemDescDB& problem_db,
+			   std::shared_ptr<Model> model);
   /// destructor
   ~NonDMultilevBLUESampling() override;
 
@@ -100,17 +101,17 @@ protected:
   //- Heading: member functions
   //
 
-  void compute_C_inverse(const RealSymMatrix& cov_GG_gq,
+  void compute_C_inverse(RealSymMatrix& cov_GG_gq,
 			 RealSymMatrix& cov_GG_inv_gq,
 			 size_t group, size_t qoi, Real& rcond);
-  void compute_C_inverse(const RealSymMatrix2DArray& cov_GG,
+  void compute_C_inverse(RealSymMatrix2DArray& cov_GG,
 			 RealSymMatrix2DArray& cov_GG_inv);
   void compute_Psi(const RealSymMatrix2DArray& cov_GG_inv,
 		   const RealVector& N_G, RealSymMatrixArray& Psi);
   void compute_Psi(const RealSymMatrix2DArray& cov_GG_inv,
 		   const Sizet2DArray& N_G, RealSymMatrixArray& Psi);
-  void invert_Psi(const RealSymMatrix& Psi, RealSymMatrix& Psi_inv);
-  void invert_Psi(const RealSymMatrix& Psi, RealMatrix& Psi_inv);
+  void invert_Psi(RealSymMatrix& Psi, RealSymMatrix& Psi_inv);
+  void invert_Psi(RealSymMatrix& Psi, RealMatrix& Psi_inv);
   /*
   void compute_Psi_inverse(const RealSymMatrix2DArray& cov_GG_inv,
 			   const RealVector& N_G_1D,
@@ -187,6 +188,8 @@ private:
   /// find group and model indices for HF reference variance
   void find_hf_sample_reference(const SizetArray& N_G,  size_t& ref_group,
 				size_t& ref_model_index) const;
+  /// identify whether any retained groups include the HF model
+  bool hf_group_retained() const;
   /// find the best-conditioned group that contains the HF model
   size_t best_conditioned_hf_group();
 
@@ -630,6 +633,17 @@ find_hf_sample_reference(const SizetArray& N_G, size_t& ref_group,
 }
 
 
+inline bool NonDMultilevBLUESampling::hf_group_retained() const
+{
+  bool no_retain_throttle = retainedModelGroups.empty();
+  for (size_t g=0; g<numGroups; ++g)
+    if ( ( no_retain_throttle || retainedModelGroups[g] ) &&
+	 modelGroups[g].back() == numApprox)
+      return true;
+  return false; // none of the retained groups include HF
+}
+
+
 inline size_t NonDMultilevBLUESampling::best_conditioned_hf_group()
 {
   //size_t skip_front = numGroups - retainedModelGroups.count();
@@ -863,7 +877,7 @@ linear_group_cost_gradient(const RealVector& cdv, RealVector& grad_c)
 
 
 inline void NonDMultilevBLUESampling::
-compute_C_inverse(const RealSymMatrix2DArray& cov_GG,
+compute_C_inverse(RealSymMatrix2DArray& cov_GG,
 		  RealSymMatrix2DArray& cov_GG_inv)
 {
   // cov matrices are sized according to group member size
@@ -875,8 +889,8 @@ compute_C_inverse(const RealSymMatrix2DArray& cov_GG,
   size_t q, g, num_groups = modelGroups.size();
   RealVector rcond(numFunctions);
   for (g=0; g<num_groups; ++g) {
-    const RealSymMatrixArray& cov_GG_g = cov_GG[g];
-    RealSymMatrixArray&   cov_GG_inv_g = cov_GG_inv[g];
+    RealSymMatrixArray& cov_GG_g     = cov_GG[g];
+    RealSymMatrixArray& cov_GG_inv_g = cov_GG_inv[g];
     for (q=0; q<numFunctions; ++q)
       compute_C_inverse(cov_GG_g[q], cov_GG_inv_g[q], g, q, rcond[q]);
     if (rcond_throttle)
@@ -945,34 +959,38 @@ compute_Psi(const RealSymMatrix2DArray& cov_GG_inv, const Sizet2DArray& N_G,
 
 
 inline void NonDMultilevBLUESampling::
-invert_Psi(const RealSymMatrix& Psi, RealSymMatrix& Psi_inv)
+invert_Psi(RealSymMatrix& Psi, RealMatrix& Psi_inv)
 {
   // Psi-inverse is used for computing both estimator variance (during numerical
   // solve) and y-hat / mu-hat (after solve), so invert now without a RHS so
   // Psi-inverse can be used in multiple places without additional tracking
-  RealSpdSolver spd_solver; // reuse since setMatrix resets internal state
+
+  int r, nr = Psi.numRows();
+  RealMatrix I(nr, nr);  for (r=0; r<nr; ++r) I(r,r) = 1.; // identity
+  Psi_inv.shapeUninitialized(nr, nr);
+
+  cholesky_solve(Psi, Psi_inv, I, true, false);//copy A, overwrite B, hard error
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "In invert_Psi(), Psi:\n" << Psi << "Psi_inv:\n" << Psi_inv
+	 << std::endl;
+}
+
+
+inline void NonDMultilevBLUESampling::
+invert_Psi(RealSymMatrix& Psi, RealSymMatrix& Psi_inv)
+{
+  RealMatrix Psi_inv_rm;
+  invert_Psi(Psi, Psi_inv_rm);
+  copy_data(Psi_inv_rm, Psi_inv);
+
+  /*
   copy_data(Psi, Psi_inv);
   spd_solver.setMatrix(Teuchos::rcp(&Psi_inv, false));
   // Note: equilibration should not be used outside of the solve() context,
   // as the resulting inverse would be for the equilibrated matrix.  See
   // discussion above in compute_C_inverse().
   int code = spd_solver.invert(); // in place
-  if (code) {
-    Cerr << "Error: serial dense solver failure (LAPACK error code " << code
-	 << ") in NonDMultilevBLUE::invert_Psi()." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-  //if (outputLevel >= DEBUG_OUTPUT)
-  //  Cout << "In invert_Psi(), Psi_inv:\n" << Psi << std::endl;
-}
-
-
-inline void NonDMultilevBLUESampling::
-invert_Psi(const RealSymMatrix& Psi, RealMatrix& Psi_inv)
-{
-  RealSymMatrix Psi_inv_rsm;
-  invert_Psi(Psi, Psi_inv_rsm);
-  copy_data(Psi_inv_rsm, Psi_inv);
+  */
 }
 
 
