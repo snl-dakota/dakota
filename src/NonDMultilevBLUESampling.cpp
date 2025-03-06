@@ -38,7 +38,7 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db,
   rCondTolThrottle(problem_db.get_real("method.nond.rcond_tol_throttle"))
 {
   analyticEstVarDerivs = true; // estvar solve can be differentiated
-  //hardenNumericSoln    = true; // more important for ML BLUE than ACV family
+  hardenNumericSoln    = true; // more important for ML BLUE than ACV family
   mlmfSubMethod        = problem_db.get_ushort("method.sub_method");
 
   // SDP versus conventional NLP handled by optSubProblemSolver
@@ -1815,8 +1815,8 @@ compute_C_inverse(RealSymMatrix& cov_GG_gq, RealSymMatrix& cov_GG_inv_gq,
     // For failed solve, clearing matrix results in (a) dropping group
     // contribution to Psi in compute_Psi() and (b) dropping design var in
     // prune_model_groups() using retainedModelGroups
-    if (code) cov_GG_inv_gq.shape(0);
-    else      copy_data(cov_GG_inv_rm, cov_GG_inv_gq);
+    if (code) { cov_GG_inv_gq.shape(0);                  rcond = 0.; }
+    else      { copy_data(cov_GG_inv_rm, cov_GG_inv_gq); rcond = 1.; }
 
     /* This approach has not been effective for ill-conditioned cov_GG:
     int r, nr = cov_GG_gq.numRows();
@@ -2206,7 +2206,7 @@ void NonDMultilevBLUESampling::prune_model_groups()
 	  Cout << "Retained group " << g << ":\n" << modelGroups[g];
     }
     if (retainedModels.empty() || retainedModels.count() == numApprox+1)
-      Cout << "All models retained\n";
+      Cout << "Within retained groups, all models retained\n";
     else {
       Cout << "Retained model count = " << retainedModels.count() << '\n';
       for (size_t m=0; m<=numApprox; ++m)

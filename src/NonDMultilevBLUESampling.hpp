@@ -970,9 +970,9 @@ invert_Psi(RealSymMatrix& Psi, RealMatrix& Psi_inv)
   Psi_inv.shapeUninitialized(nr, nr);
 
   cholesky_solve(Psi, Psi_inv, I, true, false);//copy A, overwrite B, hard error
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "In invert_Psi(), Psi:\n" << Psi << "Psi_inv:\n" << Psi_inv
-	 << std::endl;
+  //if (outputLevel >= DEBUG_OUTPUT)
+  //  Cout << "In invert_Psi(), Psi:\n" << Psi << "Psi_inv:\n" << Psi_inv
+  //	   << std::endl;
 }
 
 
