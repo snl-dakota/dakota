@@ -206,10 +206,9 @@ NonDBayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
       unsigned short sample_type = SUBMETHOD_LHS;
       bool vary_pattern = true;
       String rng("mt19937");
-      auto lhs_sampler_rep = std::make_shared<NonDLHSSampling>
-	(hifiModel, sample_type, num_lhs_samples, randomSeed, rng, vary_pattern,
-	 ACTIVE_UNIFORM);
-      hifiSampler.assign_rep(lhs_sampler_rep);
+      hifiSampler = std::make_shared<NonDLHSSampling>
+	      (hifiModel, sample_type, num_lhs_samples, randomSeed, rng, vary_pattern,
+	        ACTIVE_UNIFORM);
     }
   }
 
@@ -300,7 +299,6 @@ void NonDBayesCalibration::construct_mcmc_model()
       rule_growth = probDescDB.get_short("method.nond.growth_override");
     bool pw_basis = probDescDB.get_bool("method.nond.piecewise_basis"),
        use_derivs = probDescDB.get_bool("method.derivative_usage");
-    std::shared_ptr<NonDExpansion> se_rep;
 
     if (emulatorType == SC_EMULATOR) { // SC sparse grid interpolation
       unsigned short ssg_level
@@ -314,12 +312,12 @@ void NonDBayesCalibration::construct_mcmc_model()
 	  exp_coeff_approach = Pecos::HIERARCHICAL_SPARSE_GRID;
 	else if (refine_cntl)
 	  exp_coeff_approach = Pecos::INCREMENTAL_SPARSE_GRID;
-	se_rep = std::make_shared<NonDStochCollocation>(inbound_model,
+	stochExpIterator = std::make_shared<NonDStochCollocation>(inbound_model,
 	  exp_coeff_approach, ssg_level, dim_pref, u_space_type, refine_type,
 	  refine_cntl, cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs);
       }
       else if (tpq_order != USHRT_MAX)
-	se_rep = std::make_shared<NonDStochCollocation>(inbound_model,
+        stochExpIterator = std::make_shared<NonDStochCollocation>(inbound_model,
 	  Pecos::QUADRATURE, tpq_order, dim_pref, u_space_type, refine_type,
 	  refine_cntl, cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs);
       mcmcDerivOrder = 3; // Hessian computations not yet implemented for SC
@@ -347,29 +345,29 @@ void NonDBayesCalibration::construct_mcmc_model()
 	// Imported surrogate will include state config vars for now.
 	// TO DO: expand this override to non-imported cases.
 	ShortShortPair approx_view(MIXED_ALL, EMPTY_VIEW);
-	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model,
+	stochExpIterator = std::make_shared<NonDPolynomialChaos>(inbound_model,
 	  exp_import_file, u_space_type, approx_view);//no export since imported
       }
       else if (ssg_level != USHRT_MAX) { // PCE sparse grid
 	short exp_coeff_approach = (refine_cntl) ?
 	  Pecos::INCREMENTAL_SPARSE_GRID : Pecos::COMBINED_SPARSE_GRID;
-	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model,
+	stochExpIterator = std::make_shared<NonDPolynomialChaos>(inbound_model,
 	  exp_coeff_approach, ssg_level, dim_pref, u_space_type, refine_type,
 	  refine_cntl, cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs,
 	  exp_export_file);
       }
       else if (tpq_order != USHRT_MAX)
-	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model,
+        stochExpIterator = std::make_shared<NonDPolynomialChaos>(inbound_model,
 	  Pecos::QUADRATURE, tpq_order, dim_pref, u_space_type, refine_type,
 	  refine_cntl, cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs,
 	  exp_export_file);
       else if (cub_int != USHRT_MAX)
-	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model,
+	stochExpIterator = std::make_shared<NonDPolynomialChaos>(inbound_model,
 	  Pecos::CUBATURE, cub_int, dim_pref, u_space_type, refine_type,
 	  refine_cntl, cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs,
 	  exp_export_file);
       else { // regression PCE: LeastSq/CS, OLI
-	se_rep = std::make_shared<NonDPolynomialChaos>(inbound_model,
+	stochExpIterator = std::make_shared<NonDPolynomialChaos>(inbound_model,
 	  probDescDB.get_short("method.nond.regression_type"), 
 	  probDescDB.get_ushort("method.nond.expansion_order"), dim_pref,
 	  probDescDB.get_sizet("method.nond.collocation_points"),
@@ -401,13 +399,13 @@ void NonDBayesCalibration::construct_mcmc_model()
 	  exp_coeff_approach = Pecos::HIERARCHICAL_SPARSE_GRID;
 	else if (refine_cntl)
 	  exp_coeff_approach = Pecos::INCREMENTAL_SPARSE_GRID;
-	se_rep = std::make_shared<NonDMultilevelStochCollocation>(inbound_model,
+	stochExpIterator = std::make_shared<NonDMultilevelStochCollocation>(inbound_model,
 	  exp_coeff_approach, ssg_level_seq, dim_pref, u_space_type,
 	  refine_type, refine_cntl, cov_cntl, ml_alloc_cntl, ml_discrep,
 	  rule_nest, rule_growth, pw_basis, use_derivs);
       }
       else if (!tpq_order_seq.empty())
-	se_rep = std::make_shared<NonDMultilevelStochCollocation>(inbound_model,
+	stochExpIterator = std::make_shared<NonDMultilevelStochCollocation>(inbound_model,
 	  Pecos::QUADRATURE, tpq_order_seq, dim_pref, u_space_type, refine_type,
 	  refine_cntl, cov_cntl, ml_alloc_cntl, ml_discrep, rule_nest,
 	  rule_growth, pw_basis, use_derivs);
@@ -426,19 +424,19 @@ void NonDBayesCalibration::construct_mcmc_model()
       if (!ssg_level_seq.empty()) {
 	short exp_coeff_approach = (refine_cntl) ?
 	  Pecos::INCREMENTAL_SPARSE_GRID : Pecos::COMBINED_SPARSE_GRID;
-	se_rep = std::make_shared<NonDMultilevelPolynomialChaos>(inbound_model,
+	stochExpIterator = std::make_shared<NonDMultilevelPolynomialChaos>(inbound_model,
 	  exp_coeff_approach, ssg_level_seq, dim_pref, u_space_type,
 	  refine_type, refine_cntl, cov_cntl, ml_alloc_cntl, ml_discrep,
 	  rule_nest, rule_growth, pw_basis, use_derivs);
       }
       else if (!tpq_order_seq.empty())
-	se_rep = std::make_shared<NonDMultilevelPolynomialChaos>(inbound_model,
+	stochExpIterator = std::make_shared<NonDMultilevelPolynomialChaos>(inbound_model,
 	  Pecos::QUADRATURE, tpq_order_seq, dim_pref, u_space_type, refine_type,
 	  refine_cntl, cov_cntl, ml_alloc_cntl, ml_discrep, rule_nest,
 	  rule_growth, pw_basis, use_derivs);
       else { // regression PCE: LeastSq/CS, OLI
         SizetArray seed_seq(1, randomSeed); // reuse bayes_calib scalar spec
-        se_rep = std::make_shared<NonDMultilevelPolynomialChaos>(
+        stochExpIterator = std::make_shared<NonDMultilevelPolynomialChaos>(
           MULTIFIDELITY_POLYNOMIAL_CHAOS, inbound_model,
           probDescDB.get_short("method.nond.regression_type"), 
           probDescDB.get_usa("method.nond.expansion_order"), dim_pref,
@@ -456,7 +454,7 @@ void NonDBayesCalibration::construct_mcmc_model()
 
     else if (emulatorType == ML_PCE_EMULATOR) {
       SizetArray seed_seq(1, randomSeed); // reuse bayes_calib scalar spec
-      se_rep = std::make_shared<NonDMultilevelPolynomialChaos>(
+      stochExpIterator = std::make_shared<NonDMultilevelPolynomialChaos>(
         MULTILEVEL_POLYNOMIAL_CHAOS, inbound_model,
         probDescDB.get_short("method.nond.regression_type"),
         probDescDB.get_usa("method.nond.expansion_order"), dim_pref,
@@ -474,18 +472,17 @@ void NonDBayesCalibration::construct_mcmc_model()
     }
 
     // for adaptive exp refinement, propagate controls from Bayes method spec:
-    se_rep->maximum_iterations(maxIterations);
-    se_rep->maximum_refinement_iterations(
+    stochExpIterator->maximum_iterations(maxIterations);
+    stochExpIterator->maximum_refinement_iterations(
       probDescDB.get_sizet("method.nond.max_refinement_iterations"));
-    se_rep->convergence_tolerance(convergenceTol);
+    stochExpIterator->convergence_tolerance(convergenceTol);
 
-    stochExpIterator.assign_rep(se_rep);
     // no CDF or PDF level mappings
     RealVectorArray empty_rv_array; // empty
-    se_rep->requested_levels(empty_rv_array, empty_rv_array, empty_rv_array,
+    stochExpIterator->requested_levels(empty_rv_array, empty_rv_array, empty_rv_array,
       empty_rv_array, respLevelTarget, respLevelTargetReduce, cdfFlag, false);
     // extract NonDExpansion's uSpaceModel for use in likelihood evals
-    mcmcModel = stochExpIterator.algorithm_space_model(); // shared rep
+    mcmcModel = stochExpIterator->algorithm_space_model(); // shared rep
     break;
   }
 
@@ -512,7 +509,7 @@ void NonDBayesCalibration::construct_mcmc_model()
       { samples = 0; sample_reuse = "all"; }
 
     // Consider elevating lhsSampler from NonDGPMSABayesCalibration:
-    Iterator lhs_iterator;
+    std::shared_ptr<Iterator> lhs_iterator;
     std::shared_ptr<Model> lhs_model;
     // NKM requires finite bounds for scaling and init of correlation lengths.
     // Default truncation is +/-10 sigma, which may be overly conservative for
@@ -525,10 +522,9 @@ void NonDBayesCalibration::construct_mcmc_model()
       lhs_model = inbound_model; // shared rep
     // Unlike EGO-based approaches, use ACTIVE sampling mode to concentrate
     // samples in regions of higher prior density
-    auto lhs_rep = std::make_shared<NonDLHSSampling>(lhs_model, sample_type,
+    lhs_iterator = std::make_shared<NonDLHSSampling>(lhs_model, sample_type,
       samples, randomSeed,
       probDescDB.get_string("method.random_number_generator"));
-    lhs_iterator.assign_rep(lhs_rep);
 
     ActiveSet gp_set = lhs_model->current_response().active_set(); // copy
     gp_set.request_values(mcmcDerivOrder); // for misfit Hessian
@@ -703,16 +699,16 @@ void NonDBayesCalibration::construct_map_optimizer()
   case SUBMETHOD_NPSOL: {
     // SQP with BFGS Hessians
     int npsol_deriv_level = 3;
-    mapOptimizer.assign_rep(std::make_shared<NPSOLOptimizer>
-			    (negLogPostModel, npsol_deriv_level, convergenceTol));
+    mapOptimizer = std::make_shared<NPSOLOptimizer>
+			    (negLogPostModel, npsol_deriv_level, convergenceTol);
     break;
   }
 #endif
 #ifdef HAVE_OPTPP
   case SUBMETHOD_OPTPP:
     // full Newton (OPTPP::OptBCNewton)
-    mapOptimizer.assign_rep(std::make_shared<SNLLOptimizer>
-			    ("optpp_newton", negLogPostModel));
+    mapOptimizer = std::make_shared<SNLLOptimizer>
+			    ("optpp_newton", negLogPostModel);
     break;
 #endif
   }
@@ -773,17 +769,17 @@ void NonDBayesCalibration::derived_init_communicators(ParLevLIter pl_iter)
   switch (emulatorType) {
   case PCE_EMULATOR:    case SC_EMULATOR:
   case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
-    stochExpIterator.init_communicators(pl_iter);              break;
+    stochExpIterator->init_communicators(pl_iter);              break;
   //default:
   //  mcmcModel->init_communicators(pl_iter, maxEvalConcurrency); break;
   }
   residualModel->init_communicators(pl_iter, maxEvalConcurrency);
 
-  if (!mapOptimizer.is_null())
-    mapOptimizer.init_communicators(pl_iter);
+  if (mapOptimizer)
+    mapOptimizer->init_communicators(pl_iter);
 
-  if (!hifiSampler.is_null())
-    hifiSampler.init_communicators(pl_iter);
+  if (hifiSampler)
+    hifiSampler->init_communicators(pl_iter);
 }
 
 
@@ -796,33 +792,33 @@ void NonDBayesCalibration::derived_set_communicators(ParLevLIter pl_iter)
   switch (emulatorType) {
   case PCE_EMULATOR:    case SC_EMULATOR:
   case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
-    stochExpIterator.set_communicators(pl_iter);              break;
+    stochExpIterator->set_communicators(pl_iter);              break;
   //default:
   //  mcmcModel->set_communicators(pl_iter, maxEvalConcurrency); break;
   }
   residualModel->set_communicators(pl_iter, maxEvalConcurrency);
 
-  if (!mapOptimizer.is_null())
-    mapOptimizer.set_communicators(pl_iter);
+  if (mapOptimizer)
+    mapOptimizer->set_communicators(pl_iter);
 
-  if (!hifiSampler.is_null())
-    hifiSampler.set_communicators(pl_iter);
+  if (hifiSampler)
+    hifiSampler->set_communicators(pl_iter);
 }
 
 
 void NonDBayesCalibration::derived_free_communicators(ParLevLIter pl_iter)
 {
-  if (!hifiSampler.is_null())
-    hifiSampler.free_communicators(pl_iter);
+  if (hifiSampler)
+    hifiSampler->free_communicators(pl_iter);
 
-  if (!mapOptimizer.is_null())
-    mapOptimizer.free_communicators(pl_iter);
+  if (mapOptimizer)
+    mapOptimizer->free_communicators(pl_iter);
 
   residualModel->free_communicators(pl_iter, maxEvalConcurrency);
   switch (emulatorType) {
   case PCE_EMULATOR:    case SC_EMULATOR:
   case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
-    stochExpIterator.free_communicators(pl_iter);              break;
+    stochExpIterator->free_communicators(pl_iter);              break;
   //default:
   //  mcmcModel->free_communicators(pl_iter, maxEvalConcurrency); break;
   }
@@ -835,7 +831,7 @@ void NonDBayesCalibration::initialize_model()
   case PCE_EMULATOR: case SC_EMULATOR:
   case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR: {
     ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-    stochExpIterator.run(pl_iter); break;
+    stochExpIterator->run(pl_iter); break;
   }
   default: // GPs and NO_EMULATOR
     //resize_final_statistics_gradients(); // not required
@@ -856,7 +852,7 @@ void NonDBayesCalibration::map_pre_solve()
 
   // Management of pre_solve spec options occurs in NonDBayesCalibration ctor,
   // manifesting here as a valid mapOptimizer instance.
-  if (mapOptimizer.is_null()) return;
+  if (!mapOptimizer) return;
   
   // Pre-solve for MAP point using optimization prior to MCMC.
 
@@ -866,16 +862,16 @@ void NonDBayesCalibration::map_pre_solve()
   // warm start from previous map soln computed from previous emulator
   ModelUtils::continuous_variables(*negLogPostModel, mapSoln);
 
-  mapOptimizer.run();
+  mapOptimizer->run();
   //negLogPostModel.print_evaluation_summary(Cout);
-  //mapOptimizer.print_results(Cout); // needs xform if standardizedSpace
+  //mapOptimizer->print_results(Cout); // needs xform if standardizedSpace
   Cout << "Maximum a posteriori probability (MAP) point from pre-solve"
        << "\n(will be used as initial point for MCMC chain):\n";
 
   // TNP ? Why are we introducting this local variable instead of copying to
   // mapSoln?
   const RealVector& map_c_vars
-    = mapOptimizer.variables_results().continuous_variables();
+    = mapOptimizer->variables_results().continuous_variables();
   print_variables(Cout, map_c_vars);
   Cout << std::endl;
 
@@ -973,14 +969,14 @@ void NonDBayesCalibration::update_model()
   switch (emulatorType) {
   case PCE_EMULATOR: case SC_EMULATOR:
   case ML_PCE_EMULATOR: case MF_PCE_EMULATOR: case MF_SC_EMULATOR:
-    nondInstance = (NonD*)stochExpIterator.iterator_rep().get();
+    nondInstance = (NonD*)stochExpIterator.get();
     evaluate_parameter_sets(*mcmcModel);
     nondInstance = this; // restore
     break;
   case GP_EMULATOR: case KRIGING_EMULATOR:
     if (standardizedSpace)
       nondInstance
-	= (NonD*)mcmcModel->subordinate_iterator().iterator_rep().get();
+	= (NonD*)mcmcModel->subordinate_iterator().get();
     evaluate_parameter_sets(*mcmcModel);
     if (standardizedSpace)
       nondInstance = this; // restore
@@ -998,7 +994,7 @@ void NonDBayesCalibration::update_model()
     // Adapt the expansion in sync with the dataset using a top-down design
     // (more explicit than embedded logic w/i mcmcModel->append_approximation).
     std::shared_ptr<NonDExpansion> se_iterator =
-      std::static_pointer_cast<NonDExpansion>(stochExpIterator.iterator_rep());
+      std::static_pointer_cast<NonDExpansion>(stochExpIterator);
     se_iterator->append_expansion(allSamples, allResponses);
     // TO DO: order increment places addtnl reqmts on emulator conv assessment
     break;
@@ -1450,11 +1446,11 @@ void NonDBayesCalibration::add_lhs_hifi_data()
   if ( initHifiSamples <= expData.num_experiments() )
     return;
 
-  hifiSampler.run();
+  hifiSampler->run();
 
   int num_exp = expData.num_experiments();
-  const VariablesArray& all_variables = hifiSampler.all_variables();
-  const IntResponseMap& all_responses = hifiSampler.all_responses();
+  const VariablesArray& all_variables = hifiSampler->all_variables();
+  const IntResponseMap& all_responses = hifiSampler->all_responses();
 
   if (num_exp == 0) {
     // No file data; all initial hifi calibration data points come from LHS
@@ -1588,19 +1584,17 @@ void NonDBayesCalibration::build_designs(VariablesArray& design_matrix)
   if (num_candidates_in < numCandidates) {
     size_t new_candidates = numCandidates - num_candidates_in;
 
-    Iterator lhs_iterator2;
     unsigned short sample_type = SUBMETHOD_LHS;
     bool vary_pattern = true;
     String rng("mt19937");
     int random_seed_1 = randomSeed+1;
-    auto lhs_sampler_rep2 = std::make_shared<NonDLHSSampling>
+    auto lhs_iterator2 = std::make_shared<NonDLHSSampling>
       (hifiModel, sample_type, new_candidates, random_seed_1,
        rng, vary_pattern, ACTIVE_UNIFORM);
-    lhs_iterator2.assign_rep(lhs_sampler_rep2);
-    lhs_iterator2.pre_run();
+    lhs_iterator2->pre_run();
     // populate the sub-set (possibly full set) of generated candidates
     // could skip this copy if the lhs_iterator2 doesn't share any other uses
-    const auto& lhs_all_vars = lhs_iterator2.all_variables();
+    const auto& lhs_all_vars = lhs_iterator2->all_variables();
     for (size_t i=0; i<new_candidates; ++i)
       design_matrix[num_candidates_in + i] = lhs_all_vars[i].copy();
   }
@@ -3004,7 +2998,7 @@ void NonDBayesCalibration::calculate_evidence()
     Cout << "Starting Laplace approximation of model evidence, first " 
          << "\nobtain MAP point from pre-solve.\n";
     const RealVector& map_c_vars
-      = mapOptimizer.variables_results().continuous_variables();
+      = mapOptimizer->variables_results().continuous_variables();
     //estimate likelihood at MAP point: 
     ModelUtils::continuous_variables(*residualModel, map_c_vars);
     ActiveSet resAS = residualModel->current_response().active_set();
@@ -3023,7 +3017,7 @@ void NonDBayesCalibration::calculate_evidence()
     ActiveSet as2 = nlpost_resp.active_set();
     as2.request_values(7);
     nlpost_resp.active_set(as2);
-    neg_log_post_resp_mapping(mapOptimizer.variables_results(), mapOptimizer.variables_results(), 
+    neg_log_post_resp_mapping(mapOptimizer->variables_results(), mapOptimizer->variables_results(), 
       residualModel->current_response(), nlpost_resp);
     if (outputLevel >= DEBUG_OUTPUT) {
       Cout << "Negative log posterior function values " << nlpost_resp.function_values() << '\n';

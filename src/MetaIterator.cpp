@@ -17,7 +17,7 @@ static const char rcsId[]="@(#) $Id: MetaIterator.cpp 6715 2010-04-02 21:58:15Z 
 namespace Dakota {
 
 MetaIterator::MetaIterator(ProblemDescDB& problem_db):
-  Iterator(BaseConstructor(), problem_db),
+  Iterator(problem_db),
   iterSched(problem_db.parallel_library(),
 	    false, // peers can manage local jobs (initial extracted from DB)
 	    problem_db.get_int("method.iterator_servers"),
@@ -33,7 +33,7 @@ MetaIterator::MetaIterator(ProblemDescDB& problem_db):
 
 
 MetaIterator::MetaIterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  Iterator(BaseConstructor(), problem_db),
+  Iterator(problem_db),
   iterSched(problem_db.parallel_library(),
 	    false, // peers can manage local jobs (initial extracted from DB)
 	    problem_db.get_int("method.iterator_servers"),
@@ -90,7 +90,7 @@ check_model(const String& method_ptr, const String& model_ptr)
 
 
 void MetaIterator::
-allocate_by_pointer(const String& method_ptr, Iterator& the_iterator,
+allocate_by_pointer(const String& method_ptr, std::shared_ptr<Iterator>& the_iterator,
 		    std::shared_ptr<Model>& the_model)
 {
   // store/restore the method/model indices separately (the current
@@ -111,7 +111,7 @@ allocate_by_pointer(const String& method_ptr, Iterator& the_iterator,
 
 void MetaIterator::
 allocate_by_name(const String& method_string, const String& model_ptr,
-		 Iterator& the_iterator, std::shared_ptr<Model>& the_model)
+		 std::shared_ptr<Iterator>& the_iterator, std::shared_ptr<Model>& the_model)
 {
   // model instantiation is DB-based, iterator instantiation is not
 
@@ -134,7 +134,7 @@ allocate_by_name(const String& method_string, const String& model_ptr,
 
 
 IntIntPair MetaIterator::
-estimate_by_pointer(const String& method_ptr, Iterator& the_iterator,
+estimate_by_pointer(const String& method_ptr, std::shared_ptr<Iterator>& the_iterator,
 		    std::shared_ptr<Model>& the_model)
 {
   // store/restore the method/model indices separately (the current
@@ -156,7 +156,7 @@ estimate_by_pointer(const String& method_ptr, Iterator& the_iterator,
 
 IntIntPair MetaIterator::
 estimate_by_name(const String& method_string, const String& model_ptr,
-		 Iterator& the_iterator, std::shared_ptr<Model>& the_model)
+		 std::shared_ptr<Iterator>& the_iterator, std::shared_ptr<Model>& the_model)
 {
   // model instantiation is DB-based, iterator instantiation is not
 

@@ -155,12 +155,12 @@ NonDGlobalReliability(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
     { samples = 0; sample_reuse = "all"; }
 
   //int symbols = samples; // symbols needed for DDACE
-  Iterator dace_iterator;
+  std::shared_ptr<Iterator> dace_iterator;
   // instantiate the ProbabilityTransform and GP DataFit recursions
   if (mppSearchType == SUBMETHOD_EGRA_X) { // Recast( DataFit( iteratedModel ) )
 
     // The following uses on the fly derived ctor:
-    auto lhs_sampler_rep = std::make_shared<NonDLHSSampling>
+    dace_iterator = std::make_shared<NonDLHSSampling>
       (iteratedModel, sample_type, samples,
        lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM);
     //unsigned short dace_method = SUBMETHOD_LHS; // submethod enum
@@ -169,7 +169,6 @@ NonDGlobalReliability(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
     //unsigned short dace_method = FSU_HAMMERSLEY;
     //lhs_sampler_rep = new FSUDesignCompExp(iteratedModel, samples, lhs_seed,
     //                                       dace_method);
-    dace_iterator.assign_rep(lhs_sampler_rep);
 
     // Construct g-hat(x) using a GP approximation over the active/uncertain
     // vars (same view as iteratedModel: not the typical All view for DACE).
@@ -181,7 +180,7 @@ NonDGlobalReliability(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
     for (i=0; i<numFunctions; ++i)
       if (!computedRespLevels[i].empty()) // sized to total req levels above
     	{ set.request_value(dataOrder, i); surr_fn_indices.insert(i); }
-    dace_iterator.active_set(set);
+    dace_iterator->active_set(set);
     //const Variables& curr_vars = iteratedModel.current_variables();
     ActiveSet gp_set = iteratedModel->current_response().active_set(); // copy
     gp_set.request_values(1);// no surr deriv evals, but GP may be grad-enhanced
@@ -223,7 +222,7 @@ NonDGlobalReliability(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
     //Iterator dace_iterator(g_u_model, dace_method, ...);
 
     // The following use on-the-fly derived ctors:
-    auto lhs_sampler_rep = std::make_shared<NonDLHSSampling>(g_u_model,
+    dace_iterator = std::make_shared<NonDLHSSampling>(g_u_model,
       sample_type, samples, lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM);
     //unsigned short dace_method = SUBMETHOD_LHS; // submethod enum
     //lhs_sampler_rep = new DDACEDesignCompExp(g_u_model, samples, symbols,
@@ -231,7 +230,6 @@ NonDGlobalReliability(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
     //unsigned short dace_method = FSU_HAMMERSLEY;
     //lhs_sampler_rep = new FSUDesignCompExp(g_u_model, samples, lhs_seed,
     //                                       dace_method);
-    dace_iterator.assign_rep(lhs_sampler_rep);
 
     // Construct G-hat(u) using a GP approximation over the active/uncertain
     // variables (using the same view as iteratedModel/g_u_model: not the
@@ -243,7 +241,7 @@ NonDGlobalReliability(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
     for (i=0; i<numFunctions; ++i)
       if (!computedRespLevels[i].empty()) // sized to total req levels above
     	{ set.request_value(dataOrder, i); surr_fn_indices.insert(i); }
-    dace_iterator.active_set(set);
+    dace_iterator->active_set(set);
 
     //const Variables& g_u_vars = g_u_model.current_variables();
     ActiveSet gp_set = g_u_model->current_response().active_set(); // copy
@@ -285,7 +283,7 @@ NonDGlobalReliability(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   // A max of the local derivative concurrency and the DACE concurrency is used
   // for this purpose.
   maxEvalConcurrency = std::max(maxEvalConcurrency,
-				dace_iterator.maximum_evaluation_concurrency());
+				dace_iterator->maximum_evaluation_concurrency());
 
   // Configure a RecastModel with one objective and no constraints using the
   // alternate minimalist constructor.  The RIA/PMA expected improvement/
@@ -309,8 +307,8 @@ NonDGlobalReliability(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   size_t max_iter = 1000, max_eval = 10000;
   double min_box_size = 1.e-15, vol_box_size = 1.e-15;
 #ifdef HAVE_NCSU  
-  mppOptimizer.assign_rep(std::make_shared<NCSUOptimizer>
-    (mppModel, max_iter, max_eval, min_box_size, vol_box_size));
+  mppOptimizer = std::make_shared<NCSUOptimizer>
+    (mppModel, max_iter, max_eval, min_box_size, vol_box_size);
   //#ifdef HAVE_ACRO
   //int coliny_seed = 0; // system-generated, for now
   //mppOptimizer.assign_rep(new
@@ -334,11 +332,10 @@ NonDGlobalReliability(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   bool x_model_flag = false, use_model_bounds = true, track_extreme = pdfOutput;
   integrationRefinement = MMAIS; vary_pattern = true;
 
-  auto importance_sampler_rep = std::make_shared<NonDAdaptImpSampling>
+  importanceSampler = std::make_shared<NonDAdaptImpSampling>
     (uSpaceModel, sample_type, refine_samples, refine_seed,
      rng, vary_pattern, integrationRefinement, cdfFlag,
      x_model_flag, use_model_bounds, track_extreme);
-  importanceSampler.assign_rep(importance_sampler_rep);
 }
 
 
@@ -371,8 +368,8 @@ void NonDGlobalReliability::derived_init_communicators(ParLevLIter pl_iter)
 
   // mppOptimizer and importanceSampler use NoDBBaseConstructor, so no
   // need to manage DB list nodes at this level
-  mppOptimizer.init_communicators(pl_iter);
-  importanceSampler.init_communicators(pl_iter);
+  mppOptimizer->init_communicators(pl_iter);
+  importanceSampler->init_communicators(pl_iter);
 }
 
 
@@ -385,18 +382,18 @@ void NonDGlobalReliability::derived_set_communicators(ParLevLIter pl_iter)
 
   // mppOptimizer and importanceSampler use NoDBBaseConstructor, so no
   // need to manage DB list nodes at this level
-  mppOptimizer.set_communicators(pl_iter);
-  importanceSampler.set_communicators(pl_iter);
+  mppOptimizer->set_communicators(pl_iter);
+  importanceSampler->set_communicators(pl_iter);
 }
 
 
 void NonDGlobalReliability::derived_free_communicators(ParLevLIter pl_iter)
 {
   // deallocate communicators for MMAIS on uSpaceModel
-  importanceSampler.free_communicators(pl_iter);
+  importanceSampler->free_communicators(pl_iter);
 
   // deallocate communicators for DIRECT on mppModel
-  mppOptimizer.free_communicators(pl_iter);
+  mppOptimizer->free_communicators(pl_iter);
 
   //uSpaceMaxConcurrency = maxEvalConcurrency; // local derivative concurrency
   //uSpaceModel->free_communicators(pl_iter, uSpaceMaxConcurrency);
@@ -591,13 +588,13 @@ void NonDGlobalReliability::optimize_gaussian_process()
 
 	// Execute GLOBAL search and retrieve u-space results
 	Cout << "\n>>>>> Initiating global reliability optimization\n";
-	mppOptimizer.run(pl_iter);
+	mppOptimizer->run(pl_iter);
 	// Use these two lines for COLINY optimizers
 	//const VariablesArray& vars_star
 	//  = mppOptimizer.variables_array_results();
 	//const RealVector& c_vars_u = vars_star[0].continuous_variables();
 	// Use these two lines for NCSU DIRECT
-	const Variables& vars_star = mppOptimizer.variables_results();
+	const Variables& vars_star = mppOptimizer->variables_results();
 	const RealVector& c_vars_u = vars_star.continuous_variables();
 
 	// Get expected value at u* for output
@@ -811,7 +808,7 @@ void NonDGlobalReliability::importance_sampling()
   // rep needed for access to functions not mapped to Iterator level
   std::shared_ptr<NonDAdaptImpSampling> importance_sampler_rep =
     std::static_pointer_cast<NonDAdaptImpSampling>
-    (importanceSampler.iterator_rep());
+    (importanceSampler);
 
   for (respFnCount=0; respFnCount<numFunctions; respFnCount++) {
 
@@ -866,7 +863,7 @@ void NonDGlobalReliability::importance_sampling()
 	importance_sampler_rep->initialize(gp_inputs, x_data_flag,
 	  respFnCount, 0., computedRespLevels[respFnCount][levelCount]);
 
-      importanceSampler.run(pl_iter);
+      importanceSampler->run(pl_iter);
 
       Real p = importance_sampler_rep->final_probability();
 #ifdef DEBUG
@@ -1025,7 +1022,7 @@ void NonDGlobalReliability::get_best_sample()
   // This is only done for PMA - there is no "best solution" for
   //   the expected feasibility function used in RIA
 
-  Iterator&             dace_iterator  = uSpaceModel->subordinate_iterator();
+  Iterator&             dace_iterator  = *uSpaceModel->subordinate_iterator();
   const RealMatrix&     true_vars_x    = dace_iterator.all_samples();
   const IntResponseMap& true_responses = dace_iterator.all_responses();
   size_t i, j, num_samples = true_vars_x.numCols(),

@@ -125,7 +125,7 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   // Instantiate dace iterator from DB
   if (dace_construct) {
     daceIterator = problem_db.get_iterator(actualModel); // no meta-iterators
-    daceIterator.sub_iterator_flag(true);
+    daceIterator->sub_iterator_flag(true);
     // if outer level output is verbose/debug and actualModel verbosity is
     // defined by the DACE method spec, request fine-grained evaluation
     // reporting for purposes of the final output summary.  This allows verbose
@@ -219,7 +219,7 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
 
 
 DataFitSurrModel::
-DataFitSurrModel(Iterator& dace_iterator, std::shared_ptr<Model> actual_model,
+DataFitSurrModel(std::shared_ptr<Iterator> dace_iterator, std::shared_ptr<Model> actual_model,
 		 //const SharedVariablesData& svd,const SharedResponseData& srd,
 		 const ActiveSet& dfs_set, const ShortShortPair& dfs_view,
 		 const String& approx_type, const UShortArray& approx_order,
@@ -291,8 +291,8 @@ DataFitSurrModel(Iterator& dace_iterator, std::shared_ptr<Model> actual_model,
     /*dfs_view,*/ approx_type, approx_order, actualModel->current_variables(), // ***
     cache, actualModel->interface_id(), numFns, data_order, outputLevel));
 
-  if (!daceIterator.is_null()) // global DACE approximations
-    daceIterator.sub_iterator_flag(true);
+  if (daceIterator) // global DACE approximations
+    daceIterator->sub_iterator_flag(true);
   //else { // local/multipoint approximation
   //}
 
@@ -482,34 +482,33 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     // derivatives multiplier.  Obtain the deriv multiplier from actualModel.
     // min_points does not account for reuse_points or anchor, since these
     // will vary, and min_points must remain constant among ctor/run/dtor.
-    int min_conc = approxInterface.minimum_points(false)
+    approxMinConcurrency = approxInterface.minimum_points(false)
                  * actualModel->derivative_concurrency();
     // as for constructors, we recursively set and restore DB list nodes
     // (initiated from the restored starting point following construction)
     size_t model_index = probDescDB.get_db_model_node(); // for restoration
-    if (daceIterator.is_null()) {
+    if (!daceIterator) {
       // store within empty envelope for later use in derived_{set,free}_comms
-      daceIterator.maximum_evaluation_concurrency(min_conc);
-      daceIterator.iterated_model(actualModel);
+      // daceIterator->iterated_model(actualModel);
       // init comms for actualModel
       probDescDB.set_db_model_nodes(actualModel->model_id());
-      actualModel->init_communicators(pl_iter, min_conc);
+      actualModel->init_communicators(pl_iter, approxMinConcurrency);
     }
     else {
-      // daceIterator.maximum_evaluation_concurrency() includes user-specified
+      // daceIterator->maximum_evaluation_concurrency() includes user-specified
       // samples for building a global approx & any numerical deriv multiplier.
       // Analyzer::maxEvalConcurrency must remain constant for ctor/run/dtor.
 
       // The concurrency for global/local surrogate construction is defined by
       // the greater of the dace samples user-specification and the min_points
       // approximation requirement.
-      if (min_conc > daceIterator.maximum_evaluation_concurrency())
-	daceIterator.maximum_evaluation_concurrency(min_conc); // update
+      if (approxMinConcurrency > daceIterator->maximum_evaluation_concurrency())
+	      daceIterator->maximum_evaluation_concurrency(approxMinConcurrency); // update
 
       // init comms for daceIterator
       size_t method_index = probDescDB.get_db_method_node(); // for restoration
-      probDescDB.set_db_list_nodes(daceIterator.method_id());
-      daceIterator.init_communicators(pl_iter);
+      probDescDB.set_db_list_nodes(daceIterator->method_id());
+      daceIterator->init_communicators(pl_iter);
       probDescDB.set_db_method_node(method_index); // restore method only
     }
     probDescDB.set_db_model_nodes(model_index); // restore all model nodes
@@ -622,12 +621,12 @@ void DataFitSurrModel::update_approximation(bool rebuild_flag)
     Cout << "\n>>>>> Updating " << surrogateType << " approximations.\n";
 
   // replace the current points for each approximation
-  //daceIterator.run(pl_iter);
-  const IntResponseMap& all_resp = daceIterator.all_responses();
-  if (daceIterator.compact_mode())
-    approxInterface.update_approximation(daceIterator.all_samples(),  all_resp);
+  //daceIterator->run(pl_iter);
+  const IntResponseMap& all_resp = daceIterator->all_responses();
+  if (daceIterator->compact_mode())
+    approxInterface.update_approximation(daceIterator->all_samples(),  all_resp);
   else
-    approxInterface.update_approximation(daceIterator.all_variables(),all_resp);
+    approxInterface.update_approximation(daceIterator->all_variables(),all_resp);
 
   if (rebuild_flag) // update the coefficients for each approximation
     rebuild_approximation(all_resp);
@@ -719,15 +718,15 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
 void DataFitSurrModel::append_approximation(bool rebuild_flag)
 {
   // append to the current points for each approximation
-  //daceIterator.run(pl_iter);
-  const IntResponseMap& all_resp = daceIterator.all_responses();
+  //daceIterator->run(pl_iter);
+  const IntResponseMap& all_resp = daceIterator->all_responses();
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\n>>>>> Appending " << all_resp.size() << " points to "
 	 << surrogateType << " approximations.\n";
-  if (daceIterator.compact_mode())
-    approxInterface.append_approximation(daceIterator.all_samples(),  all_resp);
+  if (daceIterator->compact_mode())
+    approxInterface.append_approximation(daceIterator->all_samples(),  all_resp);
   else
-    approxInterface.append_approximation(daceIterator.all_variables(),all_resp);
+    approxInterface.append_approximation(daceIterator->all_variables(),all_resp);
 
   if (rebuild_flag)
     rebuild_approximation(all_resp); // all_resp used to define build_fns
@@ -953,7 +952,7 @@ void DataFitSurrModel::combine_approximation()
   // Note: access to spec sequences are on Dakota side, but need to reach
   // into Pecos driver levels (TPQ, SSG) and approx orders (regression) for
   // access to final refinement levels (GSG starting levels could be the same).
-  //NonDIntegration* nond_int = (NonDIntegration*)daceIterator.iterator_rep();
+  //NonDIntegration* nond_int = (NonDIntegration*)daceIterator->iterator_rep();
   //bool swap = !nond_int->maximal_grid();
 
   approxInterface.combine_approximation();
@@ -1127,7 +1126,7 @@ build_local_multipoint(const Variables& vars,
 
 
 /** Determine points to use in building the approximation and then
-    evaluate them on actualModel using daceIterator.  Any changes to
+    evaluate them on actualModel using daceIterator->  Any changes to
     the bounds should be performed by setting them at a higher level
     (e.g., SurrBasedOptStrategy). */
 void DataFitSurrModel::build_global()
@@ -1217,7 +1216,7 @@ void DataFitSurrModel::build_global()
   // Evaluate new data points using daceIterator
   // *******************************************
   int new_points = 0;
-  if (daceIterator.is_null()) { // reused/imported data only (no new data)
+  if (!daceIterator) { // reused/imported data only (no new data)
     // check for sufficient data
     int min_points = approxInterface.minimum_points(true);
     if (reuse_points < min_points) {
@@ -1236,10 +1235,10 @@ void DataFitSurrModel::build_global()
     // populate allData lists (allDataFlag = true), and should bypass
     // statistics computation (statsFlag = false).
     int diff_points = std::max(0, required_points() - (int)reuse_points);
-    daceIterator.sampling_reset(diff_points, true, false);// update s.t. lwr bnd
+    daceIterator->sampling_reset(diff_points, true, false);// update s.t. lwr bnd
     // The DACE iterator's samples{Spec,Ref} value provides a lower bound on
     // the number of samples generated: new_points = max(diff_points,reference).
-    new_points = daceIterator.num_samples();
+    new_points = daceIterator->num_samples();
 
     // only run the iterator if work to do
     if (new_points) {
@@ -1271,7 +1270,7 @@ void DataFitSurrModel::build_global()
 
 
 /** Determine points to use in rebuilding the approximation and
-    then evaluate them on actualModel using daceIterator.  Assumes
+    then evaluate them on actualModel using daceIterator->  Assumes
     data imports/reuse have been handled previously within build_global(). */
 void DataFitSurrModel::rebuild_global()
 {
@@ -1289,7 +1288,7 @@ void DataFitSurrModel::rebuild_global()
     if (pts_i < curr_points) curr_points = pts_i;
   }
   int new_points = 0;
-  if (daceIterator.is_null()) { // reused/imported data only (no new data)
+  if (!daceIterator) { // reused/imported data only (no new data)
     // check for sufficient data
     int min_points = approxInterface.minimum_points(true);
     if (curr_points < min_points) {
@@ -1310,10 +1309,10 @@ void DataFitSurrModel::rebuild_global()
       // daceIterator's samples{Spec,Ref} is intended to overlay minimum user
       // spec with imported/reqd data, by defining a lower bound on the number
       // of generated samples, e.g. new_points = max(diff_points, samplesRef)
-      daceIterator.sampling_reference(0); // make new points = diff points
+      daceIterator->sampling_reference(0); // make new points = diff points
       // daceIterator generates diff_points samples, populates allData arrays
       // (allDataFlag = true), bypasses stats computation (statsFlag = false)
-      daceIterator.sampling_reset(diff_points, true, false);
+      daceIterator->sampling_reset(diff_points, true, false);
       run_dace();
       // append new data sets, rebuild approximation, increment approxBuilds
       append_approximation(true);
@@ -1343,22 +1342,22 @@ void DataFitSurrModel::run_dace()
   // daceIterator activeSet gets resized in DataFitSurrModel::
   // resize_from_subordinate_model(), but can be overwritten by top-level
   // Iterator (e.g., NonDExpansion::compute_expansion()
-  const ShortArray& dace_asv = daceIterator.active_set_request_vector();
+  const ShortArray& dace_asv = daceIterator->active_set_request_vector();
   if (dace_asv.size() != ModelUtils::response_size(*actualModel)) {
     ShortArray actual_asv;
     asv_inflate_build(dace_asv, actual_asv);
-    daceIterator.active_set_request_vector(actual_asv);
+    daceIterator->active_set_request_vector(actual_asv);
   }
 
   // prepend hierarchical tag before running
   if (hierarchicalTagging) {
     String eval_tag = evalTagPrefix + '.' + std::to_string(surrModelEvalCntr+1);
-    daceIterator.eval_tag_prefix(eval_tag);
+    daceIterator->eval_tag_prefix(eval_tag);
   }
 
   // run the iterator
   ParLevLIter pl_iter = modelPCIter->mi_parallel_level_iterator(miPLIndex);
-  daceIterator.run(pl_iter);
+  daceIterator->run(pl_iter);
 }
 
 
@@ -1375,7 +1374,7 @@ void DataFitSurrModel::refine_surrogate()
   accumulator_set<Real, stats<tag::rolling_mean> >
     mean_err(tag::rolling_window::window_size = softConvergenceLimit);
 
-  num_samples = daceIterator.num_samples();
+  num_samples = daceIterator->num_samples();
   total_evals += num_samples;
 
   // build surrogate from initial sample
@@ -1417,8 +1416,8 @@ void DataFitSurrModel::refine_surrogate()
 
     // sampling reset only resets the base numSamples; if there are
     // refinement samples, increment them here and add points
-    daceIterator.sampling_increment();
-    num_samples = daceIterator.num_samples();
+    daceIterator->sampling_increment();
+    num_samples = daceIterator->num_samples();
     total_evals += num_samples;
     Cout << "\n------------\nRefining surrogate(s) with " << num_samples 
 	 << " samples (iteration " << curr_iter << ")\n";

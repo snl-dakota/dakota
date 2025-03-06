@@ -20,6 +20,7 @@
 
 namespace Dakota {
 
+class NonDExpansion;
 
 /// Base class for Bayesian inference: generates posterior
 /// distribution on model parameters given experimental data
@@ -293,7 +294,7 @@ protected:
   /// This is restricted to emulator cases for now, but as for derivative
   /// preconditioning, could be activated for no-emulator cases with a
   /// specification option (not active by default).
-  Iterator mapOptimizer;
+  std::shared_ptr<Iterator> mapOptimizer;
   /// RecastModel for solving for MAP: reduces residualModel to scalar
   /// negative log posterior
   std::shared_ptr<Model>negLogPostModel;
@@ -302,7 +303,7 @@ protected:
 
   /// NonDPolynomialChaos or NonDStochCollocation instance for defining a
   /// PCE/SC-based mcmcModel
-  Iterator stochExpIterator;
+  std::shared_ptr<NonDExpansion> stochExpIterator;
 
   /// number of samples in the chain (e.g. number of MCMC samples);
   /// for iterative update cycles, number of samples per update cycle
@@ -402,7 +403,7 @@ protected:
   /// initial high-fidelity model samples
   int initHifiSamples;
   /// LHS iterator to generate hi-fi model data
-  Iterator hifiSampler;
+  std::shared_ptr<Iterator> hifiSampler;
 
   /// the Cholesky factor of the prior covariance
   RealMatrix priorCovCholFactor;

@@ -98,7 +98,7 @@ private:
   //- Heading: Data members
   //
 
-  Iterator selectedIterator; ///< the iterator selected for concurrent iteration
+  std::shared_ptr<Iterator> selectedIterator; ///< the iterator selected for concurrent iteration
 
   /// the initial continuous variables for restoring the starting
   /// point in the Pareto set minimization
@@ -140,7 +140,7 @@ inline IntIntPair ConcurrentMetaIterator::estimate_partition_bounds()
     probDescDB.get_string("method.sub_method_pointer"),
     probDescDB.get_string("method.sub_method_name"),
     probDescDB.get_string("method.sub_model_pointer"));
-  IntIntPair min_max, si_min_max = selectedIterator.estimate_partition_bounds();
+  IntIntPair min_max, si_min_max = selectedIterator->estimate_partition_bounds();
 
   // now apply scheduling data for this level (recursion is complete)
   min_max.first = ProblemDescDB::min_procs_per_level(si_min_max.first,
@@ -212,9 +212,9 @@ unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index)
 inline void ConcurrentMetaIterator::update_local_results(int job_index)
 {
   prpResults[job_index]
-    = ParamResponsePair(selectedIterator.variables_results(),
+    = ParamResponsePair(selectedIterator->variables_results(),
 			iteratedModel->interface_id(),
-			selectedIterator.response_results(),
+			selectedIterator->response_results(),
 			job_index+1); // deep copy
 }
 

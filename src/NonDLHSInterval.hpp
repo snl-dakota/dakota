@@ -59,7 +59,7 @@ protected:
   // - Heading: Data
   //
 
-  Iterator  lhsSampler; ///< the LHS sampler instance
+  std::unique_ptr<Iterator>  lhsSampler; ///< the LHS sampler instance
   const int seedSpec;   ///< the user seed specification (default is 0)     
   int       numSamples; ///< the number of samples used
   String    rngName;	///< name of the random number generator

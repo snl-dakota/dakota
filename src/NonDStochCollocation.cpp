@@ -48,7 +48,7 @@ NonDStochCollocation(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   // -------------------------
   // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
   // generated using active sampling view:
-  Iterator u_space_sampler;
+  std::shared_ptr<Iterator> u_space_sampler;
   config_integration(probDescDB.get_ushort("method.nond.quadrature_order"),
 		     probDescDB.get_ushort("method.nond.sparse_grid_level"),
 		     probDescDB.get_rv("method.nond.dimension_preference"),
@@ -127,7 +127,7 @@ NonDStochCollocation(std::shared_ptr<Model> model, short exp_coeffs_approach,
   // -------------------------
   // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
   // generated using active sampling view:
-  Iterator u_space_sampler;
+  std::shared_ptr<Iterator> u_space_sampler;
   config_integration(exp_coeffs_approach, num_int, dim_pref, u_space_sampler,
 		     g_u_model);
   String pt_reuse, approx_type;
@@ -196,7 +196,7 @@ NonDStochCollocation::~NonDStochCollocation()
 void NonDStochCollocation::
 config_integration(unsigned short quad_order, unsigned short ssg_level,
 		   const RealVector& dim_pref, short u_space_type, 
-		   Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model)
+		   std::shared_ptr<Iterator>& u_space_sampler, std::shared_ptr<Model> g_u_model)
 {
   // -------------------------
   // Construct u_space_sampler
@@ -260,7 +260,7 @@ config_integration(unsigned short quad_order, unsigned short ssg_level,
 
 void NonDStochCollocation::
 config_integration(short exp_coeffs_approach, unsigned short num_int,
-		   const RealVector& dim_pref, Iterator& u_space_sampler,
+		   const RealVector& dim_pref, std::shared_ptr<Iterator>& u_space_sampler,
 		   std::shared_ptr<Model> g_u_model)
 {
   // -------------------------
@@ -388,7 +388,7 @@ void NonDStochCollocation::initialize_u_space_model()
 
   // Precedes construct_basis() since basis is stored in Pecos driver
   SharedApproxData& shared_data = uSpaceModel->shared_approximation();
-  shared_data.integration_iterator(uSpaceModel->subordinate_iterator());
+  shared_data.integration_iterator(*uSpaceModel->subordinate_iterator());
 
   // DataFitSurrModel copies u-space mvDist from ProbabilityTransformModel
   const Pecos::MultivariateDistribution& u_mvd

@@ -295,7 +295,7 @@ protected:
   // Helper members
 
   /// Monte Carlo sampler for the full parameter space
-  Iterator fullspaceSampler;
+  std::unique_ptr<Iterator> fullspaceSampler;
 
   /// static pointer to this class for use in static callbacks
   static ActiveSubspaceModel* asmInstance;

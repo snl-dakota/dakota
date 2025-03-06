@@ -146,7 +146,7 @@ protected:
 
   /// the minimizer used on the surrogate model to solve the
   /// approximate subproblem on each surrogate-based iteration
-  Iterator approxSubProbMinimizer;
+  std::shared_ptr<Iterator> approxSubProbMinimizer;
 
   /// global iteration counter corresponding to number of
   /// surrogate-based minimizations

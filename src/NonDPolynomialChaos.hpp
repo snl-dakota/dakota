@@ -149,13 +149,13 @@ protected:
   /// configure u_space_sampler and approx_type based on numerical
   /// integration specification
   bool config_integration(unsigned short quad_order, unsigned short ssg_level,
-			  unsigned short cub_int, Iterator& u_space_sampler,
+			  unsigned short cub_int, std::shared_ptr<Iterator>& u_space_sampler,
 			  std::shared_ptr<Model> g_u_model, String& approx_type);
   /// configure u_space_sampler and approx_type based on expansion_samples
   /// specification
   bool config_expectation(size_t exp_samples, unsigned short sample_type,
 			  int seed, const String& rng,
-			  Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model,
+			  std::shared_ptr<Iterator>& u_space_sampler, std::shared_ptr<Model> g_u_model,
 			  String& approx_type);
   /// configure u_space_sampler and approx_type based on regression
   /// specification
@@ -165,7 +165,7 @@ protected:
 			 const UShortArray& tensor_grid_order,
 			 unsigned short sample_type, int seed,
 			 const String& rng, const String& pt_reuse,
-			 Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model,
+			 std::shared_ptr<Iterator>& u_space_sampler, std::shared_ptr<Model> g_u_model,
 			 String& approx_type);
 
   /// define an expansion order that is consistent with an advancement in

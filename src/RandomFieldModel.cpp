@@ -62,11 +62,11 @@ void RandomFieldModel::init_dace_iterator(ProblemDescDB& problem_db)
 
     // instantiate the DACE iterator, which instantiates the actual model
     daceIterator = problem_db.get_iterator();
-    daceIterator.sub_iterator_flag(true);
+    daceIterator->sub_iterator_flag(true);
 
     // retrieve the actual model from daceIterator (invalid for selected
     // meta-iterators, e.g., hybrids)
-    Model& rf_generating_model = *daceIterator.iterated_model();
+    Model& rf_generating_model = *daceIterator->iterated_model();
     // BMA TODO: review
     //    check_submodel_compatibility(actualModel);
     // if outer level output is verbose/debug and actualModel verbosity is
@@ -81,7 +81,7 @@ void RandomFieldModel::init_dace_iterator(ProblemDescDB& problem_db)
 
 
     // TODO: may want to make this a quieter, lighter iterator?
-    daceIterator.sub_iterator_flag(true);
+    daceIterator->sub_iterator_flag(true);
   }
 }
 
@@ -89,7 +89,7 @@ void RandomFieldModel::init_dace_iterator(ProblemDescDB& problem_db)
 void RandomFieldModel::validate_inputs()
 {
   //if (buildField) {
-  if (rfDataFilename.empty() && daceIterator.is_null() && (covarianceForm == NOCOVAR)) {
+  if (rfDataFilename.empty() && !daceIterator && (covarianceForm == NOCOVAR)) {
     Cerr << "\nError: Random field model requires data_file or "
 	 << "dace_method_pointer or specification of an analytic covariance" 
          << std::endl;
@@ -143,7 +143,7 @@ void RandomFieldModel::get_field_data()
   // TODO: either load the data matrix using ReducedBasis utilities or
   // run daceIterator
 
-  if (daceIterator.is_null()) {
+  if (!daceIterator) {
     // TODO: temporary data for testing
     std::ifstream rf_file;
     rf_file.open("rfbuild.test");
@@ -156,16 +156,16 @@ void RandomFieldModel::get_field_data()
     // generate samples of the random field
     Cout << "\nRandomFieldModel: Gathering random field data from RF-generating "
          << "model" << std::endl;
-    daceIterator.run();
-    size_t num_samples = daceIterator.num_samples();
+    daceIterator->run();
+    size_t num_samples = daceIterator->num_samples();
     // BMA TODO: relax assumption of allSamples / compactMode
     // Generalize to discrete vars
     if (expansionForm == RF_PCA_GP) {
       rfBuildVars.reshape(ModelUtils::cv(*subModel), num_samples);
-      rfBuildVars.assign(daceIterator.all_samples());
+      rfBuildVars.assign(daceIterator->all_samples());
     }
     rfBuildData.reshape(num_samples, numFns);
-    const IntResponseMap& all_resp = daceIterator.all_responses();
+    const IntResponseMap& all_resp = daceIterator->all_responses();
     IntRespMCIter r_it = all_resp.begin(); 
     for (size_t samp=0; samp<num_samples; ++samp, ++r_it)
       for (size_t fn=0; fn<numFns; ++fn) 

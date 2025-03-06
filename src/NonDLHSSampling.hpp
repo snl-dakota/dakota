@@ -66,8 +66,6 @@ public:
   /// destructor
   ~NonDLHSSampling() override;
 
-protected:
-
   //
   //- Heading: Virtual function redefinitions
   //

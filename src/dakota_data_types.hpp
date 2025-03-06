@@ -127,7 +127,9 @@ typedef std::vector<ParamResponsePair> PRPArray;
 typedef std::vector<PRPArray>          PRP2DArray;
 typedef std::vector<Model>             ModelArray;
 typedef std::vector<Iterator>          IteratorArray;
+typedef std::vector<std::shared_ptr<Iterator>> IteratorPtrArray;
 typedef std::vector<IteratorArray>     Iterator2DArray;
+typedef std::vector<IteratorPtrArray>  Iterator2DPtrArray;
 typedef std::vector<RealMultiArray>    BoostMAArray;
 typedef std::vector<RealMulti2DArray>  BoostMA2DArray;
 typedef std::vector<RealMulti3DArray>  BoostMA3DArray;
@@ -144,7 +146,7 @@ typedef std::list<Interface>           InterfaceList;
 typedef std::list<Response>            ResponseList;
 typedef std::list<ParamResponsePair>   PRPList;
 typedef std::list<std::shared_ptr<Model>> ModelList;
-typedef std::list<Iterator>            IteratorList;
+typedef std::list<std::shared_ptr<Iterator>> IteratorList;
 //typedef std::list<ParallelLevel>         ParLevList;
 //typedef std::list<ParallelConfiguration> ParConfigList;
 

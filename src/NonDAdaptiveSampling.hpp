@@ -69,13 +69,11 @@ private:
   //
   //- Heading: Data
   //
-
-  /// LHS iterator for building the initial GP
-  Iterator gpBuild;
+  
   /// LHS iterator for sampling on the GP
-  Iterator gpEval;
+  std::shared_ptr<Iterator> gpEval;
   /// LHS iterator for sampling on the final GP
-  Iterator gpFinalEval;
+  std::shared_ptr<Iterator> gpFinalEval;
   /// GP model of response, one approximation per response function
   std::shared_ptr<Model> gpModel;
   
@@ -232,7 +230,7 @@ private:
   /// designs.  This can break the fsu_cvt, so it is not used at the moment,
   /// and these designs only affect the initial sample build not the candidate
   /// sets constructed at each round
-  void construct_fsu_sampler(Iterator& u_space_sampler, std::shared_ptr<Model> u_model, 
+  std::shared_ptr<Iterator> construct_fsu_sampler(std::shared_ptr<Model> u_model, 
     int num_samples, int seed, unsigned short sample_type);
 
   /// This function will write an input deck for a multi-start global 

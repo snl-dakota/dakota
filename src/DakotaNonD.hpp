@@ -253,7 +253,8 @@ protected:
 				      short seq_type, bool discrep_flag);
 
   /// assign a NonDLHSSampling instance within u_space_sampler
-  void construct_lhs(Iterator& u_space_sampler, std::shared_ptr<Model> u_model,
+  void construct_lhs(std::shared_ptr<Iterator>& u_space_sampler, 
+         std::shared_ptr<Model> u_model,
 		     unsigned short sample_type, int num_samples, int seed,
 		     const String& rng, bool vary_pattern,
 		     short sampling_vars_mode = ACTIVE);

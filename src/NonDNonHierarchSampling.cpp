@@ -1383,10 +1383,9 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
           if (adapt_model->gradient_type() != "none") data_order |= 2;
           if (adapt_model->hessian_type()  != "none") data_order |= 4;
         }
-        Iterator dace_iterator;
-        dace_iterator.assign_rep(std::make_shared<NonDLHSSampling>(adapt_model,
-          sample_type, samples, seed, rng, vary_pattern, ACTIVE_UNIFORM));
-        dace_iterator.active_set_request_values(data_order);
+        auto dace_iterator = std::make_shared<NonDLHSSampling>(adapt_model,
+          sample_type, samples, seed, rng, vary_pattern, ACTIVE_UNIFORM);
+        dace_iterator->active_set_request_values(data_order);
 
         String approx_type("global_kriging"), point_reuse("none");// TO DO: spec
         UShortArray approx_order; // empty
@@ -1408,7 +1407,7 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
     varianceMinimizers.resize(sequence_len);
     for (i=0; i<sequence_len; ++i) {
       ShortArray& solvers_i = solvers[i];
-      IteratorArray&  min_i = varianceMinimizers[i];
+      IteratorPtrArray&  min_i = varianceMinimizers[i];
       varMinIndices.first = i;
       num_solvers = solvers_i.size();
       min_i.resize(num_solvers);
@@ -1433,10 +1432,10 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 	    default:                           deriv_level = 0;  break;
 	    }
 #ifdef HAVE_NPSOL
-	  min_i[j].assign_rep(std::make_shared<NPSOLOptimizer>(x0, x_lb, x_ub,
+	  min_i[j] = std::make_shared<NPSOLOptimizer>(x0, x_lb, x_ub,
 	    lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
 	    lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt, npsol_objective,
-	    npsol_constraint, deriv_level, conv_tol, max_iter, fdss));
+	    npsol_constraint, deriv_level, conv_tol, max_iter, fdss);
 #endif
 	  break;
 	}
@@ -1450,29 +1449,29 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 	  Real max_step = 100000.;    String fd_type = "forward";
 	  RealVector fdss(1, false);  fdss[0] = 1.e-7; // ~7x > default
 #ifdef HAVE_OPTPP
-	  if (analyticEstVarDerivs)
-	    min_i[j].assign_rep(std::make_shared<SNLLOptimizer>(x0, x_lb,
+	if (analyticEstVarDerivs)
+	    min_i[j] = std::make_shared<SNLLOptimizer>(x0, x_lb,
 	      x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
 	      lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
 	      optpp_nlf1_objective, optpp_nlf1_constraint, //fdss, fd_type,
-	      max_iter, max_eval, conv_tol, conv_tol, max_step));
-	  else
-	    switch (optSubProblemForm) {
-	    case N_MODEL_LINEAR_OBJECTIVE: case N_GROUP_LINEAR_OBJECTIVE:
-	      min_i[j].assign_rep(std::make_shared<SNLLOptimizer>(x0, x_lb,
-	        x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
-	        lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
-	        optpp_nlf1_objective, optpp_fdnlf1_constraint, fdss, fd_type,
-	        max_iter, max_eval, conv_tol, conv_tol, max_step));
-	      break;
-	    default:
-	      min_i[j].assign_rep(std::make_shared<SNLLOptimizer>(x0, x_lb,
-	        x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
-	        lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
-	        optpp_fdnlf1_objective, optpp_nlf1_constraint, fdss, fd_type,
-	        max_iter, max_eval, conv_tol, conv_tol, max_step));
-	      break;
-	    }
+	      max_iter, max_eval, conv_tol, conv_tol, max_step);
+	else
+	  switch (optSubProblemForm) {
+	  case N_MODEL_LINEAR_OBJECTIVE: case N_GROUP_LINEAR_OBJECTIVE:
+	    min_i[j] = std::make_shared<SNLLOptimizer>(x0, x_lb, x_ub,
+	      lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
+	      lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
+	      optpp_nlf1_objective, optpp_fdnlf1_constraint, fdss, fd_type,
+	      max_iter, max_eval, conv_tol, conv_tol, max_step);
+	    break;
+	  default:
+	    min_i[j] = std::make_shared<SNLLOptimizer>(x0, x_lb, x_ub,
+	      lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
+	      lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
+	      optpp_fdnlf1_objective, optpp_nlf1_constraint, fdss, fd_type,
+	      max_iter, max_eval, conv_tol, conv_tol, max_step);
+	    break;
+	  }
 #endif
 	  break;
 	}
@@ -1491,10 +1490,10 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 	       vol_box_size = 1.e-9, //-1. activates NCSU default = 1.e-6 
 	       soln_target  = -DBL_MAX; // no target, deactivates convergenceTol
 #ifdef HAVE_NCSU
-	  min_i[j].assign_rep(std::make_shared<NCSUOptimizer>(x_lb, x_ub,
+	  min_i[j] = std::make_shared<NCSUOptimizer>(x_lb, x_ub,
 	    lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub,lin_eq_coeffs, lin_eq_tgt,
 	    nln_ineq_lb, nln_ineq_ub, nln_eq_tgt, max_iter, max_eval,
-	    direct_penalty_merit, min_box_size, vol_box_size, soln_target));
+	    direct_penalty_merit, min_box_size, vol_box_size, soln_target);
 #endif
 	  break;
 	}
@@ -1504,9 +1503,9 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 	  unsigned short soft_conv_limit = 5;
 	  Real tr_factor = .5;
 	  // TO DO: push updated solution bounds into model(s)
-	  min_i[j].assign_rep(std::make_shared<DataFitSurrBasedLocalMinimizer>(
+	  min_i[j] = std::make_shared<DataFitSurrBasedLocalMinimizer>(
 	    sub_prob_model, merit_fn, accept_logic, constr_relax, tr_factor,
-	    max_iter, max_eval, conv_tol, soft_conv_limit, false));
+	    max_iter, max_eval, conv_tol, soft_conv_limit, false);
 	  break;
 	}
 	case SUBMETHOD_EGO: {
@@ -1517,9 +1516,9 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 	  String approx_type("global_kriging"); // TO DO: spec
 	  bool use_derivs = false;
 	  // TO DO: push updated solution bounds into model(s)
-	  min_i[j].assign_rep(std::make_shared<EffGlobalMinimizer>(
+	  min_i[j] = std::make_shared<EffGlobalMinimizer>(
 	    sub_prob_model, approx_type, samples, seed, use_derivs, max_iter,
-	    max_eval, conv_tol));
+	    max_eval, conv_tol);
 	  break;
 	}
 	/*
@@ -1557,11 +1556,11 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
       //  lin_ineq_ub, lin_eq_coeffs, lin_eq_tgt, nln_ineq_lb, nln_ineq_ub,
       //  nln_eq_tgt);
       for (i=start; i<sequence_len; ++i) {
-	IteratorArray& min_i = varianceMinimizers[i];
+	IteratorPtrArray& min_i = varianceMinimizers[i];
 	varMinIndices.first = i;
 	num_solvers = min_i.size();
-	for (j=0; j<num_solvers; ++j) {
-	  Iterator& min_ij = min_i[j];
+  //for (j=0; j<num_solvers; ++j) {
+	//  auto& min_ij = min_i[j];
 	  //if (!min_ij.is_null()) {
 	  //  finite_solution_bounds(x0, x_lb, x_ub);
 	  //  adapt_model.update_active_variables(x0, x_lb, x_ub);
@@ -1569,20 +1568,20 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 	  //  varMinIndices.second = j;
 	  //  min_i[j].update_from_model(sub_prob_model);
 	  //}
-	}
+	//}
       }
     }
     else
       for (i=start; i<sequence_len; ++i) {
-	IteratorArray& min_i = varianceMinimizers[i];
+	IteratorPtrArray& min_i = varianceMinimizers[i];
 	varMinIndices.first = i;
 	num_solvers = min_i.size();
 	for (j=0; j<num_solvers; ++j) {
-	  Iterator& min_ij = min_i[j];
-	  if (!min_ij.is_null()) {
+	  auto& min_ij = min_i[j];
+	  if (min_ij) {
 	    varMinIndices.second = j;
 	    finite_solution_bounds(x0, x_lb, x_ub);
-	    min_ij.update_callback_data(x0, x_lb, x_ub, lin_ineq_coeffs,
+	    min_ij->update_callback_data(x0, x_lb, x_ub, lin_ineq_coeffs,
 	      lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs, lin_eq_tgt, nln_ineq_lb,
 	      nln_ineq_ub, nln_eq_tgt);
 	  }
@@ -1612,17 +1611,17 @@ void NonDNonHierarchSampling::run_minimizers(MFSolutionData& soln)
   size_t i, j, sequence_len = varianceMinimizers.size(), best_min, num_solvers,
     last_seq_index = sequence_len - 1, start = (mlmfIter) ? last_seq_index : 0;
   for (i=start; i<sequence_len; ++i) {
-    IteratorArray& min_i = varianceMinimizers[i];
+    IteratorPtrArray& min_i = varianceMinimizers[i];
     varMinIndices.first = i;
     num_solvers = min_i.size();
     for (j=0; j<num_solvers; ++j) {
-      Iterator& min_ij = min_i[j];
-      if (min_ij.is_null()) continue;
+      auto& min_ij = min_i[j];
+      if (!min_ij) continue;
       varMinIndices.second = j;
-      min_ij.run();
-      const Variables& vars_star = min_ij.variables_results();
+      min_ij->run();
+      const Variables& vars_star = min_ij->variables_results();
       const RealVector&  cv_star = vars_star.continuous_variables();
-      const RealVector&  fn_star = min_ij.response_results().function_values();
+      const RealVector&  fn_star = min_ij->response_results().function_values();
       if (outputLevel >= DEBUG_OUTPUT)
 	Cout << "run_minimizers() results for (i,j) = (" << i << "," << j
 	     << "):\ncv_star =\n" << cv_star << "fn_vals_star =\n" << fn_star;
@@ -1633,16 +1632,16 @@ void NonDNonHierarchSampling::run_minimizers(MFSolutionData& soln)
     }
     if (outputLevel >= NORMAL_OUTPUT && num_solvers > 1)
       Cout << "run_minimizers() best solver at step " << i << " = "
-	   << min_i[best_min].method_string() << std::endl;
+	   << min_i[best_min]->method_string() << std::endl;
 
     if (i < last_seq_index) { // propagate best final pt to next initial pt(s)
-      const Variables& vars_star = min_i[best_min].variables_results();
-      IteratorArray& min_ip1 = varianceMinimizers[i+1];
+      const Variables& vars_star = min_i[best_min]->variables_results();
+      IteratorPtrArray& min_ip1 = varianceMinimizers[i+1];
       num_solvers = min_ip1.size();
       for (j=0; j<num_solvers; ++j) {
-	Iterator& min_ij = min_ip1[j];
-	auto  model_ij = min_ij.iterated_model();
-	if (!model_ij)  min_ij.initial_point(vars_star);
+	auto& min_ij = min_ip1[j];
+	auto  model_ij = min_ij->iterated_model();
+	if (!model_ij)  min_ij->initial_point(vars_star);
 	else                model_ij->current_variables().active_variables(vars_star);
       }
     }
@@ -1654,10 +1653,10 @@ void NonDNonHierarchSampling::run_minimizers(MFSolutionData& soln)
   // Note: issues with more involved recovery for upstream (global) optimizers
   // that don't support linear/nonlinear constraints can be avoided by always
   // ending with capable (local gradient-based) minimizers at sequence end.
-  Iterator& min_last_best = varianceMinimizers[last_seq_index][best_min];
+  auto& min_last_best = varianceMinimizers[last_seq_index][best_min];
   minimizer_results_to_solution_data(
-    min_last_best.variables_results().continuous_variables(),
-    min_last_best.response_results().function_values(), soln);
+    min_last_best->variables_results().continuous_variables(),
+    min_last_best->response_results().function_values(), soln);
 }
 
 
@@ -2300,13 +2299,13 @@ Real NonDNonHierarchSampling::direct_penalty_merit(const RealVector& cd_vars)
   // > estimator_variance_ratios() converts cd_vars as needed
   // > linear_model_cost() requires N_MODEL_*
   const SizetSizetPair& vm_ind = nonHierSampInstance->varMinIndices;
-  const Iterator& direct_min
+  const auto& direct_min
     = nonHierSampInstance->varianceMinimizers[vm_ind.first][vm_ind.second];
   Real lin_ineq_viol
     = nonHierSampInstance->augmented_linear_ineq_violations(cd_vars,
-        direct_min.callback_linear_ineq_coefficients(),
-        direct_min.callback_linear_ineq_lower_bounds(),
-        direct_min.callback_linear_ineq_upper_bounds());
+        direct_min->callback_linear_ineq_coefficients(),
+        direct_min->callback_linear_ineq_lower_bounds(),
+        direct_min->callback_linear_ineq_upper_bounds());
   bool protect_numerics = (lin_ineq_viol > 0.); // RATIO_NUDGE reflected in viol
   Real obj, constr, constr_u_bnd, log_metric;
   if (protect_numerics) {

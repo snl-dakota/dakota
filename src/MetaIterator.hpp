@@ -64,18 +64,18 @@ protected:
   void check_model(const String& method_ptr, const String& model_ptr);
 
   /// initialize the_iterator and the_model based on method_ptr
-  void allocate_by_pointer(const String& method_ptr, Iterator& the_iterator,
+  void allocate_by_pointer(const String& method_ptr, std::shared_ptr<Iterator>& the_iterator,
 			   std::shared_ptr<Model>& the_model);
   /// initialize the_iterator based on method_string
   void allocate_by_name(const String& method_string, const String& model_ptr,
-			Iterator& the_iterator,	std::shared_ptr<Model>& the_model);
+			std::shared_ptr<Iterator>& the_iterator,	std::shared_ptr<Model>& the_model);
 
   /// estimate minimum and maximum processors per iterator needed for
   /// init_iterator_parallelism(); instantiates the_iterator and the_model
   /// as needed, but on minimal processor ranks (is later augmented by
   /// allocate_by_pointer())
   std::pair<int, int> estimate_by_pointer(const String& method_ptr,
-					  Iterator& the_iterator,
+					  std::shared_ptr<Iterator>& the_iterator,
 					  std::shared_ptr<Model>& the_model);
   /// estimate minimum and maximum processors per iterator needed for
   /// init_iterator_parallelism(); instantiates the_iterator and the_model
@@ -83,7 +83,7 @@ protected:
   /// allocate_by_name())
   std::pair<int, int> estimate_by_name(const String& method_string,
 				       const String& model_ptr,
-				       Iterator& the_iterator,
+				       std::shared_ptr<Iterator>& the_iterator,
 				       std::shared_ptr<Model>& the_model);
 
   //

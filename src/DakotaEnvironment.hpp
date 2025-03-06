@@ -152,7 +152,7 @@ protected:
   ParallelLibrary parallelLib; ///< the parallel library instance
   ProblemDescDB   probDescDB;  ///< the parser database instance
 
-  Iterator topLevelIterator;  ///< the top level (meta-)iterator
+  std::shared_ptr<Iterator> topLevelIterator;  ///< the top level (meta-)iterator
 
   /// tool for Dakota usage tracking (this is a thin wrapper class)
   UsageTracker usageTracker;
@@ -198,16 +198,16 @@ inline ProblemDescDB& Environment::problem_description_db()
 inline const Variables& Environment::variables_results() const
 {
   return (environmentRep) ?
-    environmentRep->topLevelIterator.variables_results() :
-    topLevelIterator.variables_results();
+    environmentRep->topLevelIterator->variables_results() :
+    topLevelIterator->variables_results();
 }
 
 
 inline const Response& Environment::response_results() const
 {
   return (environmentRep) ?
-    environmentRep->topLevelIterator.response_results() :
-    topLevelIterator.response_results();
+    environmentRep->topLevelIterator->response_results() :
+    topLevelIterator->response_results();
 }
 
 

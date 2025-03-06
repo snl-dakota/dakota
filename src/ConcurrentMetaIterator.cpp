@@ -140,7 +140,7 @@ ConcurrentMetaIterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
 void ConcurrentMetaIterator::declare_sources() {
   evaluationsDB.declare_source(method_id(), 
                                "iterator",
-                               selectedIterator.method_id(),
+                               selectedIterator->method_id(),
                                "iterator");
 }
 
@@ -228,7 +228,7 @@ void ConcurrentMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
-    iterSched.set_iterator(selectedIterator, si_pl_iter);
+    iterSched.set_iterator(*selectedIterator, si_pl_iter);
   }
 }
 
@@ -240,7 +240,7 @@ void ConcurrentMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
-    iterSched.free_iterator(selectedIterator, si_pl_iter);
+    iterSched.free_iterator(*selectedIterator, si_pl_iter);
   }
 
   // deallocate the mi_pl parallelism level
@@ -372,10 +372,10 @@ void ConcurrentMetaIterator::core_run()
   if (iterSched.iteratorCommRank == 0) {
     int server_id = iterSched.iteratorServerId;
     if (server_id > 0 && server_id <= iterSched.numIteratorServers)
-      selectedIterator.initialize_graphics(server_id);
+      selectedIterator->initialize_graphics(server_id);
   }
 
-  iterSched.schedule_iterators(*this, selectedIterator);
+  iterSched.schedule_iterators(*this, *selectedIterator);
 }
 
 

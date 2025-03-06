@@ -117,7 +117,7 @@ void NonDQUESOBayesCalibration::map_pre_solve()
 {
   // doing a double check here to avoid a double copy if not optimizing 
   // for MAP (this check happens again in base class map_pre_solve()). 
-  if (mapOptimizer.is_null()) return;
+  if (!mapOptimizer) return;
   NonDBayesCalibration::map_pre_solve();
 
   // propagate MAP to paramInitials for starting point of MCMC chain.  
@@ -625,7 +625,7 @@ void NonDQUESOBayesCalibration::filter_chain_by_conditioning()
 	 << batchSize << " from aggregate MCMC chain containing "
 	 << unique_samples.size() << " samples.\n";
   std::shared_ptr<NonDExpansion> nond_exp =
-    std::static_pointer_cast<NonDExpansion>(stochExpIterator.iterator_rep());
+    std::static_pointer_cast<NonDExpansion>(stochExpIterator);
   nond_exp->select_refinement_points(unique_samples, batchSize, allSamples);
 }
 

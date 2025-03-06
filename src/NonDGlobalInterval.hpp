@@ -88,13 +88,13 @@ protected:
   //
 
   /// LHS iterator for constructing initial GP for all response functions
-  Iterator daceIterator;
+  std::shared_ptr<Iterator> daceIterator;
   /// GP model of response, one approximation per response function
   std::shared_ptr<Model> fHatModel;
 
   /// optimizer for solving surrogate-based subproblem: NCSU DIRECT optimizer
   /// for maximizing expected improvement or mixed EA if discrete variables.
-  Iterator intervalOptimizer;
+  std::shared_ptr<Iterator> intervalOptimizer;
   /// recast model which formulates the surrogate-based optimization 
   /// subproblem (recasts as design problem; may assimilate mean and
   /// variance to enable max(expected improvement))

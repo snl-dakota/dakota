@@ -245,7 +245,7 @@ void NonD::distribute_levels(RealVectorArray& levels, bool ascending)
 
 
 void NonD::
-construct_lhs(Iterator& u_space_sampler, std::shared_ptr<Model> u_model,
+construct_lhs(std::shared_ptr<Iterator>& u_space_sampler, std::shared_ptr<Model> u_model,
 	      unsigned short sample_type, int num_samples, int seed,
 	      const String& rng, bool vary_pattern, short sampling_vars_mode)
 {
@@ -257,8 +257,8 @@ construct_lhs(Iterator& u_space_sampler, std::shared_ptr<Model> u_model,
   }
 
   // construct NonDLHSSampling with default sampling_vars_mode (ACTIVE)
-  u_space_sampler.assign_rep(std::make_shared<NonDLHSSampling>(u_model,
-    sample_type, num_samples, seed, rng, vary_pattern, sampling_vars_mode));
+  u_space_sampler = std::make_shared<NonDLHSSampling>(u_model,
+    sample_type, num_samples, seed, rng, vary_pattern, sampling_vars_mode);
 }
 
 

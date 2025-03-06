@@ -263,20 +263,21 @@ void DOTOptimizer::check_sub_iterator_conflict()
   // Note: This check is performed for DOT, CONMIN, and SOLBase, but not
   //       for LHS since it is only active in pre-processing.
   // Run-time check since NestedModel::subIterator is constructed in init_comms
-  Iterator sub_iterator = iteratedModel->subordinate_iterator();
-  if (!sub_iterator.is_null() && 
-      ( ( sub_iterator.method_name() >= DOT_BFGS &&
-	  sub_iterator.method_name() <= DOT_SQP ) ||
-	sub_iterator.uses_method() == SUBMETHOD_DOT ) ) //_BFGS,_SQP, ...
-    sub_iterator.method_recourse(methodName);
+  std::shared_ptr<Iterator> sub_iterator;
+  sub_iterator = iteratedModel->subordinate_iterator();
+  if (sub_iterator && 
+      ( ( sub_iterator->method_name() >= DOT_BFGS &&
+	  sub_iterator->method_name() <= DOT_SQP ) ||
+	sub_iterator->uses_method() == SUBMETHOD_DOT ) ) //_BFGS,_SQP, ...
+    sub_iterator->method_recourse(methodName);
   ModelList& sub_models = iteratedModel->subordinate_models();
   for (auto& sm : sub_models) {
     sub_iterator = sm->subordinate_iterator();
-    if (!sub_iterator.is_null() && 
-	( ( sub_iterator.method_name() >= DOT_BFGS &&
-	    sub_iterator.method_name() <= DOT_SQP ) ||
-	  sub_iterator.uses_method() == SUBMETHOD_DOT ) ) //_BFGS,_SQP, ...
-      sub_iterator.method_recourse(methodName);
+    if (sub_iterator && 
+	( ( sub_iterator->method_name() >= DOT_BFGS &&
+	    sub_iterator->method_name() <= DOT_SQP ) ||
+	  sub_iterator->uses_method() == SUBMETHOD_DOT ) ) //_BFGS,_SQP, ...
+      sub_iterator->method_recourse(methodName);
   }
 }
 

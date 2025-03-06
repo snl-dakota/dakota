@@ -16,6 +16,7 @@
 //- Checked by:
 
 #include "dakota_system_defs.hpp"
+#include "iterator_utils.hpp"
 #include "model_utils.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
@@ -938,7 +939,7 @@ void ProblemDescDB::receive_db_buffer()
 }
 
 
-const Iterator& ProblemDescDB::get_iterator()
+std::shared_ptr<Iterator> ProblemDescDB::get_iterator()
 {
   // ProblemDescDB::get_<object> functions operate at the envelope level
   // so that any passing of *this provides the envelope object.
@@ -964,17 +965,16 @@ const Iterator& ProblemDescDB::get_iterator()
     id_method = "NO_METHOD_ID";
   IterLIter i_it
     = std::find_if(dbRep->iteratorList.begin(), dbRep->iteratorList.end(),
-                   boost::bind(&Iterator::method_id, _1) == id_method);
+                  [&id_method](std::shared_ptr<Iterator> iter) {return iter->method_id() == id_method;});
   if (i_it == dbRep->iteratorList.end()) {
-    Iterator new_iterator(*this);
-    dbRep->iteratorList.push_back(new_iterator);
+    dbRep->iteratorList.push_back(IteratorUtils::get_iterator(*this));
     i_it = --dbRep->iteratorList.end();
   }
   return *i_it;
 }
 
 
-const Iterator& ProblemDescDB::get_iterator(std::shared_ptr<Model> model)
+std::shared_ptr<Iterator> ProblemDescDB::get_iterator(std::shared_ptr<Model> model)
 {
   // ProblemDescDB::get_<object> functions operate at the envelope level
   // so that any passing of *this provides the envelope object.
@@ -989,25 +989,24 @@ const Iterator& ProblemDescDB::get_iterator(std::shared_ptr<Model> model)
     id_method = "NO_METHOD_ID";
   IterLIter i_it
     = std::find_if(dbRep->iteratorList.begin(), dbRep->iteratorList.end(),
-                   boost::bind(&Iterator::method_id, _1) == id_method);
+                    [&id_method](std::shared_ptr<Iterator> iter) {return iter->method_id() == id_method;});
+
   // if Iterator does not already exist, then create it
   if (i_it == dbRep->iteratorList.end()) {
-    Iterator new_iterator(*this, model);
-    dbRep->iteratorList.push_back(new_iterator);
+    dbRep->iteratorList.push_back(IteratorUtils::get_iterator(*this, model));
     i_it = --dbRep->iteratorList.end();
   }
   // idMethod already exists, but check for same model.  If !same, instantiate
   // new rather than update (i_it->iterated_model(model)) all shared instances.
-  else if (model != i_it->iterated_model()) {
-    Iterator new_iterator(*this, model);
-    dbRep->iteratorList.push_back(new_iterator);
+  else if (model != (*i_it)->iterated_model()) {
+    dbRep->iteratorList.push_back(IteratorUtils::get_iterator(*this, model));
     i_it = --dbRep->iteratorList.end();
   }
   return *i_it;
 }
 
 
-const Iterator& ProblemDescDB::
+std::shared_ptr<Iterator> ProblemDescDB::
 get_iterator(const String& method_name, std::shared_ptr<Model> model)
 {
   // ProblemDescDB::get_<object> functions operate at the envelope level
@@ -1021,18 +1020,16 @@ get_iterator(const String& method_name, std::shared_ptr<Model> model)
   IterLIter i_it
     = std::find_if(dbRep->iteratorByNameList.begin(),
 		   dbRep->iteratorByNameList.end(),
-                   boost::bind(&Iterator::method_string, _1) == method_name);
+                  [&method_name](std::shared_ptr<Iterator> iter) {return iter->method_string() == method_name;});
   // if Iterator does not already exist, then create it
   if (i_it == dbRep->iteratorByNameList.end()) {
-    Iterator new_iterator(method_name, model);
-    dbRep->iteratorByNameList.push_back(new_iterator);
+    dbRep->iteratorByNameList.push_back(IteratorUtils::get_iterator(method_name, model));
     i_it = --dbRep->iteratorByNameList.end();
   }
   // method_name already exists, but check for same model. If !same, instantiate
   // new rather than update (i_it->iterated_model(model)) all shared instances.
-  else if (model != i_it->iterated_model()) {
-    Iterator new_iterator(method_name, model);
-    dbRep->iteratorByNameList.push_back(new_iterator);
+  else if (model != (*i_it)->iterated_model()) {
+    dbRep->iteratorByNameList.push_back(IteratorUtils::get_iterator(method_name, model));
     i_it = --dbRep->iteratorByNameList.end();
   }
   return *i_it;
