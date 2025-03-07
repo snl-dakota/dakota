@@ -37,8 +37,8 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db,
   rCondBestThrottle(problem_db.get_sizet("method.nond.rcond_best_throttle")),
   rCondTolThrottle(problem_db.get_real("method.nond.rcond_tol_throttle"))
 {
-  analyticEstVarDerivs = true; // estvar solve can be differentiated
-  hardenNumericSoln    = true; // more important for ML BLUE than ACV family
+  analyticEstVarDerivs = true; // ML BLUE estvar soln has analytic derivatives
+  //hardenNumericSoln  = true; // now adopted for all non-hierarch estimators
   mlmfSubMethod        = problem_db.get_ushort("method.sub_method");
 
   // SDP versus conventional NLP handled by optSubProblemSolver

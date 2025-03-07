@@ -47,7 +47,8 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db,
   NonDEnsembleSampling(problem_db, model),
   activeBudget((Real)maxFunctionEvals), optSubProblemForm(0),
   truthFixedByPilot(problem_db.get_bool("method.nond.truth_fixed_by_pilot")),
-  analyticEstVarDerivs(false), hardenNumericSoln(false)
+  analyticEstVarDerivs(false), // only in ML BLUE currently
+  hardenNumericSoln(true)      // Cholesky option not currently exposed in spec
 {
   // solver(s) that perform the numerical solution for resource allocations
   optSubProblemSolver = sub_optimizer_select(
@@ -1826,7 +1827,9 @@ cholesky_solve(RealSymMatrix& A, RealMatrix& X, RealMatrix& B,
 	       bool copy_A, bool copy_B, bool hard_error)
 {
   // Leverage both the soln refinement in solve() and equilibration during
-  // factorization (inverting Psi in place can only leverage the latter).
+  // factorization (inverting in place has issues with both -- while it can
+  // leverage equilibration during factorization, the resulting inverse is
+  // equilibrated and requires additional processing).
   RealSpdSolver spd_solver;
   spd_solver.solveToRefinedSolution(true);
 
@@ -1851,9 +1854,11 @@ cholesky_solve(RealSymMatrix& A, RealMatrix& X, RealMatrix& B,
     spd_solver.setVectors(Teuchos::rcp(&X,false), Teuchos::rcp(&B,false));
 
   spd_solver.factorWithEquilibration(spd_solver.shouldEquilibrate());
-  // Teuchos bug: solve() discards lower level factor() error code, so unroll
+  // Teuchos bug: solve() discards lower level factor() return code, so unroll
   int fact_code = spd_solver.factor();
   if (fact_code) {
+    // It appears from testing that this is non-fatal to the subsequent solve(),
+    // but we can use it to flag cases that should use SVD for robustness.
     if (hard_error) {
       Cerr << "Error: Cholesky factorization failure (LAPACK POTRF error code "
 	   << fact_code << ") during cholesky_solve().\n       Consider "
@@ -1866,8 +1871,11 @@ cholesky_solve(RealSymMatrix& A, RealMatrix& X, RealMatrix& B,
 	   << "         Mitigation to be performed." << std::endl;
     return fact_code;
   }
-  int solve_code = spd_solver.solve();
+  int solve_code = spd_solver.solve(); // detects/uses preceding factorization
   if (solve_code) {
+    // This trap is unlikely to become active since the remaining steps are
+    // FBS and de-equilibration.  Factorization is the main issue (which
+    // solve() neglects to propagate).
     if (hard_error) {
       Cerr << "Error: solver failure (LAPACK POTRS error code " << solve_code
 	   << ") in cholesky_solve().\n       Consider hardened SVD-based "
