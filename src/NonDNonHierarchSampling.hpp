@@ -133,6 +133,9 @@ protected:
   virtual Real augmented_linear_ineq_violations(const RealVector& cd_vars,
     const RealMatrix& lin_ineq_coeffs, const RealVector& lin_ineq_lb,
     const RealVector& lin_ineq_ub);
+  /// enforce the augmented linear inequality constraints, usually to prevent
+  /// numerical exceptions in the computation of estimator variance
+  virtual void enforce_augmented_linear_ineq_constraints(RealVector& cd_vars);
 
   /// post-process minimization results to update MFSolutionData
   virtual void minimizer_results_to_solution_data(const RealVector& cv_star,

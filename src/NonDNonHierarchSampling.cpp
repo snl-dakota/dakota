@@ -955,7 +955,7 @@ numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
   case R_AND_N_NONLINEAR_CONSTRAINT:
     num_cdv = numGroups;  num_nln_con = 1;  num_lin_con = 0;          break;
   case N_MODEL_LINEAR_CONSTRAINT:
-    num_lin_con = num_cdv = numGroups;      num_nln_con = 0;          break;
+    num_cdv = num_lin_con = numGroups;      num_nln_con = 0;          break;
   case N_MODEL_LINEAR_OBJECTIVE:
     num_cdv = numGroups;  num_nln_con = 1;  num_lin_con = numApprox;  break;
   }
@@ -1092,7 +1092,8 @@ augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
   //  N_i >  N (aka r_i > 1) prevents numerical exceptions
   // (N_i >= N becomes N_i > N based on RATIO_NUDGE)
 
-  // numerical MFMC now adopts this base implementation (see above)
+  // numerical MFMC now adopts this base implementation since it reorders
+  // on the fly
 
   switch (optSubProblemForm) {
   case N_MODEL_LINEAR_CONSTRAINT:  // lin_ineq #0 is augmented
@@ -1116,7 +1117,36 @@ augmented_linear_ineq_violations(const RealVector& cd_vars,
 				 const RealVector& lin_ineq_lb,
 				 const RealVector& lin_ineq_ub)
 {
-  Real quad_viol = 0.;
+  // Simple, general, and readily adapts to other logic changes
+
+  Real coeff, viol, inner_prod, l_bnd, u_bnd, quad_viol = 0.;
+  size_t r, c, num_v = cd_vars.length(),
+    num_lin_con     = lin_ineq_coeffs.numRows(),
+    lin_ineq_offset = (optSubProblemForm == N_MODEL_LINEAR_CONSTRAINT ||
+		       optSubProblemForm == N_GROUP_LINEAR_CONSTRAINT ||
+		       optSubProblemForm == R_ONLY_LINEAR_CONSTRAINT) ? 1 : 0;
+  for (r=lin_ineq_offset; r<num_lin_con; ++r) {
+    inner_prod = 0.;
+    for (c=0; c<num_v; ++c) {
+      coeff = lin_ineq_coeffs(r, c);
+      if (coeff != 0.) // coeff matrix is sparse
+	inner_prod += coeff * cd_vars[c];
+    }
+    l_bnd = lin_ineq_lb[r];  u_bnd = lin_ineq_ub[r];
+    if (inner_prod < l_bnd) {
+      viol = (std::abs(l_bnd) > Pecos::SMALL_NUMBER)
+	? (1. - inner_prod / l_bnd) : l_bnd - inner_prod;
+      quad_viol += viol*viol;
+    }
+    else if (inner_prod > u_bnd) {
+      viol = (std::abs(u_bnd) > Pecos::SMALL_NUMBER)
+	? (inner_prod / u_bnd - 1.) : inner_prod - u_bnd;
+      quad_viol += viol*viol;
+    }
+  }
+  return quad_viol;
+
+  /*
   switch (optSubProblemForm) {
   case N_MODEL_LINEAR_CONSTRAINT:  // lin_ineq #0 is augmented
   case N_MODEL_LINEAR_OBJECTIVE: { // no other lin ineq
@@ -1143,7 +1173,27 @@ augmented_linear_ineq_violations(const RealVector& cd_vars,
   case R_ONLY_LINEAR_CONSTRAINT: case R_AND_N_NONLINEAR_CONSTRAINT:
     break; // none to add (r lower bounds = 1)
   }
-  return quad_viol;
+  */
+}
+
+
+void NonDNonHierarchSampling::
+enforce_augmented_linear_ineq_constraints(RealVector& cd_vars)
+{
+  // default is simply N_i > N
+
+  switch (optSubProblemForm) {
+  case N_MODEL_LINEAR_CONSTRAINT:  // lin_ineq #0 is augmented
+  case N_MODEL_LINEAR_OBJECTIVE: { // no other lin ineq
+    Real N_H_nudge = cd_vars[numApprox] * (1. + RATIO_NUDGE);
+    for (size_t approx=0; approx<numApprox; ++approx)
+      if (cd_vars[approx] < N_H_nudge)
+	cd_vars[approx] = N_H_nudge;
+    break;
+  }
+  case R_ONLY_LINEAR_CONSTRAINT: case R_AND_N_NONLINEAR_CONSTRAINT:
+    break; // none to add (r lower bounds = 1)
+  }
 }
 
 
@@ -1637,14 +1687,19 @@ void NonDNonHierarchSampling::run_minimizers(MFSolutionData& soln)
 	   << min_i[best_min]->method_string() << std::endl;
 
     if (i < last_seq_index) { // propagate best final pt to next initial pt(s)
-      const Variables& vars_star = min_i[best_min]->variables_results();
+      Variables vars_star = min_i[best_min]->variables_results().copy();
+      // upstream/global searches may fail to satisfy all constaints, where it
+      // is the augmented linear constraints that affect numerical viability
+      enforce_augmented_linear_ineq_constraints(
+	vars_star.continuous_variables_view());
+
       IteratorPtrArray& min_ip1 = varianceMinimizers[i+1];
       num_solvers = min_ip1.size();
       for (j=0; j<num_solvers; ++j) {
-	auto& min_ij = min_ip1[j];
-	auto  model_ij = min_ij->iterated_model();
-	if (!model_ij)  min_ij->initial_point(vars_star);
-	else                model_ij->current_variables().active_variables(vars_star);
+	auto&  min_ij = min_ip1[j];
+	auto model_ij = min_ij->iterated_model();
+	if (model_ij) model_ij->current_variables().active_variables(vars_star);
+	else            min_ij->initial_point(vars_star);
       }
     }
   }

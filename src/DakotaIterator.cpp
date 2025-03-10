@@ -189,6 +189,7 @@ void Iterator::declare_sources() {
                                iterated_model()->model_type());
 }
 
+
 Iterator::~Iterator()
 { /* empty dtor */ }
 

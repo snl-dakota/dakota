@@ -590,29 +590,12 @@ numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
   num_cdv = num_active_groups();
   bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
 		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
-
-  //switch (optSubProblemSolver) {
-  //case SUBMETHOD_SDP:
-    switch (optSubProblemForm) {
-    case N_GROUP_LINEAR_CONSTRAINT:
-      num_lin_con = (offline) ? 2 : 1;
-      num_nln_con = 0;   break;
-    case N_GROUP_LINEAR_OBJECTIVE:
-      num_lin_con = (offline) ? 1 : 0;
-      num_nln_con = 1;  break;
-    }
-  /*
-    break;
-  default:
-    switch (optSubProblemForm) {
-    case N_GROUP_LINEAR_CONSTRAINT:
-      num_lin_con = 1;  num_nln_con = 0;   break;
-    case N_GROUP_LINEAR_OBJECTIVE:
-      num_nln_con = 1;  num_lin_con = numApprox;  break;
-    }
-    break;
+  switch (optSubProblemForm) {
+  case N_GROUP_LINEAR_CONSTRAINT:
+    num_lin_con = (offline) ? 2 : 1;  num_nln_con = 0;  break;
+  case N_GROUP_LINEAR_OBJECTIVE:
+    num_lin_con = (offline) ? 1 : 0;  num_nln_con = 1;  break;
   }
-  */
 }
 
 
@@ -641,108 +624,6 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   specify_linear_constraints(lin_ineq_lb, lin_ineq_ub, lin_eq_tgt,
 			     lin_ineq_coeffs, lin_eq_coeffs);
   specify_nonlinear_constraints(nln_ineq_lb, nln_ineq_ub, nln_eq_tgt);
-}
-
-
-void NonDMultilevBLUESampling::
-derived_finite_solution_bounds(const RealVector& x0, RealVector& x_lb,
-			       RealVector& x_ub, Real budget)
-{
-  // Extreme N_g is all refinement budget allocated to one group:
-  //   delta_N_g cost_g = budget_cost - equivHFEvals
-  size_t g, v, num_v = x0.length();  Real cost_H = sequenceCost[numApprox];
-  if (equivHFEvals > 0.) {
-    Real remaining_cost = (budget - equivHFEvals) * cost_H;
-    for (v=0; v<num_v; ++v) {
-      g = active_to_all_group(v);
-      x_ub[v] = x0[v] + remaining_cost / modelGroupCost[g];
-    }
-  }
-  else { // in this case, avoid offline_N_lwr,RATIO_NUDGE within x0
-    Real budget_cost = budget * cost_H;
-    for (v=0; v<num_v; ++v) {
-      g = active_to_all_group(v);
-      x_ub[v] = budget_cost / modelGroupCost[g];
-    }
-  }
-}
-
-
-void NonDMultilevBLUESampling::
-augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
-				RealVector& lin_ineq_lb,
-				RealVector& lin_ineq_ub)
-{
-  // Note: could be collapsed within numerical_solution_bounds_constraints()
-  // above to reduce function declarations, but we stick with the convention
-  // that augment_linear_ineq_constraints() augments the core problem definition
-  // with additional sample count relationship constraints.  Instead of managing
-  // accuracy/cost metrics, these constraints ensure a well-posed solution and
-  // may need to be enforced first by methods w/o explicit constraint handling.
-
-  if (pilotMgmtMode == OFFLINE_PILOT ||
-      pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
-    // Ensure that we have at least one sample for one of the groups containing
-    // the HF reference model.  This is already satisfied by pilot sampling for
-    // current group definitions used by online/projection modes.
-    lin_ineq_lb[0] = 1.;  lin_ineq_ub[0] = DBL_MAX;
-    size_t v, g, num_v = lin_ineq_coeffs.numCols();
-    for (v=0; v<num_v; ++v) {
-      g = active_to_all_group(v);
-      if (contains(modelGroups[g], numApprox)) // HF model is part of group
-	lin_ineq_coeffs(0, v) = 1.;
-    }
-  }
-}
-
-
-Real NonDMultilevBLUESampling::
-augmented_linear_ineq_violations(const RealVector& cd_vars,
-				 const RealMatrix& lin_ineq_coeffs,
-				 const RealVector& lin_ineq_lb,
-				 const RealVector& lin_ineq_ub)
-{
-  // These are called out separately to avoid NaNs from inadmissible points
-
-  Real quad_viol = 0.;
-  if (pilotMgmtMode == OFFLINE_PILOT ||
-      pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
-    // Ensure that we have at least one sample for one of the HF groups
-    Real inner_prod = 0.;
-    size_t v, num_v = cd_vars.length();
-    for (v=0; v<num_v; ++v)
-      inner_prod += lin_ineq_coeffs(0, v) * cd_vars[v]; // avoid contains()
-    Real viol, l_bnd = lin_ineq_lb[0];//, u_bnd = lin_ineq_ub[0];
-    if (inner_prod < l_bnd) {
-      viol =
-	//(std::abs(l_bnd) > Pecos::SMALL_NUMBER) ? (1. - inner_prod / l_bnd) :
-	l_bnd - inner_prod;
-      quad_viol += viol*viol;
-    }
-    //else if (inner_prod > u_bnd) {
-    //	viol = (std::abs(u_bnd) > Pecos::SMALL_NUMBER)
-    //	  ? (inner_prod / u_bnd - 1.) : inner_prod - u_bnd;
-    //	quad_viol += viol*viol;
-    //}
-  }
-  return quad_viol;
-}
-
-
-void NonDMultilevBLUESampling::
-enforce_bounds_linear_constraints(RealVector& soln_vars)
-{
-  // This function applies ML BLUE requirements to an (analytic) initial guess
-  // from another estimator (MFMC, CVMC).  These requirements are focused on
-  // having the matrix solution be well-posed, rather than enforcing constraints
-  // on accuracy or budget.
-
-  size_t num_v = num_active_groups();
-  RealVector x_lb(num_v), x_ub(num_v);
-  specify_parameter_bounds(x_lb, x_ub);
-  enforce_nudge(x_lb); // nudge away from 0 if needed
-  enforce_bounds(soln_vars, x_lb, x_ub);
-  enforce_augmented_linear_ineq_constraints(soln_vars);
 }
 
 
@@ -794,15 +675,13 @@ specify_linear_constraints(RealVector& lin_ineq_lb, RealVector& lin_ineq_ub,
   case N_GROUP_LINEAR_CONSTRAINT: { // linear inequality constraint on budget:
     // \Sum_grp_i w_grp_i        N_grp_i <= equiv_HF * w_HF
     // \Sum_grp_i w_grp_i / w_HF N_grp_i <= equivHF
-    size_t g, v, num_v = num_active_groups(), lin_offset
-      = (pilotMgmtMode == OFFLINE_PILOT ||
-	 pilotMgmtMode == OFFLINE_PILOT_PROJECTION) ? 1 : 0;
-    lin_ineq_lb[lin_offset] = -DBL_MAX; // no lb
-    lin_ineq_ub[lin_offset] = activeBudget;
+    size_t g, v, num_v = num_active_groups();
+    lin_ineq_lb[0] = -DBL_MAX; // no lb
+    lin_ineq_ub[0] = activeBudget;
     Real cost_H = sequenceCost[numApprox];
     for (v=0; v<num_v; ++v) {
       g = active_to_all_group(v);
-      lin_ineq_coeffs(lin_offset, v) = modelGroupCost[g] / cost_H;
+      lin_ineq_coeffs(0, v) = modelGroupCost[g] / cost_H;
     }
     break;
   }
@@ -824,29 +703,102 @@ specify_nonlinear_constraints(RealVector& nln_ineq_lb, RealVector& nln_ineq_ub,
 
 
 void NonDMultilevBLUESampling::
+derived_finite_solution_bounds(const RealVector& x0, RealVector& x_lb,
+			       RealVector& x_ub, Real budget)
+{
+  // Extreme N_g is all refinement budget allocated to one group:
+  //   delta_N_g cost_g = budget_cost - equivHFEvals
+  size_t g, v, num_v = x0.length();  Real cost_H = sequenceCost[numApprox];
+  if (equivHFEvals > 0.) {
+    Real remaining_cost = (budget - equivHFEvals) * cost_H;
+    for (v=0; v<num_v; ++v) {
+      g = active_to_all_group(v);
+      x_ub[v] = x0[v] + remaining_cost / modelGroupCost[g];
+    }
+  }
+  else { // in this case, avoid offline_N_lwr,RATIO_NUDGE within x0
+    Real budget_cost = budget * cost_H;
+    for (v=0; v<num_v; ++v) {
+      g = active_to_all_group(v);
+      x_ub[v] = budget_cost / modelGroupCost[g];
+    }
+  }
+}
+
+
+void NonDMultilevBLUESampling::
+augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
+				RealVector& lin_ineq_lb,
+				RealVector& lin_ineq_ub)
+{
+  // Note: could be collapsed within numerical_solution_bounds_constraints()
+  // above to reduce function declarations, but we stick with the convention
+  // that augment_linear_ineq_constraints() augments the core problem definition
+  // with additional sample count relationship constraints.  Instead of managing
+  // accuracy/cost metrics, these constraints ensure a well-posed solution and
+  // may need to be enforced first by methods w/o explicit constraint handling.
+
+  if (pilotMgmtMode == OFFLINE_PILOT ||
+      pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
+    size_t v, g, num_v = lin_ineq_coeffs.numCols(), lin_ineq_offset
+      = (optSubProblemForm == N_GROUP_LINEAR_CONSTRAINT) ? 1 : 0;
+    // Ensure that we have at least one sample for one of the groups containing
+    // the HF reference model.  This is already satisfied by pilot sampling for
+    // current group definitions used by online/projection modes.
+    lin_ineq_lb[lin_ineq_offset] = 1.;
+    lin_ineq_ub[lin_ineq_offset] = DBL_MAX;
+    for (v=0; v<num_v; ++v) {
+      g = active_to_all_group(v);
+      if (contains(modelGroups[g], numApprox)) // HF model is part of group
+	lin_ineq_coeffs(lin_ineq_offset, v) = 1.;
+    }
+  }
+}
+
+
+void NonDMultilevBLUESampling::
+enforce_bounds_linear_constraints(RealVector& soln_vars)
+{
+  // This function applies ML BLUE requirements to an (analytic) initial guess
+  // from another estimator (MFMC, CVMC).  These requirements are focused on
+  // having the matrix solution be well-posed, rather than enforcing constraints
+  // on accuracy or budget.
+
+  size_t num_v = num_active_groups();
+  RealVector x_lb(num_v), x_ub(num_v);
+  specify_parameter_bounds(x_lb, x_ub);
+  enforce_nudge(x_lb); // nudge away from 0 if needed
+  enforce_bounds(soln_vars, x_lb, x_ub);
+  enforce_augmented_linear_ineq_constraints(soln_vars);
+}
+
+
+void NonDMultilevBLUESampling::
 enforce_augmented_linear_ineq_constraints(RealVector& soln_vars)
 {
+  // Ensure that we have at least one sample for one of the groups containing
+  // the HF reference model.  This is already satisfied by pilot sampling for
+  // current group definitions used by online modes.
   if ( pilotMgmtMode == ONLINE_PILOT ||
        pilotMgmtMode == ONLINE_PILOT_PROJECTION ) // no augmented linear ineq
     return;
 
-  RealMatrix lin_ineq_coeffs(1, soln_vars.length());
-  RealVector lin_ineq_lb(1), lin_ineq_ub(1);
+  size_t v, num_v = soln_vars.length(), last_v = num_v - 1, g,
+    offset = (optSubProblemForm == N_GROUP_LINEAR_CONSTRAINT) ? 1 : 0,
+    num_lin_ineq = 1 + offset;
+  RealMatrix lin_ineq_coeffs(num_lin_ineq, num_v);
+  RealVector lin_ineq_lb(num_lin_ineq), lin_ineq_ub(num_lin_ineq);
   augment_linear_ineq_constraints(lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub);
 
-  size_t g;  int v, num_v = soln_vars.length(), last_v = num_v - 1;
   Real lb = 1.;
   // Assess presence of at least 1 sample in a HF group (any partial
   // contributions are discarded in a way that linear ineq cannot support)
   bool hf_sampled = false;
   for (v=last_v; v>=0; --v)
-    if (lin_ineq_coeffs(0, v) == 1. && // active group contains HF
-	soln_vars[v] >= lb)            // active group is sampled
+    if (lin_ineq_coeffs(offset, v) == 1. && // active group contains HF
+	soln_vars[v] >= lb)                 // active group is sampled
       { hf_sampled = true; break; }
 
-  // Ensure that we have at least one sample for one of the groups containing
-  // the HF reference model.  This is already satisfied by pilot sampling for
-  // current group definitions used by online modes.
   if (!hf_sampled)
     switch (groupThrottleType) {
     case RCOND_TOLERANCE_THROTTLE: case RCOND_BEST_COUNT_THROTTLE: {
@@ -861,8 +813,8 @@ enforce_augmented_linear_ineq_constraints(RealVector& soln_vars)
       // no rcond ranking: work backwards from last v to first
       // (subsumes all_group cases)
       for (v=last_v; v>=0; --v)
-	if (lin_ineq_coeffs(0, v) == 1.) // active group contains HF
-	  { soln_vars[v] += lb; break; } // preserve any previous nudge
+	if (lin_ineq_coeffs(offset, v) == 1.) // active group contains HF
+	  { soln_vars[v] += lb; break; }      // preserve any previous nudge
       break;
     }
 }
