@@ -83,12 +83,7 @@ protected:
   void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 				       RealVector& lin_ineq_lb,
 				       RealVector& lin_ineq_ub) override;
-				       
-  Real augmented_linear_ineq_violations(const RealVector& cd_vars,
-					const RealMatrix& lin_ineq_coeffs,
-					const RealVector& lin_ineq_lb,
-					const RealVector& lin_ineq_ub) override;
-					
+  void enforce_augmented_linear_ineq_constraints(RealVector& cd_vars);
 
   //
   //- Heading: member functions
@@ -245,9 +240,10 @@ private:
 		       const UShortArray& approx_set,
 		       const UShortList& root_list, Real budget,
 		       Real offline_N_lwr = 1.);
-  void enforce_linear_ineq_constraints(RealVector& avg_eval_ratios,
-				       const UShortArray& approx_set,
-				       const UShortList& root_list);
+
+  void enforce_augmented_linear_ineq_constraints(RealVector& avg_eval_ratios,
+						 const UShortArray& approx_set,
+						 const UShortList& root_list);
 
   void update_best(MFSolutionData& solution);
   void restore_best();
@@ -294,7 +290,7 @@ private:
   /// unrolling dependent sources; allows unrolling of z^1,z^2 sample sets
   UShortList orderedRootList;
 
-  /// the best performing model graph among the set from generate_dags()
+  /// the best performing model subset when model selection is active
   std::map<UShortArray, UShortArraySet>::const_iterator bestModelSetIter;
   /// the best performing model graph among the set from generate_dags()
   UShortArraySet::const_iterator bestDAGIter;

@@ -1066,8 +1066,8 @@ compute_allocations(const RealMatrix& var_L, MFSolutionData& soln)
       size_t num_approx = approx_set.size();
       RealVector avg_eval_ratios(num_approx, false);  avg_eval_ratios = 1.;
       // For r_i = 1, C_G,c_g = 0 --> enforce linear constr based on current DAG
-      enforce_linear_ineq_constraints(avg_eval_ratios, approx_set,
-				      orderedRootList);
+      enforce_augmented_linear_ineq_constraints(avg_eval_ratios, approx_set,
+						orderedRootList);
       soln.anchored_solution_ratios(avg_eval_ratios, avg_N_H);
       no_solve_variances(soln);  numSamples = 0;  return;
     }
@@ -1160,7 +1160,8 @@ analytic_initialization_from_ensemble_cvmc(const UShortArray& approx_set,
   Real hf_target;
   if (maxFunctionEvals == SZ_MAX) {
     // scale according to accuracy (convergenceTol * estVarIter0)
-    enforce_linear_ineq_constraints(avg_eval_ratios, approx_set, root_list);
+    enforce_augmented_linear_ineq_constraints(avg_eval_ratios, approx_set,
+					      root_list);
     hf_target = update_hf_target(avg_eval_ratios, avg_N_H, varH, estVarIter0);
   }
   else { // scale according to cost
@@ -1247,19 +1248,25 @@ numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
 {
   // Note: SUBMETHOD_MFMC not used by GenACV
 
-  size_t num_approx = activeModelSetIter->first.size();
+  size_t i, num_approx = activeModelSetIter->first.size();
+  const UShortArray& dag = *activeDAGIter;
   switch (optSubProblemForm) {
   case R_ONLY_LINEAR_CONSTRAINT:
     num_cdv = num_approx;  num_nln_con = 0;
     num_lin_con = 1;
-    //if (mlmfSubMethod == SUBMETHOD_MFMC) num_lin_con += num_approx;
+    for (i=0; i<num_approx; ++i)
+      if (dag[i] != numApprox)
+	++num_lin_con;
     break;
   case R_AND_N_NONLINEAR_CONSTRAINT:
     num_cdv = num_approx + 1;  num_nln_con = 1;
-    num_lin_con = 0; //(mlmfSubMethod == SUBMETHOD_MFMC) ? num_approx : 0;
+    num_lin_con = 0;
+    for (i=0; i<num_approx; ++i)
+      if (dag[i] != numApprox)
+	++num_lin_con;
     break;
   case N_MODEL_LINEAR_CONSTRAINT:
-    num_lin_con = num_cdv = num_approx + 1;  num_nln_con = 0;
+    num_cdv = num_lin_con = num_approx + 1;  num_nln_con = 0;
     break;
   case N_MODEL_LINEAR_OBJECTIVE:
     num_cdv = num_approx + 1;  num_nln_con = 1;  num_lin_con = num_approx;
@@ -1370,137 +1377,122 @@ augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 				RealVector& lin_ineq_lb,
 				RealVector& lin_ineq_ub)
 {
+  // Enforce DAG dependencies (ACV: all point to numApprox)
+  // > N for each source model > N for model it targets
+  // > Avoids negative z2 = z - z1 in IS/RD (--> questionable G,g numerics)
+
+  const UShortArray& dag = *activeDAGIter;
+  const UShortArray& approx_set = activeModelSetIter->first;
+  size_t i, num_approx = approx_set.size(), tgt;//, src;
+  SizetArray index_map;  inflate_approx_set(approx_set, index_map);
+
   switch (optSubProblemForm) {
   case N_MODEL_LINEAR_CONSTRAINT:  // lin_ineq #0 is augmented
   case N_MODEL_LINEAR_OBJECTIVE: { // no other lin ineq
-    size_t src, tgt, deflate_tgt, lin_ineq_offset
+    size_t offset_i, deflate_tgt, lin_ineq_offset
       = (optSubProblemForm == N_MODEL_LINEAR_CONSTRAINT) ? 1 : 0;
-
-    // Enforce DAG dependencies (ACV: all point to numApprox)
-    // > N for each source model > N for model it targets
-    // > Avoids negative z2 = z - z1 in IS/RD (--> questionable G,g numerics)
-    const UShortArray& dag = *activeDAGIter;
-    const UShortArray& approx_set = activeModelSetIter->first;
-    size_t i, num_approx = approx_set.size();
-    SizetArray index_map;  inflate_approx_set(approx_set, index_map);
-    for (i=0; i<num_approx; ++i) {
-      src = approx_set[i];  tgt = dag[i];
+    for (i=0; i<num_approx; ++i) { // N_src > N_tgt
+      tgt = dag[i]; //src = approx_set[i];
       deflate_tgt = (tgt == numApprox) ? num_approx : index_map[tgt];
-      lin_ineq_coeffs(i+lin_ineq_offset, i) = -1.;
-      lin_ineq_coeffs(i+lin_ineq_offset, deflate_tgt) =  1. + RATIO_NUDGE;
-      //Cout << "lin ineq: source = " << source
-      //     << " target = " << target << std::endl;
+      offset_i = i+lin_ineq_offset;
+      lin_ineq_coeffs(offset_i, i) = -1.;
+      lin_ineq_coeffs(offset_i, deflate_tgt) = 1. + RATIO_NUDGE;
     }
     break;
   }
-  case R_ONLY_LINEAR_CONSTRAINT:
-    // *** TO DO ***:
-    // This is active for truthFixedByPilot && !offline
-    // but r is not appropriate for general DAG including multiple CV targets.
-    // --> either need to alter handling or suppress this option...
-
-    Cerr << "Error: R_ONLY_LINEAR_CONSTRAINT not implemented in NonDGenACV"
-	 << "Sampling::augment_linear_ineq_constraints()." << std::endl;
-    abort_handler(METHOD_ERROR);
-    break;
-  case R_AND_N_NONLINEAR_CONSTRAINT: // not used
-    Cerr << "Error: R_AND_N_NONLINEAR_CONSTRAINT not supported in NonDGenACV"
-	 << "Sampling::augment_linear_ineq_constraints()." << std::endl;
-    abort_handler(METHOD_ERROR);
-    break;
-  }
-}
-
-
-Real NonDGenACVSampling::
-augmented_linear_ineq_violations(const RealVector& cd_vars,
-				 const RealMatrix& lin_ineq_coeffs,
-				 const RealVector& lin_ineq_lb,
-				 const RealVector& lin_ineq_ub)
-{
-  Real quad_viol = 0.;
-  switch (optSubProblemForm) {
-  case N_MODEL_LINEAR_CONSTRAINT:  // lin_ineq #0 is augmented
-  case N_MODEL_LINEAR_OBJECTIVE: { // no other lin ineq
-    size_t src, tgt, deflate_tgt, lin_ineq_offset
-      = (optSubProblemForm == N_MODEL_LINEAR_CONSTRAINT) ? 1 : 0;
-
-    // Enforce DAG dependencies (ACV: all point to numApprox)
-    // > N for each source model > N for model it targets
-    // > Avoids negative z2 = z - z1 in IS/RD (--> questionable G,g numerics)
-    const UShortArray& dag = *activeDAGIter;
-    const UShortArray& approx_set = activeModelSetIter->first;
-    size_t i, num_approx = approx_set.size();
-    SizetArray index_map;  inflate_approx_set(approx_set, index_map);
-    Real viol, inner_prod, l_bnd, u_bnd;
+  case R_ONLY_LINEAR_CONSTRAINT: // active for truthFixedByPilot && !offline
+  case R_AND_N_NONLINEAR_CONSTRAINT: {
+    size_t cntr = (optSubProblemForm == R_ONLY_LINEAR_CONSTRAINT) ? 1 : 0;
     for (i=0; i<num_approx; ++i) {
-      src = approx_set[i];  tgt = dag[i];
-      deflate_tgt = (tgt == numApprox) ? num_approx : index_map[tgt];
-      // Don't use any constraint tolerance since lin_ineq_coeffs already
-      // has RATIO_NUDGE built in
-      inner_prod = lin_ineq_coeffs(i+lin_ineq_offset, i) * cd_vars[i] +
-	lin_ineq_coeffs(i+lin_ineq_offset, deflate_tgt)  * cd_vars[deflate_tgt];
-      l_bnd = lin_ineq_lb[i+lin_ineq_offset];
-      u_bnd = lin_ineq_ub[i+lin_ineq_offset];
-      if (inner_prod < l_bnd) {
-	viol = (std::abs(l_bnd) > Pecos::SMALL_NUMBER)
-	  ? (1. - inner_prod / l_bnd) : l_bnd - inner_prod;
-	quad_viol += viol*viol;
-      }
-      else if (inner_prod > u_bnd) {
-	viol = (std::abs(u_bnd) > Pecos::SMALL_NUMBER)
-	  ? (inner_prod / u_bnd - 1.) : inner_prod - u_bnd;
-	quad_viol += viol*viol;
+      tgt = dag[i]; //src = approx_set[i];
+      //offset_i = i+lin_ineq_offset;
+      //if (tgt == numApprox) { // r_i > 1. handled by bounds + nudge
+      //  lin_ineq_coeffs(offset_i, i) = 1.;
+      //  lin_ineq_lb(offset_i) = 1.;
+      //  lin_ineq_ub(offset_i) = DBL_MAX;
+      //}
+      if (tgt != numApprox) { // r_src > r_tgt
+	lin_ineq_coeffs(cntr, i) = -1.;
+	lin_ineq_coeffs(cntr, index_map[tgt]) = 1. + RATIO_NUDGE;
+	++cntr;
       }
     }
     break;
   }
-  case R_ONLY_LINEAR_CONSTRAINT:
-    // *** TO DO ***:
-    // This is active for truthFixedByPilot && !offline
-    // but r is not appropriate for general DAG including multiple CV targets.
-    // --> either need to alter handling or suppress this option...
-
-    Cerr << "Error: R_ONLY_LINEAR_CONSTRAINT not implemented in NonDGenACV"
-	 << "Sampling::augmented_linear_ineq_violations()." << std::endl;
-    abort_handler(METHOD_ERROR);
-    break;
-  case R_AND_N_NONLINEAR_CONSTRAINT: // not used
-    Cerr << "Error: R_AND_N_NONLINEAR_CONSTRAINT not supported in NonDGenACV"
-	 << "Sampling::augmented_linear_ineq_violations()." << std::endl;
-    abort_handler(METHOD_ERROR);
-    break;
   }
-
-  return quad_viol;
 }
 
 
 void NonDGenACVSampling::
-enforce_linear_ineq_constraints(RealVector& avg_eval_ratios,
-				const UShortArray& approx_set,
-				const UShortList& root_list)
+enforce_augmented_linear_ineq_constraints(RealVector& avg_eval_ratios,
+					  const UShortArray& approx_set,
+					  const UShortList& root_list)
 {
   // Enforce DAG dependencies (ACV: all point to numApprox)
   // > N for each source model > N for model it targets
   // > Avoids negative z2 = z - z1 in IS/RD (--> questionable G,g numerics)
   UShortList::const_iterator r_cit;  UShortSet::const_iterator d_cit;
-  unsigned short source, target;  Real r_tgt;
+  unsigned short source, target;
+  Real r_tgt, r_tgt_nudge, nudge_p1 = RATIO_NUDGE + 1.;
   SizetArray index_map;  inflate_approx_set(approx_set, index_map);
   for (r_cit=root_list.begin(); r_cit!=root_list.end(); ++r_cit) {
     target = *r_cit;  const UShortSet& reverse_dag = reverseActiveDAG[target];
-    r_tgt = (target == numApprox) ? 1. :
-      avg_eval_ratios[index_map[target]];
+    r_tgt = (target == numApprox) ? 1. : avg_eval_ratios[index_map[target]];
+    r_tgt_nudge = r_tgt * nudge_p1;
     for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) {
       source = *d_cit;
       Real& r_src = avg_eval_ratios[index_map[source]];
-      if (r_src <= r_tgt) {
-	r_src = r_tgt * (1. + RATIO_NUDGE);
+      if (r_src < r_tgt_nudge) {
+	r_src = r_tgt_nudge;
 	if (outputLevel >= DEBUG_OUTPUT)
 	  Cout << "Enforcing source = " << source << " target = " << target
 	       << ": r_src = " << r_src << " r_tgt = "<< r_tgt << std::endl;
       }
     }
+  }
+}
+
+
+void NonDGenACVSampling::
+enforce_augmented_linear_ineq_constraints(RealVector& cd_vars)
+{
+  // Outer loops: GenACV over DAGs + model subsets
+  // > generate_reverse_dag(), unroll_reverse_dag_from_root():
+  //   activeDAGIter,activeModelSetIter --> reverseDAG,orderedRootList
+  // > Inner loop: compute_allocations --> run_minimizers()
+  //   >> each min_ij.run() within global + competed local
+  //   >> this fn invoked across sequencing for warm starting from previous best
+  // > update_best() --> bestDAGIter,bestModelSetIter 
+  // Therefore, map to currently active DAG + model subset (not best)
+
+  const UShortArray& approx_set = activeModelSetIter->first;
+  switch (optSubProblemForm) {
+  case R_ONLY_LINEAR_CONSTRAINT:     // trap target == numApprox
+  case R_AND_N_NONLINEAR_CONSTRAINT: // replace N with 1
+    enforce_augmented_linear_ineq_constraints(cd_vars, approx_set,
+					      orderedRootList);
+    break;
+  default: {                         // use N directly rather than r
+    UShortList::const_iterator r_cit;  UShortSet::const_iterator d_cit;
+    unsigned short source, target;
+    Real N_tgt, N_tgt_nudge, nudge_p1 = RATIO_NUDGE + 1.;
+    SizetArray index_map;  inflate_approx_set(approx_set, index_map);
+    for (r_cit=orderedRootList.begin(); r_cit!=orderedRootList.end(); ++r_cit) {
+      target = *r_cit;  const UShortSet& reverse_dag = reverseActiveDAG[target];
+      N_tgt = cd_vars[index_map[target]];  N_tgt_nudge = N_tgt * nudge_p1;
+      for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) {
+	source = *d_cit;
+	Real& N_src = cd_vars[index_map[source]];
+	if (N_src < N_tgt_nudge) {
+	  N_src = N_tgt_nudge;
+	  if (outputLevel >= DEBUG_OUTPUT)
+	    Cout << "Enforcing source = " << source << " target = " << target
+		 << ": N_src = " << N_src << " N_tgt = "<< N_tgt << std::endl;
+	}
+      }
+    }
+    break;
+  }
   }
 }
 
@@ -1540,20 +1532,22 @@ scale_to_target(Real avg_N_H, const RealVector& cost,
 
     // Enforce DAG dependencies (ACV: all point to numApprox)
     // > N for each source model > N for model it targets
-    // > Avoids negative z2 = z - z1 in IS/RD (--> questionable G,g numerics)
+    // > Avoids negative z2 = z - z1 in IS/RD (--> failure in G,g numerics)
     UShortList::const_iterator r_cit;  UShortSet::const_iterator d_cit;
     unsigned short source, target;
-    Real r_tgt, cost_r_src, budget_decr, inner_prod_decr;
+    Real r_tgt, r_tgt_nudge, cost_r_src, budget_decr, inner_prod_decr,
+      nudge_p1 = RATIO_NUDGE + 1.;
     SizetArray index_map;  inflate_approx_set(approx_set, index_map);
     for (r_cit=root_list.begin(); r_cit!=root_list.end(); ++r_cit) {
       target = *r_cit; const UShortSet& reverse_dag = reverseActiveDAG[target];
       r_tgt = (target == numApprox) ? 1. : avg_eval_ratios[index_map[target]];
+      r_tgt_nudge = r_tgt * nudge_p1;
       budget_decr = inner_prod_decr = 0.;
       for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) {
 	source = *d_cit;  Real& r_src = avg_eval_ratios[index_map[source]];
 	r_src *= factor;
-	if (r_src <= 1.) {
-	  r_src = r_tgt * (1. + RATIO_NUDGE);
+	if (r_src < r_tgt_nudge) {
+	  r_src = r_tgt_nudge;
 	  if (outputLevel >= DEBUG_OUTPUT)
 	    Cout << "Enforcing source = " << source << " target = " << target
 		 << ": r_src = " << r_src << " r_tgt = "<< r_tgt << std::endl;
@@ -1577,7 +1571,8 @@ scale_to_target(Real avg_N_H, const RealVector& cost,
     }
   }
   else
-    enforce_linear_ineq_constraints(avg_eval_ratios, approx_set, root_list);
+    enforce_augmented_linear_ineq_constraints(avg_eval_ratios, approx_set,
+					      root_list);
 }
 
 
@@ -2034,12 +2029,13 @@ void NonDGenACVSampling::compute_parameterized_G_g(const RealVector& N_vec)
 void NonDGenACVSampling::
 unroll_z1_z2(const RealVector& N_vec, RealVector& z1, RealVector& z2)
 {
-  // Note: N_vec,z1,z2 are inflated to full dimension, avoiding the need to
-  //       map indices (DAG values to sample count indices) 
+  // z1, z2 denote z_m^1 and z_m^2 from ACV paper: Gorodetsky et al., JCP 2020
+  // > N_vec,z1,z2 are inflated to full dimension, avoiding the need to map
+  //   indices (DAG values to sample count indices) 
 
   //Real z_H = N_vec[numApprox];
-  z1.size(numGroups);  z1[numApprox] = 0;
-  z2.size(numGroups);  z2[numApprox] = N_vec[numApprox];
+  z1.size(numGroups);  z1[numApprox] = 0;                // JCP ACV Fig 2 "z"
+  z2.size(numGroups);  z2[numApprox] = N_vec[numApprox]; // JCP ACV Fig 2 "z"
 
   switch (mlmfSubMethod) {
   case SUBMETHOD_ACV_MF: { // not used (special unroll logic not required)
@@ -2048,7 +2044,7 @@ unroll_z1_z2(const RealVector& N_vec, RealVector& z1, RealVector& z2)
     unsigned short i, source, target;  size_t dag_size = active_dag.size();
     for (i=0; i<dag_size; ++i) {
       source = approx_set[i];  target = active_dag[i];
-      //z1[i] = N_vec[target];  z2[i] = N_vec[source]; // COMPACTED z1,z2
+      //z1[i] = N_vec[target];  z2[i] = N_vec[source];    // COMPACTED z1,z2
       z1[source] = N_vec[target];  z2[source] = N_vec[source]; // FULL z1,z2
     }
     break;
@@ -2062,8 +2058,8 @@ unroll_z1_z2(const RealVector& N_vec, RealVector& z1, RealVector& z2)
       const UShortSet& reverse_dag = reverseActiveDAG[target];
       for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) {
 	source = *d_cit;
-	z1[source] = N_vec[target] - z1t; // Bomarito Fig. 6
-	z2[source] = N_vec[source];       // Bomarito Fig. 6
+	z1[source] = N_vec[target] - z1t; // Bomarito Fig 6, JCP ACV Fig 2c
+	z2[source] = N_vec[source];
       }
     }
     break;
@@ -2077,8 +2073,8 @@ unroll_z1_z2(const RealVector& N_vec, RealVector& z1, RealVector& z2)
       const UShortSet& reverse_dag = reverseActiveDAG[target];
       for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) {
 	source = *d_cit;  Real& z1s = z1[source];
-	z1s = z2t;                        // Bomarito Fig. 5
-	z2[source] = N_vec[source] - z1s; // Bomarito Fig. 5
+	z1s = z2t;                        // Bomarito Fig 5, JCP ACV Fig 2a
+	z2[source] = N_vec[source] - z1s;
       }
     }
     break;
@@ -2089,7 +2085,7 @@ unroll_z1_z2(const RealVector& N_vec, RealVector& z1, RealVector& z2)
   }
 
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "GenACV-IS/RD unroll of N_vec:\n" << N_vec << "into z1:\n" << z1
+    Cout << "GenACV unroll of N_vec:\n" << N_vec << "into z1:\n" << z1
 	 << "and z2:\n" << z2 << std::endl;
 }
 

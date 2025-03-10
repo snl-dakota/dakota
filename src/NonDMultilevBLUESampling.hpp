@@ -87,15 +87,9 @@ protected:
 
   void apply_mc_reference(RealVector& mc_targets) override;
 
-
   void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 				       RealVector& lin_ineq_lb,
 				       RealVector& lin_ineq_ub) override;
-
-  Real augmented_linear_ineq_violations(const RealVector& cd_vars,
-					const RealMatrix& lin_ineq_coeffs,
-					const RealVector& lin_ineq_lb,
-					const RealVector& lin_ineq_ub) override;
 
   //
   //- Heading: member functions

@@ -830,7 +830,9 @@ Iterator::Iterator(const Iterator& iterator):
   parallelLib(iterator.parallel_library()), resultsDB(iterator_results_db), 
   evaluationsDB(evaluation_store_db), methodTraits(iterator.traits()),
   iteratorRep(iterator.iteratorRep)
-{ Cout << "Iterator copy constructor called\n"; }
+{
+  //Cout << "Iterator copy constructor called\n";
+}
 
 
 Iterator Iterator::operator=(const Iterator& iterator)
