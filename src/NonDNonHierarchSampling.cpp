@@ -47,7 +47,7 @@ NonDNonHierarchSampling(ProblemDescDB& problem_db,
   NonDEnsembleSampling(problem_db, model),
   activeBudget((Real)maxFunctionEvals), optSubProblemForm(0),
   truthFixedByPilot(problem_db.get_bool("method.nond.truth_fixed_by_pilot")),
-  analyticEstVarDerivs(false), hardenNumericSoln(false)
+  analyticEstVarDerivs(false), hardenNumericSoln(true)
 {
   // solver(s) that perform the numerical solution for resource allocations
   optSubProblemSolver = sub_optimizer_select(

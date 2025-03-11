@@ -38,7 +38,7 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db,
   rCondTolThrottle(problem_db.get_real("method.nond.rcond_tol_throttle"))
 {
   analyticEstVarDerivs = true; // estvar solve can be differentiated
-  hardenNumericSoln    = true; // more important for ML BLUE than ACV family
+  //hardenNumericSoln  = true; // more important for ML BLUE than ACV family
   mlmfSubMethod        = problem_db.get_ushort("method.sub_method");
 
   // SDP versus conventional NLP handled by optSubProblemSolver

@@ -1475,11 +1475,14 @@ enforce_augmented_linear_ineq_constraints(RealVector& cd_vars)
   default: {                         // use N directly rather than r
     UShortList::const_iterator r_cit;  UShortSet::const_iterator d_cit;
     unsigned short source, target;
+    size_t num_approx = approx_set.size(), deflate_tgt;
     Real N_tgt, N_tgt_nudge, nudge_p1 = RATIO_NUDGE + 1.;
     SizetArray index_map;  inflate_approx_set(approx_set, index_map);
     for (r_cit=orderedRootList.begin(); r_cit!=orderedRootList.end(); ++r_cit) {
-      target = *r_cit;  const UShortSet& reverse_dag = reverseActiveDAG[target];
-      N_tgt = cd_vars[index_map[target]];  N_tgt_nudge = N_tgt * nudge_p1;
+      target = *r_cit;
+      deflate_tgt = (target == numApprox) ? num_approx : index_map[target];
+      N_tgt = cd_vars[deflate_tgt];  N_tgt_nudge = N_tgt * nudge_p1;
+      const UShortSet& reverse_dag = reverseActiveDAG[target];
       for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) {
 	source = *d_cit;
 	Real& N_src = cd_vars[index_map[source]];
