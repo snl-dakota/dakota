@@ -1,150 +1,150 @@
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 4000 total (4000 new, 0 duplicate)
 <<<<< Function evaluation summary: 4000 total (4000 new, 0 duplicate)
-<<<<< Projected number of equivalent high fidelity evaluations: 1.0000076585e+03
+<<<<< Projected number of equivalent high fidelity evaluations: 1.0003642076e+03
 <<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000e+00
 <<<<< Variance for mean estimator:
  response_fn_1:
   Projected MC    (     5 HF samples):   2.1806402381e+03
-  Projected ML BLUE  (sample profile):   1.4565223674e-03
-  Projected ML BLUE ratio   (1 - R^2):   6.6793336283e-07
- Equivalent MC    (  1000 HF samples):   1.0903117689e+01
- Equivalent ML BLUE ratio:               1.3358769564e-04
+  Projected ML BLUE  (sample profile):   1.4559735835e-03
+  Projected ML BLUE ratio   (1 - R^2):   6.6768170100e-07
+ Equivalent MC    (  1000 HF samples):   1.0899231608e+01
+ Equivalent ML BLUE ratio:               1.3358497515e-04
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 4000 total (4000 new, 0 duplicate)
 <<<<< Function evaluation summary: 4000 total (4000 new, 0 duplicate)
-<<<<< Projected number of equivalent high fidelity evaluations: 1.0001373683e+03
+<<<<< Projected number of equivalent high fidelity evaluations: 1.0001582277e+03
 <<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000e+00
 <<<<< Variance for mean estimator:
  response_fn_1:
   Projected MC    (    21 HF samples):   5.1920005669e+02
-  Projected ML BLUE  (sample profile):   6.5464798096e-02
-  Projected ML BLUE ratio   (1 - R^2):   1.2608780999e-04
- Equivalent MC    (  1000 HF samples):   1.0901703642e+01
- Equivalent ML BLUE ratio:               6.0050062124e-03
+  Projected ML BLUE  (sample profile):   6.5465782319e-02
+  Projected ML BLUE ratio   (1 - R^2):   1.2608970565e-04
+ Equivalent MC    (  1000 HF samples):   1.0901476275e+01
+ Equivalent ML BLUE ratio:               6.0052217394e-03
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 4000 total (4000 new, 0 duplicate)
 <<<<< Function evaluation summary: 4000 total (4000 new, 0 duplicate)
-<<<<< Projected number of equivalent high fidelity evaluations: 1.0004820134e+03
+<<<<< Projected number of equivalent high fidelity evaluations: 1.0004911138e+03
 <<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000e+00
 <<<<< Variance for mean estimator:
  response_fn_1:
   Projected MC    (    21 HF samples):   5.1920005669e+02
-  Projected ML BLUE  (sample profile):   1.3248412371e-02
-  Projected ML BLUE ratio   (1 - R^2):   2.5516970194e-05
- Equivalent MC    (  1000 HF samples):   1.0897948234e+01
- Equivalent ML BLUE ratio:               1.2156795103e-03
+  Projected ML BLUE  (sample profile):   1.3248352357e-02
+  Projected ML BLUE ratio   (1 - R^2):   2.5516854604e-05
+ Equivalent MC    (  1000 HF samples):   1.0897849106e+01
+ Equivalent ML BLUE ratio:               1.2156850612e-03
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 4000 total (4000 new, 0 duplicate)
 <<<<< Function evaluation summary: 4000 total (4000 new, 0 duplicate)
-<<<<< Projected number of equivalent high fidelity evaluations: 1.0007779375e+03
+<<<<< Projected number of equivalent high fidelity evaluations: 1.0007974643e+03
 <<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000e+00
 <<<<< Variance for mean estimator:
  response_fn_1:
   Projected MC    (    62 HF samples):   1.7585808372e+02
-  Projected ML BLUE  (sample profile):   1.7840391203e-03
-  Projected ML BLUE ratio   (1 - R^2):   1.0144766067e-05
- Equivalent MC    (  1001 HF samples):   1.0894725775e+01
- Equivalent ML BLUE ratio:               1.6375254937e-04
+  Projected ML BLUE  (sample profile):   1.7839980320e-03
+  Projected ML BLUE ratio   (1 - R^2):   1.0144532422e-05
+ Equivalent MC    (  1001 HF samples):   1.0894513205e+01
+ Equivalent ML BLUE ratio:               1.6375197297e-04
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 4000 total (4000 new, 0 duplicate)
 <<<<< Function evaluation summary: 4000 total (4000 new, 0 duplicate)
-<<<<< Projected number of equivalent high fidelity evaluations: 1.0002894107e+03
+<<<<< Projected number of equivalent high fidelity evaluations: 1.0003647612e+03
 <<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000e+00
 <<<<< Variance for mean estimator:
  response_fn_1:
   Projected MC    (     5 HF samples):   2.1806402381e+03
-  Projected ML BLUE  (sample profile):   1.4561199086e-03
-  Projected ML BLUE ratio   (1 - R^2):   6.6774880290e-07
- Equivalent MC    (  1000 HF samples):   1.0900046600e+01
- Equivalent ML BLUE ratio:               1.3358841131e-04
+  Projected ML BLUE  (sample profile):   1.4560386813e-03
+  Projected ML BLUE ratio   (1 - R^2):   6.6771155361e-07
+ Equivalent MC    (  1000 HF samples):   1.0899225576e+01
+ Equivalent ML BLUE ratio:               1.3359102177e-04
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 4000 total (4000 new, 0 duplicate)
 <<<<< Function evaluation summary: 4000 total (4000 new, 0 duplicate)
-<<<<< Projected number of equivalent high fidelity evaluations: 1.0003238080e+03
+<<<<< Projected number of equivalent high fidelity evaluations: 1.0004553348e+03
 <<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000e+00
 <<<<< Variance for mean estimator:
  response_fn_1:
   Projected MC    (     5 HF samples):   2.1806402381e+03
-  Projected ML BLUE  (sample profile):   1.4560355119e-03
-  Projected ML BLUE ratio   (1 - R^2):   6.6771010020e-07
- Equivalent MC    (  1000 HF samples):   1.0899671789e+01
- Equivalent ML BLUE ratio:               1.3358526202e-04
+  Projected ML BLUE  (sample profile):   1.4559611896e-03
+  Projected ML BLUE ratio   (1 - R^2):   6.6767601741e-07
+ Equivalent MC    (  1000 HF samples):   1.0898238843e+01
+ Equivalent ML BLUE ratio:               1.3359600671e-04
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
-<<<<< Projected number of equivalent high fidelity evaluations: 9.9961786161e+02
+<<<<< Projected number of equivalent high fidelity evaluations: 9.9998375446e+02
 <<<<< Incurred cost in equivalent high fidelity evaluations: 5.7988839286e+01
 <<<<< Variance for mean estimator:
  response_fn_1:
     Initial pilot ( 50 share samples):   6.5096836326e-01
   Projected MC    (    50 HF samples):   1.6545556341e+02
-  Projected ML BLUE  (sample profile):   1.9797626319e-03
-  Projected ML BLUE ratio   (1 - R^2):   1.1965524707e-05
- Equivalent MC    (  1000 HF samples):   8.2759407252e+00
- Equivalent ML BLUE ratio:               2.3921904442e-04
+  Projected ML BLUE  (sample profile):   1.9789791410e-03
+  Projected ML BLUE ratio   (1 - R^2):   1.1960789352e-05
+ Equivalent MC    (  1000 HF samples):   8.2729125684e+00
+ Equivalent ML BLUE ratio:               2.3921190084e-04
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
-<<<<< Projected number of equivalent high fidelity evaluations: 1.0000208192e+03
+<<<<< Projected number of equivalent high fidelity evaluations: 9.9993031696e+02
 <<<<< Incurred cost in equivalent high fidelity evaluations: 5.7988839286e+01
 <<<<< Variance for mean estimator:
  response_fn_1:
     Initial pilot ( 50 share samples):   3.3524361621e+01
   Projected MC    (    50 HF samples):   1.6545556341e+02
-  Projected ML BLUE  (sample profile):   5.6172864616e-02
-  Projected ML BLUE ratio   (1 - R^2):   3.3950423581e-04
- Equivalent MC    (  1000 HF samples):   8.2726059415e+00
- Equivalent ML BLUE ratio:               6.7902260803e-03
+  Projected ML BLUE  (sample profile):   5.4700104854e-02
+  Projected ML BLUE ratio   (1 - R^2):   3.3060299531e-04
+ Equivalent MC    (  1000 HF samples):   8.2733546830e+00
+ Equivalent ML BLUE ratio:               6.6115991578e-03
 Test Number 8 succeeded
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
-<<<<< Projected number of equivalent high fidelity evaluations: 1.0005302210e+03
+<<<<< Projected number of equivalent high fidelity evaluations: 1.0005309710e+03
 <<<<< Incurred cost in equivalent high fidelity evaluations: 5.7988839286e+01
 <<<<< Variance for mean estimator:
  response_fn_1:
     Initial pilot ( 50 share samples):   8.3835105009e+00
   Projected MC    (    50 HF samples):   1.6545556341e+02
-  Projected ML BLUE  (sample profile):   1.5198009782e-02
-  Projected ML BLUE ratio   (1 - R^2):   9.1855537941e-05
- Equivalent MC    (  1001 HF samples):   8.2683940945e+00
- Equivalent ML BLUE ratio:               1.8380848335e-03
+  Projected ML BLUE  (sample profile):   1.5197939595e-02
+  Projected ML BLUE ratio   (1 - R^2):   9.1855113733e-05
+ Equivalent MC    (  1001 HF samples):   8.2683878965e+00
+ Equivalent ML BLUE ratio:               1.8380777227e-03
 Test Number 9 succeeded
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
-<<<<< Projected number of equivalent high fidelity evaluations: 9.9948048438e+02
+<<<<< Projected number of equivalent high fidelity evaluations: 9.9949931473e+02
 <<<<< Incurred cost in equivalent high fidelity evaluations: 5.7988839286e+01
 <<<<< Variance for mean estimator:
  response_fn_1:
     Initial pilot ( 50 share samples):   4.5650527522e+00
   Projected MC    (    59 HF samples):   1.4021657916e+02
-  Projected ML BLUE  (sample profile):   2.2809037275e-03
-  Projected ML BLUE ratio   (1 - R^2):   1.6267004524e-05
- Equivalent MC    (   999 HF samples):   8.2770782420e+00
- Equivalent ML BLUE ratio:               2.7556870442e-04
+  Projected ML BLUE  (sample profile):   2.2808511659e-03
+  Projected ML BLUE ratio   (1 - R^2):   1.6266629663e-05
+ Equivalent MC    (   999 HF samples):   8.2769223036e+00
+ Equivalent ML BLUE ratio:               2.7556754579e-04
 Test Number 10 succeeded
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
-<<<<< Projected number of equivalent high fidelity evaluations: 9.9987721875e+02
+<<<<< Projected number of equivalent high fidelity evaluations: 9.9999442411e+02
 <<<<< Incurred cost in equivalent high fidelity evaluations: 5.7988839286e+01
 <<<<< Variance for mean estimator:
  response_fn_1:
     Initial pilot ( 50 share samples):   1.6445818348e+00
   Projected MC    (    50 HF samples):   1.6545556341e+02
-  Projected ML BLUE  (sample profile):   1.9792128938e-03
-  Projected ML BLUE ratio   (1 - R^2):   1.1962202134e-05
- Equivalent MC    (  1000 HF samples):   8.2737940373e+00
- Equivalent ML BLUE ratio:               2.3921466800e-04
+  Projected ML BLUE  (sample profile):   1.9789617659e-03
+  Projected ML BLUE ratio   (1 - R^2):   1.1960684338e-05
+ Equivalent MC    (  1000 HF samples):   8.2728242989e+00
+ Equivalent ML BLUE ratio:               2.3921235293e-04
 Test Number 11 succeeded
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
-<<<<< Projected number of equivalent high fidelity evaluations: 9.9994702902e+02
+<<<<< Projected number of equivalent high fidelity evaluations: 9.9999499107e+02
 <<<<< Incurred cost in equivalent high fidelity evaluations: 5.7988839286e+01
 <<<<< Variance for mean estimator:
  response_fn_1:
     Initial pilot ( 50 share samples):   3.0207377334e+00
   Projected MC    (    50 HF samples):   1.6545556341e+02
-  Projected ML BLUE  (sample profile):   1.9790687853e-03
-  Projected ML BLUE ratio   (1 - R^2):   1.1961331155e-05
- Equivalent MC    (  1000 HF samples):   8.2732164109e+00
- Equivalent ML BLUE ratio:               2.3921395102e-04
+  Projected ML BLUE  (sample profile):   1.9789572096e-03
+  Projected ML BLUE ratio   (1 - R^2):   1.1960656800e-05
+ Equivalent MC    (  1000 HF samples):   8.2728196085e+00
+ Equivalent ML BLUE ratio:               2.3921193779e-04

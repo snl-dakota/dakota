@@ -39,7 +39,8 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db,
 {
   analyticEstVarDerivs = true; // ML BLUE estvar soln has analytic derivatives
   //hardenNumericSoln  = true; // now adopted for all non-hierarch estimators
-  mlmfSubMethod        = problem_db.get_ushort("method.sub_method");
+
+  mlmfSubMethod = problem_db.get_ushort("method.sub_method");
 
   // SDP versus conventional NLP handled by optSubProblemSolver
   //optSubProblemSolver = sub_optimizer_select(
@@ -783,7 +784,7 @@ enforce_augmented_linear_ineq_constraints(RealVector& soln_vars)
        pilotMgmtMode == ONLINE_PILOT_PROJECTION ) // no augmented linear ineq
     return;
 
-  size_t v, num_v = soln_vars.length(), last_v = num_v - 1, g,
+  int v, num_v = soln_vars.length(), last_v = num_v - 1,
     offset = (optSubProblemForm == N_GROUP_LINEAR_CONSTRAINT) ? 1 : 0,
     num_lin_ineq = 1 + offset;
   RealMatrix lin_ineq_coeffs(num_lin_ineq, num_v);
