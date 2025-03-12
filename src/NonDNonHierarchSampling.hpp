@@ -484,11 +484,6 @@ protected:
   /// identify if there are activeSet requests for model i
   bool active_set_for_model(size_t i);
 
-  /// Perform a Cholesky factorization and solve
-  int cholesky_solve(RealSymMatrix& A, RealMatrix& X, RealMatrix& B,
-		     bool copy_A = false, bool copy_B = false,
-		     bool hard_error = true);
-
   /// promote scalar to 1D array
   void inflate(size_t N_0D, SizetArray& N_1D);
   /// promote scalar to portion of 1D array

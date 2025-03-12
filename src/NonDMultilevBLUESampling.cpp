@@ -1854,6 +1854,24 @@ compute_C_inverse(RealSymMatrix& cov_GG_gq, RealSymMatrix& cov_GG_inv_gq,
 
 
 void NonDMultilevBLUESampling::
+invert_Psi(RealSymMatrix& Psi, RealMatrix& Psi_inv)
+{
+  // Psi-inverse is used for computing both estimator variance (during numerical
+  // solve) and y-hat / mu-hat (after solve), so invert now without a RHS so
+  // Psi-inverse can be used in multiple places without additional tracking
+
+  int r, nr = Psi.numRows();
+  RealMatrix I(nr, nr);  for (r=0; r<nr; ++r) I(r,r) = 1.; // identity
+  Psi_inv.shapeUninitialized(nr, nr);
+
+  cholesky_solve(Psi, Psi_inv, I, true, false);//copy A, overwrite B, hard error
+  //if (outputLevel >= DEBUG_OUTPUT)
+  //  Cout << "In invert_Psi(), Psi:\n" << Psi << "Psi_inv:\n" << Psi_inv
+  //	   << std::endl;
+}
+
+
+void NonDMultilevBLUESampling::
 compute_mu_hat(const RealSymMatrix2DArray& cov_GG_inv,
 	       const RealMatrixArray& sum_G, const Sizet2DArray& N_G,
 	       RealVectorArray& mu_hat)
