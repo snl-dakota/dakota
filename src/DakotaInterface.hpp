@@ -439,9 +439,6 @@ private:
   //- Heading: Member functions
   //
 
-  /// Used by the envelope to instantiate the correct letter class
-  std::shared_ptr<Interface> get_interface(ProblemDescDB& problem_db);
-
   /// Used by algebraic mappings to determine the correct AMPL function
   /// evaluation call to make
   int algebraic_function_type(String);

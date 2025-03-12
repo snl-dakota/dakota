@@ -415,6 +415,7 @@ set(util_src ParallelLibrary.cpp IteratorScheduler.cpp MPIPackBuffer.cpp
     ParametersFileWriter.cpp ApreproParametersFileWriter.cpp StandardParametersFileWriter.cpp
     JSONParametersFileWriter.cpp ResultsFileReader.cpp StandardResultsFileReader.cpp
     JSONResultsFileReader.cpp JSONResultsParser.cpp model_utils.cpp iterator_utils.cpp
+    interface_utils.cpp
     )
 
 if(DAKOTA_HAVE_HDF5)
