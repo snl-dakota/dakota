@@ -134,10 +134,6 @@ NonDMUQBayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model)
   }
 
   if (mcmcType == "multilevel_mcmc"){
-    Cout << "=====================================" << '\n';
-    Cout << "******* MUQ MLMCMC constructor ******" << '\n';
-    Cout << "=====================================" << '\n';
-
     // first, make sure the numbers of levels set by the user is consistent
     // across all parameters that should be set per level
     const int numSolutionLevels = iteratedModel->truth_model()->solution_levels();
@@ -152,25 +148,6 @@ NonDMUQBayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model)
     }
 
     mlmcmcNumLevels = numSolutionLevels;
-
-    // problem specific, so not really a good default value
-    // for 1d maybe fewer , so large d maybe we need more to start with
-    Cout << "mlmcmcInitialNumSamples = " << mlmcmcInitialNumSamples << '\n';
-
-    // this is p depenent, and it is dimensional, so base on maybe the initail value of the calibration params
-    Cout << "mlmcmcTargetVariance    = " << mlmcmcTargetVariance << '\n';
-
-    // use same coarse proposal and run mcmc for a bit and integrated autocorr time
-    // so that one knows how many samples to run to get uncorrelated
-    Cout << "mlmcmcSubsamplingSteps  = " << mlmcmcSubsamplingSteps << '\n';
-
-    // in greedy we recomp variances at all the time
-    // this is to avoid recomputing variances all the time or too frequently, 0.5 default
-    Cout << "mlmcmcGreedyResamplingFactor = " << mlmcmcGreedyResamplingFactor << '\n';
-
-    Cout << "numContinuousVars = " << numContinuousVars << "\n";
-    Cout << "mlmcmcNumLevels   = " << mlmcmcNumLevels << "\n";
-    Cout << "=====================================" << '\n';
   }
 }
 
