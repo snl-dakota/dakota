@@ -92,13 +92,12 @@ Response(BaseConstructor, const Variables& vars,
 }
 
 
-/** BaseConstructor must build the base class data for all derived
-    classes.  This version is used for building a response object of
-    the correct size on the fly (e.g., by slave analysis servers
-    performing execute() on a local_response).
-    SharedResponseData::functionLabels is not needed for MPI send/recv
-    buffers, but is needed for NPSOLOptimizer's user-defined functions
-    option to support I/O in bestResponseArray.front(). */
+/** BaseConstructor must build the base class data for all derived classes.
+    This version is used for building a response object of the correct size
+    on the fly (e.g., by analysis servers performing execute() on a
+    local_response).  SharedResponseData::functionLabels is not needed for
+    MPI send/recv buffers, but is needed for NPSOLOptimizer's user-defined
+    functions option to support I/O in bestResponseArray.front(). */
 Response::
 Response(BaseConstructor, const SharedResponseData& srd, const ActiveSet& set):
   sharedRespData(srd), responseActiveSet(set)
@@ -108,13 +107,12 @@ Response(BaseConstructor, const SharedResponseData& srd, const ActiveSet& set):
 }
 
 
-/** BaseConstructor must build the base class data for all derived
-    classes.  This version is used for building a response object of
-    the correct size on the fly (e.g., by slave analysis servers
-    performing execute() on a local_response).
-    SharedResponseData::functionLabels is not needed for MPI send/recv
-    buffers, but is needed for NPSOLOptimizer's user-defined functions
-    option to support I/O in bestResponseArray.front(). */
+/** BaseConstructor must build the base class data for all derived classes.
+    This version is used for building a response object of the correct size
+    on the fly (e.g., by analysis servers performing execute() on a
+    local_response).  SharedResponseData::functionLabels is not needed for
+    MPI send/recv buffers, but is needed for NPSOLOptimizer's user-defined
+    functions option to support I/O in bestResponseArray.front(). */
 Response::Response(BaseConstructor, const ActiveSet& set):
   sharedRespData(set), // minimal unshared definition
   responseActiveSet(set)
@@ -1127,8 +1125,8 @@ void Response::write(MPIPackBuffer& s) const
 
 
 /** UnpackBuffer version differs from BiStream version in the omission
-    of functionLabels.  Master processor retains labels and interface ids
-    and communicates asv and response data only with slaves. */
+    of functionLabels.  Scheduler processor retains labels and interface
+    ids and communicates asv and response data only with servers. */
 void Response::read_rep(MPIUnpackBuffer& s)
 {
   // Read derivative sizing data and responseActiveSet
@@ -1168,8 +1166,8 @@ void Response::read_rep(MPIUnpackBuffer& s)
 
 
 /** MPIPackBuffer version differs from BoStream version only in the
-    omission of functionLabels.  The master processor retains labels
-    and ids and communicates asv and response data only with slaves. */
+    omission of functionLabels.  The scheduler processor retains labels
+    and ids and communicates asv and response data only with servers. */
 void Response::write_rep(MPIPackBuffer& s) const
 {
   // Write sizing data and responseActiveSet

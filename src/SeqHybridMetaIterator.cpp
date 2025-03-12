@@ -172,7 +172,7 @@ void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   // from this point on, we can specialize logic in terms of iterator servers.
   // An idle partition need not instantiate iterators/models (empty Iterator
   // envelopes are adequate for serve_iterators()), so return now.  A dedicated
-  // master processor is managed in IteratorScheduler::init_iterator().
+  // scheduler processor is managed in IteratorScheduler::init_iterator().
   if (iterSched.iteratorServerId > iterSched.numIteratorServers)
     return;
 
@@ -295,8 +295,9 @@ void SeqHybridMetaIterator::run_sequential()
     if (server_id <= iterSched.numIteratorServers) {
 
       // For graphics data, limit to iterator server comm leaders; this is
-      // further segregated within initialize_graphics(): all iterator masters
-      // stream tabular data, but only server 1 generates a graphics window.
+      // further segregated within initialize_graphics(): all iterator
+      // schedulers stream tabular data, but only server 1 generates a
+      // graphics window.
       if (rank0 && server_id > 0)
 	      curr_iterator.initialize_graphics(server_id);
 
@@ -315,7 +316,7 @@ void SeqHybridMetaIterator::run_sequential()
 	//bool curr_returns_multi = curr_iterator.returns_multiple_points();
 	// update numIteratorJobs
 	if (iterSched.iteratorScheduling == DEDICATED_SCHEDULER_DYNAMIC) {
-	  // send curr_accepts_multi from 1st iterator master to strategy master
+	  // send curr_accepts_multi from 1st iterator to strategy
 	  if (rank0 && server_id == 1) {
 	    int multi_flag = (int)curr_accepts_multi; // bool -> int
 	    parallelLib.send(multi_flag, 0, 0, parent_pl, mi_pl);
@@ -405,8 +406,8 @@ void SeqHybridMetaIterator::run_sequential()
       }
       // migrate results among procs as required for parallel scheduling, e.g.,
       // from multiple single-point iterators to a single multi-point iterator
-      // > for dedicated master scheduling, all results data resides on the
-      //   dedicated master and no additional migration is required.
+      // > for dedicated scheduler scheduling, all results data resides on the
+      //   dedicated scheduler and no additional migration is required.
       // > for peer static scheduling, the full parameterSets array needs to be
       //   propagated back to peers 2 though n (like an All-Reduce, except that
       //   IteratorScheduler::static_schedule_iterators() enforces reduction to
@@ -452,13 +453,13 @@ void SeqHybridMetaIterator::run_sequential_adaptive()
   Real progress_metric = 1.0;
   for (seqCount=0; seqCount<num_iterators; seqCount++) {
 
-    // TO DO: don't run on ded master (see NOTE 2 above)
+    // TO DO: don't run on ded scheduler (see NOTE 2 above)
     //if (server_id) {
 
     Iterator& curr_iterator = *selectedIterators[seqCount];
 
     // For graphics data, limit to iterator server comm leaders; this is
-    // further segregated within initialize_graphics(): all iterator masters
+    // further segregated within initialize_graphics(): all iterator schedulers
     // stream tabular data, but only server 1 generates a graphics window.
     if (rank0 && server_id > 0 && server_id <= iterSched.numIteratorServers)
       curr_iterator.initialize_graphics(server_id);

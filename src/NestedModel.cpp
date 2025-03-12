@@ -599,7 +599,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   subIteratorSched.partition(max_eval_concurrency, ppi_pr);
   // > now augment prev subIterator instantiations for additional mi_pl ranks
   //   (new mi_pl is used via miPLIndex update in partition())
-  // > idle server is managed here; a dedicated master processor is managed
+  // > idle server is managed here; a dedicated scheduler processor is managed
   //   within IteratorScheduler::init_iterator().
   if (subIteratorSched.iteratorServerId <= subIteratorSched.numIteratorServers)
     subIteratorSched.init_iterator(probDescDB, subIterator, subModel);
@@ -1364,7 +1364,7 @@ void NestedModel::derived_evaluate(const ActiveSet& set)
   if (sub_iterator_map) {
     //++subIteratorJobCntr; // does not encompass blocking evals
 
-    // need comm set up and master break off
+    // need comm set up and scheduler break off
     // (see IteratorScheduler::run_iterator())
     Cout << "\n-------------------------------------------------\nNestedModel "
 	 << "Evaluation " << std::setw(4) << nestedModelEvalCntr << ": running "
@@ -1383,7 +1383,7 @@ void NestedModel::derived_evaluate(const ActiveSet& set)
     if (subIteratorSched.messagePass) {
       // For derived_evaluate(), subIterator scheduling would not
       // normally be expected, but singleton jobs could use this fn assuming
-      // no dedicated master overload (enforced in Model::evaluate()).
+      // no dedicated scheduler overload (enforced in Model::evaluate()).
       // Given this protection, don't schedule the job -- execute it locally.
       if (subIteratorSched.iteratorScheduling == PEER_SCHEDULING &&
 	  subIteratorSched.peerAssignJobs) {
@@ -1401,8 +1401,9 @@ void NestedModel::derived_evaluate(const ActiveSet& set)
 	subIteratorSched.stop_iterator_servers();
 
       /* This approach has 2 issues: (1) a single-processor subIterator job is
-	 always assigned by master to server 1 (ded master overload bypassed),
-	 (2) peer static init/update bookkeeping is redundant of above/below.
+	 always assigned by ded scheduler to server 1 (ded scheduler overload
+	 bypassed), (2) peer static init/update bookkeeping is redundant of
+	 above/below.
       subIteratorSched.numIteratorJobs = 1;
       // can use shallow copy for queue of 1 job (avoids need to copy updated
       // entry in subIteratorPRPQueue back to subIterator->response_results())
@@ -1471,7 +1472,7 @@ void NestedModel::derived_evaluate_nowait(const ActiveSet& set)
   if (sub_iterator_map) {
     ++subIteratorJobCntr;
 
-    // need comm set up and master break off
+    // need comm set up and scheduler break off
     // (see IteratorScheduler::run_iterator())
     Cout << "\n-------------------------------------------------\n"
 	 << "NestedModel Evaluation " << std::setw(4) << nestedModelEvalCntr 

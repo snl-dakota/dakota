@@ -104,7 +104,7 @@ protected:
   short local_eval_synchronization();
   /// return subModel local evaluation concurrency
   int local_eval_concurrency();
-  /// flag which prevents overloading the master with a multiprocessor
+  /// flag which prevents overloading the scheduler with a multiprocessor
   /// evaluation (request forwarded to subModel)
   bool derived_scheduler_overload() const;
 
@@ -120,10 +120,10 @@ protected:
   void derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 				  bool recurse_flag = true);
 
-  /// Service subModel job requests received from the master.
+  /// Service subModel job requests received from the scheduler.
   /// Completes when a termination message is received from stop_servers().
   void serve_run(ParLevLIter pl_iter, int max_eval_concurrency);
-  /// executed by the master to terminate subModel server operations
+  /// executed by the scheduler to terminate subModel server operations
   /// when AdapterModel iteration is complete.
   void stop_servers();
 

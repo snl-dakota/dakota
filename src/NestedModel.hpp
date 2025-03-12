@@ -100,7 +100,7 @@ protected:
   short local_eval_synchronization() override;
   /// return optionalInterface asynchronous evaluation concurrency
   int local_eval_concurrency() override;
-  /// flag which prevents overloading the master with a multiprocessor
+  /// flag which prevents overloading the scheduler with a multiprocessor
   /// evaluation (forwarded to optionalInterface)
   bool derived_scheduler_overload() const override;
 
@@ -120,10 +120,10 @@ protected:
 				  bool recurse_flag = true) override;
 
   /// Service optionalInterface and subModel job requests received from
-  /// the master.  Completes when a termination message is received from
+  /// the scheduler.  Completes when a termination message is received from
   /// stop_servers().
   void serve_run(ParLevLIter pl_iter, int max_eval_concurrency) override;
-  /// Executed by the master to terminate server operations for subModel and
+  /// Executed by the scheduler to terminate server operations for subModel and
   /// optionalInterface when iteration on the NestedModel is complete.
   void stop_servers() override;
 
@@ -512,7 +512,7 @@ inline int NestedModel::local_eval_concurrency()
 }
 
 
-/** Derived master overload for subModel is handled separately in
+/** Derived scheduler overload for subModel is handled separately in
     subModel.evaluate() within subIterator->run(). */
 inline bool NestedModel::derived_scheduler_overload() const
 {

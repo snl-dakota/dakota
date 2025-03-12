@@ -303,14 +303,14 @@ inline std::ostream& operator<<(std::ostream& s, const ParamResponsePair& pair)
 { pair.write(s); return s; }
 
 
-/** interfaceId is omitted since master processor retains interface
-    ids and communicates asv and response data only with slaves. */
+/** interfaceId is omitted since scheduler processor retains interface
+    ids and communicates asv and response data only with servers. */
 inline void ParamResponsePair::read(MPIUnpackBuffer& s)
 { s >> prpVariables >> prpResponse >> evalInterfaceIds.first; }
 
 
-/** interfaceId is omitted since master processor retains interface
-    ids and communicates asv and response data only with slaves. */
+/** interfaceId is omitted since scheduler processor retains interface
+    ids and communicates asv and response data only with servers. */
 inline void ParamResponsePair::write(MPIPackBuffer& s) const
 { s << prpVariables << prpResponse << evalInterfaceIds.first; }
 

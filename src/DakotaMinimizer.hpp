@@ -397,30 +397,30 @@ inline void Minimizer::reshape_best(size_t num_cv, size_t num_fns)
 //{ } // default = no-op
 
 
-/** This virtual function redefinition is executed on the dedicated master
-    processor for self scheduling.  It is not used for peer partitions. */
+/* This virtual function redefinition is executed on the dedicated scheduler
+   processor for self scheduling.  It is not used for peer partitions. */
 //inline void Minimizer::
 //pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index)
 //{ } // default = no-op
 
 
-/** This virtual function redefinition is executed on an iterator server for
-    dedicated master self scheduling.  It is not used for  peer partitions. */
+/* This virtual function redefinition is executed on an iterator server for
+   dedicated scheduler self scheduling.  It is not used for  peer partitions. */
 //inline void Minimizer::
 //unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer)
 //{ } // default = no-op
 
 
-/** This virtual function redefinition is executed either on an iterator
-    server for dedicated master self scheduling or on peers 2 through n
-    for static scheduling. */
+/* This virtual function redefinition is executed either on an iterator server
+   for dedicated scheduler self scheduling or on peers 2 through n for static
+   scheduling. */
 //inline void Minimizer::
 //pack_results_buffer(MPIPackBuffer& send_buffer, int job_index)
 //{ } // default = no-op
 
 
-/** This virtual function redefinition is executed on an environment master
-    (either the dedicated master processor for self scheduling or peer 1
+/** This virtual function redefinition is executed on an environment leader
+    (either the dedicated scheduler processor for self scheduling or peer 1
     for static scheduling). */
 //inline void Minimizer::
 //unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index)
