@@ -75,7 +75,7 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
     abort_handler(-1);
   }
 
-  // Instantiate the model on all processors, even a dedicated master
+  // Instantiate the model on all processors, even a dedicated scheduler
   iteratedModel = problem_db.get_model();
   initialize_model();
 
@@ -260,7 +260,7 @@ void ConcurrentMetaIterator::pre_run()
 
   // estimate params_msg_len & results_msg_len and publish to IteratorScheduler
   int params_msg_len = 0, results_msg_len; // peer sched doesn't send params
-  if (iterSched.iteratorScheduling == MASTER_SCHEDULING) {
+  if (iterSched.iteratorScheduling == DEDICATED_SCHEDULER_DYNAMIC) {
     // define params_msg_len
     RealVector rv(paramSetLen);
     MPIPackBuffer send_buffer;

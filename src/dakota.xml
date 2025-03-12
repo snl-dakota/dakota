@@ -1763,7 +1763,7 @@
 	     </keyword>
 	     <keyword  id="iterator_scheduling" name="iterator_scheduling" code="{0}" label="iterator_scheduling"  minOccurs="0" >
                <oneOf label="Scheduling Mode">
-		 <keyword  id="master" name="master" code="{N_mdm(type,iteratorScheduling_MASTER_SCHEDULING)}" label="master"   />
+		 <keyword  id="master" name="master" code="{N_mdm(type,iteratorScheduling_DEDICATED_SCHEDULER_DYNAMIC)}" label="master"   />
 		 <keyword  id="peer" name="peer" code="{N_mdm(type,iteratorScheduling_PEER_SCHEDULING)}" label="peer"   />
 		 <!-- #	    | ( peer {0}
 		      #	      	dynamic  {N_mdm(type,iteratorScheduling_PEER_DYNAMIC_SCHEDULING)}
@@ -4737,7 +4737,7 @@
             </keyword>
             <keyword  id="iterator_scheduling1" name="iterator_scheduling" code="{0}" label="Iterator Scheduling"  minOccurs="0" >
               <oneOf label="Server Mode">
-                <keyword  id="master1" name="master" code="{N_mom(type,subMethodScheduling_MASTER_SCHEDULING)}" label="Master"   />
+                <keyword  id="master1" name="master" code="{N_mom(type,subMethodScheduling_DEDICATED_SCHEDULER_DYNAMIC)}" label="Master"   />
                 <keyword  id="peer1" name="peer" code="{N_mom(type,subMethodScheduling_PEER_SCHEDULING)}" label="Peer"   />
 				<!-- #	      | ( peer {0}
                      #	          dynamic  {N_mom(type,subMethodScheduling_PEER_DYNAMIC_SCHEDULING)}
@@ -5878,7 +5878,7 @@
 	    </keyword>
 		<keyword id="evaluation_scheduling" name="evaluation_scheduling" code="{0}" label="Message Passing Configuration for Scheduling of Evaluations"  minOccurs="0" default="automatic (see discussion)" complexity="1">
 	      <oneOf label="Server Mode">
-	        <keyword id="master2" name="master" code="{N_ifm(type,evalScheduling_MASTER_SCHEDULING)}" label="Master"  complexity="1" />
+	        <keyword id="master2" name="master" code="{N_ifm(type,evalScheduling_DEDICATED_SCHEDULER_DYNAMIC)}" label="Master"  complexity="1" />
 	        <keyword id="peer2" name="peer" code="{0}" label="Peer Scheduling of Evaluations"  complexity="1">
 	          <oneOf label="Scheduling Mode">
 		        <keyword id="dynamic1" name="dynamic" code="{N_ifm(type,evalScheduling_PEER_DYNAMIC_SCHEDULING)}" label="Dynamic"  default="dynamic (see discussion)" complexity="1" />
@@ -5895,7 +5895,7 @@
 	    </keyword>
 	    <keyword id="analysis_scheduling" name="analysis_scheduling" code="{0}" label="Message Passing Configuration for Scheduling of Analyses"  minOccurs="0" default="automatic (see discussion)" complexity="1">
 	      <oneOf label="Scheduling Mode">
-	        <keyword id="master3" name="master" code="{N_ifm(type,analysisScheduling_MASTER_SCHEDULING)}" label="Master"  complexity="1" />
+	        <keyword id="master3" name="master" code="{N_ifm(type,analysisScheduling_DEDICATED_SCHEDULER_DYNAMIC)}" label="Master"  complexity="1" />
 	        <keyword id="peer3" name="peer" code="{N_ifm(type,analysisScheduling_PEER_SCHEDULING)}" label="Peer"  complexity="1" />
 	        <!-- #	  | ( peer {0}
 			#	      dynamic  {N_ifm(type,analysisScheduling_PEER_DYNAMIC_SCHEDULING)}

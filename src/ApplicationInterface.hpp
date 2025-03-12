@@ -104,10 +104,10 @@ protected:
   /// beforeSynchCorePRPQueue and returns a partial set of completed jobs
   const IntResponseMap& synchronize_nowait() override;
 
-  /// run on evaluation servers to serve the iterator master
+  /// run on evaluation servers to serve the iterator dedicated scheduler
   void serve_evaluations() override;
 
-  /// used by the iterator master to terminate evaluation servers
+  /// used by the iterator dedicated scheduler to terminate evaluation servers
   void stop_evaluation_servers() override;
 
   /// checks on multiprocessor analysis configuration
@@ -165,7 +165,7 @@ protected:
 
   /// blocking dynamic schedule of all analyses within a function
   /// evaluation using message passing
-  void master_dynamic_schedule_analyses();
+  void dedicated_dynamic_scheduler_analyses();
   // manage asynchronous analysis jobs on local proc. (not currently
   // elevated to ApplicationInterface since only ForkApplicInterface
   // currently supports this)
@@ -178,10 +178,10 @@ protected:
   // Server routines for message passing parallelism of analyses
   // within function evaluations (employed by derived classes):
 
-  /// serve the master analysis scheduler and manage one synchronous
+  /// serve the dedicated analysis scheduler and manage one synchronous
   /// analysis job at a time
   void serve_analyses_synch();
-  // serve the master analysis scheduler and manage multiple asynchronous
+  // serve the dedicated analysis scheduler and manage multiple asynchronous
   // analysis jobs (not currently elevated to ApplicationInterface since
   // only ForkApplicInterface currently supports this)
   //void serve_analyses_asynch();
@@ -213,14 +213,14 @@ protected:
   /// maintain a count of the batches
   int batchIdCntr; 
 
-  /// flag for suppressing output on slave processors
+  /// flag for suppressing output on server processors
   bool suppressOutput;
 
-  int evalCommSize;     ///< size of evalComm
-  int evalCommRank;     ///< processor rank within evalComm
-  int evalServerId;     ///< evaluation server identifier
+  int evalCommSize;   ///< size of evalComm
+  int evalCommRank;   ///< processor rank within evalComm
+  int evalServerId;   ///< evaluation server identifier
 
-  bool eaDedMasterFlag; ///< flag for dedicated master partitioning at ea level
+  bool eaDedSchedFlag;///< flag for dedicated scheduler partitioning at ea level
   int analysisCommSize; ///< size of analysisComm
   int analysisCommRank; ///< processor rank within analysisComm
   int analysisServerId; ///< analysis server identifier
@@ -272,14 +272,14 @@ private:
   // Scheduling routines employed by synchronize():
 
   /// blocking dynamic schedule of all evaluations in beforeSynchCorePRPQueue
-  /// using message passing on a dedicated master partition; executes on
-  /// iteratorComm master
-  void master_dynamic_schedule_evaluations();
+  /// using message passing on a dedicated scheduler partition; executes on
+  /// iteratorComm dedicated scheduler
+  void dedicated_dynamic_scheduler_evaluations();
   /// blocking static schedule of all evaluations in beforeSynchCorePRPQueue
-  /// using message passing on a peer partition; executes on iteratorComm master
+  /// using message passing on a peer partition; executes on iteratorComm rank 0
   void peer_static_schedule_evaluations();
   /// blocking dynamic schedule of all evaluations in beforeSynchCorePRPQueue
-  /// using message passing on a peer partition; executes on iteratorComm master
+  /// using message passing on a peer partition; executes on iteratorComm rank 0
   void peer_dynamic_schedule_evaluations();
   /// perform all jobs in prp_queue using asynchronous approaches on
   /// the local processor
@@ -290,16 +290,16 @@ private:
 
   // Scheduling routines employed by synchronize_nowait():
 
-  /// execute a nonblocking dynamic schedule in a master-slave partition
-  void master_dynamic_schedule_evaluations_nowait();
+  /// execute a nonblocking dynamic schedule in a dedicated scheduler partition
+  void dedicated_dynamic_scheduler_evaluations_nowait();
   /// execute a nonblocking static schedule in a peer partition
   void peer_static_schedule_evaluations_nowait();
   /// execute a nonblocking dynamic schedule in a peer partition
   void peer_dynamic_schedule_evaluations_nowait();
   /// launch new jobs in prp_queue asynchronously (if capacity is
   /// available), perform nonblocking query of all running jobs, and
-  /// process any completed jobs (handles both local master- and local
-  /// peer-scheduling cases)
+  /// process any completed jobs (handles both local dedicated-scheduler
+  /// and local peer-scheduling cases)
   void asynchronous_local_evaluations_nowait(PRPQueue& prp_queue);
 
   // Utility routines for message passing schedulers
@@ -368,7 +368,7 @@ private:
   /// set concurrent evaluation configuration for serial operations
   void init_serial_evaluations();
   /// set concurrent analysis configuration for serial operations
-  /// (e.g., for local executions on a dedicated master)
+  /// (e.g., for local executions on a dedicated scheduler)
   void init_serial_analyses();
 
   // Routines employed by manage_failure():
@@ -435,11 +435,13 @@ private:
   int lenPRPairMessage;
 
   /// user specification of evaluation scheduling algorithm:
-  /// {DEFAULT,MASTER,PEER_DYNAMIC,PEER_STATIC}_SCHEDULING.  Used for manual
+  /// DEDICATED_DYNAMIC_SCHEDULER and
+  /// {DEFAULT,PEER_DYNAMIC,PEER_STATIC}_SCHEDULING.  Used for manual
   /// overrides of auto-configure logic in ParallelLibrary::resolve_inputs().
   short evalScheduling;
   /// user specification of analysis scheduling algorithm:
-  /// {DEFAULT,MASTER,PEER}_SCHEDULING.  Used for manual overrides of
+  /// DEDICATED_DYNAMIC_SCHEDULER and
+  /// {DEFAULT,PEER}_SCHEDULING.  Used for manual overrides of
   /// the auto-configure logic in ParallelLibrary::resolve_inputs().
   short analysisScheduling;
 
@@ -666,7 +668,7 @@ send_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
 	   << server_id+1 << '\n'; // 2 to numEvalServers
     }
     else {
-      Cout << "Master assigning ";
+      Cout << "Dedicated scheduler assigning ";
       if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
       Cout << "evaluation " << fn_eval_id << " to server "
 	   << server_id << '\n';
@@ -681,7 +683,7 @@ send_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
   // pre-post nonblocking receives (to prevent any message buffering)
   parallelLib.irecv_ie(recvBuffers[buff_index], server_id, fn_eval_id,
 		       recvRequests[buff_index]);
-  // nonblocking sends: master assigns jobs to evaluation servers
+  // nonblocking sends: dedicated scheduler assigns jobs to evaluation servers
   MPI_Request send_request; // only 1 needed
   parallelLib.isend_ie(sendBuffers[buff_index], server_id, fn_eval_id,
 		       send_request);

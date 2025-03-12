@@ -68,7 +68,7 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
   coreMappings(true), outputLevel(problem_db.get_short("method.output")),
   currEvalId(0), fineGrainEvalCounters(outputLevel > NORMAL_OUTPUT),
   evalIdCntr(0), newEvalIdCntr(0), evalIdRefPt(0), newEvalIdRefPt(0),
-  multiProcEvalFlag(false), ieDedMasterFlag(false),
+  multiProcEvalFlag(false), ieDedSchedFlag(false),
   // See base constructor in DakotaIterator.cpp for full discussion of output
   // verbosity.  Interfaces support the full granularity in verbosity.
   appendIfaceId(true), asl(NULL)
@@ -171,7 +171,7 @@ Interface::Interface(NoDBBaseConstructor, size_t num_fns, short output_level):
   outputLevel(output_level), currEvalId(0), 
   fineGrainEvalCounters(outputLevel > NORMAL_OUTPUT), evalIdCntr(0), 
   newEvalIdCntr(0), evalIdRefPt(0), newEvalIdRefPt(0), multiProcEvalFlag(false),
-  ieDedMasterFlag(false), appendIfaceId(true)
+  ieDedSchedFlag(false), appendIfaceId(true)
 {
 #ifdef DEBUG
   outputLevel = DEBUG_OUTPUT;

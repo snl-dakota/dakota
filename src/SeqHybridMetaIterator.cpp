@@ -309,12 +309,12 @@ void SeqHybridMetaIterator::run_sequential()
       //   prior to additional specification data, we either have a single
       //   multipoint iterator or concurrent single-point iterators.
       if (seqCount == 0) // initialize numIteratorJobs
-	      iterSched.numIteratorJobs = 1;
+	iterSched.numIteratorJobs = 1;
       else {
-	      bool curr_accepts_multi = curr_iterator.accepts_multiple_points();
+	bool curr_accepts_multi = curr_iterator.accepts_multiple_points();
 	//bool curr_returns_multi = curr_iterator.returns_multiple_points();
 	// update numIteratorJobs
-	if (iterSched.iteratorScheduling == MASTER_SCHEDULING) {
+	if (iterSched.iteratorScheduling == DEDICATED_SCHEDULER_DYNAMIC) {
 	  // send curr_accepts_multi from 1st iterator master to strategy master
 	  if (rank0 && server_id == 1) {
 	    int multi_flag = (int)curr_accepts_multi; // bool -> int
@@ -354,7 +354,7 @@ void SeqHybridMetaIterator::run_sequential()
       if (iterSched.messagePass && rank0) {
         int params_msg_len, results_msg_len;
         // define params_msg_len
-        if (iterSched.iteratorScheduling == MASTER_SCHEDULING) {
+        if (iterSched.iteratorScheduling == DEDICATED_SCHEDULER_DYNAMIC) {
           MPIPackBuffer params_buffer;
           pack_parameters_buffer(params_buffer, 0);
           params_msg_len = params_buffer.size();

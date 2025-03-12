@@ -1123,7 +1123,7 @@ void Model::evaluate()
     evaluationsDB.store_model_variables(modelId, modelType, modelEvalCntr,
           temp_set, currentVariables);
 
-  if (derived_master_overload()) {
+  if (derived_scheduler_overload()) {
     // prevents error of trying to run a multiproc. direct job on the master
     derived_evaluate_nowait(temp_set);
     currentResponse = derived_synchronize().begin()->second;
@@ -1177,7 +1177,7 @@ void Model::evaluate(const ActiveSet& set)
       fd_grad_asv, fd_hess_asv, quasi_hess_asv, set);
     }
   }
-  else if (derived_master_overload()) {
+  else if (derived_scheduler_overload()) {
     // This map must be asynchronous since it prevents the error of trying
     // to run a multiprocessor direct job on the master.
     derived_evaluate_nowait(set);
@@ -3242,7 +3242,7 @@ const IntResponseMap& Model::derived_synchronize_nowait()
 }
 
 
-bool Model::derived_master_overload() const
+bool Model::derived_scheduler_overload() const
 {
   return false; // default for Surrogate models
 }

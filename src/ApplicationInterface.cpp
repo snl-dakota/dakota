@@ -30,7 +30,7 @@ ApplicationInterface(const ProblemDescDB& problem_db):
   asynchFlag(problem_db.get_bool("interface.asynch")),
   batchIdCntr(0),
   suppressOutput(false), evalCommSize(1), evalCommRank(0), evalServerId(1),
-  eaDedMasterFlag(false), analysisCommSize(1), analysisCommRank(0),
+  eaDedSchedFlag(false), analysisCommSize(1), analysisCommRank(0),
   analysisServerId(1), multiProcAnalysisFlag(false),
   asynchLocalAnalysisFlag(false),
   asynchLocalEvalConcSpec(
@@ -129,8 +129,8 @@ init_communicators(const IntArray& message_lengths, int max_eval_concurrency)
   // in ParallelLibrary::resolve_inputs when there is a user spec that can't
   // be supported from a single processor).  However, a dedicated master can
   // run a local single-processor job if the algorithm uses a synchronous eval
-  // (see derived_master_overload() usage in Model::evaluate()).
-  if (ieDedMasterFlag && iteratorCommRank == 0 && multiProcEvalFlag)
+  // (see derived_scheduler_overload() usage in Model::evaluate()).
+  if (ieDedSchedFlag && iteratorCommRank == 0 && multiProcEvalFlag)
     init_serial_analyses();
   else {
     const ParallelLevel& ea_pl = parallelLib.init_analysis_communicators(
@@ -159,7 +159,7 @@ set_communicators(const IntArray& message_lengths, int max_eval_concurrency)
   // Initialize communicators for analyses (partitions of evalComm).  This call
   // is protected from an iterator dedicated master in cases where local
   // evaluations are precluded (see comments in init_communicators()).
-  if (ieDedMasterFlag && iteratorCommRank == 0 && multiProcEvalFlag)
+  if (ieDedSchedFlag && iteratorCommRank == 0 && multiProcEvalFlag)
     init_serial_analyses();
   else
     set_analysis_communicators();
@@ -193,13 +193,13 @@ set_evaluation_communicators(const IntArray& message_lengths)
   // These attributes are set by init_evaluation_communicators and are not 
   // available for use in the constructor.
   const ParallelLevel& ie_pl = pc.ie_parallel_level();
-  ieDedMasterFlag = ie_pl.dedicated_master();
+  ieDedSchedFlag = ie_pl.dedicated_scheduler();
   ieMessagePass   = ie_pl.message_pass();
   numEvalServers  = ie_pl.num_servers(); // may differ from numEvalServersSpec
   evalCommRank    = ie_pl.server_communicator_rank();
   evalCommSize    = ie_pl.server_communicator_size();
   evalServerId    = ie_pl.server_id();
-  if (ieDedMasterFlag)
+  if (ieDedSchedFlag)
     multiProcEvalFlag = (ie_pl.processors_per_server() > 1 ||
 			 ie_pl.processor_remainder());
   else // peer: split flag insufficient if 1 server
@@ -222,13 +222,13 @@ void ApplicationInterface::set_analysis_communicators()
   const ParallelLevel& ea_pl = pc.ea_parallel_level();
 
   // Extract attributes for analysis partitions
-  eaDedMasterFlag    = ea_pl.dedicated_master();
+  eaDedSchedFlag    = ea_pl.dedicated_scheduler();
   eaMessagePass      = ea_pl.message_pass();
   numAnalysisServers = ea_pl.num_servers();//may differ from numAnalysisSrvSpec
   analysisCommRank   = ea_pl.server_communicator_rank();
   analysisCommSize   = ea_pl.server_communicator_size();
   analysisServerId   = ea_pl.server_id();
-  if (eaDedMasterFlag)
+  if (eaDedSchedFlag)
     multiProcAnalysisFlag = (ea_pl.processors_per_server() > 1 ||
 			     ea_pl.processor_remainder());
   else // peer: split flag insufficient if 1 server
@@ -236,7 +236,7 @@ void ApplicationInterface::set_analysis_communicators()
 
   if ( iteratorCommRank // any processor other than rank 0 in iteratorComm
        || ( outputLevel == SILENT_OUTPUT && evalCommRank == 0 &&
-	   !eaDedMasterFlag && numAnalysisServers < 2) )
+	   !eaDedSchedFlag && numAnalysisServers < 2) )
     suppressOutput = true; // suppress output of fn. eval. echoes
   /* Additional output granularity:
   if (ieMessagePass)                // suppress fn eval output in 
@@ -735,7 +735,7 @@ const IntResponseMap& ApplicationInterface::synchronize()
       Cout << std::endl;
 
       if (ieMessagePass) { // single or multi-processor servers
-	if (ieDedMasterFlag) master_dynamic_schedule_evaluations();
+	if (ieDedSchedFlag) dedicated_dynamic_scheduler_evaluations();
 	else {
 	  // utilize asynch local evals to accomplish a dynamic peer schedule
 	  // (even if hybrid mode not specified) unless precluded by direct
@@ -847,8 +847,8 @@ const IntResponseMap& ApplicationInterface::synchronize_nowait()
     // Test nonduplicate evaluations and add completions to rawResponseMap
     if (core_prp_jobs) {
       if (ieMessagePass) { // single or multi-processor servers
-	if (ieDedMasterFlag)
-	  master_dynamic_schedule_evaluations_nowait();
+	if (ieDedSchedFlag)
+	  dedicated_dynamic_scheduler_evaluations_nowait();
 	else {
 	  // prefer to use peer_dynamic to avoid blocking on local jobs, as
 	  // is consistent with nowait requirement; however, a fallback to
@@ -978,7 +978,7 @@ const IntResponseMap& ApplicationInterface::synchronize_nowait()
     are completed and returned.  Single- and multilevel parallel use intra-
     and inter-communicators, respectively, for send/receive.  Specific
     syntax is encapsulated within ParallelLibrary. */
-void ApplicationInterface::master_dynamic_schedule_evaluations()
+void ApplicationInterface::dedicated_dynamic_scheduler_evaluations()
 {
   int capacity = numEvalServers;
   if (asynchLocalEvalConcurrency > 1) capacity *= asynchLocalEvalConcurrency;
@@ -1178,7 +1178,7 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations()
   // Note: this scheduler switch needs to be fully consistent with inter-comm
   // creation logic in init_communicators().
   //if (num_jobs <= remote_capacity && !multiProcEvalFlag)
-  //  { master_dynamic_schedule_evaluations(); return; }
+  //  { dedicated_dynamic_scheduler_evaluations(); return; }
 
   // Use round-robin assignment, skipping peer1 on 1st round.  Alternatively,
   // could minimize local job count, but this is less balanced (also consider
@@ -1239,7 +1239,7 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations()
     to perform a local portion of the total job set.  It uses 
     derived_map_asynch() to initiate asynchronous evaluations and 
     wait_local_evaluations() to capture completed jobs, and mirrors the
-    master_dynamic_schedule_evaluations() message passing scheduler as much
+    dedicated_dynamic_scheduler_evaluations() message passing scheduler as much
     as possible (wait_local_evaluations() is modeled after MPI_Waitsome()). */
 void ApplicationInterface::
 asynchronous_local_evaluations(PRPQueue& local_prp_queue)
@@ -1526,7 +1526,7 @@ test_local_backfill(PRPQueue& assign_queue, PRPQueueIter& assign_iter)
     are completed.  Single- and multilevel parallel use intra- and
     inter-communicators, respectively, for send/receive.  Specific
     syntax is encapsulated within ParallelLibrary. */
-void ApplicationInterface::master_dynamic_schedule_evaluations_nowait()
+void ApplicationInterface::dedicated_dynamic_scheduler_evaluations_nowait()
 {
   // beforeSynchCorePRPQueue includes running evaluations plus new requests;
   // previous completions have been removed by synchronize_nowait().  Thus,
@@ -1602,7 +1602,7 @@ void ApplicationInterface::master_dynamic_schedule_evaluations_nowait()
 	    { avail = true; break; }
 	if (!avail) {
 	  Cerr << "Error: no available buffer index for backfill in Application"
-	       << "Interface::master_dynamic_schedule_evaluations_nowait()."
+	       << "Interface::dedicated_dynamic_scheduler_evaluations_nowait()."
 	       << std::endl;
 	  abort_handler(-1);
 	}
@@ -2187,7 +2187,7 @@ void ApplicationInterface::serve_evaluations()
 
   // test for server 1 within a static schedule: multiProcEvalFlag is implied
   // since evalCommRank 0 is running the iterator/job schedulers
-  bool peer_server1 = (!ieDedMasterFlag && evalServerId == 1);
+  bool peer_server1 = (!ieDedSchedFlag && evalServerId == 1);
 
   if (asynchLocalEvalConcurrency > 1) {
     if (peer_server1) serve_evaluations_asynch_peer();
@@ -2362,7 +2362,7 @@ void ApplicationInterface::serve_evaluations_asynch()
     // -------------------------------------------------------------------
     int mpi_test_flag = 1;
     // num_active < asynchLocalEvalConcurrency check below manages concurrency
-    // in the static scheduling case (master_dynamic_schedule_evaluations()
+    // in the static scheduling case (dedicated_dynamic_scheduler_evaluations()
     // handles this from the master side)
     while (mpi_test_flag && fn_eval_id &&
            num_active < asynchLocalEvalConcurrency) {
@@ -2506,7 +2506,7 @@ void ApplicationInterface::serve_evaluations_asynch_peer()
 void ApplicationInterface::stop_evaluation_servers()
 { 
   if (iteratorCommSize > 1) {
-    if (!ieDedMasterFlag) {
+    if (!ieDedSchedFlag) {
       if (outputLevel > NORMAL_OUTPUT)
 	Cout << "Peer 1 stopping" << std::endl;
 
@@ -2523,11 +2523,11 @@ void ApplicationInterface::stop_evaluation_servers()
     // Peer partitions have one fewer interComm from server 1 to servers 2-n,
     // relative to ded master partitions which have interComms from server 0
     // to servers 1-n.
-    int end = (ieDedMasterFlag) ? numEvalServers+1 : numEvalServers;
+    int end = (ieDedSchedFlag) ? numEvalServers+1 : numEvalServers;
     for (server_id=1; server_id<end; ++server_id) {
       // stop serve_evaluation_{synch,asynch} procs
       if (outputLevel > NORMAL_OUTPUT) {
-	if (ieDedMasterFlag)
+	if (ieDedSchedFlag)
 	  Cout << "Master stopping server " << server_id << std::endl;
 	else
 	  Cout << "Peer " << server_id+1 << " stopping" << std::endl;
@@ -2561,7 +2561,7 @@ void ApplicationInterface::stop_evaluation_servers()
 /** This code is called from derived classes to provide the master
     portion of a master-slave algorithm for the dynamic scheduling of
     analyses among slave servers.  It is patterned after
-    master_dynamic_schedule_evaluations(). It performs no analyses
+    dedicated_dynamic_scheduler_evaluations(). It performs no analyses
     locally and matches either serve_analyses_synch() or
     serve_analyses_asynch() on the slave servers, depending on the
     value of asynchLocalAnalysisConcurrency.  Dynamic scheduling
@@ -2571,7 +2571,7 @@ void ApplicationInterface::stop_evaluation_servers()
     are completed.  Single- and multilevel parallel use intra- and
     inter-communicators, respectively, for send/receive.  Specific
     syntax is encapsulated within ParallelLibrary. */
-void ApplicationInterface::master_dynamic_schedule_analyses()
+void ApplicationInterface::dedicated_dynamic_scheduler_analyses()
 {
   int capacity  = (asynchLocalAnalysisConcurrency > 1) ?
                    asynchLocalAnalysisConcurrency*numAnalysisServers : 
@@ -2648,9 +2648,10 @@ void ApplicationInterface::master_dynamic_schedule_analyses()
     parallelLib.waitall(numAnalysisDrivers, recv_requests);
   }
 
-  // Unlike ApplicationInterface::master_dynamic_schedule_evaluations() (which
-  // terminates servers only when the iterator/model is complete), terminate
-  // servers now so that they can return from derived_map to the higher level.
+  // Unlike ApplicationInterface::dedicated_dynamic_scheduler_evaluations()
+  // (which terminates servers only when the iterator/model is complete),
+  // terminate servers now so that they can return from derived_map to the
+  // higher level.
   analysis_id = 0; // termination flag for servers
   for (i=0; i<numAnalysisServers; ++i) {
     parallelLib.isend_ea(analysis_id, i+1, 0, send_request);

@@ -222,7 +222,7 @@ init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator
 
   // check for dedicated master overload -> no iterator jobs can run
   // on master, so no need to init
-  if (pl_iter->dedicated_master() && pl_iter->processors_per_server() > 1 &&
+  if (pl_iter->dedicated_scheduler() && pl_iter->processors_per_server() > 1 &&
       pl_iter->server_id() == 0)
     return;
 
@@ -279,7 +279,7 @@ init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator
 
   // check for dedicated master overload -> no iterator jobs can run
   // on master, so no need to init
-  if (pl_iter->dedicated_master() && pl_iter->processors_per_server() > 1 &&
+  if (pl_iter->dedicated_scheduler() && pl_iter->processors_per_server() > 1 &&
       pl_iter->server_id() == 0)
     return;
 
@@ -321,7 +321,7 @@ init_iterator(ProblemDescDB& problem_db, const String& method_string,
 
   // check for dedicated master overload -> no iterator jobs can run
   // on master, so no need to init
-  if (pl_iter->dedicated_master() && pl_iter->processors_per_server() > 1 &&
+  if (pl_iter->dedicated_scheduler() && pl_iter->processors_per_server() > 1 &&
       pl_iter->server_id() == 0)
     return;
 
@@ -360,7 +360,7 @@ set_iterator(Iterator& sub_iterator, ParLevLIter pl_iter)
 {
   // check for dedicated master overload -> no iterator jobs can run
   // on master, so no need to init
-  if (pl_iter->dedicated_master() && pl_iter->processors_per_server() > 1 &&
+  if (pl_iter->dedicated_scheduler() && pl_iter->processors_per_server() > 1 &&
       pl_iter->server_id() == 0)
     return;
 
@@ -407,7 +407,7 @@ run_iterator(Iterator& sub_iterator, ParLevLIter pl_iter)
 
   // check for dedicated master overload -> no iterator jobs can run
   // on master, so no need to init
-  if (pl_iter->dedicated_master() && pl_iter->processors_per_server() > 1 &&
+  if (pl_iter->dedicated_scheduler() && pl_iter->processors_per_server() > 1 &&
       pl_iter->server_id() == 0)
     return;
 
@@ -471,7 +471,7 @@ free_iterator(Iterator& sub_iterator, ParLevLIter pl_iter)
 
   // check for dedicated master overload -> no iterator jobs can run
   // on master, so no need to init
-  if (pl_iter->dedicated_master() && pl_iter->processors_per_server() > 1 &&
+  if (pl_iter->dedicated_scheduler() && pl_iter->processors_per_server() > 1 &&
       pl_iter->server_id() == 0)
     return;
 
@@ -495,7 +495,7 @@ void IteratorScheduler::stop_iterator_servers()
   MPIPackBuffer send_buffer(0); // empty buffer
   MPI_Request   send_request;
   int server_id, term_tag = 0;
-  if (iteratorScheduling == MASTER_SCHEDULING)
+  if (iteratorScheduling == DEDICATED_SCHEDULER_DYNAMIC)
     for (server_id=1; server_id<=numIteratorServers; ++server_id) {
       // nonblocking sends: master posts all terminate messages without waiting
       // for completion.  Bcast cannot be used since all procs must call it and

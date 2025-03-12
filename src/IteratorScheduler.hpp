@@ -122,14 +122,14 @@ public:
   void free_iterator_parallelism();
 
   /// short convenience function for distributing control among
-  /// master_dynamic_schedule_iterators(), serve_iterators(), and
+  /// dedicated_dynamic_scheduler_iterators(), serve_iterators(), and
   /// peer_static_schedule_iterators()
   template <typename MetaType>
   void schedule_iterators(MetaType& meta_object, Iterator& sub_iterator);
   /// executed by the scheduler master to manage a dynamic schedule of
   /// iterator jobs among slave iterator servers
   template <typename MetaType>
-  void master_dynamic_schedule_iterators(MetaType& meta_object);
+  void dedicated_dynamic_scheduler_iterators(MetaType& meta_object);
   /// executed by the scheduler master to terminate slave iterator servers
   void stop_iterator_servers();
   /// executed on the slave iterator servers to perform iterator jobs
@@ -210,9 +210,9 @@ init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator
 	      std::shared_ptr<Model> sub_model)
 {
   ParLevLIter pl_iter = schedPCIter->mi_parallel_level_iterator(miPLIndex);
-  // if dedicated master overload, no iterator jobs can run on master, so no
+  // if dedicated scheduler overload, no iterator jobs can run on master, so no
   // init/set/free --> need to match init_comms() on iterator servers
-  if (pl_iter->dedicated_master() && pl_iter->processors_per_server() > 1 &&
+  if (pl_iter->dedicated_scheduler() && pl_iter->processors_per_server() > 1 &&
       pl_iter->server_id() == 0) {
     parallelLib.parallel_configuration_iterator(schedPCIter);
     parallelLib.print_configuration(); // match init_comms() on iterator servers
@@ -227,9 +227,9 @@ init_iterator(ProblemDescDB& problem_db, const String& method_string,
 	      std::shared_ptr<Iterator>& sub_iterator, std::shared_ptr<Model> sub_model)
 {
   ParLevLIter pl_iter = schedPCIter->mi_parallel_level_iterator(miPLIndex);
-  // if dedicated master overload, no iterator jobs can run on master, so no
+  // if dedicated scheduler overload, no iterator jobs can run on master, so no
   // init/set/free --> need to match init_comms() on iterator servers
-  if (pl_iter->dedicated_master() && pl_iter->processors_per_server() > 1 &&
+  if (pl_iter->dedicated_scheduler() && pl_iter->processors_per_server() > 1 &&
       pl_iter->server_id() == 0) {
     parallelLib.parallel_configuration_iterator(schedPCIter);
     parallelLib.print_configuration();
@@ -272,7 +272,7 @@ inline void IteratorScheduler::update(size_t index)
   const ParallelLevel& mi_pl = schedPCIter->mi_parallel_level(index);
 
   // retrieve the partition data
-  //dedicatedMaster = mi_pl.dedicated_master();
+  //dedicatedScheduler = mi_pl.dedicated_scheduler();
   messagePass        = mi_pl.message_pass();
   iteratorCommRank   = mi_pl.server_communicator_rank();
   iteratorCommSize   = mi_pl.server_communicator_size();
@@ -280,8 +280,8 @@ inline void IteratorScheduler::update(size_t index)
 
   // update requests with actual
   numIteratorServers = mi_pl.num_servers();
-  iteratorScheduling = (mi_pl.dedicated_master())
-                     ? MASTER_SCHEDULING : PEER_SCHEDULING;
+  iteratorScheduling = (mi_pl.dedicated_scheduler())
+                     ? DEDICATED_SCHEDULER_DYNAMIC : PEER_SCHEDULING;
 }
 
 
@@ -301,9 +301,9 @@ schedule_iterators(MetaType& meta_object, Iterator& sub_iterator)
   parallelLib.parallel_configuration_iterator(
     meta_object.parallel_configuration_iterator());
 
-  if (iteratorScheduling == MASTER_SCHEDULING) { //(dedicatedMaster) {
-    if (lead_rank()) { // strategy master
-      master_dynamic_schedule_iterators(meta_object);
+  if (iteratorScheduling == DEDICATED_SCHEDULER_DYNAMIC) {//(dedicateScheduler){
+    if (lead_rank()) { // strategy dedicated scheduler
+      dedicated_dynamic_scheduler_iterators(meta_object);
       stop_iterator_servers();
     }
     else // slave iterator servers
@@ -326,9 +326,9 @@ schedule_iterators(MetaType& meta_object, Iterator& sub_iterator)
 
 
 /** This function is adapted from
-    ApplicationInterface::master_dynamic_schedule_evaluations(). */
+    ApplicationInterface::dedicated_dynamic_scheduler_evaluations(). */
 template <typename MetaType> void IteratorScheduler::
-master_dynamic_schedule_iterators(MetaType& meta_object)
+dedicated_dynamic_scheduler_iterators(MetaType& meta_object)
 {
   int i, j, num_sends = std::min(numIteratorServers, numIteratorJobs);
   Cout << "Master dynamic schedule: first pass assigning " << num_sends
@@ -545,8 +545,9 @@ iterator_message_lengths(int params_msg_len, int results_msg_len)
 inline bool IteratorScheduler::lead_rank() const
 {
   return ( iteratorCommRank == 0 && ( !messagePass ||
-    ( iteratorScheduling == MASTER_SCHEDULING && iteratorServerId == 0 ) ||
-    ( iteratorScheduling == PEER_SCHEDULING   && iteratorServerId == 1 ) ) );
+    ( iteratorScheduling == DEDICATED_SCHEDULER_DYNAMIC &&
+      iteratorServerId == 0 ) ||
+    ( iteratorScheduling == PEER_SCHEDULING && iteratorServerId == 1 ) ) );
 }
 
 } // namespace Dakota

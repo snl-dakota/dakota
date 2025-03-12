@@ -296,7 +296,7 @@ public:
 
   /// returns a flag signaling the use of a dedicated master processor at the
   /// iterator-evaluation scheduling level
-  bool iterator_eval_dedicated_master() const;
+  bool iterator_eval_dedicated_scheduler() const;
 
   /// function to check interfaceRep (does this envelope contain a letter?)
   bool is_null() const;
@@ -423,7 +423,7 @@ protected:
   bool multiProcEvalFlag;
 
   /// flag for dedicated master partitioning at the iterator level
-  bool ieDedMasterFlag;
+  bool ieDedSchedFlag;
 
   /// set of period-delimited evaluation ID tags to use in evaluation tagging
   String evalTagPrefix;
@@ -512,8 +512,8 @@ inline bool Interface::multi_proc_eval() const
 { return (interfaceRep) ? interfaceRep->multiProcEvalFlag : multiProcEvalFlag; }
 
 
-inline bool Interface::iterator_eval_dedicated_master() const
-{ return (interfaceRep) ? interfaceRep->ieDedMasterFlag : ieDedMasterFlag; }
+inline bool Interface::iterator_eval_dedicated_scheduler() const
+{ return (interfaceRep) ? interfaceRep->ieDedSchedFlag : ieDedSchedFlag; }
 
 
 inline bool Interface::is_null() const

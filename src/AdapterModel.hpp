@@ -106,7 +106,7 @@ protected:
   int local_eval_concurrency();
   /// flag which prevents overloading the master with a multiprocessor
   /// evaluation (request forwarded to subModel)
-  bool derived_master_overload() const;
+  bool derived_scheduler_overload() const;
 
   /// set up AdapterModel for parallel operations
   void derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
@@ -279,8 +279,8 @@ inline int AdapterModel::local_eval_concurrency()
 { return subModel.local_eval_concurrency(); }
 
 
-inline bool AdapterModel::derived_master_overload() const
-{ return subModel.derived_master_overload(); }
+inline bool AdapterModel::derived_scheduler_overload() const
+{ return subModel.derived_scheduler_overload(); }
 
 
 inline void AdapterModel::

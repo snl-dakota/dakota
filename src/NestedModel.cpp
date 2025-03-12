@@ -1397,7 +1397,7 @@ void NestedModel::derived_evaluate(const ActiveSet& set)
       // run_iterator() is used since we stop subModel servers for consistency
       // with fall through behavior of schedule_iterators()
       subIteratorSched.run_iterator(*subIterator, pl_iter);
-      if (subIteratorSched.iteratorScheduling == MASTER_SCHEDULING)
+      if (subIteratorSched.iteratorScheduling == DEDICATED_SCHEDULER_DYNAMIC)
 	subIteratorSched.stop_iterator_servers();
 
       /* This approach has 2 issues: (1) a single-processor subIterator job is
