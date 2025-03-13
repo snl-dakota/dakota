@@ -163,9 +163,9 @@ void register_signal_handlers()
 void mpi_debug_hold()
 {
 #ifdef MPI_DEBUG
-  // hold parallel job prior to MPI_Init() in order to attach debugger to
-  // master process.  Then step past ParallelLibrary instantiation and attach
-  // debugger to other processes.
+  // hold parallel job prior to MPI_Init() in order to attach debugger
+  // to rank 0 process.  Then step past ParallelLibrary instantiation
+  // and attach debugger to other processes.
 //#ifdef MPICH2
 #ifdef MPICH_NAME
   // To use this approach, set $DAKOTA_DEBUGPIPE to a suitable name,

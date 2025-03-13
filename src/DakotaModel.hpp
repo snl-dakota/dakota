@@ -160,10 +160,10 @@ public:
   /// return derived model asynchronous evaluation concurrency
   virtual int local_eval_concurrency();
 
-  /// Service job requests received from the master.  Completes when
+  /// Service job requests received from the scheduler.  Completes when
   /// a termination message is received from stop_servers().
   virtual void serve_run(ParLevLIter pl_iter, int max_eval_concurrency);
-  /// Executed by the master to terminate all server operations for a
+  /// Executed by the scheduler to terminate all server operations for a
   /// particular model when iteration on the model is complete.
   virtual void stop_servers();
 

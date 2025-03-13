@@ -1124,7 +1124,7 @@ void Model::evaluate()
           temp_set, currentVariables);
 
   if (derived_scheduler_overload()) {
-    // prevents error of trying to run a multiproc. direct job on the master
+    // prevents error of trying to run a multiproc direct job on the scheduler
     derived_evaluate_nowait(temp_set);
     currentResponse = derived_synchronize().begin()->second;
   }
@@ -1179,7 +1179,7 @@ void Model::evaluate(const ActiveSet& set)
   }
   else if (derived_scheduler_overload()) {
     // This map must be asynchronous since it prevents the error of trying
-    // to run a multiprocessor direct job on the master.
+    // to run a multiprocessor direct job on the scheduler
     derived_evaluate_nowait(set);
     currentResponse = derived_synchronize().begin()->second;
   }
@@ -4450,8 +4450,8 @@ MPI_Comm Model::analysis_comm() const
 /** This functionality has been pulled out of init_communicators() and
     defined separately so that it may be used in those cases when
     messageLengths is needed but model.init_communicators() is not
-    called, e.g., for the master processor in the self-scheduling of a
-    concurrent iterator strategy. */
+    called, e.g., for the ded scheduler processor in the self-scheduling
+    of a concurrent iterator strategy. */
 void Model::estimate_message_lengths()
 {
     // currently, every processor does this estimation (no Bcast needed)

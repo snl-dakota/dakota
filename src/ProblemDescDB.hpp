@@ -687,7 +687,7 @@ max_procs_per_level(int max_procs_per_server, int pps_spec, int num_serv_spec,
 {
   int max_procs_per_lev, max_pps = (pps_spec) ? pps_spec : max_procs_per_server;
 
-  if (num_serv_spec) { // check for dedicated master
+  if (num_serv_spec) { // check for dedicated scheduler
     max_procs_per_lev = max_pps * num_serv_spec;
     switch (sched_spec) {
     case DEDICATED_SCHEDULER_DYNAMIC:
@@ -695,7 +695,7 @@ max_procs_per_level(int max_procs_per_server, int pps_spec, int num_serv_spec,
     //case PEER_SCHEDULING: case PEER_STATIC_SCHEDULING:
     //case PEER_DYNAMIC_SCHEDULING:
     //  break;
-    case DEFAULT_SCHEDULING: // emulate auto-config logic for master scheduling
+    case DEFAULT_SCHEDULING: // emulate auto-config logic
       if (!peer_dynamic_avail && num_serv_spec > 1 &&
 	  num_serv_spec * std::max(1, asynch_local_conc) < max_concurrency)
 	++max_procs_per_lev;
@@ -704,8 +704,8 @@ max_procs_per_level(int max_procs_per_server, int pps_spec, int num_serv_spec,
   }
   else {
     max_procs_per_lev = max_pps * max_concurrency;
-    // assume peer partition unless explicit override to master, since
-    // we don't have avail_procs to estimate need for master scheduling
+    // assume peer partition unless explicit override to ded scheduler,
+    // since we don't have avail_procs to estimate need for ded scheduler
     if (sched_spec == DEDICATED_SCHEDULER_DYNAMIC)
       ++max_procs_per_lev;
   }

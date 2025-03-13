@@ -40,7 +40,7 @@
 # point (x1,x2) = (0.177,0.177) which has a function value
 # of 0.060.
 
-# Parallel test matrix is dedicated master and peer partition
+# Parallel test matrix is dedicated scheduler and peer partition
 # scheduling for concurrent iterators with single-processor and
 # multiprocessor iterator partitions. Parallel tests 2 and 3 include
 # an idle partition due to over-allocation
@@ -51,13 +51,13 @@ environment
 method
   id_method = 'MS'
   multi_start
-#    iterator_servers = 3         #p0,#p2,#p5
-#    iterator_scheduling peer     #p0,#p2,#p5
-#    iterator_servers = 2         #p1,#p3,#p4,#p6
-#    iterator_scheduling master   #p1,#p3,#p4,#p6
-#    processors_per_iterator = 1  #p2,#p3,#p5
-    method_pointer = 'NLP'        #s0,#s1,#s2,#s4,#p0,#p1,#p2,#p3,#p5,#p6
-#    method_name 'dot_bfgs'       #s3,#p4
+#    iterator_servers = 3          #p0,#p2,#p5
+#    iterator_scheduling peer      #p0,#p2,#p5
+#    iterator_servers = 2          #p1,#p3,#p4,#p6
+#    iterator_scheduling dedicated #p1,#p3,#p4,#p6
+#    processors_per_iterator = 1   #p2,#p3,#p5
+    method_pointer = 'NLP'         #s0,#s1,#s2,#s4,#p0,#p1,#p2,#p3,#p5,#p6
+#    method_name 'dot_bfgs'        #s3,#p4
     random_starts = 3 seed = 123
     starting_points = -0.8  -0.8
                       -0.8   0.8
