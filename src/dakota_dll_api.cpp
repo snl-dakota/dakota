@@ -210,8 +210,8 @@ void DakotaRunner::start()
       // set the DB nodes to that of the existing Model specification
       problem_db.set_db_model_nodes(m->model_id());
       // plug in the new derived Interface object
-      model_interface = std::make_shared<SIM::SerialDirectApplicInterface>
-				 (problem_db);
+      m->derived_interface(std::make_shared<SIM::SerialDirectApplicInterface>
+				 (problem_db));
     }
   }
   problem_db.set_db_model_nodes(model_index);            // restore

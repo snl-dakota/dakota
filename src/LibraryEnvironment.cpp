@@ -123,8 +123,8 @@ bool LibraryEnvironment::plugin_interface(const String& model_type,
     // plugin the Interface
     std::shared_ptr<Interface> model_interface = fm->derived_interface();
     // don't increment ref count since no other envelope shares this letter
-    model_interface = plugin_iface;
-    *model_interface = *plugin_iface;
+    fm->derived_interface(plugin_iface);
+    //model_interface.reset(new Interface(*plugin_iface));
     plugged_in = true;
   }
   probDescDB.set_db_model_nodes(model_index);          // restore

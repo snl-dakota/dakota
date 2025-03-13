@@ -81,6 +81,7 @@ protected:
   void derived_subordinate_models(ModelList& ml, bool recurse_flag) override;
   /// return optionalInterface
   std::shared_ptr<Interface> derived_interface() override;
+  void derived_interface(std::shared_ptr<Interface>) override;
 
   /// retrieve error estimates corresponding to the subIterator's response
   /// results (e.g., statistical MSE for subordinate UQ).
@@ -474,6 +475,9 @@ derived_subordinate_models(ModelList& ml, bool recurse_flag)
 
 inline std::shared_ptr<Interface> NestedModel::derived_interface()
 { return optionalInterface; }
+
+inline void NestedModel::derived_interface(std::shared_ptr<Interface> di)
+{ optionalInterface = di; }
 
 
 inline const RealVector& NestedModel::error_estimates()

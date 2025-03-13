@@ -102,6 +102,7 @@ public:
   /// SimulationModel::userDefinedInterface, DataFitSurrModel::approxInterface,
   /// or NestedModel::optionalInterface
   virtual std::shared_ptr<Interface> derived_interface();
+  virtual void derived_interface(std::shared_ptr<Interface> );
 
   /// set the relative weightings for multiple objective functions or least
   /// squares terms

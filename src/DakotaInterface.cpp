@@ -189,24 +189,18 @@ Interface::Interface()
     only needs to extract enough data to properly execute get_interface, since
     Interface::Interface(BaseConstructor, problem_db) builds the 
     actual base class data inherited by the derived interfaces. */
-Interface::Interface(ProblemDescDB& problem_db):
-  // Set the rep pointer to the appropriate interface type
-  interfaceRep(InterfaceUtils::get_interface(problem_db))
+Interface::Interface(ProblemDescDB& problem_db)
 {
-  if (!interfaceRep) // bad type or insufficient memory
-    abort_handler(-1);
 }
 
 
-/** Copy constructor manages sharing of interfaceRep */
-Interface::Interface(const Interface& interface_in):
-  interfaceRep(interface_in.interfaceRep)
+/** Copy constructor */
+Interface::Interface(const Interface& interface_in)
 { /* empty ctor */ }
 
 
 Interface Interface::operator=(const Interface& interface_in)
 {
-  interfaceRep = interface_in.interfaceRep;
   return *this; // calls copy constructor since returned by value
 }
 
@@ -217,9 +211,7 @@ Interface::~Interface()
 
 void Interface::fine_grained_evaluation_counters(size_t num_fns)
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->fine_grained_evaluation_counters(num_fns);
-  else if (!fineGrainEvalCounters) { // letter (not virtual)
+  if (!fineGrainEvalCounters) {
     init_evaluation_counters(num_fns);
     fineGrainEvalCounters = true;
   }
@@ -228,44 +220,35 @@ void Interface::fine_grained_evaluation_counters(size_t num_fns)
 
 void Interface::init_evaluation_counters(size_t num_fns)
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->init_evaluation_counters(num_fns);
-  else { // letter (not virtual)
-    //if (fnLabels.empty()) {
-    //  fnLabels.resize(num_fns);
-    //  build_labels(fnLabels, "response_fn_"); // generic resp fn labels
-    //}
-    if (fnValCounter.size() != num_fns) {
-      fnValCounter.assign(num_fns, 0);     fnGradCounter.assign(num_fns, 0);
-      fnHessCounter.assign(num_fns, 0);    newFnValCounter.assign(num_fns, 0);
-      newFnGradCounter.assign(num_fns, 0); newFnHessCounter.assign(num_fns, 0);
-      fnValRefPt.assign(num_fns, 0);       fnGradRefPt.assign(num_fns, 0);
-      fnHessRefPt.assign(num_fns, 0);      newFnValRefPt.assign(num_fns, 0);
-      newFnGradRefPt.assign(num_fns, 0);   newFnHessRefPt.assign(num_fns, 0);
-    }
+  //if (fnLabels.empty()) {
+  //  fnLabels.resize(num_fns);
+  //  build_labels(fnLabels, "response_fn_"); // generic resp fn labels
+  //}
+  if (fnValCounter.size() != num_fns) {
+    fnValCounter.assign(num_fns, 0);     fnGradCounter.assign(num_fns, 0);
+    fnHessCounter.assign(num_fns, 0);    newFnValCounter.assign(num_fns, 0);
+    newFnGradCounter.assign(num_fns, 0); newFnHessCounter.assign(num_fns, 0);
+    fnValRefPt.assign(num_fns, 0);       fnGradRefPt.assign(num_fns, 0);
+    fnHessRefPt.assign(num_fns, 0);      newFnValRefPt.assign(num_fns, 0);
+    newFnGradRefPt.assign(num_fns, 0);   newFnHessRefPt.assign(num_fns, 0);
   }
 }
 
 
 void Interface::set_evaluation_reference()
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->set_evaluation_reference();
-  else { // letter (not virtual)
+  evalIdRefPt    = evalIdCntr;
+  newEvalIdRefPt = newEvalIdCntr;
 
-    evalIdRefPt    = evalIdCntr;
-    newEvalIdRefPt = newEvalIdCntr;
-
-    if (fineGrainEvalCounters) {
-      size_t i, num_fns = fnValCounter.size();
-      for (i=0; i<num_fns; i++) {
-	fnValRefPt[i]     =     fnValCounter[i];
-	newFnValRefPt[i]  =  newFnValCounter[i];
-	fnGradRefPt[i]    =    fnGradCounter[i];
-	newFnGradRefPt[i] = newFnGradCounter[i];
-	fnHessRefPt[i]    =    fnHessCounter[i];
-	newFnHessRefPt[i] = newFnHessCounter[i];
-      }
+  if (fineGrainEvalCounters) {
+    size_t i, num_fns = fnValCounter.size();
+    for (i=0; i<num_fns; i++) {
+      fnValRefPt[i]     =     fnValCounter[i];
+      newFnValRefPt[i]  =  newFnValCounter[i];
+      fnGradRefPt[i]    =    fnGradCounter[i];
+      newFnGradRefPt[i] = newFnGradCounter[i];
+      fnHessRefPt[i]    =    fnHessCounter[i];
+      newFnHessRefPt[i] = newFnHessCounter[i];
     }
   }
 }
@@ -275,50 +258,45 @@ void Interface::
 print_evaluation_summary(std::ostream& s, bool minimal_header,
 			 bool relative_count) const
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->print_evaluation_summary(s, minimal_header, relative_count);
-  else { // letter (not virtual)
+  // standard evaluation summary
+  if (minimal_header) {
+    if (interfaceId.empty() || interfaceId == "NO_ID")
+      s << "  Interface evaluations";
+    else
+      s << "  " << interfaceId << " evaluations";
+  }
+  else {
+    s << "<<<<< Function evaluation summary";
+    if (!(interfaceId.empty() || interfaceId == "NO_ID"))
+      s << " (" << interfaceId << ')';
+  }
+  int     fn_evals = (relative_count) ? evalIdCntr - evalIdRefPt
+                                      : evalIdCntr;
+  int new_fn_evals = (relative_count) ? newEvalIdCntr - newEvalIdRefPt
+                                      : newEvalIdCntr;
+  s << ": " << fn_evals << " total (" << new_fn_evals << " new, "
+    << fn_evals - new_fn_evals << " duplicate)\n";
 
-    // standard evaluation summary
-    if (minimal_header) {
-      if (interfaceId.empty() || interfaceId == "NO_ID")
-	s << "  Interface evaluations";
-      else
-	s << "  " << interfaceId << " evaluations";
-    }
-    else {
-      s << "<<<<< Function evaluation summary";
-      if (!(interfaceId.empty() || interfaceId == "NO_ID"))
-	s << " (" << interfaceId << ')';
-    }
-    int     fn_evals = (relative_count) ? evalIdCntr - evalIdRefPt
-                                        : evalIdCntr;
-    int new_fn_evals = (relative_count) ? newEvalIdCntr - newEvalIdRefPt
-                                        : newEvalIdCntr;
-    s << ": " << fn_evals << " total (" << new_fn_evals << " new, "
-      << fn_evals - new_fn_evals << " duplicate)\n";
-
-    // detailed evaluation summary
-    if (fineGrainEvalCounters) {
-      size_t i, num_fns = std::min(fnValCounter.size(), fnLabels.size());
-      for (i=0; i<num_fns; i++) {
-	int t_v = (relative_count) ?     fnValCounter[i] -     fnValRefPt[i]
-	                           :     fnValCounter[i];
-	int n_v = (relative_count) ?  newFnValCounter[i] -  newFnValRefPt[i]
-	                           :  newFnValCounter[i];
-	int t_g = (relative_count) ?    fnGradCounter[i] -    fnGradRefPt[i]
-	                           :    fnGradCounter[i];
-	int n_g = (relative_count) ? newFnGradCounter[i] - newFnGradRefPt[i]
-	                           : newFnGradCounter[i];
-	int t_h = (relative_count) ?    fnHessCounter[i] -    fnHessRefPt[i]
-	                           :    fnHessCounter[i];
-	int n_h = (relative_count) ? newFnHessCounter[i] - newFnHessRefPt[i]
-	                           : newFnHessCounter[i];
-	s << std::setw(15) << fnLabels[i] << ": "
-	  << t_v << " val ("  << n_v << " n, " << t_v - n_v << " d), "
-	  << t_g << " grad (" << n_g << " n, " << t_g - n_g << " d), "
-	  << t_h << " Hess (" << n_h << " n, " << t_h - n_h << " d)\n";
-      }
+  // detailed evaluation summary
+  if (fineGrainEvalCounters) {
+    size_t i, num_fns = std::min(fnValCounter.size(), fnLabels.size());
+    for (i=0; i<num_fns; i++) {
+      int t_v = (relative_count) ?     fnValCounter[i] -     fnValRefPt[i]
+                                 :     fnValCounter[i];
+      int n_v = (relative_count) ?  newFnValCounter[i] -  newFnValRefPt[i]
+                                 :  newFnValCounter[i];
+      int t_g = (relative_count) ?    fnGradCounter[i] -    fnGradRefPt[i]
+                                 :    fnGradCounter[i];
+      int n_g = (relative_count) ? newFnGradCounter[i] - newFnGradRefPt[i]
+                                 : newFnGradCounter[i];
+      int t_h = (relative_count) ?    fnHessCounter[i] -    fnHessRefPt[i]
+                                 :    fnHessCounter[i];
+      int n_h = (relative_count) ? newFnHessCounter[i] - newFnHessRefPt[i]
+                                 : newFnHessCounter[i];
+      s << std::setw(15) << fnLabels[i] << ": "
+        << t_v << " val ("  << n_v << " n, " << t_v - n_v << " d), "
+        << t_g << " grad (" << n_g << " n, " << t_g - n_g << " d), "
+        << t_h << " Hess (" << n_h << " n, " << t_h - n_h << " d)\n";
     }
   }
 }
@@ -330,25 +308,17 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
 void Interface::
 eval_tag_prefix(const String& eval_id_str, bool append_iface_id)
 {
-  if (interfaceRep)
-    interfaceRep->eval_tag_prefix(eval_id_str, append_iface_id);
-  else {
-    evalTagPrefix = eval_id_str;
-    appendIfaceId = append_iface_id;
-  }
+  evalTagPrefix = eval_id_str;
+  appendIfaceId = append_iface_id;
 }
 
 
 void Interface::map(const Variables& vars, const ActiveSet& set,
 		    Response& response, bool asynch_flag)
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->map(vars, set, response, asynch_flag);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual map function.\n"
-         << "No default map defined at Interface base class." << std::endl;
-    abort_handler(-1);
-  }
+  Cerr << "Error: Letter lacking redefinition of virtual map function.\n"
+       << "No default map defined at Interface base class." << std::endl;
+  abort_handler(-1);
 }
 
 
@@ -637,9 +607,6 @@ response_mapping(const Response& algebraic_response,
 
 String Interface::final_eval_id_tag(int iface_eval_id)
 {
-  if (interfaceRep)
-    return interfaceRep->final_eval_id_tag(iface_eval_id);
-
   if (appendIfaceId)
     return evalTagPrefix + "." + std::to_string(iface_eval_id);
   return evalTagPrefix;
@@ -667,226 +634,137 @@ int Interface::algebraic_function_type(String functionTag)
 
 const IntResponseMap& Interface::synchronize()
 {
-  if (!interfaceRep) { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual synchronize() "
-	 << "function.\nNo default defined at Interface base class."
-	 << std::endl;
-    abort_handler(-1);
-  }
-
-  return interfaceRep->synchronize();
+  Cerr << "Error: Letter lacking redefinition of virtual synchronize() "
+       << "function.\nNo default defined at Interface base class."
+       << std::endl;
+  abort_handler(-1);
 }
 
 
 const IntResponseMap& Interface::synchronize_nowait()
 {
-  if (!interfaceRep) { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual synchronize_nowait"
-	 << "() function.\nNo default defined at Interface base class."
-	 << std::endl;
-    abort_handler(-1);
-  }
-
-  return interfaceRep->synchronize_nowait();
+  Cerr << "Error: Letter lacking redefinition of virtual synchronize_nowait"
+       << "() function.\nNo default defined at Interface base class."
+       << std::endl;
+  abort_handler(-1);
 }
 
 
 void Interface::cache_unmatched_response(int raw_id)
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->cache_unmatched_response(raw_id);
-  else { // base definition; not virtual
-    IntRespMIter rr_it = rawResponseMap.find(raw_id);
-    if (rr_it != rawResponseMap.end()) {
-      cachedResponseMap.insert(*rr_it);
-      rawResponseMap.erase(rr_it);
-    }
+  IntRespMIter rr_it = rawResponseMap.find(raw_id);
+  if (rr_it != rawResponseMap.end()) {
+    cachedResponseMap.insert(*rr_it);
+    rawResponseMap.erase(rr_it);
   }
 }
 
 
 void Interface::cache_unmatched_responses()
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->cache_unmatched_responses();
-  else { // base definition; not virtual
-    cachedResponseMap.insert(rawResponseMap.begin(), rawResponseMap.end());
-    rawResponseMap.clear();
-  }
+  cachedResponseMap.insert(rawResponseMap.begin(), rawResponseMap.end());
+  rawResponseMap.clear();
 }
 
 
 void Interface::serve_evaluations()
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->serve_evaluations();
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual serve_evaluations "
-	 << "function.\nNo default serve_evaluations defined at Interface"
-	 << " base class." << std::endl;
-    abort_handler(-1);
-  }
+  Cerr << "Error: Letter lacking redefinition of virtual serve_evaluations "
+       << "function.\nNo default serve_evaluations defined at Interface"
+       << " base class." << std::endl;
+  abort_handler(-1);
 }
 
 
 void Interface::stop_evaluation_servers()
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->stop_evaluation_servers();
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual stop_evaluation_"
-	 << "servers fn.\nNo default stop_evaluation_servers defined at "
-	 << "Interface base class." << std::endl;
-    abort_handler(-1);
-  }
+  Cerr << "Error: Letter lacking redefinition of virtual stop_evaluation_"
+       << "servers fn.\nNo default stop_evaluation_servers defined at "
+       << "Interface base class." << std::endl;
+  abort_handler(-1);
 }
 
 
 void Interface::init_communicators(const IntArray& message_lengths,
 				   int max_eval_concurrency)
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->init_communicators(message_lengths, max_eval_concurrency);
-  else { // letter lacking redefinition of virtual fn.
-    // ApproximationInterfaces: do nothing
-  }
+  // ApproximationInterfaces: do nothing
 }
 
 
 void Interface::set_communicators(const IntArray& message_lengths,
 				  int max_eval_concurrency)
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->set_communicators(message_lengths, max_eval_concurrency);
-  else { // letter lacking redefinition of virtual fn.
-    // ApproximationInterfaces: do nothing
-  }
+  // ApproximationInterfaces: do nothing
 }
-
-
-/*
-void Interface::free_communicators()
-{
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->free_communicators();
-  else { // letter lacking redefinition of virtual fn.
-    // default is no-op
-  }
-}
-*/
 
 
 void Interface::init_serial()
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->init_serial();
-  else { // letter lacking redefinition of virtual fn.
-    // ApproximationInterfaces: do nothing
-  }
+  // ApproximationInterfaces: do nothing
 }
 
 
 int Interface::asynch_local_evaluation_concurrency() const
 {
-  if (interfaceRep) // envelope fwd to letter
-    return interfaceRep->asynch_local_evaluation_concurrency();
-  else // letter lacking redefinition of virtual fn.
-    return 0; // default (redefined only for ApplicationInterfaces)
+  return 0; // default (redefined only for ApplicationInterfaces)
 }
 
 
 short Interface::interface_synchronization() const
 {
-  if (interfaceRep) // envelope fwd to letter
-    return interfaceRep->interface_synchronization(); // ApplicationInterfaces
-  else // letter lacking redefinition of virtual fn.
-    return SYNCHRONOUS_INTERFACE; // default (ApproximationInterfaces)
+  return SYNCHRONOUS_INTERFACE; // default (ApproximationInterfaces)
 }
 
 
 int Interface::minimum_points(bool constraint_flag) const
 {
-  if (interfaceRep) // envelope fwd to letter
-    return interfaceRep->minimum_points(constraint_flag);
-  else // letter lacking redefinition of virtual fn.
-    return 0; // default (currently redefined only for ApproximationInterfaces)
+  return 0; // default (currently redefined only for ApproximationInterfaces)
 }
 
 
 int Interface::recommended_points(bool constraint_flag) const
 {
-  if (interfaceRep) // envelope fwd to letter
-    return interfaceRep->recommended_points(constraint_flag);
-  else // letter lacking redefinition of virtual fn.
-    return 0; // default (currently redefined only for ApproximationInterfaces)
+  return 0; // default (currently redefined only for ApproximationInterfaces)
 }
 
 
 void Interface::active_model_key(const Pecos::ActiveKey& key)
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->active_model_key(key);
-  // else: default implementation is no-op
+  // default implementation is no-op
 }
 
 
 void Interface::clear_model_keys()
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->clear_model_keys();
-  // else: default implementation is no-op
+  // default implementation is no-op
 }
 
 
 void Interface::
 approximation_function_indices(const SizetSet& approx_fn_indices)
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->approximation_function_indices(approx_fn_indices);
-  // else: default implementation is no-op
+  // default implementation is no-op
 }
-
-
-/*
-void Interface::link_multilevel_approximation_data()
-{
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->link_multilevel_approximation_data();
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual link_multilevel_"
-	 << "approximation_data() function.\n       This interface does not "
-	 << "support multilevel data." << std::endl;
-    abort_handler(-1);
-  }
-}
-*/
 
 
 void Interface::
 update_approximation(const Variables& vars, const IntResponsePair& response_pr)
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->update_approximation(vars, response_pr);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
-         << "(Variables, IntResponsePair) function.\n       This interface "
-	 << "does not support approximation updating." << std::endl;
-    abort_handler(-1);
-  }
+  Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
+       << "(Variables, IntResponsePair) function.\n       This interface "
+       << "does not support approximation updating." << std::endl;
+  abort_handler(-1);
 }
 
 
 void Interface::
 update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->update_approximation(samples, resp_map);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
-         << "(RealMatrix, IntResponseMap) function.\n       This interface "
-	 << "does not support approximation updating." << std::endl;
-    abort_handler(-1);
-  }
+  Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
+       << "(RealMatrix, IntResponseMap) function.\n       This interface "
+       << "does not support approximation updating." << std::endl;
+  abort_handler(-1);
 }
 
 
@@ -894,42 +772,30 @@ void Interface::
 update_approximation(const VariablesArray& vars_array,
 		     const IntResponseMap& resp_map)
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->update_approximation(vars_array, resp_map);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
-         << "(VariablesArray, IntResponseMap) function.\n       This interface "
-	 << "does not support approximation updating." << std::endl;
-    abort_handler(-1);
-  }
+  Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
+       << "(VariablesArray, IntResponseMap) function.\n       This interface "
+       << "does not support approximation updating." << std::endl;
+  abort_handler(-1);
 }
 
 
 void Interface::
 append_approximation(const Variables& vars, const IntResponsePair& response_pr)
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->append_approximation(vars, response_pr);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
-	 << "(Variables, IntResponsePair) function.\n       This interface "
-	 << "does not support approximation appending." << std::endl;
-    abort_handler(-1);
-  }
+  Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
+       << "(Variables, IntResponsePair) function.\n       This interface "
+       << "does not support approximation appending." << std::endl;
+  abort_handler(-1);
 }
 
 
 void Interface::
 append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->append_approximation(samples, resp_map);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
-         << "(RealMatrix, IntResponseMap) function.\n       This interface "
-	 << "does not support approximation appending." << std::endl;
-    abort_handler(-1);
-  }
+  Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
+       << "(RealMatrix, IntResponseMap) function.\n       This interface "
+       << "does not support approximation appending." << std::endl;
+  abort_handler(-1);
 }
 
 
@@ -937,14 +803,10 @@ void Interface::
 append_approximation(const VariablesArray& vars_array,
 		     const IntResponseMap& resp_map)
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->append_approximation(vars_array, resp_map);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
-         << "(VariablesArray, IntResponseMap) function.\n       This interface "
-	 << "does not support approximation appending." << std::endl;
-    abort_handler(-1);
-  }
+  Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
+       << "(VariablesArray, IntResponseMap) function.\n       This interface "
+       << "does not support approximation appending." << std::endl;
+  abort_handler(-1);
 }
 
 
@@ -952,14 +814,10 @@ void Interface::
 append_approximation(const IntVariablesMap& vars_map,
 		     const IntResponseMap&  resp_map)
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->append_approximation(vars_map, resp_map);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
-         << "(IntVariablesMap, IntResponseMap) function.\n       This interface"
-	 << " does not support approximation appending." << std::endl;
-    abort_handler(-1);
-  }
+  Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
+       << "(IntVariablesMap, IntResponseMap) function.\n       This interface"
+       << " does not support approximation appending." << std::endl;
+  abort_handler(-1);
 }
 
 
@@ -968,302 +826,207 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
 		    const IntVector&  di_l_bnds, const IntVector&  di_u_bnds,
 		    const RealVector& dr_l_bnds, const RealVector& dr_u_bnds)
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->build_approximation(c_l_bnds, c_u_bnds, di_l_bnds, di_u_bnds,
-				      dr_l_bnds, dr_u_bnds);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual build_approximation"
-         << "() function.\n       This interface does not support "
-	 << "approximations." << std::endl;
-    abort_handler(-1);
-  }
+  Cerr << "Error: Letter lacking redefinition of virtual build_approximation"
+       << "() function.\n       This interface does not support "
+       << "approximations." << std::endl;
+  abort_handler(-1);
 }
 
 
 void Interface::export_approximation()
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->export_approximation();
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual export_approximation"
-         << "() function.\n       This interface does not support exporting "
-	 << "approximations." << std::endl;
-    abort_handler(-1);
-  }
+  Cerr << "Error: Letter lacking redefinition of virtual export_approximation"
+       << "() function.\n       This interface does not support exporting "
+       << "approximations." << std::endl;
+  abort_handler(-1);
 }
 
 
 void Interface::rebuild_approximation(const BitArray& rebuild_fns)
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->rebuild_approximation(rebuild_fns);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual rebuild_"
-	 << "approximation() function.\n       This interface does not "
-	 << "support approximations." << std::endl;
-    abort_handler(-1);
-  }
+  Cerr << "Error: Letter lacking redefinition of virtual rebuild_"
+       << "approximation() function.\n       This interface does not "
+       << "support approximations." << std::endl;
+  abort_handler(-1);
 }
 
 
 void Interface::replace_approximation(const IntResponsePair& response_pr)
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->replace_approximation(response_pr);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual replace_"
-	 << "approximation(IntResponsePair) function.\n       This interface "
-	 << "does not support approximation data replacement." << std::endl;
-    abort_handler(-1);
-  }
+  Cerr << "Error: Letter lacking redefinition of virtual replace_"
+       << "approximation(IntResponsePair) function.\n       This interface "
+       << "does not support approximation data replacement." << std::endl;
+  abort_handler(-1);
 }
 
 
 void Interface::replace_approximation(const IntResponseMap& resp_map)
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->replace_approximation(resp_map);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual replace_"
-	 << "approximation(IntResponseMap) function.\n       This interface "
-	 << "does not support approximation data replacement." << std::endl;
-    abort_handler(-1);
-  }
+  Cerr << "Error: Letter lacking redefinition of virtual replace_"
+       << "approximation(IntResponseMap) function.\n       This interface "
+       << "does not support approximation data replacement." << std::endl;
+  abort_handler(-1);
 }
 
 
 void Interface::track_evaluation_ids(bool track)
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->track_evaluation_ids(track);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual track_evaluation_"
-	 << "ids() function.\n       This interface does not support "
-	 << "evaluation tracking." << std::endl;
-    abort_handler(-1);
-  }
+  Cerr << "Error: Letter lacking redefinition of virtual track_evaluation_"
+       << "ids() function.\n       This interface does not support "
+       << "evaluation tracking." << std::endl;
+  abort_handler(-1);
 }
 
 
 void Interface::pop_approximation(bool save_data)
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->pop_approximation(save_data);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual pop_approximation"
-	 << "(bool)\n       function. This interface does not support "
-	 << "approximation\n       data removal." << std::endl;
-    abort_handler(-1);
-  }
+  Cerr << "Error: Letter lacking redefinition of virtual pop_approximation"
+       << "(bool)\n       function. This interface does not support "
+       << "approximation\n       data removal." << std::endl;
+  abort_handler(-1);
 }
 
 
 void Interface::push_approximation()
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->push_approximation();
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual push_"
-	 << "approximation() function.\n       This interface does not "
-	 << "support approximation data retrieval." << std::endl;
-    abort_handler(-1);
-  }
+  Cerr << "Error: Letter lacking redefinition of virtual push_"
+       << "approximation() function.\n       This interface does not "
+       << "support approximation data retrieval." << std::endl;
+  abort_handler(-1);
 }
 
 
 bool Interface::push_available()
 {
-  if (!interfaceRep) { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual push_"
-	 << "available() function.\n       This interface does not "
-	 << "support approximation data retrieval." << std::endl;
-    abort_handler(-1);
-  }
-
-  return interfaceRep->push_available();
+  Cerr << "Error: Letter lacking redefinition of virtual push_"
+       << "available() function.\n       This interface does not "
+       << "support approximation data retrieval." << std::endl;
+  abort_handler(-1);
 }
 
 
 void Interface::finalize_approximation()
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->finalize_approximation();
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual finalize_"
-	 << "approximation() function.\n       This interface does not "
-	 << "support approximation finalization." << std::endl;
-    abort_handler(-1);
-  }
+  Cerr << "Error: Letter lacking redefinition of virtual finalize_"
+       << "approximation() function.\n       This interface does not "
+       << "support approximation finalization." << std::endl;
+  abort_handler(-1);
 }
 
 
 void Interface::clear_inactive()
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->clear_inactive();
-  //else // letter lacking redefinition of virtual fn.
   //  default: no inactive data to clear
 }
 
 
 void Interface::combine_approximation()
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->combine_approximation();
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual combine_"
-	 << "approximation() function.\n       This interface does not "
-	 << "support approximation combination." << std::endl;
-    abort_handler(-1);
-  }
+  Cerr << "Error: Letter lacking redefinition of virtual combine_"
+       << "approximation() function.\n       This interface does not "
+       << "support approximation combination." << std::endl;
+  abort_handler(-1);
 }
 
 
 void Interface::combined_to_active(bool clear_combined)
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->combined_to_active(clear_combined);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual combined_to_active()"
-	 << " function.\n       This interface does not support approximation"
-	 << " combination." << std::endl;
-    abort_handler(-1);
-  }
+  Cerr << "Error: Letter lacking redefinition of virtual combined_to_active()"
+       << " function.\n       This interface does not support approximation"
+       << " combination." << std::endl;
+  abort_handler(-1);
 }
 
 
 bool Interface::advancement_available()
 {
-  if (interfaceRep) return interfaceRep->advancement_available();
-  else              return true; // only a few cases throttle advancements
+  return true; // only a few cases throttle advancements
 }
 
 
 bool Interface::formulation_updated() const
 {
-  if (!interfaceRep) { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual formulation_updated"
-	 << "() function.\n       This interface does not define approximation "
-	 << "formulations." << std::endl;
-    abort_handler(-1);
-  }
-
-  return interfaceRep->formulation_updated();
+  Cerr << "Error: Letter lacking redefinition of virtual formulation_updated"
+       << "() function.\n       This interface does not define approximation "
+       << "formulations." << std::endl;
+  abort_handler(-1);
 }
 
 
 void Interface::formulation_updated(bool update)
 {
-  if (interfaceRep)
-    interfaceRep->formulation_updated(update);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual formulation_updated"
-	 << "() function.\n       This interface does not define approximation "
-	 << "formulations." << std::endl;
-    abort_handler(-1);
-  }
+  Cerr << "Error: Letter lacking redefinition of virtual formulation_updated"
+       << "() function.\n       This interface does not define approximation "
+       << "formulations." << std::endl;
+  abort_handler(-1);
 }
 
 
 Real2DArray Interface::
 cv_diagnostics(const StringArray& metric_types, unsigned num_folds)
 {
-  if (!interfaceRep) { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual cv_diagnostics()"
-	 << "function.\n       This interface does not "
-	 << "support cross-validation diagnostics." << std::endl;
-    abort_handler(-1);
-  }
-
-  return interfaceRep->cv_diagnostics(metric_types, num_folds);
+  Cerr << "Error: Letter lacking redefinition of virtual cv_diagnostics()"
+       << "function.\n       This interface does not "
+       << "support cross-validation diagnostics." << std::endl;
+  abort_handler(-1);
 }
 
 
 RealArray Interface::challenge_diagnostics(const String& metric_type,
 					    const RealMatrix& challenge_pts)
 {
-  if (!interfaceRep) { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual challenge_"
-	 << "diagnostics() function.\n       This interface does not "
-	 << "support challenge data diagnostics." << std::endl;
-    abort_handler(-1);
-  }
-
-  return interfaceRep->challenge_diagnostics(metric_type, challenge_pts);
+  Cerr << "Error: Letter lacking redefinition of virtual challenge_"
+       << "diagnostics() function.\n       This interface does not "
+       << "support challenge data diagnostics." << std::endl;
+  abort_handler(-1);
 }
 
 
 void Interface::clear_current_active_data()
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->clear_current_active_data();
-  //else // letter lacking redefinition of virtual fn.
-    // ApplicationInterfaces: do nothing
+  // ApplicationInterfaces: do nothing
 }
 
 
 void Interface::clear_active_data()
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->clear_active_data();
-  //else // letter lacking redefinition of virtual fn.
-    // ApplicationInterfaces: do nothing
+  // ApplicationInterfaces: do nothing
 }
 
 
 SharedApproxData& Interface::shared_approximation()
 {
-  if (!interfaceRep) { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual shared_approximation"
-         << "() function.\nThis interface does not support approximations."
-	 << std::endl;
-    abort_handler(-1);
-  }
-
-  // envelope fwd to letter
-  return interfaceRep->shared_approximation();
+  Cerr << "Error: Letter lacking redefinition of virtual shared_approximation"
+       << "() function.\nThis interface does not support approximations."
+       << std::endl;
+  abort_handler(-1);
 }
 
 
 std::vector<Approximation>& Interface::approximations()
 {
-  if (!interfaceRep) { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual approximations() "
-	 << "function.\n       This interface does not support approximations."
-	 << std::endl;
-    abort_handler(-1);
-  }
-  
-  // envelope fwd to letter
-  return interfaceRep->approximations();
+  Cerr << "Error: Letter lacking redefinition of virtual approximations() "
+       << "function.\n       This interface does not support approximations."
+       << std::endl;
+  abort_handler(-1);
 }
 
 
 const Pecos::SurrogateData& Interface::approximation_data(size_t fn_index)
 {
-  if (!interfaceRep) { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual approximation_data "
-	 << "function.\n       This interface does not support approximations."
-	 << std::endl;
-    abort_handler(-1);
-  }
-
-  // envelope fwd to letter
-  return interfaceRep->approximation_data(fn_index);
+  Cerr << "Error: Letter lacking redefinition of virtual approximation_data "
+       << "function.\n       This interface does not support approximations."
+       << std::endl;
+  abort_handler(-1);
 }
 
 
 const RealVectorArray& Interface::approximation_coefficients(bool normalized)
 {
-  if (!interfaceRep) { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual approximation_"
-	 << "coefficients function.\n       This interface does not support "
-         << "approximations." << std::endl;
-    abort_handler(-1);
-  }
-
-  // envelope fwd to letter
-  return interfaceRep->approximation_coefficients(normalized);
+  Cerr << "Error: Letter lacking redefinition of virtual approximation_"
+       << "coefficients function.\n       This interface does not support "
+       << "approximations." << std::endl;
+  abort_handler(-1);
 }
 
 
@@ -1271,83 +1034,57 @@ void Interface::
 approximation_coefficients(const RealVectorArray& approx_coeffs,
 			   bool normalized)
 {
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->approximation_coefficients(approx_coeffs, normalized);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual approximation_"
-	 << "coefficients function.\n       This interface does not support "
-         << "approximations." << std::endl;
-    abort_handler(-1);
-  }
+  Cerr << "Error: Letter lacking redefinition of virtual approximation_"
+       << "coefficients function.\n       This interface does not support "
+       << "approximations." << std::endl;
+  abort_handler(-1);
 }
 
 
 const RealVector& Interface::approximation_variances(const Variables& vars)
 {
-  if (!interfaceRep) { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual approximation_"
-	 << "variances function.\n       This interface does not support "
-         << "approximations." << std::endl;
-    abort_handler(-1);
-  }
-  
-  // envelope fwd to letter
-  return interfaceRep->approximation_variances(vars);
+  Cerr << "Error: Letter lacking redefinition of virtual approximation_"
+       << "variances function.\n       This interface does not support "
+       << "approximations." << std::endl;
+  abort_handler(-1);
 }
 
 
 const StringArray& Interface::analysis_drivers() const
 {
-  if (!interfaceRep) { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual analysis_drivers "
-	 << "function." << std::endl;
-    abort_handler(-1);
-  }
-
-  // envelope fwd to letter
-  return interfaceRep->analysis_drivers();
+  Cerr << "Error: Letter lacking redefinition of virtual analysis_drivers "
+       << "function." << std::endl;
+  abort_handler(-1);
 }
 
 
 const String2DArray& Interface::analysis_components() const
 {
-  if(interfaceRep)
-    return interfaceRep->analysis_components();
   return analysisComponents;
 }
 
 
 void Interface::discrepancy_emulation_mode(short mode)
 {
-  if (interfaceRep)
-    interfaceRep->discrepancy_emulation_mode(mode);
-  //else no-op
+  // no-op
 }
 
 
 bool Interface::evaluation_cache() const
 {
-  if (interfaceRep)
-    return interfaceRep->evaluation_cache();
-  else // letter lacking redefinition of virtual fn.
-    return false; // default
+  return false; // default
 }
 
 
 bool Interface::restart_file() const
 {
-  if (interfaceRep)
-    return interfaceRep->restart_file();
-  else // letter lacking redefinition of virtual fn.
-    return false; // default
+  return false; // default
 }
 
 
 void Interface::file_cleanup() const
 {
-  if (interfaceRep)
-    interfaceRep->file_cleanup();
-  // else no-op
+  // no-op
 }
 
 /** Rationale: The parser allows multiple user-specified interfaces with

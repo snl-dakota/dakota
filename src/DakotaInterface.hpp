@@ -289,7 +289,7 @@ public:
   /// iterator-evaluation scheduling level
   bool iterator_eval_dedicated_master() const;
 
-  /// function to check interfaceRep (does this envelope contain a letter?)
+  /// REMOVE
   bool is_null() const;
 
   /// function to return the letter
@@ -470,45 +470,39 @@ private:
   /// number of algebraic responses (objectives+constraints)
   int numAlgebraicResponses;
 
-  /// pointer to the letter (initialized only for the envelope)
-  std::shared_ptr<Interface> interfaceRep;
-
   /// pointer to an AMPL solver library (ASL) object
   ASL *asl;
 };
 
 
 inline IntResponseMap& Interface::response_map()
-{ return (interfaceRep) ? interfaceRep->rawResponseMap : rawResponseMap; }
+{ return rawResponseMap; }
 
 
 // nonvirtual functions can access letter attributes directly (only need to fwd
 // member function call when the function could be redefined).
 inline unsigned short Interface::interface_type() const
-{ return (interfaceRep) ? interfaceRep->interfaceType : interfaceType; }
+{ return interfaceType; }
 
 
 inline const String& Interface::interface_id() const
-{ return (interfaceRep) ? interfaceRep->interfaceId : interfaceId; }
+{ return interfaceId; }
 
 
 inline int Interface::evaluation_id() const
-{ return (interfaceRep) ? interfaceRep->evalIdCntr : evalIdCntr; }
+{ return evalIdCntr; }
 
 
 inline bool Interface::multi_proc_eval() const
-{ return (interfaceRep) ? interfaceRep->multiProcEvalFlag : multiProcEvalFlag; }
+{ return multiProcEvalFlag; }
 
 
 inline bool Interface::iterator_eval_dedicated_master() const
-{ return (interfaceRep) ? interfaceRep->ieDedMasterFlag : ieDedMasterFlag; }
+{ return ieDedMasterFlag; }
 
 
 inline bool Interface::is_null() const
-{ return (interfaceRep) ? false : true; }
-
-inline std::shared_ptr<Interface> Interface::interface_rep()
-{ return interfaceRep; }
+{ return false; }
 
 
 /// global comparison function for Interface

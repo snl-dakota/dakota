@@ -47,6 +47,7 @@ protected:
 
   /// return userDefinedInterface
   std::shared_ptr<Interface> derived_interface() override;
+  void derived_interface(std::shared_ptr<Interface>) override;
 
   /// return size of solnCntlCostMap, optionally enforcing lower bound
   /// of 1 solution level
@@ -214,6 +215,9 @@ private:
 
 inline std::shared_ptr<Interface> SimulationModel::derived_interface()
 { return userDefinedInterface; }
+
+inline void SimulationModel::derived_interface(std::shared_ptr<Interface> di)
+{ userDefinedInterface = di; }
 
 
 /* There is a default solution level (nominal settings) even if no

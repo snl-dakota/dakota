@@ -3481,6 +3481,11 @@ std::shared_ptr<Interface> Model::derived_interface()
 }
 
 
+void Model::derived_interface(std::shared_ptr<Interface> di)
+{
+  Cout << "Model bsae class received derived_interface \"" << di->interface_id() << "\"" << std::endl;
+}
+
 /** return the number of levels within a solution / discretization hierarchy. */
 size_t Model::solution_levels() const
 {

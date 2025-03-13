@@ -179,6 +179,7 @@ public:
   void update_from_subordinate_model(size_t depth = SZ_MAX) override;
   /// return approxInterface
   std::shared_ptr<Interface> derived_interface() override;
+  void derived_interface(std::shared_ptr<Interface>) override;
 
   /// set the relative weightings for multiple objective functions or least
   /// squares terms and optionally recurses into actualModel
@@ -743,6 +744,9 @@ inline void DataFitSurrModel::update_from_subordinate_model(size_t depth)
 
 inline std::shared_ptr<Interface> DataFitSurrModel::derived_interface()
 { return approxInterface; }
+
+inline void DataFitSurrModel::derived_interface(std::shared_ptr<Interface> di)
+{ approxInterface = di; }
 
 
 inline void DataFitSurrModel::
