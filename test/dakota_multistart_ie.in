@@ -12,16 +12,16 @@
 # Demonstrate use of parallel iterators with parallel evaluations, in
 # combination with various user overrides of the automatic parallel
 # configuration
-# 0 - iterator_servers = 2. Yields a ded. master partition.
+# 0 - iterator_servers = 2. Yields a dedicated scheduler partition.
 # 1 - Add iterator_scheduling peer to force a peer partition.
 # 2 - evaluation_servers = 2. -> 4 iterator_servers
 # 3 - i_servers = 2, e_servers = 2 -> Idle processors.
-# 4 - i_servers = 2, e_scheduling master -> 2 evaluation servers of size 3.
-# 5 - i_servers = 4, ppi = 2, i_scheduling master. Ignore sched. request.
+# 4 - i_servers = 2, e_scheduling dedicated -> 2 evaluation servers of size 3.
+# 5 - i_servers = 4, ppi = 2, i_scheduling dedicated. Ignore sched. request.
 # 6 - i_servers = 4, ppi = 2, e_servers = 2. Specify everything.
 # 7 - e_servers = 3, -> Idle processors
 # 8 - Reduced problem size to lower available eval concurrency
-# 9 - Reduced problem size + evaluation_scheduling master
+# 9 - Reduced problem size + evaluation_scheduling dedicated
 
 environment,
   top_method_pointer = 'MS'
@@ -33,7 +33,7 @@ method,
 #   iterator_servers = 2 		#p0,#p1,#p3,#p4
 #   iterator_servers = 4 		#p5,#p6
 #   processors_per_iterator 2 		#p5,#p6
-#   iterator_scheduling master 		#p5
+#   iterator_scheduling dedicated	#p5
 #   iterator_scheduling peer 		#p1
   multi_start
     method_pointer = 'PS'
@@ -56,7 +56,7 @@ interface,
 #  evaluation_servers = 2 		#p2,#p3,#p6
 #  evaluation_servers = 3 		#p7
 #  processors_per_evaluation = 2
-#  evaluation_scheduling master 	#p4,#p9
+#  evaluation_scheduling dedicated 	#p4,#p9
   fork
     analysis_driver = 'text_book'
 

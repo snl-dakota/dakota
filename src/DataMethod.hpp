@@ -143,7 +143,7 @@ enum { DEFAULT_SYNCHRONIZATION=0, BLOCKING_SYNCHRONIZATION,
        NONBLOCKING_SYNCHRONIZATION };
 
 // define special values for Iterator and Interface scheduling
-enum { DEFAULT_SCHEDULING, MASTER_SCHEDULING, PEER_SCHEDULING,
+enum { DEFAULT_SCHEDULING, DEDICATED_SCHEDULER_DYNAMIC, PEER_SCHEDULING,
        PEER_DYNAMIC_SCHEDULING, PEER_STATIC_SCHEDULING, DYNAMIC_SCHEDULING,
        STATIC_SCHEDULING };
 // define special values for ParallelLibrary configuration logic
@@ -386,8 +386,8 @@ public:
   /// number of processors for each concurrent iterator partition (from
   /// the \c processors_per_iterator specification)
   int procsPerIterator;
-  /// type of scheduling ({DEFAULT,MASTER,PEER}_SCHEDULING) used in concurrent
-  /// iterator parallelism (from the \c iterator_scheduling specification)
+  /// type of scheduling used in concurrent iterator parallelism
+  /// (from the \c iterator_scheduling specification)
   short iteratorScheduling;
 
   /// array of methods for the sequential and collaborative hybrid

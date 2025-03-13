@@ -79,7 +79,7 @@ void ParallelLibrary::init_mpi_comm()
     pl.serverIntraComm  = mpiManager.dakota_mpi_comm();
     pl.serverCommRank   = mpiManager.world_rank();
     pl.serverCommSize   = pl.procsPerServer   = mpiManager.world_size();
-    pl.serverMasterFlag = (pl.serverCommRank == 0);
+    pl.serverLeaderFlag = (pl.serverCommRank == 0);
     // align specification settings, should they be queried:
     pl.serverId         = pl.numServers       = 1;
     pl.procsPerServer   = pl.serverCommSize;
@@ -156,15 +156,15 @@ init_communicators(const ParallelLevel& parent_pl, int num_servers,
   int capacity_multiplier = std::max(asynch_local_concurrency, 1);
   bool print_rank         = (parent_pl.serverCommRank == 0);
 
-  // resolve_inputs selects master vs. peer scheduling
+  // resolve_inputs selects dedicated scheduler vs. peer scheduling
   resolve_inputs(child_pl, parent_pl.serverCommSize, min_procs_per_server,
 		 max_procs_per_server, max_concurrency, capacity_multiplier,
 		 default_config, scheduling_override, peer_dynamic_avail,
 		 print_rank);
 
   // create child_pl by partitioning parent_pl 
-  if (child_pl.dedicatedMasterFlag)
-    split_communicator_dedicated_master(parent_pl, child_pl);
+  if (child_pl.dedicatedSchedulerFlag)
+    split_communicator_dedicated_scheduler(parent_pl, child_pl);
   else
     split_communicator_peer_partition(parent_pl,   child_pl);
 
@@ -180,14 +180,14 @@ init_communicators(const ParallelLevel& parent_pl, int num_servers,
 // Hierarchy of partitioning logic sophistication
 // ----------------------------------------------
 // low performance: 
-//   always use a master (p_min equation from the MDO2000 paper theory)
+//   always use a ded scheduler (p_min equation from the MDO2000 paper theory)
 // 
 // medium performance: 
-//   only use a master if tau_i > 1 
+//   only use a ded scheduler if tau_i > 1 
 //   (may be a first step towards distributed scheduling)
 // 
 // high performance: 
-//   only use a master if tau_i > 1 and some n_ij > tau_i
+//   only use a dedicated scheduler if tau_i > 1 and some n_ij > tau_i
 //   (adaptive determination of a static schedule)
 
 /** This function is responsible for the "auto-configure" intelligence of
@@ -218,7 +218,7 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
   int&  num_servers      = child_pl.numServers;
   int&  procs_per_server = child_pl.procsPerServer;
   int&  proc_remainder   = child_pl.procRemainder;
-  bool& ded_master       = child_pl.dedicatedMasterFlag;
+  bool& ded_scheduler    = child_pl.dedicatedSchedulerFlag;
 
 #ifdef MPI_DEBUG
   if (print_rank)
@@ -232,7 +232,8 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
 	 << scheduling_override << std::endl;
 #endif
 
-  const bool master_override = (scheduling_override == MASTER_SCHEDULING);
+  const bool ded_sched_override
+    = (scheduling_override == DEDICATED_SCHEDULER_DYNAMIC);
   const bool peer_override
     = (scheduling_override == PEER_SCHEDULING ||
        scheduling_override == PEER_DYNAMIC_SCHEDULING ||
@@ -274,7 +275,7 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
     // ------------------------
     // insufficient avail_procs
     // ------------------------
-    num_servers = 1; procs_per_server = 1; ded_master = false; // peer partition
+    num_servers = 1; procs_per_server = 1; ded_scheduler = false; // peer partition
   }
   else if (num_servers > 0 && procs_per_server > 0) { // Data defaults are 0
     // ------------------------------------------
@@ -298,15 +299,15 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
 
     int total_request = num_servers * procs_per_server;
     if (total_request == avail_procs) {
-      ded_master = false;
-      if (master_override && print_rank)
-	Cerr << "\nWarning: user selection of master scheduling cannot be "
+      ded_scheduler = false;
+      if (ded_sched_override && print_rank)
+	Cerr << "\nWarning: user selection of dedicated scheduler cannot be "
 	     << "supported in this partition.\n         Overriding to peer "
 	     << "partition.\n\n";
     }
     else if (total_request < avail_procs) {
-      ded_master = !peer_override; // dedicate a master if no peer override
-      if (ded_master) ++total_request;
+      ded_scheduler = !peer_override;// dedicate a scheduler if no peer override
+      if (ded_scheduler) ++total_request;
       if (total_request < avail_procs && print_rank)
 	Cerr << "\nWarning: user override of server count and server size "
 	     << "results in idle processors\n         (request = "
@@ -342,28 +343,28 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
       abort_handler(-1);
     }
     else if (avail_procs == min_procs) {
-      ded_master = false;
-      if (master_override && print_rank)
-	Cerr << "\nWarning: user selection of master scheduling cannot be "
+      ded_scheduler = false;
+      if (ded_sched_override && print_rank)
+	Cerr << "\nWarning: user selection of dedicated scheduler cannot be "
 	     << "supported in this partition.\n         Overriding to peer "
 	     << "partition.\n\n";
     }
-    else if (master_override)
-      ded_master = true;
+    else if (ded_sched_override)
+      ded_scheduler = true;
     else if (peer_override || num_servers == 1 ||
 	     max_concurrency <= num_servers * capacity_multiplier)
-      ded_master = false;
+      ded_scheduler = false;
     // peer dynamic requires pps = 1 with no remainder (else use remainder to
-    // dedicate a master).  This turns out to be redundant of the check above.
+    // dedicate a scheduler).  This turns out to be redundant of check above.
     //else if (peer_dynamic_avail && num_servers == avail_procs &&
     //         min_procs_per_server == 1)
-    //  ded_master = false;
+    //  ded_scheduler = false;
     else
       // since idle procs can be reallocated in this case, we don't need to be
-      // too concerned about a ded master partition inducing addtl remainder
-      ded_master = true;
+      // too concerned about a ded scheduler partition inducing addtl remainder
+      ded_scheduler = true;
 
-    int server_procs = (ded_master) ? avail_procs - 1 : avail_procs;
+    int server_procs = (ded_scheduler) ? avail_procs - 1 : avail_procs;
     procs_per_server = server_procs / num_servers; // >= min_procs_per_server
     if (procs_per_server >= max_procs_per_server) {// include = due to remainder
       procs_per_server = max_procs_per_server; // truncate if necessary
@@ -410,60 +411,62 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
 
     proc_remainder = 0; // all cases, no freedom to increment server sizes
     if (procs_per_server == avail_procs) {
-      ded_master = false;
-      if (master_override && print_rank)
-	Cerr << "\nWarning: user selection of master scheduling cannot be "
+      ded_scheduler = false;
+      if (ded_sched_override && print_rank)
+	Cerr << "\nWarning: user selection of dedicated scheduler cannot be "
 	     << "supported in this partition.\n         Overriding to peer "
 	     << "partition.\n\n";
     }
-    else if (master_override)
-      ded_master = true;
+    else if (ded_sched_override)
+      ded_scheduler = true;
     else if (peer_override)
-      ded_master = false;
-    else { // neither override: try peer, then master
+      ded_scheduler = false;
+    else { // neither override: try peer, then ded scheduler
       int peer_servers   = avail_procs / procs_per_server,
 	  peer_remainder = avail_procs % procs_per_server;
       // Since we will not carry a proc_remainder, the logic below currently
-      // dedicates a master if there are excess processors, even if not needed
+      // dedicates a scheduler if there are excess procs, even if not needed
       // to cover max_concurrency.  We also use special logic to avoid inducing
-      // high idle proc counts due to selection of a master partition in the
+      // high idle proc counts due to selection of a ded sched partition in the
       // case of excess concurrency.  For example:
-      // > pps = 5, avail = 16: always dedicate master from remainder
-      // > pps = 5, avail = 15: avoid inducing 4 idle due to master selection
+      // > pps = 5, avail = 16: always dedicate scheduler from remainder
+      // > pps = 5, avail = 15: avoid inducing 4 idle due to ded sched selection
       if (peer_remainder)
-	ded_master = true; // if any remainder, dedicate 1 for scheduling
+	ded_scheduler = true; // if any remainder, dedicate 1 for scheduling
       else if ( peer_servers == 1 ||// avail_procs not enough for 2 full servers
 		max_concurrency <= peer_servers * capacity_multiplier ||
 		( peer_dynamic_avail && procs_per_server == 1 ) )
-	ded_master = false;
+	ded_scheduler = false;
       else {
 	// num_servers could drop from 2 to 1 with one less processor, and 2
-	// peer servers will always be better than 1 ded master server:
-	// > we generally choose n ded master servers over n+1 peer servers for
+	// peer servers will always be better than ded sched + 1 server:
+	// > we generally choose ded sched + n servers over n+1 peer servers for
 	//   n>1 when max_concurrency indicates need for dynamic scheduling
-	// > but we try to avoid bad cases, when master selection is wasteful
+	// > but we try to avoid bad cases, when ded sched selection is wasteful
 	//   due to significant increase in idle procs
-	int master_servers   = (avail_procs - 1) / procs_per_server,
-	    master_remainder = (avail_procs - 1) % procs_per_server;
-	// We seek a simple heuristic that disallows wasteful master partitions:
-	// > simple enforcement of !master_remainder is insufficient since this
-	//   would eval to true for any pps > 1 (peer_remainder is 0; therefore,
-	//   master_remainder = pps-1)
+	int ded_sched_servers   = (avail_procs - 1) / procs_per_server,
+	    ded_sched_remainder = (avail_procs - 1) % procs_per_server;
+	// We seek a simple heuristic that prevents wasteful dedicated scheduler
+	// partitions:
+	// > simple enforcement of !ded_sched_remainder is insufficient since
+	//   this would eval to true for any pps > 1 (peer_remainder is 0;
+	//   therefore, ded_sched_remainder = pps-1)
 	// > enforcement that we don't waste some portion (half) of a server is
-	//   also insufficiently general: master_remainder > pps / 2 is true
-	//   for all pps > 2 (since master_remainder = pps-1).
+	//   also insufficiently general: ded_sched_remainder > pps / 2 is true
+	//   for all pps > 2 (since ded_sched_remainder = pps-1).
 	// > It appears we need to assess wastefulness more globally, e.g., if
 	//   idle / available > some %.  In the example above, 4 idle / 15 avail
-	//   increases idle percentage from 0% to 27% due to a master partition.
+	//   increases idle percentage from 0% to 27% due to a dedicated
+	//   scheduler partition.
 	// > A more complicated formula would need to estimate the value to be
 	//   derived from dynamic scheduling in term of an excess concurrency
 	//   factor (# of scheduling passes), expected job heterogeneity, etc.
-	ded_master
-	  = (master_servers > 1 && master_remainder <= avail_procs / 10);
+	ded_scheduler
+	  = (ded_sched_servers > 1 && ded_sched_remainder <= avail_procs / 10);
       }
     }
 
-    int server_procs = (ded_master) ? avail_procs - 1 : avail_procs;
+    int server_procs = (ded_scheduler) ? avail_procs - 1 : avail_procs;
     num_servers = server_procs / procs_per_server;
     if (server_procs % procs_per_server && print_rank)
       Cerr << "\nWarning: user override of server size results in idle "
@@ -476,33 +479,33 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
     // neither num_servers nor procs_per_server specified -> auto config
     // --------------------------------------------------
     if (min_procs_per_server == avail_procs) {
-      if (master_override && print_rank)
-        Cerr << "\nWarning: user selection of master scheduling cannot be "
+      if (ded_sched_override && print_rank)
+        Cerr << "\nWarning: user selection of a dedicated scheduler cannot be "
 	     << "supported in this partition\n         due to minimum server "
 	     << "size (" << min_procs_per_server << ").  Overriding to peer "
 	     << "partition.\n\n";
-      procs_per_server = avail_procs; num_servers = 1; ded_master = false;
+      procs_per_server = avail_procs; num_servers = 1; ded_scheduler = false;
     }
     else if (default_config == PUSH_DOWN) {
       // PUSH_UP is informed by min_procs_per_server, flowing bottom-up from
       // user overrides; PUSH_DOWN is informed by max_procs_per_server, flowing
       // bottom-up from concurrency limits at each level.
-      if (master_override)
-	ded_master = true;
+      if (ded_sched_override)
+	ded_scheduler = true;
       else if (peer_override)
-        ded_master = false;
-      else { // try peer, then master
+        ded_scheduler = false;
+      else { // try peer, then dedicated scheduler
 	// maximize procs_per_server for PUSH_DOWN
 	int peer_pps     = std::min(max_procs_per_server, avail_procs),
 	    peer_servers = avail_procs / peer_pps;
 	if (num_servers == 1 || (peer_dynamic_avail && peer_pps == 1) ||
 	    max_concurrency <= peer_servers * capacity_multiplier)
-	  ded_master = false;
-	else // ded_master if num_servers >= 2 in calculation to follow
+	  ded_scheduler = false;
+	else // ded_scheduler if num_servers >= 2 in calculation to follow
 	     // avail_procs - 1 >= 2 * pps
-	  ded_master = (avail_procs >= 2 * max_procs_per_server + 1);
+	  ded_scheduler = (avail_procs >= 2 * max_procs_per_server + 1);
       }
-      int server_procs = (ded_master) ? avail_procs - 1 : avail_procs;
+      int server_procs = (ded_scheduler) ? avail_procs - 1 : avail_procs;
       procs_per_server = std::min(max_procs_per_server, server_procs),
       num_servers      = server_procs / procs_per_server;
       if (procs_per_server == max_procs_per_server) {
@@ -525,25 +528,25 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
       // round down available servers
       int avail_servers = avail_procs / min_procs_per_server;
 
-      if (master_override) // master partition (dynamic scheduling)
-	ded_master = true;
+      if (ded_sched_override) // ded scheduler partition (dynamic scheduling)
+	ded_scheduler = true;
       else if (peer_override || loaded_servers <= avail_servers)
-        ded_master = false; // tau_i = n_ij_max -> static scheduling
+        ded_scheduler = false; // tau_i = n_ij_max -> static scheduling
 
       // We have excess concurrency (loaded_servers > avail_servers yields
       // procs_per_server = min_procs_per_server, num_servers =
       // server_procs / min_procs_per_server): use peer dynamic if available,
-      // then master if num_servers > 1, then revert to peer (static)
+      // then ded scheduler if num_servers > 1, then revert to peer (static)
       else if (peer_dynamic_avail && min_procs_per_server == 1) // remainder=0
-	ded_master = false;
-      else // ded_master if num_servers >= 2 in calculation to follow
-	ded_master = (avail_procs >= 2 * min_procs_per_server + 1);
+	ded_scheduler = false;
+      else // ded_scheduler if num_servers >= 2 in calculation to follow
+	ded_scheduler = (avail_procs >= 2 * min_procs_per_server + 1);
 
       // As for the num_servers specification case, we don't need to be as
-      // concerned with selection of a wasteful master partition (increased
-      // idleness), since any partition remainder gets reallocated.
+      // concerned with selection of a wasteful dedicated scheduler partition
+      // (increased idleness), since any partition remainder gets reallocated.
 
-      int server_procs = (ded_master) ? avail_procs - 1 : avail_procs;
+      int server_procs = (ded_scheduler) ? avail_procs - 1 : avail_procs;
       num_servers = std::min(server_procs / min_procs_per_server,
 			     loaded_servers);
       procs_per_server = server_procs / num_servers;
@@ -573,15 +576,15 @@ resolve_inputs(ParallelLevel& child_pl, int avail_procs,
   if (print_rank)
     Cout << "ParallelLibrary::resolve_inputs() returns num_servers = "
 	 << num_servers << " procs_per_server = " << procs_per_server
-	 << " proc_remainder = " << proc_remainder << " dedicated master = "
-	 << ded_master << std::endl;
+	 << " proc_remainder = " << proc_remainder << " dedicated scheduler = "
+	 << ded_scheduler << std::endl;
 #endif
 }
 
 
 void ParallelLibrary::
-split_communicator_dedicated_master(const ParallelLevel& parent_pl,
-				    ParallelLevel& child_pl)
+split_communicator_dedicated_scheduler(const ParallelLevel& parent_pl,
+				       ParallelLevel& child_pl)
 {
   // ----------------------------------------------------------------
   // Check to see if resulting partition sizes require comm splitting
@@ -600,7 +603,7 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
   // ------------------------------------------------------
 
   IntArray start_rank(child_pl.numServers);
-  int color = 0; // reassigned unless master proc.
+  int color = 0; // reassigned unless ded scheduler proc.
   // addtl_procs manages case where procRemainder > numServers that can occur
   // for large procsPerServer --> ensures that proc_rem_cntr < numServers
   int i, color_cntr = 1, end_rank = 0,
@@ -631,9 +634,9 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
   if (end_rank+1 < parent_pl.serverCommSize)
     child_pl.idlePartition = true;
 
-  // verify that all processors except master have a color
+  // verify that all processors except dedicated scheduler have a color
   if (parent_pl.serverCommRank && !color) {
-    Cerr << "\nError: slave processor " << parent_pl.serverCommRank 
+    Cerr << "\nError: server processor " << parent_pl.serverCommRank 
          << " missing color assignment" << std::endl;
     abort_handler(-1);
   }
@@ -644,23 +647,23 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
   if (child_pl.procsPerServer == 1 && !child_pl.procRemainder &&
       !child_pl.idlePartition) {
     copy_as_hub_server_comm(parent_pl, child_pl);
-    child_pl.serverMasterFlag = (parent_pl.serverCommRank > 0);
-    child_pl.serverId = parent_pl.serverCommRank;// 0 = master, 1/2/... = slaves
+    child_pl.serverLeaderFlag = (parent_pl.serverCommRank > 0);
+    child_pl.serverId = parent_pl.serverCommRank;// 0=ded sched, 1/2/...=servers
     return;
   }
   // special case: assign child = parent without partitioning
-  if (child_pl.numServers < 1) { // no check on idlePartition for ded master
+  if (child_pl.numServers < 1) { // no check on idlePartition for ded scheduler
     // complete deep copy can be a problem since idle partition must
     // participate in MPI_Comm_dup() collective for hubServerInterComms
     //child_pl.copy(parent_pl);
     // but partial copy of serverIntraComm is OK
     copy_as_server_comm(parent_pl, child_pl);
-    child_pl.serverId = 1; // 1st peer, no dedication of master
+    child_pl.serverId = 1; // 1st peer, no dedication of scheduler
     return;
   }
 
 #ifdef DAKOTA_HAVE_MPI
-  // messagePass and commSplitFlag are the same for dedicated master
+  // messagePass and commSplitFlag are the same for dedicated scheduler
   child_pl.messagePass = child_pl.commSplitFlag = true;
 
   MPI_Comm_split(parent_pl.serverIntraComm, color, parent_pl.serverCommRank,
@@ -668,15 +671,15 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
   MPI_Comm_rank(child_pl.serverIntraComm, &child_pl.serverCommRank);
   MPI_Comm_size(child_pl.serverIntraComm, &child_pl.serverCommSize);
 
-  child_pl.serverId = color; // master = 0, slaves = 1/2/3/.../n, idle = n+1
-  // child partition master excludes parent dedicated master:
-  child_pl.serverMasterFlag
+  child_pl.serverId = color; // scheduler = 0, servers = 1/2/3/.../n, idle = n+1
+  // child partition dedicated scheduler excludes parent dedicated scheduler:
+  child_pl.serverLeaderFlag
     = (child_pl.serverCommRank == 0 && parent_pl.serverCommRank);
 
   // Create intercommunicators.  All processors in both intracommunicators 
-  // (child_pl.serverIntraComm for master and slaves) must participate in call
-  // with matching tags (tag = color on slave side and = i+1 on master side).
-  // See example on p. 252 of MPI: The Complete Reference.
+  // (child_pl.serverIntraComm for scheduler and servers) must participate in
+  // call with matching tags (tag = color on server side and = i+1 on scheduler
+  // side).  See example on p. 252 of MPI: The Complete Reference.
   if (parent_pl.serverCommRank == 0) {
     int num_hs_ic = child_pl.numServers;
     if (child_pl.idlePartition) ++num_hs_ic;
@@ -698,18 +701,18 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
        << child_pl.serverCommRank << " child comm size = "
        << child_pl.serverCommSize << '\n';
   int size, remote_size;
-  if (parent_pl.serverCommRank==0) { // the dedicated master
+  if (parent_pl.serverCommRank==0) { // the dedicated scheduler
     for (int i=0; i<child_pl.numServers; ++i) {
       MPI_Comm_size(child_pl.hubServerInterComms[i], &size);
       MPI_Comm_remote_size(child_pl.hubServerInterComms[i], &remote_size);
-      Cout << "Master: size = " << size << " inter_comms[" << i
+      Cout << "Scheduler: size = " << size << " inter_comms[" << i
            << "] remote_size = " << remote_size << '\n';
     }
   }
-  else { // slaves
+  else { // servers
     MPI_Comm_size(child_pl.hubServerInterComm, &size);
     MPI_Comm_remote_size(child_pl.hubServerInterComm, &remote_size);
-    Cout << "Slave: size = " << size <<" inter_comm remote_size = " 
+    Cout << "Server: size = " << size <<" inter_comm remote_size = " 
          << remote_size << '\n';
   }
   Cout << std::flush;
@@ -801,7 +804,7 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
     //       approach required for future contexts.
     if (child_pl.procsPerServer == 1 && !child_pl.procRemainder) {//1-proc peers
       copy_as_hub_server_comm(parent_pl, child_pl);
-      child_pl.serverMasterFlag = true;
+      child_pl.serverLeaderFlag = true;
       child_pl.serverId = parent_pl.serverCommRank + 1;//peer id's = 1/2/3/.../n
       return;
     }
@@ -828,12 +831,12 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
   MPI_Comm_size(child_pl.serverIntraComm, &child_pl.serverCommSize);
 
   child_pl.serverId = color; // peer id's = 1/2/3/.../n, idle id = n+1
-  // child partition master (don't need to exclude parent master):
-  child_pl.serverMasterFlag = (child_pl.serverCommRank == 0);
+  // child partition doesn't need to exclude parent dedicated scheduler:
+  child_pl.serverLeaderFlag = (child_pl.serverCommRank == 0);
 
   // Create intercommunicators.  Current implementation is very similar to
-  // master-slave in that only the 1st server has an array of intercomms.  This
-  // reflects the current ApplicationInterface::static_schedule_message_passing
+  // scheduler-server in that only the 1st server has an array of intercomms.
+  // This reflects current ApplicationInterface::static_schedule_message_passing
   // design.  A more general implementation would give each peer an array of 
   // intercomms, and could easily be supported in the future if needed.
   if (child_pl.serverId == 1) {
@@ -903,7 +906,7 @@ void ParallelLibrary::print_configuration()
   // Send partition info up the chain to worldRank == 0
   // --------------------------------------------------
   // If meta-iterator, iterator, or evaluation scheduling has a dedicated
-  // master, then only the servers for these parallelism levels participate
+  // scheduler, then only the servers for these parallelism levels participate
   // in server partitioning.  This may require multiple messages to jump
   // these gaps in partitioning participation.  Logic involves a combination
   // of top-down restriction to server ids = 1 and bottom-up messaging to 
@@ -925,8 +928,8 @@ void ParallelLibrary::print_configuration()
   int tag = 1001;
   if (server1_messaging) {
     ie_pl.copy_config(*ie_iter);
-    if (ie_iter->dedicatedMasterFlag) {
-      // EA SEND: eval server 1 master sends ea data to iterator server 1 master
+    if (ie_iter->dedicatedSchedulerFlag) {
+      // EA SEND: eval server 1 sends ea data to iterator server 1
       if (ie_iter->serverId == 1 && ie_iter->serverCommRank == 0) {
 	MPIPackBuffer send_buffer;
 	send_buffer << dak_par_levels << *ea_iter;
@@ -934,7 +937,7 @@ void ParallelLibrary::print_configuration()
 	send_ie(buffer_len,  0, tag);
 	send_ie(send_buffer, 0, tag+1);
       }
-      // EA RECV: iter server 1 master recvs ea data from eval server 1 master
+      // EA RECV: iter server 1 recvs ea data from eval server 1
       else if (ie_iter->serverId == 0) { // last mi_iter
 	MPI_Status status;
 	recv_ie(buffer_len,  1, tag,   status);
@@ -957,8 +960,8 @@ void ParallelLibrary::print_configuration()
     if (server1_messaging) {
       ParLevLIter mi_iter = mi_iters[i];
       mi_pls[i].copy_config(*mi_iter);
-      // SEND: iter server 1 master sends combined info to meta-iter master
-      if (mi_iter->dedicatedMasterFlag) {
+      // SEND: iter server 1 sends combined info to meta-iterator
+      if (mi_iter->dedicatedSchedulerFlag) {
 	tag += 2;
 	if (mi_iter->serverId == 1 && mi_iter->serverCommRank == 0) {
 	  MPIPackBuffer send_buffer;
@@ -969,7 +972,7 @@ void ParallelLibrary::print_configuration()
 	  send_mi(buffer_len,  0, tag,   i);
 	  send_mi(send_buffer, 0, tag+1, i);
 	}
-	// RECV: if ded master, must receive data from serverId 1
+	// RECV: if ded scheduler, must receive data from iter server 1
 	else if (mi_iter->serverId == 0) {
 	  MPI_Status status;
 	  recv_mi(buffer_len,  1, tag,   status, i);
@@ -998,22 +1001,22 @@ void ParallelLibrary::print_configuration()
       if (mi_pl.messagePass) {
 	Cout << "concurrent iterators\t  " << std::setw(4) << mi_pl.numServers
 	     << "\t\t   " << std::setw(4) << mi_pl.procsPerServer << "\t\t   ";
-	if (mi_pl.dedicatedMasterFlag) Cout << "ded. master\n";
-	else                           Cout << "peer\n";
+	if (mi_pl.dedicatedSchedulerFlag) Cout << "ded. sched.\n";
+	else                              Cout << "peer\n";
       }
     }
 
     // Iterator diagnostics
     Cout << "concurrent evaluations\t  " << std::setw(4) << ie_pl.numServers
 	 << "\t\t   " << std::setw(4) << ie_pl.procsPerServer << "\t\t   ";
-    if (ie_pl.dedicatedMasterFlag) Cout << "ded. master\n";
-    else                           Cout << "peer\n";
+    if (ie_pl.dedicatedSchedulerFlag) Cout << "ded. sched.\n";
+    else                              Cout << "peer\n";
 
     // Evaluation diagnostics
     Cout << "concurrent analyses\t  " << std::setw(4) << ea_pl.numServers
 	 << "\t\t   " << std::setw(4) << ea_pl.procsPerServer << "\t\t   ";
-    if (ea_pl.dedicatedMasterFlag) Cout << "ded. master\n";
-    else                           Cout << "peer\n";
+    if (ea_pl.dedicatedSchedulerFlag) Cout << "ded. sched.\n";
+    else                              Cout << "peer\n";
 
     // Analysis diagnostics
     int anal_par_levels
@@ -1034,7 +1037,7 @@ void ParallelLibrary::print_configuration()
     used, create and tag multiple output streams in order to prevent
     jumbled output. Manage restart file(s) by processing any incoming
     evaluations from an old restart file and by setting up the binary
-    output stream for new evaluations.  Only master iterator
+    output stream for new evaluations.  Only scheduler iterator
     processor(s) read & write restart information.  This function must
     follow init_iterator_communicators so that restart can be managed
     properly for concurrent iterator strategies.  In the case of
@@ -1047,8 +1050,8 @@ void ParallelLibrary::push_output_tag(const ParallelLevel& pl)
   // redirection to OutputManager (with help from ProgramOptions).
 
   // If an idle partition, then no output handling to manage.  Note that a
-  // meta-iterator dedicated master must participate in the broadcasts, but
-  // returns thereafter since it does not redirect its output, read from
+  // meta-iterator dedicated scheduler must participate in the broadcasts,
+  // but returns thereafter since it does not redirect its output, read from
   // restart files, etc.
   if (pl.serverId > pl.numServers)
     return;
@@ -1057,7 +1060,7 @@ void ParallelLibrary::push_output_tag(const ParallelLevel& pl)
   // As we recurse, we broadcast key data from hubServerCommRank == 0
   // to all other iterator servers in this ParallelLevel
 
-  // Synchronize necessary data from hubServerCommRank 0 to iterator masters
+  // Synchronize necessary data from hubServerCommRank 0 to iterator schedulers
   bool stdout_redirect_required = false, restart_redirect_required = false;
   if (pl.serverCommRank == 0) {
 
@@ -1065,7 +1068,7 @@ void ParallelLibrary::push_output_tag(const ParallelLevel& pl)
     restart_redirect_required = true;
     // output redirection is on only if explicit user override or required
     // for segregation of iterator streams
-    stdout_redirect_required = (pl.numServers > 1 || pl.dedicatedMasterFlag);
+    stdout_redirect_required = (pl.numServers > 1 || pl.dedicatedSchedulerFlag);
     // for std error, assume that this should remain directed to the screen
     // unless an explicit "-e" command line option has been given (managed
     // in OutputManager).
@@ -1104,7 +1107,7 @@ void ParallelLibrary::push_output_tag(const ParallelLevel& pl)
   // OutputManager as it may be managing open file streams and the state would
   // be hard to preserve.  (May later encapsulate the broadcast there though.)
 
-  // This returns a meta-iterator dedicated master processor, if present.
+  // This returns a meta-iterator dedicated scheduler processor, if present.
   if (pl.serverId == 0)
     return;
 
@@ -1114,16 +1117,16 @@ void ParallelLibrary::push_output_tag(const ParallelLevel& pl)
   // create new partition leaders that require the hierarchical tag context 
   // from above to properly redirect.
   String ctr_tag;
-  if (pl.numServers > 1 || pl.dedicatedMasterFlag) {
+  if (pl.numServers > 1 || pl.dedicatedSchedulerFlag) {
     // could change to numServers>0 since it would still be nice to organize
     // the output for 1 server in ConcurrentMetaIterator
     ctr_tag += "." + std::to_string(pl.serverId);
   }
 
-  // Now that all iterator masters have the output filename settings and local
-  // tags have been added, initialize output streams, restart, databases, etc.,
-  // for each iterator master.  Note that the opening of files on processors
-  // for which there is no output is avoided.
+  // Now that all iterator schedulers have the output filename settings and
+  // local tags have been added, initialize output streams, restart, databases,
+  // etc., for each iterator scheduler.  Note that the opening of files on
+  // processors for which there is no output is avoided.
 
   // append tag and manage file open/close as needed
   outputManager.push_output_tag(ctr_tag, programOptions,
@@ -1134,7 +1137,7 @@ void ParallelLibrary::push_output_tag(const ParallelLevel& pl)
 
 void ParallelLibrary::pop_output_tag(const ParallelLevel& pl)
 {
-  if (pl.serverMasterFlag && pl.serverId <= pl.numServers)
+  if (pl.serverLeaderFlag && pl.serverId <= pl.numServers)
     outputManager.pop_output_tag();
 }
 
@@ -1257,7 +1260,7 @@ void ParallelLibrary::output_timers()
     if (mpiManager.world_rank()==0) {
       Real runWC = parallel_time();
       Cout << std::setprecision(6) << std::resetiosflags(std::ios::floatfield)
-	   << "DAKOTA master processor execution time in seconds:\n"
+	   << "DAKOTA scheduler processor execution time in seconds:\n"
 	   << "  Total CPU        = " << std::setw(10) << totalCPU;
       time_attrs.push_back(ResultAttribute<Real>("total_cpu_time", totalCPU));
 #ifdef DAKOTA_UTILIB

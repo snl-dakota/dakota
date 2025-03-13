@@ -105,7 +105,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       method_pointer_list STRINGLIST {N_mdm(strL,hybridMethodPointers)}
       [ iterator_servers INTEGER > 0 {N_mdm(int,iteratorServers)} ]
       [ iterator_scheduling {0}
-        master {N_mdm(type,iteratorScheduling_MASTER_SCHEDULING)}
+        dedicated {N_mdm(type,iteratorScheduling_DEDICATED_SCHEDULER_DYNAMIC)}
         |
         peer {N_mdm(type,iteratorScheduling_PEER_SCHEDULING)}
        ]
@@ -126,7 +126,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       [ local_search_probability REAL {N_mdm(Real,hybridLSProb)} ]
       [ iterator_servers INTEGER > 0 {N_mdm(int,iteratorServers)} ]
       [ iterator_scheduling {0}
-        master {N_mdm(type,iteratorScheduling_MASTER_SCHEDULING)}
+        dedicated {N_mdm(type,iteratorScheduling_DEDICATED_SCHEDULER_DYNAMIC)}
         |
         peer {N_mdm(type,iteratorScheduling_PEER_SCHEDULING)}
        ]
@@ -141,7 +141,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       method_pointer_list STRINGLIST {N_mdm(strL,hybridMethodPointers)}
       [ iterator_servers INTEGER > 0 {N_mdm(int,iteratorServers)} ]
       [ iterator_scheduling {0}
-        master {N_mdm(type,iteratorScheduling_MASTER_SCHEDULING)}
+        dedicated {N_mdm(type,iteratorScheduling_DEDICATED_SCHEDULER_DYNAMIC)}
         |
         peer {N_mdm(type,iteratorScheduling_PEER_SCHEDULING)}
        ]
@@ -161,7 +161,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ starting_points REALLIST {N_mdm(RealDL,concurrentParameterSets)} ]
     [ iterator_servers INTEGER > 0 {N_mdm(int,iteratorServers)} ]
     [ iterator_scheduling {0}
-      master {N_mdm(type,iteratorScheduling_MASTER_SCHEDULING)}
+      dedicated {N_mdm(type,iteratorScheduling_DEDICATED_SCHEDULER_DYNAMIC)}
       |
       peer {N_mdm(type,iteratorScheduling_PEER_SCHEDULING)}
      ]
@@ -180,7 +180,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ weight_sets ALIAS multi_objective_weight_sets REALLIST {N_mdm(RealDL,concurrentParameterSets)} ]
     [ iterator_servers INTEGER > 0 {N_mdm(int,iteratorServers)} ]
     [ iterator_scheduling {0}
-      master {N_mdm(type,iteratorScheduling_MASTER_SCHEDULING)}
+      dedicated {N_mdm(type,iteratorScheduling_DEDICATED_SCHEDULER_DYNAMIC)}
       |
       peer {N_mdm(type,iteratorScheduling_PEER_SCHEDULING)}
      ]
@@ -6988,7 +6988,7 @@ KEYWORD model {N_mom3(start,0,stop)}
     ( sub_method_pointer STRING {N_mom(str,subMethodPointer)}
       [ iterator_servers INTEGER > 0 {N_mom(int,subMethodServers)} ]
       [ iterator_scheduling {0}
-        master {N_mom(type,subMethodScheduling_MASTER_SCHEDULING)}
+        dedicated {N_mom(type,subMethodScheduling_DEDICATED_SCHEDULER_DYNAMIC)}
         |
         peer {N_mom(type,subMethodScheduling_PEER_SCHEDULING)}
        ]
@@ -7497,7 +7497,7 @@ KEYWORD interface {N_ifm3(start,0,stop)}
    ]
   [ evaluation_servers INTEGER > 0 {N_ifm(int,evalServers)} ]
   [ evaluation_scheduling {0}
-    master {N_ifm(type,evalScheduling_MASTER_SCHEDULING)}
+    dedicated {N_ifm(type,evalScheduling_DEDICATED_SCHEDULER_DYNAMIC)}
     |
     ( peer {0}
       dynamic {N_ifm(type,evalScheduling_PEER_DYNAMIC_SCHEDULING)}
@@ -7508,7 +7508,7 @@ KEYWORD interface {N_ifm3(start,0,stop)}
   [ processors_per_evaluation INTEGER > 0 {N_ifm(int,procsPerEval)} ]
   [ analysis_servers INTEGER > 0 {N_ifm(int,analysisServers)} ]
   [ analysis_scheduling {0}
-    master {N_ifm(type,analysisScheduling_MASTER_SCHEDULING)}
+    dedicated {N_ifm(type,analysisScheduling_DEDICATED_SCHEDULER_DYNAMIC)}
     |
     peer {N_ifm(type,analysisScheduling_PEER_SCHEDULING)}
    ]

@@ -133,7 +133,7 @@ void EmbedHybridMetaIterator::core_run()
   }
 
   // For graphics data, limit to iterator server comm leaders; this is
-  // further segregated within initialize_graphics(): all iterator masters
+  // further segregated within initialize_graphics(): all iterator leaders
   // stream tabular data, but only server 1 generates a graphics window.
   int server_id = iterSched.iteratorServerId;
   if (iterSched.iteratorCommRank == 0 && server_id > 0 &&

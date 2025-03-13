@@ -75,7 +75,7 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
     abort_handler(-1);
   }
 
-  // Instantiate the model on all processors, even a dedicated master
+  // Instantiate the model on all processors, even a dedicated scheduler
   iteratedModel = problem_db.get_model();
   initialize_model();
 
@@ -197,7 +197,7 @@ void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   // from this point on, we can specialize logic in terms of iterator servers.
   // An idle partition need not instantiate iterators (empty selectedIterator
   // envelope is adequate) or initialize, so return now.  A dedicated
-  // master processor is managed in IteratorScheduler::init_iterator().
+  // scheduler processor is managed in IteratorScheduler::init_iterator().
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     // Instantiate the iterator
     if (lightwt_ctor) {
@@ -260,14 +260,14 @@ void ConcurrentMetaIterator::pre_run()
 
   // estimate params_msg_len & results_msg_len and publish to IteratorScheduler
   int params_msg_len = 0, results_msg_len; // peer sched doesn't send params
-  if (iterSched.iteratorScheduling == MASTER_SCHEDULING) {
+  if (iterSched.iteratorScheduling == DEDICATED_SCHEDULER_DYNAMIC) {
     // define params_msg_len
     RealVector rv(paramSetLen);
     MPIPackBuffer send_buffer;
     send_buffer << rv;
     params_msg_len = send_buffer.size();
     // define results_msg_len
-    if (iterSched.iteratorServerId == 0) // master proc: init_comms not called
+    if (iterSched.iteratorServerId == 0)// scheduler proc: init_comms not called
       iteratedModel->estimate_message_lengths();
   }
   results_msg_len = iteratedModel->message_lengths()[3];
@@ -276,7 +276,7 @@ void ConcurrentMetaIterator::pre_run()
   // -------------------------------------------------------------------------
   // Define parameterSets from the combination of user-specified & random jobs
   // -------------------------------------------------------------------------
-  if ( iterSched.iteratorServerId   == 0 ||                // master proc
+  if ( iterSched.iteratorServerId   == 0 ||                // ded scheduler
        iterSched.iteratorScheduling == PEER_SCHEDULING ) { // peer server
 
     // random jobs
@@ -314,7 +314,8 @@ void ConcurrentMetaIterator::pre_run()
 	const ParallelLevel& mi_pl
 	  = methodPCIter->mi_parallel_level(iterSched.miPLIndex);
 	// For static scheduling, bcast all random jobs over mi_intra_comm (not 
-	// necessary for self-scheduling as jobs are assigned from the master).
+	// necessary for dedicated-scheduler as jobs are assigned from the
+	// scheduler).
 	if (iterSched.lead_rank()) {
 	  MPIPackBuffer send_buffer;
 	  send_buffer << random_jobs;
@@ -358,7 +359,7 @@ void ConcurrentMetaIterator::pre_run()
     // minimizer (initiated with global sampling).
   }
 
-  // all iterator masters bookkeep on the full results list, even if
+  // all iterator schedulers bookkeep on the full results list, even if
   // only some entries are defined locally
   prpResults.resize(iterSched.numIteratorJobs);
 }
@@ -367,7 +368,7 @@ void ConcurrentMetaIterator::pre_run()
 void ConcurrentMetaIterator::core_run()
 {
   // For graphics data, limit to iterator server comm leaders; this is further
-  // segregated within initialize_graphics(): all iterator masters stream
+  // segregated within initialize_graphics(): all iterator schedulers stream
   // tabular data, but only iterator server 1 generates a graphics window.
   if (iterSched.iteratorCommRank == 0) {
     int server_id = iterSched.iteratorServerId;

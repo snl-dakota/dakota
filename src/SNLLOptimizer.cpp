@@ -59,7 +59,7 @@ SNLLOptimizer::SNLLOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> m
   switch (methodName) {
   case OPTPP_PDS: {
     // ************************************************************************
-    // NOTE: the parallelism of PDS is peer partition, not master-slave/asynch.
+    // NOTE: the parallelism of PDS is peer partition, not dedicated scheduler.
     // That is, PDS cannot use a simple launch/synchronize protocol like most 
     // other optimizers in DAKOTA.  Rather it will be necessary to implement
     // a communicator partition for the PDS processors (with hidden layers of

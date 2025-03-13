@@ -5,8 +5,8 @@
 
 # Nonblocking scheduler tests:
 #   asynch local:    20
-#   message passing: p0 (peer), p1 (ded master)
-#   hybrid:          p2 (peer), p3 (ded master)
+#   message passing: p0 (peer), p1 (dedicated scheduler)
+#   hybrid:          p2 (peer), p3 (dedicated scheduler)
 
 environment,
 	graphics

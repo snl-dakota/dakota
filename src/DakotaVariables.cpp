@@ -769,7 +769,7 @@ void Variables::read(MPIUnpackBuffer& s)
 	variablesRep = get_variables(svd);
       }
     }
-    else // buffer read on slaves: variablesRep must be instantiated
+    else // buffer read on servers: variablesRep must be instantiated
       variablesRep = get_variables(svd);
 
     // This code block would normally be the default implementation (without

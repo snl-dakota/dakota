@@ -196,9 +196,9 @@ partition_sets(size_t num_sets, int job_index, size_t& start_index,
 }
 
 
-/** This convenience function is executed on an iterator master
-    (static scheduling) or a meta-iterator master (self scheduling) at
-    run initialization time and has access to the full parameterSets
+/** This convenience function is executed on an iterator leader proc
+    (static scheduling) or a meta-iterator leader proc (self scheduling)
+    at run initialization time and has access to the full parameterSets
     array (this is All-Reduced for all peers at the completion of each
     cycle in run_sequential()). */
 inline void SeqHybridMetaIterator::

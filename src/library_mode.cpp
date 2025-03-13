@@ -357,8 +357,8 @@ void run_dakota_mixed(const char* dakota_input_file, bool mpirun_flag)
   // Demonstrate changes to data after the Environment has been instantiated.
   // In this case, the DB is not updated since its data has already been
   // extracted; rather, we must update the Environment's Iterators and Models
-  // directly.  Iterator updates should be performed only on the Iterator
-  // master processor, but Model updates are performed on all processors.
+  // directly.  Iterator updates should be performed only on rank 0 in
+  // iteratorComm, but Model updates are performed on all processors.
   Dakota::ModelList models
     = env.filtered_model_list("simulation", "direct", "plugin_text_book");
   Dakota::ModelLIter ml_iter;

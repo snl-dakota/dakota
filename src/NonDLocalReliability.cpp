@@ -516,7 +516,7 @@ void NonDLocalReliability::initialize_graphics(int iterator_server_id)
     OutputManager& mgr = parallelLib.output_manager();
     Graphics& dakota_graphics = mgr.graphics();
 
-    // For graphics, limit (currently) to server id 1, for both ded master
+    // For graphics, limit (currently) to server id 1, for both ded scheduler
     // (parent partition rank 1) and peer partitions (parent partition rank 0)
     if (mgr.graph2DFlag && iterator_server_id == 1) { // initialize the 2D plots
       iteratedModel->create_2d_plots();
@@ -531,7 +531,7 @@ void NonDLocalReliability::initialize_graphics(int iterator_server_id)
     }
 
     /*
-    // For output/restart/tabular data, all Iterator masters stream output
+    // For output/restart/tabular data, all Iterator leaders stream output
     if (mgr.tabularDataFlag) { // initialize the tabular data file
       dakota_graphics.tabular_counter_label("z");
       iteratedModel.create_tabular_datastream();

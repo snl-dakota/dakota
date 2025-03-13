@@ -873,12 +873,12 @@ void Iterator::initialize_model_graphics(Model& model, int iterator_server_id)
   OutputManager& mgr = parallelLib.output_manager();
   bool auto_log = false;
 
-  // For graphics, limit (currently) to server id 1, for both ded master
+  // For graphics, limit (currently) to server id 1, for both ded scheduler
   // (parent partition rank 1) and peer partitions (parent partition rank 0)
   if (mgr.graph2DFlag && iterator_server_id == 1) // initialize the 2D plots
     { model.create_2d_plots();           auto_log = true; }
 
-  // initialize the tabular data file on all iterator masters
+  // initialize the tabular data file on all iterator schedulers
   if (mgr.tabularDataFlag)
     { model.create_tabular_datastream(); auto_log = true; }
 

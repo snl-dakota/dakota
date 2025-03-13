@@ -322,7 +322,7 @@ void SurrBasedLocalMinimizer::initialize_graphics(int iterator_server_id)
     *iteratedModel->truth_model() : *iteratedModel;
   OutputManager& mgr = parallelLib.output_manager();
 
-  // For graphics, limit (currently) to server id 1, for both ded master
+  // For graphics, limit (currently) to server id 1, for both ded scheduler
   // (parent partition rank 1) and peer partitions (parent partition rank 0)
   if (mgr.graph2DFlag && iterator_server_id == 1) { // initialize the 2D plots
     mgr.graphics_counter(0); // starting point is iteration 0
@@ -330,7 +330,7 @@ void SurrBasedLocalMinimizer::initialize_graphics(int iterator_server_id)
     mgr.graphics().set_x_labels2d("Surr-Based Iteration No.");
   }
 
-  // For output/restart/tabular data, all Iterator masters stream output
+  // For output/restart/tabular data, all Iterator leaders stream output
   if (mgr.tabularDataFlag) { // initialize data tabulation
     mgr.graphics_counter(0); // starting point is iteration 0
     mgr.tabular_counter_label("iter_no");
