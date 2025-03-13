@@ -80,7 +80,7 @@ protected:
   /// return subModel
   void derived_subordinate_models(ModelList& ml, bool recurse_flag) override;
   /// return optionalInterface
-  Interface& derived_interface() override;
+  std::shared_ptr<Interface> derived_interface() override;
 
   /// retrieve error estimates corresponding to the subIterator's response
   /// results (e.g., statistical MSE for subordinate UQ).
@@ -305,7 +305,7 @@ private:
   //
   /// the optional interface contributes nonnested response data to
   /// the total model response
-  Interface optionalInterface;
+  std::shared_ptr<Interface> optionalInterface;
   /// the optional interface pointer from the nested model specification
   String optInterfacePointer;
   /// the response object resulting from optional interface evaluations
@@ -472,7 +472,7 @@ derived_subordinate_models(ModelList& ml, bool recurse_flag)
 }
 
 
-inline Interface& NestedModel::derived_interface()
+inline std::shared_ptr<Interface> NestedModel::derived_interface()
 { return optionalInterface; }
 
 
@@ -498,8 +498,8 @@ inline void NestedModel::surrogate_response_mode(short mode)
 inline short NestedModel::local_eval_synchronization()
 {
   return ( optInterfacePointer.empty() ||
-	   optionalInterface.asynch_local_evaluation_concurrency() == 1 ) ?
-    SYNCHRONOUS_INTERFACE : optionalInterface.interface_synchronization();
+	   optionalInterface->asynch_local_evaluation_concurrency() == 1 ) ?
+    SYNCHRONOUS_INTERFACE : optionalInterface->interface_synchronization();
 }
 
 
@@ -508,7 +508,7 @@ inline short NestedModel::local_eval_synchronization()
 inline int NestedModel::local_eval_concurrency()
 {
   return ( optInterfacePointer.empty() ) ? 0 :
-    optionalInterface.asynch_local_evaluation_concurrency();
+    optionalInterface->asynch_local_evaluation_concurrency();
 }
 
 
@@ -517,8 +517,8 @@ inline int NestedModel::local_eval_concurrency()
 inline bool NestedModel::derived_master_overload() const
 {
   bool oi_overload = ( !optInterfacePointer.empty() &&
-		       optionalInterface.iterator_eval_dedicated_master() && 
-		       optionalInterface.multi_proc_eval() ),
+		       optionalInterface->iterator_eval_dedicated_master() && 
+		       optionalInterface->multi_proc_eval() ),
     si_overload = ( subIterator &&
 		    subIteratorSched.iteratorScheduling == MASTER_SCHEDULING && 
 		    subIteratorSched.procsPerIterator > 1 );
@@ -573,7 +573,7 @@ inline void NestedModel::derived_init_serial()
   // (e.g., num servers = 1 instead of the 0 default used by
   // ParallelLibrary::resolve_inputs())
   if (!optInterfacePointer.empty())
-    optionalInterface.init_serial();
+    optionalInterface->init_serial();
   subModel->init_serial();
 }
 
@@ -652,7 +652,7 @@ response_mapping(const Response& opt_interface_response,
 
 
 inline const String& NestedModel::interface_id() const
-{ return optionalInterface.interface_id(); }
+{ return optionalInterface->interface_id(); }
 
 
 /** return the top level nested evaluation count.  To get the lower level
@@ -665,7 +665,7 @@ inline int NestedModel::derived_evaluation_id() const
 inline void NestedModel::set_evaluation_reference()
 {
   if (!optInterfacePointer.empty())
-    optionalInterface.set_evaluation_reference();
+    optionalInterface->set_evaluation_reference();
 
   // don't recurse this, since the eval reference is for the top level iteration
   //subModel.set_evaluation_reference();
@@ -680,7 +680,7 @@ inline void NestedModel::fine_grained_evaluation_counters()
   if (!optInterfacePointer.empty()) {
     size_t num_oi_fns
       = numOptInterfPrimary + numOptInterfIneqCon + numOptInterfEqCon;
-    optionalInterface.fine_grained_evaluation_counters(num_oi_fns);
+    optionalInterface->fine_grained_evaluation_counters(num_oi_fns);
   }
   subModel->fine_grained_evaluation_counters();
 }
@@ -691,7 +691,7 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
 			 bool relative_count) const
 {
   if (!optInterfacePointer.empty())
-    optionalInterface.print_evaluation_summary(s, minimal_header,
+    optionalInterface->print_evaluation_summary(s, minimal_header,
 					       relative_count);
   // subIterator will reset evaluation references, so do not use relative counts
   subModel->print_evaluation_summary(s, minimal_header, false);

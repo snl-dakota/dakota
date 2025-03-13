@@ -180,7 +180,7 @@ PYBIND11_MODULE(environment, m) {
             for( auto & interface : interfaces )
             {
               auto py11_int = std::dynamic_pointer_cast<Dakota::Pybind11Interface>(
-                                p_libEnv->problem_description_db().interface_list().begin()->interface_rep());
+                                (*p_libEnv->problem_description_db().interface_list().begin())->interface_rep());
               if( py11_int )
                 py11_int->register_pybind11_callback_fn(callback);
             }
@@ -202,16 +202,16 @@ PYBIND11_MODULE(environment, m) {
             for( auto & interface : interfaces )
             {
               auto py11_int = std::dynamic_pointer_cast<Dakota::Pybind11Interface>(
-                                p_libEnv->problem_description_db().interface_list().begin()->interface_rep());
+                                (*p_libEnv->problem_description_db().interface_list().begin())->interface_rep());
               if( py11_int )
               {
-                for( auto const & idrv : interface.analysis_drivers() )
+                for( auto const & idrv : interface->analysis_drivers() )
                 {
                   if( callbacks_map.count(idrv) > 0 )
                     py11_int->register_pybind11_callback_fn(callbacks_map[idrv]);
                   else {
                     Cout << "Warning: Could not find a pybind11 callback \"" << idrv << "\" needed "
-                            "by Dakota interface \"" << interface.interface_id() << "\".\n"
+                            "by Dakota interface \"" << interface->interface_id() << "\".\n"
                             "... will try to use module:function interface specification.\n";
                   }
                 }

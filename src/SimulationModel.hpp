@@ -46,7 +46,7 @@ protected:
   //
 
   /// return userDefinedInterface
-  Interface& derived_interface() override;
+  std::shared_ptr<Interface> derived_interface() override;
 
   /// return size of solnCntlCostMap, optionally enforcing lower bound
   /// of 1 solution level
@@ -79,7 +79,7 @@ protected:
   size_t cost_metadata_index() const override;
 
   // Perform the response computation portions specific to this derived 
-  // class.  In this case, it simply employs userDefinedInterface.map()/
+  // class.  In this case, it simply employs userDefinedInterface->map()/
   // synch()/synch_nowait()
   //
   /// portion of evaluate() specific to SimulationModel
@@ -183,7 +183,7 @@ private:
   //
 
   /// the interface used for mapping variables to responses
-  Interface userDefinedInterface;
+  std::shared_ptr<Interface> userDefinedInterface;
 
   /// type of the discrete variable that controls the set/range of
   /// solution levels
@@ -212,7 +212,7 @@ private:
 };
 
 
-inline Interface& SimulationModel::derived_interface()
+inline std::shared_ptr<Interface> SimulationModel::derived_interface()
 { return userDefinedInterface; }
 
 
@@ -248,15 +248,15 @@ inline void SimulationModel::derived_evaluate(const ActiveSet& set)
   if(interfEvaluationsDBState == EvaluationsDBState::UNINITIALIZED)
       interfEvaluationsDBState = evaluationsDB.interface_allocate(modelId, 
           interface_id(), "simulation", currentVariables, currentResponse, 
-          default_interface_active_set(), userDefinedInterface.analysis_components());
+          default_interface_active_set(), userDefinedInterface->analysis_components());
 
-  userDefinedInterface.map(currentVariables, set, currentResponse);
+  userDefinedInterface->map(currentVariables, set, currentResponse);
 
   if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE) {
     evaluationsDB.store_interface_variables(modelId, interface_id(),
-        userDefinedInterface.evaluation_id(), set, currentVariables);
+        userDefinedInterface->evaluation_id(), set, currentVariables);
     evaluationsDB.store_interface_response(modelId, interface_id(),
-        userDefinedInterface.evaluation_id(), currentResponse);
+        userDefinedInterface->evaluation_id(), currentResponse);
   }
 
   parallelLib.parallel_configuration_iterator(curr_pc_iter); // restore
@@ -270,19 +270,19 @@ inline void SimulationModel::derived_evaluate_nowait(const ActiveSet& set)
   if(interfEvaluationsDBState == EvaluationsDBState::UNINITIALIZED)
     interfEvaluationsDBState = evaluationsDB.interface_allocate(modelId, interface_id(),
         "simulation", currentVariables, currentResponse, default_interface_active_set(), 
-        userDefinedInterface.analysis_components());
+        userDefinedInterface->analysis_components());
 
-  userDefinedInterface.map(currentVariables, set, currentResponse, true);
+  userDefinedInterface->map(currentVariables, set, currentResponse, true);
 
   if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE) 
       evaluationsDB.store_interface_variables(modelId, interface_id(),
-      userDefinedInterface.evaluation_id(), set, currentVariables);
+      userDefinedInterface->evaluation_id(), set, currentVariables);
 
   // Even though each evaluate on SimulationModel results in a corresponding
   // Interface mapping, we utilize an id mapping to protect against the case
   // where multiple Models use the same Interface instance, for which this
   // Model instance will only match a subset of the Interface eval ids.
-  simIdMap[userDefinedInterface.evaluation_id()] = simModelEvalCntr;
+  simIdMap[userDefinedInterface->evaluation_id()] = simModelEvalCntr;
 }
 
 
@@ -292,9 +292,9 @@ inline const IntResponseMap& SimulationModel::derived_synchronize()
   ParConfigLIter curr_pc_iter = parallelLib.parallel_configuration_iterator();
   parallelLib.parallel_configuration_iterator(modelPCIter);
 
-  // Any responses from userDefinedInterface.synchronize() that are unmatched
+  // Any responses from userDefinedInterface->synchronize() that are unmatched
   // in simIdMap are cached in Interface::cachedResponseMap
-  rekey_synch(userDefinedInterface, true, simIdMap, simResponseMap);
+  rekey_synch(*userDefinedInterface, true, simIdMap, simResponseMap);
   // Caching for Models must also occur at the base class level
   // (Model::cachedResponseMap) since deriv estimation-based rekeying is
   // performed as this top level (and any lower level mappings are erased
@@ -312,7 +312,7 @@ inline const IntResponseMap& SimulationModel::derived_synchronize_nowait()
   parallelLib.parallel_configuration_iterator(modelPCIter);
 
   // See comments above regarding levels of rekeying / caching
-  rekey_synch(userDefinedInterface, false, simIdMap, simResponseMap);
+  rekey_synch(*userDefinedInterface, false, simIdMap, simResponseMap);
 
   parallelLib.parallel_configuration_iterator(curr_pc_iter); // restore
   return simResponseMap;
@@ -321,19 +321,19 @@ inline const IntResponseMap& SimulationModel::derived_synchronize_nowait()
 
 inline short SimulationModel::local_eval_synchronization()
 {
-  return ( userDefinedInterface.asynch_local_evaluation_concurrency() == 1 ) ?
-    SYNCHRONOUS_INTERFACE : userDefinedInterface.interface_synchronization();
+  return ( userDefinedInterface->asynch_local_evaluation_concurrency() == 1 ) ?
+    SYNCHRONOUS_INTERFACE : userDefinedInterface->interface_synchronization();
 }
 
 
 inline int SimulationModel::local_eval_concurrency()
-{ return userDefinedInterface.asynch_local_evaluation_concurrency(); }
+{ return userDefinedInterface->asynch_local_evaluation_concurrency(); }
 
 
 inline bool SimulationModel::derived_master_overload() const
 {
-  return ( userDefinedInterface.iterator_eval_dedicated_master() && 
-           userDefinedInterface.multi_proc_eval() ) ? true : false;
+  return ( userDefinedInterface->iterator_eval_dedicated_master() && 
+           userDefinedInterface->multi_proc_eval() ) ? true : false;
 }
 
 
@@ -354,12 +354,12 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 {
   // allow recursion to progress - don't store/set/restore
   parallelLib.parallel_configuration_iterator(modelPCIter);
-  userDefinedInterface.init_communicators(messageLengths, max_eval_concurrency);
+  userDefinedInterface->init_communicators(messageLengths, max_eval_concurrency);
 }
 
 
 inline void SimulationModel::derived_init_serial()
-{ userDefinedInterface.init_serial(); }
+{ userDefinedInterface->init_serial(); }
 
 
 inline void SimulationModel::
@@ -368,7 +368,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 {
   // allow recursion to progress - don't store/set/restore
   parallelLib.parallel_configuration_iterator(modelPCIter);
-  userDefinedInterface.set_communicators(messageLengths, max_eval_concurrency);
+  userDefinedInterface->set_communicators(messageLengths, max_eval_concurrency);
   set_ie_asynchronous_mode(max_eval_concurrency);// asynchEvalFlag, evalCapacity
 }
 
@@ -380,7 +380,7 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 {
   // allow recursion to progress - don't store/set/restore
   parallelLib.parallel_configuration_iterator(modelPCIter);
-  userDefinedInterface.free_communicators();
+  userDefinedInterface->free_communicators();
 }
 */
 
@@ -390,7 +390,7 @@ serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
 {
   set_communicators(pl_iter, max_eval_concurrency, false);// no recursion (moot)
 
-  userDefinedInterface.serve_evaluations();
+  userDefinedInterface->serve_evaluations();
 }
 
 
@@ -400,14 +400,14 @@ inline void SimulationModel::stop_servers()
   ParConfigLIter curr_pc_iter = parallelLib.parallel_configuration_iterator();
   parallelLib.parallel_configuration_iterator(modelPCIter);
 
-  userDefinedInterface.stop_evaluation_servers();
+  userDefinedInterface->stop_evaluation_servers();
 
   parallelLib.parallel_configuration_iterator(curr_pc_iter); // restore
 }
 
 
 inline const String& SimulationModel::interface_id() const
-{ return userDefinedInterface.interface_id(); }
+{ return userDefinedInterface->interface_id(); }
 
 
 inline int SimulationModel::derived_evaluation_id() const
@@ -415,26 +415,26 @@ inline int SimulationModel::derived_evaluation_id() const
 
 
 inline bool SimulationModel::evaluation_cache(bool recurse_flag) const
-{ return userDefinedInterface.evaluation_cache(); }
+{ return userDefinedInterface->evaluation_cache(); }
 
 
 inline bool SimulationModel::restart_file(bool recurse_flag) const
-{ return userDefinedInterface.restart_file(); }
+{ return userDefinedInterface->restart_file(); }
 
 
 inline void SimulationModel::set_evaluation_reference()
-{ userDefinedInterface.set_evaluation_reference(); }
+{ userDefinedInterface->set_evaluation_reference(); }
 
 
 inline void SimulationModel::fine_grained_evaluation_counters()
-{ userDefinedInterface.fine_grained_evaluation_counters(numFns); }
+{ userDefinedInterface->fine_grained_evaluation_counters(numFns); }
 
 
 inline void SimulationModel::
 print_evaluation_summary(std::ostream& s, bool minimal_header,
 			 bool relative_count) const
 {
-  userDefinedInterface.print_evaluation_summary(s, minimal_header,
+  userDefinedInterface->print_evaluation_summary(s, minimal_header,
 						relative_count);
 }
 

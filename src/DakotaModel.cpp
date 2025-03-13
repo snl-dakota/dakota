@@ -3475,9 +3475,9 @@ void Model::update_from_subordinate_model(size_t depth)
 /** return by reference requires use of dummy objects, but is
     important to allow use of assign_rep() since this operation must
     be performed on the original envelope object. */
-Interface& Model::derived_interface()
+std::shared_ptr<Interface> Model::derived_interface()
 {
-  return dummy_interface; // return null/empty envelope
+  return std::shared_ptr<Interface>(nullptr); //dummy_interface; // return null/empty envelope
 }
 
 

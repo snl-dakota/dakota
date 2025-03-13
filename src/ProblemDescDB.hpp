@@ -438,7 +438,7 @@ private:
 
   const Variables& get_variables();
   /// retrieve an existing Interface, if it exists, or instantiate a new one
-  const Interface& get_interface();
+  const std::shared_ptr<Interface> get_interface();
   /// retrieve an existing Response, if it exists, or instantiate a new one
   const Response& get_response(short type, const Variables& vars);
 

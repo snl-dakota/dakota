@@ -215,54 +215,6 @@ Interface::~Interface()
 { /* empty dtor */ }
 
 
-/** DEPRECATED but temporarily left for library mode clients needing to
-    MIGRATE TO shared_ptr API
-
-    Similar to the assignment operator, the assign_rep() function
-    decrements referenceCount for the old interfaceRep and assigns the
-    new interfaceRep.  It is different in that it is used for
-    publishing derived class letters to existing envelopes, as opposed
-    to sharing representations among multiple envelopes (in
-    particular, assign_rep is passed a letter object and operator= is
-    passed an envelope object).  Letter assignment historically
-    supported two models as governed by ref_count_incr:
-
-    \li ref_count_incr = true (removed): the incoming letter belongs
-    to another envelope.  In this case, increment the reference count
-    in the normal manner so that deallocation of the letter is handled
-    properly.
-
-    \li ref_count_incr = false (always): the incoming letter is
-    instantiated on the fly and has no envelope.  This case is modeled
-    after get_interface(): a letter is dynamically allocated using new
-    and passed into assign_rep, the letter's reference count is not
-    incremented, and the letter is not remotely deleted (its memory
-    management is passed over to the envelope). */
-void Interface::assign_rep(Interface* interface_rep, bool ref_count_incr)
-{
-  interfaceRep.reset(interface_rep);
-}
-
-
-/** The assign_rep() function is used for publishing derived class
-    letters to existing envelopes, as opposed to sharing
-    representations among multiple envelopes (in particular,
-    assign_rep is passed a letter object and operator= is passed an
-    envelope object).
-
-    Use case assumes the incoming letter is instantiated on the fly
-    and has no envelope.  This case is modeled after get_interface(): a
-    letter is dynamically allocated and passed into assign_rep (its
-    memory management is passed over to the envelope).
-
-    If the letter happens to be managed by another envelope, it will
-    persist as long as the last envelope referencing it. */
-void Interface::assign_rep(std::shared_ptr<Interface> interface_rep)
-{
-  interfaceRep = interface_rep;
-}
-
-
 void Interface::fine_grained_evaluation_counters(size_t num_fns)
 {
   if (interfaceRep) // envelope fwd to letter

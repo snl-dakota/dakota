@@ -176,7 +176,7 @@ namespace {
     interface envelope in the environment. */
   void serial_interface_plugin(Dakota::LibraryEnvironment& env,
 			       const std::string an_driver,
-			       Dakota::Interface* serial_iface)
+			       std::shared_ptr<Dakota::Interface> serial_iface)
   {
     std::string model_type(""); // demo: empty string will match any model type
     std::string interf_type("direct");
@@ -247,8 +247,8 @@ Dakota::LibraryEnvironment * Dakota::Opt_TPL_Test_Fixture::create_default_env(un
 
   // plug the client's interface (function evaluator) into the Dakota environment
   Dakota::ProblemDescDB& problem_db = env.problem_description_db();
-  Dakota::Interface* serial_iface =
-    new OptTestDirectApplicInterface(problem_db);
+  std::shared_ptr<OptTestDirectApplicInterface> serial_iface(
+    new OptTestDirectApplicInterface(problem_db));
   serial_interface_plugin(env, "simple_quad", serial_iface);
 
   return p_env;

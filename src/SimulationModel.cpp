@@ -448,7 +448,7 @@ void SimulationModel::eval_tag_prefix(const String& eval_id_str)
 {
   // Simulation model uses the counter from the interface
   bool append_iface_id = true;
-  userDefinedInterface.eval_tag_prefix(eval_id_str, append_iface_id);
+  userDefinedInterface->eval_tag_prefix(eval_id_str, append_iface_id);
 }
 
 

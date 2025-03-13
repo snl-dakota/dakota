@@ -270,7 +270,7 @@ public:
   /// pass request to subModel if recursing and then update from its results
   void update_from_subordinate_model(size_t depth = SZ_MAX) override;
   /// return subModel interface
-  Interface& derived_interface() override;
+  std::shared_ptr<Interface> derived_interface() override;
 
   /// return size of subModel::solnControlCostMap
   size_t solution_levels() const override;
@@ -847,7 +847,7 @@ inline void RecastModel::update_from_subordinate_model(size_t depth)
 }
 
 
-inline Interface& RecastModel::derived_interface()
+inline std::shared_ptr<Interface> RecastModel::derived_interface()
 { return subModel->derived_interface(); }
 
 

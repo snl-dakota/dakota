@@ -121,9 +121,10 @@ bool LibraryEnvironment::plugin_interface(const String& model_type,
     // set DB nodes to input specification for this Model
     probDescDB.set_db_model_nodes(fm->model_id());
     // plugin the Interface
-    Interface& model_interface = fm->derived_interface();
+    std::shared_ptr<Interface> model_interface = fm->derived_interface();
     // don't increment ref count since no other envelope shares this letter
-    model_interface.assign_rep(plugin_iface);
+    model_interface = plugin_iface;
+    *model_interface = *plugin_iface;
     plugged_in = true;
   }
   probDescDB.set_db_model_nodes(model_index);          // restore
@@ -141,13 +142,13 @@ filtered_interface_list(const String& interf_type, const String& an_driver)
   InterfaceList filt_interf_list;
   ModelList& models = probDescDB.model_list();
   for (auto& m : models) {
-    Interface& model_interface = m->derived_interface();
+    std::shared_ptr<Interface> model_interface = m->derived_interface();
     if ( ( interf_type.empty() || 
-	   interface_enum_to_string(model_interface.interface_type()) == 
+	   interface_enum_to_string(model_interface->interface_type()) == 
 	   interf_type ) &&
 	 ( an_driver.empty() || 
 	   //interface.analysis_drivers().size() == 1  &&
-	   contains(model_interface.analysis_drivers(), an_driver) ) )
+	   contains(model_interface->analysis_drivers(), an_driver) ) )
       filt_interf_list.push_back(model_interface);
   }
   return filt_interf_list;
@@ -166,13 +167,13 @@ filtered_model_list(const String& model_type, const String& interf_type,
   ModelList& models = probDescDB.model_list();
   for(auto& m : models) {
     if (model_type.empty() || m->model_type() == model_type) {
-      Interface& model_interface = m->derived_interface();
+      std::shared_ptr<Interface> model_interface = m->derived_interface();
       if ( ( interf_type.empty() || 
-	     interface_enum_to_string(model_interface.interface_type()) == 
+	     interface_enum_to_string(model_interface->interface_type()) == 
 	     interf_type ) &&
 	   ( an_driver.empty() || 
 	     //interface.analysis_drivers().size() == 1  &&
-	     contains(model_interface.analysis_drivers(), an_driver) ) )
+	     contains(model_interface->analysis_drivers(), an_driver) ) )
 	filt_model_list.push_back(m);
     }
   }

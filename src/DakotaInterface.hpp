@@ -262,15 +262,6 @@ public:
   /// cachedResponseMap
   void cache_unmatched_responses();
 
-  /// assign letter or replace existing letter with a new one
-  void assign_rep(std::shared_ptr<Interface> interface_rep);
-
-  /// assign letter or replace existing letter with a new one
-  /// DEPRECATED, but left for library mode clients to migrate:
-  /// transfers memory ownership to the contained shared_ptr;
-  /// ref_count_incr is ignored
-  void assign_rep(Interface* interface_rep, bool ref_count_incr = false);
-
   /// returns the interface type
   unsigned short interface_type() const;
 

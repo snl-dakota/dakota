@@ -16,6 +16,7 @@
 //- Checked by:
 
 #include "dakota_system_defs.hpp"
+#include "interface_utils.hpp"
 #include "iterator_utils.hpp"
 #include "model_utils.hpp"
 #include "ProblemDescDB.hpp"
@@ -1112,7 +1113,7 @@ const Variables& ProblemDescDB::get_variables()
 }
 
 
-const Interface& ProblemDescDB::get_interface()
+const std::shared_ptr<Interface> ProblemDescDB::get_interface()
 {
   // ProblemDescDB::get_<object> functions operate at the envelope level
   // so that any passing of *this provides the envelope object.
@@ -1154,7 +1155,7 @@ const Interface& ProblemDescDB::get_interface()
     = std::find_if(dbRep->interfaceList.begin(), dbRep->interfaceList.end(),
                    boost::bind(&Interface::interface_id, _1) == id_interface);
   if (i_it == dbRep->interfaceList.end()) {
-    Interface new_interface(*this);
+    auto new_interface = InterfaceUtils::get_interface(*this);
     dbRep->interfaceList.push_back(new_interface);
     i_it = --dbRep->interfaceList.end();
   }
