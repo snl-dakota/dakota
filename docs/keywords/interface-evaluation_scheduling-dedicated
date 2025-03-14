@@ -1,9 +1,9 @@
 Blurb::
-Specify a dedicated master partition for parallel analysis scheduling
+Specify a dedicated scheduler partition for concurrent evaluation scheduling
 Description::
 This option overrides the Dakota parallel automatic configuration, forcing
-the use of a dedicated master partition. In a dedicated master partition,
-one processor (the "master") dynamically schedules work on the analysis
+the use of a dedicated scheduler partition. In this partition, one processor
+(the "dedicated scheduler") dynamically schedules work on the evaluation
 servers. This reduces the number of processors available to create servers
 by 1.
 Topics::
