@@ -3477,7 +3477,7 @@ void Model::update_from_subordinate_model(size_t depth)
     be performed on the original envelope object. */
 std::shared_ptr<Interface> Model::derived_interface()
 {
-  return std::shared_ptr<Interface>(nullptr); //dummy_interface; // return null/empty envelope
+  return std::shared_ptr<Interface>(nullptr);
 }
 
 
@@ -3611,7 +3611,7 @@ size_t Model::cost_metadata_index() const
     be performed on the original envelope object. */
 const String& Model::interface_id() const
 {
-  return dummy_interface.interface_id(); // return empty string
+  return ModelUtils::empty_string;
 }
 
 

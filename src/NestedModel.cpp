@@ -549,7 +549,7 @@ void NestedModel::declare_sources()
 {
   evaluationsDB.declare_source(modelId, modelType, subIterator->method_id(),
     "iterator");
-  if(!optionalInterface->is_null())
+  if(optionalInterface)
     evaluationsDB.declare_source(modelId, modelType,
       optionalInterface->interface_id(), "interface");
 }

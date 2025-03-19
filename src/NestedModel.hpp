@@ -656,7 +656,7 @@ response_mapping(const Response& opt_interface_response,
 
 
 inline const String& NestedModel::interface_id() const
-{ return optionalInterface->interface_id(); }
+{ return optionalInterface ? optionalInterface->interface_id() : Dakota::ModelUtils::empty_string; }
 
 
 /** return the top level nested evaluation count.  To get the lower level
