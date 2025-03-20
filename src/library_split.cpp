@@ -135,8 +135,8 @@ void manage_mpi(MPI_Comm& my_comm, int& color)
 void gen_dakota_input(const int& color, std::string& input)
 {
 
-  // TODO: diagnose problems with ded. master/self scheduling which hangs
-  //       mandating use of evaluation_scheduling peer static
+  // TODO: diagnose problems with ded. scheduler/dynamic scheduling which
+  //       hangs mandating use of evaluation_scheduling peer static
   switch(color) {
 
   case 1:

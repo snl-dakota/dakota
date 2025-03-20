@@ -40,7 +40,7 @@
 # to eliminate unsupported combinations.
 #  s0-s22: serial tests (synch/asynch, blocking/nonblocking)
 #  p0-p21: MPI parallel tests
-# p22-p29: hybrid parallel tests (block/nonblock, peer/master, system/fork)
+# p22-p29: hybrid parallel tests (block/nonblock, peer/dedicated, system/fork)
 
 method,
 #	max_function_evaluations 500		#s2,#s5,#s6,#s8,#s10,#s11
@@ -218,7 +218,7 @@ interface,
 #		evaluation_concurrency 10	#s3,#s8,#s18
 #		evaluation_concurrency 2	#p22,#p23,#p24,#p25
 #		evaluation_concurrency 2	#p26,#p27,#p28,#p29
-#		evaluation_scheduling master	#p5,#p24,#p25,#p28,#p29
+#		evaluation_scheduling dedicated	#p5,#p24,#p25,#p28,#p29
 		analysis_driver = 'text_book'   #s0,#p0,#s23,#s24
 #		analysis_driver = 'text_book'   #s1,#s2,#s3,#s4,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,
 #		analysis_driver = 'text_book'   #s14,#s16,#s17,#s18,#s19,#s20,#s21,#s22

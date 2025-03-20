@@ -196,7 +196,7 @@ protected:
                                   bool recurse_flag = true) override;
 
   /// Service the low and high fidelity model job requests received from the
-  /// master; completes when termination message received from stop_servers().
+  /// scheduler; completes when termination message received from stop_servers()
   void serve_run(ParLevLIter pl_iter, int max_eval_concurrency) override;
 
   /// update the Model's inactive view based on higher level (nested)

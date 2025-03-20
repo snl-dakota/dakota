@@ -377,9 +377,9 @@ public:
   short local_eval_synchronization() override;
   /// return subModel local evaluation concurrency
   int local_eval_concurrency() override;
-  /// flag which prevents overloading the master with a multiprocessor
-  /// evaluation (request forwarded to subModel)
-  bool derived_master_overload() const override;
+  /// flag which prevents overloading the dedicated scheduler processor with
+  /// a multiprocessor evaluation (request forwarded to subModel)
+  bool derived_scheduler_overload() const override;
 
   IntIntPair estimate_partition_bounds(int max_eval_concurrency) override;
 
@@ -396,11 +396,11 @@ public:
   void derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 				  bool recurse_flag = true) override;
 
-  /// Service subModel job requests received from the master.
+  /// Service subModel job requests received from the dedicated scheduler.
   /// Completes when a termination message is received from stop_servers().
   void serve_run(ParLevLIter pl_iter, int max_eval_concurrency) override;
-  /// executed by the master to terminate subModel server operations
-  /// when RecastModel iteration is complete.
+  /// executed by the dedicated scheduler to terminate subModel server
+  /// operations when RecastModel iteration is complete.
   void stop_servers() override;
 
   /// update the Model's active view based on higher level context
@@ -1057,8 +1057,8 @@ inline int RecastModel::local_eval_concurrency()
 { return subModel->local_eval_concurrency(); }
 
 
-inline bool RecastModel::derived_master_overload() const
-{ return subModel->derived_master_overload(); }
+inline bool RecastModel::derived_scheduler_overload() const
+{ return subModel->derived_scheduler_overload(); }
 
 
 inline IntIntPair RecastModel::

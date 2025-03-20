@@ -111,7 +111,7 @@ CollabHybridMetaIterator::~CollabHybridMetaIterator()
 void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 {
   size_t i, num_iterators = methodStrings.size();
-  selectedIterators.resize(num_iterators); // slaves also need for run_iterator
+  selectedIterators.resize(num_iterators); // servers also need for run_iterator
   if (!singlePassedModel)
     selectedModels.resize(num_iterators);
 
@@ -136,7 +136,7 @@ void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   // from this point on, we can specialize logic in terms of iterator servers.
   // An idle partition need not instantiate iterators/models (empty Iterator
   // envelopes are adequate for serve_iterators()), so return now.  A dedicated
-  // master processor is managed in IteratorScheduler::init_iterator().
+  // scheduler processor is managed in IteratorScheduler::init_iterator().
   if (iterSched.iteratorServerId > iterSched.numIteratorServers)
     return;
 
@@ -204,8 +204,8 @@ void CollabHybridMetaIterator::core_run()
 
     Iterator& curr_iterator = *selectedIterators[i];
 
-    // For graphics data, limit to iterator server comm leaders; this is
-    // further segregated within initialize_graphics(): all iterator masters
+    // For graphics data, limit to iterator server comm leaders; this is further
+    // segregated w/i initialize_graphics(): all iterator dedicated schedulers
     // stream tabular data, but only server 1 generates a graphics window.
     if (rank0 && server_id > 0 && server_id <= iterSched.numIteratorServers)
       curr_iterator.initialize_graphics(server_id);

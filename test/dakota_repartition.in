@@ -9,11 +9,11 @@
 # analysis server size.  Method 1 uses 2 processors per analysis, and
 # method 2 repartitions to 5 processors per analysis.  A minimum of 5
 # processors is required to run this input file, which will result in
-# a dedicated master/self-scheduling approach for method 1 (9 jobs
-# through 2 2-proc. servers) and a peer/static scheduling approach for
-# method 2 (44 jobs through 1 5-proc. server).  11 processors is also
-# a good choice (5 2-proc. servers and 2 5-proc. servers with
-# dedicated- master/self-scheduling for both methods).
+# a dedicated scheduler approach for method 1 (9 jobs through 2 2-proc.
+# servers) and a peer/static scheduling approach for method 2 (44 jobs
+# through 1 5-proc. server).  11 processors is also a good choice
+# (5 2-proc. servers and 2 5-proc. servers with a dedicated scheduler
+# for both methods).
 
 environment,
 	top_method_pointer = 'HS'

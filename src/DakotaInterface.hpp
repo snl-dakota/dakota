@@ -285,9 +285,9 @@ public:
   /// returns a flag signaling the use of multiprocessor evaluation partitions
   bool multi_proc_eval() const;
 
-  /// returns a flag signaling the use of a dedicated master processor at the
-  /// iterator-evaluation scheduling level
-  bool iterator_eval_dedicated_master() const;
+  /// returns a flag signaling the use of a dedicated scheduler processor
+  /// at the iterator-evaluation scheduling level
+  bool iterator_eval_dedicated_scheduler() const;
 
   /// REMOVE
   bool is_null() const;
@@ -365,12 +365,12 @@ protected:
 
   /// identifier for the current evaluation, which may differ from the
   /// evaluation counters in the case of evaluation scheduling; used on
-  /// iterator master as well as server processors.  Currently, this is
+  /// iterator scheduler as well as server processors.  Currently, this is
   /// set prior to all invocations of derived_map() for all processors.
   int currEvalId;
 
   // evaluation counters specific to each interface instance that track
-  // counts on the iterator master processor
+  // counts on the iterator scheduler processor
 
   /// controls use of fn val/grad/hess counters for detailed evaluation report
   bool fineGrainEvalCounters;
@@ -413,8 +413,8 @@ protected:
   /// flag for multiprocessor evaluation partitions (evalComm)
   bool multiProcEvalFlag;
 
-  /// flag for dedicated master partitioning at the iterator level
-  bool ieDedMasterFlag;
+  /// flag for dedicated scheduler partitioning at the iterator level
+  bool ieDedSchedFlag;
 
   /// set of period-delimited evaluation ID tags to use in evaluation tagging
   String evalTagPrefix;
@@ -497,8 +497,8 @@ inline bool Interface::multi_proc_eval() const
 { return multiProcEvalFlag; }
 
 
-inline bool Interface::iterator_eval_dedicated_master() const
-{ return ieDedMasterFlag; }
+inline bool Interface::iterator_eval_dedicated_scheduler() const
+{ return ieDedSchedFlag; }
 
 
 /// global comparison function for Interface

@@ -132,14 +132,14 @@ bool MPIManager::detect_parallel_launch(int& argc, char**& argv)
   // Unfortunately, this is not as simple as monitoring argv[0] since the 
   // launch utility (which would contain mpirun/dmpirun/yod in argv[0]) creates
   // the actual dakota processes as child processes (with different argv's).  
-  // MPICH does add "-p4pg" (master) and "-p4amslave" (slaves) command line 
-  // arguments which can be used for detection; however other platforms with 
-  // proprietary MPI implementations (e.g., DEC, SGI) pass no telltale argv 
-  // content.  On DEC/SGI, it's necessary to query environment variables, 
+  // MPICH does add "-p4pg" (rank 0) and "-p4amslave" (server procs) command
+  // line arguments which can be used for detection; however other platforms
+  // with proprietary MPI implementations (e.g., DEC, SGI) pass no telltale
+  // argv content.  On DEC/SGI, it's necessary to query environment variables,
   // e.g. DIGITALMPI_ENV_MAP, MPI_ENVIRONMENT.  These variables are set for all
   // processors on DEC/SGI, but again it is not consistent across platforms 
-  // (MPICH sets MPIRUN_DEVICE=ch_p4, but only on the master processor).
-  // 
+  // (MPICH sets MPIRUN_DEVICE=ch_p4, but only on rank 0).
+  //
   // The logic falls through and sets mpi_launch true if Dakota was configured 
   // with MPI but lacks detection for the platform/MPI implementation. 
   //
@@ -147,7 +147,7 @@ bool MPIManager::detect_parallel_launch(int& argc, char**& argv)
   // detection. If it is set and begins with 1, t, or T, mpi_launch is set 
   // true (run in parallel mode). If it is defined and set to anything else, 
   // mpi_launch remains false (run in serial mode).
-  
+
 #ifdef DAKOTA_HAVE_MPI
   // Check DAKOTA_RUN_PARALLEL override.
   char* parallel_override = std::getenv("DAKOTA_RUN_PARALLEL");
@@ -206,7 +206,7 @@ bool MPIManager::detect_parallel_launch(int& argc, char**& argv)
     env_vars.push_back("MPIRUN_NPROCS");            // MPICH1, Myrinet/all
     env_vars.push_back("GMPI_NP");                  // MPICH1, Myrinet GM
     // Also historically validated GMPI_NP > 1.
-    // For MPICH2, can't check MPIRUN_DEVICE; only set on master.
+    // For MPICH2, can't check MPIRUN_DEVICE; only set on rank 0.
 
     StringArray::const_iterator ev_it = env_vars.begin();
     StringArray::const_iterator ev_end = env_vars.end();
