@@ -77,7 +77,7 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
     String interface_type(interface_enum_to_string(interfaceType));
     interface_type.replace(0, 1, 1, std::toupper(*interface_type.begin()));
 
-    if (eaDedMasterFlag)
+    if (eaDedSchedFlag)
       Cout << interface_type << " interface: self-scheduling ";
     else if (numAnalysisServers > 1)
       Cout << interface_type << " interface: static scheduling ";
@@ -119,9 +119,9 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
   // ----------------
   // Analysis portion
   // ----------------
-  if (eaDedMasterFlag) { // set up master-slave
+  if (eaDedSchedFlag) { // set up dedicated scheduler
     if (evalCommRank == 0)
-      master_dynamic_schedule_analyses();
+      dedicated_dynamic_scheduler_analyses();
     else
       serve_analyses_synch();
   }
@@ -132,7 +132,7 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
 	 << " numAnalysisServers = " << numAnalysisServers << std::endl;
 #endif // MPI_DEBUG
 
-    // For execution of local jobs on a dedicated master (e.g., for a serial
+    // For execution of local jobs on a dedicated scheduler (e.g., for a serial
     // value computation amongst parallel numerical gradient computations),
     // ApplicationInterface::init_serial_analyses() updates numAnalysisServers
     // from its default (0) to a serial setting (1).
@@ -153,7 +153,7 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
     // Provide synchronization if there's an oFilter and a static schedule
     // was used since evalCommRank 0 must postprocess all results (MPI_Reduce
     // provides synchronization in overlay() for the case of no oFilter).
-    if (evalCommSize > 1 && !eaDedMasterFlag) // static schedule
+    if (evalCommSize > 1 && !eaDedSchedFlag) // static schedule
       parallelLib.barrier_e(); // evalCommRank 0 waits for analyses to complete
     if (evalCommRank == 0)
       derived_map_of(oFilterName);
@@ -517,13 +517,14 @@ void DirectApplicInterface::overlay_response(Response& response)
   // add all contributions to the response object from analysisComm leaders.
 
   // If not rank 0 within an analysisComm, then nothing to contribute to the
-  // total response.  Note that an evaluation dedicated master must participate
-  // in the reduction (even though it contributes no response data) since it is
-  // the final destination of the evaluation result.
+  // total response.  Note that an evaluation dedicated scheduler must
+  // participate in the reduction (even though it contributes no response data)
+  // since it is the final destination of the evaluation result.
   if (analysisCommRank)
     return;
 
-  // set response data for analysisComm leaders (excluding master if present)
+  // set response data for analysisComm leaders (excluding dedicated scheduler
+  // if present)
   if (analysisServerId) {
     ActiveSet set;
     set.request_vector(directFnASV);
@@ -532,16 +533,16 @@ void DirectApplicInterface::overlay_response(Response& response)
     response.metadata(metaData);
   }
 
-  // For all master-slave cases & for peer cases in which numAnalysisServers>1,
+  // For all dedicated scheduler cases & peer cases with numAnalysisServers>1,
   // response components from analysis servers must be overlaid using 
   // MPI_Reduce(..., MPI_SUM, ...).  This is performed using a mapping of 
   // response->double*->Reduce(double*)->response.
-  if (numAnalysisServers > 1 || eaDedMasterFlag) {
+  if (numAnalysisServers > 1 || eaDedSchedFlag) {
     int num_doubles   = response.data_size();
     double* local_fns = new double [num_doubles];
     if (analysisServerId) // analysis leaders
       response.write_data(local_fns);
-    else { // evaluation dedicated master (if present)
+    else { // evaluation dedicated scheduler (if present)
       for (size_t i=0; i<num_doubles; ++i)
         local_fns[i] = 0.0;
     }

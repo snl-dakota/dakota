@@ -81,10 +81,10 @@ protected:
   void component_parallel_mode(short mode) override;
 
   /// Service the offline and online phase job requests received from the
-  /// master; completes when termination message received from stop_servers().
+  /// scheduler; completes when termination message received from stop_servers()
   void serve_run(ParLevLIter pl_iter, int max_eval_concurrency) override;
 
-  /// Executed by the master to terminate the offline and online phase
+  /// Executed by the scheduler to terminate the offline and online phase
   /// server operations when iteration on the SubspaceModel is complete
   void stop_servers() override;
 

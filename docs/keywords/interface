@@ -19,8 +19,8 @@ input/output filters).  The mapping actions of
 
 
 - The :dakkw:`interface-asynchronous` keyword enables concurrent local     function evaluations or analyses via operating system process     management.  Its child keywords allow tailoring the evaluation and     analysis concurency.
-- The evaluation servers, scheduling mode (master, peer static or     dynamic), and processor keywords allow a user to override Dakota's     default evaluation configuration when running in parallel (MPI)     mode.
-- The analysis servers and scheduling mode (master, peer static or     dynamic) keywords allow a user to override Dakota's default     analysis configuration when running in parallel (MPI) mode.
+- The evaluation servers, scheduling mode (dedicated, peer static, or peer dynamic), and processor keywords allow a user to override Dakota's     default evaluation configuration when running in parallel (MPI)     mode.
+- The analysis servers and scheduling mode (dedicated or peer) keywords allow a user to override Dakota's default     analysis configuration when running in parallel (MPI) mode.
 
 Note: see :dakkw:`interface-analysis_drivers-direct` for the specific
 ``processors_per_analysis`` specification supported for direct

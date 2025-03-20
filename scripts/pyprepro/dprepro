@@ -25,7 +25,7 @@ if pyv >= (3,):
     xrange = range
     unicode = str
     
-__version__ = "20230908.0"
+__version__ = "20250305.0"
 
 __all__ = ['pyprepro','Immutable','Mutable','ImmutableValDict','dprepro','convert_dakota']
 
@@ -1165,6 +1165,16 @@ def convert_dakota(input_file):
     # Use pyprepro's _touni since it is more robust to windows encoding
     with open(input_file,'rb') as F:
         lines = _touni(F.read()).strip().split('\n') 
+    
+    # See if it is a JSON format and use that. Otherwise, go to the other readers
+    try:
+        env = json.loads('\n'.join(lines))
+        for item in env['variables']:
+            env[item['label']] = item['value']
+        
+        return env
+    except ValueError: # or json.JSONDecodeError  in 3+
+        pass
         
     for n,line in enumerate(lines):
         line = line.strip()

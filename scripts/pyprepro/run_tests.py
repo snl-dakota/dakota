@@ -958,10 +958,20 @@ class dakota_dprepro(unittest.TestCase):
         cmd = '--no-warn test_files/dakota_aprepro.1 {0} test_output/dakota.2'.format(templatepath)
         pyprepro._dprepro_cli(shsplit(cmd))
         self.assertTrue(compare_lines(read('test_output/dakota.2'),gold))
+        
+        # json style with 3 inputs. NOTE: call dprepro
+        cmd = '--no-warn test_files/dakota_json.1 {0} test_output/dakota.3'.format(templatepath)
+        pyprepro._dprepro_cli(shsplit(cmd))
+        self.assertTrue(compare_lines(read('test_output/dakota.3'),gold))
+
+        # json style with 3 inputs. NOTE: call dprepro. Use --simple-parser
+        cmd = '--simple-parser --no-warn test_files/dakota_json.1 {0} test_output/dakota.4'.format(templatepath)
+        pyprepro._dprepro_cli(shsplit(cmd))
+        self.assertTrue(compare_lines(read('test_output/dakota.4'),gold))
 
     def test_malformed_dakota_and_simple(self):
         """
-        Test using the --simple-parser
+        Test using the --simple-parser including malformed Dakota.
         """
         gold = read('test_gold/read_from_dakota.gold')
     
@@ -976,14 +986,14 @@ class dakota_dprepro(unittest.TestCase):
         
         # dakota style using a file that would break the non dakota.interfacing parser
         
-        cmd = ' --no-warn --simple-parser test_files/dakota_malformed_default.1 {0} test_output/dakota.3'.format(templatepath)
+        cmd = ' --no-warn --simple-parser test_files/dakota_malformed_default.1 {0} test_output/dakota.5'.format(templatepath)
         pyprepro._dprepro_cli(shsplit(cmd))
-        self.assertTrue(compare_lines(read('test_output/dakota.3'),gold))
+        self.assertTrue(compare_lines(read('test_output/dakota.5'),gold))
     
         # aprepo style with 3 inputs. NOTE: call dprepro
-        cmd = '--no-warn --simple-parser test_files/dakota_malformed_aprepro.1 {0} test_output/dakota.4'.format(templatepath)
+        cmd = '--no-warn --simple-parser test_files/dakota_malformed_aprepro.1 {0} test_output/dakota.6'.format(templatepath)
         pyprepro._dprepro_cli(shsplit(cmd))
-        self.assertTrue(compare_lines(read('test_output/dakota.4'),gold))
+        self.assertTrue(compare_lines(read('test_output/dakota.6'),gold))
         
 
     def test_dakota_interfacing(self):

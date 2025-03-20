@@ -6516,11 +6516,11 @@ static Iface_mp_lit
 	MP2(failAction,continuation);
 
 static Iface_mp_type
-	MP2s(analysisScheduling,MASTER_SCHEDULING),
+	MP2s(analysisScheduling,DEDICATED_SCHEDULER_DYNAMIC),
 	MP2s(analysisScheduling,PEER_SCHEDULING),
       //MP2s(analysisScheduling,PEER_DYNAMIC_SCHEDULING),
       //MP2s(analysisScheduling,PEER_STATIC_SCHEDULING),
-	MP2s(evalScheduling,MASTER_SCHEDULING),
+	MP2s(evalScheduling,DEDICATED_SCHEDULER_DYNAMIC),
 	MP2s(evalScheduling,PEER_DYNAMIC_SCHEDULING),
 	MP2s(evalScheduling,PEER_STATIC_SCHEDULING),
 	MP2s(asynchLocalEvalScheduling,DYNAMIC_SCHEDULING),
@@ -6676,6 +6676,7 @@ static Method_mp_lit
 	MP2(mcmcType,dili),
 	MP2(mcmcType,dram),
 	MP2(mcmcType,mala),
+	MP2(mcmcType,multilevel_mcmc),
 	MP2(mcmcType,metropolis_hastings),
 	MP2(mcmcType,multilevel),
 	MP2(modelDiscrepancyType,global_kriging),
@@ -6710,6 +6711,16 @@ static Method_mp_lit
 	MP2(trialType,random),
         MP2(useSurrogate,inform_search),
         MP2(useSurrogate,optimize);
+
+static IntVector
+  MP_(mlmcmcSubsamplingSteps);
+
+static Real
+  MP_(mlmcmcTargetVariance),
+  MP_(mlmcmcGreedyResamplingFactor);
+
+static int
+  MP_(mlmcmcInitialChainSamples);
 
 static Method_mp_litc
 	MP3(crossoverType,crossoverRate,shuffle_random),
@@ -7127,7 +7138,7 @@ static Method_mp_type
 	MP2s(groupThrottleType,MFMC_ESTIMATOR_GROUPS),
         MP2p(growthOverride,RESTRICTED),                   // Pecos enumeration
 	MP2p(growthOverride,UNRESTRICTED),                 // Pecos enumeration
-	MP2s(iteratorScheduling,MASTER_SCHEDULING),
+	MP2s(iteratorScheduling,DEDICATED_SCHEDULER_DYNAMIC),
 	MP2s(iteratorScheduling,PEER_SCHEDULING),
       //MP2s(iteratorScheduling,PEER_DYNAMIC_SCHEDULING),
       //MP2s(iteratorScheduling,PEER_STATIC_SCHEDULING),
@@ -7464,11 +7475,10 @@ static Model_mp_type
       //MP2p(refinementType,P_REFINEMENT),        // Pecos
 	MP2s(regressionType,FT_LS),
 	MP2s(regressionType,FT_RLS2),
-	MP2s(subMethodScheduling,MASTER_SCHEDULING),
+	MP2s(subMethodScheduling,DEDICATED_SCHEDULER_DYNAMIC),
         MP2s(method_rotation,ROTATION_METHOD_UNRANKED),
 	MP2s(method_rotation,ROTATION_METHOD_RANKED),
 	MP2s(subMethodScheduling,PEER_SCHEDULING);
-
       //MP2s(subMethodScheduling,PEER_DYNAMIC_SCHEDULING),
       //MP2s(subMethodScheduling,PEER_STATIC_SCHEDULING),
 

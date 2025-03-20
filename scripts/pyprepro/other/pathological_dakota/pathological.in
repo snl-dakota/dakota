@@ -23,7 +23,10 @@ interface
     fork analysis_driver = 'echo.sh'
     parameters_file = 'params.in'
     file_save
-    aprepro
+    parameters_format
+        # standard
+        # aprepro
+        json
 
 responses
 	response_functions = 1

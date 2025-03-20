@@ -134,7 +134,7 @@ parse_inputs(ProgramOptions& prog_opts,
   }
   else {
 
-    // Only the master parses the input file.
+    // Only world rank 0 parses the input file.
     if (parallelLib.world_rank() == 0) {
 
       if ( !prog_opts.input_file().empty() &&
@@ -218,15 +218,15 @@ void ProblemDescDB::broadcast()
   if (dbRep)
     dbRep->broadcast();
   else {
-    // DAKOTA's old design for reading the input file was for the master to get
-    // the input filename from cmd_line_handler (after MPI_Init) and broadcast
+    // DAKOTA's old design for reading the input file was for world rank 0 to
+    // get the input filename from cmd_line_handler (after MPI_Init) and bcast
     // the character buffer to all other processors (having every processor
     // query the cmd_line_handler was failing because of the effect of MPI_Init
     // on argc and argv).  Then every processor yyparsed.  This worked fine but
     // was not scalable for MP machines with a limited number of I/O devices.
 
-    // Now, rank 0 yyparse's and sends all the parsed data in a single buffer
-    // to all other ranks.
+    // Now, world rank 0 yyparse's and sends all the parsed data in a single
+    // buffer to all other ranks.
     if (parallelLib.world_size() > 1) {
       if (parallelLib.world_rank() == 0) {
 	enforce_unique_ids();
@@ -916,7 +916,7 @@ void ProblemDescDB::send_db_buffer()
   send_buffer << environmentSpec   << dataMethodList    << dataModelList
 	      << dataVariablesList << dataInterfaceList << dataResponsesList;
 
-  // Broadcast length of buffer so that slaves can allocate MPIUnpackBuffer
+  // Broadcast length of buffer so that servers can allocate MPIUnpackBuffer
   int buffer_len = send_buffer.size();
   parallelLib.bcast_w(buffer_len);
 
@@ -1562,7 +1562,8 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
       {"nond.refinement_samples", P_MET refineSamples},
       {"parameter_study.steps_per_variable", P_MET stepsPerVariable},
       {"generating_vector.inline", P_MET generatingVector},
-      {"generating_matrices.inline", P_MET generatingMatrices}
+      {"generating_matrices.inline", P_MET generatingMatrices},
+      {"nond.mlmcmc_subsampling_steps", P_MET mlmcmcSubsamplingSteps}
     },
     { /* model */
       {"refinement_samples", P_MOD refineSamples}
@@ -2215,6 +2216,8 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
       {"nond.estimator_variance_metric_norm_order",
        P_MET estVarMetricNormOrder},
       {"nond.mala_step_size", P_MET malaStepSize},
+      {"nond.mlmcmc_greedy_resampling_factor", P_MET mlmcmcGreedyResamplingFactor},
+      {"nond.mlmcmc_target_variance", P_MET mlmcmcTargetVariance},
       {"nond.multilevel_estimator_rate", P_MET multilevEstimatorRate},
       {"nond.rcond_tol_throttle", P_MET rCondTolThrottle},
       {"nond.regression_penalty", P_MET regressionL2Penalty},
@@ -2312,6 +2315,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
       {"nond.dili_ses_num_eigs", P_MET diliSesNumEigs},
       {"nond.dili_ses_overs_factor", P_MET diliSesOversFactor},
       {"nond.dr_num_stages", P_MET drNumStages},
+      {"nond.mlmcmc_initial_chain_samples", P_MET mlmcmcInitialChainSamples},
       {"nond.prop_cov_update_period", P_MET proposalCovUpdatePeriod},
       {"nond.pushforward_samples", P_MET numPushforwardSamples},
       {"nond.samples_on_emulator", P_MET samplesOnEmulator},

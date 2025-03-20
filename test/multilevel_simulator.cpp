@@ -35,26 +35,26 @@
 //        case.
 //  -d    Use deterministic serial, communication and computation
 //        times.
-//  -m    medium performance scheduling -- eliminate masters,
+//  -m    medium performance scheduling -- eliminate dedicated schedulers,
 //        if present, from levels where the number of partitions is
 //        equal to one for a given partitioning scheme 
 //  -h    high performance scheduling -- medium performance scheduling
-//        plus eliminate masters, if present, from levels where
+//        plus eliminate dedicated scheduler, if present, from levels where
 //        the number of partitions is equal to the maximum concurrency 
 //        for a given partitioning scheme.
 //  -l    skew the schedule so that extra processors are distributed
 //        to the lowest numbered partitions in a level.
 //  -p    Output only the partitioning schemes that use exactly
 //        the requested number of processors
-//  -s    The number of processors listed in the input file are
-//        used for simulations only. Any additional processors
-//        needed for masters are automaticly added to the total.
+//  -s    The number of processors listed in the input file are used
+//        for simulations only. Any additional processors needed for
+//        dedicated schedulers are automaticly added to the total.
 //
 //  Input file:
 //   The input file has the following line format:
 //
 //   first line:    processors  algorithm_levels iterations
-//   lvls 1 to k-1: master_flag  static_phases stochastic_phases max_concurrency
+//   lvls 1 to k-1: dedicated_flag static_phases stochastic_phases max_concurrency
 //   last level:    static_phases stochastic_phases pmin pmax
 //
 //   where:
@@ -62,8 +62,8 @@
 //      algorithm_levels     total number of levels (k) of parallelism
 //      iterations           number of times the algorithm is executed
 //                           (for computation of statistical parameters)
-//      master_flag          partitions on the kth level require (1)
-//                           or do not require (0) a master
+//      dedicated_flag       partitions on the kth level require (1) or
+//                           do not require (0) a dedicated scheduler
 //      static_phases        minimum number of phases for the level
 //      stochastic_phases    phases uniformly distributed over range 
 //                           [0,stochastic_phases] are added to 
@@ -91,7 +91,8 @@
 //                 a partitioning scheme.
 //     sim. proc.= Number of processors used for an individual
 //                 simulation
-//     masters   = Number of masters used for the partitioning scheme
+//     ded sched = Number of dedicated schedulers used for the partitioning
+//                 scheme
 //     ser.sims. = Number of serial executions of the simulation code.
 //     partitions(tot. level 1 2 ... ) =
 //                 The first column under this heading is the total
@@ -123,13 +124,13 @@
 #define LIST_START   -1
 #define LIST_END     -2
 
-unsigned int Levels=0, Iterations, Pkmin, Pkmax, LevelsWithMaster=0; 
+unsigned int Levels=0, Iterations, Pkmin, Pkmax, LevelsWithDedicated=0; 
 unsigned int Processors=0, SimProcessors, RemProcessors, ComputeProcessors;
 unsigned int RequestedProcessors;
 unsigned int AllPermutations=0, DeterministicTimes=0;
 unsigned int MediumPerformance=0, HighPerformance=0;
 unsigned int BalancedSchedule=1;
-unsigned int ExactProcessorCount=0, SupplyMasters=0;
+unsigned int ExactProcessorCount=0, SupplyDedicateds=0;
 int Experiment=0,Seed;
 double Pmin_time=0.0, Pmin_work, Usage;
 
@@ -320,14 +321,14 @@ class alg_times: public algorithm_times {
 
 class algorithm: public alg_times {
 private:
-  unsigned int level, master, partitions, max_concurrency;
+  unsigned int level, dedicated, partitions, max_concurrency;
   unsigned int processors_in_partition; 
   algorithm *sublevel;
   algorithm *superlevel;
 
 public:
   double dynamic_wallclock_time(unsigned int);
-  unsigned int get_master() { return master; };
+  unsigned int get_dedicated() { return dedicated; };
   unsigned int permute_partitions();
   double pmin_wallclock_time(); 
   void populate(unsigned int, ifstream&, algorithm *);  
@@ -360,7 +361,7 @@ double algorithm::dynamic_wallclock_time(unsigned int p_index = 0 )
           if(superlevel->processors_in_partition%partitions>wall_times.start)
             processors_in_partition++;
         }
-        if(master)
+        if(dedicated)
           wall_times[LIST_START] += sublevel->dynamic_wallclock_time(p_index
             + sublevel->processor_index(wall_times.start));
         else
@@ -454,12 +455,12 @@ void algorithm::populate(unsigned int lvl, ifstream& alg_in, algorithm *Algs)
   if(level < Levels) {
  
     // input algorithm constants
-    alg_in >> master >> static_phases >> stochastic_phases >> max_concurrency;
+    alg_in >> dedicated >> static_phases >> stochastic_phases >> max_concurrency;
     // output constants
-    cout << setw(5) << level << setw(8) << master << setw(9) << static_phases;
+    cout << setw(5) << level << setw(8) << dedicated << setw(9) << static_phases;
     cout << setw(12) << stochastic_phases << setw(14) << max_concurrency << "\n";
-    if(master)
-      LevelsWithMaster++;
+    if(dedicated)
+      LevelsWithDedicated++;
     // construct link to the previous level
     if(level != BASE_LEVEL)
       superlevel = &Algs[level-BASE_LEVEL-1];
@@ -473,7 +474,7 @@ void algorithm::populate(unsigned int lvl, ifstream& alg_in, algorithm *Algs)
     // last level, input min. processors per simulation
     alg_in >> static_phases >> stochastic_phases >> Pkmin >> Pkmax;
     //initialize other variables
-    master=0;
+    dedicated=0;
     // output constants
     cout << setw(5) << level << "       -        " << static_phases;
     cout << setw(12) << stochastic_phases << "    pkmin = " << Pkmin; 
@@ -515,16 +516,16 @@ void algorithm::reset_partitions()
 }
 
 int algorithm::properties(unsigned int &concurrency_product, unsigned int
-  &masters, unsigned int &seriality)
+  &ded_scheds, unsigned int &seriality)
 {
   if(level == BASE_LEVEL) {
     //initialize
     concurrency_product=1;
     if((HighPerformance && partitions < max_concurrency && partitions > 1) ||
       (MediumPerformance && partitions > 1) || (!HighPerformance && !MediumPerformance))
-      masters=master;
+      ded_scheds=dedicated;
     else
-      masters=0;
+      ded_scheds=0;
     seriality=1;
   }
   if(level < Levels) {
@@ -532,21 +533,21 @@ int algorithm::properties(unsigned int &concurrency_product, unsigned int
     if((HighPerformance && sublevel->partitions < sublevel->max_concurrency &&
       partitions > 1) || (MediumPerformance && sublevel->partitions > 1) || 
       (!HighPerformance && !MediumPerformance))
-      masters += concurrency_product*sublevel->master;
+      ded_scheds += concurrency_product*sublevel->dedicated;
     if(max_concurrency%partitions == 0)
       seriality *= phases*(max_concurrency/partitions);
     else
       seriality *= phases*(1+max_concurrency/partitions);
-    return sublevel->properties(concurrency_product,masters,seriality);
+    return sublevel->properties(concurrency_product,ded_scheds,seriality);
   }
   else {
     seriality *= phases;
-    if(SupplyMasters) {
+    if(SupplyDedicateds) {
       ComputeProcessors = RequestedProcessors;
-      Processors = RequestedProcessors+masters;
+      Processors = RequestedProcessors+ded_scheds;
     }
     else {
-      ComputeProcessors = RequestedProcessors-masters;
+      ComputeProcessors = RequestedProcessors-ded_scheds;
       Processors = RequestedProcessors;
     }
     SimProcessors = (ComputeProcessors)/concurrency_product;
@@ -581,7 +582,7 @@ double algorithm::static_wallclock_time(unsigned int p_index = 0 )
           if(superlevel->processors_in_partition%partitions>k)
             processors_in_partition++;
         }
-        if(master)
+        if(dedicated)
           wall_times[k] += sublevel->dynamic_wallclock_time(p_index
             + sublevel->processor_index(k));
         else
@@ -622,7 +623,7 @@ class partitioning {
 private:
   double sim_time, wall_time, comm_time, ser_time, p_usg;
   double eff, max_eff, stdev_eff;
-  unsigned int concurrency_product, masters, seriality, min_prcsrs;
+  unsigned int concurrency_product, ded_scheds, seriality, min_prcsrs;
   int sim_prcsrs;
   algorithm *alg;
   void efficency();
@@ -649,7 +650,7 @@ partitioning::partitioning(algorithm *alg_ptr)
 
 int partitioning::algorithm_properties()
 {
-  sim_prcsrs = alg->properties(concurrency_product, masters, seriality);
+  sim_prcsrs = alg->properties(concurrency_product, ded_scheds, seriality);
   if(ExactProcessorCount && RemProcessors!=0)
     return 0;
   else
@@ -677,7 +678,7 @@ void partitioning::properties()
     sim_time += simulation_time();
 
     // compute the relative wall clock time
-      if(alg->get_master())
+      if(alg->get_dedicated())
         tmp = alg->dynamic_wallclock_time();
       else
         tmp = alg->static_wallclock_time();
@@ -719,7 +720,7 @@ void partitioning::output_heading()
   // output the table heading for the partioning properties data
   cout << "\n" << setfill('-') << setw(111) << "\n" << setfill(' ');
   cout << "efficency  wall time  sim. time  %usage min proc. sim.proc. ";
-  cout << "masters ser.sims.  partitions(tot. level 1 2 ... ) \n";
+  cout << "ded_scheds ser.sims.  partitions(tot. level 1 2 ... ) \n";
   cout << setfill('-') << setw(111) << "\n" << setfill(' ');
 }
 
@@ -733,7 +734,7 @@ void partitioning::output_properties()
     cout << setprecision(1) << setw(7) << p_usg;
     cout << setw(7) << min_prcsrs;
     cout << setw(9) << sim_prcsrs;
-    cout << setw(9) << masters;
+    cout << setw(9) << ded_scheds;
     cout << setw(9) << seriality;
     cout << setw(9) << concurrency_product << "  ";
     // output the partitions at each level
@@ -760,7 +761,7 @@ double partitioning::simulation_time()
 
 void partitioning::total_processors()
 {
-  min_prcsrs = masters + concurrency_product*sim_prcsrs;
+  min_prcsrs = ded_scheds + concurrency_product*sim_prcsrs;
 }
 
 void partitioning::wallclock_time()
@@ -798,7 +799,7 @@ int main(int argc, char** argv)
     if(!strcmp(argv[i],"-p"))
       ExactProcessorCount=1;
     if(!strcmp(argv[i],"-s"))
-      SupplyMasters=1;
+      SupplyDedicateds=1;
   }
 
   // open the algorithim definition file
@@ -817,7 +818,7 @@ int main(int argc, char** argv)
        << "  Iterations = " << Iterations << "\n";
   cout << "--------------------------------------------------------------\n";
   cout << "                        phases               maximum\n";
-  cout << "  level   master   static    stochastic    concurrency\n";
+  cout << "  level   dedicated   static    stochastic    concurrency\n";
   cout << "--------------------------------------------------------------\n";
 
   // instanciate the algorithm array
@@ -847,9 +848,9 @@ int main(int argc, char** argv)
   part.reset();
 
   // output heading for properties data
-  if(LevelsWithMaster == 0)
+  if(LevelsWithDedicated == 0)
     cout << "\nStatic Scheduling:";
-  else if(LevelsWithMaster == Levels-1)
+  else if(LevelsWithDedicated == Levels-1)
     cout << "\nSelf Scheduling:";
   else
     cout << "\nMixed Static/Self Scheduling:";

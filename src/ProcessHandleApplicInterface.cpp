@@ -97,7 +97,7 @@ pid_t ProcessHandleApplicInterface::create_evaluation_process(bool block_flag)
   size_t i;
   if (evalCommRank == 0 && !suppressOutput) {
     if (block_flag) {
-      if (eaDedMasterFlag)
+      if (eaDedSchedFlag)
         Cout << "blocking fork dynamic schedule: ";
       else if (numAnalysisServers > 1)
         Cout << "blocking fork static schedule: ";
@@ -167,12 +167,12 @@ pid_t ProcessHandleApplicInterface::create_evaluation_process(bool block_flag)
       create_analysis_process(BLOCK, false);
     }
 
-    // Schedule analyses using either master-slave/dynamic or peer/static
-    if (eaDedMasterFlag) {
-      // master-slave dynamic scheduling requires a central point of control 
-      // and therefore needs separate schedule & serve functions.
+    // Schedule analyses using either dedicated scheduler/dynamic or peer/static
+    if (eaDedSchedFlag) {
+      // dedicated scheduler dynamic scheduling requires a central point of
+      // control and therefore needs separate schedule & serve functions.
       if (evalCommRank == 0)
-        master_dynamic_schedule_analyses();
+        dedicated_dynamic_scheduler_analyses();
       else {
 	// in message passing mode, the user must explicitly specify analysis
 	// concurrency to get hybrid parallelism
@@ -399,9 +399,9 @@ void ProcessHandleApplicInterface::serve_analyses_asynch()
     // -----------------------------------------------------------------
     int mpi_test_flag = 1;
     // check on asynchLocalAnalysisConcurrency limit below only required for
-    // static scheduling (self scheduler handles this from the master side).
-    // Leave it in for completeness even though static analysis scheduler
-    // doesn't use serve fns.
+    // static scheduling (self scheduler handles this from the ded scheduler
+    // side).  Leave it in for completeness even though static analysis
+    // scheduler doesn't use serve fns.
     while (mpi_test_flag && analysis_id &&
 	   num_running < asynchLocalAnalysisConcurrency) {
       // test for completion
@@ -424,9 +424,9 @@ void ProcessHandleApplicInterface::serve_analyses_asynch()
       }
     }
 
-    // -----------------------------------------------------------------
-    // Step 3: check for any completed jobs and return results to master
-    // -----------------------------------------------------------------
+    // --------------------------------------------------------------------
+    // Step 3: check for any completed jobs and return results to scheduler
+    // --------------------------------------------------------------------
     if (num_running)
       num_running -= test_local_analyses_send(analysis_id); // virtual fn
 

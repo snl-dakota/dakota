@@ -301,10 +301,10 @@ public:
   void derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 				  bool recurse_flag = true) override;
 
-  /// Service actualModel job requests received from the master.
+  /// Service actualModel job requests received from the scheduler.
   /// Completes when a termination message is received from stop_servers().
   void serve_run(ParLevLIter pl_iter, int max_eval_concurrency) override;
-  /// Executed by the master to terminate actualModel server operations
+  /// Executed by the scheduler to terminate actualModel server operations
   /// when DataFitSurrModel iteration is complete.
   void stop_servers() override;
 

@@ -12,5 +12,5 @@ Documentation Authors
 Adams, B.M., Bohnhoff, W.J., Coomber, W.P., Dalbey, K.R., Ebeida,
 M.S., Eddy, J.P.  Eldred, M.S.  Geraci, G.  Hooper, R.W., Hough, P.D.,
 Hu, K.T., Jakeman, J.D.  Khalil, M., Maupin, K.A., Menhorn, F.,
-Monschke, J.A., Prudencio, E.E., Ridgway, E.M., Rushdi, A.A., Seidl, D.T., 
+Monschke, J.A., Prudencio, E.E., Ridgway, E.M., Rizzi, F., Rushdi, A.A., Seidl, D.T., 
 Stephens, J.A., Swiler, L.P., Tran, A., Winokur, J.G.
