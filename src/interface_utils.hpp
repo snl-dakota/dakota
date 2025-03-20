@@ -18,7 +18,7 @@ namespace Dakota {
           inline T
           no_derived_method_error() {
             Cerr << "Error: No derived " << __func__ << " method.\n"
-              << "No default at Interface" << " base class." << std::endl;
+                 << "No default at Interface base class." << std::endl;
             abort_handler(-1);
             return T();
             //return std::nullopt;
@@ -26,7 +26,7 @@ namespace Dakota {
 
         inline void no_derived_method_error() {
           Cerr << "Error: No derived " << __func__ << " method.\n"
-               << "No default at Interface" << " base class." << std::endl;
+               << "No default at Interface base class." << std::endl;
           abort_handler(-1);
         }
     }
