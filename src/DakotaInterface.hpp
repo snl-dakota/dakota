@@ -501,10 +501,6 @@ inline bool Interface::iterator_eval_dedicated_master() const
 { return ieDedMasterFlag; }
 
 
-inline bool Interface::is_null() const
-{ return false; }
-
-
 /// global comparison function for Interface
 inline bool interface_id_compare(const Interface& interface_in, const void* id)
 { return ( *(const String*)id == interface_in.interface_id() ); }

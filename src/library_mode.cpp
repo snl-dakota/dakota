@@ -430,8 +430,6 @@ void parallel_interface_plugin(Dakota::LibraryEnvironment& env)
     // set DB nodes to input specification for this Model
     problem_db.set_db_model_nodes(fm->model_id());
 
-    std::shared_ptr<Dakota::Interface> model_interface = fm->derived_interface();
-
     // Parallel case: plug in derived Interface object with an analysisComm.
     // Note: retrieval and passing of analysisComm is necessary only if
     // parallel operations will be performed in the derived constructor.
@@ -441,8 +439,8 @@ void parallel_interface_plugin(Dakota::LibraryEnvironment& env)
     const MPI_Comm& analysis_comm = fm->analysis_comm();
 
     // don't increment ref count since no other envelope shares this letter
-    model_interface = std::make_shared<SIM::ParallelDirectApplicInterface>
-			       (problem_db, analysis_comm);
+    fm->derived_interface(std::make_shared<SIM::ParallelDirectApplicInterface>
+			       (problem_db, analysis_comm));
   }
   problem_db.set_db_model_nodes(model_index);            // restore
 }

@@ -220,12 +220,11 @@ void run_dakota(const MPI_Comm& my_comm, const std::string& input,
     env.filtered_model_list("simulation", "direct", "plugin_text_book");
   Dakota::ModelLIter ml_iter = models.begin(), ml_end = models.end();
   for ( ; ml_iter != ml_end; ++ml_iter) {
-    std::shared_ptr<Dakota::Interface> model_iface = (*ml_iter)->derived_interface();
     const Dakota::ParallelLevel& ea_level
       = (*ml_iter)->parallel_configuration_iterator()->ea_parallel_level();
     const MPI_Comm& analysis_comm = ea_level.server_intra_communicator();
-    model_iface = std::make_shared<SIM::ParallelDirectApplicInterface>
-			   (problem_db, analysis_comm);
+    (*ml_iter)->derived_interface(std::make_shared<SIM::ParallelDirectApplicInterface>
+			   (problem_db, analysis_comm));
   }
 
   // Execute the Environment

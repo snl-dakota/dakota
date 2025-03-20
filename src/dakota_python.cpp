@@ -180,7 +180,7 @@ PYBIND11_MODULE(environment, m) {
             for( auto & interface : interfaces )
             {
               auto py11_int = std::dynamic_pointer_cast<Dakota::Pybind11Interface>(
-                                (*p_libEnv->problem_description_db().interface_list().begin())->interface_rep());
+                                (*p_libEnv->problem_description_db().interface_list().begin()));
               if( py11_int )
                 py11_int->register_pybind11_callback_fn(callback);
             }
@@ -202,7 +202,7 @@ PYBIND11_MODULE(environment, m) {
             for( auto & interface : interfaces )
             {
               auto py11_int = std::dynamic_pointer_cast<Dakota::Pybind11Interface>(
-                                (*p_libEnv->problem_description_db().interface_list().begin())->interface_rep());
+                                (*p_libEnv->problem_description_db().interface_list().begin()));
               if( py11_int )
               {
                 for( auto const & idrv : interface->analysis_drivers() )
