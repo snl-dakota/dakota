@@ -41,14 +41,13 @@
 namespace Dakota {
     namespace InterfaceUtils {
 
-        /** used only by the envelope constructor to initialize interfaceRep
-            to the appropriate derived type. */
+        // Derived class factory
         std::shared_ptr<Interface> get_interface(ProblemDescDB& problem_db)
         {
           const unsigned short interface_type = problem_db.get_ushort("interface.type");
 
           // In the case where a derived interface type has been selected for managing
-          // analysis_drivers, then this determines the letter instantiation and any 
+          // analysis_drivers, then this determines the instantiation and any 
           // algebraic mappings are overlayed by ApplicationInterface.
           const String& algebraic_map_file
             = problem_db.get_string("interface.algebraic_mappings");
@@ -126,7 +125,7 @@ namespace Dakota {
           //  return std::make_shared<ApproximationInterface>(problem_db, num_acv, num_fns);
 
           // In the case where only algebraic mappings are used, then no derived map
-          // functionality is needed and ApplicationInterface is used for the letter.
+          // functionality is needed and ApplicationInterface is used
           else if (!algebraic_map_file.empty()) {
 #ifdef DEBUG
             Cout << ">>>>> new ApplicationInterface: " << algebraic_map_file
@@ -136,7 +135,7 @@ namespace Dakota {
           }
 
           // If the interface type is empty (e.g., from default DataInterface creation
-          // in ProblemDescDB::check_input()), then ApplicationInterface is the letter.
+          // in ProblemDescDB::check_input()), then ApplicationInterface used
           else if (interface_type == DEFAULT_INTERFACE) {
             Cerr << "Warning: empty interface type in Interface::get_interface()."
                  << std::endl;

@@ -54,13 +54,11 @@ namespace Dakota {
 size_t Interface::noSpecIdNum = 0;
 
 
-/** This constructor is the one which must build the base class data for all
-    inherited interfaces.  get_interface() instantiates a derived class letter
-    and the derived constructor selects this base class constructor in its 
-    initialization list (to avoid the recursion of the base class constructor
-    calling get_interface() again).  Since this is the letter and the letter 
-    IS the representation, interfaceRep is set to NULL. */
-Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db): 
+/** Base class constructor to initialize class data for all
+    inherited interfaces.  InterfaceUtils::get_interface(...)
+    instantiates derived classs */
+
+Interface::Interface(const ProblemDescDB& problem_db): 
   interfaceType(problem_db.get_ushort("interface.type")),
   interfaceId(problem_db.get_string("interface.id")), 
   analysisComponents(
@@ -167,7 +165,7 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
 }
 
 
-Interface::Interface(NoDBBaseConstructor, size_t num_fns, short output_level):
+Interface::Interface(size_t num_fns, short output_level):
   interfaceId(no_spec_id()), algebraicMappings(false), coreMappings(true),
   outputLevel(output_level), currEvalId(0), 
   fineGrainEvalCounters(outputLevel > NORMAL_OUTPUT), evalIdCntr(0), 
@@ -180,7 +178,7 @@ Interface::Interface(NoDBBaseConstructor, size_t num_fns, short output_level):
 }
 
 
-/** used in Model envelope class instantiations */
+/** used in Model class instantiations */
 Interface::Interface()
 { }
 

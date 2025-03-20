@@ -11,7 +11,7 @@
 #define DAKOTA_INTERFACE_H
 
 #include "dakota_system_defs.hpp"
-#include "dakota_global_defs.hpp" // for BaseConstructor
+#include "dakota_global_defs.hpp"
 #include "dakota_data_types.hpp"
 
 // forward declarations
@@ -287,12 +287,6 @@ public:
   /// at the iterator-evaluation scheduling level
   bool iterator_eval_dedicated_scheduler() const;
 
-  /// REMOVE
-  bool is_null() const;
-
-  /// function to return the letter
-  std::shared_ptr<Interface> interface_rep();
-
   /// set the evaluation tag prefix (does not recurse)
   void eval_tag_prefix(const String& eval_id_str, bool append_iface_id = true);
 
@@ -302,14 +296,12 @@ protected:
   //- Heading: Constructors
   //
 
-  /// constructor initializes the base class part of letter classes
-  /// (BaseConstructor overloading avoids infinite recursion in the
-  /// derived class constructors - Coplien, p. 139)
-  Interface(BaseConstructor, const ProblemDescDB& problem_db);
+  /// constructor initializes the base class configuration
+  Interface(const ProblemDescDB& problem_db);
 
-  /// constructor initializes the base class part of letter classes
-  /// (NoDBBaseConstructor used for on the fly instantiations without a DB)
-  Interface(NoDBBaseConstructor, size_t num_fns, short output_level);
+  /// constructor initializes the base class configuration
+  /// for on the fly instantiations without a DB)
+  Interface(size_t num_fns, short output_level);
 
   //
   //- Heading: Convenience functions
