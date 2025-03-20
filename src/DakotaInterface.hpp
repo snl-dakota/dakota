@@ -54,8 +54,6 @@ public:
   //- Heading: Constructors, destructor, assignment operator
   //
 
-  /// default constructor
-  Interface();
   /// copy constructor
   Interface(const Interface& interface_in);
 

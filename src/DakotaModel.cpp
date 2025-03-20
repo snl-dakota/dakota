@@ -35,10 +35,6 @@ extern EvaluationStore evaluation_store_db; // defined in dakota_global_defs.cpp
 
 // These globals defined here rather than in dakota_global_defs.cpp in order to
 // minimize dakota_restart_util object file dependencies
-Interface dummy_interface; ///< dummy Interface object used for mandatory
-                           ///< reference initialization or default virtual
-                           ///< function return by reference when a real
-                           ///< Interface instance is unavailable
 Iterator  dummy_iterator;  ///< dummy Iterator object used for mandatory
                            ///< reference initialization or default virtual
                            ///< function return by reference when a real

@@ -178,11 +178,6 @@ Interface::Interface(size_t num_fns, short output_level):
 }
 
 
-/** used in Model class instantiations */
-Interface::Interface()
-{ }
-
-
 /** Copy constructor */
 Interface::Interface(const Interface& interface_in)
 { /* empty ctor */ }
