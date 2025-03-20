@@ -248,7 +248,7 @@ Dakota::LibraryEnvironment * Dakota::Opt_TPL_Test_Fixture::create_default_env(un
   // plug the client's interface (function evaluator) into the Dakota environment
   Dakota::ProblemDescDB& problem_db = env.problem_description_db();
   std::shared_ptr<OptTestDirectApplicInterface> serial_iface(
-    new OptTestDirectApplicInterface(problem_db));
+    std::make_shared<OptTestDirectApplicInterface>(problem_db));
   serial_interface_plugin(env, "simple_quad", serial_iface);
 
   return p_env;

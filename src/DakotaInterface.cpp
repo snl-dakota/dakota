@@ -316,9 +316,7 @@ eval_tag_prefix(const String& eval_id_str, bool append_iface_id)
 void Interface::map(const Variables& vars, const ActiveSet& set,
 		    Response& response, bool asynch_flag)
 {
-  Cerr << "Error: Letter lacking redefinition of virtual map function.\n"
-       << "No default map defined at Interface base class." << std::endl;
-  abort_handler(-1);
+  InterfaceUtils::no_derived_method_error();
 }
 
 
@@ -627,6 +625,7 @@ int Interface::algebraic_function_type(String functionTag)
   Cerr << "Error: No function type available for \'" << functionTag << "\' " 
        << "via algebraic_mappings interface." << std::endl;
   abort_handler(INTERFACE_ERROR);
+  return 0; // does not get returned but quiets compiler warning
 #else
   return 0;
 #endif // HAVE_AMPL
@@ -634,19 +633,13 @@ int Interface::algebraic_function_type(String functionTag)
 
 const IntResponseMap& Interface::synchronize()
 {
-  Cerr << "Error: Letter lacking redefinition of virtual synchronize() "
-       << "function.\nNo default defined at Interface base class."
-       << std::endl;
-  abort_handler(-1);
+  return InterfaceUtils::no_derived_method_error<IntResponseMap>();
 }
 
 
 const IntResponseMap& Interface::synchronize_nowait()
 {
-  Cerr << "Error: Letter lacking redefinition of virtual synchronize_nowait"
-       << "() function.\nNo default defined at Interface base class."
-       << std::endl;
-  abort_handler(-1);
+  return InterfaceUtils::no_derived_method_error<IntResponseMap>();
 }
 
 
@@ -669,8 +662,8 @@ void Interface::cache_unmatched_responses()
 
 void Interface::serve_evaluations()
 {
-  Cerr << "Error: Letter lacking redefinition of virtual serve_evaluations "
-       << "function.\nNo default serve_evaluations defined at Interface"
+  Cerr << "Error: No derived serve_evaluations() method.\n"
+       << "nNo default serve_evaluations defined at Interface"
        << " base class." << std::endl;
   abort_handler(-1);
 }
@@ -678,8 +671,8 @@ void Interface::serve_evaluations()
 
 void Interface::stop_evaluation_servers()
 {
-  Cerr << "Error: Letter lacking redefinition of virtual stop_evaluation_"
-       << "servers fn.\nNo default stop_evaluation_servers defined at "
+  Cerr << "Error: No derived stop_evaluation_servers() method.\n"
+       << "No default stop_evaluation_servers defined at "
        << "Interface base class." << std::endl;
   abort_handler(-1);
 }
@@ -751,20 +744,14 @@ approximation_function_indices(const SizetSet& approx_fn_indices)
 void Interface::
 update_approximation(const Variables& vars, const IntResponsePair& response_pr)
 {
-  Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
-       << "(Variables, IntResponsePair) function.\n       This interface "
-       << "does not support approximation updating." << std::endl;
-  abort_handler(-1);
+  InterfaceUtils::no_derived_method_error();
 }
 
 
 void Interface::
 update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
 {
-  Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
-       << "(RealMatrix, IntResponseMap) function.\n       This interface "
-       << "does not support approximation updating." << std::endl;
-  abort_handler(-1);
+  InterfaceUtils::no_derived_method_error();
 }
 
 
@@ -772,30 +759,21 @@ void Interface::
 update_approximation(const VariablesArray& vars_array,
 		     const IntResponseMap& resp_map)
 {
-  Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
-       << "(VariablesArray, IntResponseMap) function.\n       This interface "
-       << "does not support approximation updating." << std::endl;
-  abort_handler(-1);
+  InterfaceUtils::no_derived_method_error();
 }
 
 
 void Interface::
 append_approximation(const Variables& vars, const IntResponsePair& response_pr)
 {
-  Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
-       << "(Variables, IntResponsePair) function.\n       This interface "
-       << "does not support approximation appending." << std::endl;
-  abort_handler(-1);
+  InterfaceUtils::no_derived_method_error();
 }
 
 
 void Interface::
 append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
 {
-  Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
-       << "(RealMatrix, IntResponseMap) function.\n       This interface "
-       << "does not support approximation appending." << std::endl;
-  abort_handler(-1);
+  InterfaceUtils::no_derived_method_error();
 }
 
 
@@ -803,10 +781,7 @@ void Interface::
 append_approximation(const VariablesArray& vars_array,
 		     const IntResponseMap& resp_map)
 {
-  Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
-       << "(VariablesArray, IntResponseMap) function.\n       This interface "
-       << "does not support approximation appending." << std::endl;
-  abort_handler(-1);
+  InterfaceUtils::no_derived_method_error();
 }
 
 
@@ -814,10 +789,7 @@ void Interface::
 append_approximation(const IntVariablesMap& vars_map,
 		     const IntResponseMap&  resp_map)
 {
-  Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
-       << "(IntVariablesMap, IntResponseMap) function.\n       This interface"
-       << " does not support approximation appending." << std::endl;
-  abort_handler(-1);
+  InterfaceUtils::no_derived_method_error();
 }
 
 
@@ -826,91 +798,61 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
 		    const IntVector&  di_l_bnds, const IntVector&  di_u_bnds,
 		    const RealVector& dr_l_bnds, const RealVector& dr_u_bnds)
 {
-  Cerr << "Error: Letter lacking redefinition of virtual build_approximation"
-       << "() function.\n       This interface does not support "
-       << "approximations." << std::endl;
-  abort_handler(-1);
+  InterfaceUtils::no_derived_method_error();
 }
 
 
 void Interface::export_approximation()
 {
-  Cerr << "Error: Letter lacking redefinition of virtual export_approximation"
-       << "() function.\n       This interface does not support exporting "
-       << "approximations." << std::endl;
-  abort_handler(-1);
+  InterfaceUtils::no_derived_method_error();
 }
 
 
 void Interface::rebuild_approximation(const BitArray& rebuild_fns)
 {
-  Cerr << "Error: Letter lacking redefinition of virtual rebuild_"
-       << "approximation() function.\n       This interface does not "
-       << "support approximations." << std::endl;
-  abort_handler(-1);
+  InterfaceUtils::no_derived_method_error();
 }
 
 
 void Interface::replace_approximation(const IntResponsePair& response_pr)
 {
-  Cerr << "Error: Letter lacking redefinition of virtual replace_"
-       << "approximation(IntResponsePair) function.\n       This interface "
-       << "does not support approximation data replacement." << std::endl;
-  abort_handler(-1);
+  InterfaceUtils::no_derived_method_error();
 }
 
 
 void Interface::replace_approximation(const IntResponseMap& resp_map)
 {
-  Cerr << "Error: Letter lacking redefinition of virtual replace_"
-       << "approximation(IntResponseMap) function.\n       This interface "
-       << "does not support approximation data replacement." << std::endl;
-  abort_handler(-1);
+  InterfaceUtils::no_derived_method_error();
 }
 
 
 void Interface::track_evaluation_ids(bool track)
 {
-  Cerr << "Error: Letter lacking redefinition of virtual track_evaluation_"
-       << "ids() function.\n       This interface does not support "
-       << "evaluation tracking." << std::endl;
-  abort_handler(-1);
+  InterfaceUtils::no_derived_method_error();
 }
 
 
 void Interface::pop_approximation(bool save_data)
 {
-  Cerr << "Error: Letter lacking redefinition of virtual pop_approximation"
-       << "(bool)\n       function. This interface does not support "
-       << "approximation\n       data removal." << std::endl;
-  abort_handler(-1);
+  InterfaceUtils::no_derived_method_error();
 }
 
 
 void Interface::push_approximation()
 {
-  Cerr << "Error: Letter lacking redefinition of virtual push_"
-       << "approximation() function.\n       This interface does not "
-       << "support approximation data retrieval." << std::endl;
-  abort_handler(-1);
+  InterfaceUtils::no_derived_method_error();
 }
 
 
 bool Interface::push_available()
 {
-  Cerr << "Error: Letter lacking redefinition of virtual push_"
-       << "available() function.\n       This interface does not "
-       << "support approximation data retrieval." << std::endl;
-  abort_handler(-1);
+  return InterfaceUtils::no_derived_method_error<bool>();
 }
 
 
 void Interface::finalize_approximation()
 {
-  Cerr << "Error: Letter lacking redefinition of virtual finalize_"
-       << "approximation() function.\n       This interface does not "
-       << "support approximation finalization." << std::endl;
-  abort_handler(-1);
+  InterfaceUtils::no_derived_method_error();
 }
 
 
@@ -922,19 +864,13 @@ void Interface::clear_inactive()
 
 void Interface::combine_approximation()
 {
-  Cerr << "Error: Letter lacking redefinition of virtual combine_"
-       << "approximation() function.\n       This interface does not "
-       << "support approximation combination." << std::endl;
-  abort_handler(-1);
+  InterfaceUtils::no_derived_method_error();
 }
 
 
 void Interface::combined_to_active(bool clear_combined)
 {
-  Cerr << "Error: Letter lacking redefinition of virtual combined_to_active()"
-       << " function.\n       This interface does not support approximation"
-       << " combination." << std::endl;
-  abort_handler(-1);
+  InterfaceUtils::no_derived_method_error();
 }
 
 
@@ -946,39 +882,27 @@ bool Interface::advancement_available()
 
 bool Interface::formulation_updated() const
 {
-  Cerr << "Error: Letter lacking redefinition of virtual formulation_updated"
-       << "() function.\n       This interface does not define approximation "
-       << "formulations." << std::endl;
-  abort_handler(-1);
+  return InterfaceUtils::no_derived_method_error<bool>();
 }
 
 
 void Interface::formulation_updated(bool update)
 {
-  Cerr << "Error: Letter lacking redefinition of virtual formulation_updated"
-       << "() function.\n       This interface does not define approximation "
-       << "formulations." << std::endl;
-  abort_handler(-1);
+  InterfaceUtils::no_derived_method_error();
 }
 
 
 Real2DArray Interface::
 cv_diagnostics(const StringArray& metric_types, unsigned num_folds)
 {
-  Cerr << "Error: Letter lacking redefinition of virtual cv_diagnostics()"
-       << "function.\n       This interface does not "
-       << "support cross-validation diagnostics." << std::endl;
-  abort_handler(-1);
+  return InterfaceUtils::no_derived_method_error<Real2DArray>();
 }
 
 
 RealArray Interface::challenge_diagnostics(const String& metric_type,
 					    const RealMatrix& challenge_pts)
 {
-  Cerr << "Error: Letter lacking redefinition of virtual challenge_"
-       << "diagnostics() function.\n       This interface does not "
-       << "support challenge data diagnostics." << std::endl;
-  abort_handler(-1);
+  return InterfaceUtils::no_derived_method_error<RealArray>();
 }
 
 
@@ -996,37 +920,30 @@ void Interface::clear_active_data()
 
 SharedApproxData& Interface::shared_approximation()
 {
-  Cerr << "Error: Letter lacking redefinition of virtual shared_approximation"
-       << "() function.\nThis interface does not support approximations."
-       << std::endl;
+  Cerr << "Error: No derived " << __func__ << " method.\n"
+       << "No default at Interface" << " base class." << std::endl;
   abort_handler(-1);
 }
 
 
 std::vector<Approximation>& Interface::approximations()
 {
-  Cerr << "Error: Letter lacking redefinition of virtual approximations() "
-       << "function.\n       This interface does not support approximations."
-       << std::endl;
-  abort_handler(-1);
+  InterfaceUtils::no_derived_method_error();
+  //return InterfaceUtils::no_derived_method_error<std::vector<Approximation>>();
 }
 
 
 const Pecos::SurrogateData& Interface::approximation_data(size_t fn_index)
 {
-  Cerr << "Error: Letter lacking redefinition of virtual approximation_data "
-       << "function.\n       This interface does not support approximations."
-       << std::endl;
+  Cerr << "Error: No derived " << __func__ << " method.\n"
+       << "No default at Interface" << " base class." << std::endl;
   abort_handler(-1);
 }
 
 
 const RealVectorArray& Interface::approximation_coefficients(bool normalized)
 {
-  Cerr << "Error: Letter lacking redefinition of virtual approximation_"
-       << "coefficients function.\n       This interface does not support "
-       << "approximations." << std::endl;
-  abort_handler(-1);
+  return InterfaceUtils::no_derived_method_error<RealVectorArray>();
 }
 
 
@@ -1034,27 +951,19 @@ void Interface::
 approximation_coefficients(const RealVectorArray& approx_coeffs,
 			   bool normalized)
 {
-  Cerr << "Error: Letter lacking redefinition of virtual approximation_"
-       << "coefficients function.\n       This interface does not support "
-       << "approximations." << std::endl;
-  abort_handler(-1);
+  InterfaceUtils::no_derived_method_error();
 }
 
 
 const RealVector& Interface::approximation_variances(const Variables& vars)
 {
-  Cerr << "Error: Letter lacking redefinition of virtual approximation_"
-       << "variances function.\n       This interface does not support "
-       << "approximations." << std::endl;
-  abort_handler(-1);
+  return InterfaceUtils::no_derived_method_error<RealVector>();
 }
 
 
 const StringArray& Interface::analysis_drivers() const
 {
-  Cerr << "Error: Letter lacking redefinition of virtual analysis_drivers "
-       << "function." << std::endl;
-  abort_handler(-1);
+  return InterfaceUtils::no_derived_method_error<StringArray>();
 }
 
 
