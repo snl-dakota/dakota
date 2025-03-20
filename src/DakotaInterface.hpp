@@ -56,8 +56,6 @@ public:
 
   /// default constructor
   Interface();
-  /// standard constructor for envelope
-  Interface(ProblemDescDB& problem_db);
   /// copy constructor
   Interface(const Interface& interface_in);
 

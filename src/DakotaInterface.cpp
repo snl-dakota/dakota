@@ -185,15 +185,6 @@ Interface::Interface()
 { }
 
 
-/** Used in Model instantiation to build the envelope.  This constructor
-    only needs to extract enough data to properly execute get_interface, since
-    Interface::Interface(BaseConstructor, problem_db) builds the 
-    actual base class data inherited by the derived interfaces. */
-Interface::Interface(ProblemDescDB& problem_db)
-{
-}
-
-
 /** Copy constructor */
 Interface::Interface(const Interface& interface_in)
 { /* empty ctor */ }
