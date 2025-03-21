@@ -61,7 +61,7 @@ model,
 	simulation
 #	  solution_level_control = 'ModelForm'
 	  solution_level_cost = 0.1 # w = 10	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13
-#	  solution_level_cost = 8.7181214 	# mistuned,denomalized	#s14,#s15
+#	  solution_level_cost = 8.7181214 	# mistuned,denormalized	#s14,#s15
 
 model,
 	id_model = 'HF'

@@ -727,10 +727,10 @@ update_hf_target(const RealVector& avg_eval_ratios, Real avg_N_H,
 
 /** Multi-moment map-based version used by ACV following shared_increment() */
 void NonDACVSampling::
-accumulate_acv_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
+accumulate_acv_sums(IntRealMatrixMap& sum_L_shared, IntRealVectorMap& sum_H,
 		    IntRealSymMatrixArrayMap& sum_LL, // L w/ itself + other L
 		    IntRealMatrixMap&         sum_LH, // each L with H
-		    RealVector& sum_HH, SizetArray& N_shared)
+		    RealVector& sum_HH, SizetArray& N_H_shared)//, Sizet2DArray& N_L_shared)
 {
   // uses one set of allResponses with QoI aggregation across all Models,
   // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
@@ -760,7 +760,7 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 
       hf_index = numApprox * numFunctions + qoi;
       if (asv[hf_index] & 1) {
-	++N_shared[qoi];
+	++N_H_shared[qoi];
 	// High accumulations:
 	hf_fn = fn_vals[hf_index];
 	// High-High:
@@ -780,20 +780,21 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 	  // Low accumulations:
 	  lf_index = approx * numFunctions + qoi;
 	  if (asv[lf_index] & 1) {
+	    //++N_L_shared[approx][qoi];
 	    lf_fn = fn_vals[lf_index];
 
-	    lb_it = sum_L_baseline.begin();
+	    lb_it = sum_L_shared.begin();
 	    ll_it = sum_LL.begin();  lh_it = sum_LH.begin();
-	    lb_ord = (lb_it == sum_L_baseline.end()) ? 0 : lb_it->first;
+	    lb_ord = (lb_it == sum_L_shared.end()) ? 0 : lb_it->first;
 	    ll_ord = (ll_it == sum_LL.end())         ? 0 : ll_it->first;
 	    lh_ord = (lh_it == sum_LH.end())         ? 0 : lh_it->first;
 	    lf_prod = lf_fn;  hf_prod = hf_fn;  active_ord = 1;
 	    while (lb_ord || ll_ord || lh_ord) {
     
-	      // Low baseline
+	      // Low shared
 	      if (lb_ord == active_ord) { // support general key sequence
 		lb_it->second(qoi,approx) += lf_prod;  ++lb_it;
-		lb_ord = (lb_it == sum_L_baseline.end()) ? 0 : lb_it->first;
+		lb_ord = (lb_it == sum_L_shared.end()) ? 0 : lb_it->first;
 	      }
 	      // Low-Low
 	      if (ll_ord == active_ord) { // support general key sequence

@@ -161,7 +161,7 @@ void NonDGenACVSampling::generate_ensembles_dags()
 
   std::map<UShortArray, UShortArraySet>::const_iterator d_cit;
   size_t set_size, total_size = 0;
-  for (d_cit=modelDAGs.begin(); d_cit!=modelDAGs.end(); ++d_cit) {
+  for (d_cit=++modelDAGs.begin(); d_cit!=modelDAGs.end(); ++d_cit) {
     const UShortArraySet& dag_set = d_cit->second;
     set_size = dag_set.size();  total_size += set_size;
     Cout << "For approximation set:\n" << d_cit->first
@@ -177,19 +177,20 @@ void NonDGenACVSampling::generate_ensembles_dags()
 
 void NonDGenACVSampling::prune_ensembles(const UShortArray& active_approx_set)
 {
-  UShortArray inactive_approx_set;  size_t i, cntr = 0;
+  UShortArray inactive_approx_set;
+  size_t i, cntr = 0, num_active = active_approx_set.size();
   for (i=0; i<numApprox; ++i)
-    if (active_approx_set[cntr] == i) ++cntr;
-    else    inactive_approx_set.push_back(i);
+    if (cntr < num_active && active_approx_set[cntr] == i) ++cntr;
+    else                         inactive_approx_set.push_back(i);
 
-  std::map<UShortArray, UShortArraySet>::iterator d_it;
-  size_t set_size, total_size = 0;
-  for (d_it=modelDAGs.begin(); d_it!=modelDAGs.end(); ++d_it) {
+  std::map<UShortArray, UShortArraySet>::iterator d_it = ++modelDAGs.begin();
+  while (d_it != modelDAGs.end()) {
     const UShortArray& approx_set = d_it->first;
     if (contains(approx_set, inactive_approx_set, true)) { // ordered
       Cout << "Removing approx_set:\n" << approx_set;
-      modelDAGs.erase(d_it);
+      modelDAGs.erase(d_it++);
     }
+    else ++d_it;
   }
 }
 
@@ -654,8 +655,10 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
     // leaves inactive approx sums in state inconsistent with sum_H/N_H_actual
     accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
 			sum_LH, sum_HH, N_H_actual);
+    // *** N_L_actual_shared
     N_H_alloc += (backfillFailures && mlmfIter) ?
       one_sided_delta(N_H_alloc, hf_target, relaxFactor) : numSamples;
+    // *** N_L_alloc_shared
     // While online cost recovery could be continuously updated, we restrict
     // to the pilot and do not not update after iter 0.  We could potentially
     // update cost for shared samples, mirroring the covariance updates.
@@ -668,7 +671,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
 			  sum_HH, N_H_actual, varH, covLL, covLH, approx_set);
 
     precompute_allocations(); // metrics not dependent on DAG
-    for (activeModelSetIter  = modelDAGs.begin();
+    for (activeModelSetIter  = ++modelDAGs.begin(); // skip no-approx case (MC)
 	 activeModelSetIter != modelDAGs.end(); ++activeModelSetIter) {
       const UShortArray& approx_set = activeModelSetIter->first;
       const UShortArraySet& dag_set = activeModelSetIter->second;
@@ -695,9 +698,9 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
 	//reset_acv(); // reset state for next ACV execution
       }
     }
-    restore_best();
-    soln_key.first  = activeModelSetIter->first;
-    soln_key.second = *activeDAGIter;
+    print_best();
+    soln_key.first  =  bestModelSetIter->first;
+    soln_key.second = *bestDAGIter;
     if (truthFixedByPilot) numSamples = 0;
     else {
       hf_target = dagSolns[soln_key].solution_reference();
@@ -711,6 +714,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
     // over the best model subset (retention results in budget overshoot).
     prune_ensembles(soln_key.first);
   }
+  restore_best();
 
   // Only QOI_STATISTICS requires application of oversample ratios and
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
@@ -761,7 +765,7 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
   N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
   precompute_allocations(); // compute metrics not dependent on active DAG
   std::pair<UShortArray, UShortArray> soln_key;
-  for (activeModelSetIter  = modelDAGs.begin();
+  for (activeModelSetIter  = ++modelDAGs.begin(); // skip no-approx case (MC)
        activeModelSetIter != modelDAGs.end(); ++activeModelSetIter) {
     const UShortArray& approx_set = activeModelSetIter->first;
     const UShortArraySet& dag_set = activeModelSetIter->second;
@@ -788,8 +792,7 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
       //reset_acv(); // reset state for next ACV execution
     }
   }
-  restore_best();
-  ++mlmfIter;
+  print_best();  restore_best();  ++mlmfIter;
 
   // -----------------------------------
   // Perform "online" sample increments:
@@ -864,7 +867,7 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
   // Compute "online" sample increments:
   // -----------------------------------
   precompute_allocations(); // compute metrics not dependent on active DAG
-  for (activeModelSetIter  = modelDAGs.begin();
+  for (activeModelSetIter  = ++modelDAGs.begin(); // skip no-approx case (MC)
        activeModelSetIter != modelDAGs.end(); ++activeModelSetIter) {
     const UShortArray&  approx_set = activeModelSetIter->first;
     const UShortArraySet& dag_set = activeModelSetIter->second;
@@ -891,8 +894,7 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
       //reset_acv(); // reset state for next ACV execution
     }
   }
-  restore_best();
-  ++mlmfIter;
+  print_best();  restore_best();  ++mlmfIter;
 
   // No LF increments or final moments for pilot projection
   soln_key.first  = activeModelSetIter->first;
@@ -2143,7 +2145,7 @@ void NonDGenACVSampling::update_best(MFSolutionData& soln)
 }
 
 
-void NonDGenACVSampling::restore_best()
+void NonDGenACVSampling::print_best()
 {
   //Cout << "\n>>>>> Approx subset and DAG evaluation completed\n" << std::endl;
 
@@ -2153,30 +2155,41 @@ void NonDGenACVSampling::restore_best()
     return;
   }
 
-  const UShortArray& best_models = bestModelSetIter->first;
+  const UShortArray& best_models =  bestModelSetIter->first;
   const UShortArray& best_dag    = *bestDAGIter;
-  Cout << "\nBest solution from DAG:\n";  print_dag(best_dag, best_models);
-  std::pair<UShortArray, UShortArray> soln_key(best_models, best_dag);
-  MFSolutionData& best_soln = dagSolns[soln_key];
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "\nwith solution variables =\n" << best_soln.solution_variables()
-	 << std::endl;
+  Cout << "\nBest solution from DAG:\n";
+  print_dag(best_models, best_dag);
 
+  if (outputLevel >= DEBUG_OUTPUT) {
+    std::pair<UShortArray, UShortArray> soln_key(best_models, best_dag);
+    Cout << "\nwith solution variables =\n"
+	 << dagSolns[soln_key].solution_variables() << std::endl;
+  }
+}
+
+
+void NonDGenACVSampling::restore_best()
+{
   // restore best state for compute/archive/print final results
   bool approx_incr = ( finalStatsType == QOI_STATISTICS &&
     ( pilotMgmtMode == ONLINE_PILOT || pilotMgmtMode == OFFLINE_PILOT ) );
+
+  const UShortArray& best_models =  bestModelSetIter->first;
+  const UShortArray& best_dag    = *bestDAGIter;
   if (activeModelSetIter != bestModelSetIter ||
       activeDAGIter      != bestDAGIter) { // best is not most recent
     activeModelSetIter = bestModelSetIter;
     activeDAGIter      = bestDAGIter;
-    if (approx_incr)
-      generate_reverse_dag(best_models, best_dag);
+    if (approx_incr) generate_reverse_dag(best_models, best_dag);
   }
   // now we can re-order roots based on final eval ratios solution
   // --> used for pyramid sample set ordering in approx_increments()
-  if (approx_incr)
+  if (approx_incr) {
+    std::pair<UShortArray, UShortArray> soln_key(best_models, best_dag);
+    MFSolutionData& best_soln = dagSolns[soln_key];
     unroll_reverse_dag_from_root(numApprox, best_soln.solution_ratios(),
 				 orderedRootList);
+  }
 }
 
 } // namespace Dakota

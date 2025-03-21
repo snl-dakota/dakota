@@ -249,6 +249,7 @@ private:
 						 const UShortList& root_list);
 
   void update_best(MFSolutionData& solution);
+  void print_best();
   void restore_best();
   //void reset_acv();
 
@@ -321,7 +322,7 @@ inline Real NonDGenACVSampling::available_budget() const
   size_t N_H_alloc = NLevAlloc[hf_form_index][hf_lev_index];
   Real cost_H = sequenceCost[numApprox], N_over_cost = (Real)N_H_alloc / cost_H;
   for (size_t approx=0; approx<numApprox; ++approx)
-    if  (approx == approx_set[cntr]) ++cntr; // ordered sequence
+    if  (cntr < num_approx && approx == approx_set[cntr]) ++cntr; // ordered seq
     else budget -= sequenceCost[approx] * N_over_cost;
 
   return budget;
