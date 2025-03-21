@@ -90,6 +90,8 @@ protected:
   void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 				       RealVector& lin_ineq_lb,
 				       RealVector& lin_ineq_ub) override;
+  void enforce_augmented_linear_ineq_constraints(RealVector& soln_vars)
+    override;
 
   //
   //- Heading: member functions
@@ -212,7 +214,6 @@ private:
   void specify_nonlinear_constraints(RealVector& nln_ineq_lb,
 				     RealVector& nln_ineq_ub,
 				     RealVector& nln_eq_tgt);
-  void enforce_augmented_linear_ineq_constraints(RealVector& soln_vars);
 
   void project_mc_estimator_variance(const RealSymMatrixArray& cov_GG_g,
 				     size_t H_index,

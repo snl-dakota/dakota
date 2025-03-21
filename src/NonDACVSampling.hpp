@@ -80,9 +80,15 @@ protected:
   void compute_LH_statistics(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
 			     RealSymMatrixArray& sum_LL_pilot,
 			     RealMatrix& sum_LH_pilot, RealVector& sum_HH_pilot,
-			     SizetArray& N_shared_pilot, RealMatrix& var_L,
+			     SizetArray& N_shared_pilot, //RealMatrix& var_L,
 			     RealVector& var_H, RealSymMatrixArray& cov_LL,
 			     RealMatrix& cov_LH);
+  void compute_LH_statistics(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
+			     RealSymMatrixArray& sum_LL_pilot,
+			     RealMatrix& sum_LH_pilot, RealVector& sum_HH_pilot,
+			     SizetArray& N_shared_pilot, //RealMatrix& var_L,
+			     RealVector& var_H, RealSymMatrixArray& cov_LL,
+			     RealMatrix& cov_LH, const UShortArray& approx_set);
 
   // shared_increment() cases:
   void accumulate_acv_sums(IntRealMatrixMap& sum_L_baseline,
@@ -135,6 +141,10 @@ protected:
   /// covariances among all LF approximations (the C matrix in ACV); organized
   /// as a numFunctions array of symmetric numApprox x numApprox matrices
   RealSymMatrixArray covLL;
+
+  /// ACV uses all approximations with in numApprox; this array supports this
+  /// case for functions that are generalized to support approx subsets
+  UShortArray fullApproxSet;
 
 private:
 
@@ -203,15 +213,16 @@ private:
 
   void compute_LH_covariance(const RealMatrix& sum_L_shared,
 			     const RealVector& sum_H, const RealMatrix& sum_LH,
-			     const SizetArray& N_shared, RealMatrix& cov_LH);
+			     const SizetArray& N_shared, RealMatrix& cov_LH,
+			     const UShortArray& approx_set);
   void compute_LL_covariance(const RealMatrix& sum_L_shared,
 			     const RealSymMatrixArray& sum_LL,
 			     const SizetArray& N_shared,
-			     RealSymMatrixArray& cov_LL);
-
-  void compute_L_variance(const RealMatrix& sum_L,
-			  const RealSymMatrixArray& sum_LL,
-			  const SizetArray& num_L, RealMatrix& var_L);
+			     RealSymMatrixArray& cov_LL,
+			     const UShortArray& approx_set);
+  //void compute_L_variance(const RealMatrix& sum_L,
+  // 			    const RealSymMatrixArray& sum_LL,
+  // 			    const SizetArray& num_L, RealMatrix& var_L);
 
   void compute_F_matrix(const RealVector& avg_eval_ratios, RealSymMatrix& F);
   /*
@@ -235,7 +246,7 @@ private:
   Real compute_R_sq(const RealSymMatrix& C, const RealSymMatrix& F,
 		    const RealMatrix& c, size_t qoi, Real var_H_q);
 
-  void compute_allocations(const RealMatrix& var_L, MFSolutionData& soln);
+  void compute_allocations(MFSolutionData& soln);
 
   void acv_estvar_ratios(const RealSymMatrix& F, RealVector& estvar_ratios);
   //Real acv_estimator_variance(const RealVector& avg_eval_ratios,
@@ -251,10 +262,6 @@ private:
 
   // option for performing multiple ACV optimizations and taking the best
   //bool multiStartACV;
-
-  /// ACV uses all approximations with in numApprox; this array supports this
-  /// case for functions that are generalized to support approx subsets
-  UShortArray approxSet;
 
   /// the "F" matrix from Gorodetsky JCP paper
   RealSymMatrix FMat;
@@ -338,7 +345,6 @@ initialize_acv_covariances(IntRealSymMatrixArrayMap covLL,
       mat_array[i].shape(numApprox);
   }
 }
-*/
 
 
 inline void NonDACVSampling::
@@ -354,6 +360,21 @@ compute_L_variance(const RealMatrix& sum_L, const RealSymMatrixArray& sum_LL,
       compute_variance(sum_L(qoi,approx), sum_LL[qoi](approx,approx),
 		       num_L_q, var_L(qoi,approx));
   }
+}
+*/
+
+
+inline void NonDACVSampling::
+compute_LH_statistics(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
+		      RealSymMatrixArray& sum_LL_pilot,
+		      RealMatrix& sum_LH_pilot, RealVector& sum_HH_pilot,
+		      SizetArray& N_pilot, //RealMatrix& var_L,
+		      RealVector& var_H, RealSymMatrixArray& cov_LL,
+		      RealMatrix& cov_LH)
+{
+  compute_LH_statistics(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
+			sum_HH_pilot, N_pilot, //var_L,
+			var_H, cov_LL, cov_LH, fullApproxSet);
 }
 
 

@@ -83,7 +83,7 @@ protected:
   void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 				       RealVector& lin_ineq_lb,
 				       RealVector& lin_ineq_ub) override;
-  void enforce_augmented_linear_ineq_constraints(RealVector& cd_vars);
+  void enforce_augmented_linear_ineq_constraints(RealVector& cd_vars) override;
 
   //
   //- Heading: member functions
@@ -98,6 +98,9 @@ private:
   /// generate sets of DAGs for the relevant combinations of active
   /// approximations
   void generate_ensembles_dags();
+  /// remove sets of DAGs for discarded models after an online iteration
+  void prune_ensembles(const UShortArray& active_approx_set);
+
   /// generate a set of DAGs for the provided root and subordinate nodes
   void generate_dags(unsigned short root, const UShortArray& nodes,
 		     UShortArraySet& dag_set);
@@ -147,7 +150,7 @@ private:
   void update_model_groups(const UShortList& root_list);
 
   void precompute_allocations();
-  void compute_allocations(const RealMatrix& var_L, MFSolutionData& solution);
+  void compute_allocations(MFSolutionData& solution);
 
   void genacv_raw_moments(const IntRealMatrixMap& sum_L_covar,
 			  const IntRealVectorMap& sum_H_covar,

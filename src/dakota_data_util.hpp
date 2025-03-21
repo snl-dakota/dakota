@@ -1671,12 +1671,40 @@ inline void copy_data(StringMultiArrayConstView ma, StringArray& da)
     da[i] = ma[i];
 }
 
+
 /// return true if the item val appears in container v
 template <typename DakContainerType>
 inline bool contains(const DakContainerType& v,
                      const typename DakContainerType::value_type& val)
 {
   return ( std::find(v.begin(), v.end(), val) != v.end() ) ? true : false;
+}
+
+/// return true if any of the entries in search_vec item val appear within vec
+template <typename ScalarType>
+inline bool contains(const std::vector<ScalarType>& vec,
+		     const std::vector<ScalarType>& search_vec, bool ordered)
+{
+  size_t i, j, vec_len = vec.size(), search_len = search_vec.size(), start = 0;
+  ScalarType search_val, val;
+  if (ordered)
+    for (i=0; i<search_len; ++i) {
+      search_val = search_vec[i];
+      for (j=start; j<vec_len; ++j) {
+	val = vec[j];
+	if (val == search_val)
+	  return true;
+	else if (val > search_val)
+	  { start = j; break; } // stop inner loop, resume outer search
+	// else continue advancing for val < search_val
+      }
+    }
+  else
+    for (i=0; i<search_len; ++i)
+      if (contains(vec, search_vec[i]))
+	return true;
+
+  return false;
 }
 
 

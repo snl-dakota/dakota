@@ -347,7 +347,7 @@ protected:
 			  size_t N_shared, Real& cov_Q1Q2);
 
   void covariance_to_correlation_sq(const RealMatrix& cov_LH,
-				    const RealMatrix& var_L,
+				    const RealSymMatrixArray& cov_LL,
 				    const RealVector& var_H,
 				    RealMatrix& rho2_LH);
 
@@ -571,6 +571,8 @@ protected:
   /// scalar accuracy metric derived from estVarIter0 according to
   /// estVarMetricType
   Real estVarMetric0;
+
+  //int fdCntr; // for debug FD gradient output (compared with analytic grad)
 
 private:
 
@@ -1811,7 +1813,8 @@ compute_covariance(Real sum_Q1, Real sum_Q2, Real sum_Q1Q2, size_t N_shared,
 
 
 inline void NonDNonHierarchSampling::
-covariance_to_correlation_sq(const RealMatrix& cov_LH, const RealMatrix& var_L,
+covariance_to_correlation_sq(const RealMatrix& cov_LH,
+			     const RealSymMatrixArray& cov_LL,
 			     const RealVector& var_H, RealMatrix& rho2_LH)
 {
   if (rho2_LH.empty()) rho2_LH.shapeUninitialized(numFunctions, numApprox);
@@ -1819,9 +1822,11 @@ covariance_to_correlation_sq(const RealMatrix& cov_LH, const RealMatrix& var_L,
   size_t qoi, approx;  Real var_H_q, cov_LH_aq;
   for (qoi=0; qoi<numFunctions; ++qoi) {
     var_H_q = var_H[qoi];
+    const RealSymMatrix& cov_LL_q = cov_LL[qoi];
     for (approx=0; approx<numApprox; ++approx) {
       cov_LH_aq = cov_LH(qoi,approx);
-      rho2_LH(qoi,approx) = cov_LH_aq / var_L(qoi,approx) * cov_LH_aq / var_H_q;
+      rho2_LH(qoi,approx) = cov_LH_aq / cov_LL_q(approx,approx)
+	                  * cov_LH_aq / var_H_q;
     }
   }
 }

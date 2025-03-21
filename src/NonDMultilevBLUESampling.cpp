@@ -1945,6 +1945,16 @@ estimator_variances(const RealVector& cd_vars, RealVector& est_var)
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Solve at sample allocations:\n" << cd_vars
 	 << "for QoI estimator variances:\n" << est_var << std::endl;
+
+  /* Special debug output for comparing forward finite diff grads to analytic
+  int x_len = cd_vars.length();
+  if (fdCntr < 0) // f at x0, prior to FD offsets
+    Cout << "x0:\n" << cd_vars << "f0 = " << est_var[0]
+	 << "\nFD offsets to follow:\n";
+  else if (fdCntr < x_len)// FD gradient offset
+    Cout << cd_vars[fdCntr] << ' ' << est_var[0] << '\n';
+  ++fdCntr;
+  */
 }
 
 

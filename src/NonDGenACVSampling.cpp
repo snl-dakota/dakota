@@ -175,6 +175,25 @@ void NonDGenACVSampling::generate_ensembles_dags()
 }
 
 
+void NonDGenACVSampling::prune_ensembles(const UShortArray& active_approx_set)
+{
+  UShortArray inactive_approx_set;  size_t i, cntr = 0;
+  for (i=0; i<numApprox; ++i)
+    if (active_approx_set[cntr] == i) ++cntr;
+    else    inactive_approx_set.push_back(i);
+
+  std::map<UShortArray, UShortArraySet>::iterator d_it;
+  size_t set_size, total_size = 0;
+  for (d_it=modelDAGs.begin(); d_it!=modelDAGs.end(); ++d_it) {
+    const UShortArray& approx_set = d_it->first;
+    if (contains(approx_set, inactive_approx_set, true)) { // ordered
+      Cout << "Removing approx_set:\n" << approx_set;
+      modelDAGs.erase(d_it);
+    }
+  }
+}
+
+
 void NonDGenACVSampling::
 generate_dags(unsigned short root, const UShortArray& nodes,
 	      UShortArraySet& dag_set)
@@ -615,21 +634,24 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
 {
   // retrieve cost estimates across soln levels for a particular model form
   IntRealVectorMap sum_H;  IntRealMatrixMap sum_L_baselineH, sum_LH;
-  IntRealSymMatrixArrayMap sum_LL;  RealVector sum_HH;  RealMatrix var_L;
+  IntRealSymMatrixArrayMap sum_LL;  RealVector sum_HH;
   initialize_acv_sums(sum_L_baselineH, sum_H, sum_LL, sum_LH, sum_HH);
   size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
-  std::pair<UShortArray, UShortArray> soln_key;
-
   Real hf_target = 0., avg_N_H;
+  std::pair<UShortArray, UShortArray> soln_key;
+  soln_key.first = fullApproxSet; // start with all approximations included
+
   while (numSamples && mlmfIter <= maxIterations) {
 
     // --------------------------------------------------------------------
     // Evaluate shared increment and update correlations, {eval,EstVar}_ratios
     // --------------------------------------------------------------------
-    shared_increment("acv_"); // spans ALL models, blocking
+    const UShortArray& approx_set = soln_key.first;
+    shared_increment("acv_", approx_set); // active approx set + truth
+    // leaves inactive approx sums in state inconsistent with sum_H/N_H_actual
     accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
 			sum_LH, sum_HH, N_H_actual);
     N_H_alloc += (backfillFailures && mlmfIter) ?
@@ -639,10 +661,11 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
     // update cost for shared samples, mirroring the covariance updates.
     if (mlmfIter == 0 && costSource != USER_COST_SPEC)
       recover_online_cost(allResponses);
-    increment_equivalent_cost(numSamples, sequenceCost, 0, numGroups,
+    increment_equivalent_cost(numSamples, sequenceCost, numApprox, approx_set,
 			      equivHFEvals);
+    // inactive covariance terms are zeroed
     compute_LH_statistics(sum_L_baselineH[1], sum_H[1], sum_LL[1], sum_LH[1],
-			  sum_HH, N_H_actual, var_L, varH, covLL, covLH);
+			  sum_HH, N_H_actual, varH, covLL, covLH, approx_set);
 
     precompute_allocations(); // metrics not dependent on DAG
     for (activeModelSetIter  = modelDAGs.begin();
@@ -667,7 +690,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
 	// ratio of MC and ACV mean sq errors (which incorporates anticipated
 	// variance reduction from application of avg_eval_ratios).
 	MFSolutionData& soln = dagSolns[soln_key];
-	compute_allocations(var_L, soln);
+	compute_allocations(soln);
 	update_best(soln);// store state for restoration
 	//reset_acv(); // reset state for next ACV execution
       }
@@ -682,6 +705,11 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
       numSamples = one_sided_delta(avg_N_H, hf_target, relaxFactor);
     }
     ++mlmfIter;  advance_relaxation();
+    // prune models discarded by the best soln from the completed iteration.
+    // This avoids continuing to invest in covariance refinement for discarded
+    // models, which is inconsistent with the budget from the optimal solution
+    // over the best model subset (retention results in budget overshoot).
+    prune_ensembles(soln_key.first);
   }
 
   // Only QOI_STATISTICS requires application of oversample ratios and
@@ -717,12 +745,12 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
   IntRealSymMatrixArrayMap sum_LL_pilot;  RealVector sum_HH_pilot;
   initialize_acv_sums(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
 		      sum_HH_pilot);
-  RealMatrix var_L;  SizetArray N_shared_pilot;
+  SizetArray N_shared_pilot;
   evaluate_pilot(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
 		 sum_HH_pilot, N_shared_pilot, false);
   compute_LH_statistics(sum_L_pilot[1], sum_H_pilot[1], sum_LL_pilot[1],
 			sum_LH_pilot[1], sum_HH_pilot, N_shared_pilot,
-			var_L, varH, covLL, covLH);
+			varH, covLL, covLH);
 
   // -----------------------------------
   // Compute "online" sample increments:
@@ -755,7 +783,7 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
       // ratio of MC and ACV mean sq errors (which incorporates anticipated
       // variance reduction from application of avg_eval_ratios).
       MFSolutionData& soln = dagSolns[soln_key];
-      compute_allocations(var_L, soln);
+      compute_allocations(soln);
       update_best(soln); // store state for restoration
       //reset_acv(); // reset state for next ACV execution
     }
@@ -814,20 +842,20 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
   // --------------------------------------------------------------------
   // Evaluate shared increment and update correlations, {eval,EstVar}_ratios
   // --------------------------------------------------------------------
-  RealVector sum_H, sum_HH;   RealMatrix sum_L, sum_LH, var_L;
+  RealVector sum_H, sum_HH;   RealMatrix sum_L, sum_LH;
   RealSymMatrixArray sum_LL;
   if (pilotMgmtMode == OFFLINE_PILOT || // redirected here for ESTIMATOR_PERF
       pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
     SizetArray N_shared_pilot;
     evaluate_pilot(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared_pilot, false);
     compute_LH_statistics(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared_pilot,
-			  var_L, varH, covLL, covLH);
+			  varH, covLL, covLH);
     N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
   }
   else { // ONLINE_PILOT_PROJECTION
     evaluate_pilot(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual, true);
     compute_LH_statistics(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual,
-			  var_L, varH, covLL, covLH);
+			  varH, covLL, covLH);
     N_H_alloc = numSamples;
   } /// *** TO DO: this code block is exact same as ACV
   std::pair<UShortArray, UShortArray> soln_key;
@@ -858,7 +886,7 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
       // ratio of MC and ACV mean sq errors (which incorporates anticipated
       // variance reduction from application of avg_eval_ratios).
       MFSolutionData& soln = dagSolns[soln_key];
-      compute_allocations(var_L, soln);
+      compute_allocations(soln);
       update_best(soln); // store state for restoration
       //reset_acv(); // reset state for next ACV execution
     }
@@ -1036,8 +1064,7 @@ void NonDGenACVSampling::precompute_allocations()
 }
 
 
-void NonDGenACVSampling::
-compute_allocations(const RealMatrix& var_L, MFSolutionData& soln)
+void NonDGenACVSampling::compute_allocations(MFSolutionData& soln)
 {
   // --------------------------------------
   // Configure the optimization sub-problem
@@ -1083,7 +1110,7 @@ compute_allocations(const RealMatrix& var_L, MFSolutionData& soln)
       ensemble_numerical_solution(soln);  break;
     default: { // competed initial guesses with (competed) local methods
       RealMatrix rho2_LH;
-      covariance_to_correlation_sq(covLH, var_L, varH, rho2_LH);
+      covariance_to_correlation_sq(covLH, covLL, varH, rho2_LH);
       MFSolutionData mf_soln, cv_soln;
       analytic_initialization_from_mfmc(approx_set, rho2_LH, avg_N_H, mf_soln);
       analytic_initialization_from_ensemble_cvmc(approx_set, *activeDAGIter,

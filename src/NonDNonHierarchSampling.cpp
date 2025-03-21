@@ -1669,7 +1669,7 @@ void NonDNonHierarchSampling::run_minimizers(MFSolutionData& soln)
     for (j=0; j<num_solvers; ++j) {
       auto& min_ij = min_i[j];
       if (!min_ij) continue;
-      varMinIndices.second = j;
+      varMinIndices.second = j; //fdCntr = -1;
       min_ij->run();
       const Variables& vars_star = min_ij->variables_results();
       const RealVector&  cv_star = vars_star.continuous_variables();
