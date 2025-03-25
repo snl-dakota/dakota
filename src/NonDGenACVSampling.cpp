@@ -160,17 +160,21 @@ void NonDGenACVSampling::generate_ensembles_dags()
   }
 
   std::map<UShortArray, UShortArraySet>::const_iterator d_cit;
-  size_t set_size, total_size = 0;
-  for (d_cit=++modelDAGs.begin(); d_cit!=modelDAGs.end(); ++d_cit) {
+  size_t approx_set_size, dag_set_size, total_dag_size = 0;
+  for (d_cit=modelDAGs.begin(); d_cit!=modelDAGs.end(); ++d_cit) {
+    const UShortArray& approx_set = d_cit->first;
     const UShortArraySet& dag_set = d_cit->second;
-    set_size = dag_set.size();  total_size += set_size;
-    Cout << "For approximation set:\n" << d_cit->first
-	 << "searching array of DAGs of size " << set_size;
-    if (outputLevel >= DEBUG_OUTPUT) Cout << ":\n" << dag_set;//<< '\n';
-    else                             Cout << ".\n";
+    approx_set_size = approx_set.size();  dag_set_size = dag_set.size();
+    //if (approx_set.size()) { // suppress MC case
+      total_dag_size += dag_set_size;
+      Cout << "For approximation set:\n" << approx_set
+	   << "searching array of DAGs of size " << dag_set_size;
+      if (outputLevel >= DEBUG_OUTPUT) Cout << ":\n" << dag_set;//<< '\n';
+      else                             Cout << ".\n";
+    //}
   }
   if (modelSelectType)
-    Cout << "Total DAGs across all approximation sets = " << total_size << '\n';
+    Cout << "Total DAGs across all approximation sets = "<<total_dag_size<<'\n';
   Cout << std::endl;
 }
 
@@ -182,8 +186,9 @@ void NonDGenACVSampling::prune_ensembles(const UShortArray& active_approx_set)
   for (i=0; i<numApprox; ++i)
     if (cntr < num_active && active_approx_set[cntr] == i) ++cntr;
     else                         inactive_approx_set.push_back(i);
+  if (inactive_approx_set.empty()) return;
 
-  std::map<UShortArray, UShortArraySet>::iterator d_it = ++modelDAGs.begin();
+  std::map<UShortArray, UShortArraySet>::iterator d_it = modelDAGs.begin();
   while (d_it != modelDAGs.end()) {
     const UShortArray& approx_set = d_it->first;
     if (contains(approx_set, inactive_approx_set, true)) { // ordered
@@ -673,7 +678,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
 			  sum_HH, N_H_actual, varH, covLL, covLH, approx_set);
 
     precompute_allocations(); // metrics not dependent on DAG
-    for (activeModelSetIter  = ++modelDAGs.begin(); // skip no-approx case (MC)
+    for (activeModelSetIter  = modelDAGs.begin();
 	 activeModelSetIter != modelDAGs.end(); ++activeModelSetIter) {
       const UShortArray& approx_set = activeModelSetIter->first;
       const UShortArraySet& dag_set = activeModelSetIter->second;
@@ -714,7 +719,8 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
     // This avoids continuing to invest in covariance refinement for discarded
     // models, which is inconsistent with the budget from the optimal solution
     // over the best model subset (retention results in budget overshoot).
-    prune_ensembles(soln_key.first);
+    if (modelSelectType)
+      prune_ensembles(soln_key.first);
   }
   restore_best();
 
@@ -766,7 +772,7 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
   N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
   precompute_allocations(); // compute metrics not dependent on active DAG
   std::pair<UShortArray, UShortArray> soln_key;
-  for (activeModelSetIter  = ++modelDAGs.begin(); // skip no-approx case (MC)
+  for (activeModelSetIter  = modelDAGs.begin();
        activeModelSetIter != modelDAGs.end(); ++activeModelSetIter) {
     const UShortArray& approx_set = activeModelSetIter->first;
     const UShortArraySet& dag_set = activeModelSetIter->second;
@@ -867,7 +873,7 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
   // Compute "online" sample increments:
   // -----------------------------------
   precompute_allocations(); // compute metrics not dependent on active DAG
-  for (activeModelSetIter  = ++modelDAGs.begin(); // skip no-approx case (MC)
+  for (activeModelSetIter  = modelDAGs.begin();
        activeModelSetIter != modelDAGs.end(); ++activeModelSetIter) {
     const UShortArray&  approx_set = activeModelSetIter->first;
     const UShortArraySet& dag_set = activeModelSetIter->second;
@@ -2197,7 +2203,7 @@ void NonDGenACVSampling::print_best()
   const UShortArray& best_models =  bestModelSetIter->first;
   const UShortArray& best_dag    = *bestDAGIter;
   Cout << "\nBest solution from DAG:\n";
-  print_dag(best_models, best_dag);
+  print_dag(best_dag, best_models);
 
   if (outputLevel >= DEBUG_OUTPUT) {
     std::pair<UShortArray, UShortArray> soln_key(best_models, best_dag);
