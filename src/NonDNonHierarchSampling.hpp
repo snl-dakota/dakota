@@ -1799,11 +1799,14 @@ compute_covariance(Real sum_Q1, Real sum_Q2, Real sum_Q1Q2, size_t N_shared,
     cov_Q1Q2 = (N_shared) ? 0. : std::numeric_limits<double>::quiet_NaN();
   else {
     // unbiased mean X-bar = 1/N * sum
-    Real bessel_corr = (Real)N_shared / (Real)(N_shared - 1),
-      mu_Q1 = sum_Q1 / N_shared,  mu_Q2 = sum_Q2 / N_shared;
+    //Real bessel_corr = (Real)N_shared / (Real)(N_shared - 1),
+    //  mu_Q1 = sum_Q1 / N_shared,  mu_Q2 = sum_Q2 / N_shared;
     // unbiased sample covariance = 1/(N-1) sum[(X_i - X-bar)(Y_i - Y-bar)]
     // = 1/(N-1) [N RawMom_XY - N X-bar Y-bar] = bessel[RawMom_XY - X-bar Y-bar]
-    cov_Q1Q2 = (sum_Q1Q2 / N_shared - mu_Q1 * mu_Q2) * bessel_corr;
+    //cov_Q1Q2 = (sum_Q1Q2 / N_shared - mu_Q1 * mu_Q2) * bessel_corr;
+
+    // be consistent with term cancellations in compute_{variance,correlation}
+    cov_Q1Q2 = (sum_Q1Q2 - sum_Q1 * sum_Q2 / N_shared) / (N_shared - 1);
   }
 
   //Cout << "compute_covariance: sum_Q1 = " << sum_Q1 << " sum_Q2 = " << sum_Q2
