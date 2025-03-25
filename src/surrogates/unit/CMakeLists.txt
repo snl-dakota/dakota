@@ -40,14 +40,14 @@ dakota_add_unit_test(NAME surrogates_eval_metrics_cross_val
 
 if(DAKOTA_PYTHON_SURROGATES)
   add_test(NAME surrogates_python_poly
-    COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_surrogate_poly.py
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_surrogate_poly.py
     $<TARGET_FILE_DIR:surrogates>
     )
   set_tests_properties(surrogates_python_poly PROPERTIES LABELS Unit)
 
   if(HAVE_ROL)
     add_test(NAME surrogates_python_gp
-      COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_surrogate_gp.py
+      COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_surrogate_gp.py
       $<TARGET_FILE_DIR:surrogates>
     )
     set_tests_properties(surrogates_python_gp PROPERTIES LABELS Unit)

@@ -3,7 +3,7 @@
 if(DAKOTA_ENABLE_TESTS AND Python_Interpreter_FOUND AND
     Python_VERSION VERSION_GREATER 2.6)
   add_test(NAME pyprepro_test 
-	  COMMAND ${Python_EXECUTABLE} -B run_tests.py
+	  COMMAND ${Python3_EXECUTABLE} -B run_tests.py
 	  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
   set_property(TEST pyprepro_test PROPERTY LABELS Unit Python)
   set_property(TEST pyprepro_test 
