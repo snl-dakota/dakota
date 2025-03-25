@@ -156,23 +156,24 @@ void NonDACVSampling::approximate_control_variate_online_pilot()
 
   // Only QOI_STATISTICS requires application of oversample ratios and
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
+  Sizet2DArray N_L_actual_refined;  SizetArray N_L_alloc;
   if (finalStatsType == QOI_STATISTICS) {
     // peer DAG: no need for shared arrays since shared == baseline
-    IntRealMatrixMap  sum_L_refined; //, sum_L_shared;
-    Sizet2DArray N_L_actual_refined, N_L_actual_baseline;
-    SizetArray N_L_alloc_refined;  RealVector2DArray beta(4);
-    inflate(N_H_actual, N_L_actual_baseline);
+    IntRealMatrixMap sum_L_refined;//, sum_L_shared;
+    Sizet2DArray N_L_actual_baseline; inflate(N_H_actual, N_L_actual_baseline);
+    RealVector2DArray beta(4);
     approx_increments(sum_L_baselineH, N_H_actual, N_H_alloc, sum_L_refined,
-		      N_L_actual_refined, N_L_alloc_refined, acvSolnData);
+		      N_L_actual_refined, N_L_alloc, acvSolnData);
     compute_acv_controls(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
 			 acvSolnData, beta);
     apply_controls(sum_H, N_H_actual, sum_L_baselineH, N_L_actual_baseline,
 		   sum_L_refined, N_L_actual_refined, beta);
-    finalize_counts(N_L_actual_refined, N_L_alloc_refined);
+    finalize_counts(N_L_actual_refined, N_L_alloc);
   }
   else // N_H is final --> do not compute any deltaNActualHF (from maxIter exit)
     update_projected_lf_samples(acvSolnData, fullApproxSet, N_H_actual,
-				N_H_alloc, deltaEquivHF);
+				N_H_alloc, N_L_actual_refined, N_L_alloc,
+				deltaEquivHF);
 }
 
 
@@ -229,15 +230,15 @@ void NonDACVSampling::approximate_control_variate_offline_pilot()
   // peer DAG: no need for shared arrays since shared == baseline
   IntRealMatrixMap sum_L_refined;  //, sum_L_shared;
   Sizet2DArray N_L_actual_refined, N_L_actual_baseline;
-  SizetArray   N_L_alloc_refined;  RealVector2DArray beta(4);
+  SizetArray   N_L_alloc;  RealVector2DArray beta(4);
   inflate(N_H_actual, N_L_actual_baseline);
   approx_increments(sum_L_baselineH, N_H_actual, N_H_alloc, sum_L_refined,
-		    N_L_actual_refined, N_L_alloc_refined, acvSolnData);
+		    N_L_actual_refined, N_L_alloc, acvSolnData);
   compute_acv_controls(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
 		       N_pilot, acvSolnData, beta);
   apply_controls(sum_H, N_H_actual, sum_L_baselineH, N_L_actual_baseline,
 		 sum_L_refined, N_L_actual_refined, beta);
-  finalize_counts(N_L_actual_refined, N_L_alloc_refined);
+  finalize_counts(N_L_actual_refined, N_L_alloc);
 }
 
 
@@ -283,8 +284,9 @@ void NonDACVSampling::approximate_control_variate_pilot_projection()
   ++mlmfIter;
 
   // No LF increments or final moments for pilot projection
+  Sizet2DArray N_L_actual;  SizetArray N_L_alloc; // inflated from N_H
   update_projected_samples(acvSolnData, fullApproxSet, N_H_actual, N_H_alloc,
-			   deltaNActualHF, deltaEquivHF);
+			   N_L_actual, N_L_alloc, deltaNActualHF, deltaEquivHF);
   // No need for updating estimator variance given deltaNActualHF since
   // NonDNonHierarchSampling::ensemble_numerical_solution() recovers N*
   // from the numerical solve and computes projected estVariance{s,Ratios}
@@ -371,7 +373,7 @@ approx_increments(IntRealMatrixMap& sum_L_baseline,
 		  const SizetArray& N_H_actual, size_t N_H_alloc,
 		  IntRealMatrixMap& sum_L_refined,
 		  Sizet2DArray& N_L_actual_refined,
-		  SizetArray& N_L_alloc_refined, const MFSolutionData& soln)
+		  SizetArray& N_L_alloc, const MFSolutionData& soln)
 {
   // Note: these results do not affect the iteration above and can be
   // performed after N_H has converged
@@ -399,7 +401,7 @@ approx_increments(IntRealMatrixMap& sum_L_baseline,
   // --------------------------------------------
   SizetArray delta_N_G(numGroups);
   inflate(N_H_actual, N_L_actual_refined);
-  inflate(N_H_alloc,  N_L_alloc_refined);
+  inflate(N_H_alloc,  N_L_alloc);
   const RealVector& soln_vars = soln.solution_variables();
   size_t last_g = numGroups - 1;  delta_N_G[last_g] = 0;
   // Pyramid sampling with reuse: base to top, excluding all-model group.
@@ -407,7 +409,7 @@ approx_increments(IntRealMatrixMap& sum_L_baseline,
   for (int g=last_g-1; g>=0; --g)
     delta_N_G[g]
       = group_approx_increment(soln_vars, fullApproxSet, N_L_actual_refined,
-			       N_L_alloc_refined, modelGroups[g]);
+			       N_L_alloc, modelGroups[g]);
   group_increments(delta_N_G, "acv_", true); // reverse order for RNG sequence
 
   // --------------------------
@@ -730,17 +732,13 @@ void NonDACVSampling::
 accumulate_acv_sums(IntRealMatrixMap& sum_L_shared, IntRealVectorMap& sum_H,
 		    IntRealSymMatrixArrayMap& sum_LL, // L w/ itself + other L
 		    IntRealMatrixMap&         sum_LH, // each L with H
-		    RealVector& sum_HH, SizetArray& N_H_shared)//, Sizet2DArray& N_L_shared)
+		    RealVector& sum_HH, SizetArray& N_H_shared)
 {
   // uses one set of allResponses with QoI aggregation across all Models,
   // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
 
-  using std::isfinite;  bool all_finite;
-  Real lf_fn, lf2_fn, hf_fn, lf_prod, lf2_prod, hf_prod;
-  IntRespMCIter r_it;              IntRVMIter    h_it;
-  IntRMMIter lb_it, lr_it, lh_it;  IntRSMAMIter ll_it;
-  int lb_ord, lr_ord, h_ord, ll_ord, lh_ord, active_ord, m;
-  size_t qoi, approx, approx2, lf_index, lf2_index, hf_index;
+  IntRespMCIter r_it; 
+  size_t qoi, approx, lf_index, hf_index, num_am1 = numApprox+1;
 
   for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
     const Response&   resp    = r_it->second;
@@ -750,78 +748,20 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_shared, IntRealVectorMap& sum_H,
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
       // see fault tol notes in NonDNonHierarchSampling::compute_correlation()
-      all_finite = true;
-      for (approx=0; approx<=numApprox; ++approx) {
-	lf_index = approx * numFunctions + qoi;
-	if ((asv[lf_index] & 1) && !isfinite(fn_vals[lf_index]))//active NaN/Inf
-	  { all_finite = false; break; }
-      }
-      if (!all_finite) continue;
+      if (!check_finite(fn_vals, asv, qoi, num_am1)) continue;
 
       hf_index = numApprox * numFunctions + qoi;
       if (asv[hf_index] & 1) {
 	++N_H_shared[qoi];
-	// High accumulations:
-	hf_fn = fn_vals[hf_index];
-	// High-High:
-	sum_HH[qoi] += hf_fn * hf_fn; // a single vector for ord 1
-	// High:
-	h_it = sum_H.begin();  h_ord = (h_it == sum_H.end()) ? 0 : h_it->first;
-	hf_prod = hf_fn;       active_ord = 1;
-	while (h_ord) {
-	  if (h_ord == active_ord) { // support general key sequence
-	    h_it->second[qoi] += hf_prod;
-	    ++h_it; h_ord = (h_it == sum_H.end()) ? 0 : h_it->first;
-	  }
-	  hf_prod *= hf_fn;  ++active_ord;
-	}
+	accumulate_hf_qoi(fn_vals, qoi, sum_H, sum_HH);
 
 	for (approx=0; approx<numApprox; ++approx) {
-	  // Low accumulations:
+	  // for ACV with all models active, don't additionally increment N_L
+	  // since redundant of N_H
 	  lf_index = approx * numFunctions + qoi;
-	  if (asv[lf_index] & 1) {
-	    //++N_L_shared[approx][qoi];
-	    lf_fn = fn_vals[lf_index];
-
-	    lb_it = sum_L_shared.begin();
-	    ll_it = sum_LL.begin();  lh_it = sum_LH.begin();
-	    lb_ord = (lb_it == sum_L_shared.end()) ? 0 : lb_it->first;
-	    ll_ord = (ll_it == sum_LL.end())         ? 0 : ll_it->first;
-	    lh_ord = (lh_it == sum_LH.end())         ? 0 : lh_it->first;
-	    lf_prod = lf_fn;  hf_prod = hf_fn;  active_ord = 1;
-	    while (lb_ord || ll_ord || lh_ord) {
-    
-	      // Low shared
-	      if (lb_ord == active_ord) { // support general key sequence
-		lb_it->second(qoi,approx) += lf_prod;  ++lb_it;
-		lb_ord = (lb_it == sum_L_shared.end()) ? 0 : lb_it->first;
-	      }
-	      // Low-Low
-	      if (ll_ord == active_ord) { // support general key sequence
-		RealSymMatrix& sum_LL_q = ll_it->second[qoi];
-		sum_LL_q(approx,approx) += lf_prod * lf_prod;
-		// Off-diagonal of C matrix:
-		// look back (only) for single capture of each combination
-		for (approx2=0; approx2<approx; ++approx2) {
-		  lf2_index = approx2 * numFunctions + qoi;
-		  if (asv[lf2_index] & 1) {
-		    lf2_prod = lf2_fn = fn_vals[lf2_index];
-		    for (m=1; m<active_ord; ++m)
-		      lf2_prod *= lf2_fn;
-		    sum_LL_q(approx,approx2) += lf_prod * lf2_prod;
-		  }
-		}
-		++ll_it; ll_ord = (ll_it == sum_LL.end()) ? 0 : ll_it->first;
-	      }
-	      // Low-High (c vector for each QoI):
-	      if (lh_ord == active_ord) {
-		lh_it->second(qoi,approx) += lf_prod * hf_prod;
-		++lh_it; lh_ord = (lh_it == sum_LH.end()) ? 0 : lh_it->first;
-	      }
-
-	      lf_prod *= lf_fn;  hf_prod *= hf_fn;  ++active_ord;
-	    }
-	  }
+	  if (asv[lf_index] & 1)
+	    accumulate_lf_hf_qoi(fn_vals, asv, qoi, approx, sum_L_shared,
+				 sum_LL, sum_LH);
 	}
       }
     }
@@ -840,10 +780,10 @@ accumulate_acv_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
   // uses one set of allResponses with QoI aggregation across all Models,
   // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
 
-  using std::isfinite;  bool all_finite;
   Real lf_fn, hf_fn;
   IntRespMCIter r_it;
-  size_t qoi, approx, approx2, lf_index, lf2_index, hf_index;
+  size_t qoi, approx, approx2, lf_index, lf2_index, hf_index,
+    num_am1 = numApprox+1;
 
   for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
     const Response&   resp    = r_it->second;
@@ -853,13 +793,7 @@ accumulate_acv_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
       // see fault tol notes in NonDNonHierarchSampling::compute_correlation()
-      all_finite = true;
-      for (approx=0; approx<=numApprox; ++approx) {
-	lf_index = approx * numFunctions + qoi;
-	if ((asv[lf_index] & 1) && !isfinite(fn_vals[lf_index]))//active NaN/Inf
-	  { all_finite = false; break; }
-      }
-      if (!all_finite) continue;
+      if (!check_finite(fn_vals, asv, qoi, num_am1)) continue;
       
       // High accumulations:
       hf_index = numApprox * numFunctions + qoi;
@@ -895,187 +829,6 @@ accumulate_acv_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
 }
 
 
-/** Multi-moment map-based version with fine-grained fault tolerance, 
-    used by ACV following shared_increment()
-void NonDACVSampling::
-accumulate_acv_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
-		    IntRealSymMatrixArrayMap& sum_LL, // L w/ itself + other L
-		    IntRealMatrixMap&         sum_LH, // each L with H
-		    RealVector& sum_HH, Sizet2DArray& num_L_baseline,
-		    SizetArray& num_H,  SizetSymMatrixArray& num_LL,
-		    Sizet2DArray& num_LH)
-{
-  // uses one set of allResponses with QoI aggregation across all Models,
-  // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
-
-  using std::isfinite;
-  Real lf_fn, lf2_fn, hf_fn, lf_prod, lf2_prod, hf_prod;
-  IntRespMCIter r_it;              IntRVMIter    h_it;
-  IntRMMIter lb_it, lr_it, lh_it;  IntRSMAMIter ll_it;
-  int lb_ord, lr_ord, h_ord, ll_ord, lh_ord, active_ord, m;
-  size_t qoi, approx, approx2, lf_index, lf2_index, hf_index;
-  bool hf_is_finite;
-
-  for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
-    const Response&   resp    = r_it->second;
-    const RealVector& fn_vals = resp.function_values();
-    //const ShortArray& asv   = resp.active_set_request_vector();
-    hf_index = numApprox * numFunctions;
-
-    for (qoi=0; qoi<numFunctions; ++qoi, ++hf_index) {
-      hf_fn = fn_vals[hf_index];
-      hf_is_finite = isfinite(hf_fn);
-      // High accumulations:
-      if (hf_is_finite) { // neither NaN nor +/-Inf
-	++num_H[qoi];
-	// High-High:
-	sum_HH[qoi] += hf_fn * hf_fn; // a single vector for ord 1
-	// High:
-	h_it = sum_H.begin();  h_ord = (h_it == sum_H.end()) ? 0 : h_it->first;
-	hf_prod = hf_fn;       active_ord = 1;
-	while (h_ord) {
-	  if (h_ord == active_ord) { // support general key sequence
-	    h_it->second[qoi] += hf_prod;
-	    ++h_it; h_ord = (h_it == sum_H.end()) ? 0 : h_it->first;
-	  }
-	  hf_prod *= hf_fn;  ++active_ord;
-	}
-      }
-	
-      SizetSymMatrix& num_LL_q = num_LL[qoi];
-      for (approx=0; approx<numApprox; ++approx) {
-	lf_index = approx * numFunctions + qoi;
-	lf_fn = fn_vals[lf_index];
-
-	// Low accumulations:
-	if (isfinite(lf_fn)) {
-	  ++num_L_baseline[approx][qoi];
-	  ++num_LL_q(approx,approx); // Diagonal of C matrix
-	  if (hf_is_finite) ++num_LH[approx][qoi]; // pull out of moment loop
-
-	  lb_it = sum_L_baseline.begin();
-	  ll_it = sum_LL.begin();  lh_it = sum_LH.begin();
-	  lb_ord = (lb_it == sum_L_baseline.end()) ? 0 : lb_it->first;
-	  ll_ord = (ll_it == sum_LL.end())         ? 0 : ll_it->first;
-	  lh_ord = (lh_it == sum_LH.end())         ? 0 : lh_it->first;
-	  lf_prod = lf_fn;  active_ord = 1;
-	  while (lb_ord || ll_ord || lh_ord) {
-    
-	    // Low baseline
-	    if (lb_ord == active_ord) { // support general key sequence
-	      lb_it->second(qoi,approx) += lf_prod;  ++lb_it;
-	      lb_ord = (lb_it == sum_L_baseline.end()) ? 0 : lb_it->first;
-	    }
-	    // Low-Low
-	    if (ll_ord == active_ord) { // support general key sequence
-	      ll_it->second[qoi](approx,approx) += lf_prod * lf_prod;
-	      // Off-diagonal of C matrix:
-	      // look back (only) for single capture of each combination
-	      for (approx2=0; approx2<approx; ++approx2) {
-		lf2_index = approx2 * numFunctions + qoi;
-		lf2_fn = fn_vals[lf2_index];
-
-		if (isfinite(lf2_fn)) { // both are finite
-		  if (active_ord == 1) ++num_LL_q(approx,approx2);
-		  lf2_prod = lf2_fn;
-		  for (m=1; m<active_ord; ++m)
-		    lf2_prod *= lf2_fn;
-		  ll_it->second[qoi](approx,approx2) += lf_prod * lf2_prod;
-		}
-	      }
-	      ++ll_it; ll_ord = (ll_it == sum_LL.end()) ? 0 : ll_it->first;
-	    }
-	    // Low-High (c vector for each QoI):
-	    if (lh_ord == active_ord) {
-	      if (hf_is_finite) {
-		hf_prod = hf_fn;
-		for (m=1; m<active_ord; ++m)
-		  hf_prod *= hf_fn;
-		lh_it->second(qoi,approx) += lf_prod * hf_prod;
-	      }
-	      ++lh_it; lh_ord = (lh_it == sum_LH.end()) ? 0 : lh_it->first;
-	    }
-
-	    lf_prod *= lf_fn;  ++active_ord;
-	  }
-	}
-      }
-    }
-  }
-}
-
-
-// Single moment version with fine-grained fault tolerance, used by 
-// offline-pilot and pilot-projection ACV following shared_increment()
-void NonDACVSampling::
-accumulate_acv_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
-		    RealSymMatrixArray& sum_LL, // L w/ itself + other L
-		    RealMatrix&         sum_LH, // each L with H
-		    RealVector& sum_HH, Sizet2DArray& num_L_baseline,
-		    SizetArray& num_H,  SizetSymMatrixArray& num_LL,
-		    Sizet2DArray& num_LH)
-{
-  // uses one set of allResponses with QoI aggregation across all Models,
-  // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
-
-  using std::isfinite;
-  Real lf_fn, lf2_fn, hf_fn;
-  IntRespMCIter r_it;
-  size_t qoi, approx, approx2, lf_index, lf2_index, hf_index;
-  bool hf_is_finite;
-
-  for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
-    const Response&   resp    = r_it->second;
-    const RealVector& fn_vals = resp.function_values();
-    //const ShortArray& asv   = resp.active_set_request_vector();
-    hf_index = numApprox * numFunctions;
-
-    for (qoi=0; qoi<numFunctions; ++qoi, ++hf_index) {
-      hf_fn = fn_vals[hf_index];
-      hf_is_finite = isfinite(hf_fn);
-      // High accumulations:
-      if (hf_is_finite) { // neither NaN nor +/-Inf
-	++num_H[qoi];
-	sum_H[qoi]  += hf_fn;         // High
-	sum_HH[qoi] += hf_fn * hf_fn; // High-High
-      }
-	
-      SizetSymMatrix& num_LL_q = num_LL[qoi];
-      RealSymMatrix&  sum_LL_q = sum_LL[qoi];
-      for (approx=0; approx<numApprox; ++approx) {
-	lf_index = approx * numFunctions + qoi;
-	lf_fn = fn_vals[lf_index];
-
-	// Low accumulations:
-	if (isfinite(lf_fn)) {
-	  ++num_L_baseline[approx][qoi];
-	  sum_L_baseline(qoi,approx) += lf_fn; // Low
-
-	  ++num_LL_q(approx,approx); // Diagonal of C matrix
-	  sum_LL_q(approx,approx) += lf_fn * lf_fn; // Low-Low
-	  // Off-diagonal of C matrix:
-	  // look back (only) for single capture of each combination
-	  for (approx2=0; approx2<approx; ++approx2) {
-	    lf2_index = approx2 * numFunctions + qoi;
-	    lf2_fn = fn_vals[lf2_index];
-	    if (isfinite(lf2_fn)) { // both are finite
-	       ++num_LL_q(approx,approx2);
-	       sum_LL_q(approx,approx2) += lf_fn * lf2_fn;
-	    }
-	  }
-
-	  if (hf_is_finite) {
-	    ++num_LH[approx][qoi];
-	    sum_LH(qoi,approx) += lf_fn * hf_fn;// Low-High (c vector)	    
-	  }
-	}
-      }
-    }
-  }
-}
-*/
-
-
 /** This version used by ACV following shared_approx_increment() */
 void NonDACVSampling::
 accumulate_acv_sums(IntRealMatrixMap& sum_L_shared,
@@ -1085,12 +838,7 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_shared,
   // uses one set of allResponses with QoI aggregation across all approx Models,
   // corresponding to unorderedModels[i-1], i=1:numApprox (omits truthModel)
 
-  using std::isfinite;  bool all_lf_finite;
-  Real lf_fn, lf2_fn, lf_prod, lf2_prod;
-  IntRespMCIter r_it; IntRMMIter ls_it; IntRSMAMIter ll_it;
-  int ls_ord, ll_ord, active_ord, m;
-  size_t qoi, approx, approx2, lf_index, lf2_index;
-
+  IntRespMCIter r_it;  size_t qoi, approx, lf_index;
   for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
     const Response&   resp    = r_it->second;
     const RealVector& fn_vals = resp.function_values();
@@ -1099,53 +847,14 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_shared,
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
       // see fault tol notes in NonDNonHierarchSampling::compute_correlation()
-      all_lf_finite = true;
-      for (approx=0; approx<numApprox; ++approx) {
-	lf_index = approx * numFunctions + qoi;
-	if ((asv[lf_index] & 1) && !isfinite(fn_vals[lf_index]))//active NaN/Inf
-	  { all_lf_finite = false; break; }
-      }
-      if (!all_lf_finite) continue;
+      if (!check_finite(fn_vals, asv, qoi, numApprox)) continue;
 
       // Low accumulations:
       ++N_L_shared[approx][qoi];
       for (approx=0; approx<numApprox; ++approx) {
 	lf_index = approx * numFunctions + qoi;
-	if (asv[lf_index] & 1) {
-	  lf_fn = fn_vals[lf_index];
-
-	  ls_it = sum_L_shared.begin();  ll_it = sum_LL.begin();
-	  ls_ord = (ls_it == sum_L_shared.end()) ? 0 : ls_it->first;
-	  ll_ord = (ll_it == sum_LL.end())       ? 0 : ll_it->first;
-	  lf_prod = lf_fn;  active_ord = 1;
-	  while (ls_ord || ll_ord) {
-    
-	    // Low shared
-	    if (ls_ord == active_ord) { // support general key sequence
-	      ls_it->second(qoi,approx) += lf_prod;  ++ls_it;
-	      ls_ord = (ls_it == sum_L_shared.end()) ? 0 : ls_it->first;
-	    }
-	    // Low-Low
-	    if (ll_ord == active_ord) { // support general key sequence
-	      RealSymMatrix& sum_LL_q = ll_it->second[qoi];
-	      sum_LL_q(approx,approx) += lf_prod * lf_prod;
-	      // Off-diagonal of C matrix:
-	      // look back (only) for single capture of each combination
-	      for (approx2=0; approx2<approx; ++approx2) {
-		lf2_index = approx2 * numFunctions + qoi;
-		if (asv[lf2_index] & 1) {
-		  lf2_prod = lf2_fn = fn_vals[lf2_index];
-		  for (m=1; m<active_ord; ++m)
-		    lf2_prod *= lf2_fn;
-		  sum_LL_q(approx,approx2) += lf_prod * lf2_prod;
-		}
-	      }
-	      ++ll_it;  ll_ord = (ll_it == sum_LL.end()) ? 0 : ll_it->first;
-	    }
-
-	    lf_prod *= lf_fn;  ++active_ord;
-	  }
-	}
+	if (asv[lf_index] & 1)
+	  accumulate_lf_qoi(fn_vals, asv, qoi, approx, sum_L_shared, sum_LL);
       }
     }
   }
@@ -1161,28 +870,12 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L, Sizet2DArray& N_L_actual,
   // uses one set of allResponses with QoI aggregation across all Models,
   // led by the approx Model responses of interest
 
-  using std::isfinite;
-  size_t qoi, lf_index;  Real lf_fn;
+  size_t qoi, lf_index;
   for (qoi=0; qoi<numFunctions; ++qoi) {
     lf_index = approx * numFunctions + qoi;
-    lf_fn    = fn_vals[lf_index];
-
-    // Low accumulations:
-    if ( (asv[lf_index] & 1) && isfinite(lf_fn) ) {
+    if ( (asv[lf_index] & 1) && std::isfinite(fn_vals[lf_index]) ) {
       ++N_L_actual[approx][qoi];
-      IntRMMIter lr_it = sum_L.begin();
-      int  lr_ord  = (lr_it == sum_L.end()) ? 0 : lr_it->first;
-      Real lf_prod = lf_fn;  int active_ord = 1;
-      while (lr_ord) {
-
-	// Low refined
-	if (lr_ord == active_ord) { // support general key sequence
-	  lr_it->second(qoi,approx) += lf_prod;  ++lr_it;
-	  lr_ord = (lr_it == sum_L.end()) ? 0 : lr_it->first;
-	}
-
-	lf_prod *= lf_fn;  ++active_ord;
-      }
+      accumulate_lf_qoi(fn_vals, qoi, approx, sum_L);
     }
   }
 }
@@ -1208,6 +901,139 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_refined, Sizet2DArray& N_L_refined,
       approx = (ordered) ? s : approx_sequence[s];
       accumulate_acv_sums(sum_L_refined, N_L_refined, fn_vals, asv, approx);
     }
+  }
+}
+
+
+void NonDACVSampling::
+accumulate_hf_qoi(const RealVector& fn_vals, size_t qoi,
+		  IntRealVectorMap& sum_H, RealVector& sum_HH)
+{
+  size_t hf_index = numApprox * numFunctions + qoi;
+  Real hf_fn = fn_vals[hf_index], hf_prod = hf_fn;
+
+  // High-High:
+  sum_HH[qoi] += hf_fn * hf_fn; // a single vector for ord 1
+  // High:
+  IntRVMIter h_it = sum_H.begin();
+  int active_ord = 1, h_ord = (h_it == sum_H.end()) ? 0 : h_it->first;
+  while (h_ord) {
+    if (h_ord == active_ord) { // support general key sequence
+      h_it->second[qoi] += hf_prod;
+      ++h_it; h_ord = (h_it == sum_H.end()) ? 0 : h_it->first;
+    }
+    hf_prod *= hf_fn;  ++active_ord;
+  }
+}
+
+
+void NonDACVSampling::
+accumulate_lf_qoi(const RealVector& fn_vals, size_t qoi, size_t approx,
+		  IntRealMatrixMap& sum_L)
+{
+  size_t lf_index = approx * numFunctions + qoi;
+  Real lf_fn = fn_vals[lf_index], lf_prod = lf_fn;
+  IntRMMIter l_it = sum_L.begin();
+  int l_ord = (l_it == sum_L.end()) ? 0 : l_it->first, active_ord = 1;
+  while (l_ord) {
+    if (l_ord == active_ord) { // support general key sequence
+      l_it->second(qoi,approx) += lf_prod;  ++l_it;
+      l_ord = (l_it == sum_L.end()) ? 0 : l_it->first;
+    }
+    lf_prod *= lf_fn;  ++active_ord;
+  }
+}
+
+
+void NonDACVSampling::
+accumulate_lf_qoi(const RealVector& fn_vals, const ShortArray& asv,
+		  size_t qoi, size_t approx, IntRealMatrixMap& sum_L_shared,
+		  IntRealSymMatrixArrayMap& sum_LL)
+{
+  size_t lf_index = approx * numFunctions + qoi, approx2, lf2_index, m;
+
+  IntRMMIter ls_it = sum_L_shared.begin(); IntRSMAMIter ll_it = sum_LL.begin();
+  int ls_ord = (ls_it == sum_L_shared.end()) ? 0 : ls_it->first,
+      ll_ord = (ll_it == sum_LL.end())       ? 0 : ll_it->first,
+      active_ord = 1;
+  Real lf_fn = fn_vals[lf_index], lf_prod = lf_fn, lf2_fn, lf2_prod;
+  while (ls_ord || ll_ord) {
+
+    // Low shared
+    if (ls_ord == active_ord) { // support general key sequence
+      ls_it->second(qoi,approx) += lf_prod;  ++ls_it;
+      ls_ord = (ls_it == sum_L_shared.end()) ? 0 : ls_it->first;
+    }
+    // Low-Low
+    if (ll_ord == active_ord) { // support general key sequence
+      RealSymMatrix& sum_LL_q = ll_it->second[qoi];
+      sum_LL_q(approx,approx) += lf_prod * lf_prod;
+      // Off-diagonal of C matrix:
+      // look back (only) for single capture of each combination
+      for (approx2=0; approx2<approx; ++approx2) {
+	lf2_index = approx2 * numFunctions + qoi;
+	if (asv[lf2_index] & 1) {
+	  lf2_prod = lf2_fn = fn_vals[lf2_index];
+	  for (m=1; m<active_ord; ++m)
+	    lf2_prod *= lf2_fn;
+	  sum_LL_q(approx,approx2) += lf_prod * lf2_prod;
+	}
+      }
+      ++ll_it;  ll_ord = (ll_it == sum_LL.end()) ? 0 : ll_it->first;
+    }
+    
+    lf_prod *= lf_fn;  ++active_ord;
+  }
+}
+
+
+void NonDACVSampling::
+accumulate_lf_hf_qoi(const RealVector& fn_vals, const ShortArray& asv,
+		     size_t qoi, size_t approx, IntRealMatrixMap& sum_L_shared,
+		     IntRealSymMatrixArrayMap& sum_LL, IntRealMatrixMap& sum_LH)
+{
+  size_t hf_index = numApprox * numFunctions + qoi,
+         lf_index =    approx * numFunctions + qoi, approx2, lf2_index, m;
+
+  IntRMMIter ls_it = sum_L_shared.begin(), lh_it = sum_LH.begin();
+  IntRSMAMIter ll_it = sum_LL.begin();
+  int ls_ord = (ls_it == sum_L_shared.end()) ? 0 : ls_it->first,
+      ll_ord = (ll_it == sum_LL.end())       ? 0 : ll_it->first,
+      lh_ord = (lh_it == sum_LH.end())       ? 0 : lh_it->first,
+      active_ord = 1;
+  Real lf_fn = fn_vals[lf_index], lf_prod = lf_fn, lf2_fn, lf2_prod,
+       hf_fn = fn_vals[hf_index], hf_prod = hf_fn;
+  while (ls_ord || ll_ord || lh_ord) {
+    
+    // Low shared
+    if (ls_ord == active_ord) { // support general key sequence
+      ls_it->second(qoi,approx) += lf_prod;  ++ls_it;
+      ls_ord = (ls_it == sum_L_shared.end()) ? 0 : ls_it->first;
+    }
+    // Low-Low
+    if (ll_ord == active_ord) { // support general key sequence
+      RealSymMatrix& sum_LL_q = ll_it->second[qoi];
+      sum_LL_q(approx,approx) += lf_prod * lf_prod;
+      // Off-diagonal of C matrix:
+      // look back (only) for single capture of each combination
+      for (approx2=0; approx2<approx; ++approx2) {
+	lf2_index = approx2 * numFunctions + qoi;
+	if (asv[lf2_index] & 1) {
+	  lf2_prod = lf2_fn = fn_vals[lf2_index];
+	  for (m=1; m<active_ord; ++m)
+	    lf2_prod *= lf2_fn;
+	  sum_LL_q(approx,approx2) += lf_prod * lf2_prod;
+	}
+      }
+      ++ll_it; ll_ord = (ll_it == sum_LL.end()) ? 0 : ll_it->first;
+    }
+    // Low-High (c vector for each QoI):
+    if (lh_ord == active_ord) {
+      lh_it->second(qoi,approx) += lf_prod * hf_prod;
+      ++lh_it; lh_ord = (lh_it == sum_LH.end()) ? 0 : lh_it->first;
+    }
+
+    lf_prod *= lf_fn;  hf_prod *= hf_fn;  ++active_ord;
   }
 }
 
@@ -1274,25 +1100,44 @@ compute_LL_covariance(const RealMatrix& sum_L_shared,
 }
 
 
+/** LF and HF */
+void NonDACVSampling::
+update_projected_samples(const MFSolutionData& soln,
+			 const UShortArray& approx_set,
+			 const SizetArray& N_H_actual, size_t& N_H_alloc,
+			 Sizet2DArray& N_L_actual, SizetArray& N_L_alloc,
+			 size_t& delta_N_H_actual,
+			 //SizetArray& delta_N_L_actual,
+			 Real& delta_equiv_hf)
+{
+  // The N_L baseline is the shared set PRIOR to delta_N_H --> important for
+  // cost incr even if lf_targets is defined robustly (hf_targets * eval_ratios)
+  update_projected_lf_samples(soln, approx_set, N_H_actual, N_H_alloc,
+			      N_L_actual, N_L_alloc, //delta_N_L_actual,
+			      delta_equiv_hf);
+
+  Real hf_target = soln.solution_reference();
+  // No relaxation for projections
+  size_t alloc_incr = one_sided_delta(N_H_alloc, hf_target),
+    actual_incr = (backfillFailures) ?
+      one_sided_delta(average(N_H_actual), hf_target) : alloc_incr;
+  delta_N_H_actual += actual_incr;  N_H_alloc += alloc_incr;
+  increment_equivalent_cost(actual_incr, sequenceCost, numApprox,
+			    delta_equiv_hf);
+}
+
+
 /** LF only */
 void NonDACVSampling::
 update_projected_lf_samples(const MFSolutionData& soln,
 			    const UShortArray& approx_set,
-			    const SizetArray& N_H_actual, size_t& N_H_alloc,
+			    const SizetArray& N_H_actual, size_t  N_H_alloc,
+			    Sizet2DArray& N_L_actual, SizetArray& N_L_alloc,
 			    //SizetArray& delta_N_L_actual,
 			    Real& delta_equiv_hf)
 {
-  // pilot+iterated samples shared by all approx, not just final best set
-  Sizet2DArray N_L_actual;  SizetArray N_L_alloc;
-  if (pilotMgmtMode == OFFLINE_PILOT ||
-      pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
-    // shared online sampling spans active model set after processing of
-    // covariance data assembled offline
-    inflate(N_H_actual, N_L_actual, approx_set);
-    inflate(N_H_alloc,  N_L_alloc,  approx_set);
-  }
-  else // shared sampling spans all models as covariances are assembled online
-    { inflate(N_H_actual, N_L_actual);  inflate(N_H_alloc, N_L_alloc); }
+  // inflate if needed
+  inflate_lf_samples(approx_set, N_H_actual, N_H_alloc, N_L_actual, N_L_alloc);
 
   size_t i, num_approx = approx_set.size(), alloc_incr, actual_incr;
   unsigned short inflate_i;  Real lf_target;
@@ -1314,27 +1159,26 @@ update_projected_lf_samples(const MFSolutionData& soln,
 }
 
 
-/** LF and HF */
 void NonDACVSampling::
-update_projected_samples(const MFSolutionData& soln,
-			 const UShortArray& approx_set,
-			 const SizetArray& N_H_actual, size_t& N_H_alloc,
-			 size_t& delta_N_H_actual,
-			 /*SizetArray& delta_N_L_actual,*/ Real& delta_equiv_hf)
+inflate_lf_samples(const UShortArray& approx_set,
+		   const SizetArray& N_H_actual, size_t      N_H_alloc,
+		   Sizet2DArray&     N_L_actual, SizetArray& N_L_alloc)
 {
-  // The N_L baseline is the shared set PRIOR to delta_N_H --> important for
-  // cost incr even if lf_targets is defined robustly (hf_targets * eval_ratios)
-  update_projected_lf_samples(soln, approx_set, N_H_actual, N_H_alloc,
-			      /*delta_N_L_actual,*/ delta_equiv_hf);
-
-  Real hf_target = soln.solution_reference();
-  // No relaxation for projections
-  size_t alloc_incr = one_sided_delta(N_H_alloc, hf_target),
-    actual_incr = (backfillFailures) ?
-      one_sided_delta(average(N_H_actual), hf_target) : alloc_incr;
-  delta_N_H_actual += actual_incr;  N_H_alloc += alloc_incr;
-  increment_equivalent_cost(actual_incr, sequenceCost, numApprox,
-			    delta_equiv_hf);
+  if (pilotMgmtMode == OFFLINE_PILOT ||
+      pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
+    // after processing of offline covariance data, online shared_increment()
+    // which follows only includes best model set 
+    inflate(N_H_actual, N_L_actual, approx_set);
+    inflate(N_H_alloc,  N_L_alloc,  approx_set);
+  }
+  else {
+    // online: all models are part of initial shared_increment(), which can
+    // then be updated when there is GenACV iteration of the active set.
+    // > when iteration is not used, N_L counts do not need to be managed
+    //   separately and can be inflated here from N_H.
+    if (N_L_actual.empty()) inflate(N_H_actual, N_L_actual);
+    if (N_L_alloc.empty())  inflate(N_H_alloc,  N_L_alloc);
+  }
 }
 
 } // namespace Dakota

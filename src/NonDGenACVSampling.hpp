@@ -143,8 +143,7 @@ private:
 			 Sizet2DArray& N_L_actual_shared,
 			 IntRealMatrixMap& sum_L_refined,
 			 Sizet2DArray& N_L_actual_refined,
-			 SizetArray& N_L_alloc_refined,
-			 const MFSolutionData& soln);
+			 SizetArray& N_L_alloc, const MFSolutionData& soln);
 
   void update_model_groups();
   void update_model_groups(const UShortList& root_list);
@@ -225,11 +224,16 @@ private:
 			      Sizet2DArray& N_L_refined,
 			      const SizetArray& approx_sequence,
 			      size_t sequence_start, size_t sequence_end);
+  void accumulate_genacv_sums(IntRealMatrixMap& sum_L_shared,
+			      IntRealVectorMap& sum_H,
+			      IntRealSymMatrixArrayMap& sum_LL,
+			      IntRealMatrixMap& sum_LH, RealVector& sum_HH,
+			      SizetArray& N_H_shared, Sizet2DArray& N_L_shared);
 
   //bool genacv_approx_increment(const MFSolutionData& soln,
   // 			         const Sizet2DArray& N_L_actual_refined,
-  // 			         SizetArray& N_L_alloc_refined,
-  // 			         size_t iter, const SizetArray& approx_sequence,
+  // 			         SizetArray& N_L_alloc, size_t iter,
+  //                             const SizetArray& approx_sequence,
   // 			         size_t start, size_t end);
 
   void solve_for_genacv_control(const RealSymMatrix& cov_LL,

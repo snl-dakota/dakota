@@ -104,6 +104,22 @@ protected:
   void accumulate_acv_sums(IntRealMatrixMap& sum_L, Sizet2DArray& N_L_actual,
 			   const RealVector& fn_vals, const ShortArray& asv,
 			   size_t approx);
+  // utilities
+  void accumulate_hf_qoi(const RealVector& fn_vals, size_t qoi,
+			 IntRealVectorMap& sum_H, RealVector& sum_HH);
+  void accumulate_lf_qoi(const RealVector& fn_vals, size_t qoi, size_t approx,
+			 IntRealMatrixMap& sum_L);
+  void accumulate_lf_qoi(const RealVector& fn_vals, const ShortArray& asv,
+			 size_t qoi, size_t approx,
+			 IntRealMatrixMap& sum_L_shared,
+			 IntRealSymMatrixArrayMap& sum_LL);
+  void accumulate_lf_hf_qoi(const RealVector& fn_vals, const ShortArray& asv,
+			    size_t qoi, size_t approx,
+			    IntRealMatrixMap& sum_L_shared,
+			    IntRealSymMatrixArrayMap& sum_LL,
+			    IntRealMatrixMap& sum_LH);
+  bool check_finite(const RealVector& fn_vals, const ShortArray& asv,
+		    size_t qoi, size_t num_models);
 
   void compute_acv_control_covariances(const RealMatrix& sum_L, Real sum_H_q,
 				       const RealSymMatrix& sum_LL_q,
@@ -112,18 +128,23 @@ protected:
 				       RealSymMatrix& cov_LL,
 				       RealMatrix& cov_LH);
 
-  void update_projected_lf_samples(const MFSolutionData& soln,
-				   const UShortArray& approx_set,
-				   const SizetArray& N_H_actual,
-				   size_t& N_H_alloc,
-				   //SizetArray& delta_N_L_actual,
-				   Real& delta_equiv_hf);
   void update_projected_samples(const MFSolutionData& soln,
 				const UShortArray& approx_set,
 				const SizetArray& N_H_actual, size_t& N_H_alloc,
+				Sizet2DArray& N_L_actual, SizetArray& N_L_alloc,
 				size_t& delta_N_H_actual,
 				//SizetArray& delta_N_L_actual,
 				Real& delta_equiv_hf);
+  void update_projected_lf_samples(const MFSolutionData& soln,
+				   const UShortArray& approx_set,
+				   const SizetArray& N_H_actual,
+				   size_t N_H_alloc, Sizet2DArray& N_L_actual,
+				   SizetArray& N_L_alloc,
+				   //SizetArray& delta_N_L_actual,
+				   Real& delta_equiv_hf);
+  void inflate_lf_samples(const UShortArray& approx_set,
+			  const SizetArray& N_H_actual, size_t      N_H_alloc,
+			  Sizet2DArray&     N_L_actual, SizetArray& N_L_alloc);
 
   Real update_hf_target(const RealVector& avg_eval_ratios, Real avg_N_H,
 			const RealVector& var_H, const RealVector& estvar0);
@@ -162,8 +183,7 @@ private:
 			 //Sizet2DArray& N_L_actual_shared,
 			 IntRealMatrixMap& sum_L_refined,
 			 Sizet2DArray& N_L_actual_refined,
-			 SizetArray& N_L_alloc_refined,
-			 const MFSolutionData& soln);
+			 SizetArray& N_L_alloc, const MFSolutionData& soln);
 
   void overlay_peer_group_sums(const IntRealMatrixArrayMap& sum_G,
 			       const Sizet2DArray& N_G_actual,
@@ -362,6 +382,20 @@ compute_L_variance(const RealMatrix& sum_L, const RealSymMatrixArray& sum_LL,
   }
 }
 */
+
+
+inline bool NonDACVSampling::
+check_finite(const RealVector& fn_vals, const ShortArray& asv,
+	     size_t qoi, size_t num_models)
+{
+  bool all_finite = true;  size_t m, q_index;
+  for (m=0; m<num_models; ++m) {
+    q_index = m * numFunctions + qoi;
+    if ((asv[q_index] & 1) && !std::isfinite(fn_vals[q_index]))// active NaN/Inf
+      { all_finite = false; break; }
+  }
+  return all_finite;
+}
 
 
 inline void NonDACVSampling::

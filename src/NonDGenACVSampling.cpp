@@ -641,7 +641,9 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
-  Real hf_target = 0., avg_N_H;
+  Sizet2DArray N_L_actual_shared;  inflate(N_H_actual, N_L_actual_shared);
+  SizetArray   N_L_alloc;          inflate(N_H_alloc,  N_L_alloc);
+  Real hf_target = 0., avg_N_H;  size_t alloc_incr;
   std::pair<UShortArray, UShortArray> soln_key;
   soln_key.first = fullApproxSet; // start with all approximations included
 
@@ -653,12 +655,12 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
     const UShortArray& approx_set = soln_key.first;
     shared_increment("acv_", approx_set); // active approx set + truth
     // leaves inactive approx sums in state inconsistent with sum_H/N_H_actual
-    accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
-			sum_LH, sum_HH, N_H_actual);
-    // *** N_L_actual_shared
-    N_H_alloc += (backfillFailures && mlmfIter) ?
+    accumulate_genacv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
+			   sum_LH, sum_HH, N_H_actual, N_L_actual_shared);
+    alloc_incr = (backfillFailures && mlmfIter) ?
       one_sided_delta(N_H_alloc, hf_target, relaxFactor) : numSamples;
-    // *** N_L_alloc_shared
+    N_H_alloc += alloc_incr;
+    increment_sample_range(N_L_alloc, alloc_incr, approx_set);
     // While online cost recovery could be continuously updated, we restrict
     // to the pilot and do not not update after iter 0.  We could potentially
     // update cost for shared samples, mirroring the covariance updates.
@@ -721,20 +723,19 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
   MFSolutionData& soln = dagSolns[soln_key];
   if (finalStatsType == QOI_STATISTICS) {
     IntRealMatrixMap sum_L_shared, sum_L_refined;
-    Sizet2DArray N_L_actual_shared, N_L_actual_refined;
-    SizetArray N_L_alloc_refined;
+    Sizet2DArray N_L_actual_refined;
     approx_increments(sum_L_baselineH, N_H_actual, N_H_alloc, sum_L_shared,
 		      N_L_actual_shared, sum_L_refined, N_L_actual_refined,
-		      N_L_alloc_refined, soln);
+		      N_L_alloc, soln);
     genacv_raw_moments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
 		       sum_H, N_H_actual, sum_L_shared, N_L_actual_shared,
 		       sum_L_refined, N_L_actual_refined, soln);
-    finalize_counts(N_L_actual_refined, N_L_alloc_refined);
+    finalize_counts(N_L_actual_refined, N_L_alloc);
   }
   else
     // N_H is final --> do not compute any deltaNActualHF (from maxIter exit)
     update_projected_lf_samples(soln, soln_key.first, N_H_actual, N_H_alloc,
-				deltaEquivHF);
+				N_L_actual_shared, N_L_alloc, deltaEquivHF);
 }
 
 
@@ -820,17 +821,16 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
   increment_equivalent_cost(numSamples, sequenceCost, numApprox, approx_set,
 			    equivHFEvals);
   // perform LF increments for the online sample profile
-  IntRealMatrixMap sum_L_shared, sum_L_refined;
-  Sizet2DArray N_L_actual_shared, N_L_actual_refined;
-  SizetArray N_L_alloc_refined;
+  IntRealMatrixMap  sum_L_shared,      sum_L_refined;
+  Sizet2DArray N_L_actual_shared, N_L_actual_refined;  SizetArray N_L_alloc;
   approx_increments(sum_L_baselineH, N_H_actual, N_H_alloc, sum_L_shared,
 		    N_L_actual_shared, sum_L_refined, N_L_actual_refined,
-		    N_L_alloc_refined, soln);
+		    N_L_alloc, soln);
   genacv_raw_moments(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
 		     N_shared_pilot, sum_H, N_H_actual,
 		     sum_L_shared, N_L_actual_shared,
 		     sum_L_refined, N_L_actual_refined, soln);
-  finalize_counts(N_L_actual_refined, N_L_alloc_refined);
+  finalize_counts(N_L_actual_refined, N_L_alloc);
 }
 
 
@@ -900,8 +900,9 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
   soln_key.first  = activeModelSetIter->first;
   soln_key.second = *activeDAGIter;
   MFSolutionData& soln = dagSolns[soln_key];
+  Sizet2DArray N_L_actual;  SizetArray N_L_alloc; // inflated from N_H
   update_projected_samples(soln, soln_key.first, N_H_actual, N_H_alloc,
-			   deltaNActualHF, deltaEquivHF);
+			   N_L_actual, N_L_alloc, deltaNActualHF, deltaEquivHF);
   // No need for updating estimator variance given deltaNActualHF since
   // NonDNonHierarchSampling::ensemble_numerical_solution() recovers N*
   // from the numerical solve and computes projected estVariance{s,Ratios}
@@ -915,7 +916,7 @@ approx_increments(IntRealMatrixMap& sum_L_baseline,
 		  Sizet2DArray& N_L_actual_shared,
 		  IntRealMatrixMap& sum_L_refined,
 		  Sizet2DArray& N_L_actual_refined,
-		  SizetArray& N_L_alloc_refined, const MFSolutionData& soln)
+		  SizetArray&   N_L_alloc, const MFSolutionData& soln)
 {
   // Note: these results do not affect the iteration above and can be
   // performed after N_H has converged
@@ -923,19 +924,11 @@ approx_increments(IntRealMatrixMap& sum_L_baseline,
   // The final approx set and DAG have been selected
   const UShortArray& approx_set = activeModelSetIter->first;
   size_t num_approx = approx_set.size(), num_groups = num_approx + 1;
-
   SizetArray delta_N_G(num_groups);
-  if (pilotMgmtMode == OFFLINE_PILOT ||
-      pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
-    // online shared_increment() only includes best model set after
-    // processing of offline covariance data
-    inflate(N_H_actual, N_L_actual_shared, approx_set);
-    inflate(N_H_alloc,  N_L_alloc_refined, approx_set);
-  }
-  else { // all models are part of online shared_increment()
-    inflate(N_H_actual, N_L_actual_shared);
-    inflate(N_H_alloc,  N_L_alloc_refined);
-  }
+
+  // inflate if needed
+  inflate_lf_samples(approx_set, N_H_actual, N_H_alloc,
+		     N_L_actual_shared, N_L_alloc);
 
   // For pyramid sampling (ACV-MF), define a sequence that reuses sample
   // increments: approx_sequence uses decreasing r_i order, directionally
@@ -965,7 +958,7 @@ approx_increments(IntRealMatrixMap& sum_L_baseline,
   for (int g=num_approx-1; g>=0; --g) // base to top, excluding all-model group
     delta_N_G[g]
       = group_approx_increment(soln_vars, approx_set, N_L_actual_refined,
-			       N_L_alloc_refined, modelGroups[g]);
+			       N_L_alloc, modelGroups[g]);
   group_increments(delta_N_G, "acv_", true); // reverse order for RNG sequence
 
   // --------------------------
@@ -1851,6 +1844,52 @@ nonlinear_model_cost_gradient(const RealVector& r_and_N, RealVector& grad_c)
   grad_c[num_approx] = 1. + approx_inner_prod / cost_H;     // 1 + Sum(w_i r_i)
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "nonlinear cost gradient:\n" << grad_c << std::endl;
+}
+
+
+/** Multi-moment map-based version used by GenACV following shared_increment().
+    Differs from ACV version in accumulations of N_L_shared, since dependent
+    on actve model subset. */
+void NonDGenACVSampling::
+accumulate_genacv_sums(IntRealMatrixMap& sum_L_shared, IntRealVectorMap& sum_H,
+		       IntRealSymMatrixArrayMap& sum_LL,// L w/ itself + other L
+		       IntRealMatrixMap&         sum_LH,// each L with H
+		       RealVector& sum_HH, SizetArray& N_H_shared,
+		       Sizet2DArray& N_L_shared)
+{
+  // uses one set of allResponses with QoI aggregation across all Models,
+  // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
+
+  size_t qoi, approx, lf_index, hf_index, num_am1 = numApprox+1;
+  IntRespMCIter r_it;
+
+  for (r_it=allResponses.begin(); r_it!=allResponses.end(); ++r_it) {
+    const Response&   resp    = r_it->second;
+    const RealVector& fn_vals = resp.function_values();
+    const ShortArray& asv     = resp.active_set_request_vector();
+
+    for (qoi=0; qoi<numFunctions; ++qoi) {
+
+      // see fault tol notes in NonDNonHierarchSampling::compute_correlation()
+      if (!check_finite(fn_vals, asv, qoi, num_am1)) continue;
+
+      hf_index = numApprox * numFunctions + qoi;
+      if (asv[hf_index] & 1) {
+	++N_H_shared[qoi];
+	accumulate_hf_qoi(fn_vals, qoi, sum_H, sum_HH);
+
+	for (approx=0; approx<numApprox; ++approx) {
+	  lf_index = approx * numFunctions + qoi;
+	  if (asv[lf_index] & 1) {
+	    // for GenACV with some models active, increment N_L separately
+	    ++N_L_shared[approx][qoi];
+	    accumulate_lf_hf_qoi(fn_vals, asv, qoi, approx, sum_L_shared,
+				 sum_LL, sum_LH);
+	  }
+	}
+      }
+    }
+  }
 }
 
 
