@@ -164,14 +164,14 @@ void NonDGenACVSampling::generate_ensembles_dags()
   for (d_cit=modelDAGs.begin(); d_cit!=modelDAGs.end(); ++d_cit) {
     const UShortArray& approx_set = d_cit->first;
     const UShortArraySet& dag_set = d_cit->second;
-    approx_set_size = approx_set.size();  dag_set_size = dag_set.size();
-    //if (approx_set.size()) { // suppress MC case
-      total_dag_size += dag_set_size;
+    approx_set_size = approx_set.size();
+    if (approx_set.size()) { // suppress MC case
+      dag_set_size = dag_set.size();  total_dag_size += dag_set_size;
       Cout << "For approximation set:\n" << approx_set
 	   << "searching array of DAGs of size " << dag_set_size;
       if (outputLevel >= DEBUG_OUTPUT) Cout << ":\n" << dag_set;//<< '\n';
       else                             Cout << ".\n";
-    //}
+    }
   }
   if (modelSelectType)
     Cout << "Total DAGs across all approximation sets = "<<total_dag_size<<'\n';
