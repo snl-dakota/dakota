@@ -243,7 +243,7 @@ add_dependencies(text_book dakota)
 if(DAKOTA_PYTHON)
   # Test restart translation capability.
   # (Example of system-level test that's not a Dakota study regression.)
-  add_test(NAME sys_restart_neutral COMMAND ${Python_EXECUTABLE}
+  add_test(NAME sys_restart_neutral COMMAND ${Python3_EXECUTABLE}
     ${CMAKE_CURRENT_SOURCE_DIR}/test_sys_restart_neutral.py 
     $<TARGET_FILE:dakota> $<TARGET_FILE:dakota_restart_util>
     )
