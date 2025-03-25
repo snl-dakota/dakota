@@ -11,7 +11,7 @@
 #define NOND_NONHIERARCH_SAMPLING_H
 
 #include "NonDEnsembleSampling.hpp"
-//#include "DataMethod.hpp"
+#include "MFSolutionData.hpp"
 
 
 namespace Dakota {
@@ -28,435 +28,6 @@ enum { ANALYTIC_SOLUTION = 1, REORDERED_ANALYTIC_SOLUTION,
        N_GROUP_LINEAR_CONSTRAINT, N_GROUP_LINEAR_OBJECTIVE };
 
 
-/// Container class for the numerical solution for a given configuration
-/// (e.g. ensemble + DAG)
-
-/** Used for caching the optimization solution data that is associated with
-    one configuration among multiple possibilities, e.g. ensemble membership
-    and directed acyclic graph (DAG) of paired control variates. */
-
-class MFSolutionData
-{
-
-public:
-
-  //
-  //- Heading: Constructors / destructor
-  //
-
-  /// default constructor
-  MFSolutionData();
-  // full constructor
-  MFSolutionData(const RealVector& soln_vars, const RealVector& est_var,
-		 const RealVector& est_var_ratios, Real equiv_hf);
-  /// copy constructor
-  MFSolutionData(const MFSolutionData& sd);
-  /// destructor
-  ~MFSolutionData();
-
-  /// assignment operator
-  MFSolutionData& operator=(const MFSolutionData&);
-
-  //
-  //- Heading: Accessors (supporting conversions)
-  //
-
-  const RealVector& solution_variables() const;
-  Real solution_variable(size_t i) const;
-  void solution_variables(const RealVector& soln_vars);
-  void solution_variables(const SizetArray& samples);
-
-  std::pair<RealVector, Real> anchored_solution_ratios() const;
-  void anchored_solution_ratios(const RealVector& soln_ratios, Real soln_ref);
-
-  RealVector solution_ratios() const;
-  Real solution_reference() const;
-  
-  void initialize_estimator_variances(size_t num_fns);
-  void initialize_estimator_variances(size_t num_fns, Real val);
-  void estimator_variances(const RealVector& est_var);
-  const RealVector& estimator_variances() const;
-  void estimator_variance(Real est_var, size_t i);
-  Real estimator_variance(size_t i) const;
-
-  static void update_estimator_variance_metric(short metric_type,
-					       Real norm_order,
-					       const RealVector& est_var_ratios,
-					       const RealVector& est_var,
-					       Real& est_var_metric,
-					       size_t& metric_index);
-  static void update_estimator_variance_metric(short metric_type,
-					       Real norm_order,
-					       const RealVector& est_var,
-					       Real& est_var_metric);
-  void update_estimator_variance_metric(short metric_type,
-					Real norm_order = 2.);
-  Real estimator_variance_metric() const;
-  void estimator_variance_metric(Real estvar_metric);
-  size_t estimator_variance_metric_index() const;
-
-  void initialize_estimator_variance_ratios(size_t num_fns);
-  void initialize_estimator_variance_ratios(size_t num_fns, Real val);
-  void estimator_variance_ratios(const RealVector& est_var_ratios);
-  const RealVector& estimator_variance_ratios() const;
-  void estimator_variance_ratio(Real est_var_ratio, size_t i);
-  Real estimator_variance_ratio(size_t i) const;
-
-  Real equivalent_hf_allocation() const;
-  void equivalent_hf_allocation(Real equiv_hf_alloc);
-   
-protected:
-
-  //
-  //- Heading: Data
-  //
-
-  // ***********************
-  // optimization variables:
-  // ***********************
-
-  // r_i and N_H for model graph:
-  //RealVector avgEvalRatios;
-  //Real avgHFTarget;
-
-  // N_i and N_H for model graph:
-  //RealVector avgApproxSamples;
-  //Real        avgTruthSamples;
-
-  // integrated & abstract:
-  // > ML BLUE: samples per group (last group is all models)
-  // > MFMC_numerical/ACV/GenACV: samples per model (last model is truth)
-  RealVector solutionVars;
-
-  // *********************
-  // optimization results:
-  // *********************
-  // Note: could be subclassed for analytic (vector estvar) vs. numerical
-  // solutions (averaged estvar)
-
-  /// estimator variances for each QoI for a given model graph
-  RealVector estVariances;
-  /// estimator variance ratios (1 - R^2) for each QoI for a given model
-  /// graph: the ratio of final estimator variances (optimization results)
-  /// and final MC estimator variance using final N_H samples (not equivHF)
-  RealVector estVarRatios;
-
-  /// scalar metric computed from estVariances or estVarRatios according
-  /// to incoming metric type
-  Real estVarMetric;
-  /// index when estVarMetric involves a selection (e.g. max over QoI)
-  /// rather than reduction (e.g. average over QoI)
-  size_t estVarMetricIndex;
-
-  // for accuracy constrained: total allocation for estimator in
-  // equivalent HF units (may differ from total actual = equivHFEvals)
-  Real equivHFAlloc;
-};
-
-
-inline MFSolutionData::MFSolutionData(): //, avgHFTarget(0.)
-  estVarMetric(DBL_MAX), equivHFAlloc(0.)
-{ }
-
-
-inline MFSolutionData::
-MFSolutionData(const RealVector& soln_vars, const RealVector& est_var,
-	       const RealVector& est_var_ratios, Real equiv_hf):
-  estVarMetric(DBL_MAX)
-{
-  copy_data(soln_vars, solutionVars);       copy_data(est_var, estVariances);
-  copy_data(est_var_ratios, estVarRatios);  equivHFAlloc = equiv_hf;
-}
-
-
-inline MFSolutionData::MFSolutionData(const MFSolutionData& sd)
-{
-  copy_data(sd.solutionVars, solutionVars);
-  copy_data(sd.estVariances, estVariances);
-  copy_data(sd.estVarRatios, estVarRatios);
-  //estVarMetricType = sd.estVarMetricType;
-  estVarMetric = sd.estVarMetric;
-  equivHFAlloc = sd.equivHFAlloc;
-}
-
-
-inline MFSolutionData::~MFSolutionData()
-{ }
-
-
-inline MFSolutionData& MFSolutionData::operator=(const MFSolutionData& sd)
-{
-  copy_data(sd.solutionVars, solutionVars);
-  copy_data(sd.estVariances, estVariances);
-  copy_data(sd.estVarRatios, estVarRatios);
-  //estVarMetricType = sd.estVarMetricType;
-  estVarMetric = sd.estVarMetric;
-  equivHFAlloc = sd.equivHFAlloc;
-  return *this;
-}
-
-
-inline const RealVector& MFSolutionData::solution_variables() const
-{ return solutionVars; }
-
-
-inline Real MFSolutionData::solution_variable(size_t i) const
-{ return solutionVars[i]; }
-
-
-inline void MFSolutionData::solution_variables(const RealVector& soln_vars)
-{ copy_data(soln_vars, solutionVars); }
-
-
-inline void MFSolutionData::solution_variables(const SizetArray& samples)
-{
-  size_t i, len = samples.size();
-  if (solutionVars.length() != len) solutionVars.sizeUninitialized(len);
-  for (i=0; i<len; ++i)
-    solutionVars[i] = (Real)samples[i];
-}
-
-
-inline std::pair<RealVector, Real> MFSolutionData::
-anchored_solution_ratios() const
-{
-  RealVector ratios; Real ratio_ref = 0.; int v_len = solutionVars.length();
-  if (v_len) {
-    int r_len = v_len - 1;
-    ratio_ref = solutionVars[r_len];
-    copy_data_partial(solutionVars, 0, r_len, ratios);
-    ratios.scale(1./ratio_ref);
-  }
-  return std::pair<RealVector, Real>(ratios, ratio_ref);
-}
-
-
-inline void MFSolutionData::
-anchored_solution_ratios(const RealVector& soln_ratios, Real soln_ref)
-{
-  int r_len = soln_ratios.length(), v_len = r_len + 1;
-  if (solutionVars.length() != v_len)
-    solutionVars.sizeUninitialized(v_len);
-  for (int i=0; i<r_len; ++i)
-    solutionVars[i] = soln_ratios[i] * soln_ref;
-  solutionVars[r_len] = soln_ref;
-}
-
-
-inline RealVector MFSolutionData::solution_ratios() const
-{
-  RealVector ratios; int v_len = solutionVars.length();
-  if (v_len) {
-    int r_len = v_len - 1;
-    copy_data_partial(solutionVars, 0, r_len, ratios);
-    ratios.scale(1./solutionVars[r_len]);
-  }
-  return ratios;
-}
-
-
-inline Real MFSolutionData::solution_reference() const
-{
-  int sv_len = solutionVars.length();
-  return (sv_len) ? solutionVars[sv_len - 1] : 0.;
-}
-
-
-inline void MFSolutionData::
-initialize_estimator_variances(size_t num_fns)
-{ if (estVariances.length()!=num_fns) estVariances.sizeUninitialized(num_fns); }
-
-
-inline void MFSolutionData::
-initialize_estimator_variances(size_t num_fns, Real val)
-{
-  if (estVariances.length()!=num_fns) estVariances.sizeUninitialized(num_fns);
-  estVariances.putScalar(val);
-}
-
-
-inline void MFSolutionData::estimator_variances(const RealVector& est_var)
-{ copy_data(est_var, estVariances); }
-
-
-inline const RealVector& MFSolutionData::estimator_variances() const
-{ return estVariances; } // enforce length == numFunctions?
-
-
-inline void MFSolutionData::estimator_variance(Real est_var, size_t i)
-{ estVariances[i] = est_var; }
-
-
-inline Real MFSolutionData::estimator_variance(size_t i) const
-{ return estVariances[i]; }
-
-
-inline void MFSolutionData::
-update_estimator_variance_metric(short metric_type, Real norm_order,
-				 const RealVector& est_var_ratios,
-				 const RealVector& est_var,
-				 Real& metric, size_t& metric_index)
-{
-  // Another metric to consider would be to move away from a relative accuracy
-  // constraint (convTol * estVarIter0) and allow specification of a mean
-  // accuracy based on the confidence interval, e.g. user wants the mean value
-  // within +/- 1% --> 95% confidence interval half-width / mean estimate < .01,
-  // which would shift from relative to absolute when mean estimate ~ 0.
-
-  // Error checks
-  bool err_flag = false;
-  switch (metric_type) {
-  case DEFAULT_ESTVAR_METRIC: case AVG_ESTVAR_METRIC:
-  case NORM_ESTVAR_METRIC:    case MAX_ESTVAR_METRIC:
-    if (est_var.empty()) {
-      Cerr << "Error: estimator variance undefined in MFSolutionData::"
-	   << "update_estimator_variance_metric()" << std::endl;
-      err_flag = true;
-    }
-    break;
-  case AVG_ESTVAR_RATIO_METRIC:  case NORM_ESTVAR_RATIO_METRIC:
-  case MAX_ESTVAR_RATIO_METRIC:
-    // Can only omit N* from variance minimization in case where it is fixed
-    // (R_ONLY_LINEAR_CONSTRAINT from truth_fixed_by_pilot specification).
-    // In this case, minimizing an estvar ratios metric is equivalent to
-    // minimizing estvar, albeit more well scaled across QoI.
-
-    // This error check would need to be performed at a higher level scope
-    //if (optSubProblemForm != R_ONLY_LINEAR_CONSTRAINT) { // not in scope
-    //  Cerr << "Error: minimization metrics defined from estimator variance "
-    //       << "ratios require a R_ONLY_LINEAR_CONSTRAINT formulation."
-    // 	     << std::endl;
-    //  err_flag = true;
-    //}
- 
-    if (est_var_ratios.empty()) {
-      Cerr << "Error: estimator variance ratios undefined in MFSolutionData::"
-	   << "update_estimator_variance_metric()" << std::endl;
-      err_flag = true;
-    }
-    break;
-  default:
-    Cerr << "Error: unsupported metric type in MFSolutionData::"
-	 << "update_estimator_variance_metric()" << std::endl;
-    err_flag = true;  break;
-  }
-  if (err_flag)
-    abort_handler(METHOD_ERROR);
-
-  switch (metric_type) {
-  // absolute metrics:
-  case DEFAULT_ESTVAR_METRIC: case AVG_ESTVAR_METRIC:
-    metric_index = _NPOS;
-    metric = average(est_var);                    break;
-  case NORM_ESTVAR_METRIC:
-    metric_index = _NPOS;
-    metric = p_norm(est_var, norm_order);         break;
-  case MAX_ESTVAR_METRIC:
-    metric_index = find_max_index(est_var);
-    metric = est_var[metric_index];               break;
-  // metrics relative to MC estvar (see validity note above):
-  case AVG_ESTVAR_RATIO_METRIC:
-    metric_index = _NPOS;
-    metric = average(est_var_ratios);             break;
-  case NORM_ESTVAR_RATIO_METRIC:
-    metric_index = _NPOS;
-    metric = p_norm(est_var_ratios, norm_order);  break;
-  case MAX_ESTVAR_RATIO_METRIC:
-    metric_index = find_max_index(est_var_ratios);
-    metric = est_var_ratios[metric_index];        break;
-  }
-}
-
-
-inline void MFSolutionData::
-update_estimator_variance_metric(short metric_type, Real norm_order,
-				 const RealVector& est_var, Real& metric)
-{
-  // In current uses, we restrict to estvar metrics even for a metric_type
-  // based on estvar ratios
-
-  switch (metric_type) {
-  case DEFAULT_ESTVAR_METRIC: case AVG_ESTVAR_METRIC:
-  case AVG_ESTVAR_RATIO_METRIC:
-    metric = average(est_var);             break;
-  case NORM_ESTVAR_METRIC:    case NORM_ESTVAR_RATIO_METRIC:
-    metric = p_norm(est_var, norm_order);  break;
-  case MAX_ESTVAR_METRIC:     case MAX_ESTVAR_RATIO_METRIC:
-    metric = maximum(est_var);             break;
-  default:
-    Cerr << "Error: unsupported metric type in MFSolutionData::"
-	 << "update_estimator_variance_metric()" << std::endl;
-    abort_handler(METHOD_ERROR);        break;
-  }
-}
-
-
-inline void MFSolutionData::
-update_estimator_variance_metric(short metric_type, Real norm_order)
-{
-  update_estimator_variance_metric(metric_type, norm_order, estVarRatios,
-				   estVariances, estVarMetric,
-				   estVarMetricIndex);
-}
-
-
-inline Real MFSolutionData::estimator_variance_metric() const
-{ return estVarMetric; }
-
-
-/** This function must be used with care as it can desynchronize the
-    scalar estVarMetric from its corresponding estVariances vector. At
-    this time, it is only used during solution comparison in numerical
-    solves, where we need to store the final scalar value coming from
-    the optimizer.  For the solution that is selected, the estVariances
-    vector is then synchronized downstream. */
-inline void MFSolutionData::estimator_variance_metric(Real estvar_metric)
-{ estVarMetric = estvar_metric; }
-
-
-inline size_t MFSolutionData::estimator_variance_metric_index() const
-{ return estVarMetricIndex; }
-
-
-inline void MFSolutionData::
-initialize_estimator_variance_ratios(size_t num_fns)
-{ if (estVarRatios.length()!=num_fns) estVarRatios.sizeUninitialized(num_fns); }
-
-
-inline void MFSolutionData::
-initialize_estimator_variance_ratios(size_t num_fns, Real val)
-{
-  if (estVarRatios.length()!=num_fns) estVarRatios.sizeUninitialized(num_fns);
-  estVarRatios.putScalar(val);
-}
-
-
-inline void MFSolutionData::
-estimator_variance_ratios(const RealVector& est_var_ratios)
-{ copy_data(est_var_ratios, estVarRatios); }
-
-
-inline const RealVector& MFSolutionData::estimator_variance_ratios() const
-{ return estVarRatios; }
-
-
-inline void MFSolutionData::
-estimator_variance_ratio(Real est_var_ratio, size_t i)
-{ estVarRatios[i] = est_var_ratio; }
-
-
-inline Real MFSolutionData::estimator_variance_ratio(size_t i) const
-{ return estVarRatios[i]; }
-
-
-inline Real MFSolutionData::equivalent_hf_allocation() const
-{ return equivHFAlloc; }
-
-
-inline void MFSolutionData::equivalent_hf_allocation(Real equiv_hf_alloc)
-{ equivHFAlloc = equiv_hf_alloc; }
-
-
 /// Base class for non-hierarchical ensemble-based Monte Carlo sampling.
 
 /** Derived classes include MFMC, ACV, and GenACV. */
@@ -470,7 +41,8 @@ public:
   //
 
   /// standard constructor
-  NonDNonHierarchSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  NonDNonHierarchSampling(ProblemDescDB& problem_db,
+			  std::shared_ptr<Model> model);
   /// destructor
   ~NonDNonHierarchSampling() override;
 
@@ -511,11 +83,24 @@ protected:
   /// helper function that supports optimization APIs passing design variables
   virtual void estimator_variances(const RealVector& cd_vars,
 				   RealVector& est_var);
+  /// helper function that supports optimization APIs passing design variables
+  virtual void estimator_variance_gradients(const RealVector& cd_vars,
+					    RealMatrix& ev_grads);
+  /// helper function that supports optimization APIs passing design variables
+  virtual void estimator_variances_and_gradients(const RealVector& cd_vars,
+						 RealVector& est_var,
+						 RealMatrix& ev_grads);
+
   /// compute estimator variance ratios from HF samples and oversample ratios
   virtual void estimator_variance_ratios(const RealVector& cd_vars,
 					 RealVector& estvar_ratios);
   /// helper function that supports optimization APIs passing design variables
-  virtual Real estimator_variance_metric(const RealVector& cd_vars);
+  virtual void estimator_variance_ratio_gradients(const RealVector& cd_vars,
+						  RealMatrix& evr_grads);
+  /// helper function that supports optimization APIs passing design variables
+  virtual void estimator_variance_ratios_and_gradients(
+    const RealVector& cd_vars, RealVector& estvar_ratios,
+    RealMatrix& evr_grads);
 
   /// within ensemble_numerical_solution(), define the number of
   /// solution variables and constraints
@@ -548,6 +133,9 @@ protected:
   virtual Real augmented_linear_ineq_violations(const RealVector& cd_vars,
     const RealMatrix& lin_ineq_coeffs, const RealVector& lin_ineq_lb,
     const RealVector& lin_ineq_ub);
+  /// enforce the augmented linear inequality constraints, usually to prevent
+  /// numerical exceptions in the computation of estimator variance
+  virtual void enforce_augmented_linear_ineq_constraints(RealVector& cd_vars);
 
   /// post-process minimization results to update MFSolutionData
   virtual void minimizer_results_to_solution_data(const RealVector& cv_star,
@@ -629,6 +217,19 @@ protected:
   /// compute estimator variance from estimator variance ratios
   void estvar_ratios_to_estvar(const RealVector& var_H, const SizetArray& N_H,
 			       MFSolutionData& soln);
+
+  /// evaluate the optimization metric formed from a reduction of
+  /// estimator variances
+  Real estimator_variance_metric(const RealVector& cd_vars);
+  /// evaluate the gradient of the optimization metric formed from a
+  /// reduction of estimator variances
+  void estimator_variance_metric_gradient(const RealVector& cd_vars,
+					  RealVector& evm_grad);
+  /// evaluate the gradient of the optimization metric formed from a
+  /// reduction of estimator variances
+  void estimator_variance_metric_and_gradient(const RealVector& cd_vars,
+					      Real& ev_metric,
+					      RealVector& evm_grad);
 
   /// helper function for assigning dummy estimator variances when no
   /// numerical solve is performed
@@ -883,6 +484,11 @@ protected:
   /// identify if there are activeSet requests for model i
   bool active_set_for_model(size_t i);
 
+  /// Perform a Cholesky factorization and solve
+  int cholesky_solve(RealSymMatrix& A, RealMatrix& X, RealMatrix& B,
+		     bool copy_A = false, bool copy_B = false,
+		     bool hard_error = true);
+
   /// promote scalar to 1D array
   void inflate(size_t N_0D, SizetArray& N_1D);
   /// promote scalar to portion of 1D array
@@ -899,6 +505,12 @@ protected:
   /// promote active vector subset to full vector based on mask
   void inflate(const RealVector& vec, const BitArray& mask,
 	       RealVector& inflated_vec);
+  // promote active subset to full matrix based on mask
+  //void inflate(const RealMatrix& mat, const BitArray& mask,
+  //	         RealMatrix& inflated_mat);
+  // promote active subset to full symmetric matrix based on mask
+  //void inflate(const RealSymMatrix& mat, const BitArray& mask,
+  //	         RealSymMatrix& inflated_mat);
   /// demote full vector to active subset based on mask
   void deflate(const RealVector& vec, const BitArray& mask,
 	       RealVector& deflated_vec);
@@ -919,7 +531,7 @@ protected:
   /// of truth model samples and approximation eval_ratios.  Minimizers are
   /// arranged in a sequence (first dimension) where each step in the sequence
   /// may have multiple competitors (second dimension)
-  Iterator2DArray varianceMinimizers;
+  Iterator2DPtrArray varianceMinimizers;
   /// active indices for numerical solutions: varianceMinimizers[first][second]
   SizetSizetPair varMinIndices;
 
@@ -949,6 +561,11 @@ protected:
   /// user specification to suppress any increments in the number of HF
   /// evaluations (e.g., because too expensive and no more can be performed)
   bool truthFixedByPilot;
+  /// a subset of the non-hierarchcvial samplers provide analytic derivatives
+  /// of estimator variance
+  bool analyticEstVarDerivs;
+  /// employ truncated SVD rather than Cholesky factorization for matrix solve
+  bool hardenNumericSoln;
 
   /// for sample projections, the calculated increment in HF samples that
   /// would be evaluated if full iteration/statistics were pursued
@@ -968,6 +585,17 @@ private:
 
   /// flattens contours of estimator_variance_metric() using std::log
   Real log_estvar_metric(const RealVector& cd_vars);
+  /// gradient of log-metric returned by log_estvar_metric()
+  void log_estvar_metric_gradient(const RealVector& cd_vars,
+				  RealVector& log_ev_grad);
+  /// both value and gradient of log-metric, avoiding duplicated calculations
+  void log_estvar_metric_and_gradient(const RealVector& cd_vars, Real& log_ev,
+				      RealVector& log_ev_grad);
+
+  /// reduce gradients of estvar{,_ratios} to form gradient of estvar metric
+  void estvar_gradients_to_metric_gradient(const RealVector& ev_vec,
+					   const RealMatrix& ev_grad,
+					   RealVector& evm_grad);
 
   /// compute a penalty merit function from objective, constraint, and
   /// constaint bound
@@ -1205,6 +833,20 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
 
 
 inline void NonDNonHierarchSampling::
+estimator_variance_ratio_gradients(const RealVector& cd_vars,
+				   RealMatrix& evr_grads)
+{
+  // *** TO DO ***: this can be derived from
+  //   ev = varH/N_H ev_ratios
+  // where varH is fixed and N_H is a design variable for ACV,GenACV,MFMC
+
+  Cerr << "Error: estimator_variance_ratio_gradients() not defined by derived "
+       << "class.\n" << std::endl;
+  abort_handler(METHOD_ERROR);
+}
+
+
+inline void NonDNonHierarchSampling::
 estimator_variances(const RealVector& cd_vars, RealVector& est_var)
 {
   RealVector estvar_ratios(numFunctions, false);
@@ -1235,15 +877,33 @@ estimator_variances_and_ratios(const RealVector& cd_vars, MFSolutionData& soln)
 }
 
 
-inline Real NonDNonHierarchSampling::
-estimator_variance_metric(const RealVector& cd_vars)
+inline void NonDNonHierarchSampling::
+estimator_variance_gradients(const RealVector& cd_vars, RealMatrix& ev_grads)
 {
-  RealVector estvar_ratios, estvar;  Real metric;  size_t metric_index;
-  estimator_variance_ratios(cd_vars, estvar_ratios); // virtual: MFMC,ACV,GenACV
-  estimator_variances_from_ratios(cd_vars, estvar_ratios, estvar);
-  MFSolutionData::update_estimator_variance_metric(estVarMetricType,
-    estVarMetricNormOrder, estvar_ratios, estvar, metric, metric_index);
-  return metric;
+  //Cerr << "Warning: testing omission of estimator_variance_gradients() by "
+  //     << "derived class.\n" << std::endl;
+  ev_grads.shape(0,0);
+}
+
+
+inline void NonDNonHierarchSampling::
+estimator_variances_and_gradients(const RealVector& cd_vars,
+				  RealVector& est_var, RealMatrix& ev_grads)
+{
+  // default implementation
+  estimator_variances(cd_vars, est_var);
+  estimator_variance_gradients(cd_vars, ev_grads);
+}
+
+
+inline void NonDNonHierarchSampling::
+estimator_variance_ratios_and_gradients(const RealVector& cd_vars,
+					RealVector& estvar_ratios,
+					RealMatrix& evr_grads)
+{
+  // default implementation
+  estimator_variance_ratios(cd_vars, estvar_ratios);
+  estimator_variance_ratio_gradients(cd_vars, evr_grads);
 }
 
 
@@ -1276,6 +936,117 @@ estvar_ratios_to_estvar(const RealVector& var_H, const SizetArray& N_H,
   soln.initialize_estimator_variances(numFunctions);
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     soln.estimator_variance(estvar_ratios[qoi] * var_H[qoi] / N_H[qoi], qoi);
+}
+
+
+inline Real NonDNonHierarchSampling::
+estimator_variance_metric(const RealVector& cd_vars)
+{
+  RealVector estvar_ratios, estvar;  Real metric;  size_t metric_index;
+  switch (estVarMetricType) {
+  case AVG_ESTVAR_RATIO_METRIC: case NORM_ESTVAR_RATIO_METRIC:
+  case MAX_ESTVAR_RATIO_METRIC:
+    estimator_variance_ratios(cd_vars, estvar_ratios);//virtual: MFMC,ACV,GenACV
+    break;
+  default:
+    estimator_variances(cd_vars, estvar); break;
+  }
+  MFSolutionData::update_estimator_variance_metric(estVarMetricType,
+    estVarMetricNormOrder, estvar_ratios, estvar, metric, metric_index);
+  return metric;
+}
+
+
+inline void NonDNonHierarchSampling::
+estimator_variance_metric_gradient(const RealVector& cd_vars,
+				   RealVector& evm_grad)
+{
+  RealVector ev_vec;  RealMatrix ev_grads;
+  switch (estVarMetricType) {
+  case NORM_ESTVAR_METRIC:       case MAX_ESTVAR_METRIC:
+    estimator_variances_and_gradients(cd_vars, ev_vec, ev_grads);        break;
+  case NORM_ESTVAR_RATIO_METRIC: case MAX_ESTVAR_RATIO_METRIC:
+    estimator_variance_ratios_and_gradients(cd_vars, ev_vec, ev_grads);  break;
+  default:
+    estimator_variance_gradients(cd_vars, ev_grads);                     break;
+  }
+
+  estvar_gradients_to_metric_gradient(ev_vec, ev_grads, evm_grad);
+}
+
+
+inline void NonDNonHierarchSampling::
+estimator_variance_metric_and_gradient(const RealVector& cd_vars,
+				       Real& ev_metric, RealVector& evm_grad)
+{
+  RealVector estvar_ratios, estvar;  RealMatrix ev_grads;
+  switch (estVarMetricType) {
+  case AVG_ESTVAR_RATIO_METRIC: case NORM_ESTVAR_RATIO_METRIC:
+  case MAX_ESTVAR_RATIO_METRIC:
+    estimator_variance_ratios_and_gradients(cd_vars, estvar_ratios, ev_grads);
+    estvar_gradients_to_metric_gradient(estvar_ratios, ev_grads, evm_grad);
+    break;
+  default:
+    estimator_variances_and_gradients(cd_vars, estvar, ev_grads);
+    estvar_gradients_to_metric_gradient(estvar, ev_grads, evm_grad);
+    break;
+  }
+
+  size_t metric_index;
+  MFSolutionData::update_estimator_variance_metric(estVarMetricType,
+    estVarMetricNormOrder, estvar_ratios, estvar, ev_metric, metric_index);
+}
+
+
+inline Real NonDNonHierarchSampling::
+log_estvar_metric(const RealVector& cd_vars)
+{
+  Real ev_metric = estimator_variance_metric(cd_vars);
+  if (ev_metric > 0.)
+    return std::log(ev_metric); // use log to flatten contours
+  else
+    return std::numeric_limits<Real>::quiet_NaN();//Pecos::LARGE_NUMBER;
+}
+
+
+inline void NonDNonHierarchSampling::
+log_estvar_metric_gradient(const RealVector& cd_vars, RealVector& log_evm_grad)
+{
+  RealVector evm_grad;  estimator_variance_metric_gradient(cd_vars, evm_grad);
+  if (evm_grad.empty()) // not supported by derived class
+    { log_evm_grad.size(0); return; }
+
+  size_t v, num_v = cd_vars.length();
+  if (log_evm_grad.length() != num_v) log_evm_grad.sizeUninitialized(num_v);
+  Real ev_metric = estimator_variance_metric(cd_vars);
+  if (ev_metric > 0.)
+    for (v=0; v<num_v; ++v)
+      log_evm_grad[v] = evm_grad[v] / ev_metric;
+  else
+    log_evm_grad = 0.;
+}
+
+
+inline void NonDNonHierarchSampling::
+log_estvar_metric_and_gradient(const RealVector& cd_vars, Real& log_evm,
+			       RealVector& log_evm_grad)
+{
+  Real ev_metric;  RealVector evm_grad;
+  estimator_variance_metric_and_gradient(cd_vars, ev_metric, evm_grad);
+
+  log_evm = (ev_metric > 0.) ? std::log(ev_metric) :
+    std::numeric_limits<Real>::quiet_NaN();//Pecos::LARGE_NUMBER;
+  if (evm_grad.empty()) // not supported by derived class
+    log_evm_grad.size(0);
+  else {
+    size_t v, num_v = cd_vars.length();
+    if (log_evm_grad.length() != num_v) log_evm_grad.sizeUninitialized(num_v);
+    if (ev_metric > 0.)
+      for (v=0; v<num_v; ++v)
+	log_evm_grad[v] = evm_grad[v] / ev_metric;
+    else
+      log_evm_grad = 0.;
+  }
 }
 
 
@@ -2061,17 +1832,6 @@ covariance_to_correlation_sq(const RealMatrix& cov_LH, const RealMatrix& var_L,
 }
 
 
-inline Real NonDNonHierarchSampling::
-log_estvar_metric(const RealVector& cd_vars)
-{
-  Real estvar_metric = estimator_variance_metric(cd_vars);
-  if (estvar_metric > 0.)
-    return std::log(estvar_metric); // use log to flatten contours
-  else
-    return std::numeric_limits<Real>::quiet_NaN();//Pecos::LARGE_NUMBER;
-}
-
-
 /*
 inline void NonDNonHierarchSampling::
 compute_correlation(Real sum_Q1, Real sum_Q2, Real sum_Q1Q1, Real sum_Q1Q2,
@@ -2251,6 +2011,52 @@ inflate(const RealVector& vec, const BitArray& mask, RealVector& inflated_vec)
 	inflated_vec[i] = vec[cntr++];
   }
 }
+
+
+/*
+inline void NonDNonHierarchSampling::
+inflate(const RealMatrix& mat, const BitArray& mask, RealMatrix& inflated_mat)
+{
+  if (mask.empty())
+    copy_data(mat, inflated_mat);
+  else {
+    size_t i, j, i_cntr = 0, j_cntr, inflated_len = mask.size();
+    if (inflated_mat.numRows() != inflated_len ||
+	inflated_mat.numCols() != inflated_len)
+      inflated_mat.shape(inflated_len, inflated_len); // init to 0
+    else inflated_mat = 0.;
+    for (i=0; i<inflated_len; ++i)
+      if (mask[i]) {
+	for (j=0, j_cntr=0; j<inflated_len; ++j)
+	  if (mask[j])
+	    { inflated_mat(i,j) = mat(i_cntr,j_cntr); ++j_cntr; }
+	++i_cntr;
+      }
+  }
+}
+
+
+inline void NonDNonHierarchSampling::
+inflate(const RealSymMatrix& mat, const BitArray& mask,
+	RealSymMatrix& inflated_mat)
+{
+  if (mask.empty())
+    copy_data(mat, inflated_mat);
+  else {
+    size_t i, j, i_cntr = 0, j_cntr, inflated_len = mask.size();
+    if (inflated_mat.numRows() != inflated_len)
+      inflated_mat.shape(inflated_len); // init to 0
+    else inflated_mat = 0.;
+    for (i=0; i<inflated_len; ++i)
+      if (mask[i]) {
+	for (j=0, j_cntr=0; j<=i; ++j)
+	  if (mask[j])
+	    { inflated_mat(i,j) = mat(i_cntr,j_cntr); ++j_cntr; }
+	++i_cntr;
+      }
+  }
+}
+*/
 
 
 inline void NonDNonHierarchSampling::

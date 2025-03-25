@@ -74,7 +74,7 @@ protected:
   //const IntResponseMap& derived_synchronize_nowait();
 
   /// return subIterator
-  Iterator& subordinate_iterator() override;
+  std::shared_ptr<Iterator> subordinate_iterator() override;
   /// return subModel
   std::shared_ptr<Model> subordinate_model() override;
   /// return subModel
@@ -100,9 +100,9 @@ protected:
   short local_eval_synchronization() override;
   /// return optionalInterface asynchronous evaluation concurrency
   int local_eval_concurrency() override;
-  /// flag which prevents overloading the master with a multiprocessor
+  /// flag which prevents overloading the scheduler with a multiprocessor
   /// evaluation (forwarded to optionalInterface)
-  bool derived_master_overload() const override;
+  bool derived_scheduler_overload() const override;
 
   IntIntPair estimate_partition_bounds(int max_eval_concurrency) override;
 
@@ -120,10 +120,10 @@ protected:
 				  bool recurse_flag = true) override;
 
   /// Service optionalInterface and subModel job requests received from
-  /// the master.  Completes when a termination message is received from
+  /// the scheduler.  Completes when a termination message is received from
   /// stop_servers().
   void serve_run(ParLevLIter pl_iter, int max_eval_concurrency) override;
-  /// Executed by the master to terminate server operations for subModel and
+  /// Executed by the scheduler to terminate server operations for subModel and
   /// optionalInterface when iteration on the NestedModel is complete.
   void stop_servers() override;
 
@@ -262,7 +262,7 @@ private:
   /// at the base class level
   IntResponseMap nestedResponseMap;
 
-  /// mapping of subIterator.response_error_estimates() through
+  /// mapping of subIterator->response_error_estimates() through
   /// primary and secondary mappings
   RealVector mappedErrorEstimates;
 
@@ -273,7 +273,7 @@ private:
   // attributes pertaining to the subIterator/subModel pair:
   //
   /// the sub-iterator that is executed on every evaluation of this model
-  Iterator subIterator;
+  std::shared_ptr<Iterator> subIterator;
   /// the sub-model used in sub-iterator evaluations
   /** There are no restrictions on subModel, so arbitrary nestings are
       possible.  This is commonly used to support surrogate-based
@@ -455,7 +455,7 @@ inline bool NestedModel::finalize_mapping()
 */
 
 
-inline Iterator& NestedModel::subordinate_iterator()
+inline std::shared_ptr<Iterator> NestedModel::subordinate_iterator()
 { return subIterator; }
 
 
@@ -483,7 +483,7 @@ inline const RealVector& NestedModel::error_estimates()
 
   // *** TO DO: integrate with evaluate and evaluate_nowait()
 
-  iterator_error_estimation(subIterator.response_error_estimates(),
+  iterator_error_estimation(subIterator->response_error_estimates(),
 			    mappedErrorEstimates);
   return mappedErrorEstimates; 
 }
@@ -512,15 +512,15 @@ inline int NestedModel::local_eval_concurrency()
 }
 
 
-/** Derived master overload for subModel is handled separately in
-    subModel.evaluate() within subIterator.run(). */
-inline bool NestedModel::derived_master_overload() const
+/** Derived scheduler overload for subModel is handled separately in
+    subModel.evaluate() within subIterator->run(). */
+inline bool NestedModel::derived_scheduler_overload() const
 {
   bool oi_overload = ( !optInterfacePointer.empty() &&
-		       optionalInterface.iterator_eval_dedicated_master() && 
+		       optionalInterface.iterator_eval_dedicated_scheduler() && 
 		       optionalInterface.multi_proc_eval() ),
-    si_overload = ( !subIterator.is_null() &&
-		    subIteratorSched.iteratorScheduling == MASTER_SCHEDULING && 
+    si_overload = ( subIterator && subIteratorSched.iteratorScheduling ==
+		    DEDICATED_SCHEDULER_DYNAMIC && 
 		    subIteratorSched.procsPerIterator > 1 );
   return (oi_overload || si_overload);
 }
@@ -545,7 +545,7 @@ estimate_partition_bounds(int max_eval_concurrency)
   String empty_str;
   subIteratorSched.construct_sub_iterator(probDescDB, subIterator, subModel,
     subMethodPointer, empty_str, empty_str);
-  IntIntPair min_max, si_min_max = subIterator.estimate_partition_bounds();
+  IntIntPair min_max, si_min_max = subIterator->estimate_partition_bounds();
 
   // apply multiplier from concurrent iterator scheduling overrides
   min_max.first = ProblemDescDB::min_procs_per_level(
@@ -740,11 +740,11 @@ inline void NestedModel::
 initialize_iterator(const Variables& vars, const ActiveSet& set, int eval_id)
 {
   update_sub_model(vars, userDefinedConstraints);
-  subIterator.response_results_active_set(set);
+  subIterator->response_results_active_set(set);
   if (hierarchicalTagging) {
     // unique id from nested eval cntr
     String eval_tag = evalTagPrefix + '.' + std::to_string(eval_id);
-    subIterator.eval_tag_prefix(eval_tag);
+    subIterator->eval_tag_prefix(eval_tag);
   }
 }
 
@@ -767,9 +767,9 @@ unpack(MPIUnpackBuffer& recv_buffer, int job_index, Variables& vars,
   subIteratorIdMap[job_index+1] = eval_id;
 
   // add new job to local queue
-  Response resp = subIterator.response_results().copy();
+  Response resp = subIterator->response_results().copy();
   resp.active_set(set);
-  ParamResponsePair pair(vars, subIterator.method_id(), resp, eval_id, false);
+  ParamResponsePair pair(vars, subIterator->method_id(), resp, eval_id, false);
   subIteratorPRPQueue.insert(pair);
 }
 
@@ -820,12 +820,12 @@ inline void NestedModel::update_local_results(int job_index)
   PRPQueueIter q_it = job_index_to_queue_iterator(job_index);
 
   // Can't do this since it affects Queue hash-by-value ordering
-  //q_it->variables(subIterator.variables_results());
+  //q_it->variables(subIterator->variables_results());
 
   // Bypassing PRPQueue const-ness is OK for the PRP response since
   // this should not affect hash-by-value ordering
   Response resp = q_it->response(); // shallow copy
-  resp.update(subIterator.response_results());
+  resp.update(subIterator->response_results());
 }
 
 } // namespace Dakota

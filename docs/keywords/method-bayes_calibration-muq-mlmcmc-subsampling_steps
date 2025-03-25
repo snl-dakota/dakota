@@ -1,0 +1,33 @@
+Blurb::
+Parameter for the Multi-level MCMC algorithm in MUQ
+
+Description::
+How many samples to take at each level before using one as proposal sample for the next level.
+Note that this should be a vector with as many entries as desired levels set via the ``solution_level_control``.
+
+
+*Default Behavior*
+
+No default behavior, this MUST be specified.
+
+Topics::
+bayesian_calibration, solution_level_control
+
+Examples::
+
+.. code-block::
+
+    method,
+    bayes_calibration muq
+    multilevel_mcmc
+        initial_chain_samples = 50
+        target_variance = 0.5
+        subsampling_steps = 12 0
+        greedy_resampling_factor = 0.5
+
+
+Theory::
+
+Faq::
+
+See_Also::

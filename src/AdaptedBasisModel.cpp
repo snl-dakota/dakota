@@ -33,15 +33,15 @@ AdaptedBasisModel(ProblemDescDB& problem_db):
   // been default constructed yet; for now we transfer ownership of
   // this pointer into a shared pointer, as delete isn't being called
   // in this class anyway.
-  pcePilotExpansion.assign_rep(std::shared_ptr<NonDPolynomialChaos>
-			       (pcePilotExpRepPtr));
+  pcePilotExpansion = std::shared_ptr<NonDPolynomialChaos>
+			       (pcePilotExpRepPtr);
   modelType = "adapted_basis";
   modelId = RecastModel::recast_model_id(root_model_id(), "ADAPTED_BASIS");
   supportsEstimDerivs = true;  // perform numerical derivatives in subspace
 
   validate_inputs();
 
-  offlineEvalConcurrency = pcePilotExpansion.maximum_evaluation_concurrency();
+  offlineEvalConcurrency = pcePilotExpansion->maximum_evaluation_concurrency();
   
 }
 
@@ -105,7 +105,7 @@ std::shared_ptr<Model> AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_d
   // member data, pcePilotExpansion would get overwritten by its (default)
   // initialization.  Therefore, we initialize pcePilotExpRepPtr above and then
   // assign it into pcePilotExpansion in the AdaptedBasisModel initializer list.
-  //pcePilotExpansion.assign_rep(pce_rep);
+  //pcePilotExpansion->assign_rep(pce_rep);
     
   problem_db.set_db_model_nodes(model_index); // restore
 
@@ -131,7 +131,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 
   if (recurse_flag) {
     //if (!mappingInitialized)
-      pcePilotExpansion.init_communicators(pl_iter);
+      pcePilotExpansion->init_communicators(pl_iter);
     subModel->init_communicators(pl_iter, max_eval_concurrency);
   }
 }
@@ -145,7 +145,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 
   if (recurse_flag) {
     //if (!mappingInitialized)
-      pcePilotExpansion.set_communicators(pl_iter);
+      pcePilotExpansion->set_communicators(pl_iter);
 
     subModel->set_communicators(pl_iter, max_eval_concurrency);
 
@@ -162,7 +162,7 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
                            bool recurse_flag)
 {
   if (recurse_flag) {
-    pcePilotExpansion.free_communicators(pl_iter);
+    pcePilotExpansion->free_communicators(pl_iter);
     subModel->free_communicators(pl_iter, max_eval_concurrency);
   }
 }
@@ -211,8 +211,8 @@ void AdaptedBasisModel::compute_subspace()
   //   Step 1: Compute a low order Hermite PCE: either linear or full quadratic
 
   ParLevLIter pl_iter = modelPCIter->mi_parallel_level_iterator(miPLIndex);
-  pcePilotExpansion.run(pl_iter);
-  auto pce_model = pcePilotExpansion.algorithm_space_model();
+  pcePilotExpansion->run(pl_iter);
+  auto pce_model = pcePilotExpansion->algorithm_space_model();
   const RealVectorArray& pce_coeffs = pce_model->approximation_coefficients();
 
   // retrieve the underlying PCE approximation model

@@ -33,7 +33,8 @@ public:
   //
 
   /// standard constructor
-  NonDMultilevBLUESampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  NonDMultilevBLUESampling(ProblemDescDB& problem_db,
+			   std::shared_ptr<Model> model);
   /// destructor
   ~NonDMultilevBLUESampling() override;
 
@@ -49,9 +50,14 @@ protected:
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   Real available_budget() const override;
+
   void estimator_variances(const RealVector& cd_vars,
 			   RealVector& est_var) override;
-  Real estimator_variance_metric(const RealVector& cd_vars) override;
+  void estimator_variance_gradients(const RealVector& cd_vars,
+				    RealMatrix& ev_grads) override;
+  void estimator_variances_and_gradients(const RealVector& cd_vars,
+					 RealVector& est_var,
+					 RealMatrix& ev_grads) override;
 
   const MFSolutionData& final_solution_data() const override;
 
@@ -81,31 +87,26 @@ protected:
 
   void apply_mc_reference(RealVector& mc_targets) override;
 
-
   void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 				       RealVector& lin_ineq_lb,
 				       RealVector& lin_ineq_ub) override;
-
-  Real augmented_linear_ineq_violations(const RealVector& cd_vars,
-					const RealMatrix& lin_ineq_coeffs,
-					const RealVector& lin_ineq_lb,
-					const RealVector& lin_ineq_ub) override;
 
   //
   //- Heading: member functions
   //
 
-  void compute_C_inverse(const RealSymMatrix& cov_GG_gq,
+  void compute_C_inverse(RealSymMatrix& cov_GG_gq,
 			 RealSymMatrix& cov_GG_inv_gq,
 			 size_t group, size_t qoi, Real& rcond);
-  void compute_C_inverse(const RealSymMatrix2DArray& cov_GG,
+  void compute_C_inverse(RealSymMatrix2DArray& cov_GG,
 			 RealSymMatrix2DArray& cov_GG_inv);
   void compute_Psi(const RealSymMatrix2DArray& cov_GG_inv,
 		   const RealVector& N_G, RealSymMatrixArray& Psi);
   void compute_Psi(const RealSymMatrix2DArray& cov_GG_inv,
 		   const Sizet2DArray& N_G, RealSymMatrixArray& Psi);
+  void invert_Psi(RealSymMatrix& Psi, RealSymMatrix& Psi_inv);
+  void invert_Psi(RealSymMatrix& Psi, RealMatrix& Psi_inv);
   /*
-  void invert_Psi(RealSymMatrixArray& Psi);
   void compute_Psi_inverse(const RealSymMatrix2DArray& cov_GG_inv,
 			   const RealVector& N_G_1D,
 			   RealSymMatrixArray& Psi_inv);
@@ -181,8 +182,22 @@ private:
   /// find group and model indices for HF reference variance
   void find_hf_sample_reference(const SizetArray& N_G,  size_t& ref_group,
 				size_t& ref_model_index) const;
+  /// identify whether any retained groups include the HF model
+  bool hf_group_retained() const;
   /// find the best-conditioned group that contains the HF model
   size_t best_conditioned_hf_group();
+
+  /// deduct sunk (pilot) costs from samples on discarded groups
+  void deduct_inactive_group_costs(const BitArray& retained,
+				   const SizetArray& N_G_alloc,
+				   Real& budget) const;
+  /// deduct sunk (pilot) costs from samples on discarded models
+  void deduct_inactive_model_costs(const BitArray& retained,
+				   size_t N_alloc, Real& budget) const;
+
+  /// define active models from overlay of components of active groups
+  void retained_groups_to_models(const BitArray& active_g,
+				 BitArray& active_m) const;
 
   void enforce_bounds_linear_constraints(RealVector& soln_vars);
   void specify_parameter_bounds(RealVector& x_lb, RealVector& x_ub);
@@ -263,6 +278,8 @@ private:
   /// prune modelGroups down to subset with best conditioned group covariances
   void prune_model_groups();
 
+  void assign_sub_matrix(const RealSymMatrix& sub_mat,
+			 const UShortArray& subset, RealSymMatrix& mat);
   void add_sub_matrix(Real coeff, const RealSymMatrix& sub_mat,
 		      const UShortArray& subset, RealSymMatrix& mat);
   void add_sub_matvec(const RealSymMatrix& sub_mat, const RealMatrix& sub_mat2,
@@ -382,6 +399,38 @@ all_to_active_group(size_t all_index) const
 }
 
 
+inline void NonDMultilevBLUESampling::
+deduct_inactive_group_costs(const BitArray& retained,
+			    const SizetArray& N_G_alloc, Real& budget) const
+{
+  // deduct accumulated cost for inactive groups (independent pilot sampling)
+
+  if (retained.empty()) return;
+
+  //budget = (Real)maxFunctionEvals;
+  Real cost_H = sequenceCost[numApprox];
+  for (size_t g=0; g<numGroups; ++g)
+    if (!retained[g])
+      budget -= N_G_alloc[g] * modelGroupCost[g] / cost_H;
+}
+
+
+inline void NonDMultilevBLUESampling::
+deduct_inactive_model_costs(const BitArray& retained, size_t N_alloc,
+			    Real& budget) const
+{
+  // deduct accumulated cost for inactive models (shared pilot sampling)
+
+  if (retained.empty()) return;
+
+  //budget = (Real)maxFunctionEvals;
+  Real cost_H = sequenceCost[numApprox], N_over_cost = (Real)N_alloc / cost_H;
+  for (size_t m=0; m<=numApprox; ++m)
+    if (!retained[m])
+      budget -= sequenceCost[m] * N_over_cost;
+}
+
+
 inline Real NonDMultilevBLUESampling::available_budget() const
 {
   bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
@@ -392,31 +441,22 @@ inline Real NonDMultilevBLUESampling::available_budget() const
   // deduct accumulated cost for inactive models (shared pilot sampling) or
   // inactive groups (independent pilot sampling)
 
-  // *** TO DO: review shared to independent workflow ***
-  // *** TO DO: review SHARED_PILOT case below        ***
-
-  Real cost_H = sequenceCost[numApprox];
   switch (pilotGroupSampling) {
   case INDEPENDENT_PILOT: // budget deductions are group-based
-    if (!retainedModelGroups.empty())
-      for (size_t g=0; g<numGroups; ++g)
-	if (!retainedModelGroups[g])
-	  budget -= NGroupAlloc[g] * modelGroupCost[g] / cost_H;
+    deduct_inactive_group_costs(retainedModelGroups, NGroupAlloc, budget);
     break;
-  case SHARED_PILOT:
-    // budget deductions are model-based (deduct shared pilot cost for an
-    // approx model iff all groups containing this model are discarded)
+  case SHARED_PILOT: // budget deductions are model-based
+    // > deduct shared pilot cost for an approx model iff all groups containing
+    //   this model are discarded
     // > prune_model_groups() currently enforces retention of all_group for
     //   the case of SHARED_PILOT (logic: disproportionate investment), so
     //   all models are retained in this case.
     // > Note: it would be possible to reassign the shared pilot investment
     //   to a different retained group if models would otherwise be discarded.
-    if (!retainedModels.empty()) {
-      size_t m, all_group = numGroups - 1, shared_samp = NGroupAlloc[all_group];
-      for (m=0; m<=numApprox; ++m)
-	if (!retainedModels[m])
-	  budget -= shared_samp * sequenceCost[m] / cost_H;
-    }
+    // *** TO DO: revise all_group,shared_samp as needed to sync with changes
+    //            to prune_model_groups()
+    size_t all_group = numGroups - 1;
+    deduct_inactive_model_costs(retainedModels, NGroupAlloc[all_group], budget);
     break;
   }
 
@@ -424,16 +464,25 @@ inline Real NonDMultilevBLUESampling::available_budget() const
 }
 
 
-inline Real NonDMultilevBLUESampling::
-estimator_variance_metric(const RealVector& cd_vars)
+inline void NonDMultilevBLUESampling::
+retained_groups_to_models(const BitArray& active_g, BitArray& active_m) const
 {
-  RealVector estvar_ratios, estvar;  Real metric;  size_t metric_index;
-  estimator_variances(cd_vars, estvar);
-  // estvar_ratios remains empty (ML BLUE does not support metric types
-  // {AVG,MAX}_ESTVAR_RATIO_METRIC)
-  MFSolutionData::update_estimator_variance_metric(estVarMetricType,
-    estVarMetricNormOrder, estvar_ratios, estvar, metric, metric_index);
-  return metric;
+  size_t g, m, model_m, num_models, retained = 0, num_ap1 = numApprox + 1;
+  if (active_m.size() != num_ap1)
+    active_m.resize(num_ap1);
+  active_m.reset();
+  for (g=0; g<numGroups; ++g) {
+    if (active_g[g]) {
+      const UShortArray& group_g = modelGroups[g];
+      num_models = group_g.size();
+      for (m=0; m<num_models; ++m) {
+	model_m = group_g[m];
+	if (!active_m[model_m])
+	  { active_m.set(model_m); ++retained; }
+      }
+    }
+    if (retained == num_ap1) { active_m.clear(); break; }
+  }
 }
 
 
@@ -578,6 +627,17 @@ find_hf_sample_reference(const SizetArray& N_G, size_t& ref_group,
 }
 
 
+inline bool NonDMultilevBLUESampling::hf_group_retained() const
+{
+  bool no_retain_throttle = retainedModelGroups.empty();
+  for (size_t g=0; g<numGroups; ++g)
+    if ( ( no_retain_throttle || retainedModelGroups[g] ) &&
+	 modelGroups[g].back() == numApprox)
+      return true;
+  return false; // none of the retained groups include HF
+}
+
+
 inline size_t NonDMultilevBLUESampling::best_conditioned_hf_group()
 {
   //size_t skip_front = numGroups - retainedModelGroups.count();
@@ -612,11 +672,14 @@ inline void NonDMultilevBLUESampling::enforce_nudge(RealVector& x)
   // a degree of hardening for extreme drop-out cases.
 
   size_t i, len = x.length();
-  Real lb = (maxFunctionEvals == SZ_MAX) ? RATIO_NUDGE :
-    RATIO_NUDGE * std::sqrt(maxFunctionEvals); // hand-tuned heuristic
+  // The budget-scaling heuristic, trading improved conditioning for reduced
+  // optimality, is less important now with the introduction of analytic estvar
+  // gradients, so retire this bandaid.
+  //Real lb = (maxFunctionEvals == SZ_MAX) ? RATIO_NUDGE :
+  //  RATIO_NUDGE * std::sqrt(maxFunctionEvals); // hand-tuned heuristic
   for (i=0; i<len; ++i)
-    if (x[i] < lb)
-      x[i] = lb;
+    if (x[i] < RATIO_NUDGE)// < lb)
+      x[i] = RATIO_NUDGE;  // = lb;
 }
 
 
@@ -675,10 +738,26 @@ inline void NonDMultilevBLUESampling::form_R(size_t k, RealMatrix& R_k)
 
 
 inline void NonDMultilevBLUESampling::
+assign_sub_matrix(const RealSymMatrix& sub_mat, const UShortArray& subset,
+		  RealSymMatrix& mat)
+{
+  size_t r, c, num_sub = subset.size(), num_models = numApprox+1;
+  if (mat.numRows() != num_models) mat.shape(num_models); // init to 0
+  else                             mat = 0.;
+  for (r=0; r<num_sub; ++r)
+    for (c=0; c<=r; ++c)
+      mat(subset[r], subset[c]) = sub_mat(r,c);
+
+  //if (outputLevel >= DEBUG_OUTPUT)
+  //  Cout << "assign_sub_matrix() =\n" << mat << std::endl;
+}
+
+
+inline void NonDMultilevBLUESampling::
 add_sub_matrix(Real coeff, const RealSymMatrix& sub_mat,
 	       const UShortArray& subset, RealSymMatrix& mat)
 {
-  size_t r, c, model, num_sub = subset.size();
+  size_t r, c, num_sub = subset.size();
   for (r=0; r<num_sub; ++r)
     for (c=0; c<=r; ++c)
       mat(subset[r], subset[c]) += coeff * sub_mat(r,c);
@@ -692,7 +771,7 @@ inline void NonDMultilevBLUESampling::
 add_sub_matvec(const RealSymMatrix& sub_mat, const RealMatrix& sub_mat2,
 	       size_t sub_mat2_row, const UShortArray& subset, RealVector& vec)
 {
-  size_t r, c, model, num_sub = subset.size();  Real sub_matvec;
+  size_t r, c, num_sub = subset.size();  Real sub_matvec;
   for (r=0; r<num_sub; ++r) {
     sub_matvec = 0.;
     for (c=0; c<num_sub; ++c)
@@ -792,7 +871,7 @@ linear_group_cost_gradient(const RealVector& cdv, RealVector& grad_c)
 
 
 inline void NonDMultilevBLUESampling::
-compute_C_inverse(const RealSymMatrix2DArray& cov_GG,
+compute_C_inverse(RealSymMatrix2DArray& cov_GG,
 		  RealSymMatrix2DArray& cov_GG_inv)
 {
   // cov matrices are sized according to group member size
@@ -804,8 +883,8 @@ compute_C_inverse(const RealSymMatrix2DArray& cov_GG,
   size_t q, g, num_groups = modelGroups.size();
   RealVector rcond(numFunctions);
   for (g=0; g<num_groups; ++g) {
-    const RealSymMatrixArray& cov_GG_g = cov_GG[g];
-    RealSymMatrixArray&   cov_GG_inv_g = cov_GG_inv[g];
+    RealSymMatrixArray& cov_GG_g     = cov_GG[g];
+    RealSymMatrixArray& cov_GG_inv_g = cov_GG_inv[g];
     for (q=0; q<numFunctions; ++q)
       compute_C_inverse(cov_GG_g[q], cov_GG_inv_g[q], g, q, rcond[q]);
     if (rcond_throttle)
@@ -829,14 +908,14 @@ compute_Psi(const RealSymMatrix2DArray& cov_GG_inv, const RealVector& cdv,
     // In the context of numerical optimization, we should not need to protect
     // cov_GG_inv against n_g = 0.
     if (no_retain_throttle || retainedModelGroups[g]) {
-      Real v_i = cdv[v_index++];
-      if (v_i > 0.) {
+      Real v_g = cdv[v_index];  ++v_index;
+      if (v_g > 0.) {
 	const UShortArray&            models_g = modelGroups[g];
 	const RealSymMatrixArray& cov_GG_inv_g =  cov_GG_inv[g];
 	for (qoi=0; qoi<numFunctions; ++qoi) {
 	  const RealSymMatrix& cov_GG_inv_gq = cov_GG_inv_g[qoi];
 	  if (!cov_GG_inv_gq.empty())
-	    add_sub_matrix(v_i, cov_GG_inv_gq, models_g, Psi[qoi]); // *** can become indefinite here when N_g --> 0, which depends on online/offline pilot integration strategy
+	    add_sub_matrix(v_g, cov_GG_inv_gq, models_g, Psi[qoi]); // *** can become indefinite here when N_g --> 0, which depends on online/offline pilot integration strategy
 	}
       }
     }
@@ -870,6 +949,42 @@ compute_Psi(const RealSymMatrix2DArray& cov_GG_inv, const Sizet2DArray& N_G,
   }
   // Add \delta I (Schaden & Ullmann, 2020)
   //enforce_diagonal_delta(Psi);
+}
+
+
+inline void NonDMultilevBLUESampling::
+invert_Psi(RealSymMatrix& Psi, RealMatrix& Psi_inv)
+{
+  // Psi-inverse is used for computing both estimator variance (during numerical
+  // solve) and y-hat / mu-hat (after solve), so invert now without a RHS so
+  // Psi-inverse can be used in multiple places without additional tracking
+
+  int r, nr = Psi.numRows();
+  RealMatrix I(nr, nr);  for (r=0; r<nr; ++r) I(r,r) = 1.; // identity
+  Psi_inv.shapeUninitialized(nr, nr);
+
+  cholesky_solve(Psi, Psi_inv, I, true, false);//copy A, overwrite B, hard error
+  //if (outputLevel >= DEBUG_OUTPUT)
+  //  Cout << "In invert_Psi(), Psi:\n" << Psi << "Psi_inv:\n" << Psi_inv
+  //	   << std::endl;
+}
+
+
+inline void NonDMultilevBLUESampling::
+invert_Psi(RealSymMatrix& Psi, RealSymMatrix& Psi_inv)
+{
+  RealMatrix Psi_inv_rm;
+  invert_Psi(Psi, Psi_inv_rm);
+  copy_data(Psi_inv_rm, Psi_inv);
+
+  /*
+  copy_data(Psi, Psi_inv);
+  spd_solver.setMatrix(Teuchos::rcp(&Psi_inv, false));
+  // Note: equilibration should not be used outside of the solve() context,
+  // as the resulting inverse would be for the equilibrated matrix.  See
+  // discussion above in compute_C_inverse().
+  int code = spd_solver.invert(); // in place
+  */
 }
 
 

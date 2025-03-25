@@ -193,18 +193,19 @@ void NLPQLPOptimizer::check_sub_iterator_conflict()
   // instance of the same iterator (which would result in data clashes since
   // Fortran does not support object independence).  Recurse through all
   // sub-models and test each sub-iterator for NLPQL presence.
-  Iterator sub_iterator = iteratedModel->subordinate_iterator();
-  if (!sub_iterator.is_null() && 
-       ( sub_iterator.method_name() == NLPQL_SQP ||
-	 sub_iterator.uses_method() == SUBMETHOD_NLPQL ) )
-    sub_iterator.method_recourse(methodName);
+  std::shared_ptr<Iterator> sub_iterator;
+  sub_iterator = iteratedModel->subordinate_iterator();
+  if (sub_iterator && 
+       ( sub_iterator->method_name() == NLPQL_SQP ||
+	 sub_iterator->uses_method() == SUBMETHOD_NLPQL ) )
+    sub_iterator->method_recourse(methodName);
   ModelList& sub_models = iteratedModel->subordinate_models();
   for (auto& sm : sub_models) {
     sub_iterator = sm->subordinate_iterator();
-    if (!sub_iterator.is_null() && 
-	 ( sub_iterator.method_name() == NLPQL_SQP ||
-	   sub_iterator.uses_method() == SUBMETHOD_NLPQL ) )
-      sub_iterator.method_recourse(methodName);
+    if (sub_iterator && 
+	 ( sub_iterator->method_name() == NLPQL_SQP ||
+	   sub_iterator->uses_method() == SUBMETHOD_NLPQL ) )
+      sub_iterator->method_recourse(methodName);
   }
 }
 

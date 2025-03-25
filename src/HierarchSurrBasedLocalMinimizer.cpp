@@ -449,7 +449,7 @@ void HierarchSurrBasedLocalMinimizer::minimize()
   // Retrieve vars_star and responseStarCorrected[lf_model_form]
   // Corrections are applied recursively during the minimization, so this
   // response is corrected to the highest fidelity level.
-  const Variables& v_star = approxSubProbMinimizer.variables_results();
+  const Variables& v_star = approxSubProbMinimizer->variables_results();
   tr_min.vars_star(v_star);
   if (recastSubProb) {
     // Can't back out eval from recast data and can't assume last iteratedModel
@@ -462,7 +462,7 @@ void HierarchSurrBasedLocalMinimizer::minimize()
     tr_min.response_star(corr_resp, CORR_APPROX_RESPONSE);
   }
   else // retrieve corrected final results
-    tr_min.response_star(approxSubProbMinimizer.response_results(),
+    tr_min.response_star(approxSubProbMinimizer->response_results(),
 			 CORR_APPROX_RESPONSE); // Note: fn values only
 }
 
@@ -841,7 +841,7 @@ optimize(const RealVector &x, size_t max_iter, int index)
   ModelUtils::continuous_variables(*approxSubProbModel, x);
 
   // Set the max iterations for this level:
-  approxSubProbMinimizer.maximum_iterations(max_iter);
+  approxSubProbMinimizer->maximum_iterations(max_iter);
 
   // Set truth and surrogate models for optimization to be performed on:
   set_active_model(index);
@@ -851,10 +851,10 @@ optimize(const RealVector &x, size_t max_iter, int index)
 
   iteratedModel->surrogate_response_mode(AUTO_CORRECTED_SURROGATE);
   ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-  approxSubProbMinimizer.run(pl_iter); // pl_iter required for hierarchical
+  approxSubProbMinimizer->run(pl_iter); // pl_iter required for hierarchical
 
   // Return candidate point:
-  return approxSubProbMinimizer.variables_results().continuous_variables();
+  return approxSubProbMinimizer->variables_results().continuous_variables();
 }
 
 } // namespace Dakota

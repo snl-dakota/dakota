@@ -77,7 +77,7 @@ private:
   bool singlePassedModel;
 
   /// the set of iterators, one for each entry in methodStrings
-  IteratorArray selectedIterators;
+  std::vector<std::shared_ptr<Iterator>> selectedIterators;
   /// the set of models, one for each iterator
   std::vector<std::shared_ptr<Model>> selectedModels;
 
@@ -103,7 +103,7 @@ inline IntIntPair CollabHybridMetaIterator::estimate_partition_bounds()
       iterSched.construct_sub_iterator(probDescDB, selectedIterators[i], model,
 				       methodStrings[i], empty_str, empty_str);
 
-    min_max = selectedIterators[i].estimate_partition_bounds();
+    min_max = selectedIterators[i]->estimate_partition_bounds();
     if (min_max.first  < min_procs) min_procs = min_max.first;
     if (min_max.second > max_procs) max_procs = min_max.second;
   }

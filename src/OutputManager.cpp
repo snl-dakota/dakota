@@ -418,7 +418,7 @@ void OutputManager::append_restart(const ParamResponsePair& prp)
     Matlab, Tecplot, etc. */
 void OutputManager::open_tabular_datastream()
 {
-  // For output/restart/tabular data, all Iterator masters stream
+  // For output/restart/tabular data, all Iterator leaders stream
   // output so tabular graphics files need to be tagged
 
   // TODO: with multiple tags, this will be wrong (last pushed tag)

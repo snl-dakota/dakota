@@ -161,7 +161,7 @@ private:
   /// Pointer to current class instance for use in static callback functions
   static NonDGPMSABayesCalibration* nonDGPMSAInstance;
   /// LHS iterator for generating samples for GP 
-  Iterator lhsIter;
+  std::unique_ptr<Iterator> lhsIter;
 };
 
 } // namespace Dakota

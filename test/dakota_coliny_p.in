@@ -60,7 +60,7 @@ interface,
 #         asynchronous                          #p1,#p3,#p5,#p7
 #         asynchronous                          #p9,#p11,#p13
 #         asynchronous                          #p15,#p17,#p19
-#         evaluation_scheduling master		#p14
+#         evaluation_scheduling dedicated	#p14
 #	ALL METHODS
 	  analysis_driver = 'text_book'
 

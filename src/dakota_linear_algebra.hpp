@@ -63,6 +63,10 @@ void singular_values(RealMatrix& matrix, RealVector& singular_values);
 
 /// compute the pseudo-inverse by SVD (A is overwritten by U)
 void pseudo_inverse(RealMatrix& A, RealMatrix& A_inv, Real& rcond);
+/// compute the pseudo-inverse for a symmetric matrix by SVD
+void pseudo_inverse(const RealSymMatrix& A, RealMatrix& A_inv, Real& rcond);
+/// compute the pseudo-inverse for a symmetric matrix by SVD
+void pseudo_inverse(const RealSymMatrix& A, RealSymMatrix& A_inv, Real& rcond);
 
 /**
  * \brief Compute an in-place QR factorization A = QR

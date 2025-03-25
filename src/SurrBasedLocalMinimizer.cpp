@@ -236,14 +236,14 @@ void SurrBasedLocalMinimizer::initialize_sub_minimizer()
     // Approach 1: method spec support for approxSubProbMinimizer
     const String& model_ptr = probDescDB.get_string("method.model_pointer");
     // NOTE: set_db_list_nodes is not used for instantiating a Model for the
-    // approxSubProbMinimizer.  Rather, the iteratedModel passed into the SBLM
+    // approxSubProbMinimizer->  Rather, the iteratedModel passed into the SBLM
     // iterator, or a recasting of it, is used.  Thus, the SBLM model_pointer
     // is relevant and any sub-method model_pointer spec is ignored.  
     size_t method_index = probDescDB.get_db_method_node(); // for restoration
     probDescDB.set_db_method_node(approx_method_ptr); // set method only
     approxSubProbMinimizer = probDescDB.get_iterator(approxSubProbModel);
     // suppress DB ctor default and don't output summary info
-    approxSubProbMinimizer.summary_output(false);
+    approxSubProbMinimizer->summary_output(false);
     // verify approx method's modelPointer is empty or consistent
     const String& am_model_ptr = probDescDB.get_string("method.model_pointer");
     if (!am_model_ptr.empty() && am_model_ptr != model_ptr)
@@ -253,7 +253,7 @@ void SurrBasedLocalMinimizer::initialize_sub_minimizer()
     // setting SBLM constraintTol is tricky since the DAKOTA default of 0. is a
     // dummy -> NPSOL, DOT, and CONMIN use their internal defaults in this case.
     // It would be preferable to support tolerance rtn in NPSOL/DOT/CONMIN & use
-    // constraintTol = approxSubProbMinimizer.constraint_tolerance();
+    // constraintTol = approxSubProbMinimizer->constraint_tolerance();
     if (constraintTol <= 0.) { // not specified in SBLM method spec
       Real aspm_constr_tol = probDescDB.get_real("method.constraint_tolerance");
       if (aspm_constr_tol > 0.) // sub-method has spec: enforce SBLM consistency
@@ -261,13 +261,13 @@ void SurrBasedLocalMinimizer::initialize_sub_minimizer()
       else { // neither has spec: assign default and enforce consistency
 	constraintTol = 1.e-4; // compromise value among NPSOL/DOT/CONMIN
 	std::shared_ptr<Minimizer> aspm = std::static_pointer_cast<Minimizer>
-	  (approxSubProbMinimizer.iterator_rep());
+	  (approxSubProbMinimizer);
 	aspm->constraint_tolerance(constraintTol);
       }
     }
     else { // SBLM method spec takes precedence over approxSubProbMinimizer spec
       std::shared_ptr<Minimizer> aspm = std::static_pointer_cast<Minimizer>
-	(approxSubProbMinimizer.iterator_rep());
+	(approxSubProbMinimizer);
       aspm->constraint_tolerance(constraintTol);
     }
     probDescDB.set_db_method_node(method_index); // restore method only
@@ -279,7 +279,7 @@ void SurrBasedLocalMinimizer::initialize_sub_minimizer()
     if (constraintTol <= 0.) // not specified in SBLM method spec
       constraintTol = 1.e-4; // compromise value among NPSOL/DOT/CONMIN
     std::shared_ptr<Minimizer> aspm = std::static_pointer_cast<Minimizer>
-      (approxSubProbMinimizer.iterator_rep());
+      (approxSubProbMinimizer);
     aspm->constraint_tolerance(constraintTol);
   }
 }
@@ -322,7 +322,7 @@ void SurrBasedLocalMinimizer::initialize_graphics(int iterator_server_id)
     *iteratedModel->truth_model() : *iteratedModel;
   OutputManager& mgr = parallelLib.output_manager();
 
-  // For graphics, limit (currently) to server id 1, for both ded master
+  // For graphics, limit (currently) to server id 1, for both ded scheduler
   // (parent partition rank 1) and peer partitions (parent partition rank 0)
   if (mgr.graph2DFlag && iterator_server_id == 1) { // initialize the 2D plots
     mgr.graphics_counter(0); // starting point is iteration 0
@@ -330,7 +330,7 @@ void SurrBasedLocalMinimizer::initialize_graphics(int iterator_server_id)
     mgr.graphics().set_x_labels2d("Surr-Based Iteration No.");
   }
 
-  // For output/restart/tabular data, all Iterator masters stream output
+  // For output/restart/tabular data, all Iterator leaders stream output
   if (mgr.tabularDataFlag) { // initialize data tabulation
     mgr.graphics_counter(0); // starting point is iteration 0
     mgr.tabular_counter_label("iter_no");
@@ -376,7 +376,7 @@ void SurrBasedLocalMinimizer::core_run()
     update_trust_region();
 
     // Build new approximations and compute corrections for use within
-    // approxSubProbMinimizer.run() (unless previous build can be reused)
+    // approxSubProbMinimizer->run() (unless previous build can be reused)
     build(); // Build the approximation and perform hard convergence check
 
     if (!converged()) {
@@ -530,7 +530,7 @@ void SurrBasedLocalMinimizer::minimize()
   iteratedModel->surrogate_response_mode(AUTO_CORRECTED_SURROGATE);
 
   ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-  approxSubProbMinimizer.run(pl_iter); // pl_iter required for hierarchical
+  approxSubProbMinimizer->run(pl_iter); // pl_iter required for hierarchical
 
   Cout << "\n<<<<< Approximate optimization cycle completed.\n";
   ++minimizeCycles;  // number of trust-region minimization cycles
@@ -1394,7 +1394,7 @@ void SurrBasedLocalMinimizer::relax_constraints(SurrBasedLevelData& tr_data)
 	 << "\n<<<<< Adjusting constraints ...\n";
     
     // Use NPSOL/OPT++ in "user_functions" mode to optimize tau
-    Iterator tau_minimizer;
+    std::unique_ptr<Iterator> tau_minimizer;
     
     // derivative level for NPSOL (1 = supplied grads of objective fn,
     // 2 = supplied grads of constraints, 3 = supplied grads of both)
@@ -1420,22 +1420,22 @@ void SurrBasedLocalMinimizer::relax_constraints(SurrBasedLevelData& tr_data)
     
     // setup optimization problem for updating tau
 #ifdef HAVE_NPSOL
-    tau_minimizer.assign_rep(std::make_shared<NPSOLOptimizer>(tau_and_x_initial,
+    tau_minimizer = std::make_unique<NPSOLOptimizer>(tau_and_x_initial,
       tau_and_x_lower_bnds, tau_and_x_upper_bnds, lin_ineq_coeffs,
       lin_ineq_lower_bnds, lin_ineq_lower_bnds, lin_eq_coeffs, lin_eq_targets,
       origNonlinIneqLowerBnds, origNonlinIneqUpperBnds, origNonlinEqTargets,
-      hom_objective_eval, hom_constraint_eval, deriv_level, conv_tol));
+      hom_objective_eval, hom_constraint_eval, deriv_level, conv_tol);
 #endif
 
     // find optimum tau by solving approximate subproblem
     // (pl_iter could be needed for hierarchical surrogate case, in which case
     // {set,free}_communicators must be added)
     //ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-    tau_minimizer.run();//(pl_iter);
+    tau_minimizer->run();//(pl_iter);
 
     // retrieve tau from current response
     const RealVector& tau_and_x_star
-      = tau_minimizer.variables_results().continuous_variables();
+      = tau_minimizer->variables_results().continuous_variables();
 #ifdef DEBUG
     Cout << "tau_and_x_star:\n" << tau_and_x_star << std::endl;
 #endif // debug

@@ -4,8 +4,8 @@ Description::
 The ``muq`` method supports the following MCMC algorithms:
 adaptive metropolis (AM), Metropolis Hasting (MH), delayed
 rejection (DR), delayed-rejection adaptive metropolis (DRAM),
-Metropolis-adjusted Langevin algorithm (MALA), or dimension-independent
-likelihood-informed (DILI).
+Metropolis-adjusted Langevin algorithm (MALA), dimension-independent
+likelihood-informed (DILI), and multi-level MCMC.
 
 The ``muq`` method is currently an experimental method that relies
 on algorithms from MIT's MUQ code documented at:

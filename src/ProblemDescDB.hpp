@@ -106,6 +106,18 @@ public:
   //- Heading: Member methods
   //
 
+  /// retrieve an existing Iterator, if it exists in iteratorList, or
+  /// instantiate a new one
+  std::shared_ptr<Iterator> get_iterator();
+  /// retrieve an existing Iterator, if it exists in iteratorList, or
+  /// instantiate a new one
+  std::shared_ptr<Iterator> get_iterator(std::shared_ptr<Model> model);
+  /// retrieve an existing Iterator, if it exists in iteratorByNameList,
+  /// or instantiate a new one
+  std::shared_ptr<Iterator> get_iterator(const String& method_name, std::shared_ptr<Model> model);
+  /// retrieve an existing Model, if it exists, or instantiate a new one
+  std::shared_ptr<Model> get_model();
+
   /// Parses the input file or input string if present and executes
   /// callbacks.  Does not perform any validation.
   void parse_inputs(ProgramOptions& prog_opts,
@@ -424,18 +436,6 @@ private:
 
   // These functions avoid multiple instantiations of the same specification.
 
-  /// retrieve an existing Iterator, if it exists in iteratorList, or
-  /// instantiate a new one
-  const Iterator& get_iterator();
-  /// retrieve an existing Iterator, if it exists in iteratorList, or
-  /// instantiate a new one
-  const Iterator& get_iterator(std::shared_ptr<Model> model);
-  /// retrieve an existing Iterator, if it exists in iteratorByNameList,
-  /// or instantiate a new one
-  const Iterator& get_iterator(const String& method_name, std::shared_ptr<Model> model);
-  /// retrieve an existing Model, if it exists, or instantiate a new one
-  std::shared_ptr<Model> get_model();
-  /// retrieve an existing Variables, if it exists, or instantiate a new one
   const Variables& get_variables();
   /// retrieve an existing Interface, if it exists, or instantiate a new one
   const Interface& get_interface();
@@ -675,7 +675,7 @@ min_procs_per_level(int min_procs_per_server, int pps_spec, int num_serv_spec)
   int min_procs_per_lev = (pps_spec) ? pps_spec : min_procs_per_server;
   if (num_serv_spec)
     min_procs_per_lev *= num_serv_spec;
-  //if (sched_spec == MASTER_SCHEDULING) ++min_procs_per_lev;
+  //if (sched_spec == DEDICATED_SCHEDULER_DYNAMIC) ++min_procs_per_lev;
   return min_procs_per_lev;
 }
 
@@ -687,15 +687,15 @@ max_procs_per_level(int max_procs_per_server, int pps_spec, int num_serv_spec,
 {
   int max_procs_per_lev, max_pps = (pps_spec) ? pps_spec : max_procs_per_server;
 
-  if (num_serv_spec) { // check for dedicated master
+  if (num_serv_spec) { // check for dedicated scheduler
     max_procs_per_lev = max_pps * num_serv_spec;
     switch (sched_spec) {
-    case MASTER_SCHEDULING:
+    case DEDICATED_SCHEDULER_DYNAMIC:
       ++max_procs_per_lev; break;
     //case PEER_SCHEDULING: case PEER_STATIC_SCHEDULING:
     //case PEER_DYNAMIC_SCHEDULING:
     //  break;
-    case DEFAULT_SCHEDULING: // emulate auto-config logic for master scheduling
+    case DEFAULT_SCHEDULING: // emulate auto-config logic
       if (!peer_dynamic_avail && num_serv_spec > 1 &&
 	  num_serv_spec * std::max(1, asynch_local_conc) < max_concurrency)
 	++max_procs_per_lev;
@@ -704,9 +704,9 @@ max_procs_per_level(int max_procs_per_server, int pps_spec, int num_serv_spec,
   }
   else {
     max_procs_per_lev = max_pps * max_concurrency;
-    // assume peer partition unless explicit override to master, since
-    // we don't have avail_procs to estimate need for master scheduling
-    if (sched_spec == MASTER_SCHEDULING)
+    // assume peer partition unless explicit override to ded scheduler,
+    // since we don't have avail_procs to estimate need for ded scheduler
+    if (sched_spec == DEDICATED_SCHEDULER_DYNAMIC)
       ++max_procs_per_lev;
   }
 

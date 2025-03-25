@@ -90,10 +90,10 @@ void PebbldBranchSub::boundComputation(double* controlParam)
   ModelUtils::continuous_upper_bounds(*subModel, upper_bounds);
 
   // Run the solver.
-  subNLPSolver.run();
+  subNLPSolver->run();
 
-  Variables _variables = subNLPSolver.variables_results();
-  Response _response = subNLPSolver.response_results();
+  Variables _variables = subNLPSolver->variables_results();
+  Response _response = subNLPSolver->response_results();
      
   // Considering that the problem is relaxed, all variables should be continuous.
   RealVector _finalVars = _variables.continuous_variables();

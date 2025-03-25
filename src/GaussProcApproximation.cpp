@@ -370,7 +370,7 @@ void GaussProcApproximation::get_trend()
 void GaussProcApproximation::optimize_theta_global()
 {
   GPinstance = this;
-  Iterator nll_optimizer; // empty envelope
+  std::shared_ptr<Iterator> nll_optimizer;
 
   // bounds for non-log transformation - ie, no exp(theta)
   //RealVector theta_lbnds(num_v,1.e-5), theta_ubnds(num_v,150.);
@@ -385,13 +385,13 @@ void GaussProcApproximation::optimize_theta_global()
   RealVector lin_ineq_lb, lin_ineq_ub, lin_eq_tgt,
              nln_ineq_lb, nln_ineq_ub, nln_eq_tgt;
   RealMatrix lin_ineq_coeffs, lin_eq_coeffs;
-  nll_optimizer.assign_rep(std::make_shared<NCSUOptimizer>
+  nll_optimizer = std::make_shared<NCSUOptimizer>
     (theta_lbnds, theta_ubnds, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub,
      lin_eq_coeffs, lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
-     max_iter, max_eval, negloglikNCSU));
-  nll_optimizer.run(); // no pl_iter needed for this optimization
-  const Variables& vars_star = nll_optimizer.variables_results();
-  const Response&  resp_star = nll_optimizer.response_results();
+     max_iter, max_eval, negloglikNCSU);
+  nll_optimizer->run(); // no pl_iter needed for this optimization
+  const Variables& vars_star = nll_optimizer->variables_results();
+  const Response&  resp_star = nll_optimizer->response_results();
   copy_data(vars_star.continuous_variables(), thetaParams);
 
 #ifdef DEBUG
@@ -798,7 +798,7 @@ double GaussProcApproximation::negloglikNCSU(const RealVector &x)
 void GaussProcApproximation::optimize_theta_multipoint()
 {
   GPinstance = this;
-  Iterator nll_optimizer; // empty envelope
+  std::shared_ptr<Iterator> nll_optimizer; // empty envelope
 
   size_t num_v = sharedDataRep->numVars;
   // bounds for non-log transformation - ie, no exp(theta)
@@ -826,15 +826,14 @@ void GaussProcApproximation::optimize_theta_multipoint()
   for (i=0; i<3; i++) {
     for (j=0; j<num_v; j++)
       thetaParams[j] = THETA_INIT_STARTS[i];
-    nll_optimizer.assign_rep
-      (std::make_shared<SNLLOptimizer>(
+    nll_optimizer = std::make_shared<SNLLOptimizer>(
         thetaParams, theta_lbnds, theta_ubnds, lin_ineq_coeffs,
 	lin_ineq_lower_bnds, lin_ineq_lower_bnds, lin_eq_coeffs,
 	lin_eq_targets, nln_ineq_lower_bnds, nln_ineq_upper_bnds,
-	nln_eq_targets, negloglik, constraint_eval));
-    nll_optimizer.run(); // no pl_iter needed for this optimization
-    const Variables& vars_star = nll_optimizer.variables_results();
-    const Response&  resp_star = nll_optimizer.response_results();
+	nln_eq_targets, negloglik, constraint_eval);
+    nll_optimizer->run(); // no pl_iter needed for this optimization
+    const Variables& vars_star = nll_optimizer->variables_results();
+    const Response&  resp_star = nll_optimizer->response_results();
     copy_data(vars_star.continuous_variables(), thetaParams);
     nll = resp_star.function_value(0);
     if (nll < nll_best) {

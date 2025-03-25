@@ -31,7 +31,7 @@ void NonDLocalSingleInterval::post_process_cell_results(bool maximize)
   NonDLocalInterval::post_process_cell_results(maximize);
 
   const RealVector& fns_star_approx
-    = minMaxOptimizer.response_results().function_values();
+    = minMaxOptimizer->response_results().function_values();
   finalStatistics.function_value(fns_star_approx[0], statCntr++);
 }
 

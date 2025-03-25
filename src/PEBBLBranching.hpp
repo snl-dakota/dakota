@@ -23,7 +23,7 @@ protected:
   /// Original model, before branching
   std::shared_ptr<Model> parentModel;
   /// Solver to be used at root node
-  Iterator nlpSolver;
+  std::shared_ptr<Iterator> nlpSolver;
   /// Initial variable values for root node
   RealVector cont_vars;
   /// Lower bounds for root node
@@ -40,7 +40,7 @@ public:
   /// Method that returns an empty Sub-Branch
   pebbl::branchSub* blankSub() override;
   void setModel(std::shared_ptr<Model> model) {parentModel = model;};
-  void setIterator(Iterator& iterator) {nlpSolver = iterator;};
+  void setIterator(std::shared_ptr<Iterator> iterator) {nlpSolver = iterator;};
 };
 
 /// Sub Branch class for the PEBBL-based Minimizer
@@ -55,7 +55,7 @@ protected:
   std::shared_ptr<Model> subModel;
 
   /// Solver used for sub-problems
-  Iterator subNLPSolver;
+  std::shared_ptr<Iterator> subNLPSolver;
   /// Candidate solution after solving sub-problem (also the bound)
   std::vector<double> candidate_x;
   /// Objective value at the candidate solution

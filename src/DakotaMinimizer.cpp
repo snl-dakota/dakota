@@ -42,7 +42,7 @@ Minimizer* Minimizer::minimizerInstance(NULL);
 Minimizer::
 Minimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model,
 	  std::shared_ptr<TraitsBase> traits): 
-  Iterator(BaseConstructor(), problem_db, traits),
+  Iterator(problem_db, traits),
   constraintTol(probDescDB.get_real("method.constraint_tolerance")),
   bigRealBoundSize(BIG_REAL_BOUND), bigIntBoundSize(1000000000),
   boundConstraintFlag(false),
@@ -72,7 +72,7 @@ Minimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model,
 Minimizer::
 Minimizer(unsigned short method_name, std::shared_ptr<Model> model,
 	  std::shared_ptr<TraitsBase> traits):
-  Iterator(NoDBBaseConstructor(), method_name, model, traits),
+  Iterator(method_name, model, traits),
   constraintTol(0.), bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
   boundConstraintFlag(false), speculativeFlag(false), optimizationFlag(true),
   calibrationDataFlag(false), numExperiments(0), numTotalCalibTerms(0),
@@ -85,7 +85,7 @@ Minimizer(unsigned short method_name, std::shared_ptr<Model> model,
 Minimizer::
 Minimizer(std::shared_ptr<Model> model, size_t max_iter, size_t max_eval, Real conv_tol,
 	  std::shared_ptr<TraitsBase> traits):
-  Iterator(NoDBBaseConstructor(), model, max_iter, max_eval, conv_tol, traits),
+  Iterator(model, max_iter, max_eval, conv_tol, traits),
   constraintTol(0.), bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
   boundConstraintFlag(false), speculativeFlag(false), optimizationFlag(true),
   calibrationDataFlag(false), numExperiments(0), numTotalCalibTerms(0),
@@ -99,7 +99,7 @@ Minimizer::
 Minimizer(unsigned short method_name, size_t num_lin_ineq, size_t num_lin_eq,
 	  size_t num_nln_ineq, size_t num_nln_eq,
 	  std::shared_ptr<TraitsBase> traits):
-  Iterator(NoDBBaseConstructor(), method_name, traits),
+  Iterator(method_name, traits),
   bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
   numNonlinearIneqConstraints(num_nln_ineq),
   numNonlinearEqConstraints(num_nln_eq), numLinearIneqConstraints(num_lin_ineq),

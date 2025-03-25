@@ -48,14 +48,14 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, std::shared_ptr<Model> mo
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
-  Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
-    *iteratedModel, u_space_type)); // retain dist bounds
+  
+  auto g_u_model = std::make_shared<ProbabilityTransformModel>(
+    *iteratedModel, u_space_type); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
-  Iterator u_space_sampler; // evaluates truth model
+  std::shared_ptr<Iterator> u_space_sampler; // evaluates truth model
   if (!config_regression(collocation_points(), regression_size(sequenceIndex),
 			 random_seed(), u_space_sampler, g_u_model)) {
     Cerr << "Error: incomplete configuration in NonDMultilevelFunctionTrain "
@@ -77,11 +77,11 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, std::shared_ptr<Model> mo
   if (!importBuildPointsFile.empty() && pt_reuse.empty())
     pt_reuse = "all"; // reassign default if data import
   String approx_type = "global_function_train";
-  const ActiveSet& recast_set = g_u_model.current_response().active_set();
+  const ActiveSet& recast_set = g_u_model->current_response().active_set();
   // DFSModel consumes QoI aggregations; supports surrogate grad evals at most
-  ShortArray asv(g_u_model.qoi(), 3); // for stand alone mode
+  ShortArray asv(g_u_model->qoi(), 3); // for stand alone mode
   ActiveSet mlft_set(asv, recast_set.derivative_vector());
-  const ShortShortPair& mlft_view = g_u_model.current_variables().view();
+  const ShortShortPair& mlft_view = g_u_model->current_variables().view();
   uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, mlft_set, mlft_view, approx_type, start_orders, corr_type,
     corr_order, data_order, outputLevel, pt_reuse, importBuildPointsFile,

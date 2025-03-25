@@ -64,7 +64,7 @@ pid_t SysCallApplicInterface::create_evaluation_process(bool block_flag)
 
     int i;
     if (evalCommRank == 0 && !suppressOutput) {
-      if (eaDedMasterFlag)
+      if (eaDedSchedFlag)
         Cout << "System call: dynamic scheduling { ";
       else
         Cout << "System call: static scheduling { ";
@@ -74,13 +74,13 @@ pid_t SysCallApplicInterface::create_evaluation_process(bool block_flag)
            << std::endl;
     }
 
-    // Schedule analyses using either master-slave/dynamic or peer/static
+    // Schedule analyses using either dedicated scheduler/dynamic or peer/static
     bool output_setting = suppressOutput; // for restore below
     suppressOutput = true; // turn off sys call output
-    if (eaDedMasterFlag) { // master-slave dynamic scheduling requires a
+    if (eaDedSchedFlag) { // dedicated scheduler dynamic scheduling requires a
       // central pt of control & therefore needs separate schedule & serve fns.
       if (evalCommRank == 0)
-        master_dynamic_schedule_analyses();
+        dedicated_dynamic_scheduler_analyses();
       else
         serve_analyses_synch();
     }

@@ -68,12 +68,12 @@ private:
   //
 
   /// the top-level outer iterator (e.g., global minimizer)
-  Iterator globalIterator;
+  std::shared_ptr<Iterator> globalIterator;
   /// the model employed by the top-level outer iterator
   std::shared_ptr<Model> globalModel;
 
   /// the inner iterator (e.g., local minimizer)
-  Iterator localIterator;
+  std::shared_ptr<Iterator> localIterator;
   /// the model employed by the inner iterator
   std::shared_ptr<Model> localModel;
 
@@ -113,8 +113,8 @@ inline IntIntPair EmbedHybridMetaIterator::estimate_partition_bounds()
     local_method_ptr, probDescDB.get_string("method.hybrid.local_method_name"),
     local_model_ptr);
 
-  IntIntPair global_min_max = globalIterator.estimate_partition_bounds(),
-    local_min_max = localIterator.estimate_partition_bounds(), min_max;
+  IntIntPair global_min_max = globalIterator->estimate_partition_bounds(),
+    local_min_max = localIterator->estimate_partition_bounds(), min_max;
   int min_procs = std::min(global_min_max.first,  local_min_max.first),
       max_procs = std::max(global_min_max.second, local_min_max.second);
 
@@ -129,11 +129,11 @@ inline IntIntPair EmbedHybridMetaIterator::estimate_partition_bounds()
 
 
 inline const Variables& EmbedHybridMetaIterator::variables_results() const
-{ return globalIterator.variables_results(); }
+{ return globalIterator->variables_results(); }
 
 
 inline const Response& EmbedHybridMetaIterator::response_results() const
-{ return globalIterator.response_results(); }
+{ return globalIterator->response_results(); }
 
 } // namespace Dakota
 

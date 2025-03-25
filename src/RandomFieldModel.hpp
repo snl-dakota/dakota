@@ -162,7 +162,7 @@ protected:
   /// String dataDirectoryBasename;
 
   /// DACE Iterator to evaluate the RF generating model
-  Iterator daceIterator;
+  std::shared_ptr<Iterator> daceIterator;
 
   /// unsigned short analyticCovForm;
 

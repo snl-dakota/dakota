@@ -122,7 +122,7 @@ private:
   bool singlePassedModel;
 
   /// the set of iterators, one for each entry in methodStrings
-  IteratorArray selectedIterators;
+  std::vector<std::shared_ptr<Iterator>> selectedIterators;
   /// the set of models, one for each iterator (if not lightweight construction)
   std::vector<std::shared_ptr<Model>> selectedModels;
 
@@ -155,7 +155,7 @@ inline IntIntPair SeqHybridMetaIterator::estimate_partition_bounds()
       iterSched.construct_sub_iterator(probDescDB, selectedIterators[i], model,
 				       methodStrings[i], empty_str, empty_str);
 
-    min_max = selectedIterators[i].estimate_partition_bounds();
+    min_max = selectedIterators[i]->estimate_partition_bounds();
     if (min_max.first  < min_procs) min_procs = min_max.first;
     if (min_max.second > max_procs) max_procs = min_max.second;
   }
@@ -171,11 +171,11 @@ inline IntIntPair SeqHybridMetaIterator::estimate_partition_bounds()
 
 
 inline const Variables& SeqHybridMetaIterator::variables_results() const
-{ return selectedIterators[methodStrings.size()-1].variables_results(); }
+{ return selectedIterators[methodStrings.size()-1]->variables_results(); }
 
 
 inline const Response& SeqHybridMetaIterator::response_results() const
-{ return selectedIterators[methodStrings.size()-1].response_results(); }
+{ return selectedIterators[methodStrings.size()-1]->response_results(); }
 
 
 inline void SeqHybridMetaIterator::
@@ -196,9 +196,9 @@ partition_sets(size_t num_sets, int job_index, size_t& start_index,
 }
 
 
-/** This convenience function is executed on an iterator master
-    (static scheduling) or a meta-iterator master (self scheduling) at
-    run initialization time and has access to the full parameterSets
+/** This convenience function is executed on an iterator leader proc
+    (static scheduling) or a meta-iterator leader proc (self scheduling)
+    at run initialization time and has access to the full parameterSets
     array (this is All-Reduced for all peers at the completion of each
     cycle in run_sequential()). */
 inline void SeqHybridMetaIterator::
@@ -233,8 +233,8 @@ initialize_iterator(const VariablesArray& param_sets)
   size_t num_param_sets = param_sets.size();
   if (num_param_sets == 1)
     selectedModels[seqCount]->current_variables().active_variables(param_sets[0]);
-  else if (selectedIterators[seqCount].accepts_multiple_points())
-    selectedIterators[seqCount].initial_points(param_sets);
+  else if (selectedIterators[seqCount]->accepts_multiple_points())
+    selectedIterators[seqCount]->initial_points(param_sets);
   else {
     std::cerr << "Error: bad parameter sets array in SeqHybridMetaIterator::"
 	      << "initialize_iterator()" << std::endl;

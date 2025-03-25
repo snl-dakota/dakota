@@ -10,6 +10,7 @@
 #include "dakota_system_defs.hpp"
 #include "dakota_data_io.hpp"
 //#include "dakota_tabular_io.hpp"
+#include "dakota_linear_algebra.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "NonDACVSampling.hpp"
@@ -491,6 +492,30 @@ compute_acv_controls(const IntRealMatrixMap& sum_L_covar,
 }
 
 
+void NonDACVSampling::
+solve_for_C_F_c_f(RealSymMatrix& C_F, RealVector& c_f, RealVector& lhs,
+		  bool copy_C_F, bool copy_c_f)
+{
+  // The idea behind this approach is to leverage both the solution refinement
+  // in solve() and equilibration during factorization (inverting C_F in place
+  // can only leverage the latter).
+
+  size_t n = c_f.length();
+  lhs.size(n); // not sure if initialization matters here...
+
+  if (hardenNumericSoln) {
+    RealMatrix C_F_inv;  Real rcond;
+    pseudo_inverse(C_F, C_F_inv, rcond);
+    lhs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., C_F_inv, c_f, 0.);
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "ACV pseudo-inverse solve for LHS:\n" << lhs << "has rcond = "
+	   << rcond << std::endl;
+  }
+  else
+    cholesky_solve(C_F, lhs, c_f, copy_C_F, copy_c_f);
+}
+
+
 void NonDACVSampling::update_model_groups()
 {
   // Note: model selection case handled by NonDDGenACV, so here numGroups
@@ -657,8 +682,8 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
   if (maxFunctionEvals == SZ_MAX) // HF tgt from ACV estvar using analytic soln
     hf_target = update_hf_target(avg_eval_ratios, avg_N_H, varH, estVarIter0);
   else // allocate_budget(), then manage lower bounds and pilot over-estimation
-    scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios,
-		    hf_target, activeBudget);
+    scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, hf_target,
+		    activeBudget);
 
   soln.anchored_solution_ratios(avg_eval_ratios, hf_target);
 }

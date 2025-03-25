@@ -111,7 +111,7 @@ CollabHybridMetaIterator::~CollabHybridMetaIterator()
 void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 {
   size_t i, num_iterators = methodStrings.size();
-  selectedIterators.resize(num_iterators); // slaves also need for run_iterator
+  selectedIterators.resize(num_iterators); // servers also need for run_iterator
   if (!singlePassedModel)
     selectedModels.resize(num_iterators);
 
@@ -121,7 +121,7 @@ void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   String empty_str;
   for (i=0; i<num_iterators; ++i) {
     // compute min/max processors per iterator for each method
-    Iterator& the_iterator = selectedIterators[i];
+    auto the_iterator = selectedIterators[i];
     auto the_model = (singlePassedModel) ? iteratedModel : selectedModels[i];
     ppi_pr_i = (lightwtMethodCtor) ?
       estimate_by_name(methodStrings[i], modelStrings[i], the_iterator,
@@ -136,7 +136,7 @@ void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   // from this point on, we can specialize logic in terms of iterator servers.
   // An idle partition need not instantiate iterators/models (empty Iterator
   // envelopes are adequate for serve_iterators()), so return now.  A dedicated
-  // master processor is managed in IteratorScheduler::init_iterator().
+  // scheduler processor is managed in IteratorScheduler::init_iterator().
   if (iterSched.iteratorServerId > iterSched.numIteratorServers)
     return;
 
@@ -166,7 +166,7 @@ void CollabHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
     size_t i, num_iterators = methodStrings.size();
     for (i=0; i<num_iterators; ++i)
-      iterSched.set_iterator(selectedIterators[i], si_pl_iter);
+      iterSched.set_iterator(*selectedIterators[i], si_pl_iter);
   }
 }
 
@@ -180,7 +180,7 @@ void CollabHybridMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
     size_t i, num_iterators = methodStrings.size();
     for (i=0; i<num_iterators; ++i)
-      iterSched.free_iterator(selectedIterators[i], si_pl_iter);
+      iterSched.free_iterator(*selectedIterators[i], si_pl_iter);
   }
 
   // deallocate the mi_pl parallelism level
@@ -202,10 +202,10 @@ void CollabHybridMetaIterator::core_run()
       Cout << "\n>>>>> Running Collaborative Hybrid with iterator "
 	   << methodStrings[i] << ".\n";
 
-    Iterator& curr_iterator = selectedIterators[i];
+    Iterator& curr_iterator = *selectedIterators[i];
 
-    // For graphics data, limit to iterator server comm leaders; this is
-    // further segregated within initialize_graphics(): all iterator masters
+    // For graphics data, limit to iterator server comm leaders; this is further
+    // segregated w/i initialize_graphics(): all iterator dedicated schedulers
     // stream tabular data, but only server 1 generates a graphics window.
     if (rank0 && server_id > 0 && server_id <= iterSched.numIteratorServers)
       curr_iterator.initialize_graphics(server_id);

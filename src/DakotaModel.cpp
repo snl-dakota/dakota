@@ -1123,8 +1123,8 @@ void Model::evaluate()
     evaluationsDB.store_model_variables(modelId, modelType, modelEvalCntr,
           temp_set, currentVariables);
 
-  if (derived_master_overload()) {
-    // prevents error of trying to run a multiproc. direct job on the master
+  if (derived_scheduler_overload()) {
+    // prevents error of trying to run a multiproc direct job on the scheduler
     derived_evaluate_nowait(temp_set);
     currentResponse = derived_synchronize().begin()->second;
   }
@@ -1177,9 +1177,9 @@ void Model::evaluate(const ActiveSet& set)
       fd_grad_asv, fd_hess_asv, quasi_hess_asv, set);
     }
   }
-  else if (derived_master_overload()) {
+  else if (derived_scheduler_overload()) {
     // This map must be asynchronous since it prevents the error of trying
-    // to run a multiprocessor direct job on the master.
+    // to run a multiprocessor direct job on the scheduler
     derived_evaluate_nowait(set);
     currentResponse = derived_synchronize().begin()->second;
   }
@@ -3242,7 +3242,7 @@ const IntResponseMap& Model::derived_synchronize_nowait()
 }
 
 
-bool Model::derived_master_overload() const
+bool Model::derived_scheduler_overload() const
 {
   return false; // default for Surrogate models
 }
@@ -3273,9 +3273,9 @@ derived_auto_graphics(const Variables& vars, const Response& resp)
 /** return by reference requires use of dummy objects, but is
     important to allow use of assign_rep() since this operation must
     be performed on the original envelope object. */
-Iterator& Model::subordinate_iterator()
+std::shared_ptr<Iterator> Model::subordinate_iterator()
 {
-  return dummy_iterator; // return null/empty envelope
+  return nullptr; // return null/empty envelope
 }
 
 
@@ -4450,8 +4450,8 @@ MPI_Comm Model::analysis_comm() const
 /** This functionality has been pulled out of init_communicators() and
     defined separately so that it may be used in those cases when
     messageLengths is needed but model.init_communicators() is not
-    called, e.g., for the master processor in the self-scheduling of a
-    concurrent iterator strategy. */
+    called, e.g., for the ded scheduler processor in the self-scheduling
+    of a concurrent iterator strategy. */
 void Model::estimate_message_lengths()
 {
     // currently, every processor does this estimation (no Bcast needed)

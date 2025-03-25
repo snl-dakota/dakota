@@ -58,9 +58,9 @@ interface,
 	id_interface = 'I1'
   analysis_drivers = 'text_book'
 	  system
-#	evaluation_scheduling master
+#	evaluation_scheduling dedicated
 # Force following line as comment in test 0 for examples/advanced
-#	evaluation_scheduling master	    	#s0
+#	evaluation_scheduling dedicated	    	#s0
 #	evaluation_scheduling peer dynamic	#p1,#p4
 #	evaluation_servers = 4	   		#p4
 #	processors_per_evaluation = 1		#p4

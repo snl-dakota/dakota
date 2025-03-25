@@ -63,8 +63,8 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, std::shared_ptr<
   case SUBMETHOD_NPSOL: {
 #ifdef HAVE_NPSOL
     int deriv_level = 3;
-    minMaxOptimizer.assign_rep(std::make_shared<NPSOLOptimizer>
-			       (minMaxModel, deriv_level, convergenceTol));
+    minMaxOptimizer = std::make_unique<NPSOLOptimizer>
+			       (minMaxModel, deriv_level, convergenceTol);
     npsolFlag = true;
 //#elif // handled within NonD::sub_optimizer_select()
 #endif // HAVE_NPSOL
@@ -72,8 +72,8 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, std::shared_ptr<
   }
   case SUBMETHOD_OPTPP:
 #ifdef HAVE_OPTPP
-    minMaxOptimizer.assign_rep(std::make_shared<SNLLOptimizer>
-			       ("optpp_q_newton", minMaxModel));
+    minMaxOptimizer = std::make_unique<SNLLOptimizer>
+			       ("optpp_q_newton", minMaxModel);
 //#elif // handled within NonD::sub_optimizer_select()
 #endif // HAVE_OPTPP
     break;
@@ -95,23 +95,24 @@ void NonDLocalInterval::check_sub_iterator_conflict()
   // Note 1: NPSOL/NLSSOL share code modules, so we check for both.
   // Note 2: forces lower-level to accommodate, even though this level may be
   //         the more flexible one in its ability to switch away from NPSOL.
+  std::shared_ptr<Iterator> sub_iterator;
   if (npsolFlag) {
-    Iterator sub_iterator = iteratedModel->subordinate_iterator();
-    if (!sub_iterator.is_null() && 
-	 ( sub_iterator.method_name() ==  NPSOL_SQP ||
-	   sub_iterator.method_name() == NLSSOL_SQP ||
-	   sub_iterator.uses_method() == SUBMETHOD_NPSOL ||
-	   sub_iterator.uses_method() == SUBMETHOD_NPSOL_OPTPP ) )
-      sub_iterator.method_recourse(methodName);
+    sub_iterator = iteratedModel->subordinate_iterator();
+    if (sub_iterator && 
+	 ( sub_iterator->method_name() ==  NPSOL_SQP ||
+	   sub_iterator->method_name() == NLSSOL_SQP ||
+	   sub_iterator->uses_method() == SUBMETHOD_NPSOL ||
+	   sub_iterator->uses_method() == SUBMETHOD_NPSOL_OPTPP ) )
+      sub_iterator->method_recourse(methodName);
     ModelList& sub_models = iteratedModel->subordinate_models();
     for (auto& sm : sub_models) {
         sub_iterator = sm->subordinate_iterator();
-        if (!sub_iterator.is_null() && 
-          ( sub_iterator.method_name() ==  NPSOL_SQP ||
-            sub_iterator.method_name() == NLSSOL_SQP ||
-            sub_iterator.uses_method() == SUBMETHOD_NPSOL ||
-            sub_iterator.uses_method() == SUBMETHOD_NPSOL_OPTPP ) )
-    sub_iterator.method_recourse(methodName);
+        if (sub_iterator && 
+          ( sub_iterator->method_name() ==  NPSOL_SQP ||
+            sub_iterator->method_name() == NLSSOL_SQP ||
+            sub_iterator->uses_method() == SUBMETHOD_NPSOL ||
+            sub_iterator->uses_method() == SUBMETHOD_NPSOL_OPTPP ) )
+    sub_iterator->method_recourse(methodName);
     }
   }
 }
@@ -132,7 +133,7 @@ void NonDLocalInterval::derived_init_communicators(ParLevLIter pl_iter)
   if (npsolFlag) miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
   // minMaxOptimizer uses NoDBBaseConstructor, so no need to manage DB
   // list nodes at this level
-  minMaxOptimizer.init_communicators(pl_iter);
+  minMaxOptimizer->init_communicators(pl_iter);
 }
 
 
@@ -142,13 +143,13 @@ void NonDLocalInterval::derived_set_communicators(ParLevLIter pl_iter)
 
   // minMaxOptimizer uses NoDBBaseConstructor, so no need to manage DB
   // list nodes at this level
-  minMaxOptimizer.set_communicators(pl_iter);
+  minMaxOptimizer->set_communicators(pl_iter);
 }
 
 
 void NonDLocalInterval::derived_free_communicators(ParLevLIter pl_iter)
 {
-  minMaxOptimizer.free_communicators(pl_iter);
+  minMaxOptimizer->free_communicators(pl_iter);
 
   iteratedModel->free_communicators(pl_iter, maxEvalConcurrency);
 }
@@ -203,9 +204,9 @@ void NonDLocalInterval::core_run()
       Cout << "\n>>>>> Initiating local minimization\n";
       truncate_to_cell_bounds(min_initial_pt);
       ModelUtils::continuous_variables(*minMaxModel, min_initial_pt); // set starting pt
-      minMaxOptimizer.run(pl_iter);
+      minMaxOptimizer->run(pl_iter);
       if (numCells>1 && cellCntr<numCells-1)            // warm start next min
-	copy_data(minMaxOptimizer.variables_results().continuous_variables(),
+	copy_data(minMaxOptimizer->variables_results().continuous_variables(),
 		  min_initial_pt);
       post_process_cell_results(false); // virtual fn: post-process min
 
@@ -216,9 +217,9 @@ void NonDLocalInterval::core_run()
       Cout << "\n>>>>> Initiating local maximization\n";
       truncate_to_cell_bounds(max_initial_pt);
       ModelUtils::continuous_variables(*minMaxModel, max_initial_pt); // set starting point
-      minMaxOptimizer.run(pl_iter); 
+      minMaxOptimizer->run(pl_iter); 
       if (numCells>1 && cellCntr<numCells-1)            // warm start next max
-	copy_data(minMaxOptimizer.variables_results().continuous_variables(),
+	copy_data(minMaxOptimizer->variables_results().continuous_variables(),
 		  max_initial_pt);
       post_process_cell_results(true); // virtual fn: post-process max
     }
@@ -246,13 +247,13 @@ void NonDLocalInterval::truncate_to_cell_bounds(RealVector& initial_pt)
 // default is partial output; invoked by derived class implementations
 void NonDLocalInterval::post_process_cell_results(bool maximize)
 {
-  const Variables&    vars_star = minMaxOptimizer.variables_results();
+  const Variables&    vars_star = minMaxOptimizer->variables_results();
   const RealVector& c_vars_star = vars_star.continuous_variables();
   Cout << "\nResults of local gradient-based optimization:\n"
        << "Final point             =\n" << c_vars_star;
 
   const RealVector& fns_star_approx
-    = minMaxOptimizer.response_results().function_values();
+    = minMaxOptimizer->response_results().function_values();
   Cout << "Final response          =\n                     "
        << std::setw(write_precision+7) << fns_star_approx[0] << "\n";
 }
@@ -294,11 +295,11 @@ void NonDLocalInterval::method_recourse(unsigned short method_name)
 #ifdef HAVE_OPTPP
     ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
     std::map<size_t, ParConfigLIter> pc_iter_map
-      = minMaxOptimizer.parallel_configuration_iterator_map();
-    minMaxOptimizer.assign_rep(std::make_shared<SNLLOptimizer>
-			       ("optpp_q_newton", minMaxModel));
-    minMaxOptimizer.parallel_configuration_iterator_map(pc_iter_map);
-    minMaxOptimizer.init_communicators(pl_iter); // restore methodPCIter et al.
+      = minMaxOptimizer->parallel_configuration_iterator_map();
+    minMaxOptimizer = std::make_unique<SNLLOptimizer>
+			       ("optpp_q_newton", minMaxModel);
+    minMaxOptimizer->parallel_configuration_iterator_map(pc_iter_map);
+    minMaxOptimizer->init_communicators(pl_iter); // restore methodPCIter et al.
 #else
     Cerr << "\nError: method recourse not possible in NonDLocalInterval "
 	 << "(OPT++ NIP unavailable).\n";

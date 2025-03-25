@@ -16,6 +16,7 @@
 //- Checked by:
 
 #include "dakota_system_defs.hpp"
+#include "iterator_utils.hpp"
 #include "model_utils.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
@@ -133,7 +134,7 @@ parse_inputs(ProgramOptions& prog_opts,
   }
   else {
 
-    // Only the master parses the input file.
+    // Only world rank 0 parses the input file.
     if (parallelLib.world_rank() == 0) {
 
       if ( !prog_opts.input_file().empty() &&
@@ -217,15 +218,15 @@ void ProblemDescDB::broadcast()
   if (dbRep)
     dbRep->broadcast();
   else {
-    // DAKOTA's old design for reading the input file was for the master to get
-    // the input filename from cmd_line_handler (after MPI_Init) and broadcast
+    // DAKOTA's old design for reading the input file was for world rank 0 to
+    // get the input filename from cmd_line_handler (after MPI_Init) and bcast
     // the character buffer to all other processors (having every processor
     // query the cmd_line_handler was failing because of the effect of MPI_Init
     // on argc and argv).  Then every processor yyparsed.  This worked fine but
     // was not scalable for MP machines with a limited number of I/O devices.
 
-    // Now, rank 0 yyparse's and sends all the parsed data in a single buffer
-    // to all other ranks.
+    // Now, world rank 0 yyparse's and sends all the parsed data in a single
+    // buffer to all other ranks.
     if (parallelLib.world_size() > 1) {
       if (parallelLib.world_rank() == 0) {
 	enforce_unique_ids();
@@ -915,7 +916,7 @@ void ProblemDescDB::send_db_buffer()
   send_buffer << environmentSpec   << dataMethodList    << dataModelList
 	      << dataVariablesList << dataInterfaceList << dataResponsesList;
 
-  // Broadcast length of buffer so that slaves can allocate MPIUnpackBuffer
+  // Broadcast length of buffer so that servers can allocate MPIUnpackBuffer
   int buffer_len = send_buffer.size();
   parallelLib.bcast_w(buffer_len);
 
@@ -938,7 +939,7 @@ void ProblemDescDB::receive_db_buffer()
 }
 
 
-const Iterator& ProblemDescDB::get_iterator()
+std::shared_ptr<Iterator> ProblemDescDB::get_iterator()
 {
   // ProblemDescDB::get_<object> functions operate at the envelope level
   // so that any passing of *this provides the envelope object.
@@ -964,17 +965,16 @@ const Iterator& ProblemDescDB::get_iterator()
     id_method = "NO_METHOD_ID";
   IterLIter i_it
     = std::find_if(dbRep->iteratorList.begin(), dbRep->iteratorList.end(),
-                   boost::bind(&Iterator::method_id, _1) == id_method);
+                  [&id_method](std::shared_ptr<Iterator> iter) {return iter->method_id() == id_method;});
   if (i_it == dbRep->iteratorList.end()) {
-    Iterator new_iterator(*this);
-    dbRep->iteratorList.push_back(new_iterator);
+    dbRep->iteratorList.push_back(IteratorUtils::get_iterator(*this));
     i_it = --dbRep->iteratorList.end();
   }
   return *i_it;
 }
 
 
-const Iterator& ProblemDescDB::get_iterator(std::shared_ptr<Model> model)
+std::shared_ptr<Iterator> ProblemDescDB::get_iterator(std::shared_ptr<Model> model)
 {
   // ProblemDescDB::get_<object> functions operate at the envelope level
   // so that any passing of *this provides the envelope object.
@@ -989,25 +989,24 @@ const Iterator& ProblemDescDB::get_iterator(std::shared_ptr<Model> model)
     id_method = "NO_METHOD_ID";
   IterLIter i_it
     = std::find_if(dbRep->iteratorList.begin(), dbRep->iteratorList.end(),
-                   boost::bind(&Iterator::method_id, _1) == id_method);
+                    [&id_method](std::shared_ptr<Iterator> iter) {return iter->method_id() == id_method;});
+
   // if Iterator does not already exist, then create it
   if (i_it == dbRep->iteratorList.end()) {
-    Iterator new_iterator(*this, model);
-    dbRep->iteratorList.push_back(new_iterator);
+    dbRep->iteratorList.push_back(IteratorUtils::get_iterator(*this, model));
     i_it = --dbRep->iteratorList.end();
   }
   // idMethod already exists, but check for same model.  If !same, instantiate
   // new rather than update (i_it->iterated_model(model)) all shared instances.
-  else if (model != i_it->iterated_model()) {
-    Iterator new_iterator(*this, model);
-    dbRep->iteratorList.push_back(new_iterator);
+  else if (model != (*i_it)->iterated_model()) {
+    dbRep->iteratorList.push_back(IteratorUtils::get_iterator(*this, model));
     i_it = --dbRep->iteratorList.end();
   }
   return *i_it;
 }
 
 
-const Iterator& ProblemDescDB::
+std::shared_ptr<Iterator> ProblemDescDB::
 get_iterator(const String& method_name, std::shared_ptr<Model> model)
 {
   // ProblemDescDB::get_<object> functions operate at the envelope level
@@ -1021,18 +1020,16 @@ get_iterator(const String& method_name, std::shared_ptr<Model> model)
   IterLIter i_it
     = std::find_if(dbRep->iteratorByNameList.begin(),
 		   dbRep->iteratorByNameList.end(),
-                   boost::bind(&Iterator::method_string, _1) == method_name);
+                  [&method_name](std::shared_ptr<Iterator> iter) {return iter->method_string() == method_name;});
   // if Iterator does not already exist, then create it
   if (i_it == dbRep->iteratorByNameList.end()) {
-    Iterator new_iterator(method_name, model);
-    dbRep->iteratorByNameList.push_back(new_iterator);
+    dbRep->iteratorByNameList.push_back(IteratorUtils::get_iterator(method_name, model));
     i_it = --dbRep->iteratorByNameList.end();
   }
   // method_name already exists, but check for same model. If !same, instantiate
   // new rather than update (i_it->iterated_model(model)) all shared instances.
-  else if (model != i_it->iterated_model()) {
-    Iterator new_iterator(method_name, model);
-    dbRep->iteratorByNameList.push_back(new_iterator);
+  else if (model != (*i_it)->iterated_model()) {
+    dbRep->iteratorByNameList.push_back(IteratorUtils::get_iterator(method_name, model));
     i_it = --dbRep->iteratorByNameList.end();
   }
   return *i_it;
@@ -1565,7 +1562,8 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
       {"nond.refinement_samples", P_MET refineSamples},
       {"parameter_study.steps_per_variable", P_MET stepsPerVariable},
       {"generating_vector.inline", P_MET generatingVector},
-      {"generating_matrices.inline", P_MET generatingMatrices}
+      {"generating_matrices.inline", P_MET generatingMatrices},
+      {"nond.mlmcmc_subsampling_steps", P_MET mlmcmcSubsamplingSteps}
     },
     { /* model */
       {"refinement_samples", P_MOD refineSamples}
@@ -2218,6 +2216,8 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
       {"nond.estimator_variance_metric_norm_order",
        P_MET estVarMetricNormOrder},
       {"nond.mala_step_size", P_MET malaStepSize},
+      {"nond.mlmcmc_greedy_resampling_factor", P_MET mlmcmcGreedyResamplingFactor},
+      {"nond.mlmcmc_target_variance", P_MET mlmcmcTargetVariance},
       {"nond.multilevel_estimator_rate", P_MET multilevEstimatorRate},
       {"nond.rcond_tol_throttle", P_MET rCondTolThrottle},
       {"nond.regression_penalty", P_MET regressionL2Penalty},
@@ -2315,6 +2315,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
       {"nond.dili_ses_num_eigs", P_MET diliSesNumEigs},
       {"nond.dili_ses_overs_factor", P_MET diliSesOversFactor},
       {"nond.dr_num_stages", P_MET drNumStages},
+      {"nond.mlmcmc_initial_chain_samples", P_MET mlmcmcInitialChainSamples},
       {"nond.prop_cov_update_period", P_MET proposalCovUpdatePeriod},
       {"nond.pushforward_samples", P_MET numPushforwardSamples},
       {"nond.samples_on_emulator", P_MET samplesOnEmulator},

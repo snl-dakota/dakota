@@ -35,7 +35,7 @@ model,
                                        0. 0. 0. 0. 1.
 #	iterator_servers = 3	       #p4,#p6
 #	iterator_servers = 2	       #p5,#p7
-#	iterator_scheduling master     #p5,#p7
+#	iterator_scheduling dedicated  #p5,#p7
 #	processors_per_iterator = 2    #p6,#p7
 
 variables,

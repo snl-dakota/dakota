@@ -53,27 +53,27 @@ public:
   //- Heading: Member functions
   //
 
-  //bool own_communicators() const;              // return ownCommFlag
-  bool dedicated_master() const;               ///< return dedicatedMasterFlag
-  //bool communicator_split() const;             // return commSplitFlag
-  bool server_master() const;                  ///< return serverMasterFlag
-  bool message_pass() const;                   ///< return messagePass
-  bool idle_partition() const;                 ///< return idlePartition
-  int num_servers() const;                     ///< return numServers
-  int processors_per_server() const;           ///< return procsPerServer
-  int processor_remainder() const;             ///< return procRemainder
+  //bool own_communicators() const;         // return ownCommFlag
+  bool dedicated_scheduler() const;         ///< return dedicatedSchedulerFlag
+  //bool communicator_split() const;        // return commSplitFlag
+  bool server_leader() const;               ///< return serverLeaderFlag
+  bool message_pass() const;                ///< return messagePass
+  bool idle_partition() const;              ///< return idlePartition
+  int num_servers() const;                  ///< return numServers
+  int processors_per_server() const;        ///< return procsPerServer
+  int processor_remainder() const;          ///< return procRemainder
   const MPI_Comm& server_intra_communicator() const; ///< return serverIntraComm
-  int server_communicator_rank() const;        ///< return serverCommRank
-  int server_communicator_size() const;        ///< return serverCommSize
+  int server_communicator_rank() const;     ///< return serverCommRank
+  int server_communicator_size() const;     ///< return serverCommSize
   const MPI_Comm& hub_server_intra_communicator() const;
-                                               ///< return hubServerIntraComm
-  int hub_server_communicator_rank() const;    ///< return hubServerCommRank
-  int hub_server_communicator_size() const;    ///< return hubServerCommSize
+                                            ///< return hubServerIntraComm
+  int hub_server_communicator_rank() const; ///< return hubServerCommRank
+  int hub_server_communicator_size() const; ///< return hubServerCommSize
   const MPI_Comm& hub_server_inter_communicator() const;
-                                               ///< return hubServerInterComm
+                                            ///< return hubServerInterComm
   MPI_Comm* hub_server_inter_communicators() const;
-                                               ///< return hubServerInterComms
-  int server_id() const;                       ///< return serverId
+                                            ///< return hubServerInterComms
+  int server_id() const;                    ///< return serverId
 
   /// read a ParallelLevel object from a packed MPI buffer
   void read(MPIUnpackBuffer& s);
@@ -111,9 +111,9 @@ private:
 
   bool ownCommFlag;              ///< signals Comm ownership for deallocation
 
-  bool dedicatedMasterFlag;      ///< signals dedicated master partitioning
+  bool dedicatedSchedulerFlag;   ///< signals dedicated scheduler partitioning
   bool commSplitFlag;            ///< signals a communicator split was used
-  bool serverMasterFlag;         ///< identifies master server processors
+  bool serverLeaderFlag;         ///< identifies rank 0 within serverIntraComm
   bool messagePass;              ///< flag for message passing at this level,
                                  ///< indicating work assignment among servers
   bool idlePartition;            ///< identifies presence of an idle processor
@@ -140,7 +140,7 @@ private:
 
 
 inline ParallelLevel::ParallelLevel(): ownCommFlag(true),
-  dedicatedMasterFlag(false), commSplitFlag(false), serverMasterFlag(true),
+  dedicatedSchedulerFlag(false), commSplitFlag(false), serverLeaderFlag(true),
   messagePass(false), idlePartition(false), numServers(0), procsPerServer(0),
   procRemainder(0), serverId(0), serverIntraComm(MPI_COMM_NULL),
   serverCommRank(0), serverCommSize(1), hubServerIntraComm(MPI_COMM_NULL),
@@ -179,8 +179,8 @@ inline void ParallelLevel::clear()
   if (ownCommFlag) { // dealloc intra/inter comms
     if (!special(serverIntraComm))    MPI_Comm_free(&serverIntraComm);
     if (!special(hubServerIntraComm)) MPI_Comm_free(&hubServerIntraComm);
-    if (dedicatedMasterFlag) { // master-slave interComms
-      if (serverId == 0 && hubServerInterComms) { // if dedicated master
+    if (dedicatedSchedulerFlag) { // scheduler-server interComms
+      if (serverId == 0 && hubServerInterComms) { // if dedicated scheduler
 	int i;
 	for(i=0; i<numServers; ++i)
 	  if (!special(hubServerInterComms[i]))
@@ -218,8 +218,8 @@ inline void ParallelLevel::copy_config(const ParallelLevel& pl)
   // This function copies scalar config settings without copying MPI_Comms
 
   // these are shared configuration attributes (also passed in read/write)
-  dedicatedMasterFlag = pl.dedicatedMasterFlag;
-  commSplitFlag = pl.commSplitFlag; serverMasterFlag = pl.serverMasterFlag;
+  dedicatedSchedulerFlag = pl.dedicatedSchedulerFlag;
+  commSplitFlag = pl.commSplitFlag; serverLeaderFlag = pl.serverLeaderFlag;
   messagePass   = pl.messagePass;   idlePartition    = pl.idlePartition;
   numServers    = pl.numServers;    procsPerServer   = pl.procsPerServer;
   procRemainder = pl.procRemainder;
@@ -281,7 +281,7 @@ inline void ParallelLevel::copy(const ParallelLevel& pl)
 
     if (pl.hubServerInterComms == NULL) hubServerInterComms = NULL;
     else { // reallocate + MPI_Comm_dup()
-      int i, num_hs_ic = (dedicatedMasterFlag) ? numServers : numServers - 1;
+      int i, num_hs_ic = (dedicatedSchedulerFlag) ? numServers : numServers - 1;
       if (idlePartition) ++num_hs_ic;
       hubServerInterComms = new MPI_Comm [num_hs_ic];
       for (i=0; i<num_hs_ic; ++i)
@@ -307,14 +307,14 @@ inline ParallelLevel& ParallelLevel::operator=(const ParallelLevel& pl)
 //inline bool ParallelLevel::own_communicators() const
 //{ return ownCommFlag; }
 
-inline bool ParallelLevel::dedicated_master() const
-{ return dedicatedMasterFlag; }
+inline bool ParallelLevel::dedicated_scheduler() const
+{ return dedicatedSchedulerFlag; }
 
 //inline bool ParallelLevel::communicator_split() const
 //{ return commSplitFlag; }
 
-inline bool ParallelLevel::server_master() const
-{ return serverMasterFlag; }
+inline bool ParallelLevel::server_leader() const
+{ return serverLeaderFlag; }
 
 inline bool ParallelLevel::message_pass() const
 { return messagePass; }
@@ -362,8 +362,9 @@ inline void ParallelLevel::read(MPIUnpackBuffer& s)
 {
   // pass configuration settings (which are relevant on other procs),
   // but not specific comm/rank/size/id
-  s >> dedicatedMasterFlag >> commSplitFlag >> serverMasterFlag >> messagePass
-    >> idlePartition >> numServers >> procsPerServer >> procRemainder;
+  s >> dedicatedSchedulerFlag >> commSplitFlag >> serverLeaderFlag
+    >> messagePass >> idlePartition >> numServers >> procsPerServer
+    >> procRemainder;
   //>> serverIntraComm >> serverCommRank >> serverCommSize
   //>> hubServerIntraComm >> hubServerCommRank >> hubServerCommSize
   //>> hubServerInterComm >> hubServerInterComms >> serverId;
@@ -373,8 +374,9 @@ inline void ParallelLevel::write(MPIPackBuffer& s) const
 {
   // pass configuration settings (which are relevant on other procs),
   // but not specific comm/rank/size/id
-  s << dedicatedMasterFlag << commSplitFlag << serverMasterFlag << messagePass
-    << idlePartition << numServers << procsPerServer << procRemainder;
+  s << dedicatedSchedulerFlag << commSplitFlag << serverLeaderFlag
+    << messagePass << idlePartition << numServers << procsPerServer
+    << procRemainder;
   //<< serverIntraComm << serverCommRank << serverCommSize
   //<< hubServerIntraComm << hubServerCommRank << hubServerCommSize
   //<< hubServerInterComm << hubServerInterComms << serverId;
@@ -953,13 +955,13 @@ private:
     int max_concurrency, int asynch_local_concurrency, short default_config,
     short scheduling_override, bool peer_dynamic_avail);
 
-  /// split a parent communicator into a dedicated master processor
+  /// split a parent communicator into a dedicated scheduler processor
   /// and num_servers child communicators
-  void split_communicator_dedicated_master(const ParallelLevel& parent_pl,
-					   ParallelLevel& child_pl);
+  void split_communicator_dedicated_scheduler(const ParallelLevel& parent_pl,
+					      ParallelLevel& child_pl);
 
   /// split a parent communicator into num_servers peer child
-  /// communicators (no dedicated master processor)
+  /// communicators (no dedicated scheduler processor)
   void split_communicator_peer_partition(const ParallelLevel& parent_pl,
 					 ParallelLevel& child_pl);
 
@@ -1095,10 +1097,10 @@ inline bool ParallelLibrary::parallel_configuration_is_complete()
   size_t i, num_mipl = currPCIter->miPLIters.size();
   if (!num_mipl) return false; // PC incomplete if w level undefined
   bool prev_pl_rank0 = (mpiManager.world_rank() == 0);
-  for (i=1; i<num_mipl; ++i) { // skip w_pl (dedicated master not supported)
+  for (i=1; i<num_mipl; ++i) { // skip w_pl (dedicated scheduler not supported)
     const ParallelLevel& mi_pl = *currPCIter->miPLIters[i];
-    if (mi_pl.dedicatedMasterFlag && prev_pl_rank0)
-      return true; // PC complete at mi level for ded master
+    if (mi_pl.dedicatedSchedulerFlag && prev_pl_rank0)
+      return true; // PC complete at mi level for dedicated scheduler
     else
       prev_pl_rank0 = (mi_pl.serverCommRank == 0);
   }
@@ -1107,8 +1109,8 @@ inline bool ParallelLibrary::parallel_configuration_is_complete()
     return false; // PC incomplete for remaining procs if ie level undefined
 
   const ParallelLevel& ie_pl = currPCIter->ie_parallel_level();
-  if (ie_pl.dedicatedMasterFlag && prev_pl_rank0)
-    return true;  // PC complete at ie level for iterator ded master
+  if (ie_pl.dedicatedSchedulerFlag && prev_pl_rank0)
+    return true;  // PC complete at ie level for iterator dedicated scheduler
   else // PC incomplete for remaining procs if ea level undefined
     return currPCIter->ea_parallel_level_defined();
 }
@@ -1406,9 +1408,9 @@ send(MPIPackBuffer& send_buff, int dest, int tag,
   if (child_pl.commSplitFlag)
     err_code = (parent_pl.serverCommRank) ?
       MPI_Send((void*)send_buff.buf(), send_buff.size(), MPI_PACKED, 0, tag,
-	       child_pl.hubServerInterComm) : // slave/peers 2 through n
+	       child_pl.hubServerInterComm) : // servers/peers 2 through n
       MPI_Send((void*)send_buff.buf(), send_buff.size(), MPI_PACKED, 0, tag,
-	       child_pl.hubServerInterComms[dest-1]); // master/peer 1
+	       child_pl.hubServerInterComms[dest-1]); // scheduler/peer 1
   else
     err_code = MPI_Send((void*)send_buff.buf(), send_buff.size(), MPI_PACKED,
 			dest, tag, parent_pl.serverIntraComm);
@@ -1426,9 +1428,9 @@ send(int& send_int, int dest, int tag, const ParallelLevel& parent_pl,
   if (child_pl.commSplitFlag)
     err_code = (parent_pl.serverCommRank) ?
       MPI_Send((void*)&send_int, 1, MPI_INT, 0, tag,
-	       child_pl.hubServerInterComm) : // slaves/peers 2 -> n
+	       child_pl.hubServerInterComm) : // servers/peers 2 -> n
       MPI_Send((void*)&send_int, 1, MPI_INT, 0, tag,
-	       child_pl.hubServerInterComms[dest-1]); // master/peer 1
+	       child_pl.hubServerInterComms[dest-1]); // scheduler/peer 1
   else
     err_code = MPI_Send((void*)&send_int, 1, MPI_INT, dest, tag,
 			parent_pl.serverIntraComm);
@@ -1503,9 +1505,9 @@ isend(MPIPackBuffer& send_buff, int dest, int tag,
   if (child_pl.commSplitFlag)
     err_code = (parent_pl.serverCommRank) ?
       MPI_Isend((void*)send_buff.buf(), send_buff.size(), MPI_PACKED, 0, tag,
-		child_pl.hubServerInterComm, &send_req) : // slave/peers 2 -> n
+		child_pl.hubServerInterComm, &send_req) :// servers/peers 2 -> n
       MPI_Isend((void*)send_buff.buf(), send_buff.size(), MPI_PACKED, 0, tag,
-		child_pl.hubServerInterComms[dest-1], &send_req);//master/peer 1
+		child_pl.hubServerInterComms[dest-1], &send_req); //sched/peer 1
   else
     err_code = MPI_Isend((void*)send_buff.buf(), send_buff.size(), MPI_PACKED,
 			 dest, tag, parent_pl.serverIntraComm, &send_req);
@@ -1523,9 +1525,9 @@ isend(int& send_int, int dest, int tag, MPI_Request& send_req,
   if (child_pl.commSplitFlag)
     err_code = (parent_pl.serverCommRank) ?
       MPI_Isend((void*)&send_int, 1, MPI_INT, 0, tag,
-		child_pl.hubServerInterComm, &send_req) : // slaves/peers 2 -> n
+		child_pl.hubServerInterComm, &send_req) :// servers/peers 2 -> n
       MPI_Isend((void*)&send_int, 1, MPI_INT, 0, tag,
-		child_pl.hubServerInterComms[dest-1], &send_req);//master/peer 1
+		child_pl.hubServerInterComms[dest-1], &send_req);//sched/peer 1
   else
     err_code = MPI_Isend((void*)&send_int, 1, MPI_INT, dest, tag,
 			 parent_pl.serverIntraComm, &send_req);
@@ -1590,9 +1592,9 @@ recv(MPIUnpackBuffer& recv_buff, int source, int tag, MPI_Status& status,
   if (child_pl.commSplitFlag)
     err_code = (parent_pl.serverCommRank) ?
       MPI_Recv((void*)recv_buff.buf(), recv_buff.size(), MPI_PACKED, 0, tag,
-	       child_pl.hubServerInterComm, &status) : // slave/peers 2 -> n
+	       child_pl.hubServerInterComm, &status) : // servers/peers 2 -> n
       MPI_Recv((void*)recv_buff.buf(), recv_buff.size(), MPI_PACKED, 0, tag, 
-	       child_pl.hubServerInterComms[source-1], &status);// master/peer 1
+	       child_pl.hubServerInterComms[source-1], &status);// sched/peer 1
   else
     err_code = MPI_Recv((void*)recv_buff.buf(), recv_buff.size(), MPI_PACKED,
 			source, tag, parent_pl.serverIntraComm, &status);
@@ -1609,9 +1611,9 @@ recv(int& recv_int, int source, int tag, MPI_Status& status,
   int err_code = 0;
   if (child_pl.commSplitFlag)
     err_code = (parent_pl.serverCommRank) ?
-      MPI_Recv((void*)&recv_int, 1, MPI_INT, 0, tag, // slaves/peers 2 -> n
+      MPI_Recv((void*)&recv_int, 1, MPI_INT, 0, tag, // servers/peers 2 -> n
 	       child_pl.hubServerInterComm, &status) :
-      MPI_Recv((void*)&recv_int, 1, MPI_INT, 0, tag, // master/peer 1
+      MPI_Recv((void*)&recv_int, 1, MPI_INT, 0, tag, // sched/peer 1
 	       child_pl.hubServerInterComms[source-1], &status);
   else
     err_code = MPI_Recv((void*)&recv_int, 1, MPI_INT, source, tag, 
@@ -1677,9 +1679,9 @@ irecv(MPIUnpackBuffer& recv_buff, int source, int tag,
   if (child_pl.commSplitFlag)
     err_code = (parent_pl.serverCommRank) ?
       MPI_Irecv((void*)recv_buff.buf(), recv_buff.size(), MPI_PACKED, 0, tag,
-		child_pl.hubServerInterComm, &recv_req) : // slave/peers 2 -> n
+		child_pl.hubServerInterComm, &recv_req) :// servers/peers 2 -> n
       MPI_Irecv((void*)recv_buff.buf(), recv_buff.size(), MPI_PACKED, 0, tag, 
-		child_pl.hubServerInterComms[source-1], &recv_req);//mast/peer 1
+		child_pl.hubServerInterComms[source-1], &recv_req);//sched/peer1
   else
     err_code = MPI_Irecv((void*)recv_buff.buf(), recv_buff.size(), MPI_PACKED,
 			 source, tag, parent_pl.serverIntraComm, &recv_req);
@@ -1696,9 +1698,9 @@ irecv(int& recv_int, int source, int tag, MPI_Request& recv_req,
   int err_code = 0;
   if (child_pl.commSplitFlag)
     err_code = (parent_pl.serverCommRank) ? 
-      MPI_Irecv((void*)&recv_int, 1, MPI_INT, 0, tag, // slaves/peers 2 -> n
+      MPI_Irecv((void*)&recv_int, 1, MPI_INT, 0, tag,// servers/peers 2 -> n
 		child_pl.hubServerInterComm, &recv_req) :
-      MPI_Irecv((void*)&recv_int, 1, MPI_INT, 0, tag, // master/peer 1
+      MPI_Irecv((void*)&recv_int, 1, MPI_INT, 0, tag, // scheduler/peer 1
 		child_pl.hubServerInterComms[source-1], &recv_req);
   else
     err_code = MPI_Irecv((void*)&recv_int, 1, MPI_INT, source, tag, 
@@ -2045,7 +2047,7 @@ alias_as_server_comm(const ParallelLevel& parent_pl, ParallelLevel& child_pl)
   child_pl.serverIntraComm  =  parent_pl.serverIntraComm; // same comm
   child_pl.serverCommRank   =  parent_pl.serverCommRank;
   child_pl.serverCommSize   =  parent_pl.serverCommSize;
-  child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0);
+  child_pl.serverLeaderFlag = (parent_pl.serverCommRank == 0);
 
   child_pl.hubServerIntraComm = MPI_COMM_NULL;
   // use ctor defaults for child_pl.hubServerCommRank/hubServerCommSize
@@ -2067,7 +2069,7 @@ copy_as_server_comm(const ParallelLevel& parent_pl, ParallelLevel& child_pl)
     MPI_Comm_dup(parent_pl.serverIntraComm, &child_pl.serverIntraComm);
     child_pl.serverCommRank   =  parent_pl.serverCommRank;
     child_pl.serverCommSize   =  parent_pl.serverCommSize;
-    child_pl.serverMasterFlag = (parent_pl.serverCommRank == 0);
+    child_pl.serverLeaderFlag = (parent_pl.serverCommRank == 0);
 
     child_pl.hubServerIntraComm = MPI_COMM_NULL;
     // use ctor defaults for child_pl.hubServerCommRank/hubServerCommSize

@@ -37,8 +37,8 @@ void NonDLHSEvidence::post_process_samples()
   // Use the sample set generated above to determine the maximum and minimum 
   // of each function within each input interval combination
 
-  const RealMatrix&     all_samples   = lhsSampler.all_samples();
-  const IntResponseMap& all_responses = lhsSampler.all_responses();
+  const RealMatrix&     all_samples   = lhsSampler->all_samples();
+  const IntResponseMap& all_responses = lhsSampler->all_responses();
 
   for (respFnCntr=0; respFnCntr<numFunctions; ++respFnCntr) {
     // Use the max and mins to determine the cumulative distributions

@@ -37,7 +37,7 @@ PebbldMinimizer::PebbldMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Mode
     // (from problem_db.get_model())
     subProbMinimizer = probDescDB.get_iterator();//(iteratedModel);
     // suppress DB ctor default and don't output summary info
-    subProbMinimizer.summary_output(false);
+    subProbMinimizer->summary_output(false);
     // verify method's modelPointer is empty or consistent
     const String& am_model_ptr = probDescDB.get_string("method.model_pointer");
     if (!am_model_ptr.empty() && am_model_ptr != model_ptr)

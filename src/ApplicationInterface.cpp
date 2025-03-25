@@ -30,7 +30,7 @@ ApplicationInterface(const ProblemDescDB& problem_db):
   asynchFlag(problem_db.get_bool("interface.asynch")),
   batchIdCntr(0),
   suppressOutput(false), evalCommSize(1), evalCommRank(0), evalServerId(1),
-  eaDedMasterFlag(false), analysisCommSize(1), analysisCommRank(0),
+  eaDedSchedFlag(false), analysisCommSize(1), analysisCommRank(0),
   analysisServerId(1), multiProcAnalysisFlag(false),
   asynchLocalAnalysisFlag(false),
   asynchLocalEvalConcSpec(
@@ -124,13 +124,13 @@ init_communicators(const IntArray& message_lengths, int max_eval_concurrency)
   set_evaluation_communicators(message_lengths);
 
   // Initialize communicators for analyses (partitions of evalComm).  This
-  // call is protected from an iterator dedicated master in the same way a
-  // meta-iterator master never calls init_eval_comms (prevents some warnings
+  // call is protected from an iterator dedicated scheduler in the same way a
+  // meta-iterator scheduler never calls init_eval_comms (prevents some warnings
   // in ParallelLibrary::resolve_inputs when there is a user spec that can't
-  // be supported from a single processor).  However, a dedicated master can
+  // be supported from a single processor).  However, a dedicated scheduler can
   // run a local single-processor job if the algorithm uses a synchronous eval
-  // (see derived_master_overload() usage in Model::evaluate()).
-  if (ieDedMasterFlag && iteratorCommRank == 0 && multiProcEvalFlag)
+  // (see derived_scheduler_overload() usage in Model::evaluate()).
+  if (ieDedSchedFlag && iteratorCommRank == 0 && multiProcEvalFlag)
     init_serial_analyses();
   else {
     const ParallelLevel& ea_pl = parallelLib.init_analysis_communicators(
@@ -157,9 +157,9 @@ set_communicators(const IntArray& message_lengths, int max_eval_concurrency)
   set_evaluation_communicators(message_lengths);
 
   // Initialize communicators for analyses (partitions of evalComm).  This call
-  // is protected from an iterator dedicated master in cases where local
+  // is protected from an iterator dedicated scheduler in cases where local
   // evaluations are precluded (see comments in init_communicators()).
-  if (ieDedMasterFlag && iteratorCommRank == 0 && multiProcEvalFlag)
+  if (ieDedSchedFlag && iteratorCommRank == 0 && multiProcEvalFlag)
     init_serial_analyses();
   else
     set_analysis_communicators();
@@ -193,13 +193,13 @@ set_evaluation_communicators(const IntArray& message_lengths)
   // These attributes are set by init_evaluation_communicators and are not 
   // available for use in the constructor.
   const ParallelLevel& ie_pl = pc.ie_parallel_level();
-  ieDedMasterFlag = ie_pl.dedicated_master();
+  ieDedSchedFlag = ie_pl.dedicated_scheduler();
   ieMessagePass   = ie_pl.message_pass();
   numEvalServers  = ie_pl.num_servers(); // may differ from numEvalServersSpec
   evalCommRank    = ie_pl.server_communicator_rank();
   evalCommSize    = ie_pl.server_communicator_size();
   evalServerId    = ie_pl.server_id();
-  if (ieDedMasterFlag)
+  if (ieDedSchedFlag)
     multiProcEvalFlag = (ie_pl.processors_per_server() > 1 ||
 			 ie_pl.processor_remainder());
   else // peer: split flag insufficient if 1 server
@@ -222,13 +222,13 @@ void ApplicationInterface::set_analysis_communicators()
   const ParallelLevel& ea_pl = pc.ea_parallel_level();
 
   // Extract attributes for analysis partitions
-  eaDedMasterFlag    = ea_pl.dedicated_master();
+  eaDedSchedFlag    = ea_pl.dedicated_scheduler();
   eaMessagePass      = ea_pl.message_pass();
   numAnalysisServers = ea_pl.num_servers();//may differ from numAnalysisSrvSpec
   analysisCommRank   = ea_pl.server_communicator_rank();
   analysisCommSize   = ea_pl.server_communicator_size();
   analysisServerId   = ea_pl.server_id();
-  if (eaDedMasterFlag)
+  if (eaDedSchedFlag)
     multiProcAnalysisFlag = (ea_pl.processors_per_server() > 1 ||
 			     ea_pl.processor_remainder());
   else // peer: split flag insufficient if 1 server
@@ -236,7 +236,7 @@ void ApplicationInterface::set_analysis_communicators()
 
   if ( iteratorCommRank // any processor other than rank 0 in iteratorComm
        || ( outputLevel == SILENT_OUTPUT && evalCommRank == 0 &&
-	   !eaDedMasterFlag && numAnalysisServers < 2) )
+	   !eaDedSchedFlag && numAnalysisServers < 2) )
     suppressOutput = true; // suppress output of fn. eval. echoes
   /* Additional output granularity:
   if (ieMessagePass)                // suppress fn eval output in 
@@ -735,7 +735,7 @@ const IntResponseMap& ApplicationInterface::synchronize()
       Cout << std::endl;
 
       if (ieMessagePass) { // single or multi-processor servers
-	if (ieDedMasterFlag) master_dynamic_schedule_evaluations();
+	if (ieDedSchedFlag) dedicated_dynamic_scheduler_evaluations();
 	else {
 	  // utilize asynch local evals to accomplish a dynamic peer schedule
 	  // (even if hybrid mode not specified) unless precluded by direct
@@ -847,8 +847,8 @@ const IntResponseMap& ApplicationInterface::synchronize_nowait()
     // Test nonduplicate evaluations and add completions to rawResponseMap
     if (core_prp_jobs) {
       if (ieMessagePass) { // single or multi-processor servers
-	if (ieDedMasterFlag)
-	  master_dynamic_schedule_evaluations_nowait();
+	if (ieDedSchedFlag)
+	  dedicated_dynamic_scheduler_evaluations_nowait();
 	else {
 	  // prefer to use peer_dynamic to avoid blocking on local jobs, as
 	  // is consistent with nowait requirement; however, a fallback to
@@ -967,24 +967,24 @@ const IntResponseMap& ApplicationInterface::synchronize_nowait()
 }
 
 
-/** This code is called from synchronize() to provide the master portion of
-    a master-slave algorithm for the dynamic scheduling of evaluations among
-    slave servers.  It performs no evaluations locally and matches either
-    serve_evaluations_synch() or serve_evaluations_asynch() on the slave
-    servers, depending on the value of asynchLocalEvalConcurrency.  Dynamic 
-    scheduling assigns jobs in 2 passes.  The 1st pass gives each server
-    the same number of jobs (equal to asynchLocalEvalConcurrency).  The
-    2nd pass assigns the remaining jobs to slave servers as previous jobs
-    are completed and returned.  Single- and multilevel parallel use intra-
-    and inter-communicators, respectively, for send/receive.  Specific
-    syntax is encapsulated within ParallelLibrary. */
-void ApplicationInterface::master_dynamic_schedule_evaluations()
+/** This code is called from synchronize() to provide the scheduler portion
+    of a scheduler-server algorithm for the dynamic scheduling of evaluations
+    among servers.  It performs no evaluations locally and matches either
+    serve_evaluations_synch() or serve_evaluations_asynch() on the servers,
+    depending on the value of asynchLocalEvalConcurrency.  Dynamic scheduling
+    assigns jobs in 2 passes.  The 1st pass gives each server the same number
+    of jobs (equal to asynchLocalEvalConcurrency).  The 2nd pass assigns the
+    remaining jobs to servers as previous jobs are completed and returned.
+    Single- and multilevel parallel use intra- and inter-communicators,
+    respectively, for send/receive.  Specific syntax is encapsulated within
+    ParallelLibrary. */
+void ApplicationInterface::dedicated_dynamic_scheduler_evaluations()
 {
   int capacity = numEvalServers;
   if (asynchLocalEvalConcurrency > 1) capacity *= asynchLocalEvalConcurrency;
   int num_jobs = beforeSynchCorePRPQueue.size(),
      num_sends = std::min(capacity, num_jobs);
-  Cout << "Master dynamic schedule: first pass assigning " << num_sends
+  Cout << "Dedicated scheduler: first pass assigning " << num_sends
        << " jobs among " << numEvalServers << " servers\n";
 
   // only need num_sends entries (not num_jobs) due to reuse
@@ -1003,7 +1003,7 @@ void ApplicationInterface::master_dynamic_schedule_evaluations()
 
   // schedule remaining jobs
   if (num_sends < num_jobs) {
-    Cout << "Master dynamic schedule: second pass scheduling "
+    Cout << "Dedicated scheduler: second pass scheduling "
 	 << num_jobs-num_sends << " remaining jobs\n";
     int send_cntr = num_sends, recv_cntr = 0, out_count;
     auto status_array{std::vector<MPI_Status>(num_sends)};
@@ -1011,7 +1011,7 @@ void ApplicationInterface::master_dynamic_schedule_evaluations()
     PRPQueueIter return_iter;
     while (recv_cntr < num_jobs) {
       if (outputLevel > SILENT_OUTPUT)
-        Cout << "Master dynamic schedule: waiting on completed jobs"<<std::endl;
+        Cout << "Dedicated scheduler: waiting on completed jobs"<<std::endl;
       parallelLib.waitsome(num_sends, recvRequests, out_count, index_array, 
 			   status_array);
       recv_cntr += out_count;
@@ -1030,7 +1030,7 @@ void ApplicationInterface::master_dynamic_schedule_evaluations()
   }
   else { // all jobs assigned in first pass
     if (outputLevel > SILENT_OUTPUT)
-      Cout << "Master dynamic schedule: waiting on all jobs" << std::endl;
+      Cout << "Dedicated scheduler: waiting on all jobs" << std::endl;
     parallelLib.waitall(num_jobs, recvRequests);
     // All buffers received, now generate rawResponseMap
     for (i=0, prp_iter = beforeSynchCorePRPQueue.begin(); i<num_jobs;
@@ -1178,7 +1178,7 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations()
   // Note: this scheduler switch needs to be fully consistent with inter-comm
   // creation logic in init_communicators().
   //if (num_jobs <= remote_capacity && !multiProcEvalFlag)
-  //  { master_dynamic_schedule_evaluations(); return; }
+  //  { dedicated_dynamic_scheduler_evaluations(); return; }
 
   // Use round-robin assignment, skipping peer1 on 1st round.  Alternatively,
   // could minimize local job count, but this is less balanced (also consider
@@ -1239,7 +1239,7 @@ void ApplicationInterface::peer_dynamic_schedule_evaluations()
     to perform a local portion of the total job set.  It uses 
     derived_map_asynch() to initiate asynchronous evaluations and 
     wait_local_evaluations() to capture completed jobs, and mirrors the
-    master_dynamic_schedule_evaluations() message passing scheduler as much
+    dedicated_dynamic_scheduler_evaluations() message passing scheduler as much
     as possible (wait_local_evaluations() is modeled after MPI_Waitsome()). */
 void ApplicationInterface::
 asynchronous_local_evaluations(PRPQueue& local_prp_queue)
@@ -1514,19 +1514,18 @@ test_local_backfill(PRPQueue& assign_queue, PRPQueueIter& assign_iter)
 }
 
 
-/** This code is called from synchronize_nowait() to provide the master 
-    portion of a nonblocking master-slave algorithm for the dynamic 
-    scheduling of evaluations among slave servers.  It performs no
-    evaluations locally and matches either serve_evaluations_synch() 
-    or serve_evaluations_asynch() on the slave servers, depending on 
-    the value of asynchLocalEvalConcurrency.  Dynamic scheduling 
-    assigns jobs in 2 passes.  The 1st pass gives each server the same
-    number of jobs (equal to asynchLocalEvalConcurrency).  The 2nd
-    pass assigns the remaining jobs to slave servers as previous jobs
-    are completed.  Single- and multilevel parallel use intra- and
-    inter-communicators, respectively, for send/receive.  Specific
-    syntax is encapsulated within ParallelLibrary. */
-void ApplicationInterface::master_dynamic_schedule_evaluations_nowait()
+/** This code is called from synchronize_nowait() to provide the scheduler 
+    portion of a nonblocking scheduler-server algorithm for the dynamic 
+    scheduling of evaluations among servers.  It performs no evaluations
+    locally and matches either serve_evaluations_synch() or
+    serve_evaluations_asynch() on the servers, depending on the value of
+    asynchLocalEvalConcurrency.  Dynamic scheduling assigns jobs in 2 passes.
+    The 1st pass gives each server the same number of jobs (equal to
+    asynchLocalEvalConcurrency).  The 2nd pass assigns the remaining jobs
+    to servers as previous jobs are completed.  Single- and multilevel
+    parallel use intra- and inter-communicators, respectively, for
+    send/receive.  Specific syntax is encapsulated within ParallelLibrary. */
+void ApplicationInterface::dedicated_dynamic_scheduler_evaluations_nowait()
 {
   // beforeSynchCorePRPQueue includes running evaluations plus new requests;
   // previous completions have been removed by synchronize_nowait().  Thus,
@@ -1545,7 +1544,7 @@ void ApplicationInterface::master_dynamic_schedule_evaluations_nowait()
   PRPQueueIter assign_iter = beforeSynchCorePRPQueue.begin();
   if (!num_running) { // simplest case
     num_running = std::min(capacity, num_jobs);
-    Cout << "Master dynamic schedule: first pass assigning " << num_running
+    Cout << "Dedicated scheduler: first pass assigning " << num_running
 	 << " jobs among " << numEvalServers << " servers\n";
     // send data & post receives for 1st set of jobs
     for (i=0; i<num_running; ++i, ++assign_iter) {
@@ -1562,7 +1561,7 @@ void ApplicationInterface::master_dynamic_schedule_evaluations_nowait()
     }
   }
   else if (num_backfill && num_running < capacity) { // fill in any gaps
-    Cout << "Master dynamic schedule: first pass backfilling jobs up to "
+    Cout << "Dedicated scheduler: first pass backfilling jobs up to "
 	 << "available capacity\n";
     UShortSetArray server_jobs(numEvalServers);
     for (std::map<int, IntSizetPair>::iterator r_it = msgPassRunningMap.begin();
@@ -1602,7 +1601,7 @@ void ApplicationInterface::master_dynamic_schedule_evaluations_nowait()
 	    { avail = true; break; }
 	if (!avail) {
 	  Cerr << "Error: no available buffer index for backfill in Application"
-	       << "Interface::master_dynamic_schedule_evaluations_nowait()."
+	       << "Interface::dedicated_dynamic_scheduler_evaluations_nowait()."
 	       << std::endl;
 	  abort_handler(-1);
 	}
@@ -1617,7 +1616,7 @@ void ApplicationInterface::master_dynamic_schedule_evaluations_nowait()
 
   // Step 2: check status of running jobs and backfill any completions
   if (headerFlag) {
-    Cout << "Master dynamic schedule: second pass testing for completions ("
+    Cout << "Dedicated scheduler: second pass testing for completions ("
 	 << num_running << " running)";
     if (num_running == num_jobs) Cout << '\n';
     else Cout << " and backfilling (" << num_jobs-num_running <<" remaining)\n";
@@ -2179,7 +2178,7 @@ void ApplicationInterface::serve_evaluations()
   // test below is sufficient.  Would like to use serve_evaluation_synch() in
   // the case where a request for asynch local concurrency is made but it is
   // not utilized (num_jobs <= numEvalServers in *_schedule_evaluations), but 
-  // this is not currently detectable by the slave since num_jobs is not known
+  // this is not currently detectable by the server since num_jobs is not known
   // a priori.  serve_evaluation_asynch() still works in this case, but it
   // exposes the run to race conditions from the asynch processing procedure.
   // Thus, it is up to the user to avoid specifying asynch local concurrency
@@ -2187,7 +2186,7 @@ void ApplicationInterface::serve_evaluations()
 
   // test for server 1 within a static schedule: multiProcEvalFlag is implied
   // since evalCommRank 0 is running the iterator/job schedulers
-  bool peer_server1 = (!ieDedMasterFlag && evalServerId == 1);
+  bool peer_server1 = (!ieDedSchedFlag && evalServerId == 1);
 
   if (asynchLocalEvalConcurrency > 1) {
     if (peer_server1) serve_evaluations_asynch_peer();
@@ -2201,10 +2200,10 @@ void ApplicationInterface::serve_evaluations()
 
 
 /** This code is invoked by serve_evaluations() to perform one synchronous
-    job at a time on each slave/peer server.  The servers receive requests
-    (blocking receive), do local synchronous maps, and return results.
-    This is done continuously until a termination signal is received from
-    the master (sent via stop_evaluation_servers()). */
+    job at a time on each server.  The servers receive requests (blocking
+    receive), do local synchronous maps, and return results.  This is done
+    continuously until a termination signal is received from the scheduler
+    (sent via stop_evaluation_servers()). */
 void ApplicationInterface::serve_evaluations_synch()
 {
   // update class member eval id for usage on iteratorCommRank!=0 processors
@@ -2228,13 +2227,13 @@ void ApplicationInterface::serve_evaluations_synch()
 
     if (currEvalId) { // currEvalId = 0 is the termination signal
 
-      // could slave's Model::currentVariables be used instead?
+      // could server's Model::currentVariables be used instead?
       // (would remove need to pass vars flags in MPI buffers)
       Variables vars; ActiveSet set;
       recv_buffer >> vars >> set;
 
 #ifdef MPI_DEBUG
-      Cout << "Slave receives vars/set buffer which unpacks to:\n" << vars 
+      Cout << "Server receives vars/set buffer which unpacks to:\n" << vars 
            << "Active set vector = { ";
       array_write_annotated(Cout, set.request_vector(), false);
       Cout << "} Deriv values vector = { ";
@@ -2244,11 +2243,11 @@ void ApplicationInterface::serve_evaluations_synch()
 
       Response local_response(sharedRespData, set); // special constructor
 
-      // slaves invoke derived_map to avoid repeating overhead of map fn.
+      // servers invoke derived_map to avoid repeating overhead of map fn.
       try { derived_map(vars, set, local_response, currEvalId); } // synch local
 
       catch(const FunctionEvalFailure& fneval_except) {
-        //Cerr<< "Slave has caught exception from local derived_map; message: "
+        //Cerr<< "Server has caught exception from local derived_map; message: "
 	//<< fneval_except.what() << std::endl;
         manage_failure(vars, set, local_response, currEvalId);
       }
@@ -2257,14 +2256,14 @@ void ApplicationInterface::serve_evaluations_synch()
       if (request != MPI_REQUEST_NULL) // MPI_REQUEST_NULL = -1 IBM, 0 elsewhere
         parallelLib.wait(request, status); // Removes need for send_bufs array
         // by assuring that send_buffer is undisturbed prior to receipt by
-        // master.  This design should work well for expensive fn. evals., but
-        // the master might become overloaded for many inexpensive evals.
+        // scheduler.  This design should work well for expensive fn. evals.,
+        // but the scheduler might become overloaded for many inexpensive evals.
 
       // Return local_response data.  Isend allows execution of next job to
-      // start (if master has posted several jobs for this slave -- e.g., a
-      // static schedule) prior to master receiving the current results.  This
-      // allows the response to be overwritten, but send_buffer overwrite is
-      // prevented by MPI_Wait.
+      // start (if scheduler has posted several jobs for this server -- e.g., a
+      // static schedule) prior to scheduler receiving the current results.
+      // This allows the response to be overwritten, but send_buffer overwrite
+      // is prevented by MPI_Wait.
       if (evalCommRank == 0) { // 1-level or local comm. leader in 2-level
         send_buffer.reset();
         send_buffer << local_response;
@@ -2307,11 +2306,11 @@ void ApplicationInterface::serve_evaluations_synch_peer()
 
       Response local_response(sharedRespData, set); // special constructor
 
-      // slaves invoke derived_map to avoid repeating overhead of map fn.
+      // servers invoke derived_map to avoid repeating overhead of map fn.
       try { derived_map(vars, set, local_response, currEvalId); } //synch local
 
       catch(const FunctionEvalFailure& fneval_except) {
-        //Cerr<< "Slave has caught exception from local derived_map; message: "
+        //Cerr<< "Server has caught exception from local derived_map; message: "
 	//<< fneval_except.what() << std::endl;
         manage_failure(vars, set, local_response, currEvalId);
       }
@@ -2321,15 +2320,15 @@ void ApplicationInterface::serve_evaluations_synch_peer()
 
 
 /** This code is invoked by serve_evaluations() to perform multiple
-    asynchronous jobs on each slave/peer server.  The servers test for
-    any incoming jobs, launch any new jobs, process any completed jobs,
-    and return any results.  Each of these components is nonblocking,
-    although the server loop continues until a termination signal is
-    received from the master (sent via stop_evaluation_servers()).  In
-    the master-slave case, the master maintains the correct number of
-    jobs on each slave.  In the static scheduling case, each server is
-    responsible for limiting concurrency (since the entire static
-    schedule is sent to the peers at start up). */
+    asynchronous jobs on each server.  The servers test for any incoming
+    jobs, launch any new jobs, process any completed jobs, and return any
+    results.  Each of these components is nonblocking, although the server
+    loop continues until a termination signal is received from the scheduler
+    (sent via stop_evaluation_servers()).  In the dedicated scheduler case,
+    the scheduler maintains the correct number of jobs on each server.  In
+    the static scheduling case, each server is responsible for limiting
+    concurrency (since the entire static schedule is sent to the peers at
+    start up). */
 void ApplicationInterface::serve_evaluations_asynch()
 {
   // ---------------------------------------------------------------------------
@@ -2362,8 +2361,8 @@ void ApplicationInterface::serve_evaluations_asynch()
     // -------------------------------------------------------------------
     int mpi_test_flag = 1;
     // num_active < asynchLocalEvalConcurrency check below manages concurrency
-    // in the static scheduling case (master_dynamic_schedule_evaluations()
-    // handles this from the master side)
+    // in the static scheduling case (dedicated_dynamic_scheduler_evaluations()
+    // handles this from the scheduler side)
     while (mpi_test_flag && fn_eval_id &&
            num_active < asynchLocalEvalConcurrency) {
       // test for completion (Note: MPI_REQUEST_NULL != 0 on IBM)
@@ -2388,9 +2387,9 @@ void ApplicationInterface::serve_evaluations_asynch()
       }
     }
 
-    // -----------------------------------------------------------------
-    // Step 3: check for any completed jobs and return results to master
-    // -----------------------------------------------------------------
+    // --------------------------------------------------------------------
+    // Step 3: check for any completed jobs and return results to scheduler
+    // --------------------------------------------------------------------
     if (num_active > 0) {
       completionSet.clear();
       test_local_evaluations(asynchLocalActivePRPQueue);//rebuilds completionSet
@@ -2427,8 +2426,8 @@ void ApplicationInterface::serve_evaluations_asynch()
 
 
 /** This code is invoked by serve_evaluations() to perform multiple
-    asynchronous jobs on multiprocessor slave/peer servers.  It
-    matches the multiProcEvalFlag bcasts in
+    asynchronous jobs on multiprocessor servers.  It matches the
+    multiProcEvalFlag bcasts in
     ApplicationInterface::asynchronous_local_evaluations(). */
 void ApplicationInterface::serve_evaluations_asynch_peer()
 {
@@ -2439,7 +2438,7 @@ void ApplicationInterface::serve_evaluations_asynch_peer()
   // TO DO: redesign this logic for greater generality.
   // ONE OPTION: MOVE THIS INSIDE LOOP AND SYNC #JOBS THIS PASS
   // > num_jobs could be inefficient to determine a priori (static_limited)
-  // MORE ATTRACTIVE OPTION: ELIMINATE BCAST & HAVE PEER MASTER SEND TERM ASAP
+  // MORE ATTRACTIVE OPTION: ELIMINATE BCAST & HAVE PEER LEADER SEND TERM ASAP
   // > straightforward for asynchronous_local_evaluations()
   // > asynch_local_evaluations_nowait() presents a problem (it can be active in
   //   the multiProcEvalFlag peer asynch context...) since the job queue can
@@ -2465,7 +2464,7 @@ void ApplicationInterface::serve_evaluations_asynch_peer()
     }
 
     // -----------------------------------------------------------------
-    // check for any completed jobs and return results to master
+    // check for any completed jobs and return results to scheduler
     // -----------------------------------------------------------------
     if (num_active > 0) {
       completionSet.clear();
@@ -2497,16 +2496,16 @@ void ApplicationInterface::serve_evaluations_asynch_peer()
 }
 
 
-/** This code is executed on the iteratorComm rank 0 processor when
-    iteration on a particular model is complete.  It sends a
-    termination signal (tag = 0 instead of a valid fn_eval_id) to each
-    of the slave analysis servers.  NOTE: This function is called from
-    the Strategy layer even when in serial mode.  Therefore, use
-    iteratorCommSize to provide appropriate fall through behavior. */
+/** This code is executed on the iteratorComm rank 0 processor when iteration
+    on a particular model is complete.  It sends a termination signal
+    (tag = 0 instead of a valid fn_eval_id) to each of the analysis servers.
+    NOTE: This function is called from the Strategy layer even when in serial
+    mode.  Therefore, use iteratorCommSize to provide appropriate fall
+    through behavior. */
 void ApplicationInterface::stop_evaluation_servers()
 { 
   if (iteratorCommSize > 1) {
-    if (!ieDedMasterFlag) {
+    if (!ieDedSchedFlag) {
       if (outputLevel > NORMAL_OUTPUT)
 	Cout << "Peer 1 stopping" << std::endl;
 
@@ -2521,20 +2520,20 @@ void ApplicationInterface::stop_evaluation_servers()
     MPI_Request send_request;
     int server_id, term_tag = 0; // triggers termination
     // Peer partitions have one fewer interComm from server 1 to servers 2-n,
-    // relative to ded master partitions which have interComms from server 0
+    // relative to ded scheduler partitions which have interComms from server 0
     // to servers 1-n.
-    int end = (ieDedMasterFlag) ? numEvalServers+1 : numEvalServers;
+    int end = (ieDedSchedFlag) ? numEvalServers+1 : numEvalServers;
     for (server_id=1; server_id<end; ++server_id) {
       // stop serve_evaluation_{synch,asynch} procs
       if (outputLevel > NORMAL_OUTPUT) {
-	if (ieDedMasterFlag)
-	  Cout << "Master stopping server " << server_id << std::endl;
+	if (ieDedSchedFlag)
+	  Cout << "Scheduler stopping server " << server_id << std::endl;
 	else
 	  Cout << "Peer " << server_id+1 << " stopping" << std::endl;
       }
-      // nonblocking sends: master posts all terminate messages without waiting
+      // nonblocking sends: scheduler posts all terminate messages w/o waiting
       // for completion.  Bcast cannot be used since all procs must call it and
-      // slaves are using Recv/Irecv in serve_evaluation_synch/asynch.
+      // servers are using Recv/Irecv in serve_evaluation_synch/asynch.
       parallelLib.isend_ie(send_buffer, server_id, term_tag, send_request);
       parallelLib.free(send_request); // no test/wait on send_request
     }
@@ -2544,8 +2543,8 @@ void ApplicationInterface::stop_evaluation_servers()
     // included in numEvalServers and we quietly free them separately.
     // We assume a single server with all idle processors and a valid
     // inter-communicator (enforced during split).
-    // > dedicated master: server_id = #servers+1 -> interComm[#servers]
-    // > peer:             server_id = #servers   -> interComm[#servers-1]
+    // > dedicated scheduler: server_id = #servers+1 -> interComm[#servers]
+    // > peer:                server_id = #servers   -> interComm[#servers-1]
     if (parallelLib.parallel_configuration().ie_parallel_level().
 	idle_partition()) {
       parallelLib.isend_ie(send_buffer, server_id, term_tag, send_request);
@@ -2558,20 +2557,19 @@ void ApplicationInterface::stop_evaluation_servers()
 // --------------------------------------------------
 // Schedulers for concurrent analyses within fn evals
 // --------------------------------------------------
-/** This code is called from derived classes to provide the master
-    portion of a master-slave algorithm for the dynamic scheduling of
-    analyses among slave servers.  It is patterned after
-    master_dynamic_schedule_evaluations(). It performs no analyses
-    locally and matches either serve_analyses_synch() or
-    serve_analyses_asynch() on the slave servers, depending on the
-    value of asynchLocalAnalysisConcurrency.  Dynamic scheduling
-    assigns jobs in 2 passes.  The 1st pass gives each server the same
-    number of jobs (equal to asynchLocalAnalysisConcurrency).  The 2nd
-    pass assigns the remaining jobs to slave servers as previous jobs
-    are completed.  Single- and multilevel parallel use intra- and
-    inter-communicators, respectively, for send/receive.  Specific
-    syntax is encapsulated within ParallelLibrary. */
-void ApplicationInterface::master_dynamic_schedule_analyses()
+/** This code is called from derived classes to provide the scheduler portion
+    of a dedicated-scheduler algorithm for the dynamic scheduling of analyses
+    among servers.  It is patterned after
+    dedicated_dynamic_scheduler_evaluations(). It performs no analyses locally
+    and matches either serve_analyses_synch() or serve_analyses_asynch() on
+    the servers, depending on the value of asynchLocalAnalysisConcurrency.
+    Dynamic scheduling assigns jobs in 2 passes.  The 1st pass gives each
+    server the same number of jobs (equal to asynchLocalAnalysisConcurrency).
+    The 2nd pass assigns the remaining jobs to servers as previous jobs are
+    completed.  Single- and multilevel parallel use intra- and inter-
+    communicators, respectively, for send/receive.  Specific syntax is
+    encapsulated within ParallelLibrary. */
+void ApplicationInterface::dedicated_dynamic_scheduler_analyses()
 {
   int capacity  = (asynchLocalAnalysisConcurrency > 1) ?
                    asynchLocalAnalysisConcurrency*numAnalysisServers : 
@@ -2592,7 +2590,7 @@ void ApplicationInterface::master_dynamic_schedule_analyses()
     server_id = i%numAnalysisServers + 1; // from 1 to numAnalysisServers
     analysis_id = i+1;
 #ifdef MPI_DEBUG
-    Cout << "Master assigning analysis " << analysis_id << " to server " 
+    Cout << "scheduler assigning analysis " << analysis_id << " to server " 
          << server_id << '\n';
 #endif // MPI_DEBUG
     // pre-post receives.  
@@ -2622,13 +2620,13 @@ void ApplicationInterface::master_dynamic_schedule_analyses()
         server_id = index%numAnalysisServers + 1;// from 1 to numAnalysisServers
 #ifdef MPI_DEBUG
         Cout << "analysis " << status_array.at(i).MPI_TAG
-             << " has returned from slave server " << server_id << '\n';
+             << " has returned from server " << server_id << '\n';
 #endif // MPI_DEBUG
         if (send_cntr < numAnalysisDrivers) {
           analysis_id = send_cntr+1;
 #ifdef MPI_DEBUG
-          Cout << "Master assigning analysis " << analysis_id << " to server "
-               << server_id << '\n';
+          Cout << "Scheduler assigning analysis " << analysis_id
+	       << " to server " << server_id << '\n';
 #endif // MPI_DEBUG
 	  // pre-post receives
           parallelLib.irecv_ea(rtn_codes.at(index), server_id, analysis_id, 
@@ -2648,9 +2646,10 @@ void ApplicationInterface::master_dynamic_schedule_analyses()
     parallelLib.waitall(numAnalysisDrivers, recv_requests);
   }
 
-  // Unlike ApplicationInterface::master_dynamic_schedule_evaluations() (which
-  // terminates servers only when the iterator/model is complete), terminate
-  // servers now so that they can return from derived_map to the higher level.
+  // Unlike ApplicationInterface::dedicated_dynamic_scheduler_evaluations()
+  // (which terminates servers only when the iterator/model is complete),
+  // terminate servers now so that they can return from derived_map to the
+  // higher level.
   analysis_id = 0; // termination flag for servers
   for (i=0; i<numAnalysisServers; ++i) {
     parallelLib.isend_ea(analysis_id, i+1, 0, send_request);
@@ -2659,12 +2658,11 @@ void ApplicationInterface::master_dynamic_schedule_analyses()
 }
 
 
-/** This code is called from derived classes to run synchronous
-    analyses on slave processors.  The slaves receive requests
-    (blocking receive), do local derived_map_ac's, and return codes.
-    This is done continuously until a termination signal is received
-    from the master.  It is patterned after
-    serve_evaluations_synch(). */
+/** This code is called from derived classes to run synchronous analyses
+    on server processors.  The servers receive requests (blocking receive),
+    do local derived_map_ac's, and return codes.  This is done continuously
+    until a termination signal is received from the scheduler.  It is
+    patterned after serve_evaluations_synch(). */
 void ApplicationInterface::serve_analyses_synch()
 {
   int analysis_id = 1;
@@ -2691,7 +2689,7 @@ void ApplicationInterface::serve_analyses_synch()
         parallelLib.wait(request, status); // block until prev isend completes
 
       // Return the simulation failure code and tag with analysis_id
-      // NOTE: the rtn_code is not currently used for anything on the master 
+      // NOTE: the rtn_code is not currently used for anything on the scheduler 
       //       since failure capturing exceptions are captured in 
       //       read_results_files (sys call, fork) or derived_map_ac (direct).
       //       As for recv_ea above, it could be replaced with something else.
@@ -2768,12 +2766,13 @@ manage_failure(const Variables& vars, const ActiveSet& set, Response& response,
     // Compute closest source pt. for continuation from extern data_pairs.
     ParamResponsePair source_pair;
     // THIS CODE BLOCK IS A PLACEHOLDER AND IS NOT YET OPERATIONAL
-    if (iteratorCommRank) { // if other than master
-      // Get source pt. for continuation.  Master calls get_source_point for 
-      // slave (since it has access to data_pairs) and returns result.
+    if (iteratorCommRank) { // if other than dedicated Dedicated scheduler
+      // Get source pt. for continuation.  Dedicated scheduler calls
+      // get_source_point for server (since it has access to data_pairs)
+      // and returns result.
       MPIPackBuffer send_buffer(lenVarsMessage);
       send_buffer << vars;
-      // master must receive failure message w/i *_schedule_evaluations 
+      // ded scheduler must receive failure message w/i *_schedule_evaluations 
       // after MPI_Waitany or MPI_Waitall.  Use tag < 0 ?
       parallelLib.send_ie(send_buffer, 0, failed_eval_id);
       MPIUnpackBuffer recv_buffer(lenPRPairMessage);
@@ -2941,7 +2940,7 @@ receive_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
     else Cout << interfaceId << " evaluation ";
     Cout << fn_eval_id << " has returned from ";
     if (peer_flag) Cout << "peer server " << server_id+1 << '\n';
-    else           Cout << "slave server " << server_id << '\n';
+    else           Cout << "server " << server_id << '\n';
   }
 
 #ifdef MPI_DEBUG

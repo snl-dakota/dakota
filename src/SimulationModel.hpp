@@ -103,9 +103,9 @@ protected:
   short local_eval_synchronization() override;
   /// return userDefinedInterface asynchronous evaluation concurrency
   int local_eval_concurrency() override;
-  /// flag which prevents overloading the master with a multiprocessor
+  /// flag which prevents overloading the scheduler with a multiprocessor
   /// evaluation (request forwarded to userDefinedInterface)
-  bool derived_master_overload() const override;
+  bool derived_scheduler_overload() const override;
 
   IntIntPair estimate_partition_bounds(int max_eval_concurrency) override;
 
@@ -126,10 +126,10 @@ protected:
   //                                int max_eval_concurrency,
   //                                bool recurse_flag = true);
 
-  /// Service userDefinedInterface job requests received from the master.
+  /// Service userDefinedInterface job requests received from the scheduler.
   /// Completes when a termination message is received from stop_servers().
   void serve_run(ParLevLIter pl_iter, int max_eval_concurrency) override;
-  /// executed by the master to terminate userDefinedInterface server
+  /// executed by the scheduler to terminate userDefinedInterface server
   /// operations when SimulationModel iteration is complete.
   void stop_servers() override;
 
@@ -330,9 +330,9 @@ inline int SimulationModel::local_eval_concurrency()
 { return userDefinedInterface.asynch_local_evaluation_concurrency(); }
 
 
-inline bool SimulationModel::derived_master_overload() const
+inline bool SimulationModel::derived_scheduler_overload() const
 {
-  return ( userDefinedInterface.iterator_eval_dedicated_master() && 
+  return ( userDefinedInterface.iterator_eval_dedicated_scheduler() && 
            userDefinedInterface.multi_proc_eval() ) ? true : false;
 }
 

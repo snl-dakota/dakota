@@ -86,7 +86,7 @@ public:
   // *** BASE MODEL (BROADLY USED, OPERATES ON BASE DATA, SUPPORTS RECURSION)
 
   /// return the sub-iterator in nested and surrogate models
-  virtual Iterator& subordinate_iterator();
+  virtual std::shared_ptr<Iterator> subordinate_iterator();
   /// return a single sub-model defined from subModel in nested and recast
   /// models and truth_model() in surrogate models; used for a directed
   /// dive through model recursions that may bypass some components.
@@ -160,18 +160,18 @@ public:
   /// return derived model asynchronous evaluation concurrency
   virtual int local_eval_concurrency();
 
-  /// Service job requests received from the master.  Completes when
+  /// Service job requests received from the scheduler.  Completes when
   /// a termination message is received from stop_servers().
   virtual void serve_run(ParLevLIter pl_iter, int max_eval_concurrency);
-  /// Executed by the master to terminate all server operations for a
+  /// Executed by the scheduler to terminate all server operations for a
   /// particular model when iteration on the model is complete.
   virtual void stop_servers();
 
-  /// Return a flag indicating the combination of multiprocessor
-  /// evaluations and a dedicated master iterator scheduling.  Used
-  /// in synchronous evaluate functions to prevent the error
-  /// of trying to run a multiprocessor job on the master.
-  virtual bool derived_master_overload() const;
+  /// Return a flag indicating the combination of multiprocessor evaluations
+  /// and a dedicated scheduler processor for iterator-model scheduling.  Used
+  /// in synchronous evaluate functions to prevent the error of trying to run
+  /// a multiprocessor job on the dedicated scheduler.
+  virtual bool derived_scheduler_overload() const;
 
   /// create 2D graphics plots for automatic logging of vars/response data
   virtual void create_2d_plots();

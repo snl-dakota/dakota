@@ -49,11 +49,11 @@ IteratorScheduler(ParallelLibrary& parallel_lib, bool peer_assign_jobs,
 
 
 void IteratorScheduler::
-construct_sub_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
+construct_sub_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator,
 		       std::shared_ptr<Model> sub_model, const String& method_ptr,
 		       const String& method_name, const String& model_ptr)
 {
-  if (sub_iterator.is_null()) { // if not already constructed on this rank
+  if (!sub_iterator) { // if not already constructed on this rank
 
     bool light_wt = method_ptr.empty();
     if (light_wt) problem_db.set_db_model_nodes(model_ptr);
@@ -69,7 +69,7 @@ construct_sub_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
 /** This is a convenience function for computing the minimum and maximum
     partition size prior to concurrent iterator partitioning. */
 IntIntPair IteratorScheduler::
-configure(ProblemDescDB& problem_db, Iterator& sub_iterator, std::shared_ptr<Model> sub_model)
+configure(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator, std::shared_ptr<Model> sub_model)
 {
   // minimally instantiate the sub_iterator for concurrency estimation
   const ParallelLevel& mi_pl = schedPCIter->mi_parallel_level(); // last level
@@ -84,7 +84,7 @@ configure(ProblemDescDB& problem_db, Iterator& sub_iterator, std::shared_ptr<Mod
     partition size prior to concurrent iterator partitioning. */
 IntIntPair IteratorScheduler::
 configure(ProblemDescDB& problem_db, const String& method_string,
-	  Iterator& sub_iterator, std::shared_ptr<Model> sub_model)
+	  std::shared_ptr<Iterator>& sub_iterator, std::shared_ptr<Model> sub_model)
 {
   // minimally instantiate the sub_iterator (reused downstream on some ranks)
   // for concurrency estimation
@@ -99,7 +99,7 @@ configure(ProblemDescDB& problem_db, const String& method_string,
 /** This is a convenience function for computing the minimum and maximum
     partition size prior to concurrent iterator partitioning. */
 IntIntPair IteratorScheduler::
-configure(ProblemDescDB& problem_db, Iterator& sub_iterator)
+configure(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator)
 {
   // Prior to IteratorScheduler::partition(), we utilize the trailing mi_pl
   // (often the world pl) for the concurrency estimation.  If this is not the
@@ -115,7 +115,7 @@ configure(ProblemDescDB& problem_db, Iterator& sub_iterator)
     size_t method_index = problem_db.get_db_method_node(); // for restoration
     size_t model_index  = problem_db.get_db_model_node();  // for restoration
 
-    min_max_procs = sub_iterator.estimate_partition_bounds();
+    min_max_procs = sub_iterator->estimate_partition_bounds();
 
     problem_db.set_db_method_node(method_index); // restore method only
     problem_db.set_db_model_nodes(model_index);  // restore all model nodes
@@ -203,7 +203,7 @@ void IteratorScheduler::free_iterator_parallelism()
 /** This is a convenience function for encapsulating the allocation of
     communicators prior to running an iterator.*/
 void IteratorScheduler::
-init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
+init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator,
 	      ParLevLIter pl_iter)
 {
   // pl_iter advanced by miPLIndex update() in partition()
@@ -215,14 +215,14 @@ init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
     sub_iterator = problem_db.get_iterator(); // all procs
     // init_communicators() manages IteratorScheduler::partition() and
     // IteratorScheduler::init_iterator()
-    sub_iterator.init_communicators(pl_iter);
+    sub_iterator->init_communicators(pl_iter);
     return;
   }
   // all other iterators are instantiated on selected processors
 
-  // check for dedicated master overload -> no iterator jobs can run
-  // on master, so no need to init
-  if (pl_iter->dedicated_master() && pl_iter->processors_per_server() > 1 &&
+  // check for dedicated scheduler overload -> no iterator jobs can run
+  // on scheduler, so no need to init
+  if (pl_iter->dedicated_scheduler() && pl_iter->processors_per_server() > 1 &&
       pl_iter->server_id() == 0)
     return;
 
@@ -231,11 +231,13 @@ init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
   // This function cannot be used for the case where a model exists, but the
   // iterator does not --> they must be consistent (defined or undefined)
   // since sub_model is not passed separately.
-  auto sub_model = sub_iterator.iterated_model();
+  std::shared_ptr<Model> sub_model;
+  if(sub_iterator)
+    sub_model = sub_iterator->iterated_model();
   if (!sub_model) {
     sub_model = problem_db.get_model();
-    if (!sub_iterator.is_null()) // else constructed with sub_model below
-      sub_iterator.iterated_model(sub_model);
+    if (sub_iterator) // else constructed with sub_model below
+      sub_iterator->iterated_model(sub_model);
   }
 
   // iterator rank 0: Instantiate the iterator and initialize communicators.
@@ -244,10 +246,10 @@ init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
   if (pl_iter->server_communicator_rank() == 0) {
     bool multiproc = (pl_iter->server_communicator_size() > 1);
     if (multiproc) sub_model->init_comms_bcast_flag(true);
-    // only master processor needs an iterator object:
-    if (sub_iterator.is_null())
+    // only dedicated scheduler processor needs an iterator object:
+    if (!sub_iterator)
       sub_iterator = problem_db.get_iterator(sub_model);
-    sub_iterator.init_communicators(pl_iter);
+      sub_iterator->init_communicators(pl_iter);
     if (multiproc) sub_model->stop_init_communicators(pl_iter);
   }
   // iterator ranks 1->n: match all init_communicators() calls that occur
@@ -255,13 +257,14 @@ init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
   // constructors and the explicit call above).  Some data is stored in the
   // empty envelope for later use in execute/destruct or run/free_iterator.
   else {
+    sub_iterator = std::make_shared<Iterator>();
     int last_concurrency = sub_model->serve_init_communicators(pl_iter);
     // store data for {run,free}_iterator() below:
-    sub_iterator.maximum_evaluation_concurrency(last_concurrency);
-    sub_iterator.iterated_model(sub_model);
+    sub_iterator->maximum_evaluation_concurrency(last_concurrency);
+    sub_iterator->iterated_model(sub_model);
     // store for meta-iterator bit logic applied to all ranks
     // (e.g., Environment::execute/destruct()):
-    sub_iterator.method_name(problem_db.get_ushort("method.algorithm"));
+    sub_iterator->method_name(problem_db.get_ushort("method.algorithm"));
   }
 }
 
@@ -269,14 +272,14 @@ init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
 /** This is a convenience function for encapsulating the allocation of
     communicators prior to running an iterator. */
 void IteratorScheduler::
-init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
+init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator,
 	      std::shared_ptr<Model> sub_model, ParLevLIter pl_iter)
 {
   // pl_iter advanced by miPLIndex update() in partition()
 
-  // check for dedicated master overload -> no iterator jobs can run
-  // on master, so no need to init
-  if (pl_iter->dedicated_master() && pl_iter->processors_per_server() > 1 &&
+  // check for dedicated scheduler overload -> no iterator jobs can run
+  // on scheduler, so no need to init
+  if (pl_iter->dedicated_scheduler() && pl_iter->processors_per_server() > 1 &&
       pl_iter->server_id() == 0)
     return;
 
@@ -286,9 +289,9 @@ init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
   if (pl_iter->server_communicator_rank() == 0) {
     bool multiproc = (pl_iter->server_communicator_size() > 1);
     if (multiproc) sub_model->init_comms_bcast_flag(true);
-    if (sub_iterator.is_null())// only master processor needs an iterator object
+    if (!sub_iterator)// only ded scheduler processor needs an iterator object
       sub_iterator = problem_db.get_iterator(sub_model);
-    sub_iterator.init_communicators(pl_iter);
+    sub_iterator->init_communicators(pl_iter);
     if (multiproc) sub_model->stop_init_communicators(pl_iter);
   }
   // iterator ranks 1->n: match all init_communicators() calls that occur
@@ -298,11 +301,12 @@ init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
   else {
     int last_concurrency = sub_model->serve_init_communicators(pl_iter);
     // store data for {run,free}_iterator() below:
-    sub_iterator.maximum_evaluation_concurrency(last_concurrency);
-    sub_iterator.iterated_model(sub_model);
+    sub_iterator = std::make_shared<Iterator>();
+    sub_iterator->maximum_evaluation_concurrency(last_concurrency);
+    sub_iterator->iterated_model(sub_model);
     // store for meta-iterator bit logic applied to all ranks
     // (e.g., Environment::execute/destruct()):
-    sub_iterator.method_name(problem_db.get_ushort("method.algorithm"));
+    sub_iterator->method_name(problem_db.get_ushort("method.algorithm"));
   }
 }
 
@@ -311,13 +315,13 @@ init_iterator(ProblemDescDB& problem_db, Iterator& sub_iterator,
     communicators prior to running an iterator. */
 void IteratorScheduler::
 init_iterator(ProblemDescDB& problem_db, const String& method_string,
-	      Iterator& sub_iterator, std::shared_ptr<Model> sub_model, ParLevLIter pl_iter)
+	      std::shared_ptr<Iterator>& sub_iterator, std::shared_ptr<Model> sub_model, ParLevLIter pl_iter)
 {
   // pl_iter advanced by miPLIndex update() in partition()
 
-  // check for dedicated master overload -> no iterator jobs can run
-  // on master, so no need to init
-  if (pl_iter->dedicated_master() && pl_iter->processors_per_server() > 1 &&
+  // check for dedicated scheduler overload -> no iterator jobs can run
+  // on scheduler, so no need to init
+  if (pl_iter->dedicated_scheduler() && pl_iter->processors_per_server() > 1 &&
       pl_iter->server_id() == 0)
     return;
 
@@ -327,9 +331,9 @@ init_iterator(ProblemDescDB& problem_db, const String& method_string,
   if (pl_iter->server_communicator_rank() == 0) {
     bool multiproc = (pl_iter->server_communicator_size() > 1);
     if (multiproc) sub_model->init_comms_bcast_flag(true);
-    if (sub_iterator.is_null())// only master processor needs an iterator object
+    if (!sub_iterator)// only ded scheduler processor needs an iterator object
       sub_iterator = problem_db.get_iterator(method_string, sub_model);
-    sub_iterator.init_communicators(pl_iter);
+    sub_iterator->init_communicators(pl_iter);
     if (multiproc) sub_model->stop_init_communicators(pl_iter);
   }
   // iterator ranks 1->n: match all init_communicators() calls that occur
@@ -339,11 +343,12 @@ init_iterator(ProblemDescDB& problem_db, const String& method_string,
   else {
     int last_concurrency = sub_model->serve_init_communicators(pl_iter);
     // store data for {run,free}_iterator() below:
-    sub_iterator.maximum_evaluation_concurrency(last_concurrency);
-    sub_iterator.iterated_model(sub_model);
+    sub_iterator = std::make_shared<Iterator>();
+    sub_iterator->maximum_evaluation_concurrency(last_concurrency);
+    sub_iterator->iterated_model(sub_model);
     // store for meta-iterator bit logic applied to all ranks
     // (e.g., Environment::execute/destruct()):
-    sub_iterator.method_string(method_string);
+    sub_iterator->method_string(method_string);
   }
 }
 
@@ -353,9 +358,9 @@ init_iterator(ProblemDescDB& problem_db, const String& method_string,
 void IteratorScheduler::
 set_iterator(Iterator& sub_iterator, ParLevLIter pl_iter)
 {
-  // check for dedicated master overload -> no iterator jobs can run
-  // on master, so no need to init
-  if (pl_iter->dedicated_master() && pl_iter->processors_per_server() > 1 &&
+  // check for dedicated scheduler overload -> no iterator jobs can run
+  // on scheduler, so no need to init
+  if (pl_iter->dedicated_scheduler() && pl_iter->processors_per_server() > 1 &&
       pl_iter->server_id() == 0)
     return;
 
@@ -400,9 +405,9 @@ run_iterator(Iterator& sub_iterator, ParLevLIter pl_iter)
   // all other iterators execute on selected processors
   // (execution segregated below among run() and serve_run())
 
-  // check for dedicated master overload -> no iterator jobs can run
-  // on master, so no need to init
-  if (pl_iter->dedicated_master() && pl_iter->processors_per_server() > 1 &&
+  // check for dedicated scheduler overload -> no iterator jobs can run
+  // on scheduler, so no need to init
+  if (pl_iter->dedicated_scheduler() && pl_iter->processors_per_server() > 1 &&
       pl_iter->server_id() == 0)
     return;
 
@@ -464,9 +469,9 @@ free_iterator(Iterator& sub_iterator, ParLevLIter pl_iter)
   // all other iterators free on selected processors
   // (segregated below among free_comms() and derived_free_comms())
 
-  // check for dedicated master overload -> no iterator jobs can run
-  // on master, so no need to init
-  if (pl_iter->dedicated_master() && pl_iter->processors_per_server() > 1 &&
+  // check for dedicated scheduler overload -> no iterator jobs can run
+  // on scheduler, so no need to init
+  if (pl_iter->dedicated_scheduler() && pl_iter->processors_per_server() > 1 &&
       pl_iter->server_id() == 0)
     return;
 
@@ -482,19 +487,19 @@ free_iterator(Iterator& sub_iterator, ParLevLIter pl_iter)
 
 void IteratorScheduler::stop_iterator_servers()
 {
-  // Only used for dedicated master iterator scheduling
+  // Only used for dedicated scheduler iterator partitioning
   // (see ApplicationInterface::stop_evaluation_servers() for example where
-  // termination of both master and peer scheduling are managed)
+  // termination of both dedicated scheduler and peer scheduling are managed)
 
   // terminate iterator servers
   MPIPackBuffer send_buffer(0); // empty buffer
   MPI_Request   send_request;
   int server_id, term_tag = 0;
-  if (iteratorScheduling == MASTER_SCHEDULING)
+  if (iteratorScheduling == DEDICATED_SCHEDULER_DYNAMIC)
     for (server_id=1; server_id<=numIteratorServers; ++server_id) {
-      // nonblocking sends: master posts all terminate messages without waiting
+      // nonblocking sends: scheduler posts all terminate messages w/o waiting
       // for completion.  Bcast cannot be used since all procs must call it and
-      // slaves are using Recv/Irecv in serve_evaluation_synch/asynch.
+      // servers are using Recv/Irecv in serve_evaluation_synch/asynch.
       parallelLib.isend_mi(send_buffer, server_id, term_tag,
 			   send_request, miPLIndex);
       parallelLib.free(send_request); // no test/wait on send_request
@@ -508,10 +513,10 @@ void IteratorScheduler::stop_iterator_servers()
   // included in numIteratorServers and we quietly free them separately.
   // We assume a single server with all idle processors and a valid
   // inter-communicator (enforced during split).  Peer partitions have one
-  // fewer interComm from server 1 to servers 2-n, relative to ded master
+  // fewer interComm from server 1 to servers 2-n, relative to ded scheduler
   // partitions which have interComms from server 0 to servers 1-n:
-  // > dedicated master: server_id = #servers+1 -> interComm[#servers]
-  // > peer:             server_id = #servers   -> interComm[#servers-1]
+  // > dedicated scheduler: server_id = #servers+1 -> interComm[#servers]
+  // > peer:                server_id = #servers   -> interComm[#servers-1]
   if (schedPCIter->mi_parallel_level(miPLIndex).idle_partition()) {
     parallelLib.isend_mi(send_buffer, server_id, term_tag,
 			 send_request, miPLIndex);

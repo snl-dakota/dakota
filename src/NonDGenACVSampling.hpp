@@ -83,12 +83,7 @@ protected:
   void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 				       RealVector& lin_ineq_lb,
 				       RealVector& lin_ineq_ub) override;
-				       
-  Real augmented_linear_ineq_violations(const RealVector& cd_vars,
-					const RealMatrix& lin_ineq_coeffs,
-					const RealVector& lin_ineq_lb,
-					const RealVector& lin_ineq_ub) override;
-					
+  void enforce_augmented_linear_ineq_constraints(RealVector& cd_vars);
 
   //
   //- Heading: member functions
@@ -245,9 +240,10 @@ private:
 		       const UShortArray& approx_set,
 		       const UShortList& root_list, Real budget,
 		       Real offline_N_lwr = 1.);
-  void enforce_linear_ineq_constraints(RealVector& avg_eval_ratios,
-				       const UShortArray& approx_set,
-				       const UShortList& root_list);
+
+  void enforce_augmented_linear_ineq_constraints(RealVector& avg_eval_ratios,
+						 const UShortArray& approx_set,
+						 const UShortList& root_list);
 
   void update_best(MFSolutionData& solution);
   void restore_best();
@@ -294,7 +290,7 @@ private:
   /// unrolling dependent sources; allows unrolling of z^1,z^2 sample sets
   UShortList orderedRootList;
 
-  /// the best performing model graph among the set from generate_dags()
+  /// the best performing model subset when model selection is active
   std::map<UShortArray, UShortArraySet>::const_iterator bestModelSetIter;
   /// the best performing model graph among the set from generate_dags()
   UShortArraySet::const_iterator bestDAGIter;
@@ -315,15 +311,15 @@ inline Real NonDGenACVSampling::available_budget() const
   const UShortArray& approx_set = activeModelSetIter->first;
   size_t num_approx = approx_set.size();
   Real budget = (Real)maxFunctionEvals;
-  if (!offline && num_approx != numApprox) {
-    size_t hf_form_index, hf_lev_index, cntr = 0;
-    hf_indices(hf_form_index, hf_lev_index);
-    size_t N_H_alloc = NLevAlloc[hf_form_index][hf_lev_index];
-    Real cost_H = sequenceCost[numApprox];
-    for (size_t approx=0; approx<numApprox; ++approx)
-      if  (approx == approx_set[cntr]) ++cntr; // ordered sequence
-      else budget -= N_H_alloc * sequenceCost[approx] / cost_H;
-  }
+  if (offline || num_approx == numApprox) return budget;
+
+  size_t hf_form_index, hf_lev_index, cntr = 0;
+  hf_indices(hf_form_index, hf_lev_index);
+  size_t N_H_alloc = NLevAlloc[hf_form_index][hf_lev_index];
+  Real cost_H = sequenceCost[numApprox], N_over_cost = (Real)N_H_alloc / cost_H;
+  for (size_t approx=0; approx<numApprox; ++approx)
+    if  (approx == approx_set[cntr]) ++cntr; // ordered sequence
+    else budget -= sequenceCost[approx] * N_over_cost;
 
   return budget;
 }
@@ -489,45 +485,6 @@ compute_C_G_c_g(const RealSymMatrix& C, const RealSymMatrix& G,
     c_g[i] = c(qoi, approx_i) * g[i];
     for (j=0; j<=i; ++j)
       C_G(i,j) = C(approx_i,approx_set[j]) * G(i,j); // Ok for RealSymMatrix
-  }
-}
-
-
-inline void NonDGenACVSampling::
-solve_for_C_G_c_g(RealSymMatrix& C_G, RealVector& c_g, RealVector& lhs,
-		  bool copy_C_G, bool copy_c_g)
-{
-  // The idea behind this approach is to leverage both the solution refinement
-  // in solve() and equilibration during factorization (inverting C_G in place
-  // can only leverage the latter).
-
-  size_t n = c_g.length();
-  if (lhs.length() != n) lhs.size(n); // not sure if initialization matters
-
-  RealSpdSolver spd_solver;  RealSymMatrix C_G_copy;  RealVector c_g_copy;
-  // Matrix & RHS get altered by equilibration --> make copies if needed later
-  if (copy_C_G) {
-    C_G_copy = C_G; // Teuchos::Copy by default
-    spd_solver.setMatrix(Teuchos::rcp(&C_G_copy, false));
-  }
-  else // Ok to modify C_G in place
-    spd_solver.setMatrix(Teuchos::rcp(&C_G, false));
-  if (copy_c_g) {
-    c_g_copy = c_g; // Teuchos::Copy by default
-    spd_solver.setVectors(Teuchos::rcp(&lhs, false),
-			  Teuchos::rcp(&c_g_copy, false));
-  }
-  else // Ok to modify c_g in place
-    spd_solver.setVectors(Teuchos::rcp(&lhs, false), Teuchos::rcp(&c_g, false));
-
-  if (spd_solver.shouldEquilibrate())
-    spd_solver.factorWithEquilibration(true);
-  spd_solver.solveToRefinedSolution(true);
-  int code = spd_solver.solve();
-  if (code) {
-    Cerr << "Error: serial dense solver failure (LAPACK error code " << code
-	 << ") in GenACV::solve_for_C_G_c_g()." << std::endl;
-    abort_handler(METHOD_ERROR);
   }
 }
 

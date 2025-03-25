@@ -78,13 +78,13 @@ private:
   //
 
   /// LHS iterator for building the initial GP
-  Iterator gpBuild;
+  std::shared_ptr<Iterator> gpBuild;
   /// LHS iterator for sampling on the GP
-  Iterator gpEval;
+  std::shared_ptr<Iterator> gpEval;
   /// GP model of response, one approximation per response function
   std::shared_ptr<Model> gpModel;
   /// LHS iterator for sampling from the rhoOneDistribution 
-  Iterator sampleRhoOne;
+  std::shared_ptr<Iterator> sampleRhoOne;
   
   /// the number of points added to the original set of LHS samples
   int numPtsAdd;

@@ -35,8 +35,8 @@ NonDLHSInterval::NonDLHSInterval(ProblemDescDB& problem_db, std::shared_ptr<Mode
 
   unsigned short sample_type = SUBMETHOD_DEFAULT;
   bool vary_pattern = false; // for consistency across outer loop invocations
-  lhsSampler.assign_rep(std::make_shared<NonDLHSSampling>(iteratedModel,
-    sample_type, numSamples, seedSpec, rngName, vary_pattern, ACTIVE));
+  lhsSampler = std::make_unique<NonDLHSSampling>(iteratedModel,
+    sample_type, numSamples, seedSpec, rngName, vary_pattern, ACTIVE);
 }
 
 
@@ -50,7 +50,7 @@ void NonDLHSInterval::derived_init_communicators(ParLevLIter pl_iter)
 
   // lhsSampler uses NoDBBaseConstructor, so no need to manage DB list
   // nodes at this level
-  lhsSampler.init_communicators(pl_iter);
+  lhsSampler->init_communicators(pl_iter);
 }
 
 
@@ -61,13 +61,13 @@ void NonDLHSInterval::derived_set_communicators(ParLevLIter pl_iter)
 
   // lhsSampler uses NoDBBaseConstructor, so no need to manage DB list
   // nodes at this level
-  lhsSampler.set_communicators(pl_iter);
+  lhsSampler->set_communicators(pl_iter);
 }
 
 
 void NonDLHSInterval::derived_free_communicators(ParLevLIter pl_iter)
 {
-  lhsSampler.free_communicators(pl_iter);
+  lhsSampler->free_communicators(pl_iter);
   //iteratedModel.free_communicators(pl_iter, maxEvalConcurrency);
 }
 
@@ -79,7 +79,7 @@ void NonDLHSInterval::core_run()
 
   // Evaluate a set of random samples
   ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-  lhsSampler.run(pl_iter);
+  lhsSampler->run(pl_iter);
 
   // Use the sample set generated above to determine the maximum and minimum 
   // of each function within each input interval combination

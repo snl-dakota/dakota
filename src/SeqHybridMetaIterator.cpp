@@ -125,7 +125,7 @@ void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   bool sizet_max_replace = false;
   for (i=0; i<num_iterators; ++i) {
     // compute min/max processors per iterator for each method
-    Iterator& the_iterator = selectedIterators[i];
+    auto the_iterator = selectedIterators[i];
     auto& the_model = (singlePassedModel) ? iteratedModel : selectedModels[i];
     ppi_pr_i = (lightwtMethodCtor) ?
       estimate_by_name(methodStrings[i], modelStrings[i], the_iterator,
@@ -139,18 +139,18 @@ void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
     // number of final solutions by one step in the sequence
     if (pl_rank == 0) {
       // manage number of points accepted per iterator instance
-      if (the_iterator.accepts_multiple_points())
+      if (the_iterator->accepts_multiple_points())
         running_product = 1; // reset
       // max concurrency tracking
       else if (running_product > maxIteratorConcurrency)
 	maxIteratorConcurrency = running_product;
       // manage number of points generated per iterator instance
-      if (the_iterator.returns_multiple_points()) {
-	size_t num_final = the_iterator.num_final_solutions();
+      if (the_iterator->returns_multiple_points()) {
+	size_t num_final = the_iterator->num_final_solutions();
 	// if unlimited final solns (e.g. MOGA), use a stand-in (e.g. pop_size)
 	if (num_final == SZ_MAX) {
 	  sizet_max_replace = true;
-	  running_product *= the_iterator.maximum_evaluation_concurrency();
+	  running_product *= the_iterator->maximum_evaluation_concurrency();
 	}
 	else
 	  running_product *= num_final;
@@ -172,7 +172,7 @@ void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   // from this point on, we can specialize logic in terms of iterator servers.
   // An idle partition need not instantiate iterators/models (empty Iterator
   // envelopes are adequate for serve_iterators()), so return now.  A dedicated
-  // master processor is managed in IteratorScheduler::init_iterator().
+  // scheduler processor is managed in IteratorScheduler::init_iterator().
   if (iterSched.iteratorServerId > iterSched.numIteratorServers)
     return;
 
@@ -220,10 +220,10 @@ void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   // results_msg_len estimation in run function)
   if (sizet_max_replace && iterSched.iteratorCommRank == 0)
     for (i=0; i<num_iterators; ++i) {
-      Iterator& the_iterator = selectedIterators[i];
+      Iterator& the_iterator = *selectedIterators[i];
       if (the_iterator.num_final_solutions() == SZ_MAX)
-	the_iterator.num_final_solutions(
-	  the_iterator.maximum_evaluation_concurrency());
+	      the_iterator.num_final_solutions(
+	    the_iterator.maximum_evaluation_concurrency());
     }
 }
 
@@ -237,7 +237,7 @@ void SeqHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
     size_t i, num_iterators = methodStrings.size();
     for (i=0; i<num_iterators; ++i)
-      iterSched.set_iterator(selectedIterators[i], si_pl_iter);
+      iterSched.set_iterator(*selectedIterators[i], si_pl_iter);
   }
 }
 
@@ -251,7 +251,7 @@ void SeqHybridMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
     size_t i, num_iterators = methodStrings.size();
     for (i=0; i<num_iterators; ++i)
-      iterSched.free_iterator(selectedIterators[i], si_pl_iter);
+      iterSched.free_iterator(*selectedIterators[i], si_pl_iter);
   }
 
   // deallocate the mi_pl parallelism level
@@ -284,7 +284,7 @@ void SeqHybridMetaIterator::run_sequential()
   for (seqCount=0; seqCount<num_iterators; seqCount++) {
 
     // each of these is safe for all processors
-    Iterator& curr_iterator = selectedIterators[seqCount];
+    Iterator& curr_iterator = *selectedIterators[seqCount];
     auto    curr_model
       = (singlePassedModel) ? iteratedModel : selectedModels[seqCount];
  
@@ -295,10 +295,11 @@ void SeqHybridMetaIterator::run_sequential()
     if (server_id <= iterSched.numIteratorServers) {
 
       // For graphics data, limit to iterator server comm leaders; this is
-      // further segregated within initialize_graphics(): all iterator masters
-      // stream tabular data, but only server 1 generates a graphics window.
+      // further segregated within initialize_graphics(): all iterator
+      // schedulers stream tabular data, but only server 1 generates a
+      // graphics window.
       if (rank0 && server_id > 0)
-	curr_iterator.initialize_graphics(server_id);
+	      curr_iterator.initialize_graphics(server_id);
 
       // -------------------------------------------------------------
       // Define total number of runs for this iterator in the sequence
@@ -314,8 +315,8 @@ void SeqHybridMetaIterator::run_sequential()
 	bool curr_accepts_multi = curr_iterator.accepts_multiple_points();
 	//bool curr_returns_multi = curr_iterator.returns_multiple_points();
 	// update numIteratorJobs
-	if (iterSched.iteratorScheduling == MASTER_SCHEDULING) {
-	  // send curr_accepts_multi from 1st iterator master to strategy master
+	if (iterSched.iteratorScheduling == DEDICATED_SCHEDULER_DYNAMIC) {
+	  // send curr_accepts_multi from 1st iterator to strategy
 	  if (rank0 && server_id == 1) {
 	    int multi_flag = (int)curr_accepts_multi; // bool -> int
 	    parallelLib.send(multi_flag, 0, 0, parent_pl, mi_pl);
@@ -354,7 +355,7 @@ void SeqHybridMetaIterator::run_sequential()
       if (iterSched.messagePass && rank0) {
         int params_msg_len, results_msg_len;
         // define params_msg_len
-        if (iterSched.iteratorScheduling == MASTER_SCHEDULING) {
+        if (iterSched.iteratorScheduling == DEDICATED_SCHEDULER_DYNAMIC) {
           MPIPackBuffer params_buffer;
           pack_parameters_buffer(params_buffer, 0);
           params_msg_len = params_buffer.size();
@@ -405,8 +406,8 @@ void SeqHybridMetaIterator::run_sequential()
       }
       // migrate results among procs as required for parallel scheduling, e.g.,
       // from multiple single-point iterators to a single multi-point iterator
-      // > for dedicated master scheduling, all results data resides on the
-      //   dedicated master and no additional migration is required.
+      // > for dedicated scheduler scheduling, all results data resides on the
+      //   dedicated scheduler and no additional migration is required.
       // > for peer static scheduling, the full parameterSets array needs to be
       //   propagated back to peers 2 though n (like an All-Reduce, except that
       //   IteratorScheduler::static_schedule_iterators() enforces reduction to
@@ -452,13 +453,13 @@ void SeqHybridMetaIterator::run_sequential_adaptive()
   Real progress_metric = 1.0;
   for (seqCount=0; seqCount<num_iterators; seqCount++) {
 
-    // TO DO: don't run on ded master (see NOTE 2 above)
+    // TO DO: don't run on ded scheduler (see NOTE 2 above)
     //if (server_id) {
 
-    Iterator& curr_iterator = selectedIterators[seqCount];
+    Iterator& curr_iterator = *selectedIterators[seqCount];
 
     // For graphics data, limit to iterator server comm leaders; this is
-    // further segregated within initialize_graphics(): all iterator masters
+    // further segregated within initialize_graphics(): all iterator schedulers
     // stream tabular data, but only server 1 generates a graphics window.
     if (rank0 && server_id > 0 && server_id <= iterSched.numIteratorServers)
       curr_iterator.initialize_graphics(server_id);
@@ -496,7 +497,7 @@ void SeqHybridMetaIterator::run_sequential_adaptive()
 void SeqHybridMetaIterator::
 update_local_results(PRPArray& prp_results, int job_id)
 {
-  Iterator& curr_iterator = selectedIterators[seqCount];
+  Iterator& curr_iterator = *selectedIterators[seqCount];
   auto    curr_model    = (selectedModels.empty()) ?
     iteratedModel : selectedModels[seqCount];
   // Analyzers do not currently support returns_multiple_points() since the
@@ -533,9 +534,9 @@ update_local_results(PRPArray& prp_results, int job_id)
 }
 
 void SeqHybridMetaIterator::declare_sources() {
-  for(const auto & si : selectedIterators)
+  for(const auto si : selectedIterators)
     evaluationsDB.declare_source(method_id(), "iterator",
-        si.method_id(), "iterator");
+        si->method_id(), "iterator");
 }
 
 void SeqHybridMetaIterator::print_results(std::ostream& s, short results_state)

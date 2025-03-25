@@ -64,15 +64,14 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
-  Model g_u_model;
-  g_u_model.assign_rep(std::make_shared<ProbabilityTransformModel>(
+  auto g_u_model = std::make_shared<ProbabilityTransformModel>(
     *iteratedModel, u_space_type)); // retain dist bnds
 
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
   // configure u-space sampler and model
-  Iterator u_space_sampler; // evaluates truth model
+  std::shared_ptr<Iterator> u_space_sampler; // evaluates truth model
   if (!config_regression(collocPtsSpec, regression_size(), randomSeed,
 			 u_space_sampler, g_u_model)) {
     Cerr << "Error: incomplete configuration in NonDC3FunctionTrain "
@@ -94,9 +93,9 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   if (!importBuildPointsFile.empty() && pt_reuse.empty())
     pt_reuse = "all"; // reassign default if data import
   String approx_type = "global_function_train";
-  ActiveSet ft_set = g_u_model.current_response().active_set(); // copy
+  ActiveSet ft_set = g_u_model->current_response().active_set(); // copy
   ft_set.request_values(3); // stand-alone mode: surrogate grad evals at most
-  const ShortShortPair& ft_view = g_u_model.current_variables().view();
+  const ShortShortPair& ft_view = g_u_model->current_variables().view();
   uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, ft_set, ft_view, approx_type, start_orders, corr_type,
     corr_order, data_order, outputLevel, pt_reuse, importBuildPointsFile,
@@ -287,7 +286,7 @@ resolve_inputs(short& u_space_type, short& data_order)
 
 bool NonDC3FunctionTrain::
 config_regression(size_t colloc_pts, size_t regress_size, int seed,
-		  Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model)
+		  std::shared_ptr<Iterator>& u_space_sampler, std::shared_ptr<Model> g_u_model)
 {
   // Adapted from NonDPolynomialChaos::config_regression()
 

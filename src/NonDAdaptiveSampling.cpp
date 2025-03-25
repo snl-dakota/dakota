@@ -54,6 +54,7 @@ namespace Dakota
 		AMSC = NULL;
 
 		//Defaults are set before parsing input parameters
+    validationSetSize = 0;
 		outputValidationData = false;
 		numKneighbors = 5;
                 numRounds = maxIterations;
@@ -121,9 +122,9 @@ namespace Dakota
                 //**NOTE:  We are hardcoding the sample type to LHS and the approximation type to kriging for now
 		//if (sampleDesign == RANDOM_SAMPLING)
 		//{
-		gpBuild.assign_rep(std::make_shared<NonDLHSSampling>(iteratedModel, SUBMETHOD_DEFAULT,
+		std::shared_ptr<Iterator> gp_build = std::make_shared<NonDLHSSampling>(iteratedModel, SUBMETHOD_DEFAULT,
 								     samples, randomSeed, rngName,
-								     varyPattern, ACTIVE_UNIFORM));
+								     varyPattern, ACTIVE_UNIFORM);
 		//}
 		//else
 		//{
@@ -135,7 +136,7 @@ namespace Dakota
 		gp_set.request_values(1); // no surr deriv evals, but GP may be grad-enhanced
 		const ShortShortPair& gp_view = iteratedModel->current_variables().view();
 		gpModel = std::make_shared<DataFitSurrModel>
-				   (gpBuild, iteratedModel,
+				   (gp_build, iteratedModel,
 				    gp_set, gp_view, approx_type, approx_order, corr_type, corr_order, data_order,
 				    outputLevel, sample_reuse, import_pts_file,
 				    probDescDB.get_ushort("method.import_build_format"),
@@ -162,8 +163,8 @@ namespace Dakota
 		}
 		else
 		{
-			construct_fsu_sampler(gpEval, gpModel, numEmulEval, randomSeed,sampleDesign);
-			//gpEval.assign_rep(new FSUDesignCompExp(gpModel, numEmulEval, randomSeed, sampleDesign));
+			gpEval = construct_fsu_sampler(gpModel, numEmulEval, randomSeed,sampleDesign);
+			//gpEval->assign_rep(new FSUDesignCompExp(gpModel, numEmulEval, randomSeed, sampleDesign));
 		}
 
 		#pragma endregion
@@ -190,8 +191,8 @@ namespace Dakota
 
     // gpEval and gpFinalEval use NoDBBaseConstructor, so no need to
     // manage DB list nodes at this level
-    gpEval.init_communicators(pl_iter);
-    gpFinalEval.init_communicators(pl_iter);
+    gpEval->init_communicators(pl_iter);
+    gpFinalEval->init_communicators(pl_iter);
   }
 
   void NonDAdaptiveSampling::derived_set_communicators(ParLevLIter pl_iter)
@@ -200,14 +201,14 @@ namespace Dakota
 
     // gpEval and gpFinalEval use NoDBBaseConstructor, so no need to
     // manage DB list nodes at this level
-    gpEval.set_communicators(pl_iter);
-    gpFinalEval.set_communicators(pl_iter);
+    gpEval->set_communicators(pl_iter);
+    gpFinalEval->set_communicators(pl_iter);
   }
 
   void NonDAdaptiveSampling::derived_free_communicators(ParLevLIter pl_iter)
   {
-    gpFinalEval.free_communicators(pl_iter);
-    gpEval.free_communicators(pl_iter);
+    gpFinalEval->free_communicators(pl_iter);
+    gpEval->free_communicators(pl_iter);
 
     iteratedModel->free_communicators(pl_iter, maxEvalConcurrency);
   }
@@ -328,8 +329,8 @@ namespace Dakota
 	
 		// Exploring Final Emulator
 		ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-		gpFinalEval.run(pl_iter);
-		const IntResponseMap& all_resp = gpFinalEval.all_responses();
+		gpFinalEval->run(pl_iter);
+		const IntResponseMap& all_resp = gpFinalEval->all_responses();
 		IntRespMCIter resp_it = all_resp.begin();
 
 		for (int icand = 0; icand < numFinalEmulEval; icand++) 
@@ -380,11 +381,11 @@ namespace Dakota
 		// generate new set of emulator samples.  Note this will have a different seed  each time.
 
 		ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-		gpEval.run(pl_iter);
+		gpEval->run(pl_iter);
 
 		// obtain results 
-		const RealMatrix&  all_samples = gpEval.all_samples();
-		const IntResponseMap& all_resp = gpEval.all_responses();
+		const RealMatrix&  all_samples = gpEval->all_samples();
+		const IntResponseMap& all_resp = gpEval->all_responses();
 
 		for (int i = 0; i < numEmulEval; i++) 
 		{
@@ -1770,8 +1771,8 @@ void NonDAdaptiveSampling::output_for_optimization(int dim)
 
 
 
-void NonDAdaptiveSampling::
-construct_fsu_sampler(Iterator& u_space_sampler, std::shared_ptr<Model> u_model, 
+std::shared_ptr<Iterator> NonDAdaptiveSampling::
+construct_fsu_sampler(std::shared_ptr<Model> u_model, 
     int num_samples, int seed, unsigned short sample_type) {
   // sanity checks
   if (num_samples <= 0) {
@@ -1779,9 +1780,7 @@ construct_fsu_sampler(Iterator& u_space_sampler, std::shared_ptr<Model> u_model,
 	 << "NonD::construct_fsu_sampler()." << std::endl;
     abort_handler(-1);
   }
-
-  u_space_sampler.assign_rep(std::make_shared<FSUDesignCompExp>
-			     (u_model, num_samples, seed, sample_type));
+  return std::make_shared<FSUDesignCompExp>(u_model, num_samples, seed, sample_type);
 }
 
 // Mohamed and Laura

@@ -81,7 +81,7 @@ protected:
   /// configure u_space_sampler and approx_type based on regression
   /// specification
   bool config_regression(size_t colloc_pts, size_t regress_size, int seed,
-			 Iterator& u_space_sampler, std::shared_ptr<Model> g_u_model);
+			 std::shared_ptr<Iterator>& u_space_sampler, std::shared_ptr<Model> g_u_model);
 
   /// Publish options from C3 input specification (not needed if model-driven
   /// specification: already extracted by iteratedModel)

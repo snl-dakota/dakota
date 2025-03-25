@@ -109,11 +109,11 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, std::shared_pt
 
     // The following uses on the fly derived ctor:
     short mode = (eifFlag) ? ACTIVE_UNIFORM : ACTIVE;
-    daceIterator.assign_rep(std::make_shared<NonDLHSSampling>
+    daceIterator = std::make_shared<NonDLHSSampling>
 			    (iteratedModel, sample_type, numSamples, seedSpec,
-			     rngName, false, mode));
+			     rngName, false, mode);
     // only use derivatives if the user requested and they are available
-    daceIterator.active_set_request_values(dataOrder);
+    daceIterator->active_set_request_values(dataOrder);
 
     // Construct fHatModel using a GP approximation over the active/uncertain
     // vars (same view as iteratedModel: not the typical All view for DACE).
@@ -160,7 +160,7 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, std::shared_pt
     // > max_concurrency within IteratorScheduler::init_iterator().  Max of the
     // local deriv concurrency & the DACE concurrency is used for this purpose.
     maxEvalConcurrency = std::max(maxEvalConcurrency,
-      daceIterator.maximum_evaluation_concurrency());
+      daceIterator->maximum_evaluation_concurrency());
   }
   else
     fHatModel = iteratedModel; // shared rep
@@ -193,9 +193,9 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, std::shared_pt
     size_t max_direct_iter = 1000, max_direct_eval = 10000; // 10*defaults
 #ifdef HAVE_NCSU
     // EGO with DIRECT (exploits GP variance)
-    intervalOptimizer.assign_rep(std::make_shared<NCSUOptimizer>
+    intervalOptimizer = std::make_shared<NCSUOptimizer>
 				 (intervalOptModel, max_direct_iter,
-				  max_direct_eval, min_box_size, vol_box_size));
+				  max_direct_eval, min_box_size, vol_box_size);
 #else
     Cerr << "NCSU DIRECT Optimizer is not available to use to find the" 
 	 << " interval bounds from the GP model." << std::endl;
@@ -213,11 +213,11 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, std::shared_pt
 
 #ifdef HAVE_ACRO
     // mixed EA (ignores GP variance)
-    intervalOptimizer.assign_rep(std::make_shared<COLINOptimizer>
+    intervalOptimizer = std::make_shared<COLINOptimizer>
 				 ("coliny_ea", intervalOptModel, seedSpec,
-				  max_ea_iter, max_ea_eval));
+				  max_ea_iter, max_ea_eval);
 //#elif HAVE_JEGA
-//    intervalOptimizer.assign_rep(new
+//    intervalOptimizer->assign_rep(new
 //      JEGAOptimizer(intervalOptModel, max_iter, max_eval, min_box_size,
 //      vol_box_size), false);
 #else
@@ -246,7 +246,7 @@ void NonDGlobalInterval::derived_init_communicators(ParLevLIter pl_iter)
 
   // intervalOptimizer uses NoDBBaseConstructor, so no need to manage
   // DB list nodes at this level
-  intervalOptimizer.init_communicators(pl_iter);
+  intervalOptimizer->init_communicators(pl_iter);
 }
 
 
@@ -259,7 +259,7 @@ void NonDGlobalInterval::derived_set_communicators(ParLevLIter pl_iter)
 
   // intervalOptimizer uses NoDBBaseConstructor, so no need to manage
   // DB list nodes at this level
-  intervalOptimizer.set_communicators(pl_iter);
+  intervalOptimizer->set_communicators(pl_iter);
 }
 
 
@@ -267,7 +267,7 @@ void NonDGlobalInterval::derived_free_communicators(ParLevLIter pl_iter)
 {
   // intervalOptimizer uses NoDBBaseConstructor, so no need to manage
   // DB list nodes at this level
-  intervalOptimizer.free_communicators(pl_iter);
+  intervalOptimizer->free_communicators(pl_iter);
 
   //fHatMaxConcurrency = maxEvalConcurrency; // local derivative concurrency
   //fHatModel->free_communicators(pl_iter, fHatMaxConcurrency);
@@ -343,8 +343,8 @@ void NonDGlobalInterval::core_run()
 	Cout << "\n>>>>> Initiating global minimization: response "
 	     << respFnCntr+1 << " cell " << cellCntr+1 << " iteration "
 	     << globalIterCntr << "\n\n";
-	//intervalOptimizer.reset(); // redundant for COLINOptimizer::core_run()
-	intervalOptimizer.run(pl_iter);
+	//intervalOptimizer->reset(); // redundant for COLINOptimizer::core_run()
+	intervalOptimizer->run(pl_iter);
 	// output iteration results, update convergence controls, and update GP
 	post_process_run_results(false);
       }
@@ -377,8 +377,8 @@ void NonDGlobalInterval::core_run()
 	Cout << "\n>>>>> Initiating global maximization: response "
 	     << respFnCntr+1 << " cell " << cellCntr+1 << " iteration "
 	     << globalIterCntr << "\n\n";
-	//intervalOptimizer.reset(); // redundant for COLINOptimizer::core_run()
-	intervalOptimizer.run(pl_iter);
+	//intervalOptimizer->reset(); // redundant for COLINOptimizer::core_run()
+	intervalOptimizer->run(pl_iter);
 	// output iteration results, update convergence controls, and update GP
 	post_process_run_results(true);
       }
@@ -410,11 +410,11 @@ void NonDGlobalInterval::set_cell_bounds()
 
 void NonDGlobalInterval::post_process_run_results(bool maximize)
 {
-  const Variables&     vars_star = intervalOptimizer.variables_results();
+  const Variables&     vars_star = intervalOptimizer->variables_results();
   const RealVector&  c_vars_star = vars_star.continuous_variables();
   const IntVector&  di_vars_star = vars_star.discrete_int_variables();
   const RealVector& dr_vars_star = vars_star.discrete_real_variables();
-  const Response&      resp_star = intervalOptimizer.response_results();
+  const Response&      resp_star = intervalOptimizer->response_results();
   Real fn_star = resp_star.function_value(0), fn_conv, dist_conv;
 
   Cout << "\nResults of interval optimization:\nFinal point             =\n";
@@ -497,7 +497,7 @@ void NonDGlobalInterval::post_process_run_results(bool maximize)
 void NonDGlobalInterval::evaluate_response_star_truth()
 {
   //fHatModel->component_parallel_mode(TRUTH_MODEL_MODE);
-  const Variables& vars_star = intervalOptimizer.variables_results();
+  const Variables& vars_star = intervalOptimizer->variables_results();
   ModelUtils::active_variables(*iteratedModel, vars_star);
   ActiveSet set = iteratedModel->current_response().active_set();
   // GT: Get all responses per function evaluation

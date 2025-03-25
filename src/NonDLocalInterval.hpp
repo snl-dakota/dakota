@@ -79,7 +79,7 @@ protected:
   //
 
   /// local gradient-based optimizer
-  Iterator minMaxOptimizer;
+  std::unique_ptr<Iterator> minMaxOptimizer;
   /// recast model which extracts the active objective function
   std::shared_ptr<Model> minMaxModel;
 
