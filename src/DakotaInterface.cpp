@@ -7,39 +7,14 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
+#include "dakota_data_types.hpp"
+#include "dakota_data_util.hpp"
 #include "interface_utils.hpp"
 #include "DakotaInterface.hpp"
-#include "ProblemDescDB.hpp"
+#include "DakotaResponse.hpp"
 #include "DakotaVariables.hpp"
+#include "ProblemDescDB.hpp"
 
-#include "SysCallApplicInterface.hpp"
-
-#if defined(HAVE_SYS_WAIT_H) && defined(HAVE_UNISTD_H)
-#include "ForkApplicInterface.hpp"
-#elif defined(_WIN32) // or _MSC_VER (native MSVS compilers)
-#include "SpawnApplicInterface.hpp"
-#endif // HAVE_SYS_WAIT_H, HAVE_UNISTD_H
-
-// Direct interfaces
-#ifdef DAKOTA_GRID
-#include "GridApplicInterface.hpp"
-#endif // DAKOTA_GRID
-#ifdef DAKOTA_MATLAB
-#include "MatlabInterface.hpp"
-#endif // DAKOTA_MATLAB
-#ifdef DAKOTA_PYTHON_LEGACY
-#include "PythonInterface.hpp"
-#endif // DAKOTA_PYTHON
-#ifdef DAKOTA_PYBIND11
-#include "Pybind11Interface.hpp"
-#endif // DAKOTA_PYBIND11
-#ifdef DAKOTA_SCILAB
-#include "ScilabInterface.hpp"
-#endif // DAKOTA_SCILAB
-#include "TestDriverInterface.hpp"
-#include "PluginInterface.hpp"
-
-#include "ApproximationInterface.hpp"
 
 #ifdef HAVE_AMPL
 #undef NO // avoid name collision from UTILIB
