@@ -1168,8 +1168,8 @@ inflate_lf_samples(const UShortArray& approx_set,
       pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
     // after processing of offline covariance data, online shared_increment()
     // which follows only includes best model set 
-    inflate(N_H_actual, N_L_actual, approx_set);
-    inflate(N_H_alloc,  N_L_alloc,  approx_set);
+    if (N_L_actual.empty()) inflate(N_H_actual, N_L_actual, approx_set);
+    if (N_L_alloc.empty())  inflate(N_H_alloc,  N_L_alloc,  approx_set);
   }
   else {
     // online: all models are part of initial shared_increment(), which can

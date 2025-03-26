@@ -649,8 +649,8 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
   Sizet2DArray N_L_actual_shared;  inflate(N_H_actual, N_L_actual_shared);
   inflate(N_H_alloc, NApproxAlloc);
   Real hf_target = 0., avg_N_H;  size_t alloc_incr;
-  std::pair<UShortArray, UShortArray> soln_key;
-  soln_key.first = fullApproxSet; // start with all approximations included
+  // start with all approximations included
+  std::pair<UShortArray, UShortArray> soln_key(fullApproxSet, UShortArray());
 
   while (numSamples && mlmfIter <= maxIterations) {
 
@@ -770,6 +770,7 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
+  inflate(N_H_alloc, NApproxAlloc); // used in available_budget()
   precompute_allocations(); // compute metrics not dependent on active DAG
   std::pair<UShortArray, UShortArray> soln_key;
   for (activeModelSetIter  = modelDAGs.begin();
@@ -824,6 +825,7 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
   accumulate_acv_sums(sum_L_baselineH, /*sum_L_baselineL,*/ sum_H, sum_LL,
 		      sum_LH, sum_HH, N_H_actual);
   N_H_alloc += numSamples;
+  increment_sample_range(NApproxAlloc, numSamples, approx_set);
   increment_equivalent_cost(numSamples, sequenceCost, numApprox, approx_set,
 			    equivHFEvals);
   // perform LF increments for the online sample profile
@@ -866,13 +868,14 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
     compute_LH_statistics(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual,
 			  varH, covLL, covLH);
     N_H_alloc = numSamples;
-  } /// *** TO DO: this code block is exact same as ACV
-  std::pair<UShortArray, UShortArray> soln_key;
+  } /// TO DO: this code block is exact same as ACV
+  inflate(N_H_alloc, NApproxAlloc);
 
   // -----------------------------------
   // Compute "online" sample increments:
   // -----------------------------------
   precompute_allocations(); // compute metrics not dependent on active DAG
+  std::pair<UShortArray, UShortArray> soln_key;
   for (activeModelSetIter  = modelDAGs.begin();
        activeModelSetIter != modelDAGs.end(); ++activeModelSetIter) {
     const UShortArray&  approx_set = activeModelSetIter->first;
@@ -906,7 +909,7 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
   soln_key.first  = activeModelSetIter->first;
   soln_key.second = *activeDAGIter;
   MFSolutionData& soln = dagSolns[soln_key];
-  Sizet2DArray N_L_actual; // inflated from N_H
+  Sizet2DArray N_L_actual; // inflate from N_H_actual for shared pilot
   update_projected_samples(soln, soln_key.first, N_H_actual,
 			   N_H_alloc, N_L_actual, NApproxAlloc,
 			   deltaNActualHF, deltaEquivHF);
