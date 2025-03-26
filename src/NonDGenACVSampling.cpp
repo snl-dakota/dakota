@@ -647,7 +647,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
   Sizet2DArray N_L_actual_shared;  inflate(N_H_actual, N_L_actual_shared);
-  SizetArray   N_L_alloc;          inflate(N_H_alloc,  N_L_alloc);
+  inflate(N_H_alloc, NApproxAlloc);
   Real hf_target = 0., avg_N_H;  size_t alloc_incr;
   std::pair<UShortArray, UShortArray> soln_key;
   soln_key.first = fullApproxSet; // start with all approximations included
@@ -665,7 +665,7 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
     alloc_incr = (backfillFailures && mlmfIter) ?
       one_sided_delta(N_H_alloc, hf_target, relaxFactor) : numSamples;
     N_H_alloc += alloc_incr;
-    increment_sample_range(N_L_alloc, alloc_incr, approx_set);
+    increment_sample_range(NApproxAlloc, alloc_incr, approx_set);
     // While online cost recovery could be continuously updated, we restrict
     // to the pilot and do not not update after iter 0.  We could potentially
     // update cost for shared samples, mirroring the covariance updates.
@@ -732,16 +732,16 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
     Sizet2DArray N_L_actual_refined;
     approx_increments(sum_L_baselineH, N_H_actual, N_H_alloc, sum_L_shared,
 		      N_L_actual_shared, sum_L_refined, N_L_actual_refined,
-		      N_L_alloc, soln);
+		      NApproxAlloc, soln);
     genacv_raw_moments(sum_L_baselineH, sum_H, sum_LL, sum_LH, N_H_actual,
 		       sum_H, N_H_actual, sum_L_shared, N_L_actual_shared,
 		       sum_L_refined, N_L_actual_refined, soln);
-    finalize_counts(N_L_actual_refined, N_L_alloc);
+    finalize_counts(N_L_actual_refined, NApproxAlloc);
   }
   else
     // N_H is final --> do not compute any deltaNActualHF (from maxIter exit)
     update_projected_lf_samples(soln, soln_key.first, N_H_actual, N_H_alloc,
-				N_L_actual_shared, N_L_alloc, deltaEquivHF);
+				N_L_actual_shared, NApproxAlloc, deltaEquivHF);
 }
 
 
@@ -828,15 +828,15 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
 			    equivHFEvals);
   // perform LF increments for the online sample profile
   IntRealMatrixMap  sum_L_shared,      sum_L_refined;
-  Sizet2DArray N_L_actual_shared, N_L_actual_refined;  SizetArray N_L_alloc;
+  Sizet2DArray N_L_actual_shared, N_L_actual_refined;
   approx_increments(sum_L_baselineH, N_H_actual, N_H_alloc, sum_L_shared,
 		    N_L_actual_shared, sum_L_refined, N_L_actual_refined,
-		    N_L_alloc, soln);
+		    NApproxAlloc, soln);
   genacv_raw_moments(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
 		     N_shared_pilot, sum_H, N_H_actual,
 		     sum_L_shared, N_L_actual_shared,
 		     sum_L_refined, N_L_actual_refined, soln);
-  finalize_counts(N_L_actual_refined, N_L_alloc);
+  finalize_counts(N_L_actual_refined, NApproxAlloc);
 }
 
 
@@ -906,9 +906,10 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
   soln_key.first  = activeModelSetIter->first;
   soln_key.second = *activeDAGIter;
   MFSolutionData& soln = dagSolns[soln_key];
-  Sizet2DArray N_L_actual;  SizetArray N_L_alloc; // inflated from N_H
-  update_projected_samples(soln, soln_key.first, N_H_actual, N_H_alloc,
-			   N_L_actual, N_L_alloc, deltaNActualHF, deltaEquivHF);
+  Sizet2DArray N_L_actual; // inflated from N_H
+  update_projected_samples(soln, soln_key.first, N_H_actual,
+			   N_H_alloc, N_L_actual, NApproxAlloc,
+			   deltaNActualHF, deltaEquivHF);
   // No need for updating estimator variance given deltaNActualHF since
   // NonDNonHierarchSampling::ensemble_numerical_solution() recovers N*
   // from the numerical solve and computes projected estVariance{s,Ratios}
@@ -2225,6 +2226,7 @@ void NonDGenACVSampling::restore_best()
       activeDAGIter      != bestDAGIter) { // best is not most recent
     activeModelSetIter = bestModelSetIter;
     activeDAGIter      = bestDAGIter;
+    //activeBudget     = available_budget(); // for completeness?
     if (approx_incr) generate_reverse_dag(best_models, best_dag);
   }
   // now we can re-order roots based on final eval ratios solution

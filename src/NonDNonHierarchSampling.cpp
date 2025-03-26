@@ -465,7 +465,7 @@ export_sample_sets(const String& prepend, size_t step)
 			 mlmfIter, step);
     for (size_t i=0; i<numApprox; ++i)
       if (active_set_for_model(i))
-	      export_all_samples(prepend, *iteratedModel->active_surrogate_model(i),
+	export_all_samples(prepend, *iteratedModel->active_surrogate_model(i),
 			   mlmfIter, step);
   }
 }

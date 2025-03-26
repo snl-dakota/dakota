@@ -268,6 +268,10 @@ private:
   //- Heading: Data
   //
 
+  /// sample allocations per approximation (differs from actual if failed sims;
+  /// cached for use in available_budget())
+  SizetArray NApproxAlloc;
+
   /// the "G" matrix in Bomarito et al.
   RealSymMatrix GMat;
   /// the "g" vector in Bomarito et al.
@@ -314,6 +318,8 @@ private:
 
 inline Real NonDGenACVSampling::available_budget() const
 {
+  // NLevAlloc[mf][rl] not avail until finalize_counts() --> cache NApproxAlloc
+
   bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
 		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
   const UShortArray& approx_set = activeModelSetIter->first;
@@ -321,14 +327,13 @@ inline Real NonDGenACVSampling::available_budget() const
   Real budget = (Real)maxFunctionEvals;
   if (offline || num_approx == numApprox) return budget;
 
-  size_t hf_form_index, hf_lev_index, cntr = 0;
-  hf_indices(hf_form_index, hf_lev_index);
-  size_t N_H_alloc = NLevAlloc[hf_form_index][hf_lev_index];
-  Real cost_H = sequenceCost[numApprox], N_over_cost = (Real)N_H_alloc / cost_H;
+  size_t lf_form_index, lf_lev_index, cntr = 0, N_L_alloc_a;
+  Real cost_H = sequenceCost[numApprox];
   for (size_t approx=0; approx<numApprox; ++approx)
     if  (cntr < num_approx && approx == approx_set[cntr]) ++cntr; // ordered seq
-    else budget -= sequenceCost[approx] * N_over_cost;
+    else budget -= sequenceCost[approx] * NApproxAlloc[approx] / cost_H;
 
+  //Cout << "active budget = " << budget << std::endl;
   return budget;
 }
 
