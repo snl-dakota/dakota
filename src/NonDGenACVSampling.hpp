@@ -320,8 +320,6 @@ inline Real NonDGenACVSampling::available_budget() const
 {
   // NLevAlloc[mf][rl] not avail until finalize_counts() --> cache NApproxAlloc
 
-  Cout << "NApproxAlloc size = " << NApproxAlloc.size() << std::endl;
-
   bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
 		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
   const UShortArray& approx_set = activeModelSetIter->first;
