@@ -7,35 +7,35 @@ Test Number 0 succeeded
  response_fn_1:
       Initial     MC (   10 HF samples):  5.6033560944958559e-02
        Online     MC (   56 HF samples):  1.1175976161093611e-02
-       Online    ACV (sample profile):    3.0466141775477955e-03
-       Online    ACV ratio (1 - R^2):     2.7284913764914731e-01
+       Online    ACV (sample profile):    3.0466440567970218e-03
+       Online    ACV ratio (1 - R^2):     2.7262050228083112e-01
    Equivalent     MC (  100 HF samples):  6.2585466502124223e-03
-   Equivalent    ACV ratio:               4.8679259703918476e-01
+   Equivalent    ACV ratio:               4.8679737119058064e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  3.7378802891632798e-02  9.8689001708916535e-01 -2.2310353307238984e-01  5.0668387901648302e+00
+ response_fn_1  3.7378801704316650e-02  9.8689001723468950e-01 -2.2310353328001886e-01  5.0668387813782587e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean
- response_fn_1 -7.0803649038394922e-02  1.4556125482166052e-01
+ response_fn_1 -7.0804180716664208e-02  1.4556178412529752e-01
 Test Number 1 succeeded
-<<<<< Function evaluation summary (LF_INT): 990 total (990 new, 0 duplicate)
-<<<<< Function evaluation summary (MF_INT): 990 total (990 new, 0 duplicate)
-<<<<< Function evaluation summary (HF_INT): 141 total (141 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 2.4989999999999998e+02
+<<<<< Function evaluation summary (LF_INT): 1018 total (1018 new, 0 duplicate)
+<<<<< Function evaluation summary (MF_INT): 1018 total (1018 new, 0 duplicate)
+<<<<< Function evaluation summary (HF_INT): 138 total (138 new, 0 duplicate)
+<<<<< Online number of equivalent high fidelity evaluations: 2.4997999999999996e+02
 <<<<< Variance for mean estimator:
  response_fn_1:
       Initial     MC (   10 HF samples):  5.6033560944958559e-02
-       Online     MC (  141 HF samples):  5.9606804687884598e-03
-       Online    ACV (sample profile):    1.4954643613092060e-03
-       Online    ACV ratio (1 - R^2):     2.5097012333873658e-01
-   Equivalent     MC (  250 HF samples):  3.3631690520174989e-03
-   Equivalent    ACV ratio:               4.4465928955076056e-01
+       Online     MC (  138 HF samples):  5.6790054548557191e-03
+       Online    ACV (sample profile):    1.4771384089036638e-03
+       Online    ACV ratio (1 - R^2):     2.6010588485766439e-01
+   Equivalent     MC (  250 HF samples):  3.1350618160256396e-03
+   Equivalent    ACV ratio:               4.7116723547615791e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1 -6.4892326809972700e-03  9.3437987396967015e-01 -2.4870332269966430e-01  2.6698821849747771e+00
+ response_fn_1 -2.0790877714037398e-02  9.2641361021084467e-01 -2.8569626773341134e-01  2.5153587201827472e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean
- response_fn_1 -8.2283459121966745e-02  6.9304993759972205e-02
+ response_fn_1 -9.6119267915003886e-02  5.4537512486929091e-02
 Test Number 2 succeeded
 <<<<< Function evaluation summary (LF_INT): 2182 total (2182 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 2182 total (2182 new, 0 duplicate)
@@ -45,16 +45,16 @@ Test Number 2 succeeded
  response_fn_1:
       Initial     MC (   10 HF samples):  5.6033560944958559e-02
        Online     MC (  260 HF samples):  3.4435986101703422e-03
-       Online    ACV (sample profile):    7.4396873286023443e-04
-       Online    ACV ratio (1 - R^2):     2.1604402554469981e-01
+       Online    ACV (sample profile):    7.4396873557273869e-04
+       Online    ACV ratio (1 - R^2):     2.1604401649538485e-01
    Equivalent     MC (  500 HF samples):  1.7905996533024459e-03
-   Equivalent    ACV ratio:               4.1548580191452344e-01
+   Equivalent    ACV ratio:               4.1548580342938152e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  1.5223376094705659e-02  1.0063396978979398e+00  2.7646148760406442e-01  2.0169309348039146e+00
+ response_fn_1  1.5223376331610293e-02  1.0063396978195753e+00  2.7646148714329460e-01  2.0169309364510370e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean
- response_fn_1 -3.8236190412764069e-02  6.8682942602175390e-02
+ response_fn_1 -3.8236190273316012e-02  6.8682942936536595e-02
 Test Number 3 succeeded
 <<<<< Function evaluation summary (LF_INT): 4678 total (4678 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 4678 total (4678 new, 0 duplicate)
@@ -64,16 +64,16 @@ Test Number 3 succeeded
  response_fn_1:
       Initial     MC (   10 HF samples):  5.6033560944958559e-02
        Online     MC (  485 HF samples):  2.2364566404997630e-03
-       Online    ACV (sample profile):    4.3060173269454167e-04
-       Online    ACV ratio (1 - R^2):     1.9269607048709403e-01
+       Online    ACV (sample profile):    4.3060173240929079e-04
+       Online    ACV ratio (1 - R^2):     1.9269607284743062e-01
    Equivalent     MC ( 1000 HF samples):  1.0851372282782619e-03
-   Equivalent    ACV ratio:               3.9681776781150341e-01
+   Equivalent    ACV ratio:               3.9681776754863257e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1 -1.7600811537436423e-02  1.0361059429140886e+00  2.1718655397603906e-01  2.4699412512523580e+00
+ response_fn_1 -1.7600811537027621e-02  1.0361059429143502e+00  2.1718655396351635e-01  2.4699412512529726e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean
- response_fn_1 -5.8271917058009881e-02  2.3070293983137036e-02
+ response_fn_1 -5.8271917044129859e-02  2.3070293970074613e-02
 Test Number 4 succeeded
 <<<<< Function evaluation summary (LF_INT): 11651 total (11651 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 11651 total (11651 new, 0 duplicate)
@@ -83,16 +83,16 @@ Test Number 4 succeeded
  response_fn_1:
       Initial     MC (   10 HF samples):  5.6033560944958559e-02
        Online     MC ( 1218 HF samples):  7.5226532329978149e-04
-       Online    ACV (sample profile):    1.5388635538972844e-04
-       Online    ACV ratio (1 - R^2):     2.0463237754440922e-01
+       Online    ACV (sample profile):    1.5388635366503297e-04
+       Online    ACV ratio (1 - R^2):     2.0463236894175907e-01
    Equivalent     MC ( 2500 HF samples):  3.6656084900409819e-04
-   Equivalent    ACV ratio:               4.1981121499423407e-01
+   Equivalent    ACV ratio:               4.1981121028916130e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  1.9182555530458424e-03  9.7347557831618992e-01 -1.5516239301374716e-02  2.7216059446471901e+00
+ response_fn_1  1.9182556690124468e-03  9.7347557835768694e-01 -1.5516239785353847e-02  2.7216059431701183e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean
- response_fn_1 -2.2395281772821476e-02  2.6231792878913161e-02
+ response_fn_1 -2.2395281520606769e-02  2.6231792858631663e-02
 Test Number 5 succeeded
 <<<<< Function evaluation summary (LF_INT): 22964 total (22964 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 22964 total (22964 new, 0 duplicate)
@@ -102,16 +102,16 @@ Test Number 5 succeeded
  response_fn_1:
       Initial     MC (   10 HF samples):  5.6033560944958559e-02
        Online     MC ( 2474 HF samples):  4.2464056294639707e-04
-       Online    ACV (sample profile):    8.4403024582769005e-05
-       Online    ACV ratio (1 - R^2):     1.9876345813370622e-01
+       Online    ACV (sample profile):    8.4403024583096462e-05
+       Online    ACV ratio (1 - R^2):     1.9876345812938601e-01
    Equivalent     MC ( 5000 HF samples):  2.1011046966211996e-04
-   Equivalent    ACV ratio:               4.0170784786925690e-01
+   Equivalent    ACV ratio:               4.0170784787081543e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1 -4.2666845724144940e-04  9.9882534242396792e-01 -7.5912090308786664e-02  2.7080993419600938e+00
+ response_fn_1 -4.2666845725029649e-04  9.9882534242398380e-01 -7.5912090308572530e-02  2.7080993419599286e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean
- response_fn_1 -1.8433076851941961e-02  1.7579739937459066e-02
+ response_fn_1 -1.8433076851985739e-02  1.7579739937485149e-02
 Test Number 6 succeeded
 <<<<< Function evaluation summary (LF_INT): 46436 total (46436 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 46436 total (46436 new, 0 duplicate)
@@ -121,16 +121,16 @@ Test Number 6 succeeded
  response_fn_1:
       Initial     MC (   10 HF samples):  5.6033560944958559e-02
        Online     MC ( 4892 HF samples):  2.1732033061856273e-04
-       Online    ACV (sample profile):    4.2596453521602939e-05
-       Online    ACV ratio (1 - R^2):     1.9600768860371054e-01
+       Online    ACV (sample profile):    4.2596453409139095e-05
+       Online    ACV ratio (1 - R^2):     1.9600767810308428e-01
    Equivalent     MC (10000 HF samples):  1.0631353099272484e-04
-   Equivalent    ACV ratio:               4.0066822279205327e-01
+   Equivalent    ACV ratio:               4.0066822173420258e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1 -5.9896205887881165e-03  1.0044246265416685e+00 -1.1230666159352344e-02  2.7912334618587575e+00
+ response_fn_1 -5.9896205634812245e-03  1.0044246264296446e+00 -1.1230666506799977e-02  2.7912334624754189e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean
- response_fn_1 -1.8781513416311686e-02  6.8022722387354531e-03
+ response_fn_1 -1.8781513374118111e-02  6.8022722471556638e-03
 Test Number 7 succeeded
 <<<<< Function evaluation summary (LF_INT): 398 total (398 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 398 total (398 new, 0 duplicate)
@@ -140,16 +140,16 @@ Test Number 7 succeeded
  response_fn_1:
       Initial     MC (   10 HF samples):  5.6033560944958559e-02
        Online     MC (   56 HF samples):  1.1175976161093611e-02
-       Online    ACV (sample profile):    3.0465676358378208e-03
-       Online    ACV ratio (1 - R^2):     2.7390860995532462e-01
+       Online    ACV (sample profile):    3.0465668085742602e-03
+       Online    ACV ratio (1 - R^2):     2.7390853408081639e-01
    Equivalent     MC (  100 HF samples):  6.2723458109966148e-03
-   Equivalent    ACV ratio:               4.8571423318156476e-01
+   Equivalent    ACV ratio:               4.8571410129094755e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  3.3969014880001890e-02  1.0117603196140181e+00 -5.6561447259476694e-01  4.7297097822906764e+00
+ response_fn_1  3.3969001139291341e-02  1.0117603345296493e+00 -5.6561447615781557e-01  4.7297096058024701e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean
- response_fn_1 -7.4212610720330280e-02  1.4215064048033407e-01
+ response_fn_1 -7.4212609773245647e-02  1.4215061205182833e-01
 Test Number 8 succeeded
 <<<<< Function evaluation summary (LF_INT): 967 total (967 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 995 total (995 new, 0 duplicate)
@@ -159,54 +159,54 @@ Test Number 8 succeeded
  response_fn_1:
       Initial     MC (   10 HF samples):  5.6033560944958559e-02
        Online     MC (  140 HF samples):  5.7716231331855928e-03
-       Online    ACV (sample profile):    1.4954943248385575e-03
-       Online    ACV ratio (1 - R^2):     2.5949101406000341e-01
+       Online    ACV (sample profile):    1.4952536395594954e-03
+       Online    ACV ratio (1 - R^2):     2.5944913764683453e-01
    Equivalent     MC (  249 HF samples):  3.2428753005818646e-03
-   Equivalent    ACV ratio:               4.6116306864165363e-01
+   Equivalent    ACV ratio:               4.6108884892712471e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1 -9.6165156394243112e-03  9.2757772495630186e-01 -2.4530633837600199e-01  3.5109428260542233e+00
+ response_fn_1 -9.6105971366416965e-03  9.2757917871995688e-01 -2.4531217588258508e-01  3.5109543920562079e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean
- response_fn_1 -8.5411501393424447e-02  6.6178470114575824e-02
+ response_fn_1 -8.5399483412010715e-02  6.6178289138727323e-02
 Test Number 9 succeeded
-<<<<< Function evaluation summary (LF_INT): 2180 total (2180 new, 0 duplicate)
+<<<<< Function evaluation summary (LF_INT): 2179 total (2179 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 2181 total (2181 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 260 total (260 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 4.9989999999999998e+02
+<<<<< Online number of equivalent high fidelity evaluations: 4.9988999999999999e+02
 <<<<< Variance for mean estimator:
  response_fn_1:
       Initial     MC (   10 HF samples):  5.6033560944958559e-02
        Online     MC (  260 HF samples):  3.6815254306896555e-03
-       Online    ACV (sample profile):    8.0905522717864074e-04
-       Online    ACV ratio (1 - R^2):     2.1984977922002691e-01
-   Equivalent     MC (  500 HF samples):  1.9147761791944600e-03
-   Equivalent    ACV ratio:               4.2253253198449942e-01
+       Online    ACV (sample profile):    8.0920663312785616e-04
+       Online    ACV ratio (1 - R^2):     2.1985778392524569e-01
+   Equivalent     MC (  500 HF samples):  1.9148144831449129e-03
+   Equivalent    ACV ratio:               4.2260315046228714e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  3.2944740182813265e-02  1.0117094080929179e+00  5.2576397353368422e-02  2.4591745727766909e+00
+ response_fn_1  3.2171139125088802e-02  1.0147036169957377e+00 -1.3326416904506719e-01  2.9329072604220530e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean
- response_fn_1 -2.2804271816271336e-02  8.8693752181897872e-02
+ response_fn_1 -2.3583089042765862e-02  8.7925367292943465e-02
 Test Number 10 succeeded
-<<<<< Function evaluation summary (LF_INT): 4139 total (4139 new, 0 duplicate)
-<<<<< Function evaluation summary (MF_INT): 4116 total (4116 new, 0 duplicate)
-<<<<< Function evaluation summary (HF_INT): 547 total (547 new, 0 duplicate)
+<<<<< Function evaluation summary (LF_INT): 13279 total (13279 new, 0 duplicate)
+<<<<< Function evaluation summary (MF_INT): 3792 total (3792 new, 0 duplicate)
+<<<<< Function evaluation summary (HF_INT): 488 total (488 new, 0 duplicate)
 <<<<< Online number of equivalent high fidelity evaluations: 9.9999000000000001e+02
 <<<<< Variance for mean estimator:
  response_fn_1:
       Initial     MC (   10 HF samples):  5.6033560944958559e-02
-       Online     MC (  547 HF samples):  1.7845663327603826e-03
-       Online    ACV (sample profile):    4.1704972861696208e-04
-       Online    ACV ratio (1 - R^2):     2.3370443614103098e-01
-   Equivalent     MC ( 1000 HF samples):  9.7616754569538624e-04
-   Equivalent    ACV ratio:               4.2723170879428390e-01
+       Online     MC (  488 HF samples):  2.1534948775812275e-03
+       Online    ACV (sample profile):    6.2160797993140592e-04
+       Online    ACV ratio (1 - R^2):     2.8865081422868144e-01
+   Equivalent     MC ( 1000 HF samples):  1.0509160094197333e-03
+   Equivalent    ACV ratio:               5.9149158863288109e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1 -1.4927103604018763e-02  1.0145678383782337e+00 -1.2047671378948314e-01  2.6129044552210354e+00
+ response_fn_1 -1.1230819728099164e-02  1.0031908551401540e+00  1.7257749499698240e-02  2.5576663800655561e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean
- response_fn_1 -5.4953087148008284e-02  2.5098879939970759e-02
+ response_fn_1 -6.0096773699359729e-02  3.7635134243161394e-02
 Test Number 11 succeeded
 <<<<< Function evaluation summary (LF_INT): 27531 total (27531 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 7296 total (7296 new, 0 duplicate)
@@ -216,16 +216,16 @@ Test Number 11 succeeded
  response_fn_1:
       Initial     MC (   10 HF samples):  5.6033560944958559e-02
        Online     MC ( 1494 HF samples):  6.4803903241368946e-04
-       Online    ACV (sample profile):    2.5156767378448628e-04
-       Online    ACV ratio (1 - R^2):     3.8838066436337115e-01
+       Online    ACV (sample profile):    2.5156767369772685e-04
+       Online    ACV ratio (1 - R^2):     3.8838066419187933e-01
    Equivalent     MC ( 2499 HF samples):  3.8743704832349025e-04
-   Equivalent    ACV ratio:               6.4931238474241126e-01
+   Equivalent    ACV ratio:               6.4931238451847961e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.1808378894616759e-03  9.9907389231643096e-01  5.5630723720164810e-02  2.5872538949910568e+00
+ response_fn_1  2.1808378878230492e-03  9.9907389231845378e-01  5.5630723733543268e-02  2.5872538949882662e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean
- response_fn_1 -2.8905925522976699e-02  3.3267601301900054e-02
+ response_fn_1 -2.8905925519254798e-02  3.3267601294900896e-02
 Test Number 12 succeeded
 <<<<< Function evaluation summary (LF_INT): 80156 total (80156 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 19011 total (19011 new, 0 duplicate)
@@ -235,16 +235,16 @@ Test Number 12 succeeded
  response_fn_1:
       Initial     MC (   10 HF samples):  5.6033560944958559e-02
        Online     MC ( 2289 HF samples):  4.4636049635112326e-04
-       Online    ACV (sample profile):    1.2524278319310566e-04
-       Online    ACV ratio (1 - R^2):     2.8136031203623824e-01
+       Online    ACV (sample profile):    1.2524278296877160e-04
+       Online    ACV ratio (1 - R^2):     2.8136031165183939e-01
    Equivalent     MC ( 4992 HF samples):  2.0468525022692273e-04
-   Equivalent    ACV ratio:               6.1187986459335109e-01
+   Equivalent    ACV ratio:               6.1187986349735579e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1 -2.4982635741933046e-03  9.9799034558037369e-01  3.6346254624671254e-02  2.6965908278529396e+00
+ response_fn_1 -2.4982635782258393e-03  9.9799034557597899e-01  3.6346254581488983e-02  2.6965908279324964e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean
- response_fn_1 -2.4432597259660880e-02  1.9436070111274271e-02
+ response_fn_1 -2.4432597244049097e-02  1.9436070087597419e-02
 Test Number 13 succeeded
 <<<<< Function evaluation summary (LF_INT): 150798 total (150798 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 36307 total (36307 new, 0 duplicate)
@@ -254,16 +254,16 @@ Test Number 13 succeeded
  response_fn_1:
       Initial     MC (   10 HF samples):  5.6033560944958559e-02
        Online     MC ( 4835 HF samples):  2.0924586214804671e-04
-       Online    ACV (sample profile):    6.2730610622753916e-05
-       Online    ACV ratio (1 - R^2):     3.0097336973692712e-01
+       Online    ACV (sample profile):    6.2730610743744726e-05
+       Online    ACV ratio (1 - R^2):     3.0097337020432913e-01
    Equivalent     MC ( 9974 HF samples):  1.0143735747345070e-04
-   Equivalent    ACV ratio:               6.1841723981396557e-01
+   Equivalent    ACV ratio:               6.1841724100672946e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1 -5.8282021070873245e-03  1.0011442712692431e+00 -2.4554614451326912e-02  2.7846212911951715e+00
+ response_fn_1 -5.8282021038278623e-03  1.0011442712690906e+00 -2.4554614449741875e-02  2.7846212911341759e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean
- response_fn_1 -2.1351637857729214e-02  9.6952336435545631e-03
+ response_fn_1 -2.1351637869440054e-02  9.6952336617843297e-03
 Test Number 14 succeeded
 <<<<< Function evaluation summary (LF_INT): 100 total (100 new, 0 duplicate)
 <<<<< Function evaluation summary (MF_INT): 100 total (100 new, 0 duplicate)
@@ -275,25 +275,25 @@ Test Number 14 succeeded
       Initial     MC (  100 HF samples):  1.1448865853298427e-02
     Projected     MC (  396 HF samples):  2.8911277407319257e-03
     Projected GenACV (sample profile):    2.5475648427786737e-03
-    Projected GenACV ratio (1 - R^2):     8.8080592436016492e-01
+    Projected GenACV ratio (1 - R^2):     8.8080592462874452e-01
    Equivalent     MC (  500 HF samples):  2.2890351216434844e-03
    Equivalent GenACV ratio:               1.1129426624741212e+00
 Test Number 15 succeeded
-<<<<< Function evaluation summary (LF_INT): 1698 total (1698 new, 0 duplicate)
-<<<<< Function evaluation summary (MF_INT): 396 total (396 new, 0 duplicate)
+<<<<< Function evaluation summary (LF_INT): 1652 total (1652 new, 0 duplicate)
+<<<<< Function evaluation summary (MF_INT): 100 total (100 new, 0 duplicate)
 <<<<< Function evaluation summary (HF_INT): 396 total (396 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 7.5821760743999994e+02
+<<<<< Online number of equivalent high fidelity evaluations: 4.9970121399999999e+02
 <<<<< Variance for mean estimator:
  response_fn_1:
       Initial     MC (  100 HF samples):  1.1448865853298427e-02
        Online     MC (  396 HF samples):  2.6415851682138301e-03
-       Online GenACV (sample profile):    2.5475648427786737e-03
-       Online GenACV ratio (1 - R^2):     8.8080592436016492e-01
-   Equivalent     MC (  758 HF samples):  1.3796405099909992e-03
-   Equivalent GenACV ratio:               1.8465425046088955e+00
+       Online GenACV (sample profile):    2.3425689740730429e-03
+       Online GenACV ratio (1 - R^2):     8.8747396275857449e-01
+   Equivalent     MC (  500 HF samples):  2.0933864023245635e-03
+   Equivalent GenACV ratio:               1.1190332427266074e+00
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1 -4.4494664401585289e-02  1.0127869713314617e+00 -1.4732107254221666e-01  3.1736323424600759e+00
+ response_fn_1 -4.3039620142157071e-02  1.0124330105026129e+00 -1.5065445446660078e-01  3.1994511650255779e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean
- response_fn_1 -1.4342072485373500e-01  5.4431396050564414e-02
+ response_fn_1 -1.3790205869682043e-01  5.1822818412506279e-02
