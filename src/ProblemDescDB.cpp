@@ -1153,7 +1153,9 @@ const std::shared_ptr<Interface> ProblemDescDB::get_interface()
 
   InterfLIter i_it
     = std::find_if(dbRep->interfaceList.begin(), dbRep->interfaceList.end(),
-                   boost::bind(&Interface::interface_id, _1) == id_interface);
+        [&id_interface](const std::shared_ptr<Interface>& interface) {
+          return interface->interface_id() == id_interface;
+        });
   if (i_it == dbRep->interfaceList.end()) {
     auto new_interface = InterfaceUtils::get_interface(*this);
     dbRep->interfaceList.push_back(new_interface);
