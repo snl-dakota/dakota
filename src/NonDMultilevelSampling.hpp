@@ -48,11 +48,12 @@ protected:
 
   //void pre_run();
   void core_run() override;
-  //void post_run(std::ostream& s);
-  //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  //void post_run(std::ostream& s) override;
+  //void print_results(std::ostream& s,
+  //                   short results_state = FINAL_RESULTS) override;
 
-  Real estimator_accuracy_metric() const;
-  void print_variance_reduction(std::ostream& s) const;
+  Real estimator_accuracy_metric() const override;
+  void print_variance_reduction(std::ostream& s) const override;
 
   void nested_response_mappings(const RealMatrix& primary_coeffs,
 				const RealMatrix& secondary_coeffs) override;

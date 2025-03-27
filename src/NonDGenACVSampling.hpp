@@ -83,7 +83,7 @@ protected:
   void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 				       RealVector& lin_ineq_lb,
 				       RealVector& lin_ineq_ub) override;
-  void enforce_augmented_linear_ineq_constraints(RealVector& cd_vars);
+  void enforce_augmented_linear_ineq_constraints(RealVector& cd_vars) override;
 
   //
   //- Heading: member functions
@@ -98,6 +98,9 @@ private:
   /// generate sets of DAGs for the relevant combinations of active
   /// approximations
   void generate_ensembles_dags();
+  /// remove sets of DAGs for discarded models after an online iteration
+  void prune_ensembles(const UShortArray& active_approx_set);
+
   /// generate a set of DAGs for the provided root and subordinate nodes
   void generate_dags(unsigned short root, const UShortArray& nodes,
 		     UShortArraySet& dag_set);
@@ -140,14 +143,13 @@ private:
 			 Sizet2DArray& N_L_actual_shared,
 			 IntRealMatrixMap& sum_L_refined,
 			 Sizet2DArray& N_L_actual_refined,
-			 SizetArray& N_L_alloc_refined,
-			 const MFSolutionData& soln);
+			 SizetArray& N_L_alloc, const MFSolutionData& soln);
 
   void update_model_groups();
   void update_model_groups(const UShortList& root_list);
 
   void precompute_allocations();
-  void compute_allocations(const RealMatrix& var_L, MFSolutionData& solution);
+  void compute_allocations(MFSolutionData& solution);
 
   void genacv_raw_moments(const IntRealMatrixMap& sum_L_covar,
 			  const IntRealVectorMap& sum_H_covar,
@@ -222,11 +224,16 @@ private:
 			      Sizet2DArray& N_L_refined,
 			      const SizetArray& approx_sequence,
 			      size_t sequence_start, size_t sequence_end);
+  void accumulate_genacv_sums(IntRealMatrixMap& sum_L_shared,
+			      IntRealVectorMap& sum_H,
+			      IntRealSymMatrixArrayMap& sum_LL,
+			      IntRealMatrixMap& sum_LH, RealVector& sum_HH,
+			      SizetArray& N_H_shared, Sizet2DArray& N_L_shared);
 
   //bool genacv_approx_increment(const MFSolutionData& soln,
   // 			         const Sizet2DArray& N_L_actual_refined,
-  // 			         SizetArray& N_L_alloc_refined,
-  // 			         size_t iter, const SizetArray& approx_sequence,
+  // 			         SizetArray& N_L_alloc, size_t iter,
+  //                             const SizetArray& approx_sequence,
   // 			         size_t start, size_t end);
 
   void solve_for_genacv_control(const RealSymMatrix& cov_LL,
@@ -246,6 +253,7 @@ private:
 						 const UShortList& root_list);
 
   void update_best(MFSolutionData& solution);
+  void print_best();
   void restore_best();
   //void reset_acv();
 
@@ -259,6 +267,10 @@ private:
   //
   //- Heading: Data
   //
+
+  /// sample allocations per approximation (differs from actual if failed sims;
+  /// cached for use in available_budget())
+  SizetArray NApproxAlloc;
 
   /// the "G" matrix in Bomarito et al.
   RealSymMatrix GMat;
@@ -306,6 +318,8 @@ private:
 
 inline Real NonDGenACVSampling::available_budget() const
 {
+  // NLevAlloc[mf][rl] not avail until finalize_counts() --> cache NApproxAlloc
+
   bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
 		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
   const UShortArray& approx_set = activeModelSetIter->first;
@@ -313,14 +327,13 @@ inline Real NonDGenACVSampling::available_budget() const
   Real budget = (Real)maxFunctionEvals;
   if (offline || num_approx == numApprox) return budget;
 
-  size_t hf_form_index, hf_lev_index, cntr = 0;
-  hf_indices(hf_form_index, hf_lev_index);
-  size_t N_H_alloc = NLevAlloc[hf_form_index][hf_lev_index];
-  Real cost_H = sequenceCost[numApprox], N_over_cost = (Real)N_H_alloc / cost_H;
+  size_t lf_form_index, lf_lev_index, cntr = 0, N_L_alloc_a;
+  Real cost_H = sequenceCost[numApprox];
   for (size_t approx=0; approx<numApprox; ++approx)
-    if  (approx == approx_set[cntr]) ++cntr; // ordered sequence
-    else budget -= sequenceCost[approx] * N_over_cost;
+    if  (cntr < num_approx && approx == approx_set[cntr]) ++cntr; // ordered seq
+    else budget -= sequenceCost[approx] * NApproxAlloc[approx] / cost_H;
 
+  //Cout << "active budget = " << budget << std::endl;
   return budget;
 }
 

@@ -549,9 +549,9 @@ void NestedModel::declare_sources()
 {
   evaluationsDB.declare_source(modelId, modelType, subIterator->method_id(),
     "iterator");
-  if(!optionalInterface.is_null())
+  if(optionalInterface)
     evaluationsDB.declare_source(modelId, modelType,
-      optionalInterface.interface_id(), "interface");
+      optionalInterface->interface_id(), "interface");
 }
 
 
@@ -569,7 +569,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   if (!optInterfacePointer.empty()) {
     // allow recursion to progress - don't store/set/restore
     parallelLib.parallel_configuration_iterator(modelPCIter);
-    optionalInterface.init_communicators(messageLengths, max_eval_concurrency);
+    optionalInterface->init_communicators(messageLengths, max_eval_concurrency);
   }
 
   if (!recurse_flag)
@@ -636,7 +636,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   if (!optInterfacePointer.empty()) {
     // allow recursion to progress - don't store/set/restore
     parallelLib.parallel_configuration_iterator(modelPCIter);
-    optionalInterface.set_communicators(messageLengths, max_eval_concurrency);
+    optionalInterface->set_communicators(messageLengths, max_eval_concurrency);
     // initial setting for asynchEvalFlag & evaluationCapacity based on
     // optInterface (may be updated below)
     set_ie_asynchronous_mode(max_eval_concurrency);
@@ -671,7 +671,7 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   if (!optInterfacePointer.empty()) {
     // allow recursion to progress - don't store/set/restore
     parallelLib.parallel_configuration_iterator(modelPCIter);
-    optionalInterface.free_communicators();
+    optionalInterface->free_communicators();
   }
   */
   if (recurse_flag) {
@@ -1337,7 +1337,7 @@ void NestedModel::derived_evaluate(const ActiveSet& set)
 	std::to_string(nestedModelEvalCntr);
       // don't apply a redundant interface eval id
       bool append_iface_tag = false;
-      optionalInterface.eval_tag_prefix(eval_tag, append_iface_tag);
+      optionalInterface->eval_tag_prefix(eval_tag, append_iface_tag);
     }
 
     ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
@@ -1345,15 +1345,15 @@ void NestedModel::derived_evaluate(const ActiveSet& set)
     if(interfEvaluationsDBState == EvaluationsDBState::UNINITIALIZED)
       interfEvaluationsDBState = evaluationsDB.interface_allocate(modelId, 
           interface_id(), "simulation", currentVariables, optInterfaceResponse, 
-          default_interface_active_set(), optionalInterface.analysis_components());
+          default_interface_active_set(), optionalInterface->analysis_components());
 
-    optionalInterface.map(currentVariables, opt_interface_set,
+    optionalInterface->map(currentVariables, opt_interface_set,
 			  optInterfaceResponse);
     if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE) {
       evaluationsDB.store_interface_variables(modelId, interface_id(),
-          optionalInterface.evaluation_id(), opt_interface_set, currentVariables);
+          optionalInterface->evaluation_id(), opt_interface_set, currentVariables);
       evaluationsDB.store_interface_response(modelId, interface_id(),
-          optionalInterface.evaluation_id(), optInterfaceResponse);
+          optionalInterface->evaluation_id(), optInterfaceResponse);
     }
     parallelLib.parallel_configuration_iterator(pc_iter); // restore
 
@@ -1460,13 +1460,13 @@ void NestedModel::derived_evaluate_nowait(const ActiveSet& set)
     if(interfEvaluationsDBState == EvaluationsDBState::UNINITIALIZED)
       interfEvaluationsDBState = evaluationsDB.interface_allocate(modelId, interface_id(), 
           "simulation", currentVariables, optInterfaceResponse, default_interface_active_set(),
-          optionalInterface.analysis_components());
-    optionalInterface.map(currentVariables, opt_interface_set,
+          optionalInterface->analysis_components());
+    optionalInterface->map(currentVariables, opt_interface_set,
 			  optInterfaceResponse, true);
     if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE)
       evaluationsDB.store_interface_variables(modelId, interface_id(),
-          optionalInterface.evaluation_id(), opt_interface_set, currentVariables);
-    optInterfaceIdMap[optionalInterface.evaluation_id()] = nestedModelEvalCntr;
+          optionalInterface->evaluation_id(), opt_interface_set, currentVariables);
+    optInterfaceIdMap[optionalInterface->evaluation_id()] = nestedModelEvalCntr;
   }
 
   if (sub_iterator_map) {
@@ -1514,7 +1514,7 @@ const IntResponseMap& NestedModel::derived_synchronize()
 
     ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
     parallelLib.parallel_configuration_iterator(modelPCIter);
-    const IntResponseMap& opt_int_resp_map = optionalInterface.synchronize();
+    const IntResponseMap& opt_int_resp_map = optionalInterface->synchronize();
     parallelLib.parallel_configuration_iterator(pc_iter); // restore
 
     // overlay response sets
@@ -1530,7 +1530,7 @@ const IntResponseMap& NestedModel::derived_synchronize()
       }
       else { // see also Model::rekey_synch()
 	++r_cit; // prior to invalidation from erase within cache_unmatched
-	optionalInterface.cache_unmatched_response(oi_eval_id);
+	optionalInterface->cache_unmatched_response(oi_eval_id);
       }
     }
   }
@@ -2022,7 +2022,7 @@ void NestedModel::component_parallel_mode(short mode)
 	  modelPCIter->mi_parallel_level(index).server_communicator_size() > 1){
 	ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
 	parallelLib.parallel_configuration_iterator(modelPCIter);
-	optionalInterface.stop_evaluation_servers();
+	optionalInterface->stop_evaluation_servers();
 	parallelLib.parallel_configuration_iterator(pc_iter); // restore
       }
     }
@@ -2080,7 +2080,7 @@ void NestedModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
       // store/set/restore the ParallelLibrary::currPCIter
       ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
       parallelLib.parallel_configuration_iterator(modelPCIter);
-      optionalInterface.serve_evaluations();
+      optionalInterface->serve_evaluations();
       parallelLib.parallel_configuration_iterator(pc_iter); // restore
     }
     else if (componentParallelMode == SUB_MODEL_MODE) {

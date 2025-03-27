@@ -172,16 +172,16 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
 	      !actualModel->derivative_estimation())
       cache = true;
   }
-  // size approxInterface based on currentResponse, which is constructed from
+  // size approxInterface->based on currentResponse, which is constructed from
   // DB response spec, since actualModel could contain response aggregations
   if( 0 == currentResponse.field_lengths().length() )
-    approxInterface.assign_rep(std::make_shared<ApproximationInterface>(
+    approxInterface = std::make_shared<ApproximationInterface>(
       problem_db, vars, cache, am_interface_id,
-      currentResponse.function_labels()));
+      currentResponse.function_labels());
   else // field-based approximations
-    approxInterface.assign_rep(std::make_shared<ApproximationFieldInterface>(
+    approxInterface = std::make_shared<ApproximationFieldInterface>(
       problem_db, vars, cache, am_interface_id,
-      currentResponse));
+      currentResponse);
 
   // initialize the basis, if needed
   if (basis_expansion)
@@ -207,7 +207,7 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   // actual import of the model happens in ctor of specific Approximations
   // this prevents an initial build
   if (problem_db.get_bool("model.surrogate.import_surrogate")) {
-    for (auto& approx : approxInterface.approximations())
+    for (auto& approx : approxInterface->approximations())
       approx.map_variable_labels(vars);
     ++approxBuilds;
     if (strbegins(surrogateType, "global_")) update_global_reference();
@@ -287,9 +287,9 @@ DataFitSurrModel(std::shared_ptr<Iterator> dace_iterator, std::shared_ptr<Model>
   // assign the ApproximationInterface instance which manages the
   // local/multipoint/global approximation.  By instantiating with assign_rep(),
   // Interface::get_interface() does not need special logic for approximations.
-  approxInterface.assign_rep(std::make_shared<ApproximationInterface>(
+  approxInterface = std::make_shared<ApproximationInterface>(
     /*dfs_view,*/ approx_type, approx_order, actualModel->current_variables(), // ***
-    cache, actualModel->interface_id(), numFns, data_order, outputLevel));
+    cache, actualModel->interface_id(), numFns, data_order, outputLevel);
 
   if (daceIterator) // global DACE approximations
     daceIterator->sub_iterator_flag(true);
@@ -472,7 +472,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 {
   // initialize approxInterface (for serial operations).
   // Note: this is where max_eval_concurrency would be used.
-  //approxInterface.init_serial();
+  //approxInterface->init_serial();
 
   // initialize actualModel for parallel operations
   if (recurse_flag && actualModel) {
@@ -482,7 +482,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     // derivatives multiplier.  Obtain the deriv multiplier from actualModel.
     // min_points does not account for reuse_points or anchor, since these
     // will vary, and min_points must remain constant among ctor/run/dtor.
-    approxMinConcurrency = approxInterface.minimum_points(false)
+    approxMinConcurrency = approxInterface->minimum_points(false)
                  * actualModel->derivative_concurrency();
     // as for constructors, we recursively set and restore DB list nodes
     // (initiated from the restored starting point following construction)
@@ -624,9 +624,9 @@ void DataFitSurrModel::update_approximation(bool rebuild_flag)
   //daceIterator->run(pl_iter);
   const IntResponseMap& all_resp = daceIterator->all_responses();
   if (daceIterator->compact_mode())
-    approxInterface.update_approximation(daceIterator->all_samples(),  all_resp);
+    approxInterface->update_approximation(daceIterator->all_samples(),  all_resp);
   else
-    approxInterface.update_approximation(daceIterator->all_variables(),all_resp);
+    approxInterface->update_approximation(daceIterator->all_variables(),all_resp);
 
   if (rebuild_flag) // update the coefficients for each approximation
     rebuild_approximation(all_resp);
@@ -651,7 +651,7 @@ update_approximation(const Variables& vars, const IntResponsePair& response_pr,
     Cout << "\n>>>>> Updating " << surrogateType << " approximations.\n";
 
   // populate/replace the anchor point for each approximation
-  approxInterface.update_approximation(vars, response_pr); // update anchor pt
+  approxInterface->update_approximation(vars, response_pr); // update anchor pt
 
   if (rebuild_flag)
     rebuild_approximation(response_pr);
@@ -676,7 +676,7 @@ update_approximation(const VariablesArray& vars_array,
     Cout << "\n>>>>> Updating " << surrogateType << " approximations.\n";
 
   // populate/replace the current points for each approximation
-  approxInterface.update_approximation(vars_array, resp_map);
+  approxInterface->update_approximation(vars_array, resp_map);
 
   if (rebuild_flag)
     rebuild_approximation(resp_map);
@@ -701,7 +701,7 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
     Cout << "\n>>>>> Updating " << surrogateType << " approximations.\n";
 
   // populate/replace the current points for each approximation
-  approxInterface.update_approximation(samples, resp_map);
+  approxInterface->update_approximation(samples, resp_map);
 
   if (rebuild_flag)
     rebuild_approximation(resp_map);
@@ -724,9 +724,9 @@ void DataFitSurrModel::append_approximation(bool rebuild_flag)
     Cout << "\n>>>>> Appending " << all_resp.size() << " points to "
 	 << surrogateType << " approximations.\n";
   if (daceIterator->compact_mode())
-    approxInterface.append_approximation(daceIterator->all_samples(),  all_resp);
+    approxInterface->append_approximation(daceIterator->all_samples(),  all_resp);
   else
-    approxInterface.append_approximation(daceIterator->all_variables(),all_resp);
+    approxInterface->append_approximation(daceIterator->all_variables(),all_resp);
 
   if (rebuild_flag)
     rebuild_approximation(all_resp); // all_resp used to define build_fns
@@ -751,7 +751,7 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr,
     Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
 
   // append to the current points for each approximation
-  approxInterface.append_approximation(vars, response_pr);
+  approxInterface->append_approximation(vars, response_pr);
 
   if (rebuild_flag)
     rebuild_approximation(response_pr); // response_pr used to define build_fns
@@ -776,7 +776,7 @@ append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
     Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
 
   // append to the current points for each approximation
-  approxInterface.append_approximation(samples, resp_map);
+  approxInterface->append_approximation(samples, resp_map);
 
   if (rebuild_flag)
     rebuild_approximation(resp_map);
@@ -801,7 +801,7 @@ append_approximation(const VariablesArray& vars_array,
     Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
 
   // append to the current points for each approximation
-  approxInterface.append_approximation(vars_array, resp_map);
+  approxInterface->append_approximation(vars_array, resp_map);
 
   if (rebuild_flag)
     rebuild_approximation(resp_map); // resp_map used to define build_fns
@@ -826,7 +826,7 @@ append_approximation(const IntVariablesMap& vars_map,
     Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
 
   // append to the current points for each approximation
-  approxInterface.append_approximation(vars_map, resp_map);
+  approxInterface->append_approximation(vars_map, resp_map);
 
   if (rebuild_flag)
     rebuild_approximation(resp_map); // resp_map used to define build_fns
@@ -845,7 +845,7 @@ replace_approximation(const IntResponsePair& response_pr, bool rebuild_flag)
 	 << surrogateType << " approximations.\n";
 
   // append to the current points for each approximation
-  approxInterface.replace_approximation(response_pr);
+  approxInterface->replace_approximation(response_pr);
 
   if (rebuild_flag)
     rebuild_approximation(response_pr); // response_pr used to define build_fns
@@ -864,7 +864,7 @@ replace_approximation(const IntResponseMap& resp_map, bool rebuild_flag)
 	 << " approximations.\n";
 
   // append to the current points for each approximation
-  approxInterface.replace_approximation(resp_map);
+  approxInterface->replace_approximation(resp_map);
 
   if (rebuild_flag)
     rebuild_approximation(resp_map);
@@ -884,11 +884,11 @@ void DataFitSurrModel::pop_approximation(bool save_surr_data, bool rebuild_flag)
   // remove the most recent data appends from each approximation, where the
   // number of points to pop is tracked by pop counts at a lower level.
   // Typical use is to pop a candidate refinement following its evaluation.
-  approxInterface.pop_approximation(save_surr_data);
+  approxInterface->pop_approximation(save_surr_data);
 
   if (rebuild_flag) { // update the coefficients for each approximation
     BitArray rebuild_fns; // empty: default rebuild of all fns
-    approxInterface.rebuild_approximation(rebuild_fns);
+    approxInterface->rebuild_approximation(rebuild_fns);
     ++approxBuilds;
   }
 
@@ -907,12 +907,12 @@ void DataFitSurrModel::push_approximation()//(bool rebuild_flag)
   // where the data set to restore is tracked by the push index at a lower
   // level.  Typical use is to select the best candidate refinement from
   // previously popped data sets.
-  approxInterface.push_approximation();
+  approxInterface->push_approximation();
 
   /*
   if (rebuild_flag) { // update the coefficients for each approximation
     BitArray rebuild_fns; // empty: default rebuild of all fns
-    approxInterface.rebuild_approximation(rebuild_fns);
+    approxInterface->rebuild_approximation(rebuild_fns);
     ++approxBuilds;
   }
   */
@@ -928,12 +928,12 @@ void DataFitSurrModel::finalize_approximation()//(bool rebuild_flag)
     Cout << "\n>>>>> Finalizing " << surrogateType << " approximations.\n";
 
   // restore all remaining popped data sets to finalize each approximation
-  approxInterface.finalize_approximation();
+  approxInterface->finalize_approximation();
 
   /*
   if (rebuild_flag) { // update the coefficients for each approximation
     BitArray rebuild_fns; // empty: default rebuild of all fns
-    approxInterface.rebuild_approximation(rebuild_fns);
+    approxInterface->rebuild_approximation(rebuild_fns);
     ++approxBuilds;
   }
   */
@@ -955,7 +955,7 @@ void DataFitSurrModel::combine_approximation()
   //NonDIntegration* nond_int = (NonDIntegration*)daceIterator->iterator_rep();
   //bool swap = !nond_int->maximal_grid();
 
-  approxInterface.combine_approximation();
+  approxInterface->combine_approximation();
 }
 
 
@@ -965,7 +965,7 @@ void DataFitSurrModel::combined_to_active(bool clear_combined)
     Cout << "\n>>>>> Promoting combined " << surrogateType << " approximation "
 	 << "to active approximation.\n";
 
-  approxInterface.combined_to_active(clear_combined);
+  approxInterface->combined_to_active(clear_combined);
 }
 
 
@@ -1033,7 +1033,7 @@ void DataFitSurrModel::clear_approx_interface()
 {
   // fresh build: clear out previous data, but preserve history if needed
   // (multipoint preserves history for both {build,rebuild}_approximation())
-  approxInterface.clear_current_active_data();
+  approxInterface->clear_current_active_data();
 }
 
 
@@ -1043,18 +1043,18 @@ update_approx_interface(const Variables& vars,
 {
   // fresh build: clear out previous data, but preserve history if needed
   // (multipoint preserves history for both {build,rebuild}_approximation())
-  approxInterface.clear_current_active_data();
+  approxInterface->clear_current_active_data();
   // populate/replace the anchor data.  When supported by the surrogate type
   // (local, multipoint, equality-constrained global regression), this is
   // enforced as a hard constraint. Otherwise, it is just another data point.
-  approxInterface.update_approximation(vars, response_pr);
+  approxInterface->update_approximation(vars, response_pr);
 }
 
 
 void DataFitSurrModel::build_approx_interface()
 {
   if (!actualModel)
-    approxInterface.build_approximation(
+    approxInterface->build_approximation(
       userDefinedConstraints.continuous_lower_bounds(),
       userDefinedConstraints.continuous_upper_bounds(),
       userDefinedConstraints.discrete_int_lower_bounds(),
@@ -1062,7 +1062,7 @@ void DataFitSurrModel::build_approx_interface()
       userDefinedConstraints.discrete_real_lower_bounds(),
       userDefinedConstraints.discrete_real_upper_bounds());
   else { // employ sub-model vars view, if available
-    approxInterface.build_approximation(
+    approxInterface->build_approximation(
       ModelUtils::continuous_lower_bounds(*actualModel),
       ModelUtils::continuous_upper_bounds(*actualModel),
       ModelUtils::discrete_int_lower_bounds(*actualModel),
@@ -1141,7 +1141,7 @@ void DataFitSurrModel::build_global()
   size_t i, j, reuse_points = 0;
   int fn_index = *surrogateFnIndices.begin();
   const Pecos::SurrogateData& approx_data
-    = approxInterface.approximation_data(fn_index);
+    = approxInterface->approximation_data(fn_index);
   bool anchor = approx_data.anchor();
   if (pointReuse == "all" || pointReuse == "region") {
 
@@ -1197,7 +1197,7 @@ void DataFitSurrModel::build_global()
 	  //   id < 0 for non-unique evals from restart
 	  // update one point at a time since accumulation within an
 	  // IntResponseMap requires unique id's
-	  approxInterface.append_approximation(db_vars,
+	  approxInterface->append_approximation(db_vars,
 	    std::make_pair(prp_iter->eval_id(), db_resp));
 	  ++reuse_points;
 
@@ -1218,7 +1218,7 @@ void DataFitSurrModel::build_global()
   int new_points = 0;
   if (!daceIterator) { // reused/imported data only (no new data)
     // check for sufficient data
-    int min_points = approxInterface.minimum_points(true);
+    int min_points = approxInterface->minimum_points(true);
     if (reuse_points < min_points) {
       Cerr << "Error: a minimum of " << min_points << " points is required by "
 	   << "DataFitSurrModel::build_global.\n" << reuse_points
@@ -1284,13 +1284,13 @@ void DataFitSurrModel::rebuild_global()
   size_t pts_i, curr_points = SZ_MAX;
   StSIter it;
   for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
-    pts_i = approxInterface.approximation_data(*it).points();
+    pts_i = approxInterface->approximation_data(*it).points();
     if (pts_i < curr_points) curr_points = pts_i;
   }
   int new_points = 0;
   if (!daceIterator) { // reused/imported data only (no new data)
     // check for sufficient data
-    int min_points = approxInterface.minimum_points(true);
+    int min_points = approxInterface->minimum_points(true);
     if (curr_points < min_points) {
       Cerr << "Error: a minimum of " << min_points << " points is required by "
 	   << "DataFitSurrModel::build_global.\n" << curr_points
@@ -1317,12 +1317,12 @@ void DataFitSurrModel::rebuild_global()
       // append new data sets, rebuild approximation, increment approxBuilds
       append_approximation(true);
     }
-    else if (approxInterface.formulation_updated()) {
+    else if (approxInterface->formulation_updated()) {
       // Rebuild the approximation for updated formulation with existing data
 
       // This approach currently assumes an increment to data and coeffs:
       //BitArray rebuild_fns; // empty: default rebuild of all fns
-      //approxInterface.rebuild_approximation(rebuild_fns);
+      //approxInterface->rebuild_approximation(rebuild_fns);
 
       // Overwrite previous build without assumed increment to data/coeffs:
       build_approx_interface();
@@ -1380,7 +1380,7 @@ void DataFitSurrModel::refine_surrogate()
   // build surrogate from initial sample
   build_approx_interface();
   Real2DArray cv_diags = 
-    approxInterface.cv_diagnostics(diag_metrics, refineCVFolds);
+    approxInterface->cv_diagnostics(diag_metrics, refineCVFolds);
   size_t resp_fns = currentResponse.num_functions();
   RealArray cv_per_fn(resp_fns);
   for (size_t i=0; i<resp_fns; ++i)
@@ -1427,7 +1427,7 @@ void DataFitSurrModel::refine_surrogate()
     // build and check diagnostics
     build_approx_interface();
     Real2DArray cv_diags = 
-      approxInterface.cv_diagnostics(diag_metrics, refineCVFolds);
+      approxInterface->cv_diagnostics(diag_metrics, refineCVFolds);
     RealArray cv_per_fn(resp_fns);
     for (size_t i=0; i<resp_fns; ++i)
       cv_per_fn[i] = cv_diags[i][0];
@@ -1644,35 +1644,35 @@ void DataFitSurrModel::derived_evaluate(const ActiveSet& set)
     //parallelLib.parallel_configuration_iterator(modelPCIter);
     if (interfEvaluationsDBState == EvaluationsDBState::UNINITIALIZED)
       interfEvaluationsDBState = evaluationsDB.interface_allocate(modelId, 
-        approxInterface.interface_id(), "approximation", currentVariables,
+        approxInterface->interface_id(), "approximation", currentVariables,
 	currentResponse, default_interface_active_set(),
-	approxInterface.analysis_components());
+	approxInterface->analysis_components());
     
     switch (responseMode) {
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
       ActiveSet approx_set = set;
       approx_set.request_vector(approx_asv);
       approx_response = (mixed_eval) ? currentResponse.copy() : currentResponse;
-      approxInterface.map(currentVariables, approx_set, approx_response);
+      approxInterface->map(currentVariables, approx_set, approx_response);
       if (interfEvaluationsDBState == EvaluationsDBState::ACTIVE) {
         evaluationsDB.store_interface_variables(modelId,
-	  approxInterface.interface_id(), approxInterface.evaluation_id(),
+	  approxInterface->interface_id(), approxInterface->evaluation_id(),
 	  approx_set, currentVariables);
         evaluationsDB.store_interface_response(modelId,
-	  approxInterface.interface_id(), approxInterface.evaluation_id(),
+	  approxInterface->interface_id(), approxInterface->evaluation_id(),
 	  approx_response);
       }
       break;
     }
     case MODEL_DISCREPANCY: case AGGREGATED_MODEL_PAIR:
       approx_response = currentResponse.copy(); // TO DO
-      approxInterface.map(currentVariables, set, approx_response);
+      approxInterface->map(currentVariables, set, approx_response);
       if (interfEvaluationsDBState == EvaluationsDBState::ACTIVE) {
         evaluationsDB.store_interface_variables(modelId,
-	  approxInterface.interface_id(), approxInterface.evaluation_id(),
+	  approxInterface->interface_id(), approxInterface->evaluation_id(),
 	  set, currentVariables);
         evaluationsDB.store_interface_response(modelId,
-	  approxInterface.interface_id(), approxInterface.evaluation_id(),
+	  approxInterface->interface_id(), approxInterface->evaluation_id(),
 	  approx_response);
       }
       break;
@@ -1784,9 +1784,9 @@ void DataFitSurrModel::derived_evaluate_nowait(const ActiveSet& set)
     }
 
     if (interfEvaluationsDBState == EvaluationsDBState::ACTIVE)
-      evaluationsDB.interface_allocate(modelId, approxInterface.interface_id(),
+      evaluationsDB.interface_allocate(modelId, approxInterface->interface_id(),
 	"approximation", currentVariables, currentResponse,
-	default_interface_active_set(), approxInterface.analysis_components());
+	default_interface_active_set(), approxInterface->analysis_components());
 
     // compute the approximate response
     // don't need to set component parallel mode since this only queues the job
@@ -1794,18 +1794,18 @@ void DataFitSurrModel::derived_evaluate_nowait(const ActiveSet& set)
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
       ActiveSet approx_set = set;
       approx_set.request_vector(approx_asv);
-      approxInterface.map(currentVariables, approx_set, currentResponse, true);
+      approxInterface->map(currentVariables, approx_set, currentResponse, true);
       if (interfEvaluationsDBState == EvaluationsDBState::ACTIVE)
         evaluationsDB.store_interface_variables(modelId,
-	  approxInterface.interface_id(), approxInterface.evaluation_id(),
+	  approxInterface->interface_id(), approxInterface->evaluation_id(),
 	  approx_set, currentVariables);
       break;
     }
     case MODEL_DISCREPANCY: case AGGREGATED_MODEL_PAIR:
-      approxInterface.map(currentVariables,        set, currentResponse, true);
+      approxInterface->map(currentVariables,        set, currentResponse, true);
       if(interfEvaluationsDBState == EvaluationsDBState::ACTIVE)
         evaluationsDB.store_interface_variables(modelId,
-	  approxInterface.interface_id(), approxInterface.evaluation_id(),
+	  approxInterface->interface_id(), approxInterface->evaluation_id(),
 	  set, currentVariables);
       break;
     }
@@ -1820,7 +1820,7 @@ void DataFitSurrModel::derived_evaluate_nowait(const ActiveSet& set)
       break;
     }
     // store map from approxInterface eval id to DataFitSurrModel id
-    surrIdMap[approxInterface.evaluation_id()] = surrModelEvalCntr;
+    surrIdMap[approxInterface->evaluation_id()] = surrModelEvalCntr;
   }
 }
 
@@ -2049,7 +2049,7 @@ derived_synchronize_approx(bool block, IntResponseMap& approx_resp_map_rekey)
   //parallelLib.parallel_configuration_iterator(modelPCIter);
 
   // synchronize and rekey to use surrModelEvalCntr
-  rekey_synch(approxInterface, block, surrIdMap, approx_resp_map_rekey);
+  rekey_synch(*approxInterface, block, surrIdMap, approx_resp_map_rekey);
 
   //parallelLib.parallel_configuration_iterator(pc_iter); // restore
 
@@ -2334,13 +2334,13 @@ void DataFitSurrModel::declare_sources()
   switch (responseMode) {
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
     if(!actualModel || surrogateFnIndices.size() == numFns) {
-      evaluationsDB.declare_source(modelId, "surrogate", approxInterface.interface_id(),
+      evaluationsDB.declare_source(modelId, "surrogate", approxInterface->interface_id(),
         "approximation");
     } else if(surrogateFnIndices.empty()) { // don't know if this can happen.
       evaluationsDB.declare_source(modelId, "surrogate", actualModel->model_id(),
         actualModel->model_type());
     } else {
-      evaluationsDB.declare_source(modelId, "surrogate", approxInterface.interface_id(),
+      evaluationsDB.declare_source(modelId, "surrogate", approxInterface->interface_id(),
         "approximation");
       evaluationsDB.declare_source(modelId, "surrogate", actualModel->model_id(),
         actualModel->model_type());
@@ -2353,7 +2353,7 @@ void DataFitSurrModel::declare_sources()
   case MODEL_DISCREPANCY: case AGGREGATED_MODEL_PAIR:
     evaluationsDB.declare_source(modelId, "surrogate", actualModel->model_id(),
         actualModel->model_type());
-    evaluationsDB.declare_source(modelId, "surrogate", approxInterface.interface_id(),
+    evaluationsDB.declare_source(modelId, "surrogate", approxInterface->interface_id(),
         "approximation");
     break;
   }

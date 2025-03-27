@@ -327,12 +327,7 @@ if(DAKOTA_PYTHON_DIRECT_INTERFACE)
   # TODO: Use target_definitions
   # If not, use  Python_LIBRARY_DIRS
 
-  if(DAKOTA_PYTHON_DIRECT_INTERFACE_LEGACY) 
-    list(APPEND EXT_TPL_INCDIRS ${Python_INCLUDE_DIRS})
-    add_definitions("-DDAKOTA_PYTHON_LEGACY")
-    list(APPEND EXT_TPL_LIBS ${Python_LIBRARIES})
-  endif()
-  # Pybind11 is also included alongside older Python interface
+  # Pybind11
   list(APPEND EXT_TPL_INCDIRS ${pybind11_INCLUDE_DIR})
   add_definitions("-DDAKOTA_PYBIND11")
 
@@ -415,6 +410,7 @@ set(util_src ParallelLibrary.cpp IteratorScheduler.cpp MPIPackBuffer.cpp
     ParametersFileWriter.cpp ApreproParametersFileWriter.cpp StandardParametersFileWriter.cpp
     JSONParametersFileWriter.cpp ResultsFileReader.cpp StandardResultsFileReader.cpp
     JSONResultsFileReader.cpp JSONResultsParser.cpp model_utils.cpp iterator_utils.cpp
+    interface_utils.cpp
     )
 
 if(DAKOTA_HAVE_HDF5)
@@ -505,9 +501,6 @@ endif()
 
 if(DAKOTA_PYTHON_DIRECT_INTERFACE)
   list(APPEND interface_src Pybind11Interface.cpp)
-  if(DAKOTA_PYTHON_DIRECT_INTERFACE_LEGACY)
-    list(APPEND interface_src PythonInterface.cpp)
-   endif()
 endif()
 
 if(DAKOTA_SCILAB)

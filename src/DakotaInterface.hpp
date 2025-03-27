@@ -11,7 +11,7 @@
 #define DAKOTA_INTERFACE_H
 
 #include "dakota_system_defs.hpp"
-#include "dakota_global_defs.hpp" // for BaseConstructor
+#include "dakota_global_defs.hpp"
 #include "dakota_data_types.hpp"
 
 // forward declarations
@@ -54,10 +54,6 @@ public:
   //- Heading: Constructors, destructor, assignment operator
   //
 
-  /// default constructor
-  Interface();
-  /// standard constructor for envelope
-  Interface(ProblemDescDB& problem_db);
   /// copy constructor
   Interface(const Interface& interface_in);
 
@@ -262,15 +258,6 @@ public:
   /// cachedResponseMap
   void cache_unmatched_responses();
 
-  /// assign letter or replace existing letter with a new one
-  void assign_rep(std::shared_ptr<Interface> interface_rep);
-
-  /// assign letter or replace existing letter with a new one
-  /// DEPRECATED, but left for library mode clients to migrate:
-  /// transfers memory ownership to the contained shared_ptr;
-  /// ref_count_incr is ignored
-  void assign_rep(Interface* interface_rep, bool ref_count_incr = false);
-
   /// returns the interface type
   unsigned short interface_type() const;
 
@@ -298,12 +285,6 @@ public:
   /// at the iterator-evaluation scheduling level
   bool iterator_eval_dedicated_scheduler() const;
 
-  /// function to check interfaceRep (does this envelope contain a letter?)
-  bool is_null() const;
-
-  /// function to return the letter
-  std::shared_ptr<Interface> interface_rep();
-
   /// set the evaluation tag prefix (does not recurse)
   void eval_tag_prefix(const String& eval_id_str, bool append_iface_id = true);
 
@@ -313,14 +294,12 @@ protected:
   //- Heading: Constructors
   //
 
-  /// constructor initializes the base class part of letter classes
-  /// (BaseConstructor overloading avoids infinite recursion in the
-  /// derived class constructors - Coplien, p. 139)
-  Interface(BaseConstructor, const ProblemDescDB& problem_db);
+  /// constructor initializes the base class configuration
+  Interface(const ProblemDescDB& problem_db);
 
-  /// constructor initializes the base class part of letter classes
-  /// (NoDBBaseConstructor used for on the fly instantiations without a DB)
-  Interface(NoDBBaseConstructor, size_t num_fns, short output_level);
+  /// constructor initializes the base class configuration
+  /// for on the fly instantiations without a DB)
+  Interface(size_t num_fns, short output_level);
 
   //
   //- Heading: Convenience functions
@@ -439,9 +418,6 @@ private:
   //- Heading: Member functions
   //
 
-  /// Used by the envelope to instantiate the correct letter class
-  std::shared_ptr<Interface> get_interface(ProblemDescDB& problem_db);
-
   /// Used by algebraic mappings to determine the correct AMPL function
   /// evaluation call to make
   int algebraic_function_type(String);
@@ -482,45 +458,35 @@ private:
   /// number of algebraic responses (objectives+constraints)
   int numAlgebraicResponses;
 
-  /// pointer to the letter (initialized only for the envelope)
-  std::shared_ptr<Interface> interfaceRep;
-
   /// pointer to an AMPL solver library (ASL) object
   ASL *asl;
 };
 
 
 inline IntResponseMap& Interface::response_map()
-{ return (interfaceRep) ? interfaceRep->rawResponseMap : rawResponseMap; }
+{ return rawResponseMap; }
 
 
 // nonvirtual functions can access letter attributes directly (only need to fwd
 // member function call when the function could be redefined).
 inline unsigned short Interface::interface_type() const
-{ return (interfaceRep) ? interfaceRep->interfaceType : interfaceType; }
+{ return interfaceType; }
 
 
 inline const String& Interface::interface_id() const
-{ return (interfaceRep) ? interfaceRep->interfaceId : interfaceId; }
+{ return interfaceId; }
 
 
 inline int Interface::evaluation_id() const
-{ return (interfaceRep) ? interfaceRep->evalIdCntr : evalIdCntr; }
+{ return evalIdCntr; }
 
 
 inline bool Interface::multi_proc_eval() const
-{ return (interfaceRep) ? interfaceRep->multiProcEvalFlag : multiProcEvalFlag; }
+{ return multiProcEvalFlag; }
 
 
 inline bool Interface::iterator_eval_dedicated_scheduler() const
-{ return (interfaceRep) ? interfaceRep->ieDedSchedFlag : ieDedSchedFlag; }
-
-
-inline bool Interface::is_null() const
-{ return (interfaceRep) ? false : true; }
-
-inline std::shared_ptr<Interface> Interface::interface_rep()
-{ return interfaceRep; }
+{ return ieDedSchedFlag; }
 
 
 /// global comparison function for Interface

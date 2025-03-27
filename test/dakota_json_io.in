@@ -26,12 +26,12 @@ responses
 
 interface
   fork
-     analysis_drivers '@Python_EXECUTABLE@ dakota_json_io.py not_batch no_metadata no_an_comp json json'      #s0,#s1
-#    analysis_drivers '@Python_EXECUTABLE@ dakota_json_io.py no_metadata no_an_comp not_batch standard standard ' #s2
-#    analysis_drivers '@Python_EXECUTABLE@ dakota_json_io.py no_metadata no_an_comp not_batch aprepro standard' #s3
-#    analysis_drivers '@Python_EXECUTABLE@ dakota_json_io.py not_batch metadata an_comp json json'      #s4
-#    analysis_drivers '@Python_EXECUTABLE@ dakota_json_io.py batch no_metadata no_an_comp json json'          #s5,#s6
-#    analysis_drivers '@Python_EXECUTABLE@ dakota_json_io.py batch no_metadata no_an_comp standard json'        #s7
+     analysis_drivers '@Python3_EXECUTABLE@ dakota_json_io.py not_batch no_metadata no_an_comp json json'      #s0,#s1
+#    analysis_drivers '@Python3_EXECUTABLE@ dakota_json_io.py no_metadata no_an_comp not_batch standard standard ' #s2
+#    analysis_drivers '@Python3_EXECUTABLE@ dakota_json_io.py no_metadata no_an_comp not_batch aprepro standard' #s3
+#    analysis_drivers '@Python3_EXECUTABLE@ dakota_json_io.py not_batch metadata an_comp json json'      #s4
+#    analysis_drivers '@Python3_EXECUTABLE@ dakota_json_io.py batch no_metadata no_an_comp json json'          #s5,#s6
+#    analysis_drivers '@Python3_EXECUTABLE@ dakota_json_io.py batch no_metadata no_an_comp standard json'        #s7
     parameters_file 'params.in'
     results_file    'results.out'
     file_tag file_save

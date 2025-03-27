@@ -24,7 +24,7 @@ extern PRPCache data_pairs;
 
 ApplicationInterface::
 ApplicationInterface(const ProblemDescDB& problem_db):
-  Interface(BaseConstructor(), problem_db),
+  Interface(problem_db),
   parallelLib(problem_db.parallel_library()), 
   batchEval(problem_db.get_bool("interface.batch")),
   asynchFlag(problem_db.get_bool("interface.asynch")),

@@ -465,7 +465,7 @@ export_sample_sets(const String& prepend, size_t step)
 			 mlmfIter, step);
     for (size_t i=0; i<numApprox; ++i)
       if (active_set_for_model(i))
-	      export_all_samples(prepend, *iteratedModel->active_surrogate_model(i),
+	export_all_samples(prepend, *iteratedModel->active_surrogate_model(i),
 			   mlmfIter, step);
   }
 }
@@ -1221,7 +1221,7 @@ finite_solution_bounds(const RealVector& x0, RealVector& x_lb, RealVector& x_ub)
       budget = average(hf_targets); break;
     }
     default:
-      budget = activeBudget;  break;
+      budget = activeBudget;        break;
     }
 
     // "budget_exhausted" logic protects numerical solutions for budget-
@@ -1231,7 +1231,8 @@ finite_solution_bounds(const RealVector& x0, RealVector& x_lb, RealVector& x_ub)
     // but accuracy-constrained cases estimate hf_targets above, where it is
     // possible for the pilot to overshoot this target, such that we need to
     // protect against x_ub < x_lb.
-    if (equivHFEvals < budget) // budget not exhausted
+    //if (active_investment() < activeBudget) // active-model budget check
+    if (equivHFEvals < maxFunctionEvals)      //    all-model budget check
       derived_finite_solution_bounds(x0, x_lb, x_ub, budget);
     else
       x_ub = x0; // Note: x_ub = x_lb could then update x0 w/ enforce_bounds()
@@ -1669,7 +1670,7 @@ void NonDNonHierarchSampling::run_minimizers(MFSolutionData& soln)
     for (j=0; j<num_solvers; ++j) {
       auto& min_ij = min_i[j];
       if (!min_ij) continue;
-      varMinIndices.second = j;
+      varMinIndices.second = j; //fdCntr = -1;
       min_ij->run();
       const Variables& vars_star = min_ij->variables_results();
       const RealVector&  cv_star = vars_star.continuous_variables();
@@ -1874,75 +1875,6 @@ estvar_gradients_to_metric_gradient(const RealVector& ev_vec,
       evm_grad[v] = ev_grad(v, metric_index);
     break;
   }
-}
-
-
-int NonDNonHierarchSampling::
-cholesky_solve(RealSymMatrix& A, RealMatrix& X, RealMatrix& B,
-	       bool copy_A, bool copy_B, bool hard_error)
-{
-  // Leverage both the soln refinement in solve() and equilibration during
-  // factorization (inverting in place has issues with both -- while it can
-  // leverage equilibration during factorization, the resulting inverse is
-  // equilibrated and requires additional processing).
-  RealSpdSolver spd_solver;
-  spd_solver.solveToRefinedSolution(true);
-
-  int num_Ac = A.numCols(), num_Bc = B.numCols();
-  if (X.numRows() != num_Ac || X.numCols() != num_Bc)
-    X.shapeUninitialized(num_Ac, num_Bc);
-
-  // Matrix & RHS altered by equilibration --> make copies if orig still needed
-  RealSymMatrix A_copy;  RealMatrix B_copy;
-  if (copy_A) {
-    copy_data(A, A_copy);
-    spd_solver.setMatrix(Teuchos::rcp(&A_copy,false));
-  }
-  else // Ok to modify A in place
-    spd_solver.setMatrix(Teuchos::rcp(&A,false));
-
-  if (copy_B) {
-    copy_data(B, B_copy);
-    spd_solver.setVectors(Teuchos::rcp(&X,false), Teuchos::rcp(&B_copy,false));
-  }
-  else // Ok to modify B in place
-    spd_solver.setVectors(Teuchos::rcp(&X,false), Teuchos::rcp(&B,false));
-
-  spd_solver.factorWithEquilibration(spd_solver.shouldEquilibrate());
-  // Teuchos bug: solve() discards lower level factor() return code, so unroll
-  int fact_code = spd_solver.factor();
-  if (fact_code) {
-    // It appears from testing that this is non-fatal to the subsequent solve(),
-    // but we can use it to flag cases that should use SVD for robustness.
-    if (hard_error) {
-      Cerr << "Error: Cholesky factorization failure (LAPACK POTRF error code "
-	   << fact_code << ") during cholesky_solve().\n       Consider "
-	   << "hardened SVD-based approach." << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
-    else
-      Cerr << "Warning: Cholesky factorization failure (LAPACK POTRF "
-	   << "error code " << fact_code << ") during cholesky_solve().\n"
-	   << "         Mitigation to be performed." << std::endl;
-    return fact_code;
-  }
-  int solve_code = spd_solver.solve(); // detects/uses preceding factorization
-  if (solve_code) {
-    // This trap is unlikely to become active since the remaining steps are
-    // FBS and de-equilibration.  Factorization is the main issue (which
-    // solve() neglects to propagate).
-    if (hard_error) {
-      Cerr << "Error: solver failure (LAPACK POTRS error code " << solve_code
-	   << ") in cholesky_solve().\n       Consider hardened SVD-based "
-	   << "approach." << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
-    else
-      Cerr << "Warning: solver failure (LAPACK POTRS error code " << solve_code
-	   << ") in cholesky_solve().\n         Mitigation to be performed."
-	   << std::endl;
-  }
-  return solve_code;
 }
 
 
