@@ -10,15 +10,6 @@ macro(dakota_find_python)
       message(STATUS "Dakota enabling Python (Development) for direct or surrogate interface")
       list(APPEND dakota_python_components Development)
       
-      if (DAKOTA_PYTHON_DIRECT_INTERFACE_LEGACY)
-        if (DAKOTA_PYTHON_DIRECT_INTERFACE)
-          message(STATUS "Dakota enabling legacy Python direct interface")
-	else()
-          message(WARNING "Request to enable Dakota's legacy Python direct interface forced OFF; set DAKOTA_PYTHON_DIRECT_INTERFACE to ON to use it")
-          set(DAKOTA_PYTHON_DIRECT_INTERFACE_LEGACY OFF CACHE BOOL "Force OFF because direct interface not enabled" FORCE) 
-        endif()
-      endif()
-
       if (DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY)
 	if (DAKOTA_PYTHON_DIRECT_INTERFACE)
           message(STATUS "Dakota enabling Python direct interface with NumPy")
@@ -35,15 +26,6 @@ macro(dakota_find_python)
 
     if (DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY)
 	message(STATUS "NumPy version ${Python_NumPy_VERSION} found at ${Python_NumPy_INCLUDE_DIRS}")
-        if (DAKOTA_PYTHON_DIRECT_INTERFACE_LEGACY)
-          string(FIND ${Python_NumPy_VERSION} "." first_dot)
-	  if(first_dot GREATER -1)
-	    string(SUBSTRING ${Python_NumPy_VERSION} 0 ${first_dot} MAJOR_VERSION)
-	    if(MAJOR_VERSION GREATER 1)
-              message(FATAL_ERROR "Dakota legacy Python direct interface incompatible with NumPy version 2+; set DAKOTA_PYTHON_DIRECT_INTERFACE_LEGACY to OFF")
-	    endif()
-	  endif()
-        endif()
     endif()
 
 
@@ -52,7 +34,7 @@ macro(dakota_find_python)
     # require setting other variables
     if(NOT PYTHON_EXECUTABLE)
       set(PYTHON_EXECUTABLE "${Python_EXECUTABLE}" CACHE FILEPATH
-	"Dakota set legacy PYTHON_EXECUTABLE to match Python_EXECUTABLE")
+	"Dakota set PYTHON_EXECUTABLE to match Python_EXECUTABLE")
     endif()
     
     # TODO: fine-grained error messages

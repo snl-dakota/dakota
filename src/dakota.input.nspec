@@ -7453,10 +7453,6 @@ KEYWORD interface {N_ifm3(start,0,stop)}
       [ numpy {N_ifm(true,numpyFlag)} ]
      )
     |
-    ( legacy_python {N_ifm(type,interfaceType_LEGACY_PYTHON_INTERFACE)}
-      [ numpy {N_ifm(true,numpyFlag)} ]
-     )
-    |
     scilab {N_ifm(type,interfaceType_SCILAB_INTERFACE)}
     |
     grid {N_ifm(type,interfaceType_GRID_INTERFACE)}
