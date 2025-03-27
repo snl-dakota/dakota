@@ -142,7 +142,7 @@ typedef std::list<Real>                RealList;
 typedef std::list<RealVector>          RealVectorList;
 typedef std::list<String>              StringList;
 typedef std::list<Variables>           VariablesList;
-typedef std::list<Interface>           InterfaceList;
+typedef std::list<std::shared_ptr<Interface>> InterfaceList;
 typedef std::list<Response>            ResponseList;
 typedef std::list<ParamResponsePair>   PRPList;
 typedef std::list<std::shared_ptr<Model>> ModelList;

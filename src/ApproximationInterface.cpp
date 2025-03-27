@@ -28,7 +28,7 @@ ApproximationInterface::
 ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
 		       bool am_cache, const String& am_interface_id,
 		       const StringArray& fn_labels):
-  Interface(BaseConstructor(), problem_db), 
+  Interface(problem_db), 
   approxFnIndices(problem_db.get_szs("model.surrogate.function_indices")),
   trackEvalIds(false),
   //graph3DFlag(problem_db.get_bool("environment.graphics")),
@@ -131,7 +131,7 @@ ApproximationInterface(const String& approx_type,
 		       const Variables& am_vars, bool am_cache,
 		       const String& am_interface_id, size_t num_fns,
 		       short data_order, short output_level):
-  Interface(NoDBBaseConstructor(), num_fns, output_level), //graph3DFlag(false),
+  Interface(num_fns, output_level), //graph3DFlag(false),
   trackEvalIds(false), challengeFormat(TABULAR_ANNOTATED),
   challengeActiveOnly(false), actualModelVars(am_vars.copy()),
   actualModelCache(am_cache), actualModelInterfaceId(am_interface_id)
