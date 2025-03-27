@@ -1221,7 +1221,7 @@ finite_solution_bounds(const RealVector& x0, RealVector& x_lb, RealVector& x_ub)
       budget = average(hf_targets); break;
     }
     default:
-      budget = activeBudget;  break;
+      budget = activeBudget;        break;
     }
 
     // "budget_exhausted" logic protects numerical solutions for budget-
@@ -1231,7 +1231,8 @@ finite_solution_bounds(const RealVector& x0, RealVector& x_lb, RealVector& x_ub)
     // but accuracy-constrained cases estimate hf_targets above, where it is
     // possible for the pilot to overshoot this target, such that we need to
     // protect against x_ub < x_lb.
-    if (equivHFEvals < budget) // budget not exhausted
+    //if (active_investment() < activeBudget) // active-model budget check
+    if (equivHFEvals < maxFunctionEvals)      //    all-model budget check
       derived_finite_solution_bounds(x0, x_lb, x_ub, budget);
     else
       x_ub = x0; // Note: x_ub = x_lb could then update x0 w/ enforce_bounds()
