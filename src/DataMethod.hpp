@@ -226,15 +226,12 @@ enum { DEFAULT_FINAL_STATS=0, QOI_STATISTICS, ESTIMATOR_PERFORMANCE };
 // define special values for qoi aggregation norm for sample
 // allocation over levels and QoIs
 enum { QOI_AGGREGATION_MAX, QOI_AGGREGATION_SUM };
-
 // target variance for fitting sample allocation
 enum { TARGET_MEAN, TARGET_VARIANCE, TARGET_SIGMA, TARGET_SCALARIZATION };
-
 // define special values for computation of convergence tolerance,
 // either absolute or relative
 enum { CONVERGENCE_TOLERANCE_TYPE_RELATIVE,
        CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE };
-
 // define optimization formulation for MLMC sample allocation by
 // specifing equality constraint, either variance or cost
 enum { CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT,
@@ -249,6 +246,11 @@ enum { SHARED_PILOT, INDEPENDENT_PILOT };
 enum { NO_GROUP_THROTTLE=0,      MFMC_ESTIMATOR_GROUPS,
        COMMON_ESTIMATOR_GROUPS,  GROUP_SIZE_THROTTLE,
        RCOND_TOLERANCE_THROTTLE, RCOND_BEST_COUNT_THROTTLE };
+// special values for optSubProblemForm
+enum { NO_OPTIMAL_ALLOCATION=0, ANALYTIC_SOLUTION, REORDERED_ANALYTIC_SOLUTION,
+       R_ONLY_LINEAR_CONSTRAINT, R_AND_N_NONLINEAR_CONSTRAINT,
+       N_MODEL_LINEAR_CONSTRAINT, N_MODEL_LINEAR_OBJECTIVE,
+       N_GROUP_LINEAR_CONSTRAINT, N_GROUP_LINEAR_OBJECTIVE };
 // Numerical solution modes
 enum { REORDERED_FALLBACK, NUMERICAL_FALLBACK, NUMERICAL_OVERRIDE };
 // options for obtaining cost data for model fidelities/resolutions

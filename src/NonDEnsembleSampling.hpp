@@ -48,9 +48,9 @@ protected:
   //- Heading: New virtual functions
   //
 
-  /// return the amount of budget available for optimal allocation, generally
-  /// maxFunctionEvals minus any sunk cost for inactive groups/models
-  virtual Real available_budget() const;
+  /// compute the deduction in available budget for optimal allocation,
+  /// generally any sunk pilot cost for deactivated groups/models
+  virtual Real inactive_budget_deduction() const;
 
   /// return the scalar optimization metric (objective or constraint)
   /// defined from the QoI-vector of estimator variances
@@ -80,6 +80,10 @@ protected:
   //
   //- Heading: Member functions
   //
+
+  /// return the amount of budget available for optimal allocation, generally
+  /// maxFunctionEvals minus any deductions
+  Real active_budget() const;
 
   /// recover estimates of simulation cost using aggregated response
   /// metadata spanning one batch of samples
@@ -201,6 +205,12 @@ protected:
   /// OFFLINE_PILOT, ONLINE_PILOT_PROJECTION, or OFFLINE_PILOT_PROJECTION
   short pilotMgmtMode;
 
+  /// formulation for optimization sub-problem that targets maximal accuracy
+  /// fo fixed budget or minimal cost for specified accuracy
+  short optSubProblemForm;
+  /// SQP or NIP
+  unsigned short optSubProblemSolver;
+
   /// indicates use of user-specified cost ratios, online cost recovery,
   /// or a combination
   short costSource;
@@ -299,8 +309,25 @@ private:
     (pilot included within total budget), then any online pilot cost
     for inactive models/groups needs to be deducted from the total
     budget available for the optimization over active models/groups. */
-inline Real NonDEnsembleSampling::available_budget() const
-{ return (Real)maxFunctionEvals; } // default (no runtime model/group selection)
+inline Real NonDEnsembleSampling::inactive_budget_deduction() const
+{ return 0.; } // default implementation (overridden by GenACV,ML BLUE)
+
+
+/** If a model or group is rendered inactive for an online approach
+    (pilot included within total budget), then any online pilot cost
+    for inactive models/groups needs to be deducted from the total
+    budget available for the optimization over active models/groups. */
+inline Real NonDEnsembleSampling::active_budget() const
+{
+  Real budget = (Real)maxFunctionEvals; // SZ_MAX if accuracy_constrained
+  bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
+		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION),
+    accuracy_constrained = (optSubProblemForm == N_MODEL_LINEAR_OBJECTIVE ||
+			    optSubProblemForm == N_GROUP_LINEAR_OBJECTIVE);
+  if (!offline && !accuracy_constrained)
+    budget -= inactive_budget_deduction();
+  return budget;
+}
 
 
 inline void NonDEnsembleSampling::

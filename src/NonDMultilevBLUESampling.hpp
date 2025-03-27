@@ -49,7 +49,7 @@ protected:
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
-  Real available_budget() const override;
+  Real inactive_budget_deduction() const override;
 
   void estimator_variances(const RealVector& cd_vars,
 			   RealVector& est_var) override;
@@ -189,13 +189,13 @@ private:
   /// find the best-conditioned group that contains the HF model
   size_t best_conditioned_hf_group();
 
-  /// deduct sunk (pilot) costs from samples on discarded groups
-  void deduct_inactive_group_costs(const BitArray& retained,
-				   const SizetArray& N_G_alloc,
-				   Real& budget) const;
-  /// deduct sunk (pilot) costs from samples on discarded models
-  void deduct_inactive_model_costs(const BitArray& retained,
-				   size_t N_alloc, Real& budget) const;
+  /// compute budget deduction for sunk (pilot) costs from samples on
+  /// discarded groups
+  Real inactive_group_costs(const BitArray& retained,
+			    const SizetArray& N_G_alloc) const;
+  /// compute budget deduction for sunk (pilot) costs from samples on
+  /// discarded models
+  Real inactive_model_costs(const BitArray& retained, size_t N_alloc) const;
 
   /// define active models from overlay of components of active groups
   void retained_groups_to_models(const BitArray& active_g,
@@ -400,53 +400,48 @@ all_to_active_group(size_t all_index) const
 }
 
 
-inline void NonDMultilevBLUESampling::
-deduct_inactive_group_costs(const BitArray& retained,
-			    const SizetArray& N_G_alloc, Real& budget) const
+inline Real NonDMultilevBLUESampling::
+inactive_group_costs(const BitArray&   retained,
+		     const SizetArray& N_G_alloc) const
 {
   // deduct accumulated cost for inactive groups (independent pilot sampling)
 
-  if (retained.empty()) return;
+  if (retained.empty()) return 0.;
 
-  //budget = (Real)maxFunctionEvals;
-  Real cost_H = sequenceCost[numApprox];
+  Real cost_H = sequenceCost[numApprox], deduct = 0.;
   for (size_t g=0; g<numGroups; ++g)
     if (!retained[g])
-      budget -= N_G_alloc[g] * modelGroupCost[g] / cost_H;
+      deduct += N_G_alloc[g] * modelGroupCost[g] / cost_H;
+  return deduct;
 }
 
 
-inline void NonDMultilevBLUESampling::
-deduct_inactive_model_costs(const BitArray& retained, size_t N_alloc,
-			    Real& budget) const
+inline Real NonDMultilevBLUESampling::
+inactive_model_costs(const BitArray& retained, size_t N_alloc) const
 {
   // deduct accumulated cost for inactive models (shared pilot sampling)
 
-  if (retained.empty()) return;
+  if (retained.empty()) return 0.;
 
-  //budget = (Real)maxFunctionEvals;
-  Real cost_H = sequenceCost[numApprox], N_over_cost = (Real)N_alloc / cost_H;
+  Real cost_H = sequenceCost[numApprox], N_over_cost = (Real)N_alloc / cost_H,
+    deduct = 0.;
   for (size_t m=0; m<=numApprox; ++m)
     if (!retained[m])
-      budget -= sequenceCost[m] * N_over_cost;
+      deduct += sequenceCost[m] * N_over_cost;
+  return deduct;
 }
 
 
-inline Real NonDMultilevBLUESampling::available_budget() const
+inline Real NonDMultilevBLUESampling::inactive_budget_deduction() const
 {
-  bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
-		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
-  Real budget = (Real)maxFunctionEvals;
-  if (offline) return budget;
-
   // deduct accumulated cost for inactive models (shared pilot sampling) or
   // inactive groups (independent pilot sampling)
 
   switch (pilotGroupSampling) {
   case INDEPENDENT_PILOT: // budget deductions are group-based
-    deduct_inactive_group_costs(retainedModelGroups, NGroupAlloc, budget);
+    return inactive_group_costs(retainedModelGroups, NGroupAlloc);
     break;
-  case SHARED_PILOT: // budget deductions are model-based
+  default: // SHARED_PILOT: budget deductions are model-based
     // > deduct shared pilot cost for an approx model iff all groups containing
     //   this model are discarded
     // > prune_model_groups() currently enforces retention of all_group for
@@ -457,11 +452,9 @@ inline Real NonDMultilevBLUESampling::available_budget() const
     // *** TO DO: revise all_group,shared_samp as needed to sync with changes
     //            to prune_model_groups()
     size_t all_group = numGroups - 1;
-    deduct_inactive_model_costs(retainedModels, NGroupAlloc[all_group], budget);
+    return inactive_model_costs(retainedModels, NGroupAlloc[all_group]);
     break;
   }
-
-  return budget;
 }
 
 

@@ -996,14 +996,14 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
 	if (g != _NPOS) active_g.set(g); // flip bit to on
       }
       // For analytic initial guesses, mirror the budget deductions used in
-      // available_budget() for ensemble_numerical_solution()
+      // active_budget() for ensemble_numerical_solution()
       switch (pilotGroupSampling) {
       case SHARED_PILOT: {
 	BitArray active_m;  retained_groups_to_models(active_g, active_m);
-	deduct_inactive_model_costs(active_m, pilot_all,    budget);  break;
+	budget -= inactive_model_costs(active_m, pilot_all);     break;
       }
       case INDEPENDENT_PILOT: // budget deductions are group-based
-	deduct_inactive_group_costs(active_g, pilotSamples, budget);  break;
+	budget -= inactive_group_costs(active_g, pilotSamples);  break;
       }
     }
     if (budget > 0.)

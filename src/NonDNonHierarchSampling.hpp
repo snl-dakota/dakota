@@ -21,12 +21,6 @@ namespace Dakota {
 // control of NPSOL is needed: {Central,Fwd} FDSS are now assigned.
 #define RATIO_NUDGE 1.e-4
 
-// special values for optSubProblemForm
-enum { ANALYTIC_SOLUTION = 1, REORDERED_ANALYTIC_SOLUTION,
-       R_ONLY_LINEAR_CONSTRAINT, R_AND_N_NONLINEAR_CONSTRAINT,
-       N_MODEL_LINEAR_CONSTRAINT, N_MODEL_LINEAR_OBJECTIVE,
-       N_GROUP_LINEAR_CONSTRAINT, N_GROUP_LINEAR_OBJECTIVE };
-
 
 /// Base class for non-hierarchical ensemble-based Monte Carlo sampling.
 
@@ -548,11 +542,6 @@ protected:
   /// deduction of sunk (pilot) cost for inactive models/groups
   Real activeBudget;
 
-  /// formulation for optimization sub-problem that minimizes R^2 subject
-  /// to different variable sets and different linear/nonlinear constraints
-  short optSubProblemForm;
-  /// SQP or NIP
-  unsigned short optSubProblemSolver;
   /// user specification to suppress any increments in the number of HF
   /// evaluations (e.g., because too expensive and no more can be performed)
   bool truthFixedByPilot;
