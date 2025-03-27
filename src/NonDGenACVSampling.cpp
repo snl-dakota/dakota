@@ -192,7 +192,7 @@ void NonDGenACVSampling::prune_ensembles(const UShortArray& active_approx_set)
   while (d_it != modelDAGs.end()) {
     const UShortArray& approx_set = d_it->first;
     if (contains(approx_set, inactive_approx_set, true)) { // ordered
-      Cout << "Removing approx_set:\n" << approx_set;
+      Cout << "Removing approximation set:\n" << approx_set;
       modelDAGs.erase(d_it++);
     }
     else ++d_it;
@@ -770,7 +770,7 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
-  inflate(N_H_alloc, NApproxAlloc); // used in available_budget()
+  inflate(N_H_alloc, NApproxAlloc); // used in active_budget()
   precompute_allocations(); // compute metrics not dependent on active DAG
   std::pair<UShortArray, UShortArray> soln_key;
   for (activeModelSetIter  = modelDAGs.begin();
@@ -2229,7 +2229,7 @@ void NonDGenACVSampling::restore_best()
       activeDAGIter      != bestDAGIter) { // best is not most recent
     activeModelSetIter = bestModelSetIter;
     activeDAGIter      = bestDAGIter;
-    //activeBudget     = available_budget(); // for completeness?
+    //activeBudget     = active_budget(); // for completeness?
     if (approx_incr) generate_reverse_dag(best_models, best_dag);
   }
   // now we can re-order roots based on final eval ratios solution

@@ -44,13 +44,15 @@ NonDNonHierarchSampling* NonDNonHierarchSampling::nonHierSampInstance(NULL);
 NonDNonHierarchSampling::
 NonDNonHierarchSampling(ProblemDescDB& problem_db,
 			std::shared_ptr<Model> model):
-  NonDEnsembleSampling(problem_db, model),
-  activeBudget((Real)maxFunctionEvals), optSubProblemForm(0),
+  NonDEnsembleSampling(problem_db, model), activeBudget((Real)maxFunctionEvals),
   truthFixedByPilot(problem_db.get_bool("method.nond.truth_fixed_by_pilot")),
   analyticEstVarDerivs(false), // only in ML BLUE currently
   hardenNumericSoln(true)      // Cholesky option not currently exposed in spec
 {
   // solver(s) that perform the numerical solution for resource allocations
+  // > Note: this is not a hard error for analytic MFMC that doesn't require
+  //   fallback, but since this is a runtime detection, go ahead and enforce
+  //   that a numerical solution fallback is available.
   optSubProblemSolver = sub_optimizer_select(
     probDescDB.get_ushort("method.nond.opt_subproblem_solver"),
     SUBMETHOD_DIRECT_NPSOL_OPTPP); // default is global + competed local
@@ -524,7 +526,7 @@ mfmc_analytic_solution(const UShortArray& approx_set, const RealMatrix& rho2_LH,
   if (lower_bounded_r)
     for (a=num_am1; a>=0; --a) {
       // approx_set is ordered but with omissions
-      Real& avg_eval_ratio = avg_eval_ratios[approx_set[a]];
+      Real& avg_eval_ratio = avg_eval_ratios[a];
       if (avg_eval_ratio < nudge_p1)
 	{ avg_eval_ratio = nudge_p1; nudge_p1 += RATIO_NUDGE; }
     }
@@ -854,7 +856,7 @@ scale_to_budget_with_pilot(RealVector& avg_eval_ratios, const RealVector& cost,
 void NonDNonHierarchSampling::ensemble_numerical_solution(MFSolutionData& soln)
 {
   // deduct sunk cost for inactive models/groups
-  activeBudget = available_budget(); // virtual for GenACV, ML BLUE
+  activeBudget = active_budget(); // virtual for GenACV, ML BLUE
 
   size_t num_cdv, num_lin_con, num_nln_con;
   numerical_solution_counts(num_cdv, num_lin_con, num_nln_con); // virtual
@@ -1211,17 +1213,21 @@ finite_solution_bounds(const RealVector& x0, RealVector& x_lb, RealVector& x_ub)
 	 optSubProblemSolver == SUBMETHOD_EGO ) ) {
     // Prior to approx increments (when numerical solns are performed),
     // equivHFEvals represents the total incurred cost in shared sample sets
-    Real budget;
+    Real active_budget, total_budget;
     switch (optSubProblemForm) {
     case N_MODEL_LINEAR_OBJECTIVE: case N_GROUP_LINEAR_OBJECTIVE: {
       // accuracy constrained: infer upper bounds from budget reqd to obtain
       // target accuracy via MC: varH[q] / tgt = tol * estvar0[q]; for minimizer
       // sequencing, a downstream refinement can omit this approximated bound
       RealVector hf_targets;  apply_mc_reference(hf_targets);
-      budget = average(hf_targets); break;
+      active_budget  = total_budget = average(hf_targets);
+      active_budget -= inactive_budget_deduction();
+      break;
     }
     default:
-      budget = activeBudget;        break;
+      active_budget = activeBudget;
+      total_budget  = (Real)maxFunctionEvals;
+      break;
     }
 
     // "budget_exhausted" logic protects numerical solutions for budget-
@@ -1231,9 +1237,9 @@ finite_solution_bounds(const RealVector& x0, RealVector& x_lb, RealVector& x_ub)
     // but accuracy-constrained cases estimate hf_targets above, where it is
     // possible for the pilot to overshoot this target, such that we need to
     // protect against x_ub < x_lb.
-    //if (active_investment() < activeBudget) // active-model budget check
-    if (equivHFEvals < maxFunctionEvals)      //    all-model budget check
-      derived_finite_solution_bounds(x0, x_lb, x_ub, budget);
+    //if (active_investment() < active_budget) // active-model budget check
+    if (equivHFEvals < total_budget)           //        total budget check
+      derived_finite_solution_bounds(x0, x_lb, x_ub, active_budget);
     else
       x_ub = x0; // Note: x_ub = x_lb could then update x0 w/ enforce_bounds()
   }

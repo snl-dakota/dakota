@@ -229,7 +229,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
   Real eps_sq_div_2, sum_sqrt_var_cost, agg_estvar0 = 0., lev_cost, budget,
     ref_cost = sequenceCost[numSteps-1]; // HF cost (1 level)
 
-  if (budget_constrained) budget_cost = available_budget() * ref_cost;
+  if (budget_constrained) budget_cost = active_budget() * ref_cost;
   // For moment estimation, we accumulate telescoping sums for Q^i using
   // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (sum_Y[i] for i=1:4).
   // For computing N_l from estimator variance, we accumulate square of Y1
@@ -1530,7 +1530,7 @@ compute_sample_allocation_target(const RealMatrix& var_qoi,
 				 SizetArray& delta_N_l)
 {
   size_t step, num_steps = cost.length(), qoi;
-  Real budget_cost = available_budget() * cost[num_steps-1], N_target, factor;
+  Real budget_cost = active_budget() * cost[num_steps-1], N_target, factor;
   RealVector lev_costs(num_steps, false);
   for (step=0; step<num_steps; ++step)
     lev_costs[step] = level_cost(cost, step);

@@ -1613,7 +1613,7 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
     lf_cost =  surr_model.solution_level_costs();
   Real eps_sq_div_2, sum_sqrt_var_cost, agg_estvar_iter0 = 0., budget_cost,
     r_lq, lf_lev_cost, hf_lev_cost, hf_ref_cost = hf_cost.back();
-  if (budget_constrained) budget_cost = available_budget() * hf_ref_cost;
+  if (budget_constrained) budget_cost = active_budget() * hf_ref_cost;
   RealVectorArray eval_ratios(num_cv_lev);
   // For moment estimation, we accumulate telescoping sums for Q^i using
   // discrepancies Yi = Q^i_{lev} - Q^i_{lev-1} (Y_diff_Qpow[i] for i=1:4).

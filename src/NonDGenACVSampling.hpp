@@ -48,7 +48,7 @@ protected:
   //void print_results(std::ostream& s,
   //                   short results_state = FINAL_RESULTS) override;
 
-  Real available_budget() const override;
+  Real inactive_budget_deduction() const override;
 
   void numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
 				 size_t& num_nln_con) override;
@@ -269,7 +269,7 @@ private:
   //
 
   /// sample allocations per approximation (differs from actual if failed sims;
-  /// cached for use in available_budget())
+  /// cached for use in inactive_budget_deduction())
   SizetArray NApproxAlloc;
 
   /// the "G" matrix in Bomarito et al.
@@ -316,25 +316,22 @@ private:
 };
 
 
-inline Real NonDGenACVSampling::available_budget() const
+inline Real NonDGenACVSampling::inactive_budget_deduction() const
 {
   // NLevAlloc[mf][rl] not avail until finalize_counts() --> cache NApproxAlloc
 
-  bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
-		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
   const UShortArray& approx_set = activeModelSetIter->first;
   size_t num_approx = approx_set.size();
-  Real budget = (Real)maxFunctionEvals;
-  if (offline || num_approx == numApprox) return budget;
+  if (num_approx == numApprox) return 0.;
 
   size_t lf_form_index, lf_lev_index, cntr = 0, N_L_alloc_a;
-  Real cost_H = sequenceCost[numApprox];
+  Real cost_H = sequenceCost[numApprox], deduct = 0.;
   for (size_t approx=0; approx<numApprox; ++approx)
     if  (cntr < num_approx && approx == approx_set[cntr]) ++cntr; // ordered seq
-    else budget -= sequenceCost[approx] * NApproxAlloc[approx] / cost_H;
+    else deduct += sequenceCost[approx] * NApproxAlloc[approx] / cost_H;
 
-  //Cout << "active budget = " << budget << std::endl;
-  return budget;
+  //Cout << "inactive budget deduction = " << deduct << std::endl;
+  return deduct;
 }
 
 

@@ -32,6 +32,7 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   //pilotSamples(problem_db.get_sza("method.nond.pilot_samples")),
   pilotMgmtMode(
     problem_db.get_short("method.nond.ensemble_pilot_solution_mode")),
+  optSubProblemForm(NO_OPTIMAL_ALLOCATION), optSubProblemSolver(SUBMETHOD_NONE),
   randomSeedSeqSpec(problem_db.get_sza("method.random_seed_sequence")),
   backfillFailures(false), // inactive option for now
   mlmfIter(0), equivHFEvals(0.), // also reset in pre_run()
