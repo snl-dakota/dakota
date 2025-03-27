@@ -44,8 +44,8 @@ TEST(opt_tpl_rol_test_rol_pbs_tests, test_simple_eq_cons)
   Dakota::LibraryEnvironment & env = *p_env;
 
   Dakota::ProblemDescDB& problem_db = env.problem_description_db();
-  RolTestInterface* rol_iface =
-    new RolTestInterface("simple_eq_cons", problem_db);
+  std::shared_ptr<RolTestInterface> rol_iface =
+    std::make_shared<RolTestInterface>("simple_eq_cons", problem_db);
   serial_interface_plugin(env, "rol_testers", rol_iface);
 
   if (env.parallel_library().mpirun_flag())
@@ -111,8 +111,8 @@ TEST(opt_tpl_rol_test_rol_pbs_tests, test_paraboloid_circle)
   Dakota::LibraryEnvironment & env = *p_env;
 
   Dakota::ProblemDescDB& problem_db = env.problem_description_db();
-  RolTestInterface* rol_iface =
-    new RolTestInterface("paraboloid_circle", problem_db);
+  std::shared_ptr<RolTestInterface> rol_iface =
+    std::make_shared<RolTestInterface>("paraboloid_circle", problem_db);
   serial_interface_plugin(env, "rol_testers", rol_iface);
 
   if (env.parallel_library().mpirun_flag())

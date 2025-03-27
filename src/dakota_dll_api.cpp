@@ -204,13 +204,13 @@ void DakotaRunner::start()
   ModelList& models = problem_db.model_list();
   size_t model_index = problem_db.get_db_model_node(); // for restoration
   for (auto& m : models) {
-    Interface& model_interface = m->derived_interface();
-    if ( (model_interface.interface_type() & DIRECT_INTERFACE_BIT) &&
-	 contains(model_interface.analysis_drivers(), "plugin_rosenbrock") ) {
+    std::shared_ptr<Interface> model_interface = m->derived_interface();
+    if ( (model_interface->interface_type() & DIRECT_INTERFACE_BIT) &&
+	 contains(model_interface->analysis_drivers(), "plugin_rosenbrock") ) {
       // set the DB nodes to that of the existing Model specification
       problem_db.set_db_model_nodes(m->model_id());
       // plug in the new derived Interface object
-      model_interface.assign_rep(std::make_shared<SIM::SerialDirectApplicInterface>
+      m->derived_interface(std::make_shared<SIM::SerialDirectApplicInterface>
 				 (problem_db));
     }
   }
