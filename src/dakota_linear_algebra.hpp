@@ -68,6 +68,11 @@ void pseudo_inverse(const RealSymMatrix& A, RealMatrix& A_inv, Real& rcond);
 /// compute the pseudo-inverse for a symmetric matrix by SVD
 void pseudo_inverse(const RealSymMatrix& A, RealSymMatrix& A_inv, Real& rcond);
 
+/// Perform a Cholesky factorization and solve; propagate LAPACK return codes
+int cholesky_solve(RealSymMatrix& A, RealMatrix& X, RealMatrix& B,
+		   bool copy_A = false, bool copy_B = false,
+		   bool hard_error = true);
+
 /**
  * \brief Compute an in-place QR factorization A = QR
 

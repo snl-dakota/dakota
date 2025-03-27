@@ -347,7 +347,7 @@ protected:
 			  size_t N_shared, Real& cov_Q1Q2);
 
   void covariance_to_correlation_sq(const RealMatrix& cov_LH,
-				    const RealMatrix& var_L,
+				    const RealSymMatrixArray& cov_LL,
 				    const RealVector& var_H,
 				    RealMatrix& rho2_LH);
 
@@ -484,11 +484,6 @@ protected:
   /// identify if there are activeSet requests for model i
   bool active_set_for_model(size_t i);
 
-  /// Perform a Cholesky factorization and solve
-  int cholesky_solve(RealSymMatrix& A, RealMatrix& X, RealMatrix& B,
-		     bool copy_A = false, bool copy_B = false,
-		     bool hard_error = true);
-
   /// promote scalar to 1D array
   void inflate(size_t N_0D, SizetArray& N_1D);
   /// promote scalar to portion of 1D array
@@ -576,6 +571,8 @@ protected:
   /// scalar accuracy metric derived from estVarIter0 according to
   /// estVarMetricType
   Real estVarMetric0;
+
+  //int fdCntr; // for debug FD gradient output (compared with analytic grad)
 
 private:
 
@@ -1802,11 +1799,14 @@ compute_covariance(Real sum_Q1, Real sum_Q2, Real sum_Q1Q2, size_t N_shared,
     cov_Q1Q2 = (N_shared) ? 0. : std::numeric_limits<double>::quiet_NaN();
   else {
     // unbiased mean X-bar = 1/N * sum
-    Real bessel_corr = (Real)N_shared / (Real)(N_shared - 1),
-      mu_Q1 = sum_Q1 / N_shared,  mu_Q2 = sum_Q2 / N_shared;
+    //Real bessel_corr = (Real)N_shared / (Real)(N_shared - 1),
+    //  mu_Q1 = sum_Q1 / N_shared,  mu_Q2 = sum_Q2 / N_shared;
     // unbiased sample covariance = 1/(N-1) sum[(X_i - X-bar)(Y_i - Y-bar)]
     // = 1/(N-1) [N RawMom_XY - N X-bar Y-bar] = bessel[RawMom_XY - X-bar Y-bar]
-    cov_Q1Q2 = (sum_Q1Q2 / N_shared - mu_Q1 * mu_Q2) * bessel_corr;
+    //cov_Q1Q2 = (sum_Q1Q2 / N_shared - mu_Q1 * mu_Q2) * bessel_corr;
+
+    // be consistent with term cancellations in compute_{variance,correlation}
+    cov_Q1Q2 = (sum_Q1Q2 - sum_Q1 * sum_Q2 / N_shared) / (N_shared - 1);
   }
 
   //Cout << "compute_covariance: sum_Q1 = " << sum_Q1 << " sum_Q2 = " << sum_Q2
@@ -1816,7 +1816,8 @@ compute_covariance(Real sum_Q1, Real sum_Q2, Real sum_Q1Q2, size_t N_shared,
 
 
 inline void NonDNonHierarchSampling::
-covariance_to_correlation_sq(const RealMatrix& cov_LH, const RealMatrix& var_L,
+covariance_to_correlation_sq(const RealMatrix& cov_LH,
+			     const RealSymMatrixArray& cov_LL,
 			     const RealVector& var_H, RealMatrix& rho2_LH)
 {
   if (rho2_LH.empty()) rho2_LH.shapeUninitialized(numFunctions, numApprox);
@@ -1824,9 +1825,11 @@ covariance_to_correlation_sq(const RealMatrix& cov_LH, const RealMatrix& var_L,
   size_t qoi, approx;  Real var_H_q, cov_LH_aq;
   for (qoi=0; qoi<numFunctions; ++qoi) {
     var_H_q = var_H[qoi];
+    const RealSymMatrix& cov_LL_q = cov_LL[qoi];
     for (approx=0; approx<numApprox; ++approx) {
       cov_LH_aq = cov_LH(qoi,approx);
-      rho2_LH(qoi,approx) = cov_LH_aq / var_L(qoi,approx) * cov_LH_aq / var_H_q;
+      rho2_LH(qoi,approx) = cov_LH_aq / cov_LL_q(approx,approx)
+	                  * cov_LH_aq / var_H_q;
     }
   }
 }

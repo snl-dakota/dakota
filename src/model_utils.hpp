@@ -579,5 +579,8 @@ namespace Dakota {
 
         /// construct the appropriate derived model type as given by the modelType attribute
         std::shared_ptr<Model> get_model(ProblemDescDB& problem_db);
+
+        /// dummy default empty string
+        static const String empty_string = "";
     }
 }

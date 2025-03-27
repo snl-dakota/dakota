@@ -70,7 +70,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void calibrate();
+  void calibrate() override;
   void print_results(std::ostream& s, short 
       results_state = FINAL_RESULTS) override;
 

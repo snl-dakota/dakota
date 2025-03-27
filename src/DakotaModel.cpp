@@ -35,10 +35,6 @@ extern EvaluationStore evaluation_store_db; // defined in dakota_global_defs.cpp
 
 // These globals defined here rather than in dakota_global_defs.cpp in order to
 // minimize dakota_restart_util object file dependencies
-Interface dummy_interface; ///< dummy Interface object used for mandatory
-                           ///< reference initialization or default virtual
-                           ///< function return by reference when a real
-                           ///< Interface instance is unavailable
 Iterator  dummy_iterator;  ///< dummy Iterator object used for mandatory
                            ///< reference initialization or default virtual
                            ///< function return by reference when a real
@@ -3475,11 +3471,16 @@ void Model::update_from_subordinate_model(size_t depth)
 /** return by reference requires use of dummy objects, but is
     important to allow use of assign_rep() since this operation must
     be performed on the original envelope object. */
-Interface& Model::derived_interface()
+std::shared_ptr<Interface> Model::derived_interface()
 {
-  return dummy_interface; // return null/empty envelope
+  return std::shared_ptr<Interface>(nullptr);
 }
 
+
+void Model::derived_interface(std::shared_ptr<Interface> di)
+{
+  // no-op
+}
 
 /** return the number of levels within a solution / discretization hierarchy. */
 size_t Model::solution_levels() const
@@ -3606,7 +3607,7 @@ size_t Model::cost_metadata_index() const
     be performed on the original envelope object. */
 const String& Model::interface_id() const
 {
-  return dummy_interface.interface_id(); // return empty string
+  return ModelUtils::empty_string;
 }
 
 

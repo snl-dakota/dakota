@@ -90,6 +90,8 @@ protected:
   void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 				       RealVector& lin_ineq_lb,
 				       RealVector& lin_ineq_ub) override;
+  void enforce_augmented_linear_ineq_constraints(RealVector& soln_vars)
+    override;
 
   //
   //- Heading: member functions
@@ -212,7 +214,6 @@ private:
   void specify_nonlinear_constraints(RealVector& nln_ineq_lb,
 				     RealVector& nln_ineq_ub,
 				     RealVector& nln_eq_tgt);
-  void enforce_augmented_linear_ineq_constraints(RealVector& soln_vars);
 
   void project_mc_estimator_variance(const RealSymMatrixArray& cov_GG_g,
 				     size_t H_index,
@@ -949,24 +950,6 @@ compute_Psi(const RealSymMatrix2DArray& cov_GG_inv, const Sizet2DArray& N_G,
   }
   // Add \delta I (Schaden & Ullmann, 2020)
   //enforce_diagonal_delta(Psi);
-}
-
-
-inline void NonDMultilevBLUESampling::
-invert_Psi(RealSymMatrix& Psi, RealMatrix& Psi_inv)
-{
-  // Psi-inverse is used for computing both estimator variance (during numerical
-  // solve) and y-hat / mu-hat (after solve), so invert now without a RHS so
-  // Psi-inverse can be used in multiple places without additional tracking
-
-  int r, nr = Psi.numRows();
-  RealMatrix I(nr, nr);  for (r=0; r<nr; ++r) I(r,r) = 1.; // identity
-  Psi_inv.shapeUninitialized(nr, nr);
-
-  cholesky_solve(Psi, Psi_inv, I, true, false);//copy A, overwrite B, hard error
-  //if (outputLevel >= DEBUG_OUTPUT)
-  //  Cout << "In invert_Psi(), Psi:\n" << Psi << "Psi_inv:\n" << Psi_inv
-  //	   << std::endl;
 }
 
 

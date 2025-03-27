@@ -364,7 +364,7 @@ void run_dakota_mixed(const char* dakota_input_file, bool mpirun_flag)
   Dakota::ModelLIter ml_iter;
   for (auto& m : models) {
     const Dakota::StringArray& drivers
-      = m->derived_interface().analysis_drivers();
+      = m->derived_interface()->analysis_drivers();
     if (drivers.size() == 1 && drivers[0] == "plugin_text_book") {
       // Change initial guess:
       //ml_iter->continuous_variables(T);
@@ -430,8 +430,6 @@ void parallel_interface_plugin(Dakota::LibraryEnvironment& env)
     // set DB nodes to input specification for this Model
     problem_db.set_db_model_nodes(fm->model_id());
 
-    Dakota::Interface& model_interface = fm->derived_interface();
-
     // Parallel case: plug in derived Interface object with an analysisComm.
     // Note: retrieval and passing of analysisComm is necessary only if
     // parallel operations will be performed in the derived constructor.
@@ -441,7 +439,7 @@ void parallel_interface_plugin(Dakota::LibraryEnvironment& env)
     const MPI_Comm& analysis_comm = fm->analysis_comm();
 
     // don't increment ref count since no other envelope shares this letter
-    model_interface.assign_rep(std::make_shared<SIM::ParallelDirectApplicInterface>
+    fm->derived_interface(std::make_shared<SIM::ParallelDirectApplicInterface>
 			       (problem_db, analysis_comm));
   }
   problem_db.set_db_model_nodes(model_index);            // restore

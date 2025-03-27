@@ -484,40 +484,40 @@ Sample moment statistics for each response function:
  response_fn_2  1.2857914292e-01  1.3067056432e-01
  response_fn_3  2.5213910612e-02  2.5628326091e-02
 Test Number 16 succeeded
-<<<<< Function evaluation summary: 5329 total (5329 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 2.5628417969e+01
+<<<<< Function evaluation summary: 5330 total (5330 new, 0 duplicate)
+<<<<< Online number of equivalent high fidelity evaluations: 2.5630371094e+01
 <<<<< Variance for mean estimator:
  response_fn_1:
       Initial     MC (   20 HF samples):  3.4086773621e-06
        Online     MC (   20 HF samples):  3.4086773621e-06
-       Online GenACV (sample profile):    1.4840831399e-08
-       Online GenACV ratio (1 - R^2):     4.3538386955e-03
-   Equivalent     MC (   26 HF samples):  2.6600762999e-06
-   Equivalent GenACV ratio:               5.5790998927e-03
+       Online GenACV (sample profile):    1.4840855291e-08
+       Online GenACV ratio (1 - R^2):     4.3538457047e-03
+   Equivalent     MC (   26 HF samples):  2.6598735927e-06
+   Equivalent GenACV ratio:               5.5795340546e-03
  response_fn_2:
       Initial     MC (   20 HF samples):  1.2860352339e-05
        Online     MC (   20 HF samples):  1.2860352339e-05
-       Online GenACV (sample profile):    1.6709544793e-07
-       Online GenACV ratio (1 - R^2):     1.2993069204e-02
-   Equivalent     MC (   26 HF samples):  1.0036009523e-05
-   Equivalent GenACV ratio:               1.6649590413e-02
+       Online GenACV (sample profile):    1.6709536269e-07
+       Online GenACV ratio (1 - R^2):     1.2993062576e-02
+   Equivalent     MC (   26 HF samples):  1.0035244743e-05
+   Equivalent GenACV ratio:               1.6650850773e-02
  response_fn_3:
       Initial     MC (   20 HF samples):  3.4086773625e-06
        Online     MC (   20 HF samples):  3.4086773625e-06
-       Online GenACV (sample profile):    1.4840831401e-08
-       Online GenACV ratio (1 - R^2):     4.3538386956e-03
-   Equivalent     MC (   26 HF samples):  2.6600763002e-06
-   Equivalent GenACV ratio:               5.5790998928e-03
+       Online GenACV (sample profile):    1.4840855293e-08
+       Online GenACV ratio (1 - R^2):     4.3538457048e-03
+   Equivalent     MC (   26 HF samples):  2.6598735930e-06
+   Equivalent GenACV ratio:               5.5795340548e-03
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5203131014e-02  6.3860871006e-03  7.7575690335e-01 -1.0955667234e-01
- response_fn_2  1.2905662246e-01  1.2979879494e-02  8.4426324553e-01 -4.8708700484e-02
- response_fn_3  2.5203131014e-02  6.3860871010e-03  7.7575690324e-01 -1.0955667323e-01
+ response_fn_1  2.5200261257e-02  6.3724163794e-03  7.9295988480e-01 -6.2623769610e-02
+ response_fn_2  1.2901859914e-01  1.2947323985e-02  8.9698063551e-01 -3.0835673966e-02
+ response_fn_3  2.5200261257e-02  6.3724163798e-03  7.9295988469e-01 -6.2623770517e-02
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean
- response_fn_1  2.4964362417e-02  2.5441899610e-02
- response_fn_2  1.2825544190e-01  1.2985780302e-01
- response_fn_3  2.4964362417e-02  2.5441899610e-02
+ response_fn_1  2.4961492468e-02  2.5439030046e-02
+ response_fn_2  1.2821741879e-01  1.2981977949e-01
+ response_fn_3  2.4961492469e-02  2.5439030046e-02
 Test Number 17 succeeded
 <<<<< Function evaluation summary: 6510 total (6510 new, 0 duplicate)
 <<<<< Online number of equivalent high fidelity evaluations: 2.5544189453e+01
@@ -525,69 +525,69 @@ Test Number 17 succeeded
  response_fn_1:
       Initial     MC (   20 HF samples):  3.4086773621e-06
        Online     MC (   20 HF samples):  3.4086773621e-06
-       Online GenACV (sample profile):    1.2333948007e-08
-       Online GenACV ratio (1 - R^2):     3.6183980609e-03
+       Online GenACV (sample profile):    1.2334004761e-08
+       Online GenACV ratio (1 - R^2):     3.6184147110e-03
    Equivalent     MC (   26 HF samples):  2.6688475423e-06
-   Equivalent GenACV ratio:               4.6214509490e-03
+   Equivalent GenACV ratio:               4.6214722143e-03
  response_fn_2:
       Initial     MC (   20 HF samples):  1.2860352339e-05
        Online     MC (   20 HF samples):  1.2860352339e-05
-       Online GenACV (sample profile):    1.7213320448e-07
-       Online GenACV ratio (1 - R^2):     1.3384800780e-02
+       Online GenACV (sample profile):    1.7213310298e-07
+       Online GenACV ratio (1 - R^2):     1.3384792889e-02
    Equivalent     MC (   26 HF samples):  1.0069101909e-05
-   Equivalent GenACV ratio:               1.7095189426e-02
+   Equivalent GenACV ratio:               1.7095179346e-02
  response_fn_3:
       Initial     MC (   20 HF samples):  3.4086773625e-06
        Online     MC (   20 HF samples):  3.4086773625e-06
-       Online GenACV (sample profile):    1.2333948008e-08
-       Online GenACV ratio (1 - R^2):     3.6183980608e-03
+       Online GenACV (sample profile):    1.2334004762e-08
+       Online GenACV ratio (1 - R^2):     3.6184147109e-03
    Equivalent     MC (   26 HF samples):  2.6688475426e-06
-   Equivalent GenACV ratio:               4.6214509489e-03
+   Equivalent GenACV ratio:               4.6214722143e-03
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5359980829e-02  6.6158471047e-03  7.6124688261e-01 -1.9730895804e-01
- response_fn_2  1.2911293790e-01  1.3564971185e-02  8.5424424303e-01 -1.0918996410e-01
- response_fn_3  2.5359980829e-02  6.6158471052e-03  7.6124688251e-01 -1.9730895876e-01
+ response_fn_1  2.5359980783e-02  6.6158473104e-03  7.6124692281e-01 -1.9730897723e-01
+ response_fn_2  1.2911293770e-01  1.3564971349e-02  8.5424406242e-01 -1.0919086863e-01
+ response_fn_3  2.5359980784e-02  6.6158473109e-03  7.6124692271e-01 -1.9730897795e-01
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean
- response_fn_1  2.5142310543e-02  2.5577651115e-02
- response_fn_2  1.2829976964e-01  1.2992610616e-01
- response_fn_3  2.5142310543e-02  2.5577651115e-02
+ response_fn_1  2.5142309997e-02  2.5577651570e-02
+ response_fn_2  1.2829976968e-01  1.2992610572e-01
+ response_fn_3  2.5142309997e-02  2.5577651570e-02
 Test Number 18 succeeded
-<<<<< Function evaluation summary: 5329 total (5329 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 2.5628417969e+01
+<<<<< Function evaluation summary: 5330 total (5330 new, 0 duplicate)
+<<<<< Online number of equivalent high fidelity evaluations: 2.5630371094e+01
 <<<<< Variance for mean estimator:
  response_fn_1:
       Initial     MC (   20 HF samples):  3.4086773621e-06
        Online     MC (   20 HF samples):  3.4086773621e-06
-       Online GenACV (sample profile):    1.4840831399e-08
-       Online GenACV ratio (1 - R^2):     4.3538386955e-03
-   Equivalent     MC (   26 HF samples):  2.6600762999e-06
-   Equivalent GenACV ratio:               5.5790998927e-03
+       Online GenACV (sample profile):    1.4840855291e-08
+       Online GenACV ratio (1 - R^2):     4.3538457047e-03
+   Equivalent     MC (   26 HF samples):  2.6598735927e-06
+   Equivalent GenACV ratio:               5.5795340546e-03
  response_fn_2:
       Initial     MC (   20 HF samples):  1.2860352339e-05
        Online     MC (   20 HF samples):  1.2860352339e-05
-       Online GenACV (sample profile):    1.6709544793e-07
-       Online GenACV ratio (1 - R^2):     1.2993069204e-02
-   Equivalent     MC (   26 HF samples):  1.0036009523e-05
-   Equivalent GenACV ratio:               1.6649590413e-02
+       Online GenACV (sample profile):    1.6709536269e-07
+       Online GenACV ratio (1 - R^2):     1.2993062576e-02
+   Equivalent     MC (   26 HF samples):  1.0035244743e-05
+   Equivalent GenACV ratio:               1.6650850773e-02
  response_fn_3:
       Initial     MC (   20 HF samples):  3.4086773625e-06
        Online     MC (   20 HF samples):  3.4086773625e-06
-       Online GenACV (sample profile):    1.4840831401e-08
-       Online GenACV ratio (1 - R^2):     4.3538386956e-03
-   Equivalent     MC (   26 HF samples):  2.6600763002e-06
-   Equivalent GenACV ratio:               5.5790998928e-03
+       Online GenACV (sample profile):    1.4840855293e-08
+       Online GenACV ratio (1 - R^2):     4.3538457048e-03
+   Equivalent     MC (   26 HF samples):  2.6598735930e-06
+   Equivalent GenACV ratio:               5.5795340548e-03
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5203131014e-02  6.3860871006e-03  7.7575690335e-01 -1.0955667234e-01
- response_fn_2  1.2905662246e-01  1.2979879494e-02  8.4426324553e-01 -4.8708700484e-02
- response_fn_3  2.5203131014e-02  6.3860871010e-03  7.7575690324e-01 -1.0955667323e-01
+ response_fn_1  2.5200261257e-02  6.3724163794e-03  7.9295988480e-01 -6.2623769610e-02
+ response_fn_2  1.2901859914e-01  1.2947323985e-02  8.9698063551e-01 -3.0835673966e-02
+ response_fn_3  2.5200261257e-02  6.3724163798e-03  7.9295988469e-01 -6.2623770517e-02
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean
- response_fn_1  2.4964362417e-02  2.5441899610e-02
- response_fn_2  1.2825544190e-01  1.2985780302e-01
- response_fn_3  2.4964362417e-02  2.5441899610e-02
+ response_fn_1  2.4961492468e-02  2.5439030046e-02
+ response_fn_2  1.2821741879e-01  1.2981977949e-01
+ response_fn_3  2.4961492469e-02  2.5439030046e-02
 Test Number 19 succeeded
 <<<<< Function evaluation summary: 6510 total (6510 new, 0 duplicate)
 <<<<< Online number of equivalent high fidelity evaluations: 2.5544189453e+01
@@ -595,31 +595,31 @@ Test Number 19 succeeded
  response_fn_1:
       Initial     MC (   20 HF samples):  3.4086773621e-06
        Online     MC (   20 HF samples):  3.4086773621e-06
-       Online GenACV (sample profile):    1.2333948007e-08
-       Online GenACV ratio (1 - R^2):     3.6183980609e-03
+       Online GenACV (sample profile):    1.2334004761e-08
+       Online GenACV ratio (1 - R^2):     3.6184147110e-03
    Equivalent     MC (   26 HF samples):  2.6688475423e-06
-   Equivalent GenACV ratio:               4.6214509490e-03
+   Equivalent GenACV ratio:               4.6214722143e-03
  response_fn_2:
       Initial     MC (   20 HF samples):  1.2860352339e-05
        Online     MC (   20 HF samples):  1.2860352339e-05
-       Online GenACV (sample profile):    1.7213320448e-07
-       Online GenACV ratio (1 - R^2):     1.3384800780e-02
+       Online GenACV (sample profile):    1.7213310298e-07
+       Online GenACV ratio (1 - R^2):     1.3384792889e-02
    Equivalent     MC (   26 HF samples):  1.0069101909e-05
-   Equivalent GenACV ratio:               1.7095189426e-02
+   Equivalent GenACV ratio:               1.7095179346e-02
  response_fn_3:
       Initial     MC (   20 HF samples):  3.4086773625e-06
        Online     MC (   20 HF samples):  3.4086773625e-06
-       Online GenACV (sample profile):    1.2333948008e-08
-       Online GenACV ratio (1 - R^2):     3.6183980608e-03
+       Online GenACV (sample profile):    1.2334004762e-08
+       Online GenACV ratio (1 - R^2):     3.6184147109e-03
    Equivalent     MC (   26 HF samples):  2.6688475426e-06
-   Equivalent GenACV ratio:               4.6214509489e-03
+   Equivalent GenACV ratio:               4.6214722143e-03
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5359980829e-02  6.6158471047e-03  7.6124688261e-01 -1.9730895804e-01
- response_fn_2  1.2911293790e-01  1.3564971185e-02  8.5424424303e-01 -1.0918996410e-01
- response_fn_3  2.5359980829e-02  6.6158471052e-03  7.6124688251e-01 -1.9730895876e-01
+ response_fn_1  2.5359980783e-02  6.6158473104e-03  7.6124692281e-01 -1.9730897723e-01
+ response_fn_2  1.2911293770e-01  1.3564971349e-02  8.5424406242e-01 -1.0919086863e-01
+ response_fn_3  2.5359980784e-02  6.6158473109e-03  7.6124692271e-01 -1.9730897795e-01
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean
- response_fn_1  2.5142310543e-02  2.5577651115e-02
- response_fn_2  1.2829976964e-01  1.2992610616e-01
- response_fn_3  2.5142310543e-02  2.5577651115e-02
+ response_fn_1  2.5142309997e-02  2.5577651570e-02
+ response_fn_2  1.2829976968e-01  1.2992610572e-01
+ response_fn_3  2.5142309997e-02  2.5577651570e-02
