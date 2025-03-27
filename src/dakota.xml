@@ -5814,9 +5814,6 @@
 	      <!-- #	  | modelcenter {N_ifm(type,interfaceType_MC_INTERFACE)}
                #	  | plugin {N_ifm(type,interfaceType_PLUGIN_INTERFACE)}
 	      -->
-	      <keyword id="legacy_python" name="legacy_python" code="{N_ifm(type,interfaceType_LEGACY_PYTHON_INTERFACE)}" label="Legacy Python Interface "  complexity="1">
-            <keyword id="numpy" name="numpy" code="{N_ifm(true,numpyFlag)}" label="Python NumPy Dataflow"  minOccurs="0" default="Python list dataflow" complexity="1"/>
-          </keyword>
 	      <keyword id="scilab" name="scilab" code="{N_ifm(type,interfaceType_SCILAB_INTERFACE)}" label="Scilab Interface "  complexity="1"/>
 	      <keyword id="grid2" name="grid" code="{N_ifm(type,interfaceType_GRID_INTERFACE)}" label="Grid Interface "  complexity="1"/>
 	    </oneOf>

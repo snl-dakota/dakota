@@ -18,9 +18,6 @@
 #ifdef DAKOTA_MATLAB
 #include "MatlabInterface.hpp"
 #endif // DAKOTA_MATLAB
-#ifdef DAKOTA_PYTHON_LEGACY
-#include "PythonInterface.hpp"
-#endif // DAKOTA_PYTHON
 #ifdef DAKOTA_PYBIND11
 #include "Pybind11Interface.hpp"
 #endif // DAKOTA_PYBIND11
@@ -84,16 +81,6 @@ namespace Dakota {
             return std::make_shared<MatlabInterface>(problem_db);
 #else
             Cerr << "Direct Matlab interface requested, but not enabled in this "
-                 << "Dakota executable." << std::endl;
-            return std::shared_ptr<Interface>();
-#endif
-          }
-
-          else if (interface_type == LEGACY_PYTHON_INTERFACE) {
-#ifdef DAKOTA_PYTHON_LEGACY
-            return std::make_shared<PythonInterface>(problem_db);
-#else
-            Cerr << "Direct Legacy Python interface requested, but not enabled in this "
                  << "Dakota executable." << std::endl;
             return std::shared_ptr<Interface>();
 #endif
