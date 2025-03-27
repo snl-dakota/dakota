@@ -48,18 +48,18 @@ interface
   system	#s0,#s2,#s4,#s6,#s8,#p0
 #  fork		#s1,#s3,#s5,#s7,#s9,#p1
 #    asynchronous evaluation_concurrency = 2	     	     	#s1,#s2,#s9,#p1
-    analysis_driver = '@Python_EXECUTABLE@ dakota_workdir.py'			   #s0,#p0
-#    analysis_driver = '@Python_EXECUTABLE@ dakota_workdir.py tag'		   #s1,#p1
-#    analysis_driver = '@Python_EXECUTABLE@ dakota_workdir.py tag_save' 	   #s2
-#    analysis_driver = '@Python_EXECUTABLE@ dakota_workdir.py templatefiles' 	   #s3
-#    analysis_driver = '@Python_EXECUTABLE@ dakota_workdir.py templatedir' 	   #s4
-#    analysis_driver = '@Python_EXECUTABLE@ dakota_workdir.py templatefiles_copy'  #s5
-#    analysis_driver = '@Python_EXECUTABLE@ dakota_workdir.py templatedir_copy'    #s6
-#    analysis_driver = '@Python_EXECUTABLE@ templatedir_rosenbrock.py' 		   #s7
-#    analysis_driver = '@Python_EXECUTABLE@ dakota_workdir.py named_params' 	   #s8
-#    analysis_driver = '@Python_EXECUTABLE@ dakota_workdir.py saved_params' 	   #s9
+    analysis_driver = '@Python3_EXECUTABLE@ dakota_workdir.py'			   #s0,#p0
+#    analysis_driver = '@Python3_EXECUTABLE@ dakota_workdir.py tag'		   #s1,#p1
+#    analysis_driver = '@Python3_EXECUTABLE@ dakota_workdir.py tag_save' 	   #s2
+#    analysis_driver = '@Python3_EXECUTABLE@ dakota_workdir.py templatefiles' 	   #s3
+#    analysis_driver = '@Python3_EXECUTABLE@ dakota_workdir.py templatedir' 	   #s4
+#    analysis_driver = '@Python3_EXECUTABLE@ dakota_workdir.py templatefiles_copy'  #s5
+#    analysis_driver = '@Python3_EXECUTABLE@ dakota_workdir.py templatedir_copy'    #s6
+#    analysis_driver = '@Python3_EXECUTABLE@ templatedir_rosenbrock.py' 		   #s7
+#    analysis_driver = '@Python3_EXECUTABLE@ dakota_workdir.py named_params' 	   #s8
+#    analysis_driver = '@Python3_EXECUTABLE@ dakota_workdir.py saved_params' 	   #s9
 # Not yet active:
-#    analysis_driver = '@Python_EXECUTABLE@ dakota_workdir.py -params $DAKOTA_PARAMETERS_FILE -results $DAKOTA_RESULTS_FILE'   NO 10
+#    analysis_driver = '@Python3_EXECUTABLE@ dakota_workdir.py -params $DAKOTA_PARAMETERS_FILE -results $DAKOTA_RESULTS_FILE'   NO 10
 #      verbatim        			  	  		NO 10
 
     work_directory

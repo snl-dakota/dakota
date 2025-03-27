@@ -28,12 +28,12 @@ interface
 #  fork		#s1,#s3,#s6
 #    asynchronous evaluation_concurrency = 2	     	     	#s1,#s2,#s6
     analysis_driver = 'dakota_workdir_windows.py'			#s0
-#    analysis_driver = '@Python_EXECUTABLE@ ../dakota_workdir_windows.py tag'			#s1
+#    analysis_driver = '@Python3_EXECUTABLE@ ../dakota_workdir_windows.py tag'			#s1
 #    analysis_driver = 'dakota_workdir_windows.py tag_save' 		#s2
-#    analysis_driver = '@Python_EXECUTABLE@ ../dakota_workdir_windows.py templatefiles_copy' 	#s3
+#    analysis_driver = '@Python3_EXECUTABLE@ ../dakota_workdir_windows.py templatefiles_copy' 	#s3
 #    analysis_driver = 'dakota_workdir_windows.py templatedir_copy' 	#s4
 #    analysis_driver = 'dakota_workdir_windows.py named_params' 	#s5
-#    analysis_driver = '@Python_EXECUTABLE@ ../dakota_workdir_windows.py saved_params' 	#s6
+#    analysis_driver = '@Python3_EXECUTABLE@ ../dakota_workdir_windows.py saved_params' 	#s6
 
     work_directory
       named 'trydir'

@@ -90,7 +90,7 @@ function(generate_users_examples_interfacing _output_dir
   add_custom_command(
     OUTPUT  "${_output_dir}/dprepro_usage"
     DEPENDS "${Dakota_SOURCE_DIR}/scripts/pyprepro/dprepro"
-    COMMAND "${Python_EXECUTABLE}"
+    COMMAND "${Python3_EXECUTABLE}"
     ARGS    "${Dakota_SOURCE_DIR}/scripts/pyprepro/dprepro" --help > "${_output_dir}/dprepro_usage"
     )
 

@@ -21,7 +21,7 @@ interface
   # Using a system interface so Windows will use python interpreter for the driver
   system 
   batch size 10
-   analysis_drivers '@Python_EXECUTABLE@ dakota_batch.py'
+   analysis_drivers '@Python3_EXECUTABLE@ dakota_batch.py'
   parameters_file 'params.in'
   results_file 'results.out'
   file_save
