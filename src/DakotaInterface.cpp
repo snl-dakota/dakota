@@ -882,6 +882,8 @@ SharedApproxData& Interface::shared_approximation()
   Cerr << "Error: No derived " << __func__ << " method.\n"
        << "No default at Interface" << " base class." << std::endl;
   abort_handler(-1);
+
+  throw INTERFACE_ERROR;
 }
 
 
@@ -889,6 +891,7 @@ std::vector<Approximation>& Interface::approximations()
 {
   InterfaceUtils::no_derived_method_error();
   //return InterfaceUtils::no_derived_method_error<std::vector<Approximation>>();
+  throw INTERFACE_ERROR;
 }
 
 
@@ -897,6 +900,8 @@ const Pecos::SurrogateData& Interface::approximation_data(size_t fn_index)
   Cerr << "Error: No derived " << __func__ << " method.\n"
        << "No default at Interface" << " base class." << std::endl;
   abort_handler(-1);
+
+  throw INTERFACE_ERROR;
 }
 
 
