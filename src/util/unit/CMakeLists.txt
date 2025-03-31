@@ -49,6 +49,6 @@ if(DAKOTA_PYTHON AND DAKOTA_PYBIND11)
   # BMA TODO: couldn't get to work using .py in source tree
   configure_file(pybind11_example.py pybind11_example.py COPYONLY)
   add_test(NAME dakota_util_pybind11_example
-    COMMAND ${Python_EXECUTABLE} pybind11_example.py)
+    COMMAND ${Python3_EXECUTABLE} pybind11_example.py)
   set_tests_properties(dakota_util_pybind11_example PROPERTIES LABELS Unit)
 endif()

@@ -207,7 +207,7 @@ if(DAKOTA_PYTHON_WRAPPER)
     dakota_unit_test_copied_files
     )
   add_test(NAME dakota_python_env
-    COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_dakota_python_env.py
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_dakota_python_env.py
     $<TARGET_FILE_DIR:environment>
     )
   set_property(TEST dakota_python_env PROPERTY LABELS Unit)

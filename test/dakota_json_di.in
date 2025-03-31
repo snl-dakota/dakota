@@ -26,7 +26,7 @@ responses
   metadata 'seconds'
 
 interface
-  analysis_drivers '@Python_EXECUTABLE@ dakota_json_di.py'
+  analysis_drivers '@Python3_EXECUTABLE@ dakota_json_di.py'
   fork
   parameters_file 'params.in'
   results_file 'results.out'
