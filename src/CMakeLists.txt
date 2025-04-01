@@ -67,45 +67,45 @@ set(EXPORT_TARGETS dakota_src nidr)
 # tree.  However, when building under Trilinos, targets like pecos_src
 # and dakota_src need to see these libraries in the exports list at
 # this point as Trilinos hasn't exported them yet.
-#if (BUILD_IN_TRILINOS OR DAKOTA_BUILDING_TEUCHOS)
-#  list(APPEND DAKOTA_INCDIRS ${Teuchos_INCLUDE_DIRS})
-#  list(APPEND DAKOTA_LIBDIRS ${Teuchos_LIBRARY_DIRS})
-#  list(APPEND EXPORT_TARGETS ${Teuchos_LIBRARIES})
-#  list(APPEND DAKOTA_PKG_LIBS ${Teuchos_LIBRARIES})
-#  # As of 20141219, Teuchos optionally depends on Kokkos, which may be
-#  # on if building in Trilinos; try to detect all Teuchos deps.
-#  if (Teuchos_FULL_ENABLED_DEP_PACKAGES)
-#    foreach(dep_pkg ${Teuchos_FULL_ENABLED_DEP_PACKAGES})
-#      # Add the libraries of all non-Teuchos packages
-#      if(NOT ${dep_pkg} MATCHES "^Teuchos")
-#	if (${dep_pkg}_LIBRARIES)
-#	  list(APPEND EXPORT_TARGETS ${${dep_pkg}_LIBRARIES})
-#	  list(APPEND DAKOTA_PKG_LIBS ${${dep_pkg}_LIBRARIES})
-#	  message(STATUS 
-#	    "Adding Teuchos dependency ${dep_pkg}_LIBRARIES to Dakota libraries")
-#	endif()
-#      endif()
-#    endforeach()
-#  else()
-#    # conservative fall-through for currently known Teuchos deps
-#    if(KokkosCore_LIBRARIES)
-#      list(APPEND EXPORT_TARGETS ${KokkosCore_LIBRARIES})
-#      list(APPEND DAKOTA_PKG_LIBS ${KokkosCore_LIBRARIES})
-#      message(STATUS 
-#	"Adding Teuchos dependency KokkosCore_LIBRARIES to Dakota libraries")
-#    endif()
-#    if(KokkosTPL_LIBRARIES)
-#      list(APPEND EXPORT_TARGETS ${KokkosTPL_LIBRARIES})
-#      list(APPEND DAKOTA_PKG_LIBS ${KokkosTPL_LIBRARIES})
-#      message(STATUS
-#	"Adding Teuchos dependency KokkosTPL_LIBRARIES to Dakota libraries")
-#    endif()
-#  endif()
-#else()
-#  list(APPEND EXT_TPL_INCDIRS ${Teuchos_INCLUDE_DIRS})
-#  list(APPEND EXT_TPL_LIBDIRS ${Teuchos_LIBRARY_DIRS})
-#  list(APPEND EXT_TPL_LIBS ${Teuchos_LIBRARIES})
-#endif()
+if (BUILD_IN_TRILINOS OR DAKOTA_BUILDING_TEUCHOS)
+  list(APPEND DAKOTA_INCDIRS ${Teuchos_INCLUDE_DIRS})
+  list(APPEND DAKOTA_LIBDIRS ${Teuchos_LIBRARY_DIRS})
+  #list(APPEND EXPORT_TARGETS ${Teuchos_LIBRARIES})
+  list(APPEND DAKOTA_PKG_LIBS ${Teuchos_LIBRARIES})
+  # As of 20141219, Teuchos optionally depends on Kokkos, which may be
+  # on if building in Trilinos; try to detect all Teuchos deps.
+  if (Teuchos_FULL_ENABLED_DEP_PACKAGES)
+    foreach(dep_pkg ${Teuchos_FULL_ENABLED_DEP_PACKAGES})
+      # Add the libraries of all non-Teuchos packages
+      if(NOT ${dep_pkg} MATCHES "^Teuchos")
+	if (${dep_pkg}_LIBRARIES)
+	  list(APPEND EXPORT_TARGETS ${${dep_pkg}_LIBRARIES})
+	  list(APPEND DAKOTA_PKG_LIBS ${${dep_pkg}_LIBRARIES})
+	  message(STATUS 
+	    "Adding Teuchos dependency ${dep_pkg}_LIBRARIES to Dakota libraries")
+	endif()
+      endif()
+    endforeach()
+  else()
+    # conservative fall-through for currently known Teuchos deps
+    if(KokkosCore_LIBRARIES)
+      list(APPEND EXPORT_TARGETS ${KokkosCore_LIBRARIES})
+      list(APPEND DAKOTA_PKG_LIBS ${KokkosCore_LIBRARIES})
+      message(STATUS 
+	"Adding Teuchos dependency KokkosCore_LIBRARIES to Dakota libraries")
+    endif()
+    if(KokkosTPL_LIBRARIES)
+      list(APPEND EXPORT_TARGETS ${KokkosTPL_LIBRARIES})
+      list(APPEND DAKOTA_PKG_LIBS ${KokkosTPL_LIBRARIES})
+      message(STATUS
+	"Adding Teuchos dependency KokkosTPL_LIBRARIES to Dakota libraries")
+    endif()
+  endif()
+else()
+  list(APPEND EXT_TPL_INCDIRS ${Teuchos_INCLUDE_DIRS})
+  list(APPEND EXT_TPL_LIBDIRS ${Teuchos_LIBRARY_DIRS})
+  list(APPEND EXT_TPL_LIBS ${Teuchos_LIBRARIES})
+endif()
 
 #------------------
 # Generat DakotaBuildInfo.src if needed
