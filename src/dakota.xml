@@ -189,6 +189,15 @@
              </keyword>
 	     ' >
 
+    <!ENTITY method_refine_metric_type '
+	     <keyword  id="refinement_metric" name="refinement_metric" code="{0}" label="Refinement metric type"  minOccurs="0" default="requested statistics" >
+	       <oneOf label="type of refinement metric">
+		 <keyword  id="level_mappings" name="level_mappings" code="{N_mdm(type,refinementMetric_LEVEL_STATS_METRIC)}" label="level mappings refinement metric" />
+                 <keyword  id="covariance" name="covariance" code="{N_mdm(type,refinementMetric_COVARIANCE_METRIC)}" label="covariance refinement metric" />
+	       </oneOf>
+             </keyword>
+	     ' >
+
     <!ENTITY method_mf_refine_stats_mode '
 	     <keyword  id="statistics_mode" name="statistics_mode" code="{0}" label="Statistics mode for computing refinement metrics"  minOccurs="0" default="DEFAULT_EXPANSION_STATS" >
 	       <oneOf label="Statistics mode for refinement metric">
@@ -207,11 +216,13 @@
     <!ENTITY method_exp_convergence_tolerance '
 	     &method_convergence_tolerance;
              &method_refine_metric_scale;
+             &method_refine_metric_type;
 	     ' >
 
     <!ENTITY method_mf_exp_convergence_tolerance '
 	     &method_convergence_tolerance;
              &method_refine_metric_scale;
+             &method_refine_metric_type;
              &method_mf_refine_stats_mode;
 	     ' >
 
@@ -924,6 +935,15 @@
 	     </keyword>
 	     ' >
 
+    <!ENTITY method_covariance_type '
+      	     <optional>
+	       <oneOf label="Covariance Type">
+		 <keyword  id="diagonal_covariance" name="diagonal_covariance" code="{N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}" label="diagonal_covariance"   default="diagonal_covariance for response vector > 10; else full_covariance" />
+		 <keyword  id="full_covariance" name="full_covariance" code="{N_mdm(type,covarianceControl_FULL_COVARIANCE)}" label="full_covariance"   />
+	       </oneOf>
+	     </optional>
+	     ' >
+
     <!ENTITY vbd_expansion '
       	     <keyword  id="variance_based_decomp" name="variance_based_decomp" code="{N_mdm(true,vbdFlag)}" label="Variance based decomposition (VBD)"  minOccurs="0" default="no variance-based decomposition" >
 	       <keyword  id="interaction_order" name="interaction_order" code="{N_mdm(ushint,vbdOrder)}" label="Restriction of order of VBD interations"  minOccurs="0" default="Unrestricted (VBD includes all interaction orders present in the expansion)" >
@@ -1003,12 +1023,7 @@
              &default_final_moments;
              &level_mappings;
 	     &vbd_expansion;
-	     <optional>
-	       <oneOf label="Covariance Type">
-		 <keyword  id="diagonal_covariance" name="diagonal_covariance" code="{N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}" label="diagonal_covariance"   default="diagonal_covariance for response vector > 10; else full_covariance" />
-		 <keyword  id="full_covariance" name="full_covariance" code="{N_mdm(type,covarianceControl_FULL_COVARIANCE)}" label="full_covariance"   />
-	       </oneOf>
-	     </optional>
+	     &method_covariance_type;
 	     <keyword  id="import_approx_points_file" name="import_approx_points_file" code="{N_mdm(str,importApproxPtsFile)}" label="File name for importing samples for evaluating the PCE"  minOccurs="0" default="no point import from a file" >
 	       <param type="INPUT_FILE" />
 	       &method_import_approx_format;
@@ -1273,15 +1288,6 @@
              &rng_options;
 	     ' >
 
-    <!ENTITY bayes_expansion_options '
-	     <optional>
-	       <oneOf label="Covariance Type">
-		 <keyword  id="diagonal_covariance" name="diagonal_covariance" code="{N_mdm(type,covarianceControl_DIAGONAL_COVARIANCE)}" label="diagonal_covariance"   default="diagonal_covariance for response vector > 10; else full_covariance" />
-		 <keyword  id="full_covariance" name="full_covariance" code="{N_mdm(type,covarianceControl_FULL_COVARIANCE)}" label="full_covariance"   />
-	       </oneOf>
-	     </optional>
-	     ' >
-
     <!ENTITY bayes_pce_expansion_order '
 	     <keyword  id="expansion_order" name="expansion_order" code="{N_mdm(ushint,expansionOrder)}" label="Expansion order"  >
 	       <param type="INTEGER" />
@@ -1311,7 +1317,7 @@
                  &pce_expansion_import;
                </oneOf>
 	       &pce_options;
-	       &bayes_expansion_options;
+	       &method_covariance_type;
 	     </keyword>
 	     ' >
 
@@ -1324,7 +1330,7 @@
 		 &pce_orthog_least_interp_sequence;
 	       </oneOf>
 	       &pce_options;
-	       &bayes_expansion_options;
+	       &method_covariance_type;
 	       <!-- <keyword  id="posterior_adaptive1" name="posterior_adaptive" code="{N_mdm(true,adaptPosteriorRefine)}" label="posterior_adaptive"  minOccurs="0"/> -->
 	     </keyword>
 	     ' >
@@ -1347,7 +1353,7 @@
 		 <!-- </required> -->
 	       </oneOf>
 	       &pce_options;
-	       &bayes_expansion_options;
+	       &method_covariance_type;
 	     </keyword>
 	     ' >
 
@@ -1359,7 +1365,7 @@
 		 &sc_sparse_grid;
 	       </oneOf>
 	       &sc_options;
-	       &bayes_expansion_options;
+	       &method_covariance_type;
 	     </keyword>
 	     ' >
 
@@ -1373,7 +1379,7 @@
 		 &sc_sparse_grid_sequence;
 	       </oneOf>
 	       &sc_options;
-	       &bayes_expansion_options;
+	       &method_covariance_type;
 	     </keyword>
 	     ' >
 
@@ -5837,14 +5843,14 @@
 	    </oneOf>
       </keyword>
       <keyword  id="deactivate" name="deactivate" code="{0}" label="Feature Deactivation"  minOccurs="0" default="Active set vector control, function evaluation cache, and restart file features are active" complexity="0">
-	    <keyword  id="active_set_vector" name="active_set_vector" code="{N_ifm(false,activeSetVectorFlag)}" label="Active Set Vector"  minOccurs="0" complexity="0"/>
-	    <keyword  id="evaluation_cache" name="evaluation_cache" code="{N_ifm(false,evalCacheFlag)}" label="Evaluation Cache"  minOccurs="0" complexity="1"/>
-	    <keyword  id="strict_cache_equality" name="strict_cache_equality" code="{N_ifm(true,nearbyEvalCacheFlag)}" label="Strict Cache Equality"  minOccurs="0" complexity="1">
+	<keyword  id="active_set_vector" name="active_set_vector" code="{N_ifm(false,activeSetVectorFlag)}" label="Active Set Vector"  minOccurs="0" complexity="0"/>
+	<keyword  id="evaluation_cache" name="evaluation_cache" code="{N_ifm(false,evalCacheFlag)}" label="Evaluation Cache"  minOccurs="0" complexity="1"/>
+	<keyword  id="strict_cache_equality" name="strict_cache_equality" code="{N_ifm(true,nearbyEvalCacheFlag)}" label="Strict Cache Equality"  minOccurs="0" complexity="1">
           <keyword  id="cache_tolerance" name="cache_tolerance" code="{N_ifm(Real,nearbyEvalCacheTol)}" label="Cache Tolerance"  minOccurs="0" complexity="1">
             <param type="REAL" />
           </keyword>
-	    </keyword>
-	    <keyword  id="restart_file" name="restart_file" code="{N_ifm(false,restartFileFlag)}" label="Restart File"  minOccurs="0" complexity="1"/>
+	</keyword>
+	<keyword  id="restart_file" name="restart_file" code="{N_ifm(false,restartFileFlag)}" label="Restart File"  minOccurs="0" complexity="1"/>
       </keyword>
       <optional>
         <oneOf>

@@ -2386,6 +2386,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
       {"nond.estimator_variance_metric", P_MET estVarMetricType},
       {"nond.expansion_basis_type", P_MET expansionBasisType},
       {"nond.expansion_refinement_control", P_MET refinementControl},
+      {"nond.expansion_refinement_metric", P_MET refinementMetric},
       {"nond.expansion_refinement_type", P_MET refinementType},
       {"nond.expansion_type", P_MET expansionType},
       {"nond.final_moments", P_MET finalMomentsType},

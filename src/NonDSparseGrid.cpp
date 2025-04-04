@@ -56,10 +56,10 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, std::shared_ptr<Model>
     = model->multivariate_distribution();
 
   // define ExpansionConfigOptions
-  short refine_metric = (refine_control) ? Pecos::COVARIANCE_METRIC :
-    Pecos::NO_METRIC;
-  short refine_stats  = (refine_control) ? Pecos::ACTIVE_EXPANSION_STATS :
-    Pecos::NO_EXPANSION_STATS;
+  short refine_metric = (refine_control) ?
+    Pecos::COVARIANCE_METRIC : Pecos::DEFAULT_METRIC;
+  short refine_stats  = (refine_control) ?
+    Pecos::ACTIVE_EXPANSION_STATS : Pecos::NO_EXPANSION_STATS;
   Pecos::ExpansionConfigOptions ec_options(ssgDriverType, exp_basis_type,
     model->correction_type(),
     probDescDB.get_short("method.nond.multilevel_discrepancy_emulation"),

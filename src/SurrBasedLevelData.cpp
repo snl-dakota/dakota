@@ -106,7 +106,8 @@ response_star(short corr_response_type)
   case CORR_TRUTH_RESPONSE:    return responseStarTruthCorrected.second; break;
   case UNCORR_TRUTH_RESPONSE:  return responseStarTruthUncorrected;      break;
   case CORR_APPROX_RESPONSE:   return responseStarApproxCorrected;       break;
-  case UNCORR_APPROX_RESPONSE: return responseStarApproxUncorrected;     break;
+  default: //case UNCORR_APPROX_RESPONSE:
+    return responseStarApproxUncorrected;                                break;
   }
 }
 
@@ -119,7 +120,8 @@ response_center(short corr_response_type)
     return responseCenterTruthCorrected.second;                        break;
   case UNCORR_TRUTH_RESPONSE:  return responseCenterTruthUncorrected;  break;
   case CORR_APPROX_RESPONSE:   return responseCenterApproxCorrected;   break;
-  case UNCORR_APPROX_RESPONSE: return responseCenterApproxUncorrected; break;
+  default: //case UNCORR_APPROX_RESPONSE:
+    return responseCenterApproxUncorrected;                            break;
   }
 }
 

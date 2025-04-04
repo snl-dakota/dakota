@@ -967,11 +967,11 @@ public:
   short covarianceControl;
   /// the \c basic random-number generator for NonD
   String rngName;
-  /// refinement type for stochastic expansions from dimension refinement
-  /// keyword group
+  /// refinement type for stochastic expansions: p-refinement, h-refinement
   short refinementType;
-  /// refinement control for stochastic expansions from dimension refinement
-  /// keyword group
+  /// refinement metric for stochastic expansions: covariance or level mappings
+  short refinementMetric;
+  /// refinement control for stochastic expansions: uniform, dimension-adaptive
   short refinementControl;
   /// override for default point nesting policy: NO_NESTING_OVERRIDE, NESTED,
   /// or NON_NESTED
