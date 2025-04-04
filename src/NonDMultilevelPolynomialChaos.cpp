@@ -886,7 +886,7 @@ print_results(std::ostream& s, short results_state)
 {
   switch (results_state) {
   case REFINEMENT_RESULTS:  case INTERMEDIATE_RESULTS:
-    if (outputLevel == DEBUG_OUTPUT)   print_coefficients(s);
+    if (outputLevel >= NORMAL_OUTPUT)  print_coefficients(s);
     break;
   case FINAL_RESULTS:
     if (outputLevel >= NORMAL_OUTPUT)  print_coefficients(s);
