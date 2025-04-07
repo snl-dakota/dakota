@@ -43,9 +43,16 @@ macro(dakota_find_trilinos)
           "Dakota enabling Trilinos Teuchos" FORCE)
         #set(Trilinos_VERBOSE_CONFIGURE OFF CACHE BOOL
         #  "Dakota enabling Trilinos VERBOSE Configure" FORCE)
-	# Map key Dakota variables to TriBITS variables
-	set( TPL_BLAS_LIBRARIES ${BLAS_LIBS} )
-	set( TPL_LAPACK_LIBRARIES ${LAPACK_LIBS} )
+	    # Map key Dakota variables to TriBITS variables, but
+        # only if Dakota is not being built as an external project on Windows.
+	    # In this case, BLAS_LIBS and LAPACK_LIBS are set to just "blas" and "lapack",
+		# and after the update to Trilinos 16, Tribits can't find them. We now set
+		# BLAS_LIBRARY_DIR and LAPACK_LIBRARY_DIRS using custom Dakota variables.
+		# See surrogates/CMakeLists.txt for details.
+        if(NOT DAKOTA_JAVA_SURROGATES_EXTPROJ)
+  	      set( TPL_BLAS_LIBRARIES ${BLAS_LIBS} )
+	      set( TPL_LAPACK_LIBRARIES ${LAPACK_LIBS} )
+        endif()
 	# Newer versions of Trilinos automatically turn off Fortran name-mangling
 	# on Windows
 	if(WIN32)

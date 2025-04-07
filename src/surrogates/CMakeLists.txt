@@ -109,6 +109,8 @@ if(DAKOTA_JAVA_SURROGATES)
   # Assumes separate Boost include and library dir are given
   if(WIN32)
     # This variable prevents infinite recursion
+    
+
     if(DAKOTA_JAVA_SURROGATES_EXTPROJ)
 	  # We're in the external surrogates JNI DLL project
 	  add_subdirectory(java)
@@ -132,8 +134,10 @@ if(DAKOTA_JAVA_SURROGATES)
 	    -D JAVA_HOME=${JAVA_HOME}
         -D BOOST_INCLUDEDIR=${Boost_INCLUDE_DIR}
 	    -D BOOST_LIBRARYDIR=${Boost_LIBRARY_DIR}
-        -D LAPACK_DIR=${DAKOTA_LAPACK_DLL_DIR}
-	-D Python_ROOT_DIR=${Python_ROOT_DIR}
+        -D BLAS_LIBRARY_DIRS=${DAKOTA_LAPACK_DLL_DIR}
+	-D LAPACK_LIBRARY_DIRS=${DAKOTA_LAPACK_DLL_DIR}
+        -D LAPACK_DIR=${DAKOTA_LAPACK_CONFIG_DIR}
+	-D Python3_EXECUTABLE=$<TARGET_FILE:Python3::Interpreter>
 	    )
 	  install(DIRECTORY ${Dakota_BINARY_DIR}/DjsDll/install/bin/ DESTINATION bin
 	    FILES_MATCHING PATTERN "*.dll")
