@@ -190,6 +190,9 @@ Real SurrogatesGPApprox::prediction_variance(const RealVector& c_vars)
 }
 
 void set_model_gp_options(Model& model, const String& options_file) {
+  #ifdef DISABLE_YAML_SURROGATES_CONFIG
+    throw std::runtime_error("Configuring a surrogate using a YAML file not supported by this build of Dakota");
+  #endif
   auto custom_param_list = Teuchos::getParametersFromYamlFile(options_file);
   std::vector<Approximation>& exp_gp_approxs = model.approximations();
   for (int i = 0; i < exp_gp_approxs.size(); ++i) {
