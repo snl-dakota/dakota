@@ -29,6 +29,9 @@ PolynomialRegression::PolynomialRegression(const ParameterList& param_list) {
 
 PolynomialRegression::PolynomialRegression(
     const std::string& param_list_yaml_filename) {
+  #ifdef DISABLE_YAML_SURROGATES_CONFIG
+    throw std::runtime_error("Configuring a surrogate using a YAML file not supported by this build of Dakota");
+  #endif
   default_options();
   auto param_list =
       Teuchos::getParametersFromYamlFile(param_list_yaml_filename);
@@ -47,6 +50,9 @@ PolynomialRegression::PolynomialRegression(const MatrixXd& samples,
 PolynomialRegression::PolynomialRegression(
     const MatrixXd& samples, const MatrixXd& response,
     const std::string& param_list_yaml_filename) {
+  #ifdef DISABLE_YAML_SURROGATES_CONFIG
+    throw std::runtime_error("Configuring a surrogate using a YAML file not supported by this build of Dakota");
+  #endif
   default_options();
   auto param_list =
       Teuchos::getParametersFromYamlFile(param_list_yaml_filename);

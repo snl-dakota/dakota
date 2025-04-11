@@ -872,6 +872,7 @@ TEST(GaussianProcessTest_tests, test_surrogates_matern_52_gp) {
   }
 }
 
+#ifndef DISABLE_YAML_SURROGATES_CONFIG
 TEST(GaussianProcessTest_tests, test_surrogates_gp_read_from_parameterlist) {
   std::string test_parameterlist_file =
       "gp_test_data/GP_test_parameterlist.yaml";
@@ -903,6 +904,7 @@ TEST(GaussianProcessTest_tests, test_surrogates_gp_read_from_parameterlist) {
   EXPECT_TRUE((plist_options.get<std::string>("regression solver type") ==
                 "SVD"));
 }
+#endif
 
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);

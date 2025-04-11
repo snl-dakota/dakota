@@ -80,6 +80,10 @@ install(TARGETS dakota_surrogates EXPORT ${ExportTarget}
   ARCHIVE DESTINATION lib
 )
 
+if(DISABLE_YAML_SURROGATES_CONFIG)
+  target_compile_definitions(dakota_surrogates PUBLIC DISABLE_YAML_SURROGATES_CONFIG)
+endif()
+
 if(DAKOTA_PYTHON_SURROGATES)
   # NOTE: Library name is really generic due to overly simple Python
   # packaging scheme we're using
