@@ -139,8 +139,10 @@ int ReducedBasis::VarianceExplained::get_num_components(const ReducedBasis & bas
   int num_comp = 0;
   Real partial_sum = 0.0;
 
-  while( partial_sum/total_sum < variance_explained )
-    partial_sum += singular_vals(num_comp)*singular_vals(num_comp++);
+  while( partial_sum/total_sum < variance_explained ) {
+    partial_sum += singular_vals(num_comp)*singular_vals(num_comp);
+    ++num_comp;
+  }
 
   return num_comp;
 }
@@ -167,8 +169,10 @@ int ReducedBasis::HeuristicVarianceExplained::get_num_components(const ReducedBa
   int num_comp = 0;
   Real ratio = 1.0;
 
-  while( ratio > (1.0-variance_explained) )
-    ratio = singular_vals(num_comp)*singular_vals(num_comp++)/largest_eig_val;
+  while( ratio > (1.0-variance_explained) ) {
+    ratio = singular_vals(num_comp)*singular_vals(num_comp)/largest_eig_val;
+    ++num_comp;
+  }
 
   return num_comp;
 }
