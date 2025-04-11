@@ -1154,7 +1154,7 @@ int GaussProcApproximation::pointsel_add_sel(const RealArray& delta)
 
 Real GaussProcApproximation::maxval(const RealArray& x) const
 {
-  Real result;
+  Real result = -std::numeric_limits<Real>::max();
   for (size_t i=0; i<x.size(); i++) {
     if (x[i]>result || i==0) 
       result = x[i];
