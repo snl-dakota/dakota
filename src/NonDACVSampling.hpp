@@ -97,10 +97,10 @@ protected:
 			   IntRealMatrixMap& sum_LH, RealVector& sum_HH,
 			   SizetArray& N_shared);
   // approx_increment() cases:
-  void accumulate_acv_sums(IntRealMatrixMap& sum_L_refined,
-			   Sizet2DArray& N_L_refined,
-			   const SizetArray& approx_sequence,
-			   size_t approx_start, size_t approx_end);
+  //void accumulate_acv_sums(IntRealMatrixMap& sum_L_refined,
+  // 			     Sizet2DArray& N_L_refined,
+  // 			     const SizetArray& approx_sequence,
+  // 			     size_t approx_start, size_t approx_end);
   void accumulate_acv_sums(IntRealMatrixMap& sum_L, Sizet2DArray& N_L_actual,
 			   const RealVector& fn_vals, const ShortArray& asv,
 			   size_t approx);
@@ -226,9 +226,9 @@ private:
 			   RealSymMatrixArray& sum_LL, RealMatrix& sum_LH,
 			   RealVector& sum_HH, SizetArray& N_shared);
   // shared_approx_increment() case:
-  void accumulate_acv_sums(IntRealMatrixMap& sum_L_baseline,
-			   IntRealSymMatrixArrayMap& sum_LL,
-			   Sizet2DArray& N_L_shared);
+  //void accumulate_acv_sums(IntRealMatrixMap& sum_L_baseline,
+  // 			     IntRealSymMatrixArrayMap& sum_LL,
+  // 			     Sizet2DArray& N_L_shared);
   // approx_increment() cases:
 
   void compute_LH_covariance(const RealMatrix& sum_L_shared,

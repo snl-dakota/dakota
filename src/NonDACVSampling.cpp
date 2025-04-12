@@ -829,7 +829,8 @@ accumulate_acv_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
 }
 
 
-/** This version used by ACV following shared_approx_increment() */
+/*
+// This version used by ACV following shared_approx_increment()
 void NonDACVSampling::
 accumulate_acv_sums(IntRealMatrixMap& sum_L_shared,
 		    IntRealSymMatrixArrayMap& sum_LL, // L w/ itself + other L
@@ -850,38 +851,19 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_shared,
       if (!check_finite(fn_vals, asv, qoi, numApprox)) continue;
 
       // Low accumulations:
-      ++N_L_shared[approx][qoi];
       for (approx=0; approx<numApprox; ++approx) {
 	lf_index = approx * numFunctions + qoi;
-	if (asv[lf_index] & 1)
+	if (asv[lf_index] & 1) {
+	  ++N_L_shared[approx][qoi];
 	  accumulate_lf_qoi(fn_vals, asv, qoi, approx, sum_L_shared, sum_LL);
+	}
       }
     }
   }
 }
 
 
-/** This version used by ACV, GenACV following approx_increment() */
-void NonDACVSampling::
-accumulate_acv_sums(IntRealMatrixMap& sum_L, Sizet2DArray& N_L_actual,
-		    const RealVector& fn_vals, const ShortArray& asv,
-		    size_t approx)
-{
-  // uses one set of allResponses with QoI aggregation across all Models,
-  // led by the approx Model responses of interest
-
-  size_t qoi, lf_index;
-  for (qoi=0; qoi<numFunctions; ++qoi) {
-    lf_index = approx * numFunctions + qoi;
-    if ( (asv[lf_index] & 1) && std::isfinite(fn_vals[lf_index]) ) {
-      ++N_L_actual[approx][qoi];
-      accumulate_lf_qoi(fn_vals, qoi, approx, sum_L);
-    }
-  }
-}
-
-
-/** This version used by ACV following approx_increment() */
+// This version used by ACV following approx_increment()
 void NonDACVSampling::
 accumulate_acv_sums(IntRealMatrixMap& sum_L_refined, Sizet2DArray& N_L_refined,
 		    const SizetArray& approx_sequence, size_t sequence_start,
@@ -900,6 +882,27 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_refined, Sizet2DArray& N_L_refined,
     for (s=sequence_start; s<sequence_end; ++s) {
       approx = (ordered) ? s : approx_sequence[s];
       accumulate_acv_sums(sum_L_refined, N_L_refined, fn_vals, asv, approx);
+    }
+  }
+}
+*/
+
+
+/** This version used by ACV, GenACV following approx_increment() */
+void NonDACVSampling::
+accumulate_acv_sums(IntRealMatrixMap& sum_L, Sizet2DArray& N_L_actual,
+		    const RealVector& fn_vals, const ShortArray& asv,
+		    size_t approx)
+{
+  // uses one set of allResponses with QoI aggregation across all Models,
+  // led by the approx Model responses of interest
+
+  size_t qoi, lf_index;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    lf_index = approx * numFunctions + qoi;
+    if ( (asv[lf_index] & 1) && std::isfinite(fn_vals[lf_index]) ) {
+      ++N_L_actual[approx][qoi];
+      accumulate_lf_qoi(fn_vals, qoi, approx, sum_L);
     }
   }
 }
