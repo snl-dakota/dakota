@@ -43,7 +43,33 @@ NonDGenACVSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
     // weighted MLMC = ACV-RD for hierarchical DAG(s)
     //dagRecursionType = NO_GRAPH_RECURSION; // DAG recursion now optional
     dagWidthLimit = 1;  dagDepthLimit = numApprox; // a hierarchical DAG
-    mlmfSubMethod = SUBMETHOD_ACV_RD;   break;
+    mlmfSubMethod = SUBMETHOD_ACV_RD;
+    // check for unsupported allocation targets from MLMC spec
+    bool err_flag = false;
+    if (problem_db.get_short("method.nond.allocation_target") != TARGET_MEAN) {
+      Cerr << "Error: unsupported allocation target specification.\n";
+      err_flag = true;
+    }
+    if (problem_db.get_short("method.nond.qoi_aggregation") != AGGREGATION_SUM){
+      Cerr << "Error: unsupported qoi aggregation specification.\n";
+      err_flag = true;
+    }
+    if (problem_db.get_short("method.nond.convergence_tolerance_type") !=
+	CONVERGENCE_TOLERANCE_TYPE_RELATIVE) {
+      Cerr << "Error: unsupported convergence tol type specification.\n";
+      err_flag = true;
+    }
+    if (problem_db.get_short("method.nond.convergence_tolerance_target") !=
+	CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT) {
+      Cerr << "Error: unsupported convergence tol target specification.\n";
+      err_flag = true;
+    }
+    if (err_flag) {
+      Cerr << "Some controls not available when promoting weighted MLMC to "
+	   << "GenACV." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    break;
   case MULTIFIDELITY_SAMPLING: // MFMC promotion for model selection
     // MFMC = ACV-MF for hierarchical DAG(s) (Note: SUBMETHOD_MFMC not used)
     //dagRecursionType = NO_GRAPH_RECURSION; // DAG recursion now optional
@@ -87,9 +113,17 @@ void NonDGenACVSampling::generate_ensembles_dags()
   unsigned short root = numApprox;
 
   /* For verification of consistency with MFMC,ACV:
-  //dag.resize(numApprox); for (i=0; i<numApprox; ++i) dag[i] = i+1; // MFMC
+  UShortArray dag(numApprox);
+  for (i=0; i<numApprox; ++i) dag[i] = i+1; // MFMC
   dag.assign(numApprox, numApprox); // ACV
   modelDAGs[nodes].insert(dag);
+  return;
+  */
+
+  /* For debugging a specific DAG case + specific G_g evaluation
+  UShortArray debug_nodes = {0,1,2,3,4,5}, debug_dag = {4,7,3,1,5,2};
+  modelDAGs[debug_nodes].insert(debug_dag);
+  compGgCntr = 0;
   return;
   */
 
@@ -2017,6 +2051,10 @@ void NonDGenACVSampling::compute_parameterized_G_g(const RealVector& N_vec)
 
   // Note: N_vec,z1,z2 are inflated to full dimension, avoiding the need to
   //       map indices (DAG values to sample count indices)
+
+  //Cout << "Call " << ++compGgCntr << " to compute_param_G_g()" << std::endl;
+  //if (compGgCntr == 385)
+  //  Cout << "Here.\n";
 
   const UShortArray& approx_set = activeModelSetIter->first;
   const UShortArray& active_dag = *activeDAGIter;
