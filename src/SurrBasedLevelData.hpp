@@ -367,12 +367,9 @@ inline void SurrBasedLevelData::c_var_star(Real c_var, size_t i)
 inline const ActiveSet& SurrBasedLevelData::
 active_set_center(short response_type) const
 {
-  switch (response_type) {
-  case TRUTH_RESPONSE:
-    return responseCenterTruthCorrected.second.active_set(); break;
-  case APPROX_RESPONSE:
-    return responseCenterApproxCorrected.active_set();       break;
-  }
+  return (response_type == TRUTH_RESPONSE) ?
+    responseCenterTruthCorrected.second.active_set() :
+    responseCenterApproxCorrected.active_set(); // response_type APPROX_RESPONSE
 }
 
 
@@ -388,12 +385,9 @@ active_set_center(short request, short response_type, bool uncorr)
 inline const ActiveSet& SurrBasedLevelData::
 active_set_star(short response_type) const
 {
-  switch (response_type) {
-  case TRUTH_RESPONSE:
-    return responseStarTruthCorrected.second.active_set(); break;
-  case APPROX_RESPONSE:
-    return responseStarApproxCorrected.active_set();       break;
-  }
+  return (response_type == TRUTH_RESPONSE) ?
+    responseStarTruthCorrected.second.active_set() :
+    responseStarApproxCorrected.active_set(); // response_type APPROX_RESPONSE
 }
 
 

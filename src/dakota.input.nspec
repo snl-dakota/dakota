@@ -1170,6 +1170,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       absolute {N_mdm(false,relativeConvMetric)}
      ]
+    [ refinement_metric {0}
+      level_mappings {N_mdm(type,refinementMetric_LEVEL_STATS_METRIC)}
+      |
+      covariance {N_mdm(type,refinementMetric_COVARIANCE_METRIC)}
+     ]
     [ regression_type {0}
       ls {N_mdm(type,regressionType_FT_LS)}
       |
@@ -1315,6 +1320,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
       relative {N_mdm(true,relativeConvMetric)}
       |
       absolute {N_mdm(false,relativeConvMetric)}
+     ]
+    [ refinement_metric {0}
+      level_mappings {N_mdm(type,refinementMetric_LEVEL_STATS_METRIC)}
+      |
+      covariance {N_mdm(type,refinementMetric_COVARIANCE_METRIC)}
      ]
     [ statistics_mode {0}
       active {N_mdm(type,statsMetricMode_ACTIVE_EXPANSION_STATS)}
@@ -1468,6 +1478,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       absolute {N_mdm(false,relativeConvMetric)}
      ]
+    [ refinement_metric {0}
+      level_mappings {N_mdm(type,refinementMetric_LEVEL_STATS_METRIC)}
+      |
+      covariance {N_mdm(type,refinementMetric_COVARIANCE_METRIC)}
+     ]
     [ discrepancy_emulation {0}
       distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
       |
@@ -1615,6 +1630,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
       relative {N_mdm(true,relativeConvMetric)}
       |
       absolute {N_mdm(false,relativeConvMetric)}
+     ]
+    [ refinement_metric {0}
+      level_mappings {N_mdm(type,refinementMetric_LEVEL_STATS_METRIC)}
+      |
+      covariance {N_mdm(type,refinementMetric_COVARIANCE_METRIC)}
      ]
     ( quadrature_order INTEGER {N_mdm(ushint,quadratureOrder)}
       [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
@@ -1897,6 +1917,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       absolute {N_mdm(false,relativeConvMetric)}
      ]
+    [ refinement_metric {0}
+      level_mappings {N_mdm(type,refinementMetric_LEVEL_STATS_METRIC)}
+      |
+      covariance {N_mdm(type,refinementMetric_COVARIANCE_METRIC)}
+     ]
     [ statistics_mode {0}
       active {N_mdm(type,statsMetricMode_ACTIVE_EXPANSION_STATS)}
       |
@@ -2143,6 +2168,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       absolute {N_mdm(false,relativeConvMetric)}
      ]
+    [ refinement_metric {0}
+      level_mappings {N_mdm(type,refinementMetric_LEVEL_STATS_METRIC)}
+      |
+      covariance {N_mdm(type,refinementMetric_COVARIANCE_METRIC)}
+     ]
     [ discrepancy_emulation {0}
       distinct ALIAS paired {N_mdm(type,multilevDiscrepEmulation_DISTINCT_EMULATION)}
       |
@@ -2374,6 +2404,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       absolute {N_mdm(false,relativeConvMetric)}
      ]
+    [ refinement_metric {0}
+      level_mappings {N_mdm(type,refinementMetric_LEVEL_STATS_METRIC)}
+      |
+      covariance {N_mdm(type,refinementMetric_COVARIANCE_METRIC)}
+     ]
     ( quadrature_order INTEGER {N_mdm(ushint,quadratureOrder)}
       [ dimension_preference REALLIST {N_mdm(RealDL,anisoDimPref)} ]
       [ 
@@ -2535,6 +2570,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
       relative {N_mdm(true,relativeConvMetric)}
       |
       absolute {N_mdm(false,relativeConvMetric)}
+     ]
+    [ refinement_metric {0}
+      level_mappings {N_mdm(type,refinementMetric_LEVEL_STATS_METRIC)}
+      |
+      covariance {N_mdm(type,refinementMetric_COVARIANCE_METRIC)}
      ]
     [ statistics_mode {0}
       active {N_mdm(type,statsMetricMode_ACTIVE_EXPANSION_STATS)}

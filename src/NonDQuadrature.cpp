@@ -47,10 +47,10 @@ NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, std::shared_ptr<Model>
     = probDescDB.get_short("method.nond.expansion_refinement_type");
   short refine_control
     = probDescDB.get_short("method.nond.expansion_refinement_control");
-  short refine_metric = (refine_control) ? Pecos::COVARIANCE_METRIC :
-    Pecos::NO_METRIC;
-  short refine_stats  = (refine_control) ? Pecos::ACTIVE_EXPANSION_STATS :
-    Pecos::NO_EXPANSION_STATS;
+  short refine_metric = (refine_control) ?
+    Pecos::COVARIANCE_METRIC : Pecos::DEFAULT_METRIC;
+  short refine_stats  = (refine_control) ?
+    Pecos::ACTIVE_EXPANSION_STATS : Pecos::NO_EXPANSION_STATS;
   short nest_override = probDescDB.get_short("method.nond.nesting_override");
   nestedRules = ( nest_override == Pecos::NESTED ||
 		  ( refine_type && nest_override != Pecos::NON_NESTED ) );

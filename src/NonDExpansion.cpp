@@ -64,7 +64,8 @@ NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, std::shared_ptr<Model> m
   refineType(problem_db.get_short("method.nond.expansion_refinement_type")),
   refineControl(
     problem_db.get_short("method.nond.expansion_refinement_control")),
-  refineMetric(Pecos::NO_METRIC),
+  refineMetric(
+    problem_db.get_short("method.nond.expansion_refinement_metric")),
   softConvLimit(problem_db.get_ushort("method.soft_convergence_limit")),
   numUncertainQuant(0),
   maxRefineIterations(
@@ -105,7 +106,7 @@ NonDExpansion(unsigned short method_name, std::shared_ptr<Model> model,
   gammaEstimatorScale(1.), numSamplesOnModel(0), numSamplesOnExpansion(0),
   nestedRules(false), piecewiseBasis(piecewise_basis), useDerivs(use_derivs),
   refineType(refine_type), refineControl(refine_control),
-  refineMetric(Pecos::NO_METRIC), softConvLimit(3), numUncertainQuant(0),
+  refineMetric(Pecos::DEFAULT_METRIC), softConvLimit(3), numUncertainQuant(0),
   maxRefineIterations(SZ_MAX), maxSolverIterations(SZ_MAX),
   ruleNestingOverride(rule_nest), ruleGrowthOverride(rule_growth),
   vbdOrderLimit(0),
@@ -528,16 +529,40 @@ void NonDExpansion::initialize_u_space_model()
   if (refineControl) {
     // communicate refinement metric to Pecos (determines internal
     // bookkeeping requirements for some PolyApproximation types)
+    bool rel_mapping = false;
     if (totalLevelRequests) {
-      refineMetric = Pecos::LEVEL_STATS_METRIC;
       for (size_t i=0; i<numFunctions; ++i)
 	if ( !requestedRelLevels[i].empty() ||
 	     ( respLevelTarget == RELIABILITIES &&
 	       !requestedRespLevels[i].empty() ) )
-	  { refineMetric = Pecos::MIXED_STATS_METRIC; break; }
+	  { rel_mapping = true; break; }
     }
-    else
-      refineMetric = Pecos::COVARIANCE_METRIC;
+
+    switch (refineMetric) {
+    case Pecos::DEFAULT_METRIC:
+      if (totalLevelRequests)
+	refineMetric = (rel_mapping) ?
+	  Pecos::MIXED_STATS_METRIC : Pecos::LEVEL_STATS_METRIC;
+      else
+	refineMetric = Pecos::COVARIANCE_METRIC;
+      break;
+    break;
+    case Pecos::COVARIANCE_METRIC:
+      if (totalLevelRequests)
+	Cout << "Warning: refinement metric set to covariance.  Level mappings"
+	     << "\n        will not be used to guide adaptation." << std::endl;
+      break;
+    case Pecos::LEVEL_STATS_METRIC:
+      if (totalLevelRequests)
+	refineMetric = (rel_mapping) ?
+	  Pecos::MIXED_STATS_METRIC : Pecos::LEVEL_STATS_METRIC;
+      else {
+	Cerr << "Warning: refinement metric switched to covariance as no level"
+	     << "\n        mappings were provided." << std::endl;
+	refineMetric = Pecos::COVARIANCE_METRIC;
+      }
+      break;
+    }
   }
 
   // if all variables mode, init bookkeeping for the random variable subset
@@ -2707,7 +2732,7 @@ void NonDExpansion::compute_statistics(short results_state)
     break;
   case INTERMEDIATE_RESULTS:
     switch (refineMetric) {
-    case Pecos::NO_METRIC: // possible for multifidelity_expansion()
+    case Pecos::DEFAULT_METRIC: // possible for multifidelity_expansion()
       compute_moments();
       if (totalLevelRequests) {
 	if (allVars) ModelUtils::continuous_variables(*uSpaceModel, initialPtU); // see top
@@ -4185,7 +4210,7 @@ void NonDExpansion::print_results(std::ostream& s, short results_state)
     if (outputLevel == DEBUG_OUTPUT) {
       //iteratedModel.print_evaluation_summary(s);
       switch (refineMetric) {
-    //case Pecos::NO_METRIC: // not an option for refinement
+    //case Pecos::DEFAULT_METRIC: // not an option for refinement
       case Pecos::COVARIANCE_METRIC:
       case Pecos::MIXED_STATS_METRIC:
     //case Pecos::LEVEL_STATS_METRIC: // moments only computed if beta mappings
@@ -4198,7 +4223,7 @@ void NonDExpansion::print_results(std::ostream& s, short results_state)
   }
   case INTERMEDIATE_RESULTS: {
     switch (refineMetric) {
-    case Pecos::NO_METRIC:
+    case Pecos::DEFAULT_METRIC:
       print_moments(s); if (totalLevelRequests) print_level_mappings(s); break;
     case Pecos::COVARIANCE_METRIC:
       print_moments(s); print_covariance(s);                             break;

@@ -372,7 +372,7 @@ lookup_by_ids(PRPMultiIndexCache& prp_cache, const IntStringPair& search_ids)
 
     Cerr << "Error: lookup_by_ids(PRPCache&) used for lookup with non-positive "
 	 << "evaluation id, which may be non-unique." << std::endl;
-    abort_handler(-1);
+    abort_handler(-1);  return prp_cache.get<ordered>().end();
   }
 }
 

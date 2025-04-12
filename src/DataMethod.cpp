@@ -132,7 +132,7 @@ DataMethodRep::DataMethodRep():
   stdRegressionCoeffs(false),
   respScalingFlag(false), vbdOrder(0), covarianceControl(DEFAULT_COVARIANCE),
   rngName("mt19937"), refinementType(Pecos::NO_REFINEMENT),
-  refinementControl(Pecos::NO_CONTROL),
+  refinementMetric(Pecos::DEFAULT_METRIC), refinementControl(Pecos::NO_CONTROL),
   nestingOverride(Pecos::NO_NESTING_OVERRIDE),
   growthOverride(Pecos::NO_GROWTH_OVERRIDE), expansionType(EXTENDED_U),
   piecewiseBasis(false), expansionBasisType(Pecos::DEFAULT_BASIS),
@@ -340,11 +340,11 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   // NonD
   s << toleranceIntervalsFlag << tiCoverage << tiConfidenceLevel
     << stdRegressionCoeffs << respScalingFlag << vbdOrder << covarianceControl
-    << rngName << refinementType << refinementControl << nestingOverride
-    << growthOverride << expansionType << piecewiseBasis << expansionBasisType
-    << quadratureOrderSeq << sparseGridLevelSeq << expansionOrderSeq
-    << collocationPointsSeq << expansionSamplesSeq << quadratureOrder
-    << sparseGridLevel << expansionOrder << collocationPoints
+    << rngName << refinementType << refinementMetric<< refinementControl
+    << nestingOverride << growthOverride << expansionType << piecewiseBasis
+    << expansionBasisType << quadratureOrderSeq << sparseGridLevelSeq
+    << expansionOrderSeq << collocationPointsSeq << expansionSamplesSeq
+    << quadratureOrder << sparseGridLevel << expansionOrder << collocationPoints
     << expansionSamples //<< expansionSampleType
     << anisoDimPref << cubIntOrder << collocationRatio
     << collocRatioTermsOrder << regressionType << lsRegressionType
@@ -545,11 +545,11 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   // NonD
   s >> toleranceIntervalsFlag >> tiCoverage >> tiConfidenceLevel
     >> stdRegressionCoeffs >> respScalingFlag >> vbdOrder >> covarianceControl
-    >> rngName >> refinementType >> refinementControl >> nestingOverride
-    >> growthOverride >> expansionType >> piecewiseBasis >> expansionBasisType
-    >> quadratureOrderSeq >> sparseGridLevelSeq >> expansionOrderSeq
-    >> collocationPointsSeq >> expansionSamplesSeq >> quadratureOrder
-    >> sparseGridLevel >> expansionOrder >> collocationPoints
+    >> rngName >> refinementType >> refinementMetric>> refinementControl
+    >> nestingOverride >> growthOverride >> expansionType >> piecewiseBasis
+    >> expansionBasisType >> quadratureOrderSeq >> sparseGridLevelSeq
+    >> expansionOrderSeq >> collocationPointsSeq >> expansionSamplesSeq
+    >> quadratureOrder >> sparseGridLevel >> expansionOrder >> collocationPoints
     >> expansionSamples //>> expansionSampleType
     >> anisoDimPref >> cubIntOrder >> collocationRatio
     >> collocRatioTermsOrder >> regressionType >> lsRegressionType
@@ -750,11 +750,11 @@ void DataMethodRep::write(std::ostream& s) const
   // NonD
   s << toleranceIntervalsFlag << tiCoverage << tiConfidenceLevel
     << stdRegressionCoeffs << respScalingFlag << vbdOrder << covarianceControl
-    << rngName << refinementType << refinementControl << nestingOverride
-    << growthOverride << expansionType << piecewiseBasis << expansionBasisType
-    << quadratureOrderSeq << sparseGridLevelSeq << expansionOrderSeq
-    << collocationPointsSeq << expansionSamplesSeq << quadratureOrder
-    << sparseGridLevel << expansionOrder << collocationPoints
+    << rngName << refinementType << refinementMetric<< refinementControl
+    << nestingOverride << growthOverride << expansionType << piecewiseBasis
+    << expansionBasisType << quadratureOrderSeq << sparseGridLevelSeq
+    << expansionOrderSeq << collocationPointsSeq << expansionSamplesSeq
+    << quadratureOrder << sparseGridLevel << expansionOrder << collocationPoints
     << expansionSamples //<< expansionSampleType
     << anisoDimPref << cubIntOrder << collocationRatio
     << collocRatioTermsOrder << regressionType << lsRegressionType

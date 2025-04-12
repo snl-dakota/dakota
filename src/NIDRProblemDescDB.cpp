@@ -7169,6 +7169,8 @@ static Method_mp_type
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_SOBOL),      // Pecos
 	MP2p(refinementControl,LOCAL_ADAPTIVE_CONTROL),                // Pecos
 	MP2p(refinementControl,UNIFORM_CONTROL),                       // Pecos
+        MP2p(refinementMetric,COVARIANCE_METRIC),          // Pecos enumeration
+        MP2p(refinementMetric,LEVEL_STATS_METRIC),         // Pecos enumeration
 	MP2p(refinementType,P_REFINEMENT),                 // Pecos enumeration
         MP2p(refinementType,H_REFINEMENT),                 // Pecos enumeration
 	MP2p(regressionType,BASIS_PURSUIT),                // Pecos enumeration
@@ -7185,8 +7187,8 @@ static Method_mp_type
 	MP2s(responseLevelTarget,RELIABILITIES),
 	MP2s(responseLevelTargetReduce,SYSTEM_PARALLEL),
 	MP2s(responseLevelTargetReduce,SYSTEM_SERIES),
-        MP2p(statsMetricMode,ACTIVE_EXPANSION_STATS),   // Pecos
-        MP2p(statsMetricMode,COMBINED_EXPANSION_STATS), // Pecos
+        MP2p(statsMetricMode,ACTIVE_EXPANSION_STATS),      // Pecos enumeration
+        MP2p(statsMetricMode,COMBINED_EXPANSION_STATS),    // Pecos enumeration
 	MP2s(surrBasedLocalAcceptLogic,FILTER),
 	MP2s(surrBasedLocalAcceptLogic,TR_RATIO),
 	MP2s(surrBasedLocalConstrRelax,HOMOTOPY),
