@@ -39,9 +39,12 @@ NonDGenACVSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   // Support constrained DAG ensembles for method promotions (hierarchical
   // for MFMC/MLMC, peer for ACV); recursion + model selection are optional
   switch (methodName) {
-  case MULTILEVEL_SAMPLING:    // MLMC promotion for model selection
-    // weighted MLMC = ACV-RD for hierarchical DAG(s)
-    //dagRecursionType = NO_GRAPH_RECURSION; // DAG recursion now optional
+  case MULTILEVEL_SAMPLING: {// MLMC promotion: hierarch search, model selection
+    // weighted MLMC = ACV-RD restricted to hierarchical DAG(s)
+    // > for model graph search off, ACV-RD defaults to the same hierarchical
+    //   DAG(s) as for weighted MLMC
+    // > for model graph search on, ACV-RD searches all graphs whereas weighted
+    //   MLMC is restricted to the hierarchical subset
     dagWidthLimit = 1;  dagDepthLimit = numApprox; // a hierarchical DAG
     mlmfSubMethod = SUBMETHOD_ACV_RD;
     // check for unsupported allocation targets from MLMC spec
@@ -50,7 +53,8 @@ NonDGenACVSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
       Cerr << "Error: unsupported allocation target specification.\n";
       err_flag = true;
     }
-    if (problem_db.get_short("method.nond.qoi_aggregation") != AGGREGATION_SUM){
+    if (problem_db.get_short("method.nond.qoi_aggregation") !=
+	QOI_AGGREGATION_SUM) {
       Cerr << "Error: unsupported qoi aggregation specification.\n";
       err_flag = true;
     }
@@ -70,9 +74,14 @@ NonDGenACVSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
       abort_handler(METHOD_ERROR);
     }
     break;
-  case MULTIFIDELITY_SAMPLING: // MFMC promotion for model selection
-    // MFMC = ACV-MF for hierarchical DAG(s) (Note: SUBMETHOD_MFMC not used)
-    //dagRecursionType = NO_GRAPH_RECURSION; // DAG recursion now optional
+  }
+  case MULTIFIDELITY_SAMPLING: // MFMC promotion: hierarch search, model select
+    // MFMC = ACV-MF restricted to hierarchical DAG(s)
+    // > for model graph search off, ACV-MF defaults to peer DAG(s) whereas
+    //   MFMC uses hierarchical DAG(s)
+    // > for model graph search on, ACV-MF searches all graphs whereas MFMC
+    //   is restricted to the hierarchical subset
+    // > Note: the SUBMETHOD_MFMC sub-type is not used here
     dagWidthLimit = 1;  dagDepthLimit = numApprox; // a hierarchical DAG
     mlmfSubMethod = SUBMETHOD_ACV_MF;   break;
   default: // not a promotion: ACV specification + search options

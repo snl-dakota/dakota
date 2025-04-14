@@ -2936,6 +2936,24 @@ KEYWORD method {N_mdm3(start,0,stop)}
         |
         full_recursion {N_mdm(type,dagRecursionType_FULL_GRAPH_RECURSION)}
        ]
+      [ 
+        sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}
+        |
+        nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}
+        |
+        global_local {N_mdm(utype,optSubProbSolver_SUBMETHOD_DIRECT_NPSOL_OPTPP)}
+        |
+        competed_local {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL_OPTPP)}
+       ]
+      [ solver_metric {0}
+        average_estimator_variance {N_mdm(type,estVarMetricType_AVG_ESTVAR_METRIC)}
+        |
+        ( norm_estimator_variance {N_mdm(type,estVarMetricType_NORM_ESTVAR_METRIC)}
+          [ norm_order REAL >= 1. {N_mdm(Real,estVarMetricNormOrder)} ]
+         )
+        |
+        max_estimator_variance {N_mdm(type,estVarMetricType_MAX_ESTVAR_METRIC)}
+       ]
      ]
     [ export_sample_sequence {N_mdm(true,exportSampleSeqFlag)}
       [ 
