@@ -3237,6 +3237,8 @@
 	  &method_sample_type_lhs_mc;
 	  <keyword  id="weighted" name="weighted" code="{N_mdm(utype,subMethod_SUBMETHOD_WEIGHTED_MLMC)}" label="weighted MLMC"  minOccurs="0" >
 	    &promoted_model_selection;
+	    &method_mlmf_sub_problem_solver;
+	    &method_mlmf_solver_metric;
 	  </keyword>
 	  <keyword  id="export_sample_sequence" name="export_sample_sequence" code="{N_mdm(true,exportSampleSeqFlag)}" label="export_sample_sequence"  minOccurs="0" >
 	    &method_export_samples_format;

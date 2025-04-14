@@ -277,6 +277,8 @@ private:
   /// the "g" vector in Bomarito et al.
   RealVector gVec;
 
+  //size_t compGgCntr; // debugging aide for finding a specific G,g solve
+
   /// type of tunable recursion for defining set of DAGs: KL, partial, or full
   short dagRecursionType;
   /// depth throttle for constraining set from generate_dags()
