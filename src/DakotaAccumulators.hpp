@@ -64,7 +64,7 @@ public:
     // Returns:
     //   The number of samples.
     std::size_t numSamples() {
-        return count(acc_);
+        return boost::accumulators::count(acc_);
     }
 
     // Computes the mean of the accumulated samples.
@@ -102,7 +102,7 @@ public:
     // Returns:
     //   The number of samples.
     std::size_t numSamples() {
-        return count(acc_);
+        return boost::accumulators::count(acc_);
     }
 
     // Computes the variance of the accumulated samples.
@@ -151,7 +151,7 @@ public:
     // Returns:
     //   The number of samples.
     std::size_t numSamples() {
-        return count(acc_);
+        return boost::accumulators::count(acc_);
     }
 
     // Computes the covariance of the accumulated samples.
@@ -159,7 +159,7 @@ public:
     // Returns:
     //   The computed covariance of type T.
     T computeStatistic() override {
-        return covariance(acc_) * count(acc_) / (count(acc_) - 1);
+        return covariance(acc_) * numSamples() / (numSamples() - 1);
     }
 
 private:
