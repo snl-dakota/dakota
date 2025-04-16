@@ -12,7 +12,7 @@
 
 #include "NonDSampling.hpp"
 #include "DataMethod.hpp"
-
+#include "DakotaResponseContainer.hpp"
 
 namespace Dakota {
 
@@ -286,6 +286,12 @@ protected:
   //   - sum = aggregate the variance over all QoIs, compute samples from that
   //   - max = take maximum sample allocation over QoIs for each level
   //short qoiAggregation;
+
+  // A container to collect statistics of the model reponses
+  ResponseContainer responseContainer;
+
+  // Same, but for the pilot samples
+  ResponseContainer pilotResponseContainer;
 
 private:
 

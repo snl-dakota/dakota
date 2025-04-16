@@ -70,7 +70,7 @@ set(EXPORT_TARGETS dakota_src nidr)
 if (BUILD_IN_TRILINOS OR DAKOTA_BUILDING_TEUCHOS)
   list(APPEND DAKOTA_INCDIRS ${Teuchos_INCLUDE_DIRS})
   list(APPEND DAKOTA_LIBDIRS ${Teuchos_LIBRARY_DIRS})
-  list(APPEND EXPORT_TARGETS ${Teuchos_LIBRARIES})
+  #list(APPEND EXPORT_TARGETS ${Teuchos_LIBRARIES})
   list(APPEND DAKOTA_PKG_LIBS ${Teuchos_LIBRARIES})
   # As of 20141219, Teuchos optionally depends on Kokkos, which may be
   # on if building in Trilinos; try to detect all Teuchos deps.
@@ -540,6 +540,7 @@ set(iterator_src DakotaIterator.cpp DakotaAnalyzer.cpp DakotaPStudyDACE.cpp
     MetaIterator.cpp ConcurrentMetaIterator.cpp SeqHybridMetaIterator.cpp
     EmbedHybridMetaIterator.cpp CollabHybridMetaIterator.cpp Rank1Lattice.cpp
     DigitalNet.cpp low_discrepancy_data.cpp LHSDriverAdapter.cpp LDDriver.cpp LDDriverAdapter.cpp
+    DakotaResponseContainer.cpp
 )
 set(Dakota_src_fortran lawson_hanson1.f)
 if(DAKOTA_F90)

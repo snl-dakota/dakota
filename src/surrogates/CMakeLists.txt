@@ -60,11 +60,9 @@ target_include_directories(dakota_surrogates PUBLIC
 target_link_libraries(dakota_surrogates PUBLIC ${Teuchos_LIBRARIES})
 
 
-# BMA: Unless there's a better way, specify that ROL is a system
-# library to suppress warnings
 if(HAVE_ROL)
-  target_include_directories(dakota_surrogates SYSTEM PRIVATE
-    "${ROL_INCLUDE_DIRS}"
+  target_include_directories(dakota_surrogates PUBLIC
+    "$<BUILD_INTERFACE:${ROL_INCLUDE_DIRS}>"
   )
 endif(HAVE_ROL)
 
@@ -81,6 +79,10 @@ install(TARGETS dakota_surrogates EXPORT ${ExportTarget}
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
 )
+
+if(DISABLE_YAML_SURROGATES_CONFIG)
+  target_compile_definitions(dakota_surrogates PUBLIC DISABLE_YAML_SURROGATES_CONFIG)
+endif()
 
 if(DAKOTA_PYTHON_SURROGATES)
   # NOTE: Library name is really generic due to overly simple Python
@@ -111,6 +113,8 @@ if(DAKOTA_JAVA_SURROGATES)
   # Assumes separate Boost include and library dir are given
   if(WIN32)
     # This variable prevents infinite recursion
+    
+
     if(DAKOTA_JAVA_SURROGATES_EXTPROJ)
 	  # We're in the external surrogates JNI DLL project
 	  add_subdirectory(java)
@@ -134,8 +138,10 @@ if(DAKOTA_JAVA_SURROGATES)
 	    -D JAVA_HOME=${JAVA_HOME}
         -D BOOST_INCLUDEDIR=${Boost_INCLUDE_DIR}
 	    -D BOOST_LIBRARYDIR=${Boost_LIBRARY_DIR}
-        -D LAPACK_DIR=${DAKOTA_LAPACK_DLL_DIR}
-	-D Python_ROOT_DIR=${Python_ROOT_DIR}
+        -D BLAS_LIBRARY_DIRS=${DAKOTA_LAPACK_DLL_DIR}
+	-D LAPACK_LIBRARY_DIRS=${DAKOTA_LAPACK_DLL_DIR}
+        -D LAPACK_DIR=${DAKOTA_LAPACK_CONFIG_DIR}
+	-D Python3_EXECUTABLE=$<TARGET_FILE:Python3::Interpreter>
 	    )
 	  install(DIRECTORY ${Dakota_BINARY_DIR}/DjsDll/install/bin/ DESTINATION bin
 	    FILES_MATCHING PATTERN "*.dll")

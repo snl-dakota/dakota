@@ -94,6 +94,7 @@ TEST(gauss_proc_test_tests, test_surrogates_gp_base_test)
   data_pairs.clear();
 }
 
+#ifndef DISABLE_YAML_SURROGATES_CONFIG
 TEST(gauss_proc_test_tests, test_surrogates_gp_yaml_read)
 {
   // Dakota input string:
@@ -167,7 +168,10 @@ TEST(gauss_proc_test_tests, test_surrogates_gp_yaml_read)
   // Clear the cache
   data_pairs.clear();
 }
+#endif
 
+
+#ifndef DISABLE_YAML_SURROGATES_CONFIG
 TEST(gauss_proc_test_tests, test_surrogates_gp_yaml_read_alternate_parameters)
 {
   // This test uses the gold values from the surrogates_gp test above.
@@ -245,7 +249,7 @@ TEST(gauss_proc_test_tests, test_surrogates_gp_yaml_read_alternate_parameters)
   // Clear the cache
   data_pairs.clear();
 }
-
+#endif
 
 TEST(gauss_proc_test_tests, test_surrogates_gp_reduced_quadratic)
 {

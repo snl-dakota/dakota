@@ -38,13 +38,21 @@ macro(dakota_find_trilinos)
       else()
 	# Directory containing TeuchosConfig.cmake at build time
 	set(Teuchos_DIR
-          ${CMAKE_CURRENT_BINARY_DIR}/packages/external/trilinos/packages/teuchos)
+          ${CMAKE_CURRENT_BINARY_DIR}/packages/external/trilinos/cmake_packages/Teuchos)
 	set(Trilinos_ENABLE_Teuchos ON CACHE BOOL
           "Dakota enabling Trilinos Teuchos" FORCE)
-
-	# Map key Dakota variables to TriBITS variables
-	set( TPL_BLAS_LIBRARIES ${BLAS_LIBS} )
-	set( TPL_LAPACK_LIBRARIES ${LAPACK_LIBS} )
+        #set(Trilinos_VERBOSE_CONFIGURE OFF CACHE BOOL
+        #  "Dakota enabling Trilinos VERBOSE Configure" FORCE)
+	    # Map key Dakota variables to TriBITS variables, but
+        # only if Dakota is not being built as an external project on Windows.
+	    # In this case, BLAS_LIBS and LAPACK_LIBS are set to just "blas" and "lapack",
+		# and after the update to Trilinos 16, Tribits can't find them. We now set
+		# BLAS_LIBRARY_DIR and LAPACK_LIBRARY_DIRS using custom Dakota variables.
+		# See surrogates/CMakeLists.txt for details.
+        if(NOT DAKOTA_JAVA_SURROGATES_EXTPROJ)
+  	      set( TPL_BLAS_LIBRARIES ${BLAS_LIBS} )
+	      set( TPL_LAPACK_LIBRARIES ${LAPACK_LIBS} )
+        endif()
 	# Newer versions of Trilinos automatically turn off Fortran name-mangling
 	# on Windows
 	if(WIN32)
@@ -97,16 +105,14 @@ macro(dakota_find_trilinos)
 
 	add_subdirectory(packages/external/trilinos)
 
+	if(HAVE_ROL)
+          get_target_property(ROL_INCLUDE_DIRS rol INCLUDE_DIRECTORIES)
+	endif()
+
       endif() # Teuchos_DIR
 
       # Additional setting to prevent multiple targets with the same name
       set(Trilinos_TARGETS_IMPORTED 1)
-
-      find_package( Teuchos NO_MODULE REQUIRED )
-      # Can't get this to work due to ROLConfig.cmake only working once installed
-      #if(HAVE_ROL)
-      #  find_package( ROL NO_MODULE REQUIRED )
-      #endif()
 
     endif() # Trilinos_DIR
 

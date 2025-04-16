@@ -182,11 +182,24 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db,
 
   size_t max_ps = find_max(pilotSamples);
   if (max_ps) maxEvalConcurrency *= max_ps;
+
+  // Initialize response container
+  for (auto groupNumber=0; groupNumber < numGroups; ++groupNumber) {
+    responseContainer.addModelGroup(modelGroups[groupNumber], numFunctions, 4); // For actual samples
+    pilotResponseContainer.addModelGroup(modelGroups[groupNumber], numFunctions, 4); // For pilot samples
+  }
 }
 
 
 NonDMultilevBLUESampling::~NonDMultilevBLUESampling()
 { }
+
+void NonDMultilevBLUESampling::pre_run()
+{
+  NonDNonHierarchSampling::pre_run();
+  responseContainer.reset();
+  pilotResponseContainer.reset();
+}
 
 
 void NonDMultilevBLUESampling::core_run()
@@ -330,6 +343,10 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
   // perform the shared increment for the online sample profile
   group_increments(delta_N_G, "blue_"); // spans ALL models, blocking
   accumulate_blue_sums(sum_G, sum_GG, NGroupActual, batchResponsesMap);
+
+  // Accumulate samples
+  responseContainer.addSamples(batchResponsesMap);
+
   increment_equivalent_cost(delta_N_G, modelGroupCost,
 			    sequenceCost[numApprox], equivHFEvals);
   clear_batches();
@@ -407,6 +424,12 @@ shared_covariance_iteration(IntRealMatrixArrayMap& sum_G,
     shared_increment("blue_");
     // accumulate for one group only and reuse for group covariances
     accumulate_blue_sums(sum_G, sum_GG, NGroupActual, all_group, allResponses);
+
+    // Accumulate shared samples
+    IntIntResponse2DMap batchedSamples;
+    batchedSamples.insert(std::make_pair(all_group, allResponses));
+    responseContainer.addSamples(batchedSamples);
+
     // update covariances, recomputing model group pruning if active
     compute_GG_covariance(sum_G[1][all_group], sum_GG[1][all_group],
 			  NGroupActual[all_group], covGG, covGGinv);
@@ -460,8 +483,12 @@ independent_covariance_iteration(IntRealMatrixArrayMap& sum_G,
     // -----------------------------------------------
     group_increments(delta_N_G, "blue_"); // spans ALL model groups, blocking
     accumulate_blue_sums(sum_G, sum_GG, NGroupActual, batchResponsesMap);
+
+    // Accumulate independent samples
+    responseContainer.addSamples(batchResponsesMap);
+
     compute_GG_covariance(sum_G[1], sum_GG[1], NGroupActual,
-			  covGG, covGGinv, N_G_ref);
+			  covGG, covGGinv, false, 1, N_G_ref);
     // While online cost recovery could be continuously updated, we restrict
     // to the pilot and do not not update on subsequent iterations.  We could
     // potentially mirror the covariance updates with cost updates, but seems
@@ -510,7 +537,13 @@ evaluate_pilot(RealMatrixArray& sum_G_pilot, RealSymMatrix2DArray& sum_GG_pilot,
     RealSymMatrixArray& sum_GG_sh =   sum_GG_pilot[all_group];
     SizetArray&              N_sh = N_shared_pilot[all_group];
     accumulate_blue_sums(sum_G_sh, sum_GG_sh, N_sh, all_group, allResponses);
-    compute_GG_covariance(sum_G_sh, sum_GG_sh, N_sh, covGG, covGGinv);
+
+    // Accumulate shared pilot samples
+    IntIntResponse2DMap batchedSamples;
+    batchedSamples.insert(std::make_pair(all_group, allResponses));
+    pilotResponseContainer.addSamples(batchedSamples);
+
+    compute_GG_covariance(sum_G_sh, sum_GG_sh, N_sh, covGG, covGGinv, true);
     if (costSource != USER_COST_SPEC)
       { recover_online_cost(allResponses); update_model_group_costs(); }
     if (incr_cost)
@@ -521,8 +554,13 @@ evaluate_pilot(RealMatrixArray& sum_G_pilot, RealSymMatrix2DArray& sum_GG_pilot,
     group_increments(pilotSamples, "blue_"); // all groups, independent samples
     accumulate_blue_sums(sum_G_pilot, sum_GG_pilot, N_shared_pilot,
 			 batchResponsesMap);
+
+    // Accumulate independent pilot samples
+    pilotResponseContainer.addSamples(batchResponsesMap);
+
     compute_GG_covariance(sum_G_pilot, sum_GG_pilot, N_shared_pilot,
-			  covGG, covGGinv);
+			  covGG, covGGinv, true);
+
     if (costSource != USER_COST_SPEC)
       { recover_online_cost(batchResponsesMap); update_model_group_costs(); }
     if (incr_cost)
@@ -559,8 +597,15 @@ evaluate_pilot(IntRealMatrixArrayMap& sum_G_pilot,
     // accumulate for one group only and reuse for group covariances
     accumulate_blue_sums(sum_G_pilot, sum_GG_pilot, N_shared_pilot, all_group,
 			 allResponses);
+
+    // Accumulate shared pilot samples
+    IntIntResponse2DMap batchedSamples;
+    batchedSamples.insert(std::make_pair(all_group, allResponses));
+    pilotResponseContainer.addSamples(batchedSamples);
+
     compute_GG_covariance(sum_G_pilot[1][all_group], sum_GG_pilot[1][all_group],
-			  N_shared_pilot[all_group], covGG, covGGinv);
+			  N_shared_pilot[all_group], covGG, covGGinv, true);
+
     if (costSource != USER_COST_SPEC)
       { recover_online_cost(allResponses); update_model_group_costs(); }
     if (incr_cost)
@@ -571,8 +616,12 @@ evaluate_pilot(IntRealMatrixArrayMap& sum_G_pilot,
     group_increments(pilotSamples, "blue_"); // all groups, independent samples
     accumulate_blue_sums(sum_G_pilot, sum_GG_pilot, N_shared_pilot,
 			 batchResponsesMap);
-    compute_GG_covariance(sum_G_pilot[1], sum_GG_pilot[1], N_shared_pilot,
-			  covGG, covGGinv);
+
+    // Accumulate independent pilot samples
+    pilotResponseContainer.addSamples(batchResponsesMap);
+
+    compute_GG_covariance(sum_G_pilot[1], sum_GG_pilot[1], N_shared_pilot, covGG, covGGinv, true);
+
     if (costSource != USER_COST_SPEC)
       { recover_online_cost(batchResponsesMap); update_model_group_costs(); }
     if (incr_cost)
@@ -1214,13 +1263,13 @@ blue_raw_moments(const IntRealMatrixArrayMap& sum_G_online,
     const RealSymMatrix2DArray& sum_GG_online_m = sum_GG_online.at(mom);
 
     if (mom == 1) // Use online covar + online sum to solve for mean
-      compute_mu_hat(covGGinv, sum_G_online_m, N_G_online, mu_hat);
+      compute_mu_hat(covGGinv, sum_G_online_m, N_G_online, mu_hat, mom);
     else { // compute covariances for higher-order moment solves
       RealSymMatrix2DArray cov_GG, cov_GG_inv;
       compute_GG_covariance(sum_G_online_m, sum_GG_online_m, N_G_online,
-			    cov_GG, cov_GG_inv);
+			    cov_GG, cov_GG_inv, false, mom);
       //prune_model_groups(); // "Against" selected
-      compute_mu_hat(cov_GG_inv, sum_G_online_m, N_G_online, mu_hat);
+      compute_mu_hat(cov_GG_inv, sum_G_online_m, N_G_online, mu_hat, mom);
     }
 
     for (size_t qoi=0; qoi<numFunctions; ++qoi)
@@ -1266,19 +1315,21 @@ blue_raw_moments(const IntRealMatrixArrayMap& sum_G_offline,
     // for all moments or store offline sums for these covariances, deferring
     // computation until needed here.  Using the latter approach for now.
     if (mom == 1) // Use offline covar + online sum to solve for mean
-      compute_mu_hat(covGGinv, sum_G_online_m, N_G_online, mu_hat);
+      compute_mu_hat(covGGinv, sum_G_online_m, N_G_online, mu_hat, mom);
     else {
       const RealMatrixArray&       sum_G_offline_m  = sum_G_offline.at(mom);
       const RealSymMatrix2DArray& sum_GG_offline_m = sum_GG_offline.at(mom);
       // compute covariances for higher-order moments using offline sums
       RealSymMatrix2DArray cov_GG, cov_GG_inv;
-      if (pilotGroupSampling == SHARED_PILOT)
+      if (pilotGroupSampling == SHARED_PILOT) {
 	compute_GG_covariance( sum_G_offline_m[all_group],
 			      sum_GG_offline_m[all_group],
-			      N_G_offline[all_group], cov_GG, cov_GG_inv);
-      else
+			      N_G_offline[all_group], cov_GG, cov_GG_inv, true, mom);
+      }
+      else {
 	compute_GG_covariance(sum_G_offline_m, sum_GG_offline_m, N_G_offline,
-			      cov_GG, cov_GG_inv);
+			      cov_GG, cov_GG_inv, true, mom);
+      }
       // Update model group pruning or stick with set from final iteration?
       // (Psi solve still needed although optimization cycles are complete.)
       // For:     online:  condition rankings will change for higher moments
@@ -1288,7 +1339,7 @@ blue_raw_moments(const IntRealMatrixArrayMap& sum_G_offline,
       //prune_model_groups(); // "Against" selected
 
       // solve for mu-hat using online sums
-      compute_mu_hat(cov_GG_inv, sum_G_online_m, N_G_online, mu_hat);
+      compute_mu_hat(cov_GG_inv, sum_G_online_m, N_G_online, mu_hat, mom);
     }
 
     for (size_t qoi=0; qoi<numFunctions; ++qoi)
@@ -1600,7 +1651,7 @@ void NonDMultilevBLUESampling::
 compute_GG_covariance(const RealMatrixArray& sum_G,
 		      const RealSymMatrix2DArray& sum_GG,
 		      const Sizet2DArray& num_G, RealSymMatrix2DArray& cov_GG,
-		      RealSymMatrix2DArray& cov_GG_inv,
+		      RealSymMatrix2DArray& cov_GG_inv, bool pilot, int moment,
 		      const SizetArray& N_G_ref)
 {
   initialize_rsm2a(cov_GG);  initialize_rsm2a(cov_GG_inv); // bypass if sized
@@ -1631,21 +1682,29 @@ compute_GG_covariance(const RealMatrixArray& sum_G,
 	if (cov_GG_gq.empty()) cov_GG_gq.shape(num_models);
 	for (m=0; m<num_models; ++m) {
 	  sum_G_gqm = sum_G_g(qoi,m);
-	  for (m2=0; m2<=m; ++m2)
-	    compute_covariance(sum_G_gqm, sum_G_g(qoi,m2), sum_GG_gq(m,m2),
-			       num_G_gq, cov_GG_gq(m,m2));
+	  for (m2=0; m2<=m; ++m2) {
+	    // compute_covariance(sum_G_gqm, sum_G_g(qoi,m2), sum_GG_gq(m,m2),
+			//        num_G_gq, cov_GG_gq(m,m2));
+      if (pilot) {
+        cov_GG_gq(m, m2) = pilotResponseContainer.getCovariance(g, m, m2, qoi, moment);
+      }
+      else {
+        cov_GG_gq(m, m2) = responseContainer.getCovariance(g, m, m2, qoi, moment);
+      }
+    }
 	}
 	compute_C_inverse(cov_GG_gq, cov_GG_inv_g[qoi], g, qoi, rcond[qoi]);
       }
       else if (!relative_update) // inadequate samples to define covar
-	{ cov_GG_g[qoi].shape(0); cov_GG_inv_g[qoi].shape(0); rcond[qoi] = 0.; }
+	{
+    cov_GG_g[qoi].shape(0); cov_GG_inv_g[qoi].shape(0); rcond[qoi] = 0.; 
+  }
       //else: leave as previous shared covariance and covariance-inverse
+      if (rcond_throttle)
+        groupCovCondMap.insert(std::pair<Real,size_t>(average(rcond), g));
     }
-    if (rcond_throttle)
-      groupCovCondMap.insert(std::pair<Real,size_t>(average(rcond), g));
   }
 }
-
 
 /** overload version for shared group samples */
 void NonDMultilevBLUESampling::
@@ -1653,7 +1712,7 @@ compute_GG_covariance(const RealMatrix& sum_G_g,
 		      const RealSymMatrixArray& sum_GG_g,
 		      const SizetArray& num_G_g,
 		      RealSymMatrix2DArray& cov_GG,
-		      RealSymMatrix2DArray& cov_GG_inv)
+		      RealSymMatrix2DArray& cov_GG_inv, bool pilot, int moment)
 {
   initialize_rsm2a(cov_GG);
 
@@ -1669,9 +1728,16 @@ compute_GG_covariance(const RealMatrix& sum_G_g,
       if (cov_GG_gq.numRows() != num_models) cov_GG_gq.shape(num_models);
       for (m1=0; m1<num_models; ++m1) {
 	sum_G_gqm = sum_G_g(qoi,m1);
-	for (m2=0; m2<=m1; ++m2)
-	  compute_covariance(sum_G_gqm, sum_G_g(qoi,m2), sum_GG_gq(m1,m2),
-			     num_G_gq, cov_GG_gq(m1,m2));
+	for (m2=0; m2<=m1; ++m2) {
+	  // compute_covariance(sum_G_gqm, sum_G_g(qoi,m2), sum_GG_gq(m1,m2),
+			    //  num_G_gq, cov_GG_gq(m1,m2));
+           if (pilot) {
+            cov_GG_gq(m1, m2) = pilotResponseContainer.getCovariance(all_group, m1, m2, qoi, moment);
+           }
+           else {
+            cov_GG_gq(m1, m2) = responseContainer.getCovariance(all_group, m1, m2, qoi, moment);
+           }
+  }
       }
       // map shared covariance into partial groups
       for (g=0; g<all_group; ++g) {
@@ -1682,15 +1748,17 @@ compute_GG_covariance(const RealMatrix& sum_G_g,
 	  cov_GG_mapped.shape(num_mapped);
 	for (m1=0; m1<num_mapped; ++m1) {
 	  g1 = group_g[m1];
-	  for (m2=0; m2<=m1; ++m2)
+	  for (m2=0; m2<=m1; ++m2) {
 	    cov_GG_mapped(m1,m2) = cov_GG_gq(g1, group_g[m2]);
+    }
 	}
       }
     }
     else {
       cov_GG_gq.shape(0);
-      for (g=0; g<all_group; ++g)
-	cov_GG[g][qoi].shape(0);
+      for (g=0; g<all_group; ++g) {
+	      cov_GG[g][qoi].shape(0);
+      }
     }
   }
 
@@ -1698,6 +1766,8 @@ compute_GG_covariance(const RealMatrix& sum_G_g,
   // (Phi-inverse is dependent on N_G, but C-inverse is not)
   compute_C_inverse(cov_GG, cov_GG_inv);
 }
+
+
 
 
 /*
@@ -1875,16 +1945,36 @@ invert_Psi(RealSymMatrix& Psi, RealMatrix& Psi_inv)
 void NonDMultilevBLUESampling::
 compute_mu_hat(const RealSymMatrix2DArray& cov_GG_inv,
 	       const RealMatrixArray& sum_G, const Sizet2DArray& N_G,
-	       RealVectorArray& mu_hat)
+	       RealVectorArray& mu_hat, int moment)
 {
   // accumulate Psi but don't invert in place
   RealSymMatrixArray Psi;
   compute_Psi(cov_GG_inv, N_G, Psi);
 
+  // Make a sum_G based on accumulators
+  auto lastGroup = numGroups - 1;
+  RealMatrixArray my_sum_G(numGroups);
+  for (auto group = 0; group < numGroups; ++group) {
+    auto numModels = modelGroups[group].size();
+    auto numRows = sum_G[group].numRows();
+    auto numCols = sum_G[group].numCols();
+    my_sum_G[group].shape(numRows, numCols);
+    for (auto qoi = 0; qoi < numFunctions; ++qoi) {
+      for (auto model = 0; model < numModels; ++model) {
+        auto numSamples = responseContainer.numSamples(group);
+        if (numSamples > 0) {
+          my_sum_G[group](qoi, model) = responseContainer.getMean(group, model, qoi, moment) * numSamples;
+        }
+        else {
+          my_sum_G[group](qoi, model) = 0;
+        }
+      }
+    }
+  }
+
   // Only need to form y when solving for mu-hat:
   RealVectorArray y;
-  compute_y(cov_GG_inv, sum_G, y);
-
+  compute_y(cov_GG_inv, my_sum_G, y);
   initialize_rva(mu_hat, false);
   size_t q, r, c, g, num_groups = modelGroups.size();
   if (hardenNumericSoln) { // SVD

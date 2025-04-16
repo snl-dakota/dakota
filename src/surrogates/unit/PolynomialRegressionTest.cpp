@@ -430,7 +430,9 @@ TEST(PolynomialRegressionTest_tests, all_tests)
   PolynomialRegressionSurrogate_gradient_and_hessian();
 
   // ParameterList import test
-  PolynomialRegressionSurrogate_parameter_list_import();
+  #ifndef DISABLE_YAML_SURROGATES_CONFIG
+    PolynomialRegressionSurrogate_parameter_list_import();
+  #endif
 
   // Serialization tests
   PolynomialRegression_SaveLoad();

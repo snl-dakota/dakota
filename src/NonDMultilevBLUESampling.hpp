@@ -44,7 +44,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  //void pre_run();
+  void pre_run();
   void core_run() override;
   //void post_run(std::ostream& s);
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
@@ -120,7 +120,7 @@ protected:
 		 const RealMatrixArray& sum_G, RealVectorArray& y);
   void compute_mu_hat(const RealSymMatrix2DArray& cov_GG_inv,
 		      const RealMatrixArray& sum_G, const Sizet2DArray& N_G,
-		      RealVectorArray& mu_hat);
+		      RealVectorArray& mu_hat, int moment);
 
   void process_group_allocations(MFSolutionData& soln,
 				 const Sizet2DArray& N_G_actual,
@@ -244,13 +244,13 @@ private:
 			     const RealSymMatrix2DArray& sum_GG,
 			     const Sizet2DArray& N_G,
 			     RealSymMatrix2DArray& cov_GG,
-			     RealSymMatrix2DArray& cov_GG_inv,
+			     RealSymMatrix2DArray& cov_GG_inv, bool pilot=false, int moment=1,
 			     const SizetArray& N_G_ref = SizetArray());
   void compute_GG_covariance(const RealMatrix& sum_G_g,
 			     const RealSymMatrixArray& sum_GG_g,
 			     const SizetArray& num_G_g,
 			     RealSymMatrix2DArray& cov_GG,
-			     RealSymMatrix2DArray& cov_GG_inv);
+			     RealSymMatrix2DArray& cov_GG_inv, bool pilot=false, int moment=1);
 
   void covariance_to_correlation_sq(const RealSymMatrixArray& cov_GG_g,
 				    RealMatrix& rho2_LH);
@@ -293,6 +293,7 @@ private:
 
   void enforce_nudge(RealVector& x);
   void enforce_diagonal_delta(RealSymMatrixArray& Psi);
+
 
   /*
   void compute_GG_statistics(RealMatrixArray& sum_G_pilot,
@@ -768,13 +769,14 @@ add_sub_matvec(const RealSymMatrix& sub_mat, const RealMatrix& sub_mat2,
   size_t r, c, num_sub = subset.size();  Real sub_matvec;
   for (r=0; r<num_sub; ++r) {
     sub_matvec = 0.;
-    for (c=0; c<num_sub; ++c)
+    for (c=0; c<num_sub; ++c) {
       sub_matvec += sub_mat(r,c) * sub_mat2(sub_mat2_row,c);
+    }
     vec[subset[r]] += sub_matvec;
   }
 
-  //if (outputLevel >= DEBUG_OUTPUT)
-  //  Cout << "add_sub_matvec() aggregate =\n" << vec << std::endl;
+  if (outputLevel >= DEBUG_OUTPUT)
+   Cout << "add_sub_matvec() aggregate =\n" << vec << std::endl;
 }
 
 
