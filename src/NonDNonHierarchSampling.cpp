@@ -1080,6 +1080,16 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     break;
   }
   }
+
+  // use a lb specification that satisfies linear constraints
+  // > some optimizers may use or visit corners, violating linear cons,
+  //   so make these corners more robust
+  // > should not be strictly necessary, but may improve robustness
+  // > so far, testing artifacts show mixed effects with no clear trend;
+  //   not surprising without more stress tests like weighted MLMC + DAG
+  //   search (leaving commented out for now)
+  //enforce_augmented_linear_ineq_constraints(x_lb);
+
   // x0 can undershoot x_lb if an OFFLINE mode, but enforce generally
   enforce_bounds(x0, x_lb, x_ub);
 }

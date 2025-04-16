@@ -620,6 +620,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   enforce_nudge(x_lb); // nudge away from 0 if needed
 
   specify_initial_parameters(soln, x0, x_lb, x_ub);
+  //enforce_augmented_linear_ineq_constraints(x_lb); // difficult a priori
   enforce_bounds(x0, x_lb, x_ub);// for example, x0 can undershoot lb if OFFLINE
 
   specify_linear_constraints(lin_ineq_lb, lin_ineq_ub, lin_eq_tgt,
@@ -661,7 +662,7 @@ specify_initial_parameters(const MFSolutionData& soln, RealVector& x0,
   if (soln_vars.empty()) x0 = x_lb;
   else {
     size_t num_v = num_active_groups();
-    if (soln_vars.length() != num_v) deflate(soln_vars, retainedModelGroups,x0);
+    if (soln_vars.length() != num_v) deflate(soln_vars,retainedModelGroups,x0);
     else                             x0 = soln_vars;
   }
 }
