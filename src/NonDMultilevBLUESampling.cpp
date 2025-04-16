@@ -194,6 +194,12 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db,
 NonDMultilevBLUESampling::~NonDMultilevBLUESampling()
 { }
 
+void NonDMultilevBLUESampling::pre_run()
+{
+  NonDNonHierarchSampling::pre_run();
+  
+}
+
 
 void NonDMultilevBLUESampling::core_run()
 {

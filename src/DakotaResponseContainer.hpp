@@ -65,6 +65,9 @@ public:
     //   The computed covariance for the specified parameters.
     Real getCovariance(int model, int other_model, int qoi, int moment, int replication);
 
+    // Empties the model group of all stored samples.
+    void reset();
+
 private:
     std::vector<unsigned short> model_indices_; // Indices of models in this group.
     int num_moments_; // Number of moments to be calculated.
@@ -141,6 +144,9 @@ public:
     // Returns:
     //   The computed covariance for the specified parameters.
     Real getCovariance(int group, int model, int other_model, int qoi = 0, int moment = 1, int replication = 0);
+
+    // Empties the response container of all stored samples.
+    void reset();
 
 private:
     std::vector<std::unique_ptr<ModelGroup>> model_groups_; // Unique pointers to model groups.

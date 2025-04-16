@@ -116,6 +116,22 @@ Real ModelGroup::getCovariance(int model, int other_model, int qoi, int moment, 
     return covariance_accumulators_[moment - 1][model][other_model][qoi][replication].computeStatistic();
 }
 
+// Empties the model group of all stored samples.
+void ModelGroup::reset() {
+    for (int moment = 0; moment < num_moments_; ++moment) {
+        for (int model = 0; model < model_indices_.size(); ++model) {
+            for (int qoi = 0; qoi < num_qois_; ++qoi) {
+                for (int replication = 0; replication < num_replications_; ++replication) {
+                    mean_accumulators_[moment][model][qoi][replication].reset();
+                    for (int other_model = 0; other_model <= model; ++other_model) {
+                        covariance_accumulators_[moment][model][other_model][qoi][replication].reset();
+                    }
+                }
+            }
+        }
+    }
+}
+
 // Constructs an empty ResponseContainer.
 ResponseContainer::ResponseContainer() 
     : model_groups_() // Initialize the vector of unique pointers to model groups
@@ -200,6 +216,12 @@ int ResponseContainer::numSamples(int group) {
 //   The number of model groups.
 int ResponseContainer::numGroups() {
     return model_groups_.size();
+}
+
+// Empties the response container of all stored samples.
+void ResponseContainer::reset() {
+    for (auto& model_group : model_groups_)
+        model_group->reset();
 }
 
 } // end namespace Dakota

@@ -39,6 +39,9 @@ public:
     // Returns:
     //   The computed statistic of type T.
     virtual T computeStatistic() = 0;
+
+    // Empties the accumulator of all stored samples.
+    virtual void reset() = 0;
 };
 
 // Accumulator for computing the mean of a set of samples.
@@ -75,8 +78,14 @@ public:
         return mean(acc_);
     }
 
+    // Empties the accumulator of all stored samples.
+    void reset() override {
+        acc_ = mean_accumulator();
+    }
+
 private:
-    accumulator_set<T, stats<tag::mean>> acc_;
+    typedef mean_accumulator = accumulator_set<T, stats<tag::mean>>;
+    mean_accumulator acc_;
 };
 
 // Accumulator for computing the variance of a set of samples.
@@ -113,8 +122,14 @@ public:
         return variance(acc_);
     }
 
+    // Empties the accumulator of all stored samples.
+    void reset() override {
+        acc_ = variance_accumulator();
+    }
+
 private:
-    accumulator_set<T, stats<tag::variance>> acc_;
+    typedef variance_accumulator = accumulator_set<T, stats<tag::variance>>;
+    variance_accumulator acc_;
 };
 
 // Accumulator for computing the covariance between two sets of samples.
@@ -162,8 +177,14 @@ public:
         return covariance(acc_) * numSamples() / (numSamples() - 1);
     }
 
+    // Empties the accumulator of all stored samples.
+    void reset() override {
+        acc_ = covariance_accumulator();
+    }
+
 private:
-    accumulator_set<T, stats<tag::covariance<T, tag::covariate1>>> acc_;
+    typedef variance_accumulator = accumulator_set<T, stats<tag::covariance<T, tag::covariate1>>>co;
+    covariance_accumulator acc_;
 };
 
 // Explicit instantiation for Real type
