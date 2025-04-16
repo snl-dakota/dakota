@@ -10,7 +10,7 @@ Test Number 0 succeeded
                       1.0000000000e+00 z1
 <<<<< Best objective function  =
                       1.2462008192e-01
-<<<<< Best evaluation ID: 182
+<<<<< Best evaluation ID: 191
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 97 total (97 new, 0 duplicate)
          obj_fn: 97 val (97 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -23,7 +23,7 @@ Test Number 1 succeeded
                       1.0000000000e+00 z1
 <<<<< Best objective function  =
                       1.2501781853e-01
-<<<<< Best evaluation ID: 79
+<<<<< Best evaluation ID: 94
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 1036 total (1036 new, 0 duplicate)
          obj_fn: 1036 val (1036 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -33,11 +33,11 @@ Test Number 2 succeeded
                      -6.9372548288e-01 x1
                       5.5580917306e-01 x2
                       1.4847716277e+00 x3
-                      2.0000000000e+00 y1
+                      3.0000000000e+00 y1
                       2.0000000000e+00 y2
 <<<<< Best objective function  =
-                      1.0323630296e+01
-<<<<< Best evaluation ID: 741
+                      2.5323630296e+01
+<<<<< Best evaluation ID: 889
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 43 total (32 new, 11 duplicate)
          obj_fn: 43 val (32 n, 11 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -50,4 +50,4 @@ Test Number 3 succeeded
                       1.0000000000e+00 z1
 <<<<< Best objective function  =
                       2.9772896557e+00
-<<<<< Best evaluation ID: 28
+<<<<< Best evaluation ID: 37
