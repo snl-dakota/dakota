@@ -197,7 +197,8 @@ NonDMultilevBLUESampling::~NonDMultilevBLUESampling()
 void NonDMultilevBLUESampling::pre_run()
 {
   NonDNonHierarchSampling::pre_run();
-  
+  responseContainer.reset();
+  pilotResponseContainer.reset();
 }
 
 

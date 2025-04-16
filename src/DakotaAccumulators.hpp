@@ -84,7 +84,7 @@ public:
     }
 
 private:
-    typedef mean_accumulator = accumulator_set<T, stats<tag::mean>>;
+    typedef accumulator_set<T, stats<tag::mean>> mean_accumulator;
     mean_accumulator acc_;
 };
 
@@ -128,7 +128,7 @@ public:
     }
 
 private:
-    typedef variance_accumulator = accumulator_set<T, stats<tag::variance>>;
+    typedef accumulator_set<T, stats<tag::variance>> variance_accumulator;
     variance_accumulator acc_;
 };
 
@@ -183,7 +183,7 @@ public:
     }
 
 private:
-    typedef variance_accumulator = accumulator_set<T, stats<tag::covariance<T, tag::covariate1>>>co;
+    typedef accumulator_set<T, stats<tag::covariance<T, tag::covariate1>>> covariance_accumulator;
     covariance_accumulator acc_;
 };
 
