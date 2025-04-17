@@ -41,6 +41,7 @@ if(DEFINED ifort_libpath)
     "${ifort_libpath}/libmmd.dll"
     "${ifort_libpath}/libifcoremd.dll"
     "${ifort_libpath}/svml_dispmd.dll"
+    "${ifort_libpath}/libifportmd.dll"
   )
   # Intel debug libraries
   IF(CMAKE_INSTALL_DEBUG_LIBRARIES)
@@ -71,6 +72,8 @@ if(DEFINED ifort_libpath)
 endif()
 
 # The CMake module takes care of MSVS runtime libraries
+# Seems to be required by the jni surrogates library
+set(CMAKE_INSTALL_UCRT_LIBRARIES ON CACHE BOOL "Install universal crt dlls") 
 include(InstallRequiredSystemLibraries)
 
 message(STATUS "Installing system DLLs: ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS}")
