@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#  _______________________________________________________________________
+# _______________________________________________________________________
 #
-#  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014 Sandia Corporation.
-#  This software is distributed under the GNU Lesser General Public License.
-#  For more information, see the README file in the top Dakota directory.
-#  _______________________________________________________________________
+#    Dakota: Explore and predict with confidence.
+#    Copyright 2014-2025
+#    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+#    This software is distributed under the GNU Lesser General Public License.
+#    For more information, see the README file in the top Dakota directory.
+# _______________________________________________________________________
+
 
 import argparse
 import sys

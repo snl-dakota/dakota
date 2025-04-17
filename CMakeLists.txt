@@ -1,11 +1,12 @@
-#  _______________________________________________________________________
+# _______________________________________________________________________
 #
-#  DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
-#  Copyright 2014-2023
-#  National Technology & Engineering Solutions of Sandia, LLC (NTESS).
-#  This software is distributed under the GNU Lesser General Public License.
-#  For more information, see the README file in the top Dakota directory.
-#  _______________________________________________________________________
+#    Dakota: Explore and predict with confidence.
+#    Copyright 2014-2025
+#    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+#    This software is distributed under the GNU Lesser General Public License.
+#    For more information, see the README file in the top Dakota directory.
+# _______________________________________________________________________
+#
 
 # Dakota itself requires this CMake version; some TPLs may require even newer
 cmake_minimum_required(VERSION 3.17)
