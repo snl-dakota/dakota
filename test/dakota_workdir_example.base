@@ -1,11 +1,11 @@
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 370 total (70 new, 300 duplicate)
+<<<<< Function evaluation summary: 740 total (140 new, 600 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
-                      5.0000007785e-01 x2
+                      5.0000087043e-01 x2
 <<<<< Best objective function  =
-                      1.2499996107e-01
+                      1.2499956478e-01
 <<<<< Best constraint values   =
-                     -3.8927426060e-08
-                      7.7854858505e-08
-<<<<< Best evaluation ID: 362
+                     -4.3521635240e-07
+                      8.7043412078e-07
+<<<<< Best evaluation ID: 732
