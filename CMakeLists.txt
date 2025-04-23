@@ -134,10 +134,10 @@ dakota_cpack_prune_distro()
 #   $ORIGIN/../bin so that exectuables in lib and test can find shared libs in the bin folder.
 if(APPLE)
   set(CMAKE_MACOSX_RPATH TRUE CACHE BOOL "Add @rpath to library install names")
-  set(CMAKE_INSTALL_RPATH "@executable_path;@executable_path/../lib;@executable_path/../bin"
+  set(CMAKE_INSTALL_RPATH "@executable_path;@executable_path/../lib;@executable_path/../lib64;@executable_path/../bin"
     CACHE STRING "Set the RPATH in Dakota executables and libraries")
 elseif(UNIX)
-   set(CMAKE_INSTALL_RPATH "\$ORIGIN:\$ORIGIN/../lib:\$ORIGIN/../bin"
+   set(CMAKE_INSTALL_RPATH "\$ORIGIN:\$ORIGIN/../lib:\$ORIGIN/../lib64:\$ORIGIN/../bin"
      CACHE STRING "Set the RPATH in Dakota executables and libraries")
 endif()
 

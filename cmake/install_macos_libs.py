@@ -12,6 +12,7 @@ from typing import List, Callable
 executable_dirs = [
     "bin",
     "lib",
+    "lib64",
     "share/dakota/test",
     "share/dakota/examples/hopspack/1-var-bnds-only",
     "share/dakota/examples/hopspack/2-linear-constraints",
@@ -286,8 +287,8 @@ if __name__ == '__main__':
     logging.info(f"Will scan dependencies of executables and libraries in {', '.join(executable_dirs)}")
 
 
-    # don't copy files from lib/, which are targets built by cmake, to bin/
-    copy_black_list = [str(pathlib.Path("lib").resolve())]
+    # don't copy files from lib/ or lib64/, which are targets built by cmake, to bin/
+    copy_black_list = [str(pathlib.Path("lib").resolve()), str(pathlib.Path("lib64").resolve())]
 
     # Recursively copy the external dependencies of targets to the bin folder
     copied = apply_to_dirs(executable_dirs, [], copy_external_deps, "bin", copy_black_list)

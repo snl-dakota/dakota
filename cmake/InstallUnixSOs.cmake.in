@@ -30,7 +30,7 @@ function(dakota_install_dll dakota_dll)
     #  OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE) 
     if(CHANGE_RPATH)
       execute_process(COMMAND
-          chrpath -r \$ORIGIN:\$ORIGIN/../lib:\$ORIGIN/../bin ${CMAKE_INSTALL_PREFIX}/bin/${dll_filename}
+          chrpath -r \$ORIGIN:\$ORIGIN/../lib:\$ORIGIN/../lib64:\$ORIGIN/../bin ${CMAKE_INSTALL_PREFIX}/bin/${dll_filename}
           OUTPUT_QUIET
           RESULT_VARIABLE chrpath_return
       )
