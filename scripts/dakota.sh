@@ -11,7 +11,7 @@
 
 # Wrapper script dakota.sh to help manage binary and library paths
 # when running dakota.  Assume dakota is installed alongside this
-# script and libraries are in the same directory and/or ../lib.
+# script and libraries are in the same directory and/or ../lib and ../lib64
 script_name=`basename ${0}`
 
 # get the path to this wrapper script
@@ -38,7 +38,7 @@ elif [ ! -x "${execpath}/dakota" ]; then
   echo "  dakota binary in ${execpath} is not executable."
   exit 1
 fi
-libpaths="${execpath}:${execpath}/../lib"
+libpaths="${execpath}:${execpath}/../lib:${execpath}/../lib64"
 
 #echo "Prepending library path with ${libpaths}"
 if [ `uname` = "Darwin" ]; then 

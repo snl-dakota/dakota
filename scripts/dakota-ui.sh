@@ -13,7 +13,7 @@
 # needed, e.g., for surrogate import.
 #
 # Assumes dakota is installed alongside this script and libraries are
-# in the same directory and/or ../lib.
+# in the same directory and/or ../lib and ../lib64.
 #
 # Assuems gui launcher is installed in OS-dependent path ../gui/*...
 
@@ -54,7 +54,7 @@ export PYTHONPATH
 PATH="$PATH:${execpath}:${execpath}/../share/dakota/test:."
 export PATH
 
-libpaths="${execpath}:${execpath}/../lib"
+libpaths="${execpath}:${execpath}/../lib:${execpath}/../lib64"
 #echo "Prepending library path with ${libpaths}"
 if [ `uname` = "Darwin" ]; then 
   DYLD_LIBRARY_PATH="${libpaths}:${DYLD_LIBRARY_PATH}"
