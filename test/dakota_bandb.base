@@ -25,19 +25,19 @@ Test Number 1 succeeded
                       1.2501781853e-01
 <<<<< Best evaluation ID: 94
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 1036 total (1036 new, 0 duplicate)
-         obj_fn: 1036 val (1036 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- nln_ineq_con_1: 1036 val (1036 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- nln_ineq_con_2: 1036 val (1036 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 1332 total (1332 new, 0 duplicate)
+         obj_fn: 1332 val (1332 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 1332 val (1332 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_2: 1332 val (1332 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                     -6.9372548288e-01 x1
-                      5.5580917306e-01 x2
-                      1.4847716277e+00 x3
+                     -5.1763266815e-01 x1
+                      1.4774644289e-01 x2
+                      3.1744655842e+00 x3
                       3.0000000000e+00 y1
                       2.0000000000e+00 y2
 <<<<< Best objective function  =
-                      2.5323630296e+01
-<<<<< Best evaluation ID: 889
+                      4.5189161820e+01
+<<<<< Best evaluation ID: 1185
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 43 total (32 new, 11 duplicate)
          obj_fn: 43 val (32 n, 11 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
