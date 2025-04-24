@@ -38,13 +38,14 @@ elif [ ! -x "${execpath}/dakota" ]; then
   echo "  dakota binary in ${execpath} is not executable."
   exit 1
 fi
-libpaths="${execpath}:${execpath}/../lib:${execpath}/../lib64"
 
 #echo "Prepending library path with ${libpaths}"
 if [ `uname` = "Darwin" ]; then 
+  libpaths="${execpath}:${execpath}/../lib"
   DYLD_LIBRARY_PATH="${libpaths}:${DYLD_LIBRARY_PATH}"
   export DYLD_LIBRARY_PATH
 else
+  libpaths="${execpath}:${execpath}/../lib:${execpath}/../lib64"
   LD_LIBRARY_PATH="${libpaths}:${LD_LIBRARY_PATH}"
   export LD_LIBRARY_PATH
 fi

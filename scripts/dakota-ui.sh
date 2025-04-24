@@ -54,9 +54,9 @@ export PYTHONPATH
 PATH="$PATH:${execpath}:${execpath}/../share/dakota/test:."
 export PATH
 
-libpaths="${execpath}:${execpath}/../lib:${execpath}/../lib64"
 #echo "Prepending library path with ${libpaths}"
 if [ `uname` = "Darwin" ]; then 
+  libpaths="${execpath}:${execpath}/../lib"
   DYLD_LIBRARY_PATH="${libpaths}:${DYLD_LIBRARY_PATH}"
   export DYLD_LIBRARY_PATH
 
@@ -67,6 +67,7 @@ if [ `uname` = "Darwin" ]; then
   cd ${gui_path}
   ./DakotaUI "$@"
 else
+  libpaths="${execpath}:${execpath}/../lib:${execpath}/../lib64"
   LD_LIBRARY_PATH="${libpaths}:${LD_LIBRARY_PATH}"
   export LD_LIBRARY_PATH
 
