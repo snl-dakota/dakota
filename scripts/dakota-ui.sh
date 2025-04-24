@@ -22,7 +22,7 @@ get_abs_path() {
   echo "$(cd "$(dirname "$1")" && pwd)"
 }
 
-script_name=`basename ${0}`
+script_name=$(basename ${0})
 
 # get the path to this wrapper script
 # assume dakota executable lives in same directory
@@ -55,17 +55,14 @@ PATH="$PATH:${execpath}:${execpath}/../share/dakota/test:."
 export PATH
 
 #echo "Prepending library path with ${libpaths}"
-if [ `uname` = "Darwin" ]; then 
+if [ $(uname) == "Darwin" ]; then 
   libpaths="${execpath}:${execpath}/../lib"
   DYLD_LIBRARY_PATH="${libpaths}:${DYLD_LIBRARY_PATH}"
   export DYLD_LIBRARY_PATH
-
-  gui_path="${execpath}/../gui/Dakota_*.app/Contents/MacOS"
-  # The explicit cd is a workaround for DakotaUI to find the JNI
-  # surrogates lib. The gui_path isn't quoted here so the wildcard
-  # will get evaluated and work across versions:
-  cd ${gui_path}
-  ./DakotaUI "$@"
+  
+  app_name=$(ls "${execpath}/../gui")
+  cd "${execpath}/../gui"
+  open -a ${app_name}
 else
   libpaths="${execpath}:${execpath}/../lib:${execpath}/../lib64"
   LD_LIBRARY_PATH="${libpaths}:${LD_LIBRARY_PATH}"
