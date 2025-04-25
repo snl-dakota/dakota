@@ -1,0 +1,19 @@
+Blurb::
+Utilize the level mappings metric for guiding adaptive refinement during UQ.
+
+Description::
+The level mappings option allows the user to override the default
+refinement control, in particular activating the L2 norm of the change
+in any level mappings.  If no level mappings are present, a warning
+will be output and the metric will fall back to the norm of the change
+in the response covariance.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

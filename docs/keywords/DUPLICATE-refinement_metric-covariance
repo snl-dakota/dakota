@@ -1,0 +1,17 @@
+Blurb::
+Utilize the response covariance metric for guiding adaptive refinement during UQ.
+
+Description::
+The covariance option allows the user to override the default refinement
+control, in particular activating the L2 norm of the change in response
+covariance option despite the presence of any level mappings.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

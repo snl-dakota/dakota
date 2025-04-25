@@ -1,5 +1,6 @@
 Blurb::
-Number of samples used to refine a probabilty estimate or sampling design.
+Number of samples used to refine a probability estimate or sampling design.
+
 Description::
 Probability estimate: Specify the (scalar) number of samples used to
 improve a probabilty estimate. If using uni-modal sampling all samples
@@ -9,6 +10,7 @@ computed weights.
 
 Sampling design: Specify one or a sequenence of refinement samples to
 augment the initial_samples in a sampling design.
+
 Topics::
 
 Examples::

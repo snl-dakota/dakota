@@ -1,0 +1,41 @@
+Blurb::
+Metric used for guiding adaptive refinement during UQ.
+
+Description::
+The refinement metric for each (greedy) refinement candidate defaults
+to the change induced by the candidate across the set of level
+mappings (L2 norm in the results for response levels, probability
+levels, reliability levels, and generalized reliability levels)
+whenever level mappings are specified.  This supports goal orientation
+during the refinement process.  When no level mappings are specified,
+the default metric is the norm of the change in the response
+covariance matrix for the QoI targets.
+
+This specification option allows the user to override the default, in
+particular activating the response covariance option despite the
+presence of level mappings (see example below).
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+method,
+        multifidelity_polynomial_chaos				
+	  p_refinement uniform
+	    expansion_order_sequence = 0 cross_validation
+	    collocation_ratio = 0.75
+	    seed = 8674132
+	  allocation_control greedy
+	    refinement_metric covariance  # override default of level mappings
+	    convergence_tolerance = 1.e-6
+	  samples_on_emulator = 250000
+	  num_response_levels = 41 41 41
+	  response_levels = -100:5:100 -100:5:100 -100:5:100
+
+Theory::
+
+Faq::
+
+See_Also::
