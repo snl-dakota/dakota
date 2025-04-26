@@ -1,0 +1,17 @@
+Blurb::
+Utilize the maximum estimator variance as the solver metric for sampling-based multifidelity methods.
+
+Description::
+The maximum estimator variance option focuses strictly on the worst case variance, 
+relative to the other average and norm options for scalar reduction of the estimator
+variance vector.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

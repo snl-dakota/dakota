@@ -1,0 +1,17 @@
+Blurb::
+Utilize the estimator variance averaged over the QoI as the solver metric for sampling-based multifidelity methods.
+
+Description::
+The average estimator variance option treats each QoI more equally, as
+compared to other max and norm options for scalar reduction of the
+estimator variance vector.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

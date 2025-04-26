@@ -1,0 +1,30 @@
+Blurb::
+Metric employed during numerical solutions in sampling-based multifidelity UQ methods.
+
+Description::
+For sampling-based multifidelity UQ methods, this specification
+selects the metric to be used during numerical solutions for sample
+allocations per model.  When there are multiple quantities of interest
+(QoI), the vector of QoI estimator variances needs to be converted to
+a scalar for use by the numerical solver.  Options include the
+average, maximum, and p-norm of the QoI vector, with the default of
+average estimator variance.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+method,
+	approximate_control_variate acv_mf
+	  solver_metric norm_estimator_variance norm_order = 2	# objective fn for budget-constrained
+	solution_mode  online_pilot
+	pilot_samples = 50 seed = 8674132
+	max_function_evaluations = 500
+
+Theory::
+
+Faq::
+
+See_Also::

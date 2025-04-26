@@ -1,0 +1,19 @@
+Blurb::
+Utilize a p-norm over the vector of QoI estimator variances as the solver metric for sampling-based multifidelity methods.
+
+Description::
+The p-norm option provides more flexibility in defining a middle
+ground between the average and max options for scalar reduction of the
+estimator variance vector.  As the order of the norm increases, the
+metric approaches the max option (the infinity norm).  The default
+norm order is 2.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::
