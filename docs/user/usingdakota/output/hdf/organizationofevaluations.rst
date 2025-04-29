@@ -4,7 +4,8 @@
 Organization of Evaluations
 """""""""""""""""""""""""""
 
-An evaluation is a mapping from variables to responses performed by a Dakota model or interface. Beginning with release 6.10, Dakota has the ability to report evaluation history in HDF5 format. The HDF5 format offers many advantages over existing console output and :ref:`tabular output<environment-tabular_data>`. Requring no "scraping", it is more convenient for most users than the former, and being unrestricted to a two-dimensional, tabular arragnment of information, it is far richer than the latter.
+An evaluation is a mapping from variables to responses performed by a Dakota model or interface. Dakota optionally writes
+evaluation history to its HDF5 results file. The HDF5 format offers many advantages over existing console output and :ref:`tabular output<environment-tabular_data>`. Requring no "scraping", it is more convenient for most users than the former, and being unrestricted to a two-dimensional, tabular arragnment of information, it is far richer than the latter.
 
 This section begins by describing the Dakota components that can generate evaluation data. It then documents the high-level organization of the data from those components. Detailed documentation of the individual datasets (the "low-level" organization) where data are stored follows. Finally, information is provided concerning input keywords that control which components report evaluations.
 
@@ -137,9 +138,11 @@ Recast models are a special case and receive the name ``RECAST_<WRAPPED-MODEL>_<
 
  - WRAPPED-MODEL is the Id of the innermost wrapped model, typically a user-specified model
  - TYPE is the specific kind of recast. The three most common recasts are:
+
    - RECAST: several generic responsibilities, including summing objective functions to present to a single-objective optimizer
    - DATA_TRANSFORM: Compute residuals in a calibration
    - SCALING: scale variables and responses
+
  - N is an incrementing integer that begins with 1. It is employed to distinguish recasts of the same type that wrap the same underlying model.
 
 The model's evaluations may be the result of combining information from multiple sources. A simulation/single model will receive all the information it requires from its interface, but more complicated model types may use information not only from interfaces, but also other models and the results of method executions. Nested models, for instance, receive information from a submethod (the mean of a response from a sampling study, for instance) and potentially also an :ref:`optional interface<model-nested-optional_interface_pointer>`.
@@ -178,11 +181,11 @@ The variables group contains datasets that store the variables information for e
 |                              | +===========+=========+================+======================+========================================================================+==================+ |
 |                              | | 0         | Integer | evaluation_ids | Evaluation Ids       | false                                                                  |                  | |
 |                              | +-----------+---------+----------------+----------------------+------------------------------------------------------------------------+------------------+ |
-|                              | | 1         | String  | variables      | Variable descriptors | false                                                                  |                  | |
+|                              | | 1         | String  | *_descriptors  | Variable descriptors | false                                                                  |                  | |
 |                              | +-----------+---------+----------------+----------------------+------------------------------------------------------------------------+------------------+ |
-|                              | | 1         | Integer | variables      | Variable Ids         | 1-to-N rank of the variable in Dakota input spec order                 | false            | |
+|                              | | 1         | Integer | *_ids          | Variable Ids         | 1-to-N rank of the variable in Dakota input spec order                 | false            | |
 |                              | +-----------+---------+----------------+----------------------+------------------------------------------------------------------------+------------------+ |
-|                              | | 1         | String  | types          | Variable types       | Type of each variable, e.g. CONTINUOUS_DESIGN, DISCRETE_DESIGN_SET_INT | false            | |
+|                              | | 1         | String  | *_type         | Variable types       | Type of each variable, e.g. CONTINUOUS_DESIGN, DISCRETE_DESIGN_SET_INT | false            | |
 |                              | +-----------+---------+----------------+----------------------+------------------------------------------------------------------------+------------------+ |
 +------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
