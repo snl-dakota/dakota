@@ -69,5 +69,6 @@ for using the GUI.  The 6.11 GUI manual is also available here.
 **Compatibility**
 
 - Dakota now requires C++17 and CMake 3.23
+- Legacy Python 2 support has been removed, and Python 3 is required for all optional python dependencies
 
 **Other Notes and Known Issues**
