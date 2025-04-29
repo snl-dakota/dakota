@@ -46,7 +46,7 @@ for using the GUI.  The 6.11 GUI manual is also available here.
 
 *Optimization Methods*
 
-- ROL was updated to release foo.
+- ROL optimizer was updated to release 2.0.
 
 *UQ Methods*
 
