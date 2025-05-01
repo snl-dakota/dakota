@@ -16,7 +16,7 @@ Examples::
 
 .. code-block::
 
-method,
+    method,
 	approximate_control_variate acv_mf
 	  solver_metric norm_estimator_variance norm_order = 2	# objective fn for budget-constrained
 	solution_mode  online_pilot
