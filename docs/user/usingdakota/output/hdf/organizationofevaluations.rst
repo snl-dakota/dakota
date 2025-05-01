@@ -181,11 +181,11 @@ The variables group contains datasets that store the variables information for e
 |                              | +===========+=========+================+======================+========================================================================+==================+ |
 |                              | | 0         | Integer | evaluation_ids | Evaluation Ids       | false                                                                  |                  | |
 |                              | +-----------+---------+----------------+----------------------+------------------------------------------------------------------------+------------------+ |
-|                              | | 1         | String  | *_descriptors  | Variable descriptors | false                                                                  |                  | |
+|                              | | 1         | String  | \*_descriptors | Variable descriptors | false                                                                  |                  | |
 |                              | +-----------+---------+----------------+----------------------+------------------------------------------------------------------------+------------------+ |
-|                              | | 1         | Integer | *_ids          | Variable Ids         | 1-to-N rank of the variable in Dakota input spec order                 | false            | |
+|                              | | 1         | Integer | \*_ids         | Variable Ids         | 1-to-N rank of the variable in Dakota input spec order                 | false            | |
 |                              | +-----------+---------+----------------+----------------------+------------------------------------------------------------------------+------------------+ |
-|                              | | 1         | String  | *_type         | Variable types       | Type of each variable, e.g. CONTINUOUS_DESIGN, DISCRETE_DESIGN_SET_INT | false            | |
+|                              | | 1         | String  | \*_type        | Variable types       | Type of each variable, e.g. CONTINUOUS_DESIGN, DISCRETE_DESIGN_SET_INT | false            | |
 |                              | +-----------+---------+----------------+----------------------+------------------------------------------------------------------------+------------------+ |
 +------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
