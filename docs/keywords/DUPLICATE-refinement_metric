@@ -21,7 +21,7 @@ Examples::
 
 .. code-block::
 
-method,
+    method,
         multifidelity_polynomial_chaos				
 	  p_refinement uniform
 	    expansion_order_sequence = 0 cross_validation
