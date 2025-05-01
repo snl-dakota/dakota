@@ -136,10 +136,10 @@ dakota_generate_test_properties("${Dakota_SOURCE_DIR}/test"
 file(STRINGS "${CMAKE_CURRENT_BINARY_DIR}/dakota_usersexamples.props"
   users_test_inputs)
 file(MAKE_DIRECTORY "${DakotaDocs_SOURCE_DIR}/user/usingdakota/samples")
-generate_users_examples("${users_test_inputs}"
-  "${DakotaDocs_SOURCE_DIR}/user/usingdakota/samples" _gen_inputs_var_out)
 generate_users_examples_interfacing(
   "${DakotaDocs_SOURCE_DIR}/user/usingdakota/samples" _gen_interfacing_var_out)
+generate_users_examples("${users_test_inputs}"
+  "${DakotaDocs_SOURCE_DIR}/user/usingdakota/samples" _gen_inputs_var_out)
 
 add_custom_target(docs-user-samples DEPENDS ${_gen_inputs_var_out} ${_gen_interfacing_var_out})
 
