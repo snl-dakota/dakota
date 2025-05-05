@@ -45,7 +45,8 @@ release = ''
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['myst_parser', 'sphinxcontrib.bibtex', 'dakota',
-              'sphinx.ext.imgmath']
+              'sphinx.ext.imgmath',
+              'sphinx_copybutton']
 #              'sphinx.ext.mathjax']
 
 # Dakota input file syntax highlighting
