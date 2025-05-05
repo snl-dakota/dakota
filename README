@@ -106,6 +106,7 @@ dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
   hopspack	    GNU Lesser General Public License (LGPL) [SNL]
     CDDLIB	    GNU General Public License (GPL; disabled by default)
   JEGA		    GNU Lesser General Public License (LGPL) [SNL]
+  JSON              MIT License
   LHS		    GNU Lesser General Public License (LGPL) [SNL]
   MUQ2              BSD 3-clause
   NCSUOpt	    MIT License

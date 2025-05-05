@@ -23,7 +23,7 @@ Table of Contents
 
 Distribution Contents
 Binary Quick Start
- I.   Install Unix-Like Binary (Linux RHEL7/8, or binary compatible, macOS)
+ I.   Install Unix-Like Binary (Linux RHEL8, or binary compatible, macOS)
  II.  Install Windows Executable
  III. Test Binary Distribution installation.
 Source Quick Start
@@ -64,7 +64,7 @@ src-dist      interfaces Corresponding source files
 
 bin-dist      include	 Include files for Dakota and it's associated TPLs.
 
-bin-dist      lib	 Library files for Dakota and it's associated TPLs.
+bin-dist      lib,lib64	 Library files for Dakota and it's associated TPLs.
 
 src-dist      packages	 Libraries of iterative algorithms provided by
 	      		 commercial vendors and related Sandia projects.
@@ -264,13 +264,14 @@ tree for the target platform with generated Makefiles, and then
 execute 'make'.  Given the large number of supported packages,
 specifying a few 'cmake' options and environment variables may be
 required.  Building the software with all packages may take from 15
-minutes to over an hour. 
+minutes to over an hour. More detailed build instructions are available
+at https://snl-dakota.github.io/docs/latest_release/users/compiling/compiling.html.
 
 The following are instructions for building Dakota on a Unix-like platform
 in a Bash shell. You may need to use appropriate commands to work for your
 particular platform or shell.
 
-1. Install CMake 3.17 (or later) and ensure it is in your $PATH.
+1. Install CMake 3.23 (or later) and ensure it is in your $PATH.
 
 2. Extract Dakota source archive file. In the example below, Dakota will
    be extracted into the user's home directory, /home/username. 
