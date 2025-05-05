@@ -32,17 +32,18 @@ for using the GUI.  The 6.11 GUI manual is also available here.
 
 *Interfaces, Input/Output*
 
-- The pyprepro template processing tool now supports JSON format Dakota parameters files.
+- The :ref:`pyprepro template processing <interfaces:dprepro-and-pyprepro>` tool now supports
+  :ref:`JSON format Dakota parameters files <variables:parameters:json>`.
 
 *Models*
 
 *Optimization Methods*
 
-- ROL optimizer was updated to release 2.0.
+- :dakkw:`ROL optimizer <method-rol>` was updated to release 2.0.
 
 *UQ Methods*
 
-- Support for MUQ's multilevel MCMC algorithm was added.
+- Support for MUQ's :dakkw:`multilevel MCMC algorithm <method-bayes_calibration-muq-multilevel_mcmc>` was added.
 
 *MLMF Sampling*
 
@@ -50,13 +51,15 @@ for using the GUI.  The 6.11 GUI manual is also available here.
 **Miscellaneous Enhancements and Bugfixes**
 
 - Enh: Dakota now uses GoogleTest instead of Boost.Test
-- Enh: Dakota now uses std::filesystem when available instead of Boost.filesystem
+- Enh: Dakota now uses std::filesystem when available instead of Boost.filesystem.
 - Enh: The Trilinos snapshot was updated to version 16.1
 - Bug fix: Small fixes to JEGA to satisfy recent versions of clang (issues `#178 <https://github.com/snl-dakota/dakota/issues/178>`_ and `#94 <https://github.com/snl-dakota/dakota/issues/94>`_)
 - Bug fix: Boost version check fixed (issue `#163 <https://github.com/snl-dakota/dakota/issues/163>`_)
 - Bug fix: Broken links in examples (issue `#162 <https://github.com/snl-dakota/dakota/issues/162>`_)
 
 **Deprecated and Changed**
+
+- The legacy Python interface, which was incompatible with NumPy 2, has been removed.
 
 **Compatibility**
 
