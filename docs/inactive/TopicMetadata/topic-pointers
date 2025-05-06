@@ -1,8 +1,0 @@
-For all pointer specifications, if a pointer string is specified and no
-corresponding id string is available, %Dakota will exit with an error message. 
-
-If the pointer is optional and no pointer string is specified,
-then the last specification parsed will be used. 
-
-It is appropriate to omit optional cross-referencing whenever the
-relationships are unambiguous due to the presence of only one specification.

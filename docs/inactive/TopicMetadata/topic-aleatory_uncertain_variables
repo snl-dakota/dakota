@@ -1,6 +1,0 @@
-Aleatory uncertainty is also known as inherent variability,
-irreducible uncertainty, or randomness.
-
-Aleatory uncertainty is typically represented by probability
-distributions and is specified to %Dakota using the following
-parametric and histogram uncertain variable keywords.
