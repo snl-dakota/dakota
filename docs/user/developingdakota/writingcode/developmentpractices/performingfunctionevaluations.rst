@@ -24,7 +24,7 @@ For an asynchronous (i.e., nonblocking) mapping of parameters to responses, an i
 - This derived model class function directly or indirectly invokes Interface::map() in asynchronous mode, which adds the job to a scheduling queue.
 - Model::synchronize() or Model::synchronize_nowait() utilize Model::derived_synchronize() or Model::derived_synchronize_nowait() for portions of the scheduling process specific to derived model classes.
 - These derived model class functions directly or indirectly invoke Interface::synchronize() or Interface::synchronize_nowait().
-- For application interfaces, these interface synchronization functions are responsible for performing evaluation scheduling in one of the following modes: master dynamic, peer dynamic or peer static.
+- For application interfaces, these interface synchronization functions are responsible for performing evaluation scheduling in one of the following modes: dedicated dynamic, peer dynamic or peer static.
 - *NOTE:* The Interface evaluation scheduling in Dakota was refactored for releases 5.4 and 6.0. Discussion of the new Interface-related functions is currently missing here.
 
 ========================================

@@ -86,7 +86,7 @@ The Dakota project started in 1994 as an internal research and development activ
 New Mexico. The original goal was to provide a common set of optimization tools for a group of engineers solving structural analysis
 and design problems. Prior to the Dakota project, there was no focused effort to archive optimization methods for reuse on other
 projects. Thus, engineers found themselves repeatedly building new custom interfaces between the engineering analysis software
-and optimization software. This was especially burdensome when using parallel computing, as each project developed a unique master
+and optimization software. This was especially burdensome when using parallel computing, as each project developed a unique
 program to coordinate concurrent simulations on a network of workstations or a parallel computer. The initial Dakota toolkit
 provided the engineering and analysis community at Sandia access to a variety of optimization algorithms, hiding the complexity 
 of the optimization software interfaces from the users. Engineers could readily switch between optimization software packages by
