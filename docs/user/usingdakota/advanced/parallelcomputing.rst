@@ -830,7 +830,7 @@ Partitioning
 A level of message passing parallelism can use either of two processor
 partitioning models:
 
--  *Dedicated master*: a single processor is dedicated to scheduling
+-  *Dedicated scheduler*: a single processor is dedicated to scheduling
    operations and the remaining processors are split into server
    partitions.
 
@@ -843,7 +843,7 @@ computation; however, it requires either the use of sophisticated
 mechanisms for distributed scheduling or a problem for which static
 scheduling of concurrent work performs well (see :ref:`Scheduling <parallel:SLP:message:sched>` 
 below). If neither of these characteristics is present, then use of the dedicated
-master partition supports a dynamic scheduling which assures that server
+partition supports a dynamic scheduling which assures that server
 idleness is minimized.
 
 .. figure:: img/comm_partitioning.png
@@ -866,12 +866,12 @@ message passing parallelism:
    TODO: need a more descriptive term, e.g. single-point dedicated
    dynamic scheduling
 
--  *Dynamic scheduling*: in the dedicated master model, the master
+-  *Dynamic scheduling*: in the dedicated scheduling model, the dedicated 
    processor manages a single processing queue and maintains a
-   prescribed number of jobs (usually one) active on each slave. Once a
-   slave server has completed a job and returned its results, the master
-   assigns the next job to this slave. Thus, the job assignment on the
-   master adapts to the job completion speed on the slaves. This
+   prescribed number of jobs (usually one) active on each server. Once a
+   server has completed a job and returned its results, the scheduler
+   assigns the next job to this server. Thus, the job assignment on the
+   scheduler adapts to the job completion speed on the servers. This
    provides a simple dynamic scheduler in that heterogeneous processor
    speeds and/or job durations are naturally handled, provided there are
    sufficient instances scheduled through the servers to balance the
@@ -882,40 +882,12 @@ message passing parallelism:
    other peers.
 
 -  *Static scheduling*: if scheduling is statically determined at
-   start-up, then no master processor is needed to direct traffic and a
+   start-up, then no scheduling processor is needed to direct traffic and a
    peer partitioning approach is applicable. If the static schedule is a
    good one (ideal conditions), then this approach will have superior
    performance. However, heterogeneity, when not known *a priori*, can
    very quickly degrade performance since there is no mechanism to
    adapt.
-
-
-..
-   TODO:
-   %In addition, the following scheduling approach is provided by PICO for
-   %the scheduling of concurrent optimizations within the branch and bound
-   %minimizer:
-   
-   %\begin{itemize}
-   % TO DO: this could become multipoint nondedicated dynamic scheduling
-   %\item \emph{Distributed scheduling}: in this approach, a peer
-   %  partition is used and each peer maintains a separate queue of
-   %  pending jobs. When one peer's queue is smaller than the other
-   %  queues, it requests work from its peers (prior to idleness). In this
-   %  way, it can adapt to heterogeneous conditions, provided there are
-   %  sufficient instances to balance the variation. Each partition
-   %  performs communication between computations, and no processors are
-   %  dedicated to scheduling. Furthermore, it distributes scheduling load
-   %  beyond a single processor, which can be important for large numbers
-   %  of concurrent jobs (whose scheduling might overload a single master)
-   %  or for fault tolerance (avoiding a single point of failure).
-   %  However, it involves relatively complicated logic and additional
-   %  communication for queue status and job migration, and its
-   %  performance is not always superior since a partition can become
-   %  work-starved if its peers are locked in computation (Note: this
-   %  logic can be somewhat simplified if a separate thread can be created
-   %  for communication and migration of jobs).
-   %\end{itemize}
 
 
 Message passing schedulers may be used for managing concurrent
@@ -961,7 +933,7 @@ interface specification does not include the
                system
                  analysis_driver = 'text_book'
 
-The relevant excerpts from the Dakota output for a dedicated master
+The relevant excerpts from the Dakota output for a dedicated scheduler
 partition and dynamic schedule, the default when the maximum concurrency
 (49) exceeds the available capacity (5), would appear similar to the
 following:
@@ -1076,12 +1048,12 @@ approaches.
 
 :numref:`parallel:figure03` depicts the
 asynchronous local, message-passing, and hybrid approaches for a
-dedicated-master partition. Approaches (b) and (c) both use MPI
-message-passing to distribute work from the master to the slaves, and
+dedicated-scheduler partition. Approaches (b) and (c) both use MPI
+message-passing to distribute work from the scheduler to the server, and
 approaches (a) and (c) both manage asynchronous jobs local to a
 processor. The hybrid approach (c) can be seen to be a combination of
-(a) and (b) since jobs are being internally distributed to slave servers
-through message-passing and each slave server is managing multiple
+(a) and (b) since jobs are being internally distributed to servers
+through message-passing and each server is managing multiple
 concurrent jobs using an asynchronous local approach. From a different
 perspective, one could consider (a) and (b) to be special cases within
 the range of configurations supported by (c). The hybrid approach is
@@ -1357,10 +1329,10 @@ the parallel configurations are allocated at object construction time
 and are reported at the beginning of the Dakota output.
 
 Each tier within Dakota’s nested parallelism hierarchy can use the
-dedicated master and peer partition approaches described above in the
+dedicated scheduler and peer partition approaches described above in the
 :ref:`Partitioning <parallel:SLP:message:part>` section. To recursively
 partition the subcommunicators of :numref:`parallel:figure01`,
-``COMM1/2/3`` in the dedicated master or peer partition case would be
+``COMM1/2/3`` in the dedicated scheduler or peer partition case would be
 further subdivided using the appropriate partitioning model for the next
 lower level of parallelism.
 
@@ -1378,7 +1350,7 @@ Scheduling within levels
    Recursive partitioning for nested parallelism.
 
 Dakota is designed to allow the freedom to configure each parallelism
-level with either the dedicated master partition/dynamic scheduling
+level with either the dedicated scheduler partition/dynamic scheduling
 combination or the peer partition/static scheduling combination. In
 addition, the iterator-evaluation level supports a peer
 partition/dynamic scheduling option, and certain external libraries may
@@ -1390,13 +1362,13 @@ provide custom options.
 As an example, :numref:`parallel:figure02` shows a case in which a branch and
 bound meta-iterator employs peer partition/distributed scheduling at
 level 1, each optimizer partition employs concurrent function
-evaluations in a dedicated master partition/dynamic scheduling model at
+evaluations in a dedicated scheduler partition/dynamic scheduling model at
 level 2, and each function evaluation partition employs concurrent
 multiprocessor analyses in a peer partition/static scheduling model at
 level 3. In this case, ``MPI_COMM_WORLD`` is subdivided into
 :math:`optCOMM1/2/3/.../\tau_{1}`, each :math:`optCOMM` is further subdivided
-into :math:`evalCOMM0` (master) and :math:`evalCOMM1/2/3/.../\tau_{2}` (slaves),
-and each slave :math:`evalCOMM` is further subdivided into
+into :math:`evalCOMM0` (scheduler) and :math:`evalCOMM1/2/3/.../\tau_{2}` (servers),
+and each server :math:`evalCOMM` is further subdivided into
 :math:`analysisCOMM1/2/3/.../\tau_{3}`. Logic for selecting the :math:`\tau_i`
 that maximize overall efficiency is discussed
 in :cite:p:`Eld00`.
@@ -1444,8 +1416,8 @@ would be executed concurrently using asynchronous local approaches
 within the SMP. Thus, the distinction can be viewed as whether the
 concurrent jobs on each server in :numref:`parallel:figure03`
 reflect the same level of parallelism as that being scheduled by the
-master (intra-level) or one level of parallelism below that being
-scheduled by the master (inter-level).
+scheduler (intra-level) or one level of parallelism below that being
+scheduled by the scheduler (inter-level).
 
 .. _`parallel:summary`:
 
@@ -1684,7 +1656,7 @@ results. For these levels, concurrency is pushed down since it is
 generally best to serialize the levels with the highest job variation
 and exploit concurrency elsewhere.
 
-Partition type (master or peer) may also be specified for each level,
+Partition type (dedicated or peer) may also be specified for each level,
 and peer scheduling type (dynamic or static) may be specified at the
 level of evaluation concurrency. However, these selections may be
 overridden by Dakota if they are inconsistent with the number of
@@ -1738,7 +1710,7 @@ In addition, :dakkw:`interface-evaluation_servers`, :dakkw:`interface-processors
 and :dakkw:`interface-evaluation_scheduling` keywords can be used to
 override the automatic parallel configuration for concurrent function
 evaluations. Evaluation scheduling may be selected to be
-:dakkw:`interface-evaluation_scheduling-master` or :dakkw:`interface-evaluation_scheduling-peer`,
+:dakkw:`interface-evaluation_scheduling-dedicated` or :dakkw:`interface-evaluation_scheduling-peer`,
 where the latter must be further specified to be
 :dakkw:`interface-evaluation_scheduling-peer-dynamic` or :dakkw:`interface-evaluation_scheduling-peer-static`.
 
@@ -1749,7 +1721,7 @@ may be specified, and the :dakkw:`interface-analysis_drivers-direct-processors_p
 keyword can be used to override the automatic parallelism configuration
 for the size of multiprocessor analyses used in a direct function simulation 
 interface. Scheduling options for this level include 
-:dakkw:`interface-analysis_scheduling-master` or 
+:dakkw:`interface-analysis_scheduling-dedicated` or 
 :dakkw:`interface-analysis_scheduling-peer`, where
 the latter is static (no dynamic peer option supported).
 
@@ -1763,7 +1735,7 @@ To specify concurrency in sub-iterator executions within meta-iterators
 :dakkw:`model-nested-sub_method_pointer`), the ``iterator_servers``,
 ``processors_per_iterator``, and ``iterator_scheduling`` keywords are used to
 override the automatic parallelism configuration. For this level, the available
-scheduling options are ``master`` or ``peer``, where the latter is static
+scheduling options are ``dedicated`` or ``peer``, where the latter is static
 (no dynamic peer option supported). See the method and model commands specification
 in the :ref:`Keyword Reference <keyword-reference-area>` for additional
 details.
@@ -1930,13 +1902,13 @@ parallel configuration report from the Dakota output:
 
 In this case, a peer partition and dynamic scheduling algorithm are
 automatically selected for the concurrent evaluations. If a dedicated
-master is desired instead, then this logic could be overriden by adding:
+scheduler is desired instead, then this logic could be overriden by adding:
 
 ::
 
        interface,
                system,
-                 evaluation_scheduling master
+                 evaluation_scheduling dedicated 
                  analysis_drivers = 'text_book'
 
 Running Dakota again on 4 processors (syntax:
@@ -1950,15 +1922,15 @@ configuration report:
 
        Level                   num_servers    procs_per_server    partition
        -----                   -----------    ----------------    ---------
-       concurrent evaluations       3                1            ded. master
+       concurrent evaluations       3                1            ded. sched 
        concurrent analyses          1                1            peer
        multiprocessor analysis      1               N/A           N/A
 
        Total parallelism levels =   1 (1 dakota, 0 analysis)
        -----------------------------------------------------------------------------
 
-Now the 11 jobs will be dynamically distributed among 3 slave servers,
-under the control of 1 dedicated master.
+Now the 11 jobs will be dynamically distributed among 3 servers,
+under the control of 1 dedicated scheduler.
 
 As a related example, consider the case where each of the workstations
 used in the parallel execution has multiple processors. In this case, a
@@ -2059,7 +2031,7 @@ which results in the following 2-level parallel configuration:
 The six processors available have been split into two evaluation servers
 of three processors each, where the three processors in each evaluation
 server manage the three analyses, one per processor. Note that without
-the scheduling override, a dedicated master partition at the evaluation
+the scheduling override, a dedicated partition at the evaluation
 level would have been chosen automatically, dividing the six available
 processors into one evaluation server with three processors and another
 with two.
@@ -2317,17 +2289,6 @@ processors (``pbs_submission``):
 
 and will launch :math:`M` simultaneous analysis jobs, and as each job
 completes, another will be launched, until all jobs are complete.
-
-..
-   TODO:
-   %\item If the possible Dakota application concurrency equals $M$,
-   %Dakota will use a peer-to-peer scheduler, and run the $M$ jobs
-   %concurrently.  When the possible concurrency is greater than $M$,
-   %Dakota will by default launch $M-1$ jobs with a master-slave model.
-   %Specifying a static schedule (see {\tt evaluation\_scheduling} 
-   %options) in the Dakota input, will override the default master-slave 
-   %scheduler and Dakota will launch M jobs, but jobs will be launched 
-   %blocking, so all M will complete, then another M will be scheduled.
 
 -  If the analysis is extremely fast, performance may be improved by
    launching multiple evaluation jobs local to each Dakota MPI process,

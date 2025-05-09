@@ -32,7 +32,7 @@ Several of these functions involve format conversions. In particular, the binary
 for restart files can be converted to ASCII text and printed to the screen, converted to and
 from a neutral file format, or converted to a tabular format for importing into
 3rd-party plotting programs. In addition, a restart file with corrupted data can be repaired by
-value or id, and multiple restart files can be combined to create a master database.
+value or id, and multiple restart files can be combined into a single database.
 
 =============
 Print Command
@@ -230,7 +230,7 @@ digits of precision.
 Concatenation of Multiple Restart Files
 =======================================
 
-In some instances, it is useful to combine restart files into a single master function
+In some instances, it is useful to combine restart files into a single function
 evaluation database. For example, when constructing a data fit surrogate model,
 data from previous studies can be pulled in and reused to create a combined data set for the
 surrogate fit. An example command for concatenating multiple restart files is:

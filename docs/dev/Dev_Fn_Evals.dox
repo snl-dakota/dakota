@@ -78,35 +78,7 @@ for portions of the scheduling process specific to derived model classes.
 \ref Interface::synchronize_nowait "Interface::synchronize_nowait()".
 <li> For application interfaces, these interface synchronization
 functions are responsible for performing evaluation scheduling in 
-one of the following modes: master dynamic, peer dynamic or peer static.
-<!--
-  <ul>
-  <li> asynchronous local mode (using 
-\ref ApplicationInterface::asynchronous_local_evaluations "ApplicationInterface::asynchronous_local_evaluations()" or 
-\ref ApplicationInterface::asynchronous_local_evaluations_nowait "ApplicationInterface::asynchronous_local_evaluations_nowait()")
-  <li> message passing mode (using
-\ref ApplicationInterface::self_schedule_evaluations "ApplicationInterface::self_schedule_evaluations()" or 
-\ref ApplicationInterface::static_schedule_evaluations "ApplicationInterface::static_schedule_evaluations()"
-  on the iterator master and 
-\ref ApplicationInterface::serve_evaluations_synch "ApplicationInterface::serve_evaluations_synch()" or 
-\ref ApplicationInterface::serve_evaluations_synch_peer "ApplicationInterface::serve_evaluations_synch_peer()" on the servers)
-  <li> hybrid mode (using 
-\ref ApplicationInterface::self_schedule_evaluations "ApplicationInterface::self_schedule_evaluations()" or 
-\ref ApplicationInterface::static_schedule_evaluations "ApplicationInterface::static_schedule_evaluations()"
-  on the iterator master and 
-\ref ApplicationInterface::serve_evaluations_asynch "ApplicationInterface::serve_evaluations_asynch()" or 
-\ref ApplicationInterface::serve_evaluations_asynch_peer "ApplicationInterface::serve_evaluations_asynch_peer()" or 
-  on the servers)
-  </ul>
-<li> These scheduling functions utilize
-\ref ApplicationInterface::derived_map "ApplicationInterface::derived_map()" and
-\ref ApplicationInterface::derived_map_asynch "ApplicationInterface::derived_map_asynch()"
-for portions of asynchronous job launching specific to derived application 
-interface classes, as well as 
-\ref ApplicationInterface::derived_synch "ApplicationInterface::derived_synch()" and
-\ref ApplicationInterface::derived_synch_nowait "ApplicationInterface::derived_synch_nowait()"
-for portions of job capturing specific to derived application interface classes.
--->
+one of the following modes: dedicated dynamic, peer dynamic or peer static.
 <li><em>NOTE: The Interface evaluation scheduling in %Dakota was refactored for
 releases 5.4 and 6.0.  Discussion of the new Interface-related
 functions is currently missing here.</em>

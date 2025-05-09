@@ -99,7 +99,7 @@ if(DAKOTA_PYTHON_SURROGATES)
       "@rpath;@rpath/../../../../../lib;@rpath/../../../../../bin")
   elseif (UNIX)
     set_target_properties(surrogates PROPERTIES INSTALL_RPATH
-      "\$ORIGIN;\$ORIGIN/../../../../../lib;\$ORIGIN/../../../../../bin")
+      "\$ORIGIN;\$ORIGIN/../../../../../lib;\$ORIGIN/../../../../../lib64;\$ORIGIN/../../../../../bin")
   endif()
   install(TARGETS surrogates EXPORT ${ExportTarget}
     DESTINATION share/dakota/Python/dakota/surrogates/)
