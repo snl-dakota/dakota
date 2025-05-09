@@ -17,21 +17,37 @@ Version 6.22 (2025/05/15)
 
 *UQ Methods*
 
-- Support for MUQ's :dakkw:`multilevel MCMC algorithm <method-bayes_calibration-muq-multilevel_mcmc>` was added.
-- When performing sampling-based multifidelity UQ with multiple QoIs, the
-  target metric used to determine sample allocations may now be specified.
-  Options for the average over the QoIs, the maximum, and the p-norm
-  are provided. See, e.g., for the 
-  :dakkw:`multifelity estimator<method-multifidelity_sampling-numerical_solve-solver_metric>`.
-- Weighted MLMC sampling now accepts specification of an 
-  :dakkw:`optimization strategy <method-multilevel_sampling-weighted>`.
+- Multifidelity sampling methods now summarize the final variance metrics
+  per quantity of interest (QoI) and report 95% confidence intervals for
+  each of the QoI means.
+
+- Multifidelity sampling methods now admit different reductions for forming
+  a scalar optimization metric in multiple QoI cases: max, average, and
+  p-norm can now be used during sample allocation solves.  Refer to :dakkw:`optimization metric <method-approximate_control_variate-solver_metric>`.
  
+- ML BLUE now employs analytic gradients of the estimator variance to improve
+  solution robustness.
+
+- All multifidelity sampling methods (previously only ML BLUE, but now
+  including all ACV and generalized ACV solves) now employ the same
+  truncated SVD mitigations for ill-conditioned matrix solves.
+  Previous Cholesky factorization approaches have been retired.
+
+- Support for MUQ's :dakkw:`multilevel MCMC algorithm <method-bayes_calibration-muq-multilevel_mcmc>` was added.
+
 
 **Miscellaneous Enhancements and Bugfixes**
 
 - Enh: Dakota now uses GoogleTest instead of Boost.Test
 - Enh: Dakota now uses std::filesystem when available instead of Boost.filesystem.
 - Enh: The Trilinos snapshot was updated to version 16.1
+- Enh: Switch offline_pilot modes to use oracle covariances when computing control variate parameters, for better consistency in final roll-up between model-based and group-based approaches.
+- Enh: Refactor multilevel_multifidelity_sampling to modernize and improve code reuse
+- Enh: Weighted MLMC sampling now accepts specification of an 
+  :dakkw:`optimization strategy <method-multilevel_sampling-weighted>`.
+- Bug fix: In generalized ACV, deduct sunk pilot cost for inactive models from budget when solving for sample allocations for an active subset.  In ML BLUE, a similar fix is applied for either inactive models (shared pilot) or inactive groups (independent pilot).
+- Bug fix: In generalized ACV, reset the optimal merit function for each search over model subsets and DAGs (important for online_pilot iteration and model tuning)
+- Bug fix: Hardening of model selection within multilevel_sampling and multifidelity_sampling (hierarchical cases promoted to generalized ACV)
 - Bug fix: Small fixes to JEGA to satisfy recent versions of clang (issues `#178 <https://github.com/snl-dakota/dakota/issues/178>`_ and `#94 <https://github.com/snl-dakota/dakota/issues/94>`_)
 - Bug fix: Boost version check fixed (issue `#163 <https://github.com/snl-dakota/dakota/issues/163>`_)
 - Bug fix: Broken links in examples (issue `#162 <https://github.com/snl-dakota/dakota/issues/162>`_)
