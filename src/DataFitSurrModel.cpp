@@ -124,7 +124,7 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
 
   // Instantiate dace iterator from DB
   if (dace_construct) {
-    daceIterator = problem_db.get_iterator(actualModel); // no meta-iterators
+    daceIterator = Iterator::get_iterator(problem_db, actualModel); // no meta-iterators
     daceIterator->sub_iterator_flag(true);
     // if outer level output is verbose/debug and actualModel verbosity is
     // defined by the DACE method spec, request fine-grained evaluation

@@ -66,7 +66,7 @@ SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model
     probDescDB.set_db_method_node(approx_method_ptr); // method only
     // sub-problem minimizer will use shallow copy of iteratedModel
     // (from problem_db.get_model())
-    approxSubProbMinimizer = probDescDB.get_iterator();//(iteratedModel);
+    approxSubProbMinimizer = Iterator::get_iterator(probDescDB);//(iteratedModel);
     // suppress DB ctor default and don't output summary info
     approxSubProbMinimizer->summary_output(false);
     // verify approx method's modelPointer is empty or consistent
@@ -80,7 +80,7 @@ SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model
   else if (!approx_method_name.empty())
     // Approach 2: instantiate on-the-fly w/o method spec support
     approxSubProbMinimizer
-      = probDescDB.get_iterator(approx_method_name, iteratedModel);
+      = Iterator::get_iterator(approx_method_name, iteratedModel);
 }
 
 

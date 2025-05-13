@@ -7,6 +7,7 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
+#include <stdexcept>
 #include "dakota_data_io.hpp"
 #include "DakotaIterator.hpp"
 #include "DakotaApproximation.hpp"
@@ -16,6 +17,7 @@
 #include "DakotaGraphics.hpp"
 #include "ResultsManager.hpp"
 #include "EvaluationStore.hpp"
+#include "iterator_utils.hpp"
 
 
 #include <boost/bimap.hpp>
@@ -34,6 +36,8 @@ extern EvaluationStore evaluation_store_db;
 // Initialization of static method ID counters
 size_t Iterator::noSpecIdNum = 0;
 
+std::map<const ProblemDescDB*, std::list<std::shared_ptr<Iterator>>> Iterator::iteratorCache{};
+std::list<std::shared_ptr<Iterator>> Iterator::iteratorByNameCache{};
 
 /** This constructor builds the base class data for all inherited
     iterators, including meta-iterators.  get_iterator() instantiates
@@ -366,6 +370,95 @@ String Iterator::submethod_enum_to_string(unsigned short submethod_enum)
     abort_handler(METHOD_ERROR);
   }
   return lc_iter->second;
+}
+
+std::shared_ptr<Iterator> Iterator::get_iterator(ProblemDescDB& problem_db) {
+  ProblemDescDB* const study_ptr = &problem_db;
+
+  if(Iterator::iteratorCache.count(study_ptr) == 0) {
+    Iterator::iteratorCache[study_ptr] = std::list<std::shared_ptr<Iterator>>();
+  }
+
+  auto& study_cache = Iterator::iteratorCache[study_ptr];
+
+  auto id_method = problem_db.method_id();
+  if(id_method.empty())
+    id_method = "NO_METHOD_ID";
+  auto i_it
+    = std::find_if(study_cache.begin(), study_cache.end(),
+                  [&id_method](std::shared_ptr<Iterator> iter) {return iter->method_id() == id_method;});
+  if (i_it == study_cache.end()) {
+    study_cache.push_back(IteratorUtils::get_iterator(problem_db));
+    i_it = --study_cache.end();
+  }
+  return *i_it;
+}
+
+std::shared_ptr<Iterator> Iterator::get_iterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model) {
+  const ProblemDescDB* const study_ptr = &problem_db;
+  if(Iterator::iteratorCache.count(study_ptr) == 0) {
+    Iterator::iteratorCache[study_ptr] = std::list<std::shared_ptr<Iterator>>();
+  }
+
+  auto& study_cache = Iterator::iteratorCache[study_ptr];
+
+  auto id_method = problem_db.method_id();
+  if(id_method.empty())
+    id_method = "NO_METHOD_ID";
+  auto i_it
+    = std::find_if(study_cache.begin(), study_cache.end(),
+                    [&id_method](std::shared_ptr<Iterator> iter) {return iter->method_id() == id_method;});
+
+  // if Iterator does not already exist, then create it
+  if (i_it == study_cache.end()) {
+    study_cache.push_back(IteratorUtils::get_iterator(problem_db, model));
+    i_it = --study_cache.end();
+  }
+  // idMethod already exists, but check for same model.  If !same, instantiate
+  // new rather than update (i_it->iterated_model(model)) all shared instances.
+  else if (model != (*i_it)->iterated_model()) {
+    study_cache.push_back(IteratorUtils::get_iterator(problem_db, model));
+    i_it = --study_cache.end();
+  }
+  return *i_it;
+}
+
+
+std::shared_ptr<Iterator> Iterator::get_iterator( 
+  const String& method_name, std::shared_ptr<Model> model) {
+
+  auto i_it
+    = std::find_if(Iterator::iteratorByNameCache.begin(), Iterator::iteratorByNameCache.end(),
+                  [&method_name](std::shared_ptr<Iterator> iter) {return iter->method_string() == method_name;});
+  // if Iterator does not already exist, then create it
+  if (i_it == Iterator::iteratorByNameCache.end()) {
+    Iterator::iteratorByNameCache.push_back(IteratorUtils::get_iterator(method_name, model));
+    i_it = --Iterator::iteratorByNameCache.end();
+  }
+  // method_name already exists, but check for same model. If !same, instantiate
+  // new rather than update (i_it->iterated_model(model)) all shared instances.
+  else if (model != (*i_it)->iterated_model()) {
+    Iterator::iteratorByNameCache.push_back(IteratorUtils::get_iterator(method_name, model));
+    i_it = --Iterator::iteratorByNameCache.end();
+  }
+  return *i_it;
+}
+
+
+std::list<std::shared_ptr<Iterator>>& Iterator::iterator_cache(ProblemDescDB& problem_db) {
+  const ProblemDescDB* const study_ptr = &problem_db;
+  try {
+    return Iterator::iteratorCache.at(study_ptr);
+  } catch(std::out_of_range) {
+    Cerr << "Iterator::iterator_cache() called with nonexistent study!\n";
+    throw;
+  }
+}
+
+
+void Iterator::remove_cached_iterator(const ProblemDescDB& problem_db) {
+  const ProblemDescDB* const study_ptr = &problem_db;
+  Iterator::iteratorCache.erase(study_ptr);
 }
 
 

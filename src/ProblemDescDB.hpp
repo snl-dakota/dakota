@@ -106,15 +106,6 @@ public:
   //- Heading: Member methods
   //
 
-  /// retrieve an existing Iterator, if it exists in iteratorList, or
-  /// instantiate a new one
-  std::shared_ptr<Iterator> get_iterator();
-  /// retrieve an existing Iterator, if it exists in iteratorList, or
-  /// instantiate a new one
-  std::shared_ptr<Iterator> get_iterator(std::shared_ptr<Model> model);
-  /// retrieve an existing Iterator, if it exists in iteratorByNameList,
-  /// or instantiate a new one
-  std::shared_ptr<Iterator> get_iterator(const String& method_name, std::shared_ptr<Model> model);
   /// retrieve an existing Model, if it exists, or instantiate a new one
   std::shared_ptr<Model> get_model();
 
@@ -188,9 +179,7 @@ public:
   /// return the parallelLib reference
   ParallelLibrary& parallel_library() const;
 
-  /// return a list of all Iterator objects that have been instantiated
-  IteratorList& iterator_list();
-  /// return a list of all Model objects that have been instantiated
+   /// return a list of all Model objects that have been instantiated
   ModelList& model_list();
   /// return a list of all Variables objects that have been instantiated
   VariablesList& variables_list();
@@ -198,6 +187,8 @@ public:
   InterfaceList& interface_list();
   /// return a list of all Response objects that have been instantiated
   ResponseList& response_list();
+
+  std::string_view method_id() const;
 
   // These functions get values out of the database.  A value is found by its
   // entry_name. Need a HashTable or other container with an efficient lookup
@@ -486,10 +477,6 @@ private:
   /// iterator identifying the active list node in dataResponsesList
   std::list<DataResponses>::iterator dataResponsesIter;
 
-  /// list of iterator objects, one for each method specification
-  IteratorList iteratorList;
-  /// list of iterator objects, one for each lightweight instantiation by name
-  IteratorList iteratorByNameList;
   /// list of model objects, one for each model specification
   ModelList modelList;
   /// list of variables objects, one for each variables specification
@@ -546,10 +533,6 @@ inline ParallelLibrary& ProblemDescDB::parallel_library() const
 { return (dbRep) ? dbRep->parallelLib : parallelLib; }
 
 
-inline IteratorList& ProblemDescDB::iterator_list()
-{ return (dbRep) ? dbRep->iteratorList : iteratorList; }
-
-
 inline ModelList& ProblemDescDB::model_list()
 { return (dbRep) ? dbRep->modelList : modelList; }
 
@@ -565,6 +548,9 @@ inline InterfaceList& ProblemDescDB::interface_list()
 inline ResponseList& ProblemDescDB::response_list()
 { return (dbRep) ? dbRep->responseList : responseList; }
 
+inline std::string_view ProblemDescDB::method_id() const {
+  return dbRep->dataMethodIter->dataMethodRep->idMethod;
+}
 
 inline size_t ProblemDescDB::get_db_method_node()
 {

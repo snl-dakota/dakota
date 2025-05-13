@@ -60,8 +60,8 @@ construct_sub_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub
     else          problem_db.set_db_list_nodes(method_ptr);
 
     sub_iterator = (light_wt) ?
-      problem_db.get_iterator(method_name, sub_model) : //, ctor_model) :
-      problem_db.get_iterator(sub_model); //(ctor_model);
+      Iterator::get_iterator(method_name, sub_model) :
+      Iterator::get_iterator(problem_db, sub_model);
   }
 }
 
@@ -74,7 +74,7 @@ configure(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator, st
   // minimally instantiate the sub_iterator for concurrency estimation
   const ParallelLevel& mi_pl = schedPCIter->mi_parallel_level(); // last level
   if (mi_pl.server_communicator_rank() == 0)
-    sub_iterator = problem_db.get_iterator(sub_model); // reused downstream
+    sub_iterator = Iterator::get_iterator(problem_db, sub_model); // reused downstream
 
   return configure(problem_db, sub_iterator);
 }
@@ -90,7 +90,7 @@ configure(ProblemDescDB& problem_db, const String& method_string,
   // for concurrency estimation
   const ParallelLevel& mi_pl = schedPCIter->mi_parallel_level(); // last level
   if (mi_pl.server_communicator_rank() == 0)
-    sub_iterator = problem_db.get_iterator(method_string, sub_model);
+    sub_iterator = Iterator::get_iterator(method_string, sub_model);
 
   return configure(problem_db, sub_iterator);
 }
@@ -212,7 +212,7 @@ init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator
   //
   // Parallel iterators are constructed/initialized on all processors
   if (problem_db.get_ushort("method.algorithm") & PARALLEL_BIT) {
-    sub_iterator = problem_db.get_iterator(); // all procs
+    sub_iterator = Iterator::get_iterator(problem_db); // all procs
     // init_communicators() manages IteratorScheduler::partition() and
     // IteratorScheduler::init_iterator()
     sub_iterator->init_communicators(pl_iter);
@@ -248,7 +248,7 @@ init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator
     if (multiproc) sub_model->init_comms_bcast_flag(true);
     // only dedicated scheduler processor needs an iterator object:
     if (!sub_iterator)
-      sub_iterator = problem_db.get_iterator(sub_model);
+      sub_iterator = Iterator::get_iterator(problem_db, sub_model);
       sub_iterator->init_communicators(pl_iter);
     if (multiproc) sub_model->stop_init_communicators(pl_iter);
   }
@@ -290,7 +290,7 @@ init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator
     bool multiproc = (pl_iter->server_communicator_size() > 1);
     if (multiproc) sub_model->init_comms_bcast_flag(true);
     if (!sub_iterator)// only ded scheduler processor needs an iterator object
-      sub_iterator = problem_db.get_iterator(sub_model);
+      sub_iterator = Iterator::get_iterator(problem_db, sub_model);
     sub_iterator->init_communicators(pl_iter);
     if (multiproc) sub_model->stop_init_communicators(pl_iter);
   }
@@ -332,7 +332,7 @@ init_iterator(ProblemDescDB& problem_db, const String& method_string,
     bool multiproc = (pl_iter->server_communicator_size() > 1);
     if (multiproc) sub_model->init_comms_bcast_flag(true);
     if (!sub_iterator)// only ded scheduler processor needs an iterator object
-      sub_iterator = problem_db.get_iterator(method_string, sub_model);
+      sub_iterator = Iterator::get_iterator(method_string, sub_model);
     sub_iterator->init_communicators(pl_iter);
     if (multiproc) sub_model->stop_init_communicators(pl_iter);
   }

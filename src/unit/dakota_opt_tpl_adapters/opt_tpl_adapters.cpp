@@ -18,6 +18,7 @@
 
 #include "DemoOptimizer.hpp"
 #include "DakotaTPLDataTransfer.hpp"
+#include "DakotaIterator.hpp"
 
 using namespace Dakota;
 
@@ -54,7 +55,7 @@ namespace {
     get_optimizer(std::shared_ptr<Dakota::LibraryEnvironment> p_env, bool verbose = false)
     {
       Dakota::ProblemDescDB & problem_db = p_env->problem_description_db();
-      Dakota::IteratorList & iter_list = problem_db.iterator_list();
+      Dakota::IteratorList & iter_list = Dakota::Iterator::iterator_cache();
       std::shared_ptr<Iterator> dak_iter = *iter_list.begin();
       if( verbose )
       {

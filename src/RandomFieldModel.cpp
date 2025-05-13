@@ -61,7 +61,7 @@ void RandomFieldModel::init_dace_iterator(ProblemDescDB& problem_db)
     problem_db.set_db_list_nodes(dace_method_pointer);
 
     // instantiate the DACE iterator, which instantiates the actual model
-    daceIterator = problem_db.get_iterator();
+    daceIterator = Iterator::get_iterator(problem_db);
     daceIterator->sub_iterator_flag(true);
 
     // retrieve the actual model from daceIterator (invalid for selected

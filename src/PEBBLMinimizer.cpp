@@ -35,7 +35,7 @@ PebbldMinimizer::PebbldMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Mode
     probDescDB.set_db_method_node(subprob_method_ptr); // method only
     // sub-problem minimizer will use shallow copy of iteratedModel
     // (from problem_db.get_model())
-    subProbMinimizer = probDescDB.get_iterator();//(iteratedModel);
+    subProbMinimizer = Iterator::get_iterator(probDescDB);//(iteratedModel);
     // suppress DB ctor default and don't output summary info
     subProbMinimizer->summary_output(false);
     // verify method's modelPointer is empty or consistent
@@ -49,7 +49,7 @@ PebbldMinimizer::PebbldMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Mode
   else if (!subprob_method_name.empty())
     // Approach 2: instantiate on-the-fly w/o method spec support
     subProbMinimizer
-      = probDescDB.get_iterator(subprob_method_name, iteratedModel);
+      = Iterator::get_iterator(subprob_method_name, iteratedModel);
 
   branchAndBound = new PebbldBranching();
   branchAndBound->setModel(model);

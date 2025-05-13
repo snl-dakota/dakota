@@ -229,7 +229,7 @@ TEST(rol_integration_tests, test_rol_text_book_nln_ineq_const)
 
   // Now get the ROL Optimizer and test various reset functionality
   Dakota::ProblemDescDB& problem_db = env.problem_description_db();
-  IteratorList& iter_list = problem_db.iterator_list();
+  IteratorList& iter_list = Dakota::Iterator::iterator_cache(problem_db);
   std::shared_ptr<Dakota::Iterator> dak_iter = *iter_list.begin();
   //Cout << "The iterator is a : " << dak_iter.method_string() << endl;
   dak_iter->print_results(Cout);

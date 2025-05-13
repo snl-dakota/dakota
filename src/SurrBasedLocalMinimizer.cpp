@@ -241,7 +241,7 @@ void SurrBasedLocalMinimizer::initialize_sub_minimizer()
     // is relevant and any sub-method model_pointer spec is ignored.  
     size_t method_index = probDescDB.get_db_method_node(); // for restoration
     probDescDB.set_db_method_node(approx_method_ptr); // set method only
-    approxSubProbMinimizer = probDescDB.get_iterator(approxSubProbModel);
+    approxSubProbMinimizer = Iterator::get_iterator(probDescDB, approxSubProbModel);
     // suppress DB ctor default and don't output summary info
     approxSubProbMinimizer->summary_output(false);
     // verify approx method's modelPointer is empty or consistent
@@ -275,7 +275,7 @@ void SurrBasedLocalMinimizer::initialize_sub_minimizer()
   else if (!approx_method_name.empty()) {
     // Approach 2: instantiate on-the-fly w/o method spec support
     approxSubProbMinimizer
-      = probDescDB.get_iterator(approx_method_name, approxSubProbModel);
+      = Iterator::get_iterator(approx_method_name, approxSubProbModel);
     if (constraintTol <= 0.) // not specified in SBLM method spec
       constraintTol = 1.e-4; // compromise value among NPSOL/DOT/CONMIN
     std::shared_ptr<Minimizer> aspm = std::static_pointer_cast<Minimizer>

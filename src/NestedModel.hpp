@@ -567,7 +567,7 @@ inline void NestedModel::derived_init_serial()
   size_t method_index = probDescDB.get_db_method_node(),
          model_index  = probDescDB.get_db_model_node(); // for restoration
   probDescDB.set_db_list_nodes(subMethodPointer);       // even if empty
-  subIterator = probDescDB.get_iterator(subModel);
+  subIterator = Iterator::get_iterator(probDescDB, subModel);
   probDescDB.set_db_method_node(method_index); // restore method only
   probDescDB.set_db_model_nodes(model_index);  // restore all model nodes
 
