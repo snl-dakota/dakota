@@ -132,36 +132,35 @@ namespace Dakota {
         Supports all iterators and meta-iterators.  These instantiations
         will NOT recurse on the Iterator(problem_db) constructor due to
         the use of BaseConstructor. */
-        std::shared_ptr<Iterator> get_iterator(ProblemDescDB& problem_db)
-        {
-        unsigned short method_name = problem_db.get_ushort("method.algorithm");
+        std::shared_ptr<Iterator> get_iterator(ProblemDescDB& problem_db) {
+            unsigned short method_name = problem_db.get_ushort("method.algorithm");
 
-        // Meta-iterators support special constructors that are not bound to a Model
-        // instance for top-level instantiation of general meta-iteration.  However,
-        // they also support construction with a provided Model to allow use as a
-        // component within an Iterator recursion.
-        switch (method_name) {
-        case HYBRID:
-            switch (problem_db.get_ushort("method.sub_method")) {
-            case SUBMETHOD_COLLABORATIVE:
-            return std::make_shared<CollabHybridMetaIterator>(problem_db); break;
-            case SUBMETHOD_EMBEDDED:
-            return std::make_shared<EmbedHybridMetaIterator>(problem_db); break;
-            case SUBMETHOD_SEQUENTIAL:
-            return std::make_shared<SeqHybridMetaIterator>(problem_db); break;
+            // Meta-iterators support special constructors that are not bound to a Model
+            // instance for top-level instantiation of general meta-iteration.  However,
+            // they also support construction with a provided Model to allow use as a
+            // component within an Iterator recursion.
+            switch (method_name) {
+            case HYBRID:
+                switch (problem_db.get_ushort("method.sub_method")) {
+                case SUBMETHOD_COLLABORATIVE:
+                return std::make_shared<CollabHybridMetaIterator>(problem_db); break;
+                case SUBMETHOD_EMBEDDED:
+                return std::make_shared<EmbedHybridMetaIterator>(problem_db); break;
+                case SUBMETHOD_SEQUENTIAL:
+                return std::make_shared<SeqHybridMetaIterator>(problem_db); break;
+                default:
+                Cerr << "Invalid hybrid meta-iterator type." << std::endl;
+                return std::shared_ptr<Iterator>(); break;
+                }
+                break;
+            case PARETO_SET: case MULTI_START:
+                return std::make_shared<ConcurrentMetaIterator>(problem_db); break;
             default:
-            Cerr << "Invalid hybrid meta-iterator type." << std::endl;
-            return std::shared_ptr<Iterator>(); break;
+                // rather than create additional derived constructors for non-meta-iterators
+                // that differ only in creation of their own Model instance, perform the
+                // Model instantiation here and leverage the existing constructors.
+                return get_iterator(problem_db, Model::get_model(problem_db)); break;
             }
-            break;
-        case PARETO_SET: case MULTI_START:
-            return std::make_shared<ConcurrentMetaIterator>(problem_db); break;
-        default:
-            // rather than create additional derived constructors for non-meta-iterators
-            // that differ only in creation of their own Model instance, perform the
-            // Model instantiation here and leverage the existing constructors.
-            return get_iterator(problem_db, problem_db.get_model()); break;
-        }
         }
 
 

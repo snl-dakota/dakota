@@ -62,6 +62,16 @@ class Model
 {
 
 public:
+  /// @brief retrieve an existing Model, if it exists, or instantiate a new one
+  /// @return pointer to existing or newly created Model
+  static std::shared_ptr<Model> get_model(ProblemDescDB& problem_db);
+
+  /// @brief remove a cached Model for the study
+  static void remove_cached_model(const ProblemDescDB& problem_db);
+
+  /// @brief Cache of Models created for each study
+  static std::map<ProblemDescDB*, std::list<std::shared_ptr<Model>>> modelCache;
+
 
   //
   //- Heading: Constructors, destructor, assignment operator

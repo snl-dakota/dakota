@@ -43,6 +43,46 @@ Iterator  dummy_iterator;  ///< dummy Iterator object used for mandatory
 // Initialization of static model ID counters
 size_t Model::noSpecIdNum = 0;
 
+std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db) {
+
+  ProblemDescDB* const study_ptr = &problem_db;
+
+  if(Iterator::modelCache.count(study_ptr) == 0) {
+    Iterator::modelCache[study_ptr] = std::list<std::shared_ptr<Model>>();
+  }
+
+  auto& study_cache = Iterator::modelCache[study_ptr];
+
+  // A model specification identifies its variables, interface, and responses.
+  // Have to worry about loss of encapsulation and use of context _above_ this
+  // specification, i.e., any dependence on an iterator specification
+  // (dependence on the environment spec is OK since there is only one).
+  // > method.output
+  // > Constraints: variables view
+
+  // The DB list nodes are set prior to calling get_model():
+  // >    model_ptr spec -> id_model must be defined
+  // > no model_ptr spec -> id_model is ignored, model spec is last parsed
+  auto id_model = problem_db.model_id();
+  if(id_model.empty())
+    id_model = "NO_MODEL_ID";
+  auto m_it
+    = std::find_if(study_cache.begin(), study_cache.end(),
+                   [&id_model](std::shared_ptr<Model> m) {return m->model_id() == id_model;});
+  if (m_it == study_cache.end()) {
+    study_cache.push_back(ModelUtils::get_model(problem_db));
+    m_it = --study_cache.end();
+  }
+  return *m_it;
+}
+
+void Model::remove_cached_model(const ProblemDescDB& problem_db) {
+  const ProblemDescDB* const study_ptr = &problem_db;
+  Model::modelCache.erase(study_ptr);
+}
+
+std::map<ProblemDescDB*, std::list<std::shared_ptr<Model>>> Model::modelCache{};
+
 
 /** This constructor builds the base class data for all inherited
     models.  get_model() instantiates a derived class and the derived
