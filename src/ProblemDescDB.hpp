@@ -106,9 +106,6 @@ public:
   //- Heading: Member methods
   //
 
-  /// retrieve an existing Model, if it exists, or instantiate a new one
-  std::shared_ptr<Model> get_model();
-
   /// Parses the input file or input string if present and executes
   /// callbacks.  Does not perform any validation.
   void parse_inputs(ProgramOptions& prog_opts,
@@ -481,8 +478,6 @@ private:
   /// iterator identifying the active list node in dataResponsesList
   std::list<DataResponses>::iterator dataResponsesIter;
 
-  /// list of model objects, one for each model specification
-  ModelList modelList;
   /// list of variables objects, one for each variables specification
   VariablesList variablesList;
   /// list of interface objects, one for each interface specification

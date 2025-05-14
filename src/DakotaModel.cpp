@@ -47,11 +47,11 @@ std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db) {
 
   ProblemDescDB* const study_ptr = &problem_db;
 
-  if(Iterator::modelCache.count(study_ptr) == 0) {
-    Iterator::modelCache[study_ptr] = std::list<std::shared_ptr<Model>>();
+  if(Model::modelCache.count(study_ptr) == 0) {
+    Model::modelCache[study_ptr] = std::list<std::shared_ptr<Model>>();
   }
 
-  auto& study_cache = Iterator::modelCache[study_ptr];
+  auto& study_cache = Model::modelCache[study_ptr];
 
   // A model specification identifies its variables, interface, and responses.
   // Have to worry about loss of encapsulation and use of context _above_ this
@@ -81,7 +81,7 @@ void Model::remove_cached_model(const ProblemDescDB& problem_db) {
   Model::modelCache.erase(study_ptr);
 }
 
-std::map<ProblemDescDB*, std::list<std::shared_ptr<Model>>> Model::modelCache{};
+std::map<const ProblemDescDB*, std::list<std::shared_ptr<Model>>> Model::modelCache{};
 
 
 /** This constructor builds the base class data for all inherited

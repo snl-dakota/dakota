@@ -939,41 +939,6 @@ void ProblemDescDB::receive_db_buffer()
 	      >> dataVariablesList >> dataInterfaceList >> dataResponsesList;
 }
 
-
-std::shared_ptr<Model> ProblemDescDB::get_model()
-{
-  // ProblemDescDB::get_<object> functions operate at the envelope level
-  // so that any passing of *this provides the envelope object.
-  if (!dbRep) {
-    Cerr << "Error: ProblemDescDB::get_model() called for letter object."
-         << std::endl;
-    abort_handler(PARSE_ERROR);
-  }
-
-  // A model specification identifies its variables, interface, and responses.
-  // Have to worry about loss of encapsulation and use of context _above_ this
-  // specification, i.e., any dependence on an iterator specification
-  // (dependence on the environment spec is OK since there is only one).
-  // > method.output
-  // > Constraints: variables view
-
-  // The DB list nodes are set prior to calling get_model():
-  // >    model_ptr spec -> id_model must be defined
-  // > no model_ptr spec -> id_model is ignored, model spec is last parsed
-  String id_model = dbRep->dataModelIter->dataModelRep->idModel;
-  if(id_model.empty())
-    id_model = "NO_MODEL_ID";
-  ModelLIter m_it
-    = std::find_if(dbRep->modelList.begin(), dbRep->modelList.end(),
-                   [&id_model](std::shared_ptr<Model> m) {return m->model_id() == id_model;});
-  if (m_it == dbRep->modelList.end()) {
-    dbRep->modelList.push_back(ModelUtils::get_model(*this));
-    m_it = --dbRep->modelList.end();
-  }
-  return *m_it;
-}
-
-
 const Variables& ProblemDescDB::get_variables()
 {
   // ProblemDescDB::get_<object> functions operate at the envelope level

@@ -70,7 +70,7 @@ public:
   static void remove_cached_model(const ProblemDescDB& problem_db);
 
   /// @brief Cache of Models created for each study
-  static std::map<ProblemDescDB*, std::list<std::shared_ptr<Model>>> modelCache;
+  static std::map<const ProblemDescDB*, std::list<std::shared_ptr<Model>>> modelCache;
 
 
   //
