@@ -34,7 +34,7 @@ PebbldMinimizer::PebbldMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Mode
     size_t method_index = probDescDB.get_db_method_node(); // for restoration
     probDescDB.set_db_method_node(subprob_method_ptr); // method only
     // sub-problem minimizer will use shallow copy of iteratedModel
-    // (from problem_db.get_model())
+    // (from Model::get_model(problem_db)
     subProbMinimizer = Iterator::get_iterator(probDescDB);//(iteratedModel);
     // suppress DB ctor default and don't output summary info
     subProbMinimizer->summary_output(false);

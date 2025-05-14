@@ -116,7 +116,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 
   problem_db.set_db_list_nodes(subMethodPointer); // even if empty
 
-  subModel = problem_db.get_model();
+  subModel = Model::get_model(problem_db);
   //check_submodel_compatibility(subModel); // sanity checks performed below
   // if outer level output is verbose/debug, request fine-grained evaluation 
   // reporting for purposes of the final output summary.  This allows verbose

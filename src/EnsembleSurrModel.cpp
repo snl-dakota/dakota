@@ -37,12 +37,12 @@ EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db):
   approxModels.resize(num_approx);
   for (i=0; i<num_approx; ++i) {
     problem_db.set_db_model_nodes(ensemble_model_ptrs[i]);
-    approxModels[i] = problem_db.get_model();
+    approxModels[i] = Model::get_model(problem_db);
     check_submodel_compatibility(*approxModels[i]);
   }
   if (truth_model_spec) problem_db.set_db_model_nodes(truth_model_ptr);
   else problem_db.set_db_model_nodes(ensemble_model_ptrs[num_approx]);
-  truthModel = problem_db.get_model();
+  truthModel = Model::get_model(problem_db);
   check_submodel_compatibility(*truthModel);
 
   problem_db.set_db_model_nodes(model_index); // restore

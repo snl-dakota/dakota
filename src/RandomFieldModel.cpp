@@ -42,7 +42,7 @@ std::shared_ptr<Model> RandomFieldModel::get_sub_model(ProblemDescDB& problem_db
     = problem_db.get_string("model.rf.propagation_model_pointer");
   size_t model_index = problem_db.get_db_model_node(); // for restoration
   problem_db.set_db_model_nodes(propagation_model_pointer);
-  auto sub_model = problem_db.get_model();
+  auto sub_model = Model::get_model(problem_db);
   //check_submodel_compatibility(actualModel);
   problem_db.set_db_model_nodes(model_index); // restore
 

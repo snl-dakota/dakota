@@ -76,7 +76,7 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
   }
 
   // Instantiate the model on all processors, even a dedicated scheduler
-  iteratedModel = problem_db.get_model();
+  iteratedModel = Model::get_model(problem_db);
   initialize_model();
 
   // user-specified jobs

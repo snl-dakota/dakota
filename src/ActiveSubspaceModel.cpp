@@ -122,12 +122,12 @@ std::shared_ptr<Model> ActiveSubspaceModel::get_sub_model(ProblemDescDB& problem
 
   std::shared_ptr<Model> sub_model;
   if (transformVars) {
-    auto db_model = problem_db.get_model();
+    auto db_model = Model::get_model(problem_db);
     sub_model = std::make_shared<ProbabilityTransformModel>(
       db_model, STD_NORMAL_U); // retain dist bounds
   }
   else
-    sub_model = problem_db.get_model();
+    sub_model = Model::get_model(problem_db);
 
   problem_db.set_db_model_nodes(model_index); // restore
 
