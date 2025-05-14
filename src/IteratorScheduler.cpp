@@ -235,7 +235,7 @@ init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator
   if(sub_iterator)
     sub_model = sub_iterator->iterated_model();
   if (!sub_model) {
-    sub_model = problem_db.get_model();
+    sub_model = Model::get_model(problem_db);
     if (sub_iterator) // else constructed with sub_model below
       sub_iterator->iterated_model(sub_model);
   }

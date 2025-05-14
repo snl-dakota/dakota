@@ -68,7 +68,7 @@ std::shared_ptr<Model> AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_d
   size_t model_index = problem_db.get_db_model_node(); // for restoration
   problem_db.set_db_model_nodes(actual_model_pointer);
 
-  auto actual_model(problem_db.get_model());
+  auto actual_model(Model::get_model(problem_db));
 
     // configure pilot PCE object (instantiate now; build expansion at run time)
   RealVector dim_pref;
