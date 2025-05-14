@@ -201,7 +201,7 @@ void DakotaRunner::start()
   // Any library mode plug-ins would go here.
   // Refer to the library mode documentation in the Developers Manual.
   ProblemDescDB& problem_db = dakotaEnv->problem_description_db();
-  ModelList& models = problem_db.model_list();
+  ModelList& models = Model::model_cache(problem_db);
   size_t model_index = problem_db.get_db_model_node(); // for restoration
   for (auto& m : models) {
     std::shared_ptr<Interface> model_interface = m->derived_interface();

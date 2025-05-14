@@ -76,6 +76,16 @@ std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db) {
   return *m_it;
 }
 
+std::list<std::shared_ptr<Model>>& Model::model_cache(ProblemDescDB& problem_db) {
+  const ProblemDescDB* const study_ptr = &problem_db;
+  try {
+    return Model::modelCache.at(study_ptr);
+  } catch(std::out_of_range) {
+    Cerr << "Model::model_cache() called with nonexistent study!\n";
+    throw;
+  }
+}
+
 void Model::remove_cached_model(const ProblemDescDB& problem_db) {
   const ProblemDescDB* const study_ptr = &problem_db;
   Model::modelCache.erase(study_ptr);

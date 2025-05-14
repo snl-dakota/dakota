@@ -66,6 +66,11 @@ public:
   /// @return pointer to existing or newly created Model
   static std::shared_ptr<Model> get_model(ProblemDescDB& problem_db);
 
+  /// @brief return the model cache for the study
+  /// @param problem_db 
+  /// @return model cache
+  static std::list<std::shared_ptr<Model>>& model_cache(ProblemDescDB& problem_db);
+
   /// @brief remove a cached Model for the study
   static void remove_cached_model(const ProblemDescDB& problem_db);
 

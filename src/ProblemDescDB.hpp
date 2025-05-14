@@ -176,8 +176,6 @@ public:
   /// return the parallelLib reference
   ParallelLibrary& parallel_library() const;
 
-   /// return a list of all Model objects that have been instantiated
-  ModelList& model_list();
   /// return a list of all Variables objects that have been instantiated
   VariablesList& variables_list();
   /// return a list of all Interface objects that have been instantiated
@@ -530,10 +528,6 @@ inline void ProblemDescDB::unlock()
 
 inline ParallelLibrary& ProblemDescDB::parallel_library() const
 { return (dbRep) ? dbRep->parallelLib : parallelLib; }
-
-
-inline ModelList& ProblemDescDB::model_list()
-{ return (dbRep) ? dbRep->modelList : modelList; }
 
 
 inline VariablesList& ProblemDescDB::variables_list()

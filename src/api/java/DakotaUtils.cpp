@@ -14,7 +14,7 @@
 using namespace Dakota;
 
 void DART::connect_plugin(Dakota::ProblemDescDB *problem_db, DART::DakotaFunctor *f) {
-  ModelList& models = problem_db->model_list();
+  ModelList& models = Dakota::Model::model_cache(*problem_db);
   for (ModelLIter ml_iter = models.begin(); ml_iter != models.end(); ml_iter++){
     Interface& interface = ml_iter->derived_interface();
     if ((interface.interface_type() & DIRECT_INTERFACE_BIT) &&
