@@ -20,8 +20,6 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/export.hpp>
-#include <boost/filesystem/operations.hpp>
-#include "boost/filesystem/path.hpp"
 
 static const char rcsId[]="@(#) $Id: DakotaResponse.cpp 7029 2010-10-22 00:17:02Z mseldre $";
 

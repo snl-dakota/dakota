@@ -11,7 +11,6 @@
 #include "ProblemDescDB.hpp"
 
 #include <boost/dll/import.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/version.hpp>
 
 // Boost 1.76 and newer avoid the C++20 import keyword

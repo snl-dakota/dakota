@@ -18,7 +18,6 @@ typedef intptr_t pid_t;
 #endif
 
 #include <boost/tuple/tuple.hpp>
-#include <boost/filesystem/path.hpp>
 
 namespace Dakota {
 

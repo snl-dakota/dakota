@@ -16,7 +16,6 @@
 #include "ParametersFileWriter.hpp"
 #include "ResultsFileReader.hpp"
 #include <algorithm>
-#include <boost/filesystem/fstream.hpp>
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;

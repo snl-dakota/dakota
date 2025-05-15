@@ -13,8 +13,6 @@
 #include "DakotaVariables.hpp"
 
 #include <boost/tokenizer.hpp>
-#include <boost/filesystem/operations.hpp>
-#include "boost/filesystem/path.hpp"
 
 namespace Dakota {
 

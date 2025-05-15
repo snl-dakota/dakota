@@ -10,7 +10,6 @@
 #pragma once
 
 #include <memory>
-#include <boost/filesystem/path.hpp>
 #include "PRPMultiIndex.hpp"
 
 namespace Dakota {

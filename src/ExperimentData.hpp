@@ -17,8 +17,6 @@
 #include "ExperimentDataUtils.hpp"
 #include "SharedResponseData.hpp"
 #include "SimulationResponse.hpp"
-#include <boost/filesystem/operations.hpp>
-#include "boost/filesystem/path.hpp"
 
 namespace Dakota {
 

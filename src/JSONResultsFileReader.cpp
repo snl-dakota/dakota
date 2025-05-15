@@ -9,7 +9,6 @@
 
 #include "JSONResultsFileReader.hpp"
 #include "DakotaResponse.hpp"
-#include <boost/filesystem/fstream.hpp>
 
 namespace Dakota {
 

@@ -12,7 +12,6 @@
 // Maybe CMake Test property for ENVIRONMENT
 
 #include "dakota_preproc_util.hpp"
-#include <boost/filesystem/operations.hpp>
 #include <gtest/gtest.h>
 
 #include <fstream>

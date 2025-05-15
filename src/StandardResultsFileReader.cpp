@@ -8,7 +8,6 @@
     _______________________________________________________________________ */
 
 #include "StandardResultsFileReader.hpp"
-#include <boost/filesystem/fstream.hpp>
 
 namespace Dakota {
 
