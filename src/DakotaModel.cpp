@@ -84,7 +84,7 @@ std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db) {
 }
 
 std::list<std::shared_ptr<Model>>& Model::model_cache(ProblemDescDB& problem_db) {
-  const ProblemDescDB* const study_ptr = &problem_db;
+  const ProblemDescDB* const study_ptr = problem_db.get_rep().get();
   try {
     return Model::modelCache.at(study_ptr);
   } catch(std::out_of_range) {
@@ -108,7 +108,7 @@ std::map<const ProblemDescDB*, std::list<std::shared_ptr<Model>>> Model::modelCa
     get_model() again).  Since the letter IS the representation, its
     representation pointer is set to NULL. */
 Model::Model(ProblemDescDB& problem_db):
-  currentVariables(problem_db.get_variables()),
+  currentVariables(Variables::get_variables(problem_db)),
   numDerivVars(currentVariables.cv()),
   currentResponse(
     problem_db.get_response(SIMULATION_RESPONSE, currentVariables)),

@@ -116,7 +116,7 @@ public:
     ProblemDescDB& problem_db = dakotaEnv->problem_description_db();
 
     // set the variable names
-    const VariablesList& vlist = problem_db.variables_list();
+    const VariablesList& vlist = Variables::variables_cache(problem_db);
     VariablesList::const_iterator vlist_it;
     VariablesList::const_iterator vlist_end = vlist.end();
 

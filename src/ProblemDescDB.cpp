@@ -940,48 +940,6 @@ void ProblemDescDB::receive_db_buffer()
 	      >> dataVariablesList >> dataInterfaceList >> dataResponsesList;
 }
 
-const Variables& ProblemDescDB::get_variables()
-{
-  // ProblemDescDB::get_<object> functions operate at the envelope level
-  // so that any passing of *this provides the envelope object.
-  if (!dbRep) {
-    Cerr << "Error: ProblemDescDB::get_variables() called for letter object."
-	 << std::endl;
-    abort_handler(PARSE_ERROR);
-  }
-
-  // Have to worry about loss of encapsulation and use of context _above_ this
-  // specification, i.e., any dependence on iterator/model/interface/responses
-  // specifications (dependence on the environment specification is OK since
-  // there is only one).
-  // > variables view is method dependent
-
-  // The DB list nodes are set prior to calling get_variables():
-  // >    variables_ptr spec -> id_variables must be defined
-  // > no variables_ptr spec -> id_variables ignored, vars spec = last parsed
-  //const String& id_variables = dbRep->dataVariablesIter->idVariables;
-
-  // Turn off variables reuse for now, since it is problematic with surrogates:
-  // a top level variables set followed by a subModel eval which sets subModel
-  // vars (where the subModel vars object is reused) results in a top level
-  // eval with the wrong vars (e.g., surrogate auto-build in
-  // dakota_textbook_lhs_approx.in).
-  //
-  // In general, variables object reuse should be fine for objects with peer
-  // relationships, but are questionable for use among nested/layered levels.
-  // Need a way to detect peer vs. nested/layered relationships.
-  VarsLIter v_it;
-  // = dbRep->variablesList.find(variables_id_compare, &id_variables);
-  //if ( v_it == dbRep->variablesList.end() ||
-  //     v_it->view() != v_it->get_view(*this) ) {
-    Variables new_variables(*this);
-    dbRep->variablesList.push_back(new_variables);
-    v_it = --dbRep->variablesList.end();
-  //}
-  return *v_it;
-}
-
-
 const Response& ProblemDescDB::get_response(short type, const Variables& vars)
 {
   // ProblemDescDB::get_<object> functions operate at the envelope level

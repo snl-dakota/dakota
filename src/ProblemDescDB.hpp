@@ -176,8 +176,6 @@ public:
   /// return the parallelLib reference
   ParallelLibrary& parallel_library() const;
 
-  /// return a list of all Variables objects that have been instantiated
-  VariablesList& variables_list();
   /// return a list of all Interface objects that have been instantiated
   InterfaceList& interface_list();
   /// return a list of all Response objects that have been instantiated
@@ -482,8 +480,6 @@ private:
   /// iterator identifying the active list node in dataResponsesList
   std::list<DataResponses>::iterator dataResponsesIter;
 
-  /// list of variables objects, one for each variables specification
-  VariablesList variablesList;
   /// list of response objects, one for each responses specification
   ResponseList responseList;
 
@@ -532,10 +528,6 @@ inline void ProblemDescDB::unlock()
 
 inline ParallelLibrary& ProblemDescDB::parallel_library() const
 { return (dbRep) ? dbRep->parallelLib : parallelLib; }
-
-
-inline VariablesList& ProblemDescDB::variables_list()
-{ return (dbRep) ? dbRep->variablesList : variablesList; }
 
 
 inline ResponseList& ProblemDescDB::response_list()
