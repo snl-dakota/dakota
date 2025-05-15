@@ -75,7 +75,7 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> mode
   }
 
   if (!advancedOptionsFile.empty()) {
-    if (boost::filesystem::exists(advancedOptionsFile)) {
+    if (std::filesystem::exists(advancedOptionsFile)) {
       if (outputLevel >= NORMAL_OUTPUT)
 	Cout << "Any QUESO options in file '" << advancedOptionsFile
 	     << "' will override Dakota options." << std::endl;

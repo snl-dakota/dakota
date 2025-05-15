@@ -34,7 +34,7 @@ TEST(test_preproc_tests, test_pyprepro)
   }
 
   // remove generated file
-  boost::filesystem::remove(gen_file);
+  std::filesystem::remove(gen_file);
 }
 
 int main(int argc, char **argv) {

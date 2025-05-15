@@ -574,7 +574,7 @@ void NonDMUQBayesCalibration::calibrate_single_chain()
 
   samps = mcmc->Run(init_pt);
 
-  bfs::path wd( WorkdirHelper::rel_to_abs("MUQDiagnostics") );
+  std::filesystem::path wd( WorkdirHelper::rel_to_abs("MUQDiagnostics") );
   WorkdirHelper::create_directory(wd, DIR_CLEAN);
   const std::string filename = "MUQDiagnostics/mcmc_output.h5";
   samps->WriteToFile(filename);
@@ -625,7 +625,7 @@ void NonDMUQBayesCalibration::calibrate_mlmcmc()
   // FRizzi: maybe we will want to output the chain at each level?
   auto boxes = mlmcmcGreedy->GetBoxes();
   samps = boxes[boxes.size()-1]->FinestChain()->GetSamples();
-  bfs::path wd( WorkdirHelper::rel_to_abs("MUQDiagnostics") );
+  std::filesystem::path wd( WorkdirHelper::rel_to_abs("MUQDiagnostics") );
   WorkdirHelper::create_directory(wd, DIR_CLEAN);
   const std::string filename = "MUQDiagnostics/mcmc_output.h5";
   samps->WriteToFile(filename);

@@ -15,8 +15,6 @@
 #include "DakotaModel.hpp"
 
 // then system-related headers
-#include <boost/filesystem/path.hpp>
-namespace bfs = boost::filesystem;
 
 // then list QUESO headers
 #include "queso/GPMSA.h"
@@ -363,7 +361,7 @@ overlay_proposal_covariance(GslMatrix& full_prop_cov) const
   // Power users can override the covariance values with a file
   std::string initial_cov_filename =
     "initial_proposal_covariance_sub" + quesoEnv->subIdString();
-  if (bfs::exists(initial_cov_filename + ".m")) {
+  if (std::filesystem::exists(initial_cov_filename + ".m")) {
     std::set<unsigned int> sid_set;
     sid_set.insert(quesoEnv->subId());
     full_prop_cov.subReadContents(initial_cov_filename, "m", sid_set);
@@ -414,7 +412,7 @@ overlay_initial_params(GslVector& full_param_initials)
   // Power users can override the initial values with a file
   std::string initial_point_filename =
     "initial_point_sub" + quesoEnv->subIdString();
-  if (bfs::exists(initial_point_filename + ".m")) {
+  if (std::filesystem::exists(initial_point_filename + ".m")) {
     std::set<unsigned int> sid_set;
     sid_set.insert(quesoEnv->subId());
     full_param_initials.subReadContents(initial_point_filename, "m", sid_set);

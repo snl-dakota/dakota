@@ -143,7 +143,7 @@ void ModelInterface::set_default_parameters( Optimizer* opt ) {
   // Check for ROL XML input file.
   String adv_opts_file = prob_desc_db.get_string("method.advanced_options_file");
   if (!adv_opts_file.empty()) {
-    if (boost::filesystem::exists(adv_opts_file)) {
+    if (std::filesystem::exists(adv_opts_file)) {
       if( has_normal_output ) {
                Cout << "Any ROL options in file '" << adv_opts_file
                  << "' will override Dakota options." << std::endl;

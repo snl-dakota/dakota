@@ -13,8 +13,6 @@
 #include <boost/filesystem/path.hpp>
 #include "PRPMultiIndex.hpp"
 
-namespace bfs = boost::filesystem;
-
 namespace Dakota {
 
 class Response;
@@ -38,7 +36,7 @@ class ResultsFileReader {
         static std::unique_ptr<ResultsFileReader> get_reader(unsigned short results_file_format, bool labeled);
     
 	/// Read results for a single evaluation
-        virtual void read_results_file(Response& response, const bfs::path &results_path, const int id) const = 0;
+        virtual void read_results_file(Response& response, const std::filesystem::path &results_path, const int id) const = 0;
 	/// Read results for a batch of evaluations
         virtual void read_results_file(PRPQueue& prp_queue, const std::string &results_path, const int batch_id, IntSet& completion_set) const = 0;
 

@@ -51,6 +51,14 @@ if(DAKOTA_PYTHON_SURROGATES)
   target_link_libraries(dakota_surrogates PUBLIC pybind11::embed)
 endif()
 
+# handle special case for gcc filesystem support
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)
+    #message(STATUS "GCC version is less than 9.0, adding -lstdc++fs")
+    target_link_libraries(dakota_surrogates PUBLIC stdc++fs)
+  endif()
+endif()
+
 # Rationale: Teuchos is included in API headers, and ParameterList
 # library component is needed
 target_include_directories(dakota_surrogates PUBLIC

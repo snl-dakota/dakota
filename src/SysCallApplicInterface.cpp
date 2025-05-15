@@ -128,7 +128,7 @@ void SysCallApplicInterface::test_local_evaluation_sequence(PRPQueue& prp_queue)
     bool err_msg_caught = false;
 
     // Test for existence of the results file(s) corresponding to this PRPair
-    const bfs::path& file_to_test = fileNameMap[fn_eval_id].get<1>();
+    const std::filesystem::path& file_to_test = fileNameMap[fn_eval_id].get<1>();
     if (system_call_file_test(file_to_test)) {
       // File exists; test for complete/valid set of results (an incomplete 
       // set can result from a race condition in which Dakota is reading a 
@@ -215,7 +215,7 @@ void SysCallApplicInterface::test_local_evaluation_sequence(PRPQueue& prp_queue)
 }
 
 
-bool SysCallApplicInterface::system_call_file_test(const bfs::path& root_file)
+bool SysCallApplicInterface::system_call_file_test(const std::filesystem::path& root_file)
 {
   size_t num_programs = programNames.size();
   if ( num_programs > 1 && oFilterName.empty() ) {
@@ -223,22 +223,22 @@ bool SysCallApplicInterface::system_call_file_test(const bfs::path& root_file)
     // Sun Solaris has been observed to have problems with the final results
     // file existing before previous results files exist (I/O threading?)
     for (size_t i=0; i<num_programs; ++i) {
-      bfs::path tagged_file = 
+      std::filesystem::path tagged_file = 
 	WorkdirHelper::concat_path(root_file, "." + std::to_string(i+1));
-      if (!bfs::exists(tagged_file))
+      if (!std::filesystem::exists(tagged_file))
 	return false;
     }
     return true;
 #else
     // Testing all files is usually overkill for sequential analyses.  It's only
     // really necessary to check the last tagged_file: root_file.[num_programs]
-    bfs::path tagged_file = 
+    std::filesystem::path tagged_file = 
       WorkdirHelper::concat_path(root_file, "." + std::to_string(num_programs));
-    return bfs::exists(tagged_file);
+    return std::filesystem::exists(tagged_file);
 #endif // __SUNPRO_CC
   }
   else
-    return bfs::exists(root_file);
+    return std::filesystem::exists(root_file);
 }
 
 

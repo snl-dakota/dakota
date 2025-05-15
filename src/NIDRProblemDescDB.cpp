@@ -649,7 +649,7 @@ int not_executable(const char *driver_name, const char *tdir)
   int rc, sv;
   size_t clen, dlen, plen, tlen;
   void *a0;
-  std::string cwd = boost::filesystem::current_path().string();
+  std::string cwd = std::filesystem::current_path().string();
 
 #ifdef _WIN32
   char dbuf[128];
@@ -711,7 +711,7 @@ int not_executable(const char *driver_name, const char *tdir)
     goto ret;
 #endif
 
-  cwd = boost::filesystem::current_path().string();
+  cwd = std::filesystem::current_path().string();
   clen = cwd.size();
   dlen = std::strlen(driver_name);
   tlen = std::strlen(tdir);
@@ -909,7 +909,7 @@ int NIDRProblemDescDB::check_driver(const String& an_driver,
       // Therefore have to check PATH, link/copy files, PWD
 
       // check PATH and RUNDIR (since . is already on the search path)
-      bfs::path driver_found = WorkdirHelper::which(program_name);
+      std::filesystem::path driver_found = WorkdirHelper::which(program_name);
       if ( !driver_found.empty() )
 	return 0;
 

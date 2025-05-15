@@ -15,8 +15,8 @@ namespace Dakota {
 
 JSONResultsFileReader::JSONResultsFileReader(bool labeled) : ResultsFileReader(labeled) {}
 
-void JSONResultsFileReader::read_results_file(Response& response, const bfs::path &results_path, const int id) const {
-    bfs::ifstream results_file(results_path);
+void JSONResultsFileReader::read_results_file(Response& response, const std::filesystem::path &results_path, const int id) const {
+  std::ifstream results_file(results_path);
     if (!results_file) {
         Cerr << "\nError: cannot open results file " << results_path
 	    << " for evaluation " << std::to_string(id) << std::endl;
@@ -44,7 +44,7 @@ void JSONResultsFileReader::read_results_file(Response& response, const bfs::pat
 void JSONResultsFileReader::read_results_file(PRPQueue& prp_queue, const std::string &results_path,
 		const int batch_id, IntSet &completion_set) const {
 
-    bfs::ifstream results_file(results_path);
+  std::ifstream results_file(results_path);
     if (!results_file) {
         Cerr << "\nError: cannot open results file " << results_path << 
             " for batch " << std::to_string(batch_id) << std::endl;

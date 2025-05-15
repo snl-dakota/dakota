@@ -202,7 +202,7 @@ void PluginInterface::check_plugin_exists()
 {
   // This only accounts for user-provided path case
   // TODO: locate plugin in default locations such as dakota/bin or dakota/lib
-  if (!boost::filesystem::exists(pluginPath)) {
+  if (!std::filesystem::exists(pluginPath)) {
     Cerr << "\nError: Specified plugin interface library \n  '" << pluginPath
 	 << "'\ndoes not exist.\n";
     abort_handler(INTERFACE_ERROR);

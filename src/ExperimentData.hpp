@@ -76,7 +76,7 @@ public:
 
   /// temporary? constructor for testing
   ExperimentData(size_t num_experiments, size_t num_config_vars, 
-                 const boost::filesystem::path& data_prefix,
+                 const std::filesystem::path& data_prefix,
                  const SharedResponseData& srd,
                  const StringArray& variance_types,
                  short output_level,
@@ -439,7 +439,7 @@ private:
   Real logCovarianceDeterminant;
 
   /// path to prepend to any data file names
-  boost::filesystem::path dataPathPrefix;
+  std::filesystem::path dataPathPrefix;
 
   // scalar data config information
 

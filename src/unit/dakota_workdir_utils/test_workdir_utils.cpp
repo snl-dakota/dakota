@@ -28,14 +28,15 @@ void test_save_current_path(const std::string& pwd_str,
 
   bfs::path tmp_dir( WorkdirHelper::system_tmp_path() );
   bfs::path temp_name = bfs::unique_path("daktst_%%%%%%%%");
-  bfs::path wd( tmp_dir/temp_name );
+  bfs::path bwd( tmp_dir/temp_name );
+  std::filesystem::path wd( bwd.string() );
 
   WorkdirHelper::create_directory(wd, DIR_CLEAN);
 
-  if( bfs::exists(wd) && is_directory(wd) ) {
+  if( std::filesystem::exists(wd) && is_directory(wd) ) {
     // Change directory into newly created dir (verify current path is as expected)
     WorkdirHelper::change_directory(wd);
-    std::string new_pwd_str = boost::filesystem::current_path().string();
+    std::string new_pwd_str = std::filesystem::current_path().string();
     EXPECT_TRUE(( pwd_str != new_pwd_str ));
 
     WorkdirHelper::set_preferred_path();
@@ -47,9 +48,9 @@ void test_save_current_path(const std::string& pwd_str,
 
     // Change to startup PWD (aka rundir) (verify current path is as expected)
     // change back to original rundir
-    bfs::path rundir(pwd_str);
+    std::filesystem::path rundir(pwd_str);
     WorkdirHelper::change_directory(rundir);
-    new_pwd_str = boost::filesystem::current_path().string();
+    new_pwd_str = std::filesystem::current_path().string();
     EXPECT_TRUE(( pwd_str == new_pwd_str ));
 
     // verify that PATH no longer has '.' prepended
@@ -66,8 +67,8 @@ void test_save_current_path(const std::string& pwd_str,
 void count_driver_scripts(const std::string& glob_string)
 {
   try {
-    bfs::path search_dir;
-    bfs::path wild_card;
+    std::filesystem::path search_dir;
+    std::filesystem::path wild_card;
     WorkdirHelper::split_wildcard(glob_string, search_dir, wild_card);
 
 #if defined(DEBUG)
@@ -76,8 +77,8 @@ void count_driver_scripts(const std::string& glob_string)
 #endif
 
     MatchesWC wc_predicate(wild_card);
-    glob_iterator fit(wc_predicate, bfs::directory_iterator(search_dir));
-    glob_iterator fitend(wc_predicate, bfs::directory_iterator());
+    glob_iterator fit(wc_predicate, std::filesystem::directory_iterator(search_dir));
+    glob_iterator fitend(wc_predicate, std::filesystem::directory_iterator());
     size_t file_count = 0;
     for ( ; fit != fitend; ++fit) {
 #if defined(DEBUG)
@@ -96,9 +97,9 @@ void count_driver_scripts(const std::string& glob_string)
 }
 
 
-void test_which_driver(bfs::path& wd, const std::string& driver_name)
+void test_which_driver(std::filesystem::path& wd, const std::string& driver_name)
 {
-  EXPECT_TRUE(( bfs::exists(wd) ));
+  EXPECT_TRUE(( std::filesystem::exists(wd) ));
   EXPECT_TRUE(( wd.is_absolute() ));
 
   // BFS issue?  mkdir/change_dir seems problematic if wd is relative dir
@@ -106,15 +107,15 @@ void test_which_driver(bfs::path& wd, const std::string& driver_name)
   WorkdirHelper::set_preferred_path();
 
   // verify that a driver can be found in newly populated wdir
-  bfs::path driver = WorkdirHelper::which(driver_name);
+  std::filesystem::path driver = WorkdirHelper::which(driver_name);
 
   EXPECT_TRUE(( !driver.is_absolute() ));
-  EXPECT_TRUE(( bfs::is_regular_file(driver) ));
-  EXPECT_TRUE(( bfs::equivalent(driver, bfs::path(driver_name)) ));
+  EXPECT_TRUE(( std::filesystem::is_regular_file(driver) ));
+  EXPECT_TRUE(( std::filesystem::equivalent(driver, std::filesystem::path(driver_name)) ));
 }
 
 
-void test_cp_template_files_into_wd(bfs::path& wd)
+void test_cp_template_files_into_wd(std::filesystem::path& wd)
 {
   //std::cout << "OK to COPY template files into EMPTY dir:  " << wd << std::endl;
   std::string template_path_str = WorkdirHelper::startup_pwd();
@@ -127,7 +128,7 @@ void test_cp_template_files_into_wd(bfs::path& wd)
   }
   catch (const std::runtime_error&) {
 #if defined(DEBUG)
-    std::cout << "\nWarning: unable to locate BFS::path items relative.."
+    std::cout << "\nWarning: unable to locate std::filesystem::path items relative.."
               << " to directory:  " << template_path_str << std::endl;
 #endif
     // Early return undesirable, but this is just some simple test code
@@ -136,9 +137,9 @@ void test_cp_template_files_into_wd(bfs::path& wd)
   }
 
   // double-check contents of expected items in the wd
-  bfs::directory_iterator it(wd), eod;
+  std::filesystem::directory_iterator it(wd), eod;
   size_t file_count = 0; size_t link_count = 0; size_t dir_count = 0;
-  BOOST_FOREACH( bfs::path const &p, std::make_pair(it, eod) ) {
+  BOOST_FOREACH( std::filesystem::path const &p, std::make_pair(it, eod) ) {
     if( is_regular_file(p) ) {
       ++file_count;
       //std::cout << "counting files poplated wdir.. currentFCount is: " << file_count << std::endl;
@@ -164,7 +165,7 @@ void test_cp_template_files_into_wd(bfs::path& wd)
 }
 
 
-void test_ln_template_files_into_wd(bfs::path& wd)
+void test_ln_template_files_into_wd(std::filesystem::path& wd)
 {
   //std::cout << "OK to LINK template files into EMPTY dir:  " << wd << std::endl;
   std::string template_path_str = WorkdirHelper::startup_pwd();
@@ -177,7 +178,7 @@ void test_ln_template_files_into_wd(bfs::path& wd)
   }
   catch (const std::runtime_error&) {
 #if defined(DEBUG)
-    std::cout << "\nWarning: unable to locate BFS::path items relative.."
+    std::cout << "\nWarning: unable to locate std::filesystem::path items relative.."
               << " to directory:  " << template_path_str << std::endl;
 #endif
     // Early return undesirable, but this is just some simple test code
@@ -186,9 +187,9 @@ void test_ln_template_files_into_wd(bfs::path& wd)
   }
 
   // double-check contents of expected items in the wd
-  bfs::directory_iterator it(wd), eod;
+  std::filesystem::directory_iterator it(wd), eod;
   size_t file_count = 0; size_t link_count = 0; size_t dir_count = 0;
-  BOOST_FOREACH( bfs::path const &p, std::make_pair(it, eod) ) { 
+  BOOST_FOREACH( std::filesystem::path const &p, std::make_pair(it, eod) ) { 
     if( is_regular_file(p) ) {
       ++file_count;
       //std::cout << "counting files poplated wdir.. currentFCount is: " << file_count << std::endl;
@@ -212,15 +213,15 @@ void test_ln_template_files_into_wd(bfs::path& wd)
 
   test_which_driver(wd, "templatedir_rosenbrock.py"); // consider argv[1] here?
 
-  //EXPECT_TRUE(( bfs::exists(wd += "/dakota_workdir.templatedir.dat") ));
+  //EXPECT_TRUE(( std::filesystem::exists(wd += "/dakota_workdir.templatedir.dat") ));
 }
 
 
-void test_rmdir(bfs::path& wd)
+void test_rmdir(std::filesystem::path& wd)
 {
   // 7.	Remove the directory (verify its gone)
   WorkdirHelper::recursive_remove(wd, 0); // 0 indicates silent (appropriate for unit test)
-  EXPECT_TRUE(( !bfs::exists(wd) ));
+  EXPECT_TRUE(( !std::filesystem::exists(wd) ));
 }
 
 
@@ -233,11 +234,12 @@ void test_create_and_remove_tmpdir(bool copy=false)
 
   bfs::path tmp_dir( WorkdirHelper::system_tmp_path() );
   bfs::path temp_name = bfs::unique_path("daktst_%%%%%%%%");
-  bfs::path wd( tmp_dir/temp_name );
+  bfs::path bwd( tmp_dir/temp_name );
+  std::filesystem::path wd( bwd.string() );
 
   WorkdirHelper::create_directory(wd, DIR_CLEAN);
 
-  if( bfs::exists(wd) && is_directory(wd) ) {
+  if( std::filesystem::exists(wd) && is_directory(wd) ) {
     (copy) ? test_cp_template_files_into_wd(wd)
            : test_ln_template_files_into_wd(wd);
 
@@ -256,10 +258,10 @@ void test_create_and_remove_wd_in_rundir(const std::string& dir_name,
 //		ToDo: does this work right for pre-existing dir when it’s supposed to tolerate vs. error?
 // 5.	ToDo:  Make a subdir and a contained file so we can verify rm –rf (verify subdir is there)
 
-  bfs::path wd( WorkdirHelper::rel_to_abs(dir_name) );
+  std::filesystem::path wd( WorkdirHelper::rel_to_abs(dir_name) );
   WorkdirHelper::create_directory(wd, DIR_CLEAN);
 
-  if( bfs::exists(wd) && is_directory(wd) ) {
+  if( std::filesystem::exists(wd) && is_directory(wd) ) {
     (copy) ? test_cp_template_files_into_wd(wd)
            : test_ln_template_files_into_wd(wd);
 
@@ -273,14 +275,14 @@ void test_create_and_remove_wd_in_rundir(const std::string& dir_name,
 }
 
 
-void test_driver_relative_path(const bfs::path& rel_driver_path)
+void test_driver_relative_path(const std::filesystem::path& rel_driver_path)
 {
   std::string rundir_str = Dakota::WorkdirHelper::startup_pwd();
   Dakota::WorkdirHelper::change_directory(rundir_str);
 
   EXPECT_TRUE(( !rel_driver_path.is_absolute() ));
 #if !defined(_WIN32)
-  EXPECT_TRUE(( bfs::is_regular_file(rel_driver_path) ));
+  EXPECT_TRUE(( std::filesystem::is_regular_file(rel_driver_path) ));
 #endif
 
   //try {
@@ -315,7 +317,7 @@ TEST( workdir_utils_tests, all_tests )
   test_create_and_remove_tmpdir(do_copy);
   test_create_and_remove_wd_in_rundir("workdir", do_copy);
 
-  /* WJB: consider refactor count_driver_scripts test -- bfs::path fq_search(argv[1]);
+  /* WJB: consider refactor count_driver_scripts test -- std::filesystem::path fq_search(argv[1]);
   std::string fq_search(rundir_str);
   fq_search += "/../test/d*.sh";
   int run_result = 0;
