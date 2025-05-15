@@ -111,7 +111,8 @@ Model::Model(ProblemDescDB& problem_db):
   currentVariables(Variables::get_variables(problem_db)),
   numDerivVars(currentVariables.cv()),
   currentResponse(
-    problem_db.get_response(SIMULATION_RESPONSE, currentVariables)),
+    Response::get_response(problem_db, SIMULATION_RESPONSE, currentVariables)
+  ),
   numFns(currentResponse.num_functions()),
   userDefinedConstraints(problem_db, currentVariables.shared_data()),
   evaluationsDB(evaluation_store_db),

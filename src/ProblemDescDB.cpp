@@ -940,46 +940,6 @@ void ProblemDescDB::receive_db_buffer()
 	      >> dataVariablesList >> dataInterfaceList >> dataResponsesList;
 }
 
-const Response& ProblemDescDB::get_response(short type, const Variables& vars)
-{
-  // ProblemDescDB::get_<object> functions operate at the envelope level
-  // so that any passing of *this provides the envelope object.
-  if (!dbRep) {
-    Cerr << "Error: ProblemDescDB::get_response() called for letter object."
-	 << std::endl;
-    abort_handler(PARSE_ERROR);
-  }
-
-  // Have to worry about loss of encapsulation and use of context _above_ this
-  // specification, i.e., any dependence on iterator/model/variables/interface
-  // specifications (dependence on the environment specification is OK since
-  // there is only one).
-  // > mismatch in vars attributes (cv(),continuous_variable_ids()) should be OK
-  //   since derivative arrays are dynamically resized based on current active
-  //   set content
-
-  // The DB list nodes are set prior to calling get_response():
-  // >    responses_ptr spec -> id_responses must be defined
-  // > no responses_ptr spec -> id_responses ignored, resp spec = last parsed
-  //const String& id_responses
-  //  = dbRep->dataResponsesIter->dataRespRep->idResponses;
-
-  // Turn off response reuse for now, even though it has not yet been
-  // problematic.  In general, response object reuse should be fine for objects
-  // with peer relationships, but are questionable for use among nested/layered
-  // levels.  Need a way to detect peer vs. nested/layered relationships.
-  RespLIter r_it;
-  // = dbRep->responseList.find(responses_id_compare, &id_responses);
-  //if (r_it == dbRep->responseList.end()) { // ||
-    //r_it->active_set_derivative_vector() != vars.continuous_variable_ids()) {
-    Response new_response(type, vars, *this);
-    dbRep->responseList.push_back(new_response);
-    r_it = --dbRep->responseList.end();
-  //}}
-  return *r_it;
-}
-
-
 inline int ProblemDescDB::min_procs_per_ea()
 {
   // Note: get_*() requires envelope execution (throws error if !dbRep)

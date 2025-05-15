@@ -45,9 +45,29 @@ using RespMetadataT = double;
 
 class Response
 {
+  public:
+  // Functions and data for instantiating and caching Responses
+
+  /// @brief retrieve an existing Response, if it exists, or instantiate a new one
+  /// @return pointer to existing or newly created Response
+  static const Response& get_response(ProblemDescDB& problem_db, short type, const Variables& vars);
+
+
+  /// @brief return the response cache for the study
+  /// @param problem_db 
+  /// @return response cache
+  static std::list<Response>& response_cache(ProblemDescDB& problem_db);
+
+  /// @brief remove a cached Response for the study
+  static void remove_cached_response(const ProblemDescDB& problem_db);
+
+  /// @brief Cache of Responses created for each study
+  static std::map<const ProblemDescDB*, std::list<Response>> responseCache;
+
   //
   //- Heading: Friends
   //
+  private:
 
   /// equality operator
   friend bool operator==(const Response& resp1, const Response& resp2);

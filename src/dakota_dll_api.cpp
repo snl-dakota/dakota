@@ -117,54 +117,47 @@ public:
 
     // set the variable names
     const VariablesList& vlist = Variables::variables_cache(problem_db);
-    VariablesList::const_iterator vlist_it;
-    VariablesList::const_iterator vlist_end = vlist.end();
 
     // calculate total number of vars by iterating over each set
     // overly cautious check for non-empty labels (shouldn't they have
     // defaults?)
     numVars = 0;
-    for (vlist_it = vlist.begin(); vlist_it != vlist_end; ++vlist_it)
-      numVars += vlist_it->all_continuous_variable_labels().size() + 
-	vlist_it->all_discrete_int_variable_labels().size() + 
-	vlist_it->all_discrete_real_variable_labels().size();
+    for (const auto& v : vlist) 
+      numVars += v.all_continuous_variable_labels().size() + 
+      v.all_discrete_int_variable_labels().size() + 
+      v.all_discrete_real_variable_labels().size();
     // if appropriate, populate name array
     if (numVars > 0) {
       varNames = new char* [numVars]; 
       size_t j, idx = 0;
-      for (vlist_it = vlist.begin(); vlist_it != vlist_end; ++vlist_it) {
-	StringMultiArrayConstView acv_labels
-	  = vlist_it->all_continuous_variable_labels();
-	StringMultiArrayConstView adiv_labels
-	  = vlist_it->all_discrete_int_variable_labels();
-	StringMultiArrayConstView adrv_labels
-	  = vlist_it->all_discrete_real_variable_labels();
-	for (j=0; j<acv_labels.size(); ++j, ++idx)
-	  varNames[idx] = strdup(acv_labels[j].c_str());
-	for (j=0; j<adiv_labels.size(); ++j, ++idx)
-	  varNames[idx] = strdup(adiv_labels[j].c_str());
-	for (j=0; j<adrv_labels.size(); ++j, ++idx)
-	  varNames[idx] = strdup(adrv_labels[j].c_str());
+      for (const auto& v : vlist) {
+        auto acv_labels = v.all_continuous_variable_labels();
+        auto adiv_labels = v.all_discrete_int_variable_labels();
+        auto adrv_labels = v.all_discrete_real_variable_labels();
+        for (j=0; j<acv_labels.size(); ++j, ++idx)
+          varNames[idx] = strdup(acv_labels[j].c_str());
+	      for (j=0; j<adiv_labels.size(); ++j, ++idx)
+	        varNames[idx] = strdup(adiv_labels[j].c_str());
+	      for (j=0; j<adrv_labels.size(); ++j, ++idx)
+	        varNames[idx] = strdup(adrv_labels[j].c_str());
       }
     }
 
     // set the response names
-    const ResponseList& rlist = problem_db.response_list();
-    ResponseList::const_iterator rlist_it;
-    ResponseList::const_iterator rlist_end = rlist.end();
+    const ResponseList& rlist = Response::response_cache(problem_db);
 
     // calculate total number of responses by iterating over each set
     numResp = 0;
-    for (rlist_it = rlist.begin(); rlist_it != rlist_end; ++rlist_it)
-      numResp += rlist_it->function_labels().size();
+    for(const auto& r : rlist)
+      numResp += r.function_labels().size();
     // if appropriate, populate name array
     if (numResp > 0) {
       respNames = new char* [numResp]; 
       size_t j, idx = 0;
-      for (rlist_it = rlist.begin(); rlist_it != rlist_end; ++rlist_it) {
-	const StringArray& fn_labels = rlist_it->function_labels();
-	for (j=0; j<fn_labels.size(); ++j, ++idx)
-	  respNames[idx] = strdup(fn_labels[j].c_str());
+      for (const auto& r : rlist) {
+	      const StringArray& fn_labels = r.function_labels();
+	      for (j=0; j<fn_labels.size(); ++j, ++idx)
+	        respNames[idx] = strdup(fn_labels[j].c_str());
       }
     }
 

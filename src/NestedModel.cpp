@@ -81,7 +81,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
     numOptInterfEqCon
       = problem_db.get_sizet("responses.num_nonlinear_equality_constraints");
     optInterfaceResponse
-      = problem_db.get_response(SIMULATION_RESPONSE, currentVariables);
+      = Response::get_response(problem_db, SIMULATION_RESPONSE, currentVariables);
     optionalInterface = Interface::get_interface(problem_db);
     size_t num_fns = optInterfaceResponse.num_functions();
     numOptInterfPrimary = num_fns - numOptInterfIneqCon - numOptInterfEqCon;

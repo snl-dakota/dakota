@@ -35,54 +35,11 @@ typedef void(*DbCallbackFunctionPtr)(Dakota::ProblemDescDB* db, void *data_ptr);
     that is populated by a parser defined in a derived class.  When
     the parser reads a complete keyword, it populates a data class
     object (DataEnvironment, DataMethod, DataVariables, DataInterface, or
-    DataResponses) and, for all cases except environment, appends the
-    object to a linked list (dataMethodList, dataVariablesList,
-    dataInterfaceList, or dataResponsesList).  No environment linked list
-    is used since only one environment specification is allowed. */
+    DataResponses) */
 
 class ProblemDescDB
 {
-  //
-  //- Heading: Friends
-  //
-
-  /// Model requires access to get_variables() and get_response()
-  friend class Model;
-  /// SimulationModel requires access to get_interface()
-  friend class SimulationModel;
-  /// EnsembleSurrModel requires access to get_model()
-  friend class EnsembleSurrModel;
-  /// DataFitSurrModel requires access to get_iterator() and get_model()
-  friend class DataFitSurrModel;
-  /// NestedModel requires access to get_interface(), get_response(),
-  /// get_iterator(), and get_model()
-  friend class NestedModel;
-  friend class ActiveSubspaceModel;
-  friend class AdaptedBasisModel;
-  friend class RandomFieldModel;
-
-  /// Environment requires access to get_iterator()
-  friend class Environment;
-  /// Environment requires access to get_iterator()
-  friend class IteratorScheduler;
-
-  /// Iterator requires access to get_model()
-  friend class Iterator;
-  /// Iterator requires access to get_model()
-  friend class MetaIterator;
-  /// SeqHybridMetaIterator requires access to get_model()
-  friend class SeqHybridMetaIterator;
-  /// CollabHybridMetaIterator requires access to get_model()
-  friend class CollabHybridMetaIterator;
-  /// ConcurrentMetaIterator requires access to get_model()
-  friend class ConcurrentMetaIterator;
-  /// HierarchSurrBasedLocalMinimizer requires access to get_iterator()
-  friend class SurrBasedLocalMinimizer;
-  /// SurrBasedGlobalMinimizer requires access to get_iterator()
-  friend class SurrBasedGlobalMinimizer;
-  /// PEBBLMinimizer requires access to get_iterator()
-  friend class PebbldMinimizer;
-
+  
 public:
 
   //
@@ -431,11 +388,6 @@ private:
 
   // These functions avoid multiple instantiations of the same specification.
 
-  const Variables& get_variables();
-
-  /// retrieve an existing Response, if it exists, or instantiate a new one
-  const Response& get_response(short type, const Variables& vars);
-
   /// Used by the envelope constructor to instantiate the correct letter class
   std::shared_ptr<ProblemDescDB> get_db(ParallelLibrary& parallel_lib);
 
@@ -479,9 +431,6 @@ private:
   std::list<DataInterface>::iterator dataInterfaceIter;
   /// iterator identifying the active list node in dataResponsesList
   std::list<DataResponses>::iterator dataResponsesIter;
-
-  /// list of response objects, one for each responses specification
-  ResponseList responseList;
 
   /// prevents use of get_<type> retrieval and set_<type> update functions 
   /// prior to setting the list node for the active method specification
@@ -528,10 +477,6 @@ inline void ProblemDescDB::unlock()
 
 inline ParallelLibrary& ProblemDescDB::parallel_library() const
 { return (dbRep) ? dbRep->parallelLib : parallelLib; }
-
-
-inline ResponseList& ProblemDescDB::response_list()
-{ return (dbRep) ? dbRep->responseList : responseList; }
 
 inline std::string_view ProblemDescDB::method_id() const {
   return dbRep->dataMethodIter->dataMethodRep->idMethod;
