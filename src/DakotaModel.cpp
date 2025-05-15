@@ -45,10 +45,13 @@ size_t Model::noSpecIdNum = 0;
 
 std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db) {
 
-  ProblemDescDB* const study_ptr = &problem_db;
+  ProblemDescDB* const study_ptr = problem_db.get_rep().get();
 
   if(Model::modelCache.count(study_ptr) == 0) {
+    std::cout << "Model::get_model(): Study not in the cache\n";
     Model::modelCache[study_ptr] = std::list<std::shared_ptr<Model>>();
+  } else {
+    std::cout << "Model::get_model(): Study found in cache\n";
   }
 
   auto& study_cache = Model::modelCache[study_ptr];
@@ -64,15 +67,19 @@ std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db) {
   // >    model_ptr spec -> id_model must be defined
   // > no model_ptr spec -> id_model is ignored, model spec is last parsed
   auto id_model = problem_db.model_id();
-  if(id_model.empty())
+  if(id_model.empty()) {
+    std::cout << "Model::get_model(): model_id() is empty.\n";
     id_model = "NO_MODEL_ID";
+  }
   auto m_it
     = std::find_if(study_cache.begin(), study_cache.end(),
                    [&id_model](std::shared_ptr<Model> m) {return m->model_id() == id_model;});
   if (m_it == study_cache.end()) {
+    std::cout << "Model:get_model(): Model lookup failed.\n";
     study_cache.push_back(ModelUtils::get_model(problem_db));
     m_it = --study_cache.end();
   }
+  std::cout << "Model::get_model(): returning model of type " << (*m_it)->model_type() << std::endl;
   return *m_it;
 }
 
@@ -87,7 +94,7 @@ std::list<std::shared_ptr<Model>>& Model::model_cache(ProblemDescDB& problem_db)
 }
 
 void Model::remove_cached_model(const ProblemDescDB& problem_db) {
-  const ProblemDescDB* const study_ptr = &problem_db;
+  const ProblemDescDB* const study_ptr = problem_db.get_rep().get();
   Model::modelCache.erase(study_ptr);
 }
 

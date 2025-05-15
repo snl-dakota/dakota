@@ -29,7 +29,7 @@
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <string>
-
+#include "delete_study_components.hpp"
 
 //#define DEBUG
 //#define MPI_DEBUG
@@ -113,6 +113,7 @@ ProblemDescDB::~ProblemDescDB()
 {
   if (this == Dak_pddb)
     Dak_pddb = NULL;
+  delete_study_components(*this);
 }
 
 

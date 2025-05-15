@@ -373,7 +373,7 @@ String Iterator::submethod_enum_to_string(unsigned short submethod_enum)
 }
 
 std::shared_ptr<Iterator> Iterator::get_iterator(ProblemDescDB& problem_db) {
-  ProblemDescDB* const study_ptr = &problem_db;
+  ProblemDescDB* const study_ptr = problem_db.get_rep().get();
 
   if(Iterator::iteratorCache.count(study_ptr) == 0) {
     Iterator::iteratorCache[study_ptr] = std::list<std::shared_ptr<Iterator>>();
@@ -395,7 +395,7 @@ std::shared_ptr<Iterator> Iterator::get_iterator(ProblemDescDB& problem_db) {
 }
 
 std::shared_ptr<Iterator> Iterator::get_iterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model) {
-  const ProblemDescDB* const study_ptr = &problem_db;
+  const ProblemDescDB* const study_ptr = problem_db.get_rep().get();
   if(Iterator::iteratorCache.count(study_ptr) == 0) {
     Iterator::iteratorCache[study_ptr] = std::list<std::shared_ptr<Iterator>>();
   }
@@ -457,7 +457,7 @@ std::list<std::shared_ptr<Iterator>>& Iterator::iterator_cache(ProblemDescDB& pr
 
 
 void Iterator::remove_cached_iterator(const ProblemDescDB& problem_db) {
-  const ProblemDescDB* const study_ptr = &problem_db;
+  const ProblemDescDB* const study_ptr = problem_db.get_rep().get();
   Iterator::iteratorCache.erase(study_ptr);
 }
 

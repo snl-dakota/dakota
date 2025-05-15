@@ -189,6 +189,9 @@ public:
   /// @brief return the name of the currently selected model
   std::string_view model_id() const;
 
+  /// @brief return the dbRep
+  std::shared_ptr<ProblemDescDB> get_rep() const;
+
   // These functions get values out of the database.  A value is found by its
   // entry_name. Need a HashTable or other container with an efficient lookup
   // function here.
@@ -547,6 +550,10 @@ inline std::string_view ProblemDescDB::method_id() const {
 
 inline std::string_view ProblemDescDB::model_id() const {
   return dbRep->dataModelIter->dataModelRep->idModel;
+}
+
+inline std::shared_ptr<ProblemDescDB> ProblemDescDB::get_rep() const {
+  return dbRep;
 }
 
 inline size_t ProblemDescDB::get_db_method_node()
