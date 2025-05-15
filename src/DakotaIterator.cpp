@@ -446,7 +446,7 @@ std::shared_ptr<Iterator> Iterator::get_iterator(
 
 
 std::list<std::shared_ptr<Iterator>>& Iterator::iterator_cache(ProblemDescDB& problem_db) {
-  const ProblemDescDB* const study_ptr = &problem_db;
+  const ProblemDescDB* const study_ptr = problem_db.get_rep().get();
   try {
     return Iterator::iteratorCache.at(study_ptr);
   } catch(std::out_of_range) {

@@ -189,6 +189,10 @@ public:
   /// @brief return the name of the currently selected model
   std::string_view model_id() const;
 
+  /// @brief return the name of the currently selected interface
+  std::string_view interface_id() const;
+
+
   /// @brief return the dbRep
   std::shared_ptr<ProblemDescDB> get_rep() const;
 
@@ -430,8 +434,7 @@ private:
   // These functions avoid multiple instantiations of the same specification.
 
   const Variables& get_variables();
-  /// retrieve an existing Interface, if it exists, or instantiate a new one
-  const std::shared_ptr<Interface> get_interface();
+
   /// retrieve an existing Response, if it exists, or instantiate a new one
   const Response& get_response(short type, const Variables& vars);
 
@@ -481,8 +484,6 @@ private:
 
   /// list of variables objects, one for each variables specification
   VariablesList variablesList;
-  /// list of interface objects, one for each interface specification
-  InterfaceList interfaceList;
   /// list of response objects, one for each responses specification
   ResponseList responseList;
 
@@ -537,10 +538,6 @@ inline VariablesList& ProblemDescDB::variables_list()
 { return (dbRep) ? dbRep->variablesList : variablesList; }
 
 
-inline InterfaceList& ProblemDescDB::interface_list()
-{ return (dbRep) ? dbRep->interfaceList : interfaceList; }
-
-
 inline ResponseList& ProblemDescDB::response_list()
 { return (dbRep) ? dbRep->responseList : responseList; }
 
@@ -550,6 +547,10 @@ inline std::string_view ProblemDescDB::method_id() const {
 
 inline std::string_view ProblemDescDB::model_id() const {
   return dbRep->dataModelIter->dataModelRep->idModel;
+}
+
+inline std::string_view ProblemDescDB::interface_id() const {
+  return dbRep->dataInterfaceIter->dataIfaceRep->idInterface;
 }
 
 inline std::shared_ptr<ProblemDescDB> ProblemDescDB::get_rep() const {

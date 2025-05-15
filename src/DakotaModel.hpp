@@ -58,6 +58,9 @@ class Model
 {
 
 public:
+
+  // Functions and data for instantiating and caching Models
+
   /// @brief retrieve an existing Model, if it exists, or instantiate a new one
   /// @return pointer to existing or newly created Model
   static std::shared_ptr<Model> get_model(ProblemDescDB& problem_db);

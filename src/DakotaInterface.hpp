@@ -39,16 +39,28 @@ class SharedApproxData;
 /** The Interface class hierarchy provides the part of a Model that is
     responsible for mapping a set of Variables into a set of Responses.
     The mapping is performed using either a simulation-based application
-    interface or a surrogate-based approximation interface.  For memory
-    efficiency and enhanced polymorphism, the interface hierarchy
-    employs the "letter/envelope idiom" (see Coplien "Advanced C++",
-    p. 133), for which the base class (Interface) serves as the envelope
-    and one of the derived classes (selected in Interface::get_interface())
-    serves as the letter. */
+    interface or a surrogate-based approximation interface. */
 
 class Interface
 {
 public:
+
+  // Functions and data for instantiating and caching Interfaces
+
+  /// @brief retrieve an existing Interface, if it exists, or instantiate a new one
+  /// @return pointer to existing or newly created Interface
+  static std::shared_ptr<Interface> get_interface(ProblemDescDB& problem_db);
+
+  /// @brief return the interface cache for the study
+  /// @param problem_db 
+  /// @return interface cache
+  static std::list<std::shared_ptr<Interface>>& interface_cache(ProblemDescDB& problem_db);
+
+  /// @brief remove a cached Interface for the study
+  static void remove_cached_interface(const ProblemDescDB& problem_db);
+
+  /// @brief Cache of Interfaces created for each study
+  static std::map<const ProblemDescDB*, std::list<std::shared_ptr<Interface>>> interfaceCache;
 
   //
   //- Heading: Constructors, destructor, assignment operator

@@ -982,58 +982,6 @@ const Variables& ProblemDescDB::get_variables()
 }
 
 
-const std::shared_ptr<Interface> ProblemDescDB::get_interface()
-{
-  // ProblemDescDB::get_<object> functions operate at the envelope level
-  // so that any passing of *this provides the envelope object.
-  if (!dbRep) {
-    Cerr << "Error: ProblemDescDB::get_interface() called for letter object."
-	 << std::endl;
-    abort_handler(PARSE_ERROR);
-  }
-
-  // Have to worry about loss of encapsulation and use of context _above_ this
-  // specification, i.e., any dependence on iterator/model/variables/responses
-  // specifications (dependence on the environment specification is OK since
-  // there is only one):
-  // > Interface: method.output
-  // > ApplicationInterface: responses.gradient_type, responses.hessian_type,
-  //     responses.gradients.mixed.id_analytic
-  // > DakotaInterface: responses.labels
-
-  // ApproximationInterfaces and related classes are OK, since they are
-  // instantiated with assign_rep() for each unique DataFitSurrModel instance:
-  // > ApproximationInterface: model.surrogate.function_ids
-  // > Approximation: method.output, model.surrogate.type,
-  //     model.surrogate.derivative_usage
-  // > SurfpackApproximation: model.surrogate.polynomial_order,
-  //     model.surrogate.kriging_correlations
-  // > TaylorApproximation: model.surrogate.truth_model_pointer,
-  //     responses.hessian_type
-  // > OrthogPolyApproximation: method.nond.expansion_{terms,order}
-
-  // The DB list nodes are set prior to calling get_interface():
-  // >    interface_ptr spec -> id_interface must be defined
-  // > no interface_ptr spec -> id_interf ignored, interf spec = last parsed
-  String id_interface
-    = dbRep->dataInterfaceIter->dataIfaceRep->idInterface;
-  if(id_interface.empty())
-    id_interface = "NO_ID";
-
-  InterfLIter i_it
-    = std::find_if(dbRep->interfaceList.begin(), dbRep->interfaceList.end(),
-        [&id_interface](const std::shared_ptr<Interface>& interface) {
-          return interface->interface_id() == id_interface;
-        });
-  if (i_it == dbRep->interfaceList.end()) {
-    auto new_interface = InterfaceUtils::get_interface(*this);
-    dbRep->interfaceList.push_back(new_interface);
-    i_it = --dbRep->interfaceList.end();
-  }
-  return *i_it;
-}
-
-
 const Response& ProblemDescDB::get_response(short type, const Variables& vars)
 {
   // ProblemDescDB::get_<object> functions operate at the envelope level
