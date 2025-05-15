@@ -16,15 +16,11 @@
 //- Checked by:
 
 #include "dakota_system_defs.hpp"
-#include "interface_utils.hpp"
-#include "iterator_utils.hpp"
-#include "model_utils.hpp"
+#include "dakota_data_util.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "NIDRProblemDescDB.hpp"
 #include "ProgramOptions.hpp"
-#include "DakotaIterator.hpp"
-#include "DakotaInterface.hpp"
 #include "WorkdirHelper.hpp"  // bfs utils and prepend_preferred_env_path
 #include <boost/bind.hpp>
 #include <boost/function.hpp>

@@ -133,11 +133,6 @@ public:
   /// return the parallelLib reference
   ParallelLibrary& parallel_library() const;
 
-  /// return a list of all Interface objects that have been instantiated
-  InterfaceList& interface_list();
-  /// return a list of all Response objects that have been instantiated
-  ResponseList& response_list();
-
   /// @brief return the name of the currently selected method
   std::string_view method_id() const;
 

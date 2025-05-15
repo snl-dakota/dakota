@@ -36,6 +36,7 @@ namespace Dakota {
 #define ESTIMATE_MESSAGE_LENGTHS 4
 
 // forward declarations
+class Iterator;
 class ParallelLibrary;
 class Approximation;
 class SharedApproxData;
