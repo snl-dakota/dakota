@@ -3118,6 +3118,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
        ]
      ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ convergence_tolerance_type {0}
+      relative {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_RELATIVE)}
+      |
+      absolute {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)}
+     ]
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
     [ rng {0}
@@ -3205,6 +3210,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
        ]
      ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ convergence_tolerance_type {0}
+      relative {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_RELATIVE)}
+      |
+      absolute {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)}
+     ]
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
     [ rng {0}
@@ -3328,6 +3338,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
        ]
      ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ convergence_tolerance_type {0}
+      relative {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_RELATIVE)}
+      |
+      absolute {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)}
+     ]
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
     [ rng {0}
@@ -3446,6 +3461,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
        ]
      ]
     [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+    [ convergence_tolerance_type {0}
+      relative {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_RELATIVE)}
+      |
+      absolute {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)}
+     ]
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
     [ rng {0}

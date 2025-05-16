@@ -551,13 +551,6 @@ private:
   ///   - max = take maximum sample allocation over QoIs for each level
   short qoiAggregation;
 
-	/// store the convergence_tolerance_type input specification, prior to run-time
-  /// Options right now:
-  ///   - relative = computes reference tolerance in first iteration and sets convergence_tolerance as 
-  ///								 reference tolerance * convergence_tol
-  ///   - absolute = sets convergence tolerance from input
-  short convergenceTolType;
-
   /// store the convergence_tolerance_target input specification, prior to run-time
   /// Options right now:
   ///   - variance_constraint = minimizes cost for equality constraint on variance of estimator (rhs of constraint from convergenceTol)

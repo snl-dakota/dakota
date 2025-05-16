@@ -194,6 +194,7 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db,
 NonDMultilevBLUESampling::~NonDMultilevBLUESampling()
 { }
 
+
 void NonDMultilevBLUESampling::pre_run()
 {
   NonDNonHierarchSampling::pre_run();
@@ -747,7 +748,8 @@ specify_nonlinear_constraints(RealVector& nln_ineq_lb, RealVector& nln_ineq_ub,
   switch (optSubProblemForm) {
   case N_GROUP_LINEAR_OBJECTIVE: // nonlinear accuracy constraint: ub on estvar
     nln_ineq_lb = -DBL_MAX;   // no lower bnd
-    nln_ineq_ub = std::log(convergenceTol * estVarMetric0);
+    nln_ineq_ub = (convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE) ?
+      std::log(convergenceTol) : std::log(convergenceTol * estVarMetric0);
     break;
   }
 }
@@ -892,8 +894,9 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
     if (pilotMgmtMode == ONLINE_PILOT ||
 	pilotMgmtMode == ONLINE_PILOT_PROJECTION) { // cache ref estVarIter0
       estimator_variances(soln.solution_variables(), estVarIter0);
-      MFSolutionData::update_estimator_variance_metric(estVarMetricType,
-	estVarMetricNormOrder, estVarIter0, estVarMetric0);
+      if (convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_RELATIVE)
+	MFSolutionData::update_estimator_variance_metric(estVarMetricType,
+	  estVarMetricNormOrder, estVarIter0, estVarMetric0);
     }
 
     if (no_solve)

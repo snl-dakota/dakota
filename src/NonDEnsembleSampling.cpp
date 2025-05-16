@@ -38,6 +38,8 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   mlmfIter(0), equivHFEvals(0.), // also reset in pre_run()
   //allocationTarget(problem_db.get_short("method.nond.allocation_target")),
   //qoiAggregation(problem_db.get_short("method.nond.qoi_aggregation")),
+  convergenceTolType(
+    problem_db.get_short("method.nond.convergence_tolerance_type")),
   estVarMetricType(
     problem_db.get_short("method.nond.estimator_variance_metric")),
   estVarMetricNormOrder(

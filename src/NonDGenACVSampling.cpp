@@ -58,11 +58,6 @@ NonDGenACVSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
       Cerr << "Error: unsupported qoi aggregation specification.\n";
       err_flag = true;
     }
-    if (problem_db.get_short("method.nond.convergence_tolerance_type") !=
-	CONVERGENCE_TOLERANCE_TYPE_RELATIVE) {
-      Cerr << "Error: unsupported convergence tol type specification.\n";
-      err_flag = true;
-    }
     if (problem_db.get_short("method.nond.convergence_tolerance_target") !=
 	CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT) {
       Cerr << "Error: unsupported convergence tol target specification.\n";
@@ -1437,7 +1432,8 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     else if (optSubProblemForm == N_MODEL_LINEAR_OBJECTIVE) {
       // nonlinear constraint on estvar
       nln_ineq_lb = -DBL_MAX;  // no lower bnd
-      nln_ineq_ub = std::log(convergenceTol * estVarMetric0);
+      nln_ineq_ub = (convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)
+	? std::log(convergenceTol) : std::log(convergenceTol * estVarMetric0);
     }
     break;
   }

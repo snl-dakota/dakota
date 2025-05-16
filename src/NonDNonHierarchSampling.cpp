@@ -1075,7 +1075,8 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     else if (optSubProblemForm == N_MODEL_LINEAR_OBJECTIVE) {
       // nonlinear inequality constraint on estvar
       nln_ineq_lb = -DBL_MAX;  // no lower bnd
-      nln_ineq_ub = std::log(convergenceTol * estVarMetric0);
+      nln_ineq_ub = (convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)
+	? std::log(convergenceTol) : std::log(convergenceTol * estVarMetric0);
     }
     break;
   }
@@ -1987,10 +1988,13 @@ nh_penalty_merit(const RealVector& cd_vars, const RealVector& fn_vals)
   // Keep accuracy in log space and normalize both cost and log-accuracy
 
   switch (optSubProblemForm) {
-  case N_MODEL_LINEAR_OBJECTIVE:  case N_GROUP_LINEAR_OBJECTIVE:
-    return nh_penalty_merit(fn_vals[0], fn_vals[1],
-			    std::log(convergenceTol * estVarMetric0));
+  case N_MODEL_LINEAR_OBJECTIVE:  case N_GROUP_LINEAR_OBJECTIVE: {
+    Real nln_ineq_ub =
+      (convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE) ?
+      std::log(convergenceTol) : std::log(convergenceTol * estVarMetric0);
+    return nh_penalty_merit(fn_vals[0], fn_vals[1], nln_ineq_ub);
     break;
+  }
   case N_MODEL_LINEAR_CONSTRAINT:
     return
       nh_penalty_merit(fn_vals[0], linear_model_cost(cd_vars), activeBudget);
@@ -2023,10 +2027,14 @@ Real NonDNonHierarchSampling::nh_penalty_merit(const MFSolutionData& soln)
   Real estvar_metric  = soln.estimator_variance_metric(),
        equiv_hf_alloc = soln.equivalent_hf_allocation();
   switch (optSubProblemForm) {
-  case N_MODEL_LINEAR_OBJECTIVE:  case N_GROUP_LINEAR_OBJECTIVE:
+  case N_MODEL_LINEAR_OBJECTIVE:  case N_GROUP_LINEAR_OBJECTIVE: {
+    Real nln_ineq_ub =
+      (convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE) ?
+      std::log(convergenceTol) : std::log(convergenceTol * estVarMetric0);
     return nh_penalty_merit(equiv_hf_alloc, std::log(estvar_metric),
-			    std::log(convergenceTol * estVarMetric0));
+			    nln_ineq_ub);
     break;
+  }
   default:
     return
       nh_penalty_merit(std::log(estvar_metric), equiv_hf_alloc, activeBudget);
@@ -2383,9 +2391,7 @@ Real NonDNonHierarchSampling::direct_penalty_merit(const RealVector& cd_vars)
   bool protect_numerics = (lin_ineq_viol > 0.); // RATIO_NUDGE reflected in viol
   Real obj, constr, constr_u_bnd, log_metric;
   if (protect_numerics) {
-    //const RealVector& estvar0 = nonHierSampInstance->estVarIter0;
-    log_metric = //(estvar0.empty()) ? // offline modes
-      std::log(Pecos::LARGE_NUMBER);// : std::log(estVarMetric0);
+    log_metric = std::log(Pecos::LARGE_NUMBER);
     if (nonHierSampInstance->outputLevel >= DEBUG_OUTPUT)
       Cout << "Protect numerics: bypass EstVar computation due to linear ineq "
 	   << "constraint violation." << std::endl;
@@ -2430,8 +2436,11 @@ Real NonDNonHierarchSampling::direct_penalty_merit(const RealVector& cd_vars)
     break;
   case N_MODEL_LINEAR_OBJECTIVE:  case N_GROUP_LINEAR_OBJECTIVE:
     constr       = log_metric;
-    constr_u_bnd = std::log(nonHierSampInstance->convergenceTol *
-			    nonHierSampInstance->estVarMetric0);
+    constr_u_bnd = (nonHierSampInstance->convergenceTolType ==
+		    CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE) ?
+      std::log(nonHierSampInstance->convergenceTol) :
+      std::log(nonHierSampInstance->convergenceTol *
+	       nonHierSampInstance->estVarMetric0);
     break;
   }
 

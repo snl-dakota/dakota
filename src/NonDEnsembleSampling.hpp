@@ -237,6 +237,12 @@ protected:
   /// variances for HF truth (length numFunctions)
   RealVector varH;
 
+  ///  the convergence_tolerance_type input specification with options:
+  ///   - relative = computes reference tolerance in first iteration and sets
+  ///     convergence_tolerance as reference tolerance * convergence_tol
+  ///   - absolute = sets convergence tolerance from input
+  short convergenceTolType;
+
   /// initial estimator variance from shared pilot (no CV reduction)
   RealVector estVarIter0;
 

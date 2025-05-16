@@ -38,8 +38,6 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   useTargetVarianceOptimizationFlag(
     problem_db.get_bool("method.nond.allocation_target.optimization")),
   qoiAggregation(problem_db.get_short("method.nond.qoi_aggregation")),
-  convergenceTolType(
-    problem_db.get_short("method.nond.convergence_tolerance_type")),
   convergenceTolTarget(
     problem_db.get_short("method.nond.convergence_tolerance_target"))
 {
