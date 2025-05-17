@@ -715,50 +715,54 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
     compute_LH_statistics(sum_L_baselineH[1], sum_H[1], sum_LL[1], sum_LH[1],
 			  sum_HH, N_H_actual, varH, covLL, covLH, approx_set);
 
-    precompute_allocations(); // metrics not dependent on DAG
-    for (activeModelSetIter  = modelDAGs.begin();
-	 activeModelSetIter != modelDAGs.end(); ++activeModelSetIter) {
-      const UShortArray& approx_set = activeModelSetIter->first;
-      const UShortArraySet& dag_set = activeModelSetIter->second;
-      soln_key.first = approx_set;
-      for (activeDAGIter  = dag_set.begin();
-	   activeDAGIter != dag_set.end(); ++activeDAGIter) {
-	// sample set definitions are enabled by reversing the DAG direction:
-	const UShortArray& active_dag = *activeDAGIter;
-	soln_key.second  = active_dag;
-	if (outputLevel >= QUIET_OUTPUT) {
-	  Cout << "Evaluating active DAG:\n";
-	  print_dag(active_dag, approx_set);
-	}
-	generate_reverse_dag(approx_set, active_dag);
-	// Use default ordering in root list, prior to final eval ratios soln.
-	// Sufficient for finding best DAG, but not for approx_increments().
-	unroll_reverse_dag_from_root(numApprox, orderedRootList);
-	// compute the LF/HF evaluation ratios from shared samples and compute
-	// ratio of MC and ACV mean sq errors (which incorporates anticipated
-	// variance reduction from application of avg_eval_ratios).
-	MFSolutionData& soln = dagSolns[soln_key];
-	compute_allocations(soln);
-	update_best(soln);// store state for restoration
-	//reset_acv(); // reset state for next ACV execution
-      }
-    }
-    print_best();
-    soln_key.first  =  bestModelSetIter->first;
-    soln_key.second = *bestDAGIter;
-    if (truthFixedByPilot) numSamples = 0;
+    bool no_solve = precompute_allocations(); // independent of DAG
+    if (no_solve) no_solve_solution();
     else {
-      hf_target = dagSolns[soln_key].solution_reference();
-      avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
-      numSamples = one_sided_delta(avg_N_H, hf_target, relaxFactor);
+      for (activeModelSetIter  = modelDAGs.begin();
+	   activeModelSetIter != modelDAGs.end(); ++activeModelSetIter) {
+	const UShortArray& approx_set = activeModelSetIter->first;
+	const UShortArraySet& dag_set = activeModelSetIter->second;
+	soln_key.first = approx_set;
+	for (activeDAGIter  = dag_set.begin();
+	     activeDAGIter != dag_set.end(); ++activeDAGIter) {
+	  // sample set definitions are enabled by reversing the DAG direction:
+	  const UShortArray& active_dag = *activeDAGIter;
+	  soln_key.second  = active_dag;
+	  if (outputLevel >= QUIET_OUTPUT) {
+	    Cout << "Evaluating active DAG:\n";
+	    print_dag(active_dag, approx_set);
+	  }
+	  generate_reverse_dag(approx_set, active_dag);
+	  // Use default ordering in root list, prior to final eval ratios soln.
+	  // Sufficient for finding best DAG, but not for approx_increments().
+	  unroll_reverse_dag_from_root(numApprox, orderedRootList);
+	  // compute the LF/HF evaluation ratios from shared samples and compute
+	  // ratio of MC and ACV mean sq errors (which incorporates anticipated
+	  // variance reduction from application of avg_eval_ratios).
+	  MFSolutionData& soln = dagSolns[soln_key];
+	  compute_allocations(soln);
+	  update_best(soln);// store state for restoration
+	  //reset_acv(); // reset state for next ACV execution
+	}
+      }
+
+      print_best();
+      soln_key.first  =  bestModelSetIter->first;
+      soln_key.second = *bestDAGIter;
+      if (truthFixedByPilot) numSamples = 0;
+      else {
+	hf_target = dagSolns[soln_key].solution_reference();
+	avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
+	numSamples = one_sided_delta(avg_N_H, hf_target, relaxFactor);
+      }
+      ++mlmfIter;  advance_relaxation();
+      // prune models discarded by the best soln from the completed iteration.
+      // This avoids continuing to invest in covariance refinement for discarded
+      // models, which is inconsistent with the budget from the optimal solution
+      // over the best model subset (retention results in budget overshoot).
+      if (modelSelectType)
+	prune_ensembles(soln_key.first);
     }
-    ++mlmfIter;  advance_relaxation();
-    // prune models discarded by the best soln from the completed iteration.
-    // This avoids continuing to invest in covariance refinement for discarded
-    // models, which is inconsistent with the budget from the optimal solution
-    // over the best model subset (retention results in budget overshoot).
-    if (modelSelectType)
-      prune_ensembles(soln_key.first);
   }
   restore_best();
 
@@ -809,8 +813,10 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
   inflate(N_H_alloc, NApproxAlloc); // used in active_budget()
-  precompute_allocations(); // compute metrics not dependent on active DAG
   std::pair<UShortArray, UShortArray> soln_key;
+
+  // no need for "no_solve" logic in offline case
+  precompute_allocations(); // metrics not dependent on DAG
   for (activeModelSetIter  = modelDAGs.begin();
        activeModelSetIter != modelDAGs.end(); ++activeModelSetIter) {
     const UShortArray& approx_set = activeModelSetIter->first;
@@ -912,36 +918,40 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
   // -----------------------------------
   // Compute "online" sample increments:
   // -----------------------------------
-  precompute_allocations(); // compute metrics not dependent on active DAG
   std::pair<UShortArray, UShortArray> soln_key;
-  for (activeModelSetIter  = modelDAGs.begin();
-       activeModelSetIter != modelDAGs.end(); ++activeModelSetIter) {
-    const UShortArray&  approx_set = activeModelSetIter->first;
-    const UShortArraySet& dag_set = activeModelSetIter->second;
-    soln_key.first = approx_set;
-    for (activeDAGIter  = dag_set.begin();
-	 activeDAGIter != dag_set.end(); ++activeDAGIter) {
-      // sample set definitions are enabled by reversing the DAG direction:
-      const UShortArray& active_dag = *activeDAGIter;
-      soln_key.second  = active_dag;
-      if (outputLevel >= QUIET_OUTPUT) {
-	Cout << "Evaluating active DAG:\n";
-	print_dag(active_dag, approx_set);
+  bool no_solve = precompute_allocations(); // independent of DAG
+  if (no_solve) no_solve_solution();
+  else {
+    for (activeModelSetIter  = modelDAGs.begin();
+	 activeModelSetIter != modelDAGs.end(); ++activeModelSetIter) {
+      const UShortArray&  approx_set = activeModelSetIter->first;
+      const UShortArraySet& dag_set = activeModelSetIter->second;
+      soln_key.first = approx_set;
+      for (activeDAGIter  = dag_set.begin();
+	   activeDAGIter != dag_set.end(); ++activeDAGIter) {
+	// sample set definitions are enabled by reversing the DAG direction:
+	const UShortArray& active_dag = *activeDAGIter;
+	soln_key.second  = active_dag;
+	if (outputLevel >= QUIET_OUTPUT) {
+	  Cout << "Evaluating active DAG:\n";
+	  print_dag(active_dag, approx_set);
+	}
+	generate_reverse_dag(approx_set, active_dag);
+	// Use default ordering in root list, prior to final eval ratios soln.
+	// Sufficient for finding best DAG, but not for approx_increments().
+	unroll_reverse_dag_from_root(numApprox, orderedRootList);
+	// compute the LF/HF evaluation ratios from shared samples and compute
+	// ratio of MC and ACV mean sq errors (which incorporates anticipated
+	// variance reduction from application of avg_eval_ratios).
+	MFSolutionData& soln = dagSolns[soln_key];
+	compute_allocations(soln);
+	update_best(soln); // store state for restoration
+	//reset_acv(); // reset state for next ACV execution
       }
-      generate_reverse_dag(approx_set, active_dag);
-      // Use default ordering in root list, prior to final eval ratios soln.
-      // Sufficient for finding best DAG, but not for approx_increments().
-      unroll_reverse_dag_from_root(numApprox, orderedRootList);
-      // compute the LF/HF evaluation ratios from shared samples and compute
-      // ratio of MC and ACV mean sq errors (which incorporates anticipated
-      // variance reduction from application of avg_eval_ratios).
-      MFSolutionData& soln = dagSolns[soln_key];
-      compute_allocations(soln);
-      update_best(soln); // store state for restoration
-      //reset_acv(); // reset state for next ACV execution
     }
+    print_best();  ++mlmfIter;
   }
-  print_best();  restore_best();  ++mlmfIter;
+  restore_best();
 
   // No LF increments or final moments for pilot projection
   soln_key.first  = activeModelSetIter->first;
@@ -954,6 +964,49 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
   // No need for updating estimator variance given deltaNActualHF since
   // NonDNonHierarchSampling::ensemble_numerical_solution() recovers N*
   // from the numerical solve and computes projected estVariance{s,Ratios}
+}
+
+
+void NonDGenACVSampling::no_solve_solution()
+{
+  numSamples = 0; // terminate online iteration
+
+  if (mlmfIter == 0) { // default to peer DAG with all models
+    UShortArray peer_dag;  peer_dag.assign(numApprox, numApprox); // peer DAG
+    std::pair<UShortArray, UShortArray> soln_key(fullApproxSet, peer_dag);
+    MFSolutionData& soln = dagSolns[soln_key]; // create new if necessary
+
+    std::map<UShortArray, UShortArraySet>::iterator m_it;
+    UShortArraySet::iterator d_it;
+
+    m_it = modelDAGs.find(fullApproxSet);
+    if (m_it == modelDAGs.end()) { // should not happen
+      std::pair<UShortArray, UShortArraySet>
+	soln_set(fullApproxSet, UShortArraySet());
+      m_it = modelDAGs.insert(soln_set).first;
+      UShortArraySet& dag_set = m_it->second;
+      d_it = dag_set.insert(peer_dag).first;
+    }
+    else {
+      UShortArraySet& dag_set = m_it->second;
+      d_it = dag_set.find(peer_dag);
+      if (d_it == dag_set.end())
+	d_it = dag_set.insert(peer_dag).first;
+    }
+    bestModelSetIter = m_it;  bestDAGIter = d_it;
+
+    RealVector avg_eval_ratios(numApprox, false);  avg_eval_ratios = 1.;
+    // For r_i = 1, C_G,c_g = 0 --> enforce linear constr based on curr DAG
+    enforce_augmented_linear_ineq_constraints(avg_eval_ratios, fullApproxSet,
+					      orderedRootList);
+    size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
+    Real avg_N_H = (backfillFailures) ?
+      average(NLevActual[hf_form_index][hf_lev_index]) :
+      NLevAlloc[hf_form_index][hf_lev_index];
+    soln.anchored_solution_ratios(avg_eval_ratios, avg_N_H);
+    no_solve_variances(soln);
+  }
+  // else leave best soln at previous iters and values
 }
 
 
@@ -1095,15 +1148,26 @@ genacv_raw_moments(const IntRealMatrixMap& sum_L_covar,
 }
 
 
-void NonDGenACVSampling::precompute_allocations()
+bool NonDGenACVSampling::precompute_allocations()
 {
-  if (mlmfIter == 0 && ( pilotMgmtMode == ONLINE_PILOT ||
-			 pilotMgmtMode == ONLINE_PILOT_PROJECTION) )
-    cache_mc_reference();// {estVar,numH}Iter0, estVarMetric0
-
   // reset for each search over model sets and DAGs; otherwise previous
-  // best could hide new best from more resolved covariances
+  // best can hide new best (new iter using more resolved covariances)
   meritFnStar = DBL_MAX;
+
+  bool no_solve = (maxFunctionEvals != SZ_MAX &&
+		   equivHFEvals >= (Real)maxFunctionEvals);
+  if (mlmfIter == 0 && ( pilotMgmtMode == ONLINE_PILOT ||
+			 pilotMgmtMode == ONLINE_PILOT_PROJECTION) ) {
+    cache_mc_reference();// {estVar,numH}Iter0, estVarMetric0
+    if (convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_RELATIVE)
+      no_solve = (no_solve || convergenceTol >= 1.);
+    else
+      no_solve = (no_solve || estVarMetric0  <= convergenceTol);
+  }
+  // Note: offline pilot can support absolute conv tol during numeric solve,
+  // but not in advance for no_solve since estVarMetric0 would be oracle value
+
+  return no_solve;
 }
 
 
@@ -1121,26 +1185,13 @@ void NonDGenACVSampling::compute_allocations(MFSolutionData& soln)
   update_model_groups(); // no approx sequence at this point
   update_model_group_costs();
 
-  bool budget_constrained = (maxFunctionEvals != SZ_MAX), budget_exhausted
-    = (budget_constrained && equivHFEvals >= (Real)maxFunctionEvals),
-    no_solve = (budget_exhausted || convergenceTol >= 1.); // bypass opt solve
   const UShortArray& approx_set = activeModelSetIter->first;
-
   if (mlmfIter == 0) {
+
     size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
     SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
     size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
     Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
-
-    if (no_solve) { // no need for solve
-      size_t num_approx = approx_set.size();
-      RealVector avg_eval_ratios(num_approx, false);  avg_eval_ratios = 1.;
-      // For r_i = 1, C_G,c_g = 0 --> enforce linear constr based on current DAG
-      enforce_augmented_linear_ineq_constraints(avg_eval_ratios, approx_set,
-						orderedRootList);
-      soln.anchored_solution_ratios(avg_eval_ratios, avg_N_H);
-      no_solve_variances(soln);  numSamples = 0;  return;
-    }
 
     // Run a competition among related analytic approaches (MFMC or pairwise
     // CVMC) for best initial guess, where each initial gues may additionally
@@ -1164,8 +1215,6 @@ void NonDGenACVSampling::compute_allocations(MFSolutionData& soln)
     }
   }
   else { // subsequent iterations
-    if (no_solve) // leave soln at previous values
-      { numSamples = 0; return; }
 
     // no scaling needed from prev soln (as in NonDLocalReliability) since
     // updated avg_N_H now includes allocation from previous solution and

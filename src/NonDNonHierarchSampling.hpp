@@ -1499,9 +1499,8 @@ inline void NonDNonHierarchSampling::cache_mc_reference()
   // estVarMetric0) used in accuracy constraint bounds.  It does not
   // update the bound for a runtime change in the max metric_index, which
   // would require moving the variable bound value inside the constraint.
-  if (convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_RELATIVE)
-    MFSolutionData::update_estimator_variance_metric(estVarMetricType,
-      estVarMetricNormOrder, estVarIter0, estVarMetric0);
+  MFSolutionData::update_estimator_variance_metric(estVarMetricType,
+    estVarMetricNormOrder, estVarIter0, estVarMetric0);
 }
 
 

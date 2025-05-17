@@ -341,7 +341,7 @@ private:
 
   /// compute epsilon^2/2 term for each qoi based on reference estimator_var0 and relative convergence tolereance
   void set_convergence_tol(const RealVector& estimator_var0_qoi, 
-  								const RealVector& cost, RealVector& eps_sq_div_2_qoi);
+    const RealVector& cost, RealVector& eps_sq_div_2_qoi);
 
   /// compute sample allocation delta based on a budget constraint
   void compute_sample_allocation_target(const RealMatrix& var_qoi, 
@@ -538,29 +538,33 @@ private:
   /// store the allocation_target input specification, prior to run-time
   /// Options right now:
   ///   - Mean = First moment (Mean)
-  ///   - Variance = Second moment (Variance or standard deviation depending on moments central or standard)
+  ///   - Variance = Second moment (Variance or standard deviation depending
+  ///     on moments central or standard)
   short allocationTarget;
 
-  /// option to switch on numerical optimization for solution of sample alloation
-  /// of allocationTarget Variance
+  /// option to switch on numerical optimization for solution of sample
+  /// allocation of allocationTarget Variance
   bool useTargetVarianceOptimizationFlag;
 
-  /// store the qoi_aggregation_norm input specification, prior to run-time
+  /// store the qoi_aggregation_norm input specification, prior to run-time.
   /// Options right now:
   ///   - sum = aggregate the variance over all QoIs, compute samples from that
   ///   - max = take maximum sample allocation over QoIs for each level
   short qoiAggregation;
 
-  /// store the convergence_tolerance_target input specification, prior to run-time
-  /// Options right now:
-  ///   - variance_constraint = minimizes cost for equality constraint on variance of estimator (rhs of constraint from convergenceTol)
-  ///   - cost_constraint = minizes variance of estimator for equality constraint on cost (rhs of constraint from convergenceTol)
+  /// store the convergence_tolerance_target input specification, prior to
+  /// run-time.  Options right now:
+  ///   - variance_constraint = minimizes cost for equality constraint on
+  ///     variance of estimator (rhs of constraint from convergenceTol)
+  ///   - cost_constraint = minizes variance of estimator for equality
+  ///     constraint on cost (rhs of constraint from convergenceTol)
   short convergenceTolTarget;
 
   RealVector convergenceTolVec;
 
-  /// "scalarization" response_mapping matrix applied to the mlmc sample allocation
-  /// when a scalarization, i.e. alpha_1 * mean + alpha_2 * sigma, is the target. 
+  /// "scalarization" response_mapping matrix applied to the mlmc sample
+  /// allocation when a scalarization, i.e. alpha_1 * mean + alpha_2 * sigma,
+  /// is the target. 
   RealMatrix scalarizationCoeffs;
 
   /// Helper data structure to store intermedia sample allocations
@@ -896,43 +900,44 @@ aggregate_mse_target_Qsum(RealMatrix& agg_var_qoi, const Sizet2DArray& N_l,
 
 
 inline void NonDMultilevelSampling::
-set_convergence_tol(const RealVector& estimator_var0_qoi, const RealVector& cost, RealVector& eps_sq_div_2_qoi)
+set_convergence_tol(const RealVector& estimator_var0_qoi,
+		    const RealVector& cost, RealVector& eps_sq_div_2_qoi)
 {
-	for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
-	  if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT){
+  for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
+    if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT){
       // compute epsilon target based on relative tolerance: total MSE = eps^2
       // which is equally apportioned (eps^2 / 2) among discretization MSE and
       // estimator variance (\Sum var_Y_l / N_l).  Since we do not know the
       // discretization error, we compute an initial estimator variance and
       // then seek to reduce it by a relative_factor <= 1.
-		  if(convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_RELATIVE){
-				eps_sq_div_2_qoi[qoi] = estimator_var0_qoi[qoi] * convergenceTolVec[qoi];
-      // compute epsilon target based on absolute tolerance which is given.
-			}else if(convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE){
-				eps_sq_div_2_qoi[qoi] = convergenceTolVec[qoi];
-			}else{
-	  	  Cerr << "NonDMultilevelSampling::set_convergence_tol: convergenceTolType is not known.\n";
-	  	  abort_handler(INTERFACE_ERROR);
-			}
-		}else if (convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT){
+      if(convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_RELATIVE){
+	eps_sq_div_2_qoi[qoi] = estimator_var0_qoi[qoi] * convergenceTolVec[qoi];
+	// compute epsilon target based on absolute tolerance which is given.
+      }else if(convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE){
+	eps_sq_div_2_qoi[qoi] = convergenceTolVec[qoi];
+      }else{
+	Cerr << "NonDMultilevelSampling::set_convergence_tol: convergenceTolType is not known.\n";
+	abort_handler(INTERFACE_ERROR);
+      }
+    }else if (convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT){
       //Relative cost with respect to convergenceTol evaluations on finest grid
-			if(convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_RELATIVE){
-				eps_sq_div_2_qoi[qoi] = cost[cost.length()-1] * convergenceTolVec[qoi]; 
-      //Absolute cost which is given.
-			}else if(convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE){
-				eps_sq_div_2_qoi[qoi] = convergenceTolVec[qoi]; 
-			}else{
-	  	  Cerr << "NonDMultilevelSampling::set_convergence_tol: convergenceTolType is not known.\n";
-	  	  abort_handler(INTERFACE_ERROR);
-			}
-		}else{
-  	  Cerr << "NonDMultilevelSampling::set_convergence_tol: convergenceTolTarget is not known.\n";
-  	  abort_handler(INTERFACE_ERROR);
-		}
+      if(convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_RELATIVE){
+	eps_sq_div_2_qoi[qoi] = cost[cost.length()-1] * convergenceTolVec[qoi]; 
+	//Absolute cost which is given.
+      }else if(convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE){
+	eps_sq_div_2_qoi[qoi] = convergenceTolVec[qoi]; 
+      }else{
+	Cerr << "NonDMultilevelSampling::set_convergence_tol: convergenceTolType is not known.\n";
+	abort_handler(INTERFACE_ERROR);
+      }
+    }else{
+      Cerr << "NonDMultilevelSampling::set_convergence_tol: convergenceTolTarget is not known.\n";
+      abort_handler(INTERFACE_ERROR);
+    }
 
-	}
-	if (outputLevel == DEBUG_OUTPUT)
-	       Cout << "Epsilon squared target per QoI = " << eps_sq_div_2_qoi << std::endl;
+  }
+  if (outputLevel == DEBUG_OUTPUT)
+    Cout << "Epsilon squared target per QoI = " << eps_sq_div_2_qoi << std::endl;
 }
 
 

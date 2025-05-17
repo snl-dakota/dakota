@@ -881,10 +881,8 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
   // related analytic solutions (iter == 0) or warm started from the previous
   // solutions (iter >= 1)
 
-  bool budget_constrained = (maxFunctionEvals != SZ_MAX), budget_exhausted
-    = (budget_constrained && equivHFEvals >= (Real)maxFunctionEvals),
-    no_solve = (budget_exhausted || convergenceTol >= 1.); // bypass opt solve
-
+  bool no_solve = (maxFunctionEvals != SZ_MAX &&
+		   equivHFEvals >= (Real)maxFunctionEvals); // budget exhausted
   if (mlmfIter == 0) {
     if (retainedModelGroups.empty()) soln.solution_variables(pilotSamples);
     else {
@@ -892,14 +890,19 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
       soln.solution_variables(x0);
     }
     if (pilotMgmtMode == ONLINE_PILOT ||
-	pilotMgmtMode == ONLINE_PILOT_PROJECTION) { // cache ref estVarIter0
+	pilotMgmtMode == ONLINE_PILOT_PROJECTION) { // cache estVarIter0
       estimator_variances(soln.solution_variables(), estVarIter0);
+      MFSolutionData::update_estimator_variance_metric(estVarMetricType,
+	estVarMetricNormOrder, estVarIter0, estVarMetric0);
       if (convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_RELATIVE)
-	MFSolutionData::update_estimator_variance_metric(estVarMetricType,
-	  estVarMetricNormOrder, estVarIter0, estVarMetric0);
+	no_solve = (no_solve || convergenceTol >= 1.);
+      else
+	no_solve = (no_solve || estVarMetric0  <= convergenceTol);
     }
+    // Note: offline pilot can support absolute conv tol during numeric solve,
+    // but not in advance for no_solve since estVarMetric0 would be oracle value
 
-    if (no_solve)
+    if (no_solve) // bypass numerical solution
       { no_solve_variances(soln); delta_N_G.assign(numGroups, 0); return; }
 
     // Run a competition among related analytic approaches (MFMC or pairwise

@@ -141,9 +141,11 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
     // relative accuracy control with convergenceTol is problematic since
     // the reference EstVar comes from offline eval with Oracle/overkill N.
     // Could support an absolute tolerance, but error for now.
-    if (maxFunctionEvals == SZ_MAX) {
-      Cerr << "Error: evaluation budget required for offline projection mode."
-	   << std::endl;
+    if (maxFunctionEvals   == SZ_MAX &&
+	convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_RELATIVE) {
+      Cerr << "Error: accuracy-constrained formulation for offline projection "
+	   << "mode\n       requires use of an absolute convergence tolerance "
+	   << "(relative not supported)." << std::endl;
       abort_handler(METHOD_ERROR);
     }
     break;
@@ -157,9 +159,11 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
     // convergenceTol option is problematic since the reference EstVar
     // comes from offline eval with Oracle/overkill N.  Could support an
     // absolute rather than relative tolerance, but error for now.
-    if (maxFunctionEvals == SZ_MAX) {
-      Cerr << "Error: evaluation budget required for offline pilot mode."
-	   << std::endl;
+    if (maxFunctionEvals   == SZ_MAX &&
+	convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_RELATIVE) {
+      Cerr << "Error: accuracy-constrained formulation for offline pilot mode"
+	   << "\n       requires use of an absolute convergence tolerance "
+	   << "(relative not supported)." << std::endl;
       abort_handler(METHOD_ERROR);
     }
     if (!finalStatsType) finalStatsType = QOI_STATISTICS; // mode default

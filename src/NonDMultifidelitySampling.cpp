@@ -203,7 +203,7 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   compute_allocations(rho2LH, varH, N_H_actual, sequenceCost, mfmcSolnData);
   ++mlmfIter;
 
-  // estVarIter0 no longer used for offline mode
+  // estVarIter0 not used for offline mode
   //cache_mc_reference();
 
   // -----------------------------------
@@ -252,6 +252,7 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
   RealVector sum_H(numFunctions), sum_HH(numFunctions);
   RealMatrix var_L, sum_L(numFunctions, numApprox),
     sum_LL(numFunctions, numApprox), sum_LH(numFunctions, numApprox);
+
   // ----------------------------------------------------
   // Evaluate shared increment and increment accumulators
   // ----------------------------------------------------
@@ -273,14 +274,14 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
     // averaged over QoI.  This includes updating varH and rho2LH.
     compute_LH_correlation(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual,
 			   var_L, varH, rho2LH);
+    // estVarIter0 only uses HF pilot since CV terms (sum_L_shared / N_shared
+    // - sum_L_refined / N_refined) cancel out prior to sample refinement.
+    cache_mc_reference();
   }
 
   // --------------------------
   // Compute evaluation ratios:
   // --------------------------
-  // estVarIter0 only uses HF pilot since CV terms (sum_L_shared / N_shared
-  // - sum_L_refined / N_refined) cancel out prior to sample refinement.
-  cache_mc_reference();
   // compute r* from rho2 and cost
   compute_allocations(rho2LH, varH, N_H_actual, sequenceCost, mfmcSolnData);
   ++mlmfIter;
@@ -1212,12 +1213,19 @@ void NonDMultifidelitySampling::
 mfmc_numerical_solution(const RealMatrix& rho2_LH, const RealVector& cost,
 			MFSolutionData& soln)
 {
-  bool budget_constrained = (maxFunctionEvals != SZ_MAX), budget_exhausted
-    = (budget_constrained && equivHFEvals >= (Real)maxFunctionEvals),
-    no_solve = (budget_exhausted || convergenceTol >= 1.); // bypass opt solve
+  bool budget_constrained = (maxFunctionEvals != SZ_MAX),
+    no_solve = (budget_constrained && equivHFEvals >= (Real)maxFunctionEvals);
 
   if (mlmfIter == 0) {
 
+    if (pilotMgmtMode == ONLINE_PILOT ||
+	pilotMgmtMode == ONLINE_PILOT_PROJECTION) {
+      if (convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_RELATIVE)
+	no_solve = (no_solve || convergenceTol >= 1.);
+      else
+	no_solve = (no_solve || estVarMetric0  <= convergenceTol);
+    }
+    
     size_t hf_form_index, hf_lev_index;
     hf_indices(hf_form_index, hf_lev_index);
     SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];

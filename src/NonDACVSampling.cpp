@@ -573,15 +573,19 @@ void NonDACVSampling::compute_allocations(MFSolutionData& soln)
   // related analytic solutions (iter == 0) or warm started from the previous
   // solutions (iter >= 1)
 
-  bool budget_constrained = (maxFunctionEvals != SZ_MAX), budget_exhausted
-    = (budget_constrained && equivHFEvals >= (Real)maxFunctionEvals),
-    no_solve = (budget_exhausted || convergenceTol >= 1.); // bypass opt solve
-
+  bool no_solve = (maxFunctionEvals != SZ_MAX &&
+		   equivHFEvals >= (Real)maxFunctionEvals); // budget exhausted
   if (mlmfIter == 0) {
-    bool online = (pilotMgmtMode == ONLINE_PILOT ||
-		   pilotMgmtMode == ONLINE_PILOT_PROJECTION);
-    if (online)
+    if (pilotMgmtMode == ONLINE_PILOT ||
+	pilotMgmtMode == ONLINE_PILOT_PROJECTION) {
       cache_mc_reference(); // {estVar,numH}Iter0, estVarMetric0
+      if (convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_RELATIVE)
+	no_solve = (no_solve || convergenceTol >= 1.);
+      else
+	no_solve = (no_solve || estVarMetric0  <= convergenceTol);
+    }
+    // Note: offline pilot can support absolute conv tol during numeric solve,
+    // but not in advance for no_solve since estVarMetric0 would be oracle value
 
     size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
     SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];

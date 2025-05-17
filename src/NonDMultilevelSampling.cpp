@@ -291,8 +291,11 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
       // MLMC estimator variance for final estvar reporting is not aggregated
       compute_ml_estimator_variance(var_Y, N_l, estVarIter0);
       // compute eps^2 / 2 = aggregated estvar0 * rel tol
-      if (!budget_constrained) // eps^2 / 2 = estvar0 * rel tol
-	eps_sq_div_2 = agg_estvar0 * convergenceTol;
+      if (!budget_constrained) { // eps^2 / 2 = estvar0 * relative tol
+        eps_sq_div_2 = convergenceTol;
+        if (convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_RELATIVE)// default
+	  eps_sq_div_2 *= agg_estvar0;
+      }
     }
 
     // update sample targets based on latest variance estimates
