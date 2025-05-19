@@ -31,14 +31,6 @@ size_t Interface::noSpecIdNum = 0;
 std::shared_ptr<Interface> Interface::get_interface(ProblemDescDB& problem_db) {
 
   ProblemDescDB* const study_ptr = problem_db.get_rep().get();
-
-  if(Interface::interfaceCache.count(study_ptr) == 0) {
-    std::cout << "Interface::get_interface(): Study not in the cache\n";
-    Interface::interfaceCache[study_ptr] = std::list<std::shared_ptr<Interface>>();
-  } else {
-    std::cout << "Interface::get_interface(): Study found in cache\n";
-  }
-
   auto& study_cache = Interface::interfaceCache[study_ptr];
 
   // Have to worry about loss of encapsulation and use of context _above_ this
@@ -66,18 +58,15 @@ std::shared_ptr<Interface> Interface::get_interface(ProblemDescDB& problem_db) {
   // > no interface_ptr spec -> id_interf ignored, interf spec = last parsed
   auto id_interface = problem_db.interface_id();
   if(id_interface.empty()) {
-    std::cout << "Interface::get_interface(): interface_id() is empty.\n";
     id_interface = "NO_MODEL_ID";
   }
   auto m_it
     = std::find_if(study_cache.begin(), study_cache.end(),
                    [&id_interface](std::shared_ptr<Interface> m) {return m->interface_id() == id_interface;});
   if (m_it == study_cache.end()) {
-    std::cout << "Interface:get_interface(): Interface lookup failed.\n";
     study_cache.push_back(InterfaceUtils::get_interface(problem_db));
     m_it = --study_cache.end();
   }
-  std::cout << "Interface::get_interface(): returning interface of type " << (*m_it)->interface_type() << std::endl;
   return *m_it;
 }
 

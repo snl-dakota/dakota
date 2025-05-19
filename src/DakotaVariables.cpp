@@ -35,14 +35,6 @@ namespace Dakota {
   const Variables& Dakota::Variables::get_variables(ProblemDescDB& problem_db) {
 
     ProblemDescDB* const study_ptr = problem_db.get_rep().get();
-  
-    if(Variables::variablesCache.count(study_ptr) == 0) {
-      std::cout << "Variables::get_variables(): Study not in the cache\n";
-      Variables::variablesCache[study_ptr] = std::list<Variables>();
-    } else {
-      std::cout << "Variables::get_variables(): Study found in cache\n";
-    }
-  
     auto& study_cache = Variables::variablesCache[study_ptr];
   
     // Have to worry about loss of encapsulation and use of context _above_ this
@@ -66,7 +58,6 @@ namespace Dakota {
     // relationships, but are questionable for use among nested/layered levels.
     // Need a way to detect peer vs. nested/layered relationships.
     study_cache.emplace_back(problem_db);
-
     return study_cache.back();
   }
   

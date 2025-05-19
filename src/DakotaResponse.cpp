@@ -31,15 +31,7 @@ namespace Dakota {
 
   const Response& Dakota::Response::get_response(ProblemDescDB& problem_db, short type, const Variables& vars) {
 
-    ProblemDescDB* const study_ptr = problem_db.get_rep().get();
-  
-    if(Response::responseCache.count(study_ptr) == 0) {
-      std::cout << "Response::get_response(): Study not in the cache\n";
-      Response::responseCache[study_ptr] = std::list<Response>();
-    } else {
-      std::cout << "Response::get_response(): Study found in cache\n";
-    }
-  
+    ProblemDescDB* const study_ptr = problem_db.get_rep().get(); 
     auto& study_cache = Response::responseCache[study_ptr];
   
     // Have to worry about loss of encapsulation and use of context _above_ this

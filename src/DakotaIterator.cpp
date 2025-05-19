@@ -374,13 +374,7 @@ String Iterator::submethod_enum_to_string(unsigned short submethod_enum)
 
 std::shared_ptr<Iterator> Iterator::get_iterator(ProblemDescDB& problem_db) {
   ProblemDescDB* const study_ptr = problem_db.get_rep().get();
-
-  if(Iterator::iteratorCache.count(study_ptr) == 0) {
-    Iterator::iteratorCache[study_ptr] = std::list<std::shared_ptr<Iterator>>();
-  }
-
   auto& study_cache = Iterator::iteratorCache[study_ptr];
-
   auto id_method = problem_db.method_id();
   if(id_method.empty())
     id_method = "NO_METHOD_ID";
@@ -396,12 +390,7 @@ std::shared_ptr<Iterator> Iterator::get_iterator(ProblemDescDB& problem_db) {
 
 std::shared_ptr<Iterator> Iterator::get_iterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model) {
   const ProblemDescDB* const study_ptr = problem_db.get_rep().get();
-  if(Iterator::iteratorCache.count(study_ptr) == 0) {
-    Iterator::iteratorCache[study_ptr] = std::list<std::shared_ptr<Iterator>>();
-  }
-
   auto& study_cache = Iterator::iteratorCache[study_ptr];
-
   auto id_method = problem_db.method_id();
   if(id_method.empty())
     id_method = "NO_METHOD_ID";
