@@ -61,13 +61,13 @@ class Response
   /// @brief remove a cached Response for the study
   static void remove_cached_response(const ProblemDescDB& problem_db);
 
+  private:
   /// @brief Cache of Responses created for each study
   static std::map<const ProblemDescDB*, std::list<Response>> responseCache;
 
   //
   //- Heading: Friends
   //
-  private:
 
   /// equality operator
   friend bool operator==(const Response& resp1, const Response& resp2);

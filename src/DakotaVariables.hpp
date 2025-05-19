@@ -121,7 +121,7 @@ public:
 class Variables
 {
 
-  public:
+public:
   // Functions and data for instantiating and caching Variabless
 
   /// @brief retrieve an existing Variables, if it exists, or instantiate a new one
@@ -136,13 +136,13 @@ class Variables
   /// @brief remove a cached Variables for the study
   static void remove_cached_variables(const ProblemDescDB& problem_db);
 
+private:
   /// @brief Cache of Variabless created for each study
   static std::map<const ProblemDescDB*, std::list<Variables>> variablesCache;
 
   //
   //- Heading: Friends
   //
-  private:
   /// for serializing private data members
   friend class boost::serialization::access;
 

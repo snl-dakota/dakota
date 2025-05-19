@@ -74,9 +74,11 @@ public:
   /// @brief remove a cached Model for the study
   static void remove_cached_model(const ProblemDescDB& problem_db);
 
+private:
   /// @brief Cache of Models created for each study
   static std::map<const ProblemDescDB*, std::list<std::shared_ptr<Model>>> modelCache;
 
+public:
 
   //
   //- Heading: Constructors, destructor, assignment operator

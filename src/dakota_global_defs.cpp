@@ -102,9 +102,8 @@ void abort_handler(int code)
 
   if (Dak_pddb) {
     // cleanup parameters/results files
-    InterfaceList &ifaces = Interface::interface_cache(*Dak_pddb);
-    for (InterfaceList::iterator It = ifaces.begin(); It != ifaces.end(); ++It)
-      (*It)->file_cleanup(); // virtual fn defined for ProcessApplicInterface
+    CleanUpAllInterfacesAttorney::execute();
+    //Interface::clean_up_all_interfaces();
     // properly terminate in parallel
     Dak_pddb->parallel_library().abort_helper(code);
   }

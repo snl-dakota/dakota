@@ -85,6 +85,12 @@ void Interface::remove_cached_interface(const ProblemDescDB& problem_db) {
   Interface::interfaceCache.erase(study_ptr);
 }
 
+void Interface::clean_up_all_interfaces() {
+  for(auto& icache_pair : Interface::interfaceCache)
+    for(auto& interface : icache_pair.second)
+      interface->file_cleanup();
+}
+
 std::map<const ProblemDescDB*, std::list<std::shared_ptr<Interface>>> Interface::interfaceCache{};
 
 

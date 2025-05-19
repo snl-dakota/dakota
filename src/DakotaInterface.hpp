@@ -59,9 +59,17 @@ public:
   /// @brief remove a cached Interface for the study
   static void remove_cached_interface(const ProblemDescDB& problem_db);
 
+private:
+  /// @brief Clean up files for all interfaces (used by abort handler)
+  static void clean_up_all_interfaces();
+
+  // attorney class to permit access to clean_up_all_interfaces to abort_handler()
+  friend class CleanUpAllInterfacesAttorney;
+
   /// @brief Cache of Interfaces created for each study
   static std::map<const ProblemDescDB*, std::list<std::shared_ptr<Interface>>> interfaceCache;
 
+public:
   //
   //- Heading: Constructors, destructor, assignment operator
   //
@@ -504,6 +512,14 @@ inline bool Interface::iterator_eval_dedicated_scheduler() const
 /// global comparison function for Interface
 inline bool interface_id_compare(const Interface& interface_in, const void* id)
 { return ( *(const String*)id == interface_in.interface_id() ); }
+
+
+class CleanUpAllInterfacesAttorney {
+  static void execute() {
+    Interface::clean_up_all_interfaces();
+  }
+  friend void abort_handler(int);
+};
 
 } // namespace Dakota
 
