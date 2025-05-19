@@ -58,7 +58,7 @@ std::shared_ptr<Interface> Interface::get_interface(ProblemDescDB& problem_db) {
   // > no interface_ptr spec -> id_interf ignored, interf spec = last parsed
   auto id_interface = problem_db.interface_id();
   if(id_interface.empty()) {
-    id_interface = "NO_MODEL_ID";
+    id_interface = "NO_ID";
   }
   auto m_it
     = std::find_if(study_cache.begin(), study_cache.end(),
