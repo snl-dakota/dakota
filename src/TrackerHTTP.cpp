@@ -181,8 +181,8 @@ void TrackerHTTP::populate_method_list(ProblemDescDB& problem_db)
   // TODO: consider sorting and removing duplicates -- probably not
   // TODO: fix trailing comma
   // TODO: consider "uses_method"
-  const auto& dakota_iterators = problem_db.iterator_list();
-  for(const auto& it : problem_db.iterator_list())
+  const auto& dakota_iterators = Iterator::iterator_cache(problem_db);
+  for(const auto& it : dakota_iterators)
     methodList += it->method_string() + ",";
 }
 
