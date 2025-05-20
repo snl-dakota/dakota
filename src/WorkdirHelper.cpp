@@ -13,6 +13,7 @@
 #include <boost/array.hpp>
 #include <boost/tokenizer.hpp>
 #include <cassert>
+#include <random>
 
 #if defined(_WIN32) || defined(_WIN64)
 
@@ -441,19 +442,46 @@ void WorkdirHelper::split_wildcard(const std::string& path_with_wc,
 
   // might we need wstring on Windows?
   wild_card = fq_search.filename();
+}
+
+
+std::filesystem::path WorkdirHelper::unique_path(const std::string& input)
+{
+  // Function to replace '%' characters in a string with random alphanumeric values
+
+  // Create a random number generator
+  std::random_device rd;
+  std::mt19937 rng(rd());
+
+  // Lambda to generate a random case-sensitive alphanumeric character
+  auto generate_rnd_alphanumeric = [&rng]() -> char {
+    const std::string characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    std::uniform_int_distribution<std::size_t> dist(0, characters.size() - 1);
+    return characters[dist(rng)];
+  };
+
+  // Create a copy of the input string to modify
+  std::string result = input;
+
+  // Replace each '%' with a random alphanumeric character
+  std::transform(result.begin(), result.end(), result.begin(), [&](char c) {
+      return (c == '%') ? generate_rnd_alphanumeric() : c;
+      });
+
+  return std::filesystem::path(result);
 
 }
 
 
-boost::filesystem::path WorkdirHelper::system_tmp_file(const std::string& prefix)
+std::filesystem::path WorkdirHelper::system_tmp_file(const std::string& prefix)
 {
-  boost::filesystem::path temp_filename;
+  std::filesystem::path temp_filename;
   try {
-    // generate an 8 hex character unique name
+    // generate an 8 character unique name
     std::string temp_name_pattern(prefix + "_%%%%%%%%");
-    temp_filename = boost::filesystem::unique_path(temp_name_pattern);
+    temp_filename = unique_path(temp_name_pattern);
   }
-  catch (const boost::filesystem::filesystem_error& e) {
+  catch (const std::filesystem::filesystem_error& e) {
     Cerr << "\nError: could not generate temporary filename with prefix "
 	 << prefix << ";\n       " << e.what() << std::endl;
     abort_handler(IO_ERROR);

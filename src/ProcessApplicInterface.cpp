@@ -402,7 +402,7 @@ void ProcessApplicInterface::define_filenames(const String& eval_id_tag)
 
     // no user spec -> use temp files, possibly in workdir; generate relative
     if (specifiedParamsFileName.empty())
-      params_path = std::filesystem::path(WorkdirHelper::system_tmp_file("dakota_params").string());
+      params_path = WorkdirHelper::system_tmp_file("dakota_params");
 
     // append tag for all cases (previously temp files weren't tagged)
     if (fileTagFlag)
@@ -442,7 +442,7 @@ void ProcessApplicInterface::define_filenames(const String& eval_id_tag)
 
     // no user spec -> use temp files, possibly in workdir; generate relative
     if (specifiedResultsFileName.empty())
-      results_path = std::filesystem::path(WorkdirHelper::system_tmp_file("dakota_results").string());
+      results_path = WorkdirHelper::system_tmp_file("dakota_results");
 
     // append tag for all cases (previously temp files weren't tagged)
     if (fileTagFlag)
@@ -770,7 +770,7 @@ std::filesystem::path ProcessApplicInterface::get_workdir_name()
   // PDH suggets making in rundir instead of tmp area...
   std::filesystem::path wd_name = workDirName.empty() ? 
     ( WorkdirHelper::system_tmp_path() / 
-      std::filesystem::path(WorkdirHelper::system_tmp_file("dakota_work").string()) ) :
+      WorkdirHelper::system_tmp_file("dakota_work") ) :
     std::filesystem::path(workDirName);
 
   // we allow tagging of tmp dirs in case the user's script needs the tag

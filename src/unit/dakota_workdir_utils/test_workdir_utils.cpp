@@ -26,10 +26,9 @@ void test_save_current_path(const std::string& pwd_str,
 {
   // NOTE: current path is passed in as a argument
 
-  bfs::path tmp_dir( WorkdirHelper::system_tmp_path() );
-  bfs::path temp_name = bfs::unique_path("daktst_%%%%%%%%");
-  bfs::path bwd( tmp_dir/temp_name );
-  std::filesystem::path wd( bwd.string() );
+  std::filesystem::path tmp_dir( WorkdirHelper::system_tmp_path() );
+  std::filesystem::path temp_name = WorkdirHelper::unique_path("daktst_%%%%%%%%");
+  std::filesystem::path wd( tmp_dir/temp_name );
 
   WorkdirHelper::create_directory(wd, DIR_CLEAN);
 
@@ -102,7 +101,7 @@ void test_which_driver(std::filesystem::path& wd, const std::string& driver_name
   EXPECT_TRUE(( std::filesystem::exists(wd) ));
   EXPECT_TRUE(( wd.is_absolute() ));
 
-  // BFS issue?  mkdir/change_dir seems problematic if wd is relative dir
+  // Could try using relative path, but be conservative for now
   WorkdirHelper::change_directory(wd);
   WorkdirHelper::set_preferred_path();
 
@@ -232,10 +231,9 @@ void test_create_and_remove_tmpdir(bool copy=false)
 //		ToDo: does this work right for pre-existing dir when it’s supposed to tolerate vs. error?
 // 5.	ToDo:  Make a subdir and a contained file so we can verify rm –rf (verify subdir is there)
 
-  bfs::path tmp_dir( WorkdirHelper::system_tmp_path() );
-  bfs::path temp_name = bfs::unique_path("daktst_%%%%%%%%");
-  bfs::path bwd( tmp_dir/temp_name );
-  std::filesystem::path wd( bwd.string() );
+  std::filesystem::path tmp_dir( WorkdirHelper::system_tmp_path() );
+  std::filesystem::path temp_name = WorkdirHelper::unique_path("daktst_%%%%%%%%");
+  std::filesystem::path wd( tmp_dir/temp_name );
 
   WorkdirHelper::create_directory(wd, DIR_CLEAN);
 

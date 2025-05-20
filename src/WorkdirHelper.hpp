@@ -17,10 +17,6 @@
 #include <boost/regex.hpp>
 #include <boost/iterator/filter_iterator.hpp>
 
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
-namespace bfs = boost::filesystem;
-
 #include <boost/function.hpp>
 
 #include <filesystem>
@@ -162,8 +158,11 @@ public:
   /// concatenate a string onto the end of a path
   static std::filesystem::path concat_path(const std::filesystem::path& p_in, const String& tag);
 
+  /// helper utility to replace boost::filesystem::unique_path
+  static std::filesystem::path unique_path(const std::string& name);
+
   /// generate a valid temporary file name prefix_%%%%%%%%
-  static boost::filesystem::path system_tmp_file(const std::string& prefix);
+  static std::filesystem::path system_tmp_file(const std::string& prefix);
 
   /// get the system tmp path, e.g., /tmp or C:\\temp
   static std::filesystem::path system_tmp_path();
