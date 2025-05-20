@@ -188,3 +188,35 @@ Sample moment statistics for each response function:
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean
  response_fn_1  4.0790174146e+01  4.2862905030e+01
+Test Number 12 succeeded
+<<<<< Function evaluation summary: 891803 total (891803 new, 0 duplicate)
+<<<<< Function evaluation summary: 891803 total (891803 new, 0 duplicate)
+<<<<< Online number of equivalent high fidelity evaluations: 4.6213479911e+01
+<<<<< Variance for mean estimator:
+ response_fn_1:
+        Initial MLMC (pilot samples):     4.5412772423e+02
+       Online MLCVMC (sample profile):    6.4608739002e-02
+       Online MLCVMC / pilot ratio:       1.4226997286e-04
+   Equivalent     MC (   46 HF samples):  2.5115320716e+02
+   Equivalent MLCVMC / MC ratio:          2.5724831362e-04
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.1716000792e+01  1.0773422712e+02  2.1527370039e+00  6.9193332412e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean
+ response_fn_1  4.1217812263e+01  4.2214189321e+01
+Test Number 13 succeeded
+<<<<< Function evaluation summary: 899520 total (899520 new, 0 duplicate)
+<<<<< Function evaluation summary: 899520 total (899520 new, 0 duplicate)
+<<<<< Online number of equivalent high fidelity evaluations: 1.8402526786e+01
+<<<<< Variance for mean estimator:
+ response_fn_1:
+       Online MLCVMC (sample profile):    9.6411153208e-02
+   Equivalent     MC (   18 HF samples):  6.2366309536e+02
+   Equivalent MLCVMC / MC ratio:          1.5458851730e-04
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.1330882633e+01  1.0713065303e+02  2.1620830113e+00  6.9608492202e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean
+ response_fn_1  4.0722310965e+01  4.1939454301e+01

@@ -237,6 +237,12 @@ protected:
   /// variances for HF truth (length numFunctions)
   RealVector varH;
 
+  ///  the convergence_tolerance_type input specification with options:
+  ///   - relative = computes reference tolerance in first iteration and sets
+  ///     convergence_tolerance as reference tolerance * convergence_tol
+  ///   - absolute = sets convergence tolerance from input
+  short convergenceTolType;
+
   /// initial estimator variance from shared pilot (no CV reduction)
   RealVector estVarIter0;
 
@@ -299,6 +305,9 @@ private:
   //- Heading: Helper functions
   //
 
+  /// capture unsupported cases and assign mode-specific defaults
+  void manage_offline_convergence_tolerance();
+
   /// accumulator of cost metadata per sample batch
   void accumulate_online_cost(const IntResponseMap& resp_map,
 			      RealVector& accum_cost, SizetArray& num_cost);
@@ -309,6 +318,24 @@ private:
   /// cache state of seed sequence for use in seed_updated()
   size_t seedIndex;
 };
+
+
+inline void NonDEnsembleSampling::manage_offline_convergence_tolerance()
+{
+  if (maxFunctionEvals == SZ_MAX) // accuracy constrained
+    switch (convergenceTolType) {
+    case DEFAULT_CONVERGENCE_TOLERANCE:
+      // mode-specific default: since no reference estvar, use absolute tol
+      convergenceTolType = ABSOLUTE_CONVERGENCE_TOLERANCE;  break;
+    case RELATIVE_CONVERGENCE_TOLERANCE:
+      // relative accuracy control with convergenceTol is problematic since
+      // reference EstVar comes from offline eval with Oracle/overkill N.
+      Cerr << "Error: accuracy-constrained formulation for offline modes "
+	   << "requires\n       an absolute convergence tolerance "
+	   << "(relative not supported)." << std::endl;
+      abort_handler(METHOD_ERROR); break;
+    }
+}
 
 
 /** If a model or group is rendered inactive for an online approach

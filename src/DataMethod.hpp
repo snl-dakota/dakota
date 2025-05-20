@@ -228,10 +228,10 @@ enum { DEFAULT_FINAL_STATS=0, QOI_STATISTICS, ESTIMATOR_PERFORMANCE };
 enum { QOI_AGGREGATION_MAX, QOI_AGGREGATION_SUM };
 // target variance for fitting sample allocation
 enum { TARGET_MEAN, TARGET_VARIANCE, TARGET_SIGMA, TARGET_SCALARIZATION };
-// define special values for computation of convergence tolerance,
-// either absolute or relative
-enum { CONVERGENCE_TOLERANCE_TYPE_RELATIVE,
-       CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE };
+// define special values for assessment of iterative refinement against a
+// specified convergence tolerance, either as an absolute or relative difference
+enum {  DEFAULT_CONVERGENCE_TOLERANCE=0, RELATIVE_CONVERGENCE_TOLERANCE,
+       ABSOLUTE_CONVERGENCE_TOLERANCE };
 // define optimization formulation for MLMC sample allocation by
 // specifing equality constraint, either variance or cost
 enum { CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT,

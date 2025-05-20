@@ -146,7 +146,7 @@ DataMethodRep::DataMethodRep():
   modelSelectType(NO_MODEL_SELECTION), relaxFixedFactor(0.),
   relaxRecursiveFactor(0.), allocationTarget(TARGET_MEAN),
   useTargetVarianceOptimizationFlag(false), qoiAggregation(QOI_AGGREGATION_SUM),
-  convergenceToleranceType(CONVERGENCE_TOLERANCE_TYPE_RELATIVE),
+  convergenceToleranceType(DEFAULT_CONVERGENCE_TOLERANCE),
   convergenceToleranceTarget(CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT),
   //expansionSampleType("lhs"),
   cubIntOrder(USHRT_MAX), collocationRatio(0.), collocRatioTermsOrder(1.),

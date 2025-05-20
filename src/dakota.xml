@@ -213,6 +213,18 @@
              </keyword>
 	     ' >
 
+    <!ENTITY method_mf_samp_convergence_tolerance '
+	     <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mdm(Real,convergenceTolerance)}" label="Convergence tolerance"  minOccurs="0" default="1.e-4" >
+               <param type="REAL" />
+               <optional>
+                 <oneOf label="Convergence tolerance type">
+                   <keyword  id="relative" name="relative" code="{N_mdm(type,convergenceToleranceType_RELATIVE_CONVERGENCE_TOLERANCE)}" label="relative" />
+                   <keyword  id="absolute" name="absolute" code="{N_mdm(type,convergenceToleranceType_ABSOLUTE_CONVERGENCE_TOLERANCE)}" label="absolute" />
+                 </oneOf>
+               </optional>
+             </keyword>
+	     ' >
+
     <!ENTITY method_exp_convergence_tolerance '
 	     &method_convergence_tolerance;
              &method_refine_metric_scale;
@@ -3266,13 +3278,7 @@
 	      <keyword  id="max" name="max" code="{N_mdm(type,qoiAggregation_QOI_AGGREGATION_MAX)}" label="max"   />
 	    </oneOf>
 	  </keyword>
-	  &method_convergence_tolerance;
-	  <keyword  id="convergence_tolerance_type" name="convergence_tolerance_type" code="{0}" label="Type of convergence tolerance"  minOccurs="0" default="relative" >
-            <oneOf label="Convergence tolerance type">
-	      <keyword  id="relative" name="relative" code="{N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_RELATIVE)}" label="relative"   />
-	      <keyword  id="absolute" name="absolute" code="{N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)}" label="absolute"   />
-	    </oneOf>
-	  </keyword>
+	  &method_mf_samp_convergence_tolerance;
 	  <keyword  id="convergence_tolerance_target" name="convergence_tolerance_target" code="{0}" label="Target of convergence tolerance"  minOccurs="0" default="variance_constraint" >
             <oneOf label="Convergence tolerance target">
 	      <keyword  id="variance_constraint" name="variance_constraint" code="{N_mdm(type,convergenceToleranceTarget_CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT)}" label="variance_constraint"   />
@@ -3297,7 +3303,7 @@
 	  <keyword  id="export_sample_sequence" name="export_sample_sequence" code="{N_mdm(true,exportSampleSeqFlag)}" label="export_sample_sequence"  minOccurs="0" >
 	    &method_export_samples_format;
 	  </keyword>
-	  &method_convergence_tolerance;
+	  &method_mf_samp_convergence_tolerance;
 	  &method_max_iterations;
           &method_max_function_evaluations;
 	  &rng_options;
@@ -3314,7 +3320,7 @@
 	  <keyword  id="export_sample_sequence" name="export_sample_sequence" code="{N_mdm(true,exportSampleSeqFlag)}" label="export_sample_sequence"  minOccurs="0" >
 	    &method_export_samples_format;
 	  </keyword>
-	  &method_convergence_tolerance;
+	  &method_mf_samp_convergence_tolerance;
 	  &method_max_iterations;
           &method_max_function_evaluations;
 	  &rng_options;
@@ -3367,7 +3373,7 @@
 	  <keyword  id="export_sample_sequence" name="export_sample_sequence" code="{N_mdm(true,exportSampleSeqFlag)}" label="export_sample_sequence"  minOccurs="0" >
 	    &method_export_samples_format;
 	  </keyword>
-	  &method_convergence_tolerance;
+	  &method_mf_samp_convergence_tolerance;
 	  &method_max_iterations;
           &method_max_function_evaluations;
 	  &rng_options;
@@ -3385,7 +3391,7 @@
 	  <keyword  id="export_sample_sequence" name="export_sample_sequence" code="{N_mdm(true,exportSampleSeqFlag)}" label="export_sample_sequence"  minOccurs="0" >
 	    &method_export_samples_format;
 	  </keyword>
-	  &method_convergence_tolerance;
+	  &method_mf_samp_convergence_tolerance;
 	  &method_max_iterations;
           &method_max_function_evaluations;
 	  &rng_options;

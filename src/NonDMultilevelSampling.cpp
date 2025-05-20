@@ -38,8 +38,6 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   useTargetVarianceOptimizationFlag(
     problem_db.get_bool("method.nond.allocation_target.optimization")),
   qoiAggregation(problem_db.get_short("method.nond.qoi_aggregation")),
-  convergenceTolType(
-    problem_db.get_short("method.nond.convergence_tolerance_type")),
   convergenceTolTarget(
     problem_db.get_short("method.nond.convergence_tolerance_target"))
 {
@@ -293,8 +291,11 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
       // MLMC estimator variance for final estvar reporting is not aggregated
       compute_ml_estimator_variance(var_Y, N_l, estVarIter0);
       // compute eps^2 / 2 = aggregated estvar0 * rel tol
-      if (!budget_constrained) // eps^2 / 2 = estvar0 * rel tol
-	eps_sq_div_2 = agg_estvar0 * convergenceTol;
+      if (!budget_constrained) { // eps^2 / 2 = estvar0 * relative tol
+        eps_sq_div_2 = convergenceTol;
+        if (convergenceTolType == RELATIVE_CONVERGENCE_TOLERANCE) // default
+	  eps_sq_div_2 *= agg_estvar0;
+      }
     }
 
     // update sample targets based on latest variance estimates

@@ -573,15 +573,24 @@ void NonDACVSampling::compute_allocations(MFSolutionData& soln)
   // related analytic solutions (iter == 0) or warm started from the previous
   // solutions (iter >= 1)
 
-  bool budget_constrained = (maxFunctionEvals != SZ_MAX), budget_exhausted
-    = (budget_constrained && equivHFEvals >= (Real)maxFunctionEvals),
-    no_solve = (budget_exhausted || convergenceTol >= 1.); // bypass opt solve
+  bool budget_constrained = (maxFunctionEvals != SZ_MAX), no_solve = false;
+  // no_solve for any iteration:
+  if (budget_constrained)
+    no_solve = (equivHFEvals >= (Real)maxFunctionEvals); // budget exhausted
 
   if (mlmfIter == 0) {
-    bool online = (pilotMgmtMode == ONLINE_PILOT ||
-		   pilotMgmtMode == ONLINE_PILOT_PROJECTION);
-    if (online)
+
+    if (pilotMgmtMode == ONLINE_PILOT ||
+	pilotMgmtMode == ONLINE_PILOT_PROJECTION) {
       cache_mc_reference(); // {estVar,numH}Iter0, estVarMetric0
+      // no_solve augmentation for online iter 0:
+      if (!budget_constrained) // accuracy controlled by convergenceTol
+	no_solve = (convergenceTolType == RELATIVE_CONVERGENCE_TOLERANCE) ?
+	  (convergenceTol >= 1.) : (estVarMetric0  <= convergenceTol);
+    }
+    // Offline accuracy-constrained is allowed with absolute tol, but is
+    // not available in advance of numerical solve (estVarMetric appears
+    // in nln_ineq_con, but pilot estVarMetric0 is not tracked)
 
     size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
     SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
@@ -681,8 +690,11 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
 				      Real avg_N_H, MFSolutionData& soln)
 {
   Real hf_target;
-  if (maxFunctionEvals == SZ_MAX) // HF tgt from ACV estvar using analytic soln
-    hf_target = update_hf_target(avg_eval_ratios, avg_N_H, varH, estVarIter0);
+  if (maxFunctionEvals == SZ_MAX) {// HF tgt from ACV estvar using analytic soln
+    hf_target = (convergenceTolType == ABSOLUTE_CONVERGENCE_TOLERANCE) ?
+      update_hf_target(avg_eval_ratios, avg_N_H, varH) :
+      update_hf_target(avg_eval_ratios, avg_N_H, varH, estVarIter0);
+  }
   else // allocate_budget(), then manage lower bounds and pilot over-estimation
     scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, hf_target,
 		    activeBudget);
@@ -707,23 +719,6 @@ print_model_allocations(std::ostream& s, const MFSolutionData& soln,
   else
     s << "Estimator variance metric = " << soln.estimator_variance_metric()
       << std::endl;
-}
-
-
-Real NonDACVSampling::
-update_hf_target(const RealVector& avg_eval_ratios, Real avg_N_H,
-		 const RealVector& var_H, const RealVector& estvar0)
-{
-  RealVector cd_vars, estvar_ratios, estvar;
-  r_and_N_to_design_vars(avg_eval_ratios, avg_N_H, cd_vars);
-  estimator_variances_and_ratios(cd_vars, estvar_ratios, estvar);
-
-  Real metric;  size_t metric_index;
-  MFSolutionData::update_estimator_variance_metric(estVarMetricType,
-    estVarMetricNormOrder, estvar_ratios, estvar, metric, metric_index);
-
-  return NonDNonHierarchSampling::
-    update_hf_target(estvar_ratios, metric_index, var_H, estvar0);
 }
 
 

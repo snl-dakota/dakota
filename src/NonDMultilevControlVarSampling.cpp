@@ -1744,7 +1744,9 @@ void NonDMultilevControlVarSampling::multilevel_control_variate_mc_Ycorr()
       compute_ml_estimator_variance(var_YH, N_hf, estVarIter0);
       // compute eps^2 / 2 = aggregated estvar0 * rel tol
       if (!budget_constrained) {
-	eps_sq_div_2 = agg_estvar_iter0 * convergenceTol;
+        eps_sq_div_2 = convergenceTol;
+        if (convergenceTolType == RELATIVE_CONVERGENCE_TOLERANCE) // default
+	  eps_sq_div_2 *= agg_estvar_iter0;
 	if (outputLevel == DEBUG_OUTPUT)
 	  Cout << "Epsilon squared target = " << eps_sq_div_2 << std::endl;
       }

@@ -137,6 +137,8 @@ private:
   void generalized_acv_offline_pilot();
   void generalized_acv_pilot_projection();
 
+  void no_solve_solution();
+
   void approx_increments(IntRealMatrixMap& sum_L_baseline,
 			 const SizetArray& N_H_actual, size_t N_H_alloc,
 			 IntRealMatrixMap& sum_L_shared,
@@ -148,7 +150,7 @@ private:
   void update_model_groups();
   void update_model_groups(const UShortList& root_list);
 
-  void precompute_allocations();
+  bool precompute_allocations();
   void compute_allocations(MFSolutionData& solution);
 
   void genacv_raw_moments(const IntRealMatrixMap& sum_L_covar,

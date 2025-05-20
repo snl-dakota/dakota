@@ -749,7 +749,9 @@ compute_allocations(RealVectorArray& eval_ratios, RealMatrix& Lambda,
       compute_ml_estimator_variance(var_YH, N_actual, estVarIter0);
     // compute eps^2 / 2 = aggregated estvar0 * rel tol
     if (!budget_constrained) {// eps^2 / 2 = est var * conv tol
-      eps_sq_div_2 = agg_estvar_iter0 * convergenceTol;
+      eps_sq_div_2 = convergenceTol;
+      if (convergenceTolType == RELATIVE_CONVERGENCE_TOLERANCE) // default
+	eps_sq_div_2 *= agg_estvar_iter0;
       if (outputLevel == DEBUG_OUTPUT)
 	Cout << "Epsilon squared target = " << eps_sq_div_2 << std::endl;
     }

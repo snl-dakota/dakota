@@ -30,11 +30,11 @@ method,
 	  allocation_target = mean	#s0,#s1,#s2,#s3,#s4,#s5,#s9,#p0,#p1
 #	  allocation_target = variance	#s6,#s7,#s8
 #	    optimization 
-	  qoi_aggregation = sum	 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#p0,#p1
-	  convergence_tolerance = .1			#s0,#s3,#s6,#p0,#p1
-#	  convergence_tolerance = .01			#s1,#s4,#s7,#s9,#s10,#s15,#s16,#s17,#s18,#s19
-#	  convergence_tolerance = .001			#s2,#s5,#s8
-#	  convergence_tolerance_type = relative		#s0,#s6,#s2,#s7
+	  qoi_aggregation = sum		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#p0,#p1
+	  convergence_tolerance = .1	#s0,#s3,#s6,#p0,#p1
+#	  convergence_tolerance = .01	#s1,#s4,#s7,#s9,#s10,#s15,#s16,#s17,#s18,#s19
+#	  convergence_tolerance = .001	#s2,#s5,#s8
+#	    relative		  	#s0,#s6,#s2,#s7
 #	  max_function_evaluations = 100		#s11,#s12
 #	  max_function_evaluations = 5000		#s13,#s14
 	output silent

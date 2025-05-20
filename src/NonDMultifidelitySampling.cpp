@@ -203,7 +203,7 @@ void NonDMultifidelitySampling::multifidelity_mc_offline_pilot()
   compute_allocations(rho2LH, varH, N_H_actual, sequenceCost, mfmcSolnData);
   ++mlmfIter;
 
-  // estVarIter0 no longer used for offline mode
+  // estVarIter0 not used for offline mode
   //cache_mc_reference();
 
   // -----------------------------------
@@ -252,6 +252,7 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
   RealVector sum_H(numFunctions), sum_HH(numFunctions);
   RealMatrix var_L, sum_L(numFunctions, numApprox),
     sum_LL(numFunctions, numApprox), sum_LH(numFunctions, numApprox);
+
   // ----------------------------------------------------
   // Evaluate shared increment and increment accumulators
   // ----------------------------------------------------
@@ -273,14 +274,14 @@ void NonDMultifidelitySampling::multifidelity_mc_pilot_projection()
     // averaged over QoI.  This includes updating varH and rho2LH.
     compute_LH_correlation(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual,
 			   var_L, varH, rho2LH);
+    // estVarIter0 only uses HF pilot since CV terms (sum_L_shared / N_shared
+    // - sum_L_refined / N_refined) cancel out prior to sample refinement.
+    cache_mc_reference();
   }
 
   // --------------------------
   // Compute evaluation ratios:
   // --------------------------
-  // estVarIter0 only uses HF pilot since CV terms (sum_L_shared / N_shared
-  // - sum_L_refined / N_refined) cancel out prior to sample refinement.
-  cache_mc_reference();
   // compute r* from rho2 and cost
   compute_allocations(rho2LH, varH, N_H_actual, sequenceCost, mfmcSolnData);
   ++mlmfIter;
@@ -1212,11 +1213,21 @@ void NonDMultifidelitySampling::
 mfmc_numerical_solution(const RealMatrix& rho2_LH, const RealVector& cost,
 			MFSolutionData& soln)
 {
-  bool budget_constrained = (maxFunctionEvals != SZ_MAX), budget_exhausted
-    = (budget_constrained && equivHFEvals >= (Real)maxFunctionEvals),
-    no_solve = (budget_exhausted || convergenceTol >= 1.); // bypass opt solve
+  bool budget_constrained = (maxFunctionEvals != SZ_MAX), no_solve = false;
+  // no_solve for any iteration:
+  if (budget_constrained)
+    no_solve = (equivHFEvals >= (Real)maxFunctionEvals); // budget exhausted
 
   if (mlmfIter == 0) {
+
+    // no_solve augmentation for online iter 0:
+    if (!budget_constrained && ( pilotMgmtMode == ONLINE_PILOT ||
+				 pilotMgmtMode == ONLINE_PILOT_PROJECTION ) )
+      no_solve = (convergenceTolType == RELATIVE_CONVERGENCE_TOLERANCE) ?
+	(convergenceTol >= 1.) : (estVarMetric0  <= convergenceTol);
+    // Offline accuracy-constrained is allowed with absolute tol, but is
+    // not available in advance of numerical solve (estVarMetric appears
+    // in nln_ineq_con, but pilot estVarMetric0 is not tracked)
 
     size_t hf_form_index, hf_lev_index;
     hf_indices(hf_form_index, hf_lev_index);
@@ -1261,8 +1272,9 @@ mfmc_numerical_solution(const RealMatrix& rho2_LH, const RealVector& cost,
       estvar_ratios_to_estvar(estvar_ratios, varH, N_H_actual, estvar);
       MFSolutionData::update_estimator_variance_metric(estVarMetricType,
 	estVarMetricNormOrder, estvar_ratios, estvar, metric, metric_index);
-      hf_target = update_hf_target(estvar_ratios, metric_index, varH,
-				   estVarIter0);
+      hf_target = (convergenceTolType == ABSOLUTE_CONVERGENCE_TOLERANCE) ?
+	update_hf_target(estvar_ratios, metric_index, varH) :
+	update_hf_target(estvar_ratios, metric_index, varH, estVarIter0);
     }
     // push updates to MFSolutionData
     soln.anchored_solution_ratios(avg_eval_ratios, hf_target);
@@ -1311,8 +1323,9 @@ process_analytic_allocations(const RealMatrix& rho2_LH, const RealVector& var_H,
     estvar_ratios_to_estvar(estvar_ratios, var_H, N_H, estvar);
     MFSolutionData::update_estimator_variance_metric(estVarMetricType,
       estVarMetricNormOrder, estvar_ratios, estvar, metric, metric_index);
-    hf_target = update_hf_target(estvar_ratios, metric_index, varH,
-				 estVarIter0);
+    hf_target =  (convergenceTolType == ABSOLUTE_CONVERGENCE_TOLERANCE) ?
+      update_hf_target(estvar_ratios, metric_index, varH) :
+      update_hf_target(estvar_ratios, metric_index, varH, estVarIter0);
   }
   else
     hf_target = allocate_budget(avg_eval_ratios, cost);

@@ -194,6 +194,7 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db,
 NonDMultilevBLUESampling::~NonDMultilevBLUESampling()
 { }
 
+
 void NonDMultilevBLUESampling::pre_run()
 {
   NonDNonHierarchSampling::pre_run();
@@ -747,7 +748,8 @@ specify_nonlinear_constraints(RealVector& nln_ineq_lb, RealVector& nln_ineq_ub,
   switch (optSubProblemForm) {
   case N_GROUP_LINEAR_OBJECTIVE: // nonlinear accuracy constraint: ub on estvar
     nln_ineq_lb = -DBL_MAX;   // no lower bnd
-    nln_ineq_ub = std::log(convergenceTol * estVarMetric0);
+    nln_ineq_ub = (convergenceTolType == ABSOLUTE_CONVERGENCE_TOLERANCE) ?
+      std::log(convergenceTol) : std::log(convergenceTol * estVarMetric0);
     break;
   }
 }
@@ -879,9 +881,10 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
   // related analytic solutions (iter == 0) or warm started from the previous
   // solutions (iter >= 1)
 
-  bool budget_constrained = (maxFunctionEvals != SZ_MAX), budget_exhausted
-    = (budget_constrained && equivHFEvals >= (Real)maxFunctionEvals),
-    no_solve = (budget_exhausted || convergenceTol >= 1.); // bypass opt solve
+  bool budget_constrained = (maxFunctionEvals != SZ_MAX), no_solve = false;
+  // no_solve for any iteration:
+  if (budget_constrained)
+    no_solve = (equivHFEvals >= (Real)maxFunctionEvals); // budget exhausted
 
   if (mlmfIter == 0) {
     if (retainedModelGroups.empty()) soln.solution_variables(pilotSamples);
@@ -889,14 +892,22 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
       RealVector x0; deflate(pilotSamples, retainedModelGroups, x0);
       soln.solution_variables(x0);
     }
+
     if (pilotMgmtMode == ONLINE_PILOT ||
-	pilotMgmtMode == ONLINE_PILOT_PROJECTION) { // cache ref estVarIter0
+	pilotMgmtMode == ONLINE_PILOT_PROJECTION) { // cache estVarIter0
       estimator_variances(soln.solution_variables(), estVarIter0);
       MFSolutionData::update_estimator_variance_metric(estVarMetricType,
 	estVarMetricNormOrder, estVarIter0, estVarMetric0);
+      // no_solve augmentation for online iter 0:
+      if (!budget_constrained) // accuracy controlled by convergenceTol
+	no_solve = (convergenceTolType == RELATIVE_CONVERGENCE_TOLERANCE) ?
+	  (convergenceTol >= 1.) : (estVarMetric0  <= convergenceTol);
     }
+    // Offline accuracy-constrained is allowed with absolute tol, but is
+    // not available in advance of numerical solve (estVarMetric appears
+    // in nln_ineq_con, but pilot estVarMetric0 is not tracked)
 
-    if (no_solve)
+    if (no_solve) // bypass numerical solution
       { no_solve_variances(soln); delta_N_G.assign(numGroups, 0); return; }
 
     // Run a competition among related analytic approaches (MFMC or pairwise

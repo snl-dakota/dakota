@@ -66,7 +66,7 @@ public:
     //
     // Returns:
     //   The number of samples.
-    std::size_t numSamples() {
+    std::size_t numSamples() override {
         return boost::accumulators::count(acc_);
     }
 
@@ -110,7 +110,7 @@ public:
     //
     // Returns:
     //   The number of samples.
-    std::size_t numSamples() {
+    std::size_t numSamples() override {
         return boost::accumulators::count(acc_);
     }
 
@@ -165,7 +165,7 @@ public:
     //
     // Returns:
     //   The number of samples.
-    std::size_t numSamples() {
+    std::size_t numSamples() override {
         return boost::accumulators::count(acc_);
     }
 

@@ -38,6 +38,8 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   mlmfIter(0), equivHFEvals(0.), // also reset in pre_run()
   //allocationTarget(problem_db.get_short("method.nond.allocation_target")),
   //qoiAggregation(problem_db.get_short("method.nond.qoi_aggregation")),
+  convergenceTolType(
+    problem_db.get_short("method.nond.convergence_tolerance_type")),
   estVarMetricType(
     problem_db.get_short("method.nond.estimator_variance_metric")),
   estVarMetricNormOrder(
@@ -132,35 +134,27 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   case ONLINE_PILOT_PROJECTION:
     maxIterations = 0; // no iteration
     finalStatsType = ESTIMATOR_PERFORMANCE; // no mlmf_final_stats in spec
-    break;
-  case OFFLINE_PILOT_PROJECTION:
-    maxIterations = 0; // no iteration
-    finalStatsType = ESTIMATOR_PERFORMANCE; // no mlmf_final_stats in spec
-    // relative accuracy control with convergenceTol is problematic since
-    // the reference EstVar comes from offline eval with Oracle/overkill N.
-    // Could support an absolute tolerance, but error for now.
-    if (maxFunctionEvals == SZ_MAX) {
-      Cerr << "Error: evaluation budget required for offline projection mode."
-	   << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
+    // mode-specific default: if we have reference estvar, use relative tol
+    if (convergenceTolType == DEFAULT_CONVERGENCE_TOLERANCE)
+      convergenceTolType   = RELATIVE_CONVERGENCE_TOLERANCE;
     break;
   case ONLINE_PILOT:
     // MLMF-specific default: don't let allocator get stuck in fine-tuning
     if (maxIterations == SZ_MAX) maxIterations = 25;
     if (!finalStatsType) finalStatsType = QOI_STATISTICS; // mode default
+    // mode-specific default: if we have reference estvar, use relative tol
+    if (convergenceTolType == DEFAULT_CONVERGENCE_TOLERANCE)
+      convergenceTolType   = RELATIVE_CONVERGENCE_TOLERANCE;
+    break;
+  case OFFLINE_PILOT_PROJECTION:
+    maxIterations = 0; // no iteration
+    finalStatsType = ESTIMATOR_PERFORMANCE; // no mlmf_final_stats in spec
+    manage_offline_convergence_tolerance();
     break;
   case OFFLINE_PILOT:
     maxIterations = 1;
-    // convergenceTol option is problematic since the reference EstVar
-    // comes from offline eval with Oracle/overkill N.  Could support an
-    // absolute rather than relative tolerance, but error for now.
-    if (maxFunctionEvals == SZ_MAX) {
-      Cerr << "Error: evaluation budget required for offline pilot mode."
-	   << std::endl;
-      abort_handler(METHOD_ERROR);
-    }
     if (!finalStatsType) finalStatsType = QOI_STATISTICS; // mode default
+    manage_offline_convergence_tolerance();
     break;
   default:
     Cerr << "Error: unrecognized pilot solution mode in ensemble sampling."

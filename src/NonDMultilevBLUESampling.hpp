@@ -44,10 +44,11 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void pre_run();
+  void  pre_run() override;
   void core_run() override;
-  //void post_run(std::ostream& s);
-  //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  //void post_run(std::ostream& s) override;
+  //void print_results(std::ostream& s,
+  //                   short results_state = FINAL_RESULTS) override;
 
   Real inactive_budget_deduction() const override;
 
@@ -1062,9 +1063,18 @@ inline void NonDMultilevBLUESampling::apply_mc_reference(RealVector& mc_targets)
   if (mc_targets.length() != numFunctions)
     mc_targets.sizeUninitialized(numFunctions);
   const RealSymMatrixArray& cov_GG_g = covGG[ref_group];
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    mc_targets[qoi] = cov_GG_g[qoi](ref_model_index,ref_model_index)
-                    / ( convergenceTol * estVarIter0[qoi] );
+  switch (convergenceTolType) {
+  case ABSOLUTE_CONVERGENCE_TOLERANCE:
+    for (size_t qoi=0; qoi<numFunctions; ++qoi)
+      mc_targets[qoi] = cov_GG_g[qoi](ref_model_index,ref_model_index)
+                      / convergenceTol;
+    break;
+  default: // relative tolerance
+    for (size_t qoi=0; qoi<numFunctions; ++qoi)
+      mc_targets[qoi] = cov_GG_g[qoi](ref_model_index,ref_model_index)
+                      / ( convergenceTol * estVarIter0[qoi] );
+    break;
+  }
 }
 
 } // namespace Dakota
