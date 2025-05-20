@@ -464,8 +464,9 @@ std::filesystem::path WorkdirHelper::unique_path(const std::string& input)
   std::string result = input;
 
   // Replace each '%' with a random alphanumeric character
-  std::transform(result.begin(), result.end(), result.begin(), [&](char c) {
-      return (c == '%') ? generate_rnd_alphanumeric() : c;
+  std::transform(result.begin(), result.end(), result.begin(),
+      [&generate_rnd_alphanumeric](char c) {
+        return (c == '%') ? generate_rnd_alphanumeric() : c;
       });
 
   return std::filesystem::path(result);
