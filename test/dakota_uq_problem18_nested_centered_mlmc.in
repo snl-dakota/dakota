@@ -61,8 +61,8 @@
 	    final_moments standard
  	  max_iterations = 10
  	  convergence_tolerance 5.391910901958546e-05
- 		convergence_tolerance_type absolute
- 		convergence_tolerance_target variance_constraint
+ 	    absolute
+ 	    convergence_tolerance_target variance_constraint
  	  allocation_target scalarization
 	    scalarization_response_mapping = 1. 0. 0. 0.    #s0
 	    				     0. 0. 1. 3.    #s0

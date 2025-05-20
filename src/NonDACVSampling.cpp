@@ -579,7 +579,7 @@ void NonDACVSampling::compute_allocations(MFSolutionData& soln)
     if (pilotMgmtMode == ONLINE_PILOT ||
 	pilotMgmtMode == ONLINE_PILOT_PROJECTION) {
       cache_mc_reference(); // {estVar,numH}Iter0, estVarMetric0
-      if (convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_RELATIVE)
+      if (convergenceTolType == RELATIVE_CONVERGENCE_TOLERANCE)
 	no_solve = (no_solve || convergenceTol >= 1.);
       else
 	no_solve = (no_solve || estVarMetric0  <= convergenceTol);
@@ -686,7 +686,7 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
 {
   Real hf_target;
   if (maxFunctionEvals == SZ_MAX) {// HF tgt from ACV estvar using analytic soln
-    hf_target = (convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE) ?
+    hf_target = (convergenceTolType == ABSOLUTE_CONVERGENCE_TOLERANCE) ?
       update_hf_target(avg_eval_ratios, avg_N_H, varH) :
       update_hf_target(avg_eval_ratios, avg_N_H, varH, estVarIter0);
   }

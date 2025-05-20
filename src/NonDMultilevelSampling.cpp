@@ -293,7 +293,7 @@ void NonDMultilevelSampling::multilevel_mc_Ysum()
       // compute eps^2 / 2 = aggregated estvar0 * rel tol
       if (!budget_constrained) { // eps^2 / 2 = estvar0 * relative tol
         eps_sq_div_2 = convergenceTol;
-        if (convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_RELATIVE)// default
+        if (convergenceTolType == RELATIVE_CONVERGENCE_TOLERANCE) // default
 	  eps_sq_div_2 *= agg_estvar0;
       }
     }

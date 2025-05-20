@@ -8,20 +8,21 @@
 method,
 	model_pointer = 'HIERARCH'
         multilevel_multifidelity_sampling
-	  solution_mode  online_pilot		#s0,#s1,#s2,#s3,#s4,#s9,#s10,#s11
+	  solution_mode  online_pilot		#s0,#s1,#s2,#s3,#s4,#s9,#s10,#s11,#s12
 #	    relaxation factor_sequence = .5 .75 1.	#s9
 #	  solution_mode  online_projection 	#s5
-#	  solution_mode offline_pilot		#s6
+#	  solution_mode offline_pilot		#s6,#s13
 #	  solution_mode offline_projection	#s8
-	  pilot_samples = 20  seed = 1237	#s0,#s1,#s2,#s3,#s5,#s7,#s9,#s10,#s11,#p0,#p1
+	  pilot_samples = 20  seed = 1237	#s0,#s1,#s2,#s3,#s5,#s7,#s9,#s10,#s11,#s12,#p0,#p1
 #	  pilot_samples = 100 50 40 20		#s4
 #	  seed_sequence = 1234 2345 3456 4567	#s4
-#	  pilot_samples = 500 seed = 1237	#s6,#s8
+#	  pilot_samples = 500 seed = 1237	#s6,#s8,#s13
 #	  max_iterations = 0
 #	  convergence_tolerance = .1			
 	  convergence_tolerance = .01		#s0,#s2,#s3,#p0,#p1
-#	  convergence_tolerance = .001		#s1,#s4,#s7,#s9,#s10,#s11
+#	  convergence_tolerance = .001		#s1,#s4,#s7,#s9,#s10,#s11,#s12,#s13
 #	  convergence_tolerance = .0001
+#	    absolute				#s12,#s13
 #	  max_function_evaluations = 50		#s5,#s6,#s8
 	output silent
 

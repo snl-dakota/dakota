@@ -1159,7 +1159,7 @@ bool NonDGenACVSampling::precompute_allocations()
   if (mlmfIter == 0 && ( pilotMgmtMode == ONLINE_PILOT ||
 			 pilotMgmtMode == ONLINE_PILOT_PROJECTION) ) {
     cache_mc_reference();// {estVar,numH}Iter0, estVarMetric0
-    if (convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_RELATIVE)
+    if (convergenceTolType == RELATIVE_CONVERGENCE_TOLERANCE)
       no_solve = (no_solve || convergenceTol >= 1.);
     else
       no_solve = (no_solve || estVarMetric0  <= convergenceTol);
@@ -1254,7 +1254,7 @@ analytic_initialization_from_mfmc(const UShortArray& approx_set,
 
   Real hf_target;
   if (maxFunctionEvals == SZ_MAX)// HF target from GenACV estvar using MFMC soln
-    hf_target = (convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE) ?
+    hf_target = (convergenceTolType == ABSOLUTE_CONVERGENCE_TOLERANCE) ?
       update_hf_target(avg_eval_ratios, avg_N_H, varH) :
       update_hf_target(avg_eval_ratios, avg_N_H, varH, estVarIter0);
   else // allocate_budget(), then manage lower bounds and pilot over-estimation
@@ -1283,7 +1283,7 @@ analytic_initialization_from_ensemble_cvmc(const UShortArray& approx_set,
     // scale according to accuracy (convergenceTol * estVarIter0)
     enforce_augmented_linear_ineq_constraints(avg_eval_ratios, approx_set,
 					      root_list);
-    hf_target = (convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE) ?
+    hf_target = (convergenceTolType == ABSOLUTE_CONVERGENCE_TOLERANCE) ?
       update_hf_target(avg_eval_ratios, avg_N_H, varH) :
       update_hf_target(avg_eval_ratios, avg_N_H, varH, estVarIter0);
   }
@@ -1485,7 +1485,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     else if (optSubProblemForm == N_MODEL_LINEAR_OBJECTIVE) {
       // nonlinear constraint on estvar
       nln_ineq_lb = -DBL_MAX;  // no lower bnd
-      nln_ineq_ub = (convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)
+      nln_ineq_ub = (convergenceTolType == ABSOLUTE_CONVERGENCE_TOLERANCE)
 	? std::log(convergenceTol) : std::log(convergenceTol * estVarMetric0);
     }
     break;
@@ -1832,7 +1832,7 @@ minimizer_results_to_solution_data(const RealVector& cv_star,
       SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
       size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
       Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
-      hf_target = (convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE) ?
+      hf_target = (convergenceTolType == ABSOLUTE_CONVERGENCE_TOLERANCE) ?
 	update_hf_target(avg_eval_ratios, avg_N_H, varH) :
 	update_hf_target(avg_eval_ratios, avg_N_H, varH, estVarIter0);
       Cout << "Scaling profile for convergenceTol = " << convergenceTol

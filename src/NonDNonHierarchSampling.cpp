@@ -1075,7 +1075,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     else if (optSubProblemForm == N_MODEL_LINEAR_OBJECTIVE) {
       // nonlinear inequality constraint on estvar
       nln_ineq_lb = -DBL_MAX;  // no lower bnd
-      nln_ineq_ub = (convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)
+      nln_ineq_ub = (convergenceTolType == ABSOLUTE_CONVERGENCE_TOLERANCE)
 	? std::log(convergenceTol) : std::log(convergenceTol * estVarMetric0);
     }
     break;
@@ -1780,12 +1780,12 @@ minimizer_results_to_solution_data(const RealVector& cv_star,
 	estVarMetricNormOrder, estvar_ratios, estvar, metric, metric_index);
       size_t hf_form, hf_lev;  hf_indices(hf_form, hf_lev);
       if (backfillFailures)
-	hf_target = (convergenceTolType==CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE) ?
+	hf_target = (convergenceTolType == ABSOLUTE_CONVERGENCE_TOLERANCE) ?
 	  update_hf_target(estvar, metric_index, NLevActual[hf_form][hf_lev]) :
 	  update_hf_target(estvar, metric_index, NLevActual[hf_form][hf_lev],
 			   estVarIter0);
       else
-	hf_target = (convergenceTolType==CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE) ?
+	hf_target = (convergenceTolType == ABSOLUTE_CONVERGENCE_TOLERANCE) ?
 	  update_hf_target(estvar, metric_index, NLevAlloc[hf_form][hf_lev]) :
 	  update_hf_target(estvar, metric_index, NLevAlloc[hf_form][hf_lev],
 			   estVarIter0);
@@ -1995,7 +1995,7 @@ nh_penalty_merit(const RealVector& cd_vars, const RealVector& fn_vals)
   switch (optSubProblemForm) {
   case N_MODEL_LINEAR_OBJECTIVE:  case N_GROUP_LINEAR_OBJECTIVE: {
     Real nln_ineq_ub =
-      (convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE) ?
+      (convergenceTolType == ABSOLUTE_CONVERGENCE_TOLERANCE) ?
       std::log(convergenceTol) : std::log(convergenceTol * estVarMetric0);
     return nh_penalty_merit(fn_vals[0], fn_vals[1], nln_ineq_ub);
     break;
@@ -2034,7 +2034,7 @@ Real NonDNonHierarchSampling::nh_penalty_merit(const MFSolutionData& soln)
   switch (optSubProblemForm) {
   case N_MODEL_LINEAR_OBJECTIVE:  case N_GROUP_LINEAR_OBJECTIVE: {
     Real nln_ineq_ub =
-      (convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE) ?
+      (convergenceTolType == ABSOLUTE_CONVERGENCE_TOLERANCE) ?
       std::log(convergenceTol) : std::log(convergenceTol * estVarMetric0);
     return nh_penalty_merit(equiv_hf_alloc, std::log(estvar_metric),
 			    nln_ineq_ub);
@@ -2442,7 +2442,7 @@ Real NonDNonHierarchSampling::direct_penalty_merit(const RealVector& cd_vars)
   case N_MODEL_LINEAR_OBJECTIVE:  case N_GROUP_LINEAR_OBJECTIVE:
     constr       = log_metric;
     constr_u_bnd = (nonHierSampInstance->convergenceTolType ==
-		    CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE) ?
+		    ABSOLUTE_CONVERGENCE_TOLERANCE) ?
       std::log(nonHierSampInstance->convergenceTol) :
       std::log(nonHierSampInstance->convergenceTol *
 	       nonHierSampInstance->estVarMetric0);

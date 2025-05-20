@@ -32,12 +32,12 @@ method,
 	  convergence_tolerance = 1                   	#s0
 #	  convergence_tolerance = 0.1                   #s1
 #	  convergence_tolerance = 0.01                  #s2,#s3
-	  convergence_tolerance_type = relative		#s0,#s1,#s2,#s3
+	    relative		  			#s0,#s1,#s2,#s3
 #	  convergence_tolerance = 7.440476190476190e-06 #s4
 #	  convergence_tolerance = 4.610304615157100e-08 #s5
 #	  convergence_tolerance = 5.163541168975952e-06 #s6
 #	  convergence_tolerance = 5.391910901958546e-05 #s7
-#	  convergence_tolerance_type = absolute 	#s4,#s5,#s6,#s7
+#	    absolute 		  			#s4,#s5,#s6,#s7
 	  solution_mode online_pilot
 	    final_statistics qoi_statistics
 	    final_moments standard			#s0,#s1,#s2,#s4,#s6,#s7

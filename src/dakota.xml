@@ -218,8 +218,8 @@
                <param type="REAL" />
                <optional>
                  <oneOf label="Convergence tolerance type">
-                   <keyword  id="relative" name="relative" code="{N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_RELATIVE)}" label="relative" />
-                   <keyword  id="absolute" name="absolute" code="{N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)}" label="absolute" />
+                   <keyword  id="relative" name="relative" code="{N_mdm(type,convergenceToleranceType_RELATIVE_CONVERGENCE_TOLERANCE)}" label="relative" />
+                   <keyword  id="absolute" name="absolute" code="{N_mdm(type,convergenceToleranceType_ABSOLUTE_CONVERGENCE_TOLERANCE)}" label="absolute" />
                  </oneOf>
                </optional>
              </keyword>

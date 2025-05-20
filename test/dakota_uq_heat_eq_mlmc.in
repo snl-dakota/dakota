@@ -23,7 +23,7 @@ method,
 #         convergence_tolerance = .01           #s1,#s4,#s6,#s9,#s10
 #         convergence_tolerance = .001          #s2,#s7,#s11,#s12
 #         convergence_tolerance = .0001
-#		  convergence_tolerance_type = relative #s0,#s3,#s2,#s8
+#	    relative				#s0,#s3,#s2,#s8
         output silent
 
 model,

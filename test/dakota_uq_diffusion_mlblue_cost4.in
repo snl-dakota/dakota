@@ -8,8 +8,8 @@ environment
 method,
 	model_pointer = 'HIERARCH'
 	multilevel_blue
-	  solution_mode offline_pilot		#s0,#s4
-#	  solution_mode  online_pilot		#s1,#s5,#s8,#s10,#s12,#s13,#s14,#s15
+	  solution_mode offline_pilot		#s0,#s4,#s21
+#	  solution_mode  online_pilot		#s1,#s5,#s8,#s10,#s12,#s13,#s14,#s15,#s20
 #	    relaxation factor_sequence = .5 .75 1.	#s13
 #	    relaxation fixed_factor = .8    		#s14
 #	    relaxation recursive_factor = .5		#s15
@@ -17,13 +17,14 @@ method,
 #	  solution_mode  online_projection	#s3,#s7,#s9,#s11,#s16,#s17,#s18,#s19
 #	  solver_metric  max_estimator_variance			#s16,#s18
 #	  solver_metric norm_estimator_variance norm_order = 2	#s17,#s19
-	  pilot_samples = 100			#s0,#s2,#s4,#s6
-#	  pilot_samples = 25			#s1,#s3,#s5,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19
+	  pilot_samples = 100			#s0,#s2,#s4,#s6,#s21
+#	  pilot_samples = 25			#s1,#s3,#s5,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16,#s17,#s18,#s19,#s20
 	    independent				#s0,#s1,#s2,#s3,#s8,#s9
 	  seed = 8674132
 #	  competed_local			#s12
 	  max_function_evaluations = 500	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s12,#s13,#s14,#s15,#s16,#s17
-#	  convergence_tolerance = .01		#s8,#s9,#s10,#s11,#s18,#s19
+#	  convergence_tolerance = .01		#s8,#s9,#s10,#s11,#s18,#s19,#s20,#s21
+#	    absolute		    		#s20,#s21
 	  output silent
 
 model,
