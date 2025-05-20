@@ -1779,11 +1779,16 @@ minimizer_results_to_solution_data(const RealVector& cv_star,
       MFSolutionData::update_estimator_variance_metric(estVarMetricType,
 	estVarMetricNormOrder, estvar_ratios, estvar, metric, metric_index);
       size_t hf_form, hf_lev;  hf_indices(hf_form, hf_lev);
-      hf_target = (backfillFailures) ?
-	update_hf_target(estvar, metric_index, NLevActual[hf_form][hf_lev],
-			 estVarIter0) :
-	update_hf_target(estvar, metric_index,  NLevAlloc[hf_form][hf_lev],
-			 estVarIter0);
+      if (backfillFailures)
+	hf_target = (convergenceTolType==CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE) ?
+	  update_hf_target(estvar, metric_index, NLevActual[hf_form][hf_lev]) :
+	  update_hf_target(estvar, metric_index, NLevActual[hf_form][hf_lev],
+			   estVarIter0);
+      else
+	hf_target = (convergenceTolType==CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE) ?
+	  update_hf_target(estvar, metric_index, NLevAlloc[hf_form][hf_lev]) :
+	  update_hf_target(estvar, metric_index, NLevAlloc[hf_form][hf_lev],
+			   estVarIter0);
       Cout << "Scaling profile for convergenceTol = " << convergenceTol
 	   << ": HF target = " << hf_target << std::endl;
     }

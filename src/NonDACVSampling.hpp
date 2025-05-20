@@ -148,6 +148,8 @@ protected:
 
   Real update_hf_target(const RealVector& avg_eval_ratios, Real avg_N_H,
 			const RealVector& var_H, const RealVector& estvar0);
+  Real update_hf_target(const RealVector& avg_eval_ratios, Real avg_N_H,
+			const RealVector& var_H);
 
   void print_model_allocations(std::ostream& s, const MFSolutionData& soln,
 			       const UShortArray& approx_set);
@@ -689,6 +691,40 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
   }
   // compute ACV estimator variance given F
   acv_estvar_ratios(F, estvar_ratios);
+}
+
+
+inline Real NonDACVSampling::
+update_hf_target(const RealVector& avg_eval_ratios, Real avg_N_H,
+		 const RealVector& var_H, const RealVector& estvar0)
+{
+  RealVector cd_vars, estvar_ratios, estvar;
+  r_and_N_to_design_vars(avg_eval_ratios, avg_N_H, cd_vars);
+  estimator_variances_and_ratios(cd_vars, estvar_ratios, estvar);
+
+  Real metric;  size_t metric_index;
+  MFSolutionData::update_estimator_variance_metric(estVarMetricType,
+    estVarMetricNormOrder, estvar_ratios, estvar, metric, metric_index);
+
+  return NonDNonHierarchSampling::
+    update_hf_target(estvar_ratios, metric_index, var_H, estvar0);
+}
+
+
+inline Real NonDACVSampling::
+update_hf_target(const RealVector& avg_eval_ratios, Real avg_N_H,
+		 const RealVector& var_H)
+{
+  RealVector cd_vars, estvar_ratios, estvar;
+  r_and_N_to_design_vars(avg_eval_ratios, avg_N_H, cd_vars);
+  estimator_variances_and_ratios(cd_vars, estvar_ratios, estvar);
+
+  Real metric;  size_t metric_index;
+  MFSolutionData::update_estimator_variance_metric(estVarMetricType,
+    estVarMetricNormOrder, estvar_ratios, estvar, metric, metric_index);
+
+  return NonDNonHierarchSampling::
+    update_hf_target(estvar_ratios, metric_index, var_H);
 }
 
 

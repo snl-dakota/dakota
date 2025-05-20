@@ -214,12 +214,14 @@
 	     ' >
 
     <!ENTITY method_mf_samp_convergence_tolerance '
-	     &method_convergence_tolerance;
-             <keyword  id="convergence_tolerance_type" name="convergence_tolerance_type" code="{0}" label="Type of convergence tolerance"  minOccurs="0" default="relative" >
-               <oneOf label="Convergence tolerance type">
-                 <keyword  id="relative" name="relative" code="{N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_RELATIVE)}" label="relative"   />
-                 <keyword  id="absolute" name="absolute" code="{N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)}" label="absolute"   />
-               </oneOf>
+	     <keyword  id="convergence_tolerance" name="convergence_tolerance" code="{N_mdm(Real,convergenceTolerance)}" label="Convergence tolerance"  minOccurs="0" default="1.e-4" >
+               <param type="REAL" />
+               <optional>
+                 <oneOf label="Convergence tolerance type">
+                   <keyword  id="relative" name="relative" code="{N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_RELATIVE)}" label="relative" />
+                   <keyword  id="absolute" name="absolute" code="{N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)}" label="absolute" />
+                 </oneOf>
+               </optional>
              </keyword>
 	     ' >
 

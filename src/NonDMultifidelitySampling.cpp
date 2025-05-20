@@ -1269,8 +1269,9 @@ mfmc_numerical_solution(const RealMatrix& rho2_LH, const RealVector& cost,
       estvar_ratios_to_estvar(estvar_ratios, varH, N_H_actual, estvar);
       MFSolutionData::update_estimator_variance_metric(estVarMetricType,
 	estVarMetricNormOrder, estvar_ratios, estvar, metric, metric_index);
-      hf_target = update_hf_target(estvar_ratios, metric_index, varH,
-				   estVarIter0);
+      hf_target = (convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE) ?
+	update_hf_target(estvar_ratios, metric_index, varH) :
+	update_hf_target(estvar_ratios, metric_index, varH, estVarIter0);
     }
     // push updates to MFSolutionData
     soln.anchored_solution_ratios(avg_eval_ratios, hf_target);
@@ -1319,8 +1320,9 @@ process_analytic_allocations(const RealMatrix& rho2_LH, const RealVector& var_H,
     estvar_ratios_to_estvar(estvar_ratios, var_H, N_H, estvar);
     MFSolutionData::update_estimator_variance_metric(estVarMetricType,
       estVarMetricNormOrder, estvar_ratios, estvar, metric, metric_index);
-    hf_target = update_hf_target(estvar_ratios, metric_index, varH,
-				 estVarIter0);
+    hf_target =  (convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE) ?
+      update_hf_target(estvar_ratios, metric_index, varH) :
+      update_hf_target(estvar_ratios, metric_index, varH, estVarIter0);
   }
   else
     hf_target = allocate_budget(avg_eval_ratios, cost);

@@ -422,10 +422,18 @@ protected:
 		       const RealVector& avg_eval_ratios,
 		       const RealVector& cost);
 
-  Real update_hf_target(const RealVector& estvar, size_t metric_index,
-			const SizetArray& N_H,   const RealVector& estvar_0);
   Real update_hf_target(const RealVector& estvar_ratios, size_t metric_index,
 			const RealVector& var_H, const RealVector& estvar_0);
+  Real update_hf_target(const RealVector& estvar_ratios, size_t metric_index,
+			const RealVector& var_H);
+  Real update_hf_target(const RealVector& estvar, size_t metric_index,
+			const SizetArray& N_H, const RealVector& estvar_0);
+  Real update_hf_target(const RealVector& estvar, size_t metric_index,
+			const SizetArray& N_H);
+  Real update_hf_target(const RealVector& estvar, size_t metric_index,
+			size_t N_H, const RealVector& estvar_0);
+  Real update_hf_target(const RealVector& estvar, size_t metric_index,
+			size_t N_H);
 
   void scale_to_target(Real avg_N_H, const RealVector& cost,
 		       RealVector& avg_eval_ratios, Real& hf_target,
@@ -1606,7 +1614,31 @@ update_hf_target(const RealVector& estvar_ratios, size_t metric_index,
     break;
   case MAX_ESTVAR_METRIC:  case MAX_ESTVAR_RATIO_METRIC:
     hf_target = estvar_ratios[metric_index] * var_H[metric_index]
-              /     (estvar_0[metric_index] * convergenceTol);
+              / ( convergenceTol * estvar_0[metric_index] );
+    break;
+  }
+  Cout << "Scaling profile for convergenceTol = " << convergenceTol
+       << ": HF target = " << hf_target << std::endl;
+  return hf_target;
+}
+
+
+inline Real NonDNonHierarchSampling::
+update_hf_target(const RealVector& estvar_ratios, size_t metric_index,
+		 const RealVector& var_H)
+{
+  Real hf_target;
+  switch (estVarMetricType) {
+  case   DEFAULT_ESTVAR_METRIC:  case AVG_ESTVAR_METRIC:
+  case AVG_ESTVAR_RATIO_METRIC:
+    hf_target = 0.;
+    for (size_t qoi=0; qoi<numFunctions; ++qoi)
+      hf_target += estvar_ratios[qoi] * var_H[qoi];
+    hf_target /= convergenceTol * numFunctions;
+    break;
+  case MAX_ESTVAR_METRIC:  case MAX_ESTVAR_RATIO_METRIC:
+    hf_target = estvar_ratios[metric_index] * var_H[metric_index]
+              / convergenceTol;
     break;
   }
   Cout << "Scaling profile for convergenceTol = " << convergenceTol
@@ -1640,6 +1672,51 @@ update_hf_target(const RealVector& estvar, size_t metric_index,
   Cout << "Scaling profile for convergenceTol = " << convergenceTol
        << ": HF target = " << hf_target << std::endl;
   return hf_target;
+}
+
+
+inline Real NonDNonHierarchSampling::
+update_hf_target(const RealVector& estvar, size_t metric_index,
+		 const SizetArray& N_H)
+{
+  // Starting from last expression above: convert estvar_ratio back to
+  // incoming estvar using estvar_ratio var_H = estvar N_H
+  //   N_tgt = estvar N_H / (convTol estvar_0)               [this case]
+
+  Real hf_target;
+  switch (estVarMetricType) {
+  case   DEFAULT_ESTVAR_METRIC:  case AVG_ESTVAR_METRIC:
+  case AVG_ESTVAR_RATIO_METRIC:
+    hf_target = 0.;
+    for (size_t qoi=0; qoi<numFunctions; ++qoi)
+      hf_target += estvar[qoi] * N_H[qoi];
+    hf_target /= convergenceTol * numFunctions;
+    break;
+  case MAX_ESTVAR_METRIC:  case MAX_ESTVAR_RATIO_METRIC:
+    hf_target = estvar[metric_index] * N_H[metric_index] / convergenceTol;
+    break;
+  }
+  Cout << "Scaling profile for convergenceTol = " << convergenceTol
+       << ": HF target = " << hf_target << std::endl;
+  return hf_target;
+}
+
+
+inline Real NonDNonHierarchSampling::
+update_hf_target(const RealVector& estvar, size_t metric_index,
+		 size_t N_H, const RealVector& estvar_0)
+{
+  SizetArray N_H_array;  N_H_array.assign(estvar.length(), N_H);
+  return update_hf_target(estvar, metric_index, N_H_array, estvar_0);
+}
+
+
+inline Real NonDNonHierarchSampling::
+update_hf_target(const RealVector& estvar, size_t metric_index,
+		 size_t N_H)
+{
+  SizetArray N_H_array;  N_H_array.assign(estvar.length(), N_H);
+  return update_hf_target(estvar, metric_index, N_H_array);
 }
 
 

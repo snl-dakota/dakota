@@ -15,7 +15,7 @@ method,
 	model_pointer = 'NONHIER'
 	approximate_control_variate acv_mf sqp	#s0,#s1,#s2,#s3,#s4,#s5,#s6
 #	approximate_control_variate acv_mf nip	#s7,#s8,#s9,#s10,#s11,#s12,#s13
-#	approximate_control_variate acv_mf	#s14,#s15
+#	approximate_control_variate acv_mf	#s14,#s15,#s16,#s17
 #	approximate_control_variate acv_is sqp	
 #	approximate_control_variate acv_is nip	
 	  max_function_evaluations = 100	#s0,#s7
@@ -26,7 +26,7 @@ method,
 #	  max_function_evaluations = 5000	#s5,#s12
 #	  max_function_evaluations = 10000	#s6,#s13
 #	  pilot_samples =   5
-	  pilot_samples =  10			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13
+	  pilot_samples =  10			#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s16,#s17
 #	  pilot_samples =  25
 #	  pilot_samples =  50
 # Special case: model mistuning to verify budget deductions in model selection
@@ -35,7 +35,8 @@ method,
 #	  search_model_graphs			#s14,#s15
 #	    no_recursion model_selection	#s14,#s15
 	  seed = 8674132
-#	  convergence_tolerance = .1
+#	  convergence_tolerance = .01  relative	#s16
+#	  convergence_tolerance = .001 absolute	#s17
 	output silent
 
 model,
@@ -51,8 +52,8 @@ model,
 	interface_pointer = 'LF_INT'
 	simulation
 #	  solution_level_control = 'ModelForm'
-	  solution_level_cost = 0.01 # w = 10	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13
-#	  solution_level_cost = 0.1    	   	# denormalize		#s14,#s15
+	  solution_level_cost = 0.01 # w = 10	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s16,#s17
+#	  solution_level_cost = 0.1    	   	#s14,#s15 # denormalize
 
 model,
 	id_model = 'MF'
@@ -60,8 +61,8 @@ model,
 	interface_pointer = 'MF_INT'
 	simulation
 #	  solution_level_control = 'ModelForm'
-	  solution_level_cost = 0.1 # w = 10	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13
-#	  solution_level_cost = 8.7181214 	# mistuned,denormalized	#s14,#s15
+	  solution_level_cost = 0.1 # w = 10	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s16,#s17
+#	  solution_level_cost = 8.7181214 	#s14,#s15 # mistuned,denormalized
 
 model,
 	id_model = 'HF'
@@ -69,8 +70,8 @@ model,
 	interface_pointer = 'HF_INT'
 	simulation
 #	  solution_level_control = 'ModelForm'
-	  solution_level_cost = 1.		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13
-#	  solution_level_cost = 10.		# denormalize		#s14,#s15
+	  solution_level_cost = 1.		#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s16,#s17
+#	  solution_level_cost = 10.		#s14,#s15 # denormalize
 
 variables,
 	id_variables = 'LF_VARS'
@@ -93,8 +94,8 @@ variables,
 	  upper_bounds    = 2* 1.
      	  descriptors     = 'x' 'y'
 	continuous_state  = 1
-	  initial_state   = 1.0471975511966 # pi/3	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13
-#	  initial_state   = 1.55            # mistuned	#s14
+	  initial_state   = 1.0471975511966 # pi/3	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#s16,#s17
+#	  initial_state   = 1.55              		#s14 # mistuned
      	  descriptors     = 'theta'
 	discrete_state_set integer = 1
 	  initial_state = 1

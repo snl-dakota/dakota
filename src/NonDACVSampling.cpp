@@ -685,8 +685,11 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
 				      Real avg_N_H, MFSolutionData& soln)
 {
   Real hf_target;
-  if (maxFunctionEvals == SZ_MAX) // HF tgt from ACV estvar using analytic soln
-    hf_target = update_hf_target(avg_eval_ratios, avg_N_H, varH, estVarIter0);
+  if (maxFunctionEvals == SZ_MAX) {// HF tgt from ACV estvar using analytic soln
+    hf_target = (convergenceTolType == CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE) ?
+      update_hf_target(avg_eval_ratios, avg_N_H, varH) :
+      update_hf_target(avg_eval_ratios, avg_N_H, varH, estVarIter0);
+  }
   else // allocate_budget(), then manage lower bounds and pilot over-estimation
     scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, hf_target,
 		    activeBudget);
@@ -711,23 +714,6 @@ print_model_allocations(std::ostream& s, const MFSolutionData& soln,
   else
     s << "Estimator variance metric = " << soln.estimator_variance_metric()
       << std::endl;
-}
-
-
-Real NonDACVSampling::
-update_hf_target(const RealVector& avg_eval_ratios, Real avg_N_H,
-		 const RealVector& var_H, const RealVector& estvar0)
-{
-  RealVector cd_vars, estvar_ratios, estvar;
-  r_and_N_to_design_vars(avg_eval_ratios, avg_N_H, cd_vars);
-  estimator_variances_and_ratios(cd_vars, estvar_ratios, estvar);
-
-  Real metric;  size_t metric_index;
-  MFSolutionData::update_estimator_variance_metric(estVarMetricType,
-    estVarMetricNormOrder, estvar_ratios, estvar, metric, metric_index);
-
-  return NonDNonHierarchSampling::
-    update_hf_target(estvar_ratios, metric_index, var_H, estvar0);
 }
 
 

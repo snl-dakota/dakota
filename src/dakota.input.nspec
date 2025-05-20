@@ -2989,11 +2989,12 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       max {N_mdm(type,qoiAggregation_QOI_AGGREGATION_MAX)}
      ]
-    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ convergence_tolerance_type {0}
-      relative {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_RELATIVE)}
-      |
-      absolute {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)}
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)}
+      [ 
+        relative {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_RELATIVE)}
+        |
+        absolute {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)}
+       ]
      ]
     [ convergence_tolerance_target {0}
       variance_constraint {N_mdm(type,convergenceToleranceTarget_CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT)}
@@ -3117,11 +3118,12 @@ KEYWORD method {N_mdm3(start,0,stop)}
         freeform {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
        ]
      ]
-    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ convergence_tolerance_type {0}
-      relative {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_RELATIVE)}
-      |
-      absolute {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)}
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)}
+      [ 
+        relative {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_RELATIVE)}
+        |
+        absolute {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)}
+       ]
      ]
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
@@ -3209,11 +3211,12 @@ KEYWORD method {N_mdm3(start,0,stop)}
         freeform {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
        ]
      ]
-    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ convergence_tolerance_type {0}
-      relative {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_RELATIVE)}
-      |
-      absolute {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)}
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)}
+      [ 
+        relative {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_RELATIVE)}
+        |
+        absolute {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)}
+       ]
      ]
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
@@ -3337,11 +3340,12 @@ KEYWORD method {N_mdm3(start,0,stop)}
         freeform {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
        ]
      ]
-    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ convergence_tolerance_type {0}
-      relative {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_RELATIVE)}
-      |
-      absolute {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)}
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)}
+      [ 
+        relative {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_RELATIVE)}
+        |
+        absolute {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)}
+       ]
      ]
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
@@ -3460,11 +3464,12 @@ KEYWORD method {N_mdm3(start,0,stop)}
         freeform {N_mdm(utype,exportSamplesFormat_TABULAR_NONE)}
        ]
      ]
-    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ convergence_tolerance_type {0}
-      relative {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_RELATIVE)}
-      |
-      absolute {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)}
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)}
+      [ 
+        relative {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_RELATIVE)}
+        |
+        absolute {N_mdm(type,convergenceToleranceType_CONVERGENCE_TOLERANCE_TYPE_ABSOLUTE)}
+       ]
      ]
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
