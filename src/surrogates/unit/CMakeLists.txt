@@ -20,12 +20,12 @@ if(HAVE_ROL AND NOT WIN32)
     # To force linking against fortran runtime needed to teuchosnumerics
     # dependence on BLAS/LAPACK (TODO: root cause the link chain)
     empty.f90
-    LINK_LIBS dakota_surrogates Boost::boost Boost::filesystem )
+    LINK_LIBS dakota_surrogates Boost::boost )
 endif()
 
 dakota_add_unit_test(NAME surrogates_polynomial_regression
   SOURCES PolynomialRegressionTest.cpp
-  LINK_LIBS dakota_surrogates Boost::system Boost::filesystem )
+  LINK_LIBS dakota_surrogates Boost::system )
 
 dakota_add_unit_test(NAME surrogates_tools
   SOURCES SurrogatesToolsTest.cpp
@@ -55,7 +55,7 @@ if(DAKOTA_PYTHON_SURROGATES)
 
   dakota_add_unit_test(NAME surrogates_python_pybind11
     SOURCES PythonSurrogatesTest.cpp
-    LINK_LIBS dakota_surrogates Boost::system Boost::filesystem )
+    LINK_LIBS dakota_surrogates Boost::system )
   # Rationale: This includes Teuchos headers and needs to link to the
   # ParameterList components
   target_include_directories(surrogates_python_pybind11 PRIVATE "${Teuchos_INCLUDE_DIRS}")
