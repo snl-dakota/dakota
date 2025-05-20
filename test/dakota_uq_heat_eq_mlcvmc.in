@@ -18,12 +18,11 @@ method,
 #	  seed_sequence = 1234 2345 3456 4567	#s4
 #	  pilot_samples = 500 seed = 1237	#s6,#s8,#s13
 #	  max_iterations = 0
-#	  convergence_tolerance = .1			
-	  convergence_tolerance = .01		#s0,#s2,#s3,#p0,#p1
-#	  convergence_tolerance = .001		#s1,#s4,#s7,#s9,#s10,#s11,#s12,#s13
-#	  convergence_tolerance = .0001
-#	    absolute				#s12,#s13
 #	  max_function_evaluations = 50		#s5,#s6,#s8
+	  convergence_tolerance = .01		#s0,#s2,#s3,#p0,#p1
+#	  convergence_tolerance = .001		#s1,#s4,#s7,#s9,#s10,#s11
+#	  convergence_tolerance = .0001
+#	  convergence_tolerance = .1  absolute	#s12,#s13
 	output silent
 
 model,
@@ -36,11 +35,11 @@ model,
 	id_model = 'LF'
 	variables_pointer = 'LF_VARS'
 	simulation
-	  solution_level_control = 'N_x'		 #s0,#s1,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#p0,#p1
+	  solution_level_control = 'N_x'		 #s0,#s1,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#p0,#p1
 # linear in modes, linear in spatial coords:
 #	  solution_level_cost = 15. 45. 90. 180.
 # linear in modes, cubic in spatial coords:
-	  solution_level_cost = 375. 10125. 81000. 648000.   #s0,#s1,#s3,#s4,#s5,#s6,#s8,#s9,#s11,#p0,#p1
+	  solution_level_cost = 375. 10125. 81000. 648000.   #s0,#s1,#s3,#s4,#s5,#s6,#s8,#s9,#s11,#s12,#s13,#p0,#p1
 #	  solution_level_cost = 375. 	    	   	     #s2
 #	  cost_recovery_metadata = 'cost_model'		     #s7,#s10
 
@@ -48,11 +47,11 @@ model,
 	id_model = 'HF'
 	variables_pointer = 'HF_VARS'
 	simulation
-	  solution_level_control = 'N_x'		 #s0,#s1,#s2,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#p0,#p1
+	  solution_level_control = 'N_x'		 #s0,#s1,#s2,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#s12,#s13,#p0,#p1
 # linear in modes, linear in spatial coords:
 #	  solution_level_cost = 630. 1260. 2100. 4200.
 # linear in modes, cubic in spatial coords:
-	  solution_level_cost = 5.67e+5 4.536e+6 2.1e+7 1.68e+8	#s0,#s1,#s2,#s4,#s5,#s6,#s8,#s9,#s10,#p0,#p1
+	  solution_level_cost = 5.67e+5 4.536e+6 2.1e+7 1.68e+8	#s0,#s1,#s2,#s4,#s5,#s6,#s8,#s9,#s10,#s12,#s13,#p0,#p1
 #	  solution_level_cost = 5.67e+5			   	#s3
 #	  cost_recovery_metadata = 'cost_model'			#s7,#s11
 

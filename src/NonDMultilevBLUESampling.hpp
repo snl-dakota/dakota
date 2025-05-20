@@ -1063,9 +1063,18 @@ inline void NonDMultilevBLUESampling::apply_mc_reference(RealVector& mc_targets)
   if (mc_targets.length() != numFunctions)
     mc_targets.sizeUninitialized(numFunctions);
   const RealSymMatrixArray& cov_GG_g = covGG[ref_group];
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    mc_targets[qoi] = cov_GG_g[qoi](ref_model_index,ref_model_index)
-                    / ( convergenceTol * estVarIter0[qoi] );
+  switch (convergenceTolType) {
+  case ABSOLUTE_CONVERGENCE_TOLERANCE:
+    for (size_t qoi=0; qoi<numFunctions; ++qoi)
+      mc_targets[qoi] = cov_GG_g[qoi](ref_model_index,ref_model_index)
+                      / convergenceTol;
+    break;
+  default: // relative tolerance
+    for (size_t qoi=0; qoi<numFunctions; ++qoi)
+      mc_targets[qoi] = cov_GG_g[qoi](ref_model_index,ref_model_index)
+                      / ( convergenceTol * estVarIter0[qoi] );
+    break;
+  }
 }
 
 } // namespace Dakota

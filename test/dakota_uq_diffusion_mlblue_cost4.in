@@ -23,8 +23,8 @@ method,
 	  seed = 8674132
 #	  competed_local			#s12
 	  max_function_evaluations = 500	#s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s12,#s13,#s14,#s15,#s16,#s17
-#	  convergence_tolerance = .01		#s8,#s9,#s10,#s11,#s18,#s19,#s20,#s21
-#	    absolute		    		#s20,#s21
+#	  convergence_tolerance = .01		#s8,#s9,#s10,#s11,#s18,#s19
+#	  convergence_tolerance = 1e-8 absolute	#s20,#s21
 	  output silent
 
 model,

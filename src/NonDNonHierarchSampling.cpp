@@ -1312,17 +1312,6 @@ derived_finite_solution_bounds(const RealVector& x0, RealVector& x_lb,
 }
 
 
-void NonDNonHierarchSampling::apply_mc_reference(RealVector& mc_targets)
-{
-  // base implementation for use when varH is available
-
-  if (mc_targets.length() != numFunctions)
-    mc_targets.sizeUninitialized(numFunctions);
-  for (size_t qoi=0; qoi<numFunctions; ++qoi)
-    mc_targets[qoi] = varH[qoi] / (convergenceTol * estVarIter0[qoi]);
-}
-
-
 void NonDNonHierarchSampling::
 configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 		     const RealVector& lin_ineq_lb,

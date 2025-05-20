@@ -1512,6 +1512,25 @@ inline void NonDNonHierarchSampling::cache_mc_reference()
 }
 
 
+inline void NonDNonHierarchSampling::apply_mc_reference(RealVector& mc_targets)
+{
+  // base implementation for use when varH is available
+
+  if (mc_targets.length() != numFunctions)
+    mc_targets.sizeUninitialized(numFunctions);
+  switch (convergenceTolType) {
+  case ABSOLUTE_CONVERGENCE_TOLERANCE:
+    for (size_t qoi=0; qoi<numFunctions; ++qoi)
+      mc_targets[qoi] = varH[qoi] / convergenceTol;
+    break;
+  default: // relative tolerance
+    for (size_t qoi=0; qoi<numFunctions; ++qoi)
+      mc_targets[qoi] = varH[qoi] / (convergenceTol * estVarIter0[qoi]);
+    break;
+  }
+}
+
+
 inline void NonDNonHierarchSampling::
 enforce_bounds(RealVector& x0, const RealVector& x_lb, const RealVector& x_ub)
 {

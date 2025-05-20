@@ -1154,18 +1154,22 @@ bool NonDGenACVSampling::precompute_allocations()
   // best can hide new best (new iter using more resolved covariances)
   meritFnStar = DBL_MAX;
 
-  bool no_solve = (maxFunctionEvals != SZ_MAX &&
-		   equivHFEvals >= (Real)maxFunctionEvals);
+  bool budget_constrained = (maxFunctionEvals != SZ_MAX), no_solve = false;
+  // no_solve for any iteration:
+  if (budget_constrained)
+    no_solve = (equivHFEvals >= (Real)maxFunctionEvals); // budget exhausted
+
   if (mlmfIter == 0 && ( pilotMgmtMode == ONLINE_PILOT ||
 			 pilotMgmtMode == ONLINE_PILOT_PROJECTION) ) {
     cache_mc_reference();// {estVar,numH}Iter0, estVarMetric0
-    if (convergenceTolType == RELATIVE_CONVERGENCE_TOLERANCE)
-      no_solve = (no_solve || convergenceTol >= 1.);
-    else
-      no_solve = (no_solve || estVarMetric0  <= convergenceTol);
+    // no_solve augmentation for online iter 0:
+    if (!budget_constrained) // accuracy controlled by convergenceTol
+      no_solve = (convergenceTolType == RELATIVE_CONVERGENCE_TOLERANCE) ?
+	(convergenceTol >= 1.) : (estVarMetric0  <= convergenceTol);
   }
-  // Note: offline pilot can support absolute conv tol during numeric solve,
-  // but not in advance for no_solve since estVarMetric0 would be oracle value
+  // Offline accuracy-constrained is allowed with absolute tol, but is
+  // not available in advance of numerical solve (estVarMetric appears
+  // in nln_ineq_con, but pilot estVarMetric0 is not tracked)
 
   return no_solve;
 }

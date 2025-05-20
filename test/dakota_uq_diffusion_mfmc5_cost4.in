@@ -35,9 +35,9 @@ method,
 # LF correlations out for order for 5 samples at this seed:
 #	  seed = 1237				#s9,#s11
 #	  numerical_solve override		#s12,#s13,#s19,#s22,#s23,#s26,#s27
-#	    solver_metric max_estimator_variance	       #s22,#s23
-#	  convergence_tolerance = .001 relative		       #s13,#s23
-#	  convergence_tolerance = .001 absolute		       #s24,#s25,#s26,#s27
+#	    solver_metric max_estimator_variance       #s22,#s23
+#	  convergence_tolerance = .001 relative	       #s13,#s23
+#	  convergence_tolerance = 1e-8 absolute	       #s24,#s25,#s26,#s27
 	output silent
 
 model,

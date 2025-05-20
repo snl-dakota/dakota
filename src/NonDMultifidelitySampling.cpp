@@ -1213,19 +1213,22 @@ void NonDMultifidelitySampling::
 mfmc_numerical_solution(const RealMatrix& rho2_LH, const RealVector& cost,
 			MFSolutionData& soln)
 {
-  bool budget_constrained = (maxFunctionEvals != SZ_MAX),
-    no_solve = (budget_constrained && equivHFEvals >= (Real)maxFunctionEvals);
+  bool budget_constrained = (maxFunctionEvals != SZ_MAX), no_solve = false;
+  // no_solve for any iteration:
+  if (budget_constrained)
+    no_solve = (equivHFEvals >= (Real)maxFunctionEvals); // budget exhausted
 
   if (mlmfIter == 0) {
 
-    if (pilotMgmtMode == ONLINE_PILOT ||
-	pilotMgmtMode == ONLINE_PILOT_PROJECTION) {
-      if (convergenceTolType == RELATIVE_CONVERGENCE_TOLERANCE)
-	no_solve = (no_solve || convergenceTol >= 1.);
-      else
-	no_solve = (no_solve || estVarMetric0  <= convergenceTol);
-    }
-    
+    // no_solve augmentation for online iter 0:
+    if (!budget_constrained && ( pilotMgmtMode == ONLINE_PILOT ||
+				 pilotMgmtMode == ONLINE_PILOT_PROJECTION ) )
+      no_solve = (convergenceTolType == RELATIVE_CONVERGENCE_TOLERANCE) ?
+	(convergenceTol >= 1.) : (estVarMetric0  <= convergenceTol);
+    // Offline accuracy-constrained is allowed with absolute tol, but is
+    // not available in advance of numerical solve (estVarMetric appears
+    // in nln_ineq_con, but pilot estVarMetric0 is not tracked)
+
     size_t hf_form_index, hf_lev_index;
     hf_indices(hf_form_index, hf_lev_index);
     SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
