@@ -70,6 +70,14 @@ ProgramOptions::ProgramOptions(int argc, char* argv[], int world_rank):
 
   if (clh.retrieve("input"))
     inputFile = clh.retrieve("input");
+  Cout << "inputFile is " << inputFile << std::endl;
+  
+  if(inputFile == "-") {
+    stdinInput = true;
+    inputFile = "";
+  } else {
+    stdinInput = false;
+  }
 
   if (clh.retrieve("preproc")) {
     preprocInput = true;
@@ -114,6 +122,9 @@ const String& ProgramOptions::input_file() const
 
 const String& ProgramOptions::input_string() const
 { return inputString; }
+
+bool ProgramOptions::stdin_input() const
+{ return stdinInput; }
 
 bool ProgramOptions::echo_input() const
 { return echoInput; }

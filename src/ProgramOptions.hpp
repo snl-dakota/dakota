@@ -53,6 +53,8 @@ public:
   const String& input_file() const;
   /// alternate Dakota input string literal; also set when input is read from stdin
   const String& input_string() const;
+  /// is input from stdin?
+  bool stdin_input() const;
   /// is input echo specified?
   bool echo_input() const;
 
@@ -226,6 +228,8 @@ private:
   /// alternate input means for library clients: input string
   /// (mutually exclusive with input file)
   String inputString;
+  /// @brief true when user indicated input from stdin (inputFile == "-)
+  bool stdinInput;
   bool echoInput;         ///< whether to echo client's input file at parse 
 
   bool preprocInput;      ///< whether to pre-process input with pyprepro/etc.

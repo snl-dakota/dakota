@@ -14,6 +14,7 @@
 #include "ProblemDescDB.hpp"
 #include "IteratorScheduler.hpp"
 #include "dakota_preproc_util.hpp"
+#include "ProblemDescDBUtils.hpp"
 
 static const char rcsId[]="@(#) $Id: DakotaEnvironment.cpp 6749 2010-05-03 17:11:57Z briadam $";
 
@@ -223,7 +224,7 @@ void Environment::preprocess_inputs() {
   }
 
   // Read the input from stdin if the user provided "-" as the filename
-  if(programOptions.input_file() == "-") {
+  if(programOptions.stdin_input()) {
     Cout << "Reading Dakota input from standard input" << std::endl;
     String stdin_string;
     char in = std::cin.get();
@@ -231,7 +232,6 @@ void Environment::preprocess_inputs() {
       stdin_string.push_back(in);
       in = std::cin.get();
     }
-    programOptions.input_file("");
     programOptions.input_string(stdin_string);
   }
 
@@ -282,12 +282,19 @@ void Environment::parse(bool check_bcast_database,
 
   // parse input and callback functions
   if ( !programOptions.input_file().empty() || 
-       !programOptions.input_string().empty())
-    probDescDB.parse_inputs(programOptions, callback, callback_data);
+       !programOptions.input_string().empty()) {
+    auto [final_input, template_string] = 
+      ProblemDescDBUtils::final_input_and_template(programOptions);
+    if(programOptions.echo_input())
+      ProblemDescDBUtils::echo_input(final_input, template_string);
+    probDescDB.parse_inputs(final_input, programOptions.parser_options(), callback, callback_data);
+    if(programOptions.preproc_input())
+        std::filesystem::remove(programOptions.preprocessed_file());
+  }
 
   // check if true, otherwise caller assumes responsibility  
   if (check_bcast_database) 
-    probDescDB.check_and_broadcast(programOptions);
+    probDescDB.check_and_broadcast();
 }
 
 

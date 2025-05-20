@@ -22,7 +22,6 @@
 namespace Dakota {
 
 class ParallelLibrary;
-class ProgramOptions;
 
 // define the callback function for user updates to the problem DB
 class ProblemDescDB;
@@ -120,12 +119,12 @@ public:
 
   /// Parses the input file or input string if present and executes
   /// callbacks.  Does not perform any validation.
-  void parse_inputs(ProgramOptions& prog_opts,
+  void parse_inputs(const std::string_view input_string, const std::string_view parser_options,
 		    DbCallbackFunctionPtr callback = NULL,
 		    void* callback_data = NULL);
   /// performs check_input, broadcast, and post_process, but for now,
   /// allowing separate invocation through the public API as well
-  void check_and_broadcast(const ProgramOptions& prog_opts);
+  void check_and_broadcast();
   /// verifies that there is at least one of each of the required
   /// keywords in the dakota input file
   void check_input();
@@ -371,9 +370,8 @@ protected:
   //
 
   /// derived class specifics within parse_inputs()
-  virtual void derived_parse_inputs(const std::string& dakota_input_file,
-				    const std::string& dakota_input_string,
-				    const std::string& parser_options);
+  virtual void derived_parse_inputs(const std::string_view dakota_input,
+				    const std::string_view parser_options);
   /// derived class specifics within broadcast()
   virtual void derived_broadcast();
   /// derived class specifics within post_process()
@@ -456,11 +454,6 @@ private:
   /// helper function for determining whether an interface specification
   /// should be active, based on model type
   bool model_has_interface(const DataModelRep& model_rep) const;
-
-  /// echo the (potentially) specified input file or string to stdout
-  void echo_input_file(const std::string& dakota_input_file,
-		       const std::string& dakota_input_string,
-		       const std::string& tmpl_qualifier = "");
 
   /// require user-specified block identifiers to be unique
   void enforce_unique_ids();

@@ -37,6 +37,7 @@
 #include "DiscreteSetRandomVariable.hpp"
 #include <functional>
 #include <string>
+#include <string_view>
 #include <sstream>
 #include <algorithm>
 #include <stdarg.h>
@@ -129,23 +130,18 @@ void NIDRProblemDescDB::warn(const char *fmt, ...)
 /** Parse the input file using the Input Deck Reader (IDR) parsing system.
     IDR populates the IDRProblemDescDB object with the input file data. */
 void NIDRProblemDescDB::
-derived_parse_inputs(const std::string& dakota_input_file,
-		     const std::string& dakota_input_string,
-		     const std::string& parser_options)
+derived_parse_inputs(const std::string_view dakota_input,
+		     const std::string_view parser_options)
 {
   // set the pDDBInstance
   pDDBInstance = this;
 
   // Open the dakota input file passed in and "attach" it to stdin
   // (required by nidr_parse)
-  if(!dakota_input_string.empty()) {
+  if(!dakota_input.empty()) {
     Cout << "Using provided Dakota input string" << std::endl;
     // BMA TODO: output the string contents if verbose
-    nidr_set_input_string(dakota_input_string.c_str());
-  } else if (!dakota_input_file.empty()) {
-      Cout << "Using Dakota input file '" << dakota_input_file << "'" << std::endl;
-      if( !(nidrin = std::fopen(dakota_input_file.c_str(), "r")) )
-        botch("cannot open \"%s\"", dakota_input_file.c_str());
+    nidr_set_input_string(dakota_input.data());
   } else {
     Cerr << "\nError: NIDR parser called with no input." << std::endl;
     abort_handler(PARSE_ERROR);
@@ -159,7 +155,7 @@ derived_parse_inputs(const std::string& dakota_input_file,
   FILE *dump_file = NULL;
 
   nidr_alloc_error_cache();
-  if (nidr_parse(parser_options.c_str(), dump_file)) {
+  if (nidr_parse(parser_options.data(), dump_file)) {
     //Cerr << "\nErrors parsing input file." << std::endl;
     for (unsigned int i=0; i<nidr_max_errors; ++i)
       if (nidr_parse_errors[i][0] != '\0')
