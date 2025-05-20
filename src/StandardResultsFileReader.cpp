@@ -8,14 +8,13 @@
     _______________________________________________________________________ */
 
 #include "StandardResultsFileReader.hpp"
-#include <boost/filesystem/fstream.hpp>
 
 namespace Dakota {
 
 StandardResultsFileReader::StandardResultsFileReader(bool labeled) : ResultsFileReader(labeled) {}
 
-void StandardResultsFileReader::read_results_file(Response& response, const bfs::path &results_path, const int id) const {
-    bfs::ifstream recovery_stream(results_path);
+void StandardResultsFileReader::read_results_file(Response& response, const std::filesystem::path &results_path, const int id) const {
+  std::ifstream recovery_stream(results_path);
     if (!recovery_stream) {
         Cerr << "\nError: cannot open results file " << results_path
 	    << " for evaluation " << std::to_string(id) << std::endl;
@@ -32,7 +31,7 @@ void StandardResultsFileReader::read_results_file(Response& response, const bfs:
 }
 
 void StandardResultsFileReader::read_results_file(PRPQueue& prp_queue, const std::string &results_path, const int batch_id, IntSet &completion_set) const {
-    bfs::ifstream results_file(results_path);
+  std::ifstream results_file(results_path);
     if (!results_file) {
         Cerr << "\nError: cannot open results file " << results_path << 
             " for batch " << std::to_string(batch_id) << std::endl;

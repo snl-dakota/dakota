@@ -17,11 +17,9 @@
 #include <boost/regex.hpp>
 #include <boost/iterator/filter_iterator.hpp>
 
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
-namespace bfs = boost::filesystem;
-
 #include <boost/function.hpp>
+
+#include <filesystem>
 
 
 namespace Dakota {
@@ -35,8 +33,8 @@ enum {FILEOP_SILENT, FILEOP_WARN, FILEOP_ERROR};
 /// define a function type that operates from src to dest, with option
 /// to overwrite
 typedef 
-boost::function<bool (const bfs::path& src_path, 
-		      const bfs::path& dest_path, bool overwrite)> 
+boost::function<bool (const std::filesystem::path& src_path, 
+		      const std::filesystem::path& dest_path, bool overwrite)> 
 file_op_function;
 
 
@@ -65,10 +63,10 @@ struct MatchesWC {
   // manage generically in this struct by converting where needed
  
   /// ctor that builds and stores the regular expression
-  MatchesWC(const bfs::path& wild_card)
+  MatchesWC(const std::filesystem::path& wild_card)
   { 
 
-    bfs::path::string_type file_regex(wild_card.native());
+    std::filesystem::path::string_type file_regex(wild_card.native());
 
     // map * and ? wildcards to regular expression syntax
     boost::replace_all(file_regex, ".", "\\.") ;
@@ -85,7 +83,7 @@ struct MatchesWC {
   }
 
   /// return true is dir_entry matches wildCardRegEx
-  bool operator()(const bfs::path& dir_entry) 
+  bool operator()(const std::filesystem::path& dir_entry) 
   {  
     // generic vs. native shouldn't matter for the filename part;
     // using native in case we extend the regex to directories later
@@ -93,11 +91,11 @@ struct MatchesWC {
   }
 
   /// archived RegEx; wchar-based on Windows
-  boost::basic_regex<bfs::path::value_type> wildCardRegEx;
+  boost::basic_regex<std::filesystem::path::value_type> wildCardRegEx;
 };
 
 /// a glob_iterator filters a directory_iterator based on a wildcard predicate
-typedef boost::filter_iterator<MatchesWC, bfs::directory_iterator> glob_iterator;
+typedef boost::filter_iterator<MatchesWC, std::filesystem::directory_iterator> glob_iterator;
 
 
 /* RATIONALE on path management: only update PATH when needed, for
@@ -120,7 +118,7 @@ public:
   static const std::string& startup_pwd() { return startupPWD; }
 
   /// change current directory 
-  static void change_directory(const bfs::path& new_dir);
+  static void change_directory(const std::filesystem::path& new_dir);
 
   /// Prepend cached preferredEnvPath with extra_path and update $PATH
   /// environment variable
@@ -131,12 +129,12 @@ public:
 			      const std::string& env_val, 
 			      bool overwrite_flag = true);
 
-  /// Returns the bfs::path for the analysis driver, supporting
+  /// Returns the std::filesystem::path for the analysis driver, supporting
   /// typical windows filename extensions, or empty if not found
-  static bfs::path which(const std::string& driver_name);
+  static std::filesystem::path which(const std::string& driver_name);
 
-  /// get a valid absolute bfs::path to a subdirectory relative to rundir
-  static bfs::path rel_to_abs(const bfs::path& subdir_path)
+  /// get a valid absolute std::filesystem::path to a subdirectory relative to rundir
+  static std::filesystem::path rel_to_abs(const std::filesystem::path& subdir_path)
   { return ( startupPWD / subdir_path ); }
 
   /// tokenize a white-space separated analysis driver, respecting
@@ -154,28 +152,31 @@ public:
   /// the wildcard D*.?pp.  Return wild_card as path to reduce wstring
   /// conversions
   static void split_wildcard(const std::string& path_with_wc, 
-			     bfs::path& search_dir, bfs::path& wild_card);
+			     std::filesystem::path& search_dir, std::filesystem::path& wild_card);
 
 
   /// concatenate a string onto the end of a path
-  static bfs::path concat_path(const bfs::path& p_in, const String& tag);
+  static std::filesystem::path concat_path(const std::filesystem::path& p_in, const String& tag);
+
+  /// helper utility to replace boost::filesystem::unique_path
+  static std::filesystem::path unique_path(const std::string& name);
 
   /// generate a valid temporary file name prefix_%%%%%%%%
-  static bfs::path system_tmp_file(const std::string& prefix);
+  static std::filesystem::path system_tmp_file(const std::string& prefix);
 
   /// get the system tmp path, e.g., /tmp or C:\\temp
-  static bfs::path system_tmp_path();
+  static std::filesystem::path system_tmp_path();
 
   /// Create a directory, with options for remove or error
-  static bool create_directory(const bfs::path& dir_path,
+  static bool create_directory(const std::filesystem::path& dir_path,
 			       short mkdir_option);
 
   /// Remove a path (file, directory, or symlink) without regard to its
   /// type.  Only error if existed and there's an error in the remove.
-  static void recursive_remove(const bfs::path& rm_path, short fileop_option);
+  static void recursive_remove(const std::filesystem::path& rm_path, short fileop_option);
 
   /// Rename a file, catching any errors and optionally warning/erroring.
-  static void rename(const bfs::path& old_path, const bfs::path& new_path,
+  static void rename(const std::filesystem::path& old_path, const std::filesystem::path& new_path,
 		     short fileop_option);
 
   // Convenience functions which invoke file_op_items() with various kernels
@@ -184,14 +185,14 @@ public:
   /// symlinks), potentially including wildcards, from
   /// destination_dir, which must exist
   static void link_items(const StringArray& source_itemss,
-			 const bfs::path& dest_dir,
+			 const std::filesystem::path& dest_dir,
 			 bool overwrite);
 
   /// copy a list of source_paths (files, directories, symlinks),
   /// potentially including wildcards into destination_dir, which must
   /// exist
   static void copy_items(const StringArray& source_items,
-			 const bfs::path& dest_dir,
+			 const std::filesystem::path& dest_dir,
 			 bool overwrite);
 
   /// prepend any directories (including wildcards) found in
@@ -203,49 +204,49 @@ public:
   /// equivalent to the destination path, return true if any one is
   /// equivalent to dest
   static bool check_equivalent_dest(const StringArray& source_items,
-				    const bfs::path& dest_dir);
+				    const std::filesystem::path& dest_dir);
 
 
   /// check whether the any of the passed source items (possibly
   /// including wildcards to be expanded) matches the passed search driver
   static bool find_driver(const StringArray& source_items,
-			  const bfs::path& search_driver);
+			  const std::filesystem::path& search_driver);
 
   // Kernels for file operations to apply when iterating directory
   // entries or wildcards.  All must be of type file_op_function.
 
   /// create link from dest_dir/src_path.filename() to a single path
   /// (file, dir, link) in source directory
-  static bool link(const bfs::path& src_path,
-		   const bfs::path& dest_dir, bool overwrite);
+  static bool link(const std::filesystem::path& src_path,
+		   const std::filesystem::path& dest_dir, bool overwrite);
  
   /// Recrusive copy of src_path into dest_dir, with optional
   /// top-level overwrite (remove/recreate) of
   /// dest_dir/src_path.filename()
-  static bool recursive_copy(const bfs::path& src_path, 
-			     const bfs::path& dest_dir, bool overwrite);
+  static bool recursive_copy(const std::filesystem::path& src_path, 
+			     const std::filesystem::path& dest_dir, bool overwrite);
  
   /// prepend the preferred env path with source path if it's a
   /// directory; this will update cached preferred path and manipulate
   /// PATH
-  static bool prepend_path_item(const bfs::path& src_path, 
-				const bfs::path& dest_dir, bool overwrite);
+  static bool prepend_path_item(const std::filesystem::path& src_path, 
+				const std::filesystem::path& dest_dir, bool overwrite);
 
   /// return true if the src and dest are filesystem equivalent
-  static bool check_equivalent(const bfs::path& src_path, 
-			       const bfs::path& dest_dir, bool overwrite);
+  static bool check_equivalent(const std::filesystem::path& src_path, 
+			       const std::filesystem::path& dest_dir, bool overwrite);
 
   /// return true if the src_path is a regular file and has same
   /// filename as search_file
-  static bool find_file(const bfs::path& src_path, 
-			const bfs::path& search_file, bool overwrite);
+  static bool find_file(const std::filesystem::path& src_path, 
+			const std::filesystem::path& search_file, bool overwrite);
 
   /// recursively perform file_op (copy, path adjust, etc.) on a list
   /// of source_paths (files, directories, symlinks), which
   /// potentially include wildcards, w.r.t. destination_dir
   static bool file_op_items(const file_op_function& file_op,
 			    const StringArray& source_paths,
-			    const bfs::path& dest_dir,
+			    const std::filesystem::path& dest_dir,
 			    bool overwrite);
 
   /// set/reset PATH to dakPreferredEnvPath
@@ -253,7 +254,7 @@ public:
 
   /// set PATH to absolute(extra_path):dakPreferredEnvPath, without
   /// changing cached preferred PATH
-  static void set_preferred_path(const boost::filesystem::path& extra_path);
+  static void set_preferred_path(const std::filesystem::path& extra_path);
 
   ///  Resets the working directory "state" to its initial state when
   ///  DAKOTA  was launched
@@ -261,9 +262,9 @@ public:
 
 private:
 
-  /// Returns the bfs::path for the analysis driver - POSIX-style
+  /// Returns the std::filesystem::path for the analysis driver - POSIX-style
   /// implementation, returns empty if not found
-  static bfs::path po_which(const std::string& driver_name);
+  static std::filesystem::path po_which(const std::string& driver_name);
 
   /// Initializes class member, startupPATH
   static std::string init_startup_path();

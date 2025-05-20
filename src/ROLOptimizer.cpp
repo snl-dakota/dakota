@@ -430,7 +430,7 @@ void ROLOptimizer::set_rol_parameters()
   // Check for ROL XML input file.
   String adv_opts_file = probDescDB.get_string("method.advanced_options_file");
   if (!adv_opts_file.empty()) {
-    if (boost::filesystem::exists(adv_opts_file)) {
+    if (std::filesystem::exists(adv_opts_file)) {
       if (outputLevel >= NORMAL_OUTPUT)
 	       Cout << "Any ROL options in file '" << adv_opts_file
 	         << "' will override Dakota options." << std::endl;

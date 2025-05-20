@@ -17,7 +17,7 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <fstream>
 
 // BMA TODO: Review with team for best practice
@@ -555,7 +555,7 @@ TEST(GaussianProcessTest_tests, test_surrogates_2D_gp_with_trend_values_derivs_a
   std::string filename("gp_test.surr");
 
   for (bool binary : {true, false}) {
-    boost::filesystem::remove(filename);
+    std::filesystem::remove(filename);
     Surrogate::save(gp, filename, binary);
 
     GaussianProcess gp_loaded;

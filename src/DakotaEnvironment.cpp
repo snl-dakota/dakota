@@ -247,7 +247,7 @@ void Environment::preprocess_inputs() {
     programOptions.preprocessed_file(preproc_file);
 
     if (!programOptions.input_string().empty())
-      boost::filesystem::remove(tmpl_file);
+      std::filesystem::remove(tmpl_file);
 
     // once pre-processed, check for any input file redirs
     outputManager.check_input_redirs(programOptions, preproc_file,

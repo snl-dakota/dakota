@@ -17,7 +17,7 @@
 #endif
 
 #include <gtest/gtest.h>
-#include <boost/filesystem/operations.hpp>
+#include <filesystem>
 #include <cmath>
 
 #ifndef M_PI
@@ -181,7 +181,7 @@ TEST(restart_test_tests, test_io_restart_1var)
 TEST(restart_test_tests, test_io_restart_allvar)
 {
   std::string rst_filename("restart_allvar.rst");
-  boost::filesystem::remove(rst_filename);
+  std::filesystem::remove(rst_filename);
 
   const int num_evals = 10;
   PRPArray prps_out, prps_in;
@@ -206,7 +206,7 @@ TEST(restart_test_tests, test_io_restart_allvar)
   // std::cout << std::setprecision(20) << std::setw(30) << prp_in << '\n'
   // 	    << std::setprecision(20)  << prp_out << '\n';
 
-  boost::filesystem::remove(rst_filename);
+  std::filesystem::remove(rst_filename);
 }
 
 
@@ -214,7 +214,7 @@ TEST(restart_test_tests, test_io_restart_allvar)
 TEST(restart_test_tests, test_io_restart_read_oldfile)
 {
   std::string rst_filename("old.rst");
-  boost::filesystem::remove(rst_filename);
+  std::filesystem::remove(rst_filename);
 
   // an old restart file started with a PRP, instead of versioning, so
   // mock one up
@@ -250,7 +250,7 @@ TEST(restart_test_tests, test_io_restart_read_oldfile)
     EXPECT_TRUE((prps_in == prps_out));
   }
 
-  boost::filesystem::remove(rst_filename);
+  std::filesystem::remove(rst_filename);
 }
 
 
@@ -259,7 +259,7 @@ TEST(restart_test_tests, test_io_restart_read_oldfile)
 TEST(restart_test_tests, test_io_restart_read_minimal_oldfile)
 {
   std::string rst_filename("minimal_old.rst");
-  boost::filesystem::remove(rst_filename);
+  std::filesystem::remove(rst_filename);
 
   // an old restart file started with a PRP, instead of versioning, so mock one up
   const int num_evals = 1;
@@ -294,13 +294,13 @@ TEST(restart_test_tests, test_io_restart_read_minimal_oldfile)
     EXPECT_TRUE((prps_in == prps_out));
   }
 
-  boost::filesystem::remove(rst_filename);
+  std::filesystem::remove(rst_filename);
 }
 
 TEST(restart_test_tests, test_io_restart_read_newfile)
 {
   std::string rst_filename("new.rst");
-  boost::filesystem::remove(rst_filename);
+  std::filesystem::remove(rst_filename);
 
   const int num_evals = 1;
   PRPArray prps_out, prps_in;
@@ -333,7 +333,7 @@ TEST(restart_test_tests, test_io_restart_read_newfile)
     EXPECT_TRUE((prps_in == prps_out));
   }
 
-  boost::filesystem::remove(rst_filename);
+  std::filesystem::remove(rst_filename);
 }
 
 int main(int argc, char **argv) {

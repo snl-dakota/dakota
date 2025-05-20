@@ -18,8 +18,6 @@ typedef intptr_t pid_t;
 #endif
 
 #include <boost/tuple/tuple.hpp>
-#include <boost/filesystem/path.hpp>
-namespace bfs = boost::filesystem;
 
 namespace Dakota {
 
@@ -32,7 +30,7 @@ String substitute_params_and_results(const String &driver, const String &params,
 
 
 /// Triplet of filesystem paths: e.g., params, results, workdir 
-typedef boost::tuple<bfs::path, bfs::path, bfs::path> PathTriple;
+typedef boost::tuple<std::filesystem::path, std::filesystem::path, std::filesystem::path> PathTriple;
 
 
 /// Derived application interface class that spawns a simulation code
@@ -71,24 +69,24 @@ protected:
 
   void file_cleanup() const override;
 
-  void file_and_workdir_cleanup(const bfs::path &params_path,
-      const bfs::path &results_path,
-      const bfs::path &workdir_path,
+  void file_and_workdir_cleanup(const std::filesystem::path &params_path,
+      const std::filesystem::path &results_path,
+      const std::filesystem::path &workdir_path,
       const String &tag) const;
 
   /// Remove (potentially autotagged for multiple programs) parameters
   /// and results files with passed root names
-  void remove_params_results_files(const bfs::path& params_path, 
-				   const bfs::path& results_path) const;
+  void remove_params_results_files(const std::filesystem::path& params_path, 
+				   const std::filesystem::path& results_path) const;
 
 
   /// Utility to automatically tag parameters and results files with
   /// passed root names (the files may already need per-program
   /// tagging)
-  void autotag_files(const bfs::path& params_path, 
-		     const bfs::path& results_path,
+  void autotag_files(const std::filesystem::path& params_path, 
+		     const std::filesystem::path& results_path,
 		     const String& eval_id_tag
-		     //, const bfs::path dest_dir = bfs::path()
+		     //, const std::filesystem::path dest_dir = std::filesystem::path()
 		     ) const;
 
 
@@ -139,7 +137,7 @@ protected:
 			  const String& eval_id_tag);
 
   /// construct a work directory name (tmp or named), with optional tag
-  bfs::path get_workdir_name();
+  std::filesystem::path get_workdir_name();
   
   /// set PATH, environment variables, and change directory prior to
   /// fork/system/spawn
@@ -219,11 +217,11 @@ protected:
   bool dirSave;
   /// active working directory for this evaluation; valid only from
   /// define_filenames to create_evaluation_process
-  bfs::path curWorkdir;
+  std::filesystem::path curWorkdir;
 
   /// non-empty if created for this eval; valid only from
   /// define_filenames to write_parameters_files
-  bfs::path createdDir;
+  std::filesystem::path createdDir;
 
   // work directory population controls
 

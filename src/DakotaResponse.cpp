@@ -20,8 +20,6 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/export.hpp>
-#include <boost/filesystem/operations.hpp>
-#include "boost/filesystem/path.hpp"
 
 static const char rcsId[]="@(#) $Id: DakotaResponse.cpp 7029 2010-10-22 00:17:02Z mseldre $";
 
@@ -73,13 +71,13 @@ Response(BaseConstructor, const Variables& vars,
   if (problem_db.get_bool("responses.read_field_coordinates")) {
     size_t num_fields = shared_data().num_field_response_groups(); 
     const StringArray& field_labels = shared_data().field_group_labels();
-    boost::filesystem::path data_path_prefix = problem_db.get_string("responses.data_directory");
+    std::filesystem::path data_path_prefix = problem_db.get_string("responses.data_directory");
 
     for (size_t field_index = 0; field_index < num_fields; ++field_index) {
       const String& field_name = field_labels[field_index];
       std::string coord_file = field_name + ".coords";
-      boost::filesystem::path coord_path_and_file = data_path_prefix / coord_file;
-      if ( boost::filesystem::is_regular_file(coord_path_and_file) ) {
+      std::filesystem::path coord_path_and_file = data_path_prefix / coord_file;
+      if ( std::filesystem::is_regular_file(coord_path_and_file) ) {
         RealMatrix coord_values;
         read_coord_values(coord_path_and_file.string(), coord_values);
     //Cout << "coord_file " << coord_file << " coord_values:" << coord_values;

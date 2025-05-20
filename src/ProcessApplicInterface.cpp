@@ -16,7 +16,6 @@
 #include "ParametersFileWriter.hpp"
 #include "ResultsFileReader.hpp"
 #include <algorithm>
-#include <boost/filesystem/fstream.hpp>
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
@@ -56,7 +55,7 @@ using json = nlohmann::json;
       dir?!?  I think arg_adjust is removing the directory args that
       aren't needed.
 
-    - Consider making the class members for directories and files bfs::paths
+    - Consider making the class members for directories and files std::filesystem::paths
 
     - Behavior of file_save when directory not saved
 
@@ -183,8 +182,8 @@ ProcessApplicInterface(const ProblemDescDB& problem_db):
       }
       // even with a work_directory, there might be absolute
       // params/results paths...
-      bfs::path spf_path(specifiedParamsFileName);
-      bfs::path srf_path(specifiedResultsFileName);
+      std::filesystem::path spf_path(specifiedParamsFileName);
+      std::filesystem::path srf_path(specifiedResultsFileName);
       // an empty path is not absolute, so no need to check empty
       bool exist_abs_filenames = 
 	spf_path.is_absolute() || srf_path.is_absolute(); 
@@ -381,7 +380,7 @@ void ProcessApplicInterface::define_filenames(const String& eval_id_tag)
     bool wd_created = false;
     if (useWorkdir) {
       // curWorkdir is used by Fork/SysCall arg_adjust
-      curWorkdir = get_workdir_name();
+      curWorkdir = std::filesystem::path(get_workdir_name().string());
       // TODO: Create with 0700 mask?
       wd_created = WorkdirHelper::create_directory(curWorkdir, DIR_PERSIST);
       // copy/link tolerate empty items
@@ -399,7 +398,7 @@ void ProcessApplicInterface::define_filenames(const String& eval_id_tag)
 
     // define paramsFleName for use in write_parameters_files
     
-    bfs::path params_path(specifiedParamsFileName);
+    std::filesystem::path params_path(specifiedParamsFileName);
 
     // no user spec -> use temp files, possibly in workdir; generate relative
     if (specifiedParamsFileName.empty())
@@ -439,7 +438,7 @@ void ProcessApplicInterface::define_filenames(const String& eval_id_tag)
 
     // define resultsFileName for use in write_parameters_files
 
-    bfs::path results_path(specifiedResultsFileName);
+    std::filesystem::path results_path(specifiedResultsFileName);
 
     // no user spec -> use temp files, possibly in workdir; generate relative
     if (specifiedResultsFileName.empty())
@@ -518,9 +517,9 @@ write_parameters_files(const Variables& vars,    const ActiveSet& set,
     // all other cases (including tagged) will overwrite the old files.  Since
     // we don't want to save tmp files, don't bother to check fileSaveFlag.
     // Also don't check allow existing results since they may be bogus.
-    const bfs::path& pfile_path = (map_iter->second).get<0>();
+    const std::filesystem::path& pfile_path = (map_iter->second).get<0>();
     WorkdirHelper::recursive_remove(pfile_path, FILEOP_WARN);
-    const bfs::path& rfile_path = (map_iter->second).get<1>();
+    const std::filesystem::path& rfile_path = (map_iter->second).get<1>();
     WorkdirHelper::recursive_remove(rfile_path, FILEOP_WARN);
     // replace file names in map, avoiding 2nd lookup
     map_iter->second = file_names;
@@ -581,9 +580,9 @@ read_results_files(Response& response, const int id, const String& eval_id_tag)
   // ProcessApplicInterface or rebuilding the file name from the root name
   // plus the counter).
   std::map<int, PathTriple>::iterator map_iter = fileNameMap.find(id);
-  const bfs::path& params_path  = (map_iter->second).get<0>();
-  const bfs::path& results_path = (map_iter->second).get<1>();
-  const bfs::path& workdir_path = (map_iter->second).get<2>();
+  const std::filesystem::path& params_path  = (map_iter->second).get<0>();
+  const std::filesystem::path& results_path = (map_iter->second).get<1>();
+  const std::filesystem::path& workdir_path = (map_iter->second).get<2>();
 
   // If multiple analysis programs are used, then results_filename is tagged
   // with program number (to match ProcessApplicInterface::spawn_evaluation)
@@ -600,7 +599,7 @@ read_results_files(Response& response, const int id, const String& eval_id_tag)
     Response partial_response = response.copy();
     for (size_t i=0; i<num_programs; ++i) {
       const std::string prog_num("." + std::to_string(i+1));
-      bfs::path prog_tagged_results
+      std::filesystem::path prog_tagged_results
 	= WorkdirHelper::concat_path(results_path, prog_num);
       resultsFileReader->read_results_file(partial_response, prog_tagged_results, id);
       response.overlay(partial_response);
@@ -617,10 +616,10 @@ read_results_files(Response& response, const int id, const String& eval_id_tag)
 
 /** Move specified params and results files to unique tagged versions
     when needed */
-void ProcessApplicInterface::autotag_files(const bfs::path& params_path, 
-					   const bfs::path& results_path,
+void ProcessApplicInterface::autotag_files(const std::filesystem::path& params_path, 
+					   const std::filesystem::path& results_path,
 					   const String& eval_id_tag
-					   //, const bfs::path dest_dir
+					   //, const std::filesystem::path dest_dir
 					   ) const
 
 {
@@ -631,7 +630,7 @@ void ProcessApplicInterface::autotag_files(const bfs::path& params_path,
     Cout << "Files with nonunique names will be tagged for file_save:\n";
 
   if (!specifiedParamsFileName.empty()) {
-    bfs::path eval_tagged_params = 
+    std::filesystem::path eval_tagged_params = 
       WorkdirHelper::concat_path(params_path, eval_id_tag);
 
     if (!multipleParamsFiles || !iFilterName.empty()) {
@@ -642,9 +641,9 @@ void ProcessApplicInterface::autotag_files(const bfs::path& params_path,
     if (multipleParamsFiles) { // append program counters to old/new strings
       for (size_t i=0; i<num_programs; ++i) {
 	const std::string prog_num("." + std::to_string(i+1));
-	const bfs::path prog_tagged_old = 
+	const std::filesystem::path prog_tagged_old = 
 	  WorkdirHelper::concat_path(params_path, prog_num);
-	const bfs::path eval_prog_tagged_new = 
+	const std::filesystem::path eval_prog_tagged_new = 
 	  WorkdirHelper::concat_path(eval_tagged_params, prog_num);
 	if (!suppressOutput && outputLevel > NORMAL_OUTPUT)
 	  Cout << "Moving " << prog_tagged_old << " to " << eval_prog_tagged_new
@@ -656,7 +655,7 @@ void ProcessApplicInterface::autotag_files(const bfs::path& params_path,
   }
 
   if (!specifiedResultsFileName.empty()) {
-    bfs::path eval_tagged_results = 
+    std::filesystem::path eval_tagged_results = 
       WorkdirHelper::concat_path(results_path, eval_id_tag);
 
     if (num_programs == 1 || !oFilterName.empty()) {
@@ -668,9 +667,9 @@ void ProcessApplicInterface::autotag_files(const bfs::path& params_path,
     if (num_programs > 1) { // append program counters to old/new strings
       for (size_t i=0; i<num_programs; ++i) {
 	const std::string prog_num("." + std::to_string(i+1));
-	const bfs::path prog_tagged_old = 
+	const std::filesystem::path prog_tagged_old = 
 	  WorkdirHelper::concat_path(results_path, prog_num);
-	const bfs::path eval_prog_tagged_new = 
+	const std::filesystem::path eval_prog_tagged_new = 
 	  WorkdirHelper::concat_path(eval_tagged_results, prog_num);
 	if (!suppressOutput && outputLevel > NORMAL_OUTPUT)
 	  Cout << "Moving " << prog_tagged_old << " to " << eval_prog_tagged_new
@@ -683,8 +682,8 @@ void ProcessApplicInterface::autotag_files(const bfs::path& params_path,
 }
 
 void ProcessApplicInterface::
-remove_params_results_files(const bfs::path& params_path, 
-			    const bfs::path& results_path) const
+remove_params_results_files(const std::filesystem::path& params_path, 
+			    const std::filesystem::path& results_path) const
 {
   size_t num_programs = programNames.size();
 
@@ -710,7 +709,7 @@ remove_params_results_files(const bfs::path& params_path,
   if (multipleParamsFiles) {
     for (size_t i=0; i<num_programs; ++i) {
       const std::string prog_num("." + std::to_string(i+1));
-      const bfs::path tagged_params = 
+      const std::filesystem::path tagged_params = 
 	WorkdirHelper::concat_path(params_path, prog_num);
       WorkdirHelper::recursive_remove(tagged_params, FILEOP_WARN);
     }
@@ -722,7 +721,7 @@ remove_params_results_files(const bfs::path& params_path,
   if (num_programs > 1)
     for (size_t i=0; i<num_programs; ++i) {
       const std::string prog_num("." + std::to_string(i+1));
-      const bfs::path tagged_results = 
+      const std::filesystem::path tagged_results = 
 	WorkdirHelper::concat_path(results_path, prog_num);
       WorkdirHelper::recursive_remove(tagged_results, FILEOP_WARN);
     }
@@ -739,9 +738,9 @@ void ProcessApplicInterface::file_cleanup() const
     file_name_map_it  = fileNameMap.begin(),
     file_name_map_end = fileNameMap.end();
   for(; file_name_map_it != file_name_map_end; ++file_name_map_it) {
-    const bfs::path& parfile = (file_name_map_it->second).get<0>();
-    const bfs::path& resfile = (file_name_map_it->second).get<1>();
-    const bfs::path& wd_path = (file_name_map_it->second).get<2>();
+    const std::filesystem::path& parfile = (file_name_map_it->second).get<0>();
+    const std::filesystem::path& resfile = (file_name_map_it->second).get<1>();
+    const std::filesystem::path& wd_path = (file_name_map_it->second).get<2>();
     if (!fileSaveFlag) {
       if (!multipleParamsFiles || !iFilterName.empty()) {
 	WorkdirHelper::recursive_remove(parfile, FILEOP_SILENT);
@@ -751,9 +750,9 @@ void ProcessApplicInterface::file_cleanup() const
 	size_t i, num_programs = programNames.size();
 	for(i=1; i<=num_programs; ++i) {
 	  std::string prog_num("." + std::to_string(i));
-	  bfs::path pname = WorkdirHelper::concat_path(parfile, prog_num);
+          std::filesystem::path pname = WorkdirHelper::concat_path(parfile, prog_num);
 	  WorkdirHelper::recursive_remove(pname, FILEOP_SILENT);
-	  bfs::path rname = WorkdirHelper::concat_path(resfile, prog_num);
+          std::filesystem::path rname = WorkdirHelper::concat_path(resfile, prog_num);
 	  WorkdirHelper::recursive_remove(rname, FILEOP_SILENT);
 	}
       }
@@ -766,13 +765,13 @@ void ProcessApplicInterface::file_cleanup() const
 
 
 // get the current work directory name
-bfs::path ProcessApplicInterface::get_workdir_name()
+std::filesystem::path ProcessApplicInterface::get_workdir_name()
 {
   // PDH suggets making in rundir instead of tmp area...
-  bfs::path wd_name = workDirName.empty() ? 
+  std::filesystem::path wd_name = workDirName.empty() ? 
     ( WorkdirHelper::system_tmp_path() / 
       WorkdirHelper::system_tmp_file("dakota_work") ) :
-    workDirName;
+    std::filesystem::path(workDirName);
 
   // we allow tagging of tmp dirs in case the user's script needs the tag
   if (dirTag)
@@ -827,9 +826,9 @@ void ProcessApplicInterface::reset_process_environment()
 }
 
 void ProcessApplicInterface::
-file_and_workdir_cleanup(const bfs::path &params_path,
-    const bfs::path &results_path,
-    const bfs::path &workdir_path, 
+file_and_workdir_cleanup(const std::filesystem::path &params_path,
+    const std::filesystem::path &results_path,
+    const std::filesystem::path &workdir_path, 
     const String &tag) const
 {
   
@@ -863,7 +862,7 @@ file_and_workdir_cleanup(const bfs::path &params_path,
 	// TODO: distinguish between params in vs. not in (absolute
 	// path) the workdir
 	// autotag_files(params_path, results_path, eval_id_tag,
-	// 	      bfs::current_path());
+	// 	      std::filesystem::current_path());
       }
     }
     else {

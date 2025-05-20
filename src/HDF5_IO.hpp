@@ -16,7 +16,6 @@
 #include "dakota_global_defs.hpp"
 #include "dakota_results_types.hpp"
 
-//#include <boost/filesystem/operations.hpp>
 //#include <boost/multi_array.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/algorithm/string.hpp>

@@ -13,7 +13,8 @@
 #include "surrogates_tools.hpp"
 #include "util_common.hpp"
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
+
 #include <boost/version.hpp>
 #if (BOOST_VERSION < 107000) && !defined(BOOST_ALLOW_DEPRECATED_HEADERS)
 // could alternately use: #define BOOST_PENDING_INTEGER_LOG2_HPP 1
@@ -389,7 +390,7 @@ void PolynomialRegression_SaveLoad() {
     std::string filename("poly_test.surr");
     filename += binary ? ".bin" : ".txt";
 
-    boost::filesystem::remove(filename);
+    std::filesystem::remove(filename);
     Surrogate::save(std::dynamic_pointer_cast<Surrogate>(pr3), filename,
                     binary);
 

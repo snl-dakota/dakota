@@ -13,8 +13,6 @@
 #include "DakotaVariables.hpp"
 
 #include <boost/tokenizer.hpp>
-#include <boost/filesystem/operations.hpp>
-#include "boost/filesystem/path.hpp"
 
 namespace Dakota {
 
@@ -111,7 +109,7 @@ read_config_vars_multifile(const std::string& basename, int num_expts, int ncv,
   assert(num_expts == config_vars.size());
   for( int i = 0; i < num_expts; ++i ) {
     std::string filename = basename + "." + std::to_string(i+1) + ".config";
-    if( !boost::filesystem::exists(filename) ) {
+    if( !std::filesystem::exists(filename) ) {
       Cerr << "Could not find expected experiment config file '"
 	   << filename << "'.\n";
       abort_handler(IO_ERROR);
@@ -141,7 +139,7 @@ read_config_vars_singlefile(const std::string& basename, int num_expts, int ncv,
 			    std::vector<Variables>& config_vars){
   assert(num_expts == config_vars.size());
   std::string filename = basename + ".config";
-  if( !boost::filesystem::exists(filename) ) {
+  if( !std::filesystem::exists(filename) ) {
     Cerr << "Could not find expected experiment config file '" << filename
 	 << "'.\n";
     abort_handler(IO_ERROR);

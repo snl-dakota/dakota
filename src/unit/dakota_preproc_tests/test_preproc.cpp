@@ -12,7 +12,6 @@
 // Maybe CMake Test property for ENVIRONMENT
 
 #include "dakota_preproc_util.hpp"
-#include <boost/filesystem/operations.hpp>
 #include <gtest/gtest.h>
 
 #include <fstream>
@@ -34,7 +33,7 @@ TEST(test_preproc_tests, test_pyprepro)
   }
 
   // remove generated file
-  boost::filesystem::remove(gen_file);
+  std::filesystem::remove(gen_file);
 }
 
 int main(int argc, char **argv) {

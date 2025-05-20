@@ -13,6 +13,7 @@
 #include <boost/array.hpp>
 #include <boost/tokenizer.hpp>
 #include <cassert>
+#include <random>
 
 #if defined(_WIN32) || defined(_WIN64)
 
@@ -41,18 +42,18 @@ std::string WorkdirHelper::dakPreferredEnvPath = ".";
 
 
 /* Portability adapter: return the cwd string in OS-native
-   format.  TODO: change paths throughout code to use bfs::path where
+   format.  TODO: change paths throughout code to use std::filesystem::path where
    possible, since Windows (and Cygwin) use wchar_t instead of
    char_t. */
 std::string get_cwd_str()
 {
   // Get the native path and return as a string, using locale-specific
   // conversion from wchar to char if needed.
-  bfs::path curr_path;
+  std::filesystem::path curr_path;
   try {
-    curr_path = boost::filesystem::current_path();
+    curr_path = std::filesystem::current_path();
   }
-  catch (const bfs::filesystem_error& e) {
+  catch (const std::filesystem::filesystem_error& e) {
     Cerr << "\nError: could not get current directory path;\n       " 
 	 << e.what() << std::endl;
     abort_handler(IO_ERROR);
@@ -71,10 +72,10 @@ void WorkdirHelper::initialize()
 }
 
 
-void WorkdirHelper::change_directory(const bfs::path& new_dir)
+void WorkdirHelper::change_directory(const std::filesystem::path& new_dir)
 {
   // TODO: check DAK_MAXPATHLEN? (advice varies on practicality)
-  //  bfs::path::string_type new_dir_str = new_dir.native();
+  //  std::filesystem::path::string_type new_dir_str = new_dir.native();
   // path::c_str() should return right width string...
   int err_code = -1;
 #if defined(_WIN32) || defined(_WIN64)
@@ -115,7 +116,7 @@ std::string WorkdirHelper::init_preferred_env_path()
 void WorkdirHelper::prepend_preferred_env_path(const std::string& extra_path)
 {
   // Assume a relative extra_path arg is relative to dakota's startupPWD
-  std::string abs_extra_path = bfs::path(extra_path).is_absolute() ? extra_path :
+  std::string abs_extra_path = std::filesystem::path(extra_path).is_absolute() ? extra_path :
     startupPWD + std::string(1,DAK_SLASH) + extra_path;
 
   std::string path_sep_string(1, DAK_PATH_SEP);
@@ -175,7 +176,7 @@ WorkdirHelper::tokenize_env_path(const std::string& env_path)
     dirs.push_back(dir_path);
 
 #if defined(DEBUG)
-    if( !bfs::is_directory(dir_path) )
+    if( !std::filesystem::is_directory(dir_path) )
       Cout << "Warning - DAKOTA analysis driver resolution detects issue with: "
            << dir_path << " on the environment path.\n\t"
            << "Directory may not exist" << std::endl;
@@ -222,14 +223,14 @@ std::vector<std::string> get_pathext()
  *  This version is a wrapper over the "plain ol' which" implementation,
  *  allowing an array of windows, 3-letter extensions to be checked.
  */
-bfs::path WorkdirHelper::which(const std::string& driver_name)
+std::filesystem::path WorkdirHelper::which(const std::string& driver_name)
 {
-  boost::filesystem::path driver_found;
+  std::filesystem::path driver_found;
 
 #if defined(_WIN32)
 
   // TODO: consider skipping this if the user gave an explicit
-  // extension (use bfs::path::extension())
+  // extension (use std::filesystem::path::extension())
 
   // get list of valid extensions for executables
   StringArray extensions = get_pathext();
@@ -328,15 +329,15 @@ bool WorkdirHelper::resolve_driver_path(String& an_driver)
 /** Utility function for "which"
  *  sets complete_filepath from dir_path/file_name combo
  */
-inline bool contains(const bfs::path& dir_path, const std::string& file_name,
-                     boost::filesystem::path& complete_filepath)
+inline bool contains(const std::filesystem::path& dir_path, const std::string& file_name,
+                     std::filesystem::path& complete_filepath)
 {
   try {
     complete_filepath = dir_path;
     complete_filepath /= file_name;
-    return boost::filesystem::is_regular_file(complete_filepath);
+    return std::filesystem::is_regular_file(complete_filepath);
   }
-  catch(const bfs::filesystem_error&) {
+  catch(const std::filesystem::filesystem_error&) {
 #if defined(DEBUG)
     Cout << "\nWarning: unable to perform search for analysis driver"
          << " using a directory in $PATH:  " << dir_path << std::endl;
@@ -352,10 +353,10 @@ inline bool contains(const bfs::path& dir_path, const std::string& file_name,
  *
  *  This is the "plain ol' which" impl that worked well, historically, on POSIX.
  */
-bfs::path WorkdirHelper::po_which(const std::string& driver_name)
+std::filesystem::path WorkdirHelper::po_which(const std::string& driver_name)
 {
-  bfs::path driver_path_spec(driver_name);
-  bfs::path driver_path_found;
+  std::filesystem::path driver_path_spec(driver_name);
+  std::filesystem::path driver_path_found;
 
   if( !driver_path_spec.is_absolute() ) {
     //Cout << "RELATIVE path to driver case" << '\n';
@@ -363,8 +364,8 @@ bfs::path WorkdirHelper::po_which(const std::string& driver_name)
       tokenize_env_path(dakPreferredEnvPath);
 
     for(const std::string& d : search_dirs) {
-      boost::filesystem::path complete_path_to_driver;
-      boost::filesystem::path search_dir_path(d);
+      std::filesystem::path complete_path_to_driver;
+      std::filesystem::path search_dir_path(d);
 
       if( contains(search_dir_path, driver_name, complete_path_to_driver) ) {
         //Cout << driver_name << " FOUND in: " << d << "; complete path is: " 
@@ -377,7 +378,7 @@ bfs::path WorkdirHelper::po_which(const std::string& driver_name)
   }
   else {
     //Cout << "ABSOLUTE path to driver was specified" << std::endl;
-    if (bfs::is_regular_file(driver_path_spec))
+    if (std::filesystem::is_regular_file(driver_path_spec))
       driver_path_found = driver_path_spec;
   }
 
@@ -395,9 +396,9 @@ void WorkdirHelper::set_preferred_path()
     could make sense to prepend a relative path, no current use cases)
     and prepend when setting environment. Does not update cached
     preferred path.  */
-void WorkdirHelper::set_preferred_path(const boost::filesystem::path& extra_path)
+void WorkdirHelper::set_preferred_path(const std::filesystem::path& extra_path)
 {
-  boost::filesystem::path abs_extra_path = extra_path.is_absolute() ? 
+  std::filesystem::path abs_extra_path = extra_path.is_absolute() ? 
     extra_path : rel_to_abs(extra_path);
 
   std::string path_sep_string(1, DAK_PATH_SEP);
@@ -417,11 +418,11 @@ void WorkdirHelper::reset()
 
 /** Input: path_with_wc; Output: search_dir, wild_card */
 void WorkdirHelper::split_wildcard(const std::string& path_with_wc, 
-				   bfs::path& search_dir, 
-				   bfs::path& wild_card)
+				   std::filesystem::path& search_dir, 
+				   std::filesystem::path& wild_card)
 {
   // could coerce string to path in passing args...
-  bfs::path fq_search(path_with_wc);
+  std::filesystem::path fq_search(path_with_wc);
 
   // TODO: better way to do this (trailing slash yields filename of .)
   // want to allow matching /tmp/foo/ as /tmp with entry foo so foo
@@ -441,19 +442,47 @@ void WorkdirHelper::split_wildcard(const std::string& path_with_wc,
 
   // might we need wstring on Windows?
   wild_card = fq_search.filename();
+}
+
+
+std::filesystem::path WorkdirHelper::unique_path(const std::string& input)
+{
+  // Function to replace '%' characters in a string with random alphanumeric values
+
+  // Create a random number generator
+  std::random_device rd;
+  std::mt19937 rng(rd());
+
+  // Lambda to generate a random case-sensitive alphanumeric character
+  auto generate_rnd_alphanumeric = [&rng]() -> char {
+    const std::string characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    std::uniform_int_distribution<std::size_t> dist(0, characters.size() - 1);
+    return characters[dist(rng)];
+  };
+
+  // Create a copy of the input string to modify
+  std::string result = input;
+
+  // Replace each '%' with a random alphanumeric character
+  std::transform(result.begin(), result.end(), result.begin(),
+      [&generate_rnd_alphanumeric](char c) {
+        return (c == '%') ? generate_rnd_alphanumeric() : c;
+      });
+
+  return std::filesystem::path(result);
 
 }
 
 
-bfs::path WorkdirHelper::system_tmp_file(const std::string& prefix)
+std::filesystem::path WorkdirHelper::system_tmp_file(const std::string& prefix)
 {
-  bfs::path temp_filename;
+  std::filesystem::path temp_filename;
   try {
-    // generate an 8 hex character unique name
+    // generate an 8 character unique name
     std::string temp_name_pattern(prefix + "_%%%%%%%%");
-    temp_filename = bfs::unique_path(temp_name_pattern);
+    temp_filename = unique_path(temp_name_pattern);
   }
-  catch (const bfs::filesystem_error& e) {
+  catch (const std::filesystem::filesystem_error& e) {
     Cerr << "\nError: could not generate temporary filename with prefix "
 	 << prefix << ";\n       " << e.what() << std::endl;
     abort_handler(IO_ERROR);
@@ -482,14 +511,14 @@ bfs::path WorkdirHelper::system_tmp_file(const std::string& prefix)
 }
 
 
-bfs::path WorkdirHelper::system_tmp_path()
+std::filesystem::path WorkdirHelper::system_tmp_path()
 {
   // TODO: tmp files in . or /tmp?   Could offer option.
-  bfs::path temp_directory;
+  std::filesystem::path temp_directory;
   try {
-    temp_directory = bfs::temp_directory_path();
+    temp_directory = std::filesystem::temp_directory_path();
   }
-  catch (const bfs::filesystem_error& e) {
+  catch (const std::filesystem::filesystem_error& e) {
     Cerr << "\nError: could not determine temporary directory path;\n       " 
 	 << e.what() << std::endl;
     abort_handler(IO_ERROR);
@@ -501,18 +530,18 @@ bfs::path WorkdirHelper::system_tmp_path()
 /** mkdir_option is DIR_CLEAN (remove and recreate), DIR_PERSIST
     (leave existing), or DIR_ERROR (don't allow existing) returns
     whether a new directory was created. */
-bool WorkdirHelper::create_directory(const bfs::path& dir_path,
+bool WorkdirHelper::create_directory(const std::filesystem::path& dir_path,
 				     short mkdir_option)
 {
   bool dir_created = false;  // whether this function created a new directory
 
   // remove any existing directory if requested, error since we test if exists
-  if (mkdir_option == DIR_CLEAN && bfs::exists(dir_path))
+  if (mkdir_option == DIR_CLEAN && std::filesystem::exists(dir_path))
     recursive_remove(dir_path, FILEOP_ERROR);
 
   try {
     // now conditionally create a new one
-    if (bfs::exists(dir_path)) {
+    if (std::filesystem::exists(dir_path)) {
 
       if (mkdir_option == DIR_ERROR) {
 	// DIR_ERROR or failure in removal
@@ -522,17 +551,17 @@ bool WorkdirHelper::create_directory(const bfs::path& dir_path,
       }
 
       // DIR_PERSIST case
-      if (!bfs::is_directory(dir_path)) {
+      if (!std::filesystem::is_directory(dir_path)) {
 	Cerr << "\nError: Directory " << dir_path << " exists (permitted), but "
 	     << "is not a directory." << std::endl;
 	abort_handler(-1);
       }
 
       // check permissions; syntax requires Boost 1.49 or newer
-      bfs::perms dir_perms = bfs::status(dir_path).permissions();
+      std::filesystem::perms dir_perms = std::filesystem::status(dir_path).permissions();
       // TODO: verify owner_all on Windows?
       //      if ( !(dir_perms & owner_all) ) {
-      if ( !(dir_perms & bfs::owner_write) ) {
+      if ( (dir_perms & std::filesystem::perms::owner_write) == std::filesystem::perms::none ) {
 	// BMA: Make this a warning until we get permission checking fixed
 	Cout << "\nWarning: Directory " << dir_path << " exists (permitted), but "
 	     << "not writable." << std::endl;
@@ -543,7 +572,7 @@ bool WorkdirHelper::create_directory(const bfs::path& dir_path,
 
       try {
 	// directory does not exist, create recursively (as if mkdir -p, we hope)
-	bfs::create_directories(dir_path);
+        std::filesystem::create_directories(dir_path);
 	dir_created = true;
 
 	// Shouldn't need this as create_directory is probably already more
@@ -551,16 +580,16 @@ bool WorkdirHelper::create_directory(const bfs::path& dir_path,
 
 	// make sure new directory has at least rwx (might also have s)
 	// TODO: make sure any intermediate paths have right permissions
-	//bfs::permissions(dir_path, bfs::add_perms | bfs::owner_all);
+	//std::filesystem::permissions(dir_path, std::filesystem::add_perms | std::filesystem::owner_all);
       }
-      catch (const bfs::filesystem_error& e) {
+      catch (const std::filesystem::filesystem_error& e) {
 	Cerr << "\nError: could not create directory " << dir_path 
 	     << ";\n       " << e.what() << std::endl;
 	abort_handler(IO_ERROR);
       }
     }
   }
-  catch  (const bfs::filesystem_error& e) {
+  catch  (const std::filesystem::filesystem_error& e) {
     Cerr << "\nError: could not get status of directory " << dir_path 
 	 << ";\n       " << e.what() << std::endl;
     abort_handler(IO_ERROR);
@@ -570,11 +599,11 @@ bool WorkdirHelper::create_directory(const bfs::path& dir_path,
 }
 
 
-void WorkdirHelper::recursive_remove(const bfs::path& rm_path, short fileop_opt)
+void WorkdirHelper::recursive_remove(const std::filesystem::path& rm_path, short fileop_opt)
 {
   try {
-    if (bfs::exists(rm_path))
-      bfs::remove_all(rm_path);
+    if (std::filesystem::exists(rm_path))
+      std::filesystem::remove_all(rm_path);
     else {
       if (fileop_opt == FILEOP_WARN) {
 	Cerr << "\nWarning: path " << rm_path << " to remove does not exist." 
@@ -587,7 +616,7 @@ void WorkdirHelper::recursive_remove(const bfs::path& rm_path, short fileop_opt)
       }
     }
   }
-  catch (const bfs::filesystem_error& e) {
+  catch (const std::filesystem::filesystem_error& e) {
     if (fileop_opt == FILEOP_WARN) {
       Cerr << "\nWarning: could not remove path " << rm_path << ";\n" 
 	   << e.what() << std::endl;
@@ -601,12 +630,12 @@ void WorkdirHelper::recursive_remove(const bfs::path& rm_path, short fileop_opt)
 }
 
 
-void WorkdirHelper::rename(const bfs::path& old_path, const bfs::path& new_path,
+void WorkdirHelper::rename(const std::filesystem::path& old_path, const std::filesystem::path& new_path,
 			   short fileop_opt)
 {
   try {
-    if (bfs::exists(old_path))
-      bfs::rename(old_path, new_path);
+    if (std::filesystem::exists(old_path))
+      std::filesystem::rename(old_path, new_path);
     else {
       if (fileop_opt == FILEOP_WARN) {
 	Cerr << "\nWarning: path " << old_path << " to rename does not exist." 
@@ -619,7 +648,7 @@ void WorkdirHelper::rename(const bfs::path& old_path, const bfs::path& new_path,
       }
     }
   }
-  catch (const bfs::filesystem_error& e) {
+  catch (const std::filesystem::filesystem_error& e) {
     if (fileop_opt == FILEOP_WARN) {
       Cerr << "\nWarning: could not rename path " << old_path << " to "
 	   << new_path << ";\n" << e.what() << std::endl;
@@ -640,7 +669,7 @@ void WorkdirHelper::rename(const bfs::path& old_path, const bfs::path& new_path,
     persist.  Return code true indicates abnormal behavior. */
 bool WorkdirHelper::file_op_items(const file_op_function& file_op, 
 				  const StringArray& source_items,
-				  const bfs::path& dest_dir,
+				  const std::filesystem::path& dest_dir,
 				  bool overwrite) 
 {
   bool return_code = false;
@@ -655,17 +684,17 @@ bool WorkdirHelper::file_op_items(const file_op_function& file_op,
     if ( strcontains(*src_it, "*") || strcontains(*src_it, "?") ) {
       //   iterate paths matching the wildcard;
       std::string glob_string = *src_it;
-      bfs::path root_dir;
-      bfs::path wild_card;
+      std::filesystem::path root_dir;
+      std::filesystem::path wild_card;
       WorkdirHelper::split_wildcard(glob_string, root_dir, wild_card);
 
       MatchesWC wc_predicate(wild_card);
-      glob_iterator fit(wc_predicate, bfs::directory_iterator(root_dir));
-      glob_iterator fitend(wc_predicate, bfs::directory_iterator());
+      glob_iterator fit(wc_predicate, std::filesystem::directory_iterator(root_dir));
+      glob_iterator fitend(wc_predicate, std::filesystem::directory_iterator());
       for ( ; fit != fitend; ++fit) {
-        bfs::path src_path = fit->path();
-        if (bfs::exists(src_path)) {
-	  bfs::path src_filename = src_path.filename();
+        std::filesystem::path src_path = fit->path();
+        if (std::filesystem::exists(src_path)) {
+          std::filesystem::path src_filename = src_path.filename();
 	  if (file_op(src_path, dest_dir, overwrite))
 	    return_code = true;
         }
@@ -677,9 +706,9 @@ bool WorkdirHelper::file_op_items(const file_op_function& file_op,
     }
     else {
       // perform file_op directly on the path;
-      bfs::path src_path(*src_it);
-      if (bfs::exists(src_path)) {
-	bfs::path src_filename = src_path.filename();
+      std::filesystem::path src_path(*src_it);
+      if (std::filesystem::exists(src_path)) {
+        std::filesystem::path src_filename = src_path.filename();
 	if (file_op(src_path, dest_dir, overwrite))
 	  return_code = true;
       }
@@ -699,7 +728,7 @@ bool WorkdirHelper::file_op_items(const file_op_function& file_op,
     from the destination.  If overwrite, remove and replace any
     existing destination target, otherwise, allow to persist */
 void WorkdirHelper::link_items(const StringArray& source_items,
-			       const bfs::path& dest_dir,
+			       const std::filesystem::path& dest_dir,
 			       bool overwrite) 
 {
   file_op_function file_op = &WorkdirHelper::link;
@@ -711,7 +740,7 @@ void WorkdirHelper::link_items(const StringArray& source_items,
     into the destination.  If overwrite, remove and replace any
     existing destination target, otherwise, allow to persist */
 void WorkdirHelper::copy_items(const StringArray& source_items,
-			       const bfs::path& dest_dir,
+			       const std::filesystem::path& dest_dir,
 			       bool overwrite) 
 {
   file_op_function file_op = &WorkdirHelper::recursive_copy;
@@ -723,20 +752,20 @@ void WorkdirHelper::copy_items(const StringArray& source_items,
 void WorkdirHelper::prepend_path_items(const StringArray& source_items)
 {
   file_op_function file_op = &WorkdirHelper::prepend_path_item;
-  bfs::path dummy_path;
+  std::filesystem::path dummy_path;
   file_op_items(file_op, source_items, dummy_path, false);
 }
 
 
 bool WorkdirHelper::check_equivalent_dest(const StringArray& source_items,
-					  const bfs::path& dest_dir)
+					  const std::filesystem::path& dest_dir)
 {
   file_op_function file_op = &WorkdirHelper::check_equivalent;
   return file_op_items(file_op, source_items, dest_dir, false);
 }
 
 bool WorkdirHelper::find_driver(const StringArray& source_items,
-				const bfs::path& search_driver)
+				const std::filesystem::path& search_driver)
 {
   // BMA TODO: file_op_items should short-circuit when found and not be verbose...
   file_op_function file_op = &WorkdirHelper::find_file;
@@ -747,33 +776,33 @@ bool WorkdirHelper::find_driver(const StringArray& source_items,
 /** Assumes source file exists since it was iterated in the calling
     context. If overwrite, any existing file in dest_dir will be
     removed prior to creating the new link. */
-bool WorkdirHelper::link(const bfs::path& src_path, const bfs::path& dest_dir,
+bool WorkdirHelper::link(const std::filesystem::path& src_path, const std::filesystem::path& dest_dir,
 			 bool overwrite)
 {
   // symlink facilities require a qualifed source and destination
   // name, be absolute for now
-  bfs::path dest_link = dest_dir / src_path.filename();
+  std::filesystem::path dest_link = dest_dir / src_path.filename();
 
   try {
 
     // when relative, assume relative to current path
-    bfs::path fq_src_path(src_path);
+    std::filesystem::path fq_src_path(src_path);
     if (src_path.is_relative())
-      fq_src_path = bfs::current_path() / src_path;
+      fq_src_path = std::filesystem::current_path() / src_path;
 
-    if (overwrite && bfs::exists(dest_link))
-      bfs::remove_all(dest_link);
+    if (overwrite && std::filesystem::exists(dest_link))
+      std::filesystem::remove_all(dest_link);
 
     // now, only make the link if the dest doesn't exist
-    if (!bfs::exists(dest_link)) {
-      if (bfs::is_directory(fq_src_path))
-	bfs::create_directory_symlink(fq_src_path, dest_link);
+    if (!std::filesystem::exists(dest_link)) {
+      if (std::filesystem::is_directory(fq_src_path))
+	std::filesystem::create_directory_symlink(fq_src_path, dest_link);
       else
-	bfs::create_symlink(fq_src_path, dest_link);
+	std::filesystem::create_symlink(fq_src_path, dest_link);
     }
 
   }
-  catch (const bfs::filesystem_error& e) {
+  catch (const std::filesystem::filesystem_error& e) {
     Cerr << "\nError: could not create symlink from " << dest_dir 
 	 << " to " << src_path << ";\n       " << e.what() << std::endl;
     abort_handler(IO_ERROR);
@@ -786,42 +815,42 @@ bool WorkdirHelper::link(const bfs::path& src_path, const bfs::path& dest_dir,
 /// note dest_dir is the containing folder for the src_path contents
 /// to be placed in for consistency with other convenience functions
 /// (may need to reconsider)
-bool WorkdirHelper::recursive_copy(const bfs::path& src_path, 
-				   const bfs::path& dest_dir, bool overwrite)
+bool WorkdirHelper::recursive_copy(const std::filesystem::path& src_path, 
+				   const std::filesystem::path& dest_dir, bool overwrite)
 {
   try {
     // precondition: dest exists and is a dir
-    if (!bfs::exists(dest_dir) || !bfs::is_directory(dest_dir)) {
+    if (!std::filesystem::exists(dest_dir) || !std::filesystem::is_directory(dest_dir)) {
       Cerr << "\nError: destination directory " << dest_dir 
 	   << " must exist for recursive_copy." << std::endl;
       abort_handler(IO_ERROR);
     }
 
-    bfs::path dest_path = dest_dir / src_path.filename();
+    std::filesystem::path dest_path = dest_dir / src_path.filename();
   
     // TODO: gentler overwrite of contents, not top-level paths
-    if (overwrite && bfs::exists(dest_path))
-      bfs::remove_all(dest_path);
+    if (overwrite && std::filesystem::exists(dest_path))
+      std::filesystem::remove_all(dest_path);
 
-    if (!bfs::exists(dest_path)) {
+    if (!std::filesystem::exists(dest_path)) {
 
       // non-recursive copy of file or directory or symlink into dest
-      bfs::copy(src_path, dest_path);
-      //bfs::create_directory(dest_path);
-      //bfs::copy_directory(src_path, dest_path);
+      std::filesystem::copy(src_path, dest_path);
+      //std::filesystem::create_directory(dest_path);
+      //std::filesystem::copy_directory(src_path, dest_path);
 
-      if (bfs::is_directory(src_path)) {
-	bfs::directory_iterator dir_it(src_path);
-	bfs::directory_iterator dir_end;
+      if (std::filesystem::is_directory(src_path)) {
+        std::filesystem::directory_iterator dir_it(src_path);
+        std::filesystem::directory_iterator dir_end;
 	for ( ; dir_it != dir_end; ++dir_it) {
-	  bfs::path src_item(dir_it->path());
+          std::filesystem::path src_item(dir_it->path());
 	  recursive_copy(src_item, dest_path, overwrite);
 	}
       }
     }
 
   }
-  catch (const bfs::filesystem_error& e) {
+  catch (const std::filesystem::filesystem_error& e) {
     Cerr << "\nError: could not recursive copy " << src_path 
 	 << " to " << dest_dir << ";\n       " << e.what() << std::endl;
     abort_handler(IO_ERROR);
@@ -832,16 +861,16 @@ bool WorkdirHelper::recursive_copy(const bfs::path& src_path,
 
 /// prepend the env path with source path if it's a directory or
 /// directory symlink
-bool WorkdirHelper::prepend_path_item(const bfs::path& src_path, 
-				      const bfs::path& dest_dir, bool overwrite)
+bool WorkdirHelper::prepend_path_item(const std::filesystem::path& src_path, 
+				      const std::filesystem::path& dest_dir, bool overwrite)
 {
   // BMA TODO: this should use wstring vs. string...
-  // Change once we upgrade preferred path to a set of BFS paths
+  // Change once we upgrade preferred path to a set of std::filesystem paths
   try {
-    if (bfs::is_directory(src_path))
+    if (std::filesystem::is_directory(src_path))
       prepend_preferred_env_path(src_path.string());
   }
-  catch (const bfs::filesystem_error& e) {
+  catch (const std::filesystem::filesystem_error& e) {
     Cerr << "\nError: could not prepend PATH with " << src_path 
 	 << ";\n       " << e.what() << std::endl;
     abort_handler(IO_ERROR);
@@ -851,18 +880,18 @@ bool WorkdirHelper::prepend_path_item(const bfs::path& src_path,
 }
 
 
-bool WorkdirHelper::check_equivalent(const bfs::path& src_path, 
-				     const bfs::path& dest_dir, bool overwrite)
+bool WorkdirHelper::check_equivalent(const std::filesystem::path& src_path, 
+				     const std::filesystem::path& dest_dir, bool overwrite)
 {
   try {
-    if (bfs::equivalent(src_path, dest_dir)) {
+    if (std::filesystem::equivalent(src_path, dest_dir)) {
       Cerr << "Error: specified link/copy_file " << src_path << "\n"
 	   << "       is same as work_directory " << dest_dir << "." 
 	   << std::endl;
       return true;
     }
   }
-  catch (const bfs::filesystem_error& e) {
+  catch (const std::filesystem::filesystem_error& e) {
     Cerr << "\nError: could not determine equivalence of paths " << src_path 
 	 << " and " << dest_dir << ";\n       " << e.what() << std::endl;
     abort_handler(IO_ERROR);
@@ -871,15 +900,15 @@ bool WorkdirHelper::check_equivalent(const bfs::path& src_path,
   return false;
 }
 
-bool WorkdirHelper::find_file(const bfs::path& src_path, 
-			      const bfs::path& search_file, bool overwrite)
+bool WorkdirHelper::find_file(const std::filesystem::path& src_path, 
+			      const std::filesystem::path& search_file, bool overwrite)
 {
   try {
-    if ( bfs::is_regular_file(src_path) && 
+    if ( std::filesystem::is_regular_file(src_path) && 
 	 src_path.filename() == search_file.filename())
       return true;
   }
-  catch (const bfs::filesystem_error& e) {
+  catch (const std::filesystem::filesystem_error& e) {
     Cerr << "\nError: could not determine equivalence of files " << src_path 
 	 << " and " << search_file << ";\n       " << e.what() << std::endl;
     abort_handler(IO_ERROR);
@@ -890,9 +919,9 @@ bool WorkdirHelper::find_file(const bfs::path& src_path,
 
 /** NOTE: Could remove this function and use += at call sites, but
     seems convenient to keep (since path doesn't have operator+) */
-bfs::path WorkdirHelper::concat_path(const bfs::path& p_in, const String& tag)
+std::filesystem::path WorkdirHelper::concat_path(const std::filesystem::path& p_in, const String& tag)
 {
-  bfs::path p_out(p_in);
+  std::filesystem::path p_out(p_in);
   // TODO: review whether ever need to convert from string to wstring
   p_out += tag;
   return p_out;

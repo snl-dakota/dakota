@@ -158,7 +158,7 @@ parse_inputs(ProgramOptions& prog_opts,
 			     prog_opts.parser_options());
 
 	// Remove file created by preprocessing input
-	boost::filesystem::remove(prog_opts.preprocessed_file());
+	std::filesystem::remove(prog_opts.preprocessed_file());
       }
       else {
 
@@ -3285,8 +3285,8 @@ void ProblemDescDB::echo_input_file(const std::string& dakota_input_file,
 
       // BMA TODO: could enable this now
       // want to output FQ path, but only valid in BFS v3; need wrapper
-      //boost::filesystem::path bfs_file(dakota_input_file);
-      //boost::filesystem::path bfs_abs_path = bfs_file.absolute();
+      //std::filesystem::path bfs_file(dakota_input_file);
+      //std::filesystem::path bfs_abs_path = bfs_file.absolute();
 
       // header to span the potentially long filename
       size_t header_len = std::max((size_t) 23,

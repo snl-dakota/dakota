@@ -43,7 +43,7 @@ ExperimentData(const ProblemDescDB& pddb,
 
 ExperimentData::
 ExperimentData(size_t num_experiments, size_t num_config_vars, 
-               const boost::filesystem::path& data_prefix,
+               const std::filesystem::path& data_prefix,
                const SharedResponseData& srd,
                const StringArray& variance_types,
                short output_level,
@@ -109,7 +109,7 @@ void ExperimentData::initialize(const StringArray& variance_types,
 
     if (!dataPathPrefix.empty()) {
       // Disallow scalar_data_file using absolute path together with data_directory spec
-      boost::filesystem::path check_scalar_data_file_path = scalarDataFilename;
+      std::filesystem::path check_scalar_data_file_path = scalarDataFilename;
       if( !dataPathPrefix.empty() && check_scalar_data_file_path.is_absolute() ) {
         Cerr << "\nError: Cannot specify \"data_directory\" together "
                 "with \"scalar_data_filename\" having an absolute path."
@@ -386,7 +386,7 @@ void ExperimentData::load_data(const std::string& context_message,
     // TODO: have the user give a name for this file, since should be
     // the same for all responses.  Read from foo.<exp_num>.config. 
     //    String config_vars_basename("experiment");
-    boost::filesystem::path config_vars_basepath = dataPathPrefix / "experiment";
+    std::filesystem::path config_vars_basepath = dataPathPrefix / "experiment";
     try {
       read_config_vars_multifile(config_vars_basepath.string(), numExperiments, 
           numConfigVars, allConfigVars);
@@ -570,7 +570,7 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
     for( size_t i=0; i<num_scalars; ++i ) {
       //std::cout << "Scalar function " << i << ": veriance_type = " << varianceTypes[i] << ", label = \"" << scalar_labels[i] << "\"" << std::endl;
       // Read data from file named: scalar_labels.expt_num.dat
-      boost::filesystem::path field_base = dataPathPrefix / scalar_labels[i];
+      std::filesystem::path field_base = dataPathPrefix / scalar_labels[i];
       read_field_values(field_base.string(), exp_index+1, exp_values[i]);
 
       // Optionally allow covariance data
@@ -618,7 +618,7 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
 
     // read a column vector of field values for this field from
     // fn_name.exp_num.dat
-    boost::filesystem::path field_base = dataPathPrefix / field_name;
+    std::filesystem::path field_base = dataPathPrefix / field_name;
     read_field_values(field_base.string(), exp_index+1, exp_values[fn_index]);
     field_lengths[field_index] = exp_values[fn_index].length();
 
@@ -626,10 +626,10 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
     // from field_name.exp_num.coords and validate number of rows is
     // field_lengths[field_index]
     std::string filename = field_name + "." + Dakota::convert_to_string(exp_index+1) + ".coords";
-    boost::filesystem::path coord_path_and_file = dataPathPrefix / filename;
-    if ( boost::filesystem::is_regular_file(coord_path_and_file) )
+    std::filesystem::path coord_path_and_file = dataPathPrefix / filename;
+    if ( std::filesystem::is_regular_file(coord_path_and_file) )
     {
-      boost::filesystem::path coord_base = dataPathPrefix / field_name;
+      std::filesystem::path coord_base = dataPathPrefix / field_name;
       read_coord_values(coord_base.string(), exp_index+1, exp_coords);
       // Sanity check length
       if( field_lengths[field_index] != exp_coords.numRows() )
