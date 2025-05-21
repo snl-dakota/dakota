@@ -600,5 +600,3 @@ Sample moment statistics for each response function:
  response_fn_1  2.5188211386042738e-02  2.5381725959813330e-02
  response_fn_2  1.2878770471691861e-01  1.2940905753171397e-01
  response_fn_3  2.5188211386621213e-02  2.5381725960418097e-02
-Test Number 19 failed with exit code 254
-Test Number 20 failed with exit code 254
