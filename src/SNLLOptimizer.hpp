@@ -113,7 +113,7 @@ public:
   //
 
   /// standard constructor
-  SNLLOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model>);
+  SNLLOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model>);
 
   /// alternate constructor for instantiations "on the fly"
   SNLLOptimizer(const String& method_string, std::shared_ptr<Model>);

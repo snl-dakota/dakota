@@ -91,7 +91,7 @@ protected:
   //
 
   /// constructor
-  NonDIntegration(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  NonDIntegration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// alternate constructor for instantiations "on the fly"
   NonDIntegration(unsigned short method_name, std::shared_ptr<Model> model);
   /// alternate constructor for instantiations "on the fly"

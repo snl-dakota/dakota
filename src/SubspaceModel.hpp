@@ -36,7 +36,7 @@ public:
   //
 
   /// Problem database constructor
-  SubspaceModel(ProblemDescDB& problem_db, std::shared_ptr<Model> sub_model);
+  SubspaceModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> sub_model);
 
   /// lightweight constructor
   SubspaceModel(std::shared_ptr<Model>, unsigned int dimension,

@@ -263,7 +263,7 @@ Model(const ShortShortPair& vars_view,
       const SharedVariablesData& svd, bool share_svd,
       const SharedResponseData&  srd, bool share_srd,
       const ActiveSet& set, short output_level, ProblemDescDB& problem_db,
-      ParallelLibrary& parallel_lib):
+      ParallelLibrary& parallel_lib, ParallelLibrary& parallel_lib):
   numDerivVars(set.derivative_vector().size()),
   numFns(set.request_vector().size()), evaluationsDB(evaluation_store_db),
   fdGradStepType("relative"), fdHessStepType("relative"), warmStartFlag(false), 
@@ -304,7 +304,7 @@ Model(const ShortShortPair& vars_view,
     Therefore it only initializes a small subset of attributes. */
 Model::
 Model(ProblemDescDB& problem_db,
-      ParallelLibrary& parallel_lib):
+      ParallelLibrary& parallel_lib, ParallelLibrary& parallel_lib):
   warmStartFlag(false), supportsEstimDerivs(true), mappingInitialized(false),
   probDescDB(problem_db), parallelLib(parallel_lib),
   evaluationsDB(evaluation_store_db),

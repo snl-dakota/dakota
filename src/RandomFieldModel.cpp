@@ -19,7 +19,7 @@ RandomFieldModel* RandomFieldModel::rfmInstance(NULL);
 
 
 RandomFieldModel::RandomFieldModel(ProblemDescDB& problem_db):
-  RecastModel(problem_db, get_sub_model(problem_db)),
+  RecastModel(problem_db, parallel_lib, get_sub_model(problem_db)),
   // LPS TODO: initialize other class data members off problemDB
   numObservations(0), 
   expansionForm(problem_db.get_ushort("model.rf.expansion_form")),

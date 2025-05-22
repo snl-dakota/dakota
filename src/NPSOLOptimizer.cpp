@@ -56,8 +56,8 @@ NPSOLOptimizer* NPSOLOptimizer::npsolInstance(NULL);
 
 
 /** This is the primary constructor.  It accepts a Model reference. */
-NPSOLOptimizer::NPSOLOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new NPSOLTraits())),
+NPSOLOptimizer::NPSOLOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  Optimizer(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new NPSOLTraits())),
   SOLBase(model), setUpType("model")
 {
   // invoke SOLBase set function (shared with NLSSOLLeastSq)

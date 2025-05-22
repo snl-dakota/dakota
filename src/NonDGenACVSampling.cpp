@@ -27,8 +27,8 @@ namespace Dakota {
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDGenACVSampling::
-NonDGenACVSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDACVSampling(problem_db, model),
+NonDGenACVSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDACVSampling(problem_db, parallel_lib, model),
   dagRecursionType(
     problem_db.get_short("method.nond.search_model_graphs.recursion")),
   dagDepthLimit(problem_db.get_ushort("method.nond.graph_depth_limit")),

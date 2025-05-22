@@ -26,8 +26,8 @@ namespace Dakota {
 NonD* NonD::nondInstance(NULL);
 
 
-NonD::NonD(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  Analyzer(problem_db, model),
+NonD::NonD(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  Analyzer(problem_db, parallel_lib, model),
   respLevelTarget(problem_db.get_short("method.nond.response_level_target")),
   respLevelTargetReduce(
     problem_db.get_short("method.nond.response_level_target_reduce")),

@@ -26,8 +26,8 @@ namespace Dakota {
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDHierarchSampling::
-NonDHierarchSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDEnsembleSampling(problem_db, model)
+NonDHierarchSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDEnsembleSampling(problem_db, parallel_lib, model)
 {
   bool err_flag = false;
   /*

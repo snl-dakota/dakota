@@ -19,8 +19,8 @@ namespace Dakota {
 /** This constructor is called for a standard letter-envelope iterator 
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
-NonDCalibration::NonDCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonD(problem_db, model),
+NonDCalibration::NonDCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonD(problem_db, parallel_lib, model),
   calibrationData(probDescDB.get_bool("responses.calibration_data") ||
     !probDescDB.get_string("responses.scalar_data_filename").empty()),
   expData(problem_db, iteratedModel->current_response().shared_data(), 

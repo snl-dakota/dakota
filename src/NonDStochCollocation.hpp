@@ -34,7 +34,7 @@ public:
   //
 
   /// standard constructor
-  NonDStochCollocation(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  NonDStochCollocation(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// alternate constructor
   NonDStochCollocation(std::shared_ptr<Model> model, short exp_coeffs_approach,
 		       unsigned short num_int, const RealVector& dim_pref,

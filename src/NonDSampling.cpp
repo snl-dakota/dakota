@@ -38,8 +38,8 @@ namespace Dakota {
 /** This constructor is called for a standard letter-envelope iterator
     instantiation.  In this case, set_db_list_nodes has been called and
     probDescDB can be queried for settings from the method specification. */
-NonDSampling::NonDSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonD(problem_db, model), seedSpec(probDescDB.get_int("method.random_seed")),
+NonDSampling::NonDSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonD(problem_db, parallel_lib, model), seedSpec(probDescDB.get_int("method.random_seed")),
   randomSeed(seedSpec), samplesSpec(probDescDB.get_int("method.samples")),
   samplesRef(samplesSpec), numSamples(samplesSpec),
   rngName(probDescDB.get_string("method.random_number_generator")),

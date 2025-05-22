@@ -29,8 +29,8 @@ namespace Dakota {
 
 // Main Class: NomadOptimizer
 
-NomadOptimizer::NomadOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new NomadTraits()))
+NomadOptimizer::NomadOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  Optimizer(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new NomadTraits()))
 {     
   // Set initial mesh size
   initMesh = probDescDB.get_real("method.mesh_adaptive_search.initial_delta");

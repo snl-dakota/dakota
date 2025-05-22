@@ -24,8 +24,8 @@ namespace Dakota {
     and probDescDB can be queried for settings from the method
     specification.  It is not currently used, as there are not yet
     separate nond_quadrature/nond_sparse_grid method specifications. */
-NonDIntegration::NonDIntegration(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonD(problem_db, model), numIntegrations(0),
+NonDIntegration::NonDIntegration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonD(problem_db, parallel_lib, model), numIntegrations(0),
   dimPrefSpec(probDescDB.get_rv("method.nond.dimension_preference"))
   //standAloneMode(true)
 {

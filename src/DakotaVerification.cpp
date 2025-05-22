@@ -17,8 +17,8 @@ static const char rcsId[]="@(#) $Id: DakotaVerification.cpp 6886 2010-08-02 19:1
 
 namespace Dakota {
 
-Verification::Verification(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  Analyzer(problem_db, model)
+Verification::Verification(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  Analyzer(problem_db, parallel_lib, model)
 {
   // Check for vendor numerical gradients (manage_asv will not work properly)
   if (iteratedModel->gradient_type() == "numerical" &&

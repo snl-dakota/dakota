@@ -39,7 +39,7 @@ public:
   //- Heading: Constructors and destructors
   //
 
-  ParamStudy(ProblemDescDB& problem_db, std::shared_ptr<Model> model); ///< constructor
+  ParamStudy(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model); ///< constructor
   ~ParamStudy() override;                                       ///< destructor
     
   //

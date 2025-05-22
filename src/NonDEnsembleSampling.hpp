@@ -31,7 +31,7 @@ public:
   //
 
   /// standard constructor
-  NonDEnsembleSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  NonDEnsembleSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// destructor (virtual declaration should be redundant with ~Iterator,
   /// but this is top of MLMF diamond so doesn't hurt to be explicit)
   ~NonDEnsembleSampling() override;

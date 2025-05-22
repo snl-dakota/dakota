@@ -36,8 +36,8 @@
 
 namespace Dakota {
 
-NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonD(problem_db, model), expansionCoeffsApproach(-1),
+NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonD(problem_db, parallel_lib, model), expansionCoeffsApproach(-1),
   expansionBasisType(problem_db.get_short("method.nond.expansion_basis_type")),
   statsMetricMode(
     problem_db.get_short("method.nond.refinement_statistics_mode")),

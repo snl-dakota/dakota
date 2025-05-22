@@ -37,7 +37,7 @@ public:
   //
     
   /// primary constructor for building a standard DACE iterator
-  DDACEDesignCompExp(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  DDACEDesignCompExp(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// alternate constructor used for building approximations
   DDACEDesignCompExp(std::shared_ptr<Model> model, int samples, int symbols, int seed, 
 		     unsigned short sampling_method);

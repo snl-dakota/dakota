@@ -16,7 +16,7 @@ static const char rcsId[]=
 namespace Dakota {
 
 EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db):
-  SurrogateModel(problem_db), sameModelInstance(false),
+  SurrogateModel(problem_db, parallel_lib), sameModelInstance(false),
   sameInterfaceInstance(false), ensemblePrecedence(DEFAULT_PRECEDENCE),
   modeKeyBufferSize(0), correctionMode(SINGLE_CORRECTION)
 {

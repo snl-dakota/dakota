@@ -25,8 +25,8 @@ namespace Dakota {
 
 
 SurrBasedGlobalMinimizer::
-SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  SurrBasedMinimizer(problem_db, model, std::shared_ptr<TraitsBase>(new SurrBasedGlobalTraits())),
+SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  SurrBasedMinimizer(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new SurrBasedGlobalTraits())),
   replacePoints(probDescDB.get_bool("method.sbg.replace_points"))
 {
   // Verify that iteratedModel is a surrogate model so that

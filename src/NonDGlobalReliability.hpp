@@ -33,7 +33,7 @@ public:
   //
 
   /// constructor
-  NonDGlobalReliability(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  NonDGlobalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// destructor
   ~NonDGlobalReliability() override;
 

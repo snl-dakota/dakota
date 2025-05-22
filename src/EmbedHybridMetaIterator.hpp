@@ -36,7 +36,7 @@ public:
   /// standard constructor
   EmbedHybridMetaIterator(ProblemDescDB& problem_db);
   /// alternate constructor
-  EmbedHybridMetaIterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  EmbedHybridMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// destructor
   ~EmbedHybridMetaIterator() override;
     

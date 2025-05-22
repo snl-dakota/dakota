@@ -28,8 +28,8 @@ namespace Dakota {
     and probDescDB can be queried for settings from the method
     specification.  It is not currently used, as there is not yet a
     separate nond_quadrature method specification. */
-NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDIntegration(problem_db, model),
+NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDIntegration(problem_db, parallel_lib, model),
   quadOrderSpec(probDescDB.get_ushort("method.nond.quadrature_order")),
   numSamples(0), quadMode(FULL_TENSOR)
 {

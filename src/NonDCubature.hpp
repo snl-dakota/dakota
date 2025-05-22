@@ -54,7 +54,7 @@ protected:
   //- Heading: Constructors and destructor
   //
 
-  NonDCubature(ProblemDescDB& problem_db, std::shared_ptr<Model> model); ///< constructor
+  NonDCubature(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model); ///< constructor
 
   //
   //- Heading: Virtual function redefinitions

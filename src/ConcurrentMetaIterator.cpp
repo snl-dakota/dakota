@@ -20,7 +20,7 @@ static const char rcsId[]="@(#) $Id: ConcurrentMetaIterator.cpp 7018 2010-10-12 
 namespace Dakota {
 
 ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
-  MetaIterator(problem_db),
+  MetaIterator(problem_db, parallel_lib),
   numRandomJobs(probDescDB.get_int("method.concurrent.random_jobs")),
   randomSeed(probDescDB.get_int("method.random_seed"))
 {
@@ -101,8 +101,8 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db):
 
 
 ConcurrentMetaIterator::
-ConcurrentMetaIterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  MetaIterator(problem_db, model),
+ConcurrentMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  MetaIterator(problem_db, parallel_lib, model),
   numRandomJobs(probDescDB.get_int("method.concurrent.random_jobs")),
   randomSeed(probDescDB.get_int("method.random_seed"))
 {

@@ -56,8 +56,8 @@ NonDBayesCalibration* NonDBayesCalibration::nonDBayesInstance(NULL);
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDBayesCalibration::
-NonDBayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDCalibration(problem_db, model),
+NonDBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDCalibration(problem_db, parallel_lib, model),
   emulatorType(probDescDB.get_short("method.nond.emulator")),
   mcmcModelHasSurrogate(false),
   mapOptAlgOverride(probDescDB.get_ushort("method.nond.opt_subproblem_solver")),

@@ -30,7 +30,7 @@ extern PRPCache data_pairs;
 
 
 DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
-  SurrogateModel(problem_db),
+  SurrogateModel(problem_db, parallel_lib),
   pointsTotal(problem_db.get_int("model.surrogate.points_total")),
   pointsManagement(problem_db.get_short("model.surrogate.points_management")),
   pointReuse(problem_db.get_string("model.surrogate.point_reuse")),

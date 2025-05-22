@@ -46,8 +46,8 @@ NLSSOLLeastSq* NLSSOLLeastSq::nlssolInstance(NULL);
 
 
 /** This is the primary constructor.  It accepts a Model reference. */
-NLSSOLLeastSq::NLSSOLLeastSq(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  LeastSq(problem_db, model, std::shared_ptr<TraitsBase>(new NLSSOLLeastSqTraits())), SOLBase(model)
+NLSSOLLeastSq::NLSSOLLeastSq(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  LeastSq(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new NLSSOLLeastSqTraits())), SOLBase(model)
 {
   // historical default convergence tolerance
   if (convergenceTol < 0.0) convergenceTol = 1.0e-4;

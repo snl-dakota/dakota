@@ -17,7 +17,7 @@ static const char rcsId[]="@(#) $Id: MetaIterator.cpp 6715 2010-04-02 21:58:15Z 
 namespace Dakota {
 
 MetaIterator::MetaIterator(ProblemDescDB& problem_db):
-  Iterator(problem_db),
+  Iterator(problem_db, parallel_lib),
   iterSched(problem_db.parallel_library(),
 	    false, // peers can manage local jobs (initial extracted from DB)
 	    problem_db.get_int("method.iterator_servers"),
@@ -32,8 +32,8 @@ MetaIterator::MetaIterator(ProblemDescDB& problem_db):
 }
 
 
-MetaIterator::MetaIterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  Iterator(problem_db),
+MetaIterator::MetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  Iterator(problem_db, parallel_lib),
   iterSched(problem_db.parallel_library(),
 	    false, // peers can manage local jobs (initial extracted from DB)
 	    problem_db.get_int("method.iterator_servers"),

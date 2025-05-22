@@ -24,8 +24,8 @@ namespace Dakota {
     and probDescDB can be queried for settings from the method
     specification.  It is not currently used, as there is not yet a
     separate nond_cubature method specification. */
-NonDCubature::NonDCubature(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDIntegration(problem_db, model),
+NonDCubature::NonDCubature(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDIntegration(problem_db, parallel_lib, model),
   cubIntOrderRef(probDescDB.get_ushort("method.nond.cubature_integrand"))
 {
   // initialize the numerical integration driver

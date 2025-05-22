@@ -494,7 +494,7 @@ protected:
   /// default constructor
   Optimizer(std::shared_ptr<TraitsBase> traits);
   /// alternate constructor; accepts a model
-  Optimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model, std::shared_ptr<TraitsBase> traits);
+  Optimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model, std::shared_ptr<TraitsBase> traits);
 
   /// alternate constructor for "on the fly" instantiations
   Optimizer(unsigned short method_name, std::shared_ptr<Model> model, std::shared_ptr<TraitsBase> traits);

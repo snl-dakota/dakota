@@ -198,8 +198,8 @@ RecastModel(std::shared_ptr<Model> sub_model, const ShortShortPair& recast_vars_
 }
 
 
-RecastModel::RecastModel(ProblemDescDB& problem_db, std::shared_ptr<Model> sub_model):
-  Model(problem_db), subModel(sub_model),
+RecastModel::RecastModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> sub_model):
+  Model(problem_db, parallel_lib), subModel(sub_model),
   recastModelEvalCntr(0), variablesMapping(NULL), setMapping(NULL),
   primaryRespMapping(NULL), secondaryRespMapping(NULL), invVarsMapping(NULL),
   invSetMapping(NULL), invPriRespMapping(NULL), invSecRespMapping(NULL)

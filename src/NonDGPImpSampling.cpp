@@ -30,8 +30,8 @@ namespace Dakota {
 /** This constructor is called for a standard letter-envelope iterator 
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
-NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDSampling(problem_db, model)
+NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDSampling(problem_db, parallel_lib, model)
 {
   // sampleType default in DataMethod.cpp is SUBMETHOD_DEFAULT (0).
   // Enforce an LHS default for this method.

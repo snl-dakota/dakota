@@ -13,8 +13,8 @@
 namespace Dakota {
 
 
-APPSOptimizer::APPSOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new AppsTraits()))
+APPSOptimizer::APPSOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  Optimizer(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new AppsTraits()))
 {
   // (iteratedModel initialized in Optimizer(Model&))
 

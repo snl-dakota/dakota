@@ -29,8 +29,8 @@ namespace Dakota {
     and probDescDB can be queried for settings from the method
     specification.  It is not currently used, as there is not a
     separate sparse_grid method specification. */
-NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDIntegration(problem_db, model),  
+NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDIntegration(problem_db, parallel_lib, model),  
   ssgLevelSpec(probDescDB.get_ushort("method.nond.sparse_grid_level"))
 {
   short exp_basis_type

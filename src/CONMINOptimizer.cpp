@@ -29,8 +29,8 @@ using namespace std;
 namespace Dakota {
 
 
-CONMINOptimizer::CONMINOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new CONMINTraits()))
+CONMINOptimizer::CONMINOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  Optimizer(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new CONMINTraits()))
 {
   // If speculativeFlag is set with vendor numerical_gradients, output a warning
   if (speculativeFlag && vendorNumericalGradFlag)

@@ -98,7 +98,7 @@ protected:
   //- Heading: Constructors and destructor
   //
 
-  NonDQuadrature(ProblemDescDB& problem_db, std::shared_ptr<Model> model); ///< constructor
+  NonDQuadrature(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model); ///< constructor
 
   //
   //- Heading: Virtual function redefinitions

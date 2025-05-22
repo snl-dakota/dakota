@@ -34,7 +34,7 @@ public:
   //
  
   /// standard constructor
-  NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, std::shared_ptr<Model>  model);
+  NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model>  model);
   /// alternate constructor for numerical integration (tensor, sparse, cubature)
   NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ std::shared_ptr<Model> model,
 				short exp_coeffs_approach,

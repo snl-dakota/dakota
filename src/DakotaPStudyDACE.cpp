@@ -23,8 +23,8 @@ static const char rcsId[]="@(#) $Id: DakotaPStudyDACE.cpp 6492 2009-12-19 00:04:
 
 namespace Dakota {
 
-PStudyDACE::PStudyDACE(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  Analyzer(problem_db, model),
+PStudyDACE::PStudyDACE(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  Analyzer(problem_db, parallel_lib, model),
   volQualityFlag(probDescDB.get_bool("method.quality_metrics")),
   vbdViaSamplingMethod(probDescDB.get_ushort("method.vbd_via_sampling_method")),
   vbdViaSamplingNumBins(probDescDB.get_int("method.vbd_via_sampling_num_bins"))

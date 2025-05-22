@@ -30,8 +30,8 @@ namespace Dakota {
 /** This is the primary constructor.  It accepts a Model reference.  It will
     perform refinement for all response QOI and all probability levels. */
 NonDAdaptImpSampling::
-NonDAdaptImpSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDSampling(problem_db, model),
+NonDAdaptImpSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDSampling(problem_db, parallel_lib, model),
   importanceSamplingType(
     probDescDB.get_ushort("method.nond.integration_refinement")),
   initLHS(true), useModelBounds(false), invertProb(false),

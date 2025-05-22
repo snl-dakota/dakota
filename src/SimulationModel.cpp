@@ -21,7 +21,7 @@ namespace Dakota {
 
 
 SimulationModel::SimulationModel(ProblemDescDB& problem_db):
-  Model(problem_db),
+  Model(problem_db, parallel_lib),
   userDefinedInterface(Interface::get_interface(problem_db)), solnCntlVarType(EMPTY_TYPE),
   solnCntlADVIndex(_NPOS), solnCntlAVIndex(_NPOS), costMetadataIndex(_NPOS),
   simModelEvalCntr(0)

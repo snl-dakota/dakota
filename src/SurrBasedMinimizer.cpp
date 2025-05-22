@@ -53,9 +53,9 @@ namespace Dakota {
 
 
 SurrBasedMinimizer::
-SurrBasedMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model,
+SurrBasedMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model,
 		   std::shared_ptr<TraitsBase> traits):
-  Minimizer(problem_db, model, traits), globalIterCount(0),
+  Minimizer(problem_db, parallel_lib, model, traits), globalIterCount(0),
   // See Conn, Gould, and Toint, pp. 598-599
   penaltyParameter(5.), eta(1.), alphaEta(0.1), betaEta(0.9),
   etaSequence(eta*std::pow(2.*penaltyParameter, -alphaEta))

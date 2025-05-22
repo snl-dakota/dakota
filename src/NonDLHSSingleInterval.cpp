@@ -17,8 +17,8 @@ namespace Dakota {
 
 
 NonDLHSSingleInterval::
-NonDLHSSingleInterval(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDLHSInterval(problem_db, model)
+NonDLHSSingleInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDLHSInterval(problem_db, parallel_lib, model)
 { }
 
 

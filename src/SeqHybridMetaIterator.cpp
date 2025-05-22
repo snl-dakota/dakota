@@ -20,7 +20,7 @@ static const char rcsId[]="@(#) $Id: SeqHybridMetaIterator.cpp 6972 2010-09-17 2
 namespace Dakota {
 
 SeqHybridMetaIterator::SeqHybridMetaIterator(ProblemDescDB& problem_db):
-  MetaIterator(problem_db), singlePassedModel(false)
+  MetaIterator(problem_db, parallel_lib), singlePassedModel(false)
   //seqHybridType(problem_db.get_string("method.hybrid.type")),
   //progressThreshold(problem_db.get_real("method.hybrid.progress_threshold"))
 {
@@ -61,8 +61,8 @@ SeqHybridMetaIterator::SeqHybridMetaIterator(ProblemDescDB& problem_db):
 
 
 SeqHybridMetaIterator::
-SeqHybridMetaIterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  MetaIterator(problem_db, model), singlePassedModel(true)
+SeqHybridMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  MetaIterator(problem_db, parallel_lib, model), singlePassedModel(true)
   //seqHybridType(problem_db.get_string("method.hybrid.type")),
   //progressThreshold(problem_db.get_real("method.hybrid.progress_threshold"))
 {

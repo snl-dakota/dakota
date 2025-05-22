@@ -29,8 +29,8 @@ namespace Dakota {
     probDescDB can be queried for settings from the method specification. */
 NonDMultilevBLUESampling::
 NonDMultilevBLUESampling(ProblemDescDB& problem_db,
-			 std::shared_ptr<Model> model):
-  NonDNonHierarchSampling(problem_db, model),
+			 ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDNonHierarchSampling(problem_db, parallel_lib, model),
   pilotGroupSampling(problem_db.get_short("method.nond.pilot_samples.mode")),
   groupThrottleType(problem_db.get_short("method.nond.group_throttle_type")),
   groupSizeThrottle(problem_db.get_ushort("method.nond.group_size_throttle")),

@@ -43,7 +43,7 @@ public:
   //- Heading: Constructors and destructor
   //
 
-  NonDPOFDarts(ProblemDescDB& problem_db, std::shared_ptr<Model> model); ///< constructor
+  NonDPOFDarts(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model); ///< constructor
   ~NonDPOFDarts() override;                                       ///< destructor
 
   //

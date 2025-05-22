@@ -37,7 +37,7 @@ public:
   //
 
   /// standard constructor
-  NonDAdaptiveSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  NonDAdaptiveSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
 
   /// alternate constructor for sample generation and evaluation "on the fly"
   /// has not been implemented

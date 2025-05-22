@@ -86,8 +86,8 @@ NonDDREAMBayesCalibration* NonDDREAMBayesCalibration::nonDDREAMInstance(NULL);
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDDREAMBayesCalibration::
-NonDDREAMBayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDBayesCalibration(problem_db, model),
+NonDDREAMBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDBayesCalibration(problem_db, parallel_lib, model),
   numChains(probDescDB.get_int("method.dream.num_chains")),
   numCR(probDescDB.get_int("method.dream.num_cr")),
   crossoverChainPairs(probDescDB.get_int("method.dream.crossover_chain_pairs")),

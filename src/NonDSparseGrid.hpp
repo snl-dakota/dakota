@@ -108,7 +108,7 @@ protected:
   //- Heading: Constructors and destructor
   //
 
-  NonDSparseGrid(ProblemDescDB& problem_db, std::shared_ptr<Model> model); ///< constructor
+  NonDSparseGrid(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model); ///< constructor
 
   //
   //- Heading: Virtual function redefinitions

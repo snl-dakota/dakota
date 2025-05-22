@@ -28,9 +28,9 @@ Optimizer* Optimizer::optimizerInstance(NULL);
 
 
 Optimizer::
-Optimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model,
+Optimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model,
 	  std::shared_ptr<TraitsBase> traits):
-  Minimizer(problem_db, model, traits),
+  Minimizer(problem_db, parallel_lib, model, traits),
   // initial value from Minimizer as accounts for fields and transformations
   numObjectiveFns(numUserPrimaryFns), localObjectiveRecast(false)
 {

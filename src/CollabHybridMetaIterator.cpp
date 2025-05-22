@@ -17,7 +17,7 @@ static const char rcsId[]="@(#) $Id: CollabHybridMetaIterator.cpp 6715 2010-04-0
 namespace Dakota {
 
 CollabHybridMetaIterator::CollabHybridMetaIterator(ProblemDescDB& problem_db):
-  MetaIterator(problem_db), singlePassedModel(false)
+  MetaIterator(problem_db, parallel_lib), singlePassedModel(false)
   //hybridCollabType(
   //  problem_db.get_string("method.hybrid.collaborative_type"))
 {
@@ -52,8 +52,8 @@ CollabHybridMetaIterator::CollabHybridMetaIterator(ProblemDescDB& problem_db):
 
 
 CollabHybridMetaIterator::
-CollabHybridMetaIterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  MetaIterator(problem_db, model), singlePassedModel(true)
+CollabHybridMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  MetaIterator(problem_db, parallel_lib, model), singlePassedModel(true)
   //hybridCollabType(
   //  problem_db.get_string("method.hybrid.collaborative_type"))
 {

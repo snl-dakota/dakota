@@ -94,7 +94,7 @@ protected:
   Minimizer(std::shared_ptr<TraitsBase> traits = 
       std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// standard constructor
-  Minimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model, 
+  Minimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model, 
       std::shared_ptr<TraitsBase> traits =
       std::shared_ptr<TraitsBase>(new TraitsBase()));
 

@@ -42,8 +42,8 @@ RealArray NonDLHSSampling::rawData;
 /** This constructor is called for a standard letter-envelope iterator 
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
-NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDSampling(problem_db, model), numResponseFunctions(0),
+NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDSampling(problem_db, parallel_lib, model), numResponseFunctions(0),
   refineSamples(probDescDB.get_iv("method.nond.refinement_samples")),
   dOptimal(probDescDB.get_bool("method.nond.d_optimal")),
   numCandidateDesigns(probDescDB.get_sizet("method.num_candidate_designs")),

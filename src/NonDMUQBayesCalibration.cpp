@@ -37,8 +37,8 @@ NonDMUQBayesCalibration* NonDMUQBayesCalibration::nonDMUQInstance(NULL);
     instantiation.  In this case, set_db_list_nodes has been called and
     probDescDB can be queried for settings from the method specification. */
 NonDMUQBayesCalibration::
-NonDMUQBayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDBayesCalibration(problem_db, model),
+NonDMUQBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDBayesCalibration(problem_db, parallel_lib, model),
   numBestSamples(1),
   mcmcType(probDescDB.get_string("method.nond.mcmc_type")),
   priorPropCovMult(probDescDB.get_real("method.prior_prop_cov_mult")),

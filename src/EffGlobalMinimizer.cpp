@@ -34,8 +34,8 @@ EffGlobalMinimizer* EffGlobalMinimizer::effGlobalInstance(NULL);
 
 
 EffGlobalMinimizer::
-EffGlobalMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  SurrBasedMinimizer(problem_db, model,
+EffGlobalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  SurrBasedMinimizer(problem_db, parallel_lib, model,
 		     std::shared_ptr<TraitsBase>(new EffGlobalTraits())),
   batchSize(probDescDB.get_int("method.batch_size")),
   batchSizeExploration(probDescDB.get_int("method.batch_size.exploration")),

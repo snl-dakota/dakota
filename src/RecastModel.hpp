@@ -86,7 +86,7 @@ public:
 
   /// Problem DB-based ctor, e.g., for use in subspace model; assumes
   /// mappings to be initialized later; only initializes based on sub-model
-  RecastModel(ProblemDescDB& problem_db, std::shared_ptr<Model> sub_model);
+  RecastModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> sub_model);
 
   /// lightest constructor used when transform sizes aren't known at
   /// construct time; doesn't initialize variables and responses, so

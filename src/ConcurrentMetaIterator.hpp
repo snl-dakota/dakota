@@ -46,7 +46,7 @@ public:
   /// standard constructor
   ConcurrentMetaIterator(ProblemDescDB& problem_db);
   /// alternate constructor
-  ConcurrentMetaIterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  ConcurrentMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// destructor
   ~ConcurrentMetaIterator() override;
 

@@ -47,7 +47,7 @@ std::list<std::shared_ptr<Iterator>> Iterator::iteratorByNameCache{};
     the letter IS the representation, its representation pointer is
     set to NULL */
 Iterator::Iterator(ProblemDescDB& problem_db,
-		   std::shared_ptr<TraitsBase> traits):
+		   ParallelLibrary& parallel_lib, std::shared_ptr<TraitsBase> traits):
   probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
   myModelLayers(0), methodName(problem_db.get_ushort("method.algorithm")),

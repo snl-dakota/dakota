@@ -87,7 +87,7 @@ public:
   //
 
   /// standard constructor
-  CONMINOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  CONMINOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// alternate constructor; construct without ProblemDescDB
   CONMINOptimizer(const String& method_string, std::shared_ptr<Model> model);
   /// destructor

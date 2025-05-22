@@ -44,8 +44,8 @@ static const char rcsId[] = "@(#) $Id: NonDPOFDart.cpp 6080 2009-09-08 19:03:20Z
 
 namespace Dakota {
 
-NonDPOFDarts::NonDPOFDarts(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonD(problem_db, model), seed(probDescDB.get_int("method.random_seed")),
+NonDPOFDarts::NonDPOFDarts(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonD(problem_db, parallel_lib, model), seed(probDescDB.get_int("method.random_seed")),
   emulatorSamples(probDescDB.get_int("method.nond.samples_on_emulator")),
   lipschitzType(probDescDB.get_string("method.lipschitz")),
   samples(probDescDB.get_int("method.build_samples"))

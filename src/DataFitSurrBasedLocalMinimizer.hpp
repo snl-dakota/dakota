@@ -70,7 +70,7 @@ public:
   //
 
   /// constructor
-  DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// alternate constructor for instantiations "on the fly"
   DataFitSurrBasedLocalMinimizer(std::shared_ptr<Model> model, short merit_fn,
 				 short accept_logic, short constr_relax,

@@ -17,14 +17,14 @@ static const char rcsId[]="@(#) $Id: EmbedHybridMetaIterator.cpp 6715 2010-04-02
 namespace Dakota {
 
 EmbedHybridMetaIterator::EmbedHybridMetaIterator(ProblemDescDB& problem_db):
-  MetaIterator(problem_db), singlePassedModel(false),
+  MetaIterator(problem_db, parallel_lib), singlePassedModel(false),
   localSearchProb(problem_db.get_real("method.hybrid.local_search_probability"))
 { maxIteratorConcurrency = 1; }
 
 
 EmbedHybridMetaIterator::
-EmbedHybridMetaIterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  MetaIterator(problem_db, model), singlePassedModel(true),
+EmbedHybridMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  MetaIterator(problem_db, parallel_lib, model), singlePassedModel(true),
   localSearchProb(problem_db.get_real("method.hybrid.local_search_probability"))
 {
   // Ensure consistency between iteratedModel and any method/model pointers

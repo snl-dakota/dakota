@@ -27,8 +27,8 @@ namespace Dakota {
 /** This constructor is called for a standard letter-envelope iterator
     instantiation using the ProblemDescDB. */
 NonDStochCollocation::
-NonDStochCollocation(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDExpansion(problem_db, model)
+NonDStochCollocation(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDExpansion(problem_db, parallel_lib, model)
 {
   // ----------------
   // Resolve settings
@@ -161,8 +161,8 @@ NonDStochCollocation(std::shared_ptr<Model> model, short exp_coeffs_approach,
     customize the object construction. */
 NonDStochCollocation::
 NonDStochCollocation(unsigned short method_name, ProblemDescDB& problem_db,
-		     std::shared_ptr<Model> model):
-  NonDExpansion(problem_db, model)
+		     ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDExpansion(problem_db, parallel_lib, model)
 {
   // Logic delegated to derived class constructor...
 }

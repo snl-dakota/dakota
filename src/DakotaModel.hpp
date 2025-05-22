@@ -864,7 +864,7 @@ protected:
 	ParallelLibrary& parallel_lib = dummy_lib);
 
   /// constructor initializing base class for recast model instances
-  Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
+  Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  ParallelLibrary& parallel_lib);
 
   //
   //- Heading: Virtual functions

@@ -32,7 +32,7 @@ public:
   //
 
   /// standard constructor
-  NonDGenACVSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  NonDGenACVSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// destructor
   ~NonDGenACVSampling() override;
 

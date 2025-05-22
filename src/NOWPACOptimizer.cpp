@@ -19,8 +19,8 @@ static const char rcsId[]="@(#) $Id: NOWPACOptimizer.cpp 7029 2010-10-22 00:17:0
 namespace Dakota {
 
 
-NOWPACOptimizer::NOWPACOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new NOWPACTraits())),
+NOWPACOptimizer::NOWPACOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  Optimizer(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new NOWPACTraits())),
   nowpacSolver(numContinuousVars, "nowpac_diagnostics.dat"),
   nowpacEvaluator(iteratedModel)
 {

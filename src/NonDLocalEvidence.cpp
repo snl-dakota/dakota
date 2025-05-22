@@ -18,8 +18,8 @@
 
 namespace Dakota {
 
-NonDLocalEvidence::NonDLocalEvidence(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDLocalInterval(problem_db, model)
+NonDLocalEvidence::NonDLocalEvidence(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDLocalInterval(problem_db, parallel_lib, model)
 { }
 
 

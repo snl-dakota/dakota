@@ -23,8 +23,8 @@ namespace Dakota {
 /** This constructor is called for a standard letter-envelope iterator
     instantiation using the ProblemDescDB. */
 NonDSurrogateExpansion::
-NonDSurrogateExpansion(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDExpansion(problem_db, model)
+NonDSurrogateExpansion(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDExpansion(problem_db, parallel_lib, model)
   // base classes extract generic UQ spec for stochastic expansions
 {
   // ----------------

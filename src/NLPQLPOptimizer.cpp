@@ -39,8 +39,8 @@ void NLPQLP_F77(int&, int&, int&, int&, int&, int&, int&, double*, double*,
 
 namespace Dakota {
 
-NLPQLPOptimizer::NLPQLPOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new NLPQLPTraits()))
+NLPQLPOptimizer::NLPQLPOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  Optimizer(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new NLPQLPTraits()))
 { initialize(); }
 
 

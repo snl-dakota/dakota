@@ -24,7 +24,7 @@ namespace Dakota {
 /** This constructor is called for a standard letter-envelope iterator
     instantiation using the ProblemDescDB. */
 NonDMultilevelFunctionTrain::
-NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
+NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   NonDC3FunctionTrain(DEFAULT_METHOD, problem_db, model),
   startRankSeqSpec(
     problem_db.get_sza("method.nond.c3function_train.start_rank_sequence")),

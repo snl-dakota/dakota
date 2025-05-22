@@ -40,8 +40,8 @@ NonDQUESOBayesCalibration* NonDQUESOBayesCalibration::nonDQUESOInstance(NULL);
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDQUESOBayesCalibration::
-NonDQUESOBayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDBayesCalibration(problem_db, model),
+NonDQUESOBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDBayesCalibration(problem_db, parallel_lib, model),
   mcmcType(probDescDB.get_string("method.nond.mcmc_type")),
   propCovUpdatePeriod(probDescDB.get_int("method.nond.prop_cov_update_period")),
   precondRequestValue(0),

@@ -28,8 +28,8 @@ extern PRPCache data_pairs;
 
 
 Analyzer::
-Analyzer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  Iterator(problem_db), compactMode(true),
+Analyzer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  Iterator(problem_db, parallel_lib), compactMode(true),
   numObjFns(0), numLSqTerms(0), // default: no best data tracking
   vbdFlag(problem_db.get_bool("method.variance_based_decomp")),
   writePrecision(problem_db.get_int("environment.output_precision"))

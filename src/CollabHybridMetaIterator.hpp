@@ -34,7 +34,7 @@ public:
   /// standard constructor
   CollabHybridMetaIterator(ProblemDescDB& problem_db);
   /// alternate constructor
-  CollabHybridMetaIterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  CollabHybridMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// destructor
   ~CollabHybridMetaIterator() override;
     

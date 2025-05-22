@@ -27,7 +27,7 @@ ActiveSubspaceModel* ActiveSubspaceModel::asmInstance(NULL);
 // in a helper iterator specification.
 
 ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
-  SubspaceModel(problem_db, get_sub_model(problem_db)),
+  SubspaceModel(problem_db, parallel_lib, get_sub_model(problem_db)),
   initialSamples(problem_db.get_int("model.initial_samples")),
   subspaceIdBingLi(
     probDescDB.get_bool("model.active_subspace.truncation_method.bing_li")),

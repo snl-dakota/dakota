@@ -19,8 +19,8 @@ static const char rcsId[]="@(#) $Id: RichExtrapVerification.cpp 6972 2010-09-17 
 namespace Dakota {
 
 RichExtrapVerification::
-RichExtrapVerification(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  Verification(problem_db, model),
+RichExtrapVerification(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  Verification(problem_db, parallel_lib, model),
   studyType(probDescDB.get_ushort("method.sub_method")),
   refinementRate(probDescDB.get_real("method.verification.refinement_rate"))
 {

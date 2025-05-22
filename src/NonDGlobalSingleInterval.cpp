@@ -18,8 +18,8 @@
 namespace Dakota {
 
 NonDGlobalSingleInterval::
-NonDGlobalSingleInterval(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDGlobalInterval(problem_db, model)
+NonDGlobalSingleInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDGlobalInterval(problem_db, parallel_lib, model)
 { }
 
 

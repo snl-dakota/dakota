@@ -22,7 +22,7 @@ static const char rcsId[]="@(#) $Id: NestedModel.cpp 7024 2010-10-16 01:24:42Z m
 namespace Dakota {
 
 NestedModel::NestedModel(ProblemDescDB& problem_db):
-  Model(problem_db),
+  Model(problem_db, parallel_lib),
   nestedModelEvalCntr(0), firstUpdate(true), outerMIPLIndex(0),
   subIteratorSched(parallelLib,
 		   true, // peer 1 must assign jobs to peers 2-n
