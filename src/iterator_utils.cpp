@@ -162,7 +162,7 @@ namespace Dakota {
                 // rather than create additional derived constructors for non-meta-iterators
                 // that differ only in creation of their own Model instance, perform the
                 // Model instantiation here and leverage the existing constructors.
-                return get_iterator(problem_db, parallel_lib, Model::get_model(problem_db)); break;
+                return get_iterator(problem_db, parallel_lib, Model::get_model(problem_db, parallel_lib)); break;
             }
         }
 
@@ -322,7 +322,7 @@ namespace Dakota {
             return std::make_shared<NonDGenACVSampling>(problem_db, parallel_lib, model);
             else // Note that numerical MFMC reorders models on the fly, similar to
                 // enumeration of hierarchical DAGs (more efficient, less smooth?)
-            return std::make_shared<NonDMultifidelitySampling>(problem_db,model);
+            return std::make_shared<NonDMultifidelitySampling>(problem_db, parallel_lib, model);
             break;
         case MULTILEVEL_MULTIFIDELITY_SAMPLING:
             return std::make_shared<NonDMultilevControlVarSampling>(problem_db, parallel_lib, model);

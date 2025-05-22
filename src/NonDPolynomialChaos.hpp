@@ -79,7 +79,7 @@ protected:
   /// (method_name is not necessary, rather it is just a convenient overload
   /// allowing the derived ML PCE class to bypass the standard PCE ctor)
   NonDPolynomialChaos(unsigned short method_name, ProblemDescDB& problem_db,
-		      std::shared_ptr<Model> model);
+          ParallelLibrary& parallel_lib, std::shared_ptr<Model> model);
   /// base constructor for lightweight construction of multifidelity PCE
   /// using numerical integration
   NonDPolynomialChaos(unsigned short method_name, std::shared_ptr<Model> model,

@@ -10,6 +10,8 @@
 #include "dakota_system_defs.hpp"
 #include "RecastModel.hpp"
 #include "EvaluationStore.hpp"
+#include "DataModel.hpp"
+#include "DataMethod.hpp"
 
 static const char rcsId[]="@(#) $Id: RecastModel.cpp 7029 2010-10-22 00:17:02Z mseldre $";
 
@@ -54,7 +56,7 @@ RecastModel(std::shared_ptr<Model> sub_model, const Sizet2DArray& vars_map_indic
 					const Response& sub_model_response,
 					Response& recast_response)):
   Model(sub_model->problem_description_db(),
-	sub_model->parallel_library()),
+	sub_model->parallel_library(), Model::ModelCtor::LtWt),
   subModel(sub_model), varsMapIndices(vars_map_indices),
   nonlinearVarsMapping(nonlinear_vars_mapping),
   primaryRespMapIndices(primary_resp_map_indices),
@@ -139,7 +141,7 @@ RecastModel(std::shared_ptr<Model> sub_model, //size_t num_deriv_vars,
 	    size_t num_recast_primary_fns, size_t num_recast_secondary_fns,
 	    size_t recast_secondary_offset, short recast_resp_order):
   Model(sub_model->problem_description_db(),
-	sub_model->parallel_library()),
+	sub_model->parallel_library(), Model::ModelCtor::LtWt),
   subModel(sub_model), nonlinearVarsMapping(false), recastModelEvalCntr(0),
   variablesMapping(NULL), setMapping(NULL), primaryRespMapping(NULL),
   secondaryRespMapping(NULL), invVarsMapping(NULL), invSetMapping(NULL),
@@ -163,7 +165,7 @@ RecastModel(std::shared_ptr<Model> sub_model, //size_t num_deriv_vars,
 RecastModel::
 RecastModel(std::shared_ptr<Model> sub_model, const ShortShortPair& recast_vars_view):
   Model(sub_model->problem_description_db(),
-	sub_model->parallel_library()),
+	sub_model->parallel_library(), Model::ModelCtor::LtWt),
   subModel(sub_model), nonlinearVarsMapping(false), recastModelEvalCntr(0),
   variablesMapping(NULL), setMapping(NULL), primaryRespMapping(NULL),
   secondaryRespMapping(NULL), invVarsMapping(NULL), invSetMapping(NULL),
@@ -212,7 +214,7 @@ RecastModel::RecastModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_li
 
 RecastModel::RecastModel(std::shared_ptr<Model> sub_model):
   Model(sub_model->problem_description_db(),
-   	sub_model->parallel_library()),
+   	sub_model->parallel_library(), Model::ModelCtor::LtWt),
   subModel(sub_model), recastModelEvalCntr(0), variablesMapping(NULL),
   setMapping(NULL), primaryRespMapping(NULL), secondaryRespMapping(NULL),
   invVarsMapping(NULL), invSetMapping(NULL), invPriRespMapping(NULL),

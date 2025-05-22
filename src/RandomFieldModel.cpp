@@ -9,6 +9,7 @@
 
 #include "RandomFieldModel.hpp"
 #include "MarginalsCorrDistribution.hpp"
+#include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "Teuchos_SerialDenseHelpers.hpp"
 

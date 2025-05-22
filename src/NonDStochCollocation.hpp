@@ -61,7 +61,7 @@ protected:
   /// (method_name is not necessary, rather it is just a convenient overload
   /// allowing the derived ML SC class to bypass the standard SC ctor)
   NonDStochCollocation(unsigned short method_name, ProblemDescDB& problem_db,
-		       std::shared_ptr<Model> model);
+            ParallelLibrary& parallel_lib, std::shared_ptr<Model> model);
   /// short-cut ctor allowing derived class to replace logic in base class ctor
   NonDStochCollocation(unsigned short method_name, std::shared_ptr<Model> model,
 		       short exp_coeffs_approach, const RealVector& dim_pref,

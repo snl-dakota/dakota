@@ -32,8 +32,8 @@ namespace Dakota {
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDMultilevelSampling::
-NonDMultilevelSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDHierarchSampling(problem_db, model),
+NonDMultilevelSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDHierarchSampling(problem_db, parallel_lib, model),
   allocationTarget(problem_db.get_short("method.nond.allocation_target")),
   useTargetVarianceOptimizationFlag(
     problem_db.get_bool("method.nond.allocation_target.optimization")),

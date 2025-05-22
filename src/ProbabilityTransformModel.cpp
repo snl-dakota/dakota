@@ -13,6 +13,8 @@
 #include "GumbelRandomVariable.hpp"
 #include "FrechetRandomVariable.hpp"
 #include "WeibullRandomVariable.hpp"
+#include "DataModel.hpp"
+#include "DataMethod.hpp"
 
 static const char rcsId[]="@(#) $Id$";
 

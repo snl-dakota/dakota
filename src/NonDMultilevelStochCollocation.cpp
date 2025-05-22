@@ -28,7 +28,7 @@ namespace Dakota {
     instantiation using the ProblemDescDB. */
 NonDMultilevelStochCollocation::
 NonDMultilevelStochCollocation(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
-  NonDStochCollocation(DEFAULT_METHOD, problem_db, model), // bypass SC ctor
+  NonDStochCollocation(DEFAULT_METHOD, problem_db, parallel_lib, model), // bypass SC ctor
   quadOrderSeqSpec(problem_db.get_usa("method.nond.quadrature_order")),
   ssgLevelSeqSpec(problem_db.get_usa("method.nond.sparse_grid_level")),
   sequenceIndex(0)

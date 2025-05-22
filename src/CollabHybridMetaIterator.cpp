@@ -16,7 +16,7 @@ static const char rcsId[]="@(#) $Id: CollabHybridMetaIterator.cpp 6715 2010-04-0
 
 namespace Dakota {
 
-CollabHybridMetaIterator::CollabHybridMetaIterator(ProblemDescDB& problem_db):
+CollabHybridMetaIterator::CollabHybridMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   MetaIterator(problem_db, parallel_lib), singlePassedModel(false)
   //hybridCollabType(
   //  problem_db.get_string("method.hybrid.collaborative_type"))

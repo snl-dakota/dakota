@@ -17,6 +17,8 @@
 #include "LowDiscrepancySequence.hpp"
 #include "Rank1Lattice.hpp"
 
+#include "ProblemDescDB.hpp"
+
 #include <boost/random/uniform_01.hpp>
 
 namespace Dakota {

@@ -12,6 +12,7 @@
 
 #include "NonDReliability.hpp"
 #include "ProbabilityTransformation.hpp"
+#include "DataModel.hpp"
 
 namespace Dakota {
 

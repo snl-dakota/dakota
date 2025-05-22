@@ -589,7 +589,7 @@ namespace Dakota {
         void nonlinear_eq_constraint_targets(Model &model, const RealVector& nln_eq_targets);
 
         /// construct the appropriate derived model type as given by the modelType attribute
-        std::shared_ptr<Model> get_model(ProblemDescDB& problem_db, ParallelLibrary parallel_lib);
+        std::shared_ptr<Model> get_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
 
         /// dummy default empty string
         static const String empty_string = "";

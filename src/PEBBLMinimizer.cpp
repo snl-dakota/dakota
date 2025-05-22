@@ -10,12 +10,13 @@
 #include "PEBBLMinimizer.hpp"
 #include "PRPMultiIndex.hpp"
 #include "dakota_data_io.hpp"
+#include "ProblemDescDB.hpp"
 
 namespace Dakota 
 {
 
-PebbldMinimizer::PebbldMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  Minimizer(problem_db, model, std::shared_ptr<TraitsBase>(new PebbldTraits()))
+PebbldMinimizer::PebbldMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  Minimizer(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new PebbldTraits()))
 {
   // While this copy will be replaced in best update, initialize here
   // since relied on in Minimizer::initialize_run when a sub-iterator

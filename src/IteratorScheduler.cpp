@@ -10,6 +10,7 @@
 #include "IteratorScheduler.hpp"
 #include "DakotaIterator.hpp"
 #include "ParallelLibrary.hpp"
+#include "ProblemDescDB.hpp"
 
 static const char rcsId[]="@(#) $Id: IteratorScheduler.cpp 6492 2009-12-19 00:04:28Z briadam $";
 

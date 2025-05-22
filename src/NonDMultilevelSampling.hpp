@@ -36,7 +36,7 @@ public:
   //
 
   /// standard constructor
-  NonDMultilevelSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  NonDMultilevelSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model);
   /// destructor
   ~NonDMultilevelSampling() override;
 

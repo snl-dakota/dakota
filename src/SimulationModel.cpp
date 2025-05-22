@@ -20,7 +20,7 @@ using namespace std;
 namespace Dakota {
 
 
-SimulationModel::SimulationModel(ProblemDescDB& problem_db):
+SimulationModel::SimulationModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   Model(problem_db, parallel_lib),
   userDefinedInterface(Interface::get_interface(problem_db)), solnCntlVarType(EMPTY_TYPE),
   solnCntlADVIndex(_NPOS), solnCntlAVIndex(_NPOS), costMetadataIndex(_NPOS),
@@ -502,6 +502,34 @@ ActiveSet SimulationModel::default_interface_active_set()
   return set;
 }
 
+void SimulationModel::
+derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+			   bool recurse_flag)
+{
+  // allow recursion to progress - don't store/set/restore
+  parallelLib.parallel_configuration_iterator(modelPCIter);
+  userDefinedInterface->init_communicators(messageLengths, max_eval_concurrency);
+}
+
+void SimulationModel::
+derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+			  bool recurse_flag)
+{
+  // allow recursion to progress - don't store/set/restore
+  parallelLib.parallel_configuration_iterator(modelPCIter);
+  userDefinedInterface->set_communicators(messageLengths, max_eval_concurrency);
+  set_ie_asynchronous_mode(max_eval_concurrency);// asynchEvalFlag, evalCapacity
+}
+
+IntIntPair SimulationModel::
+estimate_partition_bounds(int max_eval_concurrency)
+{
+  // Note: accesses DB data
+  // > for use at construct/init_comms time
+  // > DB list nodes set by calling context
+  return IntIntPair(probDescDB.min_procs_per_ie(), 
+		    probDescDB.max_procs_per_ie(max_eval_concurrency));
+}
 
 void SimulationModel::declare_sources()
 {

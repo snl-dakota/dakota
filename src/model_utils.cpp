@@ -18,6 +18,7 @@
 #include "RandomFieldModel.hpp"
 #include "MarginalsCorrDistribution.hpp"
 #include "ParallelLibrary.hpp"
+#include "ProblemDescDB.hpp"
 
 namespace Dakota {
     namespace ModelUtils {

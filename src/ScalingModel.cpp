@@ -8,6 +8,7 @@
     _______________________________________________________________________ */
 
 #include "ScalingModel.hpp"
+#include "DataMethod.hpp"
 
 static const char rcsId[]="@(#) $Id$";
 

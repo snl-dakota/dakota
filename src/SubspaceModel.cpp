@@ -10,6 +10,7 @@
 #include "SubspaceModel.hpp"
 #include "dakota_linear_algebra.hpp"
 #include "ParallelLibrary.hpp"
+#include "ProblemDescDB.hpp"
 #include "MarginalsCorrDistribution.hpp"
 
 namespace Dakota {

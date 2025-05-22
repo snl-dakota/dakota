@@ -904,25 +904,6 @@ approximation_data(size_t fn_index)
 { return approxInterface->approximation_data(fn_index); }
 
 
-inline IntIntPair DataFitSurrModel::
-estimate_partition_bounds(int max_eval_concurrency)
-{
-  // support DB-based and on-the-fly instantiations for DataFitSurrModel
-  if (daceIterator) {
-    probDescDB.set_db_list_nodes(daceIterator->method_id());
-    return daceIterator->estimate_partition_bounds();
-  }
-  else if (actualModel) {
-    int am_max_conc = approxInterface->minimum_points(false)
-                    * actualModel->derivative_concurrency(); // local/multipt
-    probDescDB.set_db_model_nodes(actualModel->model_id());
-    return actualModel->estimate_partition_bounds(am_max_conc);
-  }
-  else
-    return IntIntPair(1, 1);
-}
-
-
 inline void DataFitSurrModel::derived_init_serial()
 {
   //approxInterface->init_serial();

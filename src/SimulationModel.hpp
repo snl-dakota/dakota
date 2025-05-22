@@ -14,6 +14,7 @@
 #include "DakotaInterface.hpp"
 #include "ParallelLibrary.hpp"
 #include "EvaluationStore.hpp"
+#include "DataInterface.hpp"
 
 namespace Dakota {
 
@@ -34,7 +35,7 @@ public:
   //- Heading: Constructor and destructor
   //
 
-  SimulationModel(ProblemDescDB& problem_db); ///< constructor
+  SimulationModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib); ///< constructor
   
   /// Return the "default" or maximal ActiveSet for the model
   //ActiveSet default_active_set();
@@ -341,41 +342,8 @@ inline bool SimulationModel::derived_scheduler_overload() const
 }
 
 
-inline IntIntPair SimulationModel::
-estimate_partition_bounds(int max_eval_concurrency)
-{
-  // Note: accesses DB data
-  // > for use at construct/init_comms time
-  // > DB list nodes set by calling context
-  return IntIntPair(probDescDB.min_procs_per_ie(), 
-		    probDescDB.max_procs_per_ie(max_eval_concurrency));
-}
-
-
-inline void SimulationModel::
-derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-			   bool recurse_flag)
-{
-  // allow recursion to progress - don't store/set/restore
-  parallelLib.parallel_configuration_iterator(modelPCIter);
-  userDefinedInterface->init_communicators(messageLengths, max_eval_concurrency);
-}
-
-
 inline void SimulationModel::derived_init_serial()
 { userDefinedInterface->init_serial(); }
-
-
-inline void SimulationModel::
-derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-			  bool recurse_flag)
-{
-  // allow recursion to progress - don't store/set/restore
-  parallelLib.parallel_configuration_iterator(modelPCIter);
-  userDefinedInterface->set_communicators(messageLengths, max_eval_concurrency);
-  set_ie_asynchronous_mode(max_eval_concurrency);// asynchEvalFlag, evalCapacity
-}
-
 
 /*
 inline void SimulationModel::

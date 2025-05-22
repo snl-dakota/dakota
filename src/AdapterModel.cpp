@@ -9,7 +9,7 @@
 
 //#include "dakota_system_defs.hpp"
 #include "AdapterModel.hpp"
-#include "pecos_global_defs.hpp"
+#include "DataMethod.hpp"
 //#include "EvaluationStore.hpp"
 
 static const char rcsId[]="@(#) $Id: AdapterModel.cpp 7029 2010-10-22 00:17:02Z mseldre $";
@@ -45,12 +45,12 @@ AdapterModel(const Variables& initial_vars, const Constraints& cons,
 			       Response& response)):
   Model(initial_vars.view(),
 	initial_vars.shared_data(), true, resp.shared_data(), true,
-	resp.active_set(), Pecos::SILENT_OUTPUT),
+	resp.active_set(), SILENT_OUTPUT),
   adapterModelEvalCntr(0), respMapping(resp_map)
 {
   modelType   = "adapter";
   modelId     = "ADAPTER";
-  outputLevel = Pecos::SILENT_OUTPUT;
+  outputLevel = SILENT_OUTPUT;
 
   currentVariables.active_variables(initial_vars); // {c,di,dr}_vars
   userDefinedConstraints.update(cons); // update the Model ctor instantiation

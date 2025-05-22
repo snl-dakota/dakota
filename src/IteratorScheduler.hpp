@@ -206,7 +206,7 @@ inline IteratorScheduler::~IteratorScheduler()
 
 
 inline void IteratorScheduler::
-init_iterator(std::shared_ptr<Iterator>& sub_iterator,
+init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator,
 	      std::shared_ptr<Model> sub_model)
 {
   ParLevLIter pl_iter = schedPCIter->mi_parallel_level_iterator(miPLIndex);
@@ -223,7 +223,7 @@ init_iterator(std::shared_ptr<Iterator>& sub_iterator,
 
 
 inline void IteratorScheduler::
-init_iterator(ProblemDescDB& problem_db, const String& method_string,
+init_iterator(const String& method_string,
 	      std::shared_ptr<Iterator>& sub_iterator, std::shared_ptr<Model> sub_model)
 {
   ParLevLIter pl_iter = schedPCIter->mi_parallel_level_iterator(miPLIndex);

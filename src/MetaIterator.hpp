@@ -43,7 +43,7 @@ protected:
   //
 
   /// standard constructor
-  MetaIterator(ProblemDescDB& problem_db);
+  MetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
   /// alternate constructor
   MetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// destructor
