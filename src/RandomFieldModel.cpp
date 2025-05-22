@@ -18,8 +18,8 @@ namespace Dakota {
 RandomFieldModel* RandomFieldModel::rfmInstance(NULL);
 
 
-RandomFieldModel::RandomFieldModel(ProblemDescDB& problem_db):
-  RecastModel(problem_db, parallel_lib, get_sub_model(problem_db)),
+RandomFieldModel::RandomFieldModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
+  RecastModel(problem_db, parallel_lib, get_sub_model(problem_db, parallel_lib)),
   // LPS TODO: initialize other class data members off problemDB
   numObservations(0), 
   expansionForm(problem_db.get_ushort("model.rf.expansion_form")),
@@ -36,13 +36,13 @@ RandomFieldModel::RandomFieldModel(ProblemDescDB& problem_db):
 }
 
 
-std::shared_ptr<Model> RandomFieldModel::get_sub_model(ProblemDescDB& problem_db)
+std::shared_ptr<Model> RandomFieldModel::get_sub_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib)
 {
   const String& propagation_model_pointer
     = problem_db.get_string("model.rf.propagation_model_pointer");
   size_t model_index = problem_db.get_db_model_node(); // for restoration
   problem_db.set_db_model_nodes(propagation_model_pointer);
-  auto sub_model = Model::get_model(problem_db);
+  auto sub_model = Model::get_model(problem_db, parallel_lib);
   //check_submodel_compatibility(actualModel);
   problem_db.set_db_model_nodes(model_index); // restore
 
@@ -61,7 +61,7 @@ void RandomFieldModel::init_dace_iterator(ProblemDescDB& problem_db)
     problem_db.set_db_list_nodes(dace_method_pointer);
 
     // instantiate the DACE iterator, which instantiates the actual model
-    daceIterator = Iterator::get_iterator(problem_db);
+    daceIterator = Iterator::get_iterator(problem_db, parallelLib);
     daceIterator->sub_iterator_flag(true);
 
     // retrieve the actual model from daceIterator (invalid for selected

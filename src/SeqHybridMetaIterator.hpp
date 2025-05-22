@@ -148,11 +148,11 @@ inline IntIntPair SeqHybridMetaIterator::estimate_partition_bounds()
   for (i=0; i<num_meth; ++i)  {
     auto model = (singlePassedModel) ? iteratedModel : selectedModels[i];
     if (lightwtMethodCtor)
-      iterSched.construct_sub_iterator(probDescDB, selectedIterators[i], model,
+      iterSched.construct_sub_iterator(probDescDB, parallelLib, selectedIterators[i], model,
 				       empty_str, methodStrings[i], // ptr, name
 				       modelStrings[i]); // ptr
     else
-      iterSched.construct_sub_iterator(probDescDB, selectedIterators[i], model,
+      iterSched.construct_sub_iterator(probDescDB, parallelLib, selectedIterators[i], model,
 				       methodStrings[i], empty_str, empty_str);
 
     min_max = selectedIterators[i]->estimate_partition_bounds();

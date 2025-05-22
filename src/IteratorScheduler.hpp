@@ -55,16 +55,15 @@ public:
 
   /// convenience function for allocation of an iterator and (parallel)
   /// initialization of its comms
-  static void init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator,
+  static void init_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Iterator>& sub_iterator,
 			    ParLevLIter pl_iter);
   /// convenience function for allocation of an iterator and (parallel)
   /// initialization of its comms
-  static void init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator,
+  static void init_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Iterator>& sub_iterator,
 			    std::shared_ptr<Model> sub_model, ParLevLIter pl_iter);
   /// convenience function for lightweight allocation of an iterator
   /// and (parallel) initialization of its comms
-  static void init_iterator(ProblemDescDB& problem_db,
-			    const String& method_string, std::shared_ptr<Iterator>& sub_iterator,
+  static void init_iterator(const String& method_string, std::shared_ptr<Iterator>& sub_iterator,
 			    std::shared_ptr<Model>, ParLevLIter pl_iter);
 
   /// convenience function for setting comms prior to running an iterator
@@ -83,7 +82,8 @@ public:
   //
 
   /// instantiate sub_iterator on the current rank if not already constructed
-  void construct_sub_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator,
+  void construct_sub_iterator(ProblemDescDB& problem_db, ParallelLibrary &parallel_lib,
+            std::shared_ptr<Iterator>& sub_iterator,
 			      std::shared_ptr<Model> sub_model, const String& method_ptr,
 			      const String& method_name,
 			      const String& model_ptr);
@@ -108,7 +108,7 @@ public:
   void init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator,
 		     std::shared_ptr<Model> sub_model);
   /// invokes static version of this function with appropriate parallelism level
-  void init_iterator(ProblemDescDB& problem_db, const String& method_string,
+  void init_iterator(const String& method_string,
 		     std::shared_ptr<Iterator>& sub_iterator, std::shared_ptr<Model> sub_model);
   /// invokes static version of this function with appropriate parallelism level
   void set_iterator(Iterator& sub_iterator);
@@ -206,7 +206,7 @@ inline IteratorScheduler::~IteratorScheduler()
 
 
 inline void IteratorScheduler::
-init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator,
+init_iterator(std::shared_ptr<Iterator>& sub_iterator,
 	      std::shared_ptr<Model> sub_model)
 {
   ParLevLIter pl_iter = schedPCIter->mi_parallel_level_iterator(miPLIndex);
@@ -218,7 +218,7 @@ init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator
     parallelLib.print_configuration(); // match init_comms() on iterator servers
   }
   else
-    init_iterator(problem_db, sub_iterator, sub_model, pl_iter);
+    init_iterator(problem_db, parallelLib, sub_iterator, sub_model, pl_iter);
 }
 
 
@@ -235,7 +235,7 @@ init_iterator(ProblemDescDB& problem_db, const String& method_string,
     parallelLib.print_configuration();
   }
   else
-    init_iterator(problem_db, method_string, sub_iterator, sub_model, pl_iter);
+    init_iterator(method_string, sub_iterator, sub_model, pl_iter);
 }
 
 

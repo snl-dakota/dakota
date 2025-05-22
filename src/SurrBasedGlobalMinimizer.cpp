@@ -66,7 +66,7 @@ SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_li
     probDescDB.set_db_method_node(approx_method_ptr); // method only
     // sub-problem minimizer will use shallow copy of iteratedModel
     // (from Model::get_model(problem_db)
-    approxSubProbMinimizer = Iterator::get_iterator(probDescDB);//(iteratedModel);
+    approxSubProbMinimizer = Iterator::get_iterator(probDescDB, parallelLib);//(iteratedModel);
     // suppress DB ctor default and don't output summary info
     approxSubProbMinimizer->summary_output(false);
     // verify approx method's modelPointer is empty or consistent

@@ -241,7 +241,7 @@ void SurrBasedLocalMinimizer::initialize_sub_minimizer()
     // is relevant and any sub-method model_pointer spec is ignored.  
     size_t method_index = probDescDB.get_db_method_node(); // for restoration
     probDescDB.set_db_method_node(approx_method_ptr); // set method only
-    approxSubProbMinimizer = Iterator::get_iterator(probDescDB, approxSubProbModel);
+    approxSubProbMinimizer = Iterator::get_iterator(probDescDB, parallelLib, approxSubProbModel);
     // suppress DB ctor default and don't output summary info
     approxSubProbMinimizer->summary_output(false);
     // verify approx method's modelPointer is empty or consistent

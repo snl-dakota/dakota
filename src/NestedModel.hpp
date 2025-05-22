@@ -13,13 +13,14 @@
 #include "DakotaModel.hpp"
 #include "DakotaInterface.hpp"
 #include "DakotaIterator.hpp"
-#include "ParallelLibrary.hpp"
 #include "DataModel.hpp"
 #include "PRPMultiIndex.hpp"
 #include "IteratorScheduler.hpp"
 
 
 namespace Dakota {
+
+class ParallelLibrary;
 
 /// Derived model class which performs a complete sub-iterator
 /// execution within every evaluation of the model.
@@ -48,7 +49,7 @@ public:
   //- Heading: Constructors and destructor
   //
 
-  NestedModel(ProblemDescDB& problem_db); ///< constructor
+  NestedModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib); ///< constructor
 
   void declare_sources() override;
 
@@ -547,7 +548,7 @@ estimate_partition_bounds(int max_eval_concurrency)
   }
 
   String empty_str;
-  subIteratorSched.construct_sub_iterator(probDescDB, subIterator, subModel,
+  subIteratorSched.construct_sub_iterator(probDescDB, parallelLib, subIterator, subModel,
     subMethodPointer, empty_str, empty_str);
   IntIntPair min_max, si_min_max = subIterator->estimate_partition_bounds();
 
@@ -567,7 +568,7 @@ inline void NestedModel::derived_init_serial()
   size_t method_index = probDescDB.get_db_method_node(),
          model_index  = probDescDB.get_db_model_node(); // for restoration
   probDescDB.set_db_list_nodes(subMethodPointer);       // even if empty
-  subIterator = Iterator::get_iterator(probDescDB, subModel);
+  subIterator = Iterator::get_iterator(probDescDB, parallelLib, subModel);
   probDescDB.set_db_method_node(method_index); // restore method only
   probDescDB.set_db_model_nodes(model_index);  // restore all model nodes
 

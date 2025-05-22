@@ -15,6 +15,7 @@
 #include "ParamResponsePair.hpp"
 
 
+
 namespace Dakota {
 
 /// Meta-iterator for multi-start iteration or pareto set optimization.
@@ -44,7 +45,7 @@ public:
   //
 
   /// standard constructor
-  ConcurrentMetaIterator(ProblemDescDB& problem_db);
+  ConcurrentMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
   /// alternate constructor
   ConcurrentMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// destructor
@@ -123,50 +124,6 @@ private:
 
 inline std::shared_ptr<Model> ConcurrentMetaIterator::algorithm_space_model()
 { return iteratedModel; }
-
-
-inline IntIntPair ConcurrentMetaIterator::estimate_partition_bounds()
-{
-  // Note: ConcurrentMetaIterator::derived_init_communicators() calls
-  // IteratorScheduler::configure() to estimate_partition_bounds() on the
-  // subIterator, not the MetaIterator.  When ConcurrentMetaIterator is a
-  // sub-iterator, we augment the subIterator concurrency with the MetaIterator
-  // concurrency.  [Thus, this is not redundant with configure().]
-
-  // This function is already rank protected as far as partitioning has occurred
-  // to this point.  However, this call may precede derived_init_communicators
-  // when the ConcurrentMetaIterator is a sub-iterator.
-  iterSched.construct_sub_iterator(probDescDB, selectedIterator, iteratedModel,
-    probDescDB.get_string("method.sub_method_pointer"),
-    probDescDB.get_string("method.sub_method_name"),
-    probDescDB.get_string("method.sub_model_pointer"));
-  IntIntPair min_max, si_min_max = selectedIterator->estimate_partition_bounds();
-
-  // now apply scheduling data for this level (recursion is complete)
-  min_max.first = ProblemDescDB::min_procs_per_level(si_min_max.first,
-    iterSched.procsPerIterator, iterSched.numIteratorServers);
-  min_max.second = ProblemDescDB::max_procs_per_level(si_min_max.second,
-    iterSched.procsPerIterator, iterSched.numIteratorServers,
-    iterSched.iteratorScheduling, 1, false, maxIteratorConcurrency);
-  return min_max;
-}
-
-
-inline void ConcurrentMetaIterator::initialize_model()
-{
-  if (methodName == PARETO_SET) {
-    paramSetLen = probDescDB.get_sizet("responses.num_objective_functions");
-    // define dummy weights to trigger model recasting in iterator construction
-    // (replaced at run-time with weight sets from specification)
-    if (iteratedModel->primary_response_fn_weights().empty()) {
-      RealVector initial_wts(paramSetLen, false);
-      initial_wts = 1./(Real)paramSetLen;
-      iteratedModel->primary_response_fn_weights(initial_wts); // trigger recast
-    }
-  }
-  else
-    paramSetLen = ModelUtils::cv(*iteratedModel);
-}
 
 
 inline void ConcurrentMetaIterator::

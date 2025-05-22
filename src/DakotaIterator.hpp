@@ -12,6 +12,7 @@
 
 #include "dakota_data_types.hpp"
 #include "DakotaModel.hpp"
+#include "DataMethod.hpp"
 #include "ResultsManager.hpp"
 #include "DakotaTraitsBase.hpp"
 #include <memory>
@@ -19,6 +20,7 @@
 
 namespace Dakota {
 
+class ParallelLib;
 class ProblemDescDB;
 class Variables;
 class Response;
@@ -46,15 +48,16 @@ public:
 
   /// @brief retrieve existing Iterator if it exists or instantiate a new one
   /// @param problem_db Instantiate from this database
+  /// @param parallel_lib Parallel library to use
   /// @return Pointer to the cached or new Iterator
-  static std::shared_ptr<Iterator> get_iterator(ProblemDescDB& problem_db);
+  static std::shared_ptr<Iterator> get_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
 
     
   /// @brief retrieve existing Iterator if it exists or instantiate a new one
   /// @param problem_db Instantiate from this database
   /// @param model If Iterator is instantiated, construct using this model
   /// @return Pointer to the cached or new Iterator
-  static std::shared_ptr<Iterator> get_iterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  static std::shared_ptr<Iterator> get_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model);
 
   /// @brief retrieve existing Iterator (that matches name and model) if it exists or instantiate a new one
   /// @param method_name Name (i.e. type) of the method

@@ -12,6 +12,7 @@
 #include "DakotaIterator.hpp"
 #include "DakotaApproximation.hpp"
 #include "DakotaTraitsBase.hpp"
+#include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "DakotaGraphics.hpp"
@@ -372,7 +373,7 @@ String Iterator::submethod_enum_to_string(unsigned short submethod_enum)
   return lc_iter->second;
 }
 
-std::shared_ptr<Iterator> Iterator::get_iterator(ProblemDescDB& problem_db) {
+std::shared_ptr<Iterator> Iterator::get_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib) {
   ProblemDescDB* const study_ptr = problem_db.get_rep().get();
   auto& study_cache = Iterator::iteratorCache[study_ptr];
   auto id_method = problem_db.method_id();
@@ -382,13 +383,13 @@ std::shared_ptr<Iterator> Iterator::get_iterator(ProblemDescDB& problem_db) {
     = std::find_if(study_cache.begin(), study_cache.end(),
                   [&id_method](std::shared_ptr<Iterator> iter) {return iter->method_id() == id_method;});
   if (i_it == study_cache.end()) {
-    study_cache.push_back(IteratorUtils::get_iterator(problem_db));
+    study_cache.push_back(IteratorUtils::get_iterator(problem_db, parallel_lib));
     i_it = --study_cache.end();
   }
   return *i_it;
 }
 
-std::shared_ptr<Iterator> Iterator::get_iterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model) {
+std::shared_ptr<Iterator> Iterator::get_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model) {
   const ProblemDescDB* const study_ptr = problem_db.get_rep().get();
   auto& study_cache = Iterator::iteratorCache[study_ptr];
   auto id_method = problem_db.method_id();
@@ -400,13 +401,13 @@ std::shared_ptr<Iterator> Iterator::get_iterator(ProblemDescDB& problem_db, std:
 
   // if Iterator does not already exist, then create it
   if (i_it == study_cache.end()) {
-    study_cache.push_back(IteratorUtils::get_iterator(problem_db, model));
+    study_cache.push_back(IteratorUtils::get_iterator(problem_db, parallel_lib, model));
     i_it = --study_cache.end();
   }
   // idMethod already exists, but check for same model.  If !same, instantiate
   // new rather than update (i_it->iterated_model(model)) all shared instances.
   else if (model != (*i_it)->iterated_model()) {
-    study_cache.push_back(IteratorUtils::get_iterator(problem_db, model));
+    study_cache.push_back(IteratorUtils::get_iterator(problem_db, parallel_lib, model));
     i_it = --study_cache.end();
   }
   return *i_it;

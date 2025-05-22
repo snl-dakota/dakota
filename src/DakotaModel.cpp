@@ -43,8 +43,8 @@ Iterator  dummy_iterator;  ///< dummy Iterator object used for mandatory
 // Initialization of static model ID counters
 size_t Model::noSpecIdNum = 0;
 
-std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db) {
-
+std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib) {
+  // Check for a cached Model
   ProblemDescDB* const study_ptr = problem_db.get_rep().get();
   auto& study_cache = Model::modelCache[study_ptr];
 
@@ -66,7 +66,7 @@ std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db) {
     = std::find_if(study_cache.begin(), study_cache.end(),
                    [&id_model](std::shared_ptr<Model> m) {return m->model_id() == id_model;});
   if (m_it == study_cache.end()) {
-    study_cache.push_back(ModelUtils::get_model(problem_db));
+    study_cache.push_back(ModelUtils::get_model(problem_db, parallel_lib));
     m_it = --study_cache.end();
   }
   return *m_it;
@@ -96,7 +96,7 @@ std::map<const ProblemDescDB*, std::list<std::shared_ptr<Model>>> Model::modelCa
     list (to avoid the recursion of the base class constructor calling
     get_model() again).  Since the letter IS the representation, its
     representation pointer is set to NULL. */
-Model::Model(ProblemDescDB& problem_db):
+Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   currentVariables(Variables::get_variables(problem_db)),
   numDerivVars(currentVariables.cv()),
   currentResponse(
@@ -123,7 +123,7 @@ Model::Model(ProblemDescDB& problem_db):
   hessIdNumerical(problem_db.get_is("responses.hessians.mixed.id_numerical")),
   hessIdQuasi(problem_db.get_is("responses.hessians.mixed.id_quasi")),
   warmStartFlag(false), supportsEstimDerivs(true), mappingInitialized(false),
-  probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
+  probDescDB(problem_db), parallelLib(parallel_lib),
   modelPCIter(parallelLib.parallel_configuration_iterator()),
   componentParallelMode(NO_PARALLEL_MODE), asynchEvalFlag(false),
   evaluationCapacity(1), 
@@ -263,7 +263,7 @@ Model(const ShortShortPair& vars_view,
       const SharedVariablesData& svd, bool share_svd,
       const SharedResponseData&  srd, bool share_srd,
       const ActiveSet& set, short output_level, ProblemDescDB& problem_db,
-      ParallelLibrary& parallel_lib, ParallelLibrary& parallel_lib):
+      ParallelLibrary& parallel_lib):
   numDerivVars(set.derivative_vector().size()),
   numFns(set.request_vector().size()), evaluationsDB(evaluation_store_db),
   fdGradStepType("relative"), fdHessStepType("relative"), warmStartFlag(false), 
@@ -302,9 +302,7 @@ Model(const ShortShortPair& vars_view,
 /** This constructor also builds the base class data for inherited models.
     However, it is used for derived models which are instantiated on the fly.
     Therefore it only initializes a small subset of attributes. */
-Model::
-Model(ProblemDescDB& problem_db,
-      ParallelLibrary& parallel_lib, ParallelLibrary& parallel_lib):
+Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   warmStartFlag(false), supportsEstimDerivs(true), mappingInitialized(false),
   probDescDB(problem_db), parallelLib(parallel_lib),
   evaluationsDB(evaluation_store_db),

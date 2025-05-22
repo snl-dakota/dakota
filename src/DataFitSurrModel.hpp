@@ -15,11 +15,14 @@
 #include "SurrogateModel.hpp"
 #include "DakotaInterface.hpp"
 #include "DakotaIterator.hpp"
-#include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 
 
 namespace Dakota {
+
+class ProblemDescDB;
+class ParallelLibrary;
+
 
 /// Derived model class within the surrogate model branch for managing
 /// data fit surrogates (global and local)
@@ -47,7 +50,7 @@ public:
   //
 
   /// constructor
-  DataFitSurrModel(ProblemDescDB& problem_db);
+  DataFitSurrModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
   /// alternate constructor for instantiations on the fly
   DataFitSurrModel(std::shared_ptr<Iterator> dace_iterator, std::shared_ptr<Model> actual_model,
 		   const ActiveSet& dfs_set, const ShortShortPair& dfs_view,

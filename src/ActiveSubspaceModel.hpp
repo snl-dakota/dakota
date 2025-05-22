@@ -17,7 +17,7 @@ namespace Dakota {
 
 /// forward declarations
 class ProblemDescDB;
-
+class ParallelLibrary;
 
 //---
 // BMA: Wishlist / notes:
@@ -57,7 +57,7 @@ public:
   //
 
   /// Problem database constructor
-  ActiveSubspaceModel(ProblemDescDB& problem_db);
+  ActiveSubspaceModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
 
   /// lightweight constructor
   ActiveSubspaceModel(std::shared_ptr<Model> sub_model, unsigned int dimension,
@@ -115,7 +115,7 @@ protected:
   // ---
 
   /// retrieve the sub-Model from the DB to pass up the constructor chain
-  std::shared_ptr<Model> get_sub_model(ProblemDescDB& problem_db);
+  std::shared_ptr<Model> get_sub_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
 
   /// initialize the native problem space Monte Carlo sampler
   void init_fullspace_sampler(unsigned short sample_type);

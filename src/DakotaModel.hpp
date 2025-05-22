@@ -13,7 +13,6 @@
 #include "dakota_data_types.hpp"
 #include "model_utils.hpp"
 #include "MPIManager.hpp"
-#include "ProblemDescDB.hpp"
 #include "DakotaVariables.hpp"
 #include "DakotaConstraints.hpp"
 //#include "DakotaInterface.hpp"
@@ -38,6 +37,7 @@ namespace Dakota {
 // forward declarations
 class Iterator;
 class ParallelLibrary;
+class ProblemDescDB;
 class Approximation;
 class SharedApproxData;
 class DiscrepancyCorrection;
@@ -64,7 +64,7 @@ public:
 
   /// @brief retrieve an existing Model, if it exists, or instantiate a new one
   /// @return pointer to existing or newly created Model
-  static std::shared_ptr<Model> get_model(ProblemDescDB& problem_db);
+  static std::shared_ptr<Model> get_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
 
   /// @brief return the model cache for the study
   /// @param problem_db 
@@ -87,7 +87,7 @@ public:
   /// default constructor
   Model();
   /// standard constructor
-  Model(ProblemDescDB& problem_db);
+  Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
   /// copy constructor
   Model(const Model& model) = delete;
 
@@ -864,7 +864,7 @@ protected:
 	ParallelLibrary& parallel_lib = dummy_lib);
 
   /// constructor initializing base class for recast model instances
-  Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  ParallelLibrary& parallel_lib);
+  Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
 
   //
   //- Heading: Virtual functions

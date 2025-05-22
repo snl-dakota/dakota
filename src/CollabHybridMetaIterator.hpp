@@ -88,36 +88,6 @@ private:
   Response  bestResponse;  ///< best response  found in collaborative iteration
 };
 
-
-inline IntIntPair CollabHybridMetaIterator::estimate_partition_bounds()
-{
-  int min_procs = INT_MAX, max_procs = 0;       IntIntPair min_max;
-  size_t i, num_meth = selectedIterators.size();  String empty_str;
-  for (i=0; i<num_meth; ++i)  {
-    auto model = (singlePassedModel) ? iteratedModel : selectedModels[i];
-    if (lightwtMethodCtor)
-      iterSched.construct_sub_iterator(probDescDB, selectedIterators[i], model,
-				       empty_str, methodStrings[i], // ptr, name
-				       modelStrings[i]); // ptr
-    else
-      iterSched.construct_sub_iterator(probDescDB, selectedIterators[i], model,
-				       methodStrings[i], empty_str, empty_str);
-
-    min_max = selectedIterators[i]->estimate_partition_bounds();
-    if (min_max.first  < min_procs) min_procs = min_max.first;
-    if (min_max.second > max_procs) max_procs = min_max.second;
-  }
-
-  // now apply scheduling data for this level (recursion is complete)
-  min_max.first = ProblemDescDB::min_procs_per_level(min_procs,
-    iterSched.procsPerIterator, iterSched.numIteratorServers);
-  min_max.second = ProblemDescDB::max_procs_per_level(max_procs,
-    iterSched.procsPerIterator, iterSched.numIteratorServers,
-    iterSched.iteratorScheduling, 1, false, maxIteratorConcurrency);
-  return min_max;
-}
-
-
 inline const Variables& CollabHybridMetaIterator::variables_results() const
 { return bestVariables; }
 

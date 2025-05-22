@@ -8,6 +8,7 @@
     _______________________________________________________________________ */
 
 #include "NestedModel.hpp"
+#include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
 #include "MarginalsCorrDistribution.hpp"
 #include "dakota_system_defs.hpp"
@@ -21,7 +22,7 @@ static const char rcsId[]="@(#) $Id: NestedModel.cpp 7024 2010-10-16 01:24:42Z m
 
 namespace Dakota {
 
-NestedModel::NestedModel(ProblemDescDB& problem_db):
+NestedModel::NestedModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   Model(problem_db, parallel_lib),
   nestedModelEvalCntr(0), firstUpdate(true), outerMIPLIndex(0),
   subIteratorSched(parallelLib,
@@ -116,7 +117,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 
   problem_db.set_db_list_nodes(subMethodPointer); // even if empty
 
-  subModel = Model::get_model(problem_db);
+  subModel = Model::get_model(problem_db, parallel_lib);
   //check_submodel_compatibility(subModel); // sanity checks performed below
   // if outer level output is verbose/debug, request fine-grained evaluation 
   // reporting for purposes of the final output summary.  This allows verbose
