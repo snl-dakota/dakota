@@ -60,6 +60,9 @@ class Model
 
 public:
 
+  // enum to disambiguate protected ctor used for on-the-fly construction
+  enum class ModelCtor{ LtWt };
+
   // Functions and data for instantiating and caching Models
 
   /// @brief retrieve an existing Model, if it exists, or instantiate a new one
@@ -864,7 +867,7 @@ protected:
 	ParallelLibrary& parallel_lib = dummy_lib);
 
   /// constructor initializing base class for recast model instances
-  Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
+  Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, ModelCtor dummy);
 
   //
   //- Heading: Virtual functions

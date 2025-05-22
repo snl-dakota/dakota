@@ -302,7 +302,7 @@ Model(const ShortShortPair& vars_view,
 /** This constructor also builds the base class data for inherited models.
     However, it is used for derived models which are instantiated on the fly.
     Therefore it only initializes a small subset of attributes. */
-Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
+Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, Model::ModelCtor dummy):
   warmStartFlag(false), supportsEstimDerivs(true), mappingInitialized(false),
   probDescDB(problem_db), parallelLib(parallel_lib),
   evaluationsDB(evaluation_store_db),
