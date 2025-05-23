@@ -39,7 +39,7 @@ public:
   //
 
   /// constructor
-  SerialDirectApplicInterface(const Dakota::ProblemDescDB& problem_db);
+  SerialDirectApplicInterface(const Dakota::ProblemDescDB& problem_db, Dakota::ParallelLibrary& parallel_lib);
   /// destructor
   ~SerialDirectApplicInterface() override;
 
@@ -89,8 +89,8 @@ private:
 
 
 inline SerialDirectApplicInterface::
-SerialDirectApplicInterface(const Dakota::ProblemDescDB& problem_db):
-  Dakota::DirectApplicInterface(problem_db)
+SerialDirectApplicInterface(const Dakota::ProblemDescDB& problem_db, Dakota::ParallelLibrary& parallel_lib):
+  Dakota::DirectApplicInterface(problem_db, parallel_lib)
 { }
 
 

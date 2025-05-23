@@ -44,7 +44,7 @@ public:
   //
 
   /// constructor
-  GridApplicInterface(const ProblemDescDB& problem_db);
+  GridApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
 
   /// destructor
   ~GridApplicInterface();

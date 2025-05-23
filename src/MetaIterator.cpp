@@ -34,7 +34,7 @@ MetaIterator::MetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_
 
 MetaIterator::MetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   Iterator(problem_db, parallel_lib),
-  iterSched(problem_db.parallel_library(),
+  iterSched(parallel_lib,
 	    false, // peers can manage local jobs (initial extracted from DB)
 	    problem_db.get_int("method.iterator_servers"),
 	    problem_db.get_int("method.processors_per_iterator"),

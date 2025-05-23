@@ -30,7 +30,7 @@ public:
   //
 
   /// constructor
-  SpawnApplicInterface(const ProblemDescDB& problem_db);
+  SpawnApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
   /// destructor
   ~SpawnApplicInterface();
 
@@ -53,16 +53,6 @@ protected:
   //
 
 };
-
-
-inline SpawnApplicInterface::
-SpawnApplicInterface(const ProblemDescDB& problem_db):
-  ProcessHandleApplicInterface(problem_db)
-{ }
-
-
-inline SpawnApplicInterface::~SpawnApplicInterface() 
-{ }
 
 } // namespace Dakota
 

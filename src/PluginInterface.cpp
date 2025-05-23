@@ -44,8 +44,8 @@ void copy_hessian(std::vector<std::vector<double>> const& source,
   }
 }
 
-PluginInterface::PluginInterface(const ProblemDescDB& problem_db):
-  ApplicationInterface(problem_db),
+PluginInterface::PluginInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
+  ApplicationInterface(problem_db, parallel_lib),
   pluginPath(problem_db.get_string("interface.plugin_library_path")),
   analysisDrivers(
     problem_db.get_sa("interface.application.analysis_drivers"))

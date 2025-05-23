@@ -43,8 +43,8 @@ namespace Dakota {
 
 
 GridApplicInterface::
-GridApplicInterface(const ProblemDescDB& problem_db):
-  SysCallApplicInterface(problem_db)
+GridApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
+  SysCallApplicInterface(problem_db, parallel_lib)
 { 
   void* handle = dlopen("foo.so", RTLD_NOW);
   if (!handle) {

@@ -50,7 +50,7 @@ public:
   //
 
   /// constructor
-  ProcessApplicInterface(const ProblemDescDB& problem_db);
+  ProcessApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
   /// destructor
   ~ProcessApplicInterface() override;
 

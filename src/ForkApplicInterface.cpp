@@ -21,8 +21,8 @@
 namespace Dakota {
 
 ForkApplicInterface::
-ForkApplicInterface(const ProblemDescDB& problem_db):
-  ProcessHandleApplicInterface(problem_db)
+ForkApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
+  ProcessHandleApplicInterface(problem_db, parallel_lib)
 { }
 
 

@@ -14,6 +14,7 @@
 #include "DakotaResponse.hpp"
 #include "DakotaVariables.hpp"
 #include "ProblemDescDB.hpp"
+#include "ParallelLibrary.hpp"
 
 
 #ifdef HAVE_AMPL
@@ -28,7 +29,7 @@ namespace Dakota {
 // Initialization of static interface ID counters
 size_t Interface::noSpecIdNum = 0;
 
-std::shared_ptr<Interface> Interface::get_interface(ProblemDescDB& problem_db) {
+std::shared_ptr<Interface> Interface::get_interface(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib) {
 
   ProblemDescDB* const study_ptr = problem_db.get_rep().get();
   auto& study_cache = Interface::interfaceCache[study_ptr];
@@ -64,7 +65,7 @@ std::shared_ptr<Interface> Interface::get_interface(ProblemDescDB& problem_db) {
     = std::find_if(study_cache.begin(), study_cache.end(),
                    [&id_interface](std::shared_ptr<Interface> m) {return m->interface_id() == id_interface;});
   if (m_it == study_cache.end()) {
-    study_cache.push_back(InterfaceUtils::get_interface(problem_db));
+    study_cache.push_back(InterfaceUtils::get_interface(problem_db, parallel_lib));
     m_it = --study_cache.end();
   }
   return *m_it;

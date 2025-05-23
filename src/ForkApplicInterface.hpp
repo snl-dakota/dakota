@@ -30,7 +30,7 @@ public:
   //
 
   /// constructor
-  ForkApplicInterface(const ProblemDescDB& problem_db);
+  ForkApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
   /// destructor
   ~ForkApplicInterface() override;
 

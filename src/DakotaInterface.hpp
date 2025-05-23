@@ -24,6 +24,7 @@ namespace Pecos { class SurrogateData; class ActiveKey; }
 namespace Dakota {
 
 // forward declarations
+class ParallelLibrary;
 class ProblemDescDB;
 class Variables;
 class ActiveSet;
@@ -49,7 +50,7 @@ public:
 
   /// @brief retrieve an existing Interface, if it exists, or instantiate a new one
   /// @return pointer to existing or newly created Interface
-  static std::shared_ptr<Interface> get_interface(ProblemDescDB& problem_db);
+  static std::shared_ptr<Interface> get_interface(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
 
   /// @brief return the interface cache for the study
   /// @param problem_db 

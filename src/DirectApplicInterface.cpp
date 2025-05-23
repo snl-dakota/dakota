@@ -16,8 +16,8 @@
 namespace Dakota {
 
 DirectApplicInterface::
-DirectApplicInterface(const ProblemDescDB& problem_db):
-  ApplicationInterface(problem_db),
+DirectApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
+  ApplicationInterface(problem_db, parallel_lib),
   iFilterName(problem_db.get_string("interface.application.input_filter")),
   oFilterName(problem_db.get_string("interface.application.output_filter")),
   gradFlag(false), hessFlag(false), numFns(0), numVars(0), numDerivVars(0),

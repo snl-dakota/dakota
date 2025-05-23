@@ -49,7 +49,7 @@ std::list<std::shared_ptr<Iterator>> Iterator::iteratorByNameCache{};
     set to NULL */
 Iterator::Iterator(ProblemDescDB& problem_db,
 		   ParallelLibrary& parallel_lib, std::shared_ptr<TraitsBase> traits):
-  probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
+  probDescDB(problem_db), parallelLib(parallel_lib),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
   myModelLayers(0), methodName(problem_db.get_ushort("method.algorithm")),
   convergenceTol(problem_db.get_real("method.convergence_tolerance")),

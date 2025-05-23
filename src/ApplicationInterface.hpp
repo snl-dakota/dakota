@@ -10,9 +10,9 @@
 #ifndef APPLICATION_INTERFACE_H
 #define APPLICATION_INTERFACE_H
 
+#include "ParallelLibrary.hpp"
 #include "DakotaInterface.hpp"
 #include "PRPMultiIndex.hpp"
-#include "ParallelLibrary.hpp"
 #include "DataMethod.hpp"
 
 namespace Dakota {
@@ -22,6 +22,8 @@ namespace Dakota {
 
 class ParamResponsePair;
 class ActiveSet;
+class ParallelLibrary;
+
 
 
 /// Derived class within the interface class hierarchy for supporting
@@ -43,7 +45,7 @@ public:
   //- Heading: Constructors and destructor
   //
 
-  ApplicationInterface(const ProblemDescDB& problem_db); ///< constructor
+  ApplicationInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib); ///< constructor
   ~ApplicationInterface() override;                               ///< destructor
 
 protected:
@@ -647,50 +649,6 @@ broadcast_evaluation(const ParamResponsePair& pair)
 { broadcast_evaluation(pair.eval_id(), pair.variables(), pair.active_set()); }
 
 
-inline void ApplicationInterface::
-send_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
-		bool peer_flag)
-{
-  if (sendBuffers[buff_index].size()) // reuse of existing send/recv buffers
-    { sendBuffers[buff_index].reset(); recvBuffers[buff_index].reset(); }
-  else {                              // freshly allocated send/recv buffers
-    //sendBuffers[buff_index].resize(lenVarsActSetMessage); // protected
-    recvBuffers[buff_index].resize(lenResponseMessage);
-  }
-  sendBuffers[buff_index] << prp_it->variables() << prp_it->active_set();
-
-  int fn_eval_id = prp_it->eval_id();
-  if (outputLevel > SILENT_OUTPUT) {
-    if (peer_flag) {
-      Cout << "Peer 1 assigning ";
-      if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
-      Cout << "evaluation " << fn_eval_id << " to peer "
-	   << server_id+1 << '\n'; // 2 to numEvalServers
-    }
-    else {
-      Cout << "Dedicated scheduler assigning ";
-      if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
-      Cout << "evaluation " << fn_eval_id << " to server "
-	   << server_id << '\n';
-    }
-  }
-
-#ifdef MPI_DEBUG
-  Cout << "send_evaluation() buff_index = " << buff_index << " fn_eval_id = "
-       << fn_eval_id << " server_id = " << server_id << std::endl;
-#endif // MPI_DEBUG
-
-  // pre-post nonblocking receives (to prevent any message buffering)
-  parallelLib.irecv_ie(recvBuffers[buff_index], server_id, fn_eval_id,
-		       recvRequests[buff_index]);
-  // nonblocking sends: dedicated scheduler assigns jobs to evaluation servers
-  MPI_Request send_request; // only 1 needed
-  parallelLib.isend_ie(sendBuffers[buff_index], server_id, fn_eval_id,
-		       send_request);
-  parallelLib.free(send_request); // no test/wait on send_request
-}
-
-
 inline void ApplicationInterface::launch_asynch_local(PRPQueueIter& prp_it)
 {
   if (outputLevel > SILENT_OUTPUT) {
@@ -720,24 +678,6 @@ inline void ApplicationInterface::launch_asynch_local(PRPQueueIter& prp_it)
   //   derived_map_asynch(), etc., to support batch executions
 
   asynchLocalActivePRPQueue.insert(*prp_it);
-}
-
-
-inline void ApplicationInterface::
-launch_asynch_local(MPIUnpackBuffer& recv_buffer, int fn_eval_id)
-{
-  if (multiProcEvalFlag)
-    parallelLib.bcast_e(recv_buffer);
-  // unpack
-  Variables vars; ActiveSet set;
-  recv_buffer >> vars >> set;
-  recv_buffer.reset();
-  Response local_response(sharedRespData, set); // special ctor
-  ParamResponsePair
-    prp(vars, interfaceId, local_response, fn_eval_id, false); // shallow copy
-  asynchLocalActivePRPQueue.insert(prp);
-  // execute
-  derived_map_asynch(prp);
 }
 
 

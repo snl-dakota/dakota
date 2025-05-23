@@ -23,7 +23,7 @@ class PluginInterface: public ApplicationInterface
 
 public:
 
-  PluginInterface(const ProblemDescDB& problem_db);
+  PluginInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
 
   ~PluginInterface() override;
   

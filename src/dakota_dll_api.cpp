@@ -194,6 +194,7 @@ void DakotaRunner::start()
   // Any library mode plug-ins would go here.
   // Refer to the library mode documentation in the Developers Manual.
   ProblemDescDB& problem_db = dakotaEnv->problem_description_db();
+  ParallelLibrary& parallel_lib = dakotaEnv->parallel_library();
   ModelList& models = Model::model_cache(problem_db);
   size_t model_index = problem_db.get_db_model_node(); // for restoration
   for (auto& m : models) {
@@ -204,7 +205,7 @@ void DakotaRunner::start()
       problem_db.set_db_model_nodes(m->model_id());
       // plug in the new derived Interface object
       m->derived_interface(std::make_shared<SIM::SerialDirectApplicInterface>
-				 (problem_db));
+				 (problem_db, parallel_lib));
     }
   }
   problem_db.set_db_model_nodes(model_index);            // restore

@@ -19,8 +19,8 @@ using namespace pybind11::literals; // to bring in the `_a` literal
 
 namespace Dakota {
 
-Pybind11Interface::Pybind11Interface(const ProblemDescDB& problem_db)
-  : DirectApplicInterface(problem_db),
+Pybind11Interface::Pybind11Interface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib)
+  : DirectApplicInterface(problem_db, parallel_lib),
     userNumpyFlag(problem_db.get_bool("interface.python.numpy")),
     ownPython(false),
     py11Active(false)
