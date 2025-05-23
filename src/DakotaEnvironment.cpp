@@ -236,10 +236,8 @@ void Environment::preprocess_inputs() {
   }
 
   if (programOptions.preproc_input()) {
-    std::string tmpl_file = programOptions.input_file();
-    if (!programOptions.input_string().empty())
-      // must generate to file on disk for pyprepro
-      tmpl_file = string_to_tmpfile(programOptions.input_string());
+    std::string tmpl_file = (programOptions.input_string().empty()) ? 
+      programOptions.input_file() : string_to_tmpfile(programOptions.input_string());
 
     // run the pre-processor on the file
     std::string preproc_file = pyprepro_input(tmpl_file,
@@ -277,8 +275,6 @@ void Environment::parse(bool check_bcast_database,
   // Output/restart management utilizes iterator partitions, so calls to
   // push_output_tag() follow ParallelLibrary::init_iterator_communicators()
   // within IteratorScheduler::partition().
-
-  // ProblemDescDB requires cmd line information, so pass programOptions
 
   // parse input and callback functions
   if ( !programOptions.input_file().empty() || 

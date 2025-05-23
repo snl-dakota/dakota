@@ -29,7 +29,8 @@ ProgramOptions::ProgramOptions():
   echoInput(true), preprocInput(false), stopRestartEvals(0),
   helpFlag(false), versionFlag(false), checkFlag(false), 
   preRunFlag(false), runFlag(false), postRunFlag(false), userModesFlag(false),
-  preRunOutputFormat(TABULAR_ANNOTATED), postRunInputFormat(TABULAR_ANNOTATED)
+  preRunOutputFormat(TABULAR_ANNOTATED), postRunInputFormat(TABULAR_ANNOTATED),
+  stdinInput(false)
 {
   // environment settings are overridden by command line options
   parse_environment_options();
@@ -41,7 +42,8 @@ ProgramOptions::ProgramOptions(int world_rank):
   echoInput(true), preprocInput(false), stopRestartEvals(0),
   helpFlag(false), versionFlag(false), checkFlag(false), 
   preRunFlag(false), runFlag(false), postRunFlag(false), userModesFlag(false),
-  preRunOutputFormat(TABULAR_ANNOTATED), postRunInputFormat(TABULAR_ANNOTATED)
+  preRunOutputFormat(TABULAR_ANNOTATED), postRunInputFormat(TABULAR_ANNOTATED),
+  stdinInput(false)
 {
   // environment settings are overridden by command line options
   parse_environment_options();

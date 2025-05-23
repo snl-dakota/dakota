@@ -34,13 +34,13 @@ std::pair<std::string, std::string> final_input_and_template(const ProgramOption
     std::string tmpl{};
     if(prog_opts.preproc_input()) {
         final_input = read_input_file(prog_opts.preprocessed_file());
-        if(prog_opts.stdin_input()) {
+        if(!prog_opts.input_string().empty()) {
             tmpl = prog_opts.input_string();
         } else {
             tmpl = read_input_file(prog_opts.input_file());
         }
     } else {
-        if(prog_opts.stdin_input()) {
+        if(!prog_opts.input_string().empty()) {
             final_input = prog_opts.input_string();
         } else {
             final_input = read_input_file(prog_opts.input_file());
