@@ -18,10 +18,10 @@
 #include "DataVariables.hpp"
 #include "DataInterface.hpp"
 #include "DataResponses.hpp"
+#include "UserModes.hpp"
+#include "ProblemDescDBUtils.hpp"
 
 namespace Dakota {
-
-class ParallelLibrary;
 
 // define the callback function for user updates to the problem DB
 class ProblemDescDB;
@@ -36,9 +36,12 @@ typedef void(*DbCallbackFunctionPtr)(Dakota::ProblemDescDB* db, void *data_ptr);
     object (DataEnvironment, DataMethod, DataVariables, DataInterface, or
     DataResponses) */
 
+class ParallelLibrary;
 class ProblemDescDB
 {
   
+  friend void ProblemDescDBUtils::check_and_broadcast_pdb(ProblemDescDB& problem_db, const UserModes& user_modes, ParallelLibrary& parallel_lib);
+
 public:
 
   //
@@ -46,9 +49,9 @@ public:
   //
 
   /// default constructor
-  ProblemDescDB();
+  ProblemDescDB() = default;
   /// standard constructor
-  ProblemDescDB(ParallelLibrary& parallel_lib);
+  ProblemDescDB(int world_size, int world_rank);
   /// copy constructor
   ProblemDescDB(const ProblemDescDB& db);
 
@@ -71,10 +74,10 @@ public:
 		    void* callback_data = NULL);
   /// performs check_input, broadcast, and post_process, but for now,
   /// allowing separate invocation through the public API as well
-  void check_and_broadcast();
+  void check_and_broadcast(const UserModes& user_modes);
   /// verifies that there is at least one of each of the required
   /// keywords in the dakota input file
-  void check_input();
+  void check_input(const UserModes& user_modes);
   /// invokes send_db_buffer() and receive_db_buffer() to broadcast DB
   /// data across the processor allocation.  Used by manage_inputs().
   void broadcast();
@@ -131,9 +134,6 @@ public:
   //- Heading: Set/Inquire functions
   //
 
-  private:
-  /// return the parallelLib reference
-  ParallelLibrary& parallel_library() const;
   public:
 
   /// @brief return the name of the currently selected method
@@ -314,7 +314,7 @@ protected:
   /// constructor initializes the base class part of letter classes
   /// (BaseConstructor overloading avoids infinite recursion in the
   /// derived class constructors - Coplien, p. 139)
-  ProblemDescDB(BaseConstructor, ParallelLibrary& parallel_lib);
+  ProblemDescDB(BaseConstructor);
 
   //
   //- Heading: Virtual functions
@@ -387,7 +387,7 @@ private:
   // These functions avoid multiple instantiations of the same specification.
 
   /// Used by the envelope constructor to instantiate the correct letter class
-  std::shared_ptr<ProblemDescDB> get_db(ParallelLibrary& parallel_lib);
+  std::shared_ptr<ProblemDescDB> get_db();
 
   /// MPI send of a large buffer containing environmentSpec and all objects
   /// in dataMethodList, dataModelList, dataVariablesList, dataInterfaceList,
@@ -409,9 +409,6 @@ private:
   //- Heading: Data
   //
  
-  /// reference to the parallel_lib object passed from main
-  ParallelLibrary& parallelLib;
-
   // Iterators for identifying active list nodes in data object linked lists
 
   /// iterator identifying the active list node in dataMethodList
@@ -443,6 +440,11 @@ private:
 
   /// pointer to the letter (initialized only for the envelope)
   std::shared_ptr<ProblemDescDB> dbRep;
+
+  /// MPI world rank
+  int worldRank;
+  /// MPI world size
+  int worldSize;
 };
 
 
@@ -467,9 +469,6 @@ inline void ProblemDescDB::unlock()
       = responsesDBLocked = false;
 }
 
-
-inline ParallelLibrary& ProblemDescDB::parallel_library() const
-{ return (dbRep) ? dbRep->parallelLib : parallelLib; }
 
 inline std::string_view ProblemDescDB::method_id() const {
   return dbRep->dataMethodIter->dataMethodRep->idMethod;

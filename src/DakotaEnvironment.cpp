@@ -34,7 +34,7 @@ namespace Dakota {
 Environment::Environment(BaseConstructor):
   mpiManager(), programOptions(mpiManager.world_rank()), outputManager(),
   parallelLib(mpiManager, programOptions, outputManager),
-  probDescDB(parallelLib), usageTracker(mpiManager.world_rank())
+  probDescDB(mpiManager.world_size(), mpiManager.world_size()), usageTracker(mpiManager.world_rank())
 {
   // set exit mode as early as possible
   if (!programOptions.exit_mode().empty())
@@ -66,7 +66,7 @@ Environment::Environment(BaseConstructor, int argc, char* argv[]):
 		mpiManager.mpirun_flag()),
   // now instantiate the parallel library and problem description DB
   parallelLib(mpiManager, programOptions, outputManager),
-  probDescDB(parallelLib), usageTracker(mpiManager.world_rank())
+  probDescDB(mpiManager.world_size(), mpiManager.world_rank()), usageTracker(mpiManager.world_rank())
 {
   // set exit mode as early as possible
   if (!programOptions.exit_mode().empty())
@@ -93,7 +93,7 @@ Environment::Environment(BaseConstructor, ProgramOptions prog_opts,
   outputManager(programOptions, mpiManager.world_rank(),
 		mpiManager.mpirun_flag()), 
   parallelLib(mpiManager, programOptions, outputManager),
-  probDescDB(parallelLib), usageTracker(mpiManager.world_rank())
+  probDescDB(mpiManager.world_size(), mpiManager.world_size()), usageTracker(mpiManager.world_rank())
 {
   // set exit mode as early as possible
   if (!programOptions.exit_mode().empty())
@@ -283,14 +283,14 @@ void Environment::parse(bool check_bcast_database,
       ProblemDescDBUtils::final_input_and_template(programOptions);
     if(programOptions.echo_input())
       ProblemDescDBUtils::echo_input(final_input, template_string);
-    probDescDB.parse_inputs(final_input, programOptions.parser_options(), parallelLib.command_line_run(), callback, callback_data);
+    probDescDB.parse_inputs(final_input, programOptions.parser_options(), programOptions.user_modes().run, callback, callback_data);
     if(programOptions.preproc_input())
         std::filesystem::remove(programOptions.preprocessed_file());
   }
 
   // check if true, otherwise caller assumes responsibility  
-  if (check_bcast_database) 
-    probDescDB.check_and_broadcast();
+  if (check_bcast_database)
+    ProblemDescDBUtils::check_and_broadcast_pdb(probDescDB, programOptions.user_modes(), parallelLib); 
 }
 
 

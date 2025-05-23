@@ -500,20 +500,20 @@ void Iterator::run()
   initialize_run();
   if (summaryOutputFlag)
     Cout << "\n>>>>> Running "  << method_string <<" iterator.\n";
-  if (parallelLib.command_line_pre_run()) {
+  if (parallelLib.user_modes().preRun) {
     if (summaryOutputFlag && outputLevel > NORMAL_OUTPUT)
 Cout << "\n>>>>> " << method_string <<": pre-run phase.\n";
     pre_run();
     pre_output(); // for now, the helper manages whether output is needed
   }
-  if (parallelLib.command_line_run()) {
+  if (parallelLib.user_modes().run) {
     //core_input();
     if (summaryOutputFlag && outputLevel > NORMAL_OUTPUT)
 Cout << "\n>>>>> " << method_string <<": core run phase.\n";
     core_run();
     //core_output();
   }
-  if (parallelLib.command_line_post_run()) {
+  if (parallelLib.user_modes().postRun) {
     post_input();
     if (summaryOutputFlag && outputLevel > NORMAL_OUTPUT)
 Cout << "\n>>>>> " << method_string <<": post-run phase.\n";
@@ -1154,10 +1154,10 @@ StrStrSizet Iterator::run_identifier() const
 void Iterator::pre_output()
 {
   // distinguish between defaulted pre-run and user-specified
-  if (!parallelLib.command_line_user_modes())
+  if (!parallelLib.user_modes().any_active())
     return;
 
-  const String& filename = parallelLib.command_line_pre_run_output();
+  const String& filename = parallelLib. user_modes().preRunOutput;
   if (filename.empty()) {
     if (outputLevel > QUIET_OUTPUT)
       Cout << "\nPre-run phase complete: no output requested.\n" << std::endl;
@@ -1173,10 +1173,10 @@ void Iterator::pre_output()
 void Iterator::post_input()
 {
     // distinguish between defaulted post-run and user-specified
-    if (!parallelLib.command_line_user_modes())
+    if (!parallelLib.user_modes().any_active())
       return;
 
-    const String& filename = parallelLib.command_line_post_run_input();
+    const String& filename = parallelLib.user_modes().postRunInput;
     if (outputLevel > QUIET_OUTPUT) {
       if (filename.empty())
 	      Cout << "\nPost-run phase initialized: no input requested.\n"

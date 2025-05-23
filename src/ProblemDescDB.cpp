@@ -47,17 +47,10 @@ extern ProblemDescDB *Dak_pddb;	  // defined in dakota_global_defs.cpp
     initialization list (to avoid the recursion of the base class constructor
     calling get_db() again).  Since the letter IS the representation, its
     representation pointer is set to NULL. */
-ProblemDescDB::ProblemDescDB(BaseConstructor, ParallelLibrary& parallel_lib):
-  parallelLib(parallel_lib), environmentCntr(0), methodDBLocked(true),
+ProblemDescDB::ProblemDescDB(BaseConstructor):
+  environmentCntr(0), methodDBLocked(true),
   modelDBLocked(true), variablesDBLocked(true), interfaceDBLocked(true),
   responsesDBLocked(true)
-{ /* empty ctor */ }
-
-
-/** The default constructor: dbRep is NULL in this case.  This makes
-    it necessary to check for NULL in the copy constructor, assignment
-    operator, and destructor. */
-ProblemDescDB::ProblemDescDB(): parallelLib(dummy_lib)
 { /* empty ctor */ }
 
 
@@ -66,10 +59,9 @@ ProblemDescDB::ProblemDescDB(): parallelLib(dummy_lib)
     to properly execute get_db(problem_db), since the constructor
     overloaded with BaseConstructor builds the actual base class data
     inherited by the derived classes. */
-ProblemDescDB::ProblemDescDB(ParallelLibrary& parallel_lib):
-  parallelLib(parallel_lib),
+ProblemDescDB::ProblemDescDB(int world_size, int world_rank) :
   // Set the rep pointer to the appropriate db type
-  dbRep(get_db(parallel_lib))
+  dbRep(get_db()), worldSize(world_size), worldRank(world_rank)
 
 {
   if (!dbRep) // bad settings or insufficient memory
@@ -80,20 +72,19 @@ ProblemDescDB::ProblemDescDB(ParallelLibrary& parallel_lib):
 /** Initializes dbRep to the appropriate derived type.  The standard
     derived class constructors are invoked.  */
 std::shared_ptr<ProblemDescDB>
-ProblemDescDB::get_db(ParallelLibrary& parallel_lib)
+ProblemDescDB::get_db()
 {
   Dak_pddb = this;	// for use in abort_handler()
 
   //if (xml_flag)
   //  return new XMLProblemDescDB(parallel_lib);
   //else
-  return std::make_shared<NIDRProblemDescDB>(parallel_lib);
+  return std::make_shared<NIDRProblemDescDB>();
 }
 
 
 /** Copy constructor manages sharing of dbRep */
 ProblemDescDB::ProblemDescDB(const ProblemDescDB& db):
-  parallelLib(db.parallel_library()),
   dbRep(db.dbRep)
 { /* empty ctor */ }
 
@@ -129,13 +120,13 @@ parse_inputs(const std::string_view input_string, const std::string_view parser_
     // BMA TODO: Temporary workaround; can't get callback to work on
     // letter yet. Need to replace Null_rep* with forward to letter
     // and remove dbRep->, but initial cut didn't work.
-    if (callback && dbRep->parallelLib.world_rank() == 0)
+    if (callback && dbRep->worldRank == 0)
       (*callback)(this, callback_data);
   }
   else {
 
     // Only world rank 0 parses the input file.
-    if (parallelLib.world_rank() == 0) {
+    if (worldRank == 0) {
         // Parse the input file using one of the derived parser-specific classes
         derived_parse_inputs(input_string, parser_options, command_line_run);
     }
@@ -155,16 +146,16 @@ parse_inputs(const std::string_view input_string, const std::string_view parser_
 
 /** DB setup phase 3: perform basic checks on keywords counts in
     current DB state, then sync to all processors. */
-void ProblemDescDB::check_and_broadcast() {
+void ProblemDescDB::check_and_broadcast(const UserModes& user_modes) {
 
   if (dbRep)
-    dbRep->check_and_broadcast();
+    dbRep->check_and_broadcast(user_modes);
   else {
 
     // Check to make sure at least one of each of the keywords was found
     // in the problem specification file; checks only happen on Dakota rank 0
-    if (parallelLib.world_rank() == 0)
-      check_input();
+    if (worldRank == 0)
+      check_input(user_modes);
 
     // bcast a minimal MPI buffer containing the input specification
     // data prior to post-processing
@@ -194,13 +185,13 @@ void ProblemDescDB::broadcast()
 
     // Now, world rank 0 yyparse's and sends all the parsed data in a single
     // buffer to all other ranks.
-    if (parallelLib.world_size() > 1) {
-      if (parallelLib.world_rank() == 0) {
+    if (worldSize > 1) {
+      if (worldRank == 0) {
 	enforce_unique_ids();
 	derived_broadcast(); // pre-processor
 	send_db_buffer();
 #ifdef MPI_DEBUG
-	Cout << "DB buffer to send on world rank " << parallelLib.world_rank()
+	Cout << "DB buffer to send on world rank " << worldRank
 	     << ":\n" << environmentSpec << dataMethodList << dataVariablesList
 	     << dataInterfaceList << dataResponsesList << std::endl;
 #endif // MPI_DEBUG
@@ -208,7 +199,7 @@ void ProblemDescDB::broadcast()
       else {
 	receive_db_buffer();
 #ifdef MPI_DEBUG
-	Cout << "DB buffer received on world rank " << parallelLib.world_rank()
+	Cout << "DB buffer received on world rank " << worldRank
 	     << ":\n" << environmentSpec << dataMethodList << dataVariablesList
 	     << dataInterfaceList << dataResponsesList << std::endl;
 #endif // MPI_DEBUG
@@ -274,10 +265,10 @@ void ProblemDescDB::derived_post_process()
 /** NOTE: when using library mode in a parallel application,
     check_input() should either be called only on worldRank 0, or it
     should follow a matched send_db_buffer()/receive_db_buffer() pair. */
-void ProblemDescDB::check_input()
+void ProblemDescDB::check_input(const UserModes& user_modes)
 {
   if (dbRep)
-    dbRep->check_input();
+    dbRep->check_input(user_modes);
   else {
 
     int num_errors = 0;
@@ -335,12 +326,12 @@ void ProblemDescDB::check_input()
       dataModelList.push_back(data_model);
     }
 
-    if (parallelLib.command_line_user_modes()) {
+    if (user_modes.any_active()) {
 
-      if (!parallelLib.command_line_pre_run_input().empty())
+      if (!user_modes.postRunInput.empty())
 	Cerr << "Warning: pre-run input not implemented; ignored.\n";
 
-      if (!parallelLib.command_line_pre_run_output().empty()) {
+      if (!user_modes.preRunOutput.empty()) {
 	if (dataMethodList.size() > 1) {
 	  Cerr << "Error: pre-run output only allowed for single method.\n";
 	  ++num_errors;
@@ -360,13 +351,13 @@ void ProblemDescDB::check_input()
 	}
       }
 
-      if (!parallelLib.command_line_run_input().empty())
+      if (!user_modes.runInput.empty())
 	Cerr << "Warning: run input not implemented; ignored.\n";
 
-      if (!parallelLib.command_line_run_output().empty())
+      if (!user_modes.runOutput.empty())
 	Cerr << "Warning: run output not implemented; ignored.\n";
 
-      if (!parallelLib.command_line_post_run_input().empty()) {
+      if (!user_modes.postRunInput.empty()) {
 	if (dataMethodList.size() > 1) {
 	  Cerr << "Error: post-run input only allowed for single method.\n";
 	  ++num_errors;
@@ -386,7 +377,7 @@ void ProblemDescDB::check_input()
 	}
       }
 
-      if (!parallelLib.command_line_post_run_output().empty())
+      if (!user_modes.postRunOutput.empty())
 	Cerr << "Warning: post-run output not implemented; ignored.\n";
 
     }
@@ -518,12 +509,12 @@ void ProblemDescDB::set_db_method_node(const String& method_tag)
 	  = std::find_if( dataMethodList.begin(), dataMethodList.end(),
               boost::bind(DataMethod::id_compare, _1, method_tag) );
 	if (dataMethodIter == dataMethodList.end()) {
-	  if (parallelLib.world_rank() == 0)
+	  if (worldRank == 0)
 	    Cerr << "\nWarning: empty method id string not found.\n         "
 		 << "Last method specification parsed will be used.\n";
 	  --dataMethodIter; // last entry in list
 	}
-	else if (parallelLib.world_rank() == 0 &&
+	else if (worldRank == 0 &&
 		 std::count_if(dataMethodList.begin(), dataMethodList.end(),
                    boost::bind(DataMethod::id_compare, _1, method_tag)) > 1)
 	  Cerr << "\nWarning: empty method id string is ambiguous.\n         "
@@ -544,7 +535,7 @@ void ProblemDescDB::set_db_method_node(const String& method_tag)
       else {
 	methodDBLocked = false; // unlock
 	dataMethodIter = dm_it;
-	if (parallelLib.world_rank() == 0 &&
+	if (worldRank == 0 &&
 	    std::count_if(dataMethodList.begin(), dataMethodList.end(),
 			  boost::bind(DataMethod::id_compare,_1,method_tag))>1)
 	  Cerr << "\nWarning: method id string " << method_tag
@@ -636,12 +627,12 @@ void ProblemDescDB::set_db_model_nodes(const String& model_tag)
 	  = std::find_if( dataModelList.begin(), dataModelList.end(),
               boost::bind(DataModel::id_compare, _1, model_tag) );
 	if (dataModelIter == dataModelList.end()) {
-	  if (parallelLib.world_rank() == 0)
+	  if (worldRank == 0)
 	    Cerr << "\nWarning: empty model id string not found.\n         "
 		 << "Last model specification parsed will be used.\n";
 	  --dataModelIter; // last entry in list
 	}
-	else if (parallelLib.world_rank() == 0 &&
+	else if (worldRank == 0 &&
 		 std::count_if(dataModelList.begin(), dataModelList.end(),
                    boost::bind(DataModel::id_compare, _1, model_tag)) > 1)
 	  Cerr << "\nWarning: empty model id string is ambiguous.\n         "
@@ -662,7 +653,7 @@ void ProblemDescDB::set_db_model_nodes(const String& model_tag)
       else {
 	modelDBLocked = false; // unlock
 	dataModelIter = dm_it;
-	if (parallelLib.world_rank() == 0 &&
+	if (worldRank == 0 &&
 	    std::count_if(dataModelList.begin(), dataModelList.end(),
 			  boost::bind(DataModel::id_compare, _1, model_tag))>1)
 	  Cerr << "\nWarning: model id string " << model_tag << " is ambiguous."
@@ -704,12 +695,12 @@ void ProblemDescDB::set_db_variables_node(const String& variables_tag)
 	  = std::find_if( dataVariablesList.begin(), dataVariablesList.end(),
               boost::bind(DataVariables::id_compare, _1, variables_tag) );
 	if (dataVariablesIter == dataVariablesList.end()) {
-	  if (parallelLib.world_rank() == 0)
+	  if (worldRank == 0)
 	    Cerr << "\nWarning: empty variables id string not found.\n         "
 		 << "Last variables specification parsed will be used.\n";
 	  --dataVariablesIter; // last entry in list
 	}
-	else if (parallelLib.world_rank() == 0 &&
+	else if (worldRank == 0 &&
 		 std::count_if(dataVariablesList.begin(),
 			       dataVariablesList.end(),
 			       boost::bind(DataVariables::id_compare, _1,
@@ -733,7 +724,7 @@ void ProblemDescDB::set_db_variables_node(const String& variables_tag)
       else {
 	variablesDBLocked = false; // unlock
 	dataVariablesIter = dv_it;
-	if (parallelLib.world_rank() == 0 &&
+	if (worldRank == 0 &&
 	    std::count_if(dataVariablesList.begin(), dataVariablesList.end(),
 			  boost::bind(DataVariables::id_compare, _1,
 				      variables_tag)) > 1)
@@ -771,13 +762,13 @@ void ProblemDescDB::set_db_interface_node(const String& interface_tag)
 	// interface ptr in nested models indicates the omission of an optional
 	// interface (rather than the presence of an unidentified interface).
 	if (dataInterfaceIter == dataInterfaceList.end()) {
-	  if (parallelLib.world_rank() == 0 &&
+	  if (worldRank == 0 &&
 	      MoRep.modelType == "simulation")
 	    Cerr << "\nWarning: empty interface id string not found.\n         "
 		 << "Last interface specification parsed will be used.\n";
 	  --dataInterfaceIter; // last entry in list
 	}
-	else if (parallelLib.world_rank() == 0 &&
+	else if (worldRank == 0 &&
 		 MoRep.modelType == "simulation"  &&
 		 std::count_if(dataInterfaceList.begin(),
 			       dataInterfaceList.end(),
@@ -802,7 +793,7 @@ void ProblemDescDB::set_db_interface_node(const String& interface_tag)
       else {
 	interfaceDBLocked = false; // unlock
 	dataInterfaceIter = di_it;
-	if (parallelLib.world_rank() == 0 &&
+	if (worldRank == 0 &&
 	    std::count_if(dataInterfaceList.begin(), dataInterfaceList.end(),
 			  boost::bind(DataInterface::id_compare, _1,
 				      interface_tag)) > 1)
@@ -833,12 +824,12 @@ void ProblemDescDB::set_db_responses_node(const String& responses_tag)
 	  = std::find_if( dataResponsesList.begin(), dataResponsesList.end(),
               boost::bind(DataResponses::id_compare, _1, responses_tag) );
 	if (dataResponsesIter == dataResponsesList.end()) {
-	  if (parallelLib.world_rank() == 0)
+	  if (worldRank == 0)
 	    Cerr << "\nWarning: empty responses id string not found.\n         "
 		 << "Last responses specification parsed will be used.\n";
 	  --dataResponsesIter; // last entry in list
 	}
-	else if (parallelLib.world_rank() == 0 &&
+	else if (worldRank == 0 &&
 		 std::count_if(dataResponsesList.begin(),
 			       dataResponsesList.end(),
 			       boost::bind(DataResponses::id_compare, _1,
@@ -862,7 +853,7 @@ void ProblemDescDB::set_db_responses_node(const String& responses_tag)
       else {
 	responsesDBLocked = false; // unlock
 	dataResponsesIter = dr_it;
-	if (parallelLib.world_rank() == 0 &&
+	if (worldRank == 0 &&
 	    std::count_if(dataResponsesList.begin(), dataResponsesList.end(),
 			  boost::bind(DataResponses::id_compare, _1,
 				      responses_tag)) > 1)
@@ -883,10 +874,10 @@ void ProblemDescDB::send_db_buffer()
 
   // Broadcast length of buffer so that servers can allocate MPIUnpackBuffer
   int buffer_len = send_buffer.size();
-  parallelLib.bcast_w(buffer_len);
+  //parallelLib.bcast_w(buffer_len);
 
   // Broadcast actual buffer
-  parallelLib.bcast_w(send_buffer);
+  //parallelLib.bcast_w(send_buffer);
 }
 
 
@@ -894,11 +885,11 @@ void ProblemDescDB::receive_db_buffer()
 {
   // receive length of incoming buffer and allocate space for MPIUnpackBuffer
   int buffer_len;
-  parallelLib.bcast_w(buffer_len);
+  //parallelLib.bcast_w(buffer_len);
 
   // receive incoming buffer
   MPIUnpackBuffer recv_buffer(buffer_len);
-  parallelLib.bcast_w(recv_buffer);
+  //parallelLib.bcast_w(recv_buffer);
   recv_buffer >> environmentSpec   >> dataMethodList    >> dataModelList
 	      >> dataVariablesList >> dataInterfaceList >> dataResponsesList;
 }
@@ -923,7 +914,7 @@ int ProblemDescDB::max_procs_per_ea()
   //        default tester could get hidden by plug-in...
 
   int max_ppa = (get_ushort("interface.type") & DIRECT_INTERFACE_BIT) ?
-    parallelLib.world_size() : 1; // system/fork/spawn
+    worldSize : 1; // system/fork/spawn
   // Note: DataInterfaceRep::procsPerAnalysis defaults to zero, which is used
   // when the processors_per_analysis spec is unreachable (system/fork/spawn)
   return max_procs_per_level(max_ppa,

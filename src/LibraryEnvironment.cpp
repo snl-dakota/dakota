@@ -86,7 +86,7 @@ insert_nodes(Dakota::DataMethod&   dme, Dakota::DataModel&    dmo,
 void LibraryEnvironment::done_modifying_db()
 {  
   // always check and broadcast before construction
-  probDescDB.check_and_broadcast(); 
+  ProblemDescDBUtils::check_and_broadcast_pdb(probDescDB, programOptions.user_modes(), parallelLib); 
   construct();
 }
 

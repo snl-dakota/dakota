@@ -687,16 +687,7 @@ public:
   // BMA TODO: consider moving all to ProgramOptions, possibly with
   // delegation from here.
   bool command_line_check() const;      ///< return checkFlag
-  bool command_line_pre_run() const;    ///< return preRunFlag
-  bool command_line_run() const;        ///< return runFlag
-  bool command_line_post_run() const;   ///< return postRunFlag
-  bool command_line_user_modes() const; ///< return userModesFlag
-  const String& command_line_pre_run_input() const;   ///< preRunInput filename
-  const String& command_line_pre_run_output() const;  ///< preRunOutput filename
-  const String& command_line_run_input() const;       ///< runInput filename
-  const String& command_line_run_output() const;      ///< runOutput filename
-  const String& command_line_post_run_input() const;  ///< postRunInput filename
-  const String& command_line_post_run_output() const; ///< postRunOutput fname
+  const UserModes& user_modes() const;  ///< return user_modes from programOptions
 
   /// blocking buffer send at the current communication level
   void  send(MPIPackBuffer& send_buff, int dest, int tag,
@@ -1333,46 +1324,6 @@ init_analysis_communicators(int analysis_servers, int procs_per_analysis,
 
 inline bool ParallelLibrary::command_line_check() const
 { return programOptions.check(); }
-
-
-inline bool ParallelLibrary::command_line_pre_run() const
-{ return programOptions.pre_run(); }
-
-
-inline bool ParallelLibrary::command_line_run() const
-{ return programOptions.run(); }
-
-
-inline bool ParallelLibrary::command_line_post_run() const
-{ return programOptions.post_run(); }
-
-
-inline bool ParallelLibrary::command_line_user_modes() const
-{ return programOptions.user_modes(); }
-
-
-inline const String& ParallelLibrary::command_line_pre_run_input() const
-{ return programOptions.pre_run_input(); }
-
-
-inline const String& ParallelLibrary::command_line_pre_run_output() const
-{ return programOptions.pre_run_output(); }
-
-
-inline const String& ParallelLibrary::command_line_run_input() const
-{ return programOptions.run_input(); }
-
-
-inline const String& ParallelLibrary::command_line_run_output() const
-{ return programOptions.run_output(); }
-
-
-inline const String& ParallelLibrary::command_line_post_run_input() const
-{ return programOptions.post_run_input(); }
-
-
-inline const String& ParallelLibrary::command_line_post_run_output() const
-{ return programOptions.post_run_output(); }
 
 
 // ---------------------------

@@ -16,7 +16,6 @@
 //- Version: $Id$
 
 #include "NIDRProblemDescDB.hpp"
-#include "ParallelLibrary.hpp"
 #include "WorkdirHelper.hpp"     // for copy/link file op utilities
 #include "dakota_data_util.hpp"
 #include "pecos_stat_util.hpp"
@@ -81,8 +80,8 @@ int NIDRProblemDescDB::nerr = 0;
 NIDRProblemDescDB* NIDRProblemDescDB::pDDBInstance(NULL);
 
 
-NIDRProblemDescDB::NIDRProblemDescDB(ParallelLibrary& parallel_lib):
-  ProblemDescDB(BaseConstructor(), parallel_lib)
+NIDRProblemDescDB::NIDRProblemDescDB():
+  ProblemDescDB(BaseConstructor())
 {}
 
 

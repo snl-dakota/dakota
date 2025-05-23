@@ -1308,4 +1308,7 @@ void ParallelLibrary::output_timers()
   iterator_results_db.add_metadata_to_study(time_attrs);
 }
 
+const UserModes& ParallelLibrary::user_modes() const
+{ return programOptions.user_modes(); }
+
 } // namespace Dakota

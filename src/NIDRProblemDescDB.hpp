@@ -14,9 +14,7 @@
 #include <external/nidr/nidr.h>
 
 namespace Dakota {
-
-class ParallelLibrary;
-
+ 
 /// The derived input file database utilizing the new IDR parser.
 
 /** The NIDRProblemDescDB class is derived from ProblemDescDB for use
@@ -38,7 +36,7 @@ public:
   //
 
   /// constructor
-  NIDRProblemDescDB(ParallelLibrary& parallel_lib);
+  NIDRProblemDescDB();
   /// destructor
   ~NIDRProblemDescDB();
 
