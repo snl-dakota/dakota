@@ -432,9 +432,9 @@ set(evaldata_src DakotaVariables.cpp MixedVariables.cpp RelaxedVariables.cpp
     ParamResponsePair.cpp)
 
 ## DB sources.
-set(db_src ProblemDescDB.cpp NIDRProblemDescDB.cpp DataEnvironment.cpp
-  DataMethod.cpp DataModel.cpp DataVariables.cpp DataInterface.cpp 
-  DataResponses.cpp)
+set(db_src ProblemDescDB.cpp NIDRProblemDescDB.cpp ProblemDescDBUtils.cpp
+  DataEnvironment.cpp DataMethod.cpp DataModel.cpp DataVariables.cpp
+  DataInterface.cpp DataResponses.cpp)
 
 ## Model sources.
 set(model_src DakotaModel.cpp SimulationModel.cpp NestedModel.cpp

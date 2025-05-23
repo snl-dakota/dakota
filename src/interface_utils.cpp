@@ -9,6 +9,7 @@
 
 #include "interface_utils.hpp"
 #include "DakotaInterface.hpp"
+#include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaVariables.hpp"
 
@@ -48,7 +49,7 @@ namespace Dakota {
     namespace InterfaceUtils {
 
         // Derived class factory
-        std::shared_ptr<Interface> get_interface(ProblemDescDB& problem_db)
+        std::shared_ptr<Interface> get_interface(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib)
         {
           const unsigned short interface_type = problem_db.get_ushort("interface.type");
 

@@ -37,6 +37,13 @@ extern ProgramOptions dummy_prg_opt; // defined in dakota_global_defs.cpp
 extern OutputManager  dummy_out_mgr; // defined in dakota_global_defs.cpp
 extern ResultsManager iterator_results_db; // defined in DakotaIterator.cpp
 
+// A very bad, no good, temporary hack to give abort_handler() access to the
+// ParallelLibrary object, since it's been removed from ProblemDescDB.
+// I think we should replace the calls to abort with
+// a system of exceptions that are caught and handled in Environment, which
+// has the ProblemDescDB and ParallelLibrary objects and can clean things up.
+extern ParallelLibrary *Dak_parallel_lib;	  // defined in dakota_global_defs.cpp
+
 /** This constructor is used for creation of the global dummy_lib
     object, which is used to satisfy initialization requirements when
     the real ParallelLibrary object is not available. */
@@ -61,6 +68,7 @@ ParallelLibrary(const MPIManager& mpi_mgr, ProgramOptions& prog_opts,
   dummyFlag(false), outputTimings(programOptions.proceed_to_run()),
   startClock(0), currPCIter(parallelConfigurations.end())
 {
+  Dak_parallel_lib = this;
   initialize_timers();
   init_mpi_comm();
 }

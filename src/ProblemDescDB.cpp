@@ -20,12 +20,14 @@
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "NIDRProblemDescDB.hpp"
-#include "ProgramOptions.hpp"
+#include "DakotaIterator.hpp"
+#include "DakotaInterface.hpp"
 #include "WorkdirHelper.hpp"  // bfs utils and prepend_preferred_env_path
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <string>
 #include "delete_study_components.hpp"
+#include <string_view>
 
 //#define DEBUG
 //#define MPI_DEBUG
@@ -119,11 +121,11 @@ ProblemDescDB::~ProblemDescDB()
     DB setup phase 2: optionally insert additional data via late sets.
     Rank 0 only. */
 void ProblemDescDB::
-parse_inputs(ProgramOptions& prog_opts,
+parse_inputs(const std::string_view input_string, const std::string_view parser_options, bool command_line_run,
 	     DbCallbackFunctionPtr callback, void *callback_data)
 {
   if (dbRep) {
-    dbRep->parse_inputs(prog_opts, callback, callback_data);
+    dbRep->parse_inputs(input_string, parser_options, command_line_run, callback, callback_data);
     // BMA TODO: Temporary workaround; can't get callback to work on
     // letter yet. Need to replace Null_rep* with forward to letter
     // and remove dbRep->, but initial cut didn't work.
@@ -134,62 +136,29 @@ parse_inputs(ProgramOptions& prog_opts,
 
     // Only world rank 0 parses the input file.
     if (parallelLib.world_rank() == 0) {
-
-      if ( !prog_opts.input_file().empty() &&
-	   !prog_opts.input_string().empty() ) {
-	Cerr << "\nError: parse_inputs called with both input file and input "
-	     << "string." << std::endl;
-	abort_handler(PARSE_ERROR);
-      }
-
-      if (prog_opts.preproc_input()) {
-
-	if (prog_opts.echo_input()) {
-	  echo_input_file(prog_opts.input_file(), prog_opts.input_string(),
-			  " template");
-	  echo_input_file(prog_opts.preprocessed_file(), "");
-	}
-
-	// Parse the input file using one of the derived parser-specific classes
-	derived_parse_inputs(prog_opts.preprocessed_file(), "",
-			     prog_opts.parser_options());
-
-	// Remove file created by preprocessing input
-	boost::filesystem::remove(prog_opts.preprocessed_file());
-      }
-      else {
-
-	if (prog_opts.echo_input())
-	  echo_input_file(prog_opts.input_file(), prog_opts.input_string());
-
-	// Parse the input file using one of the derived parser-specific classes
-	derived_parse_inputs(prog_opts.input_file(), prog_opts.input_string(),
-			     prog_opts.parser_options());
-
-      }
-
-      // Allow user input by callback function.
-
-      // BMA TODO: Is this comment true?
-      // Note: the DB is locked and the list iterators are not defined.  Thus,
-      // the user function must do something to put the DB in a usable set/get
-      // state (e.g., resolve_top_method() or set_db_list_nodes()).
-
-      // if (callback)
-      // 	(*callback)(this, callback_data);
-
+        // Parse the input file using one of the derived parser-specific classes
+        derived_parse_inputs(input_string, parser_options, command_line_run);
     }
 
+    // Allow user input by callback function.
+
+    // BMA TODO: Is this comment true?
+    // Note: the DB is locked and the list iterators are not defined.  Thus,
+    // the user function must do something to put the DB in a usable set/get
+    // state (e.g., resolve_top_method() or set_db_list_nodes()).
+
+    // if (callback)
+    // 	(*callback)(this, callback_data);
   }
 }
 
 
 /** DB setup phase 3: perform basic checks on keywords counts in
     current DB state, then sync to all processors. */
-void ProblemDescDB::check_and_broadcast(const ProgramOptions& prog_opts) {
+void ProblemDescDB::check_and_broadcast() {
 
   if (dbRep)
-    dbRep->check_and_broadcast(prog_opts);
+    dbRep->check_and_broadcast();
   else {
 
     // Check to make sure at least one of each of the keywords was found
@@ -273,13 +242,11 @@ void ProblemDescDB::post_process()
 
 
 void ProblemDescDB::
-derived_parse_inputs(const std::string& dakota_input_file,
-		     const std::string& dakota_input_string,
-		     const std::string& parser_options)
+derived_parse_inputs(const std::string_view dakota_input,
+		     const std::string_view parser_options, bool command_line_run)
 {
   if (dbRep)
-    dbRep->derived_parse_inputs(dakota_input_file, dakota_input_string,
-				parser_options);
+    dbRep->derived_parse_inputs(dakota_input, parser_options, command_line_run);
   else { // this fn must be redefined
     Cerr << "Error: Letter lacking redefinition of virtual derived_parse_inputs"
 	 << " function.\n       No default defined at base class." << std::endl;
@@ -2985,57 +2952,6 @@ void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
     entry_name, dbRep);
 
   rep_sa = sa;
-}
-
-
-void ProblemDescDB::echo_input_file(const std::string& dakota_input_file,
-				    const std::string& dakota_input_string,
-				    const std::string& tmpl_qualifier)
-{
-  if (!dakota_input_string.empty()) {
-    size_t header_len = 23;
-    std::string header(header_len, '-');
-    Cout << header << '\n';
-    Cout << "Begin DAKOTA input file" << tmpl_qualifier << "\n";
-    if(dakota_input_file == "-")
-      Cout << "(from standard input)\n";
-    else
-      Cout << "(from string)\n";
-    Cout << header << std::endl;
-    Cout << dakota_input_string << std::endl;
-    Cout << "---------------------\n";
-    Cout << "End DAKOTA input file\n";
-    Cout << "---------------------\n" << std::endl;
-  } else if(!dakota_input_file.empty()) {
-      std::ifstream inputstream(dakota_input_file.c_str());
-      if (!inputstream.good()) {
-	Cerr << "\nError: Could not open input file '" << dakota_input_file
-	     << "' for reading." << std::endl;
-	abort_handler(IO_ERROR);
-      }
-
-      // BMA TODO: could enable this now
-      // want to output FQ path, but only valid in BFS v3; need wrapper
-      //boost::filesystem::path bfs_file(dakota_input_file);
-      //boost::filesystem::path bfs_abs_path = bfs_file.absolute();
-
-      // header to span the potentially long filename
-      size_t header_len = std::max((size_t) 23,
-				   dakota_input_file.size());
-      std::string header(header_len, '-');
-      Cout << header << '\n';
-      Cout << "Begin DAKOTA input file" << tmpl_qualifier << "\n";
-      Cout << dakota_input_file << "\n";
-      Cout << header << std::endl;
-      int inputchar = inputstream.get();
-      while (inputstream.good()) {
-	Cout << (char) inputchar;
-	inputchar = inputstream.get();
-      }
-      Cout << "---------------------\n";
-      Cout << "End DAKOTA input file\n";
-      Cout << "---------------------\n" << std::endl;
-  }
 }
 
 /** Require string idenfitiers id_* to be unique across all blocks of
