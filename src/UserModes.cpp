@@ -8,7 +8,7 @@
     _______________________________________________________________________ */
     
 #include "UserModes.hpp"
-#include "ParallelLibrary.hpp"
+#include "dakota_data_io.hpp"
 
 namespace Dakota {
     /// MPIUnpackBuffer extraction operator
