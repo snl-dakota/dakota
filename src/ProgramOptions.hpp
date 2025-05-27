@@ -89,32 +89,9 @@ public:
   bool version() const;
   /// is check mode active?
   bool check() const;
-  /// is pre-run mode active?
-  bool pre_run() const;
-  /// is run mode active?
-  bool run() const;
-  /// is post-run mode active?
-  bool post_run() const;
-  /// are any non-default, user-specified run modes active?
+
+  /// UserModes object
   const UserModes& user_modes() const;
-
-  /// filename for pre-run input
-  const String& pre_run_input() const;
-  /// filename for pre-run output
-  const String& pre_run_output() const;
-  /// filename for run input
-  const String& run_input() const;
-  /// filename for run output
-  const String& run_output() const;
-  /// filename for post-run input
-  const String& post_run_input() const;
-  /// filename for post-run output
-  const String& post_run_output() const;
-
-  /// tabular format for pre-run output
-  unsigned int pre_run_output_format() const;
-  /// tabular format for post-run input
-  unsigned int post_run_input_format() const;
 
   /// whether steps beyond help/version are requested (instantiation required)
   bool proceed_to_instantiate() const;

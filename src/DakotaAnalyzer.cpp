@@ -580,7 +580,7 @@ void Analyzer::pre_output()
   // use sample_to_variables to set the discrete variables not treated
   // by allSamples.
   unsigned short tabular_format = 
-    parallelLib.program_options().pre_run_output_format();
+    parallelLib.program_options().user_modes().preRunOutputFormat;
   TabularIO::write_header_tabular(tabular_file,
 				  iteratedModel->current_variables(), 
 				  iteratedModel->current_response(),
@@ -643,7 +643,7 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
 
   // pre/post only supports annotated; could detect
   unsigned short tabular_format = 
-    parallelLib.program_options().post_run_input_format();
+    parallelLib.program_options().user_modes().postRunInputFormat;
 
   // Define modelList and recastFlags to support any recastings within
   // a model recursion

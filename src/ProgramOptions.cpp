@@ -166,33 +166,6 @@ bool ProgramOptions::check() const
 const UserModes& ProgramOptions::user_modes() const
 { return userModes; }
 
-
-const String& ProgramOptions::pre_run_input() const
-{ return userModes.preRunInput; }
-
-const String& ProgramOptions::pre_run_output() const
-{ return userModes.preRunOutput; }
-
-const String& ProgramOptions::run_input() const
-{ return userModes.runInput; }
-
-const String& ProgramOptions::run_output() const
-{ return userModes.runOutput; }
-
-const String& ProgramOptions::post_run_input() const
-{ return userModes.postRunInput; }
-
-const String& ProgramOptions::post_run_output() const
-{ return userModes.postRunOutput; }
-
-
-unsigned int ProgramOptions::pre_run_output_format() const
-{ return userModes.preRunOutputFormat; }
-
-unsigned int ProgramOptions::post_run_input_format() const
-{ return userModes.postRunInputFormat; }
-
-
 bool ProgramOptions::proceed_to_instantiate() const
 {
   if (helpFlag || versionFlag)
