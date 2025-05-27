@@ -544,7 +544,7 @@ void Analyzer::get_vbd_parameter_sets(std::shared_ptr<Model> model, size_t num_s
 void Analyzer::pre_output()
 {
   // distinguish between defaulted pre-run and user-specified
-  if (!parallelLib.user_modes().userModes)
+  if (!parallelLib.user_modes().requestedUserModes)
     return;
 
   const String& filename = parallelLib.user_modes().preRunOutput;
@@ -623,7 +623,7 @@ void Analyzer::pre_output()
 void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
 {
   // distinguish between defaulted post-run and user-specified
-  if (!parallelLib.user_modes().userModes)
+  if (!parallelLib.user_modes().requestedUserModes)
     return;
 
   const String& filename = parallelLib.user_modes().postRunInput;

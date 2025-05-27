@@ -326,7 +326,7 @@ void ProblemDescDB::check_input(const UserModes& user_modes)
       dataModelList.push_back(data_model);
     }
 
-    if (user_modes.userModes) {
+    if (user_modes.requestedUserModes) {
 
       if (!user_modes.postRunInput.empty())
 	Cerr << "Warning: pre-run input not implemented; ignored.\n";

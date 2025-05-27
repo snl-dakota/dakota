@@ -326,7 +326,7 @@ void ProgramOptions::parse(const ProblemDescDB& problem_db)
   
   // if command line options already set, ignore all input file pre/run/post
   if (pre_run || run || post_run) {
-    if (userModes.userModes) {
+    if (userModes.requestedUserModes) {
       if (worldRank == 0)
 	Cout << "Warning: run mode options already passed; input file run " 
 	     << "modes will be ignored." << std::endl;
@@ -468,10 +468,10 @@ void ProgramOptions::validate_run_modes() {
   // if no phases were given, assume default that all are active
   if ( !userModes.preRun && !userModes.run && !userModes.postRun ) {
     userModes.preRun = userModes.run = userModes.postRun = true;
-    userModes.userModes = false; // no active user-specified modes
+    userModes.requestedUserModes = false; // no active user-specified modes
   }
   else
-    userModes.userModes = true;  // one or more active user-specified modes
+    userModes.requestedUserModes = true;  // one or more active user-specified modes
 
 }
 

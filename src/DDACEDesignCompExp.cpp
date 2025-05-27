@@ -132,7 +132,7 @@ void DDACEDesignCompExp::core_run()
 
 void DDACEDesignCompExp::post_input()
 {
-  if (parallelLib.user_modes().userModes && 
+  if (parallelLib.user_modes().requestedUserModes && 
       !parallelLib.user_modes().postRunInput.empty()) {
     // apply any corrections to user spec to update numSamples before post input
     resolve_samples_symbols();

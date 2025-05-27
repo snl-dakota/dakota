@@ -1,3 +1,12 @@
+/*  _______________________________________________________________________
+
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2025
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
+
 #pragma once
 
 #include <string>
@@ -21,7 +30,7 @@ class UserModes {
     bool postRun{};
 
     /// did the user provide a pre-run, run, or post-run flag?
-    bool userModes{};
+    bool requestedUserModes{};
 
     // The meanings of preRun, run, postRun, and userModes feel inconsistent.
     // In ProgramOptions:: parse() and validate_run_modes(), preRun, run, and postRun
