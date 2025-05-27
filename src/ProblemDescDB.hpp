@@ -314,7 +314,7 @@ protected:
   /// constructor initializes the base class part of letter classes
   /// (BaseConstructor overloading avoids infinite recursion in the
   /// derived class constructors - Coplien, p. 139)
-  ProblemDescDB(BaseConstructor);
+  ProblemDescDB(BaseConstructor, int world_size, int world_rank);
 
   //
   //- Heading: Virtual functions
@@ -387,7 +387,7 @@ private:
   // These functions avoid multiple instantiations of the same specification.
 
   /// Used by the envelope constructor to instantiate the correct letter class
-  std::shared_ptr<ProblemDescDB> get_db();
+  std::shared_ptr<ProblemDescDB> get_db(int world_size, int world_rank);
 
   /// MPI send of a large buffer containing environmentSpec and all objects
   /// in dataMethodList, dataModelList, dataVariablesList, dataInterfaceList,

@@ -36,7 +36,7 @@ public:
   //
 
   /// constructor
-  NIDRProblemDescDB();
+  NIDRProblemDescDB(int world_size, int world_rank);
   /// destructor
   ~NIDRProblemDescDB();
 

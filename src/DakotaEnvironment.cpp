@@ -34,7 +34,7 @@ namespace Dakota {
 Environment::Environment(BaseConstructor):
   mpiManager(), programOptions(mpiManager.world_rank()), outputManager(),
   parallelLib(mpiManager, programOptions, outputManager),
-  probDescDB(mpiManager.world_size(), mpiManager.world_size()), usageTracker(mpiManager.world_rank())
+  probDescDB(mpiManager.world_size(), mpiManager.world_rank()), usageTracker(mpiManager.world_rank())
 {
   // set exit mode as early as possible
   if (!programOptions.exit_mode().empty())
@@ -93,7 +93,7 @@ Environment::Environment(BaseConstructor, ProgramOptions prog_opts,
   outputManager(programOptions, mpiManager.world_rank(),
 		mpiManager.mpirun_flag()), 
   parallelLib(mpiManager, programOptions, outputManager),
-  probDescDB(mpiManager.world_size(), mpiManager.world_size()), usageTracker(mpiManager.world_rank())
+  probDescDB(mpiManager.world_size(), mpiManager.world_rank()), usageTracker(mpiManager.world_rank())
 {
   // set exit mode as early as possible
   if (!programOptions.exit_mode().empty())

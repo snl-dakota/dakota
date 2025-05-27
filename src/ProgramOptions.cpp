@@ -236,7 +236,7 @@ void ProgramOptions::input_file(const String& in_file)
 
 void ProgramOptions::input_string(const String& in_string)
 {  
-  inputString = in_string; 
+  inputString = in_string;
   // not an error if client later resolves
   if ( !inputFile.empty()   && 
        inputFile != "-"     &&

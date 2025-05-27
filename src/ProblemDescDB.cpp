@@ -47,10 +47,10 @@ extern ProblemDescDB *Dak_pddb;	  // defined in dakota_global_defs.cpp
     initialization list (to avoid the recursion of the base class constructor
     calling get_db() again).  Since the letter IS the representation, its
     representation pointer is set to NULL. */
-ProblemDescDB::ProblemDescDB(BaseConstructor):
+ProblemDescDB::ProblemDescDB(BaseConstructor, int world_size, int world_rank):
   environmentCntr(0), methodDBLocked(true),
   modelDBLocked(true), variablesDBLocked(true), interfaceDBLocked(true),
-  responsesDBLocked(true)
+  responsesDBLocked(true), worldSize(world_size), worldRank(world_rank)
 { /* empty ctor */ }
 
 
@@ -61,7 +61,7 @@ ProblemDescDB::ProblemDescDB(BaseConstructor):
     inherited by the derived classes. */
 ProblemDescDB::ProblemDescDB(int world_size, int world_rank) :
   // Set the rep pointer to the appropriate db type
-  dbRep(get_db()), worldSize(world_size), worldRank(world_rank)
+  dbRep(get_db(world_size, world_rank))
 
 {
   if (!dbRep) // bad settings or insufficient memory
@@ -72,14 +72,14 @@ ProblemDescDB::ProblemDescDB(int world_size, int world_rank) :
 /** Initializes dbRep to the appropriate derived type.  The standard
     derived class constructors are invoked.  */
 std::shared_ptr<ProblemDescDB>
-ProblemDescDB::get_db()
+ProblemDescDB::get_db(int world_size, int world_rank)
 {
   Dak_pddb = this;	// for use in abort_handler()
 
   //if (xml_flag)
   //  return new XMLProblemDescDB(parallel_lib);
   //else
-  return std::make_shared<NIDRProblemDescDB>();
+  return std::make_shared<NIDRProblemDescDB>(world_size, world_rank);
 }
 
 

@@ -80,8 +80,8 @@ int NIDRProblemDescDB::nerr = 0;
 NIDRProblemDescDB* NIDRProblemDescDB::pDDBInstance(NULL);
 
 
-NIDRProblemDescDB::NIDRProblemDescDB():
-  ProblemDescDB(BaseConstructor())
+NIDRProblemDescDB::NIDRProblemDescDB(int world_size, int world_rank):
+  ProblemDescDB(BaseConstructor(), world_size, world_rank)
 {}
 
 
