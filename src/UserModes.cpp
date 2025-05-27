@@ -1,0 +1,33 @@
+#include "UserModes.hpp"
+#include "ParallelLibrary.hpp"
+
+namespace Dakota {
+    /// MPIUnpackBuffer extraction operator
+MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, UserModes& u)
+{ 
+  u.read(s);
+  return s; 
+}
+
+/// MPIPackBuffer insertion operator
+MPIPackBuffer& operator<<(MPIPackBuffer& s, const UserModes& u)
+{ 
+  u.write(s);
+  return s; 
+}
+
+void UserModes::read(MPIUnpackBuffer& is)
+
+{
+    is >> preRun >> run >> postRun >> preRunInput >> preRunOutput >> 
+    runInput >> runOutput >> postRunInput >> postRunOutput >> 
+    preRunOutputFormat >> postRunInputFormat;
+}
+
+void UserModes::write(MPIPackBuffer& is) const {
+    is << preRun << run << postRun;
+    is << preRunInput << preRunOutput << runInput << runOutput << postRunInput << postRunOutput;
+    is << preRunOutputFormat << postRunInputFormat;
+}
+
+}

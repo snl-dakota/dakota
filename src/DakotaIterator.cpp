@@ -1154,7 +1154,7 @@ StrStrSizet Iterator::run_identifier() const
 void Iterator::pre_output()
 {
   // distinguish between defaulted pre-run and user-specified
-  if (!parallelLib.user_modes().any_active())
+  if (!parallelLib.user_modes().userModes)
     return;
 
   const String& filename = parallelLib. user_modes().preRunOutput;
@@ -1173,7 +1173,7 @@ void Iterator::pre_output()
 void Iterator::post_input()
 {
     // distinguish between defaulted post-run and user-specified
-    if (!parallelLib.user_modes().any_active())
+    if (!parallelLib.user_modes().userModes)
       return;
 
     const String& filename = parallelLib.user_modes().postRunInput;
