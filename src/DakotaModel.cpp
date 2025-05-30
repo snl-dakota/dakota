@@ -1166,7 +1166,7 @@ void Model::evaluate(const ActiveSet& set)
     // perform initial map for parallel load balance).  estimate_derivatives()
     // may involve asynch evals depending on asynchEvalFlag.
     estimate_derivatives(map_asv, fd_grad_asv, fd_hess_asv, quasi_hess_asv,
-        set, asynchEvalFlag);
+			 set, asynchEvalFlag);
     if (asynchEvalFlag) { // concatenate asynch map calls into 1 response
       const IntResponseMap& fd_responses = derived_synchronize();
       synchronize_derivatives(currentVariables, fd_responses, currentResponse,
@@ -4219,6 +4219,12 @@ short Model::local_eval_synchronization()
 int Model::local_eval_concurrency()
 {
   return 0; // default value
+}
+
+
+void Model::serialize_threshold(size_t thresh)
+{
+  // default is no-op
 }
 
 

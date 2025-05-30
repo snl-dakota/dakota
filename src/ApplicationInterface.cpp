@@ -9,9 +9,8 @@
 
 #include "dakota_system_defs.hpp"
 #include "ApplicationInterface.hpp"
-#include "ParamResponsePair.hpp"
+//#include "ParamResponsePair.hpp"
 #include "ProblemDescDB.hpp"
-#include "ParallelLibrary.hpp"
 #include <thread>
 
 //#define DEBUG
@@ -24,11 +23,9 @@ extern PRPCache data_pairs;
 
 ApplicationInterface::
 ApplicationInterface(const ProblemDescDB& problem_db):
-  Interface(problem_db),
-  parallelLib(problem_db.parallel_library()), 
+  Interface(problem_db), parallelLib(problem_db.parallel_library()),
   batchEval(problem_db.get_bool("interface.batch")),
-  asynchFlag(problem_db.get_bool("interface.asynch")),
-  batchIdCntr(0),
+  asynchFlag(problem_db.get_bool("interface.asynch")), batchIdCntr(0),
   suppressOutput(false), evalCommSize(1), evalCommRank(0), evalServerId(1),
   eaDedSchedFlag(false), analysisCommSize(1), analysisCommRank(0),
   analysisServerId(1), multiProcAnalysisFlag(false),
@@ -55,11 +52,7 @@ ApplicationInterface(const ProblemDescDB& problem_db):
   asynchLocalEvalStatic(
     problem_db.get_short("interface.local_evaluation_scheduling") ==
     STATIC_SCHEDULING),
-  interfaceSynchronization( 
-      (batchEval | asynchFlag) ? 
-        ASYNCHRONOUS_INTERFACE : SYNCHRONOUS_INTERFACE
-      ),
-  headerFlag(true),
+  serializeThreshold(1), headerFlag(true),
   asvControlFlag(problem_db.get_bool("interface.active_set_vector")),
   evalCacheFlag(problem_db.get_bool("interface.evaluation_cache")),
   nearbyDuplicateDetect(
@@ -211,8 +204,11 @@ set_evaluation_communicators(const IntArray& message_lengths)
   // (default is unlimited unless user concurrency spec) from message passing
   // parallelism with synchronous local evals (default; hybrid mode requires
   // user spec > 1).
-  asynchLocalEvalConcurrency = (ieMessagePass && asynchLocalEvalConcSpec == 0)
-                             ? 1 : asynchLocalEvalConcSpec;
+  asynchLocalEvalConcurrency
+    = (ieMessagePass && asynchLocalEvalConcSpec == 0)
+    ? 1 : asynchLocalEvalConcSpec;
+
+  asynchLocalEvalFlag = check_asynch_local_evaluations();
 }
 
 
@@ -259,11 +255,7 @@ void ApplicationInterface::set_analysis_communicators()
   // a limit (default is unlimited).  In the message passing case, the user
   // must explicitly specify analysis concurrency to get hybrid parallelism
   // (default is no analysis concurrency).
-  if ( numAnalysisDrivers > 1 && 
-       interfaceSynchronization == ASYNCHRONOUS_INTERFACE &&
-       ( asynchLocalAnalysisConcurrency > 1 || ( !eaMessagePass &&
-        !asynchLocalAnalysisConcurrency ) ) )
-    asynchLocalAnalysisFlag = true;
+  asynchLocalAnalysisFlag = check_asynch_local_analyses();
 }
 
 
@@ -314,14 +306,10 @@ bool ApplicationInterface::check_multiprocessor_analysis(bool warn)
 bool ApplicationInterface::
 check_asynchronous(bool warn, int max_eval_concurrency)
 {
-  bool issue_flag = false, asynch_local_eval_flag
-    = ( max_eval_concurrency > 1 &&
-	interfaceSynchronization == ASYNCHRONOUS_INTERFACE &&
-	( asynchLocalEvalConcurrency > 1 ||           // captures hybrid mode
-	  ( !ieMessagePass && !asynchLocalEvalConcurrency ) ) ); // unlimited
-
   // Check for asynchronous local evaluations or analyses
-  if (asynch_local_eval_flag || asynchLocalAnalysisFlag) {
+  bool issue_flag = false;
+  if ( ( max_eval_concurrency > 1 && asynchLocalEvalFlag ) ||
+       asynchLocalAnalysisFlag ) {
     issue_flag = true;
     if (iteratorCommRank == 0) {
       if (warn) Cerr << "Warning: ";
@@ -339,17 +327,12 @@ check_asynchronous(bool warn, int max_eval_concurrency)
 bool ApplicationInterface::
 check_multiprocessor_asynchronous(bool warn, int max_eval_concurrency)
 {
-  bool issue_flag = false, asynch_local_eval_flag
-    = ( max_eval_concurrency > 1 &&
-	interfaceSynchronization == ASYNCHRONOUS_INTERFACE &&
-	( asynchLocalEvalConcurrency > 1 ||           // captures hybrid mode
-	  ( !ieMessagePass && !asynchLocalEvalConcurrency ) ) ); // unlimited
-
   // Performing asynch local concurrency requires a single processor.
   // multiProcEvalFlag & asynchLocalAnalysisConcurrency can coexist provided
   // that evalComm is divided into single-processor analysis servers.
-  if ( (multiProcEvalFlag     && asynch_local_eval_flag) ||
-       (multiProcAnalysisFlag && asynchLocalAnalysisFlag) ) {
+  bool issue_flag = false;
+  if ( ( max_eval_concurrency > 1 && multiProcEvalFlag && asynchLocalEvalFlag )
+       || ( multiProcAnalysisFlag && asynchLocalAnalysisFlag ) ) {
     issue_flag = true;
     if (iteratorCommRank == 0) {
       if (warn) Cerr << "Warning: ";
@@ -366,23 +349,21 @@ check_multiprocessor_asynchronous(bool warn, int max_eval_concurrency)
 
 /// form and return the final batch ID tag
 
-String ApplicationInterface::
-final_batch_id_tag() {
-  return evalTagPrefix + "." + std::to_string(batchIdCntr);
-}
+String ApplicationInterface::final_batch_id_tag()
+{ return evalTagPrefix + "." + std::to_string(batchIdCntr); }
 
-String ApplicationInterface::
-final_eval_id_tag(int iface_eval_id)
+
+String ApplicationInterface::final_eval_id_tag(int iface_eval_id)
 {
   if (appendIfaceId) {
-    if(batchEval)
-      return evalTagPrefix + "." + std::to_string(batchIdCntr) + "." + std::to_string(iface_eval_id);
-     else
-      return evalTagPrefix + "." + std::to_string(iface_eval_id);
-  } else
+    String tag = evalTagPrefix + ".";
+    if (batchEval) tag += std::to_string(batchIdCntr) + ".";
+    tag += std::to_string(iface_eval_id);
+    return tag;
+  }
+  else
     return evalTagPrefix;
 }
-
 
 
 //void ApplicationInterface::free_communicators()
@@ -547,8 +528,8 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
   if (asynch_flag) {
     // Output appears here to support core | algebraic | both
     if (!duplicate && outputLevel > SILENT_OUTPUT) {
-      if(batchEval) Cout << "(Batch job ";
-      else Cout << "(Asynchronous job "; 
+      if (batchEval) Cout << "(Batch job ";
+      else           Cout << "(Asynchronous job ";
       Cout << evalIdCntr;
       if (interfaceId.empty() || interfaceId == "NO_ID")
 	Cout << " added to queue)\n";
@@ -1281,10 +1262,8 @@ asynchronous_local_evaluations(PRPQueue& local_prp_queue)
 
     // Step 2: process completed jobs with wait_local_evaluations()
     if (outputLevel > SILENT_OUTPUT) {
-      if(batchEval)
-        Cout << "Waiting on completed batch" << std::endl;
-      else
-        Cout << "Waiting on completed jobs" << std::endl;
+      if (batchEval) Cout << "Waiting on completed batch" << std::endl;
+      else           Cout << "Waiting on completed jobs"  << std::endl;
     }
     completionSet.clear();
     wait_local_evaluations(asynchLocalActivePRPQueue); // rebuilds completionSet
@@ -2148,6 +2127,85 @@ synchronous_local_evaluations(PRPQueue& local_prp_queue)
 }
 
 
+void ApplicationInterface::launch_asynch_local(PRPQueueIter& prp_it)
+{
+  if (outputLevel > SILENT_OUTPUT) {
+    if(batchEval) {
+      Cout << "Adding ";
+      if (!interfaceId.empty() && interfaceId != "NO_ID")
+	Cout << interfaceId << ' ';
+      Cout << "evaluation " << prp_it->eval_id() << " to batch "
+	   << batchIdCntr + 1 << std::endl;
+    } else {
+      Cout << "Initiating ";
+      if (!interfaceId.empty() && interfaceId != "NO_ID")
+	Cout << interfaceId << ' ';
+      Cout << "evaluation " << prp_it->eval_id() << '\n';
+    }
+  }
+
+  // bcast job to other processors within peer 1 (added for direct plugins)
+  if (multiProcEvalFlag)
+    broadcast_evaluation(*prp_it);
+  // launch non-blocking job
+  derived_map_asynch(*prp_it);
+
+  // Note: for (plug-in) direct interfaces supporting a batch capability,
+  // derived_map_asynch() should be overridden to no-op --> scheduler and
+  // server processors bcast and update asynchLocalActivePRPQueue, but launch
+  // of the batch is deferred until synchronization time (batch is then
+  // launched as one unit within {wait,test}_local_evaluations).
+  // > TO DO: insufficient for Fork/System -> add batchEval conditionals to
+  //   derived_map_asynch(), etc., to support batch executions
+
+  asynchLocalActivePRPQueue.insert(*prp_it);
+}
+
+
+void ApplicationInterface::
+send_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
+		bool peer_flag)
+{
+  if (sendBuffers[buff_index].size()) // reuse of existing send/recv buffers
+    { sendBuffers[buff_index].reset(); recvBuffers[buff_index].reset(); }
+  else {                              // freshly allocated send/recv buffers
+    //sendBuffers[buff_index].resize(lenVarsActSetMessage); // protected
+    recvBuffers[buff_index].resize(lenResponseMessage);
+  }
+  sendBuffers[buff_index] << prp_it->variables() << prp_it->active_set();
+
+  int fn_eval_id = prp_it->eval_id();
+  if (outputLevel > SILENT_OUTPUT) {
+    if (peer_flag) {
+      Cout << "Peer 1 assigning ";
+      if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
+      Cout << "evaluation " << fn_eval_id << " to peer "
+	   << server_id+1 << '\n'; // 2 to numEvalServers
+    }
+    else {
+      Cout << "Dedicated scheduler assigning ";
+      if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
+      Cout << "evaluation " << fn_eval_id << " to server "
+	   << server_id << '\n';
+    }
+  }
+
+#ifdef MPI_DEBUG
+  Cout << "send_evaluation() buff_index = " << buff_index << " fn_eval_id = "
+       << fn_eval_id << " server_id = " << server_id << std::endl;
+#endif // MPI_DEBUG
+
+  // pre-post nonblocking receives (to prevent any message buffering)
+  parallelLib.irecv_ie(recvBuffers[buff_index], server_id, fn_eval_id,
+		       recvRequests[buff_index]);
+  // nonblocking sends: dedicated scheduler assigns jobs to evaluation servers
+  MPI_Request send_request; // only 1 needed
+  parallelLib.isend_ie(sendBuffers[buff_index], server_id, fn_eval_id,
+		       send_request);
+  parallelLib.free(send_request); // no test/wait on send_request
+}
+
+
 void ApplicationInterface::
 broadcast_evaluation(int fn_eval_id, const Variables& vars,
 		     const ActiveSet& set)
@@ -2921,8 +2979,8 @@ continuation(const Variables& target_vars, const ActiveSet& set,
       }
     }
   }
-  Cout << "Finished with continuation for evaluation " << failed_eval_id << 
-    "." << std::endl;
+  Cout << "Finished with continuation for evaluation " << failed_eval_id
+       << "." << std::endl;
 }
 
 
@@ -2978,7 +3036,7 @@ void ApplicationInterface::process_asynch_local(int fn_eval_id)
     if (interfaceId.empty() || interfaceId == "NO_ID") Cout << "Evaluation ";
     else Cout << interfaceId << " evaluation ";
     Cout << fn_eval_id;
-    if(batchEval) Cout << " (batch " << batchIdCntr << ")";
+    if (batchEval) Cout << " (batch " << batchIdCntr << ")";
     Cout << " has completed\n";
   }
 
@@ -3000,7 +3058,8 @@ void ApplicationInterface::process_synch_local(PRPQueueIter& prp_it)
   int fn_eval_id = prp_it->eval_id();
   if (outputLevel > SILENT_OUTPUT) {
     Cout << "Performing ";
-    if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
+    if (!interfaceId.empty() && interfaceId != "NO_ID")
+      Cout << interfaceId << ' ';
     Cout << "evaluation " << fn_eval_id << std::endl;
   }
   rawResponseMap[fn_eval_id] = prp_it->response();

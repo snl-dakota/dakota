@@ -137,7 +137,7 @@ ProcessApplicInterface(const ProblemDescDB& problem_db):
   // place as strings (could leave tokenized for Fork/Spawn, but
   // assemble the string for SysCall Interfaces
   if (useWorkdir) {
-    StringArray::iterator pn_it = programNames.begin();
+    StringArray::iterator pn_it  = programNames.begin();
     StringArray::iterator pn_end = programNames.end();
     for ( ; pn_it != pn_end; ++pn_it)
       if (WorkdirHelper::resolve_driver_path(*pn_it) && 
@@ -168,9 +168,8 @@ ProcessApplicInterface(const ProblemDescDB& problem_db):
   // configuration in set_communicators.
 
   bool require_unique =
-    (interface_synchronization() == ASYNCHRONOUS_INTERFACE) &&
-    (asynchLocalEvalConcSpec != 1) && 
-    !batchEval;
+    (interface_synchronization() == ASYNCHRONOUS_INTERFACE &&
+     asynchLocalEvalConcSpec > serializeThreshold && !batchEval);
 
   if (require_unique) {
     if (useWorkdir) {

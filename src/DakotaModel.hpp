@@ -160,6 +160,8 @@ public:
   virtual short local_eval_synchronization();
   /// return derived model asynchronous evaluation concurrency
   virtual int local_eval_concurrency();
+  /// return derived model synchronization setting
+  virtual void serialize_threshold(size_t thresh);
 
   /// Service job requests received from the scheduler.  Completes when
   /// a termination message is received from stop_servers().

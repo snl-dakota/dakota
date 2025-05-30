@@ -103,6 +103,9 @@ public:
   /// return the user-specified concurrency for asynch local evaluations
   virtual int asynch_local_evaluation_concurrency() const;
 
+  /// set the threshold concurrency for serializing local evaluations
+  virtual void serialize_threshold(size_t thresh);
+
   /// return the user-specified interface synchronization
   virtual short interface_synchronization() const;
 

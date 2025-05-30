@@ -30,9 +30,9 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 		   problem_db.get_int("model.nested.processors_per_iterator"),
 		   problem_db.get_short("model.nested.iterator_scheduling")),
   subMethodPointer(problem_db.get_string("model.nested.sub_method_pointer")),
-  subIteratorJobCntr(0),
-  optInterfacePointer(problem_db.get_string("model.interface_pointer"))
+  subIteratorJobCntr(0)
 {
+  const String& oi_ptr = problem_db.get_string("model.interface_pointer");
   ignoreBounds = problem_db.get_bool("responses.ignore_bounds");
   centralHess  = problem_db.get_bool("responses.central_hess");
 
@@ -50,7 +50,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
   size_t model_index  = problem_db.get_db_model_node();  // for restoration
 
   // interface for non-nested data is optional
-  if (optInterfacePointer.empty())
+  if (oi_ptr.empty())
     numOptInterfPrimary = numOptInterfIneqCon = numOptInterfEqCon = 0;
   else {
     const String& oi_resp_ptr
@@ -110,6 +110,9 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 	     << "composite response constraint bounds and targets."
 	     << std::endl;
     }
+
+    // don't serialize for asynch concurrency = 1
+    optionalInterface->serialize_threshold(0);
 
     // db_responses restore not needed since set_db_list_nodes below will reset
   }
@@ -566,7 +569,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 			   bool recurse_flag)
 {
   // initialize optionalInterface for parallel operations
-  if (!optInterfacePointer.empty()) {
+  if (optionalInterface) {
     // allow recursion to progress - don't store/set/restore
     parallelLib.parallel_configuration_iterator(modelPCIter);
     optionalInterface->init_communicators(messageLengths, max_eval_concurrency);
@@ -633,7 +636,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   // Outer context:
   outerMIPLIndex = modelPCIter->mi_parallel_level_index(pl_iter);
 
-  if (!optInterfacePointer.empty()) {
+  if (optionalInterface) {
     // allow recursion to progress - don't store/set/restore
     parallelLib.parallel_configuration_iterator(modelPCIter);
     optionalInterface->set_communicators(messageLengths, max_eval_concurrency);
@@ -668,7 +671,7 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 			   bool recurse_flag)
 {
   /*
-  if (!optInterfacePointer.empty()) {
+  if (optionalInterface) {
     // allow recursion to progress - don't store/set/restore
     parallelLib.parallel_configuration_iterator(modelPCIter);
     optionalInterface->free_communicators();
@@ -737,7 +740,7 @@ void NestedModel::init_sub_iterator()
 
   if (identityRespMap) {
     bool found_error = false;
-    if (!optInterfacePointer.empty()) {
+    if (optionalInterface) {
       Cerr << "\nError: identity_response_mapping not supported in conjunction"
        << " with optional_interface_pointer; use explicit primary/secondary_"
        << "response_mapping instead.\n";
@@ -1509,7 +1512,7 @@ const IntResponseMap& NestedModel::derived_synchronize()
   // overlapped as in EnsembleSurrModel, given IteratorScheduler nowait support
 
   IntIntMIter id_it; IntRespMCIter r_cit;
-  if (!optInterfacePointer.empty()) {
+  if (optionalInterface) {
     component_parallel_mode(INTERFACE_MODE);
 
     ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
@@ -1688,7 +1691,7 @@ set_mapping(const ActiveSet& mapped_set, ActiveSet& opt_interface_set,
   // this allows usage of the optional interface to generate data used only
   // by the sub-iterator.  Put another way, the optional interface is active
   // unless functions are present and all functions are inactive.
-  if (!optInterfacePointer.empty() && num_opt_interf_fns == 0)
+  if (optionalInterface && num_opt_interf_fns == 0)
     opt_interface_map = sub_iterator_map;
   else // normal case of mapping optional interface fns
     for (i=0; i<num_opt_interf_fns; ++i)
@@ -2075,8 +2078,7 @@ void NestedModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
   while (componentParallelMode) {
     // outer context: matches bcast at bottom of component_parallel_mode()
     parallelLib.bcast(componentParallelMode, *pl_iter);
-    if (componentParallelMode == INTERFACE_MODE &&
-	!optInterfacePointer.empty()) {
+    if (componentParallelMode == INTERFACE_MODE && optionalInterface) {
       // store/set/restore the ParallelLibrary::currPCIter
       ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
       parallelLib.parallel_configuration_iterator(modelPCIter);

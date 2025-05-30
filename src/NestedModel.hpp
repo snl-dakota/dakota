@@ -101,6 +101,8 @@ protected:
   short local_eval_synchronization() override;
   /// return optionalInterface asynchronous evaluation concurrency
   int local_eval_concurrency() override;
+  /// update serialization threshold for optionalInterface
+  void serialize_threshold(size_t thresh) override;
   /// flag which prevents overloading the scheduler with a multiprocessor
   /// evaluation (forwarded to optionalInterface)
   bool derived_scheduler_overload() const override;
@@ -307,8 +309,6 @@ private:
   /// the optional interface contributes nonnested response data to
   /// the total model response
   std::shared_ptr<Interface> optionalInterface;
-  /// the optional interface pointer from the nested model specification
-  String optInterfacePointer;
   /// the response object resulting from optional interface evaluations
   Response optInterfaceResponse;
   /// mapping from optionalInterface evaluation counter to nested model
@@ -476,6 +476,7 @@ derived_subordinate_models(ModelList& ml, bool recurse_flag)
 inline std::shared_ptr<Interface> NestedModel::derived_interface()
 { return optionalInterface; }
 
+
 inline void NestedModel::derived_interface(std::shared_ptr<Interface> di)
 { optionalInterface = di; }
 
@@ -501,9 +502,9 @@ inline void NestedModel::surrogate_response_mode(short mode)
     is used for setting asynchEvalFlag within subModel. */
 inline short NestedModel::local_eval_synchronization()
 {
-  return ( optInterfacePointer.empty() ||
-	   optionalInterface->asynch_local_evaluation_concurrency() == 1 ) ?
-    SYNCHRONOUS_INTERFACE : optionalInterface->interface_synchronization();
+   // delegate to optionalInterface if !empty()
+  return (optionalInterface) ?
+    optionalInterface->interface_synchronization() : SYNCHRONOUS_INTERFACE;
 }
 
 
@@ -511,8 +512,15 @@ inline short NestedModel::local_eval_synchronization()
     is used for setting evaluationCapacity within subModel. */
 inline int NestedModel::local_eval_concurrency()
 {
-  return ( optInterfacePointer.empty() ) ? 0 :
-    optionalInterface->asynch_local_evaluation_concurrency();
+  return (optionalInterface) ?
+    optionalInterface->asynch_local_evaluation_concurrency() : 0;
+}
+
+
+inline void NestedModel::serialize_threshold(size_t thresh)
+{
+  if (optionalInterface)
+    optionalInterface->serialize_threshold(thresh);
 }
 
 
@@ -520,8 +528,8 @@ inline int NestedModel::local_eval_concurrency()
     subModel.evaluate() within subIterator->run(). */
 inline bool NestedModel::derived_scheduler_overload() const
 {
-  bool oi_overload = ( !optInterfacePointer.empty() &&
-		       optionalInterface->iterator_eval_dedicated_scheduler() && 
+  bool oi_overload = ( optionalInterface &&
+		       optionalInterface->iterator_eval_dedicated_scheduler() &&
 		       optionalInterface->multi_proc_eval() ),
     si_overload = ( subIterator && subIteratorSched.iteratorScheduling ==
 		    DEDICATED_SCHEDULER_DYNAMIC && 
@@ -539,12 +547,12 @@ estimate_partition_bounds(int max_eval_concurrency)
   short i_sched = probDescDB.get_short("model.nested.iterator_scheduling");
 
   int oi_min_procs, oi_max_procs;
-  if (optInterfacePointer.empty())
-    oi_min_procs = oi_max_procs = 1;
-  else {
+  if (optionalInterface) {
     oi_min_procs = probDescDB.min_procs_per_ie();
     oi_max_procs = probDescDB.max_procs_per_ie(max_eval_concurrency);
   }
+  else
+    oi_min_procs = oi_max_procs = 1;
 
   String empty_str;
   subIteratorSched.construct_sub_iterator(probDescDB, subIterator, subModel,
@@ -576,7 +584,7 @@ inline void NestedModel::derived_init_serial()
   // initialize optionalInterface and subModel for serial operations
   // (e.g., num servers = 1 instead of the 0 default used by
   // ParallelLibrary::resolve_inputs())
-  if (!optInterfacePointer.empty())
+  if (optionalInterface)
     optionalInterface->init_serial();
   subModel->init_serial();
 }
@@ -668,7 +676,7 @@ inline int NestedModel::derived_evaluation_id() const
 
 inline void NestedModel::set_evaluation_reference()
 {
-  if (!optInterfacePointer.empty())
+  if (optionalInterface)
     optionalInterface->set_evaluation_reference();
 
   // don't recurse this, since the eval reference is for the top level iteration
@@ -681,7 +689,7 @@ inline void NestedModel::set_evaluation_reference()
 
 inline void NestedModel::fine_grained_evaluation_counters()
 {
-  if (!optInterfacePointer.empty()) {
+  if (optionalInterface) {
     size_t num_oi_fns
       = numOptInterfPrimary + numOptInterfIneqCon + numOptInterfEqCon;
     optionalInterface->fine_grained_evaluation_counters(num_oi_fns);
@@ -694,7 +702,7 @@ inline void NestedModel::
 print_evaluation_summary(std::ostream& s, bool minimal_header,
 			 bool relative_count) const
 {
-  if (!optInterfacePointer.empty())
+  if (optionalInterface)
     optionalInterface->print_evaluation_summary(s, minimal_header,
 					       relative_count);
   // subIterator will reset evaluation references, so do not use relative counts

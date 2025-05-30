@@ -13,7 +13,7 @@
 #include "DakotaInterface.hpp"
 #include "PRPMultiIndex.hpp"
 #include "ParallelLibrary.hpp"
-#include "DataMethod.hpp"
+#include "DataInterface.hpp"
 
 namespace Dakota {
 
@@ -44,7 +44,7 @@ public:
   //
 
   ApplicationInterface(const ProblemDescDB& problem_db); ///< constructor
-  ~ApplicationInterface() override;                               ///< destructor
+  ~ApplicationInterface() override;                      ///< destructor
 
 protected:
 
@@ -66,8 +66,9 @@ protected:
 
   /// return asynchLocalEvalConcurrency
   int asynch_local_evaluation_concurrency() const override;
-
-  /// return interfaceSynchronization
+  /// set serializeThreshold
+  void serialize_threshold(size_t thresh) override;
+  /// return whether interface supports synchronous or asynchronous jobs
   short interface_synchronization() const override;
 
   /// return evalCacheFlag
@@ -116,6 +117,13 @@ protected:
   bool check_asynchronous(bool warn, int max_eval_concurrency);
   /// checks on asynchronous settings for multiprocessor partitions
   bool check_multiprocessor_asynchronous(bool warn, int max_eval_concurrency);
+
+  /// helper function for checking conditions for asynchronous local
+  /// evaluations (results cached in asynchLocalEvalFlag)
+  bool check_asynch_local_evaluations() const;
+  /// helper function for checking conditions for asynchronous local
+  /// analyses (results cached in asynchLocalAnalysisFlag)
+  bool check_asynch_local_analyses() const;
 
   /// form and return the final batch ID tag
   String final_batch_id_tag();
@@ -229,9 +237,14 @@ protected:
   /// flag for multiprocessor analysis partitions
   bool multiProcAnalysisFlag;
 
+  /// flag for asynchronous local parallelism of evaluations
+  bool asynchLocalEvalFlag;
   /// flag for asynchronous local parallelism of analyses
   bool asynchLocalAnalysisFlag;
 
+  /// limits the number of concurrent evaluations in asynchronous local
+  /// scheduling and specifies hybrid concurrency when message passing
+  int asynchLocalEvalConcurrency;
   /// limits the number of concurrent analyses in asynchronous local
   /// scheduling and specifies hybrid concurrency when message passing
   int asynchLocalAnalysisConcurrency;
@@ -241,6 +254,12 @@ protected:
   int asynchLocalEvalConcSpec;
   /// user specification for asynchronous local analysis concurrency
   int asynchLocalAnalysisConcSpec;
+
+  /// limit value for concurreny throttle which triggers switch to
+  /// synchronous scheduling, despite am asynch specification.  Normally
+  /// this value is 1, but it can be overridden (to 0) in the case of model
+  /// ensembles to prevent one serialized model from blocking others.
+  size_t serializeThreshold;
 
   /// the number of analysis drivers used for each function evaluation
   /// (from the analysis_drivers interface specification)
@@ -445,10 +464,6 @@ private:
   /// the auto-configure logic in ParallelLibrary::resolve_inputs().
   short analysisScheduling;
 
-  /// limits the number of concurrent evaluations in asynchronous local
-  /// scheduling and specifies hybrid concurrency when message passing
-  int asynchLocalEvalConcurrency;
-
   /// whether the asynchronous local evaluations are to be performed
   /// with a static schedule (default false)
   bool asynchLocalEvalStatic;
@@ -456,10 +471,6 @@ private:
   /// array with one bit per logical "server" indicating whether a job is
   /// currently running on the server (used for asynch local static schedules)
   BitArray localServerAssigned;
-
-  /// interface synchronization specification: synchronous (default)
-  /// or asynchronous
-  short interfaceSynchronization;
 
   /// used by synchronize_nowait to manage header output frequency (since this
   /// function may be called many times prior to any completions)
@@ -585,8 +596,40 @@ inline int ApplicationInterface::asynch_local_evaluation_concurrency() const
 { return asynchLocalEvalConcurrency; }
 
 
+inline void ApplicationInterface::serialize_threshold(size_t thresh)
+{ serializeThreshold = thresh; }
+
+
+inline bool ApplicationInterface::check_asynch_local_evaluations() const
+{
+  // Following initialize_comms --> set_{evaluation,analysis}_comms, local
+  // concurrencies have been defaulted to 1 if message passing (hybrid
+  // parallelism spec must be explicit)
+  return ( ( batchEval || asynchFlag ) &&
+	   ( asynchLocalEvalConcurrency > serializeThreshold ||
+	     ( !ieMessagePass && asynchLocalEvalConcurrency == 0 ) ) );
+}
+
+
+inline bool ApplicationInterface::check_asynch_local_analyses() const
+{
+  // Following initialize_comms --> set_{evaluation,analysis}_comms, local
+  // concurrencies have been defaulted to 1 if message passing (hybrid
+  // parallelism spec must be explicit)
+  return ( asynchFlag && numAnalysisDrivers > 1 &&
+	   // *** TO DO: can batchEval be relevant here?
+	   ( asynchLocalAnalysisConcurrency > serializeThreshold ||
+	     ( !eaMessagePass && asynchLocalAnalysisConcurrency == 0 ) ) );
+}
+
+
 inline short ApplicationInterface::interface_synchronization() const
-{ return interfaceSynchronization; }
+{
+  // Following initialize_comms --> set_{evaluation,analysis}_comms, local
+  // concurrencies are fully defined, including mods for hybrid parallel
+  return ( check_asynch_local_evaluations() || check_asynch_local_analyses() ) ?
+    ASYNCHRONOUS_INTERFACE : SYNCHRONOUS_INTERFACE;
+}
 
 
 inline bool ApplicationInterface::evaluation_cache() const
@@ -645,82 +688,6 @@ synchronous_local_analysis(int analysis_id)
 inline void ApplicationInterface::
 broadcast_evaluation(const ParamResponsePair& pair)
 { broadcast_evaluation(pair.eval_id(), pair.variables(), pair.active_set()); }
-
-
-inline void ApplicationInterface::
-send_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
-		bool peer_flag)
-{
-  if (sendBuffers[buff_index].size()) // reuse of existing send/recv buffers
-    { sendBuffers[buff_index].reset(); recvBuffers[buff_index].reset(); }
-  else {                              // freshly allocated send/recv buffers
-    //sendBuffers[buff_index].resize(lenVarsActSetMessage); // protected
-    recvBuffers[buff_index].resize(lenResponseMessage);
-  }
-  sendBuffers[buff_index] << prp_it->variables() << prp_it->active_set();
-
-  int fn_eval_id = prp_it->eval_id();
-  if (outputLevel > SILENT_OUTPUT) {
-    if (peer_flag) {
-      Cout << "Peer 1 assigning ";
-      if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
-      Cout << "evaluation " << fn_eval_id << " to peer "
-	   << server_id+1 << '\n'; // 2 to numEvalServers
-    }
-    else {
-      Cout << "Dedicated scheduler assigning ";
-      if (!(interfaceId.empty() || interfaceId == "NO_ID")) Cout << interfaceId << ' ';
-      Cout << "evaluation " << fn_eval_id << " to server "
-	   << server_id << '\n';
-    }
-  }
-
-#ifdef MPI_DEBUG
-  Cout << "send_evaluation() buff_index = " << buff_index << " fn_eval_id = "
-       << fn_eval_id << " server_id = " << server_id << std::endl;
-#endif // MPI_DEBUG
-
-  // pre-post nonblocking receives (to prevent any message buffering)
-  parallelLib.irecv_ie(recvBuffers[buff_index], server_id, fn_eval_id,
-		       recvRequests[buff_index]);
-  // nonblocking sends: dedicated scheduler assigns jobs to evaluation servers
-  MPI_Request send_request; // only 1 needed
-  parallelLib.isend_ie(sendBuffers[buff_index], server_id, fn_eval_id,
-		       send_request);
-  parallelLib.free(send_request); // no test/wait on send_request
-}
-
-
-inline void ApplicationInterface::launch_asynch_local(PRPQueueIter& prp_it)
-{
-  if (outputLevel > SILENT_OUTPUT) {
-    if(batchEval) {
-      Cout << "Adding ";
-      if (!interfaceId.empty() && interfaceId != "NO_ID") Cout << interfaceId << ' ';
-      Cout << "evaluation " << prp_it->eval_id() << " to batch " << batchIdCntr + 1 << std::endl;
-    } else {
-      Cout << "Initiating ";
-      if (!interfaceId.empty() && interfaceId != "NO_ID") Cout << interfaceId << ' ';
-      Cout << "evaluation " << prp_it->eval_id() << '\n';
-    }
-  }
-
-  // bcast job to other processors within peer 1 (added for direct plugins)
-  if (multiProcEvalFlag)
-    broadcast_evaluation(*prp_it);
-  // launch non-blocking job
-  derived_map_asynch(*prp_it);
-
-  // Note: for (plug-in) direct interfaces supporting a batch capability,
-  // derived_map_asynch() should be overridden to no-op --> scheduler and
-  // server processors bcast and update asynchLocalActivePRPQueue, but launch
-  // of the batch is deferred until synchronization time (batch is then
-  // launched as one unit within {wait,test}_local_evaluations).
-  // > TO DO: insufficient for Fork/System -> add batchEval conditionals to
-  //   derived_map_asynch(), etc., to support batch executions
-
-  asynchLocalActivePRPQueue.insert(*prp_it);
-}
 
 
 inline void ApplicationInterface::

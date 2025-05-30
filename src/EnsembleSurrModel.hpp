@@ -283,7 +283,6 @@ protected:
 
   /// the single truth reference model
   std::shared_ptr<Model> truthModel;
-  
   /// set of model approximations
   std::vector<std::shared_ptr<Model>> approxModels;
 

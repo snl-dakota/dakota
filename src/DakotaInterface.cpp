@@ -663,6 +663,12 @@ int Interface::asynch_local_evaluation_concurrency() const
 }
 
 
+void Interface::serialize_threshold(size_t thresh)
+{
+  // default: no-op
+}
+
+
 short Interface::interface_synchronization() const
 {
   return SYNCHRONOUS_INTERFACE; // default (ApproximationInterfaces)

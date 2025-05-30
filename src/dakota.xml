@@ -5862,7 +5862,7 @@
       </keyword>
       <optional>
         <oneOf>
-  	<keyword id="batch" name="batch" code="{N_ifm(true,batchEvalFlag)}" label="Batch Interface Usage"  default="sequential interface usage" complexity="0">
+  	  <keyword id="batch" name="batch" code="{N_ifm(true,batchEvalFlag)}" label="Batch Interface Usage"  default="sequential interface usage" complexity="0">
     	    <keyword id="size" name="size" code="{N_ifm(int,asynchLocalEvalConcurrency)}" label="Batch size"  minOccurs="0" default="local: unlimited batch size, hybrid: zero batch size" complexity="0">
               <param type="INTEGER" constraint="> 0" />
     	    </keyword>

@@ -100,10 +100,6 @@ protected:
   /// return subModel's MI parallel level index
   size_t mi_parallel_level_index() const;
 
-  /// return subModel local synchronization setting
-  short local_eval_synchronization();
-  /// return subModel local evaluation concurrency
-  int local_eval_concurrency();
   /// flag which prevents overloading the scheduler with a multiprocessor
   /// evaluation (request forwarded to subModel)
   bool derived_scheduler_overload() const;
@@ -269,14 +265,6 @@ inline void AdapterModel::component_parallel_mode(short mode)
 
 inline size_t AdapterModel::mi_parallel_level_index() const
 { return subModel.mi_parallel_level_index(); }
-
-
-inline short AdapterModel::local_eval_synchronization()
-{ return subModel.local_eval_synchronization(); }
-
-
-inline int AdapterModel::local_eval_concurrency()
-{ return subModel.local_eval_concurrency(); }
 
 
 inline bool AdapterModel::derived_scheduler_overload() const

@@ -104,6 +104,8 @@ protected:
   short local_eval_synchronization() override;
   /// return userDefinedInterface asynchronous evaluation concurrency
   int local_eval_concurrency() override;
+  /// update serialization threshold for userDefinedInterface
+  void serialize_threshold(size_t thresh) override;
   /// flag which prevents overloading the scheduler with a multiprocessor
   /// evaluation (request forwarded to userDefinedInterface)
   bool derived_scheduler_overload() const override;
@@ -324,14 +326,15 @@ inline const IntResponseMap& SimulationModel::derived_synchronize_nowait()
 
 
 inline short SimulationModel::local_eval_synchronization()
-{
-  return ( userDefinedInterface->asynch_local_evaluation_concurrency() == 1 ) ?
-    SYNCHRONOUS_INTERFACE : userDefinedInterface->interface_synchronization();
-}
+{ return userDefinedInterface->interface_synchronization(); }
 
 
 inline int SimulationModel::local_eval_concurrency()
 { return userDefinedInterface->asynch_local_evaluation_concurrency(); }
+
+
+inline void SimulationModel::serialize_threshold(size_t thresh)
+{ userDefinedInterface->serialize_threshold(thresh); }
 
 
 inline bool SimulationModel::derived_scheduler_overload() const
@@ -358,7 +361,8 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 {
   // allow recursion to progress - don't store/set/restore
   parallelLib.parallel_configuration_iterator(modelPCIter);
-  userDefinedInterface->init_communicators(messageLengths, max_eval_concurrency);
+  userDefinedInterface->
+    init_communicators(messageLengths, max_eval_concurrency);
 }
 
 

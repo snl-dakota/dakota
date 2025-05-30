@@ -31,9 +31,7 @@ EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db):
   if (truth_model_spec) ++num_models;
   size_t num_approx = num_models - 1;
 
-  // approxModels is now a container of models with corresponding pointers in approxModels.
-  // The orignial population relied on Model copies of the const & returned by get_model.
-  // I think we'll need to handle this with shared_ptr's.
+  // approxModels is now a container of model shared pointers.
   approxModels.resize(num_approx);
   for (i=0; i<num_approx; ++i) {
     problem_db.set_db_model_nodes(ensemble_model_ptrs[i]);
@@ -46,6 +44,17 @@ EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db):
   check_submodel_compatibility(*truthModel);
 
   problem_db.set_db_model_nodes(model_index); // restore
+
+  if (truth_model_spec) problem_db.set_db_model_nodes(truth_model_ptr);
+  else problem_db.set_db_model_nodes(ensemble_model_ptrs[num_approx]);
+  truthModel = problem_db.get_model();
+
+  // honor an asynchronous local specification and perform local scheduling
+  // even if the concurrency is 1.  This avoid blocking other models within
+  // the ensemble when a single model is serialized.
+  for (i=0; i<num_approx; ++i)
+    approxModels[i]->serialize_threshold(0);
+  truthModel->serialize_threshold(0);
 
   // Default keys are overridden once Iterator sets surrogate_response_mode()
   // and calls active_model_key():
