@@ -255,10 +255,11 @@ protected:
   /// user specification for asynchronous local analysis concurrency
   int asynchLocalAnalysisConcSpec;
 
-  /// limit value for concurreny throttle which triggers switch to
-  /// synchronous scheduling, despite am asynch specification.  Normally
-  /// this value is 1, but it can be overridden (to 0) in the case of model
-  /// ensembles to prevent one serialized model from blocking others.
+  /// limit value for asynch local concurrency level which triggers switch to
+  /// synchronous scheduling, despite an asynch interface specification.
+  /// Normally this value is 1 in order to avoid unnecessary scheduling
+  /// overhead, but it can be overridden (to 0) in the case of model ensembles
+  /// to prevent one serialized model from blocking others.
   size_t serializeThreshold;
 
   /// the number of analysis drivers used for each function evaluation
