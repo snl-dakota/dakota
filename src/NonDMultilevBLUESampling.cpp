@@ -1023,7 +1023,7 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
   size_t all_group = numGroups - 1; // for all throttles
 
   Real hf_target;
-  if (maxFunctionEvals == SZ_MAX) { // accuracy-constrained -> online only
+  if (maxFunctionEvals == SZ_MAX) { // accuracy-constrained
     // As for {ACV,GenACV}, employ ML BLUE's native estvar for accuracy scaling
     RealVector soln_vars, mlblue_ev, mlblue_ev_ratios;//ratios remain empty
     SizetArray N_shared;  Real metric;  size_t metric_index;
@@ -1041,7 +1041,9 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
     // the assumed scaling with N_sh is not generally valid for ML BLUE,
     // but is reasonable for emulation of MFMC
     N_shared.assign(numFunctions, pilot_samp); // online
-    hf_target = update_hf_target(mlblue_ev, metric_index, N_shared,estVarIter0);
+    hf_target = (convergenceTolType == ABSOLUTE_CONVERGENCE_TOLERANCE) ?
+      update_hf_target(mlblue_ev, metric_index, N_shared) :
+      update_hf_target(mlblue_ev, metric_index, N_shared, estVarIter0);
   }
   else { // budget-constrained -> online or offline
     bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
