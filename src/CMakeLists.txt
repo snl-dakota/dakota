@@ -913,11 +913,9 @@ list(APPEND EXPORT_TARGETS dakota_src_fortran)
 
 add_library(dakota_src ${Dakota_src})
 # handle special case for gcc filesystem support
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)
-    #message(STATUS "GCC version is less than 9.0, adding -lstdc++fs")
-    target_link_libraries(dakota_src stdc++fs)
-  endif()
+if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0) OR DAKOTA_LINK_STDCPPFS)
+  #message(STATUS "GCC version is less than 9.0, adding -lstdc++fs")
+  target_link_libraries(dakota_src stdc++fs)
 endif()
 # When using Boost imported targets, we only link libraries using them,
 # then rely on transitive library linking from CMake
