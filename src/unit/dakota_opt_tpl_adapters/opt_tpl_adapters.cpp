@@ -55,7 +55,7 @@ namespace {
     get_optimizer(std::shared_ptr<Dakota::LibraryEnvironment> p_env, bool verbose = false)
     {
       Dakota::ProblemDescDB & problem_db = p_env->problem_description_db();
-      Dakota::IteratorList & iter_list = Dakota::Iterator::iterator_cache();
+      Dakota::IteratorList & iter_list = Dakota::Iterator::iterator_cache(problem_db);
       std::shared_ptr<Iterator> dak_iter = *iter_list.begin();
       if( verbose )
       {
