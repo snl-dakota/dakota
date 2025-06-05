@@ -630,7 +630,48 @@ class invocation_and_options(unittest.TestCase):
         res = [r.strip() for r in res.split('\n') if r.strip()]
         self.assertTrue(res == ['5','100'])
     
+    def test_include_search_path(self):
+        gold = dedent("""\
+            Top Level!
+            First Include (in subdir)
+            Second Include (in subdir)
+            Third Include (in subdir)
+            Third Include (in top)
+            Fourth include
+        """)
+        res = pyprepro.pyprepro('test_files/test_subdir_includes.inp')
+        self.assertTrue(compare_lines(res,gold))
 
+    def test_dunder_file_dir(self):
+        res = pyprepro.pyprepro('test_files/dunder_file_dir/demo.tpl')
+        lines = res.splitlines()
+               
+        self.assertTrue('foo bar' in lines) # declared variables in the includes
+        self.assertTrue('fizz buzz' in lines)
+        
+        # Create a dict of paths
+        paths = {}
+        for line in lines:
+            if ':' not in line:
+                continue
+            key,val = line.split(':',1)
+            paths[key.strip()] = val.strip()
+        
+        # Make sure they get reset
+        self.assertTrue(paths['Demo0 file'] == paths['Demo1 file'],"demo file")
+        self.assertTrue(paths['Demo0 dir']  == paths['Demo1 dir'],"demo dir")
+        self.assertTrue(paths['first0 file'] == paths['first1 file'],"first file")
+        self.assertTrue(paths['first0 dir'] == paths['first1 dir'],"first dir")
+        
+        # make sure they get set properly
+        self.assertTrue(os.path.dirname(paths['Demo0 file']) == paths['Demo0 dir'])
+        self.assertTrue(os.path.dirname(paths['first0 file']) == paths['first0 dir'])
+        self.assertTrue(os.path.dirname(paths['second0 file']) == paths['second0 dir'])
+    
+        self.assertTrue(os.path.join(paths['Demo0 dir'],'first') == paths['first0 dir'])
+        self.assertTrue(os.path.join(paths['Demo0 dir'],'first','second') == paths['second0 dir'])
+        self.assertTrue(os.path.join(paths['first0 dir'],'second') == paths['second0 dir']) # already checked by associative property but this is more clear
+        
 class preparser_edge_cases(unittest.TestCase):
     def test_escaping(self):
         """
@@ -831,13 +872,31 @@ class preparser_edge_cases(unittest.TestCase):
         GOLD = '"11'
         self.assertTrue(OUT == GOLD)
     
-        IN = """'{A="}"}'"""
+        # This fails as per the docs...See "Edge Case: Delimiters inside Python quotes" in manual
+        IN = r"""'{A="\}"}'"""
+        OUT = pyprepro.pyprepro(IN)
+        GOLD = """'}'"""
+        self.assertFalse(OUT == GOLD)
+        
+        # ...so do this as per the docs
+        
+        IN = r"""% A = '}'N'{A}'""".replace('N','\n')
         OUT = pyprepro.pyprepro(IN)
         GOLD = """'}'"""
         self.assertTrue(OUT == GOLD)
 
         # With UNmatched inner quotes. We still expect this to fail since it isn't
         self.assertRaises(SyntaxError,pyprepro.pyprepro,'{A = "}adshd}')
+
+        # Handle Empty quotes with proceeded quoted variable cause error
+        # Regression for 18 (but fixed with 16)
+        IN = """\
+            { var1 = '' }
+            { var2 = 'this is var2' }
+        """
+        GOLD = """this is var2"""
+        self.assertTrue(compare_lines(pyprepro.pyprepro(IN),GOLD))
+
 
     def test_empty_inline(self):
         """
@@ -858,7 +917,24 @@ class preparser_edge_cases(unittest.TestCase):
         self.assertTrue(E.exit_code != 0)
         self.assertTrue('EmptyInlineError' in E.stderr)
         self.assertTrue('Empty inline expression' in E.stderr)
+
+    def test_unclosed_quotes(self):
+        """Regression for #16 """
         
+        input ="""\
+            {%
+            # Bob's idea
+            %}
+            bob's: { bob = 1.0 }
+        """
+        gold = """\
+            bob's: 1
+        """
+        self.assertTrue(compare_lines(pyprepro.pyprepro(input),gold))
+ 
+        # EDGE CASE: Ideally this would be assertTrue but at least documented. See "Edge Case: Delimiters inside Python quotes" in manual
+        self.assertFalse(pyprepro.pyprepro("{ text = 'inside \} quote' }") == 'inside } quote')
+ 
 class dakota_dprepro(unittest.TestCase):
     def test_dakota_param_names(self):
         """

@@ -10,7 +10,7 @@ import argparse
 import functools
 import random
 import pprint
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 import json
 import math
 import keyword
@@ -25,7 +25,7 @@ if pyv >= (3,):
     xrange = range
     unicode = str
     
-__version__ = "20230908.0"
+__version__ = "20250404.0"
 
 __all__ = ['pyprepro','Immutable','Mutable','ImmutableValDict','dprepro','convert_dakota']
 
@@ -250,9 +250,12 @@ def pyprepro(tpl,
             
     # perform the final evaluation. Note that we do *NOT* pass `**env` since that
     # would create a copy.
-    if hasattr(tpl,'read'):
+    filename = None
+    if hasattr(tpl,'read'): # Passed a file-like object
         tpl = tpl.read()
-    txtout = _template(tpl,syntax=syntax.copy(),env=env)     
+        filename = getattr(tpl,'filename',filename)
+        
+    txtout = _template(tpl,syntax=syntax.copy(),env=env,filename=filename)     
 
     if output:
         with open(output,'wt') as out:
@@ -286,7 +289,10 @@ def render(*args,**kwargs):
     # the code itself and not the user. The problem is, we want to permit writing
     # variables with names already defined (e.g. 'gamma'). Approach is documented
     for key,val in INIT_VARS.items():
-        if key in env and (env[key] == val or key.startswith('_')): # Value hasn't changed
+        if key not in env:
+            continue
+            
+        if (env[key] == val or key.startswith('_')): # Value hasn't changed
             del env[key]
             continue
             
@@ -554,6 +560,7 @@ def _mult_replace(text,*A,**replacements):
     for key,val in replacements.items():
         if invert:
             val,key = key,val
+            
         text = text.replace(key,val)
     return text
 
@@ -686,7 +693,7 @@ def _preparser(text,syntax):
     text = text.replace(u'\ufeff', '').replace(u'\ufffe','') # Remove BOM from windows
     text = text.replace('\r','') # Remove `^M` characters
     
-    # Parse inline specification
+    # Parse inline specification (e.g., # DPREPRO_CODE = "&") and remove ot
     otext = []
     text = iter(text.split('\n'))
     for line in text:
@@ -702,7 +709,7 @@ def _preparser(text,syntax):
             key,value = m.groups()
             syntax[key.lower()] = value                
     text = '\n'.join(otext)
-    
+
     syntax = _check_block_syntax(syntax)
     BLOCK_START, BLOCK_CLOSE = syntax['BLOCK_START'], syntax['BLOCK_CLOSE']
     LINE_START = syntax['LINE_START']
@@ -713,7 +720,7 @@ def _preparser(text,syntax):
     code_rep = defaultdict(lambda:_rnd_str(20))    # will return random string but store it
     _,text = _delim_capture(text,'{0} {1}'.format(BLOCK_START,BLOCK_CLOSE), # delim_capture does NOT want re.escape
                             lambda t:code_rep[t])
-        
+                            
     # Convert single line expression "% expr" and convert them to "{% expr %}" 
     search  =  "^([\t\f ]*)LINE_START(.*)".replace('LINE_START',re.escape(LINE_START))
     replace = r"\1{0} \2 {1}".format(BLOCK_START,BLOCK_CLOSE)
@@ -751,7 +758,16 @@ def _preparser(text,syntax):
     text = re.sub(r'\\\\{0}'.format(re.escape(INLINE_END)),
                   r'{0}_eINLINE_END{1}'.format(INLINE_START,INLINE_END),
                   text)
-                  
+    
+    # Now, use this opertunity to undo the escape of anything in the inline e.g. {val = "\}"}
+#     inline_rep1 = {}
+#     for key,val in inline_rep.items():
+#         for r in [BLOCK_START,BLOCK_CLOSE,LINE_START,INLINE_START,INLINE_END]:
+#             key = re.sub(r'(?<!\\)\\RR'.replace('RR',re.escape(r)),r,key)
+#         inline_rep1[key] = val
+#     inline_rep = inline_rep1
+    
+           
     # Sub back in the other removed inline expressions
     text = _mult_replace(text,inline_rep,_invert=True)       
     ###### /Bracket Escaping
@@ -761,14 +777,22 @@ def _preparser(text,syntax):
                             '{0} {1}'.format(INLINE_START,INLINE_END), # do not use re escaped
                             functools.partial(_inline_fix,syntax=syntax))
                 
-    
     # Re-add the code blocks with an inverted dict
-    return _mult_replace(text,code_rep,_invert=True)
+
+    text =  _mult_replace(text,code_rep,_invert=True)
+    return text
+    
 
 def _inline_fix(capture,syntax=None):
     """
     Replace the matched line in a ROBUST manner to allow multiple definitions
-    on each line
+    on each line. For example
+        IN : _inline_fix('{a = 1}',syntax=syntax)
+        OUT: '''
+             \\
+             {% a= 1 %}
+             { a }
+             ''' 
     """
     if syntax is None:
         # syntax is a kw to make partial easier
@@ -777,7 +801,7 @@ def _inline_fix(capture,syntax=None):
 
     INLINE_START,INLINE_END = syntax['INLINE_START'],syntax['INLINE_END']
     BLOCK_START,BLOCK_CLOSE = syntax['BLOCK_START'],syntax['BLOCK_CLOSE']
-    
+
     match = capture[len(INLINE_START):-len(INLINE_END)].strip() # Remove open and close brackets
     
     if not match.strip():
@@ -848,15 +872,40 @@ def _inline_fix(capture,syntax=None):
     var = _fix_varnames(var)
     
     # Set the value
-    return ''.join([r'\\','\n', 
+    res = ''.join([r'\\','\n', 
                     BLOCK_START,' ',var,operator,val,' ',BLOCK_CLOSE,'\n', 
                     INLINE_START,' ',var.strip(),' ',INLINE_END])
 
+    return res
+class _re_sub_match0_fun:
+    """wrapper sub arg of re.sub so that it sends the match.group(0) rather than match"""
+    def __init__(self,sub):
+        self.sub = sub
+    def __call__(self,match):
+        if callable(self.sub):
+            return self.sub(match.group(0))
+        return self.sub
 
-def _delim_capture(txt,delim,sub=None):
+def _delim_capture(text,delim,sub=None):
+    # Set up the regexes and the output
+    OPEN,CLOSE = delim.split()
+    pattern = r'(?<!\\)OPEN(.*?)(?<!\\)CLOSE' \
+        .replace('OPEN',re.escape(OPEN)) \
+        .replace('CLOSE',re.escape(CLOSE))
+    
+    repat = re.compile(pattern,flags=re.DOTALL|re.U)
+    
+    matches = repat.findall(text)
+    if sub:
+        text = repat.sub(_re_sub_match0_fun(sub),text)
+        
+    return matches, text
+
+
+def _0delim_capture(txt,delim,sub=None):
     '''
-    Combination of regex and some hacking to LAZY capture text between 
-    the delims *while* accounting for quotes. 
+    Combination of regex and some hacking to LAZY (i.e. first occurance) capture text 
+    between the delims *while* accounting for quotes. 
     
     Returns the captured group INCLUDING the delimiters
     
@@ -1165,6 +1214,16 @@ def convert_dakota(input_file):
     # Use pyprepro's _touni since it is more robust to windows encoding
     with open(input_file,'rb') as F:
         lines = _touni(F.read()).strip().split('\n') 
+    
+    # See if it is a JSON format and use that. Otherwise, go to the other readers
+    try:
+        env = json.loads('\n'.join(lines))
+        for item in env['variables']:
+            env[item['label']] = item['value']
+        
+        return env
+    except ValueError: # or json.JSONDecodeError  in 3+
+        pass
         
     for n,line in enumerate(lines):
         line = line.strip()
@@ -1387,6 +1446,7 @@ def dprepro(include=None, template=None, output=None, fmt='%0.10g', code='%',
 # * Ability to return the environment
 # * Adjusted scope so that if a variable is parsed in an include, it is present
 #   in the parent. (the env object is passed in and NEVER copied)
+# * Removed "lookup" and hardcoded that logic
 # 
 # Minor:
 # 
@@ -1476,16 +1536,15 @@ class _BaseTemplate(object):
     def __init__(self,
                  syntax=None,
                  source=None,
+                 filename=None,
+                 top_filename=None,
+                 parent=None,
                  name=None,
-                 lookup=None,
                  encoding='utf8', **settings):
         """ Create a new _template.
         If the source parameter (str or buffer) is missing, the name argument
         is used to guess a _template filename. Subclasses can assume that
         self.source and/or self.filename are set. Both are strings.
-        The lookup, encoding and settings parameters are stored as instance
-        variables.
-        The lookup parameter stores a list containing directory paths.
         The encoding parameter should be used to decode byte strings or files.
         The settings parameter contains a dict for engine-specific settings.
         """
@@ -1494,45 +1553,50 @@ class _BaseTemplate(object):
             
         self.syntax = syntax
         self.name = name
+        
+        self.top_filename = top_filename
+        self.parent = parent
+        
         if hasattr(source, 'read'):
             self.source = _preparser(source.read(),self.syntax)
         else:
             self.source = source
-        self.filename = source.filename if hasattr(source, 'filename') else None
-        self.lookup = [os.path.abspath(x) for x in lookup] if lookup else []
+        self.filename = filename or getattr(source, 'filename',None)
+        
         self.encoding = encoding
         self.settings = self.settings.copy()  # Copy from class variable
         self.settings.update(settings)  # Apply
         if not self.source and self.name:
-            self.filename = self.search(self.name, self.lookup)
-            if not self.filename:
-                raise TemplateError('Template %s not found.' % repr(name))
+            self.filename = self.search(self.name)
         if not self.source and not self.filename:
             raise TemplateError('No _template specified.')
         self.prepare(syntax=self.syntax,**self.settings)
 
-    @classmethod
-    def search(cls, name, lookup=None):
-        """ Search name in all directories specified in lookup.
-        First without, then with common extensions. Return first hit. """
-        #if not lookup:
-        #    raise depr(0, 12, "Empty _template lookup path.", "Configure a _template lookup path.")
-        #if os.path.isabs(name):
-        #    raise depr(0, 12, "Use of absolute path for _template name.",
-        #               "Refer to _templates with names or paths relative to the lookup path.")
         
-        # JW: Search full system name first:
-        if os.path.isfile(name):
-            return os.path.abspath(name)
+
+    def search(self, name):
+        """ 
+        Search name in the following directories:
+            The directory of template calling `include()`
+            The directory of the top-level template file
+            The current working directory
+        """         
+        lookups = []
+        if self.parent:
+            lookups.append(os.path.dirname(self.parent))
+        if self.top_filename:
+            lookups.append(os.path.dirname(self.top_filename))
+        lookups.append(os.getcwd())
         
-        for spath in lookup:
-            spath = os.path.abspath(spath) + os.sep
-            fname = os.path.abspath(os.path.join(spath, name))
-            if not fname.startswith(spath): continue
-            if os.path.isfile(fname): return fname
-            for ext in cls.extensions:
-                if os.path.isfile('%s.%s' % (fname, ext)):
-                    return '%s.%s' % (fname, ext)
+        lookups = (os.path.abspath(lookup) for lookup in lookups)
+        lookups = list(OrderedDict(((k,None) for k in lookups))) # unique but keep order
+        
+        for lookup in lookups:
+            new = os.path.join(lookup,name)
+            if os.path.isfile(new):
+                return new
+        
+        raise TemplateError('Template %s not found. Searched: %s' % (repr(name),', '.join(repr(l) for l in lookups)))
 
     @classmethod
     def global_config(cls, key, *args):
@@ -1564,7 +1628,8 @@ class _SimpleTemplate(_BaseTemplate):
     def prepare(self,
                 escape_func=lambda a:a,
                 noescape=True,
-                syntax=None, **ka):
+                syntax=None, 
+                **ka):
         self.cache = {}
         enc = self.encoding
         self._str = _formatter
@@ -1600,13 +1665,24 @@ class _SimpleTemplate(_BaseTemplate):
     def _include(self, _env, _name=None, **kwargs):
         env = _env # Use the same namespace/environment rather than a copy
         env.update(kwargs)
+        dunders = {
+            '__file__':env.get('__file__',None),
+            '__dir__':env.get('__dir__',None),
+        }
+
         if _name not in self.cache:
-            self.cache[_name] = self.__class__(name=_name, lookup=self.lookup, syntax=self.syntax)
+            self.cache[_name] = self.__class__(
+                name=_name, 
+                syntax=self.syntax,
+                top_filename=self.top_filename,
+                parent=self.filename,
+            )
         
         r = self.cache[_name].execute(env['_stdout'], env)
         
         r.includesentinel = True # This is to make sure the return of include
                                  # is not trying to be displayed
+        env.update(dunders)
         return r
 
     def execute(self, _stdout, kwargs):
@@ -1651,6 +1727,12 @@ class _SimpleTemplate(_BaseTemplate):
             'json_dumps':lambda **k: _json_dumps(env,**k),
         })
         
+        if self.filename:
+            env['__file__'] = os.path.abspath(self.filename)
+            env['__dir__'] = os.path.dirname(env['__file__'])
+        else:
+            env['__file__'] = env['__dir__'] = None
+        
         # String literals of escape characters
         env.update({
             '_BLOCK_START' : self.syntax['BLOCK_START'],
@@ -1661,7 +1743,6 @@ class _SimpleTemplate(_BaseTemplate):
             '_INLINE_END'  : self.syntax['INLINE_END'],
             '_eINLINE_END':'\\' + self.syntax['INLINE_END'],
             })
-
         exec_(self.co,env)
         
         if env.get('_rebase'):
@@ -1673,7 +1754,8 @@ class _SimpleTemplate(_BaseTemplate):
 
     def render(self,env=None):
         """ Render the _template using keyword arguments as local variables. """
-        if env is None:
+        # Explcitly check for None, not False since an empyt env could be passed
+        if env is None: 
             env = ImmutableValDict()
         stdout = []
         env = self.execute(stdout, env)
@@ -1881,7 +1963,7 @@ class _StplParser(object):
         self.code_buffer.append(code)
 
 
-def _template(tpl, syntax=None, env=None, return_env=False):
+def _template(tpl, syntax=None, env=None, filename=None,return_env=False):
     """
     Get a rendered _template as a string iterator.
     You can use a name, a filename or a _template string as first parameter.
@@ -1901,27 +1983,30 @@ def _template(tpl, syntax=None, env=None, return_env=False):
     
         # Try to determine if it is a file or a template string
         
-        isfile = False
-        try:
-            if os.path.exists(tpl):
-                isfile = True
-        except:pass # Catch any kind of error
-    
+        isfile = os.path.exists(tpl)
+        
         if not isfile:  # template string
-            lookup = ['./'] # Just have the lookup be in this path
             tpl = _preparser(tpl,syntax) # Modifies syntax in place
-            tpl_obj = _SimpleTemplate(source=tpl, lookup=lookup, syntax=syntax, **settings)
-        else: # template file
-            # set the lookup. It goes in order so first check directory
-            # of the original template and then the current.
-            lookup = [os.path.dirname(tpl) + '/.','./']
-            tpl_obj = _SimpleTemplate(name=tpl, lookup=lookup, syntax=syntax, **settings)
-
+        else:
+            filename = filename or tpl
+            with open(tpl,'rb') as fp:
+                tpl = _touni(fp.read()) # more robust to Windows encodings
+            
+        filename = filename or None
+        if filename:
+            filename = os.path.abspath(filename)
+        tpl_obj = _SimpleTemplate(
+            source=tpl,
+            syntax=syntax, 
+            filename=filename,
+            top_filename=filename, # Set the first time. Includes will keep this
+            **settings
+        )
+        
         # Added the option to return the environment, but this is really not needed
         # if env is set.
     
         rendered,env =  tpl_obj.render(env)
-    
         if not return_env:
             return rendered
         return rendered,env

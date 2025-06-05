@@ -120,6 +120,21 @@ returns
 
 Note that escaping the trailing delimiter (e.g. `\}`) is optional.
 
+### Edge Case: Delimiters inside Python quotes
+
+There is a further edge case for inline text. For example, the following will cause issues:
+
+    {A="}"}
+
+However, when you escape the bracket, it also fails to replace that.
+
+    {A="\}"}
+
+results in `\}` which is not desired. While this is not a common use case but if it comes up, the following is a workaround
+
+    % A = "}"
+    {A}
+
 ## Whitespace Control
 
 Expressions span the entire line which can possibly introduce undesired white space. Ending a line with `\\` will prevent the additional space. Consider the following:
@@ -453,7 +468,14 @@ Using
 
 Will insert the contents of `'path/to/include.txt'`. Inside `'path/to/include.txt'`, there can be new variable definitions and/or it can access older ones. Note that unlike the command-line `--include`, there is *no (im)mutability assigned* for these unless explicit for each parameter!
 
-The code will search for the include text first in the path of the original template file and then in the path where `pyprepro` is executed.
+When using an include statment inside of a template, the specified include path is "joined" with the following root paths in the following order to find the matching include file. The specified path can include a subdirectory or `../`. Note that it is very possible for these all to be the same.
+
+1. The directory of template calling `include()`
+2. The directory of the top-level template file
+3. The current working directory.
+
+Note that while it is generally best practices to use relative paths, if an absolute path is specified, that will implicitly ignore any of the above and just look there.
+
 
 ## Immutable and Mutable
 
