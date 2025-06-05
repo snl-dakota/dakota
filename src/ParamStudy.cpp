@@ -26,8 +26,8 @@ static const char rcsId[]="@(#) $Id: ParamStudy.cpp 7024 2010-10-16 01:24:42Z ms
 
 namespace Dakota {
 
-ParamStudy::ParamStudy(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  PStudyDACE(problem_db, model)
+ParamStudy::ParamStudy(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  PStudyDACE(problem_db, parallel_lib, model)
 {
   // use allVariables instead of default allSamples
   compactMode = false;

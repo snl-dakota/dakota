@@ -43,6 +43,52 @@ Iterator  dummy_iterator;  ///< dummy Iterator object used for mandatory
 // Initialization of static model ID counters
 size_t Model::noSpecIdNum = 0;
 
+std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib) {
+  // Check for a cached Model
+  ProblemDescDB* const study_ptr = problem_db.get_rep().get();
+  auto& study_cache = Model::modelCache[study_ptr];
+
+  // A model specification identifies its variables, interface, and responses.
+  // Have to worry about loss of encapsulation and use of context _above_ this
+  // specification, i.e., any dependence on an iterator specification
+  // (dependence on the environment spec is OK since there is only one).
+  // > method.output
+  // > Constraints: variables view
+
+  // The DB list nodes are set prior to calling get_model():
+  // >    model_ptr spec -> id_model must be defined
+  // > no model_ptr spec -> id_model is ignored, model spec is last parsed
+  auto id_model = problem_db.model_id();
+  if(id_model.empty()) {
+    id_model = "NO_MODEL_ID";
+  }
+  auto m_it
+    = std::find_if(study_cache.begin(), study_cache.end(),
+                   [&id_model](std::shared_ptr<Model> m) {return m->model_id() == id_model;});
+  if (m_it == study_cache.end()) {
+    study_cache.push_back(ModelUtils::get_model(problem_db, parallel_lib));
+    m_it = --study_cache.end();
+  }
+  return *m_it;
+}
+
+std::list<std::shared_ptr<Model>>& Model::model_cache(ProblemDescDB& problem_db) {
+  const ProblemDescDB* const study_ptr = problem_db.get_rep().get();
+  try {
+    return Model::modelCache.at(study_ptr);
+  } catch(std::out_of_range) {
+    Cerr << "Model::model_cache() called with nonexistent study!\n";
+    throw;
+  }
+}
+
+void Model::remove_cached_model(const ProblemDescDB& problem_db) {
+  const ProblemDescDB* const study_ptr = problem_db.get_rep().get();
+  Model::modelCache.erase(study_ptr);
+}
+
+std::map<const ProblemDescDB*, std::list<std::shared_ptr<Model>>> Model::modelCache{};
+
 
 /** This constructor builds the base class data for all inherited
     models.  get_model() instantiates a derived class and the derived
@@ -50,11 +96,12 @@ size_t Model::noSpecIdNum = 0;
     list (to avoid the recursion of the base class constructor calling
     get_model() again).  Since the letter IS the representation, its
     representation pointer is set to NULL. */
-Model::Model(ProblemDescDB& problem_db):
-  currentVariables(problem_db.get_variables()),
+Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
+  currentVariables(Variables::get_variables(problem_db)),
   numDerivVars(currentVariables.cv()),
   currentResponse(
-    problem_db.get_response(SIMULATION_RESPONSE, currentVariables)),
+    Response::get_response(problem_db, SIMULATION_RESPONSE, currentVariables)
+  ),
   numFns(currentResponse.num_functions()),
   userDefinedConstraints(problem_db, currentVariables.shared_data()),
   evaluationsDB(evaluation_store_db),
@@ -76,7 +123,7 @@ Model::Model(ProblemDescDB& problem_db):
   hessIdNumerical(problem_db.get_is("responses.hessians.mixed.id_numerical")),
   hessIdQuasi(problem_db.get_is("responses.hessians.mixed.id_quasi")),
   warmStartFlag(false), supportsEstimDerivs(true), mappingInitialized(false),
-  probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
+  probDescDB(problem_db), parallelLib(parallel_lib),
   modelPCIter(parallelLib.parallel_configuration_iterator()),
   componentParallelMode(NO_PARALLEL_MODE), asynchEvalFlag(false),
   evaluationCapacity(1), 
@@ -255,9 +302,7 @@ Model(const ShortShortPair& vars_view,
 /** This constructor also builds the base class data for inherited models.
     However, it is used for derived models which are instantiated on the fly.
     Therefore it only initializes a small subset of attributes. */
-Model::
-Model(ProblemDescDB& problem_db,
-      ParallelLibrary& parallel_lib):
+Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, Model::ModelCtor dummy):
   warmStartFlag(false), supportsEstimDerivs(true), mappingInitialized(false),
   probDescDB(problem_db), parallelLib(parallel_lib),
   evaluationsDB(evaluation_store_db),

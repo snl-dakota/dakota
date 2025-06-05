@@ -30,7 +30,7 @@ public:
   //- Heading: Constructor and destructor
   //
 
-  SysCallApplicInterface(const ProblemDescDB& problem_db); ///< constructor
+  SysCallApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib); ///< constructor
   ~SysCallApplicInterface() override;                               ///< destructor
 
 protected:

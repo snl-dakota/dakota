@@ -77,7 +77,7 @@ public:
   //- Heading: Constructor and destructor
   //
 
-  DirectApplicInterface(const ProblemDescDB& problem_db); ///< constructor
+  DirectApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib); ///< constructor
   ~DirectApplicInterface() override;                               ///< destructor
 
   //

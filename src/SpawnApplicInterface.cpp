@@ -20,6 +20,16 @@
 
 namespace Dakota {
 
+
+SpawnApplicInterface::
+SpawnApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
+	ProcessHandleApplicInterface(problem_db, parallel_lib)
+{ }
+
+
+SpawnApplicInterface::~SpawnApplicInterface() 
+{ }
+
  static HANDLE*
 wait_setup(std::map<pid_t, int> *M, size_t *pn)
 {

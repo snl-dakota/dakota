@@ -25,8 +25,8 @@ namespace Dakota {
 
 
 SurrBasedGlobalMinimizer::
-SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  SurrBasedMinimizer(problem_db, model, std::shared_ptr<TraitsBase>(new SurrBasedGlobalTraits())),
+SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  SurrBasedMinimizer(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new SurrBasedGlobalTraits())),
   replacePoints(probDescDB.get_bool("method.sbg.replace_points"))
 {
   // Verify that iteratedModel is a surrogate model so that
@@ -65,8 +65,8 @@ SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model
     size_t method_index = probDescDB.get_db_method_node(); // for restoration
     probDescDB.set_db_method_node(approx_method_ptr); // method only
     // sub-problem minimizer will use shallow copy of iteratedModel
-    // (from problem_db.get_model())
-    approxSubProbMinimizer = probDescDB.get_iterator();//(iteratedModel);
+    // (from Model::get_model(problem_db)
+    approxSubProbMinimizer = Iterator::get_iterator(probDescDB, parallelLib);//(iteratedModel);
     // suppress DB ctor default and don't output summary info
     approxSubProbMinimizer->summary_output(false);
     // verify approx method's modelPointer is empty or consistent
@@ -80,7 +80,7 @@ SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model
   else if (!approx_method_name.empty())
     // Approach 2: instantiate on-the-fly w/o method spec support
     approxSubProbMinimizer
-      = probDescDB.get_iterator(approx_method_name, iteratedModel);
+      = Iterator::get_iterator(approx_method_name, iteratedModel);
 }
 
 

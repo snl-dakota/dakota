@@ -98,7 +98,7 @@ void rol_quad_solv()
   if (env.parallel_library().mpirun_flag())
     FAIL(); // This test only works for serial builds
 
-  Dakota::Model & model = **(env.problem_description_db().model_list().begin());
+  Dakota::Model & model = **(Dakota::Model::model_cache(env.problem_description_db()).begin());
 
   // ROL stuff from here down ...
 

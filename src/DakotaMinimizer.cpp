@@ -40,9 +40,9 @@ Minimizer* Minimizer::minimizerInstance(NULL);
 /** This constructor extracts inherited data for the optimizer and least
     squares branches and performs sanity checking on constraint settings. */
 Minimizer::
-Minimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model,
+Minimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model,
 	  std::shared_ptr<TraitsBase> traits): 
-  Iterator(problem_db, traits),
+  Iterator(problem_db, parallel_lib, traits),
   constraintTol(probDescDB.get_real("method.constraint_tolerance")),
   bigRealBoundSize(BIG_REAL_BOUND), bigIntBoundSize(1000000000),
   boundConstraintFlag(false),

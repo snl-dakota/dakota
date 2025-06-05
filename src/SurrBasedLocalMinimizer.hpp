@@ -33,7 +33,7 @@ public:
   //
 
   /// constructor
-  SurrBasedLocalMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model,
+  SurrBasedLocalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model,
 			  std::shared_ptr<TraitsBase> traits);
   /// alternate constructor for instantiations "on the fly"
   SurrBasedLocalMinimizer(std::shared_ptr<Model> model, short merit_fn, short accept_logic,

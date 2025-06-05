@@ -28,8 +28,8 @@ namespace Dakota {
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDWASABIBayesCalibration::
-NonDWASABIBayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDBayesCalibration(problem_db, model),
+NonDWASABIBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDBayesCalibration(problem_db, parallel_lib, model),
   numPushforwardSamples(probDescDB.get_int("method.nond.pushforward_samples")),
   dataDistMeans(probDescDB.get_rv("method.nond.data_dist_means")),
   dataDistCovariance(probDescDB.get_rv("method.nond.data_dist_covariance")),

@@ -26,7 +26,8 @@ public:
 
   /// constructor, accepting name of ROL problem to construct
   RolTestInterface(const std::string& problem_name,
-		     const Dakota::ProblemDescDB& problem_db);
+		              const Dakota::ProblemDescDB& problem_db,
+                  Dakota::ParallelLibrary& parallel_lib);
 
   ~RolTestInterface() override {  /* empty dtor */  }
 
@@ -73,8 +74,9 @@ protected:
 
 RolTestInterface::
 RolTestInterface(const std::string& problem_name,
-		   const Dakota::ProblemDescDB& problem_db):
-  Dakota::DirectApplicInterface(problem_db)
+		             const Dakota::ProblemDescDB& problem_db,
+                 Dakota::ParallelLibrary& parallel_lib):
+  Dakota::DirectApplicInterface(problem_db, parallel_lib)
 {
   numAnalysisServers = 1;
 

@@ -28,8 +28,8 @@ namespace Dakota {
 
 // Main Class: OptDartsOptimizer
 
-OptDartsOptimizer::OptDartsOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new OptDartsTraits()))
+OptDartsOptimizer::OptDartsOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  Optimizer(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new OptDartsTraits()))
 {     
      // load_parameters
      this->load_parameters(*model);

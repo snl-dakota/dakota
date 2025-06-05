@@ -30,7 +30,7 @@ public:
   //- Heading: Constructors and destructor
   //
 
-  NonDLHSInterval(ProblemDescDB& problem_db, std::shared_ptr<Model> model); ///< constructor
+  NonDLHSInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model); ///< constructor
   ~NonDLHSInterval() override;                                       ///< destructor
 
   //

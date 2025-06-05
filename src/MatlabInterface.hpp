@@ -34,7 +34,7 @@ class MatlabInterface: public DirectApplicInterface
 public:
 
   /// Constructor: start Matlab engine
-  MatlabInterface(const ProblemDescDB& problem_db);
+  MatlabInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
 
   /// Destructor: close Matlab engine
   ~MatlabInterface();

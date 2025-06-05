@@ -11,6 +11,7 @@
 #define DAKOTA_PROGRAM_OPTIONS_H
 
 #include "dakota_data_io.hpp"
+#include "UserModes.hpp"
 
 // ProgramOptions is currently default constructible and we pass it by
 // value to the Environment constructors.  If it becomes larger or more 
@@ -53,6 +54,8 @@ public:
   const String& input_file() const;
   /// alternate Dakota input string literal; also set when input is read from stdin
   const String& input_string() const;
+  /// is input from stdin?
+  bool stdin_input() const;
   /// is input echo specified?
   bool echo_input() const;
 
@@ -86,32 +89,9 @@ public:
   bool version() const;
   /// is check mode active?
   bool check() const;
-  /// is pre-run mode active?
-  bool pre_run() const;
-  /// is run mode active?
-  bool run() const;
-  /// is post-run mode active?
-  bool post_run() const;
-  /// are any non-default, user-specified run modes active?
-  bool user_modes() const;
 
-  /// filename for pre-run input
-  const String& pre_run_input() const;
-  /// filename for pre-run output
-  const String& pre_run_output() const;
-  /// filename for run input
-  const String& run_input() const;
-  /// filename for run output
-  const String& run_output() const;
-  /// filename for post-run input
-  const String& post_run_input() const;
-  /// filename for post-run output
-  const String& post_run_output() const;
-
-  /// tabular format for pre-run output
-  unsigned int pre_run_output_format() const;
-  /// tabular format for post-run input
-  unsigned int post_run_input_format() const;
+  /// UserModes object
+  const UserModes& user_modes() const;
 
   /// whether steps beyond help/version are requested (instantiation required)
   bool proceed_to_instantiate() const;
@@ -226,6 +206,8 @@ private:
   /// alternate input means for library clients: input string
   /// (mutually exclusive with input file)
   String inputString;
+  /// @brief true when user indicated input from stdin (inputFile == "-)
+  bool stdinInput;
   bool echoInput;         ///< whether to echo client's input file at parse 
 
   bool preprocInput;      ///< whether to pre-process input with pyprepro/etc.
@@ -248,22 +230,9 @@ private:
   bool helpFlag;        ///< whether to print help message and exit
   bool versionFlag;     ///< whether to print version message and exit
   bool checkFlag;       ///< flags invocation with command line option -check
-  bool preRunFlag;      ///< flags invocation with command line option -pre_run
-  bool runFlag;         ///< flags invocation with command line option -run
-  bool postRunFlag;     ///< flags invocation with command line option -post_run
-  bool userModesFlag;   ///< whether any user run modes are active
 
-  // pre/run/post I/O filenames; intially only valid on rank 0.
-  String preRunInput;   ///< filename for pre_run input
-  String preRunOutput;  ///< filename for pre_run output
-  String runInput;      ///< filename for run input
-  String runOutput;     ///< filename for run output
-  String postRunInput;  ///< filename for post_run input
-  String postRunOutput; ///< filename for post_run output
-
-  unsigned short preRunOutputFormat;  ///< tabular format for pre_run output
-  unsigned short postRunInputFormat;  ///< tabular format for post_run input
-
+  // Prerun, run, and postrun settings
+  UserModes userModes{};
 };  // class ProgramOptions
 
 

@@ -33,8 +33,8 @@ namespace Dakota {
 NonDGlobalInterval* NonDGlobalInterval::nondGIInstance(NULL);
 
 
-NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDInterval(problem_db, model),
+NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDInterval(problem_db, parallel_lib, model),
   seedSpec(probDescDB.get_int("method.random_seed")),
   numSamples(probDescDB.get_int("method.samples")),
   rngName(probDescDB.get_string("method.random_number_generator")),

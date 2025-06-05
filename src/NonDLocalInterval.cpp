@@ -28,8 +28,8 @@ namespace Dakota {
 NonDLocalInterval* NonDLocalInterval::nondLIInstance(NULL);
 
 
-NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDInterval(problem_db, model), npsolFlag(false)
+NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDInterval(problem_db, parallel_lib, model), npsolFlag(false)
 {
   bool err_flag = false;
 

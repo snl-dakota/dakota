@@ -37,7 +37,7 @@ protected:
   //
 
   /// constructor
-  SurrogateModel(ProblemDescDB& problem_db);
+  SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
   /// alternate constructor
   SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 		 const ShortShortPair& surr_view,

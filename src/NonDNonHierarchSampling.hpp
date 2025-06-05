@@ -35,7 +35,7 @@ public:
   //
 
   /// standard constructor
-  NonDNonHierarchSampling(ProblemDescDB& problem_db,
+  NonDNonHierarchSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
 			  std::shared_ptr<Model> model);
   /// destructor
   ~NonDNonHierarchSampling() override;

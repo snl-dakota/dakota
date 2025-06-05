@@ -38,8 +38,8 @@ struct SPrintArgs
 /** This constructor is called for a standard letter-envelope iterator
     instantiation using the ProblemDescDB. */
 NonDC3FunctionTrain::
-NonDC3FunctionTrain(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDExpansion(problem_db, model),
+NonDC3FunctionTrain(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDExpansion(problem_db, parallel_lib, model),
   importBuildPointsFile(
     problem_db.get_string("method.import_build_points_file")),
   startRankSpec(
@@ -121,8 +121,8 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
 /** This constructor is called by derived class constructors. */
 NonDC3FunctionTrain::
 NonDC3FunctionTrain(unsigned short method_name, ProblemDescDB& problem_db,
-		    std::shared_ptr<Model> model):
-  NonDExpansion(problem_db, model),
+		    ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDExpansion(problem_db, parallel_lib, model),
   importBuildPointsFile(
     problem_db.get_string("method.import_build_points_file")),
   startRankSpec(

@@ -24,8 +24,8 @@ namespace Dakota {
 
 /** This constructor is called for a standard iterator built with data from
     probDescDB. */
-FSUDesignCompExp::FSUDesignCompExp(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  PStudyDACE(problem_db, model),
+FSUDesignCompExp::FSUDesignCompExp(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  PStudyDACE(problem_db, parallel_lib, model),
   samplesSpec(probDescDB.get_int("method.samples")), numSamples(samplesSpec),
   allDataFlag(false), numDACERuns(0),
   latinizeFlag(probDescDB.get_bool("method.latinize"))

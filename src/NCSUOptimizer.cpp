@@ -45,8 +45,8 @@ NCSUOptimizer* NCSUOptimizer::ncsudirectInstance(NULL);
 
 
 /** This is the standard constructor with method specification support. */ 
-NCSUOptimizer::NCSUOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new NCSUTraits())),
+NCSUOptimizer::NCSUOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  Optimizer(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new NCSUTraits())),
   setUpType(SETUP_MODEL),
   minBoxSize(probDescDB.get_real("method.min_boxsize_limit")), 
   volBoxSize(probDescDB.get_real("method.volume_boxsize_limit")),

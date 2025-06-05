@@ -12,6 +12,7 @@
 
 #include "dakota_data_types.hpp"
 #include "DakotaModel.hpp"
+#include "DataMethod.hpp"
 #include "ResultsManager.hpp"
 #include "DakotaTraitsBase.hpp"
 #include <memory>
@@ -19,6 +20,7 @@
 
 namespace Dakota {
 
+class ParallelLib;
 class ProblemDescDB;
 class Variables;
 class Response;
@@ -27,13 +29,9 @@ class EvaluationStore;
 /// Base class for the iterator class hierarchy.
 
 /** The Iterator class is the base class for one of the primary class
-    hierarchies in DAKOTA.  The iterator hierarchy contains all of the
+    hierarchies in Dakota.  The iterator hierarchy contains all of the
     iterative algorithms which use repeated execution of simulations
-    as function evaluations.  For memory efficiency and enhanced
-    polymorphism, the iterator hierarchy employs the "letter/envelope
-    idiom" (see Coplien "Advanced C++", p. 133), for which the base
-    class (Iterator) serves as the envelope and one of the derived
-    classes (selected in Iterator::get_iterator()) serves as the letter. */
+    as function evaluations. **/
 
 class Iterator
 {
@@ -45,6 +43,48 @@ public:
   static unsigned short method_string_to_enum(const String& method_str);
   /// convert a sub-method name enumeration value to a string
   static String submethod_enum_to_string(unsigned short submethod_enum);
+
+  // Functions and variables for getting (cached) Iterators for a study (ProblemDescDB instance)
+
+  /// @brief retrieve existing Iterator if it exists or instantiate a new one
+  /// @param problem_db Instantiate from this database
+  /// @param parallel_lib Parallel library to use
+  /// @return Pointer to the cached or new Iterator
+  static std::shared_ptr<Iterator> get_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
+
+    
+  /// @brief retrieve existing Iterator if it exists or instantiate a new one
+  /// @param problem_db Instantiate from this database
+  /// @param model If Iterator is instantiated, construct using this model
+  /// @return Pointer to the cached or new Iterator
+  static std::shared_ptr<Iterator> get_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model);
+
+  /// @brief retrieve existing Iterator (that matches name and model) if it exists or instantiate a new one
+  /// @param method_name Name (i.e. type) of the method
+  /// @param model Cached Iterator must use this model; also, if Iterator is instantiated, construct using this model
+  /// @return Pointer to the cached or new Iterator
+  static std::shared_ptr<Iterator> get_iterator( 
+    const String& method_name, std::shared_ptr<Model> model);
+
+
+  /// @brief Return a reference to the instantiated Iterators for a study
+  /// @param problem_db 
+  /// @return Instantiated iterators
+  static std::list<std::shared_ptr<Iterator>>& iterator_cache(ProblemDescDB& problem_db);
+
+  /// @brief Remove cached Iterators associated with the study
+  /// @param problem_db Study "key"
+  static void remove_cached_iterator(const ProblemDescDB& problem_db);
+
+private:
+  /// @brief Cache of Iterators, mapped to study database
+  static std::map<const ProblemDescDB*, std::list<std::shared_ptr<Iterator>>> iteratorCache;
+  /// @brief Cache of Iterators
+  // It's not necessary to map from a ProblemDescDB* because the model, which is study-specific, is
+  // used as a key
+  static std::list<std::shared_ptr<Iterator>> iteratorByNameCache;
+
+public:
 
   //
   //- Heading: Constructors, destructor, assignment operator
@@ -381,7 +421,7 @@ protected:
   /// constructor initializes the base class part of letter classes
   /// (BaseConstructor overloading avoids infinite recursion in the
   /// derived class constructors - Coplien, p. 139)
-  Iterator(ProblemDescDB& problem_db,
+  Iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
 	   std::shared_ptr<TraitsBase> traits =
 	   std::shared_ptr<TraitsBase>(new TraitsBase()));
 

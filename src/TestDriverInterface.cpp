@@ -42,8 +42,8 @@ int salinas_main(int argc, char *argv[], MPI_Comm* comm);
 #endif // DAKOTA_SALINAS
 
 
-TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db)
-  : DirectApplicInterface(problem_db)
+TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib)
+  : DirectApplicInterface(problem_db, parallel_lib)
 {
   // register this class' analysis driver types with the string to enum map
   // at the base class

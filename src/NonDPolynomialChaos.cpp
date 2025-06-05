@@ -32,8 +32,8 @@ namespace Dakota {
 /** This constructor is called for a standard letter-envelope iterator
     instantiation using the ProblemDescDB. */
 NonDPolynomialChaos::
-NonDPolynomialChaos(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDExpansion(problem_db, model),
+NonDPolynomialChaos(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDExpansion(problem_db, parallel_lib, model),
   crossValidation(problem_db.get_bool("method.nond.cross_validation")),
   crossValidNoiseOnly(
     problem_db.get_bool("method.nond.cross_validation.noise_only")),
@@ -366,8 +366,8 @@ NonDPolynomialChaos(std::shared_ptr<Model> model, const String& exp_import_file,
     customize the object construction. */
 NonDPolynomialChaos::
 NonDPolynomialChaos(unsigned short method_name, ProblemDescDB& problem_db,
-		    std::shared_ptr<Model> model):
-  NonDExpansion(problem_db, model),
+		    ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDExpansion(problem_db, parallel_lib, model),
   crossValidation(problem_db.get_bool("method.nond.cross_validation")),
   crossValidNoiseOnly(
     problem_db.get_bool("method.nond.cross_validation.noise_only")),

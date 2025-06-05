@@ -17,6 +17,7 @@ namespace Dakota {
 
 /// forward declarations
 class NonDPolynomialChaos;
+class ParallelLibrary;
 class ProblemDescDB;
 
 
@@ -33,7 +34,7 @@ public:
   //
 
   /// Problem database constructor
-  AdaptedBasisModel(ProblemDescDB& problem_db);
+  AdaptedBasisModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
 
 protected:
 
@@ -55,7 +56,7 @@ protected:
   // ---
 
   /// retrieve the sub-Model from the DB to pass up the constructor chain
-  std::shared_ptr<Model> get_sub_model(ProblemDescDB& problem_db);
+  std::shared_ptr<Model> get_sub_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
 
   // ---
   // Subspace identification functions: rank-revealing build phase

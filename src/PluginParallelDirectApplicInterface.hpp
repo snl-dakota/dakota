@@ -37,7 +37,7 @@ public:
   //
 
   /// constructor
-  ParallelDirectApplicInterface(const Dakota::ProblemDescDB& problem_db,
+  ParallelDirectApplicInterface(const Dakota::ProblemDescDB& problem_db, Dakota::ParallelLibrary& parallel_lib,
 				const MPI_Comm& analysis_comm);
   /// destructor
   ~ParallelDirectApplicInterface() override;

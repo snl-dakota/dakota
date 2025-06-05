@@ -25,8 +25,8 @@ namespace Dakota {
 
 
 HierarchSurrBasedLocalMinimizer::
-HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  SurrBasedLocalMinimizer(problem_db, model,
+HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  SurrBasedLocalMinimizer(problem_db, parallel_lib, model,
     std::shared_ptr<TraitsBase>(new HierarchSurrBasedLocalTraits())),
   minimizeIndex(0), nestedTrustRegions(true), multiLev(false)
 {

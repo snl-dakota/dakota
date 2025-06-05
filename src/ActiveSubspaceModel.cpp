@@ -13,6 +13,7 @@
 #include "BootstrapSampler.hpp"
 #include "dakota_linear_algebra.hpp"
 #include "ParallelLibrary.hpp"
+#include "ProblemDescDB.hpp"
 #include "DataFitSurrModel.hpp"
 #include "MarginalsCorrDistribution.hpp"
 #include "dakota_mersenne_twister.hpp"
@@ -26,8 +27,8 @@ ActiveSubspaceModel* ActiveSubspaceModel::asmInstance(NULL);
 // the modularity yet, but a lot of the build controls better belong
 // in a helper iterator specification.
 
-ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db):
-  SubspaceModel(problem_db, get_sub_model(problem_db)),
+ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
+  SubspaceModel(problem_db, parallel_lib, get_sub_model(problem_db, parallel_lib)),
   initialSamples(problem_db.get_int("model.initial_samples")),
   subspaceIdBingLi(
     probDescDB.get_bool("model.active_subspace.truncation_method.bing_li")),
@@ -111,7 +112,7 @@ ActiveSubspaceModel(std::shared_ptr<Model> sub_model, unsigned int dimension,
 }
 
 
-std::shared_ptr<Model> ActiveSubspaceModel::get_sub_model(ProblemDescDB& problem_db)
+std::shared_ptr<Model> ActiveSubspaceModel::get_sub_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib)
 {
   const String& actual_model_pointer
     = problem_db.get_string("model.surrogate.truth_model_pointer");
@@ -122,12 +123,12 @@ std::shared_ptr<Model> ActiveSubspaceModel::get_sub_model(ProblemDescDB& problem
 
   std::shared_ptr<Model> sub_model;
   if (transformVars) {
-    auto db_model = problem_db.get_model();
+    auto db_model = Model::get_model(problem_db, parallel_lib);
     sub_model = std::make_shared<ProbabilityTransformModel>(
       db_model, STD_NORMAL_U); // retain dist bounds
   }
   else
-    sub_model = problem_db.get_model();
+    sub_model = Model::get_model(problem_db, parallel_lib);
 
   problem_db.set_db_model_nodes(model_index); // restore
 

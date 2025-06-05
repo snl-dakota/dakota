@@ -586,7 +586,7 @@ class JEGAOptimizer :
          *              for problem information, etc.
          */
         JEGAOptimizer(
-            ProblemDescDB& problem_db, std::shared_ptr<Model> model
+            ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model
             );
 
         /// Destructs a JEGAOptimizer

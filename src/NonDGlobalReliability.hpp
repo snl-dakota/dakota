@@ -12,6 +12,7 @@
 
 #include "NonDReliability.hpp"
 #include "ProbabilityTransformation.hpp"
+#include "DataModel.hpp"
 
 namespace Dakota {
 
@@ -33,7 +34,7 @@ public:
   //
 
   /// constructor
-  NonDGlobalReliability(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  NonDGlobalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// destructor
   ~NonDGlobalReliability() override;
 

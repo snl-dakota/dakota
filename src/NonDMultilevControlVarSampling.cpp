@@ -25,10 +25,10 @@ namespace Dakota {
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDMultilevControlVarSampling::
-NonDMultilevControlVarSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDMultilevelSampling(problem_db, model),
+NonDMultilevControlVarSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDMultilevelSampling(problem_db, parallel_lib, model),
   //NonDMultifidelitySampling(problem_db, model),
-  NonDHierarchSampling(problem_db, model), // top of virtual inheritance
+  NonDHierarchSampling(problem_db, parallel_lib, model), // top of virtual inheritance
   delegateMethod(MULTILEVEL_MULTIFIDELITY_SAMPLING)
 {
   // override MULTILEVEL_PRECEDENCE from NonDMultilevel ctor

@@ -21,8 +21,8 @@ namespace Dakota {
 NL2SOLLeastSq* NL2SOLLeastSq::nl2solInstance(NULL);
 
 
-NL2SOLLeastSq::NL2SOLLeastSq(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  LeastSq(problem_db, model, std::shared_ptr<TraitsBase>(new NL2SOLLeastSqTraits())),
+NL2SOLLeastSq::NL2SOLLeastSq(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  LeastSq(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new NL2SOLLeastSqTraits())),
   // output controls
   auxprt(31), outlev(1), // normal/verbose/debug
   // finite differencing

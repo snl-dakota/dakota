@@ -50,7 +50,7 @@ namespace Dakota {
 	  
      public:
        /// Constructor
-       OptDartsOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model>);
+       OptDartsOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model>);
 
        /// alternate constructor for Iterator instantiations by name
        OptDartsOptimizer(std::shared_ptr<Model>);

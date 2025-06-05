@@ -28,9 +28,9 @@ Optimizer* Optimizer::optimizerInstance(NULL);
 
 
 Optimizer::
-Optimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model,
+Optimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model,
 	  std::shared_ptr<TraitsBase> traits):
-  Minimizer(problem_db, model, traits),
+  Minimizer(problem_db, parallel_lib, model, traits),
   // initial value from Minimizer as accounts for fields and transformations
   numObjectiveFns(numUserPrimaryFns), localObjectiveRecast(false)
 {
@@ -279,6 +279,22 @@ void Optimizer::print_results(std::ostream& s, short results_state)
 
     print_best_eval_ids(interface_id, best_vars, search_set, s);
   }
+}
+
+//----------------------------------------------------------------
+
+  /** Convenience method for common optimizer stopping criteria vectors */
+  void Optimizer::get_common_stopping_criteria(int    & max_fn_evals,
+    int    & max_iters,
+    double & conv_tol,
+    double & min_var_chg,
+    double & obj_target )
+{ 
+max_fn_evals =  maxFunctionEvals;
+max_iters = maxIterations;
+conv_tol = convergenceTol;
+min_var_chg = probDescDB.get_real("method.variable_tolerance");
+obj_target = probDescDB.get_real("method.solution_target");
 }
 
 

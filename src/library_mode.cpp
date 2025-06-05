@@ -392,8 +392,9 @@ void serial_interface_plugin(Dakota::LibraryEnvironment& env)
   std::string an_driver("plugin_rosenbrock");
 
   Dakota::ProblemDescDB& problem_db = env.problem_description_db();
+  Dakota::ParallelLibrary& parallel_lib = env.parallel_library();
   Dakota::Interface* serial_iface = 
-    new SIM::SerialDirectApplicInterface(problem_db);
+    new SIM::SerialDirectApplicInterface(problem_db, parallel_lib);
 
   bool plugged_in =
     env.plugin_interface(model_type, interf_type, an_driver, serial_iface);
@@ -424,6 +425,7 @@ void parallel_interface_plugin(Dakota::LibraryEnvironment& env)
   }
 
   Dakota::ProblemDescDB& problem_db = env.problem_description_db();
+  Dakota::ParallelLibrary& parallel_lib = env.parallel_library();
   Dakota::ModelLIter ml_iter;
   size_t model_index = problem_db.get_db_model_node(); // for restoration
   for (auto& fm : filt_models) {
@@ -440,7 +442,7 @@ void parallel_interface_plugin(Dakota::LibraryEnvironment& env)
 
     // don't increment ref count since no other envelope shares this letter
     fm->derived_interface(std::make_shared<SIM::ParallelDirectApplicInterface>
-			       (problem_db, analysis_comm));
+			       (problem_db, parallel_lib, analysis_comm));
   }
   problem_db.set_db_model_nodes(model_index);            // restore
 }

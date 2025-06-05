@@ -11,7 +11,6 @@
 #define ENSEMBLE_SURR_MODEL_H
 
 #include "SurrogateModel.hpp"
-#include "ParallelLibrary.hpp"
 #include "DataModel.hpp"
 
 namespace Dakota {
@@ -29,6 +28,8 @@ enum { DEFAULT_CORRECTION = 0, SINGLE_CORRECTION, FULL_MODEL_FORM_CORRECTION,
     of solution levels (space/time discretization, convergence
     tolerances, etc.). */
 
+class ParallelLibrary;
+
 class EnsembleSurrModel: public SurrogateModel
 {
 public:
@@ -37,7 +38,7 @@ public:
   //- Heading: Constructors and destructor
   //
 
-  EnsembleSurrModel(ProblemDescDB& problem_db); ///< constructor
+  EnsembleSurrModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib); ///< constructor
 
   //
   //- Heading: Member functions
@@ -1121,31 +1122,6 @@ primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
 }
 
 
-inline IntIntPair EnsembleSurrModel::
-estimate_partition_bounds(int max_eval_concurrency)
-{
-  // responseMode is a run-time setting, so we are conservative on usage of
-  // max_eval_concurrency as in derived_init_communicators()
-
-  probDescDB.set_db_model_nodes(truthModel->model_id());
-  IntIntPair min_max_i,
-    min_max = truthModel->estimate_partition_bounds(max_eval_concurrency);
-
-  size_t i, num_approx = approxModels.size();
-  for (i=0; i<num_approx; ++i) {
-    Model& model_i = *approxModels[i];
-    probDescDB.set_db_model_nodes(model_i.model_id());
-    min_max_i = model_i.estimate_partition_bounds(max_eval_concurrency);
-    if (min_max_i.first  < min_max.first)  min_max.first  = min_max_i.first;
-    if (min_max_i.second > min_max.second) min_max.second = min_max_i.second;
-  }
-
-  return min_max;
-
-  // list nodes are reset at the calling level after completion of recursion
-}
-
-
 inline void EnsembleSurrModel::derived_init_serial()
 {
   size_t i, num_approx = approxModels.size();
@@ -1153,21 +1129,6 @@ inline void EnsembleSurrModel::derived_init_serial()
     approxModels[i]->init_serial();
   truthModel->init_serial();
 }
-
-
-inline void EnsembleSurrModel::stop_model(short model_id)
-{
-  if (model_id) {
-    short  model_index = model_id - 1; // id to index
-    auto model = model_from_index(model_index);
-    ParConfigLIter pc_it = model->parallel_configuration_iterator();
-    size_t pl_index = model->mi_parallel_level_index();
-    if (pc_it->mi_parallel_level_defined(pl_index) &&
-	pc_it->mi_parallel_level(pl_index).server_communicator_size() > 1)
-      model->stop_servers();
-  }
-}
-
 
 inline void EnsembleSurrModel::inactive_view(short view, bool recurse_flag)
 {

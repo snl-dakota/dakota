@@ -19,6 +19,8 @@
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/mersenne_twister.hpp>
 
+#include "ProblemDescDB.hpp"
+
 namespace Dakota {
 
 /// Default constructor

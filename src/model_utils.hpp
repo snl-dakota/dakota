@@ -14,6 +14,8 @@
 namespace Dakota {
     class Model;
     class ProblemDescDB;
+    class ParallelLibrary;
+    
     namespace ModelUtils {
         /// define and return discreteIntSets using active view from currentVariables
         BitArray discrete_int_sets(const Model &model);
@@ -587,7 +589,7 @@ namespace Dakota {
         void nonlinear_eq_constraint_targets(Model &model, const RealVector& nln_eq_targets);
 
         /// construct the appropriate derived model type as given by the modelType attribute
-        std::shared_ptr<Model> get_model(ProblemDescDB& problem_db);
+        std::shared_ptr<Model> get_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
 
         /// dummy default empty string
         static const String empty_string = "";

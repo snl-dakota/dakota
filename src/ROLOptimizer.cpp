@@ -44,8 +44,8 @@ namespace Dakota {
 
 // Standard constructor for ROLOptimizer.  Sets up ROL solver based on
 // information from the problem database.
-ROLOptimizer::ROLOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new ROLTraits())),
+ROLOptimizer::ROLOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  Optimizer(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new ROLTraits())),
   optSolverParams("Dakota::ROL"), problemType(TYPE_B)
 {
   // Populate ROL data with user-provided problem dimensions and

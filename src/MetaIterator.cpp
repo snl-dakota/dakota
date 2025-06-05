@@ -16,9 +16,9 @@ static const char rcsId[]="@(#) $Id: MetaIterator.cpp 6715 2010-04-02 21:58:15Z 
 
 namespace Dakota {
 
-MetaIterator::MetaIterator(ProblemDescDB& problem_db):
-  Iterator(problem_db),
-  iterSched(problem_db.parallel_library(),
+MetaIterator::MetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
+  Iterator(problem_db, parallel_lib),
+  iterSched(parallel_lib,
 	    false, // peers can manage local jobs (initial extracted from DB)
 	    problem_db.get_int("method.iterator_servers"),
 	    problem_db.get_int("method.processors_per_iterator"),
@@ -32,9 +32,9 @@ MetaIterator::MetaIterator(ProblemDescDB& problem_db):
 }
 
 
-MetaIterator::MetaIterator(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  Iterator(problem_db),
-  iterSched(problem_db.parallel_library(),
+MetaIterator::MetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  Iterator(problem_db, parallel_lib),
+  iterSched(parallel_lib,
 	    false, // peers can manage local jobs (initial extracted from DB)
 	    problem_db.get_int("method.iterator_servers"),
 	    problem_db.get_int("method.processors_per_iterator"),
@@ -101,7 +101,7 @@ allocate_by_pointer(const String& method_ptr, std::shared_ptr<Iterator>& the_ite
   probDescDB.set_db_list_nodes(method_ptr);
 
   if (!the_model)
-    the_model = probDescDB.get_model();
+    the_model = Model::get_model(probDescDB, parallelLib);
   iterSched.init_iterator(probDescDB, the_iterator, the_model);
 
   probDescDB.set_db_method_node(method_index);          // restore
@@ -125,8 +125,8 @@ allocate_by_name(const String& method_string, const String& model_ptr,
   //}
 
   if (!the_model)
-    the_model = probDescDB.get_model();
-  iterSched.init_iterator(probDescDB, method_string, the_iterator, the_model);
+    the_model = Model::get_model(probDescDB, parallelLib);
+  iterSched.init_iterator(method_string, the_iterator, the_model);
 
   //if (set)
     probDescDB.set_db_model_nodes(model_index);   // restore
@@ -145,7 +145,7 @@ estimate_by_pointer(const String& method_ptr, std::shared_ptr<Iterator>& the_ite
   probDescDB.set_db_list_nodes(method_ptr);
 
   if (!the_model)
-    the_model = probDescDB.get_model();
+    the_model = Model::get_model(probDescDB, parallelLib);
   IntIntPair ppi_pr = iterSched.configure(probDescDB, the_iterator, the_model);
 
   probDescDB.set_db_method_node(method_index);          // restore
@@ -170,7 +170,7 @@ estimate_by_name(const String& method_string, const String& model_ptr,
   //}
 
   if (!the_model)
-    the_model = probDescDB.get_model();
+    the_model = Model::get_model(probDescDB, parallelLib);
 
   IntIntPair ppi_pr
     = iterSched.configure(probDescDB, method_string, the_iterator, the_model);

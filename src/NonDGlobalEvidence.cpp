@@ -15,8 +15,8 @@
 
 namespace Dakota {
 
-NonDGlobalEvidence::NonDGlobalEvidence(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDGlobalInterval(problem_db, model)
+NonDGlobalEvidence::NonDGlobalEvidence(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDGlobalInterval(problem_db, parallel_lib, model)
 {
   // if the user does not specify the number of samples, 
   // try to get at least one function evaluation in each cell 

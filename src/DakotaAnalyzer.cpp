@@ -28,8 +28,8 @@ extern PRPCache data_pairs;
 
 
 Analyzer::
-Analyzer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  Iterator(problem_db), compactMode(true),
+Analyzer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  Iterator(problem_db, parallel_lib), compactMode(true),
   numObjFns(0), numLSqTerms(0), // default: no best data tracking
   vbdFlag(problem_db.get_bool("method.variance_based_decomp")),
   writePrecision(problem_db.get_int("environment.output_precision"))
@@ -544,10 +544,10 @@ void Analyzer::get_vbd_parameter_sets(std::shared_ptr<Model> model, size_t num_s
 void Analyzer::pre_output()
 {
   // distinguish between defaulted pre-run and user-specified
-  if (!parallelLib.command_line_user_modes())
+  if (!parallelLib.user_modes().requestedUserModes)
     return;
 
-  const String& filename = parallelLib.command_line_pre_run_output();
+  const String& filename = parallelLib.user_modes().preRunOutput;
   if (filename.empty()) {
     if (outputLevel > QUIET_OUTPUT)
       Cout << "\nPre-run phase complete: no output requested.\n" << std::endl;
@@ -580,7 +580,7 @@ void Analyzer::pre_output()
   // use sample_to_variables to set the discrete variables not treated
   // by allSamples.
   unsigned short tabular_format = 
-    parallelLib.program_options().pre_run_output_format();
+    parallelLib.program_options().user_modes().preRunOutputFormat;
   TabularIO::write_header_tabular(tabular_file,
 				  iteratedModel->current_variables(), 
 				  iteratedModel->current_response(),
@@ -623,10 +623,10 @@ void Analyzer::pre_output()
 void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
 {
   // distinguish between defaulted post-run and user-specified
-  if (!parallelLib.command_line_user_modes())
+  if (!parallelLib.user_modes().requestedUserModes)
     return;
 
-  const String& filename = parallelLib.command_line_post_run_input();
+  const String& filename = parallelLib.user_modes().postRunInput;
   if (filename.empty()) {
     if (outputLevel > QUIET_OUTPUT)
       Cout << "\nPost-run phase initialized: no input requested.\n" 
@@ -643,7 +643,7 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
 
   // pre/post only supports annotated; could detect
   unsigned short tabular_format = 
-    parallelLib.program_options().post_run_input_format();
+    parallelLib.program_options().user_modes().postRunInputFormat;
 
   // Define modelList and recastFlags to support any recastings within
   // a model recursion

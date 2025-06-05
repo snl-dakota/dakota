@@ -14,6 +14,7 @@
 #include "DakotaResponse.hpp"
 #include "DakotaVariables.hpp"
 #include "ProblemDescDB.hpp"
+#include "ParallelLibrary.hpp"
 
 
 #ifdef HAVE_AMPL
@@ -27,6 +28,71 @@ namespace Dakota {
 
 // Initialization of static interface ID counters
 size_t Interface::noSpecIdNum = 0;
+
+std::shared_ptr<Interface> Interface::get_interface(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib) {
+
+  ProblemDescDB* const study_ptr = problem_db.get_rep().get();
+  auto& study_cache = Interface::interfaceCache[study_ptr];
+
+  // Have to worry about loss of encapsulation and use of context _above_ this
+  // specification, i.e., any dependence on iterator/model/variables/responses
+  // specifications (dependence on the environment specification is OK since
+  // there is only one):
+  // > Interface: method.output
+  // > ApplicationInterface: responses.gradient_type, responses.hessian_type,
+  //     responses.gradients.mixed.id_analytic
+  // > DakotaInterface: responses.labels
+
+  // ApproximationInterfaces and related classes are OK, since they are
+  // instantiated with assign_rep() for each unique DataFitSurrModel instance:
+  // > ApproximationInterface: model.surrogate.function_ids
+  // > Approximation: method.output, model.surrogate.type,
+  //     model.surrogate.derivative_usage
+  // > SurfpackApproximation: model.surrogate.polynomial_order,
+  //     model.surrogate.kriging_correlations
+  // > TaylorApproximation: model.surrogate.truth_model_pointer,
+  //     responses.hessian_type
+  // > OrthogPolyApproximation: method.nond.expansion_{terms,order}
+
+  // The DB list nodes are set prior to calling get_interface():
+  // >    interface_ptr spec -> id_interface must be defined
+  // > no interface_ptr spec -> id_interf ignored, interf spec = last parsed
+  auto id_interface = problem_db.interface_id();
+  if(id_interface.empty()) {
+    id_interface = "NO_ID";
+  }
+  auto m_it
+    = std::find_if(study_cache.begin(), study_cache.end(),
+                   [&id_interface](std::shared_ptr<Interface> m) {return m->interface_id() == id_interface;});
+  if (m_it == study_cache.end()) {
+    study_cache.push_back(InterfaceUtils::get_interface(problem_db, parallel_lib));
+    m_it = --study_cache.end();
+  }
+  return *m_it;
+}
+
+std::list<std::shared_ptr<Interface>>& Interface::interface_cache(ProblemDescDB& problem_db) {
+  const ProblemDescDB* const study_ptr = problem_db.get_rep().get();
+  try {
+    return Interface::interfaceCache.at(study_ptr);
+  } catch(std::out_of_range) {
+    Cerr << "Interface::interface_cache() called with nonexistent study!\n";
+    throw;
+  }
+}
+
+void Interface::remove_cached_interface(const ProblemDescDB& problem_db) {
+  const ProblemDescDB* const study_ptr = problem_db.get_rep().get();
+  Interface::interfaceCache.erase(study_ptr);
+}
+
+void Interface::clean_up_all_interfaces() {
+  for(auto& icache_pair : Interface::interfaceCache)
+    for(auto& interface : icache_pair.second)
+      interface->file_cleanup();
+}
+
+std::map<const ProblemDescDB*, std::list<std::shared_ptr<Interface>>> Interface::interfaceCache{};
 
 
 /** Base class constructor to initialize class data for all

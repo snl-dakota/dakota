@@ -240,8 +240,8 @@ enum { COBYLA, DIRECT, EA, MS, PS, SW, BETA };
 
   /// Standard constructor.
 
-COLINOptimizer::COLINOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new COLINTraits()))
+COLINOptimizer::COLINOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  Optimizer(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new COLINTraits()))
 {
   // (iteratedModel initialized in Optimizer(Model&))
   // Set solver properties.

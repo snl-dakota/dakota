@@ -83,7 +83,7 @@ protected:
   //
 
   /// constructor
-  NonD(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  NonD(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// alternate constructor for sample generation and evaluation "on the fly"
   NonD(unsigned short method_name, std::shared_ptr<Model>);
   /// alternate constructor for sample generation and evaluation "on the fly"

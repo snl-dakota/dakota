@@ -50,7 +50,7 @@ class PebbldMinimizer : public Minimizer
 {
 public:
         /// standard constructor
-        PebbldMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+        PebbldMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model);
 	/// Constructor
 	/** PebbldMinimizer Constructor
 	    @param model DAKOTA Model object

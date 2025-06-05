@@ -7,15 +7,18 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
+#include <stdexcept>
 #include "dakota_data_io.hpp"
 #include "DakotaIterator.hpp"
 #include "DakotaApproximation.hpp"
 #include "DakotaTraitsBase.hpp"
+#include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "DakotaGraphics.hpp"
 #include "ResultsManager.hpp"
 #include "EvaluationStore.hpp"
+#include "iterator_utils.hpp"
 
 
 #include <boost/bimap.hpp>
@@ -34,6 +37,8 @@ extern EvaluationStore evaluation_store_db;
 // Initialization of static method ID counters
 size_t Iterator::noSpecIdNum = 0;
 
+std::map<const ProblemDescDB*, std::list<std::shared_ptr<Iterator>>> Iterator::iteratorCache{};
+std::list<std::shared_ptr<Iterator>> Iterator::iteratorByNameCache{};
 
 /** This constructor builds the base class data for all inherited
     iterators, including meta-iterators.  get_iterator() instantiates
@@ -43,8 +48,8 @@ size_t Iterator::noSpecIdNum = 0;
     the letter IS the representation, its representation pointer is
     set to NULL */
 Iterator::Iterator(ProblemDescDB& problem_db,
-		   std::shared_ptr<TraitsBase> traits):
-  probDescDB(problem_db), parallelLib(problem_db.parallel_library()),
+		   ParallelLibrary& parallel_lib, std::shared_ptr<TraitsBase> traits):
+  probDescDB(problem_db), parallelLib(parallel_lib),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
   myModelLayers(0), methodName(problem_db.get_ushort("method.algorithm")),
   convergenceTol(problem_db.get_real("method.convergence_tolerance")),
@@ -368,6 +373,84 @@ String Iterator::submethod_enum_to_string(unsigned short submethod_enum)
   return lc_iter->second;
 }
 
+std::shared_ptr<Iterator> Iterator::get_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib) {
+  ProblemDescDB* const study_ptr = problem_db.get_rep().get();
+  auto& study_cache = Iterator::iteratorCache[study_ptr];
+  auto id_method = problem_db.method_id();
+  if(id_method.empty())
+    id_method = "NO_METHOD_ID";
+  auto i_it
+    = std::find_if(study_cache.begin(), study_cache.end(),
+                  [&id_method](std::shared_ptr<Iterator> iter) {return iter->method_id() == id_method;});
+  if (i_it == study_cache.end()) {
+    study_cache.push_back(IteratorUtils::get_iterator(problem_db, parallel_lib));
+    i_it = --study_cache.end();
+  }
+  return *i_it;
+}
+
+std::shared_ptr<Iterator> Iterator::get_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model) {
+  const ProblemDescDB* const study_ptr = problem_db.get_rep().get();
+  auto& study_cache = Iterator::iteratorCache[study_ptr];
+  auto id_method = problem_db.method_id();
+  if(id_method.empty())
+    id_method = "NO_METHOD_ID";
+  auto i_it
+    = std::find_if(study_cache.begin(), study_cache.end(),
+                    [&id_method](std::shared_ptr<Iterator> iter) {return iter->method_id() == id_method;});
+
+  // if Iterator does not already exist, then create it
+  if (i_it == study_cache.end()) {
+    study_cache.push_back(IteratorUtils::get_iterator(problem_db, parallel_lib, model));
+    i_it = --study_cache.end();
+  }
+  // idMethod already exists, but check for same model.  If !same, instantiate
+  // new rather than update (i_it->iterated_model(model)) all shared instances.
+  else if (model != (*i_it)->iterated_model()) {
+    study_cache.push_back(IteratorUtils::get_iterator(problem_db, parallel_lib, model));
+    i_it = --study_cache.end();
+  }
+  return *i_it;
+}
+
+
+std::shared_ptr<Iterator> Iterator::get_iterator( 
+  const String& method_name, std::shared_ptr<Model> model) {
+
+  auto i_it
+    = std::find_if(Iterator::iteratorByNameCache.begin(), Iterator::iteratorByNameCache.end(),
+                  [&method_name](std::shared_ptr<Iterator> iter) {return iter->method_string() == method_name;});
+  // if Iterator does not already exist, then create it
+  if (i_it == Iterator::iteratorByNameCache.end()) {
+    Iterator::iteratorByNameCache.push_back(IteratorUtils::get_iterator(method_name, model));
+    i_it = --Iterator::iteratorByNameCache.end();
+  }
+  // method_name already exists, but check for same model. If !same, instantiate
+  // new rather than update (i_it->iterated_model(model)) all shared instances.
+  else if (model != (*i_it)->iterated_model()) {
+    Iterator::iteratorByNameCache.push_back(IteratorUtils::get_iterator(method_name, model));
+    i_it = --Iterator::iteratorByNameCache.end();
+  }
+  return *i_it;
+}
+
+
+std::list<std::shared_ptr<Iterator>>& Iterator::iterator_cache(ProblemDescDB& problem_db) {
+  const ProblemDescDB* const study_ptr = problem_db.get_rep().get();
+  try {
+    return Iterator::iteratorCache.at(study_ptr);
+  } catch(std::out_of_range) {
+    Cerr << "Iterator::iterator_cache() called with nonexistent study!\n";
+    throw;
+  }
+}
+
+
+void Iterator::remove_cached_iterator(const ProblemDescDB& problem_db) {
+  const ProblemDescDB* const study_ptr = problem_db.get_rep().get();
+  Iterator::iteratorCache.erase(study_ptr);
+}
+
 
 void Iterator::update_from_model(const Model& model)
 {
@@ -417,20 +500,20 @@ void Iterator::run()
   initialize_run();
   if (summaryOutputFlag)
     Cout << "\n>>>>> Running "  << method_string <<" iterator.\n";
-  if (parallelLib.command_line_pre_run()) {
+  if (parallelLib.user_modes().preRun) {
     if (summaryOutputFlag && outputLevel > NORMAL_OUTPUT)
 Cout << "\n>>>>> " << method_string <<": pre-run phase.\n";
     pre_run();
     pre_output(); // for now, the helper manages whether output is needed
   }
-  if (parallelLib.command_line_run()) {
+  if (parallelLib.user_modes().run) {
     //core_input();
     if (summaryOutputFlag && outputLevel > NORMAL_OUTPUT)
 Cout << "\n>>>>> " << method_string <<": core run phase.\n";
     core_run();
     //core_output();
   }
-  if (parallelLib.command_line_post_run()) {
+  if (parallelLib.user_modes().postRun) {
     post_input();
     if (summaryOutputFlag && outputLevel > NORMAL_OUTPUT)
 Cout << "\n>>>>> " << method_string <<": post-run phase.\n";
@@ -1071,10 +1154,10 @@ StrStrSizet Iterator::run_identifier() const
 void Iterator::pre_output()
 {
   // distinguish between defaulted pre-run and user-specified
-  if (!parallelLib.command_line_user_modes())
+  if (!parallelLib.user_modes().requestedUserModes)
     return;
 
-  const String& filename = parallelLib.command_line_pre_run_output();
+  const String& filename = parallelLib. user_modes().preRunOutput;
   if (filename.empty()) {
     if (outputLevel > QUIET_OUTPUT)
       Cout << "\nPre-run phase complete: no output requested.\n" << std::endl;
@@ -1090,10 +1173,10 @@ void Iterator::pre_output()
 void Iterator::post_input()
 {
     // distinguish between defaulted post-run and user-specified
-    if (!parallelLib.command_line_user_modes())
+    if (!parallelLib.user_modes().requestedUserModes)
       return;
 
-    const String& filename = parallelLib.command_line_post_run_input();
+    const String& filename = parallelLib.user_modes().postRunInput;
     if (outputLevel > QUIET_OUTPUT) {
       if (filename.empty())
 	      Cout << "\nPost-run phase initialized: no input requested.\n"

@@ -32,8 +32,8 @@ void DOT510_F77( int& ndv, int& ncon, int& ncola, int& method, int& nrwk,
 namespace Dakota {
 
 
-DOTOptimizer::DOTOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new DOTTraits())),
+DOTOptimizer::DOTOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  Optimizer(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new DOTTraits())),
   realCntlParmArray(20, 0.0),
   intCntlParmArray(20, 0)
 {

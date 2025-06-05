@@ -45,8 +45,8 @@ NonDLocalReliability* NonDLocalReliability::nondLocRelInstance(NULL);
 
 
 NonDLocalReliability::
-NonDLocalReliability(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDReliability(problem_db, model), 
+NonDLocalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDReliability(problem_db, parallel_lib, model), 
   initialPtUserSpec(
     probDescDB.get_bool("variables.uncertain.initial_point_flag")),
   npsolFlag(false), warmStartFlag(true), nipModeOverrideFlag(true),

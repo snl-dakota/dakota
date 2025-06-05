@@ -90,7 +90,7 @@ public:
   //
 
   /// standard constructor
-  NPSOLOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  NPSOLOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
 
   /// alternate constructor for Iterator instantiations by name
   NPSOLOptimizer(std::shared_ptr<Model> model);

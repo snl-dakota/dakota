@@ -14,6 +14,7 @@
 #include "ProblemDescDB.hpp"
 #include "IteratorScheduler.hpp"
 #include "dakota_preproc_util.hpp"
+#include "ProblemDescDBUtils.hpp"
 
 static const char rcsId[]="@(#) $Id: DakotaEnvironment.cpp 6749 2010-05-03 17:11:57Z briadam $";
 
@@ -33,7 +34,7 @@ namespace Dakota {
 Environment::Environment(BaseConstructor):
   mpiManager(), programOptions(mpiManager.world_rank()), outputManager(),
   parallelLib(mpiManager, programOptions, outputManager),
-  probDescDB(parallelLib), usageTracker(mpiManager.world_rank())
+  probDescDB(mpiManager.world_size(), mpiManager.world_rank()), usageTracker(mpiManager.world_rank())
 {
   // set exit mode as early as possible
   if (!programOptions.exit_mode().empty())
@@ -65,7 +66,7 @@ Environment::Environment(BaseConstructor, int argc, char* argv[]):
 		mpiManager.mpirun_flag()),
   // now instantiate the parallel library and problem description DB
   parallelLib(mpiManager, programOptions, outputManager),
-  probDescDB(parallelLib), usageTracker(mpiManager.world_rank())
+  probDescDB(mpiManager.world_size(), mpiManager.world_rank()), usageTracker(mpiManager.world_rank())
 {
   // set exit mode as early as possible
   if (!programOptions.exit_mode().empty())
@@ -92,7 +93,7 @@ Environment::Environment(BaseConstructor, ProgramOptions prog_opts,
   outputManager(programOptions, mpiManager.world_rank(),
 		mpiManager.mpirun_flag()), 
   parallelLib(mpiManager, programOptions, outputManager),
-  probDescDB(parallelLib), usageTracker(mpiManager.world_rank())
+  probDescDB(mpiManager.world_size(), mpiManager.world_rank()), usageTracker(mpiManager.world_rank())
 {
   // set exit mode as early as possible
   if (!programOptions.exit_mode().empty())
@@ -223,7 +224,7 @@ void Environment::preprocess_inputs() {
   }
 
   // Read the input from stdin if the user provided "-" as the filename
-  if(programOptions.input_file() == "-") {
+  if(programOptions.stdin_input()) {
     Cout << "Reading Dakota input from standard input" << std::endl;
     String stdin_string;
     char in = std::cin.get();
@@ -231,15 +232,12 @@ void Environment::preprocess_inputs() {
       stdin_string.push_back(in);
       in = std::cin.get();
     }
-    programOptions.input_file("");
     programOptions.input_string(stdin_string);
   }
 
   if (programOptions.preproc_input()) {
-    std::string tmpl_file = programOptions.input_file();
-    if (!programOptions.input_string().empty())
-      // must generate to file on disk for pyprepro
-      tmpl_file = string_to_tmpfile(programOptions.input_string());
+    std::string tmpl_file = (programOptions.input_string().empty()) ? 
+      programOptions.input_file() : string_to_tmpfile(programOptions.input_string());
 
     // run the pre-processor on the file
     std::string preproc_file = pyprepro_input(tmpl_file,
@@ -278,16 +276,21 @@ void Environment::parse(bool check_bcast_database,
   // push_output_tag() follow ParallelLibrary::init_iterator_communicators()
   // within IteratorScheduler::partition().
 
-  // ProblemDescDB requires cmd line information, so pass programOptions
-
   // parse input and callback functions
   if ( !programOptions.input_file().empty() || 
-       !programOptions.input_string().empty())
-    probDescDB.parse_inputs(programOptions, callback, callback_data);
+       !programOptions.input_string().empty()) {
+    auto [final_input, template_string] = 
+      ProblemDescDBUtils::final_input_and_template(programOptions);
+    if(programOptions.echo_input())
+      ProblemDescDBUtils::echo_input(final_input, template_string);
+    probDescDB.parse_inputs(final_input, programOptions.parser_options(), programOptions.user_modes().run, callback, callback_data);
+    if(programOptions.preproc_input())
+        std::filesystem::remove(programOptions.preprocessed_file());
+  }
 
   // check if true, otherwise caller assumes responsibility  
-  if (check_bcast_database) 
-    probDescDB.check_and_broadcast(programOptions);
+  if (check_bcast_database)
+    ProblemDescDBUtils::check_and_broadcast_pdb(probDescDB, programOptions.user_modes(), parallelLib); 
 }
 
 
@@ -330,7 +333,7 @@ void Environment::construct()
 
   // Instantiate topLevelIterator in parallel
   // (invoke ProblemDescDB ctor chain on all processors)
-  IteratorScheduler::init_iterator(probDescDB, topLevelIterator, w_pl_iter);
+  IteratorScheduler::init_iterator(probDescDB, parallelLib, topLevelIterator, w_pl_iter);
   // Notfiy the iterator that it is the top level
   topLevelIterator->top_level(true);
 }

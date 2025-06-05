@@ -410,7 +410,7 @@ set(util_src ParallelLibrary.cpp IteratorScheduler.cpp MPIPackBuffer.cpp
     ParametersFileWriter.cpp ApreproParametersFileWriter.cpp StandardParametersFileWriter.cpp
     JSONParametersFileWriter.cpp ResultsFileReader.cpp StandardResultsFileReader.cpp
     JSONResultsFileReader.cpp JSONResultsParser.cpp model_utils.cpp iterator_utils.cpp
-    interface_utils.cpp
+    interface_utils.cpp delete_study_components.cpp UserModes.cpp
     )
 
 if(DAKOTA_HAVE_HDF5)
@@ -432,9 +432,9 @@ set(evaldata_src DakotaVariables.cpp MixedVariables.cpp RelaxedVariables.cpp
     ParamResponsePair.cpp)
 
 ## DB sources.
-set(db_src ProblemDescDB.cpp NIDRProblemDescDB.cpp DataEnvironment.cpp
-  DataMethod.cpp DataModel.cpp DataVariables.cpp DataInterface.cpp 
-  DataResponses.cpp)
+set(db_src ProblemDescDB.cpp NIDRProblemDescDB.cpp ProblemDescDBUtils.cpp
+  DataEnvironment.cpp DataMethod.cpp DataModel.cpp DataVariables.cpp
+  DataInterface.cpp DataResponses.cpp)
 
 ## Model sources.
 set(model_src DakotaModel.cpp SimulationModel.cpp NestedModel.cpp

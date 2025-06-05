@@ -28,7 +28,7 @@ class ScilabInterface: public DirectApplicInterface
 public:
 
   /// Constructor: start Scilab engine
-  ScilabInterface(const ProblemDescDB& problem_db);
+  ScilabInterface(const ProblemDescDB& problem_db, ParallelLib& parallel_lib);
 
   /// Destructor: close Scilab engine
   ~ScilabInterface();

@@ -104,8 +104,8 @@ String substitute_params_and_results(const String &driver, const String &params,
 
 
 ProcessApplicInterface::
-ProcessApplicInterface(const ProblemDescDB& problem_db):
-  ApplicationInterface(problem_db), 
+ProcessApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
+  ApplicationInterface(problem_db, parallel_lib), 
   fileTagFlag(problem_db.get_bool("interface.application.file_tag")),
   fileSaveFlag(problem_db.get_bool("interface.application.file_save")),
   commandLineArgs(!problem_db.get_bool("interface.application.verbatim")),

@@ -22,8 +22,9 @@ namespace Dakota {
 extern PRPCache data_pairs;
 
 ApplicationInterface::
-ApplicationInterface(const ProblemDescDB& problem_db):
-  Interface(problem_db), parallelLib(problem_db.parallel_library()),
+ApplicationInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
+  Interface(problem_db),
+  parallelLib(parallel_lib), 
   batchEval(problem_db.get_bool("interface.batch")),
   asynchFlag(problem_db.get_bool("interface.asynch")), batchIdCntr(0),
   suppressOutput(false), evalCommSize(1), evalCommRank(0), evalServerId(1),
@@ -2126,20 +2127,19 @@ synchronous_local_evaluations(PRPQueue& local_prp_queue)
   }
 }
 
-
 void ApplicationInterface::launch_asynch_local(PRPQueueIter& prp_it)
 {
   if (outputLevel > SILENT_OUTPUT) {
     if(batchEval) {
       Cout << "Adding ";
       if (!interfaceId.empty() && interfaceId != "NO_ID")
-	Cout << interfaceId << ' ';
+        Cout << interfaceId << ' ';
       Cout << "evaluation " << prp_it->eval_id() << " to batch "
-	   << batchIdCntr + 1 << std::endl;
+           << batchIdCntr + 1 << std::endl;
     } else {
       Cout << "Initiating ";
       if (!interfaceId.empty() && interfaceId != "NO_ID")
-	Cout << interfaceId << ' ';
+        Cout << interfaceId << ' ';
       Cout << "evaluation " << prp_it->eval_id() << '\n';
     }
   }
@@ -2161,6 +2161,24 @@ void ApplicationInterface::launch_asynch_local(PRPQueueIter& prp_it)
   asynchLocalActivePRPQueue.insert(*prp_it);
 }
 
+
+void ApplicationInterface::
+broadcast_evaluation(int fn_eval_id, const Variables& vars,
+		     const ActiveSet& set)
+{
+  // match bcast_e()'s in serve_evaluations_{synch,asynch,peer}
+  parallelLib.bcast_e(fn_eval_id);
+  MPIPackBuffer send_buffer(lenVarsActSetMessage);
+  send_buffer << vars << set;
+
+#ifdef MPI_DEBUG
+  Cout << "broadcast_evaluation() for eval " << fn_eval_id
+       << " with send_buffer size = " << send_buffer.size()
+       << " and ActiveSet:\n" << set << std::endl;
+#endif // MPI_DEBUG
+
+  parallelLib.bcast_e(send_buffer);
+}
 
 void ApplicationInterface::
 send_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
@@ -2205,25 +2223,22 @@ send_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
   parallelLib.free(send_request); // no test/wait on send_request
 }
 
-
 void ApplicationInterface::
-broadcast_evaluation(int fn_eval_id, const Variables& vars,
-		     const ActiveSet& set)
+launch_asynch_local(MPIUnpackBuffer& recv_buffer, int fn_eval_id)
 {
-  // match bcast_e()'s in serve_evaluations_{synch,asynch,peer}
-  parallelLib.bcast_e(fn_eval_id);
-  MPIPackBuffer send_buffer(lenVarsActSetMessage);
-  send_buffer << vars << set;
-
-#ifdef MPI_DEBUG
-  Cout << "broadcast_evaluation() for eval " << fn_eval_id
-       << " with send_buffer size = " << send_buffer.size()
-       << " and ActiveSet:\n" << set << std::endl;
-#endif // MPI_DEBUG
-
-  parallelLib.bcast_e(send_buffer);
+  if (multiProcEvalFlag)
+    parallelLib.bcast_e(recv_buffer);
+  // unpack
+  Variables vars; ActiveSet set;
+  recv_buffer >> vars >> set;
+  recv_buffer.reset();
+  Response local_response(sharedRespData, set); // special ctor
+  ParamResponsePair
+    prp(vars, interfaceId, local_response, fn_eval_id, false); // shallow copy
+  asynchLocalActivePRPQueue.insert(prp);
+  // execute
+  derived_map_asynch(prp);
 }
-
 
 /** Invoked by the serve() function in derived Model classes.  Passes
     control to serve_evaluations_synch(), serve_evaluations_asynch(),

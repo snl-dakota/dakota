@@ -27,6 +27,49 @@ BOOST_CLASS_EXPORT(Dakota::Response)
 
 namespace Dakota {
 
+  const Response& Dakota::Response::get_response(ProblemDescDB& problem_db, short type, const Variables& vars) {
+
+    ProblemDescDB* const study_ptr = problem_db.get_rep().get(); 
+    auto& study_cache = Response::responseCache[study_ptr];
+  
+    // Have to worry about loss of encapsulation and use of context _above_ this
+    // specification, i.e., any dependence on iterator/model/variables/interface
+    // specifications (dependence on the environment specification is OK since
+    // there is only one).
+    // > mismatch in vars attributes (cv(),continuous_variable_ids()) should be OK
+    //   since derivative arrays are dynamically resized based on current active
+    //   set content
+
+    // The DB list nodes are set prior to calling get_response():
+    // >    responses_ptr spec -> id_responses must be defined
+    // > no responses_ptr spec -> id_responses ignored, resp spec = last parsed
+    //const String& id_responses
+    //  = dbRep->dataResponsesIter->dataRespRep->idResponses;
+
+    // Turn off response reuse for now, even though it has not yet been
+    // problematic.  In general, response object reuse should be fine for objects
+    // with peer relationships, but are questionable for use among nested/layered
+    // levels.  Need a way to detect peer vs. nested/layered relationships.
+    study_cache.emplace_back(type, vars, problem_db);
+    return study_cache.back();
+  }
+  
+  std::list<Response>& Response::response_cache(ProblemDescDB& problem_db) {
+    const ProblemDescDB* const study_ptr = problem_db.get_rep().get();
+    try {
+      return Response::responseCache.at(study_ptr);
+    } catch(std::out_of_range) {
+      Cerr << "Response::response_cache() called with nonexistent study!\n";
+      throw;
+    }
+  }
+  
+  void Response::remove_cached_response(const ProblemDescDB& problem_db) {
+    const ProblemDescDB* const study_ptr = problem_db.get_rep().get();
+    Response::responseCache.erase(study_ptr);
+  }
+  
+  std::map<const ProblemDescDB*, std::list<Response>> Response::responseCache{};
 
 /** This constructor is the one which must build the base class data for all
     derived classes.  get_response() instantiates a derived class letter

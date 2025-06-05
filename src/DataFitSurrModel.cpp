@@ -12,6 +12,7 @@
 #include "ApproximationInterface.hpp"
 #include "ApproximationFieldInterface.hpp"
 #include "ParamResponsePair.hpp"
+#include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
 #include "PRPMultiIndex.hpp"
 #include "dakota_data_io.hpp"
@@ -29,8 +30,8 @@ namespace Dakota {
 extern PRPCache data_pairs;
 
 
-DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
-  SurrogateModel(problem_db),
+DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
+  SurrogateModel(problem_db, parallel_lib),
   pointsTotal(problem_db.get_int("model.surrogate.points_total")),
   pointsManagement(problem_db.get_short("model.surrogate.points_management")),
   pointReuse(problem_db.get_string("model.surrogate.point_reuse")),
@@ -105,13 +106,13 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
       u_space_type = PARTIAL_ASKEY_U;//problem_db.get_short("model.surrogate.expansion_type");
     }
     else {
-      actualModel = problem_db.get_model();
+      actualModel = Model::get_model(problem_db, parallel_lib);
       // leave mvDist as initialized in Model ctor (from variables spec)
     }
 
     if (basis_expansion) {
       actualModel= std::make_shared<ProbabilityTransformModel>(
-	      problem_db.get_model(), u_space_type);
+	      Model::get_model(problem_db, parallel_lib), u_space_type);
       // overwrite mvDist from Model ctor by copying transformed u-space dist
       // (keep them distinct to allow for different active views).
       // construct time augmented with run time pull_distribution_parameters().
@@ -124,7 +125,7 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
 
   // Instantiate dace iterator from DB
   if (dace_construct) {
-    daceIterator = problem_db.get_iterator(actualModel); // no meta-iterators
+    daceIterator = Iterator::get_iterator(problem_db, parallelLib, actualModel); // no meta-iterators
     daceIterator->sub_iterator_flag(true);
     // if outer level output is verbose/debug and actualModel verbosity is
     // defined by the DACE method spec, request fine-grained evaluation
@@ -2328,6 +2329,23 @@ void DataFitSurrModel::component_parallel_mode(short mode)
   componentParallelMode = mode;
 }
 
+IntIntPair DataFitSurrModel::
+estimate_partition_bounds(int max_eval_concurrency)
+{
+  // support DB-based and on-the-fly instantiations for DataFitSurrModel
+  if (daceIterator) {
+    probDescDB.set_db_list_nodes(daceIterator->method_id());
+    return daceIterator->estimate_partition_bounds();
+  }
+  else if (actualModel) {
+    int am_max_conc = approxInterface->minimum_points(false)
+                    * actualModel->derivative_concurrency(); // local/multipt
+    probDescDB.set_db_model_nodes(actualModel->model_id());
+    return actualModel->estimate_partition_bounds(am_max_conc);
+  }
+  else
+    return IntIntPair(1, 1);
+}
 
 void DataFitSurrModel::declare_sources()
 {

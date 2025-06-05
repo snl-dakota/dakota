@@ -35,9 +35,9 @@ LeastSq* LeastSq::leastSqInstance(NULL);
     branch and performs sanity checking on gradient and constraint
     settings. */
 LeastSq::
-LeastSq(ProblemDescDB& problem_db, std::shared_ptr<Model> model,
+LeastSq(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model,
 	std::shared_ptr<TraitsBase> traits):
-  Minimizer(problem_db, model, traits),
+  Minimizer(problem_db, parallel_lib, model, traits),
   // initial value from Minimizer as accounts for fields and transformations
   numLeastSqTerms(numUserPrimaryFns),
   weightFlag(!iteratedModel->primary_response_fn_weights().empty()),

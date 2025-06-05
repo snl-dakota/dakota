@@ -33,7 +33,7 @@ public:
   //
 
   /// standard constructor
-  NonDAdaptImpSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  NonDAdaptImpSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// alternate constructor for on-the-fly instantiations
   NonDAdaptImpSampling(std::shared_ptr<Model> model, unsigned short sample_type, int samples,
 		       int seed, const String& rng, bool vary_pattern,

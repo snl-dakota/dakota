@@ -210,7 +210,7 @@ void run_dakota(const MPI_Comm& my_comm, const std::string& input,
   // Create LibraryEnvironment
   Dakota::LibraryEnvironment env(my_comm, prog_opts);
   Dakota::ProblemDescDB& problem_db = env.problem_description_db();
-
+  Dakota::ParallelLibrary& parallel_lib = env.parallel_library();
   // Perform interface plug-ins.
   // retrieve the currently active analysisComm from the Model.  In the most
   // general case, need an array of Comms to cover all Model configurations.
@@ -224,7 +224,7 @@ void run_dakota(const MPI_Comm& my_comm, const std::string& input,
       = (*ml_iter)->parallel_configuration_iterator()->ea_parallel_level();
     const MPI_Comm& analysis_comm = ea_level.server_intra_communicator();
     (*ml_iter)->derived_interface(std::make_shared<SIM::ParallelDirectApplicInterface>
-			   (problem_db, analysis_comm));
+			   (problem_db, parallel_lib, analysis_comm));
   }
 
   // Execute the Environment

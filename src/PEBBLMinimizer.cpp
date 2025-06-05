@@ -10,12 +10,13 @@
 #include "PEBBLMinimizer.hpp"
 #include "PRPMultiIndex.hpp"
 #include "dakota_data_io.hpp"
+#include "ProblemDescDB.hpp"
 
 namespace Dakota 
 {
 
-PebbldMinimizer::PebbldMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  Minimizer(problem_db, model, std::shared_ptr<TraitsBase>(new PebbldTraits()))
+PebbldMinimizer::PebbldMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  Minimizer(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new PebbldTraits()))
 {
   // While this copy will be replaced in best update, initialize here
   // since relied on in Minimizer::initialize_run when a sub-iterator
@@ -34,8 +35,8 @@ PebbldMinimizer::PebbldMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Mode
     size_t method_index = probDescDB.get_db_method_node(); // for restoration
     probDescDB.set_db_method_node(subprob_method_ptr); // method only
     // sub-problem minimizer will use shallow copy of iteratedModel
-    // (from problem_db.get_model())
-    subProbMinimizer = probDescDB.get_iterator();//(iteratedModel);
+    // (from Model::get_model(problem_db)
+    subProbMinimizer = Iterator::get_iterator(probDescDB, parallelLib);//(iteratedModel);
     // suppress DB ctor default and don't output summary info
     subProbMinimizer->summary_output(false);
     // verify method's modelPointer is empty or consistent
@@ -49,7 +50,7 @@ PebbldMinimizer::PebbldMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Mode
   else if (!subprob_method_name.empty())
     // Approach 2: instantiate on-the-fly w/o method spec support
     subProbMinimizer
-      = probDescDB.get_iterator(subprob_method_name, iteratedModel);
+      = Iterator::get_iterator(subprob_method_name, iteratedModel);
 
   branchAndBound = new PebbldBranching();
   branchAndBound->setModel(model);

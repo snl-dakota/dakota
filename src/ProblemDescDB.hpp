@@ -18,11 +18,10 @@
 #include "DataVariables.hpp"
 #include "DataInterface.hpp"
 #include "DataResponses.hpp"
+#include "UserModes.hpp"
+#include "ProblemDescDBUtils.hpp"
 
 namespace Dakota {
-
-class ParallelLibrary;
-class ProgramOptions;
 
 // define the callback function for user updates to the problem DB
 class ProblemDescDB;
@@ -35,53 +34,13 @@ typedef void(*DbCallbackFunctionPtr)(Dakota::ProblemDescDB* db, void *data_ptr);
     that is populated by a parser defined in a derived class.  When
     the parser reads a complete keyword, it populates a data class
     object (DataEnvironment, DataMethod, DataVariables, DataInterface, or
-    DataResponses) and, for all cases except environment, appends the
-    object to a linked list (dataMethodList, dataVariablesList,
-    dataInterfaceList, or dataResponsesList).  No environment linked list
-    is used since only one environment specification is allowed. */
+    DataResponses) */
 
+class ParallelLibrary;
 class ProblemDescDB
 {
-  //
-  //- Heading: Friends
-  //
-
-  /// Model requires access to get_variables() and get_response()
-  friend class Model;
-  /// SimulationModel requires access to get_interface()
-  friend class SimulationModel;
-  /// EnsembleSurrModel requires access to get_model()
-  friend class EnsembleSurrModel;
-  /// DataFitSurrModel requires access to get_iterator() and get_model()
-  friend class DataFitSurrModel;
-  /// NestedModel requires access to get_interface(), get_response(),
-  /// get_iterator(), and get_model()
-  friend class NestedModel;
-  friend class ActiveSubspaceModel;
-  friend class AdaptedBasisModel;
-  friend class RandomFieldModel;
-
-  /// Environment requires access to get_iterator()
-  friend class Environment;
-  /// Environment requires access to get_iterator()
-  friend class IteratorScheduler;
-
-  /// Iterator requires access to get_model()
-  friend class Iterator;
-  /// Iterator requires access to get_model()
-  friend class MetaIterator;
-  /// SeqHybridMetaIterator requires access to get_model()
-  friend class SeqHybridMetaIterator;
-  /// CollabHybridMetaIterator requires access to get_model()
-  friend class CollabHybridMetaIterator;
-  /// ConcurrentMetaIterator requires access to get_model()
-  friend class ConcurrentMetaIterator;
-  /// HierarchSurrBasedLocalMinimizer requires access to get_iterator()
-  friend class SurrBasedLocalMinimizer;
-  /// SurrBasedGlobalMinimizer requires access to get_iterator()
-  friend class SurrBasedGlobalMinimizer;
-  /// PEBBLMinimizer requires access to get_iterator()
-  friend class PebbldMinimizer;
+  
+  friend void ProblemDescDBUtils::check_and_broadcast_pdb(ProblemDescDB& problem_db, const UserModes& user_modes, ParallelLibrary& parallel_lib);
 
 public:
 
@@ -90,9 +49,9 @@ public:
   //
 
   /// default constructor
-  ProblemDescDB();
+  ProblemDescDB() = default;
   /// standard constructor
-  ProblemDescDB(ParallelLibrary& parallel_lib);
+  ProblemDescDB(int world_size, int world_rank);
   /// copy constructor
   ProblemDescDB(const ProblemDescDB& db);
 
@@ -106,29 +65,19 @@ public:
   //- Heading: Member methods
   //
 
-  /// retrieve an existing Iterator, if it exists in iteratorList, or
-  /// instantiate a new one
-  std::shared_ptr<Iterator> get_iterator();
-  /// retrieve an existing Iterator, if it exists in iteratorList, or
-  /// instantiate a new one
-  std::shared_ptr<Iterator> get_iterator(std::shared_ptr<Model> model);
-  /// retrieve an existing Iterator, if it exists in iteratorByNameList,
-  /// or instantiate a new one
-  std::shared_ptr<Iterator> get_iterator(const String& method_name, std::shared_ptr<Model> model);
-  /// retrieve an existing Model, if it exists, or instantiate a new one
-  std::shared_ptr<Model> get_model();
-
   /// Parses the input file or input string if present and executes
   /// callbacks.  Does not perform any validation.
-  void parse_inputs(ProgramOptions& prog_opts,
+  void parse_inputs(const std::string_view input_string,
+        const std::string_view parser_options,
+        bool command_line_run,
 		    DbCallbackFunctionPtr callback = NULL,
 		    void* callback_data = NULL);
   /// performs check_input, broadcast, and post_process, but for now,
   /// allowing separate invocation through the public API as well
-  void check_and_broadcast(const ProgramOptions& prog_opts);
+  void check_and_broadcast(const UserModes& user_modes);
   /// verifies that there is at least one of each of the required
   /// keywords in the dakota input file
-  void check_input();
+  void check_input(const UserModes& user_modes);
   /// invokes send_db_buffer() and receive_db_buffer() to broadcast DB
   /// data across the processor allocation.  Used by manage_inputs().
   void broadcast();
@@ -185,19 +134,20 @@ public:
   //- Heading: Set/Inquire functions
   //
 
-  /// return the parallelLib reference
-  ParallelLibrary& parallel_library() const;
+  public:
 
-  /// return a list of all Iterator objects that have been instantiated
-  IteratorList& iterator_list();
-  /// return a list of all Model objects that have been instantiated
-  ModelList& model_list();
-  /// return a list of all Variables objects that have been instantiated
-  VariablesList& variables_list();
-  /// return a list of all Interface objects that have been instantiated
-  InterfaceList& interface_list();
-  /// return a list of all Response objects that have been instantiated
-  ResponseList& response_list();
+  /// @brief return the name of the currently selected method
+  std::string_view method_id() const;
+
+  /// @brief return the name of the currently selected model
+  std::string_view model_id() const;
+
+  /// @brief return the name of the currently selected interface
+  std::string_view interface_id() const;
+
+
+  /// @brief return the dbRep
+  std::shared_ptr<ProblemDescDB> get_rep() const;
 
   // These functions get values out of the database.  A value is found by its
   // entry_name. Need a HashTable or other container with an efficient lookup
@@ -364,16 +314,16 @@ protected:
   /// constructor initializes the base class part of letter classes
   /// (BaseConstructor overloading avoids infinite recursion in the
   /// derived class constructors - Coplien, p. 139)
-  ProblemDescDB(BaseConstructor, ParallelLibrary& parallel_lib);
+  ProblemDescDB(BaseConstructor, int world_size, int world_rank);
 
   //
   //- Heading: Virtual functions
   //
 
   /// derived class specifics within parse_inputs()
-  virtual void derived_parse_inputs(const std::string& dakota_input_file,
-				    const std::string& dakota_input_string,
-				    const std::string& parser_options);
+  virtual void derived_parse_inputs(const std::string_view dakota_input,
+				    const std::string_view parser_options,
+            bool command_line_run);
   /// derived class specifics within broadcast()
   virtual void derived_broadcast();
   /// derived class specifics within post_process()
@@ -436,14 +386,8 @@ private:
 
   // These functions avoid multiple instantiations of the same specification.
 
-  const Variables& get_variables();
-  /// retrieve an existing Interface, if it exists, or instantiate a new one
-  const std::shared_ptr<Interface> get_interface();
-  /// retrieve an existing Response, if it exists, or instantiate a new one
-  const Response& get_response(short type, const Variables& vars);
-
   /// Used by the envelope constructor to instantiate the correct letter class
-  std::shared_ptr<ProblemDescDB> get_db(ParallelLibrary& parallel_lib);
+  std::shared_ptr<ProblemDescDB> get_db(int world_size, int world_rank);
 
   /// MPI send of a large buffer containing environmentSpec and all objects
   /// in dataMethodList, dataModelList, dataVariablesList, dataInterfaceList,
@@ -457,11 +401,6 @@ private:
   /// should be active, based on model type
   bool model_has_interface(const DataModelRep& model_rep) const;
 
-  /// echo the (potentially) specified input file or string to stdout
-  void echo_input_file(const std::string& dakota_input_file,
-		       const std::string& dakota_input_string,
-		       const std::string& tmpl_qualifier = "");
-
   /// require user-specified block identifiers to be unique
   void enforce_unique_ids();
 
@@ -470,9 +409,6 @@ private:
   //- Heading: Data
   //
  
-  /// reference to the parallel_lib object passed from main
-  ParallelLibrary& parallelLib;
-
   // Iterators for identifying active list nodes in data object linked lists
 
   /// iterator identifying the active list node in dataMethodList
@@ -485,19 +421,6 @@ private:
   std::list<DataInterface>::iterator dataInterfaceIter;
   /// iterator identifying the active list node in dataResponsesList
   std::list<DataResponses>::iterator dataResponsesIter;
-
-  /// list of iterator objects, one for each method specification
-  IteratorList iteratorList;
-  /// list of iterator objects, one for each lightweight instantiation by name
-  IteratorList iteratorByNameList;
-  /// list of model objects, one for each model specification
-  ModelList modelList;
-  /// list of variables objects, one for each variables specification
-  VariablesList variablesList;
-  /// list of interface objects, one for each interface specification
-  InterfaceList interfaceList;
-  /// list of response objects, one for each responses specification
-  ResponseList responseList;
 
   /// prevents use of get_<type> retrieval and set_<type> update functions 
   /// prior to setting the list node for the active method specification
@@ -517,6 +440,11 @@ private:
 
   /// pointer to the letter (initialized only for the envelope)
   std::shared_ptr<ProblemDescDB> dbRep;
+
+  /// MPI world rank
+  int worldRank;
+  /// MPI world size
+  int worldSize;
 };
 
 
@@ -542,29 +470,21 @@ inline void ProblemDescDB::unlock()
 }
 
 
-inline ParallelLibrary& ProblemDescDB::parallel_library() const
-{ return (dbRep) ? dbRep->parallelLib : parallelLib; }
+inline std::string_view ProblemDescDB::method_id() const {
+  return dbRep->dataMethodIter->dataMethodRep->idMethod;
+}
 
+inline std::string_view ProblemDescDB::model_id() const {
+  return dbRep->dataModelIter->dataModelRep->idModel;
+}
 
-inline IteratorList& ProblemDescDB::iterator_list()
-{ return (dbRep) ? dbRep->iteratorList : iteratorList; }
+inline std::string_view ProblemDescDB::interface_id() const {
+  return dbRep->dataInterfaceIter->dataIfaceRep->idInterface;
+}
 
-
-inline ModelList& ProblemDescDB::model_list()
-{ return (dbRep) ? dbRep->modelList : modelList; }
-
-
-inline VariablesList& ProblemDescDB::variables_list()
-{ return (dbRep) ? dbRep->variablesList : variablesList; }
-
-
-inline InterfaceList& ProblemDescDB::interface_list()
-{ return (dbRep) ? dbRep->interfaceList : interfaceList; }
-
-
-inline ResponseList& ProblemDescDB::response_list()
-{ return (dbRep) ? dbRep->responseList : responseList; }
-
+inline std::shared_ptr<ProblemDescDB> ProblemDescDB::get_rep() const {
+  return dbRep;
+}
 
 inline size_t ProblemDescDB::get_db_method_node()
 {

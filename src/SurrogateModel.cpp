@@ -23,8 +23,8 @@ static const char rcsId[]="@(#) $Id: SurrogateModel.cpp 7024 2010-10-16 01:24:42
 
 namespace Dakota {
 
-SurrogateModel::SurrogateModel(ProblemDescDB& problem_db):
-  Model(problem_db),
+SurrogateModel::SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
+  Model(problem_db, parallel_lib),
   surrogateFnIndices(problem_db.get_szs("model.surrogate.function_indices")),
   responseMode(DEFAULT_SURROGATE_RESP_MODE),
   corrType(problem_db.get_short("model.surrogate.correction_type")),

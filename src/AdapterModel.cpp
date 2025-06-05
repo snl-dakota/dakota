@@ -9,6 +9,7 @@
 
 //#include "dakota_system_defs.hpp"
 #include "AdapterModel.hpp"
+#include "DataMethod.hpp"
 //#include "EvaluationStore.hpp"
 
 static const char rcsId[]="@(#) $Id: AdapterModel.cpp 7029 2010-10-22 00:17:02Z mseldre $";

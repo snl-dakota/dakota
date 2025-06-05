@@ -16,8 +16,8 @@
 namespace Dakota {
 
 
-NonDLHSEvidence::NonDLHSEvidence(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDLHSInterval(problem_db, model)
+NonDLHSEvidence::NonDLHSEvidence(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDLHSInterval(problem_db, parallel_lib, model)
 { }
 
 

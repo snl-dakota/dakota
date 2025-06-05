@@ -13,13 +13,16 @@
 #include "DakotaModel.hpp"
 #include "DakotaInterface.hpp"
 #include "DakotaIterator.hpp"
-#include "ParallelLibrary.hpp"
 #include "DataModel.hpp"
+#include "DataInterface.hpp"
+#include "DataInterface.hpp"
 #include "PRPMultiIndex.hpp"
 #include "IteratorScheduler.hpp"
 
 
 namespace Dakota {
+
+class ParallelLibrary;
 
 /// Derived model class which performs a complete sub-iterator
 /// execution within every evaluation of the model.
@@ -48,7 +51,7 @@ public:
   //- Heading: Constructors and destructor
   //
 
-  NestedModel(ProblemDescDB& problem_db); ///< constructor
+  NestedModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib); ///< constructor
 
   void declare_sources() override;
 
@@ -536,59 +539,6 @@ inline bool NestedModel::derived_scheduler_overload() const
 		    subIteratorSched.procsPerIterator > 1 );
   return (oi_overload || si_overload);
 }
-
-
-inline IntIntPair NestedModel::
-estimate_partition_bounds(int max_eval_concurrency)
-{
-  // extract scheduling data for this level prior to dive
-  int ppi       = probDescDB.get_int("model.nested.processors_per_iterator"),
-    i_servers   = probDescDB.get_int("model.nested.iterator_servers");
-  short i_sched = probDescDB.get_short("model.nested.iterator_scheduling");
-
-  int oi_min_procs, oi_max_procs;
-  if (optionalInterface) {
-    oi_min_procs = probDescDB.min_procs_per_ie();
-    oi_max_procs = probDescDB.max_procs_per_ie(max_eval_concurrency);
-  }
-  else
-    oi_min_procs = oi_max_procs = 1;
-
-  String empty_str;
-  subIteratorSched.construct_sub_iterator(probDescDB, subIterator, subModel,
-    subMethodPointer, empty_str, empty_str);
-  IntIntPair min_max, si_min_max = subIterator->estimate_partition_bounds();
-
-  // apply multiplier from concurrent iterator scheduling overrides
-  min_max.first = ProblemDescDB::min_procs_per_level(
-    std::min(oi_min_procs, si_min_max.first), ppi, i_servers);
-  min_max.second = ProblemDescDB::max_procs_per_level(
-    std::max(oi_max_procs, si_min_max.second), ppi, i_servers, i_sched, 1,
-    false, max_eval_concurrency);
-  return min_max;
-}
-
-
-inline void NestedModel::derived_init_serial()
-{
-  // serial instantiation of subIterator
-  size_t method_index = probDescDB.get_db_method_node(),
-         model_index  = probDescDB.get_db_model_node(); // for restoration
-  probDescDB.set_db_list_nodes(subMethodPointer);       // even if empty
-  subIterator = probDescDB.get_iterator(subModel);
-  probDescDB.set_db_method_node(method_index); // restore method only
-  probDescDB.set_db_model_nodes(model_index);  // restore all model nodes
-
-  init_sub_iterator();
-
-  // initialize optionalInterface and subModel for serial operations
-  // (e.g., num servers = 1 instead of the 0 default used by
-  // ParallelLibrary::resolve_inputs())
-  if (optionalInterface)
-    optionalInterface->init_serial();
-  subModel->init_serial();
-}
-
 
 inline size_t NestedModel::mi_parallel_level_index() const
 { return subIteratorSched.miPLIndex; }

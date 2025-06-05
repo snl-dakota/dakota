@@ -15,7 +15,7 @@ namespace Dakota {
 
 // BMA TODO: review default settings from parallel library
 // checkFlag(false),
-// preRunFlag(true), runFlag(true), postRunFlag(true), userModesFlag(false),
+// runModes.preRun(true), runModes.run(true), runModes.postRun(true), runModes.user_modes()(false),
 
 // BMA TODO: some of this should be conditional on rank
 
@@ -28,8 +28,7 @@ ProgramOptions::ProgramOptions():
   worldRank(0),
   echoInput(true), preprocInput(false), stopRestartEvals(0),
   helpFlag(false), versionFlag(false), checkFlag(false), 
-  preRunFlag(false), runFlag(false), postRunFlag(false), userModesFlag(false),
-  preRunOutputFormat(TABULAR_ANNOTATED), postRunInputFormat(TABULAR_ANNOTATED)
+  stdinInput(false)
 {
   // environment settings are overridden by command line options
   parse_environment_options();
@@ -40,8 +39,7 @@ ProgramOptions::ProgramOptions(int world_rank):
   worldRank(world_rank),
   echoInput(true), preprocInput(false), stopRestartEvals(0),
   helpFlag(false), versionFlag(false), checkFlag(false), 
-  preRunFlag(false), runFlag(false), postRunFlag(false), userModesFlag(false),
-  preRunOutputFormat(TABULAR_ANNOTATED), postRunInputFormat(TABULAR_ANNOTATED)
+  stdinInput(false)
 {
   // environment settings are overridden by command line options
   parse_environment_options();
@@ -51,9 +49,7 @@ ProgramOptions::ProgramOptions(int world_rank):
 ProgramOptions::ProgramOptions(int argc, char* argv[], int world_rank):
   worldRank(world_rank),
   echoInput(true), preprocInput(false), stopRestartEvals(0),
-  helpFlag(false), versionFlag(false), checkFlag(false), 
-  preRunFlag(false), runFlag(false), postRunFlag(false), userModesFlag(false),
-  preRunOutputFormat(TABULAR_ANNOTATED), postRunInputFormat(TABULAR_ANNOTATED)
+  helpFlag(false), versionFlag(false), checkFlag(false), stdinInput(false)
 {
   // environment settings are overridden by command line options
   parse_environment_options();
@@ -70,6 +66,12 @@ ProgramOptions::ProgramOptions(int argc, char* argv[], int world_rank):
 
   if (clh.retrieve("input"))
     inputFile = clh.retrieve("input");
+  Cout << "inputFile is " << inputFile << std::endl;
+  
+  if(inputFile == "-") {
+    stdinInput = true;
+    inputFile = "";
+  }
 
   if (clh.retrieve("preproc")) {
     preprocInput = true;
@@ -115,6 +117,9 @@ const String& ProgramOptions::input_file() const
 const String& ProgramOptions::input_string() const
 { return inputString; }
 
+bool ProgramOptions::stdin_input() const
+{ return stdinInput; }
+
 bool ProgramOptions::echo_input() const
 { return echoInput; }
 
@@ -158,44 +163,8 @@ bool ProgramOptions::version() const
 bool ProgramOptions::check() const
 { return checkFlag; }
 
-bool ProgramOptions::pre_run() const
-{ return preRunFlag; }
-
-bool ProgramOptions::run() const
-{ return runFlag; }
-
-bool ProgramOptions::post_run() const
-{ return postRunFlag; }
-
-bool ProgramOptions::user_modes() const
-{ return userModesFlag; }
-
-
-const String& ProgramOptions::pre_run_input() const
-{ return preRunInput; }
-
-const String& ProgramOptions::pre_run_output() const
-{ return preRunOutput; }
-
-const String& ProgramOptions::run_input() const
-{ return runInput; }
-
-const String& ProgramOptions::run_output() const
-{ return runOutput; }
-
-const String& ProgramOptions::post_run_input() const
-{ return postRunInput; }
-
-const String& ProgramOptions::post_run_output() const
-{ return postRunOutput; }
-
-
-unsigned int ProgramOptions::pre_run_output_format() const
-{ return preRunOutputFormat; }
-
-unsigned int ProgramOptions::post_run_input_format() const
-{ return postRunInputFormat; }
-
+const UserModes& ProgramOptions::user_modes() const
+{ return userModes; }
 
 bool ProgramOptions::proceed_to_instantiate() const
 {
@@ -240,7 +209,7 @@ void ProgramOptions::input_file(const String& in_file)
 
 void ProgramOptions::input_string(const String& in_string)
 {  
-  inputString = in_string; 
+  inputString = in_string;
   // not an error if client later resolves
   if ( !inputFile.empty()   && 
        inputFile != "-"     &&
@@ -291,32 +260,32 @@ void ProgramOptions::check(bool check_flag)
 { checkFlag = check_flag; }
 
 void ProgramOptions::pre_run(bool pre_run_flag)
-{ preRunFlag = pre_run_flag; }
+{ userModes.preRun = pre_run_flag; }
 
 void ProgramOptions::run(bool run_flag)
-{ runFlag = run_flag; }
+{ userModes.run = run_flag; }
 
 void ProgramOptions::post_run(bool post_run_flag)
-{ postRunFlag = post_run_flag; }
+{ userModes.postRun = post_run_flag; }
 
 
 void ProgramOptions::pre_run_input(const String& pre_run_in)
-{ preRunInput = pre_run_in; }
+{ userModes.preRunInput = pre_run_in; }
 
 void ProgramOptions::pre_run_output(const String& pre_run_out)
-{ preRunOutput = pre_run_out; }
+{ userModes.preRunOutput = pre_run_out; }
 
 void ProgramOptions::run_input(const String& run_in)
-{ runInput = run_in; }
+{ userModes.runInput = run_in; }
 
 void ProgramOptions::run_output(const String& run_out)
-{ runOutput = run_out; }
+{ userModes.runOutput = run_out; }
 
 void ProgramOptions::post_run_input(const String& post_run_in)
-{ postRunInput = post_run_in; }
+{ userModes.postRunInput = post_run_in; }
 
 void ProgramOptions::post_run_output(const String& post_run_out)
-{ postRunOutput = post_run_out; }
+{ userModes.postRunOutput = post_run_out; }
 
 
 void ProgramOptions::parse(const ProblemDescDB& problem_db)
@@ -357,27 +326,27 @@ void ProgramOptions::parse(const ProblemDescDB& problem_db)
   
   // if command line options already set, ignore all input file pre/run/post
   if (pre_run || run || post_run) {
-    if (userModesFlag) {
+    if (userModes.requestedUserModes) {
       if (worldRank == 0)
 	Cout << "Warning: run mode options already passed; input file run " 
 	     << "modes will be ignored." << std::endl;
     }
     else {
 
-      preRunFlag = pre_run;
-      runFlag = run;
-      postRunFlag = post_run;
+      userModes.preRun = pre_run;
+      userModes.run = run;
+      userModes.postRun = post_run;
 
-      set_option(problem_db, "pre_run_input", preRunInput);
-      set_option(problem_db, "pre_run_output", preRunOutput);
-      set_option(problem_db, "run_input", runInput);
-      set_option(problem_db, "run_output", runOutput);
-      set_option(problem_db, "post_run_input", postRunInput);
-      set_option(problem_db, "post_run_output", postRunOutput);
+      set_option(problem_db, "pre_run_input", userModes.preRunInput);
+      set_option(problem_db, "pre_run_output", userModes.preRunOutput);
+      set_option(problem_db, "run_input", userModes.runInput);
+      set_option(problem_db, "run_output", userModes.runOutput);
+      set_option(problem_db, "post_run_input", userModes.postRunInput);
+      set_option(problem_db, "post_run_output", userModes.postRunOutput);
 
-      preRunOutputFormat = 
+      userModes.preRunOutputFormat = 
 	problem_db.get_ushort("environment.pre_run_output_format");
-      postRunInputFormat = 
+      userModes.postRunInputFormat = 
 	problem_db.get_ushort("environment.post_run_input_format");
 
     }
@@ -397,13 +366,7 @@ void ProgramOptions::read(MPIUnpackBuffer& s)
     >> outputFile >> errorFile 
     >> readRestartFile >> stopRestartEvals >> writeRestartFile;
   // run mode controls
-  s >> helpFlag >> versionFlag >> checkFlag >> preRunFlag >> runFlag 
-    >> postRunFlag >> userModesFlag;
-  // run mode filenames
-  s >> preRunInput >> preRunOutput >> runInput >> runOutput 
-    >> postRunInput >> postRunOutput;
-  // run mode formats
-  s >> preRunOutputFormat >> postRunInputFormat;
+  s >> helpFlag >> versionFlag >> checkFlag >> userModes;
 }
 
 
@@ -414,13 +377,7 @@ void ProgramOptions::write(MPIPackBuffer& s) const
     << outputFile << errorFile 
     << readRestartFile << stopRestartEvals << writeRestartFile;
   // run mode controls
-  s << helpFlag << versionFlag << checkFlag << preRunFlag << runFlag 
-    << postRunFlag << userModesFlag;
-  // run mode filenames
-  s << preRunInput << preRunOutput << runInput << runOutput 
-    << postRunInput << postRunOutput;
-  // run mode formats
-  s << preRunOutputFormat << postRunInputFormat;
+  s << helpFlag << versionFlag << checkFlag << userModes;
 }
 
 
@@ -442,14 +399,14 @@ void ProgramOptions::manage_run_modes(const CommandLineHandler& clh)
   // If filenames empty, do not define defaults; user might not want.
   
   // populate the filenames as necessary
-  if ( (preRunFlag = (clh.retrieve("pre_run")) != NULL))
-    split_filenames(clh.retrieve("pre_run"), preRunInput, 
-		    preRunOutput);      
-  if ( (runFlag = (clh.retrieve("run")) != NULL))
-    split_filenames(clh.retrieve("run"), runInput, runOutput);
-  if ( (postRunFlag = (clh.retrieve("post_run")) != NULL))
-    split_filenames(clh.retrieve("post_run"), postRunInput, 
-		    postRunOutput);
+  if ( (userModes.preRun = (clh.retrieve("pre_run")) != NULL))
+    split_filenames(clh.retrieve("pre_run"), userModes.preRunInput, 
+		    userModes.preRunOutput);      
+  if ( (userModes.run = (clh.retrieve("run")) != NULL))
+    split_filenames(clh.retrieve("run"), userModes.runInput, userModes.runOutput);
+  if ( (userModes.postRun = (clh.retrieve("post_run")) != NULL))
+    split_filenames(clh.retrieve("post_run"), userModes.postRunInput,
+      userModes.postRunOutput);
 
 }
 
@@ -502,19 +459,19 @@ void ProgramOptions::validate() {
 
 void ProgramOptions::validate_run_modes() {
 
-  if (preRunFlag && !runFlag && postRunFlag) {
+  if (userModes.preRun && !userModes.run && userModes.postRun) {
     Cerr << "\nError: Run phase 'run' is required when specifying both " 
 	 << "'pre_run' and 'post_run'.";
     abort_handler(-1);
   }
 
   // if no phases were given, assume default that all are active
-  if ( !preRunFlag && !runFlag && !postRunFlag ) {
-    preRunFlag = runFlag = postRunFlag = true;
-    userModesFlag = false; // no active user-specified modes
+  if ( !userModes.preRun && !userModes.run && !userModes.postRun ) {
+    userModes.preRun = userModes.run = userModes.postRun = true;
+    userModes.requestedUserModes = false; // no active user-specified modes
   }
   else
-    userModesFlag = true;  // one or more active user-specified modes
+    userModes.requestedUserModes = true;  // one or more active user-specified modes
 
 }
 

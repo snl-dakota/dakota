@@ -86,7 +86,7 @@ insert_nodes(Dakota::DataMethod&   dme, Dakota::DataModel&    dmo,
 void LibraryEnvironment::done_modifying_db()
 {  
   // always check and broadcast before construction
-  probDescDB.check_and_broadcast(programOptions); 
+  ProblemDescDBUtils::check_and_broadcast_pdb(probDescDB, programOptions.user_modes(), parallelLib); 
   construct();
 }
 
@@ -140,7 +140,7 @@ InterfaceList LibraryEnvironment::
 filtered_interface_list(const String& interf_type, const String& an_driver)
 {
   InterfaceList filt_interf_list;
-  ModelList& models = probDescDB.model_list();
+  ModelList& models = Model::model_cache(probDescDB);
   for (auto& m : models) {
     std::shared_ptr<Interface> model_interface = m->derived_interface();
     if ( ( interf_type.empty() || 
@@ -164,7 +164,7 @@ filtered_model_list(const String& model_type, const String& interf_type,
 		    const String& an_driver)
 {
   ModelList filt_model_list;
-  ModelList& models = probDescDB.model_list();
+  ModelList& models = Model::model_cache(probDescDB);
   for(auto& m : models) {
     if (model_type.empty() || m->model_type() == model_type) {
       std::shared_ptr<Interface> model_interface = m->derived_interface();

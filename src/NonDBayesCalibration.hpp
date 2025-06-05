@@ -38,7 +38,7 @@ public:
   //
 
   /// standard constructor
-  NonDBayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  NonDBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// destructor
   ~NonDBayesCalibration() override;
 

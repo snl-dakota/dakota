@@ -33,7 +33,7 @@ protected:
   //- Heading: Constructors and destructor
   //
 
-  NonDReliability(ProblemDescDB& problem_db, std::shared_ptr<Model> model); ///< constructor
+  NonDReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model); ///< constructor
   ~NonDReliability() override;                                       ///< destructor
 
   //

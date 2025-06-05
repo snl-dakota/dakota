@@ -77,7 +77,9 @@ int mc_ptr_int = 0;           ///< global pointer for ModelCenter API
 int dc_ptr_int = 0;           ///< global pointer for ModelCenter eval DB
 #endif // DAKOTA_MODELCENTER
 
-ProblemDescDB *Dak_pddb;      ///< set by ProblemDescDB, for use in parsing
+ProblemDescDB *Dak_pddb = nullptr;      ///< set by ProblemDescDB, for use in parsing
+
+ParallelLibrary *Dak_parallel_lib = nullptr; ///< set by ParallelLibrary; used by the abort handler to shut down MPI
 
 
 // -----------------------
@@ -102,11 +104,11 @@ void abort_handler(int code)
 
   if (Dak_pddb) {
     // cleanup parameters/results files
-    InterfaceList &ifaces = Dak_pddb->interface_list();
-    for (InterfaceList::iterator It = ifaces.begin(); It != ifaces.end(); ++It)
-      (*It)->file_cleanup(); // virtual fn defined for ProcessApplicInterface
+    CleanUpAllInterfacesAttorney::execute();
+    //Interface::clean_up_all_interfaces();
     // properly terminate in parallel
-    Dak_pddb->parallel_library().abort_helper(code);
+    if(Dak_parallel_lib)
+     Dak_parallel_lib->abort_helper(code);
   }
   else {
     abort_throw_or_exit(code);

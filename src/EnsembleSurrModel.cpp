@@ -8,6 +8,7 @@
     _______________________________________________________________________ */
 
 #include "EnsembleSurrModel.hpp"
+#include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
 
 static const char rcsId[]=
@@ -15,8 +16,8 @@ static const char rcsId[]=
 
 namespace Dakota {
 
-EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db):
-  SurrogateModel(problem_db), sameModelInstance(false),
+EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
+  SurrogateModel(problem_db, parallel_lib), sameModelInstance(false),
   sameInterfaceInstance(false), ensemblePrecedence(DEFAULT_PRECEDENCE),
   modeKeyBufferSize(0), correctionMode(SINGLE_CORRECTION)
 {
@@ -35,19 +36,19 @@ EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db):
   approxModels.resize(num_approx);
   for (i=0; i<num_approx; ++i) {
     problem_db.set_db_model_nodes(ensemble_model_ptrs[i]);
-    approxModels[i] = problem_db.get_model();
+    approxModels[i] = Model::get_model(problem_db, parallel_lib);
     check_submodel_compatibility(*approxModels[i]);
   }
   if (truth_model_spec) problem_db.set_db_model_nodes(truth_model_ptr);
   else problem_db.set_db_model_nodes(ensemble_model_ptrs[num_approx]);
-  truthModel = problem_db.get_model();
+  truthModel = Model::get_model(problem_db, parallel_lib);
   check_submodel_compatibility(*truthModel);
 
   problem_db.set_db_model_nodes(model_index); // restore
 
   if (truth_model_spec) problem_db.set_db_model_nodes(truth_model_ptr);
   else problem_db.set_db_model_nodes(ensemble_model_ptrs[num_approx]);
-  truthModel = problem_db.get_model();
+  truthModel = ModelUtils::get_model(problem_db, parallel_lib);
 
   // honor an asynchronous local specification and perform local scheduling
   // even if the concurrency is 1.  This avoid blocking other models within
@@ -173,6 +174,30 @@ void EnsembleSurrModel::assign_default_keys(short mode)
   //resize_response();  resize_maps();
 
   check_model_interface_instance();
+}
+
+IntIntPair EnsembleSurrModel::
+estimate_partition_bounds(int max_eval_concurrency)
+{
+  // responseMode is a run-time setting, so we are conservative on usage of
+  // max_eval_concurrency as in derived_init_communicators()
+
+  probDescDB.set_db_model_nodes(truthModel->model_id());
+  IntIntPair min_max_i,
+    min_max = truthModel->estimate_partition_bounds(max_eval_concurrency);
+
+  size_t i, num_approx = approxModels.size();
+  for (i=0; i<num_approx; ++i) {
+    Model& model_i = *approxModels[i];
+    probDescDB.set_db_model_nodes(model_i.model_id());
+    min_max_i = model_i.estimate_partition_bounds(max_eval_concurrency);
+    if (min_max_i.first  < min_max.first)  min_max.first  = min_max_i.first;
+    if (min_max_i.second > min_max.second) min_max.second = min_max_i.second;
+  }
+
+  return min_max;
+
+  // list nodes are reset at the calling level after completion of recursion
 }
 
 
@@ -1495,25 +1520,25 @@ std::shared_ptr<Model> EnsembleSurrModel::active_surrogate_model(size_t i)
 {
   unsigned short lf_form;
   switch (responseMode) {
-  case AGGREGATED_MODELS: // array of surrogates: require valid index
-    lf_form = active_surrogate_model_form(i);
-    if (lf_form == USHRT_MAX) {
-      Cerr << "Error: model form undefined in EnsembleSurrModel::"
-	   << "active_surrogate_model()" << std::endl;
-      abort_handler(MODEL_ERROR);
-      return nullptr;
-    }
-    return model_from_index(lf_form);  break;
-  case BYPASS_SURROGATE: case NO_SURROGATE:
-    return nullptr;                break;
-  case AGGREGATED_MODEL_PAIR: case MODEL_DISCREPANCY: // paired cases
-  case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
-    // One surrModelKey: allow client to quietly rely on default (_NPOS)
-    lf_form = (i == _NPOS) ? active_surrogate_model_form(0)
-                           : active_surrogate_model_form(i);
-    return //(lf_form == USHRT_MAX) ? model_from_index(0) :
-      model_from_index(lf_form);
-    break;
+    case AGGREGATED_MODELS: // array of surrogates: require valid index
+      lf_form = active_surrogate_model_form(i);
+      if (lf_form == USHRT_MAX) {
+        Cerr << "Error: model form undefined in EnsembleSurrModel::"
+      << "active_surrogate_model()" << std::endl;
+        abort_handler(MODEL_ERROR);
+        return nullptr;
+      }
+      return model_from_index(lf_form);  break;
+    case BYPASS_SURROGATE: case NO_SURROGATE:
+      return nullptr;                break;
+    case AGGREGATED_MODEL_PAIR: case MODEL_DISCREPANCY: // paired cases
+    case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
+      // One surrModelKey: allow client to quietly rely on default (_NPOS)
+      lf_form = (i == _NPOS) ? active_surrogate_model_form(0)
+                            : active_surrogate_model_form(i);
+      return //(lf_form == USHRT_MAX) ? model_from_index(0) :
+        model_from_index(lf_form);
+      break;
   }
 }
 
@@ -2257,6 +2282,18 @@ build_approximation(const RealVector& c_vars, const Response& response)
 }
 */
 
+void EnsembleSurrModel::stop_model(short model_id)
+{
+  if (model_id) {
+    short  model_index = model_id - 1; // id to index
+    auto model = model_from_index(model_index);
+    ParConfigLIter pc_it = model->parallel_configuration_iterator();
+    size_t pl_index = model->mi_parallel_level_index();
+    if (pc_it->mi_parallel_level_defined(pl_index) &&
+	pc_it->mi_parallel_level(pl_index).server_communicator_size() > 1)
+      model->stop_servers();
+  }
+}
 
 void EnsembleSurrModel::compute_apply_delta(IntResponseMap& lf_resp_map)
 {

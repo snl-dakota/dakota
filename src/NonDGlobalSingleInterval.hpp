@@ -37,7 +37,7 @@ public:
   //
 
   /// constructor
-  NonDGlobalSingleInterval(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  NonDGlobalSingleInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// destructor
   ~NonDGlobalSingleInterval() override;
 

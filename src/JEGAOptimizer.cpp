@@ -1873,10 +1873,10 @@ Structors
 ===============================================================================
 */
 JEGAOptimizer::JEGAOptimizer(
-    ProblemDescDB& problem_db, std::shared_ptr<Model> model
+    ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model
     ) :
         //Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new JEGATraits())),
-        Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new JEGATraits())),
+        Optimizer(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new JEGATraits())),
         _theParamDB(0x0),
         _theEvalCreator(0x0)
 {

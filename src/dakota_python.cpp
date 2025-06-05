@@ -176,11 +176,12 @@ PYBIND11_MODULE(environment, m) {
             auto p_libEnv = Dakota::python::create_libEnv(input_string);
 
             // Associate the single python callback with all Pybind11Interface interfaces
-            Dakota::InterfaceList & interfaces = p_libEnv->problem_description_db().interface_list();
+            Dakota::InterfaceList & interfaces = Dakota::Interface::interface_cache(p_libEnv->problem_description_db());
             for( auto & interface : interfaces )
             {
               auto py11_int = std::dynamic_pointer_cast<Dakota::Pybind11Interface>(
-                                (*p_libEnv->problem_description_db().interface_list().begin()));
+                                (*Dakota::Interface::interface_cache(p_libEnv->problem_description_db()).begin()));
+              
               if( py11_int )
                 py11_int->register_pybind11_callback_fn(callback);
             }
@@ -198,11 +199,11 @@ PYBIND11_MODULE(environment, m) {
 
             // Associate callbacks with interface specs
             auto callbacks_map = callbacks.cast< std::map<std::string,py::function> >();
-            Dakota::InterfaceList & interfaces = p_libEnv->problem_description_db().interface_list();
+            Dakota::InterfaceList & interfaces = Dakota::Interface::interface_cache(p_libEnv->problem_description_db());
             for( auto & interface : interfaces )
             {
               auto py11_int = std::dynamic_pointer_cast<Dakota::Pybind11Interface>(
-                                (*p_libEnv->problem_description_db().interface_list().begin()));
+                                (*Dakota::Interface::interface_cache(p_libEnv->problem_description_db()).begin()));
               if( py11_int )
               {
                 for( auto const & idrv : interface->analysis_drivers() )

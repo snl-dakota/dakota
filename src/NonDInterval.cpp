@@ -22,8 +22,8 @@ static const char rcsId[] = "@(#) $Id: NonDInterval.cpp 6080 2009-09-08 19:03:20
 
 namespace Dakota {
 
-NonDInterval::NonDInterval(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonD(problem_db, model),
+NonDInterval::NonDInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonD(problem_db, parallel_lib, model),
   singleIntervalFlag(methodName ==  LOCAL_INTERVAL_EST ||
 		     methodName == GLOBAL_INTERVAL_EST)
 {

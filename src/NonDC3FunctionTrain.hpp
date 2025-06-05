@@ -29,7 +29,7 @@ public:
   //
 
   /// standard constructor
-  NonDC3FunctionTrain(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  NonDC3FunctionTrain(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// destructor
   ~NonDC3FunctionTrain();
 

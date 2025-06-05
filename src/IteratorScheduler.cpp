@@ -10,6 +10,7 @@
 #include "IteratorScheduler.hpp"
 #include "DakotaIterator.hpp"
 #include "ParallelLibrary.hpp"
+#include "ProblemDescDB.hpp"
 
 static const char rcsId[]="@(#) $Id: IteratorScheduler.cpp 6492 2009-12-19 00:04:28Z briadam $";
 
@@ -49,7 +50,7 @@ IteratorScheduler(ParallelLibrary& parallel_lib, bool peer_assign_jobs,
 
 
 void IteratorScheduler::
-construct_sub_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator,
+construct_sub_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Iterator>& sub_iterator,
 		       std::shared_ptr<Model> sub_model, const String& method_ptr,
 		       const String& method_name, const String& model_ptr)
 {
@@ -60,8 +61,8 @@ construct_sub_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub
     else          problem_db.set_db_list_nodes(method_ptr);
 
     sub_iterator = (light_wt) ?
-      problem_db.get_iterator(method_name, sub_model) : //, ctor_model) :
-      problem_db.get_iterator(sub_model); //(ctor_model);
+      Iterator::get_iterator(method_name, sub_model) :
+      Iterator::get_iterator(problem_db, parallel_lib, sub_model);
   }
 }
 
@@ -74,7 +75,7 @@ configure(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator, st
   // minimally instantiate the sub_iterator for concurrency estimation
   const ParallelLevel& mi_pl = schedPCIter->mi_parallel_level(); // last level
   if (mi_pl.server_communicator_rank() == 0)
-    sub_iterator = problem_db.get_iterator(sub_model); // reused downstream
+    sub_iterator = Iterator::get_iterator(problem_db, parallelLib, sub_model); // reused downstream
 
   return configure(problem_db, sub_iterator);
 }
@@ -90,7 +91,7 @@ configure(ProblemDescDB& problem_db, const String& method_string,
   // for concurrency estimation
   const ParallelLevel& mi_pl = schedPCIter->mi_parallel_level(); // last level
   if (mi_pl.server_communicator_rank() == 0)
-    sub_iterator = problem_db.get_iterator(method_string, sub_model);
+    sub_iterator = Iterator::get_iterator(method_string, sub_model);
 
   return configure(problem_db, sub_iterator);
 }
@@ -203,7 +204,7 @@ void IteratorScheduler::free_iterator_parallelism()
 /** This is a convenience function for encapsulating the allocation of
     communicators prior to running an iterator.*/
 void IteratorScheduler::
-init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator,
+init_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Iterator>& sub_iterator,
 	      ParLevLIter pl_iter)
 {
   // pl_iter advanced by miPLIndex update() in partition()
@@ -212,7 +213,7 @@ init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator
   //
   // Parallel iterators are constructed/initialized on all processors
   if (problem_db.get_ushort("method.algorithm") & PARALLEL_BIT) {
-    sub_iterator = problem_db.get_iterator(); // all procs
+    sub_iterator = Iterator::get_iterator(problem_db, parallel_lib); // all procs
     // init_communicators() manages IteratorScheduler::partition() and
     // IteratorScheduler::init_iterator()
     sub_iterator->init_communicators(pl_iter);
@@ -235,7 +236,7 @@ init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator
   if(sub_iterator)
     sub_model = sub_iterator->iterated_model();
   if (!sub_model) {
-    sub_model = problem_db.get_model();
+    sub_model = Model::get_model(problem_db, parallel_lib);
     if (sub_iterator) // else constructed with sub_model below
       sub_iterator->iterated_model(sub_model);
   }
@@ -248,7 +249,7 @@ init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator
     if (multiproc) sub_model->init_comms_bcast_flag(true);
     // only dedicated scheduler processor needs an iterator object:
     if (!sub_iterator)
-      sub_iterator = problem_db.get_iterator(sub_model);
+      sub_iterator = Iterator::get_iterator(problem_db, parallel_lib, sub_model);
       sub_iterator->init_communicators(pl_iter);
     if (multiproc) sub_model->stop_init_communicators(pl_iter);
   }
@@ -272,7 +273,7 @@ init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator
 /** This is a convenience function for encapsulating the allocation of
     communicators prior to running an iterator. */
 void IteratorScheduler::
-init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator,
+init_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Iterator>& sub_iterator,
 	      std::shared_ptr<Model> sub_model, ParLevLIter pl_iter)
 {
   // pl_iter advanced by miPLIndex update() in partition()
@@ -290,7 +291,7 @@ init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator
     bool multiproc = (pl_iter->server_communicator_size() > 1);
     if (multiproc) sub_model->init_comms_bcast_flag(true);
     if (!sub_iterator)// only ded scheduler processor needs an iterator object
-      sub_iterator = problem_db.get_iterator(sub_model);
+      sub_iterator = Iterator::get_iterator(problem_db, parallel_lib, sub_model);
     sub_iterator->init_communicators(pl_iter);
     if (multiproc) sub_model->stop_init_communicators(pl_iter);
   }
@@ -314,7 +315,7 @@ init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator
 /** This is a convenience function for encapsulating the allocation of
     communicators prior to running an iterator. */
 void IteratorScheduler::
-init_iterator(ProblemDescDB& problem_db, const String& method_string,
+init_iterator(const String& method_string,
 	      std::shared_ptr<Iterator>& sub_iterator, std::shared_ptr<Model> sub_model, ParLevLIter pl_iter)
 {
   // pl_iter advanced by miPLIndex update() in partition()
@@ -332,7 +333,7 @@ init_iterator(ProblemDescDB& problem_db, const String& method_string,
     bool multiproc = (pl_iter->server_communicator_size() > 1);
     if (multiproc) sub_model->init_comms_bcast_flag(true);
     if (!sub_iterator)// only ded scheduler processor needs an iterator object
-      sub_iterator = problem_db.get_iterator(method_string, sub_model);
+      sub_iterator = Iterator::get_iterator(method_string, sub_model);
     sub_iterator->init_communicators(pl_iter);
     if (multiproc) sub_model->stop_init_communicators(pl_iter);
   }

@@ -96,7 +96,7 @@ public:
   /** NOMAD Optimizer Constructor
       @param model DAKOTA Model object
   */
-  NomadOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  NomadOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
 
   /// alternate constructor for Iterator instantiations without DB
   NomadOptimizer(std::shared_ptr<Model> model);

@@ -19,8 +19,8 @@
 namespace Dakota {
 
 SysCallApplicInterface::
-SysCallApplicInterface(const ProblemDescDB& problem_db):
-  ProcessApplicInterface(problem_db)
+SysCallApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
+  ProcessApplicInterface(problem_db, parallel_lib)
 { }
 
 

@@ -32,7 +32,7 @@ public:
   //
 
   /// standard constructor
-  NonDDREAMBayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  NonDDREAMBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// destructor
   ~NonDDREAMBayesCalibration() override;
 

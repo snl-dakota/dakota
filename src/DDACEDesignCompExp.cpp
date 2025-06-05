@@ -31,8 +31,8 @@ namespace Dakota {
 
 /** This constructor is called for a standard iterator built with data from
     probDescDB. */
-DDACEDesignCompExp::DDACEDesignCompExp(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  PStudyDACE(problem_db, model),
+DDACEDesignCompExp::DDACEDesignCompExp(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  PStudyDACE(problem_db, parallel_lib, model),
   daceMethod(probDescDB.get_ushort("method.sub_method")),
   samplesSpec(probDescDB.get_int("method.samples")), numSamples(samplesSpec),
   symbolsSpec(probDescDB.get_int("method.symbols")), numSymbols(symbolsSpec),
@@ -132,8 +132,8 @@ void DDACEDesignCompExp::core_run()
 
 void DDACEDesignCompExp::post_input()
 {
-  if (parallelLib.command_line_user_modes() && 
-      !parallelLib.command_line_post_run_input().empty()) {
+  if (parallelLib.user_modes().requestedUserModes && 
+      !parallelLib.user_modes().postRunInput.empty()) {
     // apply any corrections to user spec to update numSamples before post input
     resolve_samples_symbols();
   }

@@ -32,7 +32,7 @@ public:
   //
 
   /// constructor
-  ProcessHandleApplicInterface(const ProblemDescDB& problem_db);
+  ProcessHandleApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
   /// destructor
   ~ProcessHandleApplicInterface() override;
 
@@ -136,17 +136,6 @@ private:
   // Used for substitution of parameter input files and result output files
   // for analysis drivers.
 };
-
-
-/** argList sized 3 for [driver name, input file, output file] */
-inline ProcessHandleApplicInterface::
-ProcessHandleApplicInterface(const ProblemDescDB& problem_db):
-  ProcessApplicInterface(problem_db), argList(3)
-{ }
-
-
-inline ProcessHandleApplicInterface::~ProcessHandleApplicInterface() 
-{ }
 
 
 /** This code provides the derived function used by ApplicationInterface::

@@ -32,7 +32,7 @@ public:
   //
 
   /// standard constructor
-  NonDExpansion(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  NonDExpansion(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// alternate constructor
   NonDExpansion(unsigned short method_name, std::shared_ptr<Model> model,
 		const ShortShortPair& approx_view, short exp_coeffs_approach,

@@ -29,8 +29,8 @@ const char *SCI_FIELD_NAMES[] = { "dakota_type", "numFns", "numVars", "numACV", 
 const int SCI_NUMBER_OF_FIELDS = 26;
 
 
-ScilabInterface::ScilabInterface(const ProblemDescDB& problem_db)
-  : DirectApplicInterface(problem_db)
+ScilabInterface::ScilabInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib)
+  : DirectApplicInterface(problem_db, parallel_lib)
 {
   // Scilab Initialisation
 #ifdef _MSC_VER

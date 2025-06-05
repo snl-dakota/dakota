@@ -10,6 +10,7 @@
 #include "AdaptedBasisModel.hpp"
 #include "dakota_linear_algebra.hpp"
 #include "ParallelLibrary.hpp"
+#include "ProblemDescDB.hpp"
 #include "MarginalsCorrDistribution.hpp"
 #include "NonDPolynomialChaos.hpp"
 #include "SharedPecosApproxData.hpp"
@@ -21,13 +22,13 @@ namespace Dakota {
 
 
 AdaptedBasisModel::
-AdaptedBasisModel(ProblemDescDB& problem_db):
+AdaptedBasisModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   method_rotation(problem_db.get_short("model.adapted_basis.rotation_method")),
   adaptedBasisTruncationTolerance(probDescDB.get_real(
     "model.adapted_basis.truncation_tolerance")),
   subspaceDimension(probDescDB.get_int(
     "model.subspace.dimension")),  
-  SubspaceModel(problem_db, get_sub_model(problem_db))
+  SubspaceModel(problem_db, parallel_lib, get_sub_model(problem_db, parallel_lib))
 {
   // BMA: can't do this in get_sub_model as Iterator envelope hasn't
   // been default constructed yet; for now we transfer ownership of
@@ -45,7 +46,7 @@ AdaptedBasisModel(ProblemDescDB& problem_db):
   
 }
 
-std::shared_ptr<Model> AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db)
+std::shared_ptr<Model> AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib)
 {
   const String& actual_model_pointer
     = problem_db.get_string("model.surrogate.truth_model_pointer");
@@ -68,7 +69,7 @@ std::shared_ptr<Model> AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_d
   size_t model_index = problem_db.get_db_model_node(); // for restoration
   problem_db.set_db_model_nodes(actual_model_pointer);
 
-  auto actual_model(problem_db.get_model());
+  auto actual_model(Model::get_model(problem_db, parallel_lib));
 
     // configure pilot PCE object (instantiate now; build expansion at run time)
   RealVector dim_pref;

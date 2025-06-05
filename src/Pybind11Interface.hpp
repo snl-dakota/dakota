@@ -31,7 +31,7 @@ class Pybind11Interface: public DirectApplicInterface
 
   public:
 
-    Pybind11Interface(const ProblemDescDB& problem_db); ///< constructor
+    Pybind11Interface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib); ///< constructor
     ~Pybind11Interface();                               ///< destructor
 
     /// register a python callback function

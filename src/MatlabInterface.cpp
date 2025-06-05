@@ -38,8 +38,8 @@ const int NUMBER_OF_FIELDS = 23;
 //const int NUMBER_OF_FIELDS = sizeof(FIELD_NAMES)/sizeof(char);
 
 
-MatlabInterface::MatlabInterface(const ProblemDescDB& problem_db)
-  : DirectApplicInterface(problem_db) 
+MatlabInterface::MatlabInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib)
+  : DirectApplicInterface(problem_db, parallel_lib) 
 {
   // TODO: this code should be unreachable and can be removed; test.
   if (analysisDrivers.empty()) {

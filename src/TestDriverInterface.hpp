@@ -27,7 +27,7 @@ public:
   //- Heading: Constructor and destructor
   //
 
-  TestDriverInterface(const ProblemDescDB& problem_db); ///< constructor
+  TestDriverInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib); ///< constructor
   ~TestDriverInterface() override;                               ///< destructor
 
 protected:

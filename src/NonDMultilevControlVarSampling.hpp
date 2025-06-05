@@ -33,7 +33,7 @@ public:
   //
 
   /// standard constructor
-  NonDMultilevControlVarSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  NonDMultilevControlVarSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model);
   /// destructor
   ~NonDMultilevControlVarSampling() override;
 

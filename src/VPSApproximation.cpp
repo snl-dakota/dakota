@@ -16,6 +16,7 @@
 #include "VPSApproximation.hpp"
 #include "DakotaIterator.hpp"
 #include "DakotaResponse.hpp"
+#include "ProblemDescDB.hpp"
 
 
 

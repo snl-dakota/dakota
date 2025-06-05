@@ -110,8 +110,8 @@ NonDGPMSABayesCalibration* NonDGPMSABayesCalibration::nonDGPMSAInstance(NULL);
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDGPMSABayesCalibration::
-NonDGPMSABayesCalibration(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDQUESOBayesCalibration(problem_db, model),
+NonDGPMSABayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDQUESOBayesCalibration(problem_db, parallel_lib, model),
   buildSamples(probDescDB.get_int("method.build_samples")),
   approxImportFile(probDescDB.get_string("method.import_build_points_file")),
   approxImportFormat(probDescDB.get_ushort("method.import_build_format")),

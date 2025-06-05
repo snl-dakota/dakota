@@ -32,8 +32,8 @@ extern PRPCache data_pairs; // global container
 SNLLLeastSq* SNLLLeastSq::snllLSqInstance(NULL);
 
 
-SNLLLeastSq::SNLLLeastSq(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  LeastSq(problem_db, model, std::shared_ptr<TraitsBase>(new SNLLLeastSqTraits())),
+SNLLLeastSq::SNLLLeastSq(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  LeastSq(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new SNLLLeastSqTraits())),
   SNLLBase(problem_db), nlfObjective(NULL),
   nlfConstraint(NULL), nlpConstraint(NULL), theOptimizer(NULL)
 {

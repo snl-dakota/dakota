@@ -27,8 +27,8 @@ namespace Dakota {
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDACVSampling::
-NonDACVSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDNonHierarchSampling(problem_db, model)//, multiStartACV(true)
+NonDACVSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDNonHierarchSampling(problem_db, parallel_lib, model)//, multiStartACV(true)
 {
   mlmfSubMethod = problem_db.get_ushort("method.sub_method");
 

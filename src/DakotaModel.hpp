@@ -13,7 +13,6 @@
 #include "dakota_data_types.hpp"
 #include "model_utils.hpp"
 #include "MPIManager.hpp"
-#include "ProblemDescDB.hpp"
 #include "DakotaVariables.hpp"
 #include "DakotaConstraints.hpp"
 //#include "DakotaInterface.hpp"
@@ -36,7 +35,9 @@ namespace Dakota {
 #define ESTIMATE_MESSAGE_LENGTHS 4
 
 // forward declarations
+class Iterator;
 class ParallelLibrary;
+class ProblemDescDB;
 class Approximation;
 class SharedApproxData;
 class DiscrepancyCorrection;
@@ -52,14 +53,33 @@ extern ProblemDescDB   dummy_db;        // defined in dakota_global_defs.cpp
     class hierarchies in DAKOTA.  The model hierarchy contains a set
     of variables, an interface, and a set of responses, and an
     iterator operates on the model to map the variables into responses
-    using the interface.  For memory efficiency and enhanced
-    polymorphism, the model hierarchy employs the "letter/envelope
-    idiom" (see Coplien "Advanced C++", p. 133), for which the base
-    class (Model) serves as the envelope and one of the derived
-    classes (selected in Model::get_model()) serves as the letter. */
+    using the interface. */
 
 class Model
 {
+
+public:
+
+  // enum to disambiguate protected ctor used for on-the-fly construction
+  enum class ModelCtor{ LtWt };
+
+  // Functions and data for instantiating and caching Models
+
+  /// @brief retrieve an existing Model, if it exists, or instantiate a new one
+  /// @return pointer to existing or newly created Model
+  static std::shared_ptr<Model> get_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
+
+  /// @brief return the model cache for the study
+  /// @param problem_db 
+  /// @return model cache
+  static std::list<std::shared_ptr<Model>>& model_cache(ProblemDescDB& problem_db);
+
+  /// @brief remove a cached Model for the study
+  static void remove_cached_model(const ProblemDescDB& problem_db);
+
+private:
+  /// @brief Cache of Models created for each study
+  static std::map<const ProblemDescDB*, std::list<std::shared_ptr<Model>>> modelCache;
 
 public:
 
@@ -70,7 +90,7 @@ public:
   /// default constructor
   Model();
   /// standard constructor
-  Model(ProblemDescDB& problem_db);
+  Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
   /// copy constructor
   Model(const Model& model) = delete;
 
@@ -849,7 +869,7 @@ protected:
 	ParallelLibrary& parallel_lib = dummy_lib);
 
   /// constructor initializing base class for recast model instances
-  Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
+  Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, ModelCtor dummy);
 
   //
   //- Heading: Virtual functions

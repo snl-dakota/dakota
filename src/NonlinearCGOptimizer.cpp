@@ -40,8 +40,8 @@ private:
 
 
 NonlinearCGOptimizer::
-NonlinearCGOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model): 
-  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new NonlinearCGTraits())),
+NonlinearCGOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model): 
+  Optimizer(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new NonlinearCGTraits())),
   initialStep(0.01), linesearchTolerance(1.0e-2),
   linesearchType(CG_LS_SIMPLE), maxLinesearchIters(10), relFunctionTol(0.0),
   relGradientTol(0.0), resetStep(true), restartIter(1000000),

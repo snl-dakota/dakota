@@ -10,6 +10,7 @@
 #include "SubspaceModel.hpp"
 #include "dakota_linear_algebra.hpp"
 #include "ParallelLibrary.hpp"
+#include "ProblemDescDB.hpp"
 #include "MarginalsCorrDistribution.hpp"
 
 namespace Dakota {
@@ -18,8 +19,8 @@ namespace Dakota {
 SubspaceModel* SubspaceModel::smInstance(NULL);
 
 
-SubspaceModel::SubspaceModel(ProblemDescDB& problem_db, std::shared_ptr<Model> sub_model):
-  RecastModel(problem_db, sub_model), randomSeed(24620),
+SubspaceModel::SubspaceModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> sub_model):
+  RecastModel(problem_db, parallel_lib, sub_model), randomSeed(24620),
   numFullspaceVars(ModelUtils::cv(*subModel)),
   // default is 0 for no user override, but only used for AdaptedBasis at
   // this time (ActiveSubspace overwrites with basis truncation procedure):

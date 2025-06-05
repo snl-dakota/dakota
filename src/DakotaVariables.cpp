@@ -32,7 +32,51 @@ BOOST_CLASS_EXPORT(Dakota::Variables)
 namespace Dakota {
 
 
+  const Variables& Dakota::Variables::get_variables(ProblemDescDB& problem_db) {
 
+    ProblemDescDB* const study_ptr = problem_db.get_rep().get();
+    auto& study_cache = Variables::variablesCache[study_ptr];
+  
+    // Have to worry about loss of encapsulation and use of context _above_ this
+    // specification, i.e., any dependence on iterator/model/interface/responses
+    // specifications (dependence on the environment specification is OK since
+    // there is only one).
+    // > variables view is method dependent
+
+    // The DB list nodes are set prior to calling get_variables():
+    // >    variables_ptr spec -> id_variables must be defined
+    // > no variables_ptr spec -> id_variables ignored, vars spec = last parsed
+    //const String& id_variables = dbRep->dataVariablesIter->idVariables;
+
+    // Turn off variables reuse for now, since it is problematic with surrogates:
+    // a top level variables set followed by a subModel eval which sets subModel
+    // vars (where the subModel vars object is reused) results in a top level
+    // eval with the wrong vars (e.g., surrogate auto-build in
+    // dakota_textbook_lhs_approx.in).
+    //
+    // In general, variables object reuse should be fine for objects with peer
+    // relationships, but are questionable for use among nested/layered levels.
+    // Need a way to detect peer vs. nested/layered relationships.
+    study_cache.emplace_back(problem_db);
+    return study_cache.back();
+  }
+  
+  std::list<Variables>& Variables::variables_cache(ProblemDescDB& problem_db) {
+    const ProblemDescDB* const study_ptr = problem_db.get_rep().get();
+    try {
+      return Variables::variablesCache.at(study_ptr);
+    } catch(std::out_of_range) {
+      Cerr << "Variables::variables_cache() called with nonexistent study!\n";
+      throw;
+    }
+  }
+  
+  void Variables::remove_cached_variables(const ProblemDescDB& problem_db) {
+    const ProblemDescDB* const study_ptr = problem_db.get_rep().get();
+    Variables::variablesCache.erase(study_ptr);
+  }
+  
+  std::map<const ProblemDescDB*, std::list<Variables>> Variables::variablesCache{};
 
 /** This constructor is the one which must build the base class data for all
     derived classes.  get_variables() instantiates a derived class letter

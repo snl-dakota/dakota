@@ -27,8 +27,8 @@ namespace Dakota {
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDEnsembleSampling::
-NonDEnsembleSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  NonDSampling(problem_db, model),
+NonDEnsembleSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDSampling(problem_db, parallel_lib, model),
   //pilotSamples(problem_db.get_sza("method.nond.pilot_samples")),
   pilotMgmtMode(
     problem_db.get_short("method.nond.ensemble_pilot_solution_mode")),

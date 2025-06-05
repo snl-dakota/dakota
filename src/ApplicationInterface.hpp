@@ -10,10 +10,11 @@
 #ifndef APPLICATION_INTERFACE_H
 #define APPLICATION_INTERFACE_H
 
+#include "ParallelLibrary.hpp"
 #include "DakotaInterface.hpp"
 #include "PRPMultiIndex.hpp"
-#include "ParallelLibrary.hpp"
-#include "DataInterface.hpp"
+#include "DataMethod.hpp"
+#include <DataInterface.hpp>
 
 namespace Dakota {
 
@@ -22,6 +23,8 @@ namespace Dakota {
 
 class ParamResponsePair;
 class ActiveSet;
+class ParallelLibrary;
+
 
 
 /// Derived class within the interface class hierarchy for supporting
@@ -43,8 +46,8 @@ public:
   //- Heading: Constructors and destructor
   //
 
-  ApplicationInterface(const ProblemDescDB& problem_db); ///< constructor
-  ~ApplicationInterface() override;                      ///< destructor
+  ApplicationInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib); ///< constructor
+  ~ApplicationInterface() override;                               ///< destructor
 
 protected:
 
@@ -689,24 +692,6 @@ synchronous_local_analysis(int analysis_id)
 inline void ApplicationInterface::
 broadcast_evaluation(const ParamResponsePair& pair)
 { broadcast_evaluation(pair.eval_id(), pair.variables(), pair.active_set()); }
-
-
-inline void ApplicationInterface::
-launch_asynch_local(MPIUnpackBuffer& recv_buffer, int fn_eval_id)
-{
-  if (multiProcEvalFlag)
-    parallelLib.bcast_e(recv_buffer);
-  // unpack
-  Variables vars; ActiveSet set;
-  recv_buffer >> vars >> set;
-  recv_buffer.reset();
-  Response local_response(sharedRespData, set); // special ctor
-  ParamResponsePair
-    prp(vars, interfaceId, local_response, fn_eval_id, false); // shallow copy
-  asynchLocalActivePRPQueue.insert(prp);
-  // execute
-  derived_map_asynch(prp);
-}
 
 
 //inline void ApplicationInterface::clear_bookkeeping()

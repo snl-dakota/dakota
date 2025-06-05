@@ -55,7 +55,7 @@ public:
   //
 
   /// standard constructor
-  NCSUOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  NCSUOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
 
   /// alternate constructor for instantiations "on the fly"
   NCSUOptimizer(std::shared_ptr<Model> model, size_t max_iter, size_t max_eval,

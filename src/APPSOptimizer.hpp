@@ -132,7 +132,7 @@ public:
   //
 
   /// constructor
-  APPSOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model);
+  APPSOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
 
   /// alternate constructor for on-the-fly instantiation without ProblemDescDB
   APPSOptimizer(std::shared_ptr<Model> model);

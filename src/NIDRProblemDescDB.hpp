@@ -14,9 +14,7 @@
 #include <external/nidr/nidr.h>
 
 namespace Dakota {
-
-class ParallelLibrary;
-
+ 
 /// The derived input file database utilizing the new IDR parser.
 
 /** The NIDRProblemDescDB class is derived from ProblemDescDB for use
@@ -38,7 +36,7 @@ public:
   //
 
   /// constructor
-  NIDRProblemDescDB(ParallelLibrary& parallel_lib);
+  NIDRProblemDescDB(int world_size, int world_rank);
   /// destructor
   ~NIDRProblemDescDB();
 
@@ -48,9 +46,8 @@ public:
 
   /// parses the input file and populates the problem description
   /// database using NIDR.
-  void derived_parse_inputs(const std::string& dakota_input_file,
-			    const std::string& dakota_input_string,
-			    const std::string& parser_options) override;
+  void derived_parse_inputs(const std::string_view dakota_input,
+			    const std::string_view parser_options, bool command_line_run) override;
   /// perform any data processing that must be coordinated with DB buffer
   /// broadcasting (performed prior to broadcasting the DB buffer on rank 0
   /// and after receiving the DB buffer on other processor ranks)

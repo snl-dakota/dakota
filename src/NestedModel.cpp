@@ -8,6 +8,7 @@
     _______________________________________________________________________ */
 
 #include "NestedModel.hpp"
+#include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
 #include "MarginalsCorrDistribution.hpp"
 #include "dakota_system_defs.hpp"
@@ -21,8 +22,8 @@ static const char rcsId[]="@(#) $Id: NestedModel.cpp 7024 2010-10-16 01:24:42Z m
 
 namespace Dakota {
 
-NestedModel::NestedModel(ProblemDescDB& problem_db):
-  Model(problem_db),
+NestedModel::NestedModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
+  Model(problem_db, parallel_lib),
   nestedModelEvalCntr(0), firstUpdate(true), outerMIPLIndex(0),
   subIteratorSched(parallelLib,
 		   true, // peer 1 must assign jobs to peers 2-n
@@ -81,8 +82,8 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
     numOptInterfEqCon
       = problem_db.get_sizet("responses.num_nonlinear_equality_constraints");
     optInterfaceResponse
-      = problem_db.get_response(SIMULATION_RESPONSE, currentVariables);
-    optionalInterface = problem_db.get_interface();
+      = Response::get_response(problem_db, SIMULATION_RESPONSE, currentVariables);
+    optionalInterface = Interface::get_interface(problem_db, parallel_lib);
     size_t num_fns = optInterfaceResponse.num_functions();
     numOptInterfPrimary = num_fns - numOptInterfIneqCon - numOptInterfEqCon;
 
@@ -119,7 +120,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 
   problem_db.set_db_list_nodes(subMethodPointer); // even if empty
 
-  subModel = problem_db.get_model();
+  subModel = Model::get_model(problem_db, parallel_lib);
   //check_submodel_compatibility(subModel); // sanity checks performed below
   // if outer level output is verbose/debug, request fine-grained evaluation 
   // reporting for purposes of the final output summary.  This allows verbose
@@ -557,6 +558,35 @@ void NestedModel::declare_sources()
       optionalInterface->interface_id(), "interface");
 }
 
+IntIntPair NestedModel::
+estimate_partition_bounds(int max_eval_concurrency)
+{
+  // extract scheduling data for this level prior to dive
+  int ppi       = probDescDB.get_int("model.nested.processors_per_iterator"),
+    i_servers   = probDescDB.get_int("model.nested.iterator_servers");
+  short i_sched = probDescDB.get_short("model.nested.iterator_scheduling");
+
+  int oi_min_procs, oi_max_procs;
+  if (optionalInterface) {
+    oi_min_procs = probDescDB.min_procs_per_ie();
+    oi_max_procs = probDescDB.max_procs_per_ie(max_eval_concurrency);
+  }
+  else
+    oi_min_procs = oi_max_procs = 1;
+
+  String empty_str;
+  subIteratorSched.construct_sub_iterator(probDescDB, parallelLib, subIterator, subModel,
+    subMethodPointer, empty_str, empty_str);
+  IntIntPair min_max, si_min_max = subIterator->estimate_partition_bounds();
+
+  // apply multiplier from concurrent iterator scheduling overrides
+  min_max.first = ProblemDescDB::min_procs_per_level(
+    std::min(oi_min_procs, si_min_max.first), ppi, i_servers);
+  min_max.second = ProblemDescDB::max_procs_per_level(
+    std::max(oi_max_procs, si_min_max.second), ppi, i_servers, i_sched, 1,
+    false, max_eval_concurrency);
+  return min_max;
+}
 
 /** Asynchronous flags need to be initialized for the subModel.  In
     addition, max_eval_concurrency is the outer level iterator
@@ -626,6 +656,26 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
       subIteratorSched.iterator_message_lengths(params_buff_len, buff.size());
     }
   }
+}
+
+void NestedModel::derived_init_serial()
+{
+  // serial instantiation of subIterator
+  size_t method_index = probDescDB.get_db_method_node(),
+         model_index  = probDescDB.get_db_model_node(); // for restoration
+  probDescDB.set_db_list_nodes(subMethodPointer);       // even if empty
+  subIterator = Iterator::get_iterator(probDescDB, parallelLib, subModel);
+  probDescDB.set_db_method_node(method_index); // restore method only
+  probDescDB.set_db_model_nodes(model_index);  // restore all model nodes
+
+  init_sub_iterator();
+
+  // initialize optionalInterface and subModel for serial operations
+  // (e.g., num servers = 1 instead of the 0 default used by
+  // ParallelLibrary::resolve_inputs())
+  if (optionalInterface)
+    optionalInterface->init_serial();
+  subModel->init_serial();
 }
 
 

@@ -27,8 +27,8 @@ extern PRPCache data_pairs; // global container
 
 
 DataFitSurrBasedLocalMinimizer::
-DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  SurrBasedLocalMinimizer(problem_db, model,
+DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  SurrBasedLocalMinimizer(problem_db, parallel_lib, model,
     std::shared_ptr<TraitsBase>(new DataFitSurrBasedLocalTraits())),
   multiLayerBypassFlag(false),
   useDerivsFlag(probDescDB.get_bool("model.surrogate.derivative_usage"))

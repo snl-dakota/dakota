@@ -14,10 +14,12 @@
 #include "DakotaApproximation.hpp"
 #include "RecastModel.hpp"
 #include "DakotaIterator.hpp"
+#include "DataModel.hpp"
 
 namespace Dakota {
 
 /// forward declarations
+class ParallelLibrary;
 class ProblemDescDB;
 
 /// Random field model, capable of generating and then forward propagating
@@ -37,7 +39,7 @@ public:
   //
 
   /// Problem database constructor
-  RandomFieldModel(ProblemDescDB& problem_db);
+  RandomFieldModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
 
   //
   //- Heading: Virtual function redefinitions
@@ -75,7 +77,7 @@ protected:
   // ---
 
   /// retrieve the sub-Model from the DB to pass up the constructor chain
-  std::shared_ptr<Model> get_sub_model(ProblemDescDB& problem_db);
+  std::shared_ptr<Model> get_sub_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
 
   /// initialize the RF-generating sampler
   void init_dace_iterator(ProblemDescDB& problem_db);

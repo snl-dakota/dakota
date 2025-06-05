@@ -36,7 +36,7 @@ public:
   //- Heading: Constructors and destructor
   //
 
-  NonDGlobalInterval(ProblemDescDB& problem_db, std::shared_ptr<Model> model); ///< constructor
+  NonDGlobalInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model); ///< constructor
   ~NonDGlobalInterval() override;                                       ///< destructor
 
   //

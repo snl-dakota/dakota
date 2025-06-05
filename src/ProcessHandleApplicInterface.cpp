@@ -20,6 +20,17 @@
 
 namespace Dakota {
 
+
+/** argList sized 3 for [driver name, input file, output file] */
+ProcessHandleApplicInterface::
+ProcessHandleApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
+  ProcessApplicInterface(problem_db, parallel_lib), argList(3)
+{ }
+
+
+ProcessHandleApplicInterface::~ProcessHandleApplicInterface() 
+{ }
+
 void ProcessHandleApplicInterface::map_bookkeeping(pid_t pid, int fn_eval_id)
 {
   // store the process & eval ids in a map.  The correspondence in completed

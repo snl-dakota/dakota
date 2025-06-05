@@ -44,8 +44,8 @@ namespace {
     public:
 
       /// constructor
-      OptTestDirectApplicInterface(const Dakota::ProblemDescDB& problem_db):
-        Dakota::DirectApplicInterface(problem_db) { numAnalysisServers = 1;}
+      OptTestDirectApplicInterface(const Dakota::ProblemDescDB& problem_db, Dakota::ParallelLibrary& parallel_lib):
+        Dakota::DirectApplicInterface(problem_db, parallel_lib) { numAnalysisServers = 1;}
 
       /// destructor
       ~OptTestDirectApplicInterface() override { }
@@ -248,7 +248,7 @@ Dakota::LibraryEnvironment * Dakota::Opt_TPL_Test_Fixture::create_default_env(un
   // plug the client's interface (function evaluator) into the Dakota environment
   Dakota::ProblemDescDB& problem_db = env.problem_description_db();
   std::shared_ptr<OptTestDirectApplicInterface> serial_iface(
-    std::make_shared<OptTestDirectApplicInterface>(problem_db));
+    std::make_shared<OptTestDirectApplicInterface>(problem_db, parallel_lib));
   serial_interface_plugin(env, "simple_quad", serial_iface);
 
   return p_env;

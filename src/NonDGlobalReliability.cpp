@@ -60,8 +60,8 @@ NonDGlobalReliability* NonDGlobalReliability::nondGlobRelInstance(NULL);
 
 
 NonDGlobalReliability::
-NonDGlobalReliability(ProblemDescDB& problem_db, std::shared_ptr<Model> model): 
-  NonDReliability(problem_db, model),
+NonDGlobalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model): 
+  NonDReliability(problem_db, parallel_lib, model),
   meritFunctionType(AUGMENTED_LAGRANGIAN_MERIT), dataOrder(1)
 {
   if (mppSearchType != SUBMETHOD_EGRA_X && mppSearchType != SUBMETHOD_EGRA_U) {

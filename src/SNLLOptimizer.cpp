@@ -43,8 +43,8 @@ const int LARGE_SCALE = 100;
 
 /** This constructor is used for normal instantiations using data from
     the ProblemDescDB. */
-SNLLOptimizer::SNLLOptimizer(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
-  Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new SNLLTraits())),
+SNLLOptimizer::SNLLOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  Optimizer(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new SNLLTraits())),
   SNLLBase(problem_db), nlfObjective(NULL), nlfConstraint(NULL),
   nlpConstraint(NULL), fdnlf1(NULL), fdnlf1Con(NULL), theOptimizer(NULL),
   setUpType("model"), userObjective0(NULL), userObjective1(NULL),

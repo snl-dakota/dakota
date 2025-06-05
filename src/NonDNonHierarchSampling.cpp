@@ -43,8 +43,8 @@ NonDNonHierarchSampling* NonDNonHierarchSampling::nonHierSampInstance(NULL);
     probDescDB can be queried for settings from the method specification. */
 NonDNonHierarchSampling::
 NonDNonHierarchSampling(ProblemDescDB& problem_db,
-			std::shared_ptr<Model> model):
-  NonDEnsembleSampling(problem_db, model), activeBudget((Real)maxFunctionEvals),
+			ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDEnsembleSampling(problem_db, parallel_lib, model), activeBudget((Real)maxFunctionEvals),
   truthFixedByPilot(problem_db.get_bool("method.nond.truth_fixed_by_pilot")),
   analyticEstVarDerivs(false), // only in ML BLUE currently
   hardenNumericSoln(true)      // Cholesky option not currently exposed in spec

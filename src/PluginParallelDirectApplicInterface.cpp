@@ -22,9 +22,9 @@ namespace SIM {
 
 
 ParallelDirectApplicInterface::
-ParallelDirectApplicInterface(const Dakota::ProblemDescDB& problem_db,
+ParallelDirectApplicInterface(const Dakota::ProblemDescDB& problem_db, Dakota::ParallelLibrary& parallel_lib,
 			      const MPI_Comm& analysis_comm):
-  Dakota::DirectApplicInterface(problem_db)//, analysisComm(analysis_comm)
+  Dakota::DirectApplicInterface(problem_db, parallel_lib)//, analysisComm(analysis_comm)
 {
   // it is not necessary to update analysis communicator size/rank, since
   // these are inherited for use at run time.  The only purpose for passing

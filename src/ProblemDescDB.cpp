@@ -16,20 +16,18 @@
 //- Checked by:
 
 #include "dakota_system_defs.hpp"
-#include "interface_utils.hpp"
-#include "iterator_utils.hpp"
-#include "model_utils.hpp"
+#include "dakota_data_util.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "NIDRProblemDescDB.hpp"
-#include "ProgramOptions.hpp"
 #include "DakotaIterator.hpp"
 #include "DakotaInterface.hpp"
 #include "WorkdirHelper.hpp"  // bfs utils and prepend_preferred_env_path
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <string>
-
+#include "delete_study_components.hpp"
+#include <string_view>
 
 //#define DEBUG
 //#define MPI_DEBUG
@@ -49,17 +47,10 @@ extern ProblemDescDB *Dak_pddb;	  // defined in dakota_global_defs.cpp
     initialization list (to avoid the recursion of the base class constructor
     calling get_db() again).  Since the letter IS the representation, its
     representation pointer is set to NULL. */
-ProblemDescDB::ProblemDescDB(BaseConstructor, ParallelLibrary& parallel_lib):
-  parallelLib(parallel_lib), environmentCntr(0), methodDBLocked(true),
+ProblemDescDB::ProblemDescDB(BaseConstructor, int world_size, int world_rank):
+  environmentCntr(0), methodDBLocked(true),
   modelDBLocked(true), variablesDBLocked(true), interfaceDBLocked(true),
-  responsesDBLocked(true)
-{ /* empty ctor */ }
-
-
-/** The default constructor: dbRep is NULL in this case.  This makes
-    it necessary to check for NULL in the copy constructor, assignment
-    operator, and destructor. */
-ProblemDescDB::ProblemDescDB(): parallelLib(dummy_lib)
+  responsesDBLocked(true), worldSize(world_size), worldRank(world_rank)
 { /* empty ctor */ }
 
 
@@ -68,10 +59,9 @@ ProblemDescDB::ProblemDescDB(): parallelLib(dummy_lib)
     to properly execute get_db(problem_db), since the constructor
     overloaded with BaseConstructor builds the actual base class data
     inherited by the derived classes. */
-ProblemDescDB::ProblemDescDB(ParallelLibrary& parallel_lib):
-  parallelLib(parallel_lib),
+ProblemDescDB::ProblemDescDB(int world_size, int world_rank) :
   // Set the rep pointer to the appropriate db type
-  dbRep(get_db(parallel_lib))
+  dbRep(get_db(world_size, world_rank))
 
 {
   if (!dbRep) // bad settings or insufficient memory
@@ -82,20 +72,19 @@ ProblemDescDB::ProblemDescDB(ParallelLibrary& parallel_lib):
 /** Initializes dbRep to the appropriate derived type.  The standard
     derived class constructors are invoked.  */
 std::shared_ptr<ProblemDescDB>
-ProblemDescDB::get_db(ParallelLibrary& parallel_lib)
+ProblemDescDB::get_db(int world_size, int world_rank)
 {
   Dak_pddb = this;	// for use in abort_handler()
 
   //if (xml_flag)
   //  return new XMLProblemDescDB(parallel_lib);
   //else
-  return std::make_shared<NIDRProblemDescDB>(parallel_lib);
+  return std::make_shared<NIDRProblemDescDB>(world_size, world_rank);
 }
 
 
 /** Copy constructor manages sharing of dbRep */
 ProblemDescDB::ProblemDescDB(const ProblemDescDB& db):
-  parallelLib(db.parallel_library()),
   dbRep(db.dbRep)
 { /* empty ctor */ }
 
@@ -113,6 +102,7 @@ ProblemDescDB::~ProblemDescDB()
 {
   if (this == Dak_pddb)
     Dak_pddb = NULL;
+  delete_study_components(*this);
 }
 
 
@@ -122,83 +112,50 @@ ProblemDescDB::~ProblemDescDB()
     DB setup phase 2: optionally insert additional data via late sets.
     Rank 0 only. */
 void ProblemDescDB::
-parse_inputs(ProgramOptions& prog_opts,
+parse_inputs(const std::string_view input_string, const std::string_view parser_options, bool command_line_run,
 	     DbCallbackFunctionPtr callback, void *callback_data)
 {
   if (dbRep) {
-    dbRep->parse_inputs(prog_opts, callback, callback_data);
+    dbRep->parse_inputs(input_string, parser_options, command_line_run, callback, callback_data);
     // BMA TODO: Temporary workaround; can't get callback to work on
     // letter yet. Need to replace Null_rep* with forward to letter
     // and remove dbRep->, but initial cut didn't work.
-    if (callback && dbRep->parallelLib.world_rank() == 0)
+    if (callback && dbRep->worldRank == 0)
       (*callback)(this, callback_data);
   }
   else {
 
     // Only world rank 0 parses the input file.
-    if (parallelLib.world_rank() == 0) {
-
-      if ( !prog_opts.input_file().empty() &&
-	   !prog_opts.input_string().empty() ) {
-	Cerr << "\nError: parse_inputs called with both input file and input "
-	     << "string." << std::endl;
-	abort_handler(PARSE_ERROR);
-      }
-
-      if (prog_opts.preproc_input()) {
-
-	if (prog_opts.echo_input()) {
-	  echo_input_file(prog_opts.input_file(), prog_opts.input_string(),
-			  " template");
-	  echo_input_file(prog_opts.preprocessed_file(), "");
-	}
-
-	// Parse the input file using one of the derived parser-specific classes
-	derived_parse_inputs(prog_opts.preprocessed_file(), "",
-			     prog_opts.parser_options());
-
-	// Remove file created by preprocessing input
-	std::filesystem::remove(prog_opts.preprocessed_file());
-      }
-      else {
-
-	if (prog_opts.echo_input())
-	  echo_input_file(prog_opts.input_file(), prog_opts.input_string());
-
-	// Parse the input file using one of the derived parser-specific classes
-	derived_parse_inputs(prog_opts.input_file(), prog_opts.input_string(),
-			     prog_opts.parser_options());
-
-      }
-
-      // Allow user input by callback function.
-
-      // BMA TODO: Is this comment true?
-      // Note: the DB is locked and the list iterators are not defined.  Thus,
-      // the user function must do something to put the DB in a usable set/get
-      // state (e.g., resolve_top_method() or set_db_list_nodes()).
-
-      // if (callback)
-      // 	(*callback)(this, callback_data);
-
+    if (worldRank == 0) {
+        // Parse the input file using one of the derived parser-specific classes
+        derived_parse_inputs(input_string, parser_options, command_line_run);
     }
 
+    // Allow user input by callback function.
+
+    // BMA TODO: Is this comment true?
+    // Note: the DB is locked and the list iterators are not defined.  Thus,
+    // the user function must do something to put the DB in a usable set/get
+    // state (e.g., resolve_top_method() or set_db_list_nodes()).
+
+    // if (callback)
+    // 	(*callback)(this, callback_data);
   }
 }
 
 
 /** DB setup phase 3: perform basic checks on keywords counts in
     current DB state, then sync to all processors. */
-void ProblemDescDB::check_and_broadcast(const ProgramOptions& prog_opts) {
+void ProblemDescDB::check_and_broadcast(const UserModes& user_modes) {
 
   if (dbRep)
-    dbRep->check_and_broadcast(prog_opts);
+    dbRep->check_and_broadcast(user_modes);
   else {
 
     // Check to make sure at least one of each of the keywords was found
     // in the problem specification file; checks only happen on Dakota rank 0
-    if (parallelLib.world_rank() == 0)
-      check_input();
+    if (worldRank == 0)
+      check_input(user_modes);
 
     // bcast a minimal MPI buffer containing the input specification
     // data prior to post-processing
@@ -228,13 +185,13 @@ void ProblemDescDB::broadcast()
 
     // Now, world rank 0 yyparse's and sends all the parsed data in a single
     // buffer to all other ranks.
-    if (parallelLib.world_size() > 1) {
-      if (parallelLib.world_rank() == 0) {
+    if (worldSize > 1) {
+      if (worldRank == 0) {
 	enforce_unique_ids();
 	derived_broadcast(); // pre-processor
 	send_db_buffer();
 #ifdef MPI_DEBUG
-	Cout << "DB buffer to send on world rank " << parallelLib.world_rank()
+	Cout << "DB buffer to send on world rank " << worldRank
 	     << ":\n" << environmentSpec << dataMethodList << dataVariablesList
 	     << dataInterfaceList << dataResponsesList << std::endl;
 #endif // MPI_DEBUG
@@ -242,7 +199,7 @@ void ProblemDescDB::broadcast()
       else {
 	receive_db_buffer();
 #ifdef MPI_DEBUG
-	Cout << "DB buffer received on world rank " << parallelLib.world_rank()
+	Cout << "DB buffer received on world rank " << worldRank
 	     << ":\n" << environmentSpec << dataMethodList << dataVariablesList
 	     << dataInterfaceList << dataResponsesList << std::endl;
 #endif // MPI_DEBUG
@@ -276,13 +233,11 @@ void ProblemDescDB::post_process()
 
 
 void ProblemDescDB::
-derived_parse_inputs(const std::string& dakota_input_file,
-		     const std::string& dakota_input_string,
-		     const std::string& parser_options)
+derived_parse_inputs(const std::string_view dakota_input,
+		     const std::string_view parser_options, bool command_line_run)
 {
   if (dbRep)
-    dbRep->derived_parse_inputs(dakota_input_file, dakota_input_string,
-				parser_options);
+    dbRep->derived_parse_inputs(dakota_input, parser_options, command_line_run);
   else { // this fn must be redefined
     Cerr << "Error: Letter lacking redefinition of virtual derived_parse_inputs"
 	 << " function.\n       No default defined at base class." << std::endl;
@@ -310,10 +265,10 @@ void ProblemDescDB::derived_post_process()
 /** NOTE: when using library mode in a parallel application,
     check_input() should either be called only on worldRank 0, or it
     should follow a matched send_db_buffer()/receive_db_buffer() pair. */
-void ProblemDescDB::check_input()
+void ProblemDescDB::check_input(const UserModes& user_modes)
 {
   if (dbRep)
-    dbRep->check_input();
+    dbRep->check_input(user_modes);
   else {
 
     int num_errors = 0;
@@ -371,12 +326,12 @@ void ProblemDescDB::check_input()
       dataModelList.push_back(data_model);
     }
 
-    if (parallelLib.command_line_user_modes()) {
+    if (user_modes.requestedUserModes) {
 
-      if (!parallelLib.command_line_pre_run_input().empty())
+      if (!user_modes.postRunInput.empty())
 	Cerr << "Warning: pre-run input not implemented; ignored.\n";
 
-      if (!parallelLib.command_line_pre_run_output().empty()) {
+      if (!user_modes.preRunOutput.empty()) {
 	if (dataMethodList.size() > 1) {
 	  Cerr << "Error: pre-run output only allowed for single method.\n";
 	  ++num_errors;
@@ -396,13 +351,13 @@ void ProblemDescDB::check_input()
 	}
       }
 
-      if (!parallelLib.command_line_run_input().empty())
+      if (!user_modes.runInput.empty())
 	Cerr << "Warning: run input not implemented; ignored.\n";
 
-      if (!parallelLib.command_line_run_output().empty())
+      if (!user_modes.runOutput.empty())
 	Cerr << "Warning: run output not implemented; ignored.\n";
 
-      if (!parallelLib.command_line_post_run_input().empty()) {
+      if (!user_modes.postRunInput.empty()) {
 	if (dataMethodList.size() > 1) {
 	  Cerr << "Error: post-run input only allowed for single method.\n";
 	  ++num_errors;
@@ -422,7 +377,7 @@ void ProblemDescDB::check_input()
 	}
       }
 
-      if (!parallelLib.command_line_post_run_output().empty())
+      if (!user_modes.postRunOutput.empty())
 	Cerr << "Warning: post-run output not implemented; ignored.\n";
 
     }
@@ -554,12 +509,12 @@ void ProblemDescDB::set_db_method_node(const String& method_tag)
 	  = std::find_if( dataMethodList.begin(), dataMethodList.end(),
               boost::bind(DataMethod::id_compare, _1, method_tag) );
 	if (dataMethodIter == dataMethodList.end()) {
-	  if (parallelLib.world_rank() == 0)
+	  if (worldRank == 0)
 	    Cerr << "\nWarning: empty method id string not found.\n         "
 		 << "Last method specification parsed will be used.\n";
 	  --dataMethodIter; // last entry in list
 	}
-	else if (parallelLib.world_rank() == 0 &&
+	else if (worldRank == 0 &&
 		 std::count_if(dataMethodList.begin(), dataMethodList.end(),
                    boost::bind(DataMethod::id_compare, _1, method_tag)) > 1)
 	  Cerr << "\nWarning: empty method id string is ambiguous.\n         "
@@ -580,7 +535,7 @@ void ProblemDescDB::set_db_method_node(const String& method_tag)
       else {
 	methodDBLocked = false; // unlock
 	dataMethodIter = dm_it;
-	if (parallelLib.world_rank() == 0 &&
+	if (worldRank == 0 &&
 	    std::count_if(dataMethodList.begin(), dataMethodList.end(),
 			  boost::bind(DataMethod::id_compare,_1,method_tag))>1)
 	  Cerr << "\nWarning: method id string " << method_tag
@@ -672,12 +627,12 @@ void ProblemDescDB::set_db_model_nodes(const String& model_tag)
 	  = std::find_if( dataModelList.begin(), dataModelList.end(),
               boost::bind(DataModel::id_compare, _1, model_tag) );
 	if (dataModelIter == dataModelList.end()) {
-	  if (parallelLib.world_rank() == 0)
+	  if (worldRank == 0)
 	    Cerr << "\nWarning: empty model id string not found.\n         "
 		 << "Last model specification parsed will be used.\n";
 	  --dataModelIter; // last entry in list
 	}
-	else if (parallelLib.world_rank() == 0 &&
+	else if (worldRank == 0 &&
 		 std::count_if(dataModelList.begin(), dataModelList.end(),
                    boost::bind(DataModel::id_compare, _1, model_tag)) > 1)
 	  Cerr << "\nWarning: empty model id string is ambiguous.\n         "
@@ -698,7 +653,7 @@ void ProblemDescDB::set_db_model_nodes(const String& model_tag)
       else {
 	modelDBLocked = false; // unlock
 	dataModelIter = dm_it;
-	if (parallelLib.world_rank() == 0 &&
+	if (worldRank == 0 &&
 	    std::count_if(dataModelList.begin(), dataModelList.end(),
 			  boost::bind(DataModel::id_compare, _1, model_tag))>1)
 	  Cerr << "\nWarning: model id string " << model_tag << " is ambiguous."
@@ -740,12 +695,12 @@ void ProblemDescDB::set_db_variables_node(const String& variables_tag)
 	  = std::find_if( dataVariablesList.begin(), dataVariablesList.end(),
               boost::bind(DataVariables::id_compare, _1, variables_tag) );
 	if (dataVariablesIter == dataVariablesList.end()) {
-	  if (parallelLib.world_rank() == 0)
+	  if (worldRank == 0)
 	    Cerr << "\nWarning: empty variables id string not found.\n         "
 		 << "Last variables specification parsed will be used.\n";
 	  --dataVariablesIter; // last entry in list
 	}
-	else if (parallelLib.world_rank() == 0 &&
+	else if (worldRank == 0 &&
 		 std::count_if(dataVariablesList.begin(),
 			       dataVariablesList.end(),
 			       boost::bind(DataVariables::id_compare, _1,
@@ -769,7 +724,7 @@ void ProblemDescDB::set_db_variables_node(const String& variables_tag)
       else {
 	variablesDBLocked = false; // unlock
 	dataVariablesIter = dv_it;
-	if (parallelLib.world_rank() == 0 &&
+	if (worldRank == 0 &&
 	    std::count_if(dataVariablesList.begin(), dataVariablesList.end(),
 			  boost::bind(DataVariables::id_compare, _1,
 				      variables_tag)) > 1)
@@ -807,13 +762,13 @@ void ProblemDescDB::set_db_interface_node(const String& interface_tag)
 	// interface ptr in nested models indicates the omission of an optional
 	// interface (rather than the presence of an unidentified interface).
 	if (dataInterfaceIter == dataInterfaceList.end()) {
-	  if (parallelLib.world_rank() == 0 &&
+	  if (worldRank == 0 &&
 	      MoRep.modelType == "simulation")
 	    Cerr << "\nWarning: empty interface id string not found.\n         "
 		 << "Last interface specification parsed will be used.\n";
 	  --dataInterfaceIter; // last entry in list
 	}
-	else if (parallelLib.world_rank() == 0 &&
+	else if (worldRank == 0 &&
 		 MoRep.modelType == "simulation"  &&
 		 std::count_if(dataInterfaceList.begin(),
 			       dataInterfaceList.end(),
@@ -838,7 +793,7 @@ void ProblemDescDB::set_db_interface_node(const String& interface_tag)
       else {
 	interfaceDBLocked = false; // unlock
 	dataInterfaceIter = di_it;
-	if (parallelLib.world_rank() == 0 &&
+	if (worldRank == 0 &&
 	    std::count_if(dataInterfaceList.begin(), dataInterfaceList.end(),
 			  boost::bind(DataInterface::id_compare, _1,
 				      interface_tag)) > 1)
@@ -869,12 +824,12 @@ void ProblemDescDB::set_db_responses_node(const String& responses_tag)
 	  = std::find_if( dataResponsesList.begin(), dataResponsesList.end(),
               boost::bind(DataResponses::id_compare, _1, responses_tag) );
 	if (dataResponsesIter == dataResponsesList.end()) {
-	  if (parallelLib.world_rank() == 0)
+	  if (worldRank == 0)
 	    Cerr << "\nWarning: empty responses id string not found.\n         "
 		 << "Last responses specification parsed will be used.\n";
 	  --dataResponsesIter; // last entry in list
 	}
-	else if (parallelLib.world_rank() == 0 &&
+	else if (worldRank == 0 &&
 		 std::count_if(dataResponsesList.begin(),
 			       dataResponsesList.end(),
 			       boost::bind(DataResponses::id_compare, _1,
@@ -898,7 +853,7 @@ void ProblemDescDB::set_db_responses_node(const String& responses_tag)
       else {
 	responsesDBLocked = false; // unlock
 	dataResponsesIter = dr_it;
-	if (parallelLib.world_rank() == 0 &&
+	if (worldRank == 0 &&
 	    std::count_if(dataResponsesList.begin(), dataResponsesList.end(),
 			  boost::bind(DataResponses::id_compare, _1,
 				      responses_tag)) > 1)
@@ -919,10 +874,10 @@ void ProblemDescDB::send_db_buffer()
 
   // Broadcast length of buffer so that servers can allocate MPIUnpackBuffer
   int buffer_len = send_buffer.size();
-  parallelLib.bcast_w(buffer_len);
+  //parallelLib.bcast_w(buffer_len);
 
   // Broadcast actual buffer
-  parallelLib.bcast_w(send_buffer);
+  //parallelLib.bcast_w(send_buffer);
 }
 
 
@@ -930,280 +885,14 @@ void ProblemDescDB::receive_db_buffer()
 {
   // receive length of incoming buffer and allocate space for MPIUnpackBuffer
   int buffer_len;
-  parallelLib.bcast_w(buffer_len);
+  //parallelLib.bcast_w(buffer_len);
 
   // receive incoming buffer
   MPIUnpackBuffer recv_buffer(buffer_len);
-  parallelLib.bcast_w(recv_buffer);
+  //parallelLib.bcast_w(recv_buffer);
   recv_buffer >> environmentSpec   >> dataMethodList    >> dataModelList
 	      >> dataVariablesList >> dataInterfaceList >> dataResponsesList;
 }
-
-
-std::shared_ptr<Iterator> ProblemDescDB::get_iterator()
-{
-  // ProblemDescDB::get_<object> functions operate at the envelope level
-  // so that any passing of *this provides the envelope object.
-  if (!dbRep) {
-    Cerr << "Error: ProblemDescDB::get_iterator() called for letter object."
-	 << std::endl;
-    abort_handler(PARSE_ERROR);
-  }
-
-  // In general, have to worry about loss of encapsulation and use of context
-  // _above_ this specification.  However, any dependence on the environment
-  // specification is OK since there is only one.  All other specifications
-  // are identified via model_pointer.
-
-  // The DB list nodes are set prior to calling get_iterator():
-  // >    method_ptr spec -> id_method must be defined
-  // > no method_ptr spec -> id_method is ignored, method spec is last parsed
-  // Reuse logic works in both cases -> only a single unreferenced iterator
-  // may exist, which corresponds to the last method spec and is reused for
-  // all untagged instantiations.
-  String id_method = dbRep->dataMethodIter->dataMethodRep->idMethod;
-  if(id_method.empty())
-    id_method = "NO_METHOD_ID";
-  IterLIter i_it
-    = std::find_if(dbRep->iteratorList.begin(), dbRep->iteratorList.end(),
-                  [&id_method](std::shared_ptr<Iterator> iter) {return iter->method_id() == id_method;});
-  if (i_it == dbRep->iteratorList.end()) {
-    dbRep->iteratorList.push_back(IteratorUtils::get_iterator(*this));
-    i_it = --dbRep->iteratorList.end();
-  }
-  return *i_it;
-}
-
-
-std::shared_ptr<Iterator> ProblemDescDB::get_iterator(std::shared_ptr<Model> model)
-{
-  // ProblemDescDB::get_<object> functions operate at the envelope level
-  // so that any passing of *this provides the envelope object.
-  if (!dbRep) {
-    Cerr << "Error: ProblemDescDB::get_iterator() called for letter object."
-	 << std::endl;
-    abort_handler(PARSE_ERROR);
-  }
-
-  String id_method = dbRep->dataMethodIter->dataMethodRep->idMethod;
-  if(id_method.empty())
-    id_method = "NO_METHOD_ID";
-  IterLIter i_it
-    = std::find_if(dbRep->iteratorList.begin(), dbRep->iteratorList.end(),
-                    [&id_method](std::shared_ptr<Iterator> iter) {return iter->method_id() == id_method;});
-
-  // if Iterator does not already exist, then create it
-  if (i_it == dbRep->iteratorList.end()) {
-    dbRep->iteratorList.push_back(IteratorUtils::get_iterator(*this, model));
-    i_it = --dbRep->iteratorList.end();
-  }
-  // idMethod already exists, but check for same model.  If !same, instantiate
-  // new rather than update (i_it->iterated_model(model)) all shared instances.
-  else if (model != (*i_it)->iterated_model()) {
-    dbRep->iteratorList.push_back(IteratorUtils::get_iterator(*this, model));
-    i_it = --dbRep->iteratorList.end();
-  }
-  return *i_it;
-}
-
-
-std::shared_ptr<Iterator> ProblemDescDB::
-get_iterator(const String& method_name, std::shared_ptr<Model> model)
-{
-  // ProblemDescDB::get_<object> functions operate at the envelope level
-  // so that any passing of *this provides the envelope object.
-  if (!dbRep) {
-    Cerr << "Error: ProblemDescDB::get_iterator() called for letter object."
-	 << std::endl;
-    abort_handler(PARSE_ERROR);
-  }
-
-  IterLIter i_it
-    = std::find_if(dbRep->iteratorByNameList.begin(),
-		   dbRep->iteratorByNameList.end(),
-                  [&method_name](std::shared_ptr<Iterator> iter) {return iter->method_string() == method_name;});
-  // if Iterator does not already exist, then create it
-  if (i_it == dbRep->iteratorByNameList.end()) {
-    dbRep->iteratorByNameList.push_back(IteratorUtils::get_iterator(method_name, model));
-    i_it = --dbRep->iteratorByNameList.end();
-  }
-  // method_name already exists, but check for same model. If !same, instantiate
-  // new rather than update (i_it->iterated_model(model)) all shared instances.
-  else if (model != (*i_it)->iterated_model()) {
-    dbRep->iteratorByNameList.push_back(IteratorUtils::get_iterator(method_name, model));
-    i_it = --dbRep->iteratorByNameList.end();
-  }
-  return *i_it;
-}
-
-
-std::shared_ptr<Model> ProblemDescDB::get_model()
-{
-  // ProblemDescDB::get_<object> functions operate at the envelope level
-  // so that any passing of *this provides the envelope object.
-  if (!dbRep) {
-    Cerr << "Error: ProblemDescDB::get_model() called for letter object."
-         << std::endl;
-    abort_handler(PARSE_ERROR);
-  }
-
-  // A model specification identifies its variables, interface, and responses.
-  // Have to worry about loss of encapsulation and use of context _above_ this
-  // specification, i.e., any dependence on an iterator specification
-  // (dependence on the environment spec is OK since there is only one).
-  // > method.output
-  // > Constraints: variables view
-
-  // The DB list nodes are set prior to calling get_model():
-  // >    model_ptr spec -> id_model must be defined
-  // > no model_ptr spec -> id_model is ignored, model spec is last parsed
-  String id_model = dbRep->dataModelIter->dataModelRep->idModel;
-  if(id_model.empty())
-    id_model = "NO_MODEL_ID";
-  ModelLIter m_it
-    = std::find_if(dbRep->modelList.begin(), dbRep->modelList.end(),
-                   [&id_model](std::shared_ptr<Model> m) {return m->model_id() == id_model;});
-  if (m_it == dbRep->modelList.end()) {
-    dbRep->modelList.push_back(ModelUtils::get_model(*this));
-    m_it = --dbRep->modelList.end();
-  }
-  return *m_it;
-}
-
-
-const Variables& ProblemDescDB::get_variables()
-{
-  // ProblemDescDB::get_<object> functions operate at the envelope level
-  // so that any passing of *this provides the envelope object.
-  if (!dbRep) {
-    Cerr << "Error: ProblemDescDB::get_variables() called for letter object."
-	 << std::endl;
-    abort_handler(PARSE_ERROR);
-  }
-
-  // Have to worry about loss of encapsulation and use of context _above_ this
-  // specification, i.e., any dependence on iterator/model/interface/responses
-  // specifications (dependence on the environment specification is OK since
-  // there is only one).
-  // > variables view is method dependent
-
-  // The DB list nodes are set prior to calling get_variables():
-  // >    variables_ptr spec -> id_variables must be defined
-  // > no variables_ptr spec -> id_variables ignored, vars spec = last parsed
-  //const String& id_variables = dbRep->dataVariablesIter->idVariables;
-
-  // Turn off variables reuse for now, since it is problematic with surrogates:
-  // a top level variables set followed by a subModel eval which sets subModel
-  // vars (where the subModel vars object is reused) results in a top level
-  // eval with the wrong vars (e.g., surrogate auto-build in
-  // dakota_textbook_lhs_approx.in).
-  //
-  // In general, variables object reuse should be fine for objects with peer
-  // relationships, but are questionable for use among nested/layered levels.
-  // Need a way to detect peer vs. nested/layered relationships.
-  VarsLIter v_it;
-  // = dbRep->variablesList.find(variables_id_compare, &id_variables);
-  //if ( v_it == dbRep->variablesList.end() ||
-  //     v_it->view() != v_it->get_view(*this) ) {
-    Variables new_variables(*this);
-    dbRep->variablesList.push_back(new_variables);
-    v_it = --dbRep->variablesList.end();
-  //}
-  return *v_it;
-}
-
-
-const std::shared_ptr<Interface> ProblemDescDB::get_interface()
-{
-  // ProblemDescDB::get_<object> functions operate at the envelope level
-  // so that any passing of *this provides the envelope object.
-  if (!dbRep) {
-    Cerr << "Error: ProblemDescDB::get_interface() called for letter object."
-	 << std::endl;
-    abort_handler(PARSE_ERROR);
-  }
-
-  // Have to worry about loss of encapsulation and use of context _above_ this
-  // specification, i.e., any dependence on iterator/model/variables/responses
-  // specifications (dependence on the environment specification is OK since
-  // there is only one):
-  // > Interface: method.output
-  // > ApplicationInterface: responses.gradient_type, responses.hessian_type,
-  //     responses.gradients.mixed.id_analytic
-  // > DakotaInterface: responses.labels
-
-  // ApproximationInterfaces and related classes are OK, since they are
-  // instantiated with assign_rep() for each unique DataFitSurrModel instance:
-  // > ApproximationInterface: model.surrogate.function_ids
-  // > Approximation: method.output, model.surrogate.type,
-  //     model.surrogate.derivative_usage
-  // > SurfpackApproximation: model.surrogate.polynomial_order,
-  //     model.surrogate.kriging_correlations
-  // > TaylorApproximation: model.surrogate.truth_model_pointer,
-  //     responses.hessian_type
-  // > OrthogPolyApproximation: method.nond.expansion_{terms,order}
-
-  // The DB list nodes are set prior to calling get_interface():
-  // >    interface_ptr spec -> id_interface must be defined
-  // > no interface_ptr spec -> id_interf ignored, interf spec = last parsed
-  String id_interface
-    = dbRep->dataInterfaceIter->dataIfaceRep->idInterface;
-  if(id_interface.empty())
-    id_interface = "NO_ID";
-
-  InterfLIter i_it
-    = std::find_if(dbRep->interfaceList.begin(), dbRep->interfaceList.end(),
-        [&id_interface](const std::shared_ptr<Interface>& interface) {
-          return interface->interface_id() == id_interface;
-        });
-  if (i_it == dbRep->interfaceList.end()) {
-    auto new_interface = InterfaceUtils::get_interface(*this);
-    dbRep->interfaceList.push_back(new_interface);
-    i_it = --dbRep->interfaceList.end();
-  }
-  return *i_it;
-}
-
-
-const Response& ProblemDescDB::get_response(short type, const Variables& vars)
-{
-  // ProblemDescDB::get_<object> functions operate at the envelope level
-  // so that any passing of *this provides the envelope object.
-  if (!dbRep) {
-    Cerr << "Error: ProblemDescDB::get_response() called for letter object."
-	 << std::endl;
-    abort_handler(PARSE_ERROR);
-  }
-
-  // Have to worry about loss of encapsulation and use of context _above_ this
-  // specification, i.e., any dependence on iterator/model/variables/interface
-  // specifications (dependence on the environment specification is OK since
-  // there is only one).
-  // > mismatch in vars attributes (cv(),continuous_variable_ids()) should be OK
-  //   since derivative arrays are dynamically resized based on current active
-  //   set content
-
-  // The DB list nodes are set prior to calling get_response():
-  // >    responses_ptr spec -> id_responses must be defined
-  // > no responses_ptr spec -> id_responses ignored, resp spec = last parsed
-  //const String& id_responses
-  //  = dbRep->dataResponsesIter->dataRespRep->idResponses;
-
-  // Turn off response reuse for now, even though it has not yet been
-  // problematic.  In general, response object reuse should be fine for objects
-  // with peer relationships, but are questionable for use among nested/layered
-  // levels.  Need a way to detect peer vs. nested/layered relationships.
-  RespLIter r_it;
-  // = dbRep->responseList.find(responses_id_compare, &id_responses);
-  //if (r_it == dbRep->responseList.end()) { // ||
-    //r_it->active_set_derivative_vector() != vars.continuous_variable_ids()) {
-    Response new_response(type, vars, *this);
-    dbRep->responseList.push_back(new_response);
-    r_it = --dbRep->responseList.end();
-  //}}
-  return *r_it;
-}
-
 
 inline int ProblemDescDB::min_procs_per_ea()
 {
@@ -1219,13 +908,14 @@ inline int ProblemDescDB::min_procs_per_ea()
 
 int ProblemDescDB::max_procs_per_ea()
 {
+  int world_size = (dbRep) ? dbRep->worldSize : worldSize;
   // Note: get_*() requires envelope execution (throws error if !dbRep)
 
   // TO DO: can we be more fine grained on parallel testers?
   //        default tester could get hidden by plug-in...
 
   int max_ppa = (get_ushort("interface.type") & DIRECT_INTERFACE_BIT) ?
-    parallelLib.world_size() : 1; // system/fork/spawn
+    world_size : 1; // system/fork/spawn
   // Note: DataInterfaceRep::procsPerAnalysis defaults to zero, which is used
   // when the processors_per_analysis spec is unreachable (system/fork/spawn)
   return max_procs_per_level(max_ppa,
@@ -3254,57 +2944,6 @@ void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
     entry_name, dbRep);
 
   rep_sa = sa;
-}
-
-
-void ProblemDescDB::echo_input_file(const std::string& dakota_input_file,
-				    const std::string& dakota_input_string,
-				    const std::string& tmpl_qualifier)
-{
-  if (!dakota_input_string.empty()) {
-    size_t header_len = 23;
-    std::string header(header_len, '-');
-    Cout << header << '\n';
-    Cout << "Begin DAKOTA input file" << tmpl_qualifier << "\n";
-    if(dakota_input_file == "-")
-      Cout << "(from standard input)\n";
-    else
-      Cout << "(from string)\n";
-    Cout << header << std::endl;
-    Cout << dakota_input_string << std::endl;
-    Cout << "---------------------\n";
-    Cout << "End DAKOTA input file\n";
-    Cout << "---------------------\n" << std::endl;
-  } else if(!dakota_input_file.empty()) {
-      std::ifstream inputstream(dakota_input_file.c_str());
-      if (!inputstream.good()) {
-	Cerr << "\nError: Could not open input file '" << dakota_input_file
-	     << "' for reading." << std::endl;
-	abort_handler(IO_ERROR);
-      }
-
-      // BMA TODO: could enable this now
-      // want to output FQ path, but only valid in BFS v3; need wrapper
-      //std::filesystem::path bfs_file(dakota_input_file);
-      //std::filesystem::path bfs_abs_path = bfs_file.absolute();
-
-      // header to span the potentially long filename
-      size_t header_len = std::max((size_t) 23,
-				   dakota_input_file.size());
-      std::string header(header_len, '-');
-      Cout << header << '\n';
-      Cout << "Begin DAKOTA input file" << tmpl_qualifier << "\n";
-      Cout << dakota_input_file << "\n";
-      Cout << header << std::endl;
-      int inputchar = inputstream.get();
-      while (inputstream.good()) {
-	Cout << (char) inputchar;
-	inputchar = inputstream.get();
-      }
-      Cout << "---------------------\n";
-      Cout << "End DAKOTA input file\n";
-      Cout << "---------------------\n" << std::endl;
-  }
 }
 
 /** Require string idenfitiers id_* to be unique across all blocks of
