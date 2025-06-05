@@ -102,7 +102,8 @@ ProblemDescDB::~ProblemDescDB()
 {
   if (this == Dak_pddb)
     Dak_pddb = NULL;
-  delete_study_components(*this);
+  if(dbRep)
+    delete_study_components(*this);
 }
 
 
