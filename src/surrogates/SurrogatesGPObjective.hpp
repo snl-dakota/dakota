@@ -93,7 +93,7 @@ class GP_Objective : public ROL::Objective<double> {
   // ------------------------------------------------------------
   // Private member variables
 
-  /// Pointer to the GaussianProcess surrogate.
+  /// Reference to the GaussianProcess surrogate.
   GaussianProcess& gp;
   /// Number of optimization variables.
   int nopt;

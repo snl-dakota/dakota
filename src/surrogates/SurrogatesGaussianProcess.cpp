@@ -172,7 +172,8 @@ void GaussianProcess::build(const MatrixXd& samples, const MatrixXd& response) {
       Teuchos::rcp(new ParameterList("GP_MLE_Optimization"));
   setup_default_optimization_params(gp_mle_rol_params);
 
-  auto gp_objective = std::make_shared<GP_Objective>(*this);
+//  auto gp_objective = std::make_shared<GP_Objective>(*this);
+  GP_Objective gp_objective{*this};
   int dim = numVariables + 1 + numPolyTerms + numNuggetTerms;
 
   // Define algorithm
@@ -182,44 +183,43 @@ void GaussianProcess::build(const MatrixXd& samples, const MatrixXd& response) {
       ROL::makePtr<ROL::StatusTest<double>>(*gp_mle_rol_params);
   ROL::Algorithm<double> algo(step, status, false);
 
+  auto make_StdVector = []( auto&&... args ) {
+    return ROL::makePtr<ROL::StdVector<double>>(std::forward<decltype(args)>(args)...);
+  };
+
   /* set up parameter vectors and bounds */
-  ROL::Ptr<std::vector<double>> x_ptr =
-      ROL::makePtr<std::vector<double>>(dim, 0.0);
-  ROL::StdVector<double> x(x_ptr);
+  ROL::StdVector<double> x(dim,0.0);
+
+  auto lo_ptr = make_StdVector(dim,0.0); auto& lo = *lo_ptr;
+  auto hi_ptr = make_StdVector(dim,0.0); auto& hi = *hi_ptr;
+
   ROL::Ptr<ROL::Bounds<double>> bound;
-  ROL::Ptr<std::vector<double>> lo_ptr =
-      ROL::makePtr<std::vector<double>>(dim, 0.0);
-  ROL::Ptr<std::vector<double>> hi_ptr =
-      ROL::makePtr<std::vector<double>>(dim, 0.0);
+  
   /* sigma bounds */
-  (*lo_ptr)[0] = log(sigma_bounds(0));
-  (*hi_ptr)[0] = log(sigma_bounds(1));
+  lo[0] = log(sigma_bounds(0));
+  hi[0] = log(sigma_bounds(1));
   /* length scale bounds */
   for (int i = 0; i < numVariables; i++) {
     if (length_scale_bounds.rows() > 1) {
-      (*lo_ptr)[i + 1] = log(length_scale_bounds(i, 0));
-      (*hi_ptr)[i + 1] = log(length_scale_bounds(i, 1));
+      lo[i + 1] = log(length_scale_bounds(i, 0));
+      hi[i + 1] = log(length_scale_bounds(i, 1));
     } else {
-      (*lo_ptr)[i + 1] = log(length_scale_bounds(0, 0));
-      (*hi_ptr)[i + 1] = log(length_scale_bounds(0, 1));
+      lo[i + 1] = log(length_scale_bounds(0, 0));
+      hi[i + 1] = log(length_scale_bounds(0, 1));
     }
   }
   if (estimateTrend) {
     for (int i = 0; i < numPolyTerms; i++) {
-      (*lo_ptr)[numVariables + 1 + i] = beta_bounds(i, 0);
-      (*hi_ptr)[numVariables + 1 + i] = beta_bounds(i, 1);
+      lo[numVariables + 1 + i] = beta_bounds(i, 0);
+      hi[numVariables + 1 + i] = beta_bounds(i, 1);
     }
   }
   if (estimateNugget) {
-    (*lo_ptr)[dim - 1] = log(nugget_bounds(0));
-    (*hi_ptr)[dim - 1] = log(nugget_bounds(1));
+    lo[dim - 1] = log(nugget_bounds(0));
+    hi[dim - 1] = log(nugget_bounds(1));
   }
 
-  ROL::Ptr<ROL::Vector<double>> lop =
-      ROL::makePtr<ROL::StdVector<double>>(lo_ptr);
-  ROL::Ptr<ROL::Vector<double>> hip =
-      ROL::makePtr<ROL::StdVector<double>>(hi_ptr);
-  bound = ROL::makePtr<ROL::Bounds<double>>(lop, hip);
+  bound = ROL::makePtr<ROL::Bounds<double>>(lo_ptr, hi_ptr);
 
   std::vector<std::string> output;
 
@@ -232,19 +232,23 @@ void GaussianProcess::build(const MatrixXd& samples, const MatrixXd& response) {
 
   for (int i = 0; i < num_restarts; i++) {
     for (int j = 0; j < dim; ++j) {
-      (*x_ptr)[j] = initial_guesses(i, j);
+//      (*x_ptr)[j] = initial_guesses(i, j);
+      x[j] = initial_guesses(i, j);
     }
-    output = algo.run(x, *gp_objective, *bound, true, *outStream);
+    output = algo.run(x, gp_objective, *bound, true, *outStream);
     for (int j = 0; j < thetaValues.size(); ++j) {
-      (thetaValues)(j) = (*x_ptr)[j];
+//      (thetaValues)(j) = (*x_ptr)[j];
+      (thetaValues)(j) = x[j];
     }
     if (estimateTrend) {
       for (int j = 0; j < numPolyTerms; ++j) {
-        betaValues(j) = (*x_ptr)[numVariables + 1 + j];
+//        betaValues(j) = (*x_ptr)[numVariables + 1 + j];
+        betaValues(j) = x[numVariables + 1 + j];
       }
     }
     if (estimateNugget) {
-      estimatedNuggetValue = (*x_ptr)[numVariables + 1 + numPolyTerms];
+//      estimatedNuggetValue = (*x_ptr)[numVariables + 1 + numPolyTerms];
+      estimatedNuggetValue = x[numVariables + 1 + numPolyTerms];
     }
     /* get the final objective function value and gradient */
     negative_marginal_log_likelihood(true, true, final_obj_value,
@@ -526,10 +530,9 @@ void GaussianProcess::negative_marginal_log_likelihood(bool compute_grad,
 void GaussianProcess::setup_hyperparameter_bounds(VectorXd& sigma_bounds,
                                                   MatrixXd& length_scale_bounds,
                                                   VectorXd& nugget_bounds) {
-  sigma_bounds(0) =
-      configOptions.sublist("Sigma Bounds").get<double>("lower bound");
-  sigma_bounds(1) =
-      configOptions.sublist("Sigma Bounds").get<double>("upper bound");
+  auto& sb_list = configOptions.sublist("Sigma Bounds");
+  sigma_bounds(0) = sb_list.get<double>("lower bound");
+  sigma_bounds(1) = sb_list.get<double>("upper bound");
 
   if (length_scale_bounds.rows() == numVariables &&
       length_scale_bounds.cols() == 2)
@@ -630,29 +633,23 @@ void GaussianProcess::default_options() {
      0 - no output */
   defaultConfigOptions.set("verbosity", 1, "console output verbosity");
   /* Nugget */
-  defaultConfigOptions.sublist("Nugget").set("fixed nugget", 1.0e-10,
-                                             "fixed nugget term");
-  defaultConfigOptions.sublist("Nugget").set("estimate nugget", false,
-                                             "estimate a nugget term");
-  defaultConfigOptions.sublist("Nugget").sublist("Bounds").set(
-      "lower bound", nugget_lower_bound, "nugget term lower bound");
-  defaultConfigOptions.sublist("Nugget").sublist("Bounds").set(
-      "upper bound", nugget_upper_bound, "nugget term upper bound");
+  auto& nlist = defaultConfigOptions.sublist("Nugget");
+  nlist.set("fixed nugget", 1.0e-10,"fixed nugget term");
+  nlist.set("estimate nugget", false,"estimate a nugget term");
+  nlist.sublist("Bounds").set("lower bound", nugget_lower_bound, "nugget term lower bound");
+  nlist.sublist("Bounds").set("upper bound", nugget_upper_bound, "nugget term upper bound");
+
   /* Polynomial Trend */
-  defaultConfigOptions.sublist("Trend").set("estimate trend", false,
-                                            "estimate a trend term");
-  defaultConfigOptions.sublist("Trend").sublist("Options").set(
-      "max degree", 2, "Maximum polynomial order");
-  defaultConfigOptions.sublist("Trend").sublist("Options").set(
-      "reduced basis", false, "Use Reduced Basis");
-  defaultConfigOptions.sublist("Trend").sublist("Options").set(
-      "p-norm", 1.0, "P-Norm in hyperbolic cross");
-  defaultConfigOptions.sublist("Trend").sublist("Options").set(
-      "scaler type", "none", "Type of data scaling");
-  defaultConfigOptions.sublist("Trend").sublist("Options").set(
-      "regression solver type", "SVD", "Type of regression solver");
-  defaultConfigOptions.sublist("Trend").sublist("Options").set(
-      "verbosity", 1, "console output verbosity");
+  auto& trend_list = defaultConfigOptions.sublist("Trend");
+  trend_list.set("estimate trend", false,"estimate a trend term");
+                                            
+  auto& opt_list = trend_list.sublist("Options");
+  opt_list.set("max degree",             2,      "Maximum polynomial order");
+  opt_list.set("reduced basis",          false,  "Use Reduced Basis");
+  opt_list.set("p-norm",                 1.0,    "P-Norm in hyperbolic cross");
+  opt_list.set("scaler type",            "none", "Type of data scaling");
+  opt_list.set("regression solver type", "SVD",  "Type of regression solver");
+  opt_list.set("verbosity",              1,      "console output verbosity");
 }
 
 void GaussianProcess::compute_build_dists() {
@@ -766,80 +763,34 @@ void GaussianProcess::generate_initial_guesses(
 
 void GaussianProcess::setup_default_optimization_params(
     Teuchos::RCP<ParameterList> rol_params) {
-  /* Secant */
-  rol_params->sublist("General").sublist("Secant").set("Type",
-                                                       "Limited-Memory BFGS");
-  rol_params->sublist("General").sublist("Secant").set("Maximum Storage", 20);
-  /* Step */
-  rol_params->sublist("General")
-      .sublist("Step")
-      .sublist("Line Search")
-      .set("Function Evaluation Limit", 3);
 
-  rol_params->sublist("General")
-      .sublist("Step")
-      .sublist("Line Search")
-      .set("Sufficient Decrease Tolerance", 1.0e-4);
+  auto& sec_list = rol_params->sublist("General").sublist("Secant");
+  sec_list.set("Type","Limited-Memory BFGS");
+  sec_list.set("Maximum Storage", 20);
 
-  rol_params->sublist("General")
-      .sublist("Step")
-      .sublist("Line Search")
-      .set("Initial Step Size", 1.0);
+  auto& ls_list = rol_params->sublist("General").sublist("Step").sublist("Line Search");
+  ls_list.set("Function Evaluation Limit", 3);
+  ls_list.set("Sufficient Decrease Tolerance", 1.0e-4);
+  ls_list.set("Initial Step Size", 1.0);
 
-  rol_params->sublist("General")
-      .sublist("Step")
-      .sublist("Line Search")
-      .sublist("Descent Method")
-      .set("Type", "Quasi-Newton");
+  auto& dm_list = ls_list.sublist("Descent Method");
+  dm_list.set("Type", "Quasi-Newton");
+  dm_list.set("Nonlinear CG Type", "Hestenes-Stiefel");
 
-  rol_params->sublist("General")
-      .sublist("Step")
-      .sublist("Line Search")
-      .sublist("Descent Method")
-      .set("Nonlinear CG Type", "Hestenes-Stiefel");
+  auto& cc_list = ls_list.sublist("Curvature Condition");
+  cc_list.set("Type", "Strong Wolfe Conditions");
+  cc_list.set("General Parameter", 0.9);
+  cc_list.set("Generalized Wolfe Parameter", 0.6);
 
-  rol_params->sublist("General")
-      .sublist("Step")
-      .sublist("Line Search")
-      .sublist("Curvature Condition")
-      .set("Type", "Strong Wolfe Conditions");
+  auto& lsm_list = ls_list.sublist("Line-Search Method");
+  lsm_list.set("Type", "Cubic Interpolation");
+  lsm_list.set("Backtracking Rate", 0.5);
+  lsm_list.set("Bracketing Tolerance", 1.0e-8);
 
-  rol_params->sublist("General")
-      .sublist("Step")
-      .sublist("Line Search")
-      .sublist("Curvature Condition")
-      .set("General Parameter", 0.9);
-
-  rol_params->sublist("General")
-      .sublist("Step")
-      .sublist("Line Search")
-      .sublist("Curvature Condition")
-      .set("Generalized Wolfe Parameter", 0.6);
-
-  rol_params->sublist("General")
-      .sublist("Step")
-      .sublist("Line Search")
-      .sublist("Line-Search Method")
-      .set("Type", "Cubic Interpolation");
-
-  rol_params->sublist("General")
-      .sublist("Step")
-      .sublist("Line Search")
-      .sublist("Line-Search Method")
-      .set("Backtracking Rate", 0.5);
-
-  rol_params->sublist("General")
-      .sublist("Step")
-      .sublist("Line Search")
-      .sublist("Line-Search Method")
-      .set("Bracketing Tolerance", 1.0e-8);
-
-  /* Status Test */
-  rol_params->sublist("Status Test").set("Gradient Tolerance", 1.0e-4);
-
-  rol_params->sublist("Status Test").set("Step Tolerance", 1.0e-8);
-
-  rol_params->sublist("Status Test").set("Iteration Limit", 200);
+  auto& st_list = rol_params->sublist("Status Test");
+  st_list.set("Gradient Tolerance", 1.0e-4);
+  st_list.set("Step Tolerance", 1.0e-8);
+  st_list.set("Iteration Limit", 200);
 }
 
 }  // namespace surrogates
