@@ -883,18 +883,17 @@ bool WorkdirHelper::prepend_path_item(const std::filesystem::path& src_path,
 bool WorkdirHelper::check_equivalent(const std::filesystem::path& src_path, 
 				     const std::filesystem::path& dest_dir, bool overwrite)
 {
-  try {
-    if (std::filesystem::equivalent(src_path, dest_dir)) {
-      Cerr << "Error: specified link/copy_file " << src_path << "\n"
-	   << "       is same as work_directory " << dest_dir << "." 
-	   << std::endl;
-      return true;
-    }
-  }
-  catch (const std::filesystem::filesystem_error& e) {
-    Cerr << "\nError: could not determine equivalence of paths " << src_path 
-	 << " and " << dest_dir << ";\n       " << e.what() << std::endl;
-    abort_handler(IO_ERROR);
+  // Use the nothrow version of sfs::equivalent to avoid failures when
+  // dest_dir does not exist
+  // ... a check for the existence of src_path is made before calling
+  //     this method.
+
+  std::error_code ec;
+  if (std::filesystem::equivalent(src_path, dest_dir, ec)) {
+    Cerr << "Error: specified link/copy_file " << src_path << "\n"
+         << "       is same as work_directory " << dest_dir << "." 
+         << std::endl;
+    return true;
   }
 
   return false;
