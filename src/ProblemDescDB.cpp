@@ -102,7 +102,7 @@ ProblemDescDB::~ProblemDescDB()
 {
   if (this == Dak_pddb)
     Dak_pddb = NULL;
-  if(dbRep)
+  if(dbRep.use_count() == 1)
     delete_study_components(*this);
 }
 

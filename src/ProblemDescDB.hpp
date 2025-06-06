@@ -56,7 +56,7 @@ public:
   ProblemDescDB(const ProblemDescDB& db);
 
   /// destructor
-  ~ProblemDescDB();
+  virtual ~ProblemDescDB();
 
   /// assignment operator
   ProblemDescDB operator=(const ProblemDescDB& db);
