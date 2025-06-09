@@ -238,7 +238,7 @@ class GaussianProcess : public Surrogate {
    *  \brief Update the vector of optimization parameters.
    *  \param[in] opt_params Vector of optimization parameter values.
    */
-  void set_opt_params(const std::vector<double>& opt_params);
+  void set_opt_params(const VectorXd& opt_params);
 
   std::shared_ptr<Surrogate> clone() const override {
     return std::make_shared<GaussianProcess>(configOptions);

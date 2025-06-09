@@ -10,12 +10,15 @@
 #ifndef DAKOTA_SURROGATES_GP_OBJECTIVE_HPP
 #define DAKOTA_SURROGATES_GP_OBJECTIVE_HPP
 
+#include "ROLVectorXd.hpp"
 #include "SurrogatesGaussianProcess.hpp"
 #include "util_data_types.hpp"
 
 #include <ROL_Objective.hpp>
-#include <ROL_StdVector.hpp>
+//#include <ROL_StdVector.hpp>
 #include <ROL_Types.hpp>
+
+
 
 namespace dakota {
 namespace surrogates {
@@ -69,26 +72,7 @@ class GP_Objective : public ROL::Objective<double> {
    *  \param[in] pnew New value of the parameter vector.
    *
    */
-  bool pdiff(const std::vector<double>& pnew);
-
-  /**
-   *  \brief Convert a const ROL Vector to a ROL::Ptr<const std::vector>
-   *  \param[in] vec const ROL vector
-   *
-   */
-  ROL::Ptr<const std::vector<double> > getVector(
-      const ROL::Vector<double>& vec) {
-    return dynamic_cast<const ROL::StdVector<double>&>(vec).getVector();
-  }
-
-  /**
-   *  \brief Convert a ROL Vector to a ROL::Ptr<std::vector>
-   *  \param[in] vec ROL vector
-   *
-   */
-  ROL::Ptr<std::vector<double> > getVector(ROL::Vector<double>& vec) {
-    return dynamic_cast<ROL::StdVector<double>&>(vec).getVector();
-  }
+  bool pdiff(const VectorXd& pnew);
 
   // ------------------------------------------------------------
   // Private member variables

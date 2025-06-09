@@ -183,40 +183,40 @@ void GaussianProcess::build(const MatrixXd& samples, const MatrixXd& response) {
       ROL::makePtr<ROL::StatusTest<double>>(*gp_mle_rol_params);
   ROL::Algorithm<double> algo(step, status, false);
 
-  auto make_StdVector = []( auto&&... args ) {
-    return ROL::makePtr<ROL::StdVector<double>>(std::forward<decltype(args)>(args)...);
+  auto make_ROLVectorXd = []( auto&&... args ) {
+    return ROL::makePtr<ROLVectorXd>(std::forward<decltype(args)>(args)...);
   };
 
   /* set up parameter vectors and bounds */
-  ROL::StdVector<double> x(dim,0.0);
+  ROLVectorXd x(dim,true);
 
-  auto lo_ptr = make_StdVector(dim,0.0); auto& lo = *lo_ptr;
-  auto hi_ptr = make_StdVector(dim,0.0); auto& hi = *hi_ptr;
+  auto lo_ptr = make_ROLVectorXd(dim,true); auto& lo = *lo_ptr;
+  auto hi_ptr = make_ROLVectorXd(dim,true); auto& hi = *hi_ptr;
 
   ROL::Ptr<ROL::Bounds<double>> bound;
   
   /* sigma bounds */
-  lo[0] = log(sigma_bounds(0));
-  hi[0] = log(sigma_bounds(1));
+  lo(0) = log(sigma_bounds(0));
+  hi(0) = log(sigma_bounds(1));
   /* length scale bounds */
   for (int i = 0; i < numVariables; i++) {
     if (length_scale_bounds.rows() > 1) {
-      lo[i + 1] = log(length_scale_bounds(i, 0));
-      hi[i + 1] = log(length_scale_bounds(i, 1));
+      lo(i + 1) = log(length_scale_bounds(i, 0));
+      hi(i + 1) = log(length_scale_bounds(i, 1));
     } else {
-      lo[i + 1] = log(length_scale_bounds(0, 0));
-      hi[i + 1] = log(length_scale_bounds(0, 1));
+      lo(i + 1) = log(length_scale_bounds(0, 0));
+      hi(i + 1) = log(length_scale_bounds(0, 1));
     }
   }
   if (estimateTrend) {
     for (int i = 0; i < numPolyTerms; i++) {
-      lo[numVariables + 1 + i] = beta_bounds(i, 0);
-      hi[numVariables + 1 + i] = beta_bounds(i, 1);
+      lo(numVariables + 1 + i) = beta_bounds(i, 0);
+      hi(numVariables + 1 + i) = beta_bounds(i, 1);
     }
   }
   if (estimateNugget) {
-    lo[dim - 1] = log(nugget_bounds(0));
-    hi[dim - 1] = log(nugget_bounds(1));
+    lo(dim - 1) = log(nugget_bounds(0));
+    hi(dim - 1) = log(nugget_bounds(1));
   }
 
   bound = ROL::makePtr<ROL::Bounds<double>>(lo_ptr, hi_ptr);
@@ -232,23 +232,19 @@ void GaussianProcess::build(const MatrixXd& samples, const MatrixXd& response) {
 
   for (int i = 0; i < num_restarts; i++) {
     for (int j = 0; j < dim; ++j) {
-//      (*x_ptr)[j] = initial_guesses(i, j);
-      x[j] = initial_guesses(i, j);
+      x(j) = initial_guesses(i, j);
     }
     output = algo.run(x, gp_objective, *bound, true, *outStream);
     for (int j = 0; j < thetaValues.size(); ++j) {
-//      (thetaValues)(j) = (*x_ptr)[j];
-      (thetaValues)(j) = x[j];
+      (thetaValues)(j) = x(j);
     }
     if (estimateTrend) {
       for (int j = 0; j < numPolyTerms; ++j) {
-//        betaValues(j) = (*x_ptr)[numVariables + 1 + j];
-        betaValues(j) = x[numVariables + 1 + j];
+        betaValues(j) = x(numVariables + 1 + j);
       }
     }
     if (estimateNugget) {
-//      estimatedNuggetValue = (*x_ptr)[numVariables + 1 + numPolyTerms];
-      estimatedNuggetValue = x[numVariables + 1 + numPolyTerms];
+      estimatedNuggetValue = x(numVariables + 1 + numPolyTerms);
     }
     /* get the final objective function value and gradient */
     negative_marginal_log_likelihood(true, true, final_obj_value,
@@ -564,16 +560,18 @@ int GaussianProcess::get_num_opt_variables() {
 
 int GaussianProcess::get_num_variables() const { return numVariables; }
 
-void GaussianProcess::set_opt_params(const std::vector<double>& opt_params) {
-  for (int i = 0; i < numVariables + 1; i++) thetaValues(i) = opt_params[i];
+  void GaussianProcess::set_opt_params(const VectorXd& opt_params) {
+  // Copy the first numVariables + 1 elements to thetaValues
+  thetaValues = opt_params.head(numVariables + 1);
 
   if (estimateTrend) {
-    for (int i = 0; i < numPolyTerms; i++)
-      betaValues(i) = opt_params[numVariables + 1 + i];
+    // Copy the next numPolyTerms elements to betaValues
+    betaValues = opt_params.segment(numVariables + 1, numPolyTerms);
   }
 
-  if (estimateNugget)
-    estimatedNuggetValue = opt_params[numVariables + 1 + numPolyTerms];
+  if (estimateNugget) {
+    estimatedNuggetValue = opt_params(numVariables + 1 + numPolyTerms);
+  }
 }
 
 void GaussianProcess::default_options() {
