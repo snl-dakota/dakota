@@ -5,12 +5,15 @@
 
 namespace dakota::surrogates {
 
+inline Eigen::VectorXd& as_VectorXd( ROL::Vector<double>& x ) noexcept;
+inline const Eigen::VectorXd& as_VectorXd( const ROL::Vector<double>& x ) noexcept;
+
 class ROLVectorXd : public ROL::Vector<double> {
 public:
 
   ROLVectorXd( int dim, bool zero_out=false ) : vec_{dim} {
     if(zero_out) {
-      vec_->setZero();
+      vec_.setZero();
     }
   }
 
@@ -41,7 +44,7 @@ public:
   }
 
   void zero() override {
-    vec_->setZero();
+    vec_.setZero();
   }
 
   int dimension() const override {
@@ -52,7 +55,7 @@ public:
     vec_ = as_VectorXd(x);
   }
 
-  const Vector<double>& dual() const override {
+  const ROL::Vector<double>& dual() const override {
     return *this;
   }
 
@@ -72,7 +75,7 @@ public:
     }
   }
 
-  void applyBinary( const ROL::Elementwise::UnaryFunction<double>& bf,
+  void applyBinary( const ROL::Elementwise::BinaryFunction<double>& bf,
                     const ROL::Vector<double>& x ) override {
     const auto& xd = as_VectorXd(x);
     for(int i=0; i<vec_.size(); ++i) {
@@ -82,7 +85,7 @@ public:
 
   double reduce( const ROL::Elementwise::ReductionOp<double>& r ) const override {
     double result = r.initialValue();
-    for(int i=0; i<vec_.dim(); ++i) {
+    for(int i=0; i<vec_.size(); ++i) {
       r.reduce(vec_(i),result);
     }
     return result;
@@ -98,12 +101,12 @@ public:
       vec_ *= (u-l);
     }
     if(l != 0.0) {
-      vec_ += l;
+      vec_.array() += l;
     }
   }
 
   void setScalar( const double C ) override {
-    vec_ = C;
+    vec_.setConstant(C);
   }
 
   // Element access
@@ -116,18 +119,35 @@ public:
     return vec_(i);
   }
 
+  inline Eigen::VectorXd& getVector() noexcept { 
+    return vec_;
+  }
+
+  inline const Eigen::VectorXd& getVector() const noexcept { 
+    return vec_;
+  }
+
+
+  inline static ROLVectorXd& downcast( ROL::Vector<double>& x ) noexcept {
+    return static_cast<ROLVectorXd&>(x);
+  }
+
+  inline static const ROLVectorXd& downcast( const ROL::Vector<double>& x ) noexcept {
+    return static_cast<const ROLVectorXd&>(x);
+  }
+
 private:
-
-  inline static VectorXd& as_VectorXd( ROL::Vector<double>& x ) {
-    return static_cast<ROLVectorXd&>(x).vec_;
-  }
-
-  inline static const VectorXd& as_VectorXd( const ROL::Vector<double>& x ) {
-    return static_cast<const ROLVectorXd&>(x).vec_;
-  }
 
   Eigen::VectorXd vec_;
 
 };
+
+inline Eigen::VectorXd& as_VectorXd( ROL::Vector<double>& x ) noexcept {
+  return ROLVectorXd::downcast(x).getVector();
+}
+
+inline const Eigen::VectorXd& as_VectorXd( const ROL::Vector<double>& x ) noexcept {
+  return ROLVectorXd::downcast(x).getVector();
+}
 
 } // namespace dakota::surrogates
