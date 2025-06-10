@@ -35,6 +35,8 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, std::shared_ptr<Model> mo
   randomSeedSeqSpec = problem_db.get_sza("method.random_seed_sequence");
 
   assign_modes();
+  configure_1d_sequence(numSteps, secondaryIndex, sequenceType);
+  costSource = initialize_costs(sequenceCost, costMetadataIndices);
 
   // ----------------
   // Resolve settings
@@ -136,6 +138,8 @@ NonDMultilevelFunctionTrain(unsigned short method_name, std::shared_ptr<Model> m
   randomSeedSeqSpec = seed_seq;
 
   assign_modes();
+  configure_1d_sequence(numSteps, secondaryIndex, sequenceType);
+  costSource = initialize_costs(sequenceCost, costMetadataIndices);
 
   // ----------------
   // Resolve settings
@@ -370,10 +374,9 @@ void NonDMultilevelFunctionTrain::increment_specification_sequence()
 }
 
 
-void NonDMultilevelFunctionTrain::
-initialize_ml_regression(size_t num_lev, bool& import_pilot)
+void NonDMultilevelFunctionTrain::initialize_ml_regression(bool& import_pilot)
 {
-  NonDExpansion::initialize_ml_regression(num_lev, import_pilot);
+  NonDExpansion::initialize_ml_regression(import_pilot);
 
   // Build point import is active only for the pilot sample and we overlay an
   // additional pilot_sample spec, but we do not augment with samples from a

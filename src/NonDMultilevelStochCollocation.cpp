@@ -34,6 +34,8 @@ NonDMultilevelStochCollocation(ProblemDescDB& problem_db, std::shared_ptr<Model>
   sequenceIndex(0)
 {
   assign_modes();
+  configure_1d_sequence(numSteps, secondaryIndex, sequenceType);
+  costSource = initialize_costs(sequenceCost, costMetadataIndices);
 
   // ----------------
   // Resolve settings
@@ -124,6 +126,8 @@ NonDMultilevelStochCollocation(std::shared_ptr<Model> model, short exp_coeffs_ap
   sequenceIndex(0)
 {
   assign_modes();
+  configure_1d_sequence(numSteps, secondaryIndex, sequenceType);
+  costSource = initialize_costs(sequenceCost, costMetadataIndices);
 
   switch (expansionCoeffsApproach) {
   case Pecos::QUADRATURE: quadOrderSeqSpec = num_int_seq; break;

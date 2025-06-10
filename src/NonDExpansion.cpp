@@ -243,7 +243,7 @@ void NonDExpansion::resolve_inputs(short& u_space_type, short& data_order)
 
   // define tie breaker for hierarchy of model forms versus resolution levels
   if (iteratedModel->surrogate_type() == "ensemble")
-    iteratedModel->ensemble_precedence(mlmf_prec); // don't reassign default keys
+    iteratedModel->ensemble_precedence(mlmf_prec);// don't reassign default keys
 
   // Check for suitable distribution types.
   // Note: prefer warning in Analyzer (active discrete ignored), but
@@ -1357,6 +1357,24 @@ void NonDExpansion::assign_surrogate_response_mode()
 }
 
 
+short NonDExpansion::
+initialize_costs(RealVector& cost, SizetSizetPairArray& cost_md_indices)
+{
+  ModelList& model_list = iteratedModel->subordinate_models(false);
+  BitArray model_cost_spec;
+  size_t m, num_mf = model_list.size();  ModelLIter ml_it;
+  cost_md_indices.resize(num_mf);
+  for (m=0, ml_it=model_list.begin(); ml_it!=model_list.end(); ++m, ++ml_it) {
+    cost_md_indices[m].first  = (*ml_it)->cost_metadata_index();
+    cost_md_indices[m].second = (*ml_it)->current_response().metadata().size();
+  }
+  // we don't enforce cost data here since not all MF cases require it
+  // --> defer test_cost() until downstream
+  return query_cost(numSteps, sequenceType, cost, model_cost_spec,
+		    cost_md_indices);
+}
+
+
 void NonDExpansion::
 compute_equivalent_cost(const SizetArray& N_l, const RealVector& cost)
 {
@@ -1418,19 +1436,25 @@ void NonDExpansion::multifidelity_reference_expansion()
   refinement_statistics_mode(Pecos::ACTIVE_EXPANSION_STATS);
 
   // Allow either model forms or discretization levels, but not both
-  size_t num_steps, form, lev, secondary_index; short seq_type;
-  configure_1d_sequence(num_steps, secondary_index, seq_type);
-  bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_1D_SEQUENCE);
+  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_1D_SEQUENCE),
+    online_cost_recovery = (costSource && costSource != USER_COST_SPEC);
   // either lev varies and form is fixed, or vice versa:
-  size_t& step = (multilev) ? lev : form;  step = 0;
-  if (multilev) form = secondary_index;
-  else          lev  = secondary_index;
+  size_t form, lev;  size_t& step = (multilev) ? lev : form;  step = 0;
+  if (multilev) form = secondaryIndex;
+  else          lev  = secondaryIndex;
 
   // initial low fidelity/lowest discretization expansion
-  configure_indices(step, form, lev, seq_type);
+  configure_indices(step, form, lev, sequenceType);
   assign_specification_sequence();
   compute_expansion();  // nominal LF expansion from input spec
+  // *** TO DO ***: might be good time to implement multi-batch parallel as well
+  RealVector accum_cost;  SizetArray num_cost;
+  if (online_cost_recovery) {
+    accum_cost.size(numSteps);  num_cost.assign(numSteps, 0);
+    accumulate_online_cost(allResponses, step, accum_cost, num_cost);
+  }
   compute_statistics(INTERMEDIATE_RESULTS);
+
   bool print = (outputLevel > SILENT_OUTPUT);
   if (print) {
     Cout << "\n------------------------------------------------"
@@ -1440,15 +1464,18 @@ void NonDExpansion::multifidelity_reference_expansion()
   }
 
   // loop over each of the discrepancy levels
-  for (step=1; step<num_steps; ++step) {
+  for (step=1; step<numSteps; ++step) {
     // configure hierarchical model indices and activate key in data fit model
-    configure_indices(step, form, lev, seq_type);
+    configure_indices(step, form, lev, sequenceType);
     // advance to the next PCE/SC specification within the MF sequence
     increment_specification_sequence();
 
     // form the expansion for level i
     compute_expansion();  // nominal discrepancy expansion from input spec
+    if (online_cost_recovery)
+      accumulate_online_cost(allResponses, step, accum_cost, num_cost);
     compute_statistics(INTERMEDIATE_RESULTS);
+
     if (print) {
       Cout << "\n-----------------------------------------------------"
 	   << "\nMultifidelity UQ: model discrepancy reference results"
@@ -1456,6 +1483,8 @@ void NonDExpansion::multifidelity_reference_expansion()
       print_results(Cout, INTERMEDIATE_RESULTS);
     }
   }
+  if (online_cost_recovery)
+    average_online_cost(accum_cost, num_cost, sequenceCost);
 
   // now aggregate expansions and report COMBINED_EXPANSION_STATS for cases
   // where the run will continue (individual/integrated refinement).
@@ -1481,18 +1510,16 @@ void NonDExpansion::multifidelity_reference_expansion()
 void NonDExpansion::multifidelity_individual_refinement()
 {
   // Allow either model forms or discretization levels, but not both
-  size_t num_steps, form, lev, secondary_index; short seq_type;
-  configure_1d_sequence(num_steps, secondary_index, seq_type);
-  bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_1D_SEQUENCE);
+  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_1D_SEQUENCE);
   // either lev varies and form is fixed, or vice versa:
-  size_t& step = (multilev) ? lev : form;  step = 0;
-  if (multilev) form = secondary_index;
-  else          lev  = secondary_index;
+  size_t form, lev;  size_t& step = (multilev) ? lev : form;  step = 0;
+  if (multilev) form = secondaryIndex;
+  else          lev  = secondaryIndex;
 
   bool print = (outputLevel > SILENT_OUTPUT);
   if (refineType) {//&& maxRefineIterations
     // refine expansion for lowest fidelity/coarsest discretization
-    configure_indices(step, form, lev, seq_type);
+    configure_indices(step, form, lev, sequenceType);
     //assign_specification_sequence();
     refine_expansion(); // uniform/adaptive refinement
     metric_roll_up(INTERMEDIATE_RESULTS);
@@ -1505,9 +1532,9 @@ void NonDExpansion::multifidelity_individual_refinement()
     }
 
     // loop over each of the discrepancy levels
-    for (step=1; step<num_steps; ++step) {
+    for (step=1; step<numSteps; ++step) {
       // configure hierarchical model indices and activate key in data fit model
-      configure_indices(step, form, lev, seq_type);
+      configure_indices(step, form, lev, sequenceType);
       // advance to the next PCE/SC specification within the MF sequence
       //increment_specification_sequence();
 
@@ -1536,15 +1563,14 @@ void NonDExpansion::multifidelity_individual_refinement()
   }
 
   // generate summary output across model sequence
-  NLev.resize(num_steps);
-  for (step=0; step<num_steps; ++step) {
-    configure_indices(step, form, lev, seq_type);
+  NLev.resize(numSteps);
+  for (step=0; step<numSteps; ++step) {
+    configure_indices(step, form, lev, sequenceType);
     NLev[step] = uSpaceModel->approximation_data(0).points(); // first QoI
   }
   // cost specification is optional for multifidelity_expansion()
-  RealVector cost;
-  if (query_cost(num_steps, seq_type, cost) == USER_COST_SPEC)
-    compute_equivalent_cost(NLev, cost); // compute equivalent # of HF evals
+  if (!sequenceCost.empty())
+    compute_equivalent_cost(NLev, sequenceCost); // compute equiv # of HF evals
 }
 
 
@@ -1553,22 +1579,19 @@ void NonDExpansion::multifidelity_integrated_refinement()
   Cout << "\n-----------------------------------------------"
        << "\nMultifidelity UQ: initiating greedy competition"
        << "\n-----------------------------------------------\n";
-  // Initialize again (or must propagate settings from mf_expansion())
-  size_t num_steps, form, lev, secondary_index; short seq_type;
-  configure_1d_sequence(num_steps, secondary_index, seq_type);
-  bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_1D_SEQUENCE);
-  // either lev varies and form is fixed, or vice versa:
-  size_t& step = (multilev) ? lev : form;
-  if (multilev) form = secondary_index;
-  else          lev  = secondary_index;
 
-  RealVector cost;  configure_cost(num_steps, seq_type, cost);
+  // Initialize again (or must propagate settings from mf_expansion())
+  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_1D_SEQUENCE);
+  // either lev varies and form is fixed, or vice versa:
+  size_t form, lev;  size_t& step = (multilev) ? lev : form;
+  if (multilev) form = secondaryIndex;
+  else          lev  = secondaryIndex;
 
   // Initialize all levels.  Note: configure_indices() is used for completeness
   // (uSpaceModel->active_model_key(...) is sufficient for current grid
   // initialization operations).
-  for (step=0; step<num_steps; ++step) {
-    configure_indices(step, form, lev, seq_type);
+  for (step=0; step<numSteps; ++step) {
+    configure_indices(step, form, lev, sequenceType);
     pre_refinement();
   }
 
@@ -1584,16 +1607,16 @@ void NonDExpansion::multifidelity_integrated_refinement()
 
     ++mlmfIter;
     Cout << "\n>>>>> Begin iteration " << mlmfIter << ": competing candidates "
-	 << "across " << num_steps << " sequence steps\n";
+	 << "across " << numSteps << " sequence steps\n";
 
     // Generate candidates at each level
     best_step_metric = 0.;  best_step = best_step_candidate = SZ_MAX;
-    for (step=0; step<num_steps; ++step) {
+    for (step=0; step<numSteps; ++step) {
       Cout << "\n>>>>> Generating candidate(s) for sequence step " << step+1
 	   << '\n';
 
       // configure hierarchical model indices and activate key in data fit model
-      configure_indices(step, form, lev, seq_type);
+      configure_indices(step, form, lev, sequenceType);
 
       // This returns the best/only candidate for the current level
       // Note: it must roll up contributions from all levels --> step_metric
@@ -1606,7 +1629,10 @@ void NonDExpansion::multifidelity_integrated_refinement()
 	// required evaluations, which is sufficient for selection of the best
 	// level candidate.  For selection among multiple level candidates, a
 	// secondary normalization for relative level cost is required.
-	step_metric /= sequence_cost(step, cost);
+	Cout << "\n<<<<< Sequence step " << step+1 <<" raw refinement metric = "
+	     << step_metric<<" step cost = "<< level_cost(step, sequenceCost)
+	     <<'\n';
+	step_metric /= level_cost(step, sequenceCost);
 	Cout << "\n<<<<< Sequence step " << step+1 << " refinement metric = "
 	     << step_metric << '\n';
 	// Assess candidate for best across all levels
@@ -1627,7 +1653,7 @@ void NonDExpansion::multifidelity_integrated_refinement()
       Cout << "selected refinement = sequence step " << best_step+1
 	   << " candidate " << best_step_candidate+1 << '\n';
       step = best_step; // also updates form | lev
-      configure_indices(step, form, lev, seq_type);
+      configure_indices(step, form, lev, sequenceType);
       select_candidate(best_step_candidate);
       push_candidate(best_stats_star); // update stats from best (no recompute)
       if (print_metric)	print_results(Cout, INTERMEDIATE_RESULTS);
@@ -1635,81 +1661,128 @@ void NonDExpansion::multifidelity_integrated_refinement()
   }
 
   // Perform final roll-up for each level and then combine levels
-  NLev.resize(num_steps);  bool reverted;
-  for (step=0; step<num_steps; ++step) {
-    configure_indices(step, form, lev, seq_type);
+  NLev.resize(numSteps);  bool reverted;
+  for (step=0; step<numSteps; ++step) {
+    configure_indices(step, form, lev, sequenceType);
     reverted = (step != best_step); // only candidate from best_step was applied
     post_refinement(best_step_metric, reverted);
     NLev[step] = uSpaceModel->approximation_data(0).points(); // first QoI
   }
-  compute_equivalent_cost(NLev, cost); // compute equivalent # of HF evals
+  compute_equivalent_cost(NLev, sequenceCost); // compute equiv # of HF evals
 }
 
 
 void NonDExpansion::multilevel_regression()
 {
   // Allow either model forms or discretization levels, but not both
-  size_t num_steps, form, lev, secondary_index; short seq_type;
-  configure_1d_sequence(num_steps, secondary_index, seq_type);
-  bool multilev = (seq_type == Pecos::RESOLUTION_LEVEL_1D_SEQUENCE);
+  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_1D_SEQUENCE);
   // either lev varies and form is fixed, or vice versa:
-  size_t& step = (multilev) ? lev : form;
-  if (multilev) form = secondary_index;
-  else          lev  = secondary_index;
+  size_t form, lev;  size_t& step = (multilev) ? lev : form;
+  if (multilev) form = secondaryIndex;
+  else          lev  = secondaryIndex;
 
-  bool import_pilot;
+  if (!costSource && multilevAllocControl == ESTIMATOR_VARIANCE) { // costs reqd
+    Cerr << "Error: simulation cost estimates required for ML regression "
+	 << "based on estimator variance." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  bool import_pilot, online_cost_recovery
+    = (costSource && costSource != USER_COST_SPEC); // online or mixed
   Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0.; 
-
-  // configure metrics and cost for each step in the sequence
-  RealVector cost, level_metrics(num_steps);
-  configure_cost(num_steps, seq_type, cost);
+  RealVector level_metrics(numSteps), accum_cost(numSteps);
+  SizetArray num_cost;  num_cost.assign(numSteps, 0);
 
   // virtual: base implementation clears keys, assigns stats type, et al.
-  initialize_ml_regression(num_steps, import_pilot);
+  initialize_ml_regression(import_pilot);
 
   // Initialize NLev and load the pilot sample from user specification
-  NLev.assign(num_steps, 0);
+  NLev.assign(numSteps, 0);
   SizetArray delta_N_l;
   if (collocPtsSeqSpec.empty() && collocRatio > 0.)
-    infer_pilot_sample(/*collocRatio, */num_steps, delta_N_l);
+    infer_pilot_sample(/*collocRatio, */numSteps, delta_N_l);
   else
-    load_pilot_sample(collocPtsSeqSpec, num_steps, delta_N_l);
+    load_pilot_sample(collocPtsSeqSpec, numSteps, delta_N_l);
 
+  /////////////////////////////
+  // initial expansion build // (includes import and cost recovery)
+  /////////////////////////////
+  sum_root_var_cost = 0.;
+  for (step=0; step<numSteps; ++step) {
+
+    configure_indices(step, form, lev, sequenceType);
+
+    // Update solution control variable in uSpaceModel to support
+    // DataFitSurrModel::consistent() logic
+    if (import_pilot)
+      uSpaceModel->update_from_subordinate_model(); // max depth
+
+    NLev[step] += delta_N_l[step]; // update total samples for this step
+    increment_sample_sequence(delta_N_l[step], NLev[step], step);
+    if (step == 0 || import_pilot)
+      compute_expansion(); // init + import + build; not recursive
+    else
+      update_expansion();  // just build; not recursive
+
+    // *** TO DO ***: might be good time to implement multi-batch parallel
+    if (online_cost_recovery)
+      accumulate_online_cost(allResponses, step, accum_cost, num_cost);
+
+    if (import_pilot) { // update counts to include imported data
+      NLev[step] = delta_N_l[step]
+	= uSpaceModel->approximation_data(0).points();
+      Cout << "Pilot count including import = " << delta_N_l[step]<< "\n\n";
+      // Trap zero samples as it will cause FPE downstream
+      if (NLev[step] == 0) { // no pilot spec, no import match
+	Cerr << "Error: insufficient sample recovery for sequence step "
+	     << step << " in multilevel_regression()." << std::endl;
+	abort_handler(METHOD_ERROR);
+      }
+    }
+  }
+  if (online_cost_recovery)
+    average_online_cost(accum_cost, num_cost, sequenceCost);
+
+  switch (multilevAllocControl) {
+  case ESTIMATOR_VARIANCE:
+    for (step=0; step<numSteps; ++step) {
+      Real& agg_var_l = level_metrics[step];
+      if (delta_N_l[step] > 0) aggregate_level_variance(agg_var_l);
+      sum_root_var_cost += std::pow(agg_var_l *
+	std::pow(level_cost(step, sequenceCost), kappaEstimatorRate),
+	1./(kappaEstimatorRate+1.));
+      // MSE reference is ML MC aggregation for pilot(+import) sample:
+      estimator_var0 += agg_var_l / NLev[step];
+    }
+    // eps^2 / 2 = var * relative factor
+    eps_sq_div_2 = estimator_var0 * convergenceTol;
+    if (outputLevel == DEBUG_OUTPUT)
+      Cout << "Epsilon squared target = " << eps_sq_div_2 << '\n';
+    compute_sample_increment(level_metrics, sequenceCost, sum_root_var_cost,
+			     eps_sq_div_2, NLev, delta_N_l);
+    break;
+  default: // RIP_SAMPLING (ML PCE), RANK_SAMPLING (ML FT)
+    for (step=0; step<numSteps; ++step)
+      if (delta_N_l[step] > 0) // else level metric same as previous iter
+	sample_allocation_metric(level_metrics[step], 2.);
+    compute_sample_increment(level_metrics, NLev, delta_N_l);
+    break;
+  }
+  ++mlmfIter;
+  Cout << "\nML regression iteration " << mlmfIter << " sample increments:\n"
+       << delta_N_l << std::endl;
+
+  ///////////////////////////
+  // refinement iterations //
+  ///////////////////////////
   // now converge on sample counts per level (NLev)
-  while ( mlmfIter <= maxIterations &&
-	  ( !zeros(delta_N_l) || (mlmfIter == 0 && import_pilot) ) ) {
+  while ( mlmfIter <= maxIterations && !zeros(delta_N_l) ) {
 
     sum_root_var_cost = 0.;
-    for (step=0; step<num_steps; ++step) {
+    for (step=0; step<numSteps; ++step) {
 
-      configure_indices(step, form, lev, seq_type);
+      configure_indices(step, form, lev, sequenceType);
 
-      if (mlmfIter == 0) { // initial expansion build
-	// Update solution control variable in uSpaceModel to support
-	// DataFitSurrModel::consistent() logic
-	if (import_pilot)
-	  uSpaceModel->update_from_subordinate_model(); // max depth
-
-	NLev[step] += delta_N_l[step]; // update total samples for this step
-	increment_sample_sequence(delta_N_l[step], NLev[step], step);
-	if (step == 0 || import_pilot)
-	  compute_expansion(); // init + import + build; not recursive
-	else
-	  update_expansion();  // just build; not recursive
-
-	if (import_pilot) { // update counts to include imported data
-	  NLev[step] = delta_N_l[step]
-	    = uSpaceModel->approximation_data(0).points();
-	  Cout << "Pilot count including import = " << delta_N_l[step]<< "\n\n";
-	  // Trap zero samples as it will cause FPE downstream
-	  if (NLev[step] == 0) { // no pilot spec, no import match
-	    Cerr << "Error: insufficient sample recovery for sequence step "
-		 << step << " in multilevel_regression()." << std::endl;
-	    abort_handler(METHOD_ERROR);
-	  }
-	}
-      }
-      else if (delta_N_l[step]) {
+      if (delta_N_l[step]) {
 	NLev[step] += delta_N_l[step]; // update total samples for this step
 	increment_sample_sequence(delta_N_l[step], NLev[step], step);
 	// Note: import build data is not re-processed by append_expansion()
@@ -1719,30 +1792,22 @@ void NonDExpansion::multilevel_regression()
       switch (multilevAllocControl) {
       case ESTIMATOR_VARIANCE: {
 	Real& agg_var_l = level_metrics[step];
-	if (delta_N_l[step] > 0) aggregate_variance(agg_var_l);
+	if (delta_N_l[step] > 0) aggregate_level_variance(agg_var_l);
 	sum_root_var_cost += std::pow(agg_var_l *
-	  std::pow(sequence_cost(step, cost), kappaEstimatorRate),
+	  std::pow(level_cost(step, sequenceCost), kappaEstimatorRate),
 	  1./(kappaEstimatorRate+1.));
-        // MSE reference is ML MC aggregation for pilot(+import) sample:
-	if (mlmfIter == 0) estimator_var0 += agg_var_l / NLev[step];
 	break;
       }
       default:
-	if (delta_N_l[step] > 0)
+	if (delta_N_l[step] > 0) // else level metric same as previous iter
 	  sample_allocation_metric(level_metrics[step], 2.);
-	//else sparsity,rank metric for this level same as previous iteration
 	break;
       }
     }
 
     switch (multilevAllocControl) {
     case ESTIMATOR_VARIANCE:
-      if (mlmfIter == 0) { // eps^2 / 2 = var * relative factor
-	eps_sq_div_2 = estimator_var0 * convergenceTol;
-	if (outputLevel == DEBUG_OUTPUT)
-	  Cout << "Epsilon squared target = " << eps_sq_div_2 << '\n';
-      }
-      compute_sample_increment(level_metrics, cost, sum_root_var_cost,
+      compute_sample_increment(level_metrics, sequenceCost, sum_root_var_cost,
 			       eps_sq_div_2, NLev, delta_N_l);
       break;
     default: // RIP_SAMPLING (ML PCE), RANK_SAMPLING (ML FT)
@@ -1753,15 +1818,13 @@ void NonDExpansion::multilevel_regression()
     Cout << "\nML regression iteration " << mlmfIter << " sample increments:\n"
 	 << delta_N_l << std::endl;
   }
-  compute_equivalent_cost(NLev, cost); // compute equivalent # of HF evals
 
-  finalize_ml_regression();
-  // Final annotated results are computed / printed in core_run()
+  compute_equivalent_cost(NLev, sequenceCost); // compute equiv # of HF evals
+  finalize_ml_regression(); // annotated results computed/printed in core_run()
 }
 
 
-void NonDExpansion::
-initialize_ml_regression(size_t num_steps, bool& import_pilot)
+void NonDExpansion::initialize_ml_regression(bool& import_pilot)
 {
   mlmfIter = 0;
 
@@ -1787,6 +1850,49 @@ void NonDExpansion::finalize_ml_regression()
 {
   // combine level expansions and promote to active expansion:
   combined_to_active();
+}
+
+
+void NonDExpansion::
+accumulate_online_cost(const IntResponseMap& resp_map, size_t step,
+		       RealVector& accum_cost, SizetArray& num_cost)
+{
+  // AGGREGATED_MODEL_PAIR: (NonDExpansion DISTINCT_EMULATION)
+  // > a pair of Models is active
+  // BYPASS_SURROGATE:      (NonDExpansion RECURSIVE_EMULATION)
+  // > one Model is active
+
+  using std::isfinite;
+  const Pecos::ActiveKey& active_key = iteratedModel->active_model_key();
+  unsigned short mf;  Real cost;  IntRespMCIter r_it;
+  size_t key_index, step_index, cntr, start, end, md_index, md_index_m,
+    num_active = active_key.data_size();
+
+  for (key_index=0, cntr=0, start=0; key_index<num_active; ++key_index) {
+    step_index = step + key_index;
+    end = start + numFunctions;
+
+    // Locate cost meta-data for ensemble member m through its model form
+    // > see SurrogateModel::insert_metadata(): aggregated metadata is padded
+    //   for any inactive models within the AGGREGATED_MODELS set
+    mf = active_key.retrieve_model_form(key_index);
+    const SizetSizetPair& cost_mdi = costMetadataIndices[mf];
+    md_index_m = cost_mdi.first;
+    if (md_index_m != SZ_MAX) { // alternatively, if solnCntlCostMap key is 0.
+      md_index = cntr + md_index_m; // index into aggregated metadata
+      for (r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it) {
+	const Response& resp = r_it->second;
+	if (non_zero(resp.active_set_request_vector(), start, end)) {
+	  cost = resp.metadata(md_index);
+	  if (isfinite(cost))
+	    { accum_cost[step_index] += cost; ++num_cost[step_index]; }
+	}
+      }
+    }
+
+    start = end;
+    cntr += cost_mdi.second; // offset by size of metadata for model
+  }
 }
 
 
@@ -1818,7 +1924,7 @@ void NonDExpansion::select_candidate(size_t best_candidate)
   // increments.  For recursive discrepancy, however, all levels above the
   // selected candidate are invalidated.
   //if (multilevDiscrepEmulation == RECURSIVE_EMULATION)
-  //  for (lev=best_lev+1; lev<num_steps; ++lev)
+  //  for (lev=best_lev+1; lev<numSteps; ++lev)
   //    uSpaceModel->clear_popped();
 }
 
@@ -2414,14 +2520,14 @@ compute_sample_increment(const RealVector& agg_var, const RealVector& cost,
   Real fact = std::pow(sum_root_var_cost / eps_sq_div_2 / gammaEstimatorScale,
 		       1. / kappaEstimatorRate);
   for (lev=0; lev<num_lev; ++lev) {
-    new_N_l = std::pow(agg_var[lev] / sequence_cost(lev, cost),
+    new_N_l = std::pow(agg_var[lev] / level_cost(lev, cost),
 		       1. / (kappaEstimatorRate+1.)) * fact;
     delta_N_l[lev] = one_sided_delta(N_l[lev], new_N_l);
   }
 }
 
 
-void NonDExpansion::aggregate_variance(Real& agg_var_l)
+void NonDExpansion::aggregate_level_variance(Real& agg_var_l)
 {
   // case ESTIMATOR_VARIANCE:
   // statsMetricMode remains as Pecos::ACTIVE_EXPANSION_STATS

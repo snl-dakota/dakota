@@ -377,6 +377,8 @@ public:
   short local_eval_synchronization() override;
   /// return subModel local evaluation concurrency
   int local_eval_concurrency() override;
+  /// set threshold for serialization within subModel
+  void serialize_threshold(size_t thresh) override;
   /// flag which prevents overloading the dedicated scheduler processor with
   /// a multiprocessor evaluation (request forwarded to subModel)
   bool derived_scheduler_overload() const override;
@@ -1055,6 +1057,10 @@ inline short RecastModel::local_eval_synchronization()
 
 inline int RecastModel::local_eval_concurrency()
 { return subModel->local_eval_concurrency(); }
+
+
+inline void RecastModel::serialize_threshold(size_t thresh)
+{ subModel->serialize_threshold(thresh); }
 
 
 inline bool RecastModel::derived_scheduler_overload() const

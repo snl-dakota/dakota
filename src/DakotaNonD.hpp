@@ -129,6 +129,10 @@ protected:
   //- Heading: Utility routines
   //
 
+  /// convert cost accumulations to averages
+  void average_online_cost(const RealVector& accum_cost,
+			   const SizetArray& num_cost, RealVector& seq_cost);
+
   /// concatenate computed{Resp,Prob,Rel,GenRel}Levels into level_maps
   void pull_level_mappings(RealVector& level_maps, size_t offset);
   /// update computed{Resp,Prob,Rel,GenRel}Levels from level_maps
@@ -336,6 +340,17 @@ protected:
   size_t startCAUV;
   /// number of active continuous aleatory uncertain variables
   size_t numCAUV;
+
+  /// type of model sequence enumerated with primary MF/ACV loop over steps
+  short sequenceType;
+
+  /// indicates use of user-specified cost ratios, online cost recovery,
+  /// or a combination
+  short costSource;
+  /// indices of cost data within response metadata, one per model form
+  SizetSizetPairArray costMetadataIndices;
+  /// relative costs of model forms/resolution levels within a 1D sequence
+  RealVector sequenceCost;
 
   /// flag for computing interval-type metrics instead of integrated metrics
   /// If any epistemic vars are active in a metric evaluation, then flag is set.

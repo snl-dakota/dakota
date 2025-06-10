@@ -183,11 +183,6 @@ protected:
   //- Heading: Data
   //
 
-  /// type of model sequence enumerated with primary MF/ACV loop over steps
-  short sequenceType;
-  /// relative costs of model forms/resolution levels within a 1D sequence
-  RealVector sequenceCost;
-
   /// number of approximation models managed by non-hierarchical iteratedModel
   size_t numApprox;
 
@@ -210,12 +205,6 @@ protected:
   short optSubProblemForm;
   /// SQP or NIP
   unsigned short optSubProblemSolver;
-
-  /// indicates use of user-specified cost ratios, online cost recovery,
-  /// or a combination
-  short costSource;
-  /// indices of cost data within response metadata, one per model form
-  SizetSizetPairArray costMetadataIndices;
 
   /// user specification for seed_sequence
   SizetArray randomSeedSeqSpec;
@@ -305,15 +294,12 @@ private:
   //- Heading: Helper functions
   //
 
-  /// capture unsupported cases and assign mode-specific defaults
-  void manage_offline_convergence_tolerance();
-
   /// accumulator of cost metadata per sample batch
   void accumulate_online_cost(const IntResponseMap& resp_map,
 			      RealVector& accum_cost, SizetArray& num_cost);
-  /// convert cost accumulations to averages
-  void average_online_cost(const RealVector& accum_cost,
-			   const SizetArray& num_cost, RealVector& seq_cost);
+
+  /// capture unsupported cases and assign mode-specific defaults
+  void manage_offline_convergence_tolerance();
 
   /// cache state of seed sequence for use in seed_updated()
   size_t seedIndex;
@@ -386,30 +372,6 @@ inline void NonDEnsembleSampling::resize_active_set()
     activeSet.reshape(ModelUtils::response_size(*iteratedModel));
     activeSet.request_values(1);
   }
-}
-
-
-inline void NonDEnsembleSampling::
-average_online_cost(const RealVector& accum_cost, const SizetArray& num_cost,
-		    RealVector& seq_cost)
-{
-  // Finalize the average cost for the ensemble
-  size_t step, num_steps = accum_cost.length();  unsigned short mf;
-  //if (num_cost.size() != num_steps) { } // not possible in recover_online_cost
-  if (seq_cost.length() != num_steps) seq_cost.sizeUninitialized(num_steps);
-  const Pecos::ActiveKey& active_key = iteratedModel->active_model_key();
-
-  for (step=0; step<num_steps; ++step) {
-    mf = active_key.retrieve_model_form(step);
-    if (costMetadataIndices[mf].first != SZ_MAX)
-      seq_cost[step] = (num_cost[step]) ?
-	accum_cost[step] / num_cost[step] : 0.;
-    // else cost to be provided from metadata
-  }
-
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "Online cost: accum_cost:\n" << accum_cost << "num_cost:\n"
-	 << num_cost << "seq_cost:\n" << seq_cost << std::endl;
 }
 
 

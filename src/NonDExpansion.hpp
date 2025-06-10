@@ -155,7 +155,7 @@ protected:
   virtual void push_candidate(const RealVector& stats_star);
 
   /// initializations for multilevel_regression()
-  virtual void initialize_ml_regression(size_t num_lev, bool& import_pilot);
+  virtual void initialize_ml_regression(bool& import_pilot);
   /// increment sequence in numSamplesOnModel for multilevel_regression()
   virtual void increment_sample_sequence(size_t new_samp, size_t total_samp,
 					 size_t step);
@@ -196,6 +196,9 @@ protected:
   /// define the surrogate response mode for an ensemble model in 
   /// multilevel/multifidelity expansions
   void assign_surrogate_response_mode();
+
+  /// manage cost specification and/or online cost recovery
+  short initialize_costs(RealVector& cost,SizetSizetPairArray& cost_md_indices);
 
   /// helper for initializing a numerical integration grid
   void initialize_u_space_grid();
@@ -259,7 +262,7 @@ protected:
   /// active dimension for traversing a model sequence.
   void configure_indices(size_t group, size_t form, size_t lev, short seq_type);
   /// return aggregate cost (one or more models) for a level sample
-  Real sequence_cost(size_t step, const RealVector& cost);
+  Real level_cost(size_t step, const RealVector& cost);
   /// compute equivHFEvals from samples per level and cost per evaluation
   void compute_equivalent_cost(const SizetArray& N_l, const RealVector& cost);
 
@@ -315,7 +318,7 @@ protected:
   void metric_roll_up(short results_state = FINAL_RESULTS);
 
   /// Aggregate variance across the set of QoI for a particular model level
-  void aggregate_variance(Real& agg_var_l);
+  void aggregate_level_variance(Real& agg_var_l);
 
   /// calculate the response covariance (diagonal or full matrix) for
   /// the expansion indicated by statsMetricMode
@@ -437,9 +440,15 @@ protected:
   /// don't continue an existing random number sequence, rather reset
   /// seed each time within some sampling-based iteration
   bool fixedSeed;
+
   /// top level iteration counter in adaptive NonDExpansion ML/MF algorithms,
   /// allowing special updating logic for some sequence handlers
   size_t mlmfIter;
+
+  /// number of model forms/resolutions within a hierarchical sequence
+  size_t numSteps;
+  /// setting for inactive model dimension not traversed by loop over numSteps
+  size_t secondaryIndex;
 
   /// flag for combined variable expansions which include a
   /// non-probabilistic subset (design, epistemic, state)
@@ -549,6 +558,10 @@ private:
   /// refine each of the multifidelity reference expansions within an
   /// integrated competition
   void multifidelity_integrated_refinement();
+
+  /// accumulator of cost metadata per sample batch
+  void accumulate_online_cost(const IntResponseMap& resp_map, size_t step,
+			      RealVector& accum_cost, SizetArray& num_cost);
 
   /// compute average of total Sobol' indices (from VBD) across the
   /// response set for use as an anisotropy indicator
@@ -689,7 +702,7 @@ inline size_t NonDExpansion::collocation_points() const
 { return 0; }
 
 
-inline Real NonDExpansion::sequence_cost(size_t step, const RealVector& cost)
+inline Real NonDExpansion::level_cost(size_t step, const RealVector& cost)
 {
   if (cost.empty())
     return 0.;

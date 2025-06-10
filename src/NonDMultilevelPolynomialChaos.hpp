@@ -86,7 +86,7 @@ protected:
   int random_seed() const override;
   int first_seed() const override;
 
-  void initialize_ml_regression(size_t num_lev, bool& import_pilot) override;
+  void initialize_ml_regression(bool& import_pilot) override;
   void infer_pilot_sample(/*Real ratio, */size_t num_steps,
 			  SizetArray& delta_N_l) override;
   void increment_sample_sequence(size_t new_samp, size_t total_samp,
