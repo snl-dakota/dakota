@@ -1358,10 +1358,10 @@ void NonDExpansion::assign_surrogate_response_mode()
 
 
 short NonDExpansion::
-initialize_costs(RealVector& cost, SizetSizetPairArray& cost_md_indices)
+initialize_costs(RealVector& cost, BitArray& model_cost_spec,
+		 SizetSizetPairArray& cost_md_indices)
 {
   ModelList& model_list = iteratedModel->subordinate_models(false);
-  BitArray model_cost_spec;
   size_t m, num_mf = model_list.size();  ModelLIter ml_it;
   cost_md_indices.resize(num_mf);
   for (m=0, ml_it=model_list.begin(); ml_it!=model_list.end(); ++m, ++ml_it) {
@@ -1400,6 +1400,10 @@ compute_equivalent_cost(const SizetArray& N_l, const RealVector& cost)
 
 void NonDExpansion::multifidelity_expansion()
 {
+  // costs are required for greedy refinement, optional otherwise
+  bool greedy = (multilevAllocControl == GREEDY_REFINEMENT);
+  if (greedy) test_cost(sequenceType, modelCostSpec, costMetadataIndices);
+
   // Separating reference + refinement into two loops accomplishes two things:
   // > allows refinement based on COMBINED_EXPANSION_STATS to have a more
   //   complete view of the rolled-up stats as level refinements begin
@@ -1412,10 +1416,8 @@ void NonDExpansion::multifidelity_expansion()
   multifidelity_reference_expansion();
 
   // Perform refinement (individual || integrated)
-  if (multilevAllocControl == GREEDY_REFINEMENT)
-    multifidelity_integrated_refinement(); // refineType is required
-  else
-    multifidelity_individual_refinement(); // refineType is optional
+  if (greedy) multifidelity_integrated_refinement(); // refineType is required
+  else        multifidelity_individual_refinement(); // refineType is optional
 
   // promote combined expansion to active
   combined_to_active();
@@ -1442,6 +1444,7 @@ void NonDExpansion::multifidelity_reference_expansion()
   size_t form, lev;  size_t& step = (multilev) ? lev : form;  step = 0;
   if (multilev) form = secondaryIndex;
   else          lev  = secondaryIndex;
+  std::shared_ptr<Iterator> dace_iterator = uSpaceModel->subordinate_iterator();
 
   // initial low fidelity/lowest discretization expansion
   configure_indices(step, form, lev, sequenceType);
@@ -1451,7 +1454,8 @@ void NonDExpansion::multifidelity_reference_expansion()
   RealVector accum_cost;  SizetArray num_cost;
   if (online_cost_recovery) {
     accum_cost.size(numSteps);  num_cost.assign(numSteps, 0);
-    accumulate_online_cost(allResponses, step, accum_cost, num_cost);
+    accumulate_online_cost(dace_iterator->all_responses(), step,
+			   accum_cost, num_cost);
   }
   compute_statistics(INTERMEDIATE_RESULTS);
 
@@ -1473,7 +1477,8 @@ void NonDExpansion::multifidelity_reference_expansion()
     // form the expansion for level i
     compute_expansion();  // nominal discrepancy expansion from input spec
     if (online_cost_recovery)
-      accumulate_online_cost(allResponses, step, accum_cost, num_cost);
+      accumulate_online_cost(dace_iterator->all_responses(), step,
+			     accum_cost, num_cost);
     compute_statistics(INTERMEDIATE_RESULTS);
 
     if (print) {
@@ -1681,11 +1686,8 @@ void NonDExpansion::multilevel_regression()
   if (multilev) form = secondaryIndex;
   else          lev  = secondaryIndex;
 
-  if (!costSource && multilevAllocControl == ESTIMATOR_VARIANCE) { // costs reqd
-    Cerr << "Error: simulation cost estimates required for ML regression "
-	 << "based on estimator variance." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
+  if (multilevAllocControl == ESTIMATOR_VARIANCE) // cost estimates required
+    test_cost(sequenceType, modelCostSpec, costMetadataIndices);
   bool import_pilot, online_cost_recovery
     = (costSource && costSource != USER_COST_SPEC); // online or mixed
   Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0.; 
@@ -1707,6 +1709,7 @@ void NonDExpansion::multilevel_regression()
   // initial expansion build // (includes import and cost recovery)
   /////////////////////////////
   sum_root_var_cost = 0.;
+  std::shared_ptr<Iterator> dace_iterator = uSpaceModel->subordinate_iterator();
   for (step=0; step<numSteps; ++step) {
 
     configure_indices(step, form, lev, sequenceType);
@@ -1725,7 +1728,8 @@ void NonDExpansion::multilevel_regression()
 
     // *** TO DO ***: might be good time to implement multi-batch parallel
     if (online_cost_recovery)
-      accumulate_online_cost(allResponses, step, accum_cost, num_cost);
+      accumulate_online_cost(dace_iterator->all_responses(), step,
+			     accum_cost, num_cost);
 
     if (import_pilot) { // update counts to include imported data
       NLev[step] = delta_N_l[step]
@@ -1862,14 +1866,16 @@ accumulate_online_cost(const IntResponseMap& resp_map, size_t step,
   // BYPASS_SURROGATE:      (NonDExpansion RECURSIVE_EMULATION)
   // > one Model is active
 
+  // step = highest fidelity index so unwind to start from lowest active
+  // fidelity based on active key data size
+
   using std::isfinite;
   const Pecos::ActiveKey& active_key = iteratedModel->active_model_key();
   unsigned short mf;  Real cost;  IntRespMCIter r_it;
-  size_t key_index, step_index, cntr, start, end, md_index, md_index_m,
-    num_active = active_key.data_size();
+  size_t key_index, start=0, end, md_cntr=0, md_index, md_index_m,
+    num_active = active_key.data_size(), cost_index = step + 1 - num_active;
 
-  for (key_index=0, cntr=0, start=0; key_index<num_active; ++key_index) {
-    step_index = step + key_index;
+  for (key_index=0; key_index<num_active; ++key_index, ++cost_index) {
     end = start + numFunctions;
 
     // Locate cost meta-data for ensemble member m through its model form
@@ -1879,19 +1885,19 @@ accumulate_online_cost(const IntResponseMap& resp_map, size_t step,
     const SizetSizetPair& cost_mdi = costMetadataIndices[mf];
     md_index_m = cost_mdi.first;
     if (md_index_m != SZ_MAX) { // alternatively, if solnCntlCostMap key is 0.
-      md_index = cntr + md_index_m; // index into aggregated metadata
+      md_index = md_cntr + md_index_m; // index into aggregated metadata
       for (r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it) {
 	const Response& resp = r_it->second;
 	if (non_zero(resp.active_set_request_vector(), start, end)) {
 	  cost = resp.metadata(md_index);
 	  if (isfinite(cost))
-	    { accum_cost[step_index] += cost; ++num_cost[step_index]; }
+	    { accum_cost[cost_index] += cost; ++num_cost[cost_index]; }
 	}
       }
     }
 
-    start = end;
-    cntr += cost_mdi.second; // offset by size of metadata for model
+    start    = end;
+    md_cntr += cost_mdi.second; // offset by size of metadata for model
   }
 }
 

@@ -38,7 +38,8 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db,
 
   assign_modes();
   configure_1d_sequence(numSteps, secondaryIndex, sequenceType);
-  costSource = initialize_costs(sequenceCost, costMetadataIndices);
+  costSource
+    = initialize_costs(sequenceCost, modelCostSpec, costMetadataIndices);
 
   // ----------------
   // Resolve settings
@@ -149,7 +150,8 @@ NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/
 {
   assign_modes();
   configure_1d_sequence(numSteps, secondaryIndex, sequenceType);
-  costSource = initialize_costs(sequenceCost, costMetadataIndices);
+  costSource
+    = initialize_costs(sequenceCost, modelCostSpec, costMetadataIndices);
 
   // ----------------
   // Resolve settings
@@ -240,7 +242,8 @@ NonDMultilevelPolynomialChaos(unsigned short method_name,
 
   assign_modes();
   configure_1d_sequence(numSteps, secondaryIndex, sequenceType);
-  costSource = initialize_costs(sequenceCost, costMetadataIndices);
+  costSource
+    = initialize_costs(sequenceCost, modelCostSpec, costMetadataIndices);
 
   // ----------------
   // Resolve settings

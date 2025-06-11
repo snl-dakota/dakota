@@ -36,7 +36,8 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, std::shared_ptr<Model> mo
 
   assign_modes();
   configure_1d_sequence(numSteps, secondaryIndex, sequenceType);
-  costSource = initialize_costs(sequenceCost, costMetadataIndices);
+  costSource
+    = initialize_costs(sequenceCost, modelCostSpec, costMetadataIndices);
 
   // ----------------
   // Resolve settings
@@ -139,7 +140,8 @@ NonDMultilevelFunctionTrain(unsigned short method_name, std::shared_ptr<Model> m
 
   assign_modes();
   configure_1d_sequence(numSteps, secondaryIndex, sequenceType);
-  costSource = initialize_costs(sequenceCost, costMetadataIndices);
+  costSource
+    = initialize_costs(sequenceCost, modelCostSpec, costMetadataIndices);
 
   // ----------------
   // Resolve settings

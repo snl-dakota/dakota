@@ -198,7 +198,8 @@ protected:
   void assign_surrogate_response_mode();
 
   /// manage cost specification and/or online cost recovery
-  short initialize_costs(RealVector& cost,SizetSizetPairArray& cost_md_indices);
+  short initialize_costs(RealVector& cost, BitArray& model_cost_spec,
+			 SizetSizetPairArray& cost_md_indices);
 
   /// helper for initializing a numerical integration grid
   void initialize_u_space_grid();
@@ -463,6 +464,8 @@ protected:
   /// emulation approach for multilevel / multifidelity discrepancy:
   /// distinct or recursive
   short multilevDiscrepEmulation;
+  /// presence of a valid cost specification per model within an ensemble
+  BitArray modelCostSpec;
 
   /// number of samples allocated to each level of a discretization/model
   /// hierarchy within multilevel/multifidelity methods
