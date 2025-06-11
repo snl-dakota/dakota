@@ -26,6 +26,7 @@
 
 // C++ compiler using new, h-less standard C headers
 #include <cstdlib>
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <cctype>

@@ -15,10 +15,6 @@
 #include "util_data_types.hpp"
 
 #include <ROL_Objective.hpp>
-//#include <ROL_StdVector.hpp>
-#include <ROL_Types.hpp>
-
-
 
 namespace dakota {
 namespace surrogates {

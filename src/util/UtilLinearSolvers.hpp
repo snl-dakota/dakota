@@ -40,7 +40,7 @@ class LinearSolverBase {
   LinearSolverBase();
 
   /// Destructor
-  ~LinearSolverBase();
+  virtual ~LinearSolverBase();
 
   /**
    *  \brief Convert solver name to enum type
@@ -101,7 +101,7 @@ class LUSolver : public LinearSolverBase {
   LUSolver();
 
   /// Destructor
-  ~LUSolver();
+  virtual ~LUSolver();
 
   /**
    * \brief Query to determine if the matrix of the solver has been factored.
@@ -148,7 +148,7 @@ class SVDSolver : public LinearSolverBase {
   SVDSolver();
 
   /// Destructor
-  ~SVDSolver();
+  virtual ~SVDSolver();
 
   /**
    * \brief Query to determine if the matrix of the solver has been factored.
@@ -195,7 +195,7 @@ class QRSolver : public LinearSolverBase {
   QRSolver();
 
   /// Destructor
-  ~QRSolver();
+  virtual ~QRSolver();
 
   /**
    * \brief Query to determine if the matrix of the solver has been factored.
@@ -242,7 +242,7 @@ class CholeskySolver : public LinearSolverBase {
   CholeskySolver();
 
   /// Destructor
-  ~CholeskySolver();
+  virtual ~CholeskySolver();
 
   /**
    * \brief Query to determine if the matrix of the solver has been factored.

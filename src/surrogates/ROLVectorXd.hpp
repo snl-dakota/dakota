@@ -1,4 +1,14 @@
-#pragma once
+#ifndef ROL_VECTORXD_HPP
+#define ROL_VECTORXD_HPP
+
+/*  _______________________________________________________________________
+
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2025
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
 
 #include <Eigen/Core>
 #include "ROL_Vector.hpp"
@@ -18,6 +28,13 @@ public:
   }
 
   virtual ~ROLVectorXd() {}
+
+  template<class T>
+  inline ROLVectorXd& operator = ( T&& rhs ) {
+    vec_ = std::forward<T>(rhs);
+    return *this;
+  }    
+
 
   void plus( const ROL::Vector<double>& x ) override {
     vec_ += as_VectorXd(x);
@@ -109,6 +126,66 @@ public:
     vec_.setConstant(C);
   }
 
+  // Mutable segment access
+  inline auto segment(int start, int size) {
+    return vec_.segment(start, size);
+  }
+  
+  // Const segment access  
+  inline auto segment(int start, int size) const {
+    return vec_.segment(start, size);
+  }
+  
+  // Template versions for compile-time size (more efficient)
+  template<int Size>
+  inline auto segment(int start) {
+    return vec_.segment<Size>(start);
+  }
+  
+  template<int Size>
+  inline auto segment(int start) const {
+    return vec_.segment<Size>(start);
+  }
+  
+  // Head and tail convenience methods (commonly used)
+  inline auto head(int size) {
+    return vec_.head(size);
+  }
+  
+  inline auto head(int size) const {
+    return vec_.head(size);
+  }
+  
+  inline auto tail(int size) {
+    return vec_.tail(size);
+  }
+  
+  inline auto tail(int size) const {
+    return vec_.tail(size);
+  }
+  
+  // Template versions for compile-time size
+  template<int Size>
+  inline auto head() {
+    return vec_.head<Size>();
+  }
+  
+  template<int Size>
+  inline auto head() const {
+    return vec_.head<Size>();
+  }
+  
+  template<int Size>
+  inline auto tail() {
+    return vec_.tail<Size>();
+  }
+  
+  template<int Size>
+  inline auto tail() const {
+    return vec_.tail<Size>();
+  }
+
+
   // Element access
 
   inline double& operator() ( int i ) { 
@@ -151,3 +228,5 @@ inline const Eigen::VectorXd& as_VectorXd( const ROL::Vector<double>& x ) noexce
 }
 
 } // namespace dakota::surrogates
+
+#endif // ROL_VECTORXD_HPP

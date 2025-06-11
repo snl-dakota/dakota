@@ -9,9 +9,7 @@
 
 #include "SurrogatesGaussianProcess.hpp"
 
-#include "ROL_Algorithm.hpp"
-#include "ROL_Bounds.hpp"
-#include "ROL_LineSearchStep.hpp"
+#include "ROL_Solver.hpp"
 #include "SurrogatesGPObjective.hpp"
 #include "Teuchos_oblackholestream.hpp"
 #include "util_math_tools.hpp"
@@ -172,56 +170,43 @@ void GaussianProcess::build(const MatrixXd& samples, const MatrixXd& response) {
       Teuchos::rcp(new ParameterList("GP_MLE_Optimization"));
   setup_default_optimization_params(gp_mle_rol_params);
 
-//  auto gp_objective = std::make_shared<GP_Objective>(*this);
-  GP_Objective gp_objective{*this};
+//  auto obj = std::make_shared<GP_Objective>(*this);
+  auto obj_ptr = ROL::makePtr<GP_Objective>(*this); auto& obj = *obj_ptr;
   int dim = numVariables + 1 + numPolyTerms + numNuggetTerms;
-
-  // Define algorithm
-  ROL::Ptr<ROL::Step<double>> step =
-      ROL::makePtr<ROL::LineSearchStep<double>>(*gp_mle_rol_params);
-  ROL::Ptr<ROL::StatusTest<double>> status =
-      ROL::makePtr<ROL::StatusTest<double>>(*gp_mle_rol_params);
-  ROL::Algorithm<double> algo(step, status, false);
 
   auto make_ROLVectorXd = []( auto&&... args ) {
     return ROL::makePtr<ROLVectorXd>(std::forward<decltype(args)>(args)...);
   };
 
   /* set up parameter vectors and bounds */
-  ROLVectorXd x(dim,true);
-
+  auto x_ptr  = make_ROLVectorXd(dim,true); auto& x  = *x_ptr;
   auto lo_ptr = make_ROLVectorXd(dim,true); auto& lo = *lo_ptr;
   auto hi_ptr = make_ROLVectorXd(dim,true); auto& hi = *hi_ptr;
 
-  ROL::Ptr<ROL::Bounds<double>> bound;
-  
-  /* sigma bounds */
-  lo(0) = log(sigma_bounds(0));
-  hi(0) = log(sigma_bounds(1));
-  /* length scale bounds */
-  for (int i = 0; i < numVariables; i++) {
-    if (length_scale_bounds.rows() > 1) {
-      lo(i + 1) = log(length_scale_bounds(i, 0));
-      hi(i + 1) = log(length_scale_bounds(i, 1));
-    } else {
-      lo(i + 1) = log(length_scale_bounds(0, 0));
-      hi(i + 1) = log(length_scale_bounds(0, 1));
+  auto bounds_ptr = ROL::makePtr<ROL::Bounds<double>>(lo_ptr,hi_ptr);
+  auto& bounds = *bounds_ptr;
+
+  constexpr int LO{0}, HI{1};
+
+  for( int bnd : {LO,HI} ) {
+    auto& vec = bnd == LO ? lo : hi;
+    vec(0) = log(sigma_bounds(bnd));
+    if( length_scale_bounds.rows() > 1 ) {
+      vec.segment(1,numVariables) = length_scale_bounds.col(bnd).array().log();
+    } 
+    else {
+      vec.segment(1,numVariables).setConstant(log(length_scale_bounds(0, bnd)));
+    }
+    
+    if( estimateTrend ) {
+      vec.segment(numVariables+1,numPolyTerms) = beta_bounds.col(bnd);
+    }
+    if( estimateNugget ) {
+      vec(dim - 1) = log(nugget_bounds(bnd));
     }
   }
-  if (estimateTrend) {
-    for (int i = 0; i < numPolyTerms; i++) {
-      lo(numVariables + 1 + i) = beta_bounds(i, 0);
-      hi(numVariables + 1 + i) = beta_bounds(i, 1);
-    }
-  }
-  if (estimateNugget) {
-    lo(dim - 1) = log(nugget_bounds(0));
-    hi(dim - 1) = log(nugget_bounds(1));
-  }
 
-  bound = ROL::makePtr<ROL::Bounds<double>>(lo_ptr, hi_ptr);
-
-  std::vector<std::string> output;
+//  std::vector<std::string> output;
 
   objectiveFunctionHistory.resize(num_restarts);
   objectiveGradientHistory.resize(num_restarts, dim);
@@ -230,14 +215,15 @@ void GaussianProcess::build(const MatrixXd& samples, const MatrixXd& response) {
   double final_obj_value;
   VectorXd final_obj_gradient(dim);
 
+  auto prob_ptr = ROL::makePtr<ROL::Problem<double>>(obj_ptr,x_ptr);
+  prob_ptr->addBoundConstraint(bounds_ptr);
+
+  ROL::Solver<double> rol_solver(prob_ptr,*gp_mle_rol_params); 
+
   for (int i = 0; i < num_restarts; i++) {
-    for (int j = 0; j < dim; ++j) {
-      x(j) = initial_guesses(i, j);
-    }
-    output = algo.run(x, gp_objective, *bound, true, *outStream);
-    for (int j = 0; j < thetaValues.size(); ++j) {
-      (thetaValues)(j) = x(j);
-    }
+    x = initial_guesses(i,Eigen::all);
+    rol_solver.solve(*outStream,ROL::nullPtr,true);
+    thetaValues = x.getVector();
     if (estimateTrend) {
       for (int j = 0; j < numPolyTerms; ++j) {
         betaValues(j) = x(numVariables + 1 + j);
@@ -261,7 +247,7 @@ void GaussianProcess::build(const MatrixXd& samples, const MatrixXd& response) {
     if (estimateTrend)
       thetaHistory.row(i).segment(numVariables + 1, numPolyTerms) = betaValues;
     if (estimateNugget) thetaHistory.row(i).tail(1)(0) = estimatedNuggetValue;
-    algo.reset();
+    rol_solver.reset();
   }
 
   thetaValues = bestThetaValues;
@@ -766,7 +752,10 @@ void GaussianProcess::setup_default_optimization_params(
   sec_list.set("Type","Limited-Memory BFGS");
   sec_list.set("Maximum Storage", 20);
 
-  auto& ls_list = rol_params->sublist("General").sublist("Step").sublist("Line Search");
+  auto& step_list = rol_params->sublist("General").sublist("Step"); 
+  step_list.set("Type","Line Search");
+
+  auto& ls_list = step_list.sublist("Line Search");
   ls_list.set("Function Evaluation Limit", 3);
   ls_list.set("Sufficient Decrease Tolerance", 1.0e-4);
   ls_list.set("Initial Step Size", 1.0);
