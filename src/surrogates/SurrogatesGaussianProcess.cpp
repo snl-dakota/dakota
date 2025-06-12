@@ -221,7 +221,7 @@ void GaussianProcess::build(const MatrixXd& samples, const MatrixXd& response) {
   ROL::Solver<double> rol_solver(prob_ptr,*gp_mle_rol_params); 
 
   for (int i = 0; i < num_restarts; i++) {
-    x = initial_guesses(i,Eigen::all);
+    x = initial_guesses.row(i);
     rol_solver.solve(*outStream,ROL::nullPtr,true);
     thetaValues = x.getVector();
     if (estimateTrend) {
