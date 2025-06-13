@@ -1164,11 +1164,12 @@ KEYWORD method {N_mdm3(start,0,stop)}
        )
      ]
     [ max_refinement_iterations INTEGER >= 0 {N_mdm(sizet,maxRefineIterations)} ]
-    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ metric_scale {0}
-      relative {N_mdm(true,relativeConvMetric)}
-      |
-      absolute {N_mdm(false,relativeConvMetric)}
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)}
+      [ 
+        relative {N_mdm(type,convergenceToleranceType_RELATIVE_CONVERGENCE_TOLERANCE)}
+        |
+        absolute {N_mdm(type,convergenceToleranceType_ABSOLUTE_CONVERGENCE_TOLERANCE)}
+       ]
      ]
     [ refinement_metric {0}
       level_mappings {N_mdm(type,refinementMetric_LEVEL_STATS_METRIC)}
@@ -1315,11 +1316,12 @@ KEYWORD method {N_mdm3(start,0,stop)}
        )
      ]
     [ max_refinement_iterations INTEGER >= 0 {N_mdm(sizet,maxRefineIterations)} ]
-    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ metric_scale {0}
-      relative {N_mdm(true,relativeConvMetric)}
-      |
-      absolute {N_mdm(false,relativeConvMetric)}
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)}
+      [ 
+        relative {N_mdm(type,convergenceToleranceType_RELATIVE_CONVERGENCE_TOLERANCE)}
+        |
+        absolute {N_mdm(type,convergenceToleranceType_ABSOLUTE_CONVERGENCE_TOLERANCE)}
+       ]
      ]
     [ refinement_metric {0}
       level_mappings {N_mdm(type,refinementMetric_LEVEL_STATS_METRIC)}
@@ -1472,11 +1474,12 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       rank_sampling {N_mdm(type,multilevAllocControl_RANK_SAMPLING)}
      ]
-    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ metric_scale {0}
-      relative {N_mdm(true,relativeConvMetric)}
-      |
-      absolute {N_mdm(false,relativeConvMetric)}
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)}
+      [ 
+        relative {N_mdm(type,convergenceToleranceType_RELATIVE_CONVERGENCE_TOLERANCE)}
+        |
+        absolute {N_mdm(type,convergenceToleranceType_ABSOLUTE_CONVERGENCE_TOLERANCE)}
+       ]
      ]
     [ refinement_metric {0}
       level_mappings {N_mdm(type,refinementMetric_LEVEL_STATS_METRIC)}
@@ -1625,11 +1628,12 @@ KEYWORD method {N_mdm3(start,0,stop)}
        )
      ]
     [ max_refinement_iterations INTEGER >= 0 {N_mdm(sizet,maxRefineIterations)} ]
-    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ metric_scale {0}
-      relative {N_mdm(true,relativeConvMetric)}
-      |
-      absolute {N_mdm(false,relativeConvMetric)}
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)}
+      [ 
+        relative {N_mdm(type,convergenceToleranceType_RELATIVE_CONVERGENCE_TOLERANCE)}
+        |
+        absolute {N_mdm(type,convergenceToleranceType_ABSOLUTE_CONVERGENCE_TOLERANCE)}
+       ]
      ]
     [ refinement_metric {0}
       level_mappings {N_mdm(type,refinementMetric_LEVEL_STATS_METRIC)}
@@ -1911,11 +1915,12 @@ KEYWORD method {N_mdm3(start,0,stop)}
        )
      ]
     [ max_refinement_iterations INTEGER >= 0 {N_mdm(sizet,maxRefineIterations)} ]
-    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ metric_scale {0}
-      relative {N_mdm(true,relativeConvMetric)}
-      |
-      absolute {N_mdm(false,relativeConvMetric)}
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)}
+      [ 
+        relative {N_mdm(type,convergenceToleranceType_RELATIVE_CONVERGENCE_TOLERANCE)}
+        |
+        absolute {N_mdm(type,convergenceToleranceType_ABSOLUTE_CONVERGENCE_TOLERANCE)}
+       ]
      ]
     [ refinement_metric {0}
       level_mappings {N_mdm(type,refinementMetric_LEVEL_STATS_METRIC)}
@@ -2162,11 +2167,12 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       rip_sampling {N_mdm(type,multilevAllocControl_RIP_SAMPLING)}
      ]
-    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ metric_scale {0}
-      relative {N_mdm(true,relativeConvMetric)}
-      |
-      absolute {N_mdm(false,relativeConvMetric)}
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)}
+      [ 
+        relative {N_mdm(type,convergenceToleranceType_RELATIVE_CONVERGENCE_TOLERANCE)}
+        |
+        absolute {N_mdm(type,convergenceToleranceType_ABSOLUTE_CONVERGENCE_TOLERANCE)}
+       ]
      ]
     [ refinement_metric {0}
       level_mappings {N_mdm(type,refinementMetric_LEVEL_STATS_METRIC)}
@@ -2398,11 +2404,12 @@ KEYWORD method {N_mdm3(start,0,stop)}
        )
      ]
     [ max_refinement_iterations INTEGER >= 0 {N_mdm(sizet,maxRefineIterations)} ]
-    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ metric_scale {0}
-      relative {N_mdm(true,relativeConvMetric)}
-      |
-      absolute {N_mdm(false,relativeConvMetric)}
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)}
+      [ 
+        relative {N_mdm(type,convergenceToleranceType_RELATIVE_CONVERGENCE_TOLERANCE)}
+        |
+        absolute {N_mdm(type,convergenceToleranceType_ABSOLUTE_CONVERGENCE_TOLERANCE)}
+       ]
      ]
     [ refinement_metric {0}
       level_mappings {N_mdm(type,refinementMetric_LEVEL_STATS_METRIC)}
@@ -2565,11 +2572,12 @@ KEYWORD method {N_mdm3(start,0,stop)}
        )
      ]
     [ max_refinement_iterations INTEGER >= 0 {N_mdm(sizet,maxRefineIterations)} ]
-    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
-    [ metric_scale {0}
-      relative {N_mdm(true,relativeConvMetric)}
-      |
-      absolute {N_mdm(false,relativeConvMetric)}
+    [ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)}
+      [ 
+        relative {N_mdm(type,convergenceToleranceType_RELATIVE_CONVERGENCE_TOLERANCE)}
+        |
+        absolute {N_mdm(type,convergenceToleranceType_ABSOLUTE_CONVERGENCE_TOLERANCE)}
+       ]
      ]
     [ refinement_metric {0}
       level_mappings {N_mdm(type,refinementMetric_LEVEL_STATS_METRIC)}
@@ -2997,9 +3005,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
        ]
      ]
     [ convergence_tolerance_target {0}
-      variance_constraint {N_mdm(type,convergenceToleranceTarget_CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT)}
+      variance_constraint {N_mdm(type,convergenceToleranceTarget_VARIANCE_CONSTRAINT_TARGET)}
       |
-      cost_constraint {N_mdm(type,convergenceToleranceTarget_CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT)}
+      cost_constraint {N_mdm(type,convergenceToleranceTarget_COST_CONSTRAINT_TARGET)}
      ]
     [ max_iterations INTEGER >= 0 {N_mdm(sizet,maxIterations)} ]
     [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]

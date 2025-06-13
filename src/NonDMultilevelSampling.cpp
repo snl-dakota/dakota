@@ -1670,9 +1670,9 @@ compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql, const IntRealMa
         Cout << "\n\tN_target for Qoi: " << qoi << ", with lagrange: " << fact_qoi << std::endl;
       }
       for (size_t step = 0; step < num_steps; ++step) {
-        if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT){
+        if(convergenceTolTarget == VARIANCE_CONSTRAINT_TARGET){
           NTargetQoI(qoi, step) = Pecos::is_small(fact_qoi) ? 0 : std::sqrt(agg_var_qoi(qoi, step) / level_cost_vec[step]) * fact_qoi;
-        }else if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT){
+        }else if(convergenceTolTarget == COST_CONSTRAINT_TARGET){
           NTargetQoI(qoi, step) = Pecos::is_small(fact_qoi) ? 0 : std::sqrt(agg_var_qoi(qoi, step) / level_cost_vec[step]) / fact_qoi;
         }else{
           Cout << "NonDMultilevelSampling::compute_sample_allocation_target: convergenceTolTarget is not known.\n";
@@ -1763,7 +1763,7 @@ compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql, const IntRealMa
       void (*constraint_function_optpp_ptr) (int, int, const RealVector&, RealVector&, RealMatrix&, int&) = nullptr;
 
       #ifdef HAVE_NPSOL
-        if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT){
+        if(convergenceTolTarget == VARIANCE_CONSTRAINT_TARGET){
           objective_function_npsol_ptr = &target_cost_objective_eval_npsol;
           switch(allocationTarget){
             case TARGET_VARIANCE:
@@ -1778,7 +1778,7 @@ compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql, const IntRealMa
             default:
                break;
           }
-        }else if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT){
+        }else if(convergenceTolTarget == COST_CONSTRAINT_TARGET){
           constraint_function_npsol_ptr = &target_cost_constraint_eval_npsol;
           switch(allocationTarget){
             case TARGET_VARIANCE:
@@ -1808,7 +1808,7 @@ compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql, const IntRealMa
                                  3, 1e-15) //derivative_level = 3 means user_supplied gradients
                                  );
       #elif HAVE_OPTPP
-        if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT){
+        if(convergenceTolTarget == VARIANCE_CONSTRAINT_TARGET){
           objective_function_optpp_ptr = &target_cost_objective_eval_optpp;
           switch(allocationTarget){
             case TARGET_VARIANCE:
@@ -1823,7 +1823,7 @@ compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql, const IntRealMa
             default:
                break;
           }
-        }else if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT){
+        }else if(convergenceTolTarget == COST_CONSTRAINT_TARGET){
           constraint_function_optpp_ptr = &target_cost_constraint_eval_optpp;
           switch(allocationTarget){
             case TARGET_VARIANCE:
@@ -1881,7 +1881,7 @@ compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql, const IntRealMa
         }*/
         nonlin_eq_targets[0] = std::log(eps_sq_div_2[qoi]); //std::log(convergenceTol);
         #ifdef HAVE_NPSOL
-          if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT){
+          if(convergenceTolTarget == VARIANCE_CONSTRAINT_TARGET){
           objective_function_npsol_ptr = &target_cost_objective_eval_npsol;
           switch(allocationTarget){
             case TARGET_VARIANCE:
@@ -1896,7 +1896,7 @@ compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql, const IntRealMa
             default:
                break;
           }
-          }else if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT){
+          }else if(convergenceTolTarget == COST_CONSTRAINT_TARGET){
             constraint_function_npsol_ptr = &target_cost_constraint_eval_npsol;
             switch(allocationTarget){
               case TARGET_VARIANCE:
@@ -1926,7 +1926,7 @@ compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql, const IntRealMa
                                          3, 1e-15)
                                          ); //derivative_level = 3 means user_supplied gradients
         #elif HAVE_OPTPP
-          if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT){
+          if(convergenceTolTarget == VARIANCE_CONSTRAINT_TARGET){
             objective_function_optpp_ptr = &target_cost_objective_eval_optpp;
             switch(allocationTarget){
               case TARGET_VARIANCE:
@@ -1941,7 +1941,7 @@ compute_sample_allocation_target(const IntRealMatrixMap& sum_Ql, const IntRealMa
               default:
                  break;
             }
-          }else if(convergenceTolTarget == CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT){
+          }else if(convergenceTolTarget == COST_CONSTRAINT_TARGET){
             constraint_function_optpp_ptr = &target_cost_constraint_eval_optpp;
             switch(allocationTarget){
               case TARGET_VARIANCE:

@@ -25,7 +25,9 @@ namespace Dakota {
 /** This constructor is called for a standard letter-envelope iterator
     instantiation using the ProblemDescDB. */
 NonDMultilevelPolynomialChaos::
-NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db,
+			      ParallelLibrary& parallel_lib,
+			      std::shared_ptr<Model> model):
   NonDPolynomialChaos(DEFAULT_METHOD, problem_db, parallel_lib, model), // bypass PCE ctor
   expOrderSeqSpec(problem_db.get_usa("method.nond.expansion_order")),
   expSamplesSeqSpec(problem_db.get_sza("method.nond.expansion_samples")),
@@ -36,6 +38,9 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, ParallelLibrary& parall
   randomSeedSeqSpec = problem_db.get_sza("method.random_seed_sequence");
 
   assign_modes();
+  configure_1d_sequence(numSteps, secondaryIndex, sequenceType);
+  costSource
+    = initialize_costs(sequenceCost, modelCostSpec, costMetadataIndices);
 
   // ----------------
   // Resolve settings
@@ -127,7 +132,8 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, ParallelLibrary& parall
 /** This constructor is used for helper iterator instantiation on the fly
     that employ numerical integration (quadrature, sparse grid, cubature). */
 NonDMultilevelPolynomialChaos::
-NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ std::shared_ptr<Model> model,
+NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/
+			      std::shared_ptr<Model> model,
 			      short exp_coeffs_approach,
 			      const UShortArray& num_int_seq,
 			      const RealVector& dim_pref, short u_space_type,
@@ -144,6 +150,9 @@ NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ std::shared_ptr<Mo
   sequenceIndex(0)
 {
   assign_modes();
+  configure_1d_sequence(numSteps, secondaryIndex, sequenceType);
+  costSource
+    = initialize_costs(sequenceCost, modelCostSpec, costMetadataIndices);
 
   // ----------------
   // Resolve settings
@@ -208,7 +217,8 @@ NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ std::shared_ptr<Mo
 /** This constructor is used for helper iterator instantiation on the fly
     that employ regression (least squares, CS, OLI). */
 NonDMultilevelPolynomialChaos::
-NonDMultilevelPolynomialChaos(unsigned short method_name, std::shared_ptr<Model> model,
+NonDMultilevelPolynomialChaos(unsigned short method_name,
+			      std::shared_ptr<Model> model,
 			      short exp_coeffs_approach,
 			      const UShortArray& exp_order_seq,
 			      const RealVector& dim_pref,
@@ -232,6 +242,9 @@ NonDMultilevelPolynomialChaos(unsigned short method_name, std::shared_ptr<Model>
   randomSeedSeqSpec = seed_seq;
 
   assign_modes();
+  configure_1d_sequence(numSteps, secondaryIndex, sequenceType);
+  costSource
+    = initialize_costs(sequenceCost, modelCostSpec, costMetadataIndices);
 
   // ----------------
   // Resolve settings
@@ -810,10 +823,9 @@ increment_sample_sequence(size_t new_samp, size_t total_samp, size_t step)
 }
 
 
-void NonDMultilevelPolynomialChaos::
-initialize_ml_regression(size_t num_lev, bool& import_pilot)
+void NonDMultilevelPolynomialChaos::initialize_ml_regression(bool& import_pilot)
 {
-  NonDExpansion::initialize_ml_regression(num_lev, import_pilot);
+  NonDExpansion::initialize_ml_regression(import_pilot);
 
   // Build point import is active only for the pilot sample and we overlay an
   // additional pilot_sample spec, but we do not augment with samples from a

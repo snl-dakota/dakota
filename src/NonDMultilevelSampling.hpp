@@ -906,7 +906,7 @@ set_convergence_tol(const RealVector& estimator_var0_qoi,
   for (size_t qoi = 0; qoi < numFunctions; ++qoi) {
 
     switch (convergenceTolTarget) {
-    case CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT:
+    case VARIANCE_CONSTRAINT_TARGET:
       // compute epsilon target based on relative tolerance: total MSE = eps^2
       // which is equally apportioned (eps^2 / 2) among discretization MSE and
       // estimator variance (\Sum var_Y_l / N_l).  Since we do not know the
@@ -927,7 +927,7 @@ set_convergence_tol(const RealVector& estimator_var0_qoi,
       }
       break;
 
-    case CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT:
+    case COST_CONSTRAINT_TARGET:
       // Relative cost with respect to convergenceTol evaluations on finest grid
       switch (convergenceTolType) {
       case RELATIVE_CONVERGENCE_TOLERANCE:

@@ -608,7 +608,8 @@ void EnsembleSurrModel::derived_evaluate(const ActiveSet& set)
     auto   hf_model = (hi_fi_eval) ? active_truth_model()      : nullptr;
     auto same_model = (hi_fi_eval) ? hf_model : lf_model;
     if (hierarchicalTagging) {
-      String eval_tag = evalTagPrefix + '.' + std::to_string(surrModelEvalCntr+1);
+      String eval_tag = evalTagPrefix + '.'
+	+ std::to_string(surrModelEvalCntr+1);
       if (sameModelInstance)
 	      same_model->eval_tag_prefix(eval_tag);
       else {
@@ -713,13 +714,13 @@ void EnsembleSurrModel::derived_evaluate(const ActiveSet& set)
         // just update currentResponse (managed as surrogate data at higher level)
         bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
         currentResponse.active_set(set);
-        deltaCorr[activeKey].compute(hi_fi_response, lf_model->current_response(),
-            currentResponse, quiet_flag);
+        deltaCorr[activeKey].compute(hi_fi_response,
+	  lf_model->current_response(), currentResponse, quiet_flag);
         break;
       }
       case AGGREGATED_MODEL_PAIR:
         aggregate_response(lf_model->current_response(), hi_fi_response,
-        currentResponse);
+			   currentResponse);
         break;
       case UNCORRECTED_SURROGATE:   case AUTO_CORRECTED_SURROGATE:
         if (mixed_eval) {

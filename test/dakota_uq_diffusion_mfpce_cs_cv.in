@@ -16,7 +16,6 @@ method,
 	    convergence_tolerance 1.e-3		#s0,#s1,#s2,#s3
 #	    convergence_tolerance 1.e-2		#s4,#s5,#s6,#s7
 #         discrepancy_emulation recursive	#s4,#s5,#s6,#s7
-#         metric_scale          relative
 #         statistics_mode       combined
 	output quiet
 

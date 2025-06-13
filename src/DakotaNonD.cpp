@@ -647,7 +647,8 @@ test_cost(short seq_type, const BitArray& model_cost_spec,
   case Pecos::MODEL_FORM_1D_SEQUENCE: {       // MF
     ModelLIter m_iter;
     for (m=0, m_iter=sub_models.begin(); m<num_mf; ++m, ++m_iter)
-      if (test_cost(model_cost_spec[m], cost_md_indices[m], (*m_iter)->model_id()))
+      if (test_cost(model_cost_spec[m], cost_md_indices[m],
+		    (*m_iter)->model_id()))
 	err_flag = true;
     break;
   }
@@ -670,7 +671,8 @@ test_cost(short seq_type, const BitArray& model_cost_spec,
     // (model costs are presumed to be more separated than resolution costs)
     for (m=0, cntr=0, m_iter=sub_models.begin(); m_iter!=sub_models.end();
 	 ++m, ++m_iter)
-      if (test_cost(model_cost_spec[m], cost_md_indices[m], (*m_iter)->model_id()))
+      if (test_cost(model_cost_spec[m], cost_md_indices[m],
+		    (*m_iter)->model_id()))
 	err_flag = true;
     break;
   }
@@ -682,6 +684,30 @@ test_cost(short seq_type, const BitArray& model_cost_spec,
 	 << std::endl;
     abort_handler(METHOD_ERROR);
   }
+}
+
+
+void NonD::
+average_online_cost(const RealVector& accum_cost, const SizetArray& num_cost,
+		    RealVector& seq_cost)
+{
+  // Finalize the average cost for the ensemble
+  size_t step, num_steps = accum_cost.length();  unsigned short mf;
+  //if (num_cost.size() != num_steps) { } // not possible in recover_online_cost
+  if (seq_cost.length() != num_steps) seq_cost.sizeUninitialized(num_steps);
+  const Pecos::ActiveKey& active_key = iteratedModel->active_model_key();
+
+  for (step=0; step<num_steps; ++step) {
+    mf = active_key.retrieve_model_form(step);
+    if (costMetadataIndices[mf].first != SZ_MAX)
+      seq_cost[step] = (num_cost[step]) ?
+	accum_cost[step] / num_cost[step] : 0.;
+    // else cost to be provided from metadata
+  }
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Online cost: accum_cost:\n" << accum_cost << "num_cost:\n"
+	 << num_cost << "seq_cost:\n" << seq_cost << std::endl;
 }
 
 

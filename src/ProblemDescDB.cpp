@@ -2414,7 +2414,6 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
       {"nond.mutual_info_ksg2", P_MET mutualInfoKSG2},
       {"nond.normalized", P_MET normalizedCoeffs},
       {"nond.piecewise_basis", P_MET piecewiseBasis},
-      {"nond.relative_convergence_metric", P_MET relativeConvMetric},
       {"nond.response_scaling", P_MET respScalingFlag},
       {"nond.standardized_space", P_MET standardizedSpace},
       {"nond.tensor_grid", P_MET tensorGridFlag},

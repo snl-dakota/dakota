@@ -235,8 +235,9 @@ void NonDEnsembleSampling::
 accumulate_online_cost(const IntResponseMap& resp_map, RealVector& accum_cost,
 		       SizetArray& num_cost)
 {
-  // uses one set of allResponses with QoI aggregation across all Models,
-  // ordered by unorderedModels[i-1], i=1:numApprox --> truthModel
+  // Uses one set of allResponses with QoI aggregation across active Models
+  // AGGREGATED_MODELS: (NonDEnsembleSampling: Hierarch, NonHierarch)
+  // > all Models are active
 
   using std::isfinite;
   size_t m, cntr, start, end, md_index, md_index_m;
@@ -265,7 +266,8 @@ accumulate_online_cost(const IntResponseMap& resp_map, RealVector& accum_cost,
     }
 
     start = end;
-    cntr += cost_mdi.second; // offset by size of metadata for model
+    cntr += cost_mdi.second; // offset by size of metadata for model, even if
+                             // for the next resolution within the same model
   } 
 }
 
@@ -276,7 +278,8 @@ void NonDEnsembleSampling::initialize_final_statistics()
   case ESTIMATOR_PERFORMANCE: { // MSE in stat goal(s) used for method selection
     size_t num_final = 2;
     ActiveSet set(num_final);//, num_active_vars); // default RV = 1
-    set.derivative_vector(ModelUtils::inactive_continuous_variable_ids(*iteratedModel));
+    set.derivative_vector(ModelUtils::
+			  inactive_continuous_variable_ids(*iteratedModel));
     finalStatistics = Response(SIMULATION_RESPONSE, set);
 
     StringArray stats_labels(num_final);

@@ -71,7 +71,7 @@ protected:
   //- Heading: Data
   //
 
-  /// number of model forms/resolution in the (outer) sequence
+  /// number of model forms/resolution within a hierarchical sequence
   size_t numSteps;
   /// setting for inactive model dimension not traversed by loop over numSteps
   size_t secondaryIndex;
