@@ -10,16 +10,14 @@ method,
         multifidelity_polynomial_chaos
 	  sparse_grid_level_sequence = 0 unrestricted
 	  p_refinement dimension_adaptive generalized
-	    max_refinement_iterations 100	# per level
-	    convergence_tolerance = 1.e-6	#s0
-#	    convergence_tolerance = 1.e-8	#s1,#s3
-#	    convergence_tolerance = 1.e-3	#s2
+	    max_refinement_iterations 100		# per level
+	    convergence_tolerance = 1.e-6 relative	#s0
+#	    convergence_tolerance = 1.e-8 absolute	#s1,#s3
+#	    convergence_tolerance = 1.e-3 relative	#s2
 	  discrepancy_emulation recursive
-          metric_scale          relative	#s0,#s2
-#	  metric_scale          absolute	#s1,#s3
-	  statistics_mode       combined	#s0,#s1
-#	  statistics_mode       active		#s2,#s3
-#	  allocation_control    greedy		# not for recursive
+	  statistics_mode       combined		#s0,#s1
+#	  statistics_mode       active			#s2,#s3
+#	  allocation_control    greedy			# not for recursive
 	output silent
 
 model,

@@ -23,7 +23,7 @@ DataMethodRep::DataMethodRep():
   maxFunctionEvals(SZ_MAX), speculativeFlag(false), methodUseDerivsFlag(false),
   constraintTolerance(0.), methodScaling(false), numFinalSolutions(0),
   convergenceTolerance(-std::numeric_limits<double>::max()),
-  relativeConvMetric(true), statsMetricMode(Pecos::DEFAULT_EXPANSION_STATS),
+  statsMetricMode(Pecos::DEFAULT_EXPANSION_STATS),
   methodName(DEFAULT_METHOD), subMethod(SUBMETHOD_DEFAULT),
   // Meta-iterators
   iteratorServers(0), procsPerIterator(0), // 0 defaults to detect user spec
@@ -147,7 +147,7 @@ DataMethodRep::DataMethodRep():
   relaxRecursiveFactor(0.), allocationTarget(TARGET_MEAN),
   useTargetVarianceOptimizationFlag(false), qoiAggregation(QOI_AGGREGATION_SUM),
   convergenceToleranceType(DEFAULT_CONVERGENCE_TOLERANCE),
-  convergenceToleranceTarget(CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT),
+  convergenceToleranceTarget(VARIANCE_CONSTRAINT_TARGET),
   //expansionSampleType("lhs"),
   cubIntOrder(USHRT_MAX), collocationRatio(0.), collocRatioTermsOrder(1.),
   regressionType(Pecos::DEFAULT_REGRESSION), lsRegressionType(DEFAULT_LS),
@@ -240,9 +240,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << maxIterations << maxRefineIterations << maxSolverIterations
     << maxFunctionEvals << speculativeFlag << methodUseDerivsFlag
     << constraintTolerance << methodScaling << numFinalSolutions
-    << convergenceTolerance << relativeConvMetric << statsMetricMode
-    << methodName << subMethod << subMethodName << subModelPointer
-    << subMethodPointer;
+    << convergenceTolerance << statsMetricMode << methodName << subMethod
+    << subMethodName << subModelPointer << subMethodPointer;
 
   // Meta-iterators
   s << iteratorServers << procsPerIterator << iteratorScheduling
@@ -445,9 +444,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> maxIterations >> maxRefineIterations >> maxSolverIterations
     >> maxFunctionEvals >> speculativeFlag >> methodUseDerivsFlag
     >> constraintTolerance >> methodScaling >> numFinalSolutions
-    >> convergenceTolerance >> relativeConvMetric >> statsMetricMode
-    >> methodName >> subMethod >> subMethodName >> subModelPointer
-    >> subMethodPointer;
+    >> convergenceTolerance >> statsMetricMode >> methodName >> subMethod
+    >> subMethodName >> subModelPointer >> subMethodPointer;
 
   // Meta-iterators
   s >> iteratorServers >> procsPerIterator >> iteratorScheduling
@@ -650,9 +648,8 @@ void DataMethodRep::write(std::ostream& s) const
     << maxIterations << maxRefineIterations << maxSolverIterations
     << maxFunctionEvals << speculativeFlag << methodUseDerivsFlag
     << constraintTolerance << methodScaling << numFinalSolutions
-    << convergenceTolerance << relativeConvMetric << statsMetricMode
-    << methodName << subMethod << subMethodName << subModelPointer
-    << subMethodPointer;
+    << convergenceTolerance << statsMetricMode << methodName << subMethod
+    << subMethodName << subModelPointer << subMethodPointer;
 
   // Meta-iterators
   s << iteratorServers << procsPerIterator << iteratorScheduling

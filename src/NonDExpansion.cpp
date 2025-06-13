@@ -36,13 +36,14 @@
 
 namespace Dakota {
 
-NonDExpansion::NonDExpansion(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
+NonDExpansion::
+NonDExpansion(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   NonD(problem_db, model), expansionCoeffsApproach(-1),
   expansionBasisType(problem_db.get_short("method.nond.expansion_basis_type")),
   statsMetricMode(
     problem_db.get_short("method.nond.refinement_statistics_mode")),
-  relativeMetric(
-    problem_db.get_bool("method.nond.relative_convergence_metric")),
+  relativeMetric(problem_db.get_short("method.nond.convergence_tolerance_type")
+		 != ABSOLUTE_CONVERGENCE_TOLERANCE), // include DEFAULT,RELATIVE
   dimPrefSpec(problem_db.get_rv("method.nond.dimension_preference")),
   collocPtsSeqSpec(problem_db.get_sza("method.nond.collocation_points")),
   collocRatio(problem_db.get_real("method.nond.collocation_ratio")),
@@ -1634,12 +1635,10 @@ void NonDExpansion::multifidelity_integrated_refinement()
 	// required evaluations, which is sufficient for selection of the best
 	// level candidate.  For selection among multiple level candidates, a
 	// secondary normalization for relative level cost is required.
-	Cout << "\n<<<<< Sequence step " << step+1 <<" raw refinement metric = "
-	     << step_metric<<" step cost = "<< level_cost(step, sequenceCost)
-	     <<'\n';
-	step_metric /= level_cost(step, sequenceCost);
+	Real l_cost  = level_cost(step, sequenceCost);
+	step_metric /= l_cost;
 	Cout << "\n<<<<< Sequence step " << step+1 << " refinement metric = "
-	     << step_metric << '\n';
+	     << step_metric << " for step cost " << l_cost << '\n';
 	// Assess candidate for best across all levels
 	if (step_metric > best_step_metric) {
 	  best_step        = step;        best_step_candidate = step_candidate;

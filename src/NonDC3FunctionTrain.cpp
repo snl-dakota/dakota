@@ -65,7 +65,7 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
   // Recast g(x) to G(u)
   // -------------------
   auto g_u_model = std::make_shared<ProbabilityTransformModel>(
-    *iteratedModel, u_space_type)); // retain dist bnds
+    iteratedModel, u_space_type); // retain dist bnds
 
   // -------------------------
   // Construct u_space_sampler

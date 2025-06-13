@@ -59,7 +59,7 @@ NonDGenACVSampling(ProblemDescDB& problem_db, std::shared_ptr<Model> model):
       err_flag = true;
     }
     if (problem_db.get_short("method.nond.convergence_tolerance_target") !=
-	CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT) {
+	VARIANCE_CONSTRAINT_TARGET) {
       Cerr << "Error: unsupported convergence tol target specification.\n";
       err_flag = true;
     }

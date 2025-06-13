@@ -53,7 +53,7 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, std::shared_ptr<Model> mo
   // -------------------
   
   auto g_u_model = std::make_shared<ProbabilityTransformModel>(
-    *iteratedModel, u_space_type); // retain dist bounds
+    iteratedModel, u_space_type); // retain dist bounds
 
   // -------------------------
   // Construct u_space_sampler

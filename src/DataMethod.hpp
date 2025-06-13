@@ -234,8 +234,7 @@ enum {  DEFAULT_CONVERGENCE_TOLERANCE=0, RELATIVE_CONVERGENCE_TOLERANCE,
        ABSOLUTE_CONVERGENCE_TOLERANCE };
 // define optimization formulation for MLMC sample allocation by
 // specifing equality constraint, either variance or cost
-enum { CONVERGENCE_TOLERANCE_TARGET_VARIANCE_CONSTRAINT,
-       CONVERGENCE_TOLERANCE_TARGET_COST_CONSTRAINT };
+enum { VARIANCE_CONSTRAINT_TARGET, COST_CONSTRAINT_TARGET };
 
 // ML/MF sampling modes
 enum { ONLINE_PILOT,            OFFLINE_PILOT,
@@ -362,9 +361,12 @@ public:
   /// iteration convergence tolerance for the method (from the \c
   /// convergence_tolerance specification in \ref MethodIndControl)
   Real convergenceTolerance;
-  /// controls use of convergence tolerance in a relative (true) or
-  /// absolute (false) context
-  bool relativeConvMetric;
+  /// the \c convergence_tolerance_type selection: relative or absolute
+  short convergenceToleranceType;
+  /// the \c convergence_tolerance_target selection in \ref MethodMultilevelMC:
+  /// variance or cost constraint
+  short convergenceToleranceTarget;
+
   /// mode of computing statistics metrics used for convergence assessment
   /// of multilevel/multifidelity refinement processes: active or combined
   short statsMetricMode;
@@ -1164,10 +1166,6 @@ public:
   /// the \c scalarization_response_mapping for defining the statistical
   /// goal in multilevel UQ methods
   RealVector scalarizationRespCoeffs;
-  /// the \c convergence_tolerance_type selection in \ref MethodMultilevelMC
-  short convergenceToleranceType;
-  /// the \c convergence_tolerance_target selection in \ref MethodMultilevelMC
-  short convergenceToleranceTarget;
   /// the \c allocation_control selection in \ref MethodMultilevelPCE
   short multilevAllocControl;
   /// the \c estimator_rate selection in \ref MethodMultilevelPCE
