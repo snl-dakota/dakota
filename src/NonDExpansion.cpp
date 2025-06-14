@@ -1452,7 +1452,6 @@ void NonDExpansion::multifidelity_reference_expansion()
   configure_indices(step, form, lev, sequenceType);
   assign_specification_sequence();
   compute_expansion();  // nominal LF expansion from input spec
-  // *** TO DO ***: might be good time to implement multi-batch parallel as well
   RealVector accum_cost;  SizetArray num_cost;
   if (online_cost_recovery) {
     accum_cost.size(numSteps);  num_cost.assign(numSteps, 0);
@@ -1477,6 +1476,8 @@ void NonDExpansion::multifidelity_reference_expansion()
     increment_specification_sequence();
 
     // form the expansion for level i
+    // Note: multi-batch parallel is impeded by the use of dace_iterator.run()
+    // within DataFitSurrModel --> more challenging to queue batches.
     compute_expansion();  // nominal discrepancy expansion from input spec
     if (online_cost_recovery)
       accumulate_online_cost(dace_iterator->all_responses(), step,
@@ -1686,11 +1687,13 @@ void NonDExpansion::multilevel_regression()
   if (multilev) form = secondaryIndex;
   else          lev  = secondaryIndex;
 
-  if (multilevAllocControl == ESTIMATOR_VARIANCE) // cost estimates required
+  Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0., inv_kp1; 
+  if (multilevAllocControl == ESTIMATOR_VARIANCE) { // cost estimates required
     test_cost(sequenceType, modelCostSpec, costMetadataIndices);
+    inv_kp1 = 1./(kappaEstimatorRate+1.);
+  }
   bool import_pilot, online_cost_recovery
     = (costSource && costSource != USER_COST_SPEC); // online or mixed
-  Real eps_sq_div_2, sum_root_var_cost, estimator_var0 = 0.; 
   RealVector level_metrics(numSteps), accum_cost(numSteps);
   SizetArray num_cost;  num_cost.assign(numSteps, 0);
 
@@ -1708,7 +1711,6 @@ void NonDExpansion::multilevel_regression()
   /////////////////////////////
   // initial expansion build // (includes import and cost recovery)
   /////////////////////////////
-  sum_root_var_cost = 0.;
   std::shared_ptr<Iterator> dace_iterator = uSpaceModel->subordinate_iterator();
   for (step=0; step<numSteps; ++step) {
 
@@ -1726,7 +1728,8 @@ void NonDExpansion::multilevel_regression()
     else
       update_expansion();  // just build; not recursive
 
-    // *** TO DO ***: might be good time to implement multi-batch parallel
+    // Note: multi-batch parallel is impeded by the use of dace_iterator.run()
+    // within DataFitSurrModel --> more challenging to queue batches.
     if (online_cost_recovery)
       accumulate_online_cost(dace_iterator->all_responses(), step,
 			     accum_cost, num_cost);
@@ -1742,34 +1745,36 @@ void NonDExpansion::multilevel_regression()
 	abort_handler(METHOD_ERROR);
       }
     }
+
+    switch (multilevAllocControl) { // level_metrics depend on active config
+    case ESTIMATOR_VARIANCE:
+      aggregate_level_variance(level_metrics[step]);
+      // MSE reference is ML MC aggregation for pilot(+import) sample:
+      if (relativeMetric) estimator_var0 += level_metrics[step] / NLev[step];
+      break;
+    default: // RIP_SAMPLING (ML PCE), RANK_SAMPLING (ML FT)
+      sample_allocation_metric(level_metrics[step], 2.); break;
+    }
   }
   if (online_cost_recovery)
     average_online_cost(accum_cost, num_cost, sequenceCost);
 
   switch (multilevAllocControl) {
   case ESTIMATOR_VARIANCE:
-    for (step=0; step<numSteps; ++step) {
-      Real& agg_var_l = level_metrics[step];
-      if (delta_N_l[step] > 0) aggregate_level_variance(agg_var_l);
-      sum_root_var_cost += std::pow(agg_var_l *
-	std::pow(level_cost(step, sequenceCost), kappaEstimatorRate),
-	1./(kappaEstimatorRate+1.));
-      // MSE reference is ML MC aggregation for pilot(+import) sample:
-      estimator_var0 += agg_var_l / NLev[step];
-    }
-    // eps^2 / 2 = var * relative factor
-    eps_sq_div_2 = estimator_var0 * convergenceTol;
+    sum_root_var_cost = 0.;
+    for (step=0; step<numSteps; ++step)
+      sum_root_var_cost += std::pow(level_metrics[step] *
+	std::pow(level_cost(step, sequenceCost), kappaEstimatorRate), inv_kp1);
+    // eps^2 / 2 = var * relative factor || absolute factor
+    eps_sq_div_2 = convergenceTol;
+    if (relativeMetric) eps_sq_div_2 *= estimator_var0;
     if (outputLevel == DEBUG_OUTPUT)
       Cout << "Epsilon squared target = " << eps_sq_div_2 << '\n';
     compute_sample_increment(level_metrics, sequenceCost, sum_root_var_cost,
 			     eps_sq_div_2, NLev, delta_N_l);
     break;
   default: // RIP_SAMPLING (ML PCE), RANK_SAMPLING (ML FT)
-    for (step=0; step<numSteps; ++step)
-      if (delta_N_l[step] > 0) // else level metric same as previous iter
-	sample_allocation_metric(level_metrics[step], 2.);
-    compute_sample_increment(level_metrics, NLev, delta_N_l);
-    break;
+    compute_sample_increment(level_metrics, NLev, delta_N_l);  break;
   }
   ++mlmfIter;
   Cout << "\nML regression iteration " << mlmfIter << " sample increments:\n"
@@ -1796,14 +1801,13 @@ void NonDExpansion::multilevel_regression()
       switch (multilevAllocControl) {
       case ESTIMATOR_VARIANCE: {
 	Real& agg_var_l = level_metrics[step];
-	if (delta_N_l[step] > 0) aggregate_level_variance(agg_var_l);
-	sum_root_var_cost += std::pow(agg_var_l *
-	  std::pow(level_cost(step, sequenceCost), kappaEstimatorRate),
-	  1./(kappaEstimatorRate+1.));
+	if (delta_N_l[step]) aggregate_level_variance(agg_var_l);
+	sum_root_var_cost += std::pow(agg_var_l * std::pow(
+	  level_cost(step, sequenceCost), kappaEstimatorRate), inv_kp1);
 	break;
       }
       default:
-	if (delta_N_l[step] > 0) // else level metric same as previous iter
+	if (delta_N_l[step]) // else level metric same as previous iter
 	  sample_allocation_metric(level_metrics[step], 2.);
 	break;
       }
@@ -1812,11 +1816,9 @@ void NonDExpansion::multilevel_regression()
     switch (multilevAllocControl) {
     case ESTIMATOR_VARIANCE:
       compute_sample_increment(level_metrics, sequenceCost, sum_root_var_cost,
-			       eps_sq_div_2, NLev, delta_N_l);
-      break;
+			       eps_sq_div_2, NLev, delta_N_l);   break;
     default: // RIP_SAMPLING (ML PCE), RANK_SAMPLING (ML FT)
-      compute_sample_increment(level_metrics, NLev, delta_N_l);
-      break;
+      compute_sample_increment(level_metrics, NLev, delta_N_l);  break;
     }
     ++mlmfIter;
     Cout << "\nML regression iteration " << mlmfIter << " sample increments:\n"

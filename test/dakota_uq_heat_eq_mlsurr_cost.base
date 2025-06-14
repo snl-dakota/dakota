@@ -3,14 +3,14 @@ Test Number 0 succeeded
 <<<<< Equivalent number of high fidelity evaluations: 2.083200000000000e+01
 Moment statistics for each response function:
                                   Mean                Variance              3rdCentral              4thCentral
- response_fn_1  8.0214974739487360e+01  6.5848613147552182e-01
+ response_fn_1  8.0214974739487360e+01  6.5848613147553936e-01
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 4137 total (4092 new, 45 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 33.2692
 Moment statistics for each response function:
                                   Mean                Variance              3rdCentral              4thCentral
-  expansion:    1.6389858412834375e+01  1.1083184630677353e+04  3.1547029772020946e+06  1.5108909130630760e+09
-  integration:  1.6389858412831355e+01  1.1083184630679931e+04  3.1547029772024262e+06  1.5108909130630879e+09
+  expansion:    1.6389858412836880e+01  1.1083184630677100e+04  3.1547029772019982e+06  1.5108909130627558e+09
+  integration:  1.6389858412830353e+01  1.1083184630679190e+04  3.1547029772024611e+06  1.5108909130630066e+09
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 2604 total (2604 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 501.757
@@ -22,14 +22,14 @@ Test Number 3 succeeded
 <<<<< Equivalent number of high fidelity evaluations: 1.572900000000000e+01
 Moment statistics for each response function:
                                   Mean                Variance              3rdCentral              4thCentral
- response_fn_1  8.0097986517141848e+01  9.8632974378955643e-02
+ response_fn_1  8.0097986517141848e+01  9.8632974378956906e-02
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 17353 total (17308 new, 45 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 77.8732
 Moment statistics for each response function:
                                   Mean                Variance              3rdCentral              4thCentral
-  expansion:    3.5711118193908263e+01  1.0773498893457108e+04  2.8355401537375967e+06  1.3560276189263144e+09
-  integration:  3.5711118193886449e+01  1.0773498893439539e+04  2.8355401537389602e+06  1.3560276189263043e+09
+  expansion:    3.5711118193848456e+01  1.0773498893461903e+04  2.8355401537398421e+06  1.3560276189273164e+09
+  integration:  3.5711118193873482e+01  1.0773498893437265e+04  2.8355401537392763e+06  1.3560276189264317e+09
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 2604 total (2604 new, 0 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 501.757
