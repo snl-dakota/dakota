@@ -2,7 +2,7 @@ Blurb::
 Enable constraint relaxation
 Description::
 The command ``constraint_relax`` followed by a method name specifies
-the type of relaxation to be used. Currently, <tt>homotopy</tt>
+the type of relaxation to be used. Currently, ``homotopy``
 :cite:p:`Per04a` is the only available method for
 constraint relaxation, and this method is dependent on the presence of
 the NPSOL library within the Dakota executable.

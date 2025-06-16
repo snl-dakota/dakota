@@ -6,8 +6,8 @@ used in scaling each continuous design variable. They only have effect
 when the associated method specifies ``scaling``.
 
 This keyword is required for
-:dakkw:`variables-continuous_design-scale_types` of <tt>'value'</tt> and
-optional for <tt>'auto'</tt> and <tt>'log'</tt>. When specified in
+:dakkw:`variables-continuous_design-scale_types` of ``'value'`` and
+optional for ``'auto'`` and ``'log'``. When specified in
 conjunction with log, scale values are applied prior to the logarithm,
 to permit log scaling of strictly negative design variables.
 

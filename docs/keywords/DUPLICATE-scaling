@@ -70,7 +70,7 @@ optional.
 - ``value`` - required.
 
 A warning is issued if scaling would result in division by a value
-smaller in magnitude than <tt>1.0e10*DBL_MIN</tt>.  User-provided
+smaller in magnitude than ``1.0e10*DBL_MIN``.  User-provided
 values violating this lower bound are accepted unaltered, whereas for
 automatically calculated scaling, the lower bound is enforced.
 Topics::

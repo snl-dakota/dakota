@@ -47,10 +47,10 @@ Examples::
 The following input file fragment illustrates GPMSA-based Bayesian
 calibration of 3 :math:`\beta`  variables with a uniform prior, with 3
 configuration (scenario) variables :math:`x` .  A total of 60 simulation
-build points are provided in <tt>sim_data.dat</tt>, which contains
+build points are provided in ``sim_data.dat``, which contains
 columns for each :math:`\beta` , followed by each :math:`x` , and then the
 simulation response 'lin'.  Each row of the experiment data file
-<tt>y_exp_with_var.dat</tt> contains the values of the 3 :math:`x` 
+``y_exp_with_var.dat`` contains the values of the 3 :math:`x` 
 variables, followed by the value of 'lin' and its observation error
 (variance).
 

@@ -8,8 +8,8 @@ method specifies ``scaling``.
 The options are:
 
 
-- <tt>'value'</tt> - characteristic value by which response     functions will be divided. If this is chosen, then     :dakkw:`responses-objective_functions-primary_scales` must also be     specified; 'value' is assumed if scales are given without     ``scale_types``
-- <tt>'log'</tt> - logarithmic scaling (can be used together with     :dakkw:`responses-objective_functions-primary_scales`, which can be     helpfully used to negate values prior to log transformation)
+- ``'value'`` - characteristic value by which response     functions will be divided. If this is chosen, then     :dakkw:`responses-objective_functions-primary_scales` must also be     specified; 'value' is assumed if scales are given without     ``scale_types``
+- ``'log'`` - logarithmic scaling (can be used together with     :dakkw:`responses-objective_functions-primary_scales`, which can be     helpfully used to negate values prior to log transformation)
 
 (Automatic scaling is disallowed due to lack of bounds or targets for
 primary responses.)

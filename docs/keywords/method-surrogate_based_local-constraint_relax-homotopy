@@ -1,7 +1,7 @@
 Blurb::
 Surrogate-Based local constraint relaxation method for infeasible iterates
 Description::
-Currently, <tt>homotopy</tt> :cite:p:`Per04a` is the
+Currently, ``homotopy`` :cite:p:`Per04a` is the
 only available method for constraint relaxation, and this method is
 dependent on the presence of the NPSOL library within the Dakota
 executable.

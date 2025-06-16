@@ -7,7 +7,7 @@ characteristic value to be used in scaling each constraint. They only
 have effect when the associated method specifies ``scaling``.
 
 This keyword is required for
-:dakkw:`variables-linear_inequality_scale_types` of <tt>'value'</tt> and
+:dakkw:`variables-linear_inequality_scale_types` of ``'value'`` and
 optional for 'auto'.
 
 If a single real value is specified it will apply to all linear

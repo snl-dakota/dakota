@@ -8,9 +8,9 @@ method specifies ``scaling``.
 The options are:
 
 
-- <tt>'value'</tt> - characteristic value by which variables will be     divided. If this is chosen, then     :dakkw:`variables-continuous_design-scales` must also be specified; 'value'     is assumed if scales are given without ``scale_types``
-- <tt>'auto'</tt> - automatic scaling based on bounds.
-- <tt>'log'</tt> - logarithmic scaling (can be used together with     :dakkw:`variables-continuous_design-scales`).
+- ``'value'`` - characteristic value by which variables will be     divided. If this is chosen, then     :dakkw:`variables-continuous_design-scales` must also be specified; 'value'     is assumed if scales are given without ``scale_types``
+- ``'auto'`` - automatic scaling based on bounds.
+- ``'log'`` - logarithmic scaling (can be used together with     :dakkw:`variables-continuous_design-scales`).
 
 If a single string is specified it will apply to all continuous design
 variables. Otherwise, a scale type must be specified for each

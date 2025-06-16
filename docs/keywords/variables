@@ -190,7 +190,7 @@ In the next example, defaults are employed. In this case,
 ``upper_bounds`` will default to vector values of ``DBL_MAX`` (the maximum
 number representable in double precision for a particular platform),
 ``lower_bounds`` will default to a vector of ``-DBL_MAX`` values, and
-``descriptors`` will default to a vector of <tt>'cdv_i'</tt> strings,
+``descriptors`` will default to a vector of ``'cdv_i'`` strings,
 where ``i`` ranges from one to two:
 
 

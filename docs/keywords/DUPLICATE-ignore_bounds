@@ -5,9 +5,9 @@ When Dakota computes gradients or Hessians by finite differences and the
 variables in question have bounds, it by default chooses finite-differencing
 steps that keep the variables within their specified bounds. Older versions
 of Dakota generally ignored bounds when computing finite differences.
-To restore the older behavior, one can add keyword <tt>ignore_bounds</tt>
-to the <tt>response</tt> specification when <tt>method_source dakota</tt>
-(or just <tt>dakota</tt>) is also specified.
+To restore the older behavior, one can add keyword ``ignore_bounds``
+to the ``response`` specification when ``method_source dakota``
+(or just ``dakota``) is also specified.
 
 In forward difference or backward difference computations, honoring
 bounds is straightforward.

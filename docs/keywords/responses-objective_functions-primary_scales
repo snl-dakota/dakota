@@ -6,8 +6,8 @@ to be used in scaling each objective function. They only have effect
 when the associated method specifies ``scaling``.
 
 This keyword is required for
-:dakkw:`responses-objective_functions-primary_scale_types` of <tt>'value'</tt> and
-optional for <tt>'log'</tt>. When specified in conjunction with log,
+:dakkw:`responses-objective_functions-primary_scale_types` of ``'value'`` and
+optional for ``'log'``. When specified in conjunction with log,
 scale values are applied prior to the logarithm, to permit log scaling
 of strictly negative response functions.
 
