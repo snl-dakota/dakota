@@ -14,6 +14,8 @@ macro(dakota_find_boost)
   # Dakota requires Boost 1.69 or newer (this can possibly be relaxed to 1.58
   # if not building unit tests); enforce for all libs in the build
   set(dakota_boost_libs filesystem program_options regex serialization system)
+  # Remove filesystem after moving to Boost 1.70+
+  #set(dakota_boost_libs program_options regex serialization system)
 
   if(DAKOTA_APPLE_FIX_BOOSTLIBS)
     # This approach requires separate include and lib dirs
@@ -38,6 +40,8 @@ macro(dakota_find_boost)
 
   find_package(Boost 1.69 REQUIRED COMPONENTS ${dakota_boost_libs})
 
+  # Remove filesystem after moving to Boost 1.70+
+  #set(DAKOTA_BOOST_TARGETS Boost::boost Boost::program_options
   set(DAKOTA_BOOST_TARGETS Boost::boost Boost::filesystem Boost::program_options
     Boost::regex Boost::serialization Boost::system)
 

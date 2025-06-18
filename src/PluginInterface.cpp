@@ -10,6 +10,9 @@
 #include "PluginInterface.hpp"
 #include "ProblemDescDB.hpp"
 
+#if BOOST_VERSION >= 107000
+#define BOOST_DLL_USE_STD_FS
+#endif
 #include <boost/dll/import.hpp>
 #include <boost/version.hpp>
 
@@ -131,7 +134,11 @@ void PluginInterface::load_plugin()
 	 //     boost::dll::load_mode::rtld_now
 	 );
   }
+#if BOOST_VERSION >= 107000
+  catch (const std::filesystem::filesystem_error& e) {
+#else
   catch (const boost::system::system_error& e) {
+#endif
     Cerr << "\nError: Could not load symbol dakota_interface_plugin from "
 	 << "specified plugin \ninterface library '" << pluginPath
 	 << "'\nDetails:\n"
