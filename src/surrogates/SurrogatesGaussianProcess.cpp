@@ -223,7 +223,7 @@ void GaussianProcess::build(const MatrixXd& samples, const MatrixXd& response) {
   for (int i = 0; i < num_restarts; i++) {
     x = initial_guesses.row(i);
     rol_solver.solve(*outStream,ROL::nullPtr,true);
-    thetaValues = x.getVector();
+    thetaValues = x.head(numVariables + 1);
     if (estimateTrend) {
       for (int j = 0; j < numPolyTerms; ++j) {
         betaValues(j) = x(numVariables + 1 + j);
