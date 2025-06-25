@@ -66,7 +66,6 @@ ProgramOptions::ProgramOptions(int argc, char* argv[], int world_rank):
 
   if (clh.retrieve("input"))
     inputFile = clh.retrieve("input");
-  Cout << "inputFile is " << inputFile << std::endl;
   
   if(inputFile == "-") {
     stdinInput = true;
